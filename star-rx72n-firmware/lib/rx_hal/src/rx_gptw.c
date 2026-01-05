@@ -99,13 +99,13 @@ static volatile rx_gptw_channel_regs_t* internal_get_gptw_base(rx_gptw_channel_t
 {
   switch (channel) {
     case k_gptw_channel_0:
-      return GPTW0_BASE;
+      return gptw0();
     case k_gptw_channel_1:
-      return GPTW1_BASE;
+      return gptw1();
     case k_gptw_channel_2:
-      return GPTW2_BASE;
+      return gptw2();
     case k_gptw_channel_3:
-      return GPTW3_BASE;
+      return gptw3();
     default:
       return NULL;
   }
@@ -255,42 +255,31 @@ static void internal_configure_port_pins(rx_gptw_channel_t channel)
   }
 }
 
-/* =============================================================================
- * Public API Implementation
- * =============================================================================
+/**
+ * @brief Enable GPTW module clock
+ *
+ * Unlocks system protection and clears the GPTW module stop bit.
  */
-
-rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* config)
+static void internal_enable_gptw_module_clock(void)
 {
-  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
-
-  if ((int32_t)channel >= k_gptw_max_channels) {
-    rx_log_error(s_tag, "Invalid GPTW channel");
-    return k_rx_err_invalid_arg;
-  }
-
-  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
-  if (gptw == NULL) {
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Calculate period from frequency */
-  uint32_t period;
-  rx_err_t err = internal_calculate_period(config->frequency_hz, &period);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  rx_log_info(s_tag, "Initializing GPTW");
-
-  /* Enable GPTW module (clear module stop bit in MSTPCRC) */
   system_regs()->prcr = k_gptw_prcr_unlock;
   system_regs()->mstpcrc &= ~(1UL << k_mstpc_gptw);
   system_regs()->prcr = k_gptw_prcr_lock;
+}
 
-  /* Stop timer before configuration */
-  rx_gptw_stop(channel);
-
+/**
+ * @brief Configure GPTW hardware registers
+ *
+ * Sets up GPTW control, I/O, period, duty cycle, buffer, and dead time registers.
+ *
+ * @param[in] gptw   Pointer to GPTW channel registers
+ * @param[in] config Configuration parameters
+ * @param[in] period Calculated period value
+ */
+static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gptw,
+                                              const rx_gptw_config_t* config,
+                                              uint32_t period)
+{
   /* Unlock write protection for this channel */
   gptw->gtwp = k_gptw_gtwp_unlock;
 
@@ -331,6 +320,46 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
 
   /* Lock write protection */
   gptw->gtwp = k_gptw_gtwp_lock;
+}
+
+/* =============================================================================
+ * Public API Implementation
+ * =============================================================================
+ */
+
+rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* config)
+{
+  rx_err_t err;
+
+  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
+
+  if ((int32_t)channel >= k_gptw_max_channels) {
+    rx_log_error(s_tag, "Invalid GPTW channel");
+    return k_rx_err_invalid_arg;
+  }
+
+  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
+  if (gptw == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Calculate period from frequency */
+  uint32_t period;
+  err = internal_calculate_period(config->frequency_hz, &period);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  rx_log_info(s_tag, "Initializing GPTW");
+
+  /* Enable GPTW module clock */
+  internal_enable_gptw_module_clock();
+
+  /* Stop timer before configuration */
+  rx_gptw_stop(channel);
+
+  /* Configure GPTW hardware registers */
+  internal_configure_gptw_hardware(gptw, config, period);
 
   /* Configure MPC for Port E alternate functions */
   err = internal_configure_mpc(channel);
