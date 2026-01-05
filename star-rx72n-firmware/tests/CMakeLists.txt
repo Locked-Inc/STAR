@@ -97,6 +97,14 @@ set(MOCK_GPTW_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_gptw.c
 )
 
+# Mock HAL sources for GPIO/ADC/RIIC testing
+set(MOCK_HAL_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_gpio_hal.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_adc_hal.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_riic_hal.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_hal_regs.c
+)
+
 # rx_motor source
 set(RX_MOTOR_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_motor/src/rx_motor.c
@@ -198,6 +206,14 @@ add_executable(test_uart_hal
 target_compile_definitions(test_uart_hal PRIVATE UNIT_TEST)
 target_link_libraries(test_uart_hal unity)
 
+# Test: GPIO HAL Driver
+add_executable(test_gpio_hal
+    test_gpio_hal.c
+    ${MOCK_HAL_SRC}
+)
+target_compile_definitions(test_gpio_hal PRIVATE UNIT_TEST)
+target_link_libraries(test_gpio_hal unity)
+
 # rx_bus sources for bus abstraction tests (using mock bus manager)
 set(RX_BUS_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bus_manager.c
@@ -243,6 +259,7 @@ add_test(NAME test_rx_usb_comm COMMAND test_rx_usb_comm)
 add_test(NAME test_rx_time COMMAND test_rx_time)
 add_test(NAME test_rx_hcsr04 COMMAND test_rx_hcsr04)
 add_test(NAME test_uart_hal COMMAND test_uart_hal)
+add_test(NAME test_gpio_hal COMMAND test_gpio_hal)
 add_test(NAME test_rx_bus_uart COMMAND test_rx_bus_uart)
 add_test(NAME test_rx_motor COMMAND test_rx_motor)
 
@@ -252,7 +269,7 @@ add_test(NAME test_rx_motor COMMAND test_rx_motor)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor
+    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_gpio_hal test_rx_bus_uart test_rx_motor
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests..."
 )
