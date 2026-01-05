@@ -36,8 +36,8 @@ extern "C" {
 
 /** @brief Mock ADC constants */
 typedef enum {
-  k_mock_adc_max_units         = 2, /**< ADC units (0, 1) */
-  k_mock_adc_max_channels      = 8, /**< Channels per unit (0-7) */
+  k_mock_adc_max_units         = 2,  /**< ADC units (0, 1) */
+  k_mock_adc_max_channels      = 8,  /**< Channels per unit (0-7) */
   k_mock_adc_call_history_size = 64, /**< Call history buffer size */
 } mock_adc_constants_t;
 
@@ -63,17 +63,17 @@ typedef struct {
 
 /** @brief Per-unit ADC state */
 typedef struct {
-  bool     initialized;                                /**< Unit initialized */
-  uint8_t  resolution;                                 /**< Configured resolution */
-  uint16_t values[k_mock_adc_max_channels];            /**< Simulated ADC values */
-  bool     channel_enabled[k_mock_adc_max_channels];   /**< Channel enable state */
+  bool     initialized;                              /**< Unit initialized */
+  uint8_t  resolution;                               /**< Configured resolution */
+  uint16_t values[k_mock_adc_max_channels];          /**< Simulated ADC values */
+  bool     channel_enabled[k_mock_adc_max_channels]; /**< Channel enable state */
 } mock_adc_unit_state_t;
 
 /** @brief Global mock ADC state */
 typedef struct {
-  mock_adc_unit_state_t units[k_mock_adc_max_units];   /**< Per-unit state */
+  mock_adc_unit_state_t units[k_mock_adc_max_units];                /**< Per-unit state */
   mock_adc_call_t       call_history[k_mock_adc_call_history_size]; /**< Call history */
-  uint16_t              call_count;       /**< Number of calls recorded */
+  uint16_t              call_count;                                 /**< Number of calls recorded */
   rx_err_t              next_error;       /**< Error to return on next call */
   bool                  error_set;        /**< Whether error injection is active */
   bool                  simulate_timeout; /**< Simulate ADC timeout */

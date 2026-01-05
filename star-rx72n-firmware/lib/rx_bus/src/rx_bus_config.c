@@ -16,7 +16,6 @@
 #include <string.h>
 
 #include "hardware_pinout.h"
-
 #include "rx_check.h"
 #include "rx_log.h"
 

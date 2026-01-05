@@ -35,19 +35,19 @@
 
 /* Mock port register type - must match structure layout expected by driver */
 typedef struct {
-  volatile uint8_t pdr;
-  volatile uint8_t _pad1[0x1F];
-  volatile uint8_t podr;
-  volatile uint8_t _pad2[0x1F];
-  volatile uint8_t pidr;
-  volatile uint8_t _pad3[0x1F];
-  volatile uint8_t pmr;
-  volatile uint8_t _pad4[0x1F];
+  volatile uint8_t  pdr;
+  volatile uint8_t  _pad1[0x1F];
+  volatile uint8_t  podr;
+  volatile uint8_t  _pad2[0x1F];
+  volatile uint8_t  pidr;
+  volatile uint8_t  _pad3[0x1F];
+  volatile uint8_t  pmr;
+  volatile uint8_t  _pad4[0x1F];
   volatile uint16_t odr;
-  volatile uint8_t _pad5[0x3E];
-  volatile uint8_t pcr;
-  volatile uint8_t _pad6[0x1F];
-  volatile uint8_t dscr;
+  volatile uint8_t  _pad5[0x3E];
+  volatile uint8_t  pcr;
+  volatile uint8_t  _pad6[0x1F];
+  volatile uint8_t  dscr;
 } rx_port_regs_t;
 
 /* Mock bus manager - minimal implementation */
@@ -150,12 +150,12 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limi
 
 /** @brief Mock state constants */
 typedef enum {
-  k_mock_max_ports               = 32,
-  k_mock_default_ki_propi        = 525,
-  k_mock_max_pwm_freq_hz         = 25000,
-  k_mock_motor_duty_min          = -100,
-  k_mock_motor_duty_max          = 100,
-  k_mock_conversion_mv_to_v      = 1000,
+  k_mock_max_ports          = 32,
+  k_mock_default_ki_propi   = 525,
+  k_mock_max_pwm_freq_hz    = 25000,
+  k_mock_motor_duty_min     = -100,
+  k_mock_motor_duty_max     = 100,
+  k_mock_conversion_mv_to_v = 1000,
 } mock_constants_t;
 
 /* Motor mock state */
@@ -352,9 +352,8 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
 }
 
 /* Mock bus ADC read */
-rx_err_t rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager,
-                                    const char*       bus_name,
-                                    uint32_t*         voltage_mv)
+rx_err_t
+rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager, const char* bus_name, uint32_t* voltage_mv)
 {
   (void)manager;
   (void)bus_name;
@@ -740,7 +739,7 @@ static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle
 #define TEST_ASSERT_NE(a, b, msg) TEST_ASSERT((a) != (b), msg)
 #define TEST_ASSERT_OK(err)       TEST_ASSERT((err) == k_rx_ok, "Expected k_rx_ok")
 
-#define FLOAT_EPSILON 0.01f
+#define FLOAT_EPSILON                   0.01f
 #define TEST_ASSERT_FLOAT_EQ(a, b, msg) TEST_ASSERT(fabsf((a) - (b)) < FLOAT_EPSILON, msg)
 
 static void test_setup(void)

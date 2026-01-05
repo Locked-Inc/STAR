@@ -39,10 +39,8 @@ mock_adc_state_t g_mock_adc;
 /**
  * @brief Record a call in the history
  */
-static void internal_record_call(mock_adc_call_type_t type,
-                                 uint8_t              unit,
-                                 uint8_t              channel,
-                                 uint8_t              bits)
+static void
+internal_record_call(mock_adc_call_type_t type, uint8_t unit, uint8_t channel, uint8_t bits)
 {
   if (g_mock_adc.call_count < k_mock_adc_call_history_size) {
     mock_adc_call_t* call = &g_mock_adc.call_history[g_mock_adc.call_count];
@@ -60,8 +58,8 @@ static void internal_record_call(mock_adc_call_type_t type,
 static rx_err_t internal_check_error(void)
 {
   if (g_mock_adc.error_set) {
-    rx_err_t err          = g_mock_adc.next_error;
-    g_mock_adc.error_set  = false;
+    rx_err_t err         = g_mock_adc.next_error;
+    g_mock_adc.error_set = false;
     return err;
   }
   return k_rx_ok;

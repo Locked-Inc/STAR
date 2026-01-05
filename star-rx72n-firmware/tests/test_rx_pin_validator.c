@@ -23,11 +23,11 @@
 #include "tx_api.h"
 
 /* Include the module under test */
-#include "rx_pin_validator.h"
-#include "rx_pin_interface.h"
-#include "rx_gpio_constants.h"
-
 #include <string.h>
+
+#include "rx_gpio_constants.h"
+#include "rx_pin_interface.h"
+#include "rx_pin_validator.h"
 
 /* =============================================================================
  * Test Fixtures
@@ -54,18 +54,18 @@ void tearDown(void)
  */
 
 typedef enum {
-  k_test_port_0     = 0,
-  k_test_port_5     = 5,
-  k_test_port_9     = 9,
-  k_test_port_a     = 0xA,
-  k_test_port_b     = 0xB,
-  k_test_port_g     = 0x10,
-  k_test_pin_0      = 0,
-  k_test_pin_3      = 3,
-  k_test_pin_7      = 7,
-  k_test_pin_8      = 8, /* Invalid: max is 7 */
-  k_test_port_bad   = 0x11, /* Invalid: exceeds max port */
-  k_test_port_gap   = 0x08, /* Gap port (8 is valid) */
+  k_test_port_0   = 0,
+  k_test_port_5   = 5,
+  k_test_port_9   = 9,
+  k_test_port_a   = 0xA,
+  k_test_port_b   = 0xB,
+  k_test_port_g   = 0x10,
+  k_test_pin_0    = 0,
+  k_test_pin_3    = 3,
+  k_test_pin_7    = 7,
+  k_test_pin_8    = 8,    /* Invalid: max is 7 */
+  k_test_port_bad = 0x11, /* Invalid: exceeds max port */
+  k_test_port_gap = 0x08, /* Gap port (8 is valid) */
 } test_constants_t;
 
 /* =============================================================================
@@ -488,7 +488,10 @@ void test_pin_validator_get_function_success(void)
   iface.reserve_pin(iface.ctx, k_test_port_a, k_test_pin_3, "SPI_COPI");
 
   char function_out[k_pin_function_name_max_len];
-  err = iface.get_pin_function(iface.ctx, k_test_port_a, k_test_pin_3, function_out,
+  err = iface.get_pin_function(iface.ctx,
+                               k_test_port_a,
+                               k_test_pin_3,
+                               function_out,
                                sizeof(function_out));
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_STRING("SPI_COPI", function_out);
@@ -507,7 +510,10 @@ void test_pin_validator_get_function_null_output(void)
 
   iface.reserve_pin(iface.ctx, k_test_port_a, k_test_pin_3, "SPI_COPI");
 
-  err = iface.get_pin_function(iface.ctx, k_test_port_a, k_test_pin_3, NULL,
+  err = iface.get_pin_function(iface.ctx,
+                               k_test_port_a,
+                               k_test_pin_3,
+                               NULL,
                                k_pin_function_name_max_len);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
@@ -530,7 +536,10 @@ void test_pin_validator_get_function_buffer_too_small(void)
   };
 
   char function_out[k_small_buffer_size];
-  err = iface.get_pin_function(iface.ctx, k_test_port_a, k_test_pin_3, function_out,
+  err = iface.get_pin_function(iface.ctx,
+                               k_test_port_a,
+                               k_test_pin_3,
+                               function_out,
                                sizeof(function_out));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
@@ -547,7 +556,10 @@ void test_pin_validator_get_function_not_reserved(void)
   pin_validator_get_interface(&iface, &s_validator);
 
   char function_out[k_pin_function_name_max_len];
-  err = iface.get_pin_function(iface.ctx, k_test_port_a, k_test_pin_3, function_out,
+  err = iface.get_pin_function(iface.ctx,
+                               k_test_port_a,
+                               k_test_pin_3,
+                               function_out,
                                sizeof(function_out));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -742,7 +754,10 @@ void test_pin_validator_long_function_name(void)
 
   /* Verify truncation */
   char function_out[k_pin_function_name_max_len];
-  err = iface.get_pin_function(iface.ctx, k_test_port_a, k_test_pin_3, function_out,
+  err = iface.get_pin_function(iface.ctx,
+                               k_test_port_a,
+                               k_test_pin_3,
+                               function_out,
                                sizeof(function_out));
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_pin_function_name_max_len - 1, strlen(function_out));

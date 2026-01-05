@@ -373,4 +373,3 @@ static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle
 
   return k_rx_ok;
 }
-

@@ -17,18 +17,19 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-#include "rx_crc.h"
 #include <string.h>
+
+#include "rx_crc.h"
+#include "unity.h"
 
 void setUp(void)
 {
-    /* Nothing to set up */
+  /* Nothing to set up */
 }
 
 void tearDown(void)
 {
-    /* Nothing to tear down */
+  /* Nothing to tear down */
 }
 
 /* =============================================================================
@@ -40,17 +41,17 @@ void tearDown(void)
  * @brief Test vector size constants
  */
 typedef enum {
-    k_rom_code_size       = 8,  /**< OneWire ROM code: family + serial + CRC */
-    k_scratchpad_size     = 9,  /**< DS18B20 scratchpad with CRC */
-    k_rom_data_size       = 7,  /**< ROM code without CRC byte */
-    k_scratchpad_data_size = 8, /**< Scratchpad without CRC byte */
+  k_rom_code_size        = 8, /**< OneWire ROM code: family + serial + CRC */
+  k_scratchpad_size      = 9, /**< DS18B20 scratchpad with CRC */
+  k_rom_data_size        = 7, /**< ROM code without CRC byte */
+  k_scratchpad_data_size = 8, /**< Scratchpad without CRC byte */
 } test_size_constants_t;
 
 /**
  * @brief DS18B20 family code
  */
 typedef enum {
-    k_ds18b20_family_code = 0x28,
+  k_ds18b20_family_code = 0x28,
 } onewire_family_codes_t;
 
 /* =============================================================================
@@ -63,8 +64,8 @@ typedef enum {
  */
 void test_crc8_null_pointer(void)
 {
-    uint8_t crc = rx_crc8_maxim(NULL, 10);
-    TEST_ASSERT_EQUAL_HEX8(0x00, crc);
+  uint8_t crc = rx_crc8_maxim(NULL, 10);
+  TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
 /**
@@ -72,9 +73,9 @@ void test_crc8_null_pointer(void)
  */
 void test_crc8_zero_length(void)
 {
-    uint8_t data[] = {0x01, 0x02, 0x03};
-    uint8_t crc = rx_crc8_maxim(data, 0);
-    TEST_ASSERT_EQUAL_HEX8(0x00, crc);
+  uint8_t data[] = {0x01, 0x02, 0x03};
+  uint8_t crc    = rx_crc8_maxim(data, 0);
+  TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
 /**
@@ -82,8 +83,8 @@ void test_crc8_zero_length(void)
  */
 void test_crc8_null_zero_length(void)
 {
-    uint8_t crc = rx_crc8_maxim(NULL, 0);
-    TEST_ASSERT_EQUAL_HEX8(0x00, crc);
+  uint8_t crc = rx_crc8_maxim(NULL, 0);
+  TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
 /* =============================================================================
@@ -99,9 +100,9 @@ void test_crc8_null_zero_length(void)
  */
 void test_crc8_single_zero(void)
 {
-    uint8_t data[] = {0x00};
-    uint8_t crc = rx_crc8_maxim(data, 1);
-    TEST_ASSERT_EQUAL_HEX8(0x00, crc);
+  uint8_t data[] = {0x00};
+  uint8_t crc    = rx_crc8_maxim(data, 1);
+  TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
 /**
@@ -111,9 +112,9 @@ void test_crc8_single_zero(void)
  */
 void test_crc8_single_ff(void)
 {
-    uint8_t data[] = {0xFF};
-    uint8_t crc = rx_crc8_maxim(data, 1);
-    TEST_ASSERT_EQUAL_HEX8(0x35, crc);
+  uint8_t data[] = {0xFF};
+  uint8_t crc    = rx_crc8_maxim(data, 1);
+  TEST_ASSERT_EQUAL_HEX8(0x35, crc);
 }
 
 /**
@@ -123,9 +124,9 @@ void test_crc8_single_ff(void)
  */
 void test_crc8_single_lsb_set(void)
 {
-    uint8_t data[] = {0x01};
-    uint8_t crc = rx_crc8_maxim(data, 1);
-    TEST_ASSERT_EQUAL_HEX8(0x5E, crc);
+  uint8_t data[] = {0x01};
+  uint8_t crc    = rx_crc8_maxim(data, 1);
+  TEST_ASSERT_EQUAL_HEX8(0x5E, crc);
 }
 
 /**
@@ -135,9 +136,9 @@ void test_crc8_single_lsb_set(void)
  */
 void test_crc8_ds18b20_family_code(void)
 {
-    uint8_t data[] = {k_ds18b20_family_code};
-    uint8_t crc = rx_crc8_maxim(data, 1);
-    TEST_ASSERT_EQUAL_HEX8(0xE1, crc);
+  uint8_t data[] = {k_ds18b20_family_code};
+  uint8_t crc    = rx_crc8_maxim(data, 1);
+  TEST_ASSERT_EQUAL_HEX8(0xE1, crc);
 }
 
 /* =============================================================================
@@ -158,9 +159,9 @@ void test_crc8_ds18b20_family_code(void)
  */
 void test_crc8_ds18b20_rom_1(void)
 {
-    uint8_t rom[] = {0x28, 0xFF, 0x64, 0x1E, 0x81, 0x16, 0x05};
-    uint8_t crc = rx_crc8_maxim(rom, k_rom_data_size);
-    TEST_ASSERT_EQUAL_HEX8(0xDB, crc);
+  uint8_t rom[] = {0x28, 0xFF, 0x64, 0x1E, 0x81, 0x16, 0x05};
+  uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+  TEST_ASSERT_EQUAL_HEX8(0xDB, crc);
 }
 
 /**
@@ -173,9 +174,9 @@ void test_crc8_ds18b20_rom_1(void)
  */
 void test_crc8_ds18b20_rom_2(void)
 {
-    uint8_t rom[] = {0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    uint8_t crc = rx_crc8_maxim(rom, k_rom_data_size);
-    TEST_ASSERT_EQUAL_HEX8(0x1E, crc);
+  uint8_t rom[] = {0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+  TEST_ASSERT_EQUAL_HEX8(0x1E, crc);
 }
 
 /**
@@ -188,9 +189,9 @@ void test_crc8_ds18b20_rom_2(void)
  */
 void test_crc8_ds18b20_rom_3(void)
 {
-    uint8_t rom[] = {0x28, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-    uint8_t crc = rx_crc8_maxim(rom, k_rom_data_size);
-    TEST_ASSERT_EQUAL_HEX8(0x0C, crc);
+  uint8_t rom[] = {0x28, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+  TEST_ASSERT_EQUAL_HEX8(0x0C, crc);
 }
 
 /**
@@ -203,9 +204,9 @@ void test_crc8_ds18b20_rom_3(void)
  */
 void test_crc8_ds18b20_rom_4(void)
 {
-    uint8_t rom[] = {0x28, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x01};
-    uint8_t crc = rx_crc8_maxim(rom, k_rom_data_size);
-    TEST_ASSERT_EQUAL_HEX8(0x67, crc);
+  uint8_t rom[] = {0x28, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x01};
+  uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+  TEST_ASSERT_EQUAL_HEX8(0x67, crc);
 }
 
 /**
@@ -216,9 +217,9 @@ void test_crc8_ds18b20_rom_4(void)
  */
 void test_crc8_full_rom_validation(void)
 {
-    uint8_t rom_with_crc[] = {0x28, 0xFF, 0x64, 0x1E, 0x81, 0x16, 0x05, 0xDB};
-    uint8_t crc = rx_crc8_maxim(rom_with_crc, k_rom_code_size);
-    TEST_ASSERT_EQUAL_HEX8(0x00, crc);
+  uint8_t rom_with_crc[] = {0x28, 0xFF, 0x64, 0x1E, 0x81, 0x16, 0x05, 0xDB};
+  uint8_t crc            = rx_crc8_maxim(rom_with_crc, k_rom_code_size);
+  TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
 /* =============================================================================
@@ -238,9 +239,9 @@ void test_crc8_full_rom_validation(void)
  */
 void test_crc8_scratchpad_25c(void)
 {
-    uint8_t scratchpad[] = {0x91, 0x01, 0x4B, 0x46, 0x7F, 0xFF, 0x0F, 0x10};
-    uint8_t crc = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
-    TEST_ASSERT_EQUAL_HEX8(0x25, crc);
+  uint8_t scratchpad[] = {0x91, 0x01, 0x4B, 0x46, 0x7F, 0xFF, 0x0F, 0x10};
+  uint8_t crc          = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
+  TEST_ASSERT_EQUAL_HEX8(0x25, crc);
 }
 
 /**
@@ -251,9 +252,9 @@ void test_crc8_scratchpad_25c(void)
  */
 void test_crc8_scratchpad_85c_reset(void)
 {
-    uint8_t scratchpad[] = {0x50, 0x05, 0x4B, 0x46, 0x7F, 0xFF, 0x0C, 0x10};
-    uint8_t crc = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
-    TEST_ASSERT_EQUAL_HEX8(0x1C, crc);
+  uint8_t scratchpad[] = {0x50, 0x05, 0x4B, 0x46, 0x7F, 0xFF, 0x0C, 0x10};
+  uint8_t crc          = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
+  TEST_ASSERT_EQUAL_HEX8(0x1C, crc);
 }
 
 /**
@@ -264,9 +265,9 @@ void test_crc8_scratchpad_85c_reset(void)
  */
 void test_crc8_scratchpad_negative_temp(void)
 {
-    uint8_t scratchpad[] = {0x5E, 0xFF, 0x4B, 0x46, 0x7F, 0xFF, 0x02, 0x10};
-    uint8_t crc = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
-    TEST_ASSERT_EQUAL_HEX8(0xB6, crc);
+  uint8_t scratchpad[] = {0x5E, 0xFF, 0x4B, 0x46, 0x7F, 0xFF, 0x02, 0x10};
+  uint8_t crc          = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
+  TEST_ASSERT_EQUAL_HEX8(0xB6, crc);
 }
 
 /**
@@ -274,10 +275,9 @@ void test_crc8_scratchpad_negative_temp(void)
  */
 void test_crc8_full_scratchpad_validation(void)
 {
-    uint8_t scratchpad_with_crc[] =
-        {0x91, 0x01, 0x4B, 0x46, 0x7F, 0xFF, 0x0F, 0x10, 0x25};
-    uint8_t crc = rx_crc8_maxim(scratchpad_with_crc, k_scratchpad_size);
-    TEST_ASSERT_EQUAL_HEX8(0x00, crc);
+  uint8_t scratchpad_with_crc[] = {0x91, 0x01, 0x4B, 0x46, 0x7F, 0xFF, 0x0F, 0x10, 0x25};
+  uint8_t crc                   = rx_crc8_maxim(scratchpad_with_crc, k_scratchpad_size);
+  TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
 /* =============================================================================
@@ -295,9 +295,9 @@ void test_crc8_full_scratchpad_validation(void)
  */
 void test_crc8_ascending_sequence(void)
 {
-    uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
-    uint8_t crc = rx_crc8_maxim(data, sizeof(data));
-    TEST_ASSERT_EQUAL_HEX8(0x0F, crc);
+  uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+  uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+  TEST_ASSERT_EQUAL_HEX8(0x0F, crc);
 }
 
 /**
@@ -308,9 +308,9 @@ void test_crc8_ascending_sequence(void)
  */
 void test_crc8_descending_sequence(void)
 {
-    uint8_t data[] = {0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01};
-    uint8_t crc = rx_crc8_maxim(data, sizeof(data));
-    TEST_ASSERT_EQUAL_HEX8(0xF6, crc);
+  uint8_t data[] = {0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01};
+  uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+  TEST_ASSERT_EQUAL_HEX8(0xF6, crc);
 }
 
 /**
@@ -320,9 +320,9 @@ void test_crc8_descending_sequence(void)
  */
 void test_crc8_alternating_aa(void)
 {
-    uint8_t data[] = {0xAA, 0xAA, 0xAA, 0xAA};
-    uint8_t crc = rx_crc8_maxim(data, sizeof(data));
-    TEST_ASSERT_EQUAL_HEX8(0xF6, crc);
+  uint8_t data[] = {0xAA, 0xAA, 0xAA, 0xAA};
+  uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+  TEST_ASSERT_EQUAL_HEX8(0xF6, crc);
 }
 
 /**
@@ -332,9 +332,9 @@ void test_crc8_alternating_aa(void)
  */
 void test_crc8_alternating_55(void)
 {
-    uint8_t data[] = {0x55, 0x55, 0x55, 0x55};
-    uint8_t crc = rx_crc8_maxim(data, sizeof(data));
-    TEST_ASSERT_EQUAL_HEX8(0x7B, crc);
+  uint8_t data[] = {0x55, 0x55, 0x55, 0x55};
+  uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+  TEST_ASSERT_EQUAL_HEX8(0x7B, crc);
 }
 
 /* =============================================================================
@@ -344,37 +344,37 @@ void test_crc8_alternating_55(void)
 
 int main(void)
 {
-    UNITY_BEGIN();
+  UNITY_BEGIN();
 
-    /* Edge case tests */
-    RUN_TEST(test_crc8_null_pointer);
-    RUN_TEST(test_crc8_zero_length);
-    RUN_TEST(test_crc8_null_zero_length);
+  /* Edge case tests */
+  RUN_TEST(test_crc8_null_pointer);
+  RUN_TEST(test_crc8_zero_length);
+  RUN_TEST(test_crc8_null_zero_length);
 
-    /* Single byte tests */
-    RUN_TEST(test_crc8_single_zero);
-    RUN_TEST(test_crc8_single_ff);
-    RUN_TEST(test_crc8_single_lsb_set);
-    RUN_TEST(test_crc8_ds18b20_family_code);
+  /* Single byte tests */
+  RUN_TEST(test_crc8_single_zero);
+  RUN_TEST(test_crc8_single_ff);
+  RUN_TEST(test_crc8_single_lsb_set);
+  RUN_TEST(test_crc8_ds18b20_family_code);
 
-    /* DS18B20 ROM code tests */
-    RUN_TEST(test_crc8_ds18b20_rom_1);
-    RUN_TEST(test_crc8_ds18b20_rom_2);
-    RUN_TEST(test_crc8_ds18b20_rom_3);
-    RUN_TEST(test_crc8_ds18b20_rom_4);
-    RUN_TEST(test_crc8_full_rom_validation);
+  /* DS18B20 ROM code tests */
+  RUN_TEST(test_crc8_ds18b20_rom_1);
+  RUN_TEST(test_crc8_ds18b20_rom_2);
+  RUN_TEST(test_crc8_ds18b20_rom_3);
+  RUN_TEST(test_crc8_ds18b20_rom_4);
+  RUN_TEST(test_crc8_full_rom_validation);
 
-    /* DS18B20 scratchpad tests */
-    RUN_TEST(test_crc8_scratchpad_25c);
-    RUN_TEST(test_crc8_scratchpad_85c_reset);
-    RUN_TEST(test_crc8_scratchpad_negative_temp);
-    RUN_TEST(test_crc8_full_scratchpad_validation);
+  /* DS18B20 scratchpad tests */
+  RUN_TEST(test_crc8_scratchpad_25c);
+  RUN_TEST(test_crc8_scratchpad_85c_reset);
+  RUN_TEST(test_crc8_scratchpad_negative_temp);
+  RUN_TEST(test_crc8_full_scratchpad_validation);
 
-    /* Maxim application note reference vectors */
-    RUN_TEST(test_crc8_ascending_sequence);
-    RUN_TEST(test_crc8_descending_sequence);
-    RUN_TEST(test_crc8_alternating_aa);
-    RUN_TEST(test_crc8_alternating_55);
+  /* Maxim application note reference vectors */
+  RUN_TEST(test_crc8_ascending_sequence);
+  RUN_TEST(test_crc8_descending_sequence);
+  RUN_TEST(test_crc8_alternating_aa);
+  RUN_TEST(test_crc8_alternating_55);
 
-    return UNITY_END();
+  return UNITY_END();
 }

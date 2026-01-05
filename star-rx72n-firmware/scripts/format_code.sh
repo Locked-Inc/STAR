@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 CHECK_ONLY=false
 VERBOSE=false
 EXTENSIONS=("*.c" "*.h" "*.cpp" "*.hpp")
-DIRECTORIES=("src" "lib" "include")
+DIRECTORIES=("src" "lib" "include" "tests")
 
 # Print usage information
 usage() {
@@ -129,6 +129,7 @@ find_source_files() {
             done < <(find "$dir" -name "$ext" -type f \
                 -not -path "lib/threadx/*" \
                 -not -path "lib/rx_nanopb/nanopb/*" \
+                -not -path "tests/host-build/*" \
                 -print0 2>/dev/null)
         done
     done

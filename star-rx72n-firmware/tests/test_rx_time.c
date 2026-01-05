@@ -14,10 +14,9 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-
 #include "mock_time.h"
 #include "rx_time_interface.h"
+#include "unity.h"
 
 /* =============================================================================
  * Test Fixtures

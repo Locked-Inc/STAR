@@ -48,8 +48,8 @@ void setUp(void)
   memset(&s_sensor, 0, sizeof(s_sensor));
 
   /* Setup default config for sensor 1 (J24) using type-safe GPIO enum */
-  s_config.trigger_pin = k_gpio_pc6;  /* PMOD JB GPIO0 */
-  s_config.echo_pin    = k_gpio_p55;  /* PMOD JB GPIO1 */
+  s_config.trigger_pin = k_gpio_pc6; /* PMOD JB GPIO0 */
+  s_config.echo_pin    = k_gpio_p55; /* PMOD JB GPIO1 */
   s_config.timeout_us  = 30000;
 }
 

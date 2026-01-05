@@ -31,13 +31,13 @@ typedef enum {
  * =============================================================================
  */
 
-static bool     s_initialized  = false;
-static float    s_duty         = 0.0f;
-static bool     s_brake_mode   = false;
-static bool     s_stopped      = false;
-static rx_err_t s_init_error   = k_rx_ok;
-static rx_err_t s_duty_error   = k_rx_ok;
-static rx_err_t s_stop_error   = k_rx_ok;
+static bool     s_initialized = false;
+static float    s_duty        = 0.0f;
+static bool     s_brake_mode  = false;
+static bool     s_stopped     = false;
+static rx_err_t s_init_error  = k_rx_ok;
+static rx_err_t s_duty_error  = k_rx_ok;
+static rx_err_t s_stop_error  = k_rx_ok;
 
 /* =============================================================================
  * Mock Test Helpers

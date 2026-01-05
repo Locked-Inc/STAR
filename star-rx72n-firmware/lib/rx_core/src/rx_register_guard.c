@@ -261,8 +261,7 @@ static void internal_refresh_mstpcr(void)
     s_state.corrections++;
   }
 
-  system_regs()->prcr =
-    (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR writes */
+  system_regs()->prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR writes */
 
   __asm__ volatile("mvtc %0, psw" : : "r"(psw)); /* Restore interrupt state */
 }

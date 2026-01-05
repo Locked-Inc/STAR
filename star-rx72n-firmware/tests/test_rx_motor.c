@@ -58,13 +58,13 @@ typedef enum {
 
 /** @brief Duty cycle test values */
 typedef enum {
-  k_duty_full_forward  = 100,  /**< Full forward duty */
-  k_duty_half          = 50,   /**< Half duty */
-  k_duty_quarter       = 25,   /**< Quarter duty */
-  k_duty_zero          = 0,    /**< Zero duty */
-  k_duty_full_reverse  = -100, /**< Full reverse duty */
-  k_duty_over_max      = 150,  /**< Over maximum for clamping test */
-  k_duty_under_min     = -150, /**< Under minimum for clamping test */
+  k_duty_full_forward = 100,  /**< Full forward duty */
+  k_duty_half         = 50,   /**< Half duty */
+  k_duty_quarter      = 25,   /**< Quarter duty */
+  k_duty_zero         = 0,    /**< Zero duty */
+  k_duty_full_reverse = -100, /**< Full reverse duty */
+  k_duty_over_max     = 150,  /**< Over maximum for clamping test */
+  k_duty_under_min    = -150, /**< Under minimum for clamping test */
 } test_duty_values_t;
 
 static const float s_float_tolerance = 0.01f;
@@ -145,9 +145,11 @@ void test_motor_init_outputs_start_at_zero(void)
 {
   rx_motor_init(&s_motor, &s_config);
 
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -259,7 +261,8 @@ void test_motor_deinit_stops_motor_first(void)
   rx_motor_deinit(&s_motor);
 
   /* After deinit, GPTW is deinitialized (duty reads as 0) */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -276,9 +279,11 @@ void test_motor_set_duty_forward_50_percent(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* PH/EN mode: PH (output_a) = 100% for forward, EN (output_b) = speed */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 50.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           50.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -289,9 +294,11 @@ void test_motor_set_duty_forward_100_percent(void)
   rx_err_t err = rx_motor_set_duty(&s_motor, 100.0f);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -302,9 +309,11 @@ void test_motor_set_duty_forward_25_percent(void)
   rx_err_t err = rx_motor_set_duty(&s_motor, 25.0f);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 25.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           25.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -317,9 +326,11 @@ void test_motor_set_duty_zero(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Zero duty: PH = 100% (forward direction), EN = 0% */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -336,9 +347,11 @@ void test_motor_set_duty_reverse_50_percent(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* PH/EN mode: PH (output_a) = 0% for reverse, EN (output_b) = speed */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 50.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           50.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -349,9 +362,11 @@ void test_motor_set_duty_reverse_100_percent(void)
   rx_err_t err = rx_motor_set_duty(&s_motor, -100.0f);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -363,9 +378,11 @@ void test_motor_set_duty_reverse_75_percent(void)
   rx_err_t err = rx_motor_set_duty(&s_motor, -75.0f);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_1, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 75.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           75.0f,
                            mock_gptw_get_duty(k_gptw_channel_1, k_gptw_output_b));
 }
 
@@ -382,7 +399,8 @@ void test_motor_set_duty_clamp_above_100(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Should clamp to 100% */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -394,9 +412,11 @@ void test_motor_set_duty_clamp_below_minus_100(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Should clamp to -100% (reverse at 100% speed) */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -407,7 +427,8 @@ void test_motor_set_duty_clamp_extreme_positive(void)
   rx_err_t err = rx_motor_set_duty(&s_motor, 1000.0f);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -418,7 +439,8 @@ void test_motor_set_duty_clamp_extreme_negative(void)
   rx_err_t err = rx_motor_set_duty(&s_motor, -1000.0f);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -433,14 +455,17 @@ void test_motor_transition_forward_to_reverse(void)
 
   rx_motor_set_duty(&s_motor, 50.0f);
   /* Verify forward */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
 
   rx_motor_set_duty(&s_motor, -50.0f);
   /* Verify reverse */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 50.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           50.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -450,14 +475,17 @@ void test_motor_transition_reverse_to_forward(void)
 
   rx_motor_set_duty(&s_motor, -75.0f);
   /* Verify reverse */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
 
   rx_motor_set_duty(&s_motor, 75.0f);
   /* Verify forward */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 75.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           75.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -470,9 +498,11 @@ void test_motor_transition_through_zero(void)
   rx_motor_set_duty(&s_motor, -50.0f);
 
   /* Final state should be reverse at 50% */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 50.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           50.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -489,9 +519,11 @@ void test_motor_invert_pwm_forward_becomes_reverse(void)
   rx_motor_set_duty(&s_motor, 50.0f);
 
   /* With inversion, +50% input becomes -50% (reverse) */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 50.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           50.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -503,9 +535,11 @@ void test_motor_invert_pwm_reverse_becomes_forward(void)
   rx_motor_set_duty(&s_motor, -50.0f);
 
   /* With inversion, -50% input becomes +50% (forward) */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 50.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           50.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -523,9 +557,11 @@ void test_motor_stop_brake_from_running(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Brake not supported in PH/EN mode - falls back to coast (both 0%) */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -556,9 +592,11 @@ void test_motor_stop_coast_from_running(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Coast: EN = LOW for high impedance */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_3, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_3, k_gptw_output_b));
 }
 
@@ -570,9 +608,11 @@ void test_motor_stop_coast_from_reverse(void)
   rx_err_t err = rx_motor_stop(&s_motor, false);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -598,7 +638,7 @@ void test_motor_get_duty_after_set(void)
   rx_motor_init(&s_motor, &s_config);
   rx_motor_set_duty(&s_motor, 65.0f);
 
-  float duty;
+  float    duty;
   rx_err_t err = rx_motor_get_duty(&s_motor, &duty);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -610,7 +650,7 @@ void test_motor_get_duty_reverse(void)
   rx_motor_init(&s_motor, &s_config);
   rx_motor_set_duty(&s_motor, -45.0f);
 
-  float duty;
+  float    duty;
   rx_err_t err = rx_motor_get_duty(&s_motor, &duty);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -631,7 +671,7 @@ void test_motor_get_duty_after_stop(void)
 
 void test_motor_get_duty_null_handle_fails(void)
 {
-  float duty;
+  float    duty;
   rx_err_t err = rx_motor_get_duty(NULL, &duty);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
@@ -646,7 +686,7 @@ void test_motor_get_duty_null_output_fails(void)
 
 void test_motor_get_duty_not_initialized_fails(void)
 {
-  float duty;
+  float    duty;
   rx_err_t err = rx_motor_get_duty(&s_motor, &duty);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -689,10 +729,10 @@ void test_motor_multiple_channels_independent(void)
   rx_motor_handle_t motor1 = {0};
 
   rx_motor_config_t config0 = s_config;
-  config0.channel = k_gptw_channel_0;
+  config0.channel           = k_gptw_channel_0;
 
   rx_motor_config_t config1 = s_config;
-  config1.channel = k_gptw_channel_1;
+  config1.channel           = k_gptw_channel_1;
 
   rx_motor_init(&motor0, &config0);
   rx_motor_init(&motor1, &config1);
@@ -701,15 +741,19 @@ void test_motor_multiple_channels_independent(void)
   rx_motor_set_duty(&motor1, -60.0f);
 
   /* Verify channel 0 is forward at 30% */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 30.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           30.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 
   /* Verify channel 1 is reverse at 60% */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_1, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 60.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           60.0f,
                            mock_gptw_get_duty(k_gptw_channel_1, k_gptw_output_b));
 }
 
@@ -720,7 +764,7 @@ void test_motor_all_four_channels(void)
 
   /* Initialize all 4 motors */
   for (int32_t i = 0; i < 4; i++) {
-    configs[i] = s_config;
+    configs[i]         = s_config;
     configs[i].channel = (rx_gptw_channel_t)i;
     rx_motor_init(&motors[i], &configs[i]);
   }
@@ -744,9 +788,11 @@ void test_motor_set_duty_small_positive(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Very small positive - still forward direction */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 100.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.1f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.1f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 
@@ -758,9 +804,11 @@ void test_motor_set_duty_small_negative(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Very small negative - reverse direction */
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
-  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.1f,
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           0.1f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b));
 }
 

@@ -89,38 +89,30 @@ typedef enum {
  * - DSCR: 0x0008C0E0 (base + 0xE0)
  */
 typedef struct __attribute__((packed)) {
-  volatile uint8_t  pdr;          /**< +0x00: Port Direction Register (0=input, 1=output) */
-  volatile uint8_t  _pad1[0x1F];  /**< +0x01 to +0x1F: Reserved/padding */
-  volatile uint8_t  podr;         /**< +0x20: Port Output Data Register (output level) */
-  volatile uint8_t  _pad2[0x1F];  /**< +0x21 to +0x3F: Reserved/padding */
-  volatile uint8_t  pidr;         /**< +0x40: Port Input Data Register (read pin state) */
-  volatile uint8_t  _pad3[0x1F];  /**< +0x41 to +0x5F: Reserved/padding */
-  volatile uint8_t  pmr;          /**< +0x60: Port Mode Register (0=GPIO, 1=peripheral) */
-  volatile uint8_t  _pad4[0x1F];  /**< +0x61 to +0x7F: Reserved/padding */
-  volatile uint16_t odr;          /**< +0x80: Open Drain Control (ODR0 at +0, ODR1 at +1) */
-  volatile uint8_t  _pad5[0x3E];  /**< +0x82 to +0xBF: Reserved/padding */
-  volatile uint8_t  pcr;          /**< +0xC0: Pull-up Control Register */
-  volatile uint8_t  _pad6[0x1F];  /**< +0xC1 to +0xDF: Reserved/padding */
-  volatile uint8_t  dscr;         /**< +0xE0: Drive Capacity Control Register */
+  volatile uint8_t  pdr;         /**< +0x00: Port Direction Register (0=input, 1=output) */
+  volatile uint8_t  _pad1[0x1F]; /**< +0x01 to +0x1F: Reserved/padding */
+  volatile uint8_t  podr;        /**< +0x20: Port Output Data Register (output level) */
+  volatile uint8_t  _pad2[0x1F]; /**< +0x21 to +0x3F: Reserved/padding */
+  volatile uint8_t  pidr;        /**< +0x40: Port Input Data Register (read pin state) */
+  volatile uint8_t  _pad3[0x1F]; /**< +0x41 to +0x5F: Reserved/padding */
+  volatile uint8_t  pmr;         /**< +0x60: Port Mode Register (0=GPIO, 1=peripheral) */
+  volatile uint8_t  _pad4[0x1F]; /**< +0x61 to +0x7F: Reserved/padding */
+  volatile uint16_t odr;         /**< +0x80: Open Drain Control (ODR0 at +0, ODR1 at +1) */
+  volatile uint8_t  _pad5[0x3E]; /**< +0x82 to +0xBF: Reserved/padding */
+  volatile uint8_t  pcr;         /**< +0xC0: Pull-up Control Register */
+  volatile uint8_t  _pad6[0x1F]; /**< +0xC1 to +0xDF: Reserved/padding */
+  volatile uint8_t  dscr;        /**< +0xE0: Drive Capacity Control Register */
 } rx_port_regs_t;
 
 /* Compile-time verification that struct size matches expected layout */
-_Static_assert(sizeof(rx_port_regs_t) == 0xE1,
-               "Port register struct size must be 0xE1 bytes");
-_Static_assert(offsetof(rx_port_regs_t, pdr) == 0x00,
-               "PDR must be at offset 0x00");
-_Static_assert(offsetof(rx_port_regs_t, podr) == 0x20,
-               "PODR must be at offset 0x20");
-_Static_assert(offsetof(rx_port_regs_t, pidr) == 0x40,
-               "PIDR must be at offset 0x40");
-_Static_assert(offsetof(rx_port_regs_t, pmr) == 0x60,
-               "PMR must be at offset 0x60");
-_Static_assert(offsetof(rx_port_regs_t, odr) == 0x80,
-               "ODR must be at offset 0x80");
-_Static_assert(offsetof(rx_port_regs_t, pcr) == 0xC0,
-               "PCR must be at offset 0xC0");
-_Static_assert(offsetof(rx_port_regs_t, dscr) == 0xE0,
-               "DSCR must be at offset 0xE0");
+_Static_assert(sizeof(rx_port_regs_t) == 0xE1, "Port register struct size must be 0xE1 bytes");
+_Static_assert(offsetof(rx_port_regs_t, pdr) == 0x00, "PDR must be at offset 0x00");
+_Static_assert(offsetof(rx_port_regs_t, podr) == 0x20, "PODR must be at offset 0x20");
+_Static_assert(offsetof(rx_port_regs_t, pidr) == 0x40, "PIDR must be at offset 0x40");
+_Static_assert(offsetof(rx_port_regs_t, pmr) == 0x60, "PMR must be at offset 0x60");
+_Static_assert(offsetof(rx_port_regs_t, odr) == 0x80, "ODR must be at offset 0x80");
+_Static_assert(offsetof(rx_port_regs_t, pcr) == 0xC0, "PCR must be at offset 0xC0");
+_Static_assert(offsetof(rx_port_regs_t, dscr) == 0xE0, "DSCR must be at offset 0xE0");
 
 /* =============================================================================
  * Port Register Access Functions
@@ -192,7 +184,6 @@ static inline volatile rx_port_regs_t* port5(void)
 {
   return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_5);
 }
-
 
 /**
  * @brief Get pointer to PORTA registers

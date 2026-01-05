@@ -53,26 +53,26 @@ typedef enum {
  * @brief Mock encoder hardware state for a single channel
  */
 typedef struct {
-  bool     initialized;   /**< Channel is initialized */
-  bool     running;       /**< Timer is running */
-  uint16_t tcnt;          /**< Simulated timer counter value */
-  uint8_t  tcr;           /**< Timer control register */
-  uint8_t  tmdr;          /**< Timer mode register */
-  uint8_t  tiorh;         /**< Timer I/O control register H */
-  uint8_t  tiorl;         /**< Timer I/O control register L */
-  uint32_t start_count;   /**< Number of rx_mtu_start calls */
-  uint32_t stop_count;    /**< Number of rx_mtu_stop calls */
+  bool     initialized; /**< Channel is initialized */
+  bool     running;     /**< Timer is running */
+  uint16_t tcnt;        /**< Simulated timer counter value */
+  uint8_t  tcr;         /**< Timer control register */
+  uint8_t  tmdr;        /**< Timer mode register */
+  uint8_t  tiorh;       /**< Timer I/O control register H */
+  uint8_t  tiorl;       /**< Timer I/O control register L */
+  uint32_t start_count; /**< Number of rx_mtu_start calls */
+  uint32_t stop_count;  /**< Number of rx_mtu_stop calls */
 } mock_encoder_channel_t;
 
 /**
  * @brief Global mock encoder state
  */
 typedef struct {
-  bool                   initialized;                              /**< Mock is initialized */
-  mock_encoder_channel_t channels[k_mock_encoder_max_channels];    /**< Channel states */
-  uint32_t               mstpcra;                                  /**< Module stop control register A */
-  uint16_t               prcr;                                     /**< Protection register */
-  bool                   inject_init_error;                        /**< Inject init failure */
+  bool                   initialized;                           /**< Mock is initialized */
+  mock_encoder_channel_t channels[k_mock_encoder_max_channels]; /**< Channel states */
+  uint32_t               mstpcra;           /**< Module stop control register A */
+  uint16_t               prcr;              /**< Protection register */
+  bool                   inject_init_error; /**< Inject init failure */
 } mock_encoder_state_t;
 
 /* =============================================================================

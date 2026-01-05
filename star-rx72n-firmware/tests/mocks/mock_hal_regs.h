@@ -67,18 +67,18 @@ typedef struct {
  * @brief Mock S12AD register structure
  */
 typedef struct {
-  uint16_t adcsr;  /**< A/D Control/Status Register */
-  uint16_t adcer;  /**< A/D Conversion Extended Register */
+  uint16_t adcsr;   /**< A/D Control/Status Register */
+  uint16_t adcer;   /**< A/D Conversion Extended Register */
   uint16_t adansa0; /**< A/D Channel Select Register A0 */
   uint16_t adansa1; /**< A/D Channel Select Register A1 */
-  uint16_t addr0;  /**< A/D Data Register 0 */
-  uint16_t addr1;  /**< A/D Data Register 1 */
-  uint16_t addr2;  /**< A/D Data Register 2 */
-  uint16_t addr3;  /**< A/D Data Register 3 */
-  uint16_t addr4;  /**< A/D Data Register 4 */
-  uint16_t addr5;  /**< A/D Data Register 5 */
-  uint16_t addr6;  /**< A/D Data Register 6 */
-  uint16_t addr7;  /**< A/D Data Register 7 */
+  uint16_t addr0;   /**< A/D Data Register 0 */
+  uint16_t addr1;   /**< A/D Data Register 1 */
+  uint16_t addr2;   /**< A/D Data Register 2 */
+  uint16_t addr3;   /**< A/D Data Register 3 */
+  uint16_t addr4;   /**< A/D Data Register 4 */
+  uint16_t addr5;   /**< A/D Data Register 5 */
+  uint16_t addr6;   /**< A/D Data Register 6 */
+  uint16_t addr7;   /**< A/D Data Register 7 */
 } mock_adc_regs_t;
 
 /* =============================================================================
@@ -130,17 +130,17 @@ typedef struct {
  * @brief Global mock HAL state
  */
 typedef struct {
-  mock_port_regs_t   ports[k_mock_hal_max_ports];    /**< Port registers */
-  mock_adc_regs_t    adc[k_mock_hal_max_adc_unit];   /**< ADC registers */
-  mock_riic_regs_t   riic[k_mock_hal_max_riic_ch];   /**< RIIC registers */
-  mock_system_regs_t system;                         /**< System registers */
+  mock_port_regs_t   ports[k_mock_hal_max_ports];              /**< Port registers */
+  mock_adc_regs_t    adc[k_mock_hal_max_adc_unit];             /**< ADC registers */
+  mock_riic_regs_t   riic[k_mock_hal_max_riic_ch];             /**< RIIC registers */
+  mock_system_regs_t system;                                   /**< System registers */
   bool               adc_initialized[k_mock_hal_max_adc_unit]; /**< ADC init state */
   bool               riic_initialized[k_mock_hal_max_riic_ch]; /**< RIIC init state */
-  uint32_t           riic_simulated_timeout_count;   /**< Simulated timeout loops */
-  bool               riic_simulate_nack;             /**< Simulate NACK response */
-  bool               riic_simulate_busy;             /**< Simulate bus busy */
-  bool               adc_simulate_timeout;           /**< Simulate ADC timeout */
-  bool               pin_validator_active;           /**< Whether pin validator is active */
+  uint32_t           riic_simulated_timeout_count;             /**< Simulated timeout loops */
+  bool               riic_simulate_nack;                       /**< Simulate NACK response */
+  bool               riic_simulate_busy;                       /**< Simulate bus busy */
+  bool               adc_simulate_timeout;                     /**< Simulate ADC timeout */
+  bool               pin_validator_active; /**< Whether pin validator is active */
 } mock_hal_state_t;
 
 /* =============================================================================
