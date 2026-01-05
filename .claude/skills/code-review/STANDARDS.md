@@ -203,7 +203,18 @@ if (ret != RX_OK) {
 **Preference Hierarchy:**
 1. **Enums** - For ALL integer constants (preferred)
 2. **static const** - For floating-point values ONLY (enum limitation)
-3. **Macros** - NEVER use for constants (only for token operations)
+3. **Macros** - ONLY for specific cases (never for constants)
+
+**Allowed Macro Uses (Exhaustive List):**
+1. **Reducing duplicated code** - Function-like macros (e.g., `RX_RETURN_ON_ERROR`)
+2. **Conditional compilation** - Compile-time optimization (e.g., logging macros)
+3. **Hardware addresses** - Register pointers (can't use enum for addresses)
+4. **Build configuration flags** - Feature selection (e.g., `RX_CRC32_USE_HARDWARE`)
+
+**Forbidden Macro Uses:**
+- Simple integer constants (use enum)
+- Simple floating-point constants (use static const)
+- Function aliases for backward compatibility (project has no releases, no backward compatibility needed)
 
 **Compliant Example:**
 ```c
@@ -221,8 +232,33 @@ typedef enum {
 static const float s_max_velocity_mps = 2.5f;  /* Must be const - not integer */
 static const float s_pid_kp = 1.0f;            /* Must be const - not integer */
 
-/* ACCEPTABLE: Token operation macros only */
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))  /* Token operation */
+/* ACCEPTABLE: Macros for reducing duplicated code */
+#define RX_RETURN_ON_ERROR(err, tag, msg) \
+    do { \
+        rx_err_t _err = (err); \
+        if (_err != k_rx_ok) { \
+            rx_log_error((tag), (msg)); \
+            return _err; \
+        } \
+    } while (0)
+
+/* ACCEPTABLE: Conditional compilation (optimization) */
+#if LOG_LEVEL >= k_log_error
+#define rx_log_error(tag, msg) internal_rx_log_error((tag), (msg))
+#else
+#define rx_log_error(tag, msg) ((void)0)  /* Optimized away at compile time */
+#endif
+
+/* ACCEPTABLE: Hardware register addresses */
+#define CMT0_BASE ((rx_cmt_channel_regs_t*)0x00088000)
+#define CMT0      (*CMT0_BASE)
+
+/* ACCEPTABLE: Build configuration flags */
+#ifdef __RX__
+#define RX_CRC32_USE_HARDWARE
+#else
+#define RX_CRC32_USE_SOFTWARE
+#endif
 ```
 
 **Non-Compliant Example (AVOID):**
