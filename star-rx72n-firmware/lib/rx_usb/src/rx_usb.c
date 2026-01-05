@@ -110,6 +110,11 @@ extern void     rx_usb_cdc_handle_bulk_in(void);
 
 STATIC_TESTABLE void internal_ring_buffer_init(ring_buffer_t* buf)
 {
+  /* Rule 5: Pre-condition validation */
+  if (buf == NULL) {
+    return;
+  }
+
   buf->head  = 0;
   buf->tail  = 0;
   buf->count = 0;
@@ -117,11 +122,21 @@ STATIC_TESTABLE void internal_ring_buffer_init(ring_buffer_t* buf)
 
 STATIC_TESTABLE uint32_t internal_ring_buffer_available(const ring_buffer_t* buf)
 {
+  /* Rule 5: Pre-condition validation */
+  if (buf == NULL) {
+    return 0;
+  }
+
   return buf->count;
 }
 
 STATIC_TESTABLE uint32_t internal_ring_buffer_free(const ring_buffer_t* buf)
 {
+  /* Rule 5: Pre-condition validation */
+  if (buf == NULL) {
+    return 0;
+  }
+
   return k_usb_rx_buffer_size - buf->count;
 }
 
@@ -129,6 +144,11 @@ STATIC_TESTABLE uint32_t internal_ring_buffer_write(ring_buffer_t* buf,
                                                     const uint8_t* data,
                                                     uint32_t       len)
 {
+  /* Rule 5: Pre-condition validation */
+  if (buf == NULL || data == NULL || len == 0) {
+    return 0;
+  }
+
   uint32_t written = 0;
 
   while (written < len && buf->count < k_usb_rx_buffer_size) {
@@ -145,6 +165,11 @@ STATIC_TESTABLE uint32_t internal_ring_buffer_read(ring_buffer_t* buf,
                                                    uint8_t*       data,
                                                    uint32_t       max_len)
 {
+  /* Rule 5: Pre-condition validation */
+  if (buf == NULL || data == NULL || max_len == 0) {
+    return 0;
+  }
+
   uint32_t read_count = 0;
 
   while (read_count < max_len && buf->count > 0) {
@@ -229,7 +254,11 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   err = rx_usb_cdc_init();
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize USB CDC");
-    rx_usb_hw_deinit();
+    /* Cleanup: deinit hardware (Rule 7: check return even in error path) */
+    rx_err_t deinit_err = rx_usb_hw_deinit();
+    if (deinit_err != k_rx_ok) {
+      rx_log_warn(s_tag, "Hardware deinit failed during cleanup");
+    }
     return err;
   }
 
@@ -237,7 +266,11 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   err = rx_usb_hw_attach();
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to attach to USB bus");
-    rx_usb_hw_deinit();
+    /* Cleanup: deinit hardware (Rule 7: check return even in error path) */
+    rx_err_t deinit_err = rx_usb_hw_deinit();
+    if (deinit_err != k_rx_ok) {
+      rx_log_warn(s_tag, "Hardware deinit failed during cleanup");
+    }
     return err;
   }
 
@@ -257,11 +290,17 @@ rx_err_t rx_usb_deinit(void)
 
   rx_log_info(s_tag, "Deinitializing USB CDC driver");
 
-  /* Detach from USB bus */
-  rx_usb_hw_detach();
+  /* Detach from USB bus (Rule 7: check return value) */
+  rx_err_t detach_err = rx_usb_hw_detach();
+  if (detach_err != k_rx_ok) {
+    rx_log_warn(s_tag, "USB detach failed during deinit");
+  }
 
-  /* Deinitialize hardware */
-  rx_usb_hw_deinit();
+  /* Deinitialize hardware (Rule 7: check return value) */
+  rx_err_t deinit_err = rx_usb_hw_deinit();
+  if (deinit_err != k_rx_ok) {
+    rx_log_warn(s_tag, "Hardware deinit failed");
+  }
 
   /* Clear state */
   s_usb.initialized = false;
