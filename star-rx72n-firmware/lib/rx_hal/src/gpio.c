@@ -14,6 +14,7 @@
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+#include "rx_package_config.h"
 #include "rx_port_constants.h"
 
 /* =============================================================================
@@ -40,7 +41,7 @@ typedef enum {
 /**
  * @brief Get PORT base address from port number
  *
- * @param[in] port Port number (0-9, or 0xA-0x10 for A-G)
+ * @param[in] port Port number (0-5, J, or A-E)
  *
  * @return Pointer to PORT register base, or NULL if invalid port
  */
@@ -65,18 +66,6 @@ static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
     case k_rx_port_5: {
       return port5();
     }
-    case k_rx_port_6: {
-      return port6();
-    }
-    case k_rx_port_7: {
-      return port7();
-    }
-    case k_rx_port_8: {
-      return port8();
-    }
-    case k_rx_port_9: {
-      return port9();
-    }
     case k_rx_port_a: {
       return porta();
     }
@@ -92,11 +81,8 @@ static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
     case k_rx_port_e: {
       return porte();
     }
-    case k_rx_port_f: {
-      return portf();
-    }
-    case k_rx_port_g: {
-      return portg();
+    case k_rx_port_j: {
+      return portj();
     }
     default: {
       return NULL; /* Invalid port */
