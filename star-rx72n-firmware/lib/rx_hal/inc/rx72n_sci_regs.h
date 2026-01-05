@@ -238,7 +238,7 @@ static inline volatile rx_sci_regs_t* sci_get_channel(uint8_t channel)
     case 12:
       return sci12();
     default:
-      return (volatile rx_sci_regs_t*)0; /* NULL for invalid channel */
+      return NULL; /* Invalid channel */
   }
 }
 
