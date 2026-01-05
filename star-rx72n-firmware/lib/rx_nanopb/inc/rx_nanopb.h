@@ -52,6 +52,8 @@ typedef enum {
  * @brief Initialize nanopb wrapper
  *
  * @return k_rx_ok on success
+ * @return k_rx_err_invalid_state if already initialized
+ * @return k_rx_err_generic if initialization verification fails
  */
 rx_err_t rx_nanopb_init(void);
 
@@ -69,7 +71,8 @@ rx_err_t rx_nanopb_init(void);
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if any pointer is NULL
- * @return k_rx_err_invalid_size if encoding fails
+ * @return k_rx_err_not_initialized if rx_nanopb_init() not called
+ * @return k_rx_err_invalid_size if encoding fails or length exceeds buffer
  */
 rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg,
                                            uint8_t*                          buffer,
@@ -83,7 +86,8 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
  * @param[out] msg    Decoded message
  *
  * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_arg if any pointer is NULL or len is invalid
+ * @return k_rx_err_not_initialized if rx_nanopb_init() not called
  * @return k_rx_err_protocol_error if decoding fails
  */
 rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,

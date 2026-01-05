@@ -127,6 +127,16 @@ set(RX_ENCODER_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_encoder/src/rx_mtu_encoder.c
 )
 
+# Mock SMBus source for BQ4050 testing
+set(MOCK_SMBUS_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bus_smbus.c
+)
+
+# rx_bq4050 source
+set(RX_BQ4050_SRC
+    ${CMAKE_SOURCE_DIR}/../lib/rx_bq4050/src/rx_bq4050.c
+)
+
 # Include directories for library headers
 include_directories(
     ${CMAKE_SOURCE_DIR}/../include
@@ -145,6 +155,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/../lib/rx_motor/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_pid/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_encoder/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_bq4050/inc
     ${CMAKE_SOURCE_DIR}/mocks
     ${unity_SOURCE_DIR}/src
 )
@@ -339,6 +350,15 @@ target_include_directories(test_rx_encoder BEFORE PRIVATE
 target_compile_definitions(test_rx_encoder PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_encoder unity)
 
+# Test: BQ4050 Battery Fuel Gauge Driver
+add_executable(test_rx_bq4050
+    test_rx_bq4050.c
+    ${RX_BQ4050_SRC}
+    ${MOCK_SMBUS_SRC}
+    ${MOCK_LOG_SRC}
+)
+target_compile_definitions(test_rx_bq4050 PRIVATE UNIT_TEST)
+
 # =============================================================================
 # CTest Integration
 # =============================================================================
@@ -361,6 +381,7 @@ add_test(NAME test_rx_bus_onewire COMMAND test_rx_bus_onewire)
 add_test(NAME test_rx_spi_comm COMMAND test_rx_spi_comm)
 add_test(NAME test_rx_pid COMMAND test_rx_pid)
 add_test(NAME test_rx_encoder COMMAND test_rx_encoder)
+add_test(NAME test_rx_bq4050 COMMAND test_rx_bq4050)
 
 # =============================================================================
 # Convenience Targets
@@ -368,7 +389,7 @@ add_test(NAME test_rx_encoder COMMAND test_rx_encoder)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid test_rx_encoder
+    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid test_rx_encoder test_rx_bq4050
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests..."
 )
