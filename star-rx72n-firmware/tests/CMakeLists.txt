@@ -102,6 +102,19 @@ set(RX_MOTOR_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_motor/src/rx_motor.c
 )
 
+# rx_core sources for infrastructure testing
+set(RX_ERROR_HANDLER_SRC
+    ${CMAKE_SOURCE_DIR}/../lib/rx_core/src/rx_error_handler.c
+)
+
+set(RX_PIN_VALIDATOR_SRC
+    ${CMAKE_SOURCE_DIR}/../lib/rx_core/src/rx_pin_validator.c
+)
+
+set(RX_REGISTER_GUARD_SRC
+    ${CMAKE_SOURCE_DIR}/../lib/rx_core/src/rx_register_guard.c
+)
+
 # Include directories for library headers
 include_directories(
     ${CMAKE_SOURCE_DIR}/../include
@@ -228,6 +241,32 @@ add_executable(test_rx_motor
 target_compile_definitions(test_rx_motor PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_motor m)
 
+# Test: Error Handler (rx_core)
+add_executable(test_rx_error_handler
+    test_rx_error_handler.c
+    ${RX_ERROR_HANDLER_SRC}
+    ${MOCK_LOG_SRC}
+)
+target_compile_definitions(test_rx_error_handler PRIVATE UNIT_TEST)
+target_link_libraries(test_rx_error_handler unity)
+
+# Test: Pin Validator (rx_core)
+add_executable(test_rx_pin_validator
+    test_rx_pin_validator.c
+    ${RX_PIN_VALIDATOR_SRC}
+    ${MOCK_LOG_SRC}
+)
+target_compile_definitions(test_rx_pin_validator PRIVATE UNIT_TEST)
+target_link_libraries(test_rx_pin_validator unity)
+
+# Test: Register Guard (rx_core)
+add_executable(test_rx_register_guard
+    test_rx_register_guard.c
+    ${RX_REGISTER_GUARD_SRC}
+)
+target_compile_definitions(test_rx_register_guard PRIVATE UNIT_TEST)
+target_link_libraries(test_rx_register_guard unity)
+
 # =============================================================================
 # CTest Integration
 # =============================================================================
@@ -245,6 +284,9 @@ add_test(NAME test_rx_hcsr04 COMMAND test_rx_hcsr04)
 add_test(NAME test_uart_hal COMMAND test_uart_hal)
 add_test(NAME test_rx_bus_uart COMMAND test_rx_bus_uart)
 add_test(NAME test_rx_motor COMMAND test_rx_motor)
+add_test(NAME test_rx_error_handler COMMAND test_rx_error_handler)
+add_test(NAME test_rx_pin_validator COMMAND test_rx_pin_validator)
+add_test(NAME test_rx_register_guard COMMAND test_rx_register_guard)
 
 # =============================================================================
 # Convenience Targets
@@ -252,7 +294,7 @@ add_test(NAME test_rx_motor COMMAND test_rx_motor)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor
+    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor test_rx_error_handler test_rx_pin_validator test_rx_register_guard
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests..."
 )
