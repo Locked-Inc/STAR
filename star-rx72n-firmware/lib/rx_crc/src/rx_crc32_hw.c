@@ -81,7 +81,7 @@ rx_err_t rx_crc_init(void)
      * The RX72N CRC calculator in this configuration produces output
      * bit-exact with Go's crc32.ChecksumIEEE() when properly initialized.
      */
-  CRC.crccr = k_crc_crccr_lms | k_crc_crccr_gps_crc32;
+  crc_regs()->crccr = k_crc_crccr_lms | k_crc_crccr_gps_crc32;
 
   s_crc_initialized = true;
   return k_rx_ok;
@@ -125,7 +125,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * For IEEE 802.3, the initial value is 0xFFFFFFFF. The RX72N hardware
      * handles this automatically when DORCLR is set.
      */
-  CRC.crccr |= k_crc_crccr_dorclr;
+  crc_regs()->crccr |= k_crc_crccr_dorclr;
 
   /*
      * Feed data bytes to the CRC calculator.
@@ -136,7 +136,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * Note: For large aligned buffers, 32-bit word writes could be faster,
      * but byte-wise ensures correctness for all cases.
      */
-  volatile uint8_t* crcdir_byte = (volatile uint8_t*)&CRC.crcdir;
+  volatile uint8_t* crcdir_byte = (volatile uint8_t*)&crc_regs()->crcdir;
   for (uint32_t i = 0; i < len; i++) {
     *crcdir_byte = data[i];
   }
@@ -147,7 +147,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * IEEE 802.3 requires XOR with 0xFFFFFFFF after calculation.
      * The hardware outputs the raw CRC value, so we apply the final XOR.
      */
-  return CRC.crcdor ^ k_crc_ieee_final_xor;
+  return crc_regs()->crcdor ^ k_crc_ieee_final_xor;
 }
 
 uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)
