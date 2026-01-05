@@ -61,36 +61,36 @@ extern "C" {
  * - GPTW3: 0x000D4300
  */
 typedef struct {
-  volatile uint32_t gtwp;     /**< 0x00: Write Protection Register */
-  volatile uint32_t gtstr;    /**< 0x04: Software Start Register */
-  volatile uint32_t gtstp;    /**< 0x08: Software Stop Register */
-  volatile uint32_t gtclr;    /**< 0x0C: Software Clear Register */
-  volatile uint32_t gtssr;    /**< 0x10: Start Source Select Register */
-  volatile uint32_t gtpsr;    /**< 0x14: Stop Source Select Register */
-  volatile uint32_t gtcsr;    /**< 0x18: Clear Source Select Register */
-  volatile uint32_t gtupsr;   /**< 0x1C: Count-Up Source Select Register */
-  volatile uint32_t gtdnsr;   /**< 0x20: Count-Down Source Select Register */
-  volatile uint32_t gticasr;  /**< 0x24: Input Capture Source Select A */
-  volatile uint32_t gticbsr;  /**< 0x28: Input Capture Source Select B */
-  volatile uint32_t gtcr;     /**< 0x2C: Control Register */
-  volatile uint32_t gtuddtyc; /**< 0x30: Up/Down Count Duty Setting */
-  volatile uint32_t gtior;    /**< 0x34: I/O Control Register */
-  volatile uint32_t gtintad;  /**< 0x38: Interrupt Output Setting */
-  volatile uint32_t gtst;     /**< 0x3C: Status Register */
-  volatile uint32_t gtber;    /**< 0x40: Buffer Enable Register */
-  volatile uint32_t gtitc;    /**< 0x44: Interrupt/ADC Trigger Control */
-  volatile uint32_t gtcnt;    /**< 0x48: Counter */
-  volatile uint32_t gtccra;   /**< 0x4C: Compare Capture Register A */
-  volatile uint32_t gtccrb;   /**< 0x50: Compare Capture Register B */
-  volatile uint32_t gtccrc;   /**< 0x54: Compare Capture Register C */
-  volatile uint32_t gtccre;   /**< 0x58: Compare Capture Register E */
-  volatile uint32_t gtccrd;   /**< 0x5C: Compare Capture Register D */
-  volatile uint32_t gtccrf;   /**< 0x60: Compare Capture Register F */
-  volatile uint32_t gtpr;     /**< 0x64: Cycle Setting Register (Period) */
-  volatile uint32_t gtpbr;    /**< 0x68: Cycle Setting Buffer Register */
-  volatile uint32_t gtpdbr;   /**< 0x6C: Cycle Setting Double Buffer */
-  volatile uint32_t gtadtra;  /**< 0x70: A/D Trigger Register A */
-  volatile uint32_t gtadtbra; /**< 0x74: A/D Trigger Buffer Register A */
+  volatile uint32_t gtwp;      /**< 0x00: Write Protection Register */
+  volatile uint32_t gtstr;     /**< 0x04: Software Start Register */
+  volatile uint32_t gtstp;     /**< 0x08: Software Stop Register */
+  volatile uint32_t gtclr;     /**< 0x0C: Software Clear Register */
+  volatile uint32_t gtssr;     /**< 0x10: Start Source Select Register */
+  volatile uint32_t gtpsr;     /**< 0x14: Stop Source Select Register */
+  volatile uint32_t gtcsr;     /**< 0x18: Clear Source Select Register */
+  volatile uint32_t gtupsr;    /**< 0x1C: Count-Up Source Select Register */
+  volatile uint32_t gtdnsr;    /**< 0x20: Count-Down Source Select Register */
+  volatile uint32_t gticasr;   /**< 0x24: Input Capture Source Select A */
+  volatile uint32_t gticbsr;   /**< 0x28: Input Capture Source Select B */
+  volatile uint32_t gtcr;      /**< 0x2C: Control Register */
+  volatile uint32_t gtuddtyc;  /**< 0x30: Up/Down Count Duty Setting */
+  volatile uint32_t gtior;     /**< 0x34: I/O Control Register */
+  volatile uint32_t gtintad;   /**< 0x38: Interrupt Output Setting */
+  volatile uint32_t gtst;      /**< 0x3C: Status Register */
+  volatile uint32_t gtber;     /**< 0x40: Buffer Enable Register */
+  volatile uint32_t gtitc;     /**< 0x44: Interrupt/ADC Trigger Control */
+  volatile uint32_t gtcnt;     /**< 0x48: Counter */
+  volatile uint32_t gtccra;    /**< 0x4C: Compare Capture Register A */
+  volatile uint32_t gtccrb;    /**< 0x50: Compare Capture Register B */
+  volatile uint32_t gtccrc;    /**< 0x54: Compare Capture Register C */
+  volatile uint32_t gtccre;    /**< 0x58: Compare Capture Register E */
+  volatile uint32_t gtccrd;    /**< 0x5C: Compare Capture Register D */
+  volatile uint32_t gtccrf;    /**< 0x60: Compare Capture Register F */
+  volatile uint32_t gtpr;      /**< 0x64: Cycle Setting Register (Period) */
+  volatile uint32_t gtpbr;     /**< 0x68: Cycle Setting Buffer Register */
+  volatile uint32_t gtpdbr;    /**< 0x6C: Cycle Setting Double Buffer */
+  volatile uint32_t gtadtra;   /**< 0x70: A/D Trigger Register A */
+  volatile uint32_t gtadtbra;  /**< 0x74: A/D Trigger Buffer Register A */
   volatile uint32_t gtadtdbra; /**< 0x78: A/D Trigger Double Buffer A */
   volatile uint32_t gtadtrb;   /**< 0x7C: A/D Trigger Register B */
   volatile uint32_t gtadtbrb;  /**< 0x80: A/D Trigger Buffer Register B */
@@ -111,13 +111,13 @@ typedef struct {
  * Base address: 0x000D3000 (tentative - needs verification)
  */
 typedef struct {
-  volatile uint32_t gtstra;  /**< 0x00: General Timer Start Register A */
-  volatile uint32_t gtstpa;  /**< 0x04: General Timer Stop Register A */
-  volatile uint32_t gtclra;  /**< 0x08: General Timer Clear Register A */
+  volatile uint32_t gtstra;       /**< 0x00: General Timer Start Register A */
+  volatile uint32_t gtstpa;       /**< 0x04: General Timer Stop Register A */
+  volatile uint32_t gtclra;       /**< 0x08: General Timer Clear Register A */
   uint32_t          reserved0[5]; /**< Reserved */
-  volatile uint32_t gtstra2; /**< 0x20: General Timer Start Register A2 */
-  volatile uint32_t gtstpa2; /**< 0x24: General Timer Stop Register A2 */
-  volatile uint32_t gtclra2; /**< 0x28: General Timer Clear Register A2 */
+  volatile uint32_t gtstra2;      /**< 0x20: General Timer Start Register A2 */
+  volatile uint32_t gtstpa2;      /**< 0x24: General Timer Stop Register A2 */
+  volatile uint32_t gtclra2;      /**< 0x28: General Timer Clear Register A2 */
 } rx_gptw_common_regs_t;
 
 /* =============================================================================
@@ -130,7 +130,7 @@ typedef struct {
 
 /** @brief GPTW hardware addresses (tentative - verify against HW manual) */
 typedef enum {
-  k_gptw_channel_offset = 0x100,   /**< Channel spacing between GPTW registers */
+  k_gptw_channel_offset = 0x100,      /**< Channel spacing between GPTW registers */
   k_gptw_common_addr    = 0x000D3000, /**< GPTW common registers base */
   k_gptw0_base_addr     = 0x000D4000, /**< GPTW channel 0 base address */
   k_gptw1_base_addr     = 0x000D4100, /**< GPTW channel 1 base address */
