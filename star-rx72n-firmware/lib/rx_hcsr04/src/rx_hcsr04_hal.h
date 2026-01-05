@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 
+#include "hardware_pinout.h"
 #include "rx_err.h"
 
 #ifdef __cplusplus
@@ -36,63 +37,57 @@ extern "C" {
 /**
  * @brief Configure GPIO pin as output
  *
- * @param[in] port GPIO port number
- * @param[in] pin  GPIO pin number
+ * @param[in] pin GPIO pin (type-safe enum)
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_set_output(uint8_t port, uint8_t pin);
+rx_err_t hcsr04_hal_gpio_set_output(gpio_pin_t pin);
 
 /**
  * @brief Configure GPIO pin as input
  *
- * @param[in] port GPIO port number
- * @param[in] pin  GPIO pin number
+ * @param[in] pin GPIO pin (type-safe enum)
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_set_input(uint8_t port, uint8_t pin);
+rx_err_t hcsr04_hal_gpio_set_input(gpio_pin_t pin);
 
 /**
  * @brief Write GPIO pin high
  *
- * @param[in] port GPIO port number
- * @param[in] pin  GPIO pin number
+ * @param[in] pin GPIO pin (type-safe enum)
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_write_high(uint8_t port, uint8_t pin);
+rx_err_t hcsr04_hal_gpio_write_high(gpio_pin_t pin);
 
 /**
  * @brief Write GPIO pin low
  *
- * @param[in] port GPIO port number
- * @param[in] pin  GPIO pin number
+ * @param[in] pin GPIO pin (type-safe enum)
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_write_low(uint8_t port, uint8_t pin);
+rx_err_t hcsr04_hal_gpio_write_low(gpio_pin_t pin);
 
 /**
  * @brief Read GPIO pin state
  *
- * @param[in]  port  GPIO port number
- * @param[in]  pin   GPIO pin number
+ * @param[in]  pin   GPIO pin (type-safe enum)
  * @param[out] value Pointer to store pin state (true=high, false=low)
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_read(uint8_t port, uint8_t pin, bool* value);
+rx_err_t hcsr04_hal_gpio_read(gpio_pin_t pin, bool* value);
 
 /**
  * @brief Deinitialize GPIO pin
  *
- * @param[in] port GPIO port number
- * @param[in] pin  GPIO pin number
+ * @param[in] pin GPIO pin (type-safe enum)
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_deinit(uint8_t port, uint8_t pin);
+rx_err_t hcsr04_hal_gpio_deinit(gpio_pin_t pin);
 
 /* =============================================================================
  * Timing Functions

@@ -29,6 +29,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hardware_pinout.h"
 #include "rx_err.h"
 
 #ifdef __cplusplus
@@ -106,27 +107,25 @@ typedef enum {
  *
  * Sets pin to GPIO mode (PFS.PSEL = 0, no peripheral function).
  *
- * @param[in] port Port number (0-9 or 0x0A-0x12 for A-J)
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin enum (encodes port and pin number)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_gpio(uint8_t port, uint8_t pin);
+rx_err_t rx_mpc_set_gpio(gpio_pin_t pin);
 
 /**
  * @brief Configure pin for peripheral function
  *
  * Sets pin to peripheral mode with specified function code.
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin enum (encodes port and pin number)
  * @param[in] psel Peripheral select code (see hardware manual)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_peripheral(uint8_t port, uint8_t pin, uint8_t psel);
+rx_err_t rx_mpc_set_peripheral(gpio_pin_t pin, uint8_t psel);
 
 /**
  * @brief Configure pin for MTU PWM output
@@ -134,13 +133,12 @@ rx_err_t rx_mpc_set_peripheral(uint8_t port, uint8_t pin, uint8_t psel);
  * Convenience function for configuring MTU I/O compare/PWM pins.
  * Common pins: P14/P15/P16/P17 (MTU3), P24/P25/P26/P27 (MTU4)
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin enum (encodes port and pin number)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_mtu_pwm(uint8_t port, uint8_t pin);
+rx_err_t rx_mpc_set_mtu_pwm(gpio_pin_t pin);
 
 /**
  * @brief Configure pin for MTU encoder input
@@ -148,13 +146,12 @@ rx_err_t rx_mpc_set_mtu_pwm(uint8_t port, uint8_t pin);
  * Convenience function for configuring MTU clock/phase counter inputs.
  * Common pins: PC0/PC1 (MTCLKA/B), PD0/PD1 (MTCLKC/D)
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin enum (encodes port and pin number)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_mtu_encoder(uint8_t port, uint8_t pin);
+rx_err_t rx_mpc_set_mtu_encoder(gpio_pin_t pin);
 
 /**
  * @brief Configure pin for ADC input
@@ -162,54 +159,50 @@ rx_err_t rx_mpc_set_mtu_encoder(uint8_t port, uint8_t pin);
  * Disables digital input/output for analog operation.
  * Common pins: P40-P47 (AN000-AN007)
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin enum (encodes port and pin number)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_adc(uint8_t port, uint8_t pin);
+rx_err_t rx_mpc_set_adc(gpio_pin_t pin);
 
 /**
  * @brief Configure pin for SCI UART function
  *
  * Configures pin for SCI transmit or receive.
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin enum (encodes port and pin number)
  * @param[in] is_tx True for TX, false for RX
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_sci(uint8_t port, uint8_t pin, bool is_tx);
+rx_err_t rx_mpc_set_sci(gpio_pin_t pin, bool is_tx);
 
 /**
  * @brief Configure pin for RIIC (I2C) function
  *
  * Configures pin for RIIC SCL or SDA.
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin enum (encodes port and pin number)
  * @param[in] is_scl True for SCL, false for SDA
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_riic(uint8_t port, uint8_t pin, bool is_scl);
+rx_err_t rx_mpc_set_riic(gpio_pin_t pin, bool is_scl);
 
 /**
  * @brief Configure pin for RSPI (SPI) function
  *
  * Configures pin for RSPI clock, COPI, CIPO, or SSL.
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin enum (encodes port and pin number)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_rspi(uint8_t port, uint8_t pin);
+rx_err_t rx_mpc_set_rspi(gpio_pin_t pin);
 
 #ifdef __cplusplus
 }

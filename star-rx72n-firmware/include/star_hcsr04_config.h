@@ -56,6 +56,8 @@ typedef enum {
 /**
  * @brief Default sensor configurations for all 4 HC-SR04 sensors
  *
+ * Uses type-safe GPIO pin enum for compile-time validation.
+ *
  * Sensor 1 (J24 - PMOD JB):
  *   TRIG: PC6 (PMOD JB GPIO0)
  *   ECHO: P55 (PMOD JB GPIO1)
@@ -75,35 +77,27 @@ typedef enum {
 static const rx_hcsr04_config_t k_star_hcsr04_default_configs[k_star_hcsr04_sensor_count] = {
   [k_star_hcsr04_sensor_1] =
     {
-      .trigger_port = k_pmod_jb_gpio0_port,
-      .trigger_pin  = k_pmod_jb_gpio0_pin,
-      .echo_port    = k_pmod_jb_gpio1_port,
-      .echo_pin     = k_pmod_jb_gpio1_pin,
-      .timeout_us   = k_hcsr04_echo_timeout_us,
+      .trigger_pin = k_gpio_pmod_jb_gpio0,
+      .echo_pin    = k_gpio_pmod_jb_gpio1,
+      .timeout_us  = k_hcsr04_echo_timeout_us,
     },
   [k_star_hcsr04_sensor_2] =
     {
-      .trigger_port = k_pmod_jb_gpio2_port,
-      .trigger_pin  = k_pmod_jb_gpio2_pin,
-      .echo_port    = k_pmod_jb_gpio3_port,
-      .echo_pin     = k_pmod_jb_gpio3_pin,
-      .timeout_us   = k_hcsr04_echo_timeout_us,
+      .trigger_pin = k_gpio_pmod_jb_gpio2,
+      .echo_pin    = k_gpio_pmod_jb_gpio3,
+      .timeout_us  = k_hcsr04_echo_timeout_us,
     },
   [k_star_hcsr04_sensor_3] =
     {
-      .trigger_port = k_pmod_je_gpio0_port,
-      .trigger_pin  = k_pmod_je_gpio0_pin,
-      .echo_port    = k_pmod_je_gpio1_port,
-      .echo_pin     = k_pmod_je_gpio1_pin,
-      .timeout_us   = k_hcsr04_echo_timeout_us,
+      .trigger_pin = k_gpio_pmod_je_gpio0,
+      .echo_pin    = k_gpio_pmod_je_gpio1,
+      .timeout_us  = k_hcsr04_echo_timeout_us,
     },
   [k_star_hcsr04_sensor_4] =
     {
-      .trigger_port = k_pmod_je_gpio2_port,
-      .trigger_pin  = k_pmod_je_gpio2_pin,
-      .echo_port    = k_pmod_je_gpio3_port,
-      .echo_pin     = k_pmod_je_gpio3_pin,
-      .timeout_us   = k_hcsr04_echo_timeout_us,
+      .trigger_pin = k_gpio_pmod_je_gpio2,
+      .echo_pin    = k_gpio_pmod_je_gpio3,
+      .timeout_us  = k_hcsr04_echo_timeout_us,
     },
 };
 

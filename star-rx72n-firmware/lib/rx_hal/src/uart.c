@@ -18,8 +18,10 @@
 #include <stdint.h>
 
 #include "hardware.h"
+#include "hardware_pinout.h"
 #include "rx72n_regs.h"
 #include "rx_mpc.h"
+#include "rx_port_utils.h"
 
 /* =============================================================================
  * Private Definitions
@@ -212,54 +214,6 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
   return k_rx_ok;
 }
 
-/**
- * @brief Get PORT base address from port number
- *
- * @param[in] port Port number (0-9, or 0xA-0x10 for A-G)
- *
- * @return Pointer to PORT register base, or NULL if invalid port
- */
-static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
-{
-  switch (port) {
-    case 0:
-      return port0();
-    case 1:
-      return port1();
-    case 2:
-      return port2();
-    case 3:
-      return port3();
-    case 4:
-      return port4();
-    case 5:
-      return port5();
-    case 6:
-      return port6();
-    case 7:
-      return port7();
-    case 8:
-      return port8();
-    case 9:
-      return port9();
-    case 0x0A:
-      return porta();
-    case 0x0B:
-      return portb();
-    case 0x0C:
-      return portc();
-    case 0x0D:
-      return portd();
-    case 0x0E:
-      return porte();
-    case 0x0F:
-      return portf();
-    case 0x10:
-      return portg();
-    default:
-      return (volatile rx_port_regs_t*)0;
-  }
-}
 
 /**
  * @brief Configure pins for SCI UART operation
@@ -284,8 +238,8 @@ static rx_err_t internal_configure_uart_pins(uint8_t tx_port,
   }
 
   /* Get port bases */
-  volatile rx_port_regs_t* tx_port_base = internal_get_port_base(tx_port);
-  volatile rx_port_regs_t* rx_port_base = internal_get_port_base(rx_port);
+  volatile rx_port_regs_t* tx_port_base = rx_port_get_base(tx_port);
+  volatile rx_port_regs_t* rx_port_base = rx_port_get_base(rx_port);
 
   if (tx_port_base == (volatile rx_port_regs_t*)0 ||
       rx_port_base == (volatile rx_port_regs_t*)0) {
@@ -293,12 +247,15 @@ static rx_err_t internal_configure_uart_pins(uint8_t tx_port,
   }
 
   /* Configure MPC for SCI function */
-  rx_err_t err = rx_mpc_set_sci(tx_port, tx_pin, true);
+  gpio_pin_t tx_gpio = gpio_pin_make(tx_port, tx_pin);
+  gpio_pin_t rx_gpio = gpio_pin_make(rx_port, rx_pin);
+
+  rx_err_t err = rx_mpc_set_sci(tx_gpio, true);
   if (err != k_rx_ok) {
     return err;
   }
 
-  err = rx_mpc_set_sci(rx_port, rx_pin, false);
+  err = rx_mpc_set_sci(rx_gpio, false);
   if (err != k_rx_ok) {
     return err;
   }

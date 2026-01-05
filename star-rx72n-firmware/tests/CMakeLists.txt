@@ -104,6 +104,7 @@ set(RX_MOTOR_SRC
 
 # Include directories for library headers
 include_directories(
+    ${CMAKE_SOURCE_DIR}/../include
     ${CMAKE_SOURCE_DIR}/../lib/rx_frame/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_crc/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_fec/inc

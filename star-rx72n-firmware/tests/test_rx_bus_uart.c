@@ -15,6 +15,7 @@
 
 #include <string.h>
 
+#include "hardware_pinout.h"
 #include "mock_uart_hw.h"
 #include "rx_bus_config.h"
 #include "rx_bus_manager.h"
@@ -35,9 +36,6 @@ static rx_bus_config_t s_uart_config;
 /** @brief Test bus name */
 static const char* s_test_bus_name = "test_uart";
 
-/** @brief Port B constant for SCI9 pins */
-enum { k_port_b = 0x0B };
-
 /**
  * @brief Set up test fixtures before each test
  */
@@ -53,12 +51,10 @@ void setUp(void)
   /* Create UART bus config for SCI9 (PB7/TXD9, PB6/RXD9) */
   err = rx_bus_config_init_uart(&s_uart_config,
                                 s_test_bus_name,
-                                9,          /* SCI9 */
-                                k_port_b,   /* TX port B */
-                                7,          /* TX pin 7 */
-                                k_port_b,   /* RX port B */
-                                6,          /* RX pin 6 */
-                                115200);    /* 115200 baud */
+                                9,            /* SCI9 */
+                                k_gpio_pb7,   /* TX: Port B, Pin 7 */
+                                k_gpio_pb6,   /* RX: Port B, Pin 6 */
+                                115200);      /* 115200 baud */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Add bus to manager */
@@ -484,10 +480,10 @@ void test_rx_bus_uart_multi_channel_isolation(void)
   static rx_bus_config_t uart0_config;
   rx_err_t err = rx_bus_config_init_uart(&uart0_config,
                                           "uart0",
-                                          0,        /* SCI0 */
-                                          0, 2,     /* TX port 0, pin 2 */
-                                          0, 1,     /* RX port 0, pin 1 */
-                                          9600);    /* 9600 baud */
+                                          0,           /* SCI0 */
+                                          k_gpio_p17,  /* TX: Port 1, Pin 7 */
+                                          k_gpio_p16,  /* RX: Port 1, Pin 6 */
+                                          9600);       /* 9600 baud */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, &uart0_config);
@@ -543,29 +539,37 @@ void test_rx_bus_uart_multi_channel_isolation(void)
 void test_rx_bus_config_init_uart_invalid_channel(void)
 {
   rx_bus_config_t config;
-  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 13, 0, 0, 0, 0, 115200);
+  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 13, k_gpio_pb7, k_gpio_pb6, 115200);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /**
  * @brief Test UART config init with invalid port
+ *
+ * @note With gpio_pin_t, invalid port values are encoded in the enum.
+ *       This test uses a hand-crafted invalid gpio_pin_t value (port 0x11).
  */
 void test_rx_bus_config_init_uart_invalid_port(void)
 {
   rx_bus_config_t config;
-  /* Port 0x11 is invalid (beyond G) */
-  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, 0x11, 0, 0, 0, 115200);
+  /* Create invalid gpio_pin_t: port 0x11 (beyond G), pin 0 */
+  gpio_pin_t invalid_pin = (gpio_pin_t)0x1100;
+  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, invalid_pin, k_gpio_pb6, 115200);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /**
  * @brief Test UART config init with invalid pin
+ *
+ * @note With gpio_pin_t, invalid pin values are encoded in the enum.
+ *       This test uses a hand-crafted invalid gpio_pin_t value (pin 8).
  */
 void test_rx_bus_config_init_uart_invalid_pin(void)
 {
   rx_bus_config_t config;
-  /* Pin 8 is invalid (0-7 only) */
-  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, 0, 8, 0, 0, 115200);
+  /* Create invalid gpio_pin_t: port 0, pin 8 (beyond 0-7 range) */
+  gpio_pin_t invalid_pin = (gpio_pin_t)0x0008;
+  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, invalid_pin, k_gpio_pb6, 115200);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -575,7 +579,7 @@ void test_rx_bus_config_init_uart_invalid_pin(void)
 void test_rx_bus_config_init_uart_zero_baudrate(void)
 {
   rx_bus_config_t config;
-  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, 0, 0, 0, 0, 0);
+  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, k_gpio_pb7, k_gpio_pb6, 0);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -584,7 +588,7 @@ void test_rx_bus_config_init_uart_zero_baudrate(void)
  */
 void test_rx_bus_config_init_uart_null_config(void)
 {
-  rx_err_t err = rx_bus_config_init_uart(NULL, "uart", 9, 0, 0, 0, 0, 115200);
+  rx_err_t err = rx_bus_config_init_uart(NULL, "uart", 9, k_gpio_pb7, k_gpio_pb6, 115200);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
@@ -594,7 +598,7 @@ void test_rx_bus_config_init_uart_null_config(void)
 void test_rx_bus_config_init_uart_null_name(void)
 {
   rx_bus_config_t config;
-  rx_err_t err = rx_bus_config_init_uart(&config, NULL, 9, 0, 0, 0, 0, 115200);
+  rx_err_t err = rx_bus_config_init_uart(&config, NULL, 9, k_gpio_pb7, k_gpio_pb6, 115200);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 

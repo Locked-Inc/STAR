@@ -398,6 +398,59 @@ if (distance_cm < MIN_DISTANCE_CM || distance_cm > MAX_DISTANCE_CM) {
 }
 ```
 
+#### 15. Port/Pin Constants Policy
+
+**CRITICAL: NEVER hardcode port or pin numbers!**
+
+All port and pin numbers MUST use centralized constants from the library layer. Hex values are ONLY allowed in `lib/rx_core/inc/rx_port_constants.h`.
+
+**Architecture:**
+- `lib/rx_core/inc/rx_port_constants.h` - Library source of truth (ONLY place with hex values)
+- `lib/rx_hal/` - Library code uses constants (NO hex)
+- `include/hardware_pinout.h` - Application layer uses constants (NO hex)
+
+**Correct usage (library code):**
+
+```c
+#include "rx_port_constants.h"
+
+// Use named constants
+switch (port) {
+  case k_rx_port_b: return portb();
+  case k_rx_port_e: return porte();
+  // ...
+}
+```
+
+**Correct usage (application code):**
+
+```c
+#include "rx_port_constants.h"
+
+// Build gpio_pin_t from constants
+k_gpio_pb2 = (k_rx_port_b << k_port_shift) | k_rx_pin_2,
+```
+
+**WRONG - Never do this:**
+
+```c
+// WRONG: Hardcoded hex values
+if (port == 0x0B) { ... }           // What is 0x0B?
+if (port == 11) { ... }             // Decimal is also wrong!
+k_gpio_pb2 = 0x0B02;                // Magic number!
+```
+
+**Allowed hex values:**
+- `lib/rx_core/inc/rx_port_constants.h` - Port/pin constants (ONLY here!)
+- `lib/rx_hal/inc/rx72n_*_regs.h` - Hardware register addresses
+
+**Benefits:**
+- Single source of truth for all port/pin numbers
+- Compile-time verification via static assertions
+- Self-documenting code (`k_rx_port_b` vs `0x0B`)
+- Easy to search and maintain
+- Type-safe enum constants
+
 ## Project Structure
 
 ```
