@@ -316,6 +316,121 @@ typedef struct rx_error_interface {
 | Primary | Master | Configuration |
 | Main | Master | Configuration |
 
+## File Documentation Standard
+
+### Required Header Format
+
+Every C source and header file must begin with:
+
+1. **Path comment** (first line)
+2. **Doxygen documentation block**
+
+### Path Comment Format
+
+```c
+/* path/to/file.ext */
+```
+
+**Examples:**
+- `/* lib/rx_pid/inc/rx_pid.h */`
+- `/* lib/rx_pid/src/rx_pid.c */`
+- `/* lib/rx_crc/inc/rx_crc.h */`
+
+### Doxygen Header Block
+
+**Required Tags:**
+- `@file` - Exact filename
+- `@brief` - One-line summary
+- `@date` - Date in YYYY-MM-DD format
+- `@copyright` - Copyright notice
+
+**Optional Tags:**
+- `@details` - Extended description (recommended for complex modules)
+- `@code` - Usage examples (recommended for public API headers)
+
+**Forbidden Tags:**
+- `@author` - Not used in this project
+- `@version` - Not used (rely on git history)
+
+### Minimal Header Example
+
+```c
+/* lib/rx_utils/inc/rx_utils.h */
+
+/**
+ * @file rx_utils.h
+ * @brief Utility helper functions for RX72N firmware
+ *
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
+ */
+```
+
+### Extended Header Example (Public API)
+
+```c
+/* lib/rx_pid/inc/rx_pid.h */
+
+/**
+ * @file rx_pid.h
+ * @brief PID controller API for closed-loop motor control
+ * @details
+ * Provides a stateless PID (Proportional-Integral-Derivative) controller interface with
+ * anti-windup, derivative filtering, and configurable output limits. Suitable for embedded
+ * systems with deterministic behavior and tunable gains for velocity or position control loops.
+ *
+ * Direct port from ESP32 star_pid library - pure algorithm, no hardware dependencies.
+ *
+ * Key Features:
+ * - Standard PID algorithm with Kp, Ki, Kd gains
+ * - Configurable output limits
+ * - Integral anti-windup
+ * - Runtime gain tuning
+ * - State reset capability
+ *
+ * Example Usage:
+ * @code
+ * // Initialize PID Controller
+ * rx_pid_handle_t pid;
+ * rx_pid_config_t config = {
+ *     .kp = 1.0f,
+ *     .ki = 0.5f,
+ *     .kd = 0.1f,
+ *     .output_min = -100.0f,
+ *     .output_max = 100.0f
+ * };
+ * rx_pid_init(&pid, &config);
+ *
+ * // Compute PID output
+ * float output;
+ * rx_pid_compute(&pid, setpoint, measured, dt, &output);
+ * @endcode
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
+ */
+```
+
+### Implementation File Example
+
+```c
+/* lib/rx_pid/src/rx_pid.c */
+
+/**
+ * @file rx_pid.c
+ * @brief PID controller implementation for closed-loop motor control
+ * @details
+ * Implements a stateless PID (Proportional-Integral-Derivative) controller with anti-windup,
+ * derivative filtering, and configurable output limits. Designed for embedded systems with
+ * no dynamic memory allocation and tunable gains for velocity or position control.
+ *
+ * Direct port from ESP32 star_pid library - pure algorithm, no hardware dependencies.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
+ */
+```
+
 ## SOLID Principles for C
 
 ### Single Responsibility

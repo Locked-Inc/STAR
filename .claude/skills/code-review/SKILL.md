@@ -141,6 +141,15 @@ Review rx_pid.c for NASA Power of 10 compliance
 - [ ] Use COPI/CIPO (not MOSI/MISO)
 - [ ] Use Primary/Main (not master)
 
+### File Documentation
+- [ ] First line contains path comment: `/* path/to/file.ext */`
+- [ ] Doxygen header with required tags: `@file`, `@brief`, `@date`, `@copyright`
+- [ ] `@details` section for complex modules
+- [ ] `@code` example usage for public API headers
+- [ ] Date format: `YYYY-MM-DD`
+- [ ] Copyright: `Copyright (c) 2026 STAR Project`
+- [ ] No `@author` or `@version` tags (project policy)
+
 ## Report Format
 
 Generate a markdown report with:
