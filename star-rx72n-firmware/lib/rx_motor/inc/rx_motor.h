@@ -168,6 +168,32 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake);
  */
 rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty);
 
+/**
+ * @brief Emergency stop - disable GPTW outputs immediately
+ *
+ * Disables GPTW peripheral outputs at hardware level for fail-safe operation.
+ * Motor CANNOT be re-enabled without calling rx_motor_init() again.
+ *
+ * This function provides hardware-level safety cutoff for emergency situations
+ * such as control loop failures, sensor faults, or safety violations.
+ *
+ * Safety features:
+ * - Immediately sets duty to 0%
+ * - Disables GPTW outputs at hardware level
+ * - Stops timer to prevent glitches
+ * - Marks handle as uninitialized (requires re-init to use)
+ *
+ * @param[in] handle Pointer to motor handle. Must not be NULL.
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if motor not initialized
+ *
+ * @note After emergency stop, motor requires rx_motor_init() to operate again
+ * @warning This is a safety function - use for emergency conditions only
+ */
+rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle);
+
 #ifdef __cplusplus
 }
 #endif
