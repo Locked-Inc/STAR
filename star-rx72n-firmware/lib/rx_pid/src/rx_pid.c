@@ -152,6 +152,22 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
   /* Store error for next iteration */
   handle->prev_error = error;
 
+  /* Post-conditions: Verify computation correctness (NASA Rule 5 compliance) */
+  if (*output < handle->output_min || *output > handle->output_max) {
+    rx_log_error(s_tag, "Post-condition failed: output out of range");
+    return k_rx_fail;
+  }
+
+  if (handle->integral < handle->integral_min || handle->integral > handle->integral_max) {
+    rx_log_error(s_tag, "Post-condition failed: integral out of range");
+    return k_rx_fail;
+  }
+
+  if (!isfinite(*output)) {
+    rx_log_error(s_tag, "Post-condition failed: output is NaN or Inf");
+    return k_rx_fail;
+  }
+
   rx_log_debug(s_tag, "PID computation");
 
   return k_rx_ok;
