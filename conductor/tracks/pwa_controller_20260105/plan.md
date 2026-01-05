@@ -20,17 +20,17 @@
 - [x] Task: Write unit tests for `useGamepad` using mocked `navigator.getGamepads` (Red Phase)
 - [x] Task: Implement polling loop and connection logic to pass tests (Green Phase)
 - [x] Task: Create `ControllerView` component with "Press any button" prompt and stick visualization
-- [~] Task: Conductor - User Manual Verification 'Phase 3: UI Gamepad Integration (TypeScript)' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: UI Gamepad Integration (TypeScript)' (Protocol in workflow.md) <!-- a1a79d620996841d955410d522b9c61050595063 -->
 
 ## Phase 4: UI WebSocket & Safety Integration (TypeScript)
-- [ ] Task: Implement `ControllerService` to manage the `/ws/controller` connection
-- [ ] Task: Integrate `protobuf.js` for message serialization in the 60Hz loop
-- [ ] Task: Write integration tests for WebSocket streaming (Red Phase)
-- [ ] Task: Implement streaming logic to pass tests (Green Phase)
-- [ ] Task: Verify "Zero-Allocation" compliance using Chrome Performance tab (ensure no major GC spikes)
-- [ ] Task: Implement "Dead Man's Switch" (send stop command on disconnect/unplug)
-- [ ] Task: Verify safety logic with unit tests
-- [ ] Task: Conductor - User Manual Verification 'Phase 5: UI WebSocket & Safety Integration (TypeScript)' (Protocol in workflow.md)
+- [x] Task: Implement `ControllerService` to manage the `/ws/controller` connection
+- [x] Task: Integrate `protobuf.js` for message serialization in the 60Hz loop
+- [x] Task: Write integration tests for WebSocket streaming (Red Phase)
+- [x] Task: Implement streaming logic to pass tests (Green Phase)
+- [x] Task: Verify "Zero-Allocation" compliance using Chrome Performance tab (ensure no major GC spikes)
+- [x] Task: Implement "Dead Man's Switch" (send stop command on disconnect/unplug)
+- [x] Task: Verify safety logic with unit tests
+- [~] Task: Conductor - User Manual Verification 'Phase 4: UI WebSocket & Safety Integration (TypeScript)' (Protocol in workflow.md)
 
 ## Phase 5: Integration & Documentation
 - [ ] Task: Perform end-to-end manual test with Retroid Pocket 2S (or Chrome Emulator)
