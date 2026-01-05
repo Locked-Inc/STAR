@@ -4,7 +4,6 @@ import { ControllerState } from '../proto/star/v1/controller';
 
 describe('ControllerService', () => {
   let service: ControllerService;
-  let mockServer: any;
 
   beforeEach(() => {
     // Mock WebSocket
@@ -36,10 +35,16 @@ describe('ControllerService', () => {
     // @ts-ignore
     const socket = service['socket'];
     
+    expect(socket).not.toBeNull();
+    if (!socket) return;
+
     service.sendState(1.0, -0.5);
 
+    // Cast to any or specific mock type to access .mock
+    const mockSend = socket.send as unknown as { mock: { calls: any[][] } };
+
     expect(socket.send).toHaveBeenCalled();
-    const sentBytes = socket.send.mock.calls[0][0];
+    const sentBytes = mockSend.mock.calls[0][0];
     expect(sentBytes).toBeInstanceOf(Uint8Array);
 
     const decoded = ControllerState.fromBinary(sentBytes);

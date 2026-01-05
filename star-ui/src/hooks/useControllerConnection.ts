@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ControllerService } from '../services/ControllerService';
-import { GamepadState } from './useGamepad';
+import type { GamepadState } from './useGamepad';
 
 export const useControllerConnection = (gamepadState: GamepadState) => {
   const [connected, setConnected] = useState(false);

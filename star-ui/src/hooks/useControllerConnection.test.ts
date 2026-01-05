@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { useControllerConnection } from './useControllerConnection';
 import { ControllerService } from '../services/ControllerService';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('../services/ControllerService', () => {
   const mockService = {
@@ -10,7 +10,7 @@ vi.mock('../services/ControllerService', () => {
     sendState: vi.fn(),
   };
   return {
-    ControllerService: vi.fn().mockImplementation(function(url, onStatusChange) {
+    ControllerService: vi.fn().mockImplementation(function(_url, onStatusChange) {
       mockService.connect.mockImplementation(() => onStatusChange(true));
       return mockService;
     }),
