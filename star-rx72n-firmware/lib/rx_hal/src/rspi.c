@@ -111,13 +111,13 @@ static volatile rx_rspi_regs_t* internal_get_rspi_base(uint8_t channel)
 {
   switch (channel) {
     case k_rspi_channel_0: {
-      return &RSPI0;
+      return rspi0();
     }
     case k_rspi_channel_1: {
-      return &RSPI1;
+      return rspi1();
     }
     case k_rspi_channel_2: {
-      return &RSPI2;
+      return rspi2();
     }
     default: {
       return NULL;

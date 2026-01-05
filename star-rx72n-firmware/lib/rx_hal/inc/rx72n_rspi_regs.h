@@ -25,6 +25,13 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief RSPI base addresses */
+typedef enum {
+  k_rspi0_base_addr = 0x000D0000, /**< RSPI0 register base address */
+  k_rspi1_base_addr = 0x000D0100, /**< RSPI1 register base address */
+  k_rspi2_base_addr = 0x000D0200, /**< RSPI2 register base address */
+} rx_rspi_addresses_t;
+
 /**
  * @brief RSPI Register Map
  * @details
@@ -52,13 +59,32 @@ typedef struct {
   volatile uint16_t spcmd0; /**< SPI Command Register 0 (data length, phase, etc.) */
 } rx_rspi_regs_t;
 
-#define RSPI0_BASE ((rx_rspi_regs_t*)0x000D0000)
-#define RSPI1_BASE ((rx_rspi_regs_t*)0x000D0100)
-#define RSPI2_BASE ((rx_rspi_regs_t*)0x000D0200)
+/**
+ * @brief Get pointer to RSPI0 registers
+ * @return Volatile pointer to RSPI0 register structure
+ */
+static inline volatile rx_rspi_regs_t* rspi0(void)
+{
+  return (volatile rx_rspi_regs_t*)k_rspi0_base_addr;
+}
 
-#define RSPI0 (*RSPI0_BASE)
-#define RSPI1 (*RSPI1_BASE)
-#define RSPI2 (*RSPI2_BASE)
+/**
+ * @brief Get pointer to RSPI1 registers
+ * @return Volatile pointer to RSPI1 register structure
+ */
+static inline volatile rx_rspi_regs_t* rspi1(void)
+{
+  return (volatile rx_rspi_regs_t*)k_rspi1_base_addr;
+}
+
+/**
+ * @brief Get pointer to RSPI2 registers
+ * @return Volatile pointer to RSPI2 register structure
+ */
+static inline volatile rx_rspi_regs_t* rspi2(void)
+{
+  return (volatile rx_rspi_regs_t*)k_rspi2_base_addr;
+}
 
 /* RSPI Control Register (SPCR) Bit Definitions */
 typedef enum {

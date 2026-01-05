@@ -35,6 +35,11 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief CRC base address */
+typedef enum {
+  k_crc_base_addr = 0x00088280, /**< CRC register base address */
+} rx_crc_addresses_t;
+
 /** @brief CRC register reserved field sizes */
 typedef enum {
   k_crc_reserved_after_crccr_bytes = 3, /**< Reserved bytes after CRCCR */
@@ -54,8 +59,14 @@ typedef struct {
   volatile uint32_t crcdor; /**< CRC Data Output Register (32-bit CRC result) */
 } rx_crc_regs_t;
 
-#define CRC_BASE ((rx_crc_regs_t*)0x00088280)
-#define CRC      (*CRC_BASE)
+/**
+ * @brief Get pointer to CRC registers
+ * @return Volatile pointer to CRC register structure
+ */
+static inline volatile rx_crc_regs_t* crc_regs(void)
+{
+  return (volatile rx_crc_regs_t*)k_crc_base_addr;
+}
 
 /* CRC Control Register (CRCCR) bit definitions - CRC-32 only */
 typedef enum {

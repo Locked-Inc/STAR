@@ -25,6 +25,15 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief SCI base addresses */
+typedef enum {
+  k_sci0_base_addr = 0x0008A000, /**< SCI0 register base address */
+  k_sci1_base_addr = 0x0008A020, /**< SCI1 register base address */
+  k_sci2_base_addr = 0x0008A040, /**< SCI2 register base address */
+  k_sci5_base_addr = 0x0008A0A0, /**< SCI5 register base address */
+  k_sci6_base_addr = 0x0008A0C0, /**< SCI6 register base address */
+} rx_sci_addresses_t;
+
 /**
  * @brief SCI Register Map
  * @details
@@ -47,17 +56,50 @@ typedef struct {
   volatile uint8_t semr; /**< Serial Extended Mode Register (noise filter, etc.) */
 } rx_sci_regs_t;
 
-#define SCI0_BASE ((rx_sci_regs_t*)0x0008A000)
-#define SCI1_BASE ((rx_sci_regs_t*)0x0008A020)
-#define SCI2_BASE ((rx_sci_regs_t*)0x0008A040)
-#define SCI5_BASE ((rx_sci_regs_t*)0x0008A0A0)
-#define SCI6_BASE ((rx_sci_regs_t*)0x0008A0C0)
+/**
+ * @brief Get pointer to SCI0 registers
+ * @return Volatile pointer to SCI0 register structure
+ */
+static inline volatile rx_sci_regs_t* sci0(void)
+{
+  return (volatile rx_sci_regs_t*)k_sci0_base_addr;
+}
 
-#define SCI0 (*SCI0_BASE)
-#define SCI1 (*SCI1_BASE)
-#define SCI2 (*SCI2_BASE)
-#define SCI5 (*SCI5_BASE)
-#define SCI6 (*SCI6_BASE)
+/**
+ * @brief Get pointer to SCI1 registers
+ * @return Volatile pointer to SCI1 register structure
+ */
+static inline volatile rx_sci_regs_t* sci1(void)
+{
+  return (volatile rx_sci_regs_t*)k_sci1_base_addr;
+}
+
+/**
+ * @brief Get pointer to SCI2 registers
+ * @return Volatile pointer to SCI2 register structure
+ */
+static inline volatile rx_sci_regs_t* sci2(void)
+{
+  return (volatile rx_sci_regs_t*)k_sci2_base_addr;
+}
+
+/**
+ * @brief Get pointer to SCI5 registers
+ * @return Volatile pointer to SCI5 register structure
+ */
+static inline volatile rx_sci_regs_t* sci5(void)
+{
+  return (volatile rx_sci_regs_t*)k_sci5_base_addr;
+}
+
+/**
+ * @brief Get pointer to SCI6 registers
+ * @return Volatile pointer to SCI6 register structure
+ */
+static inline volatile rx_sci_regs_t* sci6(void)
+{
+  return (volatile rx_sci_regs_t*)k_sci6_base_addr;
+}
 
 #ifdef __cplusplus
 }

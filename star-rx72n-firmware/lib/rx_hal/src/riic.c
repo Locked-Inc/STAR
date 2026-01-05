@@ -110,13 +110,13 @@ static volatile rx_riic_regs_t* internal_get_riic_base(uint8_t channel)
 {
   switch (channel) {
     case k_riic_channel_0: {
-      return &RIIC0;
+      return riic0();
     }
     case k_riic_channel_1: {
-      return &RIIC1;
+      return riic1();
     }
     case k_riic_channel_2: {
-      return &RIIC2;
+      return riic2();
     }
     default: {
       return NULL;

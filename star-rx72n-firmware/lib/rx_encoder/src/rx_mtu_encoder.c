@@ -97,19 +97,19 @@ static volatile rx_mtu_channel_regs_t* internal_get_mtu_base(rx_mtu_channel_t ch
 {
   switch (channel) {
     case k_mtu_channel_0:
-      return (volatile rx_mtu_channel_regs_t*)MTU0_BASE;
+      return (volatile rx_mtu_channel_regs_t*)mtu0();
     case k_mtu_channel_1:
-      return (volatile rx_mtu_channel_regs_t*)MTU1_BASE;
+      return (volatile rx_mtu_channel_regs_t*)mtu1();
     case k_mtu_channel_2:
-      return (volatile rx_mtu_channel_regs_t*)MTU2_BASE;
+      return (volatile rx_mtu_channel_regs_t*)mtu2();
     case k_mtu_channel_3:
-      return (volatile rx_mtu_channel_regs_t*)((volatile uint8_t*)MTU3_BASE);
+      return (volatile rx_mtu_channel_regs_t*)((volatile uint8_t*)mtu3());
     case k_mtu_channel_4:
-      return (volatile rx_mtu_channel_regs_t*)((volatile uint8_t*)MTU4_BASE);
+      return (volatile rx_mtu_channel_regs_t*)((volatile uint8_t*)mtu4());
     case k_mtu_channel_6:
-      return (volatile rx_mtu_channel_regs_t*)MTU6_BASE;
+      return (volatile rx_mtu_channel_regs_t*)mtu6();
     case k_mtu_channel_7:
-      return (volatile rx_mtu_channel_regs_t*)MTU7_BASE;
+      return (volatile rx_mtu_channel_regs_t*)mtu7();
     default:
       return NULL;
   }
