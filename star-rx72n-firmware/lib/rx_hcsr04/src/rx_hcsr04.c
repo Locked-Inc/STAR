@@ -9,7 +9,7 @@
  * GPIO pins, timeout handling, and distance measurement in both blocking and
  * asynchronous modes. Supports temperature compensation for speed of sound.
  *
- * @date 2026-01-04
+ * @date 2026-01-05
  * @copyright Copyright (c) 2026 STAR Project
  */
 
@@ -25,9 +25,11 @@
  */
 
 /**
- * @brief Centimeters per inch * 100 (fixed point: 2.54 * 100 = 254)
+ * @brief Unit conversion constants
  */
-static const uint32_t s_cm_per_inch_x100 = 254;
+typedef enum {
+  k_cm_per_inch_x100 = 254, /**< Centimeters per inch * 100 (2.54 * 100) */
+} rx_hcsr04_conversion_t;
 
 /**
  * @brief Speed of sound base constant (m/s at 0°C)
@@ -38,6 +40,21 @@ static const float s_speed_of_sound_base_mps = 331.3f;
  * @brief Speed of sound temperature coefficient (m/s per °C)
  */
 static const float s_speed_of_sound_coeff = 0.606f;
+
+/**
+ * @brief Default temperature for distance calculations (°C)
+ */
+static const float s_default_temperature_celsius = 20.0f;
+
+/**
+ * @brief Minimum valid temperature (°C) - DS18B20 sensor lower limit
+ */
+static const float s_min_temp_celsius = -40.0f;
+
+/**
+ * @brief Maximum valid temperature (°C) - DS18B20 sensor upper limit
+ */
+static const float s_max_temp_celsius = 85.0f;
 
 /* =============================================================================
  * Internal Helper Functions
@@ -74,10 +91,9 @@ static rx_err_t
 internal_wait_for_echo(const rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
 {
   uint32_t start_time = hcsr04_hal_get_time_us();
-  bool     pin_state  = false;
-  uint32_t elapsed    = 0;
 
   while (true) {
+    bool pin_state = false;
     hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
 
     if (pin_state == target_state) {
@@ -85,7 +101,7 @@ internal_wait_for_echo(const rx_hcsr04_t* handle, bool target_state, uint32_t ti
     }
 
     /* Check for timeout */
-    elapsed = hcsr04_hal_get_time_us() - start_time;
+    uint32_t elapsed = hcsr04_hal_get_time_us() - start_time;
     if (elapsed >= timeout_us) {
       return k_rx_err_timeout;
     }
@@ -156,11 +172,13 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   }
 
   /* Initialize handle */
-  handle->trigger_pin        = config->trigger_pin;
-  handle->echo_pin           = config->echo_pin;
-  handle->timeout_us         = config->timeout_us;
-  handle->initialized        = true;
-  handle->measurement_active = false;
+  handle->trigger_pin              = config->trigger_pin;
+  handle->echo_pin                 = config->echo_pin;
+  handle->timeout_us               = config->timeout_us;
+  handle->initialized              = true;
+  handle->measurement_active       = false;
+  handle->temperature_celsius      = s_default_temperature_celsius;
+  handle->temp_compensation_enabled = false;
 
   /* Reset statistics */
   handle->measurement_count = 0;
@@ -227,8 +245,12 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
     return err;
   }
 
-  /* Convert to distance */
-  *distance_cm = rx_hcsr04_echo_to_cm(echo_time_us);
+  /* Convert to distance (with temperature compensation if enabled) */
+  if (handle->temp_compensation_enabled) {
+    *distance_cm = rx_hcsr04_echo_to_cm_with_temp(echo_time_us, handle->temperature_celsius);
+  } else {
+    *distance_cm = rx_hcsr04_echo_to_cm(echo_time_us);
+  }
 
   /* Validate range */
   if (*distance_cm < (float)k_hcsr04_min_distance_cm ||
@@ -276,8 +298,13 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
     return err;
   }
 
-  /* Convert to distance */
-  result->distance_cm = rx_hcsr04_echo_to_cm(result->echo_time_us);
+  /* Convert to distance (with temperature compensation if enabled) */
+  if (handle->temp_compensation_enabled) {
+    result->distance_cm =
+        rx_hcsr04_echo_to_cm_with_temp(result->echo_time_us, handle->temperature_celsius);
+  } else {
+    result->distance_cm = rx_hcsr04_echo_to_cm(result->echo_time_us);
+  }
   result->distance_in = rx_hcsr04_cm_to_inches(result->distance_cm);
   result->status      = k_rx_ok;
 
@@ -346,6 +373,72 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
 }
 
 /* =============================================================================
+ * Public API - Temperature Compensation
+ * =============================================================================
+ */
+
+rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, float temp_celsius)
+{
+  if (handle == NULL) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Validate temperature range */
+  if (temp_celsius < s_min_temp_celsius || temp_celsius > s_max_temp_celsius) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Update temperature and enable compensation */
+  handle->temperature_celsius       = temp_celsius;
+  handle->temp_compensation_enabled = true;
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_hcsr04_disable_temp_compensation(rx_hcsr04_t* handle)
+{
+  if (handle == NULL) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  handle->temp_compensation_enabled = false;
+
+  return k_rx_ok;
+}
+
+bool rx_hcsr04_is_temp_compensation_enabled(const rx_hcsr04_t* handle)
+{
+  if (handle == NULL) {
+    return false;
+  }
+
+  return handle->temp_compensation_enabled;
+}
+
+rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsius)
+{
+  if (handle == NULL || temp_celsius == NULL) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  *temp_celsius = handle->temperature_celsius;
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
  * Public API - Utilities
  * =============================================================================
  */
@@ -353,7 +446,7 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
 float rx_hcsr04_cm_to_inches(float distance_cm)
 {
   /* 1 inch = 2.54 cm */
-  return distance_cm * 100.0f / (float)s_cm_per_inch_x100;
+  return distance_cm * 100.0f / (float)k_cm_per_inch_x100;
 }
 
 float rx_hcsr04_echo_to_cm(uint32_t echo_time_us)
@@ -376,6 +469,14 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius)
    *
    * Valid range: -40°C to +85°C (DS18B20 sensor range)
    */
+
+  /* Clamp temperature to valid range */
+  if (temp_celsius < s_min_temp_celsius) {
+    temp_celsius = s_min_temp_celsius;
+  } else if (temp_celsius > s_max_temp_celsius) {
+    temp_celsius = s_max_temp_celsius;
+  }
+
   return s_speed_of_sound_base_mps + (s_speed_of_sound_coeff * temp_celsius);
 }
 
@@ -392,9 +493,25 @@ float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius)
    * - Speed = 0.034342 cm/us
    * - For echo_us = 580: distance = (580 * 0.034342) / 2 = 9.96 cm ≈ 10 cm
    */
+
+  /* Pre-condition: Validate temperature range - use default if invalid */
+  if (temp_celsius < s_min_temp_celsius || temp_celsius > s_max_temp_celsius) {
+    return rx_hcsr04_echo_to_cm(echo_time_us);
+  }
+
+  /* Pre-condition: Validate echo time */
+  if (echo_time_us == 0 || echo_time_us > k_hcsr04_echo_timeout_us) {
+    return 0.0f;
+  }
+
   float speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
   float speed_cm_us = speed_mps / 10000.0f; /* m/s to cm/us */
   float distance_cm = ((float)echo_time_us * speed_cm_us) / 2.0f;
+
+  /* Post-condition: Ensure non-negative result */
+  if (distance_cm < 0.0f) {
+    return 0.0f;
+  }
 
   return distance_cm;
 }
