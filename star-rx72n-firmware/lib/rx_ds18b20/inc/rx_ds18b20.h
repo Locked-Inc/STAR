@@ -77,12 +77,12 @@ typedef enum {
  * @brief DS18B20 function commands
  */
 typedef enum {
-  k_ds18b20_cmd_convert_t      = 0x44, /**< Trigger temperature conversion */
-  k_ds18b20_cmd_write_scratch  = 0x4E, /**< Write to scratchpad memory */
-  k_ds18b20_cmd_read_scratch   = 0xBE, /**< Read from scratchpad memory */
-  k_ds18b20_cmd_copy_scratch   = 0x48, /**< Copy scratchpad to EEPROM */
-  k_ds18b20_cmd_recall_eeprom  = 0xB8, /**< Recall EEPROM to scratchpad */
-  k_ds18b20_cmd_read_power     = 0xB4, /**< Read power supply mode */
+  k_ds18b20_cmd_convert_t     = 0x44, /**< Trigger temperature conversion */
+  k_ds18b20_cmd_write_scratch = 0x4E, /**< Write to scratchpad memory */
+  k_ds18b20_cmd_read_scratch  = 0xBE, /**< Read from scratchpad memory */
+  k_ds18b20_cmd_copy_scratch  = 0x48, /**< Copy scratchpad to EEPROM */
+  k_ds18b20_cmd_recall_eeprom = 0xB8, /**< Recall EEPROM to scratchpad */
+  k_ds18b20_cmd_read_power    = 0xB4, /**< Read power supply mode */
 } ds18b20_command_t;
 
 /**
@@ -149,13 +149,13 @@ typedef enum {
  * @brief DS18B20 temperature conversion constants
  */
 typedef enum {
-  k_ds18b20_temp_shift              = 4,      /**< Shift to get integer temperature */
-  k_ds18b20_sign_bit                = 0x8000, /**< Sign bit in 16-bit temperature */
-  k_ds18b20_crc_bytes               = 8,      /**< Number of bytes for CRC calculation */
-  k_ds18b20_shift_byte              = 8,      /**< Shift for byte positioning */
-  k_ds18b20_scratchpad_write_bytes  = 3,      /**< Scratchpad write size (TH, TL, Config) */
-  k_ds18b20_temp_min_raw            = -880,   /**< Minimum temperature (-55°C raw value) */
-  k_ds18b20_temp_max_raw            = 2000,   /**< Maximum temperature (+125°C raw value) */
+  k_ds18b20_temp_shift             = 4,      /**< Shift to get integer temperature */
+  k_ds18b20_sign_bit               = 0x8000, /**< Sign bit in 16-bit temperature */
+  k_ds18b20_crc_bytes              = 8,      /**< Number of bytes for CRC calculation */
+  k_ds18b20_shift_byte             = 8,      /**< Shift for byte positioning */
+  k_ds18b20_scratchpad_write_bytes = 3,      /**< Scratchpad write size (TH, TL, Config) */
+  k_ds18b20_temp_min_raw           = -880,   /**< Minimum temperature (-55°C raw value) */
+  k_ds18b20_temp_max_raw           = 2000,   /**< Maximum temperature (+125°C raw value) */
 } ds18b20_conversion_constants_t;
 
 /**
@@ -199,10 +199,10 @@ typedef enum {
  * @brief DS18B20 configuration structure
  */
 typedef struct {
-  rx_bus_manager_t*    bus_manager;       /**< Bus manager instance (required) */
-  const char*          bus_name;          /**< OneWire bus name (required) */
-  ds18b20_resolution_t resolution;        /**< Temperature resolution */
-  bool                 use_rom_matching;  /**< Use ROM matching (true) or skip ROM (false) */
+  rx_bus_manager_t*    bus_manager;              /**< Bus manager instance (required) */
+  const char*          bus_name;                 /**< OneWire bus name (required) */
+  ds18b20_resolution_t resolution;               /**< Temperature resolution */
+  bool                 use_rom_matching;         /**< Use ROM matching (true) or skip ROM (false) */
   uint8_t              rom[k_onewire_rom_bytes]; /**< Device ROM (if use_rom_matching=true) */
 } rx_ds18b20_config_t;
 
@@ -210,12 +210,12 @@ typedef struct {
  * @brief DS18B20 driver handle structure
  */
 typedef struct {
-  rx_bus_manager_t*    bus_manager;   /**< Bus manager reference (not owned) */
-  const char*          bus_name;      /**< OneWire bus name (not owned) */
-  ds18b20_resolution_t resolution;    /**< Current temperature resolution */
-  bool                 use_rom_matching; /**< ROM matching enabled */
+  rx_bus_manager_t*    bus_manager;              /**< Bus manager reference (not owned) */
+  const char*          bus_name;                 /**< OneWire bus name (not owned) */
+  ds18b20_resolution_t resolution;               /**< Current temperature resolution */
+  bool                 use_rom_matching;         /**< ROM matching enabled */
   uint8_t              rom[k_onewire_rom_bytes]; /**< Device ROM code */
-  bool                 initialized;   /**< True after successful init */
+  bool                 initialized;              /**< True after successful init */
 } rx_ds18b20_handle_t;
 
 /* =============================================================================

@@ -204,6 +204,9 @@ typedef enum {
   k_sci_channel_max = 13, /**< Total SCI channels (0-12) */
 } sci_channel_limits_t;
 
+#if defined(USE_MOCK_SCI_REGS)
+volatile rx_sci_regs_t* sci_get_channel(uint8_t channel);
+#else
 /**
  * @brief Get SCI register base for a channel
  * @param[in] channel SCI channel number (0-12)
@@ -242,6 +245,7 @@ static inline volatile rx_sci_regs_t* sci_get_channel(uint8_t channel)
       return NULL; /* Invalid channel */
   }
 }
+#endif
 
 #ifdef __cplusplus
 }

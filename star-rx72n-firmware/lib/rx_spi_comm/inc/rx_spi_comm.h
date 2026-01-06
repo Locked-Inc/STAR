@@ -70,8 +70,8 @@ typedef struct {
   uint16_t           tx_sequence;                          /**< TX sequence counter */
   uint16_t           rx_sequence;                          /**< Expected RX sequence */
   uint8_t            channel;                              /**< RSPI channel */
-  uint8_t            fec_enabled;                          /**< FEC enabled flag */
-  uint8_t            initialized;                          /**< Init flag */
+  bool               fec_enabled;                          /**< FEC enabled flag */
+  bool               initialized;                          /**< Init flag */
 } rx_spi_comm_handle_t;
 
 /**
@@ -80,7 +80,7 @@ typedef struct {
 typedef struct {
   uint8_t channel;     /**< RSPI channel (0-2, default 0) */
   uint8_t spi_mode;    /**< SPI mode (0-3, default 0) */
-  uint8_t fec_enabled; /**< Enable FEC encoding (0 = disabled) */
+  bool    fec_enabled; /**< Enable FEC encoding (false = disabled) */
 } rx_spi_comm_config_t;
 
 /* =============================================================================
@@ -209,17 +209,19 @@ void rx_spi_comm_reset_sequence(rx_spi_comm_handle_t* handle);
  * @brief Get current TX sequence number
  *
  * @param[in] handle Pointer to handle
- * @return Current TX sequence number
+ * @param[out] sequence Output pointer for TX sequence number
+ * @return k_rx_ok on success, error code on failure
  */
-uint16_t rx_spi_comm_get_tx_sequence(const rx_spi_comm_handle_t* handle);
+rx_err_t rx_spi_comm_get_tx_sequence(const rx_spi_comm_handle_t* handle, uint16_t* sequence);
 
 /**
  * @brief Get expected RX sequence number
  *
  * @param[in] handle Pointer to handle
- * @return Expected RX sequence number
+ * @param[out] sequence Output pointer for RX sequence number
+ * @return k_rx_ok on success, error code on failure
  */
-uint16_t rx_spi_comm_get_rx_sequence(const rx_spi_comm_handle_t* handle);
+rx_err_t rx_spi_comm_get_rx_sequence(const rx_spi_comm_handle_t* handle, uint16_t* sequence);
 
 #ifdef __cplusplus
 }

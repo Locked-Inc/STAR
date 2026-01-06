@@ -78,10 +78,11 @@ typedef struct {
   bool echo_pin_state;    /**< Current echo input level (simulated) */
 
   /* Echo timing simulation */
-  uint32_t simulated_echo_us; /**< Echo pulse width to simulate (us) */
-  uint32_t current_time_us;   /**< Simulated current time (us) */
-  bool     auto_advance_time; /**< Auto-advance time on timing calls */
-  uint32_t time_step_us;      /**< Time step per auto-advance */
+  uint32_t simulated_echo_us;    /**< Echo pulse width to simulate (us) */
+  uint32_t current_time_us;      /**< Simulated current time (us) */
+  uint32_t last_trigger_time_us; /**< Time when the most recent trigger pulse completed */
+  bool     auto_advance_time;    /**< Auto-advance time on timing calls */
+  uint32_t time_step_us;         /**< Time step per auto-advance */
 
   /* Error injection */
   bool inject_timeout;      /**< Simulate timeout (no echo) */

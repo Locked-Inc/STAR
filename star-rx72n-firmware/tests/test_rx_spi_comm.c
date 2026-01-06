@@ -126,7 +126,7 @@ void test_spi_comm_init_success_default_config(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_handle.initialized);
   TEST_ASSERT_EQUAL_UINT8(k_spi_comm_default_channel, s_handle.channel);
-  TEST_ASSERT_EQUAL_UINT8(0, s_handle.fec_enabled);
+  TEST_ASSERT_FALSE(s_handle.fec_enabled);
   TEST_ASSERT_EQUAL_UINT16(0, s_handle.tx_sequence);
   TEST_ASSERT_EQUAL_UINT16(0, s_handle.rx_sequence);
 }
@@ -136,7 +136,7 @@ void test_spi_comm_init_with_custom_channel(void)
   rx_spi_comm_config_t config = {
     .channel     = k_test_channel_alt,
     .spi_mode    = 0,
-    .fec_enabled = 0,
+    .fec_enabled = false,
   };
 
   rx_err_t err = rx_spi_comm_init(&s_handle, &config);
@@ -150,7 +150,7 @@ void test_spi_comm_init_with_fec_enabled(void)
   rx_spi_comm_config_t config = {
     .channel     = 0,
     .spi_mode    = 0,
-    .fec_enabled = 1,
+    .fec_enabled = true,
   };
 
   rx_err_t err = rx_spi_comm_init(&s_handle, &config);
@@ -279,7 +279,7 @@ void test_spi_comm_send_sequence_wraps(void)
 
 void test_spi_comm_send_with_fec_flag(void)
 {
-  rx_spi_comm_config_t config = {.channel = 0, .spi_mode = 0, .fec_enabled = 1};
+  rx_spi_comm_config_t config = {.channel = 0, .spi_mode = 0, .fec_enabled = true};
   rx_spi_comm_init(&s_handle, &config);
   helper_init_rspi_channel(k_test_channel_default);
   uint8_t data[] = "test";
@@ -686,16 +686,19 @@ void test_spi_comm_get_tx_sequence(void)
   rx_spi_comm_init(&s_handle, NULL);
   s_handle.tx_sequence = 0xBEEF;
 
-  uint16_t seq = rx_spi_comm_get_tx_sequence(&s_handle);
+  uint16_t seq    = 0;
+  rx_err_t result = rx_spi_comm_get_tx_sequence(&s_handle, &seq);
 
+  TEST_ASSERT_EQUAL(k_rx_ok, result);
   TEST_ASSERT_EQUAL_UINT16(0xBEEF, seq);
 }
 
 void test_spi_comm_get_tx_sequence_null_handle(void)
 {
-  uint16_t seq = rx_spi_comm_get_tx_sequence(NULL);
+  uint16_t seq    = 0;
+  rx_err_t result = rx_spi_comm_get_tx_sequence(NULL, &seq);
 
-  TEST_ASSERT_EQUAL_UINT16(0, seq);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, result);
 }
 
 void test_spi_comm_get_rx_sequence(void)
@@ -703,16 +706,19 @@ void test_spi_comm_get_rx_sequence(void)
   rx_spi_comm_init(&s_handle, NULL);
   s_handle.rx_sequence = 0xCAFE;
 
-  uint16_t seq = rx_spi_comm_get_rx_sequence(&s_handle);
+  uint16_t seq    = 0;
+  rx_err_t result = rx_spi_comm_get_rx_sequence(&s_handle, &seq);
 
+  TEST_ASSERT_EQUAL(k_rx_ok, result);
   TEST_ASSERT_EQUAL_UINT16(0xCAFE, seq);
 }
 
 void test_spi_comm_get_rx_sequence_null_handle(void)
 {
-  uint16_t seq = rx_spi_comm_get_rx_sequence(NULL);
+  uint16_t seq    = 0;
+  rx_err_t result = rx_spi_comm_get_rx_sequence(NULL, &seq);
 
-  TEST_ASSERT_EQUAL_UINT16(0, seq);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, result);
 }
 
 /* =============================================================================
@@ -724,8 +730,12 @@ void test_spi_comm_sequence_starts_at_zero(void)
 {
   rx_spi_comm_init(&s_handle, NULL);
 
-  TEST_ASSERT_EQUAL_UINT16(0, rx_spi_comm_get_tx_sequence(&s_handle));
-  TEST_ASSERT_EQUAL_UINT16(0, rx_spi_comm_get_rx_sequence(&s_handle));
+  uint16_t tx_seq = 0xFFFF;
+  uint16_t rx_seq = 0xFFFF;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_get_tx_sequence(&s_handle, &tx_seq));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_get_rx_sequence(&s_handle, &rx_seq));
+  TEST_ASSERT_EQUAL_UINT16(0, tx_seq);
+  TEST_ASSERT_EQUAL_UINT16(0, rx_seq);
 }
 
 void test_spi_comm_sequence_max_value(void)
@@ -734,8 +744,12 @@ void test_spi_comm_sequence_max_value(void)
   s_handle.tx_sequence = k_test_sequence_max;
   s_handle.rx_sequence = k_test_sequence_max;
 
-  TEST_ASSERT_EQUAL_UINT16(k_test_sequence_max, rx_spi_comm_get_tx_sequence(&s_handle));
-  TEST_ASSERT_EQUAL_UINT16(k_test_sequence_max, rx_spi_comm_get_rx_sequence(&s_handle));
+  uint16_t tx_seq = 0;
+  uint16_t rx_seq = 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_get_tx_sequence(&s_handle, &tx_seq));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_get_rx_sequence(&s_handle, &rx_seq));
+  TEST_ASSERT_EQUAL_UINT16(k_test_sequence_max, tx_seq);
+  TEST_ASSERT_EQUAL_UINT16(k_test_sequence_max, rx_seq);
 }
 
 void test_spi_comm_rx_sequence_wraparound(void)
@@ -768,7 +782,7 @@ void test_spi_comm_rx_sequence_wraparound(void)
 
 void test_spi_comm_uses_configured_channel(void)
 {
-  rx_spi_comm_config_t config = {.channel = k_test_channel_alt, .spi_mode = 0, .fec_enabled = 0};
+  rx_spi_comm_config_t config = {.channel = k_test_channel_alt, .spi_mode = 0, .fec_enabled = false};
   rx_spi_comm_init(&s_handle, &config);
   helper_init_rspi_channel(k_test_channel_alt);
   uint8_t data[] = "test";

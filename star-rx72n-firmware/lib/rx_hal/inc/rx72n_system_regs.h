@@ -90,11 +90,16 @@ static inline volatile rx_system_regs_t* system_regs(void)
   return (volatile rx_system_regs_t*)k_system_base_addr;
 }
 
+/* Module stop bits for MSTPCRA register */
+typedef enum {
+  k_mstpa_cmt23 = 14, /**< CMT2/CMT3 module stop bit in MSTPCRA */
+} rx_module_stop_bits_a_t;
+
 /* Module stop bits for MSTPCRB register */
 typedef enum {
   k_mstpb_usb0 = 19, /**< USB0 module stop bit in MSTPCRB */
   k_mstpb_crc  = 23, /**< CRC module stop bit in MSTPCRB */
-} rx_module_stop_bits_t;
+} rx_module_stop_bits_b_t;
 
 #ifdef __cplusplus
 }
