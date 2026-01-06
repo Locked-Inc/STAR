@@ -37,6 +37,9 @@ static const char* s_tag = "DRV8243";
 typedef enum {
   k_drv8243_default_ki_propi = 525,   /**< 525 A/V IPROPI ratio (typical) */
   k_drv8243_max_pwm_freq_hz  = 25000, /**< 25 kHz max recommended PWM */
+  k_pwm_not_inverted         = false, /**< PWM output not inverted */
+  k_motor_coast              = false, /**< Motor coast (no brake) */
+  k_motor_brake              = true,  /**< Motor brake (active braking) */
   k_gpio_level_low           = 0,     /**< GPIO logic level low */
   k_bit_mask_single          = 0x01,  /**< Single bit mask */
   k_speed_min_percent        = -100,  /**< Minimum speed percentage (full reverse) */
@@ -105,7 +108,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
     .output_b     = config->output_en,
     .pwm_freq_hz  = config->pwm_freq_hz,
     .dead_time_ns = config->dead_time_ns,
-    .invert_pwm   = false,
+    .invert_pwm   = k_pwm_not_inverted,
   };
 
   rx_err_t err = rx_motor_init(&handle->motor, &motor_config);
@@ -141,7 +144,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
   }
 
   /* Stop motor (best effort - log but continue if error) */
-  rx_err_t err = rx_drv8243_stop(handle, false);
+  rx_err_t err = rx_drv8243_stop(handle, k_motor_coast);
   RX_ERROR_CHECK_WITHOUT_ABORT(err);
 
   /* Deinitialize motor controller (best effort - log but continue if error) */
