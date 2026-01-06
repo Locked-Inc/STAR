@@ -391,12 +391,15 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
   }
 
   /* FEC path: decode combined soft bits */
-  err = rx_fec_decode_soft(&harq->decoder,
-                           harq->decode_buffer,
-                           combined_len,
-                           expected_output_len,
-                           output,
-                           output_len);
+  rx_fec_decode_soft_params_t decode_params = {
+    .soft_bits           = harq->decode_buffer,
+    .soft_len            = combined_len,
+    .expected_output_len = expected_output_len,
+    .output              = output,
+    .output_len          = output_len,
+  };
+
+  err = rx_fec_decode_soft(&harq->decoder, &decode_params);
 
   return internal_handle_fec_result(harq, err);
 }
