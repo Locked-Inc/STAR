@@ -159,6 +159,30 @@ typedef enum {
 } ds18b20_conversion_constants_t;
 
 /**
+ * @brief DS18B20 scratchpad write buffer indices
+ */
+typedef enum {
+  k_ds18b20_write_idx_th     = 0, /**< TH (high alarm) register index */
+  k_ds18b20_write_idx_tl     = 1, /**< TL (low alarm) register index */
+  k_ds18b20_write_idx_config = 2, /**< Configuration register index */
+} ds18b20_write_idx_t;
+
+/**
+ * @brief DS18B20 expected byte values
+ */
+typedef enum {
+  k_ds18b20_reserved_byte_value = 0xFF, /**< Expected value for reserved byte */
+} ds18b20_expected_values_t;
+
+/**
+ * @brief DS18B20 initialization values
+ */
+typedef enum {
+  k_ds18b20_config_register_cleared = 0, /**< Cleared config register value */
+  k_ds18b20_conversion_time_invalid = 0, /**< Invalid conversion time return value */
+} ds18b20_init_values_t;
+
+/**
  * @brief DS18B20 power supply modes
  */
 typedef enum {
