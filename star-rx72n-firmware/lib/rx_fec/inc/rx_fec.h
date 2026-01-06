@@ -200,29 +200,49 @@ rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, uint32_t sur
 rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec);
 
 /**
+ * @brief Soft-decision decode parameters
+ *
+ * Groups parameters for soft-decision Viterbi decoding to simplify API.
+ */
+typedef struct {
+  const rx_soft_bit_t* soft_bits;           /**< Received soft bits (pairs) */
+  uint32_t             soft_len;            /**< Number of soft bits (must be even) */
+  uint32_t             expected_output_len; /**< Expected decoded length in bytes */
+  uint8_t*             output;              /**< Decoded output buffer */
+  uint32_t*            output_len;          /**< Actual decoded length */
+} rx_fec_decode_soft_params_t;
+
+/**
  * @brief Decode soft bits using Viterbi algorithm
  *
  * Performs soft-decision Viterbi decoding on received soft bits.
  * Soft bits should be in pairs (G1, G2) for each encoded symbol.
  *
- * @param[in]  dec                 Initialized decoder handle
- * @param[in]  soft_bits           Received soft bits (pairs)
- * @param[in]  soft_len            Number of soft bits (must be even)
- * @param[in]  expected_output_len Expected decoded length in bytes
- * @param[out] output              Decoded output buffer
- * @param[out] output_len          Actual decoded length
+ * @param[in]     dec    Initialized decoder handle
+ * @param[in,out] params Decode parameters (input soft bits, output buffer)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if any pointer is NULL or soft_len is odd
  * @return k_rx_err_invalid_state if decoder not initialized
  * @return k_rx_err_invalid_size if output buffer too small
  */
-rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
-                            const rx_soft_bit_t* soft_bits,
-                            uint32_t             soft_len,
-                            uint32_t             expected_output_len,
-                            uint8_t*             output,
-                            uint32_t*            output_len);
+rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*                   dec,
+                            const rx_fec_decode_soft_params_t* params);
+
+/**
+ * @brief Hard-decision decode parameters
+ *
+ * Groups parameters for hard-decision Viterbi decoding to simplify API.
+ */
+typedef struct {
+  const uint8_t* data;                /**< Received hard bits (packed bytes) */
+  uint32_t       data_len;            /**< Number of bytes */
+  uint32_t       expected_output_len; /**< Expected decoded length in bytes */
+  uint8_t*       output;              /**< Decoded output buffer */
+  uint32_t*      output_len;          /**< Actual decoded length */
+  rx_soft_bit_t* soft_bits_buffer;    /**< Working buffer for soft bit conversion */
+  uint32_t       soft_buffer_len;     /**< Length of soft_bits_buffer */
+} rx_fec_decode_hard_params_t;
 
 /**
  * @brief Decode hard bits using Viterbi algorithm
@@ -233,28 +253,16 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
  * The caller must provide a working buffer for soft bit conversion to ensure
  * thread safety. Size should be at least k_fec_max_symbols * k_fec_num_outputs.
  *
- * @param[in]  dec                 Initialized decoder handle
- * @param[in]  data                Received hard bits (packed bytes)
- * @param[in]  data_len            Number of bytes
- * @param[in]  expected_output_len Expected decoded length in bytes
- * @param[out] output              Decoded output buffer
- * @param[out] output_len          Actual decoded length
- * @param[in]  soft_bits_buffer    Working buffer for soft bit conversion
- * @param[in]  soft_buffer_len     Length of soft_bits_buffer (must be >= num_bits)
+ * @param[in]     dec    Initialized decoder handle
+ * @param[in,out] params Decode parameters (input data, buffers)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if any pointer is NULL
  * @return k_rx_err_invalid_state if decoder not initialized
  * @return k_rx_err_invalid_size if soft_bits_buffer is too small
  */
-rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
-                            const uint8_t*    data,
-                            uint32_t          data_len,
-                            uint32_t          expected_output_len,
-                            uint8_t*          output,
-                            uint32_t*         output_len,
-                            rx_soft_bit_t*    soft_bits_buffer,
-                            uint32_t          soft_buffer_len);
+rx_err_t rx_fec_decode_hard(rx_fec_decoder_t*                   dec,
+                            const rx_fec_decode_hard_params_t* params);
 
 /* =============================================================================
  * Utility Functions
