@@ -39,6 +39,19 @@ static const float s_speed_of_sound_base_mps = 331.3f;
  */
 static const float s_speed_of_sound_coeff = 0.606f;
 
+/**
+ * @brief Default temperature for distance calculations (°C)
+ */
+static const float s_default_temperature_celsius = 20.0f;
+
+/**
+ * @brief Valid temperature range (DS18B20 sensor range)
+ */
+typedef enum {
+  k_min_temp_celsius = -40, /**< Minimum valid temperature */
+  k_max_temp_celsius = 85,  /**< Maximum valid temperature */
+} rx_hcsr04_temp_range_t;
+
 /* =============================================================================
  * Internal Helper Functions
  * =============================================================================
@@ -156,11 +169,13 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   }
 
   /* Initialize handle */
-  handle->trigger_pin        = config->trigger_pin;
-  handle->echo_pin           = config->echo_pin;
-  handle->timeout_us         = config->timeout_us;
-  handle->initialized        = true;
-  handle->measurement_active = false;
+  handle->trigger_pin              = config->trigger_pin;
+  handle->echo_pin                 = config->echo_pin;
+  handle->timeout_us               = config->timeout_us;
+  handle->initialized              = true;
+  handle->measurement_active       = false;
+  handle->temperature_celsius      = s_default_temperature_celsius;
+  handle->temp_compensation_enabled = false;
 
   /* Reset statistics */
   handle->measurement_count = 0;
@@ -227,8 +242,12 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
     return err;
   }
 
-  /* Convert to distance */
-  *distance_cm = rx_hcsr04_echo_to_cm(echo_time_us);
+  /* Convert to distance (with temperature compensation if enabled) */
+  if (handle->temp_compensation_enabled) {
+    *distance_cm = rx_hcsr04_echo_to_cm_with_temp(echo_time_us, handle->temperature_celsius);
+  } else {
+    *distance_cm = rx_hcsr04_echo_to_cm(echo_time_us);
+  }
 
   /* Validate range */
   if (*distance_cm < (float)k_hcsr04_min_distance_cm ||
@@ -276,8 +295,13 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
     return err;
   }
 
-  /* Convert to distance */
-  result->distance_cm = rx_hcsr04_echo_to_cm(result->echo_time_us);
+  /* Convert to distance (with temperature compensation if enabled) */
+  if (handle->temp_compensation_enabled) {
+    result->distance_cm =
+        rx_hcsr04_echo_to_cm_with_temp(result->echo_time_us, handle->temperature_celsius);
+  } else {
+    result->distance_cm = rx_hcsr04_echo_to_cm(result->echo_time_us);
+  }
   result->distance_in = rx_hcsr04_cm_to_inches(result->distance_cm);
   result->status      = k_rx_ok;
 
@@ -341,6 +365,72 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
 
   /* Note: Full implementation would signal worker thread to cancel */
   handle->measurement_active = false;
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * Public API - Temperature Compensation
+ * =============================================================================
+ */
+
+rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, float temp_celsius)
+{
+  if (handle == NULL) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Validate temperature range */
+  if (temp_celsius < (float)k_min_temp_celsius || temp_celsius > (float)k_max_temp_celsius) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Update temperature and enable compensation */
+  handle->temperature_celsius       = temp_celsius;
+  handle->temp_compensation_enabled = true;
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_hcsr04_disable_temp_compensation(rx_hcsr04_t* handle)
+{
+  if (handle == NULL) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  handle->temp_compensation_enabled = false;
+
+  return k_rx_ok;
+}
+
+bool rx_hcsr04_is_temp_compensation_enabled(const rx_hcsr04_t* handle)
+{
+  if (handle == NULL) {
+    return false;
+  }
+
+  return handle->temp_compensation_enabled;
+}
+
+rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsius)
+{
+  if (handle == NULL || temp_celsius == NULL) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  *temp_celsius = handle->temperature_celsius;
 
   return k_rx_ok;
 }
