@@ -22,7 +22,7 @@
  * - VCC: 5V supply
  * - GND: Common ground with RX72N
  *
- * @date 2026-01-02
+ * @date 2026-01-05
  * @copyright Copyright (c) 2026 STAR Project
  */
 
@@ -98,8 +98,10 @@ typedef struct {
   uint32_t   timeout_us;  /**< Measurement timeout in microseconds */
 
   /* State */
-  bool initialized;        /**< True if handle is initialized */
-  bool measurement_active; /**< True if async measurement in progress */
+  bool  initialized;        /**< True if handle is initialized */
+  bool  measurement_active; /**< True if async measurement in progress */
+  float temperature_celsius; /**< Ambient temperature for compensation (20.0 if not set) */
+  bool  temp_compensation_enabled; /**< True if temperature compensation is enabled */
 
   /* Statistics */
   uint32_t measurement_count; /**< Total measurements attempted */
@@ -255,6 +257,80 @@ bool rx_hcsr04_is_busy(const rx_hcsr04_t* handle);
  * @return k_rx_err_invalid_state if no measurement in progress
  */
 rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle);
+
+/* =============================================================================
+ * Public API - Temperature Compensation
+ * =============================================================================
+ */
+
+/**
+ * @brief Set ambient temperature for automatic distance compensation
+ *
+ * Enables temperature compensation and updates the temperature used for
+ * all subsequent distance measurements. The speed of sound varies with
+ * temperature (~0.17% per °C), affecting measurement accuracy.
+ *
+ * When enabled, all measurement functions (rx_hcsr04_measure_blocking,
+ * rx_hcsr04_measure, rx_hcsr04_measure_async) will automatically use
+ * temperature-compensated distance calculations.
+ *
+ * Temperature can be updated at any time, including between measurements.
+ * Typical usage: read from DS18B20 sensor periodically and update.
+ *
+ * @param[in,out] handle         Sensor handle
+ * @param[in]     temp_celsius   Ambient temperature in degrees Celsius
+ *                                Valid range: -40°C to +85°C
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if not initialized
+ * @return k_rx_err_invalid_arg if temperature out of valid range
+ *
+ * @note To disable temperature compensation, call rx_hcsr04_disable_temp_compensation()
+ *
+ * @see rx_hcsr04_disable_temp_compensation()
+ * @see rx_hcsr04_echo_to_cm_with_temp()
+ */
+rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, float temp_celsius);
+
+/**
+ * @brief Disable automatic temperature compensation
+ *
+ * Disables temperature compensation and reverts to assuming 20°C for all
+ * distance calculations. This is the default behavior after initialization.
+ *
+ * @param[in,out] handle Sensor handle
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if not initialized
+ */
+rx_err_t rx_hcsr04_disable_temp_compensation(rx_hcsr04_t* handle);
+
+/**
+ * @brief Check if temperature compensation is enabled
+ *
+ * @param[in] handle Sensor handle
+ *
+ * @return true if temperature compensation is enabled
+ * @return false if disabled or handle is NULL
+ */
+bool rx_hcsr04_is_temp_compensation_enabled(const rx_hcsr04_t* handle);
+
+/**
+ * @brief Get current temperature setting
+ *
+ * Returns the currently configured temperature value used for compensation.
+ * If compensation is disabled, still returns the last set value (or 20.0°C default).
+ *
+ * @param[in]  handle       Sensor handle
+ * @param[out] temp_celsius Current temperature setting
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle or temp_celsius is NULL
+ * @return k_rx_err_invalid_state if not initialized
+ */
+rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsius);
 
 /* =============================================================================
  * Public API - Utilities
