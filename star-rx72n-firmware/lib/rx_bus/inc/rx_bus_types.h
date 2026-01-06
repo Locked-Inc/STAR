@@ -260,7 +260,8 @@ typedef struct rx_bus_config {
  * @brief Maximum buses supported
  */
 typedef enum {
-  k_max_buses = 32, /**< Maximum number of buses */
+  k_max_buses        = 32, /**< Maximum number of buses */
+  k_max_bus_name_len = 31, /**< Maximum bus name length (excl. null terminator) */
 } bus_manager_limits_t;
 
 /**

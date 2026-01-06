@@ -180,7 +180,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
   /* Check for duplicate name */
   rx_bus_config_t* current = manager->buses;
   while (current != NULL) {
-    if (strcmp(current->name, bus_config->name) == 0) {
+    if (strncmp(current->name, bus_config->name, k_max_bus_name_len) == 0) {
       (void)tx_mutex_put(&manager->mutex);
       rx_log_error(s_tag, "Bus with same name already exists");
       return k_rx_err_exists;
@@ -227,7 +227,7 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
   /* Find bus in linked list */
   rx_bus_config_t** indirect = &manager->buses;
   while (*indirect != NULL) {
-    if (strcmp((*indirect)->name, name) == 0) {
+    if (strncmp((*indirect)->name, name, k_max_bus_name_len) == 0) {
       /* Found - remove from list */
       rx_bus_config_t* to_remove = *indirect;
       *indirect                  = to_remove->next;
@@ -274,7 +274,7 @@ rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_conf
   /* Search linked list */
   rx_bus_config_t* current = manager->buses;
   while (current != NULL) {
-    if (strcmp(current->name, name) == 0) {
+    if (strncmp(current->name, name, k_max_bus_name_len) == 0) {
       *bus_config = current;
       (void)tx_mutex_put(&manager->mutex);
       return k_rx_ok;
@@ -311,7 +311,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
   /* Find bus */
   rx_bus_config_t* current = manager->buses;
   while (current != NULL) {
-    if (strcmp(current->name, name) == 0) {
+    if (strncmp(current->name, name, k_max_bus_name_len) == 0) {
       /* Found - execute callback while holding mutex */
       rx_err_t err = callback(current, user_ctx);
 
