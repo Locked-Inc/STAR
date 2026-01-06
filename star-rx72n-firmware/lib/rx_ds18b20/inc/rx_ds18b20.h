@@ -152,6 +152,7 @@ typedef enum {
   k_ds18b20_temp_shift       = 4,      /**< Shift to get integer temperature */
   k_ds18b20_sign_bit         = 0x8000, /**< Sign bit in 16-bit temperature */
   k_ds18b20_crc_bytes        = 8,      /**< Number of bytes for CRC calculation */
+  k_ds18b20_shift_byte       = 8,      /**< Shift for byte positioning */
 } ds18b20_conversion_constants_t;
 
 /**

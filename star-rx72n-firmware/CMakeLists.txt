@@ -338,6 +338,7 @@ message(STATUS "  rx_usb         - USB CDC-ACM driver")
 message(STATUS "  rx_usb_comm    - USB communication layer")
 message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
 message(STATUS "  rx_bq4050      - BQ4050 battery fuel gauge (SBS 1.1)")
+message(STATUS "  rx_ds18b20     - DS18B20 1-Wire temperature sensor")
 message(STATUS "==============================================")
 
 # =============================================================================
