@@ -2,12 +2,9 @@
 
 /**
  * @file mock_rx_motor.c
- * @brief Mock Motor Driver Implementation for Unit Testing
- * @details
- * Provides mock implementation of rx_motor driver for DRV8243 testing.
- * Records all operations for verification without actual hardware.
+ * @brief Mock Motor Control Implementation
  *
- * @date 2026-01-05
+ * @date 2026-01-06
  * @copyright Copyright (c) 2026 STAR Project
  */
 
@@ -16,186 +13,96 @@
 #include <string.h>
 
 /* =============================================================================
- * Constants
+ * Mock State
  * =============================================================================
  */
 
-/** @brief Motor speed limits */
 typedef enum {
-  k_mock_motor_duty_min = -100, /**< Minimum duty cycle (-100%) */
-  k_mock_motor_duty_max = 100,  /**< Maximum duty cycle (+100%) */
-} mock_motor_duty_limits_t;
+  k_max_stop_calls = 100, /**< Maximum stop calls to track */
+} mock_motor_constants_t;
+
+typedef struct {
+  const rx_motor_handle_t* motor_handle; /**< Motor handle that was stopped */
+  bool                     immediate;    /**< Whether immediate stop was requested */
+} stop_call_t;
+
+static rx_err_t     s_stop_return_value = k_rx_ok;
+static stop_call_t  s_stop_calls[k_max_stop_calls];
+static uint32_t     s_stop_call_count = 0;
 
 /* =============================================================================
- * Static Variables
+ * Mock Control Functions
  * =============================================================================
  */
 
-static bool     s_initialized = false;
-static float    s_duty        = 0.0f;
-static bool     s_brake_mode  = false;
-static bool     s_stopped     = false;
-static rx_err_t s_init_error  = k_rx_ok;
-static rx_err_t s_duty_error  = k_rx_ok;
-static rx_err_t s_stop_error  = k_rx_ok;
-
-/* =============================================================================
- * Mock Test Helpers
- * =============================================================================
- */
-
-void mock_motor_reset(void)
+void mock_rx_motor_init(void)
 {
-  s_initialized = false;
-  s_duty        = 0.0f;
-  s_brake_mode  = false;
-  s_stopped     = false;
-  s_init_error  = k_rx_ok;
-  s_duty_error  = k_rx_ok;
-  s_stop_error  = k_rx_ok;
+  mock_rx_motor_reset();
 }
 
-bool mock_motor_is_initialized(void)
+void mock_rx_motor_deinit(void)
 {
-  return s_initialized;
+  mock_rx_motor_reset();
 }
 
-float mock_motor_get_duty(void)
+void mock_rx_motor_set_stop_return(rx_err_t ret_val)
 {
-  return s_duty;
+  s_stop_return_value = ret_val;
 }
 
-bool mock_motor_get_brake_mode(void)
+bool mock_rx_motor_was_stop_called(const rx_motor_handle_t* motor_handle)
 {
-  return s_brake_mode;
+  if (motor_handle == NULL) {
+    return s_stop_call_count > 0;
+  }
+
+  for (uint32_t i = 0; i < s_stop_call_count; i++) {
+    if (s_stop_calls[i].motor_handle == motor_handle) {
+      return true;
+    }
+  }
+  return false;
 }
 
-bool mock_motor_is_stopped(void)
+uint32_t mock_rx_motor_get_stop_count(const rx_motor_handle_t* motor_handle)
 {
-  return s_stopped;
+  if (motor_handle == NULL) {
+    return s_stop_call_count;
+  }
+
+  uint32_t count = 0;
+  for (uint32_t i = 0; i < s_stop_call_count; i++) {
+    if (s_stop_calls[i].motor_handle == motor_handle) {
+      count++;
+    }
+  }
+  return count;
 }
 
-void mock_motor_set_init_error(rx_err_t err)
+void mock_rx_motor_reset(void)
 {
-  s_init_error = err;
-}
-
-void mock_motor_set_duty_error(rx_err_t err)
-{
-  s_duty_error = err;
-}
-
-void mock_motor_set_stop_error(rx_err_t err)
-{
-  s_stop_error = err;
+  s_stop_return_value = k_rx_ok;
+  s_stop_call_count = 0;
+  memset(s_stop_calls, 0, sizeof(s_stop_calls));
 }
 
 /* =============================================================================
- * Motor Driver Mock Implementation
+ * Motor API Implementation (Mocked)
  * =============================================================================
  */
 
-rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* config)
+rx_err_t rx_motor_stop(rx_motor_handle_t* motor, bool immediate)
 {
-  if (handle == NULL || config == NULL) {
+  if (motor == NULL) {
     return k_rx_err_null_pointer;
   }
 
-  if (s_init_error != k_rx_ok) {
-    return s_init_error;
+  /* Record the stop call */
+  if (s_stop_call_count < k_max_stop_calls) {
+    s_stop_calls[s_stop_call_count].motor_handle = motor;
+    s_stop_calls[s_stop_call_count].immediate    = immediate;
+    s_stop_call_count++;
   }
 
-  memset(handle, 0, sizeof(rx_motor_handle_t));
-  handle->channel      = config->channel;
-  handle->output_a     = config->output_a;
-  handle->output_b     = config->output_b;
-  handle->pwm_freq_hz  = config->pwm_freq_hz;
-  handle->invert_pwm   = config->invert_pwm;
-  handle->current_duty = 0.0f;
-  handle->initialized  = true;
-
-  s_initialized = true;
-  s_stopped     = false;
-
-  return k_rx_ok;
-}
-
-rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
-{
-  if (handle == NULL) {
-    return k_rx_err_null_pointer;
-  }
-
-  if (!handle->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  handle->initialized = false;
-  s_initialized       = false;
-
-  return k_rx_ok;
-}
-
-rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
-{
-  if (handle == NULL) {
-    return k_rx_err_null_pointer;
-  }
-
-  if (!handle->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  if (s_duty_error != k_rx_ok) {
-    return s_duty_error;
-  }
-
-  /* Clamp duty cycle to valid range */
-  if (duty > (float)k_mock_motor_duty_max) {
-    duty = (float)k_mock_motor_duty_max;
-  } else if (duty < (float)k_mock_motor_duty_min) {
-    duty = (float)k_mock_motor_duty_min;
-  }
-
-  handle->current_duty = duty;
-  s_duty               = duty;
-  s_stopped            = false;
-
-  return k_rx_ok;
-}
-
-rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
-{
-  if (handle == NULL) {
-    return k_rx_err_null_pointer;
-  }
-
-  if (!handle->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  if (s_stop_error != k_rx_ok) {
-    return s_stop_error;
-  }
-
-  handle->current_duty = 0.0f;
-  s_duty               = 0.0f;
-  s_brake_mode         = brake;
-  s_stopped            = true;
-
-  return k_rx_ok;
-}
-
-rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
-{
-  if (handle == NULL || out_duty == NULL) {
-    return k_rx_err_null_pointer;
-  }
-
-  if (!handle->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  *out_duty = handle->current_duty;
-  return k_rx_ok;
+  return s_stop_return_value;
 }
