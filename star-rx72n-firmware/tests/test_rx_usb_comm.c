@@ -46,8 +46,9 @@ static void helper_usb_init_and_configure(void)
   rx_usb_set_state(k_usb_state_configured);
 }
 
-/* Extern internal function from rx_usb.c to drain TX buffer */
+/* Extern internal functions from rx_usb.c */
 extern uint32_t rx_usb_tx_pop(uint8_t* data, uint32_t max_len);
+extern uint32_t rx_usb_rx_push(const uint8_t* data, uint32_t len);
 
 void setUp(void)
 {
@@ -541,6 +542,7 @@ void test_usb_comm_init_with_time_interface(void)
   rx_time_interface_t time_iface;
 
   mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
   rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
@@ -573,6 +575,8 @@ void test_usb_comm_receive_timeout_with_mock_time(void)
 
   mock_time_init(&mock);
   mock_time_set_auto_advance(&mock, true); /* Auto-advance on sleep */
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
   rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
@@ -603,6 +607,7 @@ void test_usb_comm_receive_immediate_timeout_zero(void)
   rx_time_interface_t time_iface;
 
   mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
   rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
@@ -618,6 +623,418 @@ void test_usb_comm_receive_immediate_timeout_zero(void)
 
   /* No sleep should have been called */
   TEST_ASSERT_EQUAL_UINT32(0, mock_time_get_sleep_count(&mock));
+
+  mock_time_deinit(&mock);
+}
+
+/* =============================================================================
+ * Advanced Receive Tests - Frame Reception
+ * =============================================================================
+ */
+
+/**
+ * @brief Helper to create a valid frame with CRC
+ */
+static void helper_create_valid_frame(uint8_t*  buffer,
+                                       uint32_t* out_len,
+                                       uint16_t  sequence,
+                                       const uint8_t* payload,
+                                       uint32_t payload_len)
+{
+  rx_frame_t frame = {0};
+  frame.header.sequence = sequence;
+  frame.header.length   = (uint16_t)payload_len;
+  frame.header.type     = k_frame_type_response;
+  frame.header.flags    = 0;
+
+  if (payload != NULL && payload_len > 0) {
+    memcpy(frame.payload, payload, payload_len);
+  }
+
+  rx_frame_encoder_t encoder = {0};
+  rx_err_t err = rx_frame_encoder_init(&encoder);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  err = rx_frame_encode(&encoder, &frame, buffer, out_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+void test_usb_comm_receive_valid_frame_success(void)
+{
+  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+  rx_usb_comm_init(&s_handle, &config);
+  helper_usb_init_and_configure();
+
+  /* Create valid frame with payload */
+  uint8_t  payload[]  = "Hello, USB!";
+  uint32_t payload_len = 11;
+  uint8_t  frame_buffer[128];
+  uint32_t frame_len = 0;
+
+  helper_create_valid_frame(frame_buffer, &frame_len, 0, payload, payload_len);
+
+  /* Inject complete frame into USB RX buffer */
+  rx_usb_rx_push(frame_buffer, frame_len);
+
+  /* Try to receive the frame (loop will process buffered data) */
+  rx_frame_t received_frame;
+  rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 100);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT16(0, received_frame.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_response, received_frame.header.type);
+  TEST_ASSERT_EQUAL_UINT32(payload_len, received_frame.header.length);
+  TEST_ASSERT_EQUAL_MEMORY(payload, received_frame.payload, payload_len);
+
+  mock_time_deinit(&mock);
+}
+
+void test_usb_comm_receive_partial_frame_multiple_reads(void)
+{
+  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+  rx_usb_comm_init(&s_handle, &config);
+  helper_usb_init_and_configure();
+
+  /* Create valid frame */
+  uint8_t  payload[] = "Test payload";
+  uint32_t payload_len = 12;
+  uint8_t  frame_buffer[128];
+  uint32_t frame_len = 0;
+
+  helper_create_valid_frame(frame_buffer, &frame_len, 1, payload, payload_len);
+
+  /* Split frame into 3 parts and inject incrementally */
+  uint32_t part1_len = frame_len / 3;
+  uint32_t part2_len = frame_len / 3;
+  uint32_t part3_len = frame_len - part1_len - part2_len;
+
+  rx_usb_rx_push(frame_buffer, part1_len);
+  rx_usb_rx_push(frame_buffer + part1_len, part2_len);
+  rx_usb_rx_push(frame_buffer + part1_len + part2_len, part3_len);
+
+  /* Receive should assemble the complete frame */
+  rx_frame_t received_frame;
+  rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 100);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT16(1, received_frame.header.sequence);
+  TEST_ASSERT_EQUAL_UINT32(payload_len, received_frame.header.length);
+  TEST_ASSERT_EQUAL_MEMORY(payload, received_frame.payload, payload_len);
+
+  mock_time_deinit(&mock);
+}
+
+void test_usb_comm_receive_empty_payload_frame(void)
+{
+  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+  rx_usb_comm_init(&s_handle, &config);
+  helper_usb_init_and_configure();
+
+  /* Create frame with zero-length payload */
+  uint8_t  frame_buffer[128];
+  uint32_t frame_len = 0;
+
+  helper_create_valid_frame(frame_buffer, &frame_len, 5, NULL, 0);
+
+  /* Inject frame */
+  rx_usb_rx_push(frame_buffer, frame_len);
+
+  /* Receive */
+  rx_frame_t received_frame;
+  rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 100);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT16(5, received_frame.header.sequence);
+  TEST_ASSERT_EQUAL_UINT32(0, received_frame.header.length);
+
+  mock_time_deinit(&mock);
+}
+
+/* =============================================================================
+ * Advanced Receive Tests - Max Iterations (NASA Rule 2)
+ * =============================================================================
+ */
+
+void test_usb_comm_receive_respects_max_iterations(void)
+{
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+  rx_usb_comm_init(&s_handle, &config);
+  helper_usb_init_and_configure();
+
+  /* Continuously inject junk data (no valid sync word) */
+  uint8_t junk_data[64];
+  memset(junk_data, 0xFF, sizeof(junk_data)); /* 0xFF won't match 0x55AA sync */
+
+  /* Inject enough junk to trigger max iterations */
+  for (uint32_t i = 0; i < 20; i++) {
+    rx_usb_rx_push(junk_data, sizeof(junk_data));
+  }
+
+  /* Receive should timeout due to max iterations (k_usb_comm_max_receive_iterations = 1000) */
+  rx_frame_t received_frame;
+  rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 10000); /* Large timeout */
+
+  /* Should timeout due to iteration limit, not time limit */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  mock_time_deinit(&mock);
+}
+
+/* =============================================================================
+ * Advanced Receive Tests - Buffer Overflow
+ * =============================================================================
+ */
+
+void test_usb_comm_receive_buffer_full_discards_data(void)
+{
+  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+  rx_usb_comm_init(&s_handle, &config);
+  helper_usb_init_and_configure();
+
+  /* Fill buffer with junk data exceeding k_usb_comm_rx_buffer_size (2048) */
+  uint8_t junk_data[256];
+  memset(junk_data, 0xAA, sizeof(junk_data)); /* No valid sync pattern */
+
+  /* Inject 10x256 = 2560 bytes (exceeds 2048 buffer) */
+  for (uint32_t i = 0; i < 10; i++) {
+    rx_usb_rx_push(junk_data, sizeof(junk_data));
+  }
+
+  /* Now inject a valid frame - sliding window should have made room */
+  uint8_t  payload[] = "After overflow";
+  uint8_t  frame_buffer[128];
+  uint32_t frame_len = 0;
+
+  helper_create_valid_frame(frame_buffer, &frame_len, 10, payload, 14);
+  rx_usb_rx_push(frame_buffer, frame_len);
+
+  /* Should still be able to receive the valid frame */
+  rx_frame_t received_frame;
+  rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 500);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT16(10, received_frame.header.sequence);
+
+  mock_time_deinit(&mock);
+}
+
+/* =============================================================================
+ * Advanced Receive Tests - Invalid Frames
+ * =============================================================================
+ */
+
+void test_usb_comm_receive_invalid_crc_rejects_frame(void)
+{
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+  rx_usb_comm_init(&s_handle, &config);
+  helper_usb_init_and_configure();
+
+  /* Create valid frame then corrupt CRC */
+  uint8_t  payload[] = "Test";
+  uint8_t  frame_buffer[128];
+  uint32_t frame_len = 0;
+
+  helper_create_valid_frame(frame_buffer, &frame_len, 0, payload, 4);
+
+  /* Corrupt the CRC (last 4 bytes) */
+  frame_buffer[frame_len - 1] ^= 0xFF;
+  frame_buffer[frame_len - 2] ^= 0xFF;
+
+  /* Inject corrupted frame */
+  rx_usb_rx_push(frame_buffer, frame_len);
+
+  /* Receive should reject due to CRC mismatch */
+  rx_frame_t received_frame;
+  rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 100);
+
+  /* Should timeout because frame is rejected */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  mock_time_deinit(&mock);
+}
+
+void test_usb_comm_receive_payload_too_large_rejects_frame(void)
+{
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+  rx_usb_comm_init(&s_handle, &config);
+  helper_usb_init_and_configure();
+
+  /* Manually construct frame with length > k_frame_max_payload (1024) */
+  uint8_t frame_buffer[16];
+  uint32_t idx = 0;
+
+  /* Sync word 0x55AA */
+  frame_buffer[idx++] = 0x55;
+  frame_buffer[idx++] = 0xAA;
+
+  /* Sequence = 0 */
+  frame_buffer[idx++] = 0x00;
+  frame_buffer[idx++] = 0x00;
+
+  /* Length = 2000 (exceeds max 1024) */
+  frame_buffer[idx++] = 0x07; /* 2000 = 0x07D0 */
+  frame_buffer[idx++] = 0xD0;
+
+  /* Type */
+  frame_buffer[idx++] = k_frame_type_response;
+
+  /* Flags */
+  frame_buffer[idx++] = 0;
+
+  /* Inject invalid frame header */
+  rx_usb_rx_push(frame_buffer, idx);
+
+  /* Receive should reject due to invalid length */
+  rx_frame_t received_frame;
+  rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 100);
+
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  mock_time_deinit(&mock);
+}
+
+/* =============================================================================
+ * Advanced Receive Tests - Sequence Numbers
+ * =============================================================================
+ */
+
+void test_usb_comm_receive_increments_rx_sequence(void)
+{
+  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+  rx_usb_comm_init(&s_handle, &config);
+  helper_usb_init_and_configure();
+
+  TEST_ASSERT_EQUAL_UINT16(0, s_handle.rx_sequence);
+
+  /* Receive 3 frames with sequential sequence numbers */
+  for (uint16_t seq = 0; seq < 3; seq++) {
+    uint8_t  payload[] = "data";
+    uint8_t  frame_buffer[128];
+    uint32_t frame_len = 0;
+
+    helper_create_valid_frame(frame_buffer, &frame_len, seq, payload, 4);
+    rx_usb_rx_push(frame_buffer, frame_len);
+
+    rx_frame_t received_frame;
+    rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 100);
+
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
+    TEST_ASSERT_EQUAL_UINT16(seq, received_frame.header.sequence);
+  }
+
+  /* rx_sequence should have incremented to 3 */
+  TEST_ASSERT_EQUAL_UINT16(3, s_handle.rx_sequence);
+
+  mock_time_deinit(&mock);
+}
+
+void test_usb_comm_receive_multiple_frames_in_buffer(void)
+{
+  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+  rx_usb_comm_init(&s_handle, &config);
+  helper_usb_init_and_configure();
+
+  /* Create 3 frames and concatenate them */
+  uint8_t combined_buffer[384];
+  uint32_t combined_len = 0;
+
+  for (uint16_t seq = 0; seq < 3; seq++) {
+    uint8_t  payload[] = "msg";
+    uint8_t  frame_buffer[128];
+    uint32_t frame_len = 0;
+
+    helper_create_valid_frame(frame_buffer, &frame_len, seq, payload, 3);
+
+    memcpy(combined_buffer + combined_len, frame_buffer, frame_len);
+    combined_len += frame_len;
+  }
+
+  /* Inject all 3 frames at once */
+  rx_usb_rx_push(combined_buffer, combined_len);
+
+  /* Receive each frame sequentially */
+  for (uint16_t seq = 0; seq < 3; seq++) {
+    rx_frame_t received_frame;
+    rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 100);
+
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
+    TEST_ASSERT_EQUAL_UINT16(seq, received_frame.header.sequence);
+  }
 
   mock_time_deinit(&mock);
 }
@@ -693,6 +1110,25 @@ int main(void)
   RUN_TEST(test_usb_comm_receive_timeout_without_time_iface);
   RUN_TEST(test_usb_comm_receive_timeout_with_mock_time);
   RUN_TEST(test_usb_comm_receive_immediate_timeout_zero);
+
+  /* Advanced receive tests - Frame reception */
+  RUN_TEST(test_usb_comm_receive_valid_frame_success);
+  RUN_TEST(test_usb_comm_receive_partial_frame_multiple_reads);
+  RUN_TEST(test_usb_comm_receive_empty_payload_frame);
+
+  /* Advanced receive tests - Max iterations (NASA Rule 2) */
+  RUN_TEST(test_usb_comm_receive_respects_max_iterations);
+
+  /* Advanced receive tests - Buffer overflow */
+  RUN_TEST(test_usb_comm_receive_buffer_full_discards_data);
+
+  /* Advanced receive tests - Invalid frames */
+  RUN_TEST(test_usb_comm_receive_invalid_crc_rejects_frame);
+  RUN_TEST(test_usb_comm_receive_payload_too_large_rejects_frame);
+
+  /* Advanced receive tests - Sequence numbers */
+  RUN_TEST(test_usb_comm_receive_increments_rx_sequence);
+  RUN_TEST(test_usb_comm_receive_multiple_frames_in_buffer);
 
   return UNITY_END();
 }
