@@ -47,12 +47,14 @@ static const float s_speed_of_sound_coeff = 0.606f;
 static const float s_default_temperature_celsius = 20.0f;
 
 /**
- * @brief Valid temperature range (DS18B20 sensor range)
+ * @brief Minimum valid temperature (°C) - DS18B20 sensor lower limit
  */
-typedef enum {
-  k_min_temp_celsius = -40, /**< Minimum valid temperature */
-  k_max_temp_celsius = 85,  /**< Maximum valid temperature */
-} rx_hcsr04_temp_range_t;
+static const float s_min_temp_celsius = -40.0f;
+
+/**
+ * @brief Maximum valid temperature (°C) - DS18B20 sensor upper limit
+ */
+static const float s_max_temp_celsius = 85.0f;
 
 /* =============================================================================
  * Internal Helper Functions
@@ -386,7 +388,7 @@ rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, float temp_celsius)
   }
 
   /* Validate temperature range */
-  if (temp_celsius < (float)k_min_temp_celsius || temp_celsius > (float)k_max_temp_celsius) {
+  if (temp_celsius < s_min_temp_celsius || temp_celsius > s_max_temp_celsius) {
     return k_rx_err_invalid_arg;
   }
 
@@ -469,10 +471,10 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius)
    */
 
   /* Clamp temperature to valid range */
-  if (temp_celsius < (float)k_min_temp_celsius) {
-    temp_celsius = (float)k_min_temp_celsius;
-  } else if (temp_celsius > (float)k_max_temp_celsius) {
-    temp_celsius = (float)k_max_temp_celsius;
+  if (temp_celsius < s_min_temp_celsius) {
+    temp_celsius = s_min_temp_celsius;
+  } else if (temp_celsius > s_max_temp_celsius) {
+    temp_celsius = s_max_temp_celsius;
   }
 
   return s_speed_of_sound_base_mps + (s_speed_of_sound_coeff * temp_celsius);
@@ -493,7 +495,7 @@ float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius)
    */
 
   /* Pre-condition: Validate temperature range - use default if invalid */
-  if (temp_celsius < (float)k_min_temp_celsius || temp_celsius > (float)k_max_temp_celsius) {
+  if (temp_celsius < s_min_temp_celsius || temp_celsius > s_max_temp_celsius) {
     return rx_hcsr04_echo_to_cm(echo_time_us);
   }
 
