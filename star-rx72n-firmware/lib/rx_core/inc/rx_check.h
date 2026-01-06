@@ -11,7 +11,6 @@
  * - RX_ERROR_CHECK: Fatal error checking (log and halt)
  * - RX_ERROR_CHECK_WITHOUT_ABORT: Non-fatal error checking (log only)
  * - RX_RETURN_ON_ERROR: Early return on error
- * - RX_GOTO_ON_ERROR: Jump to cleanup label on error
  *
  * Usage:
  * @code
@@ -149,48 +148,6 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
       rx_log_error(tag, message);                                                                  \
       rx_log_error_val(tag, "Error", err_rc_);                                                     \
       return err_rc_;                                                                              \
-    }                                                                                              \
-  } while (0)
-
-/**
- * @brief Jump to cleanup label on error
- *
- * @param[in] err Error code to check
- * @param[in] label Goto label for cleanup
- * @param[in] tag Component tag for logging
- * @param[in] message Error message for logging
- *
- * If err is not k_rx_ok, logs the error and jumps to the specified label.
- * Use this for functions with cleanup requirements.
- *
- * Example:
- *   rx_err_t init_with_cleanup(void) {
- *       rx_err_t err;
- *       void* resource = NULL;
- *
- *       err = allocate_resource(&resource);
- *       RX_GOTO_ON_ERROR(err, cleanup, "INIT", "Resource allocation failed");
- *
- *       err = configure_resource(resource);
- *       RX_GOTO_ON_ERROR(err, cleanup, "INIT", "Resource config failed");
- *
- *       return k_rx_ok;
- *
- *   cleanup:
- *       if (resource != NULL) {
- *           free_resource(resource);
- *       }
- *       return err;
- *   }
- */
-#define RX_GOTO_ON_ERROR(err, label, tag, message)                                                 \
-  do {                                                                                             \
-    rx_err_t err_rc_ = (err);                                                                      \
-    if (rx_err_is_error(err_rc_)) {                                                                \
-      rx_log_error(tag, message);                                                                  \
-      rx_log_error_val(tag, "Error", err_rc_);                                                     \
-      err = err_rc_;                                                                               \
-      goto label;                                                                                  \
     }                                                                                              \
   } while (0)
 
