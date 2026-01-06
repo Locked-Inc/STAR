@@ -74,9 +74,8 @@ static void    internal_invoke_callback(rx_obstacle_detect_t* handle,
 rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
                                  const rx_obstacle_detect_config_t* config)
 {
-  UINT     status      = 0;
-  rx_err_t ret         = k_rx_ok;
-  uint8_t  i           = 0;
+  UINT     status = 0;
+  rx_err_t ret    = k_rx_ok;
 
   /* Validate inputs */
   if (handle == NULL || config == NULL) {
@@ -105,12 +104,12 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
   handle->user_data              = config->user_data;
 
   /* Copy sensor handles */
-  for (i = 0; i < config->sensor_count; i++) {
+  for (uint8_t i = 0; i < config->sensor_count; i++) {
     handle->sensors[i] = config->sensors[i];
   }
 
   /* Copy motor handles */
-  for (i = 0; i < config->motor_count; i++) {
+  for (uint8_t i = 0; i < config->motor_count; i++) {
     handle->motors[i] = config->motors[i];
   }
 
@@ -252,8 +251,6 @@ rx_err_t rx_obstacle_detect_stop(rx_obstacle_detect_t* handle)
 
 rx_err_t rx_obstacle_detect_clear_obstacle(rx_obstacle_detect_t* handle)
 {
-  uint8_t i = 0;
-
   /* Validate inputs */
   if (handle == NULL) {
     return k_rx_err_null_pointer;
@@ -264,7 +261,7 @@ rx_err_t rx_obstacle_detect_clear_obstacle(rx_obstacle_detect_t* handle)
   }
 
   /* Clear obstacle state */
-  for (i = 0; i < handle->sensor_count; i++) {
+  for (uint8_t i = 0; i < handle->sensor_count; i++) {
     handle->debounce_counter[i] = 0;
     handle->obstacle_active[i]  = false;
   }
@@ -436,8 +433,6 @@ static void internal_detection_task_entry(ULONG input)
 
 static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* config)
 {
-  uint8_t i = 0;
-
   /* Validate sensor configuration */
   if (config->sensors == NULL) {
     return k_rx_err_null_pointer;
@@ -448,7 +443,7 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
     return k_rx_err_invalid_arg;
   }
 
-  for (i = 0; i < config->sensor_count; i++) {
+  for (uint8_t i = 0; i < config->sensor_count; i++) {
     if (config->sensors[i] == NULL) {
       return k_rx_err_null_pointer;
     }
@@ -464,7 +459,7 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
     return k_rx_err_invalid_arg;
   }
 
-  for (i = 0; i < config->motor_count; i++) {
+  for (uint8_t i = 0; i < config->motor_count; i++) {
     if (config->motors[i] == NULL) {
       return k_rx_err_null_pointer;
     }
@@ -496,7 +491,6 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
 
 static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 {
-  uint8_t  i                      = 0;
   float    distance_cm            = 0.0f;
   rx_err_t ret                    = k_rx_ok;
   bool     was_obstacle_active    = false;
@@ -505,7 +499,7 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
   handle->total_polls++;
 
   /* Poll each sensor */
-  for (i = 0; i < handle->sensor_count; i++) {
+  for (uint8_t i = 0; i < handle->sensor_count; i++) {
     ret = rx_hcsr04_measure_blocking(handle->sensors[i], &distance_cm);
 
     /* Handle measurement errors */
@@ -554,7 +548,7 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 
   /* Check if any sensor has active obstacle */
   is_obstacle_active = false;
-  for (i = 0; i < handle->sensor_count; i++) {
+  for (uint8_t i = 0; i < handle->sensor_count; i++) {
     if (handle->obstacle_active[i]) {
       is_obstacle_active = true;
       break;
@@ -580,10 +574,9 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 
 static rx_err_t internal_stop_all_motors(rx_obstacle_detect_t* handle)
 {
-  uint8_t  i   = 0;
   rx_err_t ret = k_rx_ok;
 
-  for (i = 0; i < handle->motor_count; i++) {
+  for (uint8_t i = 0; i < handle->motor_count; i++) {
     ret = rx_motor_stop(handle->motors[i], true);
     if (ret != k_rx_ok) {
       /* Log error but continue stopping other motors */
