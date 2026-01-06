@@ -264,6 +264,19 @@ static inline UINT tx_thread_terminate(TX_THREAD* thread_ptr)
   return TX_SUCCESS;
 }
 
+/**
+ * @brief Sleep for specified number of timer ticks
+ *
+ * @param[in] timer_ticks Number of ticks to sleep
+ *
+ * @return TX_SUCCESS on success
+ */
+static inline UINT tx_thread_sleep(ULONG timer_ticks)
+{
+  (void)timer_ticks; /* No actual sleep in mock environment */
+  return TX_SUCCESS;
+}
+
 /* =============================================================================
  * ThreadX Event Flags Functions (Mock Implementations)
  * =============================================================================
