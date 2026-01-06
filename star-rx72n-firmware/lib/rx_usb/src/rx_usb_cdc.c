@@ -35,178 +35,195 @@
 
 static const char* s_tag = "USB_CDC";
 
+/** @brief USB Descriptor Field Default Values */
+typedef enum {
+  k_usb_subclass_none           = 0x00, /**< No subclass */
+  k_usb_protocol_none           = 0x00, /**< No protocol */
+  k_usb_num_interfaces_cdc      = 2,    /**< CDC requires 2 interfaces (control + data) */
+  k_usb_config_value_default    = 1,    /**< Default configuration value */
+  k_usb_alternate_setting_default = 0,  /**< Default alternate setting */
+  k_usb_string_index_none       = 0,    /**< No string descriptor */
+  k_usb_num_configurations      = 1,    /**< Number of configurations */
+  k_usb_num_endpoints_control   = 1,    /**< Control interface has 1 endpoint (interrupt) */
+  k_usb_num_endpoints_data      = 2,    /**< Data interface has 2 endpoints (bulk in/out) */
+  k_usb_interface_number_control = 0,   /**< Control interface number */
+  k_usb_interface_number_data   = 1,    /**< Data interface number */
+  k_cdc_call_mgmt_cap_none      = 0x00, /**< No call management capabilities */
+  k_min_transfer_size           = 0,    /**< Minimum data transfer size (no data) */
+} usb_descriptor_defaults_t;
+
 /** @brief USB Descriptor Types */
 typedef enum {
-  k_usb_desc_type_device        = (0x01), /**< Device descriptor */
-  k_usb_desc_type_configuration = (0x02), /**< Configuration descriptor */
-  k_usb_desc_type_string        = (0x03), /**< String descriptor */
-  k_usb_desc_type_interface     = (0x04), /**< Interface descriptor */
-  k_usb_desc_type_endpoint      = (0x05), /**< Endpoint descriptor */
-  k_usb_desc_type_cs_interface  = (0x24), /**< Class-specific interface descriptor */
+  k_usb_desc_type_device        = 0x01, /**< Device descriptor */
+  k_usb_desc_type_configuration = 0x02, /**< Configuration descriptor */
+  k_usb_desc_type_string        = 0x03, /**< String descriptor */
+  k_usb_desc_type_interface     = 0x04, /**< Interface descriptor */
+  k_usb_desc_type_endpoint      = 0x05, /**< Endpoint descriptor */
+  k_usb_desc_type_cs_interface  = 0x24, /**< Class-specific interface descriptor */
 } usb_descriptor_type_t;
 
 /** @brief USB Class Codes */
 typedef enum {
-  k_usb_class_cdc      = (0x02), /**< Communications Device Class */
-  k_usb_class_cdc_data = (0x0A), /**< CDC Data Class */
-  k_usb_subclass_acm   = (0x02), /**< Abstract Control Model subclass */
-  k_usb_protocol_at    = (0x01), /**< AT command protocol */
+  k_usb_class_cdc      = 0x02, /**< Communications Device Class */
+  k_usb_class_cdc_data = 0x0A, /**< CDC Data Class */
+  k_usb_subclass_acm   = 0x02, /**< Abstract Control Model subclass */
+  k_usb_protocol_at    = 0x01, /**< AT command protocol */
 } usb_class_code_t;
 
 /** @brief CDC Class Request Codes */
 typedef enum {
-  k_cdc_set_line_coding        = (0x20), /**< Set line coding (baud rate, parity, etc.) */
-  k_cdc_get_line_coding        = (0x21), /**< Get current line coding */
-  k_cdc_set_control_line_state = (0x22), /**< Set control line state (DTR/RTS) */
+  k_cdc_set_line_coding        = 0x20, /**< Set line coding (baud rate, parity, etc.) */
+  k_cdc_get_line_coding        = 0x21, /**< Get current line coding */
+  k_cdc_set_control_line_state = 0x22, /**< Set control line state (DTR/RTS) */
 } cdc_request_code_t;
 
 /** @brief USB Standard Request Codes */
 typedef enum {
-  k_usb_req_get_status        = (0x00), /**< Get device/interface/endpoint status */
-  k_usb_req_clear_feature     = (0x01), /**< Clear feature */
-  k_usb_req_set_feature       = (0x03), /**< Set feature */
-  k_usb_req_set_address       = (0x05), /**< Set device address */
-  k_usb_req_get_descriptor    = (0x06), /**< Get descriptor */
-  k_usb_req_set_descriptor    = (0x07), /**< Set descriptor */
-  k_usb_req_get_configuration = (0x08), /**< Get configuration */
-  k_usb_req_set_configuration = (0x09), /**< Set configuration */
-  k_usb_req_get_interface     = (0x0A), /**< Get interface */
-  k_usb_req_set_interface     = (0x0B), /**< Set interface */
+  k_usb_req_get_status        = 0x00, /**< Get device/interface/endpoint status */
+  k_usb_req_clear_feature     = 0x01, /**< Clear feature */
+  k_usb_req_set_feature       = 0x03, /**< Set feature */
+  k_usb_req_set_address       = 0x05, /**< Set device address */
+  k_usb_req_get_descriptor    = 0x06, /**< Get descriptor */
+  k_usb_req_set_descriptor    = 0x07, /**< Set descriptor */
+  k_usb_req_get_configuration = 0x08, /**< Get configuration */
+  k_usb_req_set_configuration = 0x09, /**< Set configuration */
+  k_usb_req_get_interface     = 0x0A, /**< Get interface */
+  k_usb_req_set_interface     = 0x0B, /**< Set interface */
 } usb_request_code_t;
 
 /** @brief Vendor and Product IDs */
 typedef enum {
-  k_usb_vid = (0x045B), /**< Vendor ID: Renesas Electronics (test VID) */
-  k_usb_pid = (0x0234), /**< Product ID: CDC-ACM device (test PID) */
+  k_usb_vid = 0x045B, /**< Vendor ID: Renesas Electronics (test VID) */
+  k_usb_pid = 0x0234, /**< Product ID: CDC-ACM device (test PID) */
 } usb_device_id_t;
 
 /** @brief USB Version Numbers (BCD format) */
 typedef enum {
-  k_usb_version_2_0  = (0x0200), /**< USB 2.0 specification */
-  k_usb_version_1_1  = (0x0110), /**< USB 1.1 specification (for CDC) */
-  k_device_version   = (0x0100), /**< Device release version 1.0 */
-  k_usb_langid_en_us = (0x0409), /**< Language ID: English (United States) */
+  k_usb_version_2_0  = 0x0200, /**< USB 2.0 specification */
+  k_usb_version_1_1  = 0x0110, /**< USB 1.1 specification (for CDC) */
+  k_device_version   = 0x0100, /**< Device release version 1.0 */
+  k_usb_langid_en_us = 0x0409, /**< Language ID: English (United States) */
 } usb_version_t;
 
 /** @brief CDC Functional Descriptor Subtypes */
 typedef enum {
-  k_cdc_subtype_header          = (0x00), /**< Header functional descriptor */
-  k_cdc_subtype_call_management = (0x01), /**< Call management functional descriptor */
-  k_cdc_subtype_acm             = (0x02), /**< ACM functional descriptor */
-  k_cdc_subtype_union           = (0x06), /**< Union functional descriptor */
+  k_cdc_subtype_header          = 0x00, /**< Header functional descriptor */
+  k_cdc_subtype_call_management = 0x01, /**< Call management functional descriptor */
+  k_cdc_subtype_acm             = 0x02, /**< ACM functional descriptor */
+  k_cdc_subtype_union           = 0x06, /**< Union functional descriptor */
 } cdc_descriptor_subtype_t;
 
 /** @brief USB Endpoint Addresses */
 typedef enum {
-  k_usb_ep0_out      = (0x00), /**< Control endpoint 0 OUT */
-  k_usb_ep0_in       = (0x80), /**< Control endpoint 0 IN */
-  k_usb_ep1_bulk_in  = (0x81), /**< Bulk IN endpoint 1 (data to host) */
-  k_usb_ep2_bulk_out = (0x02), /**< Bulk OUT endpoint 2 (data from host) */
-  k_usb_ep3_int_in   = (0x83), /**< Interrupt IN endpoint 3 (notifications) */
+  k_usb_ep0_out      = 0x00, /**< Control endpoint 0 OUT */
+  k_usb_ep0_in       = 0x80, /**< Control endpoint 0 IN */
+  k_usb_ep1_bulk_in  = 0x81, /**< Bulk IN endpoint 1 (data to host) */
+  k_usb_ep2_bulk_out = 0x02, /**< Bulk OUT endpoint 2 (data from host) */
+  k_usb_ep3_int_in   = 0x83, /**< Interrupt IN endpoint 3 (notifications) */
 } usb_endpoint_address_t;
 
 /** @brief USB Endpoint Transfer Types (bmAttributes) */
 typedef enum {
-  k_usb_ep_type_control     = (0x00), /**< Control transfer */
-  k_usb_ep_type_isochronous = (0x01), /**< Isochronous transfer */
-  k_usb_ep_type_bulk        = (0x02), /**< Bulk transfer */
-  k_usb_ep_type_interrupt   = (0x03), /**< Interrupt transfer */
+  k_usb_ep_type_control     = 0x00, /**< Control transfer */
+  k_usb_ep_type_isochronous = 0x01, /**< Isochronous transfer */
+  k_usb_ep_type_bulk        = 0x02, /**< Bulk transfer */
+  k_usb_ep_type_interrupt   = 0x03, /**< Interrupt transfer */
 } usb_endpoint_type_t;
 
 /** @brief USB Configuration Attributes */
 typedef enum {
-  k_usb_cfg_attr_bus_powered  = (0x80), /**< Bus-powered device */
-  k_usb_cfg_attr_self_powered = (0xC0), /**< Self-powered device */
+  k_usb_cfg_attr_bus_powered  = 0x80, /**< Bus-powered device */
+  k_usb_cfg_attr_self_powered = 0xC0, /**< Self-powered device */
 } usb_config_attributes_t;
 
 /** @brief USB Power Consumption (in 2mA units) */
 typedef enum {
-  k_usb_max_power_100ma = (50),  /**< 100mA (50 * 2mA) */
-  k_usb_max_power_500ma = (250), /**< 500mA (250 * 2mA) */
+  k_usb_max_power_100ma = 50,  /**< 100mA (50 * 2mA) */
+  k_usb_max_power_500ma = 250, /**< 500mA (250 * 2mA) */
 } usb_max_power_t;
 
 /** @brief CDC Capabilities */
 typedef enum {
-  k_cdc_acm_cap_line_coding = (0x02), /**< Supports SET/GET_LINE_CODING and serial state */
+  k_cdc_acm_cap_line_coding = 0x02, /**< Supports SET/GET_LINE_CODING and serial state */
 } cdc_acm_capabilities_t;
 
 /** @brief USB Descriptor Field Indices */
 typedef enum {
-  k_usb_string_index_langid        = (0), /**< Language ID string index */
-  k_usb_string_index_manufacturer  = (1), /**< Manufacturer string index */
-  k_usb_string_index_product       = (2), /**< Product string index */
-  k_usb_string_index_serial_number = (3), /**< Serial number string index */
+  k_usb_string_index_langid        = 0, /**< Language ID string index */
+  k_usb_string_index_manufacturer  = 1, /**< Manufacturer string index */
+  k_usb_string_index_product       = 2, /**< Product string index */
+  k_usb_string_index_serial_number = 3, /**< Serial number string index */
 } usb_string_index_t;
 
 /** @brief USB Endpoint Packet Sizes */
 typedef enum {
-  k_usb_ep0_packet_size       = (64), /**< Control endpoint max packet size */
-  k_usb_bulk_packet_size      = (64), /**< Bulk endpoint max packet size (Full-Speed) */
-  k_usb_interrupt_packet_size = (8),  /**< Interrupt endpoint max packet size */
+  k_usb_ep0_packet_size       = 64, /**< Control endpoint max packet size */
+  k_usb_bulk_packet_size      = 64, /**< Bulk endpoint max packet size (Full-Speed) */
+  k_usb_interrupt_packet_size = 8,  /**< Interrupt endpoint max packet size */
 } usb_packet_size_t;
 
 /** @brief USB Polling Intervals */
 typedef enum {
-  k_usb_bulk_interval      = (0),  /**< Bulk endpoints don't use polling */
-  k_usb_interrupt_interval = (10), /**< Interrupt endpoint polling interval (10ms) */
+  k_usb_bulk_interval      = 0,  /**< Bulk endpoints don't use polling */
+  k_usb_interrupt_interval = 10, /**< Interrupt endpoint polling interval (10ms) */
 } usb_polling_interval_t;
 
 /** @brief USB String Descriptor Sizes */
 typedef enum {
-  k_usb_string_header_size   = (2),  /**< bLength + bDescriptorType */
-  k_usb_string_char_size     = (2),  /**< UTF-16LE character size (2 bytes) */
-  k_usb_string_langid_chars  = (1),  /**< Language ID is 1 uint16_t */
-  k_usb_string_mfr_chars     = (7),  /**< "Renesas" = 7 characters */
-  k_usb_string_product_chars = (14), /**< "STAR RX72N CDC" = 14 characters */
-  k_usb_string_serial_chars  = (8),  /**< "00000001" = 8 characters */
+  k_usb_string_header_size   = 2,  /**< bLength + bDescriptorType */
+  k_usb_string_char_size     = 2,  /**< UTF-16LE character size (2 bytes) */
+  k_usb_string_langid_chars  = 1,  /**< Language ID is 1 uint16_t */
+  k_usb_string_mfr_chars     = 7,  /**< "Renesas" = 7 characters */
+  k_usb_string_product_chars = 14, /**< "STAR RX72N CDC" = 14 characters */
+  k_usb_string_serial_chars  = 8,  /**< "00000001" = 8 characters */
 } usb_string_size_t;
 
 /** @brief Bit Shift Values for Multi-Byte Fields */
 typedef enum {
-  k_bit_shift_byte_0 = (0),  /**< Shift for byte 0 (LSB) */
-  k_bit_shift_byte_1 = (8),  /**< Shift for byte 1 */
-  k_bit_shift_byte_2 = (16), /**< Shift for byte 2 */
-  k_bit_shift_byte_3 = (24), /**< Shift for byte 3 (MSB for 32-bit) */
+  k_bit_shift_byte_0 = 0,  /**< Shift for byte 0 (LSB) */
+  k_bit_shift_byte_1 = 8,  /**< Shift for byte 1 */
+  k_bit_shift_byte_2 = 16, /**< Shift for byte 2 */
+  k_bit_shift_byte_3 = 24, /**< Shift for byte 3 (MSB for 32-bit) */
 } bit_shift_t;
 
 /** @brief Byte Masks */
 typedef enum {
-  k_byte_mask        = (0xFF), /**< Mask for extracting a single byte */
-  k_usb_address_mask = (0x7F), /**< USB address mask (7 bits, 0-127) */
+  k_byte_mask        = 0xFF, /**< Mask for extracting a single byte */
+  k_usb_address_mask = 0x7F, /**< USB address mask (7 bits, 0-127) */
 } byte_mask_t;
 
 /** @brief USB Request Type Field Masks (bmRequestType) */
 typedef enum {
-  k_usb_req_type_mask     = (0x60), /**< Mask for bits 5-6 (request type) */
-  k_usb_req_type_standard = (0x00), /**< Standard request */
-  k_usb_req_type_class    = (0x20), /**< Class-specific request */
-  k_usb_req_type_vendor   = (0x40), /**< Vendor-specific request */
+  k_usb_req_type_mask     = 0x60, /**< Mask for bits 5-6 (request type) */
+  k_usb_req_type_standard = 0x00, /**< Standard request */
+  k_usb_req_type_class    = 0x20, /**< Class-specific request */
+  k_usb_req_type_vendor   = 0x40, /**< Vendor-specific request */
 } usb_request_type_mask_t;
 
 /** @brief CDC Line Coding Structure Byte Indices */
 typedef enum {
-  k_line_coding_baud_rate_byte_0 = (0), /**< Baud rate byte 0 (LSB) */
-  k_line_coding_baud_rate_byte_1 = (1), /**< Baud rate byte 1 */
-  k_line_coding_baud_rate_byte_2 = (2), /**< Baud rate byte 2 */
-  k_line_coding_baud_rate_byte_3 = (3), /**< Baud rate byte 3 (MSB) */
-  k_line_coding_stop_bits_index  = (4), /**< Stop bits byte index */
-  k_line_coding_parity_index     = (5), /**< Parity byte index */
-  k_line_coding_data_bits_index  = (6), /**< Data bits byte index */
-  k_line_coding_size             = (7), /**< Total line coding structure size */
+  k_line_coding_baud_rate_byte_0 = 0, /**< Baud rate byte 0 (LSB) */
+  k_line_coding_baud_rate_byte_1 = 1, /**< Baud rate byte 1 */
+  k_line_coding_baud_rate_byte_2 = 2, /**< Baud rate byte 2 */
+  k_line_coding_baud_rate_byte_3 = 3, /**< Baud rate byte 3 (MSB) */
+  k_line_coding_stop_bits_index  = 4, /**< Stop bits byte index */
+  k_line_coding_parity_index     = 5, /**< Parity byte index */
+  k_line_coding_data_bits_index  = 6, /**< Data bits byte index */
+  k_line_coding_size             = 7, /**< Total line coding structure size */
 } cdc_line_coding_index_t;
 
 /** @brief USB Pipe Numbers */
 typedef enum {
-  k_usb_pipe_0 = (0), /**< Control pipe (DCP) */
-  k_usb_pipe_1 = (1), /**< Pipe 1 (Bulk IN - EP1) */
-  k_usb_pipe_2 = (2), /**< Pipe 2 (Bulk OUT - EP2) */
-  k_usb_pipe_3 = (3), /**< Pipe 3 (Interrupt IN - EP3) */
+  k_usb_pipe_0 = 0, /**< Control pipe (DCP) */
+  k_usb_pipe_1 = 1, /**< Pipe 1 (Bulk IN - EP1) */
+  k_usb_pipe_2 = 2, /**< Pipe 2 (Bulk OUT - EP2) */
+  k_usb_pipe_3 = 3, /**< Pipe 3 (Interrupt IN - EP3) */
 } usb_pipe_number_t;
 
 /** @brief USB Configuration Values */
 typedef enum {
-  k_usb_config_unconfigured = (0), /**< Device not configured */
-  k_usb_config_value_1      = (1), /**< Configuration 1 */
+  k_usb_config_unconfigured = 0, /**< Device not configured */
+  k_usb_config_value_1      = 1, /**< Configuration 1 */
 } usb_config_value_t;
 
 /* =============================================================================
@@ -351,8 +368,8 @@ static const usb_device_descriptor_t s_device_desc = {
   .descriptor_type     = k_usb_desc_type_device,
   .usb_version         = k_usb_version_2_0,
   .device_class        = k_usb_class_cdc,
-  .device_sub_class    = 0x00,
-  .device_protocol     = 0x00,
+  .device_sub_class    = k_usb_subclass_none,
+  .device_protocol     = k_usb_protocol_none,
   .max_packet_size_ep0 = k_usb_ep0_packet_size,
   .vendor_id           = k_usb_vid,
   .product_id          = k_usb_pid,
@@ -360,7 +377,7 @@ static const usb_device_descriptor_t s_device_desc = {
   .manufacturer_index  = k_usb_string_index_manufacturer,
   .product_index       = k_usb_string_index_product,
   .serial_number_index = k_usb_string_index_serial_number,
-  .num_configurations  = 1,
+  .num_configurations  = k_usb_num_configurations,
 };
 
 /**
@@ -396,9 +413,9 @@ static const usb_cdc_config_descriptor_t s_config_desc = {
       .length              = sizeof(usb_configuration_descriptor_t),
       .descriptor_type     = k_usb_desc_type_configuration,
       .total_length        = sizeof(usb_cdc_config_descriptor_t),
-      .num_interfaces      = 2,
-      .configuration_value = 1,
-      .configuration_index = 0,
+      .num_interfaces      = k_usb_num_interfaces_cdc,
+      .configuration_value = k_usb_config_value_default,
+      .configuration_index = k_usb_string_index_none,
       .attributes          = k_usb_cfg_attr_bus_powered,
       .max_power           = k_usb_max_power_100ma,
     },
@@ -406,13 +423,13 @@ static const usb_cdc_config_descriptor_t s_config_desc = {
     {
       .length             = sizeof(usb_interface_descriptor_t),
       .descriptor_type    = k_usb_desc_type_interface,
-      .interface_number   = 0,
-      .alternate_setting  = 0,
-      .num_endpoints      = 1,
+      .interface_number   = k_usb_interface_number_control,
+      .alternate_setting  = k_usb_alternate_setting_default,
+      .num_endpoints      = k_usb_num_endpoints_control,
       .interface_class    = k_usb_class_cdc,
       .interface_subclass = k_usb_subclass_acm,
       .interface_protocol = k_usb_protocol_at,
-      .interface_index    = 0,
+      .interface_index    = k_usb_string_index_none,
     },
   .cdc_header =
     {
@@ -426,8 +443,8 @@ static const usb_cdc_config_descriptor_t s_config_desc = {
       .length             = sizeof(cdc_call_management_descriptor_t),
       .descriptor_type    = k_usb_desc_type_cs_interface,
       .descriptor_subtype = k_cdc_subtype_call_management,
-      .capabilities       = 0x00,
-      .data_interface     = 1,
+      .capabilities       = k_cdc_call_mgmt_cap_none,
+      .data_interface     = k_usb_interface_number_data,
     },
   .cdc_acm =
     {
@@ -441,8 +458,8 @@ static const usb_cdc_config_descriptor_t s_config_desc = {
       .length                = sizeof(cdc_union_descriptor_t),
       .descriptor_type       = k_usb_desc_type_cs_interface,
       .descriptor_subtype    = k_cdc_subtype_union,
-      .control_interface     = 0,
-      .subordinate_interface = 1,
+      .control_interface     = k_usb_interface_number_control,
+      .subordinate_interface = k_usb_interface_number_data,
     },
   .ep3_interrupt_in =
     {
@@ -457,13 +474,13 @@ static const usb_cdc_config_descriptor_t s_config_desc = {
     {
       .length             = sizeof(usb_interface_descriptor_t),
       .descriptor_type    = k_usb_desc_type_interface,
-      .interface_number   = 1,
-      .alternate_setting  = 0,
-      .num_endpoints      = 2,
+      .interface_number   = k_usb_interface_number_data,
+      .alternate_setting  = k_usb_alternate_setting_default,
+      .num_endpoints      = k_usb_num_endpoints_data,
       .interface_class    = k_usb_class_cdc_data,
-      .interface_subclass = 0,
-      .interface_protocol = 0,
-      .interface_index    = 0,
+      .interface_subclass = k_usb_subclass_none,
+      .interface_protocol = k_usb_protocol_none,
+      .interface_index    = k_usb_string_index_none,
     },
   .ep1_bulk_in =
     {
@@ -543,7 +560,7 @@ static rx_usb_line_coding_t s_line_coding = {.baud_rate = k_usb_default_baud_rat
                                              .data_bits = k_usb_default_data_bits};
 
 /* Control line state from host */
-static uint16_t s_control_line_state = 0;
+static uint16_t s_control_line_state = k_usb_config_unconfigured;
 
 /* =============================================================================
  * Forward Declarations
@@ -578,24 +595,27 @@ static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uin
 {
   uint16_t len = (desc_len < requested_len) ? desc_len : requested_len;
 
-  rx_usb_hw_fifo_write(k_usb_pipe_0, desc, len);
+  uint32_t written = rx_usb_hw_fifo_write(k_usb_pipe_0, desc, len);
+  if (written != len) {
+    rx_log_error(s_tag, "Descriptor write incomplete");
+  }
 }
 
 /**
  * @brief Handle GET_DESCRIPTOR request
  */
-static void internal_handle_get_descriptor(uint16_t w_value, uint16_t w_length)
+static void internal_handle_get_descriptor(uint16_t usb_value, uint16_t usb_length)
 {
-  uint8_t desc_type  = (w_value >> k_bit_shift_byte_1) & k_byte_mask;
-  uint8_t desc_index = w_value & k_byte_mask;
+  uint8_t desc_type  = (usb_value >> k_bit_shift_byte_1) & k_byte_mask;
+  uint8_t desc_index = usb_value & k_byte_mask;
 
   switch (desc_type) {
     case k_usb_desc_type_device:
-      internal_send_descriptor((const uint8_t*)&s_device_desc, sizeof(s_device_desc), w_length);
+      internal_send_descriptor((const uint8_t*)&s_device_desc, sizeof(s_device_desc), usb_length);
       break;
 
     case k_usb_desc_type_configuration:
-      internal_send_descriptor((const uint8_t*)&s_config_desc, sizeof(s_config_desc), w_length);
+      internal_send_descriptor((const uint8_t*)&s_config_desc, sizeof(s_config_desc), usb_length);
       break;
 
     case k_usb_desc_type_string:
@@ -603,22 +623,22 @@ static void internal_handle_get_descriptor(uint16_t w_value, uint16_t w_length)
         case k_usb_string_index_langid:
           internal_send_descriptor((const uint8_t*)&s_string_langid,
                                    sizeof(s_string_langid),
-                                   w_length);
+                                   usb_length);
           break;
         case k_usb_string_index_manufacturer:
           internal_send_descriptor((const uint8_t*)&s_string_manufacturer,
                                    sizeof(s_string_manufacturer),
-                                   w_length);
+                                   usb_length);
           break;
         case k_usb_string_index_product:
           internal_send_descriptor((const uint8_t*)&s_string_product,
                                    sizeof(s_string_product),
-                                   w_length);
+                                   usb_length);
           break;
         case k_usb_string_index_serial_number:
           internal_send_descriptor((const uint8_t*)&s_string_serial,
                                    sizeof(s_string_serial),
-                                   w_length);
+                                   usb_length);
           break;
         default:
           /* STALL for unknown string index */
@@ -637,9 +657,9 @@ static void internal_handle_get_descriptor(uint16_t w_value, uint16_t w_length)
 /**
  * @brief Handle SET_ADDRESS request
  */
-static void internal_handle_set_address(uint16_t w_value)
+static void internal_handle_set_address(uint16_t usb_value)
 {
-  uint8_t address = w_value & k_usb_address_mask;
+  uint8_t address = usb_value & k_usb_address_mask;
 
   /* Send zero-length status packet first */
   usb0()->dcpctr |= k_usb_dcpctr_ccpl;
@@ -657,32 +677,47 @@ static void internal_handle_set_address(uint16_t w_value)
 /**
  * @brief Handle SET_CONFIGURATION request
  */
-static void internal_handle_set_configuration(uint16_t w_value)
+static void internal_handle_set_configuration(uint16_t usb_value)
 {
-  uint8_t config = w_value & k_byte_mask;
+  uint8_t config = usb_value & k_byte_mask;
 
   if (config == k_usb_config_value_1) {
     /* Configure data endpoints */
     /* Pipe 1: Bulk IN (EP1) */
-    rx_usb_hw_configure_pipe(k_usb_pipe_1,
-                             k_usb_pipe_1,
-                             true,
-                             k_usb_pipecfg_type_bulk,
-                             k_usb_bulk_packet_size);
+    rx_err_t err = rx_usb_hw_configure_pipe(k_usb_pipe_1,
+                                             k_usb_pipe_1,
+                                             true,
+                                             k_usb_pipecfg_type_bulk,
+                                             k_usb_bulk_packet_size);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to configure Pipe 1");
+      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+      return;
+    }
 
     /* Pipe 2: Bulk OUT (EP2) */
-    rx_usb_hw_configure_pipe(k_usb_pipe_2,
-                             k_usb_pipe_2,
-                             false,
-                             k_usb_pipecfg_type_bulk,
-                             k_usb_bulk_packet_size);
+    err = rx_usb_hw_configure_pipe(k_usb_pipe_2,
+                                   k_usb_pipe_2,
+                                   false,
+                                   k_usb_pipecfg_type_bulk,
+                                   k_usb_bulk_packet_size);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to configure Pipe 2");
+      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+      return;
+    }
 
     /* Pipe 3: Interrupt IN (EP3) */
-    rx_usb_hw_configure_pipe(k_usb_pipe_3,
-                             k_usb_pipe_3,
-                             true,
-                             k_usb_pipecfg_type_int,
-                             k_usb_interrupt_packet_size);
+    err = rx_usb_hw_configure_pipe(k_usb_pipe_3,
+                                   k_usb_pipe_3,
+                                   true,
+                                   k_usb_pipecfg_type_int,
+                                   k_usb_interrupt_packet_size);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to configure Pipe 3");
+      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+      return;
+    }
 
     /* Enable BRDY interrupt for Pipe 2 (receive from host) */
     usb0()->brdyenb |= (1 << k_usb_pipe_2);
@@ -748,15 +783,18 @@ static void internal_handle_get_line_coding(void)
   data[k_line_coding_parity_index]    = s_line_coding.parity;
   data[k_line_coding_data_bits_index] = s_line_coding.data_bits;
 
-  rx_usb_hw_fifo_write(k_usb_pipe_0, data, k_line_coding_size);
+  uint32_t written = rx_usb_hw_fifo_write(k_usb_pipe_0, data, k_line_coding_size);
+  if (written != k_line_coding_size) {
+    rx_log_error(s_tag, "Line coding write incomplete");
+  }
 }
 
 /**
  * @brief Handle CDC SET_CONTROL_LINE_STATE request
  */
-static void internal_handle_set_control_line_state(uint16_t w_value)
+static void internal_handle_set_control_line_state(uint16_t usb_value)
 {
-  s_control_line_state = w_value;
+  s_control_line_state = usb_value;
 
   /* DTR (bit 0) and RTS (bit 1) */
   rx_log_debug(s_tag, "Control line state set");
@@ -794,6 +832,63 @@ rx_err_t rx_usb_cdc_init(void)
 }
 
 /**
+ * @brief Handle standard USB requests
+ */
+static void internal_handle_standard_request(uint8_t usb_request, uint16_t usb_value, uint16_t usb_length)
+{
+  switch (usb_request) {
+    case k_usb_req_get_descriptor:
+      internal_handle_get_descriptor(usb_value, usb_length);
+      break;
+
+    case k_usb_req_set_address:
+      internal_handle_set_address(usb_value);
+      break;
+
+    case k_usb_req_set_configuration:
+      internal_handle_set_configuration(usb_value);
+      break;
+
+    case k_usb_req_get_configuration: {
+      /* Return current configuration (1 = configured, 0 = not) */
+      uint8_t cfg = (rx_usb_get_state() == k_usb_state_configured) ? k_usb_config_value_1
+                                                                   : k_usb_config_unconfigured;
+      (void)rx_usb_hw_fifo_write(k_usb_pipe_0, &cfg, sizeof(cfg));
+    } break;
+
+    default:
+      /* STALL unknown standard requests */
+      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+      break;
+  }
+}
+
+/**
+ * @brief Handle CDC class-specific requests
+ */
+static void internal_handle_class_request(uint8_t usb_request, uint16_t usb_value)
+{
+  switch (usb_request) {
+    case k_cdc_set_line_coding:
+      internal_handle_set_line_coding();
+      break;
+
+    case k_cdc_get_line_coding:
+      internal_handle_get_line_coding();
+      break;
+
+    case k_cdc_set_control_line_state:
+      internal_handle_set_control_line_state(usb_value);
+      break;
+
+    default:
+      /* STALL unknown class requests */
+      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+      break;
+  }
+}
+
+/**
  * @brief Handle control transfer (SETUP packet)
  *
  * Called by ISR when a SETUP packet is received on EP0.
@@ -801,66 +896,23 @@ rx_err_t rx_usb_cdc_init(void)
 void rx_usb_cdc_handle_setup(void)
 {
   /* Read SETUP packet from registers */
-  uint16_t bm_request_type_b_request = usb0()->usbreq;
-  uint16_t w_value                   = usb0()->usbval;
-  uint16_t w_index                   = usb0()->usbindx;
-  uint16_t w_length                  = usb0()->usbleng;
+  uint16_t usb_request_type_and_request = usb0()->usbreq;
+  uint16_t usb_value                    = usb0()->usbval;
+  uint16_t usb_index                    = usb0()->usbindx;
+  uint16_t usb_length                   = usb0()->usbleng;
 
-  uint8_t bm_request_type = bm_request_type_b_request & k_byte_mask;
-  uint8_t b_request       = (bm_request_type_b_request >> k_bit_shift_byte_1) & k_byte_mask;
+  uint8_t usb_request_type = usb_request_type_and_request & k_byte_mask;
+  uint8_t usb_request      = (usb_request_type_and_request >> k_bit_shift_byte_1) & k_byte_mask;
 
-  (void)w_index; /* Currently unused */
+  (void)usb_index; /* Currently unused */
 
   /* Determine request type */
-  uint8_t type = bm_request_type & k_usb_req_type_mask;
+  uint8_t type = usb_request_type & k_usb_req_type_mask;
 
   if (type == k_usb_req_type_standard) {
-    /* Standard request */
-    switch (b_request) {
-      case k_usb_req_get_descriptor:
-        internal_handle_get_descriptor(w_value, w_length);
-        break;
-
-      case k_usb_req_set_address:
-        internal_handle_set_address(w_value);
-        break;
-
-      case k_usb_req_set_configuration:
-        internal_handle_set_configuration(w_value);
-        break;
-
-      case k_usb_req_get_configuration: {
-        /* Return current configuration (1 = configured, 0 = not) */
-        uint8_t cfg = (rx_usb_get_state() == k_usb_state_configured) ? k_usb_config_value_1
-                                                                     : k_usb_config_unconfigured;
-        rx_usb_hw_fifo_write(k_usb_pipe_0, &cfg, sizeof(cfg));
-      } break;
-
-      default:
-        /* STALL unknown standard requests */
-        usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
-        break;
-    }
+    internal_handle_standard_request(usb_request, usb_value, usb_length);
   } else if (type == k_usb_req_type_class) {
-    /* Class request (CDC) */
-    switch (b_request) {
-      case k_cdc_set_line_coding:
-        internal_handle_set_line_coding();
-        break;
-
-      case k_cdc_get_line_coding:
-        internal_handle_get_line_coding();
-        break;
-
-      case k_cdc_set_control_line_state:
-        internal_handle_set_control_line_state(w_value);
-        break;
-
-      default:
-        /* STALL unknown class requests */
-        usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
-        break;
-    }
+    internal_handle_class_request(usb_request, usb_value);
   } else {
     /* STALL vendor and reserved requests */
     usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
@@ -877,7 +929,7 @@ void rx_usb_cdc_handle_bulk_out(void)
   uint8_t  data[k_usb_bulk_packet_size];
   uint32_t len = rx_usb_hw_fifo_read(k_usb_pipe_2, data, k_usb_bulk_packet_size);
 
-  if (len > k_usb_config_unconfigured) {
+  if (len > k_min_transfer_size) {
     rx_usb_rx_push(data, len);
   }
 }
@@ -892,7 +944,7 @@ void rx_usb_cdc_handle_bulk_in(void)
   uint8_t  data[k_usb_bulk_packet_size];
   uint32_t len = rx_usb_tx_pop(data, k_usb_bulk_packet_size);
 
-  if (len > k_usb_config_unconfigured) {
+  if (len > k_min_transfer_size) {
     rx_usb_hw_fifo_write(k_usb_pipe_1, data, len);
   }
 }
