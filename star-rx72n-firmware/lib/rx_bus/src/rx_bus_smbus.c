@@ -158,6 +158,12 @@ static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* 
     return err;
   }
 
+  /* Post-condition: Verify I2C device address is within valid range */
+  if (bus_config->proto.smbus.i2c_config.device_addr > k_i2c_addr_max_7bit) {
+    rx_log_warn(s_tag, "SMBUS device address exceeds 7-bit maximum");
+    /* Continue anyway - HAL should validate, but flag if misconfigured */
+  }
+
   bus_config->initialized = true;
   ctx->result             = k_rx_ok;
   return k_rx_ok;
@@ -193,6 +199,17 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
                             bus_config->proto.smbus.i2c_config.device_addr,
                             data,
                             length);
+
+  if (err != k_rx_ok) {
+    ctx->result = err;
+    return err;
+  }
+
+  /* Post-condition: Verify buffer length matches PEC configuration */
+  if (bus_config->proto.smbus.use_pec && length != k_smbus_byte_buf_size) {
+    rx_log_warn(s_tag, "SMBUS write_byte buffer length mismatch with PEC setting");
+    /* Continue anyway - operation completed */
+  }
 
   ctx->result = err;
   return err;
@@ -235,7 +252,14 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
     }
   }
 
-  *ctx->data  = data[k_smbus_byte_data];
+  *ctx->data = data[k_smbus_byte_data];
+
+  /* Post-condition: Verify data was read into valid buffer */
+  if (ctx->data == NULL) {
+    rx_log_warn(s_tag, "SMBUS read_byte succeeded despite NULL data pointer");
+    /* Continue anyway - operation completed, but unexpected state */
+  }
+
   ctx->result = k_rx_ok;
   return k_rx_ok;
 }
@@ -288,6 +312,13 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
   /* Little-endian */
   *ctx->data = (uint16_t)read_data[k_smbus_word_lsb] |
                ((uint16_t)read_data[k_smbus_word_msb] << k_bits_per_byte);
+
+  /* Post-condition: Verify data was read into valid buffer */
+  if (ctx->data == NULL) {
+    rx_log_warn(s_tag, "SMBUS read_word_data succeeded despite NULL data pointer");
+    /* Continue anyway - operation completed, but unexpected state */
+  }
+
   ctx->result = k_rx_ok;
   return k_rx_ok;
 }

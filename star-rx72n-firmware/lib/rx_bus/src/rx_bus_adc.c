@@ -132,6 +132,13 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
     return err;
   }
 
+  /* Post-condition: Verify read value is within valid range for ADC resolution */
+  uint16_t max_value = (1U << bus_config->proto.adc.bits) - 1; /* 2^bits - 1 */
+  if (*ctx->value > max_value) {
+    rx_log_warn(s_tag, "ADC value exceeds maximum for configured resolution");
+    /* Continue anyway - HAL should prevent this, but flag if it happens */
+  }
+
   ctx->result = k_rx_ok;
   return k_rx_ok;
 }
@@ -165,6 +172,13 @@ static rx_err_t internal_adc_voltage_callback(rx_bus_config_t* bus_config, void*
     rx_log_error(s_tag, "ADC voltage read failed");
     ctx->result = err;
     return err;
+  }
+
+  /* Post-condition: Verify voltage is within reasonable range (0-5V typical) */
+  static const uint32_t s_max_voltage_mv = 5500U; /* 5.5V max for safety */
+  if (*ctx->voltage_mv > s_max_voltage_mv) {
+    rx_log_warn(s_tag, "ADC voltage exceeds typical maximum");
+    /* Continue anyway - could be valid in some configurations */
   }
 
   ctx->result = k_rx_ok;

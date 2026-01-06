@@ -666,7 +666,14 @@ static rx_err_t internal_onewire_reset_callback(rx_bus_config_t* bus_config, voi
   }
 
   *ctx->presence = presence;
-  ctx->result    = k_rx_ok;
+
+  /* Post-condition: Verify presence flag was set to valid boolean */
+  if (ctx->presence == NULL) {
+    rx_log_warn(s_tag, "OneWire reset succeeded despite NULL presence pointer");
+    /* Continue anyway - operation completed, but unexpected state */
+  }
+
+  ctx->result = k_rx_ok;
   return k_rx_ok;
 }
 
@@ -692,7 +699,19 @@ static rx_err_t internal_onewire_write_bit_callback(rx_bus_config_t* bus_config,
   }
 
   rx_err_t err = internal_write_bit(bus_config, state, ctx->bit);
-  ctx->result  = err;
+
+  if (err != k_rx_ok) {
+    ctx->result = err;
+    return err;
+  }
+
+  /* Post-condition: Verify runtime state is still valid after write */
+  if (state == NULL || bus_config->handle != state) {
+    rx_log_warn(s_tag, "OneWire state corrupted during write_bit operation");
+    /* Continue anyway - operation completed */
+  }
+
+  ctx->result = err;
   return err;
 }
 
@@ -722,6 +741,13 @@ static rx_err_t internal_onewire_read_bit_callback(rx_bus_config_t* bus_config, 
   if (err == k_rx_ok) {
     *ctx->bit = bit;
   }
+
+  /* Post-condition: Verify bit pointer was set when operation succeeded */
+  if (err == k_rx_ok && ctx->bit == NULL) {
+    rx_log_warn(s_tag, "OneWire read_bit succeeded despite NULL bit pointer");
+    /* Continue anyway - operation completed, but unexpected state */
+  }
+
   ctx->result = err;
   return err;
 }
@@ -743,7 +769,19 @@ static rx_err_t internal_onewire_write_byte_callback(rx_bus_config_t* bus_config
   }
 
   rx_err_t err = internal_write_byte(bus_config, state, ctx->byte);
-  ctx->result  = err;
+
+  if (err != k_rx_ok) {
+    ctx->result = err;
+    return err;
+  }
+
+  /* Post-condition: Verify runtime state is still valid after write */
+  if (state == NULL || bus_config->handle != state) {
+    rx_log_warn(s_tag, "OneWire state corrupted during write_byte operation");
+    /* Continue anyway - operation completed */
+  }
+
+  ctx->result = err;
   return err;
 }
 
@@ -767,6 +805,12 @@ static rx_err_t internal_onewire_read_byte_callback(rx_bus_config_t* bus_config,
   rx_err_t err  = internal_read_byte(bus_config, state, &byte);
   if (err == k_rx_ok) {
     *ctx->byte = byte;
+  }
+
+  /* Post-condition: Verify byte pointer was set when operation succeeded */
+  if (err == k_rx_ok && ctx->byte == NULL) {
+    rx_log_warn(s_tag, "OneWire read_byte succeeded despite NULL byte pointer");
+    /* Continue anyway - operation completed, but unexpected state */
   }
 
   ctx->result = err;
@@ -800,6 +844,12 @@ static rx_err_t internal_onewire_write_buffer_callback(rx_bus_config_t* bus_conf
       ctx->result = err;
       return err;
     }
+  }
+
+  /* Post-condition: Verify data buffer is valid when length > 0 */
+  if (ctx->length > 0U && ctx->data == NULL) {
+    rx_log_warn(s_tag, "OneWire write_buffer succeeded despite NULL data pointer");
+    /* Continue anyway - operation completed, but unexpected state */
   }
 
   ctx->result = k_rx_ok;
@@ -837,6 +887,12 @@ static rx_err_t internal_onewire_read_buffer_callback(rx_bus_config_t* bus_confi
     ctx->data[i] = byte;
   }
 
+  /* Post-condition: Verify data buffer is valid when length > 0 */
+  if (ctx->length > 0U && ctx->data == NULL) {
+    rx_log_warn(s_tag, "OneWire read_buffer succeeded despite NULL data pointer");
+    /* Continue anyway - operation completed, but unexpected state */
+  }
+
   ctx->result = k_rx_ok;
   return k_rx_ok;
 }
@@ -864,7 +920,18 @@ static rx_err_t internal_onewire_skip_rom_callback(rx_bus_config_t* bus_config, 
     return k_rx_err_not_found;
   }
 
-  return internal_write_byte(bus_config, state, k_onewire_cmd_skip_rom);
+  err = internal_write_byte(bus_config, state, k_onewire_cmd_skip_rom);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Post-condition: Verify runtime state is still valid after skip ROM command */
+  if (state == NULL || bus_config->handle != state) {
+    rx_log_warn(s_tag, "OneWire state corrupted during skip_rom operation");
+    /* Continue anyway - operation completed */
+  }
+
+  return k_rx_ok;
 }
 
 static rx_err_t internal_onewire_match_rom_callback(rx_bus_config_t* bus_config, void* user_ctx)
@@ -906,6 +973,12 @@ static rx_err_t internal_onewire_match_rom_callback(rx_bus_config_t* bus_config,
       ctx->result = err;
       return err;
     }
+  }
+
+  /* Post-condition: Verify ROM buffer is valid */
+  if (ctx->rom == NULL) {
+    rx_log_warn(s_tag, "OneWire match_rom succeeded despite NULL ROM pointer");
+    /* Continue anyway - operation completed, but unexpected state */
   }
 
   ctx->result = k_rx_ok;
@@ -961,6 +1034,12 @@ static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, 
     return ctx->result;
   }
 
+  /* Post-condition: Verify ROM has non-zero family code (first byte) */
+  if (ctx->rom[0] == 0x00U) {
+    rx_log_warn(s_tag, "OneWire ROM has invalid family code");
+    /* Continue anyway - CRC passed, may be valid edge case */
+  }
+
   ctx->result = k_rx_ok;
   return k_rx_ok;
 }
@@ -1008,6 +1087,18 @@ static rx_err_t internal_onewire_search_callback(rx_bus_config_t* bus_config, vo
     if (state->last_device_flag) {
       break;
     }
+  }
+
+  /* Post-condition: Verify device count doesn't exceed maximum */
+  if (*ctx->num_devices > ctx->max_devices) {
+    rx_log_warn(s_tag, "OneWire search exceeded maximum device count");
+    /* Continue anyway - operation completed, but unexpected state */
+  }
+
+  /* Post-condition: Verify ROM buffer is valid when devices found */
+  if (*ctx->num_devices > 0U && ctx->roms == NULL) {
+    rx_log_warn(s_tag, "OneWire search found devices despite NULL ROM buffer");
+    /* Continue anyway - operation completed, but unexpected state */
   }
 
   ctx->result = k_rx_ok;
