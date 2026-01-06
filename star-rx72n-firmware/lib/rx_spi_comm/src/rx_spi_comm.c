@@ -29,7 +29,7 @@
  * =============================================================================
  */
 
-static const char* s_tag = "SPI_COMM";
+static const char* s_tag = "rx_spi_comm";
 
 /* =============================================================================
  * Frame Header Byte Offsets
@@ -51,11 +51,6 @@ typedef enum {
   k_hdr_flags     = 7, /**< Frame flags */
 } frame_header_offset_t;
 
-/** @brief Big-endian conversion constants */
-typedef enum {
-  k_be16_high_shift = 8, /**< Bit shift for big-endian high byte */
-} be_conversion_t;
-
 /** @brief ThreadX timing constants for receive polling */
 typedef enum {
   k_threadx_tick_rate_hz = 100, /**< ThreadX tick rate (100 Hz) */
@@ -67,6 +62,11 @@ typedef enum {
 typedef enum {
   k_ack_wait_timeout_ms = 50, /**< Abort if host doesn't ACK within 50 ms */
 } ack_wait_t;
+
+/** @brief Polling loop iteration limits */
+typedef enum {
+  k_max_poll_iterations = 1000, /**< Maximum polling iterations (safety bound) */
+} polling_limits_t;
 
 /* =============================================================================
  * Internal Helpers
@@ -136,6 +136,30 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
                                       uint8_t*              rx_data,
                                       uint32_t              rx_len)
 {
+  /* Pre-condition 1: Handle pointer validation */
+  if (handle == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Transfer length within buffer capacity */
+  uint32_t transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
+  if (transfer_len > k_spi_comm_tx_buffer_size) {
+    rx_log_error(s_tag, "Transfer length exceeds buffer capacity");
+    return k_rx_err_invalid_size;
+  }
+
+  /* Pre-condition 3: TX data pointer consistent with length */
+  if (tx_data == NULL && tx_len > 0) {
+    rx_log_error(s_tag, "NULL TX data with non-zero length");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 4: RX data pointer consistent with length */
+  if (rx_data == NULL && rx_len > 0) {
+    rx_log_error(s_tag, "NULL RX data with non-zero length");
+    return k_rx_err_invalid_arg;
+  }
+
   /* Wait for host ready signal before transmit operations */
   if (tx_data != NULL && tx_len > 0) {
     rx_err_t wait_err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
@@ -145,12 +169,6 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
   }
 
   /* Prepare TX buffer (pad with zeros if RX is larger) */
-  uint32_t transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
-
-  if (transfer_len > k_spi_comm_tx_buffer_size) {
-    return k_rx_err_invalid_size;
-  }
-
   memset(handle->tx_buffer, 0, transfer_len);
   if (tx_data != NULL && tx_len > 0) {
     memcpy(handle->tx_buffer, tx_data, tx_len);
@@ -167,11 +185,16 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
                                           (uint16_t)transfer_len);
 
   if (err != k_rx_ok) {
+    rx_log_error(s_tag, "SPI peripheral transfer failed");
     return err;
   }
 
-  /* Copy received data if requested */
+  /* Post-condition: Validate RX buffer populated if requested */
   if (rx_data != NULL && rx_len > 0) {
+    if (handle->rx_buffer == NULL) {
+      rx_log_error(s_tag, "RX buffer null after transfer");
+      return k_rx_err_invalid_state;
+    }
     memcpy(rx_data, handle->rx_buffer, rx_len);
   }
 
@@ -198,7 +221,7 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
     handle->fec_enabled = config->fec_enabled;
   } else {
     handle->channel     = k_spi_comm_default_channel;
-    handle->fec_enabled = 0;
+    handle->fec_enabled = false;
   }
 
   /* Initialize frame encoder */
@@ -299,6 +322,12 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
     return err;
   }
 
+  /* Post-condition 1: Encoded length within valid bounds */
+  if (wire_len == 0 || wire_len > k_frame_max_size) {
+    rx_log_error(s_tag, "Invalid encoded frame length");
+    return k_rx_err_invalid_size;
+  }
+
   /* Transfer via SPI (waits for host ACK internally) */
   err = internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
   if (err != k_rx_ok) {
@@ -306,8 +335,13 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
     return err;
   }
 
-  /* Increment TX sequence */
+  /* Post-condition 2: TX sequence incremented correctly */
+  uint16_t expected_sequence = handle->tx_sequence + 1;
   handle->tx_sequence++;
+  if (handle->tx_sequence != expected_sequence) {
+    rx_log_error(s_tag, "TX sequence increment failed");
+    return k_rx_err_invalid_state;
+  }
 
   return k_rx_ok;
 }
@@ -336,6 +370,12 @@ rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence)
   err = rx_frame_encode(&handle->encoder, &ack_frame, wire_buffer, &wire_len);
   if (err != k_rx_ok) {
     return err;
+  }
+
+  /* Post-condition: ACK frame encoded to minimum size */
+  if (wire_len != k_frame_min_size) {
+    rx_log_error(s_tag, "Invalid ACK frame length");
+    return k_rx_err_invalid_size;
   }
 
   /* Transfer via SPI (waits for host ACK internally) */
@@ -368,26 +408,30 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, 
     return err;
   }
 
+  /* Post-condition: NACK frame encoded to minimum size */
+  if (wire_len != k_frame_min_size) {
+    rx_log_error(s_tag, "Invalid NACK frame length");
+    return k_rx_err_invalid_size;
+  }
+
   /* Transfer via SPI (waits for host ACK internally) */
   return internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
 }
 
 /* =============================================================================
- * Receive API
+ * Receive API - Internal Helpers
  * =============================================================================
  */
 
-rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms)
+/**
+ * @brief Wait for data to be available on SPI channel
+ *
+ * @param handle SPI communication handle
+ * @param timeout_ms Maximum time to wait in milliseconds (0 = no wait)
+ * @return k_rx_ok if data available, k_rx_err_timeout if timeout expired
+ */
+static rx_err_t internal_wait_for_data(rx_spi_comm_handle_t* handle, uint32_t timeout_ms)
 {
-  if (handle == NULL || frame == NULL) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if (!handle->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  /* Check for available data */
   bool     available = false;
   rx_err_t err       = rspi_peripheral_read_available(handle->channel, &available);
   if (err != k_rx_ok) {
@@ -406,7 +450,9 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
      * Sleep duration and tick rate are defined by threadx_timing_t constants.
      */
     uint32_t elapsed_ms = 0;
-    while (!available && elapsed_ms < timeout_ms) {
+    uint32_t iteration  = 0;
+    while (!available && elapsed_ms < timeout_ms && iteration < k_max_poll_iterations) {
+      iteration++;
       tx_thread_sleep(k_poll_sleep_ticks);
       elapsed_ms += k_threadx_ms_per_tick;
 
@@ -425,33 +471,78 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
     }
   }
 
-  /* Read frame header first to determine length */
-  uint8_t  header_buf[k_frame_sync_size + k_frame_header_size];
-  uint32_t header_len = sizeof(header_buf);
+  return k_rx_ok;
+}
 
-  /* For SPI peripheral mode, we receive what the controller sends */
-  err = internal_spi_transfer(handle, NULL, 0, header_buf, header_len);
+/**
+ * @brief Read and validate frame header from SPI
+ *
+ * @param handle SPI communication handle
+ * @param header_buf Output buffer for header (must be k_frame_sync_size + k_frame_header_size)
+ * @param payload_len Output pointer for extracted payload length
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t internal_read_frame_header(rx_spi_comm_handle_t* handle,
+                                           uint8_t*              header_buf,
+                                           uint16_t*             payload_len)
+{
+  uint32_t header_len = k_frame_sync_size + k_frame_header_size;
+
+  /* Read frame header from SPI */
+  rx_err_t err = internal_spi_transfer(handle, NULL, 0, header_buf, header_len);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Validate sync word (big-endian) */
-  uint16_t sync = ((uint16_t)header_buf[k_hdr_sync_high] << k_be16_high_shift) |
-                  (uint16_t)header_buf[k_hdr_sync_low];
+  uint16_t sync = rx_frame_read_be16(&header_buf[k_hdr_sync_high]);
   if (sync != k_frame_sync_word) {
     rx_log_error(s_tag, "Invalid sync word");
     return k_rx_err_protocol_error;
   }
 
   /* Extract payload length (big-endian) */
-  uint16_t payload_len = ((uint16_t)header_buf[k_hdr_len_high] << k_be16_high_shift) |
-                         (uint16_t)header_buf[k_hdr_len_low];
-  if (payload_len > k_frame_max_payload) {
+  *payload_len = rx_frame_read_be16(&header_buf[k_hdr_len_high]);
+  if (*payload_len > k_frame_max_payload) {
     rx_log_error(s_tag, "Payload too large");
     return k_rx_err_invalid_size;
   }
 
-  /* Calculate total frame size */
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * Receive API - Public Functions
+ * =============================================================================
+ */
+
+rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms)
+{
+  if (handle == NULL || frame == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Wait for data to be available */
+  rx_err_t err = internal_wait_for_data(handle, timeout_ms);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Read and validate frame header */
+  uint8_t  header_buf[k_frame_sync_size + k_frame_header_size];
+  uint16_t payload_len = 0;
+
+  err = internal_read_frame_header(handle, header_buf, &payload_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Calculate frame size */
+  uint32_t header_len = sizeof(header_buf);
   uint32_t total_size = k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
 
   /* Read remaining data (payload + CRC) */
@@ -505,18 +596,30 @@ void rx_spi_comm_reset_sequence(rx_spi_comm_handle_t* handle)
   }
 }
 
-uint16_t rx_spi_comm_get_tx_sequence(const rx_spi_comm_handle_t* handle)
+rx_err_t rx_spi_comm_get_tx_sequence(const rx_spi_comm_handle_t* handle, uint16_t* sequence)
 {
-  if (handle == NULL) {
-    return 0;
+  if (handle == NULL || sequence == NULL) {
+    return k_rx_err_invalid_arg;
   }
-  return handle->tx_sequence;
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  *sequence = handle->tx_sequence;
+  return k_rx_ok;
 }
 
-uint16_t rx_spi_comm_get_rx_sequence(const rx_spi_comm_handle_t* handle)
+rx_err_t rx_spi_comm_get_rx_sequence(const rx_spi_comm_handle_t* handle, uint16_t* sequence)
 {
-  if (handle == NULL) {
-    return 0;
+  if (handle == NULL || sequence == NULL) {
+    return k_rx_err_invalid_arg;
   }
-  return handle->rx_sequence;
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  *sequence = handle->rx_sequence;
+  return k_rx_ok;
 }
