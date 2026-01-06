@@ -218,7 +218,7 @@ rx_err_t rx_ds18b20_read_temperature_raw(rx_ds18b20_handle_t* handle, int16_t* r
 
   /* Extract temperature (LSB + MSB) */
   temp = (uint16_t)scratchpad[k_ds18b20_scratch_temp_lsb];
-  temp |= ((uint16_t)scratchpad[k_ds18b20_scratch_temp_msb]) << k_ds18b20_temp_shift;
+  temp |= ((uint16_t)scratchpad[k_ds18b20_scratch_temp_msb]) << k_ds18b20_shift_byte;
 
   /* Apply resolution mask to clear undefined bits */
   mask = internal_ds18b20_get_temp_mask(handle->resolution);
