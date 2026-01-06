@@ -16,6 +16,7 @@
 #include <stdbool.h>
 
 #include "hardware.h"
+#include "rx72n_clock.h"
 #include "rx72n_cmt_regs.h"
 #include "rx72n_system_regs.h"
 #include "rx_hcsr04_hal.h"
@@ -70,17 +71,17 @@ rx_err_t hcsr04_hal_gpio_deinit(gpio_pin_t pin)
  * @brief CMT2 timer constants for microsecond timing
  *
  * CMT2 Configuration:
- * - PCLKB = 60 MHz
+ * - PCLKB = 60 MHz (from rx72n_clock.h)
  * - Divider = 8 (fastest divider for high resolution)
  * - Timer frequency = 60 MHz / 8 = 7.5 MHz
  * - Timer period = 1 / 7.5 MHz = 133.33 ns per tick
  * - Ticks per microsecond = 7.5 ticks/us
  */
 typedef enum {
-  k_pclkb_hz               = 60000000, /**< Peripheral clock B frequency */
   k_cmt2_divider           = 8,        /**< CMT2 clock divider */
   k_cmt2_divider_bits      = 0x0000,   /**< CKS[1:0] = 00 for /8 divider */
   k_timer_counter_max      = 0xFFFF,   /**< 16-bit counter maximum */
+  k_timer_counter_bits     = 16,       /**< CMT2 counter width in bits */
   k_us_per_second          = 1000000,  /**< Microseconds per second */
   k_timer_rounding         = 500000,   /**< Rounding factor for integer division */
   k_max_delay_iterations   = 100,      /**< Safety guard: max loop iterations */
@@ -195,7 +196,7 @@ uint32_t hcsr04_hal_get_time_us(void)
   last_counter = current_counter;
 
   /* Calculate total ticks including overflows */
-  total_ticks = ((uint64_t)overflow_count << 16) | current_counter;
+  total_ticks = ((uint64_t)overflow_count << k_timer_counter_bits) | current_counter;
 
   /* Convert ticks to microseconds */
   timer_hz = k_pclkb_hz / k_cmt2_divider;
