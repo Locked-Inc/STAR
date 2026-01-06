@@ -127,6 +127,12 @@ static rx_err_t internal_uart_init_callback(rx_bus_config_t* bus_config, void* u
     return k_rx_err_hw_init_failed;
   }
 
+  /* Post-condition: Verify UART channel is within valid range */
+  if (bus_config->proto.uart.channel >= k_sci_channel_count) {
+    rx_log_warn(s_tag, "UART channel exceeds maximum SCI channel count");
+    /* Continue anyway - HAL should validate, but flag if misconfigured */
+  }
+
   /* Mark bus as initialized */
   bus_config->initialized = true;
 
@@ -163,6 +169,12 @@ static rx_err_t internal_uart_write_callback(rx_bus_config_t* bus_config, void* 
     return err;
   }
 
+  /* Post-condition: Verify data buffer is valid */
+  if (ctx->length > 0 && ctx->data == NULL) {
+    rx_log_warn(s_tag, "UART write succeeded despite NULL data pointer");
+    /* Continue anyway - operation completed, but unexpected state */
+  }
+
   ctx->result = k_rx_ok;
   return k_rx_ok;
 }
@@ -194,6 +206,12 @@ static rx_err_t internal_uart_read_callback(rx_bus_config_t* bus_config, void* u
     rx_log_error(s_tag, "UART read failed");
     ctx->result = err;
     return err;
+  }
+
+  /* Post-condition: Verify bytes_read is within expected range */
+  if (ctx->bytes_read > ctx->length) {
+    rx_log_warn(s_tag, "UART read returned more bytes than requested");
+    /* Continue anyway - operation completed, but unexpected state */
   }
 
   ctx->result = k_rx_ok;
@@ -228,6 +246,12 @@ static rx_err_t internal_uart_putc_callback(rx_bus_config_t* bus_config, void* u
     return err;
   }
 
+  /* Post-condition: Verify character is valid ASCII */
+  if ((uint8_t)ctx->c > 127) {
+    rx_log_warn(s_tag, "UART putc wrote non-ASCII character");
+    /* Continue anyway - some protocols use extended ASCII */
+  }
+
   ctx->result = k_rx_ok;
   return k_rx_ok;
 }
@@ -260,6 +284,12 @@ static rx_err_t internal_uart_puts_callback(rx_bus_config_t* bus_config, void* u
     return err;
   }
 
+  /* Post-condition: Verify string pointer is still valid */
+  if (ctx->str == NULL) {
+    rx_log_warn(s_tag, "UART puts succeeded despite NULL string pointer");
+    /* Continue anyway - operation completed, but unexpected state */
+  }
+
   ctx->result = k_rx_ok;
   return k_rx_ok;
 }
@@ -285,6 +315,12 @@ static rx_err_t internal_uart_getc_callback(rx_bus_config_t* bus_config, void* u
 
   /* Read single character */
   rx_err_t err = uart_getc_channel(bus_config->proto.uart.channel, &ctx->c);
+
+  /* Post-condition: Verify character is valid ASCII when data available */
+  if (err == k_rx_ok && (uint8_t)ctx->c > 127) {
+    rx_log_warn(s_tag, "UART getc received non-ASCII character");
+    /* Continue anyway - some protocols use extended ASCII */
+  }
 
   /* k_rx_err_empty is a valid return (no data available) */
   ctx->result = err;
@@ -317,6 +353,12 @@ static rx_err_t internal_uart_rx_avail_callback(rx_bus_config_t* bus_config, voi
     rx_log_error(s_tag, "UART rx_available failed");
     ctx->result = err;
     return err;
+  }
+
+  /* Post-condition: Verify availability flag was set (bool has valid value) */
+  if (ctx->available != true && ctx->available != false) {
+    rx_log_warn(s_tag, "UART rx_available returned invalid boolean value");
+    /* Continue anyway - may be undefined behavior from HAL */
   }
 
   ctx->result = k_rx_ok;

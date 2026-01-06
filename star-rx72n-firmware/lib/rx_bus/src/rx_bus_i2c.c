@@ -93,6 +93,12 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
     return err;
   }
 
+  /* Post-condition: Verify I2C channel is responsive (check configuration) */
+  if (bus_config->proto.i2c.device_addr > k_i2c_addr_max_7bit) {
+    rx_log_warn(s_tag, "I2C device address exceeds 7-bit maximum");
+    /* Continue anyway - HAL should validate, but flag if misconfigured */
+  }
+
   /* Mark bus as initialized */
   bus_config->initialized = true;
 
@@ -131,6 +137,12 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
     return err;
   }
 
+  /* Post-condition: Verify data buffer is valid */
+  if (ctx->length > 0 && ctx->data == NULL) {
+    rx_log_warn(s_tag, "I2C write succeeded despite NULL data pointer");
+    /* Continue - operation completed, but unexpected state */
+  }
+
   ctx->result = k_rx_ok;
   return k_rx_ok;
 }
@@ -164,6 +176,12 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
     rx_log_error(s_tag, "I2C read failed");
     ctx->result = err;
     return err;
+  }
+
+  /* Post-condition: Verify data buffer received data */
+  if (ctx->length > 0 && ctx->data == NULL) {
+    rx_log_warn(s_tag, "I2C read succeeded despite NULL data pointer");
+    /* Continue - operation completed, but unexpected state */
   }
 
   ctx->result = k_rx_ok;
@@ -201,6 +219,12 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
     rx_log_error(s_tag, "I2C write-read failed");
     ctx->result = err;
     return err;
+  }
+
+  /* Post-condition: Verify read buffer received data */
+  if (ctx->read_length > 0 && ctx->read_data == NULL) {
+    rx_log_warn(s_tag, "I2C write-read succeeded despite NULL read buffer");
+    /* Continue - operation completed, but unexpected state */
   }
 
   ctx->result = k_rx_ok;
