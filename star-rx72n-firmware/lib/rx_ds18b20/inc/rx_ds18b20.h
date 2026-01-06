@@ -149,10 +149,13 @@ typedef enum {
  * @brief DS18B20 temperature conversion constants
  */
 typedef enum {
-  k_ds18b20_temp_shift       = 4,      /**< Shift to get integer temperature */
-  k_ds18b20_sign_bit         = 0x8000, /**< Sign bit in 16-bit temperature */
-  k_ds18b20_crc_bytes        = 8,      /**< Number of bytes for CRC calculation */
-  k_ds18b20_shift_byte       = 8,      /**< Shift for byte positioning */
+  k_ds18b20_temp_shift              = 4,      /**< Shift to get integer temperature */
+  k_ds18b20_sign_bit                = 0x8000, /**< Sign bit in 16-bit temperature */
+  k_ds18b20_crc_bytes               = 8,      /**< Number of bytes for CRC calculation */
+  k_ds18b20_shift_byte              = 8,      /**< Shift for byte positioning */
+  k_ds18b20_scratchpad_write_bytes  = 3,      /**< Scratchpad write size (TH, TL, Config) */
+  k_ds18b20_temp_min_raw            = -880,   /**< Minimum temperature (-55°C raw value) */
+  k_ds18b20_temp_max_raw            = 2000,   /**< Maximum temperature (+125°C raw value) */
 } ds18b20_conversion_constants_t;
 
 /**
@@ -251,14 +254,14 @@ rx_err_t rx_ds18b20_trigger_conversion(rx_ds18b20_handle_t* handle);
  * Temperature conversion must complete before calling (see conversion times).
  *
  * @param[in] handle Pointer to initialized handle. Must not be NULL.
- * @param[out] temperature_c Pointer to store temperature in °C. Must not be NULL.
+ * @param[out] temperature_celsius Pointer to store temperature in °C. Must not be NULL.
  *
  * @return k_rx_ok on success
  * @return k_rx_err_null_pointer if any pointer is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  * @return k_rx_err_crc if scratchpad CRC check fails
  */
-rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle, float* temperature_c);
+rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle, float* temperature_celsius);
 
 /**
  * @brief Read raw temperature value
