@@ -22,7 +22,7 @@
  * - VCC: 5V supply
  * - GND: Common ground with RX72N
  *
- * @date 2026-01-02
+ * @date 2026-01-05
  * @copyright Copyright (c) 2026 STAR Project
  */
 
