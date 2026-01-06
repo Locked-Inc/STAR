@@ -74,6 +74,7 @@ typedef enum {
   k_rx_err_would_block   = 0x10A, /**< Operation would block */
   k_rx_err_exists        = 0x10B, /**< Already exists */
   k_rx_err_empty         = 0x10C, /**< Empty (no data available) */
+  k_rx_err_cancelled     = 0x10D, /**< Operation cancelled */
 
   /* Hardware Errors (0x200 - 0x2FF) */
   k_rx_err_hw_init_failed    = 0x201, /**< Hardware initialization failed */
