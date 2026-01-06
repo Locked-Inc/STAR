@@ -42,6 +42,8 @@ typedef enum {
   k_motor_brake              = 1,     /**< Motor brake (active braking) */
   k_gpio_level_low           = 0,     /**< GPIO logic level low */
   k_bit_mask_single          = 0x01,  /**< Single bit mask */
+  k_speed_min_percent        = -100,  /**< Minimum speed percentage (full reverse) */
+  k_speed_max_percent        = 100,   /**< Maximum speed percentage (full forward) */
 } drv8243_constants_t;
 
 /**
@@ -164,6 +166,12 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
   if (!handle->initialized) {
     rx_log_error(s_tag, "DRV8243 not initialized");
     return k_rx_err_invalid_state;
+  }
+
+  /* Validate speed bounds (-100.0 to +100.0 percent) */
+  if (speed < (float)k_speed_min_percent || speed > (float)k_speed_max_percent) {
+    rx_log_error(s_tag, "Speed out of valid range (-100.0 to +100.0)");
+    return k_rx_err_invalid_arg;
   }
 
   /* Check for fault condition */
