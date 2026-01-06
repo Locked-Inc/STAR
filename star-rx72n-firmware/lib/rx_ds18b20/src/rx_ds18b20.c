@@ -46,6 +46,8 @@ static const char* s_tag = "DS18B20";
  * =============================================================================
  */
 
+static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* config, const rx_ds18b20_handle_t* handle);
+static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* handle);
 static rx_err_t internal_ds18b20_select_device(rx_ds18b20_handle_t* handle);
 static rx_err_t internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle, uint8_t scratchpad[k_ds18b20_scratchpad_bytes]);
 static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
@@ -63,29 +65,18 @@ static float    internal_ds18b20_raw_to_celsius(int16_t raw_temp);
 
 rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t* config)
 {
-  bool     presence  = false;
-  rx_err_t err       = k_rx_ok;
-  uint8_t  scratchpad[k_ds18b20_scratchpad_bytes];
+  rx_err_t err = k_rx_ok;
 
+  /* Validate inputs */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle is NULL");
-  RX_CHECK_NULL_PTR(config, s_tag, "config is NULL");
-  RX_CHECK_NULL_PTR(config->bus_manager, s_tag, "bus_manager is NULL");
-  RX_CHECK_NULL_PTR(config->bus_name, s_tag, "bus_name is NULL");
 
-  if (handle->initialized) {
-    rx_log_warn(s_tag, "DS18B20 already initialized");
-    return k_rx_err_invalid_state;
+  err = internal_ds18b20_validate_config(config, handle);
+  if (err != k_rx_ok) {
+    return err;
   }
 
-  if (config->resolution > k_ds18b20_resolution_12bit) {
-    rx_log_error(s_tag, "Invalid resolution setting");
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Clear handle */
+  /* Initialize handle */
   memset(handle, 0, sizeof(rx_ds18b20_handle_t));
-
-  /* Store configuration */
   handle->bus_manager      = config->bus_manager;
   handle->bus_name         = config->bus_name;
   handle->resolution       = config->resolution;
@@ -95,37 +86,16 @@ rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t*
     memcpy(handle->rom, config->rom, k_onewire_rom_bytes);
   }
 
-  /* Initialize OneWire bus */
-  err = rx_bus_onewire_init(handle->bus_manager, handle->bus_name);
+  /* Verify device presence */
+  err = internal_ds18b20_verify_device_presence(handle);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to initialize OneWire bus");
     return err;
   }
 
-  /* Check device presence */
-  err = rx_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "OneWire reset failed");
-    return err;
-  }
-
-  if (!presence) {
-    rx_log_error(s_tag, "DS18B20 device not present on bus");
-    return k_rx_err_invalid_state;
-  }
-
-  /* Read scratchpad to verify communication */
-  err = internal_ds18b20_read_scratchpad_raw(handle, scratchpad);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to read scratchpad during init");
-    return err;
-  }
-
-  /* Configure resolution if different from current */
+  /* Configure resolution */
   handle->initialized = true;
   err = rx_ds18b20_set_resolution(handle, config->resolution);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to set resolution");
     handle->initialized = false;
     return err;
   }
@@ -180,13 +150,13 @@ rx_err_t rx_ds18b20_trigger_conversion(rx_ds18b20_handle_t* handle)
   return k_rx_ok;
 }
 
-rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle, float* temperature_c)
+rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle, float* temperature_celsius)
 {
   int16_t  raw_temp = 0;
   rx_err_t err      = k_rx_ok;
 
   CHECK_DS18B20_HANDLE(handle, s_tag);
-  RX_CHECK_NULL_PTR(temperature_c, s_tag, "temperature_c is NULL");
+  RX_CHECK_NULL_PTR(temperature_celsius, s_tag, "temperature_celsius is NULL");
 
   /* Read raw temperature */
   err = rx_ds18b20_read_temperature_raw(handle, &raw_temp);
@@ -195,7 +165,7 @@ rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle, float* tempera
   }
 
   /* Convert to Celsius */
-  *temperature_c = internal_ds18b20_raw_to_celsius(raw_temp);
+  *temperature_celsius = internal_ds18b20_raw_to_celsius(raw_temp);
 
   return k_rx_ok;
 }
@@ -224,7 +194,13 @@ rx_err_t rx_ds18b20_read_temperature_raw(rx_ds18b20_handle_t* handle, int16_t* r
   mask = internal_ds18b20_get_temp_mask(handle->resolution);
   temp &= mask;
 
+  /* Post-condition: Validate temperature is within sensor range */
   *raw_temp = (int16_t)temp;
+  if (*raw_temp < k_ds18b20_temp_min_raw || *raw_temp > k_ds18b20_temp_max_raw) {
+    rx_log_error(s_tag, "Temperature out of sensor range (-55°C to +125°C)");
+    return k_rx_err_out_of_range;
+  }
+
   return k_rx_ok;
 }
 
@@ -410,6 +386,84 @@ uint32_t rx_ds18b20_get_conversion_time_ms(const rx_ds18b20_handle_t* handle)
  */
 
 /**
+ * @brief Validate DS18B20 configuration parameters
+ *
+ * @param[in] config Configuration to validate
+ * @param[in] handle Handle to check initialization state
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if any required pointer is NULL
+ * @return k_rx_err_invalid_arg if resolution is invalid
+ * @return k_rx_err_invalid_state if already initialized
+ */
+static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* config,
+                                                   const rx_ds18b20_handle_t* handle)
+{
+  RX_CHECK_NULL_PTR(config, s_tag, "config is NULL");
+  RX_CHECK_NULL_PTR(config->bus_manager, s_tag, "bus_manager is NULL");
+  RX_CHECK_NULL_PTR(config->bus_name, s_tag, "bus_name is NULL");
+
+  if (handle->initialized) {
+    rx_log_warn(s_tag, "DS18B20 already initialized");
+    return k_rx_err_invalid_state;
+  }
+
+  if (config->resolution > k_ds18b20_resolution_12bit) {
+    rx_log_error(s_tag, "Invalid resolution setting");
+    return k_rx_err_invalid_arg;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Verify DS18B20 device presence and communication
+ *
+ * Initializes the OneWire bus, checks for device presence,
+ * and verifies communication by reading the scratchpad.
+ *
+ * @param[in] handle DS18B20 handle with bus configuration
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_state if device not present
+ * @return Error code on bus or communication failure
+ */
+static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* handle)
+{
+  bool     presence = false;
+  rx_err_t err      = k_rx_ok;
+  uint8_t  scratchpad[k_ds18b20_scratchpad_bytes];
+
+  /* Initialize OneWire bus */
+  err = rx_bus_onewire_init(handle->bus_manager, handle->bus_name);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to initialize OneWire bus");
+    return err;
+  }
+
+  /* Check device presence */
+  err = rx_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "OneWire reset failed");
+    return err;
+  }
+
+  if (!presence) {
+    rx_log_error(s_tag, "DS18B20 device not present on bus");
+    return k_rx_err_invalid_state;
+  }
+
+  /* Read scratchpad to verify communication */
+  err = internal_ds18b20_read_scratchpad_raw(handle, scratchpad);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to read scratchpad during init");
+    return err;
+  }
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Select DS18B20 device using ROM matching or Skip ROM
  *
  * @param[in] handle DS18B20 handle
@@ -494,6 +548,11 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle
     return k_rx_err_crc_mismatch;
   }
 
+  /* Post-condition: Validate scratchpad structure (reserved byte should be 0xFF) */
+  if (scratchpad[k_ds18b20_scratch_reserved1] != 0xFF) {
+    rx_log_warn(s_tag, "Scratchpad reserved byte unexpected value");
+  }
+
   return k_rx_ok;
 }
 
@@ -542,7 +601,8 @@ static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
   write_buf[1] = tl;
   write_buf[2] = config;
 
-  err = rx_bus_onewire_write(handle->bus_manager, handle->bus_name, write_buf, 3);
+  err = rx_bus_onewire_write(handle->bus_manager, handle->bus_name, write_buf,
+                             k_ds18b20_scratchpad_write_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to write scratchpad data");
     return err;
@@ -605,10 +665,10 @@ static uint16_t internal_ds18b20_get_temp_mask(ds18b20_resolution_t resolution)
  */
 static float internal_ds18b20_raw_to_celsius(int16_t raw_temp)
 {
-  float temp_c = 0.0f;
+  float temp_celsius = 0.0f;
 
   /* Convert from 1/16°C to °C */
-  temp_c = (float)raw_temp / 16.0f;
+  temp_celsius = (float)raw_temp / 16.0f;
 
-  return temp_c;
+  return temp_celsius;
 }
