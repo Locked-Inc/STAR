@@ -76,9 +76,9 @@ typedef enum {
  * @brief Encoder initialization values
  */
 typedef enum {
-  k_encoder_count_reset      = 0, /**< Counter reset value */
-  k_encoder_initial_count    = 0, /**< Initial total count */
-  k_encoder_initial_rev      = 0, /**< Initial revolution count */
+  k_encoder_count_reset        = 0, /**< Counter reset value */
+  k_encoder_initial_count      = 0, /**< Initial total count */
+  k_encoder_initial_rev        = 0, /**< Initial revolution count */
   k_encoder_min_counts_per_rev = 1, /**< Minimum valid counts per revolution */
 } encoder_init_values_t;
 
@@ -112,8 +112,8 @@ static int32_t            s_last_count[k_encoder_max_channels]          = {0};
 static rx_err_t internal_enable_mtu_module(rx_mtu_channel_t channel);
 static rx_err_t internal_configure_encoder_timer(volatile rx_mtu_channel_regs_t* mtu);
 static rx_err_t internal_verify_timer_counting(volatile rx_mtu_channel_regs_t* mtu);
-static rx_err_t internal_initialize_encoder_state(rx_mtu_channel_t                channel,
-                                                    const rx_encoder_config_t*     config);
+static rx_err_t internal_initialize_encoder_state(rx_mtu_channel_t           channel,
+                                                  const rx_encoder_config_t* config);
 
 /**
  * @brief Get MTU channel base address
@@ -494,7 +494,7 @@ static rx_err_t internal_verify_timer_counting(volatile rx_mtu_channel_regs_t* m
  * @return k_rx_ok on success
  */
 static rx_err_t internal_initialize_encoder_state(rx_mtu_channel_t           channel,
-                                                    const rx_encoder_config_t* config)
+                                                  const rx_encoder_config_t* config)
 {
   /* Initialize state */
   s_encoder_state[channel].total_count    = k_encoder_initial_count;

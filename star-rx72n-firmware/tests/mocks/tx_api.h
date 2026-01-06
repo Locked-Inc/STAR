@@ -65,10 +65,10 @@ typedef void VOID;
 #define TX_DONT_START    ((UINT)0)
 
 /** @brief ThreadX event flags constants */
-#define TX_OR           ((UINT)0)
-#define TX_OR_CLEAR     ((UINT)1)
-#define TX_AND          ((UINT)2)
-#define TX_AND_CLEAR    ((UINT)3)
+#define TX_OR        ((UINT)0)
+#define TX_OR_CLEAR  ((UINT)1)
+#define TX_AND       ((UINT)2)
+#define TX_AND_CLEAR ((UINT)3)
 
 /* =============================================================================
  * ThreadX Mutex Structure (Mock)
@@ -96,9 +96,9 @@ typedef struct TX_THREAD_STRUCT {
  * @brief Mock ThreadX event flags group structure
  */
 typedef struct TX_EVENT_FLAGS_GROUP_STRUCT {
-  CHAR*  tx_event_flags_name; /**< Event flags name */
-  UINT   tx_event_flags_id;   /**< Event flags ID */
-  ULONG  tx_event_flags;      /**< Current event flags */
+  CHAR* tx_event_flags_name; /**< Event flags name */
+  UINT  tx_event_flags_id;   /**< Event flags ID */
+  ULONG tx_event_flags;      /**< Current event flags */
 } TX_EVENT_FLAGS_GROUP;
 
 /* =============================================================================

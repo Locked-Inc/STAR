@@ -26,9 +26,9 @@ typedef struct {
   bool                     immediate;    /**< Whether immediate stop was requested */
 } stop_call_t;
 
-static rx_err_t     s_stop_return_value = k_rx_ok;
-static stop_call_t  s_stop_calls[k_max_stop_calls];
-static uint32_t     s_stop_call_count = 0;
+static rx_err_t    s_stop_return_value = k_rx_ok;
+static stop_call_t s_stop_calls[k_max_stop_calls];
+static uint32_t    s_stop_call_count = 0;
 
 /* =============================================================================
  * Mock Control Functions
@@ -82,7 +82,7 @@ uint32_t mock_rx_motor_get_stop_count(const rx_motor_handle_t* motor_handle)
 void mock_rx_motor_reset(void)
 {
   s_stop_return_value = k_rx_ok;
-  s_stop_call_count = 0;
+  s_stop_call_count   = 0;
   memset(s_stop_calls, 0, sizeof(s_stop_calls));
 }
 

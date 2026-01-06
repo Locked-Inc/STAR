@@ -498,8 +498,7 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
   return k_rx_ok;
 }
 
-rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*                   dec,
-                            const rx_fec_decode_soft_params_t* params)
+rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_params_t* params)
 {
   /* Validate arguments */
   if (dec == NULL || params == NULL) {
@@ -522,8 +521,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*                   dec,
   /* Calculate number of symbols */
   uint32_t num_symbols;
   if (params->expected_output_len > 0) {
-    num_symbols =
-      (uint32_t)((params->expected_output_len * k_fec_bits_per_byte) + k_fec_tail_bits);
+    num_symbols = (uint32_t)((params->expected_output_len * k_fec_bits_per_byte) + k_fec_tail_bits);
   } else {
     num_symbols = (uint32_t)(params->soft_len / k_fec_num_outputs);
   }
@@ -560,8 +558,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*                   dec,
   return k_rx_ok;
 }
 
-rx_err_t rx_fec_decode_hard(rx_fec_decoder_t*                   dec,
-                            const rx_fec_decode_hard_params_t* params)
+rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_params_t* params)
 {
   if (dec == NULL || params == NULL) {
     return k_rx_err_invalid_arg;
@@ -589,7 +586,7 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t*                   dec,
   }
 
   for (uint32_t i = 0; i < num_bits; i++) {
-    uint8_t bit                   = internal_get_bit(params->data, i);
+    uint8_t bit                 = internal_get_bit(params->data, i);
     params->soft_bits_buffer[i] = rx_fec_hard_to_soft(bit);
   }
 
