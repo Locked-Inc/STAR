@@ -17,6 +17,9 @@
 
 #include "unity.h"
 
+/* Port constants */
+#include "rx_port_constants.h"
+
 /* Mock includes */
 #include "mock_sci_regs.h"
 #include "mock_uart_hw.h"
@@ -28,10 +31,10 @@
 
 /** @brief Default test pins for SCI9 (PB7/TXD9, PB6/RXD9) */
 typedef enum {
-  k_test_tx_port = 0x0B, /**< Port B */
-  k_test_tx_pin  = 7,    /**< PB7 */
-  k_test_rx_port = 0x0B, /**< Port B */
-  k_test_rx_pin  = 6,    /**< PB6 */
+  k_test_tx_port = k_rx_port_b, /**< Port B (from rx_port_constants.h) */
+  k_test_tx_pin  = k_rx_pin_7,  /**< PB7 (from rx_port_constants.h) */
+  k_test_rx_port = k_rx_port_b, /**< Port B (from rx_port_constants.h) */
+  k_test_rx_pin  = k_rx_pin_6,  /**< PB6 (from rx_port_constants.h) */
 } test_pins_t;
 
 /* =============================================================================
