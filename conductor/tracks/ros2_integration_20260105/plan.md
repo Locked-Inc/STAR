@@ -8,15 +8,16 @@
     - [x] Document multi-machine communication (`ROS_DOMAIN_ID`).
     - [x] Document `udev` rules requirements.
 - [x] Task: Integrate section into main documentation `docs/star_documentation.tex` and compile PDF.
-- [~] Task: Conductor - User Manual Verification 'Phase 1: Research and Documentation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Research and Documentation' (Protocol in workflow.md)
+  - Commit: d70c9931cb5d1385a9af5d845f19ed16aedf947a
 
 ## Phase 2: Infrastructure Setup (Docker/Devcontainer)
-- [ ] Task: Create `Dockerfile` and `.devcontainer/devcontainer.json` at the project root.
-    - [ ] Configure base image with ROS2 Jazzy.
-    - [ ] Set up user permissions and workspace directory.
-    - [ ] Configure hardware passthrough (SPI, ttyUSB, video, usb).
-- [ ] Task: Install and configure VS Code extensions (C++, ROS, Protobuf) in `devcontainer.json`.
-- [ ] Task: Verify environment by building the container and running `ros2 doctor`.
+- [x] Task: Create `Dockerfile` and `.devcontainer/devcontainer.json` at the project root.
+    - [x] Configure base image with ROS2 Jazzy.
+    - [x] Set up user permissions and workspace directory.
+    - [x] Configure hardware passthrough (SPI, ttyUSB, video, usb).
+- [x] Task: Install and configure VS Code extensions (C++, ROS, Protobuf) in `devcontainer.json`.
+- [~] Task: Verify environment by building the container and running `ros2 doctor`.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Infrastructure Setup' (Protocol in workflow.md)
 
 ## Phase 3: Package Scaffolding
