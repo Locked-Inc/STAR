@@ -207,6 +207,19 @@ void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
                                       star_v1_Status          status,
                                       const char*             request_id);
 
+/* =============================================================================
+ * Test Helpers
+ * =============================================================================
+ */
+
+/**
+ * @brief Reset module state for testing
+ *
+ * @note This function is only for unit testing purposes.
+ *       Allows tests to reset the initialization state between test cases.
+ */
+void rx_nanopb_test_reset_state(void);
+
 #ifdef __cplusplus
 }
 #endif
