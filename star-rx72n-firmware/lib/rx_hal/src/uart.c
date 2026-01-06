@@ -84,6 +84,13 @@ typedef enum {
   k_uart_max_channels = 13, /**< SCI channels 0-12 */
 } uart_channel_limits_t;
 
+/** @brief UART timeout constants */
+typedef enum {
+  k_uart_tx_timeout         = 100000, /**< Transmit buffer wait timeout (prevents infinite loop) */
+  k_uart_timeout_expired    = 0,      /**< Timeout counter expired value */
+  k_uart_timeout_decrement  = 1,      /**< Timeout counter decrement value */
+} uart_timeout_t;
+
 /** @brief SCI module stop bit positions in MSTPCRB */
 typedef enum {
   k_sci_mstpb_sci0  = 31, /**< SCI0 module stop bit */
@@ -108,10 +115,10 @@ typedef enum {
 
 /** @brief Debug UART pins (SCI9 on RX72N) */
 typedef enum {
-  k_uart_debug_tx_port = 0x0B, /**< Port B */
-  k_uart_debug_tx_pin  = 7,    /**< PB7 = TXD9 */
-  k_uart_debug_rx_port = 0x0B, /**< Port B */
-  k_uart_debug_rx_pin  = 6,    /**< PB6 = RXD9 */
+  k_uart_debug_tx_port = k_rx_port_b, /**< Port B (from rx_port_constants.h) */
+  k_uart_debug_tx_pin  = k_rx_pin_7,  /**< PB7 = TXD9 (from rx_port_constants.h) */
+  k_uart_debug_rx_port = k_rx_port_b, /**< Port B (from rx_port_constants.h) */
+  k_uart_debug_rx_pin  = k_rx_pin_6,  /**< PB6 = RXD9 (from rx_port_constants.h) */
 } uart_debug_pins_t;
 
 /** @brief GPIO register bit manipulation constant */
@@ -374,9 +381,15 @@ rx_err_t uart_putc_channel(uint8_t channel, char data)
     return k_rx_err_invalid_arg;
   }
 
-  /* Wait for transmit buffer to be empty (TDRE flag) */
-  while ((sci->ssr & k_sci_ssr_tdre_flag) == 0) {
-    /* Wait */
+  /* Wait for transmit buffer to be empty (TDRE flag) with timeout */
+  uint32_t timeout = k_uart_tx_timeout;
+  while ((sci->ssr & k_sci_ssr_tdre_flag) == k_uart_timeout_expired && timeout > k_uart_timeout_expired) {
+    timeout -= k_uart_timeout_decrement;
+  }
+
+  /* Check if timeout occurred */
+  if (timeout == k_uart_timeout_expired) {
+    return k_rx_err_timeout;
   }
 
   /* Write data to transmit register */
