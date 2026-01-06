@@ -117,4 +117,5 @@
   (lib (name "5-534998-6")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/5-534998-6")(options "")(descr ""))
   (lib (name "SSW-106-02-G-D-RA")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SSW-106-02-G-D-RA")(options "")(descr ""))
   (lib (name "SSW-106-02-G-S-RA")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SSW-106-02-G-S-RA")(options "")(descr ""))
+  (lib (name "LVK12R010FER")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LVK12R010FER")(options "")(descr ""))
 )
