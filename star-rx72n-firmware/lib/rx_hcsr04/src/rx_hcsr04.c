@@ -18,11 +18,34 @@
 #include <stddef.h>
 
 #include "rx_hcsr04_hal.h"
+#include "tx_api.h"
 
 /* =============================================================================
  * Constants
  * =============================================================================
  */
+
+/**
+ * @brief Worker thread priority (lower number = higher priority)
+ */
+typedef enum {
+  k_worker_priority = 10, /**< Medium priority for sensor measurements */
+} rx_hcsr04_worker_priority_t;
+
+/**
+ * @brief Worker thread stack size
+ */
+typedef enum {
+  k_worker_stack_size = 1024, /**< 1KB stack for worker thread */
+} rx_hcsr04_worker_stack_t;
+
+/**
+ * @brief Worker thread event flags
+ */
+typedef enum {
+  k_event_measurement_request = 0x01, /**< Measurement request pending */
+  k_event_shutdown_request    = 0x02, /**< Worker shutdown requested */
+} rx_hcsr04_event_flags_t;
 
 /**
  * @brief Unit conversion constants
@@ -57,6 +80,55 @@ static const float s_min_temp_celsius = -40.0f;
 static const float s_max_temp_celsius = 85.0f;
 
 /* =============================================================================
+ * Worker Thread Infrastructure
+ * =============================================================================
+ */
+
+/**
+ * @brief Pending measurement context
+ *
+ * Stores the context for a pending async measurement request.
+ */
+typedef struct {
+  rx_hcsr04_t*         handle;    /**< Sensor handle */
+  rx_hcsr04_callback_t callback;  /**< Completion callback */
+  void*                user_data; /**< User context */
+} pending_measurement_t;
+
+/**
+ * @brief Worker thread handle
+ */
+static TX_THREAD s_hcsr04_worker_thread;
+
+/**
+ * @brief Worker thread stack
+ */
+static uint8_t s_worker_stack[k_worker_stack_size];
+
+/**
+ * @brief Event flags for signaling worker thread
+ */
+static TX_EVENT_FLAGS_GROUP s_measurement_request;
+
+/**
+ * @brief Mutex protecting access to pending measurement context
+ */
+static TX_MUTEX s_pending_mutex;
+
+/**
+ * @brief Pending measurement context
+ *
+ * Protected by s_pending_mutex. Access only within mutex lock.
+ * When handle is NULL, the worker is idle and ready for new requests.
+ */
+static pending_measurement_t s_pending;
+
+/**
+ * @brief Worker thread initialization state
+ */
+static bool s_worker_initialized = false;
+
+/* =============================================================================
  * Internal Helper Functions
  * =============================================================================
  */
@@ -81,18 +153,26 @@ static void internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 /**
  * @brief Wait for echo pin to reach target state with timeout
  *
- * @param[in] handle Sensor handle
+ * @param[in,out] handle Sensor handle (cancel_requested may be cleared)
  * @param[in] target_state State to wait for (true=high, false=low)
  * @param[in] timeout_us Timeout in microseconds
  *
- * @return k_rx_ok if state reached, k_rx_err_timeout if timed out
+ * @return k_rx_ok if state reached
+ * @return k_rx_err_timeout if timed out
+ * @return k_rx_err_cancelled if operation was cancelled
  */
 static rx_err_t
-internal_wait_for_echo(const rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
+internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
 {
   uint32_t start_time = hcsr04_hal_get_time_us();
 
   while (true) {
+    /* Check for cancellation request */
+    if (handle->cancel_requested) {
+      handle->cancel_requested = false;
+      return k_rx_err_cancelled;
+    }
+
     bool pin_state = false;
     hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
 
@@ -141,6 +221,159 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
 }
 
 /* =============================================================================
+ * Worker Thread Implementation
+ * =============================================================================
+ */
+
+/**
+ * @brief Worker thread entry function
+ *
+ * Waits for measurement requests or shutdown signal via event flags.
+ * Performs measurements and invokes callbacks from worker thread context.
+ * Exits gracefully when shutdown is requested.
+ *
+ * @param[in] input Thread input parameter (unused)
+ */
+static void hcsr04_worker_entry(ULONG input)
+{
+  (void)input;
+  ULONG actual_flags;
+
+  while (true) {
+    /* Wait for measurement request OR shutdown request */
+    UINT status = tx_event_flags_get(
+        &s_measurement_request,
+        k_event_measurement_request | k_event_shutdown_request,
+        TX_OR_CLEAR,
+        &actual_flags,
+        TX_WAIT_FOREVER);
+
+    if (status != TX_SUCCESS) {
+      continue; /* Should not happen with TX_WAIT_FOREVER */
+    }
+
+    /* Check for shutdown request */
+    if (actual_flags & k_event_shutdown_request) {
+      break; /* Exit loop gracefully */
+    }
+
+    /* Perform blocking measurement */
+    rx_hcsr04_result_t result;
+    rx_hcsr04_measure(s_pending.handle, &result);
+
+    /* Clear active flag */
+    s_pending.handle->measurement_active = false;
+
+    /* Invoke callback from worker context */
+    s_pending.callback(s_pending.handle, &result, s_pending.user_data);
+
+    /*
+     * Clear pending handle to signal worker is idle and ready for next request.
+     * Protected by mutex to prevent race with rx_hcsr04_measure_async().
+     */
+    tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
+    s_pending.handle = NULL;
+    tx_mutex_put(&s_pending_mutex);
+  }
+}
+
+/* =============================================================================
+ * Public API - Worker Thread Management
+ * =============================================================================
+ */
+
+rx_err_t rx_hcsr04_worker_init(void)
+{
+  UINT status;
+
+  /* Check if already initialized */
+  if (s_worker_initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Create mutex for pending measurement protection */
+  status = tx_mutex_create(&s_pending_mutex, "HCSR04_Mutex", TX_NO_INHERIT);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
+
+  /* Create event flags group */
+  status = tx_event_flags_create(&s_measurement_request, "HCSR04_Events");
+  if (status != TX_SUCCESS) {
+    tx_mutex_delete(&s_pending_mutex);
+    return k_rx_err_rtos_error;
+  }
+
+  /* Initialize pending context (worker is idle) */
+  s_pending.handle    = NULL;
+  s_pending.callback  = NULL;
+  s_pending.user_data = NULL;
+
+  /* Create worker thread */
+  status = tx_thread_create(&s_hcsr04_worker_thread, "HCSR04_Worker", hcsr04_worker_entry, 0,
+                            s_worker_stack, k_worker_stack_size, k_worker_priority,
+                            k_worker_priority, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+  if (status != TX_SUCCESS) {
+    /* Cleanup on failure */
+    tx_event_flags_delete(&s_measurement_request);
+    tx_mutex_delete(&s_pending_mutex);
+    return k_rx_err_rtos_error;
+  }
+
+  s_worker_initialized = true;
+  return k_rx_ok;
+}
+
+rx_err_t rx_hcsr04_worker_deinit(void)
+{
+  UINT status;
+
+  /* Check if initialized */
+  if (!s_worker_initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /*
+   * Graceful shutdown: Signal worker thread to exit via event flag.
+   * This prevents abrupt termination mid-measurement, which could leave
+   * sensor handles stuck in measurement_active state.
+   */
+  status = tx_event_flags_set(&s_measurement_request, k_event_shutdown_request, TX_OR);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
+
+  /*
+   * Wait for worker thread to exit gracefully.
+   * In production, we'd use a semaphore or check thread state.
+   * For simplicity, we assume the worker exits quickly (< 30ms measurement).
+   */
+  tx_thread_sleep(5); /* 50ms at 100 Hz tick rate - allows measurement to complete */
+
+  /* Delete thread (now safely terminated) */
+  status = tx_thread_delete(&s_hcsr04_worker_thread);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
+
+  /* Delete event flags */
+  status = tx_event_flags_delete(&s_measurement_request);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
+
+  /* Delete mutex */
+  status = tx_mutex_delete(&s_pending_mutex);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
+
+  s_worker_initialized = false;
+  return k_rx_ok;
+}
+
+/* =============================================================================
  * Public API - Initialization
  * =============================================================================
  */
@@ -172,12 +405,13 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   }
 
   /* Initialize handle */
-  handle->trigger_pin              = config->trigger_pin;
-  handle->echo_pin                 = config->echo_pin;
-  handle->timeout_us               = config->timeout_us;
-  handle->initialized              = true;
-  handle->measurement_active       = false;
-  handle->temperature_celsius      = s_default_temperature_celsius;
+  handle->trigger_pin               = config->trigger_pin;
+  handle->echo_pin                  = config->echo_pin;
+  handle->timeout_us                = config->timeout_us;
+  handle->initialized               = true;
+  handle->measurement_active        = false;
+  handle->cancel_requested          = false;
+  handle->temperature_celsius       = s_default_temperature_celsius;
   handle->temp_compensation_enabled = false;
 
   /* Reset statistics */
@@ -336,15 +570,54 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
 
   handle->measurement_active = true;
 
-  /* Perform measurement and invoke callback */
-  rx_hcsr04_result_t result;
-  rx_hcsr04_measure(handle, &result);
+  /* Check if worker thread is initialized */
+  if (s_worker_initialized) {
+    /*
+     * True async mode: queue measurement request for worker thread.
+     * Use mutex to prevent race condition with worker thread.
+     */
+    tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
 
-  handle->measurement_active = false;
+    /* Check if worker is already busy with another sensor */
+    if (s_pending.handle != NULL) {
+      tx_mutex_put(&s_pending_mutex);
+      handle->measurement_active = false;
+      return k_rx_err_busy;
+    }
 
-  callback(handle, &result, user_data);
+    /* Queue this measurement */
+    s_pending.handle    = handle;
+    s_pending.callback  = callback;
+    s_pending.user_data = user_data;
 
-  return k_rx_ok;
+    tx_mutex_put(&s_pending_mutex);
+
+    /* Signal worker thread - function returns immediately */
+    UINT status =
+        tx_event_flags_set(&s_measurement_request, k_event_measurement_request, TX_OR);
+
+    if (status != TX_SUCCESS) {
+      /* Rollback on failure */
+      tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
+      s_pending.handle = NULL;
+      tx_mutex_put(&s_pending_mutex);
+      handle->measurement_active = false;
+      return k_rx_err_rtos_error;
+    }
+
+    return k_rx_ok; /* Callback will be invoked from worker thread */
+  } else {
+    /* Fallback sync mode: perform measurement inline (backward compatible) */
+    rx_hcsr04_result_t result;
+    rx_hcsr04_measure(handle, &result);
+
+    handle->measurement_active = false;
+
+    /* Invoke callback before return (synchronous) */
+    callback(handle, &result, user_data);
+
+    return k_rx_ok;
+  }
 }
 
 bool rx_hcsr04_is_busy(const rx_hcsr04_t* handle)
@@ -366,8 +639,11 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
     return k_rx_err_invalid_state;
   }
 
-  /* Note: Full implementation would signal worker thread to cancel */
-  handle->measurement_active = false;
+  /*
+   * Set cancel flag. The worker thread (or sync fallback) will check
+   * this flag in internal_wait_for_echo() and abort the measurement.
+   */
+  handle->cancel_requested = true;
 
   return k_rx_ok;
 }
