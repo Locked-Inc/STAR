@@ -624,6 +624,20 @@ static rx_err_t internal_onewire_init_callback(rx_bus_config_t* bus_config, void
     return err;
   }
 
+  /* Post-condition: Verify pin reads as input with pullup */
+  bool pin_state = false;
+  err            = gpio_read(bus_config->proto.onewire.pin, &pin_state);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Post-init pin read failed");
+    ctx->result = k_rx_err_hw_error;
+    return k_rx_err_hw_error;
+  }
+
+  if (!pin_state) {
+    rx_log_warn(s_tag, "OneWire pin not pulled high - check 4.7k pullup resistor");
+    /* Continue anyway - may work if device pulls line */
+  }
+
   state->line_is_output = false;
   internal_reset_search_state(state);
 
