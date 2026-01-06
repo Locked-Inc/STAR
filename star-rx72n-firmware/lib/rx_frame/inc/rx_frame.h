@@ -255,10 +255,6 @@ static inline void rx_frame_write_be16(uint8_t* buf, uint16_t val)
   buf[k_be16_byte_low]  = (uint8_t)(val & k_rx_byte_mask);
 }
 
-/* Legacy aliases for backward compatibility - prefer rx_frame_* versions */
-#define rx_read_be16  rx_frame_read_be16
-#define rx_write_be16 rx_frame_write_be16
-
 /* =============================================================================
  * Decoder API
  * =============================================================================
