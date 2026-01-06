@@ -208,6 +208,10 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
   /* Set PWM outputs based on direction (PH/EN mode)
    * PH (output_a) = direction (HIGH=forward, LOW=reverse)
    * EN (output_b) = speed (PWM duty cycle)
+   *
+   * Extract speed magnitude (absolute value) - direction is encoded in PH signal.
+   * Duty sign determines PH (+ = forward/HIGH, - = reverse/LOW).
+   * EN always receives positive PWM duty proportional to speed.
    */
   float    speed_pwm = fabsf(duty);
   rx_err_t err;
