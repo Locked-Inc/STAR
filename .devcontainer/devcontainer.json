@@ -27,5 +27,5 @@
     "mounts": [
         "source=${localWorkspaceFolder},target=/workspaces/STAR,type=bind"
     ],
-    "postCreateCommand": "sudo rosdep init && rosdep update"
+    "postCreateCommand": "test -f /etc/ros/rosdep/sources.list.d/20-default.list || sudo rosdep init && rosdep update --rosdistro jazzy"
 }

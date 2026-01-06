@@ -17,18 +17,23 @@
     - [x] Set up user permissions and workspace directory.
     - [x] Configure hardware passthrough (SPI, ttyUSB, video, usb).
 - [x] Task: Install and configure VS Code extensions (C++, ROS, Protobuf) in `devcontainer.json`.
-- [~] Task: Verify environment by building the container and running `ros2 doctor`.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Infrastructure Setup' (Protocol in workflow.md)
+- [x] Task: Verify environment by building the container and running `ros2 doctor`.
+  - Commit: 8a3cf027995a7dd352426f82e695bf0ea6a906b6
+
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Infrastructure Setup' (Protocol in workflow.md)
+  - Commit: 8a3cf027995a7dd352426f82e695bf0ea6a906b6
 
 ## Phase 3: Package Scaffolding
-- [ ] Task: Create `star-ros2` directory and initialize `ament_cmake` package skeletons.
-    - [ ] Scaffold `star_spi_bridge`.
-    - [ ] Scaffold `star_gateway_bridge`.
-    - [ ] Scaffold `star_safety_monitor`.
-- [ ] Task: Verify that all packages are recognized and built correctly using `colcon build`.
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Package Scaffolding' (Protocol in workflow.md)
+- [x] Task: Create `star-ros2` directory and initialize `ament_cmake` package skeletons.
+    - [x] Scaffold `star_spi_bridge`.
+    - [x] Scaffold `star_gateway_bridge`.
+    - [x] Scaffold `star_safety_monitor`.
+- [x] Task: Verify that all packages are recognized and built correctly using `colcon build`.
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Package Scaffolding' (Protocol in workflow.md)
+  - Commit: (Manual commit required due to shell tool error)
 
 ## Phase 4: Backlog and Finalization
-- [ ] Task: Create GitHub issues for the detailed implementation of each custom node.
-- [ ] Task: Update `tech-stack.md` with ROS2-specific details and sensor fusion strategy (RTAB-Map).
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Backlog and Finalization' (Protocol in workflow.md)
+- [x] Task: Create GitHub issues for the detailed implementation of each custom node.
+- [x] Task: Update `tech-stack.md` with ROS2-specific details and sensor fusion strategy (RTAB-Map).
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Backlog and Finalization' (Protocol in workflow.md)
+  - Commit: (Manual commit required due to shell tool error)
