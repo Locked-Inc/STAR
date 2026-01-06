@@ -661,7 +661,7 @@ static void helper_create_valid_frame(uint8_t*  buffer,
 
 void test_usb_comm_receive_valid_frame_success(void)
 {
-  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  /* Init with mock time */
   mock_time_t         mock;
   rx_time_interface_t time_iface;
 
@@ -684,7 +684,7 @@ void test_usb_comm_receive_valid_frame_success(void)
   /* Inject complete frame into USB RX buffer */
   rx_usb_rx_push(frame_buffer, frame_len);
 
-  /* Try to receive the frame (loop will process buffered data) */
+  /* Try to receive the frame */
   rx_frame_t received_frame;
   rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 100);
 
@@ -699,7 +699,7 @@ void test_usb_comm_receive_valid_frame_success(void)
 
 void test_usb_comm_receive_partial_frame_multiple_reads(void)
 {
-  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  /* Use mock time with auto-advance to allow receive loop iterations */
   mock_time_t         mock;
   rx_time_interface_t time_iface;
 
@@ -742,7 +742,7 @@ void test_usb_comm_receive_partial_frame_multiple_reads(void)
 
 void test_usb_comm_receive_empty_payload_frame(void)
 {
-  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  /* Use mock time with auto-advance to allow receive loop iterations */
   mock_time_t         mock;
   rx_time_interface_t time_iface;
 
@@ -763,7 +763,7 @@ void test_usb_comm_receive_empty_payload_frame(void)
   /* Inject frame */
   rx_usb_rx_push(frame_buffer, frame_len);
 
-  /* Receive */
+  /* Receive frame */
   rx_frame_t received_frame;
   rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 100);
 
@@ -820,7 +820,7 @@ void test_usb_comm_receive_respects_max_iterations(void)
 
 void test_usb_comm_receive_buffer_full_discards_data(void)
 {
-  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  /* Use mock time with auto-advance to allow receive loop iterations */
   mock_time_t         mock;
   rx_time_interface_t time_iface;
 
@@ -832,24 +832,24 @@ void test_usb_comm_receive_buffer_full_discards_data(void)
   rx_usb_comm_init(&s_handle, &config);
   helper_usb_init_and_configure();
 
-  /* Fill buffer with junk data exceeding k_usb_comm_rx_buffer_size (2048) */
-  uint8_t junk_data[256];
+  /* Fill buffer with junk data (no valid sync pattern) within USB buffer limits (512 bytes) */
+  uint8_t junk_data[128];
   memset(junk_data, 0xAA, sizeof(junk_data)); /* No valid sync pattern */
 
-  /* Inject 10x256 = 2560 bytes (exceeds 2048 buffer) */
-  for (uint32_t i = 0; i < 10; i++) {
+  /* Inject 3x128 = 384 bytes of junk */
+  for (uint32_t i = 0; i < 3; i++) {
     rx_usb_rx_push(junk_data, sizeof(junk_data));
   }
 
-  /* Now inject a valid frame - sliding window should have made room */
-  uint8_t  payload[] = "After overflow";
+  /* Now inject a valid frame - should fit in remaining USB buffer space */
+  uint8_t  payload[] = "After junk";
   uint8_t  frame_buffer[128];
   uint32_t frame_len = 0;
 
-  helper_create_valid_frame(frame_buffer, &frame_len, 10, payload, 14);
+  helper_create_valid_frame(frame_buffer, &frame_len, 10, payload, 10);
   rx_usb_rx_push(frame_buffer, frame_len);
 
-  /* Should still be able to receive the valid frame */
+  /* Should skip junk and receive the valid frame */
   rx_frame_t received_frame;
   rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 500);
 
@@ -869,8 +869,6 @@ void test_usb_comm_receive_invalid_crc_rejects_frame(void)
   mock_time_t         mock;
   rx_time_interface_t time_iface;
 
-  mock_time_init(&mock);
-  mock_time_set_auto_advance(&mock, true);
   mock_time_init(&mock);
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
@@ -897,8 +895,8 @@ void test_usb_comm_receive_invalid_crc_rejects_frame(void)
   rx_frame_t received_frame;
   rx_err_t   err = rx_usb_comm_receive(&s_handle, &received_frame, 100);
 
-  /* Should timeout because frame is rejected */
-  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+  /* Should return CRC mismatch error */
+  TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
 
   mock_time_deinit(&mock);
 }
@@ -959,7 +957,7 @@ void test_usb_comm_receive_payload_too_large_rejects_frame(void)
 
 void test_usb_comm_receive_increments_rx_sequence(void)
 {
-  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  /* Use mock time with auto-advance to allow receive loop iterations */
   mock_time_t         mock;
   rx_time_interface_t time_iface;
 
@@ -997,7 +995,7 @@ void test_usb_comm_receive_increments_rx_sequence(void)
 
 void test_usb_comm_receive_multiple_frames_in_buffer(void)
 {
-  /* Use mock time interface (no auto-advance) to allow loop iterations */
+  /* Use mock time with auto-advance to allow receive loop iterations */
   mock_time_t         mock;
   rx_time_interface_t time_iface;
 

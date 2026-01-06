@@ -37,7 +37,7 @@ static const char* s_tag = "USB_COMM";
 
 /** @brief Internal timing and buffer constants */
 typedef enum {
-  k_frame_header_total = 10, /**< Total header size including sync word (2 + 8) */
+  k_frame_header_total = 8, /**< Total header size: SYNC(2) + SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) */
   k_sleep_interval_ms  = 10, /**< Sleep interval for receive polling (ms) */
 } rx_usb_comm_internal_t;
 
