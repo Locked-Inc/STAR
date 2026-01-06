@@ -9,7 +9,7 @@
  * GPIO pins, timeout handling, and distance measurement in both blocking and
  * asynchronous modes. Supports temperature compensation for speed of sound.
  *
- * @date 2026-01-04
+ * @date 2026-01-05
  * @copyright Copyright (c) 2026 STAR Project
  */
 
@@ -25,9 +25,11 @@
  */
 
 /**
- * @brief Centimeters per inch * 100 (fixed point: 2.54 * 100 = 254)
+ * @brief Unit conversion constants
  */
-static const uint32_t s_cm_per_inch_x100 = 254;
+typedef enum {
+  k_cm_per_inch_x100 = 254, /**< Centimeters per inch * 100 (2.54 * 100) */
+} rx_hcsr04_conversion_t;
 
 /**
  * @brief Speed of sound base constant (m/s at 0°C)
@@ -87,10 +89,9 @@ static rx_err_t
 internal_wait_for_echo(const rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
 {
   uint32_t start_time = hcsr04_hal_get_time_us();
-  bool     pin_state  = false;
-  uint32_t elapsed    = 0;
 
   while (true) {
+    bool pin_state = false;
     hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
 
     if (pin_state == target_state) {
@@ -98,7 +99,7 @@ internal_wait_for_echo(const rx_hcsr04_t* handle, bool target_state, uint32_t ti
     }
 
     /* Check for timeout */
-    elapsed = hcsr04_hal_get_time_us() - start_time;
+    uint32_t elapsed = hcsr04_hal_get_time_us() - start_time;
     if (elapsed >= timeout_us) {
       return k_rx_err_timeout;
     }
@@ -443,7 +444,7 @@ rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsiu
 float rx_hcsr04_cm_to_inches(float distance_cm)
 {
   /* 1 inch = 2.54 cm */
-  return distance_cm * 100.0f / (float)s_cm_per_inch_x100;
+  return distance_cm * 100.0f / (float)k_cm_per_inch_x100;
 }
 
 float rx_hcsr04_echo_to_cm(uint32_t echo_time_us)
@@ -466,6 +467,14 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius)
    *
    * Valid range: -40°C to +85°C (DS18B20 sensor range)
    */
+
+  /* Clamp temperature to valid range */
+  if (temp_celsius < (float)k_min_temp_celsius) {
+    temp_celsius = (float)k_min_temp_celsius;
+  } else if (temp_celsius > (float)k_max_temp_celsius) {
+    temp_celsius = (float)k_max_temp_celsius;
+  }
+
   return s_speed_of_sound_base_mps + (s_speed_of_sound_coeff * temp_celsius);
 }
 
@@ -482,9 +491,25 @@ float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius)
    * - Speed = 0.034342 cm/us
    * - For echo_us = 580: distance = (580 * 0.034342) / 2 = 9.96 cm ≈ 10 cm
    */
+
+  /* Pre-condition: Validate temperature range - use default if invalid */
+  if (temp_celsius < (float)k_min_temp_celsius || temp_celsius > (float)k_max_temp_celsius) {
+    return rx_hcsr04_echo_to_cm(echo_time_us);
+  }
+
+  /* Pre-condition: Validate echo time */
+  if (echo_time_us == 0 || echo_time_us > k_hcsr04_echo_timeout_us) {
+    return 0.0f;
+  }
+
   float speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
   float speed_cm_us = speed_mps / 10000.0f; /* m/s to cm/us */
   float distance_cm = ((float)echo_time_us * speed_cm_us) / 2.0f;
+
+  /* Post-condition: Ensure non-negative result */
+  if (distance_cm < 0.0f) {
+    return 0.0f;
+  }
 
   return distance_cm;
 }
