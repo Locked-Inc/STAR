@@ -1,9 +1,9 @@
-/* src/drivers/rx_mpc.c */
+/* lib/rx_hal/src/rx_mpc.c */
 
 /**
  * @file rx_mpc.c
  * @brief Multi-Function Pin Controller (MPC) Driver Implementation
- * @details
+ *
  * Configures RX72N pin functions for peripherals.
  *
  * The MPC controls pin multiplexing through PFS (Pin Function Select) registers.
@@ -16,19 +16,96 @@
  * 4. Set PWPR.PFSWE = 0 (protect PFS)
  * 5. Set PWPR.B0WI = 1 (protect PFSWE)
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_mpc.h"
 
 #include <stddef.h>
 
+#include "hardware_pinout.h"
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
 
 static const char* s_tag = "MPC";
+
+/* =============================================================================
+ * Constants
+ * =============================================================================
+ */
+
+/** @brief MPC pin validation constants */
+typedef enum {
+  k_mpc_max_pin = 7, /**< Maximum valid pin number (pins 0-7) */
+} mpc_pin_constants_t;
+
+/** @brief MPC PFS register address offset */
+typedef enum {
+  k_mpc_pfs_base_offset = 0x21, /**< Offset from MPC_BASE to P00PFS register */
+} mpc_pfs_offset_t;
+
+/** @brief MPC port number constants */
+typedef enum {
+  k_mpc_port_0 = 0,    /**< Port 0 */
+  k_mpc_port_1 = 1,    /**< Port 1 */
+  k_mpc_port_2 = 2,    /**< Port 2 */
+  k_mpc_port_3 = 3,    /**< Port 3 */
+  k_mpc_port_4 = 4,    /**< Port 4 */
+  k_mpc_port_5 = 5,    /**< Port 5 */
+  k_mpc_port_6 = 6,    /**< Port 6 */
+  k_mpc_port_7 = 7,    /**< Port 7 */
+  k_mpc_port_8 = 8,    /**< Port 8 */
+  k_mpc_port_9 = 9,    /**< Port 9 */
+  k_mpc_port_a = 0x0A, /**< Port A */
+  k_mpc_port_b = 0x0B, /**< Port B */
+  k_mpc_port_c = 0x0C, /**< Port C */
+  k_mpc_port_d = 0x0D, /**< Port D */
+  k_mpc_port_e = 0x0E, /**< Port E */
+  k_mpc_port_f = 0x0F, /**< Port F */
+  k_mpc_port_g = 0x10, /**< Port G */
+  k_mpc_port_h = 0x11, /**< Port H */
+  k_mpc_port_j = 0x12, /**< Port J */
+} mpc_port_number_t;
+
+/** @brief MPC PFS port offset values
+ *
+ * PFS registers are contiguous in memory. Each port has 8 register slots,
+ * even if not all pins are physically present.
+ */
+typedef enum {
+  k_mpc_port0_offset = 0,   /**< Port 0 offset (P00-P07 = 8 pins) */
+  k_mpc_port1_offset = 8,   /**< Port 1 offset (P10-P17 = 8 pins) */
+  k_mpc_port2_offset = 16,  /**< Port 2 offset (P20-P27 = 8 pins) */
+  k_mpc_port3_offset = 24,  /**< Port 3 offset (P30-P34 = 5 pins) */
+  k_mpc_port4_offset = 32,  /**< Port 4 offset (P40-P47 = 8 pins) */
+  k_mpc_port5_offset = 40,  /**< Port 5 offset (P50-P57 = 8 pins) */
+  k_mpc_port6_offset = 48,  /**< Port 6 offset (P60-P67 = 8 pins) */
+  k_mpc_port7_offset = 56,  /**< Port 7 offset (P70-P77 = 8 pins) */
+  k_mpc_port8_offset = 64,  /**< Port 8 offset (P80-P87 = 8 pins) */
+  k_mpc_port9_offset = 72,  /**< Port 9 offset (P90-P97 = 8 pins) */
+  k_mpc_porta_offset = 80,  /**< Port A offset (PA0-PA7 = 8 pins) */
+  k_mpc_portb_offset = 88,  /**< Port B offset (PB0-PB7 = 8 pins) */
+  k_mpc_portc_offset = 96,  /**< Port C offset (PC0-PC7 = 8 pins) */
+  k_mpc_portd_offset = 104, /**< Port D offset (PD0-PD7 = 8 pins) */
+  k_mpc_porte_offset = 112, /**< Port E offset (PE0-PE7 = 8 pins) */
+} mpc_port_offset_t;
+
+/** @brief MPC PSEL maximum value */
+typedef enum {
+  k_mpc_psel_max = 0x1F, /**< Maximum valid PSEL value (5 bits) */
+} mpc_psel_constants_t;
+
+/** @brief MPC PFS register GPIO mode value */
+typedef enum {
+  k_mpc_pfs_gpio = 0x00, /**< GPIO mode: PSEL = 0, ISEL = 0, ASEL = 0 */
+} mpc_pfs_gpio_t;
+
+/** @brief MPC PWPR register clear value */
+typedef enum {
+  k_mpc_pwpr_clear = 0x00, /**< Clear PWPR register */
+} mpc_pwpr_t;
 
 /* =============================================================================
  * Internal Helper Functions
@@ -46,7 +123,7 @@ static const char* s_tag = "MPC";
 static volatile uint8_t* internal_get_pfs_register(uint8_t port, uint8_t pin)
 {
   /* Validate pin number */
-  if (pin > 7) {
+  if (pin > k_mpc_max_pin) {
     return NULL;
   }
 
@@ -54,48 +131,66 @@ static volatile uint8_t* internal_get_pfs_register(uint8_t port, uint8_t pin)
    * PFS registers start at MPC base + 0x21 (offset for P00PFS)
    * Each port has 8 pins, layout: P00-P07, P10-P17, P20-P27, etc.
    */
-  volatile uint8_t* pfs_base = (volatile uint8_t*)MPC_BASE + 0x21;
+  volatile uint8_t* pfs_base = (volatile uint8_t*)mpc() + k_mpc_pfs_base_offset;
 
   /* Port offset calculation */
   uint16_t port_offset = 0;
 
   switch (port) {
-    case 0:
-      port_offset = 0;
+    case k_mpc_port_0:
+      port_offset = k_mpc_port0_offset;
       break;
-    case 1:
-      port_offset = 8;
+    case k_mpc_port_1:
+      port_offset = k_mpc_port1_offset;
       break;
-    case 2:
-      port_offset = 16;
+    case k_mpc_port_2:
+      port_offset = k_mpc_port2_offset;
       break;
-    case 3:
-      port_offset = 24;
+    case k_mpc_port_3:
+      port_offset = k_mpc_port3_offset;
       break;
-    case 4:
-      port_offset = 29; /* P30-P34 = 5 pins, so P40 starts at offset 29 */
+    case k_mpc_port_4:
+      port_offset = k_mpc_port4_offset;
       break;
-    case 5:
-      port_offset = 37; /* P40-P47 = 8 pins */
+    case k_mpc_port_5:
+      port_offset = k_mpc_port5_offset;
       break;
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 0x0A: /* Port A */
-    case 0x0B: /* Port B */
-    case 0x0C: /* Port C */
-    case 0x0D: /* Port D */
-    case 0x0E: /* Port E */
-    case 0x0F: /* Port F */
-    case 0x10: /* Port G */
-    case 0x11: /* Port H */
-    case 0x12: /* Port J */
-      /* For simplicity, only implement ports 0-5 which cover motor control pins */
-      RX_LOG_ERROR(s_tag, "Error occurred");
+    case k_mpc_port_6:
+      port_offset = k_mpc_port6_offset;
+      break;
+    case k_mpc_port_7:
+      port_offset = k_mpc_port7_offset;
+      break;
+    case k_mpc_port_8:
+      port_offset = k_mpc_port8_offset;
+      break;
+    case k_mpc_port_9:
+      port_offset = k_mpc_port9_offset;
+      break;
+    case k_mpc_port_a:
+      port_offset = k_mpc_porta_offset;
+      break;
+    case k_mpc_port_b:
+      port_offset = k_mpc_portb_offset;
+      break;
+    case k_mpc_port_c:
+      port_offset = k_mpc_portc_offset;
+      break;
+    case k_mpc_port_d:
+      port_offset = k_mpc_portd_offset;
+      break;
+    case k_mpc_port_e:
+      port_offset = k_mpc_porte_offset;
+      break;
+    case k_mpc_port_f:
+    case k_mpc_port_g:
+    case k_mpc_port_h:
+    case k_mpc_port_j:
+      /* Ports F, G, H, J not yet implemented */
+      rx_log_error(s_tag, "Port not implemented");
       return NULL;
     default:
-      RX_LOG_ERROR(s_tag, "Error occurred");
+      rx_log_error(s_tag, "Invalid port");
       return NULL;
   }
 
@@ -111,8 +206,8 @@ static void internal_mpc_unlock(void)
    * 1. Clear B0WI to allow PFSWE write
    * 2. Set PFSWE to allow PFS write
    */
-  MPC.PWPR = 0x00;             /* Clear B0WI */
-  MPC.PWPR = k_mpc_pwpr_pfswe; /* Set PFSWE */
+  mpc()->pwpr = k_mpc_pwpr_clear; /* Clear B0WI */
+  mpc()->pwpr = k_mpc_pwpr_pfswe; /* Set PFSWE */
 }
 
 /**
@@ -124,8 +219,8 @@ static void internal_mpc_lock(void)
    * 1. Clear PFSWE to protect PFS
    * 2. Set B0WI to protect PFSWE
    */
-  MPC.PWPR = 0x00;            /* Clear PFSWE */
-  MPC.PWPR = k_mpc_pwpr_b0wi; /* Set B0WI */
+  mpc()->pwpr = k_mpc_pwpr_clear; /* Clear PFSWE */
+  mpc()->pwpr = k_mpc_pwpr_b0wi;  /* Set B0WI */
 }
 
 /**
@@ -135,13 +230,13 @@ static void internal_mpc_lock(void)
  * @param[in] pin Pin number (0-7)
  * @param[in] value Value to write to PFS register
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_write_pfs(uint8_t port, uint8_t pin, uint8_t value)
 {
   volatile uint8_t* pfs_reg = internal_get_pfs_register(port, pin);
   if (pfs_reg == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Unlock, write, lock */
@@ -149,7 +244,7 @@ static rx_err_t internal_write_pfs(uint8_t port, uint8_t pin, uint8_t value)
   *pfs_reg = value;
   internal_mpc_lock();
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -157,34 +252,42 @@ static rx_err_t internal_write_pfs(uint8_t port, uint8_t pin, uint8_t value)
  * =============================================================================
  */
 
-rx_err_t rx_mpc_set_gpio(uint8_t port, uint8_t pin)
+rx_err_t rx_mpc_set_gpio(gpio_pin_t pin)
 {
+  /* Extract port and pin number from type-safe enum */
+  uint8_t port    = gpio_pin_get_port(pin);
+  uint8_t pin_num = gpio_pin_get_pin(pin);
+
   /* GPIO mode: PSEL = 0, ISEL = 0, ASEL = 0 */
-  return internal_write_pfs(port, pin, 0x00);
+  return internal_write_pfs(port, pin_num, k_mpc_pfs_gpio);
 }
 
-rx_err_t rx_mpc_set_peripheral(uint8_t port, uint8_t pin, uint8_t psel)
+rx_err_t rx_mpc_set_peripheral(gpio_pin_t pin, uint8_t psel)
 {
-  if (psel > 0x1F) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
-    return RX_ERR_INVALID_ARG;
+  if (psel > k_mpc_psel_max) {
+    rx_log_error(s_tag, "Error occurred");
+    return k_rx_err_invalid_arg;
   }
 
+  /* Extract port and pin number from type-safe enum */
+  uint8_t port    = gpio_pin_get_port(pin);
+  uint8_t pin_num = gpio_pin_get_pin(pin);
+
   /* Peripheral mode: PSEL = specified, ISEL = 0, ASEL = 0 */
-  return internal_write_pfs(port, pin, psel);
+  return internal_write_pfs(port, pin_num, psel);
 }
 
-rx_err_t rx_mpc_set_mtu_pwm(uint8_t port, uint8_t pin)
+rx_err_t rx_mpc_set_mtu_pwm(gpio_pin_t pin)
 {
   /* MTU PWM (MTIOC) pins typically use PSEL = 0x01
    * Common pins:
    * - P14-P17: MTU3 MTIOCA/B/C/D
    * - P24-P27: MTU4 MTIOCA/B/C/D
    */
-  return rx_mpc_set_peripheral(port, pin, k_psel_mtu_ioc);
+  return rx_mpc_set_peripheral(pin, k_psel_mtu_ioc);
 }
 
-rx_err_t rx_mpc_set_mtu_encoder(uint8_t port, uint8_t pin)
+rx_err_t rx_mpc_set_mtu_encoder(gpio_pin_t pin)
 {
   /* MTU encoder (MTCLK) pins typically use PSEL = 0x02 or 0x03
    * Common pins:
@@ -193,39 +296,43 @@ rx_err_t rx_mpc_set_mtu_encoder(uint8_t port, uint8_t pin)
    *
    * For phase counting mode, use PSEL = 0x03
    */
-  return rx_mpc_set_peripheral(port, pin, k_psel_mtu_phase);
+  return rx_mpc_set_peripheral(pin, k_psel_mtu_phase);
 }
 
-rx_err_t rx_mpc_set_adc(uint8_t port, uint8_t pin)
+rx_err_t rx_mpc_set_adc(gpio_pin_t pin)
 {
+  /* Extract port and pin number from type-safe enum */
+  uint8_t port    = gpio_pin_get_port(pin);
+  uint8_t pin_num = gpio_pin_get_pin(pin);
+
   /* ADC mode: Set ASEL = 1 to disable digital I/O
    * Common ADC pins: P40-P47 (AN000-AN007)
    */
-  return internal_write_pfs(port, pin, k_pfs_asel);
+  return internal_write_pfs(port, pin_num, k_pfs_asel);
 }
 
-rx_err_t rx_mpc_set_sci(uint8_t port, uint8_t pin, bool is_tx)
+rx_err_t rx_mpc_set_sci(gpio_pin_t pin, bool is_tx)
 {
   /* SCI pins use PSEL = 0x0A
    * TX and RX use the same PSEL code
    */
   (void)is_tx; /* Not used - same PSEL for TX/RX */
-  return rx_mpc_set_peripheral(port, pin, k_psel_sci_tx);
+  return rx_mpc_set_peripheral(pin, k_psel_sci_tx);
 }
 
-rx_err_t rx_mpc_set_riic(uint8_t port, uint8_t pin, bool is_scl)
+rx_err_t rx_mpc_set_riic(gpio_pin_t pin, bool is_scl)
 {
   /* RIIC pins use PSEL = 0x0F
    * SCL and SDA use the same PSEL code
    */
   (void)is_scl; /* Not used - same PSEL for SCL/SDA */
-  return rx_mpc_set_peripheral(port, pin, k_psel_riic_scl);
+  return rx_mpc_set_peripheral(pin, k_psel_riic_scl);
 }
 
-rx_err_t rx_mpc_set_rspi(uint8_t port, uint8_t pin)
+rx_err_t rx_mpc_set_rspi(gpio_pin_t pin)
 {
   /* RSPI pins use PSEL = 0x0D
    * All RSPI signals (CLK, COPI, CIPO, SSL) use same PSEL
    */
-  return rx_mpc_set_peripheral(port, pin, k_psel_rspi_clk);
+  return rx_mpc_set_peripheral(pin, k_psel_rspi_clk);
 }

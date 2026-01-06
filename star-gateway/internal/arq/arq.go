@@ -346,13 +346,13 @@ func (s *StopAndWait) Receive() ([]byte, error) {
 
 	if receivedSeq == previousSeq {
 		// Duplicate frame
-		s.mu.Unlock() // Release lock before I/O
+		s.mu.Unlock()              // Release lock before I/O
 		_ = s.sendAck(receivedSeq) // Best-effort
 		return nil, ErrDuplicateFrame
 	}
 
 	// Out of sequence frame
-	s.mu.Unlock() // Release lock before I/O
+	s.mu.Unlock()               // Release lock before I/O
 	_ = s.sendNack(receivedSeq) // Best-effort
 	return nil, ErrInvalidSequence
 }
@@ -430,16 +430,6 @@ func (s *StopAndWait) waitForAck() (*frame.Frame, error) {
 	case <-time.After(s.config.Timeout):
 		return nil, ErrTimeout
 	}
-}
-
-// sendAckUnlocked sends an ACK frame (caller must hold mutex).
-func (s *StopAndWait) sendAckUnlocked(seq uint16) error {
-	return s.sendControlFrame(frame.FrameTypeAck, seq)
-}
-
-// sendNackUnlocked sends a NACK frame (caller must hold mutex).
-func (s *StopAndWait) sendNackUnlocked(seq uint16) error {
-	return s.sendControlFrame(frame.FrameTypeNack, seq)
 }
 
 // sendNack sends a NACK frame.
