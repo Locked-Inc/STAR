@@ -177,13 +177,15 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle);
  * The internal state (integral, prev_error) is preserved.
  *
  * @param[in] handle Pointer to initialized PID handle. Must not be NULL.
- * @param[in] kp     New proportional gain.
- * @param[in] ki     New integral gain.
- * @param[in] kd     New derivative gain.
+ * @param[in] kp     New proportional gain (must be >= 0 and finite).
+ * @param[in] ki     New integral gain (must be >= 0 and finite).
+ * @param[in] kd     New derivative gain (must be >= 0 and finite).
  *
  * @return k_rx_ok on success
  * @return k_rx_err_null_pointer if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
+ * @return k_rx_err_invalid_arg if any gain is negative or non-finite (NaN/Inf)
+ * @return k_rx_fail if gain storage verification fails
  */
 rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, float kp, float ki, float kd);
 

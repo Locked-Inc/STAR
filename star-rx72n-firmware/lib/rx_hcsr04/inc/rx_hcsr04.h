@@ -22,7 +22,7 @@
  * - VCC: 5V supply
  * - GND: Common ground with RX72N
  *
- * @date 2026-01-02
+ * @date 2026-01-05
  * @copyright Copyright (c) 2026 STAR Project
  */
 
@@ -51,6 +51,7 @@ extern "C" {
  * Distance = (echo_us * 0.0343 cm/us) / 2 = echo_us / 58.3 cm
  */
 typedef enum {
+  k_hcsr04_trigger_settle_us   = 2,     /**< Time to hold trigger low before pulse */
   k_hcsr04_trigger_pulse_us    = 10,    /**< Minimum trigger pulse width */
   k_hcsr04_echo_timeout_us     = 30000, /**< Max echo wait (400cm + margin) */
   k_hcsr04_min_echo_us         = 116,   /**< Min valid echo (2cm) */
@@ -98,8 +99,11 @@ typedef struct {
   uint32_t   timeout_us;  /**< Measurement timeout in microseconds */
 
   /* State */
-  bool initialized;        /**< True if handle is initialized */
-  bool measurement_active; /**< True if async measurement in progress */
+  bool  initialized;               /**< True if handle is initialized */
+  bool  measurement_active;        /**< True if async measurement in progress */
+  bool  cancel_requested;          /**< True if async measurement cancellation requested */
+  float temperature_celsius;       /**< Ambient temperature for compensation (20.0 if not set) */
+  bool  temp_compensation_enabled; /**< True if temperature compensation is enabled */
 
   /* Statistics */
   uint32_t measurement_count; /**< Total measurements attempted */
@@ -167,6 +171,38 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config);
  */
 rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle);
 
+/**
+ * @brief Initialize HC-SR04 async worker thread
+ *
+ * Creates a ThreadX worker thread for non-blocking async measurements.
+ * Must be called before using rx_hcsr04_measure_async() for true async operation.
+ *
+ * The worker thread:
+ * - Runs at priority 10
+ * - Uses 1KB stack
+ * - Processes measurement requests from event flags
+ * - Invokes callbacks in worker thread context
+ *
+ * @note This is optional. If not called, rx_hcsr04_measure_async() will
+ *       fall back to synchronous operation (callback invoked before return).
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_rtos_error if thread creation fails
+ * @return k_rx_err_invalid_state if worker already initialized
+ */
+rx_err_t rx_hcsr04_worker_init(void);
+
+/**
+ * @brief Deinitialize HC-SR04 async worker thread
+ *
+ * Terminates the worker thread and releases resources.
+ * Any pending async measurements will be cancelled.
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_state if worker not initialized
+ */
+rx_err_t rx_hcsr04_worker_deinit(void);
+
 /* =============================================================================
  * Public API - Measurement
  * =============================================================================
@@ -216,16 +252,23 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result);
  *
  * Initiates measurement and invokes callback with result.
  *
- * @note Current implementation is synchronous - the callback is invoked
- *       before this function returns. True non-blocking operation with
- *       ThreadX worker thread is a planned future enhancement.
- *       See: https://github.com/Locked-Inc/STAR/issues/70
+ * **Operating Modes:**
+ * - **Worker initialized** (rx_hcsr04_worker_init() called):
+ *   Returns immediately, callback invoked from worker thread when complete.
+ *   True non-blocking operation.
+ *
+ * - **Worker not initialized**:
+ *   Performs synchronous measurement, callback invoked before return.
+ *   Caller blocks for up to timeout_us (default 30ms).
+ *
+ * @note Use rx_hcsr04_cancel() to abort in-progress async measurements.
+ *       Cancellation only works when worker thread is active.
  *
  * @param[in] handle    Sensor handle
  * @param[in] callback  Completion callback (required)
  * @param[in] user_data User context passed to callback (can be NULL)
  *
- * @return k_rx_ok if measurement completed and callback invoked
+ * @return k_rx_ok if measurement queued (async) or completed (sync)
  * @return k_rx_err_null_pointer if handle or callback is NULL
  * @return k_rx_err_invalid_state if not initialized
  * @return k_rx_err_busy if measurement already in progress
@@ -255,6 +298,80 @@ bool rx_hcsr04_is_busy(const rx_hcsr04_t* handle);
  * @return k_rx_err_invalid_state if no measurement in progress
  */
 rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle);
+
+/* =============================================================================
+ * Public API - Temperature Compensation
+ * =============================================================================
+ */
+
+/**
+ * @brief Set ambient temperature for automatic distance compensation
+ *
+ * Enables temperature compensation and updates the temperature used for
+ * all subsequent distance measurements. The speed of sound varies with
+ * temperature (~0.17% per °C), affecting measurement accuracy.
+ *
+ * When enabled, all measurement functions (rx_hcsr04_measure_blocking,
+ * rx_hcsr04_measure, rx_hcsr04_measure_async) will automatically use
+ * temperature-compensated distance calculations.
+ *
+ * Temperature can be updated at any time, including between measurements.
+ * Typical usage: read from DS18B20 sensor periodically and update.
+ *
+ * @param[in,out] handle         Sensor handle
+ * @param[in]     temp_celsius   Ambient temperature in degrees Celsius
+ *                                Valid range: -40°C to +85°C
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if not initialized
+ * @return k_rx_err_invalid_arg if temperature out of valid range
+ *
+ * @note To disable temperature compensation, call rx_hcsr04_disable_temp_compensation()
+ *
+ * @see rx_hcsr04_disable_temp_compensation()
+ * @see rx_hcsr04_echo_to_cm_with_temp()
+ */
+rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, float temp_celsius);
+
+/**
+ * @brief Disable automatic temperature compensation
+ *
+ * Disables temperature compensation and reverts to assuming 20°C for all
+ * distance calculations. This is the default behavior after initialization.
+ *
+ * @param[in,out] handle Sensor handle
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if not initialized
+ */
+rx_err_t rx_hcsr04_disable_temp_compensation(rx_hcsr04_t* handle);
+
+/**
+ * @brief Check if temperature compensation is enabled
+ *
+ * @param[in] handle Sensor handle
+ *
+ * @return true if temperature compensation is enabled
+ * @return false if disabled or handle is NULL
+ */
+bool rx_hcsr04_is_temp_compensation_enabled(const rx_hcsr04_t* handle);
+
+/**
+ * @brief Get current temperature setting
+ *
+ * Returns the currently configured temperature value used for compensation.
+ * If compensation is disabled, still returns the last set value (or 20.0°C default).
+ *
+ * @param[in]  handle       Sensor handle
+ * @param[out] temp_celsius Current temperature setting
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle or temp_celsius is NULL
+ * @return k_rx_err_invalid_state if not initialized
+ */
+rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsius);
 
 /* =============================================================================
  * Public API - Utilities

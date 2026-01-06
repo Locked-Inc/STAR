@@ -144,8 +144,12 @@ rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output,
  * Clears accumulated buffer and count.
  *
  * @param[in,out] combiner Pointer to combiner handle
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if combiner is NULL
+ * @return k_rx_err_invalid_state if combiner is not initialized
  */
-void rx_chase_combiner_reset(rx_chase_combiner_t* combiner);
+rx_err_t rx_chase_combiner_reset(rx_chase_combiner_t* combiner);
 
 /**
  * @brief Check if more transmissions can be combined
@@ -231,8 +235,12 @@ rx_harq_state_t rx_harq_get_state(const rx_harq_handle_t* harq);
  * Resets state to idle and clears combiner.
  *
  * @param[in,out] harq Pointer to HARQ handle
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if harq is NULL
+ * @return k_rx_err_invalid_state if harq is not initialized
  */
-void rx_harq_reset(rx_harq_handle_t* harq);
+rx_err_t rx_harq_reset(rx_harq_handle_t* harq);
 
 /**
  * @brief Encode payload with FEC (if enabled)
@@ -241,16 +249,19 @@ void rx_harq_reset(rx_harq_handle_t* harq);
  * @param[in]  payload Input payload
  * @param[in]  payload_len Payload length
  * @param[out] output Output buffer (must be large enough for encoded data)
+ * @param[in]  output_size Size of output buffer in bytes
  * @param[out] output_len Actual output length
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_size if output buffer too small
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
                         const uint8_t*    payload,
                         uint32_t          payload_len,
                         uint8_t*          output,
+                        uint32_t          output_size,
                         uint32_t*         output_len);
 
 /**

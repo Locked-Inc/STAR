@@ -583,6 +583,62 @@ void test_pid_compute_invalid_dt(void)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
+/**
+ * @brief Test compute post-condition catches NaN in setpoint
+ */
+void test_pid_compute_nan_setpoint(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+  float output = 0.0f;
+
+  rx_err_t err = rx_pid_compute(&pid, NAN, 90.0f, s_dt_seconds, &output);
+
+  TEST_ASSERT_EQUAL(k_rx_fail, err);
+}
+
+/**
+ * @brief Test compute post-condition catches NaN in measured value
+ */
+void test_pid_compute_nan_measured(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+  float output = 0.0f;
+
+  rx_err_t err = rx_pid_compute(&pid, 100.0f, NAN, s_dt_seconds, &output);
+
+  TEST_ASSERT_EQUAL(k_rx_fail, err);
+}
+
+/**
+ * @brief Test compute post-condition catches Infinity in setpoint
+ */
+void test_pid_compute_inf_setpoint(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+  float output = 0.0f;
+
+  rx_err_t err = rx_pid_compute(&pid, INFINITY, 90.0f, s_dt_seconds, &output);
+
+  TEST_ASSERT_EQUAL(k_rx_fail, err);
+}
+
+/**
+ * @brief Test compute post-condition catches Infinity in measured value
+ */
+void test_pid_compute_inf_measured(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+  float output = 0.0f;
+
+  rx_err_t err = rx_pid_compute(&pid, 100.0f, INFINITY, s_dt_seconds, &output);
+
+  TEST_ASSERT_EQUAL(k_rx_fail, err);
+}
+
 /* =============================================================================
  * Reset Tests
  * =============================================================================
@@ -708,6 +764,123 @@ void test_pid_set_gains_not_initialized(void)
   rx_err_t err = rx_pid_set_gains(&pid, 1.0f, 1.0f, 1.0f);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test set_gains rejects negative Kp
+ */
+void test_pid_set_gains_negative_kp(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+
+  rx_err_t err = rx_pid_set_gains(&pid, -1.0f, 1.0f, 1.0f);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test set_gains rejects negative Ki
+ */
+void test_pid_set_gains_negative_ki(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+
+  rx_err_t err = rx_pid_set_gains(&pid, 1.0f, -0.5f, 1.0f);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test set_gains rejects negative Kd
+ */
+void test_pid_set_gains_negative_kd(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+
+  rx_err_t err = rx_pid_set_gains(&pid, 1.0f, 1.0f, -2.0f);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test set_gains rejects NaN Kp
+ */
+void test_pid_set_gains_nan_kp(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+
+  rx_err_t err = rx_pid_set_gains(&pid, NAN, 1.0f, 1.0f);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test set_gains rejects NaN Ki
+ */
+void test_pid_set_gains_nan_ki(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+
+  rx_err_t err = rx_pid_set_gains(&pid, 1.0f, NAN, 1.0f);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test set_gains rejects NaN Kd
+ */
+void test_pid_set_gains_nan_kd(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+
+  rx_err_t err = rx_pid_set_gains(&pid, 1.0f, 1.0f, NAN);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test set_gains rejects infinite Kp
+ */
+void test_pid_set_gains_inf_kp(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+
+  rx_err_t err = rx_pid_set_gains(&pid, INFINITY, 1.0f, 1.0f);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test set_gains rejects infinite Ki
+ */
+void test_pid_set_gains_inf_ki(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+
+  rx_err_t err = rx_pid_set_gains(&pid, 1.0f, INFINITY, 1.0f);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test set_gains rejects infinite Kd
+ */
+void test_pid_set_gains_inf_kd(void)
+{
+  rx_pid_handle_t pid = {0};
+  init_default_pid(&pid);
+
+  rx_err_t err = rx_pid_set_gains(&pid, 1.0f, 1.0f, INFINITY);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -1180,6 +1353,10 @@ int main(void)
   RUN_TEST(test_pid_compute_null_output);
   RUN_TEST(test_pid_compute_not_initialized);
   RUN_TEST(test_pid_compute_invalid_dt);
+  RUN_TEST(test_pid_compute_nan_setpoint);
+  RUN_TEST(test_pid_compute_nan_measured);
+  RUN_TEST(test_pid_compute_inf_setpoint);
+  RUN_TEST(test_pid_compute_inf_measured);
 
   /* Reset tests */
   RUN_TEST(test_pid_reset_clears_state);
@@ -1191,6 +1368,15 @@ int main(void)
   RUN_TEST(test_pid_set_gains_preserves_state);
   RUN_TEST(test_pid_set_gains_null_handle);
   RUN_TEST(test_pid_set_gains_not_initialized);
+  RUN_TEST(test_pid_set_gains_negative_kp);
+  RUN_TEST(test_pid_set_gains_negative_ki);
+  RUN_TEST(test_pid_set_gains_negative_kd);
+  RUN_TEST(test_pid_set_gains_nan_kp);
+  RUN_TEST(test_pid_set_gains_nan_ki);
+  RUN_TEST(test_pid_set_gains_nan_kd);
+  RUN_TEST(test_pid_set_gains_inf_kp);
+  RUN_TEST(test_pid_set_gains_inf_ki);
+  RUN_TEST(test_pid_set_gains_inf_kd);
 
   /* Set output limits tests */
   RUN_TEST(test_pid_set_output_limits_success);

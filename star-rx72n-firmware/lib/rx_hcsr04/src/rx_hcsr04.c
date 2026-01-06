@@ -9,7 +9,7 @@
  * GPIO pins, timeout handling, and distance measurement in both blocking and
  * asynchronous modes. Supports temperature compensation for speed of sound.
  *
- * @date 2026-01-04
+ * @date 2026-01-05
  * @copyright Copyright (c) 2026 STAR Project
  */
 
@@ -18,6 +18,7 @@
 #include <stddef.h>
 
 #include "rx_hcsr04_hal.h"
+#include "tx_api.h"
 
 /* =============================================================================
  * Constants
@@ -25,9 +26,33 @@
  */
 
 /**
- * @brief Centimeters per inch * 100 (fixed point: 2.54 * 100 = 254)
+ * @brief Worker thread priority (lower number = higher priority)
  */
-static const uint32_t s_cm_per_inch_x100 = 254;
+typedef enum {
+  k_worker_priority = 10, /**< Medium priority for sensor measurements */
+} rx_hcsr04_worker_priority_t;
+
+/**
+ * @brief Worker thread stack size
+ */
+typedef enum {
+  k_worker_stack_size = 1024, /**< 1KB stack for worker thread */
+} rx_hcsr04_worker_stack_t;
+
+/**
+ * @brief Worker thread event flags
+ */
+typedef enum {
+  k_event_measurement_request = 0x01, /**< Measurement request pending */
+  k_event_shutdown_request    = 0x02, /**< Worker shutdown requested */
+} rx_hcsr04_event_flags_t;
+
+/**
+ * @brief Unit conversion constants
+ */
+typedef enum {
+  k_cm_per_inch_x100 = 254, /**< Centimeters per inch * 100 (2.54 * 100) */
+} rx_hcsr04_conversion_t;
 
 /**
  * @brief Speed of sound base constant (m/s at 0°C)
@@ -38,6 +63,70 @@ static const float s_speed_of_sound_base_mps = 331.3f;
  * @brief Speed of sound temperature coefficient (m/s per °C)
  */
 static const float s_speed_of_sound_coeff = 0.606f;
+
+/**
+ * @brief Default temperature for distance calculations (°C)
+ */
+static const float s_default_temperature_celsius = 20.0f;
+
+/**
+ * @brief Minimum valid temperature (°C) - DS18B20 sensor lower limit
+ */
+static const float s_min_temp_celsius = -40.0f;
+
+/**
+ * @brief Maximum valid temperature (°C) - DS18B20 sensor upper limit
+ */
+static const float s_max_temp_celsius = 85.0f;
+
+/* =============================================================================
+ * Worker Thread Infrastructure
+ * =============================================================================
+ */
+
+/**
+ * @brief Pending measurement context
+ *
+ * Stores the context for a pending async measurement request.
+ */
+typedef struct {
+  rx_hcsr04_t*         handle;    /**< Sensor handle */
+  rx_hcsr04_callback_t callback;  /**< Completion callback */
+  void*                user_data; /**< User context */
+} pending_measurement_t;
+
+/**
+ * @brief Worker thread handle
+ */
+static TX_THREAD s_hcsr04_worker_thread;
+
+/**
+ * @brief Worker thread stack
+ */
+static uint8_t s_worker_stack[k_worker_stack_size];
+
+/**
+ * @brief Event flags for signaling worker thread
+ */
+static TX_EVENT_FLAGS_GROUP s_measurement_request;
+
+/**
+ * @brief Mutex protecting access to pending measurement context
+ */
+static TX_MUTEX s_pending_mutex;
+
+/**
+ * @brief Pending measurement context
+ *
+ * Protected by s_pending_mutex. Access only within mutex lock.
+ * When handle is NULL, the worker is idle and ready for new requests.
+ */
+static pending_measurement_t s_pending;
+
+/**
+ * @brief Worker thread initialization state
+ */
+static bool s_worker_initialized = false;
 
 /* =============================================================================
  * Internal Helper Functions
@@ -53,7 +142,7 @@ static void internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 {
   /* Ensure trigger is low initially */
   hcsr04_hal_gpio_write_low(handle->trigger_pin);
-  hcsr04_hal_delay_us(2);
+  hcsr04_hal_delay_us(k_hcsr04_trigger_settle_us);
 
   /* Send 10us HIGH pulse */
   hcsr04_hal_gpio_write_high(handle->trigger_pin);
@@ -64,20 +153,26 @@ static void internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 /**
  * @brief Wait for echo pin to reach target state with timeout
  *
- * @param[in] handle Sensor handle
+ * @param[in,out] handle Sensor handle (cancel_requested may be cleared)
  * @param[in] target_state State to wait for (true=high, false=low)
  * @param[in] timeout_us Timeout in microseconds
  *
- * @return k_rx_ok if state reached, k_rx_err_timeout if timed out
+ * @return k_rx_ok if state reached
+ * @return k_rx_err_timeout if timed out
+ * @return k_rx_err_cancelled if operation was cancelled
  */
-static rx_err_t
-internal_wait_for_echo(const rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
+static rx_err_t internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
 {
   uint32_t start_time = hcsr04_hal_get_time_us();
-  bool     pin_state  = false;
-  uint32_t elapsed    = 0;
 
   while (true) {
+    /* Check for cancellation request */
+    if (handle->cancel_requested) {
+      handle->cancel_requested = false;
+      return k_rx_err_cancelled;
+    }
+
+    bool pin_state = false;
     hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
 
     if (pin_state == target_state) {
@@ -85,7 +180,7 @@ internal_wait_for_echo(const rx_hcsr04_t* handle, bool target_state, uint32_t ti
     }
 
     /* Check for timeout */
-    elapsed = hcsr04_hal_get_time_us() - start_time;
+    uint32_t elapsed = hcsr04_hal_get_time_us() - start_time;
     if (elapsed >= timeout_us) {
       return k_rx_err_timeout;
     }
@@ -125,6 +220,165 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
 }
 
 /* =============================================================================
+ * Worker Thread Implementation
+ * =============================================================================
+ */
+
+/**
+ * @brief Worker thread entry function
+ *
+ * Waits for measurement requests or shutdown signal via event flags.
+ * Performs measurements and invokes callbacks from worker thread context.
+ * Exits gracefully when shutdown is requested.
+ *
+ * @param[in] input Thread input parameter (unused)
+ */
+static void hcsr04_worker_entry(ULONG input)
+{
+  (void)input;
+  ULONG actual_flags;
+
+  while (true) {
+    /* Wait for measurement request OR shutdown request */
+    UINT status = tx_event_flags_get(&s_measurement_request,
+                                     k_event_measurement_request | k_event_shutdown_request,
+                                     TX_OR_CLEAR,
+                                     &actual_flags,
+                                     TX_WAIT_FOREVER);
+
+    if (status != TX_SUCCESS) {
+      continue; /* Should not happen with TX_WAIT_FOREVER */
+    }
+
+    /* Check for shutdown request */
+    if (actual_flags & k_event_shutdown_request) {
+      break; /* Exit loop gracefully */
+    }
+
+    /* Perform blocking measurement */
+    rx_hcsr04_result_t result;
+    rx_hcsr04_measure(s_pending.handle, &result);
+
+    /* Clear active flag */
+    s_pending.handle->measurement_active = false;
+
+    /* Invoke callback from worker context */
+    s_pending.callback(s_pending.handle, &result, s_pending.user_data);
+
+    /*
+     * Clear pending handle to signal worker is idle and ready for next request.
+     * Protected by mutex to prevent race with rx_hcsr04_measure_async().
+     */
+    tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
+    s_pending.handle = NULL;
+    tx_mutex_put(&s_pending_mutex);
+  }
+}
+
+/* =============================================================================
+ * Public API - Worker Thread Management
+ * =============================================================================
+ */
+
+rx_err_t rx_hcsr04_worker_init(void)
+{
+  UINT status;
+
+  /* Check if already initialized */
+  if (s_worker_initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Create mutex for pending measurement protection */
+  status = tx_mutex_create(&s_pending_mutex, "HCSR04_Mutex", TX_NO_INHERIT);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
+
+  /* Create event flags group */
+  status = tx_event_flags_create(&s_measurement_request, "HCSR04_Events");
+  if (status != TX_SUCCESS) {
+    tx_mutex_delete(&s_pending_mutex);
+    return k_rx_err_rtos_error;
+  }
+
+  /* Initialize pending context (worker is idle) */
+  s_pending.handle    = NULL;
+  s_pending.callback  = NULL;
+  s_pending.user_data = NULL;
+
+  /* Create worker thread */
+  status = tx_thread_create(&s_hcsr04_worker_thread,
+                            "HCSR04_Worker",
+                            hcsr04_worker_entry,
+                            0,
+                            s_worker_stack,
+                            k_worker_stack_size,
+                            k_worker_priority,
+                            k_worker_priority,
+                            TX_NO_TIME_SLICE,
+                            TX_AUTO_START);
+
+  if (status != TX_SUCCESS) {
+    /* Cleanup on failure */
+    tx_event_flags_delete(&s_measurement_request);
+    tx_mutex_delete(&s_pending_mutex);
+    return k_rx_err_rtos_error;
+  }
+
+  s_worker_initialized = true;
+  return k_rx_ok;
+}
+
+rx_err_t rx_hcsr04_worker_deinit(void)
+{
+  UINT status;
+
+  /* Check if initialized */
+  if (!s_worker_initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /*
+   * Graceful shutdown: Signal worker thread to exit via event flag.
+   * This prevents abrupt termination mid-measurement, which could leave
+   * sensor handles stuck in measurement_active state.
+   */
+  status = tx_event_flags_set(&s_measurement_request, k_event_shutdown_request, TX_OR);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
+
+  /*
+   * Wait for worker thread to exit gracefully.
+   * In production, we'd use a semaphore or check thread state.
+   * For simplicity, we assume the worker exits quickly (< 30ms measurement).
+   */
+  tx_thread_sleep(5); /* 50ms at 100 Hz tick rate - allows measurement to complete */
+
+  /* Delete thread (now safely terminated) */
+  status = tx_thread_delete(&s_hcsr04_worker_thread);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
+
+  /* Delete event flags */
+  status = tx_event_flags_delete(&s_measurement_request);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
+
+  /* Delete mutex */
+  status = tx_mutex_delete(&s_pending_mutex);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
+
+  s_worker_initialized = false;
+  return k_rx_ok;
+}
+
+/* =============================================================================
  * Public API - Initialization
  * =============================================================================
  */
@@ -156,11 +410,14 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   }
 
   /* Initialize handle */
-  handle->trigger_pin        = config->trigger_pin;
-  handle->echo_pin           = config->echo_pin;
-  handle->timeout_us         = config->timeout_us;
-  handle->initialized        = true;
-  handle->measurement_active = false;
+  handle->trigger_pin               = config->trigger_pin;
+  handle->echo_pin                  = config->echo_pin;
+  handle->timeout_us                = config->timeout_us;
+  handle->initialized               = true;
+  handle->measurement_active        = false;
+  handle->cancel_requested          = false;
+  handle->temperature_celsius       = s_default_temperature_celsius;
+  handle->temp_compensation_enabled = false;
 
   /* Reset statistics */
   handle->measurement_count = 0;
@@ -227,8 +484,12 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
     return err;
   }
 
-  /* Convert to distance */
-  *distance_cm = rx_hcsr04_echo_to_cm(echo_time_us);
+  /* Convert to distance (with temperature compensation if enabled) */
+  if (handle->temp_compensation_enabled) {
+    *distance_cm = rx_hcsr04_echo_to_cm_with_temp(echo_time_us, handle->temperature_celsius);
+  } else {
+    *distance_cm = rx_hcsr04_echo_to_cm(echo_time_us);
+  }
 
   /* Validate range */
   if (*distance_cm < (float)k_hcsr04_min_distance_cm ||
@@ -276,8 +537,13 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
     return err;
   }
 
-  /* Convert to distance */
-  result->distance_cm = rx_hcsr04_echo_to_cm(result->echo_time_us);
+  /* Convert to distance (with temperature compensation if enabled) */
+  if (handle->temp_compensation_enabled) {
+    result->distance_cm =
+      rx_hcsr04_echo_to_cm_with_temp(result->echo_time_us, handle->temperature_celsius);
+  } else {
+    result->distance_cm = rx_hcsr04_echo_to_cm(result->echo_time_us);
+  }
   result->distance_in = rx_hcsr04_cm_to_inches(result->distance_cm);
   result->status      = k_rx_ok;
 
@@ -309,15 +575,53 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
 
   handle->measurement_active = true;
 
-  /* Perform measurement and invoke callback */
-  rx_hcsr04_result_t result;
-  rx_hcsr04_measure(handle, &result);
+  /* Check if worker thread is initialized */
+  if (s_worker_initialized) {
+    /*
+     * True async mode: queue measurement request for worker thread.
+     * Use mutex to prevent race condition with worker thread.
+     */
+    tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
 
-  handle->measurement_active = false;
+    /* Check if worker is already busy with another sensor */
+    if (s_pending.handle != NULL) {
+      tx_mutex_put(&s_pending_mutex);
+      handle->measurement_active = false;
+      return k_rx_err_busy;
+    }
 
-  callback(handle, &result, user_data);
+    /* Queue this measurement */
+    s_pending.handle    = handle;
+    s_pending.callback  = callback;
+    s_pending.user_data = user_data;
 
-  return k_rx_ok;
+    tx_mutex_put(&s_pending_mutex);
+
+    /* Signal worker thread - function returns immediately */
+    UINT status = tx_event_flags_set(&s_measurement_request, k_event_measurement_request, TX_OR);
+
+    if (status != TX_SUCCESS) {
+      /* Rollback on failure */
+      tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
+      s_pending.handle = NULL;
+      tx_mutex_put(&s_pending_mutex);
+      handle->measurement_active = false;
+      return k_rx_err_rtos_error;
+    }
+
+    return k_rx_ok; /* Callback will be invoked from worker thread */
+  } else {
+    /* Fallback sync mode: perform measurement inline (backward compatible) */
+    rx_hcsr04_result_t result;
+    rx_hcsr04_measure(handle, &result);
+
+    handle->measurement_active = false;
+
+    /* Invoke callback before return (synchronous) */
+    callback(handle, &result, user_data);
+
+    return k_rx_ok;
+  }
 }
 
 bool rx_hcsr04_is_busy(const rx_hcsr04_t* handle)
@@ -339,8 +643,77 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
     return k_rx_err_invalid_state;
   }
 
-  /* Note: Full implementation would signal worker thread to cancel */
-  handle->measurement_active = false;
+  /*
+   * Set cancel flag. The worker thread (or sync fallback) will check
+   * this flag in internal_wait_for_echo() and abort the measurement.
+   */
+  handle->cancel_requested = true;
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * Public API - Temperature Compensation
+ * =============================================================================
+ */
+
+rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, float temp_celsius)
+{
+  if (handle == NULL) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Validate temperature range */
+  if (temp_celsius < s_min_temp_celsius || temp_celsius > s_max_temp_celsius) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Update temperature and enable compensation */
+  handle->temperature_celsius       = temp_celsius;
+  handle->temp_compensation_enabled = true;
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_hcsr04_disable_temp_compensation(rx_hcsr04_t* handle)
+{
+  if (handle == NULL) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  handle->temp_compensation_enabled = false;
+
+  return k_rx_ok;
+}
+
+bool rx_hcsr04_is_temp_compensation_enabled(const rx_hcsr04_t* handle)
+{
+  if (handle == NULL) {
+    return false;
+  }
+
+  return handle->temp_compensation_enabled;
+}
+
+rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsius)
+{
+  if (handle == NULL || temp_celsius == NULL) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  *temp_celsius = handle->temperature_celsius;
 
   return k_rx_ok;
 }
@@ -353,7 +726,7 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
 float rx_hcsr04_cm_to_inches(float distance_cm)
 {
   /* 1 inch = 2.54 cm */
-  return distance_cm * 100.0f / (float)s_cm_per_inch_x100;
+  return distance_cm * 100.0f / (float)k_cm_per_inch_x100;
 }
 
 float rx_hcsr04_echo_to_cm(uint32_t echo_time_us)
@@ -376,6 +749,14 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius)
    *
    * Valid range: -40°C to +85°C (DS18B20 sensor range)
    */
+
+  /* Clamp temperature to valid range */
+  if (temp_celsius < s_min_temp_celsius) {
+    temp_celsius = s_min_temp_celsius;
+  } else if (temp_celsius > s_max_temp_celsius) {
+    temp_celsius = s_max_temp_celsius;
+  }
+
   return s_speed_of_sound_base_mps + (s_speed_of_sound_coeff * temp_celsius);
 }
 
@@ -392,9 +773,25 @@ float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius)
    * - Speed = 0.034342 cm/us
    * - For echo_us = 580: distance = (580 * 0.034342) / 2 = 9.96 cm ≈ 10 cm
    */
+
+  /* Pre-condition: Validate temperature range - use default if invalid */
+  if (temp_celsius < s_min_temp_celsius || temp_celsius > s_max_temp_celsius) {
+    return rx_hcsr04_echo_to_cm(echo_time_us);
+  }
+
+  /* Pre-condition: Validate echo time */
+  if (echo_time_us == 0 || echo_time_us > k_hcsr04_echo_timeout_us) {
+    return 0.0f;
+  }
+
   float speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
   float speed_cm_us = speed_mps / 10000.0f; /* m/s to cm/us */
   float distance_cm = ((float)echo_time_us * speed_cm_us) / 2.0f;
+
+  /* Post-condition: Ensure non-negative result */
+  if (distance_cm < 0.0f) {
+    return 0.0f;
+  }
 
   return distance_cm;
 }
