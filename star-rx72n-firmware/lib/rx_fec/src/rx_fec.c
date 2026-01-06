@@ -13,6 +13,7 @@
 
 #include "rx_fec.h"
 
+#include <assert.h>
 #include <string.h>
 
 /* =============================================================================
@@ -24,11 +25,12 @@
  * @brief FEC implementation constants
  */
 typedef enum {
-  k_fec_bits_per_byte       = 8,          /**< Bits in a byte */
-  k_fec_msb_bit_position    = 7,          /**< MSB position in byte (0-indexed) */
-  k_fec_shift_register_bits = 6,          /**< K-1 shift register size */
-  k_fec_correlation_offset  = 32768,      /**< Correlation metric offset */
-  k_fec_max_path_metric     = 0x7FFFFFFF, /**< Maximum path metric (INT32_MAX) */
+  k_fec_bits_per_byte       = 8,     /**< Bits in a byte */
+  k_fec_msb_bit_position    = 7,     /**< MSB position in byte (0-indexed) */
+  k_fec_shift_register_bits = 6,     /**< K-1 shift register size */
+  k_fec_correlation_offset  = 32768, /**< Correlation metric offset (2^15) */
+  k_fec_state_shift_amount  = 5,     /**< k_fec_constraint_length - 2 */
+  k_fec_bit_mask            = 1,     /**< Mask for extracting single bit */
 } rx_fec_impl_constants_t;
 
 /**
@@ -66,10 +68,19 @@ typedef enum {
  */
 static uint8_t internal_parity(uint8_t x)
 {
+  /* Pre-condition: Input x is uint8_t (0-255), always valid */
+
+  /* Compute parity using parallel XOR reduction */
   x ^= x >> 4; /* XOR upper nibble with lower nibble */
   x ^= x >> 2; /* XOR bit pairs */
   x ^= x >> 1; /* XOR final pair */
-  return x & 1;
+
+  uint8_t result = x & k_fec_bit_mask;
+
+  /* Post-condition: Result must be 0 or 1 */
+  assert((result == 0) || (result == k_fec_bit_mask));
+
+  return result;
 }
 
 /**
@@ -86,8 +97,16 @@ static uint8_t internal_parity(uint8_t x)
  */
 static void internal_set_output_bit(uint8_t* output, uint32_t bit_idx, uint8_t value)
 {
+  /* Pre-condition 1: output must be valid */
+  assert(output != NULL);
+
+  /* Pre-condition 2: value must be 0 or 1 (normalize if needed) */
+  assert((value == 0) || (value == k_fec_bit_mask) || (value != 0));
+  value = (value != 0) ? k_fec_bit_mask : 0;
+
   uint32_t byte_idx = bit_idx / k_fec_bits_per_byte;
   uint32_t bit_pos  = k_fec_msb_bit_position - (bit_idx % k_fec_bits_per_byte); /* MSB first */
+
   if (value != 0) {
     output[byte_idx] |= (uint8_t)(1U << bit_pos);
   }
@@ -107,9 +126,18 @@ static void internal_set_output_bit(uint8_t* output, uint32_t bit_idx, uint8_t v
  */
 static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
 {
+  /* Pre-condition: data must be valid */
+  assert(data != NULL);
+
   uint32_t byte_idx = bit_idx / k_fec_bits_per_byte;
   uint32_t bit_pos  = k_fec_msb_bit_position - (bit_idx % k_fec_bits_per_byte); /* MSB first */
-  return (data[byte_idx] >> bit_pos) & 1U;
+
+  uint8_t result = (data[byte_idx] >> bit_pos) & k_fec_bit_mask;
+
+  /* Post-condition: result must be 0 or 1 */
+  assert((result == 0) || (result == k_fec_bit_mask));
+
+  return result;
 }
 
 /**
@@ -123,6 +151,14 @@ static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
  */
 static void internal_encode_bit(uint8_t* state, uint8_t input_bit, uint8_t* out0, uint8_t* out1)
 {
+  /* Pre-condition 1: All pointers must be valid */
+  assert(state != NULL);
+  assert(out0 != NULL);
+  assert(out1 != NULL);
+
+  /* Pre-condition 2: input_bit must be 0 or 1 */
+  assert((input_bit == 0) || (input_bit == k_fec_bit_mask));
+
   /* Shift in the new bit (input is MSB of the combined state) */
   uint8_t combined = (uint8_t)((input_bit << k_fec_shift_register_bits) | *state);
 
@@ -131,7 +167,7 @@ static void internal_encode_bit(uint8_t* state, uint8_t input_bit, uint8_t* out0
   *out1 = internal_parity(combined & k_fec_g2_octal);
 
   /* Update state (shift right, new bit enters from left) */
-  *state = combined >> 1;
+  *state = combined >> k_fec_bit_mask;
 }
 
 /**
@@ -144,8 +180,15 @@ static void internal_encode_bit(uint8_t* state, uint8_t input_bit, uint8_t* out0
 static void internal_init_branch_table(
   uint8_t branch_table[k_fec_num_states][k_fec_num_input_values][k_fec_num_outputs])
 {
+  /* Pre-condition: branch_table array parameter is always valid in C */
+  /* Loop invariant: state and input values are within valid bounds */
+
   for (uint8_t state = 0; state < k_fec_num_states; state++) {
     for (uint8_t input = 0; input < k_fec_num_input_values; input++) {
+      /* Verify loop invariants */
+      assert(state < k_fec_num_states);
+      assert(input < k_fec_num_input_values);
+
       uint8_t combined = (uint8_t)(((uint8_t)input << k_fec_shift_register_bits) | (uint8_t)state);
       branch_table[state][input][k_fec_output_g1] = internal_parity(combined & k_fec_g1_octal);
       branch_table[state][input][k_fec_output_g2] = internal_parity(combined & k_fec_g2_octal);
@@ -196,7 +239,7 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
 {
   /* Reset new path metrics */
   for (uint8_t i = 0; i < k_fec_num_states; i++) {
-    dec->new_path_metrics[i] = k_fec_max_path_metric;
+    dec->new_path_metrics[i] = INT32_MAX;
   }
 
   /* Clear survivors for this time step */
@@ -204,7 +247,7 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
 
   /* For each current state, compute transitions */
   for (uint8_t state = 0; state < k_fec_num_states; state++) {
-    if (dec->path_metrics[state] == k_fec_max_path_metric) {
+    if (dec->path_metrics[state] == INT32_MAX) {
       continue;
     }
 
@@ -218,7 +261,7 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
       int32_t branch_metric = internal_branch_metric(soft0, soft1, exp0, exp1);
 
       /* Compute next state: shift right and insert input as MSB */
-      uint8_t next_state = (state >> 1) | ((uint8_t)input << (k_fec_constraint_length - 2));
+      uint8_t next_state = (state >> k_fec_bit_mask) | ((uint8_t)input << k_fec_state_shift_amount);
 
       /* Compute new path metric */
       int32_t new_metric = dec->path_metrics[state] + branch_metric;
@@ -229,7 +272,7 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
 
         /* Store predecessor's LSB for traceback */
         dec->survivors[t] &= ~(1ULL << (uint8_t)next_state);
-        if ((state & 1) == 1) {
+        if ((state & k_fec_bit_mask) == k_fec_bit_mask) {
           dec->survivors[t] |= (1ULL << (uint8_t)next_state);
         }
       }
@@ -239,7 +282,38 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
   /* Swap path metrics */
   for (uint8_t i = 0; i < k_fec_num_states; i++) {
     dec->path_metrics[i]     = dec->new_path_metrics[i];
-    dec->new_path_metrics[i] = k_fec_max_path_metric;
+    dec->new_path_metrics[i] = INT32_MAX;
+  }
+}
+
+/**
+ * @brief Run Viterbi forward pass through trellis
+ *
+ * Initializes path metrics and processes all symbols through the trellis.
+ *
+ * @param[in,out] dec Decoder handle. Modified: path_metrics updated.
+ * @param[in]     soft_bits Received soft bits (pairs)
+ * @param[in]     num_symbols Number of symbols to process
+ */
+static void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
+                                          const rx_soft_bit_t* soft_bits,
+                                          uint32_t             num_symbols)
+{
+  /* Pre-conditions */
+  assert(dec != NULL);
+  assert(soft_bits != NULL);
+
+  /* Initialize path metrics: state 0 = 0, others = MAX */
+  for (uint8_t i = 0; i < k_fec_num_states; i++) {
+    dec->path_metrics[i] = INT32_MAX;
+  }
+  dec->path_metrics[0] = 0;
+
+  /* Process each symbol pair through the trellis */
+  for (uint32_t t = 0; t < num_symbols; t++) {
+    rx_soft_bit_t soft0 = soft_bits[t * k_fec_num_outputs + k_fec_output_g1];
+    rx_soft_bit_t soft1 = soft_bits[t * k_fec_num_outputs + k_fec_output_g2];
+    internal_viterbi_process_symbol(dec, soft0, soft1, t);
   }
 }
 
@@ -272,7 +346,7 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
     uint32_t t_idx = t - 1;
 
     /* The input bit is the MSB of the current state */
-    uint8_t input_bit = (uint8_t)((state >> (k_fec_constraint_length - 2)) & 1);
+    uint8_t input_bit = (uint8_t)((state >> k_fec_state_shift_amount) & k_fec_bit_mask);
 
     /* Store decoded bit if it's a data bit (not tail bit) */
     if (t_idx < data_bits) {
@@ -284,10 +358,10 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
     }
 
     /* Get predecessor's LSB from survivors */
-    uint8_t predecessor_lsb = (uint8_t)((dec->survivors[t_idx] >> state) & 1);
+    uint8_t predecessor_lsb = (uint8_t)((dec->survivors[t_idx] >> state) & k_fec_bit_mask);
 
     /* Compute predecessor state: shift left and insert the LSB */
-    state = ((state << 1) & (k_fec_num_states - 1)) | predecessor_lsb;
+    state = ((state << k_fec_bit_mask) & (k_fec_num_states - k_fec_bit_mask)) | predecessor_lsb;
   }
 }
 
@@ -363,7 +437,7 @@ rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
   for (uint32_t byte_idx = 0; byte_idx < input_len; byte_idx++) {
     uint8_t b = input[byte_idx];
     for (int8_t i = k_fec_msb_bit_position; i >= 0; i--) {
-      uint8_t input_bit = (b >> i) & 1;
+      uint8_t input_bit = (b >> i) & k_fec_bit_mask;
       uint8_t out0, out1;
 
       internal_encode_bit(&state, input_bit, &out0, &out1);
@@ -448,7 +522,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
   /* Calculate number of symbols */
   uint32_t num_symbols;
   if (expected_output_len > 0) {
-    num_symbols = (uint32_t)((expected_output_len * 8) + k_fec_tail_bits);
+    num_symbols = (uint32_t)((expected_output_len * k_fec_bits_per_byte) + k_fec_tail_bits);
   } else {
     num_symbols = (uint32_t)(soft_len / k_fec_num_outputs);
   }
@@ -467,18 +541,8 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
     return k_rx_err_invalid_size;
   }
 
-  /* Initialize path metrics: state 0 = 0, others = MAX */
-  for (uint8_t i = 0; i < k_fec_num_states; i++) {
-    dec->path_metrics[i] = k_fec_max_path_metric;
-  }
-  dec->path_metrics[0] = 0;
-
-  /* Forward pass: process each symbol pair through the trellis */
-  for (uint32_t t = 0; t < num_symbols; t++) {
-    rx_soft_bit_t soft0 = soft_bits[t * k_fec_num_outputs];
-    rx_soft_bit_t soft1 = soft_bits[t * k_fec_num_outputs + 1];
-    internal_viterbi_process_symbol(dec, soft0, soft1, t);
-  }
+  /* Forward pass: initialize path metrics and process symbols */
+  internal_viterbi_forward_pass(dec, soft_bits, num_symbols);
 
   /* Calculate data bits and output size */
   uint32_t data_bits = num_symbols - k_fec_tail_bits;
