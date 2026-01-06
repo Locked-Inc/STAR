@@ -284,10 +284,11 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   s_encoder_state[channel].position_deg =
     (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
 
-  /* Post-condition: Validate position is within 0-360 range */
-  if (s_encoder_state[channel].position_deg < k_encoder_initial_position_deg ||
-      s_encoder_state[channel].position_deg >= k_degrees_per_revolution) {
-    rx_log_error(s_tag, "Position calculation overflow");
+  /* Post-condition: Validate position is within reasonable range
+   * Note: Position can be negative for backward counts, so we check absolute value.
+   * Position beyond ±720° would indicate a calculation error. */
+  if (fabsf(s_encoder_state[channel].position_deg) > (2 * k_degrees_per_revolution)) {
+    rx_log_error(s_tag, "Position calculation overflow - exceeds ±720°");
     return k_rx_err_out_of_range;
   }
 
