@@ -17,6 +17,7 @@
 
 #include "hardware.h"
 #include "rx72n_cmt_regs.h"
+#include "rx72n_system_regs.h"
 #include "rx_hcsr04_hal.h"
 #include "tx_api.h"
 
@@ -66,14 +67,6 @@ rx_err_t hcsr04_hal_gpio_deinit(gpio_pin_t pin)
  */
 
 /**
- * @brief System register addresses and bits
- */
-typedef enum {
-  k_mstpcra_addr    = 0x00080010, /**< Module Stop Control Register A address */
-  k_mstpcra_cmt_bit = 14,         /**< MSTPCRA bit 14 controls CMT2/3 module */
-} system_register_constants_t;
-
-/**
  * @brief CMT2 timer constants for microsecond timing
  *
  * CMT2 Configuration:
@@ -106,16 +99,14 @@ static bool     s_time_mutex_initialized = false;
  */
 static void internal_cmt2_init(void)
 {
-  volatile uint16_t* cmstr1  = NULL;
-  volatile uint32_t* mstpcra = NULL;
+  volatile uint16_t* cmstr1 = NULL;
 
   if (s_cmt2_initialized) {
     return;
   }
 
   /* Enable CMT2 module (MSTPCRA bit 14 = CMT2/3) */
-  mstpcra = (volatile uint32_t*)k_mstpcra_addr;
-  *mstpcra &= ~(1U << k_mstpcra_cmt_bit);
+  system_regs()->mstpcra &= ~(1U << k_mstpa_cmt23);
 
   /* Get CMSTR1 register (controls CMT2/CMT3) */
   cmstr1 = &(cmt_ctrl()->cmstr1);
