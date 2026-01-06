@@ -416,6 +416,22 @@ add_executable(test_rx_bq4050
 )
 target_compile_definitions(test_rx_bq4050 PRIVATE UNIT_TEST)
 
+# Test: DS18B20 Temperature Sensor
+add_executable(test_rx_ds18b20
+    test_rx_ds18b20.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_ds18b20/src/rx_ds18b20.c
+    ${RX_CRC_SRC}
+    ${MOCK_LOG_SRC}
+)
+target_include_directories(test_rx_ds18b20 PRIVATE
+    ${CMAKE_SOURCE_DIR}/../lib/rx_ds18b20/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_bus/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_crc/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_core/inc
+    ${CMAKE_SOURCE_DIR}/mocks
+)
+target_link_libraries(test_rx_ds18b20 unity)
+
 # Test: Error Handler (rx_core)
 add_executable(test_rx_error_handler
     test_rx_error_handler.c
@@ -490,6 +506,7 @@ add_test(NAME test_rx_spi_comm COMMAND test_rx_spi_comm)
 add_test(NAME test_rx_pid COMMAND test_rx_pid)
 add_test(NAME test_rx_encoder COMMAND test_rx_encoder)
 add_test(NAME test_rx_bq4050 COMMAND test_rx_bq4050)
+add_test(NAME test_rx_ds18b20 COMMAND test_rx_ds18b20)
 add_test(NAME test_rx_error_handler COMMAND test_rx_error_handler)
 add_test(NAME test_rx_pin_validator COMMAND test_rx_pin_validator)
 add_test(NAME test_rx_register_guard COMMAND test_rx_register_guard)
@@ -501,7 +518,7 @@ add_test(NAME test_rx_nanopb COMMAND test_rx_nanopb)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS test_rx_crc32 test_rx_crc8 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_gpio_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid test_rx_encoder test_rx_bq4050 test_rx_error_handler test_rx_pin_validator test_rx_register_guard test_rx_nanopb
+    DEPENDS test_rx_crc32 test_rx_crc8 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_gpio_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid test_rx_encoder test_rx_bq4050 test_rx_ds18b20 test_rx_error_handler test_rx_pin_validator test_rx_register_guard test_rx_nanopb
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests..."
 )
