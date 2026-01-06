@@ -1,14 +1,14 @@
 # Plan: ROS2 Integration Research and Base Infrastructure
 
 ## Phase 1: Research and Documentation
-- [ ] Task: Research and document ROS2 integration strategy in `docs/sections/10_ros2_integration.tex`.
-    - [ ] Detail architecture for Visual-LiDAR fusion using [RTAB-Map](https://introlab.github.io/rtabmap/).
-    - [ ] Define coordinate frames (tf2 tree) per REP-105.
-    - [ ] Specify custom node topic/service/parameter interfaces.
-    - [ ] Document multi-machine communication (`ROS_DOMAIN_ID`).
-    - [ ] Document `udev` rules requirements.
-- [ ] Task: Integrate section into main documentation `docs/star_documentation.tex` and compile PDF.
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Research and Documentation' (Protocol in workflow.md)
+- [x] Task: Research and document ROS2 integration strategy in `docs/sections/10_ros2_integration.tex`.
+    - [x] Detail architecture for Visual-LiDAR fusion using [RTAB-Map](https://introlab.github.io/rtabmap/).
+    - [x] Define coordinate frames (tf2 tree) per REP-105.
+    - [x] Specify custom node topic/service/parameter interfaces.
+    - [x] Document multi-machine communication (`ROS_DOMAIN_ID`).
+    - [x] Document `udev` rules requirements.
+- [x] Task: Integrate section into main documentation `docs/star_documentation.tex` and compile PDF.
+- [~] Task: Conductor - User Manual Verification 'Phase 1: Research and Documentation' (Protocol in workflow.md)
 
 ## Phase 2: Infrastructure Setup (Docker/Devcontainer)
 - [ ] Task: Create `Dockerfile` and `.devcontainer/devcontainer.json` at the project root.
