@@ -16,6 +16,7 @@
 #define TX_API_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -51,6 +52,9 @@ typedef void VOID;
 #define TX_NOT_AVAILABLE ((UINT)1)
 #define TX_NO_MEMORY     ((UINT)2)
 #define TX_DELETED       ((UINT)3)
+#define TX_DELETE_ERROR  ((UINT)4)
+#define TX_THREAD_ERROR  ((UINT)5)
+#define TX_NO_EVENTS     ((UINT)6)
 #define TX_WAIT_FOREVER  ((ULONG)0xFFFFFFFF)
 #define TX_NO_WAIT       ((ULONG)0)
 #define TX_NO_INHERIT    ((UINT)0)
@@ -259,6 +263,22 @@ static inline UINT tx_thread_terminate(TX_THREAD* thread_ptr)
 {
   if (thread_ptr == NULL) {
     return TX_NOT_AVAILABLE;
+  }
+
+  return TX_SUCCESS;
+}
+
+/**
+ * @brief Resume a suspended thread
+ *
+ * @param[in] thread_ptr Thread control block pointer
+ *
+ * @return TX_SUCCESS on success
+ */
+static inline UINT tx_thread_resume(TX_THREAD* thread_ptr)
+{
+  if (thread_ptr == NULL) {
+    return TX_THREAD_ERROR;
   }
 
   return TX_SUCCESS;
