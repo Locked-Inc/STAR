@@ -102,6 +102,16 @@ set(MOCK_HCSR04_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_hcsr04_hw.c
 )
 
+# rx_obstacle_detect source
+set(RX_OBSTACLE_DETECT_SRC
+    ${CMAKE_SOURCE_DIR}/../lib/rx_obstacle_detect/src/rx_obstacle_detect.c
+)
+
+# Mock motor source for obstacle detection testing
+set(MOCK_MOTOR_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_motor.c
+)
+
 # Mock GPTW source for motor testing
 set(MOCK_GPTW_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_gptw.c
@@ -191,6 +201,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/../lib/rx_spi_comm/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_hcsr04/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_hcsr04/src
+    ${CMAKE_SOURCE_DIR}/../lib/rx_obstacle_detect/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_hal/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_bus/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_motor/inc
@@ -279,6 +290,16 @@ add_executable(test_rx_hcsr04
     ${MOCK_HCSR04_SRC}
 )
 target_link_libraries(test_rx_hcsr04 unity)
+
+# Test: Obstacle Detection
+add_executable(test_rx_obstacle_detect
+    test_rx_obstacle_detect.c
+    ${RX_OBSTACLE_DETECT_SRC}
+    ${RX_HCSR04_SRC}
+    ${MOCK_HCSR04_SRC}
+    ${MOCK_MOTOR_SRC}
+)
+target_link_libraries(test_rx_obstacle_detect unity)
 
 # Test: UART HAL Driver
 add_executable(test_uart_hal
