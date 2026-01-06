@@ -35,8 +35,8 @@ static const char* s_tag = "USB_COMM";
  * =============================================================================
  */
 
-/** @brief Total header size including sync word (2 + 8) */
-static const uint32_t s_frame_header_total = 10;
+/** @brief Total header size including sync word: SYNC(2) + SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) */
+static const uint32_t s_frame_header_total = 8;
 
 /** @brief Sleep interval for receive polling (ms) */
 static const uint32_t s_sleep_interval_ms = 10;
