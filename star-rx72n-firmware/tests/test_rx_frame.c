@@ -604,8 +604,7 @@ void test_flag_combined(void)
   frame.header.sequence = 6;
   frame.header.length   = 8;
   frame.header.type     = k_frame_type_command;
-  frame.header.flags =
-    k_frame_flag_requires_ack | k_frame_flag_priority | k_frame_flag_fec_enabled;
+  frame.header.flags = k_frame_flag_requires_ack | k_frame_flag_priority | k_frame_flag_fec_enabled;
   memcpy(frame.payload, "COMBINED", 8);
 
   uint8_t  buffer[64];
@@ -700,7 +699,8 @@ void test_crc_little_endian(void)
 
   /* Verify CRC is non-zero (frame is valid) */
   uint32_t crc = ((uint32_t)buffer[crc_offset + 0]) | ((uint32_t)buffer[crc_offset + 1] << 8) |
-                 ((uint32_t)buffer[crc_offset + 2] << 16) | ((uint32_t)buffer[crc_offset + 3] << 24);
+                 ((uint32_t)buffer[crc_offset + 2] << 16) |
+                 ((uint32_t)buffer[crc_offset + 3] << 24);
   TEST_ASSERT_NOT_EQUAL(0, crc);
 }
 
@@ -732,11 +732,14 @@ void test_go_compatibility_empty_ack(void)
 
   /* Verify header bytes match Go encoding */
   const uint8_t expected_header[] = {
-    0x55, 0xAA, /* SYNC */
-    0x00, 0x01, /* SEQ = 1 */
-    0x00, 0x00, /* LEN = 0 */
-    0x03,       /* TYPE = ACK */
-    0x00        /* FLAGS = none */
+    0x55,
+    0xAA, /* SYNC */
+    0x00,
+    0x01, /* SEQ = 1 */
+    0x00,
+    0x00, /* LEN = 0 */
+    0x03, /* TYPE = ACK */
+    0x00  /* FLAGS = none */
   };
   TEST_ASSERT_EQUAL_MEMORY(expected_header, buffer, 8);
 
@@ -776,12 +779,18 @@ void test_go_compatibility_command_with_payload(void)
 
   /* Verify header and payload match Go encoding */
   const uint8_t expected[] = {
-    0x55, 0xAA,       /* SYNC */
-    0x00, 0x2A,       /* SEQ = 42 */
-    0x00, 0x04,       /* LEN = 4 */
-    0x01,             /* TYPE = COMMAND */
-    0x01,             /* FLAGS = REQUIRES_ACK */
-    'T',  'E', 'S', 'T' /* PAYLOAD */
+    0x55,
+    0xAA, /* SYNC */
+    0x00,
+    0x2A, /* SEQ = 42 */
+    0x00,
+    0x04, /* LEN = 4 */
+    0x01, /* TYPE = COMMAND */
+    0x01, /* FLAGS = REQUIRES_ACK */
+    'T',
+    'E',
+    'S',
+    'T' /* PAYLOAD */
   };
   TEST_ASSERT_EQUAL_MEMORY(expected, buffer, 12);
 

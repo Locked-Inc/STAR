@@ -42,43 +42,43 @@ typedef void VOID;
  */
 
 typedef enum {
-  TX_SUCCESS                = 0x00, /**< Success */
-  TX_DELETED                = 0x01, /**< Object was deleted */
-  TX_NO_MEMORY              = 0x10, /**< No memory available */
-  TX_POOL_ERROR             = 0x02, /**< Invalid pool */
-  TX_PTR_ERROR              = 0x03, /**< Invalid pointer */
-  TX_WAIT_ERROR             = 0x04, /**< Invalid wait option */
-  TX_SIZE_ERROR             = 0x05, /**< Invalid size */
-  TX_GROUP_ERROR            = 0x06, /**< Invalid group */
-  TX_NO_EVENTS              = 0x07, /**< No events available */
-  TX_OPTION_ERROR           = 0x08, /**< Invalid option */
-  TX_QUEUE_ERROR            = 0x09, /**< Invalid queue */
-  TX_QUEUE_EMPTY            = 0x0A, /**< Queue is empty */
-  TX_QUEUE_FULL             = 0x0B, /**< Queue is full */
-  TX_SEMAPHORE_ERROR        = 0x0C, /**< Invalid semaphore */
-  TX_NO_INSTANCE            = 0x0D, /**< No instance available */
-  TX_THREAD_ERROR           = 0x0E, /**< Invalid thread */
-  TX_PRIORITY_ERROR         = 0x0F, /**< Invalid priority */
-  TX_START_ERROR            = 0x10, /**< Start error */
-  TX_DELETE_ERROR           = 0x11, /**< Delete error */
-  TX_RESUME_ERROR           = 0x12, /**< Resume error */
-  TX_CALLER_ERROR           = 0x13, /**< Caller error */
-  TX_SUSPEND_ERROR          = 0x14, /**< Suspend error */
-  TX_TIMER_ERROR            = 0x15, /**< Invalid timer */
-  TX_TICK_ERROR             = 0x16, /**< Invalid tick value */
-  TX_ACTIVATE_ERROR         = 0x17, /**< Activate error */
-  TX_THRESH_ERROR           = 0x18, /**< Threshold error */
-  TX_SUSPEND_LIFTED         = 0x19, /**< Suspension lifted */
-  TX_WAIT_ABORTED           = 0x1A, /**< Wait aborted */
-  TX_WAIT_ABORT_ERROR       = 0x1B, /**< Wait abort error */
-  TX_MUTEX_ERROR            = 0x1C, /**< Invalid mutex */
-  TX_NOT_AVAILABLE          = 0x1D, /**< Not available */
-  TX_NOT_OWNED              = 0x1E, /**< Not owned */
-  TX_INHERIT_ERROR          = 0x1F, /**< Inherit error */
-  TX_NOT_DONE               = 0x20, /**< Not done */
-  TX_CEILING_EXCEEDED       = 0x21, /**< Ceiling exceeded */
-  TX_INVALID_CEILING        = 0x22, /**< Invalid ceiling */
-  TX_FEATURE_NOT_ENABLED    = 0xFF, /**< Feature not enabled */
+  TX_SUCCESS             = 0x00, /**< Success */
+  TX_DELETED             = 0x01, /**< Object was deleted */
+  TX_NO_MEMORY           = 0x10, /**< No memory available */
+  TX_POOL_ERROR          = 0x02, /**< Invalid pool */
+  TX_PTR_ERROR           = 0x03, /**< Invalid pointer */
+  TX_WAIT_ERROR          = 0x04, /**< Invalid wait option */
+  TX_SIZE_ERROR          = 0x05, /**< Invalid size */
+  TX_GROUP_ERROR         = 0x06, /**< Invalid group */
+  TX_NO_EVENTS           = 0x07, /**< No events available */
+  TX_OPTION_ERROR        = 0x08, /**< Invalid option */
+  TX_QUEUE_ERROR         = 0x09, /**< Invalid queue */
+  TX_QUEUE_EMPTY         = 0x0A, /**< Queue is empty */
+  TX_QUEUE_FULL          = 0x0B, /**< Queue is full */
+  TX_SEMAPHORE_ERROR     = 0x0C, /**< Invalid semaphore */
+  TX_NO_INSTANCE         = 0x0D, /**< No instance available */
+  TX_THREAD_ERROR        = 0x0E, /**< Invalid thread */
+  TX_PRIORITY_ERROR      = 0x0F, /**< Invalid priority */
+  TX_START_ERROR         = 0x10, /**< Start error */
+  TX_DELETE_ERROR        = 0x11, /**< Delete error */
+  TX_RESUME_ERROR        = 0x12, /**< Resume error */
+  TX_CALLER_ERROR        = 0x13, /**< Caller error */
+  TX_SUSPEND_ERROR       = 0x14, /**< Suspend error */
+  TX_TIMER_ERROR         = 0x15, /**< Invalid timer */
+  TX_TICK_ERROR          = 0x16, /**< Invalid tick value */
+  TX_ACTIVATE_ERROR      = 0x17, /**< Activate error */
+  TX_THRESH_ERROR        = 0x18, /**< Threshold error */
+  TX_SUSPEND_LIFTED      = 0x19, /**< Suspension lifted */
+  TX_WAIT_ABORTED        = 0x1A, /**< Wait aborted */
+  TX_WAIT_ABORT_ERROR    = 0x1B, /**< Wait abort error */
+  TX_MUTEX_ERROR         = 0x1C, /**< Invalid mutex */
+  TX_NOT_AVAILABLE       = 0x1D, /**< Not available */
+  TX_NOT_OWNED           = 0x1E, /**< Not owned */
+  TX_INHERIT_ERROR       = 0x1F, /**< Inherit error */
+  TX_NOT_DONE            = 0x20, /**< Not done */
+  TX_CEILING_EXCEEDED    = 0x21, /**< Ceiling exceeded */
+  TX_INVALID_CEILING     = 0x22, /**< Invalid ceiling */
+  TX_FEATURE_NOT_ENABLED = 0xFF, /**< Feature not enabled */
 } tx_return_codes_t;
 
 /* =============================================================================
@@ -100,11 +100,11 @@ typedef enum {
  * @brief Mock ThreadX thread control block
  */
 typedef struct tx_thread_struct {
-  char*    tx_thread_name;     /**< Thread name */
-  UINT     tx_thread_state;    /**< Thread state */
-  UINT     tx_thread_priority; /**< Thread priority */
-  void*    tx_thread_stack_ptr;/**< Stack pointer */
-  ULONG    tx_thread_stack_size; /**< Stack size */
+  char* tx_thread_name;       /**< Thread name */
+  UINT  tx_thread_state;      /**< Thread state */
+  UINT  tx_thread_priority;   /**< Thread priority */
+  void* tx_thread_stack_ptr;  /**< Stack pointer */
+  ULONG tx_thread_stack_size; /**< Stack size */
 } TX_THREAD;
 
 /* =============================================================================
@@ -116,8 +116,8 @@ typedef struct tx_thread_struct {
  * @brief Mock ThreadX semaphore control block
  */
 typedef struct tx_semaphore_struct {
-  char*    tx_semaphore_name;  /**< Semaphore name */
-  ULONG    tx_semaphore_count; /**< Semaphore count */
+  char* tx_semaphore_name;  /**< Semaphore name */
+  ULONG tx_semaphore_count; /**< Semaphore count */
 } TX_SEMAPHORE;
 
 /* =============================================================================
@@ -129,8 +129,8 @@ typedef struct tx_semaphore_struct {
  * @brief Mock ThreadX mutex control block
  */
 typedef struct tx_mutex_struct {
-  char*    tx_mutex_name;      /**< Mutex name */
-  UINT     tx_mutex_ownership; /**< Ownership count */
+  char* tx_mutex_name;      /**< Mutex name */
+  UINT  tx_mutex_ownership; /**< Ownership count */
 } TX_MUTEX;
 
 /* =============================================================================
@@ -147,10 +147,10 @@ typedef enum {
  * @brief Mock ThreadX state
  */
 typedef struct {
-  uint32_t sleep_calls;                               /**< Number of tx_thread_sleep calls */
-  ULONG    sleep_ticks[k_mock_tx_max_sleep_calls];    /**< Sleep durations */
-  uint32_t current_time;                              /**< Simulated current time (ticks) */
-  bool     interrupts_enabled;                        /**< Interrupt state */
+  uint32_t sleep_calls;                            /**< Number of tx_thread_sleep calls */
+  ULONG    sleep_ticks[k_mock_tx_max_sleep_calls]; /**< Sleep durations */
+  uint32_t current_time;                           /**< Simulated current time (ticks) */
+  bool     interrupts_enabled;                     /**< Interrupt state */
 } mock_tx_state_t;
 
 extern mock_tx_state_t g_mock_tx;

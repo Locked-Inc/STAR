@@ -161,8 +161,7 @@ static void internal_send_trigger_pulse(const rx_hcsr04_t* handle)
  * @return k_rx_err_timeout if timed out
  * @return k_rx_err_cancelled if operation was cancelled
  */
-static rx_err_t
-internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
+static rx_err_t internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
 {
   uint32_t start_time = hcsr04_hal_get_time_us();
 
@@ -185,7 +184,6 @@ internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, uint32_t timeout_
     if (elapsed >= timeout_us) {
       return k_rx_err_timeout;
     }
-
   }
 }
 
@@ -242,12 +240,11 @@ static void hcsr04_worker_entry(ULONG input)
 
   while (true) {
     /* Wait for measurement request OR shutdown request */
-    UINT status = tx_event_flags_get(
-        &s_measurement_request,
-        k_event_measurement_request | k_event_shutdown_request,
-        TX_OR_CLEAR,
-        &actual_flags,
-        TX_WAIT_FOREVER);
+    UINT status = tx_event_flags_get(&s_measurement_request,
+                                     k_event_measurement_request | k_event_shutdown_request,
+                                     TX_OR_CLEAR,
+                                     &actual_flags,
+                                     TX_WAIT_FOREVER);
 
     if (status != TX_SUCCESS) {
       continue; /* Should not happen with TX_WAIT_FOREVER */
@@ -311,9 +308,16 @@ rx_err_t rx_hcsr04_worker_init(void)
   s_pending.user_data = NULL;
 
   /* Create worker thread */
-  status = tx_thread_create(&s_hcsr04_worker_thread, "HCSR04_Worker", hcsr04_worker_entry, 0,
-                            s_worker_stack, k_worker_stack_size, k_worker_priority,
-                            k_worker_priority, TX_NO_TIME_SLICE, TX_AUTO_START);
+  status = tx_thread_create(&s_hcsr04_worker_thread,
+                            "HCSR04_Worker",
+                            hcsr04_worker_entry,
+                            0,
+                            s_worker_stack,
+                            k_worker_stack_size,
+                            k_worker_priority,
+                            k_worker_priority,
+                            TX_NO_TIME_SLICE,
+                            TX_AUTO_START);
 
   if (status != TX_SUCCESS) {
     /* Cleanup on failure */
@@ -536,7 +540,7 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
   /* Convert to distance (with temperature compensation if enabled) */
   if (handle->temp_compensation_enabled) {
     result->distance_cm =
-        rx_hcsr04_echo_to_cm_with_temp(result->echo_time_us, handle->temperature_celsius);
+      rx_hcsr04_echo_to_cm_with_temp(result->echo_time_us, handle->temperature_celsius);
   } else {
     result->distance_cm = rx_hcsr04_echo_to_cm(result->echo_time_us);
   }
@@ -594,8 +598,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
     tx_mutex_put(&s_pending_mutex);
 
     /* Signal worker thread - function returns immediately */
-    UINT status =
-        tx_event_flags_set(&s_measurement_request, k_event_measurement_request, TX_OR);
+    UINT status = tx_event_flags_set(&s_measurement_request, k_event_measurement_request, TX_OR);
 
     if (status != TX_SUCCESS) {
       /* Rollback on failure */

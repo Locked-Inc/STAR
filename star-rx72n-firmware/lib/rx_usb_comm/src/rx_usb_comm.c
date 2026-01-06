@@ -246,9 +246,8 @@ static bool internal_is_timed_out(uint32_t timeout_ms, uint32_t elapsed_ms)
  * @return k_rx_ok to continue searching
  * @return k_rx_err_timeout if timed out or no time interface
  */
-static rx_err_t internal_handle_no_sync(rx_usb_comm_handle_t* handle,
-                                        uint32_t              timeout_ms,
-                                        uint32_t*             elapsed_ms)
+static rx_err_t
+internal_handle_no_sync(rx_usb_comm_handle_t* handle, uint32_t timeout_ms, uint32_t* elapsed_ms)
 {
   /* Buffer full and no sync - discard one byte to advance sliding window */
   if (handle->rx_buffer_len >= k_usb_comm_rx_buffer_size) {
@@ -282,9 +281,8 @@ static rx_err_t internal_handle_no_sync(rx_usb_comm_handle_t* handle,
  * @return k_rx_ok to continue waiting
  * @return k_rx_err_timeout if timed out or no time interface
  */
-static rx_err_t internal_wait_for_data(rx_usb_comm_handle_t* handle,
-                                       uint32_t              timeout_ms,
-                                       uint32_t*             elapsed_ms)
+static rx_err_t
+internal_wait_for_data(rx_usb_comm_handle_t* handle, uint32_t timeout_ms, uint32_t* elapsed_ms)
 {
   if (internal_is_timed_out(timeout_ms, *elapsed_ms)) {
     return k_rx_err_timeout;
@@ -307,9 +305,8 @@ static rx_err_t internal_wait_for_data(rx_usb_comm_handle_t* handle,
  * @return k_rx_ok on success
  * @return Error code from rx_frame_decode on failure
  */
-static rx_err_t internal_decode_frame(rx_usb_comm_handle_t* handle,
-                                      rx_frame_t*           frame,
-                                      uint32_t              total_size)
+static rx_err_t
+internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, uint32_t total_size)
 {
   uint8_t* hdr = handle->rx_buffer + handle->rx_buffer_pos;
 
@@ -364,9 +361,8 @@ static void internal_align_to_sync(rx_usb_comm_handle_t* handle, int32_t sync_po
  * @param[out] total_size Output total frame size
  * @return true if header is valid, false if invalid payload length
  */
-static bool internal_parse_header(rx_usb_comm_handle_t* handle,
-                                  uint16_t*             payload_len,
-                                  uint32_t*             total_size)
+static bool
+internal_parse_header(rx_usb_comm_handle_t* handle, uint16_t* payload_len, uint32_t* total_size)
 {
   uint8_t* hdr = handle->rx_buffer + handle->rx_buffer_pos;
   *payload_len = rx_frame_read_be16(&hdr[k_hdr_len_offset]);
@@ -685,10 +681,10 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
     return k_rx_err_invalid_state;
   }
 
-  uint32_t             elapsed_ms = 0;
-  uint32_t             iterations = 0;
-  rx_err_t             err        = k_rx_ok;
-  rx_receive_result_t  result     = k_receive_continue;
+  uint32_t            elapsed_ms = 0;
+  uint32_t            iterations = 0;
+  rx_err_t            err        = k_rx_ok;
+  rx_receive_result_t result     = k_receive_continue;
 
   /* Try to receive a complete frame with bounded iterations */
   while (iterations < k_max_receive_iterations) {

@@ -316,9 +316,9 @@ rx_err_t mock_gpio_read(uint8_t port, uint8_t pin, bool* value)
      * We simplify this for testing by using current_time_us
      * as a relative position in the echo sequence.
      */
-    uint32_t elapsed = m->current_time_us - m->last_trigger_time_us;
+    uint32_t       elapsed = m->current_time_us - m->last_trigger_time_us;
     const uint32_t echo_start =
-        k_hcsr04_trigger_settle_us + k_hcsr04_trigger_pulse_us; /* Wait for trigger pulse to finish */
+      k_hcsr04_trigger_settle_us + k_hcsr04_trigger_pulse_us; /* Wait for trigger pulse to finish */
     const uint32_t echo_end = echo_start + m->simulated_echo_us;
 
     if (elapsed >= echo_start && elapsed < echo_end) {

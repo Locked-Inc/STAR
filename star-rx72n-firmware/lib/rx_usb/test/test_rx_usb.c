@@ -42,71 +42,80 @@ typedef enum {
   k_test_result_init = 0, /**< Initial counter value */
 } test_result_init_t;
 
-static uint32_t s_tests_passed = k_test_result_init;
-static uint32_t s_tests_failed = k_test_result_init;
+static uint32_t    s_tests_passed = k_test_result_init;
+static uint32_t    s_tests_failed = k_test_result_init;
 static const char* s_current_test = NULL;
 
 /**
  * @brief Assert that a condition is true
  */
-#define TEST_ASSERT(condition)                                                   \
-  do {                                                                           \
-    if (!(condition)) {                                                          \
-      printf("  FAIL: %s:%d: %s\n", __FILE__, __LINE__, #condition);             \
-      s_tests_failed++;                                                          \
-      return;                                                                    \
-    }                                                                            \
+#define TEST_ASSERT(condition)                                                                     \
+  do {                                                                                             \
+    if (!(condition)) {                                                                            \
+      printf("  FAIL: %s:%d: %s\n", __FILE__, __LINE__, #condition);                               \
+      s_tests_failed++;                                                                            \
+      return;                                                                                      \
+    }                                                                                              \
   } while (0)
 
 /**
  * @brief Assert that two values are equal
  */
-#define TEST_ASSERT_EQUAL(expected, actual)                                      \
-  do {                                                                           \
-    if ((expected) != (actual)) {                                                \
-      printf("  FAIL: %s:%d: expected %d, got %d\n", __FILE__, __LINE__,         \
-             (int)(expected), (int)(actual));                                    \
-      s_tests_failed++;                                                          \
-      return;                                                                    \
-    }                                                                            \
+#define TEST_ASSERT_EQUAL(expected, actual)                                                        \
+  do {                                                                                             \
+    if ((expected) != (actual)) {                                                                  \
+      printf("  FAIL: %s:%d: expected %d, got %d\n",                                               \
+             __FILE__,                                                                             \
+             __LINE__,                                                                             \
+             (int)(expected),                                                                      \
+             (int)(actual));                                                                       \
+      s_tests_failed++;                                                                            \
+      return;                                                                                      \
+    }                                                                                              \
   } while (0)
 
 /**
  * @brief Assert that two uint32_t values are equal
  */
-#define TEST_ASSERT_EQUAL_UINT32(expected, actual)                               \
-  do {                                                                           \
-    if ((expected) != (actual)) {                                                \
-      printf("  FAIL: %s:%d: expected %u, got %u\n", __FILE__, __LINE__,         \
-             (unsigned)(expected), (unsigned)(actual));                          \
-      s_tests_failed++;                                                          \
-      return;                                                                    \
-    }                                                                            \
+#define TEST_ASSERT_EQUAL_UINT32(expected, actual)                                                 \
+  do {                                                                                             \
+    if ((expected) != (actual)) {                                                                  \
+      printf("  FAIL: %s:%d: expected %u, got %u\n",                                               \
+             __FILE__,                                                                             \
+             __LINE__,                                                                             \
+             (unsigned)(expected),                                                                 \
+             (unsigned)(actual));                                                                  \
+      s_tests_failed++;                                                                            \
+      return;                                                                                      \
+    }                                                                                              \
   } while (0)
 
 /**
  * @brief Assert that two memory regions are equal
  */
-#define TEST_ASSERT_EQUAL_MEMORY(expected, actual, len)                          \
-  do {                                                                           \
-    if (memcmp((expected), (actual), (len)) != 0) {                              \
-      printf("  FAIL: %s:%d: memory mismatch\n", __FILE__, __LINE__);            \
-      s_tests_failed++;                                                          \
-      return;                                                                    \
-    }                                                                            \
+#define TEST_ASSERT_EQUAL_MEMORY(expected, actual, len)                                            \
+  do {                                                                                             \
+    if (memcmp((expected), (actual), (len)) != 0) {                                                \
+      printf("  FAIL: %s:%d: memory mismatch\n", __FILE__, __LINE__);                              \
+      s_tests_failed++;                                                                            \
+      return;                                                                                      \
+    }                                                                                              \
   } while (0)
 
 /**
  * @brief Assert that two pointers are equal
  */
-#define TEST_ASSERT_EQUAL_PTR(expected, actual)                                  \
-  do {                                                                           \
-    if ((expected) != (actual)) {                                                \
-      printf("  FAIL: %s:%d: expected %p, got %p\n", __FILE__, __LINE__,         \
-             (void*)(expected), (void*)(actual));                                \
-      s_tests_failed++;                                                          \
-      return;                                                                    \
-    }                                                                            \
+#define TEST_ASSERT_EQUAL_PTR(expected, actual)                                                    \
+  do {                                                                                             \
+    if ((expected) != (actual)) {                                                                  \
+      printf("  FAIL: %s:%d: expected %p, got %p\n",                                               \
+             __FILE__,                                                                             \
+             __LINE__,                                                                             \
+             (void*)(expected),                                                                    \
+             (void*)(actual));                                                                     \
+      s_tests_failed++;                                                                            \
+      return;                                                                                      \
+    }                                                                                              \
   } while (0)
 
 /**
@@ -122,16 +131,16 @@ static const char* s_current_test = NULL;
 /**
  * @brief Run a test function
  */
-#define RUN_TEST(test_func)                                                      \
-  do {                                                                           \
-    s_current_test = #test_func;                                                 \
-    printf("Running %s...\n", s_current_test);                                   \
-    setUp();                                                                     \
-    test_func();                                                                 \
-    tearDown();                                                                  \
-    if (s_tests_failed == 0 || s_tests_passed > 0) {                             \
-      s_tests_passed++;                                                          \
-    }                                                                            \
+#define RUN_TEST(test_func)                                                                        \
+  do {                                                                                             \
+    s_current_test = #test_func;                                                                   \
+    printf("Running %s...\n", s_current_test);                                                     \
+    setUp();                                                                                       \
+    test_func();                                                                                   \
+    tearDown();                                                                                    \
+    if (s_tests_failed == 0 || s_tests_passed > 0) {                                               \
+      s_tests_passed++;                                                                            \
+    }                                                                                              \
   } while (0)
 
 /* =============================================================================
@@ -190,7 +199,7 @@ static mock_hw_state_t s_mock_hw = {0};
 rx_err_t rx_usb_hw_init(void)
 {
   s_mock_hw.hw_init_calls++;
-  rx_err_t ret = s_mock_hw.next_hw_init_ret;
+  rx_err_t ret               = s_mock_hw.next_hw_init_ret;
   s_mock_hw.next_hw_init_ret = k_rx_ok; /* Reset after use */
   return ret;
 }
@@ -204,7 +213,7 @@ rx_err_t rx_usb_hw_deinit(void)
 rx_err_t rx_usb_hw_attach(void)
 {
   s_mock_hw.hw_attach_calls++;
-  rx_err_t ret = s_mock_hw.next_hw_attach_ret;
+  rx_err_t ret                 = s_mock_hw.next_hw_attach_ret;
   s_mock_hw.next_hw_attach_ret = k_rx_ok; /* Reset after use */
   return ret;
 }
@@ -218,7 +227,7 @@ rx_err_t rx_usb_hw_detach(void)
 rx_err_t rx_usb_cdc_init(void)
 {
   s_mock_hw.cdc_init_calls++;
-  rx_err_t ret = s_mock_hw.next_cdc_init_ret;
+  rx_err_t ret                = s_mock_hw.next_cdc_init_ret;
   s_mock_hw.next_cdc_init_ret = k_rx_ok; /* Reset after use */
   return ret;
 }
@@ -580,12 +589,12 @@ void test_ring_buffer_interleaved_read_write(void)
   /* Simulate ISR writing while task reads */
   for (uint32_t i = 0; i < 100; i++) {
     /* Write some data (simulating ISR) */
-    uint8_t write_data = (uint8_t)i;
-    uint32_t written = internal_ring_buffer_write(&s_test_buffer, &write_data, 1);
+    uint8_t  write_data = (uint8_t)i;
+    uint32_t written    = internal_ring_buffer_write(&s_test_buffer, &write_data, 1);
     TEST_ASSERT_EQUAL_UINT32(1, written);
 
     /* Read data back (simulating task) */
-    uint8_t read_data;
+    uint8_t  read_data;
     uint32_t read_count = internal_ring_buffer_read(&s_test_buffer, &read_data, 1);
     TEST_ASSERT_EQUAL_UINT32(1, read_count);
     TEST_ASSERT_EQUAL((uint8_t)i, read_data);
@@ -605,7 +614,7 @@ void test_ring_buffer_burst_write_then_burst_read(void)
   TEST_ASSERT_EQUAL_UINT32(100, written);
 
   /* Burst read */
-  uint8_t read_buf[100];
+  uint8_t  read_buf[100];
   uint32_t read_count = internal_ring_buffer_read(&s_test_buffer, read_buf, 100);
   TEST_ASSERT_EQUAL_UINT32(100, read_count);
   TEST_ASSERT_EQUAL_MEMORY(pattern, read_buf, 100);

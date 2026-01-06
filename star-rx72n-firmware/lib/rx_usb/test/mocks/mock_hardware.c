@@ -86,8 +86,7 @@ void mock_usb0_set_dvsq(uint16_t dvsq)
 void mock_usb0_set_ctsq(uint16_t ctsq)
 {
   /* Clear existing CTSQ bits and set new value */
-  g_mock_usb0.intsts0 = (g_mock_usb0.intsts0 & ~k_intsts0_ctsq_mask) |
-                        (ctsq & k_intsts0_ctsq_mask);
+  g_mock_usb0.intsts0 = (g_mock_usb0.intsts0 & ~k_intsts0_ctsq_mask) | (ctsq & k_intsts0_ctsq_mask);
 }
 
 void mock_usb0_set_fifo_ready(uint8_t ready)
@@ -101,8 +100,8 @@ void mock_usb0_set_fifo_ready(uint8_t ready)
 
 void mock_usb0_set_fifo_dtln(uint16_t len)
 {
-  g_mock_usb0.cfifoctr = (g_mock_usb0.cfifoctr & ~k_cfifoctr_dtln_mask) |
-                         (len & k_cfifoctr_dtln_mask);
+  g_mock_usb0.cfifoctr =
+    (g_mock_usb0.cfifoctr & ~k_cfifoctr_dtln_mask) | (len & k_cfifoctr_dtln_mask);
 }
 
 void mock_usb0_set_pipe1_busy(uint8_t busy)
@@ -116,8 +115,8 @@ void mock_usb0_set_pipe1_busy(uint8_t busy)
 
 void mock_usb0_set_line_status(uint16_t lnst)
 {
-  g_mock_usb0.syssts0 = (g_mock_usb0.syssts0 & ~k_usb_syssts0_lnst_mask) |
-                        (lnst & k_usb_syssts0_lnst_mask);
+  g_mock_usb0.syssts0 =
+    (g_mock_usb0.syssts0 & ~k_usb_syssts0_lnst_mask) | (lnst & k_usb_syssts0_lnst_mask);
 }
 
 /* =============================================================================
@@ -150,9 +149,7 @@ void mock_log_set_print(bool enable)
 /**
  * @brief Internal function to record a log entry
  */
-static void internal_log_record(mock_log_level_t level,
-                                const char*      tag,
-                                const char*      msg)
+static void internal_log_record(mock_log_level_t level, const char* tag, const char* msg)
 {
   mock_log_entry_t* entry = &g_mock_log.entries[g_mock_log.write_index];
 
@@ -231,9 +228,8 @@ uint32_t mock_log_get_warn_count(void)
 
 bool mock_log_contains(mock_log_level_t level, const char* tag, const char* msg)
 {
-  uint32_t search_count = (g_mock_log.count < k_mock_log_history_size)
-                            ? g_mock_log.count
-                            : k_mock_log_history_size;
+  uint32_t search_count =
+    (g_mock_log.count < k_mock_log_history_size) ? g_mock_log.count : k_mock_log_history_size;
 
   for (uint32_t i = 0; i < search_count; i++) {
     mock_log_entry_t* entry = &g_mock_log.entries[i];
@@ -258,9 +254,8 @@ bool mock_log_contains(mock_log_level_t level, const char* tag, const char* msg)
 
 bool mock_log_get_last(mock_log_level_t level, mock_log_entry_t* out_entry)
 {
-  uint32_t search_count = (g_mock_log.count < k_mock_log_history_size)
-                            ? g_mock_log.count
-                            : k_mock_log_history_size;
+  uint32_t search_count =
+    (g_mock_log.count < k_mock_log_history_size) ? g_mock_log.count : k_mock_log_history_size;
 
   /* Search backwards for most recent entry at this level */
   for (int32_t i = search_count - 1; i >= 0; i--) {
@@ -313,7 +308,7 @@ ULONG tx_time_get(void)
 
 UINT tx_interrupt_control(UINT new_posture)
 {
-  UINT old_posture = g_mock_tx.interrupts_enabled ? 1 : 0;
+  UINT old_posture             = g_mock_tx.interrupts_enabled ? 1 : 0;
   g_mock_tx.interrupts_enabled = (new_posture != 0);
   return old_posture;
 }
@@ -325,8 +320,8 @@ uint32_t mock_tx_get_sleep_count(void)
 
 ULONG mock_tx_get_total_sleep_ticks(void)
 {
-  ULONG    total        = 0;
-  uint32_t count        = g_mock_tx.sleep_calls;
+  ULONG    total = 0;
+  uint32_t count = g_mock_tx.sleep_calls;
   if (count > k_mock_tx_max_sleep_calls) {
     count = k_mock_tx_max_sleep_calls;
   }

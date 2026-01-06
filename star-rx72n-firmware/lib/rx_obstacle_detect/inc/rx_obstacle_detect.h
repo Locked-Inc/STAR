@@ -50,8 +50,8 @@ extern "C" {
  * @brief Obstacle detection constants
  */
 typedef enum {
-  k_obstacle_detect_max_sensors = 8,  /**< Maximum number of HC-SR04 sensors */
-  k_obstacle_detect_max_motors  = 4,  /**< Maximum number of motors to control */
+  k_obstacle_detect_max_sensors     = 8,    /**< Maximum number of HC-SR04 sensors */
+  k_obstacle_detect_max_motors      = 4,    /**< Maximum number of motors to control */
   k_obstacle_detect_task_stack_size = 2048, /**< Detection task stack size (bytes) */
   k_obstacle_detect_task_priority   = 8,    /**< Detection task priority */
 } rx_obstacle_detect_constants_t;
@@ -80,10 +80,10 @@ typedef enum {
  * @param[in] distance_cm       Distance measured in centimeters
  * @param[in] user_data         User context passed during init
  */
-typedef void (*rx_obstacle_detect_callback_t)(bool     obstacle_detected,
-                                              uint8_t  sensor_idx,
-                                              float    distance_cm,
-                                              void*    user_data);
+typedef void (*rx_obstacle_detect_callback_t)(bool    obstacle_detected,
+                                              uint8_t sensor_idx,
+                                              float   distance_cm,
+                                              void*   user_data);
 
 /**
  * @brief Obstacle detection configuration
@@ -93,12 +93,12 @@ typedef void (*rx_obstacle_detect_callback_t)(bool     obstacle_detected,
  */
 typedef struct {
   /* Sensor configuration */
-  rx_hcsr04_t** sensors;       /**< Array of HC-SR04 sensor handles (required) */
-  uint8_t       sensor_count;  /**< Number of sensors (1 to k_obstacle_detect_max_sensors) */
+  rx_hcsr04_t** sensors;      /**< Array of HC-SR04 sensor handles (required) */
+  uint8_t       sensor_count; /**< Number of sensors (1 to k_obstacle_detect_max_sensors) */
 
   /* Motor configuration */
-  rx_motor_handle_t** motors;       /**< Array of motor handles to stop (required) */
-  uint8_t             motor_count;  /**< Number of motors (1 to k_obstacle_detect_max_motors) */
+  rx_motor_handle_t** motors;      /**< Array of motor handles to stop (required) */
+  uint8_t             motor_count; /**< Number of motors (1 to k_obstacle_detect_max_motors) */
 
   /* Detection parameters */
   float    detection_threshold_cm; /**< Stop distance threshold (e.g., 30.0cm) */
@@ -106,8 +106,8 @@ typedef struct {
   uint32_t poll_interval_ms;       /**< Sensor polling interval (e.g., 20ms = 50Hz) */
 
   /* Optional callback */
-  rx_obstacle_detect_callback_t callback;   /**< Event callback (can be NULL) */
-  void*                         user_data;  /**< User context for callback (can be NULL) */
+  rx_obstacle_detect_callback_t callback;  /**< Event callback (can be NULL) */
+  void*                         user_data; /**< User context for callback (can be NULL) */
 } rx_obstacle_detect_config_t;
 
 /**
@@ -118,33 +118,33 @@ typedef struct {
  */
 typedef struct {
   /* Configuration (copied from config) */
-  rx_hcsr04_t*        sensors[k_obstacle_detect_max_sensors]; /**< Sensor handles */
-  uint8_t             sensor_count;                           /**< Number of sensors */
-  rx_motor_handle_t*  motors[k_obstacle_detect_max_motors];  /**< Motor handles */
-  uint8_t             motor_count;                            /**< Number of motors */
-  float               detection_threshold_cm; /**< Stop distance threshold */
-  uint32_t            debounce_samples;       /**< Debounce sample count */
-  uint32_t            poll_interval_ms;       /**< Polling interval */
-  rx_obstacle_detect_callback_t callback;     /**< Event callback */
-  void*                         user_data;    /**< User context */
+  rx_hcsr04_t*                  sensors[k_obstacle_detect_max_sensors]; /**< Sensor handles */
+  uint8_t                       sensor_count;                           /**< Number of sensors */
+  rx_motor_handle_t*            motors[k_obstacle_detect_max_motors];   /**< Motor handles */
+  uint8_t                       motor_count;                            /**< Number of motors */
+  float                         detection_threshold_cm; /**< Stop distance threshold */
+  uint32_t                      debounce_samples;       /**< Debounce sample count */
+  uint32_t                      poll_interval_ms;       /**< Polling interval */
+  rx_obstacle_detect_callback_t callback;               /**< Event callback */
+  void*                         user_data;              /**< User context */
 
   /* ThreadX resources */
-  TX_THREAD thread;                                         /**< Detection task thread */
-  uint8_t   thread_stack[k_obstacle_detect_task_stack_size]; /**< Task stack */
-  TX_EVENT_FLAGS_GROUP event_flags;                         /**< Control event flags */
+  TX_THREAD            thread; /**< Detection task thread */
+  uint8_t              thread_stack[k_obstacle_detect_task_stack_size]; /**< Task stack */
+  TX_EVENT_FLAGS_GROUP event_flags;                                     /**< Control event flags */
 
   /* State */
-  bool                        initialized;     /**< True if initialized */
-  rx_obstacle_detect_state_t  state;           /**< Current detection state */
-  bool                        stop_requested;  /**< True if stop requested */
+  bool                       initialized;    /**< True if initialized */
+  rx_obstacle_detect_state_t state;          /**< Current detection state */
+  bool                       stop_requested; /**< True if stop requested */
 
   /* Debouncing state (per-sensor) */
   uint32_t debounce_counter[k_obstacle_detect_max_sensors]; /**< Consecutive detections */
   bool     obstacle_active[k_obstacle_detect_max_sensors];  /**< Per-sensor obstacle state */
 
   /* Statistics */
-  uint32_t total_polls;         /**< Total sensor polls performed */
-  uint32_t obstacle_events;     /**< Total obstacle detection events */
+  uint32_t total_polls;          /**< Total sensor polls performed */
+  uint32_t obstacle_events;      /**< Total obstacle detection events */
   uint32_t false_positive_count; /**< Debounced false positives */
 } rx_obstacle_detect_t;
 
@@ -257,8 +257,8 @@ rx_err_t rx_obstacle_detect_clear_obstacle(rx_obstacle_detect_t* handle);
  * @return k_rx_err_null_pointer if handle or out_state is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
-rx_err_t rx_obstacle_detect_get_state(const rx_obstacle_detect_t*  handle,
-                                      rx_obstacle_detect_state_t*  out_state);
+rx_err_t rx_obstacle_detect_get_state(const rx_obstacle_detect_t* handle,
+                                      rx_obstacle_detect_state_t* out_state);
 
 /**
  * @brief Check if obstacle is currently detected

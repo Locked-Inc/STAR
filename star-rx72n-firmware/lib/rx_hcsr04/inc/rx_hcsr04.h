@@ -99,11 +99,11 @@ typedef struct {
   uint32_t   timeout_us;  /**< Measurement timeout in microseconds */
 
   /* State */
-  bool  initialized;                   /**< True if handle is initialized */
-  bool  measurement_active;            /**< True if async measurement in progress */
-  bool  cancel_requested;              /**< True if async measurement cancellation requested */
-  float temperature_celsius;           /**< Ambient temperature for compensation (20.0 if not set) */
-  bool  temp_compensation_enabled;     /**< True if temperature compensation is enabled */
+  bool  initialized;               /**< True if handle is initialized */
+  bool  measurement_active;        /**< True if async measurement in progress */
+  bool  cancel_requested;          /**< True if async measurement cancellation requested */
+  float temperature_celsius;       /**< Ambient temperature for compensation (20.0 if not set) */
+  bool  temp_compensation_enabled; /**< True if temperature compensation is enabled */
 
   /* Statistics */
   uint32_t measurement_count; /**< Total measurements attempted */
