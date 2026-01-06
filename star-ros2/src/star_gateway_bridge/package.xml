@@ -9,9 +9,16 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <!-- ROS2 dependencies -->
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+
+  <!-- gRPC and Protobuf (system dependencies, handled in CMakeLists.txt) -->
+  <!-- These are not ROS packages, so they're found via find_package(Protobuf) -->
+  <!-- and find_package(gRPC) in CMakeLists.txt -->
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
