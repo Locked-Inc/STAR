@@ -101,6 +101,14 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
     return err;
   }
 
+  /* Post-condition: Verify GPIO is responsive by attempting a read */
+  bool test_value = false;
+  err             = gpio_read(bus_config->proto.gpio.pin, &test_value);
+  if (err != k_rx_ok) {
+    rx_log_warn(s_tag, "Post-init verification read failed (pin may not support readback)");
+    /* Continue anyway - init succeeded, readback limitation is acceptable */
+  }
+
   /* Mark bus as initialized */
   bus_config->initialized = true;
 
@@ -139,6 +147,17 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
     rx_log_error(s_tag, "GPIO write failed");
     ctx->result = err;
     return err;
+  }
+
+  /* Post-condition: Verify written value by reading back */
+  bool readback_value = false;
+  err                 = gpio_read(bus_config->proto.gpio.pin, &readback_value);
+  if (err != k_rx_ok) {
+    rx_log_warn(s_tag, "Post-write verification read failed");
+    /* Continue anyway - write succeeded, readback limitation is acceptable */
+  } else if (readback_value != ctx->value) {
+    rx_log_warn(s_tag, "GPIO readback mismatch");
+    /* Continue anyway - some hardware doesn't support output readback reliably */
   }
 
   ctx->result = k_rx_ok;
@@ -196,13 +215,32 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
     return k_rx_err_invalid_state;
   }
 
+  /* Read current state before toggle for verification */
+  bool state_before = false;
+  rx_err_t err      = gpio_read(bus_config->proto.gpio.pin, &state_before);
+  if (err != k_rx_ok) {
+    rx_log_warn(s_tag, "Pre-toggle read failed (output pin may not support readback)");
+    state_before = false; /* Assume low if can't read */
+  }
+
   /* Toggle GPIO */
-  rx_err_t err = gpio_toggle(bus_config->proto.gpio.pin);
+  err = gpio_toggle(bus_config->proto.gpio.pin);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO toggle failed");
     ctx->result = err;
     return err;
+  }
+
+  /* Post-condition: Verify pin actually toggled */
+  bool state_after = false;
+  err              = gpio_read(bus_config->proto.gpio.pin, &state_after);
+  if (err != k_rx_ok) {
+    rx_log_warn(s_tag, "Post-toggle verification read failed (output pin may not support readback)");
+    /* Continue anyway - toggle succeeded, readback limitation is acceptable */
+  } else if (state_after == state_before) {
+    rx_log_warn(s_tag, "GPIO toggle verification failed (state did not change)");
+    /* Continue anyway - some hardware doesn't support output readback reliably */
   }
 
   ctx->result = k_rx_ok;
@@ -337,6 +375,17 @@ __attribute__((unused)) static rx_err_t gpio_write_command_execute(rx_bus_config
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO write failed");
     return err;
+  }
+
+  /* Post-condition: Verify written value by reading back */
+  bool readback_value = false;
+  err                 = gpio_read(bus->proto.gpio.pin, &readback_value);
+  if (err != k_rx_ok) {
+    rx_log_warn(s_tag, "Post-write verification read failed");
+    /* Continue anyway - write succeeded, readback limitation is acceptable */
+  } else if (readback_value != write_data->value) {
+    rx_log_warn(s_tag, "GPIO readback mismatch");
+    /* Continue anyway - some hardware doesn't support output readback reliably */
   }
 
   return k_rx_ok;
