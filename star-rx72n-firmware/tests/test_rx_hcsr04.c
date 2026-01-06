@@ -558,7 +558,7 @@ void test_hcsr04_measure_with_temp_compensation_10c(void)
    *
    * Expect ~2.16% difference (97.84 vs 100)
    */
-  TEST_ASSERT_FLOAT_WITHIN(1.0f, 97.84f, distance_cm);
+  TEST_ASSERT_FLOAT_WITHIN(0.1f, 97.84f, distance_cm);
 }
 
 void test_hcsr04_measure_with_temp_compensation_30c(void)
@@ -584,7 +584,7 @@ void test_hcsr04_measure_with_temp_compensation_30c(void)
    *
    * Expect ~1.35% difference (101.35 vs 100)
    */
-  TEST_ASSERT_FLOAT_WITHIN(1.0f, 101.35f, distance_cm);
+  TEST_ASSERT_FLOAT_WITHIN(0.1f, 101.35f, distance_cm);
 }
 
 void test_hcsr04_measure_without_temp_compensation_uses_20c(void)
@@ -616,7 +616,7 @@ void test_hcsr04_measure_full_result_with_temp_compensation(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(5800, result.echo_time_us);
-  TEST_ASSERT_FLOAT_WITHIN(1.0f, 97.84f, result.distance_cm);
+  TEST_ASSERT_FLOAT_WITHIN(0.1f, 97.84f, result.distance_cm);
 }
 
 /* =============================================================================
