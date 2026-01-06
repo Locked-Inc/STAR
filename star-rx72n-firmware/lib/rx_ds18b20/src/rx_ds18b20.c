@@ -22,6 +22,10 @@
 
 static const char* s_tag = "DS18B20";
 
+/* Temperature conversion constants (floating-point) */
+static const float s_temp_conversion_divisor = 16.0f; /**< Temperature raw-to-Celsius divisor (1/16°C units) */
+static const float s_temp_initial_value      = 0.0f;  /**< Initial temperature value */
+
 /* =============================================================================
  * Internal Validation Macros
  * =============================================================================
@@ -363,7 +367,7 @@ rx_err_t rx_ds18b20_read_scratchpad(rx_ds18b20_handle_t* handle,
 uint32_t rx_ds18b20_get_conversion_time_ms(const rx_ds18b20_handle_t* handle)
 {
   if (handle == NULL || !handle->initialized) {
-    return 0;
+    return k_ds18b20_conversion_time_invalid;
   }
 
   switch (handle->resolution) {
@@ -376,7 +380,7 @@ uint32_t rx_ds18b20_get_conversion_time_ms(const rx_ds18b20_handle_t* handle)
     case k_ds18b20_resolution_12bit:
       return k_ds18b20_conv_time_12bit_ms;
     default:
-      return 0;
+      return k_ds18b20_conversion_time_invalid;
   }
 }
 
@@ -549,7 +553,7 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle
   }
 
   /* Post-condition: Validate scratchpad structure (reserved byte should be 0xFF) */
-  if (scratchpad[k_ds18b20_scratch_reserved1] != 0xFF) {
+  if (scratchpad[k_ds18b20_scratch_reserved1] != k_ds18b20_reserved_byte_value) {
     rx_log_warn(s_tag, "Scratchpad reserved byte unexpected value");
   }
 
@@ -574,7 +578,7 @@ static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
 {
   bool     presence  = false;
   rx_err_t err       = k_rx_ok;
-  uint8_t  write_buf[3];
+  uint8_t  write_buf[k_ds18b20_scratchpad_write_bytes];
 
   /* Reset and check presence */
   err = rx_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
@@ -597,9 +601,9 @@ static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
   }
 
   /* Write 3 bytes (TH, TL, Config) */
-  write_buf[0] = th;
-  write_buf[1] = tl;
-  write_buf[2] = config;
+  write_buf[k_ds18b20_write_idx_th]     = th;
+  write_buf[k_ds18b20_write_idx_tl]     = tl;
+  write_buf[k_ds18b20_write_idx_config] = config;
 
   err = rx_bus_onewire_write(handle->bus_manager, handle->bus_name, write_buf,
                              k_ds18b20_scratchpad_write_bytes);
@@ -620,7 +624,7 @@ static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
  */
 static uint8_t internal_ds18b20_resolution_to_config(ds18b20_resolution_t resolution)
 {
-  uint8_t config = 0;
+  uint8_t config = k_ds18b20_config_register_cleared;
 
   /* Resolution bits are R1:R0 at bits 6:5 */
   config = (uint8_t)resolution << k_ds18b20_config_r0_bit;
@@ -665,10 +669,10 @@ static uint16_t internal_ds18b20_get_temp_mask(ds18b20_resolution_t resolution)
  */
 static float internal_ds18b20_raw_to_celsius(int16_t raw_temp)
 {
-  float temp_celsius = 0.0f;
+  float temp_celsius = s_temp_initial_value;
 
   /* Convert from 1/16°C to °C */
-  temp_celsius = (float)raw_temp / 16.0f;
+  temp_celsius = (float)raw_temp / s_temp_conversion_divisor;
 
   return temp_celsius;
 }
