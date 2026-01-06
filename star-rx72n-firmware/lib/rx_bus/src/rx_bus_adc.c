@@ -89,6 +89,14 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
     /* Note: This is handled by the ADC HAL internally */
   }
 
+  /* Post-condition: Verify ADC channel is responsive with a test read */
+  uint16_t test_value = 0;
+  err                 = adc_read(bus_config->proto.adc.unit, bus_config->proto.adc.channel, &test_value);
+  if (err != k_rx_ok) {
+    rx_log_warn(s_tag, "Post-init ADC test read failed (channel may need settling time)");
+    /* Continue anyway - init succeeded, readback may need time to stabilize */
+  }
+
   /* Mark bus as initialized */
   bus_config->initialized = true;
 
