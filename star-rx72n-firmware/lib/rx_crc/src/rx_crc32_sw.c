@@ -36,12 +36,10 @@
  * @brief CRC-32 software implementation constants
  */
 typedef enum {
-  k_crc32_table_size = 256, /**< Number of entries in lookup table */
-  k_crc_byte_shift   = 8,   /**< Bit shift for table lookup */
+  k_crc32_table_size   = 256, /**< Number of entries in lookup table */
+  k_crc_byte_shift     = 8,   /**< Bit shift for table lookup */
+  k_crc_ieee_final_xor = -1,  /**< IEEE 802.3 CRC-32 final XOR (0xFFFFFFFF as signed int) */
 } rx_crc32_sw_constants_t;
-
-/** @brief IEEE 802.3 CRC-32 final XOR value */
-static const uint32_t k_crc_ieee_final_xor = 0xFFFFFFFF;
 
 /* =============================================================================
  * CRC-32 Lookup Table
