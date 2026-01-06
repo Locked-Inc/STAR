@@ -26,13 +26,6 @@
  */
 
 /**
- * @brief Byte manipulation constants
- */
-typedef enum {
-  k_byte_mask = 0xFFU, /**< Mask to extract one byte from a multi-byte value */
-} byte_mask_t;
-
-/**
  * @brief Bit shift amounts for extracting bytes from multi-byte values
  *
  * Each byte position requires shifting by (position * 8) bits.
@@ -67,10 +60,10 @@ typedef enum {
  */
 static void internal_write_le32(uint8_t* buf, uint32_t val)
 {
-  buf[k_le32_byte_0] = (uint8_t)(val & k_byte_mask);
-  buf[k_le32_byte_1] = (uint8_t)((val >> k_shift_byte_1) & k_byte_mask);
-  buf[k_le32_byte_2] = (uint8_t)((val >> k_shift_byte_2) & k_byte_mask);
-  buf[k_le32_byte_3] = (uint8_t)((val >> k_shift_byte_3) & k_byte_mask);
+  buf[k_le32_byte_0] = (uint8_t)(val & k_rx_byte_mask);
+  buf[k_le32_byte_1] = (uint8_t)((val >> k_shift_byte_1) & k_rx_byte_mask);
+  buf[k_le32_byte_2] = (uint8_t)((val >> k_shift_byte_2) & k_rx_byte_mask);
+  buf[k_le32_byte_3] = (uint8_t)((val >> k_shift_byte_3) & k_rx_byte_mask);
 }
 
 /**
