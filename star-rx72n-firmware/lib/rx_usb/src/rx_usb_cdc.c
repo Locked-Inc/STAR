@@ -37,19 +37,19 @@ static const char* s_tag = "USB_CDC";
 
 /** @brief USB Descriptor Field Default Values */
 typedef enum {
-  k_usb_subclass_none           = 0x00, /**< No subclass */
-  k_usb_protocol_none           = 0x00, /**< No protocol */
-  k_usb_num_interfaces_cdc      = 2,    /**< CDC requires 2 interfaces (control + data) */
-  k_usb_config_value_default    = 1,    /**< Default configuration value */
-  k_usb_alternate_setting_default = 0,  /**< Default alternate setting */
-  k_usb_string_index_none       = 0,    /**< No string descriptor */
-  k_usb_num_configurations      = 1,    /**< Number of configurations */
-  k_usb_num_endpoints_control   = 1,    /**< Control interface has 1 endpoint (interrupt) */
-  k_usb_num_endpoints_data      = 2,    /**< Data interface has 2 endpoints (bulk in/out) */
-  k_usb_interface_number_control = 0,   /**< Control interface number */
-  k_usb_interface_number_data   = 1,    /**< Data interface number */
-  k_cdc_call_mgmt_cap_none      = 0x00, /**< No call management capabilities */
-  k_min_transfer_size           = 0,    /**< Minimum data transfer size (no data) */
+  k_usb_subclass_none             = 0x00, /**< No subclass */
+  k_usb_protocol_none             = 0x00, /**< No protocol */
+  k_usb_num_interfaces_cdc        = 2,    /**< CDC requires 2 interfaces (control + data) */
+  k_usb_config_value_default      = 1,    /**< Default configuration value */
+  k_usb_alternate_setting_default = 0,    /**< Default alternate setting */
+  k_usb_string_index_none         = 0,    /**< No string descriptor */
+  k_usb_num_configurations        = 1,    /**< Number of configurations */
+  k_usb_num_endpoints_control     = 1,    /**< Control interface has 1 endpoint (interrupt) */
+  k_usb_num_endpoints_data        = 2,    /**< Data interface has 2 endpoints (bulk in/out) */
+  k_usb_interface_number_control  = 0,    /**< Control interface number */
+  k_usb_interface_number_data     = 1,    /**< Data interface number */
+  k_cdc_call_mgmt_cap_none        = 0x00, /**< No call management capabilities */
+  k_min_transfer_size             = 0,    /**< Minimum data transfer size (no data) */
 } usb_descriptor_defaults_t;
 
 /** @brief USB Descriptor Types */
@@ -685,10 +685,10 @@ static void internal_handle_set_configuration(uint16_t usb_value)
     /* Configure data endpoints */
     /* Pipe 1: Bulk IN (EP1) */
     rx_err_t err = rx_usb_hw_configure_pipe(k_usb_pipe_1,
-                                             k_usb_pipe_1,
-                                             true,
-                                             k_usb_pipecfg_type_bulk,
-                                             k_usb_bulk_packet_size);
+                                            k_usb_pipe_1,
+                                            true,
+                                            k_usb_pipecfg_type_bulk,
+                                            k_usb_bulk_packet_size);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to configure Pipe 1");
       usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
@@ -834,7 +834,8 @@ rx_err_t rx_usb_cdc_init(void)
 /**
  * @brief Handle standard USB requests
  */
-static void internal_handle_standard_request(uint8_t usb_request, uint16_t usb_value, uint16_t usb_length)
+static void
+internal_handle_standard_request(uint8_t usb_request, uint16_t usb_value, uint16_t usb_length)
 {
   switch (usb_request) {
     case k_usb_req_get_descriptor:

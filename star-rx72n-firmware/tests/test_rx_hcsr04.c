@@ -610,8 +610,8 @@ void test_hcsr04_get_temperature_default_20c(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
-  float temp = 0.0f;
-  rx_err_t err = rx_hcsr04_get_temperature(&s_sensor, &temp);
+  float    temp = 0.0f;
+  rx_err_t err  = rx_hcsr04_get_temperature(&s_sensor, &temp);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FLOAT_WITHIN(0.01f, 20.0f, temp);
@@ -619,8 +619,8 @@ void test_hcsr04_get_temperature_default_20c(void)
 
 void test_hcsr04_get_temperature_null_handle_fails(void)
 {
-  float temp = 0.0f;
-  rx_err_t err = rx_hcsr04_get_temperature(NULL, &temp);
+  float    temp = 0.0f;
+  rx_err_t err  = rx_hcsr04_get_temperature(NULL, &temp);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
@@ -639,8 +639,8 @@ void test_hcsr04_measure_with_temp_compensation_10c(void)
   /* Configure mock for 100cm measurement (5800us echo) */
   mock_hcsr04_hw_set_echo_time(NULL, 5800);
 
-  float distance_cm = 0.0f;
-  rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
+  float    distance_cm = 0.0f;
+  rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
@@ -665,8 +665,8 @@ void test_hcsr04_measure_with_temp_compensation_30c(void)
   /* Configure mock for 100cm measurement (5800us echo) */
   mock_hcsr04_hw_set_echo_time(NULL, 5800);
 
-  float distance_cm = 0.0f;
-  rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
+  float    distance_cm = 0.0f;
+  rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
@@ -691,8 +691,8 @@ void test_hcsr04_measure_without_temp_compensation_uses_20c(void)
   /* Configure mock for 100cm measurement (5800us echo) */
   mock_hcsr04_hw_set_echo_time(NULL, 5800);
 
-  float distance_cm = 0.0f;
-  rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
+  float    distance_cm = 0.0f;
+  rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Should use default 20°C calculation: 5800 / 58 = 100 cm */
@@ -708,7 +708,7 @@ void test_hcsr04_measure_full_result_with_temp_compensation(void)
   mock_hcsr04_hw_set_echo_time(NULL, 5800);
 
   rx_hcsr04_result_t result;
-  rx_err_t err = rx_hcsr04_measure(&s_sensor, &result);
+  rx_err_t           err = rx_hcsr04_measure(&s_sensor, &result);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(5800, result.echo_time_us);

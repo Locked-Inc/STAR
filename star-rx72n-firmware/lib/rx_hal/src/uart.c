@@ -86,9 +86,9 @@ typedef enum {
 
 /** @brief UART timeout constants */
 typedef enum {
-  k_uart_tx_timeout         = 100000, /**< Transmit buffer wait timeout (prevents infinite loop) */
-  k_uart_timeout_expired    = 0,      /**< Timeout counter expired value */
-  k_uart_timeout_decrement  = 1,      /**< Timeout counter decrement value */
+  k_uart_tx_timeout        = 100000, /**< Transmit buffer wait timeout (prevents infinite loop) */
+  k_uart_timeout_expired   = 0,      /**< Timeout counter expired value */
+  k_uart_timeout_decrement = 1,      /**< Timeout counter decrement value */
 } uart_timeout_t;
 
 /** @brief SCI module stop bit positions in MSTPCRB */
@@ -383,7 +383,8 @@ rx_err_t uart_putc_channel(uint8_t channel, char data)
 
   /* Wait for transmit buffer to be empty (TDRE flag) with timeout */
   uint32_t timeout = k_uart_tx_timeout;
-  while ((sci->ssr & k_sci_ssr_tdre_flag) == k_uart_timeout_expired && timeout > k_uart_timeout_expired) {
+  while ((sci->ssr & k_sci_ssr_tdre_flag) == k_uart_timeout_expired &&
+         timeout > k_uart_timeout_expired) {
     timeout -= k_uart_timeout_decrement;
   }
 

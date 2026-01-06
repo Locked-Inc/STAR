@@ -13,6 +13,7 @@
 #include "mock_uart_hw.h"
 
 #include <string.h>
+
 #include "mock_sci_regs.h"
 
 /* =============================================================================

@@ -277,15 +277,15 @@ typedef enum {
  */
 
 typedef enum {
-  k_usb_dcpctr_pid_mask  = 0x0003,   /**< Response PID Mask */
-  k_usb_dcpctr_pid_nak   = 0x0000,   /**< NAK response */
-  k_usb_dcpctr_pid_buf   = 0x0001,   /**< BUF response (enable) */
-  k_usb_dcpctr_pid_stall = 0x0002,   /**< STALL response */
-  k_usb_dcpctr_ccpl      = (1 << 2), /**< Control Transfer End */
-  k_usb_dcpctr_pbusy     = (1 << 5), /**< Pipe Busy */
-  k_usb_dcpctr_sqmon     = (1 << 6), /**< Sequence Toggle Bit Monitor */
-  k_usb_dcpctr_sqset     = (1 << 7), /**< Sequence Toggle Bit Set */
-  k_usb_dcpctr_sqclr     = (1 << 8), /**< Sequence Toggle Bit Clear */
+  k_usb_dcpctr_pid_mask  = 0x0003,    /**< Response PID Mask */
+  k_usb_dcpctr_pid_nak   = 0x0000,    /**< NAK response */
+  k_usb_dcpctr_pid_buf   = 0x0001,    /**< BUF response (enable) */
+  k_usb_dcpctr_pid_stall = 0x0002,    /**< STALL response */
+  k_usb_dcpctr_ccpl      = (1 << 2),  /**< Control Transfer End */
+  k_usb_dcpctr_pbusy     = (1 << 5),  /**< Pipe Busy */
+  k_usb_dcpctr_sqmon     = (1 << 6),  /**< Sequence Toggle Bit Monitor */
+  k_usb_dcpctr_sqset     = (1 << 7),  /**< Sequence Toggle Bit Set */
+  k_usb_dcpctr_sqclr     = (1 << 8),  /**< Sequence Toggle Bit Clear */
   k_usb_dcpctr_bsts      = (1 << 15), /**< Buffer Status */
 } mock_usb_dcpctr_bits_t;
 

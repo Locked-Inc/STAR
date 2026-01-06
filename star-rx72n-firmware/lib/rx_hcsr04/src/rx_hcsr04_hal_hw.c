@@ -78,17 +78,17 @@ rx_err_t hcsr04_hal_gpio_deinit(gpio_pin_t pin)
  * - Ticks per microsecond = 7.5 ticks/us
  */
 typedef enum {
-  k_cmt2_divider           = 8,        /**< CMT2 clock divider */
-  k_cmt2_divider_bits      = 0x0000,   /**< CKS[1:0] = 00 for /8 divider */
-  k_timer_counter_max      = 0xFFFF,   /**< 16-bit counter maximum */
-  k_timer_counter_bits     = 16,       /**< CMT2 counter width in bits */
-  k_us_per_second          = 1000000,  /**< Microseconds per second */
-  k_timer_rounding         = 500000,   /**< Rounding factor for integer division */
-  k_max_delay_iterations   = 100,      /**< Safety guard: max loop iterations */
-  k_no_delay               = 0,        /**< No delay requested */
-  k_min_ticks              = 1,        /**< Minimum ticks to wait */
-  k_cmstr1_cmt2_enable_bit = 0x01,     /**< CMSTR1 bit 0 enables CMT2 */
-  k_counter_reset          = 0,        /**< Counter reset value */
+  k_cmt2_divider           = 8,       /**< CMT2 clock divider */
+  k_cmt2_divider_bits      = 0x0000,  /**< CKS[1:0] = 00 for /8 divider */
+  k_timer_counter_max      = 0xFFFF,  /**< 16-bit counter maximum */
+  k_timer_counter_bits     = 16,      /**< CMT2 counter width in bits */
+  k_us_per_second          = 1000000, /**< Microseconds per second */
+  k_timer_rounding         = 500000,  /**< Rounding factor for integer division */
+  k_max_delay_iterations   = 100,     /**< Safety guard: max loop iterations */
+  k_no_delay               = 0,       /**< No delay requested */
+  k_min_ticks              = 1,       /**< Minimum ticks to wait */
+  k_cmstr1_cmt2_enable_bit = 0x01,    /**< CMSTR1 bit 0 enables CMT2 */
+  k_counter_reset          = 0,       /**< Counter reset value */
 } cmt2_timing_constants_t;
 
 static bool     s_cmt2_initialized = false;
@@ -145,14 +145,14 @@ void hcsr04_hal_delay_us(uint32_t us)
   internal_cmt2_init();
 
   timer_hz = k_pclkb_hz / k_cmt2_divider;
-  ticks = ((uint64_t)us * (uint64_t)timer_hz + k_timer_rounding) / k_us_per_second;
+  ticks    = ((uint64_t)us * (uint64_t)timer_hz + k_timer_rounding) / k_us_per_second;
   if (ticks < k_min_ticks) {
     ticks = k_min_ticks;
   }
 
   while (ticks > 0 && iteration_count < k_max_delay_iterations) {
     wait_ticks = (ticks > k_timer_counter_max) ? k_timer_counter_max : (uint32_t)ticks;
-    start = cmt2()->cmcnt;
+    start      = cmt2()->cmcnt;
     while ((uint16_t)(cmt2()->cmcnt - start) < wait_ticks) {
       __asm__ volatile("nop");
     }
@@ -163,13 +163,13 @@ void hcsr04_hal_delay_us(uint32_t us)
 
 uint32_t hcsr04_hal_get_time_us(void)
 {
-  static uint32_t overflow_count = 0;
-  static uint16_t last_counter   = 0;
+  static uint32_t overflow_count  = 0;
+  static uint16_t last_counter    = 0;
   uint16_t        current_counter = 0;
-  uint32_t        timer_hz       = 0;
-  uint64_t        total_ticks    = 0;
-  uint32_t        result         = 0;
-  UINT            mutex_status   = TX_SUCCESS;
+  uint32_t        timer_hz        = 0;
+  uint64_t        total_ticks     = 0;
+  uint32_t        result          = 0;
+  UINT            mutex_status    = TX_SUCCESS;
 
   internal_cmt2_init();
 
@@ -200,7 +200,7 @@ uint32_t hcsr04_hal_get_time_us(void)
 
   /* Convert ticks to microseconds */
   timer_hz = k_pclkb_hz / k_cmt2_divider;
-  result = (uint32_t)((total_ticks * k_us_per_second) / timer_hz);
+  result   = (uint32_t)((total_ticks * k_us_per_second) / timer_hz);
 
   tx_mutex_put(&s_time_mutex);
 

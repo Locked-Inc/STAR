@@ -12,9 +12,10 @@
  */
 
 #include "mock_sci_regs.h"
-#include "rx72n_sci_regs.h"
 
 #include <string.h>
+
+#include "rx72n_sci_regs.h"
 
 /* =============================================================================
  * Global Mock Register Instances

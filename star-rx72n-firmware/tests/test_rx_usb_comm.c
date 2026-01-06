@@ -539,14 +539,14 @@ void test_usb_comm_flush_rx_null_handle(void)
 extern uint32_t rx_usb_rx_push(const uint8_t* data, uint32_t len);
 
 /* Helper: Create and encode a test frame */
-static rx_err_t helper_create_encoded_frame(rx_frame_t*    frame,
-                                            uint16_t       sequence,
+static rx_err_t helper_create_encoded_frame(rx_frame_t*     frame,
+                                            uint16_t        sequence,
                                             rx_frame_type_t type,
-                                            uint8_t        flags,
-                                            const uint8_t* payload,
-                                            uint16_t       payload_len,
-                                            uint8_t*       encoded_buf,
-                                            uint32_t*      encoded_len)
+                                            uint8_t         flags,
+                                            const uint8_t*  payload,
+                                            uint16_t        payload_len,
+                                            uint8_t*        encoded_buf,
+                                            uint32_t*       encoded_len)
 {
   rx_frame_encoder_t enc;
   rx_err_t           err;
@@ -594,13 +594,13 @@ void test_usb_comm_receive_valid_frame_with_sync(void)
   uint8_t    payload[]   = "test_data!";
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              1,
-                                              k_frame_type_command,
-                                              k_frame_flag_none,
-                                              payload,
-                                              10,
-                                              encoded,
-                                              &encoded_len);
+                                             1,
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             payload,
+                                             10,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Inject frame into USB RX buffer */
@@ -640,13 +640,13 @@ void test_usb_comm_receive_empty_payload_frame(void)
   uint32_t   encoded_len = 0;
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              42,
-                                              k_frame_type_ack,
-                                              k_frame_flag_none,
-                                              NULL,
-                                              0,
-                                              encoded,
-                                              &encoded_len);
+                                             42,
+                                             k_frame_type_ack,
+                                             k_frame_flag_none,
+                                             NULL,
+                                             0,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT32(k_frame_min_size, encoded_len);
 
@@ -696,13 +696,13 @@ void test_usb_comm_receive_max_payload_frame(void)
   uint32_t   encoded_len = 0;
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              99,
-                                              k_frame_type_response,
-                                              k_frame_flag_priority,
-                                              large_payload,
-                                              k_test_large_payload_size,
-                                              encoded,
-                                              &encoded_len);
+                                             99,
+                                             k_frame_type_response,
+                                             k_frame_flag_priority,
+                                             large_payload,
+                                             k_test_large_payload_size,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify encoded size fits in USB ring buffer */
@@ -749,13 +749,13 @@ void test_usb_comm_receive_increments_rx_sequence(void)
   uint32_t   encoded_len = 0;
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              5,
-                                              k_frame_type_command,
-                                              k_frame_flag_none,
-                                              NULL,
-                                              0,
-                                              encoded,
-                                              &encoded_len);
+                                             5,
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             NULL,
+                                             0,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_usb_rx_push(encoded, encoded_len);
@@ -769,13 +769,13 @@ void test_usb_comm_receive_increments_rx_sequence(void)
 
   /* Send second frame with sequence 6 */
   err = helper_create_encoded_frame(&tx_frame,
-                                     6,
-                                     k_frame_type_command,
-                                     k_frame_flag_none,
-                                     NULL,
-                                     0,
-                                     encoded,
-                                     &encoded_len);
+                                    6,
+                                    k_frame_type_command,
+                                    k_frame_flag_none,
+                                    NULL,
+                                    0,
+                                    encoded,
+                                    &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_usb_rx_push(encoded, encoded_len);
@@ -815,13 +815,13 @@ void test_usb_comm_receive_finds_sync_after_garbage(void)
   uint8_t    payload[]   = "FOUND";
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              7,
-                                              k_frame_type_command,
-                                              k_frame_flag_none,
-                                              payload,
-                                              5,
-                                              encoded,
-                                              &encoded_len);
+                                             7,
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             payload,
+                                             5,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Inject garbage data followed by valid frame */
@@ -862,13 +862,13 @@ void test_usb_comm_receive_partial_sync_word(void)
   uint8_t    payload[]   = "SPLIT";
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              8,
-                                              k_frame_type_command,
-                                              k_frame_flag_none,
-                                              payload,
-                                              5,
-                                              encoded,
-                                              &encoded_len);
+                                             8,
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             payload,
+                                             5,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* First inject just partial data (first half of frame) */
@@ -914,23 +914,28 @@ void test_usb_comm_receive_multiple_false_syncs(void)
   uint8_t    payload[]   = "REAL";
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              9,
-                                              k_frame_type_command,
-                                              k_frame_flag_none,
-                                              payload,
-                                              4,
-                                              encoded,
-                                              &encoded_len);
+                                             9,
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             payload,
+                                             4,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Inject data with false sync patterns (0x55AA) but invalid following data */
   /* SYNC word is 0x55AA in big-endian */
   uint8_t false_sync_data[] = {
-    0x55, 0xAA, /* False sync #1 */
-    0xFF, 0xFF, /* Invalid payload length (0xFFFF > 1024) */
-    0x55, 0xAA, /* False sync #2 */
-    0x00, 0x00, /* Seq = 0 */
-    0xFF, 0xFF, /* Invalid payload length again */
+    0x55,
+    0xAA, /* False sync #1 */
+    0xFF,
+    0xFF, /* Invalid payload length (0xFFFF > 1024) */
+    0x55,
+    0xAA, /* False sync #2 */
+    0x00,
+    0x00, /* Seq = 0 */
+    0xFF,
+    0xFF, /* Invalid payload length again */
   };
   rx_usb_rx_push(false_sync_data, sizeof(false_sync_data));
   rx_usb_rx_push(encoded, encoded_len);
@@ -973,23 +978,26 @@ void test_usb_comm_receive_invalid_payload_length(void)
   uint8_t    payload[]         = "VALID";
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              10,
-                                              k_frame_type_command,
-                                              k_frame_flag_none,
-                                              payload,
-                                              5,
-                                              valid_encoded,
-                                              &valid_encoded_len);
+                                             10,
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             payload,
+                                             5,
+                                             valid_encoded,
+                                             &valid_encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Create invalid frame header with payload length > k_frame_max_payload (1024) */
   /* Frame: SYNC(2) + SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) = 8 bytes header */
   uint8_t invalid_frame[] = {
-    0x55, 0xAA,       /* Sync word */
-    0x00, 0x01,       /* Sequence = 1 */
-    0x04, 0x01,       /* Length = 1025 (0x0401) - exceeds max payload */
-    0x01,             /* Type = command */
-    0x00,             /* Flags = none */
+    0x55,
+    0xAA, /* Sync word */
+    0x00,
+    0x01, /* Sequence = 1 */
+    0x04,
+    0x01, /* Length = 1025 (0x0401) - exceeds max payload */
+    0x01, /* Type = command */
+    0x00, /* Flags = none */
   };
 
   rx_usb_rx_push(invalid_frame, sizeof(invalid_frame));
@@ -1027,13 +1035,13 @@ void test_usb_comm_receive_header_validation(void)
   uint8_t    payload[]   = "HDR";
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              0x1234,                  /* Specific sequence */
-                                              k_frame_type_response,   /* Type */
-                                              k_frame_flag_requires_ack | k_frame_flag_priority,
-                                              payload,
-                                              3,
-                                              encoded,
-                                              &encoded_len);
+                                             0x1234,                /* Specific sequence */
+                                             k_frame_type_response, /* Type */
+                                             k_frame_flag_requires_ack | k_frame_flag_priority,
+                                             payload,
+                                             3,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_usb_rx_push(encoded, encoded_len);
@@ -1081,13 +1089,13 @@ void test_usb_comm_receive_buffer_compaction(void)
     memset(payload, (int)seq, sizeof(payload));
 
     rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                                seq,
-                                                k_frame_type_command,
-                                                k_frame_flag_none,
-                                                payload,
-                                                20,
-                                                encoded,
-                                                &encoded_len);
+                                               seq,
+                                               k_frame_type_command,
+                                               k_frame_flag_none,
+                                               payload,
+                                               20,
+                                               encoded,
+                                               &encoded_len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     rx_usb_rx_push(encoded, encoded_len);
@@ -1141,13 +1149,13 @@ void test_usb_comm_receive_buffer_overflow_protection(void)
   uint8_t    payload[]   = "OK";
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              11,
-                                              k_frame_type_command,
-                                              k_frame_flag_none,
-                                              payload,
-                                              2,
-                                              encoded,
-                                              &encoded_len);
+                                             11,
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             payload,
+                                             2,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* The receiver should handle the near-full buffer by discarding garbage */
@@ -1187,13 +1195,13 @@ void test_usb_comm_receive_fragmented_frame(void)
   uint8_t    payload[]   = "FRAGMENTED_DATA";
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              12,
-                                              k_frame_type_command,
-                                              k_frame_flag_none,
-                                              payload,
-                                              15,
-                                              encoded,
-                                              &encoded_len);
+                                             12,
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             payload,
+                                             15,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Fragment the frame into small chunks simulating USB packet boundaries */
@@ -1242,13 +1250,13 @@ void test_usb_comm_receive_sequence_wraparound(void)
 
   /* First frame with sequence 65535 */
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              0xFFFF, /* 65535 */
-                                              k_frame_type_command,
-                                              k_frame_flag_none,
-                                              NULL,
-                                              0,
-                                              encoded,
-                                              &encoded_len);
+                                             0xFFFF, /* 65535 */
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             NULL,
+                                             0,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_usb_rx_push(encoded, encoded_len);
@@ -1264,13 +1272,13 @@ void test_usb_comm_receive_sequence_wraparound(void)
 
   /* Second frame with sequence 0 (after wraparound) */
   err = helper_create_encoded_frame(&tx_frame,
-                                     0,
-                                     k_frame_type_command,
-                                     k_frame_flag_none,
-                                     NULL,
-                                     0,
-                                     encoded,
-                                     &encoded_len);
+                                    0,
+                                    k_frame_type_command,
+                                    k_frame_flag_none,
+                                    NULL,
+                                    0,
+                                    encoded,
+                                    &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_usb_rx_push(encoded, encoded_len);
@@ -1308,13 +1316,13 @@ void test_usb_comm_receive_out_of_order_sequence(void)
     uint32_t   encoded_len = 0;
 
     rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                                sequences[i],
-                                                k_frame_type_command,
-                                                k_frame_flag_none,
-                                                NULL,
-                                                0,
-                                                encoded,
-                                                &encoded_len);
+                                               sequences[i],
+                                               k_frame_type_command,
+                                               k_frame_flag_none,
+                                               NULL,
+                                               0,
+                                               encoded,
+                                               &encoded_len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     rx_usb_rx_push(encoded, encoded_len);
@@ -1355,13 +1363,13 @@ void test_usb_comm_receive_crc_mismatch(void)
   uint32_t   bad_encoded_len = 0;
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              13,
-                                              k_frame_type_command,
-                                              k_frame_flag_none,
-                                              NULL,
-                                              0,
-                                              bad_encoded,
-                                              &bad_encoded_len);
+                                             13,
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             NULL,
+                                             0,
+                                             bad_encoded,
+                                             &bad_encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Corrupt the CRC (last 4 bytes) */
@@ -1374,13 +1382,13 @@ void test_usb_comm_receive_crc_mismatch(void)
   uint8_t  payload[]        = "GOOD";
 
   err = helper_create_encoded_frame(&tx_frame,
-                                     14,
-                                     k_frame_type_command,
-                                     k_frame_flag_none,
-                                     payload,
-                                     4,
-                                     good_encoded,
-                                     &good_encoded_len);
+                                    14,
+                                    k_frame_type_command,
+                                    k_frame_flag_none,
+                                    payload,
+                                    4,
+                                    good_encoded,
+                                    &good_encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Push bad frame followed by good frame */
@@ -1464,13 +1472,13 @@ void test_usb_comm_receive_with_fec_enabled(void)
   uint8_t    payload[]   = "FEC_TEST";
 
   rx_err_t err = helper_create_encoded_frame(&tx_frame,
-                                              15,
-                                              k_frame_type_command,
-                                              k_frame_flag_fec_enabled,
-                                              payload,
-                                              8,
-                                              encoded,
-                                              &encoded_len);
+                                             15,
+                                             k_frame_type_command,
+                                             k_frame_flag_fec_enabled,
+                                             payload,
+                                             8,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_usb_rx_push(encoded, encoded_len);
@@ -1480,7 +1488,8 @@ void test_usb_comm_receive_with_fec_enabled(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(15, rx_frame.header.sequence);
-  TEST_ASSERT_EQUAL_UINT8(k_frame_flag_fec_enabled, rx_frame.header.flags & k_frame_flag_fec_enabled);
+  TEST_ASSERT_EQUAL_UINT8(k_frame_flag_fec_enabled,
+                          rx_frame.header.flags & k_frame_flag_fec_enabled);
   TEST_ASSERT_EQUAL_MEMORY("FEC_TEST", rx_frame.payload, 8);
 
   mock_time_deinit(&mock);

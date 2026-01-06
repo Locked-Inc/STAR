@@ -37,12 +37,12 @@ typedef enum {
  * @brief Validation constants
  */
 typedef enum {
-  k_min_threshold_cm  = 2,   /**< Minimum detection threshold (HC-SR04 min range) */
-  k_max_threshold_cm  = 400, /**< Maximum detection threshold (HC-SR04 max range) */
-  k_min_poll_interval = 10,  /**< Minimum poll interval in ms */
+  k_min_threshold_cm  = 2,    /**< Minimum detection threshold (HC-SR04 min range) */
+  k_max_threshold_cm  = 400,  /**< Maximum detection threshold (HC-SR04 max range) */
+  k_min_poll_interval = 10,   /**< Minimum poll interval in ms */
   k_max_poll_interval = 1000, /**< Maximum poll interval in ms */
-  k_min_debounce      = 1,   /**< Minimum debounce samples */
-  k_max_debounce      = 10,  /**< Maximum debounce samples */
+  k_min_debounce      = 1,    /**< Minimum debounce samples */
+  k_max_debounce      = 10,   /**< Maximum debounce samples */
 } validation_constants_t;
 
 /**
@@ -57,14 +57,14 @@ typedef enum {
  * =============================================================================
  */
 
-static void    internal_detection_task_entry(ULONG input);
+static void     internal_detection_task_entry(ULONG input);
 static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* config);
 static rx_err_t internal_stop_all_motors(rx_obstacle_detect_t* handle);
 static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle);
-static void    internal_invoke_callback(rx_obstacle_detect_t* handle,
-                                       bool                  obstacle_detected,
-                                       uint8_t               sensor_idx,
-                                       float                 distance_cm);
+static void     internal_invoke_callback(rx_obstacle_detect_t* handle,
+                                         bool                  obstacle_detected,
+                                         uint8_t               sensor_idx,
+                                         float                 distance_cm);
 
 /* =============================================================================
  * Public API - Initialization
@@ -125,15 +125,15 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
 
   /* Create detection task */
   status = tx_thread_create(&handle->thread,
-                           "ObstacleDetect",
-                           internal_detection_task_entry,
-                           (ULONG)handle,
-                           handle->thread_stack,
-                           k_obstacle_detect_task_stack_size,
-                           k_obstacle_detect_task_priority,
-                           k_obstacle_detect_task_priority,
-                           TX_NO_TIME_SLICE,
-                           TX_DONT_START);
+                            "ObstacleDetect",
+                            internal_detection_task_entry,
+                            (ULONG)handle,
+                            handle->thread_stack,
+                            k_obstacle_detect_task_stack_size,
+                            k_obstacle_detect_task_priority,
+                            k_obstacle_detect_task_priority,
+                            TX_NO_TIME_SLICE,
+                            TX_DONT_START);
 
   if (status != TX_SUCCESS) {
     tx_event_flags_delete(&handle->event_flags);
@@ -147,8 +147,8 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
 
 rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
 {
-  UINT     status     = 0;
-  rx_err_t stop_ret   = k_rx_ok;
+  UINT     status   = 0;
+  rx_err_t stop_ret = k_rx_ok;
 
   /* Validate inputs */
   if (handle == NULL) {
@@ -241,7 +241,7 @@ rx_err_t rx_obstacle_detect_stop(rx_obstacle_detect_t* handle)
 
   /* Signal stop event */
   handle->stop_requested = true;
-  status = tx_event_flags_set(&handle->event_flags, k_event_flag_stop, TX_OR);
+  status                 = tx_event_flags_set(&handle->event_flags, k_event_flag_stop, TX_OR);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -347,8 +347,8 @@ rx_err_t rx_obstacle_detect_reset_stats(rx_obstacle_detect_t* handle)
   }
 
   /* Reset statistics */
-  handle->total_polls         = 0;
-  handle->obstacle_events     = 0;
+  handle->total_polls          = 0;
+  handle->obstacle_events      = 0;
   handle->false_positive_count = 0;
 
   return k_rx_ok;
@@ -361,12 +361,12 @@ rx_err_t rx_obstacle_detect_reset_stats(rx_obstacle_detect_t* handle)
 
 static void internal_detection_task_entry(ULONG input)
 {
-  rx_obstacle_detect_t* handle         = NULL;
-  ULONG                 actual_flags   = 0;
-  UINT                  status         = 0;
-  ULONG                 sleep_ticks    = 0;
-  rx_err_t              ret            = k_rx_ok;
-  bool                  running        = false;
+  rx_obstacle_detect_t* handle       = NULL;
+  ULONG                 actual_flags = 0;
+  UINT                  status       = 0;
+  ULONG                 sleep_ticks  = 0;
+  rx_err_t              ret          = k_rx_ok;
+  bool                  running      = false;
 
   handle = (rx_obstacle_detect_t*)input;
 
@@ -379,10 +379,10 @@ static void internal_detection_task_entry(ULONG input)
   while (true) {
     /* Wait for start event */
     status = tx_event_flags_get(&handle->event_flags,
-                               k_event_flag_start,
-                               TX_OR_CLEAR,
-                               &actual_flags,
-                               TX_WAIT_FOREVER);
+                                k_event_flag_start,
+                                TX_OR_CLEAR,
+                                &actual_flags,
+                                TX_WAIT_FOREVER);
 
     if (status != TX_SUCCESS) {
       continue;
@@ -397,14 +397,14 @@ static void internal_detection_task_entry(ULONG input)
     while (running) {
       /* Check for stop event (non-blocking) */
       status = tx_event_flags_get(&handle->event_flags,
-                                 k_event_flag_stop,
-                                 TX_OR_CLEAR,
-                                 &actual_flags,
-                                 TX_NO_WAIT);
+                                  k_event_flag_stop,
+                                  TX_OR_CLEAR,
+                                  &actual_flags,
+                                  TX_NO_WAIT);
 
       if (status == TX_SUCCESS || handle->stop_requested) {
-        running               = false;
-        handle->state         = k_obstacle_detect_state_stopped;
+        running                = false;
+        handle->state          = k_obstacle_detect_state_stopped;
         handle->stop_requested = false;
         break;
       }
@@ -414,8 +414,8 @@ static void internal_detection_task_entry(ULONG input)
       if (ret != k_rx_ok) {
         /* Critical error during polling (e.g., motor stop failed) */
         /* Stop detection to prevent unsafe operation */
-        running               = false;
-        handle->state         = k_obstacle_detect_state_stopped;
+        running                = false;
+        handle->state          = k_obstacle_detect_state_stopped;
         handle->stop_requested = false;
         break;
       }
@@ -438,8 +438,7 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
     return k_rx_err_null_pointer;
   }
 
-  if (config->sensor_count == 0 ||
-      config->sensor_count > k_obstacle_detect_max_sensors) {
+  if (config->sensor_count == 0 || config->sensor_count > k_obstacle_detect_max_sensors) {
     return k_rx_err_invalid_arg;
   }
 
@@ -454,8 +453,7 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
     return k_rx_err_null_pointer;
   }
 
-  if (config->motor_count == 0 ||
-      config->motor_count > k_obstacle_detect_max_motors) {
+  if (config->motor_count == 0 || config->motor_count > k_obstacle_detect_max_motors) {
     return k_rx_err_invalid_arg;
   }
 
@@ -471,8 +469,7 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
     return k_rx_err_invalid_arg;
   }
 
-  if (config->debounce_samples < k_min_debounce ||
-      config->debounce_samples > k_max_debounce) {
+  if (config->debounce_samples < k_min_debounce || config->debounce_samples > k_max_debounce) {
     return k_rx_err_invalid_arg;
   }
 
@@ -491,10 +488,10 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
 
 static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 {
-  float    distance_cm            = 0.0f;
-  rx_err_t ret                    = k_rx_ok;
-  bool     was_obstacle_active    = false;
-  bool     is_obstacle_active     = false;
+  float    distance_cm         = 0.0f;
+  rx_err_t ret                 = k_rx_ok;
+  bool     was_obstacle_active = false;
+  bool     is_obstacle_active  = false;
 
   handle->total_polls++;
 
@@ -518,7 +515,7 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 
       /* Check if debounce threshold reached */
       if (handle->debounce_counter[i] >= handle->debounce_samples) {
-        was_obstacle_active = handle->obstacle_active[i];
+        was_obstacle_active        = handle->obstacle_active[i];
         handle->obstacle_active[i] = true;
 
         /* Fire callback on state change */
@@ -558,7 +555,7 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
   /* Update state and stop motors if needed */
   if (is_obstacle_active && handle->state != k_obstacle_detect_state_obstacle) {
     handle->state = k_obstacle_detect_state_obstacle;
-    ret = internal_stop_all_motors(handle);
+    ret           = internal_stop_all_motors(handle);
     if (ret != k_rx_ok) {
       /* CRITICAL: Failed to stop motors during obstacle detection */
       /* This is a safety-critical failure - motors may still be running */

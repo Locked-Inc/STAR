@@ -52,10 +52,8 @@ static float   s_callback_distance_cm;
 /**
  * @brief Test callback for obstacle events
  */
-static void test_callback(bool     obstacle_detected,
-                         uint8_t  sensor_idx,
-                         float    distance_cm,
-                         void*    user_data)
+static void
+test_callback(bool obstacle_detected, uint8_t sensor_idx, float distance_cm, void* user_data)
 {
   s_callback_called            = true;
   s_callback_obstacle_detected = obstacle_detected;
@@ -86,15 +84,15 @@ void setUp(void)
   s_motor_ptrs[1] = &s_motors[1];
 
   /* Default configuration: 2 sensors, 2 motors, 30cm threshold */
-  s_config.sensors                 = s_sensor_ptrs;
-  s_config.sensor_count            = 2;
-  s_config.motors                  = s_motor_ptrs;
-  s_config.motor_count             = 2;
-  s_config.detection_threshold_cm  = 30.0f;
-  s_config.debounce_samples        = 3;
-  s_config.poll_interval_ms        = 20;
-  s_config.callback                = test_callback;
-  s_config.user_data               = NULL;
+  s_config.sensors                = s_sensor_ptrs;
+  s_config.sensor_count           = 2;
+  s_config.motors                 = s_motor_ptrs;
+  s_config.motor_count            = 2;
+  s_config.detection_threshold_cm = 30.0f;
+  s_config.debounce_samples       = 3;
+  s_config.poll_interval_ms       = 20;
+  s_config.callback               = test_callback;
+  s_config.user_data              = NULL;
 
   /* Reset callback tracking */
   s_callback_called            = false;
@@ -152,56 +150,56 @@ void test_obstacle_detect_init_already_initialized_fails(void)
 void test_obstacle_detect_init_null_sensors_fails(void)
 {
   s_config.sensors = NULL;
-  rx_err_t err = rx_obstacle_detect_init(&s_handle, &s_config);
+  rx_err_t err     = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
 void test_obstacle_detect_init_zero_sensors_fails(void)
 {
   s_config.sensor_count = 0;
-  rx_err_t err = rx_obstacle_detect_init(&s_handle, &s_config);
+  rx_err_t err          = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_obstacle_detect_init_too_many_sensors_fails(void)
 {
   s_config.sensor_count = k_obstacle_detect_max_sensors + 1;
-  rx_err_t err = rx_obstacle_detect_init(&s_handle, &s_config);
+  rx_err_t err          = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_obstacle_detect_init_null_motors_fails(void)
 {
   s_config.motors = NULL;
-  rx_err_t err = rx_obstacle_detect_init(&s_handle, &s_config);
+  rx_err_t err    = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
 void test_obstacle_detect_init_zero_motors_fails(void)
 {
   s_config.motor_count = 0;
-  rx_err_t err = rx_obstacle_detect_init(&s_handle, &s_config);
+  rx_err_t err         = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_obstacle_detect_init_invalid_threshold_too_low_fails(void)
 {
   s_config.detection_threshold_cm = 1.0f; /* Below 2cm minimum */
-  rx_err_t err = rx_obstacle_detect_init(&s_handle, &s_config);
+  rx_err_t err                    = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_obstacle_detect_init_invalid_threshold_too_high_fails(void)
 {
   s_config.detection_threshold_cm = 500.0f; /* Above 400cm maximum */
-  rx_err_t err = rx_obstacle_detect_init(&s_handle, &s_config);
+  rx_err_t err                    = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_obstacle_detect_init_invalid_debounce_fails(void)
 {
   s_config.debounce_samples = 0; /* Below minimum */
-  rx_err_t err = rx_obstacle_detect_init(&s_handle, &s_config);
+  rx_err_t err              = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -302,7 +300,7 @@ void test_obstacle_detect_get_state_success(void)
 void test_obstacle_detect_get_state_null_handle_fails(void)
 {
   rx_obstacle_detect_state_t state;
-  rx_err_t err = rx_obstacle_detect_get_state(NULL, &state);
+  rx_err_t                   err = rx_obstacle_detect_get_state(NULL, &state);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
@@ -340,10 +338,8 @@ void test_obstacle_detect_get_stats_success(void)
 
   rx_obstacle_detect_init(&s_handle, &s_config);
 
-  rx_err_t err = rx_obstacle_detect_get_stats(&s_handle,
-                                               &total_polls,
-                                               &obstacle_events,
-                                               &false_positives);
+  rx_err_t err =
+    rx_obstacle_detect_get_stats(&s_handle, &total_polls, &obstacle_events, &false_positives);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(0, total_polls);
   TEST_ASSERT_EQUAL(0, obstacle_events);
@@ -353,7 +349,7 @@ void test_obstacle_detect_get_stats_success(void)
 void test_obstacle_detect_get_stats_null_handle_fails(void)
 {
   uint32_t stats = 0;
-  rx_err_t err = rx_obstacle_detect_get_stats(NULL, &stats, &stats, &stats);
+  rx_err_t err   = rx_obstacle_detect_get_stats(NULL, &stats, &stats, &stats);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
@@ -362,8 +358,8 @@ void test_obstacle_detect_reset_stats_success(void)
   rx_obstacle_detect_init(&s_handle, &s_config);
 
   /* Manually set some stats */
-  s_handle.total_polls = 100;
-  s_handle.obstacle_events = 5;
+  s_handle.total_polls          = 100;
+  s_handle.obstacle_events      = 5;
   s_handle.false_positive_count = 2;
 
   rx_err_t err = rx_obstacle_detect_reset_stats(&s_handle);
@@ -389,8 +385,8 @@ void test_obstacle_detect_clear_obstacle_success(void)
   rx_obstacle_detect_init(&s_handle, &s_config);
 
   /* Manually set obstacle state */
-  s_handle.state = k_obstacle_detect_state_obstacle;
-  s_handle.obstacle_active[0] = true;
+  s_handle.state               = k_obstacle_detect_state_obstacle;
+  s_handle.obstacle_active[0]  = true;
   s_handle.debounce_counter[0] = 5;
 
   rx_err_t err = rx_obstacle_detect_clear_obstacle(&s_handle);
