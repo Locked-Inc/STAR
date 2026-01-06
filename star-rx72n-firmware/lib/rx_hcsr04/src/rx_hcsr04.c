@@ -142,7 +142,7 @@ static void internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 {
   /* Ensure trigger is low initially */
   hcsr04_hal_gpio_write_low(handle->trigger_pin);
-  hcsr04_hal_delay_us(2);
+  hcsr04_hal_delay_us(k_hcsr04_trigger_settle_us);
 
   /* Send 10us HIGH pulse */
   hcsr04_hal_gpio_write_high(handle->trigger_pin);
@@ -185,6 +185,7 @@ internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, uint32_t timeout_
     if (elapsed >= timeout_us) {
       return k_rx_err_timeout;
     }
+
   }
 }
 

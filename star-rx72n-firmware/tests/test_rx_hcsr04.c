@@ -43,6 +43,7 @@ void setUp(void)
 {
   /* Initialize mock hardware */
   mock_hcsr04_hw_init(NULL);
+  mock_hcsr04_hw_set_auto_advance(NULL, true, 1);
 
   /* Reset sensor handle */
   memset(&s_sensor, 0, sizeof(s_sensor));
