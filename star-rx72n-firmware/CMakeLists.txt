@@ -110,6 +110,7 @@ add_library(rx_hal STATIC
     lib/rx_hal/src/rx_gptw.c
     lib/rx_hal/src/rx_cmt.c
     lib/rx_hal/src/rx_mpc.c
+    lib/rx_hal/src/rx_obstacle_detect.c
 )
 target_include_directories(rx_hal PUBLIC
     lib/rx_hal/inc
