@@ -139,6 +139,18 @@ void test_uart_putc_channel_invalid_channel(void)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
+void test_uart_putc_channel_tdre_timeout(void)
+{
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
+
+  /* Simulate TDRE flag never becoming ready (transmit buffer always full) */
+  mock_sci_set_tdre(9, false);
+
+  /* This should timeout after k_uart_tx_timeout iterations */
+  rx_err_t err = uart_putc_channel(9, 'A');
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
 void test_uart_puts_channel_success(void)
 {
   uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
@@ -523,6 +535,7 @@ int main(void)
   RUN_TEST(test_uart_putc_channel_success);
   RUN_TEST(test_uart_putc_channel_not_initialized);
   RUN_TEST(test_uart_putc_channel_invalid_channel);
+  RUN_TEST(test_uart_putc_channel_tdre_timeout);
   RUN_TEST(test_uart_puts_channel_success);
   RUN_TEST(test_uart_puts_channel_newline_conversion);
   RUN_TEST(test_uart_puts_channel_null_string);
