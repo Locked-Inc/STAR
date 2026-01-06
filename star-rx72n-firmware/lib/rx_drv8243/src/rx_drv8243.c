@@ -37,6 +37,13 @@ static const char* s_tag = "DRV8243";
 typedef enum {
   k_drv8243_default_ki_propi = 525,   /**< 525 A/V IPROPI ratio (typical) */
   k_drv8243_max_pwm_freq_hz  = 25000, /**< 25 kHz max recommended PWM */
+  k_pwm_not_inverted         = false, /**< PWM output not inverted */
+  k_motor_coast              = false, /**< Motor coast (no brake) */
+  k_motor_brake              = true,  /**< Motor brake (active braking) */
+  k_gpio_level_low           = 0,     /**< GPIO logic level low */
+  k_bit_mask_single          = 0x01,  /**< Single bit mask */
+  k_speed_min_percent        = -100,  /**< Minimum speed percentage (full reverse) */
+  k_speed_max_percent        = 100,   /**< Maximum speed percentage (full forward) */
 } drv8243_constants_t;
 
 /**
@@ -54,9 +61,8 @@ static const float s_mv_to_v_divisor = 1000.0f;
  * =============================================================================
  */
 
-static rx_err_t                 internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle);
-static rx_err_t                 internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle);
-static volatile rx_port_regs_t* rx_port_get_base(uint8_t port);
+static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle);
+static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle);
 
 /* =============================================================================
  * Public API Implementation
@@ -102,7 +108,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
     .output_b     = config->output_en,
     .pwm_freq_hz  = config->pwm_freq_hz,
     .dead_time_ns = config->dead_time_ns,
-    .invert_pwm   = false,
+    .invert_pwm   = k_pwm_not_inverted,
   };
 
   rx_err_t err = rx_motor_init(&handle->motor, &motor_config);
@@ -137,11 +143,13 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
     return k_rx_err_invalid_state;
   }
 
-  /* Stop motor */
-  rx_drv8243_stop(handle, false);
+  /* Stop motor (best effort - log but continue if error) */
+  rx_err_t err = rx_drv8243_stop(handle, k_motor_coast);
+  RX_ERROR_CHECK_WITHOUT_ABORT(err);
 
-  /* Deinitialize motor controller */
-  rx_motor_deinit(&handle->motor);
+  /* Deinitialize motor controller (best effort - log but continue if error) */
+  err = rx_motor_deinit(&handle->motor);
+  RX_ERROR_CHECK_WITHOUT_ABORT(err);
 
   /* Clear handle */
   memset(handle, 0, sizeof(rx_drv8243_handle_t));
@@ -158,6 +166,12 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
   if (!handle->initialized) {
     rx_log_error(s_tag, "DRV8243 not initialized");
     return k_rx_err_invalid_state;
+  }
+
+  /* Validate speed bounds (-100.0 to +100.0 percent) */
+  if (speed < (float)k_speed_min_percent || speed > (float)k_speed_max_percent) {
+    rx_log_error(s_tag, "Speed out of valid range (-100.0 to +100.0)");
+    return k_rx_err_invalid_arg;
   }
 
   /* Check for fault condition */
@@ -186,8 +200,6 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
 
   handle->current_speed = speed;
 
-  rx_log_debug(s_tag, "Debug");
-
   return k_rx_ok;
 }
 
@@ -207,8 +219,6 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake)
   }
 
   handle->current_speed = 0.0f;
-
-  rx_log_debug(s_tag, "Debug");
 
   return k_rx_ok;
 }
@@ -247,8 +257,6 @@ rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current
    */
   *out_current = (float)(voltage_mv * handle->ki_propi) / s_mv_to_v_divisor;
 
-  rx_log_debug(s_tag, "Debug");
-
   return k_rx_ok;
 }
 
@@ -265,14 +273,14 @@ rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_faul
   /* Read nFAULT pin (active low) using PORT register */
   volatile rx_port_regs_t* port = rx_port_get_base(handle->port_nfault);
   if (port == NULL) {
-    rx_log_error(s_tag, "Error occurred");
+    rx_log_error(s_tag, "Invalid port number for nFAULT pin");
     return k_rx_err_invalid_arg;
   }
 
-  uint8_t level = (port->pidr >> handle->pin_nfault) & 0x01;
+  uint8_t level = (port->pidr >> handle->pin_nfault) & k_bit_mask_single;
 
   /* Fault is active when pin is LOW */
-  *out_fault           = (level == 0);
+  *out_fault           = (level == k_gpio_level_low);
   handle->fault_active = *out_fault;
 
   if (*out_fault) {
@@ -307,8 +315,6 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limi
   }
 
   handle->current_limit_ma = limit_ma;
-
-  rx_log_info(s_tag, "Info");
 
   return k_rx_ok;
 }
@@ -361,7 +367,7 @@ static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle
 {
   volatile rx_port_regs_t* port = rx_port_get_base(handle->port_nfault);
   if (port == NULL) {
-    rx_log_error(s_tag, "Error occurred");
+    rx_log_error(s_tag, "Invalid port number for nFAULT pin configuration");
     return k_rx_err_invalid_arg;
   }
 
