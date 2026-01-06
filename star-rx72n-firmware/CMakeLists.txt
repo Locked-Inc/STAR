@@ -243,6 +243,13 @@ add_library(rx_bq4050 STATIC
 target_include_directories(rx_bq4050 PUBLIC lib/rx_bq4050/inc)
 target_link_libraries(rx_bq4050 PUBLIC rx_bus rx_core)
 
+# rx_ds18b20 - DS18B20 1-Wire temperature sensor
+add_library(rx_ds18b20 STATIC
+    lib/rx_ds18b20/src/rx_ds18b20.c
+)
+target_include_directories(rx_ds18b20 PUBLIC lib/rx_ds18b20/inc)
+target_link_libraries(rx_ds18b20 PUBLIC rx_bus rx_crc rx_core)
+
 # =============================================================================
 # Application Source Files
 # =============================================================================
