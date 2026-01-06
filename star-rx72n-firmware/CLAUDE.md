@@ -22,7 +22,7 @@ Note: Renesas APIs and ThreadX may still use legacy terminology internally. Map 
 
 **STAR RX72N Firmware** - ThreadX-based motor control firmware for Renesas RX72N microcontroller.
 
-This firmware is part of the STAR (Sensor and Actuator Abstraction Runtime) distributed robotics platform. It runs on the RX72N motor controller PCB and communicates with the Raspberry Pi 5 control system via SPI using Protocol Buffers.
+This firmware is part of the STAR (Simultaneous Tracking and Robotics) distributed robotics platform. It runs on the RX72N motor controller PCB and communicates with the Raspberry Pi 5 control system via SPI using Protocol Buffers.
 
 ### Key Differences from ESP32 Firmware
 
@@ -140,6 +140,7 @@ CMT0.CMCR = 0x0042;    // Configure timer
 - `PORT0`-`PORTJ` - GPIO ports
 - `SCI0`-`SCI12` - Serial Communication Interface (UART)
 - `MTU0`-`MTU7` - Multi-Function Timer Units (PWM)
+- `CRC` - CRC Calculator peripheral (hardware CRC-32)
 
 #### 3. Interrupt Handlers
 
@@ -178,7 +179,33 @@ tx_thread_create(&led_thread, "LED", led_task_entry,
 uint8_t* stack = malloc(1024);  // Never do this!
 ```
 
-#### 5. Constants and Macros
+#### 5. Explicit Integer Types (No size_t)
+
+**Use explicit-width integers instead of `size_t`:**
+
+On the 32-bit RX72N platform, `size_t` is 32 bits, but using explicit types like `uint32_t` is preferred for:
+- Clarity about the actual width
+- Consistency across the codebase
+- Avoiding implicit conversions
+
+```c
+// CORRECT: Explicit width
+uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
+
+for (uint32_t i = 0; i < len; i++) {
+    // ...
+}
+
+// AVOID: size_t
+size_t rx_crc32_ieee(const uint8_t* data, size_t len);  // Don't use
+```
+
+**When to use each type:**
+- `uint32_t` - Buffer lengths, loop counters, sizes
+- `uint16_t` - Sequence numbers, frame lengths
+- `uint8_t` - Byte data, flags, small counters
+
+#### 6. Constants and Macros
 
 **Prefer enums over const over macros** (same as ESP32):
 
@@ -194,7 +221,37 @@ typedef enum {
 #define MOTOR_STATE_IDLE 0
 ```
 
-#### 6. ThreadX Configuration
+#### 7. Named Constants for Array Indices
+
+**Use enums for array indices instead of magic numbers:**
+
+When indexing into arrays (especially for byte serialization), use named constants to document what each index represents:
+
+```c
+// CORRECT: Named indices document the byte ordering
+typedef enum {
+    k_be16_byte_high = 0,  /**< High byte (MSB) at index 0 */
+    k_be16_byte_low  = 1,  /**< Low byte (LSB) at index 1 */
+} be16_byte_idx_t;
+
+static void internal_write_be16(uint8_t* buf, uint16_t val) {
+    buf[k_be16_byte_high] = (uint8_t)(val >> 8);
+    buf[k_be16_byte_low]  = (uint8_t)(val & 0xFF);
+}
+
+// AVOID: Magic number indices
+static void internal_write_be16(uint8_t* buf, uint16_t val) {
+    buf[0] = (uint8_t)(val >> 8);   // What does 0 mean?
+    buf[1] = (uint8_t)(val & 0xFF); // What does 1 mean?
+}
+```
+
+This improves:
+- **Readability** - Index meaning is self-documenting
+- **Maintainability** - Easier to understand byte ordering
+- **Debuggability** - Enum values visible in debugger
+
+#### 8. ThreadX Configuration
 
 **ThreadX config is in `include/tx_user.h`:**
 
@@ -209,7 +266,7 @@ typedef enum {
 #define TX_TIMER_PROCESS_IN_ISR           // Timer processing in ISR
 ```
 
-#### 7. Peripheral Initialization Order
+#### 9. Peripheral Initialization Order
 
 **Critical startup sequence for RX72N:**
 
@@ -234,6 +291,165 @@ int main(void) {
     return 0;
 }
 ```
+
+#### 10. Doxygen File Headers
+
+**All `.c` and `.h` files must include proper Doxygen metadata tags:**
+
+```c
+/**
+ * @file my_driver.c
+ * @brief Brief description of the file
+ *
+ * Detailed description if needed.
+ *
+ * @date 2026-01-02
+ * @copyright Copyright (c) 2026 STAR Project
+ */
+```
+
+**Do NOT use plain text dates:**
+```c
+// WRONG: Plain text, not Doxygen tags
+ * STAR Project - Texas A&M University
+ * January 2026
+
+// CORRECT: Proper Doxygen tags
+ * @date 2026-01-02
+ * @copyright Copyright (c) 2026 STAR Project
+```
+
+#### 11. Single-Value Enums
+
+**Use `static const` instead of single-value enums:**
+
+```c
+// AVOID: Single-value enum (unused typedef)
+typedef enum {
+  k_timeout_ms = 1000,
+} timeout_constants_t;
+
+// PREFER: static const with s_ prefix
+static const uint32_t s_timeout_ms = 1000;
+```
+
+Enums are for **groups of related constants**. A single constant should use `static const`.
+
+#### 12. Variable Declaration Placement
+
+**Declare all variables at function start, not mid-block:**
+
+```c
+// AVOID: Declaration inside loop
+static rx_err_t wait_for_event(uint32_t timeout_us)
+{
+  uint32_t start = get_time_us();
+  while (true) {
+    uint32_t elapsed = get_time_us() - start;  // declared mid-function
+    if (elapsed >= timeout_us) return k_rx_err_timeout;
+  }
+}
+
+// PREFER: All declarations at function start
+static rx_err_t wait_for_event(uint32_t timeout_us)
+{
+  uint32_t start   = get_time_us();
+  uint32_t elapsed = 0;
+
+  while (true) {
+    elapsed = get_time_us() - start;
+    if (elapsed >= timeout_us) return k_rx_err_timeout;
+  }
+}
+```
+
+#### 13. HAL Wrapper Error Propagation
+
+**HAL wrapper functions must propagate errors, never discard return values:**
+
+```c
+// WRONG: Discards HAL errors
+static rx_err_t wrapper_set_output(uint8_t port, uint8_t pin)
+{
+  gpio_set_output(port, pin);  // return value ignored!
+  return k_rx_ok;
+}
+
+// CORRECT: Propagate HAL errors
+static rx_err_t wrapper_set_output(uint8_t port, uint8_t pin)
+{
+  return gpio_set_output(port, pin);
+}
+```
+
+#### 14. Range Validation
+
+**Always check both minimum AND maximum bounds:**
+
+```c
+// INCOMPLETE: Only checks minimum
+if (distance_cm < MIN_DISTANCE_CM) {
+  return k_rx_err_out_of_range;
+}
+
+// COMPLETE: Checks both bounds
+if (distance_cm < MIN_DISTANCE_CM || distance_cm > MAX_DISTANCE_CM) {
+  return k_rx_err_out_of_range;
+}
+```
+
+#### 15. Port/Pin Constants Policy
+
+**CRITICAL: NEVER hardcode port or pin numbers!**
+
+All port and pin numbers MUST use centralized constants from the library layer. Hex values are ONLY allowed in `lib/rx_core/inc/rx_port_constants.h`.
+
+**Architecture:**
+- `lib/rx_core/inc/rx_port_constants.h` - Library source of truth (ONLY place with hex values)
+- `lib/rx_hal/` - Library code uses constants (NO hex)
+- `include/hardware_pinout.h` - Application layer uses constants (NO hex)
+
+**Correct usage (library code):**
+
+```c
+#include "rx_port_constants.h"
+
+// Use named constants
+switch (port) {
+  case k_rx_port_b: return portb();
+  case k_rx_port_e: return porte();
+  // ...
+}
+```
+
+**Correct usage (application code):**
+
+```c
+#include "rx_port_constants.h"
+
+// Build gpio_pin_t from constants
+k_gpio_pb2 = (k_rx_port_b << k_port_shift) | k_rx_pin_2,
+```
+
+**WRONG - Never do this:**
+
+```c
+// WRONG: Hardcoded hex values
+if (port == 0x0B) { ... }           // What is 0x0B?
+if (port == 11) { ... }             // Decimal is also wrong!
+k_gpio_pb2 = 0x0B02;                // Magic number!
+```
+
+**Allowed hex values:**
+- `lib/rx_core/inc/rx_port_constants.h` - Port/pin constants (ONLY here!)
+- `lib/rx_hal/inc/rx72n_*_regs.h` - Hardware register addresses
+
+**Benefits:**
+- Single source of truth for all port/pin numbers
+- Compile-time verification via static assertions
+- Self-documenting code (`k_rx_port_b` vs `0x0B`)
+- Easy to search and maintain
+- Type-safe enum constants
 
 ## Project Structure
 
@@ -313,6 +529,114 @@ void uart_putint(int32_t value);            // Send integer
 ```c
 void timer_init(void);          // Initialize CMT0 for ThreadX tick (100 Hz)
 void cmt0_isr(void);            // CMT0 interrupt handler
+```
+
+### Defensive Coding Modules
+
+#### IWDT Watchdog (`rx_iwdt.h`)
+
+```c
+rx_err_t rx_iwdt_init(uint32_t timeout_ms);  // Initialize with timeout
+void rx_iwdt_feed(void);                      // Feed watchdog
+bool rx_iwdt_was_reset(void);                 // Check reset cause
+```
+
+#### IRQ Filter (`rx_irq_filter.h`)
+
+```c
+rx_err_t rx_irq_filter_enable(uint8_t irq_num, rx_irq_filter_clk_t clk);
+rx_err_t rx_irq_filter_disable(uint8_t irq_num);
+```
+
+#### Register Guard (`rx_register_guard.h`)
+
+```c
+rx_err_t rx_register_guard_init(void);        // Capture golden values
+void rx_register_guard_refresh(void);          // Restore corrupted registers
+uint32_t rx_register_guard_get_correction_count(void);
+```
+
+## Protocol Stack Libraries
+
+The firmware includes protocol stack libraries for reliable SPI communication:
+
+| Library | Location | Description |
+|---------|----------|-------------|
+| `rx_frame` | `lib/rx_frame/` | Frame encoding/decoding with CRC-32 |
+| `rx_fec` | `lib/rx_fec/` | Forward Error Correction (Hamming codes) |
+| `rx_harq` | `lib/rx_harq/` | Hybrid ARQ with soft combining |
+
+### CRC-32 Module (`rx_frame`)
+
+IEEE 802.3 CRC-32 implementation with **compile-time hardware/software selection**.
+
+**Design Rationale:**
+
+The CRC module uses a compile-time selection strategy with both implementations always compiled:
+
+1. **Hardware CRC** (default on RX72N):
+   - Uses RX72N CRC Calculator peripheral (~10x faster for large buffers)
+   - Automatically enabled when `__RX__` is defined
+
+2. **Software CRC** (default on host, always available):
+   - 256-entry lookup table implementation (1KB table in .rodata)
+   - Used for host-side unit testing (no hardware available)
+   - `rx_crc32_update_sw()` always compiled for incremental CRC operations
+   - Enables A/B comparison testing on hardware for validation
+
+**Why both implementations are always compiled:**
+- Host-side tests validate CRC correctness without hardware
+- Software can be forced on target (`-DRX_CRC32_USE_SOFTWARE`) for debugging
+- Incremental CRC uses software fallback (hardware state management is complex)
+
+**Public API:**
+```c
+#include "rx_crc.h"
+
+uint32_t rx_crc32_ieee(const uint8_t *data, size_t len);
+uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len);
+```
+
+**Hardware/Software Selection:**
+
+| Build Target | Default | Override |
+|--------------|---------|----------|
+| RX72N (`__RX__` defined) | Hardware CRC | Define `RX_CRC32_USE_SOFTWARE` |
+| Host (testing) | Software CRC | N/A |
+
+```c
+// Force software CRC (useful for debugging or comparison)
+#define RX_CRC32_USE_SOFTWARE
+#include "rx_crc_internal.h"
+
+// Or via compiler flag:
+// gcc -DRX_CRC32_USE_SOFTWARE ...
+```
+
+**Hardware CRC Details:**
+- Peripheral: RX72N CRC Calculator at 0x00088280
+- Polynomial: IEEE 802.3 (0x04C11DB7)
+- Module stop: MSTPCRB bit 23
+- Bit-exact compatible with Go's `crc32.ChecksumIEEE()`
+
+**References:**
+- [RX72N Hardware Manual](https://www.renesas.com/en/products/rx72n) - CRC Calculator section
+- [Renesas FSP CRC Module](https://renesas.github.io/fsp/group___c_r_c.html)
+
+**File Structure:**
+```
+lib/rx_crc/
+├── inc/
+│   ├── rx_crc.h            # Public API
+│   └── rx_crc_internal.h   # Internal abstraction (hw/sw selection)
+└── src/
+    ├── rx_crc32.c          # Public API wrapper
+    ├── rx_crc32_sw.c       # Software implementation (lookup table)
+    └── rx_crc32_hw.c       # Hardware implementation (RX72N peripheral)
+
+lib/rx_frame/
+└── src/
+    └── rx_frame.c          # Frame encoding/decoding
 ```
 
 ## ThreadX Patterns
@@ -503,6 +827,7 @@ Peripherals:
 0x00080000 - 0x000FFFFF    Peripheral registers
 0x00088000 - ICU
 0x00088200 - CMT
+0x00088280 - CRC (CRC Calculator)
 0x000C0000 - GPIO (PORT)
 0x000D0000 - MTU3a
 0x000E0000 - S12AD
@@ -557,6 +882,7 @@ ICU.IR[28] = 0;
 ## References
 
 - [RX72N Hardware Manual](https://www.renesas.com/en/products/rx72n) - Complete peripheral reference
+- [RX72N CRC Calculator](https://renesas.github.io/fsp/group___c_r_c.html) - Hardware CRC-32 documentation
 - [ThreadX Documentation](https://github.com/eclipse-threadx/rtos-docs) - RTOS API reference
 - [GNURX Toolchain](https://llvm-gcc-renesas.com/) - Compiler documentation
 - [Main STAR Style Guide](../CLAUDE.md) - Project-wide coding standards

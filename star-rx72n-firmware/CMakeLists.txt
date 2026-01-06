@@ -57,6 +57,7 @@ add_compile_options(
     -Wno-unused-parameter
     -Wno-missing-braces    # nanopb generates these
     -Wno-comment           # ThreadX has nested comments in assembly
+    -fshort-enums          # Use smallest type for enums (embedded optimization)
 )
 
 # Optimization flags
@@ -106,6 +107,7 @@ add_library(rx_hal STATIC
     lib/rx_hal/src/riic.c
     lib/rx_hal/src/rspi.c
     lib/rx_hal/src/rx_mtu3a.c
+    lib/rx_hal/src/rx_gptw.c
     lib/rx_hal/src/rx_cmt.c
     lib/rx_hal/src/rx_mpc.c
 )
@@ -123,9 +125,11 @@ add_library(rx_bus STATIC
     lib/rx_bus/src/rx_bus_adc.c
     lib/rx_bus/src/rx_bus_i2c.c
     lib/rx_bus/src/rx_bus_smbus.c
+    lib/rx_bus/src/rx_bus_onewire.c
+    lib/rx_bus/src/rx_bus_uart.c
 )
 target_include_directories(rx_bus PUBLIC lib/rx_bus/inc)
-target_link_libraries(rx_bus PUBLIC rx_core rx_hal)
+target_link_libraries(rx_bus PUBLIC rx_core rx_hal rx_crc)
 
 # rx_encoder - MTU encoder driver
 add_library(rx_encoder STATIC
@@ -141,6 +145,83 @@ add_library(rx_pid STATIC
 target_include_directories(rx_pid PUBLIC lib/rx_pid/inc)
 target_link_libraries(rx_pid PUBLIC rx_core)
 
+# rx_fec - Forward Error Correction (convolutional encoder + Viterbi decoder)
+add_library(rx_fec STATIC
+    lib/rx_fec/src/rx_fec.c
+)
+target_include_directories(rx_fec PUBLIC lib/rx_fec/inc)
+target_link_libraries(rx_fec PUBLIC rx_core)
+
+# rx_harq - Hybrid Automatic Repeat Request (Chase Combining)
+add_library(rx_harq STATIC
+    lib/rx_harq/src/rx_harq.c
+)
+target_include_directories(rx_harq PUBLIC lib/rx_harq/inc)
+target_link_libraries(rx_harq PUBLIC rx_fec rx_core)
+
+# rx_crc - Shared CRC helpers
+add_library(rx_crc STATIC
+    lib/rx_crc/src/rx_crc32.c
+    lib/rx_crc/src/rx_crc32_hw.c
+    lib/rx_crc/src/rx_crc32_sw.c
+    lib/rx_crc/src/rx_crc8.c
+)
+target_include_directories(rx_crc PUBLIC lib/rx_crc/inc)
+target_link_libraries(rx_crc PUBLIC rx_core rx_hal)
+
+# rx_frame - Frame Layer (SYNC + header + CRC usage)
+add_library(rx_frame STATIC
+    lib/rx_frame/src/rx_frame.c
+)
+target_include_directories(rx_frame PUBLIC lib/rx_frame/inc)
+target_link_libraries(rx_frame PUBLIC rx_core rx_hal rx_crc)
+
+# rx_nanopb - nanopb Protocol Buffers Integration
+add_library(rx_nanopb STATIC
+    lib/rx_nanopb/src/rx_nanopb.c
+    lib/rx_nanopb/nanopb/pb_common.c
+    lib/rx_nanopb/nanopb/pb_encode.c
+    lib/rx_nanopb/nanopb/pb_decode.c
+    lib/rx_nanopb/inc/gen/google/protobuf/timestamp.pb.c
+    lib/rx_nanopb/inc/gen/google/protobuf/duration.pb.c
+    lib/rx_nanopb/inc/gen/star/v1/common.pb.c
+    lib/rx_nanopb/inc/gen/star/v1/motor_control.pb.c
+    lib/rx_nanopb/inc/gen/star/v1/telemetry.pb.c
+)
+target_include_directories(rx_nanopb PUBLIC
+    lib/rx_nanopb/inc
+    lib/rx_nanopb/inc/gen
+    lib/rx_nanopb/nanopb
+)
+# RX72N uses 4-byte double (same as float) - tell nanopb to handle conversion
+target_compile_definitions(rx_nanopb PUBLIC PB_CONVERT_DOUBLE_FLOAT=1)
+target_link_libraries(rx_nanopb PUBLIC rx_core)
+
+# rx_spi_comm - High-Level SPI Communication Layer
+add_library(rx_spi_comm STATIC
+    lib/rx_spi_comm/src/rx_spi_comm.c
+)
+target_include_directories(rx_spi_comm PUBLIC lib/rx_spi_comm/inc)
+target_link_libraries(rx_spi_comm PUBLIC rx_frame rx_hal rx_core)
+
+# rx_usb - USB CDC-ACM Driver for RX72N
+add_library(rx_usb STATIC
+    lib/rx_usb/src/rx_usb.c
+    lib/rx_usb/src/rx_usb_hw.c
+    lib/rx_usb/src/rx_usb_cdc.c
+    lib/rx_usb/src/rx_usb_isr.c
+)
+target_include_directories(rx_usb PUBLIC lib/rx_usb/inc)
+target_link_libraries(rx_usb PUBLIC rx_core rx_hal)
+target_compile_options(rx_usb PRIVATE -Wno-unused-function)
+
+# rx_usb_comm - USB CDC Communication Layer
+add_library(rx_usb_comm STATIC
+    lib/rx_usb_comm/src/rx_usb_comm.c
+)
+target_include_directories(rx_usb_comm PUBLIC lib/rx_usb_comm/inc)
+target_link_libraries(rx_usb_comm PUBLIC rx_core rx_frame rx_usb)
+
 # rx_motor - MTU3a motor control
 add_library(rx_motor STATIC
     lib/rx_motor/src/rx_motor.c
@@ -155,13 +236,19 @@ add_library(rx_drv8243 STATIC
 target_include_directories(rx_drv8243 PUBLIC lib/rx_drv8243/inc)
 target_link_libraries(rx_drv8243 PUBLIC rx_bus rx_motor rx_core)
 
-# rx_fuel_gauge - Battery management
-add_library(rx_fuel_gauge STATIC
-    lib/rx_fuel_gauge/src/rx_fuel_gauge.c
-    lib/rx_fuel_gauge/src/rx_bq25798.c
+# rx_bq4050 - BQ4050 battery fuel gauge (Smart Battery System)
+add_library(rx_bq4050 STATIC
+    lib/rx_bq4050/src/rx_bq4050.c
 )
-target_include_directories(rx_fuel_gauge PUBLIC lib/rx_fuel_gauge/inc)
-target_link_libraries(rx_fuel_gauge PUBLIC rx_bus rx_core)
+target_include_directories(rx_bq4050 PUBLIC lib/rx_bq4050/inc)
+target_link_libraries(rx_bq4050 PUBLIC rx_bus rx_core)
+
+# rx_ds18b20 - DS18B20 1-Wire temperature sensor
+add_library(rx_ds18b20 STATIC
+    lib/rx_ds18b20/src/rx_ds18b20.c
+)
+target_include_directories(rx_ds18b20 PUBLIC lib/rx_ds18b20/inc)
+target_link_libraries(rx_ds18b20 PUBLIC rx_bus rx_crc rx_core)
 
 # =============================================================================
 # Application Source Files
@@ -169,8 +256,6 @@ target_link_libraries(rx_fuel_gauge PUBLIC rx_bus rx_core)
 
 set(APP_SOURCES
     src/main.c
-    src/motor_shared_state.c
-    src/tasks/motor_control_task.c
 )
 
 # =============================================================================
@@ -195,8 +280,15 @@ target_link_libraries(${PROJECT_NAME}.elf
     rx_motor
     rx_encoder
     rx_pid
+    rx_fec
+    rx_harq
+    rx_frame
+    rx_nanopb
+    rx_spi_comm
+    rx_usb
+    rx_usb_comm
     rx_drv8243
-    rx_fuel_gauge
+    rx_bq4050
 )
 
 # Linker script
@@ -231,14 +323,22 @@ message(STATUS "Build Type:       ${CMAKE_BUILD_TYPE}")
 message(STATUS "C Compiler:       ${CMAKE_C_COMPILER}")
 message(STATUS "==============================================")
 message(STATUS "Libraries:")
-message(STATUS "  rx_hal         - Hardware abstraction (MTU, CMT, GPIO, UART)")
+message(STATUS "  rx_hal         - Hardware abstraction (GPTW, MTU, CMT, GPIO, UART)")
 message(STATUS "  rx_core        - Core infrastructure (error, logging, DIP)")
 message(STATUS "  rx_bus         - Bus manager (GPIO, ADC, I2C, SMBUS)")
-message(STATUS "  rx_motor       - Motor control (MTU3a PWM)")
+message(STATUS "  rx_motor       - Motor control (GPTW PWM)")
 message(STATUS "  rx_encoder     - Encoder (MTU phase counting)")
 message(STATUS "  rx_pid         - PID controller")
+message(STATUS "  rx_fec         - FEC codec (K=7 convolutional + Viterbi)")
+message(STATUS "  rx_harq        - HARQ protocol (Chase Combining)")
+message(STATUS "  rx_frame       - Frame layer (SYNC, CRC-32, header)")
+message(STATUS "  rx_nanopb      - Protocol Buffers (nanopb integration)")
+message(STATUS "  rx_spi_comm    - SPI communication layer")
+message(STATUS "  rx_usb         - USB CDC-ACM driver")
+message(STATUS "  rx_usb_comm    - USB communication layer")
 message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
-message(STATUS "  rx_fuel_gauge  - Battery management (BQ25798)")
+message(STATUS "  rx_bq4050      - BQ4050 battery fuel gauge (SBS 1.1)")
+message(STATUS "  rx_ds18b20     - DS18B20 1-Wire temperature sensor")
 message(STATUS "==============================================")
 
 # =============================================================================

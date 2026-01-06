@@ -1,5 +1,5 @@
 #!/bin/bash
-# ESP32 Firmware Code Formatting Script for Mac/Linux
+# RX72N Firmware Code Formatting Script for Mac/Linux
 # Usage: ./format_code.sh [options]
 
 set -e  # Exit on any error
@@ -16,11 +16,11 @@ NC='\033[0m' # No Color
 CHECK_ONLY=false
 VERBOSE=false
 EXTENSIONS=("*.c" "*.h" "*.cpp" "*.hpp")
-DIRECTORIES=("src" "lib" "include")
+DIRECTORIES=("src" "lib" "include" "tests")
 
 # Print usage information
 usage() {
-    echo "ESP32 Firmware Code Formatting Script"
+    echo "RX72N Firmware Code Formatting Script"
     echo ""
     echo "Usage: $0 [options]"
     echo ""
@@ -123,10 +123,14 @@ find_source_files() {
 
         for ext in "${EXTENSIONS[@]}"; do
             # Use find to recursively find files with the extension
-            # Exclude third-party code (threadx)
+            # Exclude submodules (threadx, nanopb)
             while IFS= read -r -d '' file; do
                 files+=("$file")
-            done < <(find "$dir" -name "$ext" -type f -not -path "lib/threadx/*" -print0 2>/dev/null)
+            done < <(find "$dir" -name "$ext" -type f \
+                -not -path "lib/threadx/*" \
+                -not -path "lib/rx_nanopb/nanopb/*" \
+                -not -path "tests/host-build/*" \
+                -print0 2>/dev/null)
         done
     done
 

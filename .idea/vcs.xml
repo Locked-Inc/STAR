@@ -2,5 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/star-rx72n-firmware/lib/rx_nanopb/nanopb" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/star-rx72n-firmware/lib/threadx" vcs="Git" />
   </component>
 </project>

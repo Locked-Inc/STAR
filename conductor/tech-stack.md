@@ -21,6 +21,7 @@
 - **Protocol Buffers (nanopb):** Unified serialization format for data exchange across all components (Go, C, TypeScript).
 - **SPI (10 Mbps):** High-speed serial interface for the primary RPi5 ↔ RX72N data link.
 - **gRPC / WebSockets:** Used for high-level command and telemetry streams between the UI and Gateway.
+    - `/ws/controller`: Dedicated 60Hz binary WebSocket for real-time gamepad control.
 
 ## Engineering & Design Tools
 - **MATLAB/Simulink:** For system identification, motor modeling, and discrete PID controller design.

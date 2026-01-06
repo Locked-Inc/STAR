@@ -9,3 +9,7 @@
 *.tex linguist-vendored
 *.sty linguist-vendored
 *.cls linguist-vendored
+
+# Exclude AGS Script and ASL
+*.asc linguist-vendored
+*.dsl linguist-vendored
