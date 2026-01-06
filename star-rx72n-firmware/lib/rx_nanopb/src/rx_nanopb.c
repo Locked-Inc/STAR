@@ -74,10 +74,21 @@ rx_err_t rx_nanopb_init(void)
 
   /* Post-condition: Verify initialization succeeded */
   if (!s_initialized) {
-    return k_rx_err_generic;
+    return k_rx_fail;
   }
 
   return k_rx_ok;
+}
+
+/**
+ * @brief Reset module state for testing
+ *
+ * @note This function is only for unit testing purposes.
+ *       It allows tests to reset the initialization state.
+ */
+void rx_nanopb_test_reset_state(void)
+{
+  s_initialized = false;
 }
 
 /* =============================================================================

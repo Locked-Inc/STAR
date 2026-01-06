@@ -243,6 +243,20 @@ void test_encode_velocity_request_negative_velocity(void)
   TEST_ASSERT_GREATER_THAN(0, len);
 }
 
+/**
+ * @brief Test encode velocity request when not initialized
+ */
+void test_encode_velocity_request_not_initialized(void)
+{
+  rx_nanopb_test_reset_state();
+
+  star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
+  uint32_t                   len = 0;
+
+  rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+}
+
 /* =============================================================================
  * Velocity Request Decode Tests
  * =============================================================================
@@ -291,6 +305,32 @@ void test_decode_velocity_request_invalid_data(void)
 
   rx_err_t err = rx_nanopb_decode_velocity_request(invalid_data, sizeof(invalid_data), &msg);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+}
+
+/**
+ * @brief Test decode velocity request when not initialized
+ */
+void test_decode_velocity_request_not_initialized(void)
+{
+  rx_nanopb_test_reset_state();
+
+  uint8_t                    buffer[] = {0x0A, 0x08, 0x11, 0x00, 0x00, 0x00};
+  star_v1_SetVelocityRequest msg      = star_v1_SetVelocityRequest_init_zero;
+
+  rx_err_t err = rx_nanopb_decode_velocity_request(buffer, sizeof(buffer), &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+}
+
+/**
+ * @brief Test decode velocity request with oversized buffer
+ */
+void test_decode_velocity_request_oversized_buffer(void)
+{
+  star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
+
+  /* Length exceeds k_nanopb_buffer_size */
+  rx_err_t err = rx_nanopb_decode_velocity_request(s_buffer, k_nanopb_buffer_size + 1, &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -477,6 +517,20 @@ void test_encode_velocity_response_error_status(void)
   TEST_ASSERT_GREATER_THAN(0, len);
 }
 
+/**
+ * @brief Test encode velocity response when not initialized
+ */
+void test_encode_velocity_response_not_initialized(void)
+{
+  rx_nanopb_test_reset_state();
+
+  star_v1_SetVelocityResponse msg = star_v1_SetVelocityResponse_init_zero;
+  uint32_t                    len = 0;
+
+  rx_err_t err = rx_nanopb_encode_velocity_response(&msg, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+}
+
 /* =============================================================================
  * Emergency Stop Request Decode Tests
  * =============================================================================
@@ -524,6 +578,32 @@ void test_decode_estop_request_invalid_data(void)
 
   rx_err_t err = rx_nanopb_decode_estop_request(invalid_data, sizeof(invalid_data), &msg);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+}
+
+/**
+ * @brief Test decode estop request when not initialized
+ */
+void test_decode_estop_request_not_initialized(void)
+{
+  rx_nanopb_test_reset_state();
+
+  uint8_t                      buffer[] = {0x08, 0x01};
+  star_v1_EmergencyStopRequest msg      = star_v1_EmergencyStopRequest_init_zero;
+
+  rx_err_t err = rx_nanopb_decode_estop_request(buffer, sizeof(buffer), &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+}
+
+/**
+ * @brief Test decode estop request with oversized buffer
+ */
+void test_decode_estop_request_oversized_buffer(void)
+{
+  star_v1_EmergencyStopRequest msg = star_v1_EmergencyStopRequest_init_zero;
+
+  /* Length exceeds k_nanopb_buffer_size */
+  rx_err_t err = rx_nanopb_decode_estop_request(s_buffer, k_nanopb_buffer_size + 1, &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -619,6 +699,20 @@ void test_encode_estop_response_estop_active_status(void)
   uint32_t len = 0;
   rx_err_t err = rx_nanopb_encode_estop_response(&msg, s_buffer, sizeof(s_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test encode estop response when not initialized
+ */
+void test_encode_estop_response_not_initialized(void)
+{
+  rx_nanopb_test_reset_state();
+
+  star_v1_EmergencyStopResponse msg = star_v1_EmergencyStopResponse_init_zero;
+  uint32_t                      len = 0;
+
+  rx_err_t err = rx_nanopb_encode_estop_response(&msg, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
 }
 
 /* =============================================================================
@@ -822,6 +916,20 @@ void test_encode_telemetry_all_fields(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_GREATER_THAN(0, len);
   TEST_ASSERT_LESS_THAN(k_test_buffer_size, len);
+}
+
+/**
+ * @brief Test encode telemetry when not initialized
+ */
+void test_encode_telemetry_not_initialized(void)
+{
+  rx_nanopb_test_reset_state();
+
+  star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
+  uint32_t              len = 0;
+
+  rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
 }
 
 /* =============================================================================
@@ -1147,12 +1255,15 @@ int main(void)
   RUN_TEST(test_encode_velocity_request_max_velocity);
   RUN_TEST(test_encode_velocity_request_zero_velocity);
   RUN_TEST(test_encode_velocity_request_negative_velocity);
+  RUN_TEST(test_encode_velocity_request_not_initialized);
 
   /* Velocity request decode tests */
   RUN_TEST(test_decode_velocity_request_null_buffer);
   RUN_TEST(test_decode_velocity_request_null_msg);
   RUN_TEST(test_decode_velocity_request_empty_buffer);
   RUN_TEST(test_decode_velocity_request_invalid_data);
+  RUN_TEST(test_decode_velocity_request_not_initialized);
+  RUN_TEST(test_decode_velocity_request_oversized_buffer);
 
   /* Velocity request round-trip tests */
   RUN_TEST(test_velocity_request_roundtrip_with_command);
@@ -1167,12 +1278,15 @@ int main(void)
   RUN_TEST(test_encode_velocity_response_empty);
   RUN_TEST(test_encode_velocity_response_with_header);
   RUN_TEST(test_encode_velocity_response_error_status);
+  RUN_TEST(test_encode_velocity_response_not_initialized);
 
   /* Emergency stop request decode tests */
   RUN_TEST(test_decode_estop_request_null_buffer);
   RUN_TEST(test_decode_estop_request_null_msg);
   RUN_TEST(test_decode_estop_request_empty_buffer);
   RUN_TEST(test_decode_estop_request_invalid_data);
+  RUN_TEST(test_decode_estop_request_not_initialized);
+  RUN_TEST(test_decode_estop_request_oversized_buffer);
 
   /* Emergency stop response encode tests */
   RUN_TEST(test_encode_estop_response_null_msg);
@@ -1182,6 +1296,7 @@ int main(void)
   RUN_TEST(test_encode_estop_response_engaged_true);
   RUN_TEST(test_encode_estop_response_engaged_false);
   RUN_TEST(test_encode_estop_response_estop_active_status);
+  RUN_TEST(test_encode_estop_response_not_initialized);
 
   /* Telemetry encode tests */
   RUN_TEST(test_encode_telemetry_null_msg);
@@ -1197,6 +1312,7 @@ int main(void)
   RUN_TEST(test_encode_telemetry_gps);
   RUN_TEST(test_encode_telemetry_imu);
   RUN_TEST(test_encode_telemetry_all_fields);
+  RUN_TEST(test_encode_telemetry_not_initialized);
 
   /* Helper function tests - velocity command */
   RUN_TEST(test_create_velocity_command_null);
