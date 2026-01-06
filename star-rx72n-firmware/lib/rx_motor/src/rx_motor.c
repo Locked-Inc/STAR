@@ -46,6 +46,14 @@ typedef enum {
   k_motor_ph_low    = 0,    /**< PH signal for reverse direction */
 } motor_constants_t;
 
+/** @brief Motor configuration validation limits (NASA Rule 5 compliance) */
+typedef enum {
+  k_motor_min_pwm_freq  = 1000,   /**< Minimum PWM frequency (1 kHz) */
+  k_motor_max_pwm_freq  = 50000,  /**< Maximum PWM frequency (50 kHz) */
+  k_motor_min_dead_time = 100,    /**< Minimum dead-time (100 ns) */
+  k_motor_max_dead_time = 10000,  /**< Maximum dead-time (10 us) */
+} motor_validation_limits_t;
+
 /* =============================================================================
  * Internal Helper Functions
  * =============================================================================
@@ -87,6 +95,18 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   if (handle->initialized) {
     rx_log_warn(s_tag, "Motor already initialized");
     return k_rx_err_invalid_state;
+  }
+
+  /* Pre-condition: Validate PWM frequency (NASA Rule 5 compliance) */
+  if (config->pwm_freq_hz < k_motor_min_pwm_freq || config->pwm_freq_hz > k_motor_max_pwm_freq) {
+    rx_log_error(s_tag, "PWM frequency out of range (1kHz-50kHz)");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition: Validate dead-time (NASA Rule 5 compliance) */
+  if (config->dead_time_ns < k_motor_min_dead_time || config->dead_time_ns > k_motor_max_dead_time) {
+    rx_log_error(s_tag, "Dead-time out of range (100ns-10us)");
+    return k_rx_err_invalid_arg;
   }
 
   rx_log_info(s_tag, "Initializing motor");
@@ -171,7 +191,13 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
     return k_rx_err_invalid_state;
   }
 
-  /* Clamp duty cycle to valid range */
+  /* Pre-condition: Validate duty value is reasonable (NASA Rule 5 compliance) */
+  if (isnan(duty) || isinf(duty)) {
+    rx_log_error(s_tag, "Invalid duty value (NaN or Inf)");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Clamp duty cycle to valid range (after validation) */
   duty = internal_clamp_duty(duty);
 
   /* Apply inversion if configured */
