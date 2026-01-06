@@ -40,6 +40,9 @@ local.properties
 **/.vscode/
 **/compile_commands.json
 
+# CMake/CTest artifacts
+Testing/
+
 *.zip
 
 # Exception: Track schematic output files for manufacturing
@@ -125,3 +128,9 @@ docs/doxygen/
 docs/callgraph/
 **/docs/doxygen/
 **/docs/callgraph/
+
+# Yocto build outputs (large, generated)
+star-yocto/
+yocto-downloads/
+yocto-sstate-cache/
+ros2_cross_ws/

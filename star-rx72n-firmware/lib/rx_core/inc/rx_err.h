@@ -1,9 +1,9 @@
-/* include/rx_err.h */
+/* lib/rx_core/inc/rx_err.h */
 
 /**
  * @file rx_err.h
  * @brief Error Code Definitions for RX72N Firmware
- *
+ * @details
  * Defines error codes and types for the RX72N firmware.
  * Follows ESP32 esp_err_t pattern for architectural consistency.
  *
@@ -14,6 +14,9 @@
  * - 0x3xx: RTOS errors
  * - 0x4xx: Communication errors
  * - 0x5xx: Validation errors
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_ERR_H
@@ -35,7 +38,7 @@ extern "C" {
  * @brief Error code type for RX72N firmware
  *
  * Signed 32-bit integer allowing negative error codes.
- * Success (RX_OK) is always 0.
+ * Success (k_rx_ok) is always 0.
  */
 typedef int32_t rx_err_t;
 
@@ -56,55 +59,56 @@ typedef int32_t rx_err_t;
  * - 0x5xx: Validation errors
  */
 typedef enum {
-  /* Success */
-  RX_OK = 0,
+  k_rx_ok = 0, /**< Success */
 
   /* Generic Errors (0x100 - 0x1FF) */
-  RX_FAIL              = 0x101,
-  RX_ERR_NO_MEM        = 0x102,
-  RX_ERR_INVALID_ARG   = 0x103,
-  RX_ERR_INVALID_STATE = 0x104,
-  RX_ERR_INVALID_SIZE  = 0x105,
-  RX_ERR_NOT_FOUND     = 0x106,
-  RX_ERR_NOT_SUPPORTED = 0x107,
-  RX_ERR_TIMEOUT       = 0x108,
-  RX_ERR_BUSY          = 0x109,
-  RX_ERR_WOULD_BLOCK   = 0x10A,
-  RX_ERR_EXISTS        = 0x10B,
+  k_rx_fail              = 0x101, /**< Generic failure */
+  k_rx_err_no_mem        = 0x102, /**< Out of memory */
+  k_rx_err_invalid_arg   = 0x103, /**< Invalid argument */
+  k_rx_err_invalid_state = 0x104, /**< Invalid state */
+  k_rx_err_invalid_size  = 0x105, /**< Invalid size */
+  k_rx_err_not_found     = 0x106, /**< Not found */
+  k_rx_err_not_supported = 0x107, /**< Not supported */
+  k_rx_err_timeout       = 0x108, /**< Timeout */
+  k_rx_err_busy          = 0x109, /**< Resource busy */
+  k_rx_err_would_block   = 0x10A, /**< Operation would block */
+  k_rx_err_exists        = 0x10B, /**< Already exists */
+  k_rx_err_empty         = 0x10C, /**< Empty (no data available) */
 
   /* Hardware Errors (0x200 - 0x2FF) */
-  RX_ERR_HW_INIT_FAILED    = 0x201,
-  RX_ERR_HW_NOT_READY      = 0x202,
-  RX_ERR_HW_TIMEOUT        = 0x203,
-  RX_ERR_HW_ERROR          = 0x204,
-  RX_ERR_GPIO_CONFLICT     = 0x205,
-  RX_ERR_GPIO_INVALID_PORT = 0x206,
-  RX_ERR_GPIO_INVALID_PIN  = 0x207,
+  k_rx_err_hw_init_failed    = 0x201, /**< Hardware initialization failed */
+  k_rx_err_hw_not_ready      = 0x202, /**< Hardware not ready */
+  k_rx_err_hw_timeout        = 0x203, /**< Hardware timeout */
+  k_rx_err_hw_error          = 0x204, /**< Hardware error */
+  k_rx_err_gpio_conflict     = 0x205, /**< GPIO pin conflict */
+  k_rx_err_gpio_invalid_port = 0x206, /**< Invalid GPIO port */
+  k_rx_err_gpio_invalid_pin  = 0x207, /**< Invalid GPIO pin */
+  k_rx_err_out_of_range      = 0x208, /**< Sensor value out of range */
 
   /* RTOS Errors (0x300 - 0x3FF) */
-  RX_ERR_RTOS_ERROR         = 0x301,
-  RX_ERR_THREADX            = 0x301, /* Alias for ThreadX-specific */
-  RX_ERR_RTOS_THREAD_CREATE = 0x302,
-  RX_ERR_RTOS_SEMAPHORE     = 0x303,
-  RX_ERR_RTOS_MUTEX         = 0x304,
-  RX_ERR_RTOS_QUEUE         = 0x305,
-  RX_ERR_RTOS_TIMER         = 0x306,
+  k_rx_err_rtos_error         = 0x301, /**< RTOS error */
+  k_rx_err_threadx            = 0x301, /**< ThreadX error (alias) */
+  k_rx_err_rtos_thread_create = 0x302, /**< Thread creation failed */
+  k_rx_err_rtos_semaphore     = 0x303, /**< Semaphore error */
+  k_rx_err_rtos_mutex         = 0x304, /**< Mutex error */
+  k_rx_err_rtos_queue         = 0x305, /**< Queue error */
+  k_rx_err_rtos_timer         = 0x306, /**< Timer error */
 
   /* Communication Errors (0x400 - 0x4FF) */
-  RX_ERR_COMM_ERROR     = 0x401,
-  RX_ERR_SPI_ERROR      = 0x402,
-  RX_ERR_UART_ERROR     = 0x403,
-  RX_ERR_I2C_ERROR      = 0x404,
-  RX_ERR_CRC_MISMATCH   = 0x405,
-  RX_ERR_PROTOCOL_ERROR = 0x406,
-  RX_ERR_NACK           = 0x407,
-  RX_ERR_CONFLICT       = 0x408,
+  k_rx_err_comm_error     = 0x401, /**< Communication error */
+  k_rx_err_spi_error      = 0x402, /**< SPI error */
+  k_rx_err_uart_error     = 0x403, /**< UART error */
+  k_rx_err_i2c_error      = 0x404, /**< I2C error */
+  k_rx_err_crc_mismatch   = 0x405, /**< CRC mismatch */
+  k_rx_err_protocol_error = 0x406, /**< Protocol error */
+  k_rx_err_nack           = 0x407, /**< NACK received */
+  k_rx_err_conflict       = 0x408, /**< Resource conflict */
 
   /* Validation Errors (0x500 - 0x5FF) */
-  RX_ERR_VALIDATION_FAILED  = 0x501,
-  RX_ERR_CHECKSUM_MISMATCH  = 0x502,
-  RX_ERR_RANGE_CHECK_FAILED = 0x503,
-  RX_ERR_NULL_POINTER       = 0x504,
+  k_rx_err_validation_failed  = 0x501, /**< Validation failed */
+  k_rx_err_checksum_mismatch  = 0x502, /**< Checksum mismatch */
+  k_rx_err_range_check_failed = 0x503, /**< Range check failed */
+  k_rx_err_null_pointer       = 0x504, /**< Null pointer */
 } rx_err_codes_t;
 
 /* =============================================================================
@@ -120,7 +124,7 @@ typedef enum {
  */
 static inline rx_err_t rx_err_from_threadx(uint32_t tx_status)
 {
-  return (tx_status == 0) ? RX_OK : RX_ERR_RTOS_ERROR;
+  return (tx_status == 0) ? k_rx_ok : k_rx_err_rtos_error;
 }
 
 /**
@@ -131,7 +135,7 @@ static inline rx_err_t rx_err_from_threadx(uint32_t tx_status)
  */
 static inline bool rx_err_is_ok(rx_err_t err)
 {
-  return (err == RX_OK);
+  return (err == k_rx_ok);
 }
 
 /**
@@ -142,7 +146,7 @@ static inline bool rx_err_is_ok(rx_err_t err)
  */
 static inline bool rx_err_is_error(rx_err_t err)
 {
-  return (err != RX_OK);
+  return (err != k_rx_ok);
 }
 
 #ifdef __cplusplus

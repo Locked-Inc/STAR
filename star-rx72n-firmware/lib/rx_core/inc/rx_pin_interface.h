@@ -1,9 +1,9 @@
-/* include/rx_pin_interface.h */
+/* lib/rx_core/inc/rx_pin_interface.h */
 
 /**
  * @file rx_pin_interface.h
  * @brief Pin Validator Interface (Dependency Inversion Principle)
- *
+ * @details
  * Defines the abstract interface for GPIO pin validation and reservation.
  * Follows ESP32 star_pin_interface_t pattern for architectural consistency.
  *
@@ -22,6 +22,7 @@
  * Pins within each port are numbered 0-7 (not all ports have all 8 pins).
  *
  * Usage:
+ * @code
  *   // 1. Create concrete implementation
  *   pin_validator_t validator;
  *   pin_validator_init(&validator);
@@ -35,9 +36,13 @@
  *
  *   // 4. Use through interface
  *   rx_err_t err = iface.reserve_pin(iface.ctx, 0xA, 5, "SPI_MOSI");
- *   if (err != RX_OK) {
+ *   if (err != k_rx_ok) {
  *       // Pin already reserved or invalid
  *   }
+ * @endcode
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_PIN_INTERFACE_H
@@ -62,9 +67,12 @@ typedef struct rx_pin_interface rx_pin_interface_t;
  */
 
 /**
- * @brief Maximum length of pin function name (e.g., "SPI_MOSI", "UART_TX")
+ * @brief Pin interface configuration constants
  */
-#define RX_PIN_FUNCTION_NAME_MAX_LEN 32
+typedef enum {
+  k_pin_function_name_max_len =
+    32, /**< Maximum length of pin function name (e.g., "SPI_MOSI", "UART_TX") */
+} pin_interface_limits_t;
 
 /* =============================================================================
  * Pin Interface Function Pointers
@@ -78,9 +86,9 @@ typedef struct rx_pin_interface rx_pin_interface_t;
  * @param[in] port Port number (0-9, 0xA-0x10 for A-G)
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK if pin is valid,
- *         RX_ERR_GPIO_INVALID_PORT if port is invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin is invalid
+ * @return k_rx_ok if pin is valid,
+ *         k_rx_err_gpio_invalid_port if port is invalid,
+ *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
 typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, uint8_t port, uint8_t pin);
 
@@ -92,11 +100,11 @@ typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, uint8_t port, uint8_t pin);
  * @param[in] pin Pin number
  * @param[in] function Function name (e.g., "SPI_MOSI", "GPIO_OUT")
  *
- * @return RX_OK if reserved successfully,
- *         RX_ERR_GPIO_CONFLICT if pin already reserved,
- *         RX_ERR_GPIO_INVALID_PORT if port invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin invalid,
- *         RX_ERR_INVALID_ARG if function is NULL
+ * @return k_rx_ok if reserved successfully,
+ *         k_rx_err_gpio_conflict if pin already reserved,
+ *         k_rx_err_gpio_invalid_port if port invalid,
+ *         k_rx_err_gpio_invalid_pin if pin invalid,
+ *         k_rx_err_invalid_arg if function is NULL
  */
 typedef rx_err_t (*rx_pin_reserve_fn)(void* ctx, uint8_t port, uint8_t pin, const char* function);
 
@@ -107,10 +115,10 @@ typedef rx_err_t (*rx_pin_reserve_fn)(void* ctx, uint8_t port, uint8_t pin, cons
  * @param[in] port Port number
  * @param[in] pin Pin number
  *
- * @return RX_OK if released successfully,
- *         RX_ERR_INVALID_STATE if pin was not reserved,
- *         RX_ERR_GPIO_INVALID_PORT if port invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin invalid
+ * @return k_rx_ok if released successfully,
+ *         k_rx_err_invalid_state if pin was not reserved,
+ *         k_rx_err_gpio_invalid_port if port invalid,
+ *         k_rx_err_gpio_invalid_pin if pin invalid
  */
 typedef rx_err_t (*rx_pin_release_fn)(void* ctx, uint8_t port, uint8_t pin);
 
@@ -134,12 +142,12 @@ typedef bool (*rx_pin_is_reserved_fn)(void* ctx, uint8_t port, uint8_t pin);
  * @param[out] function_out Buffer to store function name
  * @param[in] function_len Length of function_out buffer
  *
- * @return RX_OK if function retrieved,
- *         RX_ERR_INVALID_STATE if pin not reserved,
- *         RX_ERR_NULL_POINTER if function_out is NULL,
- *         RX_ERR_INVALID_SIZE if buffer too small,
- *         RX_ERR_GPIO_INVALID_PORT if port invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin invalid
+ * @return k_rx_ok if function retrieved,
+ *         k_rx_err_invalid_state if pin not reserved,
+ *         k_rx_err_null_pointer if function_out is NULL,
+ *         k_rx_err_invalid_size if buffer too small,
+ *         k_rx_err_gpio_invalid_port if port invalid,
+ *         k_rx_err_gpio_invalid_pin if pin invalid
  */
 typedef rx_err_t (*rx_pin_get_function_fn)(void*   ctx,
                                            uint8_t port,
@@ -152,7 +160,7 @@ typedef rx_err_t (*rx_pin_get_function_fn)(void*   ctx,
  *
  * @param[in] ctx Implementation context
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 typedef rx_err_t (*rx_pin_clear_all_fn)(void* ctx);
 
@@ -172,40 +180,13 @@ typedef rx_err_t (*rx_pin_clear_all_fn)(void* ctx);
  * All function pointers receive this context as their first parameter.
  */
 struct rx_pin_interface {
-  /**
-   * @brief Implementation context (opaque pointer to concrete validator)
-   */
-  void* ctx;
-
-  /**
-   * @brief Validate pin existence
-   */
-  rx_pin_validate_fn validate_pin;
-
-  /**
-   * @brief Reserve pin for function
-   */
-  rx_pin_reserve_fn reserve_pin;
-
-  /**
-   * @brief Release reserved pin
-   */
-  rx_pin_release_fn release_pin;
-
-  /**
-   * @brief Check if pin is reserved
-   */
-  rx_pin_is_reserved_fn is_pin_reserved;
-
-  /**
-   * @brief Get pin's function name
-   */
-  rx_pin_get_function_fn get_pin_function;
-
-  /**
-   * @brief Clear all reservations
-   */
-  rx_pin_clear_all_fn clear_all_reservations;
+  void*                  ctx; /**< Implementation context (opaque pointer to concrete validator) */
+  rx_pin_validate_fn     validate_pin;           /**< Validate pin existence */
+  rx_pin_reserve_fn      reserve_pin;            /**< Reserve pin for function */
+  rx_pin_release_fn      release_pin;            /**< Release reserved pin */
+  rx_pin_is_reserved_fn  is_pin_reserved;        /**< Check if pin is reserved */
+  rx_pin_get_function_fn get_pin_function;       /**< Get pin's function name */
+  rx_pin_clear_all_fn    clear_all_reservations; /**< Clear all reservations */
 };
 
 /* =============================================================================
@@ -218,22 +199,22 @@ struct rx_pin_interface {
  *
  * @param[in] iface Interface to validate
  *
- * @return RX_OK if valid, RX_ERR_NULL_POINTER if NULL,
- *         RX_ERR_INVALID_STATE if missing function pointers
+ * @return k_rx_ok if valid, k_rx_err_null_pointer if NULL,
+ *         k_rx_err_invalid_state if missing function pointers
  */
 static inline rx_err_t rx_pin_interface_validate(const rx_pin_interface_t* iface)
 {
   if (iface == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Check required function pointers */
   if (iface->validate_pin == NULL || iface->reserve_pin == NULL || iface->release_pin == NULL ||
       iface->is_pin_reserved == NULL) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 #ifdef __cplusplus

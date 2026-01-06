@@ -1,4 +1,4 @@
-/* include/rx_bus_config.h */
+/* lib/rx_bus/inc/rx_bus_config.h */
 
 /**
  * @file rx_bus_config.h
@@ -10,13 +10,14 @@
  * Unlike ESP32 version which uses dynamic allocation, RX72N firmware
  * follows zero-allocation principle for safety-critical applications.
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_BUS_CONFIG_H
 #define STAR_RX72N_BUS_CONFIG_H
 
+#include "hardware_pinout.h"
 #include "rx_bus_types.h"
 #include "rx_err.h"
 
@@ -54,18 +55,16 @@ extern "C" {
  *
  * @param[out] config Pointer to bus config structure to initialize
  * @param[in] name Unique bus name (must remain valid for lifetime)
- * @param[in] port GPIO port number (0-9, or 0xA-0x10 for A-G)
- * @param[in] pin GPIO pin number (0-7)
+ * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if config or name is NULL
- * @return RX_ERR_INVALID_ARG if port or pin is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if port or pin is invalid
  *
  * @note The config structure must remain valid for the lifetime of bus usage
  * @note The name string must remain valid (use string literals or static storage)
  */
-rx_err_t
-rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, uint8_t port, uint8_t pin);
+rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, gpio_pin_t pin);
 
 /* =============================================================================
  * ADC Bus Configuration
@@ -83,9 +82,9 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, uint8_t port,
  * @param[in] channel ADC channel (0-7)
  * @param[in] bits Resolution (8, 10, or 12 bits)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if config or name is NULL
- * @return RX_ERR_INVALID_ARG if unit, channel, or bits is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if unit, channel, or bits is invalid
  *
  * @note The config structure must remain valid for the lifetime of bus usage
  * @note The name string must remain valid (use string literals or static storage)
@@ -110,15 +109,13 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * @param[in] name Unique bus name (must remain valid for lifetime)
  * @param[in] channel RIIC channel (0-2)
  * @param[in] device_addr 7-bit I2C device address
- * @param[in] sda_port SDA pin port
- * @param[in] sda_pin SDA pin number
- * @param[in] scl_port SCL pin port
- * @param[in] scl_pin SCL pin number
+ * @param[in] sda_pin SDA pin (type-safe enum from hardware_pinout.h)
+ * @param[in] scl_pin SCL pin (type-safe enum from hardware_pinout.h)
  * @param[in] frequency_hz Clock frequency (100000, 400000, or 1000000)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if config or name is NULL
- * @return RX_ERR_INVALID_ARG if parameters are invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if parameters are invalid
  *
  * @note Not yet implemented - Phase 1.4
  */
@@ -126,10 +123,8 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
                                 const char*      name,
                                 uint8_t          channel,
                                 uint8_t          device_addr,
-                                uint8_t          sda_port,
-                                uint8_t          sda_pin,
-                                uint8_t          scl_port,
-                                uint8_t          scl_pin,
+                                gpio_pin_t       sda_pin,
+                                gpio_pin_t       scl_pin,
                                 uint32_t         frequency_hz);
 
 /* =============================================================================
@@ -146,16 +141,14 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
  * @param[in] name Unique bus name (must remain valid for lifetime)
  * @param[in] channel RIIC channel (0-2)
  * @param[in] device_addr 7-bit SMBUS device address
- * @param[in] sda_port SDA pin port
- * @param[in] sda_pin SDA pin number
- * @param[in] scl_port SCL pin port
- * @param[in] scl_pin SCL pin number
+ * @param[in] sda_pin SDA pin (type-safe enum from hardware_pinout.h)
+ * @param[in] scl_pin SCL pin (type-safe enum from hardware_pinout.h)
  * @param[in] frequency_hz Clock frequency (typically 100000)
  * @param[in] use_pec Enable Packet Error Checking (CRC-8)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if config or name is NULL
- * @return RX_ERR_INVALID_ARG if parameters are invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if parameters are invalid
  *
  * @note Not yet implemented - Phase 1.4
  */
@@ -163,12 +156,109 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
                                   const char*      name,
                                   uint8_t          channel,
                                   uint8_t          device_addr,
-                                  uint8_t          sda_port,
-                                  uint8_t          sda_pin,
-                                  uint8_t          scl_port,
-                                  uint8_t          scl_pin,
+                                  gpio_pin_t       sda_pin,
+                                  gpio_pin_t       scl_pin,
                                   uint32_t         frequency_hz,
                                   bool             use_pec);
+
+/* =============================================================================
+ * OneWire Bus Configuration
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize OneWire (1-Wire) bus configuration
+ *
+ * Configures a single GPIO pin for OneWire protocol communication.
+ * The pin should have an external 4.7k pullup resistor to VCC.
+ *
+ * OneWire uses bidirectional communication on a single wire:
+ * - Controller pulls line low to drive
+ * - Controller releases line (high-Z input) to allow peripheral to pull low
+ * - External pullup resistor pulls line high when not driven
+ *
+ * @param[out] config Pointer to bus config structure to initialize
+ * @param[in] name Unique bus name (must remain valid for lifetime)
+ * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if port or pin is invalid
+ *
+ * @note The config structure must remain valid for the lifetime of bus usage
+ * @note The name string must remain valid (use string literals or static storage)
+ * @note Requires external 4.7k pullup resistor on the data line
+ *
+ * @example
+ * @code
+ * // Declare static config
+ * static rx_bus_config_t temp_sensor_config;
+ *
+ * // Initialize OneWire on P32
+ * rx_bus_config_init_onewire(&temp_sensor_config, "temp_sensor", k_gpio_p32);
+ *
+ * // Add to bus manager
+ * rx_bus_manager_add_bus(&bus_manager, &temp_sensor_config);
+ *
+ * // Use OneWire operations
+ * bool presence;
+ * rx_bus_onewire_init(&bus_manager, "temp_sensor");
+ * rx_bus_onewire_reset(&bus_manager, "temp_sensor", &presence);
+ * @endcode
+ */
+rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, gpio_pin_t pin);
+
+/* =============================================================================
+ * UART Bus Configuration
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize UART bus configuration
+ *
+ * Configures a UART channel for bus manager control.
+ * Uses SCI peripheral for serial communication.
+ *
+ * @param[out] config Pointer to bus config structure to initialize
+ * @param[in] name Unique bus name (must remain valid for lifetime)
+ * @param[in] channel SCI channel (0-12)
+ * @param[in] tx_pin TX pin (type-safe enum from hardware_pinout.h)
+ * @param[in] rx_pin RX pin (type-safe enum from hardware_pinout.h)
+ * @param[in] baudrate Baud rate (e.g., 9600, 115200)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if channel or pins are invalid
+ *
+ * @note The config structure must remain valid for the lifetime of bus usage
+ * @note The name string must remain valid (use string literals or static storage)
+ *
+ * @example
+ * @code
+ * // Declare static config for debug UART (SCI9)
+ * static rx_bus_config_t debug_uart_config;
+ *
+ * // Initialize UART on SCI9 (PB7/TXD9, PB6/RXD9)
+ * rx_bus_config_init_uart(&debug_uart_config, "debug_uart",
+ *                         9,            // SCI9
+ *                         k_gpio_pb7,   // TX: Port B, Pin 7
+ *                         k_gpio_pb6,   // RX: Port B, Pin 6
+ *                         115200);      // 115200 baud
+ *
+ * // Add to bus manager
+ * rx_bus_manager_add_bus(&bus_manager, &debug_uart_config);
+ *
+ * // Use UART operations
+ * rx_bus_uart_init(&bus_manager, "debug_uart");
+ * rx_bus_uart_puts(&bus_manager, "debug_uart", "Hello World\n");
+ * @endcode
+ */
+rx_err_t rx_bus_config_init_uart(rx_bus_config_t* config,
+                                 const char*      name,
+                                 uint8_t          channel,
+                                 gpio_pin_t       tx_pin,
+                                 gpio_pin_t       rx_pin,
+                                 uint32_t         baudrate);
 
 #ifdef __cplusplus
 }

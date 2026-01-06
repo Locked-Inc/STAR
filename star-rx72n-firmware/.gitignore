@@ -1,6 +1,9 @@
 # Build artifacts
 build/
+build-local/
+build-host/
 cmake-build-*/
+Testing/
 *.elf
 *.hex
 *.bin
