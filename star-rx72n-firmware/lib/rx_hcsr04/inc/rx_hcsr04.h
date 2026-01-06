@@ -51,6 +51,7 @@ extern "C" {
  * Distance = (echo_us * 0.0343 cm/us) / 2 = echo_us / 58.3 cm
  */
 typedef enum {
+  k_hcsr04_trigger_settle_us   = 2,     /**< Time to hold trigger low before pulse */
   k_hcsr04_trigger_pulse_us    = 10,    /**< Minimum trigger pulse width */
   k_hcsr04_echo_timeout_us     = 30000, /**< Max echo wait (400cm + margin) */
   k_hcsr04_min_echo_us         = 116,   /**< Min valid echo (2cm) */

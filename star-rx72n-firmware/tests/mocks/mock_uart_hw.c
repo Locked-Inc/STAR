@@ -13,6 +13,7 @@
 #include "mock_uart_hw.h"
 
 #include <string.h>
+#include "mock_sci_regs.h"
 
 /* =============================================================================
  * Global State
@@ -70,6 +71,22 @@ static uint16_t internal_fifo_count(uint16_t head, uint16_t tail)
 static uint16_t internal_fifo_space(uint16_t head, uint16_t tail)
 {
   return k_mock_uart_fifo_size - 1 - internal_fifo_count(head, tail);
+}
+
+typedef enum {
+  k_mock_uart_tdre_timeout = 100000,
+} mock_uart_timeout_t;
+
+static rx_err_t internal_wait_for_tdre(uint8_t channel)
+{
+  uint32_t timeout = k_mock_uart_tdre_timeout;
+  while ((g_mock_sci[channel].ssr & k_mock_sci_ssr_tdre) == 0 && timeout > 0) {
+    timeout--;
+  }
+  if (timeout == 0) {
+    return k_rx_err_timeout;
+  }
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -312,13 +329,23 @@ rx_err_t uart_putc_channel(uint8_t channel, char data)
     return k_rx_err_invalid_state;
   }
 
+  rx_err_t tdre_status = internal_wait_for_tdre(channel);
+  if (tdre_status != k_rx_ok) {
+    return tdre_status;
+  }
+
   /* Write to TX FIFO */
   mock_uart_channel_t* ch    = &g_mock_uart.channels[channel];
   uint16_t             space = internal_fifo_space(ch->tx_head, ch->tx_tail);
   if (space > 0) {
     ch->tx_fifo[ch->tx_head] = (uint8_t)data;
     ch->tx_head              = (ch->tx_head + 1) % k_mock_uart_fifo_size;
+  } else {
+    return k_rx_err_busy;
   }
+
+  g_mock_sci[channel].tdr = (uint8_t)data;
+  mock_sci_set_tdre(channel, true);
 
   return k_rx_ok;
 }

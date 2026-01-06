@@ -9,6 +9,8 @@ project(star_rx72n_tests C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+add_compile_definitions(USE_MOCK_SCI_REGS)
+
 # Unity test framework (fetched from GitHub)
 include(FetchContent)
 FetchContent_Declare(
