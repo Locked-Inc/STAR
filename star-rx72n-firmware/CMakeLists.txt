@@ -250,6 +250,21 @@ add_library(rx_ds18b20 STATIC
 target_include_directories(rx_ds18b20 PUBLIC lib/rx_ds18b20/inc)
 target_link_libraries(rx_ds18b20 PUBLIC rx_bus rx_crc rx_core)
 
+# rx_hcsr04 - HC-SR04 ultrasonic distance sensor driver
+add_library(rx_hcsr04 STATIC
+    lib/rx_hcsr04/src/rx_hcsr04.c
+    lib/rx_hcsr04/src/rx_hcsr04_hal_hw.c
+)
+target_include_directories(rx_hcsr04 PUBLIC lib/rx_hcsr04/inc)
+target_link_libraries(rx_hcsr04 PUBLIC rx_hal rx_core)
+
+# rx_obstacle_detect - Basic obstacle detection with emergency stop
+add_library(rx_obstacle_detect STATIC
+    lib/rx_obstacle_detect/src/rx_obstacle_detect.c
+)
+target_include_directories(rx_obstacle_detect PUBLIC lib/rx_obstacle_detect/inc)
+target_link_libraries(rx_obstacle_detect PUBLIC rx_hcsr04 rx_motor rx_core)
+
 # =============================================================================
 # Application Source Files
 # =============================================================================
@@ -289,6 +304,9 @@ target_link_libraries(${PROJECT_NAME}.elf
     rx_usb_comm
     rx_drv8243
     rx_bq4050
+    rx_ds18b20
+    rx_hcsr04
+    rx_obstacle_detect
 )
 
 # Linker script
@@ -339,6 +357,8 @@ message(STATUS "  rx_usb_comm    - USB communication layer")
 message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
 message(STATUS "  rx_bq4050      - BQ4050 battery fuel gauge (SBS 1.1)")
 message(STATUS "  rx_ds18b20     - DS18B20 1-Wire temperature sensor")
+message(STATUS "  rx_hcsr04      - HC-SR04 ultrasonic distance sensor")
+message(STATUS "  rx_obstacle_detect - Obstacle detection with emergency stop")
 message(STATUS "==============================================")
 
 # =============================================================================

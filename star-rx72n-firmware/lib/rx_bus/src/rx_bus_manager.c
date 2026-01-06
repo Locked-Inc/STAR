@@ -76,9 +76,9 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
  */
 
 rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
-                              const char*           tag,
-                              rx_error_interface_t* error_iface,
-                              rx_pin_interface_t*   pin_iface)
+                             const char*           tag,
+                             rx_error_interface_t* error_iface,
+                             rx_pin_interface_t*   pin_iface)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is NULL");
   RX_CHECK_NULL_PTR(tag, s_tag, "Tag pointer is NULL");
