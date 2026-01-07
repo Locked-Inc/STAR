@@ -25,11 +25,11 @@ extern "C" {
  * =============================================================================
  */
 
-/** @brief RSPI base addresses */
+/** @brief RSPI base addresses (verified against RX72N Hardware Manual) */
 typedef enum {
-  k_rspi0_base_addr = 0x000D0000, /**< RSPI0 register base address */
-  k_rspi1_base_addr = 0x000D0100, /**< RSPI1 register base address */
-  k_rspi2_base_addr = 0x000D0200, /**< RSPI2 register base address */
+  k_rspi0_base_addr = 0x000D0100, /**< RSPI0 register base address */
+  k_rspi1_base_addr = 0x000D0140, /**< RSPI1 register base address */
+  k_rspi2_base_addr = 0x000D0300, /**< RSPI2 register base address */
 } rx_rspi_addresses_t;
 
 /**
@@ -37,12 +37,14 @@ typedef enum {
  * @details
  * Renesas Serial Peripheral Interface (RSPI) registers for SPI communication.
  * Supports controller and peripheral modes with configurable clock and data format.
+ * Addresses verified against RX72N Hardware Manual (R01UH0824EJ0120 Rev.1.20).
+ *
  * Base addresses:
- * - RSPI0: 0x000D0000
- * - RSPI1: 0x000D0100
- * - RSPI2: 0x000D0200
+ * - RSPI0: 0x000D0100
+ * - RSPI1: 0x000D0140
+ * - RSPI2: 0x000D0300
  */
-typedef struct {
+typedef struct __attribute__((packed)) {
   volatile uint8_t  spcr;   /**< SPI Control Register (enable, mode, interrupts) */
   volatile uint8_t  sslp;   /**< SPI Peripheral Select Polarity Register */
   volatile uint8_t  sppcr;  /**< SPI Pin Control Register (loopback, idle value) */
@@ -120,6 +122,29 @@ typedef enum {
   k_rspi_spdcr_sprdtd = (1 << 5), /**< Receive Data Ready Detection */
   k_rspi_spdcr_splw   = (1 << 4), /**< Word Access Mode (1=Word, 0=Byte) */
 } rspi_spdcr_bits_t;
+
+/* =============================================================================
+ * Static Assertions - Verify Register Layout at Compile Time
+ * =============================================================================
+ */
+
+/* Verify base addresses match Hardware Manual */
+_Static_assert(k_rspi0_base_addr == 0x000D0100, "RSPI0 base address incorrect");
+_Static_assert(k_rspi1_base_addr == 0x000D0140, "RSPI1 base address incorrect");
+_Static_assert(k_rspi2_base_addr == 0x000D0300, "RSPI2 base address incorrect");
+
+/* Verify register structure layout */
+_Static_assert(sizeof(rx_rspi_regs_t) == 18, "RSPI register structure size incorrect");
+_Static_assert(offsetof(rx_rspi_regs_t, spcr) == 0x00, "SPCR offset incorrect");
+_Static_assert(offsetof(rx_rspi_regs_t, spdr) == 0x04, "SPDR offset incorrect");
+_Static_assert(offsetof(rx_rspi_regs_t, spbr) == 0x0A, "SPBR offset incorrect");
+_Static_assert(offsetof(rx_rspi_regs_t, spcmd0) == 0x10, "SPCMD0 offset incorrect");
+
+/* Verify channel spacing (RSPI0 to RSPI1 = 0x40 bytes, RSPI1 to RSPI2 = 0x1C0 bytes) */
+_Static_assert((k_rspi1_base_addr - k_rspi0_base_addr) == 0x40,
+               "RSPI0 to RSPI1 spacing incorrect");
+_Static_assert((k_rspi2_base_addr - k_rspi1_base_addr) == 0x1C0,
+               "RSPI1 to RSPI2 spacing incorrect");
 
 #ifdef __cplusplus
 }
