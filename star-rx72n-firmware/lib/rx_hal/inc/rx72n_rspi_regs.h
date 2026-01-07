@@ -25,11 +25,11 @@ extern "C" {
  * =============================================================================
  */
 
-/** @brief RSPI base addresses */
+/** @brief RSPI base addresses (verified against RX72N Hardware Manual) */
 typedef enum {
-  k_rspi0_base_addr = 0x000D0000, /**< RSPI0 register base address */
-  k_rspi1_base_addr = 0x000D0100, /**< RSPI1 register base address */
-  k_rspi2_base_addr = 0x000D0200, /**< RSPI2 register base address */
+  k_rspi0_base_addr = 0x000D0100, /**< RSPI0 register base address */
+  k_rspi1_base_addr = 0x000D0140, /**< RSPI1 register base address */
+  k_rspi2_base_addr = 0x000D0300, /**< RSPI2 register base address */
 } rx_rspi_addresses_t;
 
 /**
@@ -37,10 +37,12 @@ typedef enum {
  * @details
  * Renesas Serial Peripheral Interface (RSPI) registers for SPI communication.
  * Supports controller and peripheral modes with configurable clock and data format.
+ * Addresses verified against RX72N Hardware Manual (R01UH0824EJ0120 Rev.1.20).
+ *
  * Base addresses:
- * - RSPI0: 0x000D0000
- * - RSPI1: 0x000D0100
- * - RSPI2: 0x000D0200
+ * - RSPI0: 0x000D0100
+ * - RSPI1: 0x000D0140
+ * - RSPI2: 0x000D0300
  */
 typedef struct {
   volatile uint8_t  spcr;   /**< SPI Control Register (enable, mode, interrupts) */
