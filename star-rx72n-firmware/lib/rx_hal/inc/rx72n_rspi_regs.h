@@ -141,8 +141,7 @@ _Static_assert(offsetof(rx_rspi_regs_t, spbr) == 0x0A, "SPBR offset incorrect");
 _Static_assert(offsetof(rx_rspi_regs_t, spcmd0) == 0x10, "SPCMD0 offset incorrect");
 
 /* Verify channel spacing (RSPI0 to RSPI1 = 0x40 bytes, RSPI1 to RSPI2 = 0x1C0 bytes) */
-_Static_assert((k_rspi1_base_addr - k_rspi0_base_addr) == 0x40,
-               "RSPI0 to RSPI1 spacing incorrect");
+_Static_assert((k_rspi1_base_addr - k_rspi0_base_addr) == 0x40, "RSPI0 to RSPI1 spacing incorrect");
 _Static_assert((k_rspi2_base_addr - k_rspi1_base_addr) == 0x1C0,
                "RSPI1 to RSPI2 spacing incorrect");
 

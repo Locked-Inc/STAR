@@ -140,10 +140,8 @@ _Static_assert(offsetof(rx_riic_regs_t, icdrt) == 0x12, "ICDRT offset incorrect"
 _Static_assert(offsetof(rx_riic_regs_t, icdrr) == 0x13, "ICDRR offset incorrect");
 
 /* Verify channel spacing (0x20 bytes between channels) */
-_Static_assert((k_riic1_base_addr - k_riic0_base_addr) == 0x20,
-               "RIIC0 to RIIC1 spacing incorrect");
-_Static_assert((k_riic2_base_addr - k_riic1_base_addr) == 0x20,
-               "RIIC1 to RIIC2 spacing incorrect");
+_Static_assert((k_riic1_base_addr - k_riic0_base_addr) == 0x20, "RIIC0 to RIIC1 spacing incorrect");
+_Static_assert((k_riic2_base_addr - k_riic1_base_addr) == 0x20, "RIIC1 to RIIC2 spacing incorrect");
 
 #ifdef __cplusplus
 }
