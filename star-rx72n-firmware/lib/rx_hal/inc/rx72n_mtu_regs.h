@@ -218,14 +218,21 @@ typedef enum {
   k_mtu_tior_toggle    = 0x03, /**< Toggle on compare match */
 } mtu_tior_bits_t;
 
-/* Timer Start Register (TSTR) bits */
+/* Timer Start Register A (TSTRA) bits - MTU0-4, MTU8 */
 typedef enum {
-  k_mtu_tstr_cst0 = (1 << 0), /**< Counter Start 0 */
-  k_mtu_tstr_cst1 = (1 << 1), /**< Counter Start 1 */
-  k_mtu_tstr_cst2 = (1 << 2), /**< Counter Start 2 */
-  k_mtu_tstr_cst3 = (1 << 6), /**< Counter Start 3 */
-  k_mtu_tstr_cst4 = (1 << 7), /**< Counter Start 4 */
+  k_mtu_tstr_cst0 = (1 << 0), /**< Counter Start 0 (TSTRA bit 0) */
+  k_mtu_tstr_cst1 = (1 << 1), /**< Counter Start 1 (TSTRA bit 1) */
+  k_mtu_tstr_cst2 = (1 << 2), /**< Counter Start 2 (TSTRA bit 2) */
+  k_mtu_tstr_cst3 = (1 << 6), /**< Counter Start 3 (TSTRA bit 6) */
+  k_mtu_tstr_cst4 = (1 << 7), /**< Counter Start 4 (TSTRA bit 7) */
+  k_mtu_tstr_cst8 = (1 << 3), /**< Counter Start 8 (TSTRA bit 3) */
 } mtu_tstr_bits_t;
+
+/* Timer Start Register B (TSTRB) bits - MTU6-7 */
+typedef enum {
+  k_mtu_tstr_cst6 = (1 << 6), /**< Counter Start 6 (TSTRB bit 6) */
+  k_mtu_tstr_cst7 = (1 << 7), /**< Counter Start 7 (TSTRB bit 7) */
+} mtu_tstrb_bits_t;
 
 /* =============================================================================
  * Static Assertions - Compile-time verification of register layout

@@ -116,8 +116,6 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * @return k_rx_ok on success
  * @return k_rx_err_null_pointer if config or name is NULL
  * @return k_rx_err_invalid_arg if parameters are invalid
- *
- * @note Not yet implemented - Phase 1.4
  */
 rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
                                 const char*      name,
@@ -128,7 +126,7 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
                                 uint32_t         frequency_hz);
 
 /* =============================================================================
- * SMBUS Bus Configuration (Future)
+ * SMBUS Bus Configuration
  * =============================================================================
  */
 
@@ -149,8 +147,6 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
  * @return k_rx_ok on success
  * @return k_rx_err_null_pointer if config or name is NULL
  * @return k_rx_err_invalid_arg if parameters are invalid
- *
- * @note Not yet implemented - Phase 1.4
  */
 rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
                                   const char*      name,
