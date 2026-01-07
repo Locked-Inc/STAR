@@ -40,10 +40,10 @@ typedef enum {
   k_mpc_dscr2_count     = 24, /**< DSCR2 registers count (0x0008C128-0x0008C13F) */
 
   /* Port reserved byte counts (for ports with <8 pins) */
-  k_port3_reserved_bytes = 3, /**< Port 3: P35-P37 (P35 is NMI-only) */
-  k_port5_reserved_bytes = 1, /**< Port 5: P53 (dedicated BCLK) */
-  k_port6_reserved_bytes = 1, /**< Port 6: P65 (dedicated CKE) */
-  k_port7_reserved_bytes = 1, /**< Port 7: P70 (does not exist) */
+  k_port3_reserved_bytes  = 3, /**< Port 3: P35-P37 (P35 is NMI-only) */
+  k_port5_reserved_bytes  = 1, /**< Port 5: P53 (dedicated BCLK) */
+  k_port6_reserved_bytes  = 1, /**< Port 6: P65 (dedicated CKE) */
+  k_port7_reserved_bytes  = 1, /**< Port 7: P70 (does not exist) */
   k_portf_reserved1_bytes = 2, /**< Port F: PF3-PF4 */
   k_portf_reserved2_bytes = 2, /**< Port F: PF6-PF7 */
   k_portj_reserved1_bytes = 1, /**< Port J: PJ4 */
@@ -115,175 +115,175 @@ typedef struct {
  */
 typedef struct {
   /* Bus Control Registers (0x0008C100 - 0x0008C10E) */
-  volatile uint8_t pfcse;                         /**< +0x00: CS Output Enable Register */
+  volatile uint8_t pfcse;                            /**< +0x00: CS Output Enable Register */
   uint8_t          reserved1[k_mpc_reserved1_bytes]; /**< +0x01: Reserved */
-  volatile uint8_t pfcss0;                        /**< +0x02: CS Output Pin Select 0 */
-  volatile uint8_t pfcss1;                        /**< +0x03: CS Output Pin Select 1 */
-  volatile uint8_t pfaoe0;                        /**< +0x04: Address Output Enable 0 */
-  volatile uint8_t pfaoe1;                        /**< +0x05: Address Output Enable 1 */
-  volatile uint8_t pfbcr0;                        /**< +0x06: External Bus Control 0 */
-  volatile uint8_t pfbcr1;                        /**< +0x07: External Bus Control 1 */
-  volatile uint8_t pfbcr2;                        /**< +0x08: External Bus Control 2 */
-  volatile uint8_t pfbcr3;                        /**< +0x09: External Bus Control 3 */
+  volatile uint8_t pfcss0;                           /**< +0x02: CS Output Pin Select 0 */
+  volatile uint8_t pfcss1;                           /**< +0x03: CS Output Pin Select 1 */
+  volatile uint8_t pfaoe0;                           /**< +0x04: Address Output Enable 0 */
+  volatile uint8_t pfaoe1;                           /**< +0x05: Address Output Enable 1 */
+  volatile uint8_t pfbcr0;                           /**< +0x06: External Bus Control 0 */
+  volatile uint8_t pfbcr1;                           /**< +0x07: External Bus Control 1 */
+  volatile uint8_t pfbcr2;                           /**< +0x08: External Bus Control 2 */
+  volatile uint8_t pfbcr3;                           /**< +0x09: External Bus Control 3 */
   uint8_t          reserved2[k_mpc_reserved2_bytes]; /**< +0x0A-0x0D: Reserved */
-  volatile uint8_t pfenet;                        /**< +0x0E: Ethernet Control Register */
+  volatile uint8_t pfenet;                           /**< +0x0E: Ethernet Control Register */
   uint8_t          reserved3[k_mpc_reserved3_bytes]; /**< +0x0F-0x1E: Reserved */
 
   /* Write Protection (0x0008C11F) */
   volatile uint8_t pwpr; /**< +0x1F: Write Protect Register (enable PFS writes) */
 
   /* Reserved and Drive Capacity (0x0008C120 - 0x0008C13F) */
-  uint8_t reserved4[k_mpc_reserved4_bytes];    /**< +0x20-0x27: Reserved */
-  uint8_t dscr2[k_mpc_dscr2_count];            /**< +0x28-0x3F: Drive Capacity Control 2 */
+  uint8_t reserved4[k_mpc_reserved4_bytes]; /**< +0x20-0x27: Reserved */
+  uint8_t dscr2[k_mpc_dscr2_count];         /**< +0x28-0x3F: Drive Capacity Control 2 */
 
   /* Pin Function Select Registers start at 0x0008C140 (+0x40 from base) */
-  volatile uint8_t p00pfs;                                     /**< Port 0 Pin 0 Function Select */
-  volatile uint8_t p01pfs;                                     /**< Port 0 Pin 1 Function Select */
-  volatile uint8_t p02pfs;                                     /**< Port 0 Pin 2 Function Select */
-  volatile uint8_t p03pfs;                                     /**< Port 0 Pin 3 Function Select */
-  volatile uint8_t p04pfs;                                     /**< Port 0 Pin 4 Function Select */
-  volatile uint8_t p05pfs;                                     /**< Port 0 Pin 5 Function Select */
-  volatile uint8_t p06pfs;                                     /**< Port 0 Pin 6 Function Select */
-  volatile uint8_t p07pfs;                                     /**< Port 0 Pin 7 Function Select */
-  volatile uint8_t p10pfs;                                     /**< Port 1 Pin 0 Function Select */
-  volatile uint8_t p11pfs;                                     /**< Port 1 Pin 1 Function Select */
-  volatile uint8_t p12pfs;                                     /**< Port 1 Pin 2 Function Select */
-  volatile uint8_t p13pfs;                                     /**< Port 1 Pin 3 Function Select */
-  volatile uint8_t p14pfs;                                     /**< Port 1 Pin 4 Function Select */
-  volatile uint8_t p15pfs;                                     /**< Port 1 Pin 5 Function Select */
-  volatile uint8_t p16pfs;                                     /**< Port 1 Pin 6 Function Select */
-  volatile uint8_t p17pfs;                                     /**< Port 1 Pin 7 Function Select */
-  volatile uint8_t p20pfs;                                     /**< Port 2 Pin 0 Function Select */
-  volatile uint8_t p21pfs;                                     /**< Port 2 Pin 1 Function Select */
-  volatile uint8_t p22pfs;                                     /**< Port 2 Pin 2 Function Select */
-  volatile uint8_t p23pfs;                                     /**< Port 2 Pin 3 Function Select */
-  volatile uint8_t p24pfs;                                     /**< Port 2 Pin 4 Function Select */
-  volatile uint8_t p25pfs;                                     /**< Port 2 Pin 5 Function Select */
-  volatile uint8_t p26pfs;                                     /**< Port 2 Pin 6 Function Select */
-  volatile uint8_t p27pfs;                                     /**< Port 2 Pin 7 Function Select */
-  volatile uint8_t p30pfs;                                     /**< Port 3 Pin 0 Function Select */
-  volatile uint8_t p31pfs;                                     /**< Port 3 Pin 1 Function Select */
-  volatile uint8_t p32pfs;                                     /**< Port 3 Pin 2 Function Select */
-  volatile uint8_t p33pfs;                                     /**< Port 3 Pin 3 Function Select */
-  volatile uint8_t p34pfs;                                     /**< Port 3 Pin 4 Function Select */
-  uint8_t          port3_reserved[k_port3_reserved_bytes];     /**< Port 3 reserved (P35=NMI, P36-P37 N/A) */
-  volatile uint8_t p40pfs;                                     /**< Port 4 Pin 0 Function Select */
-  volatile uint8_t p41pfs;                                     /**< Port 4 Pin 1 Function Select */
-  volatile uint8_t p42pfs;                                     /**< Port 4 Pin 2 Function Select */
-  volatile uint8_t p43pfs;                                     /**< Port 4 Pin 3 Function Select */
-  volatile uint8_t p44pfs;                                     /**< Port 4 Pin 4 Function Select */
-  volatile uint8_t p45pfs;                                     /**< Port 4 Pin 5 Function Select */
-  volatile uint8_t p46pfs;                                     /**< Port 4 Pin 6 Function Select */
-  volatile uint8_t p47pfs;                                     /**< Port 4 Pin 7 Function Select */
-  volatile uint8_t p50pfs;                                     /**< Port 5 Pin 0 Function Select */
-  volatile uint8_t p51pfs;                                     /**< Port 5 Pin 1 Function Select */
-  volatile uint8_t p52pfs;                                     /**< Port 5 Pin 2 Function Select */
-  uint8_t          port5_reserved[k_port5_reserved_bytes];     /**< Port 5 reserved (P53=BCLK dedicated) */
-  volatile uint8_t p54pfs;                                     /**< Port 5 Pin 4 Function Select */
-  volatile uint8_t p55pfs;                                     /**< Port 5 Pin 5 Function Select */
-  volatile uint8_t p56pfs;                                     /**< Port 5 Pin 6 Function Select */
-  volatile uint8_t p57pfs;                                     /**< Port 5 Pin 7 Function Select */
-  volatile uint8_t p60pfs;                                     /**< Port 6 Pin 0 Function Select */
-  volatile uint8_t p61pfs;                                     /**< Port 6 Pin 1 Function Select */
-  volatile uint8_t p62pfs;                                     /**< Port 6 Pin 2 Function Select */
-  volatile uint8_t p63pfs;                                     /**< Port 6 Pin 3 Function Select */
-  volatile uint8_t p64pfs;                                     /**< Port 6 Pin 4 Function Select */
-  uint8_t          port6_reserved[k_port6_reserved_bytes];     /**< Port 6 reserved (P65=CKE dedicated) */
-  volatile uint8_t p66pfs;                                     /**< Port 6 Pin 6 Function Select */
-  volatile uint8_t p67pfs;                                     /**< Port 6 Pin 7 Function Select */
-  uint8_t          port7_reserved[k_port7_reserved_bytes];     /**< Port 7 reserved (P70 N/A) */
-  volatile uint8_t p71pfs;                                     /**< Port 7 Pin 1 Function Select */
-  volatile uint8_t p72pfs;                                     /**< Port 7 Pin 2 Function Select */
-  volatile uint8_t p73pfs;                                     /**< Port 7 Pin 3 Function Select */
-  volatile uint8_t p74pfs;                                     /**< Port 7 Pin 4 Function Select */
-  volatile uint8_t p75pfs;                                     /**< Port 7 Pin 5 Function Select */
-  volatile uint8_t p76pfs;                                     /**< Port 7 Pin 6 Function Select */
-  volatile uint8_t p77pfs;                                     /**< Port 7 Pin 7 Function Select */
-  volatile uint8_t p80pfs;                                     /**< Port 8 Pin 0 Function Select */
-  volatile uint8_t p81pfs;                                     /**< Port 8 Pin 1 Function Select */
-  volatile uint8_t p82pfs;                                     /**< Port 8 Pin 2 Function Select */
-  volatile uint8_t p83pfs;                                     /**< Port 8 Pin 3 Function Select */
-  volatile uint8_t p84pfs;                                     /**< Port 8 Pin 4 Function Select */
-  volatile uint8_t p85pfs;                                     /**< Port 8 Pin 5 Function Select */
-  volatile uint8_t p86pfs;                                     /**< Port 8 Pin 6 Function Select */
-  volatile uint8_t p87pfs;                                     /**< Port 8 Pin 7 Function Select */
-  volatile uint8_t p90pfs;                                     /**< Port 9 Pin 0 Function Select */
-  volatile uint8_t p91pfs;                                     /**< Port 9 Pin 1 Function Select */
-  volatile uint8_t p92pfs;                                     /**< Port 9 Pin 2 Function Select */
-  volatile uint8_t p93pfs;                                     /**< Port 9 Pin 3 Function Select */
-  volatile uint8_t p94pfs;                                     /**< Port 9 Pin 4 Function Select */
-  volatile uint8_t p95pfs;                                     /**< Port 9 Pin 5 Function Select */
-  volatile uint8_t p96pfs;                                     /**< Port 9 Pin 6 Function Select */
-  volatile uint8_t p97pfs;                                     /**< Port 9 Pin 7 Function Select */
-  volatile uint8_t pa0pfs;                                     /**< Port A Pin 0 Function Select */
-  volatile uint8_t pa1pfs;                                     /**< Port A Pin 1 Function Select */
-  volatile uint8_t pa2pfs;                                     /**< Port A Pin 2 Function Select */
-  volatile uint8_t pa3pfs;                                     /**< Port A Pin 3 Function Select */
-  volatile uint8_t pa4pfs;                                     /**< Port A Pin 4 Function Select */
-  volatile uint8_t pa5pfs;                                     /**< Port A Pin 5 Function Select */
-  volatile uint8_t pa6pfs;                                     /**< Port A Pin 6 Function Select */
-  volatile uint8_t pa7pfs;                                     /**< Port A Pin 7 Function Select */
-  volatile uint8_t pb0pfs;                                     /**< Port B Pin 0 Function Select */
-  volatile uint8_t pb1pfs;                                     /**< Port B Pin 1 Function Select */
-  volatile uint8_t pb2pfs;                                     /**< Port B Pin 2 Function Select */
-  volatile uint8_t pb3pfs;                                     /**< Port B Pin 3 Function Select */
-  volatile uint8_t pb4pfs;                                     /**< Port B Pin 4 Function Select */
-  volatile uint8_t pb5pfs;                                     /**< Port B Pin 5 Function Select */
-  volatile uint8_t pb6pfs;                                     /**< Port B Pin 6 Function Select */
-  volatile uint8_t pb7pfs;                                     /**< Port B Pin 7 Function Select */
-  volatile uint8_t pc0pfs;                                     /**< Port C Pin 0 Function Select */
-  volatile uint8_t pc1pfs;                                     /**< Port C Pin 1 Function Select */
-  volatile uint8_t pc2pfs;                                     /**< Port C Pin 2 Function Select */
-  volatile uint8_t pc3pfs;                                     /**< Port C Pin 3 Function Select */
-  volatile uint8_t pc4pfs;                                     /**< Port C Pin 4 Function Select */
-  volatile uint8_t pc5pfs;                                     /**< Port C Pin 5 Function Select */
-  volatile uint8_t pc6pfs;                                     /**< Port C Pin 6 Function Select */
-  volatile uint8_t pc7pfs;                                     /**< Port C Pin 7 Function Select */
-  volatile uint8_t pd0pfs;                                     /**< Port D Pin 0 Function Select */
-  volatile uint8_t pd1pfs;                                     /**< Port D Pin 1 Function Select */
-  volatile uint8_t pd2pfs;                                     /**< Port D Pin 2 Function Select */
-  volatile uint8_t pd3pfs;                                     /**< Port D Pin 3 Function Select */
-  volatile uint8_t pd4pfs;                                     /**< Port D Pin 4 Function Select */
-  volatile uint8_t pd5pfs;                                     /**< Port D Pin 5 Function Select */
-  volatile uint8_t pd6pfs;                                     /**< Port D Pin 6 Function Select */
-  volatile uint8_t pd7pfs;                                     /**< Port D Pin 7 Function Select */
-  volatile uint8_t pe0pfs;                                     /**< Port E Pin 0 Function Select */
-  volatile uint8_t pe1pfs;                                     /**< Port E Pin 1 Function Select */
-  volatile uint8_t pe2pfs;                                     /**< Port E Pin 2 Function Select */
-  volatile uint8_t pe3pfs;                                     /**< Port E Pin 3 Function Select */
-  volatile uint8_t pe4pfs;                                     /**< Port E Pin 4 Function Select */
-  volatile uint8_t pe5pfs;                                     /**< Port E Pin 5 Function Select */
-  volatile uint8_t pe6pfs;                                     /**< Port E Pin 6 Function Select */
-  volatile uint8_t pe7pfs;                                     /**< Port E Pin 7 Function Select */
-  volatile uint8_t pf0pfs;                                     /**< Port F Pin 0 Function Select */
-  volatile uint8_t pf1pfs;                                     /**< Port F Pin 1 Function Select */
-  volatile uint8_t pf2pfs;                                     /**< Port F Pin 2 Function Select */
-  uint8_t          portf_reserved1[k_portf_reserved1_bytes];   /**< Port F reserved (PF3-PF4 N/A) */
-  volatile uint8_t pf5pfs;                                     /**< Port F Pin 5 Function Select */
-  uint8_t          portf_reserved2[k_portf_reserved2_bytes];   /**< Port F reserved (PF6-PF7 N/A) */
-  volatile uint8_t pg0pfs;                                     /**< Port G Pin 0 Function Select */
-  volatile uint8_t pg1pfs;                                     /**< Port G Pin 1 Function Select */
-  volatile uint8_t pg2pfs;                                     /**< Port G Pin 2 Function Select */
-  volatile uint8_t pg3pfs;                                     /**< Port G Pin 3 Function Select */
-  volatile uint8_t pg4pfs;                                     /**< Port G Pin 4 Function Select */
-  volatile uint8_t pg5pfs;                                     /**< Port G Pin 5 Function Select */
-  volatile uint8_t pg6pfs;                                     /**< Port G Pin 6 Function Select */
-  volatile uint8_t pg7pfs;                                     /**< Port G Pin 7 Function Select */
-  volatile uint8_t ph0pfs;                                     /**< Port H Pin 0 Function Select */
-  volatile uint8_t ph1pfs;                                     /**< Port H Pin 1 Function Select */
-  volatile uint8_t ph2pfs;                                     /**< Port H Pin 2 Function Select */
-  volatile uint8_t ph3pfs;                                     /**< Port H Pin 3 Function Select */
-  volatile uint8_t ph4pfs;                                     /**< Port H Pin 4 Function Select */
-  volatile uint8_t ph5pfs;                                     /**< Port H Pin 5 Function Select */
-  volatile uint8_t ph6pfs;                                     /**< Port H Pin 6 Function Select */
-  volatile uint8_t ph7pfs;                                     /**< Port H Pin 7 Function Select */
-  volatile uint8_t pj0pfs;                                     /**< Port J Pin 0 Function Select */
-  volatile uint8_t pj1pfs;                                     /**< Port J Pin 1 Function Select */
-  volatile uint8_t pj2pfs;                                     /**< Port J Pin 2 Function Select */
-  volatile uint8_t pj3pfs;                                     /**< Port J Pin 3 Function Select */
-  uint8_t          portj_reserved1[k_portj_reserved1_bytes];   /**< Port J reserved (PJ4 N/A) */
-  volatile uint8_t pj5pfs;                                     /**< Port J Pin 5 Function Select */
-  uint8_t          portj_reserved2[k_portj_reserved2_bytes];   /**< Port J reserved (PJ6-PJ7 N/A) */
+  volatile uint8_t p00pfs;                        /**< Port 0 Pin 0 Function Select */
+  volatile uint8_t p01pfs;                        /**< Port 0 Pin 1 Function Select */
+  volatile uint8_t p02pfs;                        /**< Port 0 Pin 2 Function Select */
+  volatile uint8_t p03pfs;                        /**< Port 0 Pin 3 Function Select */
+  volatile uint8_t p04pfs;                        /**< Port 0 Pin 4 Function Select */
+  volatile uint8_t p05pfs;                        /**< Port 0 Pin 5 Function Select */
+  volatile uint8_t p06pfs;                        /**< Port 0 Pin 6 Function Select */
+  volatile uint8_t p07pfs;                        /**< Port 0 Pin 7 Function Select */
+  volatile uint8_t p10pfs;                        /**< Port 1 Pin 0 Function Select */
+  volatile uint8_t p11pfs;                        /**< Port 1 Pin 1 Function Select */
+  volatile uint8_t p12pfs;                        /**< Port 1 Pin 2 Function Select */
+  volatile uint8_t p13pfs;                        /**< Port 1 Pin 3 Function Select */
+  volatile uint8_t p14pfs;                        /**< Port 1 Pin 4 Function Select */
+  volatile uint8_t p15pfs;                        /**< Port 1 Pin 5 Function Select */
+  volatile uint8_t p16pfs;                        /**< Port 1 Pin 6 Function Select */
+  volatile uint8_t p17pfs;                        /**< Port 1 Pin 7 Function Select */
+  volatile uint8_t p20pfs;                        /**< Port 2 Pin 0 Function Select */
+  volatile uint8_t p21pfs;                        /**< Port 2 Pin 1 Function Select */
+  volatile uint8_t p22pfs;                        /**< Port 2 Pin 2 Function Select */
+  volatile uint8_t p23pfs;                        /**< Port 2 Pin 3 Function Select */
+  volatile uint8_t p24pfs;                        /**< Port 2 Pin 4 Function Select */
+  volatile uint8_t p25pfs;                        /**< Port 2 Pin 5 Function Select */
+  volatile uint8_t p26pfs;                        /**< Port 2 Pin 6 Function Select */
+  volatile uint8_t p27pfs;                        /**< Port 2 Pin 7 Function Select */
+  volatile uint8_t p30pfs;                        /**< Port 3 Pin 0 Function Select */
+  volatile uint8_t p31pfs;                        /**< Port 3 Pin 1 Function Select */
+  volatile uint8_t p32pfs;                        /**< Port 3 Pin 2 Function Select */
+  volatile uint8_t p33pfs;                        /**< Port 3 Pin 3 Function Select */
+  volatile uint8_t p34pfs;                        /**< Port 3 Pin 4 Function Select */
+  uint8_t port3_reserved[k_port3_reserved_bytes]; /**< Port 3 reserved (P35=NMI, P36-P37 N/A) */
+  volatile uint8_t p40pfs;                        /**< Port 4 Pin 0 Function Select */
+  volatile uint8_t p41pfs;                        /**< Port 4 Pin 1 Function Select */
+  volatile uint8_t p42pfs;                        /**< Port 4 Pin 2 Function Select */
+  volatile uint8_t p43pfs;                        /**< Port 4 Pin 3 Function Select */
+  volatile uint8_t p44pfs;                        /**< Port 4 Pin 4 Function Select */
+  volatile uint8_t p45pfs;                        /**< Port 4 Pin 5 Function Select */
+  volatile uint8_t p46pfs;                        /**< Port 4 Pin 6 Function Select */
+  volatile uint8_t p47pfs;                        /**< Port 4 Pin 7 Function Select */
+  volatile uint8_t p50pfs;                        /**< Port 5 Pin 0 Function Select */
+  volatile uint8_t p51pfs;                        /**< Port 5 Pin 1 Function Select */
+  volatile uint8_t p52pfs;                        /**< Port 5 Pin 2 Function Select */
+  uint8_t port5_reserved[k_port5_reserved_bytes]; /**< Port 5 reserved (P53=BCLK dedicated) */
+  volatile uint8_t p54pfs;                        /**< Port 5 Pin 4 Function Select */
+  volatile uint8_t p55pfs;                        /**< Port 5 Pin 5 Function Select */
+  volatile uint8_t p56pfs;                        /**< Port 5 Pin 6 Function Select */
+  volatile uint8_t p57pfs;                        /**< Port 5 Pin 7 Function Select */
+  volatile uint8_t p60pfs;                        /**< Port 6 Pin 0 Function Select */
+  volatile uint8_t p61pfs;                        /**< Port 6 Pin 1 Function Select */
+  volatile uint8_t p62pfs;                        /**< Port 6 Pin 2 Function Select */
+  volatile uint8_t p63pfs;                        /**< Port 6 Pin 3 Function Select */
+  volatile uint8_t p64pfs;                        /**< Port 6 Pin 4 Function Select */
+  uint8_t port6_reserved[k_port6_reserved_bytes]; /**< Port 6 reserved (P65=CKE dedicated) */
+  volatile uint8_t p66pfs;                        /**< Port 6 Pin 6 Function Select */
+  volatile uint8_t p67pfs;                        /**< Port 6 Pin 7 Function Select */
+  uint8_t          port7_reserved[k_port7_reserved_bytes];   /**< Port 7 reserved (P70 N/A) */
+  volatile uint8_t p71pfs;                                   /**< Port 7 Pin 1 Function Select */
+  volatile uint8_t p72pfs;                                   /**< Port 7 Pin 2 Function Select */
+  volatile uint8_t p73pfs;                                   /**< Port 7 Pin 3 Function Select */
+  volatile uint8_t p74pfs;                                   /**< Port 7 Pin 4 Function Select */
+  volatile uint8_t p75pfs;                                   /**< Port 7 Pin 5 Function Select */
+  volatile uint8_t p76pfs;                                   /**< Port 7 Pin 6 Function Select */
+  volatile uint8_t p77pfs;                                   /**< Port 7 Pin 7 Function Select */
+  volatile uint8_t p80pfs;                                   /**< Port 8 Pin 0 Function Select */
+  volatile uint8_t p81pfs;                                   /**< Port 8 Pin 1 Function Select */
+  volatile uint8_t p82pfs;                                   /**< Port 8 Pin 2 Function Select */
+  volatile uint8_t p83pfs;                                   /**< Port 8 Pin 3 Function Select */
+  volatile uint8_t p84pfs;                                   /**< Port 8 Pin 4 Function Select */
+  volatile uint8_t p85pfs;                                   /**< Port 8 Pin 5 Function Select */
+  volatile uint8_t p86pfs;                                   /**< Port 8 Pin 6 Function Select */
+  volatile uint8_t p87pfs;                                   /**< Port 8 Pin 7 Function Select */
+  volatile uint8_t p90pfs;                                   /**< Port 9 Pin 0 Function Select */
+  volatile uint8_t p91pfs;                                   /**< Port 9 Pin 1 Function Select */
+  volatile uint8_t p92pfs;                                   /**< Port 9 Pin 2 Function Select */
+  volatile uint8_t p93pfs;                                   /**< Port 9 Pin 3 Function Select */
+  volatile uint8_t p94pfs;                                   /**< Port 9 Pin 4 Function Select */
+  volatile uint8_t p95pfs;                                   /**< Port 9 Pin 5 Function Select */
+  volatile uint8_t p96pfs;                                   /**< Port 9 Pin 6 Function Select */
+  volatile uint8_t p97pfs;                                   /**< Port 9 Pin 7 Function Select */
+  volatile uint8_t pa0pfs;                                   /**< Port A Pin 0 Function Select */
+  volatile uint8_t pa1pfs;                                   /**< Port A Pin 1 Function Select */
+  volatile uint8_t pa2pfs;                                   /**< Port A Pin 2 Function Select */
+  volatile uint8_t pa3pfs;                                   /**< Port A Pin 3 Function Select */
+  volatile uint8_t pa4pfs;                                   /**< Port A Pin 4 Function Select */
+  volatile uint8_t pa5pfs;                                   /**< Port A Pin 5 Function Select */
+  volatile uint8_t pa6pfs;                                   /**< Port A Pin 6 Function Select */
+  volatile uint8_t pa7pfs;                                   /**< Port A Pin 7 Function Select */
+  volatile uint8_t pb0pfs;                                   /**< Port B Pin 0 Function Select */
+  volatile uint8_t pb1pfs;                                   /**< Port B Pin 1 Function Select */
+  volatile uint8_t pb2pfs;                                   /**< Port B Pin 2 Function Select */
+  volatile uint8_t pb3pfs;                                   /**< Port B Pin 3 Function Select */
+  volatile uint8_t pb4pfs;                                   /**< Port B Pin 4 Function Select */
+  volatile uint8_t pb5pfs;                                   /**< Port B Pin 5 Function Select */
+  volatile uint8_t pb6pfs;                                   /**< Port B Pin 6 Function Select */
+  volatile uint8_t pb7pfs;                                   /**< Port B Pin 7 Function Select */
+  volatile uint8_t pc0pfs;                                   /**< Port C Pin 0 Function Select */
+  volatile uint8_t pc1pfs;                                   /**< Port C Pin 1 Function Select */
+  volatile uint8_t pc2pfs;                                   /**< Port C Pin 2 Function Select */
+  volatile uint8_t pc3pfs;                                   /**< Port C Pin 3 Function Select */
+  volatile uint8_t pc4pfs;                                   /**< Port C Pin 4 Function Select */
+  volatile uint8_t pc5pfs;                                   /**< Port C Pin 5 Function Select */
+  volatile uint8_t pc6pfs;                                   /**< Port C Pin 6 Function Select */
+  volatile uint8_t pc7pfs;                                   /**< Port C Pin 7 Function Select */
+  volatile uint8_t pd0pfs;                                   /**< Port D Pin 0 Function Select */
+  volatile uint8_t pd1pfs;                                   /**< Port D Pin 1 Function Select */
+  volatile uint8_t pd2pfs;                                   /**< Port D Pin 2 Function Select */
+  volatile uint8_t pd3pfs;                                   /**< Port D Pin 3 Function Select */
+  volatile uint8_t pd4pfs;                                   /**< Port D Pin 4 Function Select */
+  volatile uint8_t pd5pfs;                                   /**< Port D Pin 5 Function Select */
+  volatile uint8_t pd6pfs;                                   /**< Port D Pin 6 Function Select */
+  volatile uint8_t pd7pfs;                                   /**< Port D Pin 7 Function Select */
+  volatile uint8_t pe0pfs;                                   /**< Port E Pin 0 Function Select */
+  volatile uint8_t pe1pfs;                                   /**< Port E Pin 1 Function Select */
+  volatile uint8_t pe2pfs;                                   /**< Port E Pin 2 Function Select */
+  volatile uint8_t pe3pfs;                                   /**< Port E Pin 3 Function Select */
+  volatile uint8_t pe4pfs;                                   /**< Port E Pin 4 Function Select */
+  volatile uint8_t pe5pfs;                                   /**< Port E Pin 5 Function Select */
+  volatile uint8_t pe6pfs;                                   /**< Port E Pin 6 Function Select */
+  volatile uint8_t pe7pfs;                                   /**< Port E Pin 7 Function Select */
+  volatile uint8_t pf0pfs;                                   /**< Port F Pin 0 Function Select */
+  volatile uint8_t pf1pfs;                                   /**< Port F Pin 1 Function Select */
+  volatile uint8_t pf2pfs;                                   /**< Port F Pin 2 Function Select */
+  uint8_t          portf_reserved1[k_portf_reserved1_bytes]; /**< Port F reserved (PF3-PF4 N/A) */
+  volatile uint8_t pf5pfs;                                   /**< Port F Pin 5 Function Select */
+  uint8_t          portf_reserved2[k_portf_reserved2_bytes]; /**< Port F reserved (PF6-PF7 N/A) */
+  volatile uint8_t pg0pfs;                                   /**< Port G Pin 0 Function Select */
+  volatile uint8_t pg1pfs;                                   /**< Port G Pin 1 Function Select */
+  volatile uint8_t pg2pfs;                                   /**< Port G Pin 2 Function Select */
+  volatile uint8_t pg3pfs;                                   /**< Port G Pin 3 Function Select */
+  volatile uint8_t pg4pfs;                                   /**< Port G Pin 4 Function Select */
+  volatile uint8_t pg5pfs;                                   /**< Port G Pin 5 Function Select */
+  volatile uint8_t pg6pfs;                                   /**< Port G Pin 6 Function Select */
+  volatile uint8_t pg7pfs;                                   /**< Port G Pin 7 Function Select */
+  volatile uint8_t ph0pfs;                                   /**< Port H Pin 0 Function Select */
+  volatile uint8_t ph1pfs;                                   /**< Port H Pin 1 Function Select */
+  volatile uint8_t ph2pfs;                                   /**< Port H Pin 2 Function Select */
+  volatile uint8_t ph3pfs;                                   /**< Port H Pin 3 Function Select */
+  volatile uint8_t ph4pfs;                                   /**< Port H Pin 4 Function Select */
+  volatile uint8_t ph5pfs;                                   /**< Port H Pin 5 Function Select */
+  volatile uint8_t ph6pfs;                                   /**< Port H Pin 6 Function Select */
+  volatile uint8_t ph7pfs;                                   /**< Port H Pin 7 Function Select */
+  volatile uint8_t pj0pfs;                                   /**< Port J Pin 0 Function Select */
+  volatile uint8_t pj1pfs;                                   /**< Port J Pin 1 Function Select */
+  volatile uint8_t pj2pfs;                                   /**< Port J Pin 2 Function Select */
+  volatile uint8_t pj3pfs;                                   /**< Port J Pin 3 Function Select */
+  uint8_t          portj_reserved1[k_portj_reserved1_bytes]; /**< Port J reserved (PJ4 N/A) */
+  volatile uint8_t pj5pfs;                                   /**< Port J Pin 5 Function Select */
+  uint8_t          portj_reserved2[k_portj_reserved2_bytes]; /**< Port J reserved (PJ6-PJ7 N/A) */
 } rx_mpc_regs_t;
 
 /**
