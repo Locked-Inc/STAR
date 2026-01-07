@@ -26,6 +26,8 @@
 #include "star/v1/motor_control.pb.h"
 #include "star/v1/battery_management.pb.h"
 #include "star/v1/telemetry.pb.h"
+#include "star/v1/gateway_service.pb.h"
+#include "star/v1/gateway_service.grpc.pb.h"
 
 #include "star_gateway_bridge/message_converter.hpp"
 
@@ -206,8 +208,7 @@ private:
 
   // gRPC Client
   std::shared_ptr<grpc::Channel> grpc_channel_;
-  // TODO: Add gRPC stub when GatewayService is defined in Phase 4
-  // std::unique_ptr<star::v1::GatewayService::Stub> grpc_stub_;
+  std::unique_ptr<star::v1::GatewayService::Stub> grpc_stub_;
 
   // Cached telemetry data (protected by mutexes)
   std::mutex robot_status_mutex_;

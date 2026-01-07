@@ -85,9 +85,19 @@ func (s *GatewayService) ForwardTelemetry(
 	activeClients := s.activeClients
 	s.clientsMu.RUnlock()
 
+	// Log telemetry with nil-safe accessors
+	mode := "unknown"
+	if req.SystemStatus != nil {
+		mode = req.SystemStatus.GetMode().String()
+	}
+
+	batteryPercent := 0.0
+	if req.BatteryState != nil && req.BatteryState.GetSoc() != nil {
+		batteryPercent = float64(req.BatteryState.GetSoc().GetRelativeSocPercent())
+	}
+
 	log.Printf("Telemetry forwarded: mode=%s, battery=%.1f%%, clients=%d",
-		req.SystemStatus.GetMode(), req.BatteryState.GetSoc().GetRelativeSocPercent(),
-		activeClients)
+		mode, batteryPercent, activeClients)
 
 	// Build response header
 	respHeader := &starv1.ResponseHeader{

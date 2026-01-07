@@ -109,8 +109,8 @@ bool StarGatewayBridgeNode::initialize_grpc_client()
     return false;
   }
 
-  // TODO Phase 4: Create gRPC stub when GatewayService is defined
-  // grpc_stub_ = star::v1::GatewayService::NewStub(grpc_channel_);
+  // Create gRPC stub
+  grpc_stub_ = star::v1::GatewayService::NewStub(grpc_channel_);
 
   RCLCPP_INFO(this->get_logger(), "Successfully connected to Gateway gRPC server");
   grpc_connected_ = true;
@@ -230,31 +230,36 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
     battery_state_mutex_.unlock();
   }
 
-  // TODO Phase 4: Forward telemetry to Gateway via gRPC
-  // Example structure (will be implemented when GatewayService is defined):
-  //
-  // grpc::ClientContext context;
-  // context.set_deadline(std::chrono::system_clock::now() +
-  //                      std::chrono::milliseconds(grpc_deadline_ms_));
-  //
-  // star::v1::ForwardTelemetryRequest request;
-  //
-  // if (robot_status.has_value()) {
-  //   converter_.string_to_system_status(*robot_status, *request.mutable_system_status());
-  // }
-  //
-  // if (battery_state.has_value()) {
-  //   converter_.battery_state_to_proto(*battery_state, *request.mutable_battery_state());
-  // }
-  //
-  // star::v1::ForwardTelemetryResponse response;
-  // grpc::Status status = grpc_stub_->ForwardTelemetry(&context, request, &response);
-  //
-  // if (!status.ok()) {
-  //   RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
-  //     "ForwardTelemetry gRPC failed: %s", status.error_message().c_str());
-  //   grpc_connected_ = false;
-  // }
+  // Forward telemetry to Gateway via gRPC
+  if (grpc_stub_ && (robot_status.has_value() || battery_state.has_value())) {
+    grpc::ClientContext context;
+    context.set_deadline(std::chrono::system_clock::now() +
+                         std::chrono::milliseconds(grpc_deadline_ms_));
+
+    star::v1::ForwardTelemetryRequest request;
+
+    // Set request header
+    auto* header = request.mutable_header();
+    header->set_request_id("telemetry_" + std::to_string(
+      std::chrono::system_clock::now().time_since_epoch().count()));
+
+    if (robot_status.has_value()) {
+      converter_.string_to_system_status(*robot_status, *request.mutable_system_status());
+    }
+
+    if (battery_state.has_value()) {
+      converter_.battery_state_to_proto(*battery_state, *request.mutable_battery_state());
+    }
+
+    star::v1::ForwardTelemetryResponse response;
+    grpc::Status status = grpc_stub_->ForwardTelemetry(&context, request, &response);
+
+    if (!status.ok()) {
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+        "ForwardTelemetry gRPC failed: %s", status.error_message().c_str());
+      grpc_connected_ = false;
+    }
+  }
 
   RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 10000,
     "Telemetry forward: robot_status=%s, battery_state=%s",
@@ -264,62 +269,71 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
 
 void StarGatewayBridgeNode::teleop_poll_timer_callback()
 {
-  if (!grpc_connected_) {
+  if (!grpc_connected_ || !grpc_stub_) {
     // Publish zero velocity when not connected (safety feature)
     auto zero_twist = geometry_msgs::msg::Twist();
     teleop_cmd_vel_pub_->publish(zero_twist);
     return;
   }
 
-  // TODO Phase 4: Poll Gateway for latest teleop command via gRPC
-  // Example structure (will be implemented when GatewayService is defined):
-  //
-  // grpc::ClientContext context;
-  // context.set_deadline(std::chrono::system_clock::now() +
-  //                      std::chrono::milliseconds(grpc_deadline_ms_));
-  //
-  // star::v1::GetTeleopCommandRequest request;
-  // star::v1::GetTeleopCommandResponse response;
-  //
-  // grpc::Status status = grpc_stub_->GetTeleopCommand(&context, request, &response);
-  //
-  // if (!status.ok()) {
-  //   RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
-  //     "GetTeleopCommand gRPC failed: %s", status.error_message().c_str());
-  //   grpc_connected_ = false;
-  //   auto zero_twist = geometry_msgs::msg::Twist();
-  //   teleop_cmd_vel_pub_->publish(zero_twist);
-  //   return;
-  // }
-  //
-  // // Check command staleness (safety feature)
-  // auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
-  //   std::chrono::system_clock::now().time_since_epoch()).count();
-  // auto cmd_age_us = now_us - response.command().timestamp_us();
-  // auto cmd_age_ms = cmd_age_us / 1000;
-  //
-  // if (cmd_age_ms > teleop_timeout_ms_) {
-  //   RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-  //     "Teleop command stale (%ldms > %dms) - sending zero velocity",
-  //     cmd_age_ms, teleop_timeout_ms_);
-  //   auto zero_twist = geometry_msgs::msg::Twist();
-  //   teleop_cmd_vel_pub_->publish(zero_twist);
-  //   return;
-  // }
-  //
-  // // Convert and publish fresh command
-  // geometry_msgs::msg::Twist twist;
-  // if (converter_.velocity_command_to_twist(response.command(), twist, wheel_base_)) {
-  //   teleop_cmd_vel_pub_->publish(twist);
-  // } else {
-  //   RCLCPP_WARN(this->get_logger(), "Failed to convert VelocityCommand to Twist");
-  //   auto zero_twist = geometry_msgs::msg::Twist();
-  //   teleop_cmd_vel_pub_->publish(zero_twist);
-  // }
+  // Poll Gateway for latest teleop command via gRPC
+  grpc::ClientContext context;
+  context.set_deadline(std::chrono::system_clock::now() +
+                       std::chrono::milliseconds(grpc_deadline_ms_));
 
-  // Placeholder: Publish zero velocity until Phase 4 implementation
-  auto zero_twist = geometry_msgs::msg::Twist();
-  teleop_cmd_vel_pub_->publish(zero_twist);
+  star::v1::GetTeleopCommandRequest request;
+
+  // Set request header
+  auto* header = request.mutable_header();
+  header->set_request_id("teleop_" + std::to_string(
+    std::chrono::system_clock::now().time_since_epoch().count()));
+
+  star::v1::GetTeleopCommandResponse response;
+
+  grpc::Status status = grpc_stub_->GetTeleopCommand(&context, request, &response);
+
+  if (!status.ok()) {
+    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+      "GetTeleopCommand gRPC failed: %s", status.error_message().c_str());
+    grpc_connected_ = false;
+    auto zero_twist = geometry_msgs::msg::Twist();
+    teleop_cmd_vel_pub_->publish(zero_twist);
+    return;
+  }
+
+  // Check if command is available
+  if (!response.command_available()) {
+    RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 10000,
+      "No teleop command available from Gateway");
+    auto zero_twist = geometry_msgs::msg::Twist();
+    teleop_cmd_vel_pub_->publish(zero_twist);
+    return;
+  }
+
+  // Check command staleness (safety feature)
+  auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+    std::chrono::system_clock::now().time_since_epoch()).count();
+  auto cmd_age_us = now_us - response.command().timestamp_us();
+  auto cmd_age_ms = cmd_age_us / 1000;
+
+  if (cmd_age_ms > teleop_timeout_ms_) {
+    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+      "Teleop command stale (%ldms > %dms) - sending zero velocity",
+      cmd_age_ms, teleop_timeout_ms_);
+    auto zero_twist = geometry_msgs::msg::Twist();
+    teleop_cmd_vel_pub_->publish(zero_twist);
+    return;
+  }
+
+  // Convert and publish fresh command
+  geometry_msgs::msg::Twist twist;
+  if (converter_.velocity_command_to_twist(response.command(), twist, wheel_base_)) {
+    teleop_cmd_vel_pub_->publish(twist);
+  } else {
+    RCLCPP_WARN(this->get_logger(), "Failed to convert VelocityCommand to Twist");
+    auto zero_twist = geometry_msgs::msg::Twist();
+    teleop_cmd_vel_pub_->publish(zero_twist);
+  }
 }
 
 void StarGatewayBridgeNode::connection_watchdog_callback()
