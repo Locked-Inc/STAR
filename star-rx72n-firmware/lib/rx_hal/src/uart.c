@@ -19,6 +19,7 @@
 
 #include "hardware.h"
 #include "hardware_pinout.h"
+#include "rx72n_clock.h"
 #include "rx72n_regs.h"
 #include "rx_mpc.h"
 #include "rx_port_utils.h"
@@ -30,8 +31,7 @@
 
 /** @brief UART configuration constants */
 typedef enum {
-  k_uart_default_baudrate = 115200,   /**< Default baud rate: 115200 bps */
-  k_uart_pclkb_hz         = 60000000, /**< PCLKB clock: 60 MHz */
+  k_uart_default_baudrate = 115200, /**< Default baud rate: 115200 bps */
 } uart_config_t;
 
 /** @brief UART timing constants */
@@ -153,7 +153,7 @@ static uint8_t internal_calculate_brr(uint32_t baudrate)
   }
 
   /* For n=0 (CKS=00): BRR = (PCLKB / (32 * B)) - 1 */
-  uint32_t brr_value = (k_uart_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
+  uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
 
   if (brr_value > k_brr_max_value) {
     return k_brr_max_value;
