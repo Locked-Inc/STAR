@@ -423,9 +423,10 @@ rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
       mtu_tstra()->tstr |= k_mtu_tstr_cst4;
       break;
     case k_mtu_channel_6:
+      mtu_tstrb()->tstr |= k_mtu_tstr_cst6;
+      break;
     case k_mtu_channel_7:
-      /* MTU6/7 use TSTRB register - not yet implemented */
-      rx_log_warn(s_tag, "MTU6/7 start not fully implemented");
+      mtu_tstrb()->tstr |= k_mtu_tstr_cst7;
       break;
     default:
       return k_rx_err_invalid_arg;
@@ -458,8 +459,10 @@ rx_err_t rx_mtu_stop(rx_mtu_channel_t channel)
       mtu_tstra()->tstr &= ~k_mtu_tstr_cst4;
       break;
     case k_mtu_channel_6:
+      mtu_tstrb()->tstr &= ~k_mtu_tstr_cst6;
+      break;
     case k_mtu_channel_7:
-      /* MTU6/7 use TSTRB register - not yet implemented */
+      mtu_tstrb()->tstr &= ~k_mtu_tstr_cst7;
       break;
     default:
       return k_rx_err_invalid_arg;

@@ -90,6 +90,10 @@ typedef enum {
   k_mpc_portc_offset = 96,  /**< Port C offset (PC0-PC7 = 8 pins) */
   k_mpc_portd_offset = 104, /**< Port D offset (PD0-PD7 = 8 pins) */
   k_mpc_porte_offset = 112, /**< Port E offset (PE0-PE7 = 8 pins) */
+  k_mpc_portf_offset = 120, /**< Port F offset (not on 100-pin) */
+  k_mpc_portg_offset = 128, /**< Port G offset (not on 100-pin) */
+  k_mpc_porth_offset = 136, /**< Port H offset (not on 100-pin) */
+  k_mpc_portj_offset = 144, /**< Port J offset (only PJ3 on 100-pin) */
 } mpc_port_offset_t;
 
 /** @brief MPC PSEL maximum value */
@@ -185,10 +189,12 @@ static volatile uint8_t* internal_get_pfs_register(uint8_t port, uint8_t pin)
     case k_mpc_port_f:
     case k_mpc_port_g:
     case k_mpc_port_h:
-    case k_mpc_port_j:
-      /* Ports F, G, H, J not yet implemented */
-      rx_log_error(s_tag, "Port not implemented");
+      /* Ports F, G, H not available on 100-pin LFQFP package */
+      rx_log_error(s_tag, "Port not available on this package");
       return NULL;
+    case k_mpc_port_j:
+      port_offset = k_mpc_portj_offset;
+      break;
     default:
       rx_log_error(s_tag, "Invalid port");
       return NULL;

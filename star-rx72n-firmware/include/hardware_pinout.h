@@ -157,9 +157,8 @@ typedef enum {
   k_gpio_pe6 = k_rx_pe_6, /**< PE6 (pin 72) - Motor 3 EN */
   k_gpio_pe7 = k_rx_pe_7, /**< PE7 (pin 71) - Motor 3 PH */
 
-  /* Port J GPIO Pins */
+  /* Port J GPIO Pins (only PJ3 available on 100-pin LFQFP) */
   k_gpio_pj3 = k_rx_pj_3, /**< PJ3 (pin 4) - PMOD JE GPIO0 */
-  k_gpio_pj5 = k_rx_pj_5, /**< PJ5 (pin 2) - JTAG/TDO */
 
   /* Aliases for common use cases (point to same enum values) */
   k_gpio_temp_sensor   = k_gpio_p05, /**< 1-Wire Temperature Sensor (DS18B20+) */
