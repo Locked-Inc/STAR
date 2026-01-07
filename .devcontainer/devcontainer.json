@@ -2,10 +2,12 @@
     "name": "STAR ROS2 Jazzy Devcontainer",
     "dockerFile": "../Dockerfile",
     "runArgs": [
-        "--privileged",
         "--net=host",
         "--ipc=host",
-        "-v", "/dev:/dev",
+        "--device=/dev/spidev0.0",
+        "--device=/dev/ttyUSB0",
+        "--device=/dev/video0",
+        "--device=/dev/video1",
         "-v", "/run/udev:/run/udev:ro"
     ],
     "containerEnv": {

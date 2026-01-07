@@ -119,19 +119,19 @@ jobs:
       - name: Run ament_copyright
         run: |
           cd star-ros2/src
-          ament_copyright . || true
+          ament_copyright .
 
       - name: Run ament_cppcheck
         run: |
           cd star-ros2/src
-          ament_cppcheck . || true
+          ament_cppcheck .
 
       - name: Run ament_cpplint
         run: |
           cd star-ros2/src
-          ament_cpplint . || true
+          ament_cpplint .
 
       - name: Run ament_lint_cmake
         run: |
           cd star-ros2/src
-          ament_lint_cmake . || true
+          ament_lint_cmake .

@@ -48,7 +48,7 @@ map (RTAB-Map - global, corrected)
 
 1. **Open the repository in VS Code**
    ```bash
-   code /Users/cesarmagana/Documents/GitHub/STAR
+   code .
    ```
 
 2. **Reopen in Container**

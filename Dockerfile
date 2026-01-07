@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     i2c-tools \
     v4l-utils \
     udev \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up user
@@ -32,8 +33,6 @@ RUN if getent passwd $USER_UID >/dev/null; then \
         groupadd --gid $USER_GID $USERNAME; \
         useradd --uid $USER_UID --gid $USER_GID -m $USERNAME; \
     fi \
-    && apt-get update \
-    && apt-get install -y sudo \
     && echo "$USERNAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
