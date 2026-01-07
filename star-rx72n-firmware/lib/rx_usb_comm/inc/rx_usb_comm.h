@@ -47,9 +47,9 @@ extern "C" {
  * @brief USB communication parameters
  */
 typedef enum {
-  k_usb_comm_rx_buffer_size  = 2048, /**< RX staging buffer size */
-  k_usb_comm_tx_buffer_size  = 2048, /**< TX staging buffer size */
-  k_usb_comm_default_timeout = 1000, /**< Default timeout in ms */
+  k_usb_comm_rx_buffer_size         = 2048, /**< RX staging buffer size */
+  k_usb_comm_tx_buffer_size         = 2048, /**< TX staging buffer size */
+  k_usb_comm_default_timeout        = 1000, /**< Default timeout in ms */
   k_usb_comm_max_receive_iterations = 1000, /**< Max receive loop iterations (Rule 2) */
 } rx_usb_comm_constants_t;
 

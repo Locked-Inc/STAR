@@ -48,10 +48,10 @@ typedef enum {
 
 /** @brief Motor configuration validation limits (NASA Rule 5 compliance) */
 typedef enum {
-  k_motor_min_pwm_freq  = 1000,   /**< Minimum PWM frequency (1 kHz) */
-  k_motor_max_pwm_freq  = 50000,  /**< Maximum PWM frequency (50 kHz) */
-  k_motor_min_dead_time = 100,    /**< Minimum dead-time (100 ns) */
-  k_motor_max_dead_time = 10000,  /**< Maximum dead-time (10 us) */
+  k_motor_min_pwm_freq  = 1000,  /**< Minimum PWM frequency (1 kHz) */
+  k_motor_max_pwm_freq  = 50000, /**< Maximum PWM frequency (50 kHz) */
+  k_motor_min_dead_time = 100,   /**< Minimum dead-time (100 ns) */
+  k_motor_max_dead_time = 10000, /**< Maximum dead-time (10 us) */
 } motor_validation_limits_t;
 
 /* =============================================================================
@@ -70,7 +70,7 @@ static float internal_clamp_duty(float duty)
 {
   /* Safety check for invalid float values (NASA Rule 5 compliance) */
   if (isnan(duty) || isinf(duty)) {
-    return (float)k_motor_duty_zero;  /* Safe default: stopped */
+    return (float)k_motor_duty_zero; /* Safe default: stopped */
   }
 
   if (duty > (float)k_motor_duty_max) {
@@ -104,7 +104,8 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   }
 
   /* Pre-condition: Validate dead-time (NASA Rule 5 compliance) */
-  if (config->dead_time_ns < k_motor_min_dead_time || config->dead_time_ns > k_motor_max_dead_time) {
+  if (config->dead_time_ns < k_motor_min_dead_time ||
+      config->dead_time_ns > k_motor_max_dead_time) {
     rx_log_error(s_tag, "Dead-time out of range (100ns-10us)");
     return k_rx_err_invalid_arg;
   }
