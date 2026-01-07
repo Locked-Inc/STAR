@@ -85,7 +85,7 @@ colcon build --symlink-install
 source install/setup.bash
 
 # (Optional) Build specific package
-colcon build --packages-select star_spi_bridge
+colcon build --packages-select star_bringup
 ```
 
 **Build artifacts:**
@@ -97,34 +97,19 @@ colcon build --packages-select star_spi_bridge
 
 ## Running Nodes
 
-### SPI Bridge (Motor Control)
+**Note:** This PR contains only infrastructure. Application nodes are in separate PRs:
+- Motor control: See [PR #145](https://github.com/Locked-Inc/STAR/pull/145) (`star_spi_bridge`)
+- Gateway bridge: See [PR #146](https://github.com/Locked-Inc/STAR/pull/146) (`star_gateway_bridge`)
+
+### Verifying the Build
 
 ```bash
-# Basic usage
-ros2 run star_spi_bridge spi_bridge_node
+# List installed packages
+ros2 pkg list | grep star
 
-# With parameters
-ros2 run star_spi_bridge spi_bridge_node \
-  --ros-args \
-  -p spi_device:=/dev/spidev0.0 \
-  -p spi_speed:=10000000 \
-  -p wheel_radius:=0.0325 \
-  -p wheel_base:=0.150 \
-  -p cmd_timeout_sec:=0.5 \
-  -p max_linear_vel:=1.0 \
-  -p max_angular_vel:=2.0
+# Expected output:
+# star_bringup
 ```
-
-**Status:** Framework complete (263 lines C++). See [Issue #137](https://github.com/Locked-Inc/STAR/issues/137) for SPI I/O implementation.
-
-### Gateway Bridge (UI Integration)
-
-```bash
-# TODO: Implementation tracked in Issue #138
-# ros2 run star_gateway_bridge gateway_bridge_node
-```
-
-**Status:** Placeholder only. See [Issue #138](https://github.com/Locked-Inc/STAR/issues/138).
 
 ### Safety Monitor (Watchdog)
 
@@ -159,31 +144,30 @@ colcon test-result --verbose
 
 ## Package Status
 
-| Package | Status | Lines | Description | Issue |
-|---------|--------|-------|-------------|-------|
-| `star_spi_bridge` | 🟡 Framework | 263 | SPI communication to RX72N | [#137](https://github.com/Locked-Inc/STAR/issues/137) |
-| `star_gateway_bridge` | 🔴 Placeholder | 1 | gRPC bridge to Go gateway | [#138](https://github.com/Locked-Inc/STAR/issues/138) |
-| `star_safety_monitor` | 🔴 Placeholder | 1 | Battery, current, heartbeat monitor | [#139](https://github.com/Locked-Inc/STAR/issues/139) |
+| Package | Status | Lines | Description | Pull Request |
+|---------|--------|-------|-------------|--------------|
+| `star_bringup` | 🟢 Skeleton | 25 | Launch files and system bringup | This PR (#144) |
+| `star_spi_bridge` | 🔴 Not Included | - | SPI communication to RX72N | [PR #145](https://github.com/Locked-Inc/STAR/pull/145) |
+| `star_gateway_bridge` | 🔴 Not Included | - | gRPC bridge to Go gateway | [PR #146](https://github.com/Locked-Inc/STAR/pull/146) |
+| `star_safety_monitor` | 🔴 Planned | - | Battery, current, heartbeat monitor | TBD |
 
-**SLAM Configuration:** Not yet implemented. See [Issue #140](https://github.com/Locked-Inc/STAR/issues/140).
+**Note:** This infrastructure PR (#144) establishes the build system, devcontainer, and CI/CD pipeline. Application packages are in separate PRs for easier review.
 
-### star_spi_bridge - What's Complete
+**SLAM Configuration:** Not yet implemented. See future issue.
 
-**✅ Implemented:**
-- Complete ROS2 node lifecycle (constructor, destructor, spin)
-- Command watchdog (500ms timeout, stops robot if no `/cmd_vel`)
-- Input validation (NaN, infinity, range checks)
-- Velocity clamping to configurable limits
-- Non-blocking mutex pattern (`try_lock` for real-time safety)
-- Graceful shutdown (sends stop command on node destruction)
-- Configurable parameters (SPI device, wheel geometry, safety limits)
+### Included in This PR
 
-**⚠️ TODO (Issue #137):**
-- SPI device initialization (ioctl calls)
-- Differential drive kinematics (velocity → wheel speeds)
-- Protocol Buffers encoding/decoding (nanopb integration)
-- Encoder data parsing from SPI response
-- Odometry calculation (dead reckoning from encoders)
+**✅ Infrastructure:**
+- Docker container (Ubuntu 24.04 + ROS2 Jazzy)
+- VS Code devcontainer configuration
+- GitHub Actions CI/CD pipeline (build + lint)
+- Protocol Buffer C++ code generation
+- Skeleton `star_bringup` package (validates build system)
+
+**⚠️ Coming in Separate PRs:**
+- `star_spi_bridge`: SPI motor control node ([PR #145](https://github.com/Locked-Inc/STAR/pull/145))
+- `star_gateway_bridge`: gRPC bridge to Go gateway ([PR #146](https://github.com/Locked-Inc/STAR/pull/146))
+- SLAM configuration and launch files (future)
 
 ---
 

@@ -1,14 +1,17 @@
 {
     "name": "STAR ROS2 Jazzy Devcontainer",
     "dockerFile": "../Dockerfile",
+    // NOTE: For development machines (Mac/Linux/Windows), use this configuration.
+    // For Raspberry Pi 5 deployment, uncomment the hardware device flags below.
     "runArgs": [
         "--net=host",
-        "--ipc=host",
-        "--device=/dev/spidev0.0",
-        "--device=/dev/ttyUSB0",
-        "--device=/dev/video0",
-        "--device=/dev/video1",
-        "-v", "/run/udev:/run/udev:ro"
+        "--ipc=host"
+        // Uncomment for RPi5 hardware access:
+        // "--device=/dev/spidev0.0",    // RX72N motor controller
+        // "--device=/dev/ttyUSB0",       // RPLiDAR C1
+        // "--device=/dev/video0",        // OAK-D camera
+        // "--device=/dev/video1",
+        // "-v", "/run/udev:/run/udev:ro"
     ],
     "containerEnv": {
         "DISPLAY": "${localEnv:DISPLAY}",
@@ -29,5 +32,5 @@
     "mounts": [
         "source=${localWorkspaceFolder},target=/workspaces/STAR,type=bind"
     ],
-    "postCreateCommand": "test -f /etc/ros/rosdep/sources.list.d/20-default.list || sudo rosdep init && rosdep update --rosdistro jazzy"
+    "postCreateCommand": "bash -c 'if [ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]; then sudo rosdep init && rosdep update --rosdistro jazzy; fi'"
 }

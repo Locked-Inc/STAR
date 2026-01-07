@@ -37,7 +37,9 @@ RUN if getent passwd $USER_UID >/dev/null; then \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 # Add user to groups for hardware access
-RUN usermod -aG video,dialout,plugdev $USERNAME
+# Create spi and i2c groups if they don't exist (RPi5 specific)
+RUN groupadd -f spi && groupadd -f i2c \
+    && usermod -aG video,dialout,plugdev,spi,i2c $USERNAME
 
 # Set up workspace
 WORKDIR /workspaces/STAR
