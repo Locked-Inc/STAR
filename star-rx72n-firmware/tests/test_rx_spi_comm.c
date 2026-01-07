@@ -782,7 +782,9 @@ void test_spi_comm_rx_sequence_wraparound(void)
 
 void test_spi_comm_uses_configured_channel(void)
 {
-  rx_spi_comm_config_t config = {.channel = k_test_channel_alt, .spi_mode = 0, .fec_enabled = false};
+  rx_spi_comm_config_t config = {.channel     = k_test_channel_alt,
+                                 .spi_mode    = 0,
+                                 .fec_enabled = false};
   rx_spi_comm_init(&s_handle, &config);
   helper_init_rspi_channel(k_test_channel_alt);
   uint8_t data[] = "test";

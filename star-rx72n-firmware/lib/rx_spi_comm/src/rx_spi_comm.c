@@ -482,9 +482,8 @@ static rx_err_t internal_wait_for_data(rx_spi_comm_handle_t* handle, uint32_t ti
  * @param payload_len Output pointer for extracted payload length
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t internal_read_frame_header(rx_spi_comm_handle_t* handle,
-                                           uint8_t*              header_buf,
-                                           uint16_t*             payload_len)
+static rx_err_t
+internal_read_frame_header(rx_spi_comm_handle_t* handle, uint8_t* header_buf, uint16_t* payload_len)
 {
   uint32_t header_len = k_frame_sync_size + k_frame_header_size;
 
