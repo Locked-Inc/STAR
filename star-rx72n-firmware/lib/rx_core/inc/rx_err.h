@@ -62,20 +62,20 @@ typedef enum {
   k_rx_ok = 0, /**< Success */
 
   /* Generic Errors (0x100 - 0x1FF) */
-  k_rx_fail                 = 0x101, /**< Generic failure */
-  k_rx_err_no_mem           = 0x102, /**< Out of memory */
-  k_rx_err_invalid_arg      = 0x103, /**< Invalid argument */
-  k_rx_err_invalid_state    = 0x104, /**< Invalid state */
-  k_rx_err_invalid_size     = 0x105, /**< Invalid size */
-  k_rx_err_not_found        = 0x106, /**< Not found */
-  k_rx_err_not_supported    = 0x107, /**< Not supported */
-  k_rx_err_timeout          = 0x108, /**< Timeout */
-  k_rx_err_busy             = 0x109, /**< Resource busy */
-  k_rx_err_would_block      = 0x10A, /**< Operation would block */
-  k_rx_err_exists           = 0x10B, /**< Already exists */
-  k_rx_err_empty            = 0x10C, /**< Empty (no data available) */
-  k_rx_err_cancelled        = 0x10D, /**< Operation cancelled */
-  k_rx_err_not_initialized  = 0x10E, /**< Module not initialized */
+  k_rx_fail                = 0x101, /**< Generic failure */
+  k_rx_err_no_mem          = 0x102, /**< Out of memory */
+  k_rx_err_invalid_arg     = 0x103, /**< Invalid argument */
+  k_rx_err_invalid_state   = 0x104, /**< Invalid state */
+  k_rx_err_invalid_size    = 0x105, /**< Invalid size */
+  k_rx_err_not_found       = 0x106, /**< Not found */
+  k_rx_err_not_supported   = 0x107, /**< Not supported */
+  k_rx_err_timeout         = 0x108, /**< Timeout */
+  k_rx_err_busy            = 0x109, /**< Resource busy */
+  k_rx_err_would_block     = 0x10A, /**< Operation would block */
+  k_rx_err_exists          = 0x10B, /**< Already exists */
+  k_rx_err_empty           = 0x10C, /**< Empty (no data available) */
+  k_rx_err_cancelled       = 0x10D, /**< Operation cancelled */
+  k_rx_err_not_initialized = 0x10E, /**< Module not initialized */
 
   /* Hardware Errors (0x200 - 0x2FF) */
   k_rx_err_hw_init_failed    = 0x201, /**< Hardware initialization failed */
