@@ -1,7 +1,7 @@
 # Implementation Progress: Issue #138 - Gateway Bridge
 
 **Issue:** https://github.com/Locked-Inc/STAR/issues/138
-**PR:** (Will be added after PR creation)
+**PR:** https://github.com/Locked-Inc/STAR/pull/142
 **Branch:** `feature/gateway-bridge-implementation`
 **Started:** 2026-01-06
 **Estimated Total:** 27 hours (3-4 days)
