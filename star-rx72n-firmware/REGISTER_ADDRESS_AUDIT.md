@@ -84,24 +84,24 @@ lib/rx_hal/inc/
 
 All 15 peripheral register files follow the approved pattern:
 
-**Example: System Registers**
+**Example: CMT Timer Registers**
 ```c
-/** @brief System register base address */
+/** @brief CMT channel base addresses */
 typedef enum {
-  k_system_base_addr = 0x00080000,  /**< System register base address */
-} rx_system_addresses_t;
+  k_cmt0_base_addr = 0x00088002,  /**< CMT0 register base address */
+} cmt_addresses_t;
 
 /**
- * @brief Get pointer to system registers
- * @return Volatile pointer to system register structure
+ * @brief Get pointer to CMT0 registers
+ * @return Volatile pointer to CMT channel register structure
  */
-static inline volatile rx_system_regs_t* system_regs(void)
+static inline volatile rx_cmt_channel_regs_t* cmt0(void)
 {
-  return (volatile rx_system_regs_t*)k_system_base_addr;
+  return (volatile rx_cmt_channel_regs_t*)k_cmt0_base_addr;
 }
 
 // Usage in production code:
-system_regs()->mstpcrb &= ~(1 << k_mstpb_usb0);  // Type-safe, searchable
+cmt0()->cmcr = 0x0042;  // Type-safe, searchable
 ```
 
 **Benefits:**
@@ -125,11 +125,11 @@ system_regs()->mstpcrb &= ~(1 << k_mstpb_usb0);  // Type-safe, searchable
 ```c
 // CORRECT: Enum + inline accessor (type-safe, debuggable)
 typedef enum {
-  k_cmt0_base_addr = 0x00088000,
+  k_cmt0_base_addr = 0x00088002,
 } cmt_addresses_t;
 
-static inline rx_cmt_channel_regs_t* cmt0(void) {
-  return (rx_cmt_channel_regs_t*)k_cmt0_base_addr;
+static inline volatile rx_cmt_channel_regs_t* cmt0(void) {
+  return (volatile rx_cmt_channel_regs_t*)k_cmt0_base_addr;
 }
 ```
 
@@ -161,9 +161,11 @@ The codebase follows all requirements from CLAUDE.md:
 
 > **Allowed hex values:**
 > - `lib/rx_core/inc/rx_port_constants.h` - Port/pin constants (ONLY here!)
-> - `lib/rx_hal/inc/rx72n_*_regs.h` - Hardware register addresses (ONLY here!)
+> - `lib/rx_hal/inc/rx72n_*_regs.h` - Hardware register addresses
 >
 > **Hardware Register Access** - Use inline accessor functions
+
+**Note:** Hardware register addresses should ONLY be defined in the `rx72n_*_regs.h` files to maintain a single source of truth.
 
 ✅ All 15 peripheral register files use this exact pattern
 ✅ Zero hardcoded addresses found in driver/library code
