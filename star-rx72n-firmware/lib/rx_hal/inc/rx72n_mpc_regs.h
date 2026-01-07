@@ -14,6 +14,7 @@
 #ifndef STAR_RX72N_MPC_REGS_H
 #define STAR_RX72N_MPC_REGS_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -32,7 +33,21 @@ typedef enum {
 
 /** @brief MPC register reserved field sizes */
 typedef enum {
-  k_mpc_reserved_after_pwpr_bytes = 32, /**< Reserved bytes after PWPR */
+  k_mpc_reserved1_bytes = 1,  /**< Reserved after PFCSE (0x0008C101) */
+  k_mpc_reserved2_bytes = 4,  /**< Reserved after PFBCR3 (0x0008C10A-0x0008C10D) */
+  k_mpc_reserved3_bytes = 16, /**< Reserved after PFENET (0x0008C10F-0x0008C11E) */
+  k_mpc_reserved4_bytes = 8,  /**< Reserved after PWPR (0x0008C120-0x0008C127) */
+  k_mpc_dscr2_count     = 24, /**< DSCR2 registers count (0x0008C128-0x0008C13F) */
+
+  /* Port reserved byte counts (for ports with <8 pins) */
+  k_port3_reserved_bytes = 3, /**< Port 3: P35-P37 (P35 is NMI-only) */
+  k_port5_reserved_bytes = 1, /**< Port 5: P53 (dedicated BCLK) */
+  k_port6_reserved_bytes = 1, /**< Port 6: P65 (dedicated CKE) */
+  k_port7_reserved_bytes = 1, /**< Port 7: P70 (does not exist) */
+  k_portf_reserved1_bytes = 2, /**< Port F: PF3-PF4 */
+  k_portf_reserved2_bytes = 2, /**< Port F: PF6-PF7 */
+  k_portj_reserved1_bytes = 1, /**< Port J: PJ4 */
+  k_portj_reserved2_bytes = 2, /**< Port J: PJ6-PJ7 */
 } mpc_reserved_sizes_t;
 
 /**
@@ -74,23 +89,54 @@ typedef struct {
  * Controls which peripheral function each GPIO pin is assigned to.
  * Base address: 0x0008C100
  *
+ * CRITICAL: This struct matches the exact hardware memory layout!
+ * - 0x0008C100: Bus control registers (PFCSE, PFCSS, PFAOE, PFBCR, PFENET)
+ * - 0x0008C11F: PWPR (Write Protect Register)
+ * - 0x0008C140: PFS registers start (P00PFS)
+ *
  * Package Support (100-pin LFQFP R5F572NNHGFP#30):
  * - Available ports: 0-5 (partial), A-E (full), J (partial: PJ3, PJ5)
  * - Not available on 100-pin: 6-9, F, G, H
  * - Note: All ports are defined for compatibility with larger packages
  *
- * Memory layout:
- * - 0x0008C100: PWPR (Write Protect Register)
- * - 0x0008C101-0x0008C120: Reserved (32 bytes)
- * - 0x0008C121+: PFS registers (contiguous, 8 bytes per port)
- *   - Ports 0-9: 80 bytes (offsets 0-79)
- *   - Ports A-G: 56 bytes (offsets 80-135)
- *   - Port H: 8 bytes (offsets 136-143)
- *   - Port J: 8 bytes (offsets 144-151)
+ * Complete Memory Layout:
+ * - 0x0008C100: PFCSE (CS Output Enable Register)
+ * - 0x0008C101: Reserved (1 byte)
+ * - 0x0008C102-0x0008C103: PFCSS0, PFCSS1 (CS Output Pin Select)
+ * - 0x0008C104-0x0008C105: PFAOE0, PFAOE1 (Address Output Enable)
+ * - 0x0008C106-0x0008C109: PFBCR0-3 (External Bus Control)
+ * - 0x0008C10A-0x0008C10D: Reserved (4 bytes)
+ * - 0x0008C10E: PFENET (Ethernet Control)
+ * - 0x0008C10F-0x0008C11E: Reserved (16 bytes)
+ * - 0x0008C11F: PWPR (Write Protect Register)
+ * - 0x0008C120-0x0008C127: Reserved (8 bytes)
+ * - 0x0008C128-0x0008C13F: DSCR2 (Drive Capacity Control, 24 bytes)
+ * - 0x0008C140+: PFS registers (P00PFS through PJPFS, 152 bytes)
  */
 typedef struct {
-  volatile uint8_t pwpr; /**< Write Protect Register (enable PFS writes) */
-  uint8_t          reserved0[k_mpc_reserved_after_pwpr_bytes]; /**< Reserved */
+  /* Bus Control Registers (0x0008C100 - 0x0008C10E) */
+  volatile uint8_t pfcse;                         /**< +0x00: CS Output Enable Register */
+  uint8_t          reserved1[k_mpc_reserved1_bytes]; /**< +0x01: Reserved */
+  volatile uint8_t pfcss0;                        /**< +0x02: CS Output Pin Select 0 */
+  volatile uint8_t pfcss1;                        /**< +0x03: CS Output Pin Select 1 */
+  volatile uint8_t pfaoe0;                        /**< +0x04: Address Output Enable 0 */
+  volatile uint8_t pfaoe1;                        /**< +0x05: Address Output Enable 1 */
+  volatile uint8_t pfbcr0;                        /**< +0x06: External Bus Control 0 */
+  volatile uint8_t pfbcr1;                        /**< +0x07: External Bus Control 1 */
+  volatile uint8_t pfbcr2;                        /**< +0x08: External Bus Control 2 */
+  volatile uint8_t pfbcr3;                        /**< +0x09: External Bus Control 3 */
+  uint8_t          reserved2[k_mpc_reserved2_bytes]; /**< +0x0A-0x0D: Reserved */
+  volatile uint8_t pfenet;                        /**< +0x0E: Ethernet Control Register */
+  uint8_t          reserved3[k_mpc_reserved3_bytes]; /**< +0x0F-0x1E: Reserved */
+
+  /* Write Protection (0x0008C11F) */
+  volatile uint8_t pwpr; /**< +0x1F: Write Protect Register (enable PFS writes) */
+
+  /* Reserved and Drive Capacity (0x0008C120 - 0x0008C13F) */
+  uint8_t reserved4[k_mpc_reserved4_bytes];    /**< +0x20-0x27: Reserved */
+  uint8_t dscr2[k_mpc_dscr2_count];            /**< +0x28-0x3F: Drive Capacity Control 2 */
+
+  /* Pin Function Select Registers start at 0x0008C140 (+0x40 from base) */
   volatile uint8_t p00pfs;                                     /**< Port 0 Pin 0 Function Select */
   volatile uint8_t p01pfs;                                     /**< Port 0 Pin 1 Function Select */
   volatile uint8_t p02pfs;                                     /**< Port 0 Pin 2 Function Select */
@@ -120,6 +166,7 @@ typedef struct {
   volatile uint8_t p32pfs;                                     /**< Port 3 Pin 2 Function Select */
   volatile uint8_t p33pfs;                                     /**< Port 3 Pin 3 Function Select */
   volatile uint8_t p34pfs;                                     /**< Port 3 Pin 4 Function Select */
+  uint8_t          port3_reserved[k_port3_reserved_bytes];     /**< Port 3 reserved (P35=NMI, P36-P37 N/A) */
   volatile uint8_t p40pfs;                                     /**< Port 4 Pin 0 Function Select */
   volatile uint8_t p41pfs;                                     /**< Port 4 Pin 1 Function Select */
   volatile uint8_t p42pfs;                                     /**< Port 4 Pin 2 Function Select */
@@ -131,7 +178,7 @@ typedef struct {
   volatile uint8_t p50pfs;                                     /**< Port 5 Pin 0 Function Select */
   volatile uint8_t p51pfs;                                     /**< Port 5 Pin 1 Function Select */
   volatile uint8_t p52pfs;                                     /**< Port 5 Pin 2 Function Select */
-  volatile uint8_t p53pfs;                                     /**< Port 5 Pin 3 Function Select */
+  uint8_t          port5_reserved[k_port5_reserved_bytes];     /**< Port 5 reserved (P53=BCLK dedicated) */
   volatile uint8_t p54pfs;                                     /**< Port 5 Pin 4 Function Select */
   volatile uint8_t p55pfs;                                     /**< Port 5 Pin 5 Function Select */
   volatile uint8_t p56pfs;                                     /**< Port 5 Pin 6 Function Select */
@@ -141,10 +188,10 @@ typedef struct {
   volatile uint8_t p62pfs;                                     /**< Port 6 Pin 2 Function Select */
   volatile uint8_t p63pfs;                                     /**< Port 6 Pin 3 Function Select */
   volatile uint8_t p64pfs;                                     /**< Port 6 Pin 4 Function Select */
-  volatile uint8_t p65pfs;                                     /**< Port 6 Pin 5 Function Select */
+  uint8_t          port6_reserved[k_port6_reserved_bytes];     /**< Port 6 reserved (P65=CKE dedicated) */
   volatile uint8_t p66pfs;                                     /**< Port 6 Pin 6 Function Select */
   volatile uint8_t p67pfs;                                     /**< Port 6 Pin 7 Function Select */
-  volatile uint8_t p70pfs;                                     /**< Port 7 Pin 0 Function Select */
+  uint8_t          port7_reserved[k_port7_reserved_bytes];     /**< Port 7 reserved (P70 N/A) */
   volatile uint8_t p71pfs;                                     /**< Port 7 Pin 1 Function Select */
   volatile uint8_t p72pfs;                                     /**< Port 7 Pin 2 Function Select */
   volatile uint8_t p73pfs;                                     /**< Port 7 Pin 3 Function Select */
@@ -211,11 +258,9 @@ typedef struct {
   volatile uint8_t pf0pfs;                                     /**< Port F Pin 0 Function Select */
   volatile uint8_t pf1pfs;                                     /**< Port F Pin 1 Function Select */
   volatile uint8_t pf2pfs;                                     /**< Port F Pin 2 Function Select */
-  volatile uint8_t pf3pfs;                                     /**< Port F Pin 3 Function Select */
-  volatile uint8_t pf4pfs;                                     /**< Port F Pin 4 Function Select */
+  uint8_t          portf_reserved1[k_portf_reserved1_bytes];   /**< Port F reserved (PF3-PF4 N/A) */
   volatile uint8_t pf5pfs;                                     /**< Port F Pin 5 Function Select */
-  volatile uint8_t pf6pfs;                                     /**< Port F Pin 6 Function Select */
-  volatile uint8_t pf7pfs;                                     /**< Port F Pin 7 Function Select */
+  uint8_t          portf_reserved2[k_portf_reserved2_bytes];   /**< Port F reserved (PF6-PF7 N/A) */
   volatile uint8_t pg0pfs;                                     /**< Port G Pin 0 Function Select */
   volatile uint8_t pg1pfs;                                     /**< Port G Pin 1 Function Select */
   volatile uint8_t pg2pfs;                                     /**< Port G Pin 2 Function Select */
@@ -236,10 +281,9 @@ typedef struct {
   volatile uint8_t pj1pfs;                                     /**< Port J Pin 1 Function Select */
   volatile uint8_t pj2pfs;                                     /**< Port J Pin 2 Function Select */
   volatile uint8_t pj3pfs;                                     /**< Port J Pin 3 Function Select */
-  volatile uint8_t pj4pfs;                                     /**< Port J Pin 4 Function Select */
+  uint8_t          portj_reserved1[k_portj_reserved1_bytes];   /**< Port J reserved (PJ4 N/A) */
   volatile uint8_t pj5pfs;                                     /**< Port J Pin 5 Function Select */
-  volatile uint8_t pj6pfs;                                     /**< Port J Pin 6 Function Select */
-  volatile uint8_t pj7pfs;                                     /**< Port J Pin 7 Function Select */
+  uint8_t          portj_reserved2[k_portj_reserved2_bytes];   /**< Port J reserved (PJ6-PJ7 N/A) */
 } rx_mpc_regs_t;
 
 /**
@@ -263,6 +307,35 @@ typedef enum {
   k_pfs_isel      = (1 << 6), /**< Interrupt Input Select */
   k_pfs_asel      = (1 << 7), /**< Analog Input Select */
 } pfs_bits_t;
+
+/* =============================================================================
+ * Compile-Time Register Layout Verification
+ * =============================================================================
+ * These static assertions verify the struct layout matches hardware exactly.
+ * If any assertion fails, the struct definition is WRONG and must be fixed!
+ */
+
+/* Verify critical register offsets from base (0x0008C100) */
+_Static_assert(offsetof(rx_mpc_regs_t, pfcse) == 0x00,
+               "PFCSE must be at offset 0x00 (address 0x0008C100)");
+_Static_assert(offsetof(rx_mpc_regs_t, pwpr) == 0x1F,
+               "PWPR must be at offset 0x1F (address 0x0008C11F)");
+_Static_assert(offsetof(rx_mpc_regs_t, p00pfs) == 0x40,
+               "P00PFS must be at offset 0x40 (address 0x0008C140)");
+
+/* Verify specific port offsets from P00PFS base */
+_Static_assert(offsetof(rx_mpc_regs_t, p50pfs) == 0x40 + 0x28,
+               "P50PFS must be at offset 0x68 (Port 5 base)");
+_Static_assert(offsetof(rx_mpc_regs_t, pa0pfs) == 0x40 + 0x50,
+               "PA0PFS must be at offset 0x90 (Port A base)");
+_Static_assert(offsetof(rx_mpc_regs_t, pe0pfs) == 0x40 + 0x70,
+               "PE0PFS must be at offset 0xB0 (Port E base)");
+_Static_assert(offsetof(rx_mpc_regs_t, pj0pfs) == 0x40 + 0x90,
+               "PJ0PFS must be at offset 0xD0 (Port J base)");
+
+/* Verify struct total size */
+_Static_assert(sizeof(rx_mpc_regs_t) == 0x40 + 152,
+               "MPC struct size must be 64 + 152 = 216 bytes total");
 
 /* =============================================================================
  * Pin Mapping Examples
