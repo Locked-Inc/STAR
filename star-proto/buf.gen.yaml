@@ -48,3 +48,12 @@ plugins:
     opt:
       - --options-path=nanopb/
     strategy: all
+
+  # ============================================
+  # C++ for star-ros2 (ROS2 bridge node)
+  # ============================================
+  - plugin: buf.build/protocolbuffers/cpp
+    out: gen/cpp
+
+  - plugin: buf.build/grpc/cpp
+    out: gen/cpp
