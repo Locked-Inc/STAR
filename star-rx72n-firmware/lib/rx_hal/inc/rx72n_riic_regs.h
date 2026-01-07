@@ -122,6 +122,29 @@ typedef enum {
   k_riic_icsr2_rdrf  = (1 << 1), /**< Receive Data Full Flag */
 } riic_icsr2_bits_t;
 
+/* =============================================================================
+ * Static Assertions - Verify Register Layout at Compile Time
+ * =============================================================================
+ */
+
+/* Verify base addresses match Hardware Manual */
+_Static_assert(k_riic0_base_addr == 0x00088300, "RIIC0 base address incorrect");
+_Static_assert(k_riic1_base_addr == 0x00088320, "RIIC1 base address incorrect");
+_Static_assert(k_riic2_base_addr == 0x00088340, "RIIC2 base address incorrect");
+
+/* Verify register structure layout */
+_Static_assert(sizeof(rx_riic_regs_t) == 20, "RIIC register structure size incorrect");
+_Static_assert(offsetof(rx_riic_regs_t, iccr1) == 0x00, "ICCR1 offset incorrect");
+_Static_assert(offsetof(rx_riic_regs_t, iccr2) == 0x01, "ICCR2 offset incorrect");
+_Static_assert(offsetof(rx_riic_regs_t, icdrt) == 0x12, "ICDRT offset incorrect");
+_Static_assert(offsetof(rx_riic_regs_t, icdrr) == 0x13, "ICDRR offset incorrect");
+
+/* Verify channel spacing (0x20 bytes between channels) */
+_Static_assert((k_riic1_base_addr - k_riic0_base_addr) == 0x20,
+               "RIIC0 to RIIC1 spacing incorrect");
+_Static_assert((k_riic2_base_addr - k_riic1_base_addr) == 0x20,
+               "RIIC1 to RIIC2 spacing incorrect");
+
 #ifdef __cplusplus
 }
 #endif
