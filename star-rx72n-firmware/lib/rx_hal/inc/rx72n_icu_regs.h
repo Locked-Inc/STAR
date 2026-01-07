@@ -106,6 +106,24 @@ typedef enum {
   k_ipr_level_max     = 15, /**< Maximum priority */
 } rx_interrupt_priority_t;
 
+/* =============================================================================
+ * Static Assertions - Verify Register Layout at Compile Time
+ * =============================================================================
+ */
+
+/* Verify base address matches Hardware Manual */
+_Static_assert(k_icu_base_addr == 0x00087000, "ICU base address incorrect");
+
+/* Verify register structure layout and key offsets */
+_Static_assert(sizeof(rx_icu_regs_t) == 1384, "ICU register structure size incorrect");
+_Static_assert(offsetof(rx_icu_regs_t, ir) == 0x000, "IR offset incorrect");
+_Static_assert(offsetof(rx_icu_regs_t, dtcer) == 0x100, "DTCER offset incorrect");
+_Static_assert(offsetof(rx_icu_regs_t, ier) == 0x200, "IER offset incorrect");
+_Static_assert(offsetof(rx_icu_regs_t, ipr) == 0x300, "IPR offset incorrect");
+_Static_assert(offsetof(rx_icu_regs_t, dmrsr) == 0x400, "DMRSR offset incorrect");
+_Static_assert(offsetof(rx_icu_regs_t, irqcr) == 0x500, "IRQCR offset incorrect");
+_Static_assert(offsetof(rx_icu_regs_t, nmicr) == 0x560, "NMICR offset incorrect");
+
 #ifdef __cplusplus
 }
 #endif
