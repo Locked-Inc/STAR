@@ -113,11 +113,13 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends \
-            python3-ament-copyright \
-            python3-ament-cppcheck \
-            python3-ament-cpplint \
-            python3-ament-flake8 \
-            python3-ament-lint-cmake
+            python3-pip
+          pip3 install --break-system-packages \
+            ament_copyright \
+            ament_cppcheck \
+            ament_cpplint \
+            ament_flake8 \
+            ament_lint_cmake
 
       - name: Run ament_copyright
         run: |
