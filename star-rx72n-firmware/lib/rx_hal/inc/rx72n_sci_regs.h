@@ -255,16 +255,12 @@ static inline volatile rx_sci_regs_t* sci_get_channel(uint8_t channel)
  */
 
 /* Verify SCI register structure size */
-_Static_assert(sizeof(rx_sci_regs_t) == 8,
-               "SCI register structure size mismatch");
+_Static_assert(sizeof(rx_sci_regs_t) == 8, "SCI register structure size mismatch");
 
 /* Verify SCI register offsets */
-_Static_assert(offsetof(rx_sci_regs_t, smr) == 0x00,
-               "SCI SMR register offset incorrect");
-_Static_assert(offsetof(rx_sci_regs_t, scr) == 0x02,
-               "SCI SCR register offset incorrect");
-_Static_assert(offsetof(rx_sci_regs_t, tdr) == 0x03,
-               "SCI TDR register offset incorrect");
+_Static_assert(offsetof(rx_sci_regs_t, smr) == 0x00, "SCI SMR register offset incorrect");
+_Static_assert(offsetof(rx_sci_regs_t, scr) == 0x02, "SCI SCR register offset incorrect");
+_Static_assert(offsetof(rx_sci_regs_t, tdr) == 0x03, "SCI TDR register offset incorrect");
 
 /* Verify base addresses are in correct memory regions */
 _Static_assert((k_sci0_base_addr & 0xFFFF0000) == 0x00080000,

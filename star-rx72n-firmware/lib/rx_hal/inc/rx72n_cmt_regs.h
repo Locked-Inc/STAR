@@ -116,30 +116,22 @@ static inline volatile rx_cmt_control_regs_t* cmt_ctrl(void)
  */
 
 /* Verify CMT channel register structure */
-_Static_assert(sizeof(rx_cmt_channel_regs_t) == 6,
-               "CMT channel register structure size mismatch");
-_Static_assert(offsetof(rx_cmt_channel_regs_t, cmcr) == 0x00,
-               "CMT CMCR register offset incorrect");
+_Static_assert(sizeof(rx_cmt_channel_regs_t) == 6, "CMT channel register structure size mismatch");
+_Static_assert(offsetof(rx_cmt_channel_regs_t, cmcr) == 0x00, "CMT CMCR register offset incorrect");
 _Static_assert(offsetof(rx_cmt_channel_regs_t, cmcnt) == 0x02,
                "CMT CMCNT register offset incorrect");
 _Static_assert(offsetof(rx_cmt_channel_regs_t, cmcor) == 0x04,
                "CMT CMCOR register offset incorrect");
 
 /* Verify CMT control register structure */
-_Static_assert(sizeof(rx_cmt_control_regs_t) == 4,
-               "CMT control register structure size mismatch");
+_Static_assert(sizeof(rx_cmt_control_regs_t) == 4, "CMT control register structure size mismatch");
 
 /* Verify base addresses */
-_Static_assert(k_cmt_ctrl_base_addr == 0x00088000,
-               "CMT control base address incorrect");
-_Static_assert(k_cmt0_base_addr == 0x00088002,
-               "CMT0 base address incorrect");
-_Static_assert(k_cmt1_base_addr == 0x00088008,
-               "CMT1 base address incorrect");
-_Static_assert(k_cmt2_base_addr == 0x00088012,
-               "CMT2 base address incorrect");
-_Static_assert(k_cmt3_base_addr == 0x00088018,
-               "CMT3 base address incorrect");
+_Static_assert(k_cmt_ctrl_base_addr == 0x00088000, "CMT control base address incorrect");
+_Static_assert(k_cmt0_base_addr == 0x00088002, "CMT0 base address incorrect");
+_Static_assert(k_cmt1_base_addr == 0x00088008, "CMT1 base address incorrect");
+_Static_assert(k_cmt2_base_addr == 0x00088012, "CMT2 base address incorrect");
+_Static_assert(k_cmt3_base_addr == 0x00088018, "CMT3 base address incorrect");
 
 #ifdef __cplusplus
 }

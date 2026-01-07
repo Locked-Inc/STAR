@@ -240,14 +240,10 @@ typedef enum {
  */
 
 /* Verify MTU channel register structure critical offsets */
-_Static_assert(offsetof(rx_mtu_channel_regs_t, tcr) == 0x00,
-               "MTU TCR register offset incorrect");
-_Static_assert(offsetof(rx_mtu_channel_regs_t, tcnt) == 0x06,
-               "MTU TCNT register offset incorrect");
-_Static_assert(offsetof(rx_mtu_channel_regs_t, tgra) == 0x08,
-               "MTU TGRA register offset incorrect");
-_Static_assert(offsetof(rx_mtu_channel_regs_t, tgrb) == 0x0A,
-               "MTU TGRB register offset incorrect");
+_Static_assert(offsetof(rx_mtu_channel_regs_t, tcr) == 0x00, "MTU TCR register offset incorrect");
+_Static_assert(offsetof(rx_mtu_channel_regs_t, tcnt) == 0x06, "MTU TCNT register offset incorrect");
+_Static_assert(offsetof(rx_mtu_channel_regs_t, tgra) == 0x08, "MTU TGRA register offset incorrect");
+_Static_assert(offsetof(rx_mtu_channel_regs_t, tgrb) == 0x0A, "MTU TGRB register offset incorrect");
 
 /* Verify MTU3/4 extended register critical offsets */
 _Static_assert(offsetof(rx_mtu34_channel_regs_t, tcr) == 0x00,
@@ -262,8 +258,7 @@ _Static_assert(offsetof(rx_mtu34_channel_regs_t, tgrf) == 0x12,
                "MTU3/4 TGRF register offset incorrect");
 
 /* Verify TSTR register structure */
-_Static_assert(sizeof(rx_mtu_tstr_regs_t) == 1,
-               "MTU TSTR register structure size mismatch");
+_Static_assert(sizeof(rx_mtu_tstr_regs_t) == 1, "MTU TSTR register structure size mismatch");
 
 /* Verify base addresses are in correct peripheral space (0x000C1xxx) */
 _Static_assert((k_mtu0_base_addr & 0xFFFF0000) == 0x000C0000,
