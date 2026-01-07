@@ -80,7 +80,16 @@ Consistent device naming is critical for reliable startup. The following \texttt
 
 \begin{verbatim}
 # RPLiDAR C1
-SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+=/dev/ttyLidar"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="ttyLidar"
 # RX72N Motor Controller (via USB-Serial if applicable, or SPI identification)
 SUBSYSTEM=="spidev", KERNEL=="spidev0.0", GROUP=="spi", MODE=="0660"
+\end{verbatim}
+
+\textbf{Note:} The \texttt{spi} group must exist on the system before applying the udev rules.
+The STAR Docker container automatically creates this group via \texttt{groupadd -f spi} during build.
+On bare-metal installations, create the group manually:
+
+\begin{verbatim}
+sudo groupadd spi
+sudo usermod -aG spi $USER
 \end{verbatim}

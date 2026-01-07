@@ -45,6 +45,7 @@ jobs:
           rosdep install --from-paths src --ignore-src -r -y --rosdistro jazzy
 
       - name: Build packages
+        shell: bash
         run: |
           cd star-ros2
           source /opt/ros/jazzy/setup.bash
@@ -55,6 +56,7 @@ jobs:
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: Run tests
+        shell: bash
         run: |
           cd star-ros2
           source /opt/ros/jazzy/setup.bash
@@ -70,10 +72,11 @@ jobs:
           colcon test-result --verbose
 
       - name: Check for compiler warnings
+        shell: bash
         run: |
           cd star-ros2
           source /opt/ros/jazzy/setup.bash
-          colcon build \
+          colcon build --cmake-clean-cache \
             --cmake-args \
               -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror" \
               -DCMAKE_BUILD_TYPE=Release
@@ -91,7 +94,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: star-ros2/build/*/test_results/
+          path: |
+            star-ros2/build/**/test_results/
+            star-ros2/build/**/Testing/
           retention-days: 7
 
   lint:
@@ -108,13 +113,11 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends \
-            python3-pip
-          pip3 install --break-system-packages \
-            ament_copyright \
-            ament_cppcheck \
-            ament_cpplint \
-            ament_flake8 \
-            ament_lint_cmake
+            python3-ament-copyright \
+            python3-ament-cppcheck \
+            python3-ament-cpplint \
+            python3-ament-flake8 \
+            python3-ament-lint-cmake
 
       - name: Run ament_copyright
         run: |

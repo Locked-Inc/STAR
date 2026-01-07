@@ -95,99 +95,71 @@ colcon build --packages-select star_spi_bridge
 
 ---
 
-## Running Nodes
+## Verifying the Build
 
-### SPI Bridge (Motor Control)
-
-```bash
-# Basic usage
-ros2 run star_spi_bridge spi_bridge_node
-
-# With parameters
-ros2 run star_spi_bridge spi_bridge_node \
-  --ros-args \
-  -p spi_device:=/dev/spidev0.0 \
-  -p spi_speed:=10000000 \
-  -p wheel_radius:=0.0325 \
-  -p wheel_base:=0.150 \
-  -p cmd_timeout_sec:=0.5 \
-  -p max_linear_vel:=1.0 \
-  -p max_angular_vel:=2.0
-```
-
-**Status:** Framework complete (263 lines C++). See [Issue #137](https://github.com/Locked-Inc/STAR/issues/137) for SPI I/O implementation.
-
-### Gateway Bridge (UI Integration)
+This PR contains only infrastructure. To verify the build system works:
 
 ```bash
-# TODO: Implementation tracked in Issue #138
-# ros2 run star_gateway_bridge gateway_bridge_node
+# Open devcontainer
+code .
+
+# Build all packages (should succeed with star_bringup skeleton)
+colcon build
+
+# Verify build output
+ls -la build/ install/
+
+# Expected output:
+# build/star_bringup/ (CMake build artifacts)
+# install/star_bringup/ (install space with setup scripts)
+
+# Source the workspace
+source install/setup.bash
+
+# List available packages
+ros2 pkg list | grep star
+# Expected output: star_bringup
 ```
 
-**Status:** Placeholder only. See [Issue #138](https://github.com/Locked-Inc/STAR/issues/138).
-
-### Safety Monitor (Watchdog)
-
-```bash
-# TODO: Implementation tracked in Issue #139
-# ros2 run star_safety_monitor safety_monitor_node
-```
-
-**Status:** Placeholder only. See [Issue #139](https://github.com/Locked-Inc/STAR/issues/139).
+**Application Nodes:**
+- `star_spi_bridge` - See [PR #145](https://github.com/Locked-Inc/STAR/pull/145)
+- `star_gateway_bridge` - See [PR #146](https://github.com/Locked-Inc/STAR/pull/146)
 
 ---
 
 ## Testing
 
 ```bash
-# Test all packages
+# Test all packages (star_bringup has no tests yet - skeleton only)
 colcon test
-
-# Test specific package
-colcon test --packages-select star_spi_bridge
 
 # View test results
 colcon test-result --verbose
-
-# (Coming soon) Run with coverage
-# colcon test --pytest-with-coverage
 ```
 
-**Current Status:** Unit tests deferred to implementation issues (per spec.md scope).
+**Current Status:** This PR contains only infrastructure. Unit tests will be added in application node PRs ([#145](https://github.com/Locked-Inc/STAR/pull/145), [#146](https://github.com/Locked-Inc/STAR/pull/146)).
 
 ---
 
 ## Package Status
 
-| Package | Status | Lines | Description | Issue |
-|---------|--------|-------|-------------|-------|
-| `star_spi_bridge` | 🟡 Framework | 263 | SPI communication to RX72N | [#137](https://github.com/Locked-Inc/STAR/issues/137) |
-| `star_gateway_bridge` | 🔴 Placeholder | 1 | gRPC bridge to Go gateway | [#138](https://github.com/Locked-Inc/STAR/issues/138) |
-| `star_safety_monitor` | 🔴 Placeholder | 1 | Battery, current, heartbeat monitor | [#139](https://github.com/Locked-Inc/STAR/issues/139) |
+**This PR (#144) - Infrastructure Only**
 
-**SLAM Configuration:** Not yet implemented. See [Issue #140](https://github.com/Locked-Inc/STAR/issues/140).
+| Package | Status | Lines | Description | Pull Request |
+|---------|--------|-------|-------------|--------------|
+| `star_bringup` | 🟢 Skeleton | 25 | Launch files and system bringup | This PR (#144) |
+| `star_spi_bridge` | 🔴 Not Included | - | SPI communication to RX72N | [PR #145](https://github.com/Locked-Inc/STAR/pull/145) |
+| `star_gateway_bridge` | 🔴 Not Included | - | gRPC bridge to Go gateway | [PR #146](https://github.com/Locked-Inc/STAR/pull/146) |
 
-### star_spi_bridge - What's Complete
+**Note:** This PR establishes the foundation (Docker, devcontainer, CI/CD, docs). Application nodes are in separate PRs.
 
-**✅ Implemented:**
-- Complete ROS2 node lifecycle (constructor, destructor, spin)
-- Command watchdog (500ms timeout, stops robot if no `/cmd_vel`)
-- Input validation (NaN, infinity, range checks)
-- Velocity clamping to configurable limits
-- Non-blocking mutex pattern (`try_lock` for real-time safety)
-- Graceful shutdown (sends stop command on node destruction)
-- Configurable parameters (SPI device, wheel geometry, safety limits)
-
-**⚠️ TODO (Issue #137):**
-- SPI device initialization (ioctl calls)
-- Differential drive kinematics (velocity → wheel speeds)
-- Protocol Buffers encoding/decoding (nanopb integration)
-- Encoder data parsing from SPI response
-- Odometry calculation (dead reckoning from encoders)
+**SLAM Configuration:** Not yet implemented. See [Issue #140](https://github.com/Locked-Inc/STAR/issues/140)
 
 ---
 
 ## Architecture
+
+**Note:** The diagrams below show the planned system architecture. This PR (#144) contains only infrastructure. Application nodes (`star_spi_bridge`, `star_gateway_bridge`) are in separate PRs ([#145](https://github.com/Locked-Inc/STAR/pull/145), [#146](https://github.com/Locked-Inc/STAR/pull/146)).
 
 ### Node Graph
 
@@ -305,22 +277,6 @@ rosdep install --from-paths src --ignore-src -r -y
 source /opt/ros/jazzy/setup.bash
 ```
 
-### Runtime Issues
-
-**Problem:** `star_spi_bridge: Waiting for first cmd_vel message...`
-```bash
-# Solution: Publish test message
-ros2 topic pub /cmd_vel geometry_msgs/Twist '{linear: {x: 0.5}, angular: {z: 0.0}}'
-```
-
-**Problem:** `SPI device /dev/spidev0.0 not found`
-```bash
-# Solution: Check device exists and permissions
-ls -l /dev/spidev*
-# Add user to spi group
-sudo usermod -a -G spi $USER
-```
-
 ### Devcontainer Issues
 
 **Problem:** Container won't build
@@ -329,10 +285,18 @@ sudo usermod -a -G spi $USER
 Dev Containers: Rebuild Container Without Cache
 ```
 
-**Problem:** Hardware devices not accessible
+**Problem:** Hardware devices not accessible (RPi5 deployment)
 ```bash
-# Solution: Ensure privileged mode in devcontainer.json
-# Already configured in this repo
+# Solution: Uncomment device flags in .devcontainer/devcontainer.json
+# Devices: /dev/spidev0.0, /dev/ttyUSB0, /dev/video0, /dev/video1
+# Note: These are commented out by default for cross-platform compatibility
+```
+
+**Problem:** Packages fail to build even though ROS2 is sourced
+```bash
+# Solution: Ensure rosdep is initialized and updated
+bash -c 'if [ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]; then sudo rosdep init; fi'
+rosdep update --rosdistro jazzy
 ```
 
 ---
@@ -341,7 +305,7 @@ Dev Containers: Rebuild Container Without Cache
 
 - **ROS2 Jazzy Documentation:** https://docs.ros.org/en/jazzy/
 - **RTAB-Map:** https://introlab.github.io/rtabmap/
-- **robot_localization:** http://docs.ros.org/en/noetic/api/robot_localization/html/
+- **robot_localization:** https://docs.ros.org/en/noetic/api/robot_localization/html/index.html
 - **REP-105 (Coordinate Frames):** https://www.ros.org/reps/rep-0105.html
 - **STAR Project Documentation:** [`../docs/star_documentation.pdf`](../docs/star_documentation.pdf)
 - **Issue Tracker:** https://github.com/Locked-Inc/STAR/issues
