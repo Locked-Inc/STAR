@@ -408,23 +408,23 @@ rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
   /* Set corresponding bit in TSTR register */
   switch (channel) {
     case k_mtu_channel_0:
-      mtu_tstr()->tstr |= k_mtu_tstr_cst0;
+      mtu_tstra()->tstr |= k_mtu_tstr_cst0;
       break;
     case k_mtu_channel_1:
-      mtu_tstr()->tstr |= k_mtu_tstr_cst1;
+      mtu_tstra()->tstr |= k_mtu_tstr_cst1;
       break;
     case k_mtu_channel_2:
-      mtu_tstr()->tstr |= k_mtu_tstr_cst2;
+      mtu_tstra()->tstr |= k_mtu_tstr_cst2;
       break;
     case k_mtu_channel_3:
-      mtu_tstr()->tstr |= k_mtu_tstr_cst3;
+      mtu_tstra()->tstr |= k_mtu_tstr_cst3;
       break;
     case k_mtu_channel_4:
-      mtu_tstr()->tstr |= k_mtu_tstr_cst4;
+      mtu_tstra()->tstr |= k_mtu_tstr_cst4;
       break;
     case k_mtu_channel_6:
     case k_mtu_channel_7:
-      /* MTU6/7 have separate start control - simplified */
+      /* MTU6/7 use TSTRB register - not yet implemented */
       rx_log_warn(s_tag, "MTU6/7 start not fully implemented");
       break;
     default:
@@ -443,23 +443,23 @@ rx_err_t rx_mtu_stop(rx_mtu_channel_t channel)
   /* Clear corresponding bit in TSTR register */
   switch (channel) {
     case k_mtu_channel_0:
-      mtu_tstr()->tstr &= ~k_mtu_tstr_cst0;
+      mtu_tstra()->tstr &= ~k_mtu_tstr_cst0;
       break;
     case k_mtu_channel_1:
-      mtu_tstr()->tstr &= ~k_mtu_tstr_cst1;
+      mtu_tstra()->tstr &= ~k_mtu_tstr_cst1;
       break;
     case k_mtu_channel_2:
-      mtu_tstr()->tstr &= ~k_mtu_tstr_cst2;
+      mtu_tstra()->tstr &= ~k_mtu_tstr_cst2;
       break;
     case k_mtu_channel_3:
-      mtu_tstr()->tstr &= ~k_mtu_tstr_cst3;
+      mtu_tstra()->tstr &= ~k_mtu_tstr_cst3;
       break;
     case k_mtu_channel_4:
-      mtu_tstr()->tstr &= ~k_mtu_tstr_cst4;
+      mtu_tstra()->tstr &= ~k_mtu_tstr_cst4;
       break;
     case k_mtu_channel_6:
     case k_mtu_channel_7:
-      /* MTU6/7 have separate start control */
+      /* MTU6/7 use TSTRB register - not yet implemented */
       break;
     default:
       return k_rx_err_invalid_arg;

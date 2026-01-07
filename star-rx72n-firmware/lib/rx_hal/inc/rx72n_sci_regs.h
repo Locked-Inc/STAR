@@ -26,7 +26,7 @@ extern "C" {
  * =============================================================================
  */
 
-/** @brief SCI base addresses */
+/** @brief SCI base addresses (verified against RX72N Hardware Manual) */
 typedef enum {
   k_sci0_base_addr  = 0x0008A000, /**< SCI0 register base address */
   k_sci1_base_addr  = 0x0008A020, /**< SCI1 register base address */
@@ -35,19 +35,21 @@ typedef enum {
   k_sci4_base_addr  = 0x0008A080, /**< SCI4 register base address */
   k_sci5_base_addr  = 0x0008A0A0, /**< SCI5 register base address */
   k_sci6_base_addr  = 0x0008A0C0, /**< SCI6 register base address */
-  k_sci7_base_addr  = 0x0008A0E0, /**< SCI7 register base address */
-  k_sci8_base_addr  = 0x0008A100, /**< SCI8 register base address */
-  k_sci9_base_addr  = 0x0008A120, /**< SCI9 register base address (Debug UART) */
-  k_sci10_base_addr = 0x000D0000, /**< SCI10 register base address */
-  k_sci11_base_addr = 0x000D0020, /**< SCI11 register base address */
-  k_sci12_base_addr = 0x000D0040, /**< SCI12 register base address */
+  k_sci7_base_addr  = 0x000D00E0, /**< SCI7 register base address */
+  k_sci8_base_addr  = 0x000D0000, /**< SCI8 register base address */
+  k_sci9_base_addr  = 0x000D0020, /**< SCI9 register base address (Debug UART) */
+  k_sci10_base_addr = 0x000D0040, /**< SCI10 register base address */
+  k_sci11_base_addr = 0x000D0060, /**< SCI11 register base address */
+  k_sci12_base_addr = 0x0008B300, /**< SCI12 register base address */
 } rx_sci_addresses_t;
 
 /**
  * @brief SCI Register Map
  * @details
  * Serial Communication Interface (SCI) registers for UART communication.
- * Base addresses (standard region 0x0008Axxx):
+ * Addresses verified against RX72N Hardware Manual (R01UH0824EJ0120 Rev.1.20).
+ *
+ * Standard region (0x0008Axxx):
  * - SCI0: 0x0008A000
  * - SCI1: 0x0008A020
  * - SCI2: 0x0008A040
@@ -55,14 +57,14 @@ typedef enum {
  * - SCI4: 0x0008A080
  * - SCI5: 0x0008A0A0
  * - SCI6: 0x0008A0C0
- * - SCI7: 0x0008A0E0
- * - SCI8: 0x0008A100
- * - SCI9: 0x0008A120 (Debug UART - CY7C65213 USB bridge)
+ * - SCI12: 0x0008B300
  *
  * Extended region (0x000D0xxx):
- * - SCI10: 0x000D0000
- * - SCI11: 0x000D0020
- * - SCI12: 0x000D0040
+ * - SCI8: 0x000D0000
+ * - SCI9: 0x000D0020 (Debug UART - CY7C65213 USB bridge)
+ * - SCI10: 0x000D0040
+ * - SCI11: 0x000D0060
+ * - SCI7: 0x000D00E0
  */
 typedef struct {
   volatile uint8_t smr;  /**< Serial Mode Register (data length, parity, stop bits) */
@@ -246,6 +248,31 @@ static inline volatile rx_sci_regs_t* sci_get_channel(uint8_t channel)
   }
 }
 #endif
+
+/* =============================================================================
+ * Static Assertions - Compile-time verification of register layout
+ * =============================================================================
+ */
+
+/* Verify SCI register structure size */
+_Static_assert(sizeof(rx_sci_regs_t) == 8,
+               "SCI register structure size mismatch");
+
+/* Verify SCI register offsets */
+_Static_assert(offsetof(rx_sci_regs_t, smr) == 0x00,
+               "SCI SMR register offset incorrect");
+_Static_assert(offsetof(rx_sci_regs_t, scr) == 0x02,
+               "SCI SCR register offset incorrect");
+_Static_assert(offsetof(rx_sci_regs_t, tdr) == 0x03,
+               "SCI TDR register offset incorrect");
+
+/* Verify base addresses are in correct memory regions */
+_Static_assert((k_sci0_base_addr & 0xFFFF0000) == 0x00080000,
+               "SCI0 base address not in SCI standard peripheral space");
+_Static_assert((k_sci8_base_addr & 0xFFFF0000) == 0x000D0000,
+               "SCI8 base address not in SCI extended peripheral space");
+_Static_assert((k_sci12_base_addr & 0xFFFF0000) == 0x00080000,
+               "SCI12 base address not in SCI standard peripheral space");
 
 #ifdef __cplusplus
 }

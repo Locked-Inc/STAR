@@ -8,14 +8,12 @@
  * generation. The GPTW provides 32-bit resolution and is optimized for
  * motor control applications.
  *
- * @warning Base addresses are derived from the hirakuni45/RX open-source
- * framework. These addresses MUST be verified against the official RX72N
- * Hardware Manual (R01UH0883EJ) before production use.
+ * Base addresses have been verified against the RX72N Hardware Manual
+ * (R01UH0824EJ0120 Rev.1.20).
  *
- * @see https://github.com/hirakuni45/RX/blob/master/RX600/gptw.hpp
  * @see RX72N Hardware Manual Section 20: General PWM Timer (GPT)
  *
- * @date 2026-01-04
+ * @date 2026-01-06
  * @copyright Copyright (c) 2026 STAR Project
  */
 
@@ -50,15 +48,13 @@ extern "C" {
  * @brief GPTW Channel Register Map
  * @details
  * General PWM Timer channel registers for 32-bit PWM generation.
+ * Addresses verified against RX72N Hardware Manual (R01UH0824EJ0120 Rev.1.20).
  *
- * @warning Base addresses derived from hirakuni45/RX framework.
- * Verify against RX72N Hardware Manual before production use.
- *
- * Channel base addresses (tentative - needs verification):
- * - GPTW0: 0x000D4000
- * - GPTW1: 0x000D4100
- * - GPTW2: 0x000D4200
- * - GPTW3: 0x000D4300
+ * Channel base addresses:
+ * - GPTW0: 0x000C2000
+ * - GPTW1: 0x000C2100
+ * - GPTW2: 0x000C2200
+ * - GPTW3: 0x000C2300
  */
 typedef struct {
   volatile uint32_t gtwp;      /**< 0x00: Write Protection Register */
@@ -108,7 +104,8 @@ typedef struct {
  * @brief GPTW Common Register Map
  * @details
  * Shared registers for all GPTW channels (start/stop control).
- * Base address: 0x000D3000 (tentative - needs verification)
+ * Note: These registers are part of the individual channel register maps,
+ * not at a separate base address.
  */
 typedef struct {
   volatile uint32_t gtstra;       /**< 0x00: General Timer Start Register A */
@@ -124,26 +121,19 @@ typedef struct {
  * Base Address Definitions
  * =============================================================================
  *
- * WARNING: These addresses are derived from hirakuni45/RX framework and
- * need verification against the official RX72N Hardware Manual.
+ * Addresses verified against RX72N Hardware Manual (R01UH0824EJ0120 Rev.1.20).
  */
 
-/** @brief GPTW hardware addresses (tentative - verify against HW manual) */
+/** @brief GPTW hardware addresses (verified against RX72N Hardware Manual) */
 typedef enum {
   k_gptw_channel_offset = 0x100,      /**< Channel spacing between GPTW registers */
-  k_gptw_common_addr    = 0x000D3000, /**< GPTW common registers base */
-  k_gptw0_base_addr     = 0x000D4000, /**< GPTW channel 0 base address */
-  k_gptw1_base_addr     = 0x000D4100, /**< GPTW channel 1 base address */
-  k_gptw2_base_addr     = 0x000D4200, /**< GPTW channel 2 base address */
-  k_gptw3_base_addr     = 0x000D4300, /**< GPTW channel 3 base address */
+  k_gptw0_base_addr     = 0x000C2000, /**< GPTW channel 0 base address */
+  k_gptw1_base_addr     = 0x000C2100, /**< GPTW channel 1 base address */
+  k_gptw2_base_addr     = 0x000C2200, /**< GPTW channel 2 base address */
+  k_gptw3_base_addr     = 0x000C2300, /**< GPTW channel 3 base address */
 } gptw_addresses_t;
 
 /** @brief GPTW register inline accessor functions */
-static inline volatile rx_gptw_common_regs_t* gptw_common(void)
-{
-  return (volatile rx_gptw_common_regs_t*)k_gptw_common_addr;
-}
-
 static inline volatile rx_gptw_channel_regs_t* gptw0(void)
 {
   return (volatile rx_gptw_channel_regs_t*)k_gptw0_base_addr;
@@ -316,6 +306,49 @@ typedef enum {
    */
   k_pfs_psel_gptw = 0x14, /**< PSEL value for GPTW alternate function */
 } gptw_mpc_psel_t;
+
+/* =============================================================================
+ * Static Assertions - Compile-time verification of register layout
+ * =============================================================================
+ */
+
+/* Verify GPTW channel register structure size and critical offsets */
+_Static_assert(sizeof(rx_gptw_channel_regs_t) == 0xA4,
+               "GPTW channel register structure size mismatch");
+_Static_assert(offsetof(rx_gptw_channel_regs_t, gtwp) == 0x00,
+               "GPTW GTWP register offset incorrect");
+_Static_assert(offsetof(rx_gptw_channel_regs_t, gtcr) == 0x2C,
+               "GPTW GTCR register offset incorrect");
+_Static_assert(offsetof(rx_gptw_channel_regs_t, gtcnt) == 0x48,
+               "GPTW GTCNT register offset incorrect");
+_Static_assert(offsetof(rx_gptw_channel_regs_t, gtccra) == 0x4C,
+               "GPTW GTCCRA register offset incorrect");
+_Static_assert(offsetof(rx_gptw_channel_regs_t, gtpr) == 0x64,
+               "GPTW GTPR register offset incorrect");
+_Static_assert(offsetof(rx_gptw_channel_regs_t, gtdtcr) == 0x88,
+               "GPTW GTDTCR register offset incorrect");
+
+/* Verify GPTW common register structure size */
+_Static_assert(sizeof(rx_gptw_common_regs_t) == 0x2C,
+               "GPTW common register structure size mismatch");
+
+/* Verify base addresses are in correct peripheral space (0x000C2xxx) */
+_Static_assert((k_gptw0_base_addr & 0xFFFF0000) == 0x000C0000,
+               "GPTW0 base address not in GPTW peripheral space");
+_Static_assert((k_gptw1_base_addr & 0xFFFF0000) == 0x000C0000,
+               "GPTW1 base address not in GPTW peripheral space");
+_Static_assert((k_gptw2_base_addr & 0xFFFF0000) == 0x000C0000,
+               "GPTW2 base address not in GPTW peripheral space");
+_Static_assert((k_gptw3_base_addr & 0xFFFF0000) == 0x000C0000,
+               "GPTW3 base address not in GPTW peripheral space");
+
+/* Verify channel spacing is correct */
+_Static_assert(k_gptw1_base_addr - k_gptw0_base_addr == k_gptw_channel_offset,
+               "GPTW channel spacing incorrect");
+_Static_assert(k_gptw2_base_addr - k_gptw1_base_addr == k_gptw_channel_offset,
+               "GPTW channel spacing incorrect");
+_Static_assert(k_gptw3_base_addr - k_gptw2_base_addr == k_gptw_channel_offset,
+               "GPTW channel spacing incorrect");
 
 #ifdef __cplusplus
 }
