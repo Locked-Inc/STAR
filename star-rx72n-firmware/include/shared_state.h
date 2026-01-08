@@ -1,3 +1,5 @@
+/* star-rx72n-firmware/include/shared_state.h */
+
 /**
  * @file shared_state.h
  * @brief Shared state module for inter-thread communication
@@ -23,17 +25,9 @@
 #define SHARED_STATE_H
 
 #include "tx_api.h"
+#include "motor_config.h"
 #include <stdbool.h>
 #include <stdint.h>
-
-/* =============================================================================
- * Constants
- * =============================================================================
- */
-
-typedef enum {
-    k_motor_count = 4, /**< Number of active motors */
-} shared_state_constants_t;
 
 /* =============================================================================
  * Motor Setpoint (Comm_Manager → Motor_Controller)

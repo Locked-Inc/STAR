@@ -1,3 +1,5 @@
+/* star-rx72n-firmware/include/pmod_config.h */
+
 /**
  * @file pmod_config.h
  * @brief PMOD expansion module configuration
