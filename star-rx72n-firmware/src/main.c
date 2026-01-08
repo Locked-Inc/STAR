@@ -52,7 +52,7 @@ void tx_application_define(void* first_unused_memory);
  * =============================================================================
  */
 
-static const char* s_s_tag_tx = "main";
+static const char* s_tag = "main";
 
 /* =============================================================================
  * Main Entry Point
@@ -76,7 +76,7 @@ int main(void)
   if (ret != k_rx_ok) {
     /* Hardware init failed - halt system
      * Enter low-power wait state (cannot continue without hardware) */
-    rx_log_error(s_s_tag_tx, "Hardware initialization failed");
+    rx_log_error(s_tag, "Hardware initialization failed");
     while (1) {
       __asm__ volatile("wait");
     }
@@ -84,7 +84,7 @@ int main(void)
 
   /* Check if watchdog caused last reset */
   if (rx_iwdt_was_reset()) {
-    rx_log_error(s_s_tag_tx, "System recovered from watchdog reset");
+    rx_log_error(s_tag, "System recovered from watchdog reset");
   }
 
   /* Enter ThreadX kernel (never returns) */
