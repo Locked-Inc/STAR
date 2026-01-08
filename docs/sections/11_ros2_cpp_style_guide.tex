@@ -22,8 +22,8 @@ The STAR project uses different coding conventions for ROS2 C++ code compared to
 \textbf{Feature} & \textbf{C Firmware (RX72N)} & \textbf{ROS2 C++} \\
 \hline
 Classes & N/A & \texttt{CamelCase} \\
-Methods & \texttt{snake\_case} & \texttt{camelCase} \\
-Variables & \texttt{snake\_case} & \texttt{under\_scored} \\
+Methods & \texttt{snake\_case} & \texttt{snake\_case} (same) \\
+Variables & \texttt{snake\_case} & \texttt{snake\_case} (same) \\
 Member vars & \texttt{s\_} prefix & trailing \texttt{\_} \\
 Headers & \texttt{.h} & \texttt{.hpp} \\
 Line limit & 100 characters & 120 characters \\
@@ -31,6 +31,7 @@ Namespaces & Not used & \texttt{star::package\_name::} \\
 Error handling & Return codes & Exceptions \\
 Logging & \texttt{uart\_puts()} & \texttt{RCLCPP\_INFO/WARN/ERROR} \\
 Include guards & \texttt{STAR\_RX72N\_FILE\_H} & \texttt{PACKAGE\_FILE\_HPP\_} \\
+Doxygen & \texttt{/**} and \texttt{/**<} & \texttt{/**} and \texttt{/**<} (same) \\
 \hline
 \end{tabular}
 \caption{C vs C++ Style Comparison}
@@ -61,17 +62,17 @@ using TelemetryPtr = std::shared_ptr<TelemetryData>;
 
 \subsubsection{Methods and Functions}
 
-Use \texttt{camelCase} for method names with verb-based naming that clarifies actions:
+Use \texttt{snake\_case} for method names (same as C firmware):
 
 \begin{lstlisting}[language=C++, caption={Method naming examples}, label={lst:method_naming}]
-// camelCase for methods (ROS2 convention)
-void publishTelemetry(const TelemetryData & data);
-bool isConnected() const;
-void onBatteryStateReceived(const sensor_msgs::msg::BatteryState::SharedPtr msg);
+// snake_case for methods (same as C firmware)
+void publish_telemetry(const TelemetryData & data);
+bool is_connected() const;
+void on_battery_state_received(const sensor_msgs::msg::BatteryState::SharedPtr msg);
 
 // Use verb-based names that clarify actions
-void checkForErrors();      // Good: Clear intent
-void errorCheck();          // Bad: Noun-first is confusing
+void check_for_errors();      // Good: Clear intent
+void error_check();           // Bad: Noun-first is confusing
 \end{lstlisting}
 
 \subsubsection{Variables}
@@ -348,28 +349,34 @@ RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
 
 \subsection{Documentation}
 
-All public APIs must have Doxygen comments using the \texttt{///} style:
+All public APIs must have Doxygen comments using \texttt{/**} and \texttt{/**<} (same as C firmware):
 
 \begin{lstlisting}[language=C++, caption={Doxygen documentation}, label={lst:doxygen}]
-/// @brief Brief description of class
-///
-/// Detailed description can span multiple lines. Explain purpose,
-/// usage, and any important details.
+/**
+ * @brief Brief description of class
+ *
+ * Detailed description can span multiple lines. Explain purpose,
+ * usage, and any important details.
+ */
 class StarGatewayBridgeNode : public rclcpp::Node {
 public:
-  /// @brief Constructor for gateway bridge node
-  ///
-  /// @param options Node options for configuration
+  /**
+   * @brief Constructor for gateway bridge node
+   *
+   * @param options Node options for configuration
+   */
   explicit StarGatewayBridgeNode(
     const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
-  /// @brief Callback for telemetry publishing timer
-  ///
-  /// Forwards latest telemetry to Gateway via gRPC. Called at 10 Hz.
-  void telemetryTimerCallback();
+  /**
+   * @brief Callback for telemetry publishing timer
+   *
+   * Forwards latest telemetry to Gateway via gRPC. Called at 10 Hz.
+   */
+  void telemetry_timer_callback();
 
-  rclcpp::TimerBase::SharedPtr telemetry_timer_;  ///< Timer for telemetry
+  rclcpp::TimerBase::SharedPtr telemetry_timer_;  /**< Timer for telemetry */
 };
 \end{lstlisting}
 

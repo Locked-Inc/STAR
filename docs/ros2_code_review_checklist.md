@@ -5,8 +5,8 @@ Use this checklist when reviewing ROS2 C++ code in the STAR project.
 ## Naming Conventions
 
 - [ ] Classes use `CamelCase` (e.g., `StarGatewayBridgeNode`)
-- [ ] Methods use `camelCase` (e.g., `publishTelemetry()`)
-- [ ] Variables use `under_scored` (e.g., `battery_voltage`)
+- [ ] Methods use `snake_case` (e.g., `publish_telemetry()`) - same as C firmware
+- [ ] Variables use `snake_case` (e.g., `battery_voltage`)
 - [ ] Member variables have trailing `_` (e.g., `grpc_channel_`)
 - [ ] Constants use `ALL_CAPITALS` (e.g., `MAX_RETRIES`)
 - [ ] Namespaces use `under_scored` and match package name (e.g., `star::spi_bridge`)
@@ -43,7 +43,7 @@ Use this checklist when reviewing ROS2 C++ code in the STAR project.
 
 ## Documentation
 
-- [ ] All public methods have Doxygen `///` comments
+- [ ] All public methods have Doxygen `/**` and `/**<` comments (same as C firmware)
 - [ ] Class has `@brief` description
 - [ ] Complex logic has inline comments explaining "why" (not "what")
 - [ ] Parameter and return value documented with `@param` and `@return`
@@ -76,13 +76,3 @@ Use this checklist when reviewing ROS2 C++ code in the STAR project.
 - [ ] Code passes `colcon test` (all tests green)
 - [ ] Code passes `clang-format` check
 - [ ] Code passes `ament_cppcheck` and `ament_cpplint`
-
----
-
-## Review Sign-Off
-
-Reviewer: ___________________________
-Date: _______________________________
-PR #: _______________________________
-
-Notes:

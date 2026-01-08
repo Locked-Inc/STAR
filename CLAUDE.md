@@ -287,7 +287,7 @@ REG = (1 << 7) | (3 << 3);       // Which bits? Why?
 
 ## ROS2 C++ Style Guide
 
-**IMPORTANT:** ROS2 C++ code follows different conventions than C firmware. This section supplements the C style guide above.
+**Philosophy:** Maintain consistency with C firmware wherever possible. Only differ for C++-specific features (classes, namespaces, exceptions).
 
 ### When to Use This Guide
 
@@ -316,14 +316,14 @@ using TelemetryPtr = std::shared_ptr<TelemetryData>;
 
 **Methods and Functions**:
 ```cpp
-// camelCase for methods (ROS2 convention)
-void publishTelemetry(const TelemetryData & data);
-bool isConnected() const;
-void onBatteryStateReceived(const sensor_msgs::msg::BatteryState::SharedPtr msg);
+// snake_case for methods (same as C firmware)
+void publish_telemetry(const TelemetryData & data);
+bool is_connected() const;
+void on_battery_state_received(const sensor_msgs::msg::BatteryState::SharedPtr msg);
 
 // Use verb-based names that clarify actions
-void checkForErrors();      // ✓ Clear intent
-void errorCheck();          // ✗ Noun-first is confusing
+void check_for_errors();      // ✓ Clear intent
+void error_check();           // ✗ Noun-first is confusing
 ```
 
 **Variables**:
@@ -493,7 +493,7 @@ public:
   StarGatewayBridgeNode();  // Constructor
 
 private:
-  void telemetryCallback();  // Timer callback
+  void telemetry_callback();  // Timer callback
 
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr telemetry_pub_;
   rclcpp::TimerBase::SharedPtr telemetry_timer_;
@@ -532,12 +532,12 @@ public:
     cmd_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
       "/cmd_vel",
       10,
-      std::bind(&MyNode::cmdVelCallback, this, std::placeholders::_1)
+      std::bind(&MyNode::cmd_vel_callback, this, std::placeholders::_1)
     );
   }
 
 private:
-  void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
+  void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg) {
     // Handle message
   }
 
@@ -551,7 +551,7 @@ private:
 // Use create_wall_timer for periodic operations
 timer_ = this->create_wall_timer(
   std::chrono::milliseconds(100),  // 10 Hz
-  std::bind(&MyNode::timerCallback, this)
+  std::bind(&MyNode::timer_callback, this)
 );
 ```
 
@@ -561,7 +561,7 @@ timer_ = this->create_wall_timer(
 
 ```cpp
 // Throw exceptions for errors
-void publishTelemetry()
+void publish_telemetry()
 {
   if (!grpc_channel_) {
     throw std::runtime_error("gRPC channel not initialized");
@@ -571,10 +571,10 @@ void publishTelemetry()
 }
 
 // Catch exceptions in callbacks (avoid crashing node)
-void timerCallback()
+void timer_callback()
 {
   try {
-    publishTelemetry();
+    publish_telemetry();
   } catch (const std::exception & e) {
     RCLCPP_ERROR(this->get_logger(), "Failed to publish telemetry: %s", e.what());
   }
@@ -600,27 +600,33 @@ std::cout << "Debug" << std::endl;  // ✗ Don't use
 
 ### Documentation
 
-**Doxygen comments** (use /// for C++):
+**Doxygen comments** (use /** and /**< - same as C firmware):
 
 ```cpp
-/// @brief Brief description of class
-///
-/// Detailed description can span multiple lines. Explain purpose,
-/// usage, and any important details.
+/**
+ * @brief Brief description of class
+ *
+ * Detailed description can span multiple lines. Explain purpose,
+ * usage, and any important details.
+ */
 class StarGatewayBridgeNode : public rclcpp::Node {
 public:
-  /// @brief Constructor for gateway bridge node
-  ///
-  /// @param options Node options for configuration
+  /**
+   * @brief Constructor for gateway bridge node
+   *
+   * @param options Node options for configuration
+   */
   explicit StarGatewayBridgeNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
-  /// @brief Callback for telemetry publishing timer
-  ///
-  /// Forwards latest telemetry to Gateway via gRPC. Called at 10 Hz.
-  void telemetryTimerCallback();
+  /**
+   * @brief Callback for telemetry publishing timer
+   *
+   * Forwards latest telemetry to Gateway via gRPC. Called at 10 Hz.
+   */
+  void telemetry_timer_callback();
 
-  rclcpp::TimerBase::SharedPtr telemetry_timer_;  ///< Timer for telemetry publishing
+  rclcpp::TimerBase::SharedPtr telemetry_timer_;  /**< Timer for telemetry publishing */
 };
 ```
 
@@ -654,14 +660,15 @@ private:
 |---------|-------------------|----------|
 | **Headers** | `.h` | `.hpp` |
 | **Classes** | N/A | CamelCase |
-| **Methods** | snake_case | camelCase |
-| **Variables** | snake_case | under_scored |
+| **Methods** | snake_case | snake_case (same) |
+| **Variables** | snake_case | snake_case (same) |
 | **Member vars** | `s_` prefix | trailing `_` |
 | **Line limit** | 100 chars | 120 chars |
 | **Namespaces** | Not used | star::package_name:: |
 | **Error handling** | Return codes | Exceptions |
 | **Logging** | uart_puts() | RCLCPP_INFO/WARN/ERROR |
 | **Include guards** | `STAR_RX72N_FILE_H` | `PACKAGE_FILE_HPP_` |
+| **Doxygen** | `/**` and `/**<` | `/**` and `/**<` (same) |
 
 ### Formatting Enforcement
 
