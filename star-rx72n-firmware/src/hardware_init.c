@@ -14,35 +14,16 @@
 
 #include "hardware_init.h"
 #include "hardware.h"
+#include "hardware_pinout.h"
 #include "motor_config.h"
+#include "rx_bus_manager.h"
+#include "rx_bus_onewire.h"
+#include "rx_gptw.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
+#include "rx_mtu_encoder.h"
+#include "rx_register_guard.h"
 #include "rx_usb.h"
-
-/* =============================================================================
- * Constants
- * =============================================================================
- */
-
-typedef enum {
-    k_uart_baudrate = 115200, /**< Debug UART baud rate */
-} uart_config_t;
-
-typedef enum {
-    k_i2c_frequency_hz = 400000, /**< I2C clock frequency (400 kHz) */
-    k_riic_channel     = 0,      /**< RIIC channel for BQ4050 */
-} i2c_config_t;
-
-typedef enum {
-    k_rspi_channel        = 0, /**< RSPI channel for motor drivers */
-    k_rspi_mode           = 0, /**< SPI mode 0 (CPOL=0, CPHA=0) */
-    k_rspi_use_16bit      = 0, /**< Use 8-bit frames (false) */
-} spi_config_t;
-
-typedef enum {
-    k_adc_unit       = 0,  /**< ADC unit 0 */
-    k_adc_resolution = 12, /**< 12-bit ADC resolution */
-} adc_config_t;
 
 /* =============================================================================
  * Private Variables
@@ -109,25 +90,67 @@ rx_err_t hardware_init_all(void)
      * 5. MTU Encoders (Quadrature Counting)
      * -------------------------------------------------------------------------
      * Initialize MTU channels 1-4 for encoder quadrature counting
-     * TODO: Call rx_mtu3a_init() for each encoder channel
+     * 341 PPR with 4x decoding = 1364 counts per revolution
      */
-    rx_log_info(s_tag, "MTU encoders: TODO - implement in Phase 2");
+    const rx_encoder_config_t encoder_configs[k_motor_count] = {
+        {.channel = k_mtu_channel_1, .counts_per_rev = k_encoder_cpr, .invert_direction = false},
+        {.channel = k_mtu_channel_2, .counts_per_rev = k_encoder_cpr, .invert_direction = false},
+        {.channel = k_mtu_channel_3, .counts_per_rev = k_encoder_cpr, .invert_direction = false},
+        {.channel = k_mtu_channel_4, .counts_per_rev = k_encoder_cpr, .invert_direction = false},
+    };
+
+    for (uint8_t i = 0; i < k_motor_count; i++) {
+        ret = rx_encoder_init(&encoder_configs[i]);
+        if (ret != k_rx_ok) {
+            rx_log_error(s_tag, "MTU encoder init failed");
+            return ret;
+        }
+    }
+    rx_log_info(s_tag, "MTU encoders initialized (4 channels, 1364 CPR)");
 
     /* -------------------------------------------------------------------------
      * 6. GPTW PWM (Motor Drivers)
      * -------------------------------------------------------------------------
      * Initialize GPTW channels for 20 kHz PWM generation
-     * TODO: Call rx_gptw_init() for each motor channel
+     * 120 MHz / 20 kHz = 6000 discrete duty cycle steps
      */
-    rx_log_info(s_tag, "GPTW PWM: TODO - implement in Phase 2");
+    const rx_gptw_config_t pwm_config = {
+        .frequency_hz         = k_pwm_frequency_hz,
+        .deadtime_ns          = 1000,
+        .enable_complementary = true,
+        .invert_polarity      = false,
+    };
+
+    for (uint8_t i = 0; i < k_motor_count; i++) {
+        ret = rx_gptw_init_pwm((rx_gptw_channel_t)i, &pwm_config);
+        if (ret != k_rx_ok) {
+            rx_log_error(s_tag, "GPTW PWM init failed");
+            return ret;
+        }
+    }
+    rx_log_info(s_tag, "GPTW PWM initialized (4 channels, 20 kHz)");
 
     /* -------------------------------------------------------------------------
      * 7. ADC (Current Sensing)
      * -------------------------------------------------------------------------
      * Initialize ADC for motor current sensing (12-bit resolution)
-     * TODO: Call adc_init() for each motor current sense channel
+     * AN000-AN003 for 4 motor drivers (DRV8243S IPROPI outputs)
      */
-    rx_log_info(s_tag, "ADC: TODO - implement in Phase 2");
+    const uint8_t adc_channels[k_motor_count] = {
+        k_adc_motor0_current,
+        k_adc_motor1_current,
+        k_adc_motor2_current,
+        k_adc_motor3_current,
+    };
+
+    for (uint8_t i = 0; i < k_motor_count; i++) {
+        ret = adc_init(k_adc_unit, adc_channels[i], k_adc_resolution);
+        if (ret != k_rx_ok) {
+            rx_log_error(s_tag, "ADC init failed");
+            return ret;
+        }
+    }
+    rx_log_info(s_tag, "ADC initialized (4 channels, 12-bit)");
 
     /* -------------------------------------------------------------------------
      * 8. SPI (Motor Drivers + RPi5)
@@ -158,9 +181,22 @@ rx_err_t hardware_init_all(void)
      * 10. 1-Wire (Temperature Sensor)
      * -------------------------------------------------------------------------
      * Initialize 1-Wire bus for DS18B20 temperature monitoring
-     * TODO: Bus manager init for 1-Wire GPIO bit-bang
+     * P05 (pin 100) with 4.7kΩ pull-up to 3.3V
      */
-    rx_log_info(s_tag, "1-Wire: TODO - implement in Phase 4");
+    rx_bus_config_t onewire_config = {
+        .type = k_rx_bus_onewire,
+        .onewire =
+            {
+                .gpio_pin = k_pin_temp_sensor,
+            },
+    };
+
+    ret = rx_bus_init(&onewire_config);
+    if (ret != k_rx_ok) {
+        rx_log_error(s_tag, "1-Wire init failed");
+        return ret;
+    }
+    rx_log_info(s_tag, "1-Wire initialized (DS18B20 on P05)");
 
     /* -------------------------------------------------------------------------
      * 11. USB CDC (Primary Communication)
@@ -174,6 +210,19 @@ rx_err_t hardware_init_all(void)
         return ret;
     }
     rx_log_info(s_tag, "USB CDC initialized (primary communication)");
+
+    /* -------------------------------------------------------------------------
+     * 12. Register Guard
+     * -------------------------------------------------------------------------
+     * Capture golden register values for ESD/EMI protection
+     * IMPORTANT: Must be called AFTER all peripheral initialization complete
+     */
+    ret = rx_register_guard_init();
+    if (ret != k_rx_ok) {
+        rx_log_error(s_tag, "Register guard init failed");
+        return ret;
+    }
+    rx_log_info(s_tag, "Register guard initialized (ESD/EMI protection)");
 
     /* -------------------------------------------------------------------------
      * Initialization Complete
