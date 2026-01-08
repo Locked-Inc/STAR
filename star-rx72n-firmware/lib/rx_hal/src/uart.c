@@ -19,9 +19,11 @@
 
 #include "hardware.h"
 #include "hardware_pinout.h"
+#include "rx72n_clock.h"
 #include "rx72n_regs.h"
 #include "rx_mpc.h"
 #include "rx_port_utils.h"
+#include "rx_register_protection.h"
 
 /* =============================================================================
  * Private Definitions
@@ -30,8 +32,7 @@
 
 /** @brief UART configuration constants */
 typedef enum {
-  k_uart_default_baudrate = 115200,   /**< Default baud rate: 115200 bps */
-  k_uart_pclkb_hz         = 60000000, /**< PCLKB clock: 60 MHz */
+  k_uart_default_baudrate = 115200, /**< Default baud rate: 115200 bps */
 } uart_config_t;
 
 /** @brief UART timing constants */
@@ -107,12 +108,6 @@ typedef enum {
   k_sci_mstpb_sci11 = 20, /**< SCI11 module stop bit */
 } sci_mstpb_bits_t;
 
-/** @brief Protection register unlock/lock values */
-typedef enum {
-  k_uart_prcr_unlock = 0xA50F, /**< Unlock protection (PRC0-PRC3) */
-  k_uart_prcr_lock   = 0xA500, /**< Lock protection */
-} uart_prcr_t;
-
 /** @brief Debug UART pins (SCI9 on RX72N) */
 typedef enum {
   k_uart_debug_tx_port = k_rx_port_b, /**< Port B (from rx_port_constants.h) */
@@ -153,7 +148,7 @@ static uint8_t internal_calculate_brr(uint32_t baudrate)
   }
 
   /* For n=0 (CKS=00): BRR = (PCLKB / (32 * B)) - 1 */
-  uint32_t brr_value = (k_uart_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
+  uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
 
   if (brr_value > k_brr_max_value) {
     return k_brr_max_value;
@@ -210,13 +205,13 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
   }
 
   /* Unlock protection */
-  system_regs()->prcr = k_uart_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_all;
 
   /* Clear module stop bit to enable clock */
   system_regs()->mstpcrb &= ~(1UL << (uint8_t)mstpb_bit);
 
   /* Lock protection */
-  system_regs()->prcr = k_uart_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   return k_rx_ok;
 }

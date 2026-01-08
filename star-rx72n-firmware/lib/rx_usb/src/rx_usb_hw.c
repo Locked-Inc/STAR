@@ -15,6 +15,9 @@
 
 #include "rx72n_regs.h"
 #include "rx_log.h"
+#include "rx_register_protection.h"
+#include "rx_threadx_config.h"
+#include "rx_time_constants.h"
 #include "rx_usb.h"
 #include "tx_api.h"
 
@@ -25,21 +28,14 @@
 
 static const char* s_tag = "USB_HW";
 
-/** @brief ThreadX timing constants for USB initialization delays */
+/** @brief USB timing constants for initialization delays */
 typedef enum {
-  k_threadx_tick_rate_hz       = 100, /**< ThreadX tick rate (100 Hz) */
-  k_threadx_ms_per_tick        = 10,  /**< Milliseconds per tick at 100 Hz */
-  k_usb_pll_stabilization_ms   = 10,  /**< USB PLL stabilization time (10ms) */
-  k_usb_clock_stabilization_ms = 10,  /**< USB clock stabilization time (10ms) */
-  k_min_sleep_ticks            = 1,   /**< Minimum sleep duration (1 tick) */
-  k_min_transfer_size          = 0,   /**< Minimum data transfer size (no data) */
+  k_threadx_ms_per_tick        = 10, /**< Milliseconds per tick at 100 Hz */
+  k_usb_pll_stabilization_ms   = 10, /**< USB PLL stabilization time (10ms) */
+  k_usb_clock_stabilization_ms = 10, /**< USB clock stabilization time (10ms) */
+  k_min_sleep_ticks            = 1,  /**< Minimum sleep duration (1 tick) */
+  k_min_transfer_size          = 0,  /**< Minimum data transfer size (no data) */
 } usb_hw_timing_t;
-
-/** @brief USB hardware protection constants */
-typedef enum {
-  k_prcr_unlock = 0xA50B, /**< Protection register unlock value */
-  k_prcr_lock   = 0xA500, /**< Protection register lock value */
-} usb_hw_protection_t;
 
 /** @brief USB SYSCFG register values */
 typedef enum {
@@ -103,13 +99,13 @@ rx_err_t rx_usb_hw_init(void)
 
   /* 1. Enable USB0 module clock */
   /* Unlock protection */
-  system_regs()->prcr = k_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
   /* Clear module stop bit for USB0 (bit 19 in MSTPCRB) */
   system_regs()->mstpcrb &= ~(1UL << k_mstpb_usb0);
 
   /* Lock protection */
-  system_regs()->prcr = k_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   /* 2. Disable USB module before configuration */
   usb0()->syscfg = k_usb_syscfg_disabled;
@@ -189,9 +185,9 @@ rx_err_t rx_usb_hw_deinit(void)
   icu()->ir[k_vect_usb0_usbi] = 0;
 
   /* Disable USB0 module clock */
-  system_regs()->prcr = k_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
   system_regs()->mstpcrb |= (1UL << k_mstpb_usb0);
-  system_regs()->prcr = k_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   s_hw_initialized = false;
 

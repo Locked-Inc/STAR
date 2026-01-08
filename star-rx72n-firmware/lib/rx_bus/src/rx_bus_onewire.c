@@ -24,6 +24,7 @@
 #include "rx_check.h"
 #include "rx_crc.h"
 #include "rx_log.h"
+#include "rx_register_protection.h"
 
 static const char* s_tag = "BUS_ONEWIRE";
 
@@ -72,8 +73,6 @@ static onewire_state_entry_t s_state_pool[k_onewire_max_instances];
  * ticks to ensure consistent timing independent of compiler optimizations.
  */
 typedef enum {
-  k_onewire_prcr_unlock         = 0xA50B,
-  k_onewire_prcr_lock           = 0xA500,
   k_onewire_mstpb_cmt_bit       = 15, /**< CMT module stop bit in MSTPCRB */
   k_onewire_cmt3_start_bit      = 1,  /**< CMSTR1 bit controlling CMT3 */
   k_onewire_cmt_divider_setting = 0,  /**< CKS = 0 -> PCLKB/8 */
@@ -96,9 +95,9 @@ static void internal_delay_timer_init(void)
   }
 
   /* Enable CMT module clock */
-  system_regs()->prcr = k_onewire_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
   system_regs()->mstpcrb &= ~(1UL << k_onewire_mstpb_cmt_bit);
-  system_regs()->prcr = k_onewire_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   /* Stop CMT3 before reconfiguration */
   cmt_ctrl()->cmstr1 &= ~(1U << k_onewire_cmt3_start_bit);
