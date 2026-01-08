@@ -16,6 +16,8 @@
 
 #include <string.h>
 
+#include "rx_bit_constants.h"
+
 /* =============================================================================
  * Chase Combiner Implementation
  * =============================================================================
@@ -324,7 +326,6 @@ rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
  * @brief Bit position constants for soft-to-hard conversion
  */
 typedef enum {
-  k_bits_per_byte        = 8, /**< Number of bits in a byte */
   k_msb_position         = 7, /**< Most significant bit position (0-indexed) */
   k_rounding_adjustment  = 7, /**< Value for ceiling division: (n + 7) / 8 */
   k_soft_bit_zero_thresh = 0, /**< Threshold for soft-to-hard: >= 0 is bit 1 */
@@ -354,7 +355,7 @@ static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
   }
 
   /* Calculate output bytes with ceiling division */
-  uint32_t out_bytes = (soft_len + k_rounding_adjustment) / k_bits_per_byte;
+  uint32_t out_bytes = (soft_len + k_rounding_adjustment) / k_rx_bits_per_byte;
   if (out_bytes > max_out_len && max_out_len > 0) {
     out_bytes = max_out_len;
   }
@@ -363,12 +364,12 @@ static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
   /*
    * Loop bound: i < soft_len is validated by prior check that soft_bits != NULL.
    * Loop terminates when i >= soft_len OR when byte index exceeds out_bytes.
-   * Maximum iterations: min(soft_len, out_bytes * k_bits_per_byte).
+   * Maximum iterations: min(soft_len, out_bytes * k_rx_bits_per_byte).
    */
-  for (uint32_t i = 0; i < soft_len && (i / k_bits_per_byte) < out_bytes; i++) {
+  for (uint32_t i = 0; i < soft_len && (i / k_rx_bits_per_byte) < out_bytes; i++) {
     if (soft_bits[i] >= k_soft_bit_zero_thresh) {
-      uint32_t byte_idx = i / k_bits_per_byte;
-      uint32_t bit_pos  = k_msb_position - (i % k_bits_per_byte);
+      uint32_t byte_idx = i / k_rx_bits_per_byte;
+      uint32_t bit_pos  = k_msb_position - (i % k_rx_bits_per_byte);
       output[byte_idx] |= (uint8_t)(1U << bit_pos);
     }
   }

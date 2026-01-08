@@ -23,6 +23,7 @@
 #include "rx72n_regs.h"
 #include "rx_mpc.h"
 #include "rx_port_utils.h"
+#include "rx_register_protection.h"
 
 /* =============================================================================
  * Private Definitions
@@ -107,11 +108,6 @@ typedef enum {
   k_sci_mstpb_sci11 = 20, /**< SCI11 module stop bit */
 } sci_mstpb_bits_t;
 
-/** @brief Protection register unlock/lock values */
-typedef enum {
-  k_uart_prcr_unlock = 0xA50F, /**< Unlock protection (PRC0-PRC3) */
-  k_uart_prcr_lock   = 0xA500, /**< Lock protection */
-} uart_prcr_t;
 
 /** @brief Debug UART pins (SCI9 on RX72N) */
 typedef enum {
@@ -210,13 +206,13 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
   }
 
   /* Unlock protection */
-  system_regs()->prcr = k_uart_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_all;
 
   /* Clear module stop bit to enable clock */
   system_regs()->mstpcrb &= ~(1UL << (uint8_t)mstpb_bit);
 
   /* Lock protection */
-  system_regs()->prcr = k_uart_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   return k_rx_ok;
 }
