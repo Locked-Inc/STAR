@@ -15,6 +15,8 @@
 
 #include <string.h>
 
+#include "rx72n_clock.h"
+
 /* =============================================================================
  * Constants
  * =============================================================================
@@ -32,9 +34,6 @@ typedef enum {
 typedef enum {
   k_mock_duty_percent_max = 100, /**< Maximum duty cycle percentage */
 } mock_duty_constants_t;
-
-/** @brief Simulated PCLKA for period calculation */
-static const uint32_t s_mock_pclka_hz = 120000000UL;
 
 /* =============================================================================
  * Static Variables
@@ -133,7 +132,7 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
   }
 
   /* Calculate period */
-  s_period[channel]    = s_mock_pclka_hz / config->frequency_hz;
+  s_period[channel]    = k_pclka_hz / config->frequency_hz;
   s_frequency[channel] = config->frequency_hz;
 
   /* Initialize outputs to 0% duty, enabled */

@@ -15,6 +15,7 @@
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+#include "rx_register_protection.h"
 
 /* =============================================================================
  * Constants
@@ -34,12 +35,6 @@ typedef enum {
   k_adc_resolution_10bit = 10, /**< 10-bit ADC resolution */
   k_adc_resolution_12bit = 12, /**< 12-bit ADC resolution (default) */
 } adc_resolution_t;
-
-/** @brief System protection register values (from rx72n_system_regs.h) */
-typedef enum {
-  k_adc_prcr_unlock = 0xA50B, /**< Enable writes to MSTPCR */
-  k_adc_prcr_lock   = 0xA500, /**< Disable writes to MSTPCR */
-} adc_prcr_values_t;
 
 /** @brief ADC module stop bit positions in MSTPCRA */
 typedef enum {
@@ -163,7 +158,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   /* Initialize ADC unit if not already initialized */
   if (!s_adc_unit_initialized[unit]) {
     /* Unlock module stop control */
-    system_regs()->prcr = k_adc_prcr_unlock;
+    system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
     /* Enable ADC module (clear module stop bit) */
     if (unit == 0) {
@@ -173,7 +168,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
     }
 
     /* Lock module stop control */
-    system_regs()->prcr = k_adc_prcr_lock;
+    system_regs()->prcr = k_rx_prcr_lock;
 
     /* Configure ADC resolution */
     uint16_t adcer = adc->adcer;

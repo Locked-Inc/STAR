@@ -19,6 +19,8 @@
 #include <string.h>
 
 #include "hardware.h"
+#include "rx_threadx_config.h"
+#include "rx_time_constants.h"
 
 #ifdef __RX__
 #include "tx_api.h" /* ThreadX for tx_thread_sleep */
@@ -51,12 +53,11 @@ typedef enum {
   k_hdr_flags     = 7, /**< Frame flags */
 } frame_header_offset_t;
 
-/** @brief ThreadX timing constants for receive polling */
+/** @brief Timing constants for receive polling */
 typedef enum {
-  k_threadx_tick_rate_hz = 100, /**< ThreadX tick rate (100 Hz) */
-  k_threadx_ms_per_tick  = 10,  /**< Milliseconds per tick at 100 Hz */
-  k_poll_sleep_ticks     = 1,   /**< Sleep duration for polling loop (1 tick) */
-} threadx_timing_t;
+  k_threadx_ms_per_tick = 10, /**< Milliseconds per tick at 100 Hz */
+  k_poll_sleep_ticks    = 1,  /**< Sleep duration for polling loop (1 tick) */
+} polling_timing_t;
 
 /** @brief ACK/ready wait timing constants */
 typedef enum {

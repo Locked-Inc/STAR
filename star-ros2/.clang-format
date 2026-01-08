@@ -1,0 +1,101 @@
+# .clang-format for ROS2 C++ code in STAR project
+# Extends base firmware style with ROS2-specific conventions
+
+BasedOnStyle: LLVM
+
+#----------------------------------------------------------------------------
+# Indentation
+#----------------------------------------------------------------------------
+IndentWidth: 2
+UseTab: Never
+ContinuationIndentWidth: 2
+IndentCaseLabels: true
+NamespaceIndentation: None  # ROS2 convention: no indent inside namespace
+
+#----------------------------------------------------------------------------
+# Braces and Blocks
+#----------------------------------------------------------------------------
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterControlStatement: false  # Cuddle braces for if/while/for
+  AfterFunction: true           # Functions on new line
+  AfterClass: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterEnum: false
+  AfterNamespace: false
+  BeforeCatch: false
+  BeforeElse: false
+
+AllowShortBlocksOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+
+#----------------------------------------------------------------------------
+# Spacing
+#----------------------------------------------------------------------------
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators: true
+
+#----------------------------------------------------------------------------
+# Line Breaking and Wrapping
+#----------------------------------------------------------------------------
+ColumnLimit: 120  # ROS2 standard (100 for C firmware)
+
+AlignAfterOpenBracket: Align
+BinPackParameters: false
+BinPackArguments: false
+
+#----------------------------------------------------------------------------
+# Comment Handling
+#----------------------------------------------------------------------------
+ReflowComments: false
+AlignTrailingComments: true
+
+#----------------------------------------------------------------------------
+# Alignment
+#----------------------------------------------------------------------------
+AlignConsecutiveMacros: true
+AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: true
+PointerAlignment: Left
+DerivePointerAlignment: false
+
+#----------------------------------------------------------------------------
+# Includes (ROS2-specific order)
+#----------------------------------------------------------------------------
+SortIncludes: true
+IncludeBlocks: Regroup
+IncludeCategories:
+  # 1. ROS2 core libraries
+  - Regex:           '^<rclcpp/'
+    Priority:        1
+  # 2. ROS2 message packages
+  - Regex:           '^<(std_msgs|geometry_msgs|sensor_msgs|nav_msgs)/'
+    Priority:        2
+  # 3. Other ROS2 packages
+  - Regex:           '^<.*_msgs/'
+    Priority:        3
+  # 4. Project headers (star/*)
+  - Regex:           '^"star/'
+    Priority:        4
+  # 5. gRPC/Protobuf
+  - Regex:           '^<(grpc|google/protobuf)/'
+    Priority:        5
+  # 6. System C++ headers
+  - Regex:           '^<.*\.hpp>'
+    Priority:        6
+  # 7. System C headers
+  - Regex:           '^<.*>'
+    Priority:        7
+  # 8. Everything else
+  - Regex:           '.*'
+    Priority:        8
+
+#----------------------------------------------------------------------------
+# Miscellaneous
+#----------------------------------------------------------------------------
+AlwaysBreakTemplateDeclarations: Yes
+FixNamespaceComments: true

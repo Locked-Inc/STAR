@@ -16,6 +16,15 @@
 - **ThreadX (Azure RTOS):** Real-time operating system for the motor control firmware, providing deterministic task scheduling.
 - **Buildroot Linux:** Custom-tailored embedded Linux distribution for the Raspberry Pi 5.
 - **ROS2 Jazzy:** The primary robotics middleware for navigation, sensing, and higher-level behavior orchestration.
+    - **Middleware:** FastDDS (default).
+    - **Development:** Dockerized environment with VS Code Devcontainers.
+
+## Perception & Navigation
+- **Sensor Fusion:** Visual-LiDAR fusion using **RTAB-Map** (Real-Time Appearance-Based Mapping).
+    - **LiDAR:** RPLiDAR C1 (2D geometric mapping).
+    - **Visual:** OAK-D RGB-D Camera (3D depth & appearance-based loop closure).
+    - **Odometry:** EKF fusion of wheel encoders (RX72N) and visual odometry.
+- **Coordinate Frames:** Adherence to **REP-105** (`map` -> `odom` -> `base_link`).
 
 ## Communication Protocols
 - **Protocol Buffers (nanopb):** Unified serialization format for data exchange across all components (Go, C, TypeScript).

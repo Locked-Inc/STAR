@@ -328,6 +328,23 @@ typedef enum {
   k_usb_cdc_max_packet_fs   = 64, /**< Full-Speed max packet size */
 } usb_cdc_endpoints_t;
 
+/* =============================================================================
+ * Static Assertions - Verify Register Layout at Compile Time
+ * =============================================================================
+ */
+
+/* Verify base address matches Hardware Manual */
+_Static_assert(k_usb0_base_addr == 0x000A0000, "USB0 base address incorrect");
+
+/* Verify key register offsets in structure */
+_Static_assert(offsetof(rx_usb_regs_t, syscfg) == 0x00, "SYSCFG offset incorrect");
+_Static_assert(offsetof(rx_usb_regs_t, cfifo) == 0x14, "CFIFO offset incorrect");
+_Static_assert(offsetof(rx_usb_regs_t, intenb0) == 0x30, "INTENB0 offset incorrect");
+_Static_assert(offsetof(rx_usb_regs_t, intsts0) == 0x40, "INTSTS0 offset incorrect");
+_Static_assert(offsetof(rx_usb_regs_t, dcpcfg) == 0x5C, "DCPCFG offset incorrect");
+_Static_assert(offsetof(rx_usb_regs_t, pipesel) == 0x64, "PIPESEL offset incorrect");
+_Static_assert(offsetof(rx_usb_regs_t, pipe1ctr) == 0x70, "PIPE1CTR offset incorrect");
+
 #ifdef __cplusplus
 }
 #endif

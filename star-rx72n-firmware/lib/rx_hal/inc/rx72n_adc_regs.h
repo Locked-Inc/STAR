@@ -86,6 +86,28 @@ static inline volatile rx_s12ad_regs_t* s12ad1(void)
   return (volatile rx_s12ad_regs_t*)k_s12ad1_base_addr;
 }
 
+/* =============================================================================
+ * Static Assertions - Verify Register Layout at Compile Time
+ * =============================================================================
+ */
+
+/* Verify base addresses match Hardware Manual */
+_Static_assert(k_s12ad0_base_addr == 0x00089000, "S12AD0 base address incorrect");
+_Static_assert(k_s12ad1_base_addr == 0x00089100, "S12AD1 base address incorrect");
+
+/* Verify register structure layout */
+_Static_assert(sizeof(rx_s12ad_regs_t) == 38, "S12AD register structure size incorrect");
+_Static_assert(offsetof(rx_s12ad_regs_t, adcsr) == 0x00, "ADCSR offset incorrect");
+_Static_assert(offsetof(rx_s12ad_regs_t, adansa0) == 0x04, "ADANSA0 offset incorrect");
+_Static_assert(offsetof(rx_s12ad_regs_t, adadc) == 0x0C, "ADADC offset incorrect");
+_Static_assert(offsetof(rx_s12ad_regs_t, adcer) == 0x0E, "ADCER offset incorrect");
+_Static_assert(offsetof(rx_s12ad_regs_t, addr0) == 0x16, "ADDR0 offset incorrect");
+_Static_assert(offsetof(rx_s12ad_regs_t, addr7) == 0x24, "ADDR7 offset incorrect");
+
+/* Verify channel spacing (0x100 bytes between units) */
+_Static_assert((k_s12ad1_base_addr - k_s12ad0_base_addr) == 0x100,
+               "S12AD0 to S12AD1 spacing incorrect");
+
 #ifdef __cplusplus
 }
 #endif

@@ -16,6 +16,7 @@ STAR bridges the gap between low-level hardware control and high-level robotics 
 - **Custom Embedded OS:** Tailored Buildroot Linux distribution optimized for performance.
 - **Robust Communication:** Protocol Buffers over SPI for reliable inter-processor data exchange.
 - **Advanced Control:** Precise closed-loop motor control with PID algorithms tuned via MATLAB.
+- **Modern Perception:** Visual-LiDAR sensor fusion using RTAB-Map for robust mapping and localization.
 - **Real-time Remote Control:** PWA-based Gamepad Controller for low-latency tactile operation.
 - **Modern Connectivity:** ROS2 Jazzy integration and a Go-based gateway for external interfacing.
 
