@@ -366,6 +366,22 @@ bool rx_iwdt_was_reset(void);
  */
 rx_err_t rx_iwdt_check_tasks(void);
 
+/* =============================================================================
+ * Test Support Functions
+ * =============================================================================
+ */
+
+#ifdef UNIT_TEST
+/**
+ * @brief Reset IWDT driver state for unit testing
+ * @details
+ * Resets the driver to uninitialized state. This function is only available
+ * when UNIT_TEST is defined and should only be called from test code to
+ * ensure test isolation.
+ */
+void rx_iwdt_test_reset(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

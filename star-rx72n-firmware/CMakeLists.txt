@@ -94,7 +94,10 @@ add_library(rx_core STATIC
     # lib/rx_core/src/mock_error_handler.c
     # lib/rx_core/src/mock_pin_validator.c
 )
-target_include_directories(rx_core PUBLIC lib/rx_core/inc)
+target_include_directories(rx_core PUBLIC
+    lib/rx_core/inc
+    lib/rx_hal/inc  # For watchdog register definitions
+)
 target_link_libraries(rx_core PUBLIC threadx)
 
 # rx_hal - Hardware Abstraction Layer

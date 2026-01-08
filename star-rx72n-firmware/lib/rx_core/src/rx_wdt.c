@@ -15,30 +15,8 @@
 
 #include <string.h>
 
-/* =============================================================================
- * Hardware Register Definitions
- * =============================================================================
- */
-
-/** @brief WDT register addresses */
-typedef enum {
-  k_wdt_base_addr = 0x00088020, /**< WDT base address */
-} wdt_hw_addr_t;
-
-/** @brief WDT register structure */
-typedef struct {
-  volatile uint8_t  wdtcr; /**< Control Register */
-  volatile uint8_t  _pad0[1];
-  volatile uint16_t wdtsr;  /**< Status Register */
-  volatile uint16_t wdtrcr; /**< Refresh Register */
-} rx_wdt_regs_t;
-
-/** @brief WDT hardware constants */
-typedef enum {
-  k_wdt_refresh_key  = 0x00, /**< Refresh key */
-  k_wdt_enable_bit   = 0x80, /**< Enable bit */
-  k_wdt_divider_mask = 0x03, /**< Clock divider mask */
-} wdt_hw_constants_t;
+#include "rx72n_wdt_regs.h"
+#include "rx72n_system_regs.h"
 
 /* =============================================================================
  * Static Data
@@ -54,20 +32,6 @@ typedef struct {
 
 /** @brief Global WDT state */
 static rx_wdt_state_t s_wdt_state = {0};
-
-/* =============================================================================
- * Hardware Access Functions
- * =============================================================================
- */
-
-/**
- * @brief Get WDT register base
- * @return Pointer to WDT registers
- */
-static inline volatile rx_wdt_regs_t* wdt_regs(void)
-{
-  return (volatile rx_wdt_regs_t*)k_wdt_base_addr;
-}
 
 /* =============================================================================
  * Public API Implementation
@@ -112,10 +76,15 @@ rx_err_t rx_wdt_start(void)
     return k_rx_err_not_initialized;
   }
 
-  regs = wdt_regs();
+  /* NOTE: WDT is configured via OFS registers at compile/flash time.
+   * The start sequence (write 0x00 then 0xFF to WDTRR) only works if
+   * WDT was configured to start in register-start mode in OFS.
+   * If configured to auto-start, this function has no effect. */
+  regs = wdt();
 
-  /* Configure and enable WDT */
-  regs->wdtcr = (uint8_t)(k_wdt_enable_bit | s_wdt_state.config.timeout_period);
+  /* Start WDT (only works in register-start mode) */
+  regs->wdtrr = k_wdt_refresh_start;
+  regs->wdtrr = k_wdt_refresh_end;
 
   s_wdt_state.running = true;
 
@@ -124,17 +93,13 @@ rx_err_t rx_wdt_start(void)
 
 rx_err_t rx_wdt_stop(void)
 {
-  volatile rx_wdt_regs_t* regs;
-
   if (!s_wdt_state.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  regs = wdt_regs();
-
-  /* Disable WDT */
-  regs->wdtcr = 0;
-
+  /* NOTE: WDT cannot be stopped once started if configured to auto-start in OFS.
+   * This function only updates software state. The hardware WDT will continue
+   * running and must be fed to prevent reset. */
   s_wdt_state.running = false;
 
   return k_rx_ok;
@@ -152,9 +117,10 @@ rx_err_t rx_wdt_feed(void)
     return k_rx_err_invalid_state;
   }
 
-  /* Refresh watchdog */
-  regs         = wdt_regs();
-  regs->wdtrcr = k_wdt_refresh_key;
+  /* Refresh watchdog - write 0x00 then 0xFF to WDTRR */
+  regs         = wdt();
+  regs->wdtrr = k_wdt_refresh_start;
+  regs->wdtrr = k_wdt_refresh_end;
 
   return k_rx_ok;
 }
