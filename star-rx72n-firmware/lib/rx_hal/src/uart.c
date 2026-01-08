@@ -108,7 +108,6 @@ typedef enum {
   k_sci_mstpb_sci11 = 20, /**< SCI11 module stop bit */
 } sci_mstpb_bits_t;
 
-
 /** @brief Debug UART pins (SCI9 on RX72N) */
 typedef enum {
   k_uart_debug_tx_port = k_rx_port_b, /**< Port B (from rx_port_constants.h) */

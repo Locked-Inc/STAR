@@ -55,8 +55,8 @@ typedef enum {
 
 /** @brief Timing constants for receive polling */
 typedef enum {
-  k_threadx_ms_per_tick  = 10,  /**< Milliseconds per tick at 100 Hz */
-  k_poll_sleep_ticks     = 1,   /**< Sleep duration for polling loop (1 tick) */
+  k_threadx_ms_per_tick = 10, /**< Milliseconds per tick at 100 Hz */
+  k_poll_sleep_ticks    = 1,  /**< Sleep duration for polling loop (1 tick) */
 } polling_timing_t;
 
 /** @brief ACK/ready wait timing constants */
