@@ -11,7 +11,9 @@
 #include "tasks/system_health.h"
 #include "motor_config.h"
 #include "shared_state.h"
+#include "diagnostics.h"
 #include "rx_log.h"
+#include "rx_register_guard.h"
 #include <string.h>
 
 static const char* s_tag = "sys_health";
@@ -50,10 +52,16 @@ static void system_health_entry(ULONG input)
         poll_battery();
         update_diagnostics();
 
-        /* TODO: Issue 21 - Register guard integration
-         * Call rx_register_guard_refresh() every 1 second
-         * Restores corrupted registers from ESD/EMI bit flips
-         */
+        /* Register guard: Restore corrupted registers from ESD/EMI bit flips
+         * Called every 1 second as recommended by rx_register_guard.h */
+        rx_register_guard_refresh();
+
+        /* Track register corrections in diagnostics */
+        uint32_t corrections = rx_register_guard_get_correction_count();
+        if (corrections > 0) {
+            diagnostics_increment_register_correction();
+            rx_register_guard_reset_count();
+        }
 
         tx_thread_sleep(100); /* 100 ticks = 1 second */
     }

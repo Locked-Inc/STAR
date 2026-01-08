@@ -140,8 +140,11 @@ static void motor_controller_entry(ULONG input)
 
         /* Sleep for 4ms (250 Hz control rate)
          * Note: k_control_loop_ticks = 0 because 4ms < 10ms ThreadX tick
-         * We use minimal sleep to maintain timing precision */
-        tx_thread_sleep(1); /* Sleep for 1 tick (10ms) - TODO: Use timer for precise 4ms */
+         *
+         * Phase 1: Using tx_thread_sleep(1) = 10ms for stub implementation
+         * Phase 2: Will use dedicated timer interrupt for precise 4ms timing
+         *          when actual motor control hardware is integrated */
+        tx_thread_sleep(1); /* 10ms tick - Phase 2 will implement precise 4ms timer */
     }
 }
 
