@@ -113,28 +113,7 @@ jobs:
           sudo apt-get install -y clang-format
 
       - name: Check C++ formatting
-        working-directory: star-ros2
-        run: |
-          # Find all C++ files
-          FILES=$(find src -name '*.cpp' -o -name '*.hpp' 2>/dev/null || true)
-
-          if [ -z "$FILES" ]; then
-            echo "No C++ files found to format"
-            exit 0
-          fi
-
-          # Check formatting (fail if any file needs formatting)
-          echo "$FILES" | xargs clang-format --dry-run --Werror
-
-          if [ $? -ne 0 ]; then
-            echo ""
-            echo "❌ Formatting check failed!"
-            echo "Run this to fix formatting:"
-            echo "  cd star-ros2 && find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i"
-            exit 1
-          fi
-
-          echo "✅ All C++ files are properly formatted"
+        run: ./scripts/format-ros2.sh --check
 
   lint:
     name: Code Quality Checks
