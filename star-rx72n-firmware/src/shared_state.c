@@ -52,18 +52,24 @@ UINT shared_state_init(shared_state_t* state)
     /* Create encoder mutex */
     status = tx_mutex_create(&state->encoder_mutex, "EncoderMutex", TX_NO_INHERIT);
     if (status != TX_SUCCESS) {
+        tx_mutex_delete(&state->setpoint_mutex);
         return status;
     }
 
     /* Create safety mutex */
     status = tx_mutex_create(&state->safety_mutex, "SafetyMutex", TX_NO_INHERIT);
     if (status != TX_SUCCESS) {
+        tx_mutex_delete(&state->setpoint_mutex);
+        tx_mutex_delete(&state->encoder_mutex);
         return status;
     }
 
     /* Create health mutex */
     status = tx_mutex_create(&state->health_mutex, "HealthMutex", TX_NO_INHERIT);
     if (status != TX_SUCCESS) {
+        tx_mutex_delete(&state->setpoint_mutex);
+        tx_mutex_delete(&state->encoder_mutex);
+        tx_mutex_delete(&state->safety_mutex);
         return status;
     }
 

@@ -1,3 +1,5 @@
+/* star-rx72n-firmware/src/tasks/env_monitor.c */
+
 /**
  * @file env_monitor.c
  * @brief Environment Monitor thread implementation
@@ -23,7 +25,7 @@ static rx_err_t monitor_temperature(void);
 
 UINT env_monitor_create(void)
 {
-    UINT status = tx_thread_create(&s_env_monitor_thread, "EnvMon", env_monitor_entry, 0,
+    UINT status = tx_thread_create(&s_env_monitor_thread, s_tag, env_monitor_entry, 0,
                                     s_env_monitor_stack, k_stack_env_monitor,
                                     k_priority_env_monitor, k_priority_env_monitor,
                                     TX_NO_TIME_SLICE, TX_AUTO_START);
@@ -53,26 +55,16 @@ static void env_monitor_entry(ULONG input)
 
 static rx_err_t scan_obstacles(void)
 {
-    /* TODO: Issue 14 - Obstacle detection (HC-SR04)
-     * 1. Initialize 4 HC-SR04 sensors (using star_hcsr04_config.h)
-     * 2. Use rx_obstacle_detect module
-     * 3. Set detection threshold to 30cm
-     * 4. Update safety.obstacle_detected flag (with safety_mutex)
-     * 5. Trigger safety.emergency_stop on obstacle
-     * 6. Update safety.obstacle_distance_cm and obstacle_sensor_idx
-     */
+    /* Stub implementation - Issue 14:
+     * HC-SR04 obstacle detection with E-STOP trigger */
 
     return k_rx_ok;
 }
 
 static rx_err_t monitor_temperature(void)
 {
-    /* TODO: Issue 15 - Temperature monitoring (DS18B20)
-     * 1. Read DS18B20 temperature via 1-Wire (rx_ds18b20 library)
-     * 2. Update health.temperature_c (with health_mutex)
-     * 3. Log warning if temp > 70°C
-     * 4. Trigger E-STOP if temp > 85°C
-     */
+    /* Stub implementation - Issue 15:
+     * DS18B20 temperature monitoring with thermal protection */
 
     return k_rx_ok;
 }

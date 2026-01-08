@@ -1,3 +1,5 @@
+/* star-rx72n-firmware/src/tasks/comm_manager.c */
+
 /**
  * @file comm_manager.c
  * @brief Communication Manager thread implementation
@@ -52,7 +54,7 @@ UINT comm_manager_create(void)
     /* Create Comm_Manager thread */
     status = tx_thread_create(
         &s_comm_manager_thread,
-        "CommMgr",
+        s_tag,
         comm_manager_entry,
         0,
         s_comm_manager_stack,
@@ -118,49 +120,25 @@ static void comm_manager_entry(ULONG input)
 
 static rx_err_t process_ingress(void)
 {
-    /* TODO: Issue 11 - Command processing (ingress)
-     * 1. Receive frames via USB CDC (rx_usb_read with 100ms timeout)
-     * 2. Decode SetVelocityRequest (nanopb deserialize)
-     * 3. Validate command ranges (±2.0 m/s, clamp if needed)
-     * 4. Update shared setpoint (with setpoint_mutex)
-     * 5. Update s_last_command_timestamp_ms
-     * 6. Send ACK response with sequence number
-     *
-     * TODO: Issue 18 - Manual emergency stop clearance
-     * 1. Handle ClearEmergencyStop command
-     * 2. Check safety conditions (no obstacles, no faults, no timeout)
-     * 3. Clear safety.emergency_stop flag (with safety_mutex)
-     * 4. Send ClearEmergencyStopResponse with status
-     */
+    /* Stub implementation - Issues 11, 18:
+     * - Command processing via USB CDC/SPI (Issue 11)
+     * - Manual emergency stop clearance (Issue 18) */
 
     return k_rx_ok;
 }
 
 static rx_err_t process_egress(void)
 {
-    /* TODO: Issue 12 - Telemetry streaming (egress)
-     * 1. Read encoder feedback (4 motors) from shared state (encoder_mutex)
-     * 2. Read battery/temperature from health state (health_mutex)
-     * 3. Encode TelemetryData message (nanopb serialize)
-     * 4. Transmit via USB CDC at 100 Hz
-     * 5. Include system status (firmware version, uptime, fault flags)
-     */
+    /* Stub implementation - Issue 12:
+     * Telemetry streaming via USB CDC/SPI */
 
     return k_rx_ok;
 }
 
 static rx_err_t check_comm_timeout(void)
 {
-    /* TODO: Issue 17 - Communication timeout handling
-     * 1. Calculate time since last command (current_time - s_last_command_timestamp_ms)
-     * 2. If timeout > 500ms:
-     *    a. Set safety.comm_timeout = true (with safety_mutex)
-     *    b. Set safety.emergency_stop = true (with safety_mutex)
-     *    c. Log timeout event
-     * 3. If new command received:
-     *    a. Clear safety.comm_timeout = false
-     *    (Note: E-STOP remains until manual clearance)
-     */
+    /* Stub implementation - Issue 17:
+     * Communication timeout detection and E-STOP trigger */
 
     return k_rx_ok;
 }

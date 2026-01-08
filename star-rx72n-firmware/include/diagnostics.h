@@ -1,3 +1,5 @@
+/* star-rx72n-firmware/include/diagnostics.h */
+
 /**
  * @file diagnostics.h
  * @brief System diagnostics and logging module
