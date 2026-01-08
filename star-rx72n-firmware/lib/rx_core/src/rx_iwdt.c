@@ -344,12 +344,13 @@ rx_err_t rx_iwdt_get_status(rx_iwdt_status_t* status)
 
 bool rx_iwdt_was_reset(void)
 {
-  volatile rx_rstsr_regs_t* regs;
-  uint8_t                   status;
+  volatile uint8_t* rstsr2_reg;
+  uint8_t           status;
 
-  /* Read reset status register 2 for IWDT reset flag */
-  regs   = rstsr();
-  status = regs->rstsr2;
+  /* Read reset status register 2 for IWDT reset flag
+   * Note: RSTSR2 is at a separate address from RSTSR0/1 */
+  rstsr2_reg = rstsr2();
+  status     = *rstsr2_reg;
 
   /* Check IWDT reset flag in RSTSR2 */
   return ((status & k_rstsr2_iwdtrf) != 0);
