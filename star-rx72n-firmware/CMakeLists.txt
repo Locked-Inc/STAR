@@ -271,6 +271,8 @@ target_link_libraries(rx_obstacle_detect PUBLIC rx_hcsr04 rx_motor rx_core)
 
 set(APP_SOURCES
     src/main.c
+    src/shared_state.c
+    src/hardware_init.c
 )
 
 # =============================================================================
