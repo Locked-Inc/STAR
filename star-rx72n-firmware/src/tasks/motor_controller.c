@@ -1,3 +1,5 @@
+/* star-rx72n-firmware/src/tasks/motor_controller.c */
+
 /**
  * @file motor_controller.c
  * @brief Motor Controller thread implementation
@@ -21,12 +23,12 @@
  * =============================================================================
  */
 
-/* Motor subsystem state (will be populated in Issue 6) */
+/**
+ * @brief Motor subsystem state
+ * @details Will be populated with driver/encoder/PID handles in Issue 6
+ */
 typedef struct {
     bool initialized; /**< True if subsystem initialized */
-    /* TODO: Add motor driver handles */
-    /* TODO: Add encoder handles */
-    /* TODO: Add PID handles */
 } motor_subsystem_t;
 
 /* =============================================================================
@@ -81,7 +83,7 @@ UINT motor_controller_create(void)
     /* Create Motor_Controller thread */
     status = tx_thread_create(
         &s_motor_controller_thread,
-        "MotorCtrl",
+        s_tag,
         motor_controller_entry,
         0,
         s_motor_controller_stack,
@@ -145,42 +147,20 @@ static void motor_controller_entry(ULONG input)
 
 static rx_err_t motor_subsystem_init(void)
 {
-    /* TODO: Issue 6 - Initialize motor subsystem
-     * 1. Initialize bus manager (GPIO/ADC/SPI abstraction)
-     * 2. Configure DRV8243S motor drivers (4 instances)
-     * 3. Initialize MTU encoders (4 channels)
-     * 4. Initialize PID controllers (4 instances)
-     * 5. Configure motor fault pins (nFAULT on P44-P47)
-     */
+    /* Stub implementation - Issue 6: Motor subsystem initialization
+     * Will initialize: bus manager, DRV8243S drivers, MTU encoders, PIDs */
 
-    rx_log_info(s_tag, "Motor subsystem: TODO - Issue 6");
+    rx_log_info(s_tag, "Motor subsystem init (stub - Issue 6)");
     s_motor_subsystem.initialized = true;
     return k_rx_ok;
 }
 
 static rx_err_t control_loop_iteration(void)
 {
-    /* TODO: Issue 7 - Implement control loop
-     * 1. Check emergency_stop flag (if true, hardware cutoff)
-     * 2. Read encoder positions/velocities (4 motors)
-     * 3. Update shared encoder feedback (with encoder_mutex)
-     * 4. Read motor setpoint (with setpoint_mutex)
-     * 5. Compute PID for each motor
-     * 6. Apply duty cycle to motors via GPTW PWM
-     */
-
-    /* TODO: Issue 8 - Add current sensing and fault detection
-     * 1. Read motor current via ADC (IPROPI)
-     * 2. Check nFAULT pins (4 IRQ-capable pins)
-     * 3. Detect overcurrent, thermal, undervoltage, overvoltage
-     * 4. Set safety.fault_flags on detection
-     */
-
-    /* TODO: Issue 9 - Emergency stop integration
-     * 1. Check safety.emergency_stop flag
-     * 2. Call rx_motor_emergency_stop() if flag set
-     * 3. Clear setpoint.valid flag
-     */
+    /* Stub implementation - Issues 7-9:
+     * - Control loop with encoder feedback and PID (Issue 7)
+     * - Current sensing and fault detection (Issue 8)
+     * - Emergency stop integration (Issue 9) */
 
     return k_rx_ok;
 }

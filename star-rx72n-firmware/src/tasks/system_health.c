@@ -1,3 +1,5 @@
+/* star-rx72n-firmware/src/tasks/system_health.c */
+
 /**
  * @file system_health.c
  * @brief System Health thread implementation
@@ -23,7 +25,7 @@ static rx_err_t update_diagnostics(void);
 
 UINT system_health_create(void)
 {
-    UINT status = tx_thread_create(&s_system_health_thread, "SysHealth", system_health_entry, 0,
+    UINT status = tx_thread_create(&s_system_health_thread, s_tag, system_health_entry, 0,
                                     s_system_health_stack, k_stack_system_health,
                                     k_priority_system_health, k_priority_system_health,
                                     TX_NO_TIME_SLICE, TX_AUTO_START);
@@ -59,25 +61,16 @@ static void system_health_entry(ULONG input)
 
 static rx_err_t poll_battery(void)
 {
-    /* TODO: Issue 16 - Battery monitoring (BQ4050)
-     * 1. Poll BQ4050 fuel gauge via I2C
-     * 2. Update health.battery_voltage_v (with health_mutex)
-     * 3. Update health.battery_soc_percent
-     * 4. Update health.battery_current_ma
-     * 5. Set health.battery_low if SOC < 20%
-     */
+    /* Stub implementation - Issue 16:
+     * BQ4050 fuel gauge polling via I2C */
 
     return k_rx_ok;
 }
 
 static rx_err_t update_diagnostics(void)
 {
-    /* TODO: Issue 19 - Diagnostics update
-     * 1. Read CPU usage (ThreadX API)
-     * 2. Update health.uptime_ms
-     * 3. Read free heap (if any dynamic allocation)
-     * 4. Update diagnostic counters
-     */
+    /* Stub implementation - Issue 19:
+     * CPU usage, uptime, and diagnostic counters */
 
     return k_rx_ok;
 }

@@ -1,3 +1,5 @@
+/* star-rx72n-firmware/include/motor_config.h */
+
 /**
  * @file motor_config.h
  * @brief Motor system configuration constants
@@ -31,8 +33,8 @@ typedef enum {
     k_motor_count              = 4,   /**< Number of active motors */
     k_motor_rated_voltage_mv   = 6000, /**< Rated voltage (mV) */
     k_motor_rated_rpm          = 210, /**< Rated RPM at 6V */
-    k_motor_gear_ratio_x100    = 100, /**< Gear ratio (1:1 = 100) */
-    k_wheel_radius_mm          = 30,  /**< Wheel radius (mm) */
+    k_motor_gear_ratio_x100    = 3402, /**< Gear ratio (34.02:1 × 100) */
+    k_wheel_radius_mm          = 72,  /**< Wheel radius (mm) = 144mm diameter / 2 */
     k_wheelbase_mm             = 200, /**< Wheelbase (mm) */
 } motor_physical_t;
 
