@@ -258,6 +258,43 @@ git push -u origin feature/implement-spi-io
 gh pr create --title "feat(spi): implement SPI device initialization" --body "Closes #137"
 ```
 
+### Code Quality Tools
+
+**Format Code:**
+
+```bash
+# Format all ROS2 C++ files
+./scripts/format-ros2.sh
+
+# Check formatting without changes (CI mode)
+./scripts/format-ros2.sh --check
+```
+
+**Run Code Review:**
+
+```bash
+# Automated checklist validation
+./scripts/review-ros2.sh
+
+# Generate report to file
+./scripts/review-ros2.sh --report review.txt
+```
+
+**Install Pre-commit Hook (Recommended):**
+
+```bash
+# Run quality checks before every commit
+cp scripts/pre-commit-ros2 .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+**Skip Checks (Emergency Only):**
+
+```bash
+# Skip pre-commit checks for urgent fixes
+SKIP_ROS2_CHECKS=1 git commit -m "hotfix: critical issue"
+```
+
 ---
 
 ## Troubleshooting

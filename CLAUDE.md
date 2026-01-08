@@ -113,6 +113,26 @@ pid_design_velocity     # Design PID controller
 pid_discretize          # Generate discrete coefficients for RX72N
 ```
 
+### ROS2 Code Quality (`star-ros2/`)
+
+```bash
+# Format all ROS2 C++ files
+./scripts/format-ros2.sh
+
+# Check formatting (CI mode)
+./scripts/format-ros2.sh --check
+
+# Run automated code review
+./scripts/review-ros2.sh
+
+# Generate review report to file
+./scripts/review-ros2.sh --report review.txt
+
+# Install pre-commit hook (recommended)
+cp scripts/pre-commit-ros2 .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
 ## Protocol Buffers
 
 ### Style Guide (Boston Dynamics-based)
