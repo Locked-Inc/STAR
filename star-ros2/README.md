@@ -143,11 +143,11 @@ colcon test-result --verbose
 
 ## Package Status
 
-**This PR (#144) - Infrastructure Only**
+**This PR (#141) - Infrastructure Only**
 
 | Package | Status | Lines | Description | Pull Request |
 |---------|--------|-------|-------------|--------------|
-| `star_bringup` | 🟢 Skeleton | 25 | Launch files and system bringup | This PR (#144) |
+| `star_bringup` | 🟢 Skeleton | 25 | Launch files and system bringup | This PR (#141) |
 | `star_spi_bridge` | 🔴 Not Included | - | SPI communication to RX72N | [PR #145](https://github.com/Locked-Inc/STAR/pull/145) |
 | `star_gateway_bridge` | 🔴 Not Included | - | gRPC bridge to Go gateway | [PR #146](https://github.com/Locked-Inc/STAR/pull/146) |
 
@@ -159,7 +159,7 @@ colcon test-result --verbose
 
 ## Architecture
 
-**Note:** The diagrams below show the planned system architecture. This PR (#144) contains only infrastructure. Application nodes (`star_spi_bridge`, `star_gateway_bridge`) are in separate PRs ([#145](https://github.com/Locked-Inc/STAR/pull/145), [#146](https://github.com/Locked-Inc/STAR/pull/146)).
+**Note:** The diagrams below show the planned system architecture. This PR (#141) contains only infrastructure. Application nodes (`star_spi_bridge`, `star_gateway_bridge`) are in separate PRs ([#145](https://github.com/Locked-Inc/STAR/pull/145), [#146](https://github.com/Locked-Inc/STAR/pull/146)).
 
 ### Node Graph
 
