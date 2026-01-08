@@ -20,6 +20,9 @@
 
 #include <string.h>
 
+#include "rx_threadx_config.h"
+#include "rx_time_constants.h"
+
 /* =============================================================================
  * Constants
  * =============================================================================
@@ -44,13 +47,6 @@ typedef enum {
   k_min_debounce      = 1,    /**< Minimum debounce samples */
   k_max_debounce      = 10,   /**< Maximum debounce samples */
 } validation_constants_t;
-
-/**
- * @brief ThreadX tick conversion
- */
-typedef enum {
-  k_ticks_per_second = 100, /**< ThreadX configured for 100 Hz */
-} threadx_constants_t;
 
 /* =============================================================================
  * Static Function Declarations
@@ -371,7 +367,7 @@ static void internal_detection_task_entry(ULONG input)
   handle = (rx_obstacle_detect_t*)input;
 
   /* Convert poll interval to ticks */
-  sleep_ticks = (handle->poll_interval_ms * k_ticks_per_second) / 1000;
+  sleep_ticks = (handle->poll_interval_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
   if (sleep_ticks == 0) {
     sleep_ticks = 1;
   }
