@@ -18,17 +18,7 @@
 #include "rx72n_iwdt_regs.h"
 #include "rx72n_system_regs.h"
 #include "rx_check.h"
-#include "tx_api.h" /* ThreadX API for tx_time_get() */
-
-/* =============================================================================
- * Hardware Constants
- * =============================================================================
- */
-
-/** @brief IWDT internal driver constants */
-typedef enum {
-  k_ticks_per_second = 100, /**< ThreadX ticks per second */
-} iwdt_internal_constants_t;
+#include "tx_api.h" /* ThreadX API for tx_time_get() and TX_TIMER_TICKS_PER_SECOND */
 
 /* =============================================================================
  * Static Data
@@ -376,7 +366,7 @@ rx_err_t rx_iwdt_check_tasks(void)
   uint32_t current_tick;
   uint32_t i;
   uint32_t elapsed_ticks;
-  uint32_t timeout_ticks;
+  uint32_t timeout_in_ticks;
   bool     any_timeout;
 
   if (!s_iwdt_state.initialized) {
@@ -398,10 +388,10 @@ rx_err_t rx_iwdt_check_tasks(void)
 
     /* Calculate elapsed time */
     elapsed_ticks = current_tick - s_iwdt_state.tasks[i].last_heartbeat_tick;
-    timeout_ticks = (s_iwdt_state.tasks[i].timeout_ms * k_ticks_per_second) / 1000;
+    timeout_in_ticks = (s_iwdt_state.tasks[i].timeout_ms * TX_TIMER_TICKS_PER_SECOND) / 1000;
 
     /* Check for timeout */
-    if (elapsed_ticks > timeout_ticks) {
+    if (elapsed_ticks > timeout_in_ticks) {
       s_iwdt_state.tasks[i].timed_out = true;
       any_timeout                     = true;
 
