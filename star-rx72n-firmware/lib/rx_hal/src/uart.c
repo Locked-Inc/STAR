@@ -110,10 +110,8 @@ typedef enum {
 
 /** @brief Debug UART pins (SCI9 on RX72N) */
 typedef enum {
-  k_uart_debug_tx_port = k_rx_port_b, /**< Port B (from rx_port_constants.h) */
-  k_uart_debug_tx_pin  = k_rx_pin_7,  /**< PB7 = TXD9 (from rx_port_constants.h) */
-  k_uart_debug_rx_port = k_rx_port_b, /**< Port B (from rx_port_constants.h) */
-  k_uart_debug_rx_pin  = k_rx_pin_6,  /**< PB6 = RXD9 (from rx_port_constants.h) */
+  k_uart_debug_tx_gpio = k_rx_pb_7, /**< PB7 = TXD9 (from rx_port_constants.h) */
+  k_uart_debug_rx_gpio = k_rx_pb_6, /**< PB6 = RXD9 (from rx_port_constants.h) */
 } uart_debug_pins_t;
 
 /** @brief GPIO register bit manipulation constant */
@@ -221,16 +219,19 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
  *
  * Sets up MPC (pin mux) and GPIO registers for TX/RX pins.
  *
- * @param[in] tx_port TX pin port
- * @param[in] tx_pin TX pin number
- * @param[in] rx_port RX pin port
- * @param[in] rx_pin RX pin number
+ * @param[in] tx_gpio TX pin (gpio_pin_t from hardware_pinout.h)
+ * @param[in] rx_gpio RX pin (gpio_pin_t from hardware_pinout.h)
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t
-internal_configure_uart_pins(uint8_t tx_port, uint8_t tx_pin, uint8_t rx_port, uint8_t rx_pin)
+static rx_err_t internal_configure_uart_pins(gpio_pin_t tx_gpio, gpio_pin_t rx_gpio)
 {
+  /* Extract port and pin numbers for hardware register access */
+  uint8_t tx_port = gpio_pin_get_port(tx_gpio);
+  uint8_t tx_pin  = gpio_pin_get_pin(tx_gpio);
+  uint8_t rx_port = gpio_pin_get_port(rx_gpio);
+  uint8_t rx_pin  = gpio_pin_get_pin(rx_gpio);
+
   /* Validate pin numbers */
   if (tx_pin > 7 || rx_pin > 7) {
     return k_rx_err_invalid_arg;
@@ -245,9 +246,6 @@ internal_configure_uart_pins(uint8_t tx_port, uint8_t tx_pin, uint8_t rx_port, u
   }
 
   /* Configure MPC for SCI function */
-  gpio_pin_t tx_gpio = gpio_pin_make(tx_port, tx_pin);
-  gpio_pin_t rx_gpio = gpio_pin_make(rx_port, rx_pin);
-
   rx_err_t err = rx_mpc_set_sci(tx_gpio, true);
   if (err != k_rx_ok) {
     return err;
@@ -274,12 +272,8 @@ internal_configure_uart_pins(uint8_t tx_port, uint8_t tx_pin, uint8_t rx_port, u
  * =============================================================================
  */
 
-rx_err_t uart_init_channel(uint8_t  channel,
-                           uint32_t baudrate,
-                           uint8_t  tx_port,
-                           uint8_t  tx_pin,
-                           uint8_t  rx_port,
-                           uint8_t  rx_pin)
+rx_err_t
+uart_init_channel(uint8_t channel, uint32_t baudrate, gpio_pin_t tx_gpio, gpio_pin_t rx_gpio)
 {
   /* Validate channel */
   if (channel >= k_uart_max_channels) {
@@ -304,7 +298,7 @@ rx_err_t uart_init_channel(uint8_t  channel,
   }
 
   /* Configure TX/RX pins (MPC and GPIO) */
-  err = internal_configure_uart_pins(tx_port, tx_pin, rx_port, rx_pin);
+  err = internal_configure_uart_pins(tx_gpio, rx_gpio);
   if (err != k_rx_ok) {
     return err;
   }
@@ -568,10 +562,8 @@ rx_err_t uart_init(void)
 {
   return uart_init_channel(k_uart_debug_channel,
                            k_uart_default_baudrate,
-                           k_uart_debug_tx_port,
-                           k_uart_debug_tx_pin,
-                           k_uart_debug_rx_port,
-                           k_uart_debug_rx_pin);
+                           k_uart_debug_tx_gpio,
+                           k_uart_debug_rx_gpio);
 }
 
 void uart_putc(char data)
