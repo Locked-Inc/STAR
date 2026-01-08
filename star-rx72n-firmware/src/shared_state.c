@@ -1,3 +1,5 @@
+/* src/shared_state.c */
+
 /**
  * @file shared_state.c
  * @brief Shared state module implementation

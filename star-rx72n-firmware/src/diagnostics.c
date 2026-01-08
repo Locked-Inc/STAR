@@ -1,3 +1,5 @@
+/* src/diagnostics.c */
+
 /**
  * @file diagnostics.c
  * @brief Diagnostics module implementation
