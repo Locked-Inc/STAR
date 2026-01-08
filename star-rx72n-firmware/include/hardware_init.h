@@ -1,4 +1,4 @@
-/* star-rx72n-firmware/include/hardware_init.h */
+/* include/hardware_init.h */
 
 /**
  * @file hardware_init.h
