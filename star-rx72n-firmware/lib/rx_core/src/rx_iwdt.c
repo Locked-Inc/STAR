@@ -78,9 +78,7 @@ static uint32_t internal_get_tick_count(void)
  */
 static rx_iwdt_task_info_t* internal_find_task(const char* task_name)
 {
-  uint32_t i;
-
-  for (i = 0; i < k_iwdt_max_tasks; i++) {
+  for (uint32_t i = 0; i < k_iwdt_max_tasks; i++) {
     if (s_iwdt_state.tasks[i].active && strcmp(s_iwdt_state.tasks[i].task_name, task_name) == 0) {
       return &s_iwdt_state.tasks[i];
     }
@@ -96,9 +94,7 @@ static rx_iwdt_task_info_t* internal_find_task(const char* task_name)
  */
 static rx_iwdt_task_info_t* internal_find_free_slot(void)
 {
-  uint32_t i;
-
-  for (i = 0; i < k_iwdt_max_tasks; i++) {
+  for (uint32_t i = 0; i < k_iwdt_max_tasks; i++) {
     if (!s_iwdt_state.tasks[i].active) {
       return &s_iwdt_state.tasks[i];
     }
@@ -114,14 +110,12 @@ static rx_iwdt_task_info_t* internal_find_free_slot(void)
  */
 static void internal_init_default_config(rx_iwdt_config_t* config)
 {
-  uint32_t i;
-
   config->default_timeout_ms     = k_iwdt_default_timeout_ms;
   config->enable_task_monitoring = true;
   config->reset_on_timeout       = true;
 
   /* Initialize all state timeouts to default */
-  for (i = 0; i < k_system_state_count; i++) {
+  for (uint32_t i = 0; i < k_system_state_count; i++) {
     config->state_timeouts_ms[i] = k_iwdt_default_timeout_ms;
   }
 }
@@ -363,12 +357,6 @@ bool rx_iwdt_was_reset(void)
 
 rx_err_t rx_iwdt_check_tasks(void)
 {
-  uint32_t current_tick;
-  uint32_t i;
-  uint32_t elapsed_ticks;
-  uint32_t timeout_in_ticks;
-  bool     any_timeout;
-
   if (!s_iwdt_state.initialized) {
     return k_rx_err_not_initialized;
   }
@@ -377,18 +365,18 @@ rx_err_t rx_iwdt_check_tasks(void)
     return k_rx_ok;
   }
 
-  current_tick = internal_get_tick_count();
-  any_timeout  = false;
+  uint32_t current_tick = internal_get_tick_count();
+  bool     any_timeout  = false;
 
   /* Check each registered task */
-  for (i = 0; i < k_iwdt_max_tasks; i++) {
+  for (uint32_t i = 0; i < k_iwdt_max_tasks; i++) {
     if (!s_iwdt_state.tasks[i].active) {
       continue;
     }
 
     /* Calculate elapsed time */
-    elapsed_ticks = current_tick - s_iwdt_state.tasks[i].last_heartbeat_tick;
-    timeout_in_ticks = (s_iwdt_state.tasks[i].timeout_ms * TX_TIMER_TICKS_PER_SECOND) / 1000;
+    uint32_t elapsed_ticks = current_tick - s_iwdt_state.tasks[i].last_heartbeat_tick;
+    uint32_t timeout_in_ticks = (s_iwdt_state.tasks[i].timeout_ms * TX_TIMER_TICKS_PER_SECOND) / 1000;
 
     /* Check for timeout */
     if (elapsed_ticks > timeout_in_ticks) {
