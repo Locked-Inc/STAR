@@ -16,9 +16,9 @@
 #include "rx72n_regs.h"
 #include "rx_log.h"
 #include "rx_register_protection.h"
-#include "rx_usb.h"
 #include "rx_threadx_config.h"
 #include "rx_time_constants.h"
+#include "rx_usb.h"
 #include "tx_api.h"
 
 /* =============================================================================
@@ -30,13 +30,12 @@ static const char* s_tag = "USB_HW";
 
 /** @brief USB timing constants for initialization delays */
 typedef enum {
-  k_threadx_ms_per_tick        = 10,  /**< Milliseconds per tick at 100 Hz */
-  k_usb_pll_stabilization_ms   = 10,  /**< USB PLL stabilization time (10ms) */
-  k_usb_clock_stabilization_ms = 10,  /**< USB clock stabilization time (10ms) */
-  k_min_sleep_ticks            = 1,   /**< Minimum sleep duration (1 tick) */
-  k_min_transfer_size          = 0,   /**< Minimum data transfer size (no data) */
+  k_threadx_ms_per_tick        = 10, /**< Milliseconds per tick at 100 Hz */
+  k_usb_pll_stabilization_ms   = 10, /**< USB PLL stabilization time (10ms) */
+  k_usb_clock_stabilization_ms = 10, /**< USB clock stabilization time (10ms) */
+  k_min_sleep_ticks            = 1,  /**< Minimum sleep duration (1 tick) */
+  k_min_transfer_size          = 0,  /**< Minimum data transfer size (no data) */
 } usb_hw_timing_t;
-
 
 /** @brief USB SYSCFG register values */
 typedef enum {

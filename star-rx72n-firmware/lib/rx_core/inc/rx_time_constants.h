@@ -41,11 +41,11 @@ extern "C" {
  * @endcode
  */
 typedef enum {
-  k_rx_ms_per_second = 1000, /**< Milliseconds per second */
-  k_rx_us_per_ms = 1000,     /**< Microseconds per millisecond */
-  k_rx_ns_per_us = 1000,     /**< Nanoseconds per microsecond */
+  k_rx_ms_per_second = 1000,    /**< Milliseconds per second */
+  k_rx_us_per_ms     = 1000,    /**< Microseconds per millisecond */
+  k_rx_ns_per_us     = 1000,    /**< Nanoseconds per microsecond */
   k_rx_us_per_second = 1000000, /**< Microseconds per second */
-  k_rx_ns_per_ms = 1000000,     /**< Nanoseconds per millisecond */
+  k_rx_ns_per_ms     = 1000000, /**< Nanoseconds per millisecond */
 } rx_time_conversion_t;
 
 #ifdef __cplusplus

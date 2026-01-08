@@ -36,7 +36,6 @@ typedef enum {
   k_riic_channel_2 = 2, /**< RIIC2 */
 } riic_channel_num_t;
 
-
 /** @brief RIIC module stop bit positions in MSTPCRB */
 typedef enum {
   k_riic_mstpb_riic0 = 21, /**< RIIC0 module stop bit */

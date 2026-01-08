@@ -41,7 +41,6 @@ typedef enum {
   k_rspi_channel_2 = 2, /**< RSPI2 */
 } rspi_channel_num_t;
 
-
 /** @brief RSPI module stop bit positions in MSTPCRB */
 typedef enum {
   k_rspi_mstpb_rspi0 = 17, /**< RSPI0 module stop bit */

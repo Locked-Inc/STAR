@@ -62,7 +62,6 @@ typedef enum {
   k_cmt_divider_val_512 = 512, /**< Divide by 512 */
 } cmt_divider_values_t;
 
-
 /** @brief CMT module stop bit positions in MSTPCRB */
 typedef enum {
   k_cmt_mstpb_cmt = 15, /**< CMT0-CMT3 module stop bit */
