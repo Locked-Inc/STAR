@@ -20,8 +20,13 @@
 #include "hardware.h"
 #include "hardware_init.h"
 #include "shared_state.h"
+#include "diagnostics.h"
 #include "rx_log.h"
 #include "rx_iwdt.h"
+#include "tasks/motor_controller.h"
+#include "tasks/comm_manager.h"
+#include "tasks/env_monitor.h"
+#include "tasks/system_health.h"
 
 /* =============================================================================
  * Forward Declarations
@@ -100,6 +105,13 @@ void tx_application_define(void* first_unused_memory)
   rx_log_info(tag, "ThreadX application definition starting");
 
   /* -------------------------------------------------------------------------
+   * Initialize Diagnostics
+   * -------------------------------------------------------------------------
+   */
+  diagnostics_init();
+  rx_log_info(tag, "Diagnostics initialized");
+
+  /* -------------------------------------------------------------------------
    * Initialize Shared State
    * -------------------------------------------------------------------------
    * Create all mutexes and zero-initialize state structures
@@ -122,17 +134,33 @@ void tx_application_define(void* first_unused_memory)
    * - System_Health (9): Low priority for diagnostics
    */
 
-  /* TODO: Phase 2 - Create Motor_Controller thread (priority 2, 250 Hz) */
-  rx_log_info(tag, "Motor_Controller: TODO - Phase 2");
+  /* Create Motor_Controller thread (priority 2, 250 Hz) */
+  status = motor_controller_create();
+  if (status != TX_SUCCESS) {
+    rx_log_error(tag, "Motor_Controller creation failed");
+    return;
+  }
 
-  /* TODO: Phase 3 - Create Comm_Manager thread (priority 3, 100 Hz) */
-  rx_log_info(tag, "Comm_Manager: TODO - Phase 3");
+  /* Create Comm_Manager thread (priority 3, 100 Hz) */
+  status = comm_manager_create();
+  if (status != TX_SUCCESS) {
+    rx_log_error(tag, "Comm_Manager creation failed");
+    return;
+  }
 
-  /* TODO: Phase 4 - Create Env_Monitor thread (priority 5, 50 Hz) */
-  rx_log_info(tag, "Env_Monitor: TODO - Phase 4");
+  /* Create Env_Monitor thread (priority 5, 50 Hz) */
+  status = env_monitor_create();
+  if (status != TX_SUCCESS) {
+    rx_log_error(tag, "Env_Monitor creation failed");
+    return;
+  }
 
-  /* TODO: Phase 4 - Create System_Health thread (priority 9, 1 Hz) */
-  rx_log_info(tag, "System_Health: TODO - Phase 4");
+  /* Create System_Health thread (priority 9, 1 Hz) */
+  status = system_health_create();
+  if (status != TX_SUCCESS) {
+    rx_log_error(tag, "System_Health creation failed");
+    return;
+  }
 
   rx_log_info(tag, "ThreadX application definition complete");
 }
