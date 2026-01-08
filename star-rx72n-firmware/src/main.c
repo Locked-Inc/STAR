@@ -1,3 +1,5 @@
+/* src/main.c */
+
 /**
  * @file main.c
  * @brief Main entry point for STAR RX72N Motor Controller Firmware
@@ -46,6 +48,13 @@
 void tx_application_define(void* first_unused_memory);
 
 /* =============================================================================
+ * Private Variables
+ * =============================================================================
+ */
+
+static const char* s_s_tag_tx = "main";
+
+/* =============================================================================
  * Main Entry Point
  * =============================================================================
  */
@@ -65,8 +74,9 @@ int main(void)
   /* Initialize all hardware peripherals */
   ret = hardware_init_all();
   if (ret != k_rx_ok) {
-    /* Hardware init failed - halt system */
-    rx_log_error("main", "Hardware initialization failed");
+    /* Hardware init failed - halt system
+     * Enter low-power wait state (cannot continue without hardware) */
+    rx_log_error(s_s_tag_tx, "Hardware initialization failed");
     while (1) {
       __asm__ volatile("wait");
     }
@@ -74,13 +84,13 @@ int main(void)
 
   /* Check if watchdog caused last reset */
   if (rx_iwdt_was_reset()) {
-    rx_log_error("main", "System recovered from watchdog reset");
+    rx_log_error(s_s_tag_tx, "System recovered from watchdog reset");
   }
 
   /* Enter ThreadX kernel (never returns) */
   tx_kernel_enter();
 
-  /* Should never reach here - enter low-power wait state if ThreadX fails */
+  /* Should never reach here - ThreadX scheduler failed to start */
   while (1) {
     __asm__ volatile("wait");
   }
@@ -97,19 +107,19 @@ void tx_application_define(void* first_unused_memory)
 {
   UINT             status = TX_SUCCESS;
   shared_state_t*  state  = NULL;
-  static const char* tag = "tx_app_def";
+  static const char* s_tag_tx = "tx_app_def";
 
   /* Suppress unused parameter warning */
   (void)first_unused_memory;
 
-  rx_log_info(tag, "ThreadX application definition starting");
+  rx_log_info(s_tag_tx, "ThreadX application definition starting");
 
   /* -------------------------------------------------------------------------
    * Initialize Diagnostics
    * -------------------------------------------------------------------------
    */
   diagnostics_init();
-  rx_log_info(tag, "Diagnostics initialized");
+  rx_log_info(s_tag_tx, "Diagnostics initialized");
 
   /* -------------------------------------------------------------------------
    * Initialize Shared State
@@ -119,10 +129,10 @@ void tx_application_define(void* first_unused_memory)
   state = shared_state_get();
   status = shared_state_init(state);
   if (status != TX_SUCCESS) {
-    rx_log_error(tag, "Shared state init failed");
+    rx_log_error(s_tag_tx, "Shared state init failed");
     return;
   }
-  rx_log_info(tag, "Shared state initialized");
+  rx_log_info(s_tag_tx, "Shared state initialized");
 
   /* -------------------------------------------------------------------------
    * Create Application Tasks
@@ -137,30 +147,30 @@ void tx_application_define(void* first_unused_memory)
   /* Create Motor_Controller thread (priority 2, 250 Hz) */
   status = motor_controller_create();
   if (status != TX_SUCCESS) {
-    rx_log_error(tag, "Motor_Controller creation failed");
+    rx_log_error(s_tag_tx, "Motor_Controller creation failed");
     return;
   }
 
   /* Create Comm_Manager thread (priority 3, 100 Hz) */
   status = comm_manager_create();
   if (status != TX_SUCCESS) {
-    rx_log_error(tag, "Comm_Manager creation failed");
+    rx_log_error(s_tag_tx, "Comm_Manager creation failed");
     return;
   }
 
   /* Create Env_Monitor thread (priority 5, 50 Hz) */
   status = env_monitor_create();
   if (status != TX_SUCCESS) {
-    rx_log_error(tag, "Env_Monitor creation failed");
+    rx_log_error(s_tag_tx, "Env_Monitor creation failed");
     return;
   }
 
   /* Create System_Health thread (priority 9, 1 Hz) */
   status = system_health_create();
   if (status != TX_SUCCESS) {
-    rx_log_error(tag, "System_Health creation failed");
+    rx_log_error(s_tag_tx, "System_Health creation failed");
     return;
   }
 
-  rx_log_info(tag, "ThreadX application definition complete");
+  rx_log_info(s_tag_tx, "ThreadX application definition complete");
 }
