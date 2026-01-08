@@ -4,19 +4,19 @@
 // STAR Project - Texas A&M University
 // January 2026
 
-#ifndef STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
-#define STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
+#ifndef STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_MESSAGE_CONVERTER_HPP_
+#define STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_MESSAGE_CONVERTER_HPP_
 
-#include <string>
+#include "star/v1/battery_management.pb.h"
+#include "star/v1/motor_control.pb.h"
+#include "star/v1/telemetry.pb.h"
+
 #include <cmath>
+#include <string>
 
 #include "geometry_msgs/msg/twist.hpp"
 #include "sensor_msgs/msg/battery_state.hpp"
 #include "std_msgs/msg/string.hpp"
-
-#include "star/v1/motor_control.pb.h"
-#include "star/v1/battery_management.pb.h"
-#include "star/v1/telemetry.pb.h"
 
 namespace star {
 
@@ -53,11 +53,10 @@ public:
    * @param sequence Optional sequence number for command ordering
    * @return true if conversion successful, false if input validation failed
    */
-  static bool twist_to_velocity_command(
-    const geometry_msgs::msg::Twist & twist,
-    star::v1::VelocityCommand & command,
-    double wheel_base = 0.150,
-    uint32_t sequence = 0);
+  static bool twist_to_velocity_command(const geometry_msgs::msg::Twist& twist,
+                                        star::v1::VelocityCommand&       command,
+                                        double                           wheel_base = 0.150,
+                                        uint32_t                         sequence   = 0);
 
   /**
    * @brief Convert ROS2 BatteryState message to Protobuf BatteryState.
@@ -75,9 +74,8 @@ public:
    * @param proto_battery Output BatteryState protobuf
    * @return true if conversion successful, false if input validation failed
    */
-  static bool battery_state_to_proto(
-    const sensor_msgs::msg::BatteryState & ros_battery,
-    star::v1::BatteryState & proto_battery);
+  static bool battery_state_to_proto(const sensor_msgs::msg::BatteryState& ros_battery,
+                                     star::v1::BatteryState&               proto_battery);
 
   /**
    * @brief Convert ROS2 String message to Protobuf SystemStatus.
@@ -89,9 +87,7 @@ public:
    * @param system_status Output SystemStatus protobuf
    * @return true if conversion successful, false if parse failed
    */
-  static bool string_to_system_status(
-    const std_msgs::msg::String & status_msg,
-    star::v1::SystemStatus & system_status);
+  static bool string_to_system_status(const std_msgs::msg::String& status_msg, star::v1::SystemStatus& system_status);
 
   // ===========================================================================
   // Protobuf → ROS2 Conversions
@@ -116,10 +112,9 @@ public:
    * @param wheel_base Distance between wheels in meters (default: 0.150m)
    * @return true if conversion successful, false if input validation failed
    */
-  static bool velocity_command_to_twist(
-    const star::v1::VelocityCommand & command,
-    geometry_msgs::msg::Twist & twist,
-    double wheel_base = 0.150);
+  static bool velocity_command_to_twist(const star::v1::VelocityCommand& command,
+                                        geometry_msgs::msg::Twist&       twist,
+                                        double                           wheel_base = 0.150);
 
   /**
    * @brief Convert Protobuf PidConfig to individual gains (for ROS2 service).
@@ -133,11 +128,7 @@ public:
    * @param kd Output derivative gain
    * @return true if conversion successful, false if input validation failed
    */
-  static bool pid_config_to_gains(
-    const star::v1::PidConfig & pid_config,
-    double & kp,
-    double & ki,
-    double & kd);
+  static bool pid_config_to_gains(const star::v1::PidConfig& pid_config, double& kp, double& ki, double& kd);
 
   // ===========================================================================
   // Validation Helpers
@@ -148,7 +139,8 @@ public:
    * @param value Value to validate
    * @return true if value is finite (not NaN, not infinity)
    */
-  static bool is_valid_double(double value) {
+  static bool is_valid_double(double value)
+  {
     return std::isfinite(value);
   }
 
@@ -159,7 +151,8 @@ public:
    * @param max Maximum allowed value
    * @return Clamped value
    */
-  static double clamp(double value, double min, double max) {
+  static double clamp(double value, double min, double max)
+  {
     return std::max(min, std::min(max, value));
   }
 
@@ -168,24 +161,24 @@ public:
    * @param time ROS2 time
    * @return Microseconds since epoch
    */
-  static int64_t ros_time_to_us(const rclcpp::Time & time);
+  static int64_t ros_time_to_us(const rclcpp::Time& time);
 
 private:
   // Differential drive kinematics constants
-  static constexpr double k_max_velocity_mps = 2.0;      // VelocityCommand valid range
-  static constexpr double k_max_angular_vel = 4.0;       // Maximum angular velocity (rad/s)
+  static constexpr double k_max_velocity_mps = 2.0; // VelocityCommand valid range
+  static constexpr double k_max_angular_vel  = 4.0; // Maximum angular velocity (rad/s)
 
   // Battery state constants (ROS2 sensor_msgs/BatteryState uses NaN for unknown)
   static constexpr float k_battery_nan_sentinel = NAN;
 
   // Unit conversion factors
-  static constexpr double k_v_to_mv = 1000.0;            // Volts to millivolts
-  static constexpr double k_a_to_ma = 1000.0;            // Amps to milliamps
-  static constexpr double k_ah_to_mah = 1000.0;          // Amp-hours to milliamp-hours
-  static constexpr double k_c_to_decic = 10.0;           // Celsius to deci-Celsius
-  static constexpr double k_percent_to_int = 100.0;      // 0-1 to 0-100%
+  static constexpr double k_v_to_mv        = 1000.0; // Volts to millivolts
+  static constexpr double k_a_to_ma        = 1000.0; // Amps to milliamps
+  static constexpr double k_ah_to_mah      = 1000.0; // Amp-hours to milliamp-hours
+  static constexpr double k_c_to_decic     = 10.0;   // Celsius to deci-Celsius
+  static constexpr double k_percent_to_int = 100.0;  // 0-1 to 0-100%
 };
 
-}  // namespace star
+} // namespace star
 
-#endif  // STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
+#endif // STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_MESSAGE_CONVERTER_HPP_

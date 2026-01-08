@@ -5,6 +5,7 @@
 // January 2026
 
 #include <memory>
+
 #include "rclcpp/rclcpp.hpp"
 #include "star_gateway_bridge/star_gateway_bridge_node.hpp"
 
@@ -19,7 +20,7 @@
  *     --ros-args -p gateway_address:=192.168.1.100:50051 \
  *                -p telemetry_rate_hz:=20.0
  */
-int main(int argc, char ** argv)
+int main(int argc, char** argv)
 {
   // Initialize ROS2
   rclcpp::init(argc, argv);
