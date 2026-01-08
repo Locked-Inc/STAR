@@ -285,10 +285,180 @@ static rx_err_t motor_subsystem_init(void)
 
 static rx_err_t control_loop_iteration(void)
 {
-    /* Stub implementation - Issues 7-9:
-     * - Control loop with encoder feedback and PID (Issue 7)
-     * - Current sensing and fault detection (Issue 8)
-     * - Emergency stop integration (Issue 9) */
+    /* -------------------------------------------------------------------------
+     * Issue 9: Check Emergency Stop Flag
+     * -------------------------------------------------------------------------
+     * If E-STOP is active, halt all motors immediately and skip control loop
+     */
+    shared_state_t* state = shared_state_get();
+
+    UINT status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
+    if (status != TX_SUCCESS) {
+        rx_log_error(s_tag, "Failed to acquire safety mutex");
+        return k_rx_err_threadx;
+    }
+
+    const bool emergency_stop = state->safety.emergency_stop;
+    tx_mutex_put(&state->safety_mutex);
+
+    if (emergency_stop) {
+        /* E-STOP active - halt all motors with brake */
+        for (uint8_t i = 0; i < k_motor_count; i++) {
+            rx_drv8243_stop(&s_motor_subsystem.motor_drivers[i], true);
+        }
+        return k_rx_ok; /* Skip rest of control loop */
+    }
+
+    /* -------------------------------------------------------------------------
+     * Issue 7: Read Encoder Feedback (4 motors)
+     * -------------------------------------------------------------------------
+     * Read encoder positions and compute velocities
+     */
+    const float dt = (float)k_control_loop_period_ms / 1000.0f; /* 0.004 seconds (4ms) */
+
+    for (uint8_t i = 0; i < k_motor_count; i++) {
+        int32_t count = 0;
+        rx_err_t ret = rx_encoder_read_count((rx_mtu_channel_t)(i + 1), &count);
+        if (ret != k_rx_ok) {
+            rx_log_error(s_tag, "Encoder read failed");
+            continue;
+        }
+
+        /* Update encoder state */
+        const int32_t delta_count = count - s_motor_subsystem.encoder_states[i].total_count;
+        s_motor_subsystem.encoder_states[i].total_count = count;
+        s_motor_subsystem.encoder_states[i].last_raw_count = (uint16_t)(count & 0xFFFF);
+
+        /* Compute velocity (counts per second) */
+        const float velocity_cps = (float)delta_count / dt;
+
+        /* Convert to revolutions per second */
+        const float velocity_rps = velocity_cps / (float)k_encoder_cpr;
+
+        /* Convert to linear velocity (m/s) assuming wheel radius */
+        const float wheel_circumference_m = 2.0f * 3.14159f * ((float)k_wheel_radius_mm / 1000.0f);
+        const float velocity_mps = velocity_rps * wheel_circumference_m;
+
+        /* Update shared encoder feedback */
+        status = tx_mutex_get(&state->encoder_mutex, TX_WAIT_FOREVER);
+        if (status != TX_SUCCESS) {
+            rx_log_error(s_tag, "Failed to acquire encoder mutex");
+            continue;
+        }
+
+        state->encoders[i].ticks = count;
+        state->encoders[i].velocity_mps = velocity_mps;
+        state->encoders[i].timestamp_ms = tx_time_get(); /* ThreadX ticks */
+
+        tx_mutex_put(&state->encoder_mutex);
+    }
+
+    /* -------------------------------------------------------------------------
+     * Issue 7: Read Motor Setpoint
+     * -------------------------------------------------------------------------
+     * Get commanded velocities from shared state
+     */
+    status = tx_mutex_get(&state->setpoint_mutex, TX_WAIT_FOREVER);
+    if (status != TX_SUCCESS) {
+        rx_log_error(s_tag, "Failed to acquire setpoint mutex");
+        return k_rx_err_threadx;
+    }
+
+    const bool setpoint_valid = state->setpoint.valid;
+    float target_velocities[k_motor_count];
+    for (uint8_t i = 0; i < k_motor_count; i++) {
+        target_velocities[i] = state->setpoint.motor_velocities_mps[i];
+    }
+
+    tx_mutex_put(&state->setpoint_mutex);
+
+    /* If no valid setpoint, coast motors (0% duty cycle) */
+    if (!setpoint_valid) {
+        for (uint8_t i = 0; i < k_motor_count; i++) {
+            rx_drv8243_set_speed(&s_motor_subsystem.motor_drivers[i], 0.0f);
+        }
+        return k_rx_ok;
+    }
+
+    /* -------------------------------------------------------------------------
+     * Issue 7: Compute PID and Apply Motor Control
+     * -------------------------------------------------------------------------
+     * For each motor: run PID controller and apply duty cycle
+     */
+    for (uint8_t i = 0; i < k_motor_count; i++) {
+        /* Get current velocity from shared state */
+        status = tx_mutex_get(&state->encoder_mutex, TX_WAIT_FOREVER);
+        if (status != TX_SUCCESS) {
+            rx_log_error(s_tag, "Failed to acquire encoder mutex");
+            continue;
+        }
+
+        const float measured_velocity = state->encoders[i].velocity_mps;
+        tx_mutex_put(&state->encoder_mutex);
+
+        /* Compute PID output (duty cycle percentage) */
+        float output = 0.0f;
+        rx_err_t ret = rx_pid_compute(
+            &s_motor_subsystem.pid_controllers[i],
+            target_velocities[i],
+            measured_velocity,
+            dt,
+            &output
+        );
+
+        if (ret != k_rx_ok) {
+            rx_log_error(s_tag, "PID compute failed");
+            continue;
+        }
+
+        /* Apply duty cycle to motor driver (-100% to +100%) */
+        ret = rx_drv8243_set_speed(&s_motor_subsystem.motor_drivers[i], output / 100.0f);
+        if (ret != k_rx_ok) {
+            rx_log_error(s_tag, "Motor set speed failed");
+        }
+    }
+
+    /* -------------------------------------------------------------------------
+     * Issue 8: Current Sensing and Fault Detection
+     * -------------------------------------------------------------------------
+     * Read motor currents and check for faults
+     */
+    for (uint8_t i = 0; i < k_motor_count; i++) {
+        float current_ma = 0.0f;
+        rx_err_t ret = rx_drv8243_read_current(&s_motor_subsystem.motor_drivers[i], &current_ma);
+        if (ret != k_rx_ok) {
+            rx_log_error(s_tag, "Current read failed");
+            continue;
+        }
+
+        /* Check for overcurrent */
+        if (current_ma > (float)k_drv8243_overcurrent_ma) {
+            rx_log_error(s_tag, "Motor overcurrent detected");
+
+            /* Set fault flag in safety state */
+            status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
+            if (status == TX_SUCCESS) {
+                state->safety.fault_flags |= (1 << i);
+                state->safety.emergency_stop = true; /* Trigger E-STOP on overcurrent */
+                tx_mutex_put(&state->safety_mutex);
+            }
+        }
+
+        /* Check for nFAULT pin */
+        bool fault_detected = false;
+        ret = rx_drv8243_get_fault_status(&s_motor_subsystem.motor_drivers[i], &fault_detected);
+        if (ret == k_rx_ok && fault_detected) {
+            rx_log_error(s_tag, "Motor driver fault (nFAULT)");
+
+            /* Set fault flag and trigger E-STOP */
+            status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
+            if (status == TX_SUCCESS) {
+                state->safety.fault_flags |= (1 << i);
+                state->safety.emergency_stop = true;
+                tx_mutex_put(&state->safety_mutex);
+            }
+        }
+    }
 
     return k_rx_ok;
 }
