@@ -21,7 +21,7 @@ on:
 env:
   BUF_VERSION: '1.28.1'
   NODE_VERSION: '20'
-  GO_VERSION: '1.24'
+  GO_VERSION: '1.24.x'
 
 jobs:
   # ============================================
