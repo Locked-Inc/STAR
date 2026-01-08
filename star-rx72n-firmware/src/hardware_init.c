@@ -1,3 +1,5 @@
+/* src/hardware_init.c */
+
 /**
  * @file hardware_init.c
  * @brief Hardware initialization implementation
