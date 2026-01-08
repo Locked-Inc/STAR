@@ -33,61 +33,33 @@
 static const char* s_tag = "hardware_init";
 
 /* =============================================================================
- * Public API Implementation
+ * Private Function Prototypes
  * =============================================================================
  */
 
-rx_err_t hardware_init_all(void)
+/**
+ * @brief Initialize motor subsystem (encoders, PWM, current sensing)
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t motor_subsystem_init(void);
+
+/**
+ * @brief Initialize communication subsystem (SPI, I2C, 1-Wire, USB CDC)
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t communication_subsystem_init(void);
+
+/* =============================================================================
+ * Private Function Implementations
+ * =============================================================================
+ */
+
+static rx_err_t motor_subsystem_init(void)
 {
     rx_err_t ret = k_rx_ok;
 
     /* -------------------------------------------------------------------------
-     * 1. System Clocks
-     * -------------------------------------------------------------------------
-     * Initialize PLL to 240 MHz, PCLKA=120MHz, PCLKB=60MHz
-     */
-    ret = system_init();
-    if (ret != k_rx_ok) {
-        /* Cannot log yet - UART not initialized */
-        return ret;
-    }
-
-    /* -------------------------------------------------------------------------
-     * 2. Debug UART
-     * -------------------------------------------------------------------------
-     * Initialize SCI9 for debug output (115200 baud)
-     */
-    ret = uart_init();
-    if (ret != k_rx_ok) {
-        return ret;
-    }
-
-    rx_log_info(s_tag, "STAR RX72N Firmware Initialization");
-    rx_log_info(s_tag, "System clock: 240 MHz");
-
-    /* -------------------------------------------------------------------------
-     * 3. GPIO Ports
-     * -------------------------------------------------------------------------
-     * Configure all GPIO pins for motor control, sensors, communication
-     * Pin configuration is done by individual peripheral init functions
-     */
-    rx_log_info(s_tag, "GPIO ports initialized");
-
-    /* -------------------------------------------------------------------------
-     * 4. Watchdog Timer (IWDT)
-     * -------------------------------------------------------------------------
-     * Initialize independent watchdog with 1000ms timeout
-     * Must be fed every 4ms by Motor_Controller thread (250 Hz)
-     */
-    ret = rx_iwdt_init(k_iwdt_timeout_ms);
-    if (ret != k_rx_ok) {
-        rx_log_error(s_tag, "IWDT init failed");
-        return ret;
-    }
-    rx_log_info(s_tag, "Watchdog initialized (1000ms timeout)");
-
-    /* -------------------------------------------------------------------------
-     * 5. MTU Encoders (Quadrature Counting)
+     * MTU Encoders (Quadrature Counting)
      * -------------------------------------------------------------------------
      * Initialize MTU channels 1-4 for encoder quadrature counting
      * 341 PPR with 4x decoding = 1364 counts per revolution
@@ -109,7 +81,7 @@ rx_err_t hardware_init_all(void)
     rx_log_info(s_tag, "MTU encoders initialized (4 channels, 1364 CPR)");
 
     /* -------------------------------------------------------------------------
-     * 6. GPTW PWM (Motor Drivers)
+     * GPTW PWM (Motor Drivers)
      * -------------------------------------------------------------------------
      * Initialize GPTW channels for 20 kHz PWM generation
      * 120 MHz / 20 kHz = 6000 discrete duty cycle steps
@@ -131,7 +103,7 @@ rx_err_t hardware_init_all(void)
     rx_log_info(s_tag, "GPTW PWM initialized (4 channels, 20 kHz)");
 
     /* -------------------------------------------------------------------------
-     * 7. ADC (Current Sensing)
+     * ADC (Current Sensing)
      * -------------------------------------------------------------------------
      * Initialize ADC for motor current sensing (12-bit resolution)
      * AN000-AN003 for 4 motor drivers (DRV8243S IPROPI outputs)
@@ -152,8 +124,15 @@ rx_err_t hardware_init_all(void)
     }
     rx_log_info(s_tag, "ADC initialized (4 channels, 12-bit)");
 
+    return k_rx_ok;
+}
+
+static rx_err_t communication_subsystem_init(void)
+{
+    rx_err_t ret = k_rx_ok;
+
     /* -------------------------------------------------------------------------
-     * 8. SPI (Motor Drivers + RPi5)
+     * SPI (Motor Drivers + RPi5)
      * -------------------------------------------------------------------------
      * Initialize RSPI in peripheral mode for RPi5 communication
      * Also used for DRV8243S motor driver configuration
@@ -166,7 +145,7 @@ rx_err_t hardware_init_all(void)
     rx_log_info(s_tag, "SPI initialized (peripheral mode)");
 
     /* -------------------------------------------------------------------------
-     * 9. I2C (Battery Management)
+     * I2C (Battery Management)
      * -------------------------------------------------------------------------
      * Initialize RIIC for BQ4050 fuel gauge communication
      */
@@ -178,7 +157,7 @@ rx_err_t hardware_init_all(void)
     rx_log_info(s_tag, "I2C initialized (400 kHz)");
 
     /* -------------------------------------------------------------------------
-     * 10. 1-Wire (Temperature Sensor)
+     * 1-Wire (Temperature Sensor)
      * -------------------------------------------------------------------------
      * Initialize 1-Wire bus for DS18B20 temperature monitoring
      * P05 (pin 100) with 4.7kΩ pull-up to 3.3V
@@ -199,7 +178,7 @@ rx_err_t hardware_init_all(void)
     rx_log_info(s_tag, "1-Wire initialized (DS18B20 on P05)");
 
     /* -------------------------------------------------------------------------
-     * 11. USB CDC (Primary Communication)
+     * USB CDC (Primary Communication)
      * -------------------------------------------------------------------------
      * Initialize USB CDC-ACM for RPi5 communication (primary mode)
      */
@@ -211,12 +190,56 @@ rx_err_t hardware_init_all(void)
     }
     rx_log_info(s_tag, "USB CDC initialized (primary communication)");
 
-    /* -------------------------------------------------------------------------
-     * 12. Register Guard
-     * -------------------------------------------------------------------------
-     * Capture golden register values for ESD/EMI protection
-     * IMPORTANT: Must be called AFTER all peripheral initialization complete
-     */
+    return k_rx_ok;
+}
+
+/* =============================================================================
+ * Public API Implementation
+ * =============================================================================
+ */
+
+rx_err_t hardware_init_all(void)
+{
+    rx_err_t ret = k_rx_ok;
+
+    /* Initialize system clocks (240 MHz PLL) */
+    ret = system_init();
+    if (ret != k_rx_ok) {
+        /* Cannot log yet - UART not initialized */
+        return ret;
+    }
+
+    /* Initialize debug UART (115200 baud) */
+    ret = uart_init();
+    if (ret != k_rx_ok) {
+        return ret;
+    }
+
+    rx_log_info(s_tag, "STAR RX72N Firmware Initialization");
+    rx_log_info(s_tag, "System clock: 240 MHz");
+
+    /* Initialize watchdog timer (1000ms timeout) */
+    ret = rx_iwdt_init(k_iwdt_timeout_ms);
+    if (ret != k_rx_ok) {
+        rx_log_error(s_tag, "IWDT init failed");
+        return ret;
+    }
+    rx_log_info(s_tag, "Watchdog initialized (1000ms timeout)");
+
+    /* Initialize motor subsystem (encoders, PWM, current sensing) */
+    ret = motor_subsystem_init();
+    if (ret != k_rx_ok) {
+        return ret;
+    }
+
+    /* Initialize communication subsystem (SPI, I2C, 1-Wire, USB CDC) */
+    ret = communication_subsystem_init();
+    if (ret != k_rx_ok) {
+        return ret;
+    }
+
+    /* Initialize register guard (ESD/EMI protection)
+     * IMPORTANT: Must be called AFTER all peripheral initialization */
     ret = rx_register_guard_init();
     if (ret != k_rx_ok) {
         rx_log_error(s_tag, "Register guard init failed");
@@ -224,10 +247,6 @@ rx_err_t hardware_init_all(void)
     }
     rx_log_info(s_tag, "Register guard initialized (ESD/EMI protection)");
 
-    /* -------------------------------------------------------------------------
-     * Initialization Complete
-     * -------------------------------------------------------------------------
-     */
     rx_log_info(s_tag, "Hardware initialization complete");
 
     return k_rx_ok;
