@@ -15,6 +15,7 @@
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+#include "rx_register_protection.h"
 
 /* =============================================================================
  * Constants
@@ -35,11 +36,6 @@ typedef enum {
   k_riic_channel_2 = 2, /**< RIIC2 */
 } riic_channel_num_t;
 
-/** @brief System protection register values */
-typedef enum {
-  k_riic_prcr_unlock = 0xA50B, /**< Enable writes to MSTPCR */
-  k_riic_prcr_lock   = 0xA500, /**< Disable writes to MSTPCR */
-} riic_prcr_values_t;
 
 /** @brief RIIC module stop bit positions in MSTPCRB */
 typedef enum {
@@ -338,7 +334,7 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   }
 
   /* Enable RIIC module (clear module stop bit) */
-  system_regs()->prcr = k_riic_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
   if (channel == k_riic_channel_0) {
     system_regs()->mstpcrb &= ~(1UL << k_riic_mstpb_riic0);
@@ -348,7 +344,7 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
     system_regs()->mstpcrb &= ~(1UL << k_riic_mstpb_riic2);
   }
 
-  system_regs()->prcr = k_riic_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   /* Reset RIIC */
   riic->iccr1 = k_riic_iccr1_iicrst;
