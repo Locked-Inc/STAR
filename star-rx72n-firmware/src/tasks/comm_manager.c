@@ -1,4 +1,4 @@
-/* star-rx72n-firmware/src/tasks/comm_manager.c */
+/* src/tasks/comm_manager.c */
 
 /**
  * @file comm_manager.c

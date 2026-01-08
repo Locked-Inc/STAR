@@ -1,4 +1,4 @@
-/* star-rx72n-firmware/include/shared_state.h */
+/* include/shared_state.h */
 
 /**
  * @file shared_state.h

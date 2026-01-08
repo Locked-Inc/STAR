@@ -1,4 +1,4 @@
-/* star-rx72n-firmware/include/motor_config.h */
+/* include/motor_config.h */
 
 /**
  * @file motor_config.h

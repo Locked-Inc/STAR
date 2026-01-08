@@ -1,4 +1,4 @@
-/* star-rx72n-firmware/include/tasks/system_health.h */
+/* include/tasks/system_health.h */
 
 /**
  * @file system_health.h

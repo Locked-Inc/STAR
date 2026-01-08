@@ -1,4 +1,4 @@
-/* star-rx72n-firmware/include/tasks/comm_manager.h */
+/* include/tasks/comm_manager.h */
 
 /**
  * @file comm_manager.h

@@ -1,4 +1,4 @@
-/* star-rx72n-firmware/include/diagnostics.h */
+/* include/diagnostics.h */
 
 /**
  * @file diagnostics.h

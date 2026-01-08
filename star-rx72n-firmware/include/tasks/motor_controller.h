@@ -1,4 +1,4 @@
-/* star-rx72n-firmware/include/tasks/motor_controller.h */
+/* include/tasks/motor_controller.h */
 
 /**
  * @file motor_controller.h
