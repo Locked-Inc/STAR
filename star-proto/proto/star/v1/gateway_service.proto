@@ -16,9 +16,9 @@ syntax = "proto3";
 
 package star.v1;
 
+import "star/v1/battery_management.proto";
 import "star/v1/common.proto";
 import "star/v1/motor_control.proto";
-import "star/v1/battery_management.proto";
 import "star/v1/telemetry.proto";
 
 option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
