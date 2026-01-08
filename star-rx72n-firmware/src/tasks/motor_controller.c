@@ -346,9 +346,9 @@ static rx_err_t control_loop_iteration(void)
             continue;
         }
 
-        state->encoders[i].ticks = count;
-        state->encoders[i].velocity_mps = velocity_mps;
-        state->encoders[i].timestamp_ms = tx_time_get(); /* ThreadX ticks */
+        state->encoders.motors[i].ticks = count;
+        state->encoders.motors[i].velocity_mps = velocity_mps;
+        state->encoders.motors[i].timestamp_ms = tx_time_get(); /* ThreadX ticks */
 
         tx_mutex_put(&state->encoder_mutex);
     }
@@ -367,7 +367,7 @@ static rx_err_t control_loop_iteration(void)
     const bool setpoint_valid = state->setpoint.valid;
     float target_velocities[k_motor_count];
     for (uint8_t i = 0; i < k_motor_count; i++) {
-        target_velocities[i] = state->setpoint.motor_velocities_mps[i];
+        target_velocities[i] = state->setpoint.velocity_mps[i];
     }
 
     tx_mutex_put(&state->setpoint_mutex);
@@ -393,7 +393,7 @@ static rx_err_t control_loop_iteration(void)
             continue;
         }
 
-        const float measured_velocity = state->encoders[i].velocity_mps;
+        const float measured_velocity = state->encoders.motors[i].velocity_mps;
         tx_mutex_put(&state->encoder_mutex);
 
         /* Compute PID output (duty cycle percentage) */
