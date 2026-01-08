@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "rx_err.h"
+#include "unity.h"
 
 /* =============================================================================
  * Forward Declarations and Type Redefinitions for Testing
@@ -727,21 +728,6 @@ static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle
  * =============================================================================
  */
 
-#define TEST_ASSERT(cond, msg)                                                                     \
-  do {                                                                                             \
-    if (!(cond)) {                                                                                 \
-      printf("FAIL: %s (line %d): %s\n", __func__, __LINE__, msg);                                 \
-      return 1;                                                                                    \
-    }                                                                                              \
-  } while (0)
-
-#define TEST_ASSERT_EQ(a, b, msg) TEST_ASSERT((a) == (b), msg)
-#define TEST_ASSERT_NE(a, b, msg) TEST_ASSERT((a) != (b), msg)
-#define TEST_ASSERT_OK(err)       TEST_ASSERT((err) == k_rx_ok, "Expected k_rx_ok")
-
-#define FLOAT_EPSILON                   0.01f
-#define TEST_ASSERT_FLOAT_EQ(a, b, msg) TEST_ASSERT(fabsf((a) - (b)) < FLOAT_EPSILON, msg)
-
 static void test_setup(void)
 {
   mock_reset_all();
@@ -775,7 +761,7 @@ static rx_drv8243_config_t create_default_config(void)
  * =============================================================================
  */
 
-static int test_init_success(void)
+static void test_init_success(void)
 {
   test_setup();
 
@@ -783,42 +769,33 @@ static int test_init_success(void)
   rx_drv8243_config_t config = create_default_config();
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT(handle.initialized, "Handle should be initialized");
-  TEST_ASSERT(s_motor_initialized, "Motor should be initialized");
-  TEST_ASSERT_EQ(handle.ki_propi, k_drv8243_default_ki_propi, "Should use default ki_propi");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(handle.initialized);
+  TEST_ASSERT_TRUE(s_motor_initialized);
+  TEST_ASSERT_EQUAL(k_drv8243_default_ki_propi, handle.ki_propi);
 }
 
-static int test_init_null_handle(void)
+static void test_init_null_handle(void)
 {
   test_setup();
 
   rx_drv8243_config_t config = create_default_config();
 
   rx_err_t err = rx_drv8243_init(NULL, &config);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_init_null_config(void)
+static void test_init_null_config(void)
 {
   test_setup();
 
   rx_drv8243_handle_t handle = {0};
 
   rx_err_t err = rx_drv8243_init(&handle, NULL);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_init_null_bus_manager(void)
+static void test_init_null_bus_manager(void)
 {
   test_setup();
 
@@ -827,13 +804,10 @@ static int test_init_null_bus_manager(void)
   config.bus_manager         = NULL;
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_init_null_gpio_bus_name(void)
+static void test_init_null_gpio_bus_name(void)
 {
   test_setup();
 
@@ -842,13 +816,10 @@ static int test_init_null_gpio_bus_name(void)
   config.gpio_bus_name       = NULL;
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_init_null_adc_bus_name(void)
+static void test_init_null_adc_bus_name(void)
 {
   test_setup();
 
@@ -857,13 +828,10 @@ static int test_init_null_adc_bus_name(void)
   config.adc_bus_name        = NULL;
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_init_already_initialized(void)
+static void test_init_already_initialized(void)
 {
   test_setup();
 
@@ -873,13 +841,10 @@ static int test_init_already_initialized(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_EQ(err, k_rx_err_invalid_state, "Should return invalid state error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
-static int test_init_pwm_freq_too_high(void)
+static void test_init_pwm_freq_too_high(void)
 {
   test_setup();
 
@@ -888,13 +853,10 @@ static int test_init_pwm_freq_too_high(void)
   config.pwm_freq_hz         = 30000; /* Exceeds 25kHz limit */
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_EQ(err, k_rx_err_invalid_arg, "Should return invalid arg error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
-static int test_init_custom_ki_propi(void)
+static void test_init_custom_ki_propi(void)
 {
   test_setup();
 
@@ -903,14 +865,11 @@ static int test_init_custom_ki_propi(void)
   config.ki_propi            = 600;
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_EQ(handle.ki_propi, 600, "Should use custom ki_propi");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(600, handle.ki_propi);
 }
 
-static int test_init_motor_failure(void)
+static void test_init_motor_failure(void)
 {
   test_setup();
   mock_set_motor_init_error(k_rx_err_hw_init_failed);
@@ -919,13 +878,10 @@ static int test_init_motor_failure(void)
   rx_drv8243_config_t config = create_default_config();
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_EQ(err, k_rx_err_hw_init_failed, "Should propagate motor init error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_hw_init_failed, err);
 }
 
-static int test_init_fault_pin_configuration(void)
+static void test_init_fault_pin_configuration(void)
 {
   test_setup();
 
@@ -935,12 +891,9 @@ static int test_init_fault_pin_configuration(void)
   config.pin_nfault          = 3;
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT(s_fault_pin_configured, "Fault pin should be configured as input");
-  TEST_ASSERT(s_pullup_enabled, "Pull-up should be enabled on fault pin");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_fault_pin_configured);
+  TEST_ASSERT_TRUE(s_pullup_enabled);
 }
 
 /* =============================================================================
@@ -948,7 +901,7 @@ static int test_init_fault_pin_configuration(void)
  * =============================================================================
  */
 
-static int test_deinit_success(void)
+static void test_deinit_success(void)
 {
   test_setup();
 
@@ -957,36 +910,27 @@ static int test_deinit_success(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_deinit(&handle);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT(!handle.initialized, "Handle should not be initialized");
-  TEST_ASSERT(!s_motor_initialized, "Motor should be deinitialized");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(!handle.initialized);
+  TEST_ASSERT_TRUE(!s_motor_initialized);
 }
 
-static int test_deinit_null_handle(void)
+static void test_deinit_null_handle(void)
 {
   test_setup();
 
   rx_err_t err = rx_drv8243_deinit(NULL);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_deinit_not_initialized(void)
+static void test_deinit_not_initialized(void)
 {
   test_setup();
 
   rx_drv8243_handle_t handle = {0};
 
   rx_err_t err = rx_drv8243_deinit(&handle);
-  TEST_ASSERT_EQ(err, k_rx_err_invalid_state, "Should return invalid state error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 /* =============================================================================
@@ -994,7 +938,7 @@ static int test_deinit_not_initialized(void)
  * =============================================================================
  */
 
-static int test_set_speed_forward(void)
+static void test_set_speed_forward(void)
 {
   test_setup();
 
@@ -1003,15 +947,12 @@ static int test_set_speed_forward(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_set_speed(&handle, 50.0f);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(s_motor_duty, 50.0f, "Motor duty should be 50%");
-  TEST_ASSERT_FLOAT_EQ(handle.current_speed, 50.0f, "Handle speed should be 50%");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 50.0f, s_motor_duty);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 50.0f, handle.current_speed);
 }
 
-static int test_set_speed_reverse(void)
+static void test_set_speed_reverse(void)
 {
   test_setup();
 
@@ -1020,15 +961,12 @@ static int test_set_speed_reverse(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_set_speed(&handle, -75.0f);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(s_motor_duty, -75.0f, "Motor duty should be -75%");
-  TEST_ASSERT_FLOAT_EQ(handle.current_speed, -75.0f, "Handle speed should be -75%");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, -75.0f, s_motor_duty);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, -75.0f, handle.current_speed);
 }
 
-static int test_set_speed_clamp_max(void)
+static void test_set_speed_clamp_max(void)
 {
   test_setup();
 
@@ -1037,14 +975,11 @@ static int test_set_speed_clamp_max(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_set_speed(&handle, 150.0f);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(s_motor_duty, 100.0f, "Motor duty should be clamped to 100%");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 100.0f, s_motor_duty);
 }
 
-static int test_set_speed_clamp_min(void)
+static void test_set_speed_clamp_min(void)
 {
   test_setup();
 
@@ -1053,14 +988,11 @@ static int test_set_speed_clamp_min(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_set_speed(&handle, -150.0f);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(s_motor_duty, -100.0f, "Motor duty should be clamped to -100%");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, -100.0f, s_motor_duty);
 }
 
-static int test_set_speed_zero(void)
+static void test_set_speed_zero(void)
 {
   test_setup();
 
@@ -1070,38 +1002,29 @@ static int test_set_speed_zero(void)
   rx_drv8243_set_speed(&handle, 50.0f);
 
   rx_err_t err = rx_drv8243_set_speed(&handle, 0.0f);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(s_motor_duty, 0.0f, "Motor duty should be 0%");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, s_motor_duty);
 }
 
-static int test_set_speed_null_handle(void)
+static void test_set_speed_null_handle(void)
 {
   test_setup();
 
   rx_err_t err = rx_drv8243_set_speed(NULL, 50.0f);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_set_speed_not_initialized(void)
+static void test_set_speed_not_initialized(void)
 {
   test_setup();
 
   rx_drv8243_handle_t handle = {0};
 
   rx_err_t err = rx_drv8243_set_speed(&handle, 50.0f);
-  TEST_ASSERT_EQ(err, k_rx_err_invalid_state, "Should return invalid state error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
-static int test_set_speed_with_fault(void)
+static void test_set_speed_with_fault(void)
 {
   test_setup();
 
@@ -1113,10 +1036,7 @@ static int test_set_speed_with_fault(void)
   mock_set_fault(true);
 
   rx_err_t err = rx_drv8243_set_speed(&handle, 50.0f);
-  TEST_ASSERT_EQ(err, k_rx_err_invalid_state, "Should return invalid state error on fault");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 /* =============================================================================
@@ -1124,7 +1044,7 @@ static int test_set_speed_with_fault(void)
  * =============================================================================
  */
 
-static int test_stop_brake(void)
+static void test_stop_brake(void)
 {
   test_setup();
 
@@ -1134,16 +1054,13 @@ static int test_stop_brake(void)
   rx_drv8243_set_speed(&handle, 50.0f);
 
   rx_err_t err = rx_drv8243_stop(&handle, true);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT(s_motor_stopped, "Motor should be stopped");
-  TEST_ASSERT(s_motor_brake_mode, "Should be in brake mode");
-  TEST_ASSERT_FLOAT_EQ(handle.current_speed, 0.0f, "Speed should be 0");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_motor_stopped);
+  TEST_ASSERT_TRUE(s_motor_brake_mode);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, handle.current_speed);
 }
 
-static int test_stop_coast(void)
+static void test_stop_coast(void)
 {
   test_setup();
 
@@ -1153,37 +1070,28 @@ static int test_stop_coast(void)
   rx_drv8243_set_speed(&handle, 50.0f);
 
   rx_err_t err = rx_drv8243_stop(&handle, false);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT(s_motor_stopped, "Motor should be stopped");
-  TEST_ASSERT(!s_motor_brake_mode, "Should be in coast mode");
-  TEST_ASSERT_FLOAT_EQ(handle.current_speed, 0.0f, "Speed should be 0");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_motor_stopped);
+  TEST_ASSERT_TRUE(!s_motor_brake_mode);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, handle.current_speed);
 }
 
-static int test_stop_null_handle(void)
+static void test_stop_null_handle(void)
 {
   test_setup();
 
   rx_err_t err = rx_drv8243_stop(NULL, true);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_stop_not_initialized(void)
+static void test_stop_not_initialized(void)
 {
   test_setup();
 
   rx_drv8243_handle_t handle = {0};
 
   rx_err_t err = rx_drv8243_stop(&handle, true);
-  TEST_ASSERT_EQ(err, k_rx_err_invalid_state, "Should return invalid state error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 /* =============================================================================
@@ -1191,7 +1099,7 @@ static int test_stop_not_initialized(void)
  * =============================================================================
  */
 
-static int test_current_limit_below_threshold(void)
+static void test_current_limit_below_threshold(void)
 {
   test_setup();
 
@@ -1204,14 +1112,11 @@ static int test_current_limit_below_threshold(void)
   mock_set_adc_voltage(1000);
 
   rx_err_t err = rx_drv8243_set_speed(&handle, 100.0f);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(s_motor_duty, 100.0f, "Speed should not be reduced");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 100.0f, s_motor_duty);
 }
 
-static int test_current_limit_above_threshold(void)
+static void test_current_limit_above_threshold(void)
 {
   test_setup();
 
@@ -1224,15 +1129,12 @@ static int test_current_limit_above_threshold(void)
   mock_set_adc_voltage(2000);
 
   rx_err_t err = rx_drv8243_set_speed(&handle, 100.0f);
-  TEST_ASSERT_OK(err);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Speed should be reduced by 0.9 factor: 100 * 0.9 = 90% */
-  TEST_ASSERT_FLOAT_EQ(s_motor_duty, 90.0f, "Speed should be reduced by 0.9 factor");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 90.0f, s_motor_duty);
 }
 
-static int test_current_limit_disabled(void)
+static void test_current_limit_disabled(void)
 {
   test_setup();
 
@@ -1245,14 +1147,11 @@ static int test_current_limit_disabled(void)
   mock_set_adc_voltage(10000);
 
   rx_err_t err = rx_drv8243_set_speed(&handle, 100.0f);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(s_motor_duty, 100.0f, "Speed should not be reduced when limit disabled");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 100.0f, s_motor_duty);
 }
 
-static int test_set_current_limit_success(void)
+static void test_set_current_limit_success(void)
 {
   test_setup();
 
@@ -1261,35 +1160,26 @@ static int test_set_current_limit_success(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_set_current_limit(&handle, 1500);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_EQ(handle.current_limit_ma, 1500, "Current limit should be updated");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(1500, handle.current_limit_ma);
 }
 
-static int test_set_current_limit_null_handle(void)
+static void test_set_current_limit_null_handle(void)
 {
   test_setup();
 
   rx_err_t err = rx_drv8243_set_current_limit(NULL, 1500);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_set_current_limit_not_initialized(void)
+static void test_set_current_limit_not_initialized(void)
 {
   test_setup();
 
   rx_drv8243_handle_t handle = {0};
 
   rx_err_t err = rx_drv8243_set_current_limit(&handle, 1500);
-  TEST_ASSERT_EQ(err, k_rx_err_invalid_state, "Should return invalid state error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 /* =============================================================================
@@ -1297,7 +1187,7 @@ static int test_set_current_limit_not_initialized(void)
  * =============================================================================
  */
 
-static int test_read_current_zero(void)
+static void test_read_current_zero(void)
 {
   test_setup();
 
@@ -1309,14 +1199,11 @@ static int test_read_current_zero(void)
 
   float    current_ma;
   rx_err_t err = rx_drv8243_read_current(&handle, &current_ma);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(current_ma, 0.0f, "Current should be 0 mA");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, current_ma);
 }
 
-static int test_read_current_typical(void)
+static void test_read_current_typical(void)
 {
   test_setup();
 
@@ -1329,14 +1216,11 @@ static int test_read_current_typical(void)
 
   float    current_ma;
   rx_err_t err = rx_drv8243_read_current(&handle, &current_ma);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(current_ma, 525.0f, "Current should be 525 mA");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 525.0f, current_ma);
 }
 
-static int test_read_current_high(void)
+static void test_read_current_high(void)
 {
   test_setup();
 
@@ -1349,14 +1233,11 @@ static int test_read_current_high(void)
 
   float    current_ma;
   rx_err_t err = rx_drv8243_read_current(&handle, &current_ma);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(current_ma, 1050.0f, "Current should be 1050 mA");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 1050.0f, current_ma);
 }
 
-static int test_read_current_custom_ki_propi(void)
+static void test_read_current_custom_ki_propi(void)
 {
   test_setup();
 
@@ -1370,26 +1251,20 @@ static int test_read_current_custom_ki_propi(void)
 
   float    current_ma;
   rx_err_t err = rx_drv8243_read_current(&handle, &current_ma);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(current_ma, 600.0f, "Current should be 600 mA with custom ki_propi");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 600.0f, current_ma);
 }
 
-static int test_read_current_null_handle(void)
+static void test_read_current_null_handle(void)
 {
   test_setup();
 
   float    current_ma;
   rx_err_t err = rx_drv8243_read_current(NULL, &current_ma);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_read_current_null_output(void)
+static void test_read_current_null_output(void)
 {
   test_setup();
 
@@ -1398,13 +1273,10 @@ static int test_read_current_null_output(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_read_current(&handle, NULL);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_read_current_not_initialized(void)
+static void test_read_current_not_initialized(void)
 {
   test_setup();
 
@@ -1412,13 +1284,10 @@ static int test_read_current_not_initialized(void)
   float               current_ma;
 
   rx_err_t err = rx_drv8243_read_current(&handle, &current_ma);
-  TEST_ASSERT_EQ(err, k_rx_err_invalid_state, "Should return invalid state error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
-static int test_read_current_adc_error(void)
+static void test_read_current_adc_error(void)
 {
   test_setup();
 
@@ -1430,10 +1299,7 @@ static int test_read_current_adc_error(void)
 
   float    current_ma;
   rx_err_t err = rx_drv8243_read_current(&handle, &current_ma);
-  TEST_ASSERT_EQ(err, k_rx_err_timeout, "Should propagate ADC error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
 
 /* =============================================================================
@@ -1441,7 +1307,7 @@ static int test_read_current_adc_error(void)
  * =============================================================================
  */
 
-static int test_get_fault_status_no_fault(void)
+static void test_get_fault_status_no_fault(void)
 {
   test_setup();
 
@@ -1453,14 +1319,11 @@ static int test_get_fault_status_no_fault(void)
 
   bool     fault;
   rx_err_t err = rx_drv8243_get_fault_status(&handle, &fault);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT(!fault, "Fault should not be active");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(!fault);
 }
 
-static int test_get_fault_status_with_fault(void)
+static void test_get_fault_status_with_fault(void)
 {
   test_setup();
 
@@ -1472,27 +1335,21 @@ static int test_get_fault_status_with_fault(void)
 
   bool     fault;
   rx_err_t err = rx_drv8243_get_fault_status(&handle, &fault);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT(fault, "Fault should be active");
-  TEST_ASSERT(handle.fault_active, "Handle fault_active should be updated");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(fault);
+  TEST_ASSERT_TRUE(handle.fault_active);
 }
 
-static int test_get_fault_status_null_handle(void)
+static void test_get_fault_status_null_handle(void)
 {
   test_setup();
 
   bool     fault;
   rx_err_t err = rx_drv8243_get_fault_status(NULL, &fault);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_get_fault_status_null_output(void)
+static void test_get_fault_status_null_output(void)
 {
   test_setup();
 
@@ -1501,13 +1358,10 @@ static int test_get_fault_status_null_output(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_get_fault_status(&handle, NULL);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_get_fault_status_not_initialized(void)
+static void test_get_fault_status_not_initialized(void)
 {
   test_setup();
 
@@ -1515,10 +1369,7 @@ static int test_get_fault_status_not_initialized(void)
   bool                fault;
 
   rx_err_t err = rx_drv8243_get_fault_status(&handle, &fault);
-  TEST_ASSERT_EQ(err, k_rx_err_invalid_state, "Should return invalid state error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 /* =============================================================================
@@ -1526,7 +1377,7 @@ static int test_get_fault_status_not_initialized(void)
  * =============================================================================
  */
 
-static int test_get_speed_success(void)
+static void test_get_speed_success(void)
 {
   test_setup();
 
@@ -1537,14 +1388,11 @@ static int test_get_speed_success(void)
 
   float    speed;
   rx_err_t err = rx_drv8243_get_speed(&handle, &speed);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(speed, 65.0f, "Speed should be 65%");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 65.0f, speed);
 }
 
-static int test_get_speed_after_stop(void)
+static void test_get_speed_after_stop(void)
 {
   test_setup();
 
@@ -1556,26 +1404,20 @@ static int test_get_speed_after_stop(void)
 
   float    speed;
   rx_err_t err = rx_drv8243_get_speed(&handle, &speed);
-  TEST_ASSERT_OK(err);
-  TEST_ASSERT_FLOAT_EQ(speed, 0.0f, "Speed should be 0 after stop");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, speed);
 }
 
-static int test_get_speed_null_handle(void)
+static void test_get_speed_null_handle(void)
 {
   test_setup();
 
   float    speed;
   rx_err_t err = rx_drv8243_get_speed(NULL, &speed);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_get_speed_null_output(void)
+static void test_get_speed_null_output(void)
 {
   test_setup();
 
@@ -1584,13 +1426,10 @@ static int test_get_speed_null_output(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_get_speed(&handle, NULL);
-  TEST_ASSERT_EQ(err, k_rx_err_null_pointer, "Should return null pointer error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-static int test_get_speed_not_initialized(void)
+static void test_get_speed_not_initialized(void)
 {
   test_setup();
 
@@ -1598,10 +1437,7 @@ static int test_get_speed_not_initialized(void)
   float               speed;
 
   rx_err_t err = rx_drv8243_get_speed(&handle, &speed);
-  TEST_ASSERT_EQ(err, k_rx_err_invalid_state, "Should return invalid state error");
-
-  printf("PASS: %s\n", __func__);
-  return 0;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 /* =============================================================================
@@ -1611,85 +1447,73 @@ static int test_get_speed_not_initialized(void)
 
 int main(void)
 {
-  int failures = 0;
+  UNITY_BEGIN();
 
-  printf("\n=== RX DRV8243 H-Bridge Driver Tests ===\n\n");
+  /* Initialization tests */
+  RUN_TEST(test_init_success);
+  RUN_TEST(test_init_null_handle);
+  RUN_TEST(test_init_null_config);
+  RUN_TEST(test_init_null_bus_manager);
+  RUN_TEST(test_init_null_gpio_bus_name);
+  RUN_TEST(test_init_null_adc_bus_name);
+  RUN_TEST(test_init_already_initialized);
+  RUN_TEST(test_init_pwm_freq_too_high);
+  RUN_TEST(test_init_custom_ki_propi);
+  RUN_TEST(test_init_motor_failure);
+  RUN_TEST(test_init_fault_pin_configuration);
 
-  /* Initialization Tests */
-  printf("--- Initialization Tests ---\n");
-  failures += test_init_success();
-  failures += test_init_null_handle();
-  failures += test_init_null_config();
-  failures += test_init_null_bus_manager();
-  failures += test_init_null_gpio_bus_name();
-  failures += test_init_null_adc_bus_name();
-  failures += test_init_already_initialized();
-  failures += test_init_pwm_freq_too_high();
-  failures += test_init_custom_ki_propi();
-  failures += test_init_motor_failure();
-  failures += test_init_fault_pin_configuration();
+  /* Deinitialization tests */
+  RUN_TEST(test_deinit_success);
+  RUN_TEST(test_deinit_null_handle);
+  RUN_TEST(test_deinit_not_initialized);
 
-  /* Deinitialization Tests */
-  printf("\n--- Deinitialization Tests ---\n");
-  failures += test_deinit_success();
-  failures += test_deinit_null_handle();
-  failures += test_deinit_not_initialized();
+  /* Speed control tests */
+  RUN_TEST(test_set_speed_forward);
+  RUN_TEST(test_set_speed_reverse);
+  RUN_TEST(test_set_speed_clamp_max);
+  RUN_TEST(test_set_speed_clamp_min);
+  RUN_TEST(test_set_speed_zero);
+  RUN_TEST(test_set_speed_null_handle);
+  RUN_TEST(test_set_speed_not_initialized);
+  RUN_TEST(test_set_speed_with_fault);
 
-  /* Speed Control Tests */
-  printf("\n--- Speed Control Tests ---\n");
-  failures += test_set_speed_forward();
-  failures += test_set_speed_reverse();
-  failures += test_set_speed_clamp_max();
-  failures += test_set_speed_clamp_min();
-  failures += test_set_speed_zero();
-  failures += test_set_speed_null_handle();
-  failures += test_set_speed_not_initialized();
-  failures += test_set_speed_with_fault();
+  /* Stop mode tests */
+  RUN_TEST(test_stop_brake);
+  RUN_TEST(test_stop_coast);
+  RUN_TEST(test_stop_null_handle);
+  RUN_TEST(test_stop_not_initialized);
 
-  /* Stop Mode Tests */
-  printf("\n--- Stop Mode Tests ---\n");
-  failures += test_stop_brake();
-  failures += test_stop_coast();
-  failures += test_stop_null_handle();
-  failures += test_stop_not_initialized();
+  /* Current limit tests */
+  RUN_TEST(test_current_limit_below_threshold);
+  RUN_TEST(test_current_limit_above_threshold);
+  RUN_TEST(test_current_limit_disabled);
+  RUN_TEST(test_set_current_limit_success);
+  RUN_TEST(test_set_current_limit_null_handle);
+  RUN_TEST(test_set_current_limit_not_initialized);
 
-  /* Current Limit Tests */
-  printf("\n--- Current Limit Tests ---\n");
-  failures += test_current_limit_below_threshold();
-  failures += test_current_limit_above_threshold();
-  failures += test_current_limit_disabled();
-  failures += test_set_current_limit_success();
-  failures += test_set_current_limit_null_handle();
-  failures += test_set_current_limit_not_initialized();
+  /* Current reading tests */
+  RUN_TEST(test_read_current_zero);
+  RUN_TEST(test_read_current_typical);
+  RUN_TEST(test_read_current_high);
+  RUN_TEST(test_read_current_custom_ki_propi);
+  RUN_TEST(test_read_current_null_handle);
+  RUN_TEST(test_read_current_null_output);
+  RUN_TEST(test_read_current_not_initialized);
+  RUN_TEST(test_read_current_adc_error);
 
-  /* Current Reading Tests */
-  printf("\n--- Current Reading Tests ---\n");
-  failures += test_read_current_zero();
-  failures += test_read_current_typical();
-  failures += test_read_current_high();
-  failures += test_read_current_custom_ki_propi();
-  failures += test_read_current_null_handle();
-  failures += test_read_current_null_output();
-  failures += test_read_current_not_initialized();
-  failures += test_read_current_adc_error();
+  /* Fault status tests */
+  RUN_TEST(test_get_fault_status_no_fault);
+  RUN_TEST(test_get_fault_status_with_fault);
+  RUN_TEST(test_get_fault_status_null_handle);
+  RUN_TEST(test_get_fault_status_null_output);
+  RUN_TEST(test_get_fault_status_not_initialized);
 
-  /* Fault Status Tests */
-  printf("\n--- Fault Status Tests ---\n");
-  failures += test_get_fault_status_no_fault();
-  failures += test_get_fault_status_with_fault();
-  failures += test_get_fault_status_null_handle();
-  failures += test_get_fault_status_null_output();
-  failures += test_get_fault_status_not_initialized();
+  /* Get speed tests */
+  RUN_TEST(test_get_speed_success);
+  RUN_TEST(test_get_speed_after_stop);
+  RUN_TEST(test_get_speed_null_handle);
+  RUN_TEST(test_get_speed_null_output);
+  RUN_TEST(test_get_speed_not_initialized);
 
-  /* Get Speed Tests */
-  printf("\n--- Get Speed Tests ---\n");
-  failures += test_get_speed_success();
-  failures += test_get_speed_after_stop();
-  failures += test_get_speed_null_handle();
-  failures += test_get_speed_null_output();
-  failures += test_get_speed_not_initialized();
-
-  printf("\n=== Results: %d failures ===\n\n", failures);
-
-  return failures;
+  return UNITY_END();
 }
