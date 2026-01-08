@@ -42,7 +42,6 @@ typedef enum {
   k_mtu_max_channels = 7, /**< MTU0-MTU4, MTU6-MTU7 (sparse indexing) */
 } mtu_constants_t;
 
-
 /** @brief MTU module stop bit positions in MSTPCRA */
 typedef enum {
   k_mtu_mstpa_mtu0_4 = 9, /**< MTU0-MTU4 module stop bit */

@@ -36,7 +36,6 @@ typedef enum {
   k_adc_resolution_12bit = 12, /**< 12-bit ADC resolution (default) */
 } adc_resolution_t;
 
-
 /** @brief ADC module stop bit positions in MSTPCRA */
 typedef enum {
   k_adc_mstpra_s12ad1 = 16, /**< S12AD1 module stop bit */

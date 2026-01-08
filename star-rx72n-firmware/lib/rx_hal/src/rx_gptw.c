@@ -45,7 +45,6 @@ typedef enum {
   k_gptw_outputs_per_channel = 2, /**< GTIOCA and GTIOCB */
 } gptw_constants_t;
 
-
 /** @brief Period calculation constants */
 static const uint32_t s_gptw_period_max    = 0xFFFFFFFFUL;  /**< Maximum valid period (32-bit) */
 static const uint64_t s_gptw_ns_per_second = 1000000000ULL; /**< Nanoseconds per second */

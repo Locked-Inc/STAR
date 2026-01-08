@@ -47,11 +47,11 @@ extern "C" {
  * @endcode
  */
 typedef enum {
-  k_rx_prcr_unlock_prc1 = 0xA502, /**< Unlock PRC1 (MSTPCR only) */
+  k_rx_prcr_unlock_prc1      = 0xA502, /**< Unlock PRC1 (MSTPCR only) */
   k_rx_prcr_unlock_prc0_prc1 = 0xA503, /**< Unlock PRC0+PRC1 (CGC + MSTPCR) */
   k_rx_prcr_unlock_prc1_prc3 = 0xA50B, /**< Unlock PRC1+PRC3 (MSTPCR + LVD) */
-  k_rx_prcr_unlock_all = 0xA50F,       /**< Unlock PRC0+PRC1+PRC3 (all) */
-  k_rx_prcr_lock = 0xA500,             /**< Lock all protection bits */
+  k_rx_prcr_unlock_all       = 0xA50F, /**< Unlock PRC0+PRC1+PRC3 (all) */
+  k_rx_prcr_lock             = 0xA500, /**< Lock all protection bits */
 } rx_prcr_values_t;
 
 #ifdef __cplusplus

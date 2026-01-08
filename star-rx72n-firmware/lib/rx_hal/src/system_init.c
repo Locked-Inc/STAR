@@ -24,7 +24,6 @@
  * =============================================================================
  */
 
-
 /** @brief Oscillator stabilization timing constants */
 typedef enum {
   k_main_osc_stabilization_cycles     = 2400000, /**< Main oscillator delay (~10ms at 240MHz) */
