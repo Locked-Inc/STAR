@@ -51,6 +51,7 @@ typedef enum {
   k_iwdt_default_timeout_ms = 2000,  /**< Default timeout (2s) */
   k_iwdt_min_timeout_ms     = 128,   /**< Minimum timeout */
   k_iwdt_max_timeout_ms     = 16384, /**< Maximum timeout */
+  k_ms_per_second           = 1000,  /**< Milliseconds per second (time conversion) */
 } iwdt_constants_t;
 
 /** @brief IWDT timeout periods (hardware divider settings) */
