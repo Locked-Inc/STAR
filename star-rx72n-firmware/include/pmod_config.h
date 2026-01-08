@@ -1,4 +1,4 @@
-/* star-rx72n-firmware/include/pmod_config.h */
+/* include/pmod_config.h */
 
 /**
  * @file pmod_config.h

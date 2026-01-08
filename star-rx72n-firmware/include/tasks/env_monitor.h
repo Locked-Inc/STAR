@@ -1,4 +1,4 @@
-/* star-rx72n-firmware/include/tasks/env_monitor.h */
+/* include/tasks/env_monitor.h */
 
 /**
  * @file env_monitor.h
