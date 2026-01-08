@@ -365,21 +365,15 @@ typedef enum {
  *
  * @param[in] channel SCI channel (0-12)
  * @param[in] baudrate Baud rate (e.g., 9600, 115200)
- * @param[in] tx_port TX pin port number
- * @param[in] tx_pin TX pin number (0-7)
- * @param[in] rx_port RX pin port number
- * @param[in] rx_pin RX pin number (0-7)
+ * @param[in] tx_gpio TX pin (gpio_pin_t from hardware_pinout.h)
+ * @param[in] rx_gpio RX pin (gpio_pin_t from hardware_pinout.h)
  *
  * @return k_rx_ok on success,
  *         k_rx_err_invalid_arg if channel or pins are invalid,
  *         k_rx_err_invalid_state if channel already initialized
  */
-rx_err_t uart_init_channel(uint8_t  channel,
-                           uint32_t baudrate,
-                           uint8_t  tx_port,
-                           uint8_t  tx_pin,
-                           uint8_t  rx_port,
-                           uint8_t  rx_pin);
+rx_err_t
+uart_init_channel(uint8_t channel, uint32_t baudrate, gpio_pin_t tx_gpio, gpio_pin_t rx_gpio);
 
 /**
  * @brief Deinitialize SCI channel
