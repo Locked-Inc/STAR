@@ -30,6 +30,7 @@
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
+#include "rx_register_protection.h"
 
 static const char* s_tag = "GPTW";
 
@@ -44,11 +45,6 @@ typedef enum {
   k_gptw_outputs_per_channel = 2, /**< GTIOCA and GTIOCB */
 } gptw_constants_t;
 
-/** @brief System protection register values */
-typedef enum {
-  k_gptw_prcr_unlock = 0xA50B, /**< Enable writes to MSTPCR */
-  k_gptw_prcr_lock   = 0xA500, /**< Disable writes to MSTPCR */
-} gptw_prcr_values_t;
 
 /** @brief Period calculation constants */
 static const uint32_t s_gptw_period_max    = 0xFFFFFFFFUL;  /**< Maximum valid period (32-bit) */
@@ -262,9 +258,9 @@ static void internal_configure_port_pins(rx_gptw_channel_t channel)
  */
 static void internal_enable_gptw_module_clock(void)
 {
-  system_regs()->prcr = k_gptw_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
   system_regs()->mstpcrc &= ~(1UL << k_mstpc_gptw);
-  system_regs()->prcr = k_gptw_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 }
 
 /**
