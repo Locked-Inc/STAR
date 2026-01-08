@@ -273,6 +273,11 @@ set(APP_SOURCES
     src/main.c
     src/shared_state.c
     src/hardware_init.c
+    src/diagnostics.c
+    src/tasks/motor_controller.c
+    src/tasks/comm_manager.c
+    src/tasks/env_monitor.c
+    src/tasks/system_health.c
 )
 
 # =============================================================================
