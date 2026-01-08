@@ -33,7 +33,11 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends \
             python3-pip \
-            python3-colcon-common-extensions
+            python3-colcon-common-extensions \
+            libprotobuf-dev \
+            protobuf-compiler \
+            libgrpc++-dev \
+            libgrpc-dev
 
       - name: Initialize rosdep
         run: |
