@@ -25,6 +25,12 @@
  */
 static shared_state_t s_shared_state;
 
+/* Mutex name constants */
+static const char* s_setpoint_mutex_name = "SetpointMutex";
+static const char* s_encoder_mutex_name  = "EncoderMutex";
+static const char* s_safety_mutex_name   = "SafetyMutex";
+static const char* s_health_mutex_name   = "HealthMutex";
+
 /* =============================================================================
  * Public API Implementation
  * =============================================================================
@@ -46,20 +52,20 @@ UINT shared_state_init(shared_state_t* state)
     state->setpoint.valid = false;
 
     /* Create setpoint mutex */
-    status = tx_mutex_create(&state->setpoint_mutex, "SetpointMutex", TX_NO_INHERIT);
+    status = tx_mutex_create(&state->setpoint_mutex, s_setpoint_mutex_name, TX_NO_INHERIT);
     if (status != TX_SUCCESS) {
         return status;
     }
 
     /* Create encoder mutex */
-    status = tx_mutex_create(&state->encoder_mutex, "EncoderMutex", TX_NO_INHERIT);
+    status = tx_mutex_create(&state->encoder_mutex, s_encoder_mutex_name, TX_NO_INHERIT);
     if (status != TX_SUCCESS) {
         tx_mutex_delete(&state->setpoint_mutex);
         return status;
     }
 
     /* Create safety mutex */
-    status = tx_mutex_create(&state->safety_mutex, "SafetyMutex", TX_NO_INHERIT);
+    status = tx_mutex_create(&state->safety_mutex, s_safety_mutex_name, TX_NO_INHERIT);
     if (status != TX_SUCCESS) {
         tx_mutex_delete(&state->setpoint_mutex);
         tx_mutex_delete(&state->encoder_mutex);
@@ -67,7 +73,7 @@ UINT shared_state_init(shared_state_t* state)
     }
 
     /* Create health mutex */
-    status = tx_mutex_create(&state->health_mutex, "HealthMutex", TX_NO_INHERIT);
+    status = tx_mutex_create(&state->health_mutex, s_health_mutex_name, TX_NO_INHERIT);
     if (status != TX_SUCCESS) {
         tx_mutex_delete(&state->setpoint_mutex);
         tx_mutex_delete(&state->encoder_mutex);
