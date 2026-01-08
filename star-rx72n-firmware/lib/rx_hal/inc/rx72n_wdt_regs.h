@@ -55,6 +55,10 @@ typedef enum {
  * Watchdog Timer (WDT) registers for software-controllable watchdog functionality.
  * Uses PCLKB clock and can be stopped in software.
  * Base address: 0x00088020
+ *
+ * Note: WDT has 4 registers only (WDTRR, WDTCR, WDTSR, WDTRCR).
+ * WDTCSTPR exists for IWDT but NOT for WDT.
+ * Verified against RX72N Group User's Manual Hardware (R01UH0824EJ0120 Rev.1.20)
  */
 typedef struct __attribute__((packed)) {
   volatile uint8_t  wdtrr; /**< Refresh Register (write 0x00 then 0xFF to refresh) */
@@ -63,7 +67,6 @@ typedef struct __attribute__((packed)) {
   volatile uint16_t wdtsr;  /**< Status Register (counter value, flags) */
   volatile uint8_t  wdtrcr; /**< Reset Control Register (reset/NMI select) */
   uint8_t           reserved1[k_wdt_reserved_after_wdtrcr_bytes]; /**< Reserved */
-  volatile uint8_t  wdtcstpr; /**< Count Stop Control Register (sleep mode) */
 } rx_wdt_regs_t;
 
 /**
@@ -125,13 +128,6 @@ typedef enum {
   k_wdt_rstirqs_nmi      = 0x00,     /**< Generate NMI on timeout */
 } wdt_wdtrcr_bits_t;
 
-/* WDT Count Stop Control Register (WDTCSTPR) Bit Definitions */
-typedef enum {
-  k_wdt_cstpr_slcstp_mask = (1 << 7), /**< Sleep Mode Count Stop bit mask */
-  k_wdt_slcstp_stop       = (1 << 7), /**< Stop counting during sleep */
-  k_wdt_slcstp_continue   = 0x00,     /**< Continue counting during sleep */
-} wdt_wdtcstpr_bits_t;
-
 /* =============================================================================
  * Static Assertions - Verify Register Layout at Compile Time
  * =============================================================================
@@ -140,13 +136,12 @@ typedef enum {
 /* Verify base address matches Hardware Manual */
 _Static_assert(k_wdt_base_addr == 0x00088020, "WDT base address incorrect");
 
-/* Verify register structure layout */
-_Static_assert(sizeof(rx_wdt_regs_t) == 9, "WDT register structure size incorrect");
+/* Verify register structure layout (WDT has 4 registers, 8 bytes total) */
+_Static_assert(sizeof(rx_wdt_regs_t) == 8, "WDT register structure size incorrect");
 _Static_assert(offsetof(rx_wdt_regs_t, wdtrr) == 0x00, "WDTRR offset incorrect");
 _Static_assert(offsetof(rx_wdt_regs_t, wdtcr) == 0x02, "WDTCR offset incorrect");
 _Static_assert(offsetof(rx_wdt_regs_t, wdtsr) == 0x04, "WDTSR offset incorrect");
 _Static_assert(offsetof(rx_wdt_regs_t, wdtrcr) == 0x06, "WDTRCR offset incorrect");
-_Static_assert(offsetof(rx_wdt_regs_t, wdtcstpr) == 0x08, "WDTCSTPR offset incorrect");
 
 #ifdef __cplusplus
 }
