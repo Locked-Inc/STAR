@@ -15,8 +15,8 @@
 
 #include <string.h>
 
-#include "rx72n_wdt_regs.h"
 #include "rx72n_system_regs.h"
+#include "rx72n_wdt_regs.h"
 
 /* =============================================================================
  * Static Data
@@ -118,7 +118,7 @@ rx_err_t rx_wdt_feed(void)
   }
 
   /* Refresh watchdog - write 0x00 then 0xFF to WDTRR */
-  regs         = wdt();
+  regs        = wdt();
   regs->wdtrr = k_wdt_refresh_start;
   regs->wdtrr = k_wdt_refresh_end;
 
