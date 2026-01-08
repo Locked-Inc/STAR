@@ -101,6 +101,49 @@ typedef enum {
   k_mstpb_crc  = 23, /**< CRC module stop bit in MSTPCRB */
 } rx_module_stop_bits_b_t;
 
+/* =============================================================================
+ * Reset Status Registers (RSTSR)
+ * =============================================================================
+ */
+
+/** @brief Reset status register base address */
+typedef enum {
+  k_rstsr_base_addr = 0x000C0010, /**< Reset status register base address */
+} rx_rstsr_addresses_t;
+
+/**
+ * @brief Reset Status Register Map
+ * @details
+ * Reset status registers for determining the cause of the last reset.
+ * Base address: 0x000C0010
+ */
+typedef struct {
+  volatile uint8_t rstsr0; /**< Reset Status Register 0 (software reset, undervoltage) */
+  volatile uint8_t rstsr1; /**< Reset Status Register 1 (clock stop, WDT) */
+  volatile uint8_t rstsr2; /**< Reset Status Register 2 (IWDT, deep standby) */
+} rx_rstsr_regs_t;
+
+/**
+ * @brief Get pointer to reset status registers
+ * @return Volatile pointer to reset status register structure
+ */
+static inline volatile rx_rstsr_regs_t* rstsr(void)
+{
+  return (volatile rx_rstsr_regs_t*)k_rstsr_base_addr;
+}
+
+/* RSTSR1 bit definitions */
+typedef enum {
+  k_rstsr1_cwsf = (1 << 0), /**< Cold/Warm Start Determination Flag */
+  k_rstsr1_wdtrf = (1 << 7), /**< WDT Reset Detect Flag */
+} rstsr1_bits_t;
+
+/* RSTSR2 bit definitions */
+typedef enum {
+  k_rstsr2_iwdtrf = (1 << 0), /**< IWDT Reset Detect Flag */
+  k_rstsr2_dpsrstf = (1 << 7), /**< Deep Software Standby Reset Flag */
+} rstsr2_bits_t;
+
 #ifdef __cplusplus
 }
 #endif

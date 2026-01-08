@@ -15,43 +15,20 @@
 
 #include <string.h>
 
+#include "rx72n_iwdt_regs.h"
+#include "rx72n_system_regs.h"
 #include "rx_check.h"
+#include "tx_api.h" /* ThreadX API for tx_time_get() */
 
 /* =============================================================================
- * Hardware Register Definitions
+ * Hardware Constants
  * =============================================================================
  */
 
-/** @brief IWDT register addresses */
+/** @brief IWDT internal driver constants */
 typedef enum {
-  k_iwdt_base_addr = 0x00088030, /**< IWDT base address */
-  k_rstsr1_addr    = 0x000C0010, /**< Reset Status Register 1 */
-} iwdt_hw_addr_t;
-
-/** @brief IWDT register structure */
-typedef struct {
-  volatile uint8_t  iwdtcr; /**< Control Register */
-  volatile uint8_t  _pad0[1];
-  volatile uint16_t iwdtsr;  /**< Status Register */
-  volatile uint16_t iwdtrcr; /**< Refresh Register */
-  volatile uint8_t  _pad1[2];
-  volatile uint16_t iwdtcstpr; /**< Count Stop Control */
-} rx_iwdt_regs_t;
-
-/** @brief System register for reset status */
-typedef struct {
-  volatile uint8_t rstsr1; /**< Reset Status Register 1 */
-} rx_system_rstsr_t;
-
-/** @brief IWDT hardware constants */
-typedef enum {
-  k_iwdt_refresh_key  = 0x00, /**< Refresh key value */
-  k_iwdt_start_key    = 0x00, /**< Start key value */
-  k_iwdt_wdtrstf_mask = 0x80, /**< Watchdog reset flag */
-  k_iwdt_enable_bit   = 0x80, /**< Enable bit in IWDTCR */
-  k_iwdt_divider_mask = 0x03, /**< Clock divider mask */
-  k_ticks_per_second  = 100,  /**< ThreadX ticks per second */
-} iwdt_hw_constants_t;
+  k_ticks_per_second = 100, /**< ThreadX ticks per second */
+} iwdt_internal_constants_t;
 
 /* =============================================================================
  * Static Data
@@ -71,27 +48,22 @@ typedef struct {
 static rx_iwdt_state_t s_iwdt_state = {0};
 
 /* =============================================================================
- * Hardware Access Functions
+ * Test Support Functions
  * =============================================================================
  */
 
+#ifdef UNIT_TEST
 /**
- * @brief Get IWDT register base
- * @return Pointer to IWDT registers
+ * @brief Reset IWDT driver state for unit testing
+ * @details
+ * Resets the driver to uninitialized state. This function is only available
+ * when UNIT_TEST is defined and should only be called from test code.
  */
-static inline volatile rx_iwdt_regs_t* iwdt_regs(void)
+void rx_iwdt_test_reset(void)
 {
-  return (volatile rx_iwdt_regs_t*)k_iwdt_base_addr;
+  memset(&s_iwdt_state, 0, sizeof(s_iwdt_state));
 }
-
-/**
- * @brief Get reset status register
- * @return Pointer to reset status register
- */
-static inline volatile rx_system_rstsr_t* rstsr_regs(void)
-{
-  return (volatile rx_system_rstsr_t*)k_rstsr1_addr;
-}
+#endif
 
 /* =============================================================================
  * Internal Helper Functions
@@ -99,33 +71,13 @@ static inline volatile rx_system_rstsr_t* rstsr_regs(void)
  */
 
 /**
- * @brief Convert timeout in ms to hardware divider setting
- *
- * @param[in] timeout_ms Timeout in milliseconds
- * @return iwdt_timeout_period_t Hardware divider setting
- */
-static iwdt_timeout_period_t internal_timeout_to_divider(uint32_t timeout_ms)
-{
-  /* Select smallest divider that gives timeout >= requested */
-  if (timeout_ms <= 512) {
-    return k_iwdt_timeout_512ms;
-  } else if (timeout_ms <= 2048) {
-    return k_iwdt_timeout_2048ms;
-  } else {
-    return k_iwdt_timeout_8192ms;
-  }
-}
-
-/**
  * @brief Get current system tick count
  *
- * @return uint32_t Current tick count
+ * @return uint32_t Current tick count from ThreadX
  */
 static uint32_t internal_get_tick_count(void)
 {
-  /* In real implementation, would use ThreadX tx_time_get() */
-  /* For now, return stub value */
-  return 0;
+  return (uint32_t)tx_time_get();
 }
 
 /**
@@ -193,7 +145,6 @@ rx_err_t rx_iwdt_init(const rx_iwdt_config_t* config)
 {
   volatile rx_iwdt_regs_t* regs;
   rx_iwdt_config_t         local_config;
-  iwdt_timeout_period_t    divider;
 
   /* Check if already initialized */
   if (s_iwdt_state.initialized) {
@@ -231,15 +182,16 @@ rx_err_t rx_iwdt_init(const rx_iwdt_config_t* config)
     s_iwdt_state.status.last_reset_reason = k_iwdt_reset_power_on;
   }
 
-  /* Configure hardware */
-  regs    = iwdt_regs();
-  divider = internal_timeout_to_divider(config->default_timeout_ms);
+  /* Note: IWDT hardware is configured via OFS (Option Function Select) registers
+   * at compile/flash time and starts automatically on reset. We cannot reconfigure
+   * the timeout period at runtime. This driver manages the software state and
+   * provides the feed mechanism. The requested timeout is used for software task
+   * monitoring only. */
+  regs = iwdt();
 
-  /* Set clock divider and enable IWDT */
-  regs->iwdtcr = (uint8_t)(k_iwdt_enable_bit | divider);
-
-  /* Start IWDT */
-  regs->iwdtrcr = k_iwdt_start_key;
+  /* Feed the watchdog to establish baseline */
+  regs->iwdtrr = k_iwdt_refresh_start;
+  regs->iwdtrr = k_iwdt_refresh_end;
 
   s_iwdt_state.initialized = true;
 
@@ -255,9 +207,10 @@ rx_err_t rx_iwdt_feed(void)
     return k_rx_err_not_initialized;
   }
 
-  /* Refresh watchdog counter */
-  regs          = iwdt_regs();
-  regs->iwdtrcr = k_iwdt_refresh_key;
+  /* Refresh watchdog counter - write 0x00 then 0xFF to IWDTRR */
+  regs         = iwdt();
+  regs->iwdtrr = k_iwdt_refresh_start;
+  regs->iwdtrr = k_iwdt_refresh_end;
 
   s_iwdt_state.status.watchdog_feeds++;
 
@@ -376,7 +329,11 @@ rx_err_t rx_iwdt_set_state(system_state_t state)
     return k_rx_err_not_initialized;
   }
 
-  /* Update state */
+  /* Update software state tracking.
+   * NOTE: This does not change the hardware watchdog timeout, as IWDT timeout
+   * is configured via OFS registers at compile/flash time and cannot be changed
+   * at runtime. The state-dependent timeouts are used for software task monitoring
+   * via rx_iwdt_check_tasks(). The hardware IWDT timeout remains constant. */
   s_iwdt_state.current_state             = state;
   s_iwdt_state.status.current_state      = state;
   s_iwdt_state.status.current_timeout_ms = s_iwdt_state.config.state_timeouts_ms[state];
@@ -403,15 +360,15 @@ rx_err_t rx_iwdt_get_status(rx_iwdt_status_t* status)
 
 bool rx_iwdt_was_reset(void)
 {
-  volatile rx_system_rstsr_t* rstsr;
-  uint8_t                     status;
+  volatile rx_rstsr_regs_t* regs;
+  uint8_t                   status;
 
-  /* Read reset status register */
-  rstsr  = rstsr_regs();
-  status = rstsr->rstsr1;
+  /* Read reset status register 2 for IWDT reset flag */
+  regs   = rstsr();
+  status = regs->rstsr2;
 
-  /* Check watchdog reset flag */
-  return ((status & k_iwdt_wdtrstf_mask) != 0);
+  /* Check IWDT reset flag in RSTSR2 */
+  return ((status & k_rstsr2_iwdtrf) != 0);
 }
 
 rx_err_t rx_iwdt_check_tasks(void)

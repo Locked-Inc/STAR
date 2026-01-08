@@ -32,6 +32,7 @@
 static void test_setup(void)
 {
   /* Reset test environment before each test */
+  rx_iwdt_test_reset();
 }
 
 /* =============================================================================
