@@ -281,6 +281,7 @@ set(APP_SOURCES
     src/tasks/comm_manager.c
     src/tasks/env_monitor.c
     src/tasks/system_health.c
+    src/tasks/pmod_led.c
 )
 
 # =============================================================================
