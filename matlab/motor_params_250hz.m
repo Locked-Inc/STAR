@@ -1,0 +1,94 @@
+%% motor_params_250hz.m - STAR Robot Motor Parameters (250Hz Control)
+% DFRobot FIT0520 DC Gear Motor Specifications
+% Updated for RX72N 250Hz control loop
+%
+% USAGE:
+%   Run this script to load motor parameters into workspace:
+%   >> motor_params_250hz
+%
+% STAR Project - Texas A&M University
+% January 2026
+
+%% Motor Electrical Specifications (from FTP Table: Motor and Driver Specifications)
+V_rated = 6;                    % Rated voltage [V]
+n_no_load = 210;                % No-load speed [RPM]
+I_no_load = 0.13;               % No-load current [A] (from datasheet)
+I_stall = 3.2;                  % Stall current [A]
+T_stall_kgcm = 10;              % Stall torque [kg*cm]
+
+%% Motor Mechanical Specifications
+gear_ratio = 34.02;             % Gear reduction ratio (34:1 nominal)
+encoder_ppr = 341.2;            % Pulses per revolution (after gearbox)
+
+%% Unit Conversions
+T_stall_Nm = T_stall_kgcm * 0.0981;  % Stall torque [N*m] = 0.981 N*m
+
+%% Derived Electrical Parameters
+R_armature = V_rated / I_stall;      % Armature resistance [Ohm] = 1.875 Ohm
+% Note: Armature inductance is typically small for brushed DC motors
+% Estimate L ~ 0.5 mH (to be measured with LCR meter or from startup transient)
+L_armature = 0.5e-3;                 % Armature inductance [H] (estimated)
+
+%% Derived Motor Constants
+% Torque constant: Kt = T_stall / I_stall
+Kt = T_stall_Nm / I_stall;           % Torque constant [N*m/A] = 0.307 N*m/A
+
+% Back-EMF constant: Ke = (V - I*R) / omega at no-load
+omega_no_load = n_no_load * 2 * pi / 60;  % No-load speed [rad/s] = 22 rad/s
+Ke = (V_rated - I_no_load * R_armature) / omega_no_load;  % Back-EMF constant [V/(rad/s)]
+
+%% Derived Mechanical Parameters (Estimates - To Be Measured)
+% Motor rotor inertia (before gearbox) - typical for small DC motors
+J_motor = 1e-6;                 % Motor rotor inertia [kg*m^2] (estimated, 1e-7 to 1e-5 typical)
+
+% Reflected inertia at output shaft (wheel as solid disk: J = 0.5*m*r^2)
+wheel_diameter_mm = 144;        % Wheel diameter [mm] (from FTP)
+wheel_mass_kg = 0.25;           % Wheel mass [kg] (estimated)
+J_load = 0.5 * wheel_mass_kg * (wheel_diameter_mm/2000)^2;  % Load inertia [kg*m^2]
+J_total = J_motor * gear_ratio^2 + J_load;  % Total reflected inertia [kg*m^2]
+
+% Viscous friction coefficient - estimated from no-load operating point
+% At no-load: T_friction = Kt * I_no_load = b * omega_no_load
+b = (Kt * I_no_load) / omega_no_load;  % Viscous friction [N*m*s/rad]
+
+%% Time Constants
+tau_e = L_armature / R_armature;     % Electrical time constant [s] = 0.27 ms
+tau_m = J_total * R_armature / (Ke * Kt + b * R_armature);  % Mechanical time constant [s]
+
+%% Control System Parameters (RX72N at 250Hz)
+Ts = 0.004;                     % Sample time [s] (250 Hz motor control loop)
+encoder_counts_per_sample = 19; % Expected counts per sample at max speed (341.2 PPR * 3.5 Hz / 250 Hz)
+
+%% Velocity Calculation
+% At 250 Hz with encoder_ppr counts/rev:
+% velocity_rpm = (delta_counts / encoder_ppr) * (60 / Ts)
+% Example: 19 counts in 4ms -> (19/341.2) * 15000 = 835 RPM
+
+%% Physical Dimensions (from FTP)
+% wheel_diameter_mm defined above in mechanical parameters
+wheel_radius_m = wheel_diameter_mm / 2000;  % Wheel radius [m]
+max_linear_speed = omega_no_load * wheel_radius_m;  % Max speed [m/s] = 1.58 m/s
+
+%% Display Summary
+fprintf('=== STAR Motor Parameters (DFRobot FIT0520) - 250Hz Control ===\n');
+fprintf('\n--- Electrical ---\n');
+fprintf('Rated Voltage:     %.1f V\n', V_rated);
+fprintf('Stall Current:     %.1f A\n', I_stall);
+fprintf('Armature R:        %.3f Ohm\n', R_armature);
+fprintf('Armature L:        %.2f mH (estimated)\n', L_armature * 1000);
+fprintf('\n--- Mechanical ---\n');
+fprintf('No-load Speed:     %d RPM (%.1f rad/s)\n', n_no_load, omega_no_load);
+fprintf('Stall Torque:      %.2f kg*cm (%.3f N*m)\n', T_stall_kgcm, T_stall_Nm);
+fprintf('Gear Ratio:        %.2f:1\n', gear_ratio);
+fprintf('Encoder PPR:       %.1f counts/rev\n', encoder_ppr);
+fprintf('\n--- Motor Constants ---\n');
+fprintf('Torque Constant:   %.4f N*m/A\n', Kt);
+fprintf('Back-EMF Constant: %.4f V/(rad/s)\n', Ke);
+fprintf('\n--- Time Constants ---\n');
+fprintf('Electrical tau_e:  %.3f ms\n', tau_e * 1000);
+fprintf('Mechanical tau_m:  %.3f ms (estimated)\n', tau_m * 1000);
+fprintf('\n--- Control (RX72N at 250Hz) ---\n');
+fprintf('Sample Time:       %.0f ms (%.0f Hz)\n', Ts * 1000, 1/Ts);
+fprintf('Max Wheel Speed:   %.2f m/s\n', max_linear_speed);
+fprintf('Expected Counts:   ~%d counts/sample @ max speed\n', round(encoder_counts_per_sample));
+fprintf('============================================\n');

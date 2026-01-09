@@ -199,6 +199,98 @@ rx_iwdt_reset_cause_t rx_iwdt_get_reset_cause(void);
  */
 void rx_iwdt_clear_status(void);
 
+/* =============================================================================
+ * Task-Level Monitoring (Issue 20: Enhanced Watchdog)
+ * =============================================================================
+ */
+
+/**
+ * @brief Maximum number of tasks that can be monitored
+ */
+typedef enum {
+  k_iwdt_max_tasks = 8, /**< Support up to 8 monitored tasks */
+} rx_iwdt_limits_t;
+
+/**
+ * @brief Register a task for heartbeat monitoring
+ *
+ * Registers a task with the watchdog system to enable deadlock detection.
+ * Each task must call rx_iwdt_task_heartbeat() periodically to indicate
+ * it is still running.
+ *
+ * @param[in] task_name Name of the task (for logging)
+ * @param[in] timeout_ms Maximum time between heartbeats before considering
+ *                       the task dead (typically 3x the task period)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if task_name is NULL
+ * @return k_rx_err_no_mem if maximum tasks already registered
+ *
+ * @note Call during task initialization before entering main loop
+ *
+ * Example:
+ * @code
+ * // Motor_Controller runs at 250 Hz (4ms period)
+ * // Set timeout to 3x period = 12ms
+ * rx_iwdt_register_task("Motor_Controller", 12);
+ * @endcode
+ */
+rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms);
+
+/**
+ * @brief Record a task heartbeat
+ *
+ * Updates the last heartbeat timestamp for the calling task. Tasks must
+ * call this function periodically (within their registered timeout) to
+ * prove they are still alive.
+ *
+ * @param[in] task_name Name of the task (must match registration)
+ *
+ * @note Call this at the end of each task iteration
+ * @note If any task misses 3+ heartbeats, watchdog will eventually trigger
+ *
+ * Example:
+ * @code
+ * void comm_manager_entry(ULONG input) {
+ *     rx_iwdt_register_task("Comm_Manager", 30);
+ *     while (1) {
+ *         process_ingress();
+ *         process_egress();
+ *         rx_iwdt_task_heartbeat("Comm_Manager");
+ *         tx_thread_sleep(1);
+ *     }
+ * }
+ * @endcode
+ */
+void rx_iwdt_task_heartbeat(const char* task_name);
+
+/**
+ * @brief Check for task deadlocks
+ *
+ * Examines all registered tasks to see if any have exceeded their heartbeat
+ * timeout. Should be called periodically (e.g., from lowest priority task).
+ *
+ * @return k_rx_ok if all tasks healthy
+ * @return k_rx_err_timeout if one or more tasks have deadlocked
+ *
+ * @note This function logs which task(s) failed before returning
+ * @note The hardware IWDT will eventually reset the system if deadlock persists
+ */
+rx_err_t rx_iwdt_check_tasks(void);
+
+/**
+ * @brief Get the name of the last failed task (if any)
+ *
+ * Returns the name of the task that failed to heartbeat before the last
+ * watchdog reset. Useful for post-mortem diagnostics.
+ *
+ * @return Task name if reset was due to task deadlock, NULL otherwise
+ *
+ * @note This information persists across reset in a special RAM region
+ * @note Call early in startup to retrieve failure information
+ */
+const char* rx_iwdt_get_failed_task(void);
+
 #ifdef __cplusplus
 }
 #endif

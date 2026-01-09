@@ -184,17 +184,35 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
  */
 
 /**
- * @brief Create VelocityCommand with given velocities
+ * @brief Create VelocityCommand for 4 independent motors
  *
  * @param[out] cmd Output command structure
- * @param[in]  left_mps Left wheel velocity (m/s)
- * @param[in]  right_mps Right wheel velocity (m/s)
+ * @param[in]  front_left_mps Front left motor velocity (m/s)
+ * @param[in]  front_right_mps Front right motor velocity (m/s)
+ * @param[in]  back_left_mps Back left motor velocity (m/s)
+ * @param[in]  back_right_mps Back right motor velocity (m/s)
  * @param[in]  sequence Command sequence number
  */
 void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
-                                       double                   left_mps,
-                                       double                   right_mps,
+                                       double                   front_left_mps,
+                                       double                   front_right_mps,
+                                       double                   back_left_mps,
+                                       double                   back_right_mps,
                                        uint32_t                 sequence);
+
+/**
+ * @brief Create VelocityCommand in differential drive mode
+ * @details Locks left 2 motors together and right 2 motors together
+ *
+ * @param[out] cmd Output command structure
+ * @param[in]  left_mps Left side velocity (m/s) - applied to front_left & back_left
+ * @param[in]  right_mps Right side velocity (m/s) - applied to front_right & back_right
+ * @param[in]  sequence Command sequence number
+ */
+void rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
+                                                  double                   left_mps,
+                                                  double                   right_mps,
+                                                  uint32_t                 sequence);
 
 /**
  * @brief Create ResponseHeader with status

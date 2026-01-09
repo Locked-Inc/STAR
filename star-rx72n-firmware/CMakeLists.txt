@@ -115,6 +115,8 @@ add_library(rx_hal STATIC
     lib/rx_hal/src/rx_gptw.c
     lib/rx_hal/src/rx_cmt.c
     lib/rx_hal/src/rx_mpc.c
+    lib/rx_hal/src/rx_iwdt.c
+    lib/rx_core/src/rx_register_guard.c
 )
 target_include_directories(rx_hal PUBLIC
     lib/rx_hal/inc
@@ -276,6 +278,15 @@ target_link_libraries(rx_obstacle_detect PUBLIC rx_hcsr04 rx_motor rx_core)
 
 set(APP_SOURCES
     src/main.c
+    src/shared_state.c
+    src/hardware_init.c
+    src/diagnostics.c
+    src/pmod_config.c
+    src/tasks/motor_controller.c
+    src/tasks/comm_manager.c
+    src/tasks/env_monitor.c
+    src/tasks/system_health.c
+    src/tasks/pmod_led.c
 )
 
 # =============================================================================
@@ -325,7 +336,7 @@ set_target_properties(${PROJECT_NAME}.elf PROPERTIES
 
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.hex
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.bin
+    COMMAND ${CMAKE_OBJCOPY} -O binary -R .fvectors $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.bin
     COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${PROJECT_NAME}.elf>
     COMMENT "Generating HEX and BIN files, showing size..."
 )
