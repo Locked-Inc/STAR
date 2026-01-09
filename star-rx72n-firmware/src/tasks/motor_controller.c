@@ -137,7 +137,7 @@ static void motor_controller_entry(ULONG input)
         rx_log_error(s_tag, "Motor subsystem init failed");
         /* Cannot continue - halt this thread */
         while (1) {
-            tx_thread_sleep(100); /* Sleep forever */
+            tx_thread_sleep(k_threadx_ticks_1s); /* Sleep until reset */
         }
     }
 
@@ -160,10 +160,10 @@ static void motor_controller_entry(ULONG input)
         /* Sleep for 4ms (250 Hz control rate)
          * Note: k_control_loop_ticks = 0 because 4ms < 10ms ThreadX tick
          *
-         * Phase 1: Using tx_thread_sleep(1) = 10ms for stub implementation
+         * Phase 1: Using tx_thread_sleep(k_threadx_ticks_10ms) = 10ms for stub implementation
          * Phase 2: Will use dedicated timer interrupt for precise 4ms timing
          *          when actual motor control hardware is integrated */
-        tx_thread_sleep(1); /* 10ms tick - Phase 2 will implement precise 4ms timer */
+        tx_thread_sleep(k_threadx_ticks_10ms); /* 10ms tick - Phase 2 will implement precise 4ms timer */
     }
 }
 
