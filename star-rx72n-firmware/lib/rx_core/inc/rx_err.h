@@ -76,6 +76,7 @@ typedef enum {
   k_rx_err_empty           = 0x10C, /**< Empty (no data available) */
   k_rx_err_cancelled       = 0x10D, /**< Operation cancelled */
   k_rx_err_not_initialized = 0x10E, /**< Module not initialized */
+  k_rx_err_estop           = 0x10F, /**< Emergency stop active */
 
   /* Hardware Errors (0x200 - 0x2FF) */
   k_rx_err_hw_init_failed    = 0x201, /**< Hardware initialization failed */
