@@ -195,13 +195,13 @@ static rx_err_t init_bus_manager(void)
  */
 static rx_err_t init_pid_controllers(void)
 {
-  const float kp      = (float)k_pid_kp_x1000 / 1000.0f;
-  const float ki      = (float)k_pid_ki_x1000 / 1000.0f;
-  const float kd      = (float)k_pid_kd_x1000 / 1000.0f;
+  const float kp      = (float)k_pid_kp_x1000 / (float)k_pid_gain_scale_factor;
+  const float ki      = (float)k_pid_ki_x1000 / (float)k_pid_gain_scale_factor;
+  const float kd      = (float)k_pid_kd_x1000 / (float)k_pid_gain_scale_factor;
   const float out_min = -(float)k_pid_output_max_percent;
   const float out_max = (float)k_pid_output_max_percent;
-  const float int_min = (float)k_pid_integral_min_x100 / 100.0f;
-  const float int_max = (float)k_pid_integral_max_x100 / 100.0f;
+  const float int_min = (float)k_pid_integral_min_x100 / (float)k_pid_integral_scale_factor;
+  const float int_max = (float)k_pid_integral_max_x100 / (float)k_pid_integral_scale_factor;
 
   for (uint8_t i = 0; i < k_motor_count; i++) {
     rx_pid_config_t pid_config = {

@@ -82,9 +82,10 @@ typedef enum {
  * Divide by 1000 when using: Kp_actual = k_pid_kp_x1000 / 1000.0f
  */
 typedef enum {
-  k_pid_kp_x1000 = 286,  /**< Proportional gain (0.286 scaled by 1000) */
-  k_pid_ki_x1000 = 8010, /**< Integral gain (8.01 scaled by 1000) */
-  k_pid_kd_x1000 = 0,    /**< Derivative gain (0.0) */
+  k_pid_kp_x1000          = 286,  /**< Proportional gain (0.286 scaled by 1000) */
+  k_pid_ki_x1000          = 8010, /**< Integral gain (8.01 scaled by 1000) */
+  k_pid_kd_x1000          = 0,    /**< Derivative gain (0.0) */
+  k_pid_gain_scale_factor = 1000, /**< PID gain scaling factor (gains stored as x1000) */
 } pid_gains_t;
 
 /**
@@ -101,8 +102,9 @@ typedef enum {
  * @details Prevents integral windup during saturation
  */
 typedef enum {
-  k_pid_integral_min_x100 = -5000, /**< Min integral (-50.0 scaled by 100) */
-  k_pid_integral_max_x100 = 5000,  /**< Max integral (50.0 scaled by 100) */
+  k_pid_integral_min_x100     = -5000, /**< Min integral (-50.0 scaled by 100) */
+  k_pid_integral_max_x100     = 5000,  /**< Max integral (50.0 scaled by 100) */
+  k_pid_integral_scale_factor = 100,   /**< Integral limit scaling (limits stored as x100) */
 } pid_integral_limits_t;
 
 /* =============================================================================

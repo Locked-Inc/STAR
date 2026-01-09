@@ -202,14 +202,14 @@ void test_encode_velocity_request_with_command(void)
  */
 void test_encode_velocity_request_max_velocity(void)
 {
-  star_v1_SetVelocityRequest msg        = star_v1_SetVelocityRequest_init_zero;
-  msg.has_command                       = true;
-  msg.command.motor_0_velocity_mps      = s_test_max_velocity_mps;
-  original.command.motor_1_velocity_mps = s_test_max_velocity_mps;
-  msg.command.motor_2_velocity_mps      = s_test_max_velocity_mps;
-  msg.command.motor_3_velocity_mps      = s_test_max_velocity_mps;
-  msg.command.sequence                  = k_test_sequence_max;
-  msg.command.timestamp_us              = k_test_timestamp_us;
+  star_v1_SetVelocityRequest msg   = star_v1_SetVelocityRequest_init_zero;
+  msg.has_command                  = true;
+  msg.command.motor_0_velocity_mps = s_test_max_velocity_mps;
+  msg.command.motor_1_velocity_mps = s_test_max_velocity_mps;
+  msg.command.motor_2_velocity_mps = s_test_max_velocity_mps;
+  msg.command.motor_3_velocity_mps = s_test_max_velocity_mps;
+  msg.command.sequence             = k_test_sequence_max;
+  msg.command.timestamp_us         = k_test_timestamp_us;
 
   uint32_t len = 0;
   rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
@@ -222,13 +222,13 @@ void test_encode_velocity_request_max_velocity(void)
  */
 void test_encode_velocity_request_zero_velocity(void)
 {
-  star_v1_SetVelocityRequest msg        = star_v1_SetVelocityRequest_init_zero;
-  msg.has_command                       = true;
-  msg.command.motor_0_velocity_mps      = s_test_zero_velocity_mps;
-  original.command.motor_1_velocity_mps = s_test_zero_velocity_mps;
-  msg.command.motor_2_velocity_mps      = s_test_zero_velocity_mps;
-  msg.command.motor_3_velocity_mps      = s_test_zero_velocity_mps;
-  msg.command.sequence                  = 1;
+  star_v1_SetVelocityRequest msg   = star_v1_SetVelocityRequest_init_zero;
+  msg.has_command                  = true;
+  msg.command.motor_0_velocity_mps = s_test_zero_velocity_mps;
+  msg.command.motor_1_velocity_mps = s_test_zero_velocity_mps;
+  msg.command.motor_2_velocity_mps = s_test_zero_velocity_mps;
+  msg.command.motor_3_velocity_mps = s_test_zero_velocity_mps;
+  msg.command.sequence             = 1;
 
   uint32_t len = 0;
   rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
@@ -240,13 +240,13 @@ void test_encode_velocity_request_zero_velocity(void)
  */
 void test_encode_velocity_request_negative_velocity(void)
 {
-  star_v1_SetVelocityRequest msg        = star_v1_SetVelocityRequest_init_zero;
-  msg.has_command                       = true;
-  msg.command.motor_0_velocity_mps      = -s_test_max_velocity_mps;
-  original.command.motor_1_velocity_mps = -s_test_max_velocity_mps;
-  msg.command.motor_2_velocity_mps      = -s_test_max_velocity_mps;
-  msg.command.motor_3_velocity_mps      = -s_test_max_velocity_mps;
-  msg.command.sequence                  = k_test_sequence_number;
+  star_v1_SetVelocityRequest msg   = star_v1_SetVelocityRequest_init_zero;
+  msg.has_command                  = true;
+  msg.command.motor_0_velocity_mps = -s_test_max_velocity_mps;
+  msg.command.motor_1_velocity_mps = -s_test_max_velocity_mps;
+  msg.command.motor_2_velocity_mps = -s_test_max_velocity_mps;
+  msg.command.motor_3_velocity_mps = -s_test_max_velocity_mps;
+  msg.command.sequence             = k_test_sequence_number;
 
   uint32_t len = 0;
   rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
@@ -357,9 +357,9 @@ void test_velocity_request_roundtrip_with_command(void)
   star_v1_SetVelocityRequest original   = star_v1_SetVelocityRequest_init_zero;
   original.has_command                  = true;
   original.command.motor_0_velocity_mps = s_test_motor_0_velocity_mps;
-  msg.command.motor_1_velocity_mps      = s_test_motor_1_velocity_mps;
+  original.command.motor_1_velocity_mps = s_test_motor_1_velocity_mps;
   original.command.motor_2_velocity_mps = s_test_motor_2_velocity_mps;
-  msg.command.motor_3_velocity_mps      = s_test_motor_3_velocity_mps;
+  original.command.motor_3_velocity_mps = s_test_motor_3_velocity_mps;
   original.command.sequence             = k_test_sequence_number;
   original.command.timestamp_us         = k_test_timestamp_us;
 
@@ -393,7 +393,7 @@ void test_velocity_request_roundtrip_zero_velocity(void)
   original.command.motor_0_velocity_mps = s_test_zero_velocity_mps;
   original.command.motor_1_velocity_mps = s_test_zero_velocity_mps;
   original.command.motor_2_velocity_mps = s_test_zero_velocity_mps;
-  msg.command.motor_3_velocity_mps      = s_test_zero_velocity_mps;
+  original.command.motor_3_velocity_mps = s_test_zero_velocity_mps;
   original.command.sequence             = 1;
 
   uint32_t len = 0;
@@ -985,12 +985,16 @@ void test_create_velocity_command_valid(void)
 
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
                            (float)s_test_motor_0_velocity_mps,
-                           s_test_motor_1_velocity_mps,
                            (float)cmd.motor_0_velocity_mps);
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
+                           (float)s_test_motor_1_velocity_mps,
+                           (float)cmd.motor_1_velocity_mps);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
                            (float)s_test_motor_2_velocity_mps,
-                           s_test_motor_3_velocity_mps,
                            (float)cmd.motor_2_velocity_mps);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
+                           (float)s_test_motor_3_velocity_mps,
+                           (float)cmd.motor_3_velocity_mps);
   TEST_ASSERT_EQUAL(k_test_sequence_number, cmd.sequence);
   TEST_ASSERT_EQUAL(0, cmd.timestamp_us); /* Timestamp should be zero by default */
 }
@@ -1205,14 +1209,14 @@ void test_empty_message_minimal_size(void)
  */
 void test_velocity_request_fits_in_buffer(void)
 {
-  star_v1_SetVelocityRequest msg        = star_v1_SetVelocityRequest_init_zero;
-  msg.has_command                       = true;
-  msg.command.motor_0_velocity_mps      = s_test_max_velocity_mps;
-  original.command.motor_1_velocity_mps = s_test_max_velocity_mps;
-  msg.command.motor_2_velocity_mps      = s_test_max_velocity_mps;
-  msg.command.motor_3_velocity_mps      = s_test_max_velocity_mps;
-  msg.command.sequence                  = k_test_sequence_max;
-  msg.command.timestamp_us              = k_test_timestamp_us;
+  star_v1_SetVelocityRequest msg   = star_v1_SetVelocityRequest_init_zero;
+  msg.has_command                  = true;
+  msg.command.motor_0_velocity_mps = s_test_max_velocity_mps;
+  msg.command.motor_1_velocity_mps = s_test_max_velocity_mps;
+  msg.command.motor_2_velocity_mps = s_test_max_velocity_mps;
+  msg.command.motor_3_velocity_mps = s_test_max_velocity_mps;
+  msg.command.sequence             = k_test_sequence_max;
+  msg.command.timestamp_us         = k_test_timestamp_us;
 
   uint32_t len = 0;
   rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
