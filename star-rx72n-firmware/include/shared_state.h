@@ -99,12 +99,12 @@ typedef enum {
  * - Only allowed if no active obstacles, faults, or timeouts
  */
 typedef struct {
-  bool    emergency_stop;       /**< Master E-STOP flag (checked every 4ms) */
-  bool    obstacle_detected;    /**< Obstacle within threshold distance */
-  bool    comm_timeout;         /**< Communication timeout (500ms) */
-  uint8_t fault_flags;          /**< Motor fault bitfield (fault_flags_t) */
-  float   obstacle_distance_cm; /**< Distance to nearest obstacle */
-  uint8_t obstacle_sensor_idx;  /**< Index of sensor detecting obstacle */
+  bool            emergency_stop;       /**< Master E-STOP flag (checked every 4ms) */
+  bool            obstacle_detected;    /**< Obstacle within threshold distance */
+  bool            comm_timeout;         /**< Communication timeout (500ms) */
+  fault_flags_t   fault_flags;          /**< Motor fault bitfield */
+  float           obstacle_distance_cm; /**< Distance to nearest obstacle */
+  uint8_t         obstacle_sensor_idx;  /**< Index of sensor detecting obstacle */
 } safety_state_t;
 
 /* =============================================================================
@@ -117,13 +117,13 @@ typedef struct {
  * @details Battery, temperature, and diagnostics
  */
 typedef struct {
-  float    battery_voltage_v;   /**< Battery voltage (V) */
-  float    battery_soc_percent; /**< State of charge (%) */
-  float    battery_current_ma;  /**< Battery current (mA) */
-  float    temperature_c;       /**< System temperature (°C) */
-  bool     battery_low;         /**< True if SOC < 20% */
-  bool     thermal_warning;     /**< True if temp > 70°C */
-  uint32_t uptime_ms;           /**< System uptime (ms) */
+  float    battery_voltage_v;      /**< Battery voltage (V) */
+  float    battery_soc_percent;    /**< State of charge (%) */
+  float    battery_current_ma;     /**< Battery current (mA) */
+  float    temperature_celsius;    /**< System temperature (°C) */
+  bool     battery_low;            /**< True if SOC < 20% */
+  bool     thermal_warning;        /**< True if temp > 70°C */
+  uint32_t uptime_ms;              /**< System uptime (ms) */
 } system_health_t;
 
 /* =============================================================================

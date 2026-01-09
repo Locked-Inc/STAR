@@ -359,7 +359,7 @@ static rx_err_t update_temperature_health(shared_state_t* state, float temperatu
     return k_rx_err_threadx;
   }
 
-  state->health.temperature_c = temperature_c;
+  state->health.temperature_celsius = temperature_c;
 
   /* Check for thermal warning */
   if (temperature_c > k_temp_warning_threshold_c) {

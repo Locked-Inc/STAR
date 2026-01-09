@@ -274,7 +274,7 @@ static void update_shared_state(void)
    * shared_state_t* state = shared_state_get();
    * UINT status = tx_mutex_get(&state->health_mutex, TX_WAIT_FOREVER);
    * if (status == TX_SUCCESS) {
-   *   state->health.temperature_c = s_state.last_value;
+   *   state->health.temperature_celsius = s_state.last_value;
    *   tx_mutex_put(&state->health_mutex);
    * }
    */

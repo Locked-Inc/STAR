@@ -27,10 +27,10 @@
 static shared_state_t s_shared_state;
 
 /* Mutex name constants (non-const for ThreadX API) */
-static char s_setpoint_mutex_name[] = "SetpointMutex";
-static char s_encoder_mutex_name[]  = "EncoderMutex";
-static char s_safety_mutex_name[]   = "SafetyMutex";
-static char s_health_mutex_name[]   = "HealthMutex";
+static char* s_setpoint_mutex_name = "SetpointMutex";
+static char* s_encoder_mutex_name  = "EncoderMutex";
+static char* s_safety_mutex_name   = "SafetyMutex";
+static char* s_health_mutex_name   = "HealthMutex";
 
 /* =============================================================================
  * Public API Implementation
