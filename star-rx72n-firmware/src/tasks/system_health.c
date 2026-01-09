@@ -33,6 +33,12 @@ static rx_bus_manager_t s_bus_manager;
 /* System uptime tracking */
 static uint32_t s_startup_time_ms = 0;
 
+/* Module constants */
+typedef enum {
+  k_watchdog_timeout_ms = 3000, /**< 3x period = 3 * 1000ms = 3000ms */
+  k_bms_i2c_address     = 0x0B, /**< BQ4050 fuel gauge 7-bit I2C address */
+} system_health_constants_t;
+
 static void     system_health_entry(ULONG input);
 static rx_err_t init_battery_comm(void);
 static rx_err_t poll_battery(void);
@@ -68,7 +74,7 @@ static void system_health_entry(ULONG input)
 
   /* Register with watchdog for task-level monitoring
      * Timeout = 3x period = 3 * 1000ms = 3000ms */
-  rx_err_t ret = rx_iwdt_register_task(s_task_name, 3000);
+  rx_err_t ret = rx_iwdt_register_task(s_task_name, k_watchdog_timeout_ms);
   if (ret != k_rx_ok) {
     rx_log_error(s_tag, "Failed to register with watchdog");
   }
@@ -149,9 +155,9 @@ static rx_err_t init_battery_comm(void)
           {
             .channel      = 0,             /* RIIC0 */
             .sda_pin      = k_pin_bms_sda, /* P13 (pin 33) */
-            .scl_pin      = k_pin_bms_scl, /* P12 (pin 34) */
-            .frequency_hz = 1000000,       /* 1 MHz Fast Mode Plus */
-            .device_addr  = 0x0B,          /* BQ4050 7-bit address */
+            .scl_pin      = k_pin_bms_scl,    /* P12 (pin 34) */
+            .frequency_hz = 1000000,          /* 1 MHz Fast Mode Plus */
+            .device_addr  = k_bms_i2c_address, /* BQ4050 7-bit address */
           },
         .use_pec = true, /* Use Packet Error Checking (CRC-8) for SMBus */
       },
