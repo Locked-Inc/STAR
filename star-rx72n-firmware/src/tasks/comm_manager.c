@@ -402,7 +402,7 @@ static void populate_telemetry_message(star_v1_TelemetryData*    msg,
   /* Health data */
   msg->battery_voltage_v   = health->battery_voltage_v;
   msg->battery_soc_percent = (uint32_t)health->battery_soc_percent;
-  msg->temperature_celsius = health->temperature_c;
+  msg->temperature_celsius = health->temperature_celsius;
 }
 
 /**
