@@ -100,6 +100,9 @@ static void system_health_entry(ULONG input)
             diagnostics_log_fault(s_tag, "Task deadlock detected", ret);
         }
 
+        /* Feed watchdog (critical - prevents reset) */
+        rx_iwdt_feed();
+
         /* Record task heartbeat for deadlock detection */
         rx_iwdt_task_heartbeat("System_Health");
 
