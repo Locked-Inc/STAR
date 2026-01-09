@@ -75,4 +75,12 @@ void diagnostics_increment_thermal_warning(void);
  */
 void diagnostics_increment_register_correction(void);
 
+/**
+ * @brief Log a fault event with timestamp
+ * @param[in] tag Component tag (e.g., "motor_ctrl", "comm_mgr")
+ * @param[in] message Fault description
+ * @param[in] error_code Error code associated with the fault
+ */
+void diagnostics_log_fault(const char* tag, const char* message, int32_t error_code);
+
 #endif /* DIAGNOSTICS_H */

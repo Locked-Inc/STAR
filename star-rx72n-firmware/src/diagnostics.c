@@ -9,7 +9,10 @@
  */
 
 #include "diagnostics.h"
+#include "rx_log.h"
+#include "tx_api.h"
 #include <string.h>
+#include <stdio.h>
 
 /* =============================================================================
  * Private Variables
@@ -61,4 +64,34 @@ void diagnostics_increment_thermal_warning(void)
 void diagnostics_increment_register_correction(void)
 {
     s_counters.register_corrections++;
+}
+
+void diagnostics_log_fault(const char* tag, const char* message, int32_t error_code)
+{
+    /* -------------------------------------------------------------------------
+     * Issue 19: Fault Logging with Timestamp
+     * -------------------------------------------------------------------------
+     * Log fault events with timestamp for post-mortem analysis
+     */
+    const uint32_t timestamp_ms = tx_time_get();
+
+    /* Log error with timestamp and error code */
+    char log_buffer[128];
+    const int written = snprintf(log_buffer, sizeof(log_buffer),
+                                 "[%lu ms] FAULT: %s - code 0x%lx",
+                                 (unsigned long)timestamp_ms,
+                                 message,
+                                 (unsigned long)error_code);
+
+    /* Ensure buffer wasn't truncated */
+    if (written > 0 && (size_t)written < sizeof(log_buffer)) {
+        rx_log_error(tag, log_buffer);
+    } else {
+        /* Fallback if buffer too small */
+        rx_log_error(tag, message);
+    }
+
+    /* TODO (Phase 5+): Write to non-volatile storage for persistence
+     * across reboots. This would use internal data flash for post-mortem
+     * analysis of failures in the field. */
 }

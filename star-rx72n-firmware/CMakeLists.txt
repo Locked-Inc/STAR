@@ -110,6 +110,8 @@ add_library(rx_hal STATIC
     lib/rx_hal/src/rx_gptw.c
     lib/rx_hal/src/rx_cmt.c
     lib/rx_hal/src/rx_mpc.c
+    lib/rx_hal/src/rx_iwdt.c
+    lib/rx_core/src/rx_register_guard.c
 )
 target_include_directories(rx_hal PUBLIC
     lib/rx_hal/inc
@@ -274,6 +276,7 @@ set(APP_SOURCES
     src/shared_state.c
     src/hardware_init.c
     src/diagnostics.c
+    src/pmod_config.c
     src/tasks/motor_controller.c
     src/tasks/comm_manager.c
     src/tasks/env_monitor.c

@@ -30,6 +30,7 @@
 
 /**
  * @brief Captured golden values for PORT PDR registers
+ * @note 100-pin package: Only ports 0-5, A-E, J available (6-9, F-G do not exist)
  */
 typedef struct {
   uint8_t port0_pdr;
@@ -38,17 +39,11 @@ typedef struct {
   uint8_t port3_pdr;
   uint8_t port4_pdr;
   uint8_t port5_pdr;
-  uint8_t port6_pdr;
-  uint8_t port7_pdr;
-  uint8_t port8_pdr;
-  uint8_t port9_pdr;
   uint8_t porta_pdr;
   uint8_t portb_pdr;
   uint8_t portc_pdr;
   uint8_t portd_pdr;
   uint8_t porte_pdr;
-  uint8_t portf_pdr;
-  uint8_t portg_pdr;
   uint8_t portj_pdr;
 } pdr_golden_t;
 
@@ -87,6 +82,7 @@ static register_guard_state_t s_state = {0};
 #ifdef __RX__
 /**
  * @brief Capture current PORT PDR values as golden reference
+ * @note 100-pin package: Only ports 0-5, A-E, J available
  */
 static void internal_capture_pdr(void)
 {
@@ -96,17 +92,11 @@ static void internal_capture_pdr(void)
   s_state.pdr.port3_pdr = port3()->pdr;
   s_state.pdr.port4_pdr = port4()->pdr;
   s_state.pdr.port5_pdr = port5()->pdr;
-  s_state.pdr.port6_pdr = port6()->pdr;
-  s_state.pdr.port7_pdr = port7()->pdr;
-  s_state.pdr.port8_pdr = port8()->pdr;
-  s_state.pdr.port9_pdr = port9()->pdr;
   s_state.pdr.porta_pdr = porta()->pdr;
   s_state.pdr.portb_pdr = portb()->pdr;
   s_state.pdr.portc_pdr = portc()->pdr;
   s_state.pdr.portd_pdr = portd()->pdr;
   s_state.pdr.porte_pdr = porte()->pdr;
-  s_state.pdr.portf_pdr = portf()->pdr;
-  s_state.pdr.portg_pdr = portg()->pdr;
   s_state.pdr.portj_pdr = portj()->pdr;
 }
 
@@ -123,6 +113,7 @@ static void internal_capture_mstpcr(void)
 
 /**
  * @brief Refresh PORT PDR values, counting corrections
+ * @note 100-pin package: Only ports 0-5, A-E, J available
  */
 static void internal_refresh_pdr(void)
 {
@@ -151,22 +142,6 @@ static void internal_refresh_pdr(void)
     port5()->pdr = s_state.pdr.port5_pdr;
     s_state.corrections++;
   }
-  if (port6()->pdr != s_state.pdr.port6_pdr) {
-    port6()->pdr = s_state.pdr.port6_pdr;
-    s_state.corrections++;
-  }
-  if (port7()->pdr != s_state.pdr.port7_pdr) {
-    port7()->pdr = s_state.pdr.port7_pdr;
-    s_state.corrections++;
-  }
-  if (port8()->pdr != s_state.pdr.port8_pdr) {
-    port8()->pdr = s_state.pdr.port8_pdr;
-    s_state.corrections++;
-  }
-  if (port9()->pdr != s_state.pdr.port9_pdr) {
-    port9()->pdr = s_state.pdr.port9_pdr;
-    s_state.corrections++;
-  }
   if (porta()->pdr != s_state.pdr.porta_pdr) {
     porta()->pdr = s_state.pdr.porta_pdr;
     s_state.corrections++;
@@ -185,14 +160,6 @@ static void internal_refresh_pdr(void)
   }
   if (porte()->pdr != s_state.pdr.porte_pdr) {
     porte()->pdr = s_state.pdr.porte_pdr;
-    s_state.corrections++;
-  }
-  if (portf()->pdr != s_state.pdr.portf_pdr) {
-    portf()->pdr = s_state.pdr.portf_pdr;
-    s_state.corrections++;
-  }
-  if (portg()->pdr != s_state.pdr.portg_pdr) {
-    portg()->pdr = s_state.pdr.portg_pdr;
     s_state.corrections++;
   }
   if (portj()->pdr != s_state.pdr.portj_pdr) {
