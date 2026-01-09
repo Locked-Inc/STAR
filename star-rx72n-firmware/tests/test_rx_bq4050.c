@@ -24,6 +24,7 @@
 
 #include "mocks/mock_rx_bus_smbus.h"
 #include "rx_bq4050.h"
+#include "unity.h"
 
 /* =============================================================================
  * Test Constants
@@ -90,6 +91,16 @@ typedef enum {
 static rx_bus_manager_t s_manager;
 static const char*      s_bus_name = "smbus_fuel_gauge";
 
+void setUp(void)
+{
+  /* Setup is done in test_setup() called by each test */
+}
+
+void tearDown(void)
+{
+  /* Cleanup if needed */
+}
+
 /**
  * @brief Set up test environment before each test
  */
@@ -140,7 +151,7 @@ static void test_init_success(void)
 
   rx_err_t err = rx_bq4050_init(&s_manager, s_bus_name, NULL);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT(mock_smbus_was_init_called(), "SMBus init should be called");
+  TEST_ASSERT_TRUE(mock_smbus_was_init_called());
 }
 
 static void test_init_null_manager(void)
@@ -552,7 +563,7 @@ static void test_read_status_success(void)
   TEST_ASSERT_EQUAL(k_test_typical_voltage_mv, status.voltage_mv);
   TEST_ASSERT_EQUAL(k_test_cell_voltage_mv, status.cell_voltages_mv[0]);
   TEST_ASSERT_EQUAL(k_test_soc_full, status.relative_soc);
-  TEST_ASSERT_EQUAL(25, status.temperature_c);
+  TEST_ASSERT_EQUAL(25, status.temperature_celsius);
 }
 
 static void test_read_status_null_status(void)

@@ -243,12 +243,13 @@ add_library(rx_drv8243 STATIC
 target_include_directories(rx_drv8243 PUBLIC lib/rx_drv8243/inc)
 target_link_libraries(rx_drv8243 PUBLIC rx_bus rx_motor rx_core)
 
-# rx_bq4050 - BQ4050 battery fuel gauge (Smart Battery System)
-add_library(rx_bq4050 STATIC
-    lib/rx_bq4050/src/rx_bq4050.c
+# rx_bms - Battery Management System drivers (BQ78350, BQ4050, etc.)
+add_library(rx_bms STATIC
+    lib/rx_bms/src/rx_bq78350.c
+    lib/rx_bms/src/rx_bq4050.c
 )
-target_include_directories(rx_bq4050 PUBLIC lib/rx_bq4050/inc)
-target_link_libraries(rx_bq4050 PUBLIC rx_bus rx_core)
+target_include_directories(rx_bms PUBLIC lib/rx_bms/inc)
+target_link_libraries(rx_bms PUBLIC rx_bus rx_core)
 
 # rx_ds18b20 - DS18B20 1-Wire temperature sensor
 add_library(rx_ds18b20 STATIC
@@ -319,7 +320,7 @@ target_link_libraries(${PROJECT_NAME}.elf
     rx_usb
     rx_usb_comm
     rx_drv8243
-    rx_bq4050
+    rx_bms
     rx_ds18b20
     rx_hcsr04
     rx_obstacle_detect

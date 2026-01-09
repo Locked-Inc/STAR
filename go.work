@@ -1,7 +1,8 @@
-go 1.24.11
+go 1.25.5
 
 use (
+	./star-gateway
+	./star-proto
 	./star-proto/gen/go
 	./star-proto/tests/go
-	./star-gateway
 )

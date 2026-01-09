@@ -2,10 +2,10 @@
 
 /**
  * @file mock_rx_bus_smbus.c
- * @brief Mock SMBus Driver Implementation for Unit Testing BQ4050
+ * @brief Mock SMBus Driver Implementation for Unit Testing
  * @details
  * Provides mock implementation of SMBus driver for host-side testing.
- * Replaces rx_bus_smbus.c for testing BQ4050 driver.
+ * Replaces rx_bus_smbus.c for testing BMS drivers (BQ78350, BQ4050, etc.).
  *
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 STAR Project
@@ -27,6 +27,16 @@
  * @brief Mock register storage (word values)
  */
 static uint16_t s_register_values[k_mock_smbus_max_regs] = {0};
+
+/**
+ * @brief Mock block data storage
+ */
+static uint8_t s_block_data[k_mock_smbus_max_regs][k_mock_smbus_max_block_len] = {{0}};
+
+/**
+ * @brief Mock block length storage
+ */
+static uint8_t s_block_lengths[k_mock_smbus_max_regs] = {0};
 
 /**
  * @brief Error to inject for specific commands (k_rx_ok = no error)
@@ -66,6 +76,8 @@ static uint8_t s_last_command = 0;
 void mock_smbus_reset(void)
 {
   memset(s_register_values, 0, sizeof(s_register_values));
+  memset(s_block_data, 0, sizeof(s_block_data));
+  memset(s_block_lengths, 0, sizeof(s_block_lengths));
   memset(s_command_errors, 0, sizeof(s_command_errors));
   s_next_error   = k_rx_ok;
   s_initialized  = false;
@@ -102,6 +114,15 @@ void mock_smbus_clear_command_error(uint8_t command)
 void mock_smbus_set_initialized(bool initialized)
 {
   s_initialized = initialized;
+}
+
+void mock_smbus_set_block_response(uint8_t command, const uint8_t* data, uint8_t length)
+{
+  if (length > k_mock_smbus_max_block_len) {
+    length = k_mock_smbus_max_block_len;
+  }
+  memcpy(s_block_data[command], data, length);
+  s_block_lengths[command] = length;
 }
 
 uint32_t mock_smbus_get_read_count(void)
@@ -279,8 +300,28 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
     return s_command_errors[command];
   }
 
-  /* Store value */
-  s_register_values[command] = data;
+  /**
+   * @brief ManufacturerAccess command (0x00) special handling
+   *
+   * The ManufacturerAccess protocol works as follows:
+   * 1. Write subcommand code to register 0x00
+   * 2. Read response from register 0x00
+   *
+   * The write triggers internal processing, and the subsequent read
+   * returns the result of that subcommand (NOT the written value).
+   *
+   * For testing, we pre-configure the expected response using
+   * mock_smbus_set_word_response(0x00, expected_value), so we must
+   * NOT overwrite it when the driver writes the subcommand code.
+   */
+  typedef enum {
+    k_manufacturer_access_cmd = 0x00,
+  } smbus_special_commands_t;
+
+  /* Don't overwrite ManufacturerAccess response */
+  if (command != k_manufacturer_access_cmd) {
+    s_register_values[command] = data;
+  }
 
   return k_rx_ok;
 }
@@ -347,9 +388,14 @@ rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
   s_read_count++;
   s_last_command = command;
 
-  /* Return empty block */
-  *length = 0;
-  (void)max_length;
+  /* Return stored block data */
+  uint8_t block_length = s_block_lengths[command];
+  if (block_length > max_length) {
+    block_length = max_length;
+  }
+
+  memcpy(data, s_block_data[command], block_length);
+  *length = block_length;
 
   return k_rx_ok;
 }

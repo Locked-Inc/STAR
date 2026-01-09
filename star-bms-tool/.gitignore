@@ -1,0 +1,32 @@
+# OS / Editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Rust build artifacts
+/target/
+**/target/
+/gen/schemas
+
+# Node / frontend artifacts
+/node_modules/
+ui/node_modules/
+/dist/
+ui/dist/
+ui/.svelte-kit/
+
+# Playwright output
+/playwright-report/
+/test-results/
+/test-output.log
+/test_output.log
+
+# Logs & caches
+*.log
+tauri_dev.log
+
+# Coverage / debug data
+coverage/
+.nyc_output/

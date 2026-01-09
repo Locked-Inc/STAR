@@ -1,5 +1,5 @@
 # buf.gen.yaml - STAR Code Generation Configuration (buf v1)
-# Generates code for Go (primary), TypeScript, and nanopb (C)
+# Generates code for Go, TypeScript, Rust, and nanopb (C)
 #
 # STAR Project - Texas A&M University
 # December 2025
@@ -37,6 +37,12 @@ plugins:
       - generate_dependencies
       - ts_nocheck
       - eslint_disable
+
+  # ============================================
+  # Rust for star-bms-tool (prost)
+  # ============================================
+  - plugin: buf.build/community/neoeinstein-prost
+    out: gen/rust
 
   # ============================================
   # C for star-esp32-firmware (nanopb)

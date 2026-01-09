@@ -1,0 +1,62 @@
+[package]
+name = "app"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+license = ""
+repository = ""
+edition = "2021"
+rust-version = "1.77.2"
+default-run = "app"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = []
+experimental = []  # Enable experimental features (calibration wizard, etc.)
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "mock_device"
+path = "src/bin/mock_device.rs"
+
+[build-dependencies]
+tauri-build = { version = "2.5.3", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+tauri = { version = "2.9.5", features = [] }
+tauri-plugin-log = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+
+# Serial port communication
+serialport = "4.7"
+
+# Protocol Buffers
+prost = "0.13"
+star-proto = { path = "../star-proto/gen/rust" }
+
+# CRC calculation
+crc32fast = "1.4"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "2.0"
+
+# CLI argument parsing
+clap = { version = "4", features = ["derive"] }
+
+# Unix system calls (for PTY handling)
+libc = "0.2"
+
+# PTY support for mock device (will be added later)
+# nix = { version = "0.29", features = ["process"] }

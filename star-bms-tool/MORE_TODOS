@@ -1,0 +1,12 @@
+Add a disconnect button and make sure it allows me to cancel when i try to connect to something. Sometimes if i try to connect it wont let me stop trying to connect. I also need 2 more things, I need a RAW data view where I can see the RAW data from the RX72N communication (also add a
+  mode with this so I can easily see the packet data, think similar to wireshark), then I need another view that shows my PARSED data view like the RAW its the data from the RX72N, but parsed so its easier to view. The goal is to make sure I see proper data flow. I need this to be a
+  window that I can have at the bottom of the screen with scroll back and other options similar to arduino ide has. The goal is to see data to debug and ensure data flow as I navigate and use the application. I would also like a console tab where I can with CLI like tools and commands
+  navigate and control the app with the CONSOLE instead of using the GUI. Create proper tests for this too.
+
+The next thing that I need you to work on implementing and fixing is the ability to drag windows out of the app to create other windows and we can drag them back into the main view, also implment right clicking to add/toggle things back into the app like if we
+  cant see one of the windows we can say 'come back to the main view' or we can also hide certian things if we dont want them for example
+
+Make sure when we drag windows out and right click on menus to do it like intelij where we can say 'send to bottom' 'send to left side' etc and we can drag things to the sides and bottoms or out of the app. maybe i want to split on the bottom so i have the console and the serial
+    monitor to be side by side for example. its important to also have a 'reset to default' and to have the views save for users, maybe a user likes a certian work flow so we should keep their preferences
+Also make sure to be able to clear and copy from these consoles/cli and serial monitors very easily and export to logs
+With these serial monitors we should be able to see while we try to connect to a device as well, they can serve as a debug tool

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "STAR BMS Tool",
+  "version": "0.1.0",
+  "identifier": "com.star.bms-tool",
+  "build": {
+    "frontendDist": "./ui/dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "cd /Users/bsikar/Documents/git/STAR/star-bms-tool/ui && npm run dev",
+    "beforeBuildCommand": "cd /Users/bsikar/Documents/git/STAR/star-bms-tool/ui && npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "STAR BMS Tool",
+        "width": 1280,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

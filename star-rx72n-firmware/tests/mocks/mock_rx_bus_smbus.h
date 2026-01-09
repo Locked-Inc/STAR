@@ -94,6 +94,15 @@ void mock_smbus_clear_command_error(uint8_t command);
 void mock_smbus_set_initialized(bool initialized);
 
 /**
+ * @brief Set expected block data for a block read
+ *
+ * @param[in] command Register/command code
+ * @param[in] data Pointer to block data
+ * @param[in] length Length of block data
+ */
+void mock_smbus_set_block_response(uint8_t command, const uint8_t* data, uint8_t length);
+
+/**
  * @brief Get number of read operations performed
  *
  * @return Number of read operations

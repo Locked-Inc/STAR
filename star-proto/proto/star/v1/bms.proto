@@ -1,0 +1,366 @@
+// bms.proto - BMS Evaluation Tool Protocol Buffer Definitions
+// Protocol for BQ78350-R1A battery management system evaluation and configuration.
+//
+// This protocol provides both low-level SMBus register access (EV2300 replacement)
+// and high-level convenience commands for battery monitoring.
+//
+// Following Boston Dynamics style guide:
+// - Proto3 only
+// - 100 char line limit, 4 space indent
+// - MKS units (meters, kilograms, seconds, radians)
+// - Enum zero value ends with _UNKNOWN
+// - All fields documented with units
+//
+// STAR Project - Texas A&M University
+// January 2026
+
+syntax = "proto3";
+
+package star.v1;
+
+import "star/v1/common.proto";
+
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
+option java_multiple_files = true;
+option java_package = "com.star.proto.v1";
+
+// ============================================================================
+// Command Messages (Desktop Tool → RX72N)
+// ============================================================================
+
+// BMS command request from desktop tool to RX72N firmware.
+// Contains request header and one of several command types.
+message BmsCommandRequest {
+  // Standard request header with tracing and timeout.
+  RequestHeader header = 1;
+
+  // Command payload (one of the following).
+  oneof command {
+    // Low-level: Read SMBus register.
+    ReadRegisterCommand read_register = 2;
+    // Low-level: Write SMBus register.
+    WriteRegisterCommand write_register = 3;
+    // Low-level: Read SMBus block data.
+    ReadBlockCommand read_block = 4;
+    // Low-level: Write SMBus block data.
+    WriteBlockCommand write_block = 5;
+    // Low-level: Execute manufacturer access command.
+    ManufacturerAccessCommand manufacturer_access = 6;
+    // High-level: Read complete telemetry snapshot.
+    ReadTelemetryCommand read_telemetry = 7;
+    // High-level: Read individual cell voltages.
+    ReadCellVoltagesCommand read_cell_voltages = 8;
+    // High-level: Read device identification info.
+    ReadDeviceInfoCommand read_device_info = 9;
+    // High-level: Read battery protection status.
+    ReadProtectionStatusCommand read_protection_status = 10;
+    // Reset BMS device.
+    ResetDeviceCommand reset_device = 11;
+  }
+}
+
+// Low-level: Read one or two bytes from SMBus register.
+// Used for direct register inspection (EV2300-style access).
+message ReadRegisterCommand {
+  // SMBus register address (0x00-0xFF).
+  uint32 address = 1;
+
+  // Number of bytes to read (1 = byte read, 2 = word read).
+  // Range: 1-2
+  uint32 num_bytes = 2;
+}
+
+// Low-level: Write one or two bytes to SMBus register.
+// Used for configuration and control commands.
+message WriteRegisterCommand {
+  // SMBus register address (0x00-0xFF).
+  uint32 address = 1;
+
+  // Value to write (8-bit or 16-bit depending on num_bytes).
+  uint32 value = 2;
+
+  // Number of bytes to write (1 = byte write, 2 = word write).
+  // Range: 1-2
+  uint32 num_bytes = 3;
+}
+
+// Low-level: Read block of data from SMBus (strings, data flash, etc.).
+// Used for reading manufacturer name, chemistry, serial number, etc.
+message ReadBlockCommand {
+  // SMBus command/register address (0x00-0xFF).
+  uint32 address = 1;
+
+  // Maximum number of bytes to read.
+  // Range: 1-32 (SMBus block read limit)
+  uint32 max_length = 2;
+}
+
+// Low-level: Write block of data to SMBus.
+// Used for configuration and data flash updates.
+message WriteBlockCommand {
+  // SMBus command/register address (0x00-0xFF).
+  uint32 address = 1;
+
+  // Data to write (up to 32 bytes per SMBus spec).
+  bytes data = 2;
+}
+
+// Low-level: Execute manufacturer access command.
+// BQ78350-specific commands via registers 0x00/0x01.
+message ManufacturerAccessCommand {
+  // 16-bit manufacturer access subcommand code.
+  // Examples: 0x0001 (Device Type), 0x0002 (Firmware Version), etc.
+  uint32 subcommand = 1;
+
+  // Optional data payload for write commands.
+  // Empty for read commands.
+  bytes data = 2;
+}
+
+// High-level: Read complete battery telemetry in one call.
+// More efficient than individual register reads.
+message ReadTelemetryCommand {
+  // No parameters - reads standard telemetry registers.
+}
+
+// High-level: Read all individual cell voltages.
+// Reads cells 1-16 (or fewer based on battery configuration).
+message ReadCellVoltagesCommand {
+  // Number of cells to read (1-16).
+  // If 0, reads all configured cells.
+  uint32 num_cells = 1;
+}
+
+// High-level: Read device identification and version information.
+// Includes manufacturer, device name, chemistry, serial, versions.
+message ReadDeviceInfoCommand {
+  // No parameters - reads device info registers.
+}
+
+// High-level: Read battery protection status flags.
+// Overvoltage, undervoltage, overcurrent, temperature protection, etc.
+message ReadProtectionStatusCommand {
+  // No parameters - reads protection status registers.
+}
+
+// Reset BMS device (soft reset via SMBus command).
+message ResetDeviceCommand {
+  // No parameters - sends reset command.
+}
+
+// ============================================================================
+// Response Messages (RX72N → Desktop Tool)
+// ============================================================================
+
+// BMS command response from RX72N firmware to desktop tool.
+// Contains response header and result data.
+message BmsCommandResponse {
+  // Standard response header with status and timing.
+  ResponseHeader header = 1;
+
+  // Response payload (one of the following).
+  oneof response {
+    // Register read result.
+    BmsRegisterData register_data = 2;
+    // Block read result.
+    BmsBlockData block_data = 3;
+    // Manufacturer access command result.
+    BmsManufacturerAccessData manufacturer_access_data = 4;
+    // Complete telemetry snapshot.
+    BmsTelemetryData telemetry_data = 5;
+    // Individual cell voltages.
+    BmsCellVoltagesData cell_voltages_data = 6;
+    // Device identification information.
+    BmsDeviceInfoData device_info_data = 7;
+    // Battery protection status flags.
+    BmsProtectionStatusData protection_status_data = 8;
+    // Simple acknowledgment.
+    BmsAckData ack_data = 9;
+  }
+}
+
+// Response data for register read commands.
+message BmsRegisterData {
+  // Register address that was read.
+  uint32 address = 1;
+
+  // Value read from register (8-bit or 16-bit).
+  uint32 value = 2;
+
+  // Number of bytes read (1 or 2).
+  uint32 num_bytes = 3;
+}
+
+// Response data for block read commands.
+message BmsBlockData {
+  // Register/command address that was read.
+  uint32 address = 1;
+
+  // Data read from device.
+  bytes data = 2;
+}
+
+// Response data for manufacturer access commands.
+message BmsManufacturerAccessData {
+  // Subcommand that was executed.
+  uint32 subcommand = 1;
+
+  // Response data from device.
+  bytes data = 2;
+}
+
+// Complete battery telemetry data.
+// All voltage units in millivolts (mV), current in milliamps (mA),
+// temperature in Celsius, capacity in milliamp-hours (mAh).
+message BmsTelemetryData {
+  // Battery pack voltage in millivolts (mV).
+  // Range: 0-67200 (16 cells × 4.2V max)
+  uint32 voltage_mv = 1;
+
+  // Instantaneous battery current in milliamps (mA).
+  // Positive = charging, negative = discharging.
+  // Range: -32768 to +32767 (2's complement signed 16-bit)
+  int32 current_ma = 2;
+
+  // 1-minute rolling average current in milliamps (mA).
+  int32 average_current_ma = 3;
+
+  // Relative state of charge as percentage of full charge capacity.
+  // Accounts for battery aging.
+  // Range: 0-100%
+  uint32 relative_soc_percent = 4;
+
+  // Absolute state of charge as percentage of design capacity.
+  // Range: 0-100%
+  uint32 absolute_soc_percent = 5;
+
+  // Battery pack temperature in degrees Celsius.
+  // Range: -40 to +85°C (typical Li-ion operating range)
+  int32 temperature_celsius = 6;
+
+  // Remaining capacity in milliamp-hours (mAh).
+  uint32 remaining_capacity_mah = 7;
+
+  // Full charge capacity in milliamp-hours (mAh).
+  // Decreases with battery aging.
+  uint32 full_capacity_mah = 8;
+
+  // Design capacity in milliamp-hours (mAh).
+  // Nominal capacity of new battery.
+  uint32 design_capacity_mah = 9;
+
+  // Cycle count (number of charge/discharge cycles).
+  uint32 cycle_count = 10;
+
+  // Estimated time to empty in minutes (0xFFFF = not discharging).
+  uint32 time_to_empty_min = 11;
+
+  // Estimated time to full charge in minutes (0xFFFF = not charging).
+  uint32 time_to_full_min = 12;
+
+  // Battery status flags.
+  bool is_charging = 13;
+  // Battery has reached full charge voltage and current tapered.
+  bool is_fully_charged = 14;
+  // Battery is fully discharged (near minimum voltage).
+  bool is_fully_discharged = 15;
+  // Remaining capacity below alarm threshold.
+  bool is_low_capacity = 16;
+}
+
+// Individual cell voltage data.
+message BmsCellVoltagesData {
+  // Individual cell voltages in millivolts (mV).
+  // Index 0 = Cell 1, Index 1 = Cell 2, etc.
+  // Range per cell: 2500-4200 mV (typical Li-ion)
+  repeated uint32 cell_mv = 1;
+
+  // Pack voltage in millivolts (sum of all cells).
+  uint32 pack_mv = 2;
+
+  // Minimum cell voltage in millivolts.
+  uint32 min_cell_mv = 3;
+
+  // Maximum cell voltage in millivolts.
+  uint32 max_cell_mv = 4;
+
+  // Cell voltage delta (max - min) in millivolts.
+  // Used to assess cell balance.
+  uint32 delta_mv = 5;
+}
+
+// Device identification and version information.
+message BmsDeviceInfoData {
+  // Manufacturer name (e.g., "Texas Instruments").
+  string manufacturer = 1;
+
+  // Device name (e.g., "BQ78350-R1A").
+  string device_name = 2;
+
+  // Battery chemistry (e.g., "LION", "LiPo").
+  string chemistry = 3;
+
+  // Device serial number (hex format).
+  uint32 serial_number = 4;
+
+  // Firmware version string (e.g., "v1.2.3").
+  string firmware_version = 5;
+
+  // Hardware version string (e.g., "v0.1").
+  string hardware_version = 6;
+
+  // Design capacity in milliamp-hours (mAh).
+  uint32 design_capacity_mah = 7;
+
+  // Design voltage in millivolts (mV).
+  uint32 design_voltage_mv = 8;
+
+  // Number of series cells (1-16).
+  uint32 num_cells = 9;
+}
+
+// Battery protection status flags.
+// Indicates active protection conditions.
+message BmsProtectionStatusData {
+  // Overvoltage protection flags.
+  bool cell_overvoltage = 1;
+  // Pack voltage exceeded maximum threshold.
+  bool pack_overvoltage = 2;
+
+  // Undervoltage protection flags.
+  bool cell_undervoltage = 3;
+  // Pack voltage below minimum threshold.
+  bool pack_undervoltage = 4;
+
+  // Overcurrent protection flags.
+  bool charge_overcurrent = 5;
+  // Discharge current exceeded maximum threshold.
+  bool discharge_overcurrent = 6;
+  // Short circuit detected.
+  bool short_circuit = 7;
+
+  // Temperature protection flags.
+  bool overtemperature_charge = 8;
+  // Temperature too high during discharge.
+  bool overtemperature_discharge = 9;
+  // Temperature too low during charge.
+  bool undertemperature_charge = 10;
+  // Temperature too low during discharge.
+  bool undertemperature_discharge = 11;
+
+  // Other protection flags.
+  bool cell_balancing_active = 12;
+  // Permanent failure detected (requires service).
+  bool permanent_failure = 13;
+  // Safety alert triggered.
+  bool safety_status_alert = 14;
+}
+
+// Simple acknowledgment for commands that don't return data.
+message BmsAckData {
+  // Command was executed successfully.
+  bool success = 1;
+
+  // Optional message.
+  string message = 2;
+}

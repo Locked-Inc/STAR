@@ -1,0 +1,31 @@
+{
+  "name": "star-bms-tool",
+  "version": "0.1.0",
+  "description": "STAR BMS Tool - Tauri-based Battery Management System interface",
+  "private": true,
+  "scripts": {
+    "dev:ui": "npm --prefix ui run dev -- --host 127.0.0.1 --port 5173",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report test-results/html",
+    "test:connection": "playwright test tests/ui/connection.spec.ts",
+    "test:telemetry": "playwright test tests/ui/telemetry.spec.ts",
+    "test:cells": "playwright test tests/ui/cell-voltages.spec.ts",
+    "test:info": "playwright test tests/ui/device-info.spec.ts",
+    "test:registers": "playwright test tests/ui/registers.spec.ts",
+    "test:e2e": "playwright test tests/ui/e2e-workflow.spec.ts",
+    "test:bottom-panel": "playwright test tests/ui/bottom-panel.spec.ts",
+    "test:cancel-connection": "playwright test tests/ui/cancel-connection.spec.ts",
+    "test:zoom": "playwright test tests/ui/zoom.spec.ts",
+    "test:phase7": "playwright test tests/ui/bottom-panel.spec.ts tests/ui/cancel-connection.spec.ts tests/ui/zoom.spec.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
