@@ -46,12 +46,12 @@ typedef enum {
 
 /**
  * @brief Floating-point test values (4-motor differential drive)
- * Motors 0 & 1 = left side, Motors 2 & 3 = right side
+ * Matches motor_config.h motor indices (front_left=0, front_right=1, back_left=2, back_right=3)
  */
-static const double s_test_motor_0_velocity_mps = 1.5; /* Left front */
-static const double s_test_motor_1_velocity_mps = 1.5; /* Left rear */
-static const double s_test_motor_2_velocity_mps = 1.0; /* Right front */
-static const double s_test_motor_3_velocity_mps = 1.0; /* Right rear */
+static const double s_test_front_left_velocity_mps  = 1.5; /* Motor 0 */
+static const double s_test_front_right_velocity_mps = 1.5; /* Motor 1 */
+static const double s_test_back_left_velocity_mps   = 1.0; /* Motor 2 */
+static const double s_test_back_right_velocity_mps  = 1.0; /* Motor 3 */
 static const double s_test_max_velocity_mps     = 2.0;
 static const double s_test_zero_velocity_mps    = 0.0;
 static const double s_test_battery_percent      = 85.5;
@@ -184,10 +184,10 @@ void test_encode_velocity_request_with_command(void)
 {
   star_v1_SetVelocityRequest msg   = star_v1_SetVelocityRequest_init_zero;
   msg.has_command                  = true;
-  msg.command.motor_0_velocity_mps = s_test_motor_0_velocity_mps;
-  msg.command.motor_1_velocity_mps = s_test_motor_1_velocity_mps;
-  msg.command.motor_2_velocity_mps = s_test_motor_2_velocity_mps;
-  msg.command.motor_3_velocity_mps = s_test_motor_3_velocity_mps;
+  msg.command.motor_0_velocity_mps = s_test_front_left_velocity_mps;
+  msg.command.motor_1_velocity_mps = s_test_front_right_velocity_mps;
+  msg.command.motor_2_velocity_mps = s_test_back_left_velocity_mps;
+  msg.command.motor_3_velocity_mps = s_test_back_right_velocity_mps;
   msg.command.sequence             = k_test_sequence_number;
   msg.command.timestamp_us         = k_test_timestamp_us;
 
@@ -356,10 +356,10 @@ void test_velocity_request_roundtrip_with_command(void)
 {
   star_v1_SetVelocityRequest original   = star_v1_SetVelocityRequest_init_zero;
   original.has_command                  = true;
-  original.command.motor_0_velocity_mps = s_test_motor_0_velocity_mps;
-  original.command.motor_1_velocity_mps = s_test_motor_1_velocity_mps;
-  original.command.motor_2_velocity_mps = s_test_motor_2_velocity_mps;
-  original.command.motor_3_velocity_mps = s_test_motor_3_velocity_mps;
+  original.command.motor_0_velocity_mps = s_test_front_left_velocity_mps;
+  original.command.motor_1_velocity_mps = s_test_front_right_velocity_mps;
+  original.command.motor_2_velocity_mps = s_test_back_left_velocity_mps;
+  original.command.motor_3_velocity_mps = s_test_back_right_velocity_mps;
   original.command.sequence             = k_test_sequence_number;
   original.command.timestamp_us         = k_test_timestamp_us;
 
@@ -420,10 +420,10 @@ void test_velocity_request_roundtrip_negative_velocity(void)
 {
   star_v1_SetVelocityRequest original   = star_v1_SetVelocityRequest_init_zero;
   original.has_command                  = true;
-  original.command.motor_0_velocity_mps = -s_test_motor_0_velocity_mps;
-  original.command.motor_1_velocity_mps = -s_test_motor_1_velocity_mps;
-  original.command.motor_2_velocity_mps = -s_test_motor_2_velocity_mps;
-  msg.command.motor_3_velocity_mps      = -s_test_motor_3_velocity_mps;
+  original.command.motor_0_velocity_mps = -s_test_front_left_velocity_mps;
+  original.command.motor_1_velocity_mps = -s_test_front_right_velocity_mps;
+  original.command.motor_2_velocity_mps = -s_test_back_left_velocity_mps;
+  msg.command.motor_3_velocity_mps      = -s_test_back_right_velocity_mps;
   original.command.sequence             = k_test_sequence_number;
 
   uint32_t len = 0;
@@ -435,10 +435,10 @@ void test_velocity_request_roundtrip_negative_velocity(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
-                           (float)(-s_test_motor_0_velocity_mps),
+                           (float)(-s_test_front_left_velocity_mps),
                            (float)decoded.command.motor_0_velocity_mps);
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
-                           (float)(-s_test_motor_2_velocity_mps),
+                           (float)(-s_test_back_left_velocity_mps),
                            (float)decoded.command.motor_2_velocity_mps);
 }
 
@@ -961,10 +961,10 @@ void test_create_velocity_command_null(void)
 {
   /* Should not crash with NULL pointer */
   rx_nanopb_create_velocity_command(NULL,
-                                    s_test_motor_0_velocity_mps,
-                                    s_test_motor_1_velocity_mps,
-                                    s_test_motor_2_velocity_mps,
-                                    s_test_motor_3_velocity_mps,
+                                    s_test_front_left_velocity_mps,
+                                    s_test_front_right_velocity_mps,
+                                    s_test_back_left_velocity_mps,
+                                    s_test_back_right_velocity_mps,
                                     k_test_sequence_number);
   /* If we reach here, the function handled NULL gracefully */
   TEST_PASS();
@@ -977,23 +977,23 @@ void test_create_velocity_command_valid(void)
 {
   star_v1_VelocityCommand cmd;
   rx_nanopb_create_velocity_command(&cmd,
-                                    s_test_motor_0_velocity_mps,
-                                    s_test_motor_1_velocity_mps,
-                                    s_test_motor_2_velocity_mps,
-                                    s_test_motor_3_velocity_mps,
+                                    s_test_front_left_velocity_mps,
+                                    s_test_front_right_velocity_mps,
+                                    s_test_back_left_velocity_mps,
+                                    s_test_back_right_velocity_mps,
                                     k_test_sequence_number);
 
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
-                           (float)s_test_motor_0_velocity_mps,
+                           (float)s_test_front_left_velocity_mps,
                            (float)cmd.motor_0_velocity_mps);
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
-                           (float)s_test_motor_1_velocity_mps,
+                           (float)s_test_front_right_velocity_mps,
                            (float)cmd.motor_1_velocity_mps);
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
-                           (float)s_test_motor_2_velocity_mps,
+                           (float)s_test_back_left_velocity_mps,
                            (float)cmd.motor_2_velocity_mps);
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
-                           (float)s_test_motor_3_velocity_mps,
+                           (float)s_test_back_right_velocity_mps,
                            (float)cmd.motor_3_velocity_mps);
   TEST_ASSERT_EQUAL(k_test_sequence_number, cmd.sequence);
   TEST_ASSERT_EQUAL(0, cmd.timestamp_us); /* Timestamp should be zero by default */
@@ -1023,10 +1023,10 @@ void test_create_velocity_command_max_sequence(void)
 {
   star_v1_VelocityCommand cmd;
   rx_nanopb_create_velocity_command(&cmd,
-                                    s_test_motor_0_velocity_mps,
-                                    s_test_motor_1_velocity_mps,
-                                    s_test_motor_2_velocity_mps,
-                                    s_test_motor_3_velocity_mps,
+                                    s_test_front_left_velocity_mps,
+                                    s_test_front_right_velocity_mps,
+                                    s_test_back_left_velocity_mps,
+                                    s_test_back_right_velocity_mps,
                                     k_test_sequence_max);
 
   TEST_ASSERT_EQUAL(k_test_sequence_max, cmd.sequence);
@@ -1042,10 +1042,10 @@ void test_create_velocity_command_initializes_struct(void)
   memset(&cmd, 0xFF, sizeof(cmd));
 
   rx_nanopb_create_velocity_command(&cmd,
-                                    s_test_motor_0_velocity_mps,
-                                    s_test_motor_1_velocity_mps,
-                                    s_test_motor_2_velocity_mps,
-                                    s_test_motor_3_velocity_mps,
+                                    s_test_front_left_velocity_mps,
+                                    s_test_front_right_velocity_mps,
+                                    s_test_back_left_velocity_mps,
+                                    s_test_back_right_velocity_mps,
                                     k_test_sequence_number);
 
   /* timestamp_us should be explicitly set to 0 */
