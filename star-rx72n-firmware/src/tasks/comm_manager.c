@@ -48,6 +48,14 @@ static rx_usb_comm_handle_t s_usb_comm_handle;
 /* Communication state */
 static uint32_t s_last_command_timestamp_ms = 0;
 
+/* Module constants */
+typedef enum {
+  k_usb_receive_timeout_ms = 100, /**< USB receive timeout (non-blocking) */
+} comm_timeout_constants_t;
+
+/* Velocity scaling constants */
+static const float s_velocity_scale_factor = 100.0f; /**< Converts x100 velocity to m/s */
+
 /* =============================================================================
  * Private Function Prototypes
  * =============================================================================
@@ -230,8 +238,8 @@ static rx_err_t decode_and_apply_velocity_command(const rx_frame_t* frame)
 
   /* Validate and clamp velocities to ±2.0 m/s */
   for (uint8_t i = 0; i < k_motor_count; i++) {
-    const float max_vel = (float)k_motor_max_velocity_x100 / 100.0f;
-    const float min_vel = (float)k_motor_min_velocity_x100 / 100.0f;
+    const float max_vel = (float)k_motor_max_velocity_x100 / s_velocity_scale_factor;
+    const float min_vel = (float)k_motor_min_velocity_x100 / s_velocity_scale_factor;
 
     if (velocities[i] > max_vel) {
       velocities[i] = max_vel;
@@ -277,7 +285,7 @@ static rx_err_t process_ingress(void)
   rx_frame_t frame = {0};
 
   /* Non-blocking receive (100ms timeout) */
-  rx_err_t ret = rx_usb_comm_receive(&s_usb_comm_handle, &frame, 100);
+  rx_err_t ret = rx_usb_comm_receive(&s_usb_comm_handle, &frame, k_usb_receive_timeout_ms);
 
   if (ret == k_rx_err_timeout) {
     /* No data available - not an error */
