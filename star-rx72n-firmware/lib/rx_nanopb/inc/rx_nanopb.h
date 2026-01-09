@@ -184,17 +184,35 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
  */
 
 /**
- * @brief Create VelocityCommand with given velocities
+ * @brief Create VelocityCommand for 4 independent motors
  *
  * @param[out] cmd Output command structure
- * @param[in]  left_mps Left wheel velocity (m/s)
- * @param[in]  right_mps Right wheel velocity (m/s)
+ * @param[in]  motor_0_mps Motor 0 velocity (m/s)
+ * @param[in]  motor_1_mps Motor 1 velocity (m/s)
+ * @param[in]  motor_2_mps Motor 2 velocity (m/s)
+ * @param[in]  motor_3_mps Motor 3 velocity (m/s)
  * @param[in]  sequence Command sequence number
  */
 void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
-                                       double                   left_mps,
-                                       double                   right_mps,
+                                       double                   motor_0_mps,
+                                       double                   motor_1_mps,
+                                       double                   motor_2_mps,
+                                       double                   motor_3_mps,
                                        uint32_t                 sequence);
+
+/**
+ * @brief Create VelocityCommand in differential drive mode
+ * @details Locks left 2 motors (0, 1) together and right 2 motors (2, 3) together
+ *
+ * @param[out] cmd Output command structure
+ * @param[in]  left_mps Left side velocity (m/s) - applied to motors 0 & 1
+ * @param[in]  right_mps Right side velocity (m/s) - applied to motors 2 & 3
+ * @param[in]  sequence Command sequence number
+ */
+void rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
+                                                   double                   left_mps,
+                                                   double                   right_mps,
+                                                   uint32_t                 sequence);
 
 /**
  * @brief Create ResponseHeader with status

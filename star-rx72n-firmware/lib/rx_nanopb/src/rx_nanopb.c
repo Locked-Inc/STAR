@@ -323,19 +323,34 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
  */
 
 void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
-                                       double                   left_mps,
-                                       double                   right_mps,
+                                       double                   motor_0_mps,
+                                       double                   motor_1_mps,
+                                       double                   motor_2_mps,
+                                       double                   motor_3_mps,
                                        uint32_t                 sequence)
 {
   if (cmd == NULL) {
     return;
   }
 
-  *cmd                    = (star_v1_VelocityCommand)star_v1_VelocityCommand_init_zero;
-  cmd->left_velocity_mps  = left_mps;
-  cmd->right_velocity_mps = right_mps;
-  cmd->sequence           = sequence;
-  cmd->timestamp_us       = 0; /* Set by caller if needed */
+  *cmd                     = (star_v1_VelocityCommand)star_v1_VelocityCommand_init_zero;
+  cmd->motor_0_velocity_mps = motor_0_mps;
+  cmd->motor_1_velocity_mps = motor_1_mps;
+  cmd->motor_2_velocity_mps = motor_2_mps;
+  cmd->motor_3_velocity_mps = motor_3_mps;
+  cmd->sequence             = sequence;
+  cmd->timestamp_us         = 0; /* Set by caller if needed */
+}
+
+void rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
+                                                   double                   left_mps,
+                                                   double                   right_mps,
+                                                   uint32_t                 sequence)
+{
+  /* Differential drive mode: Lock left 2 motors together, right 2 motors together
+   * Motor 0 & Motor 1 = Left side
+   * Motor 2 & Motor 3 = Right side */
+  rx_nanopb_create_velocity_command(cmd, left_mps, left_mps, right_mps, right_mps, sequence);
 }
 
 void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,

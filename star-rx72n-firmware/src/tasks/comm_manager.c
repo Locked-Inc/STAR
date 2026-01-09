@@ -21,6 +21,13 @@
 #include "rx_usb_comm.h"
 #include <string.h>
 
+/* nanopb Protocol Buffers */
+#include "pb.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
+#include "gen/star/v1/motor_control.pb.h"
+#include "gen/star/v1/telemetry.pb.h"
+
 /* =============================================================================
  * Private Variables
  * =============================================================================
@@ -190,21 +197,26 @@ static rx_err_t process_ingress(void)
             return ret;
         }
 
-        /* TODO: Decode Protocol Buffer message (nanopb integration)
-         * For now, assume payload contains 4 floats (motor velocities in m/s)
-         * Wire format: [velocity_0][velocity_1][velocity_2][velocity_3]
-         * Each velocity is 4 bytes (IEEE 754 float, little-endian)
-         */
+        /* Decode Protocol Buffer message using nanopb */
+        star_v1_VelocityCommand velocity_cmd = star_v1_VelocityCommand_init_zero;
 
-        if (frame.header.length < (k_motor_count * sizeof(float))) {
-            rx_log_error(s_tag, "Invalid payload size");
+        /* Create nanopb input stream from frame payload */
+        pb_istream_t istream = pb_istream_from_buffer(frame.payload, frame.header.length);
+
+        /* Decode VelocityCommand message */
+        const bool decode_status = pb_decode(&istream, star_v1_VelocityCommand_fields, &velocity_cmd);
+        if (!decode_status) {
+            rx_log_error(s_tag, "Protobuf decode failed");
             rx_usb_comm_send_nack(&s_usb_comm_handle, frame.header.sequence, 0);
             return k_rx_err_protocol_error;
         }
 
-        /* Extract velocities from payload */
+        /* Extract and validate velocities from decoded message */
         float velocities[k_motor_count];
-        memcpy(velocities, frame.payload, k_motor_count * sizeof(float));
+        velocities[0] = (float)velocity_cmd.motor_0_velocity_mps;
+        velocities[1] = (float)velocity_cmd.motor_1_velocity_mps;
+        velocities[2] = (float)velocity_cmd.motor_2_velocity_mps;
+        velocities[3] = (float)velocity_cmd.motor_3_velocity_mps;
 
         /* Validate and clamp velocities to ±2.0 m/s */
         for (uint8_t i = 0; i < k_motor_count; i++) {
@@ -287,39 +299,52 @@ static rx_err_t process_egress(void)
     system_health_t health_data = state->health;
     tx_mutex_put(&state->health_mutex);
 
-    /* TODO: Encode Protocol Buffer message (nanopb integration)
-     * For now, send simple telemetry frame with encoder data
-     * Wire format: [timestamp][motor0_ticks][motor0_vel]...[motor3_ticks][motor3_vel]
-     */
+    /* Encode Protocol Buffer message using nanopb */
+    star_v1_TelemetryData telemetry_msg = star_v1_TelemetryData_init_zero;
 
-    /* Build telemetry payload */
-    uint8_t payload[256];
-    uint32_t offset = 0;
+    /* Fill in telemetry data */
+    const uint32_t timestamp_ms = tx_time_get();
+    telemetry_msg.timestamp_us = (int64_t)timestamp_ms * 1000LL; /* Convert ms to us */
 
-    /* Current timestamp */
-    const uint32_t timestamp = tx_time_get();
-    memcpy(&payload[offset], &timestamp, sizeof(uint32_t));
-    offset += sizeof(uint32_t);
+    /* Encoder data (4 motors) - individual fields for embedded (no dynamic allocation) */
+    telemetry_msg.encoder_0.motor_id = 0;
+    telemetry_msg.encoder_0.ticks = encoder_data.motors[0].ticks;
+    telemetry_msg.encoder_0.velocity_mps = encoder_data.motors[0].velocity_mps;
+    telemetry_msg.encoder_0.timestamp_us = telemetry_msg.timestamp_us;
 
-    /* Encoder data (4 motors) */
-    for (uint8_t i = 0; i < k_motor_count; i++) {
-        memcpy(&payload[offset], &encoder_data.motors[i].ticks, sizeof(int32_t));
-        offset += sizeof(int32_t);
+    telemetry_msg.encoder_1.motor_id = 1;
+    telemetry_msg.encoder_1.ticks = encoder_data.motors[1].ticks;
+    telemetry_msg.encoder_1.velocity_mps = encoder_data.motors[1].velocity_mps;
+    telemetry_msg.encoder_1.timestamp_us = telemetry_msg.timestamp_us;
 
-        memcpy(&payload[offset], &encoder_data.motors[i].velocity_mps, sizeof(float));
-        offset += sizeof(float);
-    }
+    telemetry_msg.encoder_2.motor_id = 2;
+    telemetry_msg.encoder_2.ticks = encoder_data.motors[2].ticks;
+    telemetry_msg.encoder_2.velocity_mps = encoder_data.motors[2].velocity_mps;
+    telemetry_msg.encoder_2.timestamp_us = telemetry_msg.timestamp_us;
+
+    telemetry_msg.encoder_3.motor_id = 3;
+    telemetry_msg.encoder_3.ticks = encoder_data.motors[3].ticks;
+    telemetry_msg.encoder_3.velocity_mps = encoder_data.motors[3].velocity_mps;
+    telemetry_msg.encoder_3.timestamp_us = telemetry_msg.timestamp_us;
 
     /* Safety state */
-    payload[offset++] = safety_data.emergency_stop ? 1 : 0;
-    payload[offset++] = safety_data.fault_flags;
+    telemetry_msg.emergency_stop = safety_data.emergency_stop;
+    telemetry_msg.fault_flags = safety_data.fault_flags;
 
     /* Health data */
-    memcpy(&payload[offset], &health_data.battery_voltage_v, sizeof(float));
-    offset += sizeof(float);
+    telemetry_msg.battery_voltage_v = health_data.battery_voltage_v;
+    telemetry_msg.battery_soc_percent = (uint32_t)health_data.battery_soc_percent;
+    telemetry_msg.temperature_celsius = health_data.temperature_c;
 
-    memcpy(&payload[offset], &health_data.temperature_c, sizeof(float));
-    offset += sizeof(float);
+    /* Encode message to buffer */
+    uint8_t payload[256];
+    pb_ostream_t ostream = pb_ostream_from_buffer(payload, sizeof(payload));
+
+    const bool encode_status = pb_encode(&ostream, star_v1_TelemetryData_fields, &telemetry_msg);
+    if (!encode_status) {
+        rx_log_error(s_tag, "Protobuf encode failed");
+        return k_rx_err_protocol_error;
+    }
 
     /* Send telemetry frame */
     rx_err_t ret = rx_usb_comm_send(
@@ -327,7 +352,7 @@ static rx_err_t process_egress(void)
         k_frame_type_response,
         0, /* flags */
         payload,
-        offset
+        ostream.bytes_written
     );
 
     if (ret != k_rx_ok) {
