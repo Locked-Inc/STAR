@@ -45,7 +45,7 @@ typedef struct {
  * =============================================================================
  */
 
-static const char* s_tag = "motor_ctrl";
+static char s_tag[] = "motor_ctrl";
 
 /* Thread control block and stack (statically allocated) */
 static TX_THREAD s_motor_controller_thread;
@@ -124,6 +124,13 @@ static void motor_controller_entry(ULONG input)
 
     rx_log_info(s_tag, "Motor_Controller thread started");
 
+    /* Register with watchdog for task-level monitoring
+     * Timeout = 3x period = 3 * 4ms = 12ms */
+    ret = rx_iwdt_register_task("Motor_Controller", 12);
+    if (ret != k_rx_ok) {
+        rx_log_error(s_tag, "Failed to register with watchdog");
+    }
+
     /* Initialize motor subsystem */
     ret = motor_subsystem_init();
     if (ret != k_rx_ok) {
@@ -146,6 +153,9 @@ static void motor_controller_entry(ULONG input)
 
         /* Feed watchdog (critical - prevents reset) */
         rx_iwdt_feed();
+
+        /* Record task heartbeat for deadlock detection */
+        rx_iwdt_task_heartbeat("Motor_Controller");
 
         /* Sleep for 4ms (250 Hz control rate)
          * Note: k_control_loop_ticks = 0 because 4ms < 10ms ThreadX tick
@@ -214,6 +224,7 @@ static rx_err_t motor_subsystem_init(void)
      * - Port 4 ADC pins for current sensing (IPROPI)
      * - Port 4 GPIO pins for fault detection (nFAULT)
      */
+    /* GPIO pins for motor drivers (not currently used - GPTW handles pinmux)
     const gpio_pin_t motor_pins_ph[k_motor_count] = {
         k_pin_motor0_ph,
         k_pin_motor1_ph,
@@ -227,6 +238,7 @@ static rx_err_t motor_subsystem_init(void)
         k_pin_motor2_en,
         k_pin_motor3_en,
     };
+    */
 
     const uint8_t adc_pins_ipropi[k_motor_count] = {
         k_adc_motor0_current,
@@ -317,17 +329,18 @@ static rx_err_t control_loop_iteration(void)
     const float dt = (float)k_control_loop_period_ms / 1000.0f; /* 0.004 seconds (4ms) */
 
     for (uint8_t i = 0; i < k_motor_count; i++) {
-        int32_t count = 0;
-        rx_err_t ret = rx_encoder_read_count((rx_mtu_channel_t)(i + 1), &count);
+        /* Read encoder state (updates total_count, revolutions, position) */
+        rx_encoder_state_t* encoder_state = &s_motor_subsystem.encoder_states[i];
+        const int32_t prev_count = encoder_state->total_count;
+
+        rx_err_t ret = rx_encoder_read_count((rx_mtu_channel_t)(i + 1), encoder_state);
         if (ret != k_rx_ok) {
             rx_log_error(s_tag, "Encoder read failed");
             continue;
         }
 
-        /* Update encoder state */
-        const int32_t delta_count = count - s_motor_subsystem.encoder_states[i].total_count;
-        s_motor_subsystem.encoder_states[i].total_count = count;
-        s_motor_subsystem.encoder_states[i].last_raw_count = (uint16_t)(count & 0xFFFF);
+        /* Calculate delta count for velocity */
+        const int32_t delta_count = encoder_state->total_count - prev_count;
 
         /* Compute velocity (counts per second) */
         const float velocity_cps = (float)delta_count / dt;
@@ -346,7 +359,7 @@ static rx_err_t control_loop_iteration(void)
             continue;
         }
 
-        state->encoders.motors[i].ticks = count;
+        state->encoders.motors[i].ticks = encoder_state->total_count;
         state->encoders.motors[i].velocity_mps = velocity_mps;
         state->encoders.motors[i].timestamp_ms = tx_time_get(); /* ThreadX ticks */
 

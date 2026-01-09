@@ -15,6 +15,7 @@
 #include "motor_config.h"
 #include "shared_state.h"
 #include "rx_frame.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_usb.h"
 #include "rx_usb_comm.h"
@@ -25,7 +26,7 @@
  * =============================================================================
  */
 
-static const char* s_tag = "comm_mgr";
+static char s_tag[] = "comm_mgr";
 
 /* Thread control block and stack */
 static TX_THREAD s_comm_manager_thread;
@@ -46,6 +47,8 @@ static void     comm_manager_entry(ULONG input);
 static rx_err_t process_ingress(void);
 static rx_err_t process_egress(void);
 static rx_err_t check_comm_timeout(void);
+static rx_err_t check_safe_to_clear_estop(void);
+static rx_err_t process_clear_estop_command(uint16_t sequence);
 
 /* =============================================================================
  * Public API Implementation
@@ -90,6 +93,13 @@ static void comm_manager_entry(ULONG input)
     (void)input;
 
     rx_log_info(s_tag, "Comm_Manager thread started");
+
+    /* Register with watchdog for task-level monitoring
+     * Timeout = 3x period = 3 * 10ms = 30ms */
+    ret = rx_iwdt_register_task("Comm_Manager", 30);
+    if (ret != k_rx_ok) {
+        rx_log_error(s_tag, "Failed to register with watchdog");
+    }
 
     /* Initialize USB communication handle */
     rx_usb_comm_config_t usb_config = {
@@ -136,6 +146,9 @@ static void comm_manager_entry(ULONG input)
             /* Timeout already logged in check_comm_timeout */
         }
 
+        /* Record task heartbeat for deadlock detection */
+        rx_iwdt_task_heartbeat("Comm_Manager");
+
         /* Sleep for 10ms (100 Hz) */
         tx_thread_sleep(1); /* 1 tick = 10ms at 100 Hz ThreadX tick */
     }
@@ -170,16 +183,22 @@ static rx_err_t process_ingress(void)
     s_last_command_timestamp_ms = tx_time_get();
 
     /* Process frame based on type */
-    if (frame.type == k_frame_type_request) {
+    if (frame.header.type == k_frame_type_command) {
+        /* Check for clear E-STOP command (empty payload = clear E-STOP) */
+        if (frame.header.length == 0) {
+            ret = process_clear_estop_command(frame.header.sequence);
+            return ret;
+        }
+
         /* TODO: Decode Protocol Buffer message (nanopb integration)
          * For now, assume payload contains 4 floats (motor velocities in m/s)
          * Wire format: [velocity_0][velocity_1][velocity_2][velocity_3]
          * Each velocity is 4 bytes (IEEE 754 float, little-endian)
          */
 
-        if (frame.payload_len < (k_motor_count * sizeof(float))) {
+        if (frame.header.length < (k_motor_count * sizeof(float))) {
             rx_log_error(s_tag, "Invalid payload size");
-            rx_usb_comm_send_nack(&s_usb_comm_handle, frame.sequence, 0);
+            rx_usb_comm_send_nack(&s_usb_comm_handle, frame.header.sequence, 0);
             return k_rx_err_protocol_error;
         }
 
@@ -210,14 +229,14 @@ static rx_err_t process_ingress(void)
         for (uint8_t i = 0; i < k_motor_count; i++) {
             state->setpoint.velocity_mps[i] = velocities[i];
         }
-        state->setpoint.sequence = frame.sequence;
+        state->setpoint.sequence = frame.header.sequence;
         state->setpoint.timestamp_ms = tx_time_get();
         state->setpoint.valid = true;
 
         tx_mutex_put(&state->setpoint_mutex);
 
         /* Send ACK response */
-        ret = rx_usb_comm_send_ack(&s_usb_comm_handle, frame.sequence);
+        ret = rx_usb_comm_send_ack(&s_usb_comm_handle, frame.header.sequence);
         if (ret != k_rx_ok) {
             rx_log_error(s_tag, "ACK send failed");
         }
@@ -368,6 +387,91 @@ static rx_err_t check_comm_timeout(void)
     }
 
     tx_mutex_put(&state->safety_mutex);
+
+    return k_rx_ok;
+}
+
+static rx_err_t check_safe_to_clear_estop(void)
+{
+    /* -------------------------------------------------------------------------
+     * Issue 18: Manual Emergency Stop Clearance - Safety Check
+     * -------------------------------------------------------------------------
+     * Check all safety conditions before allowing E-STOP clearance:
+     * - No obstacle detected
+     * - No motor faults
+     * - No communication timeout
+     */
+    shared_state_t* state = shared_state_get();
+
+    /* Read safety state (mutex-protected) */
+    UINT status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
+    if (status != TX_SUCCESS) {
+        rx_log_error(s_tag, "Failed to acquire safety mutex");
+        return k_rx_err_threadx;
+    }
+
+    const bool obstacle_detected = state->safety.obstacle_detected;
+    const bool comm_timeout = state->safety.comm_timeout;
+    const uint8_t fault_flags = state->safety.fault_flags;
+
+    tx_mutex_put(&state->safety_mutex);
+
+    /* Check safety conditions */
+    if (obstacle_detected) {
+        rx_log_error(s_tag, "Cannot clear E-STOP: obstacle still detected");
+        return k_rx_err_invalid_state;
+    }
+
+    if (comm_timeout) {
+        rx_log_error(s_tag, "Cannot clear E-STOP: communication timeout");
+        return k_rx_err_invalid_state;
+    }
+
+    if (fault_flags != 0) {
+        rx_log_error(s_tag, "Cannot clear E-STOP: motor faults present");
+        return k_rx_err_hw_error;
+    }
+
+    /* All safety conditions met */
+    return k_rx_ok;
+}
+
+static rx_err_t process_clear_estop_command(uint16_t sequence)
+{
+    /* -------------------------------------------------------------------------
+     * Issue 18: Manual Emergency Stop Clearance - Command Handler
+     * -------------------------------------------------------------------------
+     * Handle ClearEmergencyStop command from RPi5
+     * Only clear E-STOP if all safety conditions are met
+     */
+    shared_state_t* state = shared_state_get();
+
+    /* Check if it's safe to clear E-STOP */
+    rx_err_t ret = check_safe_to_clear_estop();
+    if (ret != k_rx_ok) {
+        /* Safety check failed - send NACK with error code */
+        rx_usb_comm_send_nack(&s_usb_comm_handle, sequence, (uint8_t)ret);
+        return ret;
+    }
+
+    /* Safe to clear - clear emergency stop flag */
+    UINT status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
+    if (status != TX_SUCCESS) {
+        rx_log_error(s_tag, "Failed to acquire safety mutex");
+        rx_usb_comm_send_nack(&s_usb_comm_handle, sequence, (uint8_t)k_rx_err_threadx);
+        return k_rx_err_threadx;
+    }
+
+    state->safety.emergency_stop = false;
+    tx_mutex_put(&state->safety_mutex);
+
+    rx_log_info(s_tag, "Emergency stop cleared (manual clearance)");
+
+    /* Send ACK response */
+    ret = rx_usb_comm_send_ack(&s_usb_comm_handle, sequence);
+    if (ret != k_rx_ok) {
+        rx_log_error(s_tag, "Failed to send clearance ACK");
+    }
 
     return k_rx_ok;
 }

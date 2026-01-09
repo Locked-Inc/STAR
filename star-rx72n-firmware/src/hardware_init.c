@@ -161,21 +161,11 @@ static rx_err_t communication_subsystem_init(void)
      * -------------------------------------------------------------------------
      * Initialize 1-Wire bus for DS18B20 temperature monitoring
      * P05 (pin 100) with 4.7kΩ pull-up to 3.3V
+     *
+     * TODO: 1-Wire initialization will be handled by Env_Monitor thread
+     * when sensors are actually configured and ready to use.
      */
-    rx_bus_config_t onewire_config = {
-        .type = k_rx_bus_onewire,
-        .onewire =
-            {
-                .gpio_pin = k_pin_temp_sensor,
-            },
-    };
-
-    ret = rx_bus_init(&onewire_config);
-    if (ret != k_rx_ok) {
-        rx_log_error(s_tag, "1-Wire init failed");
-        return ret;
-    }
-    rx_log_info(s_tag, "1-Wire initialized (DS18B20 on P05)");
+    rx_log_info(s_tag, "1-Wire initialization deferred to Env_Monitor thread");
 
     /* -------------------------------------------------------------------------
      * USB CDC (Primary Communication)
