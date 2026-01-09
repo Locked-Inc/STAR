@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP ECS-240-8-30B-CKM-TR
+D Crystals 24MHz 10ppm 8pF -20C +70C
+K
+F https://componentsearchengine.com/Datasheets/1/ECS-240-8-30B-CKM-TR.pdf
+$ENDCMP
+#
+#End Doc Library
