@@ -18,6 +18,7 @@
 #include "hardware_pinout.h"
 #include "motor_config.h"
 #include "rx_bus_manager.h"
+#include "system_config.h"
 #include "rx_drv8243.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"

@@ -12,9 +12,10 @@
 
 #include <string.h>
 
+#include "env_monitor_config.h"
 #include "hardware_pinout.h"
-#include "motor_config.h"
 #include "rx_bus_manager.h"
+#include "system_config.h"
 #include "rx_ds18b20.h"
 #include "rx_hcsr04.h"
 #include "rx_iwdt.h"

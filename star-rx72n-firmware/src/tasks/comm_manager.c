@@ -15,8 +15,10 @@
 
 #include <string.h>
 
+#include "comm_config.h"
 #include "motor_config.h"
 #include "rx_frame.h"
+#include "system_config.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_usb.h"
