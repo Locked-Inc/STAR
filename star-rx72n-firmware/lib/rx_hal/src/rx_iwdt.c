@@ -301,6 +301,7 @@ void rx_iwdt_clear_status(void)
  * =============================================================================
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -413,9 +414,9 @@ rx_err_t rx_iwdt_check_tasks(void)
       char           log_msg[k_log_msg_buffer_size];
       const uint32_t written = (uint32_t)snprintf(log_msg,
                                                    sizeof(log_msg),
-                                                   "Task deadlock: %s (timeout %lu ms)",
+                                                   "Task deadlock: %s (timeout %" PRIu32 " ms)",
                                                    task->task_name,
-                                                   (unsigned long)task->timeout_ms);
+                                                   task->timeout_ms);
 
       if (written > 0 && written < sizeof(log_msg)) {
         rx_log_error(s_tag, log_msg);

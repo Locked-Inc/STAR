@@ -21,7 +21,8 @@
 #include "rx_register_guard.h"
 #include "shared_state.h"
 
-static char* s_tag = "sys_health";
+static char* s_tag       = "sys_health";
+static char* s_task_name = "System_Health";
 
 static TX_THREAD s_system_health_thread;
 static uint8_t   s_system_health_stack[k_stack_system_health];
@@ -67,7 +68,7 @@ static void system_health_entry(ULONG input)
 
   /* Register with watchdog for task-level monitoring
      * Timeout = 3x period = 3 * 1000ms = 3000ms */
-  rx_err_t ret = rx_iwdt_register_task("System_Health", 3000);
+  rx_err_t ret = rx_iwdt_register_task(s_task_name, 3000);
   if (ret != k_rx_ok) {
     rx_log_error(s_tag, "Failed to register with watchdog");
   }
@@ -112,7 +113,7 @@ static void system_health_entry(ULONG input)
     rx_iwdt_feed();
 
     /* Record task heartbeat for deadlock detection */
-    rx_iwdt_task_heartbeat("System_Health");
+    rx_iwdt_task_heartbeat(s_task_name);
 
     tx_thread_sleep(k_threadx_ticks_1s); /* 1 second = 1 Hz polling rate */
   }

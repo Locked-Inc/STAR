@@ -35,7 +35,8 @@
  * =============================================================================
  */
 
-static char* s_tag = "comm_mgr";
+static char* s_tag       = "comm_mgr";
+static char* s_task_name = "Comm_Manager";
 
 /* Thread control block and stack */
 static TX_THREAD s_comm_manager_thread;
@@ -120,7 +121,7 @@ static rx_err_t comm_manager_init_task(void)
 
   /* Register with watchdog for task-level monitoring
      * Timeout = 3x period = 3 * 10ms = 30ms */
-  ret = rx_iwdt_register_task("Comm_Manager", 30);
+  ret = rx_iwdt_register_task(s_task_name, 30);
   if (ret != k_rx_ok) {
     rx_log_error(s_tag, "Failed to register with watchdog");
   }
@@ -192,7 +193,7 @@ static void comm_manager_entry(ULONG input)
     rx_iwdt_feed();
 
     /* Record task heartbeat for deadlock detection */
-    rx_iwdt_task_heartbeat("Comm_Manager");
+    rx_iwdt_task_heartbeat(s_task_name);
 
     /* Sleep for 10ms (100 Hz) */
     tx_thread_sleep(k_threadx_ticks_10ms); /* 10ms = 100 Hz communication rate */
