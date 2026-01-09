@@ -984,7 +984,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "B6B-XH-A_0_0"
+			(symbol "B6B-XH-A_LF__SN__0_0"
 				(polyline
 					(pts
 						(xy -3.81 6.35) (xy -3.81 -8.89)
