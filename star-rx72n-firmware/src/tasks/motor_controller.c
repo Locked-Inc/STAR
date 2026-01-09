@@ -47,7 +47,8 @@ typedef struct {
  * =============================================================================
  */
 
-static char* s_tag = "motor_ctrl";
+static char* s_tag       = "motor_ctrl";
+static char* s_task_name = "Motor_Controller";
 
 /* Thread control block and stack (statically allocated) */
 static TX_THREAD s_motor_controller_thread;
@@ -131,7 +132,7 @@ static void motor_controller_entry(ULONG input)
 
   /* Register with watchdog for task-level monitoring
      * Timeout = 3x period = 3 * 4ms = 12ms */
-  ret = rx_iwdt_register_task("Motor_Controller", 12);
+  ret = rx_iwdt_register_task(s_task_name, 12);
   if (ret != k_rx_ok) {
     rx_log_error(s_tag, "Failed to register with watchdog");
   }
@@ -160,7 +161,7 @@ static void motor_controller_entry(ULONG input)
     rx_iwdt_feed();
 
     /* Record task heartbeat for deadlock detection */
-    rx_iwdt_task_heartbeat("Motor_Controller");
+    rx_iwdt_task_heartbeat(s_task_name);
 
     /* Sleep for 4ms (250 Hz control rate)
          * Note: k_control_loop_ticks = 0 because 4ms < 10ms ThreadX tick

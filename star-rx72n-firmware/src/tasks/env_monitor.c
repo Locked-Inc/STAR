@@ -23,7 +23,8 @@
 #include "shared_state.h"
 #include "star_hcsr04_config.h"
 
-static char* s_tag = "env_mon";
+static char* s_tag       = "env_mon";
+static char* s_task_name = "Env_Monitor";
 
 static TX_THREAD s_env_monitor_thread;
 static uint8_t   s_env_monitor_stack[k_stack_env_monitor];
@@ -90,7 +91,7 @@ static void env_monitor_entry(ULONG input)
 
   /* Register with watchdog for task-level monitoring
      * Timeout = 3x period = 3 * 20ms = 60ms */
-  rx_err_t ret = rx_iwdt_register_task("Env_Monitor", 60);
+  rx_err_t ret = rx_iwdt_register_task(s_task_name, 60);
   if (ret != k_rx_ok) {
     rx_log_error(s_tag, "Failed to register with watchdog");
   }
@@ -116,7 +117,7 @@ static void env_monitor_entry(ULONG input)
     rx_iwdt_feed();
 
     /* Record task heartbeat for deadlock detection */
-    rx_iwdt_task_heartbeat("Env_Monitor");
+    rx_iwdt_task_heartbeat(s_task_name);
 
     tx_thread_sleep(k_threadx_ticks_20ms); /* 20ms = 50 Hz scan rate */
   }
