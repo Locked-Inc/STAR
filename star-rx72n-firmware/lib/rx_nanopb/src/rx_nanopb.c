@@ -333,7 +333,7 @@ void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
     return;
   }
 
-  *cmd                     = (star_v1_VelocityCommand)star_v1_VelocityCommand_init_zero;
+  *cmd                      = (star_v1_VelocityCommand)star_v1_VelocityCommand_init_zero;
   cmd->motor_0_velocity_mps = motor_0_mps;
   cmd->motor_1_velocity_mps = motor_1_mps;
   cmd->motor_2_velocity_mps = motor_2_mps;
@@ -343,9 +343,9 @@ void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
 }
 
 void rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
-                                                   double                   left_mps,
-                                                   double                   right_mps,
-                                                   uint32_t                 sequence)
+                                                  double                   left_mps,
+                                                  double                   right_mps,
+                                                  uint32_t                 sequence)
 {
   /* Differential drive mode: Lock left 2 motors together, right 2 motors together
    * Motor 0 & Motor 1 = Left side

@@ -34,10 +34,11 @@
 extern "C" {
 #endif
 
-#include "rx_err.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include "rx_err.h"
 
 /* =============================================================================
  * PMOD Module Types
@@ -55,45 +56,45 @@ typedef enum {
 
   /* Display modules (SPI) */
   k_pmod_oled_rgb = 1, /**< PmodOLEDrgb: 96x64 OLED RGB display (SPI) */
-  k_pmod_cls = 2,      /**< PmodCLS: 16x2 character LCD (SPI) */
+  k_pmod_cls      = 2, /**< PmodCLS: 16x2 character LCD (SPI) */
 
   /* Sensor modules (I2C) */
-  k_pmod_acl = 10,  /**< PmodACL: 3-axis accelerometer (I2C) */
+  k_pmod_acl  = 10, /**< PmodACL: 3-axis accelerometer (I2C) */
   k_pmod_gyro = 11, /**< PmodGYRO: 3-axis gyroscope (SPI) */
-  k_pmod_als = 12,  /**< PmodALS: Ambient light sensor (I2C) */
+  k_pmod_als  = 12, /**< PmodALS: Ambient light sensor (I2C) */
   k_pmod_tmp2 = 13, /**< PmodTMP2: Temperature sensor (I2C) */
 
   /* Communication modules */
-  k_pmod_wifi = 20,     /**< PmodWiFi: 802.11 WiFi module (SPI) */
-  k_pmod_bt2 = 21,      /**< PmodBT2: Bluetooth 2.1 module (UART) */
-  k_pmod_gps = 22,      /**< PmodGPS: GPS receiver (UART) */
-  k_pmod_rf2 = 23,      /**< PmodRF2: 2.4 GHz transceiver (SPI) */
+  k_pmod_wifi     = 20, /**< PmodWiFi: 802.11 WiFi module (SPI) */
+  k_pmod_bt2      = 21, /**< PmodBT2: Bluetooth 2.1 module (UART) */
+  k_pmod_gps      = 22, /**< PmodGPS: GPS receiver (UART) */
+  k_pmod_rf2      = 23, /**< PmodRF2: 2.4 GHz transceiver (SPI) */
   k_pmod_maxsonar = 24, /**< PmodMAXSONAR: Ultrasonic rangefinder (UART) */
 
   /* Input/Output modules (GPIO) */
-  k_pmod_led = 30, /**< PmodLED: 4 LEDs (GPIO output) */
-  k_pmod_btn = 31, /**< PmodBTN: 4 push buttons (GPIO input) */
-  k_pmod_swt = 32, /**< PmodSWT: 4 slide switches (GPIO input) */
-  k_pmod_8ld = 33, /**< Pmod8LD: 8 LEDs (GPIO output) */
-  k_pmod_enc = 34, /**< PmodENC: Rotary encoder with button (GPIO) */
-  k_pmod_jstk = 35, /**< PmodJSTK: 2-axis joystick (SPI) */
-  k_pmod_kypd = 36, /**< PmodKYPD: 16-button keypad (GPIO) */
-  k_pmod_ssd = 37,  /**< PmodSSD: 7-segment display (SPI) */
+  k_pmod_led     = 30, /**< PmodLED: 4 LEDs (GPIO output) */
+  k_pmod_btn     = 31, /**< PmodBTN: 4 push buttons (GPIO input) */
+  k_pmod_swt     = 32, /**< PmodSWT: 4 slide switches (GPIO input) */
+  k_pmod_8ld     = 33, /**< Pmod8LD: 8 LEDs (GPIO output) */
+  k_pmod_enc     = 34, /**< PmodENC: Rotary encoder with button (GPIO) */
+  k_pmod_jstk    = 35, /**< PmodJSTK: 2-axis joystick (SPI) */
+  k_pmod_kypd    = 36, /**< PmodKYPD: 16-button keypad (GPIO) */
+  k_pmod_ssd     = 37, /**< PmodSSD: 7-segment display (SPI) */
   k_pmod_r2r_dac = 38, /**< Pmod R2R DAC: 8-bit resistor ladder DAC (GPIO) */
 
   /* Motor/Actuator modules */
-  k_pmod_dhb1 = 40,  /**< PmodDHB1: Dual H-bridge (PWM) */
-  k_pmod_step = 41,  /**< PmodSTEP: Stepper motor driver (SPI) */
+  k_pmod_dhb1  = 40, /**< PmodDHB1: Dual H-bridge (PWM) */
+  k_pmod_step  = 41, /**< PmodSTEP: Stepper motor driver (SPI) */
   k_pmod_servo = 42, /**< Custom servo controller (PWM) */
 
   /* Audio modules */
-  k_pmod_i2s2 = 50,    /**< PmodI2S2: Stereo audio codec (I2S) */
-  k_pmod_mic3 = 51,    /**< PmodMIC3: MEMS microphone (I2S) */
-  k_pmod_amp2 = 52,    /**< PmodAMP2: Audio amplifier (I2S) */
+  k_pmod_i2s2    = 50, /**< PmodI2S2: Stereo audio codec (I2S) */
+  k_pmod_mic3    = 51, /**< PmodMIC3: MEMS microphone (I2S) */
+  k_pmod_amp2    = 52, /**< PmodAMP2: Audio amplifier (I2S) */
   k_pmod_speaker = 53, /**< Custom speaker driver (PWM) */
 
   /* Memory/Storage modules */
-  k_pmod_sd = 60,     /**< PmodSD: MicroSD card (SPI) */
+  k_pmod_sd     = 60, /**< PmodSD: MicroSD card (SPI) */
   k_pmod_eeprom = 61, /**< Custom EEPROM module (I2C) */
 
   /* Custom/Application-Specific modules */
@@ -110,11 +111,11 @@ typedef enum {
  */
 typedef enum {
   k_pmod_interface_gpio = 0, /**< GPIO-only (6-pin) */
-  k_pmod_interface_i2c = 1,  /**< I2C (8-pin) */
-  k_pmod_interface_spi = 2,  /**< SPI (12-pin) */
+  k_pmod_interface_i2c  = 1, /**< I2C (8-pin) */
+  k_pmod_interface_spi  = 2, /**< SPI (12-pin) */
   k_pmod_interface_uart = 3, /**< UART (custom) */
-  k_pmod_interface_pwm = 4,  /**< PWM (custom) */
-  k_pmod_interface_i2s = 5,  /**< I2S audio (custom) */
+  k_pmod_interface_pwm  = 4, /**< PWM (custom) */
+  k_pmod_interface_i2s  = 5, /**< I2S audio (custom) */
 } pmod_interface_t;
 
 /* =============================================================================
@@ -133,12 +134,12 @@ typedef enum {
  * - Update rate (Hz, 0 = event-driven)
  */
 typedef struct {
-  pmod_type_t type;           /**< Module type (k_pmod_none = unused) */
-  pmod_interface_t interface; /**< Communication interface */
-  uint8_t priority;           /**< ThreadX priority (10-31 for PMODs) */
-  uint32_t stack_size;        /**< Stack size in bytes */
-  uint32_t update_rate_hz;    /**< Update rate (0 = event-driven) */
-  const char* task_name;      /**< Task name (NULL = auto-generated) */
+  pmod_type_t      type;           /**< Module type (k_pmod_none = unused) */
+  pmod_interface_t interface;      /**< Communication interface */
+  uint8_t          priority;       /**< ThreadX priority (10-31 for PMODs) */
+  uint32_t         stack_size;     /**< Stack size in bytes */
+  uint32_t         update_rate_hz; /**< Update rate (0 = event-driven) */
+  const char*      task_name;      /**< Task name (NULL = auto-generated) */
 } pmod_config_t;
 
 /**
@@ -147,12 +148,12 @@ typedef struct {
  * Standard PMOD connector naming (JA-JF).
  */
 typedef enum {
-  k_pmod_connector_ja = 0,    /**< Connector JA */
-  k_pmod_connector_jb = 1,    /**< Connector JB */
-  k_pmod_connector_jc = 2,    /**< Connector JC */
-  k_pmod_connector_jd = 3,    /**< Connector JD */
-  k_pmod_connector_je = 4,    /**< Connector JE */
-  k_pmod_connector_jf = 5,    /**< Connector JF */
+  k_pmod_connector_ja    = 0, /**< Connector JA */
+  k_pmod_connector_jb    = 1, /**< Connector JB */
+  k_pmod_connector_jc    = 2, /**< Connector JC */
+  k_pmod_connector_jd    = 3, /**< Connector JD */
+  k_pmod_connector_je    = 4, /**< Connector JE */
+  k_pmod_connector_jf    = 5, /**< Connector JF */
   k_pmod_connector_count = 6, /**< Total connectors */
 } pmod_connector_id_t;
 
@@ -184,12 +185,12 @@ typedef enum {
   k_pmod_priority_max = 31, /**< Maximum PMOD priority (lowest) */
 
   /* Suggested priority ranges */
-  k_pmod_priority_high_start = 10,   /**< High-rate tasks (>50 Hz) */
-  k_pmod_priority_high_end = 15,     /**< High-rate tasks end */
+  k_pmod_priority_high_start   = 10, /**< High-rate tasks (>50 Hz) */
+  k_pmod_priority_high_end     = 15, /**< High-rate tasks end */
   k_pmod_priority_medium_start = 16, /**< Medium-rate tasks (1-50 Hz) */
-  k_pmod_priority_medium_end = 23,   /**< Medium-rate tasks end */
-  k_pmod_priority_low_start = 24,    /**< Low-rate tasks (<1 Hz) */
-  k_pmod_priority_low_end = 31,      /**< Low-rate tasks end */
+  k_pmod_priority_medium_end   = 23, /**< Medium-rate tasks end */
+  k_pmod_priority_low_start    = 24, /**< Low-rate tasks (<1 Hz) */
+  k_pmod_priority_low_end      = 31, /**< Low-rate tasks end */
 } pmod_priority_t;
 
 /* =============================================================================
@@ -223,64 +224,70 @@ typedef enum {
  */
 static const pmod_config_t g_pmod_connectors[k_pmod_connector_count] = {
   /* JA: Connector A (default: unused) */
-  [k_pmod_connector_ja] = {
-      .type = k_pmod_none,
-      .interface = k_pmod_interface_gpio,
-      .priority = 20,
-      .stack_size = 2048,
+  [k_pmod_connector_ja] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 20,
+      .stack_size     = 2048,
       .update_rate_hz = 0,
-      .task_name = NULL,
-  },
+      .task_name      = NULL,
+    },
 
   /* JB: Connector B (default: unused) */
-  [k_pmod_connector_jb] = {
-      .type = k_pmod_none,
-      .interface = k_pmod_interface_gpio,
-      .priority = 21,
-      .stack_size = 2048,
+  [k_pmod_connector_jb] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 21,
+      .stack_size     = 2048,
       .update_rate_hz = 0,
-      .task_name = NULL,
-  },
+      .task_name      = NULL,
+    },
 
   /* JC: Connector C (default: unused) */
-  [k_pmod_connector_jc] = {
-      .type = k_pmod_none,
-      .interface = k_pmod_interface_gpio,
-      .priority = 22,
-      .stack_size = 2048,
+  [k_pmod_connector_jc] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 22,
+      .stack_size     = 2048,
       .update_rate_hz = 0,
-      .task_name = NULL,
-  },
+      .task_name      = NULL,
+    },
 
   /* JD: Connector D (default: unused) */
-  [k_pmod_connector_jd] = {
-      .type = k_pmod_none,
-      .interface = k_pmod_interface_gpio,
-      .priority = 23,
-      .stack_size = 2048,
+  [k_pmod_connector_jd] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 23,
+      .stack_size     = 2048,
       .update_rate_hz = 0,
-      .task_name = NULL,
-  },
+      .task_name      = NULL,
+    },
 
   /* JE: Connector E (default: unused) */
-  [k_pmod_connector_je] = {
-      .type = k_pmod_none,
-      .interface = k_pmod_interface_gpio,
-      .priority = 24,
-      .stack_size = 2048,
+  [k_pmod_connector_je] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 24,
+      .stack_size     = 2048,
       .update_rate_hz = 0,
-      .task_name = NULL,
-  },
+      .task_name      = NULL,
+    },
 
   /* JF: Connector F (default: unused) */
-  [k_pmod_connector_jf] = {
-      .type = k_pmod_none,
-      .interface = k_pmod_interface_gpio,
-      .priority = 25,
-      .stack_size = 2048,
+  [k_pmod_connector_jf] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 25,
+      .stack_size     = 2048,
       .update_rate_hz = 0,
-      .task_name = NULL,
-  },
+      .task_name      = NULL,
+    },
 };
 
 /* =============================================================================

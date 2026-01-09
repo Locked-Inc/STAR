@@ -24,10 +24,11 @@
 #ifndef SHARED_STATE_H
 #define SHARED_STATE_H
 
-#include "tx_api.h"
-#include "motor_config.h"
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "motor_config.h"
+#include "tx_api.h"
 
 /* =============================================================================
  * Motor Setpoint (Comm_Manager → Motor_Controller)
@@ -39,10 +40,10 @@
  * @details Commands from RPi5 via USB/SPI to Motor_Controller
  */
 typedef struct {
-    float    velocity_mps[k_motor_count]; /**< Target velocity (m/s) for each motor */
-    uint32_t sequence;                    /**< Command sequence number */
-    uint32_t timestamp_ms;                /**< Timestamp when command received */
-    bool     valid;                       /**< True if setpoint is valid */
+  float    velocity_mps[k_motor_count]; /**< Target velocity (m/s) for each motor */
+  uint32_t sequence;                    /**< Command sequence number */
+  uint32_t timestamp_ms;                /**< Timestamp when command received */
+  bool     valid;                       /**< True if setpoint is valid */
 } motor_setpoint_t;
 
 /* =============================================================================
@@ -55,16 +56,16 @@ typedef struct {
  * @details Measured encoder position and velocity for telemetry
  */
 typedef struct {
-    int32_t  ticks;       /**< Encoder ticks (quadrature counts) */
-    float    velocity_mps; /**< Measured velocity (m/s) */
-    uint32_t timestamp_ms; /**< Timestamp when data captured */
+  int32_t  ticks;        /**< Encoder ticks (quadrature counts) */
+  float    velocity_mps; /**< Measured velocity (m/s) */
+  uint32_t timestamp_ms; /**< Timestamp when data captured */
 } encoder_data_t;
 
 /**
  * @brief Encoder feedback for all motors
  */
 typedef struct {
-    encoder_data_t motors[k_motor_count]; /**< Feedback for each motor */
+  encoder_data_t motors[k_motor_count]; /**< Feedback for each motor */
 } encoder_feedback_t;
 
 /* =============================================================================
@@ -77,10 +78,10 @@ typedef struct {
  * @details Each bit represents a fault for one motor (bits 0-3)
  */
 typedef enum {
-    k_fault_motor_0 = (1 << 0), /**< Motor 0 fault (overcurrent, thermal, etc.) */
-    k_fault_motor_1 = (1 << 1), /**< Motor 1 fault */
-    k_fault_motor_2 = (1 << 2), /**< Motor 2 fault */
-    k_fault_motor_3 = (1 << 3), /**< Motor 3 fault */
+  k_fault_motor_0 = (1 << 0), /**< Motor 0 fault (overcurrent, thermal, etc.) */
+  k_fault_motor_1 = (1 << 1), /**< Motor 1 fault */
+  k_fault_motor_2 = (1 << 2), /**< Motor 2 fault */
+  k_fault_motor_3 = (1 << 3), /**< Motor 3 fault */
 } fault_flags_t;
 
 /**
@@ -98,12 +99,12 @@ typedef enum {
  * - Only allowed if no active obstacles, faults, or timeouts
  */
 typedef struct {
-    bool     emergency_stop;   /**< Master E-STOP flag (checked every 4ms) */
-    bool     obstacle_detected; /**< Obstacle within threshold distance */
-    bool     comm_timeout;     /**< Communication timeout (500ms) */
-    uint8_t  fault_flags;      /**< Motor fault bitfield (fault_flags_t) */
-    float    obstacle_distance_cm; /**< Distance to nearest obstacle */
-    uint8_t  obstacle_sensor_idx;  /**< Index of sensor detecting obstacle */
+  bool    emergency_stop;       /**< Master E-STOP flag (checked every 4ms) */
+  bool    obstacle_detected;    /**< Obstacle within threshold distance */
+  bool    comm_timeout;         /**< Communication timeout (500ms) */
+  uint8_t fault_flags;          /**< Motor fault bitfield (fault_flags_t) */
+  float   obstacle_distance_cm; /**< Distance to nearest obstacle */
+  uint8_t obstacle_sensor_idx;  /**< Index of sensor detecting obstacle */
 } safety_state_t;
 
 /* =============================================================================
@@ -116,13 +117,13 @@ typedef struct {
  * @details Battery, temperature, and diagnostics
  */
 typedef struct {
-    float    battery_voltage_v;  /**< Battery voltage (V) */
-    float    battery_soc_percent; /**< State of charge (%) */
-    float    battery_current_ma;  /**< Battery current (mA) */
-    float    temperature_c;       /**< System temperature (°C) */
-    bool     battery_low;         /**< True if SOC < 20% */
-    bool     thermal_warning;     /**< True if temp > 70°C */
-    uint32_t uptime_ms;           /**< System uptime (ms) */
+  float    battery_voltage_v;   /**< Battery voltage (V) */
+  float    battery_soc_percent; /**< State of charge (%) */
+  float    battery_current_ma;  /**< Battery current (mA) */
+  float    temperature_c;       /**< System temperature (°C) */
+  bool     battery_low;         /**< True if SOC < 20% */
+  bool     thermal_warning;     /**< True if temp > 70°C */
+  uint32_t uptime_ms;           /**< System uptime (ms) */
 } system_health_t;
 
 /* =============================================================================
@@ -140,15 +141,15 @@ typedef struct {
  * - Use TX_WAIT_FOREVER for mutex acquisition (critical data)
  */
 typedef struct {
-    motor_setpoint_t    setpoint; /**< Current motor commands */
-    encoder_feedback_t  encoders; /**< Encoder data (4 motors) */
-    safety_state_t      safety;   /**< E-STOP, obstacles, faults */
-    system_health_t     health;   /**< Battery, temperature */
+  motor_setpoint_t   setpoint; /**< Current motor commands */
+  encoder_feedback_t encoders; /**< Encoder data (4 motors) */
+  safety_state_t     safety;   /**< E-STOP, obstacles, faults */
+  system_health_t    health;   /**< Battery, temperature */
 
-    TX_MUTEX setpoint_mutex; /**< Protects setpoint */
-    TX_MUTEX encoder_mutex;  /**< Protects encoders */
-    TX_MUTEX safety_mutex;   /**< Protects safety */
-    TX_MUTEX health_mutex;   /**< Protects health */
+  TX_MUTEX setpoint_mutex; /**< Protects setpoint */
+  TX_MUTEX encoder_mutex;  /**< Protects encoders */
+  TX_MUTEX safety_mutex;   /**< Protects safety */
+  TX_MUTEX health_mutex;   /**< Protects health */
 } shared_state_t;
 
 /* =============================================================================

@@ -12,6 +12,7 @@
  */
 
 #include "shared_state.h"
+
 #include <string.h>
 
 /* =============================================================================
@@ -38,53 +39,53 @@ static char s_health_mutex_name[]   = "HealthMutex";
 
 UINT shared_state_init(shared_state_t* state)
 {
-    UINT status = TX_SUCCESS;
+  UINT status = TX_SUCCESS;
 
-    /* Validate parameter */
-    if (state == NULL) {
-        return TX_PTR_ERROR;
-    }
+  /* Validate parameter */
+  if (state == NULL) {
+    return TX_PTR_ERROR;
+  }
 
-    /* Zero-initialize all state structures */
-    memset(state, 0, sizeof(shared_state_t));
+  /* Zero-initialize all state structures */
+  memset(state, 0, sizeof(shared_state_t));
 
-    /* Initialize setpoint to invalid by default */
-    state->setpoint.valid = false;
+  /* Initialize setpoint to invalid by default */
+  state->setpoint.valid = false;
 
-    /* Create setpoint mutex */
-    status = tx_mutex_create(&state->setpoint_mutex, s_setpoint_mutex_name, TX_NO_INHERIT);
-    if (status != TX_SUCCESS) {
-        return status;
-    }
+  /* Create setpoint mutex */
+  status = tx_mutex_create(&state->setpoint_mutex, s_setpoint_mutex_name, TX_NO_INHERIT);
+  if (status != TX_SUCCESS) {
+    return status;
+  }
 
-    /* Create encoder mutex */
-    status = tx_mutex_create(&state->encoder_mutex, s_encoder_mutex_name, TX_NO_INHERIT);
-    if (status != TX_SUCCESS) {
-        tx_mutex_delete(&state->setpoint_mutex);
-        return status;
-    }
+  /* Create encoder mutex */
+  status = tx_mutex_create(&state->encoder_mutex, s_encoder_mutex_name, TX_NO_INHERIT);
+  if (status != TX_SUCCESS) {
+    tx_mutex_delete(&state->setpoint_mutex);
+    return status;
+  }
 
-    /* Create safety mutex */
-    status = tx_mutex_create(&state->safety_mutex, s_safety_mutex_name, TX_NO_INHERIT);
-    if (status != TX_SUCCESS) {
-        tx_mutex_delete(&state->setpoint_mutex);
-        tx_mutex_delete(&state->encoder_mutex);
-        return status;
-    }
+  /* Create safety mutex */
+  status = tx_mutex_create(&state->safety_mutex, s_safety_mutex_name, TX_NO_INHERIT);
+  if (status != TX_SUCCESS) {
+    tx_mutex_delete(&state->setpoint_mutex);
+    tx_mutex_delete(&state->encoder_mutex);
+    return status;
+  }
 
-    /* Create health mutex */
-    status = tx_mutex_create(&state->health_mutex, s_health_mutex_name, TX_NO_INHERIT);
-    if (status != TX_SUCCESS) {
-        tx_mutex_delete(&state->setpoint_mutex);
-        tx_mutex_delete(&state->encoder_mutex);
-        tx_mutex_delete(&state->safety_mutex);
-        return status;
-    }
+  /* Create health mutex */
+  status = tx_mutex_create(&state->health_mutex, s_health_mutex_name, TX_NO_INHERIT);
+  if (status != TX_SUCCESS) {
+    tx_mutex_delete(&state->setpoint_mutex);
+    tx_mutex_delete(&state->encoder_mutex);
+    tx_mutex_delete(&state->safety_mutex);
+    return status;
+  }
 
-    return TX_SUCCESS;
+  return TX_SUCCESS;
 }
 
 shared_state_t* shared_state_get(void)
 {
-    return &s_shared_state;
+  return &s_shared_state;
 }
