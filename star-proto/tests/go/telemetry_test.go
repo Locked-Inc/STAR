@@ -1,0 +1,387 @@
+package starproto_test
+
+import (
+	"testing"
+
+	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+// TestTelemetryData_RX72N_EncoderFields verifies individual encoder fields (encoder_0..3)
+func TestTelemetryData_RX72N_EncoderFields(t *testing.T) {
+	telem := &starv1.TelemetryData{
+		TimestampUs: 1000000,
+		Encoder_0: &starv1.EncoderData{
+			MotorId:     0,
+			Ticks:       1000,
+			VelocityMps: 1.5,
+			TimestampUs: 1000000,
+		},
+		Encoder_1: &starv1.EncoderData{
+			MotorId:     1,
+			Ticks:       1050,
+			VelocityMps: 1.5,
+			TimestampUs: 1000000,
+		},
+		Encoder_2: &starv1.EncoderData{
+			MotorId:     2,
+			Ticks:       900,
+			VelocityMps: 1.0,
+			TimestampUs: 1000000,
+		},
+		Encoder_3: &starv1.EncoderData{
+			MotorId:     3,
+			Ticks:       950,
+			VelocityMps: 1.0,
+			TimestampUs: 1000000,
+		},
+		EmergencyStop: false,
+		FaultFlags:    0,
+	}
+
+	// Serialize
+	data, err := proto.Marshal(telem)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	// Verify reasonable size for embedded systems
+	if len(data) > 256 {
+		t.Errorf("Encoded size %d bytes exceeds 256 byte limit", len(data))
+	}
+
+	// Deserialize
+	decoded := &starv1.TelemetryData{}
+	if err := proto.Unmarshal(data, decoded); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	// Verify all 4 encoder fields
+	if decoded.Encoder_0 == nil || decoded.Encoder_0.MotorId != 0 {
+		t.Error("Encoder 0 not decoded correctly")
+	}
+	if decoded.Encoder_1 == nil || decoded.Encoder_1.MotorId != 1 {
+		t.Error("Encoder 1 not decoded correctly")
+	}
+	if decoded.Encoder_2 == nil || decoded.Encoder_2.MotorId != 2 {
+		t.Error("Encoder 2 not decoded correctly")
+	}
+	if decoded.Encoder_3 == nil || decoded.Encoder_3.MotorId != 3 {
+		t.Error("Encoder 3 not decoded correctly")
+	}
+
+	// Verify encoder data
+	if decoded.Encoder_0.Ticks != 1000 {
+		t.Errorf("Encoder 0 ticks = %d, want 1000", decoded.Encoder_0.Ticks)
+	}
+	if decoded.Encoder_0.VelocityMps != 1.5 {
+		t.Errorf("Encoder 0 velocity = %f, want 1.5", decoded.Encoder_0.VelocityMps)
+	}
+}
+
+// TestTelemetryData_RX72N_BatteryFields verifies battery telemetry from BQ4050
+func TestTelemetryData_RX72N_BatteryFields(t *testing.T) {
+	telem := &starv1.TelemetryData{
+		BatteryVoltageV:    12.6,
+		BatterySocPercent:  85,
+		BatteryPercent:     85.0, // Legacy field
+		TimestampUs:        1000000,
+	}
+
+	data, err := proto.Marshal(telem)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	decoded := &starv1.TelemetryData{}
+	if err := proto.Unmarshal(data, decoded); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	// Verify battery fields
+	if decoded.BatteryVoltageV != 12.6 {
+		t.Errorf("BatteryVoltageV = %f, want 12.6", decoded.BatteryVoltageV)
+	}
+	if decoded.BatterySocPercent != 85 {
+		t.Errorf("BatterySocPercent = %d, want 85", decoded.BatterySocPercent)
+	}
+}
+
+// TestTelemetryData_RX72N_SafetyFields verifies emergency stop and fault flags
+func TestTelemetryData_RX72N_SafetyFields(t *testing.T) {
+	testCases := []struct {
+		name          string
+		emergencyStop bool
+		faultFlags    uint32
+	}{
+		{"Normal operation", false, 0},
+		{"Emergency stop active", true, 0},
+		{"Motor 0 fault", false, 0x01},
+		{"Motor 1 fault", false, 0x02},
+		{"Motor 2 fault", false, 0x04},
+		{"Motor 3 fault", false, 0x08},
+		{"All motors fault", false, 0x0F},
+		{"E-STOP with faults", true, 0x0F},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			telem := &starv1.TelemetryData{
+				EmergencyStop: tc.emergencyStop,
+				FaultFlags:    tc.faultFlags,
+				TimestampUs:   1000000,
+			}
+
+			data, err := proto.Marshal(telem)
+			if err != nil {
+				t.Fatalf("Marshal failed: %v", err)
+			}
+
+			decoded := &starv1.TelemetryData{}
+			if err := proto.Unmarshal(data, decoded); err != nil {
+				t.Fatalf("Unmarshal failed: %v", err)
+			}
+
+			if decoded.EmergencyStop != tc.emergencyStop {
+				t.Errorf("EmergencyStop = %v, want %v", decoded.EmergencyStop, tc.emergencyStop)
+			}
+			if decoded.FaultFlags != tc.faultFlags {
+				t.Errorf("FaultFlags = 0x%X, want 0x%X", decoded.FaultFlags, tc.faultFlags)
+			}
+		})
+	}
+}
+
+// TestTelemetryData_RX72N_TemperatureField verifies DS18B20 temperature
+func TestTelemetryData_RX72N_TemperatureField(t *testing.T) {
+	telem := &starv1.TelemetryData{
+		TemperatureCelsius: 45.5,
+		TimestampUs:        1000000,
+	}
+
+	data, err := proto.Marshal(telem)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	decoded := &starv1.TelemetryData{}
+	if err := proto.Unmarshal(data, decoded); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	if decoded.TemperatureCelsius != 45.5 {
+		t.Errorf("TemperatureCelsius = %f, want 45.5", decoded.TemperatureCelsius)
+	}
+}
+
+// TestTelemetryData_Complete verifies full telemetry message with all RX72N fields
+func TestTelemetryData_Complete(t *testing.T) {
+	telem := &starv1.TelemetryData{
+		// Standard fields
+		Timestamp:          timestamppb.Now(),
+		BatteryPercent:     85.0,
+		WifiSignalDbm:      -45,
+		CpuUsagePercent:    25.5,
+		TemperatureCelsius: 45.0,
+		MotorLoadPercent:   60.0,
+
+		// RX72N-specific fields
+		TimestampUs:        1000000,
+		Encoder_0: &starv1.EncoderData{
+			MotorId:     0,
+			Ticks:       1000,
+			VelocityMps: 1.5,
+			TimestampUs: 1000000,
+		},
+		Encoder_1: &starv1.EncoderData{
+			MotorId:     1,
+			Ticks:       1050,
+			VelocityMps: 1.5,
+			TimestampUs: 1000000,
+		},
+		Encoder_2: &starv1.EncoderData{
+			MotorId:     2,
+			Ticks:       900,
+			VelocityMps: 1.0,
+			TimestampUs: 1000000,
+		},
+		Encoder_3: &starv1.EncoderData{
+			MotorId:     3,
+			Ticks:       950,
+			VelocityMps: 1.0,
+			TimestampUs: 1000000,
+		},
+		EmergencyStop:     false,
+		FaultFlags:        0,
+		BatteryVoltageV:   12.6,
+		BatterySocPercent: 85,
+	}
+
+	// Serialize
+	data, err := proto.Marshal(telem)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	// Verify reasonable size
+	t.Logf("Complete telemetry message size: %d bytes", len(data))
+	if len(data) > 512 {
+		t.Errorf("Encoded size %d bytes exceeds 512 byte limit", len(data))
+	}
+
+	// Deserialize
+	decoded := &starv1.TelemetryData{}
+	if err := proto.Unmarshal(data, decoded); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	// Verify critical fields
+	if decoded.EmergencyStop != false {
+		t.Error("EmergencyStop should be false")
+	}
+	if decoded.Encoder_0 == nil {
+		t.Fatal("Encoder_0 should not be nil")
+	}
+	if decoded.Encoder_0.VelocityMps != 1.5 {
+		t.Errorf("Encoder 0 velocity = %f, want 1.5", decoded.Encoder_0.VelocityMps)
+	}
+	if decoded.BatteryVoltageV != 12.6 {
+		t.Errorf("BatteryVoltageV = %f, want 12.6", decoded.BatteryVoltageV)
+	}
+}
+
+// TestTelemetryData_Streaming simulates high-frequency telemetry streaming (100 Hz)
+func TestTelemetryData_Streaming(t *testing.T) {
+	const numMessages = 100
+
+	for i := int64(0); i < numMessages; i++ {
+		telem := &starv1.TelemetryData{
+			TimestampUs: i * 10000, // 10ms intervals (100 Hz)
+			Encoder_0: &starv1.EncoderData{
+				MotorId:     0,
+				Ticks:       i * 10,
+				VelocityMps: 1.5,
+				TimestampUs: i * 10000,
+			},
+			Encoder_1: &starv1.EncoderData{
+				MotorId:     1,
+				Ticks:       i * 10,
+				VelocityMps: 1.5,
+				TimestampUs: i * 10000,
+			},
+			Encoder_2: &starv1.EncoderData{
+				MotorId:     2,
+				Ticks:       i * 8,
+				VelocityMps: 1.0,
+				TimestampUs: i * 10000,
+			},
+			Encoder_3: &starv1.EncoderData{
+				MotorId:     3,
+				Ticks:       i * 8,
+				VelocityMps: 1.0,
+				TimestampUs: i * 10000,
+			},
+			EmergencyStop:     false,
+			FaultFlags:        0,
+			BatteryVoltageV:   12.6,
+			BatterySocPercent: 85,
+		}
+
+		data, err := proto.Marshal(telem)
+		if err != nil {
+			t.Fatalf("Message %d: Marshal failed: %v", i, err)
+		}
+
+		// Verify consistent encoding size
+		if i == 0 {
+			t.Logf("Telemetry message size: %d bytes", len(data))
+		}
+		if len(data) > 256 {
+			t.Errorf("Message %d: Size %d bytes exceeds 256 byte limit", i, len(data))
+		}
+
+		// Spot check decoding every 10th message
+		if i%10 == 0 {
+			decoded := &starv1.TelemetryData{}
+			if err := proto.Unmarshal(data, decoded); err != nil {
+				t.Fatalf("Message %d: Unmarshal failed: %v", i, err)
+			}
+
+			if decoded.TimestampUs != i*10000 {
+				t.Errorf("Message %d: TimestampUs = %d, want %d", i, decoded.TimestampUs, i*10000)
+			}
+		}
+	}
+}
+
+// TestGetTelemetryResponse verifies telemetry service response
+func TestGetTelemetryResponse(t *testing.T) {
+	resp := &starv1.GetTelemetryResponse{
+		Header: &starv1.ResponseHeader{
+			RequestId: "telem-request-1",
+			Status:    starv1.Status_STATUS_OK,
+		},
+		Telemetry: &starv1.TelemetryData{
+			TimestampUs: 1000000,
+			Encoder_0: &starv1.EncoderData{
+				MotorId:     0,
+				Ticks:       1000,
+				VelocityMps: 1.5,
+				TimestampUs: 1000000,
+			},
+			EmergencyStop:     false,
+			FaultFlags:        0,
+			BatteryVoltageV:   12.6,
+			BatterySocPercent: 85,
+		},
+	}
+
+	data, err := proto.Marshal(resp)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	decoded := &starv1.GetTelemetryResponse{}
+	if err := proto.Unmarshal(data, decoded); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	if decoded.Header.RequestId != "telem-request-1" {
+		t.Errorf("RequestId = %s, want telem-request-1", decoded.Header.RequestId)
+	}
+	if decoded.Telemetry == nil {
+		t.Fatal("Telemetry should not be nil")
+	}
+	if decoded.Telemetry.BatteryVoltageV != 12.6 {
+		t.Errorf("BatteryVoltageV = %f, want 12.6", decoded.Telemetry.BatteryVoltageV)
+	}
+}
+
+// TestStreamTelemetryRequest verifies streaming request configuration
+func TestStreamTelemetryRequest(t *testing.T) {
+	req := &starv1.StreamTelemetryRequest{
+		Header: &starv1.RequestHeader{
+			RequestId: "stream-request-1",
+		},
+		RateHz: 100, // 100 Hz streaming
+		Fields: []string{"encoders", "battery", "emergency_stop"},
+	}
+
+	data, err := proto.Marshal(req)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	decoded := &starv1.StreamTelemetryRequest{}
+	if err := proto.Unmarshal(data, decoded); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	if decoded.RateHz != 100 {
+		t.Errorf("RateHz = %d, want 100", decoded.RateHz)
+	}
+	if len(decoded.Fields) != 3 {
+		t.Errorf("Fields count = %d, want 3", len(decoded.Fields))
+	}
+}
