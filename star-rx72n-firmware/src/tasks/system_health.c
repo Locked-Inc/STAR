@@ -12,9 +12,11 @@
 
 #include <string.h>
 
+#include "battery_config.h"
 #include "diagnostics.h"
-#include "motor_config.h"
+#include "peripheral_config.h"
 #include "rx_bq4050.h"
+#include "system_config.h"
 #include "rx_bus_manager.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
