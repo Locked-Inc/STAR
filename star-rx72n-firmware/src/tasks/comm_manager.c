@@ -52,7 +52,9 @@ static uint32_t s_last_command_timestamp_ms = 0;
 
 static void     comm_manager_entry(ULONG input);
 static rx_err_t process_ingress(void);
+static rx_err_t decode_and_apply_velocity_command(const rx_frame_t* frame);
 static rx_err_t process_egress(void);
+static rx_err_t collect_and_encode_telemetry(uint8_t* payload, uint32_t* payload_len);
 static rx_err_t check_comm_timeout(void);
 static rx_err_t check_safe_to_clear_estop(void);
 static rx_err_t process_clear_estop_command(uint16_t sequence);
@@ -164,15 +166,79 @@ static void comm_manager_entry(ULONG input)
     }
 }
 
+/**
+ * @brief Decode velocity command and apply to shared setpoint
+ * @param frame Received frame with velocity command payload
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t decode_and_apply_velocity_command(const rx_frame_t* frame)
+{
+    /* Decode Protocol Buffer message using nanopb */
+    star_v1_VelocityCommand velocity_cmd = star_v1_VelocityCommand_init_zero;
+
+    /* Create nanopb input stream from frame payload */
+    pb_istream_t istream = pb_istream_from_buffer(frame->payload, frame->header.length);
+
+    /* Decode VelocityCommand message */
+    const bool decode_status = pb_decode(&istream, star_v1_VelocityCommand_fields, &velocity_cmd);
+    if (!decode_status) {
+        rx_log_error(s_tag, "Protobuf decode failed");
+        rx_usb_comm_send_nack(&s_usb_comm_handle, frame->header.sequence, 0);
+        return k_rx_err_protocol_error;
+    }
+
+    /* Extract and validate velocities from decoded message */
+    float velocities[k_motor_count];
+    velocities[0] = (float)velocity_cmd.motor_0_velocity_mps;
+    velocities[1] = (float)velocity_cmd.motor_1_velocity_mps;
+    velocities[2] = (float)velocity_cmd.motor_2_velocity_mps;
+    velocities[3] = (float)velocity_cmd.motor_3_velocity_mps;
+
+    /* Validate and clamp velocities to ±2.0 m/s */
+    for (uint8_t i = 0; i < k_motor_count; i++) {
+        const float max_vel = (float)k_motor_max_velocity_x100 / 100.0f;
+        const float min_vel = (float)k_motor_min_velocity_x100 / 100.0f;
+
+        if (velocities[i] > max_vel) {
+            velocities[i] = max_vel;
+        } else if (velocities[i] < min_vel) {
+            velocities[i] = min_vel;
+        }
+    }
+
+    /* Update shared setpoint (mutex-protected) */
+    shared_state_t* state = shared_state_get();
+    UINT status = tx_mutex_get(&state->setpoint_mutex, TX_WAIT_FOREVER);
+    if (status != TX_SUCCESS) {
+        rx_log_error(s_tag, "Failed to acquire setpoint mutex");
+        return k_rx_err_threadx;
+    }
+
+    for (uint8_t i = 0; i < k_motor_count; i++) {
+        state->setpoint.velocity_mps[i] = velocities[i];
+    }
+    state->setpoint.sequence = frame->header.sequence;
+    state->setpoint.timestamp_ms = tx_time_get();
+    state->setpoint.valid = true;
+
+    tx_mutex_put(&state->setpoint_mutex);
+
+    /* Send ACK response */
+    rx_err_t ret = rx_usb_comm_send_ack(&s_usb_comm_handle, frame->header.sequence);
+    if (ret != k_rx_ok) {
+        rx_log_error(s_tag, "ACK send failed");
+    }
+
+    return k_rx_ok;
+}
+
 static rx_err_t process_ingress(void)
 {
     /* -------------------------------------------------------------------------
-     * Issue 11: Command Processing (Ingress)
+     * Issue 11: Command Processing (Ingress - Refactored)
      * -------------------------------------------------------------------------
      * Receive frames via USB CDC (100ms timeout = non-blocking poll)
-     * Decode SetVelocityRequest (nanopb deserialize)
-     * Update shared setpoint
-     * Send ACK response
+     * Decode and apply velocity commands via helper function
      */
     rx_frame_t frame = {0};
 
@@ -200,76 +266,24 @@ static rx_err_t process_ingress(void)
             return ret;
         }
 
-        /* Decode Protocol Buffer message using nanopb */
-        star_v1_VelocityCommand velocity_cmd = star_v1_VelocityCommand_init_zero;
-
-        /* Create nanopb input stream from frame payload */
-        pb_istream_t istream = pb_istream_from_buffer(frame.payload, frame.header.length);
-
-        /* Decode VelocityCommand message */
-        const bool decode_status = pb_decode(&istream, star_v1_VelocityCommand_fields, &velocity_cmd);
-        if (!decode_status) {
-            rx_log_error(s_tag, "Protobuf decode failed");
-            rx_usb_comm_send_nack(&s_usb_comm_handle, frame.header.sequence, 0);
-            return k_rx_err_protocol_error;
-        }
-
-        /* Extract and validate velocities from decoded message */
-        float velocities[k_motor_count];
-        velocities[0] = (float)velocity_cmd.motor_0_velocity_mps;
-        velocities[1] = (float)velocity_cmd.motor_1_velocity_mps;
-        velocities[2] = (float)velocity_cmd.motor_2_velocity_mps;
-        velocities[3] = (float)velocity_cmd.motor_3_velocity_mps;
-
-        /* Validate and clamp velocities to ±2.0 m/s */
-        for (uint8_t i = 0; i < k_motor_count; i++) {
-            const float max_vel = (float)k_motor_max_velocity_x100 / 100.0f;
-            const float min_vel = (float)k_motor_min_velocity_x100 / 100.0f;
-
-            if (velocities[i] > max_vel) {
-                velocities[i] = max_vel;
-            } else if (velocities[i] < min_vel) {
-                velocities[i] = min_vel;
-            }
-        }
-
-        /* Update shared setpoint (mutex-protected) */
-        shared_state_t* state = shared_state_get();
-        UINT status = tx_mutex_get(&state->setpoint_mutex, TX_WAIT_FOREVER);
-        if (status != TX_SUCCESS) {
-            rx_log_error(s_tag, "Failed to acquire setpoint mutex");
-            return k_rx_err_threadx;
-        }
-
-        for (uint8_t i = 0; i < k_motor_count; i++) {
-            state->setpoint.velocity_mps[i] = velocities[i];
-        }
-        state->setpoint.sequence = frame.header.sequence;
-        state->setpoint.timestamp_ms = tx_time_get();
-        state->setpoint.valid = true;
-
-        tx_mutex_put(&state->setpoint_mutex);
-
-        /* Send ACK response */
-        ret = rx_usb_comm_send_ack(&s_usb_comm_handle, frame.header.sequence);
+        /* Decode and apply velocity command */
+        ret = decode_and_apply_velocity_command(&frame);
         if (ret != k_rx_ok) {
-            rx_log_error(s_tag, "ACK send failed");
+            return ret;
         }
     }
 
     return k_rx_ok;
 }
 
-static rx_err_t process_egress(void)
+/**
+ * @brief Collect telemetry data and encode to Protocol Buffer
+ * @param payload Output buffer for encoded telemetry
+ * @param payload_len Output length of encoded payload
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t collect_and_encode_telemetry(uint8_t* payload, uint32_t* payload_len)
 {
-    /* -------------------------------------------------------------------------
-     * Issue 12: Telemetry Streaming (Egress)
-     * -------------------------------------------------------------------------
-     * Read encoder feedback (4 motors) from shared state
-     * Read battery/temperature from health state
-     * Encode TelemetryData message (nanopb serialize)
-     * Transmit via USB CDC at 100 Hz
-     */
     shared_state_t* state = shared_state_get();
 
     /* Read encoder feedback (mutex-protected) */
@@ -340,8 +354,7 @@ static rx_err_t process_egress(void)
     telemetry_msg.temperature_celsius = health_data.temperature_c;
 
     /* Encode message to buffer */
-    uint8_t payload[256];
-    pb_ostream_t ostream = pb_ostream_from_buffer(payload, sizeof(payload));
+    pb_ostream_t ostream = pb_ostream_from_buffer(payload, 256);
 
     const bool encode_status = pb_encode(&ostream, star_v1_TelemetryData_fields, &telemetry_msg);
     if (!encode_status) {
@@ -349,13 +362,34 @@ static rx_err_t process_egress(void)
         return k_rx_err_protocol_error;
     }
 
+    *payload_len = (uint32_t)ostream.bytes_written;
+    return k_rx_ok;
+}
+
+static rx_err_t process_egress(void)
+{
+    /* -------------------------------------------------------------------------
+     * Issue 12: Telemetry Streaming (Egress - Refactored)
+     * -------------------------------------------------------------------------
+     * Collect telemetry and encode via helper function
+     * Transmit via USB CDC at 100 Hz
+     */
+    uint8_t payload[256];
+    uint32_t payload_len = 0;
+
+    /* Collect telemetry data and encode to Protocol Buffer */
+    rx_err_t ret = collect_and_encode_telemetry(payload, &payload_len);
+    if (ret != k_rx_ok) {
+        return ret;
+    }
+
     /* Send telemetry frame */
-    rx_err_t ret = rx_usb_comm_send(
+    ret = rx_usb_comm_send(
         &s_usb_comm_handle,
         k_frame_type_response,
         0, /* flags */
         payload,
-        ostream.bytes_written
+        payload_len
     );
 
     if (ret != k_rx_ok) {
