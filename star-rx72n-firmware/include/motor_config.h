@@ -155,6 +155,7 @@ typedef enum {
 typedef enum {
   k_pwm_frequency_hz  = 20000, /**< PWM frequency (20 kHz) */
   k_pwm_resolution_us = 50,    /**< PWM period (50 us = 1/20kHz) */
+  k_pwm_deadtime_ns   = 1000,  /**< PWM deadtime (1000 ns = 1 μs) */
 } pwm_config_t;
 
 /* =============================================================================

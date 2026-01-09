@@ -89,7 +89,7 @@ static rx_err_t motor_subsystem_init(void)
      */
   const rx_gptw_config_t pwm_config = {
     .frequency_hz         = k_pwm_frequency_hz,
-    .deadtime_ns          = 1000,
+    .deadtime_ns          = k_pwm_deadtime_ns,
     .enable_complementary = true,
     .invert_polarity      = false,
   };
@@ -163,8 +163,8 @@ static rx_err_t communication_subsystem_init(void)
      * Initialize 1-Wire bus for DS18B20 temperature monitoring
      * P05 (pin 100) with 4.7kΩ pull-up to 3.3V
      *
-     * TODO: 1-Wire initialization will be handled by Env_Monitor thread
-     * when sensors are actually configured and ready to use.
+     * NOTE: 1-Wire initialization is deferred to Env_Monitor thread
+     * when sensors are actually configured and ready to use (on-demand init).
      */
   rx_log_info(s_tag, "1-Wire initialization deferred to Env_Monitor thread");
 
