@@ -70,6 +70,10 @@ static void motor_controller_entry(ULONG input);
  * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t motor_subsystem_init(void);
+static rx_err_t init_bus_manager(void);
+static rx_err_t init_pid_controllers(void);
+static rx_err_t init_motor_drivers(void);
+static rx_err_t init_encoder_states(void);
 
 /**
  * @brief Execute one control loop iteration
@@ -167,27 +171,28 @@ static void motor_controller_entry(ULONG input)
     }
 }
 
-static rx_err_t motor_subsystem_init(void)
+/**
+ * @brief Initialize bus manager for motor subsystem
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t init_bus_manager(void)
 {
-    /* -------------------------------------------------------------------------
-     * Initialize Bus Manager
-     * -------------------------------------------------------------------------
-     * Create bus manager with no error/pin interfaces (use defaults)
-     */
     rx_err_t ret = rx_bus_manager_init(&s_motor_subsystem.bus_manager, s_tag, NULL, NULL);
     if (ret != k_rx_ok) {
         rx_log_error(s_tag, "Bus manager init failed");
         return ret;
     }
-    rx_log_info(s_tag, "Bus manager initialized");
 
-    /* -------------------------------------------------------------------------
-     * Initialize PID Controllers (4 motors)
-     * -------------------------------------------------------------------------
-     * MATLAB-tuned gains: Kp=0.286, Ki=8.01, Kd=0.0
-     * Output limits: ±100% duty cycle
-     * Integral limits: ±50% (anti-windup)
-     */
+    rx_log_info(s_tag, "Bus manager initialized");
+    return k_rx_ok;
+}
+
+/**
+ * @brief Initialize PID controllers for all 4 motors
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t init_pid_controllers(void)
+{
     const float kp      = (float)k_pid_kp_x1000 / 1000.0f;
     const float ki      = (float)k_pid_ki_x1000 / 1000.0f;
     const float kd      = (float)k_pid_kd_x1000 / 1000.0f;
@@ -207,39 +212,23 @@ static rx_err_t motor_subsystem_init(void)
             .integral_max = int_max,
         };
 
-        ret = rx_pid_init(&s_motor_subsystem.pid_controllers[i], &pid_config);
+        rx_err_t ret = rx_pid_init(&s_motor_subsystem.pid_controllers[i], &pid_config);
         if (ret != k_rx_ok) {
             rx_log_error(s_tag, "PID init failed");
             return ret;
         }
     }
+
     rx_log_info(s_tag, "PID controllers initialized (Kp=0.286, Ki=8.01)");
+    return k_rx_ok;
+}
 
-    /* -------------------------------------------------------------------------
-     * Initialize DRV8243S Motor Drivers (4 motors)
-     * -------------------------------------------------------------------------
-     * Motor driver configuration:
-     * - GPTW channels 0-3 for PWM generation (20 kHz)
-     * - Port E pins for Phase/Enable control
-     * - Port 4 ADC pins for current sensing (IPROPI)
-     * - Port 4 GPIO pins for fault detection (nFAULT)
-     */
-    /* GPIO pins for motor drivers (not currently used - GPTW handles pinmux)
-    const gpio_pin_t motor_pins_ph[k_motor_count] = {
-        k_pin_motor0_ph,
-        k_pin_motor1_ph,
-        k_pin_motor2_ph,
-        k_pin_motor3_ph,
-    };
-
-    const gpio_pin_t motor_pins_en[k_motor_count] = {
-        k_pin_motor0_en,
-        k_pin_motor1_en,
-        k_pin_motor2_en,
-        k_pin_motor3_en,
-    };
-    */
-
+/**
+ * @brief Initialize DRV8243S motor drivers for all 4 motors
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t init_motor_drivers(void)
+{
     const uint8_t adc_pins_ipropi[k_motor_count] = {
         k_adc_motor0_current,
         k_adc_motor1_current,
@@ -256,38 +245,78 @@ static rx_err_t motor_subsystem_init(void)
 
     for (uint8_t i = 0; i < k_motor_count; i++) {
         rx_drv8243_config_t motor_config = {
-            .bus_manager     = &s_motor_subsystem.bus_manager,
-            .gpio_bus_name   = "motor_gpio",
-            .adc_bus_name    = "motor_adc",
-            .gptw_channel    = (rx_gptw_channel_t)i,
-            .output_ph       = k_gptw_output_a,
-            .output_en       = k_gptw_output_b,
-            .pin_ipropi      = adc_pins_ipropi[i],
-            .port_nfault     = (uint8_t)((fault_pins[i] >> 8) & 0xFF),
-            .pin_nfault      = (uint8_t)(fault_pins[i] & 0xFF),
-            .pwm_freq_hz     = k_pwm_frequency_hz,
+            .bus_manager      = &s_motor_subsystem.bus_manager,
+            .gpio_bus_name    = "motor_gpio",
+            .adc_bus_name     = "motor_adc",
+            .gptw_channel     = (rx_gptw_channel_t)i,
+            .output_ph        = k_gptw_output_a,
+            .output_en        = k_gptw_output_b,
+            .pin_ipropi       = adc_pins_ipropi[i],
+            .port_nfault      = (uint8_t)((fault_pins[i] >> 8) & 0xFF),
+            .pin_nfault       = (uint8_t)(fault_pins[i] & 0xFF),
+            .pwm_freq_hz      = k_pwm_frequency_hz,
             .current_limit_ma = k_drv8243_max_current_ma,
-            .ki_propi        = (uint16_t)(k_drv8243_ipropi_scaling_x100 / 100),
+            .ki_propi         = (uint16_t)(k_drv8243_ipropi_scaling_x100 / 100),
         };
 
-        ret = rx_drv8243_init(&s_motor_subsystem.motor_drivers[i], &motor_config);
+        rx_err_t ret = rx_drv8243_init(&s_motor_subsystem.motor_drivers[i], &motor_config);
         if (ret != k_rx_ok) {
             rx_log_error(s_tag, "Motor driver init failed");
             return ret;
         }
     }
-    rx_log_info(s_tag, "Motor drivers initialized (4x DRV8243S, 20 kHz PWM)");
 
-    /* -------------------------------------------------------------------------
-     * Initialize Encoder State Tracking
-     * -------------------------------------------------------------------------
-     * MTU encoders already initialized in hardware_init.c
-     * Just zero-initialize encoder state structures
-     */
+    rx_log_info(s_tag, "Motor drivers initialized (4x DRV8243S, 20 kHz PWM)");
+    return k_rx_ok;
+}
+
+/**
+ * @brief Initialize encoder state tracking structures
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t init_encoder_states(void)
+{
     for (uint8_t i = 0; i < k_motor_count; i++) {
         memset(&s_motor_subsystem.encoder_states[i], 0, sizeof(rx_encoder_state_t));
     }
+
     rx_log_info(s_tag, "Encoder state tracking initialized");
+    return k_rx_ok;
+}
+
+static rx_err_t motor_subsystem_init(void)
+{
+    /* -------------------------------------------------------------------------
+     * Issue 6: Motor Subsystem Initialization (Refactored)
+     * -------------------------------------------------------------------------
+     * Refactored into 4 single-responsibility helper functions for NASA Rule 4
+     * compliance (functions ≤60 lines)
+     */
+    rx_err_t ret;
+
+    /* 1. Initialize bus manager (GPIO/ADC/SPI abstraction) */
+    ret = init_bus_manager();
+    if (ret != k_rx_ok) {
+        return ret;
+    }
+
+    /* 2. Initialize PID controllers (MATLAB-tuned gains) */
+    ret = init_pid_controllers();
+    if (ret != k_rx_ok) {
+        return ret;
+    }
+
+    /* 3. Initialize DRV8243S motor drivers (4 motors, 20 kHz PWM) */
+    ret = init_motor_drivers();
+    if (ret != k_rx_ok) {
+        return ret;
+    }
+
+    /* 4. Initialize encoder state tracking structures */
+    ret = init_encoder_states();
+    if (ret != k_rx_ok) {
+        return ret;
+    }
 
     s_motor_subsystem.initialized = true;
     rx_log_info(s_tag, "Motor subsystem initialization complete");
