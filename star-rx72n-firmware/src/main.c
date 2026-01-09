@@ -21,6 +21,7 @@
 #include "tx_api.h"
 #include "hardware.h"
 #include "hardware_init.h"
+#include "pmod_config.h"
 #include "shared_state.h"
 #include "diagnostics.h"
 #include "rx_log.h"
@@ -170,6 +171,18 @@ void tx_application_define(void* first_unused_memory)
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag_tx, "System_Health creation failed");
     return;
+  }
+
+  /* -------------------------------------------------------------------------
+   * Create PMOD Expansion Tasks (optional)
+   * -------------------------------------------------------------------------
+   * Create tasks for any enabled PMOD modules (priorities 10-31)
+   * By default, all PMOD connectors are disabled (type = k_pmod_none)
+   */
+  rx_err_t pmod_ret = pmod_create_all_tasks();
+  if (pmod_ret != k_rx_ok) {
+    rx_log_error(s_tag_tx, "PMOD task creation failed");
+    /* Non-critical - continue even if PMOD tasks fail */
   }
 
   rx_log_info(s_tag_tx, "ThreadX application definition complete");
