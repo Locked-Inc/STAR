@@ -295,13 +295,13 @@ static rx_err_t motor_subsystem_init(void)
     return k_rx_ok;
 }
 
-static rx_err_t control_loop_iteration(void)
+/**
+ * @brief Check emergency stop status and halt motors if active
+ *
+ * @return k_rx_ok if E-STOP not active, k_rx_err_estop if active
+ */
+static rx_err_t check_emergency_stop(void)
 {
-    /* -------------------------------------------------------------------------
-     * Issue 9: Check Emergency Stop Flag
-     * -------------------------------------------------------------------------
-     * If E-STOP is active, halt all motors immediately and skip control loop
-     */
     shared_state_t* state = shared_state_get();
 
     UINT status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
@@ -318,15 +318,24 @@ static rx_err_t control_loop_iteration(void)
         for (uint8_t i = 0; i < k_motor_count; i++) {
             rx_drv8243_stop(&s_motor_subsystem.motor_drivers[i], true);
         }
-        return k_rx_ok; /* Skip rest of control loop */
+        return k_rx_err_estop; /* Signal E-STOP is active */
     }
 
-    /* -------------------------------------------------------------------------
-     * Issue 7: Read Encoder Feedback (4 motors)
-     * -------------------------------------------------------------------------
-     * Read encoder positions and compute velocities
-     */
-    const float dt = (float)k_control_loop_period_ms / 1000.0f; /* 0.004 seconds (4ms) */
+    return k_rx_ok;
+}
+
+/**
+ * @brief Read encoder feedback and update shared state
+ *
+ * Reads encoder counts for all motors, computes velocities, and updates
+ * shared state encoder feedback structure.
+ *
+ * @param[in] dt Time delta in seconds for velocity calculation
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t read_encoder_feedback(float dt)
+{
+    shared_state_t* state = shared_state_get();
 
     for (uint8_t i = 0; i < k_motor_count; i++) {
         /* Read encoder state (updates total_count, revolutions, position) */
@@ -353,7 +362,7 @@ static rx_err_t control_loop_iteration(void)
         const float velocity_mps = velocity_rps * wheel_circumference_m;
 
         /* Update shared encoder feedback */
-        status = tx_mutex_get(&state->encoder_mutex, TX_WAIT_FOREVER);
+        UINT status = tx_mutex_get(&state->encoder_mutex, TX_WAIT_FOREVER);
         if (status != TX_SUCCESS) {
             rx_log_error(s_tag, "Failed to acquire encoder mutex");
             continue;
@@ -366,41 +375,53 @@ static rx_err_t control_loop_iteration(void)
         tx_mutex_put(&state->encoder_mutex);
     }
 
-    /* -------------------------------------------------------------------------
-     * Issue 7: Read Motor Setpoint
-     * -------------------------------------------------------------------------
-     * Get commanded velocities from shared state
-     */
-    status = tx_mutex_get(&state->setpoint_mutex, TX_WAIT_FOREVER);
+    return k_rx_ok;
+}
+
+/**
+ * @brief Read motor velocity setpoints from shared state
+ *
+ * @param[out] target_velocities Array to store target velocities (m/s)
+ * @param[out] setpoint_valid Pointer to store setpoint validity flag
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t read_motor_setpoint(float* target_velocities, bool* setpoint_valid)
+{
+    shared_state_t* state = shared_state_get();
+
+    UINT status = tx_mutex_get(&state->setpoint_mutex, TX_WAIT_FOREVER);
     if (status != TX_SUCCESS) {
         rx_log_error(s_tag, "Failed to acquire setpoint mutex");
         return k_rx_err_threadx;
     }
 
-    const bool setpoint_valid = state->setpoint.valid;
-    float target_velocities[k_motor_count];
+    *setpoint_valid = state->setpoint.valid;
     for (uint8_t i = 0; i < k_motor_count; i++) {
         target_velocities[i] = state->setpoint.velocity_mps[i];
     }
 
     tx_mutex_put(&state->setpoint_mutex);
 
-    /* If no valid setpoint, coast motors (0% duty cycle) */
-    if (!setpoint_valid) {
-        for (uint8_t i = 0; i < k_motor_count; i++) {
-            rx_drv8243_set_speed(&s_motor_subsystem.motor_drivers[i], 0.0f);
-        }
-        return k_rx_ok;
-    }
+    return k_rx_ok;
+}
 
-    /* -------------------------------------------------------------------------
-     * Issue 7: Compute PID and Apply Motor Control
-     * -------------------------------------------------------------------------
-     * For each motor: run PID controller and apply duty cycle
-     */
+/**
+ * @brief Compute PID control and apply motor commands
+ *
+ * For each motor: reads current velocity, runs PID controller, and applies
+ * duty cycle command to motor driver.
+ *
+ * @param[in] target_velocities Array of target velocities (m/s)
+ * @param[in] dt Time delta in seconds for PID computation
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t compute_and_apply_pid(const float* target_velocities, float dt)
+{
+    shared_state_t* state = shared_state_get();
+
     for (uint8_t i = 0; i < k_motor_count; i++) {
         /* Get current velocity from shared state */
-        status = tx_mutex_get(&state->encoder_mutex, TX_WAIT_FOREVER);
+        UINT status = tx_mutex_get(&state->encoder_mutex, TX_WAIT_FOREVER);
         if (status != TX_SUCCESS) {
             rx_log_error(s_tag, "Failed to acquire encoder mutex");
             continue;
@@ -431,11 +452,21 @@ static rx_err_t control_loop_iteration(void)
         }
     }
 
-    /* -------------------------------------------------------------------------
-     * Issue 8: Current Sensing and Fault Detection
-     * -------------------------------------------------------------------------
-     * Read motor currents and check for faults
-     */
+    return k_rx_ok;
+}
+
+/**
+ * @brief Check for motor faults and update safety state
+ *
+ * Reads motor currents and nFAULT pins, triggers E-STOP on overcurrent
+ * or fault detection.
+ *
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t check_motor_faults(void)
+{
+    shared_state_t* state = shared_state_get();
+
     for (uint8_t i = 0; i < k_motor_count; i++) {
         float current_ma = 0.0f;
         rx_err_t ret = rx_drv8243_read_current(&s_motor_subsystem.motor_drivers[i], &current_ma);
@@ -449,7 +480,7 @@ static rx_err_t control_loop_iteration(void)
             rx_log_error(s_tag, "Motor overcurrent detected");
 
             /* Set fault flag in safety state */
-            status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
+            UINT status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
             if (status == TX_SUCCESS) {
                 state->safety.fault_flags |= (1 << i);
                 state->safety.emergency_stop = true; /* Trigger E-STOP on overcurrent */
@@ -464,13 +495,70 @@ static rx_err_t control_loop_iteration(void)
             rx_log_error(s_tag, "Motor driver fault (nFAULT)");
 
             /* Set fault flag and trigger E-STOP */
-            status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
+            UINT status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
             if (status == TX_SUCCESS) {
                 state->safety.fault_flags |= (1 << i);
                 state->safety.emergency_stop = true;
                 tx_mutex_put(&state->safety_mutex);
             }
         }
+    }
+
+    return k_rx_ok;
+}
+
+static rx_err_t control_loop_iteration(void)
+{
+    /* -------------------------------------------------------------------------
+     * Issue 7: Deterministic 250 Hz Motor Control Loop
+     * -------------------------------------------------------------------------
+     * Refactored into 5 single-responsibility helper functions for NASA Rule 4
+     * compliance (functions ≤60 lines)
+     */
+    rx_err_t ret;
+    float target_velocities[k_motor_count];
+    bool setpoint_valid = false;
+    const float dt = (float)k_control_loop_period_ms / 1000.0f; /* 0.004s (4ms) */
+
+    /* 1. Check emergency stop flag */
+    ret = check_emergency_stop();
+    if (ret == k_rx_err_estop) {
+        return k_rx_ok; /* E-STOP active, motors already halted */
+    }
+    if (ret != k_rx_ok) {
+        return ret;
+    }
+
+    /* 2. Read encoder feedback and update shared state */
+    ret = read_encoder_feedback(dt);
+    if (ret != k_rx_ok) {
+        return ret;
+    }
+
+    /* 3. Read motor setpoint from shared state */
+    ret = read_motor_setpoint(target_velocities, &setpoint_valid);
+    if (ret != k_rx_ok) {
+        return ret;
+    }
+
+    /* 4. If no valid setpoint, coast motors (0% duty cycle) */
+    if (!setpoint_valid) {
+        for (uint8_t i = 0; i < k_motor_count; i++) {
+            rx_drv8243_set_speed(&s_motor_subsystem.motor_drivers[i], 0.0f);
+        }
+        return k_rx_ok;
+    }
+
+    /* 5. Compute PID and apply duty cycles to motors */
+    ret = compute_and_apply_pid(target_velocities, dt);
+    if (ret != k_rx_ok) {
+        return ret;
+    }
+
+    /* 6. Check for motor faults (overcurrent, nFAULT) */
+    ret = check_motor_faults();
+    if (ret != k_rx_ok) {
+        return ret;
     }
 
     return k_rx_ok;
