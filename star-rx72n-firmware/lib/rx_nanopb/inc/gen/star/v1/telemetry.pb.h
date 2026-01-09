@@ -162,7 +162,8 @@ typedef struct _star_v1_TelemetryData {
   /* Emergency stop state (RX72N specific). */
   bool emergency_stop;
   /* Motor fault flags bitfield (RX72N specific).
- Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc. */
+ Bit 0: Front left fault, Bit 1: Front right fault,
+ Bit 2: Back left fault, Bit 3: Back right fault. */
   uint32_t fault_flags;
   /* Battery voltage in volts (RX72N specific - BQ4050). */
   double battery_voltage_v;
@@ -171,15 +172,20 @@ typedef struct _star_v1_TelemetryData {
   uint32_t battery_soc_percent;
   /* Timestamp in microseconds since boot (RX72N specific). */
   int64_t timestamp_us;
-  /* Encoder data from motors (RX72N specific - fixed size for embedded). */
-  bool                has_encoder_0;
-  star_v1_EncoderData encoder_0;
-  bool                has_encoder_1;
-  star_v1_EncoderData encoder_1;
-  bool                has_encoder_2;
-  star_v1_EncoderData encoder_2;
-  bool                has_encoder_3;
-  star_v1_EncoderData encoder_3;
+  /* Encoder data from motors (RX72N specific - fixed size for embedded).
+ Motor Layout (top view):
+   Front
+  FL   FR
+  BL   BR
+   Back */
+  bool                has_encoder_front_left;
+  star_v1_EncoderData encoder_front_left;
+  bool                has_encoder_front_right;
+  star_v1_EncoderData encoder_front_right;
+  bool                has_encoder_back_left;
+  star_v1_EncoderData encoder_back_left;
+  bool                has_encoder_back_right;
+  star_v1_EncoderData encoder_back_right;
 } star_v1_TelemetryData;
 
 /* Response with telemetry snapshot. */
@@ -366,10 +372,10 @@ extern "C" {
 #define star_v1_TelemetryData_battery_voltage_v_tag   12
 #define star_v1_TelemetryData_battery_soc_percent_tag 13
 #define star_v1_TelemetryData_timestamp_us_tag        14
-#define star_v1_TelemetryData_encoder_0_tag           15
-#define star_v1_TelemetryData_encoder_1_tag           16
-#define star_v1_TelemetryData_encoder_2_tag           17
-#define star_v1_TelemetryData_encoder_3_tag           18
+#define star_v1_TelemetryData_encoder_front_left_tag  15
+#define star_v1_TelemetryData_encoder_front_right_tag 16
+#define star_v1_TelemetryData_encoder_back_left_tag   17
+#define star_v1_TelemetryData_encoder_back_right_tag  18
 #define star_v1_GetTelemetryResponse_header_tag       1
 #define star_v1_GetTelemetryResponse_telemetry_tag    2
 #define star_v1_SystemStatus_connection_status_tag    1
@@ -432,19 +438,19 @@ extern "C" {
   X(a, STATIC, SINGULAR, DOUBLE, battery_voltage_v, 12)                                            \
   X(a, STATIC, SINGULAR, UINT32, battery_soc_percent, 13)                                          \
   X(a, STATIC, SINGULAR, INT64, timestamp_us, 14)                                                  \
-  X(a, STATIC, OPTIONAL, MESSAGE, encoder_0, 15)                                                   \
-  X(a, STATIC, OPTIONAL, MESSAGE, encoder_1, 16)                                                   \
-  X(a, STATIC, OPTIONAL, MESSAGE, encoder_2, 17)                                                   \
-  X(a, STATIC, OPTIONAL, MESSAGE, encoder_3, 18)
-#define star_v1_TelemetryData_CALLBACK          NULL
-#define star_v1_TelemetryData_DEFAULT           NULL
-#define star_v1_TelemetryData_imu_MSGTYPE       star_v1_ImuData
-#define star_v1_TelemetryData_gps_MSGTYPE       star_v1_GpsData
-#define star_v1_TelemetryData_timestamp_MSGTYPE google_protobuf_Timestamp
-#define star_v1_TelemetryData_encoder_0_MSGTYPE star_v1_EncoderData
-#define star_v1_TelemetryData_encoder_1_MSGTYPE star_v1_EncoderData
-#define star_v1_TelemetryData_encoder_2_MSGTYPE star_v1_EncoderData
-#define star_v1_TelemetryData_encoder_3_MSGTYPE star_v1_EncoderData
+  X(a, STATIC, OPTIONAL, MESSAGE, encoder_front_left, 15)                                          \
+  X(a, STATIC, OPTIONAL, MESSAGE, encoder_front_right, 16)                                         \
+  X(a, STATIC, OPTIONAL, MESSAGE, encoder_back_left, 17)                                           \
+  X(a, STATIC, OPTIONAL, MESSAGE, encoder_back_right, 18)
+#define star_v1_TelemetryData_CALLBACK                    NULL
+#define star_v1_TelemetryData_DEFAULT                     NULL
+#define star_v1_TelemetryData_imu_MSGTYPE                 star_v1_ImuData
+#define star_v1_TelemetryData_gps_MSGTYPE                 star_v1_GpsData
+#define star_v1_TelemetryData_timestamp_MSGTYPE           google_protobuf_Timestamp
+#define star_v1_TelemetryData_encoder_front_left_MSGTYPE  star_v1_EncoderData
+#define star_v1_TelemetryData_encoder_front_right_MSGTYPE star_v1_EncoderData
+#define star_v1_TelemetryData_encoder_back_left_MSGTYPE   star_v1_EncoderData
+#define star_v1_TelemetryData_encoder_back_right_MSGTYPE  star_v1_EncoderData
 
 #define star_v1_ImuData_FIELDLIST(X, a)                                                            \
   X(a, STATIC, SINGULAR, DOUBLE, pitch_rad, 1)                                                     \
