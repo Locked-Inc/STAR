@@ -37,28 +37,34 @@ typedef struct _star_v1_SetVelocityResponse {
 } star_v1_SetVelocityResponse;
 
 /* Velocity command for 4-motor independent control.
- Uses MKS units: meters per second. */
+ Uses MKS units: meters per second.
+
+ Motor Layout (top view):
+   Front
+  FL   FR
+  BL   BR
+   Back */
 typedef struct _star_v1_VelocityCommand {
-  /* Motor 0 velocity in meters per second.
+  /* Front left motor velocity in meters per second.
  Valid range: -2.0 to 2.0 m/s.
  Positive = forward, negative = reverse. */
-  double motor_0_velocity_mps;
-  /* Motor 1 velocity in meters per second.
+  double front_left_velocity_mps;
+  /* Front right motor velocity in meters per second.
  Valid range: -2.0 to 2.0 m/s.
  Positive = forward, negative = reverse. */
-  double motor_1_velocity_mps;
+  double front_right_velocity_mps;
   /* Command sequence number for ordering and deduplication. */
   uint32_t sequence;
   /* Client timestamp in microseconds for latency tracking. */
   int64_t timestamp_us;
-  /* Motor 2 velocity in meters per second.
+  /* Back left motor velocity in meters per second.
  Valid range: -2.0 to 2.0 m/s.
  Positive = forward, negative = reverse. */
-  double motor_2_velocity_mps;
-  /* Motor 3 velocity in meters per second.
+  double back_left_velocity_mps;
+  /* Back right motor velocity in meters per second.
  Valid range: -2.0 to 2.0 m/s.
  Positive = forward, negative = reverse. */
-  double motor_3_velocity_mps;
+  double back_right_velocity_mps;
 } star_v1_VelocityCommand;
 
 /* Request to set wheel velocities. */
@@ -249,46 +255,46 @@ extern "C" {
 #define star_v1_PidConfig_init_zero             {0, 0, 0, 0, 0, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define star_v1_SetVelocityResponse_header_tag           1
-#define star_v1_SetVelocityResponse_motor_status_tag     2
-#define star_v1_VelocityCommand_motor_0_velocity_mps_tag 1
-#define star_v1_VelocityCommand_motor_1_velocity_mps_tag 2
-#define star_v1_VelocityCommand_sequence_tag             3
-#define star_v1_VelocityCommand_timestamp_us_tag         4
-#define star_v1_VelocityCommand_motor_2_velocity_mps_tag 5
-#define star_v1_VelocityCommand_motor_3_velocity_mps_tag 6
-#define star_v1_SetVelocityRequest_header_tag            1
-#define star_v1_SetVelocityRequest_command_tag           2
-#define star_v1_EmergencyStopRequest_header_tag          1
-#define star_v1_EmergencyStopRequest_reason_tag          2
-#define star_v1_EmergencyStopResponse_header_tag         1
-#define star_v1_EmergencyStopResponse_estop_engaged_tag  2
-#define star_v1_SetMotorPowerResponse_header_tag         1
-#define star_v1_MotorPowerCommand_motor_id_tag           1
-#define star_v1_MotorPowerCommand_duty_cycle_percent_tag 2
-#define star_v1_SetMotorPowerRequest_header_tag          1
-#define star_v1_SetMotorPowerRequest_command_tag         2
-#define star_v1_StreamEncodersRequest_header_tag         1
-#define star_v1_StreamEncodersRequest_rate_hz_tag        2
-#define star_v1_EncoderData_motor_id_tag                 1
-#define star_v1_EncoderData_ticks_tag                    2
-#define star_v1_EncoderData_velocity_mps_tag             3
-#define star_v1_EncoderData_timestamp_us_tag             4
-#define star_v1_MotorStatus_motor_id_tag                 1
-#define star_v1_MotorStatus_duty_cycle_percent_tag       2
-#define star_v1_MotorStatus_velocity_mps_tag             3
-#define star_v1_MotorStatus_target_velocity_mps_tag      4
-#define star_v1_MotorStatus_temperature_celsius_tag      5
-#define star_v1_MotorStatus_current_ma_tag               6
-#define star_v1_MotorStatus_fault_flags_tag              7
-#define star_v1_MotorStatus_state_tag                    8
-#define star_v1_PidConfig_kp_tag                         1
-#define star_v1_PidConfig_ki_tag                         2
-#define star_v1_PidConfig_kd_tag                         3
-#define star_v1_PidConfig_output_min_percent_tag         4
-#define star_v1_PidConfig_output_max_percent_tag         5
-#define star_v1_PidConfig_integral_min_tag               6
-#define star_v1_PidConfig_integral_max_tag               7
+#define star_v1_SetVelocityResponse_header_tag               1
+#define star_v1_SetVelocityResponse_motor_status_tag         2
+#define star_v1_VelocityCommand_front_left_velocity_mps_tag  1
+#define star_v1_VelocityCommand_front_right_velocity_mps_tag 2
+#define star_v1_VelocityCommand_sequence_tag                 3
+#define star_v1_VelocityCommand_timestamp_us_tag             4
+#define star_v1_VelocityCommand_back_left_velocity_mps_tag   5
+#define star_v1_VelocityCommand_back_right_velocity_mps_tag  6
+#define star_v1_SetVelocityRequest_header_tag                1
+#define star_v1_SetVelocityRequest_command_tag               2
+#define star_v1_EmergencyStopRequest_header_tag              1
+#define star_v1_EmergencyStopRequest_reason_tag              2
+#define star_v1_EmergencyStopResponse_header_tag             1
+#define star_v1_EmergencyStopResponse_estop_engaged_tag      2
+#define star_v1_SetMotorPowerResponse_header_tag             1
+#define star_v1_MotorPowerCommand_motor_id_tag               1
+#define star_v1_MotorPowerCommand_duty_cycle_percent_tag     2
+#define star_v1_SetMotorPowerRequest_header_tag              1
+#define star_v1_SetMotorPowerRequest_command_tag             2
+#define star_v1_StreamEncodersRequest_header_tag             1
+#define star_v1_StreamEncodersRequest_rate_hz_tag            2
+#define star_v1_EncoderData_motor_id_tag                     1
+#define star_v1_EncoderData_ticks_tag                        2
+#define star_v1_EncoderData_velocity_mps_tag                 3
+#define star_v1_EncoderData_timestamp_us_tag                 4
+#define star_v1_MotorStatus_motor_id_tag                     1
+#define star_v1_MotorStatus_duty_cycle_percent_tag           2
+#define star_v1_MotorStatus_velocity_mps_tag                 3
+#define star_v1_MotorStatus_target_velocity_mps_tag          4
+#define star_v1_MotorStatus_temperature_celsius_tag          5
+#define star_v1_MotorStatus_current_ma_tag                   6
+#define star_v1_MotorStatus_fault_flags_tag                  7
+#define star_v1_MotorStatus_state_tag                        8
+#define star_v1_PidConfig_kp_tag                             1
+#define star_v1_PidConfig_ki_tag                             2
+#define star_v1_PidConfig_kd_tag                             3
+#define star_v1_PidConfig_output_min_percent_tag             4
+#define star_v1_PidConfig_output_max_percent_tag             5
+#define star_v1_PidConfig_integral_min_tag                   6
+#define star_v1_PidConfig_integral_max_tag                   7
 
 /* Struct field encoding specification for nanopb */
 #define star_v1_SetVelocityRequest_FIELDLIST(X, a)                                                 \
@@ -308,12 +314,12 @@ extern "C" {
 #define star_v1_SetVelocityResponse_motor_status_MSGTYPE star_v1_MotorStatus
 
 #define star_v1_VelocityCommand_FIELDLIST(X, a)                                                    \
-  X(a, STATIC, SINGULAR, DOUBLE, motor_0_velocity_mps, 1)                                          \
-  X(a, STATIC, SINGULAR, DOUBLE, motor_1_velocity_mps, 2)                                          \
+  X(a, STATIC, SINGULAR, DOUBLE, front_left_velocity_mps, 1)                                       \
+  X(a, STATIC, SINGULAR, DOUBLE, front_right_velocity_mps, 2)                                      \
   X(a, STATIC, SINGULAR, UINT32, sequence, 3)                                                      \
   X(a, STATIC, SINGULAR, INT64, timestamp_us, 4)                                                   \
-  X(a, STATIC, SINGULAR, DOUBLE, motor_2_velocity_mps, 5)                                          \
-  X(a, STATIC, SINGULAR, DOUBLE, motor_3_velocity_mps, 6)
+  X(a, STATIC, SINGULAR, DOUBLE, back_left_velocity_mps, 5)                                        \
+  X(a, STATIC, SINGULAR, DOUBLE, back_right_velocity_mps, 6)
 #define star_v1_VelocityCommand_CALLBACK NULL
 #define star_v1_VelocityCommand_DEFAULT  NULL
 
