@@ -417,7 +417,7 @@ static rx_err_t encode_telemetry_to_buffer(const star_v1_TelemetryData* msg,
                                            uint32_t*                    payload_len)
 {
   /* Encode message to buffer */
-  pb_ostream_t ostream = pb_ostream_from_buffer(payload, 256);
+  pb_ostream_t ostream = pb_ostream_from_buffer(payload, star_v1_TelemetryData_size);
 
   const bool encode_status = pb_encode(&ostream, star_v1_TelemetryData_fields, msg);
   if (!encode_status) {
