@@ -37,8 +37,8 @@
 
 #include <string.h>
 
-#include "motor_config.h"
 #include "pmod_config.h"
+#include "system_config.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
 #include "shared_state.h"
