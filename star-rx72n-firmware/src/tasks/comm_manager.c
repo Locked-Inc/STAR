@@ -153,6 +153,9 @@ static void comm_manager_entry(ULONG input)
             /* Timeout already logged in check_comm_timeout */
         }
 
+        /* Feed watchdog (critical - prevents reset) */
+        rx_iwdt_feed();
+
         /* Record task heartbeat for deadlock detection */
         rx_iwdt_task_heartbeat("Comm_Manager");
 

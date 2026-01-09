@@ -86,6 +86,9 @@ static void env_monitor_entry(ULONG input)
         scan_obstacles();
         monitor_temperature();
 
+        /* Feed watchdog (critical - prevents reset) */
+        rx_iwdt_feed();
+
         /* Record task heartbeat for deadlock detection */
         rx_iwdt_task_heartbeat("Env_Monitor");
 
