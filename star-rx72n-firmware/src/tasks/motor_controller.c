@@ -57,6 +57,16 @@ static uint8_t   s_motor_controller_stack[k_stack_motor_controller];
 /* Motor subsystem state */
 static motor_subsystem_t s_motor_subsystem;
 
+/* Module constants */
+typedef enum {
+  k_watchdog_timeout_ms = 12,  /**< 3x period = 3 * 4ms = 12ms */
+  k_port_shift          = 8,   /**< Bit shift to extract port from gpio_pin_t */
+  k_port_mask           = 0xFF, /**< Bit mask to extract port or pin */
+} motor_controller_constants_t;
+
+/* PWM duty cycle conversion factor */
+static const float s_duty_cycle_scale = 100.0f; /**< Converts PID output (-100 to +100) to duty (-1.0 to +1.0) */
+
 /* =============================================================================
  * Private Function Prototypes
  * =============================================================================
@@ -132,7 +142,7 @@ static void motor_controller_entry(ULONG input)
 
   /* Register with watchdog for task-level monitoring
      * Timeout = 3x period = 3 * 4ms = 12ms */
-  ret = rx_iwdt_register_task(s_task_name, 12);
+  ret = rx_iwdt_register_task(s_task_name, k_watchdog_timeout_ms);
   if (ret != k_rx_ok) {
     rx_log_error(s_tag, "Failed to register with watchdog");
   }
@@ -255,8 +265,8 @@ static rx_err_t init_motor_drivers(void)
       .output_ph        = k_gptw_output_a,
       .output_en        = k_gptw_output_b,
       .pin_ipropi       = adc_pins_ipropi[i],
-      .port_nfault      = (uint8_t)((fault_pins[i] >> 8) & 0xFF),
-      .pin_nfault       = (uint8_t)(fault_pins[i] & 0xFF),
+      .port_nfault      = (uint8_t)((fault_pins[i] >> k_port_shift) & k_port_mask),
+      .pin_nfault       = (uint8_t)(fault_pins[i] & k_port_mask),
       .pwm_freq_hz      = k_pwm_frequency_hz,
       .current_limit_ma = k_drv8243_max_current_ma,
       .ki_propi         = (uint16_t)(k_drv8243_ipropi_scaling_x100 / 100),
@@ -476,7 +486,7 @@ static rx_err_t compute_and_apply_pid(const float* target_velocities, float dt)
     }
 
     /* Apply duty cycle to motor driver (-100% to +100%) */
-    ret = rx_drv8243_set_speed(&s_motor_subsystem.motor_drivers[i], output / 100.0f);
+    ret = rx_drv8243_set_speed(&s_motor_subsystem.motor_drivers[i], output / s_duty_cycle_scale);
     if (ret != k_rx_ok) {
       rx_log_error(s_tag, "Motor set speed failed");
     }
