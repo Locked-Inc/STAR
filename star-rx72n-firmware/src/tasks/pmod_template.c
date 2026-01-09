@@ -107,7 +107,7 @@ static rx_err_t init_gpio_module(void)
 {
   /* Example: Initialize GPIO pins for LED output
    *
-   * TODO: Configure actual GPIO pins from hardware_pinout.h
+   * Note: Configure actual GPIO pins from hardware_pinout.h
    * Example:
    *   gpio_set_output(k_port_b, 0);  // LED 0
    *   gpio_set_output(k_port_b, 1);  // LED 1
@@ -138,7 +138,7 @@ static rx_err_t init_i2c_module(void)
 {
   /* Example: Initialize I2C bus for sensor
    *
-   * TODO: Use rx_bus_manager with I2C interface
+   * Note: Use rx_bus_manager with I2C interface
    * Example:
    *   rx_bus_manager_t bus_mgr = {0};
    *   rx_bus_config_t config = {
@@ -174,7 +174,7 @@ static rx_err_t init_spi_module(void)
 {
   /* Example: Initialize SPI bus for display/sensor
    *
-   * TODO: Use rx_bus_manager with SPI interface
+   * Note: Use rx_bus_manager with SPI interface
    * Example:
    *   rx_bus_manager_t bus_mgr = {0};
    *   rx_bus_config_t config = {
@@ -329,7 +329,7 @@ static void pmod_template_entry(ULONG input)
   }
 
   /* Initialize hardware based on interface type
-   * TODO: Remove unused interface init functions */
+   * Note: Remove unused interface init functions */
   ret = init_gpio_module();  /* GPIO example */
   /* ret = init_i2c_module(); */  /* I2C example */
   /* ret = init_spi_module(); */  /* SPI example */
