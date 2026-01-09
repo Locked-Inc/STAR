@@ -35,6 +35,15 @@ static rx_ds18b20_handle_t s_ds18b20_handle;
 /* Bus manager for 1-Wire communication */
 static rx_bus_manager_t s_bus_manager;
 
+/* Temperature sensor state machine */
+typedef enum {
+    k_temp_state_idle            = 0,
+    k_temp_state_conversion_wait = 1,
+} temp_state_t;
+
+static temp_state_t s_temp_state = k_temp_state_idle;
+static uint32_t s_conversion_start_ms = 0;
+
 static void     env_monitor_entry(ULONG input);
 static rx_err_t init_sensors(void);
 static rx_err_t scan_obstacles(void);
@@ -241,61 +250,97 @@ static rx_err_t scan_obstacles(void)
 static rx_err_t monitor_temperature(void)
 {
     /* -------------------------------------------------------------------------
-     * Issue 15: Temperature Monitoring Integration
+     * Issue 15: Temperature Monitoring Integration (Non-Blocking)
      * -------------------------------------------------------------------------
-     * Read DS18B20 temperature sensor (1-Wire)
-     * Update health state
-     * Trigger E-STOP if temperature > 85°C (thermal protection)
+     * Read DS18B20 temperature sensor (1-Wire) using state machine
+     * to avoid blocking the 50 Hz task loop.
+     *
+     * State machine:
+     * - IDLE: Trigger conversion, transition to WAIT
+     * - WAIT: Check if conversion time elapsed, read temperature, transition to IDLE
+     *
+     * This ensures obstacle detection continues at 50 Hz even during
+     * temperature conversion (which takes 750ms for 12-bit resolution)
      */
 
     shared_state_t* state = shared_state_get();
+    rx_err_t ret;
+    UINT status;
 
-    /* Trigger conversion and read temperature */
-    rx_err_t ret = rx_ds18b20_trigger_conversion(&s_ds18b20_handle);
-    if (ret != k_rx_ok) {
-        rx_log_error(s_tag, "Temperature conversion failed");
-        return ret;
-    }
+    switch (s_temp_state) {
+    case k_temp_state_idle:
+        /* Trigger temperature conversion */
+        ret = rx_ds18b20_trigger_conversion(&s_ds18b20_handle);
+        if (ret != k_rx_ok) {
+            rx_log_error(s_tag, "Temperature conversion trigger failed");
+            return ret;
+        }
 
-    /* Wait for conversion to complete (~750ms for 12-bit resolution) */
-    tx_thread_sleep(k_threadx_ticks_80ms);  /* 80ms for 12-bit conversion */
+        /* Record start time and transition to WAIT state */
+        s_conversion_start_ms = tx_time_get();
+        s_temp_state = k_temp_state_conversion_wait;
+        break;
 
-    float temperature_c = 0.0f;
-    ret = rx_ds18b20_read_temperature(&s_ds18b20_handle, &temperature_c);
-    if (ret != k_rx_ok) {
-        rx_log_error(s_tag, "Temperature read failed");
-        return ret;
-    }
+    case k_temp_state_conversion_wait: {
+        /* Check if conversion time has elapsed */
+        const uint32_t elapsed_ms = tx_time_get() - s_conversion_start_ms;
+        const uint32_t required_ms = rx_ds18b20_get_conversion_time_ms(&s_ds18b20_handle);
 
-    /* Update health state (mutex-protected) */
-    UINT status = tx_mutex_get(&state->health_mutex, TX_WAIT_FOREVER);
-    if (status != TX_SUCCESS) {
-        rx_log_error(s_tag, "Failed to acquire health mutex");
-        return k_rx_err_threadx;
-    }
+        if (elapsed_ms < required_ms) {
+            /* Conversion still in progress, return immediately */
+            return k_rx_ok;
+        }
 
-    state->health.temperature_c = temperature_c;
+        /* Conversion complete - read temperature */
+        float temperature_c = 0.0f;
+        ret = rx_ds18b20_read_temperature(&s_ds18b20_handle, &temperature_c);
+        if (ret != k_rx_ok) {
+            rx_log_error(s_tag, "Temperature read failed");
+            s_temp_state = k_temp_state_idle; /* Reset to idle on error */
+            return ret;
+        }
 
-    /* Check for thermal warning */
-    if (temperature_c > k_temp_warning_threshold_c) {
-        state->health.thermal_warning = true;
-        if (temperature_c > k_temp_shutdown_threshold_c) {
-            /* Thermal shutdown - trigger E-STOP */
-            rx_log_error(s_tag, "Thermal shutdown - E-STOP triggered");
+        /* Update health state (mutex-protected) */
+        status = tx_mutex_get(&state->health_mutex, TX_WAIT_FOREVER);
+        if (status != TX_SUCCESS) {
+            rx_log_error(s_tag, "Failed to acquire health mutex");
+            s_temp_state = k_temp_state_idle;
+            return k_rx_err_threadx;
+        }
 
-            status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
-            if (status == TX_SUCCESS) {
-                state->safety.emergency_stop = true;
-                tx_mutex_put(&state->safety_mutex);
+        state->health.temperature_c = temperature_c;
+
+        /* Check for thermal warning */
+        if (temperature_c > k_temp_warning_threshold_c) {
+            state->health.thermal_warning = true;
+            if (temperature_c > k_temp_shutdown_threshold_c) {
+                /* Thermal shutdown - trigger E-STOP */
+                rx_log_error(s_tag, "Thermal shutdown - E-STOP triggered");
+
+                status = tx_mutex_get(&state->safety_mutex, TX_WAIT_FOREVER);
+                if (status == TX_SUCCESS) {
+                    state->safety.emergency_stop = true;
+                    tx_mutex_put(&state->safety_mutex);
+                }
+            } else {
+                rx_log_error(s_tag, "Thermal warning");
             }
         } else {
-            rx_log_error(s_tag, "Thermal warning");
+            state->health.thermal_warning = false;
         }
-    } else {
-        state->health.thermal_warning = false;
+
+        tx_mutex_put(&state->health_mutex);
+
+        /* Transition back to IDLE for next conversion */
+        s_temp_state = k_temp_state_idle;
+        break;
     }
 
-    tx_mutex_put(&state->health_mutex);
+    default:
+        /* Invalid state - reset to idle */
+        s_temp_state = k_temp_state_idle;
+        return k_rx_err_invalid_state;
+    }
 
     return k_rx_ok;
 }
