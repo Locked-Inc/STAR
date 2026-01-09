@@ -291,19 +291,20 @@ void rx_iwdt_clear_status(void)
  * =============================================================================
  */
 
-#include "rx_log.h"
-#include "tx_api.h"
 #include <stdio.h>
 #include <string.h>
+
+#include "rx_log.h"
+#include "tx_api.h"
 
 /**
  * @brief Task monitoring state for a single task
  */
 typedef struct {
-  char     task_name[16];    /**< Task name (truncated if needed) */
-  uint32_t timeout_ms;       /**< Heartbeat timeout in milliseconds */
+  char     task_name[16];     /**< Task name (truncated if needed) */
+  uint32_t timeout_ms;        /**< Heartbeat timeout in milliseconds */
   uint32_t last_heartbeat_ms; /**< Last heartbeat timestamp */
-  uint8_t  registered;       /**< 1 if task is registered */
+  uint8_t  registered;        /**< 1 if task is registered */
 } task_monitor_t;
 
 /**
@@ -311,8 +312,8 @@ typedef struct {
  */
 typedef struct {
   task_monitor_t tasks[k_iwdt_max_tasks]; /**< Array of monitored tasks */
-  uint8_t        task_count;               /**< Number of registered tasks */
-  char           failed_task[16];          /**< Name of last failed task */
+  uint8_t        task_count;              /**< Number of registered tasks */
+  char           failed_task[16];         /**< Name of last failed task */
 } task_monitor_state_t;
 
 /**
@@ -364,9 +365,9 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
   strncpy(task->task_name, task_name, 15);
   task->task_name[15] = '\0'; /* Ensure null termination */
 
-  task->timeout_ms = timeout_ms;
+  task->timeout_ms        = timeout_ms;
   task->last_heartbeat_ms = tx_time_get();
-  task->registered = 1;
+  task->registered        = 1;
 
   s_task_monitor.task_count++;
 
@@ -392,17 +393,18 @@ void rx_iwdt_task_heartbeat(const char* task_name)
 rx_err_t rx_iwdt_check_tasks(void)
 {
   const uint32_t current_time_ms = tx_time_get();
-  rx_err_t       result = k_rx_ok;
+  rx_err_t       result          = k_rx_ok;
   uint32_t       i;
 
   for (i = 0; i < s_task_monitor.task_count; i++) {
-    const task_monitor_t* task = &s_task_monitor.tasks[i];
-    const uint32_t elapsed_ms = current_time_ms - task->last_heartbeat_ms;
+    const task_monitor_t* task       = &s_task_monitor.tasks[i];
+    const uint32_t        elapsed_ms = current_time_ms - task->last_heartbeat_ms;
 
     if (elapsed_ms > task->timeout_ms) {
       /* Task has exceeded heartbeat timeout - deadlock detected */
-      char log_msg[64];
-      const int written = snprintf(log_msg, sizeof(log_msg),
+      char      log_msg[64];
+      const int written = snprintf(log_msg,
+                                   sizeof(log_msg),
                                    "Task deadlock: %s (timeout %lu ms)",
                                    task->task_name,
                                    (unsigned long)task->timeout_ms);

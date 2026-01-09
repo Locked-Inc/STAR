@@ -18,18 +18,18 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "tx_api.h"
+#include "diagnostics.h"
 #include "hardware.h"
 #include "hardware_init.h"
 #include "pmod_config.h"
-#include "shared_state.h"
-#include "diagnostics.h"
-#include "rx_log.h"
 #include "rx_iwdt.h"
-#include "tasks/motor_controller.h"
+#include "rx_log.h"
+#include "shared_state.h"
 #include "tasks/comm_manager.h"
 #include "tasks/env_monitor.h"
+#include "tasks/motor_controller.h"
 #include "tasks/system_health.h"
+#include "tx_api.h"
 
 /* =============================================================================
  * Forward Declarations
@@ -106,8 +106,8 @@ int main(void)
 
 void tx_application_define(void* first_unused_memory)
 {
-  UINT             status = TX_SUCCESS;
-  shared_state_t*  state  = NULL;
+  UINT               status   = TX_SUCCESS;
+  shared_state_t*    state    = NULL;
   static const char* s_tag_tx = "tx_app_def";
 
   /* Suppress unused parameter warning */
@@ -127,7 +127,7 @@ void tx_application_define(void* first_unused_memory)
    * -------------------------------------------------------------------------
    * Create all mutexes and zero-initialize state structures
    */
-  state = shared_state_get();
+  state  = shared_state_get();
   status = shared_state_init(state);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag_tx, "Shared state init failed");

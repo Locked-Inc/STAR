@@ -21,12 +21,12 @@
  */
 
 typedef struct {
-    uint32_t watchdog_resets;    /**< Total watchdog resets */
-    uint32_t motor_faults;       /**< Total motor fault events */
-    uint32_t comm_timeouts;      /**< Total communication timeouts */
-    uint32_t obstacle_events;    /**< Total obstacle detection events */
-    uint32_t thermal_warnings;   /**< Total thermal warnings */
-    uint32_t register_corrections; /**< Register guard corrections */
+  uint32_t watchdog_resets;      /**< Total watchdog resets */
+  uint32_t motor_faults;         /**< Total motor fault events */
+  uint32_t comm_timeouts;        /**< Total communication timeouts */
+  uint32_t obstacle_events;      /**< Total obstacle detection events */
+  uint32_t thermal_warnings;     /**< Total thermal warnings */
+  uint32_t register_corrections; /**< Register guard corrections */
 } diagnostic_counters_t;
 
 /* =============================================================================

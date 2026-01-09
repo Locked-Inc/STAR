@@ -34,12 +34,14 @@
 #if 0
 
 #include "tasks/pmod_template.h"
+
+#include <string.h>
+
 #include "motor_config.h"
 #include "pmod_config.h"
-#include "shared_state.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
-#include <string.h>
+#include "shared_state.h"
 
 /* =============================================================================
  * Configuration

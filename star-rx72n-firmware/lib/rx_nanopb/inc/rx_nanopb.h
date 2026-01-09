@@ -210,9 +210,9 @@ void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
  * @param[in]  sequence Command sequence number
  */
 void rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
-                                                   double                   left_mps,
-                                                   double                   right_mps,
-                                                   uint32_t                 sequence);
+                                                  double                   left_mps,
+                                                  double                   right_mps,
+                                                  uint32_t                 sequence);
 
 /**
  * @brief Create ResponseHeader with status

@@ -8,15 +8,24 @@
 
 PB_BIND(star_v1_RequestHeader, star_v1_RequestHeader, AUTO)
 
+
 PB_BIND(star_v1_ResponseHeader, star_v1_ResponseHeader, AUTO)
+
 
 PB_BIND(star_v1_Vector3, star_v1_Vector3, AUTO)
 
+
 PB_BIND(star_v1_Quaternion, star_v1_Quaternion, AUTO)
+
 
 PB_BIND(star_v1_SE2Pose, star_v1_SE2Pose, AUTO)
 
+
 PB_BIND(star_v1_SE2Velocity, star_v1_SE2Velocity, AUTO)
+
+
+
+
 
 #ifndef PB_CONVERT_DOUBLE_FLOAT
 /* On some platforms (such as AVR), double is really float.
@@ -25,3 +34,4 @@ PB_BIND(star_v1_SE2Velocity, star_v1_SE2Velocity, AUTO)
  */
 PB_STATIC_ASSERT(sizeof(double) == 8, DOUBLE_MUST_BE_8_BYTES)
 #endif
+
