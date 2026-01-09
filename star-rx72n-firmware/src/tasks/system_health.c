@@ -269,8 +269,7 @@ static rx_err_t update_diagnostics(void)
 
   state->health.uptime_ms = uptime_ms;
 
-  /* TODO: Aggregate diagnostic counters (Issue 19 - Phase 5)
-     * This will include:
+  /* Note: Future enhancement (Issue 19 - Phase 5) will aggregate diagnostic counters:
      * - Watchdog resets
      * - Motor faults
      * - Communication timeouts
