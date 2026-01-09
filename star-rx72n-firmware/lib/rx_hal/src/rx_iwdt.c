@@ -37,6 +37,13 @@ typedef enum {
   k_iwdt_clock_hz = 120000, /**< IWDT clock frequency in Hz */
 } iwdt_clock_constants_t;
 
+/** @brief Task monitoring string buffer sizes */
+typedef enum {
+  k_task_name_max_len = 16,     /**< Maximum task name length (including null) */
+  k_task_name_cmp_len = 15,     /**< Length for strncmp (excluding null) */
+  k_log_msg_buffer_size = 64,   /**< Log message buffer size */
+} iwdt_buffer_size_constants_t;
+
 /** @brief Timeout configuration lookup table entry */
 typedef struct {
   uint32_t timeout_ms; /**< Timeout in milliseconds */
@@ -76,6 +83,9 @@ static const uint32_t k_iwdt_timeout_table_size =
  * Module State
  * =============================================================================
  */
+
+/** @brief Log tag for IWDT module */
+static char* s_tag = "iwdt";
 
 /** @brief Flag indicating IWDT has been initialized */
 static uint8_t s_iwdt_initialized = 0;
@@ -301,19 +311,19 @@ void rx_iwdt_clear_status(void)
  * @brief Task monitoring state for a single task
  */
 typedef struct {
-  char     task_name[16];     /**< Task name (truncated if needed) */
-  uint32_t timeout_ms;        /**< Heartbeat timeout in milliseconds */
-  uint32_t last_heartbeat_ms; /**< Last heartbeat timestamp */
-  uint8_t  registered;        /**< 1 if task is registered */
+  char     task_name[k_task_name_max_len]; /**< Task name (truncated if needed) */
+  uint32_t timeout_ms;                     /**< Heartbeat timeout in milliseconds */
+  uint32_t last_heartbeat_ms;              /**< Last heartbeat timestamp */
+  uint8_t  registered;                     /**< 1 if task is registered */
 } task_monitor_t;
 
 /**
  * @brief Task monitoring module state
  */
 typedef struct {
-  task_monitor_t tasks[k_iwdt_max_tasks]; /**< Array of monitored tasks */
-  uint8_t        task_count;              /**< Number of registered tasks */
-  char           failed_task[16];         /**< Name of last failed task */
+  task_monitor_t tasks[k_iwdt_max_tasks];       /**< Array of monitored tasks */
+  uint8_t        task_count;                    /**< Number of registered tasks */
+  char           failed_task[k_task_name_max_len]; /**< Name of last failed task */
 } task_monitor_state_t;
 
 /**
@@ -329,13 +339,12 @@ static task_monitor_state_t s_task_monitor = {0};
  */
 static int32_t internal_find_task(const char* task_name)
 {
-  uint32_t i;
   if (task_name == NULL) {
     return -1;
   }
 
-  for (i = 0; i < s_task_monitor.task_count; i++) {
-    if (strncmp(s_task_monitor.tasks[i].task_name, task_name, 15) == 0) {
+  for (uint32_t i = 0; i < s_task_monitor.task_count; i++) {
+    if (strncmp(s_task_monitor.tasks[i].task_name, task_name, k_task_name_cmp_len) == 0) {
       return (int32_t)i;
     }
   }
@@ -362,8 +371,8 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
   /* Register new task */
   task_monitor_t* task = &s_task_monitor.tasks[s_task_monitor.task_count];
 
-  strncpy(task->task_name, task_name, 15);
-  task->task_name[15] = '\0'; /* Ensure null termination */
+  strncpy(task->task_name, task_name, k_task_name_cmp_len);
+  task->task_name[k_task_name_cmp_len] = '\0'; /* Ensure null termination */
 
   task->timeout_ms        = timeout_ms;
   task->last_heartbeat_ms = tx_time_get();
@@ -371,7 +380,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 
   s_task_monitor.task_count++;
 
-  rx_log_info("iwdt", "Registered task for monitoring");
+  rx_log_info(s_tag, "Registered task for monitoring");
 
   return k_rx_ok;
 }
@@ -382,7 +391,7 @@ void rx_iwdt_task_heartbeat(const char* task_name)
 
   if (idx < 0) {
     /* Task not registered - log warning but don't fail */
-    rx_log_error("iwdt", "Heartbeat from unregistered task");
+    rx_log_error(s_tag, "Heartbeat from unregistered task");
     return;
   }
 
@@ -394,28 +403,27 @@ rx_err_t rx_iwdt_check_tasks(void)
 {
   const uint32_t current_time_ms = tx_time_get();
   rx_err_t       result          = k_rx_ok;
-  uint32_t       i;
 
-  for (i = 0; i < s_task_monitor.task_count; i++) {
+  for (uint32_t i = 0; i < s_task_monitor.task_count; i++) {
     const task_monitor_t* task       = &s_task_monitor.tasks[i];
     const uint32_t        elapsed_ms = current_time_ms - task->last_heartbeat_ms;
 
     if (elapsed_ms > task->timeout_ms) {
       /* Task has exceeded heartbeat timeout - deadlock detected */
-      char      log_msg[64];
-      const int written = snprintf(log_msg,
-                                   sizeof(log_msg),
-                                   "Task deadlock: %s (timeout %lu ms)",
-                                   task->task_name,
-                                   (unsigned long)task->timeout_ms);
+      char           log_msg[k_log_msg_buffer_size];
+      const uint32_t written = (uint32_t)snprintf(log_msg,
+                                                   sizeof(log_msg),
+                                                   "Task deadlock: %s (timeout %lu ms)",
+                                                   task->task_name,
+                                                   (unsigned long)task->timeout_ms);
 
-      if (written > 0 && (size_t)written < sizeof(log_msg)) {
-        rx_log_error("iwdt", log_msg);
+      if (written > 0 && written < sizeof(log_msg)) {
+        rx_log_error(s_tag, log_msg);
       }
 
       /* Record failed task name for post-mortem */
-      strncpy(s_task_monitor.failed_task, task->task_name, 15);
-      s_task_monitor.failed_task[15] = '\0';
+      strncpy(s_task_monitor.failed_task, task->task_name, k_task_name_cmp_len);
+      s_task_monitor.failed_task[k_task_name_cmp_len] = '\0';
 
       result = k_rx_err_timeout;
       /* Continue checking other tasks to log all failures */
