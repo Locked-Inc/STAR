@@ -17,6 +17,16 @@
 #include "tx_api.h"
 
 /* =============================================================================
+ * Private Constants
+ * =============================================================================
+ */
+
+/** @brief Log buffer size for formatted fault messages */
+typedef enum {
+  k_log_buffer_size = 128, /**< Buffer size for formatted log messages */
+} diagnostics_buffer_constants_t;
+
+/* =============================================================================
  * Private Variables
  * =============================================================================
  */
@@ -105,23 +115,23 @@ void diagnostics_log_fault(const char* tag, const char* message, int32_t error_c
   const uint32_t timestamp_ms = tx_time_get();
 
   /* Log error with timestamp and error code */
-  char      log_buffer[128];
-  const int written = snprintf(log_buffer,
-                               sizeof(log_buffer),
-                               "[%lu ms] FAULT: %s - code 0x%lx",
-                               (unsigned long)timestamp_ms,
-                               message,
-                               (unsigned long)error_code);
+  char           log_buffer[k_log_buffer_size];
+  const uint32_t written = (uint32_t)snprintf(log_buffer,
+                                              sizeof(log_buffer),
+                                              "[%lu ms] FAULT: %s - code 0x%lx",
+                                              (uint32_t)timestamp_ms,
+                                              message,
+                                              (uint32_t)error_code);
 
   /* Ensure buffer wasn't truncated */
-  if (written > 0 && (uint32_t)written < sizeof(log_buffer)) {
+  if (written > 0 && written < sizeof(log_buffer)) {
     rx_log_error(tag, log_buffer);
   } else {
     /* Fallback if buffer too small */
     rx_log_error(tag, message);
   }
 
-  /* TODO (Phase 5+): Write to non-volatile storage for persistence
-     * across reboots. This would use internal data flash for post-mortem
-     * analysis of failures in the field. */
+  /* NOTE: Future enhancement could write to non-volatile storage for
+     * persistence across reboots using internal data flash for post-mortem
+     * analysis of failures in the field. Not implemented in Phase 1. */
 }

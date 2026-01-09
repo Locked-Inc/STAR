@@ -21,7 +21,7 @@
 #include "rx_register_guard.h"
 #include "shared_state.h"
 
-static char s_tag[] = "sys_health";
+static char* s_tag = "sys_health";
 
 static TX_THREAD s_system_health_thread;
 static uint8_t   s_system_health_stack[k_stack_system_health];

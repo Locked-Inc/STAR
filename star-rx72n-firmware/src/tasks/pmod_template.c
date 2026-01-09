@@ -49,7 +49,7 @@
  */
 
 /* Module name for logging */
-static char s_tag[] = "pmod_template";
+static char* s_tag = "pmod_template";
 
 /* ThreadX thread control block and stack */
 static TX_THREAD s_pmod_template_thread;

@@ -47,7 +47,7 @@ typedef struct {
  * =============================================================================
  */
 
-static char s_tag[] = "motor_ctrl";
+static char* s_tag = "motor_ctrl";
 
 /* Thread control block and stack (statically allocated) */
 static TX_THREAD s_motor_controller_thread;

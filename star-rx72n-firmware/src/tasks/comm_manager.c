@@ -35,7 +35,7 @@
  * =============================================================================
  */
 
-static char s_tag[] = "comm_mgr";
+static char* s_tag = "comm_mgr";
 
 /* Thread control block and stack */
 static TX_THREAD s_comm_manager_thread;

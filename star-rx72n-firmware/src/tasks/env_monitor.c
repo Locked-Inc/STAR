@@ -23,7 +23,7 @@
 #include "shared_state.h"
 #include "star_hcsr04_config.h"
 
-static char s_tag[] = "env_mon";
+static char* s_tag = "env_mon";
 
 static TX_THREAD s_env_monitor_thread;
 static uint8_t   s_env_monitor_stack[k_stack_env_monitor];
