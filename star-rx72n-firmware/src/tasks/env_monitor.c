@@ -44,6 +44,11 @@ typedef enum {
   k_temp_state_conversion_wait = 1,
 } temp_state_t;
 
+/* Watchdog timeout constants */
+typedef enum {
+  k_watchdog_timeout_ms = 60, /**< 3x period = 3 * 20ms = 60ms */
+} env_monitor_timeout_constants_t;
+
 static temp_state_t s_temp_state          = k_temp_state_idle;
 static uint32_t     s_conversion_start_ms = 0;
 
@@ -91,7 +96,7 @@ static void env_monitor_entry(ULONG input)
 
   /* Register with watchdog for task-level monitoring
      * Timeout = 3x period = 3 * 20ms = 60ms */
-  rx_err_t ret = rx_iwdt_register_task(s_task_name, 60);
+  rx_err_t ret = rx_iwdt_register_task(s_task_name, k_watchdog_timeout_ms);
   if (ret != k_rx_ok) {
     rx_log_error(s_tag, "Failed to register with watchdog");
   }
