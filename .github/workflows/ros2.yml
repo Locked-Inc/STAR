@@ -36,6 +36,7 @@ jobs:
             python3-colcon-common-extensions \
             libprotobuf-dev \
             protobuf-compiler \
+            protobuf-compiler-grpc \
             libgrpc++-dev \
             libgrpc-dev
 
