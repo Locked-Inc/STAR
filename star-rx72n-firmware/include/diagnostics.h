@@ -15,6 +15,8 @@
 
 #include <stdint.h>
 
+#include "rx_err.h"
+
 /* =============================================================================
  * Diagnostic Counters
  * =============================================================================
@@ -81,6 +83,6 @@ void diagnostics_increment_register_correction(void);
  * @param[in] message Fault description
  * @param[in] error_code Error code associated with the fault
  */
-void diagnostics_log_fault(const char* tag, const char* message, int32_t error_code);
+void diagnostics_log_fault(const char* tag, const char* message, rx_err_t error_code);
 
 #endif /* DIAGNOSTICS_H */

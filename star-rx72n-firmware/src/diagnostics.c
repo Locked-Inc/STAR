@@ -105,7 +105,7 @@ void diagnostics_increment_register_correction(void)
   tx_mutex_put(&s_diagnostics_mutex);
 }
 
-void diagnostics_log_fault(const char* tag, const char* message, int32_t error_code)
+void diagnostics_log_fault(const char* tag, const char* message, rx_err_t error_code)
 {
   /* -------------------------------------------------------------------------
      * Issue 19: Fault Logging with Timestamp
