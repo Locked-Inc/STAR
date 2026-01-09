@@ -114,7 +114,7 @@ void diagnostics_log_fault(const char* tag, const char* message, int32_t error_c
                                (unsigned long)error_code);
 
   /* Ensure buffer wasn't truncated */
-  if (written > 0 && (size_t)written < sizeof(log_buffer)) {
+  if (written > 0 && (uint32_t)written < sizeof(log_buffer)) {
     rx_log_error(tag, log_buffer);
   } else {
     /* Fallback if buffer too small */
