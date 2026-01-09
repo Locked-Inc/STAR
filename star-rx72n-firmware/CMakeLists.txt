@@ -330,7 +330,7 @@ set_target_properties(${PROJECT_NAME}.elf PROPERTIES
 
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.hex
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.bin
+    COMMAND ${CMAKE_OBJCOPY} -O binary -R .fvectors $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.bin
     COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${PROJECT_NAME}.elf>
     COMMENT "Generating HEX and BIN files, showing size..."
 )
