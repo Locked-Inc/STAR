@@ -338,7 +338,7 @@ static void pmod_template_entry(ULONG input)
 
     /* Cannot continue - halt this thread */
     while (1) {
-      tx_thread_sleep(100);
+      tx_thread_sleep(k_threadx_ticks_1s);
     }
   }
 

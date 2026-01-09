@@ -75,7 +75,7 @@ static void env_monitor_entry(ULONG input)
         rx_log_error(s_tag, "Sensor initialization failed");
         /* Cannot continue - halt this thread */
         while (1) {
-            tx_thread_sleep(100);
+            tx_thread_sleep(k_threadx_ticks_1s);
         }
     }
 
@@ -89,7 +89,7 @@ static void env_monitor_entry(ULONG input)
         /* Record task heartbeat for deadlock detection */
         rx_iwdt_task_heartbeat("Env_Monitor");
 
-        tx_thread_sleep(2); /* 2 ticks = 20ms at 100Hz ThreadX tick */
+        tx_thread_sleep(k_threadx_ticks_20ms); /* 20ms = 50 Hz scan rate */
     }
 }
 
@@ -255,7 +255,7 @@ static rx_err_t monitor_temperature(void)
     }
 
     /* Wait for conversion to complete (~750ms for 12-bit resolution) */
-    tx_thread_sleep(8);  /* 80ms should be enough for 12-bit */
+    tx_thread_sleep(k_threadx_ticks_80ms);  /* 80ms for 12-bit conversion */
 
     float temperature_c = 0.0f;
     ret = rx_ds18b20_read_temperature(&s_ds18b20_handle, &temperature_c);

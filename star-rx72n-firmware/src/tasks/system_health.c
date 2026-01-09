@@ -103,7 +103,7 @@ static void system_health_entry(ULONG input)
         /* Record task heartbeat for deadlock detection */
         rx_iwdt_task_heartbeat("System_Health");
 
-        tx_thread_sleep(100); /* 100 ticks = 1 second at 100Hz ThreadX tick */
+        tx_thread_sleep(k_threadx_ticks_1s); /* 1 second = 1 Hz polling rate */
     }
 }
 

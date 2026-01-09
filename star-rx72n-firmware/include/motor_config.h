@@ -296,4 +296,28 @@ typedef enum {
     k_stack_system_health    = 2048, /**< Battery monitoring + diagnostics */
 } thread_stack_sizes_t;
 
+/* =============================================================================
+ * ThreadX Tick Conversion Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief ThreadX tick conversion constants
+ * @details Convert time periods to ThreadX ticks (100 Hz = 10ms per tick)
+ *
+ * Usage: tx_thread_sleep(k_threadx_ticks_20ms);
+ *
+ * NASA Power of 10 Rule 8: No magic numbers - all tick values must use
+ * these named constants for clarity and maintainability.
+ *
+ * Note: For infinite timeout use TX_WAIT_FOREVER macro directly
+ */
+typedef enum {
+    k_threadx_ticks_10ms  = 1,   /**< 10ms = 1 tick at 100Hz */
+    k_threadx_ticks_20ms  = 2,   /**< 20ms = 2 ticks (Env_Monitor period) */
+    k_threadx_ticks_80ms  = 8,   /**< 80ms = 8 ticks (DS18B20 conversion) */
+    k_threadx_ticks_100ms = 10,  /**< 100ms = 10 ticks (Comm_Manager period) */
+    k_threadx_ticks_1s    = 100, /**< 1 second = 100 ticks (System_Health period) */
+} threadx_tick_constants_t;
+
 #endif /* MOTOR_CONFIG_H */
