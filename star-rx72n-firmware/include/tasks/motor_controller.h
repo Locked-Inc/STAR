@@ -27,8 +27,8 @@
 #ifndef MOTOR_CONTROLLER_H
 #define MOTOR_CONTROLLER_H
 
-#include "tx_api.h"
 #include "rx_err.h"
+#include "tx_api.h"
 
 /* =============================================================================
  * Public API
