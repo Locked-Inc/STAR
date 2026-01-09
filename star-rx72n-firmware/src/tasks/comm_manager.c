@@ -112,13 +112,13 @@ static void comm_manager_entry(ULONG input)
         rx_log_error(s_tag, "USB comm init failed");
         /* Cannot continue without USB comm */
         while (1) {
-            tx_thread_sleep(100);
+            tx_thread_sleep(k_threadx_ticks_1s);
         }
     }
 
     /* Wait for USB CDC to be configured */
     while (!rx_usb_is_configured()) {
-        tx_thread_sleep(10); /* Wait 100ms */
+        tx_thread_sleep(k_threadx_ticks_100ms); /* Wait 100ms */
     }
 
     rx_log_info(s_tag, "USB CDC configured, entering main loop");
@@ -150,7 +150,7 @@ static void comm_manager_entry(ULONG input)
         rx_iwdt_task_heartbeat("Comm_Manager");
 
         /* Sleep for 10ms (100 Hz) */
-        tx_thread_sleep(1); /* 1 tick = 10ms at 100 Hz ThreadX tick */
+        tx_thread_sleep(k_threadx_ticks_10ms); /* 10ms = 100 Hz communication rate */
     }
 }
 
