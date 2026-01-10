@@ -22,6 +22,7 @@ find_package(rclcpp_components REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 # System dependencies (Protobuf and gRPC)
 find_package(Protobuf REQUIRED)
@@ -83,6 +84,7 @@ ament_target_dependencies(star_gateway_bridge_component
   geometry_msgs
   std_msgs
   sensor_msgs
+  std_srvs
 )
 
 # Link system dependencies
