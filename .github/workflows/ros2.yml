@@ -60,42 +60,31 @@ jobs:
       - name: Generate Protobuf C++ code
         run: |
           cd star-proto
-          # Create temporary buf.yaml WITHOUT name field to force local-only generation
-          # (proto/buf.yaml has name: buf.build/star/proto which pulls from BSR)
-          cat > proto/buf.local.yaml <<EOF
+
+          # Copy proto files to temp directory to avoid buf.yaml BSR configuration
+          mkdir -p /tmp/star-proto
+          cp -r proto/star /tmp/star-proto/
+
+          # Create minimal buf.yaml in temp directory (no BSR name)
+          cat > /tmp/star-proto/buf.yaml <<EOF
           version: v1
           lint:
-            use:
-              - DEFAULT
-              - COMMENTS
-          breaking:
-            use:
-              - FILE
-              - PACKAGE
+            use: [DEFAULT]
           EOF
 
-          # Create temporary buf.gen.yaml with only C++ plugins
-          # Pin to versions matching Ubuntu 24.04 (ROS Jazzy):
-          #   - protobuf 3.21.12 → v21.12
-          #   - grpc 1.51.1 → v1.51.1
-          cat > buf.gen.ros2.yaml <<EOF
+          # Create buf.gen.yaml for C++ only
+          # Pin to Ubuntu 24.04 versions: protobuf 3.21.12, grpc 1.51.1
+          cat > /tmp/buf.gen.ros2.yaml <<EOF
           version: v1
           plugins:
             - plugin: buf.build/protocolbuffers/cpp:v21.12
-              out: gen/cpp
+              out: $PWD/gen/cpp
             - plugin: buf.build/grpc/cpp:v1.51.1
-              out: gen/cpp
+              out: $PWD/gen/cpp
           EOF
 
-          # Temporarily replace buf.yaml to force local generation
-          mv proto/buf.yaml proto/buf.yaml.bak
-          mv proto/buf.local.yaml proto/buf.yaml
-
-          # Generate from local files only
-          buf generate proto/ --template buf.gen.ros2.yaml
-
-          # Restore original buf.yaml
-          mv proto/buf.yaml.bak proto/buf.yaml
+          # Generate C++ code from temp directory (no BSR pollution)
+          buf generate /tmp/star-proto --template /tmp/buf.gen.ros2.yaml
 
       - name: Build packages
         shell: bash
