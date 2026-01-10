@@ -61,12 +61,13 @@ jobs:
         run: |
           cd star-proto
           # Create temporary buf.gen.yaml with only C++ plugins (CI doesn't have Go/TS/nanopb)
+          # Pin to v21.12 to match Ubuntu 24.04 (ROS Jazzy) protobuf 3.21.12
           cat > buf.gen.ros2.yaml <<EOF
           version: v1
           plugins:
-            - plugin: buf.build/protocolbuffers/cpp
+            - plugin: buf.build/protocolbuffers/cpp:v21.12
               out: gen/cpp
-            - plugin: buf.build/grpc/cpp
+            - plugin: buf.build/grpc/cpp:v1.56.2
               out: gen/cpp
           EOF
           buf generate proto/ --template buf.gen.ros2.yaml --include-imports
