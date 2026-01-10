@@ -70,7 +70,8 @@ jobs:
             - plugin: buf.build/grpc/cpp:v1.56.2
               out: gen/cpp
           EOF
-          buf generate proto/ --template buf.gen.ros2.yaml --include-imports
+          # Don't use --include-imports to avoid pulling old schemas from BSR
+          buf generate proto/ --template buf.gen.ros2.yaml
 
       - name: Build packages
         shell: bash
