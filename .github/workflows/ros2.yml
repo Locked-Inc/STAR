@@ -49,6 +49,19 @@ jobs:
           cd star-ros2
           rosdep install --from-paths src --ignore-src -r -y --rosdistro jazzy
 
+      - name: Install buf
+        run: |
+          BUF_VERSION=1.28.1
+          curl -sSL \
+            "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" \
+            -o "/usr/local/bin/buf"
+          chmod +x /usr/local/bin/buf
+
+      - name: Generate Protobuf C++ code
+        run: |
+          cd star-proto
+          buf generate proto/ --template buf.gen.yaml --include-imports
+
       - name: Build packages
         shell: bash
         run: |
