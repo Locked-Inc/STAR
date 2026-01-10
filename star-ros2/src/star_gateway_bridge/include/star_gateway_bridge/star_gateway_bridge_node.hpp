@@ -72,8 +72,10 @@ public:
    * - teleop_timeout_ms: Teleop command staleness timeout (default: 500ms)
    * - grpc_deadline_ms: gRPC call deadline (default: 100ms)
    * - wheel_base: Distance between wheels in meters (default: 0.150m)
+   *
+   * @param options ROS2 node options for component configuration
    */
-  StarGatewayBridgeNode();
+  explicit StarGatewayBridgeNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
 
   /**
    * @brief Destructor - sends stop command and shuts down gracefully.

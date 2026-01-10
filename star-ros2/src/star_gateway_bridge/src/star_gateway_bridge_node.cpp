@@ -13,8 +13,8 @@ using namespace std::chrono_literals;
 
 namespace star {
 
-StarGatewayBridgeNode::StarGatewayBridgeNode()
-    : Node("star_gateway_bridge"), grpc_connected_(false), reconnect_attempts_(0)
+StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions& options)
+    : Node("star_gateway_bridge", options), grpc_connected_(false), reconnect_attempts_(0)
 {
   RCLCPP_INFO(this->get_logger(), "Initializing STAR Gateway Bridge Node");
 
