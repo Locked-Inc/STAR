@@ -60,10 +60,24 @@ jobs:
       - name: Generate Protobuf C++ code
         run: |
           cd star-proto
-          # Create temporary buf.gen.yaml with only C++ plugins (CI doesn't have Go/TS/nanopb)
+          # Create temporary buf.yaml WITHOUT name field to force local-only generation
+          # (proto/buf.yaml has name: buf.build/star/proto which pulls from BSR)
+          cat > proto/buf.local.yaml <<EOF
+          version: v1
+          lint:
+            use:
+              - DEFAULT
+              - COMMENTS
+          breaking:
+            use:
+              - FILE
+              - PACKAGE
+          EOF
+
+          # Create temporary buf.gen.yaml with only C++ plugins
           # Pin to versions matching Ubuntu 24.04 (ROS Jazzy):
-          #   - protobuf 3.21.12 → buf.build/protocolbuffers/cpp:v21.12
-          #   - grpc 1.51.1 → buf.build/grpc/cpp:v1.51.1
+          #   - protobuf 3.21.12 → v21.12
+          #   - grpc 1.51.1 → v1.51.1
           cat > buf.gen.ros2.yaml <<EOF
           version: v1
           plugins:
@@ -72,8 +86,16 @@ jobs:
             - plugin: buf.build/grpc/cpp:v1.51.1
               out: gen/cpp
           EOF
-          # Don't use --include-imports to avoid pulling old schemas from BSR
+
+          # Temporarily replace buf.yaml to force local generation
+          mv proto/buf.yaml proto/buf.yaml.bak
+          mv proto/buf.local.yaml proto/buf.yaml
+
+          # Generate from local files only
           buf generate proto/ --template buf.gen.ros2.yaml
+
+          # Restore original buf.yaml
+          mv proto/buf.yaml.bak proto/buf.yaml
 
       - name: Build packages
         shell: bash
