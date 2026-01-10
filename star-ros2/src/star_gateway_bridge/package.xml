@@ -15,6 +15,7 @@
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>std_srvs</depend>
 
   <!-- gRPC and Protobuf (system dependencies, handled in CMakeLists.txt) -->
   <!-- These are not ROS packages, so they're found via find_package(Protobuf) -->
