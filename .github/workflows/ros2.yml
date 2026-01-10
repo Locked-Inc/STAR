@@ -60,7 +60,16 @@ jobs:
       - name: Generate Protobuf C++ code
         run: |
           cd star-proto
-          buf generate proto/ --template buf.gen.yaml --include-imports
+          # Create temporary buf.gen.yaml with only C++ plugins (CI doesn't have Go/TS/nanopb)
+          cat > buf.gen.ros2.yaml <<EOF
+          version: v1
+          plugins:
+            - plugin: buf.build/protocolbuffers/cpp
+              out: gen/cpp
+            - plugin: buf.build/grpc/cpp
+              out: gen/cpp
+          EOF
+          buf generate proto/ --template buf.gen.ros2.yaml --include-imports
 
       - name: Build packages
         shell: bash
