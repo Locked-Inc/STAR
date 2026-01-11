@@ -24,8 +24,8 @@
 #include "shared_state.h"
 #include "star_hcsr04_config.h"
 
-static char* s_tag       = "env_mon";
-static char* s_task_name = "Env_Monitor";
+static const char* s_tag       = "env_monitor";
+static const char* s_task_name = "env_monitor";
 
 static TX_THREAD s_env_monitor_thread;
 static uint8_t   s_env_monitor_stack[k_stack_env_monitor];
@@ -449,15 +449,15 @@ static rx_err_t monitor_temperature(void)
      * temperature conversion (which takes 750ms for 12-bit resolution)
      */
 
-  shared_state_t* state = shared_state_get();
-
   /* Dispatch to appropriate state handler */
   switch (s_temp_state) {
     case k_temp_state_idle:
       return handle_temp_idle_state();
 
-    case k_temp_state_conversion_wait:
+    case k_temp_state_conversion_wait: {
+      shared_state_t* state = shared_state_get();
       return handle_temp_wait_state(state);
+    }
 
     default:
       /* Invalid state - reset to idle */

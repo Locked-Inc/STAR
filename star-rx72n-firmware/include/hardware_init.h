@@ -25,8 +25,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef HARDWARE_INIT_H
-#define HARDWARE_INIT_H
+#ifndef STAR_RX72N_HARDWARE_INIT_H
+#define STAR_RX72N_HARDWARE_INIT_H
 
 #include "rx_err.h"
 
@@ -66,4 +66,4 @@
  */
 rx_err_t hardware_init_all(void);
 
-#endif /* HARDWARE_INIT_H */
+#endif /* STAR_RX72N_HARDWARE_INIT_H */

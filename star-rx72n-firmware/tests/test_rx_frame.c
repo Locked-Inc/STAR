@@ -11,10 +11,31 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include <stdint.h>
 #include <string.h>
 
 #include "rx_frame.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief Frame test constants for payload and buffer sizes
+ */
+typedef enum {
+  k_test_payload_size  = 256, /**< Large payload size for testing */
+  k_test_buffer_size   = 512, /**< Buffer size for encoded frame */
+  k_test_header_size   = 12,  /**< Frame header size in bytes */
+  k_test_sequence_num  = 100, /**< Test sequence number */
+} frame_test_constants_t;
+
+/* =============================================================================
+ * Test Fixtures
+ * =============================================================================
+ */
 
 /* Test fixtures */
 static rx_frame_encoder_t s_encoder;
@@ -318,26 +339,26 @@ void test_roundtrip_max_sequence(void)
 void test_roundtrip_large_payload(void)
 {
   rx_frame_t original      = {0};
-  original.header.sequence = 100;
-  original.header.length   = 256;
+  original.header.sequence = k_test_sequence_num;
+  original.header.length   = k_test_payload_size;
   original.header.type     = k_frame_type_response;
   original.header.flags    = k_frame_flag_none;
 
   /* Fill payload with pattern */
-  for (int i = 0; i < 256; i++) {
+  for (uint32_t i = 0; i < k_test_payload_size; i++) {
     original.payload[i] = (uint8_t)(i & 0xFF);
   }
 
-  uint8_t  buffer[512];
+  uint8_t  buffer[k_test_buffer_size];
   uint32_t len;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &original, buffer, &len));
-  TEST_ASSERT_EQUAL(12 + 256, len);
+  TEST_ASSERT_EQUAL(k_test_header_size + k_test_payload_size, len);
 
   rx_frame_t decoded;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
 
-  TEST_ASSERT_EQUAL(256, decoded.header.length);
-  TEST_ASSERT_EQUAL_MEMORY(original.payload, decoded.payload, 256);
+  TEST_ASSERT_EQUAL(k_test_payload_size, decoded.header.length);
+  TEST_ASSERT_EQUAL_MEMORY(original.payload, decoded.payload, k_test_payload_size);
 }
 
 /* =============================================================================
