@@ -184,6 +184,7 @@ void StarGatewayBridgeNode::set_pid_gains_callback(const std::shared_ptr<std_srv
 {
   // TODO Phase 4: Implement PID gains service after defining custom service type
   // For now, placeholder implementation
+  (void)request;  // Unused parameter (placeholder service)
 
   RCLCPP_INFO(this->get_logger(), "set_pid_gains service called (placeholder)");
 
