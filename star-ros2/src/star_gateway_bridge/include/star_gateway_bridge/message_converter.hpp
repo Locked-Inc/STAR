@@ -37,10 +37,11 @@ public:
    * @brief Convert ROS2 Twist message to Protobuf VelocityCommand.
    *
    * Maps differential drive velocities from ROS2 standard Twist to STAR VelocityCommand.
-   * Uses differential drive kinematics: (linear, angular) → (left, right) wheel velocities.
+   * Uses differential drive kinematics: (linear, angular) → (motor_0, motor_1) wheel velocities.
+   * Note: motor_0 = left wheel, motor_1 = right wheel for differential drive.
    *
    * Conversions:
-   * - Linear velocity (m/s) → Left/right wheel velocities (m/s)
+   * - Linear velocity (m/s) → motor_0/motor_1 wheel velocities (m/s)
    * - Angular velocity (rad/s) → Wheel velocity differential (m/s)
    * - Timestamp → Microseconds since epoch
    *
@@ -97,16 +98,17 @@ public:
   /**
    * @brief Convert Protobuf VelocityCommand to ROS2 Twist message.
    *
-   * Maps STAR VelocityCommand (left/right wheel velocities) to ROS2 Twist
+   * Maps STAR VelocityCommand (motor_0/motor_1 wheel velocities) to ROS2 Twist
    * (linear/angular velocities) using differential drive kinematics.
+   * Note: motor_0 = left wheel, motor_1 = right wheel for differential drive.
    *
    * Conversions:
-   * - Left/right wheel velocities (m/s) → Linear velocity (m/s)
+   * - motor_0/motor_1 wheel velocities (m/s) → Linear velocity (m/s)
    * - Wheel velocity differential (m/s) → Angular velocity (rad/s)
    *
    * Kinematics:
-   * - linear.x = (left + right) / 2
-   * - angular.z = (right - left) / wheel_base
+   * - linear.x = (motor_0 + motor_1) / 2
+   * - angular.z = (motor_1 - motor_0) / wheel_base
    *
    * @param command Input VelocityCommand protobuf
    * @param twist Output ROS2 Twist message

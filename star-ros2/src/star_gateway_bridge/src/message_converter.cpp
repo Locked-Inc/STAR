@@ -48,8 +48,9 @@ bool MessageConverter::twist_to_velocity_command(const geometry_msgs::msg::Twist
   right_velocity = clamp(right_velocity, -k_max_velocity_mps, k_max_velocity_mps);
 
   // Populate protobuf message
-  command.set_left_velocity_mps(left_velocity);
-  command.set_right_velocity_mps(right_velocity);
+  // Note: motor_0 = left wheel, motor_1 = right wheel for differential drive
+  command.set_motor_0_velocity_mps(left_velocity);
+  command.set_motor_1_velocity_mps(right_velocity);
   command.set_sequence(sequence);
 
   // Timestamp in microseconds since epoch
@@ -187,8 +188,9 @@ bool MessageConverter::velocity_command_to_twist(const star::v1::VelocityCommand
                                                  double                           wheel_base)
 {
   // Validate protobuf inputs
-  double left_vel  = command.left_velocity_mps();
-  double right_vel = command.right_velocity_mps();
+  // Note: motor_0 = left wheel, motor_1 = right wheel for differential drive
+  double left_vel  = command.motor_0_velocity_mps();
+  double right_vel = command.motor_1_velocity_mps();
 
   if (!is_valid_double(left_vel) || !is_valid_double(right_vel)) {
     RCLCPP_WARN(rclcpp::get_logger("message_converter"), "Invalid VelocityCommand: NaN/infinity in wheel velocities");
