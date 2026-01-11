@@ -21,6 +21,98 @@
 
 static const char* s_tag = "pmod";
 
+/**
+ * @brief PMOD connector configuration array
+ *
+ * Default configuration: All connectors set to k_pmod_none (unused).
+ * To enable a module:
+ * 1. Set type to desired module (e.g., k_pmod_oled_rgb)
+ * 2. Set interface type (e.g., k_pmod_interface_spi)
+ * 3. Set priority (10-31, see guidelines in pmod_config.h)
+ * 4. Set stack size (typically 1024-4096 bytes)
+ * 5. Set update rate (Hz, 0 = event-driven)
+ * 6. Set task name (NULL = auto-generated "PMOD_JA", etc.)
+ *
+ * Example (enable OLED RGB display on JA):
+ * @code
+ * [k_pmod_connector_ja] = {
+ *     .type = k_pmod_oled_rgb,
+ *     .interface = k_pmod_interface_spi,
+ *     .priority = 20,
+ *     .stack_size = 2048,
+ *     .update_rate_hz = 30,
+ *     .task_name = "PMOD_Display",
+ * },
+ * @endcode
+ */
+const pmod_config_t g_pmod_connectors[k_pmod_connector_count] = {
+  /* JA: Connector A (default: unused) */
+  [k_pmod_connector_ja] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 20,
+      .stack_size     = 2048,
+      .update_rate_hz = 0,
+      .task_name      = NULL,
+    },
+
+  /* JB: Connector B (default: unused) */
+  [k_pmod_connector_jb] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 21,
+      .stack_size     = 2048,
+      .update_rate_hz = 0,
+      .task_name      = NULL,
+    },
+
+  /* JC: Connector C (default: unused) */
+  [k_pmod_connector_jc] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 22,
+      .stack_size     = 2048,
+      .update_rate_hz = 0,
+      .task_name      = NULL,
+    },
+
+  /* JD: Connector D (default: unused) */
+  [k_pmod_connector_jd] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 23,
+      .stack_size     = 2048,
+      .update_rate_hz = 0,
+      .task_name      = NULL,
+    },
+
+  /* JE: Connector E (default: unused) */
+  [k_pmod_connector_je] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 24,
+      .stack_size     = 2048,
+      .update_rate_hz = 0,
+      .task_name      = NULL,
+    },
+
+  /* JF: Connector F (default: unused) */
+  [k_pmod_connector_jf] =
+    {
+      .type           = k_pmod_none,
+      .interface      = k_pmod_interface_gpio,
+      .priority       = 25,
+      .stack_size     = 2048,
+      .update_rate_hz = 0,
+      .task_name      = NULL,
+    },
+};
+
 /* =============================================================================
  * Public API Implementation
  * =============================================================================
