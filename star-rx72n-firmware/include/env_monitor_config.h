@@ -11,8 +11,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef ENV_MONITOR_CONFIG_H
-#define ENV_MONITOR_CONFIG_H
+#ifndef STAR_RX72N_ENV_MONITOR_CONFIG_H
+#define STAR_RX72N_ENV_MONITOR_CONFIG_H
 
 /* =============================================================================
  * Obstacle Detection Configuration
@@ -45,4 +45,4 @@ typedef enum {
   k_temp_sample_hz            = 50, /**< Sample rate (Hz) */
 } temperature_config_t;
 
-#endif /* ENV_MONITOR_CONFIG_H */
+#endif /* STAR_RX72N_ENV_MONITOR_CONFIG_H */

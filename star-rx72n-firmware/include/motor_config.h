@@ -17,8 +17,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOTOR_CONFIG_H
-#define MOTOR_CONFIG_H
+#ifndef STAR_RX72N_MOTOR_CONFIG_H
+#define STAR_RX72N_MOTOR_CONFIG_H
 
 /* =============================================================================
  * Motor Physical Constants
@@ -182,4 +182,4 @@ typedef enum {
  * Include these headers in your source files as needed.
  */
 
-#endif /* MOTOR_CONFIG_H */
+#endif /* STAR_RX72N_MOTOR_CONFIG_H */

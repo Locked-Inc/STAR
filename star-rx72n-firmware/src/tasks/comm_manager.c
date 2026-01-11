@@ -37,8 +37,8 @@
  * =============================================================================
  */
 
-static char* s_tag       = "comm_mgr";
-static char* s_task_name = "Comm_Manager";
+static const char* s_tag       = "comm_manager";
+static const char* s_task_name = "comm_manager";
 
 /* Thread control block and stack */
 static TX_THREAD s_comm_manager_thread;

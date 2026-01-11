@@ -173,15 +173,31 @@ typedef enum {
 } gpio_pin_t;
 
 /**
+ * @brief GPIO encoding constants for pin accessor functions
+ *
+ * These constants define the bit layout and validation parameters for
+ * the gpio_pin_t enum encoding: (port << k_port_shift) | pin
+ */
+typedef enum {
+  k_port_shift     = 8,    /**< Bit shift for port number (upper byte) */
+  k_pin_mask       = 0xFF, /**< Bit mask for pin number (lower byte) */
+  k_gpio_invalid   = 0xFF, /**< Return value for invalid pin parameter */
+  k_gpio_max_value = 0x1007, /**< Maximum valid GPIO value (Port J pin 7) */
+} gpio_encoding_constants_t;
+
+/**
  * @brief Extract GPIO port number from gpio_pin_t enum
  *
  * @param[in] pin GPIO pin enum value
  *
- * @return Port number (0x0-0x10 for ports 0-J)
+ * @return Port number (0x0-0x10 for ports 0-J), or k_gpio_invalid if pin is out of range
  */
 static inline uint8_t gpio_pin_get_port(gpio_pin_t pin)
 {
-  return (uint8_t)((uint16_t)pin >> 8);
+  if ((uint16_t)pin == 0 || (uint16_t)pin > k_gpio_max_value) {
+    return k_gpio_invalid;
+  }
+  return (uint8_t)((uint16_t)pin >> k_port_shift);
 }
 
 /**
@@ -189,11 +205,14 @@ static inline uint8_t gpio_pin_get_port(gpio_pin_t pin)
  *
  * @param[in] pin GPIO pin enum value
  *
- * @return Pin number (0-7)
+ * @return Pin number (0-7), or k_gpio_invalid if pin is out of range
  */
 static inline uint8_t gpio_pin_get_pin(gpio_pin_t pin)
 {
-  return (uint8_t)((uint16_t)pin & 0xFF);
+  if ((uint16_t)pin == 0 || (uint16_t)pin > k_gpio_max_value) {
+    return k_gpio_invalid;
+  }
+  return (uint8_t)((uint16_t)pin & k_pin_mask);
 }
 
 /* =============================================================================

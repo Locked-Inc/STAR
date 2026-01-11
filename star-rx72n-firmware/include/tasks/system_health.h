@@ -11,8 +11,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef SYSTEM_HEALTH_H
-#define SYSTEM_HEALTH_H
+#ifndef STAR_RX72N_SYSTEM_HEALTH_H
+#define STAR_RX72N_SYSTEM_HEALTH_H
 
 #include "tx_api.h"
 
@@ -22,4 +22,4 @@
  */
 UINT system_health_create(void);
 
-#endif /* SYSTEM_HEALTH_H */
+#endif /* STAR_RX72N_SYSTEM_HEALTH_H */

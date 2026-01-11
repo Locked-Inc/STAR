@@ -48,8 +48,8 @@ typedef struct {
  * =============================================================================
  */
 
-static char* s_tag       = "motor_ctrl";
-static char* s_task_name = "Motor_Controller";
+static const char* s_tag       = "motor_controller";
+static const char* s_task_name = "motor_controller";
 
 /* Thread control block and stack (statically allocated) */
 static TX_THREAD s_motor_controller_thread;
@@ -65,8 +65,10 @@ typedef enum {
   k_port_mask           = 0xFF, /**< Bit mask to extract port or pin */
 } motor_controller_constants_t;
 
-/* PWM duty cycle conversion factor */
+/* Mathematical and unit conversion constants */
 static const float s_duty_cycle_scale = 100.0f; /**< Converts PID output (-100 to +100) to duty (-1.0 to +1.0) */
+static const float s_pi               = 3.14159265358979323846f; /**< Pi constant for circumference calculations */
+static const float s_mm_to_m          = 0.001f; /**< Millimeters to meters conversion factor */
 
 /* =============================================================================
  * Private Function Prototypes
@@ -401,7 +403,7 @@ static rx_err_t read_encoder_feedback(float dt)
     const float velocity_rps = velocity_cps / (float)k_encoder_cpr;
 
     /* Convert to linear velocity (m/s) assuming wheel radius */
-    const float wheel_circumference_m = 2.0f * 3.14159f * ((float)k_wheel_radius_mm / 1000.0f);
+    const float wheel_circumference_m = 2.0f * s_pi * ((float)k_wheel_radius_mm * s_mm_to_m);
     const float velocity_mps          = velocity_rps * wheel_circumference_m;
 
     /* Update shared encoder feedback */
@@ -557,9 +559,7 @@ static rx_err_t control_loop_iteration(void)
      * compliance (functions ≤60 lines)
      */
   rx_err_t    ret;
-  float       target_velocities[k_motor_count];
-  bool        setpoint_valid = false;
-  const float dt             = (float)k_control_loop_period_ms / 1000.0f; /* 0.004s (4ms) */
+  const float dt = (float)k_control_loop_period_ms / 1000.0f; /* 0.004s (4ms) */
 
   /* 1. Check emergency stop flag */
   ret = check_emergency_stop();
@@ -577,7 +577,9 @@ static rx_err_t control_loop_iteration(void)
   }
 
   /* 3. Read motor setpoint from shared state */
-  ret = read_motor_setpoint(target_velocities, &setpoint_valid);
+  float target_velocities[k_motor_count];
+  bool  setpoint_valid = false;
+  ret                  = read_motor_setpoint(target_velocities, &setpoint_valid);
   if (ret != k_rx_ok) {
     return ret;
   }

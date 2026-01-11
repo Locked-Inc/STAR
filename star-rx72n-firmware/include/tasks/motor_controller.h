@@ -24,8 +24,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOTOR_CONTROLLER_H
-#define MOTOR_CONTROLLER_H
+#ifndef STAR_RX72N_MOTOR_CONTROLLER_H
+#define STAR_RX72N_MOTOR_CONTROLLER_H
 
 #include "rx_err.h"
 #include "tx_api.h"
@@ -55,4 +55,4 @@
  */
 UINT motor_controller_create(void);
 
-#endif /* MOTOR_CONTROLLER_H */
+#endif /* STAR_RX72N_MOTOR_CONTROLLER_H */
