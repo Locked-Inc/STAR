@@ -11,8 +11,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef ENV_MONITOR_H
-#define ENV_MONITOR_H
+#ifndef STAR_RX72N_ENV_MONITOR_H
+#define STAR_RX72N_ENV_MONITOR_H
 
 #include "tx_api.h"
 
@@ -22,4 +22,4 @@
  */
 UINT env_monitor_create(void);
 
-#endif /* ENV_MONITOR_H */
+#endif /* STAR_RX72N_ENV_MONITOR_H */

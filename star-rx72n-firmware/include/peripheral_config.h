@@ -11,8 +11,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef PERIPHERAL_CONFIG_H
-#define PERIPHERAL_CONFIG_H
+#ifndef STAR_RX72N_PERIPHERAL_CONFIG_H
+#define STAR_RX72N_PERIPHERAL_CONFIG_H
 
 /* =============================================================================
  * UART Configuration
@@ -70,4 +70,4 @@ typedef enum {
   k_adc_resolution = 12, /**< 12-bit ADC resolution */
 } adc_config_t;
 
-#endif /* PERIPHERAL_CONFIG_H */
+#endif /* STAR_RX72N_PERIPHERAL_CONFIG_H */

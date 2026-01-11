@@ -24,6 +24,7 @@
  */
 
 #include <math.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "mock_rx_gptw.h"
@@ -35,7 +36,6 @@
  * =============================================================================
  */
 
-/** @brief Float comparison tolerance */
 typedef enum {
   k_float_tolerance_percent = 1, /**< 0.01 tolerance for percentage comparisons */
 } test_constants_t;

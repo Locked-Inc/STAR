@@ -27,8 +27,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef PMOD_CONFIG_H
-#define PMOD_CONFIG_H
+#ifndef STAR_RX72N_PMOD_CONFIG_H
+#define STAR_RX72N_PMOD_CONFIG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -327,4 +327,4 @@ bool pmod_is_enabled(pmod_connector_id_t connector);
 }
 #endif
 
-#endif /* PMOD_CONFIG_H */
+#endif /* STAR_RX72N_PMOD_CONFIG_H */
