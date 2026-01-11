@@ -11,8 +11,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef COMM_CONFIG_H
-#define COMM_CONFIG_H
+#ifndef STAR_RX72N_COMM_CONFIG_H
+#define STAR_RX72N_COMM_CONFIG_H
 
 /* =============================================================================
  * Communication Configuration
@@ -30,4 +30,4 @@ typedef enum {
   k_comm_max_frame_bytes = 256, /**< Maximum frame size (bytes) */
 } comm_config_t;
 
-#endif /* COMM_CONFIG_H */
+#endif /* STAR_RX72N_COMM_CONFIG_H */

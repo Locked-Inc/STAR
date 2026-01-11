@@ -23,8 +23,9 @@
  */
 typedef enum {
   k_crc8_maxim_poly = 0x8C, /**< Reversed polynomial 0x31 */
-  k_bits_per_byte   = 8,
-  k_crc8_lsb_mask   = 0x01,
+  k_bits_per_byte   = 8,    /**< Number of bits in a byte */
+  k_crc8_lsb_mask   = 0x01, /**< Mask for LSB */
+  k_shift_one_bit   = 1,    /**< Shift by one bit position */
 } crc8_constants_t;
 
 /* =============================================================================
@@ -72,9 +73,9 @@ uint8_t rx_crc8_maxim(const uint8_t* data, uint32_t length)
 
     for (uint8_t j = 0; j < k_bits_per_byte; ++j) {
       if ((crc & k_crc8_lsb_mask) != 0) {
-        crc = (uint8_t)((crc >> 1) ^ k_crc8_maxim_poly);
+        crc = (uint8_t)((crc >> k_shift_one_bit) ^ k_crc8_maxim_poly);
       } else {
-        crc >>= 1;
+        crc >>= k_shift_one_bit;
       }
     }
   }

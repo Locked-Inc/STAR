@@ -11,8 +11,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef SYSTEM_CONFIG_H
-#define SYSTEM_CONFIG_H
+#ifndef STAR_RX72N_SYSTEM_CONFIG_H
+#define STAR_RX72N_SYSTEM_CONFIG_H
 
 /* =============================================================================
  * Thread Priorities
@@ -79,4 +79,4 @@ typedef enum {
   k_threadx_ticks_1s    = 100, /**< 1 second = 100 ticks (System_Health period) */
 } threadx_tick_constants_t;
 
-#endif /* SYSTEM_CONFIG_H */
+#endif /* STAR_RX72N_SYSTEM_CONFIG_H */

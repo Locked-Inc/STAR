@@ -21,8 +21,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef SHARED_STATE_H
-#define SHARED_STATE_H
+#ifndef STAR_RX72N_SHARED_STATE_H
+#define STAR_RX72N_SHARED_STATE_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -74,14 +74,25 @@ typedef struct {
  */
 
 /**
+ * @brief Bit positions for fault flags
+ * @details Defines which bit corresponds to each motor's fault flag
+ */
+typedef enum {
+  k_fault_bit_motor_0 = 0, /**< Motor 0 fault bit position */
+  k_fault_bit_motor_1 = 1, /**< Motor 1 fault bit position */
+  k_fault_bit_motor_2 = 2, /**< Motor 2 fault bit position */
+  k_fault_bit_motor_3 = 3, /**< Motor 3 fault bit position */
+} fault_bit_positions_t;
+
+/**
  * @brief Fault flags bitfield
  * @details Each bit represents a fault for one motor (bits 0-3)
  */
 typedef enum {
-  k_fault_motor_0 = (1 << 0), /**< Motor 0 fault (overcurrent, thermal, etc.) */
-  k_fault_motor_1 = (1 << 1), /**< Motor 1 fault */
-  k_fault_motor_2 = (1 << 2), /**< Motor 2 fault */
-  k_fault_motor_3 = (1 << 3), /**< Motor 3 fault */
+  k_fault_motor_0 = (1 << k_fault_bit_motor_0), /**< Motor 0 fault (overcurrent, thermal, etc.) */
+  k_fault_motor_1 = (1 << k_fault_bit_motor_1), /**< Motor 1 fault */
+  k_fault_motor_2 = (1 << k_fault_bit_motor_2), /**< Motor 2 fault */
+  k_fault_motor_3 = (1 << k_fault_bit_motor_3), /**< Motor 3 fault */
 } fault_flags_t;
 
 /**
@@ -176,4 +187,4 @@ UINT shared_state_init(shared_state_t* state);
  */
 shared_state_t* shared_state_get(void);
 
-#endif /* SHARED_STATE_H */
+#endif /* STAR_RX72N_SHARED_STATE_H */
