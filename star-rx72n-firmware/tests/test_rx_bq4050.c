@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "unity.h"
+
 #include "mocks/mock_rx_bus_smbus.h"
 #include "rx_bq4050.h"
 
@@ -140,7 +142,7 @@ static void test_init_success(void)
 
   rx_err_t err = rx_bq4050_init(&s_manager, s_bus_name, NULL);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT(mock_smbus_was_init_called(), "SMBus init should be called");
+  TEST_ASSERT_MESSAGE(mock_smbus_was_init_called(), "SMBus init should be called");
 }
 
 static void test_init_null_manager(void)

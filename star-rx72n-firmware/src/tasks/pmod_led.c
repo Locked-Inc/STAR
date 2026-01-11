@@ -33,8 +33,8 @@
  */
 
 /* Module name for logging */
-static char* s_tag       = "pmod_led";
-static char* s_task_name = "PMOD_LED";
+static const char* s_tag       = "pmod_led";
+static const char* s_task_name = "pmod_led";
 
 /* ThreadX thread control block and stack */
 static TX_THREAD s_pmod_led_thread;

@@ -19,8 +19,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef PMOD_TEMPLATE_H
-#define PMOD_TEMPLATE_H
+#ifndef STAR_RX72N_PMOD_TEMPLATE_H
+#define STAR_RX72N_PMOD_TEMPLATE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,4 +45,4 @@ UINT pmod_template_create(void);
 }
 #endif
 
-#endif /* PMOD_TEMPLATE_H */
+#endif /* STAR_RX72N_PMOD_TEMPLATE_H */

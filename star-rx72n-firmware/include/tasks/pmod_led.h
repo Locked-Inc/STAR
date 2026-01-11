@@ -18,8 +18,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef PMOD_LED_H
-#define PMOD_LED_H
+#ifndef STAR_RX72N_PMOD_LED_H
+#define STAR_RX72N_PMOD_LED_H
 
 #include <stdint.h>
 
@@ -35,4 +35,4 @@
  */
 UINT pmod_led_create(void);
 
-#endif /* PMOD_LED_H */
+#endif /* STAR_RX72N_PMOD_LED_H */
