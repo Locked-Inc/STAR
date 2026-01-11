@@ -17,6 +17,7 @@
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+#include "rx72n_rtc_regs.h"
 #include "rx_register_protection.h"
 
 /* =============================================================================
@@ -94,9 +95,9 @@ static rx_err_t clock_init(void)
   /* Stop sub-clock oscillator (not used) */
   system_regs()->sosccr = k_sub_clock_stopped;
 
-  /* TODO: Also set RCR3.RTCEN = 0 to fully disable sub-clock.
-   *       Requires RTC register definitions.
-   */
+  /* Disable RTC to fully disable sub-clock (RCR3.RTCEN = 0)
+   * Required for complete sub-clock shutdown as per hardware manual */
+  rtc_regs()->rcr3 = k_rcr3_rtcen_disable;
 
   /* Start main oscillator (16 MHz external crystal) */
   system_regs()->mosccr = k_main_osc_enabled;

@@ -15,6 +15,7 @@ package star.v1;
 
 import "google/protobuf/timestamp.proto";
 import "star/v1/common.proto";
+import "star/v1/motor_control.proto";
 
 option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
 option java_multiple_files = true;
@@ -109,6 +110,29 @@ message TelemetryData {
 
   // Telemetry timestamp.
   google.protobuf.Timestamp timestamp = 8;
+
+  // Timestamp in microseconds since boot (RX72N specific).
+  int64 timestamp_us = 14;
+
+  // Encoder data from motors (RX72N specific - fixed size for embedded).
+  star.v1.EncoderData encoder_0 = 15;
+  star.v1.EncoderData encoder_1 = 16;
+  star.v1.EncoderData encoder_2 = 17;
+  star.v1.EncoderData encoder_3 = 18;
+
+  // Emergency stop state (RX72N specific).
+  bool emergency_stop = 10;
+
+  // Motor fault flags bitfield (RX72N specific).
+  // Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc.
+  uint32 fault_flags = 11;
+
+  // Battery voltage in volts (RX72N specific - BQ4050).
+  double battery_voltage_v = 12;
+
+  // Battery state of charge percentage (RX72N specific - BQ4050).
+  // Range: 0 to 100 percent.
+  uint32 battery_soc_percent = 13;
 }
 
 // IMU sensor data (orientation, velocity, acceleration).
