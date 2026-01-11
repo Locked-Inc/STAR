@@ -26,11 +26,17 @@
  */
 static shared_state_t s_shared_state;
 
-/* Mutex name constants (non-const for ThreadX API) */
-static char* s_setpoint_mutex_name = "SetpointMutex";
-static char* s_encoder_mutex_name  = "EncoderMutex";
-static char* s_safety_mutex_name   = "SafetyMutex";
-static char* s_health_mutex_name   = "HealthMutex";
+/**
+ * @brief Mutex name constants for ThreadX
+ *
+ * ThreadX tx_mutex_create() requires char* (not const char*) for mutex names.
+ * Using array syntax allocates mutable strings in .data instead of .rodata,
+ * avoiding undefined behavior if ThreadX modifies the names.
+ */
+static char s_setpoint_mutex_name[] = "SetpointMutex";
+static char s_encoder_mutex_name[]  = "EncoderMutex";
+static char s_safety_mutex_name[]   = "SafetyMutex";
+static char s_health_mutex_name[]   = "HealthMutex";
 
 /* =============================================================================
  * Public API Implementation

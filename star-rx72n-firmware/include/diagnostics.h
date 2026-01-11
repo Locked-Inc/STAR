@@ -10,8 +10,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef DIAGNOSTICS_H
-#define DIAGNOSTICS_H
+#ifndef STAR_RX72N_DIAGNOSTICS_H
+#define STAR_RX72N_DIAGNOSTICS_H
 
 #include <stdint.h>
 
@@ -85,4 +85,4 @@ void diagnostics_increment_register_correction(void);
  */
 void diagnostics_log_fault(const char* tag, const char* message, rx_err_t error_code);
 
-#endif /* DIAGNOSTICS_H */
+#endif /* STAR_RX72N_DIAGNOSTICS_H */

@@ -14,6 +14,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include <stdint.h>
 #include <string.h>
 
 #include "unity.h"
@@ -22,6 +23,18 @@
 #include "mock_usb0_regs.h"
 #include "mock_usb_hw.h"
 #include "rx_usb.h"
+
+/* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief Test array sizes for ring buffer validation
+ */
+typedef enum {
+  k_test_buffer_size = 5, /**< Size of test data array */
+} test_array_sizes_t;
 
 /* =============================================================================
  * External Declarations for STATIC_TESTABLE Functions
@@ -316,13 +329,13 @@ void test_ring_buffer_fifo_order(void)
 
   /* Write sequence */
   uint8_t write_data[] = {1, 2, 3, 4, 5};
-  internal_ring_buffer_write(&s_test_buffer, write_data, 5);
+  internal_ring_buffer_write(&s_test_buffer, write_data, k_test_buffer_size);
 
   /* Read should be in same order */
-  uint8_t read_data[5];
-  internal_ring_buffer_read(&s_test_buffer, read_data, 5);
+  uint8_t read_data[k_test_buffer_size];
+  internal_ring_buffer_read(&s_test_buffer, read_data, k_test_buffer_size);
 
-  for (int i = 0; i < 5; i++) {
+  for (uint32_t i = 0; i < k_test_buffer_size; i++) {
     TEST_ASSERT_EQUAL_UINT8(i + 1, read_data[i]);
   }
 }

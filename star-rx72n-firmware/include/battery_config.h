@@ -11,8 +11,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef BATTERY_CONFIG_H
-#define BATTERY_CONFIG_H
+#ifndef STAR_RX72N_BATTERY_CONFIG_H
+#define STAR_RX72N_BATTERY_CONFIG_H
 
 /* =============================================================================
  * Battery Monitoring Configuration
@@ -29,4 +29,4 @@ typedef enum {
   k_battery_sample_hz        = 1,  /**< Sample rate (Hz) */
 } battery_config_t;
 
-#endif /* BATTERY_CONFIG_H */
+#endif /* STAR_RX72N_BATTERY_CONFIG_H */

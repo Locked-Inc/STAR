@@ -27,8 +27,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef PMOD_CONFIG_H
-#define PMOD_CONFIG_H
+#ifndef STAR_RX72N_PMOD_CONFIG_H
+#define STAR_RX72N_PMOD_CONFIG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -199,7 +199,7 @@ typedef enum {
  */
 
 /**
- * @brief PMOD connector configuration array
+ * @brief PMOD connector configuration array (defined in pmod_config.c)
  *
  * Default configuration: All connectors set to k_pmod_none (unused).
  * To enable a module:
@@ -222,73 +222,7 @@ typedef enum {
  * },
  * @endcode
  */
-static const pmod_config_t g_pmod_connectors[k_pmod_connector_count] = {
-  /* JA: Connector A (default: unused) */
-  [k_pmod_connector_ja] =
-    {
-      .type           = k_pmod_none,
-      .interface      = k_pmod_interface_gpio,
-      .priority       = 20,
-      .stack_size     = 2048,
-      .update_rate_hz = 0,
-      .task_name      = NULL,
-    },
-
-  /* JB: Connector B (default: unused) */
-  [k_pmod_connector_jb] =
-    {
-      .type           = k_pmod_none,
-      .interface      = k_pmod_interface_gpio,
-      .priority       = 21,
-      .stack_size     = 2048,
-      .update_rate_hz = 0,
-      .task_name      = NULL,
-    },
-
-  /* JC: Connector C (default: unused) */
-  [k_pmod_connector_jc] =
-    {
-      .type           = k_pmod_none,
-      .interface      = k_pmod_interface_gpio,
-      .priority       = 22,
-      .stack_size     = 2048,
-      .update_rate_hz = 0,
-      .task_name      = NULL,
-    },
-
-  /* JD: Connector D (default: unused) */
-  [k_pmod_connector_jd] =
-    {
-      .type           = k_pmod_none,
-      .interface      = k_pmod_interface_gpio,
-      .priority       = 23,
-      .stack_size     = 2048,
-      .update_rate_hz = 0,
-      .task_name      = NULL,
-    },
-
-  /* JE: Connector E (default: unused) */
-  [k_pmod_connector_je] =
-    {
-      .type           = k_pmod_none,
-      .interface      = k_pmod_interface_gpio,
-      .priority       = 24,
-      .stack_size     = 2048,
-      .update_rate_hz = 0,
-      .task_name      = NULL,
-    },
-
-  /* JF: Connector F (default: unused) */
-  [k_pmod_connector_jf] =
-    {
-      .type           = k_pmod_none,
-      .interface      = k_pmod_interface_gpio,
-      .priority       = 25,
-      .stack_size     = 2048,
-      .update_rate_hz = 0,
-      .task_name      = NULL,
-    },
-};
+extern const pmod_config_t g_pmod_connectors[k_pmod_connector_count];
 
 /* =============================================================================
  * PMOD Task Creation API
@@ -327,4 +261,4 @@ bool pmod_is_enabled(pmod_connector_id_t connector);
 }
 #endif
 
-#endif /* PMOD_CONFIG_H */
+#endif /* STAR_RX72N_PMOD_CONFIG_H */

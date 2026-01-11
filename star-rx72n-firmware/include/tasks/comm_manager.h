@@ -22,8 +22,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef COMM_MANAGER_H
-#define COMM_MANAGER_H
+#ifndef STAR_RX72N_COMM_MANAGER_H
+#define STAR_RX72N_COMM_MANAGER_H
 
 #include "tx_api.h"
 
@@ -38,4 +38,4 @@
  */
 UINT comm_manager_create(void);
 
-#endif /* COMM_MANAGER_H */
+#endif /* STAR_RX72N_COMM_MANAGER_H */

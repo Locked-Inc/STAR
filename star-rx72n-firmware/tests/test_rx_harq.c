@@ -11,10 +11,30 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include <stdint.h>
 #include <string.h>
 
 #include "rx_harq.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief Bit manipulation constants for byte-to-bit conversion
+ */
+typedef enum {
+  k_bits_per_byte    = 8, /**< Number of bits in a byte */
+  k_bit_idx_msb      = 7, /**< MSB index in byte (bit 7) */
+  k_bit_idx_lsb      = 0, /**< LSB index in byte (bit 0) */
+} bit_manipulation_t;
+
+/* =============================================================================
+ * Test Fixtures
+ * =============================================================================
+ */
 
 /* Test fixtures */
 static rx_chase_combiner_t s_combiner;
@@ -564,9 +584,9 @@ void test_harq_roundtrip_with_fec(void)
   uint32_t      soft_len = enc_len * 8;
 
   for (uint32_t i = 0; i < enc_len; i++) {
-    for (int b = 7; b >= 0; b--) {
-      uint8_t bit           = (encoded[i] >> b) & 1;
-      soft[i * 8 + (7 - b)] = rx_fec_hard_to_soft(bit);
+    for (int8_t b = k_bit_idx_msb; b >= k_bit_idx_lsb; b--) {
+      uint8_t bit                         = (encoded[i] >> b) & 1;
+      soft[i * k_bits_per_byte + (k_bit_idx_msb - b)] = rx_fec_hard_to_soft(bit);
     }
   }
 
@@ -599,9 +619,9 @@ void test_harq_combining_improves_reception(void)
   uint32_t      soft_len = enc_len * 8;
 
   for (uint32_t i = 0; i < enc_len; i++) {
-    for (int b = 7; b >= 0; b--) {
-      uint8_t bit           = (encoded[i] >> b) & 1;
-      soft[i * 8 + (7 - b)] = rx_fec_hard_to_soft(bit);
+    for (int8_t b = k_bit_idx_msb; b >= k_bit_idx_lsb; b--) {
+      uint8_t bit                         = (encoded[i] >> b) & 1;
+      soft[i * k_bits_per_byte + (k_bit_idx_msb - b)] = rx_fec_hard_to_soft(bit);
     }
   }
 
