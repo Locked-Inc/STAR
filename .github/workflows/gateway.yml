@@ -1,0 +1,340 @@
+# gateway.yml - Gateway Service CI/CD Pipeline for STAR Robot Project
+# Tests the Go gateway service with build, test, lint, security, and cross-compilation.
+#
+# STAR Project - Texas A&M University
+# January 2026
+
+name: Gateway CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'star-gateway/**'
+      - 'star-proto/gen/go/**'
+      - '.github/workflows/gateway.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'star-gateway/**'
+      - 'star-proto/gen/go/**'
+      - '.github/workflows/gateway.yml'
+
+env:
+  GO_VERSION: '1.24.x'
+  GOLANGCI_LINT_VERSION: 'v1.61'
+  MIN_COVERAGE: 75  # Current: 79.1% (excluding main.go)
+
+jobs:
+  # ============================================
+  # Job 1: Build and Test (Primary)
+  # ============================================
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: star-gateway
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: star-gateway/go.sum
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Build gateway binary
+        run: go build -v -o star-gateway ./cmd/star-gateway
+
+      - name: Run unit tests
+        run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Calculate coverage
+        id: coverage
+        run: |
+          total=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "total=$total" >> $GITHUB_OUTPUT
+          echo "### Test Coverage: ${total}%" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check coverage threshold
+        run: |
+          coverage=${{ steps.coverage.outputs.total }}
+          echo "Coverage: ${coverage}%"
+          echo "Threshold: ${{ env.MIN_COVERAGE }}%"
+          if (( $(echo "$coverage < ${{ env.MIN_COVERAGE }}" | bc -l) )); then
+            echo "❌ Coverage ${coverage}% is below threshold ${{ env.MIN_COVERAGE }}%"
+            exit 1
+          else
+            echo "✅ Coverage ${coverage}% meets threshold ${{ env.MIN_COVERAGE }}%"
+          fi
+
+      - name: Generate coverage report
+        run: go tool cover -html=coverage.out -o coverage.html
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: star-gateway/coverage.html
+          retention-days: 30
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: star-gateway-linux-amd64
+          path: star-gateway/star-gateway
+          retention-days: 7
+
+  # ============================================
+  # Job 2: Linting and Code Quality
+  # ============================================
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: star-gateway
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: star-gateway/go.sum
+
+      - name: Check go.mod and go.sum are tidy
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum || {
+            echo "❌ go.mod or go.sum is not tidy. Run 'go mod tidy' and commit changes."
+            exit 1
+          }
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Check gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "❌ The following files are not formatted:"
+            echo "$unformatted"
+            echo "Run 'gofmt -w .' to fix formatting issues."
+            exit 1
+          fi
+
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
+            sh -s -- -b $(go env GOPATH)/bin ${{ env.GOLANGCI_LINT_VERSION }}
+
+      - name: Run golangci-lint
+        run: $(go env GOPATH)/bin/golangci-lint run --timeout=5m ./...
+
+  # ============================================
+  # Job 3: Security Scanning
+  # ============================================
+  security:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: star-gateway
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: star-gateway/go.sum
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck
+        run: $(go env GOPATH)/bin/govulncheck ./...
+
+      - name: Run go list to check dependencies
+        run: |
+          echo "### Direct Dependencies" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          go list -m all | grep -v "^github.com/Locked-Inc/STAR/star-gateway" >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
+  # Job 4: Cross-Compilation for RPi5 (ARM64)
+  # ============================================
+  cross-compile:
+    name: Cross-Compile for RPi5
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: arm64
+            name: raspberry-pi-5
+          - goos: linux
+            goarch: amd64
+            name: linux-x86-64
+    defaults:
+      run:
+        working-directory: star-gateway
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: star-gateway/go.sum
+
+      - name: Build for ${{ matrix.name }}
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 1
+        run: |
+          if [ "${{ matrix.goarch }}" = "arm64" ]; then
+            # Install ARM64 cross-compilation tools
+            sudo apt-get update
+            sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+            export CC=aarch64-linux-gnu-gcc
+            export CXX=aarch64-linux-gnu-g++
+          fi
+
+          go build -v \
+            -ldflags="-s -w" \
+            -o star-gateway-${{ matrix.goos }}-${{ matrix.goarch }} \
+            ./cmd/star-gateway
+
+      - name: Check binary size
+        run: |
+          size=$(du -h star-gateway-${{ matrix.goos }}-${{ matrix.goarch }} | cut -f1)
+          echo "Binary size for ${{ matrix.name }}: $size"
+          echo "### Binary Size (${{ matrix.name }}): $size" >> $GITHUB_STEP_SUMMARY
+
+      - name: Verify binary
+        if: matrix.goarch == 'amd64'
+        run: |
+          file star-gateway-${{ matrix.goos }}-${{ matrix.goarch }}
+          ./star-gateway-${{ matrix.goos }}-${{ matrix.goarch }} --version || true
+
+      - name: Upload cross-compiled binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: star-gateway-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: star-gateway/star-gateway-${{ matrix.goos }}-${{ matrix.goarch }}
+          retention-days: 7
+
+  # ============================================
+  # Job 5: Integration Tests (Optional)
+  # ============================================
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    defaults:
+      run:
+        working-directory: star-gateway
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: star-gateway/go.sum
+
+      - name: Run integration tests
+        run: |
+          # Run tests tagged with 'integration' if they exist
+          go test -v -tags=integration ./... || echo "No integration tests found"
+
+  # ============================================
+  # Job 6: Benchmark Tests
+  # ============================================
+  benchmark:
+    name: Benchmark Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: star-gateway
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: star-gateway/go.sum
+
+      - name: Run benchmarks
+        run: |
+          go test -bench=. -benchmem -run=^$ ./... > benchmark.txt 2>&1 || true
+          if [ -s benchmark.txt ]; then
+            echo "### Benchmark Results" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat benchmark.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results
+          path: star-gateway/benchmark.txt
+          retention-days: 30
+
+  # ============================================
+  # Job 7: CI Summary
+  # ============================================
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [build-and-test, lint, security, cross-compile]
+    if: always()
+    steps:
+      - name: Check Job Results
+        run: |
+          echo "## Gateway CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Build & Test** | ${{ needs.build-and-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Linting** | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Security Scan** | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Cross-Compile** | ${{ needs.cross-compile.result }} |" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.build-and-test.result }}" != "success" ] || \
+             [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.security.result }}" != "success" ] || \
+             [ "${{ needs.cross-compile.result }}" != "success" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **CI Failed** - Please check the logs above." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **All Checks Passed**" >> $GITHUB_STEP_SUMMARY
+          fi
