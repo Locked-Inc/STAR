@@ -83,10 +83,10 @@ func TestTelemetryData_RX72N_EncoderFields(t *testing.T) {
 // TestTelemetryData_RX72N_BatteryFields verifies battery telemetry from BQ4050
 func TestTelemetryData_RX72N_BatteryFields(t *testing.T) {
 	telem := &starv1.TelemetryData{
-		BatteryVoltageV:    12.6,
-		BatterySocPercent:  85,
-		BatteryPercent:     85.0, // Legacy field
-		TimestampUs:        1000000,
+		BatteryVoltageV:   12.6,
+		BatterySocPercent: 85,
+		BatteryPercent:    85.0, // Legacy field
+		TimestampUs:       1000000,
 	}
 
 	data, err := proto.Marshal(telem)
@@ -187,7 +187,7 @@ func TestTelemetryData_Complete(t *testing.T) {
 		MotorLoadPercent:   60.0,
 
 		// RX72N-specific fields
-		TimestampUs:        1000000,
+		TimestampUs: 1000000,
 		Encoder_0: &starv1.EncoderData{
 			MotorId:     0,
 			Ticks:       1000,

@@ -147,13 +147,13 @@ func TestVelocityCommandRoundTrip(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			// Differential drive mode: Motors 0 & 1 = left, Motors 2 & 3 = right
+			// Differential drive mode: Front/back left = left, Front/back right = right
 			cmd := &starv1.VelocityCommand{
-				Motor_0VelocityMps: tc.leftMps,
-				Motor_1VelocityMps: tc.leftMps,
-				Motor_2VelocityMps: tc.rightMps,
-				Motor_3VelocityMps: tc.rightMps,
-				Sequence:           tc.sequence,
+				FrontLeftVelocityMps:  tc.leftMps,
+				BackLeftVelocityMps:   tc.leftMps,
+				FrontRightVelocityMps: tc.rightMps,
+				BackRightVelocityMps:  tc.rightMps,
+				Sequence:              tc.sequence,
 			}
 
 			bytes, err := proto.Marshal(cmd)
@@ -163,12 +163,12 @@ func TestVelocityCommandRoundTrip(t *testing.T) {
 			err = proto.Unmarshal(bytes, parsed)
 			require.NoError(t, err, tc.desc)
 
-			// Verify left motors (0 & 1) match left velocity
-			assert.InDelta(t, tc.leftMps, parsed.Motor_0VelocityMps, 0.0001, tc.desc)
-			assert.InDelta(t, tc.leftMps, parsed.Motor_1VelocityMps, 0.0001, tc.desc)
-			// Verify right motors (2 & 3) match right velocity
-			assert.InDelta(t, tc.rightMps, parsed.Motor_2VelocityMps, 0.0001, tc.desc)
-			assert.InDelta(t, tc.rightMps, parsed.Motor_3VelocityMps, 0.0001, tc.desc)
+			// Verify left motors (front & back) match left velocity
+			assert.InDelta(t, tc.leftMps, parsed.FrontLeftVelocityMps, 0.0001, tc.desc)
+			assert.InDelta(t, tc.leftMps, parsed.BackLeftVelocityMps, 0.0001, tc.desc)
+			// Verify right motors (front & back) match right velocity
+			assert.InDelta(t, tc.rightMps, parsed.FrontRightVelocityMps, 0.0001, tc.desc)
+			assert.InDelta(t, tc.rightMps, parsed.BackRightVelocityMps, 0.0001, tc.desc)
 			assert.Equal(t, tc.sequence, parsed.Sequence, tc.desc)
 		})
 	}
@@ -256,14 +256,14 @@ func TestPidConfigRoundTrip(t *testing.T) {
 
 func TestImuDataRoundTrip(t *testing.T) {
 	tests := []struct {
-		name    string
-		accelX  float64
-		accelY  float64
-		accelZ  float64
-		gyroX   float64
-		gyroY   float64
-		gyroZ   float64
-		desc    string
+		name   string
+		accelX float64
+		accelY float64
+		accelZ float64
+		gyroX  float64
+		gyroY  float64
+		gyroZ  float64
+		desc   string
 	}{
 		{"rest", 0.0, 0.0, 9.81, 0.0, 0.0, 0.0, "At rest, gravity on Z"},
 		{"tilted", 4.9, 0.0, 8.5, 0.0, 0.0, 0.0, "Tilted 30 degrees"},
@@ -360,11 +360,11 @@ func TestSetVelocityRequestResponse(t *testing.T) {
 		},
 		Command: &starv1.VelocityCommand{
 			// Differential drive mode: all motors at 1.5 m/s (straight forward)
-			Motor_0VelocityMps: 1.5, // Left front
-			Motor_1VelocityMps: 1.5, // Left rear
-			Motor_2VelocityMps: 1.5, // Right front
-			Motor_3VelocityMps: 1.5, // Right rear
-			Sequence:           42,
+			FrontLeftVelocityMps:  1.5, // Left front
+			BackLeftVelocityMps:   1.5, // Left rear
+			FrontRightVelocityMps: 1.5, // Right front
+			BackRightVelocityMps:  1.5, // Right rear
+			Sequence:              42,
 		},
 	}
 
@@ -377,10 +377,10 @@ func TestSetVelocityRequestResponse(t *testing.T) {
 
 	assert.Equal(t, "vel-001", parsedReq.Header.RequestId)
 	// Verify all 4 motors have correct velocity
-	assert.InDelta(t, 1.5, parsedReq.Command.Motor_0VelocityMps, 0.0001)
-	assert.InDelta(t, 1.5, parsedReq.Command.Motor_1VelocityMps, 0.0001)
-	assert.InDelta(t, 1.5, parsedReq.Command.Motor_2VelocityMps, 0.0001)
-	assert.InDelta(t, 1.5, parsedReq.Command.Motor_3VelocityMps, 0.0001)
+	assert.InDelta(t, 1.5, parsedReq.Command.FrontLeftVelocityMps, 0.0001)
+	assert.InDelta(t, 1.5, parsedReq.Command.BackLeftVelocityMps, 0.0001)
+	assert.InDelta(t, 1.5, parsedReq.Command.FrontRightVelocityMps, 0.0001)
+	assert.InDelta(t, 1.5, parsedReq.Command.BackRightVelocityMps, 0.0001)
 
 	// Response
 	resp := &starv1.SetVelocityResponse{
