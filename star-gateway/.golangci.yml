@@ -41,7 +41,6 @@ linters:
     - stylecheck    # Replacement for golint
 
   disable:
-    - typecheck     # Often conflicts with generated code
     - funlen        # Too strict for this project
     - gomnd         # Magic number detection (too noisy)
 
