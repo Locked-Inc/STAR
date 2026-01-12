@@ -30,15 +30,15 @@ linters:
     - dupl          # Code clone detection
     - gosec         # Security issues
     - prealloc      # Find slice declarations that could be preallocated
-    - exportloopref # Check for pointers to loop variables
     - nilerr        # Find code that returns nil even if it checks err != nil
     - nolintlint    # Ill-formed or insufficient nolint directives
     - stylecheck    # Replacement for golint
 
   disable:
     - funlen        # Too strict for this project
-    - gomnd         # Magic number detection (too noisy)
+    - gomnd         # Magic number detection (deprecated)
     - unparam       # Unused parameter detection (too noisy)
+    - exportloopref # Deprecated since Go 1.22 (replaced by copyloopvar)
 
 linters-settings:
   errcheck:
