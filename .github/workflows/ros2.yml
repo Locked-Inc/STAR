@@ -203,6 +203,9 @@ jobs:
     # NOTE: Non-blocking during infrastructure phase
     # Will become blocking in future PRs when application code is added
     continue-on-error: true
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout repository
