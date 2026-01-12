@@ -24,6 +24,7 @@ env:
   GO_VERSION: '1.24.x'
   GOLANGCI_LINT_VERSION: 'v1.61'
   MIN_COVERAGE: 75  # Current: 79.1% (excluding main.go)
+  GOWORK: off  # Disable go.work in CI, use go.mod replace directive
 
 jobs:
   # ============================================
@@ -45,6 +46,20 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: true
           cache-dependency-path: star-gateway/go.sum
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate protobuf Go code
+        working-directory: star-proto
+        run: |
+          mkdir -p gen/go
+          buf generate proto/ --template buf.gen.web.yaml --include-imports
+          cd gen/go
+          go mod init github.com/Locked-Inc/star-proto/gen/go || true
+          go mod tidy
 
       - name: Download dependencies
         run: go mod download
@@ -114,6 +129,20 @@ jobs:
           cache: true
           cache-dependency-path: star-gateway/go.sum
 
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate protobuf Go code
+        working-directory: star-proto
+        run: |
+          mkdir -p gen/go
+          buf generate proto/ --template buf.gen.web.yaml --include-imports
+          cd gen/go
+          go mod init github.com/Locked-Inc/star-proto/gen/go || true
+          go mod tidy
+
       - name: Check go.mod and go.sum are tidy
         run: |
           go mod tidy
@@ -163,6 +192,20 @@ jobs:
           cache: true
           cache-dependency-path: star-gateway/go.sum
 
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate protobuf Go code
+        working-directory: star-proto
+        run: |
+          mkdir -p gen/go
+          buf generate proto/ --template buf.gen.web.yaml --include-imports
+          cd gen/go
+          go mod init github.com/Locked-Inc/star-proto/gen/go || true
+          go mod tidy
+
       - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
 
@@ -204,6 +247,20 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: true
           cache-dependency-path: star-gateway/go.sum
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate protobuf Go code
+        working-directory: star-proto
+        run: |
+          mkdir -p gen/go
+          buf generate proto/ --template buf.gen.web.yaml --include-imports
+          cd gen/go
+          go mod init github.com/Locked-Inc/star-proto/gen/go || true
+          go mod tidy
 
       - name: Build for ${{ matrix.name }}
         env:
@@ -264,6 +321,20 @@ jobs:
           cache: true
           cache-dependency-path: star-gateway/go.sum
 
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate protobuf Go code
+        working-directory: star-proto
+        run: |
+          mkdir -p gen/go
+          buf generate proto/ --template buf.gen.web.yaml --include-imports
+          cd gen/go
+          go mod init github.com/Locked-Inc/star-proto/gen/go || true
+          go mod tidy
+
       - name: Run integration tests
         run: |
           # Run tests tagged with 'integration' if they exist
@@ -288,6 +359,20 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: true
           cache-dependency-path: star-gateway/go.sum
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate protobuf Go code
+        working-directory: star-proto
+        run: |
+          mkdir -p gen/go
+          buf generate proto/ --template buf.gen.web.yaml --include-imports
+          cd gen/go
+          go mod init github.com/Locked-Inc/star-proto/gen/go || true
+          go mod tidy
 
       - name: Run benchmarks
         run: |
