@@ -18,7 +18,14 @@
     "customizations": {
         "vscode": {
             "settings": {
-                "terminal.integrated.shell.linux": "/bin/bash"
+                "terminal.integrated.shell.linux": "/bin/bash",
+                "C_Cpp.default.includePath": [
+                    "/opt/ros/jazzy/include/**",
+                    "${workspaceFolder}/**",
+                    "${workspaceFolder}/star-proto/gen/cpp",
+                    "${workspaceFolder}/install/*/include/**"
+                ],
+                "C_Cpp.default.cppStandard": "c++17"
             },
             "extensions": [
                 "ms-vscode.cpptools",
@@ -31,8 +38,6 @@
         }
     },
     "remoteUser": "star",
-    "mounts": [
-        "source=${localWorkspaceFolder},target=/workspaces/STAR,type=bind"
-    ],
+    "workspaceFolder": "/workspaces/STAR",
     "postCreateCommand": "bash -c 'if [ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]; then sudo rosdep init && rosdep update --rosdistro jazzy; fi'"
 }
