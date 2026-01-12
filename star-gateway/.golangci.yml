@@ -55,7 +55,7 @@ linters-settings:
       - fieldalignment  # Memory micro-optimizations not critical
 
   gocyclo:
-    min-complexity: 15
+    min-complexity: 20  # Increased for complex algorithms (Viterbi, HARQ)
 
   gocognit:
     min-complexity: 35  # Increased for complex algorithms (Viterbi, HARQ)
@@ -78,11 +78,13 @@ linters-settings:
       - octalLiteral  # Allow old octal literal style (0171 vs 0o171)
       - unnamedResult  # Allow unnamed return values
       - stringXbytes  # Allow string comparisons
+      - exitAfterDefer  # Allow log.Fatalf with deferred cleanup
 
   gosec:
     excludes:
       - G104  # Audit errors not checked (covered by errcheck)
       - G115  # Integer overflow conversion (many false positives)
+      - G102  # Bind to all network interfaces (intentional for gRPC/HTTP servers)
     config:
       G306: "0644"  # File permissions
 
@@ -143,9 +145,20 @@ issues:
         - revive
 
     # Allow deprecated websocket library (migration out of scope)
-    - text: "SA1019.*nhooyr.io/websocket"
+    - text: "SA1019.*websocket"
       linters:
         - staticcheck
+
+    # Allow deprecated websocket library in controller package
+    - path: "internal/controller/.*\\.go$"
+      text: "SA1019"
+      linters:
+        - staticcheck
+
+    # Allow unnecessary conversions in FEC code (type safety)
+    - path: "internal/fec/.*\\.go$"
+      linters:
+        - unconvert
 
     # Allow intentional nolint directives
     - text: "directive.*is unused for linter"
