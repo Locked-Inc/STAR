@@ -148,10 +148,12 @@ func (s *GatewayService) GetTeleopCommand(
 	} else {
 		// Return zero velocity (safe default)
 		cmd = &starv1.VelocityCommand{
-			Motor_0VelocityMps: 0.0,
-			Motor_1VelocityMps: 0.0,
-			Sequence:           0,
-			TimestampUs:        time.Now().UnixMicro(),
+			FrontLeftVelocityMps:  0.0,
+			FrontRightVelocityMps: 0.0,
+			BackLeftVelocityMps:   0.0,
+			BackRightVelocityMps:  0.0,
+			Sequence:              0,
+			TimestampUs:           time.Now().UnixMicro(),
 		}
 	}
 
@@ -201,11 +203,14 @@ func (s *GatewayService) SetPIDGains(
 	// TODO: Forward to ROS2 service when available
 	// For now, return success (placeholder)
 
-	motorDesc := "both motors"
-	if motorID == 0 {
+	var motorDesc string
+	switch motorID {
+	case 0:
 		motorDesc = "left motor"
-	} else if motorID == 1 {
+	case 1:
 		motorDesc = "right motor"
+	default:
+		motorDesc = "both motors"
 	}
 
 	// Build response header
@@ -240,8 +245,9 @@ func (s *GatewayService) UpdateTeleopCommand(cmd *starv1.VelocityCommand) {
 	s.teleopLastUpdated = time.Now()
 	s.teleopMu.Unlock()
 
-	log.Printf("Teleop updated: left=%.2fm/s, right=%.2fm/s",
-		cmd.Motor_0VelocityMps, cmd.Motor_1VelocityMps)
+	log.Printf("Teleop updated: FL=%.2fm/s, FR=%.2fm/s, BL=%.2fm/s, BR=%.2fm/s",
+		cmd.FrontLeftVelocityMps, cmd.FrontRightVelocityMps,
+		cmd.BackLeftVelocityMps, cmd.BackRightVelocityMps)
 }
 
 // GetLatestTelemetry returns the cached telemetry data for UI streaming.

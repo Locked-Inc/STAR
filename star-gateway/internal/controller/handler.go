@@ -125,12 +125,21 @@ func (h *Handler) GetSafeState() *starv1.ControllerState {
 
 // convertToVelocityCommand converts arcade drive (linear, angular) to differential drive (left, right).
 //
-// Implements differential drive inverse kinematics:
+// Implements differential drive inverse kinematics for a 4-wheel robot:
 //
 //	vL = v - (ω * wheelBase) / 2
 //	vR = v + (ω * wheelBase) / 2
 //
 // where v is linear velocity (m/s), ω is angular velocity (rad/s), and wheelBase is track width (m).
+//
+// Motor Layout (top view):
+//
+//	  Front
+//	FL   FR
+//	BL   BR
+//	  Back
+//
+// For differential drive, left side (FL, BL) and right side (FR, BR) are coupled.
 func convertToVelocityCommand(state *starv1.ControllerState) *starv1.VelocityCommand {
 	const wheelBase float32 = 0.150 // meters (150mm track width)
 
@@ -138,10 +147,13 @@ func convertToVelocityCommand(state *starv1.ControllerState) *starv1.VelocityCom
 	vLeft := state.LinearVel - (state.AngularVel * halfBase)
 	vRight := state.LinearVel + (state.AngularVel * halfBase)
 
+	// For differential drive: left side motors get same velocity, right side motors get same velocity
 	return &starv1.VelocityCommand{
-		Motor_0VelocityMps: float64(vLeft),
-		Motor_1VelocityMps: float64(vRight),
-		Sequence:           0,
-		TimestampUs:        time.Now().UnixMicro(),
+		FrontLeftVelocityMps:  float64(vLeft),
+		FrontRightVelocityMps: float64(vRight),
+		BackLeftVelocityMps:   float64(vLeft),
+		BackRightVelocityMps:  float64(vRight),
+		Sequence:              0,
+		TimestampUs:           time.Now().UnixMicro(),
 	}
 }
