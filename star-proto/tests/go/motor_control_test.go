@@ -10,12 +10,12 @@ import (
 // TestVelocityCommand_4Motors verifies that VelocityCommand supports 4 independent motors
 func TestVelocityCommand_4Motors(t *testing.T) {
 	cmd := &starv1.VelocityCommand{
-		Motor_0VelocityMps: 1.5,
-		Motor_1VelocityMps: 1.5,
-		Motor_2VelocityMps: 1.0,
-		Motor_3VelocityMps: 1.0,
-		Sequence:           42,
-		TimestampUs:        1000000,
+		FrontLeftVelocityMps:  1.5,
+		BackLeftVelocityMps:   1.5,
+		FrontRightVelocityMps: 1.0,
+		BackRightVelocityMps:  1.0,
+		Sequence:              42,
+		TimestampUs:           1000000,
 	}
 
 	// Serialize
@@ -36,17 +36,17 @@ func TestVelocityCommand_4Motors(t *testing.T) {
 	}
 
 	// Verify all 4 motor fields
-	if decoded.Motor_0VelocityMps != 1.5 {
-		t.Errorf("Motor 0 velocity = %f, want 1.5", decoded.Motor_0VelocityMps)
+	if decoded.FrontLeftVelocityMps != 1.5 {
+		t.Errorf("Front left velocity = %f, want 1.5", decoded.FrontLeftVelocityMps)
 	}
-	if decoded.Motor_1VelocityMps != 1.5 {
-		t.Errorf("Motor 1 velocity = %f, want 1.5", decoded.Motor_1VelocityMps)
+	if decoded.BackLeftVelocityMps != 1.5 {
+		t.Errorf("Back left velocity = %f, want 1.5", decoded.BackLeftVelocityMps)
 	}
-	if decoded.Motor_2VelocityMps != 1.0 {
-		t.Errorf("Motor 2 velocity = %f, want 1.0", decoded.Motor_2VelocityMps)
+	if decoded.FrontRightVelocityMps != 1.0 {
+		t.Errorf("Front right velocity = %f, want 1.0", decoded.FrontRightVelocityMps)
 	}
-	if decoded.Motor_3VelocityMps != 1.0 {
-		t.Errorf("Motor 3 velocity = %f, want 1.0", decoded.Motor_3VelocityMps)
+	if decoded.BackRightVelocityMps != 1.0 {
+		t.Errorf("Back right velocity = %f, want 1.0", decoded.BackRightVelocityMps)
 	}
 	if decoded.Sequence != 42 {
 		t.Errorf("Sequence = %d, want 42", decoded.Sequence)
@@ -57,17 +57,17 @@ func TestVelocityCommand_4Motors(t *testing.T) {
 }
 
 // TestVelocityCommand_DifferentialDrive tests differential drive mode
-// where motors 0&1 = left side, motors 2&3 = right side
+// where front/back left = left side, front/back right = right side
 func TestVelocityCommand_DifferentialDrive(t *testing.T) {
 	leftVel := 1.5
 	rightVel := 1.0
 
 	cmd := &starv1.VelocityCommand{
-		Motor_0VelocityMps: leftVel,  // Left front
-		Motor_1VelocityMps: leftVel,  // Left rear
-		Motor_2VelocityMps: rightVel, // Right front
-		Motor_3VelocityMps: rightVel, // Right rear
-		Sequence:           1,
+		FrontLeftVelocityMps:  leftVel,  // Left front
+		BackLeftVelocityMps:   leftVel,  // Left rear
+		FrontRightVelocityMps: rightVel, // Right front
+		BackRightVelocityMps:  rightVel, // Right rear
+		Sequence:              1,
 	}
 
 	// Serialize and deserialize
@@ -82,11 +82,11 @@ func TestVelocityCommand_DifferentialDrive(t *testing.T) {
 	}
 
 	// Verify differential drive pairing
-	if decoded.Motor_0VelocityMps != decoded.Motor_1VelocityMps {
-		t.Error("Left motors (0 & 1) should have same velocity")
+	if decoded.FrontLeftVelocityMps != decoded.BackLeftVelocityMps {
+		t.Error("Left motors (front & back) should have same velocity")
 	}
-	if decoded.Motor_2VelocityMps != decoded.Motor_3VelocityMps {
-		t.Error("Right motors (2 & 3) should have same velocity")
+	if decoded.FrontRightVelocityMps != decoded.BackRightVelocityMps {
+		t.Error("Right motors (front & back) should have same velocity")
 	}
 }
 
@@ -109,10 +109,10 @@ func TestVelocityCommand_VelocityRange(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			cmd := &starv1.VelocityCommand{
-				Motor_0VelocityMps: tc.velocity,
-				Motor_1VelocityMps: tc.velocity,
-				Motor_2VelocityMps: tc.velocity,
-				Motor_3VelocityMps: tc.velocity,
+				FrontLeftVelocityMps:  tc.velocity,
+				BackLeftVelocityMps:   tc.velocity,
+				FrontRightVelocityMps: tc.velocity,
+				BackRightVelocityMps:  tc.velocity,
 			}
 
 			data, err := proto.Marshal(cmd)
@@ -128,8 +128,8 @@ func TestVelocityCommand_VelocityRange(t *testing.T) {
 			// Protocol buffers will serialize any value, but application
 			// should validate and clamp to ±2.0 m/s range
 			if tc.valid {
-				if decoded.Motor_0VelocityMps != tc.velocity {
-					t.Errorf("Velocity = %f, want %f", decoded.Motor_0VelocityMps, tc.velocity)
+				if decoded.FrontLeftVelocityMps != tc.velocity {
+					t.Errorf("Velocity = %f, want %f", decoded.FrontLeftVelocityMps, tc.velocity)
 				}
 			}
 		})
@@ -256,12 +256,12 @@ func TestSetVelocityRequest_Roundtrip(t *testing.T) {
 			RequestId: "test-request-123",
 		},
 		Command: &starv1.VelocityCommand{
-			Motor_0VelocityMps: 1.5,
-			Motor_1VelocityMps: 1.5,
-			Motor_2VelocityMps: 1.0,
-			Motor_3VelocityMps: 1.0,
-			Sequence:           1,
-			TimestampUs:        1000000,
+			FrontLeftVelocityMps:  1.5,
+			BackLeftVelocityMps:   1.5,
+			FrontRightVelocityMps: 1.0,
+			BackRightVelocityMps:  1.0,
+			Sequence:              1,
+			TimestampUs:           1000000,
 		},
 	}
 
@@ -278,8 +278,8 @@ func TestSetVelocityRequest_Roundtrip(t *testing.T) {
 	if decoded.Header.RequestId != "test-request-123" {
 		t.Errorf("RequestId = %s, want test-request-123", decoded.Header.RequestId)
 	}
-	if decoded.Command.Motor_0VelocityMps != 1.5 {
-		t.Errorf("Motor 0 velocity = %f, want 1.5", decoded.Command.Motor_0VelocityMps)
+	if decoded.Command.FrontLeftVelocityMps != 1.5 {
+		t.Errorf("Front left velocity = %f, want 1.5", decoded.Command.FrontLeftVelocityMps)
 	}
 }
 
