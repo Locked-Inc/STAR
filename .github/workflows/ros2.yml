@@ -95,7 +95,8 @@ jobs:
             --symlink-install \
             --cmake-args \
               -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+              -DBUILD_TESTING=ON
 
       - name: Run tests
         shell: bash
@@ -121,7 +122,8 @@ jobs:
           colcon build --cmake-clean-cache \
             --cmake-args \
               -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror" \
-              -DCMAKE_BUILD_TYPE=Release
+              -DCMAKE_BUILD_TYPE=Release \
+              -DBUILD_TESTING=ON
 
       - name: Upload build artifacts
         if: failure()

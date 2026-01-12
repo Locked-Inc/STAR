@@ -15,6 +15,10 @@ RUN apt-get update && apt-get install -y \
     v4l-utils \
     udev \
     sudo \
+    libprotobuf-dev \
+    protobuf-compiler \
+    libgrpc++-dev \
+    protobuf-compiler-grpc \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up user
