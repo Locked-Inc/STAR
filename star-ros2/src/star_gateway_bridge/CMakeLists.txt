@@ -144,10 +144,20 @@ if(BUILD_TESTING)
   # find_package(ament_lint_auto REQUIRED)
   # ament_lint_auto_find_test_dependencies()
 
-  # TODO: Add unit tests
-  # find_package(ament_cmake_gtest REQUIRED)
-  # ament_add_gtest(test_message_converter test/test_message_converter.cpp)
-  # target_link_libraries(test_message_converter star_gateway_bridge_component)
+  # Unit tests
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(test_message_converter test/test_message_converter.cpp)
+  target_link_libraries(test_message_converter star_gateway_bridge_component)
+  target_include_directories(test_message_converter PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${STAR_PROTO_DIR}
+  )
+  ament_target_dependencies(test_message_converter
+    geometry_msgs
+    sensor_msgs
+    std_msgs
+  )
 endif()
 
 # ============================================
