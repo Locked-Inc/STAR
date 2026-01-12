@@ -94,12 +94,12 @@ func TestOvercurrentRange(t *testing.T) {
 
 func TestTimingConfigurationRoundTrip(t *testing.T) {
 	tests := []struct {
-		name             string
-		motorPeriodMs    uint32
+		name              string
+		motorPeriodMs     uint32
 		telemetryPeriodMs uint32
-		commTimeoutMs    uint32
-		bmsPollPeriodMs  uint32
-		desc             string
+		commTimeoutMs     uint32
+		bmsPollPeriodMs   uint32
+		desc              string
 	}{
 		{"high_freq", 1, 10, 100, 500, "1kHz motor, 100Hz telemetry"},
 		{"standard", 10, 100, 500, 1000, "100Hz motor, 10Hz telemetry"},
@@ -154,10 +154,10 @@ func TestControlFrequencyCalculation(t *testing.T) {
 
 func TestEncoderConfigurationRoundTrip(t *testing.T) {
 	tests := []struct {
-		name          string
-		edgesPerRev   uint32
+		name           string
+		edgesPerRev    uint32
 		wheelDiameterM float64
-		gearRatio     float64
+		gearRatio      float64
 	}{
 		{"low_res", 500, 0.065, 34.02},
 		{"medium_res", 1000, 0.065, 34.02},
@@ -268,11 +268,11 @@ func TestAllConfigErrorCodeValues(t *testing.T) {
 
 func TestConfigValidationErrorRoundTrip(t *testing.T) {
 	tests := []struct {
-		name       string
-		fieldPath  string
-		errorCode  starv1.ConfigErrorCode
-		message    string
-		desc       string
+		name      string
+		fieldPath string
+		errorCode starv1.ConfigErrorCode
+		message   string
+		desc      string
 	}{
 		{
 			"kp_too_high",

@@ -15,15 +15,16 @@ import (
 // GatewayService implements the gRPC GatewayService for ROS2 ↔ UI bridging.
 //
 // Architecture:
-//   ROS2 (C++) ↔ gRPC ↔ GatewayService (Go) ↔ WebSocket ↔ UI (TypeScript)
+//
+//	ROS2 (C++) ↔ gRPC ↔ GatewayService (Go) ↔ WebSocket ↔ UI (TypeScript)
 //
 // Data flows:
-// 1. Telemetry (ROS2 → UI):
-//    ROS2 calls ForwardTelemetry() → cached → WebSocket streams to UI
-// 2. Teleop (UI → ROS2):
-//    UI sends via WebSocket → UpdateTeleopCommand() → ROS2 polls GetTeleopCommand()
-// 3. PID Gains (UI → ROS2):
-//    UI sends via WebSocket → SetPIDGains() → ROS2 → SPI → RX72N
+//  1. Telemetry (ROS2 → UI):
+//     ROS2 calls ForwardTelemetry() → cached → WebSocket streams to UI
+//  2. Teleop (UI → ROS2):
+//     UI sends via WebSocket → UpdateTeleopCommand() → ROS2 polls GetTeleopCommand()
+//  3. PID Gains (UI → ROS2):
+//     UI sends via WebSocket → SetPIDGains() → ROS2 → SPI → RX72N
 type GatewayService struct {
 	starv1.UnimplementedGatewayServiceServer
 
@@ -146,11 +147,15 @@ func (s *GatewayService) GetTeleopCommand(
 		cmd = cachedCmd
 	} else {
 		// Return zero velocity (safe default)
+		log.Printf("Teleop watchdog triggered: no command available or stale (age=%dms, threshold=%dms)",
+			commandAgeMs, s.teleopStalenessThreshold.Milliseconds())
 		cmd = &starv1.VelocityCommand{
-			LeftVelocityMps:  0.0,
-			RightVelocityMps: 0.0,
-			Sequence:         0,
-			TimestampUs:      time.Now().UnixMicro(),
+			FrontLeftVelocityMps:  0.0,
+			FrontRightVelocityMps: 0.0,
+			BackLeftVelocityMps:   0.0,
+			BackRightVelocityMps:  0.0,
+			Sequence:              0,
+			TimestampUs:           time.Now().UnixMicro(),
 		}
 	}
 
@@ -200,11 +205,18 @@ func (s *GatewayService) SetPIDGains(
 	// TODO: Forward to ROS2 service when available
 	// For now, return success (placeholder)
 
-	motorDesc := "both motors"
-	if motorID == 0 {
-		motorDesc = "left motor"
-	} else if motorID == 1 {
-		motorDesc = "right motor"
+	var motorDesc string
+	switch motorID {
+	case 0:
+		motorDesc = "front left motor"
+	case 1:
+		motorDesc = "front right motor"
+	case 2:
+		motorDesc = "back left motor"
+	case 3:
+		motorDesc = "back right motor"
+	default:
+		motorDesc = "all motors"
 	}
 
 	// Build response header
@@ -239,8 +251,9 @@ func (s *GatewayService) UpdateTeleopCommand(cmd *starv1.VelocityCommand) {
 	s.teleopLastUpdated = time.Now()
 	s.teleopMu.Unlock()
 
-	log.Printf("Teleop updated: left=%.2fm/s, right=%.2fm/s",
-		cmd.LeftVelocityMps, cmd.RightVelocityMps)
+	log.Printf("Teleop updated: FL=%.2fm/s, FR=%.2fm/s, BL=%.2fm/s, BR=%.2fm/s",
+		cmd.FrontLeftVelocityMps, cmd.FrontRightVelocityMps,
+		cmd.BackLeftVelocityMps, cmd.BackRightVelocityMps)
 }
 
 // GetLatestTelemetry returns the cached telemetry data for UI streaming.

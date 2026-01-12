@@ -58,6 +58,7 @@ func TestWebSocketHandler_ProcessMessage(t *testing.T) {
 	lastState := handler.GetLastState()
 	if lastState == nil {
 		t.Fatal("handler did not process message")
+		return
 	}
 
 	if lastState.LinearVel != 1.0 {
@@ -113,6 +114,7 @@ func TestWebSocketHandler_DebugFlag(t *testing.T) {
 	lastState := handler.GetLastState()
 	if lastState == nil {
 		t.Fatal("handler did not process message")
+		return
 	}
 
 	if !lastState.Debug {

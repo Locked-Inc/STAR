@@ -1,0 +1,178 @@
+# .golangci.yml - golangci-lint configuration for star-gateway
+# Enforces Go code quality standards aligned with STAR project guidelines.
+#
+# STAR Project - Texas A&M University
+# January 2026
+
+run:
+  timeout: 5m
+  tests: true
+  build-tags:
+    - integration
+
+linters:
+  enable:
+    # Enabled by default
+    - errcheck      # Check for unchecked errors
+    - gosimple      # Simplify code
+    - govet         # Go vet
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Static analysis
+    - unused        # Detect unused constants, variables, functions
+
+    # Additional linters for code quality
+    - misspell      # Fix common spelling mistakes
+    - revive        # Fast, configurable, extensible linter
+    - unconvert     # Remove unnecessary type conversions
+    - gocritic      # Comprehensive Go linter
+    - gocyclo       # Cyclomatic complexity
+    - gocognit      # Cognitive complexity
+    - dupl          # Code clone detection
+    - gosec         # Security issues
+    - prealloc      # Find slice declarations that could be preallocated
+    - nilerr        # Find code that returns nil even if it checks err != nil
+    - nolintlint    # Ill-formed or insufficient nolint directives
+    - stylecheck    # Replacement for golint
+
+  disable:
+    - funlen        # Too strict for this project
+    - gomnd         # Magic number detection (deprecated)
+    - unparam       # Unused parameter detection (too noisy)
+    - exportloopref # Deprecated since Go 1.22 (replaced by copyloopvar)
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: false  # Allow _ = for intentional error ignoring
+    exclude-functions:
+      - (*github.com/gorilla/websocket.Conn).Close
+      - (*google.golang.org/grpc.ClientConn).Close
+
+  govet:
+    enable-all: true
+    disable:
+      - shadow  # Too noisy for this codebase
+      - fieldalignment  # Memory micro-optimizations not critical
+
+  gocyclo:
+    min-complexity: 20  # Increased for complex algorithms (Viterbi, HARQ)
+
+  gocognit:
+    min-complexity: 35  # Increased for complex algorithms (Viterbi, HARQ)
+
+  dupl:
+    threshold: 100
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+      - experimental
+    disabled-checks:
+      - hugeParam  # Too strict for protobuf messages
+      - rangeValCopy  # Too strict for protobuf messages
+      - builtinShadow  # Allow parameter names like 'min', 'max'
+      - whyNoLint  # Allow nolint without explanation
+      - ifElseChain  # Allow if-else chains
+      - octalLiteral  # Allow old octal literal style (0171 vs 0o171)
+      - unnamedResult  # Allow unnamed return values
+      - stringXbytes  # Allow string comparisons
+      - exitAfterDefer  # Allow log.Fatalf with deferred cleanup
+
+  gosec:
+    excludes:
+      - G104  # Audit errors not checked (covered by errcheck)
+      - G115  # Integer overflow conversion (many false positives)
+      - G102  # Bind to all network interfaces (intentional for gRPC/HTTP servers)
+    config:
+      G306: "0644"  # File permissions
+
+  revive:
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+        disabled: true  # Allow stuttering type names (FrameType, FrameFlags)
+      - name: increment-decrement
+      - name: var-naming
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: indent-error-flow
+      - name: superfluous-else
+      - name: unreachable-code
+      - name: unused-parameter
+        disabled: true  # Too noisy with interface implementations
+
+  stylecheck:
+    checks: ["all", "-ST1000", "-ST1003"]  # Disable package comment and underscores in names
+
+  nolintlint:
+    allow-unused: false
+    require-explanation: false  # Allow nolint without explanation
+    require-specific: true
+
+issues:
+  exclude-rules:
+    # Exclude linting for generated protobuf code
+    - path: ".*\\.pb\\.go$"
+      linters:
+        - all
+
+    # Exclude test files from certain linters
+    - path: "_test\\.go$"
+      linters:
+        - errcheck
+        - dupl
+        - gosec
+        - gocyclo
+        - gocognit
+        - unconvert
+
+    # Exclude mock files from most linters
+    - path: "mock_.*\\.go$"
+      linters:
+        - all
+
+    # Allow unused parameters in interface implementations
+    - text: "unused-parameter"
+      linters:
+        - revive
+
+    # Allow deprecated websocket library (migration out of scope)
+    - text: "SA1019.*websocket"
+      linters:
+        - staticcheck
+
+    # Allow deprecated websocket library in controller package
+    - path: "internal/controller/.*\\.go$"
+      text: "SA1019"
+      linters:
+        - staticcheck
+
+    # Allow unnecessary conversions in FEC code (type safety)
+    - path: "internal/fec/.*\\.go$"
+      linters:
+        - unconvert
+
+    # Allow intentional nolint directives
+    - text: "directive.*is unused for linter"
+      linters:
+        - nolintlint
+
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+  # Show all issues
+  new: false
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  sort-results: true
