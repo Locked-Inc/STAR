@@ -24,6 +24,10 @@ type Handler struct {
 	gatewaySvc *service.GatewayService
 }
 
+func NewHandler() *Handler {
+	return &Handler{}
+}
+
 func NewHandlerWithGateway(gatewaySvc *service.GatewayService) *Handler {
 	return &Handler{
 		gatewaySvc: gatewaySvc,
@@ -122,8 +126,9 @@ func (h *Handler) GetSafeState() *starv1.ControllerState {
 // convertToVelocityCommand converts arcade drive (linear, angular) to differential drive (left, right).
 //
 // Implements differential drive inverse kinematics:
-//   vL = v - (ω * wheelBase) / 2
-//   vR = v + (ω * wheelBase) / 2
+//
+//	vL = v - (ω * wheelBase) / 2
+//	vR = v + (ω * wheelBase) / 2
 //
 // where v is linear velocity (m/s), ω is angular velocity (rad/s), and wheelBase is track width (m).
 func convertToVelocityCommand(state *starv1.ControllerState) *starv1.VelocityCommand {
@@ -134,9 +139,9 @@ func convertToVelocityCommand(state *starv1.ControllerState) *starv1.VelocityCom
 	vRight := state.LinearVel + (state.AngularVel * halfBase)
 
 	return &starv1.VelocityCommand{
-		LeftVelocityMps:  float64(vLeft),
-		RightVelocityMps: float64(vRight),
-		Sequence:         0,
-		TimestampUs:      time.Now().UnixMicro(),
+		Motor_0VelocityMps: float64(vLeft),
+		Motor_1VelocityMps: float64(vRight),
+		Sequence:           0,
+		TimestampUs:        time.Now().UnixMicro(),
 	}
 }

@@ -15,15 +15,16 @@ import (
 // GatewayService implements the gRPC GatewayService for ROS2 ↔ UI bridging.
 //
 // Architecture:
-//   ROS2 (C++) ↔ gRPC ↔ GatewayService (Go) ↔ WebSocket ↔ UI (TypeScript)
+//
+//	ROS2 (C++) ↔ gRPC ↔ GatewayService (Go) ↔ WebSocket ↔ UI (TypeScript)
 //
 // Data flows:
-// 1. Telemetry (ROS2 → UI):
-//    ROS2 calls ForwardTelemetry() → cached → WebSocket streams to UI
-// 2. Teleop (UI → ROS2):
-//    UI sends via WebSocket → UpdateTeleopCommand() → ROS2 polls GetTeleopCommand()
-// 3. PID Gains (UI → ROS2):
-//    UI sends via WebSocket → SetPIDGains() → ROS2 → SPI → RX72N
+//  1. Telemetry (ROS2 → UI):
+//     ROS2 calls ForwardTelemetry() → cached → WebSocket streams to UI
+//  2. Teleop (UI → ROS2):
+//     UI sends via WebSocket → UpdateTeleopCommand() → ROS2 polls GetTeleopCommand()
+//  3. PID Gains (UI → ROS2):
+//     UI sends via WebSocket → SetPIDGains() → ROS2 → SPI → RX72N
 type GatewayService struct {
 	starv1.UnimplementedGatewayServiceServer
 
@@ -147,10 +148,10 @@ func (s *GatewayService) GetTeleopCommand(
 	} else {
 		// Return zero velocity (safe default)
 		cmd = &starv1.VelocityCommand{
-			LeftVelocityMps:  0.0,
-			RightVelocityMps: 0.0,
-			Sequence:         0,
-			TimestampUs:      time.Now().UnixMicro(),
+			Motor_0VelocityMps: 0.0,
+			Motor_1VelocityMps: 0.0,
+			Sequence:           0,
+			TimestampUs:        time.Now().UnixMicro(),
 		}
 	}
 
@@ -240,7 +241,7 @@ func (s *GatewayService) UpdateTeleopCommand(cmd *starv1.VelocityCommand) {
 	s.teleopMu.Unlock()
 
 	log.Printf("Teleop updated: left=%.2fm/s, right=%.2fm/s",
-		cmd.LeftVelocityMps, cmd.RightVelocityMps)
+		cmd.Motor_0VelocityMps, cmd.Motor_1VelocityMps)
 }
 
 // GetLatestTelemetry returns the cached telemetry data for UI streaming.
