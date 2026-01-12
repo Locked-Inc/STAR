@@ -6,9 +6,8 @@
 #include <sensor_msgs/msg/battery_state.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 
-#include "star/v1/battery.pb.h"
+#include "star/v1/battery_management.pb.h"
 #include "star/v1/motor_control.pb.h"
-#include "star/v1/pid_config.pb.h"
 
 #include <cmath>
 #include <gtest/gtest.h>

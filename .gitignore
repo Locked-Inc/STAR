@@ -133,3 +133,6 @@ yocto-downloads/
 yocto-sstate-cache/
 ros2_cross_ws/
 PR_REVIEWS.md
+# ROS 2 / Colcon build artifacts
+install/
+log/

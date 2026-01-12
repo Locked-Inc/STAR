@@ -23,6 +23,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(nav_msgs REQUIRED)
 
 # System dependencies (Protobuf and gRPC)
 find_package(Protobuf REQUIRED)
@@ -157,6 +158,7 @@ if(BUILD_TESTING)
     geometry_msgs
     sensor_msgs
     std_msgs
+    nav_msgs
   )
 endif()
 
