@@ -23,7 +23,6 @@ linters:
     - unused        # Detect unused constants, variables, functions
 
     # Additional linters for code quality
-    - goimports     # Enforce goimports formatting
     - misspell      # Fix common spelling mistakes
     - revive        # Fast, configurable, extensible linter
     - unconvert     # Remove unnecessary type conversions
