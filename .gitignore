@@ -136,3 +136,6 @@ PR_REVIEWS.md
 # ROS 2 / Colcon build artifacts
 install/
 log/
+
+# Dev container (personal config - do not share)
+.devcontainer/
