@@ -147,6 +147,8 @@ func (s *GatewayService) GetTeleopCommand(
 		cmd = cachedCmd
 	} else {
 		// Return zero velocity (safe default)
+		log.Printf("Teleop watchdog triggered: no command available or stale (age=%dms, threshold=%dms)",
+			commandAgeMs, s.teleopStalenessThreshold.Milliseconds())
 		cmd = &starv1.VelocityCommand{
 			FrontLeftVelocityMps:  0.0,
 			FrontRightVelocityMps: 0.0,
