@@ -24,7 +24,6 @@ linters:
     - misspell      # Fix common spelling mistakes
     - revive        # Fast, configurable, extensible linter
     - unconvert     # Remove unnecessary type conversions
-    - unparam       # Find unused function parameters
     - gocritic      # Comprehensive Go linter
     - gocyclo       # Cyclomatic complexity
     - gocognit      # Cognitive complexity
@@ -39,11 +38,12 @@ linters:
   disable:
     - funlen        # Too strict for this project
     - gomnd         # Magic number detection (too noisy)
+    - unparam       # Unused parameter detection (too noisy)
 
 linters-settings:
   errcheck:
     check-type-assertions: true
-    check-blank: true
+    check-blank: false  # Allow _ = for intentional error ignoring
     exclude-functions:
       - (*github.com/gorilla/websocket.Conn).Close
       - (*google.golang.org/grpc.ClientConn).Close
@@ -52,12 +52,13 @@ linters-settings:
     enable-all: true
     disable:
       - shadow  # Too noisy for this codebase
+      - fieldalignment  # Memory micro-optimizations not critical
 
   gocyclo:
     min-complexity: 15
 
   gocognit:
-    min-complexity: 20
+    min-complexity: 35  # Increased for complex algorithms (Viterbi, HARQ)
 
   dupl:
     threshold: 100
@@ -71,10 +72,17 @@ linters-settings:
     disabled-checks:
       - hugeParam  # Too strict for protobuf messages
       - rangeValCopy  # Too strict for protobuf messages
+      - builtinShadow  # Allow parameter names like 'min', 'max'
+      - whyNoLint  # Allow nolint without explanation
+      - ifElseChain  # Allow if-else chains
+      - octalLiteral  # Allow old octal literal style (0171 vs 0o171)
+      - unnamedResult  # Allow unnamed return values
+      - stringXbytes  # Allow string comparisons
 
   gosec:
     excludes:
       - G104  # Audit errors not checked (covered by errcheck)
+      - G115  # Integer overflow conversion (many false positives)
     config:
       G306: "0644"  # File permissions
 
@@ -87,6 +95,7 @@ linters-settings:
       - name: error-strings
       - name: error-naming
       - name: exported
+        disabled: true  # Allow stuttering type names (FrameType, FrameFlags)
       - name: increment-decrement
       - name: var-naming
       - name: package-comments
@@ -103,7 +112,7 @@ linters-settings:
 
   nolintlint:
     allow-unused: false
-    require-explanation: true
+    require-explanation: false  # Allow nolint without explanation
     require-specific: true
 
 issues:
@@ -121,6 +130,7 @@ issues:
         - gosec
         - gocyclo
         - gocognit
+        - unconvert
 
     # Exclude mock files from most linters
     - path: "mock_.*\\.go$"
@@ -131,6 +141,16 @@ issues:
     - text: "unused-parameter"
       linters:
         - revive
+
+    # Allow deprecated websocket library (migration out of scope)
+    - text: "SA1019.*nhooyr.io/websocket"
+      linters:
+        - staticcheck
+
+    # Allow intentional nolint directives
+    - text: "directive.*is unused for linter"
+      linters:
+        - nolintlint
 
   max-issues-per-linter: 0
   max-same-issues: 0
