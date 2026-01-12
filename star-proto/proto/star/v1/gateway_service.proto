@@ -1,0 +1,157 @@
+// gateway_service.proto - STAR Gateway Service Protocol Buffer Definitions
+// gRPC service for bidirectional communication between ROS2 and Gateway (UI).
+//
+// Architecture:
+//   ROS2 (C++) ↔ gRPC ↔ Gateway (Go) ↔ WebSocket ↔ UI (TypeScript)
+//
+// Following Boston Dynamics style guide:
+// - Proto3 only, 100 char line limit, 4 space indent
+// - MKS units (meters per second, radians)
+// - All fields documented with units and valid ranges
+//
+// STAR Project - Texas A&M University
+// January 2026
+
+syntax = "proto3";
+
+package star.v1;
+
+import "star/v1/battery_management.proto";
+import "star/v1/common.proto";
+import "star/v1/motor_control.proto";
+import "star/v1/telemetry.proto";
+
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
+option java_multiple_files = true;
+option java_outer_classname = "GatewayServiceProto";
+option java_package = "com.star.proto.v1";
+
+// Gateway service for bidirectional ROS2 ↔ UI communication.
+//
+// This service acts as a bridge between:
+// - ROS2 bridge node (C++ gRPC client) - forwards telemetry, polls for commands
+// - Gateway WebSocket handler (Go server) - receives UI commands, streams telemetry
+//
+// Data flow:
+// 1. Telemetry (ROS2 → UI):
+//    ROS2 calls ForwardTelemetry() → Gateway caches → WebSocket streams to UI
+//
+// 2. Teleop (UI → ROS2):
+//    UI sends via WebSocket → Gateway caches → ROS2 polls GetTeleopCommand()
+//
+// 3. PID Gains (UI → ROS2 → Motor Controller):
+//    UI sends via WebSocket → Gateway calls SetPIDGains() → ROS2 → SPI → RX72N
+service GatewayService {
+  // Forward telemetry data from ROS2 to Gateway for UI streaming.
+  //
+  // Called by ROS2 bridge node at 10 Hz to push latest robot status and
+  // battery state. Gateway caches this data and streams to UI clients via WebSocket.
+  //
+  // Non-blocking: Returns immediately after caching data.
+  rpc ForwardTelemetry(ForwardTelemetryRequest) returns (ForwardTelemetryResponse);
+
+  // Get latest teleop command for ROS2 to execute.
+  //
+  // Called by ROS2 bridge node at 50 Hz to poll for latest teleop command
+  // from UI. Returns cached command with timestamp for staleness checking.
+  //
+  // If no command received within 500ms, ROS2 should send zero velocity (safety).
+  rpc GetTeleopCommand(GetTeleopCommandRequest) returns (GetTeleopCommandResponse);
+
+  // Set PID gains for motor velocity control.
+  //
+  // Called by Gateway when UI requests PID tuning. Gateway forwards request
+  // to ROS2, which then forwards to motor controller via SPI bridge.
+  //
+  // Blocking: Waits for confirmation from motor controller.
+  rpc SetPIDGains(SetPIDGainsRequest) returns (SetPIDGainsResponse);
+}
+
+// ============================================================================
+// ForwardTelemetry: ROS2 → Gateway → UI
+// ============================================================================
+
+// Request to forward telemetry from ROS2 to Gateway.
+message ForwardTelemetryRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // Robot system status (mode, connections, uptime).
+  // Forwarded from /robot_status ROS2 topic.
+  SystemStatus system_status = 2;
+
+  // Battery state (voltage, current, SOC, temperature).
+  // Forwarded from /battery_state ROS2 topic.
+  BatteryState battery_state = 3;
+
+  // Optional: Additional telemetry data (IMU, GPS, etc.).
+  // Can be added in future without breaking changes.
+  TelemetryData telemetry = 4;
+}
+
+// Response to telemetry forwarding.
+message ForwardTelemetryResponse {
+  // Standard response header.
+  ResponseHeader header = 1;
+
+  // True if telemetry was successfully cached for UI streaming.
+  bool cached = 2;
+
+  // Number of active UI WebSocket clients receiving this telemetry.
+  int32 active_clients = 3;
+}
+
+// ============================================================================
+// GetTeleopCommand: UI → Gateway → ROS2
+// ============================================================================
+
+// Request for latest teleop command from Gateway.
+message GetTeleopCommandRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+}
+
+// Response with latest teleop command.
+message GetTeleopCommandResponse {
+  // Standard response header.
+  ResponseHeader header = 1;
+
+  // Latest velocity command from UI.
+  // If no command received yet, contains zero velocities.
+  VelocityCommand command = 2;
+
+  // True if a valid command is available (not just zeros).
+  bool command_available = 3;
+
+  // Age of command in milliseconds (for staleness checking).
+  // ROS2 should reject commands older than 500ms.
+  int64 command_age_ms = 4;
+}
+
+// ============================================================================
+// SetPIDGains: UI → Gateway → ROS2 → Motor Controller
+// ============================================================================
+
+// Request to set PID gains for motor velocity control.
+message SetPIDGainsRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // PID configuration to apply.
+  PidConfig pid_config = 2;
+
+  // Motor ID to configure (0 = left, 1 = right, -1 = both).
+  int32 motor_id = 3;
+}
+
+// Response to PID gains update.
+message SetPIDGainsResponse {
+  // Standard response header.
+  ResponseHeader header = 1;
+
+  // True if gains were successfully applied to motor controller.
+  bool success = 2;
+
+  // Human-readable message (e.g., "PID gains updated for both motors").
+  string message = 3;
+}

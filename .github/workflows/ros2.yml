@@ -33,7 +33,12 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends \
             python3-pip \
-            python3-colcon-common-extensions
+            python3-colcon-common-extensions \
+            libprotobuf-dev \
+            protobuf-compiler \
+            protobuf-compiler-grpc \
+            libgrpc++-dev \
+            libgrpc-dev
 
       - name: Initialize rosdep
         run: |
@@ -43,6 +48,43 @@ jobs:
         run: |
           cd star-ros2
           rosdep install --from-paths src --ignore-src -r -y --rosdistro jazzy
+
+      - name: Install buf
+        run: |
+          BUF_VERSION=1.28.1
+          curl -sSL \
+            "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" \
+            -o "/usr/local/bin/buf"
+          chmod +x /usr/local/bin/buf
+
+      - name: Generate Protobuf C++ code
+        run: |
+          cd star-proto
+
+          # Copy proto files to temp directory to avoid buf.yaml BSR configuration
+          mkdir -p /tmp/star-proto
+          cp -r proto/star /tmp/star-proto/
+
+          # Create minimal buf.yaml in temp directory (no BSR name)
+          cat > /tmp/star-proto/buf.yaml <<EOF
+          version: v1
+          lint:
+            use: [DEFAULT]
+          EOF
+
+          # Create buf.gen.yaml for C++ only
+          # Pin to Ubuntu 24.04 versions: protobuf 3.21.12, grpc 1.51.1
+          cat > /tmp/buf.gen.ros2.yaml <<EOF
+          version: v1
+          plugins:
+            - plugin: buf.build/protocolbuffers/cpp:v21.12
+              out: $PWD/gen/cpp
+            - plugin: buf.build/grpc/cpp:v1.51.1
+              out: $PWD/gen/cpp
+          EOF
+
+          # Generate C++ code from temp directory (no BSR pollution)
+          buf generate /tmp/star-proto --template /tmp/buf.gen.ros2.yaml
 
       - name: Build packages
         shell: bash
@@ -161,6 +203,9 @@ jobs:
     # NOTE: Non-blocking during infrastructure phase
     # Will become blocking in future PRs when application code is added
     continue-on-error: true
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout repository
