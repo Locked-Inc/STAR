@@ -256,14 +256,14 @@ func TestPidConfigRoundTrip(t *testing.T) {
 
 func TestImuDataRoundTrip(t *testing.T) {
 	tests := []struct {
-		name    string
-		accelX  float64
-		accelY  float64
-		accelZ  float64
-		gyroX   float64
-		gyroY   float64
-		gyroZ   float64
-		desc    string
+		name   string
+		accelX float64
+		accelY float64
+		accelZ float64
+		gyroX  float64
+		gyroY  float64
+		gyroZ  float64
+		desc   string
 	}{
 		{"rest", 0.0, 0.0, 9.81, 0.0, 0.0, 0.0, "At rest, gravity on Z"},
 		{"tilted", 4.9, 0.0, 8.5, 0.0, 0.0, 0.0, "Tilted 30 degrees"},

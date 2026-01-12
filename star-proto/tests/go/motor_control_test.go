@@ -186,14 +186,14 @@ func TestEncoderData_4Motors(t *testing.T) {
 func TestMotorStatus_4Motors(t *testing.T) {
 	for motorID := int32(0); motorID < 4; motorID++ {
 		status := &starv1.MotorStatus{
-			MotorId:           motorID,
-			DutyCyclePercent:  75.5,
-			VelocityMps:       1.5,
-			TargetVelocityMps: 1.5,
+			MotorId:            motorID,
+			DutyCyclePercent:   75.5,
+			VelocityMps:        1.5,
+			TargetVelocityMps:  1.5,
 			TemperatureCelsius: 45.0,
-			CurrentMa:         2500.0,
-			FaultFlags:        0,
-			State:             starv1.MotorState_MOTOR_STATE_RUNNING,
+			CurrentMa:          2500.0,
+			FaultFlags:         0,
+			State:              starv1.MotorState_MOTOR_STATE_RUNNING,
 		}
 
 		data, err := proto.Marshal(status)
@@ -215,7 +215,7 @@ func TestMotorStatus_4Motors(t *testing.T) {
 // TestMotorPowerCommand_4Motors verifies direct motor power control
 func TestMotorPowerCommand_4Motors(t *testing.T) {
 	testCases := []struct {
-		motorID         int32
+		motorID          int32
 		dutyCyclePercent float64
 	}{
 		{0, 50.0},
