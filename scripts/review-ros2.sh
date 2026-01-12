@@ -131,7 +131,8 @@ check_naming_conventions() {
     # Check 1.3: Member variables have trailing underscore
     TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
     local bad_members
-    bad_members=$(echo "$cpp_files" | xargs grep -Hn "^  [a-z][a-z0-9_]* [a-z][a-z0-9_]*;" 2>/dev/null | grep -v "_;" || true)
+    # Look for member variable declarations (exclude control flow statements)
+    bad_members=$(echo "$cpp_files" | xargs grep -Hn "^  [a-z][a-z0-9_]* [a-z][a-z0-9_]*;" 2>/dev/null | grep -v "_;" | grep -vE "(return|if|for|while|switch|case|break|continue|throw|delete|new|const|static|typedef)" || true)
     if [ -z "$bad_members" ]; then
         PASSED_CHECKS=$((PASSED_CHECKS + 1))
         category_passed=$((category_passed + 1))
