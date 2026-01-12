@@ -4,6 +4,8 @@
 # STAR Project - Texas A&M University
 # January 2026
 
+version: 2
+
 run:
   timeout: 5m
   tests: true
