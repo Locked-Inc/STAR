@@ -206,11 +206,15 @@ func (s *GatewayService) SetPIDGains(
 	var motorDesc string
 	switch motorID {
 	case 0:
-		motorDesc = "left motor"
+		motorDesc = "front left motor"
 	case 1:
-		motorDesc = "right motor"
+		motorDesc = "front right motor"
+	case 2:
+		motorDesc = "back left motor"
+	case 3:
+		motorDesc = "back right motor"
 	default:
-		motorDesc = "both motors"
+		motorDesc = "all motors"
 	}
 
 	// Build response header
