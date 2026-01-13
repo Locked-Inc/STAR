@@ -1,5 +1,5 @@
 # .clang-format for ROS2 C++ code in STAR project
-# Extends base firmware style with ROS2-specific conventions
+# Aligned with ROS2 uncrustify style guide
 
 BasedOnStyle: LLVM
 
@@ -19,13 +19,14 @@ BreakBeforeBraces: Custom
 BraceWrapping:
   AfterControlStatement: false  # Cuddle braces for if/while/for
   AfterFunction: true           # Functions on new line
-  AfterClass: false
-  AfterStruct: false
+  AfterClass: true              # ROS2: class braces on new line
+  AfterStruct: true             # ROS2: struct braces on new line
   AfterUnion: false
   AfterEnum: false
-  AfterNamespace: false
+  AfterNamespace: true          # ROS2: namespace braces on new line
   BeforeCatch: false
   BeforeElse: false
+  BeforeWhile: false
 
 AllowShortBlocksOnASingleLine: Never
 AllowShortIfStatementsOnASingleLine: Never
@@ -38,29 +39,38 @@ AllowShortFunctionsOnASingleLine: Empty
 SpaceBeforeParens: ControlStatements
 SpaceAfterCStyleCast: false
 SpaceBeforeAssignmentOperators: true
+SpacesInAngles: false
+DerivePointerAlignment: false
+
+# ROS2 uncrustify style: space on both sides of & and *
+# This creates: Type & ref, Type * ptr (not Type& ref, Type* ptr)
+SpaceBeforeRangeBasedForLoopColon: true
 
 #----------------------------------------------------------------------------
 # Line Breaking and Wrapping
 #----------------------------------------------------------------------------
-ColumnLimit: 120  # ROS2 standard (100 for C firmware)
+ColumnLimit: 100  # ROS2 cpplint standard
 
 AlignAfterOpenBracket: Align
 BinPackParameters: false
 BinPackArguments: false
+AlwaysBreakTemplateDeclarations: Yes
 
 #----------------------------------------------------------------------------
 # Comment Handling
 #----------------------------------------------------------------------------
 ReflowComments: false
 AlignTrailingComments: true
+SpacesBeforeTrailingComments: 2  # ROS2: 2 spaces before inline comments
 
 #----------------------------------------------------------------------------
 # Alignment
 #----------------------------------------------------------------------------
-AlignConsecutiveMacros: true
-AlignConsecutiveDeclarations: true
-AlignConsecutiveAssignments: true
-PointerAlignment: Left
+AlignConsecutiveMacros: Consecutive
+AlignConsecutiveDeclarations: false  # ROS2: Don't force align all declarations
+AlignConsecutiveAssignments: false   # ROS2: Don't force align all assignments
+PointerAlignment: Right               # ROS2: Type & ref, Type * ptr
+ReferenceAlignment: Right             # ROS2: Type & ref
 DerivePointerAlignment: false
 
 #----------------------------------------------------------------------------
@@ -69,33 +79,26 @@ DerivePointerAlignment: false
 SortIncludes: true
 IncludeBlocks: Regroup
 IncludeCategories:
-  # 1. ROS2 core libraries
-  - Regex:           '^<rclcpp/'
+  # 1. Main header (if applicable)
+  - Regex:           '^".*\.hpp"'
     Priority:        1
-  # 2. ROS2 message packages
-  - Regex:           '^<(std_msgs|geometry_msgs|sensor_msgs|nav_msgs)/'
+  # 2. C system headers
+  - Regex:           '^<(assert|ctype|errno|float|limits|locale|math|setjmp|signal|stdarg|stddef|stdio|stdlib|string|time|fcntl|sys|unistd)\.h>'
     Priority:        2
-  # 3. Other ROS2 packages
-  - Regex:           '^<.*_msgs/'
-    Priority:        3
-  # 4. Project headers (star/*)
-  - Regex:           '^"star/'
-    Priority:        4
-  # 5. gRPC/Protobuf
-  - Regex:           '^<(grpc|google/protobuf)/'
-    Priority:        5
-  # 6. System C++ headers
-  - Regex:           '^<.*\.hpp>'
-    Priority:        6
-  # 7. System C headers
+  # 3. C++ system headers
   - Regex:           '^<.*>'
-    Priority:        7
-  # 8. Everything else
-  - Regex:           '.*'
-    Priority:        8
+    Priority:        3
+  # 4. ROS2 and third-party headers (tf2, etc)
+  - Regex:           '^<(rclcpp|std_msgs|geometry_msgs|sensor_msgs|nav_msgs|tf2).*>'
+    Priority:        4
+  # 5. Local project headers
+  - Regex:           '^"'
+    Priority:        5
 
 #----------------------------------------------------------------------------
 # Miscellaneous
 #----------------------------------------------------------------------------
-AlwaysBreakTemplateDeclarations: Yes
+AccessModifierOffset: -2
+IndentAccessModifiers: false
+EmptyLineBeforeAccessModifier: LogicalBlock
 FixNamespaceComments: true
