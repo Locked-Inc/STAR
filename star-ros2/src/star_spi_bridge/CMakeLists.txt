@@ -13,6 +13,8 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 find_package(Protobuf REQUIRED)
 
@@ -53,13 +55,15 @@ target_include_directories(spi_driver PUBLIC
 )
 target_link_libraries(spi_driver
   ${Protobuf_LIBRARIES}
-  geometry_msgs::geometry_msgs
-  nav_msgs::nav_msgs
-  sensor_msgs::sensor_msgs
 )
 ament_target_dependencies(spi_driver
   rclcpp
   rclcpp_lifecycle
+  geometry_msgs
+  nav_msgs
+  sensor_msgs
+  tf2
+  tf2_geometry_msgs
 )
 
 # Main Node Executable
