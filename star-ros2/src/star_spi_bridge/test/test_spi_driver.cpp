@@ -1,8 +1,11 @@
+// Copyright 2026 Locked Inc.
+
 #include <gtest/gtest.h>
 
 #include "star_spi_bridge/spi_driver.hpp"
 
-using namespace star_spi_bridge;
+using star_spi_bridge::FrameType;
+using star_spi_bridge::SpiDriver;
 
 class SpiDriverTest : public ::testing::Test {
 protected:

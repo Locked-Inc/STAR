@@ -1,17 +1,22 @@
+// Copyright 2026 Locked Inc.
+
 #include "star_spi_bridge/spi_driver.hpp"
 
-#include <cstring>
 #include <fcntl.h>
-#include <iomanip>
-#include <iostream>
 #include <sys/ioctl.h>
 #include <unistd.h>
+
+#include <cstring>
+#include <iomanip>
+#include <iostream>
 
 #ifdef __linux__
 #include <linux/spi/spidev.h>
 #else
-// Mock spidev headers if on macOS/non-Linux to allow compilation (for development/analysis only)
-// Ideally this code runs on Linux/RPi5. On macOS, these headers likely don't exist or are different.
+// Mock spidev headers if on macOS/non-Linux to allow compilation (for
+// development/analysis only)
+// Ideally this code runs on Linux/RPi5. On macOS, these headers likely
+// don't exist or are different.
 #ifndef SPI_IOC_MESSAGE
 #define SPI_IOC_MESSAGE(N)       0
 #define SPI_MODE_0               0
@@ -19,7 +24,8 @@
 #define SPI_IOC_WR_BITS_PER_WORD 0
 #define SPI_IOC_WR_MAX_SPEED_HZ  0
 
-struct spi_ioc_transfer {
+struct spi_ioc_transfer
+{
   uint64_t tx_buf;
   uint64_t rx_buf;
   uint32_t len;
@@ -32,13 +38,14 @@ struct spi_ioc_transfer {
 #endif
 #endif
 
-namespace star_spi_bridge {
+namespace star_spi_bridge
+{
 
 uint32_t SpiDriver::crc32_table_[256];
 bool     SpiDriver::crc32_table_initialized_ = false;
 
-SpiDriver::SpiDriver(const std::string& device_path, uint32_t speed_hz)
-    : device_path_(device_path), speed_hz_(speed_hz), spi_fd_(-1)
+SpiDriver::SpiDriver(const std::string & device_path, uint32_t speed_hz)
+: device_path_(device_path), speed_hz_(speed_hz), spi_fd_(-1)
 {
   if (!crc32_table_initialized_) {
     init_crc32_table();
@@ -56,7 +63,8 @@ bool SpiDriver::initialize()
   // Open SPI device
   spi_fd_ = open(device_path_.c_str(), O_RDWR);
   if (spi_fd_ < 0) {
-    std::cerr << "Failed to open SPI device: " << device_path_ << " (" << strerror(errno) << ")" << std::endl;
+    std::cerr << "Failed to open SPI device: " << device_path_ << " (" << strerror(errno) << ")" <<
+      std::endl;
     return false;
   }
 
@@ -94,7 +102,7 @@ void SpiDriver::close_device()
   }
 }
 
-bool SpiDriver::transfer(const std::vector<uint8_t>& tx_data, std::vector<uint8_t>& rx_data)
+bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8_t> & rx_data)
 {
   if (spi_fd_ < 0) {
     return false;
@@ -107,10 +115,10 @@ bool SpiDriver::transfer(const std::vector<uint8_t>& tx_data, std::vector<uint8_
   struct spi_ioc_transfer xfer;
   std::memset(&xfer, 0, sizeof(xfer));
 
-  xfer.tx_buf        = reinterpret_cast<uint64_t>(tx_data.data());
-  xfer.rx_buf        = reinterpret_cast<uint64_t>(rx_data.data());
-  xfer.len           = static_cast<uint32_t>(tx_data.size());
-  xfer.speed_hz      = speed_hz_;
+  xfer.tx_buf = reinterpret_cast<uint64_t>(tx_data.data());
+  xfer.rx_buf = reinterpret_cast<uint64_t>(rx_data.data());
+  xfer.len = static_cast<uint32_t>(tx_data.size());
+  xfer.speed_hz = speed_hz_;
   xfer.bits_per_word = 8;
 
   int ret = ioctl(spi_fd_, SPI_IOC_MESSAGE(1), &xfer);
@@ -123,7 +131,8 @@ bool SpiDriver::transfer(const std::vector<uint8_t>& tx_data, std::vector<uint8_
 }
 
 void SpiDriver::encode_frame(
-  uint16_t seq, FrameType type, uint8_t flags, const std::vector<uint8_t>& payload, std::vector<uint8_t>& out_frame)
+  uint16_t seq, FrameType type, uint8_t flags, const std::vector<uint8_t> & payload,
+  std::vector<uint8_t> & out_frame)
 {
   // [SYNC(2)][SEQ(2)][LEN(2)][TYPE(1)][FLAGS(1)][PAYLOAD(N)][CRC(4)]
   size_t frame_size = 8 + payload.size() + 4;
@@ -164,9 +173,10 @@ void SpiDriver::encode_frame(
 }
 
 bool SpiDriver::decode_frame(
-  const std::vector<uint8_t>& frame, uint16_t& seq, FrameType& type, uint8_t& flags, std::vector<uint8_t>& payload)
+  const std::vector<uint8_t> & frame, uint16_t & seq, FrameType & type, uint8_t & flags,
+  std::vector<uint8_t> & payload)
 {
-  if (frame.size() < k_header_size + 4) { // Header (8) + CRC (4) = 12 bytes min
+  if (frame.size() < k_header_size + 4) {  // Header (8) + CRC (4) = 12 bytes min
     return false;
   }
 
@@ -190,16 +200,18 @@ bool SpiDriver::decode_frame(
   uint32_t             calculated_crc = calculate_crc32(data_to_check);
 
   uint32_t received_crc =
-    static_cast<uint32_t>(frame[frame.size() - 4]) | (static_cast<uint32_t>(frame[frame.size() - 3]) << 8) |
-    (static_cast<uint32_t>(frame[frame.size() - 2]) << 16) | (static_cast<uint32_t>(frame[frame.size() - 1]) << 24);
+    static_cast<uint32_t>(frame[frame.size() - 4]) |
+    (static_cast<uint32_t>(frame[frame.size() - 3]) << 8) |
+    (static_cast<uint32_t>(frame[frame.size() - 2]) <<
+    16) | (static_cast<uint32_t>(frame[frame.size() - 1]) << 24);
 
   if (calculated_crc != received_crc) {
     return false;
   }
 
   // Extract fields
-  seq   = (static_cast<uint16_t>(frame[2]) << 8) | frame[3];
-  type  = static_cast<FrameType>(frame[6]);
+  seq = (static_cast<uint16_t>(frame[2]) << 8) | frame[3];
+  type = static_cast<FrameType>(frame[6]);
   flags = frame[7];
 
   payload.assign(frame.begin() + 8, frame.end() - 4);
@@ -226,7 +238,7 @@ void SpiDriver::init_crc32_table()
   }
 }
 
-uint32_t SpiDriver::calculate_crc32(const std::vector<uint8_t>& data)
+uint32_t SpiDriver::calculate_crc32(const std::vector<uint8_t> & data)
 {
   if (!crc32_table_initialized_) {
     init_crc32_table();
@@ -236,9 +248,9 @@ uint32_t SpiDriver::calculate_crc32(const std::vector<uint8_t>& data)
   uint32_t crc = 0xFFFFFFFF;
   for (uint8_t byte : data) {
     uint8_t lookup_index = (crc ^ byte) & 0xFF;
-    crc                  = (crc >> 8) ^ crc32_table_[lookup_index];
+    crc = (crc >> 8) ^ crc32_table_[lookup_index];
   }
   return crc ^ 0xFFFFFFFF;
 }
 
-} // namespace star_spi_bridge
+}  // namespace star_spi_bridge
