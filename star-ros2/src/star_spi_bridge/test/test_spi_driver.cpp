@@ -21,7 +21,8 @@ TEST_F(SpiDriverTest, CRC32Calculation) {
 
 TEST_F(SpiDriverTest, FrameEncoding) {
     std::vector<uint8_t> payload = {0x01, 0x02, 0x03};
-    auto frame = SpiDriver::encode_frame(100, 0x10, 0x00, payload);
+    std::vector<uint8_t> frame;
+    SpiDriver::encode_frame(100, FrameType::VelocityCommand, 0x00, payload, frame);
     
     // Header (8) + Payload (3) + CRC (4) = 15 bytes
     EXPECT_EQ(frame.size(), 15);
@@ -40,7 +41,8 @@ TEST_F(SpiDriverTest, FrameDecoding) {
     // For Red Phase, we just assert that decode fails on garbage
     std::vector<uint8_t> garbage = {0x00, 0x00, 0x00};
     uint16_t seq;
-    uint8_t type, flags;
+    FrameType type;
+    uint8_t flags;
     std::vector<uint8_t> payload;
     
     EXPECT_FALSE(SpiDriver::decode_frame(garbage, seq, type, flags, payload));

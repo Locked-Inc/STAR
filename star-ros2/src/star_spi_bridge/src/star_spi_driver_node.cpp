@@ -163,14 +163,11 @@ void StarSpiDriverNode::timer_callback() {
     std::vector<uint8_t> payload(velocity_cmd.ByteSizeLong());
     velocity_cmd.SerializeToArray(payload.data(), payload.size());
 
-    // Type 0x01 = VelocityCommand (Assumed from spec or common usage, verify!)
-    // Spec says: "[TYPE: frame type (1B)]"
-    // I should define these types somewhere.
-    // Let's assume 0x01 for VelocityCommand.
-    uint8_t frame_type = 0x01; 
+    FrameType frame_type = FrameType::VelocityCommand; 
     uint8_t flags = 0x00;
     
-    auto tx_frame = SpiDriver::encode_frame(tx_seq_++, frame_type, flags, payload);
+    std::vector<uint8_t> tx_frame;
+    SpiDriver::encode_frame(tx_seq_++, frame_type, flags, payload, tx_frame);
 
     // 4. SPI Transfer
     std::vector<uint8_t> rx_frame;
@@ -181,7 +178,7 @@ void StarSpiDriverNode::timer_callback() {
 
     // 5. Decode Frame
     uint16_t rx_seq;
-    uint8_t rx_type;
+    FrameType rx_type;
     uint8_t rx_flags;
     std::vector<uint8_t> rx_payload;
 
@@ -191,9 +188,7 @@ void StarSpiDriverNode::timer_callback() {
     }
 
     // 6. Protobuf -> ROS2
-    // Expected rx_type = 0x02 (TelemetryData)?
-    // Assuming 0x02 for Telemetry.
-    if (rx_type == 0x02) {
+    if (rx_type == FrameType::TelemetryData) {
         star::v1::TelemetryData telemetry;
         if (telemetry.ParseFromArray(rx_payload.data(), rx_payload.size())) {
             

@@ -13,10 +13,6 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(star_common_msgs REQUIRED) 
-# Note: star_common_msgs is assumed to exist based on project structure, 
-# if not we will use standard msgs or create it.
-# Actually, based on plan, we are converting to protobuf, so we might need protobuf.
 
 find_package(Protobuf REQUIRED)
 
