@@ -35,15 +35,14 @@ Goal: Integrate SPI driver and message converter into a ROS2 lifecycle node.
 - [x] Task: Implement 100 Hz timer callback for SPI polling loop.
 - [x] Task: Implement `/cmd_vel` subscription with safety timeout.
 - [x] Task: Create `star_spi_bridge.launch.py`.
-- [ ] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
 
 ## Phase 4: SPI Hardware Integration & Testing
 Goal: Connect to real RX72N hardware and verify end-to-end communication.
 
-- [ ] Task: Configure RPi5 SPI permissions (udev rules, user groups).
-- [ ] Task: Enable real hardware I/O in `SpiDriver`.
-- [ ] Task: Perform hardware validation tests.
-    - [ ] Sub-task: Verify loopback communication.
-    - [ ] Sub-task: Verify motor control and encoder feedback.
-    - [ ] Sub-task: Measure round-trip latency.
-- [ ] Task: Conductor - User Manual Verification 'Phase 4' (Protocol in workflow.md)
+- [x] Task: Configure RPi5 SPI permissions (udev rules, user groups).
+- [x] Task: Enable real hardware I/O in `SpiDriver`.
+- [x] Task: Perform hardware validation tests.
+    - [x] Sub-task: Verify loopback communication.
+    - [x] Sub-task: Verify motor control and encoder feedback.
+    - [x] Sub-task: Measure round-trip latency.- [x] Task: Conductor - User Manual Verification 'Phase 4' (Protocol in workflow.md)
