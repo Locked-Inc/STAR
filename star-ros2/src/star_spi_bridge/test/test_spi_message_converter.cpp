@@ -1,17 +1,18 @@
 // Copyright 2026 Locked Inc.
 
-#include <gtest/gtest.h>
-
 #include <cmath>
 
 #include "star_spi_bridge/spi_message_converter.hpp"
 
+#include <gtest/gtest.h>  // NOLINT
+
 using star_spi_bridge::SpiMessageConverter;
 
-class SpiMessageConverterTest : public ::testing::Test {
+class SpiMessageConverterTest : public ::testing::Test
+{
 protected:
   SpiMessageConverter::Parameters params{0.150, 0.0325, 11599};
-  SpiMessageConverter             converter{params};
+  SpiMessageConverter converter{params};
 };
 
 TEST_F(SpiMessageConverterTest, TwistToVelocity_Forward)
@@ -85,7 +86,7 @@ TEST_F(SpiMessageConverterTest, TelemetryToOdometry_ForwardMovement)
 
   // Second message with forward movement (same ticks on both sides = straight)
   star::v1::TelemetryData telemetry2;
-  int64_t                 ticks = 11599;  // One full wheel revolution
+  int64_t ticks = 11599;  // One full wheel revolution
   telemetry2.mutable_encoder_front_left()->set_ticks(ticks);
   telemetry2.mutable_encoder_front_right()->set_ticks(ticks);
   telemetry2.mutable_encoder_back_left()->set_ticks(ticks);
@@ -169,15 +170,15 @@ TEST_F(SpiMessageConverterTest, TelemetryToJointState_Position)
 
   ASSERT_EQ(joint_state.position.size(), 4u);
   EXPECT_NEAR(joint_state.position[0], 2.0 * M_PI, 0.01);  // FL: 1 rev
-  EXPECT_NEAR(joint_state.position[1], M_PI, 0.01);  // FR: 0.5 rev
+  EXPECT_NEAR(joint_state.position[1], M_PI, 0.01);        // FR: 0.5 rev
   EXPECT_NEAR(joint_state.position[2], 4.0 * M_PI, 0.02);  // BL: 2 rev
-  EXPECT_NEAR(joint_state.position[3], 0.0, 0.001);  // BR: 0 rev
+  EXPECT_NEAR(joint_state.position[3], 0.0, 0.001);        // BR: 0 rev
 }
 
 TEST_F(SpiMessageConverterTest, TelemetryToJointState_Velocity)
 {
   star::v1::TelemetryData telemetry;
-  double                  velocity_mps = 1.0;  // 1 m/s linear
+  double velocity_mps = 1.0;  // 1 m/s linear
   telemetry.mutable_encoder_front_left()->set_velocity_mps(velocity_mps);
   telemetry.mutable_encoder_front_right()->set_velocity_mps(velocity_mps);
   telemetry.mutable_encoder_back_left()->set_velocity_mps(velocity_mps);

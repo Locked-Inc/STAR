@@ -140,7 +140,7 @@ void StarSpiDriverNode::cmd_vel_callback(const geometry_msgs::msg::Twist::Shared
 void StarSpiDriverNode::timer_callback()
 {
   // Check for command velocity timeout (watchdog safety)
-  auto   now = get_clock()->now();
+  auto now = get_clock()->now();
   double time_since_cmd = (now - last_cmd_vel_time_).seconds();
 
   geometry_msgs::msg::Twist cmd_vel_to_send;
@@ -167,7 +167,7 @@ void StarSpiDriverNode::timer_callback()
   velocity_cmd.SerializeToArray(payload.data(), payload.size());
 
   FrameType frame_type = FrameType::VelocityCommand;
-  uint8_t   flags = 0x00;
+  uint8_t flags = 0x00;
 
   std::vector<uint8_t> tx_frame;
   SpiDriver::encode_frame(tx_seq_++, frame_type, flags, payload, tx_frame);
@@ -180,9 +180,9 @@ void StarSpiDriverNode::timer_callback()
   }
 
   // Decode received frame
-  uint16_t             rx_seq;
-  FrameType            rx_type;
-  uint8_t              rx_flags;
+  uint16_t rx_seq;
+  FrameType rx_type;
+  uint8_t rx_flags;
   std::vector<uint8_t> rx_payload;
 
   if (!SpiDriver::decode_frame(rx_frame, rx_seq, rx_type, rx_flags, rx_payload)) {

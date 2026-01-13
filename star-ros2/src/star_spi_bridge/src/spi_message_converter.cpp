@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-
 #include <tf2/LinearMath/Quaternion.h>  // NOLINT(build/include_order)
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 

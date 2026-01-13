@@ -31,8 +31,8 @@ struct spi_ioc_transfer
   uint32_t len;
   uint32_t speed_hz;
   uint16_t delay_usecs;
-  uint8_t  bits_per_word;
-  uint8_t  cs_change;
+  uint8_t bits_per_word;
+  uint8_t cs_change;
   uint32_t pad;
 };
 #endif
@@ -42,7 +42,7 @@ namespace star_spi_bridge
 {
 
 uint32_t SpiDriver::crc32_table_[256];
-bool     SpiDriver::crc32_table_initialized_ = false;
+bool SpiDriver::crc32_table_initialized_ = false;
 
 SpiDriver::SpiDriver(const std::string & device_path, uint32_t speed_hz)
 : device_path_(device_path), speed_hz_(speed_hz), spi_fd_(-1)
@@ -197,7 +197,7 @@ bool SpiDriver::decode_frame(
   // Verify CRC
   // Calculate CRC over Header + Payload (bytes 0 to end-4)
   std::vector<uint8_t> data_to_check(frame.begin(), frame.end() - 4);
-  uint32_t             calculated_crc = calculate_crc32(data_to_check);
+  uint32_t calculated_crc = calculate_crc32(data_to_check);
 
   uint32_t received_crc =
     static_cast<uint32_t>(frame[frame.size() - 4]) |
