@@ -2,12 +2,12 @@
 
 #include "star_spi_bridge/spi_message_converter.hpp"
 
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
-
-#include <tf2/LinearMath/Quaternion.h>  // NOLINT(build/include_order)
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 namespace star_spi_bridge
 {
