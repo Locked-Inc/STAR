@@ -106,7 +106,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
-  
+
   ament_add_gtest(test_spi_driver test/test_spi_driver.cpp)
   target_link_libraries(test_spi_driver spi_driver ${Protobuf_LIBRARIES})
 
