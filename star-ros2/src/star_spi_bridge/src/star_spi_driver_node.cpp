@@ -97,8 +97,7 @@ StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State&)
   cmd.set_back_left_velocity_mps(0.0f);
   cmd.set_back_right_velocity_mps(0.0f);
 
-  // TODO: Send one last frame if possible, but timer is stopped.
-  // Ideally we send it here once.
+  // TODO(safety): Send final zero-velocity frame before deactivation
 
   odom_pub_->on_deactivate();
   joint_state_pub_->on_deactivate();
@@ -139,24 +138,19 @@ void StarSpiDriverNode::cmd_vel_callback(const geometry_msgs::msg::Twist::Shared
 
 void StarSpiDriverNode::timer_callback()
 {
-  // 1. Check timeout
+  // Check for command velocity timeout (watchdog safety)
   auto   now            = get_clock()->now();
   double time_since_cmd = (now - last_cmd_vel_time_).seconds();
 
   geometry_msgs::msg::Twist cmd_vel_to_send;
   if (time_since_cmd > (cmd_vel_timeout_ms_ / 1000.0)) {
-    // Timeout: Send zero velocity
-    // We initialize cmd_vel_to_send as zero by default
+    // Timeout expired: send zero velocity for safety
   } else {
     cmd_vel_to_send = current_cmd_vel_;
   }
 
-  // 2. Convert to VelocityCommand
+  // Convert Twist to protobuf VelocityCommand
   star::v1::VelocityCommand velocity_cmd;
-  // Set timestamp and sequence? Protocol buffers usually have header/timestamp fields if defined.
-  // The spec says: "Add sequence number and timestamp"
-  // Looking at the VelocityCommand protobuf (in my mind), it might just be the fields.
-  // The framing handles the sequence.
 
   if (!converter_->twist_to_velocity_command(cmd_vel_to_send, velocity_cmd)) {
     RCLCPP_WARN(get_logger(), "Failed to convert Twist to VelocityCommand (NaN/Inf?)");
@@ -167,7 +161,7 @@ void StarSpiDriverNode::timer_callback()
     velocity_cmd.set_back_right_velocity_mps(0.0f);
   }
 
-  // 3. Encode Frame
+  // Encode protobuf payload into SPI frame
   std::vector<uint8_t> payload(velocity_cmd.ByteSizeLong());
   velocity_cmd.SerializeToArray(payload.data(), payload.size());
 
@@ -177,14 +171,14 @@ void StarSpiDriverNode::timer_callback()
   std::vector<uint8_t> tx_frame;
   SpiDriver::encode_frame(tx_seq_++, frame_type, flags, payload, tx_frame);
 
-  // 4. SPI Transfer
+  // Perform full-duplex SPI transfer
   std::vector<uint8_t> rx_frame;
   if (!spi_driver_->transfer(tx_frame, rx_frame)) {
     RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 1000, "SPI Transfer Failed");
     return;
   }
 
-  // 5. Decode Frame
+  // Decode received frame
   uint16_t             rx_seq;
   FrameType            rx_type;
   uint8_t              rx_flags;
@@ -195,14 +189,12 @@ void StarSpiDriverNode::timer_callback()
     return;
   }
 
-  // 6. Protobuf -> ROS2
+  // Parse telemetry and publish ROS2 messages
   if (rx_type == FrameType::TelemetryData) {
     star::v1::TelemetryData telemetry;
     if (telemetry.ParseFromArray(rx_payload.data(), rx_payload.size())) {
 
-      // Check Emergency Stop
-      // Assuming there is a field, otherwise we check flags or motor status
-      // The spec says: "Check telemetry.emergency_stop() flag"
+      // Check emergency stop flag from motor controller
       if (telemetry.emergency_stop()) {
         RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 1000, "RX72N EMERGENCY STOP ACTIVE");
       }
