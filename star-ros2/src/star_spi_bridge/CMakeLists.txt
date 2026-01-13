@@ -103,13 +103,11 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_gtest REQUIRED)
   
-  add_executable(test_spi_driver test/test_spi_driver.cpp)
+  ament_add_gtest(test_spi_driver test/test_spi_driver.cpp)
   target_link_libraries(test_spi_driver spi_driver ${Protobuf_LIBRARIES})
-  ament_add_gtest_executable(test_spi_driver test_spi_driver)
 
-  add_executable(test_spi_message_converter test/test_spi_message_converter.cpp)
+  ament_add_gtest(test_spi_message_converter test/test_spi_message_converter.cpp)
   target_link_libraries(test_spi_message_converter spi_driver ${Protobuf_LIBRARIES})
-  ament_add_gtest_executable(test_spi_message_converter test_spi_message_converter)
 endif()
 
 ament_package()
