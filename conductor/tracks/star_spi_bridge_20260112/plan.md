@@ -25,16 +25,16 @@ Goal: Implement bidirectional ROS2 ↔ Protobuf conversion with robot kinematics
 - [x] Task: Write unit tests for `SpiMessageConverter`.
     - [x] Sub-task: Test kinematics scenarios (rotation, translation).
     - [x] Sub-task: Test odometry integration.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
 
 ## Phase 3: ROS2 Lifecycle Node Integration
 Goal: Integrate SPI driver and message converter into a ROS2 lifecycle node.
 
-- [ ] Task: Implement `StarSpiDriverNode` structure and parameters.
-- [ ] Task: Implement lifecycle transitions (configure, activate, deactivate, cleanup).
-- [ ] Task: Implement 100 Hz timer callback for SPI polling loop.
-- [ ] Task: Implement `/cmd_vel` subscription with safety timeout.
-- [ ] Task: Create `star_spi_bridge.launch.py`.
+- [x] Task: Implement `StarSpiDriverNode` structure and parameters.
+- [x] Task: Implement lifecycle transitions (configure, activate, deactivate, cleanup).
+- [x] Task: Implement 100 Hz timer callback for SPI polling loop.
+- [x] Task: Implement `/cmd_vel` subscription with safety timeout.
+- [x] Task: Create `star_spi_bridge.launch.py`.
 - [ ] Task: Conductor - User Manual Verification 'Phase 3' (Protocol in workflow.md)
 
 ## Phase 4: SPI Hardware Integration & Testing
