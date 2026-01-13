@@ -95,7 +95,9 @@ bool SpiDriver::transfer(const std::vector<uint8_t>& tx_data, std::vector<uint8_
         return false;
     }
 
-    rx_data.resize(tx_data.size());
+    if (rx_data.size() != tx_data.size()) {
+        rx_data.resize(tx_data.size());
+    }
 
     struct spi_ioc_transfer xfer;
     std::memset(&xfer, 0, sizeof(xfer));
@@ -115,47 +117,46 @@ bool SpiDriver::transfer(const std::vector<uint8_t>& tx_data, std::vector<uint8_
     return true;
 }
 
-std::vector<uint8_t> SpiDriver::encode_frame(uint16_t seq, uint8_t type, uint8_t flags, const std::vector<uint8_t>& payload) {
+void SpiDriver::encode_frame(uint16_t seq, FrameType type, uint8_t flags, const std::vector<uint8_t>& payload, std::vector<uint8_t>& out_frame) {
     // [SYNC(2)][SEQ(2)][LEN(2)][TYPE(1)][FLAGS(1)][PAYLOAD(N)][CRC(4)]
-    size_t frame_size = 2 + 2 + 2 + 1 + 1 + payload.size() + 4;
-    std::vector<uint8_t> frame;
-    frame.reserve(frame_size);
+    size_t frame_size = 8 + payload.size() + 4;
+    out_frame.clear();
+    out_frame.reserve(frame_size);
 
     // SYNC: 0x55AA (Big Endian)
-    frame.push_back((k_sync_word >> 8) & 0xFF);
-    frame.push_back(k_sync_word & 0xFF);
+    // Note: Header fields (SYNC, SEQ, LEN) are Big Endian per RFC 1700
+    out_frame.push_back((k_sync_word >> 8) & 0xFF);
+    out_frame.push_back(k_sync_word & 0xFF);
 
     // SEQ (Big Endian)
-    frame.push_back((seq >> 8) & 0xFF);
-    frame.push_back(seq & 0xFF);
+    out_frame.push_back((seq >> 8) & 0xFF);
+    out_frame.push_back(seq & 0xFF);
 
     // LEN (Big Endian)
     uint16_t len = static_cast<uint16_t>(payload.size());
-    frame.push_back((len >> 8) & 0xFF);
-    frame.push_back(len & 0xFF);
+    out_frame.push_back((len >> 8) & 0xFF);
+    out_frame.push_back(len & 0xFF);
 
     // TYPE
-    frame.push_back(type);
+    out_frame.push_back(static_cast<uint8_t>(type));
 
     // FLAGS
-    frame.push_back(flags);
+    out_frame.push_back(flags);
 
     // PAYLOAD
-    frame.insert(frame.end(), payload.begin(), payload.end());
+    out_frame.insert(out_frame.end(), payload.begin(), payload.end());
 
     // CRC-32 (IEEE 802.3) - Calculated over Header + Payload
-    uint32_t crc = calculate_crc32(frame); // Frame currently contains Header + Payload
+    uint32_t crc = calculate_crc32(out_frame); 
     
     // Append CRC (Little Endian as per spec "CRC-32: IEEE 802.3 (4B, LE)")
-    frame.push_back(crc & 0xFF);
-    frame.push_back((crc >> 8) & 0xFF);
-    frame.push_back((crc >> 16) & 0xFF);
-    frame.push_back((crc >> 24) & 0xFF);
-
-    return frame;
+    out_frame.push_back(crc & 0xFF);
+    out_frame.push_back((crc >> 8) & 0xFF);
+    out_frame.push_back((crc >> 16) & 0xFF);
+    out_frame.push_back((crc >> 24) & 0xFF);
 }
 
-bool SpiDriver::decode_frame(const std::vector<uint8_t>& frame, uint16_t& seq, uint8_t& type, uint8_t& flags, std::vector<uint8_t>& payload) {
+bool SpiDriver::decode_frame(const std::vector<uint8_t>& frame, uint16_t& seq, FrameType& type, uint8_t& flags, std::vector<uint8_t>& payload) {
     if (frame.size() < k_header_size + 4) { // Header (8) + CRC (4) = 12 bytes min
         return false;
     }
@@ -190,7 +191,7 @@ bool SpiDriver::decode_frame(const std::vector<uint8_t>& frame, uint16_t& seq, u
 
     // Extract fields
     seq = (static_cast<uint16_t>(frame[2]) << 8) | frame[3];
-    type = frame[6];
+    type = static_cast<FrameType>(frame[6]);
     flags = frame[7];
     
     payload.assign(frame.begin() + 8, frame.end() - 4);
