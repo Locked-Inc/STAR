@@ -147,6 +147,9 @@ TEST_F(MessageConverterTest, CommandToTwistPureTranslation)
   star::v1::VelocityCommand command;
   command.set_front_left_velocity_mps(1.0);
   command.set_front_right_velocity_mps(1.0);
+  // Also set back wheels for completeness
+  command.set_back_left_velocity_mps(1.0);
+  command.set_back_right_velocity_mps(1.0);
 
   geometry_msgs::msg::Twist twist;
   ASSERT_TRUE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
@@ -164,6 +167,8 @@ TEST_F(MessageConverterTest, CommandToTwistPureRotation)
   star::v1::VelocityCommand command;
   command.set_front_left_velocity_mps(-wheel_velocity);
   command.set_front_right_velocity_mps(wheel_velocity);
+  command.set_back_left_velocity_mps(-wheel_velocity);
+  command.set_back_right_velocity_mps(wheel_velocity);
 
   geometry_msgs::msg::Twist twist;
   ASSERT_TRUE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
@@ -180,6 +185,8 @@ TEST_F(MessageConverterTest, CommandToTwistMixedMotion)
   star::v1::VelocityCommand command;
   command.set_front_left_velocity_mps(0.5);
   command.set_front_right_velocity_mps(1.5);
+  command.set_back_left_velocity_mps(0.5);
+  command.set_back_right_velocity_mps(1.5);
 
   geometry_msgs::msg::Twist twist;
   ASSERT_TRUE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
