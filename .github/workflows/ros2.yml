@@ -146,18 +146,32 @@ jobs:
   format-check:
     name: C++ Formatting Check
     runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:jazzy-desktop
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install clang-format
+      - name: Check C++ formatting with uncrustify
+        shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install -y clang-format
-
-      - name: Check C++ formatting
-        run: ./scripts/format-ros2.sh --check
+          # Source ROS2 environment (required for ament tools)
+          source /opt/ros/jazzy/setup.bash
+          
+          cd star-ros2/src/star_spi_bridge
+          
+          # Run uncrustify and capture exit code
+          ament_uncrustify --xunit-file /tmp/uncrustify.xml include/star_spi_bridge/*.hpp src/*.cpp test/*.cpp
+          UNCRUSTIFY_EXIT=$?
+          
+          # Check exit code (ament_uncrustify returns 1 if there are formatting issues)
+          if [ $UNCRUSTIFY_EXIT -ne 0 ]; then
+            echo "❌ Code formatting check failed!"
+            echo "Run the following to fix formatting:"
+            echo "  cd star-ros2 && docker run --rm -v \"\$(pwd)/..:/workspaces/STAR\" osrf/ros:jazzy-desktop bash -c \"source /opt/ros/jazzy/setup.bash && cd /workspaces/STAR/star-ros2/src/star_spi_bridge && ament_uncrustify --reformat include/star_spi_bridge/*.hpp src/*.cpp test/*.cpp\""
+            exit 1
+          fi
 
   lint:
     name: Code Quality Checks

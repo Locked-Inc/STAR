@@ -11,18 +11,6 @@
 #ifndef STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
 #define STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
 
-#include "star/v1/battery_management.pb.h"
-#include "star/v1/gateway_service.grpc.pb.h"
-#include "star/v1/gateway_service.pb.h"
-#include "star/v1/motor_control.pb.h"
-#include "star/v1/telemetry.pb.h"
-
-#include <grpcpp/grpcpp.h>
-#include <memory>
-#include <mutex>
-#include <optional>
-#include <string>
-
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/battery_state.hpp"
@@ -30,7 +18,20 @@
 #include "std_msgs/msg/string.hpp"
 #include "std_srvs/srv/set_bool.hpp"
 
-namespace star {
+#include <grpcpp/grpcpp.h>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <string>
+
+#include "star/v1/battery_management.pb.h"
+#include "star/v1/gateway_service.grpc.pb.h"
+#include "star/v1/gateway_service.pb.h"
+#include "star/v1/motor_control.pb.h"
+#include "star/v1/telemetry.pb.h"
+
+namespace star
+{
 
 /**
  * @brief ROS2 node that bridges the ROS2 ecosystem with the Go gateway service via gRPC.
@@ -59,7 +60,8 @@ namespace star {
  *     rpc SetPIDGains(PIDGainsRequest) returns (PIDGainsResponse);
  *   }
  */
-class StarGatewayBridgeNode : public rclcpp::Node {
+class StarGatewayBridgeNode : public rclcpp::Node
+{
 public:
   /**
    * @brief Construct StarGatewayBridgeNode with ROS2 and gRPC initialization.
@@ -75,7 +77,7 @@ public:
    *
    * @param options ROS2 node options for component configuration
    */
-  explicit StarGatewayBridgeNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
+  explicit StarGatewayBridgeNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
 
   /**
    * @brief Destructor - sends stop command and shuts down gracefully.
@@ -136,7 +138,7 @@ private:
    * @param response Service response
    */
   void set_pid_gains_callback(const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-                              std::shared_ptr<std_srvs::srv::SetBool::Response>      response);
+                              std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
   // ===========================================================================
   // Timer Callbacks
@@ -194,7 +196,7 @@ private:
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr teleop_cmd_vel_pub_;
 
   // ROS2 Subscribers
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr          robot_status_sub_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_status_sub_;
   rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_state_sub_;
 
   // ROS2 Services
@@ -206,35 +208,35 @@ private:
   rclcpp::TimerBase::SharedPtr watchdog_timer_;
 
   // gRPC Client
-  std::shared_ptr<grpc::Channel>                  grpc_channel_;
+  std::shared_ptr<grpc::Channel> grpc_channel_;
   std::unique_ptr<star::v1::GatewayService::Stub> grpc_stub_;
 
   // Cached telemetry data (protected by mutexes)
-  std::mutex                           robot_status_mutex_;
+  std::mutex robot_status_mutex_;
   std::optional<std_msgs::msg::String> cached_robot_status_;
 
-  std::mutex                                    battery_state_mutex_;
+  std::mutex battery_state_mutex_;
   std::optional<sensor_msgs::msg::BatteryState> cached_battery_state_;
 
   // Parameters (cached for performance)
   std::string gateway_address_;
-  double      telemetry_rate_hz_;
-  double      teleop_rate_hz_;
-  double      watchdog_timeout_sec_;
-  int         teleop_timeout_ms_;
-  int         grpc_deadline_ms_;
-  double      wheel_base_;
+  double telemetry_rate_hz_;
+  double teleop_rate_hz_;
+  double watchdog_timeout_sec_;
+  int teleop_timeout_ms_;
+  int grpc_deadline_ms_;
+  double wheel_base_;
 
   // Connection state
-  bool                 grpc_connected_;
-  int                  reconnect_attempts_;
-  static constexpr int k_max_reconnect_attempts    = 10;
+  bool grpc_connected_;
+  int reconnect_attempts_;
+  static constexpr int k_max_reconnect_attempts = 10;
   static constexpr int k_reconnect_backoff_ms_base = 100;
 
   // Message converter (stateless utility)
   MessageConverter converter_;
 };
 
-} // namespace star
+}  // namespace star
 
-#endif // STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
+#endif  // STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_

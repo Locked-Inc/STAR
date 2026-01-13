@@ -11,9 +11,10 @@
 
 using namespace std::chrono_literals;
 
-namespace star {
+namespace star
+{
 
-StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions& options)
+StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions &options)
     : Node("star_gateway_bridge", options), grpc_connected_(false), reconnect_attempts_(0)
 {
   RCLCPP_INFO(this->get_logger(), "Initializing STAR Gateway Bridge Node");
@@ -25,16 +26,16 @@ StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions& options)
   this->declare_parameter("watchdog_timeout_sec", 5.0);
   this->declare_parameter("teleop_timeout_ms", 500);
   this->declare_parameter("grpc_deadline_ms", 100);
-  this->declare_parameter("wheel_base", 0.150); // 150mm track width
+  this->declare_parameter("wheel_base", 0.150);  // 150mm track width
 
   // Cache parameters
-  gateway_address_      = this->get_parameter("gateway_address").as_string();
-  telemetry_rate_hz_    = this->get_parameter("telemetry_rate_hz").as_double();
-  teleop_rate_hz_       = this->get_parameter("teleop_rate_hz").as_double();
+  gateway_address_ = this->get_parameter("gateway_address").as_string();
+  telemetry_rate_hz_ = this->get_parameter("telemetry_rate_hz").as_double();
+  teleop_rate_hz_ = this->get_parameter("teleop_rate_hz").as_double();
   watchdog_timeout_sec_ = this->get_parameter("watchdog_timeout_sec").as_double();
-  teleop_timeout_ms_    = this->get_parameter("teleop_timeout_ms").as_int();
-  grpc_deadline_ms_     = this->get_parameter("grpc_deadline_ms").as_int();
-  wheel_base_           = this->get_parameter("wheel_base").as_double();
+  teleop_timeout_ms_ = this->get_parameter("teleop_timeout_ms").as_int();
+  grpc_deadline_ms_ = this->get_parameter("grpc_deadline_ms").as_int();
+  wheel_base_ = this->get_parameter("wheel_base").as_double();
 
   RCLCPP_INFO(this->get_logger(),
               "Configuration: gateway=%s, telemetry_rate=%.1fHz, teleop_rate=%.1fHz, "
@@ -86,9 +87,9 @@ bool StarGatewayBridgeNode::initialize_grpc_client()
 
   // Create gRPC channel with keepalive settings
   grpc::ChannelArguments args;
-  args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 10000);          // 10s keepalive ping
-  args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 5000);        // 5s keepalive timeout
-  args.SetInt(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1); // Allow keepalive without calls
+  args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 10000);           // 10s keepalive ping
+  args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 5000);         // 5s keepalive timeout
+  args.SetInt(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);  // Allow keepalive without calls
 
   grpc_channel_ = grpc::CreateCustomChannel(gateway_address_, grpc::InsecureChannelCredentials(), args);
 
@@ -110,7 +111,7 @@ bool StarGatewayBridgeNode::initialize_grpc_client()
   grpc_stub_ = star::v1::GatewayService::NewStub(grpc_channel_);
 
   RCLCPP_INFO(this->get_logger(), "Successfully connected to Gateway gRPC server");
-  grpc_connected_     = true;
+  grpc_connected_ = true;
   reconnect_attempts_ = 0;
 
   return true;
@@ -137,15 +138,15 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
 
   // Timers
   auto telemetry_period_ms = static_cast<int>(1000.0 / telemetry_rate_hz_);
-  telemetry_timer_         = this->create_wall_timer(std::chrono::milliseconds(telemetry_period_ms),
+  telemetry_timer_ = this->create_wall_timer(std::chrono::milliseconds(telemetry_period_ms),
                                              std::bind(&StarGatewayBridgeNode::telemetry_forward_timer_callback, this));
 
   auto teleop_period_ms = static_cast<int>(1000.0 / teleop_rate_hz_);
-  teleop_timer_         = this->create_wall_timer(std::chrono::milliseconds(teleop_period_ms),
+  teleop_timer_ = this->create_wall_timer(std::chrono::milliseconds(teleop_period_ms),
                                           std::bind(&StarGatewayBridgeNode::teleop_poll_timer_callback, this));
 
   auto watchdog_period_ms = static_cast<int>(watchdog_timeout_sec_ * 1000.0);
-  watchdog_timer_         = this->create_wall_timer(std::chrono::milliseconds(watchdog_period_ms),
+  watchdog_timer_ = this->create_wall_timer(std::chrono::milliseconds(watchdog_period_ms),
                                             std::bind(&StarGatewayBridgeNode::connection_watchdog_callback, this));
 
   RCLCPP_INFO(this->get_logger(),
@@ -180,11 +181,11 @@ void StarGatewayBridgeNode::battery_state_callback(const sensor_msgs::msg::Batte
 }
 
 void StarGatewayBridgeNode::set_pid_gains_callback(const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-                                                   std::shared_ptr<std_srvs::srv::SetBool::Response>      response)
+                                                   std::shared_ptr<std_srvs::srv::SetBool::Response> response)
 {
   // TODO Phase 4: Implement PID gains service after defining custom service type
   // For now, placeholder implementation
-  (void)request; // Unused parameter (placeholder service)
+  (void)request;  // Unused parameter (placeholder service)
 
   RCLCPP_INFO(this->get_logger(), "set_pid_gains service called (placeholder)");
 
@@ -208,7 +209,7 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
   }
 
   // Get cached telemetry (non-blocking)
-  std::optional<std_msgs::msg::String>          robot_status;
+  std::optional<std_msgs::msg::String> robot_status;
   std::optional<sensor_msgs::msg::BatteryState> battery_state;
 
   if (robot_status_mutex_.try_lock()) {
@@ -229,7 +230,7 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
     star::v1::ForwardTelemetryRequest request;
 
     // Set request header
-    auto* header = request.mutable_header();
+    auto *header = request.mutable_header();
     header->set_request_id("telemetry_" + std::to_string(std::chrono::system_clock::now().time_since_epoch().count()));
 
     if (robot_status.has_value()) {
@@ -241,7 +242,7 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
     }
 
     star::v1::ForwardTelemetryResponse response;
-    grpc::Status                       status = grpc_stub_->ForwardTelemetry(&context, request, &response);
+    grpc::Status status = grpc_stub_->ForwardTelemetry(&context, request, &response);
 
     if (!status.ok()) {
       RCLCPP_WARN_THROTTLE(this->get_logger(),
@@ -277,7 +278,7 @@ void StarGatewayBridgeNode::teleop_poll_timer_callback()
   star::v1::GetTeleopCommandRequest request;
 
   // Set request header
-  auto* header = request.mutable_header();
+  auto *header = request.mutable_header();
   header->set_request_id("teleop_" + std::to_string(std::chrono::system_clock::now().time_since_epoch().count()));
 
   star::v1::GetTeleopCommandResponse response;
@@ -377,11 +378,11 @@ bool StarGatewayBridgeNode::is_grpc_connected() const
     return false;
   }
 
-  auto state = grpc_channel_->GetState(false); // false = don't try to connect
+  auto state = grpc_channel_->GetState(false);  // false = don't try to connect
   return (state == GRPC_CHANNEL_READY);
 }
 
-} // namespace star
+}  // namespace star
 
 // Component registration for composable node
 #include "rclcpp_components/register_node_macro.hpp"
