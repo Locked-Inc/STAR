@@ -11,20 +11,20 @@ Goal: Establish package and implement low-level SPI communication.
 - [x] Task: Write unit tests for `SpiDriver`.
     - [x] Sub-task: Test CRC-32 with standard vectors.
     - [x] Sub-task: Test frame encode/decode roundtrip.
-- [ ] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
 
 ## Phase 2: Message Conversion (Kinematics & Odometry)
 Goal: Implement bidirectional ROS2 ↔ Protobuf conversion with robot kinematics.
 
-- [ ] Task: Implement `SpiMessageConverter::twist_to_velocity_command()`.
-    - [ ] Sub-task: Implement differential drive kinematics.
-    - [ ] Sub-task: Implement NaN/Infinity validation.
-- [ ] Task: Implement `SpiMessageConverter::telemetry_to_odometry()`.
-    - [ ] Sub-task: Implement encoder tick to pose integration.
-- [ ] Task: Implement telemetry conversion for JointState and BatteryState.
-- [ ] Task: Write unit tests for `SpiMessageConverter`.
-    - [ ] Sub-task: Test kinematics scenarios (rotation, translation).
-    - [ ] Sub-task: Test odometry integration.
+- [x] Task: Implement `SpiMessageConverter::twist_to_velocity_command()`.
+    - [x] Sub-task: Implement differential drive kinematics.
+    - [x] Sub-task: Implement NaN/Infinity validation.
+- [x] Task: Implement `SpiMessageConverter::telemetry_to_odometry()`.
+    - [x] Sub-task: Implement encoder tick to pose integration.
+- [x] Task: Implement telemetry conversion for JointState and BatteryState.
+- [x] Task: Write unit tests for `SpiMessageConverter`.
+    - [x] Sub-task: Test kinematics scenarios (rotation, translation).
+    - [x] Sub-task: Test odometry integration.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2' (Protocol in workflow.md)
 
 ## Phase 3: ROS2 Lifecycle Node Integration
