@@ -50,9 +50,7 @@ void SpiMessageConverter::telemetry_to_odometry(const star::v1::TelemetryData& t
   const auto& enc_bl = telemetry.encoder_back_left();
   const auto& enc_br = telemetry.encoder_back_right();
 
-  // We rely on cumulative ticks from the firmware.
-  // Assuming absolute counts based on "telemetry_to_odometry ... Extract 4 encoder tick deltas" implies I calculate delta.
-
+  // Encoder ticks are cumulative; we compute deltas between messages
   int64_t ticks_fl = enc_fl.ticks();
   int64_t ticks_fr = enc_fr.ticks();
   int64_t ticks_bl = enc_bl.ticks();
@@ -115,17 +113,7 @@ void SpiMessageConverter::telemetry_to_odometry(const star::v1::TelemetryData& t
   odom.pose.pose.orientation.z = q.z();
   odom.pose.pose.orientation.w = q.w();
 
-  // Estimate velocity
-  // If we assume constant time step (dt), we could calculate twist.
-  // However, without dt here, we can't accurately calculate velocity unless passed in.
-  // Ideally we use the velocity reported by the motors if available, or d_dist/dt.
-  // For now, we populate twist with 0 or rely on diff drive reconstruction if dt known.
-  // The spec says: "Populate Odometry message with pose and twist"
-  // But Twist requires time. I'll leave Twist linear/angular as 0 for now or calculated by caller?
-  // Actually, `motor_telemetry` usually has velocity?
-  // `front_left_velocity_mps` etc?
-
-  // Use reported velocity from encoder data if available (non-zero values indicate valid data)
+  // Populate twist from encoder-reported velocities when available
   double v_fl = enc_fl.velocity_mps();
   double v_fr = enc_fr.velocity_mps();
   double v_bl = enc_bl.velocity_mps();
