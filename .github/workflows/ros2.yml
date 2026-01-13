@@ -156,10 +156,13 @@ jobs:
       - name: Check C++ formatting with uncrustify
         run: |
           cd star-ros2/src/star_spi_bridge
+          
+          # Run uncrustify and capture exit code
           /opt/ros/jazzy/bin/ament_uncrustify --xunit-file /tmp/uncrustify.xml include/star_spi_bridge/*.hpp src/*.cpp test/*.cpp
+          UNCRUSTIFY_EXIT=$?
           
           # Check exit code (ament_uncrustify returns 1 if there are formatting issues)
-          if [ $? -ne 0 ]; then
+          if [ $UNCRUSTIFY_EXIT -ne 0 ]; then
             echo "❌ Code formatting check failed!"
             echo "Run the following to fix formatting:"
             echo "  cd star-ros2 && docker run --rm -v \"\$(pwd)/..:/workspaces/STAR\" star-ros2 bash -c \"cd /workspaces/STAR/star-ros2/src/star_spi_bridge && /opt/ros/jazzy/bin/ament_uncrustify --reformat include/star_spi_bridge/*.hpp src/*.cpp test/*.cpp\""
