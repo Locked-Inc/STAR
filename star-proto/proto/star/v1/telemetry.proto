@@ -115,14 +115,14 @@ message TelemetryData {
   int64 timestamp_us = 14;
 
   // Encoder data from motors (RX72N specific - fixed size for embedded).
-  // Motor 0 encoder data (left front wheel for differential drive).
-  star.v1.EncoderData encoder_0 = 15;
-  // Motor 1 encoder data (right front wheel for differential drive).
-  star.v1.EncoderData encoder_1 = 16;
-  // Motor 2 encoder data (left rear wheel, reserved for future 4-motor support).
-  star.v1.EncoderData encoder_2 = 17;
-  // Motor 3 encoder data (right rear wheel, reserved for future 4-motor support).
-  star.v1.EncoderData encoder_3 = 18;
+  // Front left motor encoder data.
+  star.v1.EncoderData encoder_front_left = 15;
+  // Front right motor encoder data.
+  star.v1.EncoderData encoder_front_right = 16;
+  // Back left motor encoder data (reserved for future 4-motor support).
+  star.v1.EncoderData encoder_back_left = 17;
+  // Back right motor encoder data (reserved for future 4-motor support).
+  star.v1.EncoderData encoder_back_right = 18;
 
   // Emergency stop state (RX72N specific).
   bool emergency_stop = 10;
