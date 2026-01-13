@@ -8,56 +8,88 @@
 
 PB_BIND(star_v1_GetBatteryStateRequest, star_v1_GetBatteryStateRequest, AUTO)
 
+
 PB_BIND(star_v1_GetBatteryStateResponse, star_v1_GetBatteryStateResponse, 2)
+
 
 PB_BIND(star_v1_StreamBatteryStateRequest, star_v1_StreamBatteryStateRequest, AUTO)
 
+
 PB_BIND(star_v1_BatteryState, star_v1_BatteryState, AUTO)
+
 
 PB_BIND(star_v1_CellData, star_v1_CellData, AUTO)
 
+
 PB_BIND(star_v1_TemperatureData, star_v1_TemperatureData, AUTO)
+
 
 PB_BIND(star_v1_CurrentData, star_v1_CurrentData, AUTO)
 
+
 PB_BIND(star_v1_StateOfChargeData, star_v1_StateOfChargeData, AUTO)
+
 
 PB_BIND(star_v1_BatteryStatus, star_v1_BatteryStatus, AUTO)
 
+
 PB_BIND(star_v1_SafetyFaults, star_v1_SafetyFaults, AUTO)
+
 
 PB_BIND(star_v1_ProtectionThresholds, star_v1_ProtectionThresholds, AUTO)
 
+
 PB_BIND(star_v1_GetProtectionThresholdsRequest, star_v1_GetProtectionThresholdsRequest, AUTO)
+
 
 PB_BIND(star_v1_GetProtectionThresholdsResponse, star_v1_GetProtectionThresholdsResponse, AUTO)
 
+
 PB_BIND(star_v1_SetProtectionThresholdsRequest, star_v1_SetProtectionThresholdsRequest, AUTO)
+
 
 PB_BIND(star_v1_SetProtectionThresholdsResponse, star_v1_SetProtectionThresholdsResponse, AUTO)
 
+
 PB_BIND(star_v1_EnableCellBalancingRequest, star_v1_EnableCellBalancingRequest, AUTO)
+
 
 PB_BIND(star_v1_EnableCellBalancingResponse, star_v1_EnableCellBalancingResponse, AUTO)
 
+
 PB_BIND(star_v1_DisableCellBalancingRequest, star_v1_DisableCellBalancingRequest, AUTO)
+
 
 PB_BIND(star_v1_DisableCellBalancingResponse, star_v1_DisableCellBalancingResponse, AUTO)
 
+
 PB_BIND(star_v1_GetBalancingStatusRequest, star_v1_GetBalancingStatusRequest, AUTO)
+
 
 PB_BIND(star_v1_GetBalancingStatusResponse, star_v1_GetBalancingStatusResponse, AUTO)
 
+
 PB_BIND(star_v1_ControlFetsRequest, star_v1_ControlFetsRequest, AUTO)
+
 
 PB_BIND(star_v1_ControlFetsResponse, star_v1_ControlFetsResponse, AUTO)
 
+
 PB_BIND(star_v1_GetDeviceInfoRequest, star_v1_GetDeviceInfoRequest, AUTO)
+
 
 PB_BIND(star_v1_GetDeviceInfoResponse, star_v1_GetDeviceInfoResponse, AUTO)
 
+
 PB_BIND(star_v1_BmsDeviceInfo, star_v1_BmsDeviceInfo, AUTO)
+
 
 PB_BIND(star_v1_ResetDeviceRequest, star_v1_ResetDeviceRequest, AUTO)
 
+
 PB_BIND(star_v1_ResetDeviceResponse, star_v1_ResetDeviceResponse, AUTO)
+
+
+
+
+

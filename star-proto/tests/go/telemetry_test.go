@@ -8,29 +8,29 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// TestTelemetryData_RX72N_EncoderFields verifies individual encoder fields (encoder_0..3)
+// TestTelemetryData_RX72N_EncoderFields verifies individual encoder fields with semantic naming
 func TestTelemetryData_RX72N_EncoderFields(t *testing.T) {
 	telem := &starv1.TelemetryData{
 		TimestampUs: 1000000,
-		Encoder_0: &starv1.EncoderData{
+		EncoderFrontLeft: &starv1.EncoderData{
 			MotorId:     0,
 			Ticks:       1000,
 			VelocityMps: 1.5,
 			TimestampUs: 1000000,
 		},
-		Encoder_1: &starv1.EncoderData{
+		EncoderFrontRight: &starv1.EncoderData{
 			MotorId:     1,
 			Ticks:       1050,
 			VelocityMps: 1.5,
 			TimestampUs: 1000000,
 		},
-		Encoder_2: &starv1.EncoderData{
+		EncoderBackLeft: &starv1.EncoderData{
 			MotorId:     2,
 			Ticks:       900,
 			VelocityMps: 1.0,
 			TimestampUs: 1000000,
 		},
-		Encoder_3: &starv1.EncoderData{
+		EncoderBackRight: &starv1.EncoderData{
 			MotorId:     3,
 			Ticks:       950,
 			VelocityMps: 1.0,
@@ -58,25 +58,25 @@ func TestTelemetryData_RX72N_EncoderFields(t *testing.T) {
 	}
 
 	// Verify all 4 encoder fields
-	if decoded.Encoder_0 == nil || decoded.Encoder_0.MotorId != 0 {
+	if decoded.EncoderFrontLeft == nil || decoded.EncoderFrontLeft.MotorId != 0 {
 		t.Error("Encoder 0 not decoded correctly")
 	}
-	if decoded.Encoder_1 == nil || decoded.Encoder_1.MotorId != 1 {
+	if decoded.EncoderFrontRight == nil || decoded.EncoderFrontRight.MotorId != 1 {
 		t.Error("Encoder 1 not decoded correctly")
 	}
-	if decoded.Encoder_2 == nil || decoded.Encoder_2.MotorId != 2 {
+	if decoded.EncoderBackLeft == nil || decoded.EncoderBackLeft.MotorId != 2 {
 		t.Error("Encoder 2 not decoded correctly")
 	}
-	if decoded.Encoder_3 == nil || decoded.Encoder_3.MotorId != 3 {
+	if decoded.EncoderBackRight == nil || decoded.EncoderBackRight.MotorId != 3 {
 		t.Error("Encoder 3 not decoded correctly")
 	}
 
 	// Verify encoder data
-	if decoded.Encoder_0.Ticks != 1000 {
-		t.Errorf("Encoder 0 ticks = %d, want 1000", decoded.Encoder_0.Ticks)
+	if decoded.EncoderFrontLeft.Ticks != 1000 {
+		t.Errorf("Encoder 0 ticks = %d, want 1000", decoded.EncoderFrontLeft.Ticks)
 	}
-	if decoded.Encoder_0.VelocityMps != 1.5 {
-		t.Errorf("Encoder 0 velocity = %f, want 1.5", decoded.Encoder_0.VelocityMps)
+	if decoded.EncoderFrontLeft.VelocityMps != 1.5 {
+		t.Errorf("Encoder 0 velocity = %f, want 1.5", decoded.EncoderFrontLeft.VelocityMps)
 	}
 }
 
@@ -188,25 +188,25 @@ func TestTelemetryData_Complete(t *testing.T) {
 
 		// RX72N-specific fields
 		TimestampUs: 1000000,
-		Encoder_0: &starv1.EncoderData{
+		EncoderFrontLeft: &starv1.EncoderData{
 			MotorId:     0,
 			Ticks:       1000,
 			VelocityMps: 1.5,
 			TimestampUs: 1000000,
 		},
-		Encoder_1: &starv1.EncoderData{
+		EncoderFrontRight: &starv1.EncoderData{
 			MotorId:     1,
 			Ticks:       1050,
 			VelocityMps: 1.5,
 			TimestampUs: 1000000,
 		},
-		Encoder_2: &starv1.EncoderData{
+		EncoderBackLeft: &starv1.EncoderData{
 			MotorId:     2,
 			Ticks:       900,
 			VelocityMps: 1.0,
 			TimestampUs: 1000000,
 		},
-		Encoder_3: &starv1.EncoderData{
+		EncoderBackRight: &starv1.EncoderData{
 			MotorId:     3,
 			Ticks:       950,
 			VelocityMps: 1.0,
@@ -240,11 +240,11 @@ func TestTelemetryData_Complete(t *testing.T) {
 	if decoded.EmergencyStop != false {
 		t.Error("EmergencyStop should be false")
 	}
-	if decoded.Encoder_0 == nil {
-		t.Fatal("Encoder_0 should not be nil")
+	if decoded.EncoderFrontLeft == nil {
+		t.Fatal("EncoderFrontLeft should not be nil")
 	}
-	if decoded.Encoder_0.VelocityMps != 1.5 {
-		t.Errorf("Encoder 0 velocity = %f, want 1.5", decoded.Encoder_0.VelocityMps)
+	if decoded.EncoderFrontLeft.VelocityMps != 1.5 {
+		t.Errorf("Encoder 0 velocity = %f, want 1.5", decoded.EncoderFrontLeft.VelocityMps)
 	}
 	if decoded.BatteryVoltageV != 12.6 {
 		t.Errorf("BatteryVoltageV = %f, want 12.6", decoded.BatteryVoltageV)
@@ -258,25 +258,25 @@ func TestTelemetryData_Streaming(t *testing.T) {
 	for i := int64(0); i < numMessages; i++ {
 		telem := &starv1.TelemetryData{
 			TimestampUs: i * 10000, // 10ms intervals (100 Hz)
-			Encoder_0: &starv1.EncoderData{
+			EncoderFrontLeft: &starv1.EncoderData{
 				MotorId:     0,
 				Ticks:       i * 10,
 				VelocityMps: 1.5,
 				TimestampUs: i * 10000,
 			},
-			Encoder_1: &starv1.EncoderData{
+			EncoderFrontRight: &starv1.EncoderData{
 				MotorId:     1,
 				Ticks:       i * 10,
 				VelocityMps: 1.5,
 				TimestampUs: i * 10000,
 			},
-			Encoder_2: &starv1.EncoderData{
+			EncoderBackLeft: &starv1.EncoderData{
 				MotorId:     2,
 				Ticks:       i * 8,
 				VelocityMps: 1.0,
 				TimestampUs: i * 10000,
 			},
-			Encoder_3: &starv1.EncoderData{
+			EncoderBackRight: &starv1.EncoderData{
 				MotorId:     3,
 				Ticks:       i * 8,
 				VelocityMps: 1.0,
@@ -324,7 +324,7 @@ func TestGetTelemetryResponse(t *testing.T) {
 		},
 		Telemetry: &starv1.TelemetryData{
 			TimestampUs: 1000000,
-			Encoder_0: &starv1.EncoderData{
+			EncoderFrontLeft: &starv1.EncoderData{
 				MotorId:     0,
 				Ticks:       1000,
 				VelocityMps: 1.5,
