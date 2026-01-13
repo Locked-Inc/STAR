@@ -16,6 +16,28 @@ find_package(std_msgs REQUIRED)
 
 find_package(Protobuf REQUIRED)
 
+# ============================================
+# Include generated protobuf headers
+# ============================================
+
+# Path to generated C++ protobuf code
+set(STAR_PROTO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../star-proto/gen/cpp")
+
+# Verify protobuf directory exists
+if(NOT EXISTS "${STAR_PROTO_DIR}")
+  message(FATAL_ERROR
+    "Protobuf C++ code not found at ${STAR_PROTO_DIR}. "
+    "Run 'buf generate' in star-proto/ directory first.")
+endif()
+
+include_directories(${STAR_PROTO_DIR})
+
+# ============================================
+# Collect generated protobuf source files
+# ============================================
+
+file(GLOB PROTO_SRCS "${STAR_PROTO_DIR}/star/v1/*.pb.cc")
+
 # Include directories
 include_directories(include)
 
@@ -23,6 +45,7 @@ include_directories(include)
 add_library(spi_driver
   src/spi_driver.cpp
   src/spi_message_converter.cpp
+  ${PROTO_SRCS}
 )
 target_include_directories(spi_driver PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
