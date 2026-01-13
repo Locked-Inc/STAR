@@ -1,5 +1,5 @@
-#ifndef STAR_SPI_BRIDGE_SPI_DRIVER_HPP_
-#define STAR_SPI_BRIDGE_SPI_DRIVER_HPP_
+#ifndef STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_DRIVER_HPP_
+#define STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_DRIVER_HPP_
 
 #include <cstdint>
 #include <string>
@@ -53,4 +53,4 @@ private:
 
 } // namespace star_spi_bridge
 
-#endif // STAR_SPI_BRIDGE_SPI_DRIVER_HPP_
+#endif // STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_DRIVER_HPP_

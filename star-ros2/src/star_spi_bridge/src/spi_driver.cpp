@@ -180,7 +180,7 @@ bool SpiDriver::decode_frame(
 
   // Validate Frame Size
   // Header(8) + Payload(len) + CRC(4)
-  if (frame.size() != 8 + len + 4) {
+  if (frame.size() != static_cast<size_t>(8 + len + 4)) {
     return false;
   }
 
