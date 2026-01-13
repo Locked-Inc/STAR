@@ -209,29 +209,10 @@ bool SpiDriver::decode_frame(
 
 void SpiDriver::init_crc32_table()
 {
-  for (uint32_t i = 0; i < 256; i++) {
-    uint32_t crc = i;
-    for (uint32_t j = 0; j < 8; j++) {
-      if (crc & 1) {
-        crc = (crc >> 1) ^ k_crc32_polynomial; // 0x04C11DB7
-      } else {
-        crc >>= 1;
-      }
-    }
-    // Note: The standard implementation usually uses a reflected polynomial 0xEDB88320 for the "right shift" algorithm.
-    // The spec says "IEEE 802.3 polynomial: 0x04C11DB7".
-    // If we use the right-shift algorithm (checking LSB), we usually use the reversed polynomial.
-    // 0x04C11DB7 is the normal polynomial. 0xEDB88320 is the reversed one.
-    // Let's check the test vector in the plan: "123456789" -> 0xCBF43926
-    // 0xCBF43926 is the standard IEEE 802.3 CRC32 result (used in Ethernet, gzip, etc.)
-    // This standard algorithm reflects inputs and outputs.
-  }
-
-  // Re-implementing using the standard "Right Shift" algorithm with 0xEDB88320 which produces the standard IEEE result
-  // The "0x04C11DB7" in the plan text might refer to the mathematical polynomial, but the test vector implies standard CRC32.
-  // Standard CRC32 uses 0xEDB88320 in the table generation.
-
-  uint32_t polynomial = 0xEDB88320;
+  // Generate CRC-32 lookup table using IEEE 802.3 polynomial (reflected form)
+  // Polynomial 0xEDB88320 is the bit-reversed form of 0x04C11DB7
+  // This produces standard CRC-32 values (e.g., "123456789" -> 0xCBF43926)
+  constexpr uint32_t polynomial = 0xEDB88320;
   for (uint32_t i = 0; i < 256; i++) {
     uint32_t crc = i;
     for (uint32_t j = 0; j < 8; j++) {
