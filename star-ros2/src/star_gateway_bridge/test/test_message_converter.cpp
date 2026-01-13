@@ -42,8 +42,8 @@ TEST_F(MessageConverterTest, TwistToCommandZeroVelocity)
   star::v1::VelocityCommand command;
   ASSERT_TRUE(converter_.twist_to_velocity_command(twist, command, WHEEL_BASE_M));
 
-  EXPECT_NEAR(command.motor_0_velocity_mps(), 0.0, TOLERANCE);
-  EXPECT_NEAR(command.motor_1_velocity_mps(), 0.0, TOLERANCE);
+  EXPECT_NEAR(command.front_left_velocity_mps(), 0.0, TOLERANCE);
+  EXPECT_NEAR(command.front_right_velocity_mps(), 0.0, TOLERANCE);
 }
 
 TEST_F(MessageConverterTest, TwistToCommandPureTranslation)
@@ -56,8 +56,8 @@ TEST_F(MessageConverterTest, TwistToCommandPureTranslation)
   ASSERT_TRUE(converter_.twist_to_velocity_command(twist, command, WHEEL_BASE_M));
 
   // Both wheels should move at same speed
-  EXPECT_NEAR(command.motor_0_velocity_mps(), 1.0, TOLERANCE);
-  EXPECT_NEAR(command.motor_1_velocity_mps(), 1.0, TOLERANCE);
+  EXPECT_NEAR(command.front_left_velocity_mps(), 1.0, TOLERANCE);
+  EXPECT_NEAR(command.front_right_velocity_mps(), 1.0, TOLERANCE);
 }
 
 TEST_F(MessageConverterTest, TwistToCommandPureRotation)
@@ -72,8 +72,8 @@ TEST_F(MessageConverterTest, TwistToCommandPureRotation)
   // Differential rotation: v_left = -ω*L/2, v_right = +ω*L/2
   double expected_velocity = twist.angular.z * WHEEL_BASE_M / 2.0; // ω * L/2 = 0.075 m/s
 
-  EXPECT_NEAR(command.motor_0_velocity_mps(), -expected_velocity, TOLERANCE);
-  EXPECT_NEAR(command.motor_1_velocity_mps(), expected_velocity, TOLERANCE);
+  EXPECT_NEAR(command.front_left_velocity_mps(), -expected_velocity, TOLERANCE);
+  EXPECT_NEAR(command.front_right_velocity_mps(), expected_velocity, TOLERANCE);
 }
 
 TEST_F(MessageConverterTest, TwistToCommandMixedMotion)
@@ -91,8 +91,8 @@ TEST_F(MessageConverterTest, TwistToCommandMixedMotion)
   double expected_left        = 1.0 - rotational_component; // 0.850 m/s
   double expected_right       = 1.0 + rotational_component; // 1.150 m/s
 
-  EXPECT_NEAR(command.motor_0_velocity_mps(), expected_left, TOLERANCE);
-  EXPECT_NEAR(command.motor_1_velocity_mps(), expected_right, TOLERANCE);
+  EXPECT_NEAR(command.front_left_velocity_mps(), expected_left, TOLERANCE);
+  EXPECT_NEAR(command.front_right_velocity_mps(), expected_right, TOLERANCE);
 }
 
 TEST_F(MessageConverterTest, TwistToCommandNegativeLinear)
@@ -105,8 +105,8 @@ TEST_F(MessageConverterTest, TwistToCommandNegativeLinear)
   ASSERT_TRUE(converter_.twist_to_velocity_command(twist, command, WHEEL_BASE_M));
 
   // Both wheels should be negative (backward)
-  EXPECT_NEAR(command.motor_0_velocity_mps(), -0.5, TOLERANCE);
-  EXPECT_NEAR(command.motor_1_velocity_mps(), -0.5, TOLERANCE);
+  EXPECT_NEAR(command.front_left_velocity_mps(), -0.5, TOLERANCE);
+  EXPECT_NEAR(command.front_right_velocity_mps(), -0.5, TOLERANCE);
 }
 
 TEST_F(MessageConverterTest, TwistToCommandNegativeAngular)
@@ -121,8 +121,8 @@ TEST_F(MessageConverterTest, TwistToCommandNegativeAngular)
   // Clockwise rotation: left positive, right negative
   double expected_velocity = std::abs(twist.angular.z) * WHEEL_BASE_M / 2.0;
 
-  EXPECT_NEAR(command.motor_0_velocity_mps(), expected_velocity, TOLERANCE);
-  EXPECT_NEAR(command.motor_1_velocity_mps(), -expected_velocity, TOLERANCE);
+  EXPECT_NEAR(command.front_left_velocity_mps(), expected_velocity, TOLERANCE);
+  EXPECT_NEAR(command.front_right_velocity_mps(), -expected_velocity, TOLERANCE);
 }
 
 // =============================================================================
@@ -132,8 +132,8 @@ TEST_F(MessageConverterTest, TwistToCommandNegativeAngular)
 TEST_F(MessageConverterTest, CommandToTwistZeroVelocity)
 {
   star::v1::VelocityCommand command;
-  command.set_motor_0_velocity_mps(0.0);
-  command.set_motor_1_velocity_mps(0.0);
+  command.set_front_left_velocity_mps(0.0);
+  command.set_front_right_velocity_mps(0.0);
 
   geometry_msgs::msg::Twist twist;
   ASSERT_TRUE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
@@ -145,8 +145,8 @@ TEST_F(MessageConverterTest, CommandToTwistZeroVelocity)
 TEST_F(MessageConverterTest, CommandToTwistPureTranslation)
 {
   star::v1::VelocityCommand command;
-  command.set_motor_0_velocity_mps(1.0);
-  command.set_motor_1_velocity_mps(1.0);
+  command.set_front_left_velocity_mps(1.0);
+  command.set_front_right_velocity_mps(1.0);
 
   geometry_msgs::msg::Twist twist;
   ASSERT_TRUE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
@@ -162,8 +162,8 @@ TEST_F(MessageConverterTest, CommandToTwistPureRotation)
   double wheel_velocity = 0.075; // Arbitrary value
 
   star::v1::VelocityCommand command;
-  command.set_motor_0_velocity_mps(-wheel_velocity);
-  command.set_motor_1_velocity_mps(wheel_velocity);
+  command.set_front_left_velocity_mps(-wheel_velocity);
+  command.set_front_right_velocity_mps(wheel_velocity);
 
   geometry_msgs::msg::Twist twist;
   ASSERT_TRUE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
@@ -178,8 +178,8 @@ TEST_F(MessageConverterTest, CommandToTwistPureRotation)
 TEST_F(MessageConverterTest, CommandToTwistMixedMotion)
 {
   star::v1::VelocityCommand command;
-  command.set_motor_0_velocity_mps(0.5);
-  command.set_motor_1_velocity_mps(1.5);
+  command.set_front_left_velocity_mps(0.5);
+  command.set_front_right_velocity_mps(1.5);
 
   geometry_msgs::msg::Twist twist;
   ASSERT_TRUE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
@@ -338,8 +338,8 @@ TEST_F(MessageConverterTest, TwistToCommandNegativeWheelBase)
 TEST_F(MessageConverterTest, CommandToTwistNaNMotor0)
 {
   star::v1::VelocityCommand command;
-  command.set_motor_0_velocity_mps(std::numeric_limits<double>::quiet_NaN());
-  command.set_motor_1_velocity_mps(0.0);
+  command.set_front_left_velocity_mps(std::numeric_limits<double>::quiet_NaN());
+  command.set_front_right_velocity_mps(0.0);
 
   geometry_msgs::msg::Twist twist;
   ASSERT_FALSE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
@@ -348,8 +348,8 @@ TEST_F(MessageConverterTest, CommandToTwistNaNMotor0)
 TEST_F(MessageConverterTest, CommandToTwistNaNMotor1)
 {
   star::v1::VelocityCommand command;
-  command.set_motor_0_velocity_mps(0.0);
-  command.set_motor_1_velocity_mps(std::numeric_limits<double>::quiet_NaN());
+  command.set_front_left_velocity_mps(0.0);
+  command.set_front_right_velocity_mps(std::numeric_limits<double>::quiet_NaN());
 
   geometry_msgs::msg::Twist twist;
   ASSERT_FALSE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
@@ -358,8 +358,8 @@ TEST_F(MessageConverterTest, CommandToTwistNaNMotor1)
 TEST_F(MessageConverterTest, CommandToTwistInfinityMotor0)
 {
   star::v1::VelocityCommand command;
-  command.set_motor_0_velocity_mps(std::numeric_limits<double>::infinity());
-  command.set_motor_1_velocity_mps(0.0);
+  command.set_front_left_velocity_mps(std::numeric_limits<double>::infinity());
+  command.set_front_right_velocity_mps(0.0);
 
   geometry_msgs::msg::Twist twist;
   ASSERT_FALSE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
@@ -654,10 +654,10 @@ TEST_F(MessageConverterTest, TwistToCommandMaxVelocity)
   ASSERT_TRUE(converter_.twist_to_velocity_command(twist, command, WHEEL_BASE_M));
 
   // Should not crash or produce NaN
-  EXPECT_FALSE(std::isnan(command.motor_0_velocity_mps()));
-  EXPECT_FALSE(std::isnan(command.motor_1_velocity_mps()));
-  EXPECT_FALSE(std::isinf(command.motor_0_velocity_mps()));
-  EXPECT_FALSE(std::isinf(command.motor_1_velocity_mps()));
+  EXPECT_FALSE(std::isnan(command.front_left_velocity_mps()));
+  EXPECT_FALSE(std::isnan(command.front_right_velocity_mps()));
+  EXPECT_FALSE(std::isinf(command.front_left_velocity_mps()));
+  EXPECT_FALSE(std::isinf(command.front_right_velocity_mps()));
 }
 
 TEST_F(MessageConverterTest, TwistToCommandVerySmallWheelBase)
@@ -671,8 +671,8 @@ TEST_F(MessageConverterTest, TwistToCommandVerySmallWheelBase)
   ASSERT_TRUE(converter_.twist_to_velocity_command(twist, command, 0.001));
 
   // Should produce large angular velocities but not overflow
-  EXPECT_FALSE(std::isinf(command.motor_0_velocity_mps()));
-  EXPECT_FALSE(std::isinf(command.motor_1_velocity_mps()));
+  EXPECT_FALSE(std::isinf(command.front_left_velocity_mps()));
+  EXPECT_FALSE(std::isinf(command.front_right_velocity_mps()));
 }
 
 TEST_F(MessageConverterTest, TwistToCommandVeryLargeWheelBase)
@@ -685,8 +685,8 @@ TEST_F(MessageConverterTest, TwistToCommandVeryLargeWheelBase)
   // Large wheel base (10m)
   ASSERT_TRUE(converter_.twist_to_velocity_command(twist, command, 10.0));
 
-  EXPECT_FALSE(std::isnan(command.motor_0_velocity_mps()));
-  EXPECT_FALSE(std::isnan(command.motor_1_velocity_mps()));
+  EXPECT_FALSE(std::isnan(command.front_left_velocity_mps()));
+  EXPECT_FALSE(std::isnan(command.front_right_velocity_mps()));
 }
 
 } // namespace star
