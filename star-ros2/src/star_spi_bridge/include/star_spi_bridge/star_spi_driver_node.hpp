@@ -6,6 +6,9 @@
 #include <memory>
 #include <string>
 
+#include "star_spi_bridge/spi_driver.hpp"
+#include "star_spi_bridge/spi_message_converter.hpp"
+
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -13,13 +16,11 @@
 #include <sensor_msgs/msg/battery_state.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 
-#include "star_spi_bridge/spi_driver.hpp"
-#include "star_spi_bridge/spi_message_converter.hpp"
-
 namespace star_spi_bridge
 {
 
-class StarSpiDriverNode : public rclcpp_lifecycle::LifecycleNode {
+class StarSpiDriverNode : public rclcpp_lifecycle::LifecycleNode
+{
 public:
   explicit StarSpiDriverNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
   ~StarSpiDriverNode() override;
@@ -46,21 +47,21 @@ private:
   std::unique_ptr<SpiMessageConverter> converter_;
 
   // ROS handles
-  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr                      cmd_vel_sub_;
-  rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>::SharedPtr        odom_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::JointState>::SharedPtr   joint_state_pub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
+  rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
   rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::BatteryState>::SharedPtr battery_pub_;
-  rclcpp::TimerBase::SharedPtr                                                    timer_;
+  rclcpp::TimerBase::SharedPtr timer_;
 
   // State
   geometry_msgs::msg::Twist current_cmd_vel_;
-  rclcpp::Time              last_cmd_vel_time_;
-  uint16_t                  tx_seq_ = 0;
+  rclcpp::Time last_cmd_vel_time_;
+  uint16_t tx_seq_ = 0;
 
   // Parameters
   std::string spi_device_path_;
-  int         spi_speed_hz_;
-  int         cmd_vel_timeout_ms_;
+  int spi_speed_hz_;
+  int cmd_vel_timeout_ms_;
 };
 
 }  // namespace star_spi_bridge

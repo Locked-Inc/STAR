@@ -14,12 +14,13 @@
 namespace star_spi_bridge
 {
 
-class SpiMessageConverter {
+class SpiMessageConverter
+{
 public:
   struct Parameters
   {
-    double  wheel_base;
-    double  wheel_radius;
+    double wheel_base;
+    double wheel_radius;
     int32_t ticks_per_rev;
   };
 
@@ -54,7 +55,7 @@ private:
   int64_t prev_ticks_fr_ = 0;
   int64_t prev_ticks_bl_ = 0;
   int64_t prev_ticks_br_ = 0;
-  bool    first_odom_msg_ = true;
+  bool first_odom_msg_ = true;
 
   static double normalize_angle(double angle);
 };

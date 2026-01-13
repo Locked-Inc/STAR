@@ -1,13 +1,14 @@
 // Copyright 2026 Locked Inc.
 
-#include <gtest/gtest.h>
-
 #include "star_spi_bridge/spi_driver.hpp"
+
+#include <gtest/gtest.h>  // NOLINT
 
 using star_spi_bridge::FrameType;
 using star_spi_bridge::SpiDriver;
 
-class SpiDriverTest : public ::testing::Test {
+class SpiDriverTest : public ::testing::Test
+{
 protected:
   void SetUp() override
   {
@@ -18,7 +19,7 @@ protected:
 TEST_F(SpiDriverTest, CRC32Calculation)
 {
   // Test vector: "123456789" -> 0xCBF43926
-  std::string          test_str = "123456789";
+  std::string test_str = "123456789";
   std::vector<uint8_t> data(test_str.begin(), test_str.end());
 
   // This should fail initially as implementation is empty
@@ -48,9 +49,9 @@ TEST_F(SpiDriverTest, FrameDecoding)
   // We can't easily test decode without a working encode or pre-calculated frame
   // For Red Phase, we just assert that decode fails on garbage
   std::vector<uint8_t> garbage = {0x00, 0x00, 0x00};
-  uint16_t             seq;
-  FrameType            type;
-  uint8_t              flags;
+  uint16_t seq;
+  FrameType type;
+  uint8_t flags;
   std::vector<uint8_t> payload;
 
   EXPECT_FALSE(SpiDriver::decode_frame(garbage, seq, type, flags, payload));
