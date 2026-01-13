@@ -194,6 +194,7 @@ add_library(rx_nanopb STATIC
     lib/rx_nanopb/inc/gen/star/v1/common.pb.c
     lib/rx_nanopb/inc/gen/star/v1/motor_control.pb.c
     lib/rx_nanopb/inc/gen/star/v1/telemetry.pb.c
+    # Note: gateway_service.pb.c is generated but excluded as it is for ROS2<->Gateway only
 )
 target_include_directories(rx_nanopb PUBLIC
     lib/rx_nanopb/inc
