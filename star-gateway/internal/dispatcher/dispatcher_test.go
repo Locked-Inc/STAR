@@ -253,7 +253,7 @@ func TestDispatcherMultipleSubscribers(t *testing.T) {
 // TestDispatcherAllMessageTypes tests message routing for all message types.
 func TestDispatcherAllMessageTypes(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	
+
 	// Test each message type
 	testCases := []struct {
 		name    string
@@ -266,7 +266,7 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 		{"EncoderData", MessageTypeEncoderData, &starv1.EncoderData{MotorId: 0}},
 		{"BatteryStatus", MessageTypeBatteryStatus, &starv1.BatteryStatus{}},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Create WireMessage with correct oneof field
@@ -283,27 +283,27 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 			case MessageTypeBatteryStatus:
 				wrapper = &starv1.WireMessage{Payload: &starv1.WireMessage_BatteryStatus{BatteryStatus: tc.payload.(*starv1.BatteryStatus)}}
 			}
-			
+
 			data, _ := proto.Marshal(wrapper)
 			mockHARQ := &MockHARQ{receiveChan: make(chan []byte, 1)}
 			mockHARQ.receiveChan <- data
-			
+
 			d, err := NewDispatcher(mockHARQ, logger, nil)
 			if err != nil {
 				t.Fatalf("Failed to create dispatcher: %v", err)
 			}
-			
+
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			
+
 			if err := d.Start(ctx); err != nil {
 				t.Fatalf("Failed to start dispatcher: %v", err)
 			}
 			defer d.Stop()
-			
+
 			ch := d.Subscribe(tc.msgType)
 			defer d.Unsubscribe(tc.msgType, ch)
-			
+
 			select {
 			case msg := <-ch:
 				if msg == nil {
@@ -319,7 +319,7 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 // TestDispatcherErrorHandling tests error handling in receive loop.
 func TestDispatcherErrorHandling(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	
+
 	t.Run("HARQ Error State", func(t *testing.T) {
 		callCount := 0
 		mockHARQ := &MockHARQ{
@@ -332,46 +332,46 @@ func TestDispatcherErrorHandling(t *testing.T) {
 			},
 			ResetFunc: func() {},
 		}
-		
+
 		d, _ := NewDispatcher(mockHARQ, logger, nil)
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		
+
 		d.Start(ctx)
 		time.Sleep(50 * time.Millisecond)
 		cancel()
 		d.Stop()
-		
+
 		if callCount < 2 {
 			t.Error("Expected HARQ to be reset and retried")
 		}
 	})
-	
+
 	t.Run("Invalid WireMessage", func(t *testing.T) {
 		mockHARQ := &MockHARQ{receiveChan: make(chan []byte, 1)}
 		mockHARQ.receiveChan <- []byte{0xFF, 0xFF, 0xFF} // Invalid protobuf
-		
+
 		d, _ := NewDispatcher(mockHARQ, logger, nil)
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		
+
 		d.Start(ctx)
 		time.Sleep(50 * time.Millisecond)
 		cancel()
 		d.Stop()
 	})
-	
+
 	t.Run("Empty WireMessage", func(t *testing.T) {
 		wrapper := &starv1.WireMessage{} // No payload set
 		data, _ := proto.Marshal(wrapper)
-		
+
 		mockHARQ := &MockHARQ{receiveChan: make(chan []byte, 1)}
 		mockHARQ.receiveChan <- data
-		
+
 		d, _ := NewDispatcher(mockHARQ, logger, nil)
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		
+
 		d.Start(ctx)
 		time.Sleep(50 * time.Millisecond)
 		cancel()
@@ -382,32 +382,32 @@ func TestDispatcherErrorHandling(t *testing.T) {
 // TestDispatcherChannelBackpressure tests channel full scenario.
 func TestDispatcherChannelBackpressure(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	
+
 	telemetry := &starv1.TelemetryData{}
 	wrapper := &starv1.WireMessage{
 		Payload: &starv1.WireMessage_TelemetryData{TelemetryData: telemetry},
 	}
 	data, _ := proto.Marshal(wrapper)
-	
+
 	// Send 20 messages rapidly to fill the 10-capacity channel
 	mockHARQ := &MockHARQ{receiveChan: make(chan []byte, 20)}
 	for i := 0; i < 20; i++ {
 		mockHARQ.receiveChan <- data
 	}
-	
+
 	d, _ := NewDispatcher(mockHARQ, logger, nil)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	
+
 	d.Start(ctx)
 	defer d.Stop()
-	
+
 	ch := d.Subscribe(MessageTypeTelemetryData)
 	defer d.Unsubscribe(MessageTypeTelemetryData, ch)
-	
+
 	// Let dispatcher fill the channel
 	time.Sleep(100 * time.Millisecond)
-	
+
 	// Drain some messages
 	received := 0
 	for i := 0; i < 15; i++ {
@@ -418,7 +418,7 @@ func TestDispatcherChannelBackpressure(t *testing.T) {
 			break
 		}
 	}
-	
+
 	if received == 0 {
 		t.Error("Expected to receive messages despite backpressure")
 	}
