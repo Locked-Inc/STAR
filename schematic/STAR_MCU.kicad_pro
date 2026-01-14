@@ -1935,20 +1935,8 @@
         },
         {
           "group_by": false,
-          "label": "Manufacturer_Part_Number",
-          "name": "Manufacturer_Part_Number",
-          "show": false
-        },
-        {
-          "group_by": false,
           "label": "Manufactaurer Part Number",
           "name": "Manufactaurer Part Number",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Manufacturer_Name",
-          "name": "Manufacturer_Name",
           "show": false
         }
       ],

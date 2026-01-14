@@ -121,14 +121,14 @@
 			(pin passive line
 				(at 6.35 0 0)
 				(length 1.27)
-				(name "1"
+				(name ""
 					(effects
 						(font
 							(size 1.27 1.27)
 						)
 					)
 				)
-				(number ""
+				(number "1"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -139,14 +139,14 @@
 			(pin passive line
 				(at 13.97 0 180)
 				(length 1.27)
-				(name "2"
+				(name ""
 					(effects
 						(font
 							(size 1.27 1.27)
 						)
 					)
 				)
-				(number ""
+				(number "2"
 					(effects
 						(font
 							(size 1.27 1.27)
