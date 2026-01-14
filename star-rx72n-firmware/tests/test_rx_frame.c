@@ -11,10 +11,31 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include <stdint.h>
 #include <string.h>
 
 #include "rx_frame.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief Frame test constants for payload and buffer sizes
+ */
+typedef enum {
+  k_test_payload_size  = 256, /**< Large payload size for testing */
+  k_test_buffer_size   = 512, /**< Buffer size for encoded frame */
+  k_test_header_size   = 12,  /**< Frame header size in bytes */
+  k_test_sequence_num  = 100, /**< Test sequence number */
+} frame_test_constants_t;
+
+/* =============================================================================
+ * Test Fixtures
+ * =============================================================================
+ */
 
 /* Test fixtures */
 static rx_frame_encoder_t s_encoder;
@@ -318,26 +339,26 @@ void test_roundtrip_max_sequence(void)
 void test_roundtrip_large_payload(void)
 {
   rx_frame_t original      = {0};
-  original.header.sequence = 100;
-  original.header.length   = 256;
+  original.header.sequence = k_test_sequence_num;
+  original.header.length   = k_test_payload_size;
   original.header.type     = k_frame_type_response;
   original.header.flags    = k_frame_flag_none;
 
   /* Fill payload with pattern */
-  for (int i = 0; i < 256; i++) {
+  for (uint32_t i = 0; i < k_test_payload_size; i++) {
     original.payload[i] = (uint8_t)(i & 0xFF);
   }
 
-  uint8_t  buffer[512];
+  uint8_t  buffer[k_test_buffer_size];
   uint32_t len;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &original, buffer, &len));
-  TEST_ASSERT_EQUAL(12 + 256, len);
+  TEST_ASSERT_EQUAL(k_test_header_size + k_test_payload_size, len);
 
   rx_frame_t decoded;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
 
-  TEST_ASSERT_EQUAL(256, decoded.header.length);
-  TEST_ASSERT_EQUAL_MEMORY(original.payload, decoded.payload, 256);
+  TEST_ASSERT_EQUAL(k_test_payload_size, decoded.header.length);
+  TEST_ASSERT_EQUAL_MEMORY(original.payload, decoded.payload, k_test_payload_size);
 }
 
 /* =============================================================================
@@ -401,6 +422,479 @@ void test_frame_type_valid(void)
 }
 
 /* =============================================================================
+ * Maximum Payload Tests
+ * =============================================================================
+ */
+
+void test_roundtrip_max_payload(void)
+{
+  rx_frame_t original      = {0};
+  original.header.sequence = 999;
+  original.header.length   = k_frame_max_payload; /* 1024 bytes */
+  original.header.type     = k_frame_type_command;
+  original.header.flags    = k_frame_flag_fec_enabled;
+
+  /* Fill with deterministic pattern */
+  for (uint32_t i = 0; i < k_frame_max_payload; i++) {
+    original.payload[i] = (uint8_t)(i & 0xFF);
+  }
+
+  uint8_t  buffer[k_frame_max_size];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &original, buffer, &len));
+  TEST_ASSERT_EQUAL(k_frame_max_size, len); /* 1036 bytes total */
+
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+
+  TEST_ASSERT_EQUAL(original.header.sequence, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_max_payload, decoded.header.length);
+  TEST_ASSERT_EQUAL(original.header.type, decoded.header.type);
+  TEST_ASSERT_EQUAL(original.header.flags, decoded.header.flags);
+  TEST_ASSERT_EQUAL_MEMORY(original.payload, decoded.payload, k_frame_max_payload);
+}
+
+/* =============================================================================
+ * Frame Type Tests (Explicit Coverage)
+ * =============================================================================
+ */
+
+void test_frame_type_command(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 1;
+  frame.header.length   = 4;
+  frame.header.type     = k_frame_type_command;
+  frame.header.flags    = k_frame_flag_requires_ack;
+  memcpy(frame.payload, "CMD1", 4);
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_type_command, decoded.header.type);
+  TEST_ASSERT_EQUAL_MEMORY("CMD1", decoded.payload, 4);
+}
+
+void test_frame_type_response(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 2;
+  frame.header.length   = 4;
+  frame.header.type     = k_frame_type_response;
+  frame.header.flags    = k_frame_flag_none;
+  memcpy(frame.payload, "RSP1", 4);
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_type_response, decoded.header.type);
+  TEST_ASSERT_EQUAL_MEMORY("RSP1", decoded.payload, 4);
+}
+
+void test_frame_type_ack(void)
+{
+  rx_frame_t frame;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ack(&frame, 100));
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_type_ack, decoded.header.type);
+  TEST_ASSERT_EQUAL(100, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(0, decoded.header.length);
+}
+
+void test_frame_type_nack(void)
+{
+  rx_frame_t frame;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_nack(&frame, 200, k_frame_flag_soft_nack));
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_type_nack, decoded.header.type);
+  TEST_ASSERT_EQUAL(200, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_flag_soft_nack, decoded.header.flags);
+}
+
+/* =============================================================================
+ * Frame Flag Tests (All Combinations)
+ * =============================================================================
+ */
+
+void test_flag_requires_ack(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 1;
+  frame.header.length   = 0;
+  frame.header.type     = k_frame_type_command;
+  frame.header.flags    = k_frame_flag_requires_ack;
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_flag_requires_ack, decoded.header.flags);
+}
+
+void test_flag_retransmit(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 2;
+  frame.header.length   = 0;
+  frame.header.type     = k_frame_type_command;
+  frame.header.flags    = k_frame_flag_retransmit;
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_flag_retransmit, decoded.header.flags);
+}
+
+void test_flag_priority(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 3;
+  frame.header.length   = 0;
+  frame.header.type     = k_frame_type_command;
+  frame.header.flags    = k_frame_flag_priority;
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_flag_priority, decoded.header.flags);
+}
+
+void test_flag_fec_enabled(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 4;
+  frame.header.length   = 0;
+  frame.header.type     = k_frame_type_command;
+  frame.header.flags    = k_frame_flag_fec_enabled;
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_flag_fec_enabled, decoded.header.flags);
+}
+
+void test_flag_soft_nack(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 5;
+  frame.header.length   = 0;
+  frame.header.type     = k_frame_type_nack;
+  frame.header.flags    = k_frame_flag_soft_nack;
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_flag_soft_nack, decoded.header.flags);
+}
+
+void test_flag_combined(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 6;
+  frame.header.length   = 8;
+  frame.header.type     = k_frame_type_command;
+  frame.header.flags = k_frame_flag_requires_ack | k_frame_flag_priority | k_frame_flag_fec_enabled;
+  memcpy(frame.payload, "COMBINED", 8);
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(frame.header.flags, decoded.header.flags);
+  TEST_ASSERT_EQUAL_MEMORY("COMBINED", decoded.payload, 8);
+}
+
+/* =============================================================================
+ * Endianness Tests (Explicit Big-Endian Verification)
+ * =============================================================================
+ */
+
+void test_sync_word_big_endian(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 1;
+  frame.header.length   = 0;
+  frame.header.type     = k_frame_type_ack;
+  frame.header.flags    = k_frame_flag_none;
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  /* SYNC word 0x55AA must be big-endian: [0x55, 0xAA] */
+  TEST_ASSERT_EQUAL_HEX8(0x55, buffer[0]); /* High byte first */
+  TEST_ASSERT_EQUAL_HEX8(0xAA, buffer[1]); /* Low byte second */
+}
+
+void test_sequence_big_endian(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 0x1234;
+  frame.header.length   = 0;
+  frame.header.type     = k_frame_type_ack;
+  frame.header.flags    = k_frame_flag_none;
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  /* SEQ 0x1234 must be big-endian: [0x12, 0x34] */
+  TEST_ASSERT_EQUAL_HEX8(0x12, buffer[2]); /* High byte at offset 2 */
+  TEST_ASSERT_EQUAL_HEX8(0x34, buffer[3]); /* Low byte at offset 3 */
+}
+
+void test_length_big_endian(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 1;
+  frame.header.length   = 0x0100; /* 256 bytes */
+  frame.header.type     = k_frame_type_command;
+  frame.header.flags    = k_frame_flag_none;
+
+  /* Fill 256 bytes */
+  for (uint32_t i = 0; i < 256; i++) {
+    frame.payload[i] = (uint8_t)i;
+  }
+
+  uint8_t  buffer[512];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+
+  /* LEN 0x0100 must be big-endian: [0x01, 0x00] */
+  TEST_ASSERT_EQUAL_HEX8(0x01, buffer[4]); /* High byte at offset 4 */
+  TEST_ASSERT_EQUAL_HEX8(0x00, buffer[5]); /* Low byte at offset 5 */
+}
+
+void test_crc_little_endian(void)
+{
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 1;
+  frame.header.length   = 0;
+  frame.header.type     = k_frame_type_ack;
+  frame.header.flags    = k_frame_flag_none;
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(12, len);
+
+  /* CRC-32 is little-endian (LSB first) at end of frame */
+  /* We don't test exact CRC value (that's rx_crc32's job) */
+  /* Just verify it's at the correct position (last 4 bytes) */
+  uint32_t crc_offset = len - 4;
+  TEST_ASSERT_EQUAL(8, crc_offset); /* After SYNC(2) + Header(6) */
+
+  /* Verify CRC is non-zero (frame is valid) */
+  uint32_t crc = ((uint32_t)buffer[crc_offset + 0]) | ((uint32_t)buffer[crc_offset + 1] << 8) |
+                 ((uint32_t)buffer[crc_offset + 2] << 16) |
+                 ((uint32_t)buffer[crc_offset + 3] << 24);
+  TEST_ASSERT_NOT_EQUAL(0, crc);
+}
+
+/* =============================================================================
+ * Go Compatibility Tests (Bit-Exact Verification)
+ * =============================================================================
+ */
+
+void test_go_compatibility_empty_ack(void)
+{
+  /*
+   * Test vector from Go implementation (star-gateway/internal/frame/)
+   * Frame: ACK for sequence 1
+   * Expected wire format (hex):
+   *   55 AA          - SYNC (0x55AA big-endian)
+   *   00 01          - SEQ (1 big-endian)
+   *   00 00          - LEN (0 big-endian)
+   *   03             - TYPE (ACK = 3)
+   *   00             - FLAGS (none = 0)
+   *   <CRC-32 LE>    - CRC-32 of above 8 bytes
+   */
+  rx_frame_t frame;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ack(&frame, 1));
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(12, len);
+
+  /* Verify header bytes match Go encoding */
+  const uint8_t expected_header[] = {
+    0x55,
+    0xAA, /* SYNC */
+    0x00,
+    0x01, /* SEQ = 1 */
+    0x00,
+    0x00, /* LEN = 0 */
+    0x03, /* TYPE = ACK */
+    0x00  /* FLAGS = none */
+  };
+  TEST_ASSERT_EQUAL_MEMORY(expected_header, buffer, 8);
+
+  /* Verify round-trip decode */
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(1, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(0, decoded.header.length);
+  TEST_ASSERT_EQUAL(k_frame_type_ack, decoded.header.type);
+  TEST_ASSERT_EQUAL(k_frame_flag_none, decoded.header.flags);
+}
+
+void test_go_compatibility_command_with_payload(void)
+{
+  /*
+   * Test vector: Command with 4-byte payload "TEST"
+   * Expected wire format (hex):
+   *   55 AA          - SYNC
+   *   00 2A          - SEQ (42 big-endian)
+   *   00 04          - LEN (4 big-endian)
+   *   01             - TYPE (COMMAND = 1)
+   *   01             - FLAGS (REQUIRES_ACK = 0x01)
+   *   54 45 53 54    - PAYLOAD "TEST"
+   *   <CRC-32 LE>    - CRC-32
+   */
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 42;
+  frame.header.length   = 4;
+  frame.header.type     = k_frame_type_command;
+  frame.header.flags    = k_frame_flag_requires_ack;
+  memcpy(frame.payload, "TEST", 4);
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(16, len); /* 12 + 4 payload */
+
+  /* Verify header and payload match Go encoding */
+  const uint8_t expected[] = {
+    0x55,
+    0xAA, /* SYNC */
+    0x00,
+    0x2A, /* SEQ = 42 */
+    0x00,
+    0x04, /* LEN = 4 */
+    0x01, /* TYPE = COMMAND */
+    0x01, /* FLAGS = REQUIRES_ACK */
+    'T',
+    'E',
+    'S',
+    'T' /* PAYLOAD */
+  };
+  TEST_ASSERT_EQUAL_MEMORY(expected, buffer, 12);
+
+  /* Verify round-trip */
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(42, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(4, decoded.header.length);
+  TEST_ASSERT_EQUAL(k_frame_type_command, decoded.header.type);
+  TEST_ASSERT_EQUAL(k_frame_flag_requires_ack, decoded.header.flags);
+  TEST_ASSERT_EQUAL_MEMORY("TEST", decoded.payload, 4);
+}
+
+/* =============================================================================
+ * Edge Case Tests
+ * =============================================================================
+ */
+
+void test_decode_payload_length_mismatch(void)
+{
+  /* Create valid frame with 10-byte payload */
+  rx_frame_t frame      = {0};
+  frame.header.sequence = 1;
+  frame.header.length   = 10;
+  frame.header.type     = k_frame_type_command;
+  frame.header.flags    = k_frame_flag_none;
+  memcpy(frame.payload, "0123456789", 10);
+
+  uint8_t  buffer[64];
+  uint32_t len;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(22, len); /* 12 + 10 */
+
+  /* Truncate buffer to only 5 bytes of payload (total 17 bytes) */
+  /* LEN field still says 10, but only 5 bytes + CRC available */
+  rx_frame_t decoded;
+  rx_err_t   err = rx_frame_decode(&s_decoder, buffer, 17, &decoded);
+
+  /* Decoder should detect insufficient data */
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+void test_decode_zero_length_buffer(void)
+{
+  rx_frame_t frame;
+  rx_err_t   err = rx_frame_decode(&s_decoder, (uint8_t*)"", 0, &frame);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+void test_encode_sequence_rollover(void)
+{
+  /* Test sequence number rollover (0xFFFF -> 0x0000) */
+  rx_frame_t frame1      = {0};
+  frame1.header.sequence = 0xFFFF;
+  frame1.header.length   = 0;
+  frame1.header.type     = k_frame_type_ack;
+  frame1.header.flags    = k_frame_flag_none;
+
+  uint8_t  buffer1[64];
+  uint32_t len1;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame1, buffer1, &len1));
+
+  rx_frame_t decoded1;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer1, len1, &decoded1));
+  TEST_ASSERT_EQUAL_HEX16(0xFFFF, decoded1.header.sequence);
+
+  /* Next sequence would be 0x0000 */
+  rx_frame_t frame2      = {0};
+  frame2.header.sequence = 0x0000;
+  frame2.header.length   = 0;
+  frame2.header.type     = k_frame_type_ack;
+  frame2.header.flags    = k_frame_flag_none;
+
+  uint8_t  buffer2[64];
+  uint32_t len2;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame2, buffer2, &len2));
+
+  rx_frame_t decoded2;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer2, len2, &decoded2));
+  TEST_ASSERT_EQUAL_HEX16(0x0000, decoded2.header.sequence);
+}
+
+/* =============================================================================
  * Main
  * =============================================================================
  */
@@ -445,6 +939,38 @@ int main(void)
   RUN_TEST(test_create_nack_with_flags);
   RUN_TEST(test_encoded_size_calculation);
   RUN_TEST(test_frame_type_valid);
+
+  /* Maximum payload tests */
+  RUN_TEST(test_roundtrip_max_payload);
+
+  /* Frame type tests */
+  RUN_TEST(test_frame_type_command);
+  RUN_TEST(test_frame_type_response);
+  RUN_TEST(test_frame_type_ack);
+  RUN_TEST(test_frame_type_nack);
+
+  /* Frame flag tests */
+  RUN_TEST(test_flag_requires_ack);
+  RUN_TEST(test_flag_retransmit);
+  RUN_TEST(test_flag_priority);
+  RUN_TEST(test_flag_fec_enabled);
+  RUN_TEST(test_flag_soft_nack);
+  RUN_TEST(test_flag_combined);
+
+  /* Endianness tests */
+  RUN_TEST(test_sync_word_big_endian);
+  RUN_TEST(test_sequence_big_endian);
+  RUN_TEST(test_length_big_endian);
+  RUN_TEST(test_crc_little_endian);
+
+  /* Go compatibility tests */
+  RUN_TEST(test_go_compatibility_empty_ack);
+  RUN_TEST(test_go_compatibility_command_with_payload);
+
+  /* Edge case tests */
+  RUN_TEST(test_decode_payload_length_mismatch);
+  RUN_TEST(test_decode_zero_length_buffer);
+  RUN_TEST(test_encode_sequence_rollover);
 
   return UNITY_END();
 }

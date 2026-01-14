@@ -5,8 +5,8 @@
  * Provides mock register instances and helper functions for testing
  * USB driver code on the host without actual hardware.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2025-12-01
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #include "mock_usb0_regs.h"
@@ -23,20 +23,6 @@ mock_icu_regs_t    g_mock_icu;
 mock_system_regs_t g_mock_system;
 
 /* =============================================================================
- * USB0 Register Bit Definitions (copied from rx72n_regs.h for tests)
- * =============================================================================
- */
-
-/* INTSTS0 bit positions */
-#define INTSTS0_CTSQ_MASK  (0x0007)
-#define INTSTS0_DVSQ_MASK  (0x0070)
-#define INTSTS0_DVSQ_SHIFT (4)
-
-/* CFIFOCTR bit definitions */
-#define CFIFOCTR_DTLN_MASK (0x01FF)
-#define CFIFOCTR_FRDY      (1 << 13)
-
-/* =============================================================================
  * Helper Functions
  * =============================================================================
  */
@@ -46,8 +32,8 @@ void mock_regs_init(void)
   mock_regs_clear();
 
   /* Set reasonable defaults for USB testing */
-  g_mock_usb0.cfifoctr = CFIFOCTR_FRDY; /* FIFO ready by default */
-  g_mock_usb0.dcpmaxp  = 64;            /* Max packet size for control endpoint */
+  g_mock_usb0.cfifoctr = k_usb_cfifoctr_frdy;      /* FIFO ready by default */
+  g_mock_usb0.dcpmaxp  = k_usb_dcpmaxp_default;    /* Max packet size for control endpoint */
 }
 
 void mock_regs_clear(void)
@@ -66,34 +52,34 @@ void mock_usb0_set_dvsq(uint16_t dvsq)
 {
   /* Clear existing DVSQ bits and set new value */
   g_mock_usb0.intsts0 =
-    (g_mock_usb0.intsts0 & ~INTSTS0_DVSQ_MASK) | ((dvsq << INTSTS0_DVSQ_SHIFT) & INTSTS0_DVSQ_MASK);
+    (g_mock_usb0.intsts0 & ~k_usb_intsts0_dvsq_mask) | ((dvsq << k_usb_intsts0_dvsq_shift) & k_usb_intsts0_dvsq_mask);
 }
 
 void mock_usb0_set_ctsq(uint16_t ctsq)
 {
   /* Clear existing CTSQ bits and set new value */
-  g_mock_usb0.intsts0 = (g_mock_usb0.intsts0 & ~INTSTS0_CTSQ_MASK) | (ctsq & INTSTS0_CTSQ_MASK);
+  g_mock_usb0.intsts0 = (g_mock_usb0.intsts0 & ~k_usb_intsts0_ctsq_mask) | (ctsq & k_usb_intsts0_ctsq_mask);
 }
 
 void mock_usb0_set_fifo_ready(uint8_t ready)
 {
   if (ready) {
-    g_mock_usb0.cfifoctr |= CFIFOCTR_FRDY;
+    g_mock_usb0.cfifoctr |= k_usb_cfifoctr_frdy;
   } else {
-    g_mock_usb0.cfifoctr &= ~CFIFOCTR_FRDY;
+    g_mock_usb0.cfifoctr &= ~k_usb_cfifoctr_frdy;
   }
 }
 
 void mock_usb0_set_fifo_dtln(uint16_t len)
 {
-  g_mock_usb0.cfifoctr = (g_mock_usb0.cfifoctr & ~CFIFOCTR_DTLN_MASK) | (len & CFIFOCTR_DTLN_MASK);
+  g_mock_usb0.cfifoctr = (g_mock_usb0.cfifoctr & ~k_usb_cfifoctr_dtln_mask) | (len & k_usb_cfifoctr_dtln_mask);
 }
 
 void mock_usb0_set_pipe1_busy(uint8_t busy)
 {
   if (busy) {
-    g_mock_usb0.pipe1ctr |= (1 << 5); /* PBUSY bit */
+    g_mock_usb0.pipe1ctr |= k_usb_pipectr_pbusy;
   } else {
-    g_mock_usb0.pipe1ctr &= ~(1 << 5);
+    g_mock_usb0.pipe1ctr &= ~k_usb_pipectr_pbusy;
   }
 }

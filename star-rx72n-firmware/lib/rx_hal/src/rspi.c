@@ -20,6 +20,7 @@
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+#include "rx_register_protection.h"
 
 /* =============================================================================
  * Constants
@@ -39,12 +40,6 @@ typedef enum {
   k_rspi_channel_1 = 1, /**< RSPI1 */
   k_rspi_channel_2 = 2, /**< RSPI2 */
 } rspi_channel_num_t;
-
-/** @brief System protection register values */
-typedef enum {
-  k_rspi_prcr_unlock = 0xA50B, /**< Enable writes to MSTPCR */
-  k_rspi_prcr_lock   = 0xA500, /**< Disable writes to MSTPCR */
-} rspi_prcr_values_t;
 
 /** @brief RSPI module stop bit positions in MSTPCRB */
 typedef enum {
@@ -151,7 +146,7 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
   }
 
   /* Enable RSPI module (clear module stop bit) */
-  system_regs()->prcr = k_rspi_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
   if (channel == k_rspi_channel_0) {
     system_regs()->mstpcrb &= ~(1UL << k_rspi_mstpb_rspi0);
@@ -161,7 +156,7 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
     system_regs()->mstpcrb &= ~(1UL << k_rspi_mstpb_rspi2);
   }
 
-  system_regs()->prcr = k_rspi_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   /* Disable SPI before configuration */
   rspi->spcr = k_rspi_spcr_disabled;
@@ -307,7 +302,7 @@ rx_err_t rspi_deinit(uint8_t channel)
   rspi->spcr = k_rspi_spcr_disabled;
 
   /* Disable RSPI module (set module stop bit) */
-  system_regs()->prcr = k_rspi_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
   if (channel == k_rspi_channel_0) {
     system_regs()->mstpcrb |= (1UL << k_rspi_mstpb_rspi0);
@@ -317,7 +312,7 @@ rx_err_t rspi_deinit(uint8_t channel)
     system_regs()->mstpcrb |= (1UL << k_rspi_mstpb_rspi2);
   }
 
-  system_regs()->prcr = k_rspi_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   /* Mark channel as uninitialized */
   s_rspi_channel_initialized[channel] = false;

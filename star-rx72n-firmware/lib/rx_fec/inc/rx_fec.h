@@ -226,8 +226,7 @@ typedef struct {
  * @return k_rx_err_invalid_state if decoder not initialized
  * @return k_rx_err_invalid_size if output buffer too small
  */
-rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*                   dec,
-                            const rx_fec_decode_soft_params_t* params);
+rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_params_t* params);
 
 /**
  * @brief Hard-decision decode parameters
@@ -261,8 +260,7 @@ typedef struct {
  * @return k_rx_err_invalid_state if decoder not initialized
  * @return k_rx_err_invalid_size if soft_bits_buffer is too small
  */
-rx_err_t rx_fec_decode_hard(rx_fec_decoder_t*                   dec,
-                            const rx_fec_decode_hard_params_t* params);
+rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_params_t* params);
 
 /* =============================================================================
  * Utility Functions

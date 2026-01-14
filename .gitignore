@@ -1,5 +1,3 @@
-
-
 # macOS system files
 .DS_Store
 .DS_Store?
@@ -134,3 +132,13 @@ star-yocto/
 yocto-downloads/
 yocto-sstate-cache/
 ros2_cross_ws/
+PR_REVIEWS.md
+# ROS 2 / Colcon build artifacts
+install/
+log/
+
+# Dev container (personal config - do not share)
+.devcontainer/
+
+# Conductor (AI orchestrator state and history)
+conductor/

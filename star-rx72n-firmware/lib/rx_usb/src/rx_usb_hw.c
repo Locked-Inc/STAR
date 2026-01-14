@@ -15,6 +15,9 @@
 
 #include "rx72n_regs.h"
 #include "rx_log.h"
+#include "rx_register_protection.h"
+#include "rx_threadx_config.h"
+#include "rx_time_constants.h"
 #include "rx_usb.h"
 #include "tx_api.h"
 
@@ -25,19 +28,14 @@
 
 static const char* s_tag = "USB_HW";
 
-/** @brief ThreadX timing constants for USB initialization delays */
+/** @brief USB timing constants for initialization delays */
 typedef enum {
-  k_threadx_tick_rate_hz       = 100, /**< ThreadX tick rate (100 Hz) */
-  k_threadx_ms_per_tick        = 10,  /**< Milliseconds per tick at 100 Hz */
-  k_usb_pll_stabilization_ms   = 10,  /**< USB PLL stabilization time (10ms) */
-  k_usb_clock_stabilization_ms = 10,  /**< USB clock stabilization time (10ms) */
+  k_threadx_ms_per_tick        = 10, /**< Milliseconds per tick at 100 Hz */
+  k_usb_pll_stabilization_ms   = 10, /**< USB PLL stabilization time (10ms) */
+  k_usb_clock_stabilization_ms = 10, /**< USB clock stabilization time (10ms) */
+  k_min_sleep_ticks            = 1,  /**< Minimum sleep duration (1 tick) */
+  k_min_transfer_size          = 0,  /**< Minimum data transfer size (no data) */
 } usb_hw_timing_t;
-
-/** @brief USB hardware protection constants */
-typedef enum {
-  k_prcr_unlock = 0xA50B, /**< Protection register unlock value */
-  k_prcr_lock   = 0xA500, /**< Protection register lock value */
-} usb_hw_protection_t;
 
 /** @brief USB SYSCFG register values */
 typedef enum {
@@ -61,6 +59,14 @@ typedef enum {
   k_icu_bits_per_ier_register = 8, /**< Number of interrupt enable bits per IER register */
   k_usb_interrupt_priority    = 6, /**< USB interrupt priority (moderate, below motor control) */
 } usb_icu_config_t;
+
+/** @brief USB pipe and endpoint validation limits */
+typedef enum {
+  k_usb_pipe_min            = 0,   /**< Minimum pipe number (DCP) */
+  k_usb_pipe_max            = 9,   /**< Maximum pipe number */
+  k_usb_endpoint_max        = 15,  /**< Maximum endpoint number (0-15) */
+  k_usb_max_packet_size_max = 512, /**< Maximum packet size (512 bytes for FS) */
+} usb_validation_limits_t;
 
 /* =============================================================================
  * Private Variables
@@ -93,13 +99,13 @@ rx_err_t rx_usb_hw_init(void)
 
   /* 1. Enable USB0 module clock */
   /* Unlock protection */
-  system_regs()->prcr = k_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
   /* Clear module stop bit for USB0 (bit 19 in MSTPCRB) */
   system_regs()->mstpcrb &= ~(1UL << k_mstpb_usb0);
 
   /* Lock protection */
-  system_regs()->prcr = k_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   /* 2. Disable USB module before configuration */
   usb0()->syscfg = k_usb_syscfg_disabled;
@@ -107,8 +113,8 @@ rx_err_t rx_usb_hw_init(void)
   /* 3. Wait for USB PLL to stabilize */
   /* Note: USB requires 48 MHz clock from main PLL */
   uint32_t pll_ticks = k_usb_pll_stabilization_ms / k_threadx_ms_per_tick;
-  if (pll_ticks == 0) {
-    pll_ticks = 1;
+  if (pll_ticks == k_min_transfer_size) {
+    pll_ticks = k_min_sleep_ticks;
   }
   tx_thread_sleep(pll_ticks);
 
@@ -125,8 +131,8 @@ rx_err_t rx_usb_hw_init(void)
 
   /* Wait for clock to stabilize */
   uint32_t clock_ticks = k_usb_clock_stabilization_ms / k_threadx_ms_per_tick;
-  if (clock_ticks == 0) {
-    clock_ticks = 1;
+  if (clock_ticks == k_min_transfer_size) {
+    clock_ticks = k_min_sleep_ticks;
   }
   tx_thread_sleep(clock_ticks);
 
@@ -179,9 +185,9 @@ rx_err_t rx_usb_hw_deinit(void)
   icu()->ir[k_vect_usb0_usbi] = 0;
 
   /* Disable USB0 module clock */
-  system_regs()->prcr = k_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
   system_regs()->mstpcrb |= (1UL << k_mstpb_usb0);
-  system_regs()->prcr = k_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   s_hw_initialized = false;
 
@@ -234,8 +240,15 @@ rx_err_t rx_usb_hw_detach(void)
  */
 uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
 {
-  if (data == NULL || max_len == 0) {
-    return 0;
+  /* Rule 5: Pre-condition validation */
+  if (data == NULL || max_len == k_min_transfer_size) {
+    return k_min_transfer_size;
+  }
+
+  /* Validate pipe number */
+  if (pipe > k_usb_pipe_max) {
+    rx_log_error(s_tag, "Invalid pipe number");
+    return k_min_transfer_size;
   }
 
   /* Select pipe for CFIFO access */
@@ -249,12 +262,14 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
   }
 
   if (timeout == k_usb_fifo_timeout_expired) {
-    return 0;
+    rx_log_error(s_tag, "FIFO read timeout");
+    return k_min_transfer_size;
   }
 
   /* Get received data length */
   uint32_t len = usb0()->cfifoctr & k_usb_fifoctr_dtln_mask;
   if (len > max_len) {
+    rx_log_error(s_tag, "FIFO read overflow detected");
     len = max_len;
   }
 
@@ -265,6 +280,12 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
 
   /* Clear buffer */
   usb0()->cfifoctr |= k_usb_fifoctr_bclr;
+
+  /* Rule 5: Post-condition validation */
+  if (len > max_len) {
+    rx_log_error(s_tag, "FIFO read length validation failed");
+    return k_min_transfer_size;
+  }
 
   return len;
 }
@@ -279,8 +300,15 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
  */
 uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
 {
-  if (data == NULL || len == 0) {
-    return 0;
+  /* Rule 5: Pre-condition validation */
+  if (data == NULL || len == k_min_transfer_size) {
+    return k_min_transfer_size;
+  }
+
+  /* Validate pipe number */
+  if (pipe > k_usb_pipe_max) {
+    rx_log_error(s_tag, "Invalid pipe number");
+    return k_min_transfer_size;
   }
 
   /* Select pipe for CFIFO access with write direction */
@@ -294,7 +322,8 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   }
 
   if (timeout == k_usb_fifo_timeout_expired) {
-    return 0;
+    rx_log_error(s_tag, "FIFO write timeout");
+    return k_min_transfer_size;
   }
 
   /* Write data to FIFO */
@@ -350,7 +379,20 @@ rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
                                   uint16_t type,
                                   uint16_t max_packet)
 {
-  if (pipe == 0 || pipe > 9) {
+  /* Rule 5: Pre-condition validation */
+  if (pipe == k_usb_pipe_min || pipe > k_usb_pipe_max) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate endpoint number (0-15) */
+  if (endpoint > k_usb_endpoint_max) {
+    rx_log_error(s_tag, "Invalid endpoint number");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate max packet size */
+  if (max_packet > k_usb_max_packet_size_max) {
+    rx_log_error(s_tag, "Invalid max packet size");
     return k_rx_err_invalid_arg;
   }
 

@@ -107,19 +107,11 @@ static rx_err_t internal_uart_init_callback(rx_bus_config_t* bus_config, void* u
     return k_rx_err_invalid_arg;
   }
 
-  /* Extract port/pin from gpio_pin_t for UART HAL */
-  uint8_t tx_port = gpio_pin_get_port(bus_config->proto.uart.tx_pin);
-  uint8_t tx_pin  = gpio_pin_get_pin(bus_config->proto.uart.tx_pin);
-  uint8_t rx_port = gpio_pin_get_port(bus_config->proto.uart.rx_pin);
-  uint8_t rx_pin  = gpio_pin_get_pin(bus_config->proto.uart.rx_pin);
-
   /* Initialize SCI channel with full hardware configuration */
   rx_err_t err = uart_init_channel(bus_config->proto.uart.channel,
                                    bus_config->proto.uart.baudrate,
-                                   tx_port,
-                                   tx_pin,
-                                   rx_port,
-                                   rx_pin);
+                                   bus_config->proto.uart.tx_pin,
+                                   bus_config->proto.uart.rx_pin);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "UART HAL initialization failed");

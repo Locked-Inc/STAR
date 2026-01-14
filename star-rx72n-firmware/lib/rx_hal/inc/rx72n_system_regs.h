@@ -90,11 +90,85 @@ static inline volatile rx_system_regs_t* system_regs(void)
   return (volatile rx_system_regs_t*)k_system_base_addr;
 }
 
+/* Module stop bits for MSTPCRA register */
+typedef enum {
+  k_mstpa_cmt23 = 14, /**< CMT2/CMT3 module stop bit in MSTPCRA */
+} rx_module_stop_bits_a_t;
+
 /* Module stop bits for MSTPCRB register */
 typedef enum {
   k_mstpb_usb0 = 19, /**< USB0 module stop bit in MSTPCRB */
   k_mstpb_crc  = 23, /**< CRC module stop bit in MSTPCRB */
-} rx_module_stop_bits_t;
+} rx_module_stop_bits_b_t;
+
+/* =============================================================================
+ * Reset Status Registers (RSTSR)
+ * =============================================================================
+ */
+
+/**
+ * @brief Reset status register addresses
+ * @details
+ * IMPORTANT: RSTSR registers are NOT contiguous in memory!
+ * - RSTSR0/1 are adjacent at 0x0008C290-0x0008C291
+ * - RSTSR2 is at a separate address 0x000800C0
+ * Verified against RX72N Group User's Manual Hardware (R01UH0824EJ0120 Rev.1.20)
+ */
+typedef enum {
+  k_rstsr0_addr = 0x0008C290, /**< Reset Status Register 0 address (page 286) */
+  k_rstsr1_addr = 0x0008C291, /**< Reset Status Register 1 address (page 288) */
+  k_rstsr2_addr = 0x000800C0, /**< Reset Status Register 2 address (page 289) */
+} rx_rstsr_addresses_t;
+
+/**
+ * @brief Reset Status Registers 0 and 1 (contiguous)
+ * @details
+ * RSTSR0 and RSTSR1 are adjacent in memory at 0x0008C290-0x0008C291.
+ */
+typedef struct {
+  volatile uint8_t rstsr0; /**< Reset Status Register 0 (voltage, power-on) */
+  volatile uint8_t rstsr1; /**< Reset Status Register 1 (cold/warm start) */
+} rx_rstsr01_regs_t;
+
+/**
+ * @brief Get pointer to RSTSR0/RSTSR1 registers
+ * @return Volatile pointer to RSTSR0/1 register structure
+ */
+static inline volatile rx_rstsr01_regs_t* rstsr01(void)
+{
+  return (volatile rx_rstsr01_regs_t*)k_rstsr0_addr;
+}
+
+/**
+ * @brief Get pointer to RSTSR2 register
+ * @return Volatile pointer to RSTSR2 register
+ * @note RSTSR2 is at a separate address from RSTSR0/1
+ */
+static inline volatile uint8_t* rstsr2(void)
+{
+  return (volatile uint8_t*)k_rstsr2_addr;
+}
+
+/* RSTSR0 bit definitions (page 286) */
+typedef enum {
+  k_rstsr0_porf    = (1 << 0), /**< Power-On Reset Detect Flag */
+  k_rstsr0_lvd0rf  = (1 << 1), /**< Voltage-Monitoring 0 Reset Detect Flag */
+  k_rstsr0_lvd1rf  = (1 << 2), /**< Voltage-Monitoring 1 Reset Detect Flag */
+  k_rstsr0_lvd2rf  = (1 << 3), /**< Voltage-Monitoring 2 Reset Detect Flag */
+  k_rstsr0_dpsrstf = (1 << 7), /**< Deep Software Standby Reset Flag */
+} rstsr0_bits_t;
+
+/* RSTSR1 bit definitions (page 288) */
+typedef enum {
+  k_rstsr1_cwsf = (1 << 0), /**< Cold/Warm Start Determination Flag */
+} rstsr1_bits_t;
+
+/* RSTSR2 bit definitions (page 289) */
+typedef enum {
+  k_rstsr2_iwdtrf = (1 << 0), /**< Independent Watchdog Timer Reset Detect Flag */
+  k_rstsr2_wdtrf  = (1 << 1), /**< Watchdog Timer Reset Detect Flag */
+  k_rstsr2_swrf   = (1 << 2), /**< Software Reset Detect Flag */
+} rstsr2_bits_t;
 
 #ifdef __cplusplus
 }

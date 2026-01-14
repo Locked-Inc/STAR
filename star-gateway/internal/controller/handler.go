@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/service"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 
 	"google.golang.org/protobuf/proto"
@@ -19,10 +20,18 @@ type Handler struct {
 	lastState *starv1.ControllerState
 
 	lastReceived time.Time
+
+	gatewaySvc *service.GatewayService
 }
 
 func NewHandler() *Handler {
 	return &Handler{}
+}
+
+func NewHandlerWithGateway(gatewaySvc *service.GatewayService) *Handler {
+	return &Handler{
+		gatewaySvc: gatewaySvc,
+	}
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -77,6 +86,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Received: Linear=%.2f, Angular=%.2f", msg.LinearVel, msg.AngularVel)
 		}
 
+		// Convert ControllerState to VelocityCommand and forward to Gateway
+		if h.gatewaySvc != nil {
+			cmd := convertToVelocityCommand(&msg)
+			h.gatewaySvc.UpdateTeleopCommand(cmd)
+		}
+
 		h.mu.Lock()
 		h.lastState = &msg
 		h.lastReceived = time.Now()
@@ -106,4 +121,39 @@ func (h *Handler) GetSafeState() *starv1.ControllerState {
 	}
 
 	return h.lastState
+}
+
+// convertToVelocityCommand converts arcade drive (linear, angular) to differential drive (left, right).
+//
+// Implements differential drive inverse kinematics for a 4-wheel robot:
+//
+//	vL = v - (ω * wheelBase) / 2
+//	vR = v + (ω * wheelBase) / 2
+//
+// where v is linear velocity (m/s), ω is angular velocity (rad/s), and wheelBase is track width (m).
+//
+// Motor Layout (top view):
+//
+//	  Front
+//	FL   FR
+//	BL   BR
+//	  Back
+//
+// For differential drive, left side (FL, BL) and right side (FR, BR) are coupled.
+func convertToVelocityCommand(state *starv1.ControllerState) *starv1.VelocityCommand {
+	const wheelBase float32 = 0.150 // meters (150mm track width)
+
+	halfBase := wheelBase / 2.0
+	vLeft := state.LinearVel - (state.AngularVel * halfBase)
+	vRight := state.LinearVel + (state.AngularVel * halfBase)
+
+	// For differential drive: left side motors get same velocity, right side motors get same velocity
+	return &starv1.VelocityCommand{
+		FrontLeftVelocityMps:  float64(vLeft),
+		FrontRightVelocityMps: float64(vRight),
+		BackLeftVelocityMps:   float64(vLeft),
+		BackRightVelocityMps:  float64(vRight),
+		Sequence:              0,
+		TimestampUs:           time.Now().UnixMicro(),
+	}
 }

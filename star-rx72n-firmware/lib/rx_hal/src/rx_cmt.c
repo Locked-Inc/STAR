@@ -35,6 +35,7 @@
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
+#include "rx_register_protection.h"
 
 static const char* s_tag = "CMT";
 
@@ -60,12 +61,6 @@ typedef enum {
   k_cmt_divider_val_128 = 128, /**< Divide by 128 */
   k_cmt_divider_val_512 = 512, /**< Divide by 512 */
 } cmt_divider_values_t;
-
-/** @brief System protection register values */
-typedef enum {
-  k_cmt_prcr_unlock = 0xA50B, /**< Enable writes to MSTPCR */
-  k_cmt_prcr_lock   = 0xA500, /**< Disable writes to MSTPCR */
-} cmt_prcr_values_t;
 
 /** @brief CMT module stop bit positions in MSTPCRB */
 typedef enum {
@@ -251,9 +246,9 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   rx_log_info(s_tag, "CMT initialized");
 
   /* Enable CMT module (clear module stop bit) */
-  system_regs()->prcr = k_cmt_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
   system_regs()->mstpcrb &= ~(1UL << k_cmt_mstpb_cmt);
-  system_regs()->prcr = k_cmt_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   /* Stop timer before configuration */
   rx_cmt_stop(channel);

@@ -19,9 +19,11 @@
 
 #include "hardware.h"
 #include "hardware_pinout.h"
+#include "rx72n_clock.h"
 #include "rx72n_regs.h"
 #include "rx_mpc.h"
 #include "rx_port_utils.h"
+#include "rx_register_protection.h"
 
 /* =============================================================================
  * Private Definitions
@@ -30,8 +32,7 @@
 
 /** @brief UART configuration constants */
 typedef enum {
-  k_uart_default_baudrate = 115200,   /**< Default baud rate: 115200 bps */
-  k_uart_pclkb_hz         = 60000000, /**< PCLKB clock: 60 MHz */
+  k_uart_default_baudrate = 115200, /**< Default baud rate: 115200 bps */
 } uart_config_t;
 
 /** @brief UART timing constants */
@@ -84,6 +85,13 @@ typedef enum {
   k_uart_max_channels = 13, /**< SCI channels 0-12 */
 } uart_channel_limits_t;
 
+/** @brief UART timeout constants */
+typedef enum {
+  k_uart_tx_timeout        = 100000, /**< Transmit buffer wait timeout (prevents infinite loop) */
+  k_uart_timeout_expired   = 0,      /**< Timeout counter expired value */
+  k_uart_timeout_decrement = 1,      /**< Timeout counter decrement value */
+} uart_timeout_t;
+
 /** @brief SCI module stop bit positions in MSTPCRB */
 typedef enum {
   k_sci_mstpb_sci0  = 31, /**< SCI0 module stop bit */
@@ -100,18 +108,10 @@ typedef enum {
   k_sci_mstpb_sci11 = 20, /**< SCI11 module stop bit */
 } sci_mstpb_bits_t;
 
-/** @brief Protection register unlock/lock values */
-typedef enum {
-  k_uart_prcr_unlock = 0xA50F, /**< Unlock protection (PRC0-PRC3) */
-  k_uart_prcr_lock   = 0xA500, /**< Lock protection */
-} uart_prcr_t;
-
 /** @brief Debug UART pins (SCI9 on RX72N) */
 typedef enum {
-  k_uart_debug_tx_port = 0x0B, /**< Port B */
-  k_uart_debug_tx_pin  = 7,    /**< PB7 = TXD9 */
-  k_uart_debug_rx_port = 0x0B, /**< Port B */
-  k_uart_debug_rx_pin  = 6,    /**< PB6 = RXD9 */
+  k_uart_debug_tx_gpio = k_rx_pb_7, /**< PB7 = TXD9 (from rx_port_constants.h) */
+  k_uart_debug_rx_gpio = k_rx_pb_6, /**< PB6 = RXD9 (from rx_port_constants.h) */
 } uart_debug_pins_t;
 
 /** @brief GPIO register bit manipulation constant */
@@ -146,7 +146,7 @@ static uint8_t internal_calculate_brr(uint32_t baudrate)
   }
 
   /* For n=0 (CKS=00): BRR = (PCLKB / (32 * B)) - 1 */
-  uint32_t brr_value = (k_uart_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
+  uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
 
   if (brr_value > k_brr_max_value) {
     return k_brr_max_value;
@@ -203,13 +203,13 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
   }
 
   /* Unlock protection */
-  system_regs()->prcr = k_uart_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_all;
 
   /* Clear module stop bit to enable clock */
   system_regs()->mstpcrb &= ~(1UL << (uint8_t)mstpb_bit);
 
   /* Lock protection */
-  system_regs()->prcr = k_uart_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   return k_rx_ok;
 }
@@ -219,16 +219,19 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
  *
  * Sets up MPC (pin mux) and GPIO registers for TX/RX pins.
  *
- * @param[in] tx_port TX pin port
- * @param[in] tx_pin TX pin number
- * @param[in] rx_port RX pin port
- * @param[in] rx_pin RX pin number
+ * @param[in] tx_gpio TX pin (gpio_pin_t from hardware_pinout.h)
+ * @param[in] rx_gpio RX pin (gpio_pin_t from hardware_pinout.h)
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t
-internal_configure_uart_pins(uint8_t tx_port, uint8_t tx_pin, uint8_t rx_port, uint8_t rx_pin)
+static rx_err_t internal_configure_uart_pins(gpio_pin_t tx_gpio, gpio_pin_t rx_gpio)
 {
+  /* Extract port and pin numbers for hardware register access */
+  uint8_t tx_port = gpio_pin_get_port(tx_gpio);
+  uint8_t tx_pin  = gpio_pin_get_pin(tx_gpio);
+  uint8_t rx_port = gpio_pin_get_port(rx_gpio);
+  uint8_t rx_pin  = gpio_pin_get_pin(rx_gpio);
+
   /* Validate pin numbers */
   if (tx_pin > 7 || rx_pin > 7) {
     return k_rx_err_invalid_arg;
@@ -243,9 +246,6 @@ internal_configure_uart_pins(uint8_t tx_port, uint8_t tx_pin, uint8_t rx_port, u
   }
 
   /* Configure MPC for SCI function */
-  gpio_pin_t tx_gpio = gpio_pin_make(tx_port, tx_pin);
-  gpio_pin_t rx_gpio = gpio_pin_make(rx_port, rx_pin);
-
   rx_err_t err = rx_mpc_set_sci(tx_gpio, true);
   if (err != k_rx_ok) {
     return err;
@@ -272,12 +272,8 @@ internal_configure_uart_pins(uint8_t tx_port, uint8_t tx_pin, uint8_t rx_port, u
  * =============================================================================
  */
 
-rx_err_t uart_init_channel(uint8_t  channel,
-                           uint32_t baudrate,
-                           uint8_t  tx_port,
-                           uint8_t  tx_pin,
-                           uint8_t  rx_port,
-                           uint8_t  rx_pin)
+rx_err_t
+uart_init_channel(uint8_t channel, uint32_t baudrate, gpio_pin_t tx_gpio, gpio_pin_t rx_gpio)
 {
   /* Validate channel */
   if (channel >= k_uart_max_channels) {
@@ -302,7 +298,7 @@ rx_err_t uart_init_channel(uint8_t  channel,
   }
 
   /* Configure TX/RX pins (MPC and GPIO) */
-  err = internal_configure_uart_pins(tx_port, tx_pin, rx_port, rx_pin);
+  err = internal_configure_uart_pins(tx_gpio, rx_gpio);
   if (err != k_rx_ok) {
     return err;
   }
@@ -374,9 +370,16 @@ rx_err_t uart_putc_channel(uint8_t channel, char data)
     return k_rx_err_invalid_arg;
   }
 
-  /* Wait for transmit buffer to be empty (TDRE flag) */
-  while ((sci->ssr & k_sci_ssr_tdre_flag) == 0) {
-    /* Wait */
+  /* Wait for transmit buffer to be empty (TDRE flag) with timeout */
+  uint32_t timeout = k_uart_tx_timeout;
+  while ((sci->ssr & k_sci_ssr_tdre_flag) == k_uart_timeout_expired &&
+         timeout > k_uart_timeout_expired) {
+    timeout -= k_uart_timeout_decrement;
+  }
+
+  /* Check if timeout occurred */
+  if (timeout == k_uart_timeout_expired) {
+    return k_rx_err_timeout;
   }
 
   /* Write data to transmit register */
@@ -559,10 +562,8 @@ rx_err_t uart_init(void)
 {
   return uart_init_channel(k_uart_debug_channel,
                            k_uart_default_baudrate,
-                           k_uart_debug_tx_port,
-                           k_uart_debug_tx_pin,
-                           k_uart_debug_rx_port,
-                           k_uart_debug_rx_pin);
+                           k_uart_debug_tx_gpio,
+                           k_uart_debug_rx_gpio);
 }
 
 void uart_putc(char data)

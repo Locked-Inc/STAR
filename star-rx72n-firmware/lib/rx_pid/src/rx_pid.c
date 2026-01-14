@@ -152,6 +152,22 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
   /* Store error for next iteration */
   handle->prev_error = error;
 
+  /* Post-conditions: Verify computation correctness (NASA Rule 5 compliance) */
+  if (*output < handle->output_min || *output > handle->output_max) {
+    rx_log_error(s_tag, "Post-condition failed: output out of range");
+    return k_rx_fail;
+  }
+
+  if (handle->integral < handle->integral_min || handle->integral > handle->integral_max) {
+    rx_log_error(s_tag, "Post-condition failed: integral out of range");
+    return k_rx_fail;
+  }
+
+  if (!isfinite(*output)) {
+    rx_log_error(s_tag, "Post-condition failed: output is NaN or Inf");
+    return k_rx_fail;
+  }
+
   rx_log_debug(s_tag, "PID computation");
 
   return k_rx_ok;
@@ -177,16 +193,36 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
 
 rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, float kp, float ki, float kd)
 {
+  /* Pre-condition 1: NULL pointer check */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
+  /* Pre-condition 2: Initialization check */
   if (!handle->initialized) {
     rx_log_error(s_tag, "PID not initialized");
     return k_rx_err_invalid_state;
   }
 
+  /* Pre-condition 3: Validate gain ranges */
+  if (kp < 0.0f || ki < 0.0f || kd < 0.0f) {
+    rx_log_error(s_tag, "Gains must be non-negative");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 4: Check for extreme values */
+  if (!isfinite(kp) || !isfinite(ki) || !isfinite(kd)) {
+    rx_log_error(s_tag, "Gains must be finite values");
+    return k_rx_err_invalid_arg;
+  }
+
   handle->kp = kp;
   handle->ki = ki;
   handle->kd = kd;
+
+  /* Post-condition: Verify gains were stored correctly */
+  if (handle->kp != kp || handle->ki != ki || handle->kd != kd) {
+    rx_log_error(s_tag, "Failed to update gains");
+    return k_rx_fail;
+  }
 
   rx_log_info(s_tag, "PID gains updated");
 

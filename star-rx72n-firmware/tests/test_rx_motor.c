@@ -24,6 +24,7 @@
  */
 
 #include <math.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "mock_rx_gptw.h"
@@ -35,7 +36,6 @@
  * =============================================================================
  */
 
-/** @brief Float comparison tolerance */
 typedef enum {
   k_float_tolerance_percent = 1, /**< 0.01 tolerance for percentage comparisons */
 } test_constants_t;
@@ -831,6 +831,186 @@ void test_motor_reinit_after_deinit(void)
 }
 
 /* =============================================================================
+ * NaN/Inf Validation Tests
+ * =============================================================================
+ */
+
+void test_motor_set_duty_rejects_nan(void)
+{
+  rx_motor_init(&s_motor, &s_config);
+
+  rx_err_t err = rx_motor_set_duty(&s_motor, NAN);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_motor_set_duty_rejects_positive_inf(void)
+{
+  rx_motor_init(&s_motor, &s_config);
+
+  rx_err_t err = rx_motor_set_duty(&s_motor, INFINITY);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_motor_set_duty_rejects_negative_inf(void)
+{
+  rx_motor_init(&s_motor, &s_config);
+
+  rx_err_t err = rx_motor_set_duty(&s_motor, -INFINITY);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/* =============================================================================
+ * PWM Frequency Validation Tests
+ * =============================================================================
+ */
+
+void test_motor_init_rejects_pwm_freq_too_low(void)
+{
+  s_config.pwm_freq_hz = 500; /* Below 1 kHz minimum */
+
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_init_rejects_pwm_freq_too_high(void)
+{
+  s_config.pwm_freq_hz = 60000; /* Above 50 kHz maximum */
+
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_init_accepts_pwm_freq_at_min_boundary(void)
+{
+  s_config.pwm_freq_hz = 1000; /* Exactly 1 kHz */
+
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_motor.initialized);
+}
+
+void test_motor_init_accepts_pwm_freq_at_max_boundary(void)
+{
+  s_config.pwm_freq_hz = 50000; /* Exactly 50 kHz */
+
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_motor.initialized);
+}
+
+/* =============================================================================
+ * Dead-Time Validation Tests
+ * =============================================================================
+ */
+
+void test_motor_init_rejects_dead_time_too_low(void)
+{
+  s_config.dead_time_ns = 50; /* Below 100 ns minimum */
+
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_init_rejects_dead_time_too_high(void)
+{
+  s_config.dead_time_ns = 15000; /* Above 10 us maximum */
+
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_init_accepts_dead_time_at_min_boundary(void)
+{
+  s_config.dead_time_ns = 100; /* Exactly 100 ns */
+
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_motor.initialized);
+}
+
+void test_motor_init_accepts_dead_time_at_max_boundary(void)
+{
+  s_config.dead_time_ns = 10000; /* Exactly 10 us */
+
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_motor.initialized);
+}
+
+/* =============================================================================
+ * Emergency Stop Tests
+ * =============================================================================
+ */
+
+void test_motor_emergency_stop_from_running(void)
+{
+  rx_motor_init(&s_motor, &s_config);
+  rx_motor_set_duty(&s_motor, 75.0f);
+
+  rx_err_t err = rx_motor_emergency_stop(&s_motor);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_motor.initialized); /* Emergency stop marks as not initialized */
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, 0.0f, s_motor.current_duty);
+}
+
+void test_motor_emergency_stop_disables_outputs(void)
+{
+  rx_motor_init(&s_motor, &s_config);
+  rx_motor_set_duty(&s_motor, 50.0f);
+
+  rx_motor_emergency_stop(&s_motor);
+
+  /* Emergency stop should disable GPTW outputs */
+  TEST_ASSERT_FALSE(mock_gptw_is_running(k_gptw_channel_0));
+}
+
+void test_motor_emergency_stop_null_handle_fails(void)
+{
+  rx_err_t err = rx_motor_emergency_stop(NULL);
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+}
+
+void test_motor_emergency_stop_not_initialized_fails(void)
+{
+  rx_err_t err = rx_motor_emergency_stop(&s_motor);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_motor_emergency_stop_requires_reinit(void)
+{
+  rx_motor_init(&s_motor, &s_config);
+  rx_motor_emergency_stop(&s_motor);
+
+  /* Attempting to set duty after emergency stop should fail */
+  rx_err_t err = rx_motor_set_duty(&s_motor, 50.0f);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+
+  /* Must reinitialize after emergency stop */
+  err = rx_motor_init(&s_motor, &s_config);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Now set_duty should work */
+  err = rx_motor_set_duty(&s_motor, 50.0f);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/* =============================================================================
  * Duty Cycle Tracking Tests
  * =============================================================================
  */
@@ -952,6 +1132,30 @@ int main(void)
   /* Duty cycle tracking tests */
   RUN_TEST(test_motor_duty_tracking_updates_on_set);
   RUN_TEST(test_motor_duty_tracking_clamped_value);
+
+  /* NaN/Inf validation tests */
+  RUN_TEST(test_motor_set_duty_rejects_nan);
+  RUN_TEST(test_motor_set_duty_rejects_positive_inf);
+  RUN_TEST(test_motor_set_duty_rejects_negative_inf);
+
+  /* PWM frequency validation tests */
+  RUN_TEST(test_motor_init_rejects_pwm_freq_too_low);
+  RUN_TEST(test_motor_init_rejects_pwm_freq_too_high);
+  RUN_TEST(test_motor_init_accepts_pwm_freq_at_min_boundary);
+  RUN_TEST(test_motor_init_accepts_pwm_freq_at_max_boundary);
+
+  /* Dead-time validation tests */
+  RUN_TEST(test_motor_init_rejects_dead_time_too_low);
+  RUN_TEST(test_motor_init_rejects_dead_time_too_high);
+  RUN_TEST(test_motor_init_accepts_dead_time_at_min_boundary);
+  RUN_TEST(test_motor_init_accepts_dead_time_at_max_boundary);
+
+  /* Emergency stop tests */
+  RUN_TEST(test_motor_emergency_stop_from_running);
+  RUN_TEST(test_motor_emergency_stop_disables_outputs);
+  RUN_TEST(test_motor_emergency_stop_null_handle_fails);
+  RUN_TEST(test_motor_emergency_stop_not_initialized_fails);
+  RUN_TEST(test_motor_emergency_stop_requires_reinit);
 
   return UNITY_END();
 }
