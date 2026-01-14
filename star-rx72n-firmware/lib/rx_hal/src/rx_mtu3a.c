@@ -28,6 +28,7 @@
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
+#include "rx_register_protection.h"
 
 static const char* s_tag = "MTU3A";
 
@@ -40,12 +41,6 @@ static const char* s_tag = "MTU3A";
 typedef enum {
   k_mtu_max_channels = 7, /**< MTU0-MTU4, MTU6-MTU7 (sparse indexing) */
 } mtu_constants_t;
-
-/** @brief System protection register values */
-typedef enum {
-  k_mtu_prcr_unlock = 0xA50B, /**< Enable writes to MSTPCR */
-  k_mtu_prcr_lock   = 0xA500, /**< Disable writes to MSTPCR */
-} mtu_prcr_values_t;
 
 /** @brief MTU module stop bit positions in MSTPCRA */
 typedef enum {
@@ -220,7 +215,7 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
   rx_log_info(s_tag, "Initializing MTU");
 
   /* Enable MTU module (clear module stop bit) */
-  system_regs()->prcr = k_mtu_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
   if (channel <= k_mtu_channel_4) {
     system_regs()->mstpcra &= ~(1UL << k_mtu_mstpa_mtu0_4);
@@ -228,7 +223,7 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
     system_regs()->mstpcra &= ~(1UL << k_mtu_mstpa_mtu6_7);
   }
 
-  system_regs()->prcr = k_mtu_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   /* Stop timer before configuration */
   rx_mtu_stop(channel);
@@ -408,24 +403,25 @@ rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
   /* Set corresponding bit in TSTR register */
   switch (channel) {
     case k_mtu_channel_0:
-      mtu_tstr()->tstr |= k_mtu_tstr_cst0;
+      mtu_tstra()->tstr |= k_mtu_tstr_cst0;
       break;
     case k_mtu_channel_1:
-      mtu_tstr()->tstr |= k_mtu_tstr_cst1;
+      mtu_tstra()->tstr |= k_mtu_tstr_cst1;
       break;
     case k_mtu_channel_2:
-      mtu_tstr()->tstr |= k_mtu_tstr_cst2;
+      mtu_tstra()->tstr |= k_mtu_tstr_cst2;
       break;
     case k_mtu_channel_3:
-      mtu_tstr()->tstr |= k_mtu_tstr_cst3;
+      mtu_tstra()->tstr |= k_mtu_tstr_cst3;
       break;
     case k_mtu_channel_4:
-      mtu_tstr()->tstr |= k_mtu_tstr_cst4;
+      mtu_tstra()->tstr |= k_mtu_tstr_cst4;
       break;
     case k_mtu_channel_6:
+      mtu_tstrb()->tstr |= k_mtu_tstr_cst6;
+      break;
     case k_mtu_channel_7:
-      /* MTU6/7 have separate start control - simplified */
-      rx_log_warn(s_tag, "MTU6/7 start not fully implemented");
+      mtu_tstrb()->tstr |= k_mtu_tstr_cst7;
       break;
     default:
       return k_rx_err_invalid_arg;
@@ -443,23 +439,25 @@ rx_err_t rx_mtu_stop(rx_mtu_channel_t channel)
   /* Clear corresponding bit in TSTR register */
   switch (channel) {
     case k_mtu_channel_0:
-      mtu_tstr()->tstr &= ~k_mtu_tstr_cst0;
+      mtu_tstra()->tstr &= ~k_mtu_tstr_cst0;
       break;
     case k_mtu_channel_1:
-      mtu_tstr()->tstr &= ~k_mtu_tstr_cst1;
+      mtu_tstra()->tstr &= ~k_mtu_tstr_cst1;
       break;
     case k_mtu_channel_2:
-      mtu_tstr()->tstr &= ~k_mtu_tstr_cst2;
+      mtu_tstra()->tstr &= ~k_mtu_tstr_cst2;
       break;
     case k_mtu_channel_3:
-      mtu_tstr()->tstr &= ~k_mtu_tstr_cst3;
+      mtu_tstra()->tstr &= ~k_mtu_tstr_cst3;
       break;
     case k_mtu_channel_4:
-      mtu_tstr()->tstr &= ~k_mtu_tstr_cst4;
+      mtu_tstra()->tstr &= ~k_mtu_tstr_cst4;
       break;
     case k_mtu_channel_6:
+      mtu_tstrb()->tstr &= ~k_mtu_tstr_cst6;
+      break;
     case k_mtu_channel_7:
-      /* MTU6/7 have separate start control */
+      mtu_tstrb()->tstr &= ~k_mtu_tstr_cst7;
       break;
     default:
       return k_rx_err_invalid_arg;

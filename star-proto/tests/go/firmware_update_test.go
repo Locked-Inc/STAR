@@ -90,12 +90,12 @@ func TestEmptyChunk(t *testing.T) {
 
 func TestFirmwareUpdateProgressRoundTrip(t *testing.T) {
 	tests := []struct {
-		name           string
-		totalSize      uint32
-		bytesReceived  uint32
+		name            string
+		totalSize       uint32
+		bytesReceived   uint32
 		progressPercent int32
-		state          starv1.FirmwareUpdateState
-		desc           string
+		state           starv1.FirmwareUpdateState
+		desc            string
 	}{
 		{"start", 1048576, 0, 0, starv1.FirmwareUpdateState_FIRMWARE_UPDATE_STATE_RECEIVING, "Just started"},
 		{"quarter", 1048576, 262144, 25, starv1.FirmwareUpdateState_FIRMWARE_UPDATE_STATE_RECEIVING, "25% complete"},

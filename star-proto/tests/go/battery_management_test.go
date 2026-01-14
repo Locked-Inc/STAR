@@ -280,14 +280,14 @@ func TestAllBatteryStateEnumValues(t *testing.T) {
 
 func TestProtectionThresholdsRoundTrip(t *testing.T) {
 	tests := []struct {
-		name     string
-		ovMv     uint32
-		uvMv     uint32
-		ocMa     uint32
-		odMa     uint32
-		otDeciC  int32
-		utDeciC  int32
-		desc     string
+		name    string
+		ovMv    uint32
+		uvMv    uint32
+		ocMa    uint32
+		odMa    uint32
+		otDeciC int32
+		utDeciC int32
+		desc    string
 	}{
 		{"standard_lion", 4200, 2800, 10000, 15000, 600, 0, "Standard Li-ion thresholds"},
 		{"conservative", 4150, 3000, 5000, 8000, 500, 50, "Conservative thresholds"},
@@ -298,10 +298,10 @@ func TestProtectionThresholdsRoundTrip(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			thresholds := &starv1.ProtectionThresholds{
-				OvervoltageMv:      tc.ovMv,
-				UndervoltageMv:     tc.uvMv,
-				OverchargeMa:       tc.ocMa,
-				OverdischargeMa:    tc.odMa,
+				OvervoltageMv:        tc.ovMv,
+				UndervoltageMv:       tc.uvMv,
+				OverchargeMa:         tc.ocMa,
+				OverdischargeMa:      tc.odMa,
 				OvertempDeciCelsius:  tc.otDeciC,
 				UndertempDeciCelsius: tc.utDeciC,
 			}
@@ -329,10 +329,10 @@ func TestProtectionThresholdsRoundTrip(t *testing.T) {
 
 func TestBmsDeviceInfoRoundTrip(t *testing.T) {
 	tests := []struct {
-		name        string
-		chemistry   string
+		name         string
+		chemistry    string
 		manufacturer string
-		deviceName  string
+		deviceName   string
 	}{
 		{"lion", "LION", "Texas Instruments", "BQ7850"},
 		{"lifepo4", "LIFEPO4", "TI", "BQ7850-Q1"},
@@ -342,10 +342,10 @@ func TestBmsDeviceInfoRoundTrip(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			info := &starv1.BmsDeviceInfo{
-				Chemistry:    tc.chemistry,
-				Manufacturer: tc.manufacturer,
-				DeviceName:   tc.deviceName,
-				DeviceType:   0x7850,
+				Chemistry:       tc.chemistry,
+				Manufacturer:    tc.manufacturer,
+				DeviceName:      tc.deviceName,
+				DeviceType:      0x7850,
 				FirmwareVersion: 0x0102,
 				HardwareVersion: 0x0001,
 				SerialNumber:    12345678,
@@ -476,12 +476,12 @@ func TestCompleteBatteryStateRoundTrip(t *testing.T) {
 			CycleCount:           50,
 		},
 		Status: &starv1.BatteryStatus{
-			Charging:       false,
-			Discharging:    true,
-			FullyCharged:   false,
+			Charging:        false,
+			Discharging:     true,
+			FullyCharged:    false,
 			FullyDischarged: false,
-			FaultActive:    false,
-			State:          starv1.BatteryStateEnum_BATTERY_STATE_ENUM_DISCHARGING,
+			FaultActive:     false,
+			State:           starv1.BatteryStateEnum_BATTERY_STATE_ENUM_DISCHARGING,
 		},
 		TimestampUs: 1234567890,
 	}

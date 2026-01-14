@@ -15,6 +15,8 @@
 
 #include <string.h>
 
+#include "rx72n_sci_regs.h"
+
 /* =============================================================================
  * Global Mock Register Instances
  * =============================================================================
@@ -154,10 +156,10 @@ uint8_t mock_sci_get_brr(uint8_t channel)
  *
  * Returns pointer to mock SCI registers instead of real hardware.
  */
-mock_sci_regs_t* sci_get_channel(uint8_t channel)
+volatile rx_sci_regs_t* sci_get_channel(uint8_t channel)
 {
   if (channel >= k_mock_sci_channel_count) {
-    return (mock_sci_regs_t*)0;
+    return (volatile rx_sci_regs_t*)0;
   }
-  return &g_mock_sci[channel];
+  return (volatile rx_sci_regs_t*)&g_mock_sci[channel];
 }

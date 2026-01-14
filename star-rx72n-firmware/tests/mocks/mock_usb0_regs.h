@@ -11,8 +11,8 @@
  * - Access g_mock_usb0, g_mock_icu, g_mock_system as if they were hardware
  * - Use helper functions to set up register state for tests
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2025-12-01
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #ifndef MOCK_USB0_REGS_H
@@ -151,18 +151,31 @@ static inline volatile mock_system_regs_t* system_regs(void)
 }
 
 /* =============================================================================
- * Pipe Control Register Bits (from rx72n_regs.h)
+ * USB Register Bit Definitions (from rx72n_regs.h)
  * =============================================================================
  */
 
 typedef enum {
-  k_usb_pipectr_pid_mask  = 0x0003,    /* Response PID */
-  k_usb_pipectr_pid_nak   = 0x0000,    /* NAK response */
-  k_usb_pipectr_pid_buf   = 0x0001,    /* BUF response */
-  k_usb_pipectr_pid_stall = 0x0002,    /* STALL response */
-  k_usb_pipectr_pbusy     = (1 << 5),  /* Pipe Busy */
-  k_usb_pipectr_bsts      = (1 << 15), /* Buffer Status */
-} usb_pipectr_bits_t;
+  /* PIPECTR register bits */
+  k_usb_pipectr_pid_mask  = 0x0003,    /**< Response PID mask */
+  k_usb_pipectr_pid_nak   = 0x0000,    /**< NAK response */
+  k_usb_pipectr_pid_buf   = 0x0001,    /**< BUF response */
+  k_usb_pipectr_pid_stall = 0x0002,    /**< STALL response */
+  k_usb_pipectr_pbusy     = (1 << 5),  /**< Pipe Busy */
+  k_usb_pipectr_bsts      = (1 << 15), /**< Buffer Status */
+
+  /* INTSTS0 register bits */
+  k_usb_intsts0_ctsq_mask  = 0x0007,   /**< Control Transfer Stage mask */
+  k_usb_intsts0_dvsq_mask  = 0x0070,   /**< Device State mask */
+  k_usb_intsts0_dvsq_shift = 4,        /**< Device State bit shift */
+
+  /* CFIFOCTR register bits */
+  k_usb_cfifoctr_dtln_mask = 0x01FF,   /**< Data Length mask */
+  k_usb_cfifoctr_frdy      = (1 << 13),/**< FIFO Ready flag */
+
+  /* USB default values */
+  k_usb_dcpmaxp_default    = 64,       /**< Default max packet size for control endpoint */
+} usb_register_bits_t;
 
 /* =============================================================================
  * Helper Functions

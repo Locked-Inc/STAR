@@ -11,10 +11,30 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include <stdint.h>
 #include <string.h>
 
 #include "rx_harq.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief Bit manipulation constants for byte-to-bit conversion
+ */
+typedef enum {
+  k_bits_per_byte    = 8, /**< Number of bits in a byte */
+  k_bit_idx_msb      = 7, /**< MSB index in byte (bit 7) */
+  k_bit_idx_lsb      = 0, /**< LSB index in byte (bit 0) */
+} bit_manipulation_t;
+
+/* =============================================================================
+ * Test Fixtures
+ * =============================================================================
+ */
 
 /* Test fixtures */
 static rx_chase_combiner_t s_combiner;
@@ -240,9 +260,23 @@ void test_combiner_reset(void)
   rx_chase_combiner_add(&s_combiner, soft, 3);
   TEST_ASSERT_EQUAL(2, s_combiner.count);
 
-  rx_chase_combiner_reset(&s_combiner);
+  rx_err_t err = rx_chase_combiner_reset(&s_combiner);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(0, s_combiner.count);
   TEST_ASSERT_EQUAL(0, s_combiner.expected_len);
+}
+
+void test_combiner_reset_null(void)
+{
+  rx_err_t err = rx_chase_combiner_reset(NULL);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_combiner_reset_uninitialized(void)
+{
+  rx_chase_combiner_t comb = {0};
+  rx_err_t            err  = rx_chase_combiner_reset(&comb);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 /* =============================================================================
@@ -310,10 +344,23 @@ void test_harq_reset(void)
   s_harq.state       = k_harq_state_combining;
   s_harq.retry_count = 2;
 
-  rx_harq_reset(&s_harq);
-
+  rx_err_t err = rx_harq_reset(&s_harq);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_harq_state_idle, s_harq.state);
   TEST_ASSERT_EQUAL(0, s_harq.retry_count);
+}
+
+void test_harq_reset_null(void)
+{
+  rx_err_t err = rx_harq_reset(NULL);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_harq_reset_uninitialized(void)
+{
+  rx_harq_handle_t harq = {0};
+  rx_err_t         err  = rx_harq_reset(&harq);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 /* =============================================================================
@@ -329,10 +376,10 @@ void test_harq_encode_null_args(void)
   uint8_t  output[64];
   uint32_t len;
 
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(NULL, payload, 1, output, &len));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(&s_harq, NULL, 1, output, &len));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(&s_harq, payload, 1, NULL, &len));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(&s_harq, payload, 1, output, NULL));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(NULL, payload, 1, output, 64, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(&s_harq, NULL, 1, output, 64, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(&s_harq, payload, 1, NULL, 64, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(&s_harq, payload, 1, output, 64, NULL));
 }
 
 void test_harq_encode_uninitialized(void)
@@ -342,7 +389,7 @@ void test_harq_encode_uninitialized(void)
   uint8_t          output[64];
   uint32_t         len;
 
-  rx_err_t err = rx_harq_encode(&harq, payload, 1, output, &len);
+  rx_err_t err = rx_harq_encode(&harq, payload, 1, output, 64, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -354,7 +401,7 @@ void test_harq_encode_zero_payload(void)
   uint8_t  output[64];
   uint32_t len;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, 0, output, &len);
+  rx_err_t err = rx_harq_encode(&s_harq, payload, 0, output, 64, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -366,7 +413,7 @@ void test_harq_encode_too_large(void)
   uint8_t  output[4096];
   uint32_t len;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, k_harq_max_payload + 1, output, &len);
+  rx_err_t err = rx_harq_encode(&s_harq, payload, k_harq_max_payload + 1, output, 4096, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -378,7 +425,7 @@ void test_harq_encode_with_fec(void)
   uint8_t  output[64];
   uint32_t len;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, 1, output, &len);
+  rx_err_t err = rx_harq_encode(&s_harq, payload, 1, output, 64, &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* With FEC, output should be larger than input */
@@ -395,10 +442,35 @@ void test_harq_encode_without_fec(void)
   uint8_t  output[64];
   uint32_t len;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, 2, output, &len);
+  rx_err_t err = rx_harq_encode(&s_harq, payload, 2, output, 64, &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(2, len); /* No FEC = same size */
   TEST_ASSERT_EQUAL_MEMORY(payload, output, 2);
+}
+
+void test_harq_encode_buffer_too_small(void)
+{
+  rx_harq_init(&s_harq, NULL); /* FEC enabled */
+
+  uint8_t  payload[] = {0x42};
+  uint8_t  output[2]; /* Too small for FEC output */
+  uint32_t len;
+
+  rx_err_t err = rx_harq_encode(&s_harq, payload, 1, output, 2, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+void test_harq_encode_buffer_too_small_no_fec(void)
+{
+  rx_harq_config_t config = {.fec_enabled = 0};
+  rx_harq_init(&s_harq, &config);
+
+  uint8_t  payload[] = {0x42, 0x43};
+  uint8_t  output[1]; /* Too small for payload */
+  uint32_t len;
+
+  rx_err_t err = rx_harq_encode(&s_harq, payload, 2, output, 1, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 /* =============================================================================
@@ -504,7 +576,7 @@ void test_harq_roundtrip_with_fec(void)
   uint8_t  encoded[64];
   uint32_t enc_len;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, 2, encoded, &enc_len);
+  rx_err_t err = rx_harq_encode(&s_harq, payload, 2, encoded, 64, &enc_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Convert encoded hard bits to soft bits */
@@ -512,14 +584,14 @@ void test_harq_roundtrip_with_fec(void)
   uint32_t      soft_len = enc_len * 8;
 
   for (uint32_t i = 0; i < enc_len; i++) {
-    for (int b = 7; b >= 0; b--) {
-      uint8_t bit           = (encoded[i] >> b) & 1;
-      soft[i * 8 + (7 - b)] = rx_fec_hard_to_soft(bit);
+    for (int8_t b = k_bit_idx_msb; b >= k_bit_idx_lsb; b--) {
+      uint8_t bit                         = (encoded[i] >> b) & 1;
+      soft[i * k_bits_per_byte + (k_bit_idx_msb - b)] = rx_fec_hard_to_soft(bit);
     }
   }
 
   /* Reset HARQ for decode */
-  rx_harq_reset(&s_harq);
+  (void)rx_harq_reset(&s_harq);
 
   /* Decode */
   uint8_t  decoded[64];
@@ -540,21 +612,21 @@ void test_harq_combining_improves_reception(void)
   uint8_t  payload[] = {0x42};
   uint8_t  encoded[64];
   uint32_t enc_len;
-  rx_harq_encode(&s_harq, payload, 1, encoded, &enc_len);
+  (void)rx_harq_encode(&s_harq, payload, 1, encoded, 64, &enc_len);
 
   /* Create "perfect" soft bits from encoded data */
   rx_soft_bit_t soft[128];
   uint32_t      soft_len = enc_len * 8;
 
   for (uint32_t i = 0; i < enc_len; i++) {
-    for (int b = 7; b >= 0; b--) {
-      uint8_t bit           = (encoded[i] >> b) & 1;
-      soft[i * 8 + (7 - b)] = rx_fec_hard_to_soft(bit);
+    for (int8_t b = k_bit_idx_msb; b >= k_bit_idx_lsb; b--) {
+      uint8_t bit                         = (encoded[i] >> b) & 1;
+      soft[i * k_bits_per_byte + (k_bit_idx_msb - b)] = rx_fec_hard_to_soft(bit);
     }
   }
 
   /* Reset and decode */
-  rx_harq_reset(&s_harq);
+  (void)rx_harq_reset(&s_harq);
 
   uint8_t  decoded[64];
   uint32_t dec_len;
@@ -600,6 +672,8 @@ int main(void)
   RUN_TEST(test_combiner_count);
   RUN_TEST(test_combiner_count_null);
   RUN_TEST(test_combiner_reset);
+  RUN_TEST(test_combiner_reset_null);
+  RUN_TEST(test_combiner_reset_uninitialized);
 
   /* HARQ init tests */
   RUN_TEST(test_harq_init_null);
@@ -611,6 +685,8 @@ int main(void)
   RUN_TEST(test_harq_get_state_null);
   RUN_TEST(test_harq_get_state_idle);
   RUN_TEST(test_harq_reset);
+  RUN_TEST(test_harq_reset_null);
+  RUN_TEST(test_harq_reset_uninitialized);
 
   /* HARQ encode tests */
   RUN_TEST(test_harq_encode_null_args);
@@ -619,6 +695,8 @@ int main(void)
   RUN_TEST(test_harq_encode_too_large);
   RUN_TEST(test_harq_encode_with_fec);
   RUN_TEST(test_harq_encode_without_fec);
+  RUN_TEST(test_harq_encode_buffer_too_small);
+  RUN_TEST(test_harq_encode_buffer_too_small_no_fec);
 
   /* HARQ retry tests */
   RUN_TEST(test_harq_get_retry_count_null);

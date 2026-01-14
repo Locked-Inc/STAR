@@ -1,0 +1,287 @@
+name: ROS2 Build and Test
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+    paths:
+      - 'star-ros2/**'
+      - '.github/workflows/ros2.yml'
+      - 'Dockerfile'
+      - '.devcontainer/**'
+  pull_request:
+    paths:
+      - 'star-ros2/**'
+      - '.github/workflows/ros2.yml'
+      - 'Dockerfile'
+      - '.devcontainer/**'
+
+jobs:
+  build-and-test:
+    name: Build ROS2 Packages
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:jazzy-desktop
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            python3-pip \
+            python3-colcon-common-extensions \
+            libprotobuf-dev \
+            protobuf-compiler \
+            protobuf-compiler-grpc \
+            libgrpc++-dev \
+            libgrpc-dev
+
+      - name: Initialize rosdep
+        run: |
+          rosdep update --rosdistro jazzy
+
+      - name: Install ROS dependencies
+        run: |
+          cd star-ros2
+          rosdep install --from-paths src --ignore-src -r -y --rosdistro jazzy
+
+      - name: Install buf
+        run: |
+          BUF_VERSION=1.28.1
+          curl -sSL \
+            "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" \
+            -o "/usr/local/bin/buf"
+          chmod +x /usr/local/bin/buf
+
+      - name: Generate Protobuf C++ code
+        run: |
+          cd star-proto
+
+          # Copy proto files to temp directory to avoid buf.yaml BSR configuration
+          mkdir -p /tmp/star-proto
+          cp -r proto/star /tmp/star-proto/
+
+          # Create minimal buf.yaml in temp directory (no BSR name)
+          cat > /tmp/star-proto/buf.yaml <<EOF
+          version: v1
+          lint:
+            use: [DEFAULT]
+          EOF
+
+          # Create buf.gen.yaml for C++ only
+          # Pin to Ubuntu 24.04 versions: protobuf 3.21.12, grpc 1.51.1
+          cat > /tmp/buf.gen.ros2.yaml <<EOF
+          version: v1
+          plugins:
+            - plugin: buf.build/protocolbuffers/cpp:v21.12
+              out: $PWD/gen/cpp
+            - plugin: buf.build/grpc/cpp:v1.51.1
+              out: $PWD/gen/cpp
+          EOF
+
+          # Generate C++ code from temp directory (no BSR pollution)
+          buf generate /tmp/star-proto --template /tmp/buf.gen.ros2.yaml
+
+      - name: Build packages
+        shell: bash
+        run: |
+          cd star-ros2
+          source /opt/ros/jazzy/setup.bash
+          colcon build \
+            --symlink-install \
+            --cmake-args \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+              -DBUILD_TESTING=ON
+
+      - name: Run tests
+        shell: bash
+        run: |
+          cd star-ros2
+          source /opt/ros/jazzy/setup.bash
+          source install/setup.bash
+          colcon test \
+            --return-code-on-test-failure \
+            --event-handlers console_direct+
+
+      - name: Display test results
+        if: always()
+        run: |
+          cd star-ros2
+          colcon test-result --verbose
+
+      - name: Check for compiler warnings
+        shell: bash
+        run: |
+          cd star-ros2
+          source /opt/ros/jazzy/setup.bash
+          colcon build --cmake-clean-cache \
+            --cmake-args \
+              -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DBUILD_TESTING=ON
+
+      - name: Upload build artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: star-ros2/log/
+          retention-days: 7
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            star-ros2/build/**/test_results/
+            star-ros2/build/**/Testing/
+          retention-days: 7
+
+  format-check:
+    name: C++ Formatting Check
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:jazzy-desktop
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check C++ formatting with uncrustify
+        shell: bash
+        run: |
+          # Source ROS2 environment (required for ament tools)
+          source /opt/ros/jazzy/setup.bash
+          
+          cd star-ros2/src/star_spi_bridge
+          
+          # Run uncrustify and capture exit code
+          ament_uncrustify --xunit-file /tmp/uncrustify.xml include/star_spi_bridge/*.hpp src/*.cpp test/*.cpp
+          UNCRUSTIFY_EXIT=$?
+          
+          # Check exit code (ament_uncrustify returns 1 if there are formatting issues)
+          if [ $UNCRUSTIFY_EXIT -ne 0 ]; then
+            echo "❌ Code formatting check failed!"
+            echo "Run the following to fix formatting:"
+            echo "  cd star-ros2 && docker run --rm -v \"\$(pwd)/..:/workspaces/STAR\" osrf/ros:jazzy-desktop bash -c \"source /opt/ros/jazzy/setup.bash && cd /workspaces/STAR/star-ros2/src/star_spi_bridge && ament_uncrustify --reformat include/star_spi_bridge/*.hpp src/*.cpp test/*.cpp\""
+            exit 1
+          fi
+
+  lint:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:jazzy-desktop
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install linting tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ros-jazzy-ament-copyright \
+            ros-jazzy-ament-cppcheck \
+            ros-jazzy-ament-cpplint \
+            ros-jazzy-ament-flake8 \
+            ros-jazzy-ament-lint-cmake
+
+      - name: Run ament_copyright
+        run: |
+          cd star-ros2/src
+          ament_copyright . || true
+
+      - name: Run ament_cppcheck
+        run: |
+          cd star-ros2/src
+          ament_cppcheck . || true
+
+      - name: Run ament_cpplint
+        run: |
+          cd star-ros2/src
+          ament_cpplint . || true
+
+      - name: Run ament_lint_cmake
+        run: |
+          cd star-ros2/src
+          ament_lint_cmake . || true
+
+  code-review:
+    name: Automated Code Review
+    runs-on: ubuntu-latest
+    # NOTE: Non-blocking during infrastructure phase
+    # Will become blocking in future PRs when application code is added
+    continue-on-error: true
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run code review
+        run: |
+          ./scripts/review-ros2.sh --report review.txt || true
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-review-report
+          path: review.txt
+          retention-days: 30
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (!fs.existsSync('review.txt')) {
+              console.log('No review.txt found, skipping PR comment');
+              return;
+            }
+            const report = fs.readFileSync('review.txt', 'utf8');
+            const maxLength = 60000;
+            const truncated = report.length > maxLength
+              ? report.substring(0, maxLength) + '\n\n[Report truncated...]'
+              : report;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('🤖 Automated Code Review')
+            );
+
+            const body = '## 🤖 Automated Code Review\n\n```\n' + truncated + '\n```';
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                comment_id: botComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }

@@ -27,14 +27,19 @@ extern "C" {
 
 /** @brief MTU base addresses */
 typedef enum {
-  k_mtu0_base_addr     = 0x000D0600, /**< MTU0 register base address */
-  k_mtu1_base_addr     = 0x000D0680, /**< MTU1 register base address */
-  k_mtu2_base_addr     = 0x000D0700, /**< MTU2 register base address */
-  k_mtu3_base_addr     = 0x000D0200, /**< MTU3 register base address */
-  k_mtu4_base_addr     = 0x000D0201, /**< MTU4 register base address */
-  k_mtu6_base_addr     = 0x000D0A00, /**< MTU6 register base address */
-  k_mtu7_base_addr     = 0x000D0A80, /**< MTU7 register base address */
-  k_mtu_tstr_base_addr = 0x000D0880, /**< MTU TSTR register base address */
+  k_mtu0_base_addr      = 0x000C1300, /**< MTU0 register base address */
+  k_mtu1_base_addr      = 0x000C1380, /**< MTU1 register base address */
+  k_mtu2_base_addr      = 0x000C1400, /**< MTU2 register base address */
+  k_mtu3_base_addr      = 0x000C1200, /**< MTU3 register base address */
+  k_mtu4_base_addr      = 0x000C1200, /**< MTU4 register base address (shares with MTU3) */
+  k_mtu5u_base_addr     = 0x000C1C80, /**< MTU5U register base address */
+  k_mtu5v_base_addr     = 0x000C1C90, /**< MTU5V register base address */
+  k_mtu5w_base_addr     = 0x000C1CA0, /**< MTU5W register base address */
+  k_mtu6_base_addr      = 0x000C1A00, /**< MTU6 register base address */
+  k_mtu7_base_addr      = 0x000C1A00, /**< MTU7 register base address (shares with MTU6) */
+  k_mtu8_base_addr      = 0x000C1600, /**< MTU8 register base address */
+  k_mtu_tstra_base_addr = 0x000C1280, /**< MTU TSTRA register base address (MTU0-4, 8) */
+  k_mtu_tstrb_base_addr = 0x000C1A80, /**< MTU TSTRB register base address (MTU6-7) */
 } rx_mtu_addresses_t;
 
 /**
@@ -42,11 +47,11 @@ typedef enum {
  * @details
  * Multi-Function Timer Unit channel registers for PWM and timer functions.
  * Base addresses:
- * - MTU0: 0x000D0600
- * - MTU1: 0x000D0680
- * - MTU2: 0x000D0700
- * - MTU6: 0x000D0A00
- * - MTU7: 0x000D0A80
+ * - MTU0: 0x000C1300
+ * - MTU1: 0x000C1380
+ * - MTU2: 0x000C1400
+ * - MTU6: 0x000C1A00
+ * - MTU7: 0x000C1A00 (shares with MTU6)
  */
 typedef struct {
   volatile uint8_t  tcr;   /**< Timer Control Register (prescaler, edge, clear) */
@@ -67,8 +72,8 @@ typedef struct {
  * @details
  * MTU3 and MTU4 have additional registers for extended functionality.
  * Base addresses:
- * - MTU3: 0x000D0200
- * - MTU4: 0x000D0201
+ * - MTU3: 0x000C1200
+ * - MTU4: 0x000C1200 (shares with MTU3, adjacent registers)
  */
 typedef struct {
   volatile uint8_t  tcr;   /**< Timer Control Register (prescaler, edge, clear) */
@@ -92,8 +97,10 @@ typedef struct {
 /**
  * @brief MTU Start Register Map
  * @details
- * Timer start/stop control register.
- * Base address: 0x000D0880
+ * Timer start/stop control registers.
+ * Base addresses:
+ * - TSTRA: 0x000C1280 (MTU0-4, MTU8)
+ * - TSTRB: 0x000C1A80 (MTU6-7)
  */
 typedef struct {
   volatile uint8_t tstr; /**< Timer Start Register (channel enable bits) */
@@ -163,12 +170,21 @@ static inline volatile rx_mtu_channel_regs_t* mtu7(void)
 }
 
 /**
- * @brief Get pointer to MTU TSTR registers
- * @return Volatile pointer to MTU TSTR register structure
+ * @brief Get pointer to MTU TSTRA registers (MTU0-4, MTU8)
+ * @return Volatile pointer to MTU TSTRA register structure
  */
-static inline volatile rx_mtu_tstr_regs_t* mtu_tstr(void)
+static inline volatile rx_mtu_tstr_regs_t* mtu_tstra(void)
 {
-  return (volatile rx_mtu_tstr_regs_t*)k_mtu_tstr_base_addr;
+  return (volatile rx_mtu_tstr_regs_t*)k_mtu_tstra_base_addr;
+}
+
+/**
+ * @brief Get pointer to MTU TSTRB registers (MTU6-7)
+ * @return Volatile pointer to MTU TSTRB register structure
+ */
+static inline volatile rx_mtu_tstr_regs_t* mtu_tstrb(void)
+{
+  return (volatile rx_mtu_tstr_regs_t*)k_mtu_tstrb_base_addr;
 }
 
 /* Timer Control Register (TCR) bits */
@@ -202,14 +218,63 @@ typedef enum {
   k_mtu_tior_toggle    = 0x03, /**< Toggle on compare match */
 } mtu_tior_bits_t;
 
-/* Timer Start Register (TSTR) bits */
+/* Timer Start Register A (TSTRA) bits - MTU0-4, MTU8 */
 typedef enum {
-  k_mtu_tstr_cst0 = (1 << 0), /**< Counter Start 0 */
-  k_mtu_tstr_cst1 = (1 << 1), /**< Counter Start 1 */
-  k_mtu_tstr_cst2 = (1 << 2), /**< Counter Start 2 */
-  k_mtu_tstr_cst3 = (1 << 6), /**< Counter Start 3 */
-  k_mtu_tstr_cst4 = (1 << 7), /**< Counter Start 4 */
+  k_mtu_tstr_cst0 = (1 << 0), /**< Counter Start 0 (TSTRA bit 0) */
+  k_mtu_tstr_cst1 = (1 << 1), /**< Counter Start 1 (TSTRA bit 1) */
+  k_mtu_tstr_cst2 = (1 << 2), /**< Counter Start 2 (TSTRA bit 2) */
+  k_mtu_tstr_cst3 = (1 << 6), /**< Counter Start 3 (TSTRA bit 6) */
+  k_mtu_tstr_cst4 = (1 << 7), /**< Counter Start 4 (TSTRA bit 7) */
+  k_mtu_tstr_cst8 = (1 << 3), /**< Counter Start 8 (TSTRA bit 3) */
 } mtu_tstr_bits_t;
+
+/* Timer Start Register B (TSTRB) bits - MTU6-7 */
+typedef enum {
+  k_mtu_tstr_cst6 = (1 << 6), /**< Counter Start 6 (TSTRB bit 6) */
+  k_mtu_tstr_cst7 = (1 << 7), /**< Counter Start 7 (TSTRB bit 7) */
+} mtu_tstrb_bits_t;
+
+/* =============================================================================
+ * Static Assertions - Compile-time verification of register layout
+ * =============================================================================
+ */
+
+/* Verify MTU channel register structure critical offsets */
+_Static_assert(offsetof(rx_mtu_channel_regs_t, tcr) == 0x00, "MTU TCR register offset incorrect");
+_Static_assert(offsetof(rx_mtu_channel_regs_t, tcnt) == 0x06, "MTU TCNT register offset incorrect");
+_Static_assert(offsetof(rx_mtu_channel_regs_t, tgra) == 0x08, "MTU TGRA register offset incorrect");
+_Static_assert(offsetof(rx_mtu_channel_regs_t, tgrb) == 0x0A, "MTU TGRB register offset incorrect");
+
+/* Verify MTU3/4 extended register critical offsets */
+_Static_assert(offsetof(rx_mtu34_channel_regs_t, tcr) == 0x00,
+               "MTU3/4 TCR register offset incorrect");
+_Static_assert(offsetof(rx_mtu34_channel_regs_t, tcnt) == 0x06,
+               "MTU3/4 TCNT register offset incorrect");
+_Static_assert(offsetof(rx_mtu34_channel_regs_t, tgra) == 0x08,
+               "MTU3/4 TGRA register offset incorrect");
+_Static_assert(offsetof(rx_mtu34_channel_regs_t, tgre) == 0x10,
+               "MTU3/4 TGRE register offset incorrect");
+_Static_assert(offsetof(rx_mtu34_channel_regs_t, tgrf) == 0x12,
+               "MTU3/4 TGRF register offset incorrect");
+
+/* Verify TSTR register structure */
+_Static_assert(sizeof(rx_mtu_tstr_regs_t) == 1, "MTU TSTR register structure size mismatch");
+
+/* Verify base addresses are in correct peripheral space (0x000C1xxx) */
+_Static_assert((k_mtu0_base_addr & 0xFFFF0000) == 0x000C0000,
+               "MTU0 base address not in MTU peripheral space");
+_Static_assert((k_mtu3_base_addr & 0xFFFF0000) == 0x000C0000,
+               "MTU3 base address not in MTU peripheral space");
+_Static_assert((k_mtu6_base_addr & 0xFFFF0000) == 0x000C0000,
+               "MTU6 base address not in MTU peripheral space");
+
+/* Verify MTU3 and MTU4 share the same base address */
+_Static_assert(k_mtu3_base_addr == k_mtu4_base_addr,
+               "MTU3 and MTU4 must share base address (adjacent registers)");
+
+/* Verify MTU6 and MTU7 share the same base address */
+_Static_assert(k_mtu6_base_addr == k_mtu7_base_addr,
+               "MTU6 and MTU7 must share base address (adjacent registers)");
 
 #ifdef __cplusplus
 }

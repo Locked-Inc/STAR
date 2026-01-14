@@ -1,0 +1,482 @@
+\section{ROS2 C++ Style Guide}
+\label{sec:ros2_cpp_style}
+
+\subsection{Overview}
+
+The STAR project uses different coding conventions for ROS2 C++ code compared to RX72N firmware. This section documents the ROS2 C++ style guide, which supplements the C firmware style guide (Section~\ref{sec:code_style}).
+
+\subsubsection{When to Use This Guide}
+
+\begin{itemize}
+  \item \textbf{ROS2 packages} (\texttt{star-ros2/src/*/}): Use ROS2 C++ style
+  \item \textbf{RX72N firmware} (\texttt{star-rx72n-firmware/}): Use C firmware style
+  \item \textbf{Gateway} (\texttt{star-gateway/}): Follow Go conventions
+\end{itemize}
+
+\subsubsection{Key Differences}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Feature} & \textbf{C Firmware (RX72N)} & \textbf{ROS2 C++} \\
+\hline
+Classes & N/A & \texttt{CamelCase} \\
+Methods & \texttt{snake\_case} & \texttt{snake\_case} (same) \\
+Variables & \texttt{snake\_case} & \texttt{snake\_case} (same) \\
+Member vars & \texttt{s\_} prefix & trailing \texttt{\_} \\
+Headers & \texttt{.h} & \texttt{.hpp} \\
+Line limit & 100 characters & 120 characters \\
+Namespaces & Not used & \texttt{star::package\_name::} \\
+Error handling & Return codes & Exceptions \\
+Logging & \texttt{uart\_puts()} & \texttt{RCLCPP\_INFO/WARN/ERROR} \\
+Include guards & \texttt{STAR\_RX72N\_FILE\_H} & \texttt{PACKAGE\_FILE\_HPP\_} \\
+Doxygen & \texttt{/**} and \texttt{/**<} & \texttt{/**} and \texttt{/**<} (same) \\
+\hline
+\end{tabular}
+\caption{C vs C++ Style Comparison}
+\label{tab:c_vs_cpp_style}
+\end{table}
+
+\subsection{Naming Conventions}
+
+\subsubsection{Classes and Types}
+
+Use \texttt{CamelCase} for classes following ROS2 conventions:
+
+\begin{lstlisting}[language=C++, caption={Class naming examples}, label={lst:class_naming}]
+// CamelCase for classes (ROS2 convention)
+class StarGatewayBridgeNode : public rclcpp::Node {
+  // ...
+};
+
+// CamelCase for structs used as types
+struct TelemetryData {
+  double battery_voltage_;
+  int32_t current_ma_;
+};
+
+// Type aliases use CamelCase
+using TelemetryPtr = std::shared_ptr<TelemetryData>;
+\end{lstlisting}
+
+\subsubsection{Methods and Functions}
+
+Use \texttt{snake\_case} for method names (same as C firmware):
+
+\begin{lstlisting}[language=C++, caption={Method naming examples}, label={lst:method_naming}]
+// snake_case for methods (same as C firmware)
+void publish_telemetry(const TelemetryData & data);
+bool is_connected() const;
+void on_battery_state_received(const sensor_msgs::msg::BatteryState::SharedPtr msg);
+
+// Use verb-based names that clarify actions
+void check_for_errors();      // Good: Clear intent
+void error_check();           // Bad: Noun-first is confusing
+\end{lstlisting}
+
+\subsubsection{Variables}
+
+Use \texttt{under\_scored} for variables with trailing underscores for member variables:
+
+\begin{lstlisting}[language=C++, caption={Variable naming examples}, label={lst:variable_naming}]
+// under_scored for variables
+int loop_counter = 0;
+std::string node_name = "gateway_bridge";
+
+// Member variables with trailing underscore
+class MyNode : public rclcpp::Node {
+private:
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr telemetry_pub_;
+  std::shared_ptr<grpc::Channel> grpc_channel_;
+  bool is_connected_;
+};
+
+// Constants: ALL_CAPITALS
+const int MAX_RETRIES = 3;
+const double DEFAULT_TIMEOUT_S = 5.0;
+\end{lstlisting}
+
+\subsubsection{Namespaces}
+
+Package-based namespaces use \texttt{under\_scored} naming:
+
+\begin{lstlisting}[language=C++, caption={Namespace examples}, label={lst:namespace}]
+namespace star {
+namespace spi_bridge {
+
+class SpiDriverNode : public rclcpp::Node {
+  // ...
+};
+
+}  // namespace spi_bridge
+}  // namespace star
+\end{lstlisting}
+
+\subsection{File Naming and Organization}
+
+\subsubsection{Header Files}
+
+C++ headers use the \texttt{.hpp} extension (not \texttt{.h}):
+
+\begin{itemize}
+  \item \texttt{star\_gateway\_bridge\_node.hpp}
+  \item \texttt{message\_converter.hpp}
+  \item \texttt{grpc\_client.hpp}
+\end{itemize}
+
+Include guards follow the pattern: \texttt{PACKAGE\_FILE\_NAME\_HPP\_}
+
+\begin{lstlisting}[language=C++, caption={Include guard example}, label={lst:include_guard}]
+#ifndef STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
+#define STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
+
+// ... code ...
+
+#endif  // STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
+\end{lstlisting}
+
+\subsubsection{Source Files}
+
+Source files use the \texttt{.cpp} extension with \texttt{under\_scored} naming:
+
+\begin{itemize}
+  \item \texttt{star\_gateway\_bridge\_node.cpp}
+  \item \texttt{message\_converter.cpp}
+  \item \texttt{grpc\_client.cpp}
+\end{itemize}
+
+\subsection{Header Organization}
+
+Headers must be organized in a standard order (enforced by \texttt{.clang-format}):
+
+\begin{enumerate}
+  \item License and copyright
+  \item Include guard
+  \item ROS2 core includes (\texttt{<rclcpp/...>})
+  \item ROS2 message includes (\texttt{<geometry\_msgs/...>}, etc.)
+  \item Project includes (\texttt{"star/...})
+  \item System C++ includes (\texttt{<memory>}, \texttt{<string>}, etc.)
+  \item System C includes (\texttt{<cstdint>}, etc.)
+  \item Namespace declaration
+  \item Class/function declarations
+\end{enumerate}
+
+See CLAUDE.md for complete example.
+
+\subsection{Code Formatting}
+
+\subsubsection{Line Length}
+
+\begin{itemize}
+  \item \textbf{ROS2 C++}: 120 characters (\texttt{star-ros2/.clang-format})
+  \item \textbf{C firmware}: 100 characters (\texttt{star-rx72n-firmware/.clang-format})
+\end{itemize}
+
+\subsubsection{Indentation}
+
+All code uses 2-space indentation (same as C firmware):
+
+\begin{lstlisting}[language=C++, caption={Indentation example}, label={lst:indentation}]
+class MyNode : public rclcpp::Node {
+public:
+  MyNode() : Node("my_node") {
+    timer_ = this->create_wall_timer(
+      std::chrono::milliseconds(100),
+      std::bind(&MyNode::timerCallback, this));
+  }
+
+private:
+  void timerCallback() {
+    // ...
+  }
+
+  rclcpp::TimerBase::SharedPtr timer_;
+};
+\end{lstlisting}
+
+\subsubsection{Braces}
+
+\begin{itemize}
+  \item \textbf{Functions}: Braces on new line (same as C firmware)
+  \item \textbf{Control statements}: Cuddled braces (\texttt{if (x) \{})
+  \item \textbf{Namespaces}: No indentation inside namespace
+\end{itemize}
+
+\begin{lstlisting}[language=C++, caption={Brace style examples}, label={lst:braces}]
+// Functions: Braces on new line
+void myFunction()
+{
+  // ...
+}
+
+// Control statements: Cuddled braces
+if (condition) {
+  // ...
+} else {
+  // ...
+}
+
+// Namespaces: No indentation inside
+namespace star {
+namespace spi_bridge {
+
+// Content at zero indent
+class MyClass {
+};
+
+}  // namespace spi_bridge
+}  // namespace star
+\end{lstlisting}
+
+\subsection{ROS2-Specific Patterns}
+
+\subsubsection{Node Inheritance}
+
+Inherit from \texttt{rclcpp::Node} for basic nodes or \texttt{rclcpp\_lifecycle::LifecycleNode} for safety-critical nodes:
+
+\begin{lstlisting}[language=C++, caption={Node inheritance}, label={lst:node_inheritance}]
+// Basic node
+class StarGatewayBridgeNode : public rclcpp::Node {
+public:
+  StarGatewayBridgeNode();
+
+private:
+  void telemetryCallback();
+
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr telemetry_pub_;
+  rclcpp::TimerBase::SharedPtr telemetry_timer_;
+};
+
+// Safety-critical lifecycle node
+class StarSpiDriverNode : public rclcpp_lifecycle::LifecycleNode {
+public:
+  using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+
+  StarSpiDriverNode();
+
+  // Lifecycle transitions
+  CallbackReturn on_configure(const rclcpp_lifecycle::State &) override;
+  CallbackReturn on_activate(const rclcpp_lifecycle::State &) override;
+  CallbackReturn on_deactivate(const rclcpp_lifecycle::State &) override;
+  CallbackReturn on_cleanup(const rclcpp_lifecycle::State &) override;
+};
+\end{lstlisting}
+
+\subsubsection{Publishers and Subscribers}
+
+\begin{lstlisting}[language=C++, caption={Publishers and subscribers}, label={lst:pub_sub}]
+class MyNode : public rclcpp::Node {
+public:
+  MyNode() : Node("my_node") {
+    // Publisher: use SharedPtr
+    telemetry_pub_ = this->create_publisher<std_msgs::msg::String>(
+      "/telemetry",
+      10  // QoS depth
+    );
+
+    // Subscriber: use std::bind
+    cmd_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
+      "/cmd_vel",
+      10,
+      std::bind(&MyNode::cmdVelCallback, this, std::placeholders::_1)
+    );
+  }
+
+private:
+  void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
+    // Handle message
+  }
+
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr telemetry_pub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_sub_;
+};
+\end{lstlisting}
+
+\subsubsection{Timers}
+
+Use \texttt{create\_wall\_timer} for periodic operations:
+
+\begin{lstlisting}[language=C++, caption={Timer usage}, label={lst:timers}]
+timer_ = this->create_wall_timer(
+  std::chrono::milliseconds(100),  // 10 Hz
+  std::bind(&MyNode::timerCallback, this)
+);
+\end{lstlisting}
+
+\subsection{Error Handling}
+
+ROS2 uses exceptions (different from C firmware return codes):
+
+\begin{lstlisting}[language=C++, caption={Exception handling}, label={lst:exceptions}]
+// Throw exceptions for errors
+void publishTelemetry()
+{
+  if (!grpc_channel_) {
+    throw std::runtime_error("gRPC channel not initialized");
+  }
+  // ...
+}
+
+// Catch exceptions in callbacks (avoid crashing node)
+void timerCallback()
+{
+  try {
+    publishTelemetry();
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to publish: %s", e.what());
+  }
+}
+\end{lstlisting}
+
+\subsection{Logging}
+
+Use \texttt{RCLCPP\_*} macros for logging, not \texttt{printf} or \texttt{cout}:
+
+\begin{lstlisting}[language=C++, caption={ROS2 logging}, label={lst:logging}]
+// ROS2 logging macros (preferred)
+RCLCPP_INFO(this->get_logger(), "Node started");
+RCLCPP_WARN(this->get_logger(), "Connection lost, retrying...");
+RCLCPP_ERROR(this->get_logger(), "Failed to initialize: %s", error_msg.c_str());
+RCLCPP_DEBUG(this->get_logger(), "Processing message %d", count);
+
+// Throttled logging (max once per 5 seconds)
+RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+  "Command stale (%ldms > %dms)", cmd_age_ms, timeout_ms_);
+\end{lstlisting}
+
+\textbf{Important}: Never use \texttt{printf()} or \texttt{std::cout} in ROS2 nodes.
+
+\subsection{Documentation}
+
+All public APIs must have Doxygen comments using \texttt{/**} and \texttt{/**<} (same as C firmware):
+
+\begin{lstlisting}[language=C++, caption={Doxygen documentation}, label={lst:doxygen}]
+/**
+ * @brief Brief description of class
+ *
+ * Detailed description can span multiple lines. Explain purpose,
+ * usage, and any important details.
+ */
+class StarGatewayBridgeNode : public rclcpp::Node {
+public:
+  /**
+   * @brief Constructor for gateway bridge node
+   *
+   * @param options Node options for configuration
+   */
+  explicit StarGatewayBridgeNode(
+    const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+
+private:
+  /**
+   * @brief Callback for telemetry publishing timer
+   *
+   * Forwards latest telemetry to Gateway via gRPC. Called at 10 Hz.
+   */
+  void telemetry_timer_callback();
+
+  rclcpp::TimerBase::SharedPtr telemetry_timer_;  /**< Timer for telemetry */
+};
+\end{lstlisting}
+
+\subsection{Constants}
+
+Prefer enums and \texttt{const} (same philosophy as C firmware):
+
+\begin{lstlisting}[language=C++, caption={Constants}, label={lst:constants}]
+// Enum for related constants
+enum class MotorState {
+  kIdle = 0,
+  kRunning = 1,
+  kError = 2
+};
+
+// const for single values
+const int DEFAULT_QOS_DEPTH = 10;
+const double MAX_LINEAR_VELOCITY_MPS = 1.0;
+
+// static const for class-specific constants
+class MyNode : public rclcpp::Node {
+private:
+  static constexpr int kMaxRetries = 3;
+  static constexpr double kTimeoutS = 5.0;
+};
+\end{lstlisting}
+
+\subsection{Formatting Enforcement}
+
+All ROS2 C++ code uses \texttt{clang-format} with configuration in \texttt{star-ros2/.clang-format}:
+
+\begin{itemize}
+  \item 2-space indentation (same as C firmware)
+  \item 120-character line limit (ROS2 standard)
+  \item Cuddled braces for control statements
+  \item Function braces on new line
+  \item No indentation inside namespaces
+  \item ROS2-specific include order (core, messages, system, project)
+\end{itemize}
+
+\subsubsection{Manual Formatting}
+
+Format code before committing:
+
+\begin{verbatim}
+cd star-ros2
+find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i
+\end{verbatim}
+
+\subsubsection{CI Enforcement}
+
+The \texttt{.github/workflows/ros2.yml} workflow runs \texttt{clang-format} checks on all PRs:
+
+\begin{verbatim}
+find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror
+\end{verbatim}
+
+If formatting check fails, the build will fail with instructions to fix.
+
+\subsection{References}
+
+\begin{itemize}
+  \item \textbf{ROS2 C++ Style Guide}: \url{https://docs.ros.org/en/rolling/The-ROS2-Project/Contributing/Code-Style-Language-Versions.html}
+  \item \textbf{ROS C++ Best Practices}: \url{https://wiki.ros.org/CppStyleGuide}
+  \item \textbf{Google C++ Style Guide}: \url{https://google.github.io/styleguide/cppguide.html}
+  \item \textbf{STAR C Firmware Style}: CLAUDE.md Section "Code Style"
+  \item \textbf{STAR Project Documentation}: \texttt{docs/star\_documentation.pdf}
+\end{itemize}
+
+\subsection{Integration with Existing Tools}
+
+The ROS2 C++ style guide integrates seamlessly with existing STAR project tools:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Tool} & \textbf{Purpose} & \textbf{Configuration} \\
+\hline
+\texttt{clang-format} & Code formatting & \texttt{star-ros2/.clang-format} \\
+\texttt{ament\_cppcheck} & Static analysis & ROS2 workflow \\
+\texttt{ament\_cpplint} & Style checking & ROS2 workflow \\
+\texttt{colcon build} & Build system & CMakeLists.txt \\
+\texttt{colcon test} & Unit testing & gtest integration \\
+GitHub Actions & CI/CD enforcement & \texttt{.github/workflows/ros2.yml} \\
+\hline
+\end{tabular}
+\caption{ROS2 Development Tools}
+\label{tab:ros2_tools}
+\end{table}
+
+\subsection{Summary}
+
+The STAR project maintains separate but complementary style guides for C firmware and C++ ROS2 code:
+
+\begin{itemize}
+  \item \textbf{C firmware} follows embedded best practices with strict NASA Power of 10 compliance
+  \item \textbf{ROS2 C++} follows ROS community conventions while maintaining STAR project philosophy
+  \item Both styles share common principles: enums over macros, error checking, documentation
+  \item Automated tooling enforces consistency across all code
+\end{itemize}
+
+For complete examples and additional details, refer to CLAUDE.md.

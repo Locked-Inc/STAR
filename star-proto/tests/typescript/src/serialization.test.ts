@@ -22,12 +22,14 @@ describe('Protobuf Serialization Tests', () => {
 
     // TODO: Uncomment after buf generate produces TypeScript code
     /*
-    describe('VelocityCommand', () => {
-        it('should round-trip serialize correctly', () => {
-            // Create command with MKS units
+    describe('VelocityCommand - 4 Motors', () => {
+        it('should round-trip serialize correctly with 4 motors', () => {
+            // Create command with 4 independent motors (MKS units)
             const original: VelocityCommand = {
-                leftVelocityMps: 1.5,
-                rightVelocityMps: -0.5,
+                motor0VelocityMps: 1.5,
+                motor1VelocityMps: 1.5,
+                motor2VelocityMps: 1.0,
+                motor3VelocityMps: 1.0,
                 sequence: 42,
                 timestampUs: BigInt(Date.now() * 1000),
             };
@@ -41,16 +43,23 @@ describe('Protobuf Serialization Tests', () => {
             // Deserialize
             const deserialized = VelocityCommand.fromBinary(bytes);
 
-            // Verify fields
-            expect(deserialized.leftVelocityMps).toBeCloseTo(original.leftVelocityMps, 3);
-            expect(deserialized.rightVelocityMps).toBeCloseTo(original.rightVelocityMps, 3);
+            // Verify all 4 motor fields
+            expect(deserialized.motor0VelocityMps).toBeCloseTo(original.motor0VelocityMps, 3);
+            expect(deserialized.motor1VelocityMps).toBeCloseTo(original.motor1VelocityMps, 3);
+            expect(deserialized.motor2VelocityMps).toBeCloseTo(original.motor2VelocityMps, 3);
+            expect(deserialized.motor3VelocityMps).toBeCloseTo(original.motor3VelocityMps, 3);
             expect(deserialized.sequence).toBe(original.sequence);
         });
 
-        it('should serialize to JSON correctly', () => {
+        it('should support differential drive mode', () => {
+            const leftVel = 2.0;
+            const rightVel = 1.5;
+
             const command: VelocityCommand = {
-                leftVelocityMps: 2.0,
-                rightVelocityMps: 2.0,
+                motor0VelocityMps: leftVel,  // Left front
+                motor1VelocityMps: leftVel,  // Left rear
+                motor2VelocityMps: rightVel, // Right front
+                motor3VelocityMps: rightVel, // Right rear
                 sequence: 1,
                 timestampUs: BigInt(0),
             };
@@ -58,18 +67,24 @@ describe('Protobuf Serialization Tests', () => {
             const json = VelocityCommand.toJsonString(command);
             const parsed = VelocityCommand.fromJsonString(json);
 
-            expect(parsed.leftVelocityMps).toBeCloseTo(2.0, 3);
+            // Verify left motors match
+            expect(parsed.motor0VelocityMps).toBeCloseTo(leftVel, 3);
+            expect(parsed.motor1VelocityMps).toBeCloseTo(leftVel, 3);
+
+            // Verify right motors match
+            expect(parsed.motor2VelocityMps).toBeCloseTo(rightVel, 3);
+            expect(parsed.motor3VelocityMps).toBeCloseTo(rightVel, 3);
         });
     });
 
-    describe('EncoderData Streaming', () => {
-        it('should handle streaming message serialization', () => {
+    describe('EncoderData Streaming - 4 Motors', () => {
+        it('should handle streaming message serialization for all 4 motors', () => {
             const messages: EncoderData[] = [];
 
-            // Create multiple encoder data messages
-            for (let i = 0; i < 10; i++) {
+            // Create multiple encoder data messages (test all 4 motors)
+            for (let i = 0; i < 12; i++) {
                 messages.push({
-                    motorId: i % 2,
+                    motorId: i % 4,  // Motor IDs 0, 1, 2, 3
                     ticks: BigInt(i * 1000),
                     velocityMps: i * 0.1,
                     timestampUs: BigInt(Date.now() * 1000),
@@ -82,7 +97,7 @@ describe('Protobuf Serialization Tests', () => {
             // Deserialize and verify
             serialized.forEach((bytes, i) => {
                 const data = EncoderData.fromBinary(bytes);
-                expect(data.motorId).toBe(i % 2);
+                expect(data.motorId).toBe(i % 4);
                 expect(Number(data.ticks)).toBe(i * 1000);
             });
         });
@@ -147,8 +162,11 @@ describe('Protobuf Serialization Tests', () => {
                     clientVersion: '1.0.0',
                 },
                 command: {
-                    leftVelocityMps: 1.0,
-                    rightVelocityMps: 1.0,
+                    // Differential drive mode: all motors at 1.0 m/s (straight forward)
+                    motor0VelocityMps: 1.0,  // Left front
+                    motor1VelocityMps: 1.0,  // Left rear
+                    motor2VelocityMps: 1.0,  // Right front
+                    motor3VelocityMps: 1.0,  // Right rear
                     sequence: 1,
                     timestampUs: BigInt(Date.now() * 1000),
                 },

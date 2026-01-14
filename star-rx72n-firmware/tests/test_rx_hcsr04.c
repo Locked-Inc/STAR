@@ -43,6 +43,7 @@ void setUp(void)
 {
   /* Initialize mock hardware */
   mock_hcsr04_hw_init(NULL);
+  mock_hcsr04_hw_set_auto_advance(NULL, true, 1);
 
   /* Reset sensor handle */
   memset(&s_sensor, 0, sizeof(s_sensor));
@@ -411,6 +412,27 @@ void test_hcsr04_measure_async_callback_invoked(void)
   TEST_ASSERT_EQUAL(k_rx_ok, s_async_callback_result.status);
 }
 
+void test_hcsr04_measure_async_null_handle_fails(void)
+{
+  rx_err_t err = rx_hcsr04_measure_async(NULL, test_async_callback, NULL);
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+}
+
+void test_hcsr04_measure_async_null_callback_fails(void)
+{
+  rx_hcsr04_init(&s_sensor, &s_config);
+
+  rx_err_t err = rx_hcsr04_measure_async(&s_sensor, NULL, NULL);
+
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+}
+
+void test_hcsr04_measure_async_not_initialized_fails(void)
+{
+  rx_err_t err = rx_hcsr04_measure_async(&s_sensor, test_async_callback, NULL);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
 void test_hcsr04_is_busy_initial_false(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
@@ -420,6 +442,80 @@ void test_hcsr04_is_busy_initial_false(void)
 void test_hcsr04_is_busy_null_returns_false(void)
 {
   TEST_ASSERT_FALSE(rx_hcsr04_is_busy(NULL));
+}
+
+/* =============================================================================
+ * Async Worker Thread Tests
+ * =============================================================================
+ */
+
+void test_hcsr04_worker_init_success(void)
+{
+  rx_err_t err = rx_hcsr04_worker_init();
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Clean up */
+  rx_hcsr04_worker_deinit();
+}
+
+void test_hcsr04_worker_init_twice_fails(void)
+{
+  rx_hcsr04_worker_init();
+
+  rx_err_t err = rx_hcsr04_worker_init();
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+
+  /* Clean up */
+  rx_hcsr04_worker_deinit();
+}
+
+void test_hcsr04_worker_deinit_success(void)
+{
+  rx_hcsr04_worker_init();
+
+  rx_err_t err = rx_hcsr04_worker_deinit();
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+void test_hcsr04_worker_deinit_not_initialized_fails(void)
+{
+  rx_err_t err = rx_hcsr04_worker_deinit();
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/* =============================================================================
+ * Cancellation Tests
+ * =============================================================================
+ */
+
+void test_hcsr04_cancel_null_handle_fails(void)
+{
+  rx_err_t err = rx_hcsr04_cancel(NULL);
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+}
+
+void test_hcsr04_cancel_not_active_fails(void)
+{
+  rx_hcsr04_init(&s_sensor, &s_config);
+
+  rx_err_t err = rx_hcsr04_cancel(&s_sensor);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_hcsr04_cancel_sets_flag(void)
+{
+  rx_hcsr04_init(&s_sensor, &s_config);
+
+  /* Simulate measurement in progress */
+  s_sensor.measurement_active = true;
+
+  rx_err_t err = rx_hcsr04_cancel(&s_sensor);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_sensor.cancel_requested);
 }
 
 /* =============================================================================
@@ -514,8 +610,8 @@ void test_hcsr04_get_temperature_default_20c(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
-  float temp = 0.0f;
-  rx_err_t err = rx_hcsr04_get_temperature(&s_sensor, &temp);
+  float    temp = 0.0f;
+  rx_err_t err  = rx_hcsr04_get_temperature(&s_sensor, &temp);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FLOAT_WITHIN(0.01f, 20.0f, temp);
@@ -523,8 +619,8 @@ void test_hcsr04_get_temperature_default_20c(void)
 
 void test_hcsr04_get_temperature_null_handle_fails(void)
 {
-  float temp = 0.0f;
-  rx_err_t err = rx_hcsr04_get_temperature(NULL, &temp);
+  float    temp = 0.0f;
+  rx_err_t err  = rx_hcsr04_get_temperature(NULL, &temp);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
@@ -543,8 +639,8 @@ void test_hcsr04_measure_with_temp_compensation_10c(void)
   /* Configure mock for 100cm measurement (5800us echo) */
   mock_hcsr04_hw_set_echo_time(NULL, 5800);
 
-  float distance_cm = 0.0f;
-  rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
+  float    distance_cm = 0.0f;
+  rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
@@ -569,8 +665,8 @@ void test_hcsr04_measure_with_temp_compensation_30c(void)
   /* Configure mock for 100cm measurement (5800us echo) */
   mock_hcsr04_hw_set_echo_time(NULL, 5800);
 
-  float distance_cm = 0.0f;
-  rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
+  float    distance_cm = 0.0f;
+  rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
@@ -595,8 +691,8 @@ void test_hcsr04_measure_without_temp_compensation_uses_20c(void)
   /* Configure mock for 100cm measurement (5800us echo) */
   mock_hcsr04_hw_set_echo_time(NULL, 5800);
 
-  float distance_cm = 0.0f;
-  rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
+  float    distance_cm = 0.0f;
+  rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Should use default 20°C calculation: 5800 / 58 = 100 cm */
@@ -612,7 +708,7 @@ void test_hcsr04_measure_full_result_with_temp_compensation(void)
   mock_hcsr04_hw_set_echo_time(NULL, 5800);
 
   rx_hcsr04_result_t result;
-  rx_err_t err = rx_hcsr04_measure(&s_sensor, &result);
+  rx_err_t           err = rx_hcsr04_measure(&s_sensor, &result);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(5800, result.echo_time_us);
@@ -668,8 +764,22 @@ int main(void)
 
   /* Async API tests */
   RUN_TEST(test_hcsr04_measure_async_callback_invoked);
+  RUN_TEST(test_hcsr04_measure_async_null_handle_fails);
+  RUN_TEST(test_hcsr04_measure_async_null_callback_fails);
+  RUN_TEST(test_hcsr04_measure_async_not_initialized_fails);
   RUN_TEST(test_hcsr04_is_busy_initial_false);
   RUN_TEST(test_hcsr04_is_busy_null_returns_false);
+
+  /* Async worker thread tests */
+  RUN_TEST(test_hcsr04_worker_init_success);
+  RUN_TEST(test_hcsr04_worker_init_twice_fails);
+  RUN_TEST(test_hcsr04_worker_deinit_success);
+  RUN_TEST(test_hcsr04_worker_deinit_not_initialized_fails);
+
+  /* Cancellation tests */
+  RUN_TEST(test_hcsr04_cancel_null_handle_fails);
+  RUN_TEST(test_hcsr04_cancel_not_active_fails);
+  RUN_TEST(test_hcsr04_cancel_sets_flag);
 
   /* Temperature compensation tests */
   RUN_TEST(test_hcsr04_set_temperature_success);

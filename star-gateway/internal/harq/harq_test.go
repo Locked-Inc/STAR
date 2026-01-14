@@ -173,6 +173,7 @@ func TestNewStopAndWait(t *testing.T) {
 
 			if harq == nil {
 				t.Fatal("expected HARQ, got nil")
+				return
 			}
 			if harq.Config().MaxRetries != tc.expectedRetries {
 				t.Errorf("MaxRetries = %d, want %d", harq.Config().MaxRetries, tc.expectedRetries)

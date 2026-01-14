@@ -1,5 +1,5 @@
 // motor_control.proto - STAR Motor Control Protocol Buffer Definitions
-// Low-latency motor command service for differential drive control.
+// Low-latency motor command service for 4-motor independent control.
 //
 // Following Boston Dynamics style guide:
 // - Proto3 only, 100 char line limit, 4 space indent
@@ -20,10 +20,10 @@ option java_multiple_files = true;
 option java_outer_classname = "MotorControlProto";
 option java_package = "com.star.proto.v1";
 
-// Motor control service for low-latency differential drive commands.
+// Motor control service for low-latency 4-motor independent control.
 // Provides velocity control, emergency stop, and encoder streaming.
 service MotorControlService {
-  // Set wheel velocities for differential drive.
+  // Set motor velocities for 4 independent motors.
   // Returns immediately with command acknowledgment.
   rpc SetVelocity(SetVelocityRequest) returns (SetVelocityResponse);
 
@@ -62,24 +62,48 @@ message SetVelocityResponse {
   repeated MotorStatus motor_status = 2;
 }
 
-// Velocity command for differential drive robot.
+// Velocity command for 4-motor independent control.
 // Uses MKS units: meters per second.
+//
+// Motor Layout (top view):
+//   Front
+//  FL   FR
+//  BL   BR
+//   Back
+//
+// WARNING: Firmware Update Required
+// When regenerating firmware code, ensure mapping logic in comm_manager.c
+// matches these fields to the correct motor indices:
+//   front_left  (1) -> velocity_mps[0]
+//   front_right (2) -> velocity_mps[1]
+//   back_left   (5) -> velocity_mps[2]
+//   back_right  (6) -> velocity_mps[3]
 message VelocityCommand {
-  // Left wheel velocity in meters per second.
+  // Front left motor velocity in meters per second.
   // Valid range: -2.0 to 2.0 m/s.
   // Positive = forward, negative = reverse.
-  double left_velocity_mps = 1;
+  double front_left_velocity_mps = 1;
 
-  // Right wheel velocity in meters per second.
+  // Front right motor velocity in meters per second.
   // Valid range: -2.0 to 2.0 m/s.
   // Positive = forward, negative = reverse.
-  double right_velocity_mps = 2;
+  double front_right_velocity_mps = 2;
 
   // Command sequence number for ordering and deduplication.
   uint32 sequence = 3;
 
   // Client timestamp in microseconds for latency tracking.
   int64 timestamp_us = 4;
+
+  // Back left motor velocity in meters per second.
+  // Valid range: -2.0 to 2.0 m/s.
+  // Positive = forward, negative = reverse.
+  double back_left_velocity_mps = 5;
+
+  // Back right motor velocity in meters per second.
+  // Valid range: -2.0 to 2.0 m/s.
+  // Positive = forward, negative = reverse.
+  double back_right_velocity_mps = 6;
 }
 
 // Emergency stop request.
@@ -118,7 +142,7 @@ message SetMotorPowerResponse {
 // Direct motor power control for individual motors.
 // Bypasses PID controller - use for testing only.
 message MotorPowerCommand {
-  // Motor index: 0 = left, 1 = right.
+  // Motor index: 0-3 for 4 independent motors.
   int32 motor_id = 1;
 
   // Power level as duty cycle percentage.
@@ -140,11 +164,11 @@ message StreamEncodersRequest {
 // Real-time encoder feedback from motor controller.
 // Streamed at configured rate.
 message EncoderData {
-  // Motor index: 0 = left, 1 = right.
+  // Motor index: 0-3 for 4 independent motors.
   int32 motor_id = 1;
 
   // Absolute encoder position in ticks.
-  // 341.2 ticks per revolution (11 PPR * 34.02:1 gear ratio).
+  // 341 PPR Hall encoder * 34.02:1 gear ratio = 1364 ticks per revolution.
   int64 ticks = 2;
 
   // Current velocity in meters per second.
@@ -156,7 +180,7 @@ message EncoderData {
 
 // Motor status information.
 message MotorStatus {
-  // Motor index: 0 = left, 1 = right.
+  // Motor index: 0-3 for 4 independent motors.
   int32 motor_id = 1;
 
   // Current duty cycle percentage.

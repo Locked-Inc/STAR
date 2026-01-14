@@ -42,7 +42,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
   manager->bus_count   = 0;
 
   /* Create mutex (mock version - just sets ID) */
-  manager->mutex.tx_mutex_id   = 0x4D555458;
+  manager->mutex.tx_mutex_id   = k_tx_mutex_magic;
   manager->mutex.tx_mutex_name = (char*)"BusMutex";
   manager->mutex.locked        = false;
 

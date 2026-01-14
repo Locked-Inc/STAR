@@ -11,10 +11,11 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-#include "rx_ds18b20.h"
-#include "rx_crc.h"
 #include <string.h>
+
+#include "rx_crc.h"
+#include "rx_ds18b20.h"
+#include "unity.h"
 
 /* =============================================================================
  * Mock OneWire Bus State
@@ -22,11 +23,11 @@
  */
 
 typedef struct {
-  bool     presence_response;
-  uint8_t  scratchpad[k_ds18b20_scratchpad_bytes];
-  uint8_t  power_mode;
-  bool     initialized;
-  uint8_t  rom[8];
+  bool    presence_response;
+  uint8_t scratchpad[k_ds18b20_scratchpad_bytes];
+  uint8_t power_mode;
+  bool    initialized;
+  uint8_t rom[8];
 } mock_onewire_state_t;
 
 static mock_onewire_state_t s_mock_state;
@@ -96,10 +97,8 @@ rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name
   return k_rx_ok;
 }
 
-rx_err_t rx_bus_onewire_read(rx_bus_manager_t* manager,
-                             const char*       bus_name,
-                             uint8_t*          data,
-                             uint32_t          length)
+rx_err_t
+rx_bus_onewire_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, uint32_t length)
 {
   (void)manager;
   (void)bus_name;
@@ -135,9 +134,8 @@ rx_err_t rx_bus_onewire_skip_rom(rx_bus_manager_t* manager, const char* bus_name
   return k_rx_ok;
 }
 
-rx_err_t rx_bus_onewire_match_rom(rx_bus_manager_t* manager,
-                                  const char*       bus_name,
-                                  const uint8_t     rom[8])
+rx_err_t
+rx_bus_onewire_match_rom(rx_bus_manager_t* manager, const char* bus_name, const uint8_t rom[8])
 {
   (void)manager;
   (void)bus_name;
@@ -189,19 +187,19 @@ rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
  * @param[in] config Configuration register value
  */
 static void create_valid_scratchpad(uint8_t scratchpad[k_ds18b20_scratchpad_bytes],
-                                     uint8_t temp_lsb,
-                                     uint8_t temp_msb,
-                                     uint8_t config)
+                                    uint8_t temp_lsb,
+                                    uint8_t temp_msb,
+                                    uint8_t config)
 {
-  scratchpad[k_ds18b20_scratch_temp_lsb] = temp_lsb;
-  scratchpad[k_ds18b20_scratch_temp_msb] = temp_msb;
-  scratchpad[k_ds18b20_scratch_th_reg]   = 0x00;
-  scratchpad[k_ds18b20_scratch_tl_reg]   = 0x00;
-  scratchpad[k_ds18b20_scratch_config]   = config;
+  scratchpad[k_ds18b20_scratch_temp_lsb]  = temp_lsb;
+  scratchpad[k_ds18b20_scratch_temp_msb]  = temp_msb;
+  scratchpad[k_ds18b20_scratch_th_reg]    = 0x00;
+  scratchpad[k_ds18b20_scratch_tl_reg]    = 0x00;
+  scratchpad[k_ds18b20_scratch_config]    = config;
   scratchpad[k_ds18b20_scratch_reserved1] = 0xFF;
   scratchpad[k_ds18b20_scratch_reserved2] = 0x10;
   scratchpad[k_ds18b20_scratch_reserved3] = 0x00;
-  scratchpad[k_ds18b20_scratch_crc] = rx_crc8_maxim(scratchpad, k_ds18b20_crc_bytes);
+  scratchpad[k_ds18b20_scratch_crc]       = rx_crc8_maxim(scratchpad, k_ds18b20_crc_bytes);
 }
 
 /**
@@ -478,8 +476,8 @@ void test_ds18b20_set_resolution_9bit(void)
 
 void test_ds18b20_get_resolution(void)
 {
-  rx_ds18b20_handle_t  handle;
-  rx_ds18b20_config_t  config = {
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_11bit,
