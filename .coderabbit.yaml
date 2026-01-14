@@ -414,6 +414,7 @@ reviews:
 
   # Path filters
   path_filters:
+    # Include paths
     - "star-gateway/**"
     - "star-rx72n-firmware/**"
     - "star-ros2/**"
@@ -424,21 +425,44 @@ reviews:
     - "*.md"
     - "CMakeLists.txt"
     - ".github/workflows/**"
+
+    # Exclude build artifacts and generated files
     - "!**/node_modules/**"
     - "!**/dist/**"
     - "!**/build/**"
     - "!**/.cmake/**"
     - "!**/gen/**"
+
+    # Exclude generated protobuf code
     - "!**/*.pb.go"
     - "!**/*.pb.h"
     - "!**/*.pb.c"
     - "!**/*.pb.ts"
+
+    # Exclude dependency lock files (auto-generated)
+    - "!**/go.sum"
+    - "!**/package-lock.json"
+    - "!**/yarn.lock"
+    - "!**/pnpm-lock.yaml"
+
+    # Exclude binary and media files
     - "!**/*.pdf"
     - "!**/*.png"
     - "!**/*.jpg"
+    - "!**/*.jpeg"
     - "!**/*.svg"
+    - "!**/*.gif"
+    - "!**/*.bin"
+    - "!**/*.hex"
+    - "!**/*.elf"
+    - "!**/*.o"
+    - "!**/*.a"
+    - "!**/*.so"
+
+    # Exclude version control and logs
     - "!.git/**"
     - "!**/*.log"
+    - "!**/.DS_Store"
 
 chat:
   auto_reply: true
