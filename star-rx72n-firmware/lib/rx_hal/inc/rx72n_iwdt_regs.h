@@ -55,7 +55,7 @@ typedef enum {
  * Uses dedicated 120 kHz oscillator, independent of main system clock.
  * Base address: 0x00088030
  */
-typedef struct {
+typedef struct __attribute__((packed)) {
   volatile uint8_t  iwdtrr; /**< Refresh Register (write 0x00 then 0xFF to refresh) */
   uint8_t           reserved0[k_iwdt_reserved_after_iwdtrr_bytes]; /**< Reserved */
   volatile uint16_t iwdtcr;  /**< Control Register (timeout, clock, window) */
@@ -129,6 +129,22 @@ typedef enum {
   k_iwdt_slcstp_stop       = (1 << 7), /**< Stop counting during sleep */
   k_iwdt_slcstp_continue   = 0x00,     /**< Continue counting during sleep */
 } iwdt_iwdtcstpr_bits_t;
+
+/* =============================================================================
+ * Static Assertions - Verify Register Layout at Compile Time
+ * =============================================================================
+ */
+
+/* Verify base address matches Hardware Manual */
+_Static_assert(k_iwdt_base_addr == 0x00088030, "IWDT base address incorrect");
+
+/* Verify register structure layout */
+_Static_assert(sizeof(rx_iwdt_regs_t) == 9, "IWDT register structure size incorrect");
+_Static_assert(offsetof(rx_iwdt_regs_t, iwdtrr) == 0x00, "IWDTRR offset incorrect");
+_Static_assert(offsetof(rx_iwdt_regs_t, iwdtcr) == 0x02, "IWDTCR offset incorrect");
+_Static_assert(offsetof(rx_iwdt_regs_t, iwdtsr) == 0x04, "IWDTSR offset incorrect");
+_Static_assert(offsetof(rx_iwdt_regs_t, iwdtrcr) == 0x06, "IWDTRCR offset incorrect");
+_Static_assert(offsetof(rx_iwdt_regs_t, iwdtcstpr) == 0x08, "IWDTCSTPR offset incorrect");
 
 #ifdef __cplusplus
 }

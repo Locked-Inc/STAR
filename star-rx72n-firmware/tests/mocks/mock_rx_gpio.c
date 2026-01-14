@@ -55,7 +55,7 @@ static uint16_t internal_pin_to_index(gpio_pin_t pin)
   uint8_t port    = gpio_pin_get_port(pin);
   uint8_t pin_num = gpio_pin_get_pin(pin);
 
-  return (uint16_t)((port << 4) | pin_num);
+  return (uint16_t)((port << k_gpio_port_shift) | pin_num);
 }
 
 /* =============================================================================
@@ -69,8 +69,8 @@ void mock_gpio_init(void)
   s_mock_gpio.initialized = true;
 
   /* Default all pins to high (external pull-up for OneWire) */
-  for (uint32_t i = 0; i < k_mock_gpio_max_pins; ++i) {
-    s_mock_gpio.pins[i].read_value = true;
+  for (uint32_t pin_idx = 0; pin_idx < k_mock_gpio_max_pins; ++pin_idx) {
+    s_mock_gpio.pins[pin_idx].read_value = true;
   }
 }
 
@@ -225,22 +225,24 @@ rx_err_t gpio_read(gpio_pin_t pin, bool* high)
 {
   s_mock_gpio.read_count++;
 
+  /* Pre-condition: Validate output pointer */
   if (high == NULL) {
     return k_rx_err_null_pointer;
   }
 
+  /* Check for injected error */
   if (s_mock_gpio.next_error != k_rx_ok) {
     rx_err_t err           = s_mock_gpio.next_error;
     s_mock_gpio.next_error = k_rx_ok;
     return err;
   }
 
+  /* Bounds validation: Verify pin index is within valid range */
   uint16_t idx = internal_pin_to_index(pin);
-  if (idx < k_mock_gpio_max_pins) {
-    *high = s_mock_gpio.pins[idx].read_value;
-  } else {
-    *high = true; /* Default pull-up */
+  if (idx >= k_mock_gpio_max_pins) {
+    return k_rx_err_out_of_range;
   }
 
+  *high = s_mock_gpio.pins[idx].read_value;
   return k_rx_ok;
 }

@@ -19,6 +19,8 @@
 #ifndef UNIT_TEST
 #include "rx72n_regs.h"
 #include "rx_log.h"
+#include "rx_threadx_config.h"
+#include "rx_time_constants.h"
 #include "tx_api.h"
 #else
 /* Mock includes for unit testing */
@@ -51,12 +53,19 @@
 
 static const char* s_tag = "USB";
 
-/** @brief ThreadX timing constants for flush operation */
+/** @brief USB flush timing constants */
 typedef enum {
-  k_threadx_tick_rate_hz   = (100), /**< ThreadX tick rate (100 Hz) */
-  k_threadx_ms_per_tick    = (10),  /**< Milliseconds per tick at 100 Hz */
-  k_flush_poll_interval_ms = (10),  /**< Poll TX buffer every 10ms */
+  k_threadx_ms_per_tick    = 10, /**< Milliseconds per tick at 100 Hz */
+  k_flush_poll_interval_ms = 10, /**< Poll TX buffer every 10ms */
 } threadx_flush_timing_t;
+
+/** @brief Ring buffer operation constants */
+typedef enum {
+  k_ring_buffer_empty     = 0, /**< Empty buffer count */
+  k_ring_buffer_increment = 1, /**< Increment value for buffer indices */
+  k_min_transfer_size     = 0, /**< Minimum data transfer size (no data) */
+  k_min_sleep_ticks       = 1, /**< Minimum sleep duration (1 tick) */
+} ring_buffer_constants_t;
 
 /* Ring buffer structure */
 typedef struct {
@@ -115,16 +124,16 @@ STATIC_TESTABLE void internal_ring_buffer_init(ring_buffer_t* buf)
     return;
   }
 
-  buf->head  = 0;
-  buf->tail  = 0;
-  buf->count = 0;
+  buf->head  = k_ring_buffer_empty;
+  buf->tail  = k_ring_buffer_empty;
+  buf->count = k_ring_buffer_empty;
 }
 
 STATIC_TESTABLE uint32_t internal_ring_buffer_available(const ring_buffer_t* buf)
 {
   /* Rule 5: Pre-condition validation */
   if (buf == NULL) {
-    return 0;
+    return k_min_transfer_size;
   }
 
   return buf->count;
@@ -134,7 +143,7 @@ STATIC_TESTABLE uint32_t internal_ring_buffer_free(const ring_buffer_t* buf)
 {
   /* Rule 5: Pre-condition validation */
   if (buf == NULL) {
-    return 0;
+    return k_min_transfer_size;
   }
 
   return k_usb_rx_buffer_size - buf->count;
@@ -145,15 +154,15 @@ STATIC_TESTABLE uint32_t internal_ring_buffer_write(ring_buffer_t* buf,
                                                     uint32_t       len)
 {
   /* Rule 5: Pre-condition validation */
-  if (buf == NULL || data == NULL || len == 0) {
-    return 0;
+  if (buf == NULL || data == NULL || len == k_min_transfer_size) {
+    return k_min_transfer_size;
   }
 
-  uint32_t written = 0;
+  uint32_t written = k_min_transfer_size;
 
   while (written < len && buf->count < k_usb_rx_buffer_size) {
     buf->data[buf->head] = data[written];
-    buf->head            = (buf->head + 1) % k_usb_rx_buffer_size;
+    buf->head            = (buf->head + k_ring_buffer_increment) % k_usb_rx_buffer_size;
     buf->count++;
     written++;
   }
@@ -166,15 +175,15 @@ STATIC_TESTABLE uint32_t internal_ring_buffer_read(ring_buffer_t* buf,
                                                    uint32_t       max_len)
 {
   /* Rule 5: Pre-condition validation */
-  if (buf == NULL || data == NULL || max_len == 0) {
-    return 0;
+  if (buf == NULL || data == NULL || max_len == k_min_transfer_size) {
+    return k_min_transfer_size;
   }
 
-  uint32_t read_count = 0;
+  uint32_t read_count = k_min_transfer_size;
 
-  while (read_count < max_len && buf->count > 0) {
+  while (read_count < max_len && buf->count > k_min_transfer_size) {
     data[read_count] = buf->data[buf->tail];
-    buf->tail        = (buf->tail + 1) % k_usb_rx_buffer_size;
+    buf->tail        = (buf->tail + k_ring_buffer_increment) % k_usb_rx_buffer_size;
     buf->count--;
     read_count++;
   }
@@ -199,12 +208,12 @@ STATIC_TESTABLE uint32_t internal_ring_buffer_read(ring_buffer_t* buf,
 static void internal_trigger_tx_if_idle(void)
 {
   /* Only trigger if data is available */
-  if (internal_ring_buffer_available(&s_usb.tx_buffer) == 0) {
+  if (internal_ring_buffer_available(&s_usb.tx_buffer) == k_min_transfer_size) {
     return;
   }
 
   /* Check if Pipe 1 is not busy (PBUSY bit = 0 means idle) */
-  if ((usb0()->pipe1ctr & k_usb_pipectr_pbusy) == 0) {
+  if ((usb0()->pipe1ctr & k_usb_pipectr_pbusy) == k_ring_buffer_empty) {
     /* Pipe is idle, trigger transmission */
     rx_usb_cdc_handle_bulk_in();
   }
@@ -389,17 +398,17 @@ rx_err_t rx_usb_flush(uint32_t timeout_ms)
   }
 
   /* If timeout is 0, just check once and return immediately */
-  if (timeout_ms == 0) {
-    if (internal_ring_buffer_available(&s_usb.tx_buffer) > 0) {
+  if (timeout_ms == k_min_transfer_size) {
+    if (internal_ring_buffer_available(&s_usb.tx_buffer) > k_min_transfer_size) {
       return k_rx_err_timeout;
     }
     return k_rx_ok;
   }
 
   /* Blocking flush: poll until buffer is empty or timeout expires */
-  uint32_t elapsed_ms = 0;
+  uint32_t elapsed_ms = k_min_transfer_size;
 
-  while (internal_ring_buffer_available(&s_usb.tx_buffer) > 0) {
+  while (internal_ring_buffer_available(&s_usb.tx_buffer) > k_min_transfer_size) {
     /* Check if timeout has expired */
     if (elapsed_ms >= timeout_ms) {
       return k_rx_err_timeout;
@@ -407,8 +416,8 @@ rx_err_t rx_usb_flush(uint32_t timeout_ms)
 
     /* Sleep for poll interval (1 tick = 10ms) */
     uint32_t sleep_ticks = k_flush_poll_interval_ms / k_threadx_ms_per_tick;
-    if (sleep_ticks == 0) {
-      sleep_ticks = 1;
+    if (sleep_ticks == k_min_transfer_size) {
+      sleep_ticks = k_min_sleep_ticks;
     }
     tx_thread_sleep(sleep_ticks);
 

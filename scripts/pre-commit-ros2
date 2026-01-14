@@ -1,0 +1,82 @@
+#!/bin/bash
+# ROS2 Pre-commit Hook
+# Fast local checks on staged files only
+# Installation: cp scripts/pre-commit-ros2 .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+set -e
+
+# Escape hatch for emergency commits
+if [ "$SKIP_ROS2_CHECKS" = "1" ]; then
+    echo "[WARN] ROS2 checks skipped (SKIP_ROS2_CHECKS=1)"
+    exit 0
+fi
+
+# Get staged ROS2 C++ files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | \
+               grep -E '^star-ros2/.*\.(cpp|hpp)$' || true)
+
+# No ROS2 files staged, skip checks
+if [ -z "$STAGED_FILES" ]; then
+    exit 0
+fi
+
+echo "[INFO] Running ROS2 pre-commit checks..."
+
+# Check 1: Formatting (FAST - only staged files)
+echo "[INFO] Checking code formatting..."
+for file in $STAGED_FILES; do
+    if ! clang-format --dry-run --Werror "$file" >/dev/null 2>&1; then
+        echo "[ERROR] Formatting issues in $file"
+        echo ""
+        echo "Fix formatting:"
+        echo "  ./scripts/format-ros2.sh"
+        echo ""
+        echo "Or skip checks (emergency only):"
+        echo "  SKIP_ROS2_CHECKS=1 git commit -m \"your message\""
+        exit 1
+    fi
+done
+
+# Check 2: Basic Naming (FAST - grep patterns)
+# Anti-pattern: camelCase methods (should be snake_case)
+echo "[INFO] Checking naming conventions..."
+for file in $STAGED_FILES; do
+    # Check for camelCase methods (line starts with 2+ spaces, has camelCase pattern with parens)
+    if grep -Eq '^  [a-z][a-zA-Z0-9]*[A-Z][a-zA-Z0-9]* *\(' "$file" 2>/dev/null; then
+        camel_methods=$(grep -Hn '^  [a-z][a-zA-Z0-9]*[A-Z][a-zA-Z0-9]* *\(' "$file" || true)
+        if [ -n "$camel_methods" ]; then
+            echo "[WARN] Possible camelCase methods in $file (should be snake_case):"
+            echo "$camel_methods"
+        fi
+    fi
+
+    # Check for /// comments (should be /** or /**<)
+    if grep -Eq '^ *///' "$file" 2>/dev/null; then
+        triple_slash=$(grep -Hn '^ *///' "$file" || true)
+        if [ -n "$triple_slash" ]; then
+            echo "[WARN] Using /// comments in $file (should be /** or /**<):"
+            echo "$triple_slash"
+        fi
+    fi
+done
+
+# Check 3: Include Guards (FAST - pattern check for .hpp files only)
+echo "[INFO] Checking include guards..."
+for file in $STAGED_FILES; do
+    if [ "${file##*.}" = "hpp" ]; then
+        # Expected guard pattern: STAR_ROS2_SRC_PACKAGE_NAME_FILE_NAME_HPP_
+        # Extract package and file name
+        base=$(echo "$file" | sed 's|star-ros2/src/||')
+        expected_guard=$(echo "$base" | sed 's|/|_|g' | tr '[:lower:]' '[:upper:]' | sed 's|\.HPP|_HPP_|')
+
+        # Check if guard exists
+        if ! grep -q "#ifndef $expected_guard" "$file" 2>/dev/null; then
+            echo "[WARN] Include guard mismatch in $file"
+            echo "  Expected: #ifndef $expected_guard"
+            echo "  Please verify include guard follows PACKAGE_FILE_NAME_HPP_ pattern"
+        fi
+    fi
+done
+
+echo "[SUCCESS] All pre-commit checks passed!"
+exit 0

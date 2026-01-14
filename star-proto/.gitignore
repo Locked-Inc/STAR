@@ -2,6 +2,7 @@
 gen/go/*
 gen/typescript/*
 gen/nanopb/*
+gen/cpp/*
 !gen/*/.gitignore
 
 # Go build artifacts

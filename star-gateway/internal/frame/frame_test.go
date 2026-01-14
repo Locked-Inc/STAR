@@ -119,6 +119,7 @@ func TestNewFrame(t *testing.T) {
 				}
 				if frame == nil {
 					t.Fatal("expected frame, got nil")
+					return
 				}
 				if frame.Header.Type != tc.frameType {
 					t.Errorf("Header.Type = %v, want %v", frame.Header.Type, tc.frameType)

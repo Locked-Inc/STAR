@@ -88,11 +88,16 @@ add_library(rx_core STATIC
     lib/rx_core/src/rx_error_handler.c
     lib/rx_core/src/rx_pin_validator.c
     lib/rx_core/src/rx_infrastructure.c
+    lib/rx_core/src/rx_iwdt.c
+    lib/rx_core/src/rx_wdt.c
     # Mock implementations available for testing (not compiled by default):
     # lib/rx_core/src/mock_error_handler.c
     # lib/rx_core/src/mock_pin_validator.c
 )
-target_include_directories(rx_core PUBLIC lib/rx_core/inc)
+target_include_directories(rx_core PUBLIC
+    lib/rx_core/inc
+    lib/rx_hal/inc  # For watchdog register definitions
+)
 target_link_libraries(rx_core PUBLIC threadx)
 
 # rx_hal - Hardware Abstraction Layer
@@ -110,6 +115,8 @@ add_library(rx_hal STATIC
     lib/rx_hal/src/rx_gptw.c
     lib/rx_hal/src/rx_cmt.c
     lib/rx_hal/src/rx_mpc.c
+    lib/rx_hal/src/rx_iwdt.c
+    lib/rx_core/src/rx_register_guard.c
 )
 target_include_directories(rx_hal PUBLIC
     lib/rx_hal/inc
@@ -187,6 +194,7 @@ add_library(rx_nanopb STATIC
     lib/rx_nanopb/inc/gen/star/v1/common.pb.c
     lib/rx_nanopb/inc/gen/star/v1/motor_control.pb.c
     lib/rx_nanopb/inc/gen/star/v1/telemetry.pb.c
+    # Note: gateway_service.pb.c is generated but excluded as it is for ROS2<->Gateway only
 )
 target_include_directories(rx_nanopb PUBLIC
     lib/rx_nanopb/inc
@@ -250,12 +258,36 @@ add_library(rx_ds18b20 STATIC
 target_include_directories(rx_ds18b20 PUBLIC lib/rx_ds18b20/inc)
 target_link_libraries(rx_ds18b20 PUBLIC rx_bus rx_crc rx_core)
 
+# rx_hcsr04 - HC-SR04 ultrasonic distance sensor driver
+add_library(rx_hcsr04 STATIC
+    lib/rx_hcsr04/src/rx_hcsr04.c
+    lib/rx_hcsr04/src/rx_hcsr04_hal_hw.c
+)
+target_include_directories(rx_hcsr04 PUBLIC lib/rx_hcsr04/inc)
+target_link_libraries(rx_hcsr04 PUBLIC rx_hal rx_core)
+
+# rx_obstacle_detect - Basic obstacle detection with emergency stop
+add_library(rx_obstacle_detect STATIC
+    lib/rx_obstacle_detect/src/rx_obstacle_detect.c
+)
+target_include_directories(rx_obstacle_detect PUBLIC lib/rx_obstacle_detect/inc)
+target_link_libraries(rx_obstacle_detect PUBLIC rx_hcsr04 rx_motor rx_core)
+
 # =============================================================================
 # Application Source Files
 # =============================================================================
 
 set(APP_SOURCES
     src/main.c
+    src/shared_state.c
+    src/hardware_init.c
+    src/diagnostics.c
+    src/pmod_config.c
+    src/tasks/motor_controller.c
+    src/tasks/comm_manager.c
+    src/tasks/env_monitor.c
+    src/tasks/system_health.c
+    src/tasks/pmod_led.c
 )
 
 # =============================================================================
@@ -289,6 +321,9 @@ target_link_libraries(${PROJECT_NAME}.elf
     rx_usb_comm
     rx_drv8243
     rx_bq4050
+    rx_ds18b20
+    rx_hcsr04
+    rx_obstacle_detect
 )
 
 # Linker script
@@ -302,7 +337,7 @@ set_target_properties(${PROJECT_NAME}.elf PROPERTIES
 
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.hex
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.bin
+    COMMAND ${CMAKE_OBJCOPY} -O binary -R .fvectors $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.bin
     COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${PROJECT_NAME}.elf>
     COMMENT "Generating HEX and BIN files, showing size..."
 )
@@ -339,6 +374,8 @@ message(STATUS "  rx_usb_comm    - USB communication layer")
 message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
 message(STATUS "  rx_bq4050      - BQ4050 battery fuel gauge (SBS 1.1)")
 message(STATUS "  rx_ds18b20     - DS18B20 1-Wire temperature sensor")
+message(STATUS "  rx_hcsr04      - HC-SR04 ultrasonic distance sensor")
+message(STATUS "  rx_obstacle_detect - Obstacle detection with emergency stop")
 message(STATUS "==============================================")
 
 # =============================================================================

@@ -17,6 +17,8 @@
 
 #include <string.h>
 
+#include "rx_hcsr04.h"
+
 /* =============================================================================
  * Constants
  * =============================================================================
@@ -95,6 +97,7 @@ void mock_hcsr04_hw_init(mock_hcsr04_hw_t* mock)
   memset(m, 0, sizeof(mock_hcsr04_hw_t));
   m->initialized       = true;
   m->simulated_echo_us = 580; /* Default: 10cm */
+  m->auto_advance_time = true;
   m->time_step_us      = 1;
 }
 
@@ -121,6 +124,7 @@ void mock_hcsr04_hw_reset(mock_hcsr04_hw_t* mock)
   m->inject_gpio_error   = inject_gpio_error;
   m->inject_pin_conflict = inject_pin_conflict;
   m->simulated_echo_us   = echo_us;
+  m->auto_advance_time   = true;
   m->time_step_us        = 1;
 }
 
@@ -312,10 +316,12 @@ rx_err_t mock_gpio_read(uint8_t port, uint8_t pin, bool* value)
      * We simplify this for testing by using current_time_us
      * as a relative position in the echo sequence.
      */
-    uint32_t echo_start = 10; /* Echo starts 10us after trigger */
-    uint32_t echo_end   = echo_start + m->simulated_echo_us;
+    uint32_t       elapsed = m->current_time_us - m->last_trigger_time_us;
+    const uint32_t echo_start =
+      k_hcsr04_trigger_settle_us + k_hcsr04_trigger_pulse_us; /* Wait for trigger pulse to finish */
+    const uint32_t echo_end = echo_start + m->simulated_echo_us;
 
-    if (m->current_time_us >= echo_start && m->current_time_us < echo_end) {
+    if (elapsed >= echo_start && elapsed < echo_end) {
       *value = true;
     } else {
       *value = false;

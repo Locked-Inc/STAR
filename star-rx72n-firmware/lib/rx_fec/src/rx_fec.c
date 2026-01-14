@@ -16,6 +16,8 @@
 #include <assert.h>
 #include <string.h>
 
+#include "rx_bit_constants.h"
+
 /* =============================================================================
  * Private Constants
  * =============================================================================
@@ -25,7 +27,6 @@
  * @brief FEC implementation constants
  */
 typedef enum {
-  k_fec_bits_per_byte       = 8,     /**< Bits in a byte */
   k_fec_msb_bit_position    = 7,     /**< MSB position in byte (0-indexed) */
   k_fec_shift_register_bits = 6,     /**< K-1 shift register size */
   k_fec_correlation_offset  = 32768, /**< Correlation metric offset (2^15) */
@@ -104,8 +105,8 @@ static void internal_set_output_bit(uint8_t* output, uint32_t bit_idx, uint8_t v
   assert((value == 0) || (value == k_fec_bit_mask) || (value != 0));
   value = (value != 0) ? k_fec_bit_mask : 0;
 
-  uint32_t byte_idx = bit_idx / k_fec_bits_per_byte;
-  uint32_t bit_pos  = k_fec_msb_bit_position - (bit_idx % k_fec_bits_per_byte); /* MSB first */
+  uint32_t byte_idx = bit_idx / k_rx_bits_per_byte;
+  uint32_t bit_pos  = k_fec_msb_bit_position - (bit_idx % k_rx_bits_per_byte); /* MSB first */
 
   if (value != 0) {
     output[byte_idx] |= (uint8_t)(1U << bit_pos);
@@ -129,8 +130,8 @@ static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
   /* Pre-condition: data must be valid */
   assert(data != NULL);
 
-  uint32_t byte_idx = bit_idx / k_fec_bits_per_byte;
-  uint32_t bit_pos  = k_fec_msb_bit_position - (bit_idx % k_fec_bits_per_byte); /* MSB first */
+  uint32_t byte_idx = bit_idx / k_rx_bits_per_byte;
+  uint32_t bit_pos  = k_fec_msb_bit_position - (bit_idx % k_rx_bits_per_byte); /* MSB first */
 
   uint8_t result = (data[byte_idx] >> bit_pos) & k_fec_bit_mask;
 
@@ -351,8 +352,8 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
     /* Store decoded bit if it's a data bit (not tail bit) */
     if (t_idx < data_bits) {
       if (input_bit != 0) {
-        uint32_t byte_idx = t_idx / k_fec_bits_per_byte;
-        uint32_t bit_pos  = k_fec_msb_bit_position - (t_idx % k_fec_bits_per_byte);
+        uint32_t byte_idx = t_idx / k_rx_bits_per_byte;
+        uint32_t bit_pos  = k_fec_msb_bit_position - (t_idx % k_rx_bits_per_byte);
         output[byte_idx] |= (uint8_t)(1U << bit_pos);
       }
     }
@@ -397,12 +398,12 @@ uint32_t rx_fec_encoded_len(uint32_t input_len)
   }
 
   /* Output bits = (input bits + tail bits) * 2 */
-  uint32_t input_bits        = input_len * k_fec_bits_per_byte;
+  uint32_t input_bits        = input_len * k_rx_bits_per_byte;
   uint32_t total_input_bits  = input_bits + k_fec_tail_bits;
   uint32_t total_output_bits = total_input_bits * k_fec_num_outputs;
 
   /* Round up to full bytes */
-  return (total_output_bits + k_fec_msb_bit_position) / k_fec_bits_per_byte;
+  return (total_output_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
 }
 
 rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
@@ -498,8 +499,7 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
   return k_rx_ok;
 }
 
-rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*                   dec,
-                            const rx_fec_decode_soft_params_t* params)
+rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_params_t* params)
 {
   /* Validate arguments */
   if (dec == NULL || params == NULL) {
@@ -522,8 +522,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*                   dec,
   /* Calculate number of symbols */
   uint32_t num_symbols;
   if (params->expected_output_len > 0) {
-    num_symbols =
-      (uint32_t)((params->expected_output_len * k_fec_bits_per_byte) + k_fec_tail_bits);
+    num_symbols = (uint32_t)((params->expected_output_len * k_rx_bits_per_byte) + k_fec_tail_bits);
   } else {
     num_symbols = (uint32_t)(params->soft_len / k_fec_num_outputs);
   }
@@ -551,7 +550,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*                   dec,
     return k_rx_err_invalid_size;
   }
 
-  uint32_t output_bytes = (data_bits + k_fec_msb_bit_position) / k_fec_bits_per_byte;
+  uint32_t output_bytes = (data_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
 
   /* Traceback: extract decoded bits */
   internal_viterbi_traceback(dec, num_symbols, data_bits, params->output, output_bytes);
@@ -560,8 +559,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*                   dec,
   return k_rx_ok;
 }
 
-rx_err_t rx_fec_decode_hard(rx_fec_decoder_t*                   dec,
-                            const rx_fec_decode_hard_params_t* params)
+rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_params_t* params)
 {
   if (dec == NULL || params == NULL) {
     return k_rx_err_invalid_arg;
@@ -581,7 +579,7 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t*                   dec,
   }
 
   /* Convert hard bits to soft bits */
-  uint32_t num_bits = (uint32_t)(params->data_len * k_fec_bits_per_byte);
+  uint32_t num_bits = (uint32_t)(params->data_len * k_rx_bits_per_byte);
 
   /* Ensure soft bits buffer is large enough */
   if (num_bits > params->soft_buffer_len) {
@@ -589,7 +587,7 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t*                   dec,
   }
 
   for (uint32_t i = 0; i < num_bits; i++) {
-    uint8_t bit                   = internal_get_bit(params->data, i);
+    uint8_t bit                 = internal_get_bit(params->data, i);
     params->soft_bits_buffer[i] = rx_fec_hard_to_soft(bit);
   }
 

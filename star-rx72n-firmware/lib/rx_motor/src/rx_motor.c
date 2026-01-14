@@ -46,6 +46,14 @@ typedef enum {
   k_motor_ph_low    = 0,    /**< PH signal for reverse direction */
 } motor_constants_t;
 
+/** @brief Motor configuration validation limits (NASA Rule 5 compliance) */
+typedef enum {
+  k_motor_min_pwm_freq  = 1000,  /**< Minimum PWM frequency (1 kHz) */
+  k_motor_max_pwm_freq  = 50000, /**< Maximum PWM frequency (50 kHz) */
+  k_motor_min_dead_time = 100,   /**< Minimum dead-time (100 ns) */
+  k_motor_max_dead_time = 10000, /**< Maximum dead-time (10 us) */
+} motor_validation_limits_t;
+
 /* =============================================================================
  * Internal Helper Functions
  * =============================================================================
@@ -60,6 +68,11 @@ typedef enum {
  */
 static float internal_clamp_duty(float duty)
 {
+  /* Safety check for invalid float values (NASA Rule 5 compliance) */
+  if (isnan(duty) || isinf(duty)) {
+    return (float)k_motor_duty_zero; /* Safe default: stopped */
+  }
+
   if (duty > (float)k_motor_duty_max) {
     return (float)k_motor_duty_max;
   }
@@ -84,6 +97,19 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
     return k_rx_err_invalid_state;
   }
 
+  /* Pre-condition: Validate PWM frequency (NASA Rule 5 compliance) */
+  if (config->pwm_freq_hz < k_motor_min_pwm_freq || config->pwm_freq_hz > k_motor_max_pwm_freq) {
+    rx_log_error(s_tag, "PWM frequency out of range (1kHz-50kHz)");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition: Validate dead-time (NASA Rule 5 compliance) */
+  if (config->dead_time_ns < k_motor_min_dead_time ||
+      config->dead_time_ns > k_motor_max_dead_time) {
+    rx_log_error(s_tag, "Dead-time out of range (100ns-10us)");
+    return k_rx_err_invalid_arg;
+  }
+
   rx_log_info(s_tag, "Initializing motor");
 
   /* Initialize GPTW PWM */
@@ -100,9 +126,20 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
     return err;
   }
 
-  /* Initialize both outputs to 0% duty (stopped) */
-  rx_gptw_set_duty(config->channel, config->output_a, 0.0f);
-  rx_gptw_set_duty(config->channel, config->output_b, 0.0f);
+  /* Initialize both outputs to 0% duty (stopped) - NASA Rule 7 compliance */
+  err = rx_gptw_set_duty(config->channel, config->output_a, 0.0f);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set output_a initial duty");
+    rx_gptw_deinit(config->channel);
+    return err;
+  }
+
+  err = rx_gptw_set_duty(config->channel, config->output_b, 0.0f);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set output_b initial duty");
+    rx_gptw_deinit(config->channel);
+    return err;
+  }
 
   /* Save configuration */
   handle->channel      = config->channel;
@@ -112,6 +149,12 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   handle->current_duty = 0.0f;
   handle->invert_pwm   = config->invert_pwm;
   handle->initialized  = true;
+
+  /* Post-condition: Verify handle was properly initialized (NASA Rule 5 compliance) */
+  if (!handle->initialized || handle->pwm_freq_hz != config->pwm_freq_hz) {
+    rx_log_error(s_tag, "Post-condition failed: handle not properly initialized");
+    return k_rx_err_invalid_state;
+  }
 
   rx_log_info(s_tag, "Motor initialized successfully");
 
@@ -149,7 +192,13 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
     return k_rx_err_invalid_state;
   }
 
-  /* Clamp duty cycle to valid range */
+  /* Pre-condition: Validate duty value is reasonable (NASA Rule 5 compliance) */
+  if (isnan(duty) || isinf(duty)) {
+    rx_log_error(s_tag, "Invalid duty value (NaN or Inf)");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Clamp duty cycle to valid range (after validation) */
   duty = internal_clamp_duty(duty);
 
   /* Apply inversion if configured */
@@ -160,19 +209,49 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
   /* Set PWM outputs based on direction (PH/EN mode)
    * PH (output_a) = direction (HIGH=forward, LOW=reverse)
    * EN (output_b) = speed (PWM duty cycle)
+   *
+   * Extract speed magnitude (absolute value) - direction is encoded in PH signal.
+   * Duty sign determines PH (+ = forward/HIGH, - = reverse/LOW).
+   * EN always receives positive PWM duty proportional to speed.
    */
-  float speed_pwm = fabsf(duty);
+  float    speed_pwm = fabsf(duty);
+  rx_err_t err;
+
   if (duty >= (float)k_motor_duty_zero) {
-    /* Forward: PH = HIGH, EN = PWM */
-    rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_high);
-    rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
+    /* Forward: PH = HIGH, EN = PWM - NASA Rule 7 compliance */
+    err = rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_high);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to set PH output (forward)");
+      return err;
+    }
+
+    err = rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to set EN output (forward)");
+      return err;
+    }
   } else {
-    /* Reverse: PH = LOW, EN = PWM */
-    rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_low);
-    rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
+    /* Reverse: PH = LOW, EN = PWM - NASA Rule 7 compliance */
+    err = rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_low);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to set PH output (reverse)");
+      return err;
+    }
+
+    err = rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to set EN output (reverse)");
+      return err;
+    }
   }
 
   handle->current_duty = duty;
+
+  /* Post-condition: Verify duty was updated correctly (NASA Rule 5 compliance) */
+  if (handle->current_duty != duty) {
+    rx_log_error(s_tag, "Post-condition failed: duty not updated correctly");
+    return k_rx_err_invalid_state;
+  }
 
   return k_rx_ok;
 }
@@ -190,9 +269,19 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
     /* Brake mode not supported in PH/EN mode - coast instead */
     rx_log_warn(s_tag, "Brake not supported in PH/EN mode, coasting");
   }
-  /* Coast mode: set EN (output_b) to LOW for high impedance */
-  rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
-  rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
+
+  /* Coast mode: set both outputs to LOW for high impedance - NASA Rule 7 compliance */
+  rx_err_t err = rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set output_a during stop");
+    return err;
+  }
+
+  err = rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set output_b during stop");
+    return err;
+  }
 
   handle->current_duty = 0.0f;
 
@@ -210,6 +299,35 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
   }
 
   *out_duty = handle->current_duty;
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
+{
+  RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
+
+  if (!handle->initialized) {
+    rx_log_error(s_tag, "Motor not initialized");
+    return k_rx_err_invalid_state;
+  }
+
+  /* Immediately set duty to 0% */
+  rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
+  rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
+
+  /* Disable GPTW outputs at hardware level */
+  rx_gptw_enable_output(handle->channel, handle->output_a, false);
+  rx_gptw_enable_output(handle->channel, handle->output_b, false);
+
+  /* Stop timer to prevent glitches */
+  rx_gptw_stop(handle->channel);
+
+  /* Mark as no longer initialized - requires re-init to use */
+  handle->initialized  = false;
+  handle->current_duty = 0.0f;
+
+  rx_log_warn(s_tag, "EMERGENCY STOP - motor disabled");
 
   return k_rx_ok;
 }

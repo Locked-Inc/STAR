@@ -75,6 +75,20 @@ typedef enum {
   k_crc_crccr_dorclr    = (1 << 7), /**< Data Output Register Clear */
 } crc_crccr_bits_t;
 
+/* =============================================================================
+ * Static Assertions - Verify Register Layout at Compile Time
+ * =============================================================================
+ */
+
+/* Verify base address matches Hardware Manual */
+_Static_assert(k_crc_base_addr == 0x00088280, "CRC base address incorrect");
+
+/* Verify register structure layout */
+_Static_assert(sizeof(rx_crc_regs_t) == 12, "CRC register structure size incorrect");
+_Static_assert(offsetof(rx_crc_regs_t, crccr) == 0x00, "CRCCR offset incorrect");
+_Static_assert(offsetof(rx_crc_regs_t, crcdir) == 0x04, "CRCDIR offset incorrect");
+_Static_assert(offsetof(rx_crc_regs_t, crcdor) == 0x08, "CRCDOR offset incorrect");
+
 #ifdef __cplusplus
 }
 #endif

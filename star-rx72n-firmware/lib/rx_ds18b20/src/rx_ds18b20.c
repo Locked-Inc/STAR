@@ -23,8 +23,9 @@
 static const char* s_tag = "DS18B20";
 
 /* Temperature conversion constants (floating-point) */
-static const float s_temp_conversion_divisor = 16.0f; /**< Temperature raw-to-Celsius divisor (1/16°C units) */
-static const float s_temp_initial_value      = 0.0f;  /**< Initial temperature value */
+static const float s_temp_conversion_divisor =
+  16.0f; /**< Temperature raw-to-Celsius divisor (1/16°C units) */
+static const float s_temp_initial_value = 0.0f; /**< Initial temperature value */
 
 /* =============================================================================
  * Internal Validation Macros
@@ -38,9 +39,9 @@ static const float s_temp_initial_value      = 0.0f;  /**< Initial temperature v
  */
 #define CHECK_DS18B20_HANDLE(handle, tag)                                                          \
   do {                                                                                             \
-    RX_CHECK_NULL_PTR(handle, tag, "handle is NULL");                                             \
+    RX_CHECK_NULL_PTR(handle, tag, "handle is NULL");                                              \
     if (!(handle)->initialized) {                                                                  \
-      rx_log_error(tag, "DS18B20 not initialized");                                               \
+      rx_log_error(tag, "DS18B20 not initialized");                                                \
       return k_rx_err_invalid_state;                                                               \
     }                                                                                              \
   } while (0)
@@ -50,14 +51,17 @@ static const float s_temp_initial_value      = 0.0f;  /**< Initial temperature v
  * =============================================================================
  */
 
-static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* config, const rx_ds18b20_handle_t* handle);
+static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* config,
+                                                 const rx_ds18b20_handle_t* handle);
 static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* handle);
 static rx_err_t internal_ds18b20_select_device(rx_ds18b20_handle_t* handle);
-static rx_err_t internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle, uint8_t scratchpad[k_ds18b20_scratchpad_bytes]);
+static rx_err_t
+                internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle,
+                                                     uint8_t              scratchpad[k_ds18b20_scratchpad_bytes]);
 static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
-                                                   uint8_t              th,
-                                                   uint8_t              tl,
-                                                   uint8_t              config);
+                                                  uint8_t              th,
+                                                  uint8_t              tl,
+                                                  uint8_t              config);
 static uint8_t  internal_ds18b20_resolution_to_config(ds18b20_resolution_t resolution);
 static uint16_t internal_ds18b20_get_temp_mask(ds18b20_resolution_t resolution);
 static float    internal_ds18b20_raw_to_celsius(int16_t raw_temp);
@@ -98,7 +102,7 @@ rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t*
 
   /* Configure resolution */
   handle->initialized = true;
-  err = rx_ds18b20_set_resolution(handle, config->resolution);
+  err                 = rx_ds18b20_set_resolution(handle, config->resolution);
   if (err != k_rx_ok) {
     handle->initialized = false;
     return err;
@@ -276,7 +280,8 @@ rx_err_t rx_ds18b20_save_config(rx_ds18b20_handle_t* handle)
   }
 
   /* Send Copy Scratchpad command */
-  err = rx_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, k_ds18b20_cmd_copy_scratch);
+  err =
+    rx_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, k_ds18b20_cmd_copy_scratch);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to send copy scratchpad command");
     return err;
@@ -306,7 +311,8 @@ rx_err_t rx_ds18b20_recall_config(rx_ds18b20_handle_t* handle)
   }
 
   /* Send Recall E2 command */
-  err = rx_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, k_ds18b20_cmd_recall_eeprom);
+  err =
+    rx_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, k_ds18b20_cmd_recall_eeprom);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to send recall EEPROM command");
     return err;
@@ -317,9 +323,9 @@ rx_err_t rx_ds18b20_recall_config(rx_ds18b20_handle_t* handle)
 
 rx_err_t rx_ds18b20_read_power_mode(rx_ds18b20_handle_t* handle, bool* external_power)
 {
-  bool     presence   = false;
-  bool     power_bit  = false;
-  rx_err_t err        = k_rx_ok;
+  bool     presence  = false;
+  bool     power_bit = false;
+  rx_err_t err       = k_rx_ok;
 
   CHECK_DS18B20_HANDLE(handle, s_tag);
   RX_CHECK_NULL_PTR(external_power, s_tag, "external_power is NULL");
@@ -401,7 +407,7 @@ uint32_t rx_ds18b20_get_conversion_time_ms(const rx_ds18b20_handle_t* handle)
  * @return k_rx_err_invalid_state if already initialized
  */
 static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* config,
-                                                   const rx_ds18b20_handle_t* handle)
+                                                 const rx_ds18b20_handle_t* handle)
 {
   RX_CHECK_NULL_PTR(config, s_tag, "config is NULL");
   RX_CHECK_NULL_PTR(config->bus_manager, s_tag, "bus_manager is NULL");
@@ -509,7 +515,7 @@ static rx_err_t internal_ds18b20_select_device(rx_ds18b20_handle_t* handle)
  * @return Error code on failure
  */
 static rx_err_t internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle,
-                                                      uint8_t              scratchpad[k_ds18b20_scratchpad_bytes])
+                                                     uint8_t scratchpad[k_ds18b20_scratchpad_bytes])
 {
   bool     presence   = false;
   rx_err_t err        = k_rx_ok;
@@ -530,14 +536,18 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle
   }
 
   /* Send Read Scratchpad command */
-  err = rx_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, k_ds18b20_cmd_read_scratch);
+  err =
+    rx_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, k_ds18b20_cmd_read_scratch);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to send read scratchpad command");
     return err;
   }
 
   /* Read 9 bytes (8 data + 1 CRC) */
-  err = rx_bus_onewire_read(handle->bus_manager, handle->bus_name, scratchpad, k_ds18b20_scratchpad_bytes);
+  err = rx_bus_onewire_read(handle->bus_manager,
+                            handle->bus_name,
+                            scratchpad,
+                            k_ds18b20_scratchpad_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read scratchpad data");
     return err;
@@ -572,12 +582,12 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle
  * @return Error code on failure
  */
 static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
-                                                   uint8_t              th,
-                                                   uint8_t              tl,
-                                                   uint8_t              config)
+                                                  uint8_t              th,
+                                                  uint8_t              tl,
+                                                  uint8_t              config)
 {
-  bool     presence  = false;
-  rx_err_t err       = k_rx_ok;
+  bool     presence = false;
+  rx_err_t err      = k_rx_ok;
   uint8_t  write_buf[k_ds18b20_scratchpad_write_bytes];
 
   /* Reset and check presence */
@@ -594,7 +604,8 @@ static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
   }
 
   /* Send Write Scratchpad command */
-  err = rx_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, k_ds18b20_cmd_write_scratch);
+  err =
+    rx_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, k_ds18b20_cmd_write_scratch);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to send write scratchpad command");
     return err;
@@ -605,7 +616,9 @@ static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
   write_buf[k_ds18b20_write_idx_tl]     = tl;
   write_buf[k_ds18b20_write_idx_config] = config;
 
-  err = rx_bus_onewire_write(handle->bus_manager, handle->bus_name, write_buf,
+  err = rx_bus_onewire_write(handle->bus_manager,
+                             handle->bus_name,
+                             write_buf,
                              k_ds18b20_scratchpad_write_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to write scratchpad data");

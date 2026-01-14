@@ -17,17 +17,13 @@
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+#include "rx72n_rtc_regs.h"
+#include "rx_register_protection.h"
 
 /* =============================================================================
  * Private Definitions
  * =============================================================================
  */
-
-/** @brief Protection register unlock/lock values */
-typedef enum {
-  k_prcr_unlock = 0xA50F, /**< Unlock protection (PRC0-PRC3, PRKEY) */
-  k_prcr_lock   = 0xA500, /**< Lock protection (PRKEY only) */
-} protection_register_t;
 
 /** @brief Oscillator stabilization timing constants */
 typedef enum {
@@ -94,14 +90,14 @@ typedef enum {
 static rx_err_t clock_init(void)
 {
   /* Unlock protection for clock registers */
-  system_regs()->prcr = k_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_all;
 
   /* Stop sub-clock oscillator (not used) */
   system_regs()->sosccr = k_sub_clock_stopped;
 
-  /* TODO: Also set RCR3.RTCEN = 0 to fully disable sub-clock.
-   *       Requires RTC register definitions.
-   */
+  /* Disable RTC to fully disable sub-clock (RCR3.RTCEN = 0)
+   * Required for complete sub-clock shutdown as per hardware manual */
+  rtc_regs()->rcr3 = k_rcr3_rtcen_disable;
 
   /* Start main oscillator (16 MHz external crystal) */
   system_regs()->mosccr = k_main_osc_enabled;
@@ -127,7 +123,7 @@ static rx_err_t clock_init(void)
 
   if (timeout == k_pll_stabilization_timeout_expired) {
     /* PLL failed to stabilize - but can't log yet (UART not initialized) */
-    system_regs()->prcr = k_prcr_lock;
+    system_regs()->prcr = k_rx_prcr_lock;
     return k_rx_err_hw_timeout;
   }
 
@@ -140,7 +136,7 @@ static rx_err_t clock_init(void)
   system_regs()->sckcr3 = k_system_clock_source_pll;
 
   /* Lock protection */
-  system_regs()->prcr = k_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   return k_rx_ok;
 }
@@ -165,7 +161,7 @@ static rx_err_t clock_init(void)
 static rx_err_t module_stop_init(void)
 {
   /* Protect off */
-  system_regs()->prcr = k_prcr_unlock;
+  system_regs()->prcr = k_rx_prcr_unlock_all;
 
   /* Module Stop Control Register A */
   system_regs()->mstpcra &= ~((1UL << k_mstpcra_cmt) | /* CMT0, CMT1 */
@@ -183,7 +179,7 @@ static rx_err_t module_stop_init(void)
   );
 
   /* Protect on */
-  system_regs()->prcr = k_prcr_lock;
+  system_regs()->prcr = k_rx_prcr_lock;
 
   return k_rx_ok;
 }
