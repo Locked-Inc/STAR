@@ -7,66 +7,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
-
-// MockHARQ is a mock implementation of the harq.HARQ interface.
-type MockHARQ struct {
-	SendFunc        func(data []byte) error
-	ReceiveFunc     func() ([]byte, error)
-	GetStateFunc    func() harq.State
-	GetTxSeqFunc    func() uint16
-	GetRxSeqFunc    func() uint16
-	ResetFunc       func()
-	LastSentPayload []byte
-}
-
-func (m *MockHARQ) Send(data []byte) error {
-	m.LastSentPayload = data
-	if m.SendFunc != nil {
-		return m.SendFunc(data)
-	}
-	return nil
-}
-
-func (m *MockHARQ) Receive() ([]byte, error) {
-	if m.ReceiveFunc != nil {
-		return m.ReceiveFunc()
-	}
-	return nil, errors.New("receive not implemented")
-}
-
-func (m *MockHARQ) GetState() harq.State {
-	if m.GetStateFunc != nil {
-		return m.GetStateFunc()
-	}
-	return harq.StateIdle
-}
-
-func (m *MockHARQ) GetTxSequence() uint16 {
-	if m.GetTxSeqFunc != nil {
-		return m.GetTxSeqFunc()
-	}
-	return 0
-}
-
-func (m *MockHARQ) GetRxSequence() uint16 {
-	if m.GetRxSeqFunc != nil {
-		return m.GetRxSeqFunc()
-	}
-	return 0
-}
-
-func (m *MockHARQ) Reset() {
-	if m.ResetFunc != nil {
-		m.ResetFunc()
-	}
-}
 
 func TestSetVelocity(t *testing.T) {
 	tests := []struct {
@@ -118,12 +66,14 @@ func TestSetVelocity(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			mockHARQ := &MockHARQ{
+			mockHARQ := &testutil.MockHARQ{
 				SendFunc: func(data []byte) error {
 					return tc.mockSendErr
 				},
 			}
-			svc := NewMotorControlService(mockHARQ)
+			mockDispatcher := &testutil.MockDispatcher{}
+			logger := testutil.NewDiscardLogger()
+			svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
 
 			resp, err := svc.SetVelocity(context.Background(), tc.req)
 
@@ -141,9 +91,14 @@ func TestSetVelocity(t *testing.T) {
 			}
 
 			if tc.verifyPayload {
-				var sentCmd starv1.VelocityCommand
-				if err := proto.Unmarshal(mockHARQ.LastSentPayload, &sentCmd); err != nil {
-					t.Fatalf("Failed to unmarshal payload: %v", err)
+				// Now we need to unwrap WireMessage to get VelocityCommand
+				var wrapper starv1.WireMessage
+				if err := proto.Unmarshal(mockHARQ.LastSentPayload, &wrapper); err != nil {
+					t.Fatalf("Failed to unmarshal wire message: %v", err)
+				}
+				sentCmd := wrapper.GetVelocityCommand()
+				if sentCmd == nil {
+					t.Fatal("Expected VelocityCommand in WireMessage")
 				}
 				if sentCmd.FrontLeftVelocityMps != tc.expectedVel {
 					t.Errorf("Expected FL velocity %f, got %f", tc.expectedVel, sentCmd.FrontLeftVelocityMps)
@@ -154,8 +109,10 @@ func TestSetVelocity(t *testing.T) {
 }
 
 func TestEmergencyStop(t *testing.T) {
-	mockHARQ := &MockHARQ{}
-	svc := NewMotorControlService(mockHARQ)
+	mockHARQ := &testutil.MockHARQ{}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
+	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
 
 	req := &starv1.EmergencyStopRequest{
 		Header: &starv1.RequestHeader{RequestId: "estop-1"},
@@ -171,15 +128,23 @@ func TestEmergencyStop(t *testing.T) {
 		t.Error("Expected EstopEngaged to be true")
 	}
 
-	// Verify that a zero velocity command was sent
-	var sentCmd starv1.VelocityCommand
-	if err := proto.Unmarshal(mockHARQ.LastSentPayload, &sentCmd); err != nil {
-		t.Fatalf("Failed to unmarshal sent payload: %v", err)
+	// Verify that EmergencyStopCommand was sent (wrapped in WireMessage)
+	var wrapper starv1.WireMessage
+	if err := proto.Unmarshal(mockHARQ.LastSentPayload, &wrapper); err != nil {
+		t.Fatalf("Failed to unmarshal wire message: %v", err)
 	}
 
-	if sentCmd.FrontLeftVelocityMps != 0 || sentCmd.FrontRightVelocityMps != 0 ||
-		sentCmd.BackLeftVelocityMps != 0 || sentCmd.BackRightVelocityMps != 0 {
-		t.Error("Expected all velocities to be 0 for E-Stop")
+	estopCmd := wrapper.GetEmergencyStopCommand()
+	if estopCmd == nil {
+		t.Fatal("Expected EmergencyStopCommand in WireMessage")
+	}
+
+	if estopCmd.Reason != req.Reason {
+		t.Errorf("Expected reason %q, got %q", req.Reason, estopCmd.Reason)
+	}
+
+	if !estopCmd.EngageHardwareStop {
+		t.Error("Expected EngageHardwareStop to be true")
 	}
 }
 
@@ -221,16 +186,37 @@ func TestStreamEncoders(t *testing.T) {
 	telemetry := &starv1.TelemetryData{
 		EncoderFrontLeft: expectedData,
 	}
-	marshaledData, _ := proto.Marshal(telemetry)
 
-	mockHARQ := &MockHARQ{
-		ReceiveFunc: func() ([]byte, error) {
-			// Return telemetry data repeatedly
-			return marshaledData, nil
+	// Wrap in WireMessage (as Dispatcher would do)
+	wireMsg := &starv1.WireMessage{
+		Payload: &starv1.WireMessage_TelemetryData{
+			TelemetryData: telemetry,
 		},
 	}
 
-	svc := NewMotorControlService(mockHARQ)
+	// Create channel to send telemetry messages
+	telemetryChan := make(chan *starv1.WireMessage, 10)
+
+	mockHARQ := &testutil.MockHARQ{}
+	mockDispatcher := &testutil.MockDispatcher{
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+			// Send initial telemetry data
+			go func() {
+				for i := 0; i < 5; i++ {
+					select {
+					case telemetryChan <- wireMsg:
+					case <-ctx.Done():
+						return
+					}
+					time.Sleep(5 * time.Millisecond)
+				}
+			}()
+			return telemetryChan
+		},
+	}
+	logger := testutil.NewDiscardLogger()
+
+	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
 	stream := &mockStreamEncodersServer{
 		ctx: ctx,
 	}
@@ -320,15 +306,43 @@ func TestControlStream_GoroutineCleanup(t *testing.T) {
 			TimestampUs: 123456,
 		},
 	}
-	marshaledData, _ := proto.Marshal(telemetry)
 
-	mockHARQ := &MockHARQ{
-		ReceiveFunc: func() ([]byte, error) {
-			return marshaledData, nil
+	// Wrap in WireMessage
+	wireMsg := &starv1.WireMessage{
+		Payload: &starv1.WireMessage_TelemetryData{
+			TelemetryData: telemetry,
 		},
 	}
 
-	svc := NewMotorControlService(mockHARQ)
+	// Create channel to send telemetry messages
+	telemetryChan := make(chan *starv1.WireMessage, 10)
+
+	mockHARQ := &testutil.MockHARQ{}
+	mockDispatcher := &testutil.MockDispatcher{
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+			// Send telemetry data continuously
+			go func() {
+				ticker := time.NewTicker(10 * time.Millisecond)
+				defer ticker.Stop()
+				for {
+					select {
+					case <-ctx.Done():
+						return
+					case <-ticker.C:
+						select {
+						case telemetryChan <- wireMsg:
+						case <-ctx.Done():
+							return
+						}
+					}
+				}
+			}()
+			return telemetryChan
+		},
+	}
+	logger := testutil.NewDiscardLogger()
+
+	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
 
 	// Create mock stream with command channel
 	recvChan := make(chan *starv1.VelocityCommand)
@@ -387,24 +401,53 @@ func TestControlStream_BasicFlow(t *testing.T) {
 			TimestampUs: 123456,
 		},
 	}
-	marshaledData, _ := proto.Marshal(telemetry)
+
+	// Wrap in WireMessage
+	wireMsg := &starv1.WireMessage{
+		Payload: &starv1.WireMessage_TelemetryData{
+			TelemetryData: telemetry,
+		},
+	}
+
+	// Create channel to send telemetry messages
+	telemetryChan := make(chan *starv1.WireMessage, 10)
 
 	var sendCalls int
 	var mu sync.Mutex
 
-	mockHARQ := &MockHARQ{
+	mockHARQ := &testutil.MockHARQ{
 		SendFunc: func(data []byte) error {
 			mu.Lock()
 			sendCalls++
 			mu.Unlock()
 			return nil
 		},
-		ReceiveFunc: func() ([]byte, error) {
-			return marshaledData, nil
+	}
+	mockDispatcher := &testutil.MockDispatcher{
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+			// Send telemetry data continuously
+			go func() {
+				ticker := time.NewTicker(10 * time.Millisecond)
+				defer ticker.Stop()
+				for {
+					select {
+					case <-ctx.Done():
+						return
+					case <-ticker.C:
+						select {
+						case telemetryChan <- wireMsg:
+						case <-ctx.Done():
+							return
+						}
+					}
+				}
+			}()
+			return telemetryChan
 		},
 	}
+	logger := testutil.NewDiscardLogger()
 
-	svc := NewMotorControlService(mockHARQ)
+	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
 
 	// Create mock stream with command channel
 	recvChan := make(chan *starv1.VelocityCommand, 10)
@@ -462,7 +505,7 @@ func TestControlStream_HarqSendError(t *testing.T) {
 	defer cancel()
 
 	// Mock HARQ that fails to send
-	mockHARQ := &MockHARQ{
+	mockHARQ := &testutil.MockHARQ{
 		SendFunc: func(data []byte) error {
 			return errors.New("send failed")
 		},
@@ -472,8 +515,10 @@ func TestControlStream_HarqSendError(t *testing.T) {
 			return nil, errors.New("receive error")
 		},
 	}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
 
-	svc := NewMotorControlService(mockHARQ)
+	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
 
 	recvChan := make(chan *starv1.VelocityCommand, 1)
 	stream := &mockControlStreamServer{
@@ -515,13 +560,15 @@ func TestControlStream_ClientSendError(t *testing.T) {
 	}
 	marshaledData, _ := proto.Marshal(telemetry)
 
-	mockHARQ := &MockHARQ{
+	mockHARQ := &testutil.MockHARQ{
 		ReceiveFunc: func() ([]byte, error) {
 			return marshaledData, nil
 		},
 	}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
 
-	svc := NewMotorControlService(mockHARQ)
+	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
 
 	// Create stream that will return error on Recv
 	recvChan := make(chan *starv1.VelocityCommand)
@@ -559,13 +606,15 @@ func TestStreamEncoders_Concurrent(t *testing.T) {
 	}
 	marshaledData, _ := proto.Marshal(telemetry)
 
-	mockHARQ := &MockHARQ{
+	mockHARQ := &testutil.MockHARQ{
 		ReceiveFunc: func() ([]byte, error) {
 			return marshaledData, nil
 		},
 	}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
 
-	svc := NewMotorControlService(mockHARQ)
+	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
 
 	// Launch 5 concurrent clients
 	var wg sync.WaitGroup

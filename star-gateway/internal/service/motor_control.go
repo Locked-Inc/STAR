@@ -1,14 +1,16 @@
 // Package service implements the gRPC service handlers for the star-gateway.
 //
 // STAR Project - Texas A&M University
-// December 2025
+// January 2026
 package service
 
 import (
 	"context"
-	"log"
+	"log/slog"
+	"sync"
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc/codes"
@@ -19,80 +21,105 @@ import (
 
 // MotorControlService implements the MotorControlServiceServer interface.
 // This service handles low-latency differential drive control.
+//
+// Architecture:
+// - Uses WireMessage wrapper for protocol multiplexing (solves ambiguity)
+// - Uses Dispatcher for centralized message routing (solves concurrency race)
+// - Uses structured logging (slog) for production observability
 type MotorControlService struct {
 	starv1.UnimplementedMotorControlServiceServer
 	harqHandler harq.HARQ
+	dispatcher  dispatcher.Dispatcher
+	logger      *slog.Logger
 }
 
 // NewMotorControlService creates a new MotorControlService.
-func NewMotorControlService(h harq.HARQ) *MotorControlService {
+// Requires HARQ handler, Dispatcher for receiving telemetry, and logger.
+func NewMotorControlService(h harq.HARQ, d dispatcher.Dispatcher, logger *slog.Logger) *MotorControlService {
 	return &MotorControlService{
 		harqHandler: h,
+		dispatcher:  d,
+		logger:      logger,
 	}
 }
 
 // SetVelocity sets wheel velocities for differential drive.
-// It serializes the command and sends it via HARQ to the RX72N.
+// Wraps the command in WireMessage for protocol multiplexing and sends via HARQ.
 func (s *MotorControlService) SetVelocity(ctx context.Context, req *starv1.SetVelocityRequest) (*starv1.SetVelocityResponse, error) {
 	if req == nil || req.Command == nil {
 		return nil, status.Error(codes.InvalidArgument, "request or command cannot be nil")
 	}
 
-	// 1. Serialize the VelocityCommand
-	payload, err := proto.Marshal(req.Command)
+	// 1. Wrap VelocityCommand in WireMessage for protocol multiplexing
+	wrapper := &starv1.WireMessage{
+		Payload: &starv1.WireMessage_VelocityCommand{
+			VelocityCommand: req.Command,
+		},
+	}
+
+	// 2. Serialize the WireMessage
+	payload, err := proto.Marshal(wrapper)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to marshal velocity command: %v", err)
 	}
 
-	// 2. Send via HARQ (blocks until ACK or timeout/max retries)
-	// Note: We are sending the raw serialized VelocityCommand.
-	// The RX72N must know how to decode this specific message.
-	// TODO: Verify if a wrapper message (oneof) is required by the firmware.
+	// 3. Send via HARQ (blocks until ACK or timeout/max retries)
 	if err := s.harqHandler.Send(payload); err != nil {
-		log.Printf("Failed to send velocity command: %v", err)
+		s.logger.Error("failed to send velocity command",
+			slog.String("request_id", req.Header.GetRequestId()),
+			slog.String("error", err.Error()))
 		return nil, status.Errorf(codes.Unavailable, "failed to send command to motor controller: %v", err)
 	}
 
-	// 3. Construct response
-	// Note: We do not have the immediate motor status from the RX72N in the ACK.
-	// The status is typically streamed back via StreamEncoders or a separate Telemetry message.
-	// We return an empty status list for now, or the last known status if cached (not implemented here).
+	// 4. Construct response
+	// Note: Motor status is streamed back via StreamEncoders/telemetry.
 	return &starv1.SetVelocityResponse{
 		Header: &starv1.ResponseHeader{
 			RequestId:       req.Header.GetRequestId(),
 			ServerTimestamp: timestamppb.Now(),
 			Status:          starv1.Status_STATUS_OK,
 		},
-		MotorStatus: []*starv1.MotorStatus{}, // Populated by telemetry stream usually
+		MotorStatus: []*starv1.MotorStatus{}, // Populated by telemetry stream
 	}, nil
 }
 
-// EmergencyStop triggers an immediate stop.
-// Sends a zero velocity command to halt all motors.
+// EmergencyStop triggers an immediate stop using dedicated EmergencyStopCommand.
+// This enables the RX72N to enter MOTOR_STATE_ESTOP and engage hardware safety features.
 //
 // TODO (tracked in GitHub issue): Implement priority framing for E-Stop.
 // The frame layer supports FlagPriority, but the HARQ interface doesn't expose it.
 // EmergencyStop should use priority framing to ensure immediate processing by RX72N.
-// Current implementation sends zero velocity as a regular command without priority.
 func (s *MotorControlService) EmergencyStop(ctx context.Context, req *starv1.EmergencyStopRequest) (*starv1.EmergencyStopResponse, error) {
-	// Create zero velocity command to stop all motors
-	zeroCmd := &starv1.VelocityCommand{
-		FrontLeftVelocityMps:  0,
-		FrontRightVelocityMps: 0,
-		BackLeftVelocityMps:   0,
-		BackRightVelocityMps:  0,
-		Sequence:              0,
-		TimestampUs:           time.Now().UnixMicro(),
+	// Create dedicated EmergencyStopCommand
+	estopCmd := &starv1.EmergencyStopCommand{
+		Reason:             req.Reason,
+		EngageHardwareStop: true, // Request firmware to enter MOTOR_STATE_ESTOP
+		TimestampUs:        time.Now().UnixMicro(),
 	}
 
-	payload, err := proto.Marshal(zeroCmd)
+	// Wrap in WireMessage for protocol multiplexing
+	wrapper := &starv1.WireMessage{
+		Payload: &starv1.WireMessage_EmergencyStopCommand{
+			EmergencyStopCommand: estopCmd,
+		},
+	}
+
+	payload, err := proto.Marshal(wrapper)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to marshal estop command: %v", err)
 	}
 
 	if err := s.harqHandler.Send(payload); err != nil {
+		s.logger.Error("failed to send emergency stop command",
+			slog.String("request_id", req.Header.GetRequestId()),
+			slog.String("reason", req.Reason),
+			slog.String("error", err.Error()))
 		return nil, status.Errorf(codes.Unavailable, "failed to send estop: %v", err)
 	}
+
+	s.logger.Warn("emergency stop engaged",
+		slog.String("request_id", req.Header.GetRequestId()),
+		slog.String("reason", req.Reason))
 
 	return &starv1.EmergencyStopResponse{
 		Header: &starv1.ResponseHeader{
@@ -111,11 +138,7 @@ func (s *MotorControlService) SetMotorPower(ctx context.Context, req *starv1.Set
 }
 
 // StreamEncoders streams encoder readings from the motor controller.
-// This is a blocking call that reads from the HARQ receiver in a loop.
-//
-// WARNING: This assumes this service has exclusive access to Receive().
-// If GatewayService or other services also call Receive(), this will contend/steal frames.
-// A centralized dispatcher is recommended for production (see GitHub issue for MessageDispatcher).
+// Uses Dispatcher to receive TelemetryData messages without contention.
 func (s *MotorControlService) StreamEncoders(req *starv1.StreamEncodersRequest, stream starv1.MotorControlService_StreamEncodersServer) error {
 	// Validate and set rate limiting
 	rateHz := req.RateHz
@@ -125,44 +148,40 @@ func (s *MotorControlService) StreamEncoders(req *starv1.StreamEncodersRequest, 
 	ticker := time.NewTicker(time.Second / time.Duration(rateHz))
 	defer ticker.Stop()
 
-	// Channel for latest telemetry data
-	telemetryChan := make(chan *starv1.TelemetryData, 1)
-	errChan := make(chan error, 1)
 	ctx := stream.Context()
 
-	// Goroutine to continuously receive telemetry from RX72N
+	// Subscribe to TelemetryData messages from Dispatcher
+	telemetryCh := s.dispatcher.Subscribe(dispatcher.MessageTypeTelemetryData)
+	defer s.dispatcher.Unsubscribe(dispatcher.MessageTypeTelemetryData, telemetryCh)
+
+	// Channel for latest telemetry data
+	var latestTelemetry *starv1.TelemetryData
+	var telemetryMutex sync.RWMutex
+
+	// Goroutine to continuously receive telemetry from Dispatcher
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			default:
-			}
+			case wireMsg, ok := <-telemetryCh:
+				if !ok {
+					// Channel closed by dispatcher
+					s.logger.Debug("telemetry subscription channel closed")
+					return
+				}
 
-			// Block waiting for data from RX72N
-			data, err := s.harqHandler.Receive()
-			if err != nil {
-				log.Printf("StreamEncoders: receive error: %v", err)
-				time.Sleep(10 * time.Millisecond)
-				continue
-			}
+				// Extract TelemetryData from WireMessage
+				telemetry := wireMsg.GetTelemetryData()
+				if telemetry == nil {
+					s.logger.Warn("received wire message with nil telemetry data")
+					continue
+				}
 
-			// Unmarshal as TelemetryData (contains all encoder data)
-			// The RX72N sends full TelemetryData messages which include encoder_front_left,
-			// encoder_front_right, encoder_back_left, encoder_back_right fields.
-			var telemetry starv1.TelemetryData
-			if err := proto.Unmarshal(data, &telemetry); err != nil {
-				log.Printf("StreamEncoders: failed to unmarshal TelemetryData: %v", err)
-				continue
-			}
-
-			// Non-blocking send to update latest data
-			select {
-			case telemetryChan <- &telemetry:
-			default:
-				// Channel full, drop old data
-				<-telemetryChan
-				telemetryChan <- &telemetry
+				// Update latest telemetry with mutex protection
+				telemetryMutex.Lock()
+				latestTelemetry = telemetry
+				telemetryMutex.Unlock()
 			}
 		}
 	}()
@@ -172,33 +191,28 @@ func (s *MotorControlService) StreamEncoders(req *starv1.StreamEncodersRequest, 
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case err := <-errChan:
-			return err
 		case <-ticker.C:
-			// Send latest telemetry's encoder data
-			select {
-			case telemetry := <-telemetryChan:
+			// Send latest telemetry's encoder data if available
+			telemetryMutex.RLock()
+			currentTelemetry := latestTelemetry
+			telemetryMutex.RUnlock()
+
+			if currentTelemetry != nil {
 				// Extract and stream individual encoder data from all four motors
-				// The TelemetryData message contains EncoderData for each motor
 				for _, encData := range []*starv1.EncoderData{
-					telemetry.EncoderFrontLeft,
-					telemetry.EncoderFrontRight,
-					telemetry.EncoderBackLeft,
-					telemetry.EncoderBackRight,
+					currentTelemetry.EncoderFrontLeft,
+					currentTelemetry.EncoderFrontRight,
+					currentTelemetry.EncoderBackLeft,
+					currentTelemetry.EncoderBackRight,
 				} {
 					if encData != nil && encData.TimestampUs > 0 {
 						if err := stream.Send(encData); err != nil {
+							s.logger.Error("failed to send encoder data",
+								slog.String("error", err.Error()))
 							return err
 						}
 					}
 				}
-				// Put telemetry back for next tick
-				select {
-				case telemetryChan <- telemetry:
-				default:
-				}
-			default:
-				// No data available yet, skip this tick
 			}
 		}
 	}
@@ -206,9 +220,14 @@ func (s *MotorControlService) StreamEncoders(req *starv1.StreamEncodersRequest, 
 
 // ControlStream handles bidirectional streaming.
 // Client streams velocity commands in, server streams encoder feedback out.
+// Uses Dispatcher to receive telemetry and wraps commands in WireMessage.
 func (s *MotorControlService) ControlStream(stream starv1.MotorControlService_ControlStreamServer) error {
 	ctx := stream.Context()
 	errChan := make(chan error, 1)
+
+	// Subscribe to TelemetryData messages from Dispatcher
+	telemetryCh := s.dispatcher.Subscribe(dispatcher.MessageTypeTelemetryData)
+	defer s.dispatcher.Unsubscribe(dispatcher.MessageTypeTelemetryData, telemetryCh)
 
 	// Goroutine to send commands from client to RX72N
 	go func() {
@@ -230,20 +249,29 @@ func (s *MotorControlService) ControlStream(stream starv1.MotorControlService_Co
 				return
 			}
 
-			payload, err := proto.Marshal(cmd)
+			// Wrap VelocityCommand in WireMessage for protocol multiplexing
+			wrapper := &starv1.WireMessage{
+				Payload: &starv1.WireMessage_VelocityCommand{
+					VelocityCommand: cmd,
+				},
+			}
+
+			payload, err := proto.Marshal(wrapper)
 			if err != nil {
-				log.Printf("ControlStream: failed to marshal command: %v", err)
+				s.logger.Error("failed to marshal velocity command in control stream",
+					slog.String("error", err.Error()))
 				continue
 			}
 
 			// Best effort send to RX72N
 			if err := s.harqHandler.Send(payload); err != nil {
-				log.Printf("ControlStream: failed to send command: %v", err)
+				s.logger.Warn("failed to send command in control stream",
+					slog.String("error", err.Error()))
 			}
 		}
 	}()
 
-	// Main loop reads from RX72N and sends encoder feedback to client
+	// Main loop receives telemetry from Dispatcher and sends encoder feedback to client
 	for {
 		select {
 		case <-ctx.Done():
@@ -253,33 +281,33 @@ func (s *MotorControlService) ControlStream(stream starv1.MotorControlService_Co
 		case err := <-errChan:
 			// Send goroutine encountered error
 			return err
-		default:
-		}
+		case wireMsg, ok := <-telemetryCh:
+			if !ok {
+				// Channel closed by dispatcher
+				s.logger.Debug("telemetry subscription channel closed in control stream")
+				return nil
+			}
 
-		// Receive telemetry from RX72N
-		data, err := s.harqHandler.Receive()
-		if err != nil {
-			time.Sleep(10 * time.Millisecond)
-			continue
-		}
+			// Extract TelemetryData from WireMessage
+			telemetry := wireMsg.GetTelemetryData()
+			if telemetry == nil {
+				s.logger.Warn("received wire message with nil telemetry data in control stream")
+				continue
+			}
 
-		// Unmarshal as TelemetryData (contains all encoder data)
-		var telemetry starv1.TelemetryData
-		if err := proto.Unmarshal(data, &telemetry); err != nil {
-			log.Printf("ControlStream: failed to unmarshal TelemetryData: %v", err)
-			continue
-		}
-
-		// Send encoder data from all four motors to client
-		for _, encData := range []*starv1.EncoderData{
-			telemetry.EncoderFrontLeft,
-			telemetry.EncoderFrontRight,
-			telemetry.EncoderBackLeft,
-			telemetry.EncoderBackRight,
-		} {
-			if encData != nil && encData.TimestampUs > 0 {
-				if err := stream.Send(encData); err != nil {
-					return err
+			// Send encoder data from all four motors to client
+			for _, encData := range []*starv1.EncoderData{
+				telemetry.EncoderFrontLeft,
+				telemetry.EncoderFrontRight,
+				telemetry.EncoderBackLeft,
+				telemetry.EncoderBackRight,
+			} {
+				if encData != nil && encData.TimestampUs > 0 {
+					if err := stream.Send(encData); err != nil {
+						s.logger.Error("failed to send encoder data in control stream",
+							slog.String("error", err.Error()))
+						return err
+					}
 				}
 			}
 		}

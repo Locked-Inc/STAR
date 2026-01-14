@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/controller"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/fec"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
@@ -60,6 +62,29 @@ func main() {
 	)
 
 	// ========================================
+	// Structured Logger
+	// ========================================
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+
+	// ========================================
+	// Layer 4.5: Message Dispatcher
+	// ========================================
+	log.Printf("Initializing message dispatcher...")
+	msgDispatcher, err := dispatcher.NewDispatcher(harqHandler, logger, nil)
+	if err != nil {
+		log.Fatalf("Failed to create dispatcher: %v", err)
+	}
+
+	// Start dispatcher with context (uses background context for long-running operation)
+	dispatcherCtx := context.Background()
+	if err := msgDispatcher.Start(dispatcherCtx); err != nil {
+		log.Fatalf("Failed to start dispatcher: %v", err)
+	}
+	defer msgDispatcher.Stop()
+
+	// ========================================
 	// Layer 5: gRPC Services
 	// ========================================
 	log.Printf("Initializing gRPC services...")
@@ -67,8 +92,8 @@ func main() {
 	// Gateway service
 	gatewaySvc := service.NewGatewayService()
 
-	// Motor control service (with HARQ integration)
-	motorSvc := service.NewMotorControlService(harqHandler)
+	// Motor control service (with HARQ integration, Dispatcher, and Logger)
+	motorSvc := service.NewMotorControlService(harqHandler, msgDispatcher, logger)
 
 	// Create gRPC server
 	grpcServer := grpc.NewServer(
