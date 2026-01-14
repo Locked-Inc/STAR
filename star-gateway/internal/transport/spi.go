@@ -1,4 +1,4 @@
-// Package transport provides the SPI transport layer for RPi5 <-> ESP32 communication.
+// Package transport provides the SPI transport layer for RPi5 <-> RX72N communication.
 //
 // The Raspberry Pi 5 acts as the SPI controller, communicating with the RX72N
 // peripheral at 10 MHz using SPI Mode 0.
@@ -11,7 +11,13 @@ package transport
 
 import (
 	"errors"
+	"fmt"
 	"time"
+
+	"periph.io/x/conn/v3/physic"
+	"periph.io/x/conn/v3/spi"
+	"periph.io/x/conn/v3/spi/spireg"
+	"periph.io/x/host/v3"
 )
 
 // SPI configuration constants from hardware specification.
@@ -95,11 +101,13 @@ var (
 	ErrTransferFailed = errors.New("transport: transfer failed")
 )
 
-// SPITransport is a placeholder implementation of the Transport interface.
-// TODO: Implement actual SPI communication using periph.io or spidev in a future PR.
+// SPITransport implements the Transport interface using periph.io for SPI communication.
+// The Raspberry Pi 5 acts as the SPI controller, communicating with the RX72N at 10 MHz.
 type SPITransport struct {
 	config *SPIConfig
 	isOpen bool
+	conn   spi.Conn       // periph.io SPI connection
+	port   spi.PortCloser // periph.io SPI port (for cleanup)
 }
 
 // NewSPITransport creates a new SPITransport with the given configuration.
@@ -115,48 +123,111 @@ func NewSPITransport(config *SPIConfig) *SPITransport {
 }
 
 // Open initializes the SPI device.
-// TODO: Implement device initialization:
-//  1. Open /dev/spidevX.Y
-//  2. Configure mode, speed, bits per word
-//  3. Set up DMA if available
+// Initializes periph.io host drivers, opens the SPI port, and configures it
+// with the specified mode, speed, and bits per word.
 func (s *SPITransport) Open() error {
-	return ErrNotImplemented
+	if s.isOpen {
+		return nil
+	}
+
+	// Initialize periph.io host drivers
+	// This must be called once before using any periph.io drivers
+	if _, err := host.Init(); err != nil {
+		return fmt.Errorf("failed to initialize periph.io: %w", err)
+	}
+
+	// Open SPI port by device path (e.g., "/dev/spidev0.0")
+	port, err := spireg.Open(s.config.Device)
+	if err != nil {
+		return fmt.Errorf("failed to open SPI port %s: %w", s.config.Device, err)
+	}
+
+	// Configure SPI connection with speed, mode, and bits per word
+	conn, err := port.Connect(
+		physic.Frequency(s.config.SpeedHz)*physic.Hertz,
+		spi.Mode(s.config.Mode),
+		int(s.config.BitsPerWord),
+	)
+	if err != nil {
+		port.Close()
+		return fmt.Errorf("failed to configure SPI: %w", err)
+	}
+
+	s.port = port
+	s.conn = conn
+	s.isOpen = true
+	return nil
 }
 
 // Send transmits data over SPI.
-// TODO: Implement send logic using ioctl SPI_IOC_MESSAGE.
+// Performs a write-only operation by discarding the received data.
+// SPI is inherently full-duplex, so we must read while writing.
 func (s *SPITransport) Send(data []byte) (int, error) {
 	if !s.isOpen {
 		return 0, ErrDeviceNotOpen
 	}
-	return 0, ErrNotImplemented
+
+	// Write-only operation: allocate receive buffer but discard the data
+	rxBuf := make([]byte, len(data))
+	if err := s.conn.Tx(data, rxBuf); err != nil {
+		return 0, fmt.Errorf("SPI send failed: %w", err)
+	}
+
+	return len(data), nil
 }
 
 // Receive reads data from SPI.
-// TODO: Implement receive logic.
+// Performs a read-only operation by sending dummy bytes (zeros).
+// SPI is inherently full-duplex, so we must write while reading.
 func (s *SPITransport) Receive(maxLen int) ([]byte, error) {
 	if !s.isOpen {
 		return nil, ErrDeviceNotOpen
 	}
-	return nil, ErrNotImplemented
+
+	// Read-only operation: send dummy bytes (zeros) while reading
+	txBuf := make([]byte, maxLen)
+	rxBuf := make([]byte, maxLen)
+
+	if err := s.conn.Tx(txBuf, rxBuf); err != nil {
+		return nil, fmt.Errorf("SPI receive failed: %w", err)
+	}
+
+	return rxBuf, nil
 }
 
 // Transfer performs full-duplex SPI transfer.
-// TODO: Implement full-duplex transfer using ioctl SPI_IOC_MESSAGE.
+// Sends txData while simultaneously receiving data of the same length.
+// This is the native SPI operation mode.
 func (s *SPITransport) Transfer(txData []byte) ([]byte, error) {
 	if !s.isOpen {
 		return nil, ErrDeviceNotOpen
 	}
-	return nil, ErrNotImplemented
+
+	rxBuf := make([]byte, len(txData))
+	if err := s.conn.Tx(txData, rxBuf); err != nil {
+		return nil, fmt.Errorf("SPI transfer failed: %w", err)
+	}
+
+	return rxBuf, nil
 }
 
 // Close releases the SPI device.
-// TODO: Implement device cleanup.
+// Closes the periph.io SPI port and marks the transport as closed.
 func (s *SPITransport) Close() error {
 	if !s.isOpen {
 		return nil
 	}
-	return ErrNotImplemented
+
+	if s.port != nil {
+		if err := s.port.Close(); err != nil {
+			return fmt.Errorf("failed to close SPI port: %w", err)
+		}
+	}
+
+	s.isOpen = false
+	s.conn = nil
+	s.port = nil
+	return nil
 }
 
 // Config returns the current SPI configuration.

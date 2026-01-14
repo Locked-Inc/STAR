@@ -48,161 +48,351 @@ func TestSPIConstants(t *testing.T) {
 func TestDefaultConfig(t *testing.T) {
 	config := DefaultConfig()
 
-	t.Run("Device", func(t *testing.T) {
-		if config.Device != DefaultDevice {
-			t.Errorf("Device = %s, want %s", config.Device, DefaultDevice)
-		}
-	})
-
-	t.Run("SpeedHz", func(t *testing.T) {
-		if config.SpeedHz != DefaultSpeedHz {
-			t.Errorf("SpeedHz = %d, want %d", config.SpeedHz, DefaultSpeedHz)
-		}
-	})
-
-	t.Run("Mode", func(t *testing.T) {
-		if config.Mode != DefaultMode {
-			t.Errorf("Mode = %d, want %d", config.Mode, DefaultMode)
-		}
-	})
-
-	t.Run("BitsPerWord", func(t *testing.T) {
-		if config.BitsPerWord != DefaultBitsPerWord {
-			t.Errorf("BitsPerWord = %d, want %d", config.BitsPerWord, DefaultBitsPerWord)
-		}
-	})
-
-	t.Run("Timeout", func(t *testing.T) {
-		if config.Timeout != DefaultTimeout {
-			t.Errorf("Timeout = %v, want %v", config.Timeout, DefaultTimeout)
-		}
-	})
-}
-
-// ============================================================================
-// SPITransport Tests
-// ============================================================================
-
-func TestNewSPITransport(t *testing.T) {
-	tests := []struct {
-		name            string
-		config          *SPIConfig
-		expectedDevice  string
-		expectedSpeedHz uint32
-	}{
-		{
-			name:            "nil_config_uses_defaults",
-			config:          nil,
-			expectedDevice:  DefaultDevice,
-			expectedSpeedHz: DefaultSpeedHz,
-		},
-		{
-			name: "custom_config",
-			config: &SPIConfig{
-				Device:      "/dev/spidev1.0",
-				SpeedHz:     5_000_000,
-				Mode:        1,
-				BitsPerWord: 8,
-				Timeout:     200 * time.Millisecond,
-			},
-			expectedDevice:  "/dev/spidev1.0",
-			expectedSpeedHz: 5_000_000,
-		},
-		{
-			name: "alternate_device",
-			config: &SPIConfig{
-				Device:      "/dev/spidev0.1",
-				SpeedHz:     1_000_000,
-				Mode:        3,
-				BitsPerWord: 8,
-				Timeout:     50 * time.Millisecond,
-			},
-			expectedDevice:  "/dev/spidev0.1",
-			expectedSpeedHz: 1_000_000,
-		},
+	if config == nil {
+		t.Fatal("Expected non-nil default config")
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			transport := NewSPITransport(tc.config)
-
-			if transport == nil {
-				t.Fatal("expected transport, got nil")
-			}
-			if transport.Config().Device != tc.expectedDevice {
-				t.Errorf("Device = %s, want %s", transport.Config().Device, tc.expectedDevice)
-			}
-			if transport.Config().SpeedHz != tc.expectedSpeedHz {
-				t.Errorf("SpeedHz = %d, want %d", transport.Config().SpeedHz, tc.expectedSpeedHz)
-			}
-		})
+	// Verify default values
+	if config.Device != DefaultDevice {
+		t.Errorf("Expected device %s, got %s", DefaultDevice, config.Device)
+	}
+	if config.SpeedHz != DefaultSpeedHz {
+		t.Errorf("Expected speed %d, got %d", DefaultSpeedHz, config.SpeedHz)
+	}
+	if config.Mode != DefaultMode {
+		t.Errorf("Expected mode %d, got %d", DefaultMode, config.Mode)
+	}
+	if config.BitsPerWord != DefaultBitsPerWord {
+		t.Errorf("Expected bits per word %d, got %d", DefaultBitsPerWord, config.BitsPerWord)
+	}
+	if config.Timeout != DefaultTimeout {
+		t.Errorf("Expected timeout %v, got %v", DefaultTimeout, config.Timeout)
 	}
 }
 
-func TestSPITransportIsOpen(t *testing.T) {
-	transport := NewSPITransport(nil)
+// ============================================================================
+// SPITransport Constructor Tests
+// ============================================================================
+
+func TestSPITransport_New(t *testing.T) {
+	config := DefaultConfig()
+	transport := NewSPITransport(config)
+
+	if transport == nil {
+		t.Fatal("Expected non-nil transport")
+	}
+
 	if transport.IsOpen() {
-		t.Error("expected IsOpen() = false for new transport")
+		t.Error("Expected transport to be closed initially")
 	}
 }
 
-func TestSPITransportNotOpenErrors(t *testing.T) {
-	tests := []struct {
-		name      string
-		operation string
-	}{
-		{"Send", "send"},
-		{"Receive", "receive"},
-		{"Transfer", "transfer"},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			transport := NewSPITransport(nil)
-
-			var err error
-			switch tc.operation {
-			case "send":
-				_, err = transport.Send([]byte{0x01, 0x02})
-			case "receive":
-				_, err = transport.Receive(64)
-			case "transfer":
-				_, err = transport.Transfer([]byte{0x01, 0x02})
-			}
-
-			if err != ErrDeviceNotOpen {
-				t.Errorf("%s() error = %v, want ErrDeviceNotOpen", tc.name, err)
-			}
-		})
-	}
-}
-
-func TestSPITransportOpenNotImplemented(t *testing.T) {
+func TestSPITransport_NewWithNilConfig(t *testing.T) {
 	transport := NewSPITransport(nil)
-	err := transport.Open()
-	if err != ErrNotImplemented {
-		t.Errorf("Open() error = %v, want ErrNotImplemented", err)
+
+	if transport == nil {
+		t.Fatal("Expected non-nil transport with default config")
+	}
+
+	// Should use default config
+	config := transport.Config()
+	if config.Device != DefaultDevice {
+		t.Errorf("Expected default device %s, got %s", DefaultDevice, config.Device)
+	}
+	if config.SpeedHz != DefaultSpeedHz {
+		t.Errorf("Expected default speed %d, got %d", DefaultSpeedHz, config.SpeedHz)
 	}
 }
 
-func TestSPITransportCloseNotOpen(t *testing.T) {
-	transport := NewSPITransport(nil)
+func TestSPITransport_Config(t *testing.T) {
+	config := &SPIConfig{
+		Device:      "/dev/spidev0.0",
+		SpeedHz:     1_000_000, // 1 MHz for test
+		Mode:        0,
+		BitsPerWord: 8,
+		Timeout:     100 * time.Millisecond,
+	}
+
+	transport := NewSPITransport(config)
+	gotConfig := transport.Config()
+
+	if gotConfig.SpeedHz != 1_000_000 {
+		t.Errorf("Expected SpeedHz 1000000, got %d", gotConfig.SpeedHz)
+	}
+	if gotConfig.Mode != 0 {
+		t.Errorf("Expected Mode 0, got %d", gotConfig.Mode)
+	}
+	if gotConfig.BitsPerWord != 8 {
+		t.Errorf("Expected BitsPerWord 8, got %d", gotConfig.BitsPerWord)
+	}
+	if gotConfig.Timeout != 100*time.Millisecond {
+		t.Errorf("Expected Timeout 100ms, got %v", gotConfig.Timeout)
+	}
+}
+
+// ============================================================================
+// Error Handling Tests (without hardware)
+// ============================================================================
+
+func TestSPITransport_SendNotOpen(t *testing.T) {
+	transport := NewSPITransport(DefaultConfig())
+
+	_, err := transport.Send([]byte{0x01, 0x02})
+	if err != ErrDeviceNotOpen {
+		t.Errorf("Expected ErrDeviceNotOpen, got %v", err)
+	}
+}
+
+func TestSPITransport_ReceiveNotOpen(t *testing.T) {
+	transport := NewSPITransport(DefaultConfig())
+
+	_, err := transport.Receive(10)
+	if err != ErrDeviceNotOpen {
+		t.Errorf("Expected ErrDeviceNotOpen, got %v", err)
+	}
+}
+
+func TestSPITransport_TransferNotOpen(t *testing.T) {
+	transport := NewSPITransport(DefaultConfig())
+
+	_, err := transport.Transfer([]byte{0x01})
+	if err != ErrDeviceNotOpen {
+		t.Errorf("Expected ErrDeviceNotOpen, got %v", err)
+	}
+}
+
+func TestSPITransport_CloseNotOpen(t *testing.T) {
+	transport := NewSPITransport(DefaultConfig())
+
+	// Close when not open should be idempotent
 	err := transport.Close()
-	// Closing a non-open transport should succeed (no-op)
 	if err != nil {
-		t.Errorf("Close() error = %v, want nil", err)
+		t.Errorf("Expected no error closing unopened transport, got %v", err)
 	}
 }
 
 // ============================================================================
-// TODO: Implementation Tests
+// Hardware Integration Tests (skip with -short flag)
+// These require actual /dev/spidev0.0 device on Raspberry Pi 5
 // ============================================================================
 
-// TODO: Add integration tests with actual SPI hardware once implementation is complete.
-// func TestSPITransportIntegration(t *testing.T) {}
+func TestSPITransport_OpenClose(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping hardware test in short mode")
+	}
 
-// TODO: Add loopback tests (requires COPI/CIPO connected) once implementation is complete.
-// func TestSPILoopback(t *testing.T) {}
+	transport := NewSPITransport(DefaultConfig())
 
-// TODO: Add timeout behavior tests once implementation is complete.
-// func TestSPITimeout(t *testing.T) {}
+	err := transport.Open()
+	if err != nil {
+		t.Skipf("Skipping test: SPI device not available: %v", err)
+	}
+	defer transport.Close()
+
+	if !transport.IsOpen() {
+		t.Error("Expected transport to be open")
+	}
+
+	// Test idempotent open
+	err = transport.Open()
+	if err != nil {
+		t.Errorf("Expected idempotent Open() to succeed, got %v", err)
+	}
+
+	// Close
+	err = transport.Close()
+	if err != nil {
+		t.Errorf("Close failed: %v", err)
+	}
+
+	if transport.IsOpen() {
+		t.Error("Expected transport to be closed")
+	}
+
+	// Test idempotent close
+	err = transport.Close()
+	if err != nil {
+		t.Errorf("Expected idempotent Close() to succeed, got %v", err)
+	}
+}
+
+func TestSPITransport_SendReceive(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping hardware test in short mode")
+	}
+
+	transport := NewSPITransport(DefaultConfig())
+
+	err := transport.Open()
+	if err != nil {
+		t.Skipf("Skipping test: SPI device not available: %v", err)
+	}
+	defer transport.Close()
+
+	// Test Send
+	testData := []byte{0x55, 0xAA, 0x01, 0x02}
+	n, err := transport.Send(testData)
+	if err != nil {
+		t.Fatalf("Send failed: %v", err)
+	}
+	if n != len(testData) {
+		t.Errorf("Expected to send %d bytes, sent %d", len(testData), n)
+	}
+
+	// Test Receive
+	rxData, err := transport.Receive(4)
+	if err != nil {
+		t.Fatalf("Receive failed: %v", err)
+	}
+	if len(rxData) != 4 {
+		t.Errorf("Expected 4 bytes, got %d", len(rxData))
+	}
+}
+
+func TestSPITransport_Transfer(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping hardware test in short mode")
+	}
+
+	transport := NewSPITransport(DefaultConfig())
+
+	err := transport.Open()
+	if err != nil {
+		t.Skipf("Skipping test: SPI device not available: %v", err)
+	}
+	defer transport.Close()
+
+	// Test full-duplex transfer
+	txData := []byte{0x55, 0xAA, 0x01, 0x02}
+	rxData, err := transport.Transfer(txData)
+	if err != nil {
+		t.Fatalf("Transfer failed: %v", err)
+	}
+	if len(rxData) != len(txData) {
+		t.Errorf("Expected %d bytes, got %d", len(txData), len(rxData))
+	}
+
+	// Verify rxData is not nil and has correct length
+	if rxData == nil {
+		t.Error("Expected non-nil rxData")
+	}
+}
+
+func TestSPITransport_LargeTransfer(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping hardware test in short mode")
+	}
+
+	transport := NewSPITransport(DefaultConfig())
+
+	err := transport.Open()
+	if err != nil {
+		t.Skipf("Skipping test: SPI device not available: %v", err)
+	}
+	defer transport.Close()
+
+	// Test with larger data (1KB)
+	txData := make([]byte, 1024)
+	for i := range txData {
+		txData[i] = byte(i % 256)
+	}
+
+	rxData, err := transport.Transfer(txData)
+	if err != nil {
+		t.Fatalf("Large transfer failed: %v", err)
+	}
+	if len(rxData) != len(txData) {
+		t.Errorf("Expected %d bytes, got %d", len(txData), len(rxData))
+	}
+}
+
+func TestSPITransport_MultipleOperations(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping hardware test in short mode")
+	}
+
+	transport := NewSPITransport(DefaultConfig())
+
+	err := transport.Open()
+	if err != nil {
+		t.Skipf("Skipping test: SPI device not available: %v", err)
+	}
+	defer transport.Close()
+
+	// Perform multiple operations in sequence
+	for i := 0; i < 10; i++ {
+		testData := []byte{byte(i), 0xAA, 0x01, 0x02}
+
+		// Send
+		_, err := transport.Send(testData)
+		if err != nil {
+			t.Fatalf("Send %d failed: %v", i, err)
+		}
+
+		// Receive
+		_, err = transport.Receive(4)
+		if err != nil {
+			t.Fatalf("Receive %d failed: %v", i, err)
+		}
+
+		// Transfer
+		_, err = transport.Transfer(testData)
+		if err != nil {
+			t.Fatalf("Transfer %d failed: %v", i, err)
+		}
+	}
+}
+
+func TestSPITransport_EmptyTransfer(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping hardware test in short mode")
+	}
+
+	transport := NewSPITransport(DefaultConfig())
+
+	err := transport.Open()
+	if err != nil {
+		t.Skipf("Skipping test: SPI device not available: %v", err)
+	}
+	defer transport.Close()
+
+	// Test with empty data
+	txData := []byte{}
+	rxData, err := transport.Transfer(txData)
+	if err != nil {
+		t.Fatalf("Empty transfer failed: %v", err)
+	}
+	if len(rxData) != 0 {
+		t.Errorf("Expected 0 bytes for empty transfer, got %d", len(rxData))
+	}
+}
+
+func TestSPITransport_CustomConfig(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping hardware test in short mode")
+	}
+
+	// Test with custom configuration
+	config := &SPIConfig{
+		Device:      "/dev/spidev0.0",
+		SpeedHz:     1_000_000, // 1 MHz
+		Mode:        0,
+		BitsPerWord: 8,
+		Timeout:     50 * time.Millisecond,
+	}
+
+	transport := NewSPITransport(config)
+
+	err := transport.Open()
+	if err != nil {
+		t.Skipf("Skipping test: SPI device not available: %v", err)
+	}
+	defer transport.Close()
+
+	// Verify we can still perform transfers with custom config
+	testData := []byte{0x01, 0x02, 0x03, 0x04}
+	_, err = transport.Transfer(testData)
+	if err != nil {
+		t.Fatalf("Transfer with custom config failed: %v", err)
+	}
+}

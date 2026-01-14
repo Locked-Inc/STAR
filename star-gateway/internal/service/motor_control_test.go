@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"errors"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
@@ -213,20 +215,18 @@ func TestStreamEncoders(t *testing.T) {
 		VelocityMps: 0.5,
 		TimestampUs: 123456,
 	}
-	marshaledData, _ := proto.Marshal(expectedData)
 
-	callCount := 0
+	// Create TelemetryData containing the encoder data
+	// (The updated implementation expects TelemetryData messages from RX72N)
+	telemetry := &starv1.TelemetryData{
+		EncoderFrontLeft: expectedData,
+	}
+	marshaledData, _ := proto.Marshal(telemetry)
+
 	mockHARQ := &MockHARQ{
 		ReceiveFunc: func() ([]byte, error) {
-			callCount++
-			if callCount == 1 {
-				// First call: return valid data
-				return marshaledData, nil
-			}
-			// Second call: cancel context and return error to unblock waiting logic
-			// The error forces the loop to check context again or sleep
-			cancel()
-			return nil, errors.New("end of stream")
+			// Return telemetry data repeatedly
+			return marshaledData, nil
 		},
 	}
 
@@ -235,21 +235,356 @@ func TestStreamEncoders(t *testing.T) {
 		ctx: ctx,
 	}
 
-	// Call StreamEncoders (this will block until context cancel)
-	err := svc.StreamEncoders(&starv1.StreamEncodersRequest{}, stream)
+	// Start StreamEncoders in a goroutine (it's a blocking call)
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- svc.StreamEncoders(&starv1.StreamEncodersRequest{RateHz: 100}, stream) // Use high rate for fast test
+	}()
 
-	// Verify we exited with context canceled error
-	if !errors.Is(err, context.Canceled) {
-		t.Errorf("Expected context canceled error, got %v", err)
+	// Wait for data to be sent (ticker fires every 10ms at 100 Hz)
+	time.Sleep(50 * time.Millisecond)
+
+	// Cancel context to stop streaming
+	cancel()
+
+	// Wait for goroutine to exit
+	select {
+	case err := <-errChan:
+		// Verify we exited with context canceled error
+		if !errors.Is(err, context.Canceled) {
+			t.Errorf("Expected context canceled error, got %v", err)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("StreamEncoders goroutine did not exit")
 	}
 
 	// Verify we received the data
-	if len(stream.sentData) != 1 {
-		t.Fatalf("Expected 1 sent data item, got %d", len(stream.sentData))
+	// With rate limiting, we should get at least 1 data item
+	if len(stream.sentData) < 1 {
+		t.Fatalf("Expected at least 1 sent data item, got %d", len(stream.sentData))
 	}
 
 	received := stream.sentData[0]
 	if received.Ticks != expectedData.Ticks {
 		t.Errorf("Expected ticks %d, got %d", expectedData.Ticks, received.Ticks)
 	}
+}
+
+// Mock server stream for ControlStream
+type mockControlStreamServer struct {
+	grpc.ServerStream
+	ctx       context.Context
+	recvChan  chan *starv1.VelocityCommand
+	sentData  []*starv1.EncoderData
+	recvError error
+	sendError error
+	mu        sync.Mutex
+}
+
+func (m *mockControlStreamServer) Context() context.Context {
+	return m.ctx
+}
+
+func (m *mockControlStreamServer) Recv() (*starv1.VelocityCommand, error) {
+	if m.recvError != nil {
+		return nil, m.recvError
+	}
+	select {
+	case cmd := <-m.recvChan:
+		return cmd, nil
+	case <-m.ctx.Done():
+		return nil, m.ctx.Err()
+	}
+}
+
+func (m *mockControlStreamServer) Send(data *starv1.EncoderData) error {
+	if m.sendError != nil {
+		return m.sendError
+	}
+	m.mu.Lock()
+	m.sentData = append(m.sentData, data)
+	m.mu.Unlock()
+	return nil
+}
+
+func TestControlStream_GoroutineCleanup(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Mock HARQ that returns telemetry data
+	telemetry := &starv1.TelemetryData{
+		EncoderFrontLeft: &starv1.EncoderData{
+			MotorId:     0,
+			Ticks:       100,
+			VelocityMps: 0.5,
+			TimestampUs: 123456,
+		},
+	}
+	marshaledData, _ := proto.Marshal(telemetry)
+
+	mockHARQ := &MockHARQ{
+		ReceiveFunc: func() ([]byte, error) {
+			return marshaledData, nil
+		},
+	}
+
+	svc := NewMotorControlService(mockHARQ)
+
+	// Create mock stream with command channel
+	recvChan := make(chan *starv1.VelocityCommand)
+	stream := &mockControlStreamServer{
+		ctx:      ctx,
+		recvChan: recvChan,
+	}
+
+	// Start ControlStream in goroutine
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- svc.ControlStream(stream)
+	}()
+
+	// Send a command
+	recvChan <- &starv1.VelocityCommand{
+		FrontLeftVelocityMps: 1.0,
+	}
+
+	// Wait for command to be processed
+	time.Sleep(50 * time.Millisecond)
+
+	// Cancel context to trigger cleanup
+	cancel()
+
+	// Verify goroutine exits cleanly
+	select {
+	case err := <-errChan:
+		if !errors.Is(err, context.Canceled) {
+			t.Errorf("Expected context.Canceled, got %v", err)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("ControlStream goroutine did not exit after context cancel")
+	}
+
+	// Verify we received encoder data
+	stream.mu.Lock()
+	dataCount := len(stream.sentData)
+	stream.mu.Unlock()
+
+	if dataCount == 0 {
+		t.Error("Expected to receive encoder data")
+	}
+}
+
+func TestControlStream_BasicFlow(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+
+	// Mock HARQ that returns telemetry data
+	telemetry := &starv1.TelemetryData{
+		EncoderFrontLeft: &starv1.EncoderData{
+			MotorId:     0,
+			Ticks:       100,
+			VelocityMps: 0.5,
+			TimestampUs: 123456,
+		},
+	}
+	marshaledData, _ := proto.Marshal(telemetry)
+
+	var sendCalls int
+	var mu sync.Mutex
+
+	mockHARQ := &MockHARQ{
+		SendFunc: func(data []byte) error {
+			mu.Lock()
+			sendCalls++
+			mu.Unlock()
+			return nil
+		},
+		ReceiveFunc: func() ([]byte, error) {
+			return marshaledData, nil
+		},
+	}
+
+	svc := NewMotorControlService(mockHARQ)
+
+	// Create mock stream with command channel
+	recvChan := make(chan *starv1.VelocityCommand, 10)
+	stream := &mockControlStreamServer{
+		ctx:      ctx,
+		recvChan: recvChan,
+	}
+
+	// Send velocity commands
+	recvChan <- &starv1.VelocityCommand{
+		FrontLeftVelocityMps: 1.0,
+	}
+	recvChan <- &starv1.VelocityCommand{
+		FrontRightVelocityMps: 0.5,
+	}
+
+	// Start ControlStream
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- svc.ControlStream(stream)
+	}()
+
+	// Wait for timeout
+	<-ctx.Done()
+
+	// Wait for goroutine
+	select {
+	case <-errChan:
+		// Expected timeout
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("ControlStream goroutine did not exit")
+	}
+
+	// Verify commands were sent
+	mu.Lock()
+	calls := sendCalls
+	mu.Unlock()
+
+	if calls < 2 {
+		t.Errorf("Expected at least 2 Send calls, got %d", calls)
+	}
+
+	// Verify encoder data was received
+	stream.mu.Lock()
+	dataCount := len(stream.sentData)
+	stream.mu.Unlock()
+
+	if dataCount == 0 {
+		t.Error("Expected to receive encoder data")
+	}
+}
+
+func TestControlStream_HarqSendError(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	// Mock HARQ that fails to send
+	mockHARQ := &MockHARQ{
+		SendFunc: func(data []byte) error {
+			return errors.New("send failed")
+		},
+		ReceiveFunc: func() ([]byte, error) {
+			// Return error to avoid infinite loop
+			time.Sleep(10 * time.Millisecond)
+			return nil, errors.New("receive error")
+		},
+	}
+
+	svc := NewMotorControlService(mockHARQ)
+
+	recvChan := make(chan *starv1.VelocityCommand, 1)
+	stream := &mockControlStreamServer{
+		ctx:      ctx,
+		recvChan: recvChan,
+	}
+
+	// Send command that will fail
+	recvChan <- &starv1.VelocityCommand{
+		FrontLeftVelocityMps: 1.0,
+	}
+
+	// Start ControlStream
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- svc.ControlStream(stream)
+	}()
+
+	// Wait for timeout (should handle error gracefully)
+	<-ctx.Done()
+
+	select {
+	case <-errChan:
+		// Expected - service should exit on context done
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("ControlStream did not exit after timeout")
+	}
+}
+
+func TestControlStream_ClientSendError(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	telemetry := &starv1.TelemetryData{
+		EncoderFrontLeft: &starv1.EncoderData{
+			MotorId: 0,
+			Ticks:   100,
+		},
+	}
+	marshaledData, _ := proto.Marshal(telemetry)
+
+	mockHARQ := &MockHARQ{
+		ReceiveFunc: func() ([]byte, error) {
+			return marshaledData, nil
+		},
+	}
+
+	svc := NewMotorControlService(mockHARQ)
+
+	// Create stream that will return error on Recv
+	recvChan := make(chan *starv1.VelocityCommand)
+	stream := &mockControlStreamServer{
+		ctx:       ctx,
+		recvChan:  recvChan,
+		recvError: errors.New("client recv error"),
+	}
+
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- svc.ControlStream(stream)
+	}()
+
+	// Should exit with error from Recv
+	select {
+	case err := <-errChan:
+		if err == nil {
+			t.Error("Expected error from client recv")
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("ControlStream did not exit on recv error")
+	}
+}
+
+func TestStreamEncoders_Concurrent(t *testing.T) {
+	// Test multiple concurrent StreamEncoders clients
+	telemetry := &starv1.TelemetryData{
+		EncoderFrontLeft: &starv1.EncoderData{
+			MotorId:     0,
+			Ticks:       100,
+			VelocityMps: 0.5,
+			TimestampUs: 123456,
+		},
+	}
+	marshaledData, _ := proto.Marshal(telemetry)
+
+	mockHARQ := &MockHARQ{
+		ReceiveFunc: func() ([]byte, error) {
+			return marshaledData, nil
+		},
+	}
+
+	svc := NewMotorControlService(mockHARQ)
+
+	// Launch 5 concurrent clients
+	var wg sync.WaitGroup
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func(clientID int) {
+			defer wg.Done()
+
+			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+			defer cancel()
+
+			stream := &mockStreamEncodersServer{ctx: ctx}
+			err := svc.StreamEncoders(&starv1.StreamEncodersRequest{RateHz: 10}, stream)
+
+			if err != nil && !errors.Is(err, context.DeadlineExceeded) {
+				t.Errorf("Client %d: unexpected error: %v", clientID, err)
+			}
+		}(i)
+	}
+
+	wg.Wait()
 }
