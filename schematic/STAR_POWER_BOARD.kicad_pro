@@ -1467,7 +1467,7 @@
           "group_by": false,
           "label": "Qty",
           "name": "${QUANTITY}",
-          "show": false
+          "show": true
         },
         {
           "group_by": true,
@@ -1494,7 +1494,7 @@
           "show": true
         },
         {
-          "group_by": false,
+          "group_by": true,
           "label": "Footprint",
           "name": "Footprint",
           "show": true
@@ -1736,6 +1736,7 @@
         {
           "group_by": false,
           "label": "MP",
+          "name": "MP",
           "show": false
         },
         {
@@ -1748,7 +1749,7 @@
           "group_by": false,
           "label": "Manufacturer Part Number",
           "name": "Manufacturer Part Number",
-          "show": false
+          "show": true
         },
         {
           "group_by": false,
@@ -1860,6 +1861,12 @@
         },
         {
           "group_by": false,
+          "label": "Sim.Type",
+          "name": "Sim.Type",
+          "show": false
+        },
+        {
+          "group_by": false,
           "label": "SnapEDA_Link",
           "name": "SnapEDA_Link",
           "show": false
@@ -1904,18 +1911,6 @@
           "group_by": false,
           "label": "#",
           "name": "${ITEM_NUMBER}",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Sim.Type",
-          "name": "Sim.Type",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Manufacturer Part Number",
-          "name": "Manufacturer Part Number",
           "show": false
         }
       ],
