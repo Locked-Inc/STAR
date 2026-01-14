@@ -193,6 +193,618 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "22053041:22053041"
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "J"
+				(at 8.89 6.35 0)
+				(effects
+					(font
+						(size 1.524 1.524)
+					)
+				)
+			)
+			(property "Value" "22053041"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.524 1.524)
+					)
+				)
+			)
+			(property "Footprint" "CONN_A-7478-04A_MOL"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+						(italic yes)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://www.molex.com/en-us/products/part-detail-pdf/22053041?display=pdf"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+						(italic yes)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_locked" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "22053041"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "CONN_A-7478-04A_MOL"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "22053041_1_1"
+				(polyline
+					(pts
+						(xy 5.08 2.54) (xy 5.08 -10.16)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 5.08 -10.16) (xy 12.7 -10.16)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 0) (xy 5.08 0)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 0) (xy 8.89 0.8467)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 0) (xy 8.89 -0.8467)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 -2.54) (xy 5.08 -2.54)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 -2.54) (xy 8.89 -1.6933)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 -2.54) (xy 8.89 -3.3867)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 -5.08) (xy 5.08 -5.08)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 -5.08) (xy 8.89 -4.2333)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 -5.08) (xy 8.89 -5.9267)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 -7.62) (xy 5.08 -7.62)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 -7.62) (xy 8.89 -6.7733)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 10.16 -7.62) (xy 8.89 -8.4667)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 12.7 2.54) (xy 5.08 2.54)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 12.7 -10.16) (xy 12.7 2.54)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin unspecified line
+					(at 0 0 0)
+					(length 5.08)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 0 -2.54 0)
+					(length 5.08)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 0 -5.08 0)
+					(length 5.08)
+					(name "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 0 -7.62 0)
+					(length 5.08)
+					(name "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "22053041_1_2"
+				(polyline
+					(pts
+						(xy 5.08 2.54) (xy 5.08 -10.16)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 5.08 -10.16) (xy 12.7 -10.16)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 0) (xy 5.08 0)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 0) (xy 8.89 0.8467)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 0) (xy 8.89 -0.8467)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 -2.54) (xy 5.08 -2.54)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 -2.54) (xy 8.89 -1.6933)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 -2.54) (xy 8.89 -3.3867)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 -5.08) (xy 5.08 -5.08)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 -5.08) (xy 8.89 -4.2333)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 -5.08) (xy 8.89 -5.9267)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 -7.62) (xy 5.08 -7.62)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 -7.62) (xy 8.89 -6.7733)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 7.62 -7.62) (xy 8.89 -8.4667)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 12.7 2.54) (xy 5.08 2.54)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 12.7 -10.16) (xy 12.7 2.54)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin unspecified line
+					(at 0 0 0)
+					(length 5.08)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 0 -2.54 0)
+					(length 5.08)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 0 -5.08 0)
+					(length 5.08)
+					(name "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin unspecified line
+					(at 0 -7.62 0)
+					(length 5.08)
+					(name "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "2N7002K:2N7002K"
 			(pin_numbers
 				(hide yes)
@@ -3828,206 +4440,6 @@
 						)
 					)
 					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "Connector_Generic:Conn_01x04"
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "J"
-				(at 0 5.08 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "Conn_01x04"
-				(at 0 -7.62 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "~"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "connector"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "Connector*:*_1x??_*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "Conn_01x04_1_1"
-				(rectangle
-					(start -1.27 3.81)
-					(end 1.27 -6.35)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(rectangle
-					(start -1.27 2.667)
-					(end 0 2.413)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 0.127)
-					(end 0 -0.127)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 -2.413)
-					(end 0 -2.667)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 -4.953)
-					(end 0 -5.207)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -5.08 2.54 0)
-					(length 3.81)
-					(name "Pin_1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 0 0)
-					(length 3.81)
-					(name "Pin_2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -2.54 0)
-					(length 3.81)
-					(name "Pin_3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -5.08 0)
-					(length 3.81)
-					(name "Pin_4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -7837,7 +8249,7 @@
 	)
 	(text "EV2300-002\nNC   (4)\nSMBD (3)\nSMBC (2)\nGND  (1)"
 		(exclude_from_sim no)
-		(at 360.172 273.05 0)
+		(at 353.314 272.288 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -13869,6 +14281,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "RC0603FR-075K1L"
+			(at 427.99 171.45 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7227b970-a6ca-40cd-b9c2-89cd80871099")
 		)
@@ -14505,6 +14926,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 168.91 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "08718b17-0ec3-4ba7-a690-e95d983b6883")
 		)
@@ -14648,6 +15078,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 430.53 271.78 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "RT0603BRD07200RL"
 			(at 430.53 271.78 90)
 			(effects
 				(font
@@ -15292,6 +15731,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "SML-D12M1WT86"
+			(at 335.28 259.08 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c8abe43a-fa89-4e84-81fe-ff4cff95a76f")
 		)
@@ -15437,6 +15885,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "N/A"
+			(at 494.03 275.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "MF52C1103F3380"
 			(at 494.03 275.59 90)
 			(effects
 				(font
@@ -15620,6 +16077,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "2.12"
+			(at 477.52 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "BQ4050RSMR"
 			(at 477.52 222.25 0)
 			(effects
 				(font
@@ -15863,6 +16329,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 177.8 57.15 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "CRCW0603100RJNEA"
 			(at 177.8 57.15 90)
 			(effects
 				(font
@@ -16128,6 +16603,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "SKRPACE010"
+			(at 436.88 261.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d7f3990c-6029-450e-a786-c2bd25405b5b")
 		)
@@ -16309,6 +16793,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.53"
+			(at 384.81 111.76 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "FDN358P"
 			(at 384.81 111.76 90)
 			(effects
 				(font
@@ -16957,6 +17450,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 429.26 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d70eb63f-503e-4f8d-95eb-0f4fb7b9cc1a")
 		)
@@ -17594,6 +18096,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "DDZ9690-7"
+			(at 406.4 281.94 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "49e8204d-62d8-4924-aba3-d52c5be06fca")
 		)
@@ -17786,6 +18297,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "1017491"
+			(at 152.4 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "4"
 			(uuid "a4ec64a3-ea7a-4d0d-a222-9cee90adad6c")
 		)
@@ -17935,6 +18455,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 364.49 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "RC0603FR-075K1L"
 			(at 364.49 143.51 0)
 			(effects
 				(font
@@ -18645,6 +19174,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 219.71 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "18ce7be6-dfb3-4217-857f-80b3807cc479")
 		)
@@ -18836,6 +19374,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "694106301002"
+			(at 63.5 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "afc5364c-df7a-4b49-9b91-94b0fa240b3b")
 		)
@@ -18981,6 +19528,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.12"
+			(at 128.27 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "RT0603BRD0710RL"
 			(at 128.27 109.22 0)
 			(effects
 				(font
@@ -19615,6 +20171,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CRCW0603100RJNEA"
+			(at 398.78 271.78 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fffc1ad7-2dcb-446b-bc5d-0edf1c960af4")
 		)
@@ -20241,6 +20806,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CRCW0603100RJNEA"
+			(at 490.22 247.65 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e74bfff0-efd7-40b3-9454-06efb5f2e6c5")
 		)
@@ -20425,6 +20999,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "B3B-XH-A(LF)(SN)"
+			(at 190.5 228.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "be67cb05-61fe-4a47-965d-ca0cf0f6e22d")
 		)
@@ -20581,6 +21164,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "MF52C1103F3380"
+			(at 494.03 265.43 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "9fce3ef5-adc0-4862-9819-674d01866244")
 		)
@@ -20662,6 +21254,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 529.59 298.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" ""
 			(at 529.59 298.45 0)
 			(effects
 				(font
@@ -21306,6 +21907,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "SML-D12M1WT86"
+			(at 330.2 255.27 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "31f2aa58-dcc0-4356-81ee-19f2acc5019f")
 		)
@@ -21457,6 +22067,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" ""
+			(at 199.39 270.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7da6c3d5-c20f-4a83-803e-e6c5a47e04f1")
 		)
@@ -21597,6 +22216,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 501.65 224.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "CRCW0603100RJNEA"
 			(at 501.65 224.79 90)
 			(effects
 				(font
@@ -22223,6 +22851,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 490.22 257.81 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "CRCW0603100RJNEA"
 			(at 490.22 257.81 90)
 			(effects
 				(font
@@ -22867,6 +23504,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 240.03 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4241a7de-8c34-4e4d-b5ae-0dc13bbe5167")
 		)
@@ -23010,6 +23656,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "n/a"
+			(at 224.79 270.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" ""
 			(at 224.79 270.51 0)
 			(effects
 				(font
@@ -23651,6 +24306,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "GRM21BR61H106KE43L"
+			(at 209.55 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a3e879db-149c-4725-9b3c-e883e66486ca")
 		)
@@ -23793,6 +24457,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.16"
+			(at 128.27 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "GRT188R61H225KE13D"
 			(at 128.27 119.38 0)
 			(effects
 				(font
@@ -23944,6 +24617,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 398.78 106.68 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "ERJ-3GEYJ301V"
 			(at 398.78 106.68 90)
 			(effects
 				(font
@@ -24108,6 +24790,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.11"
+			(at 213.36 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "BAT54HT1G"
 			(at 213.36 93.98 0)
 			(effects
 				(font
@@ -24753,6 +25444,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "SML-D12M1WT86"
+			(at 340.36 248.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "59fef0f5-a00b-4e2f-9261-f00533842374")
 		)
@@ -25389,6 +26089,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "SML-D12M1WT86"
+			(at 158.75 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "68303580-ecb5-42f9-aa83-489eca9a7091")
 		)
@@ -25697,6 +26406,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "82306050029"
+			(at 388.62 300.99 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f9fbed79-d3dc-4dbc-b526-e3ed5e57478e")
 		)
@@ -25840,6 +26558,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 436.88 189.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "GRM155R61H474KE11D"
 			(at 436.88 189.23 0)
 			(effects
 				(font
@@ -26024,6 +26751,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "2.67"
+			(at 227.33 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "TPHR6503PL1,LQ"
 			(at 227.33 97.79 0)
 			(effects
 				(font
@@ -26690,6 +27426,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 425.45 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "35d223eb-c784-407e-b2d1-6ef2575b2846")
 		)
@@ -26866,6 +27611,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "2.67"
+			(at 227.33 81.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "TPHR6503PL1,LQ"
 			(at 227.33 81.28 0)
 			(effects
 				(font
@@ -27532,6 +28286,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 346.71 100.33 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "811f1680-b531-4e4b-b788-ef1cd31b387b")
 		)
@@ -27734,6 +28497,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "LVK12R010FER"
+			(at 264.16 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "cc9b0d1e-d09c-42ae-9f10-c11c7cc59fd4")
 		)
@@ -27892,6 +28664,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "MF52C1103F3380"
+			(at 200.66 50.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "ab0fd3ce-55ae-420c-b5fd-d516972b8b65")
 		)
@@ -28037,6 +28818,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "N/A"
+			(at 494.03 280.67 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "MF52C1103F3380"
 			(at 494.03 280.67 90)
 			(effects
 				(font
@@ -28294,6 +29084,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "TPHR6503PL1,LQ"
+			(at 364.49 119.38 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "c6571873-af63-4d9d-9439-3ad0f8b87c15")
 		)
@@ -28466,6 +29265,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" ""
+			(at 212.09 270.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e0bae1dd-6ad7-4f9a-91b6-433a87ba4a68")
 		)
@@ -28605,6 +29413,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 325.12 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "ERA-3AEB103V"
 			(at 325.12 143.51 0)
 			(effects
 				(font
@@ -28896,6 +29713,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "RC0603FR-075K1L"
+			(at 412.75 171.45 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "eb762448-c31e-4422-8d10-9adca8e59a1b")
 		)
@@ -29038,6 +29864,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 138.43 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "ERA-3AEB2492V"
 			(at 138.43 104.14 0)
 			(effects
 				(font
@@ -29664,6 +30499,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 504.19 182.88 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "AC0603JR-131KL"
 			(at 504.19 182.88 90)
 			(effects
 				(font
@@ -30309,6 +31153,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "DDZ9690-7"
+			(at 411.48 281.94 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "1df8b9b9-6d1f-449c-83d5-219b619aca1e")
 		)
@@ -30518,6 +31371,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 379.73 134.62 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "CRCW060310M0FKEA "
 			(at 379.73 134.62 90)
 			(effects
 				(font
@@ -31162,6 +32024,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "963-UMK107AB7105KA-T"
+			(at 201.93 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "ecd5c685-995f-4813-8de2-845986f559ce")
 		)
@@ -31790,6 +32661,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 196.85 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
 			(at 196.85 63.5 0)
 			(effects
 				(font
@@ -32435,6 +33315,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 359.41 100.33 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fddc7371-9974-49dd-b7b5-afaff6733f3f")
 		)
@@ -32657,6 +33546,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.11"
+			(at 453.39 200.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "BAT54HT1G"
 			(at 453.39 200.66 0)
 			(effects
 				(font
@@ -33300,6 +34198,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 300.99 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "AC0603JR-07100KL"
 			(at 300.99 116.84 0)
 			(effects
 				(font
@@ -34010,6 +34917,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 482.6 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "563beef8-2443-4a41-aa3a-c178757bcfb6")
 		)
@@ -34646,6 +35562,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "GRM21BR61H106KE43L"
+			(at 287.02 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1ed5288e-ede0-400a-830a-3694e5e9a12a")
 		)
@@ -34789,6 +35714,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 402.59 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "ERA-3AEB103V"
 			(at 402.59 90.17 90)
 			(effects
 				(font
@@ -35425,6 +36359,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "AC0603FR-071ML"
+			(at 421.64 281.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "789eb3bf-20f7-4d17-ad1b-a5711ede92b9")
 		)
@@ -35676,6 +36619,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "2N7002K"
+			(at 342.9 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "1c4046ea-e612-43ee-8910-b6bd77209293")
 		)
@@ -35689,6 +36641,90 @@
 			(project ""
 				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
 					(reference "Q4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "22053041:22053041")
+		(at 367.03 276.86 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "82450252-218a-4fb6-bde7-9cb8b7730302")
+		(property "Reference" "J9"
+			(at 360.934 265.684 0)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+			)
+		)
+		(property "Value" "22053041"
+			(at 358.14 280.924 0)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+			)
+		)
+		(property "Footprint" "CONN_A-7478-04A_MOL"
+			(at 367.03 276.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.molex.com/en-us/products/part-detail-pdf/22053041?display=pdf"
+			(at 367.03 276.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 367.03 276.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" ""
+			(at 367.03 276.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "ad248eca-613c-4e34-a077-9da9a44ba37d")
+		)
+		(pin "1"
+			(uuid "f7004f5c-0401-4fdd-a5f0-b5f079a5e0ef")
+		)
+		(pin "3"
+			(uuid "518e3b5c-c8f5-4769-9b64-d69aece4539a")
+		)
+		(pin "4"
+			(uuid "01f6ad3c-cf49-4d69-bf57-720cb65a1ac2")
+		)
+		(instances
+			(project ""
+				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
+					(reference "J9")
 					(unit 1)
 				)
 			)
@@ -35953,6 +36989,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 394.97 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "RC0603FR-075K1L"
 			(at 394.97 143.51 0)
 			(effects
 				(font
@@ -36269,6 +37314,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "82306050029"
+			(at 384.81 300.99 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "69c0ba39-dc90-4b7d-97fe-8ccc3a4b81d7")
 		)
@@ -36420,6 +37474,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "ERA-3AEB103V"
+			(at 152.4 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6b04c165-e326-4f5a-9cee-249266bc1453")
 		)
@@ -36562,6 +37625,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 187.96 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "RT0603BRD07430KL"
 			(at 187.96 63.5 0)
 			(effects
 				(font
@@ -36745,6 +37817,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.61"
+			(at 468.63 170.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "BQ296103DSGR"
 			(at 468.63 170.18 0)
 			(effects
 				(font
@@ -37477,6 +38558,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 492.76 219.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6c982586-2075-4299-8c46-0a1cf3bf7176")
 		)
@@ -37620,6 +38710,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.16"
+			(at 482.6 234.95 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "GRT188R61H225KE13D"
 			(at 482.6 234.95 90)
 			(effects
 				(font
@@ -38264,6 +39363,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 262.89 105.41 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "33cd4564-5f4a-40e2-a587-64125ca0c694")
 		)
@@ -38448,6 +39556,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 516.89 240.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "SKRPACE010"
 			(at 516.89 240.03 0)
 			(effects
 				(font
@@ -39091,6 +40208,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 312.42 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
 			(at 312.42 140.97 0)
 			(effects
 				(font
@@ -39801,6 +40927,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "SML-D12M1WT86"
+			(at 335.28 248.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "cae23a43-00eb-4fc2-a0fd-4c0bbfa683c7")
 		)
@@ -39975,6 +41110,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "5.51"
+			(at 163.83 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "BQ24600RVAT"
 			(at 163.83 90.17 0)
 			(effects
 				(font
@@ -40179,6 +41323,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "RC0603FR-075K1L"
+			(at 384.81 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1e77321a-54ef-403f-8bb5-faa7cec5aaa3")
 		)
@@ -40370,6 +41523,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "SKRPACE010"
+			(at 368.3 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6c995632-ea38-472d-b735-8551bb51a574")
 		)
@@ -40518,6 +41680,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 300.99 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "ERA-3AEB304V"
 			(at 300.99 106.68 0)
 			(effects
 				(font
@@ -40677,6 +41848,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CRCW0603100RJNEA"
+			(at 501.65 213.36 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "0ad059b0-ff30-4ed8-af3d-9a37bfd68641")
 		)
@@ -40820,6 +42000,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 504.19 167.64 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "CRCW0603100RJNEA"
 			(at 504.19 167.64 90)
 			(effects
 				(font
@@ -41012,6 +42201,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 261.62 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "1017491"
 			(at 261.62 229.87 0)
 			(effects
 				(font
@@ -41663,6 +42861,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 495.3 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a3d30965-46a8-41b2-b104-f79bd2504879")
 		)
@@ -41847,6 +43054,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 261.62 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "1017491"
 			(at 261.62 218.44 0)
 			(effects
 				(font
@@ -42497,6 +43713,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "GRM21BR61H106KE43L"
+			(at 280.67 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "58973a44-0a66-49ce-91b2-732eacc2c9b3")
 		)
@@ -42640,6 +43865,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 430.53 274.32 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "RT0603BRD07200RL"
 			(at 430.53 274.32 90)
 			(effects
 				(font
@@ -42832,6 +44066,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "B3B-XH-A(LF)(SN)"
+			(at 190.5 213.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1dc2e8e3-3163-4e91-8962-c20abca8cb8d")
 		)
@@ -42985,6 +44228,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CRCW060310M0FKEA "
+			(at 350.52 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "0047ab35-5486-4acc-b7cd-1346de807331")
 		)
@@ -43127,6 +44379,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 138.43 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "ERA-3AEB2873V"
 			(at 138.43 91.44 0)
 			(effects
 				(font
@@ -43837,6 +45098,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "GRM21BR61H106KE43L"
+			(at 293.37 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f434741e-e0a6-48a8-b735-45d46d77905b")
 		)
@@ -44054,6 +45324,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRNPO9BN101"
+			(at 480.06 251.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "df11e91a-ef47-411b-821c-46b3701ce7a8")
 		)
@@ -44207,6 +45486,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "MF52C1103F3380"
+			(at 494.03 270.51 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "90fcf29e-4845-406c-9745-1a23b2ec35a4")
 		)
@@ -44349,6 +45637,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 177.8 52.07 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "ERA-3AEB9311V"
 			(at 177.8 52.07 90)
 			(effects
 				(font
@@ -44994,6 +46291,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 495.3 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fca77e95-c0fb-4459-ad3a-552cc811345a")
 		)
@@ -45267,6 +46573,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 300.99 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "RC0603JR-070RL "
 			(at 300.99 96.52 0)
 			(effects
 				(font
@@ -45893,6 +47208,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 398.78 274.32 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "CRCW0603100RJNEA"
 			(at 398.78 274.32 90)
 			(effects
 				(font
@@ -46529,6 +47853,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "AC0603FR-071ML"
+			(at 416.56 281.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "2225da44-ba9d-472f-bc9b-81df8bec3d05")
 		)
@@ -46704,6 +48037,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "2.67"
+			(at 394.97 119.38 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "TPHR6503PL1,LQ"
 			(at 394.97 119.38 90)
 			(effects
 				(font
@@ -47369,6 +48711,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "963-UMK107AB7105KA-T"
+			(at 133.35 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "999134ce-ec44-484f-b589-114e3da186f1")
 		)
@@ -47520,6 +48871,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "ERA-3AEB103V"
+			(at 147.32 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "83e6a2b0-d41c-4348-8d46-899561be21ff")
 		)
@@ -47662,6 +49022,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.16"
+			(at 95.25 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "GRT188R61H225KE13D"
 			(at 95.25 119.38 0)
 			(effects
 				(font
@@ -47852,6 +49221,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "74437349033"
+			(at 245.11 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "a4c027e0-fef8-45c4-80a6-e071d82676d7")
 		)
@@ -48003,6 +49381,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" ""
+			(at 186.69 270.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "59b49887-4211-4dbb-b572-df0fe593dc48")
 		)
@@ -48143,6 +49530,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 436.88 180.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "RT0603DRE075R1L"
 			(at 436.88 180.34 0)
 			(effects
 				(font
@@ -48844,6 +50240,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 215.9 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "GRM21BR61H106KE43L"
 			(at 215.9 63.5 0)
 			(effects
 				(font
@@ -49621,6 +51026,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 312.42 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a78303c3-0abf-4d19-b454-417ea6d08eaa")
 		)
@@ -49762,6 +51176,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 139.7 237.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "61200621621"
 			(at 139.7 237.49 90)
 			(effects
 				(font
@@ -50024,6 +51447,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.37"
+			(at 436.88 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "DMN3042L-7"
 			(at 436.88 139.7 0)
 			(effects
 				(font
@@ -50661,6 +52093,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "AC0603JR-131KL"
+			(at 504.19 171.45 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e77b0465-3ade-4352-8ca7-233db4b656c7")
 		)
@@ -50835,6 +52276,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.21"
+			(at 113.03 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "BZT52C8V2T-7"
 			(at 113.03 99.06 0)
 			(effects
 				(font
@@ -51025,6 +52475,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "SSM6J507NU,LF"
+			(at 106.68 91.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "8"
 			(uuid "1b9573f7-c4ee-4da4-a04c-eba8cff239d5")
 		)
@@ -51194,6 +52653,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CRCW060310M0FKEA "
+			(at 410.21 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b6a9a671-0b66-4cf9-894e-c7d4f1019f76")
 		)
@@ -51204,610 +52672,6 @@
 			(project "STAR_BMS"
 				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
 					(reference "R27")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x04")
-		(at 361.95 274.32 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(uuid "e9f88543-50be-443d-b68d-05661fd65175")
-		(property "Reference" "J9"
-			(at 361.95 279.654 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "SMB"
-			(at 361.696 266.446 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "A_MAX" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_COLUMNS" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_ROWS" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BODY_DIAMETER" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MAX" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MIN" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_NOM" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D2_NOM" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMAX" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMIN" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DNOM" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MAX" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MIN" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_NOM" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E2_NOM" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMAX" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMIN" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "ENOM" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MAX" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MIN" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_NOM" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "IPC" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JEDEC" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MAX" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MIN" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_NOM" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PACKAGE_TYPE" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTEV" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PINS" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COLUMNS" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_D" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_E" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "THERMAL_PAD" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "VACANCIES" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Device" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Pins" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SNAPEDA_PACKAGE_ID" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Availability" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Check_prices" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description_1" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MANUFACTURER" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MF" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTREV" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Package" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part Number" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "STANDARD" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SnapEDA_Link" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Specifications" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/0fn8mfq4"
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" ""
-			(at 361.95 274.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "b07c35c2-a84d-4c25-b1dc-cc7df5803652")
-		)
-		(pin "3"
-			(uuid "78618dcf-c387-451b-b3a8-7bac3b6e64fa")
-		)
-		(pin "4"
-			(uuid "0e769c84-05d4-4062-b399-2a4df8045d52")
-		)
-		(pin "1"
-			(uuid "52381ef8-9ad3-4269-b192-c9e4c4f36b83")
-		)
-		(instances
-			(project "STAR_BMS"
-				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
-					(reference "J9")
 					(unit 1)
 				)
 			)
@@ -51940,6 +52804,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 334.01 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "ERA-3AEB103V"
 			(at 334.01 133.35 0)
 			(effects
 				(font
@@ -52584,6 +53457,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "SML-D12M1WT86"
+			(at 158.75 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b5e87063-69e5-454d-a463-534f1d4c7436")
 		)
@@ -53221,6 +54103,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "SML-D12M1WT86"
+			(at 340.36 259.08 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d02a1d6e-688d-4dc3-a659-3e46c7bb55a2")
 		)
@@ -53397,6 +54288,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.91"
+			(at 419.1 219.71 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "TFPT1206L1002JV"
 			(at 419.1 219.71 90)
 			(effects
 				(font
@@ -54042,6 +54942,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "CC0603JRX7R9BB104"
+			(at 492.76 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "792fb0a9-5f7c-435d-9e3e-0ad55faf4961")
 		)
@@ -54185,6 +55094,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 430.53 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "RC0603FR-0751KL"
 			(at 430.53 146.05 0)
 			(effects
 				(font
@@ -54343,6 +55261,15 @@
 				(hide yes)
 			)
 		)
+		(property "Mfg. part number" "RT0603BRE072RL"
+			(at 95.25 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e5858e9b-be6d-49d7-a37c-f17fa92d310c")
 		)
@@ -54486,6 +55413,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 374.65 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "CRCW0603100RJNEA"
 			(at 374.65 143.51 0)
 			(effects
 				(font
@@ -54652,6 +55588,15 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.49"
+			(at 518.16 298.45 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "CRF2512-FZ-R001ELF"
 			(at 518.16 298.45 90)
 			(effects
 				(font
@@ -55295,6 +56240,15 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 106.68 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mfg. part number" "AC0603JR-07100KL"
 			(at 106.68 109.22 0)
 			(effects
 				(font
