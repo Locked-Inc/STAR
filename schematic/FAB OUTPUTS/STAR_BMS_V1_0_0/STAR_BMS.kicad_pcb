@@ -144,7 +144,7 @@
 			(mirror no)
 			(drillshape 0)
 			(scaleselection 1)
-			(outputdirectory "BMS/")
+			(outputdirectory "./")
 		)
 	)
 	(net 0 "")
