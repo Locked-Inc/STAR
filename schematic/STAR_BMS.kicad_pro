@@ -1467,7 +1467,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "",
+      "plot": "BMS/",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "",
@@ -1971,6 +1971,12 @@
           "group_by": false,
           "label": "Price",
           "name": "Price",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Mfg. part number",
+          "name": "Mfg. part number",
           "show": false
         }
       ],
