@@ -49,10 +49,10 @@ void setUp(void)
   /* Create UART bus config for SCI9 (PB7/TXD9, PB6/RXD9) */
   err = rx_bus_config_init_uart(&s_uart_config,
                                 s_test_bus_name,
-                                9,          /* SCI9 */
+                                9,         /* SCI9 */
                                 k_rx_pb_7, /* TX: Port B, Pin 7 */
                                 k_rx_pb_6, /* RX: Port B, Pin 6 */
-                                115200);    /* 115200 baud */
+                                115200);   /* 115200 baud */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Add bus to manager */
@@ -478,10 +478,10 @@ void test_rx_bus_uart_multi_channel_isolation(void)
   static rx_bus_config_t uart0_config;
   rx_err_t               err = rx_bus_config_init_uart(&uart0_config,
                                          "uart0",
-                                         0,          /* SCI0 */
+                                         0,         /* SCI0 */
                                          k_rx_p1_7, /* TX: Port 1, Pin 7 */
                                          k_rx_p1_6, /* RX: Port 1, Pin 6 */
-                                         9600);      /* 9600 baud */
+                                         9600);     /* 9600 baud */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, &uart0_config);
@@ -548,8 +548,7 @@ void test_rx_bus_config_init_uart_invalid_port(void)
 {
   rx_bus_config_t config;
   enum { k_invalid_port = k_rx_port_j + 1 };
-  rx_port_pin_t invalid_pin =
-    (rx_port_pin_t)((k_invalid_port << k_port_shift) | k_rx_pin_0);
+  rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_invalid_port << k_port_shift) | k_rx_pin_0);
   rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, invalid_pin, k_rx_pb_6, 115200);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -561,8 +560,7 @@ void test_rx_bus_config_init_uart_invalid_pin(void)
 {
   rx_bus_config_t config;
   enum { k_invalid_pin = k_rx_pin_max + 1 };
-  rx_port_pin_t invalid_pin =
-    (rx_port_pin_t)((k_rx_port_0 << k_port_shift) | k_invalid_pin);
+  rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_rx_port_0 << k_port_shift) | k_invalid_pin);
   rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, invalid_pin, k_rx_pb_6, 115200);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -573,7 +571,7 @@ void test_rx_bus_config_init_uart_invalid_pin(void)
 void test_rx_bus_config_init_uart_zero_baudrate(void)
 {
   rx_bus_config_t config;
-  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, k_rx_pb_7, k_rx_pb_6, 0);
+  rx_err_t        err = rx_bus_config_init_uart(&config, "bad_uart", 9, k_rx_pb_7, k_rx_pb_6, 0);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -592,7 +590,7 @@ void test_rx_bus_config_init_uart_null_config(void)
 void test_rx_bus_config_init_uart_null_name(void)
 {
   rx_bus_config_t config;
-  rx_err_t err = rx_bus_config_init_uart(&config, NULL, 9, k_rx_pb_7, k_rx_pb_6, 115200);
+  rx_err_t        err = rx_bus_config_init_uart(&config, NULL, 9, k_rx_pb_7, k_rx_pb_6, 115200);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 

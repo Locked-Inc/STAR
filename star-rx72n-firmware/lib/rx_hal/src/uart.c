@@ -218,8 +218,8 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
  *
  * Sets up MPC (pin mux) and GPIO registers for TX/RX pins.
  *
- * @param[in] tx_gpio TX pin (gpio_pin_t from hardware_pinout.h)
- * @param[in] rx_gpio RX pin (gpio_pin_t from hardware_pinout.h)
+ * @param[in] tx_gpio TX pin (rx_port_pin_t from rx_port_constants.h)
+ * @param[in] rx_gpio RX pin (rx_port_pin_t from rx_port_constants.h)
  *
  * @return k_rx_ok on success, error code on failure
  */

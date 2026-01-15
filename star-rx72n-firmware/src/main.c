@@ -5,6 +5,7 @@
  *
  */
 
+#include "app_main_task.h"
 #include "hardware_init.h"
 #include "rx72n_system_regs.h"
 #include "rx_check.h"
@@ -52,10 +53,6 @@ static bool internal_check_porf(void)
   /* PORF=1 indicates power-on reset occurred, which is expected on normal startup */
   bool porf_set = (rstsr0_val & k_rstsr0_porf) != 0;
 
-  /* Postcondition: Verify RSTSR0 register read succeeded
-   * Note: Allow reads across various valid startup scenarios (both cold and warm) */
-  RX_ASSERT(rstsr0_val != 0x00, "Postcondition: RSTSR0 register must have status bits set");
-
   /* PORF may not be set on warm boots - this is valid, so log but don't halt */
   if (!porf_set) {
     /* Warm boot or software reset - both acceptable */
@@ -76,6 +73,9 @@ static bool internal_check_porf(void)
  */
 static bool internal_check_rstsr2_flag_clear(uint8_t flag_mask)
 {
+  /* Precondition: flag_mask must be non-zero */
+  RX_ASSERT(flag_mask != 0, "Precondition: flag_mask must not be zero");
+
   volatile uint8_t* reg = rstsr2();
 
   /* Precondition: Register pointer must be valid (compile-time constant address) */
@@ -85,9 +85,6 @@ static bool internal_check_rstsr2_flag_clear(uint8_t flag_mask)
 
   /* Compute result reflecting actual register state */
   bool result = (rstsr2_val & flag_mask) == 0;
-
-  /* Postcondition: Verify flag_mask is non-zero */
-  RX_ASSERT(flag_mask != 0, "Precondition: flag_mask must not be zero");
 
   return result;
 }
@@ -147,13 +144,13 @@ static bool internal_check_lvd0rf(void)
   /* Precondition: Register pointer must be valid */
   RX_ASSERT(regs != NULL, "RSTSR01 register pointer is NULL");
 
-  uint8_t rstsr0_val = regs->rstsr0;
+  uint8_t rstsr0_val  = regs->rstsr0;
+  uint8_t rstsr0_val2 = regs->rstsr0;
+
+  RX_ASSERT(rstsr0_val == rstsr0_val2, "Inconsistent RSTSR01 read");
 
   /* LVD0RF=0 means no voltage-monitoring reset (normal condition) */
   bool lvd0rf_clear = (rstsr0_val & k_rstsr0_lvd0rf) == 0;
-
-  /* Postcondition: Verify the LVD0RF bit is cleared (no voltage monitoring reset) */
-  RX_ASSERT((rstsr0_val & k_rstsr0_lvd0rf) == 0, "Postcondition: LVD0RF bit is not cleared");
 
   return lvd0rf_clear;
 }
@@ -198,23 +195,22 @@ static bool internal_check_cwsf(void)
  */
 static rx_err_t internal_check_startup_flags(void)
 {
-  bool porf_ok   = internal_check_porf();
+  (void)internal_check_porf();
   bool iwdtrf_ok = internal_check_iwdtrf();
   bool wdtrf_ok  = internal_check_wdtrf();
   bool swrf_ok   = internal_check_swrf();
   bool lvd0rf_ok = internal_check_lvd0rf();
-  bool cwsf_ok   = internal_check_cwsf();
+
+  (void)internal_check_cwsf();
 
   /* Assert critical startup conditions (fail-fast, system halts on failure):
-   * - PORF should indicate clean power-on (critical for proper initialization)
    * - IWDTRF should be clear (watchdog reset indicates prior firmware issue) */
-  RX_ASSERT(porf_ok, "Power-On Reset flag check failed - unexpected startup condition");
   RX_ASSERT(iwdtrf_ok, "Independent Watchdog Timer reset detected - prior execution fault");
 
   /* Return error if any non-critical startup flag indicates abnormal condition.
    * Note: porf_ok and iwdtrf_ok are not checked here as RX_ASSERT above
    * halts execution if they fail (fail-fast behavior for critical flags). */
-  if (!wdtrf_ok || !swrf_ok || !lvd0rf_ok || !cwsf_ok) {
+  if (!wdtrf_ok || !swrf_ok || !lvd0rf_ok) {
     return k_rx_err_hw_init_failed;
   }
 
@@ -233,8 +229,8 @@ void tx_application_define(void* first_unused_memory)
 {
   (void)first_unused_memory; /* Unused parameter */
 
-  /* Application thread creation would go here when implemented.
-   * TODO: For now, this is a placeholder to satisfy ThreadX linkage requirements. */
+  /* Create application threads */
+  RX_ERROR_CHECK(app_main_task_create());
 }
 
 /**

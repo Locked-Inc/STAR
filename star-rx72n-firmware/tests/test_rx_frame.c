@@ -26,10 +26,10 @@
  * @brief Frame test constants for payload and buffer sizes
  */
 typedef enum {
-  k_test_payload_size = 256, /**< Large payload size for testing */
-  k_test_buffer_size  = 512, /**< Buffer size for encoded frame */
-  k_test_header_size  = 12,  /**< Frame header size in bytes */
-  k_test_sequence_num = 100, /**< Test sequence number */
+  k_test_payload_size = 256,  /**< Large payload size for testing */
+  k_test_buffer_size  = 512,  /**< Buffer size for encoded frame */
+  k_test_header_size  = 12,   /**< Frame header size in bytes */
+  k_test_sequence_num = 100,  /**< Test sequence number */
   k_test_byte_mask    = 0xFF, /**< Byte mask for payload patterns */
 } frame_test_constants_t;
 
@@ -322,12 +322,13 @@ void test_roundtrip_empty_frame(void)
 
 void test_roundtrip_with_payload(void)
 {
+  enum { k_deadbeef_len = 8 };
   rx_frame_t original      = {0};
   original.header.sequence = 0xBEEF;
-  original.header.length   = 8;
+  original.header.length   = k_deadbeef_len;
   original.header.type     = k_frame_type_command;
   original.header.flags    = k_frame_flag_fec_enabled | k_frame_flag_priority;
-  memcpy(original.payload, "DEADBEEF", 8);
+  memcpy(original.payload, "DEADBEEF", k_deadbeef_len);
 
   uint8_t  buffer[64];
   uint32_t len;
@@ -340,7 +341,7 @@ void test_roundtrip_with_payload(void)
   TEST_ASSERT_EQUAL(original.header.length, decoded.header.length);
   TEST_ASSERT_EQUAL(original.header.type, decoded.header.type);
   TEST_ASSERT_EQUAL(original.header.flags, decoded.header.flags);
-  TEST_ASSERT_EQUAL_MEMORY(original.payload, decoded.payload, 8);
+  TEST_ASSERT_EQUAL_MEMORY(original.payload, decoded.payload, k_deadbeef_len);
 }
 
 void test_roundtrip_max_sequence(void)

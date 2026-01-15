@@ -51,6 +51,8 @@ void mock_usb0_set_intsts0(uint16_t value)
 
 void mock_usb0_set_dvsq(uint16_t dvsq)
 {
+  /* Validate DVSQ value is within valid 3-bit range (0-7) */
+  assert(dvsq <= k_usb_dvsq_max_value);
   /* Clear existing DVSQ bits and set new value */
   g_mock_usb0.intsts0 = (g_mock_usb0.intsts0 & ~k_usb_intsts0_dvsq_mask) |
                         ((dvsq << k_usb_intsts0_dvsq_shift) & k_usb_intsts0_dvsq_mask);

@@ -30,15 +30,7 @@
 
 rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
 {
-  /* Precondition: pin type is already enum-constrained to valid range */
-  (void)pin; /* Parameter is type-safe by enum definition */
-
-  rx_err_t err = gpio_set_output(pin);
-
-  /* Postcondition: Verify the call succeeded */
-  RX_ASSERT(err == k_rx_ok, "Postcondition: gpio_set_output failed");
-
-  return err;
+  return gpio_set_output(pin);
 }
 
 rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
@@ -66,11 +58,11 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
   uint8_t port    = rx_port_from_pin(pin);
   uint8_t pin_num = rx_pin_from_pin(pin);
 
-  if (port > k_hex_port_end || (port > k_max_decimal_port && port < k_hex_port_start)) {
+  if (port > k_rx_port_j) {
     return k_rx_err_invalid_arg;
   }
 
-  if (pin_num >= k_pins_per_port) {
+  if (pin_num > k_rx_pin_max) {
     return k_rx_err_invalid_arg;
   }
 
@@ -126,11 +118,6 @@ static rx_err_t internal_time_mutex_init(void)
 
   UINT status = tx_mutex_create(&s_time_mutex, "TimeMutex", TX_NO_INHERIT);
   if (status == TX_SUCCESS) {
-    s_time_mutex_initialized = true;
-    return k_rx_ok;
-  }
-
-  if (status == TX_MUTEX_ERROR || status == TX_CALLER_ERROR) {
     s_time_mutex_initialized = true;
     return k_rx_ok;
   }

@@ -178,12 +178,10 @@ rx_err_t rx_mpc_set_sci(rx_port_pin_t pin, bool is_tx);
  * Configures pin for RIIC SCL or SDA.
  *
  * @param[in] pin GPIO pin enum (encodes port and pin number)
- * @param[in] is_scl True for SCL, false for SDA
- *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_riic(rx_port_pin_t pin, bool is_scl);
+rx_err_t rx_mpc_set_riic(rx_port_pin_t pin);
 
 /**
  * @brief Configure pin for RSPI (SPI) function

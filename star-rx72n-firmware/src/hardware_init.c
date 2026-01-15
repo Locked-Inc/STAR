@@ -20,6 +20,7 @@
 
 #include "hardware_init.h"
 
+#include "hardware.h"
 #include "rx72n_system_regs.h"
 #include "rx_check.h"
 #include "rx_err.h"
@@ -73,13 +74,17 @@ rx_err_t hardware_init(void)
   /* err = spi_init();
    * RX_RETURN_ON_ERROR(err, "HWINT", "SPI initialization failed"); */
 
+  /* Initialize timers for ThreadX tick before UART logging */
+  rx_err_t err = timer_init();
+  if (rx_err_is_error(err)) {
+    return err;
+  }
+
   /* Initialize UART channels for debugging and external communication */
-  /* TODO: Implement uart_init() that sets up UART0 for debug console
-   *       and UART1 for wireless/network communication */
-  /* Precondition: GPIO initialized, clocks ready */
-  /* Postcondition: UART modules operational at correct baud rates */
-  /* err = uart_init();
-   * RX_RETURN_ON_ERROR(err, "HWINT", "UART initialization failed"); */
+  err = uart_init();
+  if (rx_err_is_error(err)) {
+    return err;
+  }
 
   /* Initialize I2C for sensor bus (IMU, temperature, pressure sensors) */
   /* TODO: Implement i2c_init() that configures I2C0 as bus master */
@@ -89,12 +94,7 @@ rx_err_t hardware_init(void)
    * RX_RETURN_ON_ERROR(err, "HWINT", "I2C initialization failed"); */
 
   /* Initialize timers for motor control PWM and timing */
-  /* TODO: Implement timer_init() that sets up PWM timers for motor control
-   *       and general-purpose timers for scheduling */
-  /* Precondition: GPIO initialized, clocks ready */
-  /* Postcondition: Timer modules configured and PWM ready for motor commands */
-  /* err = timer_init();
-   * RX_RETURN_ON_ERROR(err, "HWINT", "Timer initialization failed"); */
+  /* TODO: Implement PWM and scheduling timers beyond ThreadX tick */
 
   /* Initialize ADC channels for current/voltage sensing and battery monitoring */
   /* TODO: Implement adc_init() that configures ADC0 for analog inputs */
@@ -122,7 +122,5 @@ rx_err_t hardware_init(void)
    *   - ADC: Verify ADC is calibrated and ready for sampling
    */
 
-  /* Peripheral initialization not yet implemented - return error to indicate
-   * this function should not be called until real initialization is added */
-  return k_rx_err_not_supported;
+  return k_rx_ok;
 }
