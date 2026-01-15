@@ -19,27 +19,75 @@
 // don't exist or are different.
 #ifndef SPI_IOC_MESSAGE
 #define SPI_IOC_MESSAGE(N)       0
-#define SPI_MODE_0               0
-#define SPI_IOC_WR_MODE          0
-#define SPI_IOC_WR_BITS_PER_WORD 0
-#define SPI_IOC_WR_MAX_SPEED_HZ  0
+constexpr uint8_t SPI_MODE_0 = 0;
+constexpr int SPI_IOC_WR_MODE = 0;
+constexpr int SPI_IOC_WR_BITS_PER_WORD = 0;
+constexpr int SPI_IOC_WR_MAX_SPEED_HZ = 0;
 
 struct spi_ioc_transfer
 {
-  uint64_t tx_buf;
-  uint64_t rx_buf;
-  uint32_t len;
-  uint32_t speed_hz;
-  uint16_t delay_usecs;
-  uint8_t bits_per_word;
-  uint8_t cs_change;
-  uint32_t pad;
+  uint64_t tx_buf_;
+  uint64_t rx_buf_;
+  uint32_t len_;
+  uint32_t speed_hz_;
+  uint16_t delay_usecs_;
+  uint8_t bits_per_word_;
+  uint8_t cs_change_;
+  uint32_t pad_;
 };
 #endif
 #endif
 
 namespace star_spi_bridge
 {
+
+namespace
+{
+inline void set_spi_xfer_tx_buf(spi_ioc_transfer & xfer, uint64_t value)
+{
+#ifdef __linux__
+  xfer.tx_buf = value;
+#else
+  xfer.tx_buf_ = value;
+#endif
+}
+
+inline void set_spi_xfer_rx_buf(spi_ioc_transfer & xfer, uint64_t value)
+{
+#ifdef __linux__
+  xfer.rx_buf = value;
+#else
+  xfer.rx_buf_ = value;
+#endif
+}
+
+inline void set_spi_xfer_len(spi_ioc_transfer & xfer, uint32_t value)
+{
+#ifdef __linux__
+  xfer.len = value;
+#else
+  xfer.len_ = value;
+#endif
+}
+
+inline void set_spi_xfer_speed_hz(spi_ioc_transfer & xfer, uint32_t value)
+{
+#ifdef __linux__
+  xfer.speed_hz = value;
+#else
+  xfer.speed_hz_ = value;
+#endif
+}
+
+inline void set_spi_xfer_bits_per_word(spi_ioc_transfer & xfer, uint8_t value)
+{
+#ifdef __linux__
+  xfer.bits_per_word = value;
+#else
+  xfer.bits_per_word_ = value;
+#endif
+}
+}  // namespace
 
 uint32_t SpiDriver::crc32_table_[256];
 bool SpiDriver::crc32_table_initialized_ = false;
@@ -77,7 +125,7 @@ bool SpiDriver::initialize()
   }
 
   // Configure bits per word (8 bits)
-  uint8_t bits = 8;
+  uint8_t bits = k_bits_per_word;
   if (ioctl(spi_fd_, SPI_IOC_WR_BITS_PER_WORD, &bits) < 0) {
     std::cerr << "Failed to set SPI bits per word" << std::endl;
     close_device();
@@ -115,11 +163,11 @@ bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8
   struct spi_ioc_transfer xfer;
   std::memset(&xfer, 0, sizeof(xfer));
 
-  xfer.tx_buf = reinterpret_cast<uint64_t>(tx_data.data());
-  xfer.rx_buf = reinterpret_cast<uint64_t>(rx_data.data());
-  xfer.len = static_cast<uint32_t>(tx_data.size());
-  xfer.speed_hz = speed_hz_;
-  xfer.bits_per_word = 8;
+  set_spi_xfer_tx_buf(xfer, reinterpret_cast<uint64_t>(tx_data.data()));
+  set_spi_xfer_rx_buf(xfer, reinterpret_cast<uint64_t>(rx_data.data()));
+  set_spi_xfer_len(xfer, static_cast<uint32_t>(tx_data.size()));
+  set_spi_xfer_speed_hz(xfer, speed_hz_);
+  set_spi_xfer_bits_per_word(xfer, k_bits_per_word);
 
   int ret = ioctl(spi_fd_, SPI_IOC_MESSAGE(1), &xfer);
   if (ret < 0) {

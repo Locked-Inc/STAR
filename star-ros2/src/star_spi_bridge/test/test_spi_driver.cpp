@@ -49,10 +49,10 @@ TEST_F(SpiDriverTest, FrameDecoding)
   // We can't easily test decode without a working encode or pre-calculated frame
   // For Red Phase, we just assert that decode fails on garbage
   std::vector<uint8_t> garbage = {0x00, 0x00, 0x00};
-  uint16_t seq;
-  FrameType type;
-  uint8_t flags;
-  std::vector<uint8_t> payload;
+  uint16_t seq = 0;
+  FrameType type = FrameType::TelemetryData;
+  uint8_t flags = 0x00;
+  std::vector<uint8_t> payload = {};
 
   EXPECT_FALSE(SpiDriver::decode_frame(garbage, seq, type, flags, payload));
 }
