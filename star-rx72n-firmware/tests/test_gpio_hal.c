@@ -19,7 +19,6 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "hardware_pinout.h"
 #include "mock_gpio_hal.h"
 #include "rx_err.h"
 #include "unity.h"

@@ -13,7 +13,6 @@
 
 #include <string.h>
 
-#include "hardware_pinout.h"
 #include "rx_bus_command.h"
 #include "rx_bus_config.h"
 #include "rx_bus_manager.h"

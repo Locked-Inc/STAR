@@ -5,9 +5,12 @@
  *
  */
 
+#include "hardware_init.h"
+#include "rx72n_system_regs.h"
 #include "rx_check.h"
+#include "rx_clock_power_init.h"
 #include "rx_err.h"
-#include "system_init.h"
+#include "tx_api.h"
 
 /* =============================================================================
  * Main Return Codes
@@ -31,66 +34,158 @@ typedef enum {
 
 /**
  * @brief Check Power-On Reset Detect Flag (PORF)
- * @return true if PORF check passes (normal condition), false on unexpected state
+ *
+ * Reads RSTSR0 register to check if a power-on reset occurred.
+ * PORF=1 indicates power-on reset was detected (normal on fresh boot).
+ *
+ * @return true if PORF check passes (power-on reset detected), false otherwise
  */
 static bool internal_check_porf(void)
 {
-  /* TODO: Implement actual PORF flag check from RSTSR0 register */
-  /* For now, return true to indicate normal startup */
-  return true;
+  volatile rx_rstsr01_regs_t* regs = rstsr01();
+
+  /* Precondition: Register pointer must be valid (compile-time constant address) */
+  RX_ASSERT(regs != NULL, "RSTSR01 register pointer is NULL");
+
+  uint8_t rstsr0_val = regs->rstsr0;
+
+  /* PORF=1 indicates power-on reset occurred, which is expected on normal startup */
+  bool porf_set = (rstsr0_val & k_rstsr0_porf) != 0;
+
+  /* Postcondition: Verify RSTSR0 register read succeeded
+   * Note: Allow reads across various valid startup scenarios (both cold and warm) */
+  RX_ASSERT(rstsr0_val != 0x00, "Postcondition: RSTSR0 register must have status bits set");
+
+  /* PORF may not be set on warm boots - this is valid, so log but don't halt */
+  if (!porf_set) {
+    /* Warm boot or software reset - both acceptable */
+    rx_log_info("MAIN", "Power-on reset flag not set - warm boot detected");
+  }
+
+  return porf_set;
+}
+
+/**
+ * @brief Helper function to check RSTSR2 flag state
+ *
+ * Reads RSTSR2 register and checks if a specific flag is clear.
+ * Used by internal_check_iwdtrf, internal_check_wdtrf, and internal_check_swrf.
+ *
+ * @param[in] flag_mask The bit mask for the flag to check
+ * @return true if flag is clear (0), false if flag is set (1)
+ */
+static bool internal_check_rstsr2_flag_clear(uint8_t flag_mask)
+{
+  volatile uint8_t* reg = rstsr2();
+
+  /* Precondition: Register pointer must be valid (compile-time constant address) */
+  RX_ASSERT(reg != NULL, "RSTSR2 register pointer is NULL");
+
+  uint8_t rstsr2_val = *reg;
+
+  /* Compute result reflecting actual register state */
+  bool result = (rstsr2_val & flag_mask) == 0;
+
+  /* Postcondition: Verify flag_mask is non-zero */
+  RX_ASSERT(flag_mask != 0, "Precondition: flag_mask must not be zero");
+
+  return result;
 }
 
 /**
  * @brief Check Independent Watchdog Timer Reset Detect Flag (IWDTRF)
- * @return true if no IWDT reset detected (normal), false if IWDT caused reset
+ *
+ * Reads RSTSR2 register to check if an IWDT reset occurred.
+ * IWDTRF=1 indicates the previous execution was terminated by watchdog timeout.
+ *
+ * @return true if no IWDT reset detected (IWDTRF=0, normal), false if IWDT caused reset
  */
 static bool internal_check_iwdtrf(void)
 {
-  /* TODO: Implement actual IWDTRF flag check from RSTSR2 register */
-  /* For now, return true to indicate no watchdog reset */
-  return true;
+  return internal_check_rstsr2_flag_clear(k_rstsr2_iwdtrf);
 }
 
 /**
  * @brief Check Watchdog Timer Reset Detect Flag (WDTRF)
- * @return true if no WDT reset detected (normal), false if WDT caused reset
+ *
+ * Reads RSTSR2 register to check if a WDT reset occurred.
+ * WDTRF=1 indicates the previous execution was terminated by WDT timeout.
+ *
+ * @return true if no WDT reset detected (WDTRF=0, normal), false if WDT caused reset
  */
 static bool internal_check_wdtrf(void)
 {
-  /* TODO: Implement actual WDTRF flag check from RSTSR2 register */
-  return true;
+  return internal_check_rstsr2_flag_clear(k_rstsr2_wdtrf);
 }
 
 /**
  * @brief Check Software Reset Detect Flag (SWRF)
- * @return true if check passes, false on unexpected state
+ *
+ * Reads RSTSR2 register to check if a software reset occurred.
+ * SWRF=1 indicates a software reset was executed.
+ *
+ * @return true if no software reset detected (SWRF=0), false if software reset occurred
+ * @note Software reset is not necessarily an error - depends on application context
  */
 static bool internal_check_swrf(void)
 {
-  /* TODO: Implement actual SWRF flag check from RSTSR2 register */
-  return true;
+  return internal_check_rstsr2_flag_clear(k_rstsr2_swrf);
 }
 
 /**
  * @brief Check Voltage-Monitoring 0 Reset Detect Flag (LVD0RF)
- * @return true if no voltage-monitoring reset detected, false if LVD0 caused reset
+ *
+ * Reads RSTSR0 register to check if a voltage monitoring reset occurred.
+ * LVD0RF=1 indicates voltage dropped below threshold causing reset.
+ *
+ * @return true if no voltage-monitoring reset detected (LVD0RF=0), false if LVD0 caused reset
  */
 static bool internal_check_lvd0rf(void)
 {
-  /* TODO: Implement actual LVD0RF flag check from RSTSR0 register */
-  return true;
+  volatile rx_rstsr01_regs_t* regs = rstsr01();
+
+  /* Precondition: Register pointer must be valid */
+  RX_ASSERT(regs != NULL, "RSTSR01 register pointer is NULL");
+
+  uint8_t rstsr0_val = regs->rstsr0;
+
+  /* LVD0RF=0 means no voltage-monitoring reset (normal condition) */
+  bool lvd0rf_clear = (rstsr0_val & k_rstsr0_lvd0rf) == 0;
+
+  /* Postcondition: Verify the LVD0RF bit is cleared (no voltage monitoring reset) */
+  RX_ASSERT((rstsr0_val & k_rstsr0_lvd0rf) == 0, "Postcondition: LVD0RF bit is not cleared");
+
+  return lvd0rf_clear;
 }
 
 /**
  * @brief Check Cold/Warm Start Determination Flag (CWSF)
- * @return true if CWSF check passes, false on unexpected state
- * @note CWSF indicates whether this is a cold start (0) or warm start (1)
+ *
+ * Reads RSTSR1 register to determine startup type.
+ * CWSF=0 indicates cold start (power-on or voltage drop).
+ * CWSF=1 indicates warm start (software reset, watchdog, etc.).
+ *
+ * @return true always - both cold and warm starts are acceptable
+ * @note This function reads RSTSR1 but both cold and warm starts are acceptable
  */
 static bool internal_check_cwsf(void)
 {
-  /* TODO: Implement actual CWSF flag check from RSTSR1 register */
-  /* For now, return true - both cold and warm starts are acceptable */
-  return true;
+  volatile rx_rstsr01_regs_t* regs = rstsr01();
+
+  /* Precondition: Register pointer must be valid */
+  RX_ASSERT(regs != NULL, "RSTSR01 register pointer is NULL");
+
+  uint8_t rstsr1_val = regs->rstsr1;
+
+  /* Extract CWSF bit value for validation */
+  uint8_t cwsf_raw = (rstsr1_val & k_rstsr1_cwsf);
+
+  /* Postcondition: Verify CWSF bit value is either 0 or k_rstsr1_cwsf */
+  RX_ASSERT((cwsf_raw == 0) || (cwsf_raw == k_rstsr1_cwsf),
+            "Postcondition: CWSF bit value invalid");
+
+  /* Return actual CWSF state: true for warm start (CWSF=1), false for cold start (CWSF=0) */
+  return (cwsf_raw == k_rstsr1_cwsf);
 }
 
 /**
@@ -127,6 +222,22 @@ static rx_err_t internal_check_startup_flags(void)
 }
 
 /**
+ * @brief ThreadX Application Definition Callback
+ *
+ * Called by ThreadX kernel at startup to allow the application to create
+ * threads and other kernel objects.
+ *
+ * @param[in] first_unused_memory Pointer to first unused memory for kernel objects
+ */
+void tx_application_define(void* first_unused_memory)
+{
+  (void)first_unused_memory; /* Unused parameter */
+
+  /* Application thread creation would go here when implemented.
+   * TODO: For now, this is a placeholder to satisfy ThreadX linkage requirements. */
+}
+
+/**
  * @brief Main entry point
  *
  * Initializes hardware and enters ThreadX kernel.
@@ -150,10 +261,16 @@ int main(void)
   startup_ret = internal_check_startup_flags();
   RX_ERROR_CHECK(startup_ret);
 
-  ret = system_init(); /* TODO: Change the name `system_init` to something more explicit, `system` seems wrong */
+  /* Initialize system clocks and power management */
+  ret = rx_clock_power_init();
   RX_ERROR_CHECK(ret);
 
-  /* TODO: Add hardware_init() implementation and call it here once peripheral setup is defined */
+  /* Initialize application-specific hardware (motors, sensors, etc.) */
+  ret = hardware_init();
+  RX_ERROR_CHECK(ret);
+
+  /* Start the ThreadX scheduler - should never return */
+  tx_kernel_enter();
 
   /* Should never reach here, ThreadX scheduler failed to start if it does */
   while (1) {

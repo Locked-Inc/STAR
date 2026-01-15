@@ -32,8 +32,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hardware_pinout.h"
 #include "rx_err.h"
+#include "rx_port_constants.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,9 +81,9 @@ typedef enum {
  * config headers.
  */
 typedef struct {
-  gpio_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
-  gpio_pin_t echo_pin;    /**< Echo pin (type-safe GPIO enum) */
-  uint32_t   timeout_us;  /**< Measurement timeout (default: 30000us) */
+  rx_port_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
+  rx_port_pin_t echo_pin;    /**< Echo pin (type-safe GPIO enum) */
+  uint32_t      timeout_us;  /**< Measurement timeout (default: 30000us) */
 } rx_hcsr04_config_t;
 
 /**
@@ -94,9 +94,9 @@ typedef struct {
  */
 typedef struct {
   /* Configuration (set during init) */
-  gpio_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
-  gpio_pin_t echo_pin;    /**< Echo pin (type-safe GPIO enum) */
-  uint32_t   timeout_us;  /**< Measurement timeout in microseconds */
+  rx_port_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
+  rx_port_pin_t echo_pin;    /**< Echo pin (type-safe GPIO enum) */
+  uint32_t      timeout_us;  /**< Measurement timeout in microseconds */
 
   /* State */
   bool  initialized;               /**< True if handle is initialized */
