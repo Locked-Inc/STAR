@@ -27,6 +27,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// Configuration constants.
+const (
+	// DefaultShutdownTimeout is the default maximum time to wait for graceful shutdown.
+	DefaultShutdownTimeout = 5 * time.Second
+
+	// DefaultSubscriberBufferSize is the default capacity for subscriber channels.
+	DefaultSubscriberBufferSize = 10
+)
+
 // MessageType identifies a message type in the WireMessage union.
 type MessageType uint32
 
@@ -66,18 +75,6 @@ var (
 
 	// ErrLoggerNil is returned when logger is nil.
 	ErrLoggerNil = errors.New("dispatcher: logger is nil")
-
-	// ErrChannelClosed is returned when a subscription channel is closed.
-	ErrChannelClosed = errors.New("dispatcher: subscription channel closed")
-
-	// ErrTimeout is returned when a receive times out.
-	ErrTimeout = errors.New("dispatcher: receive timeout")
-
-	// ErrUnmarshalFailed is returned when unmarshaling a WireMessage fails.
-	ErrUnmarshalFailed = errors.New("dispatcher: unmarshal failed")
-
-	// ErrNoPayload is returned when WireMessage has no payload set.
-	ErrNoPayload = errors.New("dispatcher: wire message has no payload")
 )
 
 // Dispatcher defines the interface for centralized message routing.
@@ -98,8 +95,9 @@ type Dispatcher interface {
 
 	// Stop gracefully shuts down the dispatcher.
 	// All subscribed channels will be closed.
-	// Blocks until the receive loop has exited.
-	Stop()
+	// Blocks until the receive loop has exited or timeout occurs.
+	// Returns an error if shutdown times out.
+	Stop() error
 
 	// GetState returns the current dispatcher state (for testing/diagnostics).
 	GetState() State
@@ -127,19 +125,19 @@ type dispatcher struct {
 	harq   harq.HARQ
 	logger *slog.Logger
 
-	mu             sync.RWMutex
-	state          State
-	subscribers    map[MessageType][]chan *starv1.WireMessage
-	stopCh         chan struct{}
-	stoppedCh      chan struct{}
-	receiveTimeout time.Duration
+	mu              sync.RWMutex
+	state           State
+	subscribers     map[MessageType][]chan *starv1.WireMessage
+	stopCh          chan struct{}
+	stoppedCh       chan struct{}
+	shutdownTimeout time.Duration
 }
 
 // Config holds dispatcher configuration parameters.
 type Config struct {
-	// ReceiveTimeout is the timeout for individual HARQ.Receive() calls.
-	// If zero, defaults to 100ms.
-	ReceiveTimeout time.Duration
+	// ShutdownTimeout is the maximum time to wait for graceful shutdown.
+	// If zero, defaults to DefaultShutdownTimeout.
+	ShutdownTimeout time.Duration
 }
 
 // NewDispatcher creates a new message dispatcher.
@@ -156,19 +154,19 @@ func NewDispatcher(h harq.HARQ, logger *slog.Logger, cfg *Config) (Dispatcher, e
 		cfg = &Config{}
 	}
 
-	timeout := cfg.ReceiveTimeout
-	if timeout == 0 {
-		timeout = 100 * time.Millisecond
+	shutdownTimeout := cfg.ShutdownTimeout
+	if shutdownTimeout == 0 {
+		shutdownTimeout = DefaultShutdownTimeout
 	}
 
 	return &dispatcher{
-		harq:           h,
-		logger:         logger,
-		state:          StateIdle,
-		subscribers:    make(map[MessageType][]chan *starv1.WireMessage),
-		stopCh:         make(chan struct{}),
-		stoppedCh:      make(chan struct{}),
-		receiveTimeout: timeout,
+		harq:            h,
+		logger:          logger,
+		state:           StateIdle,
+		subscribers:     make(map[MessageType][]chan *starv1.WireMessage),
+		stopCh:          make(chan struct{}),
+		stoppedCh:       make(chan struct{}),
+		shutdownTimeout: shutdownTimeout,
 	}, nil
 }
 
@@ -178,7 +176,7 @@ func (d *dispatcher) Subscribe(msgType MessageType) <-chan *starv1.WireMessage {
 	defer d.mu.Unlock()
 
 	// Create buffered channel to prevent blocking senders
-	ch := make(chan *starv1.WireMessage, 10)
+	ch := make(chan *starv1.WireMessage, DefaultSubscriberBufferSize)
 	d.subscribers[msgType] = append(d.subscribers[msgType], ch)
 
 	d.logger.Debug("subscriber registered", slog.String("message_type", fmt.Sprintf("%d", msgType)))
@@ -233,18 +231,32 @@ func (d *dispatcher) Start(ctx context.Context) error {
 }
 
 // Stop gracefully shuts down the dispatcher.
-func (d *dispatcher) Stop() {
+// Returns an error if the dispatcher doesn't stop within the configured timeout.
+func (d *dispatcher) Stop() error {
 	d.mu.Lock()
+	currentState := d.state
 	if d.state == StateRunning {
 		d.state = StateStopping
 		close(d.stopCh)
 	}
 	d.mu.Unlock()
 
-	// Wait for receive loop to exit
-	<-d.stoppedCh
+	// If never started, nothing to wait for
+	if currentState == StateIdle {
+		d.logger.Debug("dispatcher stop called but never started")
+		return nil
+	}
 
-	d.logger.Info("dispatcher stopped")
+	// Wait for receive loop to exit with timeout protection
+	select {
+	case <-d.stoppedCh:
+		d.logger.Info("dispatcher stopped gracefully")
+		return nil
+	case <-time.After(d.shutdownTimeout):
+		d.logger.Error("dispatcher stop timeout - receive loop may be hung",
+			slog.Duration("timeout", d.shutdownTimeout))
+		return fmt.Errorf("dispatcher: stop timeout after %v", d.shutdownTimeout)
+	}
 }
 
 // GetState returns the current dispatcher state.
@@ -283,9 +295,20 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 		default:
 		}
 
-		// Receive from HARQ with timeout
+		// Receive from HARQ (blocking call with internal timeout)
 		data, err := d.harq.Receive()
 		if err != nil {
+			// Check for cancellation before handling error
+			select {
+			case <-ctx.Done():
+				d.logger.Debug("dispatcher context cancelled", slog.String("error", ctx.Err().Error()))
+				return
+			case <-d.stopCh:
+				d.logger.Debug("dispatcher stop requested")
+				return
+			default:
+			}
+
 			if errors.Is(err, harq.ErrTimeout) || errors.Is(err, harq.ErrDuplicateFrame) {
 				// Transient errors - continue
 				continue
@@ -298,6 +321,17 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 			// Other errors (connection lost, max retries exceeded)
 			d.logger.Error("HARQ receive error", slog.String("error", err.Error()))
 			continue
+		}
+
+		// Check for cancellation before processing data
+		select {
+		case <-ctx.Done():
+			d.logger.Debug("dispatcher context cancelled", slog.String("error", ctx.Err().Error()))
+			return
+		case <-d.stopCh:
+			d.logger.Debug("dispatcher stop requested")
+			return
+		default:
 		}
 
 		// Unmarshal WireMessage

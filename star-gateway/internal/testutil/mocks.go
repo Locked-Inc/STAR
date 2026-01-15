@@ -74,7 +74,7 @@ type MockDispatcher struct {
 	SubscribeFunc   func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage
 	UnsubscribeFunc func(msgType dispatcher.MessageType, ch <-chan *starv1.WireMessage)
 	StartFunc       func() error
-	StopFunc        func()
+	StopFunc        func() error
 	GetStateFunc    func() dispatcher.State
 }
 
@@ -103,10 +103,11 @@ func (m *MockDispatcher) Start(ctx context.Context) error {
 	return nil
 }
 
-func (m *MockDispatcher) Stop() {
+func (m *MockDispatcher) Stop() error {
 	if m.StopFunc != nil {
-		m.StopFunc()
+		return m.StopFunc()
 	}
+	return nil // Return nil by default
 }
 
 func (m *MockDispatcher) GetState() dispatcher.State {

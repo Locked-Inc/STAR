@@ -12,6 +12,7 @@ package transport
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"periph.io/x/conn/v3/physic"
@@ -104,6 +105,7 @@ var (
 // SPITransport implements the Transport interface using periph.io for SPI communication.
 // The Raspberry Pi 5 acts as the SPI controller, communicating with the RX72N at 10 MHz.
 type SPITransport struct {
+	mu     sync.RWMutex   // protects isOpen, conn, port
 	config *SPIConfig
 	isOpen bool
 	conn   spi.Conn       // periph.io SPI connection
@@ -126,6 +128,9 @@ func NewSPITransport(config *SPIConfig) *SPITransport {
 // Initializes periph.io host drivers, opens the SPI port, and configures it
 // with the specified mode, speed, and bits per word.
 func (s *SPITransport) Open() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if s.isOpen {
 		return nil
 	}
@@ -163,6 +168,9 @@ func (s *SPITransport) Open() error {
 // Performs a write-only operation by discarding the received data.
 // SPI is inherently full-duplex, so we must read while writing.
 func (s *SPITransport) Send(data []byte) (int, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	if !s.isOpen {
 		return 0, ErrDeviceNotOpen
 	}
@@ -180,6 +188,9 @@ func (s *SPITransport) Send(data []byte) (int, error) {
 // Performs a read-only operation by sending dummy bytes (zeros).
 // SPI is inherently full-duplex, so we must write while reading.
 func (s *SPITransport) Receive(maxLen int) ([]byte, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	if !s.isOpen {
 		return nil, ErrDeviceNotOpen
 	}
@@ -199,6 +210,9 @@ func (s *SPITransport) Receive(maxLen int) ([]byte, error) {
 // Sends txData while simultaneously receiving data of the same length.
 // This is the native SPI operation mode.
 func (s *SPITransport) Transfer(txData []byte) ([]byte, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	if !s.isOpen {
 		return nil, ErrDeviceNotOpen
 	}
@@ -214,6 +228,9 @@ func (s *SPITransport) Transfer(txData []byte) ([]byte, error) {
 // Close releases the SPI device.
 // Closes the periph.io SPI port and marks the transport as closed.
 func (s *SPITransport) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if !s.isOpen {
 		return nil
 	}
@@ -237,5 +254,7 @@ func (s *SPITransport) Config() *SPIConfig {
 
 // IsOpen returns whether the device is currently open.
 func (s *SPITransport) IsOpen() bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	return s.isOpen
 }

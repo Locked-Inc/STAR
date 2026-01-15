@@ -21,16 +21,27 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	// httpShutdownTimeout is the maximum time allowed for HTTP server graceful shutdown.
+	httpShutdownTimeout = 5 * time.Second
+)
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
+	if err := run(); err != nil {
+		log.Fatalf("Application error: %v", err)
+	}
+}
+
+func run() error {
 	// ========================================
 	// Layer 1: SPI Transport
 	// ========================================
 	log.Printf("Initializing SPI transport...")
 	spiTransport := transport.NewSPITransport(transport.DefaultConfig())
 	if err := spiTransport.Open(); err != nil {
-		log.Fatalf("Failed to open SPI transport: %v", err)
+		return err
 	}
 	defer spiTransport.Close()
 
@@ -74,15 +85,19 @@ func main() {
 	log.Printf("Initializing message dispatcher...")
 	msgDispatcher, err := dispatcher.NewDispatcher(harqHandler, logger, nil)
 	if err != nil {
-		log.Fatalf("Failed to create dispatcher: %v", err)
+		return err
 	}
 
-	// Start dispatcher with context (uses background context for long-running operation)
-	dispatcherCtx := context.Background()
+	// Start dispatcher with cancellable context
+	dispatcherCtx, dispatcherCancel := context.WithCancel(context.Background())
+	defer dispatcherCancel()
 	if err := msgDispatcher.Start(dispatcherCtx); err != nil {
-		log.Fatalf("Failed to start dispatcher: %v", err)
+		return err
 	}
-	defer msgDispatcher.Stop()
+	defer func() {
+		dispatcherCancel() // Trigger ctx.Done() in dispatcher's receive loop
+		msgDispatcher.Stop()
+	}()
 
 	// ========================================
 	// Layer 5: gRPC Services
@@ -108,14 +123,17 @@ func main() {
 	// Start gRPC listener
 	grpcLis, err := net.Listen("tcp", ":50051")
 	if err != nil {
-		log.Fatalf("Failed to listen on :50051: %v", err)
+		return err
 	}
+
+	// Error channel for goroutine failures
+	errChan := make(chan error, 1)
 
 	// Start gRPC server in goroutine
 	go func() {
 		log.Printf("gRPC server listening on :50051")
 		if err := grpcServer.Serve(grpcLis); err != nil {
-			log.Fatalf("gRPC server failed: %v", err)
+			errChan <- err
 		}
 	}()
 
@@ -144,33 +162,39 @@ func main() {
 	go func() {
 		log.Printf("HTTP/WebSocket server starting on %s", server.Addr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("failed to listen and serve: %v", err)
+			errChan <- err
 		}
 	}()
 
-	// Wait for interrupt
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	<-c
+	// Wait for interrupt or error
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
 
-	log.Println("Shutting down servers...")
+	select {
+	case <-sigChan:
+		log.Println("Interrupt received, shutting down...")
+	case err := <-errChan:
+		log.Printf("Server error: %v, shutting down...", err)
+	}
 
 	// Shutdown HTTP server
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), httpShutdownTimeout)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("HTTP server shutdown failed: %+v", err)
+		log.Printf("HTTP server shutdown error: %v", err)
+	} else {
+		log.Println("HTTP server stopped")
 	}
-	log.Println("HTTP server stopped")
 
 	// Shutdown gRPC server
 	log.Printf("Shutting down gRPC server...")
 	grpcServer.GracefulStop()
 	log.Println("gRPC server stopped")
 
-	// SPI transport cleanup (via defer at top of main)
+	// SPI transport cleanup (via defer at top of run)
 	log.Println("Closing SPI transport...")
 
 	log.Println("All servers exited gracefully")
+	return nil
 }

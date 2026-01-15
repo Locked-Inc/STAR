@@ -13,6 +13,16 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// Test timeout constants.
+const (
+	testHARQTimeout      = 50 * time.Millisecond
+	testShortTimeout     = 100 * time.Millisecond
+	testMediumTimeout    = 150 * time.Millisecond
+	testLongTimeout      = 200 * time.Millisecond
+	testDrainTimeout     = 10 * time.Millisecond
+	testBackpressureMsgs = 20
+)
+
 // MockHARQ is a mock implementation of the harq.HARQ interface for testing.
 type MockHARQ struct {
 	ReceiveFunc  func() ([]byte, error)
@@ -41,7 +51,7 @@ func (m *MockHARQ) Receive() ([]byte, error) {
 		select {
 		case data := <-m.receiveChan:
 			return data, nil
-		case <-time.After(50 * time.Millisecond):
+		case <-time.After(testHARQTimeout):
 			return nil, harq.ErrTimeout
 		}
 	}
@@ -156,7 +166,10 @@ func TestDispatcherBasicRouting(t *testing.T) {
 		Payload: &starv1.WireMessage_TelemetryData{TelemetryData: telemetry},
 	}
 
-	data, _ := proto.Marshal(wrapper)
+	data, err := proto.Marshal(wrapper)
+	if err != nil {
+		t.Fatalf("Failed to marshal test data: %v", err)
+	}
 
 	// Create mock HARQ that returns the telemetry message
 	receiveChan := make(chan []byte, 1)
@@ -175,7 +188,7 @@ func TestDispatcherBasicRouting(t *testing.T) {
 	telemetryCh := d.Subscribe(MessageTypeTelemetryData)
 
 	// Start dispatcher
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), testLongTimeout)
 	defer cancel()
 
 	if err := d.Start(ctx); err != nil {
@@ -195,7 +208,7 @@ func TestDispatcherBasicRouting(t *testing.T) {
 		if receivedTelem.BatteryPercent != 85.0 {
 			t.Errorf("Expected battery 85%%, got %.1f%%", receivedTelem.BatteryPercent)
 		}
-	case <-time.After(150 * time.Millisecond):
+	case <-time.After(testMediumTimeout):
 		t.Fatal("Timeout waiting for message")
 	}
 
@@ -214,7 +227,10 @@ func TestDispatcherMultipleSubscribers(t *testing.T) {
 	wrapper := &starv1.WireMessage{
 		Payload: &starv1.WireMessage_TelemetryData{TelemetryData: telemetry},
 	}
-	data, _ := proto.Marshal(wrapper)
+	data, err := proto.Marshal(wrapper)
+	if err != nil {
+		t.Fatalf("Failed to marshal test data: %v", err)
+	}
 
 	receiveChan := make(chan []byte, 1)
 	receiveChan <- data
@@ -227,14 +243,14 @@ func TestDispatcherMultipleSubscribers(t *testing.T) {
 	ch1 := d.Subscribe(MessageTypeTelemetryData)
 	ch2 := d.Subscribe(MessageTypeTelemetryData)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), testMediumTimeout)
 	defer cancel()
 
 	d.Start(ctx)
 
 	// Both should receive
 	receivedCount := 0
-	timeout := time.After(100 * time.Millisecond)
+	timeout := time.After(testShortTimeout)
 
 	for receivedCount < 2 {
 		select {
@@ -284,7 +300,10 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 				wrapper = &starv1.WireMessage{Payload: &starv1.WireMessage_BatteryStatus{BatteryStatus: tc.payload.(*starv1.BatteryStatus)}}
 			}
 
-			data, _ := proto.Marshal(wrapper)
+			data, err := proto.Marshal(wrapper)
+			if err != nil {
+				t.Fatalf("Failed to marshal test data: %v", err)
+			}
 			mockHARQ := &MockHARQ{receiveChan: make(chan []byte, 1)}
 			mockHARQ.receiveChan <- data
 
@@ -292,6 +311,10 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create dispatcher: %v", err)
 			}
+
+			// Subscribe BEFORE starting to avoid race condition
+			ch := d.Subscribe(tc.msgType)
+			defer d.Unsubscribe(tc.msgType, ch)
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -301,15 +324,12 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 			}
 			defer d.Stop()
 
-			ch := d.Subscribe(tc.msgType)
-			defer d.Unsubscribe(tc.msgType, ch)
-
 			select {
 			case msg := <-ch:
 				if msg == nil {
 					t.Error("Received nil message")
 				}
-			case <-time.After(100 * time.Millisecond):
+			case <-time.After(testShortTimeout):
 				t.Error("Timeout waiting for message")
 			}
 		})
@@ -338,7 +358,7 @@ func TestDispatcherErrorHandling(t *testing.T) {
 		defer cancel()
 
 		d.Start(ctx)
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(testHARQTimeout)
 		cancel()
 		d.Stop()
 
@@ -356,14 +376,17 @@ func TestDispatcherErrorHandling(t *testing.T) {
 		defer cancel()
 
 		d.Start(ctx)
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(testHARQTimeout)
 		cancel()
 		d.Stop()
 	})
 
 	t.Run("Empty WireMessage", func(t *testing.T) {
 		wrapper := &starv1.WireMessage{} // No payload set
-		data, _ := proto.Marshal(wrapper)
+		data, err := proto.Marshal(wrapper)
+		if err != nil {
+			t.Fatalf("Failed to marshal test data: %v", err)
+		}
 
 		mockHARQ := &MockHARQ{receiveChan: make(chan []byte, 1)}
 		mockHARQ.receiveChan <- data
@@ -373,7 +396,7 @@ func TestDispatcherErrorHandling(t *testing.T) {
 		defer cancel()
 
 		d.Start(ctx)
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(testHARQTimeout)
 		cancel()
 		d.Stop()
 	})
@@ -387,11 +410,14 @@ func TestDispatcherChannelBackpressure(t *testing.T) {
 	wrapper := &starv1.WireMessage{
 		Payload: &starv1.WireMessage_TelemetryData{TelemetryData: telemetry},
 	}
-	data, _ := proto.Marshal(wrapper)
+	data, err := proto.Marshal(wrapper)
+	if err != nil {
+		t.Fatalf("Failed to marshal test data: %v", err)
+	}
 
-	// Send 20 messages rapidly to fill the 10-capacity channel
-	mockHARQ := &MockHARQ{receiveChan: make(chan []byte, 20)}
-	for i := 0; i < 20; i++ {
+	// Send testBackpressureMsgs messages rapidly to fill the DefaultSubscriberBufferSize channel
+	mockHARQ := &MockHARQ{receiveChan: make(chan []byte, testBackpressureMsgs)}
+	for i := 0; i < testBackpressureMsgs; i++ {
 		mockHARQ.receiveChan <- data
 	}
 
@@ -406,7 +432,7 @@ func TestDispatcherChannelBackpressure(t *testing.T) {
 	defer d.Unsubscribe(MessageTypeTelemetryData, ch)
 
 	// Let dispatcher fill the channel
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(testShortTimeout)
 
 	// Drain some messages
 	received := 0
@@ -414,8 +440,8 @@ func TestDispatcherChannelBackpressure(t *testing.T) {
 		select {
 		case <-ch:
 			received++
-		case <-time.After(10 * time.Millisecond):
-			break
+		case <-time.After(testDrainTimeout):
+			// Timeout is expected when queue is drained
 		}
 	}
 
