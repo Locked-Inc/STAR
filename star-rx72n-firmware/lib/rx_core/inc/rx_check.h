@@ -72,10 +72,14 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
   uart_puts("========================================\r\n");
 
   /* Disable interrupts and halt */
+#ifndef UNIT_TEST
   __asm__ volatile("clrpsw i");
   while (1) {
     __asm__ volatile("wait");
   }
+#else
+  return;
+#endif
 }
 
 /* =============================================================================

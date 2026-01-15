@@ -106,6 +106,13 @@ static rx_err_t internal_uart_init_callback(rx_bus_config_t* bus_config, void* u
     return k_rx_err_invalid_arg;
   }
 
+  /* Pre-condition: Verify UART channel is within valid range */
+  if (bus_config->proto.uart.channel >= k_sci_channel_count) {
+    rx_log_error(s_tag, "UART channel exceeds maximum SCI channel count");
+    ctx->result = k_rx_err_invalid_arg;
+    return k_rx_err_invalid_arg;
+  }
+
   /* Initialize SCI channel with full hardware configuration */
   const uart_channel_config_t uart_config = {
     .channel  = bus_config->proto.uart.channel,
@@ -119,12 +126,6 @@ static rx_err_t internal_uart_init_callback(rx_bus_config_t* bus_config, void* u
     rx_log_error(s_tag, "UART HAL initialization failed");
     ctx->result = k_rx_err_hw_init_failed;
     return k_rx_err_hw_init_failed;
-  }
-
-  /* Post-condition: Verify UART channel is within valid range */
-  if (bus_config->proto.uart.channel >= k_sci_channel_count) {
-    rx_log_warn(s_tag, "UART channel exceeds maximum SCI channel count");
-    /* Continue anyway - HAL should validate, but flag if misconfigured */
   }
 
   /* Mark bus as initialized */

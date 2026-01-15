@@ -14,6 +14,7 @@
 
 #include <string.h>
 
+#include "hardware.h"
 #include "mock_sci_regs.h"
 
 /* =============================================================================
@@ -251,18 +252,18 @@ uint32_t mock_uart_hw_get_baudrate(uint8_t channel)
 #include "mock_sci_regs.h"
 #include "rx_err.h"
 
-rx_err_t uart_init_channel(uint8_t  channel,
-                           uint32_t baudrate,
-                           uint8_t  tx_port,
-                           uint8_t  tx_pin,
-                           uint8_t  rx_port,
-                           uint8_t  rx_pin)
+rx_err_t uart_init_channel(const uart_channel_config_t* config)
 {
+  if (config == NULL) {
+    return k_rx_err_null_pointer;
+  }
+
+  uint8_t  channel  = config->channel;
+  uint32_t baudrate = config->baudrate;
+
   /* Pin parameters are ignored in mock - no actual hardware config */
-  (void)tx_port;
-  (void)tx_pin;
-  (void)rx_port;
-  (void)rx_pin;
+  (void)config->tx_gpio;
+  (void)config->rx_gpio;
 
   internal_record_call(k_mock_uart_call_init, channel, baudrate);
 
@@ -527,7 +528,14 @@ rx_err_t uart_rx_available(uint8_t channel, bool* available)
 
 rx_err_t uart_init(void)
 {
-  return uart_init_channel(9, 115200, 0x0B, 7, 0x0B, 6);
+  const uart_channel_config_t config = {
+    .channel  = 9,
+    .baudrate = 115200,
+    .tx_gpio  = k_rx_pb_7,
+    .rx_gpio  = k_rx_pb_6,
+  };
+
+  return uart_init_channel(&config);
 }
 
 void uart_putc(char data)

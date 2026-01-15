@@ -17,6 +17,7 @@
 #ifndef STAR_RX72N_BUS_CONFIG_H
 #define STAR_RX72N_BUS_CONFIG_H
 
+#include "rx_port_constants.h"
 #include "rx_bus_types.h"
 #include "rx_err.h"
 
@@ -54,7 +55,7 @@ extern "C" {
  *
  * @param[out] config Pointer to bus config structure to initialize
  * @param[in] name Unique bus name (must remain valid for lifetime)
- * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
+ * @param[in] pin GPIO pin (type-safe enum from rx_port_constants.h)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_null_pointer if config or name is NULL
@@ -108,8 +109,8 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * @param[in] name Unique bus name (must remain valid for lifetime)
  * @param[in] channel RIIC channel (0-2)
  * @param[in] device_addr 7-bit I2C device address
- * @param[in] sda_pin SDA pin (type-safe enum from hardware_pinout.h)
- * @param[in] scl_pin SCL pin (type-safe enum from hardware_pinout.h)
+ * @param[in] sda_pin SDA pin (type-safe enum from rx_port_constants.h)
+ * @param[in] scl_pin SCL pin (type-safe enum from rx_port_constants.h)
  * @param[in] frequency_hz Clock frequency (100000, 400000, or 1000000)
  *
  * @return k_rx_ok on success
@@ -138,8 +139,8 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
  * @param[in] name Unique bus name (must remain valid for lifetime)
  * @param[in] channel RIIC channel (0-2)
  * @param[in] device_addr 7-bit SMBUS device address
- * @param[in] sda_pin SDA pin (type-safe enum from hardware_pinout.h)
- * @param[in] scl_pin SCL pin (type-safe enum from hardware_pinout.h)
+ * @param[in] sda_pin SDA pin (type-safe enum from rx_port_constants.h)
+ * @param[in] scl_pin SCL pin (type-safe enum from rx_port_constants.h)
  * @param[in] frequency_hz Clock frequency (typically 100000)
  * @param[in] use_pec Enable Packet Error Checking (CRC-8)
  *
@@ -174,7 +175,7 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
  *
  * @param[out] config Pointer to bus config structure to initialize
  * @param[in] name Unique bus name (must remain valid for lifetime)
- * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
+ * @param[in] pin GPIO pin (type-safe enum from rx_port_constants.h)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_null_pointer if config or name is NULL

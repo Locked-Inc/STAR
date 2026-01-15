@@ -89,31 +89,6 @@ typedef enum {
   k_psel_adc       = 0x00, /**< ADC input (disable digital) */
 } rx_pin_psel_t;
 
-/**
- * @brief Port numbers for RX72N
- */
-typedef enum {
-  k_port_0 = 0,
-  k_port_1 = 1,
-  k_port_2 = 2,
-  k_port_3 = 3,
-  k_port_4 = 4,
-  k_port_5 = 5,
-  k_port_6 = 6,
-  k_port_7 = 7,
-  k_port_8 = 8,
-  k_port_9 = 9,
-  k_port_a = 0x0A,
-  k_port_b = 0x0B,
-  k_port_c = 0x0C,
-  k_port_d = 0x0D,
-  k_port_e = 0x0E,
-  k_port_f = 0x0F,
-  k_port_g = 0x10,
-  k_port_h = 0x11,
-  k_port_j = 0x12,
-} rx_port_t;
-
 /* =============================================================================
  * Public API
  * =============================================================================
