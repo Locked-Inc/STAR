@@ -45,7 +45,7 @@ private:
   static const uint32_t k_crc32_polynomial = 0x04C11DB7;
   static const uint16_t k_sync_word = 0x55AA;
   static const size_t k_header_size = 8;  // SYNC(2) + SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1)
-  static const uint8_t k_bits_per_word = 8;
+  static constexpr uint8_t k_bits_per_word = 8;
   // [SYNC: 0x55AA (2B, BE)]
   // [SEQ: sequence number (2B, BE)]
   // [LEN: payload length (2B, BE)]

@@ -326,18 +326,7 @@ func (s *ConfigurationService) GetMotorPidConfig(ctx context.Context, req *starv
 		return nil, status.Errorf(codes.Unavailable, "failed to receive motor pid config response: %v", err)
 	}
 
-	if resp.Header == nil {
-		requestID := ""
-		if req.Header != nil {
-			requestID = req.Header.GetRequestId()
-		}
-		s.logger.Warn("motor pid config response missing header", "request_id", requestID)
-		resp.Header = &starv1.ResponseHeader{
-			RequestId:       requestID,
-			ServerTimestamp: timestamppb.Now(),
-			Status:          starv1.Status_STATUS_OK,
-		}
-	}
+	s.ensureResponseHeader(req.Header, &resp.Header, "motor pid config response missing header")
 
 	return &resp, nil
 }
@@ -579,14 +568,14 @@ func (s *ConfigurationService) validatePidConfig(fieldPrefix string, config *sta
 		})
 	}
 
-	// Validate ki > 0
-	if config.Ki <= minPidGain || math.IsNaN(config.Ki) || math.IsInf(config.Ki, 0) {
+	// Validate ki >= 0 (integral can be zero)
+	if config.Ki < minPidGain || math.IsNaN(config.Ki) || math.IsInf(config.Ki, 0) {
 		errors = append(errors, &starv1.ConfigValidationError{
 			FieldPath:          fmt.Sprintf("%s.ki", fieldPrefix),
 			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_LOW,
-			Message:            "ki must be greater than 0",
+			Message:            "ki must be greater than or equal to 0",
 			ActualValue:        fmt.Sprintf("%f", config.Ki),
-			ExpectedConstraint: "> 0",
+			ExpectedConstraint: ">= 0",
 		})
 	}
 

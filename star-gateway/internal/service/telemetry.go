@@ -57,7 +57,7 @@ func (h *telemetryHolder) Store(data *starv1.TelemetryData) {
 // - Background goroutine updates cached telemetry from dispatcher
 type TelemetryService struct {
 	starv1.UnimplementedTelemetryServiceServer
-	harqHandler     harq.HARQ
+	harqHandler     harq.HARQ // Reserved for future firmware/HARQ integration (GetSystemStatus, etc.)
 	dispatcher      dispatcher.Dispatcher
 	logger          *slog.Logger
 	latestTelemetry *telemetryHolder
