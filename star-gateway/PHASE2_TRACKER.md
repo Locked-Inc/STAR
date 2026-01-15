@@ -302,13 +302,13 @@ go test -cover ./internal/service/battery_test.go
 - [ ] Lint passes: `golangci-lint run ./internal/service/`
 
 ### Service Registration
-- [x] 3 services registered in main.go (Gateway, MotorControl, Telemetry):
+- [x] 4 services registered in main.go (Gateway, MotorControl, Telemetry, Configuration):
   ```bash
   grep -c "RegisterServiceServer" star-gateway/cmd/star-gateway/main.go
-  # Currently: 3 (Target: 6)
+  # Currently: 4 (Target: 6)
   ```
-- [x] Services registered: Gateway, MotorControl, Telemetry
-- [ ] Services pending: BatteryManagement, Configuration, FirmwareUpdate
+- [x] Services registered: Gateway, MotorControl, Telemetry, Configuration
+- [ ] Services pending: BatteryManagement, FirmwareUpdate
 
 ### Manual Integration Test
 - [x] Gateway starts successfully: `./star-gateway`

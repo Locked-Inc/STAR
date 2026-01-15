@@ -81,6 +81,53 @@ func NewConfigurationService(h harq.HARQ, d dispatcher.Dispatcher, logger *slog.
 	}
 }
 
+func (s *ConfigurationService) ensureResponseHeader(
+	reqHeader *starv1.RequestHeader,
+	respHeader **starv1.ResponseHeader,
+	warnMsg string,
+) {
+	requestID := ""
+	if reqHeader != nil {
+		requestID = reqHeader.GetRequestId()
+	}
+	if *respHeader == nil {
+		s.logger.Warn(warnMsg, "request_id", requestID)
+		*respHeader = &starv1.ResponseHeader{
+			RequestId:       requestID,
+			ServerTimestamp: timestamppb.Now(),
+			Status:          starv1.Status_STATUS_OK,
+		}
+	}
+}
+
+func (s *ConfigurationService) sendAndReceive(
+	ctx context.Context,
+	req proto.Message,
+	resp proto.Message,
+	sendLogMsg string,
+	sendErrMsg string,
+	recvLogMsg string,
+	recvErrMsg string,
+) error {
+	if err := s.sendProtoMessage(ctx, req); err != nil {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return status.FromContextError(ctxErr).Err()
+		}
+		s.logger.Error(sendLogMsg, "error", err)
+		return status.Errorf(codes.Unavailable, "%s: %v", sendErrMsg, err)
+	}
+
+	if err := s.receiveProtoMessage(ctx, resp); err != nil {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return status.FromContextError(ctxErr).Err()
+		}
+		s.logger.Error(recvLogMsg, "error", err)
+		return status.Errorf(codes.Unavailable, "%s: %v", recvErrMsg, err)
+	}
+
+	return nil
+}
+
 // GetConfiguration retrieves the current system configuration from the RX72N firmware.
 // TODO: Implement proper request via HARQ once firmware integration is complete.
 // For now, returns mock configuration until firmware integration is ready.
@@ -89,35 +136,20 @@ func (s *ConfigurationService) GetConfiguration(ctx context.Context, req *starv1
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	if err := s.sendProtoMessage(ctx, req); err != nil {
-		if ctxErr := ctx.Err(); ctxErr != nil {
-			return nil, status.FromContextError(ctxErr).Err()
-		}
-		s.logger.Error("failed to send get configuration request", "error", err)
-		return nil, status.Errorf(codes.Unavailable, "failed to send get configuration request: %v", err)
-	}
-
 	var resp starv1.GetConfigurationResponse
-	if err := s.receiveProtoMessage(ctx, &resp); err != nil {
-		if ctxErr := ctx.Err(); ctxErr != nil {
-			return nil, status.FromContextError(ctxErr).Err()
-		}
-		s.logger.Error("failed to receive configuration response", "error", err)
-		return nil, status.Errorf(codes.Unavailable, "failed to receive configuration response: %v", err)
+	if err := s.sendAndReceive(
+		ctx,
+		req,
+		&resp,
+		"failed to send get configuration request",
+		"failed to send get configuration request",
+		"failed to receive configuration response",
+		"failed to receive configuration response",
+	); err != nil {
+		return nil, err
 	}
 
-	if resp.Header == nil {
-		requestId := ""
-		if req.Header != nil {
-			requestId = req.Header.GetRequestId()
-		}
-		s.logger.Warn("configuration response missing header", "request_id", requestId)
-		resp.Header = &starv1.ResponseHeader{
-			RequestId:       requestId,
-			ServerTimestamp: timestamppb.Now(),
-			Status:          starv1.Status_STATUS_OK,
-		}
-	}
+	s.ensureResponseHeader(req.Header, &resp.Header, "configuration response missing header")
 
 	return &resp, nil
 }
@@ -136,16 +168,16 @@ func (s *ConfigurationService) SetConfiguration(ctx context.Context, req *starv1
 	// Validate configuration
 	validationResult := s.validateConfiguration(req.Configuration)
 
-	requestId := ""
+	requestID := ""
 	if req.Header != nil {
-		requestId = req.Header.GetRequestId()
+		requestID = req.Header.GetRequestId()
 	}
 
 	// If validation failed, return error
 	if validationResult.Status != starv1.ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VALID {
 		return &starv1.SetConfigurationResponse{
 			Header: &starv1.ResponseHeader{
-				RequestId:       requestId,
+				RequestId:       requestID,
 				ServerTimestamp: timestamppb.Now(),
 				Status:          starv1.Status_STATUS_INVALID_REQUEST,
 			},
@@ -170,18 +202,7 @@ func (s *ConfigurationService) SetConfiguration(ctx context.Context, req *starv1
 		return nil, status.Errorf(codes.Unavailable, "failed to receive configuration response: %v", err)
 	}
 
-	if resp.Header == nil {
-		requestId := ""
-		if req.Header != nil {
-			requestId = req.Header.GetRequestId()
-		}
-		s.logger.Warn("set configuration response missing header", "request_id", requestId)
-		resp.Header = &starv1.ResponseHeader{
-			RequestId:       requestId,
-			ServerTimestamp: timestamppb.Now(),
-			Status:          starv1.Status_STATUS_OK,
-		}
-	}
+	s.ensureResponseHeader(req.Header, &resp.Header, "set configuration response missing header")
 
 	if resp.Header.Status != starv1.Status_STATUS_OK {
 		s.logger.Error("firmware rejected configuration", "status", resp.Header.Status, "response", &resp)
@@ -202,7 +223,7 @@ func (s *ConfigurationService) SetConfiguration(ctx context.Context, req *starv1
 
 // ValidateConfiguration validates configuration parameters without applying them.
 // Returns detailed validation results including any errors found.
-func (s *ConfigurationService) ValidateConfiguration(ctx context.Context, req *starv1.ValidateConfigurationRequest) (*starv1.ValidateConfigurationResponse, error) {
+func (s *ConfigurationService) ValidateConfiguration(_ context.Context, req *starv1.ValidateConfigurationRequest) (*starv1.ValidateConfigurationResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
@@ -213,14 +234,14 @@ func (s *ConfigurationService) ValidateConfiguration(ctx context.Context, req *s
 
 	validationResult := s.validateConfiguration(req.Configuration)
 
-	requestId := ""
+	requestID := ""
 	if req.Header != nil {
-		requestId = req.Header.GetRequestId()
+		requestID = req.Header.GetRequestId()
 	}
 
 	return &starv1.ValidateConfigurationResponse{
 		Header: &starv1.ResponseHeader{
-			RequestId:       requestId,
+			RequestId:       requestID,
 			ServerTimestamp: timestamppb.Now(),
 			Status:          starv1.Status_STATUS_OK,
 		},
@@ -235,35 +256,20 @@ func (s *ConfigurationService) ResetToDefaults(ctx context.Context, req *starv1.
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	if err := s.sendProtoMessage(ctx, req); err != nil {
-		if ctxErr := ctx.Err(); ctxErr != nil {
-			return nil, status.FromContextError(ctxErr).Err()
-		}
-		s.logger.Error("failed to send reset to defaults request", "error", err)
-		return nil, status.Errorf(codes.Unavailable, "failed to send reset request: %v", err)
-	}
-
 	var resp starv1.ResetToDefaultsResponse
-	if err := s.receiveProtoMessage(ctx, &resp); err != nil {
-		if ctxErr := ctx.Err(); ctxErr != nil {
-			return nil, status.FromContextError(ctxErr).Err()
-		}
-		s.logger.Error("failed to receive reset to defaults response", "error", err)
-		return nil, status.Errorf(codes.Unavailable, "failed to receive reset response: %v", err)
+	if err := s.sendAndReceive(
+		ctx,
+		req,
+		&resp,
+		"failed to send reset to defaults request",
+		"failed to send reset request",
+		"failed to receive reset to defaults response",
+		"failed to receive reset response",
+	); err != nil {
+		return nil, err
 	}
 
-	if resp.Header == nil {
-		requestId := ""
-		if req.Header != nil {
-			requestId = req.Header.GetRequestId()
-		}
-		s.logger.Warn("reset response missing header", "request_id", requestId)
-		resp.Header = &starv1.ResponseHeader{
-			RequestId:       requestId,
-			ServerTimestamp: timestamppb.Now(),
-			Status:          starv1.Status_STATUS_OK,
-		}
-	}
+	s.ensureResponseHeader(req.Header, &resp.Header, "reset response missing header")
 
 	return &resp, nil
 }
@@ -274,35 +280,20 @@ func (s *ConfigurationService) SaveConfiguration(ctx context.Context, req *starv
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	if err := s.sendProtoMessage(ctx, req); err != nil {
-		if ctxErr := ctx.Err(); ctxErr != nil {
-			return nil, status.FromContextError(ctxErr).Err()
-		}
-		s.logger.Error("failed to send save configuration request", "error", err)
-		return nil, status.Errorf(codes.Unavailable, "failed to send save request: %v", err)
-	}
-
 	var resp starv1.SaveConfigurationResponse
-	if err := s.receiveProtoMessage(ctx, &resp); err != nil {
-		if ctxErr := ctx.Err(); ctxErr != nil {
-			return nil, status.FromContextError(ctxErr).Err()
-		}
-		s.logger.Error("failed to receive save configuration response", "error", err)
-		return nil, status.Errorf(codes.Unavailable, "failed to receive save response: %v", err)
+	if err := s.sendAndReceive(
+		ctx,
+		req,
+		&resp,
+		"failed to send save configuration request",
+		"failed to send save request",
+		"failed to receive save configuration response",
+		"failed to receive save response",
+	); err != nil {
+		return nil, err
 	}
 
-	if resp.Header == nil {
-		requestId := ""
-		if req.Header != nil {
-			requestId = req.Header.GetRequestId()
-		}
-		s.logger.Warn("save configuration response missing header", "request_id", requestId)
-		resp.Header = &starv1.ResponseHeader{
-			RequestId:       requestId,
-			ServerTimestamp: timestamppb.Now(),
-			Status:          starv1.Status_STATUS_OK,
-		}
-	}
+	s.ensureResponseHeader(req.Header, &resp.Header, "save configuration response missing header")
 
 	return &resp, nil
 }
@@ -336,13 +327,13 @@ func (s *ConfigurationService) GetMotorPidConfig(ctx context.Context, req *starv
 	}
 
 	if resp.Header == nil {
-		requestId := ""
+		requestID := ""
 		if req.Header != nil {
-			requestId = req.Header.GetRequestId()
+			requestID = req.Header.GetRequestId()
 		}
-		s.logger.Warn("motor pid config response missing header", "request_id", requestId)
+		s.logger.Warn("motor pid config response missing header", "request_id", requestID)
 		resp.Header = &starv1.ResponseHeader{
-			RequestId:       requestId,
+			RequestId:       requestID,
 			ServerTimestamp: timestamppb.Now(),
 			Status:          starv1.Status_STATUS_OK,
 		}
@@ -370,16 +361,16 @@ func (s *ConfigurationService) SetMotorPidConfig(ctx context.Context, req *starv
 	// Validate PID config
 	validationResult := s.validatePidConfig(fmt.Sprintf("motor_configs[%d].pid_config", req.MotorId), req.PidConfig)
 
-	requestId := ""
+	requestID := ""
 	if req.Header != nil {
-		requestId = req.Header.GetRequestId()
+		requestID = req.Header.GetRequestId()
 	}
 
 	// If validation failed, return error
 	if validationResult.Status != starv1.ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VALID {
 		return &starv1.SetMotorPidConfigResponse{
 			Header: &starv1.ResponseHeader{
-				RequestId:       requestId,
+				RequestId:       requestID,
 				ServerTimestamp: timestamppb.Now(),
 				Status:          starv1.Status_STATUS_INVALID_REQUEST,
 			},
@@ -432,13 +423,13 @@ func (s *ConfigurationService) SetMotorPidConfig(ctx context.Context, req *starv
 		}
 
 		if saveResp.Header == nil {
-			requestId := ""
+			requestID := ""
 			if req.Header != nil {
-				requestId = req.Header.GetRequestId()
+				requestID = req.Header.GetRequestId()
 			}
-			s.logger.Warn("persist configuration response missing header", "request_id", requestId)
+			s.logger.Warn("persist configuration response missing header", "request_id", requestID)
 			saveResp.Header = &starv1.ResponseHeader{
-				RequestId:       requestId,
+				RequestId:       requestID,
 				ServerTimestamp: timestamppb.Now(),
 				Status:          starv1.Status_STATUS_OK,
 			}
@@ -455,7 +446,7 @@ func (s *ConfigurationService) SetMotorPidConfig(ctx context.Context, req *starv
 
 	return &starv1.SetMotorPidConfigResponse{
 		Header: &starv1.ResponseHeader{
-			RequestId:       requestId,
+			RequestId:       requestID,
 			ServerTimestamp: timestamppb.Now(),
 			Status:          starv1.Status_STATUS_OK,
 		},
@@ -527,7 +518,7 @@ func (s *ConfigurationService) validateConfiguration(config *starv1.SystemConfig
 		}
 
 		// Validate motor_id matches array index
-		if motorConfig.MotorId != int32(i) {
+		if int(motorConfig.MotorId) != i {
 			errors = append(errors, &starv1.ConfigValidationError{
 				FieldPath:          fmt.Sprintf("motor_configs[%d].motor_id", i),
 				ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_HIGH,
@@ -751,46 +742,82 @@ func (s *ConfigurationService) validateTimingConfig(config *starv1.TimingConfigu
 	var errors []*starv1.ConfigValidationError
 
 	// Validate motor control period
-	if config.MotorControlPeriodMs < minMotorControlPeriodMs || config.MotorControlPeriodMs > maxMotorControlPeriodMs {
+	if config.MotorControlPeriodMs < minMotorControlPeriodMs {
 		errors = append(errors, &starv1.ConfigValidationError{
 			FieldPath:          "timing_config.motor_control_period_ms",
 			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_LOW,
-			Message:            "motor_control_period_ms out of valid range",
+			Message:            "motor_control_period_ms is too low",
 			ActualValue:        fmt.Sprintf("%d", config.MotorControlPeriodMs),
-			ExpectedConstraint: fmt.Sprintf("%d-%d ms", minMotorControlPeriodMs, maxMotorControlPeriodMs),
+			ExpectedConstraint: fmt.Sprintf(">= %d ms", minMotorControlPeriodMs),
+		})
+	}
+	if config.MotorControlPeriodMs > maxMotorControlPeriodMs {
+		errors = append(errors, &starv1.ConfigValidationError{
+			FieldPath:          "timing_config.motor_control_period_ms",
+			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_HIGH,
+			Message:            "motor_control_period_ms is too high",
+			ActualValue:        fmt.Sprintf("%d", config.MotorControlPeriodMs),
+			ExpectedConstraint: fmt.Sprintf("<= %d ms", maxMotorControlPeriodMs),
 		})
 	}
 
 	// Validate telemetry period
-	if config.TelemetryPeriodMs < minTelemetryPeriodMs || config.TelemetryPeriodMs > maxTelemetryPeriodMs {
+	if config.TelemetryPeriodMs < minTelemetryPeriodMs {
 		errors = append(errors, &starv1.ConfigValidationError{
 			FieldPath:          "timing_config.telemetry_period_ms",
 			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_LOW,
-			Message:            "telemetry_period_ms out of valid range",
+			Message:            "telemetry_period_ms is too low",
 			ActualValue:        fmt.Sprintf("%d", config.TelemetryPeriodMs),
-			ExpectedConstraint: fmt.Sprintf("%d-%d ms", minTelemetryPeriodMs, maxTelemetryPeriodMs),
+			ExpectedConstraint: fmt.Sprintf(">= %d ms", minTelemetryPeriodMs),
+		})
+	}
+	if config.TelemetryPeriodMs > maxTelemetryPeriodMs {
+		errors = append(errors, &starv1.ConfigValidationError{
+			FieldPath:          "timing_config.telemetry_period_ms",
+			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_HIGH,
+			Message:            "telemetry_period_ms is too high",
+			ActualValue:        fmt.Sprintf("%d", config.TelemetryPeriodMs),
+			ExpectedConstraint: fmt.Sprintf("<= %d ms", maxTelemetryPeriodMs),
 		})
 	}
 
 	// Validate communication timeout
-	if config.CommunicationTimeoutMs < minCommunicationTimeoutMs || config.CommunicationTimeoutMs > maxCommunicationTimeoutMs {
+	if config.CommunicationTimeoutMs < minCommunicationTimeoutMs {
 		errors = append(errors, &starv1.ConfigValidationError{
 			FieldPath:          "timing_config.communication_timeout_ms",
 			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_LOW,
-			Message:            "communication_timeout_ms out of valid range",
+			Message:            "communication_timeout_ms is too low",
 			ActualValue:        fmt.Sprintf("%d", config.CommunicationTimeoutMs),
-			ExpectedConstraint: fmt.Sprintf("%d-%d ms", minCommunicationTimeoutMs, maxCommunicationTimeoutMs),
+			ExpectedConstraint: fmt.Sprintf(">= %d ms", minCommunicationTimeoutMs),
+		})
+	}
+	if config.CommunicationTimeoutMs > maxCommunicationTimeoutMs {
+		errors = append(errors, &starv1.ConfigValidationError{
+			FieldPath:          "timing_config.communication_timeout_ms",
+			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_HIGH,
+			Message:            "communication_timeout_ms is too high",
+			ActualValue:        fmt.Sprintf("%d", config.CommunicationTimeoutMs),
+			ExpectedConstraint: fmt.Sprintf("<= %d ms", maxCommunicationTimeoutMs),
 		})
 	}
 
 	// Validate BMS poll period
-	if config.BmsPollPeriodMs < minBmsPollPeriodMs || config.BmsPollPeriodMs > maxBmsPollPeriodMs {
+	if config.BmsPollPeriodMs < minBmsPollPeriodMs {
 		errors = append(errors, &starv1.ConfigValidationError{
 			FieldPath:          "timing_config.bms_poll_period_ms",
 			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_LOW,
-			Message:            "bms_poll_period_ms out of valid range",
+			Message:            "bms_poll_period_ms is too low",
 			ActualValue:        fmt.Sprintf("%d", config.BmsPollPeriodMs),
-			ExpectedConstraint: fmt.Sprintf("%d-%d ms", minBmsPollPeriodMs, maxBmsPollPeriodMs),
+			ExpectedConstraint: fmt.Sprintf(">= %d ms", minBmsPollPeriodMs),
+		})
+	}
+	if config.BmsPollPeriodMs > maxBmsPollPeriodMs {
+		errors = append(errors, &starv1.ConfigValidationError{
+			FieldPath:          "timing_config.bms_poll_period_ms",
+			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_HIGH,
+			Message:            "bms_poll_period_ms is too high",
+			ActualValue:        fmt.Sprintf("%d", config.BmsPollPeriodMs),
+			ExpectedConstraint: fmt.Sprintf("<= %d ms", maxBmsPollPeriodMs),
 		})
 	}
 

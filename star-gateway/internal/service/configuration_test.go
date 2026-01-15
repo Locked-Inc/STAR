@@ -88,7 +88,7 @@ func TestGetConfiguration_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
+		ReceiveFunc: func(_ context.Context) ([]byte, error) {
 			return responsePayload, nil
 		},
 	}
@@ -128,7 +128,7 @@ func TestGetConfiguration_Success(t *testing.T) {
 
 func TestGetConfiguration_HarqFailure(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(ctx context.Context, data []byte) error {
+		SendFunc: func(_ context.Context, _ []byte) error {
 			return status.Error(codes.Unavailable, "harq send failure")
 		},
 	}
@@ -187,7 +187,7 @@ func TestSetConfiguration_ValidConfig(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
+		ReceiveFunc: func(_ context.Context) ([]byte, error) {
 			return responsePayload, nil
 		},
 	}
@@ -512,7 +512,7 @@ func TestResetToDefaults_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
+		ReceiveFunc: func(_ context.Context) ([]byte, error) {
 			return responsePayload, nil
 		},
 	}
@@ -549,7 +549,7 @@ func TestResetToDefaults_Success(t *testing.T) {
 
 func TestResetToDefaults_HarqFailure(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(ctx context.Context, data []byte) error {
+		SendFunc: func(_ context.Context, _ []byte) error {
 			return status.Error(codes.Unavailable, "harq send failure")
 		},
 	}
@@ -605,7 +605,7 @@ func TestSaveConfiguration_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
+		ReceiveFunc: func(_ context.Context) ([]byte, error) {
 			return responsePayload, nil
 		},
 	}
@@ -640,7 +640,7 @@ func TestSaveConfiguration_Success(t *testing.T) {
 
 func TestSaveConfiguration_HarqFailure(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(ctx context.Context, data []byte) error {
+		SendFunc: func(_ context.Context, _ []byte) error {
 			return status.Error(codes.Unavailable, "harq send failure")
 		},
 	}
@@ -697,7 +697,7 @@ func TestGetMotorPidConfig_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
+		ReceiveFunc: func(_ context.Context) ([]byte, error) {
 			return responsePayload, nil
 		},
 	}
@@ -740,7 +740,7 @@ func TestGetMotorPidConfig_InvalidMotorId(t *testing.T) {
 
 	testCases := []struct {
 		name    string
-		motorId int32
+		motorID int32
 	}{
 		{"Negative motor ID", -1},
 		{"Motor ID too high", 5},
@@ -752,7 +752,7 @@ func TestGetMotorPidConfig_InvalidMotorId(t *testing.T) {
 				Header: &starv1.RequestHeader{
 					RequestId: "test-invalid-motor",
 				},
-				MotorId: tc.motorId,
+				MotorId: tc.motorID,
 			}
 
 			_, err := svc.GetMotorPidConfig(context.Background(), req)
@@ -805,7 +805,7 @@ func TestSetMotorPidConfig_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
+		ReceiveFunc: func(_ context.Context) ([]byte, error) {
 			return savePayload, nil
 		},
 	}
@@ -850,11 +850,11 @@ func TestSetMotorPidConfig_RuntimeUpdate(t *testing.T) {
 		t.Fatalf("failed to marshal save response: %v", err)
 	}
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(ctx context.Context, data []byte) error {
+		SendFunc: func(_ context.Context, data []byte) error {
 			sentPayloads = append(sentPayloads, data)
 			return nil
 		},
-		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
+		ReceiveFunc: func(_ context.Context) ([]byte, error) {
 			return savePayload, nil
 		},
 	}

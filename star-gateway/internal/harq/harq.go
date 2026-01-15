@@ -241,124 +241,28 @@ func (h *ChaseCombining) Send(ctx context.Context, data []byte) error {
 		return err
 	}
 
-	h.mu.Lock()
-
-	// Validate dependencies
-	if h.transport == nil {
-		h.mu.Unlock()
-		return ErrTransportNil
-	}
-	if h.encoder == nil {
-		h.mu.Unlock()
-		return ErrEncoderNil
-	}
-	if h.config.FECEnabled && h.fecEncoder == nil {
-		h.mu.Unlock()
-		return ErrFECEncoderNil
-	}
-
-	// Check if in error state
-	if h.state == StateError {
-		h.mu.Unlock()
-		return ErrInErrorState
-	}
-
-	// Apply FEC encoding if enabled
-	payload := data
-	if h.config.FECEnabled {
-		var err error
-		payload, err = h.fecEncoder.Encode(data)
-		if err != nil {
-			h.mu.Unlock()
-			return fmt.Errorf("harq: FEC encode failed: %w", err)
-		}
-	}
-
-	// Create command frame with FEC-encoded payload
-	f, err := frame.NewFrame(frame.FrameTypeCommand, payload)
+	currentSeq, err := h.prepareSend(data)
 	if err != nil {
-		h.mu.Unlock()
-		return fmt.Errorf("harq: failed to create frame: %w", err)
+		return err
 	}
-	f.Header.Sequence = h.txSequence
-	f.Header.Flags = frame.FlagRequiresAck
-	if h.config.FECEnabled {
-		f.Header.Flags |= frame.FlagFECEnabled
-	}
-
-	h.pendingFrame = f
-	h.pendingEncoded = payload
-	h.state = StateWaitingAck
-	h.retryCount = 0
-	currentSeq := h.txSequence
-	h.mu.Unlock()
 
 	// Retry loop (Chase Combining: same encoded frame each time)
 	for attempt := 0; attempt <= h.config.MaxRetries; attempt++ {
-		h.mu.Lock()
-		if attempt > 0 {
-			h.pendingFrame.Header.Flags |= frame.FlagRetransmit
-			h.state = StateRetransmitting
-			h.retryCount = attempt
+		frameToSend := h.frameForAttempt(attempt)
+		if err := h.transmitFrame(frameToSend); err != nil {
+			return err
 		}
-		frameToSend := h.pendingFrame
-		h.mu.Unlock()
 
-		// Encode frame (framing layer, not FEC)
-		encoded, err := h.encoder.Encode(frameToSend)
+		ackFrame, retry, err := h.waitForAckOrRetry(ctx)
 		if err != nil {
-			h.setErrorState()
-			return fmt.Errorf("harq: failed to encode frame: %w", err)
+			return err
 		}
-
-		// Send via transport
-		_, err = h.transport.Send(encoded)
-		if err != nil {
-			h.setErrorState()
-			return fmt.Errorf("harq: transport send failed: %w", err)
-		}
-
-		// Wait for ACK/NACK with timeout
-		ackCtx, cancel := context.WithTimeout(ctx, h.config.Timeout)
-		ackFrame, err := h.waitForAck(ackCtx)
-		cancel()
-		if errors.Is(err, ErrTimeout) {
-			// Timeout - will retry unless caller context is done
-			if ctx.Err() != nil {
-				return ctx.Err()
-			}
+		if retry {
 			continue
 		}
-		if err != nil {
-			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-				return err
-			}
-			// Decode error or transport error - will retry
-			continue
+		if h.processAckFrame(ackFrame, currentSeq) {
+			return nil
 		}
-
-		// Process response
-		if ackFrame.Header.Type == frame.FrameTypeAck {
-			if ackFrame.Header.Sequence == currentSeq {
-				// Success
-				h.mu.Lock()
-				h.txSequence = incrementSequence(h.txSequence)
-				h.state = StateIdle
-				h.pendingFrame = nil
-				h.pendingEncoded = nil
-				h.retryCount = 0
-				h.mu.Unlock()
-				return nil
-			}
-			// Wrong sequence - ignore and continue waiting
-		}
-
-		if ackFrame.Header.Type == frame.FrameTypeNack {
-			// NACK received - will retry
-			continue
-		}
-
-		// Unexpected frame type - ignore and treat as timeout
 	}
 
 	// Max retries exceeded
@@ -378,137 +282,251 @@ func (h *ChaseCombining) Receive(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 
-	rcvCtx := ctx
-	var cancel context.CancelFunc
-	if _, ok := ctx.Deadline(); !ok && h.config != nil && h.config.Timeout > 0 {
-		rcvCtx, cancel = context.WithTimeout(ctx, h.config.Timeout)
-	}
+	rcvCtx, cancel := h.receiveContext(ctx)
 	if cancel != nil {
 		defer cancel()
 	}
-
-	// Validate dependencies
-	if h.transport == nil {
-		return nil, ErrTransportNil
+	if err := h.validateReceiveDependencies(); err != nil {
+		return nil, err
 	}
-	if h.decoder == nil {
-		return nil, ErrDecoderNil
+
+	f, err := h.receiveFrame(rcvCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	return h.handleReceivedFrame(f)
+}
+
+func (h *ChaseCombining) validateSendDependencies() error {
+	if h.transport == nil {
+		return ErrTransportNil
 	}
 	if h.encoder == nil {
-		return nil, ErrEncoderNil
+		return ErrEncoderNil
 	}
-	if h.config.FECEnabled && h.fecDecoder == nil {
-		return nil, ErrFECDecoderNil
+	if h.config.FECEnabled && h.fecEncoder == nil {
+		return ErrFECEncoderNil
+	}
+	if h.state == StateError {
+		return ErrInErrorState
+	}
+	return nil
+}
+
+func (h *ChaseCombining) prepareSend(data []byte) (uint16, error) {
+	h.mu.Lock()
+	if err := h.validateSendDependencies(); err != nil {
+		h.mu.Unlock()
+		return 0, err
 	}
 
-	// Receive raw data from transport
-	applyReadDeadline(rcvCtx, h.transport)
+	payload := data
+	if h.config.FECEnabled {
+		var err error
+		payload, err = h.fecEncoder.Encode(data)
+		if err != nil {
+			h.mu.Unlock()
+			return 0, fmt.Errorf("harq: FEC encode failed: %w", err)
+		}
+	}
+
+	f, err := frame.NewFrame(frame.FrameTypeCommand, payload)
+	if err != nil {
+		h.mu.Unlock()
+		return 0, fmt.Errorf("harq: failed to create frame: %w", err)
+	}
+	f.Header.Sequence = h.txSequence
+	f.Header.Flags = frame.FlagRequiresAck
+	if h.config.FECEnabled {
+		f.Header.Flags |= frame.FlagFECEnabled
+	}
+
+	h.pendingFrame = f
+	h.pendingEncoded = payload
+	h.state = StateWaitingAck
+	h.retryCount = 0
+	currentSeq := h.txSequence
+	h.mu.Unlock()
+	return currentSeq, nil
+}
+
+func (h *ChaseCombining) frameForAttempt(attempt int) *frame.Frame {
+	h.mu.Lock()
+	if attempt > 0 {
+		h.pendingFrame.Header.Flags |= frame.FlagRetransmit
+		h.state = StateRetransmitting
+		h.retryCount = attempt
+	}
+	frameToSend := h.pendingFrame
+	h.mu.Unlock()
+	return frameToSend
+}
+
+func (h *ChaseCombining) transmitFrame(frameToSend *frame.Frame) error {
+	encoded, err := h.encoder.Encode(frameToSend)
+	if err != nil {
+		h.setErrorState()
+		return fmt.Errorf("harq: failed to encode frame: %w", err)
+	}
+
+	_, err = h.transport.Send(encoded)
+	if err != nil {
+		h.setErrorState()
+		return fmt.Errorf("harq: transport send failed: %w", err)
+	}
+
+	return nil
+}
+
+func (h *ChaseCombining) waitForAckOrRetry(ctx context.Context) (*frame.Frame, bool, error) {
+	ackCtx, cancel := context.WithTimeout(ctx, h.config.Timeout)
+	ackFrame, err := h.waitForAck(ackCtx)
+	cancel()
+	if errors.Is(err, ErrTimeout) {
+		if ctx.Err() != nil {
+			return nil, false, ctx.Err()
+		}
+		return nil, true, nil
+	}
+	if err != nil {
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return nil, false, err
+		}
+		return nil, true, nil
+	}
+
+	return ackFrame, false, nil
+}
+
+func (h *ChaseCombining) processAckFrame(ackFrame *frame.Frame, currentSeq uint16) bool {
+	if ackFrame.Header.Type == frame.FrameTypeAck && ackFrame.Header.Sequence == currentSeq {
+		h.mu.Lock()
+		h.txSequence = incrementSequence(h.txSequence)
+		h.state = StateIdle
+		h.pendingFrame = nil
+		h.pendingEncoded = nil
+		h.retryCount = 0
+		h.mu.Unlock()
+		return true
+	}
+	if ackFrame.Header.Type == frame.FrameTypeNack {
+		return false
+	}
+	return false
+}
+
+func (h *ChaseCombining) receiveContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	if _, ok := ctx.Deadline(); !ok && h.config != nil && h.config.Timeout > 0 {
+		return context.WithTimeout(ctx, h.config.Timeout)
+	}
+	return ctx, nil
+}
+
+func (h *ChaseCombining) validateReceiveDependencies() error {
+	if h.transport == nil {
+		return ErrTransportNil
+	}
+	if h.decoder == nil {
+		return ErrDecoderNil
+	}
+	if h.encoder == nil {
+		return ErrEncoderNil
+	}
+	if h.config.FECEnabled && h.fecDecoder == nil {
+		return ErrFECDecoderNil
+	}
+	return nil
+}
+
+func (h *ChaseCombining) receiveFrame(ctx context.Context) (*frame.Frame, error) {
+	applyReadDeadline(ctx, h.transport)
 	data, err := h.transport.Receive(frame.MaxFrameSize)
 	if err != nil {
-		if errors.Is(rcvCtx.Err(), context.DeadlineExceeded) {
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			return nil, ErrTimeout
 		}
-		if errors.Is(rcvCtx.Err(), context.Canceled) {
-			return nil, rcvCtx.Err()
+		if errors.Is(ctx.Err(), context.Canceled) {
+			return nil, ctx.Err()
 		}
 		return nil, fmt.Errorf("harq: transport receive failed: %w", err)
 	}
-	if err := rcvCtx.Err(); err != nil {
+	if err := ctx.Err(); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, ErrTimeout
 		}
 		return nil, err
 	}
 
-	// Decode frame (CRC validated by decoder)
 	f, err := h.decoder.Decode(data)
 	if err != nil {
-		// CRC error or malformed frame - send NACK (best-effort)
 		h.mu.Lock()
 		seq := h.rxSequence
 		h.mu.Unlock()
-		_ = h.sendNack(seq) // Best-effort, ignore errors
+		_ = h.sendNack(seq)
 		return nil, err
 	}
 
-	// Only process command/response frames
-	if f.Header.Type != frame.FrameTypeCommand &&
-		f.Header.Type != frame.FrameTypeResponse {
+	if f.Header.Type != frame.FrameTypeCommand && f.Header.Type != frame.FrameTypeResponse {
 		return nil, ErrUnexpectedFrameType
 	}
 
-	h.mu.Lock()
+	return f, nil
+}
 
+func (h *ChaseCombining) handleReceivedFrame(f *frame.Frame) ([]byte, error) {
+	h.mu.Lock()
 	receivedSeq := f.Header.Sequence
 	expectedSeq := h.rxSequence
 	previousSeq := decrementSequence(h.rxSequence)
+	h.mu.Unlock()
 
 	if receivedSeq == expectedSeq {
-		// New valid frame - attempt FEC decode
-		var decoded []byte
-
-		if h.config.FECEnabled && (f.Header.Flags&frame.FlagFECEnabled) != 0 {
-			// Convert payload to soft bits and attempt decode
-			softBits := bytesToSoftBits(f.Payload)
-
-			// Add to combiner
-			if err := h.softCombiner.Add(softBits); err != nil {
-				// Combiner add failed - likely length mismatch or combiner full
-				h.state = StateError
-				h.mu.Unlock()
-				_ = h.sendNack(receivedSeq)
-				return nil, err
-			}
-
-			// Try decode
-			decoded, _, err = h.fecDecoder.DecodeSoft(h.softCombiner.Combined(), h.expectedLen)
-			if err != nil {
-				// Decode failed - need retransmission
-				h.state = StateCombining
-				h.mu.Unlock()
-				_ = h.sendNack(receivedSeq)
-				return nil, ErrDecodeFailed
-			}
-
-			// Success - reset combiner
-			h.softCombiner.Reset()
-		} else {
-			// No FEC - use payload directly
-			decoded = f.Payload
-		}
-
-		// Increment sequence and prepare payload
-		h.rxSequence = incrementSequence(h.rxSequence)
-		h.state = StateIdle
-		h.mu.Unlock()
-
-		// Best-effort ACK
-		_ = h.sendAck(receivedSeq)
-		return decoded, nil
+		return h.handleExpectedFrame(f)
 	}
-
 	if receivedSeq == previousSeq {
-		// Duplicate frame detected - treat as true duplicate at the HARQ layer.
-		//
-		// NOTE: This branch is taken when the initial transmission was successfully
-		// decoded (so we never entered StateCombining), the ACK was lost on the wire,
-		// and the sender retransmits with previousSeq. We still send an ACK for
-		// protocol correctness but return ErrDuplicateFrame so higher layers do not
-		// deliver the same payload twice.
-		//
-		// StateCombining case: When a frame fails to decode (receivedSeq == expectedSeq),
-		// we enter StateCombining but do NOT increment rxSequence. Retransmissions
-		// will therefore have receivedSeq == expectedSeq (not previousSeq) and are
-		// handled by the block above, which adds to the combiner and retries decode.
-		h.mu.Unlock()
 		_ = h.sendAck(receivedSeq)
 		return nil, ErrDuplicateFrame
 	}
 
-	// Out of sequence frame
-	h.mu.Unlock()
 	_ = h.sendNack(receivedSeq)
 	return nil, ErrInvalidSequence
+}
+
+func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) ([]byte, error) {
+	var decoded []byte
+	if h.config.FECEnabled && (f.Header.Flags&frame.FlagFECEnabled) != 0 {
+		softBits := bytesToSoftBits(f.Payload)
+		if err := h.softCombiner.Add(softBits); err != nil {
+			h.mu.Lock()
+			h.state = StateError
+			h.mu.Unlock()
+			_ = h.sendNack(f.Header.Sequence)
+			return nil, err
+		}
+
+		var err error
+		decoded, _, err = h.fecDecoder.DecodeSoft(h.softCombiner.Combined(), h.expectedLen)
+		if err != nil {
+			h.mu.Lock()
+			h.state = StateCombining
+			h.mu.Unlock()
+			_ = h.sendNack(f.Header.Sequence)
+			return nil, ErrDecodeFailed
+		}
+
+		h.softCombiner.Reset()
+	} else {
+		decoded = f.Payload
+	}
+
+	h.mu.Lock()
+	h.rxSequence = incrementSequence(h.rxSequence)
+	h.state = StateIdle
+	h.mu.Unlock()
+
+	_ = h.sendAck(f.Header.Sequence)
+	return decoded, nil
 }
 
 // GetState returns the current HARQ state.

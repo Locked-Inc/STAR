@@ -116,7 +116,7 @@ func (s *TelemetryService) Shutdown() {
 
 // GetTelemetry returns a snapshot of the latest telemetry data.
 // Uses cached telemetry updated by background goroutine for low latency.
-func (s *TelemetryService) GetTelemetry(ctx context.Context, req *starv1.GetTelemetryRequest) (*starv1.GetTelemetryResponse, error) {
+func (s *TelemetryService) GetTelemetry(_ context.Context, req *starv1.GetTelemetryRequest) (*starv1.GetTelemetryResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
@@ -128,14 +128,14 @@ func (s *TelemetryService) GetTelemetry(ctx context.Context, req *starv1.GetTele
 	}
 
 	// Safely extract request ID, handling nil Header
-	requestId := ""
+	requestID := ""
 	if req.Header != nil {
-		requestId = req.Header.GetRequestId()
+		requestID = req.Header.GetRequestId()
 	}
 
 	return &starv1.GetTelemetryResponse{
 		Header: &starv1.ResponseHeader{
-			RequestId:       requestId,
+			RequestId:       requestID,
 			ServerTimestamp: timestamppb.Now(),
 			Status:          starv1.Status_STATUS_OK,
 		},
@@ -218,7 +218,7 @@ func (s *TelemetryService) streamTelemetryLoop(ctx context.Context, ticker *time
 // GetSystemStatus requests system status from the RX72N firmware.
 // TODO: Implement proper SystemStatusRequest message in wire.proto and send via HARQ.
 // For now, returns mock status until firmware integration is complete.
-func (s *TelemetryService) GetSystemStatus(ctx context.Context, req *starv1.GetSystemStatusRequest) (*starv1.GetSystemStatusResponse, error) {
+func (s *TelemetryService) GetSystemStatus(_ context.Context, req *starv1.GetSystemStatusRequest) (*starv1.GetSystemStatusResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
@@ -242,14 +242,14 @@ func (s *TelemetryService) GetSystemStatus(ctx context.Context, req *starv1.GetS
 	}
 
 	// Safely extract request ID, handling nil Header
-	requestId := ""
+	requestID := ""
 	if req.Header != nil {
-		requestId = req.Header.GetRequestId()
+		requestID = req.Header.GetRequestId()
 	}
 
 	return &starv1.GetSystemStatusResponse{
 		Header: &starv1.ResponseHeader{
-			RequestId:       requestId,
+			RequestId:       requestID,
 			ServerTimestamp: timestamppb.Now(),
 			Status:          starv1.Status_STATUS_OK,
 		},
