@@ -296,7 +296,7 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 		}
 
 		// Receive from HARQ (blocking call with internal timeout)
-		data, err := d.harq.Receive()
+		data, err := d.harq.Receive(ctx)
 		if err != nil {
 			// Check for cancellation before handling error
 			select {

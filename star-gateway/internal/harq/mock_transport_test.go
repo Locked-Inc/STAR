@@ -21,6 +21,7 @@ type MockTransport struct {
 	receiveErr   error         // Error to return from Receive()
 	receiveDelay time.Duration // Delay before Receive returns
 	isOpen       bool
+	readDeadline time.Time
 }
 
 // Verify MockTransport implements transport.Transport.
@@ -100,23 +101,35 @@ func (m *MockTransport) Receive(maxLen int) ([]byte, error) {
 		time.Sleep(m.receiveDelay)
 	}
 
-	m.mu.Lock()
-	defer m.mu.Unlock()
+	for {
+		m.mu.Lock()
+		if m.receiveErr != nil {
+			err := m.receiveErr
+			m.mu.Unlock()
+			return nil, err
+		}
 
-	if m.receiveErr != nil {
-		return nil, m.receiveErr
-	}
+		if len(m.receiveQueue) > 0 {
+			data := m.receiveQueue[0]
+			m.receiveQueue = m.receiveQueue[1:]
+			m.mu.Unlock()
+			return data, nil
+		}
 
-	if len(m.receiveQueue) == 0 {
-		// Block forever (caller should use timeout)
+		deadline := m.readDeadline
 		m.mu.Unlock()
-		select {} // Deliberate block - tests use timeout
+
+		if !deadline.IsZero() {
+			wait := time.Until(deadline)
+			if wait > 0 {
+				time.Sleep(wait)
+			}
+			return nil, transport.ErrTimeout
+		}
+
+		// Block forever (caller should use timeout)
+		select {}
 	}
-
-	data := m.receiveQueue[0]
-	m.receiveQueue = m.receiveQueue[1:]
-
-	return data, nil
 }
 
 // Transfer performs a full-duplex transfer (not used in HARQ tests).
@@ -129,6 +142,14 @@ func (m *MockTransport) Close() error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.isOpen = false
+	return nil
+}
+
+// SetReadDeadline sets a deadline for Receive in tests.
+func (m *MockTransport) SetReadDeadline(deadline time.Time) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.readDeadline = deadline
 	return nil
 }
 
@@ -201,4 +222,5 @@ func (m *MockTransport) Reset() {
 	m.receiveErr = nil
 	m.receiveDelay = 0
 	m.isOpen = true
+	m.readDeadline = time.Time{}
 }

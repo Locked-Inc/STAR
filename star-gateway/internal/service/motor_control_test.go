@@ -67,7 +67,7 @@ func TestSetVelocity(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockHARQ := &testutil.MockHARQ{
-				SendFunc: func(data []byte) error {
+				SendFunc: func(ctx context.Context, data []byte) error {
 					return tc.mockSendErr
 				},
 			}
@@ -416,7 +416,7 @@ func TestControlStream_BasicFlow(t *testing.T) {
 	var mu sync.Mutex
 
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(data []byte) error {
+		SendFunc: func(ctx context.Context, data []byte) error {
 			mu.Lock()
 			sendCalls++
 			mu.Unlock()
@@ -506,10 +506,10 @@ func TestControlStream_HarqSendError(t *testing.T) {
 
 	// Mock HARQ that fails to send
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(data []byte) error {
+		SendFunc: func(ctx context.Context, data []byte) error {
 			return errors.New("send failed")
 		},
-		ReceiveFunc: func() ([]byte, error) {
+		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
 			// Return error to avoid infinite loop
 			time.Sleep(10 * time.Millisecond)
 			return nil, errors.New("receive error")
@@ -561,7 +561,7 @@ func TestControlStream_ClientSendError(t *testing.T) {
 	marshaledData, _ := proto.Marshal(telemetry)
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func() ([]byte, error) {
+		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
 			return marshaledData, nil
 		},
 	}
@@ -607,7 +607,7 @@ func TestStreamEncoders_Concurrent(t *testing.T) {
 	marshaledData, _ := proto.Marshal(telemetry)
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func() ([]byte, error) {
+		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
 			return marshaledData, nil
 		},
 	}
