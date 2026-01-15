@@ -28,6 +28,17 @@
  * =============================================================================
  */
 
+typedef enum {
+  k_invalid_port_1 = k_rx_port_j + 1,
+  k_invalid_port_2 = k_rx_port_j + 2,
+  k_invalid_port_3 = k_rx_port_j + 3,
+  k_invalid_port_4 = k_rx_port_j + 4,
+  k_invalid_pin_1  = k_rx_pin_max + 1,
+  k_invalid_pin_2  = k_rx_pin_max + 2,
+  k_invalid_pin_3  = k_rx_pin_max + 3,
+  k_invalid_pin_4  = k_rx_pin_max + 4,
+} gpio_invalid_constants_t;
+
 void setUp(void)
 {
   mock_gpio_init();
@@ -48,10 +59,10 @@ void tearDown(void)
  */
 void test_gpio_set_output_valid_pin(void)
 {
-  rx_err_t err = gpio_set_output(k_gpio_pb2);
+  rx_err_t err = gpio_set_output(k_rx_pb_2);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(k_mock_gpio_dir_output, mock_gpio_get_direction(k_gpio_pb2));
+  TEST_ASSERT_EQUAL(k_mock_gpio_dir_output, mock_gpio_get_direction(k_rx_pb_2));
 }
 
 /**
@@ -61,18 +72,18 @@ void test_gpio_set_output_multiple_pins(void)
 {
   rx_err_t err;
 
-  err = gpio_set_output(k_gpio_pa0);
+  err = gpio_set_output(k_rx_pa_0);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pc6);
+  err = gpio_set_output(k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pe5);
+  err = gpio_set_output(k_rx_pe_5);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  TEST_ASSERT_EQUAL(k_mock_gpio_dir_output, mock_gpio_get_direction(k_gpio_pa0));
-  TEST_ASSERT_EQUAL(k_mock_gpio_dir_output, mock_gpio_get_direction(k_gpio_pc6));
-  TEST_ASSERT_EQUAL(k_mock_gpio_dir_output, mock_gpio_get_direction(k_gpio_pe5));
+  TEST_ASSERT_EQUAL(k_mock_gpio_dir_output, mock_gpio_get_direction(k_rx_pa_0));
+  TEST_ASSERT_EQUAL(k_mock_gpio_dir_output, mock_gpio_get_direction(k_rx_pc_6));
+  TEST_ASSERT_EQUAL(k_mock_gpio_dir_output, mock_gpio_get_direction(k_rx_pe_5));
 }
 
 /**
@@ -81,7 +92,12 @@ void test_gpio_set_output_multiple_pins(void)
 void test_gpio_set_output_invalid_port(void)
 {
   /* Port 0x15 is not valid - beyond Port J (0x13) */
-  gpio_pin_t invalid_pin = gpio_pin_make(0x15, 0);
+  enum {
+    k_invalid_port = k_rx_port_j + 1,
+    k_invalid_pin  = k_rx_pin_0,
+  };
+  rx_port_pin_t invalid_pin =
+    (rx_port_pin_t)((k_invalid_port << k_port_shift) | k_invalid_pin);
 
   rx_err_t err = gpio_set_output(invalid_pin);
 
@@ -94,7 +110,9 @@ void test_gpio_set_output_invalid_port(void)
 void test_gpio_set_output_invalid_pin(void)
 {
   /* Pin 8 is invalid (only 0-7 allowed) */
-  gpio_pin_t invalid_pin = gpio_pin_make(k_rx_port_b, 8);
+  enum { k_invalid_pin = k_rx_pin_max + 1 };
+  rx_port_pin_t invalid_pin =
+    (rx_port_pin_t)((k_rx_port_b << k_port_shift) | k_invalid_pin);
 
   rx_err_t err = gpio_set_output(invalid_pin);
 
@@ -108,7 +126,7 @@ void test_gpio_set_output_error_injection(void)
 {
   mock_gpio_set_next_error(k_rx_err_gpio_conflict);
 
-  rx_err_t err = gpio_set_output(k_gpio_pb2);
+  rx_err_t err = gpio_set_output(k_rx_pb_2);
 
   TEST_ASSERT_EQUAL(k_rx_err_gpio_conflict, err);
 }
@@ -118,20 +136,20 @@ void test_gpio_set_output_error_injection(void)
  */
 void test_gpio_set_output_call_history(void)
 {
-  (void)gpio_set_output(k_gpio_pb2);
-  (void)gpio_set_output(k_gpio_pa0);
+  rx_err_t err = gpio_set_output(k_rx_pb_2);
+  (void)gpio_set_output(k_rx_pa_0);
 
   TEST_ASSERT_EQUAL(2, mock_gpio_get_call_count());
 
   const mock_gpio_call_t* call0 = mock_gpio_get_call(0);
   TEST_ASSERT_NOT_NULL(call0);
   TEST_ASSERT_EQUAL(k_mock_gpio_call_set_output, call0->type);
-  TEST_ASSERT_EQUAL(k_gpio_pb2, call0->pin);
+  TEST_ASSERT_EQUAL(k_rx_pb_2, call0->pin);
 
   const mock_gpio_call_t* call1 = mock_gpio_get_call(1);
   TEST_ASSERT_NOT_NULL(call1);
   TEST_ASSERT_EQUAL(k_mock_gpio_call_set_output, call1->type);
-  TEST_ASSERT_EQUAL(k_gpio_pa0, call1->pin);
+  TEST_ASSERT_EQUAL(k_rx_pa_0, call1->pin);
 }
 
 /* =============================================================================
@@ -144,10 +162,10 @@ void test_gpio_set_output_call_history(void)
  */
 void test_gpio_set_input_valid_pin(void)
 {
-  rx_err_t err = gpio_set_input(k_gpio_pb2);
+  rx_err_t err = gpio_set_input(k_rx_pb_2);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(k_mock_gpio_dir_input, mock_gpio_get_direction(k_gpio_pb2));
+  TEST_ASSERT_EQUAL(k_mock_gpio_dir_input, mock_gpio_get_direction(k_rx_pb_2));
 }
 
 /**
@@ -155,7 +173,8 @@ void test_gpio_set_input_valid_pin(void)
  */
 void test_gpio_set_input_invalid_port(void)
 {
-  gpio_pin_t invalid_pin = gpio_pin_make(0x18, 0);
+  rx_port_pin_t invalid_pin =
+    (rx_port_pin_t)((k_invalid_port_1 << k_port_shift) | k_rx_pin_0);
 
   rx_err_t err = gpio_set_input(invalid_pin);
 
@@ -167,7 +186,8 @@ void test_gpio_set_input_invalid_port(void)
  */
 void test_gpio_set_input_invalid_pin(void)
 {
-  gpio_pin_t invalid_pin = gpio_pin_make(k_rx_port_b, 9);
+  rx_port_pin_t invalid_pin =
+    (rx_port_pin_t)((k_rx_port_b << k_port_shift) | k_invalid_pin_1);
 
   rx_err_t err = gpio_set_input(invalid_pin);
 
@@ -184,11 +204,11 @@ void test_gpio_set_input_invalid_pin(void)
  */
 void test_gpio_write_high_sets_value(void)
 {
-  (void)gpio_set_output(k_gpio_pb2);
-  rx_err_t err = gpio_write_high(k_gpio_pb2);
+  (void)gpio_set_output(k_rx_pb_2);
+  rx_err_t err = gpio_write_high(k_rx_pb_2);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_TRUE(mock_gpio_get_output_value(k_gpio_pb2));
+  TEST_ASSERT_TRUE(mock_gpio_get_output_value(k_rx_pb_2));
 }
 
 /**
@@ -196,7 +216,8 @@ void test_gpio_write_high_sets_value(void)
  */
 void test_gpio_write_high_invalid_port(void)
 {
-  gpio_pin_t invalid_pin = gpio_pin_make(0x20, 0);
+  rx_port_pin_t invalid_pin =
+    (rx_port_pin_t)((k_invalid_port_2 << k_port_shift) | k_rx_pin_0);
 
   rx_err_t err = gpio_write_high(invalid_pin);
 
@@ -213,12 +234,12 @@ void test_gpio_write_high_invalid_port(void)
  */
 void test_gpio_write_low_clears_value(void)
 {
-  (void)gpio_set_output(k_gpio_pb2);
-  (void)gpio_write_high(k_gpio_pb2);
-  rx_err_t err = gpio_write_low(k_gpio_pb2);
+  (void)gpio_set_output(k_rx_pb_2);
+  (void)gpio_write_high(k_rx_pb_2);
+  rx_err_t err = gpio_write_low(k_rx_pb_2);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FALSE(mock_gpio_get_output_value(k_gpio_pb2));
+  TEST_ASSERT_FALSE(mock_gpio_get_output_value(k_rx_pb_2));
 }
 
 /**
@@ -226,7 +247,8 @@ void test_gpio_write_low_clears_value(void)
  */
 void test_gpio_write_low_invalid_port(void)
 {
-  gpio_pin_t invalid_pin = gpio_pin_make(0x25, 0);
+  rx_port_pin_t invalid_pin =
+    (rx_port_pin_t)((k_invalid_port_3 << k_port_shift) | k_rx_pin_0);
 
   rx_err_t err = gpio_write_low(invalid_pin);
 
@@ -243,20 +265,20 @@ void test_gpio_write_low_invalid_port(void)
  */
 void test_gpio_toggle_toggles_value(void)
 {
-  (void)gpio_set_output(k_gpio_pb2);
+  (void)gpio_set_output(k_rx_pb_2);
 
   /* Initial state is low (false) */
-  TEST_ASSERT_FALSE(mock_gpio_get_output_value(k_gpio_pb2));
+  TEST_ASSERT_FALSE(mock_gpio_get_output_value(k_rx_pb_2));
 
   /* Toggle to high */
-  rx_err_t err = gpio_toggle(k_gpio_pb2);
+  rx_err_t err = gpio_toggle(k_rx_pb_2);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_TRUE(mock_gpio_get_output_value(k_gpio_pb2));
+  TEST_ASSERT_TRUE(mock_gpio_get_output_value(k_rx_pb_2));
 
   /* Toggle back to low */
-  err = gpio_toggle(k_gpio_pb2);
+  err = gpio_toggle(k_rx_pb_2);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FALSE(mock_gpio_get_output_value(k_gpio_pb2));
+  TEST_ASSERT_FALSE(mock_gpio_get_output_value(k_rx_pb_2));
 }
 
 /**
@@ -264,7 +286,8 @@ void test_gpio_toggle_toggles_value(void)
  */
 void test_gpio_toggle_invalid_pin(void)
 {
-  gpio_pin_t invalid_pin = gpio_pin_make(k_rx_port_b, 10);
+  rx_port_pin_t invalid_pin =
+    (rx_port_pin_t)((k_rx_port_b << k_port_shift) | k_invalid_pin_2);
 
   rx_err_t err = gpio_toggle(invalid_pin);
 
@@ -281,21 +304,21 @@ void test_gpio_toggle_invalid_pin(void)
  */
 void test_gpio_read_returns_input_value(void)
 {
-  (void)gpio_set_input(k_gpio_pb2);
+  (void)gpio_set_input(k_rx_pb_2);
 
   /* Set simulated input high */
-  mock_gpio_set_input_value(k_gpio_pb2, true);
+  mock_gpio_set_input_value(k_rx_pb_2, true);
 
   bool     value = false;
-  rx_err_t err   = gpio_read(k_gpio_pb2, &value);
+  rx_err_t err   = gpio_read(k_rx_pb_2, &value);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(value);
 
   /* Set simulated input low */
-  mock_gpio_set_input_value(k_gpio_pb2, false);
+  mock_gpio_set_input_value(k_rx_pb_2, false);
 
-  err = gpio_read(k_gpio_pb2, &value);
+  err = gpio_read(k_rx_pb_2, &value);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(value);
@@ -306,7 +329,7 @@ void test_gpio_read_returns_input_value(void)
  */
 void test_gpio_read_null_pointer(void)
 {
-  rx_err_t err = gpio_read(k_gpio_pb2, NULL);
+  rx_err_t err = gpio_read(k_rx_pb_2, NULL);
 
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
@@ -316,7 +339,8 @@ void test_gpio_read_null_pointer(void)
  */
 void test_gpio_read_invalid_port(void)
 {
-  gpio_pin_t invalid_pin = gpio_pin_make(0x30, 0);
+  rx_port_pin_t invalid_pin =
+    (rx_port_pin_t)((k_invalid_port_4 << k_port_shift) | k_rx_pin_0);
   bool       value;
 
   rx_err_t err = gpio_read(invalid_pin, &value);
@@ -329,7 +353,8 @@ void test_gpio_read_invalid_port(void)
  */
 void test_gpio_read_invalid_pin(void)
 {
-  gpio_pin_t invalid_pin = gpio_pin_make(k_rx_port_b, 15);
+  rx_port_pin_t invalid_pin =
+    (rx_port_pin_t)((k_rx_port_b << k_port_shift) | k_invalid_pin_3);
   bool       value;
 
   rx_err_t err = gpio_read(invalid_pin, &value);
@@ -350,40 +375,40 @@ void test_gpio_valid_ports(void)
   rx_err_t err;
 
   /* Test all valid ports (Port 0, 1, 2, 3, 4, 5, A, B, C, D, E, J) */
-  err = gpio_set_output(k_gpio_p05); /* Port 0 */
+  err = gpio_set_output(k_rx_p0_5); /* Port 0 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_p12); /* Port 1 */
+  err = gpio_set_output(k_rx_p1_2); /* Port 1 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_p20); /* Port 2 */
+  err = gpio_set_output(k_rx_p2_0); /* Port 2 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_p30); /* Port 3 */
+  err = gpio_set_output(k_rx_p3_0); /* Port 3 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_p40); /* Port 4 */
+  err = gpio_set_output(k_rx_p4_0); /* Port 4 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_p50); /* Port 5 */
+  err = gpio_set_output(k_rx_p5_0); /* Port 5 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pa0); /* Port A */
+  err = gpio_set_output(k_rx_pa_0); /* Port A */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pb0); /* Port B */
+  err = gpio_set_output(k_rx_pb_0); /* Port B */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pc0); /* Port C */
+  err = gpio_set_output(k_rx_pc_0); /* Port C */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pd0); /* Port D */
+  err = gpio_set_output(k_rx_pd_0); /* Port D */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pe0); /* Port E */
+  err = gpio_set_output(k_rx_pe_0); /* Port E */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pj3); /* Port J */
+  err = gpio_set_output(k_rx_pj_3); /* Port J */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -392,8 +417,8 @@ void test_gpio_valid_ports(void)
  */
 void test_gpio_clear_history(void)
 {
-  (void)gpio_set_output(k_gpio_pb2);
-  (void)gpio_set_output(k_gpio_pa0);
+  (void)gpio_set_output(k_rx_pb_2);
+  (void)gpio_set_output(k_rx_pa_0);
   TEST_ASSERT_EQUAL(2, mock_gpio_get_call_count());
 
   mock_gpio_clear_history();

@@ -11,6 +11,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include "rx_port_constants.h"
 #include "rx_bus_config.h"
 
 #include <string.h>
@@ -135,6 +136,30 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
 
+  /* Extract and validate SDA pin */
+  uint8_t sda_port    = rx_port_from_pin(sda_pin);
+  uint8_t sda_pin_num = rx_pin_from_pin(sda_pin);
+  if (sda_port > k_hex_port_end || (sda_port > k_max_decimal_port && sda_port < k_hex_port_start)) {
+    rx_log_error(s_tag, "Invalid I2C SDA port");
+    return k_rx_err_invalid_arg;
+  }
+  if (sda_pin_num >= k_pins_per_port) {
+    rx_log_error(s_tag, "Invalid I2C SDA pin");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Extract and validate SCL pin */
+  uint8_t scl_port    = rx_port_from_pin(scl_pin);
+  uint8_t scl_pin_num = rx_pin_from_pin(scl_pin);
+  if (scl_port > k_hex_port_end || (scl_port > k_max_decimal_port && scl_port < k_hex_port_start)) {
+    rx_log_error(s_tag, "Invalid I2C SCL port");
+    return k_rx_err_invalid_arg;
+  }
+  if (scl_pin_num >= k_pins_per_port) {
+    rx_log_error(s_tag, "Invalid I2C SCL pin");
+    return k_rx_err_invalid_arg;
+  }
+
   /* Validate channel (0-2) */
   if (channel >= k_riic_channel_count) {
     rx_log_error(s_tag, "Invalid I2C channel");
@@ -186,6 +211,30 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
 {
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
+
+  /* Extract and validate SDA pin */
+  uint8_t sda_port    = rx_port_from_pin(sda_pin);
+  uint8_t sda_pin_num = rx_pin_from_pin(sda_pin);
+  if (sda_port > k_hex_port_end || (sda_port > k_max_decimal_port && sda_port < k_hex_port_start)) {
+    rx_log_error(s_tag, "Invalid SMBUS SDA port");
+    return k_rx_err_invalid_arg;
+  }
+  if (sda_pin_num >= k_pins_per_port) {
+    rx_log_error(s_tag, "Invalid SMBUS SDA pin");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Extract and validate SCL pin */
+  uint8_t scl_port    = rx_port_from_pin(scl_pin);
+  uint8_t scl_pin_num = rx_pin_from_pin(scl_pin);
+  if (scl_port > k_hex_port_end || (scl_port > k_max_decimal_port && scl_port < k_hex_port_start)) {
+    rx_log_error(s_tag, "Invalid SMBUS SCL port");
+    return k_rx_err_invalid_arg;
+  }
+  if (scl_pin_num >= k_pins_per_port) {
+    rx_log_error(s_tag, "Invalid SMBUS SCL pin");
+    return k_rx_err_invalid_arg;
+  }
 
   /* Validate channel (0-2) */
   if (channel >= k_riic_channel_count) {

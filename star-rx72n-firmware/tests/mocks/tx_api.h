@@ -43,13 +43,9 @@ typedef void VOID;
 /* =============================================================================
  * ThreadX Constants
  *
- * INTENTIONAL DEVIATION from NASA Power of 10 Rule 8:
- * These constants are defined as macros (not enums) to maintain exact
- * compatibility with the real ThreadX API. The real ThreadX uses #define
- * for all these values. In STAR production code, these would be enums.
- *
- * This mock must match the real API signatures to ensure tests accurately
- * reflect production behavior when the firmware links against real ThreadX.
+ * ThreadX return codes and options are defined as enums for type safety
+ * and debugger visibility. The numeric values match the real ThreadX API
+ * to ensure binary compatibility when the firmware links against real ThreadX.
  * =============================================================================
  */
 

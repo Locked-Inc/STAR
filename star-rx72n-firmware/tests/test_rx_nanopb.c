@@ -1005,7 +1005,12 @@ void test_create_velocity_command_valid(void)
 void test_create_velocity_command_zero(void)
 {
   star_v1_VelocityCommand cmd;
-  rx_nanopb_create_velocity_command(&cmd, s_test_zero_velocity_mps, s_test_zero_velocity_mps, 0);
+  rx_nanopb_create_velocity_command(&cmd,
+                                    s_test_zero_velocity_mps,
+                                    s_test_zero_velocity_mps,
+                                    s_test_zero_velocity_mps,
+                                    s_test_zero_velocity_mps,
+                                    0);
 
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
                            (float)s_test_zero_velocity_mps,

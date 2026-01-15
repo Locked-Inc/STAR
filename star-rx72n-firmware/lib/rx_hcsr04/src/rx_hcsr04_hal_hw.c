@@ -63,6 +63,17 @@ rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
 
 rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
 {
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
+
+  if (port > k_hex_port_end || (port > k_max_decimal_port && port < k_hex_port_start)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (pin_num >= k_pins_per_port) {
+    return k_rx_err_invalid_arg;
+  }
+
   /*
    * GPIO_DEINIT is intentionally a no-op: the RX72N GPIO HAL does not provide
    * pin deallocation. GPIO pins are static resources allocated at init time.
@@ -103,6 +114,29 @@ typedef enum {
 static bool     s_cmt2_initialized = false;
 static TX_MUTEX s_time_mutex;
 static bool     s_time_mutex_initialized = false;
+
+/**
+ * @brief Initialize timing mutex safely
+ */
+static rx_err_t internal_time_mutex_init(void)
+{
+  if (s_time_mutex_initialized) {
+    return k_rx_ok;
+  }
+
+  UINT status = tx_mutex_create(&s_time_mutex, "TimeMutex", TX_NO_INHERIT);
+  if (status == TX_SUCCESS) {
+    s_time_mutex_initialized = true;
+    return k_rx_ok;
+  }
+
+  if (status == TX_MUTEX_ERROR || status == TX_CALLER_ERROR) {
+    s_time_mutex_initialized = true;
+    return k_rx_ok;
+  }
+
+  return k_rx_err_hw_init_failed;
+}
 
 /**
  * @brief Initialize CMT2 timer for microsecond timing
@@ -182,10 +216,9 @@ uint32_t hcsr04_hal_get_time_us(void)
 
   internal_cmt2_init();
 
-  /* Initialize mutex on first call (thread-safe via atomic check) */
-  if (!s_time_mutex_initialized) {
-    tx_mutex_create(&s_time_mutex, "TimeMutex", TX_NO_INHERIT);
-    s_time_mutex_initialized = true;
+  if (internal_time_mutex_init() != k_rx_ok) {
+    timer_hz = k_pclkb_hz / k_cmt2_divider;
+    return (uint32_t)((cmt2()->cmcnt * k_us_per_second) / timer_hz);
   }
 
   /* Protect static variables from concurrent access */

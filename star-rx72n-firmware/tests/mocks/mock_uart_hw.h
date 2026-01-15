@@ -29,6 +29,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hardware.h"
 #include "rx_err.h"
 
 #ifdef __cplusplus
@@ -259,12 +260,7 @@ uint32_t mock_uart_hw_get_baudrate(uint8_t channel);
  * =============================================================================
  */
 
-rx_err_t uart_init_channel(uint8_t  channel,
-                           uint32_t baudrate,
-                           uint8_t  tx_port,
-                           uint8_t  tx_pin,
-                           uint8_t  rx_port,
-                           uint8_t  rx_pin);
+rx_err_t uart_init_channel(const uart_channel_config_t* config);
 rx_err_t uart_deinit_channel(uint8_t channel);
 rx_err_t uart_putc_channel(uint8_t channel, char data);
 rx_err_t uart_puts_channel(uint8_t channel, const char* str);
