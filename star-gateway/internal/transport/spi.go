@@ -105,7 +105,7 @@ var (
 // SPITransport implements the Transport interface using periph.io for SPI communication.
 // The Raspberry Pi 5 acts as the SPI controller, communicating with the RX72N at 10 MHz.
 type SPITransport struct {
-	mu     sync.RWMutex   // protects isOpen, conn, port
+	mu     sync.RWMutex // protects isOpen, conn, port
 	config *SPIConfig
 	isOpen bool
 	conn   spi.Conn       // periph.io SPI connection
