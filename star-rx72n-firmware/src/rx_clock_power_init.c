@@ -254,6 +254,12 @@ static rx_err_t internal_verify_system_state(void)
     return k_rx_err_hw_init_failed;
   }
 
+  /* Verify PLL is selected as the system clock source */
+  uint16_t sckcr3 = sys->sckcr3;
+  if (sckcr3 != k_system_clock_source_pll) {
+    return k_rx_err_hw_init_failed;
+  }
+
   return k_rx_ok;
 }
 

@@ -11,15 +11,30 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "rx_port_constants.h"
 #include "rx_bus_config.h"
 
 #include <string.h>
 
 #include "rx_check.h"
 #include "rx_log.h"
+#include "rx_port_constants.h"
 
 static const char* s_tag = "BUS_CFG";
+
+static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin_num, const char* context_tag)
+{
+  if (port > k_rx_port_j) {
+    rx_log_error_str(s_tag, "Invalid port", context_tag, (uint32_t)strlen(context_tag));
+    return k_rx_err_invalid_arg;
+  }
+
+  if (pin_num > k_rx_pin_max) {
+    rx_log_error_str(s_tag, "Invalid pin", context_tag, (uint32_t)strlen(context_tag));
+    return k_rx_err_invalid_arg;
+  }
+
+  return k_rx_ok;
+}
 
 /* =============================================================================
  * GPIO Bus Configuration
@@ -35,16 +50,9 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
   uint8_t port    = rx_port_from_pin(pin);
   uint8_t pin_num = rx_pin_from_pin(pin);
 
-  /* Validate port (0-9 or 0xA-0x10 for A-G) */
-  if (port > k_hex_port_end || (port > k_max_decimal_port && port < k_hex_port_start)) {
-    rx_log_error(s_tag, "Invalid GPIO port");
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Validate pin (0-7) */
-  if (pin_num >= k_pins_per_port) {
-    rx_log_error(s_tag, "Invalid GPIO pin");
-    return k_rx_err_invalid_arg;
+  rx_err_t err = internal_validate_port_pin(port, pin_num, "GPIO");
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /* Zero out config structure */
@@ -137,27 +145,19 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
 
   /* Extract and validate SDA pin */
-  uint8_t sda_port    = rx_port_from_pin(sda_pin);
-  uint8_t sda_pin_num = rx_pin_from_pin(sda_pin);
-  if (sda_port > k_hex_port_end || (sda_port > k_max_decimal_port && sda_port < k_hex_port_start)) {
-    rx_log_error(s_tag, "Invalid I2C SDA port");
-    return k_rx_err_invalid_arg;
-  }
-  if (sda_pin_num >= k_pins_per_port) {
-    rx_log_error(s_tag, "Invalid I2C SDA pin");
-    return k_rx_err_invalid_arg;
+  uint8_t  sda_port    = rx_port_from_pin(sda_pin);
+  uint8_t  sda_pin_num = rx_pin_from_pin(sda_pin);
+  rx_err_t err         = internal_validate_port_pin(sda_port, sda_pin_num, "I2C SDA");
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /* Extract and validate SCL pin */
   uint8_t scl_port    = rx_port_from_pin(scl_pin);
   uint8_t scl_pin_num = rx_pin_from_pin(scl_pin);
-  if (scl_port > k_hex_port_end || (scl_port > k_max_decimal_port && scl_port < k_hex_port_start)) {
-    rx_log_error(s_tag, "Invalid I2C SCL port");
-    return k_rx_err_invalid_arg;
-  }
-  if (scl_pin_num >= k_pins_per_port) {
-    rx_log_error(s_tag, "Invalid I2C SCL pin");
-    return k_rx_err_invalid_arg;
+  err                 = internal_validate_port_pin(scl_port, scl_pin_num, "I2C SCL");
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /* Validate channel (0-2) */
@@ -213,27 +213,19 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
 
   /* Extract and validate SDA pin */
-  uint8_t sda_port    = rx_port_from_pin(sda_pin);
-  uint8_t sda_pin_num = rx_pin_from_pin(sda_pin);
-  if (sda_port > k_hex_port_end || (sda_port > k_max_decimal_port && sda_port < k_hex_port_start)) {
-    rx_log_error(s_tag, "Invalid SMBUS SDA port");
-    return k_rx_err_invalid_arg;
-  }
-  if (sda_pin_num >= k_pins_per_port) {
-    rx_log_error(s_tag, "Invalid SMBUS SDA pin");
-    return k_rx_err_invalid_arg;
+  uint8_t  sda_port    = rx_port_from_pin(sda_pin);
+  uint8_t  sda_pin_num = rx_pin_from_pin(sda_pin);
+  rx_err_t err         = internal_validate_port_pin(sda_port, sda_pin_num, "SMBUS SDA");
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /* Extract and validate SCL pin */
   uint8_t scl_port    = rx_port_from_pin(scl_pin);
   uint8_t scl_pin_num = rx_pin_from_pin(scl_pin);
-  if (scl_port > k_hex_port_end || (scl_port > k_max_decimal_port && scl_port < k_hex_port_start)) {
-    rx_log_error(s_tag, "Invalid SMBUS SCL port");
-    return k_rx_err_invalid_arg;
-  }
-  if (scl_pin_num >= k_pins_per_port) {
-    rx_log_error(s_tag, "Invalid SMBUS SCL pin");
-    return k_rx_err_invalid_arg;
+  err                 = internal_validate_port_pin(scl_port, scl_pin_num, "SMBUS SCL");
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /* Validate channel (0-2) */
@@ -288,10 +280,11 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t* config,
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
 
   /* Extract port and pin from type-safe enums for validation */
-  uint8_t tx_port    = rx_port_from_pin(tx_pin);
-  uint8_t tx_pin_num = rx_pin_from_pin(tx_pin);
-  uint8_t rx_port    = rx_port_from_pin(rx_pin);
-  uint8_t rx_pin_num = rx_pin_from_pin(rx_pin);
+  uint8_t  tx_port    = rx_port_from_pin(tx_pin);
+  uint8_t  tx_pin_num = rx_pin_from_pin(tx_pin);
+  uint8_t  rx_port    = rx_port_from_pin(rx_pin);
+  uint8_t  rx_pin_num = rx_pin_from_pin(rx_pin);
+  rx_err_t err        = k_rx_ok;
 
   /* Validate SCI channel (0-12) */
   if (channel >= k_sci_channel_count) {
@@ -299,28 +292,14 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t* config,
     return k_rx_err_invalid_arg;
   }
 
-  /* Validate TX port (0-9 or 0xA-0x10 for A-G) */
-  if (tx_port > k_hex_port_end || (tx_port > k_max_decimal_port && tx_port < k_hex_port_start)) {
-    rx_log_error(s_tag, "Invalid UART TX port");
-    return k_rx_err_invalid_arg;
+  err = internal_validate_port_pin(tx_port, tx_pin_num, "UART TX");
+  if (err != k_rx_ok) {
+    return err;
   }
 
-  /* Validate TX pin (0-7) */
-  if (tx_pin_num >= k_pins_per_port) {
-    rx_log_error(s_tag, "Invalid UART TX pin");
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Validate RX port (0-9 or 0xA-0x10 for A-G) */
-  if (rx_port > k_hex_port_end || (rx_port > k_max_decimal_port && rx_port < k_hex_port_start)) {
-    rx_log_error(s_tag, "Invalid UART RX port");
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Validate RX pin (0-7) */
-  if (rx_pin_num >= k_pins_per_port) {
-    rx_log_error(s_tag, "Invalid UART RX pin");
-    return k_rx_err_invalid_arg;
+  err = internal_validate_port_pin(rx_port, rx_pin_num, "UART RX");
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /* Validate baud rate */
@@ -365,16 +344,9 @@ rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, r
   uint8_t port    = rx_port_from_pin(pin);
   uint8_t pin_num = rx_pin_from_pin(pin);
 
-  /* Validate port (0-9 or 0xA-0x10 for A-G) */
-  if (port > k_hex_port_end || (port > k_max_decimal_port && port < k_hex_port_start)) {
-    rx_log_error(s_tag, "Invalid OneWire GPIO port");
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Validate pin (0-7) */
-  if (pin_num >= k_pins_per_port) {
-    rx_log_error(s_tag, "Invalid OneWire GPIO pin");
-    return k_rx_err_invalid_arg;
+  rx_err_t err = internal_validate_port_pin(port, pin_num, "OneWire GPIO");
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /* Zero out config structure */

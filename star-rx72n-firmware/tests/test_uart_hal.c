@@ -114,11 +114,13 @@ void test_uart_init_channel_already_initialized(void)
 
 void test_uart_deinit_channel_success(void)
 {
-  uart_channel_config_t cfg      = {.channel  = 9,
-                                    .baudrate = 115200,
-                                    .tx_gpio  = k_test_tx_gpio,
-                                    .rx_gpio  = k_test_rx_gpio};
-  rx_err_t              init_err = uart_init_channel(&cfg);
+  uart_channel_config_t cfg = {
+    .channel  = 9,
+    .baudrate = 115200,
+    .tx_gpio  = k_test_tx_gpio,
+    .rx_gpio  = k_test_rx_gpio,
+  };
+  rx_err_t init_err = uart_init_channel(&cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, init_err);
 
   rx_err_t err = uart_deinit_channel(9);

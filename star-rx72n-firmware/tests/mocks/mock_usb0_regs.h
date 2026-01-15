@@ -169,6 +169,7 @@ typedef enum {
   k_usb_ctsq_max_value     = 0x07,   /**< Maximum valid CTSQ value (3 bits) */
   k_usb_intsts0_dvsq_mask  = 0x0070, /**< Device State mask */
   k_usb_intsts0_dvsq_shift = 4,      /**< Device State bit shift */
+  k_usb_dvsq_max_value     = 0x07,   /**< Maximum valid DVSQ value (3 bits) */
 
   /* CFIFOCTR register bits */
   k_usb_cfifoctr_dtln_mask = 0x01FF,    /**< Data Length mask */
@@ -202,7 +203,7 @@ void mock_usb0_set_intsts0(uint16_t value);
 /**
  * @brief Set device state (DVSQ field in INTSTS0)
  *
- * @param dvsq Device state value (0-4 shifted to bit position)
+ * @param dvsq Device state value (0-7)
  */
 void mock_usb0_set_dvsq(uint16_t dvsq);
 

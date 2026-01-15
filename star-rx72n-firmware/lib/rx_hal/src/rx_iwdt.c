@@ -37,6 +37,17 @@ typedef enum {
   k_iwdt_clock_hz = 120000, /**< IWDT clock frequency in Hz */
 } iwdt_clock_constants_t;
 
+/** @brief IWDT validation constants */
+typedef enum {
+  k_iwdt_timeout_min_ms = 1, /**< Minimum valid timeout */
+} iwdt_validation_constants_t;
+
+/** @brief IWDT initialization state */
+typedef enum {
+  k_iwdt_not_initialized = 0, /**< IWDT not initialized */
+  k_iwdt_initialized     = 1, /**< IWDT initialized */
+} iwdt_init_state_t;
+
 /** @brief Task monitoring string buffer sizes */
 typedef enum {
   k_task_name_max_len   = 16, /**< Maximum task name length (including null) */
@@ -88,7 +99,7 @@ static const uint32_t k_iwdt_timeout_table_size =
 static char* s_tag = "iwdt";
 
 /** @brief Flag indicating IWDT has been initialized */
-static uint8_t s_iwdt_initialized = 0;
+static iwdt_init_state_t s_iwdt_initialized = k_iwdt_not_initialized;
 
 /* =============================================================================
  * Internal Helpers
@@ -133,14 +144,33 @@ static rx_err_t internal_find_timeout_config(uint32_t                     timeou
  * =============================================================================
  */
 
+#ifdef __RX__
+static void internal_configure_iwdt_control_register(const iwdt_timeout_entry_t* config)
+{
+  uint16_t iwdtcr = 0;
+  iwdtcr |= config->tops;    /* Timeout period */
+  iwdtcr |= config->cks;     /* Clock divisor */
+  iwdtcr |= k_iwdt_rpes_0;   /* Window end at 0% (disabled) */
+  iwdtcr |= k_iwdt_rpss_100; /* Window start at 100% (full) */
+
+  iwdt()->iwdtcr = iwdtcr;
+}
+
+static void internal_configure_iwdt_registers(void)
+{
+  iwdt()->iwdtrcr   = k_iwdt_rstirqs_reset;
+  iwdt()->iwdtcstpr = k_iwdt_slcstp_continue;
+}
+#endif
+
 rx_err_t rx_iwdt_init(uint32_t timeout_ms)
 {
 #ifdef __RX__
-  if (s_iwdt_initialized) {
+  if (s_iwdt_initialized == k_iwdt_initialized) {
     return k_rx_err_invalid_state;
   }
 
-  if (timeout_ms == 0) {
+  if (timeout_ms < k_iwdt_timeout_min_ms) {
     return k_rx_err_invalid_arg;
   }
 
@@ -159,13 +189,7 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
    * Bits [9:8]   RPES  - Window End Position (0x03 = 0%, window disabled)
    * Bits [13:12] RPSS  - Window Start Position (0x00 = 100%, full window)
    */
-  uint16_t iwdtcr = 0;
-  iwdtcr |= config->tops;    /* Timeout period */
-  iwdtcr |= config->cks;     /* Clock divisor */
-  iwdtcr |= k_iwdt_rpes_0;   /* Window end at 0% (disabled) */
-  iwdtcr |= k_iwdt_rpss_100; /* Window start at 100% (full) */
-
-  iwdt()->iwdtcr = iwdtcr;
+  internal_configure_iwdt_control_register(config);
 
   /*
    * Configure Reset Control Register (IWDTRCR)
@@ -176,7 +200,7 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
    *
    * We use reset (1) for safety - NMI could be masked or ignored.
    */
-  iwdt()->iwdtrcr = k_iwdt_rstirqs_reset;
+  internal_configure_iwdt_registers();
 
   /*
    * Configure Count Stop Control Register (IWDTCSTPR)
@@ -187,8 +211,6 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
    *
    * We continue counting during sleep for safety.
    */
-  iwdt()->iwdtcstpr = k_iwdt_slcstp_continue;
-
   /*
    * Start the IWDT by performing first refresh
    *
@@ -197,13 +219,13 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
    */
   rx_iwdt_feed();
 
-  s_iwdt_initialized = 1;
+  s_iwdt_initialized = k_iwdt_initialized;
   return k_rx_ok;
 
 #else
   /* Host-side stub for unit testing */
   (void)timeout_ms;
-  s_iwdt_initialized = 1;
+  s_iwdt_initialized = k_iwdt_initialized;
   return k_rx_ok;
 #endif
 }
@@ -318,6 +340,18 @@ typedef struct {
   uint8_t  registered;                     /**< 1 if task is registered */
 } task_monitor_t;
 
+/** @brief Task search constants */
+typedef enum {
+  k_task_not_found = -1, /**< Task not found sentinel */
+  k_task_idx_min   = 0,  /**< Minimum valid task index */
+} task_search_constants_t;
+
+/** @brief Task registration state constants */
+typedef enum {
+  k_task_not_registered = 0, /**< Task not registered */
+  k_task_registered     = 1, /**< Task registered */
+} task_registration_state_t;
+
 /**
  * @brief Task monitoring module state
  */
@@ -341,7 +375,7 @@ static task_monitor_state_t s_task_monitor = {0};
 static int32_t internal_find_task(const char* task_name)
 {
   if (task_name == NULL) {
-    return -1;
+    return k_task_not_found;
   }
 
   for (uint32_t i = 0; i < s_task_monitor.task_count; i++) {
@@ -350,7 +384,7 @@ static int32_t internal_find_task(const char* task_name)
     }
   }
 
-  return -1;
+  return k_task_not_found;
 }
 
 rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
@@ -365,7 +399,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
   }
 
   /* Check for duplicate registration */
-  if (internal_find_task(task_name) >= 0) {
+  if (internal_find_task(task_name) != k_task_not_found) {
     return k_rx_err_exists;
   }
 
@@ -377,7 +411,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 
   task->timeout_ms        = timeout_ms;
   task->last_heartbeat_ms = tx_time_get();
-  task->registered        = 1;
+  task->registered        = k_task_registered;
 
   s_task_monitor.task_count++;
 
@@ -388,9 +422,14 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 
 void rx_iwdt_task_heartbeat(const char* task_name)
 {
+  if (task_name == NULL) {
+    rx_log_error(s_tag, "Heartbeat called with NULL task_name");
+    return;
+  }
+
   const int32_t idx = internal_find_task(task_name);
 
-  if (idx < 0) {
+  if (idx == k_task_not_found) {
     /* Task not registered - log warning but don't fail */
     rx_log_error(s_tag, "Heartbeat from unregistered task");
     return;

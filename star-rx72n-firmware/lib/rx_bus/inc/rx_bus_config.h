@@ -17,9 +17,9 @@
 #ifndef STAR_RX72N_BUS_CONFIG_H
 #define STAR_RX72N_BUS_CONFIG_H
 
-#include "rx_port_constants.h"
 #include "rx_bus_types.h"
 #include "rx_err.h"
+#include "rx_port_constants.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -191,7 +191,7 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
  * static rx_bus_config_t temp_sensor_config;
  *
  * // Initialize OneWire on P32
- * rx_bus_config_init_onewire(&temp_sensor_config, "temp_sensor", k_gpio_p32);
+ * rx_bus_config_init_onewire(&temp_sensor_config, "temp_sensor", k_rx_p3_2);
  *
  * // Add to bus manager
  * rx_bus_manager_add_bus(&bus_manager, &temp_sensor_config);
@@ -237,8 +237,8 @@ rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, r
  * // Initialize UART on SCI9 (PB7/TXD9, PB6/RXD9)
  * rx_bus_config_init_uart(&debug_uart_config, "debug_uart",
  *                         9,            // SCI9
- *                         k_gpio_pb7,   // TX: Port B, Pin 7
- *                         k_gpio_pb6,   // RX: Port B, Pin 6
+ *                         k_rx_pb_7,    // TX: Port B, Pin 7
+ *                         k_rx_pb_6,    // RX: Port B, Pin 6
  *                         115200);      // 115200 baud
  *
  * // Add to bus manager

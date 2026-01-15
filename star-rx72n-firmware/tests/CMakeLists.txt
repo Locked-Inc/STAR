@@ -291,7 +291,6 @@ add_executable(test_rx_hcsr04
     ${MOCK_HCSR04_SRC}
     ${MOCK_UART_SRC}
 )
-target_compile_definitions(test_rx_hcsr04 PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_hcsr04 unity)
 
 # Test: Obstacle Detection
@@ -303,7 +302,6 @@ add_executable(test_rx_obstacle_detect
     ${MOCK_MOTOR_SRC}
     ${MOCK_UART_SRC}
 )
-target_compile_definitions(test_rx_obstacle_detect PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_obstacle_detect unity)
 
 # Test: UART HAL Driver
