@@ -79,6 +79,31 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
 }
 
 /* =============================================================================
+ * Assertion Macros
+ * =============================================================================
+ */
+
+/**
+ * @brief Assert a condition and halt on failure
+ *
+ * @param[in] condition Boolean condition to check
+ * @param[in] message Error message to display on failure
+ *
+ * If condition is false, logs the error message and halts execution.
+ * Use this for checking invariants and preconditions.
+ *
+ * Example:
+ *   RX_ASSERT(ptr != NULL, "Pointer must not be NULL");
+ *   RX_ASSERT(count > 0, "Count must be positive");
+ */
+#define RX_ASSERT(condition, message)                                                              \
+  do {                                                                                             \
+    if (!(condition)) {                                                                            \
+      internal_rx_fatal_error("ASSERT", message, k_rx_fail);                                       \
+    }                                                                                              \
+  } while (0)
+
+/* =============================================================================
  * Error Checking Macros
  * =============================================================================
  */
