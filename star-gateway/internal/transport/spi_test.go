@@ -171,6 +171,49 @@ func TestSPITransport_CloseNotOpen(t *testing.T) {
 	}
 }
 
+func TestSPITransport_SetReadDeadline(t *testing.T) {
+	transport := NewSPITransport(DefaultConfig())
+
+	// Test setting a future deadline
+	futureDeadline := time.Now().Add(1 * time.Hour)
+	err := transport.SetReadDeadline(futureDeadline)
+	if err != nil {
+		t.Errorf("SetReadDeadline failed: %v", err)
+	}
+
+	// Test setting a past deadline
+	pastDeadline := time.Now().Add(-1 * time.Hour)
+	err = transport.SetReadDeadline(pastDeadline)
+	if err != nil {
+		t.Errorf("SetReadDeadline failed: %v", err)
+	}
+
+	// Test setting a zero deadline (no deadline)
+	err = transport.SetReadDeadline(time.Time{})
+	if err != nil {
+		t.Errorf("SetReadDeadline failed: %v", err)
+	}
+}
+
+func TestSPITransport_ReceiveWithExpiredDeadline(t *testing.T) {
+	transport := NewSPITransport(DefaultConfig())
+
+	// Set a deadline in the past
+	pastDeadline := time.Now().Add(-1 * time.Second)
+	err := transport.SetReadDeadline(pastDeadline)
+	if err != nil {
+		t.Fatalf("SetReadDeadline failed: %v", err)
+	}
+
+	// Attempt to receive - should fail with timeout even without opening device
+	// Note: This still won't work because device is not open
+	_, err = transport.Receive(10)
+	// Should get ErrDeviceNotOpen first (checked before deadline)
+	if err != ErrDeviceNotOpen {
+		t.Errorf("Expected ErrDeviceNotOpen, got %v", err)
+	}
+}
+
 // ============================================================================
 // Hardware Integration Tests (skip with -short flag)
 // These require actual /dev/spidev0.0 device on Raspberry Pi 5
@@ -320,7 +363,7 @@ func TestSPITransport_MultipleOperations(t *testing.T) {
 	defer transport.Close()
 
 	// Perform multiple operations in sequence
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		testData := []byte{byte(i), 0xAA, 0x01, 0x02}
 
 		// Send

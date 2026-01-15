@@ -106,11 +106,20 @@ func run() error {
 	// ========================================
 	log.Printf("Initializing gRPC services...")
 
+	// Create a context for service lifecycle management
+	ctx := context.Background()
+
 	// Gateway service
 	gatewaySvc := service.NewGatewayService()
 
 	// Motor control service (with HARQ integration, Dispatcher, and Logger)
 	motorSvc := service.NewMotorControlService(harqHandler, msgDispatcher, logger)
+
+	// Telemetry service (with context, HARQ integration, Dispatcher, and Logger)
+	telemetrySvc := service.NewTelemetryService(ctx, harqHandler, msgDispatcher, logger)
+
+	// Configuration service (with HARQ integration, Dispatcher, and Logger)
+	configSvc := service.NewConfigurationService(harqHandler, msgDispatcher, logger)
 
 	// Create gRPC server
 	grpcServer := grpc.NewServer(
@@ -121,6 +130,8 @@ func run() error {
 	// Register gRPC services
 	starv1.RegisterGatewayServiceServer(grpcServer, gatewaySvc)
 	starv1.RegisterMotorControlServiceServer(grpcServer, motorSvc)
+	starv1.RegisterTelemetryServiceServer(grpcServer, telemetrySvc)
+	starv1.RegisterConfigurationServiceServer(grpcServer, configSvc)
 
 	// Start gRPC listener
 	grpcLis, err := net.Listen("tcp", ":50051")
@@ -193,6 +204,11 @@ func run() error {
 	log.Printf("Shutting down gRPC server...")
 	grpcServer.GracefulStop()
 	log.Println("gRPC server stopped")
+
+	// Shutdown services
+	log.Println("Shutting down services...")
+	telemetrySvc.Shutdown()
+	log.Println("Services stopped")
 
 	// SPI transport cleanup (via defer at top of run)
 	log.Println("Closing SPI transport...")
