@@ -82,6 +82,18 @@ static bool internal_check_lvd0rf(void)
 }
 
 /**
+ * @brief Check Cold/Warm Start Determination Flag (CWSF)
+ * @return true if CWSF check passes, false on unexpected state
+ * @note CWSF indicates whether this is a cold start (0) or warm start (1)
+ */
+static bool internal_check_cwsf(void)
+{
+  /* TODO: Implement actual CWSF flag check from RSTSR1 register */
+  /* For now, return true - both cold and warm starts are acceptable */
+  return true;
+}
+
+/**
  * @brief Check all startup flags and return status
  *
  * Validates critical reset status flags to determine boot condition.
@@ -96,15 +108,18 @@ static rx_err_t internal_check_startup_flags(void)
   bool wdtrf_ok  = internal_check_wdtrf();
   bool swrf_ok   = internal_check_swrf();
   bool lvd0rf_ok = internal_check_lvd0rf();
+  bool cwsf_ok   = internal_check_cwsf();
 
-  /* Assert critical startup conditions:
+  /* Assert critical startup conditions (fail-fast, system halts on failure):
    * - PORF should indicate clean power-on (critical for proper initialization)
    * - IWDTRF should be clear (watchdog reset indicates prior firmware issue) */
   RX_ASSERT(porf_ok, "Power-On Reset flag check failed - unexpected startup condition");
   RX_ASSERT(iwdtrf_ok, "Independent Watchdog Timer reset detected - prior execution fault");
 
-  /* Return error if any startup flag indicates abnormal condition */
-  if (!porf_ok || !iwdtrf_ok || !wdtrf_ok || !swrf_ok || !lvd0rf_ok) {
+  /* Return error if any non-critical startup flag indicates abnormal condition.
+   * Note: porf_ok and iwdtrf_ok are not checked here as RX_ASSERT above
+   * halts execution if they fail (fail-fast behavior for critical flags). */
+  if (!wdtrf_ok || !swrf_ok || !lvd0rf_ok || !cwsf_ok) {
     return k_rx_err_hw_init_failed;
   }
 
@@ -124,13 +139,13 @@ int main(void)
   rx_err_t startup_ret;
   rx_err_t ret;
 
-  /* Check:
-   *  PORF (Power-On Reset Detect Flag),
-   *  IWDTRF (Independent Watchdog Timer Reset Detect Flag)
+  /* Check startup flags (via internal_check_startup_flags):
+   *  PORF (Power-On Reset Detect Flag) - asserted, halts on failure
+   *  IWDTRF (Independent Watchdog Timer Reset Detect Flag) - asserted, halts on failure
    *  WDTRF (Watchdog Timer Reset Detect Flag)
    *  SWRF (Software Reset Detect Flag)
-   *  CWSF (Cold/Warm Start Determination Flag)
    *  LVD0RF (Voltage-Monitoring 0 Reset Detect Flag)
+   *  CWSF (Cold/Warm Start Determination Flag)
    */
   startup_ret = internal_check_startup_flags();
   RX_ERROR_CHECK(startup_ret);
