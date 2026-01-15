@@ -233,7 +233,7 @@ typedef struct {
  * @param[in] config Pointer to configuration. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle or config is NULL
+ * @return k_rx_err_null_ptr if handle or config is NULL
  * @return k_rx_err_invalid_arg if bus_manager or bus_name is NULL
  * @return k_rx_err_invalid_state if device not responding
  * @return k_rx_err_crc if scratchpad CRC check fails
@@ -246,7 +246,7 @@ rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t*
  * @param[in] handle Pointer to initialized handle. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_ds18b20_deinit(rx_ds18b20_handle_t* handle);
@@ -266,7 +266,7 @@ rx_err_t rx_ds18b20_deinit(rx_ds18b20_handle_t* handle);
  * @param[in] handle Pointer to initialized handle. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  */
 rx_err_t rx_ds18b20_trigger_conversion(rx_ds18b20_handle_t* handle);
@@ -281,7 +281,7 @@ rx_err_t rx_ds18b20_trigger_conversion(rx_ds18b20_handle_t* handle);
  * @param[out] temperature_celsius Pointer to store temperature in °C. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer is NULL
+ * @return k_rx_err_null_ptr if any pointer is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  * @return k_rx_err_crc if scratchpad CRC check fails
  */
@@ -297,7 +297,7 @@ rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle, float* tempera
  * @param[out] raw_temp Pointer to store raw temperature. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer is NULL
+ * @return k_rx_err_null_ptr if any pointer is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  * @return k_rx_err_crc if scratchpad CRC check fails
  */
@@ -313,7 +313,7 @@ rx_err_t rx_ds18b20_read_temperature_raw(rx_ds18b20_handle_t* handle, int16_t* r
  * @param[in] resolution Resolution mode (9-12 bits)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_arg if resolution out of range
  * @return k_rx_err_invalid_state if not initialized or device not present
  */
@@ -326,7 +326,7 @@ rx_err_t rx_ds18b20_set_resolution(rx_ds18b20_handle_t* handle, ds18b20_resoluti
  * @param[out] resolution Pointer to store resolution. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer is NULL
+ * @return k_rx_err_null_ptr if any pointer is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_ds18b20_get_resolution(const rx_ds18b20_handle_t* handle,
@@ -341,7 +341,7 @@ rx_err_t rx_ds18b20_get_resolution(const rx_ds18b20_handle_t* handle,
  * @param[in] handle Pointer to initialized handle. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  */
 rx_err_t rx_ds18b20_save_config(rx_ds18b20_handle_t* handle);
@@ -355,7 +355,7 @@ rx_err_t rx_ds18b20_save_config(rx_ds18b20_handle_t* handle);
  * @param[in] handle Pointer to initialized handle. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  */
 rx_err_t rx_ds18b20_recall_config(rx_ds18b20_handle_t* handle);
@@ -369,7 +369,7 @@ rx_err_t rx_ds18b20_recall_config(rx_ds18b20_handle_t* handle);
  * @param[out] external_power True if external power, false if parasitic. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer is NULL
+ * @return k_rx_err_null_ptr if any pointer is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  */
 rx_err_t rx_ds18b20_read_power_mode(rx_ds18b20_handle_t* handle, bool* external_power);
@@ -384,7 +384,7 @@ rx_err_t rx_ds18b20_read_power_mode(rx_ds18b20_handle_t* handle, bool* external_
  * @param[out] scratchpad Pointer to 9-byte buffer. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer is NULL
+ * @return k_rx_err_null_ptr if any pointer is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  * @return k_rx_err_crc if CRC check fails
  */

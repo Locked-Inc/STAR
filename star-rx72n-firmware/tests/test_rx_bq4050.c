@@ -76,8 +76,6 @@ typedef enum {
   k_test_cell_voltage_low_mv    = 4050,  /**< Low cell voltage (mV) */
   k_test_charging_ma            = 2000,  /**< Typical charging current (mA) */
   k_test_discharging_ma         = -1500, /**< Typical discharging current (mA) */
-  k_test_charging_current_2a    = 2000,  /**< Charging current (mA) */
-  k_test_discharge_current      = -1500, /**< Discharging current (mA) */
   k_test_avg_current            = 1800,  /**< Average current (mA) */
   k_test_temp_25c_0_1k          = 2981,  /**< 25.0 deg C in 0.1K units */
   k_test_temp_0c_0_1k           = 2731,  /**< 0.0 deg C in 0.1K units */
@@ -101,11 +99,11 @@ typedef enum {
 static rx_bus_manager_t s_manager;
 static const char*      s_bus_name = "smbus_fuel_gauge";
 
-static void test_setup(void);
+static void internal_test_setup(void);
 
 void setUp(void)
 {
-  test_setup();
+  internal_test_setup();
 }
 
 void tearDown(void)
@@ -116,7 +114,7 @@ void tearDown(void)
 /**
  * @brief Set up test environment before each test
  */
-static void test_setup(void)
+static void internal_test_setup(void)
 {
   mock_smbus_reset();
   memset(&s_manager, 0, sizeof(s_manager));
@@ -129,7 +127,7 @@ static void test_setup(void)
 /**
  * @brief Set up typical battery register values for bulk status tests
  */
-static void setup_typical_battery_values(void)
+static void internal_setup_typical_battery_values(void)
 {
   mock_smbus_set_word_response(k_test_sbs_voltage, k_test_typical_voltage_mv);
   mock_smbus_set_word_response(k_test_sbs_cell_voltage_1, k_test_cell_voltage_mv);
@@ -157,7 +155,7 @@ static void setup_typical_battery_values(void)
 
 static void test_init_success(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_initialized(false);
   mock_smbus_set_word_response(k_test_sbs_voltage, k_test_typical_voltage_mv);
 
@@ -168,23 +166,23 @@ static void test_init_success(void)
 
 static void test_init_null_manager(void)
 {
-  test_setup();
+  internal_test_setup();
 
   rx_err_t err = rx_bq4050_init(NULL, s_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_init_null_bus_name(void)
 {
-  test_setup();
+  internal_test_setup();
 
   rx_err_t err = rx_bq4050_init(&s_manager, NULL, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_init_smbus_fail(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_initialized(false);
   mock_smbus_set_next_error(k_rx_err_hw_init_failed);
 
@@ -194,7 +192,7 @@ static void test_init_smbus_fail(void)
 
 static void test_init_communication_fail(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_initialized(false);
   /* Init will succeed but voltage read will fail */
   mock_smbus_set_command_error(k_test_sbs_voltage, k_rx_err_nack);
@@ -210,7 +208,7 @@ static void test_init_communication_fail(void)
 
 static void test_read_voltage_success(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_voltage, k_test_typical_voltage_mv);
 
   uint16_t voltage_mv;
@@ -221,24 +219,24 @@ static void test_read_voltage_success(void)
 
 static void test_read_voltage_null_manager(void)
 {
-  test_setup();
+  internal_test_setup();
 
   uint16_t voltage_mv;
   rx_err_t err = rx_bq4050_read_voltage(NULL, s_bus_name, &voltage_mv);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_read_voltage_null_output(void)
 {
-  test_setup();
+  internal_test_setup();
 
   rx_err_t err = rx_bq4050_read_voltage(&s_manager, s_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_read_voltage_timeout(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_command_error(k_test_sbs_voltage, k_rx_err_timeout);
 
   uint16_t voltage_mv;
@@ -253,7 +251,7 @@ static void test_read_voltage_timeout(void)
 
 static void test_read_cell_voltages_1_cell(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_cell_voltage_1, k_test_cell_voltage_high_mv);
 
   uint16_t cell_voltages[k_bq4050_max_cells] = {0};
@@ -264,7 +262,7 @@ static void test_read_cell_voltages_1_cell(void)
 
 static void test_read_cell_voltages_4_cells(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_cell_voltage_1, k_test_cell_voltage_high_mv);
   mock_smbus_set_word_response(k_test_sbs_cell_voltage_2, k_test_cell_voltage_mid_hi_mv);
   mock_smbus_set_word_response(k_test_sbs_cell_voltage_3, k_test_cell_voltage_mid_lo_mv);
@@ -281,15 +279,15 @@ static void test_read_cell_voltages_4_cells(void)
 
 static void test_read_cell_voltages_null_array(void)
 {
-  test_setup();
+  internal_test_setup();
 
   rx_err_t err = rx_bq4050_read_cell_voltages(&s_manager, s_bus_name, NULL, 1);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_read_cell_voltages_too_many_cells(void)
 {
-  test_setup();
+  internal_test_setup();
 
   uint16_t cell_voltages[k_bq4050_max_cells] = {0};
   rx_err_t err = rx_bq4050_read_cell_voltages(&s_manager, s_bus_name, cell_voltages, 5);
@@ -298,7 +296,7 @@ static void test_read_cell_voltages_too_many_cells(void)
 
 static void test_read_cell_voltages_partial_failure(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_cell_voltage_1, k_test_cell_voltage_high_mv);
   mock_smbus_set_command_error(k_test_sbs_cell_voltage_2, k_rx_err_crc_mismatch);
 
@@ -314,30 +312,30 @@ static void test_read_cell_voltages_partial_failure(void)
 
 static void test_read_current_charging(void)
 {
-  test_setup();
-  mock_smbus_set_word_response(k_test_sbs_current, (uint16_t)k_test_charging_current_2a);
+  internal_test_setup();
+  mock_smbus_set_word_response(k_test_sbs_current, (uint16_t)k_test_charging_ma);
 
   int16_t  current_ma;
   rx_err_t err = rx_bq4050_read_current(&s_manager, s_bus_name, &current_ma);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(k_test_charging_current_2a, current_ma);
+  TEST_ASSERT_EQUAL(k_test_charging_ma, current_ma);
 }
 
 static void test_read_current_discharging(void)
 {
-  test_setup();
+  internal_test_setup();
   /* -1500 as unsigned 16-bit */
-  mock_smbus_set_word_response(k_test_sbs_current, (uint16_t)k_test_discharge_current);
+  mock_smbus_set_word_response(k_test_sbs_current, (uint16_t)k_test_discharging_ma);
 
   int16_t  current_ma;
   rx_err_t err = rx_bq4050_read_current(&s_manager, s_bus_name, &current_ma);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(k_test_discharge_current, current_ma);
+  TEST_ASSERT_EQUAL(k_test_discharging_ma, current_ma);
 }
 
 static void test_read_current_idle(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_current, 0);
 
   int16_t  current_ma;
@@ -348,15 +346,15 @@ static void test_read_current_idle(void)
 
 static void test_read_current_null_output(void)
 {
-  test_setup();
+  internal_test_setup();
 
   rx_err_t err = rx_bq4050_read_current(&s_manager, s_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_read_average_current_success(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_average_current, (uint16_t)k_test_avg_current);
 
   int16_t  avg_current_ma;
@@ -367,10 +365,10 @@ static void test_read_average_current_success(void)
 
 static void test_read_average_current_null_output(void)
 {
-  test_setup();
+  internal_test_setup();
 
   rx_err_t err = rx_bq4050_read_average_current(&s_manager, s_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -380,7 +378,7 @@ static void test_read_average_current_null_output(void)
 
 static void test_read_relative_soc_full(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_relative_state_of_charge, k_test_soc_full);
 
   uint8_t  soc;
@@ -391,7 +389,7 @@ static void test_read_relative_soc_full(void)
 
 static void test_read_relative_soc_half(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_relative_state_of_charge, k_test_soc_half);
 
   uint8_t  soc;
@@ -402,7 +400,7 @@ static void test_read_relative_soc_half(void)
 
 static void test_read_relative_soc_empty(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_relative_state_of_charge, 0);
 
   uint8_t  soc;
@@ -413,27 +411,27 @@ static void test_read_relative_soc_empty(void)
 
 static void test_read_relative_soc_clamped(void)
 {
-  test_setup();
+  internal_test_setup();
   /* SBS allows values > 100% in some conditions */
   mock_smbus_set_word_response(k_test_sbs_relative_state_of_charge, k_test_soc_over_range);
 
   uint8_t  soc;
   rx_err_t err = rx_bq4050_read_relative_soc(&s_manager, s_bus_name, &soc);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(100, soc);
+  TEST_ASSERT_EQUAL(k_test_soc_full, soc);
 }
 
 static void test_read_relative_soc_null_output(void)
 {
-  test_setup();
+  internal_test_setup();
 
   rx_err_t err = rx_bq4050_read_relative_soc(&s_manager, s_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_read_absolute_soc_success(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_absolute_state_of_charge, k_test_soc_abs);
 
   uint8_t  soc;
@@ -444,13 +442,13 @@ static void test_read_absolute_soc_success(void)
 
 static void test_read_absolute_soc_clamped(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_absolute_state_of_charge, k_test_soc_way_over);
 
   uint8_t  soc;
   rx_err_t err = rx_bq4050_read_absolute_soc(&s_manager, s_bus_name, &soc);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(100, soc);
+  TEST_ASSERT_EQUAL(k_test_soc_full, soc);
 }
 
 /* =============================================================================
@@ -460,7 +458,7 @@ static void test_read_absolute_soc_clamped(void)
 
 static void test_read_temperature_25c(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_temperature, k_test_temp_25c_0_1k);
 
   int16_t  temp_c;
@@ -471,7 +469,7 @@ static void test_read_temperature_25c(void)
 
 static void test_read_temperature_0c(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_temperature, k_test_temp_0c_0_1k);
 
   int16_t  temp_c;
@@ -482,7 +480,7 @@ static void test_read_temperature_0c(void)
 
 static void test_read_temperature_negative(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_temperature, k_test_temp_neg10c_0_1k);
 
   int16_t  temp_c;
@@ -493,10 +491,10 @@ static void test_read_temperature_negative(void)
 
 static void test_read_temperature_null_output(void)
 {
-  test_setup();
+  internal_test_setup();
 
   rx_err_t err = rx_bq4050_read_temperature(&s_manager, s_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -506,7 +504,7 @@ static void test_read_temperature_null_output(void)
 
 static void test_read_capacity_success(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_word_response(k_test_sbs_remaining_capacity, k_test_capacity_half_mah);
   mock_smbus_set_word_response(k_test_sbs_full_charge_capacity, k_test_capacity_full_mah);
 
@@ -519,25 +517,25 @@ static void test_read_capacity_success(void)
 
 static void test_read_capacity_null_remaining(void)
 {
-  test_setup();
+  internal_test_setup();
 
   uint16_t full_mah;
   rx_err_t err = rx_bq4050_read_capacity(&s_manager, s_bus_name, NULL, &full_mah);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_read_capacity_null_full(void)
 {
-  test_setup();
+  internal_test_setup();
 
   uint16_t remaining_mah;
   rx_err_t err = rx_bq4050_read_capacity(&s_manager, s_bus_name, &remaining_mah, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_read_capacity_first_read_fail(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_command_error(k_test_sbs_remaining_capacity, k_rx_err_timeout);
 
   uint16_t remaining_mah, full_mah;
@@ -547,8 +545,8 @@ static void test_read_capacity_first_read_fail(void)
 
 static void test_read_capacity_second_read_fail(void)
 {
-  test_setup();
-  mock_smbus_set_word_response(k_test_sbs_remaining_capacity, 2500);
+  internal_test_setup();
+  mock_smbus_set_word_response(k_test_sbs_remaining_capacity, k_test_capacity_half_mah);
   mock_smbus_set_command_error(k_test_sbs_full_charge_capacity, k_rx_err_nack);
 
   uint16_t remaining_mah, full_mah;
@@ -563,8 +561,8 @@ static void test_read_capacity_second_read_fail(void)
 
 static void test_read_status_success(void)
 {
-  test_setup();
-  setup_typical_battery_values();
+  internal_test_setup();
+  internal_setup_typical_battery_values();
 
   rx_bq4050_status_t status = {0};
   rx_err_t           err    = rx_bq4050_read_status(&s_manager, s_bus_name, &status, 4);
@@ -577,15 +575,15 @@ static void test_read_status_success(void)
 
 static void test_read_status_null_status(void)
 {
-  test_setup();
+  internal_test_setup();
 
   rx_err_t err = rx_bq4050_read_status(&s_manager, s_bus_name, NULL, 4);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_read_status_too_many_cells(void)
 {
-  test_setup();
+  internal_test_setup();
 
   rx_bq4050_status_t status = {0};
   rx_err_t           err    = rx_bq4050_read_status(&s_manager, s_bus_name, &status, 5);
@@ -594,8 +592,8 @@ static void test_read_status_too_many_cells(void)
 
 static void test_read_status_charging_flags(void)
 {
-  test_setup();
-  setup_typical_battery_values();
+  internal_test_setup();
+  internal_setup_typical_battery_values();
   /* Clear discharging flag = charging */
   mock_smbus_set_word_response(k_test_sbs_battery_status, 0);
 
@@ -608,8 +606,8 @@ static void test_read_status_charging_flags(void)
 
 static void test_read_status_discharging_flags(void)
 {
-  test_setup();
-  setup_typical_battery_values();
+  internal_test_setup();
+  internal_setup_typical_battery_values();
   mock_smbus_set_word_response(k_test_sbs_battery_status, k_test_status_discharging);
 
   rx_bq4050_status_t status = {0};
@@ -620,8 +618,8 @@ static void test_read_status_discharging_flags(void)
 
 static void test_read_status_fully_charged_flags(void)
 {
-  test_setup();
-  setup_typical_battery_values();
+  internal_test_setup();
+  internal_setup_typical_battery_values();
   mock_smbus_set_word_response(k_test_sbs_battery_status, k_test_status_fully_charged);
 
   rx_bq4050_status_t status = {0};
@@ -632,8 +630,8 @@ static void test_read_status_fully_charged_flags(void)
 
 static void test_read_status_fully_discharged_flags(void)
 {
-  test_setup();
-  setup_typical_battery_values();
+  internal_test_setup();
+  internal_setup_typical_battery_values();
   mock_smbus_set_word_response(k_test_sbs_battery_status,
                                k_test_status_discharging | k_test_status_fully_discharged);
 
@@ -645,8 +643,8 @@ static void test_read_status_fully_discharged_flags(void)
 
 static void test_read_status_low_capacity_alarm(void)
 {
-  test_setup();
-  setup_typical_battery_values();
+  internal_test_setup();
+  internal_setup_typical_battery_values();
   mock_smbus_set_word_response(k_test_sbs_battery_status,
                                k_test_status_discharging | k_test_status_remaining_capacity_alarm);
 
@@ -663,7 +661,7 @@ static void test_read_status_low_capacity_alarm(void)
 
 static void test_read_voltage_nack(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_command_error(k_test_sbs_voltage, k_rx_err_nack);
 
   uint16_t voltage_mv;
@@ -673,7 +671,7 @@ static void test_read_voltage_nack(void)
 
 static void test_read_voltage_crc_mismatch(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_command_error(k_test_sbs_voltage, k_rx_err_crc_mismatch);
 
   uint16_t voltage_mv;
@@ -683,7 +681,7 @@ static void test_read_voltage_crc_mismatch(void)
 
 static void test_read_voltage_bus_not_initialized(void)
 {
-  test_setup();
+  internal_test_setup();
   mock_smbus_set_initialized(false);
 
   uint16_t voltage_mv;

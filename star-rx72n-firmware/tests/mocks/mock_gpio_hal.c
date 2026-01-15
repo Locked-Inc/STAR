@@ -330,7 +330,7 @@ rx_err_t gpio_read(rx_port_pin_t pin, bool* value)
   }
 
   if (value == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   uint8_t port, pin_num;

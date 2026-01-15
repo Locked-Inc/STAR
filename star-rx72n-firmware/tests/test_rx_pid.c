@@ -141,7 +141,7 @@ void test_pid_init_null_handle(void)
 
   rx_err_t err = rx_pid_init(NULL, &config);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -153,7 +153,7 @@ void test_pid_init_null_config(void)
 
   rx_err_t err = rx_pid_init(&pid, NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -238,7 +238,7 @@ void test_pid_deinit_null_handle(void)
 {
   rx_err_t err = rx_pid_deinit(NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -536,7 +536,7 @@ void test_pid_compute_null_handle(void)
 
   rx_err_t err = rx_pid_compute(NULL, 100.0f, 90.0f, s_dt_seconds, &output);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -549,7 +549,7 @@ void test_pid_compute_null_output(void)
 
   rx_err_t err = rx_pid_compute(&pid, 100.0f, 90.0f, s_dt_seconds, NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -679,7 +679,7 @@ void test_pid_reset_null_handle(void)
 {
   rx_err_t err = rx_pid_reset(NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -751,7 +751,7 @@ void test_pid_set_gains_null_handle(void)
 {
   rx_err_t err = rx_pid_set_gains(NULL, 1.0f, 1.0f, 1.0f);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -929,7 +929,7 @@ void test_pid_set_output_limits_null_handle(void)
 {
   rx_err_t err = rx_pid_set_output_limits(NULL, -50.0f, 50.0f);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -1017,7 +1017,7 @@ void test_pid_set_integral_limits_null_handle(void)
 {
   rx_err_t err = rx_pid_set_integral_limits(NULL, -25.0f, 25.0f);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**

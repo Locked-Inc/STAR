@@ -210,7 +210,7 @@ void mock_usb0_set_dvsq(uint16_t dvsq);
 /**
  * @brief Set control transfer stage (CTSQ field in INTSTS0)
  *
- * @param ctsq Control stage value (0-6)
+ * @param ctsq Control stage value (0-7)
  */
 void mock_usb0_set_ctsq(uint16_t ctsq);
 

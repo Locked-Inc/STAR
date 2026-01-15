@@ -167,7 +167,7 @@ typedef struct {
  * @param[in]  config Configuration with sensors, motors, and parameters
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle or config is NULL
+ * @return k_rx_err_null_ptr if handle or config is NULL
  * @return k_rx_err_invalid_arg if config is invalid (sensor/motor count, threshold)
  * @return k_rx_err_invalid_state if handle already initialized
  * @return k_rx_err_rtos_error if ThreadX resources fail to create
@@ -184,7 +184,7 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
  * @param[in,out] handle Obstacle detection handle
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle);
@@ -203,7 +203,7 @@ rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle);
  * @param[in,out] handle Obstacle detection handle
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_obstacle_detect_start(rx_obstacle_detect_t* handle);
@@ -217,7 +217,7 @@ rx_err_t rx_obstacle_detect_start(rx_obstacle_detect_t* handle);
  * @param[in,out] handle Obstacle detection handle
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_obstacle_detect_stop(rx_obstacle_detect_t* handle);
@@ -235,7 +235,7 @@ rx_err_t rx_obstacle_detect_stop(rx_obstacle_detect_t* handle);
  * @param[in,out] handle Obstacle detection handle
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_obstacle_detect_clear_obstacle(rx_obstacle_detect_t* handle);
@@ -254,7 +254,7 @@ rx_err_t rx_obstacle_detect_clear_obstacle(rx_obstacle_detect_t* handle);
  * @param[out] out_state Current state
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle or out_state is NULL
+ * @return k_rx_err_null_ptr if handle or out_state is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_obstacle_detect_get_state(const rx_obstacle_detect_t* handle,
@@ -284,7 +284,7 @@ bool rx_obstacle_detect_is_obstacle_detected(const rx_obstacle_detect_t* handle)
  * @param[out] out_false_positives Debounced false positives (can be NULL)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_obstacle_detect_get_stats(const rx_obstacle_detect_t* handle,
@@ -300,7 +300,7 @@ rx_err_t rx_obstacle_detect_get_stats(const rx_obstacle_detect_t* handle,
  * @param[in,out] handle Obstacle detection handle
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_obstacle_detect_reset_stats(rx_obstacle_detect_t* handle);

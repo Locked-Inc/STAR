@@ -399,7 +399,7 @@ rx_err_t uart_puts_channel(uint8_t channel, const char* str)
 {
   /* Validate parameters */
   if (str == (const char*)0) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_uart_max_channels) {
@@ -431,7 +431,7 @@ rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t lengt
 {
   /* Validate parameters */
   if (data == (const uint8_t*)0) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_uart_max_channels) {
@@ -457,7 +457,7 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data)
 {
   /* Validate parameters */
   if (data == (char*)0) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_uart_max_channels) {
@@ -499,7 +499,7 @@ rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint
 {
   /* Validate parameters */
   if (data == (uint8_t*)0 || bytes_read == (uint16_t*)0) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_uart_max_channels) {
@@ -533,7 +533,7 @@ rx_err_t uart_rx_available(uint8_t channel, bool* available)
 {
   /* Validate parameters */
   if (available == (bool*)0) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_uart_max_channels) {

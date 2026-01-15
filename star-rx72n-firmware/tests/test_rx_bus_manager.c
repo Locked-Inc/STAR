@@ -94,7 +94,7 @@ void test_rx_bus_manager_init_success(void)
 void test_rx_bus_manager_init_null_manager(void)
 {
   rx_err_t err = rx_bus_manager_init(NULL, "TEST", NULL, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -103,7 +103,7 @@ void test_rx_bus_manager_init_null_manager(void)
 void test_rx_bus_manager_init_null_tag(void)
 {
   rx_err_t err = rx_bus_manager_init(&s_test_manager, NULL, NULL, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -130,7 +130,7 @@ void test_rx_bus_manager_deinit_success(void)
 void test_rx_bus_manager_deinit_null_manager(void)
 {
   rx_err_t err = rx_bus_manager_deinit(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -200,7 +200,7 @@ void test_rx_bus_manager_add_bus_null_manager(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(NULL, &s_gpio_config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -212,7 +212,7 @@ void test_rx_bus_manager_add_bus_null_config(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -345,7 +345,7 @@ void test_rx_bus_manager_remove_bus_success(void)
 void test_rx_bus_manager_remove_bus_null_manager(void)
 {
   rx_err_t err = rx_bus_manager_remove_bus(NULL, "test_gpio");
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -357,7 +357,7 @@ void test_rx_bus_manager_remove_bus_null_name(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_remove_bus(&s_test_manager, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -450,7 +450,7 @@ void test_rx_bus_manager_find_bus_null_manager(void)
 {
   rx_bus_config_t* found = NULL;
   rx_err_t         err   = rx_bus_manager_find_bus(NULL, "test", &found);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -463,7 +463,7 @@ void test_rx_bus_manager_find_bus_null_name(void)
 
   rx_bus_config_t* found = NULL;
   err                    = rx_bus_manager_find_bus(&s_test_manager, NULL, &found);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -475,7 +475,7 @@ void test_rx_bus_manager_find_bus_null_output(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_find_bus(&s_test_manager, "test", NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -578,7 +578,7 @@ void test_rx_bus_manager_with_bus_null_manager(void)
   callback_ctx_t ctx = {.callback_called = false, .callback_return = k_rx_ok, .bus_name_seen = ""};
 
   rx_err_t err = rx_bus_manager_with_bus(NULL, "test", test_callback, &ctx);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_FALSE(ctx.callback_called);
 }
 
@@ -593,7 +593,7 @@ void test_rx_bus_manager_with_bus_null_name(void)
   callback_ctx_t ctx = {.callback_called = false, .callback_return = k_rx_ok, .bus_name_seen = ""};
 
   err = rx_bus_manager_with_bus(&s_test_manager, NULL, test_callback, &ctx);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_FALSE(ctx.callback_called);
 }
 
@@ -611,7 +611,7 @@ void test_rx_bus_manager_with_bus_null_callback(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_with_bus(&s_test_manager, "null_cb_test", NULL, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -726,7 +726,7 @@ void test_rx_bus_manager_execute_command_null_manager(void)
   rx_bus_command_init(&cmd, test_command_execute, &data);
 
   rx_err_t err = rx_bus_manager_execute_command(NULL, "test", &cmd);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_FALSE(data.executed);
 }
 
@@ -743,7 +743,7 @@ void test_rx_bus_manager_execute_command_null_name(void)
   rx_bus_command_init(&cmd, test_command_execute, &data);
 
   err = rx_bus_manager_execute_command(&s_test_manager, NULL, &cmd);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_FALSE(data.executed);
 }
 
@@ -761,7 +761,7 @@ void test_rx_bus_manager_execute_command_null_command(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_execute_command(&s_test_manager, "null_cmd_test", NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -784,7 +784,7 @@ void test_rx_bus_manager_execute_command_null_execute(void)
   cmd.result  = k_rx_ok;
 
   err = rx_bus_manager_execute_command(&s_test_manager, "null_exec_test", &cmd);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**

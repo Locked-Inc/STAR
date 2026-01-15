@@ -243,7 +243,6 @@ void tx_application_define(void* first_unused_memory)
  */
 int main(void)
 {
-  rx_err_t startup_ret;
   rx_err_t ret;
 
   /* Check startup flags (via internal_check_startup_flags):
@@ -254,8 +253,8 @@ int main(void)
    *  LVD0RF (Voltage-Monitoring 0 Reset Detect Flag)
    *  CWSF (Cold/Warm Start Determination Flag)
    */
-  startup_ret = internal_check_startup_flags();
-  RX_ERROR_CHECK(startup_ret);
+  ret = internal_check_startup_flags();
+  RX_ERROR_CHECK(ret);
 
   /* Initialize system clocks and power management */
   ret = rx_clock_power_init();

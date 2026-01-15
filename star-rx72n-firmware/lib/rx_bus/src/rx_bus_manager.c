@@ -45,8 +45,8 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
   /* Validate command has execution function */
   if (command->execute == NULL) {
     rx_log_error(s_tag, "Command execute function is NULL");
-    command->result = k_rx_err_null_pointer;
-    return k_rx_err_null_pointer;
+    command->result = k_rx_err_null_ptr;
+    return k_rx_err_null_ptr;
   }
 
   /* Execute the command */
@@ -333,7 +333,7 @@ rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
   /* Validate command has execution function */
   if (command->execute == NULL) {
     rx_log_error(s_tag, "Command execute function is NULL");
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Execute command using existing with_bus infrastructure */

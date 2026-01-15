@@ -137,6 +137,7 @@ void test_gpio_set_output_call_history(void)
   rx_err_t err = gpio_set_output(k_rx_pb_2);
   (void)gpio_set_output(k_rx_pa_0);
 
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(2, mock_gpio_get_call_count());
 
   const mock_gpio_call_t* call0 = mock_gpio_get_call(0);
@@ -324,7 +325,7 @@ void test_gpio_read_null_pointer(void)
 {
   rx_err_t err = gpio_read(k_rx_pb_2, NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**

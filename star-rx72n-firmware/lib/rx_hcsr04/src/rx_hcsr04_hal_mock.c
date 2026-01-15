@@ -45,6 +45,10 @@ rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
   uint8_t port    = rx_port_from_pin(pin);
   uint8_t pin_num = rx_pin_from_pin(pin);
 
+  if (port > k_rx_port_j || pin_num > k_rx_pin_max) {
+    return k_rx_err_invalid_arg;
+  }
+
   return mock_gpio_set_output(port, pin_num);
 }
 

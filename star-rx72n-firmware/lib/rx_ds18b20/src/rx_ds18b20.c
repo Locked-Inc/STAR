@@ -402,7 +402,7 @@ uint32_t rx_ds18b20_get_conversion_time_ms(const rx_ds18b20_handle_t* handle)
  * @param[in] handle Handle to check initialization state
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any required pointer is NULL
+ * @return k_rx_err_null_ptr if any required pointer is NULL
  * @return k_rx_err_invalid_arg if resolution is invalid
  * @return k_rx_err_invalid_state if already initialized
  */

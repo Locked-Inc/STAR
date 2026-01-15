@@ -25,10 +25,10 @@
 #else
 /* Mock includes for unit testing */
 #include "mock_usb0_regs.h"
-#define rx_log_info(tag, msg)  ((void)0)
-#define rx_log_warn(tag, msg)  ((void)0)
-#define rx_log_error(tag, msg) ((void)0)
-#define rx_log_debug(tag, msg) ((void)0)
+#define rx_log_info(tag, msg)  ((void)(tag), (void)(msg))
+#define rx_log_warn(tag, msg)  ((void)(tag), (void)(msg))
+#define rx_log_error(tag, msg) ((void)(tag), (void)(msg))
+#define rx_log_debug(tag, msg) ((void)(tag), (void)(msg))
 #define tx_thread_sleep(ticks) ((void)0)
 #endif
 
@@ -331,7 +331,7 @@ rx_usb_state_t rx_usb_get_state(void)
 rx_err_t rx_usb_write(const uint8_t* data, uint32_t len)
 {
   if (data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_usb.initialized) {
@@ -361,7 +361,7 @@ rx_err_t rx_usb_write(const uint8_t* data, uint32_t len)
 rx_err_t rx_usb_read(uint8_t* data, uint32_t max_len, uint32_t* actual_len)
 {
   if (data == NULL || actual_len == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *actual_len = internal_ring_buffer_read(&s_usb.rx_buffer, data, max_len);
@@ -372,7 +372,7 @@ rx_err_t rx_usb_read(uint8_t* data, uint32_t max_len, uint32_t* actual_len)
 rx_err_t rx_usb_rx_available(uint32_t* available)
 {
   if (available == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *available = internal_ring_buffer_available(&s_usb.rx_buffer);
@@ -383,7 +383,7 @@ rx_err_t rx_usb_rx_available(uint32_t* available)
 rx_err_t rx_usb_tx_available(uint32_t* available)
 {
   if (available == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *available = internal_ring_buffer_free(&s_usb.tx_buffer);
@@ -431,7 +431,7 @@ rx_err_t rx_usb_flush(uint32_t timeout_ms)
 rx_err_t rx_usb_get_line_coding(rx_usb_line_coding_t* line_coding)
 {
   if (line_coding == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *line_coding = s_usb.line_coding;
@@ -442,7 +442,7 @@ rx_err_t rx_usb_get_line_coding(rx_usb_line_coding_t* line_coding)
 rx_err_t rx_usb_get_stats(rx_usb_stats_t* stats)
 {
   if (stats == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *stats = s_usb.stats;

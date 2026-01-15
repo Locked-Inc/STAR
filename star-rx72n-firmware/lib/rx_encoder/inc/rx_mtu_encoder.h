@@ -78,7 +78,7 @@ typedef struct {
  * @param[in] config Encoder configuration
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if config is NULL
+ * @return k_rx_err_null_ptr if config is NULL
  * @return k_rx_err_invalid_arg if channel or counts_per_rev is invalid
  */
 rx_err_t rx_encoder_init(const rx_encoder_config_t* config);
@@ -93,7 +93,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config);
  * @param[out] count Pointer to store raw count (0-65535)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if count is NULL
+ * @return k_rx_err_null_ptr if count is NULL
  * @return k_rx_err_invalid_arg if channel is invalid
  * @return k_rx_err_invalid_state if encoder not initialized
  */
@@ -109,7 +109,7 @@ rx_err_t rx_encoder_read_raw(rx_mtu_channel_t channel, uint16_t* count);
  * @param[out] state Pointer to encoder state structure
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if state is NULL
+ * @return k_rx_err_null_ptr if state is NULL
  * @return k_rx_err_invalid_arg if channel is invalid
  * @return k_rx_err_invalid_state if encoder not initialized
  */
@@ -126,7 +126,7 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
  * @param[out] velocity_rps Pointer to store velocity in revolutions per second
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if velocity_rps is NULL
+ * @return k_rx_err_null_ptr if velocity_rps is NULL
  * @return k_rx_err_invalid_arg if channel or delta_time_s is invalid
  * @return k_rx_err_invalid_state if encoder not initialized
  */

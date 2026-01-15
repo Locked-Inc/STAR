@@ -168,13 +168,13 @@ struct rx_error_interface {
  *
  * @param[in] iface Interface to validate
  *
- * @return k_rx_ok if valid, k_rx_err_null_pointer if NULL,
+ * @return k_rx_ok if valid, k_rx_err_null_ptr if NULL,
  *         k_rx_err_invalid_state if missing function pointers
  */
 static inline rx_err_t rx_error_interface_validate(const rx_error_interface_t* iface)
 {
   if (iface == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Check required function pointers */

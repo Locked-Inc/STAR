@@ -80,12 +80,12 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
  *
  * @param[out] iface Interface to populate
  *
- * @return k_rx_ok on success, k_rx_err_null_pointer if iface is NULL
+ * @return k_rx_ok on success, k_rx_err_null_ptr if iface is NULL
  */
 rx_err_t rx_time_threadx_get_interface(rx_time_interface_t* iface)
 {
   if (iface == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   iface->ctx        = NULL; /* No context needed for ThreadX */

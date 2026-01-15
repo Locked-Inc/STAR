@@ -96,7 +96,7 @@ void test_rx_bus_uart_init_success(void)
 void test_rx_bus_uart_init_null_manager(void)
 {
   rx_err_t err = rx_bus_uart_init(NULL, s_test_bus_name);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -105,7 +105,7 @@ void test_rx_bus_uart_init_null_manager(void)
 void test_rx_bus_uart_init_null_bus_name(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -166,7 +166,7 @@ void test_rx_bus_uart_write_null_data(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_uart_write(&s_test_manager, s_test_bus_name, NULL, 10);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -255,7 +255,7 @@ void test_rx_bus_uart_puts_null_string(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_uart_puts(&s_test_manager, s_test_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -330,7 +330,7 @@ void test_rx_bus_uart_read_null_buffer(void)
 
   uint16_t bytes_read;
   err = rx_bus_uart_read(&s_test_manager, s_test_bus_name, NULL, 10, &bytes_read);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -343,7 +343,7 @@ void test_rx_bus_uart_read_null_bytes_read(void)
 
   uint8_t rx_buf[16];
   err = rx_bus_uart_read(&s_test_manager, s_test_bus_name, rx_buf, sizeof(rx_buf), NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -400,7 +400,7 @@ void test_rx_bus_uart_getc_null_pointer(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_uart_getc(&s_test_manager, s_test_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -451,7 +451,7 @@ void test_rx_bus_uart_rx_available_null_pointer(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_uart_rx_available(&s_test_manager, s_test_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -581,7 +581,7 @@ void test_rx_bus_config_init_uart_zero_baudrate(void)
 void test_rx_bus_config_init_uart_null_config(void)
 {
   rx_err_t err = rx_bus_config_init_uart(NULL, "uart", 9, k_rx_pb_7, k_rx_pb_6, 115200);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -591,7 +591,7 @@ void test_rx_bus_config_init_uart_null_name(void)
 {
   rx_bus_config_t config;
   rx_err_t        err = rx_bus_config_init_uart(&config, NULL, 9, k_rx_pb_7, k_rx_pb_6, 115200);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================

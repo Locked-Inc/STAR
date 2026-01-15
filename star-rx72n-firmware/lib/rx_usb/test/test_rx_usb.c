@@ -864,7 +864,7 @@ void test_usb_write_null_data_fails(void)
 
   rx_err_t err = rx_usb_write(NULL, 10);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_usb_write_not_initialized_fails(void)
@@ -971,7 +971,7 @@ void test_usb_read_null_data_fails(void)
 
   rx_err_t err = rx_usb_read(NULL, 10, &actual_len);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_usb_read_null_actual_len_fails(void)
@@ -980,7 +980,7 @@ void test_usb_read_null_actual_len_fails(void)
 
   rx_err_t err = rx_usb_read(data, 10, NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_usb_read_empty_buffer_returns_zero(void)
@@ -1019,7 +1019,7 @@ void test_usb_rx_available_null_fails(void)
 {
   rx_err_t err = rx_usb_rx_available(NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_usb_rx_available_empty(void)
@@ -1049,7 +1049,7 @@ void test_usb_tx_available_null_fails(void)
 {
   rx_err_t err = rx_usb_tx_available(NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_usb_tx_available_empty(void)
@@ -1085,7 +1085,7 @@ void test_usb_get_line_coding_null_fails(void)
 {
   rx_err_t err = rx_usb_get_line_coding(NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_usb_get_line_coding_default_values(void)
@@ -1144,7 +1144,7 @@ void test_usb_get_stats_null_fails(void)
 {
   rx_err_t err = rx_usb_get_stats(NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_usb_get_stats_initial_zeros(void)

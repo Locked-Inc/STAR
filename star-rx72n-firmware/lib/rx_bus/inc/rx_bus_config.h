@@ -58,7 +58,7 @@ extern "C" {
  * @param[in] pin GPIO pin (type-safe enum from rx_port_constants.h)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_null_ptr if config or name is NULL
  * @return k_rx_err_invalid_arg if port or pin is invalid
  *
  * @note The config structure must remain valid for the lifetime of bus usage
@@ -83,7 +83,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * @param[in] bits Resolution (8, 10, or 12 bits)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_null_ptr if config or name is NULL
  * @return k_rx_err_invalid_arg if unit, channel, or bits is invalid
  *
  * @note The config structure must remain valid for the lifetime of bus usage
@@ -114,7 +114,7 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * @param[in] frequency_hz Clock frequency (100000, 400000, or 1000000)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_null_ptr if config or name is NULL
  * @return k_rx_err_invalid_arg if parameters are invalid
  */
 rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
@@ -145,7 +145,7 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
  * @param[in] use_pec Enable Packet Error Checking (CRC-8)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_null_ptr if config or name is NULL
  * @return k_rx_err_invalid_arg if parameters are invalid
  */
 rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
@@ -178,7 +178,7 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
  * @param[in] pin GPIO pin (type-safe enum from rx_port_constants.h)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_null_ptr if config or name is NULL
  * @return k_rx_err_invalid_arg if port or pin is invalid
  *
  * @note The config structure must remain valid for the lifetime of bus usage
@@ -223,7 +223,7 @@ rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, r
  * @param[in] baudrate Baud rate (e.g., 9600, 115200)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_null_ptr if config or name is NULL
  * @return k_rx_err_invalid_arg if channel or pins are invalid
  *
  * @note The config structure must remain valid for the lifetime of bus usage

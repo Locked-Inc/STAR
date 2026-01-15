@@ -131,7 +131,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
   do {                                                                                             \
     if ((ptr) == NULL) {                                                                           \
       rx_log_error(tag, message);                                                                  \
-      return k_rx_err_null_pointer;                                                                \
+      return k_rx_err_null_ptr;                                                                    \
     }                                                                                              \
   } while (0)
 

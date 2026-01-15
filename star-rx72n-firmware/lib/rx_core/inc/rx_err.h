@@ -111,7 +111,7 @@ typedef enum {
   k_rx_err_validation_failed  = 0x501, /**< Validation failed */
   k_rx_err_checksum_mismatch  = 0x502, /**< Checksum mismatch */
   k_rx_err_range_check_failed = 0x503, /**< Range check failed */
-  k_rx_err_null_pointer       = 0x504, /**< Null pointer */
+  k_rx_err_null_ptr           = 0x504, /**< Null pointer */
 } rx_err_codes_t;
 
 /* =============================================================================
