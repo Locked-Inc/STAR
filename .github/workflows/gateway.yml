@@ -105,7 +105,7 @@ jobs:
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: star-gateway-linux-amd64
+          name: star-gateway-linux-amd64-test
           path: star-gateway/star-gateway
           retention-days: 7
 

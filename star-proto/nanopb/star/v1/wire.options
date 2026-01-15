@@ -1,0 +1,7 @@
+# wire.options - nanopb field size constraints for wire.proto
+# These settings optimize for RX72N embedded use with static allocation.
+#
+# STAR Project - Texas A&M University
+
+# Emergency stop command reason (align with EmergencyStopRequest.reason)
+star.v1.EmergencyStopCommand.reason     max_size:128

@@ -1,0 +1,474 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# CodeRabbit Configuration for STAR Project
+#
+# This configuration enforces:
+# - NASA Power of 10 rules for safety-critical firmware
+# - Inclusive terminology (Controller/Peripheral, COPI/CIPO)
+# - Zero tolerance for magic numbers in C/C++
+# - SOLID design principles
+# - No backward compatibility (project has no releases)
+# - No AI attribution in commits/PRs
+#
+# For more details, see:
+# - CLAUDE.md (root) - Overall project guidelines
+# - star-gateway/CLAUDE.md - Gateway architecture
+# - star-rx72n-firmware/CLAUDE.md - Firmware development guide
+
+# Tone instructions (general guidance, max 250 chars)
+tone_instructions: "Assertive code reviews enforcing NASA Power of 10 rules, inclusive terminology (Controller/Peripheral not master/slave), zero tolerance for magic numbers in C/C++, and SOLID principles."
+
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+  auto_title_placeholder: "@coderabbitai"
+
+  # Path-specific instructions
+  path_instructions:
+    - path: "star-gateway/**/*.go"
+      instructions: |
+        Review Go gateway service code:
+        - Follow standard Go conventions (gofmt, golint)
+        - Verify interfaces are well-defined (Transport, HARQ, FEC)
+        - Check error handling (all errors must be checked or explicitly ignored)
+        - Verify layer separation: transport (L1), frame (L2), HARQ/FEC (L3), service (L5)
+        - Ensure thread-safe operations for concurrent gRPC handlers
+        - No magic numbers - use named constants
+        - Follow gateway architecture from docs/sections/07_gateway_architecture.tex
+        - Test coverage required for all new functions
+        - Benchmark performance-critical paths (SPI, FEC, HARQ)
+
+    - path: "star-rx72n-firmware/**/*.{c,h}"
+      instructions: |
+        Review C firmware code with STRICT compliance checking:
+
+        NASA Power of 10 Rules (CRITICAL - REJECT violations):
+        - Rule 1: No goto, setjmp/longjmp, or recursion
+        - Rule 2: All loops must have statically provable bounds (use enums for limits)
+        - Rule 3: Zero malloc/free/realloc (static allocation only)
+        - Rule 4: Functions must be ≤60 lines
+        - Rule 5: Minimum 2 assertions per function (pre/post conditions using RX_CHECK macros)
+        - Rule 8: Enums for ALL integer constants (ZERO TOLERANCE for magic numbers)
+        - Rule 9: Function pointers ALLOWED for Dependency Inversion Principle (intentional deviation)
+        - Rule 10: Must compile with -Wall -Wextra -Werror (zero warnings)
+
+        Inclusive Terminology (CRITICAL - REJECT violations):
+        - FORBIDDEN: master/slave, MOSI/MISO, blacklist/whitelist
+        - REQUIRED: Controller/Peripheral, COPI/CIPO, denylist/allowlist
+
+        Code Style (MANDATORY):
+        - Naming: snake_case for functions/variables, SCREAMING_SNAKE_CASE for macros/enums
+        - Enums for ALL integer constants including: array indices, bit shifts, protocol offsets, bit masks
+        - const float ONLY for floating-point (enum cannot represent floats)
+        - Macros ONLY for: reducing code duplication, conditional compilation, build configuration flags
+        - Hardware register access: Use inline accessor functions with enum addresses (NEVER macros)
+        - No backward compatibility shims (project has no releases yet)
+        - Include guards: STAR_RX72N_FILENAME_H format
+        - Doxygen: /** for multi-line blocks, /**< for inline comments
+        - Line limit: 100 characters maximum
+
+        Magic Numbers (ZERO TOLERANCE):
+        - ALL numeric literals must be named enums or const
+        - This includes: 0, 1, array indices, bit positions, timeouts, buffer sizes
+        - Example: buf[k_idx_high_byte] not buf[0]
+        - Example: (val >> k_shift_byte) not (val >> 8)
+
+        SOLID Principles:
+        - Single Responsibility: One module = one purpose (e.g., rx_pid only does PID math)
+        - Open/Closed: Extensible via config structs (rx_pid_config_t)
+        - Liskov Substitution: Bus interface implementations interchangeable
+        - Interface Segregation: Small focused APIs (rx_pid has 7 functions)
+        - Dependency Inversion: Use function pointer interfaces for hardware abstraction
+
+        Validation Requirements:
+        - Pre-conditions: NULL checks, state validation, range checks
+        - Post-conditions: Output bounds, invariant validation
+        - Use RX_CHECK_NULL_PTR, RX_RETURN_ON_ERROR macros
+
+    - path: "star-ros2/**/*.{cpp,hpp}"
+      instructions: |
+        Review ROS2 C++ code:
+
+        Naming Conventions:
+        - Classes/Types: CamelCase (e.g., StarGatewayBridgeNode)
+        - Methods/Functions: snake_case (e.g., publish_telemetry, on_configure)
+        - Member variables: trailing underscore (e.g., telemetry_pub_, timer_)
+        - Constants: ALL_CAPITALS (e.g., MAX_RETRIES, DEFAULT_TIMEOUT_S)
+        - Namespaces: star::package_name::
+
+        File and Style:
+        - Headers use .hpp extension (not .h)
+        - Source files use .cpp extension
+        - Line limit: 120 characters maximum
+        - Include guard format: PACKAGE_FILENAME_HPP_
+        - Braces: Functions on new line, control statements cuddled
+        - Indentation: 2 spaces (no tabs)
+        - Filenames: under_scored (e.g., star_gateway_bridge_node.hpp)
+
+        ROS2 Patterns:
+        - Node inheritance: rclcpp::Node for basic nodes, rclcpp_lifecycle::LifecycleNode for safety-critical
+        - Publishers/Subscribers: Use SharedPtr and std::bind for callbacks
+        - Timers: Use create_wall_timer with std::chrono
+        - Logging: RCLCPP_INFO/WARN/ERROR/DEBUG (NEVER printf/cout/std::cerr)
+        - Throttled logging: RCLCPP_WARN_THROTTLE for high-frequency messages
+        - Exception handling: Catch exceptions in callbacks to prevent node crashes
+
+        Error Handling:
+        - Throw exceptions for errors (different from C firmware)
+        - Catch std::exception in all callbacks
+        - Log errors with RCLCPP_ERROR including context
+
+        Documentation:
+        - Doxygen comments: /** and /**< (same as C firmware)
+        - Document all public methods, classes, and non-obvious logic
+        - Include @brief, @param, @return tags
+
+        Formatting:
+        - Must pass clang-format check (star-ros2/.clang-format)
+        - Run: find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i
+        - CI enforces formatting on all PRs
+
+        Inclusive Terminology (CRITICAL - REJECT violations):
+        - FORBIDDEN: master/slave, MOSI/MISO, blacklist/whitelist
+        - REQUIRED: Controller/Peripheral, COPI/CIPO, denylist/allowlist
+
+    - path: "star-proto/**/*.proto"
+      instructions: |
+        Review Protocol Buffer schemas (Boston Dynamics style):
+
+        Style Requirements:
+        - Proto3 syntax only (proto2 forbidden)
+        - Line limit: 100 characters maximum
+        - Indentation: 4 spaces (no tabs)
+        - Message names: PascalCase (e.g., MotorControlRequest)
+        - Field names: snake_case (e.g., velocity_mps, motor_id)
+        - Enum names: PascalCase (e.g., MotorState)
+        - Enum values: SCREAMING_SNAKE_CASE (e.g., MOTOR_STATE_IDLE)
+
+        Mandatory Conventions:
+        - Enum zero value MUST end with _UNKNOWN (e.g., MOTOR_STATE_UNKNOWN = 0)
+        - Units: MKS system with suffixes (_mps, _rad, _ma, _celsius, _hz)
+        - All RPC messages MUST include RequestHeader/ResponseHeader
+        - Field numbers: Reserve 1-15 for frequent fields (1-byte encoding)
+
+        nanopb Constraints (Embedded Target):
+        - Configure max_size in .options files for all strings and repeated fields
+        - Example: star.v1.RequestHeader.request_id max_size:64
+        - No dynamic allocation - all strings/arrays must have fixed max sizes
+        - Document size constraints in comments
+
+        Breaking Changes:
+        - NEVER change field numbers
+        - NEVER change field types
+        - NEVER remove required fields
+        - OK to add optional fields
+        - OK to add new enum values (not zero)
+        - OK to add new messages/services
+
+        Validation:
+        - Must pass: buf lint
+        - Must pass: buf format
+        - Must pass: buf build
+        - PRs: buf breaking check against main branch
+        - Generate targets: Go, TypeScript, nanopb (all three must build)
+
+        Documentation:
+        - Document all messages, fields, services, and RPCs
+        - Explain units, ranges, and constraints
+        - Reference related messages using fully-qualified names
+
+    - path: "docs/**/*.tex"
+      instructions: |
+        Review LaTeX documentation:
+
+        Technical Accuracy:
+        - Verify measurements match actual hardware (voltages, currents, timings)
+        - Verify pin assignments match schematic/PCB design
+        - Verify protocol specifications match implementation code
+        - Cross-reference code when documenting APIs and algorithms
+
+        Content Organization:
+        - Keep docs/sections/*.tex as source of truth (not compiled PDF)
+        - Use consistent terminology with code (RequestHeader, ResponseHeader)
+        - Include code examples from actual source files
+        - Reference source files with relative paths
+
+        Inclusive Terminology (CRITICAL - REJECT violations):
+        - FORBIDDEN: master/slave, MOSI/MISO, blacklist/whitelist
+        - REQUIRED: Controller/Peripheral, COPI/CIPO, denylist/allowlist
+
+        Style:
+        - Use \texttt{} for code/identifiers
+        - Use \emph{} for emphasis (not \textbf{} unless critical)
+        - Tables: Use booktabs package (\toprule, \midrule, \bottomrule)
+        - Math: Use equation environments for formulas
+        - Citations: Use \cite{} for references
+
+        Consistency:
+        - Match constant names with code (k_max_payload_size, not MAX_PAYLOAD_SIZE)
+        - Match function names with code (rx_pid_compute, not rx_pid_update)
+        - Match type names with code (rx_err_t, not error_t)
+
+    - path: "**/*.md"
+      instructions: |
+        Review Markdown documentation:
+
+        AI Attribution (CRITICAL - REJECT violations):
+        - NO "Generated by Claude Code" footers
+        - NO "Co-Authored-By: Claude" signatures
+        - NO "Created with AI assistance" disclaimers
+        - Keep all text professional and human-written
+        - This applies to: commit messages, PR descriptions, README files, ALL markdown
+
+        Inclusive Terminology (CRITICAL - REJECT violations):
+        - FORBIDDEN: master/slave, MOSI/MISO, blacklist/whitelist
+        - REQUIRED: Controller/Peripheral, COPI/CIPO, denylist/allowlist
+
+        Technical Accuracy:
+        - Reference .tex files in docs/sections/ for technical details (not PDFs)
+        - Link to source code files for implementation details
+        - Use relative paths for internal repository links
+        - Verify commands/examples are correct and tested
+
+        Formatting:
+        - Use fenced code blocks with language identifiers (```c, ```go, ```bash)
+        - Use tables for structured information
+        - Use task lists for checklists (- [ ] item)
+        - Keep line length readable (aim for 80-100 chars, not strict)
+
+        Content:
+        - Focus on "why" and "what", not just "how"
+        - Include examples for non-obvious usage
+        - Document edge cases and limitations
+        - Link to related documentation
+
+    - path: "**/CMakeLists.txt"
+      instructions: |
+        Review CMake build configuration:
+
+        Project Standards:
+        - Minimum CMake version: 3.20
+        - C standard: C11 (set(CMAKE_C_STANDARD 11))
+        - C++ standard: C++17 (set(CMAKE_CXX_STANDARD 17))
+        - Position independent code: ON
+
+        Compiler Flags (MANDATORY):
+        - C/C++: -Wall -Wextra -Werror (treat warnings as errors)
+        - C/C++: -Wpedantic (ISO standard compliance)
+        - Release: -O2 (or -O3 for non-safety-critical)
+        - Debug: -g -O0
+
+        Target Organization:
+        - Use target_include_directories(target PRIVATE/PUBLIC) not include_directories()
+        - Use target_link_libraries(target PRIVATE/PUBLIC) not link_libraries()
+        - Use target_compile_options(target PRIVATE) not add_compile_options()
+
+        Testing:
+        - Enable testing with enable_testing()
+        - Add tests with add_test()
+        - Use CTest for test execution
+
+        Dependencies:
+        - Document all find_package() calls
+        - Check package availability before use
+        - Provide clear error messages for missing dependencies
+
+    - path: "scripts/**/*.sh"
+      instructions: |
+        Review shell scripts:
+
+        Safety and Robustness:
+        - Use bash shebang: #!/usr/bin/env bash
+        - Enable strict mode: set -euo pipefail
+        - Quote all variables: "$var" not $var
+        - Check command existence: command -v foo || error
+        - Validate inputs before use
+
+        Error Handling:
+        - Check exit codes: if ! command; then error; fi
+        - Provide meaningful error messages
+        - Clean up temporary files on error (trap)
+        - Exit with non-zero on failure
+
+        Style:
+        - Use long options for readability: --verbose not -v
+        - Document all functions with comments
+        - Use lowercase for local variables
+        - Use UPPERCASE for environment variables
+        - Indent with 2 spaces
+
+        Security:
+        - Never use eval
+        - Avoid executing user input
+        - Validate file paths before operations
+        - Use mktemp for temporary files
+
+    - path: ".github/workflows/*.yml"
+      instructions: |
+        Review GitHub Actions workflows:
+
+        Security:
+        - Pin action versions to commit SHA (not @v1 or @latest)
+        - Minimize permissions using permissions: key
+        - Never expose secrets in logs
+        - Use ${{ secrets.NAME }} for sensitive data
+
+        Best Practices:
+        - Use matrix strategy for multi-platform builds
+        - Cache dependencies (actions/cache)
+        - Fail fast when appropriate
+        - Set timeout-minutes to prevent hanging
+        - Use continue-on-error judiciously
+
+        Testing:
+        - Run tests before build
+        - Run linters and formatters
+        - Check for breaking changes (buf breaking for proto)
+        - Report test results
+
+        Artifacts:
+        - Upload build artifacts for debugging
+        - Upload test coverage reports
+        - Set retention-days appropriately
+
+    - path: "**/*_test.{go,c,cpp}"
+      instructions: |
+        Review test code:
+
+        Coverage Requirements:
+        - Test all public functions
+        - Test error paths and edge cases
+        - Test boundary conditions
+        - Test concurrent access (if applicable)
+
+        Test Organization:
+        - One test file per source file (_test.go, _test.c)
+        - Group related tests
+        - Use descriptive test names (TestFunctionName_Scenario_ExpectedBehavior)
+        - Use table-driven tests for multiple scenarios (Go)
+
+        Assertions:
+        - Use appropriate assertion macros/functions
+        - Provide descriptive failure messages
+        - Check all relevant outputs (return value, state changes, side effects)
+
+        Mocking:
+        - Mock external dependencies
+        - Use dependency injection for testability
+        - Verify mock expectations
+
+        Performance:
+        - Keep unit tests fast (<100ms per test)
+        - Use benchmarks for performance-critical code
+        - Set appropriate timeouts
+
+  # Label configuration
+  labeling_instructions:
+    - label: "component:gateway"
+      instructions: "Apply when changes affect star-gateway Go service (gRPC, SPI transport, HARQ, FEC, frame protocol)"
+    - label: "component:firmware"
+      instructions: "Apply when changes affect star-rx72n-firmware C code (motor control, PID, ThreadX, RX72N drivers)"
+    - label: "component:ros2"
+      instructions: "Apply when changes affect star-ros2 C++ nodes (ROS2 integration, lifecycle nodes)"
+    - label: "component:proto"
+      instructions: "Apply when changes affect star-proto Protocol Buffers (schemas, buf configuration, codegen)"
+    - label: "component:docs"
+      instructions: "Apply when changes affect documentation (LaTeX .tex files, markdown, CLAUDE.md files)"
+    - label: "component:build"
+      instructions: "Apply when changes affect build system (CMake, workflows, scripts, CI/CD)"
+    - label: "type:bug"
+      instructions: "Apply for bug fixes and defect corrections"
+    - label: "type:feature"
+      instructions: "Apply for new functionality or capabilities"
+    - label: "type:refactor"
+      instructions: "Apply for code restructuring without behavior changes"
+    - label: "type:test"
+      instructions: "Apply for test additions, modifications, or test infrastructure changes"
+    - label: "type:docs"
+      instructions: "Apply for documentation-only changes"
+    - label: "type:style"
+      instructions: "Apply for formatting or naming changes without logic modifications"
+    - label: "priority:critical"
+      instructions: "Apply for safety violations (NASA Power of 10), security issues, inclusive terminology violations, or breaking changes"
+    - label: "priority:high"
+      instructions: "Apply for important bugs, blockers, or significant performance issues"
+    - label: "priority:medium"
+      instructions: "Apply for normal priority items"
+    - label: "priority:low"
+      instructions: "Apply for minor improvements, nice-to-have features, or small optimizations"
+    - label: "standard:nasa-power-of-10"
+      instructions: "Apply when changes relate to NASA Power of 10 rules (no recursion, no malloc, bounded loops, etc.)"
+    - label: "standard:solid"
+      instructions: "Apply when changes demonstrate or improve SOLID design principles"
+    - label: "standard:inclusive-terminology"
+      instructions: "Apply when changes update terminology (Controller/Peripheral, COPI/CIPO) or fix violations"
+
+  auto_apply_labels: true
+
+  # Path filters
+  path_filters:
+    # Include paths
+    - "star-gateway/**"
+    - "star-rx72n-firmware/**"
+    - "star-ros2/**"
+    - "star-proto/**"
+    - "docs/**"
+    - "scripts/**"
+    - "matlab/**"
+    - "*.md"
+    - "CMakeLists.txt"
+    - ".github/workflows/**"
+
+    # Exclude build artifacts and generated files
+    - "!**/node_modules/**"
+    - "!**/dist/**"
+    - "!**/build/**"
+    - "!**/.cmake/**"
+    - "!**/gen/**"
+
+    # Exclude generated protobuf code
+    - "!**/*.pb.go"
+    - "!**/*.pb.h"
+    - "!**/*.pb.c"
+    - "!**/*.pb.ts"
+
+    # Exclude dependency lock files (auto-generated)
+    - "!**/go.sum"
+    - "!**/package-lock.json"
+    - "!**/yarn.lock"
+    - "!**/pnpm-lock.yaml"
+
+    # Exclude binary and media files
+    - "!**/*.pdf"
+    - "!**/*.png"
+    - "!**/*.jpg"
+    - "!**/*.jpeg"
+    - "!**/*.svg"
+    - "!**/*.gif"
+    - "!**/*.bin"
+    - "!**/*.hex"
+    - "!**/*.elf"
+    - "!**/*.o"
+    - "!**/*.a"
+    - "!**/*.so"
+
+    # Exclude version control and logs
+    - "!.git/**"
+    - "!**/*.log"
+    - "!**/.DS_Store"
+
+chat:
+  auto_reply: true
+
+# Early access features (enable experimental capabilities)
+early_access: true
+
+# Language-specific settings
+language: en-US
