@@ -56,7 +56,7 @@ rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, b
   (void)bus_name;
 
   if (presence == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *presence = s_mock_state.presence_response;
@@ -77,7 +77,7 @@ rx_err_t rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_nam
   (void)bus_name;
 
   if (byte == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *byte = 0xFF;
@@ -90,7 +90,7 @@ rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name
   (void)bus_name;
 
   if (bit == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *bit = s_mock_state.power_mode;
@@ -104,7 +104,7 @@ rx_bus_onewire_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* da
   (void)bus_name;
 
   if (data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (length > k_ds18b20_scratchpad_bytes) {
@@ -149,7 +149,7 @@ rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager, const char* bus_name
   (void)bus_name;
 
   if (rom == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   memcpy(rom, s_mock_state.rom, 8);
@@ -274,7 +274,7 @@ void test_ds18b20_init_null_handle(void)
 
   rx_err_t err = rx_ds18b20_init(NULL, &config);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_ds18b20_init_null_config(void)
@@ -283,7 +283,7 @@ void test_ds18b20_init_null_config(void)
 
   rx_err_t err = rx_ds18b20_init(&handle, NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_ds18b20_init_no_device_present(void)
@@ -449,7 +449,7 @@ void test_ds18b20_read_temperature_null_output(void)
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================

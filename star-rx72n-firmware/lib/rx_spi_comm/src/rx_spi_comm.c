@@ -192,10 +192,6 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
 
   /* Post-condition: Validate RX buffer populated if requested */
   if (rx_data != NULL && rx_len > 0) {
-    if (handle->rx_buffer == NULL) {
-      rx_log_error(s_tag, "RX buffer null after transfer");
-      return k_rx_err_invalid_state;
-    }
     memcpy(rx_data, handle->rx_buffer, rx_len);
   }
 

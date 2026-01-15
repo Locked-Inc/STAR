@@ -233,7 +233,7 @@ void test_uart_puts_channel_null_string(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   rx_err_t err = uart_puts_channel(9, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_uart_puts_channel_not_initialized(void)
@@ -270,7 +270,7 @@ void test_uart_write_channel_null_data(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   rx_err_t err = uart_write_channel(9, NULL, 10);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -319,7 +319,7 @@ void test_uart_getc_channel_null_buffer(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   rx_err_t err = uart_getc_channel(9, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_uart_getc_channel_not_initialized(void)
@@ -385,7 +385,7 @@ void test_uart_read_channel_null_buffer(void)
 
   uint16_t bytes_read;
   rx_err_t err = uart_read_channel(9, NULL, 10, &bytes_read);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_uart_read_channel_null_bytes_read(void)
@@ -398,7 +398,7 @@ void test_uart_read_channel_null_bytes_read(void)
 
   uint8_t  buffer[8];
   rx_err_t err = uart_read_channel(9, buffer, sizeof(buffer), NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_uart_rx_available_success(void)
@@ -432,7 +432,7 @@ void test_uart_rx_available_null(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   rx_err_t err = uart_rx_available(9, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================

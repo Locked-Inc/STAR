@@ -362,7 +362,7 @@ rx_err_t uart_puts_channel(uint8_t channel, const char* str)
   }
 
   if (str == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_mock_uart_channel_count) {
@@ -400,7 +400,7 @@ rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t lengt
   }
 
   if (data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_mock_uart_channel_count) {
@@ -432,7 +432,7 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data)
   }
 
   if (data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_mock_uart_channel_count) {
@@ -465,7 +465,7 @@ rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint
   }
 
   if (data == NULL || bytes_read == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_mock_uart_channel_count) {
@@ -504,7 +504,7 @@ rx_err_t uart_rx_available(uint8_t channel, bool* available)
   }
 
   if (available == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_mock_uart_channel_count) {
@@ -526,11 +526,17 @@ rx_err_t uart_rx_available(uint8_t channel, bool* available)
  * =============================================================================
  */
 
+/** @brief Debug UART configuration constants */
+typedef enum {
+  k_debug_uart_channel  = 9,      /**< SCI9 channel for debug UART */
+  k_debug_uart_baudrate = 115200, /**< 115200 baud for debug console */
+} debug_uart_config_t;
+
 rx_err_t uart_init(void)
 {
   const uart_channel_config_t config = {
-    .channel  = 9,
-    .baudrate = 115200,
+    .channel  = k_debug_uart_channel,
+    .baudrate = k_debug_uart_baudrate,
     .tx_gpio  = k_rx_pb_7,
     .rx_gpio  = k_rx_pb_6,
   };
@@ -540,7 +546,7 @@ rx_err_t uart_init(void)
 
 void uart_putc(char data)
 {
-  (void)uart_putc_channel(9, data);
+  (void)uart_putc_channel(k_debug_uart_channel, data);
 }
 
 void uart_puts(const char* str)

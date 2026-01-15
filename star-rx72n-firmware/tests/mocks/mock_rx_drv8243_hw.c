@@ -149,7 +149,7 @@ void mock_drv8243_track_fault_config(uint8_t port, uint8_t pin)
 rx_err_t mock_bus_adc_read_voltage_mv(uint32_t* voltage_mv)
 {
   if (voltage_mv == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (s_adc_error != k_rx_ok) {

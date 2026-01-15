@@ -37,7 +37,7 @@ extern "C" {
  * @param[in] bus_name I2C bus name
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_arg if bus is not I2C type
  * @return k_rx_err_timeout if mutex timeout
@@ -53,7 +53,7 @@ rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name);
  * @param[in] length Number of bytes to write
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or data is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or data is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if I2C timeout or mutex timeout
@@ -73,7 +73,7 @@ rx_err_t rx_bus_i2c_write(rx_bus_manager_t* manager,
  * @param[in] length Number of bytes to read
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or data is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or data is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if I2C timeout or mutex timeout
@@ -95,7 +95,7 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  * @param[in] read_length Number of bytes to read
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if I2C timeout or mutex timeout

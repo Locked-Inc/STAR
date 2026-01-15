@@ -208,7 +208,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 
   /* Validate inputs */
   if (task_name == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_iwdt_state.initialized) {
@@ -256,7 +256,7 @@ rx_err_t rx_iwdt_task_heartbeat(const char* task_name)
 
   /* Validate inputs */
   if (task_name == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_iwdt_state.initialized) {
@@ -329,7 +329,7 @@ rx_err_t rx_iwdt_get_status(rx_iwdt_status_t* status)
 {
   /* Validate inputs */
   if (status == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_iwdt_state.initialized) {

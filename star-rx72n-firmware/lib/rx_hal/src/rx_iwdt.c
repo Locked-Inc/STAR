@@ -87,7 +87,7 @@ static const iwdt_timeout_entry_t s_timeout_table[] = {
 };
 
 /** @brief Number of entries in timeout table */
-static const uint32_t k_iwdt_timeout_table_size =
+static const uint32_t s_iwdt_timeout_table_size =
   sizeof(s_timeout_table) / sizeof(s_timeout_table[0]);
 
 /* =============================================================================
@@ -96,7 +96,7 @@ static const uint32_t k_iwdt_timeout_table_size =
  */
 
 /** @brief Log tag for IWDT module */
-static char* s_tag = "iwdt";
+static const char* const s_tag = "iwdt";
 
 /** @brief Flag indicating IWDT has been initialized */
 static iwdt_init_state_t s_iwdt_initialized = k_iwdt_not_initialized;
@@ -123,20 +123,16 @@ static rx_err_t internal_find_timeout_config(uint32_t                     timeou
   }
 
   /* Find first entry with timeout >= requested */
-  for (uint32_t i = 0; i < k_iwdt_timeout_table_size; i++) {
+  for (uint32_t i = 0; i < s_iwdt_timeout_table_size; i++) {
     if (s_timeout_table[i].timeout_ms >= timeout_ms) {
       *entry = &s_timeout_table[i];
       return k_rx_ok;
     }
   }
 
-  /* Use maximum timeout if requested is too large */
-  if (timeout_ms > s_timeout_table[k_iwdt_timeout_table_size - 1].timeout_ms) {
-    *entry = &s_timeout_table[k_iwdt_timeout_table_size - 1];
-    return k_rx_ok;
-  }
-
-  return k_rx_err_invalid_arg;
+  /* Use maximum timeout if requested exceeds all entries */
+  *entry = &s_timeout_table[s_iwdt_timeout_table_size - 1];
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -147,6 +143,14 @@ static rx_err_t internal_find_timeout_config(uint32_t                     timeou
 #ifdef __RX__
 static void internal_configure_iwdt_control_register(const iwdt_timeout_entry_t* config)
 {
+  if (config == NULL) {
+    return; /* Defensive: should never happen if called correctly */
+  }
+
+  if (iwdt() == NULL) {
+    return; /* Defensive: peripheral pointer must be valid */
+  }
+
   uint16_t iwdtcr = 0;
   iwdtcr |= config->tops;    /* Timeout period */
   iwdtcr |= config->cks;     /* Clock divisor */
@@ -158,6 +162,10 @@ static void internal_configure_iwdt_control_register(const iwdt_timeout_entry_t*
 
 static void internal_configure_iwdt_registers(void)
 {
+  if (iwdt() == NULL) {
+    return; /* Defensive: peripheral pointer must be valid */
+  }
+
   iwdt()->iwdtrcr   = k_iwdt_rstirqs_reset;
   iwdt()->iwdtcstpr = k_iwdt_slcstp_continue;
 }
@@ -330,15 +338,11 @@ void rx_iwdt_clear_status(void)
 #include "rx_log.h"
 #include "tx_api.h"
 
-/**
- * @brief Task monitoring state for a single task
- */
-typedef struct {
-  char     task_name[k_task_name_max_len]; /**< Task name (truncated if needed) */
-  uint32_t timeout_ms;                     /**< Heartbeat timeout in milliseconds */
-  uint32_t last_heartbeat_ms;              /**< Last heartbeat timestamp */
-  uint8_t  registered;                     /**< 1 if task is registered */
-} task_monitor_t;
+/** @brief Task registration state constants */
+typedef enum {
+  k_task_not_registered = 0, /**< Task not registered */
+  k_task_registered     = 1, /**< Task registered */
+} task_registration_state_t;
 
 /** @brief Task search constants */
 typedef enum {
@@ -346,11 +350,15 @@ typedef enum {
   k_task_idx_min   = 0,  /**< Minimum valid task index */
 } task_search_constants_t;
 
-/** @brief Task registration state constants */
-typedef enum {
-  k_task_not_registered = 0, /**< Task not registered */
-  k_task_registered     = 1, /**< Task registered */
-} task_registration_state_t;
+/**
+ * @brief Task monitoring state for a single task
+ */
+typedef struct {
+  char                      task_name[k_task_name_max_len]; /**< Task name (truncated if needed) */
+  uint32_t                  timeout_ms;        /**< Heartbeat timeout in milliseconds */
+  uint32_t                  last_heartbeat_ms; /**< Last heartbeat timestamp */
+  task_registration_state_t registered;        /**< Task registration state */
+} task_monitor_t;
 
 /**
  * @brief Task monitoring module state
@@ -376,6 +384,10 @@ static int32_t internal_find_task(const char* task_name)
 {
   if (task_name == NULL) {
     return k_task_not_found;
+  }
+
+  if (task_name[0] == '\0') {
+    return k_task_not_found; /* Empty task name invalid */
   }
 
   for (uint32_t i = 0; i < s_task_monitor.task_count; i++) {
@@ -441,6 +453,14 @@ void rx_iwdt_task_heartbeat(const char* task_name)
 
 rx_err_t rx_iwdt_check_tasks(void)
 {
+  if (s_iwdt_initialized != k_iwdt_initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (s_task_monitor.task_count > k_iwdt_max_tasks) {
+    return k_rx_err_invalid_state; /* Corrupted state */
+  }
+
   const uint32_t current_time_ms = tx_time_get();
   rx_err_t       result          = k_rx_ok;
 
@@ -475,6 +495,10 @@ rx_err_t rx_iwdt_check_tasks(void)
 
 const char* rx_iwdt_get_failed_task(void)
 {
+  if (s_iwdt_initialized != k_iwdt_initialized) {
+    return NULL;
+  }
+
   if (s_task_monitor.failed_task[0] != '\0') {
     return s_task_monitor.failed_task;
   }

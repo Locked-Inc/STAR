@@ -262,7 +262,7 @@ static void mock_set_motor_stop_error(rx_err_t err)
 rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* config)
 {
   if (handle == NULL || config == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (s_motor_init_error != k_rx_ok) {
     return s_motor_init_error;
@@ -285,7 +285,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
 rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (!handle->initialized) {
     return k_rx_err_invalid_state;
@@ -299,7 +299,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (!handle->initialized) {
     return k_rx_err_invalid_state;
@@ -324,7 +324,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (!handle->initialized) {
     return k_rx_err_invalid_state;
@@ -343,7 +343,7 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
 rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
 {
   if (handle == NULL || out_duty == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (!handle->initialized) {
     return k_rx_err_invalid_state;
@@ -360,7 +360,7 @@ rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager, const char* bus_name, uint
   (void)bus_name;
 
   if (voltage_mv == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (s_adc_error != k_rx_ok) {
     return s_adc_error;
@@ -458,19 +458,19 @@ static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle
 rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t* config)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (config == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (config->bus_manager == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (config->gpio_bus_name == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (config->adc_bus_name == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (handle->initialized) {
@@ -530,7 +530,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
 rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -552,7 +552,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
 rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -587,7 +587,7 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
 rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -606,10 +606,10 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake)
 rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (out_current == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -632,10 +632,10 @@ rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current
 rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_fault)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (out_fault == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -660,10 +660,10 @@ rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_faul
 rx_err_t rx_drv8243_get_speed(const rx_drv8243_handle_t* handle, float* out_speed)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (out_speed == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -677,7 +677,7 @@ rx_err_t rx_drv8243_get_speed(const rx_drv8243_handle_t* handle, float* out_spee
 rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limit_ma)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -782,7 +782,7 @@ static void test_init_null_handle(void)
   rx_drv8243_config_t config = create_default_config();
 
   rx_err_t err = rx_drv8243_init(NULL, &config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_init_null_config(void)
@@ -792,7 +792,7 @@ static void test_init_null_config(void)
   rx_drv8243_handle_t handle = {0};
 
   rx_err_t err = rx_drv8243_init(&handle, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_init_null_bus_manager(void)
@@ -804,7 +804,7 @@ static void test_init_null_bus_manager(void)
   config.bus_manager         = NULL;
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_init_null_gpio_bus_name(void)
@@ -816,7 +816,7 @@ static void test_init_null_gpio_bus_name(void)
   config.gpio_bus_name       = NULL;
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_init_null_adc_bus_name(void)
@@ -828,7 +828,7 @@ static void test_init_null_adc_bus_name(void)
   config.adc_bus_name        = NULL;
 
   rx_err_t err = rx_drv8243_init(&handle, &config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_init_already_initialized(void)
@@ -920,7 +920,7 @@ static void test_deinit_null_handle(void)
   test_setup();
 
   rx_err_t err = rx_drv8243_deinit(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_deinit_not_initialized(void)
@@ -1011,7 +1011,7 @@ static void test_set_speed_null_handle(void)
   test_setup();
 
   rx_err_t err = rx_drv8243_set_speed(NULL, 50.0f);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_set_speed_not_initialized(void)
@@ -1081,7 +1081,7 @@ static void test_stop_null_handle(void)
   test_setup();
 
   rx_err_t err = rx_drv8243_stop(NULL, true);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_stop_not_initialized(void)
@@ -1169,7 +1169,7 @@ static void test_set_current_limit_null_handle(void)
   test_setup();
 
   rx_err_t err = rx_drv8243_set_current_limit(NULL, 1500);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_set_current_limit_not_initialized(void)
@@ -1261,7 +1261,7 @@ static void test_read_current_null_handle(void)
 
   float    current_ma;
   rx_err_t err = rx_drv8243_read_current(NULL, &current_ma);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_read_current_null_output(void)
@@ -1273,7 +1273,7 @@ static void test_read_current_null_output(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_read_current(&handle, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_read_current_not_initialized(void)
@@ -1346,7 +1346,7 @@ static void test_get_fault_status_null_handle(void)
 
   bool     fault;
   rx_err_t err = rx_drv8243_get_fault_status(NULL, &fault);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_get_fault_status_null_output(void)
@@ -1358,7 +1358,7 @@ static void test_get_fault_status_null_output(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_get_fault_status(&handle, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_get_fault_status_not_initialized(void)
@@ -1414,7 +1414,7 @@ static void test_get_speed_null_handle(void)
 
   float    speed;
   rx_err_t err = rx_drv8243_get_speed(NULL, &speed);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_get_speed_null_output(void)
@@ -1426,7 +1426,7 @@ static void test_get_speed_null_output(void)
   rx_drv8243_init(&handle, &config);
 
   rx_err_t err = rx_drv8243_get_speed(&handle, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_get_speed_not_initialized(void)

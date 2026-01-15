@@ -3,14 +3,17 @@
 # Host-compiled tests using Unity framework
 # =============================================================================
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 project(star_rx72n_tests C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-add_compile_definitions(USE_MOCK_SCI_REGS)
-add_compile_definitions(UNIT_TEST)
+# Helper function to apply strict warnings/defines to our test targets only
+function(apply_strict_warnings target)
+    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic -fshort-enums)
+    target_compile_definitions(${target} PRIVATE USE_MOCK_SCI_REGS UNIT_TEST)
+endfunction()
 
 # Unity test framework (fetched from GitHub)
 include(FetchContent)
@@ -225,6 +228,7 @@ add_executable(test_rx_crc32
     test_rx_crc32.c
     ${RX_CRC_SRC}
 )
+apply_strict_warnings(test_rx_crc32)
 target_link_libraries(test_rx_crc32 unity)
 
 # Test: CRC-8 (Dallas/Maxim for OneWire)
@@ -232,6 +236,7 @@ add_executable(test_rx_crc8
     test_rx_crc8.c
     ${RX_CRC_SRC}
 )
+apply_strict_warnings(test_rx_crc8)
 target_link_libraries(test_rx_crc8 unity)
 
 # Test: Frame Layer
@@ -239,6 +244,7 @@ add_executable(test_rx_frame
     test_rx_frame.c
     ${RX_FRAME_SRC}
 )
+apply_strict_warnings(test_rx_frame)
 target_link_libraries(test_rx_frame unity)
 
 # Test: FEC Codec
@@ -246,6 +252,7 @@ add_executable(test_rx_fec
     test_rx_fec.c
     ${RX_FEC_SRC}
 )
+apply_strict_warnings(test_rx_fec)
 target_link_libraries(test_rx_fec unity)
 
 # Test: HARQ Protocol
@@ -253,6 +260,7 @@ add_executable(test_rx_harq
     test_rx_harq.c
     ${RX_HARQ_SRC}
 )
+apply_strict_warnings(test_rx_harq)
 target_link_libraries(test_rx_harq unity)
 
 # Test: USB CDC Driver
@@ -261,6 +269,7 @@ add_executable(test_rx_usb
     ${RX_USB_SRC}
     ${MOCK_USB_SRC}
 )
+apply_strict_warnings(test_rx_usb)
 target_compile_definitions(test_rx_usb PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_usb unity)
 
@@ -274,6 +283,7 @@ add_executable(test_rx_usb_comm
     ${MOCK_LOG_SRC}
     ${MOCK_TIME_SRC}
 )
+apply_strict_warnings(test_rx_usb_comm)
 target_compile_definitions(test_rx_usb_comm PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_usb_comm unity)
 
@@ -282,6 +292,7 @@ add_executable(test_rx_time
     test_rx_time.c
     ${MOCK_TIME_SRC}
 )
+apply_strict_warnings(test_rx_time)
 target_link_libraries(test_rx_time unity)
 
 # Test: HC-SR04 Ultrasonic Sensor
@@ -291,6 +302,7 @@ add_executable(test_rx_hcsr04
     ${MOCK_HCSR04_SRC}
     ${MOCK_UART_SRC}
 )
+apply_strict_warnings(test_rx_hcsr04)
 target_link_libraries(test_rx_hcsr04 unity)
 
 # Test: Obstacle Detection
@@ -302,6 +314,7 @@ add_executable(test_rx_obstacle_detect
     ${MOCK_MOTOR_SRC}
     ${MOCK_UART_SRC}
 )
+apply_strict_warnings(test_rx_obstacle_detect)
 target_link_libraries(test_rx_obstacle_detect unity)
 
 # Test: UART HAL Driver
@@ -309,6 +322,7 @@ add_executable(test_uart_hal
     test_uart_hal.c
     ${MOCK_UART_SRC}
 )
+apply_strict_warnings(test_uart_hal)
 target_compile_definitions(test_uart_hal PRIVATE UNIT_TEST)
 target_link_libraries(test_uart_hal unity)
 
@@ -317,6 +331,7 @@ add_executable(test_gpio_hal
     test_gpio_hal.c
     ${MOCK_HAL_SRC}
 )
+apply_strict_warnings(test_gpio_hal)
 target_compile_definitions(test_gpio_hal PRIVATE UNIT_TEST)
 target_link_libraries(test_gpio_hal unity)
 
@@ -334,6 +349,7 @@ add_executable(test_rx_bus_uart
     ${RX_BUS_SRC}
     ${MOCK_UART_SRC}
 )
+apply_strict_warnings(test_rx_bus_uart)
 target_include_directories(test_rx_bus_uart PRIVATE
     ${CMAKE_SOURCE_DIR}/mocks
 )
@@ -347,6 +363,7 @@ add_executable(test_rx_motor
     ${MOCK_GPTW_SRC}
     ${MOCK_LOG_SRC}
 )
+apply_strict_warnings(test_rx_motor)
 target_compile_definitions(test_rx_motor PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_motor unity m)
 
@@ -379,6 +396,7 @@ add_executable(test_rx_bus_manager
     ${MOCK_BUS_MANAGER_SRC}
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
 )
+apply_strict_warnings(test_rx_bus_manager)
 target_include_directories(test_rx_bus_manager PRIVATE
     ${CMAKE_SOURCE_DIR}/mocks
 )
@@ -393,6 +411,7 @@ add_executable(test_rx_bus_onewire
     ${MOCK_BUS_MANAGER_SRC}
     ${MOCK_ONEWIRE_SRC}
 )
+apply_strict_warnings(test_rx_bus_onewire)
 target_include_directories(test_rx_bus_onewire BEFORE PRIVATE
     ${CMAKE_SOURCE_DIR}/mocks
 )
@@ -407,6 +426,7 @@ add_executable(test_rx_spi_comm
     ${MOCK_RSPI_SRC}
     ${MOCK_LOG_SRC}
 )
+apply_strict_warnings(test_rx_spi_comm)
 target_compile_definitions(test_rx_spi_comm PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_spi_comm unity)
 
@@ -416,6 +436,7 @@ add_executable(test_rx_pid
     ${RX_PID_SRC}
     ${MOCK_LOG_SRC}
 )
+apply_strict_warnings(test_rx_pid)
 target_compile_definitions(test_rx_pid PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_pid unity m)
 
@@ -427,6 +448,7 @@ add_executable(test_rx_encoder
     ${MOCK_LOG_SRC}
 )
 # Add mocks directory FIRST so mock headers override hardware headers
+apply_strict_warnings(test_rx_encoder)
 target_include_directories(test_rx_encoder BEFORE PRIVATE
     ${CMAKE_SOURCE_DIR}/mocks
 )
@@ -440,6 +462,7 @@ add_executable(test_rx_bq4050
     ${MOCK_SMBUS_SRC}
     ${MOCK_LOG_SRC}
 )
+apply_strict_warnings(test_rx_bq4050)
 target_compile_definitions(test_rx_bq4050 PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_bq4050 unity)
 
@@ -450,6 +473,7 @@ add_executable(test_rx_ds18b20
     ${RX_CRC_SRC}
     ${MOCK_LOG_SRC}
 )
+apply_strict_warnings(test_rx_ds18b20)
 target_include_directories(test_rx_ds18b20 PRIVATE
     ${CMAKE_SOURCE_DIR}/../lib/rx_ds18b20/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_bus/inc
@@ -465,6 +489,7 @@ add_executable(test_rx_error_handler
     ${RX_ERROR_HANDLER_SRC}
     ${MOCK_LOG_SRC}
 )
+apply_strict_warnings(test_rx_error_handler)
 target_compile_definitions(test_rx_error_handler PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_error_handler unity)
 
@@ -474,6 +499,7 @@ add_executable(test_rx_pin_validator
     ${RX_PIN_VALIDATOR_SRC}
     ${MOCK_LOG_SRC}
 )
+apply_strict_warnings(test_rx_pin_validator)
 target_compile_definitions(test_rx_pin_validator PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_pin_validator unity)
 
@@ -482,6 +508,7 @@ add_executable(test_rx_register_guard
     test_rx_register_guard.c
     ${RX_REGISTER_GUARD_SRC}
 )
+apply_strict_warnings(test_rx_register_guard)
 target_compile_definitions(test_rx_register_guard PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_register_guard unity)
 
@@ -493,6 +520,7 @@ add_executable(test_rx_nanopb
     ${nanopb_SOURCE_DIR}/pb_encode.c
     ${nanopb_SOURCE_DIR}/pb_decode.c
 )
+apply_strict_warnings(test_rx_nanopb)
 target_include_directories(test_rx_nanopb PRIVATE
     ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc/gen

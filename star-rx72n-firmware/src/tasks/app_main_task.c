@@ -9,6 +9,7 @@
  * Application logic will be added as subsystems are integrated.
  *
  * @date 2026-01-14
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "app_main_task.h"
@@ -43,7 +44,7 @@ static bool      s_app_main_created = false;
  * =============================================================================
  */
 
-static void app_main_task_entry(ULONG input)
+static void internal_app_main_task_entry(ULONG input)
 {
   (void)input;
 
@@ -65,7 +66,7 @@ rx_err_t app_main_task_create(void)
 
   UINT status = tx_thread_create(&s_app_main_thread,
                                  "AppMain",
-                                 app_main_task_entry,
+                                 internal_app_main_task_entry,
                                  0,
                                  s_app_main_stack,
                                  k_app_main_stack_size,

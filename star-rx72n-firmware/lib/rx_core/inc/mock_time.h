@@ -86,7 +86,7 @@ rx_err_t mock_time_deinit(mock_time_t* mock);
  * @param[out] iface Interface to populate
  * @param[in]  mock  Mock time instance (NULL for global)
  *
- * @return k_rx_ok on success, k_rx_err_null_pointer if iface is NULL
+ * @return k_rx_ok on success, k_rx_err_null_ptr if iface is NULL
  */
 rx_err_t mock_time_get_interface(rx_time_interface_t* iface, mock_time_t* mock);
 

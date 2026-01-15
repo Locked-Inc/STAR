@@ -299,7 +299,7 @@ rx_err_t mock_gpio_read(uint8_t port, uint8_t pin, bool* value)
   mock_hcsr04_hw_t* m = internal_get_mock(NULL);
 
   if (value == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Simulate echo behavior based on timing */

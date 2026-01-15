@@ -75,7 +75,7 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
 
   /* Validate inputs */
   if (handle == NULL || config == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (handle->initialized) {
@@ -148,7 +148,7 @@ rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
 
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -198,7 +198,7 @@ rx_err_t rx_obstacle_detect_start(rx_obstacle_detect_t* handle)
 
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -228,7 +228,7 @@ rx_err_t rx_obstacle_detect_stop(rx_obstacle_detect_t* handle)
 
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -249,7 +249,7 @@ rx_err_t rx_obstacle_detect_clear_obstacle(rx_obstacle_detect_t* handle)
 {
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -280,7 +280,7 @@ rx_err_t rx_obstacle_detect_get_state(const rx_obstacle_detect_t* handle,
 {
   /* Validate inputs */
   if (handle == NULL || out_state == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -308,7 +308,7 @@ rx_err_t rx_obstacle_detect_get_stats(const rx_obstacle_detect_t* handle,
 {
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -335,7 +335,7 @@ rx_err_t rx_obstacle_detect_reset_stats(rx_obstacle_detect_t* handle)
 {
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -431,7 +431,7 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
 {
   /* Validate sensor configuration */
   if (config->sensors == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (config->sensor_count == 0 || config->sensor_count > k_obstacle_detect_max_sensors) {
@@ -440,13 +440,13 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
 
   for (uint8_t i = 0; i < config->sensor_count; i++) {
     if (config->sensors[i] == NULL) {
-      return k_rx_err_null_pointer;
+      return k_rx_err_null_ptr;
     }
   }
 
   /* Validate motor configuration */
   if (config->motors == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (config->motor_count == 0 || config->motor_count > k_obstacle_detect_max_motors) {
@@ -455,7 +455,7 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
 
   for (uint8_t i = 0; i < config->motor_count; i++) {
     if (config->motors[i] == NULL) {
-      return k_rx_err_null_pointer;
+      return k_rx_err_null_ptr;
     }
   }
 

@@ -91,7 +91,7 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
   error_handler_t* handler = (error_handler_t*)ctx;
 
   if (handler == NULL || component == NULL || message == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Acquire mutex */
@@ -182,7 +182,7 @@ static rx_err_t impl_clear_errors(void* ctx)
   error_handler_t* handler = (error_handler_t*)ctx;
 
   if (handler == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Acquire mutex */
@@ -248,7 +248,7 @@ static rx_err_t impl_reset_retry_counter(void* ctx, const char* component)
   error_handler_t* handler = (error_handler_t*)ctx;
 
   if (handler == NULL || component == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Acquire mutex */

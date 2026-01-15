@@ -128,7 +128,7 @@ typedef struct {
  * @param[in] max_backoff_ms Maximum backoff delay in milliseconds
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if handler is NULL,
+ *         k_rx_err_null_ptr if handler is NULL,
  *         k_rx_err_rtos_mutex if mutex creation fails
  */
 rx_err_t error_handler_init(error_handler_t* handler,
@@ -143,7 +143,7 @@ rx_err_t error_handler_init(error_handler_t* handler,
  * @param[in,out] handler Concrete handler instance
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_null_ptr if either parameter is NULL,
  *         k_rx_err_invalid_state if handler not initialized
  */
 rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_t* handler);
@@ -154,7 +154,7 @@ rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_
  * @param[in,out] handler Handler to deinitialize
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if handler is NULL
+ *         k_rx_err_null_ptr if handler is NULL
  */
 rx_err_t error_handler_deinit(error_handler_t* handler);
 

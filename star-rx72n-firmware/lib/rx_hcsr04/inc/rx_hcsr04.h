@@ -151,7 +151,7 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  * @param[in]  config Configuration with pin assignments
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle or config is NULL
+ * @return k_rx_err_null_ptr if handle or config is NULL
  * @return k_rx_err_invalid_arg if port/pin values are invalid
  * @return k_rx_err_gpio_conflict if pins already reserved
  * @return k_rx_err_invalid_state if handle already initialized
@@ -166,7 +166,7 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config);
  * @param[in,out] handle Sensor handle
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle);
@@ -223,7 +223,7 @@ rx_err_t rx_hcsr04_worker_deinit(void);
  * @param[out] distance_cm Measured distance in centimeters
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle or distance_cm is NULL
+ * @return k_rx_err_null_ptr if handle or distance_cm is NULL
  * @return k_rx_err_invalid_state if not initialized
  * @return k_rx_err_timeout if no echo received (object >400cm or absent)
  * @return k_rx_err_out_of_range if distance <2cm (too close)
@@ -240,7 +240,7 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm);
  * @param[out] result Complete measurement result
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle or result is NULL
+ * @return k_rx_err_null_ptr if handle or result is NULL
  * @return k_rx_err_invalid_state if not initialized
  * @return k_rx_err_timeout if no echo received
  * @return k_rx_err_out_of_range if distance out of bounds
@@ -269,7 +269,7 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result);
  * @param[in] user_data User context passed to callback (can be NULL)
  *
  * @return k_rx_ok if measurement queued (async) or completed (sync)
- * @return k_rx_err_null_pointer if handle or callback is NULL
+ * @return k_rx_err_null_ptr if handle or callback is NULL
  * @return k_rx_err_invalid_state if not initialized
  * @return k_rx_err_busy if measurement already in progress
  */
@@ -294,7 +294,7 @@ bool rx_hcsr04_is_busy(const rx_hcsr04_t* handle);
  * @param[in] handle Sensor handle
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if no measurement in progress
  */
 rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle);
@@ -323,7 +323,7 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle);
  *                                Valid range: -40°C to +85°C
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  * @return k_rx_err_invalid_arg if temperature out of valid range
  *
@@ -343,7 +343,7 @@ rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, float temp_celsius);
  * @param[in,out] handle Sensor handle
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_hcsr04_disable_temp_compensation(rx_hcsr04_t* handle);
@@ -368,7 +368,7 @@ bool rx_hcsr04_is_temp_compensation_enabled(const rx_hcsr04_t* handle);
  * @param[out] temp_celsius Current temperature setting
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle or temp_celsius is NULL
+ * @return k_rx_err_null_ptr if handle or temp_celsius is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsius);
@@ -441,7 +441,7 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius);
  * @param[out] range_error_count Range error count (can be NULL)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_hcsr04_get_stats(const rx_hcsr04_t* handle,
@@ -455,7 +455,7 @@ rx_err_t rx_hcsr04_get_stats(const rx_hcsr04_t* handle,
  * @param[in,out] handle Sensor handle
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_hcsr04_reset_stats(rx_hcsr04_t* handle);

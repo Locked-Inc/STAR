@@ -101,7 +101,7 @@ rx_err_t gpio_toggle(rx_port_pin_t pin);
  * @return k_rx_ok on success,
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid,
- *         k_rx_err_null_pointer if value is NULL
+ *         k_rx_err_null_ptr if value is NULL
  */
 rx_err_t gpio_read(rx_port_pin_t pin, bool* value);
 
@@ -130,7 +130,7 @@ rx_err_t timer_stop(void);
  * @param[out] count Pointer to store counter value
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if count is NULL
+ *         k_rx_err_null_ptr if count is NULL
  */
 rx_err_t timer_get_count(uint16_t* count);
 
@@ -160,7 +160,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits);
  * @param[out] value Pointer to store ADC value
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if value is NULL,
+ *         k_rx_err_null_ptr if value is NULL,
  *         k_rx_err_invalid_arg if unit or channel is invalid,
  *         k_rx_err_invalid_state if ADC unit not initialized,
  *         k_rx_err_timeout if conversion times out
@@ -176,7 +176,7 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value);
  * @param[out] voltage_mv Pointer to store voltage in millivolts
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if voltage_mv is NULL,
+ *         k_rx_err_null_ptr if voltage_mv is NULL,
  *         k_rx_err_invalid_arg if unit or channel is invalid,
  *         k_rx_err_invalid_state if ADC unit not initialized,
  *         k_rx_err_timeout if conversion times out
@@ -208,7 +208,7 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz);
  * @param[in] length Number of bytes to write
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if data is NULL,
+ *         k_rx_err_null_ptr if data is NULL,
  *         k_rx_err_invalid_state if channel not initialized,
  *         k_rx_err_timeout if bus timeout,
  *         k_rx_err_nack if device NACK received
@@ -224,7 +224,7 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
  * @param[in] length Number of bytes to read
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if data is NULL,
+ *         k_rx_err_null_ptr if data is NULL,
  *         k_rx_err_invalid_state if channel not initialized,
  *         k_rx_err_timeout if bus timeout,
  *         k_rx_err_nack if device NACK received
@@ -244,7 +244,7 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
  * @param[in] read_length Number of bytes to read
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if write_data or read_data is NULL,
+ *         k_rx_err_null_ptr if write_data or read_data is NULL,
  *         k_rx_err_invalid_state if channel not initialized,
  *         k_rx_err_timeout if bus timeout,
  *         k_rx_err_nack if device NACK received
@@ -282,7 +282,7 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit);
  * @param[in] length Number of bytes to transfer
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if tx_data or rx_data is NULL,
+ *         k_rx_err_null_ptr if tx_data or rx_data is NULL,
  *         k_rx_err_invalid_state if channel not initialized,
  *         k_rx_err_timeout if transfer timeout
  */
@@ -298,7 +298,7 @@ rx_err_t rspi_peripheral_transfer(uint8_t        channel,
  * @param[out] available Pointer to store availability status
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if available is NULL,
+ *         k_rx_err_null_ptr if available is NULL,
  *         k_rx_err_invalid_state if channel not initialized
  */
 rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available);
@@ -310,7 +310,7 @@ rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available);
  * @param[out] ready Pointer to store ready status
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if ready is NULL,
+ *         k_rx_err_null_ptr if ready is NULL,
  *         k_rx_err_invalid_state if channel not initialized
  */
 rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready);
@@ -407,7 +407,7 @@ rx_err_t uart_putc_channel(uint8_t channel, char data);
  * @param[in] str Pointer to string
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if str is NULL,
+ *         k_rx_err_null_ptr if str is NULL,
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
@@ -421,7 +421,7 @@ rx_err_t uart_puts_channel(uint8_t channel, const char* str);
  * @param[in] length Number of bytes to write
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if data is NULL,
+ *         k_rx_err_null_ptr if data is NULL,
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
@@ -434,7 +434,7 @@ rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t lengt
  * @param[out] data Pointer to store received character
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if data is NULL,
+ *         k_rx_err_null_ptr if data is NULL,
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized,
  *         k_rx_err_empty if no data available
@@ -452,7 +452,7 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data);
  * @param[out] bytes_read Pointer to store actual bytes read
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if data or bytes_read is NULL,
+ *         k_rx_err_null_ptr if data or bytes_read is NULL,
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
@@ -465,7 +465,7 @@ rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint
  * @param[out] available Pointer to store availability status
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if available is NULL,
+ *         k_rx_err_null_ptr if available is NULL,
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */

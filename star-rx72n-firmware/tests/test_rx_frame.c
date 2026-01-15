@@ -24,11 +24,13 @@
 
 /**
  * @brief Frame test constants for payload and buffer sizes
+ *
+ * Note: Minimum frame size is defined in rx_frame.h as k_frame_min_size = 12
+ * (SYNC=2 bytes, header=6 bytes, CRC-32=4 bytes)
  */
 typedef enum {
   k_test_payload_size = 256,  /**< Large payload size for testing */
   k_test_buffer_size  = 512,  /**< Buffer size for encoded frame */
-  k_test_header_size  = 12,   /**< Frame header size in bytes */
   k_test_sequence_num = 100,  /**< Test sequence number */
   k_test_byte_mask    = 0xFF, /**< Byte mask for payload patterns */
 } frame_test_constants_t;
@@ -211,7 +213,8 @@ void test_encode_with_payload(void)
 
   rx_err_t err = rx_frame_encode(&s_encoder, &frame, buffer, &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(k_test_header_size + k_small_payload_size, len); /* Header + 4 byte payload */
+  TEST_ASSERT_EQUAL(k_frame_min_size + k_small_payload_size,
+                    len); /* Minimum frame + 4 byte payload */
 
   /* Verify SEQ (big-endian 0x1234) */
   TEST_ASSERT_EQUAL_HEX8(0x12, buffer[k_frame_offset_seq_high]);
@@ -380,7 +383,7 @@ void test_roundtrip_large_payload(void)
   uint8_t  buffer[k_test_buffer_size];
   uint32_t len;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &original, buffer, &len));
-  TEST_ASSERT_EQUAL(k_test_header_size + k_test_payload_size, len);
+  TEST_ASSERT_EQUAL(k_frame_min_size + k_test_payload_size, len);
 
   rx_frame_t decoded;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
@@ -433,9 +436,9 @@ void test_create_nack_with_flags(void)
 void test_encoded_size_calculation(void)
 {
   enum { k_payload_0 = 0, k_payload_1 = 1, k_payload_8 = 8 };
-  TEST_ASSERT_EQUAL(k_test_header_size, rx_frame_encoded_size(k_payload_0));
-  TEST_ASSERT_EQUAL(k_test_header_size + k_payload_1, rx_frame_encoded_size(k_payload_1));
-  TEST_ASSERT_EQUAL(k_test_header_size + k_payload_8, rx_frame_encoded_size(k_payload_8));
+  TEST_ASSERT_EQUAL(k_frame_min_size, rx_frame_encoded_size(k_payload_0));
+  TEST_ASSERT_EQUAL(k_frame_min_size + k_payload_1, rx_frame_encoded_size(k_payload_1));
+  TEST_ASSERT_EQUAL(k_frame_min_size + k_payload_8, rx_frame_encoded_size(k_payload_8));
   TEST_ASSERT_EQUAL(k_frame_max_size, rx_frame_encoded_size(k_frame_max_payload));
 }
 

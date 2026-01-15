@@ -43,7 +43,7 @@ extern "C" {
  * @param[in] bus_name SMBUS bus name
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_arg if bus is not SMBUS type
  * @return k_rx_err_timeout if mutex timeout
@@ -60,7 +60,7 @@ rx_err_t rx_bus_smbus_init(rx_bus_manager_t* manager, const char* bus_name);
  * @param[in] command Command byte to write
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBUS timeout
@@ -79,7 +79,7 @@ rx_err_t rx_bus_smbus_write_byte(rx_bus_manager_t* manager, const char* bus_name
  * @param[out] data Pointer to store received byte
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or data is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or data is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBUS timeout
@@ -99,7 +99,7 @@ rx_err_t rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name,
  * @param[in] data Data byte to write
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBUS timeout
@@ -122,7 +122,7 @@ rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
  * @param[out] data Pointer to store received byte
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or data is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or data is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBUS timeout
@@ -145,7 +145,7 @@ rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
  * @param[in] data Data word to write (little-endian)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBUS timeout
@@ -168,7 +168,7 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
  * @param[out] data Pointer to store received word (little-endian)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or data is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or data is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBUS timeout
@@ -193,7 +193,7 @@ rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
  * @param[in] max_length Maximum buffer size (typically 32)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBUS timeout

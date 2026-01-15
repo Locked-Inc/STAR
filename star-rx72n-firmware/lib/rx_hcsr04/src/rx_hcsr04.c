@@ -388,7 +388,7 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   rx_err_t err;
 
   if (handle == NULL || config == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (handle->initialized) {
@@ -433,7 +433,7 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
 rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -458,7 +458,7 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
 rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
 {
   if (handle == NULL || distance_cm == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -504,7 +504,7 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
 rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
 {
   if (handle == NULL || result == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -562,7 +562,7 @@ rx_err_t
 rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void* user_data)
 {
   if (handle == NULL || callback == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -636,7 +636,7 @@ bool rx_hcsr04_is_busy(const rx_hcsr04_t* handle)
 rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->measurement_active) {
@@ -660,7 +660,7 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
 rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, float temp_celsius)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -682,7 +682,7 @@ rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, float temp_celsius)
 rx_err_t rx_hcsr04_disable_temp_compensation(rx_hcsr04_t* handle)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -706,7 +706,7 @@ bool rx_hcsr04_is_temp_compensation_enabled(const rx_hcsr04_t* handle)
 rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsius)
 {
   if (handle == NULL || temp_celsius == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -802,7 +802,7 @@ rx_err_t rx_hcsr04_get_stats(const rx_hcsr04_t* handle,
                              uint32_t*          range_error_count)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -827,7 +827,7 @@ rx_err_t rx_hcsr04_get_stats(const rx_hcsr04_t* handle,
 rx_err_t rx_hcsr04_reset_stats(rx_hcsr04_t* handle)
 {
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {

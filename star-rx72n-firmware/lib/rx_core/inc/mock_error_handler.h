@@ -146,7 +146,7 @@ typedef struct {
  * @param[in] max_errors Maximum number of errors to record (1-32)
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if handler is NULL,
+ *         k_rx_err_null_ptr if handler is NULL,
  *         k_rx_err_invalid_arg if max_errors is 0 or > 32
  */
 rx_err_t mock_error_handler_init(mock_error_handler_t* handler, uint32_t max_errors);
@@ -158,7 +158,7 @@ rx_err_t mock_error_handler_init(mock_error_handler_t* handler, uint32_t max_err
  * @param[in,out] handler Mock handler instance
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_null_ptr if either parameter is NULL,
  *         k_rx_err_invalid_state if handler not initialized
  */
 rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface,
@@ -178,7 +178,7 @@ rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface,
  * @param[out] out_message Error message pointer (can be NULL)
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if handler is NULL,
+ *         k_rx_err_null_ptr if handler is NULL,
  *         k_rx_err_not_found if no errors recorded
  *
  * @note out_component and out_message point to internal buffers.
@@ -199,7 +199,7 @@ rx_err_t mock_error_handler_get_last_error(mock_error_handler_t* handler,
  * @param[out] out_message Error message pointer (can be NULL)
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if handler is NULL,
+ *         k_rx_err_null_ptr if handler is NULL,
  *         k_rx_err_invalid_arg if index out of range
  */
 rx_err_t mock_error_handler_get_error_at(mock_error_handler_t* handler,
@@ -229,7 +229,7 @@ bool mock_error_handler_has_error(mock_error_handler_t* handler,
  * @param[in,out] handler Handler to clear
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if handler is NULL
+ *         k_rx_err_null_ptr if handler is NULL
  */
 rx_err_t mock_error_handler_clear(mock_error_handler_t* handler);
 
@@ -248,7 +248,7 @@ uint32_t mock_error_handler_get_stored_count(mock_error_handler_t* handler);
  * @param[in,out] handler Handler to deinitialize
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if handler is NULL
+ *         k_rx_err_null_ptr if handler is NULL
  */
 rx_err_t mock_error_handler_deinit(mock_error_handler_t* handler);
 
