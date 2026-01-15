@@ -288,61 +288,6 @@ go test -v ./internal/service -run TestBatteryManagementService
 go test -cover ./internal/service/battery_test.go
 ```
 
----
-
-### Service 4: FirmwareUpdateService (4-5 days)
-**Priority:** LOW - Requires bootloader
-**Started:** ___________
-**Completed:** ___________
-
-- [ ] **BeginUpdate** - Initialize OTA partition
-  - [ ] Validate expected_size_bytes
-  - [ ] Send begin command
-  - [ ] Return update_id
-  - [ ] Tests: Success, InvalidSize, AlreadyInProgress
-
-- [ ] **WriteChunk** - Upload single chunk
-  - [ ] Validate sequence_number
-  - [ ] Wrap in WireMessage
-  - [ ] Tests: Success, SequenceError
-
-- [ ] **StreamChunks** - Bulk chunk transfer (client streaming)
-  - [ ] Receive loop for chunks
-  - [ ] Track progress (bytes, CRC)
-  - [ ] Tests: Success, Incomplete, CRCFailed
-
-- [ ] **FinalizeUpdate** - Validate and prepare boot
-  - [ ] Send finalize command
-  - [ ] RX72N validates CRC
-  - [ ] Tests: Success, CRCMismatch
-
-- [ ] **AbortUpdate** - Cancel and cleanup
-- [ ] **GetUpdateProgress** - Query current state
-  - [ ] Return progress percent, speed, ETA
-  - [ ] Tests: NotStarted, InProgress, Complete
-
-- [ ] **StreamUpdateProgress** - Stream progress (1 Hz)
-- [ ] **Reboot** - Boot into new firmware
-- [ ] **Rollback** - Revert to previous
-- [ ] **MarkValid** - Confirm stability
-- [ ] **GetFirmwareInfo** - Version, hash, date
-
-- [ ] **Register in main.go**
-- [ ] **Unit Tests** (15+ cases, 80%+ coverage)
-
-**Files Modified:**
-- `internal/service/firmware.go`
-- `internal/service/firmware_test.go`
-- `cmd/star-gateway/main.go`
-
-**Commands to verify:**
-```bash
-go test -v ./internal/service -run TestFirmwareUpdateService
-go test -cover ./internal/service/firmware_test.go
-```
-
----
-
 ## Final Verification Checklist
 
 ### Build & Test
