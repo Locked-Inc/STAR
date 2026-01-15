@@ -908,7 +908,7 @@ func TestSetMotorPidConfig_InvalidGains(t *testing.T) {
 	svc := NewConfigurationService(mockHARQ, mockDispatcher, logger)
 
 	pidConfig := createDefaultPidConfig()
-	pidConfig.Ki = 0.0 // Invalid: ki must be > 0
+	pidConfig.Ki = -1.0 // Invalid: ki must be >= 0
 
 	req := &starv1.SetMotorPidConfigRequest{
 		Header: &starv1.RequestHeader{
@@ -929,6 +929,52 @@ func TestSetMotorPidConfig_InvalidGains(t *testing.T) {
 
 	if resp.Header.Status != starv1.Status_STATUS_INVALID_REQUEST {
 		t.Errorf("Expected STATUS_INVALID_REQUEST, got %v", resp.Header.Status)
+	}
+}
+
+func TestSetMotorPidConfig_ZeroKiValid(t *testing.T) {
+	saveResponse := &starv1.SaveConfigurationResponse{
+		Header: &starv1.ResponseHeader{Status: starv1.Status_STATUS_OK},
+		Saved:  true,
+	}
+	savePayload, err := proto.Marshal(saveResponse)
+	if err != nil {
+		t.Fatalf("failed to marshal save response: %v", err)
+	}
+
+	mockHARQ := &testutil.MockHARQ{
+		ReceiveFunc: func(_ context.Context) ([]byte, error) {
+			return savePayload, nil
+		},
+	}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
+
+	svc := NewConfigurationService(mockHARQ, mockDispatcher, logger)
+
+	pidConfig := createDefaultPidConfig()
+	pidConfig.Ki = 0.0 // Valid: ki >= 0 is now allowed
+
+	req := &starv1.SetMotorPidConfigRequest{
+		Header: &starv1.RequestHeader{
+			RequestId: "test-set-pid-zero-ki",
+		},
+		MotorId:      0,
+		PidConfig:    pidConfig,
+		PersistToNvs: true,
+	}
+
+	resp, err := svc.SetMotorPidConfig(context.Background(), req)
+	if err != nil {
+		t.Fatalf("Expected no error, got: %v", err)
+	}
+
+	if resp == nil {
+		t.Fatal("Expected non-nil response")
+	}
+
+	if resp.ValidationResult.Status != starv1.ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VALID {
+		t.Errorf("Expected VALID status for ki=0, got %v", resp.ValidationResult.Status)
 	}
 }
 
