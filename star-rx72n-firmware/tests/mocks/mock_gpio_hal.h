@@ -22,7 +22,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hardware_pinout.h"
 #include "rx_err.h"
 
 #ifdef __cplusplus

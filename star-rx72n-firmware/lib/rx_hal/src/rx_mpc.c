@@ -24,7 +24,6 @@
 
 #include <stddef.h>
 
-#include "hardware_pinout.h"
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
@@ -258,42 +257,56 @@ static rx_err_t internal_write_pfs(uint8_t port, uint8_t pin, uint8_t value)
  * =============================================================================
  */
 
-rx_err_t rx_mpc_set_gpio(gpio_pin_t pin)
+rx_err_t rx_mpc_set_gpio(rx_port_pin_t pin)
 {
-  /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  /* Extract port and pin number from rx_port_pin_t */
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
+
+  /* Validate the decoded port and pin are in valid range */
+  if (port > k_mpc_port_j || pin_num > k_mpc_max_pin) {
+    rx_log_error(s_tag, "Invalid port or pin number");
+    return k_rx_err_invalid_arg;
+  }
 
   /* GPIO mode: PSEL = 0, ISEL = 0, ASEL = 0 */
   return internal_write_pfs(port, pin_num, k_mpc_pfs_gpio);
 }
 
-rx_err_t rx_mpc_set_peripheral(gpio_pin_t pin, uint8_t psel)
+rx_err_t rx_mpc_set_peripheral(const rx_mpc_peripheral_config_t* config)
 {
-  if (psel > k_mpc_psel_max) {
-    rx_log_error(s_tag, "Error occurred");
+  if (config == NULL) {
+    rx_log_error(s_tag, "Invalid configuration pointer");
     return k_rx_err_invalid_arg;
   }
 
-  /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  if (config->psel > k_mpc_psel_max) {
+    rx_log_error(s_tag, "Invalid PSEL value exceeds maximum");
+    rx_log_error_val(s_tag, "  psel=", config->psel);
+    rx_log_error_val(s_tag, "  k_mpc_psel_max=", (uint8_t)k_mpc_psel_max);
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Extract port and pin number from rx_port_pin_t */
+  uint8_t port    = rx_port_from_pin(config->pin);
+  uint8_t pin_num = rx_pin_from_pin(config->pin);
 
   /* Peripheral mode: PSEL = specified, ISEL = 0, ASEL = 0 */
-  return internal_write_pfs(port, pin_num, psel);
+  return internal_write_pfs(port, pin_num, config->psel);
 }
 
-rx_err_t rx_mpc_set_mtu_pwm(gpio_pin_t pin)
+rx_err_t rx_mpc_set_mtu_pwm(rx_port_pin_t pin)
 {
   /* MTU PWM (MTIOC) pins typically use PSEL = 0x01
    * Common pins:
    * - P14-P17: MTU3 MTIOCA/B/C/D
    * - P24-P27: MTU4 MTIOCA/B/C/D
    */
-  return rx_mpc_set_peripheral(pin, k_psel_mtu_ioc);
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_ioc};
+  return rx_mpc_set_peripheral(&config);
 }
 
-rx_err_t rx_mpc_set_mtu_encoder(gpio_pin_t pin)
+rx_err_t rx_mpc_set_mtu_encoder(rx_port_pin_t pin)
 {
   /* MTU encoder (MTCLK) pins typically use PSEL = 0x02 or 0x03
    * Common pins:
@@ -302,14 +315,15 @@ rx_err_t rx_mpc_set_mtu_encoder(gpio_pin_t pin)
    *
    * For phase counting mode, use PSEL = 0x03
    */
-  return rx_mpc_set_peripheral(pin, k_psel_mtu_phase);
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_phase};
+  return rx_mpc_set_peripheral(&config);
 }
 
-rx_err_t rx_mpc_set_adc(gpio_pin_t pin)
+rx_err_t rx_mpc_set_adc(rx_port_pin_t pin)
 {
   /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
 
   /* ADC mode: Set ASEL = 1 to disable digital I/O
    * Common ADC pins: P40-P47 (AN000-AN007)
@@ -317,28 +331,31 @@ rx_err_t rx_mpc_set_adc(gpio_pin_t pin)
   return internal_write_pfs(port, pin_num, k_pfs_asel);
 }
 
-rx_err_t rx_mpc_set_sci(gpio_pin_t pin, bool is_tx)
+rx_err_t rx_mpc_set_sci(rx_port_pin_t pin, bool is_tx)
 {
   /* SCI pins use PSEL = 0x0A
    * TX and RX use the same PSEL code
    */
   (void)is_tx; /* Not used - same PSEL for TX/RX */
-  return rx_mpc_set_peripheral(pin, k_psel_sci_tx);
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_sci_tx};
+  return rx_mpc_set_peripheral(&config);
 }
 
-rx_err_t rx_mpc_set_riic(gpio_pin_t pin, bool is_scl)
+rx_err_t rx_mpc_set_riic(rx_port_pin_t pin, bool is_scl)
 {
   /* RIIC pins use PSEL = 0x0F
    * SCL and SDA use the same PSEL code
    */
   (void)is_scl; /* Not used - same PSEL for SCL/SDA */
-  return rx_mpc_set_peripheral(pin, k_psel_riic_scl);
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_riic_scl};
+  return rx_mpc_set_peripheral(&config);
 }
 
-rx_err_t rx_mpc_set_rspi(gpio_pin_t pin)
+rx_err_t rx_mpc_set_rspi(rx_port_pin_t pin)
 {
   /* RSPI pins use PSEL = 0x0D
    * All RSPI signals (CLK, COPI, CIPO, SSL) use same PSEL
    */
-  return rx_mpc_set_peripheral(pin, k_psel_rspi_clk);
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_rspi_clk};
+  return rx_mpc_set_peripheral(&config);
 }

@@ -18,11 +18,13 @@
 #include <stdint.h>
 
 /* Core infrastructure */
-#include "hardware_pinout.h"
 #include "rx_check.h"
 #include "rx_err.h"
 #include "rx_infrastructure.h"
 #include "rx_log.h"
+
+/* Port/pin constants and types */
+#include "rx_port_constants.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,52 +45,52 @@ extern "C" {
  *         k_rx_err_gpio_invalid_pin if pin is invalid,
  *         k_rx_err_gpio_conflict if pin already reserved
  */
-rx_err_t gpio_set_output(gpio_pin_t pin);
+rx_err_t gpio_set_output(rx_port_pin_t pin);
 
 /**
  * @brief Configure GPIO pin as input
  *
- * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
+ * @param[in] pin GPIO pin (rx_port_pin_t)
  *
  * @return k_rx_ok on success,
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid,
  *         k_rx_err_gpio_conflict if pin already reserved
  */
-rx_err_t gpio_set_input(gpio_pin_t pin);
+rx_err_t gpio_set_input(rx_port_pin_t pin);
 
 /**
  * @brief Set GPIO pin high
  *
- * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
+ * @param[in] pin GPIO pin (rx_port_pin_t)
  *
  * @return k_rx_ok on success,
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
-rx_err_t gpio_write_high(gpio_pin_t pin);
+rx_err_t gpio_write_high(rx_port_pin_t pin);
 
 /**
  * @brief Set GPIO pin low
  *
- * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
+ * @param[in] pin GPIO pin (rx_port_pin_t)
  *
  * @return k_rx_ok on success,
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
-rx_err_t gpio_write_low(gpio_pin_t pin);
+rx_err_t gpio_write_low(rx_port_pin_t pin);
 
 /**
  * @brief Toggle GPIO pin
  *
- * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
+ * @param[in] pin GPIO pin (rx_port_pin_t)
  *
  * @return k_rx_ok on success,
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
-rx_err_t gpio_toggle(gpio_pin_t pin);
+rx_err_t gpio_toggle(rx_port_pin_t pin);
 
 /**
  * @brief Read GPIO pin
@@ -101,7 +103,7 @@ rx_err_t gpio_toggle(gpio_pin_t pin);
  *         k_rx_err_gpio_invalid_pin if pin is invalid,
  *         k_rx_err_null_pointer if value is NULL
  */
-rx_err_t gpio_read(gpio_pin_t pin, bool* value);
+rx_err_t gpio_read(rx_port_pin_t pin, bool* value);
 
 /* =============================================================================
  * Timer Functions
@@ -335,6 +337,30 @@ typedef enum {
   k_uart_debug_channel = 9, /**< Debug UART on SCI9 (PB7/TXD9, PB6/RXD9) */
 } uart_defaults_t;
 
+/* =============================================================================
+ * UART Configuration Types
+ * =============================================================================
+ */
+
+/**
+ * @brief UART channel configuration structure
+ *
+ * Encapsulates all parameters needed to initialize a UART channel.
+ * Using a struct instead of positional parameters prevents accidental
+ * parameter swapping and makes the API more maintainable.
+ */
+typedef struct {
+  uint8_t       channel;  /**< SCI channel (0-12) */
+  uint32_t      baudrate; /**< Baud rate (e.g., 9600, 115200) */
+  rx_port_pin_t tx_gpio;  /**< TX pin (rx_port_pin_t) */
+  rx_port_pin_t rx_gpio;  /**< RX pin (rx_port_pin_t) */
+} uart_channel_config_t;
+
+/* =============================================================================
+ * UART HAL Functions
+ * =============================================================================
+ */
+
 /**
  * @brief Initialize SCI channel for UART communication
  *
@@ -344,17 +370,13 @@ typedef enum {
  * - GPIO direction setup (PDR/PMR)
  * - SCI register configuration
  *
- * @param[in] channel SCI channel (0-12)
- * @param[in] baudrate Baud rate (e.g., 9600, 115200)
- * @param[in] tx_gpio TX pin (gpio_pin_t from hardware_pinout.h)
- * @param[in] rx_gpio RX pin (gpio_pin_t from hardware_pinout.h)
+ * @param[in] config UART channel configuration (must not be NULL)
  *
  * @return k_rx_ok on success,
- *         k_rx_err_invalid_arg if channel or pins are invalid,
+ *         k_rx_err_invalid_arg if config is NULL or contains invalid values,
  *         k_rx_err_invalid_state if channel already initialized
  */
-rx_err_t
-uart_init_channel(uint8_t channel, uint32_t baudrate, gpio_pin_t tx_gpio, gpio_pin_t rx_gpio);
+rx_err_t uart_init_channel(const uart_channel_config_t* config);
 
 /**
  * @brief Deinitialize SCI channel

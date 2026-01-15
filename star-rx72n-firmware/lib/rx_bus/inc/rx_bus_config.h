@@ -17,7 +17,6 @@
 #ifndef STAR_RX72N_BUS_CONFIG_H
 #define STAR_RX72N_BUS_CONFIG_H
 
-#include "hardware_pinout.h"
 #include "rx_bus_types.h"
 #include "rx_err.h"
 
@@ -64,7 +63,7 @@ extern "C" {
  * @note The config structure must remain valid for the lifetime of bus usage
  * @note The name string must remain valid (use string literals or static storage)
  */
-rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, gpio_pin_t pin);
+rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t pin);
 
 /* =============================================================================
  * ADC Bus Configuration
@@ -121,8 +120,8 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
                                 const char*      name,
                                 uint8_t          channel,
                                 uint8_t          device_addr,
-                                gpio_pin_t       sda_pin,
-                                gpio_pin_t       scl_pin,
+                                rx_port_pin_t    sda_pin,
+                                rx_port_pin_t    scl_pin,
                                 uint32_t         frequency_hz);
 
 /* =============================================================================
@@ -152,8 +151,8 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
                                   const char*      name,
                                   uint8_t          channel,
                                   uint8_t          device_addr,
-                                  gpio_pin_t       sda_pin,
-                                  gpio_pin_t       scl_pin,
+                                  rx_port_pin_t    sda_pin,
+                                  rx_port_pin_t    scl_pin,
                                   uint32_t         frequency_hz,
                                   bool             use_pec);
 
@@ -202,7 +201,7 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
  * rx_bus_onewire_reset(&bus_manager, "temp_sensor", &presence);
  * @endcode
  */
-rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, gpio_pin_t pin);
+rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, rx_port_pin_t pin);
 
 /* =============================================================================
  * UART Bus Configuration
@@ -218,8 +217,8 @@ rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, g
  * @param[out] config Pointer to bus config structure to initialize
  * @param[in] name Unique bus name (must remain valid for lifetime)
  * @param[in] channel SCI channel (0-12)
- * @param[in] tx_pin TX pin (type-safe enum from hardware_pinout.h)
- * @param[in] rx_pin RX pin (type-safe enum from hardware_pinout.h)
+ * @param[in] tx_pin TX pin (rx_port_pin_t)
+ * @param[in] rx_pin RX pin (rx_port_pin_t)
  * @param[in] baudrate Baud rate (e.g., 9600, 115200)
  *
  * @return k_rx_ok on success
@@ -252,8 +251,8 @@ rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, g
 rx_err_t rx_bus_config_init_uart(rx_bus_config_t* config,
                                  const char*      name,
                                  uint8_t          channel,
-                                 gpio_pin_t       tx_pin,
-                                 gpio_pin_t       rx_pin,
+                                 rx_port_pin_t    tx_pin,
+                                 rx_port_pin_t    rx_pin,
                                  uint32_t         baudrate);
 
 #ifdef __cplusplus

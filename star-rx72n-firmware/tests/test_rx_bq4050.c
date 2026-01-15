@@ -22,10 +22,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "unity.h"
-
 #include "mocks/mock_rx_bus_smbus.h"
 #include "rx_bq4050.h"
+#include "unity.h"
 
 /* =============================================================================
  * Test Constants

@@ -14,7 +14,6 @@
 #include "rx_bus_uart.h"
 
 #include "hardware.h"
-#include "hardware_pinout.h"
 #include "rx_check.h"
 #include "rx_log.h"
 
@@ -108,10 +107,13 @@ static rx_err_t internal_uart_init_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Initialize SCI channel with full hardware configuration */
-  rx_err_t err = uart_init_channel(bus_config->proto.uart.channel,
-                                   bus_config->proto.uart.baudrate,
-                                   bus_config->proto.uart.tx_pin,
-                                   bus_config->proto.uart.rx_pin);
+  const uart_channel_config_t uart_config = {
+    .channel  = bus_config->proto.uart.channel,
+    .baudrate = bus_config->proto.uart.baudrate,
+    .tx_gpio  = bus_config->proto.uart.tx_pin,
+    .rx_gpio  = bus_config->proto.uart.rx_pin,
+  };
+  rx_err_t err = uart_init_channel(&uart_config);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "UART HAL initialization failed");

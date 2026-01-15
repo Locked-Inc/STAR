@@ -18,7 +18,6 @@
 #include <stdint.h>
 
 #include "hardware.h"
-#include "hardware_pinout.h"
 #include "rx72n_clock.h"
 #include "rx72n_regs.h"
 #include "rx_mpc.h"
@@ -224,13 +223,13 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t internal_configure_uart_pins(gpio_pin_t tx_gpio, gpio_pin_t rx_gpio)
+static rx_err_t internal_configure_uart_pins(rx_port_pin_t tx_gpio, rx_port_pin_t rx_gpio)
 {
   /* Extract port and pin numbers for hardware register access */
-  uint8_t tx_port = gpio_pin_get_port(tx_gpio);
-  uint8_t tx_pin  = gpio_pin_get_pin(tx_gpio);
-  uint8_t rx_port = gpio_pin_get_port(rx_gpio);
-  uint8_t rx_pin  = gpio_pin_get_pin(rx_gpio);
+  uint8_t tx_port = rx_port_from_pin(tx_gpio);
+  uint8_t tx_pin  = rx_pin_from_pin(tx_gpio);
+  uint8_t rx_port = rx_port_from_pin(rx_gpio);
+  uint8_t rx_pin  = rx_pin_from_pin(rx_gpio);
 
   /* Validate pin numbers */
   if (tx_pin > 7 || rx_pin > 7) {
@@ -272,33 +271,37 @@ static rx_err_t internal_configure_uart_pins(gpio_pin_t tx_gpio, gpio_pin_t rx_g
  * =============================================================================
  */
 
-rx_err_t
-uart_init_channel(uint8_t channel, uint32_t baudrate, gpio_pin_t tx_gpio, gpio_pin_t rx_gpio)
+rx_err_t uart_init_channel(const uart_channel_config_t* config)
 {
+  /* Validate config pointer */
+  if (config == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
   /* Validate channel */
-  if (channel >= k_uart_max_channels) {
+  if (config->channel >= k_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
   /* Get SCI register base */
-  volatile rx_sci_regs_t* sci = sci_get_channel(channel);
+  volatile rx_sci_regs_t* sci = sci_get_channel(config->channel);
   if (sci == (volatile rx_sci_regs_t*)0) {
     return k_rx_err_invalid_arg;
   }
 
   /* Check if already initialized */
-  if (s_channel_initialized[channel]) {
+  if (s_channel_initialized[config->channel]) {
     return k_rx_err_invalid_state;
   }
 
   /* Enable SCI module clock (clear module stop bit) */
-  rx_err_t err = internal_enable_sci_clock(channel);
+  rx_err_t err = internal_enable_sci_clock(config->channel);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Configure TX/RX pins (MPC and GPIO) */
-  err = internal_configure_uart_pins(tx_gpio, rx_gpio);
+  err = internal_configure_uart_pins(config->tx_gpio, config->rx_gpio);
   if (err != k_rx_ok) {
     return err;
   }
@@ -310,7 +313,7 @@ uart_init_channel(uint8_t channel, uint32_t baudrate, gpio_pin_t tx_gpio, gpio_p
   sci->smr = k_sci_smr_async_8n1;
 
   /* Set baud rate */
-  sci->brr = internal_calculate_brr(baudrate);
+  sci->brr = internal_calculate_brr(config->baudrate);
 
   /* Wait for at least 1 bit time */
   /* NOTE: Busy-wait required - may run before ThreadX initialization */
@@ -325,7 +328,7 @@ uart_init_channel(uint8_t channel, uint32_t baudrate, gpio_pin_t tx_gpio, gpio_p
   sci->semr = k_sci_semr_default;
 
   /* Mark channel as initialized */
-  s_channel_initialized[channel] = true;
+  s_channel_initialized[config->channel] = true;
 
   return k_rx_ok;
 }
@@ -560,10 +563,13 @@ rx_err_t uart_rx_available(uint8_t channel, bool* available)
 
 rx_err_t uart_init(void)
 {
-  return uart_init_channel(k_uart_debug_channel,
-                           k_uart_default_baudrate,
-                           k_uart_debug_tx_gpio,
-                           k_uart_debug_rx_gpio);
+  const uart_channel_config_t config = {
+    .channel  = k_uart_debug_channel,
+    .baudrate = k_uart_default_baudrate,
+    .tx_gpio  = k_uart_debug_tx_gpio,
+    .rx_gpio  = k_uart_debug_rx_gpio,
+  };
+  return uart_init_channel(&config);
 }
 
 void uart_putc(char data)

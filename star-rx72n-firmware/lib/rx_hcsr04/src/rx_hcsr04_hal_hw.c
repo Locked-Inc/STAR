@@ -19,6 +19,7 @@
 #include "rx72n_clock.h"
 #include "rx72n_cmt_regs.h"
 #include "rx72n_system_regs.h"
+#include "rx_check.h"
 #include "rx_hcsr04_hal.h"
 #include "tx_api.h"
 
@@ -27,32 +28,40 @@
  * =============================================================================
  */
 
-rx_err_t hcsr04_hal_gpio_set_output(gpio_pin_t pin)
+rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
 {
-  return gpio_set_output(pin);
+  /* Precondition: pin type is already enum-constrained to valid range */
+  (void)pin; /* Parameter is type-safe by enum definition */
+
+  rx_err_t err = gpio_set_output(pin);
+
+  /* Postcondition: Verify the call succeeded */
+  RX_ASSERT(err == k_rx_ok, "Postcondition: gpio_set_output failed");
+
+  return err;
 }
 
-rx_err_t hcsr04_hal_gpio_set_input(gpio_pin_t pin)
+rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
 {
   return gpio_set_input(pin);
 }
 
-rx_err_t hcsr04_hal_gpio_write_high(gpio_pin_t pin)
+rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
 {
   return gpio_write_high(pin);
 }
 
-rx_err_t hcsr04_hal_gpio_write_low(gpio_pin_t pin)
+rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin)
 {
   return gpio_write_low(pin);
 }
 
-rx_err_t hcsr04_hal_gpio_read(gpio_pin_t pin, bool* value)
+rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
 {
   return gpio_read(pin, value);
 }
 
-rx_err_t hcsr04_hal_gpio_deinit(gpio_pin_t pin)
+rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
 {
   /*
    * GPIO_DEINIT is intentionally a no-op: the RX72N GPIO HAL does not provide
