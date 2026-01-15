@@ -1,4 +1,4 @@
-/* lib/rx_hal/src/system_init.c */
+/* src/system_init.c */
 
 /**
  * @file system_init.c
@@ -15,7 +15,7 @@
 
 #include <stdint.h>
 
-#include "hardware.h"
+#include "system_init.h"
 #include "rx72n_regs.h"
 #include "rx72n_rtc_regs.h"
 #include "rx_register_protection.h"
@@ -41,7 +41,7 @@ typedef enum {
 
 /** @brief PLL configuration values */
 typedef enum {
-  k_pll_multiplier_30_div_2 = 0x1D01, /**< PLLCR: 30x multiplier, divide by 2 (240MHz from 16MHz) */
+  k_pll_multiplier_10_div_1 = 0x1300, /**< PLLCR: 10x multiplier, divide by 1 (240MHz from 24MHz) */
   k_pll_stable_flag         = 0x04,   /**< OSCOVFSR: PLL stabilization flag bit */
 } pll_config_t;
 
@@ -78,8 +78,8 @@ typedef enum {
  * @brief Initialize clock system to 240 MHz
  *
  * Clock tree:
- * - Main oscillator: 16 MHz (external crystal)
- * - PLL: 16 MHz x 30 / 2 = 240 MHz
+ * - Main oscillator: 24 MHz (external crystal)
+ * - PLL: 24 MHz x 10 / 1 = 240 MHz
  * - ICLK (CPU): 240 MHz
  * - PCLKA: 120 MHz
  * - PCLKB/C/D: 60 MHz
@@ -87,7 +87,7 @@ typedef enum {
  *
  * @return k_rx_ok on success
  */
-static rx_err_t clock_init(void)
+static rx_err_t internal_clock_init(void)
 {
   /* Unlock protection for clock registers */
   system_regs()->prcr = k_rx_prcr_unlock_all;
@@ -99,7 +99,7 @@ static rx_err_t clock_init(void)
    * Required for complete sub-clock shutdown as per hardware manual */
   rtc_regs()->rcr3 = k_rcr3_rtcen_disable;
 
-  /* Start main oscillator (16 MHz external crystal) */
+  /* Start main oscillator (24 MHz external crystal) */
   system_regs()->mosccr = k_main_osc_enabled;
 
   /* Wait for main oscillator stabilization (typically 10ms) */
@@ -110,8 +110,8 @@ static rx_err_t clock_init(void)
 
   /* Configure PLL */
   /* PLL = (Main OSC x PLIDIV) / PLLSTBY */
-  /* 240 MHz = (16 MHz x 30) / 2 */
-  system_regs()->pllcr  = k_pll_multiplier_30_div_2;
+  /* 240 MHz = (24 MHz x 10) / 1 */
+  system_regs()->pllcr  = k_pll_multiplier_10_div_1;
   system_regs()->pllcr2 = k_pll_enabled;
 
   /* Wait for PLL stabilization */
@@ -158,7 +158,7 @@ static rx_err_t clock_init(void)
  *
  * @return k_rx_ok on success
  */
-static rx_err_t module_stop_init(void)
+static rx_err_t internal_module_stop_init(void)
 {
   /* Protect off */
   system_regs()->prcr = k_rx_prcr_unlock_all;
@@ -199,14 +199,14 @@ static rx_err_t module_stop_init(void)
 rx_err_t system_init(void)
 {
   /* Initialize clock to 240 MHz */
-  rx_err_t err = clock_init();
+  rx_err_t err = internal_clock_init();
   if (err != k_rx_ok) {
     /* Can't log - UART not initialized yet */
     return err;
   }
 
   /* Enable peripheral modules */
-  err = module_stop_init();
+  err = internal_module_stop_init();
   if (err != k_rx_ok) {
     /* Can't log - UART not initialized yet */
     return err;
