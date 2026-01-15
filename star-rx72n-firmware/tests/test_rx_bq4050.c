@@ -68,29 +68,29 @@ typedef enum {
  * @brief Test helper constants
  */
 typedef enum {
-  k_test_typical_voltage_mv = 14800, /**< Typical 4S pack voltage (mV) */
-  k_test_cell_voltage_mv    = 3700,  /**< Typical cell voltage (mV) */
-  k_test_cell_voltage_high_mv   = 4200, /**< High cell voltage (mV) */
-  k_test_cell_voltage_mid_hi_mv = 4150, /**< Mid-high cell voltage (mV) */
-  k_test_cell_voltage_mid_lo_mv = 4100, /**< Mid-low cell voltage (mV) */
-  k_test_cell_voltage_low_mv    = 4050, /**< Low cell voltage (mV) */
-  k_test_charging_ma        = 2000,  /**< Typical charging current (mA) */
-  k_test_discharging_ma     = -1500, /**< Typical discharging current (mA) */
-  k_test_charging_current_2a = 2000, /**< Charging current (mA) */
-  k_test_discharge_current   = -1500, /**< Discharging current (mA) */
-  k_test_avg_current         = 1800, /**< Average current (mA) */
-  k_test_temp_25c_0_1k      = 2981,  /**< 25.0 deg C in 0.1K units */
-  k_test_temp_0c_0_1k       = 2731,  /**< 0.0 deg C in 0.1K units */
-  k_test_temp_neg10c_0_1k   = 2631,  /**< -10.0 deg C in 0.1K units */
-  k_test_soc_full           = 100,   /**< Full state of charge (%) */
-  k_test_soc_half           = 50,    /**< Half state of charge (%) */
-  k_test_soc_over_range     = 105,   /**< Over-range state of charge (%) */
-  k_test_soc_way_over       = 200,   /**< Way over-range state of charge (%) */
-  k_test_soc_abs            = 85,    /**< Absolute state of charge (%) */
-  k_test_capacity_full_mah  = 5000,  /**< Full capacity (mAh) */
-  k_test_capacity_half_mah  = 2500,  /**< Half capacity (mAh) */
-  k_test_time_to_empty_min  = 120,   /**< Time to empty (min) */
-  k_test_cycle_count        = 150,   /**< Cycle count */
+  k_test_typical_voltage_mv     = 14800, /**< Typical 4S pack voltage (mV) */
+  k_test_cell_voltage_mv        = 3700,  /**< Typical cell voltage (mV) */
+  k_test_cell_voltage_high_mv   = 4200,  /**< High cell voltage (mV) */
+  k_test_cell_voltage_mid_hi_mv = 4150,  /**< Mid-high cell voltage (mV) */
+  k_test_cell_voltage_mid_lo_mv = 4100,  /**< Mid-low cell voltage (mV) */
+  k_test_cell_voltage_low_mv    = 4050,  /**< Low cell voltage (mV) */
+  k_test_charging_ma            = 2000,  /**< Typical charging current (mA) */
+  k_test_discharging_ma         = -1500, /**< Typical discharging current (mA) */
+  k_test_charging_current_2a    = 2000,  /**< Charging current (mA) */
+  k_test_discharge_current      = -1500, /**< Discharging current (mA) */
+  k_test_avg_current            = 1800,  /**< Average current (mA) */
+  k_test_temp_25c_0_1k          = 2981,  /**< 25.0 deg C in 0.1K units */
+  k_test_temp_0c_0_1k           = 2731,  /**< 0.0 deg C in 0.1K units */
+  k_test_temp_neg10c_0_1k       = 2631,  /**< -10.0 deg C in 0.1K units */
+  k_test_soc_full               = 100,   /**< Full state of charge (%) */
+  k_test_soc_half               = 50,    /**< Half state of charge (%) */
+  k_test_soc_over_range         = 105,   /**< Over-range state of charge (%) */
+  k_test_soc_way_over           = 200,   /**< Way over-range state of charge (%) */
+  k_test_soc_abs                = 85,    /**< Absolute state of charge (%) */
+  k_test_capacity_full_mah      = 5000,  /**< Full capacity (mAh) */
+  k_test_capacity_half_mah      = 2500,  /**< Half capacity (mAh) */
+  k_test_time_to_empty_min      = 120,   /**< Time to empty (min) */
+  k_test_cycle_count            = 150,   /**< Cycle count */
 } test_values_t;
 
 /* =============================================================================

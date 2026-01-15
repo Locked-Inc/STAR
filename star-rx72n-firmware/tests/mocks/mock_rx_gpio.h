@@ -34,7 +34,6 @@ extern "C" {
  */
 typedef enum {
   k_mock_gpio_max_pins = 256, /**< Maximum trackable pins (16 ports x 16 pins) */
-  k_gpio_port_shift    = 4,   /**< Bit shift to pack port into upper nibble */
 } mock_gpio_constants_t;
 
 /* =============================================================================

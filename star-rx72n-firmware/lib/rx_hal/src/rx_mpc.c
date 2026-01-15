@@ -341,12 +341,11 @@ rx_err_t rx_mpc_set_sci(rx_port_pin_t pin, bool is_tx)
   return rx_mpc_set_peripheral(&config);
 }
 
-rx_err_t rx_mpc_set_riic(rx_port_pin_t pin, bool is_scl)
+rx_err_t rx_mpc_set_riic(rx_port_pin_t pin)
 {
   /* RIIC pins use PSEL = 0x0F
    * SCL and SDA use the same PSEL code
    */
-  (void)is_scl; /* Not used - same PSEL for SCL/SDA */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_riic_scl};
   return rx_mpc_set_peripheral(&config);
 }

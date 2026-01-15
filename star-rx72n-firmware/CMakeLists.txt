@@ -280,6 +280,7 @@ set(APP_SOURCES
     src/main.c
     src/rx_clock_power_init.c
     src/hardware_init.c
+    src/tasks/app_main_task.c
 )
 
 # =============================================================================
