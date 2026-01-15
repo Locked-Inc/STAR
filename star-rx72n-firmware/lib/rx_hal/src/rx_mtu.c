@@ -1,10 +1,10 @@
-/* lib/rx_hal/src/rx_mtu3a.c */
+/* lib/rx_hal/src/rx_mtu.c */
 
 /**
- * @file rx_mtu3a.c
- * @brief MTU3a PWM Driver Implementation for Motor Control
+ * @file rx_mtu.c
+ * @brief MTU PWM Driver Implementation
  *
- * Multi-Function Timer Unit PWM driver for brushed DC motors.
+ * Multi-Function Timer Unit (MTU) PWM driver.
  *
  * PWM Mode 1 (Triangle Wave - Center-Aligned):
  * - Counter counts up to TGRA, then down to 0
@@ -21,7 +21,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "rx_mtu3a.h"
+#include "rx_mtu.h"
 
 #include <stddef.h>
 
@@ -30,7 +30,7 @@
 #include "rx_log.h"
 #include "rx_register_protection.h"
 
-static const char* s_tag = "MTU3A";
+static const char* s_tag = "MTU";
 
 /* =============================================================================
  * Constants

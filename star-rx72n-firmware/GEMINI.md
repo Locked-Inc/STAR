@@ -33,7 +33,7 @@ This firmware is part of the STAR (Simultaneous Tracking and Robotics) distribut
 | **GPIO** | 35 usable (with mux/decoder) | **182 direct** (no mux needed!) |
 | **Build System** | PlatformIO + ESP-IDF | CMake + GNURX GCC |
 | **Development** | Native builds | Docker-based cross-compilation |
-| **PWM** | MCPWM peripheral | MTU3a peripheral |
+| **PWM** | MCPWM peripheral | MTU peripheral |
 | **ADC** | SAR ADC | S12ADFa (12-bit with PWM sync) |
 | **Flash/Debug** | USB (ESP-IDF tools) | E2 Lite / J-Link (Renesas tools) |
 
@@ -794,8 +794,8 @@ See [FLASH.md](FLASH.md) for complete debugging guide.
 
 1. Create driver files:
    ```
-   include/drivers/mtu3a.h
-   src/drivers/mtu3a.c
+   include/drivers/mtu.h
+   src/drivers/mtu.c
    ```
 
 2. Add register definitions to `rx72n_regs.h`:
