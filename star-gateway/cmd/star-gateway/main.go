@@ -118,6 +118,9 @@ func run() error {
 	// Telemetry service (with context, HARQ integration, Dispatcher, and Logger)
 	telemetrySvc := service.NewTelemetryService(ctx, harqHandler, msgDispatcher, logger)
 
+	// Configuration service (with HARQ integration, Dispatcher, and Logger)
+	configSvc := service.NewConfigurationService(harqHandler, msgDispatcher, logger)
+
 	// Create gRPC server
 	grpcServer := grpc.NewServer(
 		grpc.MaxRecvMsgSize(10*1024*1024), // 10MB
@@ -128,6 +131,7 @@ func run() error {
 	starv1.RegisterGatewayServiceServer(grpcServer, gatewaySvc)
 	starv1.RegisterMotorControlServiceServer(grpcServer, motorSvc)
 	starv1.RegisterTelemetryServiceServer(grpcServer, telemetrySvc)
+	starv1.RegisterConfigurationServiceServer(grpcServer, configSvc)
 
 	// Start gRPC listener
 	grpcLis, err := net.Listen("tcp", ":50051")
