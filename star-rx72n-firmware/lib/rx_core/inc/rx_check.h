@@ -247,7 +247,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  * @param[in] tag Component tag for logging
  * @param[in] message Error message for logging
  *
- * If ptr is NULL, logs the error and returns k_rx_err_null_pointer.
+ * If ptr is NULL, logs the error and returns k_rx_err_null_ptr.
  *
  * Example:
  *   rx_err_t process_data(const uint8_t* data) {
@@ -260,7 +260,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
   do {                                                                                             \
     if ((ptr) == NULL) {                                                                           \
       rx_log_error(tag, message);                                                                  \
-      return k_rx_err_null_pointer;                                                                \
+      return k_rx_err_null_ptr;                                                                    \
     }                                                                                              \
   } while (0)
 

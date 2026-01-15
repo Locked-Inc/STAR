@@ -325,6 +325,12 @@ rx_err_t rx_mpc_set_adc(rx_port_pin_t pin)
   uint8_t port    = rx_port_from_pin(pin);
   uint8_t pin_num = rx_pin_from_pin(pin);
 
+  /* Validate the decoded port and pin are in valid range */
+  if (port > k_mpc_port_j || pin_num > k_mpc_max_pin) {
+    rx_log_error(s_tag, "Invalid port or pin number");
+    return k_rx_err_invalid_arg;
+  }
+
   /* ADC mode: Set ASEL = 1 to disable digital I/O
    * Common ADC pins: P40-P47 (AN000-AN007)
    */

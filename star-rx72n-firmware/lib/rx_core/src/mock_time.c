@@ -105,7 +105,7 @@ rx_err_t mock_time_deinit(mock_time_t* mock)
 rx_err_t mock_time_get_interface(rx_time_interface_t* iface, mock_time_t* mock)
 {
   if (iface == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   mock_time_t* m = internal_get_mock(mock);

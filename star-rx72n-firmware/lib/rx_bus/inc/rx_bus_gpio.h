@@ -38,7 +38,7 @@ extern "C" {
  * @param[in] output True for output, false for input
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_arg if bus is not GPIO type
  * @return k_rx_err_conflict if pin already reserved (via pin validator)
@@ -53,7 +53,7 @@ rx_err_t rx_bus_gpio_init(rx_bus_manager_t* manager, const char* bus_name, bool 
  * @param[in] value True for high, false for low
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  */
@@ -67,7 +67,7 @@ rx_err_t rx_bus_gpio_write(rx_bus_manager_t* manager, const char* bus_name, bool
  * @param[out] value True if high, false if low
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or value is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or value is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  */
@@ -80,7 +80,7 @@ rx_err_t rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool*
  * @param[in] bus_name GPIO bus name
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  */

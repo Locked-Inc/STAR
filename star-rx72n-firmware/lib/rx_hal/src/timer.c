@@ -161,7 +161,7 @@ rx_err_t timer_stop(void)
  * @param[out] count Pointer to store counter value
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if count is NULL
+ *         k_rx_err_null_ptr if count is NULL
  */
 rx_err_t timer_get_count(uint16_t* count)
 {

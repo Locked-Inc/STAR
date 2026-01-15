@@ -80,13 +80,13 @@ void test_hcsr04_init_success(void)
 void test_hcsr04_init_null_handle_fails(void)
 {
   rx_err_t err = rx_hcsr04_init(NULL, &s_config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_init_null_config_fails(void)
 {
   rx_err_t err = rx_hcsr04_init(&s_sensor, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_init_configures_gpio(void)
@@ -145,7 +145,7 @@ void test_hcsr04_deinit_success(void)
 void test_hcsr04_deinit_null_fails(void)
 {
   rx_err_t err = rx_hcsr04_deinit(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_deinit_not_initialized_fails(void)
@@ -219,7 +219,7 @@ void test_hcsr04_measure_null_handle_fails(void)
 {
   float    distance_cm;
   rx_err_t err = rx_hcsr04_measure_blocking(NULL, &distance_cm);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_measure_null_output_fails(void)
@@ -227,7 +227,7 @@ void test_hcsr04_measure_null_output_fails(void)
   rx_hcsr04_init(&s_sensor, &s_config);
 
   rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_measure_not_initialized_fails(void)
@@ -415,7 +415,7 @@ void test_hcsr04_measure_async_callback_invoked(void)
 void test_hcsr04_measure_async_null_handle_fails(void)
 {
   rx_err_t err = rx_hcsr04_measure_async(NULL, test_async_callback, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_measure_async_null_callback_fails(void)
@@ -424,7 +424,7 @@ void test_hcsr04_measure_async_null_callback_fails(void)
 
   rx_err_t err = rx_hcsr04_measure_async(&s_sensor, NULL, NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_measure_async_not_initialized_fails(void)
@@ -493,7 +493,7 @@ void test_hcsr04_worker_deinit_not_initialized_fails(void)
 void test_hcsr04_cancel_null_handle_fails(void)
 {
   rx_err_t err = rx_hcsr04_cancel(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_cancel_not_active_fails(void)
@@ -540,7 +540,7 @@ void test_hcsr04_set_temperature_success(void)
 void test_hcsr04_set_temperature_null_handle_fails(void)
 {
   rx_err_t err = rx_hcsr04_set_temperature(NULL, 25.0f);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_set_temperature_not_initialized_fails(void)
@@ -592,7 +592,7 @@ void test_hcsr04_disable_temp_compensation_success(void)
 void test_hcsr04_disable_temp_compensation_null_fails(void)
 {
   rx_err_t err = rx_hcsr04_disable_temp_compensation(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_is_temp_compensation_enabled_default_false(void)
@@ -621,14 +621,14 @@ void test_hcsr04_get_temperature_null_handle_fails(void)
 {
   float    temp = 0.0f;
   rx_err_t err  = rx_hcsr04_get_temperature(NULL, &temp);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_get_temperature_null_output_fails(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
   rx_err_t err = rx_hcsr04_get_temperature(&s_sensor, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_hcsr04_measure_with_temp_compensation_10c(void)

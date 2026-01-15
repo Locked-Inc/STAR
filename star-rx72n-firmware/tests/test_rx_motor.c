@@ -124,13 +124,13 @@ void test_motor_init_success(void)
 void test_motor_init_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_init(NULL, &s_config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_init_null_config_fails(void)
 {
   rx_err_t err = rx_motor_init(&s_motor, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_init_gptw_initialized(void)
@@ -236,7 +236,7 @@ void test_motor_deinit_success(void)
 void test_motor_deinit_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_deinit(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_deinit_not_initialized_fails(void)
@@ -619,7 +619,7 @@ void test_motor_stop_coast_from_reverse(void)
 void test_motor_stop_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_stop(NULL, false);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_stop_not_initialized_fails(void)
@@ -673,7 +673,7 @@ void test_motor_get_duty_null_handle_fails(void)
 {
   float    duty;
   rx_err_t err = rx_motor_get_duty(NULL, &duty);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_get_duty_null_output_fails(void)
@@ -681,7 +681,7 @@ void test_motor_get_duty_null_output_fails(void)
   rx_motor_init(&s_motor, &s_config);
 
   rx_err_t err = rx_motor_get_duty(&s_motor, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_get_duty_not_initialized_fails(void)
@@ -709,7 +709,7 @@ void test_motor_get_duty_initial_zero(void)
 void test_motor_set_duty_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_set_duty(NULL, 50.0f);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_set_duty_not_initialized_fails(void)
@@ -983,7 +983,7 @@ void test_motor_emergency_stop_disables_outputs(void)
 void test_motor_emergency_stop_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_emergency_stop(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_emergency_stop_not_initialized_fails(void)

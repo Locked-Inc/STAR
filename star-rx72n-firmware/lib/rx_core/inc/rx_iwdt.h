@@ -204,7 +204,7 @@ rx_err_t rx_iwdt_feed(void);
  * @param[in] timeout_ms Task-specific timeout in milliseconds
  * @return rx_err_t Error code
  * @retval k_rx_ok Success
- * @retval k_rx_err_null_pointer task_name is NULL
+ * @retval k_rx_err_null_ptr task_name is NULL
  * @retval k_rx_err_invalid_arg Invalid timeout or duplicate task
  * @retval k_rx_err_not_initialized IWDT not initialized
  * @retval k_rx_err_no_mem Max tasks reached
@@ -229,7 +229,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms);
  * @param[in] task_name Name of the task
  * @return rx_err_t Error code
  * @retval k_rx_ok Success
- * @retval k_rx_err_null_pointer task_name is NULL
+ * @retval k_rx_err_null_ptr task_name is NULL
  * @retval k_rx_err_not_found Task not registered
  * @retval k_rx_err_not_initialized IWDT not initialized
  *
@@ -301,7 +301,7 @@ rx_err_t rx_iwdt_set_state(system_state_t state);
  * @param[out] status Pointer to status structure
  * @return rx_err_t Error code
  * @retval k_rx_ok Success
- * @retval k_rx_err_null_pointer status is NULL
+ * @retval k_rx_err_null_ptr status is NULL
  * @retval k_rx_err_not_initialized IWDT not initialized
  *
  * @par Example:

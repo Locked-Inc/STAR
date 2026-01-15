@@ -7,6 +7,7 @@
  * Provides the primary application thread creation entry point.
  *
  * @date 2026-01-14
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_APP_MAIN_TASK_H

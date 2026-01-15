@@ -30,26 +30,87 @@
 
 rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
 {
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
+
+  /* Validate port range (0x00 - k_rx_port_j=0x13) */
+  if (port > k_rx_port_j) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate pin range (0 - k_rx_pin_max=7) */
+  if (pin_num > k_rx_pin_max) {
+    return k_rx_err_invalid_arg;
+  }
+
   return gpio_set_output(pin);
 }
 
 rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
 {
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
+
+  if (port > k_rx_port_j) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (pin_num > k_rx_pin_max) {
+    return k_rx_err_invalid_arg;
+  }
+
   return gpio_set_input(pin);
 }
 
 rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
 {
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
+
+  if (port > k_rx_port_j) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (pin_num > k_rx_pin_max) {
+    return k_rx_err_invalid_arg;
+  }
+
   return gpio_write_high(pin);
 }
 
 rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin)
 {
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
+
+  if (port > k_rx_port_j) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (pin_num > k_rx_pin_max) {
+    return k_rx_err_invalid_arg;
+  }
+
   return gpio_write_low(pin);
 }
 
 rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
 {
+  if (value == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
+
+  if (port > k_rx_port_j) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (pin_num > k_rx_pin_max) {
+    return k_rx_err_invalid_arg;
+  }
+
   return gpio_read(pin, value);
 }
 
@@ -70,7 +131,6 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
    * GPIO_DEINIT is intentionally a no-op: the RX72N GPIO HAL does not provide
    * pin deallocation. GPIO pins are static resources allocated at init time.
    */
-  (void)pin;
   return k_rx_ok;
 }
 

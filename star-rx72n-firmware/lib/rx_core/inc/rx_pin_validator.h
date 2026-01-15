@@ -124,7 +124,7 @@ typedef struct {
  * @param[in,out] validator Validator instance to initialize
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if validator is NULL,
+ *         k_rx_err_null_ptr if validator is NULL,
  *         k_rx_err_rtos_mutex if mutex creation fails
  */
 rx_err_t pin_validator_init(pin_validator_t* validator);
@@ -136,7 +136,7 @@ rx_err_t pin_validator_init(pin_validator_t* validator);
  * @param[in,out] validator Concrete validator instance
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_null_ptr if either parameter is NULL,
  *         k_rx_err_invalid_state if validator not initialized
  */
 rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t* validator);
@@ -147,7 +147,7 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
  * @param[in,out] validator Validator to deinitialize
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if validator is NULL
+ *         k_rx_err_null_ptr if validator is NULL
  */
 rx_err_t pin_validator_deinit(pin_validator_t* validator);
 

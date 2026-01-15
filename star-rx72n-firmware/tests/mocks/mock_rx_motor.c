@@ -94,7 +94,7 @@ void mock_rx_motor_reset(void)
 rx_err_t rx_motor_stop(rx_motor_handle_t* motor, bool immediate)
 {
   if (motor == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Record the stop call */

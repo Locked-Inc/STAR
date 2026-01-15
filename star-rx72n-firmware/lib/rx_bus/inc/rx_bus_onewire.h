@@ -105,7 +105,7 @@ typedef enum {
  * @param[in] bus_name OneWire bus name
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_arg if bus is not OneWire type
  * @return k_rx_err_timeout if mutex timeout
@@ -123,7 +123,7 @@ rx_err_t rx_bus_onewire_init(rx_bus_manager_t* manager, const char* bus_name);
  * @param[out] presence Presence detected (true if device present)
  *
  * @return k_rx_ok on success (check presence output for device detection)
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
@@ -142,7 +142,7 @@ rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, b
  * @param[in] bit Bit value to write (true = 1, false = 0)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
@@ -162,7 +162,7 @@ rx_err_t rx_bus_onewire_write_bit(rx_bus_manager_t* manager, const char* bus_nam
  * @param[out] bit Bit value read (true = 1, false = 0)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
@@ -179,7 +179,7 @@ rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name
  * @param[in] byte Byte value to write
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
@@ -196,7 +196,7 @@ rx_err_t rx_bus_onewire_write_byte(rx_bus_manager_t* manager, const char* bus_na
  * @param[out] byte Byte value read
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
@@ -214,7 +214,7 @@ rx_err_t rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_nam
  * @param[in] length Number of bytes to write
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
@@ -235,7 +235,7 @@ rx_err_t rx_bus_onewire_write(rx_bus_manager_t* manager,
  * @param[in] length Number of bytes to read
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
@@ -259,7 +259,7 @@ rx_err_t rx_bus_onewire_read(rx_bus_manager_t* manager,
  * @param[in] bus_name OneWire bus name
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
@@ -281,7 +281,7 @@ rx_err_t rx_bus_onewire_skip_rom(rx_bus_manager_t* manager, const char* bus_name
  * @param[in] rom 8-byte ROM code of target device
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
@@ -306,7 +306,7 @@ rx_err_t rx_bus_onewire_match_rom(rx_bus_manager_t* manager,
  * @param[out] rom 8-byte buffer for ROM code
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
@@ -339,7 +339,7 @@ rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
  * @param[out] num_devices Number of devices found
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_invalid_size if more devices found than max_devices

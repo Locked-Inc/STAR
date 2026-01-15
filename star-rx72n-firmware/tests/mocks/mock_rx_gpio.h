@@ -33,7 +33,15 @@ extern "C" {
  * @brief Mock GPIO constants
  */
 typedef enum {
-  k_mock_gpio_max_pins = 256, /**< Maximum trackable pins (16 ports x 16 pins) */
+  /* Size must accommodate internal_pin_to_index: (port << k_port_shift) | pin_num
+   * With k_port_shift == 8 and k_pin_bits == 8, maximum index is
+   * (0xFF << 8) | 0xFF = 0xFFFF + 1 = 65536
+   * Compute as: (1u << (k_port_shift + k_pin_bits)) to track the port-shift encoding
+   */
+  k_pin_bits = 8, /**< Number of bits used for the pin field in rx_port_pin_t encoding */
+  k_mock_gpio_max_pins =
+    (1u << (k_port_shift +
+            k_pin_bits)), /**< Full index space for (port<<k_port_shift)|pin encoding */
 } mock_gpio_constants_t;
 
 /* =============================================================================

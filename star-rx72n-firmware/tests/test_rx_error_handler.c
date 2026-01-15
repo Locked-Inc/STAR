@@ -89,7 +89,7 @@ void test_error_handler_init_null_pointer(void)
   rx_err_t err =
     error_handler_init(NULL, k_test_max_retries, k_test_initial_backoff_ms, k_test_max_backoff_ms);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -153,7 +153,7 @@ void test_error_handler_deinit_success(void)
 void test_error_handler_deinit_null_pointer(void)
 {
   rx_err_t err = error_handler_deinit(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -208,7 +208,7 @@ void test_error_handler_get_interface_null_iface(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = error_handler_get_interface(NULL, &s_handler);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -218,7 +218,7 @@ void test_error_handler_get_interface_null_handler(void)
 {
   rx_error_interface_t iface;
   rx_err_t             err = error_handler_get_interface(&iface, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -606,7 +606,7 @@ void test_error_interface_validate_success(void)
 void test_error_interface_validate_null(void)
 {
   rx_err_t err = rx_error_interface_validate(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**

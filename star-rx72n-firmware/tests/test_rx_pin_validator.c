@@ -91,7 +91,7 @@ void test_pin_validator_init_null_pointer(void)
 {
   rx_err_t err = pin_validator_init(NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -134,7 +134,7 @@ void test_pin_validator_deinit_success(void)
 void test_pin_validator_deinit_null_pointer(void)
 {
   rx_err_t err = pin_validator_deinit(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -181,7 +181,7 @@ void test_pin_validator_get_interface_null_iface(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = pin_validator_get_interface(NULL, &s_validator);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -191,7 +191,7 @@ void test_pin_validator_get_interface_null_validator(void)
 {
   rx_pin_interface_t iface;
   rx_err_t           err = pin_validator_get_interface(&iface, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -326,7 +326,7 @@ void test_pin_validator_reserve_null_function(void)
   pin_validator_get_interface(&iface, &s_validator);
 
   err = iface.reserve_pin(iface.ctx, k_test_port_a, k_test_pin_3, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -515,7 +515,7 @@ void test_pin_validator_get_function_null_output(void)
                                k_test_pin_3,
                                NULL,
                                k_pin_function_name_max_len);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -683,7 +683,7 @@ void test_pin_interface_validate_success(void)
 void test_pin_interface_validate_null(void)
 {
   rx_err_t err = rx_pin_interface_validate(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**

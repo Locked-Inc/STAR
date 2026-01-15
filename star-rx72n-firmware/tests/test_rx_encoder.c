@@ -107,7 +107,7 @@ void test_encoder_init_null_config_fails(void)
 {
   rx_err_t err = rx_encoder_init(NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_encoder_init_invalid_channel_fails(void)
@@ -229,7 +229,7 @@ void test_encoder_read_raw_null_pointer_fails(void)
 
   rx_err_t err = rx_encoder_read_raw(s_config.channel, NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_encoder_read_raw_not_initialized_fails(void)
@@ -289,7 +289,7 @@ void test_encoder_read_count_null_pointer_fails(void)
 
   rx_err_t err = rx_encoder_read_count(s_config.channel, NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_encoder_read_count_not_initialized_fails(void)
@@ -581,7 +581,7 @@ void test_encoder_read_velocity_null_pointer_fails(void)
 
   rx_err_t err = rx_encoder_read_velocity(s_config.channel, 0.01f, NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_encoder_read_velocity_not_initialized_fails(void)

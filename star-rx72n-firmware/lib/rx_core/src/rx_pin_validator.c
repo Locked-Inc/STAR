@@ -87,7 +87,7 @@ static rx_err_t impl_validate_pin(void* ctx, uint8_t port, uint8_t pin)
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
   if (validator == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Validate port */
@@ -113,7 +113,7 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
   if (validator == NULL || function == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Validate port/pin */
@@ -162,7 +162,7 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
   if (validator == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Validate port/pin */
@@ -243,7 +243,7 @@ impl_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* function_out, 
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
   if (validator == NULL || function_out == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (function_len < k_pin_function_name_max_len) {
@@ -290,7 +290,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
   if (validator == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Acquire mutex */

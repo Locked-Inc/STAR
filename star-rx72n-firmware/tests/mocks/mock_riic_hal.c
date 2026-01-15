@@ -252,7 +252,7 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
 
   /* Null pointer check */
   if (data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Validate channel */
@@ -292,7 +292,7 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
 
   /* Null pointer check */
   if (data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Validate channel */
@@ -340,10 +340,10 @@ rx_err_t riic_write_read(uint8_t        channel,
 
   /* Null pointer checks */
   if (write_data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
   if (read_data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Validate channel */

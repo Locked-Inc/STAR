@@ -212,7 +212,7 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
 
   /* Null pointer check */
   if (value == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Validate unit */
@@ -252,7 +252,7 @@ rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32
 
   /* Null pointer check */
   if (voltage_mv == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Read raw ADC value */

@@ -138,7 +138,7 @@ rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_
  * @param[out] duty_percent Pointer to store duty cycle in percent
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if duty_percent is NULL
+ * @return k_rx_err_null_ptr if duty_percent is NULL
  * @return k_rx_err_invalid_arg if channel or output is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
@@ -153,7 +153,7 @@ rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
  * @param[out] period_count Pointer to store period count
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if period_count is NULL
+ * @return k_rx_err_null_ptr if period_count is NULL
  * @return k_rx_err_invalid_arg if channel is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */

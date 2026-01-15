@@ -144,7 +144,7 @@ typedef bool (*rx_pin_is_reserved_fn)(void* ctx, uint8_t port, uint8_t pin);
  *
  * @return k_rx_ok if function retrieved,
  *         k_rx_err_invalid_state if pin not reserved,
- *         k_rx_err_null_pointer if function_out is NULL,
+ *         k_rx_err_null_ptr if function_out is NULL,
  *         k_rx_err_invalid_size if buffer too small,
  *         k_rx_err_gpio_invalid_port if port invalid,
  *         k_rx_err_gpio_invalid_pin if pin invalid
@@ -199,13 +199,13 @@ struct rx_pin_interface {
  *
  * @param[in] iface Interface to validate
  *
- * @return k_rx_ok if valid, k_rx_err_null_pointer if NULL,
+ * @return k_rx_ok if valid, k_rx_err_null_ptr if NULL,
  *         k_rx_err_invalid_state if missing function pointers
  */
 static inline rx_err_t rx_pin_interface_validate(const rx_pin_interface_t* iface)
 {
   if (iface == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Check required function pointers */

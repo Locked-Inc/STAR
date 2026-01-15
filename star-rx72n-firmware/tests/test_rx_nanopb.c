@@ -29,7 +29,6 @@ typedef enum {
   k_test_buffer_size          = 512,
   k_test_small_buffer_size    = 1,
   k_test_sequence_number      = 42,
-  k_test_sequence_max         = 0xFFFFFFFF,
   k_test_timestamp_us         = 1000000,
   k_test_wifi_signal_dbm      = -65,
   k_test_motor_id_left        = 0,
@@ -43,6 +42,8 @@ typedef enum {
   k_min_encoded_estop_resp    = 2,
   k_min_encoded_telemetry     = 1,
 } test_constants_t;
+
+static const uint32_t s_test_sequence_max = 0xFFFFFFFFU;
 
 /**
  * @brief Floating-point test values (4-motor differential drive)
@@ -208,7 +209,7 @@ void test_encode_velocity_request_max_velocity(void)
   msg.command.front_right_velocity_mps = s_test_max_velocity_mps;
   msg.command.back_left_velocity_mps   = s_test_max_velocity_mps;
   msg.command.back_right_velocity_mps  = s_test_max_velocity_mps;
-  msg.command.sequence                 = k_test_sequence_max;
+  msg.command.sequence                 = s_test_sequence_max;
   msg.command.timestamp_us             = k_test_timestamp_us;
 
   uint32_t len = 0;
@@ -1032,9 +1033,9 @@ void test_create_velocity_command_max_sequence(void)
                                     s_test_front_right_velocity_mps,
                                     s_test_back_left_velocity_mps,
                                     s_test_back_right_velocity_mps,
-                                    k_test_sequence_max);
+                                    s_test_sequence_max);
 
-  TEST_ASSERT_EQUAL(k_test_sequence_max, cmd.sequence);
+  TEST_ASSERT_EQUAL(s_test_sequence_max, cmd.sequence);
 }
 
 /**
@@ -1220,7 +1221,7 @@ void test_velocity_request_fits_in_buffer(void)
   msg.command.front_right_velocity_mps = s_test_max_velocity_mps;
   msg.command.back_left_velocity_mps   = s_test_max_velocity_mps;
   msg.command.back_right_velocity_mps  = s_test_max_velocity_mps;
-  msg.command.sequence                 = k_test_sequence_max;
+  msg.command.sequence                 = s_test_sequence_max;
   msg.command.timestamp_us             = k_test_timestamp_us;
 
   uint32_t len = 0;

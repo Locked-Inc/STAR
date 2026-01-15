@@ -37,7 +37,7 @@ extern "C" {
  * @param[in] bus_name ADC bus name
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_arg if bus is not ADC type
  * @return k_rx_err_timeout if mutex timeout
@@ -52,7 +52,7 @@ rx_err_t rx_bus_adc_init(rx_bus_manager_t* manager, const char* bus_name);
  * @param[out] value Pointer to store raw ADC value
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or value is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or value is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if conversion or mutex timeout
@@ -67,7 +67,7 @@ rx_err_t rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16
  * @param[out] voltage_mv Pointer to store voltage in millivolts
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or voltage_mv is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or voltage_mv is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if conversion or mutex timeout

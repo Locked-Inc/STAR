@@ -127,7 +127,7 @@ bool mock_smbus_was_init_called(void)
 rx_err_t rx_bus_smbus_init(rx_bus_manager_t* manager, const char* bus_name)
 {
   if (manager == NULL || bus_name == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   s_init_called = true;
@@ -146,7 +146,7 @@ rx_err_t rx_bus_smbus_init(rx_bus_manager_t* manager, const char* bus_name)
 rx_err_t rx_bus_smbus_write_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t command)
 {
   if (manager == NULL || bus_name == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_initialized) {
@@ -171,7 +171,7 @@ rx_err_t rx_bus_smbus_write_byte(rx_bus_manager_t* manager, const char* bus_name
 rx_err_t rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data)
 {
   if (manager == NULL || bus_name == NULL || data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_initialized) {
@@ -197,7 +197,7 @@ rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
                                       uint8_t           data)
 {
   if (manager == NULL || bus_name == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_initialized) {
@@ -228,7 +228,7 @@ rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
                                      uint8_t*          data)
 {
   if (manager == NULL || bus_name == NULL || data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_initialized) {
@@ -260,7 +260,7 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
                                       uint16_t          data)
 {
   if (manager == NULL || bus_name == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_initialized) {
@@ -291,7 +291,7 @@ rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
                                      uint16_t*         data)
 {
   if (manager == NULL || bus_name == NULL || data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_initialized) {
@@ -325,7 +325,7 @@ rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
                                       uint8_t           max_length)
 {
   if (manager == NULL || bus_name == NULL || data == NULL || length == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_initialized) {
