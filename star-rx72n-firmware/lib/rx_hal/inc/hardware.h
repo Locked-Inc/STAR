@@ -38,7 +38,7 @@ extern "C" {
 /**
  * @brief Configure GPIO pin as output
  *
- * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
+ * @param[in] pin GPIO pin (rx_port_pin_t from rx_port_constants.h)
  *
  * @return k_rx_ok on success,
  *         k_rx_err_gpio_invalid_port if port is invalid,
@@ -95,7 +95,7 @@ rx_err_t gpio_toggle(rx_port_pin_t pin);
 /**
  * @brief Read GPIO pin
  *
- * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
+ * @param[in] pin GPIO pin (rx_port_pin_t from rx_port_constants.h)
  * @param[out] value Pointer to store pin value (true=high, false=low)
  *
  * @return k_rx_ok on success,

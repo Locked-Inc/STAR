@@ -15,6 +15,7 @@
 
 #include <string.h>
 
+#include "hardware.h"
 #include "unity.h"
 
 /* Port constants */
@@ -30,10 +31,8 @@
  */
 
 /** @brief Default test pins for SCI9 (PB7/TXD9, PB6/RXD9) */
-typedef enum {
-  k_test_tx_gpio = k_rx_pb_7, /**< PB7 TX pin (from rx_port_constants.h) */
-  k_test_rx_gpio = k_rx_pb_6, /**< PB6 RX pin (from rx_port_constants.h) */
-} test_pins_t;
+static const rx_port_pin_t k_test_tx_gpio = k_rx_pb_7; /**< PB7 TX pin (from rx_port_constants.h) */
+static const rx_port_pin_t k_test_rx_gpio = k_rx_pb_6; /**< PB6 RX pin (from rx_port_constants.h) */
 
 /* =============================================================================
  * Test Fixtures

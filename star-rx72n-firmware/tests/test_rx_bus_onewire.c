@@ -51,7 +51,7 @@ static rx_bus_config_t s_onewire_config;
 static const char* s_test_bus_name = "test_onewire";
 
 /** @brief Test GPIO pin for OneWire */
-static const gpio_pin_t s_test_pin = k_gpio_p05; /* Standard temp sensor pin */
+static const rx_port_pin_t s_test_pin = k_rx_p0_5; /* Standard temp sensor pin */
 
 /**
  * @brief Set up test fixtures before each test
@@ -141,7 +141,7 @@ void test_rx_bus_onewire_init_wrong_bus_type(void)
 {
   /* Create a GPIO bus (not OneWire) */
   static rx_bus_config_t gpio_config;
-  rx_err_t               err = rx_bus_config_init_gpio(&gpio_config, "gpio_bus", k_gpio_pc6);
+  rx_err_t               err = rx_bus_config_init_gpio(&gpio_config, "gpio_bus", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, &gpio_config);

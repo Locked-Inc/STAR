@@ -31,7 +31,7 @@ mock_gpio_state_t g_mock_gpio;
 /**
  * @brief Record a call in the history
  */
-static void internal_record_call(mock_gpio_call_type_t type, gpio_pin_t pin)
+static void internal_record_call(mock_gpio_call_type_t type, rx_port_pin_t pin)
 {
   if (g_mock_gpio.call_count < k_mock_gpio_call_history_size) {
     mock_gpio_call_t* call = &g_mock_gpio.call_history[g_mock_gpio.call_count];
@@ -57,10 +57,10 @@ static rx_err_t internal_check_error(void)
 /**
  * @brief Validate port and pin
  */
-static rx_err_t internal_validate_pin(gpio_pin_t pin, uint8_t* port, uint8_t* pin_num)
+static rx_err_t internal_validate_pin(rx_port_pin_t pin, uint8_t* port, uint8_t* pin_num)
 {
-  *port    = gpio_pin_get_port(pin);
-  *pin_num = gpio_pin_get_pin(pin);
+  *port    = rx_port_from_pin(pin);
+  *pin_num = rx_pin_from_pin(pin);
 
   /* Validate port - check against known valid ports */
   bool valid_port = false;
@@ -126,10 +126,10 @@ void mock_gpio_reset(void)
  * =============================================================================
  */
 
-void mock_gpio_set_input_value(gpio_pin_t pin, bool value)
+void mock_gpio_set_input_value(rx_port_pin_t pin, bool value)
 {
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
 
   mock_gpio_pin_state_t* state = internal_get_pin_state(port, pin_num);
   if (state != NULL) {
@@ -153,10 +153,10 @@ void mock_gpio_clear_error(void)
  * =============================================================================
  */
 
-mock_gpio_direction_t mock_gpio_get_direction(gpio_pin_t pin)
+mock_gpio_direction_t mock_gpio_get_direction(rx_port_pin_t pin)
 {
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
 
   mock_gpio_pin_state_t* state = internal_get_pin_state(port, pin_num);
   if (state != NULL) {
@@ -165,10 +165,10 @@ mock_gpio_direction_t mock_gpio_get_direction(gpio_pin_t pin)
   return k_mock_gpio_dir_undefined;
 }
 
-bool mock_gpio_get_output_value(gpio_pin_t pin)
+bool mock_gpio_get_output_value(rx_port_pin_t pin)
 {
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
 
   mock_gpio_pin_state_t* state = internal_get_pin_state(port, pin_num);
   if (state != NULL) {
@@ -205,7 +205,7 @@ void mock_gpio_clear_history(void)
  * =============================================================================
  */
 
-rx_err_t gpio_set_output(gpio_pin_t pin)
+rx_err_t gpio_set_output(rx_port_pin_t pin)
 {
   internal_record_call(k_mock_gpio_call_set_output, pin);
 
@@ -228,7 +228,7 @@ rx_err_t gpio_set_output(gpio_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_set_input(gpio_pin_t pin)
+rx_err_t gpio_set_input(rx_port_pin_t pin)
 {
   internal_record_call(k_mock_gpio_call_set_input, pin);
 
@@ -251,7 +251,7 @@ rx_err_t gpio_set_input(gpio_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_write_high(gpio_pin_t pin)
+rx_err_t gpio_write_high(rx_port_pin_t pin)
 {
   internal_record_call(k_mock_gpio_call_write_high, pin);
 
@@ -274,7 +274,7 @@ rx_err_t gpio_write_high(gpio_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_write_low(gpio_pin_t pin)
+rx_err_t gpio_write_low(rx_port_pin_t pin)
 {
   internal_record_call(k_mock_gpio_call_write_low, pin);
 
@@ -297,7 +297,7 @@ rx_err_t gpio_write_low(gpio_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_toggle(gpio_pin_t pin)
+rx_err_t gpio_toggle(rx_port_pin_t pin)
 {
   internal_record_call(k_mock_gpio_call_toggle, pin);
 
@@ -320,7 +320,7 @@ rx_err_t gpio_toggle(gpio_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_read(gpio_pin_t pin, bool* value)
+rx_err_t gpio_read(rx_port_pin_t pin, bool* value)
 {
   internal_record_call(k_mock_gpio_call_read, pin);
 

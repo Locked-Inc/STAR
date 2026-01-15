@@ -10,6 +10,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 add_compile_definitions(USE_MOCK_SCI_REGS)
+add_compile_definitions(UNIT_TEST)
 
 # Unity test framework (fetched from GitHub)
 include(FetchContent)
@@ -288,7 +289,9 @@ add_executable(test_rx_hcsr04
     test_rx_hcsr04.c
     ${RX_HCSR04_SRC}
     ${MOCK_HCSR04_SRC}
+    ${MOCK_UART_SRC}
 )
+target_compile_definitions(test_rx_hcsr04 PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_hcsr04 unity)
 
 # Test: Obstacle Detection
@@ -298,7 +301,9 @@ add_executable(test_rx_obstacle_detect
     ${RX_HCSR04_SRC}
     ${MOCK_HCSR04_SRC}
     ${MOCK_MOTOR_SRC}
+    ${MOCK_UART_SRC}
 )
+target_compile_definitions(test_rx_obstacle_detect PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_obstacle_detect unity)
 
 # Test: UART HAL Driver
@@ -438,6 +443,7 @@ add_executable(test_rx_bq4050
     ${MOCK_LOG_SRC}
 )
 target_compile_definitions(test_rx_bq4050 PRIVATE UNIT_TEST)
+target_link_libraries(test_rx_bq4050 unity)
 
 # Test: DS18B20 Temperature Sensor
 add_executable(test_rx_ds18b20
