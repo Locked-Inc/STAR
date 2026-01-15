@@ -205,7 +205,7 @@ void mock_encoder_set_init_error(bool inject_error)
 }
 
 /* =============================================================================
- * Mock rx_mtu3a Functions (Replace Real Implementations)
+ * Mock rx_mtu Functions (Replace Real Implementations)
  * =============================================================================
  */
 

@@ -1,36 +1,29 @@
-/* lib/rx_hal/inc/rx_mtu3a.h */
+/* lib/rx_hal/inc/rx_mtu.h */
 
 /**
- * @file rx_mtu3a.h
- * @brief MTU3a PWM Driver for RX72N Motor Control
+ * @file rx_mtu.h
+ * @brief MTU PWM Driver for RX72N
  * @details
- * Multi-Function Timer Unit (MTU3a) PWM driver for brushed DC motor control.
+ * Multi-Function Timer Unit (MTU) PWM driver.
  *
- * The MTU3a provides:
+ * The MTU provides:
  * - 8 timer channels (MTU0-MTU4, MTU6-MTU7)
  * - PWM mode 1 (triangle wave, center-aligned)
  * - Complementary outputs for H-bridge control
  * - Configurable deadtime for shoot-through protection
  * - Up to 240MHz operation (PCLKA)
  *
- * For 4-motor control:
- * - Motor 1: MTU3 channel (MTIOC3A/3B)
- * - Motor 2: MTU3 channel (MTIOC3C/3D)
- * - Motor 3: MTU4 channel (MTIOC4A/4B)
- * - Motor 4: MTU4 channel (MTIOC4C/4D)
- *
  * PWM Configuration:
  * - Frequency: 20 kHz (typical for motor control)
- * - Resolution: 12-bit (PCLKA/20kHz = 6000 counts)
- * - Duty cycle: 0-100% (0-6000 counts)
- * - Deadtime: ~1 us (configurable)
+ * - Resolution: Up to 16-bit
+ * - Duty cycle: 0-100%
  *
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_MTU3A_H
-#define STAR_RX72N_MTU3A_H
+#ifndef STAR_RX72N_MTU_H
+#define STAR_RX72N_MTU_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -215,4 +208,4 @@ rx_err_t rx_mtu_deinit(rx_mtu_channel_t channel);
 }
 #endif
 
-#endif /* STAR_RX72N_MTU3A_H */
+#endif /* STAR_RX72N_MTU_H */

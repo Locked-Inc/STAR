@@ -4,7 +4,7 @@
  * @file rx72n_mtu_regs.h
  * @brief RX72N MTU Timer Register Definitions
  *
- * Register definitions for the Multi-Function Timer Unit (MTU3a) used for
+ * Register definitions for the Multi-Function Timer Unit (MTU) used for
  * PWM generation and timer functions.
  *
  * @date 2026-01-01
@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /* =============================================================================
- * Multi-Function Timer Unit (MTU3a)
+ * Multi-Function Timer Unit (MTU)
  * =============================================================================
  */
 

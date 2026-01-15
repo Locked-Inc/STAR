@@ -34,7 +34,7 @@
 #include <stdint.h>
 
 #include "rx_err.h"
-#include "rx_mtu3a.h"
+#include "rx_mtu.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -105,7 +105,7 @@ extern "C" {
 #include "rx72n_usb_regs.h"
 
 /* =============================================================================
- * Multi-Function Timer Unit (MTU3a) - Encoder Quadrature Counting
+ * Multi-Function Timer Unit (MTU) - Encoder Quadrature Counting
  * =============================================================================
  */
 

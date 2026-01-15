@@ -275,12 +275,12 @@ Unused/Available & White \\
 
 \subsubsection{GPTW vs MTU Selection for PWM Generation}
 
-The RX72N provides two timer peripherals suitable for motor control PWM generation: the General PWM Timer (GPTW) and the Multi-Function Timer Unit (MTU3a). After detailed analysis, \textbf{GPTW was selected} for the following technical reasons:
+The RX72N provides two timer peripherals suitable for motor control PWM generation: the General PWM Timer (GPTW) and the Multi-Function Timer Unit (MTU). After detailed analysis, \textbf{GPTW was selected} for the following technical reasons:
 
 \textbf{Resolution and Performance:}
 \begin{itemize}
     \item \textbf{GPTW:} 32-bit timer resolution enabling precise duty cycle control
-    \item \textbf{MTU3a:} 16-bit timer resolution (65,536 maximum count)
+    \item \textbf{MTU:} 16-bit timer resolution (65,536 maximum count)
     \item At 20 kHz PWM frequency with 120 MHz peripheral clock:
     \begin{itemize}
         \item GPTW provides 6,000 discrete duty cycle steps (120 MHz / 20 kHz)

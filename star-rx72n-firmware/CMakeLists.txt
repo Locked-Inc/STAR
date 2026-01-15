@@ -111,7 +111,7 @@ add_library(rx_hal STATIC
     lib/rx_hal/src/adc.c
     lib/rx_hal/src/riic.c
     lib/rx_hal/src/rspi.c
-    lib/rx_hal/src/rx_mtu3a.c
+    lib/rx_hal/src/rx_mtu.c
     lib/rx_hal/src/rx_gptw.c
     lib/rx_hal/src/rx_cmt.c
     lib/rx_hal/src/rx_mpc.c
@@ -230,7 +230,7 @@ add_library(rx_usb_comm STATIC
 target_include_directories(rx_usb_comm PUBLIC lib/rx_usb_comm/inc)
 target_link_libraries(rx_usb_comm PUBLIC rx_core rx_frame rx_usb)
 
-# rx_motor - MTU3a motor control
+# rx_motor - GPTW motor control
 add_library(rx_motor STATIC
     lib/rx_motor/src/rx_motor.c
 )
