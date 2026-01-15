@@ -90,13 +90,15 @@ func run() error {
 
 	// Start dispatcher with cancellable context
 	dispatcherCtx, dispatcherCancel := context.WithCancel(context.Background())
-	defer dispatcherCancel()
 	if err := msgDispatcher.Start(dispatcherCtx); err != nil {
+		dispatcherCancel()
 		return err
 	}
 	defer func() {
 		dispatcherCancel() // Trigger ctx.Done() in dispatcher's receive loop
-		msgDispatcher.Stop()
+		if err := msgDispatcher.Stop(); err != nil {
+			log.Printf("Dispatcher shutdown error: %v", err)
+		}
 	}()
 
 	// ========================================
