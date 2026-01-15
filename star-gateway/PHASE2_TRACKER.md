@@ -1,0 +1,545 @@
+# Phase 2: Gateway gRPC Services Implementation Tracker
+
+**Branch:** `feature/gateway-services-phase2`
+**Status:** 🚧 In Progress
+**Issue:** #181
+**Started:** 2026-01-14
+
+---
+
+## Quick Reference Commands
+
+### Build & Test
+```bash
+# Navigate to gateway directory
+cd star-gateway
+
+# Build the gateway binary
+go build ./cmd/star-gateway
+
+# Run all tests
+go test ./...
+
+# Run tests with verbose output
+go test -v ./internal/service/...
+
+# Run specific service tests
+go test -v ./internal/service -run TestTelemetryService
+
+# Run with coverage
+go test -cover ./internal/service/...
+
+# Generate coverage report
+go test -coverprofile=coverage.out ./internal/service/...
+go tool cover -html=coverage.out -o coverage.html
+
+# Check coverage percentage
+go tool cover -func=coverage.out | grep total
+
+# Run tests with race detection
+go test -race ./...
+```
+
+### Code Quality
+```bash
+# Format all Go files
+gofmt -w ./internal/service/
+
+# Check what gofmt would change (dry-run)
+gofmt -d ./internal/service/
+
+# Run golangci-lint (if installed)
+golangci-lint run ./internal/service/
+
+# Vet for suspicious constructs
+go vet ./...
+```
+
+### Git Commands
+```bash
+# Check current branch
+git branch --show-current
+
+# View status
+git status
+
+# Stage changes
+git add star-gateway/internal/service/telemetry.go
+git add star-gateway/internal/service/telemetry_test.go
+
+# Commit with conventional commit message
+git commit -m "feat(gateway): implement TelemetryService with streaming support
+
+Implement TelemetryService with 3 methods:
+- GetTelemetry - snapshot of sensor data
+- StreamTelemetry - server streaming at 1-100Hz
+- GetSystemStatus - firmware version and health
+
+Follows MotorControlService patterns:
+- HARQ + Dispatcher integration
+- WireMessage wrapping
+- RWMutex for thread-safe caching
+- Defer unsubscribe to prevent leaks
+
+Unit tests added with 80%+ coverage."
+
+# Push to remote
+git push origin feature/gateway-services-phase2
+
+# View commit history
+git log --oneline -10
+
+# Show diff
+git diff
+git diff --cached  # staged changes
+```
+
+### Manual Testing
+```bash
+# Start the gateway
+./star-gateway
+
+# In another terminal, test with grpcurl
+grpcurl -plaintext -d '{"header":{"request_id":"test-1"}}' \
+    localhost:50051 star.v1.TelemetryService/GetSystemStatus
+
+# Test streaming (will stream indefinitely, Ctrl+C to stop)
+grpcurl -plaintext -d '{"header":{"request_id":"test-2"},"rate_hz":10}' \
+    localhost:50051 star.v1.TelemetryService/StreamTelemetry
+```
+
+### Dependency Check
+```bash
+# Verify dependencies are up to date
+go mod tidy
+
+# Download dependencies
+go mod download
+
+# Verify dependencies
+go mod verify
+```
+
+---
+
+## Implementation Progress
+
+### Service 1: TelemetryService ⭐ (2-3 days)
+**Priority:** HIGH - Foundation for other services
+**Started:** ___________
+**Completed:** ___________
+
+- [ ] **GetTelemetry** - Unary RPC for snapshot
+  - [ ] Implement method with validation
+  - [ ] Add RWMutex for cached telemetry
+  - [ ] Background goroutine for updates
+  - [ ] Tests: Success, NilRequest, NoDataAvailable
+
+- [ ] **StreamTelemetry** - Server streaming
+  - [ ] Validate rate_hz (1-100 Hz, default 10)
+  - [ ] Subscribe to dispatcher (defer unsubscribe!)
+  - [ ] Separate receive/send goroutines
+  - [ ] Tests: ValidRate, InvalidRate, ContextCancellation, MultipleClients
+
+- [ ] **GetSystemStatus** - Unary RPC for health
+  - [ ] Create SystemStatusRequest message
+  - [ ] Wrap in WireMessage
+  - [ ] Send via HARQ
+  - [ ] Tests: Success, NilRequest, HarqFailure, Timeout
+
+- [ ] **Register in main.go**
+  - [ ] Add `NewTelemetryService(harqHandler, msgDispatcher, logger)`
+  - [ ] Add `RegisterTelemetryServiceServer(grpcServer, telemetrySvc)`
+
+- [ ] **Unit Tests**
+  - [ ] 10+ test cases
+  - [ ] 80%+ coverage
+  - [ ] All tests pass
+
+**Files Modified:**
+- `internal/service/telemetry.go`
+- `internal/service/telemetry_test.go`
+- `cmd/star-gateway/main.go`
+
+**Commands to verify:**
+```bash
+go test -v ./internal/service -run TestTelemetryService
+go test -cover ./internal/service/telemetry_test.go
+```
+
+---
+
+### Service 2: ConfigurationService (2-3 days)
+**Priority:** MEDIUM - No hardware dependency
+**Started:** ___________
+**Completed:** ___________
+
+- [ ] **GetConfiguration** - Read system config
+  - [ ] Send request via HARQ
+  - [ ] Parse SystemConfiguration
+  - [ ] Tests: Success, NilRequest, HarqFailure
+
+- [ ] **SetConfiguration** - Apply config with validation
+  - [ ] Call ValidateConfiguration internally
+  - [ ] Wrap in WireMessage
+  - [ ] Support persist_to_nvs flag
+  - [ ] Tests: Valid, Invalid, ValidationErrors
+
+- [ ] **ValidateConfiguration** - Dry-run validation
+  - [ ] Validate PID gains (kp/ki/kd > 0)
+  - [ ] Validate output limits (min < max)
+  - [ ] Validate encoder config (edges_per_rev > 0)
+  - [ ] Return ConfigValidationResult with errors
+  - [ ] Tests: ValidConfig, InvalidGains, InvalidLimits
+
+- [ ] **ResetToDefaults** - Factory reset
+  - [ ] Send reset command
+  - [ ] Tests: Success, HarqFailure
+
+- [ ] **SaveConfiguration** - Persist to NVS
+  - [ ] Send save command
+  - [ ] Tests: Success, HarqFailure
+
+- [ ] **GetMotorPidConfig** - Read PID for motor
+  - [ ] Validate motor_id
+  - [ ] Request config via HARQ
+  - [ ] Tests: Success, InvalidMotorId
+
+- [ ] **SetMotorPidConfig** - Update PID runtime
+  - [ ] Validate motor_id and gains
+  - [ ] Support persist_to_nvs flag
+  - [ ] Tests: Success, InvalidGains, RuntimeUpdate
+
+- [ ] **Register in main.go**
+- [ ] **Unit Tests** (12+ cases, 80%+ coverage)
+
+**Files Modified:**
+- `internal/service/configuration.go`
+- `internal/service/configuration_test.go`
+- `cmd/star-gateway/main.go`
+
+**Commands to verify:**
+```bash
+go test -v ./internal/service -run TestConfigurationService
+go test -cover ./internal/service/configuration_test.go
+```
+
+---
+
+### Service 3: BatteryManagementService (3-4 days)
+**Priority:** MEDIUM - Hardware dependent (Issue #158)
+**Started:** ___________
+**Completed:** ___________
+
+- [ ] **GetBatteryState** - Complete battery snapshot
+  - [ ] Wrap in WireMessage.BatteryStateRequest
+  - [ ] Parse BatteryState (cells, temps, SOC, status)
+  - [ ] Tests: Success, NilRequest, SMBusError
+
+- [ ] **StreamBatteryState** - Continuous monitoring
+  - [ ] Validate rate (0.1-10 Hz, default 1)
+  - [ ] Subscribe to dispatcher
+  - [ ] Tests: ValidRate, InvalidRate, ContextCancellation
+
+- [ ] **GetProtectionThresholds** - Read OV/UV/OC/OT
+  - [ ] Request BQ78350 register read
+  - [ ] Tests: Success, SMBusError
+
+- [ ] **SetProtectionThresholds** - Configure limits
+  - [ ] Validate ranges (prevent dangerous configs)
+  - [ ] Send to BQ78350 via SMBus
+  - [ ] Log all changes
+  - [ ] Tests: Valid, InvalidRanges, UnsealedRequired
+
+- [ ] **EnableCellBalancing** - Start balancing
+  - [ ] Parse cell_mask bitmap
+  - [ ] Send SMBus command
+  - [ ] Tests: Success, InvalidMask
+
+- [ ] **DisableCellBalancing** - Stop balancing
+- [ ] **GetBalancingStatus** - Check which cells balancing
+
+- [ ] **ControlFets** - Charge/discharge FET control
+  - [ ] Validate command (safety critical!)
+  - [ ] Log all FET operations
+  - [ ] Tests: Enable, Disable, SafetyCheck
+
+- [ ] **GetDeviceInfo** - Manufacturer, serial, chemistry
+- [ ] **ResetDevice** - Soft reset BMS
+
+- [ ] **Register in main.go**
+- [ ] **Unit Tests** (15+ cases, 80%+ coverage)
+
+**Files Modified:**
+- `internal/service/battery.go`
+- `internal/service/battery_test.go`
+- `cmd/star-gateway/main.go`
+
+**Commands to verify:**
+```bash
+go test -v ./internal/service -run TestBatteryManagementService
+go test -cover ./internal/service/battery_test.go
+```
+
+---
+
+### Service 4: FirmwareUpdateService (4-5 days)
+**Priority:** LOW - Requires bootloader
+**Started:** ___________
+**Completed:** ___________
+
+- [ ] **BeginUpdate** - Initialize OTA partition
+  - [ ] Validate expected_size_bytes
+  - [ ] Send begin command
+  - [ ] Return update_id
+  - [ ] Tests: Success, InvalidSize, AlreadyInProgress
+
+- [ ] **WriteChunk** - Upload single chunk
+  - [ ] Validate sequence_number
+  - [ ] Wrap in WireMessage
+  - [ ] Tests: Success, SequenceError
+
+- [ ] **StreamChunks** - Bulk chunk transfer (client streaming)
+  - [ ] Receive loop for chunks
+  - [ ] Track progress (bytes, CRC)
+  - [ ] Tests: Success, Incomplete, CRCFailed
+
+- [ ] **FinalizeUpdate** - Validate and prepare boot
+  - [ ] Send finalize command
+  - [ ] RX72N validates CRC
+  - [ ] Tests: Success, CRCMismatch
+
+- [ ] **AbortUpdate** - Cancel and cleanup
+- [ ] **GetUpdateProgress** - Query current state
+  - [ ] Return progress percent, speed, ETA
+  - [ ] Tests: NotStarted, InProgress, Complete
+
+- [ ] **StreamUpdateProgress** - Stream progress (1 Hz)
+- [ ] **Reboot** - Boot into new firmware
+- [ ] **Rollback** - Revert to previous
+- [ ] **MarkValid** - Confirm stability
+- [ ] **GetFirmwareInfo** - Version, hash, date
+
+- [ ] **Register in main.go**
+- [ ] **Unit Tests** (15+ cases, 80%+ coverage)
+
+**Files Modified:**
+- `internal/service/firmware.go`
+- `internal/service/firmware_test.go`
+- `cmd/star-gateway/main.go`
+
+**Commands to verify:**
+```bash
+go test -v ./internal/service -run TestFirmwareUpdateService
+go test -cover ./internal/service/firmware_test.go
+```
+
+---
+
+## Final Verification Checklist
+
+### Build & Test
+- [ ] All services build without errors: `go build ./cmd/star-gateway`
+- [ ] All tests pass: `go test ./...`
+- [ ] Coverage ≥ 80%: `go test -coverprofile=coverage.out ./internal/service/...`
+- [ ] No race conditions: `go test -race ./...`
+
+### Code Quality
+- [ ] Code formatted: `gofmt -d ./internal/service/` (no output)
+- [ ] Vet passes: `go vet ./...`
+- [ ] Lint passes: `golangci-lint run ./internal/service/`
+
+### Service Registration
+- [ ] 6 services registered in main.go:
+  ```bash
+  grep -c "RegisterServiceServer" star-gateway/cmd/star-gateway/main.go
+  # Should output: 6
+  ```
+- [ ] Services: Gateway, MotorControl, Telemetry, BatteryManagement, Configuration, FirmwareUpdate
+
+### Manual Integration Test
+- [ ] Gateway starts successfully: `./star-gateway`
+- [ ] TelemetryService responds:
+  ```bash
+  grpcurl -plaintext -d '{"header":{"request_id":"test-1"}}' \
+      localhost:50051 star.v1.TelemetryService/GetSystemStatus
+  ```
+- [ ] All services listed:
+  ```bash
+  grpcurl -plaintext localhost:50051 list
+  # Should show all 6 services
+  ```
+
+### Git & PR
+- [ ] All changes committed with conventional commit messages
+- [ ] Branch pushed to remote: `git push origin feature/gateway-services-phase2`
+- [ ] PR created with template from plan
+- [ ] PR title: `feat(gateway): implement remaining gRPC services (Phase 2)`
+- [ ] PR links to issue #181
+- [ ] PR description includes verification steps
+
+---
+
+## Common Issues & Solutions
+
+### Issue: Tests fail with "panic: runtime error: invalid memory address"
+**Solution:** Check for nil pointer dereferences. Ensure all request validations are in place.
+
+### Issue: "dispatcher channel closed" errors
+**Solution:** Ensure `defer dispatcher.Unsubscribe()` is called in streaming methods.
+
+### Issue: Race condition detected
+**Solution:** Use `sync.RWMutex` for shared state. Read locks for reads, write locks for writes.
+
+### Issue: Coverage below 80%
+**Solution:** Add test cases for error paths (nil requests, HARQ failures, validation errors).
+
+### Issue: Build fails with "undefined: starv1.SomeMessage"
+**Solution:** Regenerate protobuf code:
+```bash
+cd ../star-proto
+buf generate proto/
+```
+
+---
+
+## Testing Patterns Reference
+
+### Mock Setup
+```go
+mockHARQ := &testutil.MockHARQ{
+    SendFunc: func(data []byte) error {
+        // Capture payload for verification
+        mockHARQ.LastSentPayload = data
+        return nil  // or return error for failure tests
+    },
+}
+
+mockDispatcher := &testutil.MockDispatcher{
+    SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+        ch := make(chan *starv1.WireMessage, 10)
+        // Send test data
+        go func() {
+            ch <- testWireMessage
+        }()
+        return ch
+    },
+}
+
+logger := testutil.NewDiscardLogger()
+svc := NewTelemetryService(mockHARQ, mockDispatcher, logger)
+```
+
+### Streaming Test Pattern
+```go
+func TestStreamTelemetry(t *testing.T) {
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+
+    stream := &mockStreamServer{ctx: ctx}
+    errChan := make(chan error, 1)
+
+    go func() {
+        errChan <- svc.StreamTelemetry(req, stream)
+    }()
+
+    time.Sleep(50 * time.Millisecond)  // Let some data flow
+    cancel()
+
+    select {
+    case err := <-errChan:
+        assert.True(t, errors.Is(err, context.Canceled))
+    case <-time.After(100 * time.Millisecond):
+        t.Fatal("goroutine did not exit")
+    }
+
+    assert.Greater(t, len(stream.sentData), 0)
+}
+```
+
+---
+
+## Key Implementation Patterns
+
+### Constructor
+```go
+func NewTelemetryService(h harq.HARQ, d dispatcher.Dispatcher, logger *slog.Logger) *TelemetryService {
+    return &TelemetryService{
+        harqHandler: h,
+        dispatcher:  d,
+        logger:      logger,
+    }
+}
+```
+
+### WireMessage Wrapping
+```go
+wrapper := &starv1.WireMessage{
+    Payload: &starv1.WireMessage_TelemetryData{
+        TelemetryData: telemetry,
+    },
+}
+payload, err := proto.Marshal(wrapper)
+```
+
+### Response Header
+```go
+Header: &starv1.ResponseHeader{
+    RequestId:       req.Header.GetRequestId(),
+    ServerTimestamp: timestamppb.Now(),
+    Status:          starv1.Status_STATUS_OK,
+}
+```
+
+### Server Streaming Template
+```go
+func (s *Service) StreamData(req *Request, stream Service_StreamDataServer) error {
+    // 1. Validate rate
+    rateHz := validateRateHz(req.RateHz)
+    ticker := time.NewTicker(time.Second / time.Duration(rateHz))
+    defer ticker.Stop()
+
+    // 2. Subscribe to dispatcher
+    ctx := stream.Context()
+    dataCh := s.dispatcher.Subscribe(dispatcher.MessageTypeData)
+    defer s.dispatcher.Unsubscribe(dispatcher.MessageTypeData, dataCh)
+
+    // 3. Thread-safe cache
+    var latestData *Data
+    var dataMutex sync.RWMutex
+
+    // 4. Background receive goroutine
+    go s.receiveDataLoop(ctx, dataCh, &latestData, &dataMutex)
+
+    // 5. Main send loop
+    return s.streamDataLoop(ctx, ticker, stream, &latestData, &dataMutex)
+}
+```
+
+---
+
+## Resources
+
+- **Plan:** `/Users/cesarmagana/.claude/plans/indexed-knitting-sutherland.md`
+- **Roadmap:** `star-ros2/ROADMAP.md`
+- **Reference:** `star-gateway/internal/service/motor_control.go` (PR #174)
+- **Issue:** https://github.com/Locked-Inc/STAR/issues/181
+- **PR Template:** See plan file
+
+---
+
+## Notes
+
+- Always wrap messages in WireMessage for protocol multiplexing
+- Always defer Unsubscribe to prevent memory leaks
+- Use sync.RWMutex for thread-safe caching
+- Validate inputs before HARQ send
+- Log errors with request_id and full context
+- Test concurrent access patterns for streaming
+- BatteryService can be mocked until Issue #158 is complete
+- FirmwareService requires bootloader (lower priority)
+
+---
+
+**Last Updated:** 2026-01-14
+**Next Review:** After each service completion
