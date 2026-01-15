@@ -25,8 +25,8 @@ const (
 
 // MockHARQ is a mock implementation of the harq.HARQ interface for testing.
 type MockHARQ struct {
-	ReceiveFunc  func() ([]byte, error)
-	SendFunc     func(data []byte) error
+	ReceiveFunc  func(ctx context.Context) ([]byte, error)
+	SendFunc     func(ctx context.Context, data []byte) error
 	GetStateFunc func() harq.State
 	GetTxSeqFunc func() uint16
 	GetRxSeqFunc func() uint16
@@ -35,20 +35,22 @@ type MockHARQ struct {
 	LastSentData []byte
 }
 
-func (m *MockHARQ) Send(data []byte) error {
+func (m *MockHARQ) Send(ctx context.Context, data []byte) error {
 	m.LastSentData = data
 	if m.SendFunc != nil {
-		return m.SendFunc(data)
+		return m.SendFunc(ctx, data)
 	}
 	return nil
 }
 
-func (m *MockHARQ) Receive() ([]byte, error) {
+func (m *MockHARQ) Receive(ctx context.Context) ([]byte, error) {
 	if m.ReceiveFunc != nil {
-		return m.ReceiveFunc()
+		return m.ReceiveFunc(ctx)
 	}
 	if m.receiveChan != nil {
 		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
 		case data := <-m.receiveChan:
 			return data, nil
 		case <-time.After(testHARQTimeout):
@@ -343,7 +345,7 @@ func TestDispatcherErrorHandling(t *testing.T) {
 	t.Run("HARQ Error State", func(t *testing.T) {
 		callCount := 0
 		mockHARQ := &MockHARQ{
-			ReceiveFunc: func() ([]byte, error) {
+			ReceiveFunc: func(ctx context.Context) ([]byte, error) {
 				callCount++
 				if callCount == 1 {
 					return nil, harq.ErrInErrorState

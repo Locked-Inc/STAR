@@ -20,6 +20,7 @@
 package harq
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -86,13 +87,13 @@ type HARQ interface {
 	// Applies FEC encoding before transmission.
 	// Handles retransmission on timeout or NACK.
 	// Returns an error if max retries exceeded.
-	Send(data []byte) error
+	Send(ctx context.Context, data []byte) error
 
 	// Receive waits for data with HARQ handling.
 	// Applies FEC decoding and soft bit combining on retransmissions.
 	// Sends ACK on successful decode, NACK on error.
 	// Returns the decoded data and any error.
-	Receive() ([]byte, error)
+	Receive(ctx context.Context) ([]byte, error)
 
 	// GetState returns the current HARQ state.
 	GetState() State
@@ -169,6 +170,9 @@ var (
 
 	// ErrDecodeFailed is returned when FEC decode fails after combining.
 	ErrDecodeFailed = errors.New("harq: FEC decode failed after combining")
+
+	// ErrNilContext is returned when a nil context is provided.
+	ErrNilContext = errors.New("harq: context is nil")
 )
 
 // ChaseCombining implements the HARQ interface using Chase Combining (Type I).
@@ -229,7 +233,14 @@ func NewChaseCombining(
 // Send transmits data with HARQ reliability.
 // Applies FEC encoding, wraps in a command frame, and waits for ACK.
 // Retransmits the same encoded frame on timeout or NACK up to MaxRetries.
-func (h *ChaseCombining) Send(data []byte) error {
+func (h *ChaseCombining) Send(ctx context.Context, data []byte) error {
+	if ctx == nil {
+		return ErrNilContext
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	h.mu.Lock()
 
 	// Validate dependencies
@@ -308,12 +319,20 @@ func (h *ChaseCombining) Send(data []byte) error {
 		}
 
 		// Wait for ACK/NACK with timeout
-		ackFrame, err := h.waitForAck()
+		ackCtx, cancel := context.WithTimeout(ctx, h.config.Timeout)
+		ackFrame, err := h.waitForAck(ackCtx)
+		cancel()
 		if errors.Is(err, ErrTimeout) {
-			// Timeout - will retry
+			// Timeout - will retry unless caller context is done
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
 			continue
 		}
 		if err != nil {
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+				return err
+			}
 			// Decode error or transport error - will retry
 			continue
 		}
@@ -351,7 +370,23 @@ func (h *ChaseCombining) Send(data []byte) error {
 // On receive, attempts FEC decode. On failure, stores soft bits and waits
 // for retransmission. Combines soft bits from multiple transmissions.
 // Validates CRC and sequence number, sends ACK for valid frames.
-func (h *ChaseCombining) Receive() ([]byte, error) {
+func (h *ChaseCombining) Receive(ctx context.Context) ([]byte, error) {
+	if ctx == nil {
+		return nil, ErrNilContext
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	rcvCtx := ctx
+	var cancel context.CancelFunc
+	if _, ok := ctx.Deadline(); !ok && h.config != nil && h.config.Timeout > 0 {
+		rcvCtx, cancel = context.WithTimeout(ctx, h.config.Timeout)
+	}
+	if cancel != nil {
+		defer cancel()
+	}
+
 	// Validate dependencies
 	if h.transport == nil {
 		return nil, ErrTransportNil
@@ -367,9 +402,22 @@ func (h *ChaseCombining) Receive() ([]byte, error) {
 	}
 
 	// Receive raw data from transport
+	applyReadDeadline(rcvCtx, h.transport)
 	data, err := h.transport.Receive(frame.MaxFrameSize)
 	if err != nil {
+		if errors.Is(rcvCtx.Err(), context.DeadlineExceeded) {
+			return nil, ErrTimeout
+		}
+		if errors.Is(rcvCtx.Err(), context.Canceled) {
+			return nil, rcvCtx.Err()
+		}
 		return nil, fmt.Errorf("harq: transport receive failed: %w", err)
+	}
+	if err := rcvCtx.Err(); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, ErrTimeout
+		}
+		return nil, err
 	}
 
 	// Decode frame (CRC validated by decoder)
@@ -522,29 +570,54 @@ func (h *ChaseCombining) SetExpectedLenForTesting(expectedLen int) {
 }
 
 // waitForAck waits for an ACK/NACK response with timeout.
-func (h *ChaseCombining) waitForAck() (*frame.Frame, error) {
-	type result struct {
-		frame *frame.Frame
-		err   error
+func (h *ChaseCombining) waitForAck(ctx context.Context) (*frame.Frame, error) {
+	if ctx == nil {
+		return nil, ErrNilContext
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 
-	ch := make(chan result, 1)
-
-	go func() {
-		data, err := h.transport.Receive(frame.MaxFrameSize)
-		if err != nil {
-			ch <- result{nil, err}
-			return
+	applyReadDeadline(ctx, h.transport)
+	data, err := h.transport.Receive(frame.MaxFrameSize)
+	if err != nil {
+		errCtx := ctx.Err()
+		switch errCtx {
+		case context.DeadlineExceeded:
+			return nil, ErrTimeout
+		case context.Canceled:
+			return nil, errCtx
+		default:
 		}
-		f, err := h.decoder.Decode(data)
-		ch <- result{f, err}
-	}()
+		return nil, err
+	}
+	if errCtx := ctx.Err(); errCtx != nil {
+		switch errCtx {
+		case context.DeadlineExceeded:
+			return nil, ErrTimeout
+		case context.Canceled:
+			return nil, errCtx
+		default:
+			return nil, errCtx
+		}
+	}
 
-	select {
-	case r := <-ch:
-		return r.frame, r.err
-	case <-time.After(h.config.Timeout):
-		return nil, ErrTimeout
+	f, err := h.decoder.Decode(data)
+	return f, err
+}
+
+type readDeadlineSetter interface {
+	SetReadDeadline(time.Time) error
+}
+
+func applyReadDeadline(ctx context.Context, t transport.Transport) {
+	if ctx == nil || t == nil {
+		return
+	}
+	if deadline, ok := ctx.Deadline(); ok {
+		if setter, ok := t.(readDeadlineSetter); ok {
+			_ = setter.SetReadDeadline(deadline) // Best-effort: readDeadlineSetter.SetReadDeadline may be unsupported or fail; non-fatal.
+		}
 	}
 }
 

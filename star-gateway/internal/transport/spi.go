@@ -110,6 +110,8 @@ type SPITransport struct {
 	isOpen bool
 	conn   spi.Conn       // periph.io SPI connection
 	port   spi.PortCloser // periph.io SPI port (for cleanup)
+
+	readDeadline time.Time
 }
 
 // NewSPITransport creates a new SPITransport with the given configuration.
@@ -194,6 +196,9 @@ func (s *SPITransport) Receive(maxLen int) ([]byte, error) {
 	if !s.isOpen {
 		return nil, ErrDeviceNotOpen
 	}
+	if !s.readDeadline.IsZero() && time.Now().After(s.readDeadline) {
+		return nil, ErrTimeout
+	}
 
 	// Read-only operation: send dummy bytes (zeros) while reading
 	txBuf := make([]byte, maxLen)
@@ -204,6 +209,16 @@ func (s *SPITransport) Receive(maxLen int) ([]byte, error) {
 	}
 
 	return rxBuf, nil
+}
+
+// SetReadDeadline sets a deadline for future Receive calls.
+// Note: SPI transactions are synchronous and cannot be interrupted once started.
+// The deadline is checked before each Receive.
+func (s *SPITransport) SetReadDeadline(deadline time.Time) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.readDeadline = deadline
+	return nil
 }
 
 // Transfer performs full-duplex SPI transfer.

@@ -17,8 +17,8 @@ import (
 
 // MockHARQ is a mock implementation of the harq.HARQ interface.
 type MockHARQ struct {
-	SendFunc        func(data []byte) error
-	ReceiveFunc     func() ([]byte, error)
+	SendFunc        func(ctx context.Context, data []byte) error
+	ReceiveFunc     func(ctx context.Context) ([]byte, error)
 	GetStateFunc    func() harq.State
 	GetTxSeqFunc    func() uint16
 	GetRxSeqFunc    func() uint16
@@ -26,17 +26,17 @@ type MockHARQ struct {
 	LastSentPayload []byte
 }
 
-func (m *MockHARQ) Send(data []byte) error {
+func (m *MockHARQ) Send(ctx context.Context, data []byte) error {
 	m.LastSentPayload = data
 	if m.SendFunc != nil {
-		return m.SendFunc(data)
+		return m.SendFunc(ctx, data)
 	}
 	return nil
 }
 
-func (m *MockHARQ) Receive() ([]byte, error) {
+func (m *MockHARQ) Receive(ctx context.Context) ([]byte, error) {
 	if m.ReceiveFunc != nil {
-		return m.ReceiveFunc()
+		return m.ReceiveFunc(ctx)
 	}
 	return nil, errors.New("receive not implemented")
 }

@@ -184,12 +184,12 @@ func (s *ConfigurationService) SetConfiguration(ctx context.Context, req *starv1
 	}
 
 	if resp.Header.Status != starv1.Status_STATUS_OK {
-		s.logger.Error("firmware rejected configuration", "status", resp.Header.Status, "response", resp)
+		s.logger.Error("firmware rejected configuration", "status", resp.Header.Status, "response", &resp)
 		return nil, status.Errorf(codes.Internal, "firmware rejected configuration: %s", resp.Header.Status.String())
 	}
 
 	if resp.ValidationResult != nil && resp.ValidationResult.Status != starv1.ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VALID {
-		s.logger.Error("firmware validation failed", "status", resp.ValidationResult.Status, "response", resp)
+		s.logger.Error("firmware validation failed", "status", resp.ValidationResult.Status, "response", &resp)
 		return nil, status.Errorf(codes.Internal, "firmware validation failed: %s", resp.ValidationResult.Status.String())
 	}
 
@@ -404,7 +404,10 @@ func (s *ConfigurationService) SetMotorPidConfig(ctx context.Context, req *starv
 	}
 
 	// Send via HARQ
-	if err := s.harqHandler.Send(data); err != nil {
+	if err := s.harqHandler.Send(ctx, data); err != nil {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return nil, status.FromContextError(ctxErr).Err()
+		}
 		s.logger.Error("failed to send PID config", "error", err)
 		return nil, status.Errorf(codes.Internal, "failed to send configuration: %v", err)
 	}
@@ -442,7 +445,7 @@ func (s *ConfigurationService) SetMotorPidConfig(ctx context.Context, req *starv
 		}
 
 		if saveResp.Header.Status != starv1.Status_STATUS_OK || !saveResp.Saved {
-			s.logger.Error("firmware failed to persist configuration", "response", saveResp)
+			s.logger.Error("firmware failed to persist configuration", "response", &saveResp)
 			return nil, status.Errorf(codes.Internal, "failed to persist configuration")
 		}
 	}
@@ -473,46 +476,26 @@ func (s *ConfigurationService) sendProtoMessage(ctx context.Context, msg proto.M
 		return err
 	}
 
-	errCh := make(chan error, 1)
-	go func() {
-		errCh <- s.harqHandler.Send(payload)
-	}()
-
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-errCh:
-		return err
-	}
+	return s.harqHandler.Send(ctx, payload)
 }
 
 func (s *ConfigurationService) receiveProtoMessage(ctx context.Context, target proto.Message) error {
 	if ctx == nil {
-		ctx = context.Background()
+		return status.Error(codes.InvalidArgument, "context cannot be nil")
 	}
 	if err := ctx.Err(); err != nil {
 		return err
 	}
 
-	payloadCh := make(chan []byte, 1)
-	errCh := make(chan error, 1)
-	go func() {
-		payload, err := s.harqHandler.Receive()
-		if err != nil {
-			errCh <- err
-			return
-		}
-		payloadCh <- payload
-	}()
-
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-errCh:
+	payload, err := s.harqHandler.Receive(ctx)
+	if err != nil {
 		return err
-	case payload := <-payloadCh:
-		return proto.Unmarshal(payload, target)
 	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	return proto.Unmarshal(payload, target)
 }
 
 // validateConfiguration validates all configuration parameters.
@@ -814,52 +797,3 @@ func (s *ConfigurationService) validateTimingConfig(config *starv1.TimingConfigu
 	return errors
 }
 
-// createDefaultConfiguration creates a default system configuration for testing.
-func createDefaultConfiguration() *starv1.SystemConfiguration {
-	return &starv1.SystemConfiguration{
-		MotorConfigs: []*starv1.MotorPidConfiguration{
-			{MotorId: 0, PidConfig: createDefaultPidConfig()},
-			{MotorId: 1, PidConfig: createDefaultPidConfig()},
-			{MotorId: 2, PidConfig: createDefaultPidConfig()},
-			{MotorId: 3, PidConfig: createDefaultPidConfig()},
-		},
-		CurrentCalibration: &starv1.CurrentSensorCalibration{
-			OffsetMa:    []float64{0.0, 0.0, 0.0, 0.0},
-			ScaleFactor: []float64{1.0, 1.0, 1.0, 1.0},
-		},
-		TemperatureCalibration: &starv1.TemperatureCalibration{
-			OffsetCelsius: 0.0,
-		},
-		SafetyThresholds: &starv1.SafetyThresholds{
-			OvercurrentThresholdMa:     5000,
-			ThermalShutdownDeciCelsius: 800, // 80.0°C
-			CellImbalanceThresholdMv:   100,
-		},
-		EncoderConfig: &starv1.EncoderConfiguration{
-			EdgesPerRevolution: 1364,
-			WheelDiameterM:     0.065,
-			GearRatio:          1.0,
-		},
-		TimingConfig: &starv1.TimingConfiguration{
-			MotorControlPeriodMs:   10,
-			TelemetryPeriodMs:      100,
-			CommunicationTimeoutMs: 500,
-			BmsPollPeriodMs:        1000,
-		},
-		ConfigVersion: 1,
-		ConfigCrc:     0,
-	}
-}
-
-// createDefaultPidConfig creates a default PID configuration for testing.
-func createDefaultPidConfig() *starv1.PidConfig {
-	return &starv1.PidConfig{
-		Kp:               0.286,
-		Ki:               8.01,
-		Kd:               0.0,
-		OutputMinPercent: -100.0,
-		OutputMaxPercent: 100.0,
-		IntegralMin:      -100.0,
-		IntegralMax:      100.0,
-	}
-}

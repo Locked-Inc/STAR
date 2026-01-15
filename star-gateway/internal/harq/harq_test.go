@@ -5,6 +5,7 @@
 package harq
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -304,7 +305,7 @@ func TestSend_Success(t *testing.T) {
 	// Queue ACK response with sequence 0
 	mock.QueueResponse(createAckFrame(0))
 
-	err := harq.Send(payload)
+	err := harq.Send(context.Background(), payload)
 
 	if err != nil {
 		t.Errorf("Send() error = %v, want nil", err)
@@ -326,7 +327,7 @@ func TestSend_SequenceIncrement(t *testing.T) {
 	// Send three messages
 	for i := 0; i < 3; i++ {
 		mock.QueueResponse(createAckFrame(uint16(i)))
-		err := harq.Send([]byte{byte(i)})
+		err := harq.Send(context.Background(), []byte{byte(i)})
 		if err != nil {
 			t.Fatalf("Send() iteration %d error = %v", i, err)
 		}
@@ -351,7 +352,7 @@ func TestSend_TimeoutThenSuccess(t *testing.T) {
 		mock.QueueResponse(createAckFrame(0))
 	}()
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if err != nil {
 		t.Errorf("Send() error = %v, want nil", err)
@@ -372,7 +373,7 @@ func TestSend_MaxRetriesExceeded(t *testing.T) {
 	// Don't queue any responses - all attempts will timeout
 	_ = mock // unused but needed for setup
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if !errors.Is(err, ErrMaxRetriesExceeded) {
 		t.Errorf("Send() error = %v, want ErrMaxRetriesExceeded", err)
@@ -395,7 +396,7 @@ func TestSend_NackThenAck(t *testing.T) {
 		createAckFrame(0),
 	)
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if err != nil {
 		t.Errorf("Send() error = %v, want nil", err)
@@ -409,7 +410,7 @@ func TestSend_TransportError(t *testing.T) {
 	harq, mock := createTestHARQ(nil)
 	mock.SetSendError(errors.New("transport failed"))
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if err == nil {
 		t.Error("Send() error = nil, want error")
@@ -425,7 +426,7 @@ func TestSend_SequenceWraparound(t *testing.T) {
 
 	mock.QueueResponse(createAckFrame(DefaultSequenceMax))
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if err != nil {
 		t.Errorf("Send() error = %v, want nil", err)
@@ -448,7 +449,7 @@ func TestSend_RetransmitFlag(t *testing.T) {
 		mock.QueueResponse(createAckFrame(0))
 	}()
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 	if err != nil {
 		t.Errorf("Send() error = %v, want nil", err)
 	}
@@ -474,7 +475,7 @@ func TestSend_ErrorStateBlocks(t *testing.T) {
 	harq, _ := createTestHARQ(nil)
 	harq.SetStateForTesting(StateError, 0, 0, 0)
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if !errors.Is(err, ErrInErrorState) {
 		t.Errorf("Send() error = %v, want ErrInErrorState", err)
@@ -484,7 +485,7 @@ func TestSend_ErrorStateBlocks(t *testing.T) {
 func TestSend_NilTransport(t *testing.T) {
 	harq := NewStopAndWait(nil, nil, frame.NewEncoder(), frame.NewDecoder())
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if !errors.Is(err, ErrTransportNil) {
 		t.Errorf("Send() error = %v, want ErrTransportNil", err)
@@ -495,7 +496,7 @@ func TestSend_NilEncoder(t *testing.T) {
 	mock := NewMockTransport()
 	harq := NewStopAndWait(nil, mock, nil, frame.NewDecoder())
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if !errors.Is(err, ErrEncoderNil) {
 		t.Errorf("Send() error = %v, want ErrEncoderNil", err)
@@ -512,7 +513,7 @@ func TestSend_EncodeError(t *testing.T) {
 	decoder := frame.NewDecoder()
 	harq := NewStopAndWait(nil, mock, encoder, decoder)
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if err == nil {
 		t.Fatal("Send() error = nil, want error")
@@ -526,7 +527,7 @@ func TestSend_PayloadTooLarge(t *testing.T) {
 	harq, _ := createTestHARQ(nil)
 	largePayload := make([]byte, frame.MaxPayloadSize+1)
 
-	err := harq.Send(largePayload)
+	err := harq.Send(context.Background(), largePayload)
 
 	if err == nil {
 		t.Error("Send() error = nil, want error for large payload")
@@ -543,7 +544,7 @@ func TestSend_ReceiveErrorInWaitForAck(t *testing.T) {
 	// Trigger receive error during waitForAck
 	mock.SetReceiveError(errors.New("receive failed"))
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if !errors.Is(err, ErrMaxRetriesExceeded) {
 		t.Errorf("Send() error = %v, want ErrMaxRetriesExceeded", err)
@@ -557,7 +558,7 @@ func TestSendControlFrame_Errors(t *testing.T) {
 		harq := NewStopAndWait(nil, nil, frame.NewEncoder(), frame.NewDecoder())
 		// sendControlFrame is private, but we can trigger it via Receive()
 		mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
-		_, err := harq.Receive()
+		_, err := harq.Receive(context.Background())
 		if !errors.Is(err, ErrTransportNil) {
 			t.Errorf("Receive() error = %v, want ErrTransportNil", err)
 		}
@@ -566,7 +567,7 @@ func TestSendControlFrame_Errors(t *testing.T) {
 	t.Run("EncoderNil", func(t *testing.T) {
 		harq := NewStopAndWait(nil, mock, nil, frame.NewDecoder())
 		mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
-		_, err := harq.Receive()
+		_, err := harq.Receive(context.Background())
 		if !errors.Is(err, ErrEncoderNil) {
 			t.Errorf("Receive() error = %v, want ErrEncoderNil", err)
 		}
@@ -586,7 +587,7 @@ func TestSendControlFrame_Errors(t *testing.T) {
 		}
 		harq := NewStopAndWait(nil, mock, encoder, frame.NewDecoder())
 		mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
-		payload, err := harq.Receive()
+		payload, err := harq.Receive(context.Background())
 		// With best-effort ACK, encoding errors are ignored.
 		// The payload should still be returned successfully.
 		if err != nil {
@@ -609,7 +610,7 @@ func TestReceive_Success(t *testing.T) {
 	// Queue command frame with sequence 0
 	mock.QueueResponse(createCommandFrame(0, expectedPayload))
 
-	payload, err := harq.Receive()
+	payload, err := harq.Receive(context.Background())
 
 	if err != nil {
 		t.Errorf("Receive() error = %v, want nil", err)
@@ -633,7 +634,7 @@ func TestReceive_DuplicateFrame(t *testing.T) {
 	// Queue duplicate frame (seq 0 when expecting seq 1)
 	mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
 
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 
 	if !errors.Is(err, ErrDuplicateFrame) {
 		t.Errorf("Receive() error = %v, want ErrDuplicateFrame", err)
@@ -649,7 +650,7 @@ func TestReceive_OutOfSequence(t *testing.T) {
 	// Expecting seq 0, send seq 5
 	mock.QueueResponse(createCommandFrame(5, []byte{0x01}))
 
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 
 	if !errors.Is(err, ErrInvalidSequence) {
 		t.Errorf("Receive() error = %v, want ErrInvalidSequence", err)
@@ -669,7 +670,7 @@ func TestReceive_CRCError(t *testing.T) {
 
 	mock.QueueResponse(corrupted)
 
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 
 	if !errors.Is(err, frame.ErrInvalidCRC) {
 		t.Errorf("Receive() error = %v, want ErrInvalidCRC", err)
@@ -686,7 +687,7 @@ func TestReceive_SequenceIncrement(t *testing.T) {
 	// Receive three frames in sequence
 	for i := 0; i < 3; i++ {
 		mock.QueueResponse(createCommandFrame(uint16(i), []byte{byte(i)}))
-		_, err := harq.Receive()
+		_, err := harq.Receive(context.Background())
 		if err != nil {
 			t.Fatalf("Receive() iteration %d error = %v", i, err)
 		}
@@ -703,7 +704,7 @@ func TestReceive_SequenceWraparound(t *testing.T) {
 
 	mock.QueueResponse(createCommandFrame(DefaultSequenceMax, []byte{0x01}))
 
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 
 	if err != nil {
 		t.Errorf("Receive() error = %v, want nil", err)
@@ -719,7 +720,7 @@ func TestReceive_UnexpectedFrameType(t *testing.T) {
 	// Queue ACK frame instead of command/response
 	mock.QueueResponse(createAckFrame(0))
 
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 
 	if !errors.Is(err, ErrUnexpectedFrameType) {
 		t.Errorf("Receive() error = %v, want ErrUnexpectedFrameType", err)
@@ -729,7 +730,7 @@ func TestReceive_UnexpectedFrameType(t *testing.T) {
 func TestReceive_NilTransport(t *testing.T) {
 	harq := NewStopAndWait(nil, nil, frame.NewEncoder(), frame.NewDecoder())
 
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 
 	if !errors.Is(err, ErrTransportNil) {
 		t.Errorf("Receive() error = %v, want ErrTransportNil", err)
@@ -740,7 +741,7 @@ func TestReceive_NilDecoder(t *testing.T) {
 	mock := NewMockTransport()
 	harq := NewStopAndWait(nil, mock, frame.NewEncoder(), nil)
 
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 
 	if !errors.Is(err, ErrDecoderNil) {
 		t.Errorf("Receive() error = %v, want ErrDecoderNil", err)
@@ -751,7 +752,7 @@ func TestReceive_TransportError(t *testing.T) {
 	harq, mock := createTestHARQ(nil)
 	mock.SetReceiveError(errors.New("transport receive failed"))
 
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 
 	if err == nil {
 		t.Error("Receive() error = nil, want error")
@@ -763,7 +764,7 @@ func TestReceive_AckError(t *testing.T) {
 	mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
 	mock.SetSendError(errors.New("ack failed"))
 
-	payload, err := harq.Receive()
+	payload, err := harq.Receive(context.Background())
 
 	// With best-effort ACK, send errors are ignored.
 	// The payload should still be returned successfully.
@@ -781,7 +782,7 @@ func TestReceive_NackError(t *testing.T) {
 	mock.QueueResponse(createCommandFrame(5, []byte{0x01}))
 	mock.SetSendError(errors.New("nack failed"))
 
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 
 	// With best-effort NACK, send errors are ignored.
 	// But ErrInvalidSequence is still returned for out-of-sequence frames.
@@ -796,7 +797,7 @@ func TestReceive_DuplicateAckError(t *testing.T) {
 	mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
 	mock.SetSendError(errors.New("ack failed"))
 
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 
 	// With best-effort ACK, send errors are ignored.
 	// But ErrDuplicateFrame is still returned for duplicate frames.
@@ -815,14 +816,14 @@ func TestSendReceive_FullRoundTrip(t *testing.T) {
 
 	// Send a command
 	mock.QueueResponse(createAckFrame(0))
-	err := harq.Send([]byte("hello"))
+	err := harq.Send(context.Background(), []byte("hello"))
 	if err != nil {
 		t.Fatalf("Send() error = %v", err)
 	}
 
 	// Receive a response
 	mock.QueueResponse(createCommandFrame(0, []byte("world")))
-	payload, err := harq.Receive()
+	payload, err := harq.Receive(context.Background())
 	if err != nil {
 		t.Fatalf("Receive() error = %v", err)
 	}
@@ -847,7 +848,7 @@ func TestResetAfterError(t *testing.T) {
 	harq, mock := createTestHARQ(config)
 
 	// Force error state
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 	if !errors.Is(err, ErrMaxRetriesExceeded) {
 		t.Fatalf("expected ErrMaxRetriesExceeded, got %v", err)
 	}
@@ -855,7 +856,7 @@ func TestResetAfterError(t *testing.T) {
 	// Reset and try again
 	harq.Reset()
 	mock.QueueResponse(createAckFrame(0))
-	err = harq.Send([]byte{0x01})
+	err = harq.Send(context.Background(), []byte{0x01})
 	if err != nil {
 		t.Errorf("Send() after Reset error = %v, want nil", err)
 	}
@@ -1006,7 +1007,7 @@ func TestChaseCombining_FEC_FirstTrySuccess(t *testing.T) {
 	mock.QueueResponse(createAckFrame(0))
 
 	payload := []byte{0x01, 0x02, 0x03}
-	err := harq.Send(payload)
+	err := harq.Send(context.Background(), payload)
 
 	if err != nil {
 		t.Errorf("Send() error = %v, want nil", err)
@@ -1054,7 +1055,7 @@ func TestChaseCombining_FEC_SuccessAfterCombining(t *testing.T) {
 	mock.QueueResponse(createFECCommandFrame(0, fecEncodedPayload))
 
 	// First receive attempt - should fail and enter StateCombining
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 	if !errors.Is(err, ErrDecodeFailed) {
 		t.Errorf("First Receive() error = %v, want ErrDecodeFailed", err)
 	}
@@ -1066,7 +1067,7 @@ func TestChaseCombining_FEC_SuccessAfterCombining(t *testing.T) {
 	mock.QueueResponse(createFECCommandFrame(0, fecEncodedPayload))
 
 	// Second receive - should succeed after combining
-	payload, err := harq.Receive()
+	payload, err := harq.Receive(context.Background())
 	if err != nil {
 		t.Errorf("Second Receive() error = %v, want nil", err)
 	}
@@ -1102,7 +1103,7 @@ func TestChaseCombining_FEC_FailureAfterMaxRetries(t *testing.T) {
 
 	// All receive attempts should fail
 	for i := 0; i < 3; i++ {
-		_, err := harq.Receive()
+		_, err := harq.Receive(context.Background())
 		if !errors.Is(err, ErrDecodeFailed) {
 			t.Errorf("Receive() attempt %d error = %v, want ErrDecodeFailed", i+1, err)
 		}
@@ -1123,7 +1124,7 @@ func TestChaseCombining_FEC_Send_EncoderError(t *testing.T) {
 	fecDecoder := &MockFECDecoder{}
 	harq, _ := createTestChaseCombining(nil, fecEncoder, fecDecoder)
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if err == nil {
 		t.Error("Send() error = nil, want FEC encode error")
@@ -1141,7 +1142,7 @@ func TestChaseCombining_FEC_NilFECEncoder(t *testing.T) {
 	decoder := frame.NewDecoder()
 	harq := NewChaseCombining(config, mock, encoder, decoder, nil, &MockFECDecoder{})
 
-	err := harq.Send([]byte{0x01})
+	err := harq.Send(context.Background(), []byte{0x01})
 
 	if !errors.Is(err, ErrFECEncoderNil) {
 		t.Errorf("Send() error = %v, want ErrFECEncoderNil", err)
@@ -1161,7 +1162,7 @@ func TestChaseCombining_FEC_NilFECDecoder(t *testing.T) {
 
 	mock.QueueResponse(createFECCommandFrame(0, []byte{0x01, 0x02}))
 
-	_, err := harq.Receive()
+	_, err := harq.Receive(context.Background())
 
 	if !errors.Is(err, ErrFECDecoderNil) {
 		t.Errorf("Receive() error = %v, want ErrFECDecoderNil", err)

@@ -64,7 +64,7 @@ func (s *MotorControlService) SetVelocity(ctx context.Context, req *starv1.SetVe
 	}
 
 	// 3. Send via HARQ (blocks until ACK or timeout/max retries)
-	if err := s.harqHandler.Send(payload); err != nil {
+	if err := s.harqHandler.Send(ctx, payload); err != nil {
 		s.logger.Error("failed to send velocity command",
 			slog.String("request_id", req.Header.GetRequestId()),
 			slog.String("error", err.Error()))
@@ -109,7 +109,7 @@ func (s *MotorControlService) EmergencyStop(ctx context.Context, req *starv1.Eme
 		return nil, status.Errorf(codes.Internal, "failed to marshal estop command: %v", err)
 	}
 
-	if err := s.harqHandler.Send(payload); err != nil {
+	if err := s.harqHandler.Send(ctx, payload); err != nil {
 		s.logger.Error("failed to send emergency stop command",
 			slog.String("request_id", req.Header.GetRequestId()),
 			slog.String("reason", req.Reason),
@@ -266,14 +266,14 @@ func (s *MotorControlService) receiveCommandLoop(ctx context.Context, stream sta
 			return
 		}
 
-		if err := s.forwardVelocityCommand(cmd); err != nil {
+		if err := s.forwardVelocityCommand(ctx, cmd); err != nil {
 			s.logger.Warn("failed to forward command", slog.String("error", err.Error()))
 		}
 	}
 }
 
 // forwardVelocityCommand wraps and sends a velocity command to RX72N.
-func (s *MotorControlService) forwardVelocityCommand(cmd *starv1.VelocityCommand) error {
+func (s *MotorControlService) forwardVelocityCommand(ctx context.Context, cmd *starv1.VelocityCommand) error {
 	wrapper := &starv1.WireMessage{
 		Payload: &starv1.WireMessage_VelocityCommand{
 			VelocityCommand: cmd,
@@ -286,7 +286,7 @@ func (s *MotorControlService) forwardVelocityCommand(cmd *starv1.VelocityCommand
 		return err
 	}
 
-	return s.harqHandler.Send(payload)
+	return s.harqHandler.Send(ctx, payload)
 }
 
 // sendTelemetryLoop receives telemetry from Dispatcher and sends encoder feedback to client.

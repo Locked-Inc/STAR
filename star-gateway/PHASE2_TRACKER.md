@@ -178,47 +178,47 @@ go build ./cmd/star-gateway
 
 ### Service 2: ConfigurationService (2-3 days)
 **Priority:** MEDIUM - No hardware dependency
-**Started:** ___________
-**Completed:** ___________
+**Started:** 2026-01-14
+**Completed:** 2026-01-14
 
-- [ ] **GetConfiguration** - Read system config
-  - [ ] Send request via HARQ
-  - [ ] Parse SystemConfiguration
-  - [ ] Tests: Success, NilRequest, HarqFailure
+- [x] **GetConfiguration** - Read system config
+  - [x] Send request via HARQ
+  - [x] Parse SystemConfiguration
+  - [x] Tests: Success, NilRequest, HarqFailure
 
-- [ ] **SetConfiguration** - Apply config with validation
-  - [ ] Call ValidateConfiguration internally
-  - [ ] Wrap in WireMessage
-  - [ ] Support persist_to_nvs flag
-  - [ ] Tests: Valid, Invalid, ValidationErrors
+- [x] **SetConfiguration** - Apply config with validation
+  - [x] Call ValidateConfiguration internally
+  - [x] Wrap in WireMessage
+  - [x] Support persist_to_nvs flag
+  - [x] Tests: Valid, Invalid, ValidationErrors
 
-- [ ] **ValidateConfiguration** - Dry-run validation
-  - [ ] Validate PID gains (kp/ki/kd > 0)
-  - [ ] Validate output limits (min < max)
-  - [ ] Validate encoder config (edges_per_rev > 0)
-  - [ ] Return ConfigValidationResult with errors
-  - [ ] Tests: ValidConfig, InvalidGains, InvalidLimits
+- [x] **ValidateConfiguration** - Dry-run validation
+  - [x] Validate PID gains (kp/ki/kd > 0)
+  - [x] Validate output limits (min < max)
+  - [x] Validate encoder config (edges_per_rev > 0)
+  - [x] Return ConfigValidationResult with errors
+  - [x] Tests: ValidConfig, InvalidGains, InvalidLimits
 
-- [ ] **ResetToDefaults** - Factory reset
-  - [ ] Send reset command
-  - [ ] Tests: Success, HarqFailure
+- [x] **ResetToDefaults** - Factory reset
+  - [x] Send reset command
+  - [x] Tests: Success, HarqFailure
 
-- [ ] **SaveConfiguration** - Persist to NVS
-  - [ ] Send save command
-  - [ ] Tests: Success, HarqFailure
+- [x] **SaveConfiguration** - Persist to NVS
+  - [x] Send save command
+  - [x] Tests: Success, HarqFailure
 
-- [ ] **GetMotorPidConfig** - Read PID for motor
-  - [ ] Validate motor_id
-  - [ ] Request config via HARQ
-  - [ ] Tests: Success, InvalidMotorId
+- [x] **GetMotorPidConfig** - Read PID for motor
+  - [x] Validate motor_id
+  - [x] Request config via HARQ
+  - [x] Tests: Success, InvalidMotorId
 
-- [ ] **SetMotorPidConfig** - Update PID runtime
-  - [ ] Validate motor_id and gains
-  - [ ] Support persist_to_nvs flag
-  - [ ] Tests: Success, InvalidGains, RuntimeUpdate
+- [x] **SetMotorPidConfig** - Update PID runtime
+  - [x] Validate motor_id and gains
+  - [x] Support persist_to_nvs flag
+  - [x] Tests: Success, InvalidGains, RuntimeUpdate
 
-- [ ] **Register in main.go**
-- [ ] **Unit Tests** (12+ cases, 80%+ coverage)
+- [x] **Register in main.go**
+- [x] **Unit Tests** (12+ cases, 80%+ coverage)
 
 **Files Modified:**
 - `internal/service/configuration.go`

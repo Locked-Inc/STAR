@@ -16,6 +16,56 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// createDefaultConfiguration creates a default system configuration for testing.
+func createDefaultConfiguration() *starv1.SystemConfiguration {
+	return &starv1.SystemConfiguration{
+		MotorConfigs: []*starv1.MotorPidConfiguration{
+			{MotorId: 0, PidConfig: createDefaultPidConfig()},
+			{MotorId: 1, PidConfig: createDefaultPidConfig()},
+			{MotorId: 2, PidConfig: createDefaultPidConfig()},
+			{MotorId: 3, PidConfig: createDefaultPidConfig()},
+		},
+		CurrentCalibration: &starv1.CurrentSensorCalibration{
+			OffsetMa:    []float64{0.0, 0.0, 0.0, 0.0},
+			ScaleFactor: []float64{1.0, 1.0, 1.0, 1.0},
+		},
+		TemperatureCalibration: &starv1.TemperatureCalibration{
+			OffsetCelsius: 0.0,
+		},
+		SafetyThresholds: &starv1.SafetyThresholds{
+			OvercurrentThresholdMa:     5000,
+			ThermalShutdownDeciCelsius: 800, // 80.0°C
+			CellImbalanceThresholdMv:   100,
+		},
+		EncoderConfig: &starv1.EncoderConfiguration{
+			EdgesPerRevolution: 1364,
+			WheelDiameterM:     0.065,
+			GearRatio:          1.0,
+		},
+		TimingConfig: &starv1.TimingConfiguration{
+			MotorControlPeriodMs:   10,
+			TelemetryPeriodMs:      100,
+			CommunicationTimeoutMs: 500,
+			BmsPollPeriodMs:        1000,
+		},
+		ConfigVersion: 1,
+		ConfigCrc:     0,
+	}
+}
+
+// createDefaultPidConfig creates a default PID configuration for testing.
+func createDefaultPidConfig() *starv1.PidConfig {
+	return &starv1.PidConfig{
+		Kp:               0.286,
+		Ki:               8.01,
+		Kd:               0.0,
+		OutputMinPercent: -100.0,
+		OutputMaxPercent: 100.0,
+		IntegralMin:      -100.0,
+		IntegralMax:      100.0,
+	}
+}
+
 func TestNewConfigurationService(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{}
@@ -38,7 +88,7 @@ func TestGetConfiguration_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func() ([]byte, error) {
+		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
 			return responsePayload, nil
 		},
 	}
@@ -78,7 +128,7 @@ func TestGetConfiguration_Success(t *testing.T) {
 
 func TestGetConfiguration_HarqFailure(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(data []byte) error {
+		SendFunc: func(ctx context.Context, data []byte) error {
 			return status.Error(codes.Unavailable, "harq send failure")
 		},
 	}
@@ -137,7 +187,7 @@ func TestSetConfiguration_ValidConfig(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func() ([]byte, error) {
+		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
 			return responsePayload, nil
 		},
 	}
@@ -462,7 +512,7 @@ func TestResetToDefaults_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func() ([]byte, error) {
+		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
 			return responsePayload, nil
 		},
 	}
@@ -499,7 +549,7 @@ func TestResetToDefaults_Success(t *testing.T) {
 
 func TestResetToDefaults_HarqFailure(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(data []byte) error {
+		SendFunc: func(ctx context.Context, data []byte) error {
 			return status.Error(codes.Unavailable, "harq send failure")
 		},
 	}
@@ -555,7 +605,7 @@ func TestSaveConfiguration_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func() ([]byte, error) {
+		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
 			return responsePayload, nil
 		},
 	}
@@ -590,7 +640,7 @@ func TestSaveConfiguration_Success(t *testing.T) {
 
 func TestSaveConfiguration_HarqFailure(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(data []byte) error {
+		SendFunc: func(ctx context.Context, data []byte) error {
 			return status.Error(codes.Unavailable, "harq send failure")
 		},
 	}
@@ -647,7 +697,7 @@ func TestGetMotorPidConfig_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func() ([]byte, error) {
+		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
 			return responsePayload, nil
 		},
 	}
@@ -755,7 +805,7 @@ func TestSetMotorPidConfig_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func() ([]byte, error) {
+		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
 			return savePayload, nil
 		},
 	}
@@ -800,11 +850,11 @@ func TestSetMotorPidConfig_RuntimeUpdate(t *testing.T) {
 		t.Fatalf("failed to marshal save response: %v", err)
 	}
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(data []byte) error {
+		SendFunc: func(ctx context.Context, data []byte) error {
 			sentPayloads = append(sentPayloads, data)
 			return nil
 		},
-		ReceiveFunc: func() ([]byte, error) {
+		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
 			return savePayload, nil
 		},
 	}
