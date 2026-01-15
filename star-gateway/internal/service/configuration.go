@@ -796,4 +796,3 @@ func (s *ConfigurationService) validateTimingConfig(config *starv1.TimingConfigu
 
 	return errors
 }
-

@@ -236,7 +236,7 @@ go test -cover ./internal/service/configuration_test.go
 ### Service 3: BatteryManagementService (Deferred)
 **Priority:** MEDIUM - Hardware dependent (Issue #158)
 **Status:** Deferred to follow-up issue
-**Note:** TODO: Create separate issue for this implementation.
+**Note:** TODO: Follow-up issue #183 for this implementation.
 
 - [ ] **GetBatteryState** - Complete battery snapshot
   - [ ] Wrap in WireMessage.BatteryStateRequest
