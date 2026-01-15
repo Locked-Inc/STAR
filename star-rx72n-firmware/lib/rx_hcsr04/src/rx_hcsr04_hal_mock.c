@@ -16,38 +16,115 @@
 #include "rx_hcsr04_hal.h"
 
 /* =============================================================================
+ * Helper Functions
+ * =============================================================================
+ */
+
+/**
+ * @brief Validate pin parameter
+ *
+ * @param[in] pin GPIO pin to validate
+ * @return true if pin is valid, false otherwise
+ */
+static inline bool internal_is_valid_pin(rx_port_pin_t pin)
+{
+  return (pin >= k_rx_p0_0 && pin <= k_rx_pj_7);
+}
+
+/* =============================================================================
  * GPIO Functions
  * =============================================================================
  */
 
-rx_err_t hcsr04_hal_gpio_set_output(gpio_pin_t pin)
+rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
 {
-  return mock_gpio_set_output(gpio_pin_get_port(pin), gpio_pin_get_pin(pin));
+  if (!internal_is_valid_pin(pin)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Extract port and pin for secondary validation */
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
+
+  /* Validate the extracted port and pin are within expected ranges */
+  if (port > k_rx_port_j || pin_num > k_rx_pin_max) {
+    return k_rx_err_invalid_arg;
+  }
+
+  return mock_gpio_set_output(port, pin_num);
 }
 
-rx_err_t hcsr04_hal_gpio_set_input(gpio_pin_t pin)
+rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
 {
-  return mock_gpio_set_input(gpio_pin_get_port(pin), gpio_pin_get_pin(pin));
+  if (!internal_is_valid_pin(pin)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Extract port and pin for secondary validation */
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
+
+  /* Validate the extracted port and pin are within expected ranges */
+  if (port > k_rx_port_j || pin_num > k_rx_pin_max) {
+    return k_rx_err_invalid_arg;
+  }
+
+  return mock_gpio_set_input(port, pin_num);
 }
 
-rx_err_t hcsr04_hal_gpio_write_high(gpio_pin_t pin)
+rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
 {
-  return mock_gpio_write_high(gpio_pin_get_port(pin), gpio_pin_get_pin(pin));
+  if (!internal_is_valid_pin(pin)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Extract port and pin for secondary validation */
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
+
+  /* Validate the extracted port and pin are within expected ranges */
+  if (port > k_rx_port_j || pin_num > k_rx_pin_max) {
+    return k_rx_err_invalid_arg;
+  }
+
+  return mock_gpio_write_high(port, pin_num);
 }
 
-rx_err_t hcsr04_hal_gpio_write_low(gpio_pin_t pin)
+rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin)
 {
-  return mock_gpio_write_low(gpio_pin_get_port(pin), gpio_pin_get_pin(pin));
+  if (!internal_is_valid_pin(pin)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Extract port and pin for secondary validation */
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
+
+  /* Validate the extracted port and pin are within expected ranges */
+  if (port > k_rx_port_j || pin_num > k_rx_pin_max) {
+    return k_rx_err_invalid_arg;
+  }
+
+  return mock_gpio_write_low(port, pin_num);
 }
 
-rx_err_t hcsr04_hal_gpio_read(gpio_pin_t pin, bool* value)
+rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
 {
-  return mock_gpio_read(gpio_pin_get_port(pin), gpio_pin_get_pin(pin), value);
+  if (!internal_is_valid_pin(pin)) {
+    return k_rx_err_invalid_arg;
+  }
+  if (value == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+  return mock_gpio_read(rx_port_from_pin(pin), rx_pin_from_pin(pin), value);
 }
 
-rx_err_t hcsr04_hal_gpio_deinit(gpio_pin_t pin)
+rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
 {
-  return mock_gpio_deinit(gpio_pin_get_port(pin), gpio_pin_get_pin(pin));
+  if (!internal_is_valid_pin(pin)) {
+    return k_rx_err_invalid_arg;
+  }
+  return mock_gpio_deinit(rx_port_from_pin(pin), rx_pin_from_pin(pin));
 }
 
 /* =============================================================================

@@ -26,9 +26,10 @@
  * @brief Bit manipulation constants for byte-to-bit conversion
  */
 typedef enum {
-  k_bits_per_byte    = 8, /**< Number of bits in a byte */
-  k_bit_idx_msb      = 7, /**< MSB index in byte (bit 7) */
-  k_bit_idx_lsb      = 0, /**< LSB index in byte (bit 0) */
+  k_bits_per_byte = 8, /**< Number of bits in a byte */
+  k_bit_idx_msb   = 7, /**< MSB index in byte (bit 7) */
+  k_bit_idx_lsb   = 0, /**< LSB index in byte (bit 0) */
+  k_bit_mask      = 1, /**< Mask to extract single bit */
 } bit_manipulation_t;
 
 /* =============================================================================
@@ -575,6 +576,7 @@ void test_harq_roundtrip_with_fec(void)
   uint8_t  payload[] = {0xDE, 0xAD};
   uint8_t  encoded[64];
   uint32_t enc_len;
+  uint8_t  bit;
 
   rx_err_t err = rx_harq_encode(&s_harq, payload, 2, encoded, 64, &enc_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -585,7 +587,7 @@ void test_harq_roundtrip_with_fec(void)
 
   for (uint32_t i = 0; i < enc_len; i++) {
     for (int8_t b = k_bit_idx_msb; b >= k_bit_idx_lsb; b--) {
-      uint8_t bit                         = (encoded[i] >> b) & 1;
+      bit                                             = (encoded[i] >> b) & k_bit_mask;
       soft[i * k_bits_per_byte + (k_bit_idx_msb - b)] = rx_fec_hard_to_soft(bit);
     }
   }
@@ -612,6 +614,7 @@ void test_harq_combining_improves_reception(void)
   uint8_t  payload[] = {0x42};
   uint8_t  encoded[64];
   uint32_t enc_len;
+  uint8_t  bit;
   (void)rx_harq_encode(&s_harq, payload, 1, encoded, 64, &enc_len);
 
   /* Create "perfect" soft bits from encoded data */
@@ -620,7 +623,7 @@ void test_harq_combining_improves_reception(void)
 
   for (uint32_t i = 0; i < enc_len; i++) {
     for (int8_t b = k_bit_idx_msb; b >= k_bit_idx_lsb; b--) {
-      uint8_t bit                         = (encoded[i] >> b) & 1;
+      bit                                             = (encoded[i] >> b) & k_bit_mask;
       soft[i * k_bits_per_byte + (k_bit_idx_msb - b)] = rx_fec_hard_to_soft(bit);
     }
   }

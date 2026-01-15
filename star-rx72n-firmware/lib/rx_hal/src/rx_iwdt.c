@@ -39,9 +39,9 @@ typedef enum {
 
 /** @brief Task monitoring string buffer sizes */
 typedef enum {
-  k_task_name_max_len = 16,     /**< Maximum task name length (including null) */
-  k_task_name_cmp_len = 15,     /**< Length for strncmp (excluding null) */
-  k_log_msg_buffer_size = 64,   /**< Log message buffer size */
+  k_task_name_max_len   = 16, /**< Maximum task name length (including null) */
+  k_task_name_cmp_len   = 15, /**< Length for strncmp (excluding null) */
+  k_log_msg_buffer_size = 64, /**< Log message buffer size */
 } iwdt_buffer_size_constants_t;
 
 /** @brief Timeout configuration lookup table entry */
@@ -322,8 +322,8 @@ typedef struct {
  * @brief Task monitoring module state
  */
 typedef struct {
-  task_monitor_t tasks[k_iwdt_max_tasks];       /**< Array of monitored tasks */
-  uint8_t        task_count;                    /**< Number of registered tasks */
+  task_monitor_t tasks[k_iwdt_max_tasks];          /**< Array of monitored tasks */
+  uint8_t        task_count;                       /**< Number of registered tasks */
   char           failed_task[k_task_name_max_len]; /**< Name of last failed task */
 } task_monitor_state_t;
 
@@ -413,10 +413,10 @@ rx_err_t rx_iwdt_check_tasks(void)
       /* Task has exceeded heartbeat timeout - deadlock detected */
       char           log_msg[k_log_msg_buffer_size];
       const uint32_t written = (uint32_t)snprintf(log_msg,
-                                                   sizeof(log_msg),
-                                                   "Task deadlock: %s (timeout %" PRIu32 " ms)",
-                                                   task->task_name,
-                                                   task->timeout_ms);
+                                                  sizeof(log_msg),
+                                                  "Task deadlock: %s (timeout %" PRIu32 " ms)",
+                                                  task->task_name,
+                                                  task->timeout_ms);
 
       if (written > 0 && written < sizeof(log_msg)) {
         rx_log_error(s_tag, log_msg);

@@ -54,51 +54,57 @@ typedef void VOID;
  */
 
 /** @brief ThreadX return codes (must match real ThreadX API values) */
-#define TX_SUCCESS           ((UINT)0x00)
-#define TX_DELETED           ((UINT)0x01)
-#define TX_POOL_ERROR        ((UINT)0x02)
-#define TX_PTR_ERROR         ((UINT)0x03)
-#define TX_WAIT_ERROR        ((UINT)0x04)
-#define TX_SIZE_ERROR        ((UINT)0x05)
-#define TX_GROUP_ERROR       ((UINT)0x06)
-#define TX_NO_EVENTS         ((UINT)0x07)
-#define TX_OPTION_ERROR      ((UINT)0x08)
-#define TX_QUEUE_ERROR       ((UINT)0x09)
-#define TX_QUEUE_EMPTY       ((UINT)0x0A)
-#define TX_QUEUE_FULL        ((UINT)0x0B)
-#define TX_SEMAPHORE_ERROR   ((UINT)0x0C)
-#define TX_NO_INSTANCE       ((UINT)0x0D)
-#define TX_THREAD_ERROR      ((UINT)0x0E)
-#define TX_PRIORITY_ERROR    ((UINT)0x0F)
-#define TX_NO_MEMORY         ((UINT)0x10)
-#define TX_START_ERROR       ((UINT)0x10)
-#define TX_DELETE_ERROR      ((UINT)0x11)
-#define TX_RESUME_ERROR      ((UINT)0x12)
-#define TX_CALLER_ERROR      ((UINT)0x13)
-#define TX_SUSPEND_ERROR     ((UINT)0x14)
-#define TX_TIMER_ERROR       ((UINT)0x15)
-#define TX_TICK_ERROR        ((UINT)0x16)
-#define TX_ACTIVATE_ERROR    ((UINT)0x17)
-#define TX_THRESH_ERROR      ((UINT)0x18)
-#define TX_SUSPEND_LIFTED    ((UINT)0x19)
-#define TX_WAIT_ABORTED      ((UINT)0x1A)
-#define TX_WAIT_ABORT_ERROR  ((UINT)0x1B)
-#define TX_MUTEX_ERROR       ((UINT)0x1C)
-#define TX_NOT_AVAILABLE     ((UINT)0x1D)
-#define TX_NOT_OWNED         ((UINT)0x1E)
-#define TX_INHERIT_ERROR     ((UINT)0x1F)
-#define TX_NOT_DONE          ((UINT)0x20)
-#define TX_CEILING_EXCEEDED  ((UINT)0x21)
-#define TX_INVALID_CEILING   ((UINT)0x22)
-#define TX_FEATURE_NOT_ENABLED ((UINT)0xFF)
+typedef enum {
+  TX_SUCCESS             = 0x00,
+  TX_DELETED             = 0x01,
+  TX_POOL_ERROR          = 0x02,
+  TX_PTR_ERROR           = 0x03,
+  TX_WAIT_ERROR          = 0x04,
+  TX_SIZE_ERROR          = 0x05,
+  TX_GROUP_ERROR         = 0x06,
+  TX_NO_EVENTS           = 0x07,
+  TX_OPTION_ERROR        = 0x08,
+  TX_QUEUE_ERROR         = 0x09,
+  TX_QUEUE_EMPTY         = 0x0A,
+  TX_QUEUE_FULL          = 0x0B,
+  TX_SEMAPHORE_ERROR     = 0x0C,
+  TX_NO_INSTANCE         = 0x0D,
+  TX_THREAD_ERROR        = 0x0E,
+  TX_PRIORITY_ERROR      = 0x0F,
+  TX_NO_MEMORY           = 0x10,
+  TX_START_ERROR         = 0x10,
+  TX_DELETE_ERROR        = 0x11,
+  TX_RESUME_ERROR        = 0x12,
+  TX_CALLER_ERROR        = 0x13,
+  TX_SUSPEND_ERROR       = 0x14,
+  TX_TIMER_ERROR         = 0x15,
+  TX_TICK_ERROR          = 0x16,
+  TX_ACTIVATE_ERROR      = 0x17,
+  TX_THRESH_ERROR        = 0x18,
+  TX_SUSPEND_LIFTED      = 0x19,
+  TX_WAIT_ABORTED        = 0x1A,
+  TX_WAIT_ABORT_ERROR    = 0x1B,
+  TX_MUTEX_ERROR         = 0x1C,
+  TX_NOT_AVAILABLE       = 0x1D,
+  TX_NOT_OWNED           = 0x1E,
+  TX_INHERIT_ERROR       = 0x1F,
+  TX_NOT_DONE            = 0x20,
+  TX_CEILING_EXCEEDED    = 0x21,
+  TX_INVALID_CEILING     = 0x22,
+  TX_FEATURE_NOT_ENABLED = 0xFF,
+} tx_status;
 
 /** @brief ThreadX wait options */
-#define TX_NO_WAIT       ((ULONG)0)
-#define TX_WAIT_FOREVER  ((ULONG)0xFFFFFFFFUL)
+typedef enum {
+  TX_NO_WAIT      = 0,
+  TX_WAIT_FOREVER = 0xFFFFFFFFUL,
+} tx_wait_option;
 
 /** @brief ThreadX inheritance options */
-#define TX_NO_INHERIT    ((UINT)0)
-#define TX_INHERIT       ((UINT)1)
+typedef enum {
+  TX_NO_INHERIT = 0,
+  TX_INHERIT    = 1,
+} tx_inherit_option;
 
 /** @brief ThreadX thread constants */
 #define TX_NO_TIME_SLICE ((ULONG)0)

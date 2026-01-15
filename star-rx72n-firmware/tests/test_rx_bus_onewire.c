@@ -14,7 +14,6 @@
 
 #include <string.h>
 
-#include "hardware_pinout.h"
 #include "mock_rx_crc.h"
 #include "mock_rx_gpio.h"
 #include "mock_rx_onewire_hw.h"

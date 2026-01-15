@@ -68,11 +68,11 @@ static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
  * =============================================================================
  */
 
-rx_err_t gpio_set_output(gpio_pin_t pin)
+rx_err_t gpio_set_output(rx_port_pin_t pin)
 {
-  /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  /* Extract port and pin number from rx_port_pin_t */
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
 
   /* Validate parameters */
   rx_err_t err = internal_validate_port_pin(port, pin_num);
@@ -102,11 +102,11 @@ rx_err_t gpio_set_output(gpio_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_set_input(gpio_pin_t pin)
+rx_err_t gpio_set_input(rx_port_pin_t pin)
 {
-  /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  /* Extract port and pin number from rx_port_pin_t */
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
 
   /* Validate parameters */
   rx_err_t err = internal_validate_port_pin(port, pin_num);
@@ -136,11 +136,11 @@ rx_err_t gpio_set_input(gpio_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_write_high(gpio_pin_t pin)
+rx_err_t gpio_write_high(rx_port_pin_t pin)
 {
-  /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  /* Extract port and pin number from rx_port_pin_t */
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
 
   /* Validate parameters */
   rx_err_t err = internal_validate_port_pin(port, pin_num);
@@ -154,11 +154,11 @@ rx_err_t gpio_write_high(gpio_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_write_low(gpio_pin_t pin)
+rx_err_t gpio_write_low(rx_port_pin_t pin)
 {
-  /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  /* Extract port and pin number from rx_port_pin_t */
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
 
   /* Validate parameters */
   rx_err_t err = internal_validate_port_pin(port, pin_num);
@@ -172,11 +172,11 @@ rx_err_t gpio_write_low(gpio_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_toggle(gpio_pin_t pin)
+rx_err_t gpio_toggle(rx_port_pin_t pin)
 {
-  /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  /* Extract port and pin number from rx_port_pin_t */
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
 
   /* Validate parameters */
   rx_err_t err = internal_validate_port_pin(port, pin_num);
@@ -190,14 +190,14 @@ rx_err_t gpio_toggle(gpio_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_read(gpio_pin_t pin, bool* value)
+rx_err_t gpio_read(rx_port_pin_t pin, bool* value)
 {
   /* Check null pointer */
   RX_CHECK_NULL_PTR(value, "GPIO", "Value pointer is NULL");
 
-  /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  /* Extract port and pin number from rx_port_pin_t */
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
 
   /* Validate parameters */
   rx_err_t err = internal_validate_port_pin(port, pin_num);

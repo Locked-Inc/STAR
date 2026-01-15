@@ -28,6 +28,8 @@ extern "C" {
 
 #include <stdint.h>
 
+#include "rx_check.h"
+
 /* =============================================================================
  * Port Number Constants
  * =============================================================================
@@ -114,7 +116,8 @@ typedef enum {
  *   gpio_pin_t pin = (port << k_port_shift) | pin_num;
  */
 typedef enum {
-  k_port_shift = 8, /**< Left shift amount to move port to upper byte */
+  k_port_shift = 8,    /**< Left shift amount to move port to upper byte */
+  k_port_mask  = 0xFF, /**< Mask to extract pin number from lower byte */
 } port_encoding_t;
 
 /* =============================================================================
@@ -373,6 +376,56 @@ _Static_assert(k_rx_pa_2 == 0x0A02, "PA2 must be 0x0A02");
 _Static_assert(k_rx_pb_2 == 0x0B02, "PB2 must be 0x0B02");
 _Static_assert(k_rx_pe_5 == 0x0E05, "PE5 must be 0x0E05");
 _Static_assert(k_rx_pj_3 == 0x1303, "PJ3 must be 0x1303");
+
+/* =============================================================================
+ * Pin Extraction Inline Functions
+ * =============================================================================
+ */
+
+/**
+ * @brief Extract port number from rx_port_pin_t
+ *
+ * @param[in] pin GPIO pin (rx_port_pin_t)
+ * @return Port number (upper byte of pin value)
+ *
+ * rx_port_pin_t encoding: (port << k_port_shift) | pin_num
+ * Therefore: port = pin >> k_port_shift
+ */
+static inline uint8_t rx_port_from_pin(rx_port_pin_t pin)
+{
+  /* Pre-condition: pin value fits encoding scheme (port in upper byte) */
+  RX_ASSERT((pin & k_port_mask) <= k_rx_pin_max, "Pin number must be <= k_rx_pin_max");
+
+  uint8_t result = (uint8_t)((pin) >> k_port_shift);
+
+  /* Post-condition: result fits in rx_port_number_t range (0x00-0x13) */
+  RX_ASSERT(result <= k_rx_port_j, "Port number must be <= 0x13");
+
+  return result;
+}
+
+/**
+ * @brief Extract pin number from rx_port_pin_t
+ *
+ * @param[in] pin GPIO pin (rx_port_pin_t)
+ * @return Pin number (lower byte of pin value)
+ *
+ * rx_port_pin_t encoding: (port << k_port_shift) | pin_num
+ * Therefore: pin_num = pin & k_port_mask
+ */
+static inline uint8_t rx_pin_from_pin(rx_port_pin_t pin)
+{
+  /* Pre-condition: port value fits encoding scheme (port in upper byte) */
+  uint8_t port = (uint8_t)((pin) >> k_port_shift);
+  RX_ASSERT(port <= k_rx_port_j, "Port number must be <= 0x13");
+
+  uint8_t result = (uint8_t)((pin)&k_port_mask);
+
+  /* Post-condition: result fits in rx_pin_number_t range (0x00-0x07) */
+  RX_ASSERT(result <= k_rx_pin_max, "Pin number must be <= k_rx_pin_max");
+
+  return result;
+}
 
 #ifdef __cplusplus
 }

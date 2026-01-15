@@ -1,8 +1,8 @@
-/* src/system_init.c */
+/* src/rx_clock_power_init.c */
 
 /**
- * @file system_init.c
- * @brief RX72N System Initialization
+ * @file rx_clock_power_init.c
+ * @brief RX72N Clock and Power Initialization
  *
  * Configures:
  * - Clock system (240 MHz from PLL)
@@ -13,11 +13,13 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include "rx_clock_power_init.h"
+
 #include <stdint.h>
 
-#include "system_init.h"
 #include "rx72n_regs.h"
 #include "rx72n_rtc_regs.h"
+#include "rx_check.h"
 #include "rx_register_protection.h"
 
 /* =============================================================================
@@ -69,6 +71,11 @@ typedef enum {
   k_mstpcrc_s12ad = 17, /**< S12AD module stop bit */
 } mstpcrc_bits_t;
 
+/** @brief Module initialization retry configuration */
+typedef enum {
+  k_retry_count_module_stop = 3, /**< Number of retries for module stop register verification */
+} module_init_config_t;
+
 /* =============================================================================
  * Clock Configuration
  * =============================================================================
@@ -89,8 +96,13 @@ typedef enum {
  */
 static rx_err_t internal_clock_init(void)
 {
+  uint32_t timeout = k_pll_stabilization_timeout;
+
   /* Unlock protection for clock registers */
   system_regs()->prcr = k_rx_prcr_unlock_all;
+
+  /* Precondition: Verify PRCR unlock took effect */
+  RX_ASSERT(system_regs()->prcr == k_rx_prcr_unlock_all, "Precondition: PRCR unlock failed");
 
   /* Stop sub-clock oscillator (not used) */
   system_regs()->sosccr = k_sub_clock_stopped;
@@ -116,7 +128,6 @@ static rx_err_t internal_clock_init(void)
 
   /* Wait for PLL stabilization */
   /* NOTE: Busy-wait polling required - runs before ThreadX initialization */
-  uint32_t timeout = k_pll_stabilization_timeout;
   while ((system_regs()->oscovfsr & k_pll_stable_flag) == 0 && timeout > 0) {
     timeout--;
   }
@@ -134,6 +145,11 @@ static rx_err_t internal_clock_init(void)
 
   /* Select PLL as system clock */
   system_regs()->sckcr3 = k_system_clock_source_pll;
+
+  /* Postcondition: Verify PLL selection took effect */
+  RX_ASSERT((system_regs()->sckcr3 == k_system_clock_source_pll) &&
+              ((system_regs()->oscovfsr & k_pll_stable_flag) != 0),
+            "Postcondition: PLL selection and stability verification failed");
 
   /* Lock protection */
   system_regs()->prcr = k_rx_prcr_lock;
@@ -156,32 +172,52 @@ static rx_err_t internal_clock_init(void)
  *
  * Note: SCI modules are enabled per-channel in uart_init_channel()
  *
- * @return k_rx_ok on success
+ * @return k_rx_ok on success, k_rx_err if verification fails after retries
  */
 static rx_err_t internal_module_stop_init(void)
 {
-  /* Protect off */
-  system_regs()->prcr = k_rx_prcr_unlock_all;
+  const uint32_t mstpcra_clear_mask = (1UL << k_mstpcra_cmt) | (1UL << k_mstpcra_mtu);
+  const uint32_t mstpcrb_clear_mask = (1UL << k_mstpcrb_rspi0) | (1UL << k_mstpcrb_rspi1);
+  const uint32_t mstpcrc_clear_mask = (1UL << k_mstpcrc_s12ad);
 
-  /* Module Stop Control Register A */
-  system_regs()->mstpcra &= ~((1UL << k_mstpcra_cmt) | /* CMT0, CMT1 */
-                              (1UL << k_mstpcra_mtu)   /* MTU */
-  );
+  for (uint8_t attempt = 0; attempt < k_retry_count_module_stop; attempt++) {
+    /* Protect off */
+    system_regs()->prcr = k_rx_prcr_unlock_all;
 
-  /* Module Stop Control Register B */
-  /* Note: SCI modules are enabled per-channel in uart_init_channel() */
-  system_regs()->mstpcrb &= ~((1UL << k_mstpcrb_rspi0) | /* RSPI0 */
-                              (1UL << k_mstpcrb_rspi1)   /* RSPI1 */
-  );
+    /* Module Stop Control Register A */
+    system_regs()->mstpcra &= ~mstpcra_clear_mask; /* CMT0, CMT1, MTU */
 
-  /* Module Stop Control Register C */
-  system_regs()->mstpcrc &= ~((1UL << k_mstpcrc_s12ad) /* S12AD */
-  );
+    /* Module Stop Control Register B */
+    /* Note: SCI modules are enabled per-channel in uart_init_channel() */
+    system_regs()->mstpcrb &= ~mstpcrb_clear_mask; /* RSPI0, RSPI1 */
 
-  /* Protect on */
-  system_regs()->prcr = k_rx_prcr_lock;
+    /* Module Stop Control Register C */
+    system_regs()->mstpcrc &= ~mstpcrc_clear_mask; /* S12AD */
 
-  return k_rx_ok;
+    /* Protect on */
+    system_regs()->prcr = k_rx_prcr_lock;
+
+    /* Post-condition: Verify bits are cleared */
+    uint32_t mstpcra_actual = system_regs()->mstpcra & mstpcra_clear_mask;
+    uint32_t mstpcrb_actual = system_regs()->mstpcrb & mstpcrb_clear_mask;
+    uint32_t mstpcrc_actual = system_regs()->mstpcrc & mstpcrc_clear_mask;
+
+    if ((mstpcra_actual == 0) && (mstpcrb_actual == 0) && (mstpcrc_actual == 0)) {
+      /* Postcondition: Re-read hardware registers to verify stability */
+      uint32_t verify_a = system_regs()->mstpcra & mstpcra_clear_mask;
+      uint32_t verify_b = system_regs()->mstpcrb & mstpcrb_clear_mask;
+      uint32_t verify_c = system_regs()->mstpcrc & mstpcrc_clear_mask;
+
+      RX_ASSERT((verify_a == 0) && (verify_b == 0) && (verify_c == 0),
+                "Postcondition: Module stop bits remain cleared");
+      return k_rx_ok;
+    }
+
+    /* If verification failed and this isn't the last attempt, retry */
+  }
+
+  /* All retries exhausted - return error */
+  return k_rx_err_hw_timeout;
 }
 
 /* =============================================================================
@@ -190,13 +226,45 @@ static rx_err_t internal_module_stop_init(void)
  */
 
 /**
+ * @brief Verify system clock configuration is correct
+ *
+ * Checks that the clock system is properly configured to 240 MHz and
+ * that required peripheral modules are enabled.
+ *
+ * @return k_rx_ok if system state is valid, error code otherwise
+ */
+static rx_err_t internal_verify_system_state(void)
+{
+  volatile rx_system_regs_t* sys = system_regs();
+
+  /* Verify system register access */
+  if (sys == NULL) {
+    return k_rx_err_hw_init_failed;
+  }
+
+  /* Verify PLL is enabled by checking PLLCR2 register */
+  uint8_t pllcr2 = sys->pllcr2;
+  if (pllcr2 != k_pll_enabled) {
+    return k_rx_err_hw_init_failed;
+  }
+
+  /* Verify system clock dividers are configured correctly */
+  uint32_t sckcr = sys->sckcr;
+  if (sckcr != k_system_clock_dividers) {
+    return k_rx_err_hw_init_failed;
+  }
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Initialize RX72N system
  *
  * Call this early in startup, before ThreadX initialization.
  *
  * @return k_rx_ok on success, error code on failure
  */
-rx_err_t system_init(void)
+rx_err_t rx_clock_power_init(void)
 {
   /* Initialize clock to 240 MHz */
   rx_err_t err = internal_clock_init();
@@ -209,6 +277,13 @@ rx_err_t system_init(void)
   err = internal_module_stop_init();
   if (err != k_rx_ok) {
     /* Can't log - UART not initialized yet */
+    return err;
+  }
+
+  /* Postcondition: Verify system state is correctly configured */
+  err = internal_verify_system_state();
+  if (err != k_rx_ok) {
+    /* Clock or module configuration failed validation */
     return err;
   }
 

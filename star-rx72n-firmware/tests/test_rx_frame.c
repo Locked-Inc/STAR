@@ -26,10 +26,10 @@
  * @brief Frame test constants for payload and buffer sizes
  */
 typedef enum {
-  k_test_payload_size  = 256, /**< Large payload size for testing */
-  k_test_buffer_size   = 512, /**< Buffer size for encoded frame */
-  k_test_header_size   = 12,  /**< Frame header size in bytes */
-  k_test_sequence_num  = 100, /**< Test sequence number */
+  k_test_payload_size = 256, /**< Large payload size for testing */
+  k_test_buffer_size  = 512, /**< Buffer size for encoded frame */
+  k_test_header_size  = 12,  /**< Frame header size in bytes */
+  k_test_sequence_num = 100, /**< Test sequence number */
 } frame_test_constants_t;
 
 /* =============================================================================

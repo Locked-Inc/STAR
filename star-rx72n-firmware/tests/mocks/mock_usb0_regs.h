@@ -165,16 +165,18 @@ typedef enum {
   k_usb_pipectr_bsts      = (1 << 15), /**< Buffer Status */
 
   /* INTSTS0 register bits */
-  k_usb_intsts0_ctsq_mask  = 0x0007,   /**< Control Transfer Stage mask */
-  k_usb_intsts0_dvsq_mask  = 0x0070,   /**< Device State mask */
-  k_usb_intsts0_dvsq_shift = 4,        /**< Device State bit shift */
+  k_usb_intsts0_ctsq_mask  = 0x0007, /**< Control Transfer Stage mask */
+  k_usb_ctsq_max_value     = 0x07,   /**< Maximum valid CTSQ value (3 bits) */
+  k_usb_intsts0_dvsq_mask  = 0x0070, /**< Device State mask */
+  k_usb_intsts0_dvsq_shift = 4,      /**< Device State bit shift */
 
   /* CFIFOCTR register bits */
-  k_usb_cfifoctr_dtln_mask = 0x01FF,   /**< Data Length mask */
-  k_usb_cfifoctr_frdy      = (1 << 13),/**< FIFO Ready flag */
+  k_usb_cfifoctr_dtln_mask = 0x01FF,    /**< Data Length mask */
+  k_usb_dtln_max_value     = 0x1FF,     /**< Maximum valid DTLN value (9 bits) */
+  k_usb_cfifoctr_frdy      = (1 << 13), /**< FIFO Ready flag */
 
   /* USB default values */
-  k_usb_dcpmaxp_default    = 64,       /**< Default max packet size for control endpoint */
+  k_usb_dcpmaxp_default = 64, /**< Default max packet size for control endpoint */
 } usb_register_bits_t;
 
 /* =============================================================================
