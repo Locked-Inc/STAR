@@ -1,0 +1,17 @@
+# motor_control.options - nanopb field size constraints for motor_control.proto
+# These settings optimize for ESP32 embedded use with static allocation.
+#
+# STAR Project - Texas A&M University
+
+# Emergency stop reason (max_size:128)
+# Rationale: 128 bytes accommodates typical emergency stop reason strings
+# (e.g., "USER_REQUESTED", "COLLISION_DETECTED", "LOW_BATTERY", etc.)
+# Typical short reason codes (~10-20 bytes) leave ample room within the
+# 128-byte buffer for future verbose diagnostics if needed.
+# Frame overhead + protobuf encoding leaves sufficient room in the MTU.
+# If comprehensive stack traces or detailed diagnostics are needed, consider
+# increasing to 256 bytes or using a repeated string field.
+star.v1.EmergencyStopRequest.reason     max_size:128
+
+# Motor status array (2 motors for differential drive)
+star.v1.SetVelocityResponse.motor_status    max_count:2

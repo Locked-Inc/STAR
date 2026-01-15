@@ -1,0 +1,98 @@
+// wire.proto - STAR Wire Protocol Message Wrapper
+// Provides message type multiplexing over single SPI channel.
+//
+// This wrapper solves the protocol ambiguity issue where the RX72N
+// firmware cannot distinguish between different message types
+// (VelocityCommand, TelemetryData, etc.) when all frames use
+// generic FrameTypeCommand/FrameTypeResponse.
+//
+// The oneof pattern is standard practice for single-channel
+// multiplexing in Protocol Buffers (similar to gRPC Any type).
+//
+// Following Boston Dynamics style guide:
+// - Proto3 only, 100 char line limit, 4 space indent
+// - All fields documented
+//
+// STAR Project - Texas A&M University
+// January 2026
+
+syntax = "proto3";
+
+package star.v1;
+
+import "star/v1/battery_management.proto";
+import "star/v1/motor_control.proto";
+import "star/v1/telemetry.proto";
+
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
+option java_multiple_files = true;
+option java_outer_classname = "WireProto";
+option java_package = "com.star.proto.v1";
+
+// WireMessage wraps all possible message types for wire-level multiplexing.
+// The receiver can unmarshal this wrapper and use the oneof discriminator
+// to determine which concrete message type to process.
+//
+// Usage (sender):
+//   wrapper := &WireMessage{
+//       Payload: &WireMessage_VelocityCommand{VelocityCommand: cmd},
+//   }
+//   bytes, _ := proto.Marshal(wrapper)
+//
+// Usage (receiver):
+//   var wrapper WireMessage
+//   proto.Unmarshal(bytes, &wrapper)
+//   switch msg := wrapper.Payload.(type) {
+//   case *WireMessage_VelocityCommand:
+//       handleVelocity(msg.VelocityCommand)
+//   case *WireMessage_TelemetryData:
+//       handleTelemetry(msg.TelemetryData)
+//   }
+message WireMessage {
+  // Payload contains the actual message. Exactly one field must be set.
+  // This oneof discriminator enables type-safe message routing over a single transport channel.
+  oneof payload {
+    // Motor control commands (RPi5 -> RX72N)
+    VelocityCommand velocity_command = 1;
+    // Emergency stop command triggers immediate motor halt with hardware safety engagement.
+    EmergencyStopCommand emergency_stop_command = 2;
+    // Motor power command sets raw PWM duty cycle (bypasses PID control).
+    MotorPowerCommand motor_power_command = 3;
+
+    // Telemetry data (RX72N -> RPi5)
+    TelemetryData telemetry_data = 10;
+    // Encoder data contains quadrature encoder readings and velocity estimates.
+    EncoderData encoder_data = 11;
+
+    // Battery management (bidirectional)
+    BatteryStatus battery_status = 20;
+
+    // Configuration (RPi5 -> RX72N)
+    PidConfig pid_config = 30;
+
+    // Future message types can be added here with reserved field numbers:
+    // - Firmware update chunks (40-49)
+    // - Diagnostics (50-59)
+    // - Calibration (60-69)
+  }
+}
+
+// EmergencyStopCommand triggers immediate motor stop.
+// This is a dedicated command (not a zero-velocity) to enable
+// the firmware to engage hardware safety features and enter
+// MOTOR_STATE_ESTOP as defined in motor_control.proto.
+message EmergencyStopCommand {
+  // Reason for emergency stop (for logging and diagnostics).
+  string reason = 1;
+
+  // Request hardware E-Stop engagement if available.
+  // When true, firmware should:
+  // - Enter MOTOR_STATE_ESTOP
+  // - Disable PWM outputs via hardware
+  // - Engage brakes if available
+  // - Require explicit reset to exit E-Stop state
+  bool engage_hardware_stop = 2;
+
+  // Client timestamp in microseconds for latency tracking.
+  int64 timestamp_us = 3;
+}
