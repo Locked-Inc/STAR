@@ -126,35 +126,39 @@ go mod verify
 
 ### Service 1: TelemetryService ⭐ (2-3 days)
 **Priority:** HIGH - Foundation for other services
-**Started:** ___________
-**Completed:** ___________
+**Started:** 2026-01-14
+**Completed:** 2026-01-14 ✅
 
-- [ ] **GetTelemetry** - Unary RPC for snapshot
-  - [ ] Implement method with validation
-  - [ ] Add RWMutex for cached telemetry
-  - [ ] Background goroutine for updates
-  - [ ] Tests: Success, NilRequest, NoDataAvailable
+**Status:** Complete - All core functionality implemented with graceful shutdown. GetSystemStatus uses mock data pending firmware integration.
 
-- [ ] **StreamTelemetry** - Server streaming
-  - [ ] Validate rate_hz (1-100 Hz, default 10)
-  - [ ] Subscribe to dispatcher (defer unsubscribe!)
-  - [ ] Separate receive/send goroutines
-  - [ ] Tests: ValidRate, InvalidRate, ContextCancellation, MultipleClients
+- [x] **GetTelemetry** - Unary RPC for snapshot
+  - [x] Implement method with validation
+  - [x] Add telemetryHolder for thread-safe cached telemetry
+  - [x] Background goroutine for updates (with graceful shutdown)
+  - [x] Tests: Success, NilRequest, NoDataAvailable
 
-- [ ] **GetSystemStatus** - Unary RPC for health
-  - [ ] Create SystemStatusRequest message
+- [x] **StreamTelemetry** - Server streaming
+  - [x] Validate rate_hz (MinRateHz=1, MaxRateHz=100, DefaultRateHz=10)
+  - [x] Subscribe to dispatcher (defer unsubscribe!)
+  - [x] Separate receive/send goroutines (receiveStreamTelemetryLoop, streamTelemetryLoop)
+  - [x] Tests: ValidRate, InvalidRate, ContextCancellation, MultipleClients, SendError
+
+- [x] **GetSystemStatus** - Unary RPC for health ⚠️ Mock implementation
+  - [ ] Create SystemStatusRequest message in wire.proto
   - [ ] Wrap in WireMessage
   - [ ] Send via HARQ
-  - [ ] Tests: Success, NilRequest, HarqFailure, Timeout
+  - [x] Tests: Success, NilRequest
+  - [ ] Tests: HarqFailure, Timeout (pending HARQ integration)
 
-- [ ] **Register in main.go**
-  - [ ] Add `NewTelemetryService(harqHandler, msgDispatcher, logger)`
-  - [ ] Add `RegisterTelemetryServiceServer(grpcServer, telemetrySvc)`
+- [x] **Register in main.go**
+  - [x] Add `NewTelemetryService(ctx, harqHandler, msgDispatcher, logger)`
+  - [x] Add `RegisterTelemetryServiceServer(grpcServer, telemetrySvc)`
+  - [x] Add graceful shutdown with `telemetrySvc.Shutdown()`
 
-- [ ] **Unit Tests**
-  - [ ] 10+ test cases
-  - [ ] 80%+ coverage
-  - [ ] All tests pass
+- [x] **Unit Tests**
+  - [x] 23 test cases (exceeds 10+ requirement)
+  - [x] 87.6% coverage (exceeds 80% requirement)
+  - [x] All tests pass
 
 **Files Modified:**
 - `internal/service/telemetry.go`
@@ -163,8 +167,11 @@ go mod verify
 
 **Commands to verify:**
 ```bash
-go test -v ./internal/service -run TestTelemetryService
-go test -cover ./internal/service/telemetry_test.go
+cd star-gateway
+go test -v ./internal/service -run Telemetry
+go test -coverprofile=coverage.out ./internal/service
+go tool cover -func=coverage.out | grep telemetry
+go build ./cmd/star-gateway
 ```
 
 ---
@@ -339,35 +346,36 @@ go test -cover ./internal/service/firmware_test.go
 ## Final Verification Checklist
 
 ### Build & Test
-- [ ] All services build without errors: `go build ./cmd/star-gateway`
-- [ ] All tests pass: `go test ./...`
-- [ ] Coverage ≥ 80%: `go test -coverprofile=coverage.out ./internal/service/...`
+- [x] All services build without errors: `go build ./cmd/star-gateway`
+- [x] All tests pass: `go test ./...`
+- [x] Coverage ≥ 80%: `go test -coverprofile=coverage.out ./internal/service/...` (87.6%)
 - [ ] No race conditions: `go test -race ./...`
 
 ### Code Quality
-- [ ] Code formatted: `gofmt -d ./internal/service/` (no output)
-- [ ] Vet passes: `go vet ./...`
+- [x] Code formatted: `gofmt -d ./internal/service/` (no output)
+- [x] Vet passes: `go vet ./...`
 - [ ] Lint passes: `golangci-lint run ./internal/service/`
 
 ### Service Registration
-- [ ] 6 services registered in main.go:
+- [x] 3 services registered in main.go (Gateway, MotorControl, Telemetry):
   ```bash
   grep -c "RegisterServiceServer" star-gateway/cmd/star-gateway/main.go
-  # Should output: 6
+  # Currently: 3 (Target: 6)
   ```
-- [ ] Services: Gateway, MotorControl, Telemetry, BatteryManagement, Configuration, FirmwareUpdate
+- [x] Services registered: Gateway, MotorControl, Telemetry
+- [ ] Services pending: BatteryManagement, Configuration, FirmwareUpdate
 
 ### Manual Integration Test
-- [ ] Gateway starts successfully: `./star-gateway`
-- [ ] TelemetryService responds:
+- [x] Gateway starts successfully: `./star-gateway`
+- [x] TelemetryService responds:
   ```bash
   grpcurl -plaintext -d '{"header":{"request_id":"test-1"}}' \
       localhost:50051 star.v1.TelemetryService/GetSystemStatus
   ```
-- [ ] All services listed:
+- [x] Services listed:
   ```bash
   grpcurl -plaintext localhost:50051 list
-  # Should show all 6 services
+  # Shows: star.v1.GatewayService, star.v1.MotorControlService, star.v1.TelemetryService
   ```
 
 ### Git & PR
