@@ -6,6 +6,7 @@
  */
 
 #include "rx_err.h"
+#include "system_init.h"
 
 static void internal_check_porf(void) { /* TODO */ }
 static void internal_check_iwdtrf(void) { /* TODO */ }
@@ -33,7 +34,7 @@ static void internal_check_startup_flags(void)
  */
 int main(void)
 {
-  rx_err_t ret = k_rx_ok;
+  rx_err_t ret;
 
   /* Check:
    *  PORF (Power-On Reset Detect Flag),
@@ -45,7 +46,13 @@ int main(void)
    */
   internal_check_startup_flags(); /* TODO: Left as returning void, should fix once we know what to do with this */
 
-  // initalize_hardware();
+  ret = system_init(); /* TODO: Change the name `system_init` to something more explicit, `system` seems wrong */
+
+  if (ret != k_rx_ok) {
+    /* TODO */
+  }
+
+  // hardware_init(); /* TODO: initialize our hardware */
 
   /* Should never reach here, ThreadX scheduler failed to start if it does */
   while (1) {

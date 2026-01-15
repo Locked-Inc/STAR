@@ -7,6 +7,5 @@
  * Provides a centralized hardware initialization function that configures
  * all peripherals in the correct order:
  *
- * 1. System Clocks (240 MHz CPU, 120 MHz PCLKA (for GPTW and MTU—Brushed Motors and Encoders)
- * 2.
+ * TODO
  */

@@ -104,7 +104,6 @@ target_link_libraries(rx_core PUBLIC threadx)
 # Depends on rx_core for error handling and logging, threadx for RTOS
 add_library(rx_hal STATIC
     lib/rx_hal/src/startup_rx72n.S
-    lib/rx_hal/src/system_init.c
     lib/rx_hal/src/gpio.c
     lib/rx_hal/src/uart.c
     lib/rx_hal/src/timer.c
@@ -279,6 +278,7 @@ target_link_libraries(rx_obstacle_detect PUBLIC rx_hcsr04 rx_motor rx_core)
 
 set(APP_SOURCES
     src/main.c
+    src/system_init.c
 )
 
 # =============================================================================
