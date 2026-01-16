@@ -21,9 +21,11 @@ import (
 )
 
 const (
-	// Battery streaming rate validation (BMS hardware limited to 1-10 Hz)
+	// MinBatteryRateHz is the minimum supported streaming rate in Hz (BMS hardware limited to 1-10 Hz).
 	MinBatteryRateHz     = 1
+	// MaxBatteryRateHz is the maximum supported streaming rate in Hz.
 	MaxBatteryRateHz     = 10
+	// DefaultBatteryRateHz is the default streaming rate in Hz.
 	DefaultBatteryRateHz = 1
 
 	// Protection threshold validation (Li-ion safe ranges)
@@ -61,7 +63,12 @@ func (h *batteryHolder) Load() *starv1.BatteryState {
 		return nil
 	}
 	// Return deep copy to prevent callers from mutating shared data
-	return proto.Clone(h.data).(*starv1.BatteryState)
+	cloned := proto.Clone(h.data)
+	batteryState, ok := cloned.(*starv1.BatteryState)
+	if !ok {
+		return nil
+	}
+	return batteryState
 }
 
 // Store updates the battery state.
@@ -304,6 +311,27 @@ func (s *BatteryService) validateRateHz(rateHz int32) int32 {
 	return rateHz
 }
 
+// handleSimpleRequest sends a request via HARQ and receives the response with header validation.
+func (s *BatteryService) handleSimpleRequest(
+	ctx context.Context,
+	req proto.Message,
+	resp proto.Message,
+	reqHeader *starv1.RequestHeader,
+	respHeader **starv1.ResponseHeader,
+	warnMsg string,
+) error {
+	if err := s.sendProtoMessage(ctx, req); err != nil {
+		return status.Errorf(codes.Unavailable, "failed to send request: %v", err)
+	}
+
+	if err := s.receiveProtoMessage(ctx, resp); err != nil {
+		return status.Errorf(codes.Unavailable, "failed to receive response: %v", err)
+	}
+
+	s.ensureResponseHeader(reqHeader, respHeader, warnMsg)
+	return nil
+}
+
 // ============================================================================
 // Simple Request/Response Methods (6 methods)
 // ============================================================================
@@ -314,19 +342,10 @@ func (s *BatteryService) GetBatteryState(ctx context.Context, req *starv1.GetBat
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	// Send request via HARQ
-	if err := s.sendProtoMessage(ctx, req); err != nil {
-		return nil, status.Errorf(codes.Unavailable, "failed to send request: %v", err)
-	}
-
-	// Receive response via HARQ
 	var resp starv1.GetBatteryStateResponse
-	if err := s.receiveProtoMessage(ctx, &resp); err != nil {
-		return nil, status.Errorf(codes.Unavailable, "failed to receive response: %v", err)
+	if err := s.handleSimpleRequest(ctx, req, &resp, req.Header, &resp.Header, "battery state response missing header"); err != nil {
+		return nil, err
 	}
-
-	// Ensure header exists
-	s.ensureResponseHeader(req.Header, &resp.Header, "battery state response missing header")
 
 	return &resp, nil
 }
@@ -337,19 +356,10 @@ func (s *BatteryService) GetProtectionThresholds(ctx context.Context, req *starv
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	// Send request via HARQ
-	if err := s.sendProtoMessage(ctx, req); err != nil {
-		return nil, status.Errorf(codes.Unavailable, "failed to send request: %v", err)
-	}
-
-	// Receive response via HARQ
 	var resp starv1.GetProtectionThresholdsResponse
-	if err := s.receiveProtoMessage(ctx, &resp); err != nil {
-		return nil, status.Errorf(codes.Unavailable, "failed to receive response: %v", err)
+	if err := s.handleSimpleRequest(ctx, req, &resp, req.Header, &resp.Header, "protection thresholds response missing header"); err != nil {
+		return nil, err
 	}
-
-	// Ensure header exists
-	s.ensureResponseHeader(req.Header, &resp.Header, "protection thresholds response missing header")
 
 	return &resp, nil
 }
@@ -360,19 +370,10 @@ func (s *BatteryService) GetBalancingStatus(ctx context.Context, req *starv1.Get
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	// Send request via HARQ
-	if err := s.sendProtoMessage(ctx, req); err != nil {
-		return nil, status.Errorf(codes.Unavailable, "failed to send request: %v", err)
-	}
-
-	// Receive response via HARQ
 	var resp starv1.GetBalancingStatusResponse
-	if err := s.receiveProtoMessage(ctx, &resp); err != nil {
-		return nil, status.Errorf(codes.Unavailable, "failed to receive response: %v", err)
+	if err := s.handleSimpleRequest(ctx, req, &resp, req.Header, &resp.Header, "balancing status response missing header"); err != nil {
+		return nil, err
 	}
-
-	// Ensure header exists
-	s.ensureResponseHeader(req.Header, &resp.Header, "balancing status response missing header")
 
 	return &resp, nil
 }
@@ -383,19 +384,10 @@ func (s *BatteryService) GetDeviceInfo(ctx context.Context, req *starv1.GetDevic
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	// Send request via HARQ
-	if err := s.sendProtoMessage(ctx, req); err != nil {
-		return nil, status.Errorf(codes.Unavailable, "failed to send request: %v", err)
-	}
-
-	// Receive response via HARQ
 	var resp starv1.GetDeviceInfoResponse
-	if err := s.receiveProtoMessage(ctx, &resp); err != nil {
-		return nil, status.Errorf(codes.Unavailable, "failed to receive response: %v", err)
+	if err := s.handleSimpleRequest(ctx, req, &resp, req.Header, &resp.Header, "device info response missing header"); err != nil {
+		return nil, err
 	}
-
-	// Ensure header exists
-	s.ensureResponseHeader(req.Header, &resp.Header, "device info response missing header")
 
 	return &resp, nil
 }
@@ -406,19 +398,10 @@ func (s *BatteryService) DisableCellBalancing(ctx context.Context, req *starv1.D
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	// Send request via HARQ
-	if err := s.sendProtoMessage(ctx, req); err != nil {
-		return nil, status.Errorf(codes.Unavailable, "failed to send request: %v", err)
-	}
-
-	// Receive response via HARQ
 	var resp starv1.DisableCellBalancingResponse
-	if err := s.receiveProtoMessage(ctx, &resp); err != nil {
-		return nil, status.Errorf(codes.Unavailable, "failed to receive response: %v", err)
+	if err := s.handleSimpleRequest(ctx, req, &resp, req.Header, &resp.Header, "disable balancing response missing header"); err != nil {
+		return nil, err
 	}
-
-	// Ensure header exists
-	s.ensureResponseHeader(req.Header, &resp.Header, "disable balancing response missing header")
 
 	return &resp, nil
 }

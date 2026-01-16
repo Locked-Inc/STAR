@@ -125,7 +125,7 @@ func TestNewBatteryService(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	ready := make(chan struct{})
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			ch := make(chan *starv1.WireMessage)
 			// Signal that subscription happened (goroutine started)
 			select {
@@ -177,7 +177,7 @@ func TestGetBatteryState_Success(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -217,7 +217,7 @@ func TestGetBatteryState_Success(t *testing.T) {
 func TestGetBatteryState_NilRequest(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -248,7 +248,7 @@ func TestGetBatteryState_HarqFailure(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -284,7 +284,7 @@ func TestStreamBatteryState_ValidRate(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	batteryCh := make(chan *starv1.WireMessage, 10)
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return batteryCh
 		},
 	}
@@ -353,7 +353,7 @@ func TestStreamBatteryState_InvalidRate(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	batteryCh := make(chan *starv1.WireMessage, 10)
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return batteryCh
 		},
 	}
@@ -403,7 +403,7 @@ func TestStreamBatteryState_ContextCancellation(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	batteryCh := make(chan *starv1.WireMessage, 10)
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return batteryCh
 		},
 	}
@@ -450,7 +450,7 @@ func TestStreamBatteryState_MultipleClients(t *testing.T) {
 	var mu sync.Mutex
 
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			mu.Lock()
 			subscribeCount++
 			mu.Unlock()
@@ -532,7 +532,7 @@ func TestGetProtectionThresholds_Success(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -562,7 +562,7 @@ func TestGetProtectionThresholds_HarqFailure(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -598,7 +598,7 @@ func TestSetProtectionThresholds_Success(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -625,7 +625,7 @@ func TestSetProtectionThresholds_Success(t *testing.T) {
 func TestSetProtectionThresholds_InvalidThresholds(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -662,7 +662,7 @@ func TestSetProtectionThresholds_InvalidThresholds(t *testing.T) {
 func TestSetProtectionThresholds_OutOfRange(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -714,7 +714,7 @@ func TestEnableCellBalancing_Success(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -738,69 +738,53 @@ func TestEnableCellBalancing_Success(t *testing.T) {
 	}
 }
 
-func TestEnableCellBalancing_InvalidMask(t *testing.T) {
-	mockHARQ := &testutil.MockHARQ{}
-	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
-			return make(chan *starv1.WireMessage)
+func TestEnableCellBalancing_InvalidMasks(t *testing.T) {
+	tests := []struct {
+		name string
+		mask uint32
+	}{
+		{
+			name: "invalid mask (too large)",
+			mask: 0x1FFFF, // 17 bits (> 16 cells max)
+		},
+		{
+			name: "zero mask",
+			mask: 0, // No cells selected
 		},
 	}
-	logger := testutil.NewDiscardLogger()
 
-	svc := NewBatteryService(context.Background(), mockHARQ, mockDispatcher, logger)
-	defer svc.Shutdown()
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mockHARQ := &testutil.MockHARQ{}
+			mockDispatcher := &testutil.MockDispatcher{
+				SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
+					return make(chan *starv1.WireMessage)
+				},
+			}
+			logger := testutil.NewDiscardLogger()
 
-	// Test with mask > maxCellMask (0xFFFF)
-	req := &starv1.EnableCellBalancingRequest{
-		Header:   &starv1.RequestHeader{RequestId: "test-invalid-mask"},
-		CellMask: 0x1FFFF, // 17 bits (> 16 cells max)
-	}
+			svc := NewBatteryService(context.Background(), mockHARQ, mockDispatcher, logger)
+			defer svc.Shutdown()
 
-	_, err := svc.EnableCellBalancing(context.Background(), req)
-	if err == nil {
-		t.Fatal("Expected error for invalid cell mask")
-	}
+			req := &starv1.EnableCellBalancingRequest{
+				Header:   &starv1.RequestHeader{RequestId: tc.name},
+				CellMask: tc.mask,
+			}
 
-	st, ok := status.FromError(err)
-	if !ok {
-		t.Fatal("Expected gRPC status error")
-	}
+			_, err := svc.EnableCellBalancing(context.Background(), req)
+			if err == nil {
+				t.Fatal("Expected error for invalid cell mask")
+			}
 
-	if st.Code() != codes.InvalidArgument {
-		t.Errorf("Expected InvalidArgument code, got %v", st.Code())
-	}
-}
+			st, ok := status.FromError(err)
+			if !ok {
+				t.Fatal("Expected gRPC status error")
+			}
 
-func TestEnableCellBalancing_ZeroMask(t *testing.T) {
-	mockHARQ := &testutil.MockHARQ{}
-	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
-			return make(chan *starv1.WireMessage)
-		},
-	}
-	logger := testutil.NewDiscardLogger()
-
-	svc := NewBatteryService(context.Background(), mockHARQ, mockDispatcher, logger)
-	defer svc.Shutdown()
-
-	// Test with zero mask (no cells selected)
-	req := &starv1.EnableCellBalancingRequest{
-		Header:   &starv1.RequestHeader{RequestId: "test-zero-mask"},
-		CellMask: 0, // Zero mask invalid
-	}
-
-	_, err := svc.EnableCellBalancing(context.Background(), req)
-	if err == nil {
-		t.Fatal("Expected error for zero cell mask")
-	}
-
-	st, ok := status.FromError(err)
-	if !ok {
-		t.Fatal("Expected gRPC status error")
-	}
-
-	if st.Code() != codes.InvalidArgument {
-		t.Errorf("Expected InvalidArgument code, got %v", st.Code())
+			if st.Code() != codes.InvalidArgument {
+				t.Errorf("Expected InvalidArgument code, got %v", st.Code())
+			}
+		})
 	}
 }
 
@@ -819,7 +803,7 @@ func TestDisableCellBalancing_Success(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -858,7 +842,7 @@ func TestGetBalancingStatus_Success(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -902,7 +886,7 @@ func TestControlFets_Success(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -949,7 +933,7 @@ func TestControlFets_StateVerification(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -999,7 +983,7 @@ func TestGetDeviceInfo_Success(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
@@ -1046,7 +1030,7 @@ func TestResetDevice_Success(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			return make(chan *starv1.WireMessage)
 		},
 	}
