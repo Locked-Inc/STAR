@@ -22,9 +22,9 @@ import (
 
 const (
 	// MinBatteryRateHz is the minimum supported streaming rate in Hz (BMS hardware limited to 1-10 Hz).
-	MinBatteryRateHz     = 1
+	MinBatteryRateHz = 1
 	// MaxBatteryRateHz is the maximum supported streaming rate in Hz.
-	MaxBatteryRateHz     = 10
+	MaxBatteryRateHz = 10
 	// DefaultBatteryRateHz is the default streaming rate in Hz.
 	DefaultBatteryRateHz = 1
 
