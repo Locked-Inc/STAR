@@ -145,6 +145,10 @@ func (s *BatteryService) updateBatteryCache() {
 			if !ok {
 				return
 			}
+			if wireMsg == nil {
+				s.logger.Warn("received nil wire message from dispatcher in battery cache update")
+				continue
+			}
 			batteryState := wireMsg.GetBatteryState()
 			if batteryState == nil {
 				s.logger.Warn("received wire message with nil battery state in cache update")
@@ -571,7 +575,7 @@ func (s *BatteryService) StreamBatteryState(req *starv1.StreamBatteryStateReques
 	ticker := time.NewTicker(time.Second / time.Duration(rateHz))
 	defer ticker.Stop()
 
-	ctx := stream.Context()
+	ctx, cancel := context.WithCancel(stream.Context())
 	batteryCh := s.dispatcher.Subscribe(dispatcher.MessageTypeBatteryData)
 
 	holder := &batteryHolder{}
@@ -586,8 +590,12 @@ func (s *BatteryService) StreamBatteryState(req *starv1.StreamBatteryStateReques
 
 	// Main loop sends battery state at requested rate
 	err := s.streamBatteryLoop(ctx, ticker, stream, holder)
-	wg.Wait()
+
+	// Ensure receiver goroutine exits and channel is unsubscribed
+	cancel()
 	s.dispatcher.Unsubscribe(dispatcher.MessageTypeBatteryData, batteryCh)
+	wg.Wait()
+
 	return err
 }
 
@@ -601,6 +609,11 @@ func (s *BatteryService) receiveStreamBatteryLoop(ctx context.Context, batteryCh
 			if !ok {
 				s.logger.Debug("battery subscription channel closed in stream")
 				return
+			}
+
+			if wireMsg == nil {
+				s.logger.Warn("received nil wire message from dispatcher in stream")
+				continue
 			}
 
 			batteryState := wireMsg.GetBatteryState()

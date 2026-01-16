@@ -10,8 +10,8 @@
 **Status:** Ready for review and merge
 
 **Summary:**
-- ✅ All 10 RPC methods implemented (622 lines)
-- ✅ 21 comprehensive unit tests (987 lines)
+- ✅ All 10 RPC methods implemented (656 lines)
+- ✅ 22 comprehensive unit tests (1070 lines)
 - ✅ 80.38% test coverage (exceeds 80% target)
 - ✅ Registered in main.go with graceful shutdown
 - ✅ No race conditions detected
@@ -416,8 +416,8 @@ Current services in main.go:
 ### New/Modified
 
 1. `star-proto/proto/star/v1/wire.proto` - Add BatteryState to WireMessage
-2. `star-gateway/internal/service/battery.go` - Full implementation (~500 lines)
-3. `star-gateway/internal/service/battery_test.go` - Comprehensive tests (~800 lines)
+2. `star-gateway/internal/service/battery.go` - Full implementation (~650 lines)
+3. `star-gateway/internal/service/battery_test.go` - Comprehensive tests (~1070 lines)
 4. `star-gateway/cmd/star-gateway/main.go` - Register BatteryService (+3 lines)
 
 ### Generated (auto)

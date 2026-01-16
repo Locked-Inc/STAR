@@ -135,6 +135,8 @@ chmod +x .git/hooks/pre-commit
 
 ### Code Review (`coderabbit`)
 
+CodeRabbit is an AI-powered code review tool that provides detailed feedback and fix suggestions for CI/dev workflows. It helps maintain code quality by catching issues early and offering improvement insights.
+
 ```bash
 # AI-powered code review with detailed feedback and fix suggestions
 coderabbit review --plain
@@ -158,10 +160,10 @@ cr review --plain
 
 **IMPORTANT - Automated Review Workflow:**
 When completing plan mode implementations or any significant code changes:
-1. Run `coderabbit review --prompt-only` immediately after implementation
-2. Review the feedback and apply reasonable suggestions
-3. This creates an automated code improvement loop
-4. Only skip if changes are trivial (typo fixes, documentation-only)
+1. Consider running `coderabbit review --prompt-only` after implementing changes
+2. Optionally review feedback and apply suggested changes as appropriate
+3. Iteratively improve your code based on the feedback
+4. You may skip for trivial changes (typos, docs)
 
 **Note:** Must run from repository root directory.
 
