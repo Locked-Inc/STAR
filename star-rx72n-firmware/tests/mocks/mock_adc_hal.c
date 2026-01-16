@@ -36,6 +36,12 @@ typedef enum {
   k_mock_adc_bits_unused = 0, /**< Bits parameter not applicable for this call type */
 } mock_adc_bits_t;
 
+/** @brief Bit manipulation constants for ADC calculations */
+typedef enum {
+  k_mock_adc_bit_shift_base   = 1, /**< Base value for 2^n calculation */
+  k_mock_adc_max_value_offset = 1, /**< Offset to get max value from 2^n */
+} mock_adc_bit_constants_t;
+
 /* =============================================================================
  * Global State
  * =============================================================================
@@ -276,7 +282,7 @@ rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32
   }
 
   /* Calculate voltage */
-  uint32_t max_value = (1UL << bits) - 1;
+  uint32_t max_value = ((uint32_t)k_mock_adc_bit_shift_base << bits) - k_mock_adc_max_value_offset;
   *voltage_mv        = ((uint32_t)raw_value * k_mock_adc_vref_mv) / max_value;
 
   return k_rx_ok;

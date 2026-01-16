@@ -11,6 +11,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include <assert.h>
 #include <string.h>
 
 #include "rx_crc.h"
@@ -32,6 +33,12 @@ typedef struct {
 
 static mock_onewire_state_t s_mock_state;
 
+/** @brief OneWire ROM length constants */
+typedef enum {
+  k_onewire_rom_length    = k_onewire_rom_bytes,
+  k_onewire_rom_crc_index = k_onewire_rom_length - 1,
+} onewire_rom_constants_t;
+
 /* =============================================================================
  * Mock OneWire Bus Manager
  * =============================================================================
@@ -44,19 +51,26 @@ static const char*      s_test_bus_name = "test_onewire";
 
 rx_err_t rx_bus_onewire_init(rx_bus_manager_t* manager, const char* bus_name)
 {
-  (void)manager;
-  (void)bus_name;
+  if ((manager == NULL) || (bus_name == NULL)) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (s_mock_state.initialized) {
+    return k_rx_err_invalid_state;
+  }
+
   s_mock_state.initialized = true;
   return k_rx_ok;
 }
 
 rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, bool* presence)
 {
-  (void)manager;
-  (void)bus_name;
-
-  if (presence == NULL) {
+  if ((manager == NULL) || (bus_name == NULL) || (presence == NULL)) {
     return k_rx_err_null_ptr;
+  }
+
+  if (!s_mock_state.initialized) {
+    return k_rx_err_invalid_state;
   }
 
   *presence = s_mock_state.presence_response;
@@ -65,19 +79,27 @@ rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, b
 
 rx_err_t rx_bus_onewire_write_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t byte)
 {
-  (void)manager;
-  (void)bus_name;
   (void)byte;
+
+  if ((manager == NULL) || (bus_name == NULL)) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (!s_mock_state.initialized) {
+    return k_rx_err_invalid_state;
+  }
+
   return k_rx_ok;
 }
 
 rx_err_t rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t* byte)
 {
-  (void)manager;
-  (void)bus_name;
-
-  if (byte == NULL) {
+  if ((manager == NULL) || (bus_name == NULL) || (byte == NULL)) {
     return k_rx_err_null_ptr;
+  }
+
+  if (!s_mock_state.initialized) {
+    return k_rx_err_invalid_state;
   }
 
   *byte = 0xFF;
@@ -86,11 +108,12 @@ rx_err_t rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_nam
 
 rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name, bool* bit)
 {
-  (void)manager;
-  (void)bus_name;
-
-  if (bit == NULL) {
+  if ((manager == NULL) || (bus_name == NULL) || (bit == NULL)) {
     return k_rx_err_null_ptr;
+  }
+
+  if (!s_mock_state.initialized) {
+    return k_rx_err_invalid_state;
   }
 
   *bit = s_mock_state.power_mode;
@@ -100,11 +123,12 @@ rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name
 rx_err_t
 rx_bus_onewire_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, uint32_t length)
 {
-  (void)manager;
-  (void)bus_name;
-
-  if (data == NULL) {
+  if ((manager == NULL) || (bus_name == NULL) || (data == NULL)) {
     return k_rx_err_null_ptr;
+  }
+
+  if (!s_mock_state.initialized) {
+    return k_rx_err_invalid_state;
   }
 
   if (length > k_ds18b20_scratchpad_bytes) {
@@ -120,17 +144,30 @@ rx_err_t rx_bus_onewire_write(rx_bus_manager_t* manager,
                               const uint8_t*    data,
                               uint32_t          length)
 {
-  (void)manager;
-  (void)bus_name;
   (void)data;
   (void)length;
+
+  if ((manager == NULL) || (bus_name == NULL) || (data == NULL)) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (!s_mock_state.initialized) {
+    return k_rx_err_invalid_state;
+  }
+
   return k_rx_ok;
 }
 
 rx_err_t rx_bus_onewire_skip_rom(rx_bus_manager_t* manager, const char* bus_name)
 {
-  (void)manager;
-  (void)bus_name;
+  if ((manager == NULL) || (bus_name == NULL)) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (!s_mock_state.initialized) {
+    return k_rx_err_invalid_state;
+  }
+
   return k_rx_ok;
 }
 
@@ -138,9 +175,14 @@ rx_err_t rx_bus_onewire_match_rom(rx_bus_manager_t* manager,
                                   const char*       bus_name,
                                   const uint8_t     rom[k_onewire_rom_bytes])
 {
-  (void)manager;
-  (void)bus_name;
-  (void)rom;
+  if ((manager == NULL) || (bus_name == NULL) || (rom == NULL)) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (!s_mock_state.initialized) {
+    return k_rx_err_invalid_state;
+  }
+
   return k_rx_ok;
 }
 
@@ -148,11 +190,12 @@ rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
                                  const char*       bus_name,
                                  uint8_t           rom[k_onewire_rom_bytes])
 {
-  (void)manager;
-  (void)bus_name;
-
-  if (rom == NULL) {
+  if ((manager == NULL) || (bus_name == NULL) || (rom == NULL)) {
     return k_rx_err_null_ptr;
+  }
+
+  if (!s_mock_state.initialized) {
+    return k_rx_err_invalid_state;
   }
 
   memcpy(rom, s_mock_state.rom, k_onewire_rom_bytes);
@@ -165,10 +208,16 @@ rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
                                uint32_t          max_devices,
                                uint32_t*         num_devices)
 {
-  (void)manager;
-  (void)bus_name;
   (void)roms;
   (void)max_devices;
+
+  if ((manager == NULL) || (bus_name == NULL) || (num_devices == NULL)) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (!s_mock_state.initialized) {
+    return k_rx_err_invalid_state;
+  }
 
   if (num_devices != NULL) {
     *num_devices = 1;
@@ -226,19 +275,20 @@ static void reset_mock_state(void)
   s_mock_state.rom[4] = 0x04;
   s_mock_state.rom[5] = 0x05;
   s_mock_state.rom[6] = 0x06;
-  s_mock_state.rom[k_onewire_rom_bytes - 1] =
-    rx_crc8_maxim(s_mock_state.rom, k_onewire_rom_bytes - 1);
+  s_mock_state.rom[k_onewire_rom_crc_index] =
+    rx_crc8_maxim(s_mock_state.rom, k_onewire_rom_crc_index);
 }
 
 /**
  * @brief Initialize handle to a known zero state
  */
-static void init_handle(rx_ds18b20_handle_t* handle)
+static void internal_init_handle(rx_ds18b20_handle_t* handle)
 {
+  assert(handle != NULL);
   if (handle == NULL) {
     return;
   }
-  memset(handle, 0, sizeof(*handle));
+  memset(handle, 0u, sizeof(*handle));
 }
 
 /* =============================================================================
@@ -271,7 +321,7 @@ void test_ds18b20_init_success(void)
     .use_rom_matching = false,
   };
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_err_t err = rx_ds18b20_init(&handle, &config);
 
@@ -298,7 +348,7 @@ void test_ds18b20_init_null_config(void)
 {
   rx_ds18b20_handle_t handle;
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_err_t err = rx_ds18b20_init(&handle, NULL);
 
@@ -315,7 +365,7 @@ void test_ds18b20_init_no_device_present(void)
     .use_rom_matching = false,
   };
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   s_mock_state.presence_response = false;
 
@@ -335,7 +385,7 @@ void test_ds18b20_init_already_initialized(void)
     .use_rom_matching = false,
   };
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_init(&handle, &config);
@@ -353,7 +403,7 @@ void test_ds18b20_init_invalid_resolution(void)
     .use_rom_matching = false,
   };
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_err_t err = rx_ds18b20_init(&handle, &config);
 
@@ -376,7 +426,7 @@ void test_ds18b20_read_temperature_25c(void)
   };
   float temp_c = 0.0f;
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   /* Scratchpad for +25.0°C: 0x0190 = 400 decimal = 25.0°C */
   create_valid_scratchpad(s_mock_state.scratchpad, 0x90, 0x01, 0x7F);
@@ -399,7 +449,7 @@ void test_ds18b20_read_temperature_0c(void)
   };
   float temp_c = 0.0f;
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   /* 0°C: 0x0000 */
   create_valid_scratchpad(s_mock_state.scratchpad, 0x00, 0x00, 0x7F);
@@ -422,7 +472,7 @@ void test_ds18b20_read_temperature_minus_55c(void)
   };
   float temp_c = 0.0f;
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   /* -55°C: 0xFC90 (two's complement) */
   create_valid_scratchpad(s_mock_state.scratchpad, 0x90, 0xFC, 0x7F);
@@ -445,7 +495,7 @@ void test_ds18b20_read_temperature_125c(void)
   };
   float temp_c = 0.0f;
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   /* +125°C: 0x07D0 = 2000 decimal = 125.0°C */
   create_valid_scratchpad(s_mock_state.scratchpad, 0xD0, 0x07, 0x7F);
@@ -462,7 +512,7 @@ void test_ds18b20_read_temperature_not_initialized(void)
   rx_ds18b20_handle_t handle;
   float               temp_c = 0.0f;
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
 
@@ -479,7 +529,7 @@ void test_ds18b20_read_temperature_null_output(void)
     .use_rom_matching = false,
   };
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, NULL);
@@ -502,7 +552,7 @@ void test_ds18b20_set_resolution_9bit(void)
     .use_rom_matching = false,
   };
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_9bit);
@@ -522,7 +572,7 @@ void test_ds18b20_get_resolution(void)
   };
   ds18b20_resolution_t resolution;
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_get_resolution(&handle, &resolution);
@@ -541,7 +591,7 @@ void test_ds18b20_get_conversion_time_12bit(void)
     .use_rom_matching = false,
   };
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_ds18b20_init(&handle, &config);
   uint32_t time_ms = rx_ds18b20_get_conversion_time_ms(&handle);
@@ -559,7 +609,7 @@ void test_ds18b20_get_conversion_time_9bit(void)
     .use_rom_matching = false,
   };
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_ds18b20_init(&handle, &config);
   uint32_t time_ms = rx_ds18b20_get_conversion_time_ms(&handle);
@@ -583,7 +633,7 @@ void test_ds18b20_read_power_mode_external(void)
   };
   bool external_power = false;
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   s_mock_state.power_mode = true;
 
@@ -604,6 +654,8 @@ void test_ds18b20_read_power_mode_parasitic(void)
     .use_rom_matching = false,
   };
   bool external_power = true;
+
+  internal_init_handle(&handle);
 
   s_mock_state.power_mode = false;
 
@@ -629,7 +681,7 @@ void test_ds18b20_trigger_conversion(void)
     .use_rom_matching = false,
   };
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_trigger_conversion(&handle);
@@ -647,7 +699,7 @@ void test_ds18b20_trigger_conversion_no_device(void)
     .use_rom_matching = false,
   };
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_ds18b20_init(&handle, &config);
   s_mock_state.presence_response = false;
@@ -672,7 +724,7 @@ void test_ds18b20_deinit(void)
     .use_rom_matching = false,
   };
 
-  init_handle(&handle);
+  internal_init_handle(&handle);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_deinit(&handle);

@@ -51,6 +51,7 @@ typedef enum {
 /** @brief ICU IER register calculation constants */
 typedef enum {
   k_cmt0_ier_bits_per_reg = 8, /**< Bits per IER register */
+  k_ier_bit_enable_base   = 1, /**< Base value for IER bit enable shift */
 } cmt0_ier_constants_t;
 
 /** @brief Timer counter initial value */
@@ -127,14 +128,14 @@ rx_err_t timer_init(void)
 
   /* Configure interrupt controller (ICU) */
   /* Clear any pending interrupt */
-  icu()->ir[k_vect_cmt0_cmi0] = k_cmt0_counter_init;
+  icu()->ir[k_vect_cmt0_cmi0] = k_icu_ir_clear;
 
   /* Set interrupt priority (3 out of 15) */
   icu()->ipr[k_vect_cmt0_cmi0] = k_cmt0_irq_priority;
 
   /* Enable CMT0 interrupt in ICU */
   icu()->ier[k_vect_cmt0_cmi0 / k_cmt0_ier_bits_per_reg] |=
-    (1 << (k_vect_cmt0_cmi0 % k_cmt0_ier_bits_per_reg));
+    (k_ier_bit_enable_base << (k_vect_cmt0_cmi0 % k_cmt0_ier_bits_per_reg));
 
   /* Start CMT0 */
   cmt_ctrl()->cmstr0 |= k_cmt0_cmstr_start_bit;

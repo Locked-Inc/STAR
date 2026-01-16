@@ -13,7 +13,13 @@
  */
 
 #include "mock_hcsr04_hw.h"
+#include "rx_hcsr04.h"
 #include "rx_hcsr04_hal.h"
+
+enum {
+  k_hcsr04_delay_none   = 0,                        /**< No delay requested */
+  k_hcsr04_delay_max_us = k_hcsr04_echo_timeout_us, /**< Maximum supported delay */
+};
 
 /* =============================================================================
  * Helper Functions
@@ -36,6 +42,11 @@ static inline bool internal_is_valid_pin(rx_port_pin_t pin)
  * =============================================================================
  */
 
+/**
+ * @brief Set the specified pin as an output
+ *
+ * Validates pin and port ranges, then delegates to mock_gpio_set_output().
+ */
 rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
 {
   if (!internal_is_valid_pin(pin)) {
@@ -152,6 +163,14 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
 
 void hcsr04_hal_delay_us(uint32_t us)
 {
+  if (us == k_hcsr04_delay_none) {
+    return;
+  }
+
+  if (us > k_hcsr04_delay_max_us) {
+    return;
+  }
+
   mock_delay_us(us);
 }
 

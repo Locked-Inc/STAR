@@ -13,6 +13,7 @@
 
 #ifdef __RX__
 
+#include "rx_check.h"
 #include "rx_time_constants.h"
 #include "rx_time_interface.h"
 #include "tx_api.h"
@@ -84,14 +85,16 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
  */
 rx_err_t rx_time_threadx_get_interface(rx_time_interface_t* iface)
 {
-  if (iface == NULL) {
-    return k_rx_err_null_ptr;
-  }
+  RX_CHECK_NULL_PTR(iface, "TIME", "Interface pointer is NULL");
 
   iface->ctx        = NULL; /* No context needed for ThreadX */
   iface->sleep_ms   = impl_sleep_ms;
   iface->get_ms     = impl_get_ms;
   iface->is_elapsed = impl_is_elapsed;
+
+  RX_CHECK_NULL_PTR(iface->sleep_ms, "TIME", "sleep_ms is NULL");
+  RX_CHECK_NULL_PTR(iface->get_ms, "TIME", "get_ms is NULL");
+  RX_CHECK_NULL_PTR(iface->is_elapsed, "TIME", "is_elapsed is NULL");
 
   return k_rx_ok;
 }

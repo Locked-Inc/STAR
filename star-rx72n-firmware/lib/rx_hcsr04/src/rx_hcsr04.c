@@ -17,6 +17,7 @@
 
 #include <stddef.h>
 
+#include "rx_check.h"
 #include "rx_hcsr04_hal.h"
 #include "tx_api.h"
 
@@ -67,6 +68,13 @@ typedef enum {
 typedef enum {
   k_shutdown_wait_ticks = 5, /**< ~50ms at 100 Hz tick rate */
 } rx_hcsr04_shutdown_t;
+
+/**
+ * @brief Echo polling loop bounds
+ */
+typedef enum {
+  k_echo_poll_max_iterations = 30000, /**< Max polling iterations */
+} rx_hcsr04_poll_limits_t;
 
 /**
  * @brief Speed of sound base constant (m/s at 0°C)
@@ -164,33 +172,32 @@ static bool s_worker_initialized = false;
  */
 static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 {
+  rx_err_t err;
+  uint8_t  port;
+  uint8_t  pin_num;
+
   if (handle == NULL) {
     return k_rx_err_invalid_arg;
   }
 
-  uint8_t port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
-  uint8_t pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
-  if (port > k_rx_port_j || pin_num > k_rx_pin_max) {
+  port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
+  pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
+  /* port/pin_num are unsigned; lower-bound checks are unnecessary */
+  if ((port > k_rx_port_j) || (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Ensure trigger is low initially */
-  rx_err_t err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
+  RX_RETURN_ON_ERROR(err, "HCSR04", "Failed to set trigger low");
   hcsr04_hal_delay_us(k_hcsr04_trigger_settle_us);
 
   /* Send 10us HIGH pulse */
   err = hcsr04_hal_gpio_write_high(handle->trigger_pin);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  RX_RETURN_ON_ERROR(err, "HCSR04", "Failed to set trigger high");
   hcsr04_hal_delay_us(k_hcsr04_trigger_pulse_us);
   err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  RX_RETURN_ON_ERROR(err, "HCSR04", "Failed to clear trigger low");
 
   return k_rx_ok;
 }
@@ -209,16 +216,18 @@ static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 static rx_err_t internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
 {
   uint32_t start_time = hcsr04_hal_get_time_us();
+  uint32_t elapsed    = 0;
+  bool     pin_state  = false;
+  rx_err_t read_err   = k_rx_ok;
 
-  while (true) {
+  for (uint32_t i = 0; i < k_echo_poll_max_iterations; i++) {
     /* Check for cancellation request */
     if (handle->cancel_requested) {
       handle->cancel_requested = false;
       return k_rx_err_cancelled;
     }
 
-    bool     pin_state = false;
-    rx_err_t read_err  = hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
+    read_err = hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
     if (read_err != k_rx_ok) {
       return read_err;
     }
@@ -228,11 +237,13 @@ static rx_err_t internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, u
     }
 
     /* Check for timeout */
-    uint32_t elapsed = hcsr04_hal_get_time_us() - start_time;
+    elapsed = hcsr04_hal_get_time_us() - start_time;
     if (elapsed >= timeout_us) {
       return k_rx_err_timeout;
     }
   }
+
+  return k_rx_err_timeout;
 }
 
 /**
@@ -402,7 +413,10 @@ rx_err_t rx_hcsr04_worker_deinit(void)
    * In production, we'd use a semaphore or check thread state.
    * For simplicity, we assume the worker exits quickly (< 30ms measurement).
    */
-  tx_thread_sleep(k_shutdown_wait_ticks);
+  status = tx_thread_sleep(k_shutdown_wait_ticks);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
 
   /* Delete thread (now safely terminated) */
   status = tx_thread_delete(&s_hcsr04_worker_thread);

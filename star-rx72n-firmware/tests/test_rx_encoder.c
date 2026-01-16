@@ -47,12 +47,12 @@
  * @brief Test constants for encoder configuration
  */
 typedef enum {
-  k_test_counts_per_rev  = 1364,  /**< 341 PPR with 4x decoding */
-  k_test_degrees_per_rev = 360,   /**< Degrees in one revolution */
-  k_test_counter_max     = 65536, /**< 16-bit counter maximum + 1 */
-  k_test_counter_half    = 32768, /**< Half of counter range */
-  k_test_counter_max_val = 65535, /**< 16-bit counter maximum value */
-  k_test_counter_min_val = 0,     /**< 16-bit counter minimum value */
+  k_test_counts_per_rev  = 1364,                   /**< 341 PPR with 4x decoding */
+  k_test_degrees_per_rev = 360,                    /**< Degrees in one revolution */
+  k_test_counter_max     = 65536,                  /**< 16-bit counter maximum + 1 */
+  k_test_counter_half    = 32768,                  /**< Half of counter range */
+  k_test_counter_max_val = k_test_counter_max - 1, /**< 16-bit counter max */
+  k_test_counter_min_val = 0,                      /**< 16-bit counter minimum value */
 } test_constants_t;
 
 /**

@@ -157,10 +157,11 @@ typedef enum {
   k_us_per_second          = 1000000, /**< Microseconds per second */
   k_timer_rounding         = 500000,  /**< Rounding factor for integer division */
   k_max_delay_iterations   = 100,     /**< Safety guard: max loop iterations */
-  k_no_delay               = 0,       /**< No delay requested */
-  k_min_ticks              = 1,       /**< Minimum ticks to wait */
-  k_cmstr1_cmt2_enable_bit = 0x01,    /**< CMSTR1 bit 0 enables CMT2 */
-  k_counter_reset          = 0,       /**< Counter reset value */
+  k_max_delay_ticks        = k_timer_counter_max * k_max_delay_iterations, /**< Max ticks */
+  k_no_delay               = 0,    /**< No delay requested */
+  k_min_ticks              = 1,    /**< Minimum ticks to wait */
+  k_cmstr1_cmt2_enable_bit = 0x01, /**< CMSTR1 bit 0 enables CMT2 */
+  k_counter_reset          = 0,    /**< Counter reset value */
 } cmt2_timing_constants_t;
 
 static bool     s_cmt2_initialized = false;
@@ -238,6 +239,10 @@ void hcsr04_hal_delay_us(uint32_t us)
   ticks    = ((uint64_t)us * (uint64_t)timer_hz + k_timer_rounding) / k_us_per_second;
   if (ticks < k_min_ticks) {
     ticks = k_min_ticks;
+  }
+
+  if (ticks > k_max_delay_ticks) {
+    return;
   }
 
   while (ticks > 0 && iteration_count < k_max_delay_iterations) {
