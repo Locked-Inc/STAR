@@ -133,6 +133,38 @@ cp scripts/pre-commit-ros2 .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 
+### Code Review (`coderabbit`)
+
+```bash
+# AI-powered code review with detailed feedback and fix suggestions
+coderabbit review --plain
+
+# Token-efficient mode (minimal output for AI agents)
+coderabbit review --prompt-only
+
+# Review specific files
+coderabbit review --plain path/to/file.go
+
+# Shorthand alias
+cr review --plain
+```
+
+**When to use:**
+- Before commits to catch issues early
+- After implementing features to get improvement suggestions
+- During refactoring to ensure code quality
+- Use `--plain` for human-readable analysis
+- Use `--prompt-only` when working with AI agents to save tokens
+
+**IMPORTANT - Automated Review Workflow:**
+When completing plan mode implementations or any significant code changes:
+1. Run `coderabbit review --prompt-only` immediately after implementation
+2. Review the feedback and apply reasonable suggestions
+3. This creates an automated code improvement loop
+4. Only skip if changes are trivial (typo fixes, documentation-only)
+
+**Note:** Must run from repository root directory.
+
 ## Protocol Buffers
 
 ### Style Guide (Boston Dynamics-based)
