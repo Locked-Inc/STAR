@@ -29,10 +29,10 @@ const (
 	testGoroutineStartTimeout = 500 * time.Millisecond
 
 	// Stream test timing constants
-	testStreamTimeout      = 300 * time.Millisecond // Context timeout for stream tests
+	testStreamTimeout       = 300 * time.Millisecond // Context timeout for stream tests
 	testBatterySendInterval = 50 * time.Millisecond  // Interval for sending battery states
-	testStreamRateHz       = 5                       // Stream rate in Hz (200ms per message)
-	testStreamWaitTimeout  = 500 * time.Millisecond  // Maximum wait for stream completion
+	testStreamRateHz        = 5                      // Stream rate in Hz (200ms per message)
+	testStreamWaitTimeout   = 500 * time.Millisecond // Maximum wait for stream completion
 )
 
 // ============================================================================
