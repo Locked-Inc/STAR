@@ -149,11 +149,11 @@ typedef bool (*rx_pin_is_reserved_fn)(void* ctx, uint8_t port, uint8_t pin);
  *         k_rx_err_gpio_invalid_port if port invalid,
  *         k_rx_err_gpio_invalid_pin if pin invalid
  */
-typedef rx_err_t (*rx_pin_get_function_fn)(void*   ctx,
-                                           uint8_t port,
-                                           uint8_t pin,
-                                           char*   function_out,
-                                           size_t  function_len);
+typedef rx_err_t (*rx_pin_get_function_fn)(void*    ctx,
+                                           uint8_t  port,
+                                           uint8_t  pin,
+                                           char*    function_out,
+                                           uint32_t function_len);
 
 /**
  * @brief Clear all pin reservations

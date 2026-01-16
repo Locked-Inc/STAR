@@ -24,6 +24,18 @@ typedef enum {
   k_mock_adc_vref_mv = 3300, /**< 3.3V reference */
 } mock_adc_voltage_t;
 
+/** @brief Valid ADC resolution values in bits */
+typedef enum {
+  k_mock_adc_resolution_8bit  = 8,
+  k_mock_adc_resolution_10bit = 10,
+  k_mock_adc_resolution_12bit = 12,
+} mock_adc_resolution_t;
+
+/** @brief ADC bits parameter constants */
+typedef enum {
+  k_mock_adc_bits_unused = 0, /**< Bits parameter not applicable for this call type */
+} mock_adc_bits_t;
+
 /* =============================================================================
  * Global State
  * =============================================================================
@@ -185,7 +197,8 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   }
 
   /* Validate resolution */
-  if (bits != 8 && bits != 10 && bits != 12) {
+  if (bits != k_mock_adc_resolution_8bit && bits != k_mock_adc_resolution_10bit &&
+      bits != k_mock_adc_resolution_12bit) {
     return k_rx_err_invalid_arg;
   }
 
@@ -203,7 +216,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
 
 rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
 {
-  internal_record_call(k_mock_adc_call_read, unit, channel, 0);
+  internal_record_call(k_mock_adc_call_read, unit, channel, k_mock_adc_bits_unused);
 
   rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {

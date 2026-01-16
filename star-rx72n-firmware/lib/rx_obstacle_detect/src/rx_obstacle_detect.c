@@ -567,17 +567,20 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 
 static rx_err_t internal_stop_all_motors(rx_obstacle_detect_t* handle)
 {
-  rx_err_t ret = k_rx_ok;
+  rx_err_t ret       = k_rx_ok;
+  rx_err_t first_err = k_rx_ok;
 
   for (uint8_t i = 0; i < handle->motor_count; i++) {
     ret = rx_motor_stop(handle->motors[i], true);
     if (ret != k_rx_ok) {
-      /* Log error but continue stopping other motors */
-      continue;
+      /* Record first error but continue stopping other motors */
+      if (first_err == k_rx_ok) {
+        first_err = ret;
+      }
     }
   }
 
-  return k_rx_ok;
+  return first_err;
 }
 
 static void internal_invoke_callback(rx_obstacle_detect_t* handle,

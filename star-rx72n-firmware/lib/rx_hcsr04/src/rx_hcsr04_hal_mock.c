@@ -112,7 +112,7 @@ rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
     return k_rx_err_invalid_arg;
   }
   if (value == NULL) {
-    return k_rx_err_invalid_arg;
+    return k_rx_err_null_ptr;
   }
 
   /* Extract port and pin for secondary validation */

@@ -51,6 +51,8 @@ typedef enum {
   k_test_degrees_per_rev = 360,   /**< Degrees in one revolution */
   k_test_counter_max     = 65536, /**< 16-bit counter maximum + 1 */
   k_test_counter_half    = 32768, /**< Half of counter range */
+  k_test_counter_max_val = 65535, /**< 16-bit counter maximum value */
+  k_test_counter_min_val = 0,     /**< 16-bit counter minimum value */
 } test_constants_t;
 
 /**
@@ -244,25 +246,25 @@ void test_encoder_read_raw_not_initialized_fails(void)
 void test_encoder_read_raw_max_value(void)
 {
   rx_encoder_init(&s_config);
-  mock_encoder_set_counter(s_config.channel, 65535);
+  mock_encoder_set_counter(s_config.channel, k_test_counter_max_val);
 
   uint16_t count;
   rx_err_t err = rx_encoder_read_raw(s_config.channel, &count);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(65535, count);
+  TEST_ASSERT_EQUAL_UINT16(k_test_counter_max_val, count);
 }
 
 void test_encoder_read_raw_zero_value(void)
 {
   rx_encoder_init(&s_config);
-  mock_encoder_set_counter(s_config.channel, 0);
+  mock_encoder_set_counter(s_config.channel, k_test_counter_min_val);
 
   uint16_t count;
   rx_err_t err = rx_encoder_read_raw(s_config.channel, &count);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(0, count);
+  TEST_ASSERT_EQUAL_UINT16(k_test_counter_min_val, count);
 }
 
 /* =============================================================================
