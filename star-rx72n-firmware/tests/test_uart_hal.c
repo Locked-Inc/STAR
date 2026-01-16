@@ -34,6 +34,12 @@
 static const rx_port_pin_t k_test_tx_gpio = k_rx_pb_7; /**< PB7 TX pin (from rx_port_constants.h) */
 static const rx_port_pin_t k_test_rx_gpio = k_rx_pb_6; /**< PB6 RX pin (from rx_port_constants.h) */
 
+/** @brief UART test constants */
+typedef enum {
+  k_test_channel_sci9    = 9,
+  k_test_baudrate_115200 = 115200,
+} test_uart_constants_t;
+
 /* =============================================================================
  * Test Fixtures
  * =============================================================================
@@ -59,15 +65,15 @@ void tearDown(void)
 void test_uart_init_channel_success(void)
 {
   const uart_channel_config_t config = {
-    .channel  = 9,
-    .baudrate = 115200,
+    .channel  = k_test_channel_sci9,
+    .baudrate = k_test_baudrate_115200,
     .tx_gpio  = k_test_tx_gpio,
     .rx_gpio  = k_test_rx_gpio,
   };
   rx_err_t err = uart_init_channel(&config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(9));
-  TEST_ASSERT_EQUAL(115200, mock_uart_hw_get_baudrate(9));
+  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(k_test_channel_sci9));
+  TEST_ASSERT_EQUAL(k_test_baudrate_115200, mock_uart_hw_get_baudrate(k_test_channel_sci9));
 }
 
 void test_uart_init_channel_sci0(void)
@@ -88,7 +94,7 @@ void test_uart_init_channel_invalid(void)
 {
   const uart_channel_config_t config = {
     .channel  = 13,
-    .baudrate = 115200,
+    .baudrate = k_test_baudrate_115200,
     .tx_gpio  = k_test_tx_gpio,
     .rx_gpio  = k_test_rx_gpio,
   };
@@ -99,8 +105,8 @@ void test_uart_init_channel_invalid(void)
 void test_uart_init_channel_already_initialized(void)
 {
   const uart_channel_config_t config = {
-    .channel  = 9,
-    .baudrate = 115200,
+    .channel  = k_test_channel_sci9,
+    .baudrate = k_test_baudrate_115200,
     .tx_gpio  = k_test_tx_gpio,
     .rx_gpio  = k_test_rx_gpio,
   };
@@ -115,17 +121,17 @@ void test_uart_init_channel_already_initialized(void)
 void test_uart_deinit_channel_success(void)
 {
   uart_channel_config_t cfg = {
-    .channel  = 9,
-    .baudrate = 115200,
+    .channel  = k_test_channel_sci9,
+    .baudrate = k_test_baudrate_115200,
     .tx_gpio  = k_test_tx_gpio,
     .rx_gpio  = k_test_rx_gpio,
   };
   rx_err_t init_err = uart_init_channel(&cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, init_err);
 
-  rx_err_t err = uart_deinit_channel(9);
+  rx_err_t err = uart_deinit_channel(k_test_channel_sci9);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FALSE(mock_uart_hw_is_initialized(9));
+  TEST_ASSERT_FALSE(mock_uart_hw_is_initialized(k_test_channel_sci9));
 }
 
 void test_uart_deinit_channel_invalid(void)
@@ -141,25 +147,25 @@ void test_uart_deinit_channel_invalid(void)
 
 void test_uart_putc_channel_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
-  rx_err_t err = uart_putc_channel(9, 'A');
+  rx_err_t err = uart_putc_channel(k_test_channel_sci9, 'A');
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data was transmitted */
   uint8_t  tx_data[8];
-  uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
+  uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('A', tx_data[0]);
 }
 
 void test_uart_putc_channel_not_initialized(void)
 {
-  rx_err_t err = uart_putc_channel(9, 'A');
+  rx_err_t err = uart_putc_channel(k_test_channel_sci9, 'A');
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -171,52 +177,52 @@ void test_uart_putc_channel_invalid_channel(void)
 
 void test_uart_putc_channel_tdre_timeout(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   /* Simulate TDRE flag never becoming ready (transmit buffer always full) */
-  mock_sci_set_tdre(9, false);
+  mock_sci_set_tdre(k_test_channel_sci9, false);
 
   /* This should timeout after k_uart_tx_timeout iterations */
-  rx_err_t err = uart_putc_channel(9, 'A');
+  rx_err_t err = uart_putc_channel(k_test_channel_sci9, 'A');
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
 
 void test_uart_puts_channel_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
-  rx_err_t err = uart_puts_channel(9, "Hello");
+  rx_err_t err = uart_puts_channel(k_test_channel_sci9, "Hello");
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data was transmitted */
   uint8_t  tx_data[32];
-  uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
+  uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(5, count);
   TEST_ASSERT_EQUAL_STRING_LEN("Hello", tx_data, 5);
 }
 
 void test_uart_puts_channel_newline_conversion(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
-  rx_err_t err = uart_puts_channel(9, "Hi\n");
+  rx_err_t err = uart_puts_channel(k_test_channel_sci9, "Hi\n");
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify \n was converted to \r\n */
   uint8_t  tx_data[32];
-  uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
+  uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(4, count); /* "Hi\r\n" */
   TEST_ASSERT_EQUAL('H', tx_data[0]);
   TEST_ASSERT_EQUAL('i', tx_data[1]);
@@ -226,50 +232,50 @@ void test_uart_puts_channel_newline_conversion(void)
 
 void test_uart_puts_channel_null_string(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
-  rx_err_t err = uart_puts_channel(9, NULL);
+  rx_err_t err = uart_puts_channel(k_test_channel_sci9, NULL);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_uart_puts_channel_not_initialized(void)
 {
-  rx_err_t err = uart_puts_channel(9, "Test");
+  rx_err_t err = uart_puts_channel(k_test_channel_sci9, "Test");
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 void test_uart_write_channel_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   uint8_t  data[] = {0x01, 0x02, 0x03, 0x04};
-  rx_err_t err    = uart_write_channel(9, data, sizeof(data));
+  rx_err_t err    = uart_write_channel(k_test_channel_sci9, data, sizeof(data));
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data was transmitted */
   uint8_t  tx_data[8];
-  uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
+  uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(4, count);
   TEST_ASSERT_EQUAL_MEMORY(data, tx_data, 4);
 }
 
 void test_uart_write_channel_null_data(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
-  rx_err_t err = uart_write_channel(9, NULL, 10);
+  rx_err_t err = uart_write_channel(k_test_channel_sci9, NULL, 10);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -280,71 +286,71 @@ void test_uart_write_channel_null_data(void)
 
 void test_uart_getc_channel_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   /* Inject RX data */
   uint8_t rx_byte = 'X';
-  mock_uart_hw_inject_rx_data(9, &rx_byte, 1);
+  mock_uart_hw_inject_rx_data(k_test_channel_sci9, &rx_byte, 1);
 
   /* Read the data */
-  char     received;
-  rx_err_t err = uart_getc_channel(9, &received);
+  char     received = '\0';
+  rx_err_t err      = uart_getc_channel(k_test_channel_sci9, &received);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL('X', received);
 }
 
 void test_uart_getc_channel_no_data(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
-  char     received;
-  rx_err_t err = uart_getc_channel(9, &received);
+  char     received = '\0';
+  rx_err_t err      = uart_getc_channel(k_test_channel_sci9, &received);
   TEST_ASSERT_EQUAL(k_rx_err_empty, err);
 }
 
 void test_uart_getc_channel_null_buffer(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
-  rx_err_t err = uart_getc_channel(9, NULL);
+  rx_err_t err = uart_getc_channel(k_test_channel_sci9, NULL);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_uart_getc_channel_not_initialized(void)
 {
-  char     received;
-  rx_err_t err = uart_getc_channel(9, &received);
+  char     received = '\0';
+  rx_err_t err      = uart_getc_channel(k_test_channel_sci9, &received);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 void test_uart_read_channel_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   /* Inject RX data */
   uint8_t rx_data[] = {0x11, 0x22, 0x33, 0x44};
-  mock_uart_hw_inject_rx_data(9, rx_data, sizeof(rx_data));
+  mock_uart_hw_inject_rx_data(k_test_channel_sci9, rx_data, sizeof(rx_data));
 
   /* Read the data */
   uint8_t  buffer[8];
   uint16_t bytes_read;
-  rx_err_t err = uart_read_channel(9, buffer, sizeof(buffer), &bytes_read);
+  rx_err_t err = uart_read_channel(k_test_channel_sci9, buffer, sizeof(buffer), &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(4, bytes_read);
   TEST_ASSERT_EQUAL_MEMORY(rx_data, buffer, 4);
@@ -352,86 +358,86 @@ void test_uart_read_channel_success(void)
 
 void test_uart_read_channel_partial(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   /* Inject RX data */
   uint8_t rx_data[] = {0xAA, 0xBB, 0xCC};
-  mock_uart_hw_inject_rx_data(9, rx_data, sizeof(rx_data));
+  mock_uart_hw_inject_rx_data(k_test_channel_sci9, rx_data, sizeof(rx_data));
 
   /* Read only 2 bytes */
   uint8_t  buffer[8];
   uint16_t bytes_read;
-  rx_err_t err = uart_read_channel(9, buffer, 2, &bytes_read);
+  rx_err_t err = uart_read_channel(k_test_channel_sci9, buffer, 2, &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(2, bytes_read);
   TEST_ASSERT_EQUAL(0xAA, buffer[0]);
   TEST_ASSERT_EQUAL(0xBB, buffer[1]);
 
   /* Remaining byte should still be available */
-  TEST_ASSERT_EQUAL(1, mock_uart_hw_rx_available(9));
+  TEST_ASSERT_EQUAL(1, mock_uart_hw_rx_available(k_test_channel_sci9));
 }
 
 void test_uart_read_channel_null_buffer(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   uint16_t bytes_read;
-  rx_err_t err = uart_read_channel(9, NULL, 10, &bytes_read);
+  rx_err_t err = uart_read_channel(k_test_channel_sci9, NULL, 10, &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_uart_read_channel_null_bytes_read(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   uint8_t  buffer[8];
-  rx_err_t err = uart_read_channel(9, buffer, sizeof(buffer), NULL);
+  rx_err_t err = uart_read_channel(k_test_channel_sci9, buffer, sizeof(buffer), NULL);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_uart_rx_available_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   bool     available;
-  rx_err_t err = uart_rx_available(9, &available);
+  rx_err_t err = uart_rx_available(k_test_channel_sci9, &available);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(available);
 
   /* Inject data */
   uint8_t byte = 0x55;
-  mock_uart_hw_inject_rx_data(9, &byte, 1);
+  mock_uart_hw_inject_rx_data(k_test_channel_sci9, &byte, 1);
 
-  err = uart_rx_available(9, &available);
+  err = uart_rx_available(k_test_channel_sci9, &available);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(available);
 }
 
 void test_uart_rx_available_null(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
-  rx_err_t err = uart_rx_available(9, NULL);
+  rx_err_t err = uart_rx_available(k_test_channel_sci9, NULL);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -450,8 +456,8 @@ void test_uart_channel_isolation(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg0));
 
   /* Initialize channel 9 */
-  uart_channel_config_t cfg9 = {.channel  = 9,
-                                .baudrate = 115200,
+  uart_channel_config_t cfg9 = {.channel  = k_test_channel_sci9,
+                                .baudrate = k_test_baudrate_115200,
                                 .tx_gpio  = k_test_tx_gpio,
                                 .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg9));
@@ -460,7 +466,7 @@ void test_uart_channel_isolation(void)
   uart_putc_channel(0, 'A');
 
   /* Write to channel 9 */
-  uart_putc_channel(9, 'B');
+  uart_putc_channel(k_test_channel_sci9, 'B');
 
   /* Verify channel 0 data */
   uint8_t  tx_data[8];
@@ -469,7 +475,7 @@ void test_uart_channel_isolation(void)
   TEST_ASSERT_EQUAL('A', tx_data[0]);
 
   /* Verify channel 9 data */
-  count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
+  count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('B', tx_data[0]);
 }
@@ -484,8 +490,8 @@ void test_uart_rx_channel_isolation(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg0));
 
   /* Initialize channel 9 */
-  uart_channel_config_t cfg9 = {.channel  = 9,
-                                .baudrate = 115200,
+  uart_channel_config_t cfg9 = {.channel  = k_test_channel_sci9,
+                                .baudrate = k_test_baudrate_115200,
                                 .tx_gpio  = k_test_tx_gpio,
                                 .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg9));
@@ -496,15 +502,15 @@ void test_uart_rx_channel_isolation(void)
 
   /* Inject data to channel 9 */
   uint8_t data9 = 'Y';
-  mock_uart_hw_inject_rx_data(9, &data9, 1);
+  mock_uart_hw_inject_rx_data(k_test_channel_sci9, &data9, 1);
 
   /* Read from channel 0 */
-  char received;
+  char received = '\0';
   uart_getc_channel(0, &received);
   TEST_ASSERT_EQUAL('X', received);
 
   /* Read from channel 9 */
-  uart_getc_channel(9, &received);
+  uart_getc_channel(k_test_channel_sci9, &received);
   TEST_ASSERT_EQUAL('Y', received);
 }
 
@@ -516,8 +522,8 @@ void test_uart_rx_channel_isolation(void)
 void test_uart_init_error_injection(void)
 {
   mock_uart_hw_set_next_error(k_rx_err_hw_error);
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   rx_err_t              err = uart_init_channel(&cfg);
@@ -526,15 +532,15 @@ void test_uart_init_error_injection(void)
 
 void test_uart_write_error_injection(void)
 {
-  uart_channel_config_t cfg = {.channel  = 9,
-                               .baudrate = 115200,
+  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                               .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   mock_uart_hw_set_next_error(k_rx_err_timeout);
   uint8_t  data[] = {0x01, 0x02};
-  rx_err_t err    = uart_write_channel(9, data, sizeof(data));
+  rx_err_t err    = uart_write_channel(k_test_channel_sci9, data, sizeof(data));
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
 
@@ -547,8 +553,8 @@ void test_uart_init_legacy(void)
 {
   rx_err_t err = uart_init();
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(9));
-  TEST_ASSERT_EQUAL(115200, mock_uart_hw_get_baudrate(9));
+  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(k_test_channel_sci9));
+  TEST_ASSERT_EQUAL(k_test_baudrate_115200, mock_uart_hw_get_baudrate(k_test_channel_sci9));
 }
 
 void test_uart_putc_legacy(void)
@@ -557,7 +563,7 @@ void test_uart_putc_legacy(void)
   uart_putc('Z');
 
   uint8_t  tx_data[8];
-  uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
+  uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('Z', tx_data[0]);
 }
@@ -568,7 +574,7 @@ void test_uart_puts_legacy(void)
   uart_puts("Test");
 
   uint8_t  tx_data[32];
-  uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
+  uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(4, count);
   TEST_ASSERT_EQUAL_STRING_LEN("Test", tx_data, 4);
 }
@@ -579,7 +585,7 @@ void test_uart_putint_positive(void)
   uart_putint(12345);
 
   uint8_t  tx_data[32];
-  uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
+  uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(5, count);
   TEST_ASSERT_EQUAL_STRING_LEN("12345", tx_data, 5);
 }
@@ -590,7 +596,7 @@ void test_uart_putint_negative(void)
   uart_putint(-42);
 
   uint8_t  tx_data[32];
-  uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
+  uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(3, count);
   TEST_ASSERT_EQUAL_STRING_LEN("-42", tx_data, 3);
 }
@@ -601,7 +607,7 @@ void test_uart_puthex(void)
   uart_puthex(0xABCD, 4);
 
   uint8_t  tx_data[32];
-  uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
+  uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(6, count); /* "0xABCD" */
   TEST_ASSERT_EQUAL_STRING_LEN("0xABCD", tx_data, 6);
 }
@@ -613,33 +619,33 @@ void test_uart_puthex(void)
 
 void test_uart_call_history(void)
 {
-  const uart_channel_config_t cfg = {.channel  = 9,
-                                     .baudrate = 115200,
+  const uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+                                     .baudrate = k_test_baudrate_115200,
                                      .tx_gpio  = k_test_tx_gpio,
                                      .rx_gpio  = k_test_rx_gpio};
   uart_init_channel(&cfg);
 
-  uart_putc_channel(9, 'A');
-  uart_deinit_channel(9);
+  uart_putc_channel(k_test_channel_sci9, 'A');
+  uart_deinit_channel(k_test_channel_sci9);
 
   TEST_ASSERT_EQUAL(3, mock_uart_hw_get_call_count());
 
   const mock_uart_call_t* call = mock_uart_hw_get_call(0);
   TEST_ASSERT_NOT_NULL(call);
   TEST_ASSERT_EQUAL(k_mock_uart_call_init, call->type);
-  TEST_ASSERT_EQUAL(9, call->channel);
-  TEST_ASSERT_EQUAL(115200, call->param1);
+  TEST_ASSERT_EQUAL(k_test_channel_sci9, call->channel);
+  TEST_ASSERT_EQUAL(k_test_baudrate_115200, call->param1);
 
   call = mock_uart_hw_get_call(1);
   TEST_ASSERT_NOT_NULL(call);
   TEST_ASSERT_EQUAL(k_mock_uart_call_putc, call->type);
-  TEST_ASSERT_EQUAL(9, call->channel);
+  TEST_ASSERT_EQUAL(k_test_channel_sci9, call->channel);
   TEST_ASSERT_EQUAL('A', call->param1);
 
   call = mock_uart_hw_get_call(2);
   TEST_ASSERT_NOT_NULL(call);
   TEST_ASSERT_EQUAL(k_mock_uart_call_deinit, call->type);
-  TEST_ASSERT_EQUAL(9, call->channel);
+  TEST_ASSERT_EQUAL(k_test_channel_sci9, call->channel);
 }
 
 /* =============================================================================

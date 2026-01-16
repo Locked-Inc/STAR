@@ -16,11 +16,12 @@
 
 #include <string.h>
 
+#include "rx_time_constants.h"
+
 #ifndef UNIT_TEST
 #include "rx72n_regs.h"
 #include "rx_log.h"
 #include "rx_threadx_config.h"
-#include "rx_time_constants.h"
 #include "tx_api.h"
 #else
 /* Mock includes for unit testing */
@@ -55,7 +56,6 @@ static const char* s_tag = "USB";
 
 /** @brief USB flush timing constants */
 typedef enum {
-  k_threadx_ms_per_tick    = 10, /**< Milliseconds per tick at 100 Hz */
   k_flush_poll_interval_ms = 10, /**< Poll TX buffer every 10ms */
 } threadx_flush_timing_t;
 

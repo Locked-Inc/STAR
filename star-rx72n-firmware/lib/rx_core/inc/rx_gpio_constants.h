@@ -79,21 +79,6 @@ typedef enum {
   k_prcr_lock_prc1 = 0x02, /**< Unlock PRC1 (module stop control) */
 } rx_prcr_constants_t;
 
-/* =============================================================================
- * ThreadX Time Constants
- * =============================================================================
- */
-
-/**
- * @brief ThreadX time conversion constants
- *
- * ThreadX is configured at 100 Hz tick rate (TX_TIMER_TICKS_PER_SECOND = 100),
- * which means each tick is 10 milliseconds.
- */
-typedef enum {
-  k_threadx_ms_per_tick = (10), /**< Milliseconds per ThreadX tick (100 Hz = 10ms) */
-} rx_threadx_time_constants_t;
-
 #ifdef __cplusplus
 }
 #endif

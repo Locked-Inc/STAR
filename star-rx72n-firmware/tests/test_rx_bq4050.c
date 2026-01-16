@@ -68,27 +68,34 @@ typedef enum {
  * @brief Test helper constants
  */
 typedef enum {
-  k_test_typical_voltage_mv     = 14800, /**< Typical 4S pack voltage (mV) */
-  k_test_cell_voltage_mv        = 3700,  /**< Typical cell voltage (mV) */
-  k_test_cell_voltage_high_mv   = 4200,  /**< High cell voltage (mV) */
-  k_test_cell_voltage_mid_hi_mv = 4150,  /**< Mid-high cell voltage (mV) */
-  k_test_cell_voltage_mid_lo_mv = 4100,  /**< Mid-low cell voltage (mV) */
-  k_test_cell_voltage_low_mv    = 4050,  /**< Low cell voltage (mV) */
-  k_test_charging_ma            = 2000,  /**< Typical charging current (mA) */
-  k_test_discharging_ma         = -1500, /**< Typical discharging current (mA) */
-  k_test_avg_current            = 1800,  /**< Average current (mA) */
-  k_test_temp_25c_0_1k          = 2981,  /**< 25.0 deg C in 0.1K units */
-  k_test_temp_0c_0_1k           = 2731,  /**< 0.0 deg C in 0.1K units */
-  k_test_temp_neg10c_0_1k       = 2631,  /**< -10.0 deg C in 0.1K units */
-  k_test_soc_full               = 100,   /**< Full state of charge (%) */
-  k_test_soc_half               = 50,    /**< Half state of charge (%) */
-  k_test_soc_over_range         = 105,   /**< Over-range state of charge (%) */
-  k_test_soc_way_over           = 200,   /**< Way over-range state of charge (%) */
-  k_test_soc_abs                = 85,    /**< Absolute state of charge (%) */
-  k_test_capacity_full_mah      = 5000,  /**< Full capacity (mAh) */
-  k_test_capacity_half_mah      = 2500,  /**< Half capacity (mAh) */
-  k_test_time_to_empty_min      = 120,   /**< Time to empty (min) */
-  k_test_cycle_count            = 150,   /**< Cycle count */
+  k_test_typical_voltage_mv     = 14800,  /**< Typical 4S pack voltage (mV) */
+  k_test_cell_voltage_mv        = 3700,   /**< Typical cell voltage (mV) */
+  k_test_cell_voltage_high_mv   = 4200,   /**< High cell voltage (mV) */
+  k_test_cell_voltage_mid_hi_mv = 4150,   /**< Mid-high cell voltage (mV) */
+  k_test_cell_voltage_mid_lo_mv = 4100,   /**< Mid-low cell voltage (mV) */
+  k_test_cell_voltage_low_mv    = 4050,   /**< Low cell voltage (mV) */
+  k_test_charging_ma            = 2000,   /**< Typical charging current (mA) */
+  k_test_discharging_ma         = -1500,  /**< Typical discharging current (mA) */
+  k_test_avg_current            = 1800,   /**< Average current (mA) */
+  k_test_temp_25c_0_1k          = 2981,   /**< 25.0 deg C in 0.1K units */
+  k_test_temp_0c_0_1k           = 2731,   /**< 0.0 deg C in 0.1K units */
+  k_test_temp_neg10c_0_1k       = 2631,   /**< -10.0 deg C in 0.1K units */
+  k_test_soc_full               = 100,    /**< Full state of charge (%) */
+  k_test_soc_half               = 50,     /**< Half state of charge (%) */
+  k_test_soc_over_range         = 105,    /**< Over-range state of charge (%) */
+  k_test_soc_way_over           = 200,    /**< Way over-range state of charge (%) */
+  k_test_soc_abs                = 85,     /**< Absolute state of charge (%) */
+  k_test_capacity_full_mah      = 5000,   /**< Full capacity (mAh) */
+  k_test_capacity_half_mah      = 2500,   /**< Half capacity (mAh) */
+  k_test_time_to_empty_min      = 120,    /**< Time to empty (min) */
+  k_test_cycle_count            = 150,    /**< Cycle count */
+  k_test_time_to_full_invalid   = 0xFFFF, /**< Invalid/N/A time to full */
+  k_test_status_no_flags        = 0,      /**< Battery status with no flags set */
+  k_test_current_idle_ma        = 0,      /**< Idle/zero current (mA) */
+  k_test_soc_empty              = 0,      /**< Empty state of charge (%) */
+  k_test_temp_25c_expected      = 25,     /**< Expected 25°C after conversion */
+  k_test_temp_0c_expected       = 0,      /**< Expected 0°C after conversion */
+  k_test_temp_neg10c_expected   = -10,    /**< Expected -10°C after conversion */
 } test_values_t;
 
 /* =============================================================================
@@ -144,8 +151,8 @@ static void internal_setup_typical_battery_values(void)
   mock_smbus_set_word_response(k_test_sbs_design_capacity, k_test_capacity_full_mah);
   mock_smbus_set_word_response(k_test_sbs_cycle_count, k_test_cycle_count);
   mock_smbus_set_word_response(k_test_sbs_run_time_to_empty, k_test_time_to_empty_min);
-  mock_smbus_set_word_response(k_test_sbs_average_time_to_full, 0xFFFF);
-  mock_smbus_set_word_response(k_test_sbs_battery_status, 0);
+  mock_smbus_set_word_response(k_test_sbs_average_time_to_full, k_test_time_to_full_invalid);
+  mock_smbus_set_word_response(k_test_sbs_battery_status, k_test_status_no_flags);
 }
 
 /* =============================================================================
@@ -336,12 +343,12 @@ static void test_read_current_discharging(void)
 static void test_read_current_idle(void)
 {
   internal_test_setup();
-  mock_smbus_set_word_response(k_test_sbs_current, 0);
+  mock_smbus_set_word_response(k_test_sbs_current, k_test_current_idle_ma);
 
   int16_t  current_ma;
   rx_err_t err = rx_bq4050_read_current(&s_manager, s_bus_name, &current_ma);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(0, current_ma);
+  TEST_ASSERT_EQUAL(k_test_current_idle_ma, current_ma);
 }
 
 static void test_read_current_null_output(void)
@@ -401,12 +408,12 @@ static void test_read_relative_soc_half(void)
 static void test_read_relative_soc_empty(void)
 {
   internal_test_setup();
-  mock_smbus_set_word_response(k_test_sbs_relative_state_of_charge, 0);
+  mock_smbus_set_word_response(k_test_sbs_relative_state_of_charge, k_test_soc_empty);
 
   uint8_t  soc;
   rx_err_t err = rx_bq4050_read_relative_soc(&s_manager, s_bus_name, &soc);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(0, soc);
+  TEST_ASSERT_EQUAL(k_test_soc_empty, soc);
 }
 
 static void test_read_relative_soc_clamped(void)
@@ -464,7 +471,7 @@ static void test_read_temperature_25c(void)
   int16_t  temp_c;
   rx_err_t err = rx_bq4050_read_temperature(&s_manager, s_bus_name, &temp_c);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(25, temp_c);
+  TEST_ASSERT_EQUAL(k_test_temp_25c_expected, temp_c);
 }
 
 static void test_read_temperature_0c(void)
@@ -475,7 +482,7 @@ static void test_read_temperature_0c(void)
   int16_t  temp_c;
   rx_err_t err = rx_bq4050_read_temperature(&s_manager, s_bus_name, &temp_c);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(0, temp_c);
+  TEST_ASSERT_EQUAL(k_test_temp_0c_expected, temp_c);
 }
 
 static void test_read_temperature_negative(void)
@@ -486,7 +493,7 @@ static void test_read_temperature_negative(void)
   int16_t  temp_c;
   rx_err_t err = rx_bq4050_read_temperature(&s_manager, s_bus_name, &temp_c);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(-10, temp_c);
+  TEST_ASSERT_EQUAL(k_test_temp_neg10c_expected, temp_c);
 }
 
 static void test_read_temperature_null_output(void)
@@ -570,7 +577,7 @@ static void test_read_status_success(void)
   TEST_ASSERT_EQUAL(k_test_typical_voltage_mv, status.voltage_mv);
   TEST_ASSERT_EQUAL(k_test_cell_voltage_mv, status.cell_voltages_mv[0]);
   TEST_ASSERT_EQUAL(k_test_soc_full, status.relative_soc);
-  TEST_ASSERT_EQUAL(25, status.temperature_c);
+  TEST_ASSERT_EQUAL(k_test_temp_25c_expected, status.temperature_c);
 }
 
 static void test_read_status_null_status(void)
@@ -595,7 +602,7 @@ static void test_read_status_charging_flags(void)
   internal_test_setup();
   internal_setup_typical_battery_values();
   /* Clear discharging flag = charging */
-  mock_smbus_set_word_response(k_test_sbs_battery_status, 0);
+  mock_smbus_set_word_response(k_test_sbs_battery_status, k_test_status_no_flags);
 
   rx_bq4050_status_t status = {0};
   rx_err_t           err    = rx_bq4050_read_status(&s_manager, s_bus_name, &status, 1);

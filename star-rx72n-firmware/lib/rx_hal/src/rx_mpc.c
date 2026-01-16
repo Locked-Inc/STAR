@@ -291,6 +291,14 @@ rx_err_t rx_mpc_set_peripheral(const rx_mpc_peripheral_config_t* config)
   uint8_t port    = rx_port_from_pin(config->pin);
   uint8_t pin_num = rx_pin_from_pin(config->pin);
 
+  /* Validate the decoded port and pin are in valid range */
+  if (port > k_mpc_port_j || pin_num > k_mpc_max_pin) {
+    rx_log_error(s_tag, "Invalid port or pin number");
+    rx_log_error_val(s_tag, "  port=", port);
+    rx_log_error_val(s_tag, "  pin=", pin_num);
+    return k_rx_err_invalid_arg;
+  }
+
   /* Peripheral mode: PSEL = specified, ISEL = 0, ASEL = 0 */
   return internal_write_pfs(port, pin_num, config->psel);
 }

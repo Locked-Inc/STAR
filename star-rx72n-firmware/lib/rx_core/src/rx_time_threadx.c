@@ -13,7 +13,7 @@
 
 #ifdef __RX__
 
-#include "rx_gpio_constants.h"
+#include "rx_time_constants.h"
 #include "rx_time_interface.h"
 #include "tx_api.h"
 

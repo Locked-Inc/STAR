@@ -53,11 +53,10 @@ typedef enum {
   k_hdr_flags     = 7, /**< Frame flags */
 } frame_header_offset_t;
 
-/** @brief Timing constants for receive polling */
-typedef enum {
-  k_threadx_ms_per_tick = 10, /**< Milliseconds per tick at 100 Hz */
-  k_poll_sleep_ticks    = 1,  /**< Sleep duration for polling loop (1 tick) */
-} polling_timing_t;
+#ifdef __RX__
+/** @brief Sleep duration for polling loop (1 tick) */
+static const uint32_t s_poll_sleep_ticks = 1;
+#endif
 
 /** @brief ACK/ready wait timing constants */
 typedef enum {
@@ -99,7 +98,7 @@ static rx_err_t internal_wait_for_ack(rx_spi_comm_handle_t* handle, uint32_t tim
     }
 
     /* Yield to other threads while waiting */
-    tx_thread_sleep(k_poll_sleep_ticks);
+    tx_thread_sleep(s_poll_sleep_ticks);
   }
 #else
   /* Host build (testing): Use iteration counter to simulate time */
@@ -450,7 +449,7 @@ static rx_err_t internal_wait_for_data(rx_spi_comm_handle_t* handle, uint32_t ti
     uint32_t iteration  = 0;
     while (!available && elapsed_ms < timeout_ms && iteration < k_max_poll_iterations) {
       iteration++;
-      tx_thread_sleep(k_poll_sleep_ticks);
+      tx_thread_sleep(s_poll_sleep_ticks);
       elapsed_ms += k_threadx_ms_per_tick;
 
       err = rspi_peripheral_read_available(handle->channel, &available);
