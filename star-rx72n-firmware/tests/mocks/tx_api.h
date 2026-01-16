@@ -368,7 +368,6 @@ static inline tx_status tx_thread_sleep(tx_wait_option timer_ticks)
     return TX_SUCCESS;
   }
 
-  (void)timer_ticks; /* No actual sleep in mock environment */
   return TX_SUCCESS;
 }
 

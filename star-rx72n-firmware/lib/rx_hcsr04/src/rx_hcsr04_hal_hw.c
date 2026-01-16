@@ -241,7 +241,11 @@ void hcsr04_hal_delay_us(uint32_t us)
     ticks = k_min_ticks;
   }
 
+#ifdef UNIT_TEST
+  RX_ASSERT(ticks <= k_max_delay_ticks, "HCSR04 delay exceeds max ticks");
+#endif
   if (ticks > k_max_delay_ticks) {
+    /* Exceeding k_max_delay_ticks is a no-op in release builds to avoid unbounded delays. */
     return;
   }
 
