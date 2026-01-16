@@ -84,6 +84,11 @@ typedef enum {
   k_uart_max_channels = 13, /**< SCI channels 0-12 */
 } uart_channel_limits_t;
 
+typedef enum {
+  k_uart_channel_min  = 0,
+  k_uart_baudrate_min = 1,
+} uart_validation_limits_t;
+
 /** @brief UART timeout constants */
 typedef enum {
   k_uart_tx_timeout        = 100000, /**< Transmit buffer wait timeout (prevents infinite loop) */
@@ -279,7 +284,12 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
   }
 
   /* Validate channel */
+  /* channel is unsigned; lower-bound check is unnecessary */
   if (config->channel >= k_uart_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (config->baudrate < k_uart_baudrate_min) {
     return k_rx_err_invalid_arg;
   }
 

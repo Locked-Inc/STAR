@@ -210,7 +210,8 @@ static inline rx_err_t rx_pin_interface_validate(const rx_pin_interface_t* iface
 
   /* Check required function pointers */
   if (iface->validate_pin == NULL || iface->reserve_pin == NULL || iface->release_pin == NULL ||
-      iface->is_pin_reserved == NULL) {
+      iface->is_pin_reserved == NULL || iface->get_pin_function == NULL ||
+      iface->clear_all_reservations == NULL) {
     return k_rx_err_invalid_state;
   }
 

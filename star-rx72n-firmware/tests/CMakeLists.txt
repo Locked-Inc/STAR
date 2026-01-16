@@ -51,7 +51,7 @@ include(FetchContent)
 FetchContent_Declare(
     unity
     GIT_REPOSITORY https://github.com/ThrowTheSwitch/Unity.git
-    GIT_TAG v2.5.2
+    GIT_TAG v2.6.1
 )
 FetchContent_MakeAvailable(unity)
 
@@ -59,7 +59,7 @@ FetchContent_MakeAvailable(unity)
 FetchContent_Declare(
     nanopb
     GIT_REPOSITORY https://github.com/nanopb/nanopb.git
-    GIT_TAG 0.4.9
+    GIT_TAG 0.4.9.1
 )
 FetchContent_MakeAvailable(nanopb)
 
@@ -409,7 +409,6 @@ add_executable(test_rx_bus_manager
 )
 apply_strict_warnings(test_rx_bus_manager)
 apply_test_includes(test_rx_bus_manager)
-target_compile_definitions(test_rx_bus_manager PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_bus_manager unity)
 
 # Test: OneWire Bus Protocol
@@ -422,7 +421,6 @@ add_executable(test_rx_bus_onewire
 )
 apply_strict_warnings(test_rx_bus_onewire)
 apply_test_includes(test_rx_bus_onewire)
-target_compile_definitions(test_rx_bus_onewire PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_bus_onewire unity)
 
 # Test: SPI Communication Layer
@@ -457,7 +455,6 @@ add_executable(test_rx_encoder
 # Add mocks directory FIRST so mock headers override hardware headers
 apply_strict_warnings(test_rx_encoder)
 apply_test_includes(test_rx_encoder)
-target_compile_definitions(test_rx_encoder PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_encoder unity)
 
 # Test: BQ4050 Battery Fuel Gauge Driver
@@ -482,10 +479,6 @@ apply_strict_warnings(test_rx_ds18b20)
 apply_test_includes(test_rx_ds18b20)
 target_include_directories(test_rx_ds18b20 PRIVATE
     ${CMAKE_SOURCE_DIR}/../lib/rx_ds18b20/inc
-    ${CMAKE_SOURCE_DIR}/../lib/rx_bus/inc
-    ${CMAKE_SOURCE_DIR}/../lib/rx_crc/inc
-    ${CMAKE_SOURCE_DIR}/../lib/rx_core/inc
-    ${CMAKE_SOURCE_DIR}/mocks
 )
 target_link_libraries(test_rx_ds18b20 unity)
 
@@ -528,11 +521,6 @@ add_executable(test_rx_nanopb
 )
 apply_strict_warnings(test_rx_nanopb)
 apply_test_includes(test_rx_nanopb)
-target_include_directories(test_rx_nanopb PRIVATE
-    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc
-    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc/gen
-    ${nanopb_SOURCE_DIR}
-)
 target_compile_definitions(test_rx_nanopb PRIVATE
     PB_CONVERT_DOUBLE_FLOAT=1
 )

@@ -102,11 +102,18 @@ static void internal_record_call(mock_hcsr04_hw_t* mock,
 void mock_hcsr04_hw_init(mock_hcsr04_hw_t* mock)
 {
   mock_hcsr04_hw_t* m = internal_get_mock(mock);
+  if (m == NULL) {
+    return;
+  }
+
   memset(m, 0, sizeof(mock_hcsr04_hw_t));
   m->initialized       = true;
   m->simulated_echo_us = k_default_test_distance_cm * k_us_per_cm;
   m->auto_advance_time = true;
   m->time_step_us      = k_default_time_step_us;
+  if (m->time_step_us != k_default_time_step_us) {
+    return;
+  }
 }
 
 void mock_hcsr04_hw_deinit(mock_hcsr04_hw_t* mock)
@@ -118,6 +125,9 @@ void mock_hcsr04_hw_deinit(mock_hcsr04_hw_t* mock)
 void mock_hcsr04_hw_reset(mock_hcsr04_hw_t* mock)
 {
   mock_hcsr04_hw_t* m = internal_get_mock(mock);
+  if (m == NULL) {
+    return;
+  }
 
   /* Keep error injection settings, reset everything else */
   bool     inject_timeout      = m->inject_timeout;
@@ -134,6 +144,9 @@ void mock_hcsr04_hw_reset(mock_hcsr04_hw_t* mock)
   m->simulated_echo_us   = echo_us;
   m->auto_advance_time   = true;
   m->time_step_us        = k_default_time_step_us;
+  if (m->time_step_us != k_default_time_step_us) {
+    return;
+  }
 }
 
 /* =============================================================================

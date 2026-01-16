@@ -31,6 +31,8 @@ typedef enum {
   k_test_uart_baudrate          = 115200, /**< Primary baud rate */
   k_test_uart_channel_secondary = 0,      /**< Secondary SCI channel */
   k_test_uart_baudrate_slow     = 9600,   /**< Secondary baud rate */
+  k_test_uart_channel_invalid   = 13,     /**< Invalid SCI channel */
+  k_test_uart_baudrate_zero     = 0,      /**< Zero baud rate (invalid) */
 } test_uart_config_t;
 
 /** @brief Static bus manager for tests */
@@ -218,14 +220,14 @@ void test_rx_bus_uart_puts_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Clear TX FIFO (logging during init pollutes it) */
-  mock_uart_hw_clear_tx(9);
+  mock_uart_hw_clear_tx(k_test_uart_channel);
 
   err = rx_bus_uart_puts(&s_test_manager, s_test_bus_name, "Hello");
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify string was transmitted */
   uint8_t  tx_buf[32];
-  uint16_t tx_count = mock_uart_hw_get_tx_data(9, tx_buf, sizeof(tx_buf));
+  uint16_t tx_count = mock_uart_hw_get_tx_data(k_test_uart_channel, tx_buf, sizeof(tx_buf));
   TEST_ASSERT_EQUAL(5, tx_count);
   TEST_ASSERT_EQUAL_MEMORY("Hello", tx_buf, 5);
 }
@@ -239,14 +241,14 @@ void test_rx_bus_uart_puts_newline_conversion(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Clear TX FIFO (logging during init pollutes it) */
-  mock_uart_hw_clear_tx(9);
+  mock_uart_hw_clear_tx(k_test_uart_channel);
 
   err = rx_bus_uart_puts(&s_test_manager, s_test_bus_name, "Hi\n");
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify newline was converted to \r\n */
   uint8_t  tx_buf[32];
-  uint16_t tx_count = mock_uart_hw_get_tx_data(9, tx_buf, sizeof(tx_buf));
+  uint16_t tx_count = mock_uart_hw_get_tx_data(k_test_uart_channel, tx_buf, sizeof(tx_buf));
   TEST_ASSERT_EQUAL(4, tx_count); /* "Hi" + \r + \n */
   TEST_ASSERT_EQUAL('H', tx_buf[0]);
   TEST_ASSERT_EQUAL('i', tx_buf[1]);
@@ -281,7 +283,7 @@ void test_rx_bus_uart_read_success(void)
 
   /* Inject RX data */
   uint8_t inject_data[] = {0x10, 0x20, 0x30};
-  mock_uart_hw_inject_rx_data(9, inject_data, sizeof(inject_data));
+  mock_uart_hw_inject_rx_data(k_test_uart_channel, inject_data, sizeof(inject_data));
 
   /* Read data */
   uint8_t  rx_buf[16];
@@ -318,7 +320,7 @@ void test_rx_bus_uart_read_partial(void)
 
   /* Inject less data than buffer can hold */
   uint8_t inject_data[] = {0xAA, 0xBB};
-  mock_uart_hw_inject_rx_data(9, inject_data, sizeof(inject_data));
+  mock_uart_hw_inject_rx_data(k_test_uart_channel, inject_data, sizeof(inject_data));
 
   /* Request more bytes than available */
   uint8_t  rx_buf[100];
@@ -376,7 +378,7 @@ void test_rx_bus_uart_getc_success(void)
 
   /* Inject a character */
   uint8_t data = 'X';
-  mock_uart_hw_inject_rx_data(9, &data, 1);
+  mock_uart_hw_inject_rx_data(k_test_uart_channel, &data, 1);
 
   /* Read character */
   char c = '\0';
@@ -426,7 +428,7 @@ void test_rx_bus_uart_rx_available_true(void)
 
   /* Inject some data */
   uint8_t data = 0x42;
-  mock_uart_hw_inject_rx_data(9, &data, 1);
+  mock_uart_hw_inject_rx_data(k_test_uart_channel, &data, 1);
 
   /* Check availability */
   bool available = false;
@@ -546,7 +548,12 @@ void test_rx_bus_uart_multi_channel_isolation(void)
 void test_rx_bus_config_init_uart_invalid_channel(void)
 {
   rx_bus_config_t config;
-  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 13, k_rx_pb_7, k_rx_pb_6, 115200);
+  rx_err_t        err = rx_bus_config_init_uart(&config,
+                                         "bad_uart",
+                                         k_test_uart_channel_invalid,
+                                         k_rx_pb_7,
+                                         k_rx_pb_6,
+                                         k_test_uart_baudrate);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -558,7 +565,12 @@ void test_rx_bus_config_init_uart_invalid_port(void)
   rx_bus_config_t config;
   enum { k_invalid_port = k_rx_port_j + 1 };
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_invalid_port << k_port_shift) | k_rx_pin_0);
-  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, invalid_pin, k_rx_pb_6, 115200);
+  rx_err_t      err         = rx_bus_config_init_uart(&config,
+                                         "bad_uart",
+                                         k_test_uart_channel,
+                                         invalid_pin,
+                                         k_rx_pb_6,
+                                         k_test_uart_baudrate);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -570,7 +582,12 @@ void test_rx_bus_config_init_uart_invalid_pin(void)
   rx_bus_config_t config;
   enum { k_invalid_pin = k_rx_pin_max + 1 };
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_rx_port_0 << k_port_shift) | k_invalid_pin);
-  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, invalid_pin, k_rx_pb_6, 115200);
+  rx_err_t      err         = rx_bus_config_init_uart(&config,
+                                         "bad_uart",
+                                         k_test_uart_channel,
+                                         invalid_pin,
+                                         k_rx_pb_6,
+                                         k_test_uart_baudrate);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -580,7 +597,12 @@ void test_rx_bus_config_init_uart_invalid_pin(void)
 void test_rx_bus_config_init_uart_zero_baudrate(void)
 {
   rx_bus_config_t config;
-  rx_err_t        err = rx_bus_config_init_uart(&config, "bad_uart", 9, k_rx_pb_7, k_rx_pb_6, 0);
+  rx_err_t        err = rx_bus_config_init_uart(&config,
+                                         "bad_uart",
+                                         k_test_uart_channel,
+                                         k_rx_pb_7,
+                                         k_rx_pb_6,
+                                         k_test_uart_baudrate_zero);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -589,7 +611,12 @@ void test_rx_bus_config_init_uart_zero_baudrate(void)
  */
 void test_rx_bus_config_init_uart_null_config(void)
 {
-  rx_err_t err = rx_bus_config_init_uart(NULL, "uart", 9, k_rx_pb_7, k_rx_pb_6, 115200);
+  rx_err_t err = rx_bus_config_init_uart(NULL,
+                                         "uart",
+                                         k_test_uart_channel,
+                                         k_rx_pb_7,
+                                         k_rx_pb_6,
+                                         k_test_uart_baudrate);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -599,7 +626,12 @@ void test_rx_bus_config_init_uart_null_config(void)
 void test_rx_bus_config_init_uart_null_name(void)
 {
   rx_bus_config_t config;
-  rx_err_t        err = rx_bus_config_init_uart(&config, NULL, 9, k_rx_pb_7, k_rx_pb_6, 115200);
+  rx_err_t        err = rx_bus_config_init_uart(&config,
+                                         NULL,
+                                         k_test_uart_channel,
+                                         k_rx_pb_7,
+                                         k_rx_pb_6,
+                                         k_test_uart_baudrate);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
