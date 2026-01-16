@@ -219,9 +219,7 @@ rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
     return k_rx_err_invalid_state;
   }
 
-  if (num_devices != NULL) {
-    *num_devices = 1;
-  }
+  *num_devices = 1;
   return k_rx_ok;
 }
 

@@ -46,6 +46,9 @@ static inline bool internal_is_valid_pin(rx_port_pin_t pin)
  * @brief Set the specified pin as an output
  *
  * Validates pin and port ranges, then delegates to mock_gpio_set_output().
+ *
+ * @param[in] pin GPIO pin to configure as output
+ * @return k_rx_ok on success, k_rx_err_invalid_arg on invalid pin/port
  */
 rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
 {

@@ -85,8 +85,8 @@ typedef enum {
 } uart_channel_limits_t;
 
 typedef enum {
-  k_uart_channel_min  = 0,
   k_uart_baudrate_min = 1,
+  k_uart_baudrate_max = (k_pclkb_hz / k_brr_divisor_n0),
 } uart_validation_limits_t;
 
 /** @brief UART timeout constants */
@@ -289,7 +289,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  if (config->baudrate < k_uart_baudrate_min) {
+  if ((config->baudrate < k_uart_baudrate_min) || (config->baudrate > k_uart_baudrate_max)) {
     return k_rx_err_invalid_arg;
   }
 
