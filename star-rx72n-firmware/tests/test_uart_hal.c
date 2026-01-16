@@ -37,7 +37,10 @@ static const rx_port_pin_t k_test_rx_gpio = k_rx_pb_6; /**< PB6 RX pin (from rx_
 /** @brief UART test constants */
 typedef enum {
   k_test_channel_sci9    = 9,
+  k_test_channel_sci0    = 0,
+  k_test_channel_invalid = 13,
   k_test_baudrate_115200 = 115200,
+  k_test_baudrate_9600   = 9600,
 } test_uart_constants_t;
 
 /* =============================================================================
@@ -79,21 +82,21 @@ void test_uart_init_channel_success(void)
 void test_uart_init_channel_sci0(void)
 {
   const uart_channel_config_t config = {
-    .channel  = 0,
-    .baudrate = 9600,
+    .channel  = k_test_channel_sci0,
+    .baudrate = k_test_baudrate_9600,
     .tx_gpio  = k_rx_p0_2,
     .rx_gpio  = k_rx_p0_1,
   };
   rx_err_t err = uart_init_channel(&config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(0));
-  TEST_ASSERT_EQUAL(9600, mock_uart_hw_get_baudrate(0));
+  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(k_test_channel_sci0));
+  TEST_ASSERT_EQUAL(k_test_baudrate_9600, mock_uart_hw_get_baudrate(k_test_channel_sci0));
 }
 
 void test_uart_init_channel_invalid(void)
 {
   const uart_channel_config_t config = {
-    .channel  = 13,
+    .channel  = k_test_channel_invalid,
     .baudrate = k_test_baudrate_115200,
     .tx_gpio  = k_test_tx_gpio,
     .rx_gpio  = k_test_rx_gpio,
@@ -136,7 +139,7 @@ void test_uart_deinit_channel_success(void)
 
 void test_uart_deinit_channel_invalid(void)
 {
-  rx_err_t err = uart_deinit_channel(13);
+  rx_err_t err = uart_deinit_channel(k_test_channel_invalid);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -171,7 +174,7 @@ void test_uart_putc_channel_not_initialized(void)
 
 void test_uart_putc_channel_invalid_channel(void)
 {
-  rx_err_t err = uart_putc_channel(13, 'A');
+  rx_err_t err = uart_putc_channel(k_test_channel_invalid, 'A');
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -449,8 +452,8 @@ void test_uart_rx_available_null(void)
 void test_uart_channel_isolation(void)
 {
   /* Initialize channel 0 with config struct */
-  uart_channel_config_t cfg0 = {.channel  = 0,
-                                .baudrate = 9600,
+  uart_channel_config_t cfg0 = {.channel  = k_test_channel_sci0,
+                                .baudrate = k_test_baudrate_9600,
                                 .tx_gpio  = k_rx_p0_2,
                                 .rx_gpio  = k_rx_p0_1};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg0));
@@ -463,14 +466,14 @@ void test_uart_channel_isolation(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg9));
 
   /* Write to channel 0 */
-  uart_putc_channel(0, 'A');
+  uart_putc_channel(k_test_channel_sci0, 'A');
 
   /* Write to channel 9 */
   uart_putc_channel(k_test_channel_sci9, 'B');
 
   /* Verify channel 0 data */
   uint8_t  tx_data[8];
-  uint16_t count = mock_uart_hw_get_tx_data(0, tx_data, sizeof(tx_data));
+  uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci0, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('A', tx_data[0]);
 
@@ -483,8 +486,8 @@ void test_uart_channel_isolation(void)
 void test_uart_rx_channel_isolation(void)
 {
   /* Initialize channel 0 with config struct */
-  uart_channel_config_t cfg0 = {.channel  = 0,
-                                .baudrate = 9600,
+  uart_channel_config_t cfg0 = {.channel  = k_test_channel_sci0,
+                                .baudrate = k_test_baudrate_9600,
                                 .tx_gpio  = k_rx_p0_2,
                                 .rx_gpio  = k_rx_p0_1};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg0));
@@ -498,7 +501,7 @@ void test_uart_rx_channel_isolation(void)
 
   /* Inject data to channel 0 */
   uint8_t data0 = 'X';
-  mock_uart_hw_inject_rx_data(0, &data0, 1);
+  mock_uart_hw_inject_rx_data(k_test_channel_sci0, &data0, 1);
 
   /* Inject data to channel 9 */
   uint8_t data9 = 'Y';
@@ -506,7 +509,7 @@ void test_uart_rx_channel_isolation(void)
 
   /* Read from channel 0 */
   char received = '\0';
-  uart_getc_channel(0, &received);
+  uart_getc_channel(k_test_channel_sci0, &received);
   TEST_ASSERT_EQUAL('X', received);
 
   /* Read from channel 9 */

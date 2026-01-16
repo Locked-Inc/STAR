@@ -91,7 +91,7 @@ typedef enum {
  */
 typedef struct {
   bool reserved;                              /**< Is this pin reserved? */
-  char function[k_pin_function_name_max_len]; /**< Function name (e.g., "SPI_MOSI", "GPIO_OUT") */
+  char function[k_pin_function_name_max_len]; /**< Function name (e.g., "SPI_COPI", "GPIO_OUT") */
 } pin_reservation_t;
 
 /* =============================================================================

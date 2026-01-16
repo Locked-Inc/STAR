@@ -12,6 +12,7 @@
  */
 
 #include <math.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "rx_nanopb.h"
@@ -21,6 +22,8 @@
  * Test Constants
  * =============================================================================
  */
+
+static const uint32_t s_test_sequence_max = UINT32_MAX;
 
 /**
  * @brief Test constants for velocity and buffer operations
@@ -43,8 +46,6 @@ typedef enum {
   k_min_encoded_estop_resp    = 2,
   k_min_encoded_telemetry     = 1,
 } test_constants_t;
-
-static const uint32_t s_test_sequence_max = 0xFFFFFFFFU;
 
 /**
  * @brief Floating-point test values (4-motor differential drive)

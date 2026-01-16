@@ -268,13 +268,13 @@ static inline tx_status tx_mutex_put(TX_MUTEX* mutex_ptr)
 static inline tx_status tx_thread_create(TX_THREAD* thread_ptr,
                                          CHAR*      name_ptr,
                                          VOID (*entry_function)(ULONG),
-                                         ULONG          entry_input,
-                                         VOID*          stack_start,
-                                         ULONG          stack_size,
-                                         UINT           priority,
-                                         UINT           preempt_threshold,
-                                         tx_wait_option time_slice,
-                                         UINT           auto_start)
+                                         ULONG entry_input,
+                                         VOID* stack_start,
+                                         ULONG stack_size,
+                                         UINT  priority,
+                                         UINT  preempt_threshold,
+                                         ULONG time_slice,
+                                         UINT  auto_start)
 {
   (void)entry_function;
   (void)entry_input;
@@ -360,6 +360,14 @@ static inline tx_status tx_thread_resume(TX_THREAD* thread_ptr)
  */
 static inline tx_status tx_thread_sleep(tx_wait_option timer_ticks)
 {
+  if (timer_ticks == TX_WAIT_FOREVER) {
+    return TX_WAIT_ERROR;
+  }
+
+  if (timer_ticks == TX_NO_WAIT) {
+    return TX_SUCCESS;
+  }
+
   (void)timer_ticks; /* No actual sleep in mock environment */
   return TX_SUCCESS;
 }

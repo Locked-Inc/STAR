@@ -570,6 +570,14 @@ static rx_err_t internal_stop_all_motors(rx_obstacle_detect_t* handle)
   rx_err_t ret       = k_rx_ok;
   rx_err_t first_err = k_rx_ok;
 
+  if (handle == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_not_initialized;
+  }
+
   for (uint8_t i = 0; i < handle->motor_count; i++) {
     ret = rx_motor_stop(handle->motors[i], true);
     if (ret != k_rx_ok) {
