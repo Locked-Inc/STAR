@@ -40,13 +40,13 @@
  *   pin_validator_get_interface(&pin_iface, &s_pin_validator);
  *
  *   // 4. Reserve pins
- *   err = pin_iface.reserve_pin(pin_iface.ctx, 0xA, 5, "SPI_MOSI");
+ *   err = pin_iface.reserve_pin(pin_iface.ctx, k_rx_port_a, k_rx_pin_5, "SPI_COPI");
  *   if (err == k_rx_err_gpio_conflict) {
  *       // Pin already reserved
  *   }
  *
  *   // 5. Release when done
- *   pin_iface.release_pin(pin_iface.ctx, 0xA, 5);
+ *   pin_iface.release_pin(pin_iface.ctx, k_rx_port_a, k_rx_pin_5);
  * @endcode
  *
  * @date 2026-01-01

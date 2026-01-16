@@ -67,6 +67,13 @@ extern void _tx_timer_interrupt(void);
  */
 
 /**
+ * @brief ICU interrupt request flag values
+ */
+typedef enum {
+  k_icu_ir_clear = 0, /**< Clear ICU IR flag */
+} icu_ir_values_t;
+
+/**
  * @brief CMT0 compare match interrupt handler
  *
  * This is called 100 times per second and drives the ThreadX scheduler.
@@ -75,8 +82,8 @@ extern void _tx_timer_interrupt(void);
  */
 void cmt0_isr(void)
 {
-  /* Clear interrupt flag (write 0 to BSR bit) */
-  (void)cmt0()->cmcr; /* Read to clear interrupt flag */
+  /* Clear ICU interrupt request flag */
+  icu()->ir[k_vect_cmt0_cmi0] = k_icu_ir_clear;
 
   /* Call ThreadX timer interrupt handler */
   _tx_timer_interrupt();
@@ -133,6 +140,8 @@ rx_err_t timer_init(void)
   cmt_ctrl()->cmstr0 |= k_cmt0_cmstr_start_bit;
 
   /* Enable interrupts globally (set I flag in PSW) */
+  /* Enable interrupts globally via PSW I-flag
+   * Note: Direct assembly required as RX GCC has no built-in for PSW manipulation */
   __asm__ volatile("setpsw i");
 
   rx_log_info("TIMER", "CMT0 initialized successfully");

@@ -25,6 +25,14 @@
  * =============================================================================
  */
 
+/** @brief UART test configuration constants */
+typedef enum {
+  k_test_uart_channel           = 9,      /**< Primary SCI channel */
+  k_test_uart_baudrate          = 115200, /**< Primary baud rate */
+  k_test_uart_channel_secondary = 0,      /**< Secondary SCI channel */
+  k_test_uart_baudrate_slow     = 9600,   /**< Secondary baud rate */
+} test_uart_config_t;
+
 /** @brief Static bus manager for tests */
 static rx_bus_manager_t s_test_manager;
 
@@ -49,10 +57,10 @@ void setUp(void)
   /* Create UART bus config for SCI9 (PB7/TXD9, PB6/RXD9) */
   err = rx_bus_config_init_uart(&s_uart_config,
                                 s_test_bus_name,
-                                9,         /* SCI9 */
-                                k_rx_pb_7, /* TX: Port B, Pin 7 */
-                                k_rx_pb_6, /* RX: Port B, Pin 6 */
-                                115200);   /* 115200 baud */
+                                k_test_uart_channel,   /* SCI9 */
+                                k_rx_pb_7,             /* TX: Port B, Pin 7 */
+                                k_rx_pb_6,             /* RX: Port B, Pin 6 */
+                                k_test_uart_baudrate); /* 115200 baud */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Add bus to manager */
@@ -86,8 +94,8 @@ void test_rx_bus_uart_init_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify channel was initialized */
-  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(9));
-  TEST_ASSERT_EQUAL(115200, mock_uart_hw_get_baudrate(9));
+  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(k_test_uart_channel));
+  TEST_ASSERT_EQUAL(k_test_uart_baudrate, mock_uart_hw_get_baudrate(k_test_uart_channel));
 }
 
 /**
@@ -143,7 +151,7 @@ void test_rx_bus_uart_write_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Clear TX FIFO (logging during init pollutes it) */
-  mock_uart_hw_clear_tx(9);
+  mock_uart_hw_clear_tx(k_test_uart_channel);
 
   /* Write data */
   uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05};
@@ -152,7 +160,7 @@ void test_rx_bus_uart_write_success(void)
 
   /* Verify data was transmitted */
   uint8_t  tx_buf[16];
-  uint16_t tx_count = mock_uart_hw_get_tx_data(9, tx_buf, sizeof(tx_buf));
+  uint16_t tx_count = mock_uart_hw_get_tx_data(k_test_uart_channel, tx_buf, sizeof(tx_buf));
   TEST_ASSERT_EQUAL(5, tx_count);
   TEST_ASSERT_EQUAL_UINT8_ARRAY(data, tx_buf, 5);
 }
@@ -189,14 +197,14 @@ void test_rx_bus_uart_putc_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Clear TX FIFO (logging during init pollutes it) */
-  mock_uart_hw_clear_tx(9);
+  mock_uart_hw_clear_tx(k_test_uart_channel);
 
   err = rx_bus_uart_putc(&s_test_manager, s_test_bus_name, 'A');
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify character was transmitted */
   uint8_t  tx_buf[4];
-  uint16_t tx_count = mock_uart_hw_get_tx_data(9, tx_buf, sizeof(tx_buf));
+  uint16_t tx_count = mock_uart_hw_get_tx_data(k_test_uart_channel, tx_buf, sizeof(tx_buf));
   TEST_ASSERT_EQUAL(1, tx_count);
   TEST_ASSERT_EQUAL('A', tx_buf[0]);
 }
@@ -478,10 +486,10 @@ void test_rx_bus_uart_multi_channel_isolation(void)
   static rx_bus_config_t uart0_config;
   rx_err_t               err = rx_bus_config_init_uart(&uart0_config,
                                          "uart0",
-                                         0,         /* SCI0 */
+                                         k_test_uart_channel_secondary, /* SCI0 */
                                          k_rx_p1_7, /* TX: Port 1, Pin 7 */
                                          k_rx_p1_6, /* RX: Port 1, Pin 6 */
-                                         9600);     /* 9600 baud */
+                                         k_test_uart_baudrate_slow); /* 9600 baud */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, &uart0_config);
@@ -495,15 +503,16 @@ void test_rx_bus_uart_multi_channel_isolation(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify both are initialized with correct baud rates */
-  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(9));
-  TEST_ASSERT_EQUAL(115200, mock_uart_hw_get_baudrate(9));
+  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(k_test_uart_channel));
+  TEST_ASSERT_EQUAL(k_test_uart_baudrate, mock_uart_hw_get_baudrate(k_test_uart_channel));
 
-  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(0));
-  TEST_ASSERT_EQUAL(9600, mock_uart_hw_get_baudrate(0));
+  TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(k_test_uart_channel_secondary));
+  TEST_ASSERT_EQUAL(k_test_uart_baudrate_slow,
+                    mock_uart_hw_get_baudrate(k_test_uart_channel_secondary));
 
   /* Clear TX FIFOs after init (init logging pollutes them) */
-  mock_uart_hw_clear_tx(9);
-  mock_uart_hw_clear_tx(0);
+  mock_uart_hw_clear_tx(k_test_uart_channel);
+  mock_uart_hw_clear_tx(k_test_uart_channel_secondary);
 
   /* Write to channel 9 */
   err = rx_bus_uart_putc(&s_test_manager, s_test_bus_name, 'A');
@@ -517,11 +526,11 @@ void test_rx_bus_uart_multi_channel_isolation(void)
   uint8_t  tx_buf[4];
   uint16_t count;
 
-  count = mock_uart_hw_get_tx_data(9, tx_buf, sizeof(tx_buf));
+  count = mock_uart_hw_get_tx_data(k_test_uart_channel, tx_buf, sizeof(tx_buf));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('A', tx_buf[0]);
 
-  count = mock_uart_hw_get_tx_data(0, tx_buf, sizeof(tx_buf));
+  count = mock_uart_hw_get_tx_data(k_test_uart_channel_secondary, tx_buf, sizeof(tx_buf));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('B', tx_buf[0]);
 }

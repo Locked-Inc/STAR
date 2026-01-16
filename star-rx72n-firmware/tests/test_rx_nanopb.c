@@ -28,6 +28,7 @@
 typedef enum {
   k_test_buffer_size          = 512,
   k_test_small_buffer_size    = 1,
+  k_test_sequence_zero        = 0,
   k_test_sequence_number      = 42,
   k_test_timestamp_us         = 1000000,
   k_test_wifi_signal_dbm      = -65,
@@ -1011,7 +1012,7 @@ void test_create_velocity_command_zero(void)
                                     s_test_zero_velocity_mps,
                                     s_test_zero_velocity_mps,
                                     s_test_zero_velocity_mps,
-                                    0);
+                                    k_test_sequence_zero);
 
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
                            (float)s_test_zero_velocity_mps,
@@ -1019,7 +1020,7 @@ void test_create_velocity_command_zero(void)
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
                            (float)s_test_zero_velocity_mps,
                            (float)cmd.back_left_velocity_mps);
-  TEST_ASSERT_EQUAL(0, cmd.sequence);
+  TEST_ASSERT_EQUAL(k_test_sequence_zero, cmd.sequence);
 }
 
 /**

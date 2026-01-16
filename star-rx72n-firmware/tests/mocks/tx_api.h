@@ -164,7 +164,8 @@ typedef struct TX_EVENT_FLAGS_GROUP_STRUCT {
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_mutex_create(TX_MUTEX* mutex_ptr, CHAR* name_ptr, UINT inherit)
+static inline tx_status
+tx_mutex_create(TX_MUTEX* mutex_ptr, CHAR* name_ptr, tx_inherit_option inherit)
 {
   (void)inherit;
 
@@ -193,7 +194,7 @@ static inline UINT tx_mutex_create(TX_MUTEX* mutex_ptr, CHAR* name_ptr, UINT inh
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_mutex_delete(TX_MUTEX* mutex_ptr)
+static inline tx_status tx_mutex_delete(TX_MUTEX* mutex_ptr)
 {
   if (mutex_ptr == NULL) {
     return TX_NOT_AVAILABLE;
@@ -211,7 +212,7 @@ static inline UINT tx_mutex_delete(TX_MUTEX* mutex_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_mutex_get(TX_MUTEX* mutex_ptr, ULONG wait_option)
+static inline tx_status tx_mutex_get(TX_MUTEX* mutex_ptr, tx_wait_option wait_option)
 {
   (void)wait_option;
   if (mutex_ptr == NULL) {
@@ -231,7 +232,7 @@ static inline UINT tx_mutex_get(TX_MUTEX* mutex_ptr, ULONG wait_option)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_mutex_put(TX_MUTEX* mutex_ptr)
+static inline tx_status tx_mutex_put(TX_MUTEX* mutex_ptr)
 {
   if (mutex_ptr == NULL) {
     return TX_NOT_AVAILABLE;
@@ -264,16 +265,16 @@ static inline UINT tx_mutex_put(TX_MUTEX* mutex_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_thread_create(TX_THREAD* thread_ptr,
-                                    CHAR*      name_ptr,
-                                    VOID (*entry_function)(ULONG),
-                                    ULONG entry_input,
-                                    VOID* stack_start,
-                                    ULONG stack_size,
-                                    UINT  priority,
-                                    UINT  preempt_threshold,
-                                    UINT  time_slice,
-                                    UINT  auto_start)
+static inline tx_status tx_thread_create(TX_THREAD* thread_ptr,
+                                         CHAR*      name_ptr,
+                                         VOID (*entry_function)(ULONG),
+                                         ULONG          entry_input,
+                                         VOID*          stack_start,
+                                         ULONG          stack_size,
+                                         UINT           priority,
+                                         UINT           preempt_threshold,
+                                         tx_wait_option time_slice,
+                                         UINT           auto_start)
 {
   (void)entry_function;
   (void)entry_input;
@@ -308,7 +309,7 @@ static inline UINT tx_thread_create(TX_THREAD* thread_ptr,
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_thread_delete(TX_THREAD* thread_ptr)
+static inline tx_status tx_thread_delete(TX_THREAD* thread_ptr)
 {
   if (thread_ptr == NULL) {
     return TX_NOT_AVAILABLE;
@@ -325,7 +326,7 @@ static inline UINT tx_thread_delete(TX_THREAD* thread_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_thread_terminate(TX_THREAD* thread_ptr)
+static inline tx_status tx_thread_terminate(TX_THREAD* thread_ptr)
 {
   if (thread_ptr == NULL) {
     return TX_NOT_AVAILABLE;
@@ -341,7 +342,7 @@ static inline UINT tx_thread_terminate(TX_THREAD* thread_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_thread_resume(TX_THREAD* thread_ptr)
+static inline tx_status tx_thread_resume(TX_THREAD* thread_ptr)
 {
   if (thread_ptr == NULL) {
     return TX_THREAD_ERROR;
@@ -357,7 +358,7 @@ static inline UINT tx_thread_resume(TX_THREAD* thread_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_thread_sleep(ULONG timer_ticks)
+static inline tx_status tx_thread_sleep(tx_wait_option timer_ticks)
 {
   (void)timer_ticks; /* No actual sleep in mock environment */
   return TX_SUCCESS;
@@ -376,7 +377,7 @@ static inline UINT tx_thread_sleep(ULONG timer_ticks)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, CHAR* name_ptr)
+static inline tx_status tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, CHAR* name_ptr)
 {
   /* Pre-condition: Validate input pointer */
   if (group_ptr == NULL) {
@@ -403,7 +404,7 @@ static inline UINT tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, CHAR* 
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_event_flags_delete(TX_EVENT_FLAGS_GROUP* group_ptr)
+static inline tx_status tx_event_flags_delete(TX_EVENT_FLAGS_GROUP* group_ptr)
 {
   if (group_ptr == NULL) {
     return TX_NOT_AVAILABLE;
@@ -424,7 +425,7 @@ static inline UINT tx_event_flags_delete(TX_EVENT_FLAGS_GROUP* group_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT
+static inline tx_status
 tx_event_flags_set(TX_EVENT_FLAGS_GROUP* group_ptr, ULONG flags_to_set, UINT set_option)
 {
   if (group_ptr == NULL) {
@@ -455,11 +456,11 @@ tx_event_flags_set(TX_EVENT_FLAGS_GROUP* group_ptr, ULONG flags_to_set, UINT set
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
-                                      ULONG                 requested_flags,
-                                      UINT                  get_option,
-                                      ULONG*                actual_flags_ptr,
-                                      ULONG                 wait_option)
+static inline tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
+                                           ULONG                 requested_flags,
+                                           UINT                  get_option,
+                                           ULONG*                actual_flags_ptr,
+                                           tx_wait_option        wait_option)
 {
   (void)wait_option;
 

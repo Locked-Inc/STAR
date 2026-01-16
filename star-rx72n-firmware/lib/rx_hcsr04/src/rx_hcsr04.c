@@ -55,6 +55,20 @@ typedef enum {
 } rx_hcsr04_conversion_t;
 
 /**
+ * @brief Scaling factor for integer-based unit conversion
+ */
+typedef enum {
+  k_unit_scale_factor = 100, /**< Scale factor for fixed-point conversion */
+} rx_hcsr04_scale_t;
+
+/**
+ * @brief Shutdown wait time in ThreadX ticks
+ */
+typedef enum {
+  k_shutdown_wait_ticks = 5, /**< ~50ms at 100 Hz tick rate */
+} rx_hcsr04_shutdown_t;
+
+/**
  * @brief Speed of sound base constant (m/s at 0°C)
  */
 static const float s_speed_of_sound_base_mps = 331.3f;
@@ -78,6 +92,16 @@ static const float s_min_temp_celsius = -40.0f;
  * @brief Maximum valid temperature (°C) - DS18B20 sensor upper limit
  */
 static const float s_max_temp_celsius = 85.0f;
+
+/**
+ * @brief Conversion factor from m/s to cm/us (1 m/s = 0.0001 cm/us)
+ */
+static const float s_mps_to_cm_per_us = 10000.0F;
+
+/**
+ * @brief Roundtrip divisor (echo travels to target and back)
+ */
+static const float s_roundtrip_divisor = 2.0F;
 
 /* =============================================================================
  * Worker Thread Infrastructure
@@ -138,16 +162,37 @@ static bool s_worker_initialized = false;
  *
  * @param[in] handle Sensor handle
  */
-static void internal_send_trigger_pulse(const rx_hcsr04_t* handle)
+static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 {
+  if (handle == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  uint8_t port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
+  uint8_t pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
+  if (port > k_rx_port_j || pin_num > k_rx_pin_max) {
+    return k_rx_err_invalid_arg;
+  }
+
   /* Ensure trigger is low initially */
-  hcsr04_hal_gpio_write_low(handle->trigger_pin);
+  rx_err_t err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
+  if (err != k_rx_ok) {
+    return err;
+  }
   hcsr04_hal_delay_us(k_hcsr04_trigger_settle_us);
 
   /* Send 10us HIGH pulse */
-  hcsr04_hal_gpio_write_high(handle->trigger_pin);
+  err = hcsr04_hal_gpio_write_high(handle->trigger_pin);
+  if (err != k_rx_ok) {
+    return err;
+  }
   hcsr04_hal_delay_us(k_hcsr04_trigger_pulse_us);
-  hcsr04_hal_gpio_write_low(handle->trigger_pin);
+  err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return k_rx_ok;
 }
 
 /**
@@ -172,8 +217,11 @@ static rx_err_t internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, u
       return k_rx_err_cancelled;
     }
 
-    bool pin_state = false;
-    hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
+    bool     pin_state = false;
+    rx_err_t read_err  = hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
+    if (read_err != k_rx_ok) {
+      return read_err;
+    }
 
     if (pin_state == target_state) {
       return k_rx_ok;
@@ -354,7 +402,7 @@ rx_err_t rx_hcsr04_worker_deinit(void)
    * In production, we'd use a semaphore or check thread state.
    * For simplicity, we assume the worker exits quickly (< 30ms measurement).
    */
-  tx_thread_sleep(5); /* 50ms at 100 Hz tick rate - allows measurement to complete */
+  tx_thread_sleep(k_shutdown_wait_ticks);
 
   /* Delete thread (now safely terminated) */
   status = tx_thread_delete(&s_hcsr04_worker_thread);
@@ -425,7 +473,10 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   handle->range_error_count = 0;
 
   /* Ensure trigger is low */
-  hcsr04_hal_gpio_write_low(handle->trigger_pin);
+  err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   return k_rx_ok;
 }
@@ -457,6 +508,8 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
 
 rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
 {
+  rx_err_t err;
+
   if (handle == NULL || distance_cm == NULL) {
     return k_rx_err_null_ptr;
   }
@@ -469,11 +522,14 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
   handle->measurement_count++;
 
   /* Send trigger pulse */
-  internal_send_trigger_pulse(handle);
+  err = internal_send_trigger_pulse(handle);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Measure echo pulse duration */
   uint32_t echo_time_us;
-  rx_err_t err = internal_measure_echo_pulse(handle, &echo_time_us);
+  err = internal_measure_echo_pulse(handle, &echo_time_us);
 
   if (err == k_rx_err_timeout) {
     handle->timeout_count++;
@@ -503,6 +559,8 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
 
 rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
 {
+  rx_err_t err;
+
   if (handle == NULL || result == NULL) {
     return k_rx_err_null_ptr;
   }
@@ -521,10 +579,13 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
   handle->measurement_count++;
 
   /* Send trigger pulse */
-  internal_send_trigger_pulse(handle);
+  err = internal_send_trigger_pulse(handle);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Measure echo pulse duration */
-  rx_err_t err = internal_measure_echo_pulse(handle, &result->echo_time_us);
+  err = internal_measure_echo_pulse(handle, &result->echo_time_us);
 
   if (err == k_rx_err_timeout) {
     handle->timeout_count++;
@@ -726,7 +787,7 @@ rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsiu
 float rx_hcsr04_cm_to_inches(float distance_cm)
 {
   /* 1 inch = 2.54 cm */
-  return distance_cm * 100.0f / (float)k_cm_per_inch_x100;
+  return distance_cm * (float)k_unit_scale_factor / (float)k_cm_per_inch_x100;
 }
 
 float rx_hcsr04_echo_to_cm(uint32_t echo_time_us)
@@ -785,8 +846,8 @@ float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius)
   }
 
   float speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
-  float speed_cm_us = speed_mps / 10000.0f; /* m/s to cm/us */
-  float distance_cm = ((float)echo_time_us * speed_cm_us) / 2.0f;
+  float speed_cm_us = speed_mps / s_mps_to_cm_per_us;
+  float distance_cm = ((float)echo_time_us * speed_cm_us) / s_roundtrip_divisor;
 
   /* Post-condition: Ensure non-negative result */
   if (distance_cm < 0.0f) {

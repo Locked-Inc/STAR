@@ -30,7 +30,6 @@ static const char* s_tag = "USB_HW";
 
 /** @brief USB timing constants for initialization delays */
 typedef enum {
-  k_threadx_ms_per_tick        = 10, /**< Milliseconds per tick at 100 Hz */
   k_usb_pll_stabilization_ms   = 10, /**< USB PLL stabilization time (10ms) */
   k_usb_clock_stabilization_ms = 10, /**< USB clock stabilization time (10ms) */
   k_min_sleep_ticks            = 1,  /**< Minimum sleep duration (1 tick) */

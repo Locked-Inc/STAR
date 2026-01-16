@@ -275,7 +275,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
 {
   /* Validate config pointer */
   if (config == NULL) {
-    return k_rx_err_invalid_arg;
+    return k_rx_err_null_ptr;
   }
 
   /* Validate channel */
