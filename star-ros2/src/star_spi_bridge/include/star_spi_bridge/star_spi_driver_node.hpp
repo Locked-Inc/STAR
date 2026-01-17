@@ -21,20 +21,20 @@ namespace star_spi_bridge
 class StarSpiDriverNode : public rclcpp_lifecycle::LifecycleNode
 {
 public:
-  explicit StarSpiDriverNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+  explicit StarSpiDriverNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
   ~StarSpiDriverNode() override;
 
   // Lifecycle transitions
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_configure(const rclcpp_lifecycle::State &prev_state) override;
+  on_configure(const rclcpp_lifecycle::State & prev_state) override;
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_activate(const rclcpp_lifecycle::State &prev_state) override;
+  on_activate(const rclcpp_lifecycle::State & prev_state) override;
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_deactivate(const rclcpp_lifecycle::State &prev_state) override;
+  on_deactivate(const rclcpp_lifecycle::State & prev_state) override;
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_cleanup(const rclcpp_lifecycle::State &prev_state) override;
+  on_cleanup(const rclcpp_lifecycle::State & prev_state) override;
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_shutdown(const rclcpp_lifecycle::State &prev_state) override;
+  on_shutdown(const rclcpp_lifecycle::State & prev_state) override;
 
 private:
   // Callbacks
