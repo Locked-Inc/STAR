@@ -14,8 +14,8 @@ using namespace std::chrono_literals;
 namespace star
 {
 
-StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions &options)
-    : Node("star_gateway_bridge", options), grpc_connected_(false), reconnect_attempts_(0)
+StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions & options)
+: Node("star_gateway_bridge", options), grpc_connected_(false), reconnect_attempts_(0)
 {
   RCLCPP_INFO(this->get_logger(), "Initializing STAR Gateway Bridge Node");
 
@@ -330,7 +330,7 @@ void StarGatewayBridgeNode::teleop_poll_timer_callback()
   // Check command staleness (safety feature)
   auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
                   std::chrono::system_clock::now().time_since_epoch())
-                  .count();
+    .count();
   auto cmd_age_us = now_us - response.command().timestamp_us();
   auto cmd_age_ms = cmd_age_us / 1000;
 
@@ -407,7 +407,7 @@ bool StarGatewayBridgeNode::is_grpc_connected() const
   }
 
   auto state = grpc_channel_->GetState(false);  // false = don't try to connect
-  return (state == GRPC_CHANNEL_READY);
+  return  state == GRPC_CHANNEL_READY;
 }
 
 }  // namespace star

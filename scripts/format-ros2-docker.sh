@@ -21,8 +21,13 @@ if command -v devcontainer &> /dev/null; then
 elif command -v docker &> /dev/null; then
     echo "Running format-ros2.sh in Docker container..."
     
-    # Find the running STAR container or start one
-    CONTAINER_ID=$(docker ps --filter "label=devcontainer.local_folder=$PROJECT_ROOT" --format "{{.ID}}" | head -1)
+    # Find the running STAR devcontainer (vsc-star-* pattern)
+    CONTAINER_ID=$(docker ps --filter "name=vsc-star" --format "{{.ID}}" | head -1)
+    
+    # Fallback: try label-based search
+    if [ -z "$CONTAINER_ID" ]; then
+        CONTAINER_ID=$(docker ps --filter "label=devcontainer.local_folder=$PROJECT_ROOT" --format "{{.ID}}" | head -1)
+    fi
     
     if [ -z "$CONTAINER_ID" ]; then
         echo "Error: No running devcontainer found for this project."
@@ -35,6 +40,7 @@ elif command -v docker &> /dev/null; then
         exit 1
     fi
     
+    echo "Found devcontainer: $CONTAINER_ID"
     docker exec -it "$CONTAINER_ID" /bin/bash -c "cd /workspaces/STAR && ./scripts/format-ros2.sh $*"
 else
     echo "Error: Neither devcontainer nor docker found."

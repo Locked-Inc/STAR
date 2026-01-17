@@ -145,8 +145,14 @@ check_package_formatting() {
         fi
         return 0
     else
+        # Check if it's just "No files found" (not an error for launch-only packages)
+        if echo "$output" | grep -q "No files found"; then
+            if [ "$VERBOSE" = true ]; then
+                print_status "Package $pkg_name: No C++ files to check (launch-only package)"
+            fi
+            return 0
         # Check if output contains "Code style divergence"
-        if echo "$output" | grep -q "Code style divergence"; then
+        elif echo "$output" | grep -q "Code style divergence"; then
             print_warning "Package $pkg_name: Code style issues found"
             if [ "$VERBOSE" = true ]; then
                 echo "$output"
@@ -177,9 +183,17 @@ format_package() {
         print_success "Formatted package: $pkg_name"
         return 0
     else
-        print_error "Failed to format package: $pkg_name"
-        echo "$output"
-        return 1
+        # Check if it's just "No files found" (not an error for launch-only packages)
+        if echo "$output" | grep -q "No files found"; then
+            if [ "$VERBOSE" = true ]; then
+                print_status "Package $pkg_name: No C++ files to format (launch-only package)"
+            fi
+            return 0
+        else
+            print_error "Failed to format package: $pkg_name"
+            echo "$output"
+            return 1
+        fi
     fi
 }
 

@@ -17,10 +17,11 @@ namespace star
 // ROS2 → Protobuf Conversions
 // ===========================================================================
 
-bool MessageConverter::twist_to_velocity_command(const geometry_msgs::msg::Twist &twist,
-                                                 star::v1::VelocityCommand &command,
-                                                 double wheel_base,
-                                                 uint32_t sequence)
+bool MessageConverter::twist_to_velocity_command(
+  const geometry_msgs::msg::Twist & twist,
+  star::v1::VelocityCommand & command,
+  double wheel_base,
+  uint32_t sequence)
 {
   // Validate inputs for NaN/infinity
   if (!is_valid_double(twist.linear.x) || !is_valid_double(twist.angular.z)) {
@@ -66,8 +67,9 @@ bool MessageConverter::twist_to_velocity_command(const geometry_msgs::msg::Twist
   return true;
 }
 
-bool MessageConverter::battery_state_to_proto(const sensor_msgs::msg::BatteryState &ros_battery,
-                                              star::v1::BatteryState &proto_battery)
+bool MessageConverter::battery_state_to_proto(
+  const sensor_msgs::msg::BatteryState & ros_battery,
+  star::v1::BatteryState & proto_battery)
 {
   // ROS2 sensor_msgs/BatteryState uses NaN to indicate "unknown" values
   // We need to check each field before conversion
@@ -152,14 +154,15 @@ bool MessageConverter::battery_state_to_proto(const sensor_msgs::msg::BatterySta
   return true;
 }
 
-bool MessageConverter::string_to_system_status(const std_msgs::msg::String &status_msg,
-                                               star::v1::SystemStatus &system_status)
+bool MessageConverter::string_to_system_status(
+  const std_msgs::msg::String & status_msg,
+  star::v1::SystemStatus & system_status)
 {
   // For now, implement basic string parsing
   // In production, use a JSON library (e.g., nlohmann/json) for robust parsing
   // This is a placeholder implementation
 
-  const std::string &data = status_msg.data;
+  const std::string & data = status_msg.data;
 
   // Simple keyword-based parsing (not robust, but sufficient for MVP)
   if (data.find("MANUAL") != std::string::npos) {
@@ -190,9 +193,10 @@ bool MessageConverter::string_to_system_status(const std_msgs::msg::String &stat
 // Protobuf → ROS2 Conversions
 // ===========================================================================
 
-bool MessageConverter::velocity_command_to_twist(const star::v1::VelocityCommand &command,
-                                                 geometry_msgs::msg::Twist &twist,
-                                                 double wheel_base)
+bool MessageConverter::velocity_command_to_twist(
+  const star::v1::VelocityCommand & command,
+  geometry_msgs::msg::Twist & twist,
+  double wheel_base)
 {
   // Validate protobuf inputs
   // Note: front_left/back_left = left side, front_right/back_right = right side for differential drive
@@ -230,10 +234,11 @@ bool MessageConverter::velocity_command_to_twist(const star::v1::VelocityCommand
   return true;
 }
 
-bool MessageConverter::pid_config_to_gains(const star::v1::PidConfig &pid_config,
-                                           double &kp,
-                                           double &ki,
-                                           double &kd)
+bool MessageConverter::pid_config_to_gains(
+  const star::v1::PidConfig & pid_config,
+  double & kp,
+  double & ki,
+  double & kd)
 {
   // Extract gains from protobuf (no unit conversion needed)
   kp = pid_config.kp();
@@ -254,7 +259,7 @@ bool MessageConverter::pid_config_to_gains(const star::v1::PidConfig &pid_config
 // Utility Functions
 // ===========================================================================
 
-int64_t MessageConverter::ros_time_to_us(const rclcpp::Time &time)
+int64_t MessageConverter::ros_time_to_us(const rclcpp::Time & time)
 {
   return time.nanoseconds() / 1000;
 }

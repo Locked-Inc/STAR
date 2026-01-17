@@ -77,7 +77,7 @@ public:
    *
    * @param options ROS2 node options for component configuration
    */
-  explicit StarGatewayBridgeNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+  explicit StarGatewayBridgeNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   /**
    * @brief Destructor - sends stop command and shuts down gracefully.
@@ -137,8 +137,9 @@ private:
    * @param request Service request
    * @param response Service response
    */
-  void set_pid_gains_callback(const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-                              std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+  void set_pid_gains_callback(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
   // ===========================================================================
   // Timer Callbacks
