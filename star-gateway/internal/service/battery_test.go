@@ -340,7 +340,7 @@ func TestStreamBatteryState_ValidRate(t *testing.T) {
 	// Wait for stream to process
 	select {
 	case err := <-errCh:
-		if err != nil && err != context.DeadlineExceeded && err != context.Canceled {
+		if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
 			t.Fatalf("Stream failed: %v", err)
 		}
 	case <-time.After(testStreamWaitTimeout):
@@ -395,7 +395,7 @@ func TestStreamBatteryState_InvalidRate(t *testing.T) {
 	select {
 	case err := <-errCh:
 		// Should complete normally (uses default rate)
-		if err != nil && err != context.DeadlineExceeded && err != context.Canceled {
+		if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
 			t.Fatalf("Stream failed: %v", err)
 		}
 	case <-time.After(testStreamWaitTimeout):
@@ -439,7 +439,7 @@ func TestStreamBatteryState_ContextCancellation(t *testing.T) {
 	// Should return context.Canceled
 	select {
 	case err := <-errCh:
-		if err != context.Canceled {
+		if !errors.Is(err, context.Canceled) {
 			t.Errorf("Expected context.Canceled, got: %v", err)
 		}
 	case <-time.After(testCancelWait):
@@ -499,7 +499,7 @@ func TestStreamBatteryState_MultipleClients(t *testing.T) {
 	for range numClients {
 		select {
 		case err := <-errCh:
-			if err != nil && err != context.DeadlineExceeded && err != context.Canceled {
+			if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
 				t.Fatalf("Stream failed: %v", err)
 			}
 		case <-time.After(testStreamWaitTimeout):
