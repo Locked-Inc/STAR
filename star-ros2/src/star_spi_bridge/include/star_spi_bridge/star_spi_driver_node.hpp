@@ -3,17 +3,18 @@
 #ifndef STAR_SPI_BRIDGE__STAR_SPI_DRIVER_NODE_HPP_
 #define STAR_SPI_BRIDGE__STAR_SPI_DRIVER_NODE_HPP_
 
+#include <memory>
+#include <string>
+
 #include "star_spi_bridge/spi_driver.hpp"
 #include "star_spi_bridge/spi_message_converter.hpp"
 
 #include <geometry_msgs/msg/twist.hpp>
-#include <memory>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <sensor_msgs/msg/battery_state.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
-#include <string>
 
 namespace star_spi_bridge
 {

@@ -11,19 +11,19 @@
 #ifndef STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
 #define STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
 
-#include "geometry_msgs/msg/twist.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/battery_state.hpp"
-#include "star_gateway_bridge/message_converter.hpp"
-#include "std_msgs/msg/string.hpp"
-#include "std_srvs/srv/set_bool.hpp"
-
-#include <grpcpp/grpcpp.h>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <string>
 
+#include "star_gateway_bridge/message_converter.hpp"
+
+#include <grpcpp/grpcpp.h>  // NOLINT(build/include_order)
+#include <geometry_msgs/msg/twist.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/battery_state.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <std_srvs/srv/set_bool.hpp>
 #include "star/v1/battery_management.pb.h"
 #include "star/v1/gateway_service.grpc.pb.h"
 #include "star/v1/gateway_service.pb.h"

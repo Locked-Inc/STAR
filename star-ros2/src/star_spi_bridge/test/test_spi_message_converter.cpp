@@ -1,9 +1,10 @@
 // Copyright 2026 Locked Inc.
 
-#include "star_spi_bridge/spi_message_converter.hpp"
-
 #include <cmath>
+
 #include <gtest/gtest.h>  // NOLINT
+
+#include "star_spi_bridge/spi_message_converter.hpp"
 
 using star_spi_bridge::SpiMessageConverter;
 

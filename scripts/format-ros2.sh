@@ -74,6 +74,19 @@ check_uncrustify() {
     fi
 }
 
+# Check if ament_cpplint is available
+check_cpplint() {
+    if ! command -v ament_cpplint &> /dev/null; then
+        print_warning "ament_cpplint not found - skipping include order checks"
+        return 1
+    fi
+
+    if [ "$VERBOSE" = true ]; then
+        print_status "Found ament_cpplint"
+    fi
+    return 0
+}
+
 # Parse command line arguments
 parse_args() {
     while [[ $# -gt 0 ]]; do
@@ -193,6 +206,50 @@ format_package() {
             print_error "Failed to format package: $pkg_name"
             echo "$output"
             return 1
+        fi
+    fi
+}
+
+# Check cpplint (include order) for a package
+check_package_cpplint() {
+    local pkg_dir="$1"
+    local pkg_name
+    pkg_name=$(basename "$pkg_dir")
+    
+    if [ "$VERBOSE" = true ]; then
+        print_status "Checking cpplint for package: $pkg_name"
+    fi
+    
+    # Run ament_cpplint
+    local output
+    if output=$(cd "$pkg_dir" && ament_cpplint 2>&1); then
+        if [ "$VERBOSE" = true ]; then
+            print_success "Package $pkg_name: cpplint OK"
+        fi
+        return 0
+    else
+        # Check if it's just "No files found"
+        if echo "$output" | grep -q "No files found"; then
+            if [ "$VERBOSE" = true ]; then
+                print_status "Package $pkg_name: No C++ files for cpplint (launch-only package)"
+            fi
+            return 0
+        # Check if critical build/include_order errors exist
+        elif echo "$output" | grep -q "build/include_order"; then
+            print_error "Package $pkg_name: Critical include_order errors found"
+            if [ "$VERBOSE" = true ]; then
+                echo "$output"
+            else
+                echo "$output" | grep -E "build/include_order"
+            fi
+            return 1
+        else
+            # Other cpplint warnings (copyright, line length, TODOs, etc.)
+            if [ "$VERBOSE" = true ]; then
+                print_warning "Package $pkg_name: cpplint style warnings (non-critical)"
+                echo "$output" | grep -E "Total errors found:"
+            fi
+            return 0
         fi
     fi
 }
@@ -317,6 +374,10 @@ main() {
 
     # Check prerequisites
     check_uncrustify
+    local has_cpplint=false
+    if check_cpplint; then
+        has_cpplint=true
+    fi
 
     # Find ROS2 packages
     print_status "Searching for ROS2 packages in: $ROS2_DIR"
@@ -341,6 +402,14 @@ main() {
             check_package_formatting "$pkg" || exit_code=1
         done
         
+        # Check cpplint (include order) if available
+        if [ "$has_cpplint" = true ]; then
+            print_status "Checking include order (cpplint)..."
+            for pkg in "${packages[@]}"; do
+                check_package_cpplint "$pkg" || exit_code=1
+            done
+        fi
+        
         if [ "$SKIP_GUARDS" = false ]; then
             check_header_guards || exit_code=1
         fi
@@ -349,6 +418,14 @@ main() {
         for pkg in "${packages[@]}"; do
             format_package "$pkg" || exit_code=1
         done
+        
+        # Check cpplint (include order) after formatting
+        if [ "$has_cpplint" = true ]; then
+            print_status "Checking include order (cpplint)..."
+            for pkg in "${packages[@]}"; do
+                check_package_cpplint "$pkg" || exit_code=1
+            done
+        fi
         
         if [ "$SKIP_GUARDS" = false ]; then
             fix_header_guards

@@ -7,13 +7,13 @@
 #ifndef STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
 #define STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
 
+#include <cmath>
+#include <string>
+
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/battery_state.hpp"
 #include "std_msgs/msg/string.hpp"
-
-#include <cmath>
-#include <string>
 
 #include "star/v1/battery_management.pb.h"
 #include "star/v1/motor_control.pb.h"

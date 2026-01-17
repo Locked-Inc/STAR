@@ -3,12 +3,12 @@
 #include "star_spi_bridge/spi_driver.hpp"
 
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 
 #include <cstring>
 #include <iomanip>
 #include <iostream>
-#include <sys/ioctl.h>
 
 #ifdef __linux__
 #include <linux/spi/spidev.h>

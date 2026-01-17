@@ -6,9 +6,9 @@
 
 #include "star_gateway_bridge/message_converter.hpp"
 
-#include "rclcpp/rclcpp.hpp"
-
 #include <chrono>
+
+#include "rclcpp/rclcpp.hpp"
 
 namespace star
 {

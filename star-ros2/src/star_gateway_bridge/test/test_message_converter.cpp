@@ -3,12 +3,12 @@
 
 #include "star_gateway_bridge/message_converter.hpp"
 
-#include <cmath>
-#include <geometry_msgs/msg/twist.hpp>
-#include <gtest/gtest.h>
-#include <limits>
-#include <sensor_msgs/msg/battery_state.hpp>
+#include <cmath>  // NOLINT(build/include_order)
+#include <limits>  // NOLINT(build/include_order)
 
+#include <geometry_msgs/msg/twist.hpp>  // NOLINT(build/include_order)
+#include <gtest/gtest.h>  // NOLINT(build/include_order)
+#include <sensor_msgs/msg/battery_state.hpp>
 #include "star/v1/battery_management.pb.h"
 #include "star/v1/motor_control.pb.h"
 
