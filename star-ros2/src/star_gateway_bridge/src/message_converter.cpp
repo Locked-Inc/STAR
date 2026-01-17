@@ -24,12 +24,14 @@ bool MessageConverter::twist_to_velocity_command(const geometry_msgs::msg::Twist
 {
   // Validate inputs for NaN/infinity
   if (!is_valid_double(twist.linear.x) || !is_valid_double(twist.angular.z)) {
-    RCLCPP_WARN(rclcpp::get_logger("message_converter"), "Invalid Twist: NaN/infinity in linear.x or angular.z");
+    RCLCPP_WARN(rclcpp::get_logger("message_converter"),
+                "Invalid Twist: NaN/infinity in linear.x or angular.z");
     return false;
   }
 
   if (!is_valid_double(wheel_base) || wheel_base <= 0.0) {
-    RCLCPP_ERROR(rclcpp::get_logger("message_converter"), "Invalid wheel_base: must be positive and finite");
+    RCLCPP_ERROR(rclcpp::get_logger("message_converter"),
+                 "Invalid wheel_base: must be positive and finite");
     return false;
   }
 
@@ -90,7 +92,8 @@ bool MessageConverter::battery_state_to_proto(const sensor_msgs::msg::BatterySta
 
   if (is_valid_double(ros_battery.design_capacity)) {
     auto *soc_data = proto_battery.mutable_soc();
-    soc_data->set_design_capacity_mah(static_cast<uint32_t>(ros_battery.design_capacity * k_ah_to_mah));
+    soc_data->set_design_capacity_mah(
+      static_cast<uint32_t>(ros_battery.design_capacity * k_ah_to_mah));
   }
 
   if (is_valid_double(ros_battery.charge)) {
@@ -101,7 +104,8 @@ bool MessageConverter::battery_state_to_proto(const sensor_msgs::msg::BatterySta
   // Percentage: 0-1 → 0-100%
   if (is_valid_double(ros_battery.percentage)) {
     auto *soc_data = proto_battery.mutable_soc();
-    soc_data->set_relative_soc_percent(static_cast<int32_t>(ros_battery.percentage * k_percent_to_int));
+    soc_data->set_relative_soc_percent(
+      static_cast<int32_t>(ros_battery.percentage * k_percent_to_int));
   }
 
   // Temperature: °C → deci-Celsius (first temperature sensor only)
@@ -197,12 +201,14 @@ bool MessageConverter::velocity_command_to_twist(const star::v1::VelocityCommand
   double right_vel = (command.front_right_velocity_mps() + command.back_right_velocity_mps()) / 2.0;
 
   if (!is_valid_double(left_vel) || !is_valid_double(right_vel)) {
-    RCLCPP_WARN(rclcpp::get_logger("message_converter"), "Invalid VelocityCommand: NaN/infinity in wheel velocities");
+    RCLCPP_WARN(rclcpp::get_logger("message_converter"),
+                "Invalid VelocityCommand: NaN/infinity in wheel velocities");
     return false;
   }
 
   if (!is_valid_double(wheel_base) || wheel_base <= 0.0) {
-    RCLCPP_ERROR(rclcpp::get_logger("message_converter"), "Invalid wheel_base: must be positive and finite");
+    RCLCPP_ERROR(rclcpp::get_logger("message_converter"),
+                 "Invalid wheel_base: must be positive and finite");
     return false;
   }
 
@@ -224,7 +230,10 @@ bool MessageConverter::velocity_command_to_twist(const star::v1::VelocityCommand
   return true;
 }
 
-bool MessageConverter::pid_config_to_gains(const star::v1::PidConfig &pid_config, double &kp, double &ki, double &kd)
+bool MessageConverter::pid_config_to_gains(const star::v1::PidConfig &pid_config,
+                                           double &kp,
+                                           double &ki,
+                                           double &kd)
 {
   // Extract gains from protobuf (no unit conversion needed)
   kp = pid_config.kp();
@@ -233,7 +242,8 @@ bool MessageConverter::pid_config_to_gains(const star::v1::PidConfig &pid_config
 
   // Validate gains are finite
   if (!is_valid_double(kp) || !is_valid_double(ki) || !is_valid_double(kd)) {
-    RCLCPP_WARN(rclcpp::get_logger("message_converter"), "Invalid PidConfig: NaN/infinity in gains");
+    RCLCPP_WARN(rclcpp::get_logger("message_converter"),
+                "Invalid PidConfig: NaN/infinity in gains");
     return false;
   }
 

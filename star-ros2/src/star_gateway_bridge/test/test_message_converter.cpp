@@ -477,7 +477,8 @@ TEST_F(MessageConverterTest, BatteryStateToProtoNotCharging)
   ros_battery.voltage = 12.0;
   ros_battery.current = 0.0;
   ros_battery.percentage = 0.50;
-  ros_battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING;
+  ros_battery.power_supply_status =
+    sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING;
 
   star::v1::BatteryState proto_battery;
   ASSERT_TRUE(converter_.battery_state_to_proto(ros_battery, proto_battery));

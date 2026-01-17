@@ -91,7 +91,8 @@ public:
    * @param system_status Output SystemStatus protobuf
    * @return true if conversion successful, false if parse failed
    */
-  static bool string_to_system_status(const std_msgs::msg::String &status_msg, star::v1::SystemStatus &system_status);
+  static bool string_to_system_status(const std_msgs::msg::String &status_msg,
+                                      star::v1::SystemStatus &system_status);
 
   // ===========================================================================
   // Protobuf → ROS2 Conversions
@@ -133,7 +134,8 @@ public:
    * @param kd Output derivative gain
    * @return true if conversion successful, false if input validation failed
    */
-  static bool pid_config_to_gains(const star::v1::PidConfig &pid_config, double &kp, double &ki, double &kd);
+  static bool
+  pid_config_to_gains(const star::v1::PidConfig &pid_config, double &kp, double &ki, double &kd);
 
   // ===========================================================================
   // Validation Helpers
