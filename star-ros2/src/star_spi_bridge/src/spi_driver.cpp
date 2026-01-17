@@ -3,12 +3,12 @@
 #include "star_spi_bridge/spi_driver.hpp"
 
 #include <fcntl.h>
-#include <sys/ioctl.h>
 #include <unistd.h>
 
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <sys/ioctl.h>
 
 #ifdef __linux__
 #include <linux/spi/spidev.h>
@@ -18,7 +18,7 @@
 // Ideally this code runs on Linux/RPi5. On macOS, these headers likely
 // don't exist or are different.
 #ifndef SPI_IOC_MESSAGE
-#define SPI_IOC_MESSAGE(N)       0
+#define SPI_IOC_MESSAGE(N) 0
 constexpr uint8_t SPI_MODE_0 = 0;
 constexpr int SPI_IOC_WR_MODE = 0;
 constexpr int SPI_IOC_WR_BITS_PER_WORD = 0;
@@ -43,7 +43,7 @@ namespace star_spi_bridge
 
 namespace
 {
-inline void set_spi_xfer_tx_buf(spi_ioc_transfer & xfer, uint64_t value)
+inline void set_spi_xfer_tx_buf(spi_ioc_transfer &xfer, uint64_t value)
 {
 #ifdef __linux__
   xfer.tx_buf = value;
@@ -52,7 +52,7 @@ inline void set_spi_xfer_tx_buf(spi_ioc_transfer & xfer, uint64_t value)
 #endif
 }
 
-inline void set_spi_xfer_rx_buf(spi_ioc_transfer & xfer, uint64_t value)
+inline void set_spi_xfer_rx_buf(spi_ioc_transfer &xfer, uint64_t value)
 {
 #ifdef __linux__
   xfer.rx_buf = value;
@@ -61,7 +61,7 @@ inline void set_spi_xfer_rx_buf(spi_ioc_transfer & xfer, uint64_t value)
 #endif
 }
 
-inline void set_spi_xfer_len(spi_ioc_transfer & xfer, uint32_t value)
+inline void set_spi_xfer_len(spi_ioc_transfer &xfer, uint32_t value)
 {
 #ifdef __linux__
   xfer.len = value;
@@ -70,7 +70,7 @@ inline void set_spi_xfer_len(spi_ioc_transfer & xfer, uint32_t value)
 #endif
 }
 
-inline void set_spi_xfer_speed_hz(spi_ioc_transfer & xfer, uint32_t value)
+inline void set_spi_xfer_speed_hz(spi_ioc_transfer &xfer, uint32_t value)
 {
 #ifdef __linux__
   xfer.speed_hz = value;
@@ -79,7 +79,7 @@ inline void set_spi_xfer_speed_hz(spi_ioc_transfer & xfer, uint32_t value)
 #endif
 }
 
-inline void set_spi_xfer_bits_per_word(spi_ioc_transfer & xfer, uint8_t value)
+inline void set_spi_xfer_bits_per_word(spi_ioc_transfer &xfer, uint8_t value)
 {
 #ifdef __linux__
   xfer.bits_per_word = value;
@@ -92,8 +92,8 @@ inline void set_spi_xfer_bits_per_word(spi_ioc_transfer & xfer, uint8_t value)
 uint32_t SpiDriver::crc32_table_[256];
 bool SpiDriver::crc32_table_initialized_ = false;
 
-SpiDriver::SpiDriver(const std::string & device_path, uint32_t speed_hz)
-: device_path_(device_path), speed_hz_(speed_hz), spi_fd_(-1)
+SpiDriver::SpiDriver(const std::string &device_path, uint32_t speed_hz)
+    : device_path_(device_path), speed_hz_(speed_hz), spi_fd_(-1)
 {
   if (!crc32_table_initialized_) {
     init_crc32_table();
@@ -111,8 +111,8 @@ bool SpiDriver::initialize()
   // Open SPI device
   spi_fd_ = open(device_path_.c_str(), O_RDWR);
   if (spi_fd_ < 0) {
-    std::cerr << "Failed to open SPI device: " << device_path_ << " (" << strerror(errno) << ")" <<
-      std::endl;
+    std::cerr << "Failed to open SPI device: " << device_path_ << " (" << strerror(errno) << ")"
+              << std::endl;
     return false;
   }
 
@@ -150,7 +150,7 @@ void SpiDriver::close_device()
   }
 }
 
-bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8_t> & rx_data)
+bool SpiDriver::transfer(const std::vector<uint8_t> &tx_data, std::vector<uint8_t> &rx_data)
 {
   if (spi_fd_ < 0) {
     return false;
@@ -178,9 +178,11 @@ bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8
   return true;
 }
 
-void SpiDriver::encode_frame(
-  uint16_t seq, FrameType type, uint8_t flags, const std::vector<uint8_t> & payload,
-  std::vector<uint8_t> & out_frame)
+void SpiDriver::encode_frame(uint16_t seq,
+                             FrameType type,
+                             uint8_t flags,
+                             const std::vector<uint8_t> &payload,
+                             std::vector<uint8_t> &out_frame)
 {
   // [SYNC(2)][SEQ(2)][LEN(2)][TYPE(1)][FLAGS(1)][PAYLOAD(N)][CRC(4)]
   size_t frame_size = 8 + payload.size() + 4;
@@ -220,9 +222,11 @@ void SpiDriver::encode_frame(
   out_frame.push_back((crc >> 24) & 0xFF);
 }
 
-bool SpiDriver::decode_frame(
-  const std::vector<uint8_t> & frame, uint16_t & seq, FrameType & type, uint8_t & flags,
-  std::vector<uint8_t> & payload)
+bool SpiDriver::decode_frame(const std::vector<uint8_t> &frame,
+                             uint16_t &seq,
+                             FrameType &type,
+                             uint8_t &flags,
+                             std::vector<uint8_t> &payload)
 {
   if (frame.size() < k_header_size + 4) {  // Header (8) + CRC (4) = 12 bytes min
     return false;
@@ -247,11 +251,10 @@ bool SpiDriver::decode_frame(
   std::vector<uint8_t> data_to_check(frame.begin(), frame.end() - 4);
   uint32_t calculated_crc = calculate_crc32(data_to_check);
 
-  uint32_t received_crc =
-    static_cast<uint32_t>(frame[frame.size() - 4]) |
-    (static_cast<uint32_t>(frame[frame.size() - 3]) << 8) |
-    (static_cast<uint32_t>(frame[frame.size() - 2]) <<
-    16) | (static_cast<uint32_t>(frame[frame.size() - 1]) << 24);
+  uint32_t received_crc = static_cast<uint32_t>(frame[frame.size() - 4]) |
+                          (static_cast<uint32_t>(frame[frame.size() - 3]) << 8) |
+                          (static_cast<uint32_t>(frame[frame.size() - 2]) << 16) |
+                          (static_cast<uint32_t>(frame[frame.size() - 1]) << 24);
 
   if (calculated_crc != received_crc) {
     return false;
@@ -286,7 +289,7 @@ void SpiDriver::init_crc32_table()
   }
 }
 
-uint32_t SpiDriver::calculate_crc32(const std::vector<uint8_t> & data)
+uint32_t SpiDriver::calculate_crc32(const std::vector<uint8_t> &data)
 {
   if (!crc32_table_initialized_) {
     init_crc32_table();

@@ -1,7 +1,7 @@
 // Copyright 2026 Locked Inc.
 
-#ifndef STAR_SPI_BRIDGE__SPI_DRIVER_HPP_
-#define STAR_SPI_BRIDGE__SPI_DRIVER_HPP_
+#ifndef STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_DRIVER_HPP_
+#define STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_DRIVER_HPP_
 
 #include <cstdint>
 #include <string>
@@ -15,7 +15,7 @@ enum class FrameType : uint8_t { VelocityCommand = 0x01, TelemetryData = 0x02 };
 class SpiDriver
 {
 public:
-  explicit SpiDriver(const std::string & device_path, uint32_t speed_hz = 10000000);
+  explicit SpiDriver(const std::string &device_path, uint32_t speed_hz = 10000000);
   virtual ~SpiDriver();
 
   bool initialize();
@@ -23,19 +23,23 @@ public:
 
   // Full duplex transfer
   // Returns true on success, false on failure
-  bool transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8_t> & rx_data);
+  bool transfer(const std::vector<uint8_t> &tx_data, std::vector<uint8_t> &rx_data);
 
   // Frame encoding/decoding helpers
   // Optimized: uses output parameter to allow buffer reuse
-  static void encode_frame(
-    uint16_t seq, FrameType type, uint8_t flags, const std::vector<uint8_t> & payload,
-    std::vector<uint8_t> & out_frame);
-  static bool decode_frame(
-    const std::vector<uint8_t> & frame, uint16_t & seq, FrameType & type, uint8_t & flags,
-    std::vector<uint8_t> & payload);
+  static void encode_frame(uint16_t seq,
+                           FrameType type,
+                           uint8_t flags,
+                           const std::vector<uint8_t> &payload,
+                           std::vector<uint8_t> &out_frame);
+  static bool decode_frame(const std::vector<uint8_t> &frame,
+                           uint16_t &seq,
+                           FrameType &type,
+                           uint8_t &flags,
+                           std::vector<uint8_t> &payload);
 
   // CRC-32 helper (public for testing)
-  static uint32_t calculate_crc32(const std::vector<uint8_t> & data);
+  static uint32_t calculate_crc32(const std::vector<uint8_t> &data);
 
 private:
   std::string device_path_;
@@ -60,4 +64,4 @@ private:
 
 }  // namespace star_spi_bridge
 
-#endif  // STAR_SPI_BRIDGE__SPI_DRIVER_HPP_
+#endif  // STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_DRIVER_HPP_

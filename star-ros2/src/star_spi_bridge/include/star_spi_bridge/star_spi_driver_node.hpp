@@ -1,20 +1,19 @@
 // Copyright 2026 Locked Inc.
 
-#ifndef STAR_SPI_BRIDGE__STAR_SPI_DRIVER_NODE_HPP_
-#define STAR_SPI_BRIDGE__STAR_SPI_DRIVER_NODE_HPP_
-
-#include <memory>
-#include <string>
+#ifndef STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_STAR_SPI_DRIVER_NODE_HPP_
+#define STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_STAR_SPI_DRIVER_NODE_HPP_
 
 #include "star_spi_bridge/spi_driver.hpp"
 #include "star_spi_bridge/spi_message_converter.hpp"
 
 #include <geometry_msgs/msg/twist.hpp>
+#include <memory>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <sensor_msgs/msg/battery_state.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
+#include <string>
 
 namespace star_spi_bridge
 {
@@ -22,20 +21,20 @@ namespace star_spi_bridge
 class StarSpiDriverNode : public rclcpp_lifecycle::LifecycleNode
 {
 public:
-  explicit StarSpiDriverNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit StarSpiDriverNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
   ~StarSpiDriverNode() override;
 
   // Lifecycle transitions
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_configure(const rclcpp_lifecycle::State & prev_state) override;
+  on_configure(const rclcpp_lifecycle::State &prev_state) override;
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_activate(const rclcpp_lifecycle::State & prev_state) override;
+  on_activate(const rclcpp_lifecycle::State &prev_state) override;
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_deactivate(const rclcpp_lifecycle::State & prev_state) override;
+  on_deactivate(const rclcpp_lifecycle::State &prev_state) override;
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_cleanup(const rclcpp_lifecycle::State & prev_state) override;
+  on_cleanup(const rclcpp_lifecycle::State &prev_state) override;
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_shutdown(const rclcpp_lifecycle::State & prev_state) override;
+  on_shutdown(const rclcpp_lifecycle::State &prev_state) override;
 
 private:
   // Callbacks
@@ -66,4 +65,4 @@ private:
 
 }  // namespace star_spi_bridge
 
-#endif  // STAR_SPI_BRIDGE__STAR_SPI_DRIVER_NODE_HPP_
+#endif  // STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_STAR_SPI_DRIVER_NODE_HPP_

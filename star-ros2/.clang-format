@@ -40,7 +40,6 @@ SpaceBeforeParens: ControlStatements
 SpaceAfterCStyleCast: false
 SpaceBeforeAssignmentOperators: true
 SpacesInAngles: false
-DerivePointerAlignment: false
 
 # ROS2 uncrustify style: space on both sides of & and *
 # This creates: Type & ref, Type * ptr (not Type& ref, Type* ptr)

@@ -11,12 +11,10 @@
 namespace star_spi_bridge
 {
 
-SpiMessageConverter::SpiMessageConverter(const Parameters & params)
-: params_(params) {}
+SpiMessageConverter::SpiMessageConverter(const Parameters &params) : params_(params) {}
 
-bool SpiMessageConverter::twist_to_velocity_command(
-  const geometry_msgs::msg::Twist & twist,
-  star::v1::VelocityCommand & command)
+bool SpiMessageConverter::twist_to_velocity_command(const geometry_msgs::msg::Twist &twist,
+                                                    star::v1::VelocityCommand &command)
 {
   if (!std::isfinite(twist.linear.x) || !std::isfinite(twist.angular.z)) {
     return false;
@@ -46,15 +44,14 @@ bool SpiMessageConverter::twist_to_velocity_command(
   return true;
 }
 
-void SpiMessageConverter::telemetry_to_odometry(
-  const star::v1::TelemetryData & telemetry,
-  nav_msgs::msg::Odometry & odom)
+void SpiMessageConverter::telemetry_to_odometry(const star::v1::TelemetryData &telemetry,
+                                                nav_msgs::msg::Odometry &odom)
 {
   // Extract encoder data from telemetry
-  const auto & enc_fl = telemetry.encoder_front_left();
-  const auto & enc_fr = telemetry.encoder_front_right();
-  const auto & enc_bl = telemetry.encoder_back_left();
-  const auto & enc_br = telemetry.encoder_back_right();
+  const auto &enc_fl = telemetry.encoder_front_left();
+  const auto &enc_fr = telemetry.encoder_front_right();
+  const auto &enc_bl = telemetry.encoder_back_left();
+  const auto &enc_br = telemetry.encoder_back_right();
 
   // Encoder ticks are cumulative; we compute deltas between messages
   int64_t ticks_fl = enc_fl.ticks();
@@ -138,39 +135,37 @@ void SpiMessageConverter::telemetry_to_odometry(
   }
 }
 
-void SpiMessageConverter::telemetry_to_joint_state(
-  const star::v1::TelemetryData & telemetry,
-  sensor_msgs::msg::JointState & joint_state)
+void SpiMessageConverter::telemetry_to_joint_state(const star::v1::TelemetryData &telemetry,
+                                                   sensor_msgs::msg::JointState &joint_state)
 {
   // Extract encoder data from telemetry
-  const auto & enc_fl = telemetry.encoder_front_left();
-  const auto & enc_fr = telemetry.encoder_front_right();
-  const auto & enc_bl = telemetry.encoder_back_left();
-  const auto & enc_br = telemetry.encoder_back_right();
+  const auto &enc_fl = telemetry.encoder_front_left();
+  const auto &enc_fr = telemetry.encoder_front_right();
+  const auto &enc_bl = telemetry.encoder_back_left();
+  const auto &enc_br = telemetry.encoder_back_right();
 
-  joint_state.name = {"front_left_wheel", "front_right_wheel", "back_left_wheel",
-    "back_right_wheel"};
+  joint_state.name = {
+    "front_left_wheel", "front_right_wheel", "back_left_wheel", "back_right_wheel"};
 
   // Position (radians)
   double rad_per_tick = (2.0 * M_PI) / params_.ticks_per_rev;
   joint_state.position = {static_cast<double>(enc_fl.ticks()) * rad_per_tick,
-    static_cast<double>(enc_fr.ticks()) * rad_per_tick,
-    static_cast<double>(enc_bl.ticks()) * rad_per_tick,
-    static_cast<double>(enc_br.ticks()) * rad_per_tick};
+                          static_cast<double>(enc_fr.ticks()) * rad_per_tick,
+                          static_cast<double>(enc_bl.ticks()) * rad_per_tick,
+                          static_cast<double>(enc_br.ticks()) * rad_per_tick};
 
   // Velocity (rad/s)
   // velocity_mps = radius * angular_velocity_rad_s
   // angular_velocity = velocity_mps / radius
   double inv_radius = 1.0 / params_.wheel_radius;
   joint_state.velocity = {enc_fl.velocity_mps() * inv_radius,
-    enc_fr.velocity_mps() * inv_radius,
-    enc_bl.velocity_mps() * inv_radius,
-    enc_br.velocity_mps() * inv_radius};
+                          enc_fr.velocity_mps() * inv_radius,
+                          enc_bl.velocity_mps() * inv_radius,
+                          enc_br.velocity_mps() * inv_radius};
 }
 
-void SpiMessageConverter::telemetry_to_battery_state(
-  const star::v1::TelemetryData & telemetry,
-  sensor_msgs::msg::BatteryState & battery_state)
+void SpiMessageConverter::telemetry_to_battery_state(const star::v1::TelemetryData &telemetry,
+                                                     sensor_msgs::msg::BatteryState &battery_state)
 {
   // Battery data is directly on TelemetryData (RX72N specific - BQ4050)
   battery_state.voltage = static_cast<float>(telemetry.battery_voltage_v());

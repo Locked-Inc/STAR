@@ -8,8 +8,8 @@ using namespace std::chrono_literals;
 
 namespace star_spi_bridge
 {
-StarSpiDriverNode::StarSpiDriverNode(const rclcpp::NodeOptions & options)
-: rclcpp_lifecycle::LifecycleNode("star_spi_driver", options)
+StarSpiDriverNode::StarSpiDriverNode(const rclcpp::NodeOptions &options)
+    : rclcpp_lifecycle::LifecycleNode("star_spi_driver", options)
 {
   // Declare parameters
   declare_parameter("spi_device_path", "/dev/spidev0.0");
@@ -125,7 +125,7 @@ StarSpiDriverNode::on_cleanup(const rclcpp_lifecycle::State &)
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-StarSpiDriverNode::on_shutdown(const rclcpp_lifecycle::State & prev_state)
+StarSpiDriverNode::on_shutdown(const rclcpp_lifecycle::State &prev_state)
 {
   RCLCPP_INFO(get_logger(), "Shutting down StarSpiDriverNode...");
   return on_cleanup(prev_state);
@@ -186,8 +186,8 @@ void StarSpiDriverNode::timer_callback()
   std::vector<uint8_t> rx_payload;
 
   if (!SpiDriver::decode_frame(rx_frame, rx_seq, rx_type, rx_flags, rx_payload)) {
-    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
-        "SPI Frame Decode Failed (CRC mismatch or garbage)");
+    RCLCPP_WARN_THROTTLE(
+      get_logger(), *get_clock(), 1000, "SPI Frame Decode Failed (CRC mismatch or garbage)");
     return;
   }
 
