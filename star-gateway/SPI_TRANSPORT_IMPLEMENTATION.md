@@ -385,8 +385,8 @@ Log out and log back in for group changes to take effect.
 
 | RPi5 Pin | GPIO | Function | Signal | RX72N Pin | Function |
 |----------|------|----------|--------|-----------|----------|
-| 19 | GPIO 10 | COPI | MOSI | PA6 (Pin 64) | MOSIA-B |
-| 21 | GPIO 9 | CIPO | MISO | PA7 (Pin 63) | MISOA-B |
+| 19 | GPIO 10 | COPI | COPI | PA6 (Pin 64) | MOSIA-B (COPI) |
+| 21 | GPIO 9 | CIPO | CIPO | PA7 (Pin 63) | MISOA-B (CIPO) |
 | 23 | GPIO 11 | SCLK | Clock | PA5 (Pin 65) | RSPCKA-B |
 | 24 | GPIO 8 | CE0 | Chip Select | PA4 (Pin 66) | SSLA0-B |
 | 6 | - | GND | Ground | GND | Ground |
@@ -394,6 +394,7 @@ Log out and log back in for group changes to take effect.
 **Note:** Use inclusive terminology:
 - **COPI** = Controller Out, Peripheral In (formerly MOSI)
 - **CIPO** = Controller In, Peripheral Out (formerly MISO)
+- RX72N register names (MOSIA-B, MISOA-B) are hardware-specific legacy terms that map to COPI/CIPO
 
 **Hardware reference:** `docs/sections/03_hardware_pinout.tex` (lines 450-475)
 
@@ -595,9 +596,9 @@ SPI read timeout
 
 ### External Resources
 
-- **periph.io docs:** https://periph.io/
-- **SPI on Raspberry Pi:** https://pinout.xyz/pinout/spi
-- **RX72N SPI peripheral:** Renesas RX72N Group User's Manual (Chapter 38)
+- **periph.io docs:** [periph.io](https://periph.io/)
+- **SPI on Raspberry Pi:** [pinout: SPI](https://pinout.xyz/pinout/spi)
+- **RX72N SPI peripheral:** [Renesas RX72N Group User's Manual (Chapter 38)](https://www.renesas.com/us/en/document/mah/rx72n-group-users-manual-hardware)
 
 ## License
 
