@@ -33,6 +33,10 @@ const (
 	testBatterySendInterval = 50 * time.Millisecond  // Interval for sending battery states
 	testStreamRateHz        = 5                      // Stream rate in Hz (200ms per message)
 	testStreamWaitTimeout   = 500 * time.Millisecond // Maximum wait for stream completion
+
+	// Cancellation test timing constants
+	testCancelDelay = 50 * time.Millisecond  // Delay before calling cancel()
+	testCancelWait  = 200 * time.Millisecond // Maximum wait for cancellation to complete
 )
 
 // ============================================================================
@@ -369,7 +373,7 @@ func TestStreamBatteryState_InvalidRate(t *testing.T) {
 		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), testStreamTimeout)
 	defer cancel()
 
 	mockStream := &mockBatteryStreamServer{
@@ -394,7 +398,7 @@ func TestStreamBatteryState_InvalidRate(t *testing.T) {
 		if err != nil && err != context.DeadlineExceeded && err != context.Canceled {
 			t.Fatalf("Stream failed: %v", err)
 		}
-	case <-time.After(300 * time.Millisecond):
+	case <-time.After(testStreamWaitTimeout):
 		t.Fatal("Stream did not complete")
 	}
 }
@@ -429,7 +433,7 @@ func TestStreamBatteryState_ContextCancellation(t *testing.T) {
 	}()
 
 	// Cancel after a short delay
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(testCancelDelay)
 	cancel()
 
 	// Should return context.Canceled
@@ -438,7 +442,7 @@ func TestStreamBatteryState_ContextCancellation(t *testing.T) {
 		if err != context.Canceled {
 			t.Errorf("Expected context.Canceled, got: %v", err)
 		}
-	case <-time.After(200 * time.Millisecond):
+	case <-time.After(testCancelWait):
 		t.Fatal("Stream did not exit after context cancellation")
 	}
 }
@@ -469,7 +473,7 @@ func TestStreamBatteryState_MultipleClients(t *testing.T) {
 		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), testStreamTimeout)
 	defer cancel()
 
 	// Create 3 concurrent clients
@@ -498,7 +502,7 @@ func TestStreamBatteryState_MultipleClients(t *testing.T) {
 			if err != nil && err != context.DeadlineExceeded && err != context.Canceled {
 				t.Fatalf("Stream failed: %v", err)
 			}
-		case <-time.After(500 * time.Millisecond):
+		case <-time.After(testStreamWaitTimeout):
 			t.Fatal("Not all streams completed")
 		}
 	}

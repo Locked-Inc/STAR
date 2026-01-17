@@ -132,7 +132,7 @@ Added wire.proto support:
 - BatteryState added to WireMessage for streaming
 
 Unit tests added:
-- 21 test cases covering all methods
+- 22 test cases covering all methods
 - Success cases, error handling, validation
 - Streaming tests with goroutines and cancellation
 - Coverage: 80%+
@@ -267,7 +267,7 @@ lsof -i :8080   # HTTP port
   - [x] Ticker-based send loop
   - [x] Graceful shutdown
 
-### Phase 5: Testing (21 tests) ✅ COMPLETE
+### Phase 5: Testing (22 tests) ✅ COMPLETE
 
 - [x] Constructor test
 - [x] **GetBatteryState** (3 tests):
@@ -308,7 +308,7 @@ lsof -i :8080   # HTTP port
 
 ### Phase 7: Verification ✅ COMPLETE
 
-- [x] All tests pass: `go test ./internal/service` (21/21 battery tests pass)
+- [x] All tests pass: `go test ./internal/service` (22/22 battery tests pass)
 - [x] Coverage ≥ 80%: Battery service coverage is **80.38%**
 - [x] No race conditions: `go test -race ./internal/service` (passes)
 - [x] Code formatted: `gofmt` applied
