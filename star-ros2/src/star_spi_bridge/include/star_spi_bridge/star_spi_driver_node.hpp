@@ -1,7 +1,7 @@
 // Copyright 2026 Locked Inc.
 
-#ifndef STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_STAR_SPI_DRIVER_NODE_HPP_
-#define STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_STAR_SPI_DRIVER_NODE_HPP_
+#ifndef STAR_SPI_BRIDGE__STAR_SPI_DRIVER_NODE_HPP_
+#define STAR_SPI_BRIDGE__STAR_SPI_DRIVER_NODE_HPP_
 
 #include "star_spi_bridge/spi_driver.hpp"
 #include "star_spi_bridge/spi_message_converter.hpp"
@@ -65,4 +65,4 @@ private:
 
 }  // namespace star_spi_bridge
 
-#endif  // STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_STAR_SPI_DRIVER_NODE_HPP_
+#endif  // STAR_SPI_BRIDGE__STAR_SPI_DRIVER_NODE_HPP_

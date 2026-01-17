@@ -1,7 +1,7 @@
 // Copyright 2026 Locked Inc.
 
-#ifndef STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_MESSAGE_CONVERTER_HPP_
-#define STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_MESSAGE_CONVERTER_HPP_
+#ifndef STAR_SPI_BRIDGE__SPI_MESSAGE_CONVERTER_HPP_
+#define STAR_SPI_BRIDGE__SPI_MESSAGE_CONVERTER_HPP_
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -58,4 +58,4 @@ private:
 
 }  // namespace star_spi_bridge
 
-#endif  // STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_MESSAGE_CONVERTER_HPP_
+#endif  // STAR_SPI_BRIDGE__SPI_MESSAGE_CONVERTER_HPP_

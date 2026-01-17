@@ -1,0 +1,30 @@
+#!/bin/bash
+# Pre-commit hook for STAR project
+# Checks ROS2 code formatting and header guards before allowing commits
+#
+# To install: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+# Or: ln -sf ../../scripts/pre-commit .git/hooks/pre-commit
+
+set -e
+
+# Only check if there are staged ROS2 files
+STAGED_ROS2_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^star-ros2/.*\.(cpp|hpp)$' || true)
+
+if [ -z "$STAGED_ROS2_FILES" ]; then
+    exit 0
+fi
+
+echo "🔍 Checking ROS2 code formatting and header guards..."
+
+# Run format check
+if ! ./scripts/format-ros2.sh --check >/dev/null 2>&1; then
+    echo ""
+    echo "❌ Pre-commit check failed!"
+    echo ""
+    echo "Run './scripts/format-ros2.sh' to fix formatting and header guards."
+    echo "Then 'git add' the fixed files and commit again."
+    echo ""
+    exit 1
+fi
+
+echo "✅ ROS2 code checks passed!"

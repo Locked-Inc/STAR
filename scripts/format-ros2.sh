@@ -15,6 +15,7 @@ NC='\033[0m' # No Color
 # Default values
 CHECK_ONLY=false
 VERBOSE=false
+SKIP_GUARDS=false
 EXTENSIONS=("*.cpp" "*.hpp")
 DIRECTORIES=("src")
 ROS2_DIR="star-ros2"
@@ -26,12 +27,13 @@ usage() {
     echo "Usage: $0 [options]"
     echo ""
     echo "Options:"
-    echo "  -c, --check    Check formatting without making changes"
-    echo "  -v, --verbose  Enable verbose output"
-    echo "  -h, --help     Show this help message"
+    echo "  -c, --check       Check formatting without making changes"
+    echo "  -v, --verbose     Enable verbose output"
+    echo "  --skip-guards     Skip header guard checking/fixing"
+    echo "  -h, --help        Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0             # Format all ROS2 C++ files"
+    echo "  $0             # Format all ROS2 C++ files and fix header guards"
     echo "  $0 --check     # Check formatting without changes (CI mode)"
     echo "  $0 -v          # Format with verbose output"
 }
@@ -95,6 +97,10 @@ parse_args() {
                 ;;
             -v|--verbose)
                 VERBOSE=true
+                shift
+                ;;
+            --skip-guards)
+                SKIP_GUARDS=true
                 shift
                 ;;
             -h|--help)
@@ -173,6 +179,116 @@ check_formatting() {
     fi
 }
 
+# Get expected header guard for a file
+# Pattern: PACKAGE__FILENAME_HPP_
+get_expected_guard() {
+    local file="$1"
+    local rel_path="${file#star-ros2/src/}"
+    local package_name="${rel_path%%/*}"
+    local filename
+    filename=$(basename "$file" .hpp)
+    
+    local package_upper
+    package_upper=$(echo "$package_name" | tr '[:lower:]-' '[:upper:]_')
+    local filename_upper
+    filename_upper=$(echo "$filename" | tr '[:lower:]-' '[:upper:]_')
+    
+    echo "${package_upper}__${filename_upper}_HPP_"
+}
+
+# Check header guards
+check_header_guards() {
+    local issues_found=false
+    
+    print_status "Checking header guards..."
+    
+    while IFS= read -r -d '' file; do
+        local expected_guard
+        expected_guard=$(get_expected_guard "$file")
+        local current_guard
+        current_guard=$(grep -m1 "^#ifndef " "$file" 2>/dev/null | sed 's/#ifndef //' || true)
+        
+        if [ -z "$current_guard" ]; then
+            if [ "$VERBOSE" = true ]; then
+                print_warning "No header guard found in: $file"
+            fi
+            continue
+        fi
+        
+        if [ "$current_guard" != "$expected_guard" ]; then
+            if [ "$issues_found" = false ]; then
+                echo ""
+                print_warning "Header guard issues found:"
+                issues_found=true
+            fi
+            echo "  $file"
+            if [ "$VERBOSE" = true ]; then
+                echo "    Current:  $current_guard"
+                echo "    Expected: $expected_guard"
+            fi
+        fi
+    done < <(find "$ROS2_DIR/src" -name "*.hpp" -type f \
+        -not -path "*/build/*" \
+        -not -path "*/install/*" \
+        -not -path "*/log/*" \
+        -print0 2>/dev/null)
+    
+    if [ "$issues_found" = true ]; then
+        echo ""
+        print_error "Header guard check failed!"
+        echo "Run './scripts/format-ros2.sh' to fix header guards."
+        return 1
+    else
+        print_success "All header guards are correct!"
+        return 0
+    fi
+}
+
+# Fix header guards
+fix_header_guards() {
+    local fixed_count=0
+    
+    print_status "Checking and fixing header guards..."
+    
+    while IFS= read -r -d '' file; do
+        local expected_guard
+        expected_guard=$(get_expected_guard "$file")
+        local current_guard
+        current_guard=$(grep -m1 "^#ifndef " "$file" 2>/dev/null | sed 's/#ifndef //' || true)
+        
+        if [ -z "$current_guard" ]; then
+            continue
+        fi
+        
+        if [ "$current_guard" != "$expected_guard" ]; then
+            # Fix the guard (macOS compatible)
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' "s/#ifndef $current_guard/#ifndef $expected_guard/" "$file"
+                sed -i '' "s/#define $current_guard/#define $expected_guard/" "$file"
+                sed -i '' "s|// $current_guard|// $expected_guard|" "$file"
+            else
+                sed -i "s/#ifndef $current_guard/#ifndef $expected_guard/" "$file"
+                sed -i "s/#define $current_guard/#define $expected_guard/" "$file"
+                sed -i "s|// $current_guard|// $expected_guard|" "$file"
+            fi
+            ((fixed_count++))
+            if [ "$VERBOSE" = true ]; then
+                print_status "Fixed guard: $file"
+            fi
+        fi
+    done < <(find "$ROS2_DIR/src" -name "*.hpp" -type f \
+        -not -path "*/build/*" \
+        -not -path "*/install/*" \
+        -not -path "*/log/*" \
+        -print0 2>/dev/null)
+    
+    if [ $fixed_count -gt 0 ]; then
+        print_success "Fixed $fixed_count header guard(s)!"
+    else
+        print_success "All header guards were already correct!"
+    fi
+}
+
 # Format files
 format_files() {
     local files=("$@")
@@ -242,12 +358,23 @@ main() {
         print_status "Found ${#source_files[@]} C++ file(s)"
     fi
 
+    # Track overall success
+    local exit_code=0
+
     # Execute formatting or check
     if [ "$CHECK_ONLY" = true ]; then
-        check_formatting "${source_files[@]}"
+        check_formatting "${source_files[@]}" || exit_code=1
+        if [ "$SKIP_GUARDS" = false ]; then
+            check_header_guards || exit_code=1
+        fi
     else
         format_files "${source_files[@]}"
+        if [ "$SKIP_GUARDS" = false ]; then
+            fix_header_guards
+        fi
     fi
+
+    exit $exit_code
 }
 
 # Run main function with all arguments
