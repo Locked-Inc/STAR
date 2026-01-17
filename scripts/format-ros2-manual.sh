@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
 # Manual ROS2 formatting instructions
 # Use this when devcontainer is not available
 
@@ -26,7 +28,6 @@ if [ -d "star-ros2/src" ]; then
     for pkg_xml in star-ros2/src/*/package.xml; do
         if [ -f "$pkg_xml" ]; then
             pkg_dir=$(dirname "$pkg_xml")
-            pkg_name=$(basename "$pkg_dir")
             echo "cd $pkg_dir && ament_uncrustify --reformat"
         fi
     done

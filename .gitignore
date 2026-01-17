@@ -139,6 +139,3 @@ log/
 
 # Dev container (personal config - do not share)
 .devcontainer/
-
-# Conductor (AI orchestrator state and history)
-conductor/

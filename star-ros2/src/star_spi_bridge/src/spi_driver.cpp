@@ -108,6 +108,10 @@ SpiDriver::~SpiDriver()
 
 bool SpiDriver::initialize()
 {
+#ifndef __linux__
+  std::cerr << "SPI driver is only supported on Linux platforms" << std::endl;
+  return false;
+#endif
   // Open SPI device
   spi_fd_ = open(device_path_.c_str(), O_RDWR);
   if (spi_fd_ < 0) {
@@ -152,6 +156,10 @@ void SpiDriver::close_device()
 
 bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8_t> & rx_data)
 {
+#ifndef __linux__
+  std::cerr << "SPI driver is only supported on Linux platforms" << std::endl;
+  return false;
+#endif
   if (spi_fd_ < 0) {
     return false;
   }

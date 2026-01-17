@@ -258,7 +258,7 @@ check_package_cpplint() {
 # Pattern: PACKAGE__FILENAME_HPP_
 get_expected_guard() {
     local file="$1"
-    local rel_path="${file#$ROS2_DIR/}"
+    local rel_path="${file#"$ROS2_DIR"/}"
     local package_name="${rel_path%%/*}"
     local filename
     filename=$(basename "$file" .hpp)
@@ -332,19 +332,28 @@ fix_header_guards() {
         current_guard=$(grep -m1 "^#ifndef " "$file" 2>/dev/null | sed 's/#ifndef //' || true)
         
         if [ -z "$current_guard" ]; then
+            if [ "$VERBOSE" = true ]; then
+                print_status "Warning: Missing header guard in $file"
+            fi
             continue
         fi
         
         if [ "$current_guard" != "$expected_guard" ]; then
+            # Escape sed metacharacters in guard names to prevent unexpected pattern interpretation
+            local escaped_current_guard
+            escaped_current_guard=$(printf '%s\n' "$current_guard" | sed 's/[\.*^$[]/\\&/g')
+            local escaped_expected_guard
+            escaped_expected_guard=$(printf '%s\n' "$expected_guard" | sed 's/[\.*^$[]/\\&/g')
+            
             # Fix the guard (macOS compatible)
             if [[ "$OSTYPE" == "darwin"* ]]; then
-                sed -i '' "s/#ifndef $current_guard/#ifndef $expected_guard/" "$file"
-                sed -i '' "s/#define $current_guard/#define $expected_guard/" "$file"
-                sed -i '' "s|// $current_guard|// $expected_guard|" "$file"
+                sed -i '' "s/#ifndef $escaped_current_guard/#ifndef $escaped_expected_guard/" "$file"
+                sed -i '' "s/#define $escaped_current_guard/#define $escaped_expected_guard/" "$file"
+                sed -i '' "s|// $escaped_current_guard|// $escaped_expected_guard|" "$file"
             else
-                sed -i "s/#ifndef $current_guard/#ifndef $expected_guard/" "$file"
-                sed -i "s/#define $current_guard/#define $expected_guard/" "$file"
-                sed -i "s|// $current_guard|// $expected_guard|" "$file"
+                sed -i "s/#ifndef $escaped_current_guard/#ifndef $escaped_expected_guard/" "$file"
+                sed -i "s/#define $escaped_current_guard/#define $escaped_expected_guard/" "$file"
+                sed -i "s|// $escaped_current_guard|// $escaped_expected_guard|" "$file"
             fi
             ((fixed_count++))
             if [ "$VERBOSE" = true ]; then
