@@ -54,7 +54,8 @@ add_compile_options(
     -Wextra
     -Wpedantic
     -Werror                # Treat warnings as errors
-    -Wno-unused-parameter
+    -Wno-error=type-limits
+    -Wno-unused-parameter  # Required for fixed callback signatures in HAL/ThreadX APIs
     -Wno-missing-braces    # nanopb generates these
     -Wno-comment           # ThreadX has nested comments in assembly
     -fshort-enums          # Use smallest type for enums (embedded optimization)

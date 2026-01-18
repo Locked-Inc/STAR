@@ -13,7 +13,7 @@
  *
  * Pin reservation prevents conflicts when multiple peripherals or drivers
  * attempt to use the same GPIO pin. This is especially important for:
- * - Peripheral function selection (UART TX/RX, SPI MOSI/MISO, etc.)
+ * - Peripheral function selection (UART TX/RX, SPI COPI/CIPO, etc.)
  * - GPIO output conflicts (two drivers trying to control same pin)
  * - Debugging pin usage conflicts
  *
@@ -35,7 +35,7 @@
  *   bus_manager_init(&bus_mgr, &error_iface, &iface);
  *
  *   // 4. Use through interface
- *   rx_err_t err = iface.reserve_pin(iface.ctx, 0xA, 5, "SPI_MOSI");
+ *   rx_err_t err = iface.reserve_pin(iface.ctx, 0xA, 5, "SPI_COPI");
  *   if (err != k_rx_ok) {
  *       // Pin already reserved or invalid
  *   }

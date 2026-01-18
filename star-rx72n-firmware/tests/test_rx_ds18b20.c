@@ -11,7 +11,6 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include <assert.h>
 #include <string.h>
 
 #include "rx_crc.h"
@@ -38,6 +37,47 @@ typedef enum {
   k_onewire_rom_length    = k_onewire_rom_bytes,
   k_onewire_rom_crc_index = k_onewire_rom_length - 1,
 } onewire_rom_constants_t;
+
+/** @brief Mock OneWire constants */
+typedef enum {
+  k_mock_default_read_byte    = 0xFF,
+  k_ds18b20_default_th_tl     = 0x00,
+  k_ds18b20_reserved1_default = 0xFF,
+  k_ds18b20_reserved2_default = 0x10,
+  k_ds18b20_reserved3_default = 0x00,
+  k_test_temp_25c_lsb         = 0x90,
+  k_test_temp_25c_msb         = 0x01,
+  k_test_temp_0c_lsb          = 0x00,
+  k_test_temp_0c_msb          = 0x00,
+  k_test_temp_minus_55c_lsb   = 0x90,
+  k_test_temp_minus_55c_msb   = 0xFC,
+  k_test_temp_125c_lsb        = 0xD0,
+  k_test_temp_125c_msb        = 0x07,
+  k_test_config_12bit         = 0x7F,
+} ds18b20_mock_constants_t;
+
+/** @brief ROM byte indices for default ROM population */
+typedef enum {
+  k_rom_idx_family   = 0,
+  k_rom_idx_serial_0 = 1,
+  k_rom_idx_serial_1 = 2,
+  k_rom_idx_serial_2 = 3,
+  k_rom_idx_serial_3 = 4,
+  k_rom_idx_serial_4 = 5,
+  k_rom_idx_serial_5 = 6,
+} rom_byte_index_t;
+
+typedef enum {
+  k_mock_serial_byte_0 = 0x01,
+  k_mock_serial_byte_1 = 0x02,
+  k_mock_serial_byte_2 = 0x03,
+  k_mock_serial_byte_3 = 0x04,
+  k_mock_serial_byte_4 = 0x05,
+  k_mock_serial_byte_5 = 0x06,
+} mock_serial_bytes_t;
+
+/** @brief Mocked DS18B20 device count returned by search */
+static const uint32_t s_mock_ds18b20_device_count = 1;
 
 /* =============================================================================
  * Mock OneWire Bus Manager
@@ -102,7 +142,7 @@ rx_err_t rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_nam
     return k_rx_err_invalid_state;
   }
 
-  *byte = 0xFF;
+  *byte = k_mock_default_read_byte;
   return k_rx_ok;
 }
 
@@ -219,7 +259,7 @@ rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
     return k_rx_err_invalid_state;
   }
 
-  *num_devices = 1;
+  *num_devices = s_mock_ds18b20_device_count;
   return k_rx_ok;
 }
 
@@ -243,12 +283,12 @@ static void create_valid_scratchpad(uint8_t scratchpad[k_ds18b20_scratchpad_byte
 {
   scratchpad[k_ds18b20_scratch_temp_lsb]  = temp_lsb;
   scratchpad[k_ds18b20_scratch_temp_msb]  = temp_msb;
-  scratchpad[k_ds18b20_scratch_th_reg]    = 0x00;
-  scratchpad[k_ds18b20_scratch_tl_reg]    = 0x00;
+  scratchpad[k_ds18b20_scratch_th_reg]    = k_ds18b20_default_th_tl;
+  scratchpad[k_ds18b20_scratch_tl_reg]    = k_ds18b20_default_th_tl;
   scratchpad[k_ds18b20_scratch_config]    = config;
-  scratchpad[k_ds18b20_scratch_reserved1] = 0xFF;
-  scratchpad[k_ds18b20_scratch_reserved2] = 0x10;
-  scratchpad[k_ds18b20_scratch_reserved3] = 0x00;
+  scratchpad[k_ds18b20_scratch_reserved1] = k_ds18b20_reserved1_default;
+  scratchpad[k_ds18b20_scratch_reserved2] = k_ds18b20_reserved2_default;
+  scratchpad[k_ds18b20_scratch_reserved3] = k_ds18b20_reserved3_default;
   scratchpad[k_ds18b20_scratch_crc]       = rx_crc8_maxim(scratchpad, k_ds18b20_crc_bytes);
 }
 
@@ -263,16 +303,19 @@ static void reset_mock_state(void)
   s_mock_state.initialized       = false;
 
   /* Default scratchpad: +25.0°C at 12-bit resolution */
-  create_valid_scratchpad(s_mock_state.scratchpad, 0x90, 0x01, 0x7F);
+  create_valid_scratchpad(s_mock_state.scratchpad,
+                          k_test_temp_25c_lsb,
+                          k_test_temp_25c_msb,
+                          k_test_config_12bit);
 
   /* Default ROM: DS18B20 family code */
-  s_mock_state.rom[0] = k_ds18b20_family_code;
-  s_mock_state.rom[1] = 0x01;
-  s_mock_state.rom[2] = 0x02;
-  s_mock_state.rom[3] = 0x03;
-  s_mock_state.rom[4] = 0x04;
-  s_mock_state.rom[5] = 0x05;
-  s_mock_state.rom[6] = 0x06;
+  s_mock_state.rom[k_rom_idx_family]   = k_ds18b20_family_code;
+  s_mock_state.rom[k_rom_idx_serial_0] = k_mock_serial_byte_0;
+  s_mock_state.rom[k_rom_idx_serial_1] = k_mock_serial_byte_1;
+  s_mock_state.rom[k_rom_idx_serial_2] = k_mock_serial_byte_2;
+  s_mock_state.rom[k_rom_idx_serial_3] = k_mock_serial_byte_3;
+  s_mock_state.rom[k_rom_idx_serial_4] = k_mock_serial_byte_4;
+  s_mock_state.rom[k_rom_idx_serial_5] = k_mock_serial_byte_5;
   s_mock_state.rom[k_onewire_rom_crc_index] =
     rx_crc8_maxim(s_mock_state.rom, k_onewire_rom_crc_index);
 }
@@ -282,10 +325,7 @@ static void reset_mock_state(void)
  */
 static void internal_init_handle(rx_ds18b20_handle_t* handle)
 {
-  assert(handle != NULL);
-  if (handle == NULL) {
-    return;
-  }
+  TEST_ASSERT_NOT_NULL(handle);
   memset(handle, 0u, sizeof(*handle));
 }
 
@@ -427,7 +467,10 @@ void test_ds18b20_read_temperature_25c(void)
   internal_init_handle(&handle);
 
   /* Scratchpad for +25.0°C: 0x0190 = 400 decimal = 25.0°C */
-  create_valid_scratchpad(s_mock_state.scratchpad, 0x90, 0x01, 0x7F);
+  create_valid_scratchpad(s_mock_state.scratchpad,
+                          k_test_temp_25c_lsb,
+                          k_test_temp_25c_msb,
+                          k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
@@ -450,7 +493,10 @@ void test_ds18b20_read_temperature_0c(void)
   internal_init_handle(&handle);
 
   /* 0°C: 0x0000 */
-  create_valid_scratchpad(s_mock_state.scratchpad, 0x00, 0x00, 0x7F);
+  create_valid_scratchpad(s_mock_state.scratchpad,
+                          k_test_temp_0c_lsb,
+                          k_test_temp_0c_msb,
+                          k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
@@ -473,7 +519,10 @@ void test_ds18b20_read_temperature_minus_55c(void)
   internal_init_handle(&handle);
 
   /* -55°C: 0xFC90 (two's complement) */
-  create_valid_scratchpad(s_mock_state.scratchpad, 0x90, 0xFC, 0x7F);
+  create_valid_scratchpad(s_mock_state.scratchpad,
+                          k_test_temp_minus_55c_lsb,
+                          k_test_temp_minus_55c_msb,
+                          k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
@@ -496,7 +545,10 @@ void test_ds18b20_read_temperature_125c(void)
   internal_init_handle(&handle);
 
   /* +125°C: 0x07D0 = 2000 decimal = 125.0°C */
-  create_valid_scratchpad(s_mock_state.scratchpad, 0xD0, 0x07, 0x7F);
+  create_valid_scratchpad(s_mock_state.scratchpad,
+                          k_test_temp_125c_lsb,
+                          k_test_temp_125c_msb,
+                          k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);

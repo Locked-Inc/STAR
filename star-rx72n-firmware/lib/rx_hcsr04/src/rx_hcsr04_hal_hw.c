@@ -30,16 +30,23 @@
 
 rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
 {
-  uint8_t port    = rx_port_from_pin(pin);
-  uint8_t pin_num = rx_pin_from_pin(pin);
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
+
+  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  port    = rx_port_from_pin(pin);
+  pin_num = rx_pin_from_pin(pin);
 
   /* Validate port range (0x00 - k_rx_port_j=0x13) */
-  if (port > k_rx_port_j) {
+  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Validate pin range (0 - k_rx_pin_max=7) */
-  if (pin_num > k_rx_pin_max) {
+  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -48,14 +55,21 @@ rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
 
 rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
 {
-  uint8_t port    = rx_port_from_pin(pin);
-  uint8_t pin_num = rx_pin_from_pin(pin);
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
 
-  if (port > k_rx_port_j) {
+  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
     return k_rx_err_invalid_arg;
   }
 
-  if (pin_num > k_rx_pin_max) {
+  port    = rx_port_from_pin(pin);
+  pin_num = rx_pin_from_pin(pin);
+
+  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -64,14 +78,21 @@ rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
 
 rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
 {
-  uint8_t port    = rx_port_from_pin(pin);
-  uint8_t pin_num = rx_pin_from_pin(pin);
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
 
-  if (port > k_rx_port_j) {
+  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
     return k_rx_err_invalid_arg;
   }
 
-  if (pin_num > k_rx_pin_max) {
+  port    = rx_port_from_pin(pin);
+  pin_num = rx_pin_from_pin(pin);
+
+  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -80,14 +101,21 @@ rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
 
 rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin)
 {
-  uint8_t port    = rx_port_from_pin(pin);
-  uint8_t pin_num = rx_pin_from_pin(pin);
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
 
-  if (port > k_rx_port_j) {
+  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
     return k_rx_err_invalid_arg;
   }
 
-  if (pin_num > k_rx_pin_max) {
+  port    = rx_port_from_pin(pin);
+  pin_num = rx_pin_from_pin(pin);
+
+  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -96,18 +124,25 @@ rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin)
 
 rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
 {
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
+
   if (value == NULL) {
     return k_rx_err_null_ptr;
   }
 
-  uint8_t port    = rx_port_from_pin(pin);
-  uint8_t pin_num = rx_pin_from_pin(pin);
-
-  if (port > k_rx_port_j) {
+  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
     return k_rx_err_invalid_arg;
   }
 
-  if (pin_num > k_rx_pin_max) {
+  port    = rx_port_from_pin(pin);
+  pin_num = rx_pin_from_pin(pin);
+
+  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -116,14 +151,21 @@ rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
 
 rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
 {
-  uint8_t port    = rx_port_from_pin(pin);
-  uint8_t pin_num = rx_pin_from_pin(pin);
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
 
-  if (port > k_rx_port_j) {
+  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
     return k_rx_err_invalid_arg;
   }
 
-  if (pin_num > k_rx_pin_max) {
+  port    = rx_port_from_pin(pin);
+  pin_num = rx_pin_from_pin(pin);
+
+  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -158,10 +200,10 @@ typedef enum {
   k_timer_rounding         = 500000,  /**< Rounding factor for integer division */
   k_max_delay_iterations   = 100,     /**< Safety guard: max loop iterations */
   k_max_delay_ticks        = k_timer_counter_max * k_max_delay_iterations, /**< Max ticks */
-  k_no_delay               = 0,    /**< No delay requested */
-  k_min_ticks              = 1,    /**< Minimum ticks to wait */
-  k_cmstr1_cmt2_enable_bit = 0x01, /**< CMSTR1 bit 0 enables CMT2 */
-  k_counter_reset          = 0,    /**< Counter reset value */
+  k_no_delay               = 0,                          /**< No delay requested */
+  k_min_ticks              = 1,                          /**< Minimum ticks to wait */
+  k_cmstr1_cmt2_enable_bit = k_rx72n_cmstr1_cmt2_enable, /**< CMSTR1 bit 0 enables CMT2 */
+  k_counter_reset          = 0,                          /**< Counter reset value */
 } cmt2_timing_constants_t;
 
 static bool     s_cmt2_initialized = false;
@@ -173,11 +215,13 @@ static bool     s_time_mutex_initialized = false;
  */
 static rx_err_t internal_time_mutex_init(void)
 {
+  UINT status = TX_SUCCESS;
+
   if (s_time_mutex_initialized) {
     return k_rx_ok;
   }
 
-  UINT status = tx_mutex_create(&s_time_mutex, "TimeMutex", TX_NO_INHERIT);
+  status = tx_mutex_create(&s_time_mutex, "TimeMutex", TX_NO_INHERIT);
   if (status == TX_SUCCESS) {
     s_time_mutex_initialized = true;
     return k_rx_ok;

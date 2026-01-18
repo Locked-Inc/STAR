@@ -182,8 +182,9 @@ static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 
   port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
   pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
-  /* port/pin_num are unsigned; lower-bound checks are unnecessary */
-  if ((port > k_rx_port_j) || (pin_num > k_rx_pin_max)) {
+  if ((port < k_rx_port_0) || (port > k_rx_port_j) ||
+      (port > k_rx_port_e && port < k_rx_port_j) || (pin_num < k_rx_pin_0) ||
+      (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 

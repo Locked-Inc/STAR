@@ -199,8 +199,14 @@ static inline tx_status tx_mutex_delete(TX_MUTEX* mutex_ptr)
   if (mutex_ptr == NULL) {
     return TX_NOT_AVAILABLE;
   }
+  if (mutex_ptr->tx_mutex_id != k_tx_mutex_magic) {
+    return TX_DELETED;
+  }
   mutex_ptr->tx_mutex_id = 0;
   mutex_ptr->locked      = false;
+  if (mutex_ptr->tx_mutex_id == k_tx_mutex_magic || mutex_ptr->locked) {
+    return TX_PTR_ERROR;
+  }
   return TX_SUCCESS;
 }
 
@@ -315,7 +321,14 @@ static inline tx_status tx_thread_delete(TX_THREAD* thread_ptr)
     return TX_NOT_AVAILABLE;
   }
 
+  if (thread_ptr->tx_thread_id != k_tx_thread_magic) {
+    return TX_DELETED;
+  }
+
   thread_ptr->tx_thread_id = 0;
+  if (thread_ptr->tx_thread_id == k_tx_thread_magic) {
+    return TX_PTR_ERROR;
+  }
   return TX_SUCCESS;
 }
 
@@ -328,8 +341,15 @@ static inline tx_status tx_thread_delete(TX_THREAD* thread_ptr)
  */
 static inline tx_status tx_thread_terminate(TX_THREAD* thread_ptr)
 {
+  UINT original_id = 0;
+
   if (thread_ptr == NULL) {
     return TX_NOT_AVAILABLE;
+  }
+
+  original_id = thread_ptr->tx_thread_id;
+  if (original_id != k_tx_thread_magic) {
+    return TX_DELETED;
   }
 
   return TX_SUCCESS;
@@ -344,8 +364,15 @@ static inline tx_status tx_thread_terminate(TX_THREAD* thread_ptr)
  */
 static inline tx_status tx_thread_resume(TX_THREAD* thread_ptr)
 {
+  UINT original_id = 0;
+
   if (thread_ptr == NULL) {
     return TX_THREAD_ERROR;
+  }
+
+  original_id = thread_ptr->tx_thread_id;
+  if (original_id != k_tx_thread_magic) {
+    return TX_DELETED;
   }
 
   return TX_SUCCESS;
@@ -417,8 +444,16 @@ static inline tx_status tx_event_flags_delete(TX_EVENT_FLAGS_GROUP* group_ptr)
     return TX_NOT_AVAILABLE;
   }
 
+  if (group_ptr->tx_event_flags_id != k_tx_event_flags_magic) {
+    return TX_DELETED;
+  }
+
   group_ptr->tx_event_flags_id = 0;
   group_ptr->tx_event_flags    = 0;
+
+  if (group_ptr->tx_event_flags_id == k_tx_event_flags_magic) {
+    return TX_PTR_ERROR;
+  }
 
   return TX_SUCCESS;
 }

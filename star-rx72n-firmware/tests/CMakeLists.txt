@@ -11,7 +11,10 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Helper function to apply strict warnings/defines to our test targets only
 function(apply_strict_warnings target)
-    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic -fshort-enums)
+    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(${target} PRIVATE -fshort-enums)
+    endif()
     target_compile_definitions(${target} PRIVATE USE_MOCK_SCI_REGS UNIT_TEST)
 endfunction()
 
