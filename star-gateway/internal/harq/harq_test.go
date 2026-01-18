@@ -301,11 +301,12 @@ func TestDecrementSequence(t *testing.T) {
 func TestSend_Success(t *testing.T) {
 	harq, mock := createTestHARQ(nil)
 	payload := []byte{0x01, 0x02, 0x03}
+	priority := PriorityNormal
 
 	// Queue ACK response with sequence 0
 	mock.QueueResponse(createAckFrame(0))
 
-	err := harq.Send(context.Background(), payload)
+	err := harq.Send(context.Background(), payload, priority)
 
 	if err != nil {
 		t.Errorf("Send() error = %v, want nil", err)
