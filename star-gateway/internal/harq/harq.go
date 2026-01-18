@@ -1,7 +1,7 @@
 // Package harq implements Hybrid Automatic Repeat reQuest (HARQ) protocol
 // for reliable frame delivery over the SPI transport.
 //
-// The HARQ mechanism uses Chase Combining (Type I) with the following properties:
+// The HARQ mechanism use`s Chase Combining (Type I) with the following properties:
 //   - 16-bit sequence numbers with wraparound
 //   - ACK/NACK response frames
 //   - Configurable retry count and timeout

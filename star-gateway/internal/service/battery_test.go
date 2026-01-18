@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
@@ -247,7 +248,7 @@ func TestGetBatteryState_NilRequest(t *testing.T) {
 
 func TestGetBatteryState_HarqFailure(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(_ context.Context, _ []byte) error {
+		SendFunc: func(_ context.Context, _ []byte, _ ...harq.Priority) error {
 			return status.Error(codes.Unavailable, "harq send failure")
 		},
 	}
