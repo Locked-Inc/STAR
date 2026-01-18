@@ -274,6 +274,12 @@ rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32
     return k_rx_err_null_ptr;
   }
 
+  /* Validate resolution */
+  if (bits != k_mock_adc_resolution_8bit && bits != k_mock_adc_resolution_10bit &&
+      bits != k_mock_adc_resolution_12bit) {
+    return k_rx_err_invalid_arg;
+  }
+
   /* Read raw ADC value */
   uint16_t raw_value;
   err = adc_read(unit, channel, &raw_value);

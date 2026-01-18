@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include "rx_check.h"
 #include "rx_threadx_config.h"
 #include "rx_time_constants.h"
 
@@ -355,6 +356,10 @@ rx_err_t rx_obstacle_detect_reset_stats(rx_obstacle_detect_t* handle)
  * =============================================================================
  */
 
+typedef enum {
+  k_min_sleep_ticks = 1, /**< Minimum sleep duration in ticks */
+} task_constants_t;
+
 static void internal_detection_task_entry(ULONG input)
 {
   rx_obstacle_detect_t* handle       = NULL;
@@ -365,11 +370,15 @@ static void internal_detection_task_entry(ULONG input)
   bool                  running      = false;
 
   handle = (rx_obstacle_detect_t*)input;
+  RX_ASSERT(handle != NULL, "Obstacle detect handle is NULL");
+  if (handle == NULL) {
+    return;
+  }
 
   /* Convert poll interval to ticks */
   sleep_ticks = (handle->poll_interval_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
   if (sleep_ticks == 0) {
-    sleep_ticks = 1;
+    sleep_ticks = k_min_sleep_ticks;
   }
 
   while (true) {
@@ -484,10 +493,19 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
 
 static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 {
-  float    distance_cm         = 0.0f;
-  rx_err_t ret                 = k_rx_ok;
-  bool     was_obstacle_active = false;
-  bool     is_obstacle_active  = false;
+  float              distance_cm                = 0.0F;
+  rx_err_t           ret                        = k_rx_ok;
+  bool               was_obstacle_active        = false;
+  bool               is_obstacle_active         = false;
+  static const float s_clear_distance_offset_cm = 1.0F;
+
+  if (handle == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
 
   handle->total_polls++;
 
@@ -498,7 +516,7 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
     /* Handle measurement errors */
     if (ret == k_rx_err_timeout) {
       /* No echo = no object (treat as clear) */
-      distance_cm = handle->detection_threshold_cm + 1.0f;
+      distance_cm = handle->detection_threshold_cm + s_clear_distance_offset_cm;
     } else if (ret != k_rx_ok) {
       /* Other errors = skip this sensor */
       continue;
@@ -596,6 +614,10 @@ static void internal_invoke_callback(rx_obstacle_detect_t* handle,
                                      uint8_t               sensor_idx,
                                      float                 distance_cm)
 {
+  if (handle == NULL || handle->callback == NULL) {
+    return;
+  }
+
   if (handle->callback != NULL) {
     handle->callback(obstacle_detected, sensor_idx, distance_cm, handle->user_data);
   }

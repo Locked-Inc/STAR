@@ -75,9 +75,10 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
-  k_bq4050_time_to_full_invalid = 0xFFFF, /**< Invalid/N/A time-to-full value */
-} bq4050_time_constants_t;
+/**
+ * @brief Invalid/N/A time-to-full value
+ */
+static const uint16_t s_bq4050_time_to_full_invalid = 0xFFFF;
 
 #ifdef __cplusplus
 }

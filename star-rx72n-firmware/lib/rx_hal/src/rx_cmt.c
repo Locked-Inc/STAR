@@ -87,9 +87,6 @@ typedef enum {
 } cmt_cmstr_bits_t;
 
 /** @brief IER register calculation constants */
-typedef enum {
-  k_cmt_ier_bits_per_reg = 8, /**< Bits per IER register */
-} cmt_ier_constants_t;
 
 /* =============================================================================
  * Static Variables
@@ -273,8 +270,8 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   icu()->ipr[vector] = config->priority;
 
   /* Enable interrupt in ICU */
-  uint8_t ier_index = vector / k_cmt_ier_bits_per_reg;
-  uint8_t ier_bit   = vector % k_cmt_ier_bits_per_reg;
+  uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
+  uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
   icu()->ier[ier_index] |= (1 << ier_bit);
 
   /* Clear interrupt flag */
@@ -375,8 +372,8 @@ rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel)
 
   /* Disable interrupt */
   uint8_t vector    = k_vect_cmt0_cmi0 + channel;
-  uint8_t ier_index = vector / k_cmt_ier_bits_per_reg;
-  uint8_t ier_bit   = vector % k_cmt_ier_bits_per_reg;
+  uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
+  uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
   icu()->ier[ier_index] &= ~(1 << ier_bit);
 
   /* Clear callback */

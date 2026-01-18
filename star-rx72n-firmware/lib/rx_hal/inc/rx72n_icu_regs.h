@@ -52,6 +52,11 @@ typedef enum {
   k_icu_irqfltc_count = 2,   /**< Number of IRQ Filter Clock Select Registers */
 } icu_array_sizes_t;
 
+/** @brief ICU IER register calculation constants */
+typedef enum {
+  k_icu_ier_bits_per_reg = 8, /**< Bits per IER register */
+} icu_ier_constants_t;
+
 /**
  * @brief ICU Register Map
  * @details
