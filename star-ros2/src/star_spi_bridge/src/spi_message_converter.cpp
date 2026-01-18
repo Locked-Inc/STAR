@@ -148,8 +148,8 @@ void SpiMessageConverter::telemetry_to_joint_state(
   const auto & enc_bl = telemetry.encoder_back_left();
   const auto & enc_br = telemetry.encoder_back_right();
 
-  joint_state.name = {"front_left_wheel", "front_right_wheel", "back_left_wheel",
-    "back_right_wheel"};
+  joint_state.name = {
+    "front_left_wheel", "front_right_wheel", "back_left_wheel", "back_right_wheel"};
 
   // Position (radians)
   double rad_per_tick = (2.0 * M_PI) / params_.ticks_per_rev;
