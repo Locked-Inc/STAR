@@ -18,7 +18,7 @@
 // Ideally this code runs on Linux/RPi5. On macOS, these headers likely
 // don't exist or are different.
 #ifndef SPI_IOC_MESSAGE
-#define SPI_IOC_MESSAGE(N)       0
+#define SPI_IOC_MESSAGE(N) 0
 constexpr uint8_t SPI_MODE_0 = 0;
 constexpr int SPI_IOC_WR_MODE = 0;
 constexpr int SPI_IOC_WR_BITS_PER_WORD = 0;
@@ -108,11 +108,15 @@ SpiDriver::~SpiDriver()
 
 bool SpiDriver::initialize()
 {
+#ifndef __linux__
+  std::cerr << "SPI driver is only supported on Linux platforms" << std::endl;
+  return false;
+#endif
   // Open SPI device
   spi_fd_ = open(device_path_.c_str(), O_RDWR);
   if (spi_fd_ < 0) {
-    std::cerr << "Failed to open SPI device: " << device_path_ << " (" << strerror(errno) << ")" <<
-      std::endl;
+    std::cerr << "Failed to open SPI device: " << device_path_ << " (" << strerror(errno) << ")"
+              << std::endl;
     return false;
   }
 
@@ -152,6 +156,10 @@ void SpiDriver::close_device()
 
 bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8_t> & rx_data)
 {
+#ifndef __linux__
+  std::cerr << "SPI driver is only supported on Linux platforms" << std::endl;
+  return false;
+#endif
   if (spi_fd_ < 0) {
     return false;
   }
@@ -179,7 +187,10 @@ bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8
 }
 
 void SpiDriver::encode_frame(
-  uint16_t seq, FrameType type, uint8_t flags, const std::vector<uint8_t> & payload,
+  uint16_t seq,
+  FrameType type,
+  uint8_t flags,
+  const std::vector<uint8_t> & payload,
   std::vector<uint8_t> & out_frame)
 {
   // [SYNC(2)][SEQ(2)][LEN(2)][TYPE(1)][FLAGS(1)][PAYLOAD(N)][CRC(4)]
@@ -221,7 +232,10 @@ void SpiDriver::encode_frame(
 }
 
 bool SpiDriver::decode_frame(
-  const std::vector<uint8_t> & frame, uint16_t & seq, FrameType & type, uint8_t & flags,
+  const std::vector<uint8_t> & frame,
+  uint16_t & seq,
+  FrameType & type,
+  uint8_t & flags,
   std::vector<uint8_t> & payload)
 {
   if (frame.size() < k_header_size + 4) {  // Header (8) + CRC (4) = 12 bytes min
@@ -247,11 +261,10 @@ bool SpiDriver::decode_frame(
   std::vector<uint8_t> data_to_check(frame.begin(), frame.end() - 4);
   uint32_t calculated_crc = calculate_crc32(data_to_check);
 
-  uint32_t received_crc =
-    static_cast<uint32_t>(frame[frame.size() - 4]) |
+  uint32_t received_crc = static_cast<uint32_t>(frame[frame.size() - 4]) |
     (static_cast<uint32_t>(frame[frame.size() - 3]) << 8) |
-    (static_cast<uint32_t>(frame[frame.size() - 2]) <<
-    16) | (static_cast<uint32_t>(frame[frame.size() - 1]) << 24);
+    (static_cast<uint32_t>(frame[frame.size() - 2]) << 16) |
+    (static_cast<uint32_t>(frame[frame.size() - 1]) << 24);
 
   if (calculated_crc != received_crc) {
     return false;

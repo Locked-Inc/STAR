@@ -8,22 +8,22 @@
 // STAR Project - Texas A&M University
 // January 2026
 
-#ifndef STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
-#define STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
+#ifndef STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
+#define STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
 
-#include "geometry_msgs/msg/twist.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/battery_state.hpp"
-#include "star_gateway_bridge/message_converter.hpp"
-#include "std_msgs/msg/string.hpp"
-#include "std_srvs/srv/set_bool.hpp"
-
-#include <grpcpp/grpcpp.h>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <string>
 
+#include "star_gateway_bridge/message_converter.hpp"
+
+#include <grpcpp/grpcpp.h>  // NOLINT(build/include_order)
+#include <geometry_msgs/msg/twist.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/battery_state.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <std_srvs/srv/set_bool.hpp>
 #include "star/v1/battery_management.pb.h"
 #include "star/v1/gateway_service.grpc.pb.h"
 #include "star/v1/gateway_service.pb.h"
@@ -77,7 +77,7 @@ public:
    *
    * @param options ROS2 node options for component configuration
    */
-  explicit StarGatewayBridgeNode(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+  explicit StarGatewayBridgeNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   /**
    * @brief Destructor - sends stop command and shuts down gracefully.
@@ -137,8 +137,9 @@ private:
    * @param request Service request
    * @param response Service response
    */
-  void set_pid_gains_callback(const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-                              std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+  void set_pid_gains_callback(
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
   // ===========================================================================
   // Timer Callbacks
@@ -239,4 +240,4 @@ private:
 
 }  // namespace star
 
-#endif  // STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
+#endif  // STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
