@@ -81,6 +81,7 @@ typedef enum {
 
 /** @brief Maximum SCI channels */
 typedef enum {
+  k_uart_min_channel  = 0,  /**< Minimum SCI channel */
   k_uart_max_channels = 13, /**< SCI channels 0-12 */
 } uart_channel_limits_t;
 
@@ -237,7 +238,7 @@ static rx_err_t internal_configure_uart_pins(rx_port_pin_t tx_gpio, rx_port_pin_
   uint8_t rx_pin  = rx_pin_from_pin(rx_gpio);
 
   /* Validate pin numbers */
-  if (tx_pin > 7 || rx_pin > 7) {
+  if (tx_pin > k_rx_pin_max || rx_pin > k_rx_pin_max) {
     return k_rx_err_invalid_arg;
   }
 
@@ -284,8 +285,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
   }
 
   /* Validate channel */
-  /* channel is unsigned; lower-bound check is unnecessary */
-  if (config->channel >= k_uart_max_channels) {
+  if ((config->channel < k_uart_min_channel) || (config->channel >= k_uart_max_channels)) {
     return k_rx_err_invalid_arg;
   }
 

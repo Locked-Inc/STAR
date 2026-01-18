@@ -65,6 +65,18 @@ typedef struct {
   volatile uint16_t cmstr1; /**< Compare Match Timer Start Register 1 (CMT2/3) */
 } rx_cmt_control_regs_t;
 
+/** @brief CMSTR0 register bit masks */
+typedef enum {
+  k_rx72n_cmstr0_cmt0_enable = 0x01, /**< CMSTR0 bit 0 enables CMT0 */
+  k_rx72n_cmstr0_cmt1_enable = 0x02, /**< CMSTR0 bit 1 enables CMT1 */
+} rx_cmt_cmstr0_bits_t;
+
+/** @brief CMSTR1 register bit masks */
+typedef enum {
+  k_rx72n_cmstr1_cmt2_enable = 0x01, /**< CMSTR1 bit 0 enables CMT2 */
+  k_rx72n_cmstr1_cmt3_enable = 0x02, /**< CMSTR1 bit 1 enables CMT3 */
+} rx_cmt_cmstr1_bits_t;
+
 /**
  * @brief Get pointer to CMT0 registers
  * @return Volatile pointer to CMT0 register structure

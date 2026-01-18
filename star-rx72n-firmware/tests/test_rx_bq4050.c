@@ -99,7 +99,6 @@ static void internal_test_setup(void);
 void setUp(void)
 {
   s_setup_done = false;
-  internal_test_setup();
 }
 
 void tearDown(void)
@@ -145,7 +144,7 @@ static void internal_setup_typical_battery_values(void)
   mock_smbus_set_word_response(k_sbs_design_capacity, k_test_capacity_full_mah);
   mock_smbus_set_word_response(k_sbs_cycle_count, k_test_cycle_count);
   mock_smbus_set_word_response(k_sbs_run_time_to_empty, k_test_time_to_empty_min);
-  mock_smbus_set_word_response(k_sbs_average_time_to_full, k_bq4050_time_to_full_invalid);
+  mock_smbus_set_word_response(k_sbs_average_time_to_full, s_bq4050_time_to_full_invalid);
   mock_smbus_set_word_response(k_sbs_battery_status, k_test_status_no_flags);
 }
 

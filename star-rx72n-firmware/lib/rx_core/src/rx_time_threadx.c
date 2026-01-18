@@ -92,10 +92,6 @@ rx_err_t rx_time_threadx_get_interface(rx_time_interface_t* iface)
   iface->get_ms     = impl_get_ms;
   iface->is_elapsed = impl_is_elapsed;
 
-  RX_CHECK_NULL_PTR(iface->sleep_ms, "TIME", "sleep_ms is NULL");
-  RX_CHECK_NULL_PTR(iface->get_ms, "TIME", "get_ms is NULL");
-  RX_CHECK_NULL_PTR(iface->is_elapsed, "TIME", "is_elapsed is NULL");
-
   return k_rx_ok;
 }
 
