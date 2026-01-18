@@ -4,10 +4,10 @@
 // STAR Project - Texas A&M University
 // January 2026
 
+#include <memory>
+
 #include "rclcpp/rclcpp.hpp"
 #include "star_gateway_bridge/star_gateway_bridge_node.hpp"
-
-#include <memory>
 
 /**
  * @brief Main entry point for star_gateway_bridge standalone executable.
