@@ -255,9 +255,10 @@ reviews:
 
         Project Standards:
         - Minimum CMake version: 3.20
-        - C standard: C11 (set(CMAKE_C_STANDARD 11))
+        - C standard: C23 (set(CMAKE_C_STANDARD 23))
         - C++ standard: C++17 (set(CMAKE_CXX_STANDARD 17))
         - Position independent code: ON
+        - Enums: Use fixed underlying types (C23 enum : uint8_t/uint16_t) alongside -fshort-enums
 
         Compiler Flags (MANDATORY):
         - C/C++: -Wall -Wextra -Werror (treat warnings as errors)
