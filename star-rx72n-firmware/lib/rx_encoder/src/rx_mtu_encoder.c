@@ -262,9 +262,9 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   }
 
   /* Check for reverse wraparound */
-  if (delta > k_encoder_counter_half) {
+  if (delta > (int32_t)k_encoder_counter_half) {
     /* Large positive delta means we actually went backwards */
-    delta = delta - k_encoder_counter_max;
+    delta = delta - (int32_t)k_encoder_counter_max;
   }
 
   /* Invert direction if configured */
