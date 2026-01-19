@@ -6,5 +6,12 @@ version: "1.0"
 linter: qodana-cpp
 profile:
   name: qodana.recommended
+
+exclude:
+  - name: All
+    paths:
+      - star-rx72n-firmware/lib/threadx
+      - star-rx72n-firmware/lib/rx_nanopb/nanopb
+
 include:
   - name: CheckDependencyLicenses
