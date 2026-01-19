@@ -70,7 +70,7 @@ extern "C" {
 /**
  * @brief Error handler configuration constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_error_handler_max_components =
     16, /**< Maximum number of components to track (each gets error counter and retry state) */
   k_error_handler_component_name_max = 32, /**< Maximum component name length */

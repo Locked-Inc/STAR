@@ -36,12 +36,12 @@ extern "C" {
  */
 
 /** @brief CRC base address */
-typedef enum {
+typedef enum : uint32_t {
   k_crc_base_addr = 0x00088280, /**< CRC register base address */
 } rx_crc_addresses_t;
 
 /** @brief CRC register reserved field sizes */
-typedef enum {
+typedef enum : uint8_t {
   k_crc_reserved_after_crccr_bytes = 3, /**< Reserved bytes after CRCCR */
 } crc_reserved_sizes_t;
 
@@ -69,7 +69,7 @@ static inline volatile rx_crc_regs_t* crc_regs(void)
 }
 
 /* CRC Control Register (CRCCR) bit definitions - CRC-32 only */
-typedef enum {
+typedef enum : uint8_t {
   k_crc_crccr_gps_crc32 = 0x03,     /**< CRC-32 IEEE 802.3 polynomial */
   k_crc_crccr_lms       = (1 << 6), /**< LSB/MSB First (1=LSB first, reflected) */
   k_crc_crccr_dorclr    = (1 << 7), /**< Data Output Register Clear */

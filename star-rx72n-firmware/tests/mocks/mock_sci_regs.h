@@ -33,7 +33,7 @@ extern "C" {
  */
 
 /** @brief Number of SCI channels to mock */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_sci_channel_count = 13, /**< SCI channels 0-12 */
 } mock_sci_constants_t;
 
@@ -60,7 +60,7 @@ typedef struct {
  */
 
 /** @brief SCR (Serial Control Register) bits */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_sci_scr_cke_mask = 0x03, /**< Clock enable mask */
   k_mock_sci_scr_teie     = 0x04, /**< Transmit end interrupt enable */
   k_mock_sci_scr_mpie     = 0x08, /**< Multi-processor interrupt enable */
@@ -71,7 +71,7 @@ typedef enum {
 } mock_sci_scr_bits_t;
 
 /** @brief SSR (Serial Status Register) bits */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_sci_ssr_mpbt = 0x01, /**< Multi-processor bit transfer */
   k_mock_sci_ssr_mpb  = 0x02, /**< Multi-processor bit */
   k_mock_sci_ssr_tend = 0x04, /**< Transmit end flag */

@@ -96,7 +96,7 @@ extern "C" {
 /**
  * @brief Mock pin validator configuration constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_mock_pin_validator_max_pins =
     256, /**< Maximum number of pins to track (covers RX72N's 182 pins) */
   k_mock_pin_validator_function_name_max = 32, /**< Maximum function name length */

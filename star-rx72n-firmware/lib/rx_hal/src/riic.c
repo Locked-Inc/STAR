@@ -23,57 +23,57 @@
  */
 
 /** @brief RIIC channel and timeout constants */
-typedef enum {
+typedef enum : uint32_t {
   k_riic_max_channels = 3,     /**< RIIC0, RIIC1, RIIC2 */
   k_riic_timeout_us   = 10000, /**< 10ms timeout for operations */
   k_riic_timeout_zero = 0,     /**< Timeout expired value */
 } riic_constants_t;
 
 /** @brief RIIC channel numbers for switch statements */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_channel_0 = 0, /**< RIIC0 */
   k_riic_channel_1 = 1, /**< RIIC1 */
   k_riic_channel_2 = 2, /**< RIIC2 */
 } riic_channel_num_t;
 
 /** @brief RIIC module stop bit positions in MSTPCRB */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_mstpb_riic0 = 21, /**< RIIC0 module stop bit */
   k_riic_mstpb_riic1 = 20, /**< RIIC1 module stop bit */
   k_riic_mstpb_riic2 = 19, /**< RIIC2 module stop bit */
 } riic_module_stop_bits_t;
 
 /** @brief I2C frequency constants in Hz */
-typedef enum {
+typedef enum : uint32_t {
   k_riic_freq_100khz = 100000,  /**< Standard mode: 100 kHz */
   k_riic_freq_400khz = 400000,  /**< Fast mode: 400 kHz */
   k_riic_freq_1mhz   = 1000000, /**< Fast mode plus: 1 MHz */
 } riic_frequency_t;
 
 /** @brief RIIC bit rate calculation constants */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_brr_divisor = 3,   /**< Bit rate divisor for 50% duty cycle */
   k_riic_brr_min     = 1,   /**< Minimum valid bit rate divisor */
   k_riic_brr_max     = 255, /**< Maximum valid bit rate divisor (8-bit register) */
 } riic_bit_rate_t;
 
 /** @brief ICMR1 register configuration values */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_icmr1_controller_7bit = 0x08, /**< Controller mode, 7-bit addressing */
 } riic_icmr1_values_t;
 
 /** @brief ICMR2 register configuration values */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_icmr2_default = 0x00, /**< No timeout, no clock sync */
 } riic_icmr2_values_t;
 
 /** @brief ICMR3 register ACK/NACK bit */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_icmr3_ackbt_pos = 3, /**< ACKBT bit position in ICMR3 */
 } riic_icmr3_bits_t;
 
 /** @brief I2C address constants */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_addr_shift     = 1, /**< Shift for 7-bit address */
   k_riic_addr_write_bit = 0, /**< Write direction bit (0) */
   k_riic_addr_read_bit  = 1, /**< Read direction bit (1) */

@@ -20,24 +20,24 @@
  */
 
 /** @brief ADC reference voltage in millivolts */
-typedef enum {
+typedef enum : uint16_t {
   k_mock_adc_vref_mv = 3300, /**< 3.3V reference */
 } mock_adc_voltage_t;
 
 /** @brief Valid ADC resolution values in bits */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_adc_resolution_8bit  = 8,
   k_mock_adc_resolution_10bit = 10,
   k_mock_adc_resolution_12bit = 12,
 } mock_adc_resolution_t;
 
 /** @brief ADC bits parameter constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_adc_bits_unused = 0, /**< Bits parameter not applicable for this call type */
 } mock_adc_bits_t;
 
 /** @brief Bit manipulation constants for ADC calculations */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_adc_bit_shift_base   = 1, /**< Base value for 2^n calculation */
   k_mock_adc_max_value_offset = 1, /**< Offset to get max value from 2^n */
 } mock_adc_bit_constants_t;

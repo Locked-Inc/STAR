@@ -32,7 +32,7 @@ extern "C" {
 /**
  * @brief Mock GPIO constants
  */
-typedef enum {
+typedef enum : uint32_t {
   /* Size must accommodate internal_pin_to_index: (port << k_port_shift) | pin_num
    * With k_port_shift == 8 and k_pin_bits == 8, maximum index is
    * (0xFF << 8) | 0xFF = 0xFFFF + 1 = 65536

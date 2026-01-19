@@ -36,17 +36,17 @@ static const char* s_tag = "MPC";
  */
 
 /** @brief MPC pin validation constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mpc_max_pin = 7, /**< Maximum valid pin number (pins 0-7) */
 } mpc_pin_constants_t;
 
 /** @brief MPC PFS register address offset */
-typedef enum {
+typedef enum : uint8_t {
   k_mpc_pfs_base_offset = 0x21, /**< Offset from MPC_BASE to P00PFS register */
 } mpc_pfs_offset_t;
 
 /** @brief MPC port number constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mpc_port_0 = 0,    /**< Port 0 */
   k_mpc_port_1 = 1,    /**< Port 1 */
   k_mpc_port_2 = 2,    /**< Port 2 */
@@ -73,7 +73,7 @@ typedef enum {
  * PFS registers are contiguous in memory. Each port has 8 register slots,
  * even if not all pins are physically present.
  */
-typedef enum {
+typedef enum : uint16_t {
   k_mpc_port0_offset = 0,   /**< Port 0 offset (P00-P07 = 8 pins) */
   k_mpc_port1_offset = 8,   /**< Port 1 offset (P10-P17 = 8 pins) */
   k_mpc_port2_offset = 16,  /**< Port 2 offset (P20-P27 = 8 pins) */
@@ -96,17 +96,17 @@ typedef enum {
 } mpc_port_offset_t;
 
 /** @brief MPC PSEL maximum value */
-typedef enum {
+typedef enum : uint8_t {
   k_mpc_psel_max = 0x1F, /**< Maximum valid PSEL value (5 bits) */
 } mpc_psel_constants_t;
 
 /** @brief MPC PFS register GPIO mode value */
-typedef enum {
+typedef enum : uint8_t {
   k_mpc_pfs_gpio = 0x00, /**< GPIO mode: PSEL = 0, ISEL = 0, ASEL = 0 */
 } mpc_pfs_gpio_t;
 
 /** @brief MPC PWPR register clear value */
-typedef enum {
+typedef enum : uint8_t {
   k_mpc_pwpr_clear = 0x00, /**< Clear PWPR register */
 } mpc_pwpr_t;
 

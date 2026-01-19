@@ -20,11 +20,11 @@
 #include "rx_hcsr04_hal.h"
 #include "rx_log.h"
 
-enum {
-  k_hcsr04_delay_none         = 0,                        /**< No delay requested */
-  k_hcsr04_delay_max_us       = k_hcsr04_echo_timeout_us, /**< Maximum supported delay */
-  k_hcsr04_log_msg_max        = 96,                       /**< Max log message buffer size */
-  k_hcsr04_log_null_terminator = 1,                       /**< Null terminator size */
+enum : uint16_t {
+  k_hcsr04_delay_none          = 0,                        /**< No delay requested */
+  k_hcsr04_delay_max_us        = k_hcsr04_echo_timeout_us, /**< Maximum supported delay */
+  k_hcsr04_log_msg_max         = 96,                       /**< Max log message buffer size */
+  k_hcsr04_log_null_terminator = 1,                        /**< Null terminator size */
 };
 
 /* =============================================================================

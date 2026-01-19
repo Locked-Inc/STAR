@@ -36,7 +36,7 @@
 static const char* s_tag = "USB_CDC";
 
 /** @brief USB Descriptor Field Default Values */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_subclass_none             = 0x00, /**< No subclass */
   k_usb_protocol_none             = 0x00, /**< No protocol */
   k_usb_num_interfaces_cdc        = 2,    /**< CDC requires 2 interfaces (control + data) */
@@ -53,7 +53,7 @@ typedef enum {
 } usb_descriptor_defaults_t;
 
 /** @brief USB Descriptor Types */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_desc_type_device        = 0x01, /**< Device descriptor */
   k_usb_desc_type_configuration = 0x02, /**< Configuration descriptor */
   k_usb_desc_type_string        = 0x03, /**< String descriptor */
@@ -63,7 +63,7 @@ typedef enum {
 } usb_descriptor_type_t;
 
 /** @brief USB Class Codes */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_class_cdc      = 0x02, /**< Communications Device Class */
   k_usb_class_cdc_data = 0x0A, /**< CDC Data Class */
   k_usb_subclass_acm   = 0x02, /**< Abstract Control Model subclass */
@@ -71,14 +71,14 @@ typedef enum {
 } usb_class_code_t;
 
 /** @brief CDC Class Request Codes */
-typedef enum {
+typedef enum : uint8_t {
   k_cdc_set_line_coding        = 0x20, /**< Set line coding (baud rate, parity, etc.) */
   k_cdc_get_line_coding        = 0x21, /**< Get current line coding */
   k_cdc_set_control_line_state = 0x22, /**< Set control line state (DTR/RTS) */
 } cdc_request_code_t;
 
 /** @brief USB Standard Request Codes */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_req_get_status        = 0x00, /**< Get device/interface/endpoint status */
   k_usb_req_clear_feature     = 0x01, /**< Clear feature */
   k_usb_req_set_feature       = 0x03, /**< Set feature */
@@ -92,13 +92,13 @@ typedef enum {
 } usb_request_code_t;
 
 /** @brief Vendor and Product IDs */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_vid = 0x045B, /**< Vendor ID: Renesas Electronics (test VID) */
   k_usb_pid = 0x0234, /**< Product ID: CDC-ACM device (test PID) */
 } usb_device_id_t;
 
 /** @brief USB Version Numbers (BCD format) */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_version_2_0  = 0x0200, /**< USB 2.0 specification */
   k_usb_version_1_1  = 0x0110, /**< USB 1.1 specification (for CDC) */
   k_device_version   = 0x0100, /**< Device release version 1.0 */
@@ -106,7 +106,7 @@ typedef enum {
 } usb_version_t;
 
 /** @brief CDC Functional Descriptor Subtypes */
-typedef enum {
+typedef enum : uint8_t {
   k_cdc_subtype_header          = 0x00, /**< Header functional descriptor */
   k_cdc_subtype_call_management = 0x01, /**< Call management functional descriptor */
   k_cdc_subtype_acm             = 0x02, /**< ACM functional descriptor */
@@ -114,7 +114,7 @@ typedef enum {
 } cdc_descriptor_subtype_t;
 
 /** @brief USB Endpoint Addresses */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_ep0_out      = 0x00, /**< Control endpoint 0 OUT */
   k_usb_ep0_in       = 0x80, /**< Control endpoint 0 IN */
   k_usb_ep1_bulk_in  = 0x81, /**< Bulk IN endpoint 1 (data to host) */
@@ -123,7 +123,7 @@ typedef enum {
 } usb_endpoint_address_t;
 
 /** @brief USB Endpoint Transfer Types (bmAttributes) */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_ep_type_control     = 0x00, /**< Control transfer */
   k_usb_ep_type_isochronous = 0x01, /**< Isochronous transfer */
   k_usb_ep_type_bulk        = 0x02, /**< Bulk transfer */
@@ -131,24 +131,24 @@ typedef enum {
 } usb_endpoint_type_t;
 
 /** @brief USB Configuration Attributes */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_cfg_attr_bus_powered  = 0x80, /**< Bus-powered device */
   k_usb_cfg_attr_self_powered = 0xC0, /**< Self-powered device */
 } usb_config_attributes_t;
 
 /** @brief USB Power Consumption (in 2mA units) */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_max_power_100ma = 50,  /**< 100mA (50 * 2mA) */
   k_usb_max_power_500ma = 250, /**< 500mA (250 * 2mA) */
 } usb_max_power_t;
 
 /** @brief CDC Capabilities */
-typedef enum {
+typedef enum : uint8_t {
   k_cdc_acm_cap_line_coding = 0x02, /**< Supports SET/GET_LINE_CODING and serial state */
 } cdc_acm_capabilities_t;
 
 /** @brief USB Descriptor Field Indices */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_string_index_langid        = 0, /**< Language ID string index */
   k_usb_string_index_manufacturer  = 1, /**< Manufacturer string index */
   k_usb_string_index_product       = 2, /**< Product string index */
@@ -156,20 +156,20 @@ typedef enum {
 } usb_string_index_t;
 
 /** @brief USB Endpoint Packet Sizes */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_ep0_packet_size       = 64, /**< Control endpoint max packet size */
   k_usb_bulk_packet_size      = 64, /**< Bulk endpoint max packet size (Full-Speed) */
   k_usb_interrupt_packet_size = 8,  /**< Interrupt endpoint max packet size */
 } usb_packet_size_t;
 
 /** @brief USB Polling Intervals */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_bulk_interval      = 0,  /**< Bulk endpoints don't use polling */
   k_usb_interrupt_interval = 10, /**< Interrupt endpoint polling interval (10ms) */
 } usb_polling_interval_t;
 
 /** @brief USB String Descriptor Sizes */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_string_header_size   = 2,  /**< bLength + bDescriptorType */
   k_usb_string_char_size     = 2,  /**< UTF-16LE character size (2 bytes) */
   k_usb_string_langid_chars  = 1,  /**< Language ID is 1 uint16_t */
@@ -179,7 +179,7 @@ typedef enum {
 } usb_string_size_t;
 
 /** @brief Bit Shift Values for Multi-Byte Fields */
-typedef enum {
+typedef enum : uint8_t {
   k_bit_shift_byte_0 = 0,  /**< Shift for byte 0 (LSB) */
   k_bit_shift_byte_1 = 8,  /**< Shift for byte 1 */
   k_bit_shift_byte_2 = 16, /**< Shift for byte 2 */
@@ -187,13 +187,13 @@ typedef enum {
 } bit_shift_t;
 
 /** @brief Byte Masks */
-typedef enum {
+typedef enum : uint8_t {
   k_byte_mask        = 0xFF, /**< Mask for extracting a single byte */
   k_usb_address_mask = 0x7F, /**< USB address mask (7 bits, 0-127) */
 } byte_mask_t;
 
 /** @brief USB Request Type Field Masks (bmRequestType) */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_req_type_mask     = 0x60, /**< Mask for bits 5-6 (request type) */
   k_usb_req_type_standard = 0x00, /**< Standard request */
   k_usb_req_type_class    = 0x20, /**< Class-specific request */
@@ -201,7 +201,7 @@ typedef enum {
 } usb_request_type_mask_t;
 
 /** @brief CDC Line Coding Structure Byte Indices */
-typedef enum {
+typedef enum : uint8_t {
   k_line_coding_baud_rate_byte_0 = 0, /**< Baud rate byte 0 (LSB) */
   k_line_coding_baud_rate_byte_1 = 1, /**< Baud rate byte 1 */
   k_line_coding_baud_rate_byte_2 = 2, /**< Baud rate byte 2 */
@@ -213,7 +213,7 @@ typedef enum {
 } cdc_line_coding_index_t;
 
 /** @brief USB Pipe Numbers */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_pipe_0 = 0, /**< Control pipe (DCP) */
   k_usb_pipe_1 = 1, /**< Pipe 1 (Bulk IN - EP1) */
   k_usb_pipe_2 = 2, /**< Pipe 2 (Bulk OUT - EP2) */
@@ -221,7 +221,7 @@ typedef enum {
 } usb_pipe_number_t;
 
 /** @brief USB Configuration Values */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_config_unconfigured = 0, /**< Device not configured */
   k_usb_config_value_1      = 1, /**< Configuration 1 */
 } usb_config_value_t;

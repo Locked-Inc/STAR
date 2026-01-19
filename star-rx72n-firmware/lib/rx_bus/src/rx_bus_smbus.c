@@ -29,7 +29,7 @@ static const char* s_tag = "BUS_SMBUS";
 /**
  * @brief CRC-8 polynomial for SMBUS (x^8 + x^2 + x + 1)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_smbus_crc8_poly = 0x07,
   k_smbus_crc8_init = 0x00,
 } smbus_crc8_constants_t;

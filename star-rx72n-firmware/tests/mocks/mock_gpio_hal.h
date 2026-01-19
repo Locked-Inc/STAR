@@ -35,14 +35,14 @@ extern "C" {
  */
 
 /** @brief Mock GPIO constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_gpio_max_ports         = 20, /**< Maximum port numbers */
   k_mock_gpio_pins_per_port     = 8,  /**< Pins per port */
   k_mock_gpio_call_history_size = 64, /**< Call history buffer size */
 } mock_gpio_constants_t;
 
 /** @brief GPIO direction enum for mock tracking */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_gpio_dir_undefined = 0, /**< Direction not set */
   k_mock_gpio_dir_input     = 1, /**< Input direction */
   k_mock_gpio_dir_output    = 2, /**< Output direction */
@@ -54,7 +54,7 @@ typedef enum {
  */
 
 /** @brief GPIO HAL function call types */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_gpio_call_set_output,
   k_mock_gpio_call_set_input,
   k_mock_gpio_call_write_high,

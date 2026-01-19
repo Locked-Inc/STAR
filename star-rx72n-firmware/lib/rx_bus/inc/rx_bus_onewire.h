@@ -48,7 +48,7 @@ extern "C" {
  * These values are based on the Dallas/Maxim OneWire specification.
  * All timing is in microseconds.
  */
-typedef enum {
+typedef enum : uint16_t {
   /* Reset and presence detection timing */
   k_onewire_reset_pulse_us      = 480, /**< Reset pulse duration (480us min) */
   k_onewire_presence_wait_us    = 70,  /**< Wait before sampling presence (60-75us) */
@@ -75,7 +75,7 @@ typedef enum {
  *
  * Standard ROM commands for device addressing.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_onewire_cmd_search_rom   = 0xF0, /**< Search ROM - enumerate all devices */
   k_onewire_cmd_read_rom     = 0x33, /**< Read ROM - read single device address */
   k_onewire_cmd_match_rom    = 0x55, /**< Match ROM - address specific device */
@@ -86,7 +86,7 @@ typedef enum {
 /**
  * @brief OneWire device ROM size
  */
-typedef enum {
+typedef enum : uint8_t {
   k_onewire_rom_bytes = 8, /**< ROM code is 8 bytes (64 bits) */
 } onewire_rom_size_t;
 

@@ -35,7 +35,7 @@ static const rx_port_pin_t k_test_tx_gpio = k_rx_pb_7; /**< PB7 TX pin (from rx_
 static const rx_port_pin_t k_test_rx_gpio = k_rx_pb_6; /**< PB6 RX pin (from rx_port_constants.h) */
 
 /** @brief UART test constants */
-typedef enum {
+typedef enum : uint32_t {
   k_test_channel_sci9    = 9,
   k_test_channel_sci0    = 0,
   k_test_channel_invalid = 13,

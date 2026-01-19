@@ -34,7 +34,7 @@ extern "C" {
  */
 
 /** @brief Mock HAL register constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_hal_max_ports    = 20, /**< Maximum number of ports */
   k_mock_hal_max_adc_ch   = 8,  /**< Maximum ADC channels per unit */
   k_mock_hal_max_adc_unit = 2,  /**< Maximum ADC units */

@@ -30,18 +30,18 @@
  */
 
 /** @brief UART configuration constants */
-typedef enum {
+typedef enum : uint32_t {
   k_uart_default_baudrate = 115200, /**< Default baud rate: 115200 bps */
 } uart_config_t;
 
 /** @brief UART timing constants */
-typedef enum {
+typedef enum : uint16_t {
   k_uart_bit_time_delay_cycles =
     1000, /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
 } uart_timing_t;
 
 /** @brief SCI register values */
-typedef enum {
+typedef enum : uint8_t {
   k_sci_scr_disabled     = 0x00, /**< SCR: All functions disabled */
   k_sci_scr_tx_enabled   = 0x20, /**< SCR: Transmit enabled (TE=1) */
   k_sci_scr_rx_enabled   = 0x10, /**< SCR: Receive enabled (RE=1) */
@@ -57,13 +57,13 @@ typedef enum {
 } sci_register_values_t;
 
 /** @brief Integer to string buffer constants */
-typedef enum {
+typedef enum : uint8_t {
   k_uart_int_buffer_size = 12, /**< Buffer size for int32 to string (enough for -2147483648) */
   k_uart_base_10         = 10, /**< Base 10 for decimal conversion */
 } uart_int_constants_t;
 
 /** @brief Hex digit constants */
-typedef enum {
+typedef enum : uint8_t {
   k_uart_hex_max_digits  = 8,    /**< Maximum hex digits to print (32-bit value) */
   k_uart_hex_min_digits  = 1,    /**< Minimum hex digits to print */
   k_uart_hex_zero_digits = 0,    /**< Zero digits value */
@@ -72,7 +72,7 @@ typedef enum {
 } uart_hex_constants_t;
 
 /** @brief BRR calculation constants */
-typedef enum {
+typedef enum : uint16_t {
   k_brr_divisor_n0 = 32,  /**< Divisor for n=0 (CKS=00): 64 * 2^(2n-1) = 32 */
   k_brr_multiplier = 4,   /**< Multiplier per CKS increment (2^2) */
   k_brr_max_value  = 255, /**< Maximum BRR register value */
@@ -80,26 +80,26 @@ typedef enum {
 } brr_constants_t;
 
 /** @brief Maximum SCI channels */
-typedef enum {
+typedef enum : uint8_t {
   k_uart_min_channel       = 0,  /**< Minimum SCI channel */
   k_uart_max_channels      = 13, /**< SCI channels 0-12 */
   k_uart_max_mstpb_channel = 11, /**< Maximum channel in MSTPCRB (SCI12 uses MSTPCRC) */
 } uart_channel_limits_t;
 
-typedef enum {
+typedef enum : uint32_t {
   k_uart_baudrate_min = 1,
   k_uart_baudrate_max = (k_pclkb_hz / k_brr_divisor_n0),
 } uart_validation_limits_t;
 
 /** @brief UART timeout constants */
-typedef enum {
+typedef enum : uint32_t {
   k_uart_tx_timeout        = 100000, /**< Transmit buffer wait timeout (prevents infinite loop) */
   k_uart_timeout_expired   = 0,      /**< Timeout counter expired value */
   k_uart_timeout_decrement = 1,      /**< Timeout counter decrement value */
 } uart_timeout_t;
 
 /** @brief SCI module stop bit positions in MSTPCRB */
-typedef enum {
+typedef enum : uint8_t {
   k_sci_mstpb_sci0  = 31, /**< SCI0 module stop bit */
   k_sci_mstpb_sci1  = 30, /**< SCI1 module stop bit */
   k_sci_mstpb_sci2  = 29, /**< SCI2 module stop bit */
@@ -115,7 +115,7 @@ typedef enum {
 } sci_mstpb_bits_t;
 
 /** @brief Debug UART pins (SCI9 on RX72N) */
-typedef enum {
+typedef enum : uint8_t {
   k_uart_debug_tx_gpio = k_rx_pb_7, /**< PB7 = TXD9 (from rx_port_constants.h) */
   k_uart_debug_rx_gpio = k_rx_pb_6, /**< PB6 = RXD9 (from rx_port_constants.h) */
 } uart_debug_pins_t;

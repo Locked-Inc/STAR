@@ -192,7 +192,7 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
  * - Timer period = 1 / 7.5 MHz = 133.33 ns per tick
  * - Ticks per microsecond = 7.5 ticks/us
  */
-typedef enum {
+typedef enum : uint32_t {
   k_cmt2_divider           = 8,       /**< CMT2 clock divider */
   k_cmt2_divider_bits      = 0x0000,  /**< CKS[1:0] = 00 for /8 divider */
   k_timer_counter_max      = 0xFFFF,  /**< 16-bit counter maximum */

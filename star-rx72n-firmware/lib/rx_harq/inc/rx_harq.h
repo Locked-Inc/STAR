@@ -45,7 +45,7 @@ extern "C" {
 /**
  * @brief HARQ protocol parameters
  */
-typedef enum {
+typedef enum : uint16_t {
   k_harq_max_payload      = 1024,  /**< Maximum payload size in bytes */
   k_harq_default_retries  = 3,     /**< Default maximum retries */
   k_harq_default_combines = 3,     /**< Default max combining attempts */
@@ -61,7 +61,7 @@ typedef enum {
 /**
  * @brief HARQ state machine states
  */
-typedef enum {
+typedef enum : uint8_t {
   k_harq_state_idle        = 0, /**< Ready for new transmission */
   k_harq_state_waiting_ack = 1, /**< Waiting for ACK */
   k_harq_state_combining   = 2, /**< Combining retransmissions */

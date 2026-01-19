@@ -46,7 +46,7 @@ extern "C" {
 /**
  * @brief USB communication parameters
  */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_comm_rx_buffer_size         = 2048, /**< RX staging buffer size */
   k_usb_comm_tx_buffer_size         = 2048, /**< TX staging buffer size */
   k_usb_comm_default_timeout        = 1000, /**< Default timeout in ms */

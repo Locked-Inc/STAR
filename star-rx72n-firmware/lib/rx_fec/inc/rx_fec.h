@@ -48,7 +48,7 @@ extern "C" {
  * - Rate 1/2 (2 output bits per input bit)
  * - Generator polynomials in octal: G1=171, G2=133
  */
-typedef enum {
+typedef enum : uint8_t {
   k_fec_constraint_length = 7,    /**< K=7 constraint length */
   k_fec_num_states        = 64,   /**< 2^(K-1) = 64 states */
   k_fec_tail_bits         = 6,    /**< K-1 tail bits for termination */
@@ -77,7 +77,7 @@ typedef int8_t rx_soft_bit_t;
 /**
  * @brief Soft bit value limits
  */
-typedef enum {
+typedef enum : int8_t {
   k_soft_bit_max  = 127,  /**< Maximum soft bit value (confident 1) */
   k_soft_bit_min  = -127, /**< Minimum soft bit value (confident 0) */
   k_soft_bit_zero = 0,    /**< No confidence (erasure) */
@@ -155,7 +155,7 @@ uint32_t rx_fec_encoded_len(uint32_t input_len);
  * With 1024 byte max payload, encoded = (1024*8+6)*2 = 16396 bits = 8198 symbols
  * Round up to 8200 for safe margin.
  */
-typedef enum {
+typedef enum : uint16_t {
   k_fec_max_symbols = 8200, /**< Maximum symbols for static allocation */
 } rx_fec_buffer_limits_t;
 

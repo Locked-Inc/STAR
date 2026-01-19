@@ -25,7 +25,7 @@
 /**
  * @brief Bit manipulation constants for byte-to-bit conversion
  */
-typedef enum {
+typedef enum : uint8_t {
   k_bits_per_byte = 8, /**< Number of bits in a byte */
   k_bit_idx_msb   = 7, /**< MSB index in byte (bit 7) */
   k_bit_idx_lsb   = 0, /**< LSB index in byte (bit 0) */

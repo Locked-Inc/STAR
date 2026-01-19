@@ -25,7 +25,7 @@ extern "C" {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint32_t {
   k_iclk_hz  = 240000000UL, /**< CPU clock */
   k_pclka_hz = 120000000UL, /**< Peripheral clock A */
   k_pclkb_hz = 60000000UL,  /**< Peripheral clock B */

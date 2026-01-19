@@ -40,7 +40,7 @@ static const char* s_tag = "GPTW";
  */
 
 /** @brief GPTW general constants */
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_max_channels        = 4, /**< GPTW0-GPTW3 */
   k_gptw_outputs_per_channel = 2, /**< GTIOCA and GTIOCB */
 } gptw_constants_t;
@@ -49,20 +49,20 @@ typedef enum {
 static const uint32_t s_gptw_period_max    = 0xFFFFFFFFUL;  /**< Maximum valid period (32-bit) */
 static const uint64_t s_gptw_ns_per_second = 1000000000ULL; /**< Nanoseconds per second */
 
-typedef enum {
+typedef enum : uint16_t {
   k_gptw_period_min  = 10, /**< Minimum valid period */
   k_gptw_period_zero = 0,  /**< Zero period value */
 } gptw_period_constants_t;
 
 /** @brief Duty cycle calculation constants */
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_duty_min     = 0,   /**< Minimum duty cycle (0%) */
   k_gptw_duty_max     = 100, /**< Maximum duty cycle (100%) */
   k_gptw_duty_divisor = 100, /**< Divisor for percentage conversion */
 } gptw_duty_constants_t;
 
 /** @brief MPC configuration constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mpc_pwpr_b0wi_clear = 0x00, /**< Clear B0WI to enable PFSWE write */
   k_mpc_pwpr_pfswe_set  = 0x40, /**< Set PFSWE to enable PFS write */
   k_mpc_pwpr_lock       = 0x80, /**< Set B0WI to lock PFS */
@@ -207,7 +207,7 @@ static rx_err_t internal_configure_mpc(rx_gptw_channel_t channel)
 }
 
 /** @brief Port E pin indices for GPTW motor outputs */
-typedef enum {
+typedef enum : uint8_t {
   k_porte_gptw0_a = 5, /**< PE5/GTIOC0A - Motor 0 phase */
   k_porte_gptw0_b = 2, /**< PE2/GTIOC0B - Motor 0 enable */
   k_porte_gptw1_a = 4, /**< PE4/GTIOC1A - Motor 1 phase */

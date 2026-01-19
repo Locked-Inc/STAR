@@ -35,7 +35,7 @@
 /**
  * @brief Cell index constants for tests
  */
-typedef enum {
+typedef enum : uint8_t {
   k_test_cell_idx_0 = 0,
   k_test_cell_idx_1 = 1,
   k_test_cell_idx_2 = 2,
@@ -45,7 +45,7 @@ typedef enum {
 /**
  * @brief Cell count constants for tests
  */
-typedef enum {
+typedef enum : uint8_t {
   k_test_cell_count_1 = 1,
   k_test_cell_count_2 = 2,
   k_test_cell_count_4 = 4,
@@ -55,7 +55,7 @@ typedef enum {
 /**
  * @brief Test helper constants
  */
-typedef enum {
+typedef enum : int16_t {
   k_test_typical_voltage_mv     = 14800, /**< Typical 4S pack voltage (mV) */
   k_test_cell_voltage_mv        = 3700,  /**< Typical cell voltage (mV) */
   k_test_cell_voltage_high_mv   = 4200,  /**< High cell voltage (mV) */

@@ -6,7 +6,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(rx_usb_tests C)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Enable all warnings and treat as errors

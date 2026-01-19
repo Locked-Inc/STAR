@@ -43,7 +43,7 @@ static const char* s_tag = "BQ4050";
 /**
  * @brief Temperature conversion constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_temp_kelvin_offset = 2731, /**< Offset: 0.1K to 0.1°C (273.15K × 10) */
   k_temp_decimal_scale = 10,   /**< Scale: 0.1 units to whole units */
 } bq4050_temp_constants_t;
@@ -54,7 +54,7 @@ typedef enum {
  * SBS specification allows SOC > 100% in some conditions (e.g., overcharge).
  * We clamp to valid 0-100% range for application use.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_soc_min_percent = 0,   /**< Minimum SOC percentage */
   k_soc_max_percent = 100, /**< Maximum SOC percentage */
 } bq4050_soc_limits_t;
@@ -64,7 +64,7 @@ typedef enum {
  *
  * Named indices for accessing cell voltage register map array.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_cell_idx_1 = 0, /**< Cell 1 index */
   k_cell_idx_2 = 1, /**< Cell 2 index */
   k_cell_idx_3 = 2, /**< Cell 3 index */
@@ -418,7 +418,7 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
   status->is_charging         = !(status_flags & k_bq4050_status_discharging);
   status->is_fully_charged    = (status_flags & k_bq4050_status_fully_charged) != 0;
   status->is_fully_discharged = (status_flags & k_bq4050_status_fully_discharged) != 0;
-  status->is_low_capacity = (status_flags & k_bq4050_status_remaining_capacity_alarm) != 0;
+  status->is_low_capacity     = (status_flags & k_bq4050_status_remaining_capacity_alarm) != 0;
 
   return k_rx_ok;
 }

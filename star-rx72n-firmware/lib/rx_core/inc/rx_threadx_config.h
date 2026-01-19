@@ -43,7 +43,7 @@ extern "C" {
  * tx_thread_sleep(ticks);  // Sleep for 500ms
  * @endcode
  */
-typedef enum {
+typedef enum : uint16_t {
   k_rx_threadx_tick_rate_hz = 100, /**< ThreadX tick frequency: 100 Hz (10ms period) */
 } rx_threadx_timing_t;
 

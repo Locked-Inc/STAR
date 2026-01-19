@@ -51,7 +51,7 @@ void tearDown(void)
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_test_max_retries        = 3,
   k_test_initial_backoff_ms = 100,
   k_test_max_backoff_ms     = 5000,
@@ -460,7 +460,7 @@ void test_error_handler_exponential_backoff(void)
 void test_error_handler_backoff_capped(void)
 {
   /* Use small max to test capping */
-  enum {
+  enum : uint16_t {
     k_small_max_backoff = 300,
   };
 

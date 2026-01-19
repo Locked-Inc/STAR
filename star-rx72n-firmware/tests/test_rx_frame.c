@@ -28,7 +28,7 @@
  * Note: Minimum frame size is defined in rx_frame.h as k_frame_min_size = 12
  * (SYNC=2 bytes, header=6 bytes, CRC-32=4 bytes)
  */
-typedef enum {
+typedef enum : uint16_t {
   k_test_payload_size    = 256,    /**< Large payload size for testing */
   k_test_buffer_size     = 512,    /**< Buffer size for encoded frame */
   k_test_sequence_num    = 100,    /**< Test sequence number */
@@ -56,14 +56,14 @@ typedef enum {
 } frame_test_constants_t;
 
 /** @brief CRC extraction constants */
-typedef enum {
+typedef enum : uint8_t {
   k_crc_byte_0 = 0,
   k_crc_byte_1 = 1,
   k_crc_byte_2 = 2,
   k_crc_byte_3 = 3,
 } crc_byte_index_t;
 
-typedef enum {
+typedef enum : uint8_t {
   k_crc_shift_8  = 8,
   k_crc_shift_16 = 16,
   k_crc_shift_24 = 24,
@@ -80,7 +80,7 @@ static const char     s_test_payload_string[] = "TEST";
 /**
  * @brief Frame wire format byte offsets
  */
-typedef enum {
+typedef enum : uint8_t {
   k_frame_offset_sync_high = 0, /**< SYNC word high byte */
   k_frame_offset_sync_low  = 1, /**< SYNC word low byte */
   k_frame_offset_seq_high  = 2, /**< Sequence number high byte */
@@ -95,7 +95,7 @@ typedef enum {
 /**
  * @brief Payload byte offsets relative to payload start
  */
-typedef enum {
+typedef enum : uint8_t {
   k_payload_index_0 = 0,
   k_payload_index_1 = 1,
   k_payload_index_2 = 2,
@@ -427,7 +427,11 @@ void test_roundtrip_with_payload(void)
 
 void test_roundtrip_max_sequence(void)
 {
-  enum { k_seq_test_payload_len = 2, k_payload_val_high = 0x12, k_payload_val_low = 0x34 };
+  enum : uint8_t {
+    k_seq_test_payload_len = 2,
+    k_payload_val_high     = 0x12,
+    k_payload_val_low      = 0x34
+  };
   rx_frame_t original = {0};
   uint8_t    buffer[k_test_small_buffer];
   uint32_t   len;
@@ -515,7 +519,7 @@ void test_create_nack_with_flags(void)
 
 void test_encoded_size_calculation(void)
 {
-  enum { k_payload_0 = 0, k_payload_1 = 1, k_payload_8 = 8 };
+  enum : uint8_t { k_payload_0 = 0, k_payload_1 = 1, k_payload_8 = 8 };
   TEST_ASSERT_EQUAL(k_frame_min_size, rx_frame_encoded_size(k_payload_0));
   TEST_ASSERT_EQUAL(k_frame_min_size + k_payload_1, rx_frame_encoded_size(k_payload_1));
   TEST_ASSERT_EQUAL(k_frame_min_size + k_payload_8, rx_frame_encoded_size(k_payload_8));
@@ -524,7 +528,7 @@ void test_encoded_size_calculation(void)
 
 void test_frame_type_valid(void)
 {
-  enum { k_invalid_type_low = 0, k_invalid_type_high = 5, k_invalid_type_max = 255 };
+  enum : uint8_t { k_invalid_type_low = 0, k_invalid_type_high = 5, k_invalid_type_max = 255 };
   TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_low));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_command));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_response));
@@ -992,7 +996,7 @@ void test_go_compatibility_command_with_payload(void)
 
 void test_decode_payload_length_mismatch(void)
 {
-  enum {
+  enum : uint8_t {
     k_actual_payload_len  = 10,
     k_truncated_payload   = 5,
     k_truncated_frame_len = k_frame_min_size + k_truncated_payload

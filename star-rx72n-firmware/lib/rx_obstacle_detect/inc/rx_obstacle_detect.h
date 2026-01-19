@@ -49,7 +49,7 @@ extern "C" {
 /**
  * @brief Obstacle detection constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_obstacle_detect_max_sensors     = 8,    /**< Maximum number of HC-SR04 sensors */
   k_obstacle_detect_max_motors      = 4,    /**< Maximum number of motors to control */
   k_obstacle_detect_task_stack_size = 2048, /**< Detection task stack size (bytes) */
@@ -59,7 +59,7 @@ typedef enum {
 /**
  * @brief Obstacle detection state
  */
-typedef enum {
+typedef enum : uint8_t {
   k_obstacle_detect_state_stopped  = 0, /**< Detection not running */
   k_obstacle_detect_state_running  = 1, /**< Detection active, no obstacle */
   k_obstacle_detect_state_obstacle = 2, /**< Obstacle detected, motors stopped */

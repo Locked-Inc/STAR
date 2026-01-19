@@ -46,7 +46,7 @@
 /**
  * @brief Test constants for encoder configuration
  */
-typedef enum {
+typedef enum : uint32_t {
   k_test_counts_per_rev  = 1364,                   /**< 341 PPR with 4x decoding */
   k_test_degrees_per_rev = 360,                    /**< Degrees in one revolution */
   k_test_counter_max     = 65536,                  /**< 16-bit counter maximum + 1 */

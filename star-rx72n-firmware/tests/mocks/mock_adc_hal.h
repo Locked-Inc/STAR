@@ -35,7 +35,7 @@ extern "C" {
  */
 
 /** @brief Mock ADC constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_adc_max_units         = 2,  /**< ADC units (0, 1) */
   k_mock_adc_max_channels      = 8,  /**< Channels per unit (0-7) */
   k_mock_adc_call_history_size = 64, /**< Call history buffer size */
@@ -47,7 +47,7 @@ typedef enum {
  */
 
 /** @brief ADC HAL function call types */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_adc_call_init,
   k_mock_adc_call_read,
   k_mock_adc_call_read_voltage_mv,

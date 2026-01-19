@@ -27,14 +27,14 @@
 /**
  * @brief Microseconds per centimeter (roundtrip) at 20C
  */
-typedef enum {
+typedef enum : uint8_t {
   k_us_per_cm = 58, /**< 58us per cm roundtrip */
 } echo_constants_t;
 
 /**
  * @brief Default simulated distance for testing
  */
-typedef enum {
+typedef enum : uint8_t {
   k_default_test_distance_cm = 10, /**< 10cm default distance */
   k_default_time_step_us     = 1,  /**< 1us default time step */
 } mock_defaults_t;

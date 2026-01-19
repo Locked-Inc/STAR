@@ -75,7 +75,7 @@ static uint16_t internal_fifo_space(uint16_t head, uint16_t tail)
   return k_mock_uart_fifo_size - 1 - internal_fifo_count(head, tail);
 }
 
-typedef enum {
+typedef enum : uint32_t {
   k_mock_uart_tdre_timeout = 100000,
 } mock_uart_timeout_t;
 
@@ -527,7 +527,7 @@ rx_err_t uart_rx_available(uint8_t channel, bool* available)
  */
 
 /** @brief Debug UART configuration constants */
-typedef enum {
+typedef enum : uint32_t {
   k_debug_uart_channel  = 9,      /**< SCI9 channel for debug UART */
   k_debug_uart_baudrate = 115200, /**< 115200 baud for debug console */
 } debug_uart_config_t;

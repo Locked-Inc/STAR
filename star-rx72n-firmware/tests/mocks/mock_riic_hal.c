@@ -20,7 +20,7 @@
  */
 
 /** @brief Valid I2C frequencies */
-typedef enum {
+typedef enum : uint32_t {
   k_mock_riic_freq_100khz = 100000,  /**< Standard mode */
   k_mock_riic_freq_400khz = 400000,  /**< Fast mode */
   k_mock_riic_freq_1mhz   = 1000000, /**< Fast mode plus */

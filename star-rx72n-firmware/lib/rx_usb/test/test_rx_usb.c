@@ -38,7 +38,7 @@
  */
 
 /** @brief Test result counters */
-typedef enum {
+typedef enum : uint8_t {
   k_test_result_init = 0, /**< Initial counter value */
 } test_result_init_t;
 

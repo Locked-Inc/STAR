@@ -23,27 +23,27 @@
  */
 
 /** @brief ADC hardware limits */
-typedef enum {
+typedef enum : uint8_t {
   k_adc_max_units    = 2,   /**< S12AD0, S12AD1 */
   k_adc_max_channels = 8,   /**< Channels 0-7 per unit */
   k_adc_timeout_ms   = 100, /**< ADC conversion timeout (ms) */
 } adc_constants_t;
 
 /** @brief ADC resolution options */
-typedef enum {
+typedef enum : uint8_t {
   k_adc_resolution_8bit  = 8,  /**< 8-bit ADC resolution */
   k_adc_resolution_10bit = 10, /**< 10-bit ADC resolution */
   k_adc_resolution_12bit = 12, /**< 12-bit ADC resolution (default) */
 } adc_resolution_t;
 
 /** @brief ADC module stop bit positions in MSTPCRA */
-typedef enum {
+typedef enum : uint8_t {
   k_adc_mstpra_s12ad1 = 16, /**< S12AD1 module stop bit */
   k_adc_mstpra_s12ad0 = 17, /**< S12AD0 module stop bit */
 } adc_module_stop_bits_t;
 
 /** @brief ADC Control Extended Register (ADCER) bit masks and values */
-typedef enum {
+typedef enum : uint16_t {
   k_adc_adcer_adprc_mask  = 0x03,        /**< ADPRC bit mask (bits 1:0) */
   k_adc_adcer_adprc_shift = 0,           /**< ADPRC bit shift position */
   k_adc_adcer_adprc_12bit = (0x00 << 0), /**< 12-bit resolution */
@@ -52,18 +52,18 @@ typedef enum {
 } adc_adcer_bits_t;
 
 /** @brief ADC Control/Status Register (ADCSR) bit masks */
-typedef enum {
+typedef enum : uint16_t {
   k_adc_adcsr_adst = 0x1000, /**< A/D Conversion Start (bit 12) */
 } adc_adcsr_bits_t;
 
 /** @brief ADC channel register boundaries */
-typedef enum {
+typedef enum : uint8_t {
   k_adc_channel_adansa0_max  = 15, /**< Maximum channel for ADANSA0 (channels 0-15) */
   k_adc_channel_adansa1_base = 16, /**< Base channel for ADANSA1 (channels 16+) */
 } adc_channel_boundaries_t;
 
 /** @brief ADC timeout and voltage constants */
-typedef enum {
+typedef enum : uint16_t {
   k_adc_timeout_multiplier   = 1000, /**< Timeout loop multiplier */
   k_adc_timeout_expired      = 0,    /**< Timeout counter expired */
   k_adc_reference_voltage_mv = 3300, /**< ADC reference voltage (3.3V) */

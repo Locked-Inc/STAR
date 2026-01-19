@@ -57,14 +57,14 @@ typedef struct {
 } rx_bus_manager_t;
 
 /* GPTW types from rx_gptw.h */
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_channel_0 = 0,
   k_gptw_channel_1 = 1,
   k_gptw_channel_2 = 2,
   k_gptw_channel_3 = 3,
 } rx_gptw_channel_t;
 
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_output_a = 0,
   k_gptw_output_b = 1,
 } rx_gptw_output_t;
@@ -90,7 +90,7 @@ typedef struct {
 } rx_motor_handle_t;
 
 /* DRV8243 types */
-typedef enum {
+typedef enum : uint8_t {
   k_rx_drv8243_fault_none         = 0,
   k_rx_drv8243_fault_overcurrent  = 1,
   k_rx_drv8243_fault_thermal      = 2,
@@ -150,7 +150,7 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limi
  */
 
 /** @brief Mock state constants */
-typedef enum {
+typedef enum : int16_t {
   k_mock_max_ports          = 32,
   k_mock_default_ki_propi   = 525,
   k_mock_max_pwm_freq_hz    = 25000,
@@ -443,7 +443,7 @@ void uart_puthex(uint32_t value, uint8_t digits)
  */
 
 /** @brief Constants from drv8243 implementation */
-typedef enum {
+typedef enum : uint16_t {
   k_drv8243_default_ki_propi = 525,
   k_drv8243_max_pwm_freq_hz  = 25000,
 } drv8243_constants_t;

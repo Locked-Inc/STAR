@@ -29,7 +29,7 @@ extern "C" {
  */
 
 /** @brief Mock RSPI buffer and tracking constants */
-typedef enum {
+typedef enum : uint16_t {
   k_mock_rspi_max_channels     = 3,    /**< RSPI0, RSPI1, RSPI2 */
   k_mock_rspi_buffer_size      = 2048, /**< Max transfer buffer size */
   k_mock_rspi_call_history_max = 64,   /**< Max recorded calls */

@@ -35,7 +35,7 @@ extern "C" {
  */
 
 /** @brief Mock RIIC constants */
-typedef enum {
+typedef enum : uint16_t {
   k_mock_riic_max_channels      = 3,   /**< RIIC channels (0-2) */
   k_mock_riic_buffer_size       = 256, /**< TX/RX buffer size */
   k_mock_riic_call_history_size = 64,  /**< Call history buffer size */
@@ -47,7 +47,7 @@ typedef enum {
  */
 
 /** @brief RIIC HAL function call types */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_riic_call_init,
   k_mock_riic_call_write,
   k_mock_riic_call_read,

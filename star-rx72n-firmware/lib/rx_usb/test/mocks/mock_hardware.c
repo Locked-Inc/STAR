@@ -33,20 +33,20 @@ mock_tx_state_t    g_mock_tx;
  */
 
 /** @brief INTSTS0 field positions and masks */
-typedef enum {
+typedef enum : uint16_t {
   k_intsts0_ctsq_mask  = 0x0007,
   k_intsts0_dvsq_mask  = 0x0070,
   k_intsts0_dvsq_shift = 4,
 } intsts0_fields_t;
 
 /** @brief CFIFOCTR field definitions */
-typedef enum {
+typedef enum : uint16_t {
   k_cfifoctr_dtln_mask = 0x0FFF,
   k_cfifoctr_frdy_bit  = 13,
 } cfifoctr_fields_t;
 
 /** @brief Pipe control register bit positions */
-typedef enum {
+typedef enum : uint8_t {
   k_pipectr_pbusy_bit = 5,
 } pipectr_fields_t;
 

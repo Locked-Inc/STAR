@@ -24,7 +24,7 @@
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_app_main_stack_size  = 1024, /**< Stack size in bytes */
   k_app_main_priority    = 10,   /**< ThreadX priority (lower is higher) */
   k_app_main_sleep_ticks = 10,   /**< Sleep period in ThreadX ticks */

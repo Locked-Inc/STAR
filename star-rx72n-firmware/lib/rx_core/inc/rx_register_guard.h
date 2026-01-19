@@ -57,7 +57,7 @@ extern "C" {
 /**
  * @brief Register guard configuration constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_register_guard_max_ports = 10, /**< Maximum PORT registers to guard */
   k_register_guard_max_ipr   = 16, /**< Maximum IPR registers to guard */
 } rx_register_guard_config_t;

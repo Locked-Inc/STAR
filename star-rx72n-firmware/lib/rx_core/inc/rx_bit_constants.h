@@ -43,7 +43,7 @@ extern "C" {
  * uint8_t byte = (word >> (k_rx_bits_per_byte * byte_index)) & 0xFF;
  * @endcode
  */
-typedef enum {
+typedef enum : uint8_t {
   k_rx_bits_per_byte   = 8,  /**< Bits per byte (universal) */
   k_rx_bits_per_word16 = 16, /**< Bits per 16-bit word */
   k_rx_bits_per_word32 = 32, /**< Bits per 32-bit word */
@@ -55,7 +55,7 @@ typedef enum {
  *
  * Common bit shift and mask values for protocol operations.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_rx_shift_byte   = 8,  /**< Shift for byte extraction (8 bits) */
   k_rx_shift_word16 = 16, /**< Shift for 16-bit word extraction */
   k_rx_shift_word24 = 24, /**< Shift for accessing byte 3 in 32-bit word */

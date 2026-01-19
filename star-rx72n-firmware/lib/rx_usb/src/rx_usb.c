@@ -55,12 +55,12 @@
 static const char* s_tag = "USB";
 
 /** @brief USB flush timing constants */
-typedef enum {
+typedef enum : uint16_t {
   k_flush_poll_interval_ms = 10, /**< Poll TX buffer every 10ms */
 } threadx_flush_timing_t;
 
 /** @brief Ring buffer operation constants */
-typedef enum {
+typedef enum : uint8_t {
   k_ring_buffer_empty     = 0, /**< Empty buffer count */
   k_ring_buffer_increment = 1, /**< Increment value for buffer indices */
   k_min_transfer_size     = 0, /**< Minimum data transfer size (no data) */

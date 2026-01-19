@@ -29,7 +29,7 @@ extern "C" {
 /**
  * @brief RTC base address constants
  */
-typedef enum {
+typedef enum : uint32_t {
   k_rtc_base_addr = 0x0008C400, /**< RTC register base address */
 } rtc_addresses_t;
 
@@ -73,7 +73,7 @@ typedef struct {
 /**
  * @brief RCR3 register bits
  */
-typedef enum {
+typedef enum : uint8_t {
   k_rcr3_rtcen_disable = 0x00, /**< RTC disabled (bit 0 = 0) */
   k_rcr3_rtcen_enable  = 0x01, /**< RTC enabled (bit 0 = 1) */
 } rcr3_bits_t;

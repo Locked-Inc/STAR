@@ -50,7 +50,7 @@ extern "C" {
  * Timing values based on speed of sound at 20C (343 m/s).
  * Distance = (echo_us * 0.0343 cm/us) / 2 = echo_us / 58.3 cm
  */
-typedef enum {
+typedef enum : uint16_t {
   k_hcsr04_trigger_settle_us   = 2,     /**< Time to hold trigger low before pulse */
   k_hcsr04_trigger_pulse_us    = 10,    /**< Minimum trigger pulse width */
   k_hcsr04_echo_timeout_us     = 30000, /**< Max echo wait (400cm + margin) */
@@ -63,7 +63,7 @@ typedef enum {
 /**
  * @brief HC-SR04 distance range constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_hcsr04_min_distance_cm = 2,   /**< Minimum measurable distance */
   k_hcsr04_max_distance_cm = 400, /**< Maximum measurable distance */
 } rx_hcsr04_range_t;

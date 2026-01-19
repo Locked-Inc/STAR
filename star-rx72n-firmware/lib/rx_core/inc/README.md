@@ -30,7 +30,7 @@ switch (port) {
 ```c
 #include "rx_port_constants.h"
 
-typedef enum {
+typedef enum : uint16_t {
   k_gpio_pb2 = (k_rx_port_b << k_port_shift) | k_rx_pin_2,
   k_gpio_pe5 = (k_rx_port_e << k_port_shift) | k_rx_pin_5,
 } gpio_pin_t;

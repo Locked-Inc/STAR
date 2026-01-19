@@ -45,7 +45,7 @@ extern "C" {
  */
 
 /** @brief IWDT configuration constants */
-typedef enum {
+typedef enum : uint32_t {
   k_iwdt_max_tasks          = 16,    /**< Maximum monitored tasks */
   k_iwdt_task_name_len      = 32,    /**< Max task name length */
   k_iwdt_default_timeout_ms = 2000,  /**< Default timeout (2s) */
@@ -55,7 +55,7 @@ typedef enum {
 } iwdt_constants_t;
 
 /** @brief IWDT timeout periods (hardware divider settings) */
-typedef enum {
+typedef enum : uint8_t {
   k_iwdt_timeout_128ms  = 0, /**< ~128ms (CKS=00) */
   k_iwdt_timeout_512ms  = 1, /**< ~512ms (CKS=01) */
   k_iwdt_timeout_2048ms = 2, /**< ~2s (CKS=10) */
@@ -63,7 +63,7 @@ typedef enum {
 } iwdt_timeout_period_t;
 
 /** @brief System states for state-dependent timeouts */
-typedef enum {
+typedef enum : uint8_t {
   k_system_state_init         = 0, /**< System initialization */
   k_system_state_idle         = 1, /**< Idle state */
   k_system_state_running      = 2, /**< Normal operation */
@@ -74,7 +74,7 @@ typedef enum {
 } system_state_t;
 
 /** @brief Watchdog reset reasons */
-typedef enum {
+typedef enum : uint8_t {
   k_iwdt_reset_unknown     = 0, /**< Unknown reset */
   k_iwdt_reset_power_on    = 1, /**< Power-on reset */
   k_iwdt_reset_watchdog    = 2, /**< Watchdog timeout */

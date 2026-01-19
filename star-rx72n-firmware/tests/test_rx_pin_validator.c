@@ -53,7 +53,7 @@ void tearDown(void)
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_test_port_0   = 0,
   k_test_port_5   = 5,
   k_test_port_9   = 9,
@@ -531,7 +531,7 @@ void test_pin_validator_get_function_buffer_too_small(void)
 
   iface.reserve_pin(iface.ctx, k_test_port_a, k_test_pin_3, "SPI_COPI");
 
-  enum {
+  enum : uint8_t {
     k_small_buffer_size = 5,
   };
 

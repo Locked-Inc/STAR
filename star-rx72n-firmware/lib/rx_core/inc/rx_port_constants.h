@@ -51,7 +51,7 @@ extern "C" {
  * Example application use:
  *   k_gpio_pb2 = (k_rx_port_b << 8) | k_rx_pin_2
  */
-typedef enum {
+typedef enum : uint8_t {
   /* Decimal Ports (0-9) */
   k_rx_port_0 = 0x00, /**< Port 0 */
   k_rx_port_1 = 0x01, /**< Port 1 */
@@ -89,7 +89,7 @@ typedef enum {
  * Example:
  *   gpio_pin_t my_pin = (k_rx_port_b << 8) | k_rx_pin_2;  // PB2
  */
-typedef enum {
+typedef enum : uint8_t {
   k_rx_pin_0 = 0, /**< Pin 0 */
   k_rx_pin_1 = 1, /**< Pin 1 */
   k_rx_pin_2 = 2, /**< Pin 2 */
@@ -115,7 +115,7 @@ typedef enum {
  * Example:
  *   gpio_pin_t pin = (port << k_port_shift) | pin_num;
  */
-typedef enum {
+typedef enum : uint8_t {
   k_port_shift = 8,    /**< Left shift amount to move port to upper byte */
   k_port_mask  = 0xFF, /**< Mask to extract pin number from lower byte */
 } port_encoding_t;
@@ -142,7 +142,7 @@ typedef enum {
  * Example:
  *   gpio_pin_t my_pin = k_rx_pa_2;  // Port A, Pin 2
  */
-typedef enum {
+typedef enum : uint16_t {
   /* Port 0 (0x00) - Pins 0-7 */
   k_rx_p0_0 = (k_rx_port_0 << k_port_shift) | k_rx_pin_0, /**< P00 - N/A on 100-pin */
   k_rx_p0_1 = (k_rx_port_0 << k_port_shift) | k_rx_pin_1, /**< P01 - N/A on 100-pin */

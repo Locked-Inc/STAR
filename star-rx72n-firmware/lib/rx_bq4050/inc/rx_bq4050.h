@@ -51,14 +51,14 @@ extern "C" {
 /**
  * @brief BQ4050 I2C address (7-bit)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_bq4050_i2c_addr = 0x0B, /**< BQ4050 default I2C address */
 } bq4050_i2c_constants_t;
 
 /**
  * @brief BQ4050 cell configuration
  */
-typedef enum {
+typedef enum : uint8_t {
   k_bq4050_max_cells = 4, /**< Maximum number of battery cells (1-4 series) */
 } bq4050_cell_constants_t;
 

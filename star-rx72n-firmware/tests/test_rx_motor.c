@@ -36,12 +36,12 @@
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_float_tolerance_percent = 1, /**< 0.01 tolerance for percentage comparisons */
 } test_constants_t;
 
 /** @brief Common test PWM frequencies in Hz */
-typedef enum {
+typedef enum : uint16_t {
   k_test_freq_20khz = 20000, /**< Standard motor PWM frequency */
   k_test_freq_25khz = 25000, /**< Alternative motor PWM frequency */
   k_test_freq_1khz  = 1000,  /**< Low frequency for testing */
@@ -49,7 +49,7 @@ typedef enum {
 } test_frequencies_t;
 
 /** @brief Common test dead-time values in nanoseconds */
-typedef enum {
+typedef enum : uint16_t {
   k_test_deadtime_0ns    = 0,    /**< No dead-time */
   k_test_deadtime_500ns  = 500,  /**< 500ns dead-time */
   k_test_deadtime_1000ns = 1000, /**< 1us dead-time */
@@ -57,7 +57,7 @@ typedef enum {
 } test_deadtimes_t;
 
 /** @brief Duty cycle test values */
-typedef enum {
+typedef enum : int16_t {
   k_duty_full_forward = 100,  /**< Full forward duty */
   k_duty_half         = 50,   /**< Half duty */
   k_duty_quarter      = 25,   /**< Quarter duty */

@@ -85,7 +85,7 @@ extern "C" {
 /**
  * @brief DRV8243 fault type enumeration
  */
-typedef enum {
+typedef enum : uint8_t {
   k_rx_drv8243_fault_none         = 0, /**< No fault detected */
   k_rx_drv8243_fault_overcurrent  = 1, /**< Overcurrent protection triggered */
   k_rx_drv8243_fault_thermal      = 2, /**< Thermal shutdown (TSD) */
