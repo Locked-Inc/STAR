@@ -1180,9 +1180,9 @@ func TestPriorityConstants(t *testing.T) {
 		priority Priority
 		expected uint8
 	}{
-		{"Emergency", PriorityEmergency, 0},
-		{"High", PriorityHigh, 1},
-		{"Normal", PriorityNormal, 2},
+		{"Emergency", PriorityEmergency, PriorityValueEmergency},
+		{"High", PriorityHigh, PriorityValueHigh},
+		{"Normal", PriorityNormal, PriorityValueNormal},
 	}
 
 	for _, tc := range tests {

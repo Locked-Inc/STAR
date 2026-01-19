@@ -90,6 +90,13 @@ const (
 	PriorityNormal    Priority = 2
 )
 
+// Protocol wire format values for priority levels
+const (
+	PriorityValueEmergency uint8 = 0
+	PriorityValueHigh      uint8 = 1
+	PriorityValueNormal    uint8 = 2
+)
+
 // HARQ defines the interface for the HARQ protocol handler.
 type HARQ interface {
 	// Send transmits data with HARQ reliability.
