@@ -214,7 +214,7 @@ void hcsr04_hal_delay_us(uint32_t us)
         message_len = (uint32_t)(k_hcsr04_log_msg_max - k_hcsr04_log_null_terminator);
       }
     }
-    rx_log_warn_str("HCSR04", message, message_len);
+    rx_log_warn_str("HCSR04", "Delay request warning", message, message_len);
     return;
   }
 

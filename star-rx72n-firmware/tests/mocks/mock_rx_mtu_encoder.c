@@ -133,10 +133,10 @@ void mock_encoder_advance_counter(rx_mtu_channel_t channel, int32_t delta)
 
     /* Handle 16-bit wraparound */
     while (new_val < 0) {
-      new_val += k_counter_max;
+      new_val += (int32_t)k_counter_max;
     }
-    while (new_val >= k_counter_max) {
-      new_val -= k_counter_max;
+    while (new_val >= (int32_t)k_counter_max) {
+      new_val -= (int32_t)k_counter_max;
     }
 
     g_mock_mtu_regs[idx].tcnt               = (uint16_t)new_val;
