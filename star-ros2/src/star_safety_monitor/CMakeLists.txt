@@ -54,10 +54,30 @@ install(DIRECTORY config
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   find_package(ament_cmake_gtest REQUIRED)
-  
+  find_package(lifecycle_msgs REQUIRED)
+
   # Linting
   ament_lint_auto_find_test_dependencies()
-  
+
+  # Create library for shared code
+  add_library(safety_monitor_lib
+    src/safety_monitor.cpp
+  )
+  target_compile_options(safety_monitor_lib PRIVATE -Wall -Wextra -Wpedantic -Werror)
+  target_include_directories(safety_monitor_lib PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+  )
+  ament_target_dependencies(safety_monitor_lib
+    rclcpp
+    rclcpp_lifecycle
+    std_msgs
+    sensor_msgs
+    geometry_msgs
+    nav_msgs
+    diagnostic_msgs
+  )
+
   # Unit tests
   ament_add_gtest(${PROJECT_NAME}_test
     test/test_safety_monitor.cpp
@@ -65,6 +85,9 @@ if(BUILD_TESTING)
   target_include_directories(${PROJECT_NAME}_test PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
+  )
+  target_link_libraries(${PROJECT_NAME}_test
+    safety_monitor_lib
   )
   ament_target_dependencies(${PROJECT_NAME}_test
     rclcpp

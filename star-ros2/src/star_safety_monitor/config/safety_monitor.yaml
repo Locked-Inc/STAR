@@ -5,19 +5,23 @@ safety_monitor:
   ros__parameters:
     # Heartbeat monitoring
     heartbeat_timeout_ms: 500  # Maximum time without heartbeat before triggering alarm (ms)
-    
+
     # Velocity limits
     max_linear_velocity: 1.0   # Maximum allowed linear velocity (m/s)
     max_angular_velocity: 2.0  # Maximum allowed angular velocity (rad/s)
-    
+
     # Battery safety limits
     min_battery_voltage: 10.5  # Minimum safe battery voltage (V)
     max_battery_current: 30.0  # Maximum safe battery current (A)
     max_battery_temp: 60.0     # Maximum safe battery temperature (°C)
-    
+
+    # Motor stall detection
+    stall_detection_threshold: 0.05  # Minimum velocity to avoid stall detection (m/s)
+    stall_samples_required: 5        # Number of consecutive detections before E-Stop
+
     # System monitoring
     publish_rate: 10.0         # Diagnostic message publish rate (Hz)
-    
+
     # Emergency stop configuration
     enable_auto_estop: true    # Automatically trigger E-Stop on critical violations
     estop_recovery_delay: 5.0  # Delay before allowing E-Stop recovery (seconds)
