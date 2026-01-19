@@ -26,6 +26,11 @@ const (
 	httpShutdownTimeout = 5 * time.Second
 )
 
+// Shutdownable defines the interface for services that require graceful shutdown.
+type Shutdownable interface {
+	Shutdown()
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
@@ -109,6 +114,9 @@ func run() error {
 	// Create a context for service lifecycle management
 	ctx := context.Background()
 
+	// Shutdown registry for deterministic service cleanup (LIFO order)
+	var shutdownRegistry []Shutdownable
+
 	// Gateway service
 	gatewaySvc := service.NewGatewayService()
 
@@ -117,9 +125,14 @@ func run() error {
 
 	// Telemetry service (with context, HARQ integration, Dispatcher, and Logger)
 	telemetrySvc := service.NewTelemetryService(ctx, harqHandler, msgDispatcher, logger)
+	shutdownRegistry = append(shutdownRegistry, telemetrySvc)
 
 	// Configuration service (with HARQ integration, Dispatcher, and Logger)
 	configSvc := service.NewConfigurationService(harqHandler, msgDispatcher, logger)
+
+	// Battery management service (with context, HARQ integration, Dispatcher, and Logger)
+	batterySvc := service.NewBatteryService(ctx, harqHandler, msgDispatcher, logger)
+	shutdownRegistry = append(shutdownRegistry, batterySvc)
 
 	// Create gRPC server
 	grpcServer := grpc.NewServer(
@@ -132,6 +145,7 @@ func run() error {
 	starv1.RegisterMotorControlServiceServer(grpcServer, motorSvc)
 	starv1.RegisterTelemetryServiceServer(grpcServer, telemetrySvc)
 	starv1.RegisterConfigurationServiceServer(grpcServer, configSvc)
+	starv1.RegisterBatteryManagementServiceServer(grpcServer, batterySvc)
 
 	// Start gRPC listener
 	grpcLis, err := net.Listen("tcp", ":50051")
@@ -205,9 +219,11 @@ func run() error {
 	grpcServer.GracefulStop()
 	log.Println("gRPC server stopped")
 
-	// Shutdown services
+	// Shutdown services in reverse order (LIFO)
 	log.Println("Shutting down services...")
-	telemetrySvc.Shutdown()
+	for i := len(shutdownRegistry) - 1; i >= 0; i-- {
+		shutdownRegistry[i].Shutdown()
+	}
 	log.Println("Services stopped")
 
 	// SPI transport cleanup (via defer at top of run)

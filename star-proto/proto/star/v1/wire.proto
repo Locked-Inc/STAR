@@ -66,6 +66,8 @@ message WireMessage {
 
     // Battery management (bidirectional)
     BatteryStatus battery_status = 20;
+    // BatteryState contains detailed BMS telemetry for StreamBatteryState.
+    BatteryState battery_state = 21;
 
     // Configuration (RPi5 -> RX72N)
     PidConfig pid_config = 30;

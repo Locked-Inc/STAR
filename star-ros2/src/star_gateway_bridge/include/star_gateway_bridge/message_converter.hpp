@@ -4,16 +4,16 @@
 // STAR Project - Texas A&M University
 // January 2026
 
-#ifndef STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_MESSAGE_CONVERTER_HPP_
-#define STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_MESSAGE_CONVERTER_HPP_
+#ifndef STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
+#define STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
+
+#include <cmath>
+#include <string>
 
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/battery_state.hpp"
 #include "std_msgs/msg/string.hpp"
-
-#include <cmath>
-#include <string>
 
 #include "star/v1/battery_management.pb.h"
 #include "star/v1/motor_control.pb.h"
@@ -57,10 +57,11 @@ public:
    * @param sequence Optional sequence number for command ordering
    * @return true if conversion successful, false if input validation failed
    */
-  static bool twist_to_velocity_command(const geometry_msgs::msg::Twist &twist,
-                                        star::v1::VelocityCommand &command,
-                                        double wheel_base = 0.150,
-                                        uint32_t sequence = 0);
+  static bool twist_to_velocity_command(
+    const geometry_msgs::msg::Twist & twist,
+    star::v1::VelocityCommand & command,
+    double wheel_base = 0.150,
+    uint32_t sequence = 0);
 
   /**
    * @brief Convert ROS2 BatteryState message to Protobuf BatteryState.
@@ -78,8 +79,9 @@ public:
    * @param proto_battery Output BatteryState protobuf
    * @return true if conversion successful, false if input validation failed
    */
-  static bool battery_state_to_proto(const sensor_msgs::msg::BatteryState &ros_battery,
-                                     star::v1::BatteryState &proto_battery);
+  static bool battery_state_to_proto(
+    const sensor_msgs::msg::BatteryState & ros_battery,
+    star::v1::BatteryState & proto_battery);
 
   /**
    * @brief Convert ROS2 String message to Protobuf SystemStatus.
@@ -91,7 +93,9 @@ public:
    * @param system_status Output SystemStatus protobuf
    * @return true if conversion successful, false if parse failed
    */
-  static bool string_to_system_status(const std_msgs::msg::String &status_msg, star::v1::SystemStatus &system_status);
+  static bool string_to_system_status(
+    const std_msgs::msg::String & status_msg,
+    star::v1::SystemStatus & system_status);
 
   // ===========================================================================
   // Protobuf → ROS2 Conversions
@@ -117,9 +121,10 @@ public:
    * @param wheel_base Distance between wheels in meters (default: 0.150m)
    * @return true if conversion successful, false if input validation failed
    */
-  static bool velocity_command_to_twist(const star::v1::VelocityCommand &command,
-                                        geometry_msgs::msg::Twist &twist,
-                                        double wheel_base = 0.150);
+  static bool velocity_command_to_twist(
+    const star::v1::VelocityCommand & command,
+    geometry_msgs::msg::Twist & twist,
+    double wheel_base = 0.150);
 
   /**
    * @brief Convert Protobuf PidConfig to individual gains (for ROS2 service).
@@ -133,7 +138,10 @@ public:
    * @param kd Output derivative gain
    * @return true if conversion successful, false if input validation failed
    */
-  static bool pid_config_to_gains(const star::v1::PidConfig &pid_config, double &kp, double &ki, double &kd);
+  static bool
+  pid_config_to_gains(
+    const star::v1::PidConfig & pid_config, double & kp, double & ki,
+    double & kd);
 
   // ===========================================================================
   // Validation Helpers
@@ -166,7 +174,7 @@ public:
    * @param time ROS2 time
    * @return Microseconds since epoch
    */
-  static int64_t ros_time_to_us(const rclcpp::Time &time);
+  static int64_t ros_time_to_us(const rclcpp::Time & time);
 
 private:
   // Differential drive kinematics constants
@@ -186,4 +194,4 @@ private:
 
 }  // namespace star
 
-#endif  // STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_MESSAGE_CONVERTER_HPP_
+#endif  // STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
