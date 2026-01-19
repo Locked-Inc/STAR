@@ -166,7 +166,7 @@ rx_err_t timer_init(void)
 rx_err_t timer_stop(void)
 {
   if (cmt_ctrl() == NULL) {
-    return k_rx_err_invalid_state;
+    return k_rx_err_hw_unmapped;
   }
 
   if ((cmt_ctrl()->cmstr0 & k_cmt0_cmstr_start_bit) == 0) {
@@ -196,6 +196,11 @@ rx_err_t timer_stop(void)
 rx_err_t timer_get_count(uint16_t* count)
 {
   RX_CHECK_NULL_PTR(count, "TIMER", "Count pointer is NULL");
+
+  if (cmt0() == NULL) {
+    rx_log_error("TIMER", "CMT0 register block is NULL");
+    return k_rx_err_hw_unmapped;
+  }
 
   *count = cmt0()->cmcnt;
 

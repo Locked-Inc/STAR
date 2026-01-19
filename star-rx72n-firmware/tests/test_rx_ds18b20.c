@@ -78,6 +78,8 @@ typedef enum {
 
 /** @brief Mocked DS18B20 device count returned by search */
 static const uint32_t s_mock_ds18b20_device_count = 1;
+/** @brief Temperature comparison tolerance (°C) */
+static const float s_temp_tolerance_c = 0.1F;
 
 /* =============================================================================
  * Mock OneWire Bus Manager
@@ -276,10 +278,10 @@ rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
  * @param[in] temp_msb Temperature MSB
  * @param[in] config Configuration register value
  */
-static void create_valid_scratchpad(uint8_t scratchpad[k_ds18b20_scratchpad_bytes],
-                                    uint8_t temp_lsb,
-                                    uint8_t temp_msb,
-                                    uint8_t config)
+static void internal_create_valid_scratchpad(uint8_t scratchpad[k_ds18b20_scratchpad_bytes],
+                                             uint8_t temp_lsb,
+                                             uint8_t temp_msb,
+                                             uint8_t config)
 {
   scratchpad[k_ds18b20_scratch_temp_lsb]  = temp_lsb;
   scratchpad[k_ds18b20_scratch_temp_msb]  = temp_msb;
@@ -295,18 +297,18 @@ static void create_valid_scratchpad(uint8_t scratchpad[k_ds18b20_scratchpad_byte
 /**
  * @brief Reset mock state to defaults
  */
-static void reset_mock_state(void)
+static void internal_reset_mock_state(void)
 {
-  memset(&s_mock_state, 0, sizeof(s_mock_state));
+  memset(&s_mock_state, 0U, sizeof(s_mock_state));
   s_mock_state.presence_response = true;
   s_mock_state.power_mode        = true; /* External power */
   s_mock_state.initialized       = false;
 
   /* Default scratchpad: +25.0°C at 12-bit resolution */
-  create_valid_scratchpad(s_mock_state.scratchpad,
-                          k_test_temp_25c_lsb,
-                          k_test_temp_25c_msb,
-                          k_test_config_12bit);
+  internal_create_valid_scratchpad(s_mock_state.scratchpad,
+                                   k_test_temp_25c_lsb,
+                                   k_test_temp_25c_msb,
+                                   k_test_config_12bit);
 
   /* Default ROM: DS18B20 family code */
   s_mock_state.rom[k_rom_idx_family]   = k_ds18b20_family_code;
@@ -326,7 +328,7 @@ static void reset_mock_state(void)
 static void internal_init_handle(rx_ds18b20_handle_t* handle)
 {
   TEST_ASSERT_NOT_NULL(handle);
-  memset(handle, 0u, sizeof(*handle));
+  memset(handle, 0U, sizeof(*handle));
 }
 
 /* =============================================================================
@@ -336,7 +338,7 @@ static void internal_init_handle(rx_ds18b20_handle_t* handle)
 
 void setUp(void)
 {
-  reset_mock_state();
+  internal_reset_mock_state();
 }
 
 void tearDown(void)
@@ -467,16 +469,16 @@ void test_ds18b20_read_temperature_25c(void)
   internal_init_handle(&handle);
 
   /* Scratchpad for +25.0°C: 0x0190 = 400 decimal = 25.0°C */
-  create_valid_scratchpad(s_mock_state.scratchpad,
-                          k_test_temp_25c_lsb,
-                          k_test_temp_25c_msb,
-                          k_test_config_12bit);
+  internal_create_valid_scratchpad(s_mock_state.scratchpad,
+                                   k_test_temp_25c_lsb,
+                                   k_test_temp_25c_msb,
+                                   k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(0.1f, 25.0f, temp_c);
+  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, 25.0f, temp_c);
 }
 
 void test_ds18b20_read_temperature_0c(void)
@@ -493,16 +495,16 @@ void test_ds18b20_read_temperature_0c(void)
   internal_init_handle(&handle);
 
   /* 0°C: 0x0000 */
-  create_valid_scratchpad(s_mock_state.scratchpad,
-                          k_test_temp_0c_lsb,
-                          k_test_temp_0c_msb,
-                          k_test_config_12bit);
+  internal_create_valid_scratchpad(s_mock_state.scratchpad,
+                                   k_test_temp_0c_lsb,
+                                   k_test_temp_0c_msb,
+                                   k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, temp_c);
+  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, 0.0f, temp_c);
 }
 
 void test_ds18b20_read_temperature_minus_55c(void)
@@ -519,16 +521,16 @@ void test_ds18b20_read_temperature_minus_55c(void)
   internal_init_handle(&handle);
 
   /* -55°C: 0xFC90 (two's complement) */
-  create_valid_scratchpad(s_mock_state.scratchpad,
-                          k_test_temp_minus_55c_lsb,
-                          k_test_temp_minus_55c_msb,
-                          k_test_config_12bit);
+  internal_create_valid_scratchpad(s_mock_state.scratchpad,
+                                   k_test_temp_minus_55c_lsb,
+                                   k_test_temp_minus_55c_msb,
+                                   k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(0.1f, -55.0f, temp_c);
+  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, -55.0f, temp_c);
 }
 
 void test_ds18b20_read_temperature_125c(void)
@@ -545,16 +547,16 @@ void test_ds18b20_read_temperature_125c(void)
   internal_init_handle(&handle);
 
   /* +125°C: 0x07D0 = 2000 decimal = 125.0°C */
-  create_valid_scratchpad(s_mock_state.scratchpad,
-                          k_test_temp_125c_lsb,
-                          k_test_temp_125c_msb,
-                          k_test_config_12bit);
+  internal_create_valid_scratchpad(s_mock_state.scratchpad,
+                                   k_test_temp_125c_lsb,
+                                   k_test_temp_125c_msb,
+                                   k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(0.1f, 125.0f, temp_c);
+  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, 125.0f, temp_c);
 }
 
 void test_ds18b20_read_temperature_not_initialized(void)

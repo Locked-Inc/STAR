@@ -415,10 +415,10 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
   }
 
   /* Parse status flags */
-  status->is_charging         = !(status_flags & k_status_discharging);
-  status->is_fully_charged    = (status_flags & k_status_fully_charged) != 0;
-  status->is_fully_discharged = (status_flags & k_status_fully_discharged) != 0;
-  status->is_low_capacity     = (status_flags & k_status_remaining_capacity_alarm) != 0;
+  status->is_charging         = !(status_flags & k_bq4050_status_discharging);
+  status->is_fully_charged    = (status_flags & k_bq4050_status_fully_charged) != 0;
+  status->is_fully_discharged = (status_flags & k_bq4050_status_fully_discharged) != 0;
+  status->is_low_capacity = (status_flags & k_bq4050_status_remaining_capacity_alarm) != 0;
 
   return k_rx_ok;
 }

@@ -42,20 +42,16 @@ typedef enum {
 
 /** @brief ICU register array sizes */
 typedef enum {
-  k_icu_ir_count      = 256, /**< Number of Interrupt Request Registers */
-  k_icu_dtcer_count   = 256, /**< Number of DTC Enable Registers */
-  k_icu_ier_count     = 32,  /**< Number of Interrupt Enable Registers */
-  k_icu_ipr_count     = 256, /**< Number of Interrupt Priority Registers */
-  k_icu_dmrsr_count   = 8,   /**< Number of DMAC Module Start Registers */
-  k_icu_irqcr_count   = 16,  /**< Number of IRQ Control Registers */
-  k_icu_irqflte_count = 2,   /**< Number of IRQ Filter Enable Registers */
-  k_icu_irqfltc_count = 2,   /**< Number of IRQ Filter Clock Select Registers */
+  k_icu_ir_count         = 256, /**< Number of Interrupt Request Registers */
+  k_icu_dtcer_count      = 256, /**< Number of DTC Enable Registers */
+  k_icu_ier_count        = 32,  /**< Number of Interrupt Enable Registers */
+  k_icu_ier_bits_per_reg = 8,   /**< Bits per IER register */
+  k_icu_ipr_count        = 256, /**< Number of Interrupt Priority Registers */
+  k_icu_dmrsr_count      = 8,   /**< Number of DMAC Module Start Registers */
+  k_icu_irqcr_count      = 16,  /**< Number of IRQ Control Registers */
+  k_icu_irqflte_count    = 2,   /**< Number of IRQ Filter Enable Registers */
+  k_icu_irqfltc_count    = 2,   /**< Number of IRQ Filter Clock Select Registers */
 } icu_array_sizes_t;
-
-/** @brief ICU IER register calculation constants */
-typedef enum {
-  k_icu_ier_bits_per_reg = 8, /**< Bits per IER register */
-} icu_ier_constants_t;
 
 /**
  * @brief ICU Register Map

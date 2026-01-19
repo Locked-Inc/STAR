@@ -35,7 +35,7 @@
  *   bus_manager_init(&bus_mgr, &error_iface, &iface);
  *
  *   // 4. Use through interface
- *   rx_err_t err = iface.reserve_pin(iface.ctx, 0xA, 5, "SPI_COPI");
+ *   rx_err_t err = iface.reserve_pin(iface.ctx, k_rx_port_a, k_rx_pin_5, "SPI_COPI");
  *   if (err != k_rx_ok) {
  *       // Pin already reserved or invalid
  *   }
