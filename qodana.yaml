@@ -8,3 +8,9 @@ project-properties:
 
 include:
   - name: CheckDependencyLicenses
+
+exclude:
+  - name: All
+    paths:
+      - star-rx72n-firmware/lib/threadx
+      - star-rx72n-firmware/lib/rx_nanopb/nanopb
