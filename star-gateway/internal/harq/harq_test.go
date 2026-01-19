@@ -1214,26 +1214,19 @@ func TestSend_PriorityEmergencyPreservedOnRetransmit(t *testing.T) {
 	go func() {
 		ticker := time.NewTicker(testPollInterval)
 		defer ticker.Stop()
+		defer close(retransmitDetected)
 
 		timeout := time.After(testWaitTimeout)
-		channelClosed := false
 
 		for {
 			select {
 			case <-ticker.C:
 				sentData := mock.GetSentData()
 				if len(sentData) >= 2 {
-					if !channelClosed {
-						close(retransmitDetected)
-						channelClosed = true
-					}
 					mock.QueueResponse(createAckFrame(0))
 					return
 				}
 			case <-timeout:
-				if !channelClosed {
-					close(retransmitDetected)
-				}
 				t.Errorf("timeout waiting for retransmission after %v", testWaitTimeout)
 				return
 			}
