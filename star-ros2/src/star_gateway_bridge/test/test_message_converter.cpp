@@ -3,12 +3,12 @@
 
 #include "star_gateway_bridge/message_converter.hpp"
 
-#include <cmath>
-#include <geometry_msgs/msg/twist.hpp>
-#include <gtest/gtest.h>
-#include <limits>
-#include <sensor_msgs/msg/battery_state.hpp>
+#include <cmath>  // NOLINT(build/include_order)
+#include <limits>  // NOLINT(build/include_order)
 
+#include <geometry_msgs/msg/twist.hpp>  // NOLINT(build/include_order)
+#include <gtest/gtest.h>  // NOLINT(build/include_order)
+#include <sensor_msgs/msg/battery_state.hpp>
 #include "star/v1/battery_management.pb.h"
 #include "star/v1/motor_control.pb.h"
 
@@ -477,7 +477,8 @@ TEST_F(MessageConverterTest, BatteryStateToProtoNotCharging)
   ros_battery.voltage = 12.0;
   ros_battery.current = 0.0;
   ros_battery.percentage = 0.50;
-  ros_battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING;
+  ros_battery.power_supply_status =
+    sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING;
 
   star::v1::BatteryState proto_battery;
   ASSERT_TRUE(converter_.battery_state_to_proto(ros_battery, proto_battery));
