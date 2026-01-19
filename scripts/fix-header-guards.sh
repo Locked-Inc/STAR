@@ -1,7 +1,7 @@
 #!/bin/bash
 # ROS2 Header Guard Fixer
-# Converts header guards to full-path style:
-#   STAR_PACKAGE_INCLUDE_STAR_PACKAGE_HEADER_HPP_
+# Converts header guards to ROS2 standard format:
+#   PACKAGE__FILENAME_HPP_
 # Usage: ./scripts/fix-header-guards.sh [--check]
 
 set -e

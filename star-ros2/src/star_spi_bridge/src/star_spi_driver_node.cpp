@@ -180,12 +180,12 @@ void StarSpiDriverNode::timer_callback()
   }
 
   // Decode received frame
-  uint16_t rx_seq_;
+  uint16_t rx_seq;
   FrameType rx_type;
-  uint8_t rx_flags_;
+  uint8_t rx_flags;
   std::vector<uint8_t> rx_payload;
 
-  if (!SpiDriver::decode_frame(rx_frame, rx_seq_, rx_type, rx_flags_, rx_payload)) {
+  if (!SpiDriver::decode_frame(rx_frame, rx_seq, rx_type, rx_flags, rx_payload)) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 1000, "SPI Frame Decode Failed (CRC mismatch or garbage)");
     return;

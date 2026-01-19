@@ -261,8 +261,10 @@ get_expected_guard() {
     local rel_path="${file#"$ROS2_DIR"/}"
     local package_name="${rel_path%%/*}"
 
-    local package=$(echo "$package_name" | tr '[:lower:]-' '[:upper:]_')
-    local filename=$(basename "$file" .hpp | tr '[:lower:]-' '[:upper:]_')
+    local package
+    package="$(echo "$package_name" | tr '[:lower:]-' '[:upper:]_')"
+    local filename
+    filename="$(basename "$file" .hpp | tr '[:lower:]-' '[:upper:]_')"
     echo "${package}__${filename}_HPP_"
 }
 
