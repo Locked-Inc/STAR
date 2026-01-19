@@ -341,8 +341,8 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
  */
 rx_usb_state_t rx_usb_hw_get_bus_state(void)
 {
-  uint16_t intsts0 = usb0()->intsts0;
-  uint16_t dvsq    = (intsts0 & k_usb_intsts0_dvsq_mask);
+  const uint16_t intsts0 = usb0()->intsts0;
+  const uint16_t dvsq    = (intsts0 & k_usb_intsts0_dvsq_mask);
 
   switch (dvsq) {
     case k_usb_intsts0_dvsq_powered:

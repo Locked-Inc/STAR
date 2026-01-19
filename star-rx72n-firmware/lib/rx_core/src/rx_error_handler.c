@@ -95,7 +95,7 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
   }
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -132,12 +132,12 @@ static uint32_t impl_get_error_count(void* ctx)
   }
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return 0;
   }
 
-  uint32_t count = handler->total_error_count;
+  const uint32_t count = handler->total_error_count;
 
   /* Release mutex */
   tx_mutex_put(&handler->mutex);
@@ -157,7 +157,7 @@ static uint32_t impl_get_component_error_count(void* ctx, const char* component)
   }
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return 0;
   }
@@ -186,7 +186,7 @@ static rx_err_t impl_clear_errors(void* ctx)
   }
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -223,7 +223,7 @@ static bool impl_is_retry_limit_reached(void* ctx, const char* component)
   }
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return true; /* Fail-safe */
   }
@@ -252,7 +252,7 @@ static rx_err_t impl_reset_retry_counter(void* ctx, const char* component)
   }
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -280,7 +280,7 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
   }
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return 0;
   }

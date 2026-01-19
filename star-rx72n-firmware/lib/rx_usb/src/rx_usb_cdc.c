@@ -593,9 +593,9 @@ extern uint32_t rx_usb_tx_pop(uint8_t* data, uint32_t max_len);
  */
 static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uint16_t requested_len)
 {
-  uint16_t len = (desc_len < requested_len) ? desc_len : requested_len;
+  const uint16_t len = (desc_len < requested_len) ? desc_len : requested_len;
 
-  uint32_t written = rx_usb_hw_fifo_write(k_usb_pipe_0, desc, len);
+  const uint32_t written = rx_usb_hw_fifo_write(k_usb_pipe_0, desc, len);
   if (written != len) {
     rx_log_error(s_tag, "Descriptor write incomplete");
   }
@@ -606,8 +606,8 @@ static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uin
  */
 static void internal_handle_get_descriptor(uint16_t usb_value, uint16_t usb_length)
 {
-  uint8_t desc_type  = (usb_value >> k_bit_shift_byte_1) & k_byte_mask;
-  uint8_t desc_index = usb_value & k_byte_mask;
+  const uint8_t desc_type  = (usb_value >> k_bit_shift_byte_1) & k_byte_mask;
+  const uint8_t desc_index = usb_value & k_byte_mask;
 
   switch (desc_type) {
     case k_usb_desc_type_device:
@@ -659,7 +659,7 @@ static void internal_handle_get_descriptor(uint16_t usb_value, uint16_t usb_leng
  */
 static void internal_handle_set_address(uint16_t usb_value)
 {
-  uint8_t address = usb_value & k_usb_address_mask;
+  const uint8_t address = usb_value & k_usb_address_mask;
 
   /* Send zero-length status packet first */
   usb0()->dcpctr |= k_usb_dcpctr_ccpl;
@@ -743,7 +743,7 @@ static void internal_handle_set_line_coding(void)
   uint8_t data[k_line_coding_size];
 
   /* Read line coding data from FIFO */
-  uint32_t len = rx_usb_hw_fifo_read(k_usb_pipe_0, data, k_line_coding_size);
+  const uint32_t len = rx_usb_hw_fifo_read(k_usb_pipe_0, data, k_line_coding_size);
 
   if (len == k_line_coding_size) {
     s_line_coding.baud_rate =
@@ -783,7 +783,7 @@ static void internal_handle_get_line_coding(void)
   data[k_line_coding_parity_index]    = s_line_coding.parity;
   data[k_line_coding_data_bits_index] = s_line_coding.data_bits;
 
-  uint32_t written = rx_usb_hw_fifo_write(k_usb_pipe_0, data, k_line_coding_size);
+  const uint32_t written = rx_usb_hw_fifo_write(k_usb_pipe_0, data, k_line_coding_size);
   if (written != k_line_coding_size) {
     rx_log_error(s_tag, "Line coding write incomplete");
   }
@@ -852,8 +852,9 @@ internal_handle_standard_request(uint8_t usb_request, uint16_t usb_value, uint16
 
     case k_usb_req_get_configuration: {
       /* Return current configuration (1 = configured, 0 = not) */
-      uint8_t cfg = (rx_usb_get_state() == k_usb_state_configured) ? k_usb_config_value_1
-                                                                   : k_usb_config_unconfigured;
+      const uint8_t cfg = (rx_usb_get_state() == k_usb_state_configured)
+                            ? k_usb_config_value_1
+                            : k_usb_config_unconfigured;
       (void)rx_usb_hw_fifo_write(k_usb_pipe_0, &cfg, sizeof(cfg));
     } break;
 
@@ -897,18 +898,18 @@ static void internal_handle_class_request(uint8_t usb_request, uint16_t usb_valu
 void rx_usb_cdc_handle_setup(void)
 {
   /* Read SETUP packet from registers */
-  uint16_t usb_request_type_and_request = usb0()->usbreq;
-  uint16_t usb_value                    = usb0()->usbval;
-  uint16_t usb_index                    = usb0()->usbindx;
-  uint16_t usb_length                   = usb0()->usbleng;
+  const uint16_t usb_request_type_and_request = usb0()->usbreq;
+  const uint16_t usb_value                    = usb0()->usbval;
+  const uint16_t usb_index                    = usb0()->usbindx;
+  const uint16_t usb_length                   = usb0()->usbleng;
 
-  uint8_t usb_request_type = usb_request_type_and_request & k_byte_mask;
-  uint8_t usb_request      = (usb_request_type_and_request >> k_bit_shift_byte_1) & k_byte_mask;
+  const uint8_t usb_request_type = usb_request_type_and_request & k_byte_mask;
+  const uint8_t usb_request = (usb_request_type_and_request >> k_bit_shift_byte_1) & k_byte_mask;
 
   (void)usb_index; /* Currently unused */
 
   /* Determine request type */
-  uint8_t type = usb_request_type & k_usb_req_type_mask;
+  const uint8_t type = usb_request_type & k_usb_req_type_mask;
 
   if (type == k_usb_req_type_standard) {
     internal_handle_standard_request(usb_request, usb_value, usb_length);
@@ -927,8 +928,8 @@ void rx_usb_cdc_handle_setup(void)
  */
 void rx_usb_cdc_handle_bulk_out(void)
 {
-  uint8_t  data[k_usb_bulk_packet_size];
-  uint32_t len = rx_usb_hw_fifo_read(k_usb_pipe_2, data, k_usb_bulk_packet_size);
+  uint8_t        data[k_usb_bulk_packet_size];
+  const uint32_t len = rx_usb_hw_fifo_read(k_usb_pipe_2, data, k_usb_bulk_packet_size);
 
   if (len > k_min_transfer_size) {
     rx_usb_rx_push(data, len);
@@ -942,8 +943,8 @@ void rx_usb_cdc_handle_bulk_out(void)
  */
 void rx_usb_cdc_handle_bulk_in(void)
 {
-  uint8_t  data[k_usb_bulk_packet_size];
-  uint32_t len = rx_usb_tx_pop(data, k_usb_bulk_packet_size);
+  uint8_t        data[k_usb_bulk_packet_size];
+  const uint32_t len = rx_usb_tx_pop(data, k_usb_bulk_packet_size);
 
   if (len > k_min_transfer_size) {
     rx_usb_hw_fifo_write(k_usb_pipe_1, data, len);

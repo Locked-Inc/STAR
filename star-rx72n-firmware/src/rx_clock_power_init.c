@@ -198,15 +198,15 @@ static rx_err_t internal_module_stop_init(void)
     system_regs()->prcr = k_rx_prcr_lock;
 
     /* Post-condition: Verify bits are cleared */
-    uint32_t mstpcra_actual = system_regs()->mstpcra & mstpcra_clear_mask;
-    uint32_t mstpcrb_actual = system_regs()->mstpcrb & mstpcrb_clear_mask;
-    uint32_t mstpcrc_actual = system_regs()->mstpcrc & mstpcrc_clear_mask;
+    const uint32_t mstpcra_actual = system_regs()->mstpcra & mstpcra_clear_mask;
+    const uint32_t mstpcrb_actual = system_regs()->mstpcrb & mstpcrb_clear_mask;
+    const uint32_t mstpcrc_actual = system_regs()->mstpcrc & mstpcrc_clear_mask;
 
     if ((mstpcra_actual == 0) && (mstpcrb_actual == 0) && (mstpcrc_actual == 0)) {
       /* Postcondition: Re-read hardware registers to verify stability */
-      uint32_t verify_a = system_regs()->mstpcra & mstpcra_clear_mask;
-      uint32_t verify_b = system_regs()->mstpcrb & mstpcrb_clear_mask;
-      uint32_t verify_c = system_regs()->mstpcrc & mstpcrc_clear_mask;
+      const uint32_t verify_a = system_regs()->mstpcra & mstpcra_clear_mask;
+      const uint32_t verify_b = system_regs()->mstpcrb & mstpcrb_clear_mask;
+      const uint32_t verify_c = system_regs()->mstpcrc & mstpcrc_clear_mask;
 
       RX_ASSERT((verify_a == 0) && (verify_b == 0) && (verify_c == 0),
                 "Postcondition: Module stop bits remain cleared");
@@ -243,19 +243,19 @@ static rx_err_t internal_verify_system_state(void)
   }
 
   /* Verify PLL is enabled by checking PLLCR2 register */
-  uint8_t pllcr2 = sys->pllcr2;
+  const uint8_t pllcr2 = sys->pllcr2;
   if (pllcr2 != k_pll_enabled) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify system clock dividers are configured correctly */
-  uint32_t sckcr = sys->sckcr;
+  const uint32_t sckcr = sys->sckcr;
   if (sckcr != k_system_clock_dividers) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify PLL is selected as the system clock source */
-  uint16_t sckcr3 = sys->sckcr3;
+  const uint16_t sckcr3 = sys->sckcr3;
   if (sckcr3 != k_system_clock_source_pll) {
     return k_rx_err_hw_init_failed;
   }

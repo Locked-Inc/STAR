@@ -677,7 +677,8 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
     tx_mutex_put(&s_pending_mutex);
 
     /* Signal worker thread - function returns immediately */
-    UINT status = tx_event_flags_set(&s_measurement_request, k_event_measurement_request, TX_OR);
+    const UINT status =
+      tx_event_flags_set(&s_measurement_request, k_event_measurement_request, TX_OR);
 
     if (status != TX_SUCCESS) {
       /* Rollback on failure */
@@ -689,18 +690,17 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
     }
 
     return k_rx_ok; /* Callback will be invoked from worker thread */
-  } else {
-    /* Fallback sync mode: perform measurement inline (backward compatible) */
-    rx_hcsr04_result_t result;
-    rx_hcsr04_measure(handle, &result);
-
-    handle->measurement_active = false;
-
-    /* Invoke callback before return (synchronous) */
-    callback(handle, &result, user_data);
-
-    return k_rx_ok;
   }
+  /* Fallback sync mode: perform measurement inline (backward compatible) */
+  rx_hcsr04_result_t result;
+  rx_hcsr04_measure(handle, &result);
+
+  handle->measurement_active = false;
+
+  /* Invoke callback before return (synchronous) */
+  callback(handle, &result, user_data);
+
+  return k_rx_ok;
 }
 
 bool rx_hcsr04_is_busy(const rx_hcsr04_t* handle)
@@ -841,9 +841,9 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius)
 
 float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius)
 {
-  float speed_mps   = 0.0f;
-  float speed_cm_us = 0.0f;
-  float distance_cm = 0.0f;
+  float speed_mps   = 0.0F;
+  float speed_cm_us = 0.0F;
+  float distance_cm = 0.0F;
   /*
    * Temperature-compensated distance calculation:
    * 1. Calculate speed of sound at given temperature

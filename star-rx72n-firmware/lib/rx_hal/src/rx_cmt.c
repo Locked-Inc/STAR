@@ -233,9 +233,9 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   }
 
   /* Calculate divider and compare value */
-  uint8_t  divider;
-  uint16_t cmcor;
-  rx_err_t err = internal_calculate_cmt_params(config->frequency_hz, &divider, &cmcor);
+  uint8_t        divider;
+  uint16_t       cmcor;
+  const rx_err_t err = internal_calculate_cmt_params(config->frequency_hz, &divider, &cmcor);
   if (err != k_rx_ok) {
     return err;
   }
@@ -264,14 +264,14 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   cmt->cmcnt = 0;
 
   /* Configure interrupt */
-  uint8_t vector = k_vect_cmt0_cmi0 + channel;
+  const uint8_t vector = k_vect_cmt0_cmi0 + channel;
 
   /* Set interrupt priority */
   icu()->ipr[vector] = config->priority;
 
   /* Enable interrupt in ICU */
-  uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
-  uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
+  uint8_t       ier_index = vector / k_icu_ier_bits_per_reg;
+  const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
   icu()->ier[ier_index] |= (1 << ier_bit);
 
   /* Clear interrupt flag */
@@ -371,9 +371,9 @@ rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel)
   rx_cmt_stop(channel);
 
   /* Disable interrupt */
-  uint8_t vector    = k_vect_cmt0_cmi0 + channel;
-  uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
-  uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
+  const uint8_t vector    = k_vect_cmt0_cmi0 + channel;
+  uint8_t       ier_index = vector / k_icu_ier_bits_per_reg;
+  const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
   icu()->ier[ier_index] &= ~(1 << ier_bit);
 
   /* Clear callback */
