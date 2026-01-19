@@ -260,8 +260,8 @@ static rx_err_t internal_write_pfs(uint8_t port, uint8_t pin, uint8_t value)
 rx_err_t rx_mpc_set_gpio(rx_port_pin_t pin)
 {
   /* Extract port and pin number from rx_port_pin_t */
-  uint8_t port    = rx_port_from_pin(pin);
-  uint8_t pin_num = rx_pin_from_pin(pin);
+  const uint8_t port    = rx_port_from_pin(pin);
+  const uint8_t pin_num = rx_pin_from_pin(pin);
 
   /* Validate the decoded port and pin are in valid range */
   if (port > k_mpc_port_j || pin_num > k_mpc_max_pin) {
@@ -288,8 +288,8 @@ rx_err_t rx_mpc_set_peripheral(const rx_mpc_peripheral_config_t* config)
   }
 
   /* Extract port and pin number from rx_port_pin_t */
-  uint8_t port    = rx_port_from_pin(config->pin);
-  uint8_t pin_num = rx_pin_from_pin(config->pin);
+  const uint8_t port    = rx_port_from_pin(config->pin);
+  const uint8_t pin_num = rx_pin_from_pin(config->pin);
 
   /* Validate the decoded port and pin are in valid range */
   if (port > k_mpc_port_j || pin_num > k_mpc_max_pin) {
@@ -330,8 +330,8 @@ rx_err_t rx_mpc_set_mtu_encoder(rx_port_pin_t pin)
 rx_err_t rx_mpc_set_adc(rx_port_pin_t pin)
 {
   /* Extract port and pin number from type-safe enum */
-  uint8_t port    = rx_port_from_pin(pin);
-  uint8_t pin_num = rx_pin_from_pin(pin);
+  const uint8_t port    = rx_port_from_pin(pin);
+  const uint8_t pin_num = rx_pin_from_pin(pin);
 
   /* Validate the decoded port and pin are in valid range */
   if (port > k_mpc_port_j || pin_num > k_mpc_max_pin) {

@@ -112,8 +112,8 @@ uint32_t rx_crc32_update_sw(uint32_t crc, const uint8_t* data, uint32_t len)
 
   /* Process each byte using the lookup table */
   for (uint32_t i = 0; i < len; i++) {
-    uint8_t table_idx = (uint8_t)(crc ^ data[i]);
-    crc               = s_crc32_table[table_idx] ^ (crc >> k_crc_byte_shift);
+    const uint8_t table_idx = (uint8_t)(crc ^ data[i]);
+    crc                     = s_crc32_table[table_idx] ^ (crc >> k_crc_byte_shift);
   }
 
   /* Finalize */
@@ -154,8 +154,8 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 
   /* Process each byte using the lookup table */
   for (uint32_t i = 0; i < len; i++) {
-    uint8_t table_idx = (uint8_t)(crc ^ data[i]);
-    crc               = s_crc32_table[table_idx] ^ (crc >> k_crc_byte_shift);
+    const uint8_t table_idx = (uint8_t)(crc ^ data[i]);
+    crc                     = s_crc32_table[table_idx] ^ (crc >> k_crc_byte_shift);
   }
 
   /* Final XOR with all bits set (standard IEEE 802.3 finalization) */

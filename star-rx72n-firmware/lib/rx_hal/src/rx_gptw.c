@@ -391,8 +391,8 @@ rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
   }
 
   /* Convert percentage to count value */
-  uint32_t period     = s_gptw_period[channel];
-  uint32_t duty_count = (uint32_t)((duty_percent * period) / (float)k_gptw_duty_divisor);
+  const uint32_t period     = s_gptw_period[channel];
+  const uint32_t duty_count = (uint32_t)((duty_percent * period) / (float)k_gptw_duty_divisor);
 
   return rx_gptw_set_duty_raw(channel, output, duty_count);
 }
@@ -443,8 +443,8 @@ rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
     return k_rx_err_invalid_arg;
   }
 
-  uint32_t period     = s_gptw_period[channel];
-  uint32_t duty_count = 0;
+  const uint32_t period     = s_gptw_period[channel];
+  uint32_t       duty_count = 0;
 
   switch (output) {
     case k_gptw_output_a:

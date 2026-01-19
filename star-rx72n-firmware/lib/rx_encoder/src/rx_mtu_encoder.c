@@ -248,8 +248,8 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   }
 
   /* Read current counter value */
-  uint16_t current_count = mtu->tcnt;
-  uint16_t last_count    = s_encoder_state[channel].last_raw_count;
+  const uint16_t current_count = mtu->tcnt;
+  uint16_t       last_count    = s_encoder_state[channel].last_raw_count;
 
   /* Calculate delta (handling 16-bit wraparound) */
   int32_t delta;
@@ -277,10 +277,10 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   s_encoder_state[channel].last_raw_count = current_count;
 
   /* Calculate revolutions and position */
-  uint16_t counts_per_rev              = s_counts_per_rev[channel];
+  const uint16_t counts_per_rev        = s_counts_per_rev[channel];
   s_encoder_state[channel].revolutions = s_encoder_state[channel].total_count / counts_per_rev;
 
-  int32_t remainder_counts = s_encoder_state[channel].total_count % counts_per_rev;
+  const int32_t remainder_counts = s_encoder_state[channel].total_count % counts_per_rev;
   s_encoder_state[channel].position_deg =
     (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
 
@@ -323,9 +323,9 @@ rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, 
   s_last_count[channel] = state.total_count;
 
   /* Convert to revolutions per second */
-  uint16_t counts_per_rev = s_counts_per_rev[channel];
-  float    delta_revs     = (float)delta_count / counts_per_rev;
-  *velocity_rps           = delta_revs / delta_time_s;
+  const uint16_t counts_per_rev = s_counts_per_rev[channel];
+  const float    delta_revs     = (float)delta_count / counts_per_rev;
+  *velocity_rps                 = delta_revs / delta_time_s;
 
   /* Post-condition: Validate velocity is realistic */
   if (fabsf(*velocity_rps) > k_max_realistic_velocity_rps) {
@@ -380,10 +380,10 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
   s_last_count[channel]                   = count;
 
   /* Recalculate position */
-  uint16_t counts_per_rev              = s_counts_per_rev[channel];
+  const uint16_t counts_per_rev        = s_counts_per_rev[channel];
   s_encoder_state[channel].revolutions = count / counts_per_rev;
 
-  int32_t remainder_counts = count % counts_per_rev;
+  const int32_t remainder_counts = count % counts_per_rev;
   s_encoder_state[channel].position_deg =
     (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
 

@@ -264,7 +264,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize USB CDC");
     /* Cleanup: deinit hardware (Rule 7: check return even in error path) */
-    rx_err_t deinit_err = rx_usb_hw_deinit();
+    const rx_err_t deinit_err = rx_usb_hw_deinit();
     if (deinit_err != k_rx_ok) {
       rx_log_warn(s_tag, "Hardware deinit failed during cleanup");
     }
@@ -276,7 +276,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to attach to USB bus");
     /* Cleanup: deinit hardware (Rule 7: check return even in error path) */
-    rx_err_t deinit_err = rx_usb_hw_deinit();
+    const rx_err_t deinit_err = rx_usb_hw_deinit();
     if (deinit_err != k_rx_ok) {
       rx_log_warn(s_tag, "Hardware deinit failed during cleanup");
     }
@@ -300,13 +300,13 @@ rx_err_t rx_usb_deinit(void)
   rx_log_info(s_tag, "Deinitializing USB CDC driver");
 
   /* Detach from USB bus (Rule 7: check return value) */
-  rx_err_t detach_err = rx_usb_hw_detach();
+  const rx_err_t detach_err = rx_usb_hw_detach();
   if (detach_err != k_rx_ok) {
     rx_log_warn(s_tag, "USB detach failed during deinit");
   }
 
   /* Deinitialize hardware (Rule 7: check return value) */
-  rx_err_t deinit_err = rx_usb_hw_deinit();
+  const rx_err_t deinit_err = rx_usb_hw_deinit();
   if (deinit_err != k_rx_ok) {
     rx_log_warn(s_tag, "Hardware deinit failed");
   }
@@ -509,7 +509,7 @@ void rx_usb_set_line_coding(const rx_usb_line_coding_t* coding)
  */
 uint32_t rx_usb_rx_push(const uint8_t* data, uint32_t len)
 {
-  uint32_t written = internal_ring_buffer_write(&s_usb.rx_buffer, data, len);
+  const uint32_t written = internal_ring_buffer_write(&s_usb.rx_buffer, data, len);
 
   s_usb.stats.bytes_rx += written;
 

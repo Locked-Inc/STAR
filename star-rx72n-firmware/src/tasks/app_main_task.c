@@ -64,16 +64,16 @@ rx_err_t app_main_task_create(void)
     return k_rx_err_invalid_state;
   }
 
-  UINT status = tx_thread_create(&s_app_main_thread,
-                                 "AppMain",
-                                 internal_app_main_task_entry,
-                                 0,
-                                 s_app_main_stack,
-                                 k_app_main_stack_size,
-                                 k_app_main_priority,
-                                 k_app_main_priority,
-                                 TX_NO_TIME_SLICE,
-                                 TX_AUTO_START);
+  const UINT status = tx_thread_create(&s_app_main_thread,
+                                       "AppMain",
+                                       internal_app_main_task_entry,
+                                       0,
+                                       s_app_main_stack,
+                                       k_app_main_stack_size,
+                                       k_app_main_priority,
+                                       k_app_main_priority,
+                                       TX_NO_TIME_SLICE,
+                                       TX_AUTO_START);
 
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;

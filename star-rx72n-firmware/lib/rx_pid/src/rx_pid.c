@@ -129,10 +129,10 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
   }
 
   /* Calculate error */
-  float error = setpoint - measured;
+  const float error = setpoint - measured;
 
   /* Proportional term */
-  float p_term = handle->kp * error;
+  const float p_term = handle->kp * error;
 
   /* Integral term with anti-windup */
   handle->integral += error * dt;
@@ -140,8 +140,8 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
   float i_term     = handle->ki * handle->integral;
 
   /* Derivative term */
-  float derivative = (error - handle->prev_error) / dt;
-  float d_term     = handle->kd * derivative;
+  const float derivative = (error - handle->prev_error) / dt;
+  float       d_term     = handle->kd * derivative;
 
   /* Compute total output */
   float raw_output = p_term + i_term + d_term;

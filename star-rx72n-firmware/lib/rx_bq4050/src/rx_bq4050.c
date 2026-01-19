@@ -88,7 +88,7 @@ typedef enum : uint8_t {
 static int16_t internal_convert_temperature(uint16_t temp_0_1k)
 {
   /* Convert from 0.1K to 0.1°C by subtracting 2731 (273.1K) */
-  int32_t temp_0_1c = (int32_t)temp_0_1k - k_temp_kelvin_offset;
+  const int32_t temp_0_1c = (int32_t)temp_0_1k - k_temp_kelvin_offset;
 
   /* Convert to whole degrees Celsius */
   return (int16_t)(temp_0_1c / k_temp_decimal_scale);
@@ -162,7 +162,7 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
   };
 
   for (uint8_t i = 0; i < num_cells; i++) {
-    rx_err_t err =
+    const rx_err_t err =
       rx_bus_smbus_read_word_data(manager, bus_name, s_cell_reg_map[i], &cell_voltages[i]);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to read cell voltage");
@@ -181,8 +181,8 @@ rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t*
   RX_CHECK_NULL_PTR(current_ma, s_tag, "current_ma pointer is NULL");
 
   /* Read as unsigned, interpret as signed (SBS current is signed 16-bit) */
-  uint16_t raw_current;
-  rx_err_t err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_current, &raw_current);
+  uint16_t       raw_current;
+  const rx_err_t err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_current, &raw_current);
 
   if (err == k_rx_ok) {
     *current_ma = (int16_t)raw_current;
@@ -200,8 +200,8 @@ rx_err_t rx_bq4050_read_average_current(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(avg_current_ma, s_tag, "avg_current_ma pointer is NULL");
 
   /* Read as unsigned, interpret as signed */
-  uint16_t raw_current;
-  rx_err_t err =
+  uint16_t       raw_current;
+  const rx_err_t err =
     rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_average_current, &raw_current);
 
   if (err == k_rx_ok) {
@@ -218,8 +218,8 @@ rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uin
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(soc_percent, s_tag, "soc_percent pointer is NULL");
 
-  uint16_t soc_word;
-  rx_err_t err =
+  uint16_t       soc_word;
+  const rx_err_t err =
     rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_relative_state_of_charge, &soc_word);
 
   if (err == k_rx_ok) {
@@ -237,8 +237,8 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(soc_percent, s_tag, "soc_percent pointer is NULL");
 
-  uint16_t soc_word;
-  rx_err_t err =
+  uint16_t       soc_word;
+  const rx_err_t err =
     rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_absolute_state_of_charge, &soc_word);
 
   if (err == k_rx_ok) {
@@ -256,8 +256,9 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(temperature_c, s_tag, "temperature_c pointer is NULL");
 
-  uint16_t temp_0_1k;
-  rx_err_t err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_temperature, &temp_0_1k);
+  uint16_t       temp_0_1k;
+  const rx_err_t err =
+    rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_temperature, &temp_0_1k);
 
   if (err == k_rx_ok) {
     *temperature_c = internal_convert_temperature(temp_0_1k);
@@ -308,10 +309,8 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
     return k_rx_err_invalid_arg;
   }
 
-  rx_err_t err;
-
   /* Read pack voltage */
-  err = rx_bq4050_read_voltage(manager, bus_name, &status->voltage_mv);
+  rx_err_t err = rx_bq4050_read_voltage(manager, bus_name, &status->voltage_mv);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read voltage");
     return err;

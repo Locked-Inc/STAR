@@ -120,7 +120,7 @@ static rx_err_t internal_uart_init_callback(rx_bus_config_t* bus_config, void* u
     .tx_gpio  = bus_config->proto.uart.tx_pin,
     .rx_gpio  = bus_config->proto.uart.rx_pin,
   };
-  rx_err_t err = uart_init_channel(&uart_config);
+  const rx_err_t err = uart_init_channel(&uart_config);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "UART HAL initialization failed");
@@ -156,7 +156,7 @@ static rx_err_t internal_uart_write_callback(rx_bus_config_t* bus_config, void* 
   }
 
   /* Write UART data */
-  rx_err_t err = uart_write_channel(bus_config->proto.uart.channel, ctx->data, ctx->length);
+  const rx_err_t err = uart_write_channel(bus_config->proto.uart.channel, ctx->data, ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "UART write failed");
@@ -194,7 +194,7 @@ static rx_err_t internal_uart_read_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Read UART data */
-  rx_err_t err =
+  const rx_err_t err =
     uart_read_channel(bus_config->proto.uart.channel, ctx->data, ctx->length, &ctx->bytes_read);
 
   if (err != k_rx_ok) {
@@ -233,7 +233,7 @@ static rx_err_t internal_uart_putc_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Write single character */
-  rx_err_t err = uart_putc_channel(bus_config->proto.uart.channel, ctx->c);
+  const rx_err_t err = uart_putc_channel(bus_config->proto.uart.channel, ctx->c);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "UART putc failed");
@@ -271,7 +271,7 @@ static rx_err_t internal_uart_puts_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Write string */
-  rx_err_t err = uart_puts_channel(bus_config->proto.uart.channel, ctx->str);
+  const rx_err_t err = uart_puts_channel(bus_config->proto.uart.channel, ctx->str);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "UART puts failed");
@@ -309,7 +309,7 @@ static rx_err_t internal_uart_getc_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Read single character */
-  rx_err_t err = uart_getc_channel(bus_config->proto.uart.channel, &ctx->c);
+  const rx_err_t err = uart_getc_channel(bus_config->proto.uart.channel, &ctx->c);
 
   /* Post-condition: Verify character is valid ASCII when data available */
   if (err == k_rx_ok && (uint8_t)ctx->c > 127) {
@@ -342,7 +342,7 @@ static rx_err_t internal_uart_rx_avail_callback(rx_bus_config_t* bus_config, voi
   }
 
   /* Check RX data availability */
-  rx_err_t err = uart_rx_available(bus_config->proto.uart.channel, &ctx->available);
+  const rx_err_t err = uart_rx_available(bus_config->proto.uart.channel, &ctx->available);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "UART rx_available failed");
@@ -372,7 +372,8 @@ rx_err_t rx_bus_uart_init(rx_bus_manager_t* manager, const char* bus_name)
 
   uart_init_ctx_t ctx = {.result = k_rx_err_hw_init_failed};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_uart_init_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_uart_init_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -392,7 +393,8 @@ rx_err_t rx_bus_uart_write(rx_bus_manager_t* manager,
 
   uart_write_ctx_t ctx = {.data = data, .length = length, .result = k_rx_err_uart_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_uart_write_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_uart_write_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -417,7 +419,8 @@ rx_err_t rx_bus_uart_read(rx_bus_manager_t* manager,
                          .bytes_read = 0,
                          .result     = k_rx_err_uart_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_uart_read_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_uart_read_callback, &ctx);
 
   *bytes_read = ctx.bytes_read;
 
@@ -435,7 +438,8 @@ rx_err_t rx_bus_uart_putc(rx_bus_manager_t* manager, const char* bus_name, char 
 
   uart_putc_ctx_t ctx = {.c = c, .result = k_rx_err_uart_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_uart_putc_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_uart_putc_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -452,7 +456,8 @@ rx_err_t rx_bus_uart_puts(rx_bus_manager_t* manager, const char* bus_name, const
 
   uart_puts_ctx_t ctx = {.str = str, .result = k_rx_err_uart_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_uart_puts_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_uart_puts_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -469,7 +474,8 @@ rx_err_t rx_bus_uart_getc(rx_bus_manager_t* manager, const char* bus_name, char*
 
   uart_getc_ctx_t ctx = {.c = '\0', .result = k_rx_err_uart_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_uart_getc_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_uart_getc_callback, &ctx);
 
   *c = ctx.c;
 
@@ -488,7 +494,8 @@ rx_err_t rx_bus_uart_rx_available(rx_bus_manager_t* manager, const char* bus_nam
 
   uart_rx_avail_ctx_t ctx = {.available = false, .result = k_rx_err_uart_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_uart_rx_avail_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_uart_rx_avail_callback, &ctx);
 
   *available = ctx.available;
 

@@ -123,8 +123,8 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
   }
 
   /* Calculate total frame size */
-  uint32_t frame_size = rx_frame_encoded_size(frame->header.length);
-  uint32_t offset     = 0;
+  const uint32_t frame_size = rx_frame_encoded_size(frame->header.length);
+  uint32_t       offset     = 0;
 
   /* Write SYNC word (big-endian) */
   rx_frame_write_be16(&output[offset], k_frame_sync_word);
@@ -153,7 +153,7 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
   }
 
   /* Calculate CRC-32 over SYNC + Header + Payload (IEEE 802.3 polynomial) */
-  uint32_t crc = rx_crc32_ieee(output, offset);
+  const uint32_t crc = rx_crc32_ieee(output, offset);
 
   /* Write CRC-32 (little-endian to match IEEE 802.3 LSB-first order) */
   internal_write_le32(&output[offset], crc);
@@ -207,7 +207,7 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
   uint32_t offset = 0;
 
   /* Verify SYNC word */
-  uint16_t sync_word = rx_frame_read_be16(&data[offset]);
+  const uint16_t sync_word = rx_frame_read_be16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
@@ -227,7 +227,7 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
   }
 
   /* Verify we have enough data for the declared payload + CRC */
-  uint32_t expected_size = rx_frame_encoded_size(frame->header.length);
+  const uint32_t expected_size = rx_frame_encoded_size(frame->header.length);
   if (data_len < expected_size) {
     return k_rx_err_invalid_size;
   }

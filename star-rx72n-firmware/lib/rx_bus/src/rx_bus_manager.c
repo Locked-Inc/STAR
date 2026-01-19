@@ -50,7 +50,7 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
   }
 
   /* Execute the command */
-  rx_err_t err = command->execute(bus_config, command->data);
+  const rx_err_t err = command->execute(bus_config, command->data);
 
   /* Store result in command for caller inspection */
   command->result = err;
@@ -90,7 +90,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
   memset(manager, 0, sizeof(rx_bus_manager_t));
 
   /* Create ThreadX mutex for thread safety */
-  UINT status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
+  const UINT status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "ThreadX mutex creation failed");
     return k_rx_err_threadx;
@@ -114,8 +114,8 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
 
   /* Remove all buses before destroying mutex */
   while (manager->buses != NULL) {
-    rx_bus_config_t* bus = manager->buses;
-    manager->buses       = bus->next;
+    const rx_bus_config_t* bus = manager->buses;
+    manager->buses             = bus->next;
     manager->bus_count--;
 
     /* Note: bus_config memory is owned by caller, we don't free it */
@@ -123,7 +123,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
   }
 
   /* Delete ThreadX mutex */
-  UINT status = tx_mutex_delete(&manager->mutex);
+  const UINT status = tx_mutex_delete(&manager->mutex);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "ThreadX mutex deletion failed");
     return k_rx_err_threadx;
@@ -155,18 +155,18 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
   }
 
   /* Convert timeout from ms to ThreadX ticks */
-  ULONG timeout_ticks =
+  const ULONG timeout_ticks =
     (k_bus_manager_mutex_timeout_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
-  UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
+  const UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "Mutex timeout in add_bus");
     return k_rx_err_timeout;
   }
 
   /* Check for duplicate name */
-  rx_bus_config_t* current = manager->buses;
+  const rx_bus_config_t* current = manager->buses;
   while (current != NULL) {
     if (strncmp(current->name, bus_config->name, k_max_bus_name_len) == 0) {
       (void)tx_mutex_put(&manager->mutex);
@@ -202,11 +202,11 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
   RX_CHECK_NULL_PTR(name, s_tag, "Name pointer is NULL");
 
   /* Convert timeout from ms to ThreadX ticks */
-  ULONG timeout_ticks =
+  const ULONG timeout_ticks =
     (k_bus_manager_mutex_timeout_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
-  UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
+  const UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "Mutex timeout in remove_bus");
     return k_rx_err_timeout;
@@ -217,8 +217,8 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
   while (*indirect != NULL) {
     if (strncmp((*indirect)->name, name, k_max_bus_name_len) == 0) {
       /* Found - remove from list */
-      rx_bus_config_t* to_remove = *indirect;
-      *indirect                  = to_remove->next;
+      const rx_bus_config_t* to_remove = *indirect;
+      *indirect                        = to_remove->next;
       manager->bus_count--;
 
       (void)tx_mutex_put(&manager->mutex);
@@ -249,11 +249,11 @@ rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_conf
   RX_CHECK_NULL_PTR(bus_config, s_tag, "Bus config output pointer is NULL");
 
   /* Convert timeout from ms to ThreadX ticks */
-  ULONG timeout_ticks =
+  const ULONG timeout_ticks =
     (k_bus_manager_mutex_timeout_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
-  UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
+  const UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "Mutex timeout in find_bus");
     return k_rx_err_timeout;
@@ -286,11 +286,11 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(callback, s_tag, "Callback pointer is NULL");
 
   /* Convert timeout from ms to ThreadX ticks */
-  ULONG timeout_ticks =
+  const ULONG timeout_ticks =
     (k_bus_manager_mutex_timeout_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
-  UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
+  const UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "Mutex timeout in with_bus");
     return k_rx_err_timeout;
@@ -301,7 +301,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
   while (current != NULL) {
     if (strncmp(current->name, name, k_max_bus_name_len) == 0) {
       /* Found - execute callback while holding mutex */
-      rx_err_t err = callback(current, user_ctx);
+      const rx_err_t err = callback(current, user_ctx);
 
       /* Unlock mutex */
       (void)tx_mutex_put(&manager->mutex);
@@ -337,7 +337,8 @@ rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
   }
 
   /* Execute command using existing with_bus infrastructure */
-  rx_err_t err = rx_bus_manager_with_bus(manager, name, internal_execute_command_callback, command);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, name, internal_execute_command_callback, command);
 
   /* Return the error from with_bus (mutex/lookup errors) */
   /* The command execution result is stored in command->result */

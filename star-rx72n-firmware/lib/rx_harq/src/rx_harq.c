@@ -265,7 +265,7 @@ rx_err_t rx_harq_reset(rx_harq_handle_t* harq)
   harq->state       = k_harq_state_idle;
   harq->retry_count = 0;
 
-  rx_err_t err = rx_chase_combiner_reset(&harq->combiner);
+  const rx_err_t err = rx_chase_combiner_reset(&harq->combiner);
   if (err != k_rx_ok) {
     return err;
   }
@@ -368,8 +368,8 @@ static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
    */
   for (uint32_t i = 0; i < soft_len && (i / k_rx_bits_per_byte) < out_bytes; i++) {
     if (soft_bits[i] >= k_soft_bit_zero_thresh) {
-      uint32_t byte_idx = i / k_rx_bits_per_byte;
-      uint32_t bit_pos  = k_msb_position - (i % k_rx_bits_per_byte);
+      const uint32_t byte_idx = i / k_rx_bits_per_byte;
+      const uint32_t bit_pos  = k_msb_position - (i % k_rx_bits_per_byte);
       output[byte_idx] |= (uint8_t)(1U << bit_pos);
     }
   }
@@ -471,7 +471,7 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
   }
 
   /* FEC path: decode combined soft bits */
-  rx_fec_decode_soft_params_t decode_params = {
+  const rx_fec_decode_soft_params_t decode_params = {
     .soft_bits           = harq->decode_buffer,
     .soft_len            = combined_len,
     .expected_output_len = expected_output_len,

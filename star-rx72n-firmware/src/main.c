@@ -48,10 +48,10 @@ static bool internal_check_porf(void)
   /* Precondition: Register pointer must be valid (compile-time constant address) */
   RX_ASSERT(regs != NULL, "RSTSR01 register pointer is NULL");
 
-  uint8_t rstsr0_val = regs->rstsr0;
+  const uint8_t rstsr0_val = regs->rstsr0;
 
   /* PORF=1 indicates power-on reset occurred, which is expected on normal startup */
-  bool porf_set = (rstsr0_val & k_rstsr0_porf) != 0;
+  const bool porf_set = (rstsr0_val & k_rstsr0_porf) != 0;
 
   /* PORF may not be set on warm boots - this is valid, so log but don't halt */
   if (!porf_set) {
@@ -81,10 +81,10 @@ static bool internal_check_rstsr2_flag_clear(uint8_t flag_mask)
   /* Precondition: Register pointer must be valid (compile-time constant address) */
   RX_ASSERT(reg != NULL, "RSTSR2 register pointer is NULL");
 
-  uint8_t rstsr2_val = *reg;
+  const uint8_t rstsr2_val = *reg;
 
   /* Compute result reflecting actual register state */
-  bool result = (rstsr2_val & flag_mask) == 0;
+  const bool result = (rstsr2_val & flag_mask) == 0;
 
   return result;
 }
@@ -144,13 +144,13 @@ static bool internal_check_lvd0rf(void)
   /* Precondition: Register pointer must be valid */
   RX_ASSERT(regs != NULL, "RSTSR01 register pointer is NULL");
 
-  uint8_t rstsr0_val  = regs->rstsr0;
-  uint8_t rstsr0_val2 = regs->rstsr0;
+  const uint8_t rstsr0_val  = regs->rstsr0;
+  const uint8_t rstsr0_val2 = regs->rstsr0;
 
   RX_ASSERT(rstsr0_val == rstsr0_val2, "Inconsistent RSTSR01 read");
 
   /* LVD0RF=0 means no voltage-monitoring reset (normal condition) */
-  bool lvd0rf_clear = (rstsr0_val & k_rstsr0_lvd0rf) == 0;
+  const bool lvd0rf_clear = (rstsr0_val & k_rstsr0_lvd0rf) == 0;
 
   return lvd0rf_clear;
 }
@@ -172,10 +172,10 @@ static bool internal_check_cwsf(void)
   /* Precondition: Register pointer must be valid */
   RX_ASSERT(regs != NULL, "RSTSR01 register pointer is NULL");
 
-  uint8_t rstsr1_val = regs->rstsr1;
+  const uint8_t rstsr1_val = regs->rstsr1;
 
   /* Extract CWSF bit value for validation */
-  uint8_t cwsf_raw = (rstsr1_val & k_rstsr1_cwsf);
+  const uint8_t cwsf_raw = (rstsr1_val & k_rstsr1_cwsf);
 
   /* Postcondition: Verify CWSF bit value is either 0 or k_rstsr1_cwsf */
   RX_ASSERT((cwsf_raw == 0) || (cwsf_raw == k_rstsr1_cwsf),
@@ -196,10 +196,10 @@ static bool internal_check_cwsf(void)
 static rx_err_t internal_check_startup_flags(void)
 {
   (void)internal_check_porf();
-  bool iwdtrf_ok = internal_check_iwdtrf();
-  bool wdtrf_ok  = internal_check_wdtrf();
-  bool swrf_ok   = internal_check_swrf();
-  bool lvd0rf_ok = internal_check_lvd0rf();
+  const bool iwdtrf_ok = internal_check_iwdtrf();
+  const bool wdtrf_ok  = internal_check_wdtrf();
+  const bool swrf_ok   = internal_check_swrf();
+  const bool lvd0rf_ok = internal_check_lvd0rf();
 
   (void)internal_check_cwsf();
 

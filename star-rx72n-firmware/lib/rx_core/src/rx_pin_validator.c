@@ -117,15 +117,15 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
   }
 
   /* Validate port/pin */
-  rx_err_t err = impl_validate_pin(ctx, port, pin);
+  const rx_err_t err = impl_validate_pin(ctx, port, pin);
   if (err != k_rx_ok) {
     return err;
   }
 
-  uint8_t port_index = internal_port_to_index(port);
+  const uint8_t port_index = internal_port_to_index(port);
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -166,15 +166,15 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
   }
 
   /* Validate port/pin */
-  rx_err_t err = impl_validate_pin(ctx, port, pin);
+  const rx_err_t err = impl_validate_pin(ctx, port, pin);
   if (err != k_rx_ok) {
     return err;
   }
 
-  uint8_t port_index = internal_port_to_index(port);
+  const uint8_t port_index = internal_port_to_index(port);
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -218,10 +218,10 @@ static bool impl_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
     return false;
   }
 
-  uint8_t port_index = internal_port_to_index(port);
+  const uint8_t port_index = internal_port_to_index(port);
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return false;
   }
@@ -254,15 +254,15 @@ static rx_err_t impl_get_pin_function(void*    ctx,
   }
 
   /* Validate port/pin */
-  rx_err_t err = impl_validate_pin(ctx, port, pin);
+  const rx_err_t err = impl_validate_pin(ctx, port, pin);
   if (err != k_rx_ok) {
     return err;
   }
 
-  uint8_t port_index = internal_port_to_index(port);
+  const uint8_t port_index = internal_port_to_index(port);
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -297,7 +297,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
   }
 
   /* Acquire mutex */
-  UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
+  const UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
