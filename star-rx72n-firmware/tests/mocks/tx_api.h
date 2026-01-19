@@ -43,77 +43,83 @@ typedef void VOID;
 /* =============================================================================
  * ThreadX Constants
  *
- * NOTE: We intentionally use SCREAMING_SNAKECASE macros here to mirror the
- * ThreadX public API. This explicitly deviates from the project style guide
- * so the mock header matches real ThreadX usage and signatures.
+ * NOTE: ThreadX uses SCREAMING_SNAKECASE names. We preserve the names but use
+ * enums to comply with the no-magic-number policy in the firmware codebase.
  * =============================================================================
  */
 
 /** @brief ThreadX return codes (must match real ThreadX API values) */
-typedef UINT tx_status;
-#define TX_SUCCESS             ((UINT)0x00)
-#define TX_DELETED             ((UINT)0x01)
-#define TX_POOL_ERROR          ((UINT)0x02)
-#define TX_PTR_ERROR           ((UINT)0x03)
-#define TX_WAIT_ERROR          ((UINT)0x04)
-#define TX_SIZE_ERROR          ((UINT)0x05)
-#define TX_GROUP_ERROR         ((UINT)0x06)
-#define TX_NO_EVENTS           ((UINT)0x07)
-#define TX_OPTION_ERROR        ((UINT)0x08)
-#define TX_QUEUE_ERROR         ((UINT)0x09)
-#define TX_QUEUE_EMPTY         ((UINT)0x0A)
-#define TX_QUEUE_FULL          ((UINT)0x0B)
-#define TX_SEMAPHORE_ERROR     ((UINT)0x0C)
-#define TX_NO_INSTANCE         ((UINT)0x0D)
-#define TX_THREAD_ERROR        ((UINT)0x0E)
-#define TX_PRIORITY_ERROR      ((UINT)0x0F)
-#define TX_NO_MEMORY           ((UINT)0x10)
-#define TX_START_ERROR         ((UINT)0x10)
-#define TX_DELETE_ERROR        ((UINT)0x11)
-#define TX_RESUME_ERROR        ((UINT)0x12)
-#define TX_CALLER_ERROR        ((UINT)0x13)
-#define TX_SUSPEND_ERROR       ((UINT)0x14)
-#define TX_TIMER_ERROR         ((UINT)0x15)
-#define TX_TICK_ERROR          ((UINT)0x16)
-#define TX_ACTIVATE_ERROR      ((UINT)0x17)
-#define TX_THRESH_ERROR        ((UINT)0x18)
-#define TX_SUSPEND_LIFTED      ((UINT)0x19)
-#define TX_WAIT_ABORTED        ((UINT)0x1A)
-#define TX_WAIT_ABORT_ERROR    ((UINT)0x1B)
-#define TX_MUTEX_ERROR         ((UINT)0x1C)
-#define TX_NOT_AVAILABLE       ((UINT)0x1D)
-#define TX_NOT_OWNED           ((UINT)0x1E)
-#define TX_INHERIT_ERROR       ((UINT)0x1F)
-#define TX_NOT_DONE            ((UINT)0x20)
-#define TX_CEILING_EXCEEDED    ((UINT)0x21)
-#define TX_INVALID_CEILING     ((UINT)0x22)
-#define TX_FEATURE_NOT_ENABLED ((UINT)0xFF)
+typedef enum {
+  TX_SUCCESS             = 0x00U,
+  TX_DELETED             = 0x01U,
+  TX_POOL_ERROR          = 0x02U,
+  TX_PTR_ERROR           = 0x03U,
+  TX_WAIT_ERROR          = 0x04U,
+  TX_SIZE_ERROR          = 0x05U,
+  TX_GROUP_ERROR         = 0x06U,
+  TX_NO_EVENTS           = 0x07U,
+  TX_OPTION_ERROR        = 0x08U,
+  TX_QUEUE_ERROR         = 0x09U,
+  TX_QUEUE_EMPTY         = 0x0AU,
+  TX_QUEUE_FULL          = 0x0BU,
+  TX_SEMAPHORE_ERROR     = 0x0CU,
+  TX_NO_INSTANCE         = 0x0DU,
+  TX_THREAD_ERROR        = 0x0EU,
+  TX_PRIORITY_ERROR      = 0x0FU,
+  TX_NO_MEMORY           = 0x10U,
+  TX_START_ERROR         = 0x10U,
+  TX_DELETE_ERROR        = 0x11U,
+  TX_RESUME_ERROR        = 0x12U,
+  TX_CALLER_ERROR        = 0x13U,
+  TX_SUSPEND_ERROR       = 0x14U,
+  TX_TIMER_ERROR         = 0x15U,
+  TX_TICK_ERROR          = 0x16U,
+  TX_ACTIVATE_ERROR      = 0x17U,
+  TX_THRESH_ERROR        = 0x18U,
+  TX_SUSPEND_LIFTED      = 0x19U,
+  TX_WAIT_ABORTED        = 0x1AU,
+  TX_WAIT_ABORT_ERROR    = 0x1BU,
+  TX_MUTEX_ERROR         = 0x1CU,
+  TX_NOT_AVAILABLE       = 0x1DU,
+  TX_NOT_OWNED           = 0x1EU,
+  TX_INHERIT_ERROR       = 0x1FU,
+  TX_NOT_DONE            = 0x20U,
+  TX_CEILING_EXCEEDED    = 0x21U,
+  TX_INVALID_CEILING     = 0x22U,
+  TX_FEATURE_NOT_ENABLED = 0xFFU,
+} tx_status;
 
 /** @brief ThreadX wait options */
 typedef ULONG tx_wait_option;
-#define TX_NO_WAIT      ((ULONG)0)
-#define TX_WAIT_FOREVER ((ULONG)0xFFFFFFFFUL)
+static const tx_wait_option TX_NO_WAIT      = 0U;
+static const tx_wait_option TX_WAIT_FOREVER = 0xFFFFFFFFUL;
 
 /** @brief ThreadX inheritance options */
-typedef UINT tx_inherit_option;
-#define TX_NO_INHERIT ((UINT)0)
-#define TX_INHERIT    ((UINT)1)
+typedef enum {
+  TX_NO_INHERIT = 0U,
+  TX_INHERIT    = 1U,
+} tx_inherit_option;
 
 /** @brief ThreadX thread constants */
-#define TX_NO_TIME_SLICE ((ULONG)0)
-#define TX_AUTO_START    ((UINT)1)
-#define TX_DONT_START    ((UINT)0)
-#define TX_AUTO_ACTIVATE ((UINT)1)
-#define TX_NO_ACTIVATE   ((UINT)0)
+typedef enum {
+  TX_NO_TIME_SLICE = 0U,
+  TX_AUTO_START    = 1U,
+  TX_DONT_START    = 0U,
+  TX_AUTO_ACTIVATE = 1U,
+  TX_NO_ACTIVATE   = 0U,
+} tx_thread_constants_t;
 
 /** @brief ThreadX event flags constants */
-#define TX_OR        ((UINT)0)
-#define TX_OR_CLEAR  ((UINT)1)
-#define TX_AND       ((UINT)2)
-#define TX_AND_CLEAR ((UINT)3)
+typedef enum {
+  TX_OR        = 0U,
+  TX_OR_CLEAR  = 1U,
+  TX_AND       = 2U,
+  TX_AND_CLEAR = 3U,
+} tx_event_flags_option_t;
 
 /** @brief ThreadX magic ID constants for object validation */
 typedef enum {
+  k_tx_invalid_id        = 0U,         /**< Invalid/uninitialized object ID */
   k_tx_mutex_magic       = 0x4D555458, /**< "MUTX" ASCII magic ID */
   k_tx_thread_magic      = 0x54485244, /**< "THRD" ASCII magic ID */
   k_tx_event_flags_magic = 0x4556544E, /**< "EVTN" ASCII magic ID */
@@ -202,7 +208,7 @@ static inline tx_status tx_mutex_delete(TX_MUTEX* mutex_ptr)
   if (mutex_ptr->tx_mutex_id != k_tx_mutex_magic) {
     return TX_DELETED;
   }
-  mutex_ptr->tx_mutex_id = 0;
+  mutex_ptr->tx_mutex_id = k_tx_invalid_id;
   mutex_ptr->locked      = false;
   if (mutex_ptr->tx_mutex_id == k_tx_mutex_magic || mutex_ptr->locked) {
     return TX_PTR_ERROR;
@@ -325,7 +331,7 @@ static inline tx_status tx_thread_delete(TX_THREAD* thread_ptr)
     return TX_DELETED;
   }
 
-  thread_ptr->tx_thread_id = 0;
+  thread_ptr->tx_thread_id = k_tx_invalid_id;
   if (thread_ptr->tx_thread_id == k_tx_thread_magic) {
     return TX_PTR_ERROR;
   }
@@ -385,7 +391,7 @@ static inline tx_status tx_thread_resume(TX_THREAD* thread_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline tx_status tx_thread_sleep(tx_wait_option timer_ticks)
+static inline tx_status tx_thread_sleep(ULONG timer_ticks)
 {
   if (timer_ticks == TX_WAIT_FOREVER) {
     return TX_WAIT_ERROR;
@@ -448,7 +454,7 @@ static inline tx_status tx_event_flags_delete(TX_EVENT_FLAGS_GROUP* group_ptr)
     return TX_DELETED;
   }
 
-  group_ptr->tx_event_flags_id = 0;
+  group_ptr->tx_event_flags_id = k_tx_invalid_id;
   group_ptr->tx_event_flags    = 0;
 
   if (group_ptr->tx_event_flags_id == k_tx_event_flags_magic) {

@@ -3,7 +3,7 @@
 # ThreadX-based motor control for Renesas RX72N
 # =============================================================================
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 
 # Project definition
 project(star-rx72n-firmware
@@ -54,7 +54,7 @@ add_compile_options(
     -Wextra
     -Wpedantic
     -Werror                # Treat warnings as errors
-    -Wno-error=type-limits
+    -Wno-error=type-limits # Rule 10: ThreadX POSIX compat (lib/threadx/utility/rtos_compatibility_layers/posix/px_sig_*.c) triggers unsigned < 0 checks; vendor code, pending upstream fix
     -Wno-unused-parameter  # Required for fixed callback signatures in HAL/ThreadX APIs
     -Wno-missing-braces    # nanopb generates these
     -Wno-comment           # ThreadX has nested comments in assembly

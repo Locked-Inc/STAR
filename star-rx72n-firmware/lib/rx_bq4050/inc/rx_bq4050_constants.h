@@ -58,16 +58,42 @@ typedef enum {
  * @brief Battery status flags (SBS register 0x16)
  */
 typedef enum {
-  k_status_over_charged_alarm        = (1 << 15), /**< Over charged alarm */
-  k_status_terminate_charge_alarm    = (1 << 14), /**< Terminate charge alarm */
-  k_status_over_temp_alarm           = (1 << 12), /**< Over temperature alarm */
-  k_status_terminate_discharge_alarm = (1 << 11), /**< Terminate discharge alarm */
-  k_status_remaining_capacity_alarm  = (1 << 9),  /**< Remaining capacity alarm */
-  k_status_remaining_time_alarm      = (1 << 8),  /**< Remaining time alarm */
-  k_status_initialized               = (1 << 7),  /**< Battery initialized */
-  k_status_discharging               = (1 << 6),  /**< Battery discharging */
-  k_status_fully_charged             = (1 << 5),  /**< Fully charged */
-  k_status_fully_discharged          = (1 << 4),  /**< Fully discharged */
+  k_bq4050_status_bit_pos_over_charged_alarm        = 15, /**< Over charged alarm bit */
+  k_bq4050_status_bit_pos_terminate_charge_alarm    = 14, /**< Terminate charge alarm bit */
+  k_bq4050_status_bit_pos_over_temp_alarm           = 12, /**< Over temperature alarm bit */
+  k_bq4050_status_bit_pos_terminate_discharge_alarm = 11, /**< Terminate discharge alarm bit */
+  k_bq4050_status_bit_pos_remaining_capacity_alarm  = 9,  /**< Remaining capacity alarm bit */
+  k_bq4050_status_bit_pos_remaining_time_alarm      = 8,  /**< Remaining time alarm bit */
+  k_bq4050_status_bit_pos_initialized               = 7,  /**< Battery initialized bit */
+  k_bq4050_status_bit_pos_discharging               = 6,  /**< Battery discharging bit */
+  k_bq4050_status_bit_pos_fully_charged             = 5,  /**< Fully charged bit */
+  k_bq4050_status_bit_pos_fully_discharged          = 4,  /**< Fully discharged bit */
+} bq4050_status_bit_positions_t;
+
+/**
+ * @brief Battery status flags (SBS register 0x16)
+ */
+typedef enum {
+  k_bq4050_status_over_charged_alarm =
+    (1U << k_bq4050_status_bit_pos_over_charged_alarm), /**< Over charged alarm */
+  k_bq4050_status_terminate_charge_alarm =
+    (1U << k_bq4050_status_bit_pos_terminate_charge_alarm), /**< Terminate charge alarm */
+  k_bq4050_status_over_temp_alarm =
+    (1U << k_bq4050_status_bit_pos_over_temp_alarm), /**< Over temperature alarm */
+  k_bq4050_status_terminate_discharge_alarm =
+    (1U << k_bq4050_status_bit_pos_terminate_discharge_alarm), /**< Terminate discharge alarm */
+  k_bq4050_status_remaining_capacity_alarm =
+    (1U << k_bq4050_status_bit_pos_remaining_capacity_alarm), /**< Remaining capacity alarm */
+  k_bq4050_status_remaining_time_alarm =
+    (1U << k_bq4050_status_bit_pos_remaining_time_alarm),               /**< Remaining time alarm */
+  k_bq4050_status_initialized =
+    (1U << k_bq4050_status_bit_pos_initialized), /**< Battery initialized */
+  k_bq4050_status_discharging =
+    (1U << k_bq4050_status_bit_pos_discharging), /**< Battery discharging */
+  k_bq4050_status_fully_charged =
+    (1U << k_bq4050_status_bit_pos_fully_charged), /**< Fully charged */
+  k_bq4050_status_fully_discharged =
+    (1U << k_bq4050_status_bit_pos_fully_discharged), /**< Fully discharged */
 } bq4050_status_flags_t;
 
 /* =============================================================================

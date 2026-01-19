@@ -142,3 +142,5 @@ log/
 
 # Conductor (AI orchestrator state and history)
 conductor/
+# Other tools
+core
