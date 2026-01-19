@@ -115,10 +115,8 @@ typedef enum : uint8_t {
 } sci_mstpb_bits_t;
 
 /** @brief Debug UART pins (SCI9 on RX72N) */
-typedef enum : uint8_t {
-  k_uart_debug_tx_gpio = k_rx_pb_7, /**< PB7 = TXD9 (from rx_port_constants.h) */
-  k_uart_debug_rx_gpio = k_rx_pb_6, /**< PB6 = RXD9 (from rx_port_constants.h) */
-} uart_debug_pins_t;
+static const rx_port_pin_t k_uart_debug_tx_gpio = k_rx_pb_7; /**< PB7 = TXD9 (from rx_port_constants.h) */
+static const rx_port_pin_t k_uart_debug_rx_gpio = k_rx_pb_6; /**< PB6 = RXD9 (from rx_port_constants.h) */
 
 /** @brief GPIO register bit manipulation constant */
 static const uint8_t k_uart_gpio_bit_set = 1;
@@ -286,7 +284,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
   }
 
   /* Validate channel */
-  if ((config->channel < k_uart_min_channel) || (config->channel >= k_uart_max_channels)) {
+  if (config->channel >= k_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -347,7 +345,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
 rx_err_t uart_deinit_channel(uint8_t channel)
 {
   /* Validate channel */
-  if ((channel < k_uart_min_channel) || (channel >= k_uart_max_channels)) {
+  if (channel >= k_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
