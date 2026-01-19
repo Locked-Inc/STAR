@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	"net"
@@ -41,14 +42,40 @@ func main() {
 
 func run() error {
 	// ========================================
-	// Layer 1: SPI Transport
+	// Layer 1: Transport (SPI or Socket for simulation)
 	// ========================================
-	log.Printf("Initializing SPI transport...")
-	spiTransport := transport.NewSPITransport(transport.DefaultConfig())
-	if err := spiTransport.Open(); err != nil {
-		return err
+	var deviceTransport transport.Device
+	simulationMode := os.Getenv("STAR_SIMULATION_MODE") == "true"
+
+	if simulationMode {
+		log.Println("⚠️  RUNNING IN SIMULATION MODE (Virtual RX72N)")
+		log.Printf("    Connecting to socket: %s", transport.DefaultSocketPath)
+		socketTransport := transport.NewSocketTransport(transport.DefaultSocketPath)
+		if err := socketTransport.Open(); err != nil {
+			return fmt.Errorf("failed to open socket transport: %w", err)
+		}
+		defer socketTransport.Close()
+		deviceTransport = socketTransport
+	} else {
+		log.Println("🔌 Initializing SPI Transport")
+		spiTransport := transport.NewSPITransport(transport.DefaultConfig())
+		if err := spiTransport.Open(); err != nil {
+			return fmt.Errorf("failed to open SPI transport: %w", err)
+		}
+		defer spiTransport.Close()
+		deviceTransport = spiTransport
 	}
-	defer spiTransport.Close()
+
+	// Create a legacy transport adapter for HARQ (which still uses old interface)
+	// Note: We'll need to update HARQ to use Device interface in the future
+	var legacyTransport transport.Transport
+	if spi, ok := deviceTransport.(*transport.SPITransport); ok {
+		legacyTransport = spi
+	} else if sock, ok := deviceTransport.(*transport.SocketTransport); ok {
+		legacyTransport = sock
+	} else {
+		return fmt.Errorf("unknown transport type")
+	}
 
 	// ========================================
 	// Layer 2: Frame Encoder/Decoder
@@ -70,7 +97,7 @@ func run() error {
 	log.Printf("Initializing HARQ handler...")
 	harqHandler := harq.NewChaseCombining(
 		harq.DefaultConfig(),
-		spiTransport,
+		legacyTransport,
 		frameEncoder,
 		frameDecoder,
 		fecEncoder,
@@ -226,8 +253,12 @@ func run() error {
 	}
 	log.Println("Services stopped")
 
-	// SPI transport cleanup (via defer at top of run)
-	log.Println("Closing SPI transport...")
+	// Transport cleanup (via defer at top of run)
+	if simulationMode {
+		log.Println("Closing socket transport...")
+	} else {
+		log.Println("Closing SPI transport...")
+	}
 
 	log.Println("All servers exited gracefully")
 	return nil

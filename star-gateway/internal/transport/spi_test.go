@@ -5,6 +5,7 @@
 package transport
 
 import (
+	"context"
 	"testing"
 	"time"
 )
@@ -155,7 +156,7 @@ func TestSPITransport_ReceiveNotOpen(t *testing.T) {
 func TestSPITransport_TransferNotOpen(t *testing.T) {
 	transport := NewSPITransport(DefaultConfig())
 
-	_, err := transport.Transfer([]byte{0x01})
+	_, err := transport.Transfer(context.Background(), []byte{0x01})
 	if err != ErrDeviceNotOpen {
 		t.Errorf("Expected ErrDeviceNotOpen, got %v", err)
 	}
@@ -307,7 +308,7 @@ func TestSPITransport_Transfer(t *testing.T) {
 
 	// Test full-duplex transfer
 	txData := []byte{0x55, 0xAA, 0x01, 0x02}
-	rxData, err := transport.Transfer(txData)
+	rxData, err := transport.Transfer(context.Background(), txData)
 	if err != nil {
 		t.Fatalf("Transfer failed: %v", err)
 	}
@@ -340,7 +341,7 @@ func TestSPITransport_LargeTransfer(t *testing.T) {
 		txData[i] = byte(i % 256)
 	}
 
-	rxData, err := transport.Transfer(txData)
+	rxData, err := transport.Transfer(context.Background(), txData)
 	if err != nil {
 		t.Fatalf("Large transfer failed: %v", err)
 	}
@@ -379,7 +380,7 @@ func TestSPITransport_MultipleOperations(t *testing.T) {
 		}
 
 		// Transfer
-		_, err = transport.Transfer(testData)
+		_, err = transport.Transfer(context.Background(), testData)
 		if err != nil {
 			t.Fatalf("Transfer %d failed: %v", i, err)
 		}
@@ -401,7 +402,7 @@ func TestSPITransport_EmptyTransfer(t *testing.T) {
 
 	// Test with empty data
 	txData := []byte{}
-	rxData, err := transport.Transfer(txData)
+	rxData, err := transport.Transfer(context.Background(), txData)
 	if err != nil {
 		t.Fatalf("Empty transfer failed: %v", err)
 	}
@@ -434,7 +435,7 @@ func TestSPITransport_CustomConfig(t *testing.T) {
 
 	// Verify we can still perform transfers with custom config
 	testData := []byte{0x01, 0x02, 0x03, 0x04}
-	_, err = transport.Transfer(testData)
+	_, err = transport.Transfer(context.Background(), testData)
 	if err != nil {
 		t.Fatalf("Transfer with custom config failed: %v", err)
 	}
