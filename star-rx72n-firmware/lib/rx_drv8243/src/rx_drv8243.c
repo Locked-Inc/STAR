@@ -277,7 +277,7 @@ rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_faul
     return k_rx_err_invalid_arg;
   }
 
-  uint8_t level = (port->pidr >> handle->pin_nfault) & k_bit_mask_single;
+  const uint8_t level = (port->pidr >> handle->pin_nfault) & k_bit_mask_single;
 
   /* Fault is active when pin is LOW */
   *out_fault           = (level == k_gpio_level_low);

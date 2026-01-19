@@ -115,8 +115,10 @@ typedef enum : uint8_t {
 } sci_mstpb_bits_t;
 
 /** @brief Debug UART pins (SCI9 on RX72N) */
-static const rx_port_pin_t k_uart_debug_tx_gpio = k_rx_pb_7; /**< PB7 = TXD9 (from rx_port_constants.h) */
-static const rx_port_pin_t k_uart_debug_rx_gpio = k_rx_pb_6; /**< PB6 = RXD9 (from rx_port_constants.h) */
+static const rx_port_pin_t k_uart_debug_tx_gpio =
+  k_rx_pb_7; /**< PB7 = TXD9 (from rx_port_constants.h) */
+static const rx_port_pin_t k_uart_debug_rx_gpio =
+  k_rx_pb_6; /**< PB6 = RXD9 (from rx_port_constants.h) */
 
 /** @brief GPIO register bit manipulation constant */
 static const uint8_t k_uart_gpio_bit_set = 1;
@@ -150,7 +152,7 @@ static uint8_t internal_calculate_brr(uint32_t baudrate)
   }
 
   /* For n=0 (CKS=00): BRR = (PCLKB / (32 * B)) - 1 */
-  uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
+  const uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
 
   if (brr_value > k_brr_max_value) {
     return k_brr_max_value;
@@ -201,7 +203,7 @@ static int8_t internal_get_mstpb_bit(uint8_t channel)
  */
 static rx_err_t internal_enable_sci_clock(uint8_t channel)
 {
-  int8_t mstpb_bit = internal_get_mstpb_bit(channel);
+  const int8_t mstpb_bit = internal_get_mstpb_bit(channel);
   if (mstpb_bit < 0) {
     return k_rx_err_invalid_arg;
   }
@@ -231,10 +233,10 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
 static rx_err_t internal_configure_uart_pins(rx_port_pin_t tx_gpio, rx_port_pin_t rx_gpio)
 {
   /* Extract port and pin numbers for hardware register access */
-  uint8_t tx_port = rx_port_from_pin(tx_gpio);
-  uint8_t tx_pin  = rx_pin_from_pin(tx_gpio);
-  uint8_t rx_port = rx_port_from_pin(rx_gpio);
-  uint8_t rx_pin  = rx_pin_from_pin(rx_gpio);
+  const uint8_t tx_port = rx_port_from_pin(tx_gpio);
+  const uint8_t tx_pin  = rx_pin_from_pin(tx_gpio);
+  const uint8_t rx_port = rx_port_from_pin(rx_gpio);
+  const uint8_t rx_pin  = rx_pin_from_pin(rx_gpio);
 
   /* Validate pin numbers */
   if (tx_pin > k_rx_pin_max || rx_pin > k_rx_pin_max) {
@@ -398,8 +400,8 @@ rx_err_t uart_putc_channel(uint8_t channel, char data)
   sci->tdr = (uint8_t)data;
 
   /* Clear TDRE flag by reading SSR then writing 0 */
-  volatile uint8_t ssr = sci->ssr;
-  sci->ssr             = (uint8_t)(ssr & ~k_sci_ssr_tdre_flag);
+  const uint8_t ssr = sci->ssr;
+  sci->ssr          = (uint8_t)(ssr & ~k_sci_ssr_tdre_flag);
 
   return k_rx_ok;
 }
@@ -422,12 +424,12 @@ rx_err_t uart_puts_channel(uint8_t channel, const char* str)
   /* Transmit string with \n to \r\n conversion */
   while (*str) {
     if (*str == '\n') {
-      rx_err_t err = uart_putc_channel(channel, '\r');
+      const rx_err_t err = uart_putc_channel(channel, '\r');
       if (err != k_rx_ok) {
         return err;
       }
     }
-    rx_err_t err = uart_putc_channel(channel, *str++);
+    const rx_err_t err = uart_putc_channel(channel, *str++);
     if (err != k_rx_ok) {
       return err;
     }
@@ -453,7 +455,7 @@ rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t lengt
 
   /* Write each byte */
   for (uint16_t i = 0; i < length; i++) {
-    rx_err_t err = uart_putc_channel(channel, (char)data[i]);
+    const rx_err_t err = uart_putc_channel(channel, (char)data[i]);
     if (err != k_rx_ok) {
       return err;
     }
@@ -498,8 +500,8 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data)
 
   /* Clear RDRF flag by reading SSR then writing 0 */
   /* Some RX MCUs require explicit clear after reading RDR */
-  volatile uint8_t ssr = sci->ssr;
-  sci->ssr             = (uint8_t)(ssr & ~k_sci_ssr_rdrf_flag);
+  const uint8_t ssr = sci->ssr;
+  sci->ssr          = (uint8_t)(ssr & ~k_sci_ssr_rdrf_flag);
 
   return k_rx_ok;
 }
@@ -622,13 +624,13 @@ void uart_putint(int32_t value)
 
   /* Convert to string (reverse order) */
   do {
-    *--p = '0' + (abs_value % k_uart_base_10);
+    *(--p) = (char)('0' + (abs_value % k_uart_base_10));
     abs_value /= k_uart_base_10;
   } while (abs_value > 0);
 
   /* Add minus sign if negative */
   if (is_negative) {
-    *--p = '-';
+    *(--p) = '-';
   }
 
   /* Transmit the string */
@@ -651,7 +653,7 @@ void uart_puthex(uint32_t value, uint8_t digits)
 
   /* Print hex digits from most significant */
   for (int32_t i = digits - 1; i >= 0; i--) {
-    uint8_t nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
+    const uint8_t nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
     uart_putc(s_hex[nibble]);
   }
 }

@@ -142,7 +142,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
   }
 
   /* Pre-condition 2: Transfer length within buffer capacity */
-  uint32_t transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
+  const uint32_t transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
   if (transfer_len > k_spi_comm_tx_buffer_size) {
     rx_log_error(s_tag, "Transfer length exceeds buffer capacity");
     return k_rx_err_invalid_size;
@@ -162,7 +162,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
 
   /* Wait for host ready signal before transmit operations */
   if (tx_data != NULL && tx_len > 0) {
-    rx_err_t wait_err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
+    const rx_err_t wait_err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
     if (wait_err != k_rx_ok) {
       return wait_err;
     }
@@ -179,10 +179,10 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
    * Cast to uint16_t: RSPI HAL uses 16-bit length (max 65535 bytes).
    * Safe because transfer_len is validated <= k_spi_comm_tx_buffer_size above.
    */
-  rx_err_t err = rspi_peripheral_transfer(handle->channel,
-                                          handle->tx_buffer,
-                                          handle->rx_buffer,
-                                          (uint16_t)transfer_len);
+  const rx_err_t err = rspi_peripheral_transfer(handle->channel,
+                                                handle->tx_buffer,
+                                                handle->rx_buffer,
+                                                (uint16_t)transfer_len);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI peripheral transfer failed");
@@ -291,8 +291,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   }
 
   /* Build frame */
-  rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  rx_frame_t frame = {0};
 
   frame.header.sequence = handle->tx_sequence;
   frame.header.length   = (uint16_t)payload_len;
@@ -332,7 +331,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   }
 
   /* Post-condition 2: TX sequence incremented correctly */
-  uint16_t expected_sequence = handle->tx_sequence + 1;
+  const uint16_t expected_sequence = handle->tx_sequence + 1;
   handle->tx_sequence++;
   if (handle->tx_sequence != expected_sequence) {
     rx_log_error(s_tag, "TX sequence increment failed");
@@ -481,16 +480,16 @@ static rx_err_t internal_wait_for_data(rx_spi_comm_handle_t* handle, uint32_t ti
 static rx_err_t
 internal_read_frame_header(rx_spi_comm_handle_t* handle, uint8_t* header_buf, uint16_t* payload_len)
 {
-  uint32_t header_len = k_frame_sync_size + k_frame_header_size;
+  const uint32_t header_len = k_frame_sync_size + k_frame_header_size;
 
   /* Read frame header from SPI */
-  rx_err_t err = internal_spi_transfer(handle, NULL, 0, header_buf, header_len);
+  const rx_err_t err = internal_spi_transfer(handle, NULL, 0, header_buf, header_len);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Validate sync word (big-endian) */
-  uint16_t sync = rx_frame_read_be16(&header_buf[k_hdr_sync_high]);
+  const uint16_t sync = rx_frame_read_be16(&header_buf[k_hdr_sync_high]);
   if (sync != k_frame_sync_word) {
     rx_log_error(s_tag, "Invalid sync word");
     return k_rx_err_protocol_error;
@@ -537,11 +536,11 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
   }
 
   /* Calculate frame size */
-  uint32_t header_len = sizeof(header_buf);
+  const uint32_t header_len = sizeof(header_buf);
   uint32_t total_size = k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
 
   /* Read remaining data (payload + CRC) */
-  uint32_t remaining = payload_len + k_frame_crc_size;
+  const uint32_t remaining = payload_len + k_frame_crc_size;
   if (remaining > 0) {
     err = internal_spi_transfer(handle, NULL, 0, handle->rx_buffer + header_len, remaining);
     if (err != k_rx_ok) {

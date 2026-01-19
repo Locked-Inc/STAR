@@ -454,8 +454,8 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
 
   /* Receive data bytes */
   for (uint16_t i = 0; i < length; i++) {
-    bool send_ack = (i < length - 1); /* NACK on last byte */
-    err           = internal_read_byte(riic, &data[i], send_ack);
+    const bool send_ack = (i < length - 1); /* NACK on last byte */
+    err                 = internal_read_byte(riic, &data[i], send_ack);
     if (err != k_rx_ok) {
       internal_send_stop(riic);
       return err;
@@ -547,8 +547,8 @@ rx_err_t riic_write_read(uint8_t        channel,
 
   /* Receive data bytes */
   for (uint16_t i = 0; i < read_length; i++) {
-    bool send_ack = (i < read_length - 1); /* NACK on last byte */
-    err           = internal_read_byte(riic, &read_data[i], send_ack);
+    const bool send_ack = (i < read_length - 1); /* NACK on last byte */
+    err                 = internal_read_byte(riic, &read_data[i], send_ack);
     if (err != k_rx_ok) {
       internal_send_stop(riic);
       return err;

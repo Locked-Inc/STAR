@@ -85,7 +85,7 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Initialize RIIC channel */
-  rx_err_t err = riic_init(bus_config->proto.i2c.channel, bus_config->proto.i2c.frequency_hz);
+  const rx_err_t err = riic_init(bus_config->proto.i2c.channel, bus_config->proto.i2c.frequency_hz);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "RIIC HAL initialization failed");
@@ -126,10 +126,10 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Write I2C data */
-  rx_err_t err = riic_write(bus_config->proto.i2c.channel,
-                            bus_config->proto.i2c.device_addr,
-                            ctx->data,
-                            ctx->length);
+  const rx_err_t err = riic_write(bus_config->proto.i2c.channel,
+                                  bus_config->proto.i2c.device_addr,
+                                  ctx->data,
+                                  ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C write failed");
@@ -167,10 +167,10 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Read I2C data */
-  rx_err_t err = riic_read(bus_config->proto.i2c.channel,
-                           bus_config->proto.i2c.device_addr,
-                           ctx->data,
-                           ctx->length);
+  const rx_err_t err = riic_read(bus_config->proto.i2c.channel,
+                                 bus_config->proto.i2c.device_addr,
+                                 ctx->data,
+                                 ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C read failed");
@@ -208,12 +208,12 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
   }
 
   /* I2C write-read operation */
-  rx_err_t err = riic_write_read(bus_config->proto.i2c.channel,
-                                 bus_config->proto.i2c.device_addr,
-                                 ctx->write_data,
-                                 ctx->write_length,
-                                 ctx->read_data,
-                                 ctx->read_length);
+  const rx_err_t err = riic_write_read(bus_config->proto.i2c.channel,
+                                       bus_config->proto.i2c.device_addr,
+                                       ctx->write_data,
+                                       ctx->write_length,
+                                       ctx->read_data,
+                                       ctx->read_length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C write-read failed");
@@ -243,7 +243,7 @@ rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name)
 
   i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_init_callback, &ctx);
+  const rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_init_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -263,7 +263,8 @@ rx_err_t rx_bus_i2c_write(rx_bus_manager_t* manager,
 
   i2c_write_ctx_t ctx = {.data = data, .length = length, .result = k_rx_err_hw_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_write_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_i2c_write_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -281,7 +282,7 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
 
   i2c_read_ctx_t ctx = {.data = data, .length = length, .result = k_rx_err_hw_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_read_callback, &ctx);
+  const rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_read_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -308,7 +309,8 @@ rx_err_t rx_bus_i2c_write_read(rx_bus_manager_t* manager,
                               .read_length  = read_length,
                               .result       = k_rx_err_hw_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_write_read_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_i2c_write_read_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;

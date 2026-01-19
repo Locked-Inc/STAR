@@ -146,7 +146,7 @@ static rx_err_t internal_compact_rx_buffer(rx_usb_comm_handle_t* handle)
     handle->rx_buffer_pos = 0;
   } else {
     /* Move remaining data to beginning */
-    uint32_t remaining = handle->rx_buffer_len - handle->rx_buffer_pos;
+    const uint32_t remaining = handle->rx_buffer_len - handle->rx_buffer_pos;
     memmove(handle->rx_buffer, handle->rx_buffer + handle->rx_buffer_pos, remaining);
     handle->rx_buffer_len = remaining;
     handle->rx_buffer_pos = 0;
@@ -191,8 +191,8 @@ static rx_err_t internal_find_sync(rx_usb_comm_handle_t* handle, int32_t* sync_p
   }
 
   /* Extract sync word bytes using shared constants from rx_frame.h */
-  uint8_t sync_high = (uint8_t)(k_frame_sync_word >> k_rx_be16_high_shift);
-  uint8_t sync_low  = (uint8_t)(k_frame_sync_word & k_rx_byte_mask);
+  const uint8_t sync_high = (uint8_t)(k_frame_sync_word >> k_rx_be16_high_shift);
+  const uint8_t sync_low  = (uint8_t)(k_frame_sync_word & k_rx_byte_mask);
 
   for (uint32_t i = handle->rx_buffer_pos; i + 1 < handle->rx_buffer_len; i++) {
     if (handle->rx_buffer[i] == sync_high && handle->rx_buffer[i + 1] == sync_low) {
@@ -311,7 +311,7 @@ internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, uint32_t 
   uint8_t* hdr = handle->rx_buffer + handle->rx_buffer_pos;
 
   /* Decode the frame */
-  rx_err_t err = rx_frame_decode(&handle->decoder, hdr, total_size, frame);
+  const rx_err_t err = rx_frame_decode(&handle->decoder, hdr, total_size, frame);
 
   /* Consume the frame data */
   handle->rx_buffer_pos += total_size;
@@ -411,7 +411,8 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
   if (*err == k_rx_err_not_found) {
     *err = internal_handle_no_sync(handle, timeout_ms, elapsed_ms);
     return (*err != k_rx_ok) ? k_receive_error : k_receive_continue;
-  } else if (*err != k_rx_ok) {
+  }
+  if (*err != k_rx_ok) {
     return k_receive_error;
   }
 
@@ -477,7 +478,7 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
     rx_log_error(s_tag, "Failed to init frame decoder");
 
     /* Attempt cleanup, but propagate decoder init error */
-    rx_err_t cleanup_err = rx_frame_encoder_deinit(&handle->encoder);
+    const rx_err_t cleanup_err = rx_frame_encoder_deinit(&handle->encoder);
     if (cleanup_err != k_rx_ok) {
       rx_log_warn(s_tag, "Failed to cleanup encoder during decoder init failure");
     }
@@ -551,8 +552,7 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
   }
 
   /* Build frame */
-  rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  rx_frame_t frame = {0};
 
   frame.header.sequence = handle->tx_sequence;
   frame.header.length   = (uint16_t)payload_len;
@@ -693,7 +693,8 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
     result = internal_receive_iteration(handle, frame, timeout_ms, &elapsed_ms, &err);
     if (result == k_receive_done) {
       return k_rx_ok;
-    } else if (result == k_receive_error) {
+    }
+    if (result == k_receive_error) {
       return err;
     }
     /* k_receive_continue: loop continues */

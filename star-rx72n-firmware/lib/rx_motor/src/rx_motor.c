@@ -214,8 +214,8 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
    * Duty sign determines PH (+ = forward/HIGH, - = reverse/LOW).
    * EN always receives positive PWM duty proportional to speed.
    */
-  float    speed_pwm = fabsf(duty);
-  rx_err_t err;
+  const float speed_pwm = fabsf(duty);
+  rx_err_t    err;
 
   if (duty >= (float)k_motor_duty_zero) {
     /* Forward: PH = HIGH, EN = PWM - NASA Rule 7 compliance */

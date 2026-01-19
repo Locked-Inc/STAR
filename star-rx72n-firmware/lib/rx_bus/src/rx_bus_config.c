@@ -47,10 +47,10 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
 
   /* Extract port and pin from type-safe enum */
-  uint8_t port    = rx_port_from_pin(pin);
-  uint8_t pin_num = rx_pin_from_pin(pin);
+  const uint8_t port    = rx_port_from_pin(pin);
+  const uint8_t pin_num = rx_pin_from_pin(pin);
 
-  rx_err_t err = internal_validate_port_pin(port, pin_num, "GPIO");
+  const rx_err_t err = internal_validate_port_pin(port, pin_num, "GPIO");
   if (err != k_rx_ok) {
     return err;
   }
@@ -145,17 +145,17 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
 
   /* Extract and validate SDA pin */
-  uint8_t  sda_port    = rx_port_from_pin(sda_pin);
-  uint8_t  sda_pin_num = rx_pin_from_pin(sda_pin);
-  rx_err_t err         = internal_validate_port_pin(sda_port, sda_pin_num, "I2C SDA");
+  const uint8_t sda_port    = rx_port_from_pin(sda_pin);
+  const uint8_t sda_pin_num = rx_pin_from_pin(sda_pin);
+  rx_err_t      err         = internal_validate_port_pin(sda_port, sda_pin_num, "I2C SDA");
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Extract and validate SCL pin */
-  uint8_t scl_port    = rx_port_from_pin(scl_pin);
-  uint8_t scl_pin_num = rx_pin_from_pin(scl_pin);
-  err                 = internal_validate_port_pin(scl_port, scl_pin_num, "I2C SCL");
+  const uint8_t scl_port    = rx_port_from_pin(scl_pin);
+  const uint8_t scl_pin_num = rx_pin_from_pin(scl_pin);
+  err                       = internal_validate_port_pin(scl_port, scl_pin_num, "I2C SCL");
   if (err != k_rx_ok) {
     return err;
   }
@@ -213,17 +213,17 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
 
   /* Extract and validate SDA pin */
-  uint8_t  sda_port    = rx_port_from_pin(sda_pin);
-  uint8_t  sda_pin_num = rx_pin_from_pin(sda_pin);
-  rx_err_t err         = internal_validate_port_pin(sda_port, sda_pin_num, "SMBUS SDA");
+  const uint8_t sda_port    = rx_port_from_pin(sda_pin);
+  const uint8_t sda_pin_num = rx_pin_from_pin(sda_pin);
+  rx_err_t      err         = internal_validate_port_pin(sda_port, sda_pin_num, "SMBUS SDA");
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Extract and validate SCL pin */
-  uint8_t scl_port    = rx_port_from_pin(scl_pin);
-  uint8_t scl_pin_num = rx_pin_from_pin(scl_pin);
-  err                 = internal_validate_port_pin(scl_port, scl_pin_num, "SMBUS SCL");
+  const uint8_t scl_port    = rx_port_from_pin(scl_pin);
+  const uint8_t scl_pin_num = rx_pin_from_pin(scl_pin);
+  err                       = internal_validate_port_pin(scl_port, scl_pin_num, "SMBUS SCL");
   if (err != k_rx_ok) {
     return err;
   }
@@ -280,11 +280,11 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t* config,
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
 
   /* Extract port and pin from type-safe enums for validation */
-  uint8_t  tx_port    = rx_port_from_pin(tx_pin);
-  uint8_t  tx_pin_num = rx_pin_from_pin(tx_pin);
-  uint8_t  rx_port    = rx_port_from_pin(rx_pin);
-  uint8_t  rx_pin_num = rx_pin_from_pin(rx_pin);
-  rx_err_t err        = k_rx_ok;
+  const uint8_t tx_port    = rx_port_from_pin(tx_pin);
+  const uint8_t tx_pin_num = rx_pin_from_pin(tx_pin);
+  const uint8_t rx_port    = rx_port_from_pin(rx_pin);
+  const uint8_t rx_pin_num = rx_pin_from_pin(rx_pin);
+  rx_err_t      err        = k_rx_ok;
 
   /* Validate SCI channel (0-12) */
   if (channel >= k_sci_channel_count) {
@@ -341,10 +341,10 @@ rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, r
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
 
   /* Extract port and pin from type-safe enum */
-  uint8_t port    = rx_port_from_pin(pin);
-  uint8_t pin_num = rx_pin_from_pin(pin);
+  const uint8_t port    = rx_port_from_pin(pin);
+  const uint8_t pin_num = rx_pin_from_pin(pin);
 
-  rx_err_t err = internal_validate_port_pin(port, pin_num, "OneWire GPIO");
+  const rx_err_t err = internal_validate_port_pin(port, pin_num, "OneWire GPIO");
   if (err != k_rx_ok) {
     return err;
   }

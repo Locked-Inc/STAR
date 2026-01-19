@@ -284,8 +284,8 @@ rx_err_t rx_mtu_set_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
   }
 
   /* Convert percentage to count value */
-  uint16_t period     = s_mtu_period[channel];
-  uint16_t duty_count = (uint16_t)((duty_percent * period) / (float)k_mtu_duty_divisor);
+  const uint16_t period     = s_mtu_period[channel];
+  const uint16_t duty_count = (uint16_t)((duty_percent * period) / (float)k_mtu_duty_divisor);
 
   return rx_mtu_set_duty_raw(channel, output, duty_count);
 }
@@ -339,8 +339,8 @@ rx_err_t rx_mtu_get_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
     return k_rx_err_invalid_arg;
   }
 
-  uint16_t period     = s_mtu_period[channel];
-  uint16_t duty_count = *tgr;
+  const uint16_t period     = s_mtu_period[channel];
+  const uint16_t duty_count = *tgr;
 
   *duty_percent = (float)(duty_count * (float)k_mtu_duty_max) / period;
 

@@ -139,7 +139,7 @@ static rx_err_t internal_validate_unit_channel(uint8_t unit, uint8_t channel)
 rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
 {
   /* Validate parameters */
-  rx_err_t err = internal_validate_unit_channel(unit, channel);
+  const rx_err_t err = internal_validate_unit_channel(unit, channel);
   RX_RETURN_ON_ERROR(err, s_tag, "Unit/channel validation failed");
 
   /* Validate resolution */

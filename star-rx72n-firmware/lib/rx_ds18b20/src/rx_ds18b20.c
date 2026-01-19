@@ -25,7 +25,6 @@ static const char* s_tag = "DS18B20";
 /* Temperature conversion constants (floating-point) */
 static const float s_temp_conversion_divisor =
   16.0f; /**< Temperature raw-to-Celsius divisor (1/16°C units) */
-static const float s_temp_initial_value = 0.0f; /**< Initial temperature value */
 
 /* =============================================================================
  * Internal Validation Macros
@@ -682,10 +681,6 @@ static uint16_t internal_ds18b20_get_temp_mask(ds18b20_resolution_t resolution)
  */
 static float internal_ds18b20_raw_to_celsius(int16_t raw_temp)
 {
-  float temp_celsius = s_temp_initial_value;
-
   /* Convert from 1/16°C to °C */
-  temp_celsius = (float)raw_temp / s_temp_conversion_divisor;
-
-  return temp_celsius;
+  return (float)raw_temp / s_temp_conversion_divisor;
 }

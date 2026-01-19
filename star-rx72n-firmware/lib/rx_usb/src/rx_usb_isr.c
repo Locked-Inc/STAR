@@ -59,7 +59,7 @@ extern rx_usb_state_t rx_usb_hw_get_bus_state(void);
  */
 static void internal_handle_vbus_interrupt(void)
 {
-  uint16_t syssts = usb0()->syssts0;
+  const uint16_t syssts = usb0()->syssts0;
 
   /* Check line state to determine if cable is connected */
   uint16_t lnst = syssts & k_usb_syssts0_lnst_mask;
@@ -82,8 +82,8 @@ static void internal_handle_vbus_interrupt(void)
  */
 static void internal_handle_dvst_interrupt(void)
 {
-  uint16_t intsts0 = usb0()->intsts0;
-  uint16_t dvsq    = intsts0 & k_usb_intsts0_dvsq_mask;
+  const uint16_t intsts0 = usb0()->intsts0;
+  const uint16_t dvsq    = intsts0 & k_usb_intsts0_dvsq_mask;
 
   switch (dvsq) {
     case k_usb_intsts0_dvsq_powered:
@@ -127,8 +127,8 @@ static void internal_handle_dvst_interrupt(void)
  */
 static void internal_handle_ctrt_interrupt(void)
 {
-  uint16_t intsts0 = usb0()->intsts0;
-  uint16_t ctsq    = intsts0 & k_usb_intsts0_ctsq_mask;
+  const uint16_t intsts0 = usb0()->intsts0;
+  const uint16_t ctsq    = intsts0 & k_usb_intsts0_ctsq_mask;
 
   switch (ctsq) {
     case k_usb_intsts0_ctsq_idle:
@@ -258,8 +258,8 @@ static void internal_handle_resume_interrupt(void)
  */
 void rx_usb_isr_handler(void)
 {
-  uint16_t intsts0 = usb0()->intsts0;
-  uint16_t intenb0 = usb0()->intenb0;
+  const uint16_t intsts0 = usb0()->intsts0;
+  const uint16_t intenb0 = usb0()->intenb0;
 
   /* Only process enabled interrupts */
   uint16_t active = intsts0 & intenb0;
