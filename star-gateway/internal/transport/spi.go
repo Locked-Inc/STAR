@@ -62,7 +62,6 @@ type Transport interface {
 	Close() error
 }
 
-
 // SPIConfig holds SPI configuration parameters.
 type SPIConfig struct {
 	// Device is the SPI device path (e.g., "/dev/spidev0.0").
@@ -257,8 +256,6 @@ func (s *SPITransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 
 	return rxBuf, nil
 }
-
-
 
 // Close releases the SPI device.
 // Closes the periph.io SPI port and marks the transport as closed.

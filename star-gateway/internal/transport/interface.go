@@ -31,4 +31,3 @@ type Device interface {
 	// Should be called when done with the device.
 	Close() error
 }
-

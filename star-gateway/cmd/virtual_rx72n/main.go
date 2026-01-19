@@ -5,13 +5,14 @@
 // socket and responds to Gateway commands.
 //
 // Usage:
-//   go run ./cmd/virtual_rx72n/
+//
+//	go run ./cmd/virtual_rx72n/
 //
 // The simulator will:
-//   1. Create a Unix socket at /tmp/star_rx72n.sock
-//   2. Listen for connections from the Gateway
-//   3. Echo back modified data to prove it's the simulator
-//   4. Handle Ctrl+C gracefully
+//  1. Create a Unix socket at /tmp/star_rx72n.sock
+//  2. Listen for connections from the Gateway
+//  3. Echo back modified data to prove it's the simulator
+//  4. Handle Ctrl+C gracefully
 //
 // STAR Project - Texas A&M University
 // January 2026
