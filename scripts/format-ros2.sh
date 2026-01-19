@@ -1,5 +1,6 @@
 #!/bin/bash
 # ROS2 C++ Code Formatting Script
+# Uses ament_uncrustify (ROS2's official formatter) instead of clang-format
 # Usage: ./scripts/format-ros2.sh [options]
 
 set -e  # Exit on any error
@@ -15,9 +16,8 @@ NC='\033[0m' # No Color
 # Default values
 CHECK_ONLY=false
 VERBOSE=false
-EXTENSIONS=("*.cpp" "*.hpp")
-DIRECTORIES=("src")
-ROS2_DIR="star-ros2"
+SKIP_GUARDS=false
+ROS2_DIR="star-ros2/src"
 
 # Print usage information
 usage() {
@@ -26,14 +26,17 @@ usage() {
     echo "Usage: $0 [options]"
     echo ""
     echo "Options:"
-    echo "  -c, --check    Check formatting without making changes"
-    echo "  -v, --verbose  Enable verbose output"
-    echo "  -h, --help     Show this help message"
+    echo "  -c, --check       Check formatting without making changes"
+    echo "  -v, --verbose     Enable verbose output"
+    echo "  --skip-guards     Skip header guard checking/fixing"
+    echo "  -h, --help        Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0             # Format all ROS2 C++ files"
+    echo "  $0             # Format all ROS2 C++ files and fix header guards"
     echo "  $0 --check     # Check formatting without changes (CI mode)"
     echo "  $0 -v          # Format with verbose output"
+    echo ""
+    echo "Note: This script uses ament_uncrustify (ROS2 official formatter)."
 }
 
 # Print colored output
@@ -53,36 +56,35 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if clang-format is installed
-check_clang_format() {
-    if ! command -v clang-format &> /dev/null; then
-        print_error "clang-format not found!"
+# Check if ament_uncrustify is available
+check_uncrustify() {
+    if ! command -v ament_uncrustify &> /dev/null; then
+        print_error "ament_uncrustify not found!"
         echo ""
-        echo "Please install clang-format:"
-        echo "  macOS: brew install clang-format"
-        echo "  Ubuntu/Debian: sudo apt-get install clang-format"
-        echo "  Fedora: sudo dnf install clang"
+        echo "Please install ROS2 and source the environment:"
+        echo "  source /opt/ros/jazzy/setup.bash"
+        echo ""
+        echo "Or if using a devcontainer/workspace:"
+        echo "  Ensure ROS2 is properly installed and sourced"
         exit 1
     fi
 
-    local version
-    version=$(clang-format --version | head -n1)
     if [ "$VERBOSE" = true ]; then
-        print_status "Found $version"
+        print_status "Found ament_uncrustify"
     fi
 }
 
-# Check if .clang-format file exists
-check_clang_format_config() {
-    if [ ! -f "$ROS2_DIR/.clang-format" ]; then
-        print_error ".clang-format configuration file not found in $ROS2_DIR!"
-        echo "Please ensure you're running this script from the project root directory."
-        exit 1
+# Check if ament_cpplint is available
+check_cpplint() {
+    if ! command -v ament_cpplint &> /dev/null; then
+        print_warning "ament_cpplint not found - skipping include order checks"
+        return 1
     fi
 
     if [ "$VERBOSE" = true ]; then
-        print_status "Found $ROS2_DIR/.clang-format configuration"
+        print_status "Found ament_cpplint"
     fi
+    return 0
 }
 
 # Parse command line arguments
@@ -95,6 +97,10 @@ parse_args() {
                 ;;
             -v|--verbose)
                 VERBOSE=true
+                shift
+                ;;
+            --skip-guards)
+                SKIP_GUARDS=true
                 shift
                 ;;
             -h|--help)
@@ -110,110 +116,260 @@ parse_args() {
     done
 }
 
-# Find all source files
-find_source_files() {
-    local files=()
+# Find all ROS2 packages
+find_ros2_packages() {
+    local packages=()
+    
+    if [ ! -d "$ROS2_DIR" ]; then
+        print_error "ROS2 source directory not found: $ROS2_DIR"
+        exit 1
+    fi
+    
+    # Find all package directories (those containing package.xml)
+    while IFS= read -r -d '' pkg_xml; do
+        local pkg_dir
+        pkg_dir=$(dirname "$pkg_xml")
+        packages+=("$pkg_dir")
+    done < <(find "$ROS2_DIR" -name "package.xml" -type f \
+        -not -path "*/build/*" \
+        -not -path "*/install/*" \
+        -not -path "*/log/*" \
+        -print0 2>/dev/null)
+    
+    printf '%s\n' "${packages[@]}"
+}
 
-    for dir in "${DIRECTORIES[@]}"; do
-        local full_dir="$ROS2_DIR/$dir"
-        if [ ! -d "$full_dir" ]; then
+# Check formatting of a package
+check_package_formatting() {
+    local pkg_dir="$1"
+    local pkg_name
+    pkg_name=$(basename "$pkg_dir")
+    
+    if [ "$VERBOSE" = true ]; then
+        print_status "Checking package: $pkg_name"
+    fi
+    
+    # Run ament_uncrustify in check mode
+    # Redirect stderr to stdout to capture all output
+    local output
+    if output=$(cd "$pkg_dir" && ament_uncrustify --reformat 2>&1); then
+        if [ "$VERBOSE" = true ]; then
+            print_success "Package $pkg_name: OK"
+        fi
+        return 0
+    else
+        # Check if it's just "No files found" (not an error for launch-only packages)
+        if echo "$output" | grep -q "No files found"; then
             if [ "$VERBOSE" = true ]; then
-                print_warning "Directory '$full_dir' not found, skipping..."
+                print_status "Package $pkg_name: No C++ files to check (launch-only package)"
+            fi
+            return 0
+        # Check if output contains "Code style divergence"
+        elif echo "$output" | grep -q "Code style divergence"; then
+            print_warning "Package $pkg_name: Code style issues found"
+            if [ "$VERBOSE" = true ]; then
+                echo "$output"
+            fi
+            return 1
+        else
+            # Some other error
+            print_error "Package $pkg_name: ament_uncrustify failed"
+            echo "$output"
+            return 1
+        fi
+    fi
+}
+
+# Format a package
+format_package() {
+    local pkg_dir="$1"
+    local pkg_name
+    pkg_name=$(basename "$pkg_dir")
+    
+    if [ "$VERBOSE" = true ]; then
+        print_status "Formatting package: $pkg_name"
+    fi
+    
+    # Run ament_uncrustify with --reformat to fix files
+    local output
+    if output=$(cd "$pkg_dir" && ament_uncrustify --reformat 2>&1); then
+        print_success "Formatted package: $pkg_name"
+        return 0
+    else
+        # Check if it's just "No files found" (not an error for launch-only packages)
+        if echo "$output" | grep -q "No files found"; then
+            if [ "$VERBOSE" = true ]; then
+                print_status "Package $pkg_name: No C++ files to format (launch-only package)"
+            fi
+            return 0
+        else
+            print_error "Failed to format package: $pkg_name"
+            echo "$output"
+            return 1
+        fi
+    fi
+}
+
+# Check cpplint (include order) for a package
+check_package_cpplint() {
+    local pkg_dir="$1"
+    local pkg_name
+    pkg_name=$(basename "$pkg_dir")
+    
+    if [ "$VERBOSE" = true ]; then
+        print_status "Checking cpplint for package: $pkg_name"
+    fi
+    
+    # Run ament_cpplint
+    local output
+    if output=$(cd "$pkg_dir" && ament_cpplint 2>&1); then
+        if [ "$VERBOSE" = true ]; then
+            print_success "Package $pkg_name: cpplint OK"
+        fi
+        return 0
+    else
+        # Check if it's just "No files found"
+        if echo "$output" | grep -q "No files found"; then
+            if [ "$VERBOSE" = true ]; then
+                print_status "Package $pkg_name: No C++ files for cpplint (launch-only package)"
+            fi
+            return 0
+        # Check if critical build/include_order errors exist
+        elif echo "$output" | grep -q "build/include_order"; then
+            print_error "Package $pkg_name: Critical include_order errors found"
+            if [ "$VERBOSE" = true ]; then
+                echo "$output"
+            else
+                echo "$output" | grep -E "build/include_order"
+            fi
+            return 1
+        else
+            # Other cpplint warnings (copyright, line length, TODOs, etc.)
+            if [ "$VERBOSE" = true ]; then
+                print_warning "Package $pkg_name: cpplint style warnings (non-critical)"
+                echo "$output" | grep -E "Total errors found:"
+            fi
+            return 0
+        fi
+    fi
+}
+
+# Get expected header guard for a file
+# Pattern: PACKAGE__FILENAME_HPP_
+get_expected_guard() {
+    local file="$1"
+    local rel_path="${file#"$ROS2_DIR"/}"
+    local package_name="${rel_path%%/*}"
+    local filename
+    filename=$(basename "$file" .hpp)
+    
+    local package_upper
+    package_upper=$(echo "$package_name" | tr '[:lower:]-' '[:upper:]_')
+    local filename_upper
+    filename_upper=$(echo "$filename" | tr '[:lower:]-' '[:upper:]_')
+    
+    echo "${package_upper}__${filename_upper}_HPP_"
+}
+
+# Check header guards
+check_header_guards() {
+    local issues_found=false
+    
+    print_status "Checking header guards..."
+    
+    while IFS= read -r -d '' file; do
+        local expected_guard
+        expected_guard=$(get_expected_guard "$file")
+        local current_guard
+        current_guard=$(grep -m1 "^#ifndef " "$file" 2>/dev/null | sed 's/#ifndef //' || true)
+        
+        if [ -z "$current_guard" ]; then
+            if [ "$VERBOSE" = true ]; then
+                print_warning "No header guard found in: $file"
             fi
             continue
         fi
-
-        for ext in "${EXTENSIONS[@]}"; do
-            # Use find to recursively find files with the extension
-            # Exclude build/, install/, log/ directories
-            while IFS= read -r -d '' file; do
-                files+=("$file")
-            done < <(find "$full_dir" -name "$ext" -type f \
-                -not -path "*/build/*" \
-                -not -path "*/install/*" \
-                -not -path "*/log/*" \
-                -print0 2>/dev/null)
-        done
-    done
-
-    printf '%s\n' "${files[@]}"
-}
-
-# Check formatting of files
-check_formatting() {
-    local files=("$@")
-    local issues_found=false
-
-    print_status "Checking code formatting..."
-
-    for file in "${files[@]}"; do
-        if [ "$VERBOSE" = true ]; then
-            echo "  Checking: $file"
-        fi
-
-        # Check if file would be changed by clang-format
-        if ! clang-format --dry-run --Werror "$file" >/dev/null 2>&1; then
+        
+        if [ "$current_guard" != "$expected_guard" ]; then
             if [ "$issues_found" = false ]; then
                 echo ""
-                print_warning "Formatting issues found in:"
+                print_warning "Header guard issues found:"
                 issues_found=true
             fi
             echo "  $file"
+            if [ "$VERBOSE" = true ]; then
+                echo "    Current:  $current_guard"
+                echo "    Expected: $expected_guard"
+            fi
         fi
-    done
-
+    done < <(find "$ROS2_DIR" -name "*.hpp" -type f \
+        -not -path "*/build/*" \
+        -not -path "*/install/*" \
+        -not -path "*/log/*" \
+        -print0 2>/dev/null)
+    
     if [ "$issues_found" = true ]; then
         echo ""
-        print_error "Code formatting check failed!"
-        echo "Run './scripts/format-ros2.sh' to fix formatting issues."
+        print_error "Header guard check failed!"
+        echo "Run './scripts/format-ros2.sh' to fix header guards."
         return 1
     else
-        print_success "All files are properly formatted!"
+        print_success "All header guards are correct!"
         return 0
     fi
 }
 
-# Format files
-format_files() {
-    local files=("$@")
-    local formatted_count=0
-
-    print_status "Formatting source files..."
-
-    for file in "${files[@]}"; do
-        if [ "$VERBOSE" = true ]; then
-            echo "  Processing: $file"
-        fi
-
-        # Create a temporary file to compare
-        local temp_file
-        temp_file=$(mktemp)
-
-        # Format the file to temp
-        clang-format "$file" > "$temp_file" 2>&1 || {
-            echo "ERROR: clang-format failed on $file" >&2
-            rm "$temp_file"
-            continue
-        }
-
-        # Check if file was changed
-        if ! cmp -s "$file" "$temp_file" 2>/dev/null; then
-            cp "$temp_file" "$file"
-            ((formatted_count++))
+# Fix header guards
+fix_header_guards() {
+    local fixed_count=0
+    
+    print_status "Checking and fixing header guards..."
+    
+    while IFS= read -r -d '' file; do
+        local expected_guard
+        expected_guard=$(get_expected_guard "$file")
+        local current_guard
+        current_guard=$(grep -m1 "^#ifndef " "$file" 2>/dev/null | sed 's/#ifndef //' || true)
+        
+        if [ -z "$current_guard" ]; then
             if [ "$VERBOSE" = true ]; then
-                echo "    ✓ Formatted"
+                print_status "Warning: Missing header guard in $file"
             fi
-        elif [ "$VERBOSE" = true ]; then
-            echo "    • No changes needed"
+            continue
         fi
-
-        rm "$temp_file"
-    done
-
-    if [ $formatted_count -gt 0 ]; then
-        print_success "Formatted $formatted_count file(s)!"
+        
+        if [ "$current_guard" != "$expected_guard" ]; then
+            # Escape sed metacharacters in guard names to prevent unexpected pattern interpretation
+            local escaped_current_guard
+            escaped_current_guard=$(printf '%s\n' "$current_guard" | sed 's/[\.*^$[]/\\&/g')
+            local escaped_expected_guard
+            escaped_expected_guard=$(printf '%s\n' "$expected_guard" | sed 's/[\.*^$[]/\\&/g')
+            
+            # Fix the guard (macOS compatible)
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' "s/#ifndef $escaped_current_guard/#ifndef $escaped_expected_guard/" "$file"
+                sed -i '' "s/#define $escaped_current_guard/#define $escaped_expected_guard/" "$file"
+                sed -i '' "s|// $escaped_current_guard|// $escaped_expected_guard|" "$file"
+            else
+                sed -i "s/#ifndef $escaped_current_guard/#ifndef $escaped_expected_guard/" "$file"
+                sed -i "s/#define $escaped_current_guard/#define $escaped_expected_guard/" "$file"
+                sed -i "s|// $escaped_current_guard|// $escaped_expected_guard|" "$file"
+            fi
+            ((fixed_count++))
+            if [ "$VERBOSE" = true ]; then
+                print_status "Fixed guard: $file"
+            fi
+        fi
+    done < <(find "$ROS2_DIR" -name "*.hpp" -type f \
+        -not -path "*/build/*" \
+        -not -path "*/install/*" \
+        -not -path "*/log/*" \
+        -print0 2>/dev/null)
+    
+    if [ $fixed_count -gt 0 ]; then
+        print_success "Fixed $fixed_count header guard(s)!"
     else
-        print_success "All files were already properly formatted!"
+        print_success "All header guards were already correct!"
     fi
 }
 
@@ -226,28 +382,66 @@ main() {
     parse_args "$@"
 
     # Check prerequisites
-    check_clang_format
-    check_clang_format_config
+    check_uncrustify
+    local has_cpplint=false
+    if check_cpplint; then
+        has_cpplint=true
+    fi
 
-    # Find source files
-    print_status "Searching for C++ files in: $ROS2_DIR/${DIRECTORIES[*]}"
-    IFS=$'\n' read -d '' -r -a source_files < <(find_source_files && printf '\0')
+    # Find ROS2 packages
+    print_status "Searching for ROS2 packages in: $ROS2_DIR"
+    IFS=$'\n' read -d '' -r -a packages < <(find_ros2_packages && printf '\0')
 
-    if [ ${#source_files[@]} -eq 0 ]; then
-        print_warning "No C++ source files found!"
+    if [ ${#packages[@]} -eq 0 ]; then
+        print_warning "No ROS2 packages found in $ROS2_DIR!"
         exit 0
     fi
 
     if [ "$VERBOSE" = true ]; then
-        print_status "Found ${#source_files[@]} C++ file(s)"
+        print_status "Found ${#packages[@]} ROS2 package(s)"
     fi
 
-    # Execute formatting or check
+    # Track overall success
+    local exit_code=0
+
+    # Execute formatting or check on each package
     if [ "$CHECK_ONLY" = true ]; then
-        check_formatting "${source_files[@]}"
+        print_status "Checking code formatting (no changes will be made)..."
+        for pkg in "${packages[@]}"; do
+            check_package_formatting "$pkg" || exit_code=1
+        done
+        
+        # Check cpplint (include order) if available
+        if [ "$has_cpplint" = true ]; then
+            print_status "Checking include order (cpplint)..."
+            for pkg in "${packages[@]}"; do
+                check_package_cpplint "$pkg" || exit_code=1
+            done
+        fi
+        
+        if [ "$SKIP_GUARDS" = false ]; then
+            check_header_guards || exit_code=1
+        fi
     else
-        format_files "${source_files[@]}"
+        print_status "Formatting code..."
+        for pkg in "${packages[@]}"; do
+            format_package "$pkg" || exit_code=1
+        done
+        
+        # Check cpplint (include order) after formatting
+        if [ "$has_cpplint" = true ]; then
+            print_status "Checking include order (cpplint)..."
+            for pkg in "${packages[@]}"; do
+                check_package_cpplint "$pkg" || exit_code=1
+            done
+        fi
+        
+        if [ "$SKIP_GUARDS" = false ]; then
+            fix_header_guards
+        fi
     fi
+
+    exit $exit_code
 }
 
 # Run main function with all arguments

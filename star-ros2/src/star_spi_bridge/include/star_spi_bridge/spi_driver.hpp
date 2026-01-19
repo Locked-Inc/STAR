@@ -28,10 +28,16 @@ public:
   // Frame encoding/decoding helpers
   // Optimized: uses output parameter to allow buffer reuse
   static void encode_frame(
-    uint16_t seq, FrameType type, uint8_t flags, const std::vector<uint8_t> & payload,
+    uint16_t seq,
+    FrameType type,
+    uint8_t flags,
+    const std::vector<uint8_t> & payload,
     std::vector<uint8_t> & out_frame);
   static bool decode_frame(
-    const std::vector<uint8_t> & frame, uint16_t & seq, FrameType & type, uint8_t & flags,
+    const std::vector<uint8_t> & frame,
+    uint16_t & seq,
+    FrameType & type,
+    uint8_t & flags,
     std::vector<uint8_t> & payload);
 
   // CRC-32 helper (public for testing)
