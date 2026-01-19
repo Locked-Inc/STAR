@@ -34,6 +34,7 @@ jobs:
         uses: JetBrains/qodana-action@v2025.2
         with:
           pr-mode: false
+          args: --property,qodana.compile.commands=build/compile_commands.json
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_2021385077 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
