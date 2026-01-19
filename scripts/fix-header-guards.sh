@@ -44,11 +44,11 @@ while IFS= read -r -d '' file; do
     rel_path="${file#star-ros2/src/}"
     package_name="${rel_path%%/*}"
     
-    # Expected guard: RELATIVE_PATH_HPP_
-    # Example: star_pkg/include/star_pkg/header.hpp
-    #   -> STAR_PKG_INCLUDE_STAR_PKG_HEADER_HPP_
-    guard_base=$(echo "$rel_path" | tr '[:lower:]/.-' '[:upper:]___')
-    expected_guard="${guard_base}_"
+    # Expected guard: PACKAGE__FILENAME_HPP_ (ROS2 standard double underscore)
+    # Example: star_pkg/include/star_pkg/header.hpp -> STAR_PKG__HEADER_HPP_
+    package=$(echo "$package_name" | tr '[:lower:]-' '[:upper:]_')
+    filename=$(basename "$file" .hpp | tr '[:lower:]-' '[:upper:]_')
+    expected_guard="${package}__${filename}_HPP_"
     
     # Read current guard from file
     current_guard=$(grep -m1 "^#ifndef " "$file" 2>/dev/null | sed 's/#ifndef //' || true)
