@@ -24,14 +24,14 @@ set(CMAKE_OBJDUMP      "${GNURX_ROOT}/bin/rx-elf-objdump")
 set(CMAKE_SIZE         "${GNURX_ROOT}/bin/rx-elf-size")
 set(CMAKE_RANLIB       "${GNURX_ROOT}/bin/rx-elf-ranlib")
 
-# Target specifications for RX72N (use rx71m as closest supported CPU)
-# Note: Older GCC versions don't support rx72n, use rx71m from same RX700 series
-set(CPU_FLAGS "-mcpu=rx71m -mlittle-endian-data")
+# Target specifications for RX72N (GCC supports rx600/rx610 only)
+set(CPU_FLAGS "-mcpu=rx610 -mlittle-endian-data")
+set(ASM_CPU_FLAGS "-Wa,--mcpu=rxv3 -mlittle-endian-data")
 
 # Compiler flags
 set(CMAKE_C_FLAGS_INIT "${CPU_FLAGS} -ffunction-sections -fdata-sections")
 set(CMAKE_CXX_FLAGS_INIT "${CMAKE_C_FLAGS_INIT}")
-set(CMAKE_ASM_FLAGS_INIT "${CPU_FLAGS}")
+set(CMAKE_ASM_FLAGS_INIT "${ASM_CPU_FLAGS}")
 
 # Linker flags
 set(CMAKE_EXE_LINKER_FLAGS_INIT "${CPU_FLAGS} -Wl,--gc-sections -nostartfiles")

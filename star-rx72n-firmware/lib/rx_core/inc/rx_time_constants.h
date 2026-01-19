@@ -40,7 +40,7 @@ extern "C" {
  * uint32_t delay_ns = delay_us * k_rx_ns_per_us;
  * @endcode
  */
-typedef enum {
+typedef enum : uint32_t {
   k_rx_ms_per_second    = 1000,    /**< Milliseconds per second */
   k_rx_us_per_ms        = 1000,    /**< Microseconds per millisecond */
   k_rx_ns_per_us        = 1000,    /**< Nanoseconds per microsecond */

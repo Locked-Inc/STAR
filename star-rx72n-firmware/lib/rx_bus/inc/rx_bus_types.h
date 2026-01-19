@@ -42,7 +42,7 @@ extern "C" {
 /**
  * @brief Supported bus/protocol types
  */
-typedef enum {
+typedef enum : uint8_t {
   k_bus_type_gpio = 0, /**< GPIO (digital I/O) */
   k_bus_type_adc,      /**< ADC (analog input) */
   k_bus_type_i2c,      /**< I2C (RIIC peripheral) */
@@ -131,42 +131,42 @@ typedef struct {
 /**
  * @brief RX72N RIIC channel count
  */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_channel_count = 3, /**< RIIC channels 0-2 */
 } rx_riic_limits_t;
 
 /**
  * @brief RX72N RSPI channel count
  */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_channel_count = 3, /**< RSPI channels 0-2 */
 } rx_rspi_limits_t;
 
 /**
  * @brief RX72N ADC unit count
  */
-typedef enum {
+typedef enum : uint8_t {
   k_adc_unit_count = 2, /**< ADC units 0-1 */
 } rx_adc_limits_t;
 
 /**
  * @brief RX72N SCI channel count
  */
-typedef enum {
+typedef enum : uint8_t {
   k_sci_channel_count = 13, /**< SCI channels 0-12 */
 } rx_sci_limits_t;
 
 /**
  * @brief RX72N ADC channel limits
  */
-typedef enum {
+typedef enum : uint8_t {
   k_adc_channel_max = 7, /**< ADC channels 0-7 */
 } rx_adc_channel_limits_t;
 
 /**
  * @brief RX72N ADC resolution options
  */
-typedef enum {
+typedef enum : uint8_t {
   k_adc_resolution_8bit  = 8,  /**< 8-bit resolution */
   k_adc_resolution_10bit = 10, /**< 10-bit resolution */
   k_adc_resolution_12bit = 12, /**< 12-bit resolution */
@@ -175,7 +175,7 @@ typedef enum {
 /**
  * @brief I2C/SMBUS protocol constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_i2c_write_bit        = 0,    /**< I2C write bit (R/W = 0) */
   k_i2c_read_bit         = 1,    /**< I2C read bit (R/W = 1) */
   k_i2c_addr_shift       = 1,    /**< Bit shift for 7-bit address */
@@ -187,7 +187,7 @@ typedef enum {
 /**
  * @brief Bit manipulation masks
  */
-typedef enum {
+typedef enum : uint8_t {
   k_byte_mask     = 0xFF, /**< Full byte mask (all 8 bits) */
   k_byte_msb_mask = 0x80, /**< Most significant bit of a byte (bit 7) */
 } bit_masks_t;
@@ -195,7 +195,7 @@ typedef enum {
 /**
  * @brief SMBUS buffer and transfer sizes
  */
-typedef enum {
+typedef enum : uint8_t {
   k_smbus_single_byte     = 1, /**< Single byte transfer size */
   k_smbus_byte_buf_size   = 2, /**< Byte operation buffer (data + PEC) */
   k_smbus_word_data_bytes = 2, /**< Word data size (LSB + MSB) */
@@ -205,7 +205,7 @@ typedef enum {
 /**
  * @brief SMBUS byte operation buffer indices (data + optional PEC)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_smbus_byte_data = 0, /**< Data byte index */
   k_smbus_byte_pec  = 1, /**< PEC (CRC-8) index */
 } smbus_byte_pec_idx_t;
@@ -213,7 +213,7 @@ typedef enum {
 /**
  * @brief SMBUS word operation buffer indices (LSB + MSB + optional PEC)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_smbus_word_lsb = 0, /**< Low byte (LSB) index */
   k_smbus_word_msb = 1, /**< High byte (MSB) index */
   k_smbus_word_pec = 2, /**< PEC (CRC-8) index */
@@ -259,7 +259,7 @@ typedef struct rx_bus_config {
 /**
  * @brief Maximum buses supported
  */
-typedef enum {
+typedef enum : uint8_t {
   k_max_buses        = 32, /**< Maximum number of buses */
   k_max_bus_name_len = 31, /**< Maximum bus name length (excl. null terminator) */
 } bus_manager_limits_t;
@@ -293,7 +293,7 @@ typedef struct {
 /**
  * @brief Bus manager configuration constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_bus_manager_mutex_timeout_ms = 1000, /**< Default mutex timeout (ms) */
 } rx_bus_manager_config_t;
 

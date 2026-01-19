@@ -42,7 +42,7 @@ extern "C" {
  */
 
 /** @brief Mock UART constants */
-typedef enum {
+typedef enum : uint16_t {
   k_mock_uart_fifo_size       = 256, /**< Size of TX/RX FIFO per channel */
   k_mock_uart_channel_count   = 13,  /**< Number of UART channels (0-12) */
   k_mock_uart_call_history_sz = 64,  /**< Size of call history buffer */
@@ -54,7 +54,7 @@ typedef enum {
  */
 
 /** @brief UART HAL function call types (for call history) */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_uart_call_init,
   k_mock_uart_call_deinit,
   k_mock_uart_call_putc,

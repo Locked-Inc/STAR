@@ -68,7 +68,7 @@ extern "C" {
 /**
  * @brief USB event types for callback notification
  */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_event_attached   = (0), /**< USB cable attached (VBUS detected) */
   k_usb_event_detached   = (1), /**< USB cable detached */
   k_usb_event_reset      = (2), /**< USB bus reset received */
@@ -82,7 +82,7 @@ typedef enum {
 /**
  * @brief USB device state
  */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_state_detached   = (0), /**< No USB cable connected */
   k_usb_state_attached   = (1), /**< Cable connected, waiting for reset */
   k_usb_state_powered    = (2), /**< Powered, waiting for bus reset */
@@ -140,7 +140,7 @@ typedef struct {
 /**
  * @brief USB buffer and endpoint configuration
  */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_rx_buffer_size  = (512), /**< Receive ring buffer size (bytes) */
   k_usb_tx_buffer_size  = (512), /**< Transmit ring buffer size (bytes) */
   k_usb_max_packet_size = (64),  /**< Full-speed bulk max packet size */
@@ -152,7 +152,7 @@ typedef enum {
  * These defaults are used during USB initialization before the host
  * sends SET_LINE_CODING. They represent a standard 115200 8N1 configuration.
  */
-typedef enum {
+typedef enum : uint32_t {
   k_usb_default_baud_rate = (115200), /**< Default baud rate: 115200 bps */
   k_usb_default_stop_bits = (0),      /**< Default stop bits: 1 stop bit */
   k_usb_default_parity    = (0),      /**< Default parity: None */

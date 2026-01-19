@@ -26,7 +26,7 @@ extern "C" {
  */
 
 /** @brief MTU base addresses */
-typedef enum {
+typedef enum : uint32_t {
   k_mtu0_base_addr      = 0x000C1300, /**< MTU0 register base address */
   k_mtu1_base_addr      = 0x000C1380, /**< MTU1 register base address */
   k_mtu2_base_addr      = 0x000C1400, /**< MTU2 register base address */
@@ -188,7 +188,7 @@ static inline volatile rx_mtu_tstr_regs_t* mtu_tstrb(void)
 }
 
 /* Timer Control Register (TCR) bits */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_tcr_tpsc_mask = 0x07,        /**< Timer Prescaler mask (bits 0-2) */
   k_mtu_tcr_ckeg_mask = 0x18,        /**< Clock Edge mask (bits 3-4) */
   k_mtu_tcr_cclr_mask = 0xE0,        /**< Counter Clear Source mask (bits 5-7) */
@@ -200,7 +200,7 @@ typedef enum {
 } mtu_tcr_bits_t;
 
 /* Timer Mode Register (TMDR) bits */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_tmdr_md_mask   = 0x0F,     /**< Mode select mask (bits 0-3) */
   k_mtu_tmdr_md_normal = 0x00,     /**< Normal mode */
   k_mtu_tmdr_md_pwm1   = 0x02,     /**< PWM mode 1 */
@@ -210,7 +210,7 @@ typedef enum {
 } mtu_tmdr_bits_t;
 
 /* Timer I/O Control Register (TIOR) bits */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_tior_ioa_mask  = 0x0F, /**< I/O Control A mask (bits 0-3) */
   k_mtu_tior_iob_mask  = 0xF0, /**< I/O Control B mask (bits 4-7) */
   k_mtu_tior_init_low  = 0x02, /**< Initial output low, compare match high */
@@ -219,7 +219,7 @@ typedef enum {
 } mtu_tior_bits_t;
 
 /* Timer Start Register A (TSTRA) bits - MTU0-4, MTU8 */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_tstr_cst0 = (1 << 0), /**< Counter Start 0 (TSTRA bit 0) */
   k_mtu_tstr_cst1 = (1 << 1), /**< Counter Start 1 (TSTRA bit 1) */
   k_mtu_tstr_cst2 = (1 << 2), /**< Counter Start 2 (TSTRA bit 2) */
@@ -229,7 +229,7 @@ typedef enum {
 } mtu_tstr_bits_t;
 
 /* Timer Start Register B (TSTRB) bits - MTU6-7 */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_tstr_cst6 = (1 << 6), /**< Counter Start 6 (TSTRB bit 6) */
   k_mtu_tstr_cst7 = (1 << 7), /**< Counter Start 7 (TSTRB bit 7) */
 } mtu_tstrb_bits_t;

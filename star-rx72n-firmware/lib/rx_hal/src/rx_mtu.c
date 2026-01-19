@@ -38,18 +38,18 @@ static const char* s_tag = "MTU";
  */
 
 /** @brief MTU general constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_max_channels = 7, /**< MTU0-MTU4, MTU6-MTU7 (sparse indexing) */
 } mtu_constants_t;
 
 /** @brief MTU module stop bit positions in MSTPCRA */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_mstpa_mtu0_4 = 9, /**< MTU0-MTU4 module stop bit */
   k_mtu_mstpa_mtu6_7 = 8, /**< MTU6-MTU7 module stop bit */
 } mtu_module_stop_bits_t;
 
 /** @brief Period calculation constants */
-typedef enum {
+typedef enum : uint16_t {
   k_mtu_period_divisor = 2,      /**< Triangle wave period divisor */
   k_mtu_period_max     = 0xFFFF, /**< Maximum valid period (16-bit) */
   k_mtu_period_min     = 10,     /**< Minimum valid period */
@@ -57,24 +57,24 @@ typedef enum {
 } mtu_period_constants_t;
 
 /** @brief TIOR register shift positions */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_tior_low_shift  = 0, /**< Low nibble shift (MTIOCA/MTIOCC) */
   k_mtu_tior_high_shift = 4, /**< High nibble shift (MTIOCB/MTIOCD) */
 } mtu_tior_shift_t;
 
 /** @brief TIOR register mask values */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_tior_low_mask  = 0xF0, /**< Mask for low nibble */
   k_mtu_tior_high_mask = 0x0F, /**< Mask for high nibble */
 } mtu_tior_mask_t;
 
 /** @brief TIOR output disabled value */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_tior_disabled = 0x00, /**< Output disabled */
 } mtu_tior_disabled_t;
 
 /** @brief Duty cycle calculation constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_duty_min     = 0,   /**< Minimum duty cycle (0%) */
   k_mtu_duty_max     = 100, /**< Maximum duty cycle (100%) */
   k_mtu_duty_divisor = 100, /**< Divisor for percentage conversion */

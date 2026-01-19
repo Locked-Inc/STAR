@@ -155,7 +155,7 @@ static inline volatile mock_system_regs_t* system_regs(void)
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   /* PIPECTR register bits */
   k_usb_pipectr_pid_mask  = 0x0003,    /**< Response PID mask */
   k_usb_pipectr_pid_nak   = 0x0000,    /**< NAK response */

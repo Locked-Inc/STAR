@@ -34,7 +34,7 @@ static const char* s_tag = "BUS_ONEWIRE";
  */
 
 /** @brief OneWire driver constants. */
-typedef enum {
+typedef enum : uint8_t {
   k_onewire_max_instances   = k_max_buses,
   k_onewire_single_bit_mask = 0x01U,
 } onewire_driver_constants_t;
@@ -72,7 +72,7 @@ static onewire_state_entry_t s_state_pool[k_onewire_max_instances];
  * clocked from PCLKB/8 (7.5 MHz). Delays are implemented by measuring elapsed
  * ticks to ensure consistent timing independent of compiler optimizations.
  */
-typedef enum {
+typedef enum : uint32_t {
   k_onewire_mstpb_cmt_bit       = 15, /**< CMT module stop bit in MSTPCRB */
   k_onewire_cmt3_start_bit      = 1,  /**< CMSTR1 bit controlling CMT3 */
   k_onewire_cmt_divider_setting = 0,  /**< CKS = 0 -> PCLKB/8 */

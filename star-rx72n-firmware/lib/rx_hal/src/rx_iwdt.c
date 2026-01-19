@@ -33,23 +33,23 @@
  */
 
 /** @brief IWDT clock and size constants */
-typedef enum {
+typedef enum : uint32_t {
   k_iwdt_clock_hz = 120000, /**< IWDT clock frequency in Hz */
 } iwdt_clock_constants_t;
 
 /** @brief IWDT validation constants */
-typedef enum {
+typedef enum : uint32_t {
   k_iwdt_timeout_min_ms = 1, /**< Minimum valid timeout */
 } iwdt_validation_constants_t;
 
 /** @brief IWDT initialization state */
-typedef enum {
+typedef enum : uint8_t {
   k_iwdt_not_initialized = 0, /**< IWDT not initialized */
   k_iwdt_initialized     = 1, /**< IWDT initialized */
 } iwdt_init_state_t;
 
 /** @brief Task monitoring string buffer sizes */
-typedef enum {
+typedef enum : uint8_t {
   k_task_name_max_len   = 16, /**< Maximum task name length (including null) */
   k_task_name_cmp_len   = 15, /**< Length for strncmp (excluding null) */
   k_log_msg_buffer_size = 64, /**< Log message buffer size */
@@ -339,13 +339,13 @@ void rx_iwdt_clear_status(void)
 #include "tx_api.h"
 
 /** @brief Task registration state constants */
-typedef enum {
+typedef enum : uint8_t {
   k_task_not_registered = 0, /**< Task not registered */
   k_task_registered     = 1, /**< Task registered */
 } task_registration_state_t;
 
 /** @brief Task search constants */
-typedef enum {
+typedef enum : int32_t {
   k_task_not_found = -1, /**< Task not found sentinel */
   k_task_idx_min   = 0,  /**< Minimum valid task index */
 } task_search_constants_t;

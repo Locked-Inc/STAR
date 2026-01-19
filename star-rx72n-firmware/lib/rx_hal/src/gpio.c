@@ -22,12 +22,12 @@
  */
 
 /** @brief GPIO pin validation constants */
-typedef enum {
+typedef enum : uint8_t {
   k_gpio_max_pin = 7, /**< Maximum valid pin number (pins 0-7) */
 } gpio_pin_constants_t;
 
 /** @brief GPIO register bit manipulation constants */
-typedef enum {
+typedef enum : uint8_t {
   k_gpio_bit_set   = 1, /**< Value used for setting a single bit */
   k_gpio_bit_clear = 0, /**< Value for cleared bit comparison */
 } gpio_bit_constants_t;

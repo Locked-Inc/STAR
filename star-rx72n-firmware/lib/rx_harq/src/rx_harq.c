@@ -325,7 +325,7 @@ rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
 /**
  * @brief Bit position constants for soft-to-hard conversion
  */
-typedef enum {
+typedef enum : uint8_t {
   k_msb_position         = 7, /**< Most significant bit position (0-indexed) */
   k_rounding_adjustment  = 7, /**< Value for ceiling division: (n + 7) / 8 */
   k_soft_bit_zero_thresh = 0, /**< Threshold for soft-to-hard: >= 0 is bit 1 */

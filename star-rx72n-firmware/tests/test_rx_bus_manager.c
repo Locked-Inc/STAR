@@ -28,7 +28,7 @@
 /**
  * @brief Test constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_test_max_buses_to_add = 35, /**< More than k_max_buses to test overflow */
 } test_constants_t;
 

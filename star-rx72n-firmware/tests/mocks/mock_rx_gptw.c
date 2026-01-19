@@ -23,7 +23,7 @@
  */
 
 /** @brief Mock GPTW channel and output constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_gptw_max_channels   = 4, /**< Number of GPTW channels (0-3) */
   k_mock_gptw_outputs_per_ch = 2, /**< Outputs per channel (A and B) */
   k_mock_gptw_output_a       = 0, /**< Output A array index */
@@ -31,7 +31,7 @@ typedef enum {
 } mock_gptw_constants_t;
 
 /** @brief Duty cycle percentage constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_duty_percent_max = 100, /**< Maximum duty cycle percentage */
 } mock_duty_constants_t;
 

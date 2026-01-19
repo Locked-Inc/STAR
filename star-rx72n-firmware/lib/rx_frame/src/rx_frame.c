@@ -30,7 +30,7 @@
  *
  * Each byte position requires shifting by (position * 8) bits.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_shift_byte_0 = 0,  /**< No shift needed for byte 0 (LSB) */
   k_shift_byte_1 = 8,  /**< Shift 8 bits for byte 1 */
   k_shift_byte_2 = 16, /**< Shift 16 bits for byte 2 */
@@ -40,7 +40,7 @@ typedef enum {
 /**
  * @brief Byte indices for 32-bit little-endian serialization
  */
-typedef enum {
+typedef enum : uint8_t {
   k_le32_byte_0 = 0, /**< Byte 0 (LSB) */
   k_le32_byte_1 = 1, /**< Byte 1 */
   k_le32_byte_2 = 2, /**< Byte 2 */

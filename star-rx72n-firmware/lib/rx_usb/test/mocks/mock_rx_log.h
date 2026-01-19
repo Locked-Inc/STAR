@@ -25,7 +25,7 @@ extern "C" {
  */
 
 /** @brief Maximum log message length to store */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_log_max_msg_len  = 128, /**< Maximum message length */
   k_mock_log_max_tag_len  = 32,  /**< Maximum tag length */
   k_mock_log_history_size = 32,  /**< Maximum number of logged messages */
@@ -36,7 +36,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_mock_log_level_error = 0, /**< Error level */
   k_mock_log_level_warn  = 1, /**< Warning level */
   k_mock_log_level_info  = 2, /**< Info level */

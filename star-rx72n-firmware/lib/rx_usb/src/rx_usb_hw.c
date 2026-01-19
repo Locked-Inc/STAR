@@ -29,7 +29,7 @@
 static const char* s_tag = "USB_HW";
 
 /** @brief USB timing constants for initialization delays */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_pll_stabilization_ms   = 10, /**< USB PLL stabilization time (10ms) */
   k_usb_clock_stabilization_ms = 10, /**< USB clock stabilization time (10ms) */
   k_min_sleep_ticks            = 1,  /**< Minimum sleep duration (1 tick) */
@@ -37,30 +37,30 @@ typedef enum {
 } usb_hw_timing_t;
 
 /** @brief USB SYSCFG register values */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_syscfg_disabled = 0x0000, /**< USB module disabled (all bits clear) */
 } usb_syscfg_value_t;
 
 /** @brief FIFO operation timeouts and masks */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_fifo_timeout_iterations = 1000, /**< FIFO ready timeout (busy-wait iterations) */
   k_usb_fifo_timeout_expired    = 0,    /**< Timeout counter expired */
   k_usb_fifo_byte_mask          = 0xFF, /**< Byte mask for 8-bit FIFO read */
 } usb_fifo_constants_t;
 
 /** @brief USB address mask */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_address_mask_hw = 0x7F, /**< USB address mask (7 bits, 0-127) */
 } usb_address_mask_t;
 
 /** @brief Interrupt Controller (ICU) configuration constants */
-typedef enum {
+typedef enum : uint8_t {
   k_icu_bits_per_ier_register = 8, /**< Number of interrupt enable bits per IER register */
   k_usb_interrupt_priority    = 6, /**< USB interrupt priority (moderate, below motor control) */
 } usb_icu_config_t;
 
 /** @brief USB pipe and endpoint validation limits */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_pipe_min            = 0,   /**< Minimum pipe number (DCP) */
   k_usb_pipe_max            = 9,   /**< Maximum pipe number */
   k_usb_endpoint_max        = 15,  /**< Maximum endpoint number (0-15) */

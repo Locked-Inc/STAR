@@ -44,19 +44,19 @@ static const uint32_t s_sleep_interval_ms = 10;
 /**
  * @brief Sequence number constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_initial_sequence = 0, /**< Initial TX/RX sequence number */
 } rx_usb_comm_sequence_constants_t;
 
 /**
  * @brief Receive loop bounds for NASA Power of 10 Rule 2 compliance
  */
-typedef enum {
+typedef enum : uint8_t {
   k_max_receive_iterations = 100, /**< Max receive loop attempts */
 } rx_usb_comm_loop_limits_t;
 
 /** @brief Byte offsets within frame header buffer */
-typedef enum {
+typedef enum : uint8_t {
   k_hdr_len_offset = 4, /**< Payload length field offset */
 } frame_header_offset_t;
 
@@ -68,7 +68,7 @@ typedef enum {
 /**
  * @brief Sync word not found sentinel value
  */
-typedef enum {
+typedef enum : int32_t {
   k_sync_not_found = -1, /**< Sync word not found in buffer */
 } rx_usb_comm_sync_result_t;
 
@@ -334,7 +334,7 @@ internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, uint32_t 
 /**
  * @brief Receive iteration result codes
  */
-typedef enum {
+typedef enum : uint8_t {
   k_receive_continue = 0, /**< Continue to next iteration */
   k_receive_done     = 1, /**< Frame received successfully */
   k_receive_error    = 2, /**< Error occurred, check err output */

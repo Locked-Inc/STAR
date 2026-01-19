@@ -69,14 +69,14 @@ extern "C" {
 /**
  * @brief DS18B20 family code (first byte of ROM)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_ds18b20_family_code = 0x28, /**< DS18B20 family code in ROM */
 } ds18b20_family_code_t;
 
 /**
  * @brief DS18B20 function commands
  */
-typedef enum {
+typedef enum : uint8_t {
   k_ds18b20_cmd_convert_t     = 0x44, /**< Trigger temperature conversion */
   k_ds18b20_cmd_write_scratch = 0x4E, /**< Write to scratchpad memory */
   k_ds18b20_cmd_read_scratch  = 0xBE, /**< Read from scratchpad memory */
@@ -88,7 +88,7 @@ typedef enum {
 /**
  * @brief DS18B20 scratchpad memory layout
  */
-typedef enum {
+typedef enum : uint8_t {
   k_ds18b20_scratch_temp_lsb  = 0, /**< Temperature LSB */
   k_ds18b20_scratch_temp_msb  = 1, /**< Temperature MSB */
   k_ds18b20_scratch_th_reg    = 2, /**< TH (high alarm) register */
@@ -104,7 +104,7 @@ typedef enum {
 /**
  * @brief DS18B20 configuration register bit positions
  */
-typedef enum {
+typedef enum : uint8_t {
   k_ds18b20_config_r0_bit = 5, /**< Resolution bit 0 */
   k_ds18b20_config_r1_bit = 6, /**< Resolution bit 1 */
 } ds18b20_config_bits_t;
@@ -112,7 +112,7 @@ typedef enum {
 /**
  * @brief DS18B20 temperature resolution modes
  */
-typedef enum {
+typedef enum : uint8_t {
   k_ds18b20_resolution_9bit  = 0, /**< 9-bit: 0.5°C, 93.75ms */
   k_ds18b20_resolution_10bit = 1, /**< 10-bit: 0.25°C, 187.5ms */
   k_ds18b20_resolution_11bit = 2, /**< 11-bit: 0.125°C, 375ms */
@@ -125,7 +125,7 @@ typedef enum {
  * Maximum conversion time for each resolution.
  * Add margin for safety (spec values + 10%).
  */
-typedef enum {
+typedef enum : uint16_t {
   k_ds18b20_conv_time_9bit_ms  = 100, /**< 9-bit conversion: 100ms */
   k_ds18b20_conv_time_10bit_ms = 200, /**< 10-bit conversion: 200ms */
   k_ds18b20_conv_time_11bit_ms = 400, /**< 11-bit conversion: 400ms */
@@ -138,7 +138,7 @@ typedef enum {
  * Lower bits are undefined for resolutions < 12-bit and must be masked.
  * This prevents garbage bits from corrupting the temperature reading.
  */
-typedef enum {
+typedef enum : uint16_t {
   k_ds18b20_temp_mask_9bit  = 0xFFF8, /**< Mask for 9-bit (discard bits 0-2) */
   k_ds18b20_temp_mask_10bit = 0xFFFC, /**< Mask for 10-bit (discard bits 0-1) */
   k_ds18b20_temp_mask_11bit = 0xFFFE, /**< Mask for 11-bit (discard bit 0) */
@@ -148,7 +148,7 @@ typedef enum {
 /**
  * @brief DS18B20 temperature conversion constants
  */
-typedef enum {
+typedef enum : int32_t {
   k_ds18b20_temp_shift             = 4,      /**< Shift to get integer temperature */
   k_ds18b20_sign_bit               = 0x8000, /**< Sign bit in 16-bit temperature */
   k_ds18b20_crc_bytes              = 8,      /**< Number of bytes for CRC calculation */
@@ -161,7 +161,7 @@ typedef enum {
 /**
  * @brief DS18B20 scratchpad write buffer indices
  */
-typedef enum {
+typedef enum : uint8_t {
   k_ds18b20_write_idx_th     = 0, /**< TH (high alarm) register index */
   k_ds18b20_write_idx_tl     = 1, /**< TL (low alarm) register index */
   k_ds18b20_write_idx_config = 2, /**< Configuration register index */
@@ -170,14 +170,14 @@ typedef enum {
 /**
  * @brief DS18B20 expected byte values
  */
-typedef enum {
+typedef enum : uint8_t {
   k_ds18b20_reserved_byte_value = 0xFF, /**< Expected value for reserved byte */
 } ds18b20_expected_values_t;
 
 /**
  * @brief DS18B20 initialization values
  */
-typedef enum {
+typedef enum : uint8_t {
   k_ds18b20_config_register_cleared = 0, /**< Cleared config register value */
   k_ds18b20_conversion_time_invalid = 0, /**< Invalid conversion time return value */
 } ds18b20_init_values_t;
@@ -185,7 +185,7 @@ typedef enum {
 /**
  * @brief DS18B20 power supply modes
  */
-typedef enum {
+typedef enum : uint8_t {
   k_ds18b20_power_parasitic = false, /**< Parasitic power mode */
   k_ds18b20_power_external  = true,  /**< External power mode */
 } ds18b20_power_mode_t;

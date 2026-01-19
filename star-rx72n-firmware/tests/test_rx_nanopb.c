@@ -28,7 +28,7 @@ static const uint32_t s_test_sequence_max = UINT32_MAX;
 /**
  * @brief Test constants for velocity and buffer operations
  */
-typedef enum {
+typedef enum : int32_t {
   k_test_buffer_size          = 512,
   k_test_small_buffer_size    = 1,
   k_test_sequence_zero        = 0,

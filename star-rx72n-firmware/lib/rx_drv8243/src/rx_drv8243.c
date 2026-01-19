@@ -34,7 +34,7 @@ static const char* s_tag = "DRV8243";
 /**
  * @brief DRV8243 configuration constants
  */
-typedef enum {
+typedef enum : int16_t {
   k_drv8243_default_ki_propi = 525,   /**< 525 A/V IPROPI ratio (typical) */
   k_drv8243_max_pwm_freq_hz  = 25000, /**< 25 kHz max recommended PWM */
   k_pwm_not_inverted         = false, /**< PWM output not inverted */

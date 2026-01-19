@@ -29,21 +29,21 @@
 /**
  * @brief Worker thread priority (lower number = higher priority)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_worker_priority = 10, /**< Medium priority for sensor measurements */
 } rx_hcsr04_worker_priority_t;
 
 /**
  * @brief Worker thread stack size
  */
-typedef enum {
+typedef enum : uint16_t {
   k_worker_stack_size = 1024, /**< 1KB stack for worker thread */
 } rx_hcsr04_worker_stack_t;
 
 /**
  * @brief Worker thread event flags
  */
-typedef enum {
+typedef enum : uint8_t {
   k_event_measurement_request = 0x01, /**< Measurement request pending */
   k_event_shutdown_request    = 0x02, /**< Worker shutdown requested */
 } rx_hcsr04_event_flags_t;
@@ -51,28 +51,28 @@ typedef enum {
 /**
  * @brief Unit conversion constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_cm_per_inch_x100 = 254, /**< Centimeters per inch * 100 (2.54 * 100) */
 } rx_hcsr04_conversion_t;
 
 /**
  * @brief Scaling factor for integer-based unit conversion
  */
-typedef enum {
+typedef enum : uint8_t {
   k_unit_scale_factor = 100, /**< Scale factor for fixed-point conversion */
 } rx_hcsr04_scale_t;
 
 /**
  * @brief Shutdown wait time in ThreadX ticks
  */
-typedef enum {
+typedef enum : uint8_t {
   k_shutdown_wait_ticks = 5, /**< ~50ms at 100 Hz tick rate */
 } rx_hcsr04_shutdown_t;
 
 /**
  * @brief Echo polling loop bounds
  */
-typedef enum {
+typedef enum : uint16_t {
   k_echo_poll_max_iterations = 30000, /**< Max polling iterations */
 } rx_hcsr04_poll_limits_t;
 

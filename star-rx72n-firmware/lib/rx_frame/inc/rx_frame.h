@@ -41,7 +41,7 @@ extern "C" {
 /**
  * @brief Frame structure constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_frame_sync_word   = (0x55AA), /**< Frame sync marker */
   k_frame_sync_size   = (2),      /**< SYNC field size */
   k_frame_seq_size    = (2),      /**< SEQ field size */
@@ -58,7 +58,7 @@ typedef enum {
 /**
  * @brief Frame types (matches Go FrameType)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_frame_type_unknown  = (0), /**< Invalid frame type */
   k_frame_type_command  = (1), /**< Command from controller */
   k_frame_type_response = (2), /**< Response from peripheral */
@@ -69,7 +69,7 @@ typedef enum {
 /**
  * @brief Frame flags (matches Go FrameFlags)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_frame_flag_none         = (0x00), /**< No flags */
   k_frame_flag_requires_ack = (0x01), /**< Frame requires ACK */
   k_frame_flag_retransmit   = (0x02), /**< Retransmission */
@@ -206,7 +206,7 @@ static inline uint32_t rx_frame_encoded_size(uint32_t payload_len)
  * In big-endian format, the high byte (MSB) is stored at index 0 and the
  * low byte (LSB) is stored at index 1.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_be16_byte_high = 0, /**< High byte (MSB) at index 0 */
   k_be16_byte_low  = 1, /**< Low byte (LSB) at index 1 */
 } rx_be16_byte_idx_t;
@@ -214,7 +214,7 @@ typedef enum {
 /**
  * @brief Byte manipulation constants for endianness conversions
  */
-typedef enum {
+typedef enum : uint8_t {
   k_rx_be16_high_shift = (8),     /**< Bit shift for high byte in 16-bit value */
   k_rx_byte_mask       = (0xFFU), /**< Mask to extract one byte */
 } rx_byte_order_constants_t;

@@ -41,7 +41,7 @@ extern "C" {
  */
 
 /** @brief WDT timeout periods (clock divider settings) */
-typedef enum {
+typedef enum : uint8_t {
   k_wdt_timeout_256_cycles   = 0, /**< 256 PCLKB cycles */
   k_wdt_timeout_1024_cycles  = 1, /**< 1024 PCLKB cycles */
   k_wdt_timeout_4096_cycles  = 2, /**< 4096 PCLKB cycles */

@@ -31,7 +31,7 @@
 /**
  * @brief Test constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_test_rom_bytes          = 8, /**< OneWire ROM size in bytes */
   k_test_max_search_devices = 4, /**< Max devices for search tests */
 } test_constants_t;

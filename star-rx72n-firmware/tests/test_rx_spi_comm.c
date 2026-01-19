@@ -25,7 +25,7 @@
  */
 
 /** @brief Test constant values */
-typedef enum {
+typedef enum : uint16_t {
   k_test_channel_default = 0,
   k_test_channel_alt     = 1,
   k_test_channel_invalid = 5,

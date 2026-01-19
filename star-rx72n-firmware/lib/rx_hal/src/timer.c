@@ -34,28 +34,28 @@
  *         = (60,000,000 / 128 / 100) - 1
  *         = 4687
  */
-typedef enum {
+typedef enum : uint16_t {
   k_cmt0_compare_match = 4687, /**< Compare match value for 100 Hz */
   k_cmt0_irq_priority  = 3,    /**< Interrupt priority (0-15, higher = more urgent) */
 } cmt0_config_t;
 
 /** @brief CMT0 register configuration values */
-typedef enum {
+typedef enum : uint16_t {
   k_cmt0_cmcr_config = 0x0042, /**< CMCR: CKS[1:0]=10 (PCLK/128), CMIE=1 (interrupt enable) */
 } cmt0_cmcr_values_t;
 
 /** @brief CMSTR0 register bit positions */
-typedef enum {
+typedef enum : uint8_t {
   k_cmt0_cmstr_start_bit = 0x01, /**< CMT0 start bit in CMSTR0 */
 } cmt0_cmstr_bits_t;
 
 /** @brief ICU IER register calculation constants */
-typedef enum {
+typedef enum : uint8_t {
   k_ier_bit_enable_base = 1, /**< Base value for IER bit enable shift */
 } cmt0_ier_constants_t;
 
 /** @brief Timer counter initial value */
-typedef enum {
+typedef enum : uint16_t {
   k_cmt0_counter_init = 0, /**< Counter initial/clear value */
 } cmt0_counter_values_t;
 
@@ -70,7 +70,7 @@ extern void _tx_timer_interrupt(void);
 /**
  * @brief ICU interrupt request flag values
  */
-typedef enum {
+typedef enum : uint8_t {
   k_icu_ir_clear = 0, /**< Clear ICU IR flag */
 } icu_ir_values_t;
 

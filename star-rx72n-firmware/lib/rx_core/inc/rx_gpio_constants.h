@@ -30,7 +30,7 @@ extern "C" {
  * The RX72N has decimal ports (0-9) and hexadecimal ports (A-G, mapped as
  * 0xA-0x10). Each port has up to 8 pins (0-7).
  */
-typedef enum {
+typedef enum : uint16_t {
   k_pins_per_port     = 8,      /**< Pins per GPIO port (0-7) */
   k_max_decimal_port  = 9,      /**< Maximum decimal port number */
   k_hex_port_start    = 0xA,    /**< First hex port (A) */
@@ -50,7 +50,7 @@ typedef enum {
  *
  * Default retry and backoff parameters for the error handler.
  */
-typedef enum {
+typedef enum : uint16_t {
   k_error_handler_default_max_retries        = 3,    /**< Default max retry count */
   k_error_handler_default_initial_backoff_ms = 100,  /**< Default initial backoff (ms) */
   k_error_handler_default_max_backoff_ms     = 5000, /**< Default max backoff (ms) */
@@ -72,7 +72,7 @@ typedef enum {
  *
  * Reference: RX72N Hardware Manual, PRCR register section
  */
-typedef enum {
+typedef enum : uint16_t {
   k_prcr_key       = 0xA5, /**< PRCR unlock key (upper byte) */
   k_prcr_key_shift = 8,    /**< Bit shift for PRCR key into upper byte */
   k_prcr_lock_all  = 0x00, /**< Lock all protected registers */

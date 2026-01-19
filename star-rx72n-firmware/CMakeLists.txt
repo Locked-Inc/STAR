@@ -14,7 +14,10 @@ project(star-rx72n-firmware
 
 # C standard
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD_REQUIRED OFF)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    add_compile_options($<$<COMPILE_LANGUAGE:C>:-std=gnu2x>)
+endif()
 set(CMAKE_C_EXTENSIONS ON)  # GNU extensions for embedded
 
 # Build type default

@@ -64,7 +64,7 @@ typedef struct {
  * These codes are written to PFS registers to select pin functions.
  * Values are device-specific - consult RX72N hardware manual Table 21.5.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_pin_function_gpio   = 0x00, /**< GPIO mode (default) */
   k_pin_function_periph = 0x01, /**< Peripheral function (auto-detect from PSEL) */
 } rx_pin_function_t;
@@ -75,7 +75,7 @@ typedef enum {
  * These are written to the PSEL field of PFS registers.
  * Actual values depend on specific pin - see hardware manual.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_psel_mtu_ioc   = 0x01, /**< MTU I/O compare/PWM output (MTIOC) */
   k_psel_mtu_clk   = 0x02, /**< MTU clock input (MTCLK) */
   k_psel_mtu_phase = 0x03, /**< MTU encoder phase input */

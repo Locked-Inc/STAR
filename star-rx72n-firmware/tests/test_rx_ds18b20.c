@@ -33,13 +33,13 @@ typedef struct {
 static mock_onewire_state_t s_mock_state;
 
 /** @brief OneWire ROM length constants */
-typedef enum {
+typedef enum : uint8_t {
   k_onewire_rom_length    = k_onewire_rom_bytes,
   k_onewire_rom_crc_index = k_onewire_rom_length - 1,
 } onewire_rom_constants_t;
 
 /** @brief Mock OneWire constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_default_read_byte    = 0xFF,
   k_ds18b20_default_th_tl     = 0x00,
   k_ds18b20_reserved1_default = 0xFF,
@@ -57,7 +57,7 @@ typedef enum {
 } ds18b20_mock_constants_t;
 
 /** @brief ROM byte indices for default ROM population */
-typedef enum {
+typedef enum : uint8_t {
   k_rom_idx_family   = 0,
   k_rom_idx_serial_0 = 1,
   k_rom_idx_serial_1 = 2,
@@ -67,7 +67,7 @@ typedef enum {
   k_rom_idx_serial_5 = 6,
 } rom_byte_index_t;
 
-typedef enum {
+typedef enum : uint8_t {
   k_mock_serial_byte_0 = 0x01,
   k_mock_serial_byte_1 = 0x02,
   k_mock_serial_byte_2 = 0x03,

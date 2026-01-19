@@ -26,7 +26,7 @@ extern "C" {
  */
 
 /** @brief CMT base addresses (verified against RX72N Hardware Manual) */
-typedef enum {
+typedef enum : uint32_t {
   k_cmt_ctrl_base_addr = 0x00088000, /**< CMT control register base address */
   k_cmt0_base_addr     = 0x00088002, /**< CMT0 register base address */
   k_cmt1_base_addr     = 0x00088008, /**< CMT1 register base address */
@@ -66,13 +66,13 @@ typedef struct {
 } rx_cmt_control_regs_t;
 
 /** @brief CMSTR0 register bit masks */
-typedef enum {
+typedef enum : uint8_t {
   k_rx72n_cmstr0_cmt0_enable = 0x01, /**< CMSTR0 bit 0 enables CMT0 */
   k_rx72n_cmstr0_cmt1_enable = 0x02, /**< CMSTR0 bit 1 enables CMT1 */
 } rx_cmt_cmstr0_bits_t;
 
 /** @brief CMSTR1 register bit masks */
-typedef enum {
+typedef enum : uint8_t {
   k_rx72n_cmstr1_cmt2_enable = 0x01, /**< CMSTR1 bit 0 enables CMT2 */
   k_rx72n_cmstr1_cmt3_enable = 0x02, /**< CMSTR1 bit 1 enables CMT3 */
 } rx_cmt_cmstr1_bits_t;

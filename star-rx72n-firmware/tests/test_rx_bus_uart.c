@@ -26,7 +26,7 @@
  */
 
 /** @brief UART test configuration constants */
-typedef enum {
+typedef enum : uint32_t {
   k_test_uart_channel           = 9,      /**< Primary SCI channel */
   k_test_uart_baudrate          = 115200, /**< Primary baud rate */
   k_test_uart_channel_secondary = 0,      /**< Secondary SCI channel */
@@ -563,7 +563,7 @@ void test_rx_bus_config_init_uart_invalid_channel(void)
 void test_rx_bus_config_init_uart_invalid_port(void)
 {
   rx_bus_config_t config;
-  enum { k_invalid_port = k_rx_port_j + 1 };
+  enum : uint8_t { k_invalid_port = k_rx_port_j + 1 };
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_invalid_port << k_port_shift) | k_rx_pin_0);
   rx_err_t      err         = rx_bus_config_init_uart(&config,
                                          "bad_uart",
@@ -580,7 +580,7 @@ void test_rx_bus_config_init_uart_invalid_port(void)
 void test_rx_bus_config_init_uart_invalid_pin(void)
 {
   rx_bus_config_t config;
-  enum { k_invalid_pin = k_rx_pin_max + 1 };
+  enum : uint8_t { k_invalid_pin = k_rx_pin_max + 1 };
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_rx_port_0 << k_port_shift) | k_invalid_pin);
   rx_err_t      err         = rx_bus_config_init_uart(&config,
                                          "bad_uart",

@@ -41,7 +41,7 @@ typedef void VOID;
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   TX_SUCCESS             = 0x00, /**< Success */
   TX_DELETED             = 0x01, /**< Object was deleted */
   TX_NO_MEMORY           = 0x10, /**< No memory available */
@@ -86,7 +86,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint32_t {
   TX_NO_WAIT      = 0,          /**< Don't wait */
   TX_WAIT_FOREVER = 0xFFFFFFFF, /**< Wait forever */
 } tx_wait_options_t;
@@ -139,7 +139,7 @@ typedef struct tx_mutex_struct {
  */
 
 /** @brief Mock state constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_tx_max_sleep_calls = 64, /**< Maximum sleep calls to track */
 } mock_tx_constants_t;
 

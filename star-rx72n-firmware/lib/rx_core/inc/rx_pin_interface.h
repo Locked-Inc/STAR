@@ -69,7 +69,7 @@ typedef struct rx_pin_interface rx_pin_interface_t;
 /**
  * @brief Pin interface configuration constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_pin_function_name_max_len =
     32, /**< Maximum length of pin function name (e.g., "SPI_MOSI", "UART_TX") */
 } pin_interface_limits_t;

@@ -28,51 +28,51 @@
  */
 
 /** @brief Oscillator stabilization timing constants */
-typedef enum {
+typedef enum : uint32_t {
   k_main_osc_stabilization_cycles     = 2400000, /**< Main oscillator delay (~10ms at 240MHz) */
   k_pll_stabilization_timeout         = 1000000, /**< PLL stabilization max wait iterations */
   k_pll_stabilization_timeout_expired = 0,       /**< PLL timeout expiration value */
 } oscillator_timing_t;
 
 /** @brief Oscillator control register values */
-typedef enum {
+typedef enum : uint8_t {
   k_sub_clock_stopped = 0x01, /**< SOSCCR: Stop sub-clock oscillator */
   k_main_osc_enabled  = 0x00, /**< MOSCCR: Enable main oscillator */
   k_pll_enabled       = 0x00, /**< PLLCR2: Enable PLL */
 } oscillator_control_t;
 
 /** @brief PLL configuration values */
-typedef enum {
+typedef enum : uint16_t {
   k_pll_multiplier_10_div_1 = 0x1300, /**< PLLCR: 10x multiplier, divide by 1 (240MHz from 24MHz) */
   k_pll_stable_flag         = 0x04,   /**< OSCOVFSR: PLL stabilization flag bit */
 } pll_config_t;
 
 /** @brief System clock configuration */
-typedef enum {
+typedef enum : uint32_t {
   k_system_clock_dividers   = 0x21C21211, /**< SCKCR: ICLK=240MHz, PCLKA=120MHz, others=60MHz */
   k_system_clock_source_pll = 0x0400,     /**< SCKCR3: Select PLL as system clock source */
 } system_clock_config_t;
 
 /** @brief Module stop bit positions in MSTPCRA */
-typedef enum {
+typedef enum : uint8_t {
   k_mstpcra_cmt = 15, /**< CMT0, CMT1 module stop bit */
   k_mstpcra_mtu = 9,  /**< MTU module stop bit */
 } mstpcra_bits_t;
 
 /** @brief Module stop bit positions in MSTPCRB */
-typedef enum {
+typedef enum : uint8_t {
   k_mstpcrb_rspi0 = 17, /**< RSPI0 module stop bit */
   k_mstpcrb_rspi1 = 16, /**< RSPI1 module stop bit */
   /* Note: SCI modules are enabled per-channel in uart_init_channel() */
 } mstpcrb_bits_t;
 
 /** @brief Module stop bit positions in MSTPCRC */
-typedef enum {
+typedef enum : uint8_t {
   k_mstpcrc_s12ad = 17, /**< S12AD module stop bit */
 } mstpcrc_bits_t;
 
 /** @brief Module initialization retry configuration */
-typedef enum {
+typedef enum : uint8_t {
   k_retry_count_module_stop = 3, /**< Number of retries for module stop register verification */
 } module_init_config_t;
 
