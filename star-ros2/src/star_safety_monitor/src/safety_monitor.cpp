@@ -2,6 +2,9 @@
 // Licensed under MIT License
 
 #include "star_safety_monitor/safety_monitor.hpp"
+#include <cmath>
+#include <iomanip>
+#include <sstream>
 
 namespace star_safety_monitor
 {
@@ -10,14 +13,6 @@ SafetyMonitor::SafetyMonitor(const rclcpp::NodeOptions & options)
 : rclcpp_lifecycle::LifecycleNode("safety_monitor", options)
 {
   RCLCPP_INFO(get_logger(), "SafetyMonitor constructor called");
-
-  // TODO: Declare parameters
-  // - heartbeat_timeout_ms
-  // - max_linear_velocity
-  // - max_angular_velocity
-  // - min_battery_voltage
-  // - max_battery_current
-  // - publish_rate
 }
 
 SafetyMonitor::~SafetyMonitor()
@@ -31,14 +26,65 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
   (void)previous_state;
   RCLCPP_INFO(get_logger(), "Configuring SafetyMonitor");
 
-  // TODO: Initialize publishers and subscribers
-  // - Create diagnostic publisher
-  // - Create emergency stop publisher
-  // - Subscribe to battery state
-  // - Subscribe to odometry
-  // - Subscribe to system diagnostics
+  try {
+    // Declare and get parameters
+    declare_parameter("heartbeat_timeout_ms", 500);
+    declare_parameter("max_linear_velocity", 1.0);
+    declare_parameter("max_angular_velocity", 2.0);
+    declare_parameter("min_battery_voltage", 10.5);
+    declare_parameter("max_battery_current", 30.0);
+    declare_parameter("max_battery_temp", 60.0);
+    declare_parameter("publish_rate", 10.0);
+    declare_parameter("enable_auto_estop", true);
+    declare_parameter("estop_recovery_delay", 5.0);
 
-  return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+    heartbeat_timeout_ms_ = get_parameter("heartbeat_timeout_ms").as_int();
+    max_linear_velocity_ = get_parameter("max_linear_velocity").as_double();
+    max_angular_velocity_ = get_parameter("max_angular_velocity").as_double();
+    min_battery_voltage_ = get_parameter("min_battery_voltage").as_double();
+    max_battery_current_ = get_parameter("max_battery_current").as_double();
+    max_battery_temp_ = get_parameter("max_battery_temp").as_double();
+    publish_rate_ = get_parameter("publish_rate").as_double();
+    enable_auto_estop_ = get_parameter("enable_auto_estop").as_bool();
+    estop_recovery_delay_ = get_parameter("estop_recovery_delay").as_double();
+
+    RCLCPP_INFO(get_logger(), "Configuration loaded:");
+    RCLCPP_INFO(get_logger(), "  Heartbeat timeout: %d ms", heartbeat_timeout_ms_);
+    RCLCPP_INFO(get_logger(), "  Max linear velocity: %.2f m/s", max_linear_velocity_);
+    RCLCPP_INFO(get_logger(), "  Max angular velocity: %.2f rad/s", max_angular_velocity_);
+    RCLCPP_INFO(get_logger(), "  Min battery voltage: %.1f V", min_battery_voltage_);
+    RCLCPP_INFO(get_logger(), "  Max battery current: %.1f A", max_battery_current_);
+
+    // Create lifecycle publishers
+    diagnostics_pub_ =
+      create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
+    emergency_stop_pub_ = create_publisher<std_msgs::msg::Bool>("/emergency_stop", 10);
+
+    // Create subscribers
+    odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
+      "/odom", 10,
+      std::bind(&SafetyMonitor::odometry_callback, this, std::placeholders::_1));
+
+    diag_sub_ = create_subscription<diagnostic_msgs::msg::DiagnosticArray>(
+      "/diagnostics", 10,
+      std::bind(&SafetyMonitor::diagnostics_callback, this, std::placeholders::_1));
+
+    // Initialize state
+    last_diagnostics_time_ = std::chrono::system_clock::now();
+    heartbeat_times_.clear();
+    current_linear_velocity_ = 0.0;
+    current_angular_velocity_ = 0.0;
+    velocity_exceeded_ = false;
+    heartbeat_timeout_triggered_ = false;
+    emergency_stop_active_ = false;
+    overall_severity_ = SeverityLevel::OK;
+
+    RCLCPP_INFO(get_logger(), "SafetyMonitor configured successfully");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), "Configuration failed: %s", e.what());
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+  }
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -47,12 +93,24 @@ SafetyMonitor::on_activate(const rclcpp_lifecycle::State & previous_state)
   (void)previous_state;
   RCLCPP_INFO(get_logger(), "Activating SafetyMonitor");
 
-  // TODO: Start monitoring timers
-  // - Create heartbeat watchdog timer
-  // - Create diagnostic publish timer
-  // - Activate lifecycle publishers
+  try {
+    // Activate publishers
+    diagnostics_pub_->on_activate();
+    emergency_stop_pub_->on_activate();
 
-  return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+    // Create monitoring timer (10 Hz by default)
+    auto timer_period = std::chrono::milliseconds(
+      static_cast<int>(1000.0 / publish_rate_));
+    monitoring_timer_ =
+      create_wall_timer(timer_period,
+        std::bind(&SafetyMonitor::monitoring_timer_callback, this));
+
+    RCLCPP_INFO(get_logger(), "SafetyMonitor activated successfully");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), "Activation failed: %s", e.what());
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+  }
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -61,11 +119,23 @@ SafetyMonitor::on_deactivate(const rclcpp_lifecycle::State & previous_state)
   (void)previous_state;
   RCLCPP_INFO(get_logger(), "Deactivating SafetyMonitor");
 
-  // TODO: Stop monitoring
-  // - Cancel timers
-  // - Deactivate lifecycle publishers
+  try {
+    // Cancel timer
+    if (monitoring_timer_) {
+      monitoring_timer_->cancel();
+      monitoring_timer_.reset();
+    }
 
-  return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+    // Deactivate publishers
+    diagnostics_pub_->on_deactivate();
+    emergency_stop_pub_->on_deactivate();
+
+    RCLCPP_INFO(get_logger(), "SafetyMonitor deactivated successfully");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), "Deactivation failed: %s", e.what());
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+  }
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -74,11 +144,22 @@ SafetyMonitor::on_cleanup(const rclcpp_lifecycle::State & previous_state)
   (void)previous_state;
   RCLCPP_INFO(get_logger(), "Cleaning up SafetyMonitor");
 
-  // TODO: Release resources
-  // - Reset publishers/subscribers
-  // - Clear state tracking
+  try {
+    // Reset publishers and subscribers
+    diagnostics_pub_.reset();
+    emergency_stop_pub_.reset();
+    odom_sub_.reset();
+    diag_sub_.reset();
 
-  return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+    // Clear state
+    heartbeat_times_.clear();
+
+    RCLCPP_INFO(get_logger(), "SafetyMonitor cleaned up successfully");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), "Cleanup failed: %s", e.what());
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+  }
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -87,9 +168,189 @@ SafetyMonitor::on_shutdown(const rclcpp_lifecycle::State & previous_state)
   (void)previous_state;
   RCLCPP_INFO(get_logger(), "Shutting down SafetyMonitor");
 
-  // TODO: Perform graceful shutdown
+  // Ensure emergency stop is triggered on shutdown if active
+  if (emergency_stop_active_) {
+    auto msg = std_msgs::msg::Bool();
+    msg.data = true;
+    emergency_stop_pub_->publish(msg);
+  }
 
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
+}
+
+void SafetyMonitor::odometry_callback(const nav_msgs::msg::Odometry::SharedPtr msg)
+{
+  // Extract current velocities
+  current_linear_velocity_ = std::sqrt(
+    msg->twist.twist.linear.x * msg->twist.twist.linear.x +
+    msg->twist.twist.linear.y * msg->twist.twist.linear.y +
+    msg->twist.twist.linear.z * msg->twist.twist.linear.z);
+
+  current_angular_velocity_ = std::sqrt(
+    msg->twist.twist.angular.x * msg->twist.twist.angular.x +
+    msg->twist.twist.angular.y * msg->twist.twist.angular.y +
+    msg->twist.twist.angular.z * msg->twist.twist.angular.z);
+}
+
+void SafetyMonitor::diagnostics_callback(
+  const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg)
+{
+  last_diagnostics_time_ = std::chrono::system_clock::now();
+
+  // Update heartbeat times for known nodes
+  for (const auto & status : msg->status) {
+    heartbeat_times_[status.name] = std::chrono::system_clock::now();
+  }
+}
+
+void SafetyMonitor::monitoring_timer_callback()
+{
+  // Perform safety checks
+  check_heartbeat_health();
+  check_velocity_limits();
+  check_diagnostic_health();
+  update_overall_state();
+  publish_diagnostics();
+}
+
+void SafetyMonitor::check_heartbeat_health()
+{
+  auto now = std::chrono::system_clock::now();
+  auto timeout_duration = std::chrono::milliseconds(heartbeat_timeout_ms_);
+
+  // Check for stale diagnostics
+  auto time_since_diag = now - last_diagnostics_time_;
+  if (time_since_diag > timeout_duration) {
+    if (!heartbeat_timeout_triggered_) {
+      RCLCPP_WARN(get_logger(), "Heartbeat timeout detected!");
+      heartbeat_timeout_triggered_ = true;
+      if (enable_auto_estop_) {
+        emergency_stop_active_ = true;
+        estop_trigger_time_ = now;
+      }
+    }
+  } else {
+    // Reset timeout if heartbeat recovered
+    if (heartbeat_timeout_triggered_) {
+      auto estop_duration = now - estop_trigger_time_;
+      if (estop_duration > std::chrono::duration<double>(estop_recovery_delay_)) {
+        RCLCPP_INFO(get_logger(), "Heartbeat recovered");
+        heartbeat_timeout_triggered_ = false;
+        emergency_stop_active_ = false;
+      }
+    }
+  }
+}
+
+void SafetyMonitor::check_velocity_limits()
+{
+  velocity_exceeded_ = false;
+
+  if (current_linear_velocity_ > max_linear_velocity_) {
+    RCLCPP_WARN(get_logger(),
+      "Linear velocity limit exceeded: %.2f > %.2f m/s",
+      current_linear_velocity_, max_linear_velocity_);
+    velocity_exceeded_ = true;
+  }
+
+  if (current_angular_velocity_ > max_angular_velocity_) {
+    RCLCPP_WARN(get_logger(),
+      "Angular velocity limit exceeded: %.2f > %.2f rad/s",
+      current_angular_velocity_, max_angular_velocity_);
+    velocity_exceeded_ = true;
+  }
+}
+
+void SafetyMonitor::check_diagnostic_health()
+{
+  // Additional diagnostic checks can be added here
+  // For now, this is a placeholder for future expansion
+}
+
+void SafetyMonitor::update_overall_state()
+{
+  // Determine overall severity level
+  overall_severity_ = SeverityLevel::OK;
+
+  if (heartbeat_timeout_triggered_) {
+    overall_severity_ = SeverityLevel::ERROR;
+  } else if (velocity_exceeded_) {
+    overall_severity_ = SeverityLevel::WARN;
+  }
+
+  // Publish emergency stop signal if needed
+  if (emergency_stop_active_) {
+    auto msg = std_msgs::msg::Bool();
+    msg.data = true;
+    emergency_stop_pub_->publish(msg);
+  }
+}
+
+void SafetyMonitor::publish_diagnostics()
+{
+  auto diag_array = diagnostic_msgs::msg::DiagnosticArray();
+  diag_array.header.stamp = now();
+
+  // System health status
+  diagnostic_msgs::msg::DiagnosticStatus system_status;
+  system_status.name = "safety_monitor: System Health";
+  system_status.hardware_id = "safety_monitor";
+
+  if (overall_severity_ == SeverityLevel::OK) {
+    system_status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
+    system_status.message = "All systems nominal";
+  } else if (overall_severity_ == SeverityLevel::WARN) {
+    system_status.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+    system_status.message = "Warning conditions detected";
+  } else if (overall_severity_ == SeverityLevel::ERROR) {
+    system_status.level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
+    system_status.message = "Critical error - emergency stop triggered";
+  }
+
+  // Add velocity data
+  diagnostic_msgs::msg::KeyValue kv;
+  kv.key = "Linear Velocity (m/s)";
+  kv.value = std::to_string(current_linear_velocity_);
+  system_status.values.push_back(kv);
+
+  kv.key = "Angular Velocity (rad/s)";
+  kv.value = std::to_string(current_angular_velocity_);
+  system_status.values.push_back(kv);
+
+  kv.key = "Velocity Limit Exceeded";
+  kv.value = velocity_exceeded_ ? "true" : "false";
+  system_status.values.push_back(kv);
+
+  kv.key = "Heartbeat Timeout";
+  kv.value = heartbeat_timeout_triggered_ ? "true" : "false";
+  system_status.values.push_back(kv);
+
+  kv.key = "Emergency Stop Active";
+  kv.value = emergency_stop_active_ ? "true" : "false";
+  system_status.values.push_back(kv);
+
+  // Add heartbeat information for each tracked node
+  diagnostic_msgs::msg::DiagnosticStatus heartbeat_status;
+  heartbeat_status.name = "safety_monitor: Heartbeat Status";
+  heartbeat_status.hardware_id = "safety_monitor";
+  heartbeat_status.level = heartbeat_timeout_triggered_ ?
+    diagnostic_msgs::msg::DiagnosticStatus::ERROR :
+    diagnostic_msgs::msg::DiagnosticStatus::OK;
+
+  auto now_time = std::chrono::system_clock::now();
+  for (const auto & [node_name, last_time] : heartbeat_times_) {
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+      now_time - last_time).count();
+
+    kv.key = node_name;
+    kv.value = std::to_string(duration_ms) + " ms";
+    heartbeat_status.values.push_back(kv);
+  }
+
+  diag_array.status.push_back(system_status);
+  diag_array.status.push_back(heartbeat_status);
+
+  diagnostics_pub_->publish(diag_array);
 }
 
 }  // namespace star_safety_monitor

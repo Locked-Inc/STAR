@@ -43,27 +43,28 @@ def generate_launch_description():
             LaunchConfiguration('config_file'),
             {'use_sim_time': LaunchConfiguration('use_sim_time')}
         ],
-        # TODO: Add remappings if needed
-        # remappings=[
-        #     ('/battery/state', '/gateway/battery/state'),
-        # ]
+        remappings=[
+            ('/diagnostics', '/diagnostics'),
+            ('/odom', '/odom'),
+            ('/emergency_stop', '/emergency_stop'),
+        ]
     )
     
-    # TODO: Add lifecycle manager to automatically configure and activate
-    # lifecycle_manager = Node(
-    #     package='nav2_lifecycle_manager',
-    #     executable='lifecycle_manager',
-    #     name='safety_monitor_lifecycle_manager',
-    #     output='screen',
-    #     parameters=[
-    #         {'autostart': True},
-    #         {'node_names': ['safety_monitor']}
-    #     ]
-    # )
+    # Lifecycle manager to automatically configure and activate the safety monitor
+    lifecycle_manager = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='safety_monitor_lifecycle_manager',
+        output='screen',
+        parameters=[
+            {'autostart': True},
+            {'node_names': ['safety_monitor']}
+        ]
+    )
     
     return LaunchDescription([
         config_file_arg,
         use_sim_time_arg,
         safety_monitor_node,
-        # lifecycle_manager,  # Uncomment when lifecycle manager is needed
+        lifecycle_manager,
     ])
