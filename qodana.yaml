@@ -3,8 +3,7 @@ linter: qodana-cpp
 profile:
   name: qodana.recommended
 
-bootstrap:
-  - cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S star-rx72n-firmware -B build
+bootstrap: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S star-rx72n-firmware -B build
 
 exclude:
   - name: All
