@@ -182,9 +182,8 @@ static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 
   port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
   pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
-  if ((port < k_rx_port_0) || (port > k_rx_port_j) ||
-      (port > k_rx_port_e && port < k_rx_port_j) || (pin_num < k_rx_pin_0) ||
-      (pin_num > k_rx_pin_max)) {
+  if ((port < k_rx_port_0) || (port > k_rx_port_j) || (port > k_rx_port_g && port < k_rx_port_j) ||
+      (pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -259,6 +258,8 @@ static rx_err_t internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, u
 static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* duration_us)
 {
   rx_err_t err;
+  uint32_t pulse_start = 0;
+  uint32_t pulse_end   = 0;
 
   /* Wait for echo to go HIGH (pulse start) */
   err = internal_wait_for_echo(handle, true, handle->timeout_us);
@@ -266,7 +267,7 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
     return err;
   }
 
-  uint32_t pulse_start = hcsr04_hal_get_time_us();
+  pulse_start = hcsr04_hal_get_time_us();
 
   /* Wait for echo to go LOW (pulse end) */
   err = internal_wait_for_echo(handle, false, handle->timeout_us);
@@ -274,8 +275,8 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
     return err;
   }
 
-  uint32_t pulse_end = hcsr04_hal_get_time_us();
-  *duration_us       = pulse_end - pulse_start;
+  pulse_end    = hcsr04_hal_get_time_us();
+  *duration_us = pulse_end - pulse_start;
 
   return k_rx_ok;
 }
@@ -297,15 +298,17 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
 static void hcsr04_worker_entry(ULONG input)
 {
   (void)input;
-  ULONG actual_flags;
+  ULONG              actual_flags;
+  rx_hcsr04_result_t result;
+  UINT               status;
 
   while (true) {
     /* Wait for measurement request OR shutdown request */
-    UINT status = tx_event_flags_get(&s_measurement_request,
-                                     k_event_measurement_request | k_event_shutdown_request,
-                                     TX_OR_CLEAR,
-                                     &actual_flags,
-                                     TX_WAIT_FOREVER);
+    status = tx_event_flags_get(&s_measurement_request,
+                                k_event_measurement_request | k_event_shutdown_request,
+                                TX_OR_CLEAR,
+                                &actual_flags,
+                                TX_WAIT_FOREVER);
 
     if (status != TX_SUCCESS) {
       continue; /* Should not happen with TX_WAIT_FOREVER */
@@ -317,7 +320,6 @@ static void hcsr04_worker_entry(ULONG input)
     }
 
     /* Perform blocking measurement */
-    rx_hcsr04_result_t result;
     rx_hcsr04_measure(s_pending.handle, &result);
 
     /* Clear active flag */
@@ -525,6 +527,7 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
 rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
 {
   rx_err_t err;
+  uint32_t echo_time_us = 0;
 
   if (handle == NULL || distance_cm == NULL) {
     return k_rx_err_null_ptr;
@@ -544,7 +547,6 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
   }
 
   /* Measure echo pulse duration */
-  uint32_t echo_time_us;
   err = internal_measure_echo_pulse(handle, &echo_time_us);
 
   if (err == k_rx_err_timeout) {
@@ -839,6 +841,9 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius)
 
 float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius)
 {
+  float speed_mps   = 0.0f;
+  float speed_cm_us = 0.0f;
+  float distance_cm = 0.0f;
   /*
    * Temperature-compensated distance calculation:
    * 1. Calculate speed of sound at given temperature
@@ -861,9 +866,9 @@ float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius)
     return 0.0f;
   }
 
-  float speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
-  float speed_cm_us = speed_mps / s_mps_to_cm_per_us;
-  float distance_cm = ((float)echo_time_us * speed_cm_us) / s_roundtrip_divisor;
+  speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
+  speed_cm_us = speed_mps / s_mps_to_cm_per_us;
+  distance_cm = ((float)echo_time_us * speed_cm_us) / s_roundtrip_divisor;
 
   /* Post-condition: Ensure non-negative result */
   if (distance_cm < 0.0f) {

@@ -21,6 +21,7 @@
 #include "rx72n_system_regs.h"
 #include "rx_check.h"
 #include "rx_hcsr04_hal.h"
+#include "rx_log.h"
 #include "tx_api.h"
 
 /* =============================================================================
@@ -344,7 +345,10 @@ uint32_t hcsr04_hal_get_time_us(void)
   timer_hz = k_pclkb_hz / k_cmt2_divider;
   result   = (uint32_t)((total_ticks * k_us_per_second) / timer_hz);
 
-  tx_mutex_put(&s_time_mutex);
+  mutex_status = tx_mutex_put(&s_time_mutex);
+  if (mutex_status != TX_SUCCESS) {
+    rx_log_error_val("HCSR04", "Failed to release time mutex", (uint32_t)mutex_status);
+  }
 
   return result;
 }

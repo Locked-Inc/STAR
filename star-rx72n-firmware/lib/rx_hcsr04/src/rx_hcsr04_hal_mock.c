@@ -12,13 +12,19 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include <stdio.h>
+#include <string.h>
+
 #include "mock_hcsr04_hw.h"
 #include "rx_hcsr04.h"
 #include "rx_hcsr04_hal.h"
+#include "rx_log.h"
 
 enum {
-  k_hcsr04_delay_none   = 0,                        /**< No delay requested */
-  k_hcsr04_delay_max_us = k_hcsr04_echo_timeout_us, /**< Maximum supported delay */
+  k_hcsr04_delay_none         = 0,                        /**< No delay requested */
+  k_hcsr04_delay_max_us       = k_hcsr04_echo_timeout_us, /**< Maximum supported delay */
+  k_hcsr04_log_msg_max        = 96,                       /**< Max log message buffer size */
+  k_hcsr04_log_null_terminator = 1,                       /**< Null terminator size */
 };
 
 /* =============================================================================
@@ -189,6 +195,26 @@ void hcsr04_hal_delay_us(uint32_t us)
   }
 
   if (us > k_hcsr04_delay_max_us) {
+    char     message[k_hcsr04_log_msg_max];
+    uint32_t message_len = 0U;
+    int      rc          = 0;
+
+    rc = snprintf(message,
+                  sizeof(message),
+                  "Delay request %lu exceeds max %lu us",
+                  (unsigned long)us,
+                  (unsigned long)k_hcsr04_delay_max_us);
+    if (rc < 0) {
+      rx_log_error_str("HCSR04", "Delay request formatting error", "", 0U);
+      message_len = (uint32_t)(k_hcsr04_log_msg_max - k_hcsr04_log_null_terminator);
+      (void)memset(message, 0, sizeof(message));
+    } else {
+      message_len = (uint32_t)rc;
+      if (message_len >= k_hcsr04_log_msg_max) {
+        message_len = (uint32_t)(k_hcsr04_log_msg_max - k_hcsr04_log_null_terminator);
+      }
+    }
+    rx_log_warn_str("HCSR04", message, message_len);
     return;
   }
 

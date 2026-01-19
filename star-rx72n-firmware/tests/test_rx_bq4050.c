@@ -694,7 +694,7 @@ static void test_read_status_discharging_flags(void)
 
   internal_test_setup();
   internal_setup_typical_battery_values();
-  mock_smbus_set_word_response(k_sbs_battery_status, k_status_discharging);
+  mock_smbus_set_word_response(k_sbs_battery_status, k_bq4050_status_discharging);
 
   err = rx_bq4050_read_status(&s_manager, s_bus_name, &status, k_test_cell_count_1);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -708,7 +708,7 @@ static void test_read_status_fully_charged_flags(void)
 
   internal_test_setup();
   internal_setup_typical_battery_values();
-  mock_smbus_set_word_response(k_sbs_battery_status, k_status_fully_charged);
+  mock_smbus_set_word_response(k_sbs_battery_status, k_bq4050_status_fully_charged);
 
   err = rx_bq4050_read_status(&s_manager, s_bus_name, &status, k_test_cell_count_1);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -723,7 +723,7 @@ static void test_read_status_fully_discharged_flags(void)
   internal_test_setup();
   internal_setup_typical_battery_values();
   mock_smbus_set_word_response(k_sbs_battery_status,
-                               k_status_discharging | k_status_fully_discharged);
+                               k_bq4050_status_discharging | k_bq4050_status_fully_discharged);
 
   err = rx_bq4050_read_status(&s_manager, s_bus_name, &status, k_test_cell_count_1);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -738,7 +738,8 @@ static void test_read_status_low_capacity_alarm(void)
   internal_test_setup();
   internal_setup_typical_battery_values();
   mock_smbus_set_word_response(k_sbs_battery_status,
-                               k_status_discharging | k_status_remaining_capacity_alarm);
+                               k_bq4050_status_discharging |
+                                 k_bq4050_status_remaining_capacity_alarm);
 
   err = rx_bq4050_read_status(&s_manager, s_bus_name, &status, k_test_cell_count_1);
   TEST_ASSERT_EQUAL(k_rx_ok, err);

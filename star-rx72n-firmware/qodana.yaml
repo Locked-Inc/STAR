@@ -1,0 +1,26 @@
+#################################################################################
+#              WARNING: Do not store sensitive information in this file,        #
+#               as its contents will be included in the Qodana report.          #
+#################################################################################
+version: "1.0"
+linter: qodana-cpp
+profile:
+  name: qodana.recommended
+include:
+  - name: firmware-sources
+    paths:
+      - lib
+      - src
+      - include
+      - tests
+exclude:
+  - name: generated-and-third-party
+    paths:
+      - build
+      - tests/build
+      - lib/threadx
+      - lib/rx_nanopb/nanopb
+      - lib/rx_nanopb/inc/gen
+failureConditions:
+  severityThresholds:
+    any: 0

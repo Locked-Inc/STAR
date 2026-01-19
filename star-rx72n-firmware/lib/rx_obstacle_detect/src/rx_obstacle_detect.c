@@ -618,7 +618,5 @@ static void internal_invoke_callback(rx_obstacle_detect_t* handle,
     return;
   }
 
-  if (handle->callback != NULL) {
-    handle->callback(obstacle_detected, sensor_idx, distance_cm, handle->user_data);
-  }
+  handle->callback(obstacle_detected, sensor_idx, distance_cm, handle->user_data);
 }

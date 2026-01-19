@@ -81,8 +81,9 @@ typedef enum {
 
 /** @brief Maximum SCI channels */
 typedef enum {
-  k_uart_min_channel  = 0,  /**< Minimum SCI channel */
-  k_uart_max_channels = 13, /**< SCI channels 0-12 */
+  k_uart_min_channel       = 0,  /**< Minimum SCI channel */
+  k_uart_max_channels      = 13, /**< SCI channels 0-12 */
+  k_uart_max_mstpb_channel = 11, /**< Maximum channel in MSTPCRB (SCI12 uses MSTPCRC) */
 } uart_channel_limits_t;
 
 typedef enum {
@@ -185,7 +186,7 @@ static void internal_clear_errors(volatile rx_sci_regs_t* sci)
 static int8_t internal_get_mstpb_bit(uint8_t channel)
 {
   /* SCI12 is in MSTPCRC, not supported here */
-  if (channel > 11) {
+  if (channel > k_uart_max_mstpb_channel) {
     return -1;
   }
 
@@ -346,7 +347,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
 rx_err_t uart_deinit_channel(uint8_t channel)
 {
   /* Validate channel */
-  if (channel >= k_uart_max_channels) {
+  if ((channel < k_uart_min_channel) || (channel >= k_uart_max_channels)) {
     return k_rx_err_invalid_arg;
   }
 
