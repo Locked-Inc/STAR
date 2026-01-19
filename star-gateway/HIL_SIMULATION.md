@@ -76,7 +76,7 @@ go run ./cmd/virtual_rx72n/
 
 **Expected Output:**
 ```
-🤖 Virtual RX72N Started. Waiting for Gateway...
+Virtual RX72N Started. Waiting for Gateway...
    Socket: /tmp/star_rx72n.sock
    Max Frame Size: 2048 bytes
 ```
@@ -91,7 +91,7 @@ go run ./cmd/star-gateway/
 
 **Expected Output:**
 ```
-⚠️  RUNNING IN SIMULATION MODE (Virtual RX72N)
+WARNING: RUNNING IN SIMULATION MODE (Virtual RX72N)
     Connecting to socket: /tmp/star_rx72n.sock
 Initializing frame encoder/decoder...
 Initializing FEC encoder/decoder...
@@ -154,10 +154,10 @@ PASS
 ```
 
 The test verifies:
-1. ✅ Connection to Virtual RX72N succeeds
-2. ✅ Data is sent and received
-3. ✅ First byte is modified to `0xFF` (simulator marker)
-4. ✅ Remaining bytes are echoed correctly
+1. Connection to Virtual RX72N succeeds
+2. Data is sent and received
+3. First byte is modified to `0xFF` (simulator marker)
+4. Remaining bytes are echoed correctly
 
 ### Manual Testing with grpcurl
 
@@ -188,15 +188,15 @@ The Virtual RX72N simulator:
 ### Example Log Output
 
 ```
-🤖 Virtual RX72N Started. Waiting for Gateway...
+Virtual RX72N Started. Waiting for Gateway...
    Socket: /tmp/star_rx72n.sock
    Max Frame Size: 2048 bytes
-✅ Gateway connected from @
-📥 Received 4 bytes: 55aa0102
-📤 Sending 4 bytes: ffaa0102
-📥 Received 128 bytes: 55aa10...
-📤 Sending 128 bytes: ffaa10...
-❌ Gateway disconnected
+Gateway connected from @
+Received 4 bytes: 55aa0102
+Sending 4 bytes: ffaa0102
+Received 128 bytes: 55aa10...
+Sending 128 bytes: ffaa10...
+Gateway disconnected
 ```
 
 ## Constants Reference

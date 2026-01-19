@@ -66,7 +66,7 @@ func run() error {
 	simulationMode := os.Getenv("STAR_SIMULATION_MODE") == "true"
 
 	if simulationMode {
-		log.Println("⚠️  RUNNING IN SIMULATION MODE (Virtual RX72N)")
+		log.Println("WARNING: RUNNING IN SIMULATION MODE (Virtual RX72N)")
 		log.Printf("    Connecting to socket: %s", transport.DefaultSocketPath)
 		socketTransport := transport.NewSocketTransport(transport.DefaultSocketPath)
 		if err := socketTransport.Open(); err != nil {
@@ -75,7 +75,7 @@ func run() error {
 		defer socketTransport.Close()
 		deviceTransport = socketTransport
 	} else {
-		log.Println("🔌 Initializing SPI Transport")
+		log.Println("Initializing SPI Transport")
 		spiTransport := transport.NewSPITransport(transport.DefaultConfig())
 		if err := spiTransport.Open(); err != nil {
 			return fmt.Errorf("failed to open SPI transport: %w", err)

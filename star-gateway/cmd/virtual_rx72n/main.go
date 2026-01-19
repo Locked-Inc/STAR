@@ -52,7 +52,7 @@ func main() {
 	}
 	defer listener.Close()
 
-	log.Println("🤖 Virtual RX72N Started. Waiting for Gateway...")
+	log.Println("Virtual RX72N Started. Waiting for Gateway...")
 	log.Printf("   Socket: %s", SocketPath)
 	log.Printf("   Max Frame Size: %d bytes", MaxFrameSize)
 
@@ -61,7 +61,7 @@ func main() {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-sigChan
-		log.Println("\n🛑 Shutting down Virtual RX72N...")
+		log.Println("\nShutting down Virtual RX72N...")
 		listener.Close()
 		if err := os.Remove(SocketPath); err != nil {
 			log.Printf("Warning: failed to remove socket: %v", err)
@@ -76,7 +76,7 @@ func main() {
 			log.Printf("Connection error: %v", err)
 			continue
 		}
-		log.Printf("✅ Gateway connected from %v", conn.RemoteAddr())
+		log.Printf("Gateway connected from %v", conn.RemoteAddr())
 
 		// Handle each connection in a goroutine
 		go handleConnection(conn)
@@ -86,7 +86,7 @@ func main() {
 // handleConnection processes messages from a single Gateway connection.
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	defer log.Println("❌ Gateway disconnected")
+	defer log.Println("Gateway disconnected")
 
 	buffer := make([]byte, MaxFrameSize)
 
@@ -114,7 +114,7 @@ func handleConnection(conn net.Conn) {
 
 		// For demonstration, we echo back modified data
 		// indicating "I am the Virtual RX72N"
-		log.Printf("📥 Received %d bytes: %x", n, rxData)
+		log.Printf("Received %d bytes: %x", n, rxData)
 
 		// Simulate processing time (optional)
 		// time.Sleep(1 * time.Millisecond)
@@ -130,7 +130,7 @@ func handleConnection(conn net.Conn) {
 			txData[0] = SimulatorMarker
 		}
 
-		log.Printf("📤 Sending %d bytes: %x", len(txData), txData)
+		log.Printf("Sending %d bytes: %x", len(txData), txData)
 
 		if _, err := conn.Write(txData); err != nil {
 			log.Printf("Write error: %v", err)
