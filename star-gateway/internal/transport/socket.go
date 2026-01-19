@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-// Default socket configuration.
+// Socket transport configuration constants.
 const (
 	// DefaultSocketPath is the Unix domain socket path for Virtual RX72N.
 	DefaultSocketPath = "/tmp/star_rx72n.sock"
@@ -27,10 +27,13 @@ const (
 
 // SocketTransport implements the Device interface using Unix Domain Sockets.
 // It connects to a Virtual RX72N simulator for Hardware-in-the-Loop testing.
+//
+// This transport is a drop-in replacement for SPITransport, enabling the Gateway
+// to run on development machines without physical hardware.
 type SocketTransport struct {
-	mu   sync.RWMutex // protects conn, isOpen
-	conn net.Conn
-	path string
+	mu     sync.RWMutex // protects conn, isOpen
+	conn   net.Conn
+	path   string
 	isOpen bool
 }
 
@@ -70,7 +73,7 @@ func (s *SocketTransport) Open() error {
 // The context deadline is respected for both read and write operations.
 //
 // NOTE: SPI is synchronous. We expect exactly len(txData) bytes back
-// or a specific frame size depending on your protocol.
+// to match the full-duplex behavior of real SPI hardware.
 func (s *SocketTransport) Transfer(ctx context.Context, txData []byte) ([]byte, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -82,25 +85,34 @@ func (s *SocketTransport) Transfer(ctx context.Context, txData []byte) ([]byte, 
 	// Set deadline based on context
 	if deadline, ok := ctx.Deadline(); ok {
 		if err := s.conn.SetDeadline(deadline); err != nil {
-			return nil, fmt.Errorf("failed to set deadline: %w", err)
+			return nil, fmt.Errorf("failed to set socket deadline: %w", err)
 		}
-		// Reset deadline after operation
-		defer s.conn.SetDeadline(time.Time{})
+		// Reset deadline after operation to avoid affecting future calls
+		defer func() {
+			if err := s.conn.SetDeadline(time.Time{}); err != nil {
+				// Log but don't fail - the connection might be closed
+			}
+		}()
 	}
 
 	// 1. Send the command
-	_, err := s.conn.Write(txData)
+	n, err := s.conn.Write(txData)
 	if err != nil {
 		return nil, fmt.Errorf("socket write failed: %w", err)
 	}
+	if n != len(txData) {
+		return nil, fmt.Errorf("socket write incomplete: wrote %d bytes, expected %d", n, len(txData))
+	}
 
 	// 2. Read the response
-	// SPI is synchronous. We expect exactly len(txData) bytes back
-	// or a specific frame size depending on your protocol.
+	// SPI is synchronous - we expect exactly len(txData) bytes back
 	rxBuffer := make([]byte, len(txData))
-	_, err = s.conn.Read(rxBuffer)
+	n, err = s.conn.Read(rxBuffer)
 	if err != nil {
 		return nil, fmt.Errorf("socket read failed: %w", err)
+	}
+	if n != len(txData) {
+		return nil, fmt.Errorf("socket read incomplete: read %d bytes, expected %d", n, len(txData))
 	}
 
 	return rxBuffer, nil

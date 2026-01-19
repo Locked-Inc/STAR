@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+const (
+	// SimulatorMarker is the expected first byte from Virtual RX72N (must match virtual_rx72n/main.go).
+	SimulatorMarker = 0xFF
+)
+
 // ============================================================================
 // Constant Tests
 // ============================================================================
@@ -163,9 +168,9 @@ func TestSocketTransport_WithVirtualRX72N(t *testing.T) {
 		t.Errorf("Expected %d bytes, got %d", len(txData), len(rxData))
 	}
 
-	// Virtual RX72N should modify first byte to 0xFF
-	if rxData[0] != 0xFF {
-		t.Errorf("Expected first byte 0xFF (simulator marker), got 0x%02X", rxData[0])
+	// Virtual RX72N should modify first byte to SimulatorMarker
+	if rxData[0] != SimulatorMarker {
+		t.Errorf("Expected first byte 0x%02X (simulator marker), got 0x%02X", SimulatorMarker, rxData[0])
 	}
 
 	// Rest should be echoed
@@ -232,9 +237,9 @@ func TestSocketTransport_LargeTransfer(t *testing.T) {
 		t.Errorf("Expected %d bytes, got %d", len(txData), len(rxData))
 	}
 
-	// First byte should be modified
-	if rxData[0] != 0xFF {
-		t.Errorf("Expected first byte 0xFF, got 0x%02X", rxData[0])
+	// First byte should be modified to SimulatorMarker
+	if rxData[0] != SimulatorMarker {
+		t.Errorf("Expected first byte 0x%02X (simulator marker), got 0x%02X", SimulatorMarker, rxData[0])
 	}
 }
 

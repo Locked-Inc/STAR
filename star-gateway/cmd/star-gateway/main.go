@@ -25,6 +25,24 @@ import (
 const (
 	// httpShutdownTimeout is the maximum time allowed for HTTP server graceful shutdown.
 	httpShutdownTimeout = 5 * time.Second
+
+	// grpcListenPort is the TCP port for gRPC services.
+	grpcListenPort = ":50051"
+
+	// httpListenPort is the TCP port for HTTP/WebSocket services.
+	httpListenPort = ":8080"
+
+	// httpReadTimeout is the maximum duration for reading the entire HTTP request.
+	httpReadTimeout = 10 * time.Second
+
+	// httpWriteTimeout is the maximum duration for writing the HTTP response.
+	httpWriteTimeout = 10 * time.Second
+
+	// grpcMaxMsgSize is the maximum message size for gRPC (10 MB).
+	grpcMaxMsgSize = 10 * 1024 * 1024
+
+	// healthCheckQoS is the QoS depth for service discovery/health checks.
+	healthCheckQoS = 10
 )
 
 // Shutdownable defines the interface for services that require graceful shutdown.
@@ -163,8 +181,8 @@ func run() error {
 
 	// Create gRPC server
 	grpcServer := grpc.NewServer(
-		grpc.MaxRecvMsgSize(10*1024*1024), // 10MB
-		grpc.MaxSendMsgSize(10*1024*1024),
+		grpc.MaxRecvMsgSize(grpcMaxMsgSize),
+		grpc.MaxSendMsgSize(grpcMaxMsgSize),
 	)
 
 	// Register gRPC services
@@ -175,9 +193,9 @@ func run() error {
 	starv1.RegisterBatteryManagementServiceServer(grpcServer, batterySvc)
 
 	// Start gRPC listener
-	grpcLis, err := net.Listen("tcp", ":50051")
+	grpcLis, err := net.Listen("tcp", grpcListenPort)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create gRPC listener: %w", err)
 	}
 
 	// Error channel for goroutine failures
@@ -185,7 +203,7 @@ func run() error {
 
 	// Start gRPC server in goroutine
 	go func() {
-		log.Printf("gRPC server listening on :50051")
+		log.Printf("gRPC server listening on %s", grpcListenPort)
 		if err := grpcServer.Serve(grpcLis); err != nil {
 			errChan <- err
 		}
@@ -206,10 +224,10 @@ func run() error {
 	})
 
 	server := &http.Server{
-		Addr:         ":8080",
+		Addr:         httpListenPort,
 		Handler:      mux,
-		ReadTimeout:  time.Second * 10,
-		WriteTimeout: time.Second * 10,
+		ReadTimeout:  httpReadTimeout,
+		WriteTimeout: httpWriteTimeout,
 	}
 
 	// Start HTTP server in goroutine

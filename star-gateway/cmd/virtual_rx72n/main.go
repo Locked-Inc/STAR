@@ -18,7 +18,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -27,15 +26,21 @@ import (
 )
 
 const (
-	// SocketPath is the Unix domain socket path.
+	// SocketPath is the Unix domain socket path for Virtual RX72N.
 	SocketPath = "/tmp/star_rx72n.sock"
 
-	// MaxFrameSize is the maximum expected frame size.
+	// MaxFrameSize is the maximum expected frame size (must match frame.MaxPayloadSize + overhead).
 	MaxFrameSize = 2048
+
+	// SimulatorMarker is the value written to the first byte to prove simulator processed the frame.
+	SimulatorMarker = 0xFF
+
+	// SignalBufferSize is the buffer size for OS signal channel.
+	SignalBufferSize = 1
 )
 
 func main() {
-	// Cleanup old socket
+	// Cleanup old socket file if it exists
 	if err := os.Remove(SocketPath); err != nil && !os.IsNotExist(err) {
 		log.Printf("Warning: failed to remove old socket: %v", err)
 	}
@@ -49,15 +54,18 @@ func main() {
 
 	log.Println("🤖 Virtual RX72N Started. Waiting for Gateway...")
 	log.Printf("   Socket: %s", SocketPath)
+	log.Printf("   Max Frame Size: %d bytes", MaxFrameSize)
 
 	// Handle Ctrl+C gracefully
-	sigChan := make(chan os.Signal, 1)
+	sigChan := make(chan os.Signal, SignalBufferSize)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-sigChan
 		log.Println("\n🛑 Shutting down Virtual RX72N...")
 		listener.Close()
-		os.Remove(SocketPath)
+		if err := os.Remove(SocketPath); err != nil {
+			log.Printf("Warning: failed to remove socket: %v", err)
+		}
 		os.Exit(0)
 	}()
 
@@ -86,8 +94,9 @@ func handleConnection(conn net.Conn) {
 		// Read data from Gateway
 		n, err := conn.Read(buffer)
 		if err != nil {
+			// EOF is expected when connection closes
 			if err.Error() == "EOF" {
-				return // Connection closed normally
+				return
 			}
 			log.Printf("Read error: %v", err)
 			return
@@ -103,11 +112,11 @@ func handleConnection(conn net.Conn) {
 		// 2. Determine response based on input
 		// responseFrame := generateResponse(frame)
 
-		// For demonstration, we just echo back modified data
-		// indicating "I am a robot"
+		// For demonstration, we echo back modified data
+		// indicating "I am the Virtual RX72N"
 		log.Printf("📥 Received %d bytes: %x", n, rxData)
 
-		// Simulate processing time (1ms)
+		// Simulate processing time (optional)
 		// time.Sleep(1 * time.Millisecond)
 
 		// 3. Send Telemetry Back
@@ -116,15 +125,14 @@ func handleConnection(conn net.Conn) {
 		txData := make([]byte, n)
 		copy(txData, rxData)
 
-		// Example: Flip first byte to prove it's the simulator
+		// Flip MSB of first byte to prove it's the simulator
 		if len(txData) > 0 {
-			txData[0] = 0xFF
+			txData[0] = SimulatorMarker
 		}
 
 		log.Printf("📤 Sending %d bytes: %x", len(txData), txData)
 
-		_, err = conn.Write(txData)
-		if err != nil {
+		if _, err := conn.Write(txData); err != nil {
 			log.Printf("Write error: %v", err)
 			return
 		}
