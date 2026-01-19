@@ -9,27 +9,37 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 )
 
+const (
+	// DefaultHARQTimeout is the default timeout for mock HARQ receive operations.
+	DefaultHARQTimeout = 50 * time.Millisecond
+)
+
 // MockHARQ is a mock implementation of the harq.HARQ interface.
 type MockHARQ struct {
-	SendFunc        func(ctx context.Context, data []byte) error
+	SendFunc        func(ctx context.Context, data []byte, p ...harq.Priority) error
 	ReceiveFunc     func(ctx context.Context) ([]byte, error)
 	GetStateFunc    func() harq.State
 	GetTxSeqFunc    func() uint16
 	GetRxSeqFunc    func() uint16
 	ResetFunc       func()
 	LastSentPayload []byte
+
+	// ReceiveChan is an optional channel for simulating HARQ receive operations.
+	// If set, Receive will pull from this channel instead of calling ReceiveFunc.
+	ReceiveChan chan []byte
 }
 
-func (m *MockHARQ) Send(ctx context.Context, data []byte) error {
+func (m *MockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
 	m.LastSentPayload = data
 	if m.SendFunc != nil {
-		return m.SendFunc(ctx, data)
+		return m.SendFunc(ctx, data, p...)
 	}
 	return nil
 }
@@ -37,6 +47,16 @@ func (m *MockHARQ) Send(ctx context.Context, data []byte) error {
 func (m *MockHARQ) Receive(ctx context.Context) ([]byte, error) {
 	if m.ReceiveFunc != nil {
 		return m.ReceiveFunc(ctx)
+	}
+	if m.ReceiveChan != nil {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case data := <-m.ReceiveChan:
+			return data, nil
+		case <-time.After(DefaultHARQTimeout):
+			return nil, harq.ErrTimeout
+		}
 	}
 	return nil, errors.New("receive not implemented")
 }

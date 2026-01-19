@@ -64,7 +64,8 @@ func (s *MotorControlService) SetVelocity(ctx context.Context, req *starv1.SetVe
 	}
 
 	// 3. Send via HARQ (blocks until ACK or timeout/max retries)
-	if err := s.harqHandler.Send(ctx, payload); err != nil {
+	// Note: Using normal priority for standard velocity commands.
+	if err := s.harqHandler.Send(ctx, payload, harq.PriorityNormal); err != nil {
 		s.logger.Error("failed to send velocity command",
 			slog.String("request_id", req.Header.GetRequestId()),
 			slog.String("error", err.Error()))
@@ -109,7 +110,9 @@ func (s *MotorControlService) EmergencyStop(ctx context.Context, req *starv1.Eme
 		return nil, status.Errorf(codes.Internal, "failed to marshal estop command: %v", err)
 	}
 
-	if err := s.harqHandler.Send(ctx, payload); err != nil {
+	// Send via HARQ with emergency priority
+	// Note: Using high priority for emergency stop commands.
+	if err := s.harqHandler.Send(ctx, payload, harq.PriorityEmergency); err != nil {
 		s.logger.Error("failed to send emergency stop command",
 			slog.String("request_id", req.Header.GetRequestId()),
 			slog.String("reason", req.Reason),
@@ -286,7 +289,7 @@ func (s *MotorControlService) forwardVelocityCommand(ctx context.Context, cmd *s
 		return err
 	}
 
-	return s.harqHandler.Send(ctx, payload)
+	return s.harqHandler.Send(ctx, payload, harq.PriorityNormal)
 }
 
 // sendTelemetryLoop receives telemetry from Dispatcher and sends encoder feedback to client.
