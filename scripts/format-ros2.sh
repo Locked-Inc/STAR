@@ -255,20 +255,14 @@ check_package_cpplint() {
 }
 
 # Get expected header guard for a file
-# Pattern: PACKAGE__FILENAME_HPP_
+# Pattern: STAR_PACKAGE_INCLUDE_STAR_PACKAGE_HEADER_HPP_
 get_expected_guard() {
     local file="$1"
     local rel_path="${file#"$ROS2_DIR"/}"
-    local package_name="${rel_path%%/*}"
-    local filename
-    filename=$(basename "$file" .hpp)
-    
-    local package_upper
-    package_upper=$(echo "$package_name" | tr '[:lower:]-' '[:upper:]_')
-    local filename_upper
-    filename_upper=$(echo "$filename" | tr '[:lower:]-' '[:upper:]_')
-    
-    echo "${package_upper}__${filename_upper}_HPP_"
+
+    local guard_base
+    guard_base=$(echo "$rel_path" | tr '[:lower:]/.-' '[:upper:]___')
+    echo "${guard_base}_"
 }
 
 # Check header guards
