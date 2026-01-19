@@ -573,6 +573,22 @@ s.harqHandler.Send(ctx, payload, harq.PriorityEmergency)
 - ROS2 C++ coding standards compliant
 - Header guards using `PACKAGE__FILENAME_HPP_` convention
 
+**Known Issues / Follow-Up Work:**
+From PR #199 review (CodeRabbit):
+1. **Critical:** Self-published diagnostics defeating heartbeat timeout
+   - Safety monitor publishes to `/diagnostics` and also monitors it
+   - Creates false heartbeat signal - needs filtering or separate topic
+2. **Enhancement:** Replace `std::chrono::system_clock` with `rclcpp::Time`
+   - Current implementation incompatible with ROS2 sim time (`use_sim_time`)
+   - Affects all timestamp comparisons (heartbeat, battery age, cmd_vel age)
+3. **Enhancement:** Add parameter validation (e.g., `publish_rate > 0`)
+4. **Testing:** Implement 3 skipped test cases:
+   - `BatterySafetyChecks` - Verify voltage/current threshold triggering
+   - `EmergencyStopTrigger` - Validate E-Stop publishing logic
+   - `DiagnosticPublishing` - Verify diagnostic message content
+
+These items are non-blocking for MVP but should be addressed before production deployment.
+
 ---
 
 ### Task 4.2: Telemetry Frame Drop Metric
