@@ -1,6 +1,7 @@
 #!/bin/bash
 # ROS2 Header Guard Fixer
-# Converts header guards from full-path style to PACKAGE__FILENAME_HPP_ pattern
+# Converts header guards to ROS2 standard format:
+#   PACKAGE__FILENAME_HPP_
 # Usage: ./scripts/fix-header-guards.sh [--check]
 
 set -e
@@ -43,14 +44,11 @@ while IFS= read -r -d '' file; do
     rel_path="${file#star-ros2/src/}"
     package_name="${rel_path%%/*}"
     
-    # Extract just the filename without extension
-    filename=$(basename "$file" .hpp)
-    
-    # Expected guard: PACKAGE__FILENAME_HPP_
-    # Convert to uppercase and replace - with _
-    package_upper=$(echo "$package_name" | tr '[:lower:]-' '[:upper:]_')
-    filename_upper=$(echo "$filename" | tr '[:lower:]-' '[:upper:]_')
-    expected_guard="${package_upper}__${filename_upper}_HPP_"
+    # Expected guard: PACKAGE__FILENAME_HPP_ (ROS2 standard double underscore)
+    # Example: star_pkg/include/star_pkg/header.hpp -> STAR_PKG__HEADER_HPP_
+    package=$(echo "$package_name" | tr '[:lower:]-' '[:upper:]_')
+    filename=$(basename "$file" .hpp | tr '[:lower:]-' '[:upper:]_')
+    expected_guard="${package}__${filename}_HPP_"
     
     # Read current guard from file
     current_guard=$(grep -m1 "^#ifndef " "$file" 2>/dev/null | sed 's/#ifndef //' || true)
