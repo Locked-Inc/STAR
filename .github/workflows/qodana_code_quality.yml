@@ -26,9 +26,12 @@ jobs:
           # Create a build directory
           mkdir -p build
           
-          # Run CMake pointing to your specific subdirectory (-S)
-          # We enable compile commands so Qodana can read them later
+          # 1. Generate the map (paths will be wrong for Docker)
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S star-rx72n-firmware -B build
+          
+          # 2. Fix the paths: Replace GitHub workspace path with Qodana's internal path
+          #    This changes "/home/runner/work/..." to "/data/project/..."
+          sed -i "s|${{ github.workspace }}|/data/project|g" build/compile_commands.json
 
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2025.2
