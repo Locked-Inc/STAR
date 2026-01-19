@@ -1,0 +1,37 @@
+name: Qodana
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'releases/*'
+
+jobs:
+  qodana:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          submodules: recursive # Keep this!
+
+      # Create a root CMakeLists.txt to link the project structure
+      - name: Create Root CMake Entry Point
+        run: |
+          echo 'cmake_minimum_required(VERSION 3.10)' > CMakeLists.txt
+          echo 'project(StarRX72N)' >> CMakeLists.txt
+          echo 'add_subdirectory(star-rx72n-firmware)' >> CMakeLists.txt
+
+      - name: 'Qodana Scan'
+        uses: JetBrains/qodana-action@v2025.2
+        with:
+          pr-mode: false
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_2021385077 }}
+          QODANA_ENDPOINT: 'https://qodana.cloud'
