@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
@@ -67,7 +68,7 @@ func TestSetVelocity(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockHARQ := &testutil.MockHARQ{
-				SendFunc: func(ctx context.Context, data []byte) error {
+				SendFunc: func(ctx context.Context, data []byte, _ ...harq.Priority) error {
 					return tc.mockSendErr
 				},
 			}
@@ -416,7 +417,7 @@ func TestControlStream_BasicFlow(t *testing.T) {
 	var mu sync.Mutex
 
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(ctx context.Context, data []byte) error {
+		SendFunc: func(ctx context.Context, data []byte, _ ...harq.Priority) error {
 			mu.Lock()
 			sendCalls++
 			mu.Unlock()
@@ -506,7 +507,7 @@ func TestControlStream_HarqSendError(t *testing.T) {
 
 	// Mock HARQ that fails to send
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(ctx context.Context, data []byte) error {
+		SendFunc: func(ctx context.Context, data []byte, _ ...harq.Priority) error {
 			return errors.New("send failed")
 		},
 		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
