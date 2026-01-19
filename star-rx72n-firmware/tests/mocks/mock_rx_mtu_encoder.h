@@ -40,7 +40,7 @@ extern "C" {
 /**
  * @brief Mock configuration constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_encoder_max_channels = 7, /**< Maximum MTU channels for encoders */
 } mock_encoder_constants_t;
 

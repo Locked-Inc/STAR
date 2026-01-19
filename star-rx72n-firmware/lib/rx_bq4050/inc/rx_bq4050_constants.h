@@ -28,7 +28,7 @@ extern "C" {
 /**
  * @brief Smart Battery System (SBS) 1.1 command codes
  */
-typedef enum {
+typedef enum : uint8_t {
   k_sbs_manufacturer_access      = 0x00, /**< Manufacturer access commands */
   k_sbs_temperature              = 0x08, /**< Temperature (0.1K) */
   k_sbs_voltage                  = 0x09, /**< Pack voltage (mV) */
@@ -57,7 +57,7 @@ typedef enum {
 /**
  * @brief Battery status flags (SBS register 0x16)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_bq4050_status_bit_pos_over_charged_alarm        = 15, /**< Over charged alarm bit */
   k_bq4050_status_bit_pos_terminate_charge_alarm    = 14, /**< Terminate charge alarm bit */
   k_bq4050_status_bit_pos_over_temp_alarm           = 12, /**< Over temperature alarm bit */
@@ -73,7 +73,7 @@ typedef enum {
 /**
  * @brief Battery status flags (SBS register 0x16)
  */
-typedef enum {
+typedef enum : uint16_t {
   k_bq4050_status_over_charged_alarm =
     (1U << k_bq4050_status_bit_pos_over_charged_alarm), /**< Over charged alarm */
   k_bq4050_status_terminate_charge_alarm =
@@ -85,7 +85,7 @@ typedef enum {
   k_bq4050_status_remaining_capacity_alarm =
     (1U << k_bq4050_status_bit_pos_remaining_capacity_alarm), /**< Remaining capacity alarm */
   k_bq4050_status_remaining_time_alarm =
-    (1U << k_bq4050_status_bit_pos_remaining_time_alarm),               /**< Remaining time alarm */
+    (1U << k_bq4050_status_bit_pos_remaining_time_alarm), /**< Remaining time alarm */
   k_bq4050_status_initialized =
     (1U << k_bq4050_status_bit_pos_initialized), /**< Battery initialized */
   k_bq4050_status_discharging =

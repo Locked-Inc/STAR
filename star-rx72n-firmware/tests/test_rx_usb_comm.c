@@ -686,7 +686,7 @@ void test_usb_comm_receive_max_payload_frame(void)
    * Frame overhead is 12 bytes (8 header + 4 CRC), so max payload is ~500.
    * A full k_frame_max_payload (1024) test would require simulating
    * interrupt-driven incremental data arrival, which this mock doesn't support. */
-  enum { k_test_large_payload_size = 490 };
+  enum : uint16_t { k_test_large_payload_size = 490 };
   uint8_t large_payload[k_test_large_payload_size];
   for (uint32_t i = 0; i < k_test_large_payload_size; i++) {
     large_payload[i] = (uint8_t)(i & 0xFF);

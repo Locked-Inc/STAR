@@ -76,7 +76,7 @@ extern "C" {
 /**
  * @brief Pin validator configuration constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_pin_validator_max_ports = 17, /**< Maximum port number (0-16 for 0-9, A-G) */
   k_pin_validator_max_pins  = 8,  /**< Maximum pins per port */
 } pin_validator_limits_t;

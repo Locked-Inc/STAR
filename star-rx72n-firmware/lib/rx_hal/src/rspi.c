@@ -28,33 +28,33 @@
  */
 
 /** @brief RSPI channel and timeout constants */
-typedef enum {
+typedef enum : uint32_t {
   k_rspi_max_channels = 3,     /**< RSPI0, RSPI1, RSPI2 */
   k_rspi_timeout_us   = 10000, /**< 10ms timeout for operations */
   k_rspi_timeout_zero = 0,     /**< Timeout expired value */
 } rspi_constants_t;
 
 /** @brief RSPI channel numbers for switch statements */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_channel_0 = 0, /**< RSPI0 */
   k_rspi_channel_1 = 1, /**< RSPI1 */
   k_rspi_channel_2 = 2, /**< RSPI2 */
 } rspi_channel_num_t;
 
 /** @brief RSPI module stop bit positions in MSTPCRB */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_mstpb_rspi0 = 17, /**< RSPI0 module stop bit */
   k_rspi_mstpb_rspi1 = 16, /**< RSPI1 module stop bit */
   k_rspi_mstpb_rspi2 = 15, /**< RSPI2 module stop bit */
 } rspi_module_stop_bits_t;
 
 /** @brief SPI mode limits */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_mode_max = 3, /**< Maximum valid SPI mode (0-3) */
 } rspi_mode_limits_t;
 
 /** @brief SPCMD register bit positions and masks */
-typedef enum {
+typedef enum : uint16_t {
   k_rspi_spcmd_cpha_mask = 0x01, /**< CPHA bit mask (bit 0) */
   k_rspi_spcmd_cpol_mask = 0x02, /**< CPOL bit mask (bit 1) */
   k_rspi_spcmd_cpol_pos  = 1,    /**< CPOL bit position */
@@ -65,18 +65,18 @@ typedef enum {
 } rspi_spcmd_bits_t;
 
 /** @brief SPDCR register bit positions (local) */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_spdcr_splw_pos  = 4,    /**< SPLW bit position (word access) */
   k_rspi_spdcr_byte_mode = 0x00, /**< Byte access mode */
 } rspi_spdcr_local_t;
 
 /** @brief SPPCR register values */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_sppcr_no_loopback = 0x00, /**< No loopback mode */
 } rspi_sppcr_values_t;
 
 /** @brief SPCR register disabled value */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_spcr_disabled = 0x00, /**< SPI disabled */
 } rspi_spcr_values_t;
 

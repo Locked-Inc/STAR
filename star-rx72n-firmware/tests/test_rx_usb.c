@@ -32,7 +32,7 @@
 /**
  * @brief Test array sizes for ring buffer validation
  */
-typedef enum {
+typedef enum : uint8_t {
   k_test_buffer_size = 5, /**< Size of test data array */
 } test_array_sizes_t;
 

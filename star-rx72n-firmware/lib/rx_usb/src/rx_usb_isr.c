@@ -26,7 +26,7 @@
 static const char* s_tag = "USB_ISR";
 
 /** @brief USB pipe number constants */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_pipe_dcp = 0, /**< Default Control Pipe (DCP) number */
   k_usb_pipe_max = 9, /**< Maximum pipe number (pipes 0-9) */
 } usb_pipe_numbers_t;

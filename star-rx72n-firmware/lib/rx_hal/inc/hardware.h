@@ -333,7 +333,7 @@ rx_err_t rspi_deinit(uint8_t channel);
 /**
  * @brief Default debug UART channel (SCI9 - CY7C65213 USB bridge)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_uart_debug_channel = 9, /**< Debug UART on SCI9 (PB7/TXD9, PB6/RXD9) */
 } uart_defaults_t;
 

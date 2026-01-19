@@ -28,7 +28,7 @@
 /**
  * @brief Counter wrap constant
  */
-typedef enum {
+typedef enum : uint32_t {
   k_counter_max  = 65536,  /**< 16-bit counter maximum + 1 */
   k_counter_mask = 0xFFFF, /**< 16-bit mask */
 } counter_constants_t;

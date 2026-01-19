@@ -44,7 +44,7 @@ static const char* s_tag = "MTU_ENCODER";
 /**
  * @brief Encoder configuration and hardware constants
  */
-typedef enum {
+typedef enum : uint32_t {
   k_encoder_max_channels       = 7,    /**< Maximum MTU channels for encoders */
   k_tmdr_phase_counting_mode_1 = 0x04, /**< Phase counting mode 1 (4x decoding) */
 
@@ -68,14 +68,14 @@ typedef enum {
 /**
  * @brief Encoder calculation constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_degrees_per_revolution = 360, /**< Degrees in one full revolution */
 } encoder_calc_constants_t;
 
 /**
  * @brief Encoder initialization values
  */
-typedef enum {
+typedef enum : uint16_t {
   k_encoder_count_reset        = 0, /**< Counter reset value */
   k_encoder_initial_count      = 0, /**< Initial total count */
   k_encoder_initial_rev        = 0, /**< Initial revolution count */
@@ -85,7 +85,7 @@ typedef enum {
 /**
  * @brief Encoder velocity limits
  */
-typedef enum {
+typedef enum : uint16_t {
   k_max_realistic_velocity_rps = 100, /**< Maximum realistic velocity (6000 RPM) */
 } encoder_velocity_limits_t;
 

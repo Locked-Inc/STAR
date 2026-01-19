@@ -38,7 +38,7 @@
 static const char* s_tag = "MOTOR";
 
 /** @brief Motor control constants for DRV8243 PH/EN mode */
-typedef enum {
+typedef enum : int16_t {
   k_motor_duty_min  = -100, /**< Minimum duty cycle (full reverse) */
   k_motor_duty_max  = 100,  /**< Maximum duty cycle (full forward) */
   k_motor_duty_zero = 0,    /**< Zero duty cycle (stopped) */
@@ -47,7 +47,7 @@ typedef enum {
 } motor_constants_t;
 
 /** @brief Motor configuration validation limits (NASA Rule 5 compliance) */
-typedef enum {
+typedef enum : uint32_t {
   k_motor_min_pwm_freq  = 1000,  /**< Minimum PWM frequency (1 kHz) */
   k_motor_max_pwm_freq  = 50000, /**< Maximum PWM frequency (50 kHz) */
   k_motor_min_dead_time = 100,   /**< Minimum dead-time (100 ns) */

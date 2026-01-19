@@ -32,7 +32,7 @@
 /**
  * @brief Event flag bit definitions
  */
-typedef enum {
+typedef enum : uint8_t {
   k_event_flag_start = 0x01, /**< Start detection */
   k_event_flag_stop  = 0x02, /**< Stop detection */
 } event_flags_t;
@@ -40,7 +40,7 @@ typedef enum {
 /**
  * @brief Validation constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_min_threshold_cm  = 2,    /**< Minimum detection threshold (HC-SR04 min range) */
   k_max_threshold_cm  = 400,  /**< Maximum detection threshold (HC-SR04 max range) */
   k_min_poll_interval = 10,   /**< Minimum poll interval in ms */
@@ -356,7 +356,7 @@ rx_err_t rx_obstacle_detect_reset_stats(rx_obstacle_detect_t* handle)
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_min_sleep_ticks = 1, /**< Minimum sleep duration in ticks */
 } task_constants_t;
 

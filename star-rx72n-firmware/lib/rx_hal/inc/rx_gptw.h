@@ -50,7 +50,7 @@ extern "C" {
 /**
  * @brief GPTW channel identifiers
  */
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_channel_0 = 0, /**< GPTW0 - Motor 0 */
   k_gptw_channel_1 = 1, /**< GPTW1 - Motor 1 */
   k_gptw_channel_2 = 2, /**< GPTW2 - Motor 2 */
@@ -60,7 +60,7 @@ typedef enum {
 /**
  * @brief GPTW output channel (for complementary PWM)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_output_a = 0, /**< GTIOCA output */
   k_gptw_output_b = 1, /**< GTIOCB output */
 } rx_gptw_output_t;

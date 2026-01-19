@@ -26,12 +26,12 @@ extern "C" {
  */
 
 /** @brief ICU base address */
-typedef enum {
+typedef enum : uint32_t {
   k_icu_base_addr = 0x00087000, /**< ICU register base address */
 } rx_icu_addresses_t;
 
 /** @brief ICU register reserved field sizes */
-typedef enum {
+typedef enum : uint8_t {
   k_icu_reserved_after_ier_bytes     = 192, /**< Reserved bytes after IER */
   k_icu_reserved_after_swint2r_bytes = 14,  /**< Reserved bytes after SWINT2R */
   k_icu_reserved_after_fir_bytes     = 14,  /**< Reserved bytes after FIR */
@@ -41,7 +41,7 @@ typedef enum {
 } icu_reserved_sizes_t;
 
 /** @brief ICU register array sizes */
-typedef enum {
+typedef enum : uint16_t {
   k_icu_ir_count         = 256, /**< Number of Interrupt Request Registers */
   k_icu_dtcer_count      = 256, /**< Number of DTC Enable Registers */
   k_icu_ier_count        = 32,  /**< Number of Interrupt Enable Registers */
@@ -95,13 +95,13 @@ static inline volatile rx_icu_regs_t* icu(void)
 }
 
 /* Vector numbers */
-typedef enum {
+typedef enum : uint8_t {
   k_vect_cmt0_cmi0 = 28, /**< CMT0 compare match interrupt */
   k_vect_cmt1_cmi1 = 29, /**< CMT1 compare match interrupt */
 } rx_cmt_interrupt_vector_t;
 
 /* Interrupt Priority Levels (0 = disabled, 1-15 = priority) */
-typedef enum {
+typedef enum : uint8_t {
   k_ipr_level_disable = 0,  /**< Interrupt disabled */
   k_ipr_level_min     = 1,  /**< Minimum enabled priority */
   k_ipr_level_max     = 15, /**< Maximum priority */

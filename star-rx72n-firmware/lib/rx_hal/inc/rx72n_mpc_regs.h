@@ -27,12 +27,12 @@ extern "C" {
  */
 
 /** @brief MPC base address */
-typedef enum {
+typedef enum : uint32_t {
   k_mpc_base_addr = 0x0008C100, /**< MPC register base address */
 } rx_mpc_addresses_t;
 
 /** @brief MPC register reserved field sizes */
-typedef enum {
+typedef enum : uint8_t {
   k_mpc_reserved1_bytes = 1,  /**< Reserved after PFCSE (0x0008C101) */
   k_mpc_reserved2_bytes = 4,  /**< Reserved after PFBCR3 (0x0008C10A-0x0008C10D) */
   k_mpc_reserved3_bytes = 16, /**< Reserved after PFENET (0x0008C10F-0x0008C11E) */
@@ -296,13 +296,13 @@ static inline volatile rx_mpc_regs_t* mpc(void)
 }
 
 /* MPC Write Protect Register (PWPR) bits */
-typedef enum {
+typedef enum : uint8_t {
   k_mpc_pwpr_pfswe = (1 << 6), /**< PFS Write Enable */
   k_mpc_pwpr_b0wi  = (1 << 7), /**< PFSWE Bit Write Disable */
 } mpc_pwpr_bits_t;
 
 /* PFS Register bits */
-typedef enum {
+typedef enum : uint8_t {
   k_pfs_psel_mask = 0x1F,     /**< Peripheral Select mask (bits 0-4) */
   k_pfs_isel      = (1 << 6), /**< Interrupt Input Select */
   k_pfs_asel      = (1 << 7), /**< Analog Input Select */

@@ -45,7 +45,7 @@ static const char* s_tag = "CMT";
  */
 
 /** @brief CMT channel and divider constants */
-typedef enum {
+typedef enum : uint8_t {
   k_cmt_max_channels = 4, /**< CMT0, CMT1, CMT2, CMT3 */
   k_cmt_div_8        = 0, /**< PCLKB/8 divider setting */
   k_cmt_div_32       = 1, /**< PCLKB/32 divider setting */
@@ -55,7 +55,7 @@ typedef enum {
 } cmt_constants_t;
 
 /** @brief CMT divider values (actual divisor values) */
-typedef enum {
+typedef enum : uint16_t {
   k_cmt_divider_val_8   = 8,   /**< Divide by 8 */
   k_cmt_divider_val_32  = 32,  /**< Divide by 32 */
   k_cmt_divider_val_128 = 128, /**< Divide by 128 */
@@ -63,25 +63,25 @@ typedef enum {
 } cmt_divider_values_t;
 
 /** @brief CMT module stop bit positions in MSTPCRB */
-typedef enum {
+typedef enum : uint8_t {
   k_cmt_mstpb_cmt = 15, /**< CMT0-CMT3 module stop bit */
 } cmt_module_stop_bits_t;
 
 /** @brief CMCR register bit positions */
-typedef enum {
+typedef enum : uint8_t {
   k_cmt_cmcr_cks_shift = 0, /**< CKS (clock select) bit shift */
   k_cmt_cmcr_cmie_pos  = 6, /**< CMIE (interrupt enable) bit position */
 } cmt_cmcr_bits_t;
 
 /** @brief Period calculation constants */
-typedef enum {
+typedef enum : uint16_t {
   k_cmt_period_min = 0,      /**< Minimum valid period */
   k_cmt_period_max = 0xFFFF, /**< Maximum valid period (16-bit) */
   k_cmt_period_adj = 1,      /**< Period adjustment (period - 1) */
 } cmt_period_constants_t;
 
 /** @brief CMSTR register bit positions */
-typedef enum {
+typedef enum : uint8_t {
   k_cmt_cmstr_str0 = 0, /**< CMT0/CMT2 start bit */
   k_cmt_cmstr_str1 = 1, /**< CMT1/CMT3 start bit */
 } cmt_cmstr_bits_t;

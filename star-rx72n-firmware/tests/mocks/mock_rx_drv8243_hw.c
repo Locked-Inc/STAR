@@ -21,12 +21,12 @@
  */
 
 /** @brief Number of mock ports to simulate */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_max_ports = 32, /**< Support ports 0-31 */
 } mock_port_limits_t;
 
 /** @brief Pin state constants */
-typedef enum {
+typedef enum : uint8_t {
   k_pin_high = 1, /**< Pin is HIGH */
   k_pin_low  = 0, /**< Pin is LOW */
 } mock_pin_state_t;

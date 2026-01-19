@@ -97,7 +97,7 @@ typedef struct {
  */
 
 /** @brief Maximum MTU channels */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_mtu_max_channels = 7,
 } mock_mtu_constants_t;
 

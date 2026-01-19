@@ -17,7 +17,7 @@
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_max_stop_calls = 100, /**< Maximum stop calls to track */
 } mock_motor_constants_t;
 

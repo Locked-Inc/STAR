@@ -39,7 +39,7 @@ extern "C" {
 /**
  * @brief nanopb buffer configuration
  */
-typedef enum {
+typedef enum : uint16_t {
   k_nanopb_buffer_size = 512, /**< Maximum encode/decode buffer size */
 } rx_nanopb_params_t;
 

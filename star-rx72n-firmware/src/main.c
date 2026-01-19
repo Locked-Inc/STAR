@@ -24,7 +24,7 @@
  * Note: main() should never return in this firmware as ThreadX takes over.
  * These codes exist for completeness and static analysis tools.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_main_ret_success = 0, /**< Successful completion (should never be reached) */
 } main_ret_t;
 

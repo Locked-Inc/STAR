@@ -42,7 +42,7 @@ static const char* s_tag = "rx_spi_comm";
  */
 
 /** @brief Byte offsets within frame header buffer (SYNC + header fields) */
-typedef enum {
+typedef enum : uint8_t {
   k_hdr_sync_high = 0, /**< SYNC word high byte */
   k_hdr_sync_low  = 1, /**< SYNC word low byte */
   k_hdr_seq_high  = 2, /**< Sequence number high byte */
@@ -59,12 +59,12 @@ static const uint32_t s_poll_sleep_ticks = 1;
 #endif
 
 /** @brief ACK/ready wait timing constants */
-typedef enum {
+typedef enum : uint16_t {
   k_ack_wait_timeout_ms = 50, /**< Abort if host doesn't ACK within 50 ms */
 } ack_wait_t;
 
 /** @brief Polling loop iteration limits */
-typedef enum {
+typedef enum : uint16_t {
   k_max_poll_iterations = 1000, /**< Maximum polling iterations (safety bound) */
 } polling_limits_t;
 

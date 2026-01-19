@@ -30,7 +30,7 @@ extern "C" {
  */
 
 /** @brief USB register reserved field sizes */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_reserved_after_dvstctr0_bytes = 2,  /**< Reserved bytes after DVSTCTR0 */
   k_usb_reserved_after_testmode_bytes = 2,  /**< Reserved bytes after TESTMODE */
   k_usb_reserved_after_cfifoctr_bytes = 4,  /**< Reserved bytes after CFIFOCTR */
@@ -122,7 +122,7 @@ typedef struct {
  */
 
 /** @brief ICU register array sizes */
-typedef enum {
+typedef enum : uint16_t {
   k_mock_icu_ir_count  = 256, /**< Number of IR registers */
   k_mock_icu_ier_count = 32,  /**< Number of IER registers */
   k_mock_icu_ipr_count = 256, /**< Number of IPR registers */
@@ -200,7 +200,7 @@ static inline volatile mock_system_regs_t* system_regs(void)
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_usb_syscfg_usbe   = (1 << 0),  /**< USB Module Enable */
   k_usb_syscfg_uplle  = (1 << 1),  /**< USB PLL Enable */
   k_usb_syscfg_ucksel = (1 << 2),  /**< USB Clock Select */
@@ -216,7 +216,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_usb_syssts0_lnst_mask = 0x0003, /**< USB Data Line Status Mask */
   k_usb_syssts0_lnst_se0  = 0x0000, /**< SE0 (disconnected) */
   k_usb_syssts0_lnst_fs_j = 0x0001, /**< Full-Speed J-state */
@@ -229,7 +229,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_usb_intenb0_brdye = (1 << 8),  /**< Buffer Ready Interrupt Enable */
   k_usb_intenb0_nrdye = (1 << 9),  /**< Buffer Not Ready Interrupt Enable */
   k_usb_intenb0_bempe = (1 << 10), /**< Buffer Empty Interrupt Enable */
@@ -245,7 +245,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_usb_intsts0_ctsq_mask       = 0x0007,    /**< Control Transfer Stage Mask */
   k_usb_intsts0_ctsq_idle       = 0x0000,    /**< Idle or setup stage */
   k_usb_intsts0_ctsq_rd_data    = 0x0001,    /**< Control read data stage */
@@ -276,7 +276,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_usb_dcpctr_pid_mask  = 0x0003,    /**< Response PID Mask */
   k_usb_dcpctr_pid_nak   = 0x0000,    /**< NAK response */
   k_usb_dcpctr_pid_buf   = 0x0001,    /**< BUF response (enable) */
@@ -294,7 +294,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_usb_pipectr_pid_mask  = 0x0003,    /**< Response PID Mask */
   k_usb_pipectr_pid_nak   = 0x0000,    /**< NAK response */
   k_usb_pipectr_pid_buf   = 0x0001,    /**< BUF response (enable) */
@@ -314,7 +314,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_usb_fifoctr_dtln_mask = 0x0FFF,    /**< Receive Data Length Mask */
   k_usb_fifoctr_frdy      = (1 << 13), /**< FIFO Port Ready */
   k_usb_fifoctr_bclr      = (1 << 14), /**< CPU Buffer Clear */
@@ -326,7 +326,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_usb_fifosel_curpipe_mask = 0x000F,    /**< Current Pipe Mask */
   k_usb_fifosel_isel         = (1 << 5),  /**< Access Direction (1=write, 0=read) */
   k_usb_fifosel_bigend       = (1 << 8),  /**< Endian Mode (1=big, 0=little) */
@@ -338,7 +338,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_usb_pipecfg_epnum_mask = 0x000F,    /**< Endpoint Number Mask */
   k_usb_pipecfg_dir        = (1 << 4),  /**< Transfer Direction (1=TX, 0=RX) */
   k_usb_pipecfg_shtnak     = (1 << 7),  /**< Pipe Disabled at End of Transfer */
@@ -355,7 +355,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_vect_usb0_d0fifo = 34, /**< USB0 D0FIFO interrupt */
   k_vect_usb0_d1fifo = 35, /**< USB0 D1FIFO interrupt */
   k_vect_usb0_usbi   = 36, /**< USB0 USBI interrupt */
@@ -367,7 +367,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_mstpb_usb0 = 19, /**< USB0 module stop bit in MSTPCRB */
 } mock_mstpcrb_bits_t;
 
@@ -376,7 +376,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_usb_cdc_ep_bulk_in      = 1,  /**< EP1: Bulk IN (data to host) */
   k_usb_cdc_ep_bulk_out     = 2,  /**< EP2: Bulk OUT (data from host) */
   k_usb_cdc_ep_interrupt_in = 3,  /**< EP3: Interrupt IN (notifications) */

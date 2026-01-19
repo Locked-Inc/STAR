@@ -40,7 +40,7 @@ void tearDown(void)
 /**
  * @brief Test vector size constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_rom_code_size        = 8, /**< OneWire ROM code: family + serial + CRC */
   k_scratchpad_size      = 9, /**< DS18B20 scratchpad with CRC */
   k_rom_data_size        = 7, /**< ROM code without CRC byte */
@@ -50,7 +50,7 @@ typedef enum {
 /**
  * @brief DS18B20 family code
  */
-typedef enum {
+typedef enum : uint8_t {
   k_ds18b20_family_code = 0x28,
 } onewire_family_codes_t;
 

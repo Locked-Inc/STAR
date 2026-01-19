@@ -26,7 +26,7 @@
 /**
  * @brief FEC implementation constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_fec_msb_bit_position    = 7,     /**< MSB position in byte (0-indexed) */
   k_fec_shift_register_bits = 6,     /**< K-1 shift register size */
   k_fec_correlation_offset  = 32768, /**< Correlation metric offset (2^15) */
@@ -37,7 +37,7 @@ typedef enum {
 /**
  * @brief FEC output indices for G1 and G2 generator polynomials
  */
-typedef enum {
+typedef enum : uint8_t {
   k_fec_output_g1 = 0, /**< G1 generator output (first encoded bit) */
   k_fec_output_g2 = 1, /**< G2 generator output (second encoded bit) */
 } rx_fec_output_index_t;

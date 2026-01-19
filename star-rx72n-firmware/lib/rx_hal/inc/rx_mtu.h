@@ -42,7 +42,7 @@ extern "C" {
 /**
  * @brief MTU channel identifiers
  */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_channel_0 = 0,
   k_mtu_channel_1 = 1,
   k_mtu_channel_2 = 2,
@@ -55,7 +55,7 @@ typedef enum {
 /**
  * @brief MTU output channel (for complementary PWM)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_output_a = 0, /**< MTIOCA output */
   k_mtu_output_b = 1, /**< MTIOCB output */
   k_mtu_output_c = 2, /**< MTIOCC output */

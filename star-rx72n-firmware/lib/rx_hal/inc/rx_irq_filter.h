@@ -63,7 +63,7 @@ extern "C" {
  * - PCLK/32:  533ns per sample, 1.6us response
  * - PCLK/64:  1.07us per sample, 3.2us response
  */
-typedef enum {
+typedef enum : uint8_t {
   k_irq_filter_pclk_1  = 0, /**< PCLKB/1 (fastest response, minimal filtering) */
   k_irq_filter_pclk_8  = 1, /**< PCLKB/8 (good for fast signals) */
   k_irq_filter_pclk_32 = 2, /**< PCLKB/32 (moderate filtering) */
@@ -71,7 +71,7 @@ typedef enum {
 } rx_irq_filter_clk_t;
 
 /** @brief IRQ pin limits */
-typedef enum {
+typedef enum : uint8_t {
   k_irq_max = 15, /**< Maximum IRQ number (0-15) */
 } rx_irq_limits_t;
 

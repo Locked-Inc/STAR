@@ -45,7 +45,7 @@ extern "C" {
 /**
  * @brief CMT channel identifiers
  */
-typedef enum {
+typedef enum : uint8_t {
   k_cmt_channel_0 = 0, /**< CMT0 (used by ThreadX) */
   k_cmt_channel_1 = 1, /**< CMT1 (motor control) */
   k_cmt_channel_2 = 2, /**< CMT2 (available) */

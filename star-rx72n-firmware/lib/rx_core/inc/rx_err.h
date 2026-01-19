@@ -58,7 +58,7 @@ typedef int32_t rx_err_t;
  * - 0x4xx: Communication errors
  * - 0x5xx: Validation errors
  */
-typedef enum {
+typedef enum : uint16_t {
   k_rx_ok = 0, /**< Success */
 
   /* Generic Errors (0x100 - 0x1FF) */

@@ -46,7 +46,7 @@ extern "C" {
  * system_regs()->prcr = k_rx_prcr_lock;         // Lock protection
  * @endcode
  */
-typedef enum {
+typedef enum : uint16_t {
   k_rx_prcr_unlock_prc1      = 0xA502, /**< Unlock PRC1 (MSTPCR only) */
   k_rx_prcr_unlock_prc0_prc1 = 0xA503, /**< Unlock PRC0+PRC1 (CGC + MSTPCR) */
   k_rx_prcr_unlock_prc1_prc3 = 0xA50B, /**< Unlock PRC1+PRC3 (MSTPCR + LVD) */

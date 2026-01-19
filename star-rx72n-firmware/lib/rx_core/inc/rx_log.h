@@ -73,7 +73,7 @@ void uart_puthex(uint32_t value, uint8_t digits);
 /**
  * @brief Log levels (priority from low to high)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_log_none    = 0, /**< No logging */
   k_log_error   = 1, /**< Critical errors only */
   k_log_warn    = 2, /**< Errors and warnings */

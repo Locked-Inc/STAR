@@ -49,7 +49,7 @@ typedef void VOID;
  */
 
 /** @brief ThreadX return codes (must match real ThreadX API values) */
-typedef enum {
+typedef enum : uint8_t {
   TX_SUCCESS             = 0x00U,
   TX_DELETED             = 0x01U,
   TX_POOL_ERROR          = 0x02U,
@@ -90,18 +90,18 @@ typedef enum {
 } tx_status;
 
 /** @brief ThreadX wait options */
-typedef ULONG tx_wait_option;
+typedef ULONG               tx_wait_option;
 static const tx_wait_option TX_NO_WAIT      = 0U;
 static const tx_wait_option TX_WAIT_FOREVER = 0xFFFFFFFFUL;
 
 /** @brief ThreadX inheritance options */
-typedef enum {
+typedef enum : uint8_t {
   TX_NO_INHERIT = 0U,
   TX_INHERIT    = 1U,
 } tx_inherit_option;
 
 /** @brief ThreadX thread constants */
-typedef enum {
+typedef enum : uint8_t {
   TX_NO_TIME_SLICE = 0U,
   TX_AUTO_START    = 1U,
   TX_DONT_START    = 0U,
@@ -110,7 +110,7 @@ typedef enum {
 } tx_thread_constants_t;
 
 /** @brief ThreadX event flags constants */
-typedef enum {
+typedef enum : uint8_t {
   TX_OR        = 0U,
   TX_OR_CLEAR  = 1U,
   TX_AND       = 2U,
@@ -118,7 +118,7 @@ typedef enum {
 } tx_event_flags_option_t;
 
 /** @brief ThreadX magic ID constants for object validation */
-typedef enum {
+typedef enum : uint32_t {
   k_tx_invalid_id        = 0U,         /**< Invalid/uninitialized object ID */
   k_tx_mutex_magic       = 0x4D555458, /**< "MUTX" ASCII magic ID */
   k_tx_thread_magic      = 0x54485244, /**< "THRD" ASCII magic ID */

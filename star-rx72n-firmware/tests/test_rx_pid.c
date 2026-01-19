@@ -29,7 +29,7 @@
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : int8_t {
   k_test_dt_ms          = 10,   /**< Default time step in milliseconds */
   k_test_output_max     = 100,  /**< Default maximum output */
   k_test_output_min     = -100, /**< Default minimum output (as positive for enum) */

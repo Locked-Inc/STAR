@@ -94,7 +94,7 @@ extern "C" {
 /**
  * @brief Mock error handler configuration constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_error_handler_default_max_errors = 32,  /**< Default maximum errors to record */
   k_mock_error_handler_component_name_max = 32,  /**< Maximum component name length */
   k_mock_error_handler_message_max        = 128, /**< Maximum error message length */

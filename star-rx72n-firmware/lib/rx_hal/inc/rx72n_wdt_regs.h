@@ -39,12 +39,12 @@ extern "C" {
  */
 
 /** @brief WDT base address */
-typedef enum {
+typedef enum : uint32_t {
   k_wdt_base_addr = 0x00088020, /**< WDT register base address */
 } rx_wdt_addresses_t;
 
 /** @brief WDT register reserved field sizes */
-typedef enum {
+typedef enum : uint8_t {
   k_wdt_reserved_after_wdtrr_bytes  = 1, /**< Reserved byte after WDTRR */
   k_wdt_reserved_after_wdtrcr_bytes = 1, /**< Reserved byte after WDTRCR */
 } wdt_reserved_sizes_t;
@@ -79,13 +79,13 @@ static inline volatile rx_wdt_regs_t* wdt(void)
 }
 
 /* WDT Refresh Register (WDTRR) - Write sequence to refresh */
-typedef enum {
+typedef enum : uint8_t {
   k_wdt_refresh_start = 0x00, /**< First write value */
   k_wdt_refresh_end   = 0xFF, /**< Second write value */
 } wdt_refresh_sequence_t;
 
 /* WDT Control Register (WDTCR) Bit Definitions */
-typedef enum {
+typedef enum : uint16_t {
   /* Timeout Period Select (TOPS) - bits 1:0 */
   k_wdt_tops_1024  = 0x0000, /**< 1024 cycles */
   k_wdt_tops_4096  = 0x0001, /**< 4096 cycles */
@@ -115,14 +115,14 @@ typedef enum {
 } wdt_wdtcr_bits_t;
 
 /* WDT Status Register (WDTSR) Bit Definitions */
-typedef enum {
+typedef enum : uint16_t {
   k_wdt_sr_cntval_mask = 0x3FFF,    /**< Down counter value (bits 13:0) */
   k_wdt_sr_undff       = (1 << 14), /**< Underflow flag (reset occurred) */
   k_wdt_sr_refef       = (1 << 15), /**< Refresh error flag (window violation) */
 } wdt_wdtsr_bits_t;
 
 /* WDT Reset Control Register (WDTRCR) Bit Definitions */
-typedef enum {
+typedef enum : uint8_t {
   k_wdt_rcr_rstirqs_mask = (1 << 7), /**< Reset/Interrupt Select bit mask */
   k_wdt_rstirqs_reset    = (1 << 7), /**< Generate reset on timeout */
   k_wdt_rstirqs_nmi      = 0x00,     /**< Generate NMI on timeout */
