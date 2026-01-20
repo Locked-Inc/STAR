@@ -50,6 +50,15 @@ static const float s_temp_conversion_divisor =
  * =============================================================================
  */
 
+/**
+ * @brief Scratchpad write parameters for TH, TL, and config registers
+ */
+typedef struct {
+  uint8_t th;     /**< High alarm register */
+  uint8_t tl;     /**< Low alarm register */
+  uint8_t config; /**< Configuration register */
+} ds18b20_scratchpad_write_t;
+
 static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* config,
                                                  const rx_ds18b20_handle_t* handle);
 static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* handle);
@@ -57,10 +66,8 @@ static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle
 static rx_err_t
                 internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* handle,
                                                      uint8_t scratchpad[k_ds18b20_scratchpad_bytes]);
-static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t* handle,
-                                                  uint8_t                    th,
-                                                  uint8_t                    tl,
-                                                  uint8_t                    config);
+static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t*        handle,
+                                                  const ds18b20_scratchpad_write_t* scratchpad);
 static uint8_t  internal_ds18b20_resolution_to_config(const ds18b20_resolution_t resolution);
 static uint16_t internal_ds18b20_get_temp_mask(ds18b20_resolution_t resolution);
 static float    internal_ds18b20_raw_to_celsius(const int16_t raw_temp);
@@ -214,9 +221,10 @@ rx_err_t rx_ds18b20_read_temperature_raw(rx_ds18b20_handle_t* handle, int16_t* r
 rx_err_t rx_ds18b20_set_resolution(rx_ds18b20_handle_t*       handle,
                                    const ds18b20_resolution_t resolution)
 {
-  uint8_t  scratchpad[k_ds18b20_scratchpad_bytes];
-  rx_err_t err    = k_rx_ok;
-  uint8_t  config = 0;
+  uint8_t                    scratchpad[k_ds18b20_scratchpad_bytes];
+  rx_err_t                   err    = k_rx_ok;
+  uint8_t                    config = 0;
+  ds18b20_scratchpad_write_t write_cfg;
 
   CHECK_DS18B20_HANDLE(handle, s_tag);
 
@@ -235,10 +243,10 @@ rx_err_t rx_ds18b20_set_resolution(rx_ds18b20_handle_t*       handle,
   config = internal_ds18b20_resolution_to_config(resolution);
 
   /* Write scratchpad with new config */
-  err = internal_ds18b20_write_scratchpad(handle,
-                                          scratchpad[k_ds18b20_scratch_th_reg],
-                                          scratchpad[k_ds18b20_scratch_tl_reg],
-                                          config);
+  write_cfg.th     = scratchpad[k_ds18b20_scratch_th_reg];
+  write_cfg.tl     = scratchpad[k_ds18b20_scratch_tl_reg];
+  write_cfg.config = config;
+  err              = internal_ds18b20_write_scratchpad(handle, &write_cfg);
   if (err != k_rx_ok) {
     return err;
   }
@@ -574,21 +582,21 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* 
  * @brief Write scratchpad (TH, TL, Config registers)
  *
  * @param[in] handle DS18B20 handle
- * @param[in] th TH (high alarm) register value
- * @param[in] tl TL (low alarm) register value
- * @param[in] config Configuration register value
+ * @param[in] scratchpad Scratchpad write values (TH, TL, config)
  *
  * @return k_rx_ok on success
  * @return Error code on failure
  */
-static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t* handle,
-                                                  const uint8_t              th,
-                                                  const uint8_t              tl,
-                                                  const uint8_t              config)
+static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t*        handle,
+                                                  const ds18b20_scratchpad_write_t* scratchpad)
 {
   bool     presence = false;
   rx_err_t err      = k_rx_ok;
   uint8_t  write_buf[k_ds18b20_scratchpad_write_bytes];
+
+  if (scratchpad == NULL) {
+    return k_rx_err_invalid_arg;
+  }
 
   /* Reset and check presence */
   err = rx_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
@@ -612,9 +620,9 @@ static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t* han
   }
 
   /* Write 3 bytes (TH, TL, Config) */
-  write_buf[k_ds18b20_write_idx_th]     = th;
-  write_buf[k_ds18b20_write_idx_tl]     = tl;
-  write_buf[k_ds18b20_write_idx_config] = config;
+  write_buf[k_ds18b20_write_idx_th]     = scratchpad->th;
+  write_buf[k_ds18b20_write_idx_tl]     = scratchpad->tl;
+  write_buf[k_ds18b20_write_idx_config] = scratchpad->config;
 
   err = rx_bus_onewire_write(handle->bus_manager,
                              handle->bus_name,

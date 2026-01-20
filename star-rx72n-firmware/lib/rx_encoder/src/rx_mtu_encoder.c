@@ -76,10 +76,11 @@ typedef enum : uint16_t {
  * @brief Encoder initialization values
  */
 typedef enum : uint16_t {
-  k_encoder_count_reset        = 0, /**< Counter reset value */
-  k_encoder_initial_count      = 0, /**< Initial total count */
-  k_encoder_initial_rev        = 0, /**< Initial revolution count */
-  k_encoder_min_counts_per_rev = 1, /**< Minimum valid counts per revolution */
+  k_encoder_count_reset        = 0,     /**< Counter reset value */
+  k_encoder_initial_count      = 0,     /**< Initial total count */
+  k_encoder_initial_rev        = 0,     /**< Initial revolution count */
+  k_encoder_min_counts_per_rev = 1,     /**< Minimum valid counts per revolution */
+  k_encoder_max_counts_per_rev = 65535, /**< Maximum valid counts per revolution */
 } encoder_init_values_t;
 
 /**
@@ -170,7 +171,8 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
 
   const rx_mtu_channel_t channel = config->channel;
 
-  if (config->counts_per_rev < k_encoder_min_counts_per_rev) {
+  if (config->counts_per_rev < k_encoder_min_counts_per_rev ||
+      config->counts_per_rev > k_encoder_max_counts_per_rev) {
     rx_log_error(s_tag, "Invalid counts per revolution");
     return k_rx_err_invalid_arg;
   }
@@ -504,7 +506,7 @@ static rx_err_t internal_update_state_from_count(const rx_mtu_channel_t channel,
                                                  const uint16_t         current_count,
                                                  rx_encoder_state_t*    state)
 {
-  if ((uint32_t)channel >= k_encoder_max_channels || state == NULL) {
+  if (!internal_is_valid_channel(channel) || state == NULL) {
     return k_rx_err_invalid_arg;
   }
 
@@ -552,9 +554,7 @@ static rx_err_t internal_update_state_from_count(const rx_mtu_channel_t channel,
   }
 
   /* Copy to output */
-  if (state != NULL) {
-    *state = s_encoder_state[channel];
-  }
+  *state = s_encoder_state[channel];
 
   return k_rx_ok;
 }

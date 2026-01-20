@@ -27,9 +27,9 @@
  *
  *   // 2. Initialize
  *   const error_handler_config_t config = {
- *     .max_retries        = 3,
- *     .initial_backoff_ms = 100,
- *     .max_backoff_ms     = 5000,
+ *     .max_retries        = k_error_handler_default_max_retries,
+ *     .initial_backoff_ms = k_error_handler_default_initial_backoff_ms,
+ *     .max_backoff_ms     = k_error_handler_default_max_backoff_ms,
  *   };
  *   rx_err_t err = error_handler_init(&s_error_handler, &config);
  *   RX_ERROR_CHECK(err);

@@ -136,6 +136,9 @@ static rx_err_t internal_decode_header(const uint8_t* data,
 static rx_err_t
 internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uint32_t* crc_out)
 {
+  uint32_t received_crc   = 0;
+  uint32_t calculated_crc = 0;
+
   if (data == NULL || crc_out == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -144,8 +147,8 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
     return k_rx_err_invalid_size;
   }
 
-  const uint32_t received_crc   = internal_read_le32(&data[offset]);
-  const uint32_t calculated_crc = rx_crc32_ieee(data, offset);
+  received_crc   = internal_read_le32(&data[offset]);
+  calculated_crc = rx_crc32_ieee(data, offset);
 
   if (received_crc != calculated_crc) {
     return k_rx_err_crc_mismatch;
@@ -194,6 +197,9 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
                          uint8_t*                  output,
                          uint32_t*                 output_len)
 {
+  uint32_t frame_size;
+  uint32_t offset;
+
   if (enc == NULL || frame == NULL || output == NULL || output_len == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -208,8 +214,8 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
   }
 
   /* Calculate total frame size */
-  const uint32_t frame_size = rx_frame_encoded_size(frame->header.length);
-  uint32_t       offset     = k_frame_offset_start;
+  frame_size = rx_frame_encoded_size(frame->header.length);
+  offset     = k_frame_offset_start;
 
   /* Write SYNC word (big-endian) */
   rx_frame_write_be16(&output[offset], k_frame_sync_word);

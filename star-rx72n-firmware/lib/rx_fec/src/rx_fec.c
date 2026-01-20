@@ -37,7 +37,7 @@ typedef enum : uint16_t {
 /**
  * @brief FEC output indices for G1 and G2 generator polynomials
  */
-typedef enum : uint8_t {
+typedef enum {
   k_fec_output_g1 = 0, /**< G1 generator output (first encoded bit) */
   k_fec_output_g2 = 1, /**< G2 generator output (second encoded bit) */
 } rx_fec_output_index_t;
@@ -235,20 +235,24 @@ static int32_t internal_branch_metric(const rx_soft_bit_t soft0,
  * @param[in,out] dec Decoder handle. Modified: path_metrics and survivors updated.
  * @param[in]     soft0 First soft bit of symbol pair
  * @param[in]     soft1 Second soft bit of symbol pair
- * @param[in]     t Time step index
+ * @param[in]     symbol_idx Time step index
  */
 static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
                                             const rx_soft_bit_t soft0,
                                             const rx_soft_bit_t soft1,
-                                            const uint32_t      t)
+                                            const uint32_t      symbol_idx)
 {
+  /* Pre-conditions */
+  assert(dec != NULL);
+  assert(symbol_idx < dec->survivors_len);
+
   /* Reset new path metrics */
   for (uint8_t i = 0; i < k_fec_num_states; i++) {
     dec->new_path_metrics[i] = INT32_MAX;
   }
 
   /* Clear survivors for this time step */
-  dec->survivors[t] = 0;
+  dec->survivors[symbol_idx] = 0;
 
   /* For each current state, compute transitions */
   for (uint8_t state = 0; state < k_fec_num_states; state++) {
@@ -277,9 +281,9 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
         dec->new_path_metrics[next_state] = new_metric;
 
         /* Store predecessor's LSB for traceback */
-        dec->survivors[t] &= ~(1ULL << (uint8_t)next_state);
+        dec->survivors[symbol_idx] &= ~(1ULL << (uint8_t)next_state);
         if ((state & k_fec_bit_mask) == k_fec_bit_mask) {
-          dec->survivors[t] |= (1ULL << (uint8_t)next_state);
+          dec->survivors[symbol_idx] |= (1ULL << (uint8_t)next_state);
         }
       }
     }
@@ -305,6 +309,8 @@ static void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
                                           const rx_soft_bit_t* soft_bits,
                                           const uint32_t       num_symbols)
 {
+  uint32_t limit;
+
   /* Pre-conditions */
   assert(dec != NULL);
   assert(soft_bits != NULL);
@@ -316,10 +322,8 @@ static void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
   dec->path_metrics[0] = 0;
 
   /* Process each symbol pair through the trellis */
-  for (uint32_t t = 0; t < k_fec_max_symbols; t++) {
-    if (t >= num_symbols) {
-      break;
-    }
+  limit = (num_symbols < k_fec_max_symbols) ? num_symbols : k_fec_max_symbols;
+  for (uint32_t t = 0; t < limit; t++) {
     const rx_soft_bit_t soft0 = soft_bits[t * k_fec_num_outputs + k_fec_output_g1];
     const rx_soft_bit_t soft1 = soft_bits[t * k_fec_num_outputs + k_fec_output_g2];
     internal_viterbi_process_symbol(dec, soft0, soft1, t);
@@ -344,6 +348,8 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
                                        uint8_t*                output,
                                        const uint32_t          output_bytes)
 {
+  uint32_t limit;
+
   /* Clear output buffer */
   memset(output, 0, output_bytes);
 
@@ -355,10 +361,8 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
   uint8_t state = 0;
 
   /* Traceback: work backwards through the trellis */
-  for (uint32_t t = k_fec_max_symbols; t > 0; t--) {
-    if (t > num_symbols) {
-      continue;
-    }
+  limit = (num_symbols < k_fec_max_symbols) ? num_symbols : k_fec_max_symbols;
+  for (uint32_t t = limit; t > 0; t--) {
     const uint32_t t_idx = t - 1;
 
     /* The input bit is the MSB of the current state */
@@ -488,6 +492,57 @@ rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
  * =============================================================================
  */
 
+static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*                  dec,
+                                                const rx_fec_decode_soft_params_t* params,
+                                                uint32_t*                          num_symbols_out)
+{
+  uint32_t num_symbols;
+
+  if (dec == NULL || params == NULL || num_symbols_out == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (params->soft_bits == NULL || params->output == NULL || params->output_len == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!dec->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Soft bits must come in pairs (G1, G2) */
+  if (params->soft_len == 0 || (params->soft_len % k_fec_num_outputs) != 0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (params->expected_output_len > 0) {
+    num_symbols = (uint32_t)((params->expected_output_len * k_rx_bits_per_byte) + k_fec_tail_bits);
+  } else {
+    num_symbols = (uint32_t)(params->soft_len / k_fec_num_outputs);
+  }
+
+  if (num_symbols < k_fec_tail_bits) {
+    return k_rx_err_invalid_size;
+  }
+
+  if (num_symbols > k_fec_max_symbols) {
+    return k_rx_err_invalid_size;
+  }
+
+  /* Ensure we have enough soft bits */
+  if (num_symbols * k_fec_num_outputs > params->soft_len) {
+    num_symbols = (uint32_t)(params->soft_len / k_fec_num_outputs);
+  }
+
+  /* Check survivors buffer is large enough */
+  if (num_symbols > dec->survivors_len) {
+    return k_rx_err_invalid_size;
+  }
+
+  *num_symbols_out = num_symbols;
+  return k_rx_ok;
+}
+
 rx_err_t
 rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, const uint32_t survivors_len)
 {
@@ -524,60 +579,26 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
 
 rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_params_t* params)
 {
-  /* Validate arguments */
-  if (dec == NULL || params == NULL) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if (params->soft_bits == NULL || params->output == NULL || params->output_len == NULL) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if (!dec->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  /* Soft bits must come in pairs (G1, G2) */
-  if (params->soft_len == 0 || (params->soft_len % k_fec_num_outputs) != 0) {
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Calculate number of symbols */
   uint32_t num_symbols;
-  if (params->expected_output_len > 0) {
-    num_symbols = (uint32_t)((params->expected_output_len * k_rx_bits_per_byte) + k_fec_tail_bits);
-  } else {
-    num_symbols = (uint32_t)(params->soft_len / k_fec_num_outputs);
-  }
+  rx_err_t err;
+  uint32_t data_bits;
+  uint32_t output_bytes;
 
-  if (num_symbols < k_fec_tail_bits) {
-    return k_rx_err_invalid_size;
-  }
-
-  if (num_symbols > k_fec_max_symbols) {
-    return k_rx_err_invalid_size;
-  }
-
-  /* Ensure we have enough soft bits */
-  if (num_symbols * k_fec_num_outputs > params->soft_len) {
-    num_symbols = (uint32_t)(params->soft_len / k_fec_num_outputs);
-  }
-
-  /* Check survivors buffer is large enough */
-  if (num_symbols > dec->survivors_len) {
-    return k_rx_err_invalid_size;
+  err = internal_validate_decode_params(dec, params, &num_symbols);
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /* Forward pass: initialize path metrics and process symbols */
   internal_viterbi_forward_pass(dec, params->soft_bits, num_symbols);
 
   /* Calculate data bits and output size */
-  const uint32_t data_bits = num_symbols - k_fec_tail_bits;
+  data_bits = num_symbols - k_fec_tail_bits;
   if (data_bits == 0) {
     return k_rx_err_invalid_size;
   }
 
-  const uint32_t output_bytes = (data_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
+  output_bytes = (data_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
 
   /* Traceback: extract decoded bits */
   internal_viterbi_traceback(dec, num_symbols, data_bits, params->output, output_bytes);
@@ -588,6 +609,10 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
 
 rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_params_t* params)
 {
+  uint32_t                    num_bits;
+  uint32_t                    limit;
+  rx_fec_decode_soft_params_t soft_params;
+
   if (dec == NULL || params == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -610,29 +635,25 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_para
   }
 
   /* Convert hard bits to soft bits */
-  const uint32_t num_bits = (uint32_t)(params->data_len * k_rx_bits_per_byte);
+  num_bits = (uint32_t)(params->data_len * k_rx_bits_per_byte);
 
   /* Ensure soft bits buffer is large enough */
   if (num_bits > params->soft_buffer_len) {
     return k_rx_err_invalid_size;
   }
 
-  for (uint32_t i = 0; i < k_fec_max_symbols; i++) {
-    if (i >= num_bits) {
-      break;
-    }
+  limit = (num_bits < k_fec_max_symbols) ? num_bits : k_fec_max_symbols;
+  for (uint32_t i = 0; i < limit; i++) {
     const uint8_t bit           = internal_get_bit(params->data, i);
     params->soft_bits_buffer[i] = rx_fec_hard_to_soft(bit);
   }
 
   /* Prepare soft decode parameters */
-  const rx_fec_decode_soft_params_t soft_params = {
-    .soft_bits           = params->soft_bits_buffer,
-    .soft_len            = num_bits,
-    .expected_output_len = params->expected_output_len,
-    .output              = params->output,
-    .output_len          = params->output_len,
-  };
+  soft_params.soft_bits           = params->soft_bits_buffer;
+  soft_params.soft_len            = num_bits;
+  soft_params.expected_output_len = params->expected_output_len;
+  soft_params.output              = params->output;
+  soft_params.output_len          = params->output_len;
 
   return rx_fec_decode_soft(dec, &soft_params);
 }

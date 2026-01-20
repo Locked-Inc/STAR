@@ -321,7 +321,7 @@ static rx_err_t internal_uart_getc_callback(rx_bus_config_t* bus_config, void* u
   const rx_err_t err = uart_getc_channel(bus_config->proto.uart.channel, &ctx->c);
 
   /* Post-condition: Verify character is valid ASCII when data available */
-  if (err == k_rx_ok && (uint8_t)ctx->c > 127) {
+  if (err == k_rx_ok && (uint8_t)ctx->c > s_uart_ascii_max) {
     rx_log_warn(s_tag, "UART getc received non-ASCII character");
     /* Continue anyway - some protocols use extended ASCII */
   }
