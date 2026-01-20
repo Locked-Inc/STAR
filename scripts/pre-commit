@@ -16,12 +16,12 @@ fi
 
 echo "🔍 Checking ROS2 code formatting and header guards..."
 
-# Run format check
-if ! ./scripts/format-ros2.sh --check >/dev/null 2>&1; then
+# Run format check via Docker (using Make)
+if ! make check >/dev/null 2>&1; then
     echo ""
     echo "❌ Pre-commit check failed!"
     echo ""
-    echo "Run './scripts/format-ros2.sh' to fix formatting and header guards."
+    echo "Run 'make format' to fix formatting and header guards."
     echo "Then 'git add' the fixed files and commit again."
     echo ""
     exit 1
