@@ -50,12 +50,14 @@ RX72N Motor Controller
 - ✅ PR #191: BatteryManagementService (656 lines, 80% test coverage)
 - ✅ PR #192: SPI Transport with periph.io (276 lines, production-ready)
 - ✅ PR #199: star_safety_monitor (1558 lines, 7 passing tests)
+- ✅ PR #200: HIL Simulation (Virtual RX72N, Socket Transport, Service Tests)
 - ✅ Issue #176: E-Stop Priority Queue (variadic priority in HARQ.Send)
 
 **Critical Path to MVP:**
 1. ~~Implement `star_safety_monitor` node (Issue #139)~~ ✅ Complete
 2. ~~Add E-Stop priority queue (Issue #176)~~ ✅ Complete
-3. Hardware integration tests on RPi5 (Issue #180)
+3. Simulated Integration Tests (Virtual RX72N)
+4. Hardware integration tests on RPi5 (Issue #180)
 
 **Estimated Time to Production MVP:** ~1 week
 
@@ -76,11 +78,13 @@ RX72N Motor Controller
 | BatteryManagementService | #191 | ✅ Merged | 656 | 2026-01-16 |
 | SPI Transport Layer | #192 | ✅ Merged | 276 | 2026-01-17 |
 | `star_safety_monitor` | #199 | ✅ Merged | 1558 | 2026-01-19 |
+| HIL Sim + Socket Transport | #200 | ✅ Merged | 1000+ | 2026-01-19 |
 
 **Infrastructure Complete:**
 - ✅ Dockerfile (ROS2 Jazzy + gRPC + Protobuf)
 - ✅ CI/CD workflow (`.github/workflows/ros2.yml`)
 - ✅ Documentation (`docs/sections/10_ros2_integration.tex`)
+- ✅ HIL Simulation (`virtual_rx72n`, `SocketTransport`)
 - ⚠️ Devcontainer (removed in `c17e0b17f`, can be restored if needed)
 
 **ROS2 Nodes Complete (3/3):**
@@ -1014,17 +1018,21 @@ Phase 6: Integration Testing ─────────────────
 
 ### Immediate Priority (Week of 2026-01-20)
 
-1. **Hardware Integration Tests** (Issue #180) - 2-3 days 🔥 **START HERE**
+1. **Simulated Integration Tests** (Virtual RX72N) - 1-2 days 🔥 **START HERE**
+   - Verify `star_gateway_bridge` connects to Gateway (Sim Mode)
+   - Verify Telemetry/Command flow end-to-end (ROS2 <-> Gateway <-> Virtual RX72N)
+   - Verify Safety Monitor E-Stop triggering in simulation
+
+2. **Frame Drop Metrics** (Issue #166) - 1 day
+   - Track dropped frames in `star_gateway_bridge`
+   - Publish diagnostics for monitoring
+
+3. **Hardware Integration Tests** (Issue #180) - 2-3 days (When Hardware Available)
    - SPI loopback test (COPI → CIPO shorted)
    - RX72N round-trip communication
    - End-to-end latency validation (<10ms target)
    - Emergency stop response time (<50ms target with priority flag)
    - 100 Hz sustained throughput test
-   - **All software complete - ready for hardware validation**
-
-2. **Frame Drop Metrics** (Issue #166) - 1 day
-   - Track dropped frames in `star_gateway_bridge`
-   - Publish diagnostics for monitoring
 
 ### Hardware-Dependent Tasks (When RPi5 + RX72N Available)
 
