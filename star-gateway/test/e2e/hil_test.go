@@ -16,9 +16,11 @@ import (
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/app"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/proto"
 )
 
 // MockRX72N simulates the RX72N firmware behavior on a socket.
@@ -72,20 +74,145 @@ func (m *MockRX72N) Stop() {
 
 func (m *MockRX72N) handleConnection(c net.Conn) {
 	defer c.Close()
+
+	// Create frame encoder/decoder
+	encoder := frame.NewEncoder()
+	decoder := frame.NewDecoder()
+
+	// Buffer for reading incoming data
 	buf := make([]byte, 2048)
+
+	// Sequence number for outgoing frames
+	var sequenceNum uint16
+	var timestamp int64
+
+	// Main loop: receive and respond synchronously
 	for {
 		n, err := c.Read(buf)
 		if err != nil {
 			return
 		}
-		// Echo back with modification (Simulation Logic)
-		// Set first byte to 0xFF to mimic Virtual RX72N behavior
-		resp := make([]byte, n)
-		copy(resp, buf[:n])
-		if len(resp) > 0 {
-			resp[0] = 0xFF
+
+		// Try to decode the incoming frame
+		decodedFrame, decodeErr := decoder.Decode(buf[:n])
+
+		// Check if this is a dummy read (all zeros)
+		isDummyRead := n > 0 && isAllZeros(buf[:n])
+
+		if decodeErr == nil && !isDummyRead {
+			// Valid command frame received - could process it here if needed
+			_ = decodedFrame
 		}
-		c.Write(resp)
+
+		// Generate telemetry response
+		telemetry := generateMockTelemetryData(timestamp)
+		timestamp += 10000 // 10ms in microseconds
+
+		// Wrap in WireMessage
+		wireMsg := &starv1.WireMessage{
+			Payload: &starv1.WireMessage_TelemetryData{
+				TelemetryData: telemetry,
+			},
+		}
+
+		// Marshal to protobuf
+		payload, err := proto.Marshal(wireMsg)
+		if err != nil {
+			// Return zeros on error
+			c.Write(make([]byte, n))
+			continue
+		}
+
+		// Create frame
+		frameToSend := &frame.Frame{
+			Header: frame.Header{
+				Sequence: sequenceNum,
+				Length:   uint16(len(payload)),
+				Type:     frame.FrameTypeResponse,
+				Flags:    frame.FlagNone,
+			},
+			Payload: payload,
+		}
+		sequenceNum++
+
+		// Encode frame
+		encodedFrame, err := encoder.Encode(frameToSend)
+		if err != nil {
+			// Return zeros on error
+			c.Write(make([]byte, n))
+			continue
+		}
+
+		// Pad or truncate to match expected response length
+		responseData := make([]byte, n)
+		if len(encodedFrame) <= n {
+			copy(responseData, encodedFrame)
+		} else {
+			copy(responseData, encodedFrame[:n])
+		}
+
+		c.Write(responseData)
+	}
+}
+
+// isAllZeros checks if a byte slice contains only zeros.
+func isAllZeros(data []byte) bool {
+	for _, b := range data {
+		if b != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// generateMockTelemetryData creates dummy telemetry data for testing.
+func generateMockTelemetryData(timestampUs int64) *starv1.TelemetryData {
+	return &starv1.TelemetryData{
+		Imu: &starv1.ImuData{
+			PitchRad:       0.01,
+			RollRad:        -0.02,
+			YawRad:         1.57,
+			AccelXMps2:     0.1,
+			AccelYMps2:     0.0,
+			AccelZMps2:     9.81,
+			GyroXRadPerS:   0.0,
+			GyroYRadPerS:   0.0,
+			GyroZRadPerS:   0.0,
+		},
+		BatteryPercent:     85.0,
+		WifiSignalDbm:      -45,
+		CpuUsagePercent:    25.5,
+		TemperatureCelsius: 35.2,
+		MotorLoadPercent:   15.0,
+		TimestampUs:        timestampUs,
+		EncoderFrontLeft: &starv1.EncoderData{
+			MotorId:     0,
+			Ticks:       1000,
+			VelocityMps: 0.5,
+			TimestampUs: timestampUs,
+		},
+		EncoderFrontRight: &starv1.EncoderData{
+			MotorId:     1,
+			Ticks:       1020,
+			VelocityMps: 0.51,
+			TimestampUs: timestampUs,
+		},
+		EncoderBackLeft: &starv1.EncoderData{
+			MotorId:     2,
+			Ticks:       990,
+			VelocityMps: 0.49,
+			TimestampUs: timestampUs,
+		},
+		EncoderBackRight: &starv1.EncoderData{
+			MotorId:     3,
+			Ticks:       1010,
+			VelocityMps: 0.50,
+			TimestampUs: timestampUs,
+		},
+		EmergencyStop:     false,
+		FaultFlags:        0,
+		BatteryVoltageV:   24.5,
+		BatterySocPercent: 85,
 	}
 }
 
@@ -120,7 +247,7 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	}()
 
 	// Wait for Gateway to start (simple sleep for now, ideally wait for port)
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	// Check if Gateway crashed early
 	select {
@@ -136,15 +263,56 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	}
 	defer conn.Close()
 
-	client := starv1.NewGatewayServiceClient(conn)
+	gatewayClient := starv1.NewGatewayServiceClient(conn)
+	telemetryClient := starv1.NewTelemetryServiceClient(conn)
 
-	// 4. Test GetTeleopCommand (verify connection)
-	// Even if RX72N doesn't send valid telemetry yet, we should be able to call Gateway
+	// 4. Test GetTelemetry (verify we receive valid telemetry data)
+	telemetryReq := &starv1.GetTelemetryRequest{
+		Header: &starv1.RequestHeader{RequestId: "e2e-telemetry-test"},
+	}
+
+	// Wait a bit for telemetry to be received by dispatcher
+	time.Sleep(500 * time.Millisecond)
+
+	telemetryResp, err := telemetryClient.GetTelemetry(context.Background(), telemetryReq)
+	if err != nil {
+		t.Fatalf("GetTelemetry failed: %v", err)
+	}
+
+	if telemetryResp == nil {
+		t.Fatal("Expected non-nil telemetry response")
+	}
+
+	if telemetryResp.Telemetry == nil {
+		t.Fatal("Expected non-nil telemetry data")
+	}
+
+	// Verify telemetry contains expected simulator data
+	telemetry := telemetryResp.Telemetry
+	if telemetry.BatteryVoltageV == 0 {
+		t.Error("Expected non-zero battery voltage")
+	}
+	if telemetry.BatteryPercent == 0 {
+		t.Error("Expected non-zero battery percentage")
+	}
+	if telemetry.Imu == nil {
+		t.Error("Expected non-nil IMU data")
+	}
+	if telemetry.EncoderFrontLeft == nil {
+		t.Error("Expected non-nil front left encoder data")
+	}
+
+	t.Logf("GetTelemetry success: battery=%.1fV (%.0f%%), IMU pitch=%.3f rad",
+		telemetry.BatteryVoltageV,
+		telemetry.BatteryPercent,
+		telemetry.Imu.PitchRad)
+
+	// 5. Test GetTeleopCommand (verify connection)
 	req := &starv1.GetTeleopCommandRequest{
 		Header: &starv1.RequestHeader{RequestId: "e2e-test"},
 	}
 
-	resp, err := client.GetTeleopCommand(context.Background(), req)
+	resp, err := gatewayClient.GetTeleopCommand(context.Background(), req)
 	if err != nil {
 		t.Fatalf("GetTeleopCommand failed: %v", err)
 	}
@@ -155,7 +323,7 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 
 	t.Logf("GetTeleopCommand success: available=%v", resp.CommandAvailable)
 
-	// 5. Test Shutdown
+	// 6. Test Shutdown
 	cancel()
 	select {
 	case err := <-errChan:

@@ -2,7 +2,15 @@
 //
 // This program simulates the RX72N motor controller firmware for testing
 // and development without physical hardware. It listens on a Unix domain
-// socket and responds to Gateway commands.
+// socket and responds to Gateway commands with valid protocol frames.
+//
+// Protocol Implementation:
+//  - Decodes incoming frames using frame.Decoder
+//  - Validates sync word (0x55AA) and CRC-32
+//  - Parses WireMessage protobuf payloads
+//  - Recognizes VelocityCommand messages
+//  - Generates valid TelemetryData at 100Hz
+//  - Encodes outgoing frames with proper HARQ framing
 //
 // Usage:
 //
@@ -11,8 +19,9 @@
 // The simulator will:
 //  1. Create a Unix socket at /tmp/star_rx72n.sock
 //  2. Listen for connections from the Gateway
-//  3. Echo back modified data to prove it's the simulator
-//  4. Handle Ctrl+C gracefully
+//  3. Parse incoming command frames
+//  4. Send valid telemetry frames at 100Hz
+//  5. Handle Ctrl+C gracefully
 //
 // STAR Project - Texas A&M University
 // January 2026
@@ -27,23 +36,36 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
+	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
 	// SocketPath is the Unix domain socket path for Virtual RX72N.
 	SocketPath = "/tmp/star_rx72n.sock"
 
-	// MaxFrameSize is the maximum expected frame size (must match frame.MaxPayloadSize + overhead).
-	MaxFrameSize = 2048
-
-	// SimulatorMarker is the value written to the first byte to prove simulator processed the frame.
-	SimulatorMarker = 0xFF
+	// MaxFrameSize is the maximum expected frame size (must match frame.MaxFrameSize).
+	MaxFrameSize = frame.MaxFrameSize
 
 	// SignalBufferSize is the buffer size for OS signal channel.
 	SignalBufferSize = 1
 
 	// readDeadlineTimeout is the timeout for socket read operations.
-	readDeadlineTimeout = 1 * time.Second
+	readDeadlineTimeout = 100 * time.Millisecond
+
+	// telemetryInterval is the interval for sending telemetry updates (100Hz).
+	telemetryInterval = 10 * time.Millisecond
+
+	// dummyBatteryVoltage is the simulated battery voltage in volts.
+	dummyBatteryVoltage = 24.5
+
+	// dummyMotorCurrent is the simulated motor current in milliamps.
+	dummyMotorCurrent = 1500.0
+
+	// dummyBatterySOC is the simulated battery state of charge in percent.
+	dummyBatterySOC = 85
 )
 
 func main() {
@@ -115,25 +137,32 @@ func main() {
 }
 
 // handleConnection processes messages from a single Gateway connection.
+// It uses a synchronous request/response pattern to match SPI full-duplex behavior.
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 	defer log.Println("Gateway disconnected")
 
+	// Create frame encoder/decoder
+	encoder := frame.NewEncoder()
+	decoder := frame.NewDecoder()
+
+	// Buffer for reading incoming data
 	buffer := make([]byte, MaxFrameSize)
 
+	// Sequence number for outgoing frames
+	var sequenceNum uint16
+	var timestamp int64
+
+	// Main loop: receive and respond synchronously
 	for {
-		// Read data from Gateway
-		// Set a read deadline (readDeadlineTimeout) to avoid indefinite blocking if the peer stalls.
-		// Use a reasonable timeout so the simulator can continue serving other
-		// peers or handle periodic events.
-		if err := conn.SetReadDeadline(time.Now().Add(readDeadlineTimeout)); err != nil {
+		// Set a read deadline to avoid indefinite blocking
+		if err := conn.SetReadDeadline(time.Now().Add(time.Second)); err != nil {
 			log.Printf("Failed to set read deadline: %v", err)
-			// Continue without deadline if setting failed
 		}
 
 		n, err := conn.Read(buffer)
 		if err != nil {
-			// Treat timeouts as transient; continue waiting for data.
+			// Treat timeouts as transient; continue waiting for data
 			if ne, ok := err.(net.Error); ok && ne.Timeout() {
 				continue
 			}
@@ -147,37 +176,176 @@ func handleConnection(conn net.Conn) {
 
 		rxData := buffer[:n]
 
-		// --- LOGIC SIMULATION HERE ---
+		// Try to decode the incoming frame
+		decodedFrame, decodeErr := decoder.Decode(rxData)
+		
+		// Check if this is a dummy read (all zeros) - indicates Gateway is polling for telemetry
+		isDummyRead := n > 0 && isAllZeros(rxData)
 
-		// 1. Deserialize the frame (mocking HARQ/Protobuf unwrapping)
-		// frame := decodeFrame(rxData)
+		if decodeErr == nil && !isDummyRead {
+			// Valid command frame received - process it
+			log.Printf("Received valid frame: SEQ=%d TYPE=%s LEN=%d",
+				decodedFrame.Header.Sequence,
+				decodedFrame.Header.Type.String(),
+				decodedFrame.Header.Length)
 
-		// 2. Determine response based on input
-		// responseFrame := generateResponse(frame)
-
-		// For demonstration, we echo back modified data
-		// indicating "I am the Virtual RX72N"
-		log.Printf("Received %d bytes: %x", n, rxData)
-
-		// Simulate processing time (optional)
-		// time.Sleep(1 * time.Millisecond)
-
-		// 3. Send Telemetry Back
-		// In real SPI, you send bytes continuously.
-		// Here, we write back the response.
-		txData := make([]byte, n)
-		copy(txData, rxData)
-
-		// Flip MSB of first byte to prove it's the simulator
-		if len(txData) > 0 {
-			txData[0] = SimulatorMarker
+			// Parse the protobuf payload
+			var wireMsg starv1.WireMessage
+			if err := proto.Unmarshal(decodedFrame.Payload, &wireMsg); err == nil {
+				processWireMessage(&wireMsg)
+			}
 		}
 
-		log.Printf("Sending %d bytes: %x", len(txData), txData)
-
-		if _, err := conn.Write(txData); err != nil {
+		// Generate and send telemetry response
+		// Must respond with exactly n bytes to match SPI full-duplex behavior
+		responseData := generateTelemetryResponse(encoder, &sequenceNum, &timestamp, n)
+		
+		if _, err := conn.Write(responseData); err != nil {
 			log.Printf("Write error: %v", err)
 			return
 		}
+	}
+}
+
+// isAllZeros checks if a byte slice contains only zeros.
+func isAllZeros(data []byte) bool {
+	for _, b := range data {
+		if b != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// generateTelemetryResponse creates a telemetry frame and pads/truncates to exactly responseLen bytes.
+func generateTelemetryResponse(encoder *frame.DefaultEncoder, seqNum *uint16, timestamp *int64, responseLen int) []byte {
+	// Generate dummy telemetry data
+	telemetry := generateTelemetryData(*timestamp)
+	*timestamp += int64(telemetryInterval.Microseconds())
+
+	// Wrap in WireMessage
+	wireMsg := &starv1.WireMessage{
+		Payload: &starv1.WireMessage_TelemetryData{
+			TelemetryData: telemetry,
+		},
+	}
+
+	// Marshal to protobuf
+	payload, err := proto.Marshal(wireMsg)
+	if err != nil {
+		// Return zeros on error
+		return make([]byte, responseLen)
+	}
+
+	// Create frame
+	frameToSend := &frame.Frame{
+		Header: frame.Header{
+			Sequence: *seqNum,
+			Length:   uint16(len(payload)),
+			Type:     frame.FrameTypeResponse,
+			Flags:    frame.FlagNone,
+		},
+		Payload: payload,
+	}
+	*seqNum++
+
+	// Encode frame
+	encodedFrame, err := encoder.Encode(frameToSend)
+	if err != nil {
+		// Return zeros on error
+		return make([]byte, responseLen)
+	}
+
+	// Pad or truncate to match expected response length
+	if len(encodedFrame) < responseLen {
+		// Pad with zeros
+		padded := make([]byte, responseLen)
+		copy(padded, encodedFrame)
+		return padded
+	} else if len(encodedFrame) > responseLen {
+		// Truncate (should not happen in practice)
+		return encodedFrame[:responseLen]
+	}
+	
+	return encodedFrame
+}
+
+// processWireMessage handles different types of WireMessage payloads.
+func processWireMessage(wireMsg *starv1.WireMessage) {
+	switch msg := wireMsg.Payload.(type) {
+	case *starv1.WireMessage_VelocityCommand:
+		cmd := msg.VelocityCommand
+		log.Printf("VelocityCommand received: FL=%.3f m/s, FR=%.3f m/s, BL=%.3f m/s, BR=%.3f m/s, SEQ=%d",
+			cmd.FrontLeftVelocityMps,
+			cmd.FrontRightVelocityMps,
+			cmd.BackLeftVelocityMps,
+			cmd.BackRightVelocityMps,
+			cmd.Sequence)
+
+	case *starv1.WireMessage_EmergencyStopCommand:
+		cmd := msg.EmergencyStopCommand
+		log.Printf("EmergencyStopCommand received: reason=%s, hardware_stop=%v",
+			cmd.Reason,
+			cmd.EngageHardwareStop)
+
+	case *starv1.WireMessage_MotorPowerCommand:
+		cmd := msg.MotorPowerCommand
+		log.Printf("MotorPowerCommand received: motor_id=%d, duty_cycle=%.1f%%",
+			cmd.MotorId,
+			cmd.DutyCyclePercent)
+
+	default:
+		// Silently ignore unknown messages or dummy reads
+	}
+}
+
+// generateTelemetryData creates dummy telemetry data for simulation.
+func generateTelemetryData(timestampUs int64) *starv1.TelemetryData {
+	return &starv1.TelemetryData{
+		Imu: &starv1.ImuData{
+			PitchRad:       0.01,
+			RollRad:        -0.02,
+			YawRad:         1.57,
+			AccelXMps2:     0.1,
+			AccelYMps2:     0.0,
+			AccelZMps2:     9.81,
+			GyroXRadPerS:   0.0,
+			GyroYRadPerS:   0.0,
+			GyroZRadPerS:   0.0,
+		},
+		BatteryPercent:     float64(dummyBatterySOC),
+		WifiSignalDbm:      -45,
+		CpuUsagePercent:    25.5,
+		TemperatureCelsius: 35.2,
+		MotorLoadPercent:   15.0,
+		TimestampUs:        timestampUs,
+		EncoderFrontLeft: &starv1.EncoderData{
+			MotorId:     0,
+			Ticks:       1000,
+			VelocityMps: 0.5,
+			TimestampUs: timestampUs,
+		},
+		EncoderFrontRight: &starv1.EncoderData{
+			MotorId:     1,
+			Ticks:       1020,
+			VelocityMps: 0.51,
+			TimestampUs: timestampUs,
+		},
+		EncoderBackLeft: &starv1.EncoderData{
+			MotorId:     2,
+			Ticks:       990,
+			VelocityMps: 0.49,
+			TimestampUs: timestampUs,
+		},
+		EncoderBackRight: &starv1.EncoderData{
+			MotorId:     3,
+			Ticks:       1010,
+			VelocityMps: 0.50,
+			TimestampUs: timestampUs,
+		},
+		EmergencyStop:      false,
+		FaultFlags:         0,
+		BatteryVoltageV:    dummyBatteryVoltage,
+		BatterySocPercent:  dummyBatterySOC,
 	}
 }
