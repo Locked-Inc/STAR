@@ -19,7 +19,14 @@ RUN apt-get update && apt-get install -y \
     protobuf-compiler \
     libgrpc++-dev \
     protobuf-compiler-grpc \
+    libgrpc-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Install buf
+ARG BUF_VERSION=1.28.1
+RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" -o /usr/local/bin/buf \
+    && chmod +x /usr/local/bin/buf
 
 # Set up user
 ARG USERNAME=star
