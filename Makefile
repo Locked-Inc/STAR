@@ -37,6 +37,11 @@ format: build-image
 	@echo "Formatting ROS2 code..."
 	@docker run --rm -v "$(CURRENT_DIR):$(WORK_DIR)" -w $(WORK_DIR) $(IMAGE_NAME) ./scripts/format-ros2.sh
 
+# Check formatting without modifying files (for CI/pre-commit)
+check: build-image
+	@echo "Checking ROS2 code formatting..."
+	@docker run --rm -v "$(CURRENT_DIR):$(WORK_DIR)" -w $(WORK_DIR) $(IMAGE_NAME) ./scripts/format-ros2.sh --check
+
 # Start an ephemeral interactive shell
 shell: build-image
 	@echo "Starting ephemeral shell..."

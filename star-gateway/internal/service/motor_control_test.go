@@ -638,3 +638,45 @@ func TestStreamEncoders_Concurrent(t *testing.T) {
 
 	wg.Wait()
 }
+
+func TestSetMotorPower(t *testing.T) {
+	mockHARQ := &testutil.MockHARQ{}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
+	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
+
+	req := &starv1.SetMotorPowerRequest{}
+	resp, err := svc.SetMotorPower(context.Background(), req)
+
+	if status.Code(err) != codes.Unimplemented {
+		t.Errorf("Expected Unimplemented, got %v", status.Code(err))
+	}
+	if resp != nil {
+		t.Error("Expected nil response")
+	}
+}
+
+func TestMotorControl_ValidateRateHz(t *testing.T) {
+	mockHARQ := &testutil.MockHARQ{}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
+	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
+
+	// Valid rate
+	rate := svc.validateRateHz(50)
+	if rate != 50 {
+		t.Errorf("Expected 50, got %v", rate)
+	}
+
+	// Rate too low (should return default 10)
+	rate = svc.validateRateHz(0)
+	if rate != 10 {
+		t.Errorf("Expected 10, got %v", rate)
+	}
+
+	// Rate too high (should return default 10)
+	rate = svc.validateRateHz(500)
+	if rate != 10 {
+		t.Errorf("Expected 10, got %v", rate)
+	}
+}
