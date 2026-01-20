@@ -136,15 +136,15 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
 
   /* Integral term with anti-windup */
   handle->integral += error * dt;
-  handle->integral = internal_clamp(handle->integral, handle->integral_min, handle->integral_max);
-  float i_term     = handle->ki * handle->integral;
+  handle->integral   = internal_clamp(handle->integral, handle->integral_min, handle->integral_max);
+  const float i_term = handle->ki * handle->integral;
 
   /* Derivative term */
   const float derivative = (error - handle->prev_error) / dt;
-  float       d_term     = handle->kd * derivative;
+  const float d_term     = handle->kd * derivative;
 
   /* Compute total output */
-  float raw_output = p_term + i_term + d_term;
+  const float raw_output = p_term + i_term + d_term;
 
   /* Clamp output to limits */
   *output = internal_clamp(raw_output, handle->output_min, handle->output_max);

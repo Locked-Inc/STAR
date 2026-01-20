@@ -20,6 +20,15 @@
 static const char* s_tag = "BUS_UART";
 
 /* =============================================================================
+ * Constants
+ * =============================================================================
+ */
+
+typedef enum : uint8_t {
+  k_uart_ascii_max = 127, /**< Max 7-bit ASCII value */
+} uart_ascii_constants_t;
+
+/* =============================================================================
  * Callback Context Structures
  * =============================================================================
  */
@@ -242,7 +251,7 @@ static rx_err_t internal_uart_putc_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Post-condition: Verify character is valid ASCII */
-  if ((uint8_t)ctx->c > 127) {
+  if ((uint8_t)ctx->c > k_uart_ascii_max) {
     rx_log_warn(s_tag, "UART putc wrote non-ASCII character");
     /* Continue anyway - some protocols use extended ASCII */
   }

@@ -62,7 +62,7 @@ static void internal_handle_vbus_interrupt(void)
   const uint16_t syssts = usb0()->syssts0;
 
   /* Check line state to determine if cable is connected */
-  uint16_t lnst = syssts & k_usb_syssts0_lnst_mask;
+  const uint16_t lnst = syssts & k_usb_syssts0_lnst_mask;
 
   if (lnst == k_usb_syssts0_lnst_se0) {
     /* SE0 = disconnected or reset in progress */
@@ -186,7 +186,7 @@ static void internal_handle_ctrt_interrupt(void)
  */
 static void internal_handle_brdy_interrupt(void)
 {
-  uint16_t brdysts = usb0()->brdysts;
+  const uint16_t brdysts = usb0()->brdysts;
 
   /* Check each pipe for buffer ready */
   for (uint8_t pipe = k_usb_pipe_dcp; pipe <= k_usb_pipe_max; pipe++) {
@@ -210,7 +210,7 @@ static void internal_handle_brdy_interrupt(void)
  */
 static void internal_handle_bemp_interrupt(void)
 {
-  uint16_t bempsts = usb0()->bempsts;
+  const uint16_t bempsts = usb0()->bempsts;
 
   /* Check each pipe for buffer empty */
   for (uint8_t pipe = k_usb_pipe_dcp; pipe <= k_usb_pipe_max; pipe++) {
@@ -237,7 +237,7 @@ static void internal_handle_resume_interrupt(void)
   rx_log_debug(s_tag, "Resume detected");
 
   /* Update state based on hardware */
-  rx_usb_state_t state = rx_usb_hw_get_bus_state();
+  const rx_usb_state_t state = rx_usb_hw_get_bus_state();
   rx_usb_set_state(state);
 
   /* Clear resume interrupt flag */
@@ -262,7 +262,7 @@ void rx_usb_isr_handler(void)
   const uint16_t intenb0 = usb0()->intenb0;
 
   /* Only process enabled interrupts */
-  uint16_t active = intsts0 & intenb0;
+  const uint16_t active = intsts0 & intenb0;
 
   /* VBUS interrupt (cable connect/disconnect) - highest priority */
   if (active & k_usb_intsts0_vbint) {

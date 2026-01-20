@@ -343,7 +343,7 @@ rx_err_t rx_usb_write(const uint8_t* data, uint32_t len)
   }
 
   /* Write to TX ring buffer */
-  uint32_t written = internal_ring_buffer_write(&s_usb.tx_buffer, data, len);
+  const uint32_t written = internal_ring_buffer_write(&s_usb.tx_buffer, data, len);
 
   s_usb.stats.bytes_tx += written;
 

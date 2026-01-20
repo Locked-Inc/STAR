@@ -21,6 +21,7 @@
 #include "rx72n_regs.h"
 #include "rx_bus_adc.h"
 #include "rx_check.h"
+#include "rx_gpio_constants.h"
 #include "rx_log.h"
 #include "rx_port_utils.h"
 
@@ -102,7 +103,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   handle->ki_propi         = config->ki_propi > 0 ? config->ki_propi : k_drv8243_default_ki_propi;
 
   /* Initialize motor control (GPTW for H-bridge) */
-  rx_motor_config_t motor_config = {
+  const rx_motor_config_t motor_config = {
     .channel      = config->gptw_channel,
     .output_a     = config->output_ph,
     .output_b     = config->output_en,
@@ -212,7 +213,7 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake)
     return k_rx_err_invalid_state;
   }
 
-  rx_err_t err = rx_motor_stop(&handle->motor, brake);
+  const rx_err_t err = rx_motor_stop(&handle->motor, brake);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to stop motor");
     return err;
@@ -237,8 +238,9 @@ rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current
    * Read ADC voltage from IPROPI pin.
    * The voltage is returned in millivolts after calibration.
    */
-  uint32_t voltage_mv;
-  rx_err_t err = rx_bus_adc_read_voltage_mv(handle->bus_manager, handle->adc_bus_name, &voltage_mv);
+  uint32_t       voltage_mv;
+  const rx_err_t err =
+    rx_bus_adc_read_voltage_mv(handle->bus_manager, handle->adc_bus_name, &voltage_mv);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read IPROPI ADC");
     return err;
@@ -274,6 +276,11 @@ rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_faul
   volatile rx_port_regs_t* port = rx_port_get_base(handle->port_nfault);
   if (port == NULL) {
     rx_log_error(s_tag, "Invalid port number for nFAULT pin");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (handle->pin_nfault < k_rx_pin_0 || handle->pin_nfault > k_rx_pin_max) {
+    rx_log_error(s_tag, "Invalid pin number for nFAULT pin");
     return k_rx_err_invalid_arg;
   }
 
@@ -337,8 +344,8 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limi
  */
 static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle)
 {
-  float    current_ma;
-  rx_err_t err = rx_drv8243_read_current(handle, &current_ma);
+  float          current_ma;
+  const rx_err_t err = rx_drv8243_read_current(handle, &current_ma);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read current for limit check");
     return err;
@@ -368,6 +375,11 @@ static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle
   volatile rx_port_regs_t* port = rx_port_get_base(handle->port_nfault);
   if (port == NULL) {
     rx_log_error(s_tag, "Invalid port number for nFAULT pin configuration");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (handle->pin_nfault < k_rx_pin_0 || handle->pin_nfault > k_rx_pin_max) {
+    rx_log_error(s_tag, "Invalid pin number for nFAULT pin configuration");
     return k_rx_err_invalid_arg;
   }
 

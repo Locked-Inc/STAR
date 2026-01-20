@@ -18,6 +18,7 @@
 
 #include <string.h>
 
+#include "rx_crc.h"
 #include "rx_log.h"
 #include "rx_usb.h"
 
@@ -37,6 +38,71 @@ static const char* s_tag = "USB_COMM";
 
 /** @brief Total header size including sync word: SYNC(2) + SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) */
 static const uint32_t s_frame_header_total = 8;
+
+static rx_err_t internal_decode_header(const uint8_t* data,
+                                       uint32_t       data_len,
+                                       rx_frame_t*    frame,
+                                       uint32_t*      offset_out)
+{
+  uint32_t offset;
+  uint16_t sync_word;
+  uint32_t expected_size;
+
+  if (data_len < k_frame_min_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  offset = 0;
+
+  sync_word = rx_frame_read_be16(&data[offset]);
+  if (sync_word != k_frame_sync_word) {
+    return k_rx_err_protocol_error;
+  }
+  offset += k_frame_sync_size;
+
+  frame->header.sequence = rx_frame_read_be16(&data[offset]);
+  offset += k_frame_seq_size;
+
+  frame->header.length = rx_frame_read_be16(&data[offset]);
+  offset += k_frame_len_size;
+
+  if (frame->header.length > k_frame_max_payload) {
+    return k_rx_err_invalid_size;
+  }
+
+  expected_size = rx_frame_encoded_size(frame->header.length);
+  if (data_len < expected_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  frame->header.type = data[offset];
+  offset += k_frame_type_size;
+
+  frame->header.flags = data[offset];
+  offset += k_frame_flags_size;
+
+  if (offset_out != NULL) {
+    *offset_out = offset;
+  }
+
+  return k_rx_ok;
+}
+
+static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32_t* crc_out)
+{
+  const uint32_t received_crc   = rx_frame_read_le32(&data[offset]);
+  const uint32_t calculated_crc = rx_crc32_ieee(data, offset);
+
+  if (received_crc != calculated_crc) {
+    return k_rx_err_crc_mismatch;
+  }
+
+  if (crc_out != NULL) {
+    *crc_out = received_crc;
+  }
+
+  return k_rx_ok;
+}
 
 /** @brief Sleep interval for receive polling (ms) */
 static const uint32_t s_sleep_interval_ms = 10;
@@ -93,14 +159,14 @@ static rx_err_t internal_read_usb_data(rx_usb_comm_handle_t* handle)
   }
 
   /* Calculate available space in buffer */
-  uint32_t space = k_usb_comm_rx_buffer_size - handle->rx_buffer_len;
+  const uint32_t space = k_usb_comm_rx_buffer_size - handle->rx_buffer_len;
   if (space == 0) {
     return k_rx_ok; /* Buffer full */
   }
 
   /* Read from USB */
-  uint32_t bytes_read = 0;
-  rx_err_t err        = rx_usb_read(handle->rx_buffer + handle->rx_buffer_len, space, &bytes_read);
+  uint32_t       bytes_read = 0;
+  const rx_err_t err = rx_usb_read(handle->rx_buffer + handle->rx_buffer_len, space, &bytes_read);
 
   if (err != k_rx_ok) {
     return err;
@@ -255,7 +321,7 @@ internal_handle_no_sync(rx_usb_comm_handle_t* handle, uint32_t timeout_ms, uint3
   }
 
   /* Compact buffer (discard consumed/skipped data) */
-  rx_err_t compact_err = internal_compact_rx_buffer(handle);
+  const rx_err_t compact_err = internal_compact_rx_buffer(handle);
   if (compact_err != k_rx_ok) {
     return compact_err;
   }
@@ -308,14 +374,30 @@ internal_wait_for_data(rx_usb_comm_handle_t* handle, uint32_t timeout_ms, uint32
 static rx_err_t
 internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, uint32_t total_size)
 {
-  uint8_t* hdr = handle->rx_buffer + handle->rx_buffer_pos;
+  uint8_t* hdr    = handle->rx_buffer + handle->rx_buffer_pos;
+  uint32_t offset = 0;
 
-  /* Decode the frame */
-  const rx_err_t err = rx_frame_decode(&handle->decoder, hdr, total_size, frame);
+  /* Decode header */
+  rx_err_t err = internal_decode_header(hdr, total_size, frame, &offset);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Frame header decode failed");
+  } else {
+    /* Read payload */
+    if (frame->header.length > 0) {
+      memcpy(frame->payload, &hdr[offset], frame->header.length);
+      offset += frame->header.length;
+    }
+
+    /* Verify CRC */
+    err = internal_verify_crc(hdr, offset, &frame->crc);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Frame CRC check failed");
+    }
+  }
 
   /* Consume the frame data */
   handle->rx_buffer_pos += total_size;
-  rx_err_t compact_err = internal_compact_rx_buffer(handle);
+  const rx_err_t compact_err = internal_compact_rx_buffer(handle);
   if (compact_err != k_rx_ok && err == k_rx_ok) {
     return compact_err;
   }
@@ -715,14 +797,14 @@ rx_err_t rx_usb_comm_data_available(rx_usb_comm_handle_t* handle, bool* availabl
   }
 
   /* Check USB CDC buffer */
-  uint32_t usb_available = 0;
-  rx_err_t err           = rx_usb_rx_available(&usb_available);
+  uint32_t       usb_available = 0;
+  const rx_err_t err           = rx_usb_rx_available(&usb_available);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Also check our staging buffer */
-  uint32_t buffered = handle->rx_buffer_len - handle->rx_buffer_pos;
+  const uint32_t buffered = handle->rx_buffer_len - handle->rx_buffer_pos;
 
   *available = (usb_available > 0) || (buffered > 0);
   return k_rx_ok;

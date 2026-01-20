@@ -679,7 +679,7 @@ static void internal_handle_set_address(uint16_t usb_value)
  */
 static void internal_handle_set_configuration(uint16_t usb_value)
 {
-  uint8_t config = usb_value & k_byte_mask;
+  const uint8_t config = usb_value & k_byte_mask;
 
   if (config == k_usb_config_value_1) {
     /* Configure data endpoints */

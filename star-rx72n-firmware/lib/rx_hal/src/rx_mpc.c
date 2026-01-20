@@ -263,11 +263,9 @@ rx_err_t rx_mpc_set_gpio(rx_port_pin_t pin)
   const uint8_t port    = rx_port_from_pin(pin);
   const uint8_t pin_num = rx_pin_from_pin(pin);
 
-  /* Validate the decoded port and pin are in valid range */
-  if (port > k_mpc_port_j || pin_num > k_mpc_max_pin) {
-    rx_log_error(s_tag, "Invalid port or pin number");
-    return k_rx_err_invalid_arg;
-  }
+  /* Pre-condition: port and pin must be in valid range */
+  RX_CHECK_RANGE_TAG(port, k_mpc_port_0, k_mpc_port_j, k_rx_err_invalid_arg, s_tag);
+  RX_CHECK_RANGE_TAG(pin_num, 0, k_mpc_max_pin, k_rx_err_invalid_arg, s_tag);
 
   /* GPIO mode: PSEL = 0, ISEL = 0, ASEL = 0 */
   return internal_write_pfs(port, pin_num, k_mpc_pfs_gpio);
@@ -345,12 +343,11 @@ rx_err_t rx_mpc_set_adc(rx_port_pin_t pin)
   return internal_write_pfs(port, pin_num, k_pfs_asel);
 }
 
-rx_err_t rx_mpc_set_sci(rx_port_pin_t pin, bool is_tx)
+rx_err_t rx_mpc_set_sci(rx_port_pin_t pin)
 {
   /* SCI pins use PSEL = 0x0A
    * TX and RX use the same PSEL code
    */
-  (void)is_tx; /* Not used - same PSEL for TX/RX */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_sci_tx};
   return rx_mpc_set_peripheral(&config);
 }

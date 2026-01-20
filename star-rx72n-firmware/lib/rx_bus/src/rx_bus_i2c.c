@@ -76,6 +76,7 @@ typedef struct {
 static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   i2c_init_ctx_t* ctx = (i2c_init_ctx_t*)user_ctx;
+  rx_err_t        err;
 
   /* Validate bus type */
   if (bus_config->type != k_bus_type_i2c) {
@@ -85,7 +86,7 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Initialize RIIC channel */
-  const rx_err_t err = riic_init(bus_config->proto.i2c.channel, bus_config->proto.i2c.frequency_hz);
+  err = riic_init(bus_config->proto.i2c.channel, bus_config->proto.i2c.frequency_hz);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "RIIC HAL initialization failed");

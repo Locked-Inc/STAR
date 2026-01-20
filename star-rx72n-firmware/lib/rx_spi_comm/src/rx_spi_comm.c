@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include "hardware.h"
+#include "rx_crc.h"
 #include "rx_threadx_config.h"
 #include "rx_time_constants.h"
 
@@ -52,6 +53,71 @@ typedef enum : uint8_t {
   k_hdr_type      = 6, /**< Frame type */
   k_hdr_flags     = 7, /**< Frame flags */
 } frame_header_offset_t;
+
+static rx_err_t internal_decode_header(const uint8_t* data,
+                                       uint32_t       data_len,
+                                       rx_frame_t*    frame,
+                                       uint32_t*      offset_out)
+{
+  uint32_t offset;
+  uint16_t sync_word;
+  uint32_t expected_size;
+
+  if (data_len < k_frame_min_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  offset = 0;
+
+  sync_word = rx_frame_read_be16(&data[offset]);
+  if (sync_word != k_frame_sync_word) {
+    return k_rx_err_protocol_error;
+  }
+  offset += k_frame_sync_size;
+
+  frame->header.sequence = rx_frame_read_be16(&data[offset]);
+  offset += k_frame_seq_size;
+
+  frame->header.length = rx_frame_read_be16(&data[offset]);
+  offset += k_frame_len_size;
+
+  if (frame->header.length > k_frame_max_payload) {
+    return k_rx_err_invalid_size;
+  }
+
+  expected_size = rx_frame_encoded_size(frame->header.length);
+  if (data_len < expected_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  frame->header.type = data[offset];
+  offset += k_frame_type_size;
+
+  frame->header.flags = data[offset];
+  offset += k_frame_flags_size;
+
+  if (offset_out != NULL) {
+    *offset_out = offset;
+  }
+
+  return k_rx_ok;
+}
+
+static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32_t* crc_out)
+{
+  const uint32_t received_crc   = rx_frame_read_le32(&data[offset]);
+  const uint32_t calculated_crc = rx_crc32_ieee(data, offset);
+
+  if (received_crc != calculated_crc) {
+    return k_rx_err_crc_mismatch;
+  }
+
+  if (crc_out != NULL) {
+    *crc_out = received_crc;
+  }
+
+  return k_rx_ok;
+}
 
 #ifdef __RX__
 /** @brief Sleep duration for polling loop (1 tick) */
@@ -87,8 +153,8 @@ static rx_err_t internal_wait_for_ack(rx_spi_comm_handle_t* handle, uint32_t tim
   ULONG start_ticks   = tx_time_get();
 
   while ((tx_time_get() - start_ticks) < timeout_ticks) {
-    bool     ready = false;
-    rx_err_t err   = rspi_peripheral_write_ready(handle->channel, &ready);
+    bool           ready = false;
+    const rx_err_t err   = rspi_peripheral_write_ready(handle->channel, &ready);
     if (err != k_rx_ok) {
       return err;
     }
@@ -105,8 +171,8 @@ static rx_err_t internal_wait_for_ack(rx_spi_comm_handle_t* handle, uint32_t tim
   uint32_t elapsed_ms = 0;
 
   while (elapsed_ms < timeout_ms) {
-    bool     ready = false;
-    rx_err_t err   = rspi_peripheral_write_ready(handle->channel, &ready);
+    bool           ready = false;
+    const rx_err_t err   = rspi_peripheral_write_ready(handle->channel, &ready);
     if (err != k_rx_ok) {
       return err;
     }
@@ -136,13 +202,15 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
                                       uint8_t*              rx_data,
                                       uint32_t              rx_len)
 {
+  uint32_t transfer_len;
+  rx_err_t wait_err;
+  rx_err_t err;
+
   /* Pre-condition 1: Handle pointer validation */
-  if (handle == NULL) {
-    return k_rx_err_invalid_arg;
-  }
+  RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   /* Pre-condition 2: Transfer length within buffer capacity */
-  const uint32_t transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
+  transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
   if (transfer_len > k_spi_comm_tx_buffer_size) {
     rx_log_error(s_tag, "Transfer length exceeds buffer capacity");
     return k_rx_err_invalid_size;
@@ -162,10 +230,8 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
 
   /* Wait for host ready signal before transmit operations */
   if (tx_data != NULL && tx_len > 0) {
-    const rx_err_t wait_err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
-    if (wait_err != k_rx_ok) {
-      return wait_err;
-    }
+    wait_err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
+    RX_RETURN_ON_ERROR(wait_err, s_tag, "Host ACK wait failed");
   }
 
   /* Prepare TX buffer (pad with zeros if RX is larger) */
@@ -179,10 +245,10 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
    * Cast to uint16_t: RSPI HAL uses 16-bit length (max 65535 bytes).
    * Safe because transfer_len is validated <= k_spi_comm_tx_buffer_size above.
    */
-  const rx_err_t err = rspi_peripheral_transfer(handle->channel,
-                                                handle->tx_buffer,
-                                                handle->rx_buffer,
-                                                (uint16_t)transfer_len);
+  err = rspi_peripheral_transfer(handle->channel,
+                                 handle->tx_buffer,
+                                 handle->rx_buffer,
+                                 (uint16_t)transfer_len);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI peripheral transfer failed");
@@ -266,19 +332,15 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  * =============================================================================
  */
 
-rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
-                          rx_frame_type_t       type,
-                          uint8_t               flags,
-                          const uint8_t*        payload,
-                          uint32_t              payload_len)
+static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
+                                     rx_frame_type_t             type,
+                                     uint8_t                     flags,
+                                     const uint8_t*              payload,
+                                     uint32_t                    payload_len,
+                                     rx_frame_t*                 frame)
 {
-  if (handle == NULL) {
+  if (handle == NULL || frame == NULL) {
     return k_rx_err_invalid_arg;
-  }
-
-  if (!handle->initialized) {
-    rx_log_error(s_tag, "Handle not initialized");
-    return k_rx_err_invalid_state;
   }
 
   if (payload == NULL && payload_len > 0) {
@@ -290,28 +352,53 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_size;
   }
 
-  /* Build frame */
-  rx_frame_t frame = {0};
-
-  frame.header.sequence = handle->tx_sequence;
-  frame.header.length   = (uint16_t)payload_len;
-  frame.header.type     = (uint8_t)type;
-  frame.header.flags    = flags;
+  memset(frame, 0, sizeof(*frame));
+  frame->header.sequence = handle->tx_sequence;
+  frame->header.length   = (uint16_t)payload_len;
+  frame->header.type     = (uint8_t)type;
+  frame->header.flags    = flags;
 
   if (payload != NULL && payload_len > 0) {
-    memcpy(frame.payload, payload, payload_len);
+    memcpy(frame->payload, payload, payload_len);
   }
 
-  /* Add FEC flag if enabled */
   if (handle->fec_enabled) {
-    frame.header.flags |= k_frame_flag_fec_enabled;
+    frame->header.flags |= k_frame_flag_fec_enabled;
+  }
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
+                          rx_frame_type_t       type,
+                          uint8_t               flags,
+                          const uint8_t*        payload,
+                          uint32_t              payload_len)
+{
+  rx_frame_t frame;
+  uint8_t    wire_buffer[k_frame_max_size];
+  uint32_t   wire_len;
+  uint16_t   expected_sequence;
+  rx_err_t   err;
+
+  if (handle == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    rx_log_error(s_tag, "Handle not initialized");
+    return k_rx_err_invalid_state;
+  }
+
+  /* Build frame */
+  err = internal_build_frame(handle, type, flags, payload, payload_len, &frame);
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /* Encode frame to wire format */
-  uint8_t  wire_buffer[k_frame_max_size];
-  uint32_t wire_len = 0;
-
-  rx_err_t err = rx_frame_encode(&handle->encoder, &frame, wire_buffer, &wire_len);
+  wire_len = 0;
+  err      = rx_frame_encode(&handle->encoder, &frame, wire_buffer, &wire_len);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame encode failed");
     return err;
@@ -331,7 +418,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   }
 
   /* Post-condition 2: TX sequence incremented correctly */
-  const uint16_t expected_sequence = handle->tx_sequence + 1;
+  expected_sequence = handle->tx_sequence + 1;
   handle->tx_sequence++;
   if (handle->tx_sequence != expected_sequence) {
     rx_log_error(s_tag, "TX sequence increment failed");
@@ -505,6 +592,31 @@ internal_read_frame_header(rx_spi_comm_handle_t* handle, uint8_t* header_buf, ui
   return k_rx_ok;
 }
 
+static rx_err_t
+internal_decode_frame(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t total_size)
+{
+  uint32_t offset = 0;
+
+  rx_err_t err = internal_decode_header(handle->rx_buffer, total_size, frame, &offset);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Frame header decode failed");
+    return err;
+  }
+
+  if (frame->header.length > 0) {
+    memcpy(frame->payload, &handle->rx_buffer[offset], frame->header.length);
+    offset += frame->header.length;
+  }
+
+  err = internal_verify_crc(handle->rx_buffer, offset, &frame->crc);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Frame CRC check failed");
+    return err;
+  }
+
+  return k_rx_ok;
+}
+
 /* =============================================================================
  * Receive API - Public Functions
  * =============================================================================
@@ -537,7 +649,8 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
 
   /* Calculate frame size */
   const uint32_t header_len = sizeof(header_buf);
-  uint32_t total_size = k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
+  const uint32_t total_size =
+    k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
 
   /* Read remaining data (payload + CRC) */
   const uint32_t remaining = payload_len + k_frame_crc_size;
@@ -552,7 +665,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
   memcpy(handle->rx_buffer, header_buf, header_len);
 
   /* Decode frame */
-  err = rx_frame_decode(&handle->decoder, handle->rx_buffer, total_size, frame);
+  err = internal_decode_frame(handle, frame, total_size);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame decode failed");
     return err;

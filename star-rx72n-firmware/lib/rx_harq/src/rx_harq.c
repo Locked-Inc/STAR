@@ -124,7 +124,7 @@ rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output,
    * - Array bounds: accumulated[i] and output[i] are safe for i < expected_len
    */
   for (uint32_t i = 0; i < combiner->expected_len; i++) {
-    int16_t acc = combiner->accumulated[i];
+    const int16_t acc = combiner->accumulated[i];
     if (acc > k_soft_bit_max) {
       output[i] = k_soft_bit_max;
     } else if (acc < k_soft_bit_min) {
@@ -201,7 +201,7 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
   }
 
   /* Initialize Chase Combiner */
-  uint8_t max_combines =
+  const uint8_t max_combines =
     (config != NULL && config->max_combines > 0) ? config->max_combines : k_harq_default_combines;
   err = rx_chase_combiner_init(&harq->combiner, max_combines);
   if (err != k_rx_ok) {
@@ -308,7 +308,7 @@ rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
    * Required buffer: (payload_len * 8 + 6) * 2 bits = (payload_len * 8 + 6) / 4 bytes
    * Simplified worst case: payload_len * 2 + 2 bytes
    */
-  uint32_t min_output_size = (payload_len * 2) + 2;
+  const uint32_t min_output_size = (payload_len * 2) + 2;
   if (output_size < min_output_size) {
     return k_rx_err_invalid_size;
   }

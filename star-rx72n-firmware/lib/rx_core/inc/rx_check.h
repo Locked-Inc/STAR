@@ -264,6 +264,59 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
     }                                                                                              \
   } while (0)
 
+/**
+ * @brief Check that a value is within an inclusive range
+ *
+ * @param[in] value Value to check
+ * @param[in] min Minimum allowed value
+ * @param[in] max Maximum allowed value
+ * @param[in] errcode Error to return on failure
+ */
+#define RX_CHECK_RANGE(value, min, max, errcode)                                                   \
+  do {                                                                                             \
+    if (((value) < (min)) || ((value) > (max))) {                                                  \
+      rx_log_error("CHECK", "Range check failed");                                                 \
+      return (errcode);                                                                            \
+    }                                                                                              \
+  } while (0)
+
+/**
+ * @brief Check that a value is within an inclusive range with tag
+ *
+ * @param[in] value Value to check
+ * @param[in] min Minimum allowed value
+ * @param[in] max Maximum allowed value
+ * @param[in] errcode Error to return on failure
+ * @param[in] tag Component tag for logging
+ */
+#define RX_CHECK_RANGE_TAG(value, min, max, errcode, tag)                                          \
+  do {                                                                                             \
+    if (((value) < (min)) || ((value) > (max))) {                                                  \
+      rx_log_error(tag, "Range check failed");                                                     \
+      return (errcode);                                                                            \
+    }                                                                                              \
+  } while (0)
+
+/**
+ * @brief Validate pointer pre-condition and return error
+ *
+ * Alias for RX_CHECK_NULL_PTR to standardize pre-condition naming.
+ */
+#define RX_VALIDATE_PTR(ptr, tag, message) RX_CHECK_NULL_PTR(ptr, tag, message)
+
+/**
+ * @brief Validate initialization state pre-condition
+ *
+ * Returns k_rx_err_invalid_state on failure.
+ */
+#define RX_VALIDATE_INIT(initialized, tag, message)                                                \
+  do {                                                                                             \
+    if (!(initialized)) {                                                                          \
+      rx_log_error(tag, message);                                                                  \
+      return k_rx_err_invalid_state;                                                               \
+    }                                                                                              \
+  } while (0)
+
 #ifdef __cplusplus
 }
 #endif

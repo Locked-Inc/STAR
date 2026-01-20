@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "rx_check.h"
 #include "tx_api.h"
 
 /* =============================================================================
@@ -49,7 +50,7 @@ static void internal_app_main_task_entry(ULONG input)
   (void)input;
 
   while (true) {
-    tx_thread_sleep(k_app_main_sleep_ticks);
+    (void)tx_thread_sleep(k_app_main_sleep_ticks);
   }
 }
 
@@ -60,6 +61,7 @@ static void internal_app_main_task_entry(ULONG input)
 
 rx_err_t app_main_task_create(void)
 {
+  RX_ASSERT(!s_app_main_created, "Task must not be already created");
   if (s_app_main_created) {
     return k_rx_err_invalid_state;
   }
@@ -80,5 +82,6 @@ rx_err_t app_main_task_create(void)
   }
 
   s_app_main_created = true;
+  RX_ASSERT(s_app_main_created, "Task creation flag must be set");
   return k_rx_ok;
 }
