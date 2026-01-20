@@ -233,49 +233,48 @@ go test -cover ./internal/service/configuration_test.go
 
 ---
 
-### Service 3: BatteryManagementService (Deferred)
+### Service 3: BatteryManagementService ✅ COMPLETE
 **Priority:** MEDIUM - Hardware dependent (Issue #158)
-**Status:** Deferred to follow-up issue
-**Note:** TODO: Follow-up issue #183 for this implementation.
+**Status:** ✅ Merged in PR #191 (2026-01-16) and updated in PR #200 (2026-01-19)
 
-- [ ] **GetBatteryState** - Complete battery snapshot
-  - [ ] Wrap in WireMessage.BatteryStateRequest
-  - [ ] Parse BatteryState (cells, temps, SOC, status)
-  - [ ] Tests: Success, NilRequest, SMBusError
+- [x] **GetBatteryState** - Complete battery snapshot
+  - [x] Wrap in WireMessage.BatteryStateRequest
+  - [x] Parse BatteryState (cells, temps, SOC, status)
+  - [x] Tests: Success, NilRequest, SMBusError
 
-- [ ] **StreamBatteryState** - Continuous monitoring
-  - [ ] Validate rate (0.1-10 Hz, default 1)
-  - [ ] Subscribe to dispatcher
-  - [ ] Tests: ValidRate, InvalidRate, ContextCancellation
+- [x] **StreamBatteryState** - Continuous monitoring
+  - [x] Validate rate (0.1-10 Hz, default 1)
+  - [x] Subscribe to dispatcher
+  - [x] Tests: ValidRate, InvalidRate, ContextCancellation
 
-- [ ] **GetProtectionThresholds** - Read OV/UV/OC/OT
-  - [ ] Request BQ78350 register read
-  - [ ] Tests: Success, SMBusError
+- [x] **GetProtectionThresholds** - Read OV/UV/OC/OT
+  - [x] Request BQ78350 register read
+  - [x] Tests: Success, SMBusError
 
-- [ ] **SetProtectionThresholds** - Configure limits
-  - [ ] Validate ranges (prevent dangerous configs)
-  - [ ] Send to BQ78350 via SMBus
-  - [ ] Log all changes
-  - [ ] Tests: Valid, InvalidRanges, UnsealedRequired
+- [x] **SetProtectionThresholds** - Configure limits
+  - [x] Validate ranges (prevent dangerous configs)
+  - [x] Send to BQ78350 via SMBus
+  - [x] Log all changes
+  - [x] Tests: Valid, InvalidRanges, UnsealedRequired
 
-- [ ] **EnableCellBalancing** - Start balancing
-  - [ ] Parse cell_mask bitmap
-  - [ ] Send SMBus command
-  - [ ] Tests: Success, InvalidMask
+- [x] **EnableCellBalancing** - Start balancing
+  - [x] Parse cell_mask bitmap
+  - [x] Send SMBus command
+  - [x] Tests: Success, InvalidMask
 
-- [ ] **DisableCellBalancing** - Stop balancing
-- [ ] **GetBalancingStatus** - Check which cells balancing
+- [x] **DisableCellBalancing** - Stop balancing
+- [x] **GetBalancingStatus** - Check which cells balancing
 
-- [ ] **ControlFets** - Charge/discharge FET control
-  - [ ] Validate command (safety critical!)
-  - [ ] Log all FET operations
-  - [ ] Tests: Enable, Disable, SafetyCheck
+- [x] **ControlFets** - Charge/discharge FET control
+  - [x] Validate command (safety critical!)
+  - [x] Log all FET operations
+  - [x] Tests: Enable, Disable, SafetyCheck
 
-- [ ] **GetDeviceInfo** - Manufacturer, serial, chemistry
-- [ ] **ResetDevice** - Soft reset BMS
+- [x] **GetDeviceInfo** - Manufacturer, serial, chemistry
+- [x] **ResetDevice** - Soft reset BMS
 
-- [ ] **Register in main.go**
-- [ ] **Unit Tests** (15+ cases, 80%+ coverage)
+- [x] **Register in main.go**
+- [x] **Unit Tests** (15+ cases, 80%+ coverage)
 
 **Files Modified:**
 - `internal/service/battery.go`
