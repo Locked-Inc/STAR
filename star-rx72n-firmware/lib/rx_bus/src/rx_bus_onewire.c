@@ -26,7 +26,8 @@
 #include "rx_log.h"
 #include "rx_register_protection.h"
 
-static const char* s_tag = "BUS_ONEWIRE";
+static const char*    s_tag                        = "BUS_ONEWIRE";
+static const uint32_t s_onewire_max_search_devices = 64U;
 
 /* =============================================================================
  * Internal State Tracking
@@ -1069,6 +1070,11 @@ static rx_err_t internal_onewire_search_callback(rx_bus_config_t* bus_config, vo
   if (ctx->max_devices == 0U) {
     ctx->result = k_rx_ok;
     return k_rx_ok;
+  }
+
+  if (ctx->max_devices > s_onewire_max_search_devices) {
+    ctx->result = k_rx_err_invalid_arg;
+    return ctx->result;
   }
 
   if (ctx->roms == NULL) {

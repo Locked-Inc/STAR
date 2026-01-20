@@ -18,6 +18,12 @@
 
 #include "rx_bit_constants.h"
 
+/** @brief HARQ FEC size constants */
+typedef enum : uint16_t {
+  k_harq_fec_rate_multiplier = 2, /**< Rate 1/2: encoded length multiplier */
+  k_harq_tail_bytes          = 2, /**< Tail overhead in bytes */
+} harq_fec_constants_t;
+
 /* =============================================================================
  * Chase Combiner Implementation
  * =============================================================================
@@ -102,6 +108,8 @@ rx_err_t rx_chase_combiner_combined(const rx_chase_combiner_t* combiner,
                                     rx_soft_bit_t*             output,
                                     uint32_t*                  len)
 {
+  int16_t acc;
+
   if (combiner == NULL || output == NULL || len == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -125,7 +133,7 @@ rx_err_t rx_chase_combiner_combined(const rx_chase_combiner_t* combiner,
    * - Array bounds: accumulated[i] and output[i] are safe for i < expected_len
    */
   for (uint32_t i = 0; i < combiner->expected_len; i++) {
-    const int16_t acc = combiner->accumulated[i];
+    acc = combiner->accumulated[i];
     if (acc > k_soft_bit_max) {
       output[i] = k_soft_bit_max;
     } else if (acc < k_soft_bit_min) {
@@ -180,11 +188,12 @@ uint8_t rx_chase_combiner_count(const rx_chase_combiner_t* combiner)
 
 rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
 {
+  rx_err_t err;
+  uint8_t  max_combines;
+
   if (harq == NULL) {
     return k_rx_err_invalid_arg;
   }
-
-  rx_err_t err;
 
   /* Initialize state */
   harq->state       = k_harq_state_idle;
@@ -202,7 +211,7 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
   }
 
   /* Initialize Chase Combiner */
-  const uint8_t max_combines =
+  max_combines =
     (config != NULL && config->max_combines > 0) ? config->max_combines : k_harq_default_combines;
   err = rx_chase_combiner_init(&harq->combiner, max_combines);
   if (err != k_rx_ok) {
@@ -255,6 +264,8 @@ rx_harq_state_t rx_harq_get_state(const rx_harq_handle_t* harq)
 
 rx_err_t rx_harq_reset(rx_harq_handle_t* harq)
 {
+  rx_err_t err;
+
   if (harq == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -266,7 +277,7 @@ rx_err_t rx_harq_reset(rx_harq_handle_t* harq)
   harq->state       = k_harq_state_idle;
   harq->retry_count = 0;
 
-  const rx_err_t err = rx_chase_combiner_reset(&harq->combiner);
+  err = rx_chase_combiner_reset(&harq->combiner);
   if (err != k_rx_ok) {
     return err;
   }
@@ -281,6 +292,8 @@ rx_err_t rx_harq_encode(const rx_harq_handle_t* harq,
                         const uint32_t          output_size,
                         uint32_t*               output_len)
 {
+  uint32_t min_output_size;
+
   if (harq == NULL || payload == NULL || output == NULL || output_len == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -309,7 +322,7 @@ rx_err_t rx_harq_encode(const rx_harq_handle_t* harq,
    * Required buffer: (payload_len * 8 + 6) * 2 bits = (payload_len * 8 + 6) / 4 bytes
    * Simplified worst case: payload_len * 2 + 2 bytes
    */
-  const uint32_t min_output_size = (payload_len * 2) + 2;
+  min_output_size = (payload_len * k_harq_fec_rate_multiplier) + k_harq_tail_bytes;
   if (output_size < min_output_size) {
     return k_rx_err_invalid_size;
   }
@@ -327,8 +340,8 @@ rx_err_t rx_harq_encode(const rx_harq_handle_t* harq,
  * @brief Bit position constants for soft-to-hard conversion
  */
 typedef enum : uint8_t {
-  k_msb_position         = 7, /**< Most significant bit position (0-indexed) */
-  k_rounding_adjustment  = 7, /**< Value for ceiling division: (n + 7) / 8 */
+  k_msb_position         = k_rx_bits_per_byte - 1U, /**< Most significant bit position */
+  k_rounding_adjustment  = k_rx_bits_per_byte - 1U, /**< Ceiling division: (n + 7) / 8 */
   k_soft_bit_zero_thresh = 0, /**< Threshold for soft-to-hard: >= 0 is bit 1 */
 } bit_constants_t;
 
@@ -350,13 +363,15 @@ static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
                                       uint8_t*             output,
                                       uint32_t*            output_len)
 {
+  uint32_t out_bytes;
+
   /* Validate all parameters - Critical NULL checks */
   if (soft_bits == NULL || output == NULL || output_len == NULL) {
     return k_rx_err_invalid_arg;
   }
 
   /* Calculate output bytes with ceiling division */
-  uint32_t out_bytes = (soft_len + k_rounding_adjustment) / k_rx_bits_per_byte;
+  out_bytes = (soft_len + k_rounding_adjustment) / k_rx_bits_per_byte;
   if (out_bytes > max_out_len && max_out_len > 0) {
     out_bytes = max_out_len;
   }
@@ -428,6 +443,9 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
                         uint8_t*                       output,
                         uint32_t*                      output_len)
 {
+  rx_err_t err;
+  uint32_t combined_len;
+
   if (harq == NULL || params == NULL || output == NULL || output_len == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -439,14 +457,12 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
   }
 
   /* Add soft bits to combiner */
-  rx_err_t err = rx_chase_combiner_add(&harq->combiner, params->soft_bits, params->soft_len);
+  err = rx_chase_combiner_add(&harq->combiner, params->soft_bits, params->soft_len);
   if (err != k_rx_ok && err != k_rx_err_busy) {
     return err;
   }
 
   /* Get combined soft bits into handle's buffer (thread-safe) */
-  uint32_t combined_len;
-
   err = rx_chase_combiner_combined(&harq->combiner, harq->decode_buffer, &combined_len);
   if (err != k_rx_ok) {
     return err;

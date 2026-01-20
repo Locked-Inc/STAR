@@ -218,11 +218,10 @@ internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t ti
 {
   const uint32_t start_time = hcsr04_hal_get_time_us();
   uint32_t       elapsed    = 0;
-  uint32_t       i          = 0;
   bool           pin_state  = false;
   rx_err_t       read_err   = k_rx_ok;
 
-  for (i = 0; i < k_echo_poll_max_iterations; i++) {
+  for (uint32_t i = 0; i < k_echo_poll_max_iterations; i++) {
     /* Check for cancellation request */
     if (handle->cancel_requested) {
       handle->cancel_requested = false;

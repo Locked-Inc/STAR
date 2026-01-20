@@ -213,7 +213,8 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz);
  *         k_rx_err_timeout if bus timeout,
  *         k_rx_err_nack if device NACK received
  */
-rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, uint16_t length);
+rx_err_t
+riic_write(uint8_t channel, const uint8_t device_addr, const uint8_t* data, const uint16_t length);
 
 /**
  * @brief Read data from I2C device
@@ -229,7 +230,8 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
  *         k_rx_err_timeout if bus timeout,
  *         k_rx_err_nack if device NACK received
  */
-rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t length);
+rx_err_t
+riic_read(uint8_t channel, const uint8_t device_addr, uint8_t* data, const uint16_t length);
 
 /**
  * @brief Write then read from I2C device (combined transaction)
