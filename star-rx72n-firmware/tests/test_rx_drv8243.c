@@ -139,8 +139,8 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
 rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle);
 rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed);
 rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake);
-rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current);
-rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_fault);
+rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_current);
+rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* out_fault);
 rx_err_t rx_drv8243_get_speed(const rx_drv8243_handle_t* handle, float* out_speed);
 rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limit_ma);
 
@@ -603,7 +603,7 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake)
   return k_rx_ok;
 }
 
-rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current)
+rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_current)
 {
   if (handle == NULL) {
     return k_rx_err_null_ptr;
@@ -629,7 +629,7 @@ rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current
   return k_rx_ok;
 }
 
-rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_fault)
+rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* out_fault)
 {
   if (handle == NULL) {
     return k_rx_err_null_ptr;

@@ -26,7 +26,12 @@
  *   static error_handler_t s_error_handler;
  *
  *   // 2. Initialize
- *   rx_err_t err = error_handler_init(&s_error_handler, 3, 100, 5000);
+ *   const error_handler_config_t config = {
+ *     .max_retries        = 3,
+ *     .initial_backoff_ms = 100,
+ *     .max_backoff_ms     = 5000,
+ *   };
+ *   rx_err_t err = error_handler_init(&s_error_handler, &config);
  *   RX_ERROR_CHECK(err);
  *
  *   // 3. Get interface
@@ -114,6 +119,15 @@ typedef struct {
   bool     initialized;        /**< Is the handler initialized? */
 } error_handler_t;
 
+/**
+ * @brief Error handler initialization parameters
+ */
+typedef struct {
+  uint32_t max_retries;        /**< Maximum retry attempts (0 = no retry limit) */
+  uint32_t initial_backoff_ms; /**< Initial backoff delay in milliseconds */
+  uint32_t max_backoff_ms;     /**< Maximum backoff delay in milliseconds */
+} error_handler_config_t;
+
 /* =============================================================================
  * Public API
  * =============================================================================
@@ -123,18 +137,13 @@ typedef struct {
  * @brief Initialize error handler
  *
  * @param[in,out] handler Handler instance to initialize
- * @param[in] max_retries Maximum retry attempts (0 = no retry limit)
- * @param[in] initial_backoff_ms Initial backoff delay in milliseconds
- * @param[in] max_backoff_ms Maximum backoff delay in milliseconds
+ * @param[in] config Initialization configuration
  *
  * @return k_rx_ok on success,
  *         k_rx_err_null_ptr if handler is NULL,
  *         k_rx_err_rtos_mutex if mutex creation fails
  */
-rx_err_t error_handler_init(error_handler_t* handler,
-                            uint32_t         max_retries,
-                            uint32_t         initial_backoff_ms,
-                            uint32_t         max_backoff_ms);
+rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config_t* config);
 
 /**
  * @brief Get interface from concrete handler

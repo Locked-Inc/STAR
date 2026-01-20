@@ -504,6 +504,10 @@ static rx_err_t internal_update_state_from_count(const rx_mtu_channel_t channel,
                                                  const uint16_t         current_count,
                                                  rx_encoder_state_t*    state)
 {
+  if ((uint32_t)channel >= k_encoder_max_channels || state == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
   const uint16_t last_count = s_encoder_state[channel].last_raw_count;
 
   /* Calculate delta (handling 16-bit wraparound) */

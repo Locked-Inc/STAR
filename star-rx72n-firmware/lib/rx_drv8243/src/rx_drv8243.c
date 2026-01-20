@@ -38,14 +38,17 @@ static const char* s_tag = "DRV8243";
 typedef enum : int16_t {
   k_drv8243_default_ki_propi = 525,   /**< 525 A/V IPROPI ratio (typical) */
   k_drv8243_max_pwm_freq_hz  = 25000, /**< 25 kHz max recommended PWM */
-  k_pwm_not_inverted         = false, /**< PWM output not inverted */
-  k_motor_coast              = false, /**< Motor coast (no brake) */
-  k_motor_brake              = true,  /**< Motor brake (active braking) */
-  k_gpio_level_low           = 0,     /**< GPIO logic level low */
-  k_bit_mask_single          = 0x01,  /**< Single bit mask */
-  k_speed_min_percent        = -100,  /**< Minimum speed percentage (full reverse) */
-  k_speed_max_percent        = 100,   /**< Maximum speed percentage (full forward) */
-} drv8243_constants_t;
+} drv8243_motor_constants_t;
+
+typedef enum : int16_t {
+  k_speed_min_percent = -100, /**< Minimum speed percentage (full reverse) */
+  k_speed_max_percent = 100,  /**< Maximum speed percentage (full forward) */
+} drv8243_speed_constants_t;
+
+static const bool    s_pwm_not_inverted = false; /**< PWM output not inverted */
+static const bool    s_motor_coast      = false; /**< Motor coast (no brake) */
+static const int16_t s_gpio_level_low   = 0;     /**< GPIO logic level low */
+static const uint8_t s_bit_mask_single  = 1;     /**< Single bit mask */
 
 /**
  * @brief Speed reduction factor when current limit is exceeded
@@ -62,7 +65,7 @@ static const float s_mv_to_v_divisor = 1000.0f;
  * =============================================================================
  */
 
-static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle);
+static rx_err_t internal_drv8243_check_current_limit(const rx_drv8243_handle_t* handle);
 static rx_err_t internal_drv8243_configure_fault_pin(const rx_drv8243_handle_t* handle);
 
 /* =============================================================================
@@ -72,6 +75,9 @@ static rx_err_t internal_drv8243_configure_fault_pin(const rx_drv8243_handle_t* 
 
 rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t* config)
 {
+  rx_motor_config_t motor_config;
+  rx_err_t          err;
+
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
   RX_CHECK_NULL_PTR(config->bus_manager, s_tag, "bus_manager pointer is NULL");
@@ -103,16 +109,16 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   handle->ki_propi         = config->ki_propi > 0 ? config->ki_propi : k_drv8243_default_ki_propi;
 
   /* Initialize motor control (GPTW for H-bridge) */
-  const rx_motor_config_t motor_config = {
+  motor_config = (rx_motor_config_t){
     .channel      = config->gptw_channel,
     .output_a     = config->output_ph,
     .output_b     = config->output_en,
     .pwm_freq_hz  = config->pwm_freq_hz,
     .dead_time_ns = config->dead_time_ns,
-    .invert_pwm   = k_pwm_not_inverted,
+    .invert_pwm   = s_pwm_not_inverted,
   };
 
-  rx_err_t err = rx_motor_init(&handle->motor, &motor_config);
+  err = rx_motor_init(&handle->motor, &motor_config);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize motor controller");
     return err;
@@ -137,6 +143,8 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
 
 rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
 {
+  rx_err_t err = k_rx_err_invalid_state;
+
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
@@ -145,7 +153,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
   }
 
   /* Stop motor (best effort - log but continue if error) */
-  rx_err_t err = rx_drv8243_stop(handle, k_motor_coast);
+  err = rx_drv8243_stop(handle, s_motor_coast);
   RX_ERROR_CHECK_WITHOUT_ABORT(err);
 
   /* Deinitialize motor controller (best effort - log but continue if error) */
@@ -162,6 +170,9 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
 
 rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
 {
+  bool     fault_active = false;
+  rx_err_t err          = k_rx_err_invalid_state;
+
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
@@ -176,8 +187,7 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
   }
 
   /* Check for fault condition */
-  bool     fault_active;
-  rx_err_t err = rx_drv8243_get_fault_status(handle, &fault_active);
+  err = rx_drv8243_get_fault_status(handle, &fault_active);
   if (err == k_rx_ok && fault_active) {
     rx_log_warn(s_tag, "Cannot set speed: fault condition active");
     return k_rx_err_invalid_state;
@@ -206,6 +216,8 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
 
 rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, const bool brake)
 {
+  rx_err_t err = k_rx_err_invalid_state;
+
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
@@ -213,7 +225,7 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, const bool brake)
     return k_rx_err_invalid_state;
   }
 
-  const rx_err_t err = rx_motor_stop(&handle->motor, brake);
+  err = rx_motor_stop(&handle->motor, brake);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to stop motor");
     return err;
@@ -226,6 +238,9 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, const bool brake)
 
 rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_current)
 {
+  uint32_t voltage_mv = 0;
+  rx_err_t err        = k_rx_err_invalid_state;
+
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
   RX_CHECK_NULL_PTR(out_current, s_tag, "out_current pointer is NULL");
 
@@ -238,9 +253,7 @@ rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_c
    * Read ADC voltage from IPROPI pin.
    * The voltage is returned in millivolts after calibration.
    */
-  uint32_t       voltage_mv;
-  const rx_err_t err =
-    rx_bus_adc_read_voltage_mv(handle->bus_manager, handle->adc_bus_name, &voltage_mv);
+  err = rx_bus_adc_read_voltage_mv(handle->bus_manager, handle->adc_bus_name, &voltage_mv);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read IPROPI ADC");
     return err;
@@ -262,7 +275,7 @@ rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_c
   return k_rx_ok;
 }
 
-rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_fault)
+rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* out_fault)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
   RX_CHECK_NULL_PTR(out_fault, s_tag, "out_fault pointer is NULL");
@@ -285,11 +298,10 @@ rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_faul
     return k_rx_err_invalid_arg;
   }
 
-  const uint8_t level = (port->pidr >> handle->pin_nfault) & k_bit_mask_single;
+  const uint8_t level = (port->pidr >> handle->pin_nfault) & s_bit_mask_single;
 
   /* Fault is active when pin is LOW */
-  *out_fault           = (level == k_gpio_level_low);
-  handle->fault_active = *out_fault;
+  *out_fault = (level == s_gpio_level_low);
 
   if (*out_fault) {
     rx_log_warn(s_tag, "DRV8243 fault detected on nFAULT pin");
@@ -343,10 +355,14 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, const uint16_
  * @return k_rx_ok if within limit
  * @return k_rx_err_invalid_state if current exceeds limit
  */
-static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle)
+static rx_err_t internal_drv8243_check_current_limit(const rx_drv8243_handle_t* handle)
 {
-  float          current_ma;
-  const rx_err_t err = rx_drv8243_read_current(handle, &current_ma);
+  float    current_ma = 0.0f;
+  rx_err_t err        = k_rx_err_invalid_state;
+
+  RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
+
+  err = rx_drv8243_read_current(handle, &current_ma);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read current for limit check");
     return err;
@@ -373,6 +389,8 @@ static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle
  */
 static rx_err_t internal_drv8243_configure_fault_pin(const rx_drv8243_handle_t* handle)
 {
+  RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
+
   volatile rx_port_regs_t* port = rx_port_get_base(handle->port_nfault);
   if (port == NULL) {
     rx_log_error(s_tag, "Invalid port number for nFAULT pin configuration");
@@ -386,10 +404,10 @@ static rx_err_t internal_drv8243_configure_fault_pin(const rx_drv8243_handle_t* 
   }
 
   /* Configure as input */
-  port->pdr &= ~(1 << handle->pin_nfault);
+  port->pdr &= ~((uint32_t)s_bit_mask_single << handle->pin_nfault);
 
   /* Enable pull-up (active low fault signal) */
-  port->pcr |= (1 << handle->pin_nfault);
+  port->pcr |= ((uint32_t)s_bit_mask_single << handle->pin_nfault);
 
   return k_rx_ok;
 }

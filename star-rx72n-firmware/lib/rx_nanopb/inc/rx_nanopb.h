@@ -184,21 +184,26 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
  */
 
 /**
+ * @brief VelocityCommand parameters for 4 independent motors
+ */
+typedef struct {
+  double   front_left_mps;  /**< Front left motor velocity (m/s) */
+  double   front_right_mps; /**< Front right motor velocity (m/s) */
+  double   back_left_mps;   /**< Back left motor velocity (m/s) */
+  double   back_right_mps;  /**< Back right motor velocity (m/s) */
+  uint32_t sequence;        /**< Command sequence number */
+} rx_velocity_command_params_t;
+
+/**
  * @brief Create VelocityCommand for 4 independent motors
  *
  * @param[out] cmd Output command structure
- * @param[in]  front_left_mps Front left motor velocity (m/s)
- * @param[in]  front_right_mps Front right motor velocity (m/s)
- * @param[in]  back_left_mps Back left motor velocity (m/s)
- * @param[in]  back_right_mps Back right motor velocity (m/s)
- * @param[in]  sequence Command sequence number
+ * @param[in]  params Velocity command parameters
+ *
+ * @return k_rx_ok on success, error code on failure
  */
-void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
-                                       double                   front_left_mps,
-                                       double                   front_right_mps,
-                                       double                   back_left_mps,
-                                       double                   back_right_mps,
-                                       uint32_t                 sequence);
+rx_err_t rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            cmd,
+                                           const rx_velocity_command_params_t* params);
 
 /**
  * @brief Create VelocityCommand in differential drive mode
@@ -209,10 +214,10 @@ void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
  * @param[in]  right_mps Right side velocity (m/s) - applied to front_right & back_right
  * @param[in]  sequence Command sequence number
  */
-void rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
-                                                  double                   left_mps,
-                                                  double                   right_mps,
-                                                  uint32_t                 sequence);
+rx_err_t rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
+                                                      double                   left_mps,
+                                                      double                   right_mps,
+                                                      uint32_t                 sequence);
 
 /**
  * @brief Create ResponseHeader with status

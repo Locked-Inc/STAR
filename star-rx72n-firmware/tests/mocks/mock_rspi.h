@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hardware.h"
 #include "rx_err.h"
 
 #ifdef __cplusplus

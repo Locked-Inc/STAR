@@ -20,7 +20,12 @@
  * @code
  *   // 1. Create concrete implementation
  *   error_handler_t handler;
- *   error_handler_init(&handler, ...);
+ *   const error_handler_config_t config = {
+ *     .max_retries        = 3,
+ *     .initial_backoff_ms = 100,
+ *     .max_backoff_ms     = 5000,
+ *   };
+ *   error_handler_init(&handler, &config);
  *
  *   // 2. Get interface
  *   rx_error_interface_t iface;

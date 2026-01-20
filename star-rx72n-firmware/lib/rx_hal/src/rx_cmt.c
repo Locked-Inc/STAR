@@ -86,6 +86,12 @@ typedef enum : uint8_t {
   k_cmt_cmstr_str1 = 1, /**< CMT1/CMT3 start bit */
 } cmt_cmstr_bits_t;
 
+/** @brief CMT bit manipulation constants */
+typedef enum : uint8_t {
+  k_cmt_bit_mask_lsb = 1, /**< Single bit set for shifts */
+  k_cmt_value_zero   = 0, /**< Zero value for comparisons */
+} cmt_bit_constants_t;
+
 /** @brief IER register calculation constants */
 
 /* =============================================================================
@@ -138,6 +144,8 @@ static rx_err_t
 internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uint16_t* cmcor)
 {
   const uint32_t pclkb = k_pclkb_hz;
+  uint8_t        i;
+  uint32_t       period_calc;
 
   if (divider == NULL || cmcor == NULL) {
     return k_rx_err_null_ptr;
@@ -153,8 +161,8 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
                                       k_cmt_divider_val_128,
                                       k_cmt_divider_val_512};
 
-  for (uint8_t i = 0; i < k_cmt_num_dividers; i++) {
-    const uint32_t period_calc = (pclkb / dividers[i]) / frequency_hz;
+  for (i = 0; i < k_cmt_num_dividers; i++) {
+    period_calc = (pclkb / dividers[i]) / frequency_hz;
 
     /* Check if period fits in 16-bit and is reasonable */
     if (period_calc > k_cmt_period_min && period_calc <= k_cmt_period_max) {
@@ -184,8 +192,8 @@ static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_channel_t channel,
   const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
 
   icu()->ipr[vector] = priority;
-  icu()->ier[ier_index] |= (1 << ier_bit);
-  icu()->ir[vector] = 0;
+  icu()->ier[ier_index] |= (k_cmt_bit_mask_lsb << ier_bit);
+  icu()->ir[vector] = k_cmt_value_zero;
 
   return k_rx_ok;
 }
@@ -277,20 +285,24 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
   system_regs()->prcr = k_rx_prcr_lock;
 
   /* Stop timer before configuration */
-  rx_cmt_stop(channel);
+  err = rx_cmt_stop(channel);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Configure timer control register
    * - Set clock divider
    * - Enable compare match interrupt
    */
-  cmt->cmcr = (divider << k_cmt_cmcr_cks_shift) | /* CKS: Clock Select */
-              (1 << k_cmt_cmcr_cmie_pos);         /* CMIE: Compare Match Interrupt Enable */
+  cmt->cmcr =
+    (divider << k_cmt_cmcr_cks_shift) |          /* CKS: Clock Select */
+    (k_cmt_bit_mask_lsb << k_cmt_cmcr_cmie_pos); /* CMIE: Compare Match Interrupt Enable */
 
   /* Set compare match value (period - 1) */
   cmt->cmcor = cmcor - k_cmt_period_adj;
 
   /* Clear counter */
-  cmt->cmcnt = 0;
+  cmt->cmcnt = k_cmt_value_zero;
 
   /* Configure interrupt */
   err = internal_configure_cmt_interrupt(channel, config->priority);
@@ -304,7 +316,10 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
   s_cmt_initialized[channel] = true;
 
   /* Start timer */
-  rx_cmt_start(channel);
+  err = rx_cmt_start(channel);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   rx_log_info(s_tag, "CMT initialized");
 
@@ -326,30 +341,30 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
   /* Set corresponding bit in CMSTR register */
   switch (channel) {
     case k_cmt_channel_0:
-      cmt_ctrl()->cmstr0 |= (1 << k_cmt_cmstr_str0);
+      cmt_ctrl()->cmstr0 |= (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmstr_value = cmt_ctrl()->cmstr0;
-      if ((cmstr_value & (1 << k_cmt_cmstr_str0)) == 0) {
+      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0)) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     case k_cmt_channel_1:
-      cmt_ctrl()->cmstr0 |= (1 << k_cmt_cmstr_str1);
+      cmt_ctrl()->cmstr0 |= (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmstr_value = cmt_ctrl()->cmstr0;
-      if ((cmstr_value & (1 << k_cmt_cmstr_str1)) == 0) {
+      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1)) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     case k_cmt_channel_2:
-      cmt_ctrl()->cmstr1 |= (1 << k_cmt_cmstr_str0);
+      cmt_ctrl()->cmstr1 |= (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmstr_value = cmt_ctrl()->cmstr1;
-      if ((cmstr_value & (1 << k_cmt_cmstr_str0)) == 0) {
+      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0)) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     case k_cmt_channel_3:
-      cmt_ctrl()->cmstr1 |= (1 << k_cmt_cmstr_str1);
+      cmt_ctrl()->cmstr1 |= (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmstr_value = cmt_ctrl()->cmstr1;
-      if ((cmstr_value & (1 << k_cmt_cmstr_str1)) == 0) {
+      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1)) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
@@ -371,30 +386,30 @@ rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
   /* Clear corresponding bit in CMSTR register */
   switch (channel) {
     case k_cmt_channel_0:
-      cmt_ctrl()->cmstr0 &= ~(1 << k_cmt_cmstr_str0);
+      cmt_ctrl()->cmstr0 &= ~(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmstr_value = cmt_ctrl()->cmstr0;
-      if ((cmstr_value & (1 << k_cmt_cmstr_str0)) != 0) {
+      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0)) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     case k_cmt_channel_1:
-      cmt_ctrl()->cmstr0 &= ~(1 << k_cmt_cmstr_str1);
+      cmt_ctrl()->cmstr0 &= ~(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmstr_value = cmt_ctrl()->cmstr0;
-      if ((cmstr_value & (1 << k_cmt_cmstr_str1)) != 0) {
+      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1)) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     case k_cmt_channel_2:
-      cmt_ctrl()->cmstr1 &= ~(1 << k_cmt_cmstr_str0);
+      cmt_ctrl()->cmstr1 &= ~(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmstr_value = cmt_ctrl()->cmstr1;
-      if ((cmstr_value & (1 << k_cmt_cmstr_str0)) != 0) {
+      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0)) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     case k_cmt_channel_3:
-      cmt_ctrl()->cmstr1 &= ~(1 << k_cmt_cmstr_str1);
+      cmt_ctrl()->cmstr1 &= ~(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmstr_value = cmt_ctrl()->cmstr1;
-      if ((cmstr_value & (1 << k_cmt_cmstr_str1)) != 0) {
+      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1)) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
@@ -407,13 +422,15 @@ rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
 
 rx_err_t rx_cmt_get_count(const rx_cmt_channel_t channel, uint16_t* count)
 {
+  const volatile rx_cmt_channel_regs_t* cmt = NULL;
+
   RX_CHECK_NULL_PTR(count, s_tag, "count pointer is NULL");
 
   if ((int32_t)channel >= k_cmt_max_channels || !s_cmt_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
-  const volatile rx_cmt_channel_regs_t* cmt = internal_get_cmt_base(channel);
+  cmt = internal_get_cmt_base(channel);
   if (cmt == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -435,7 +452,7 @@ rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
   const uint8_t vector    = k_vect_cmt0_cmi0 + channel;
   const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
   const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
-  icu()->ier[ier_index] &= ~(1 << ier_bit);
+  icu()->ier[ier_index] &= ~(k_cmt_bit_mask_lsb << ier_bit);
 
   /* Clear callback */
   s_cmt_callback[channel]    = NULL;

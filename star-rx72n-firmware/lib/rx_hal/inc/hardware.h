@@ -265,13 +265,17 @@ rx_err_t riic_write_read(uint8_t        channel,
  * @brief Initialize RSPI in peripheral mode for RPi5 communication
  *
  * @param[in] channel RSPI channel (0-2)
- * @param[in] mode SPI mode (0-3): CPOL and CPHA configuration
- * @param[in] use_16bit True for 16-bit frames, false for 8-bit frames
+ * @param[in] config SPI configuration
  *
  * @return k_rx_ok on success,
  *         k_rx_err_invalid_arg if channel or mode is invalid
  */
-rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit);
+typedef struct {
+  uint8_t spi_mode;  /**< SPI mode (0-3): CPOL and CPHA configuration */
+  bool    use_16bit; /**< True for 16-bit frames, false for 8-bit frames */
+} rspi_config_t;
+
+rx_err_t rspi_init_peripheral(uint8_t channel, const rspi_config_t* config);
 
 /**
  * @brief Full-duplex SPI transfer in peripheral mode

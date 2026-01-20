@@ -225,7 +225,7 @@ static rx_err_t internal_check_startup_flags(void)
  *
  * @param[in] first_unused_memory Pointer to first unused memory for kernel objects
  */
-void tx_application_define(void* first_unused_memory)
+void tx_application_define(const void* first_unused_memory)
 {
   (void)first_unused_memory; /* Unused parameter */
 

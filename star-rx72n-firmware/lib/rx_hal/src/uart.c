@@ -30,15 +30,11 @@
  */
 
 /** @brief UART configuration constants */
-typedef enum : uint32_t {
-  k_uart_default_baudrate = 115200, /**< Default baud rate: 115200 bps */
-} uart_config_t;
+static const uint32_t s_uart_default_baudrate = 115200; /**< Default baud rate: 115200 bps */
 
 /** @brief UART timing constants */
-typedef enum : uint16_t {
-  k_uart_bit_time_delay_cycles =
-    1000, /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
-} uart_timing_t;
+static const uint16_t s_uart_bit_time_delay_cycles =
+  1000; /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
 
 /** @brief SCI register values */
 typedef enum : uint8_t {
@@ -287,7 +283,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
   }
 
   /* Validate channel */
-  if (config->channel >= k_uart_max_channels) {
+  if ((config->channel < k_uart_min_channel) || (config->channel >= k_uart_max_channels)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -329,7 +325,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
 
   /* Wait for at least 1 bit time */
   /* NOTE: Busy-wait required - may run before ThreadX initialization */
-  for (volatile uint32_t i = 0; i < k_uart_bit_time_delay_cycles; i++) {
+  for (volatile uint32_t i = 0; i < s_uart_bit_time_delay_cycles; i++) {
     __asm__ volatile("nop");
   }
 
@@ -578,7 +574,7 @@ rx_err_t uart_init(void)
 {
   const uart_channel_config_t config = {
     .channel  = k_uart_debug_channel,
-    .baudrate = k_uart_default_baudrate,
+    .baudrate = s_uart_default_baudrate,
     .tx_gpio  = k_uart_debug_tx_gpio,
     .rx_gpio  = k_uart_debug_rx_gpio,
   };
@@ -616,7 +612,7 @@ void uart_putint(const int32_t value)
   /* Handle negative numbers */
   if (value < 0) {
     is_negative = true;
-    abs_value   = (uint32_t)(-value);
+    abs_value   = (uint32_t)(-(int64_t)value);
   } else {
     abs_value = (uint32_t)value;
   }

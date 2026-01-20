@@ -59,12 +59,12 @@ typedef enum : uint8_t {
 
 /** @brief ICMR1 register configuration values */
 typedef enum : uint8_t {
-  k_riic_icmr1_controller_7bit = 0x08, /**< Controller mode, 7-bit addressing */
+  k_riic_icmr1_controller_7bit = 8, /**< Controller mode, 7-bit addressing */
 } riic_icmr1_values_t;
 
 /** @brief ICMR2 register configuration values */
 typedef enum : uint8_t {
-  k_riic_icmr2_default = 0x00, /**< No timeout, no clock sync */
+  k_riic_icmr2_default = 0, /**< No timeout, no clock sync */
 } riic_icmr2_values_t;
 
 /** @brief ICMR3 register ACK/NACK bit */
