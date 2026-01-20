@@ -246,7 +246,7 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 		errChan <- app.Run(ctx, cfg)
 	}()
 
-	// Wait for Gateway to start (simple sleep for now, ideally wait for port)
+	// Wait for Gateway to initialize (TODO: implement proper health check polling)
 	time.Sleep(2 * time.Second)
 
 	// Check if Gateway crashed early

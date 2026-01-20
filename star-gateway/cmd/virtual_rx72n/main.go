@@ -220,7 +220,7 @@ func isAllZeros(data []byte) bool {
 }
 
 // generateTelemetryResponse creates a telemetry frame and pads/truncates to exactly responseLen bytes.
-func generateTelemetryResponse(encoder *frame.DefaultEncoder, seqNum *uint16, timestamp *int64, responseLen int) []byte {
+func generateTelemetryResponse(encoder frame.Encoder, seqNum *uint16, timestamp *int64, responseLen int) []byte {
 	// Generate dummy telemetry data
 	telemetry := generateTelemetryData(*timestamp)
 	*timestamp += int64(telemetryInterval.Microseconds())
@@ -251,7 +251,6 @@ func generateTelemetryResponse(encoder *frame.DefaultEncoder, seqNum *uint16, ti
 		Payload: payload,
 	}
 	
-	log.Printf("Generating telemetry frame: SEQ=%d, payload_len=%d", *seqNum, len(payload))
 	*seqNum++
 
 	// Encode frame
@@ -262,7 +261,7 @@ func generateTelemetryResponse(encoder *frame.DefaultEncoder, seqNum *uint16, ti
 		return make([]byte, responseLen)
 	}
 
-	log.Printf("Encoded frame size: %d bytes, response_len=%d", len(encodedFrame), responseLen)
+	log.Printf("Encoded frame size: %d bytes, expected response length: %d", len(encodedFrame), responseLen)
 
 	// Pad or truncate to match expected response length
 	if len(encodedFrame) < responseLen {
