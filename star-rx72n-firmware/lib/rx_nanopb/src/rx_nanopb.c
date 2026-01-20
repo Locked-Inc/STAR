@@ -27,6 +27,10 @@
 /** Module initialization flag */
 static bool s_initialized = false;
 
+static const double   k_velocity_mps_min      = -1000.0;
+static const double   k_velocity_mps_max      = 1000.0;
+static const uint32_t k_velocity_sequence_max = 4294967295U;
+
 /* =============================================================================
  * Internal Helpers
  * =============================================================================
@@ -46,12 +50,20 @@ static bool s_initialized = false;
 static bool
 internal_encode_string_callback(pb_ostream_t* stream, const pb_field_t* field, void* const* arg)
 {
+  if (stream == NULL || field == NULL || arg == NULL) {
+    return false;
+  }
+
   const char* str = (const char*)*arg;
   if (str == NULL) {
     return true; /* Empty string is valid */
   }
 
-  const uint32_t len = strlen(str);
+  const size_t str_len = strlen(str);
+  if (str_len > k_nanopb_buffer_size) {
+    return false;
+  }
+  const uint32_t len = (uint32_t)str_len;
   if (!pb_encode_tag_for_field(stream, field)) {
     return false;
   }
@@ -322,35 +334,52 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
  * =============================================================================
  */
 
-void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
-                                       const double             front_left_mps,
-                                       const double             front_right_mps,
-                                       const double             back_left_mps,
-                                       const double             back_right_mps,
-                                       const uint32_t           sequence)
+rx_err_t rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            cmd,
+                                           const rx_velocity_command_params_t* params)
 {
-  if (cmd == NULL) {
-    return;
+  if (cmd == NULL || params == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if ((params->front_left_mps < k_velocity_mps_min) ||
+      (params->front_left_mps > k_velocity_mps_max) ||
+      (params->front_right_mps < k_velocity_mps_min) ||
+      (params->front_right_mps > k_velocity_mps_max) ||
+      (params->back_left_mps < k_velocity_mps_min) ||
+      (params->back_left_mps > k_velocity_mps_max) ||
+      (params->back_right_mps < k_velocity_mps_min) ||
+      (params->back_right_mps > k_velocity_mps_max) ||
+      (params->sequence > k_velocity_sequence_max)) {
+    return k_rx_err_invalid_arg;
   }
 
   *cmd                          = (star_v1_VelocityCommand)star_v1_VelocityCommand_init_zero;
-  cmd->front_left_velocity_mps  = front_left_mps;
-  cmd->front_right_velocity_mps = front_right_mps;
-  cmd->back_left_velocity_mps   = back_left_mps;
-  cmd->back_right_velocity_mps  = back_right_mps;
-  cmd->sequence                 = sequence;
+  cmd->front_left_velocity_mps  = params->front_left_mps;
+  cmd->front_right_velocity_mps = params->front_right_mps;
+  cmd->back_left_velocity_mps   = params->back_left_mps;
+  cmd->back_right_velocity_mps  = params->back_right_mps;
+  cmd->sequence                 = params->sequence;
   cmd->timestamp_us             = 0; /* Set by caller if needed */
+  return k_rx_ok;
 }
 
-void rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
-                                                  const double             left_mps,
-                                                  const double             right_mps,
-                                                  const uint32_t           sequence)
+rx_err_t rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
+                                                      const double             left_mps,
+                                                      const double             right_mps,
+                                                      const uint32_t           sequence)
 {
+  rx_velocity_command_params_t params;
+
   /* Differential drive mode: Lock left 2 motors together, right 2 motors together
    * Front Left & Back Left = Left side
    * Front Right & Back Right = Right side */
-  rx_nanopb_create_velocity_command(cmd, left_mps, right_mps, left_mps, right_mps, sequence);
+  params.front_left_mps  = left_mps;
+  params.front_right_mps = right_mps;
+  params.back_left_mps   = left_mps;
+  params.back_right_mps  = right_mps;
+  params.sequence        = sequence;
+
+  return rx_nanopb_create_velocity_command(cmd, &params);
 }
 
 void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
@@ -358,6 +387,10 @@ void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
                                       const char*             request_id)
 {
   if (header == NULL) {
+    return;
+  }
+
+  if (request_id != NULL && strlen(request_id) > k_nanopb_buffer_size) {
     return;
   }
 

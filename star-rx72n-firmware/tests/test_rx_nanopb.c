@@ -71,6 +71,22 @@ static const double s_test_yaw_rad                  = 1.57;
 static const double s_test_accel_z_mps2             = 9.81;
 static const float  s_test_float_tolerance          = 0.0001F;
 
+static rx_velocity_command_params_t internal_make_velocity_params(double   front_left_mps,
+                                                                  double   front_right_mps,
+                                                                  double   back_left_mps,
+                                                                  double   back_right_mps,
+                                                                  uint32_t sequence)
+{
+  rx_velocity_command_params_t params = {
+    .front_left_mps  = front_left_mps,
+    .front_right_mps = front_right_mps,
+    .back_left_mps   = back_left_mps,
+    .back_right_mps  = back_right_mps,
+    .sequence        = sequence,
+  };
+  return params;
+}
+
 /* =============================================================================
  * Test Fixtures
  * =============================================================================
@@ -962,15 +978,14 @@ void test_encode_telemetry_not_initialized(void)
  */
 void test_create_velocity_command_null(void)
 {
-  /* Should not crash with NULL pointer */
-  rx_nanopb_create_velocity_command(NULL,
-                                    s_test_front_left_velocity_mps,
-                                    s_test_front_right_velocity_mps,
-                                    s_test_back_left_velocity_mps,
-                                    s_test_back_right_velocity_mps,
-                                    k_test_sequence_number);
-  /* If we reach here, the function handled NULL gracefully */
-  TEST_PASS();
+  rx_velocity_command_params_t params =
+    internal_make_velocity_params(s_test_front_left_velocity_mps,
+                                  s_test_front_right_velocity_mps,
+                                  s_test_back_left_velocity_mps,
+                                  s_test_back_right_velocity_mps,
+                                  k_test_sequence_number);
+  rx_err_t err = rx_nanopb_create_velocity_command(NULL, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /**
@@ -978,13 +993,15 @@ void test_create_velocity_command_null(void)
  */
 void test_create_velocity_command_valid(void)
 {
-  star_v1_VelocityCommand cmd;
-  rx_nanopb_create_velocity_command(&cmd,
-                                    s_test_front_left_velocity_mps,
-                                    s_test_front_right_velocity_mps,
-                                    s_test_back_left_velocity_mps,
-                                    s_test_back_right_velocity_mps,
-                                    k_test_sequence_number);
+  star_v1_VelocityCommand      cmd;
+  rx_velocity_command_params_t params =
+    internal_make_velocity_params(s_test_front_left_velocity_mps,
+                                  s_test_front_right_velocity_mps,
+                                  s_test_back_left_velocity_mps,
+                                  s_test_back_right_velocity_mps,
+                                  k_test_sequence_number);
+  rx_err_t err = rx_nanopb_create_velocity_command(&cmd, &params);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
                            (float)s_test_front_left_velocity_mps,
@@ -1007,13 +1024,14 @@ void test_create_velocity_command_valid(void)
  */
 void test_create_velocity_command_zero(void)
 {
-  star_v1_VelocityCommand cmd;
-  rx_nanopb_create_velocity_command(&cmd,
-                                    s_test_zero_velocity_mps,
-                                    s_test_zero_velocity_mps,
-                                    s_test_zero_velocity_mps,
-                                    s_test_zero_velocity_mps,
-                                    k_test_sequence_zero);
+  star_v1_VelocityCommand      cmd;
+  rx_velocity_command_params_t params = internal_make_velocity_params(s_test_zero_velocity_mps,
+                                                                      s_test_zero_velocity_mps,
+                                                                      s_test_zero_velocity_mps,
+                                                                      s_test_zero_velocity_mps,
+                                                                      k_test_sequence_zero);
+  rx_err_t                     err    = rx_nanopb_create_velocity_command(&cmd, &params);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
                            (float)s_test_zero_velocity_mps,
@@ -1029,13 +1047,15 @@ void test_create_velocity_command_zero(void)
  */
 void test_create_velocity_command_max_sequence(void)
 {
-  star_v1_VelocityCommand cmd;
-  rx_nanopb_create_velocity_command(&cmd,
-                                    s_test_front_left_velocity_mps,
-                                    s_test_front_right_velocity_mps,
-                                    s_test_back_left_velocity_mps,
-                                    s_test_back_right_velocity_mps,
-                                    s_test_sequence_max);
+  star_v1_VelocityCommand      cmd;
+  rx_velocity_command_params_t params =
+    internal_make_velocity_params(s_test_front_left_velocity_mps,
+                                  s_test_front_right_velocity_mps,
+                                  s_test_back_left_velocity_mps,
+                                  s_test_back_right_velocity_mps,
+                                  s_test_sequence_max);
+  rx_err_t err = rx_nanopb_create_velocity_command(&cmd, &params);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   TEST_ASSERT_EQUAL(s_test_sequence_max, cmd.sequence);
 }
@@ -1049,12 +1069,14 @@ void test_create_velocity_command_initializes_struct(void)
   /* Fill with garbage */
   memset(&cmd, 0xFF, sizeof(cmd));
 
-  rx_nanopb_create_velocity_command(&cmd,
-                                    s_test_front_left_velocity_mps,
-                                    s_test_front_right_velocity_mps,
-                                    s_test_back_left_velocity_mps,
-                                    s_test_back_right_velocity_mps,
-                                    k_test_sequence_number);
+  rx_velocity_command_params_t params =
+    internal_make_velocity_params(s_test_front_left_velocity_mps,
+                                  s_test_front_right_velocity_mps,
+                                  s_test_back_left_velocity_mps,
+                                  s_test_back_right_velocity_mps,
+                                  k_test_sequence_number);
+  rx_err_t err = rx_nanopb_create_velocity_command(&cmd, &params);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* timestamp_us should be explicitly set to 0 */
   TEST_ASSERT_EQUAL(0, cmd.timestamp_us);

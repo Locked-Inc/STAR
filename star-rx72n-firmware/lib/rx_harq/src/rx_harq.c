@@ -274,12 +274,12 @@ rx_err_t rx_harq_reset(rx_harq_handle_t* harq)
   return k_rx_ok;
 }
 
-rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
-                        const uint8_t*    payload,
-                        const uint32_t    payload_len,
-                        uint8_t*          output,
-                        const uint32_t    output_size,
-                        uint32_t*         output_len)
+rx_err_t rx_harq_encode(const rx_harq_handle_t* harq,
+                        const uint8_t*          payload,
+                        const uint32_t          payload_len,
+                        uint8_t*                output,
+                        const uint32_t          output_size,
+                        uint32_t*               output_len)
 {
   if (harq == NULL || payload == NULL || output == NULL || output_len == NULL) {
     return k_rx_err_invalid_arg;
@@ -423,25 +423,23 @@ static rx_err_t internal_handle_fec_result(rx_harq_handle_t* harq, const rx_err_
  * =============================================================================
  */
 
-rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
-                        const rx_soft_bit_t* soft_bits,
-                        const uint32_t       soft_len,
-                        const uint32_t       expected_output_len,
-                        uint8_t*             output,
-                        uint32_t*            output_len)
+rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
+                        const rx_harq_decode_params_t* params,
+                        uint8_t*                       output,
+                        uint32_t*                      output_len)
 {
-  if (harq == NULL || soft_bits == NULL || output == NULL || output_len == NULL) {
+  if (harq == NULL || params == NULL || output == NULL || output_len == NULL) {
     return k_rx_err_invalid_arg;
   }
   if (harq->initialized == 0) {
     return k_rx_err_invalid_state;
   }
-  if (soft_len == 0) {
+  if (params->soft_bits == NULL || params->soft_len == 0) {
     return k_rx_err_invalid_arg;
   }
 
   /* Add soft bits to combiner */
-  rx_err_t err = rx_chase_combiner_add(&harq->combiner, soft_bits, soft_len);
+  rx_err_t err = rx_chase_combiner_add(&harq->combiner, params->soft_bits, params->soft_len);
   if (err != k_rx_ok && err != k_rx_err_busy) {
     return err;
   }
@@ -458,7 +456,7 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
   if (harq->fec_enabled == 0) {
     err = internal_soft_to_hard(harq->decode_buffer,
                                 combined_len,
-                                expected_output_len,
+                                params->expected_output_len,
                                 output,
                                 output_len);
     if (err != k_rx_ok) {
@@ -475,7 +473,7 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
   const rx_fec_decode_soft_params_t decode_params = {
     .soft_bits           = harq->decode_buffer,
     .soft_len            = combined_len,
-    .expected_output_len = expected_output_len,
+    .expected_output_len = params->expected_output_len,
     .output              = output,
     .output_len          = output_len,
   };

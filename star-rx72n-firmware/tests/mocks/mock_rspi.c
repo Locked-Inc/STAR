@@ -329,15 +329,26 @@ void mock_rspi_record_call(mock_rspi_t* mock,
  * =============================================================================
  */
 
-rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
+rx_err_t rspi_init_peripheral(uint8_t channel, const rspi_config_t* config)
 {
   mock_rspi_t* m = &g_mock_rspi;
 
   m->init_calls++;
 
+  if (config == NULL) {
+    rx_err_t ret = k_rx_err_null_ptr;
+    mock_rspi_record_call(m, "rspi_init_peripheral", channel, 0, 0, ret);
+    return ret;
+  }
+
   if (channel >= k_mock_rspi_max_channels) {
     rx_err_t ret = k_rx_err_invalid_arg;
-    mock_rspi_record_call(m, "rspi_init_peripheral", channel, mode, use_16bit, ret);
+    mock_rspi_record_call(m,
+                          "rspi_init_peripheral",
+                          channel,
+                          config->spi_mode,
+                          config->use_16bit,
+                          ret);
     return ret;
   }
 
@@ -345,12 +356,17 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
 
   if (ret == k_rx_ok) {
     m->channels[channel].initialized = true;
-    m->channels[channel].spi_mode    = mode;
-    m->channels[channel].use_16bit   = use_16bit;
+    m->channels[channel].spi_mode    = config->spi_mode;
+    m->channels[channel].use_16bit   = config->use_16bit;
     m->channels[channel].write_ready = true;
   }
 
-  mock_rspi_record_call(m, "rspi_init_peripheral", channel, mode, use_16bit, ret);
+  mock_rspi_record_call(m,
+                        "rspi_init_peripheral",
+                        channel,
+                        config->spi_mode,
+                        config->use_16bit,
+                        ret);
 
   /* Reset to default for next call */
   m->next_init_return = k_rx_ok;

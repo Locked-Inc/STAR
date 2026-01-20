@@ -192,6 +192,10 @@ static rx_err_t internal_calculate_period(const uint32_t frequency_hz, uint16_t*
 static volatile uint16_t* internal_get_tgr_register(volatile rx_mtu_channel_regs_t* mtu,
                                                     const rx_mtu_output_t           output)
 {
+  if (mtu == NULL) {
+    return NULL;
+  }
+
   switch (output) {
     case k_mtu_output_a:
       return &mtu->tgra;
@@ -210,6 +214,10 @@ static rx_err_t internal_set_duty_raw_mtu(volatile rx_mtu_channel_regs_t* mtu,
                                           const rx_mtu_output_t           output,
                                           const uint16_t                  duty_count)
 {
+  if (mtu == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
   volatile uint16_t* tgr = internal_get_tgr_register(mtu, output);
   if (tgr == NULL) {
     return k_rx_err_invalid_arg;
@@ -258,7 +266,10 @@ rx_err_t rx_mtu_init_pwm(const rx_mtu_channel_t channel, const rx_mtu_config_t* 
   system_regs()->prcr = k_rx_prcr_lock;
 
   /* Stop timer before configuration */
-  rx_mtu_stop(channel);
+  err = rx_mtu_stop(channel);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Configure timer control register
    * - PCLKA/1 (120 MHz)
@@ -297,7 +308,10 @@ rx_err_t rx_mtu_init_pwm(const rx_mtu_channel_t channel, const rx_mtu_config_t* 
   s_mtu_initialized[channel] = true;
 
   /* Start timer */
-  rx_mtu_start(channel);
+  err = rx_mtu_start(channel);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   rx_log_info(s_tag, "MTU initialized successfully");
 
@@ -513,10 +527,22 @@ rx_err_t rx_mtu_deinit(const rx_mtu_channel_t channel)
   }
 
   /* Disable all outputs */
-  (void)rx_mtu_enable_output(channel, k_mtu_output_a, false);
-  (void)rx_mtu_enable_output(channel, k_mtu_output_b, false);
-  (void)rx_mtu_enable_output(channel, k_mtu_output_c, false);
-  (void)rx_mtu_enable_output(channel, k_mtu_output_d, false);
+  err = rx_mtu_enable_output(channel, k_mtu_output_a, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  err = rx_mtu_enable_output(channel, k_mtu_output_b, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  err = rx_mtu_enable_output(channel, k_mtu_output_c, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  err = rx_mtu_enable_output(channel, k_mtu_output_d, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Mark as uninitialized */
   s_mtu_initialized[channel] = false;

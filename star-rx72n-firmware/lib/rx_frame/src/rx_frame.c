@@ -45,6 +45,9 @@ typedef enum : uint8_t {
   k_state_initialized   = 1, /**< Object initialized and ready */
 } init_state_t;
 
+typedef enum : uint8_t {
+  k_frame_offset_start = 0, /**< Start offset for frame parsing */
+} frame_offset_t;
 /* =============================================================================
  * Private Helper Functions
  * =============================================================================
@@ -86,11 +89,15 @@ static rx_err_t internal_decode_header(const uint8_t* data,
   uint16_t sync_word;
   uint32_t expected_size;
 
+  if (data == NULL || frame == NULL || offset_out == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
   if (data_len < k_frame_min_size) {
     return k_rx_err_invalid_size;
   }
 
-  offset = 0;
+  offset = k_frame_offset_start;
 
   sync_word = rx_frame_read_be16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
@@ -126,8 +133,17 @@ static rx_err_t internal_decode_header(const uint8_t* data,
   return k_rx_ok;
 }
 
-static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32_t* crc_out)
+static rx_err_t
+internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uint32_t* crc_out)
 {
+  if (data == NULL || crc_out == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (data_len < k_frame_min_size || (offset + k_frame_crc_size) > data_len) {
+    return k_rx_err_invalid_size;
+  }
+
   const uint32_t received_crc   = internal_read_le32(&data[offset]);
   const uint32_t calculated_crc = rx_crc32_ieee(data, offset);
 
@@ -193,7 +209,7 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
 
   /* Calculate total frame size */
   const uint32_t frame_size = rx_frame_encoded_size(frame->header.length);
-  uint32_t       offset     = 0;
+  uint32_t       offset     = k_frame_offset_start;
 
   /* Write SYNC word (big-endian) */
   rx_frame_write_be16(&output[offset], k_frame_sync_word);
@@ -265,7 +281,7 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
 
 rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
                          const uint8_t*            data,
-                         uint32_t                  data_len,
+                         const uint32_t            data_len,
                          rx_frame_t*               frame)
 {
   uint32_t offset;
@@ -290,7 +306,7 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
     offset += frame->header.length;
   }
 
-  err = internal_verify_crc(data, offset, &frame->crc);
+  err = internal_verify_crc(data, data_len, offset, &frame->crc);
   if (err != k_rx_ok) {
     return err;
   }

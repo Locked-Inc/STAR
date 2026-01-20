@@ -51,16 +51,16 @@ typedef enum : uint8_t {
 
 /** @brief ADC Control Extended Register (ADCER) bit masks and values */
 typedef enum : uint16_t {
-  k_adc_adcer_adprc_mask  = 0x03,        /**< ADPRC bit mask (bits 1:0) */
-  k_adc_adcer_adprc_shift = 0,           /**< ADPRC bit shift position */
-  k_adc_adcer_adprc_12bit = (0x00 << 0), /**< 12-bit resolution */
-  k_adc_adcer_adprc_10bit = (0x01 << 0), /**< 10-bit resolution */
-  k_adc_adcer_adprc_8bit  = (0x02 << 0), /**< 8-bit resolution */
+  k_adc_adcer_adprc_mask  = 3U, /**< ADPRC bit mask (bits 1:0) */
+  k_adc_adcer_adprc_shift = 0U, /**< ADPRC bit shift position */
+  k_adc_adcer_adprc_12bit = 0U, /**< 12-bit resolution */
+  k_adc_adcer_adprc_10bit = 1U, /**< 10-bit resolution */
+  k_adc_adcer_adprc_8bit  = 2U, /**< 8-bit resolution */
 } adc_adcer_bits_t;
 
 /** @brief ADC Control/Status Register (ADCSR) bit masks */
 typedef enum : uint16_t {
-  k_adc_adcsr_adst = 0x1000, /**< A/D Conversion Start (bit 12) */
+  k_adc_adcsr_adst = 4096U, /**< A/D Conversion Start (bit 12) */
 } adc_adcsr_bits_t;
 
 /** @brief ADC channel register boundaries */
@@ -156,13 +156,13 @@ internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, u
 static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t channel)
 {
   /* Validate unit */
-  if (unit >= k_adc_max_units) {
+  if (unit < k_adc_unit_0 || unit >= k_adc_max_units) {
     rx_log_error(s_tag, "Invalid ADC unit");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate channel */
-  if (channel >= k_adc_max_channels) {
+  if (channel < k_adc_unit_0 || channel >= k_adc_max_channels) {
     rx_log_error(s_tag, "Invalid ADC channel");
     return k_rx_err_invalid_arg;
   }
@@ -219,10 +219,12 @@ rx_err_t adc_init(const uint8_t unit, uint8_t channel, const uint8_t bits)
 
 rx_err_t adc_read(const uint8_t unit, uint8_t channel, uint16_t* value)
 {
+  rx_err_t err;
+
   /* Validate parameters */
   RX_CHECK_NULL_PTR(value, s_tag, "Value pointer is NULL");
 
-  const rx_err_t err = internal_validate_unit_channel(unit, channel);
+  err = internal_validate_unit_channel(unit, channel);
   RX_RETURN_ON_ERROR(err, s_tag, "Unit/channel validation failed");
 
   /* Check if unit is initialized */
@@ -290,13 +292,19 @@ adc_read_voltage_mv(const uint8_t unit, uint8_t channel, uint8_t bits, uint32_t*
 {
   RX_CHECK_NULL_PTR(voltage_mv, s_tag, "Voltage pointer is NULL");
 
+  if (bits != k_adc_resolution_8bit && bits != k_adc_resolution_10bit &&
+      bits != k_adc_resolution_12bit) {
+    rx_log_error(s_tag, "Invalid resolution (must be 8, 10, or 12 bits)");
+    return k_rx_err_invalid_arg;
+  }
+
   /* Read raw ADC value */
   uint16_t       raw_value;
   const rx_err_t err = adc_read(unit, channel, &raw_value);
   RX_RETURN_ON_ERROR(err, s_tag, "ADC read failed");
 
   /* Calculate voltage (using ADC reference voltage) */
-  const uint32_t max_value = (1 << bits) - 1;
+  const uint32_t max_value = ((uint32_t)k_adc_bit_one << bits) - k_adc_bit_one;
   *voltage_mv              = ((uint32_t)raw_value * k_adc_reference_voltage_mv) / max_value;
 
   return k_rx_ok;

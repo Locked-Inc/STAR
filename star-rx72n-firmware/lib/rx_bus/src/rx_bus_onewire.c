@@ -182,7 +182,7 @@ static rx_err_t internal_acquire_state(rx_bus_config_t* bus_config, onewire_runt
  *
  * @return Pointer to state or NULL if missing
  */
-static inline onewire_runtime_state_t* internal_get_state(rx_bus_config_t* bus_config)
+static inline onewire_runtime_state_t* internal_get_state(const rx_bus_config_t* bus_config)
 {
   return (onewire_runtime_state_t*)bus_config->handle;
 }
@@ -196,18 +196,20 @@ static inline onewire_runtime_state_t* internal_get_state(rx_bus_config_t* bus_c
  *
  * @return k_rx_ok on success
  */
-static rx_err_t internal_set_drive_mode(rx_bus_config_t*         bus_config,
+static rx_err_t internal_set_drive_mode(const rx_bus_config_t*   bus_config,
                                         onewire_runtime_state_t* state,
                                         const bool               output)
 {
+  rx_err_t err = k_rx_err_invalid_state;
+
   if (output && !state->line_is_output) {
-    const rx_err_t err = gpio_set_output(bus_config->proto.onewire.pin);
+    err = gpio_set_output(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
       return err;
     }
     state->line_is_output = true;
   } else if (!output && state->line_is_output) {
-    const rx_err_t err = gpio_set_input(bus_config->proto.onewire.pin);
+    err = gpio_set_input(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
       return err;
     }
@@ -242,7 +244,7 @@ static rx_err_t internal_release_line(rx_bus_config_t* bus_config, onewire_runti
  *
  * @param[out] high True if line is high
  */
-static rx_err_t internal_read_line(rx_bus_config_t* bus_config, bool* high)
+static rx_err_t internal_read_line(const rx_bus_config_t* bus_config, bool* high)
 {
   return gpio_read(bus_config->proto.onewire.pin, high);
 }
@@ -1053,6 +1055,9 @@ static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, 
 static rx_err_t internal_onewire_search_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   onewire_search_ctx_t* ctx = (onewire_search_ctx_t*)user_ctx;
+  uint8_t               rom[k_onewire_rom_bytes];
+  bool                  device_found = false;
+  rx_err_t              err          = k_rx_err_invalid_state;
 
   if (ctx->num_devices == NULL) {
     ctx->result = k_rx_err_invalid_arg;
@@ -1085,9 +1090,8 @@ static rx_err_t internal_onewire_search_callback(rx_bus_config_t* bus_config, vo
   internal_reset_search_state(state);
 
   while (*ctx->num_devices < ctx->max_devices) {
-    uint8_t        rom[k_onewire_rom_bytes];
-    bool           device_found = false;
-    const rx_err_t err          = internal_search_iteration(bus_config, state, rom, &device_found);
+    device_found = false;
+    err          = internal_search_iteration(bus_config, state, rom, &device_found);
     if (err != k_rx_ok) {
       ctx->result = err;
       return err;

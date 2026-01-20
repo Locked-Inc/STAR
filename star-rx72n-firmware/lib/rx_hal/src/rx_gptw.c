@@ -343,7 +343,8 @@ rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_
 
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
-  if ((int32_t)channel >= k_gptw_max_channels) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels)) {
     rx_log_error(s_tag, "Invalid GPTW channel");
     return k_rx_err_invalid_arg;
   }
@@ -405,7 +406,8 @@ rx_err_t rx_gptw_set_duty(const rx_gptw_channel_t channel,
                           const rx_gptw_output_t  output,
                           const float             duty_percent)
 {
-  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels) || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
@@ -424,7 +426,8 @@ rx_err_t rx_gptw_set_duty(const rx_gptw_channel_t channel,
 rx_err_t
 rx_gptw_set_duty_raw(const rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count)
 {
-  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels) || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
@@ -460,7 +463,8 @@ rx_err_t rx_gptw_get_duty(const rx_gptw_channel_t channel,
 {
   RX_CHECK_NULL_PTR(duty_percent, s_tag, "duty_percent pointer is NULL");
 
-  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels) || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
@@ -492,7 +496,8 @@ rx_err_t rx_gptw_get_period(const rx_gptw_channel_t channel, uint32_t* period_co
 {
   RX_CHECK_NULL_PTR(period_count, s_tag, "period_count pointer is NULL");
 
-  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels) || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
@@ -503,7 +508,8 @@ rx_err_t rx_gptw_get_period(const rx_gptw_channel_t channel, uint32_t* period_co
 rx_err_t
 rx_gptw_enable_output(const rx_gptw_channel_t channel, const rx_gptw_output_t output, bool enable)
 {
-  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels) || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
@@ -543,7 +549,8 @@ rx_gptw_enable_output(const rx_gptw_channel_t channel, const rx_gptw_output_t ou
 
 rx_err_t rx_gptw_start(const rx_gptw_channel_t channel)
 {
-  if ((int32_t)channel >= k_gptw_max_channels) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -562,7 +569,8 @@ rx_err_t rx_gptw_start(const rx_gptw_channel_t channel)
 
 rx_err_t rx_gptw_stop(const rx_gptw_channel_t channel)
 {
-  if ((int32_t)channel >= k_gptw_max_channels) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -581,7 +589,8 @@ rx_err_t rx_gptw_stop(const rx_gptw_channel_t channel)
 
 rx_err_t rx_gptw_deinit(const rx_gptw_channel_t channel)
 {
-  if ((int32_t)channel >= k_gptw_max_channels) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels)) {
     return k_rx_err_invalid_arg;
   }
 

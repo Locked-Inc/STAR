@@ -258,12 +258,12 @@ rx_err_t rx_harq_reset(rx_harq_handle_t* harq);
  * @return k_rx_err_invalid_size if output buffer too small
  * @return k_rx_err_invalid_state if not initialized
  */
-rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
-                        const uint8_t*    payload,
-                        uint32_t          payload_len,
-                        uint8_t*          output,
-                        uint32_t          output_size,
-                        uint32_t*         output_len);
+rx_err_t rx_harq_encode(const rx_harq_handle_t* harq,
+                        const uint8_t*          payload,
+                        uint32_t                payload_len,
+                        uint8_t*                output,
+                        uint32_t                output_size,
+                        uint32_t*               output_len);
 
 /**
  * @brief Decode soft bits with combining and FEC
@@ -271,9 +271,7 @@ rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
  * Adds soft bits to combiner, attempts decode. On failure, keeps accumulating.
  *
  * @param[in]  harq HARQ handle
- * @param[in]  soft_bits Received soft bits
- * @param[in]  soft_len Number of soft bits
- * @param[in]  expected_output_len Expected decoded length
+ * @param[in]  params Decode parameters
  * @param[out] output Decoded output buffer
  * @param[out] output_len Actual decoded length
  *
@@ -282,12 +280,16 @@ rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
  * @return k_rx_err_invalid_arg if any pointer is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
-rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
-                        const rx_soft_bit_t* soft_bits,
-                        uint32_t             soft_len,
-                        uint32_t             expected_output_len,
-                        uint8_t*             output,
-                        uint32_t*            output_len);
+typedef struct {
+  const rx_soft_bit_t* soft_bits;           /**< Received soft bits */
+  uint32_t             soft_len;            /**< Number of soft bits */
+  uint32_t             expected_output_len; /**< Expected decoded length */
+} rx_harq_decode_params_t;
+
+rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
+                        const rx_harq_decode_params_t* params,
+                        uint8_t*                       output,
+                        uint32_t*                      output_len);
 
 /**
  * @brief Get current retry count

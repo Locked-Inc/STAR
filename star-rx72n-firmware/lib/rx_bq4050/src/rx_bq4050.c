@@ -38,7 +38,8 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char* s_tag = "BQ4050";
+static const char*   s_tag              = "BQ4050";
+static const uint8_t k_bq4050_min_cells = 1;
 
 /**
  * @brief Temperature conversion constants
@@ -148,7 +149,7 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(cell_voltages, s_tag, "cell_voltages pointer is NULL");
 
-  if (num_cells > k_bq4050_max_cells) {
+  if ((num_cells < k_bq4050_min_cells) || (num_cells > k_bq4050_max_cells)) {
     rx_log_error(s_tag, "num_cells exceeds maximum (4 cells)");
     return k_rx_err_invalid_arg;
   }
@@ -224,7 +225,13 @@ rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uin
 
   if (err == k_rx_ok) {
     /* Clamp to 0-100 range (SBS allows > 100% in some conditions) */
-    *soc_percent = (soc_word > k_soc_max_percent) ? k_soc_max_percent : (uint8_t)soc_word;
+    if (soc_word < k_soc_min_percent) {
+      *soc_percent = k_soc_min_percent;
+    } else if (soc_word > k_soc_max_percent) {
+      *soc_percent = k_soc_max_percent;
+    } else {
+      *soc_percent = (uint8_t)soc_word;
+    }
   }
 
   return err;
@@ -243,7 +250,13 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
 
   if (err == k_rx_ok) {
     /* Clamp to 0-100 range */
-    *soc_percent = (soc_word > k_soc_max_percent) ? k_soc_max_percent : (uint8_t)soc_word;
+    if (soc_word < k_soc_min_percent) {
+      *soc_percent = k_soc_min_percent;
+    } else if (soc_word > k_soc_max_percent) {
+      *soc_percent = k_soc_max_percent;
+    } else {
+      *soc_percent = (uint8_t)soc_word;
+    }
   }
 
   return err;
@@ -452,7 +465,7 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
 
-  if (num_cells > k_bq4050_max_cells) {
+  if ((num_cells < k_bq4050_min_cells) || (num_cells > k_bq4050_max_cells)) {
     rx_log_error(s_tag, "num_cells parameter exceeds k_bq4050_max_cells");
     return k_rx_err_invalid_arg;
   }

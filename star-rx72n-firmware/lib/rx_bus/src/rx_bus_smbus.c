@@ -34,6 +34,10 @@ typedef enum : uint8_t {
   k_smbus_crc8_init = 0x00,
 } smbus_crc8_constants_t;
 
+typedef enum : uint8_t {
+  k_smbus_block_len_min = 1, /**< Minimum SMBUS block length */
+} smbus_block_constants_t;
+
 /**
  * @brief Calculate CRC-8 for SMBUS PEC
  *
@@ -140,6 +144,7 @@ typedef struct {
 
 static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
+  rx_err_t          err = k_rx_err_invalid_state;
   smbus_init_ctx_t* ctx = (smbus_init_ctx_t*)user_ctx;
 
   if (bus_config->type != k_bus_type_smbus) {
@@ -149,8 +154,8 @@ static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* 
   }
 
   /* Initialize underlying I2C channel */
-  const rx_err_t err = riic_init(bus_config->proto.smbus.i2c_config.channel,
-                                 bus_config->proto.smbus.i2c_config.frequency_hz);
+  err = riic_init(bus_config->proto.smbus.i2c_config.channel,
+                  bus_config->proto.smbus.i2c_config.frequency_hz);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "RIIC initialization failed");
@@ -172,15 +177,15 @@ static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* 
 static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   smbus_write_byte_ctx_t* ctx = (smbus_write_byte_ctx_t*)user_ctx;
+  uint8_t                 data[k_smbus_byte_buf_size];
+  uint8_t                 length = k_smbus_single_byte;
+  rx_err_t                err    = k_rx_err_invalid_state;
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
-
-  uint8_t data[k_smbus_byte_buf_size];
-  uint8_t length = k_smbus_single_byte;
 
   data[k_smbus_byte_data] = ctx->command;
 
@@ -195,10 +200,10 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
     length                 = k_smbus_byte_buf_size;
   }
 
-  const rx_err_t err = riic_write(bus_config->proto.smbus.i2c_config.channel,
-                                  bus_config->proto.smbus.i2c_config.device_addr,
-                                  data,
-                                  length);
+  err = riic_write(bus_config->proto.smbus.i2c_config.channel,
+                   bus_config->proto.smbus.i2c_config.device_addr,
+                   data,
+                   length);
 
   if (err != k_rx_ok) {
     ctx->result = err;
@@ -218,6 +223,9 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
 static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   smbus_read_byte_ctx_t* ctx = (smbus_read_byte_ctx_t*)user_ctx;
+  uint8_t                data[k_smbus_byte_buf_size];
+  uint8_t                length = k_smbus_single_byte;
+  rx_err_t               err    = k_rx_err_invalid_state;
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");
@@ -231,13 +239,11 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
     return k_rx_err_invalid_arg;
   }
 
-  uint8_t       data[k_smbus_byte_buf_size];
-  const uint8_t length =
-    bus_config->proto.smbus.use_pec ? k_smbus_byte_buf_size : k_smbus_single_byte;
-  const rx_err_t err = riic_read(bus_config->proto.smbus.i2c_config.channel,
-                                 bus_config->proto.smbus.i2c_config.device_addr,
-                                 data,
-                                 length);
+  length = bus_config->proto.smbus.use_pec ? k_smbus_byte_buf_size : k_smbus_single_byte;
+  err    = riic_read(bus_config->proto.smbus.i2c_config.channel,
+                  bus_config->proto.smbus.i2c_config.device_addr,
+                  data,
+                  length);
 
   if (err != k_rx_ok) {
     ctx->result = err;
@@ -267,7 +273,11 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
 
 static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  smbus_read_word_data_ctx_t* ctx = (smbus_read_word_data_ctx_t*)user_ctx;
+  smbus_read_word_data_ctx_t* ctx        = (smbus_read_word_data_ctx_t*)user_ctx;
+  uint8_t                     write_data = 0;
+  uint8_t                     read_data[k_smbus_word_buf_size];
+  uint8_t                     read_length = 0;
+  rx_err_t                    err         = k_rx_err_invalid_state;
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");
@@ -281,16 +291,14 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
     return k_rx_err_invalid_arg;
   }
 
-  const uint8_t write_data = ctx->command;
-  uint8_t       read_data[k_smbus_word_buf_size];
-  const uint8_t read_length =
-    bus_config->proto.smbus.use_pec ? k_smbus_word_buf_size : k_smbus_word_data_bytes;
-  const rx_err_t err = riic_write_read(bus_config->proto.smbus.i2c_config.channel,
-                                       bus_config->proto.smbus.i2c_config.device_addr,
-                                       &write_data,
-                                       k_smbus_single_byte,
-                                       read_data,
-                                       read_length);
+  write_data  = ctx->command;
+  read_length = bus_config->proto.smbus.use_pec ? k_smbus_word_buf_size : k_smbus_word_data_bytes;
+  err         = riic_write_read(bus_config->proto.smbus.i2c_config.channel,
+                        bus_config->proto.smbus.i2c_config.device_addr,
+                        &write_data,
+                        k_smbus_single_byte,
+                        read_data,
+                        read_length);
 
   if (err != k_rx_ok) {
     ctx->result = err;
@@ -331,37 +339,40 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
 
 rx_err_t rx_bus_smbus_init(rx_bus_manager_t* manager, const char* bus_name)
 {
+  smbus_init_ctx_t ctx = {.result = k_rx_err_hw_error};
+  rx_err_t         err = k_rx_err_invalid_state;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
-  smbus_init_ctx_t ctx = {.result = k_rx_err_hw_error};
-  const rx_err_t   err =
-    rx_bus_manager_with_bus(manager, bus_name, internal_smbus_init_callback, &ctx);
+  err = rx_bus_manager_with_bus(manager, bus_name, internal_smbus_init_callback, &ctx);
 
   return (err != k_rx_ok) ? err : ctx.result;
 }
 
 rx_err_t rx_bus_smbus_write_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t command)
 {
+  smbus_write_byte_ctx_t ctx = {.command = command, .result = k_rx_err_hw_error};
+  rx_err_t               err = k_rx_err_invalid_state;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
-  smbus_write_byte_ctx_t ctx = {.command = command, .result = k_rx_err_hw_error};
-  const rx_err_t         err =
-    rx_bus_manager_with_bus(manager, bus_name, internal_smbus_write_byte_callback, &ctx);
+  err = rx_bus_manager_with_bus(manager, bus_name, internal_smbus_write_byte_callback, &ctx);
 
   return (err != k_rx_ok) ? err : ctx.result;
 }
 
 rx_err_t rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data)
 {
+  smbus_read_byte_ctx_t ctx = {.data = data, .result = k_rx_err_hw_error};
+  rx_err_t              err = k_rx_err_invalid_state;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(data, s_tag, "data pointer is NULL");
 
-  smbus_read_byte_ctx_t ctx = {.data = data, .result = k_rx_err_hw_error};
-  const rx_err_t        err =
-    rx_bus_manager_with_bus(manager, bus_name, internal_smbus_read_byte_callback, &ctx);
+  err = rx_bus_manager_with_bus(manager, bus_name, internal_smbus_read_byte_callback, &ctx);
 
   return (err != k_rx_ok) ? err : ctx.result;
 }
@@ -417,13 +428,14 @@ rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
                                      const uint8_t     command,
                                      uint16_t*         data)
 {
+  smbus_read_word_data_ctx_t ctx = {.command = command, .data = data, .result = k_rx_err_hw_error};
+  rx_err_t                   err = k_rx_err_invalid_state;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(data, s_tag, "data pointer is NULL");
 
-  smbus_read_word_data_ctx_t ctx = {.command = command, .data = data, .result = k_rx_err_hw_error};
-  const rx_err_t             err =
-    rx_bus_manager_with_bus(manager, bus_name, internal_smbus_read_word_data_callback, &ctx);
+  err = rx_bus_manager_with_bus(manager, bus_name, internal_smbus_read_word_data_callback, &ctx);
 
   return (err != k_rx_ok) ? err : ctx.result;
 }
@@ -435,24 +447,26 @@ rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
                                       uint8_t*          length,
                                       const uint8_t     max_length)
 {
+  uint8_t  len_byte = 0;
+  rx_err_t err      = k_rx_err_invalid_state;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(data, s_tag, "data pointer is NULL");
   RX_CHECK_NULL_PTR(length, s_tag, "length pointer is NULL");
 
   /* Read length byte first, then data */
-  uint8_t  len_byte;
-  rx_err_t err = rx_bus_i2c_write_read(manager,
-                                       bus_name,
-                                       &command,
-                                       k_smbus_single_byte,
-                                       &len_byte,
-                                       k_smbus_single_byte);
+  err = rx_bus_i2c_write_read(manager,
+                              bus_name,
+                              &command,
+                              k_smbus_single_byte,
+                              &len_byte,
+                              k_smbus_single_byte);
   if (err != k_rx_ok) {
     return err;
   }
 
-  if (len_byte > max_length) {
+  if (len_byte < k_smbus_block_len_min || len_byte > max_length) {
     rx_log_error(s_tag, "Block length exceeds buffer");
     return k_rx_err_invalid_size;
   }

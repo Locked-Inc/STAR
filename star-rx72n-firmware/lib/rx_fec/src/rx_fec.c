@@ -213,8 +213,8 @@ static void internal_init_branch_table(
  */
 static int32_t internal_branch_metric(const rx_soft_bit_t soft0,
                                       const rx_soft_bit_t soft1,
-                                      uint8_t             exp0,
-                                      uint8_t             exp1)
+                                      const uint8_t       exp0,
+                                      const uint8_t       exp1)
 {
   /* Convert expected bits to soft values: 0 -> -127, 1 -> +127 */
   const int32_t exp0_soft = (exp0 != 0) ? k_soft_bit_max : k_soft_bit_min;

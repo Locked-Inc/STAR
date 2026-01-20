@@ -162,7 +162,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
   return crc ^ k_crc_ieee_final_xor;
 }
 
-uint32_t rx_crc32_update_impl(const uint32_t crc, const uint8_t* data, uint32_t len)
+uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)
 {
   /* Software implementation - delegate to the always-available function */
   return rx_crc32_update_sw(crc, data, len);

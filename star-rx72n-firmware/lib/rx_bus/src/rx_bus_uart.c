@@ -24,9 +24,8 @@ static const char* s_tag = "BUS_UART";
  * =============================================================================
  */
 
-typedef enum : uint8_t {
-  k_uart_ascii_max = 127, /**< Max 7-bit ASCII value */
-} uart_ascii_constants_t;
+static const uint8_t s_uart_ascii_max  = 127; /**< Max 7-bit ASCII value */
+static const uint8_t s_sci_channel_min = 0;   /**< Minimum SCI channel */
 
 /* =============================================================================
  * Callback Context Structures
@@ -116,7 +115,8 @@ static rx_err_t internal_uart_init_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Pre-condition: Verify UART channel is within valid range */
-  if (bus_config->proto.uart.channel >= k_sci_channel_count) {
+  if (bus_config->proto.uart.channel < s_sci_channel_min ||
+      bus_config->proto.uart.channel >= k_sci_channel_count) {
     rx_log_error(s_tag, "UART channel exceeds maximum SCI channel count");
     ctx->result = k_rx_err_invalid_arg;
     return k_rx_err_invalid_arg;
@@ -251,7 +251,7 @@ static rx_err_t internal_uart_putc_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Post-condition: Verify character is valid ASCII */
-  if ((uint8_t)ctx->c > k_uart_ascii_max) {
+  if ((uint8_t)ctx->c > s_uart_ascii_max) {
     rx_log_warn(s_tag, "UART putc wrote non-ASCII character");
     /* Continue anyway - some protocols use extended ASCII */
   }

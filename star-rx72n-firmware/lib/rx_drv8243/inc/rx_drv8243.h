@@ -221,7 +221,7 @@ rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_c
  * @return k_rx_err_null_ptr if handle or out_fault is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
-rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_fault);
+rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* out_fault);
 
 /**
  * @brief Get current motor speed

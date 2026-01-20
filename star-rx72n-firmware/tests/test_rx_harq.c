@@ -32,6 +32,18 @@ typedef enum : uint8_t {
   k_bit_mask      = 1, /**< Mask to extract single bit */
 } bit_manipulation_t;
 
+static rx_harq_decode_params_t internal_make_decode_params(const rx_soft_bit_t* soft_bits,
+                                                           uint32_t             soft_len,
+                                                           uint32_t             expected_output_len)
+{
+  rx_harq_decode_params_t params = {
+    .soft_bits           = soft_bits,
+    .soft_len            = soft_len,
+    .expected_output_len = expected_output_len,
+  };
+  return params;
+}
+
 /* =============================================================================
  * Test Fixtures
  * =============================================================================
@@ -522,31 +534,35 @@ void test_harq_decode_null_args(void)
 {
   rx_harq_init(&s_harq, NULL);
 
-  rx_soft_bit_t soft[32] = {0};
-  uint8_t       output[16];
-  uint32_t      len;
+  rx_soft_bit_t           soft[32] = {0};
+  uint8_t                 output[16];
+  uint32_t                len;
+  rx_harq_decode_params_t params = internal_make_decode_params(soft, 32, 2);
 
   /* NULL harq */
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_decode(NULL, soft, 32, 2, output, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_decode(NULL, &params, output, &len));
 
   /* NULL soft_bits */
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_decode(&s_harq, NULL, 32, 2, output, &len));
+  params.soft_bits = NULL;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_decode(&s_harq, &params, output, &len));
+  params.soft_bits = soft;
 
   /* NULL output */
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_decode(&s_harq, soft, 32, 2, NULL, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_decode(&s_harq, &params, NULL, &len));
 
   /* NULL output_len */
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_decode(&s_harq, soft, 32, 2, output, NULL));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_decode(&s_harq, &params, output, NULL));
 }
 
 void test_harq_decode_uninitialized(void)
 {
-  rx_harq_handle_t harq     = {0};
-  rx_soft_bit_t    soft[32] = {0};
-  uint8_t          output[16];
-  uint32_t         len;
+  rx_harq_handle_t        harq     = {0};
+  rx_soft_bit_t           soft[32] = {0};
+  uint8_t                 output[16];
+  uint32_t                len;
+  rx_harq_decode_params_t params = internal_make_decode_params(soft, 32, 2);
 
-  rx_err_t err = rx_harq_decode(&harq, soft, 32, 2, output, &len);
+  rx_err_t err = rx_harq_decode(&harq, &params, output, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -554,12 +570,13 @@ void test_harq_decode_zero_length(void)
 {
   rx_harq_init(&s_harq, NULL);
 
-  rx_soft_bit_t soft[32] = {0};
-  uint8_t       output[16];
-  uint32_t      len;
+  rx_soft_bit_t           soft[32] = {0};
+  uint8_t                 output[16];
+  uint32_t                len;
+  rx_harq_decode_params_t params = internal_make_decode_params(soft, 0, 2);
 
   /* Zero soft_len returns k_rx_err_invalid_arg */
-  rx_err_t err = rx_harq_decode(&s_harq, soft, 0, 2, output, &len);
+  rx_err_t err = rx_harq_decode(&s_harq, &params, output, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -596,10 +613,11 @@ void test_harq_roundtrip_with_fec(void)
   (void)rx_harq_reset(&s_harq);
 
   /* Decode */
-  uint8_t  decoded[64];
-  uint32_t dec_len;
+  uint8_t                 decoded[64];
+  uint32_t                dec_len;
+  rx_harq_decode_params_t params = internal_make_decode_params(soft, soft_len, 2);
 
-  err = rx_harq_decode(&s_harq, soft, soft_len, 2, decoded, &dec_len);
+  err = rx_harq_decode(&s_harq, &params, decoded, &dec_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(2, dec_len);
   TEST_ASSERT_EQUAL_MEMORY(payload, decoded, 2);
@@ -631,10 +649,11 @@ void test_harq_combining_improves_reception(void)
   /* Reset and decode */
   (void)rx_harq_reset(&s_harq);
 
-  uint8_t  decoded[64];
-  uint32_t dec_len;
+  uint8_t                 decoded[64];
+  uint32_t                dec_len;
+  rx_harq_decode_params_t params = internal_make_decode_params(soft, soft_len, 1);
 
-  rx_err_t err = rx_harq_decode(&s_harq, soft, soft_len, 1, decoded, &dec_len);
+  rx_err_t err = rx_harq_decode(&s_harq, &params, decoded, &dec_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_HEX8(0x42, decoded[0]);
 }

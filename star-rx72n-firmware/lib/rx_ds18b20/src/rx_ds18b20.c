@@ -55,15 +55,15 @@ static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* conf
 static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* handle);
 static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle);
 static rx_err_t
-                internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle,
-                                                     uint8_t              scratchpad[k_ds18b20_scratchpad_bytes]);
-static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
-                                                  uint8_t              th,
-                                                  uint8_t              tl,
-                                                  uint8_t              config);
-static uint8_t  internal_ds18b20_resolution_to_config(ds18b20_resolution_t resolution);
+                internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* handle,
+                                                     uint8_t scratchpad[k_ds18b20_scratchpad_bytes]);
+static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t* handle,
+                                                  uint8_t                    th,
+                                                  uint8_t                    tl,
+                                                  uint8_t                    config);
+static uint8_t  internal_ds18b20_resolution_to_config(const ds18b20_resolution_t resolution);
 static uint16_t internal_ds18b20_get_temp_mask(ds18b20_resolution_t resolution);
-static float    internal_ds18b20_raw_to_celsius(int16_t raw_temp);
+static float    internal_ds18b20_raw_to_celsius(const int16_t raw_temp);
 
 /* =============================================================================
  * Public API Implementation
@@ -127,7 +127,7 @@ rx_err_t rx_ds18b20_deinit(rx_ds18b20_handle_t* handle)
   return k_rx_ok;
 }
 
-rx_err_t rx_ds18b20_trigger_conversion(rx_ds18b20_handle_t* handle)
+rx_err_t rx_ds18b20_trigger_conversion(const rx_ds18b20_handle_t* handle)
 {
   bool     presence = false;
   rx_err_t err      = k_rx_ok;
@@ -259,7 +259,7 @@ rx_err_t rx_ds18b20_get_resolution(const rx_ds18b20_handle_t* handle,
   return k_rx_ok;
 }
 
-rx_err_t rx_ds18b20_save_config(rx_ds18b20_handle_t* handle)
+rx_err_t rx_ds18b20_save_config(const rx_ds18b20_handle_t* handle)
 {
   bool     presence = false;
   rx_err_t err      = k_rx_ok;
@@ -290,7 +290,7 @@ rx_err_t rx_ds18b20_save_config(rx_ds18b20_handle_t* handle)
   return k_rx_ok;
 }
 
-rx_err_t rx_ds18b20_recall_config(rx_ds18b20_handle_t* handle)
+rx_err_t rx_ds18b20_recall_config(const rx_ds18b20_handle_t* handle)
 {
   bool     presence = false;
   rx_err_t err      = k_rx_ok;
@@ -321,7 +321,7 @@ rx_err_t rx_ds18b20_recall_config(rx_ds18b20_handle_t* handle)
   return k_rx_ok;
 }
 
-rx_err_t rx_ds18b20_read_power_mode(rx_ds18b20_handle_t* handle, bool* external_power)
+rx_err_t rx_ds18b20_read_power_mode(const rx_ds18b20_handle_t* handle, bool* external_power)
 {
   bool     presence  = false;
   bool     power_bit = false;
@@ -514,7 +514,7 @@ static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle
  * @return k_rx_err_crc if CRC check fails
  * @return Error code on failure
  */
-static rx_err_t internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle,
+static rx_err_t internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* handle,
                                                      uint8_t scratchpad[k_ds18b20_scratchpad_bytes])
 {
   bool     presence   = false;
@@ -581,10 +581,10 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle
  * @return k_rx_ok on success
  * @return Error code on failure
  */
-static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
-                                                  const uint8_t        th,
-                                                  const uint8_t        tl,
-                                                  const uint8_t        config)
+static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t* handle,
+                                                  const uint8_t              th,
+                                                  const uint8_t              tl,
+                                                  const uint8_t              config)
 {
   bool     presence = false;
   rx_err_t err      = k_rx_ok;
