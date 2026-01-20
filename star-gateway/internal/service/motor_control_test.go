@@ -680,4 +680,3 @@ func TestMotorControl_ValidateRateHz(t *testing.T) {
 		t.Errorf("Expected 10, got %v", rate)
 	}
 }
-

@@ -192,4 +192,3 @@ func TestHandlerWithGateway(t *testing.T) {
 		t.Errorf("expected 1.0 mps, got %v", resp.Command.FrontLeftVelocityMps)
 	}
 }
-

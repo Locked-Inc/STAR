@@ -1112,13 +1112,12 @@ func TestBatteryService_ReceiveStreamBatteryLoop_Error(t *testing.T) {
 	logger := testutil.NewDiscardLogger()
 
 	svc := NewBatteryService(context.Background(), mockHARQ, mockDispatcher, logger)
-	
+
 	// Close channel to trigger error in receive loop
 	close(batteryCh)
-	
+
 	// Wait a bit for goroutine to process
 	time.Sleep(50 * time.Millisecond)
-	
+
 	svc.Shutdown()
 }
-

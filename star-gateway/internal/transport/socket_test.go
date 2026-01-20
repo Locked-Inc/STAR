@@ -221,7 +221,6 @@ func TestSocketTransport_SendReceive(t *testing.T) {
 	}
 }
 
-
 func TestSocketTransport_TransferErrors(t *testing.T) {
 	dir, err := os.MkdirTemp("/tmp", "star_socket_test_err")
 	if err != nil {
@@ -250,27 +249,26 @@ func TestSocketTransport_TransferErrors(t *testing.T) {
 	}
 
 	transport.Close()
-	
+
 	// Case 2: Read failure (incomplete)
 	ln2, _ := net.Listen("unix", socketPath)
 	defer ln2.Close()
-	
+
 	transport2 := NewSocketTransport(socketPath)
 	transport2.Open()
 	defer transport2.Close()
-	
+
 	go func() {
 		conn, _ := ln2.Accept()
 		conn.Read(make([]byte, 10))
 		conn.Close() // Close without writing enough back
 	}()
-	
+
 	_, err = transport2.Transfer(context.Background(), []byte{0x01, 0x02})
 	if err == nil {
 		t.Error("Expected error on incomplete read")
 	}
 }
-
 
 // ============================================================================
 // Integration Tests (require Virtual RX72N running)
