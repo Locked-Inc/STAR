@@ -1,19 +1,7 @@
 #!/bin/bash
 set -e
 
-# Install system dependencies
-sudo apt-get update
-sudo apt-get install -y --no-install-recommends \
-  libprotobuf-dev \
-  protobuf-compiler \
-  protobuf-compiler-grpc \
-  libgrpc++-dev \
-  libgrpc-dev
-
-# Install buf
-BUF_VERSION=1.28.1
-sudo curl -sSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" -o /usr/local/bin/buf
-sudo chmod +x /usr/local/bin/buf
+# Note: Dependencies (protobuf, grpc, buf) are now installed in the Dockerfile.
 
 # Generate protos
 cd /workspaces/STAR/star-proto
