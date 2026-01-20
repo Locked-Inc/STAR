@@ -41,9 +41,6 @@ const (
 
 	// grpcMaxMsgSize is the maximum message size for gRPC (10 MB).
 	grpcMaxMsgSize = 10 * 1024 * 1024
-
-	// healthCheckQoS is the QoS depth for service discovery/health checks.
-	healthCheckQoS = 10
 )
 
 // Shutdownable defines the interface for services that require graceful shutdown.
@@ -100,11 +97,12 @@ func run() error {
 	// Create a legacy transport adapter for HARQ (which still uses old interface)
 	// Note: We'll need to update HARQ to use Device interface in the future
 	var legacyTransport transport.Transport
-	if spi, ok := deviceTransport.(*transport.SPITransport); ok {
-		legacyTransport = spi
-	} else if sock, ok := deviceTransport.(*transport.SocketTransport); ok {
-		legacyTransport = sock
-	} else {
+	switch t := deviceTransport.(type) {
+	case *transport.SPITransport:
+		legacyTransport = t
+	case *transport.SocketTransport:
+		legacyTransport = t
+	default:
 		return fmt.Errorf("unknown transport type")
 	}
 

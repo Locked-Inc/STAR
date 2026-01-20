@@ -90,9 +90,7 @@ func (s *SocketTransport) Transfer(ctx context.Context, txData []byte) ([]byte, 
 		}
 		// Reset deadline after operation to avoid affecting future calls
 		defer func() {
-			if err := s.conn.SetDeadline(time.Time{}); err != nil {
-				// Log but don't fail - the connection might be closed
-			}
+			_ = s.conn.SetDeadline(time.Time{})
 		}()
 	}
 
