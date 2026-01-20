@@ -61,9 +61,6 @@ const (
 	// dummyBatteryVoltage is the simulated battery voltage in volts.
 	dummyBatteryVoltage = 24.5
 
-	// dummyMotorCurrent is the simulated motor current in milliamps.
-	dummyMotorCurrent = 1500.0
-
 	// dummyBatterySOC is the simulated battery state of charge in percent.
 	dummyBatterySOC = 85
 )
@@ -223,7 +220,7 @@ func isAllZeros(data []byte) bool {
 func generateTelemetryResponse(encoder frame.Encoder, seqNum *uint16, timestamp *int64, responseLen int) []byte {
 	// Generate dummy telemetry data
 	telemetry := generateTelemetryData(*timestamp)
-	*timestamp += int64(telemetryInterval.Microseconds())
+	*timestamp += telemetryInterval.Microseconds()
 
 	// Wrap in WireMessage
 	wireMsg := &starv1.WireMessage{
