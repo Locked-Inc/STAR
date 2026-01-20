@@ -88,7 +88,10 @@ func TestSocketTransport_OpenNoServer(t *testing.T) {
 	err := transport.Open()
 	if err == nil {
 		t.Error("Expected error when connecting to non-existent socket")
-		transport.Close()
+		err := transport.Close()
+		if err != nil {
+			t.Errorf("Failed to close transport: %v", err)
+		}
 	}
 }
 
@@ -96,7 +99,7 @@ func TestSocketTransport_TransferNotOpen(t *testing.T) {
 	transport := NewSocketTransport("/tmp/test.sock")
 
 	_, err := transport.Transfer(context.Background(), []byte{0x01})
-	if err != ErrDeviceNotOpen {
+	if !errors.Is(err, ErrDeviceNotOpen) {
 		t.Errorf("Expected ErrDeviceNotOpen, got %v", err)
 	}
 }
@@ -105,7 +108,7 @@ func TestSocketTransport_SendNotOpen(t *testing.T) {
 	transport := NewSocketTransport("/tmp/test.sock")
 
 	_, err := transport.Send([]byte{0x01, 0x02})
-	if err != ErrDeviceNotOpen {
+	if !errors.Is(err, ErrDeviceNotOpen) {
 		t.Errorf("Expected ErrDeviceNotOpen, got %v", err)
 	}
 }
@@ -114,7 +117,7 @@ func TestSocketTransport_ReceiveNotOpen(t *testing.T) {
 	transport := NewSocketTransport("/tmp/test.sock")
 
 	_, err := transport.Receive(10)
-	if err != ErrDeviceNotOpen {
+	if !errors.Is(err, ErrDeviceNotOpen) {
 		t.Errorf("Expected ErrDeviceNotOpen, got %v", err)
 	}
 }
@@ -136,20 +139,35 @@ func TestSocketTransport_ContextCanceled(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(dir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Errorf("Failed to remove temp dir: %v", err)
+		}
+	}(dir)
 
 	socketPath := filepath.Join(dir, "test.sock")
 	ln, err := net.Listen("unix", socketPath)
 	if err != nil {
 		t.Fatalf("Failed to create temporary listener: %v", err)
 	}
-	defer ln.Close()
+	defer func(ln net.Listener) {
+		err := ln.Close()
+		if err != nil {
+			t.Errorf("Failed to close listener: %v", err)
+		}
+	}(ln)
 
 	transport := NewSocketTransport(socketPath)
 	if err := transport.Open(); err != nil {
 		t.Fatalf("Failed to open transport: %v", err)
 	}
-	defer transport.Close()
+	defer func(transport *SocketTransport) {
+		err := transport.Close()
+		if err != nil {
+			t.Errorf("Failed to close transport: %v", err)
+		}
+	}(transport)
 
 	// Create a canceled context
 	ctx, cancel := context.WithCancel(context.Background())
@@ -171,21 +189,36 @@ func TestSocketTransport_SendReceive(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(dir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Errorf("Failed to remove temp dir: %v", err)
+		}
+	}(dir)
 
 	socketPath := filepath.Join(dir, "test.sock")
 	ln, err := net.Listen("unix", socketPath)
 	if err != nil {
 		t.Fatalf("Failed to create temporary listener: %v", err)
 	}
-	defer ln.Close()
+	defer func(ln net.Listener) {
+		err := ln.Close()
+		if err != nil {
+			t.Errorf("Failed to close listener: %v", err)
+		}
+	}(ln)
 
 	go func() {
 		conn, err := ln.Accept()
 		if err != nil {
 			return
 		}
-		defer conn.Close()
+		defer func(conn net.Conn) {
+			err := conn.Close()
+			if err != nil {
+				t.Errorf("Failed to close connection: %v", err)
+			}
+		}(conn)
 		io.Copy(conn, conn) // Echo
 	}()
 
@@ -193,7 +226,12 @@ func TestSocketTransport_SendReceive(t *testing.T) {
 	if err := transport.Open(); err != nil {
 		t.Fatalf("Failed to open transport: %v", err)
 	}
-	defer transport.Close()
+	defer func(transport *SocketTransport) {
+		err := transport.Close()
+		if err != nil {
+			t.Errorf("Failed to close transport: %v", err)
+		}
+	}(transport)
 
 	// Test Send
 	n, err := transport.Send([]byte{0x01, 0x02})
@@ -252,7 +290,12 @@ func TestSocketTransport_TransferErrors(t *testing.T) {
 
 	// Case 2: Read failure (incomplete)
 	ln2, _ := net.Listen("unix", socketPath)
-	defer ln2.Close()
+	defer func(ln2 net.Listener) {
+		err := ln2.Close()
+		if err != nil {
+			t.Errorf("Failed to close listener: %v", err)
+		}
+	}(ln2)
 
 	transport2 := NewSocketTransport(socketPath)
 	transport2.Open()
@@ -330,7 +373,12 @@ func TestSocketTransport_MultipleTransfers(t *testing.T) {
 	if err != nil {
 		t.Skipf("Skipping test: Virtual RX72N not running: %v", err)
 	}
-	defer transport.Close()
+	defer func(transport *SocketTransport) {
+		err := transport.Close()
+		if err != nil {
+			t.Errorf("Failed to close transport: %v", err)
+		}
+	}(transport)
 
 	// Perform multiple transfers
 	for i := 0; i < 10; i++ {
@@ -462,7 +510,12 @@ func TestSocketTransport_ConcurrentAccess(t *testing.T) {
 	if err != nil {
 		t.Skipf("Skipping test: Virtual RX72N not running: %v", err)
 	}
-	defer transport.Close()
+	defer func(transport *SocketTransport) {
+		err := transport.Close()
+		if err != nil {
+			t.Errorf("Failed to close transport: %v", err)
+		}
+	}(transport)
 
 	// Parameters for concurrency
 	const (
