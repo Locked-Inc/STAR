@@ -48,6 +48,11 @@ typedef enum : uint8_t {
   k_mtu_mstpa_mtu6_7 = 8, /**< MTU6-MTU7 module stop bit */
 } mtu_module_stop_bits_t;
 
+/** @brief Bit manipulation constants */
+typedef enum : uint32_t {
+  k_mtu_bit_one = 1UL, /**< Single bit value for shifts */
+} mtu_bit_constants_t;
+
 /** @brief Period calculation constants */
 typedef enum : uint16_t {
   k_mtu_period_divisor = 2,      /**< Triangle wave period divisor */
@@ -160,6 +165,10 @@ static rx_err_t internal_calculate_period(const uint32_t frequency_hz, uint16_t*
    */
   const uint32_t pclka = k_pclka_hz;
 
+  if (period == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
   if (frequency_hz == k_mtu_period_zero) {
     return k_rx_err_invalid_arg;
   }
@@ -258,9 +267,9 @@ rx_err_t rx_mtu_init_pwm(const rx_mtu_channel_t channel, const rx_mtu_config_t* 
   system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
   if (channel <= k_mtu_channel_4) {
-    system_regs()->mstpcra &= ~(1UL << k_mtu_mstpa_mtu0_4);
+    system_regs()->mstpcra &= ~(k_mtu_bit_one << k_mtu_mstpa_mtu0_4);
   } else {
-    system_regs()->mstpcra &= ~(1UL << k_mtu_mstpa_mtu6_7);
+    system_regs()->mstpcra &= ~(k_mtu_bit_one << k_mtu_mstpa_mtu6_7);
   }
 
   system_regs()->prcr = k_rx_prcr_lock;
@@ -321,8 +330,11 @@ rx_err_t rx_mtu_init_pwm(const rx_mtu_channel_t channel, const rx_mtu_config_t* 
 rx_err_t
 rx_mtu_set_duty(const rx_mtu_channel_t channel, rx_mtu_output_t output, const float duty_percent)
 {
-  volatile rx_mtu_channel_regs_t* mtu =
-    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu;
+  uint16_t                        period;
+  uint16_t                        duty_count;
+
+  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -335,8 +347,8 @@ rx_mtu_set_duty(const rx_mtu_channel_t channel, rx_mtu_output_t output, const fl
   }
 
   /* Convert percentage to count value */
-  const uint16_t period     = s_mtu_period[channel];
-  const uint16_t duty_count = (uint16_t)((duty_percent * period) / (float)k_mtu_duty_divisor);
+  period     = s_mtu_period[channel];
+  duty_count = (uint16_t)((duty_percent * period) / (float)k_mtu_duty_divisor);
 
   return internal_set_duty_raw_mtu(mtu, output, duty_count);
 }
@@ -344,8 +356,10 @@ rx_mtu_set_duty(const rx_mtu_channel_t channel, rx_mtu_output_t output, const fl
 rx_err_t
 rx_mtu_set_duty_raw(const rx_mtu_channel_t channel, rx_mtu_output_t output, uint16_t duty_count)
 {
-  volatile rx_mtu_channel_regs_t* mtu =
-    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu;
+  uint16_t                        period;
+
+  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -353,7 +367,7 @@ rx_mtu_set_duty_raw(const rx_mtu_channel_t channel, rx_mtu_output_t output, uint
   RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
 
   /* Clamp to period */
-  const uint16_t period = s_mtu_period[channel];
+  period = s_mtu_period[channel];
   if (duty_count > period) {
     duty_count = period;
   }
@@ -365,6 +379,9 @@ rx_err_t
 rx_mtu_get_duty(const rx_mtu_channel_t channel, const rx_mtu_output_t output, float* duty_percent)
 {
   volatile rx_mtu_channel_regs_t* mtu;
+  const volatile uint16_t*        tgr;
+  uint16_t                        period;
+  uint16_t                        duty_count;
 
   RX_VALIDATE_PTR(duty_percent, s_tag, "duty_percent pointer is NULL");
 
@@ -375,13 +392,13 @@ rx_mtu_get_duty(const rx_mtu_channel_t channel, const rx_mtu_output_t output, fl
 
   RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
 
-  const volatile uint16_t* tgr = internal_get_tgr_register(mtu, output);
+  tgr = internal_get_tgr_register(mtu, output);
   if (tgr == NULL) {
     return k_rx_err_invalid_arg;
   }
 
-  const uint16_t period     = s_mtu_period[channel];
-  const uint16_t duty_count = *tgr;
+  period     = s_mtu_period[channel];
+  duty_count = *tgr;
 
   *duty_percent = (float)(duty_count * (float)k_mtu_duty_max) / period;
 
@@ -405,8 +422,10 @@ rx_err_t rx_mtu_get_period(const rx_mtu_channel_t channel, uint16_t* period_coun
 rx_err_t
 rx_mtu_enable_output(const rx_mtu_channel_t channel, rx_mtu_output_t output, const bool enable)
 {
-  volatile rx_mtu_channel_regs_t* mtu =
-    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu;
+  uint8_t                         tior_value;
+
+  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -414,7 +433,7 @@ rx_mtu_enable_output(const rx_mtu_channel_t channel, rx_mtu_output_t output, con
   RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
 
   /* Enable/disable output by modifying TIOR registers */
-  const uint8_t tior_value = enable ? k_mtu_tior_init_low : k_mtu_tior_disabled;
+  tior_value = enable ? k_mtu_tior_init_low : k_mtu_tior_disabled;
 
   switch (output) {
     case k_mtu_output_a:
@@ -486,30 +505,30 @@ rx_err_t rx_mtu_stop(const rx_mtu_channel_t channel)
   switch (channel) {
     case k_mtu_channel_0:
       err = internal_clear_tstr_bit(mtu_tstra(), k_mtu_tstr_cst0);
-      return err;
+      break;
     case k_mtu_channel_1:
       err = internal_clear_tstr_bit(mtu_tstra(), k_mtu_tstr_cst1);
-      return err;
+      break;
     case k_mtu_channel_2:
       err = internal_clear_tstr_bit(mtu_tstra(), k_mtu_tstr_cst2);
-      return err;
+      break;
     case k_mtu_channel_3:
       err = internal_clear_tstr_bit(mtu_tstra(), k_mtu_tstr_cst3);
-      return err;
+      break;
     case k_mtu_channel_4:
       err = internal_clear_tstr_bit(mtu_tstra(), k_mtu_tstr_cst4);
-      return err;
+      break;
     case k_mtu_channel_6:
       err = internal_clear_tstr_bit(mtu_tstrb(), k_mtu_tstr_cst6);
-      return err;
+      break;
     case k_mtu_channel_7:
       err = internal_clear_tstr_bit(mtu_tstrb(), k_mtu_tstr_cst7);
-      return err;
+      break;
     default:
       return k_rx_err_invalid_arg;
   }
 
-  return k_rx_ok;
+  return err;
 }
 
 rx_err_t rx_mtu_deinit(const rx_mtu_channel_t channel)

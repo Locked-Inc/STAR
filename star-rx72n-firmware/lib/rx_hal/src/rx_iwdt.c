@@ -33,7 +33,8 @@
  */
 
 /** @brief IWDT validation constants */
-static const uint32_t k_iwdt_timeout_min_ms = 1; /**< Minimum valid timeout */
+static const uint32_t k_iwdt_timeout_min_ms = 1;     /**< Minimum valid timeout */
+static const uint32_t k_iwdt_timeout_max_ms = 16384; /**< Maximum valid timeout */
 
 /** @brief IWDT initialization state */
 typedef enum : uint8_t {
@@ -111,7 +112,20 @@ static iwdt_init_state_t s_iwdt_initialized = k_iwdt_not_initialized;
 static rx_err_t internal_find_timeout_config(const uint32_t               timeout_ms,
                                              const iwdt_timeout_entry_t** entry)
 {
+  uint32_t min_timeout;
+  uint32_t max_timeout;
+
+  if (s_iwdt_timeout_table_size == 0U) {
+    return k_rx_err_invalid_arg;
+  }
+
   if (entry == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  min_timeout = s_timeout_table[0].timeout_ms;
+  max_timeout = s_timeout_table[s_iwdt_timeout_table_size - 1U].timeout_ms;
+  if (timeout_ms < min_timeout || timeout_ms > max_timeout) {
     return k_rx_err_invalid_arg;
   }
 
@@ -172,6 +186,10 @@ rx_err_t rx_iwdt_init(const uint32_t timeout_ms)
   }
 
   if (timeout_ms < k_iwdt_timeout_min_ms) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (timeout_ms > k_iwdt_timeout_max_ms) {
     return k_rx_err_invalid_arg;
   }
 
@@ -383,7 +401,10 @@ static int32_t internal_find_task(const char* task_name)
     return k_task_not_found; /* Empty task name invalid */
   }
 
-  for (uint32_t i = 0; i < s_task_monitor.task_count; i++) {
+  for (uint32_t i = (uint32_t)k_task_idx_min; i < k_iwdt_max_tasks; i++) {
+    if (i >= s_task_monitor.task_count) {
+      break;
+    }
     if (strncmp(s_task_monitor.tasks[i].task_name, task_name, k_task_name_cmp_len) == 0) {
       return (int32_t)i;
     }
@@ -396,6 +417,10 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 {
   /* Validate parameters */
   if (task_name == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (task_name[0] == '\0') {
     return k_rx_err_invalid_arg;
   }
 
@@ -448,6 +473,13 @@ void rx_iwdt_task_heartbeat(const char* task_name)
 
 rx_err_t rx_iwdt_check_tasks(void)
 {
+  uint32_t              current_time_ms;
+  rx_err_t              result;
+  const task_monitor_t* task;
+  uint32_t              elapsed_ms;
+  char                  log_msg[k_log_msg_buffer_size];
+  uint32_t              written;
+
   if (s_iwdt_initialized != k_iwdt_initialized) {
     return k_rx_err_invalid_state;
   }
@@ -456,21 +488,23 @@ rx_err_t rx_iwdt_check_tasks(void)
     return k_rx_err_invalid_state; /* Corrupted state */
   }
 
-  const uint32_t current_time_ms = tx_time_get();
-  rx_err_t       result          = k_rx_ok;
+  current_time_ms = tx_time_get();
+  result          = k_rx_ok;
 
-  for (uint32_t i = 0; i < s_task_monitor.task_count; i++) {
-    const task_monitor_t* task       = &s_task_monitor.tasks[i];
-    const uint32_t        elapsed_ms = current_time_ms - task->last_heartbeat_ms;
+  for (uint32_t i = (uint32_t)k_task_idx_min; i < k_iwdt_max_tasks; i++) {
+    if (i >= s_task_monitor.task_count) {
+      break;
+    }
+    task       = &s_task_monitor.tasks[i];
+    elapsed_ms = current_time_ms - task->last_heartbeat_ms;
 
     if (elapsed_ms > task->timeout_ms) {
       /* Task has exceeded heartbeat timeout - deadlock detected */
-      char           log_msg[k_log_msg_buffer_size];
-      const uint32_t written = (uint32_t)snprintf(log_msg,
-                                                  sizeof(log_msg),
-                                                  "Task deadlock: %s (timeout %" PRIu32 " ms)",
-                                                  task->task_name,
-                                                  task->timeout_ms);
+      written = (uint32_t)snprintf(log_msg,
+                                   sizeof(log_msg),
+                                   "Task deadlock: %s (timeout %" PRIu32 " ms)",
+                                   task->task_name,
+                                   task->timeout_ms);
 
       if (written > 0 && written < sizeof(log_msg)) {
         rx_log_error(s_tag, log_msg);

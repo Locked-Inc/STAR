@@ -38,8 +38,9 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char*   s_tag              = "BQ4050";
-static const uint8_t k_bq4050_min_cells = 1;
+static const char*   s_tag                  = "BQ4050";
+static const uint8_t k_bq4050_min_cells     = 1;
+static const uint8_t s_bq4050_smbus_address = 11U;
 
 /**
  * @brief Temperature conversion constants
@@ -121,11 +122,14 @@ rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_
   uint16_t voltage_mv;
   err = rx_bq4050_read_voltage(manager, bus_name, &voltage_mv);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to communicate with BQ4050 at address 0x0B");
+    rx_log_error_hex(s_tag,
+                     "Failed to communicate with BQ4050 at address",
+                     s_bq4050_smbus_address,
+                     2);
     return err;
   }
 
-  rx_log_info(s_tag, "BQ4050 initialized successfully at address 0x0B");
+  rx_log_info_hex(s_tag, "BQ4050 initialized successfully at address", s_bq4050_smbus_address, 2);
 
   return k_rx_ok;
 }
@@ -225,9 +229,7 @@ rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uin
 
   if (err == k_rx_ok) {
     /* Clamp to 0-100 range (SBS allows > 100% in some conditions) */
-    if (soc_word < k_soc_min_percent) {
-      *soc_percent = k_soc_min_percent;
-    } else if (soc_word > k_soc_max_percent) {
+    if (soc_word > k_soc_max_percent) {
       *soc_percent = k_soc_max_percent;
     } else {
       *soc_percent = (uint8_t)soc_word;
@@ -250,9 +252,7 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
 
   if (err == k_rx_ok) {
     /* Clamp to 0-100 range */
-    if (soc_word < k_soc_min_percent) {
-      *soc_percent = k_soc_min_percent;
-    } else if (soc_word > k_soc_max_percent) {
+    if (soc_word > k_soc_max_percent) {
       *soc_percent = k_soc_max_percent;
     } else {
       *soc_percent = (uint8_t)soc_word;

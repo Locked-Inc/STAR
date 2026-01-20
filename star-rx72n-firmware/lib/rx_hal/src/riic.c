@@ -38,9 +38,10 @@ typedef enum : uint8_t {
 
 /** @brief RIIC module stop bit positions in MSTPCRB */
 typedef enum : uint8_t {
-  k_riic_mstpb_riic0 = 21, /**< RIIC0 module stop bit */
-  k_riic_mstpb_riic1 = 20, /**< RIIC1 module stop bit */
-  k_riic_mstpb_riic2 = 19, /**< RIIC2 module stop bit */
+  k_riic_mstpb_riic0     = 21, /**< RIIC0 module stop bit */
+  k_riic_mstpb_riic1     = 20, /**< RIIC1 module stop bit */
+  k_riic_mstpb_riic2     = 19, /**< RIIC2 module stop bit */
+  k_riic_mstpb_bit_value = 1,  /**< Single bit value for MSTPCRB manipulation */
 } riic_module_stop_bits_t;
 
 /** @brief I2C frequency constants in Hz */
@@ -69,14 +70,16 @@ typedef enum : uint8_t {
 
 /** @brief ICMR3 register ACK/NACK bit */
 typedef enum : uint8_t {
-  k_riic_icmr3_ackbt_pos = 3, /**< ACKBT bit position in ICMR3 */
+  k_riic_icmr3_ackbt_pos  = 3,         /**< ACKBT bit position in ICMR3 */
+  k_riic_icmr3_ackbt_mask = (1U << 3), /**< ACKBT bit mask in ICMR3 */
 } riic_icmr3_bits_t;
 
 /** @brief I2C address constants */
 typedef enum : uint8_t {
-  k_riic_addr_shift     = 1, /**< Shift for 7-bit address */
-  k_riic_addr_write_bit = 0, /**< Write direction bit (0) */
-  k_riic_addr_read_bit  = 1, /**< Read direction bit (1) */
+  k_riic_addr_shift     = 1,   /**< Shift for 7-bit address */
+  k_riic_addr_write_bit = 0,   /**< Write direction bit (0) */
+  k_riic_addr_read_bit  = 1,   /**< Read direction bit (1) */
+  k_riic_addr_max_7bit  = 127, /**< Maximum 7-bit I2C address */
 } riic_address_bits_t;
 
 /* =============================================================================
@@ -134,6 +137,10 @@ internal_calculate_bit_rate(const uint32_t frequency_hz, uint8_t* icbrl, uint8_t
   /* PCLKB is used for RIIC (60 MHz on RX72N) */
   const uint32_t pclk = k_pclkb_hz;
 
+  if (icbrl == NULL || icbrh == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
   /* Calculate bit rate for standard formula:
    * I2C_CLK = PCLK / (2 * (ICBRL + 1) + (ICBRH + 1))
    * Simplified: ICBRL = ICBRH for 50% duty cycle
@@ -183,11 +190,13 @@ static rx_err_t internal_wait_bus_ready(const volatile rx_riic_regs_t* riic)
  */
 static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
 {
+  uint32_t timeout;
+
   /* Issue start condition */
   riic->iccr2 |= k_riic_iccr2_st;
 
   /* Wait for start condition to be issued */
-  uint32_t timeout = k_riic_timeout_us;
+  timeout = k_riic_timeout_us;
   while (!(riic->icsr2 & k_riic_icsr2_start) && timeout > k_riic_timeout_zero) {
     timeout--;
   }
@@ -212,11 +221,13 @@ static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
  */
 static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
 {
+  uint32_t timeout;
+
   /* Issue stop condition */
   riic->iccr2 |= k_riic_iccr2_sp;
 
   /* Wait for stop condition to be issued */
-  uint32_t timeout = k_riic_timeout_us;
+  timeout = k_riic_timeout_us;
   while (!(riic->icsr2 & k_riic_icsr2_stop) && timeout > k_riic_timeout_zero) {
     timeout--;
   }
@@ -297,9 +308,9 @@ internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send
 
   /* Configure ACK/NACK for next byte */
   if (!send_ack) {
-    riic->icmr3 |= (1 << k_riic_icmr3_ackbt_pos); /* ACKBT = 1 (NACK) */
+    riic->icmr3 |= k_riic_icmr3_ackbt_mask; /* ACKBT = 1 (NACK) */
   } else {
-    riic->icmr3 &= ~(1 << k_riic_icmr3_ackbt_pos); /* ACKBT = 0 (ACK) */
+    riic->icmr3 &= ~k_riic_icmr3_ackbt_mask; /* ACKBT = 0 (ACK) */
   }
 
   /* Read data */
@@ -338,11 +349,11 @@ rx_err_t riic_init(const uint8_t channel, const uint32_t frequency_hz)
   system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
   if (channel == k_riic_channel_0) {
-    system_regs()->mstpcrb &= ~(1UL << k_riic_mstpb_riic0);
+    system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic0);
   } else if (channel == k_riic_channel_1) {
-    system_regs()->mstpcrb &= ~(1UL << k_riic_mstpb_riic1);
+    system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic1);
   } else {
-    system_regs()->mstpcrb &= ~(1UL << k_riic_mstpb_riic2);
+    system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic2);
   }
 
   system_regs()->prcr = k_rx_prcr_lock;
@@ -376,10 +387,17 @@ rx_err_t riic_init(const uint8_t channel, const uint32_t frequency_hz)
   return k_rx_ok;
 }
 
-rx_err_t
-riic_write(const uint8_t channel, uint8_t device_addr, const uint8_t* data, uint16_t length)
+rx_err_t riic_write(const uint8_t  channel,
+                    const uint8_t  device_addr,
+                    const uint8_t* data,
+                    const uint16_t length)
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
+
+  if (length == k_riic_timeout_zero) {
+    rx_log_error(s_tag, "Write length cannot be zero");
+    return k_rx_err_invalid_arg;
+  }
 
   /* Validate channel */
   if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
@@ -424,9 +442,15 @@ riic_write(const uint8_t channel, uint8_t device_addr, const uint8_t* data, uint
   return k_rx_ok;
 }
 
-rx_err_t riic_read(const uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t length)
+rx_err_t
+riic_read(const uint8_t channel, const uint8_t device_addr, uint8_t* data, const uint16_t length)
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
+
+  if (length == k_riic_timeout_zero) {
+    rx_log_error(s_tag, "Read length cannot be zero");
+    return k_rx_err_invalid_arg;
+  }
 
   /* Validate channel */
   if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
@@ -479,8 +503,20 @@ rx_err_t riic_write_read(const uint8_t  channel,
                          uint8_t*       read_data,
                          const uint16_t read_length)
 {
+  uint32_t timeout;
+
   RX_CHECK_NULL_PTR(write_data, s_tag, "Write data pointer is NULL");
   RX_CHECK_NULL_PTR(read_data, s_tag, "Read data pointer is NULL");
+
+  if (device_addr > k_riic_addr_max_7bit) {
+    rx_log_error(s_tag, "Invalid device address");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (write_length == k_riic_timeout_zero || read_length == k_riic_timeout_zero) {
+    rx_log_error(s_tag, "Read/write length cannot be zero");
+    return k_rx_err_invalid_arg;
+  }
 
   /* Validate channel */
   if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
@@ -525,7 +561,7 @@ rx_err_t riic_write_read(const uint8_t  channel,
   /* Send repeated start condition */
   riic->iccr2 |= k_riic_iccr2_rs;
 
-  uint32_t timeout = k_riic_timeout_us;
+  timeout = k_riic_timeout_us;
   while (!(riic->icsr2 & k_riic_icsr2_start) && timeout > k_riic_timeout_zero) {
     timeout--;
   }

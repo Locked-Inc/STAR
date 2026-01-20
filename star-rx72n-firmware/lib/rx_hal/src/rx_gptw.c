@@ -332,16 +332,12 @@ static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gp
   gptw->gtwp = k_gptw_gtwp_lock;
 }
 
-/* =============================================================================
- * Public API Implementation
- * =============================================================================
- */
-
-rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_t* config)
+static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t           channel,
+                                               const rx_gptw_config_t*           config,
+                                               volatile rx_gptw_channel_regs_t** gptw_out,
+                                               uint32_t*                         period_out)
 {
   rx_err_t err;
-
-  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
   if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
       ((int32_t)channel >= (int32_t)k_gptw_max_channels)) {
@@ -349,14 +345,33 @@ rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_
     return k_rx_err_invalid_arg;
   }
 
-  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
-  if (gptw == NULL) {
+  *gptw_out = internal_get_gptw_base(channel);
+  if (*gptw_out == NULL) {
     return k_rx_err_invalid_arg;
   }
 
-  /* Calculate period from frequency */
-  uint32_t period;
-  err = internal_calculate_period(config->frequency_hz, &period);
+  err = internal_calculate_period(config->frequency_hz, period_out);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * Public API Implementation
+ * =============================================================================
+ */
+
+rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_t* config)
+{
+  volatile rx_gptw_channel_regs_t* gptw;
+  uint32_t                         period;
+  rx_err_t                         err;
+
+  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
+
+  err = internal_prepare_gptw_pwm_init(channel, config, &gptw, &period);
   if (err != k_rx_ok) {
     return err;
   }
@@ -589,17 +604,28 @@ rx_err_t rx_gptw_stop(const rx_gptw_channel_t channel)
 
 rx_err_t rx_gptw_deinit(const rx_gptw_channel_t channel)
 {
+  rx_err_t err;
+
   if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
       ((int32_t)channel >= (int32_t)k_gptw_max_channels)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Stop timer */
-  (void)rx_gptw_stop(channel);
+  err = rx_gptw_stop(channel);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Disable outputs */
-  (void)rx_gptw_enable_output(channel, k_gptw_output_a, false);
-  (void)rx_gptw_enable_output(channel, k_gptw_output_b, false);
+  err = rx_gptw_enable_output(channel, k_gptw_output_a, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  err = rx_gptw_enable_output(channel, k_gptw_output_b, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Mark as uninitialized */
   s_gptw_initialized[channel] = false;

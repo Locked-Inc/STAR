@@ -143,25 +143,24 @@ static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(const rx_cmt_channe
 static rx_err_t
 internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uint16_t* cmcor)
 {
-  const uint32_t pclkb = k_pclkb_hz;
-  uint8_t        i;
-  uint32_t       period_calc;
-
-  if (divider == NULL || cmcor == NULL) {
-    return k_rx_err_null_ptr;
-  }
-
-  if (frequency_hz == 0) {
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Try each divider to find one that fits in 16-bit */
+  const uint32_t        pclkb         = k_pclkb_hz;
+  const uint32_t        max_frequency = pclkb / k_cmt_divider_val_8;
+  uint32_t              period_calc;
   static const uint16_t dividers[] = {k_cmt_divider_val_8,
                                       k_cmt_divider_val_32,
                                       k_cmt_divider_val_128,
                                       k_cmt_divider_val_512};
 
-  for (i = 0; i < k_cmt_num_dividers; i++) {
+  if (divider == NULL || cmcor == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (frequency_hz <= (uint32_t)k_cmt_value_zero || frequency_hz > max_frequency) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Try each divider to find one that fits in 16-bit */
+  for (uint8_t i = 0; i < k_cmt_num_dividers; i++) {
     period_calc = (pclkb / dividers[i]) / frequency_hz;
 
     /* Check if period fits in 16-bit and is reasonable */
@@ -187,9 +186,13 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
 static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_channel_t channel,
                                                  const uint8_t          priority)
 {
-  const uint8_t vector    = k_vect_cmt0_cmi0 + channel;
-  const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
-  const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
+  uint8_t vector;
+  uint8_t ier_index;
+  uint8_t ier_bit;
+
+  vector    = k_vect_cmt0_cmi0 + channel;
+  ier_index = vector / k_icu_ier_bits_per_reg;
+  ier_bit   = vector % k_icu_ier_bits_per_reg;
 
   icu()->ipr[vector] = priority;
   icu()->ier[ier_index] |= (k_cmt_bit_mask_lsb << ier_bit);
@@ -277,11 +280,9 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
     return err;
   }
 
-  rx_log_info(s_tag, "CMT initialized");
-
   /* Enable CMT module (clear module stop bit) */
   system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
-  system_regs()->mstpcrb &= ~(1UL << k_cmt_mstpb_cmt);
+  system_regs()->mstpcrb &= ~((uint32_t)k_cmt_bit_mask_lsb << k_cmt_mstpb_cmt);
   system_regs()->prcr = k_rx_prcr_lock;
 
   /* Stop timer before configuration */
@@ -441,6 +442,10 @@ rx_err_t rx_cmt_get_count(const rx_cmt_channel_t channel, uint16_t* count)
 
 rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
 {
+  uint8_t vector;
+  uint8_t ier_index;
+  uint8_t ier_bit;
+
   if ((int32_t)channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
   }
@@ -449,9 +454,9 @@ rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
   rx_cmt_stop(channel);
 
   /* Disable interrupt */
-  const uint8_t vector    = k_vect_cmt0_cmi0 + channel;
-  const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
-  const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
+  vector    = k_vect_cmt0_cmi0 + channel;
+  ier_index = vector / k_icu_ier_bits_per_reg;
+  ier_bit   = vector % k_icu_ier_bits_per_reg;
   icu()->ier[ier_index] &= ~(k_cmt_bit_mask_lsb << ier_bit);
 
   /* Clear callback */

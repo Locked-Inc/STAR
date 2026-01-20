@@ -19,7 +19,9 @@
 #include "rx_log.h"
 
 typedef enum : uint32_t {
-  k_exponential_backoff_multiplier = 2, /**< Exponential backoff multiplier */
+  k_exponential_backoff_multiplier = 2,  /**< Exponential backoff multiplier */
+  k_error_handler_no_retry_limit   = 0,  /**< No retry limit when max_retries is zero */
+  k_error_handler_max_retries      = 32, /**< Max retries cap for backoff loop */
 } error_handler_backoff_constants_t;
 
 /* =============================================================================
@@ -93,13 +95,14 @@ static rx_err_t
 impl_report_error(void* ctx, rx_err_t err, const char* component, const char* message)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
+  UINT             status;
 
   if (handler == NULL || component == NULL || message == NULL) {
     return k_rx_err_null_ptr;
   }
 
   /* Acquire mutex */
-  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -277,25 +280,34 @@ static rx_err_t impl_reset_retry_counter(void* ctx, const char* component)
  */
 static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
 {
-  error_handler_t* handler = (error_handler_t*)ctx;
+  error_handler_t*               handler = (error_handler_t*)ctx;
+  UINT                           status;
+  uint32_t                       delay_ms = 0;
+  const error_component_state_t* comp;
+  uint32_t                       retry_cap;
+  uint32_t                       retries;
 
   if (handler == NULL || component == NULL) {
     return 0;
   }
 
   /* Acquire mutex */
-  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return 0;
   }
 
-  uint32_t                       delay_ms = 0;
-  const error_component_state_t* comp     = internal_find_component(handler, component);
+  comp = internal_find_component(handler, component);
   if (comp != NULL && comp->retry_count > 0) {
     /* Exponential backoff: delay = initial * 2^(retry_count - 1)
      * Capped at max_backoff_ms */
-    delay_ms = handler->initial_backoff_ms;
-    for (uint32_t i = 1; i < comp->retry_count; i++) {
+    delay_ms  = handler->initial_backoff_ms;
+    retry_cap = (handler->max_retries == k_error_handler_no_retry_limit ||
+                 handler->max_retries > k_error_handler_max_retries)
+                  ? k_error_handler_max_retries
+                  : handler->max_retries;
+    retries   = (comp->retry_count > retry_cap) ? retry_cap : comp->retry_count;
+    for (uint32_t i = 1; i < retries; i++) {
       delay_ms *= k_exponential_backoff_multiplier;
       if (delay_ms >= handler->max_backoff_ms) {
         delay_ms = handler->max_backoff_ms;

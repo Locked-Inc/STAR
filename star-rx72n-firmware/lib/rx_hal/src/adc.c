@@ -69,6 +69,18 @@ typedef enum : uint8_t {
   k_adc_channel_adansa1_base = 16, /**< Base channel for ADANSA1 (channels 16+) */
 } adc_channel_boundaries_t;
 
+/** @brief ADC channel indices */
+typedef enum : uint8_t {
+  k_adc_channel_0 = 0U, /**< ADC channel 0 */
+  k_adc_channel_1 = 1U, /**< ADC channel 1 */
+  k_adc_channel_2 = 2U, /**< ADC channel 2 */
+  k_adc_channel_3 = 3U, /**< ADC channel 3 */
+  k_adc_channel_4 = 4U, /**< ADC channel 4 */
+  k_adc_channel_5 = 5U, /**< ADC channel 5 */
+  k_adc_channel_6 = 6U, /**< ADC channel 6 */
+  k_adc_channel_7 = 7U, /**< ADC channel 7 */
+} adc_channel_index_t;
+
 /** @brief ADC timeout and voltage constants */
 typedef enum : uint16_t {
   k_adc_timeout_multiplier   = 1000, /**< Timeout loop multiplier */
@@ -156,13 +168,13 @@ internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, u
 static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t channel)
 {
   /* Validate unit */
-  if (unit < k_adc_unit_0 || unit >= k_adc_max_units) {
+  if (unit >= k_adc_max_units) {
     rx_log_error(s_tag, "Invalid ADC unit");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate channel */
-  if (channel < k_adc_unit_0 || channel >= k_adc_max_channels) {
+  if (channel >= k_adc_max_channels) {
     rx_log_error(s_tag, "Invalid ADC channel");
     return k_rx_err_invalid_arg;
   }
@@ -219,7 +231,9 @@ rx_err_t adc_init(const uint8_t unit, uint8_t channel, const uint8_t bits)
 
 rx_err_t adc_read(const uint8_t unit, uint8_t channel, uint16_t* value)
 {
-  rx_err_t err;
+  volatile rx_s12ad_regs_t* adc;
+  rx_err_t                  err;
+  uint32_t                  timeout;
 
   /* Validate parameters */
   RX_CHECK_NULL_PTR(value, s_tag, "Value pointer is NULL");
@@ -234,7 +248,7 @@ rx_err_t adc_read(const uint8_t unit, uint8_t channel, uint16_t* value)
   }
 
   /* Get ADC base */
-  volatile rx_s12ad_regs_t* adc = internal_get_adc_base(unit);
+  adc = internal_get_adc_base(unit);
   if (adc == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -243,7 +257,7 @@ rx_err_t adc_read(const uint8_t unit, uint8_t channel, uint16_t* value)
   adc->adcsr = k_adc_adcsr_adst;
 
   /* Wait for conversion to complete (poll ADCSR.ADST bit) */
-  uint32_t timeout = k_adc_timeout_ms * k_adc_timeout_multiplier;
+  timeout = k_adc_timeout_ms * k_adc_timeout_multiplier;
   while ((adc->adcsr & k_adc_adcsr_adst) != 0 && timeout > k_adc_timeout_expired) {
     timeout--;
   }
@@ -255,28 +269,28 @@ rx_err_t adc_read(const uint8_t unit, uint8_t channel, uint16_t* value)
 
   /* Read conversion result from appropriate data register */
   switch (channel) {
-    case 0:
+    case k_adc_channel_0:
       *value = adc->addr0;
       break;
-    case 1:
+    case k_adc_channel_1:
       *value = adc->addr1;
       break;
-    case 2:
+    case k_adc_channel_2:
       *value = adc->addr2;
       break;
-    case 3:
+    case k_adc_channel_3:
       *value = adc->addr3;
       break;
-    case 4:
+    case k_adc_channel_4:
       *value = adc->addr4;
       break;
-    case 5:
+    case k_adc_channel_5:
       *value = adc->addr5;
       break;
-    case 6:
+    case k_adc_channel_6:
       *value = adc->addr6;
       break;
-    case 7:
+    case k_adc_channel_7:
       *value = adc->addr7;
       break;
     default:
@@ -290,6 +304,11 @@ rx_err_t adc_read(const uint8_t unit, uint8_t channel, uint16_t* value)
 rx_err_t
 adc_read_voltage_mv(const uint8_t unit, uint8_t channel, uint8_t bits, uint32_t* voltage_mv)
 {
+  uint16_t raw_value;
+  rx_err_t err;
+  uint32_t max_value;
+
+  /* Parameter order: unit, channel, resolution bits. */
   RX_CHECK_NULL_PTR(voltage_mv, s_tag, "Voltage pointer is NULL");
 
   if (bits != k_adc_resolution_8bit && bits != k_adc_resolution_10bit &&
@@ -299,13 +318,12 @@ adc_read_voltage_mv(const uint8_t unit, uint8_t channel, uint8_t bits, uint32_t*
   }
 
   /* Read raw ADC value */
-  uint16_t       raw_value;
-  const rx_err_t err = adc_read(unit, channel, &raw_value);
+  err = adc_read(unit, channel, &raw_value);
   RX_RETURN_ON_ERROR(err, s_tag, "ADC read failed");
 
   /* Calculate voltage (using ADC reference voltage) */
-  const uint32_t max_value = ((uint32_t)k_adc_bit_one << bits) - k_adc_bit_one;
-  *voltage_mv              = ((uint32_t)raw_value * k_adc_reference_voltage_mv) / max_value;
+  max_value   = ((uint32_t)k_adc_bit_one << bits) - k_adc_bit_one;
+  *voltage_mv = ((uint32_t)raw_value * k_adc_reference_voltage_mv) / max_value;
 
   return k_rx_ok;
 }

@@ -47,7 +47,7 @@ typedef enum : int16_t {
 
 static const bool    s_pwm_not_inverted = false; /**< PWM output not inverted */
 static const bool    s_motor_coast      = false; /**< Motor coast (no brake) */
-static const int16_t s_gpio_level_low   = 0;     /**< GPIO logic level low */
+static const uint8_t s_gpio_level_low   = 0;     /**< GPIO logic level low */
 static const uint8_t s_bit_mask_single  = 1;     /**< Single bit mask */
 
 /**
@@ -292,8 +292,7 @@ rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* ou
     return k_rx_err_invalid_arg;
   }
 
-  if ((int32_t)handle->pin_nfault < (int32_t)k_rx_pin_0 ||
-      (int32_t)handle->pin_nfault > (int32_t)k_rx_pin_max) {
+  if (handle->pin_nfault > k_rx_pin_max) {
     rx_log_error(s_tag, "Invalid pin number for nFAULT pin");
     return k_rx_err_invalid_arg;
   }
@@ -397,8 +396,7 @@ static rx_err_t internal_drv8243_configure_fault_pin(const rx_drv8243_handle_t* 
     return k_rx_err_invalid_arg;
   }
 
-  if ((int32_t)handle->pin_nfault < (int32_t)k_rx_pin_0 ||
-      (int32_t)handle->pin_nfault > (int32_t)k_rx_pin_max) {
+  if (handle->pin_nfault > k_rx_pin_max) {
     rx_log_error(s_tag, "Invalid pin number for nFAULT pin configuration");
     return k_rx_err_invalid_arg;
   }
