@@ -368,8 +368,8 @@ rx_err_t rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name,
 
 rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
                                       const char*       bus_name,
-                                      uint8_t           command,
-                                      uint8_t           data)
+                                      const uint8_t     command,
+                                      const uint8_t     data)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -381,7 +381,7 @@ rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
 
 rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
                                      const char*       bus_name,
-                                     uint8_t           command,
+                                     const uint8_t     command,
                                      uint8_t*          data)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
@@ -399,8 +399,8 @@ rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
 
 rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
                                       const char*       bus_name,
-                                      uint8_t           command,
-                                      uint16_t          data)
+                                      const uint8_t     command,
+                                      const uint16_t    data)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -414,7 +414,7 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
 
 rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
                                      const char*       bus_name,
-                                     uint8_t           command,
+                                     const uint8_t     command,
                                      uint16_t*         data)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
@@ -430,10 +430,10 @@ rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
 
 rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
                                       const char*       bus_name,
-                                      uint8_t           command,
+                                      const uint8_t     command,
                                       uint8_t*          data,
                                       uint8_t*          length,
-                                      uint8_t           max_length)
+                                      const uint8_t     max_length)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");

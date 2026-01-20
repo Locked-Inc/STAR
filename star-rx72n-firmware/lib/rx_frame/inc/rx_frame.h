@@ -153,10 +153,10 @@ rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc);
  * @return k_rx_err_invalid_state if encoder not initialized
  * @return k_rx_err_invalid_size if payload exceeds max
  */
-rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
-                         const rx_frame_t*   frame,
-                         uint8_t*            output,
-                         uint32_t*           output_len);
+rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
+                         const rx_frame_t*         frame,
+                         uint8_t*                  output,
+                         uint32_t*                 output_len);
 
 /* =============================================================================
  * Utility Functions (Static Inline)
@@ -328,8 +328,10 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec);
  * @return k_rx_err_protocol_error if SYNC word invalid
  * @return k_rx_err_crc_mismatch if CRC validation fails
  */
-rx_err_t
-rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len, rx_frame_t* frame);
+rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
+                         const uint8_t*            data,
+                         uint32_t                  data_len,
+                         rx_frame_t*               frame);
 
 /* =============================================================================
  * Frame Helper Functions

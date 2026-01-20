@@ -131,11 +131,11 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc);
  * @return k_rx_err_invalid_arg if any pointer is NULL
  * @return k_rx_err_invalid_state if encoder not initialized
  */
-rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
-                       const uint8_t*    input,
-                       uint32_t          input_len,
-                       uint8_t*          output,
-                       uint32_t*         output_len);
+rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
+                       const uint8_t*          input,
+                       uint32_t                input_len,
+                       uint8_t*                output,
+                       uint32_t*               output_len);
 
 /**
  * @brief Calculate encoded output length

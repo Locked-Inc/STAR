@@ -213,7 +213,8 @@ static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
  * @return k_rx_err_timeout if timed out
  * @return k_rx_err_cancelled if operation was cancelled
  */
-static rx_err_t internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
+static rx_err_t
+internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t timeout_us)
 {
   const uint32_t start_time = hcsr04_hal_get_time_us();
   uint32_t       elapsed    = 0;
@@ -295,7 +296,7 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
  *
  * @param[in] input Thread input parameter (unused)
  */
-static void hcsr04_worker_entry(ULONG input)
+static void hcsr04_worker_entry(const ULONG input)
 {
   (void)input;
   ULONG              actual_flags;
@@ -638,7 +639,7 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
 }
 
 rx_err_t
-rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void* user_data)
+rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback, void* user_data)
 {
   rx_err_t           err;
   UINT               status;
@@ -738,7 +739,7 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
  * =============================================================================
  */
 
-rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, float temp_celsius)
+rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, const float temp_celsius)
 {
   if (handle == NULL) {
     return k_rx_err_null_ptr;
@@ -804,13 +805,13 @@ rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsiu
  * =============================================================================
  */
 
-float rx_hcsr04_cm_to_inches(float distance_cm)
+float rx_hcsr04_cm_to_inches(const float distance_cm)
 {
   /* 1 inch = 2.54 cm */
   return distance_cm * (float)k_unit_scale_factor / (float)k_cm_per_inch_x100;
 }
 
-float rx_hcsr04_echo_to_cm(uint32_t echo_time_us)
+float rx_hcsr04_echo_to_cm(const uint32_t echo_time_us)
 {
   /*
    * Speed of sound at 20C = 343 m/s = 0.0343 cm/us
@@ -841,7 +842,7 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius)
   return s_speed_of_sound_base_mps + (s_speed_of_sound_coeff * temp_celsius);
 }
 
-float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius)
+float rx_hcsr04_echo_to_cm_with_temp(const uint32_t echo_time_us, float temp_celsius)
 {
   float speed_mps   = 0.0F;
   float speed_cm_us = 0.0F;

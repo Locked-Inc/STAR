@@ -98,7 +98,7 @@ void rx_nanopb_test_reset_state(void)
 
 rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg,
                                            uint8_t*                          buffer,
-                                           uint32_t                          buffer_size,
+                                           const uint32_t                    buffer_size,
                                            uint32_t*                         len)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -133,7 +133,7 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
 }
 
 rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
-                                           uint32_t                    len,
+                                           const uint32_t              len,
                                            star_v1_SetVelocityRequest* msg)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -170,7 +170,7 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
 
 rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
                                             uint8_t*                           buffer,
-                                            uint32_t                           buffer_size,
+                                            const uint32_t                     buffer_size,
                                             uint32_t*                          len)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -210,7 +210,7 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
  */
 
 rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
-                                        uint32_t                      len,
+                                        const uint32_t                len,
                                         star_v1_EmergencyStopRequest* msg)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -242,7 +242,7 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
 
 rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
                                          uint8_t*                             buffer,
-                                         uint32_t                             buffer_size,
+                                         const uint32_t                       buffer_size,
                                          uint32_t*                            len)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -283,7 +283,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
 
 rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
                                     uint8_t*                     buffer,
-                                    uint32_t                     buffer_size,
+                                    const uint32_t               buffer_size,
                                     uint32_t*                    len)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -323,11 +323,11 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
  */
 
 void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
-                                       double                   front_left_mps,
-                                       double                   front_right_mps,
-                                       double                   back_left_mps,
-                                       double                   back_right_mps,
-                                       uint32_t                 sequence)
+                                       const double             front_left_mps,
+                                       const double             front_right_mps,
+                                       const double             back_left_mps,
+                                       const double             back_right_mps,
+                                       const uint32_t           sequence)
 {
   if (cmd == NULL) {
     return;
@@ -343,9 +343,9 @@ void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
 }
 
 void rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
-                                                  double                   left_mps,
-                                                  double                   right_mps,
-                                                  uint32_t                 sequence)
+                                                  const double             left_mps,
+                                                  const double             right_mps,
+                                                  const uint32_t           sequence)
 {
   /* Differential drive mode: Lock left 2 motors together, right 2 motors together
    * Front Left & Back Left = Left side
@@ -354,7 +354,7 @@ void rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
 }
 
 void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
-                                      star_v1_Status          status,
+                                      const star_v1_Status    status,
                                       const char*             request_id)
 {
   if (header == NULL) {

@@ -96,7 +96,7 @@ static uint8_t internal_parity(uint8_t x)
  * @param[in]  bit_idx Bit index (0 = MSB of first byte)
  * @param[in]  value Bit value (0 or 1)
  */
-static void internal_set_output_bit(uint8_t* output, uint32_t bit_idx, uint8_t value)
+static void internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uint8_t value)
 {
   /* Pre-condition 1: output must be valid */
   assert(output != NULL);
@@ -150,7 +150,8 @@ static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
  * @param[out]    out0 First output bit (G1)
  * @param[out]    out1 Second output bit (G2)
  */
-static void internal_encode_bit(uint8_t* state, uint8_t input_bit, uint8_t* out0, uint8_t* out1)
+static void
+internal_encode_bit(uint8_t* state, const uint8_t input_bit, uint8_t* out0, uint8_t* out1)
 {
   /* Pre-condition 1: All pointers must be valid */
   assert(state != NULL);
@@ -210,8 +211,10 @@ static void internal_init_branch_table(
  * @param[in] exp1 Expected second bit (0 or 1)
  * @return Branch metric (lower is better)
  */
-static int32_t
-internal_branch_metric(rx_soft_bit_t soft0, rx_soft_bit_t soft1, uint8_t exp0, uint8_t exp1)
+static int32_t internal_branch_metric(const rx_soft_bit_t soft0,
+                                      const rx_soft_bit_t soft1,
+                                      uint8_t             exp0,
+                                      uint8_t             exp1)
 {
   /* Convert expected bits to soft values: 0 -> -127, 1 -> +127 */
   const int32_t exp0_soft = (exp0 != 0) ? k_soft_bit_max : k_soft_bit_min;
@@ -234,10 +237,10 @@ internal_branch_metric(rx_soft_bit_t soft0, rx_soft_bit_t soft1, uint8_t exp0, u
  * @param[in]     soft1 Second soft bit of symbol pair
  * @param[in]     t Time step index
  */
-static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
-                                            rx_soft_bit_t     soft0,
-                                            rx_soft_bit_t     soft1,
-                                            uint32_t          t)
+static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
+                                            const rx_soft_bit_t soft0,
+                                            const rx_soft_bit_t soft1,
+                                            const uint32_t      t)
 {
   /* Reset new path metrics */
   for (uint8_t i = 0; i < k_fec_num_states; i++) {
@@ -300,7 +303,7 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
  */
 static void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
                                           const rx_soft_bit_t* soft_bits,
-                                          uint32_t             num_symbols)
+                                          const uint32_t       num_symbols)
 {
   /* Pre-conditions */
   assert(dec != NULL);
@@ -336,10 +339,10 @@ static void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
  * @param[out] output_bytes Number of output bytes
  */
 static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
-                                       uint32_t                num_symbols,
-                                       uint32_t                data_bits,
+                                       const uint32_t          num_symbols,
+                                       const uint32_t          data_bits,
                                        uint8_t*                output,
-                                       uint32_t                output_bytes)
+                                       const uint32_t          output_bytes)
 {
   /* Clear output buffer */
   memset(output, 0, output_bytes);
@@ -403,7 +406,7 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc)
   return k_rx_ok;
 }
 
-uint32_t rx_fec_encoded_len(uint32_t input_len)
+uint32_t rx_fec_encoded_len(const uint32_t input_len)
 {
   if (input_len == 0) {
     return 0;
@@ -418,11 +421,11 @@ uint32_t rx_fec_encoded_len(uint32_t input_len)
   return (total_output_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
 }
 
-rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
-                       const uint8_t*    input,
-                       uint32_t          input_len,
-                       uint8_t*          output,
-                       uint32_t*         output_len)
+rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
+                       const uint8_t*          input,
+                       const uint32_t          input_len,
+                       uint8_t*                output,
+                       uint32_t*               output_len)
 {
   if (enc == NULL || input == NULL || output == NULL || output_len == NULL) {
     return k_rx_err_invalid_arg;
@@ -485,7 +488,8 @@ rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
  * =============================================================================
  */
 
-rx_err_t rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, uint32_t survivors_len)
+rx_err_t
+rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, const uint32_t survivors_len)
 {
   if (dec == NULL || survivors_buf == NULL) {
     return k_rx_err_invalid_arg;

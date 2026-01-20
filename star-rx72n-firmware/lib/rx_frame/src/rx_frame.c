@@ -56,7 +56,7 @@ typedef enum : uint8_t {
  * @param[out] buf Output buffer (at least 4 bytes)
  * @param[in]  val Value to write
  */
-static void internal_write_le32(uint8_t* buf, uint32_t val)
+static void internal_write_le32(uint8_t* buf, const uint32_t val)
 {
   buf[k_le32_byte_0] = (uint8_t)(val & k_rx_byte_mask);
   buf[k_le32_byte_1] = (uint8_t)((val >> k_shift_byte_1) & k_rx_byte_mask);
@@ -78,7 +78,7 @@ static uint32_t internal_read_le32(const uint8_t* buf)
 }
 
 static rx_err_t internal_decode_header(const uint8_t* data,
-                                       uint32_t       data_len,
+                                       const uint32_t data_len,
                                        rx_frame_t*    frame,
                                        uint32_t*      offset_out)
 {
@@ -173,10 +173,10 @@ rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc)
   return k_rx_ok;
 }
 
-rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
-                         const rx_frame_t*   frame,
-                         uint8_t*            output,
-                         uint32_t*           output_len)
+rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
+                         const rx_frame_t*         frame,
+                         uint8_t*                  output,
+                         uint32_t*                 output_len)
 {
   if (enc == NULL || frame == NULL || output == NULL || output_len == NULL) {
     return k_rx_err_invalid_arg;
@@ -263,8 +263,10 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
   return k_rx_ok;
 }
 
-rx_err_t
-rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len, rx_frame_t* frame)
+rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
+                         const uint8_t*            data,
+                         uint32_t                  data_len,
+                         rx_frame_t*               frame)
 {
   uint32_t offset;
   rx_err_t err;
@@ -300,7 +302,7 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
  * =============================================================================
  */
 
-rx_err_t rx_frame_create_ack(rx_frame_t* frame, uint16_t sequence)
+rx_err_t rx_frame_create_ack(rx_frame_t* frame, const uint16_t sequence)
 {
   if (frame == NULL) {
     return k_rx_err_invalid_arg;
@@ -319,7 +321,7 @@ rx_err_t rx_frame_create_ack(rx_frame_t* frame, uint16_t sequence)
   return k_rx_ok;
 }
 
-rx_err_t rx_frame_create_nack(rx_frame_t* frame, uint16_t sequence, uint8_t flags)
+rx_err_t rx_frame_create_nack(rx_frame_t* frame, const uint16_t sequence, uint8_t flags)
 {
   if (frame == NULL) {
     return k_rx_err_invalid_arg;

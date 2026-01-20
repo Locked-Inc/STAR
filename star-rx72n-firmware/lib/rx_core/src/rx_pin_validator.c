@@ -30,7 +30,7 @@
  *
  * @return Array index (0-16), or 0xFF if invalid
  */
-static uint8_t internal_port_to_index(uint8_t port)
+static uint8_t internal_port_to_index(const uint8_t port)
 {
   if (port <= k_max_decimal_port) {
     return port; /* Ports 0-9 map directly */
@@ -50,7 +50,7 @@ static uint8_t internal_port_to_index(uint8_t port)
  *
  * @return k_rx_ok if valid, k_rx_err_gpio_invalid_port if invalid
  */
-static rx_err_t internal_validate_port(uint8_t port)
+static rx_err_t internal_validate_port(const uint8_t port)
 {
   const uint8_t index = internal_port_to_index(port);
   if (index == k_invalid_port) {
@@ -66,7 +66,7 @@ static rx_err_t internal_validate_port(uint8_t port)
  *
  * @return k_rx_ok if valid, k_rx_err_gpio_invalid_pin if invalid
  */
-static rx_err_t internal_validate_pin(uint8_t pin)
+static rx_err_t internal_validate_pin(const uint8_t pin)
 {
   if (pin >= k_pins_per_port) {
     return k_rx_err_gpio_invalid_pin;
@@ -82,9 +82,9 @@ static rx_err_t internal_validate_pin(uint8_t pin)
 /**
  * @brief Validate pin implementation
  */
-static rx_err_t impl_validate_pin(void* ctx, uint8_t port, uint8_t pin)
+static rx_err_t impl_validate_pin(void* ctx, const uint8_t port, uint8_t pin)
 {
-  pin_validator_t* validator = (pin_validator_t*)ctx;
+  const pin_validator_t* validator = (pin_validator_t*)ctx;
 
   if (validator == NULL) {
     return k_rx_err_null_ptr;
@@ -108,7 +108,8 @@ static rx_err_t impl_validate_pin(void* ctx, uint8_t port, uint8_t pin)
 /**
  * @brief Reserve pin implementation
  */
-static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const char* function)
+static rx_err_t
+impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* function)
 {
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
@@ -157,7 +158,7 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
 /**
  * @brief Release pin implementation
  */
-static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
+static rx_err_t impl_release_pin(void* ctx, const uint8_t port, uint8_t pin)
 {
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
@@ -205,7 +206,7 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
 /**
  * @brief Check if pin is reserved implementation
  */
-static bool impl_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
+static bool impl_is_pin_reserved(void* ctx, const uint8_t port, const uint8_t pin)
 {
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
@@ -237,11 +238,11 @@ static bool impl_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
 /**
  * @brief Get pin function implementation
  */
-static rx_err_t impl_get_pin_function(void*    ctx,
-                                      uint8_t  port,
-                                      uint8_t  pin,
-                                      char*    function_out,
-                                      uint32_t function_len)
+static rx_err_t impl_get_pin_function(void*          ctx,
+                                      const uint8_t  port,
+                                      const uint8_t  pin,
+                                      char*          function_out,
+                                      const uint32_t function_len)
 {
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
@@ -267,7 +268,7 @@ static rx_err_t impl_get_pin_function(void*    ctx,
     return k_rx_err_rtos_mutex;
   }
 
-  pin_reservation_t* reservation = &validator->reservations[port_index][pin];
+  const pin_reservation_t* reservation = &validator->reservations[port_index][pin];
 
   /* Check if pin is reserved */
   if (!reservation->reserved) {

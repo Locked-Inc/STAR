@@ -115,7 +115,7 @@ static uint32_t s_gptw_period[k_gptw_max_channels] = {0};
  *
  * @return Pointer to GPTW register base, or NULL if invalid
  */
-static volatile rx_gptw_channel_regs_t* internal_get_gptw_base(rx_gptw_channel_t channel)
+static volatile rx_gptw_channel_regs_t* internal_get_gptw_base(const rx_gptw_channel_t channel)
 {
   switch (channel) {
     case k_gptw_channel_0:
@@ -139,7 +139,7 @@ static volatile rx_gptw_channel_regs_t* internal_get_gptw_base(rx_gptw_channel_t
  *
  * @return k_rx_ok on success, k_rx_err_invalid_arg if frequency too high/low
  */
-static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint32_t* period)
+static rx_err_t internal_calculate_period(const uint32_t frequency_hz, uint32_t* period)
 {
   /* For PWM mode (sawtooth wave):
    * Period = PCLKA / frequency
@@ -177,7 +177,7 @@ static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint32_t* perio
  *
  * @return k_rx_ok on success
  */
-static rx_err_t internal_configure_mpc(rx_gptw_channel_t channel)
+static rx_err_t internal_configure_mpc(const rx_gptw_channel_t channel)
 {
   /* MPC Pin Function Select values for GPTW on Port E
    * Each channel uses 2 pins (GTIOCA and GTIOCB)
@@ -237,7 +237,7 @@ static rx_err_t internal_configure_mpc(rx_gptw_channel_t channel)
  *
  * @param[in] channel GPTW channel
  */
-static void internal_configure_port_pins(rx_gptw_channel_t channel)
+static void internal_configure_port_pins(const rx_gptw_channel_t channel)
 {
   /* Set pins as output and enable peripheral function
    * PMR = 1 (peripheral mode), PDR = 1 (output)
@@ -287,7 +287,7 @@ static void internal_enable_gptw_module_clock(void)
  */
 static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gptw,
                                              const rx_gptw_config_t*          config,
-                                             uint32_t                         period)
+                                             const uint32_t                   period)
 {
   /* Unlock write protection for this channel */
   gptw->gtwp = k_gptw_gtwp_unlock;
@@ -337,7 +337,7 @@ static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gp
  * =============================================================================
  */
 
-rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* config)
+rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_t* config)
 {
   rx_err_t err;
 
@@ -401,7 +401,9 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float duty_percent)
+rx_err_t rx_gptw_set_duty(const rx_gptw_channel_t channel,
+                          const rx_gptw_output_t  output,
+                          const float             duty_percent)
 {
   if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
@@ -420,7 +422,7 @@ rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
 }
 
 rx_err_t
-rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count)
+rx_gptw_set_duty_raw(const rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count)
 {
   if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
@@ -452,7 +454,9 @@ rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float* duty_percent)
+rx_err_t rx_gptw_get_duty(const rx_gptw_channel_t channel,
+                          const rx_gptw_output_t  output,
+                          float*                  duty_percent)
 {
   RX_CHECK_NULL_PTR(duty_percent, s_tag, "duty_percent pointer is NULL");
 
@@ -460,7 +464,7 @@ rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
     return k_rx_err_invalid_state;
   }
 
-  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
+  const volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
   if (gptw == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -484,7 +488,7 @@ rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_get_period(rx_gptw_channel_t channel, uint32_t* period_count)
+rx_err_t rx_gptw_get_period(const rx_gptw_channel_t channel, uint32_t* period_count)
 {
   RX_CHECK_NULL_PTR(period_count, s_tag, "period_count pointer is NULL");
 
@@ -496,7 +500,8 @@ rx_err_t rx_gptw_get_period(rx_gptw_channel_t channel, uint32_t* period_count)
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t output, bool enable)
+rx_err_t
+rx_gptw_enable_output(const rx_gptw_channel_t channel, const rx_gptw_output_t output, bool enable)
 {
   if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
@@ -536,7 +541,7 @@ rx_err_t rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t outpu
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_start(rx_gptw_channel_t channel)
+rx_err_t rx_gptw_start(const rx_gptw_channel_t channel)
 {
   if ((int32_t)channel >= k_gptw_max_channels) {
     return k_rx_err_invalid_arg;
@@ -555,7 +560,7 @@ rx_err_t rx_gptw_start(rx_gptw_channel_t channel)
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_stop(rx_gptw_channel_t channel)
+rx_err_t rx_gptw_stop(const rx_gptw_channel_t channel)
 {
   if ((int32_t)channel >= k_gptw_max_channels) {
     return k_rx_err_invalid_arg;
@@ -574,7 +579,7 @@ rx_err_t rx_gptw_stop(rx_gptw_channel_t channel)
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_deinit(rx_gptw_channel_t channel)
+rx_err_t rx_gptw_deinit(const rx_gptw_channel_t channel)
 {
   if ((int32_t)channel >= k_gptw_max_channels) {
     return k_rx_err_invalid_arg;

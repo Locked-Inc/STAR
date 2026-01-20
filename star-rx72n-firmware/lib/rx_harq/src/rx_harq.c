@@ -23,7 +23,7 @@
  * =============================================================================
  */
 
-rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, uint8_t max_combines)
+rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, const uint8_t max_combines)
 {
   if (combiner == NULL) {
     return k_rx_err_invalid_arg;
@@ -98,8 +98,9 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
   return k_rx_ok;
 }
 
-rx_err_t
-rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output, uint32_t* len)
+rx_err_t rx_chase_combiner_combined(const rx_chase_combiner_t* combiner,
+                                    rx_soft_bit_t*             output,
+                                    uint32_t*                  len)
 {
   if (combiner == NULL || output == NULL || len == NULL) {
     return k_rx_err_invalid_arg;
@@ -275,9 +276,9 @@ rx_err_t rx_harq_reset(rx_harq_handle_t* harq)
 
 rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
                         const uint8_t*    payload,
-                        uint32_t          payload_len,
+                        const uint32_t    payload_len,
                         uint8_t*          output,
-                        uint32_t          output_size,
+                        const uint32_t    output_size,
                         uint32_t*         output_len)
 {
   if (harq == NULL || payload == NULL || output == NULL || output_len == NULL) {
@@ -344,8 +345,8 @@ typedef enum : uint8_t {
  * @return k_rx_err_invalid_arg if any pointer is NULL
  */
 static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
-                                      uint32_t             soft_len,
-                                      uint32_t             max_out_len,
+                                      const uint32_t       soft_len,
+                                      const uint32_t       max_out_len,
                                       uint8_t*             output,
                                       uint32_t*            output_len)
 {
@@ -389,7 +390,7 @@ static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
  * @return k_rx_err_protocol_error if decode failed but retries available
  * @return result error code if max retries reached
  */
-static rx_err_t internal_handle_fec_result(rx_harq_handle_t* harq, rx_err_t result)
+static rx_err_t internal_handle_fec_result(rx_harq_handle_t* harq, const rx_err_t result)
 {
   /* Critical NULL check */
   if (harq == NULL) {
@@ -424,8 +425,8 @@ static rx_err_t internal_handle_fec_result(rx_harq_handle_t* harq, rx_err_t resu
 
 rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
                         const rx_soft_bit_t* soft_bits,
-                        uint32_t             soft_len,
-                        uint32_t             expected_output_len,
+                        const uint32_t       soft_len,
+                        const uint32_t       expected_output_len,
                         uint8_t*             output,
                         uint32_t*            output_len)
 {

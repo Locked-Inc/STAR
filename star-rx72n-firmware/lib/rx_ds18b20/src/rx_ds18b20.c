@@ -53,7 +53,7 @@ static const float s_temp_conversion_divisor =
 static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* config,
                                                  const rx_ds18b20_handle_t* handle);
 static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* handle);
-static rx_err_t internal_ds18b20_select_device(rx_ds18b20_handle_t* handle);
+static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle);
 static rx_err_t
                 internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle,
                                                      uint8_t              scratchpad[k_ds18b20_scratchpad_bytes]);
@@ -211,7 +211,8 @@ rx_err_t rx_ds18b20_read_temperature_raw(rx_ds18b20_handle_t* handle, int16_t* r
   return k_rx_ok;
 }
 
-rx_err_t rx_ds18b20_set_resolution(rx_ds18b20_handle_t* handle, ds18b20_resolution_t resolution)
+rx_err_t rx_ds18b20_set_resolution(rx_ds18b20_handle_t*       handle,
+                                   const ds18b20_resolution_t resolution)
 {
   uint8_t  scratchpad[k_ds18b20_scratchpad_bytes];
   rx_err_t err    = k_rx_ok;
@@ -480,7 +481,7 @@ static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* han
  * @return k_rx_ok on success
  * @return Error code on failure
  */
-static rx_err_t internal_ds18b20_select_device(rx_ds18b20_handle_t* handle)
+static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle)
 {
   rx_err_t err = k_rx_ok;
 
@@ -581,9 +582,9 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(rx_ds18b20_handle_t* handle
  * @return Error code on failure
  */
 static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
-                                                  uint8_t              th,
-                                                  uint8_t              tl,
-                                                  uint8_t              config)
+                                                  const uint8_t        th,
+                                                  const uint8_t        tl,
+                                                  const uint8_t        config)
 {
   bool     presence = false;
   rx_err_t err      = k_rx_ok;
@@ -634,7 +635,7 @@ static rx_err_t internal_ds18b20_write_scratchpad(rx_ds18b20_handle_t* handle,
  *
  * @return Configuration register value
  */
-static uint8_t internal_ds18b20_resolution_to_config(ds18b20_resolution_t resolution)
+static uint8_t internal_ds18b20_resolution_to_config(const ds18b20_resolution_t resolution)
 {
   uint8_t config = k_ds18b20_config_register_cleared;
 
@@ -653,7 +654,7 @@ static uint8_t internal_ds18b20_resolution_to_config(ds18b20_resolution_t resolu
  *
  * @return Temperature mask
  */
-static uint16_t internal_ds18b20_get_temp_mask(ds18b20_resolution_t resolution)
+static uint16_t internal_ds18b20_get_temp_mask(const ds18b20_resolution_t resolution)
 {
   switch (resolution) {
     case k_ds18b20_resolution_9bit:
@@ -679,7 +680,7 @@ static uint16_t internal_ds18b20_get_temp_mask(ds18b20_resolution_t resolution)
  *
  * @return Temperature in degrees Celsius
  */
-static float internal_ds18b20_raw_to_celsius(int16_t raw_temp)
+static float internal_ds18b20_raw_to_celsius(const int16_t raw_temp)
 {
   /* Convert from 1/16°C to °C */
   return (float)raw_temp / s_temp_conversion_divisor;

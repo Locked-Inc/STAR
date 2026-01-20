@@ -237,10 +237,10 @@ static rx_err_t internal_module_stop_init(void)
  */
 static rx_err_t internal_verify_system_state(void)
 {
-  volatile rx_system_regs_t* sys = system_regs();
-  uint8_t                    pllcr2;
-  uint32_t                   sckcr;
-  uint16_t                   sckcr3;
+  const volatile rx_system_regs_t* sys = system_regs();
+  uint8_t                          pllcr2;
+  uint32_t                         sckcr;
+  uint16_t                         sckcr3;
 
   /* Verify system register access */
   RX_CHECK_NULL_PTR(sys, s_tag, "system_regs pointer is NULL");

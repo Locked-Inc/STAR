@@ -151,7 +151,7 @@ STATIC_TESTABLE uint32_t internal_ring_buffer_free(const ring_buffer_t* buf)
 
 STATIC_TESTABLE uint32_t internal_ring_buffer_write(ring_buffer_t* buf,
                                                     const uint8_t* data,
-                                                    uint32_t       len)
+                                                    const uint32_t len)
 {
   /* Rule 5: Pre-condition validation */
   if (buf == NULL || data == NULL || len == k_min_transfer_size) {
@@ -172,7 +172,7 @@ STATIC_TESTABLE uint32_t internal_ring_buffer_write(ring_buffer_t* buf,
 
 STATIC_TESTABLE uint32_t internal_ring_buffer_read(ring_buffer_t* buf,
                                                    uint8_t*       data,
-                                                   uint32_t       max_len)
+                                                   const uint32_t max_len)
 {
   /* Rule 5: Pre-condition validation */
   if (buf == NULL || data == NULL || max_len == k_min_transfer_size) {
@@ -358,7 +358,7 @@ rx_err_t rx_usb_write(const uint8_t* data, uint32_t len)
   return k_rx_ok;
 }
 
-rx_err_t rx_usb_read(uint8_t* data, uint32_t max_len, uint32_t* actual_len)
+rx_err_t rx_usb_read(uint8_t* data, const uint32_t max_len, uint32_t* actual_len)
 {
   if (data == NULL || actual_len == NULL) {
     return k_rx_err_null_ptr;
@@ -391,7 +391,7 @@ rx_err_t rx_usb_tx_available(uint32_t* available)
   return k_rx_ok;
 }
 
-rx_err_t rx_usb_flush(uint32_t timeout_ms)
+rx_err_t rx_usb_flush(const uint32_t timeout_ms)
 {
   if (!s_usb.initialized) {
     return k_rx_err_invalid_state;
@@ -463,7 +463,7 @@ void rx_usb_reset_stats(void)
 /**
  * @brief Set USB device state (called by hardware/CDC modules)
  */
-void rx_usb_set_state(rx_usb_state_t state)
+void rx_usb_set_state(const rx_usb_state_t state)
 {
   if (s_usb.state != state) {
     rx_log_debug(s_tag, "USB state change");
@@ -528,7 +528,7 @@ uint32_t rx_usb_rx_push(const uint8_t* data, uint32_t len)
 /**
  * @brief Get data from TX buffer for transmission (called by CDC/ISR)
  */
-uint32_t rx_usb_tx_pop(uint8_t* data, uint32_t max_len)
+uint32_t rx_usb_tx_pop(uint8_t* data, const uint32_t max_len)
 {
   return internal_ring_buffer_read(&s_usb.tx_buffer, data, max_len);
 }

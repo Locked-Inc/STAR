@@ -115,7 +115,7 @@ static iwdt_init_state_t s_iwdt_initialized = k_iwdt_not_initialized;
  * @return k_rx_ok if valid configuration found
  * @return k_rx_err_invalid_arg if timeout out of range
  */
-static rx_err_t internal_find_timeout_config(uint32_t                     timeout_ms,
+static rx_err_t internal_find_timeout_config(const uint32_t               timeout_ms,
                                              const iwdt_timeout_entry_t** entry)
 {
   if (entry == NULL) {
@@ -171,7 +171,7 @@ static void internal_configure_iwdt_registers(void)
 }
 #endif
 
-rx_err_t rx_iwdt_init(uint32_t timeout_ms)
+rx_err_t rx_iwdt_init(const uint32_t timeout_ms)
 {
 #ifdef __RX__
   if (s_iwdt_initialized == k_iwdt_initialized) {
