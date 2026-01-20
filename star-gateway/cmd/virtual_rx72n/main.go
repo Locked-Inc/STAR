@@ -194,6 +194,8 @@ func handleConnection(conn net.Conn) {
 			if err := proto.Unmarshal(decodedFrame.Payload, &wireMsg); err == nil {
 				processWireMessage(&wireMsg)
 			}
+		} else if isDummyRead {
+			log.Printf("Received dummy read (%d bytes), sending telemetry SEQ=%d", n, sequenceNum)
 		}
 
 		// Generate and send telemetry response
@@ -233,6 +235,7 @@ func generateTelemetryResponse(encoder *frame.DefaultEncoder, seqNum *uint16, ti
 	// Marshal to protobuf
 	payload, err := proto.Marshal(wireMsg)
 	if err != nil {
+		log.Printf("ERROR: Telemetry marshal failed: %v", err)
 		// Return zeros on error
 		return make([]byte, responseLen)
 	}
@@ -247,14 +250,19 @@ func generateTelemetryResponse(encoder *frame.DefaultEncoder, seqNum *uint16, ti
 		},
 		Payload: payload,
 	}
+	
+	log.Printf("Generating telemetry frame: SEQ=%d, payload_len=%d", *seqNum, len(payload))
 	*seqNum++
 
 	// Encode frame
 	encodedFrame, err := encoder.Encode(frameToSend)
 	if err != nil {
+		log.Printf("ERROR: Frame encode failed: %v", err)
 		// Return zeros on error
 		return make([]byte, responseLen)
 	}
+
+	log.Printf("Encoded frame size: %d bytes, response_len=%d", len(encodedFrame), responseLen)
 
 	// Pad or truncate to match expected response length
 	if len(encodedFrame) < responseLen {
@@ -264,6 +272,7 @@ func generateTelemetryResponse(encoder *frame.DefaultEncoder, seqNum *uint16, ti
 		return padded
 	} else if len(encodedFrame) > responseLen {
 		// Truncate (should not happen in practice)
+		log.Printf("WARNING: Frame too large (%d > %d), truncating", len(encodedFrame), responseLen)
 		return encodedFrame[:responseLen]
 	}
 	
