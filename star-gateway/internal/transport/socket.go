@@ -11,6 +11,7 @@ package transport
 import (
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"sync"
 	"time"
@@ -107,7 +108,7 @@ func (s *SocketTransport) Transfer(ctx context.Context, txData []byte) ([]byte, 
 	// 2. Read the response
 	// SPI is synchronous - we expect exactly len(txData) bytes back
 	rxBuffer := make([]byte, len(txData))
-	n, err = s.conn.Read(rxBuffer)
+	n, err = io.ReadFull(s.conn, rxBuffer)
 	if err != nil {
 		return nil, fmt.Errorf("socket read failed: %w", err)
 	}
@@ -151,7 +152,14 @@ func (s *SocketTransport) Path() string {
 }
 
 // Send implements the legacy Transport interface (for compatibility).
-// Delegates to Transfer with background context.
+// Delegates to Transfer using context.Background() for compatibility with the
+// legacy Transport interface.
+//
+// NOTE: Because this helper uses context.Background(), it does not provide a
+// timeout or cancellation mechanism. If the underlying Transfer blocks, this
+// call may block indefinitely. For production code prefer calling
+// `Transfer` with an explicit context (with timeout or cancellation) to avoid
+// hangs and to support cancellation/timeouts.
 func (s *SocketTransport) Send(data []byte) (int, error) {
 	_, err := s.Transfer(context.Background(), data)
 	if err != nil {
@@ -161,8 +169,13 @@ func (s *SocketTransport) Send(data []byte) (int, error) {
 }
 
 // Receive implements the legacy Transport interface (for compatibility).
-// For sockets, we can't "receive only" like SPI dummy bytes, so this
-// sends zeros and reads the response.
+// Delegates to Transfer using context.Background() and sends zeros to read a
+// response (sockets cannot read-only like typical SPI).
+//
+// NOTE: This helper uses context.Background(), so it does not support timeouts
+// or cancellation. If the underlying Transfer blocks, this call may block
+// indefinitely. Prefer calling `Transfer` with an explicit context (with
+// timeout or cancellation) in production to avoid hangs.
 func (s *SocketTransport) Receive(maxLen int) ([]byte, error) {
 	// Send dummy bytes (zeros) to trigger a response
 	txBuf := make([]byte, maxLen)

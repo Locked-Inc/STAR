@@ -19,11 +19,14 @@
 package main
 
 import (
+	"errors"
+	"io"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 const (
@@ -38,6 +41,9 @@ const (
 
 	// SignalBufferSize is the buffer size for OS signal channel.
 	SignalBufferSize = 1
+
+	// readDeadlineTimeout is the timeout for socket read operations.
+	readDeadlineTimeout = 1 * time.Second
 )
 
 func main() {
@@ -93,10 +99,22 @@ func handleConnection(conn net.Conn) {
 
 	for {
 		// Read data from Gateway
+		// Set a read deadline (readDeadlineTimeout) to avoid indefinite blocking if the peer stalls.
+		// Use a reasonable timeout so the simulator can continue serving other
+		// peers or handle periodic events.
+		if err := conn.SetReadDeadline(time.Now().Add(readDeadlineTimeout)); err != nil {
+			log.Printf("Failed to set read deadline: %v", err)
+			// Continue without deadline if setting failed
+		}
+
 		n, err := conn.Read(buffer)
 		if err != nil {
+			// Treat timeouts as transient; continue waiting for data.
+			if ne, ok := err.(net.Error); ok && ne.Timeout() {
+				continue
+			}
 			// EOF is expected when connection closes
-			if err.Error() == "EOF" {
+			if errors.Is(err, io.EOF) {
 				return
 			}
 			log.Printf("Read error: %v", err)

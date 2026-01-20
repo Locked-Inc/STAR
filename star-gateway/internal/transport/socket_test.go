@@ -6,6 +6,11 @@ package transport
 
 import (
 	"context"
+	"errors"
+	"io"
+	"net"
+	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 )
@@ -13,6 +18,12 @@ import (
 const (
 	// SimulatorMarker is the expected first byte from Virtual RX72N (must match virtual_rx72n/main.go).
 	SimulatorMarker = 0xFF
+
+	// Test delays and timeouts.
+	slowServerDelay          = 200 * time.Millisecond
+	shortContextTimeout      = 50 * time.Millisecond
+	transferContextTimeout   = 500 * time.Millisecond
+	openCloseInterleaveDelay = 5 * time.Millisecond
 )
 
 // ============================================================================
@@ -248,6 +259,70 @@ func TestSocketTransport_ContextTimeout(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
+	// Create a temporary Unix socket listener that intentionally delays response
+	dir := t.TempDir()
+	socketPath := filepath.Join(dir, "slow.sock")
+	ln, err := net.Listen("unix", socketPath)
+	if err != nil {
+		t.Fatalf("Failed to create temporary listener: %v", err)
+	}
+	defer ln.Close()
+
+	// Accept and handle one connection with an artificial delay to trigger timeout
+	go func() {
+		conn, err := ln.Accept()
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+
+		buf := make([]byte, 1024)
+		n, err := conn.Read(buf)
+		if err != nil {
+			return
+		}
+
+		// Delay longer than the test context deadline to force a timeout
+		time.Sleep(slowServerDelay)
+
+		// Echo back the received bytes
+		if _, err := conn.Write(buf[:n]); err != nil {
+			return
+		}
+	}()
+
+	transport := NewSocketTransport(socketPath)
+
+	err = transport.Open()
+	if err != nil {
+		t.Fatalf("Failed to open transport to temporary listener: %v", err)
+	}
+	defer transport.Close()
+
+	// Create a context with a short deadline that will expire while waiting for the response
+	ctx, cancel := context.WithTimeout(context.Background(), shortContextTimeout)
+	defer cancel()
+
+	_, err = transport.Transfer(ctx, []byte{0x01, 0x02, 0x03})
+	if err == nil {
+		t.Error("Expected timeout error")
+		return
+	}
+
+	// Accept either context.DeadlineExceeded or a wrapped net timeout
+	var ne net.Error
+	if !errors.Is(err, context.DeadlineExceeded) {
+		if !errors.As(err, &ne) || !ne.Timeout() {
+			t.Errorf("Expected timeout error, got: %v", err)
+		}
+	}
+}
+
+func TestSocketTransport_ConcurrentAccess(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+
 	transport := NewSocketTransport(DefaultSocketPath)
 
 	err := transport.Open()
@@ -256,16 +331,74 @@ func TestSocketTransport_ContextTimeout(t *testing.T) {
 	}
 	defer transport.Close()
 
-	// Create context with very short timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
-	defer cancel()
+	// Parameters for concurrency
+	const (
+		numTransferers    = 8
+		transfersPerGorun = 20
+		numOpenClose      = 4
+		openCloseIters    = 30
+	)
 
-	// Wait for timeout
-	time.Sleep(10 * time.Millisecond)
+	var wg sync.WaitGroup
 
-	// Transfer should fail with timeout
-	_, err = transport.Transfer(ctx, []byte{0x01, 0x02})
-	if err == nil {
-		t.Error("Expected timeout error")
+	// Launch transfer goroutines
+	for i := 0; i < numTransferers; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			for j := 0; j < transfersPerGorun; j++ {
+				tx := []byte{byte(id), byte(j), 0xAA}
+				ctx, cancel := context.WithTimeout(context.Background(), transferContextTimeout)
+				rx, err := transport.Transfer(ctx, tx)
+				cancel()
+				if err != nil {
+					// During concurrent Open/Close, ErrDeviceNotOpen or connection reset is expected
+					if errors.Is(err, ErrDeviceNotOpen) || errors.Is(err, io.EOF) {
+						continue
+					}
+					var netErr net.Error
+					if errors.As(err, &netErr) {
+						continue
+					}
+					t.Errorf("Transfer goroutine %d iteration %d: %v", id, j, err)
+					return
+				}
+				if len(rx) != len(tx) {
+					t.Errorf("Transfer goroutine %d iteration %d: expected %d bytes, got %d", id, j, len(tx), len(rx))
+					return
+				}
+			}
+		}(i)
 	}
+
+	// Launch concurrent Open/Close goroutines
+	for i := 0; i < numOpenClose; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			for k := 0; k < openCloseIters; k++ {
+				if id%2 == 0 {
+					if err := transport.Close(); err != nil {
+						// Ignore errors that are expected during concurrent close/transfer races
+						var netErr net.Error
+						if !errors.As(err, &netErr) && !errors.Is(err, io.EOF) {
+							t.Errorf("Open/Close goroutine %d iteration %d: Close error: %v", id, k, err)
+						}
+					}
+				} else {
+					if err := transport.Open(); err != nil {
+						// Ignore errors that are expected during concurrent open/transfer races
+						var netErr net.Error
+						if !errors.As(err, &netErr) {
+							t.Errorf("Open/Close goroutine %d iteration %d: Open error: %v", id, k, err)
+						}
+					}
+				}
+				// Small sleep to interleave operations
+				time.Sleep(openCloseInterleaveDelay)
+			}
+		}(i)
+	}
+
+	wg.Wait()
 }

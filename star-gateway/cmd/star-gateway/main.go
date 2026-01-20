@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/controller"
@@ -63,7 +64,7 @@ func run() error {
 	// Layer 1: Transport (SPI or Socket for simulation)
 	// ========================================
 	var deviceTransport transport.Device
-	simulationMode := os.Getenv("STAR_SIMULATION_MODE") == "true"
+	simulationMode, _ := strconv.ParseBool(os.Getenv("STAR_SIMULATION_MODE"))
 
 	if simulationMode {
 		log.Println("WARNING: RUNNING IN SIMULATION MODE (Virtual RX72N)")
@@ -72,7 +73,13 @@ func run() error {
 		if err := socketTransport.Open(); err != nil {
 			return fmt.Errorf("failed to open socket transport: %w", err)
 		}
-		defer socketTransport.Close()
+		defer func() {
+			if err := socketTransport.Close(); err != nil {
+				log.Printf("Socket transport close error: %v", err)
+			} else {
+				log.Println("Socket transport closed")
+			}
+		}()
 		deviceTransport = socketTransport
 	} else {
 		log.Println("Initializing SPI Transport")
@@ -80,7 +87,13 @@ func run() error {
 		if err := spiTransport.Open(); err != nil {
 			return fmt.Errorf("failed to open SPI transport: %w", err)
 		}
-		defer spiTransport.Close()
+		defer func() {
+			if err := spiTransport.Close(); err != nil {
+				log.Printf("SPI transport close error: %v", err)
+			} else {
+				log.Println("SPI transport closed")
+			}
+		}()
 		deviceTransport = spiTransport
 	}
 
@@ -271,12 +284,8 @@ func run() error {
 	}
 	log.Println("Services stopped")
 
-	// Transport cleanup (via defer at top of run)
-	if simulationMode {
-		log.Println("Closing socket transport...")
-	} else {
-		log.Println("Closing SPI transport...")
-	}
+	// Transport cleanup is handled by deferred close functions above which will
+	// log the actual close result (success or error) when they run.
 
 	log.Println("All servers exited gracefully")
 	return nil
