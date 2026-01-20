@@ -238,7 +238,7 @@ func initServices(ctx context.Context, harqHandler harq.HARQ, msgDispatcher disp
 
 	batterySvc := service.NewBatteryService(ctx, harqHandler, msgDispatcher, logger)
 	shutdownRegistry = append(shutdownRegistry, batterySvc)
-	
+
 	firmwareSvc := service.NewFirmwareService()
 
 	grpcServer := grpc.NewServer(

@@ -79,12 +79,15 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 	encoder := frame.NewEncoder()
 	decoder := frame.NewDecoder()
 
-	// Buffer for reading incoming data
-	buf := make([]byte, 2048)
+	// Buffer for reading incoming data (one complete frame)
+	buf := make([]byte, frame.MaxFrameSize)
 
 	// Sequence number for outgoing frames
 	var sequenceNum uint16
 	var timestamp int64
+
+	// Telemetry generation interval
+	telemetryInterval := 10 * time.Millisecond
 
 	// Main loop: receive and respond synchronously
 	for {
@@ -106,7 +109,7 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 
 		// Generate telemetry response
 		telemetry := generateMockTelemetryData(timestamp)
-		timestamp += 10000 // 10ms in microseconds
+		timestamp += telemetryInterval.Microseconds()
 
 		// Wrap in WireMessage
 		wireMsg := &starv1.WireMessage{
@@ -169,15 +172,15 @@ func isAllZeros(data []byte) bool {
 func generateMockTelemetryData(timestampUs int64) *starv1.TelemetryData {
 	return &starv1.TelemetryData{
 		Imu: &starv1.ImuData{
-			PitchRad:       0.01,
-			RollRad:        -0.02,
-			YawRad:         1.57,
-			AccelXMps2:     0.1,
-			AccelYMps2:     0.0,
-			AccelZMps2:     9.81,
-			GyroXRadPerS:   0.0,
-			GyroYRadPerS:   0.0,
-			GyroZRadPerS:   0.0,
+			PitchRad:     0.01,
+			RollRad:      -0.02,
+			YawRad:       1.57,
+			AccelXMps2:   0.1,
+			AccelYMps2:   0.0,
+			AccelZMps2:   9.81,
+			GyroXRadPerS: 0.0,
+			GyroYRadPerS: 0.0,
+			GyroZRadPerS: 0.0,
 		},
 		BatteryPercent:     85.0,
 		WifiSignalDbm:      -45,
@@ -274,7 +277,9 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	// Wait a bit for telemetry to be received by dispatcher
 	time.Sleep(500 * time.Millisecond)
 
-	telemetryResp, err := telemetryClient.GetTelemetry(context.Background(), telemetryReq)
+	telemetryCtx, telemetryCancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer telemetryCancel()
+	telemetryResp, err := telemetryClient.GetTelemetry(telemetryCtx, telemetryReq)
 	if err != nil {
 		t.Fatalf("GetTelemetry failed: %v", err)
 	}
@@ -312,7 +317,9 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 		Header: &starv1.RequestHeader{RequestId: "e2e-test"},
 	}
 
-	resp, err := gatewayClient.GetTeleopCommand(context.Background(), req)
+	teleopCtx, teleopCancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer teleopCancel()
+	resp, err := gatewayClient.GetTeleopCommand(teleopCtx, req)
 	if err != nil {
 		t.Fatalf("GetTeleopCommand failed: %v", err)
 	}

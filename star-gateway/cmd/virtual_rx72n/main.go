@@ -5,12 +5,12 @@
 // socket and responds to Gateway commands with valid protocol frames.
 //
 // Protocol Implementation:
-//  - Decodes incoming frames using frame.Decoder
-//  - Validates sync word (0x55AA) and CRC-32
-//  - Parses WireMessage protobuf payloads
-//  - Recognizes VelocityCommand messages
-//  - Generates valid TelemetryData at 100Hz
-//  - Encodes outgoing frames with proper HARQ framing
+//   - Decodes incoming frames using frame.Decoder
+//   - Validates sync word (0x55AA) and CRC-32
+//   - Parses WireMessage protobuf payloads
+//   - Recognizes VelocityCommand messages
+//   - Generates valid TelemetryData at 100Hz
+//   - Encodes outgoing frames with proper HARQ framing
 //
 // Usage:
 //
@@ -156,7 +156,7 @@ func handleConnection(conn net.Conn) {
 	// Main loop: receive and respond synchronously
 	for {
 		// Set a read deadline to avoid indefinite blocking
-		if err := conn.SetReadDeadline(time.Now().Add(time.Second)); err != nil {
+		if err := conn.SetReadDeadline(time.Now().Add(readDeadlineTimeout)); err != nil {
 			log.Printf("Failed to set read deadline: %v", err)
 		}
 
@@ -178,7 +178,7 @@ func handleConnection(conn net.Conn) {
 
 		// Try to decode the incoming frame
 		decodedFrame, decodeErr := decoder.Decode(rxData)
-		
+
 		// Check if this is a dummy read (all zeros) - indicates Gateway is polling for telemetry
 		isDummyRead := n > 0 && isAllZeros(rxData)
 
@@ -201,7 +201,7 @@ func handleConnection(conn net.Conn) {
 		// Generate and send telemetry response
 		// Must respond with exactly n bytes to match SPI full-duplex behavior
 		responseData := generateTelemetryResponse(encoder, &sequenceNum, &timestamp, n)
-		
+
 		if _, err := conn.Write(responseData); err != nil {
 			log.Printf("Write error: %v", err)
 			return
@@ -250,7 +250,7 @@ func generateTelemetryResponse(encoder frame.Encoder, seqNum *uint16, timestamp 
 		},
 		Payload: payload,
 	}
-	
+
 	*seqNum++
 
 	// Encode frame
@@ -274,7 +274,7 @@ func generateTelemetryResponse(encoder frame.Encoder, seqNum *uint16, timestamp 
 		log.Printf("WARNING: Frame too large (%d > %d), truncating", len(encodedFrame), responseLen)
 		return encodedFrame[:responseLen]
 	}
-	
+
 	return encodedFrame
 }
 
@@ -311,15 +311,15 @@ func processWireMessage(wireMsg *starv1.WireMessage) {
 func generateTelemetryData(timestampUs int64) *starv1.TelemetryData {
 	return &starv1.TelemetryData{
 		Imu: &starv1.ImuData{
-			PitchRad:       0.01,
-			RollRad:        -0.02,
-			YawRad:         1.57,
-			AccelXMps2:     0.1,
-			AccelYMps2:     0.0,
-			AccelZMps2:     9.81,
-			GyroXRadPerS:   0.0,
-			GyroYRadPerS:   0.0,
-			GyroZRadPerS:   0.0,
+			PitchRad:     0.01,
+			RollRad:      -0.02,
+			YawRad:       1.57,
+			AccelXMps2:   0.1,
+			AccelYMps2:   0.0,
+			AccelZMps2:   9.81,
+			GyroXRadPerS: 0.0,
+			GyroYRadPerS: 0.0,
+			GyroZRadPerS: 0.0,
 		},
 		BatteryPercent:     float64(dummyBatterySOC),
 		WifiSignalDbm:      -45,
@@ -351,9 +351,9 @@ func generateTelemetryData(timestampUs int64) *starv1.TelemetryData {
 			VelocityMps: 0.50,
 			TimestampUs: timestampUs,
 		},
-		EmergencyStop:      false,
-		FaultFlags:         0,
-		BatteryVoltageV:    dummyBatteryVoltage,
-		BatterySocPercent:  dummyBatterySOC,
+		EmergencyStop:     false,
+		FaultFlags:        0,
+		BatteryVoltageV:   dummyBatteryVoltage,
+		BatterySocPercent: dummyBatterySOC,
 	}
 }
