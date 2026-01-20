@@ -22,6 +22,8 @@
 #include "rx_check.h"
 #include "rx_register_protection.h"
 
+static const char* s_tag = "CLOCK_INIT";
+
 /* =============================================================================
  * Private Definitions
  * =============================================================================
@@ -236,29 +238,35 @@ static rx_err_t internal_module_stop_init(void)
 static rx_err_t internal_verify_system_state(void)
 {
   volatile rx_system_regs_t* sys = system_regs();
+  uint8_t                    pllcr2;
+  uint32_t                   sckcr;
+  uint16_t                   sckcr3;
 
   /* Verify system register access */
-  if (sys == NULL) {
-    return k_rx_err_hw_init_failed;
-  }
+  RX_CHECK_NULL_PTR(sys, s_tag, "system_regs pointer is NULL");
 
   /* Verify PLL is enabled by checking PLLCR2 register */
-  const uint8_t pllcr2 = sys->pllcr2;
+  pllcr2 = sys->pllcr2;
   if (pllcr2 != k_pll_enabled) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify system clock dividers are configured correctly */
-  const uint32_t sckcr = sys->sckcr;
+  sckcr = sys->sckcr;
   if (sckcr != k_system_clock_dividers) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify PLL is selected as the system clock source */
-  const uint16_t sckcr3 = sys->sckcr3;
+  sckcr3 = sys->sckcr3;
   if (sckcr3 != k_system_clock_source_pll) {
     return k_rx_err_hw_init_failed;
   }
+
+  /* Postcondition: All clock configuration verified */
+  RX_ASSERT((pllcr2 == k_pll_enabled) && (sckcr == k_system_clock_dividers) &&
+              (sckcr3 == k_system_clock_source_pll),
+            "Postcondition: clock configuration verified");
 
   return k_rx_ok;
 }

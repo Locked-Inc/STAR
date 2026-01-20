@@ -239,7 +239,8 @@ static rx_err_t internal_configure_uart_pins(rx_port_pin_t tx_gpio, rx_port_pin_
   const uint8_t rx_pin  = rx_pin_from_pin(rx_gpio);
 
   /* Validate pin numbers */
-  if (tx_pin > k_rx_pin_max || rx_pin > k_rx_pin_max) {
+  if (tx_pin < k_rx_pin_0 || tx_pin > k_rx_pin_max || rx_pin < k_rx_pin_0 ||
+      rx_pin > k_rx_pin_max) {
     return k_rx_err_invalid_arg;
   }
 
@@ -252,12 +253,12 @@ static rx_err_t internal_configure_uart_pins(rx_port_pin_t tx_gpio, rx_port_pin_
   }
 
   /* Configure MPC for SCI function */
-  rx_err_t err = rx_mpc_set_sci(tx_gpio, true);
+  rx_err_t err = rx_mpc_set_sci(tx_gpio);
   if (err != k_rx_ok) {
     return err;
   }
 
-  err = rx_mpc_set_sci(rx_gpio, false);
+  err = rx_mpc_set_sci(rx_gpio);
   if (err != k_rx_ok) {
     return err;
   }
@@ -524,8 +525,8 @@ rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint
   /* Read available bytes */
   *bytes_read = 0;
   for (uint16_t i = 0; i < length; i++) {
-    char     c;
-    rx_err_t err = uart_getc_channel(channel, &c);
+    char           c;
+    const rx_err_t err = uart_getc_channel(channel, &c);
     if (err == k_rx_err_empty) {
       /* No more data available */
       break;

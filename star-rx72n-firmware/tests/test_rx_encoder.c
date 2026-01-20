@@ -158,16 +158,13 @@ void test_encoder_init_channel_6_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
-void test_encoder_init_channel_7_fails_validation(void)
+void test_encoder_init_channel_7_success(void)
 {
-  /* Channel 7 has enum value 7, which equals k_encoder_max_channels (7).
-   * The driver validation uses (int32_t)channel >= k_encoder_max_channels,
-   * so channel 7 is rejected as invalid. This is a known limitation. */
   s_config.channel = k_mtu_channel_7;
 
   rx_err_t err = rx_encoder_init(&s_config);
 
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
 /* =============================================================================
@@ -933,7 +930,7 @@ int main(void)
   RUN_TEST(test_encoder_init_channel_0_success);
   RUN_TEST(test_encoder_init_channel_2_success);
   RUN_TEST(test_encoder_init_channel_6_success);
-  RUN_TEST(test_encoder_init_channel_7_fails_validation);
+  RUN_TEST(test_encoder_init_channel_7_success);
 
   /* Deinitialization tests */
   RUN_TEST(test_encoder_deinit_success);

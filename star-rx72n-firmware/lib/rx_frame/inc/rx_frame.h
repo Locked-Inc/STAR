@@ -220,6 +220,26 @@ typedef enum : uint8_t {
 } rx_byte_order_constants_t;
 
 /**
+ * @brief Byte indices for 32-bit little-endian serialization
+ */
+typedef enum : uint8_t {
+  k_le32_byte_0 = 0, /**< Byte 0 (LSB) */
+  k_le32_byte_1 = 1, /**< Byte 1 */
+  k_le32_byte_2 = 2, /**< Byte 2 */
+  k_le32_byte_3 = 3, /**< Byte 3 (MSB) */
+} rx_le32_byte_idx_t;
+
+/**
+ * @brief Bit shift amounts for extracting bytes from 32-bit values
+ */
+typedef enum : uint8_t {
+  k_rx_le32_shift_0 = 0,  /**< Shift 0 bits for byte 0 */
+  k_rx_le32_shift_1 = 8,  /**< Shift 8 bits for byte 1 */
+  k_rx_le32_shift_2 = 16, /**< Shift 16 bits for byte 2 */
+  k_rx_le32_shift_3 = 24, /**< Shift 24 bits for byte 3 */
+} rx_le32_shift_t;
+
+/**
  * @brief Read uint16 from big-endian buffer
  *
  * Reads a 16-bit unsigned integer from a buffer in big-endian (network byte
@@ -253,6 +273,21 @@ static inline void rx_frame_write_be16(uint8_t* buf, uint16_t val)
 {
   buf[k_be16_byte_high] = (uint8_t)(val >> k_rx_be16_high_shift);
   buf[k_be16_byte_low]  = (uint8_t)(val & k_rx_byte_mask);
+}
+
+/**
+ * @brief Read uint32 from little-endian buffer
+ *
+ * Reads a 32-bit unsigned integer from a buffer in little-endian format.
+ *
+ * @param[in] buf Input buffer (at least 4 bytes)
+ * @return Decoded 32-bit value in host byte order
+ */
+static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
+{
+  return (uint32_t)buf[k_le32_byte_0] | ((uint32_t)buf[k_le32_byte_1] << k_rx_le32_shift_1) |
+         ((uint32_t)buf[k_le32_byte_2] << k_rx_le32_shift_2) |
+         ((uint32_t)buf[k_le32_byte_3] << k_rx_le32_shift_3);
 }
 
 /* =============================================================================

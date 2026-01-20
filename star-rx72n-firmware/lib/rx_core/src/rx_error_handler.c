@@ -327,7 +327,7 @@ rx_err_t error_handler_init(error_handler_t* handler,
   handler->max_backoff_ms     = max_backoff_ms;
 
   /* Create mutex */
-  UINT status = tx_mutex_create(&handler->mutex, "ErrorHandlerMutex", TX_NO_INHERIT);
+  const UINT status = tx_mutex_create(&handler->mutex, "ErrorHandlerMutex", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     rx_log_error("ERROR_HANDLER", "Failed to create mutex");
     return k_rx_err_rtos_mutex;

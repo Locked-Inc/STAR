@@ -38,14 +38,12 @@ typedef enum : uint8_t {
 } byte_shift_t;
 
 /**
- * @brief Byte indices for 32-bit little-endian serialization
+ * @brief Initialization state values
  */
 typedef enum : uint8_t {
-  k_le32_byte_0 = 0, /**< Byte 0 (LSB) */
-  k_le32_byte_1 = 1, /**< Byte 1 */
-  k_le32_byte_2 = 2, /**< Byte 2 */
-  k_le32_byte_3 = 3, /**< Byte 3 (MSB) */
-} le32_byte_idx_t;
+  k_state_uninitialized = 0, /**< Object not initialized */
+  k_state_initialized   = 1, /**< Object initialized and ready */
+} init_state_t;
 
 /* =============================================================================
  * Private Helper Functions
@@ -79,6 +77,71 @@ static uint32_t internal_read_le32(const uint8_t* buf)
          ((uint32_t)buf[k_le32_byte_3] << k_shift_byte_3);
 }
 
+static rx_err_t internal_decode_header(const uint8_t* data,
+                                       uint32_t       data_len,
+                                       rx_frame_t*    frame,
+                                       uint32_t*      offset_out)
+{
+  uint32_t offset;
+  uint16_t sync_word;
+  uint32_t expected_size;
+
+  if (data_len < k_frame_min_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  offset = 0;
+
+  sync_word = rx_frame_read_be16(&data[offset]);
+  if (sync_word != k_frame_sync_word) {
+    return k_rx_err_protocol_error;
+  }
+  offset += k_frame_sync_size;
+
+  frame->header.sequence = rx_frame_read_be16(&data[offset]);
+  offset += k_frame_seq_size;
+
+  frame->header.length = rx_frame_read_be16(&data[offset]);
+  offset += k_frame_len_size;
+
+  if (frame->header.length > k_frame_max_payload) {
+    return k_rx_err_invalid_size;
+  }
+
+  expected_size = rx_frame_encoded_size(frame->header.length);
+  if (data_len < expected_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  frame->header.type = data[offset];
+  offset += k_frame_type_size;
+
+  frame->header.flags = data[offset];
+  offset += k_frame_flags_size;
+
+  if (offset_out != NULL) {
+    *offset_out = offset;
+  }
+
+  return k_rx_ok;
+}
+
+static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32_t* crc_out)
+{
+  const uint32_t received_crc   = internal_read_le32(&data[offset]);
+  const uint32_t calculated_crc = rx_crc32_ieee(data, offset);
+
+  if (received_crc != calculated_crc) {
+    return k_rx_err_crc_mismatch;
+  }
+
+  if (crc_out != NULL) {
+    *crc_out = received_crc;
+  }
+
+  return k_rx_ok;
+}
+
 /* =============================================================================
  * Encoder API Implementation
  * =============================================================================
@@ -90,7 +153,10 @@ rx_err_t rx_frame_encoder_init(rx_frame_encoder_t* enc)
     return k_rx_err_invalid_arg;
   }
 
-  enc->initialized = 1;
+  enc->initialized = k_state_initialized;
+  if (enc->initialized != k_state_initialized) {
+    return k_rx_err_validation_failed;
+  }
   return k_rx_ok;
 }
 
@@ -100,7 +166,10 @@ rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc)
     return k_rx_err_invalid_arg;
   }
 
-  enc->initialized = 0;
+  enc->initialized = k_state_uninitialized;
+  if (enc->initialized != k_state_uninitialized) {
+    return k_rx_err_validation_failed;
+  }
   return k_rx_ok;
 }
 
@@ -113,7 +182,7 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
     return k_rx_err_invalid_arg;
   }
 
-  if (enc->initialized == 0) {
+  if (enc->initialized != k_state_initialized) {
     return k_rx_err_invalid_state;
   }
 
@@ -174,7 +243,10 @@ rx_err_t rx_frame_decoder_init(rx_frame_decoder_t* dec)
     return k_rx_err_invalid_arg;
   }
 
-  dec->initialized = 1;
+  dec->initialized = k_state_initialized;
+  if (dec->initialized != k_state_initialized) {
+    return k_rx_err_validation_failed;
+  }
   return k_rx_ok;
 }
 
@@ -184,61 +256,31 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
     return k_rx_err_invalid_arg;
   }
 
-  dec->initialized = 0;
+  dec->initialized = k_state_uninitialized;
+  if (dec->initialized != k_state_uninitialized) {
+    return k_rx_err_validation_failed;
+  }
   return k_rx_ok;
 }
 
 rx_err_t
 rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len, rx_frame_t* frame)
 {
+  uint32_t offset;
+  rx_err_t err;
+
   if (dec == NULL || data == NULL || frame == NULL) {
     return k_rx_err_invalid_arg;
   }
 
-  if (dec->initialized == 0) {
+  if (dec->initialized != k_state_initialized) {
     return k_rx_err_invalid_state;
   }
 
-  /* Check minimum frame size */
-  if (data_len < k_frame_min_size) {
-    return k_rx_err_invalid_size;
+  err = internal_decode_header(data, data_len, frame, &offset);
+  if (err != k_rx_ok) {
+    return err;
   }
-
-  uint32_t offset = 0;
-
-  /* Verify SYNC word */
-  const uint16_t sync_word = rx_frame_read_be16(&data[offset]);
-  if (sync_word != k_frame_sync_word) {
-    return k_rx_err_protocol_error;
-  }
-  offset += k_frame_sync_size;
-
-  /* Read SEQ */
-  frame->header.sequence = rx_frame_read_be16(&data[offset]);
-  offset += k_frame_seq_size;
-
-  /* Read LEN */
-  frame->header.length = rx_frame_read_be16(&data[offset]);
-  offset += k_frame_len_size;
-
-  /* Validate payload length */
-  if (frame->header.length > k_frame_max_payload) {
-    return k_rx_err_invalid_size;
-  }
-
-  /* Verify we have enough data for the declared payload + CRC */
-  const uint32_t expected_size = rx_frame_encoded_size(frame->header.length);
-  if (data_len < expected_size) {
-    return k_rx_err_invalid_size;
-  }
-
-  /* Read TYPE */
-  frame->header.type = data[offset];
-  offset += k_frame_type_size;
-
-  /* Read FLAGS */
-  frame->header.flags = data[offset];
-  offset += k_frame_flags_size;
 
   /* Read PAYLOAD */
   if (frame->header.length > 0) {
@@ -246,18 +288,10 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
     offset += frame->header.length;
   }
 
-  /* Read CRC-32 (little-endian) */
-  uint32_t received_crc = internal_read_le32(&data[offset]);
-
-  /* Calculate expected CRC over SYNC + Header + Payload */
-  uint32_t calculated_crc = rx_crc32_ieee(data, offset);
-
-  /* Verify CRC */
-  if (received_crc != calculated_crc) {
-    return k_rx_err_crc_mismatch;
+  err = internal_verify_crc(data, offset, &frame->crc);
+  if (err != k_rx_ok) {
+    return err;
   }
-
-  frame->crc = received_crc;
   return k_rx_ok;
 }
 
@@ -278,6 +312,10 @@ rx_err_t rx_frame_create_ack(rx_frame_t* frame, uint16_t sequence)
   frame->header.type     = k_frame_type_ack;
   frame->header.flags    = k_frame_flag_none;
 
+  if (frame->header.type != k_frame_type_ack) {
+    return k_rx_err_validation_failed;
+  }
+
   return k_rx_ok;
 }
 
@@ -292,6 +330,10 @@ rx_err_t rx_frame_create_nack(rx_frame_t* frame, uint16_t sequence, uint8_t flag
   frame->header.length   = 0;
   frame->header.type     = k_frame_type_nack;
   frame->header.flags    = flags;
+
+  if (frame->header.type != k_frame_type_nack) {
+    return k_rx_err_validation_failed;
+  }
 
   return k_rx_ok;
 }

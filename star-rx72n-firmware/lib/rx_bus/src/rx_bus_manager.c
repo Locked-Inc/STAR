@@ -40,6 +40,17 @@ static const char* s_tag = "BUS_MANAGER";
  */
 static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
+  /* Pre-conditions: validate inputs (NASA Rule 5) */
+  if (bus_config == NULL) {
+    rx_log_error(s_tag, "Bus config is NULL in command callback");
+    return k_rx_err_null_ptr;
+  }
+
+  if (user_ctx == NULL) {
+    rx_log_error(s_tag, "User context (command) is NULL");
+    return k_rx_err_null_ptr;
+  }
+
   rx_bus_command_t* command = (rx_bus_command_t*)user_ctx;
 
   /* Validate command has execution function */
@@ -121,6 +132,9 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
     /* Note: bus_config memory is owned by caller, we don't free it */
     rx_log_info(s_tag, "Removed bus during deinit");
   }
+
+  /* Post-condition: verify all buses removed (NASA Rule 5) */
+  RX_ASSERT(manager->bus_count == 0, "Bus count should be zero after deinit");
 
   /* Delete ThreadX mutex */
   const UINT status = tx_mutex_delete(&manager->mutex);

@@ -139,6 +139,10 @@ internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t*
 {
   const uint32_t pclkb = k_pclkb_hz;
 
+  if (divider == NULL || cmcor == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
   if (frequency_hz == 0) {
     return k_rx_err_invalid_arg;
   }
@@ -150,7 +154,7 @@ internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t*
                                       k_cmt_divider_val_512};
 
   for (uint8_t i = 0; i < k_cmt_num_dividers; i++) {
-    uint32_t period_calc = (pclkb / dividers[i]) / frequency_hz;
+    const uint32_t period_calc = (pclkb / dividers[i]) / frequency_hz;
 
     /* Check if period fits in 16-bit and is reasonable */
     if (period_calc > k_cmt_period_min && period_calc <= k_cmt_period_max) {
@@ -162,6 +166,27 @@ internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t*
 
   rx_log_error(s_tag, "Error occurred");
   return k_rx_err_invalid_arg;
+}
+
+/**
+ * @brief Configure CMT interrupt routing and priority
+ *
+ * @param[in] channel CMT channel
+ * @param[in] priority Interrupt priority
+ *
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t internal_configure_cmt_interrupt(rx_cmt_channel_t channel, uint8_t priority)
+{
+  const uint8_t vector    = k_vect_cmt0_cmi0 + channel;
+  const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
+  const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
+
+  icu()->ipr[vector] = priority;
+  icu()->ier[ier_index] |= (1 << ier_bit);
+  icu()->ir[vector] = 0;
+
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -209,6 +234,11 @@ void cmt3_isr(void)
 
 rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
 {
+  volatile rx_cmt_channel_regs_t* cmt;
+  uint8_t                         divider;
+  uint16_t                        cmcor;
+  rx_err_t                        err;
+
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
   if ((int32_t)channel >= k_cmt_max_channels) {
@@ -227,15 +257,13 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  volatile rx_cmt_channel_regs_t* cmt = internal_get_cmt_base(channel);
+  cmt = internal_get_cmt_base(channel);
   if (cmt == NULL) {
     return k_rx_err_invalid_arg;
   }
 
   /* Calculate divider and compare value */
-  uint8_t        divider;
-  uint16_t       cmcor;
-  const rx_err_t err = internal_calculate_cmt_params(config->frequency_hz, &divider, &cmcor);
+  err = internal_calculate_cmt_params(config->frequency_hz, &divider, &cmcor);
   if (err != k_rx_ok) {
     return err;
   }
@@ -264,18 +292,10 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   cmt->cmcnt = 0;
 
   /* Configure interrupt */
-  const uint8_t vector = k_vect_cmt0_cmi0 + channel;
-
-  /* Set interrupt priority */
-  icu()->ipr[vector] = config->priority;
-
-  /* Enable interrupt in ICU */
-  uint8_t       ier_index = vector / k_icu_ier_bits_per_reg;
-  const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
-  icu()->ier[ier_index] |= (1 << ier_bit);
-
-  /* Clear interrupt flag */
-  icu()->ir[vector] = 0;
+  err = internal_configure_cmt_interrupt(channel, config->priority);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Save callback */
   s_cmt_callback[channel]    = config->callback;
@@ -285,14 +305,20 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   /* Start timer */
   rx_cmt_start(channel);
 
-  rx_log_info(s_tag, "Info");
+  rx_log_info(s_tag, "CMT initialized");
 
   return k_rx_ok;
 }
 
 rx_err_t rx_cmt_start(rx_cmt_channel_t channel)
 {
-  if ((int32_t)channel >= k_cmt_max_channels || !s_cmt_initialized[channel]) {
+  uint8_t cmstr_value;
+
+  if ((int32_t)channel >= k_cmt_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!s_cmt_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
@@ -300,15 +326,31 @@ rx_err_t rx_cmt_start(rx_cmt_channel_t channel)
   switch (channel) {
     case k_cmt_channel_0:
       cmt_ctrl()->cmstr0 |= (1 << k_cmt_cmstr_str0);
+      cmstr_value = cmt_ctrl()->cmstr0;
+      if ((cmstr_value & (1 << k_cmt_cmstr_str0)) == 0) {
+        return k_rx_err_hw_error;
+      }
       break;
     case k_cmt_channel_1:
       cmt_ctrl()->cmstr0 |= (1 << k_cmt_cmstr_str1);
+      cmstr_value = cmt_ctrl()->cmstr0;
+      if ((cmstr_value & (1 << k_cmt_cmstr_str1)) == 0) {
+        return k_rx_err_hw_error;
+      }
       break;
     case k_cmt_channel_2:
       cmt_ctrl()->cmstr1 |= (1 << k_cmt_cmstr_str0);
+      cmstr_value = cmt_ctrl()->cmstr1;
+      if ((cmstr_value & (1 << k_cmt_cmstr_str0)) == 0) {
+        return k_rx_err_hw_error;
+      }
       break;
     case k_cmt_channel_3:
       cmt_ctrl()->cmstr1 |= (1 << k_cmt_cmstr_str1);
+      cmstr_value = cmt_ctrl()->cmstr1;
+      if ((cmstr_value & (1 << k_cmt_cmstr_str1)) == 0) {
+        return k_rx_err_hw_error;
+      }
       break;
     default:
       return k_rx_err_invalid_arg;
@@ -319,6 +361,8 @@ rx_err_t rx_cmt_start(rx_cmt_channel_t channel)
 
 rx_err_t rx_cmt_stop(rx_cmt_channel_t channel)
 {
+  uint8_t cmstr_value;
+
   if ((int32_t)channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
   }
@@ -327,15 +371,31 @@ rx_err_t rx_cmt_stop(rx_cmt_channel_t channel)
   switch (channel) {
     case k_cmt_channel_0:
       cmt_ctrl()->cmstr0 &= ~(1 << k_cmt_cmstr_str0);
+      cmstr_value = cmt_ctrl()->cmstr0;
+      if ((cmstr_value & (1 << k_cmt_cmstr_str0)) != 0) {
+        return k_rx_err_hw_error;
+      }
       break;
     case k_cmt_channel_1:
       cmt_ctrl()->cmstr0 &= ~(1 << k_cmt_cmstr_str1);
+      cmstr_value = cmt_ctrl()->cmstr0;
+      if ((cmstr_value & (1 << k_cmt_cmstr_str1)) != 0) {
+        return k_rx_err_hw_error;
+      }
       break;
     case k_cmt_channel_2:
       cmt_ctrl()->cmstr1 &= ~(1 << k_cmt_cmstr_str0);
+      cmstr_value = cmt_ctrl()->cmstr1;
+      if ((cmstr_value & (1 << k_cmt_cmstr_str0)) != 0) {
+        return k_rx_err_hw_error;
+      }
       break;
     case k_cmt_channel_3:
       cmt_ctrl()->cmstr1 &= ~(1 << k_cmt_cmstr_str1);
+      cmstr_value = cmt_ctrl()->cmstr1;
+      if ((cmstr_value & (1 << k_cmt_cmstr_str1)) != 0) {
+        return k_rx_err_hw_error;
+      }
       break;
     default:
       return k_rx_err_invalid_arg;
@@ -372,7 +432,7 @@ rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel)
 
   /* Disable interrupt */
   const uint8_t vector    = k_vect_cmt0_cmi0 + channel;
-  uint8_t       ier_index = vector / k_icu_ier_bits_per_reg;
+  const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
   const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
   icu()->ier[ier_index] &= ~(1 << ier_bit);
 

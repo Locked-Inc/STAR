@@ -295,70 +295,78 @@ rx_err_t rx_bq4050_read_capacity(rx_bus_manager_t* manager,
   return k_rx_ok;
 }
 
-rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
-                               const char*         bus_name,
-                               rx_bq4050_status_t* status,
-                               uint8_t             num_cells)
+/* =============================================================================
+ * Internal Helper Functions
+ * =============================================================================
+ */
+
+static rx_err_t internal_read_electrical_status(rx_bus_manager_t*   manager,
+                                                const char*         bus_name,
+                                                rx_bq4050_status_t* status,
+                                                uint8_t             num_cells)
 {
-  RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
-  RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
-  RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
+  rx_err_t err;
 
-  if (num_cells > k_bq4050_max_cells) {
-    rx_log_error(s_tag, "num_cells parameter exceeds k_bq4050_max_cells");
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Read pack voltage */
-  rx_err_t err = rx_bq4050_read_voltage(manager, bus_name, &status->voltage_mv);
+  err = rx_bq4050_read_voltage(manager, bus_name, &status->voltage_mv);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read voltage");
     return err;
   }
 
-  /* Read individual cell voltages */
   err = rx_bq4050_read_cell_voltages(manager, bus_name, status->cell_voltages_mv, num_cells);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read cell voltages");
     return err;
   }
 
-  /* Read current */
   err = rx_bq4050_read_current(manager, bus_name, &status->current_ma);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read current");
     return err;
   }
 
-  /* Read average current */
   err = rx_bq4050_read_average_current(manager, bus_name, &status->average_current_ma);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read average current");
     return err;
   }
 
-  /* Read relative state of charge */
+  return k_rx_ok;
+}
+
+static rx_err_t internal_read_soc_status(rx_bus_manager_t*   manager,
+                                         const char*         bus_name,
+                                         rx_bq4050_status_t* status)
+{
+  rx_err_t err;
+
   err = rx_bq4050_read_relative_soc(manager, bus_name, &status->relative_soc);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read relative SOC");
     return err;
   }
 
-  /* Read absolute state of charge */
   err = rx_bq4050_read_absolute_soc(manager, bus_name, &status->absolute_soc);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read absolute SOC");
     return err;
   }
 
-  /* Read temperature */
   err = rx_bq4050_read_temperature(manager, bus_name, &status->temperature_c);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read temperature");
     return err;
   }
 
-  /* Read capacity */
+  return k_rx_ok;
+}
+
+static rx_err_t internal_read_capacity_status(rx_bus_manager_t*   manager,
+                                              const char*         bus_name,
+                                              rx_bq4050_status_t* status)
+{
+  rx_err_t err;
+
   err = rx_bq4050_read_capacity(manager,
                                 bus_name,
                                 &status->remaining_capacity_mah,
@@ -368,7 +376,6 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
     return err;
   }
 
-  /* Read design capacity */
   err = rx_bus_smbus_read_word_data(manager,
                                     bus_name,
                                     k_sbs_design_capacity,
@@ -378,14 +385,21 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
     return err;
   }
 
-  /* Read cycle count */
   err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_cycle_count, &status->cycle_count);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read cycle count");
     return err;
   }
 
-  /* Read time to empty */
+  return k_rx_ok;
+}
+
+static rx_err_t internal_read_timing_status(rx_bus_manager_t*   manager,
+                                            const char*         bus_name,
+                                            rx_bq4050_status_t* status)
+{
+  rx_err_t err;
+
   err = rx_bus_smbus_read_word_data(manager,
                                     bus_name,
                                     k_sbs_run_time_to_empty,
@@ -395,7 +409,6 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
     return err;
   }
 
-  /* Read time to full */
   err = rx_bus_smbus_read_word_data(manager,
                                     bus_name,
                                     k_sbs_average_time_to_full,
@@ -405,19 +418,69 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
     return err;
   }
 
-  /* Read battery status flags */
+  return k_rx_ok;
+}
+
+static rx_err_t internal_read_status_flags(rx_bus_manager_t*   manager,
+                                           const char*         bus_name,
+                                           rx_bq4050_status_t* status)
+{
   uint16_t status_flags;
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_battery_status, &status_flags);
+  rx_err_t err =
+    rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_battery_status, &status_flags);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read battery status");
     return err;
   }
 
-  /* Parse status flags */
   status->is_charging         = !(status_flags & k_bq4050_status_discharging);
   status->is_fully_charged    = (status_flags & k_bq4050_status_fully_charged) != 0;
   status->is_fully_discharged = (status_flags & k_bq4050_status_fully_discharged) != 0;
   status->is_low_capacity     = (status_flags & k_bq4050_status_remaining_capacity_alarm) != 0;
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
+                               const char*         bus_name,
+                               rx_bq4050_status_t* status,
+                               uint8_t             num_cells)
+{
+  rx_err_t err;
+
+  RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
+  RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
+  RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
+
+  if (num_cells > k_bq4050_max_cells) {
+    rx_log_error(s_tag, "num_cells parameter exceeds k_bq4050_max_cells");
+    return k_rx_err_invalid_arg;
+  }
+
+  err = internal_read_electrical_status(manager, bus_name, status, num_cells);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  err = internal_read_soc_status(manager, bus_name, status);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  err = internal_read_capacity_status(manager, bus_name, status);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  err = internal_read_timing_status(manager, bus_name, status);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  err = internal_read_status_flags(manager, bus_name, status);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   return k_rx_ok;
 }
