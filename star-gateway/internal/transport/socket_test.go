@@ -162,6 +162,116 @@ func TestSocketTransport_ContextCanceled(t *testing.T) {
 	}
 }
 
+func TestSocketTransport_SendReceive(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+
+	dir, err := os.MkdirTemp("/tmp", "star_socket_test_sr")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(dir)
+
+	socketPath := filepath.Join(dir, "test.sock")
+	ln, err := net.Listen("unix", socketPath)
+	if err != nil {
+		t.Fatalf("Failed to create temporary listener: %v", err)
+	}
+	defer ln.Close()
+
+	go func() {
+		conn, err := ln.Accept()
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		io.Copy(conn, conn) // Echo
+	}()
+
+	transport := NewSocketTransport(socketPath)
+	if err := transport.Open(); err != nil {
+		t.Fatalf("Failed to open transport: %v", err)
+	}
+	defer transport.Close()
+
+	// Test Send
+	n, err := transport.Send([]byte{0x01, 0x02})
+	if err != nil {
+		t.Errorf("Send failed: %v", err)
+	}
+	if n != 2 {
+		t.Errorf("Expected 2 bytes sent, got %d", n)
+	}
+
+	// Test Receive
+	data, err := transport.Receive(2)
+	if err != nil {
+		t.Errorf("Receive failed: %v", err)
+	}
+	if len(data) != 2 {
+		t.Errorf("Expected 2 bytes received, got %d", len(data))
+	}
+
+	// Test Send error
+	transport.Close()
+	_, err = transport.Send([]byte{0x01})
+	if err == nil {
+		t.Error("Expected error on Send to closed transport")
+	}
+}
+
+
+func TestSocketTransport_TransferErrors(t *testing.T) {
+	dir, err := os.MkdirTemp("/tmp", "star_socket_test_err")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(dir)
+
+	socketPath := filepath.Join(dir, "test.sock")
+	ln, err := net.Listen("unix", socketPath)
+	if err != nil {
+		t.Fatalf("Failed to create temporary listener: %v", err)
+	}
+
+	transport := NewSocketTransport(socketPath)
+	if err := transport.Open(); err != nil {
+		t.Fatalf("Failed to open transport: %v", err)
+	}
+
+	// Case 1: Write failure (server closed)
+	ln.Close()
+	transport.conn.Close() // Force close
+
+	_, err = transport.Transfer(context.Background(), []byte{0x01})
+	if err == nil {
+		t.Error("Expected error on write to closed connection")
+	}
+
+	transport.Close()
+	
+	// Case 2: Read failure (incomplete)
+	ln2, _ := net.Listen("unix", socketPath)
+	defer ln2.Close()
+	
+	transport2 := NewSocketTransport(socketPath)
+	transport2.Open()
+	defer transport2.Close()
+	
+	go func() {
+		conn, _ := ln2.Accept()
+		conn.Read(make([]byte, 10))
+		conn.Close() // Close without writing enough back
+	}()
+	
+	_, err = transport2.Transfer(context.Background(), []byte{0x01, 0x02})
+	if err == nil {
+		t.Error("Expected error on incomplete read")
+	}
+}
+
+
 // ============================================================================
 // Integration Tests (require Virtual RX72N running)
 // These are skipped with -short flag

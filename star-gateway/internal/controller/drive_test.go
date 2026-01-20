@@ -18,6 +18,10 @@ func TestArcadeDrive(t *testing.T) {
 		{"Forward Right Turn", 0.5, 0.5, 1.0, 0.0},
 		{"Forward Left Turn", 0.5, -0.5, 0.0, 1.0},
 		{"Clamp Overflow", 1.0, 1.0, 1.0, 0.0}, // 2.0/2.0 -> 1.0, 0/2.0 -> 0
+		{"Underflow Linear", -2.0, 0, -1.0, -1.0},
+		{"Overflow Linear", 2.0, 0, 1.0, 1.0},
+		{"Underflow Angular", 0, -2.0, -1.0, 1.0},
+		{"Overflow Angular", 0, 2.0, 1.0, -1.0},
 	}
 
 	for _, tt := range tests {
@@ -34,3 +38,23 @@ func TestArcadeDrive(t *testing.T) {
 func almostEqual(a, b float32) bool {
 	return (a-b) < 0.001 && (b-a) < 0.001
 }
+
+func TestClamp(t *testing.T) {
+	tests := []struct {
+		v, min, max float32
+		want        float32
+	}{
+		{0.5, -1.0, 1.0, 0.5},   // Inside
+		{-1.5, -1.0, 1.0, -1.0}, // Below min
+		{1.5, -1.0, 1.0, 1.0},   // Above max
+		{-1.0, -1.0, 1.0, -1.0}, // Exactly min
+		{1.0, -1.0, 1.0, 1.0},   // Exactly max
+	}
+
+	for _, tt := range tests {
+		if got := clamp(tt.v, tt.min, tt.max); got != tt.want {
+			t.Errorf("clamp(%v, %v, %v) = %v, want %v", tt.v, tt.min, tt.max, got, tt.want)
+		}
+	}
+}
+

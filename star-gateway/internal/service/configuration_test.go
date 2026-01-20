@@ -6,6 +6,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"math"
 	"testing"
 
@@ -1214,3 +1215,64 @@ func TestValidateConfiguration_AllTimingParametersInvalid(t *testing.T) {
 		t.Errorf("Expected 4 timing errors, got %d", timingErrors)
 	}
 }
+
+func TestGetConfiguration_HarqReceiveError(t *testing.T) {
+	mockHARQ := &testutil.MockHARQ{
+		ReceiveFunc: func(_ context.Context) ([]byte, error) {
+			return nil, errors.New("receive timeout")
+		},
+	}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
+
+	svc := NewConfigurationService(mockHARQ, mockDispatcher, logger)
+
+	req := &starv1.GetConfigurationRequest{Header: &starv1.RequestHeader{RequestId: "test"}}
+	_, err := svc.GetConfiguration(context.Background(), req)
+	if status.Code(err) != codes.Unavailable {
+		t.Errorf("Expected Unavailable, got %v", status.Code(err))
+	}
+}
+
+func TestSetConfiguration_HarqSendError(t *testing.T) {
+	mockHARQ := &testutil.MockHARQ{
+		SendFunc: func(_ context.Context, _ []byte, _ ...harq.Priority) error {
+			return errors.New("send failed")
+		},
+	}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
+
+	svc := NewConfigurationService(mockHARQ, mockDispatcher, logger)
+
+	req := &starv1.SetConfigurationRequest{
+		Header:        &starv1.RequestHeader{},
+		Configuration: createDefaultConfiguration(),
+	}
+	_, err := svc.SetConfiguration(context.Background(), req)
+	if status.Code(err) != codes.Unavailable {
+		t.Errorf("Expected Unavailable, got %v", status.Code(err))
+	}
+}
+
+func TestGetMotorPidConfig_UnmarshalError(t *testing.T) {
+	mockHARQ := &testutil.MockHARQ{
+		ReceiveFunc: func(_ context.Context) ([]byte, error) {
+			return []byte("garbage data"), nil
+		},
+	}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
+
+	svc := NewConfigurationService(mockHARQ, mockDispatcher, logger)
+
+	req := &starv1.GetMotorPidConfigRequest{
+		Header:  &starv1.RequestHeader{},
+		MotorId: 0,
+	}
+	_, err := svc.GetMotorPidConfig(context.Background(), req)
+	if status.Code(err) != codes.Unavailable {
+		t.Errorf("Expected Unavailable error for unmarshal failure, got %v", status.Code(err))
+	}
+}
+

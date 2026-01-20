@@ -1057,3 +1057,68 @@ func TestResetDevice_Success(t *testing.T) {
 		t.Error("Expected reset to be initiated")
 	}
 }
+
+func TestSetProtectionThresholds_MultipleValidationErrors(t *testing.T) {
+	mockHARQ := &testutil.MockHARQ{}
+	mockDispatcher := &testutil.MockDispatcher{
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
+			return make(chan *starv1.WireMessage)
+		},
+	}
+	logger := testutil.NewDiscardLogger()
+
+	svc := NewBatteryService(context.Background(), mockHARQ, mockDispatcher, logger)
+	defer svc.Shutdown()
+
+	tests := []struct {
+		name       string
+		modifyFunc func(*starv1.ProtectionThresholds)
+	}{
+		{"invalid overcharge", func(t *starv1.ProtectionThresholds) { t.OverchargeMa = 20000 }},
+		{"invalid overdischarge", func(t *starv1.ProtectionThresholds) { t.OverdischargeMa = 40000 }},
+		{"invalid overtemp", func(t *starv1.ProtectionThresholds) { t.OvertempDeciCelsius = 1500 }},
+		{"invalid undertemp", func(t *starv1.ProtectionThresholds) { t.UndertempDeciCelsius = -1000 }},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			thresholds := createValidProtectionThresholds()
+			tc.modifyFunc(thresholds)
+
+			req := &starv1.SetProtectionThresholdsRequest{
+				Header:     &starv1.RequestHeader{RequestId: "test"},
+				Thresholds: thresholds,
+			}
+
+			_, err := svc.SetProtectionThresholds(context.Background(), req)
+			if err == nil {
+				t.Errorf("Expected error for %s", tc.name)
+			}
+			if status.Code(err) != codes.InvalidArgument {
+				t.Errorf("Expected InvalidArgument for %s, got %v", tc.name, status.Code(err))
+			}
+		})
+	}
+}
+
+func TestBatteryService_ReceiveStreamBatteryLoop_Error(t *testing.T) {
+	mockHARQ := &testutil.MockHARQ{}
+	batteryCh := make(chan *starv1.WireMessage)
+	mockDispatcher := &testutil.MockDispatcher{
+		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
+			return batteryCh
+		},
+	}
+	logger := testutil.NewDiscardLogger()
+
+	svc := NewBatteryService(context.Background(), mockHARQ, mockDispatcher, logger)
+	
+	// Close channel to trigger error in receive loop
+	close(batteryCh)
+	
+	// Wait a bit for goroutine to process
+	time.Sleep(50 * time.Millisecond)
+	
+	svc.Shutdown()
+}
+
