@@ -210,7 +210,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
  *
  * @return k_rx_ok on success
  */
-rx_err_t rx_usb_comm_data_available(rx_usb_comm_handle_t* handle, bool* available);
+rx_err_t rx_usb_comm_data_available(const rx_usb_comm_handle_t* handle, bool* available);
 
 /**
  * @brief Check if USB is connected and ready
@@ -220,7 +220,7 @@ rx_err_t rx_usb_comm_data_available(rx_usb_comm_handle_t* handle, bool* availabl
  *
  * @return k_rx_ok on success
  */
-rx_err_t rx_usb_comm_is_ready(rx_usb_comm_handle_t* handle, bool* ready);
+rx_err_t rx_usb_comm_is_ready(const rx_usb_comm_handle_t* handle, bool* ready);
 
 /* =============================================================================
  * Utility Functions

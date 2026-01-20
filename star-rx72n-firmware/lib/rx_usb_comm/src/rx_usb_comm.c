@@ -40,7 +40,7 @@ static const char* s_tag = "USB_COMM";
 static const uint32_t s_frame_header_total = 8;
 
 static rx_err_t internal_decode_header(const uint8_t* data,
-                                       uint32_t       data_len,
+                                       const uint32_t data_len,
                                        rx_frame_t*    frame,
                                        uint32_t*      offset_out)
 {
@@ -239,7 +239,7 @@ static rx_err_t internal_compact_rx_buffer(rx_usb_comm_handle_t* handle)
  * @return k_rx_err_invalid_state if buffer state is inconsistent
  * @return k_rx_err_not_found if sync word not found
  */
-static rx_err_t internal_find_sync(rx_usb_comm_handle_t* handle, int32_t* sync_pos)
+static rx_err_t internal_find_sync(const rx_usb_comm_handle_t* handle, int32_t* sync_pos)
 {
   /* Pre-condition 1: Handle must be valid */
   if (handle == NULL) {
@@ -279,7 +279,7 @@ static rx_err_t internal_find_sync(rx_usb_comm_handle_t* handle, int32_t* sync_p
  * @param[in,out] elapsed_ms Pointer to elapsed time counter
  * @return true if sleep was performed, false if no time interface
  */
-static bool internal_sleep_and_advance(rx_usb_comm_handle_t* handle, uint32_t* elapsed_ms)
+static bool internal_sleep_and_advance(const rx_usb_comm_handle_t* handle, uint32_t* elapsed_ms)
 {
   if (handle->time_iface != NULL && handle->time_iface->sleep_ms != NULL) {
     handle->time_iface->sleep_ms(handle->time_iface->ctx, s_sleep_interval_ms);
@@ -296,7 +296,7 @@ static bool internal_sleep_and_advance(rx_usb_comm_handle_t* handle, uint32_t* e
  * @param[in] elapsed_ms Elapsed time in milliseconds
  * @return true if timed out, false otherwise
  */
-static bool internal_is_timed_out(uint32_t timeout_ms, uint32_t elapsed_ms)
+static bool internal_is_timed_out(const uint32_t timeout_ms, uint32_t elapsed_ms)
 {
   return (timeout_ms == 0) || (elapsed_ms >= timeout_ms);
 }
@@ -312,8 +312,9 @@ static bool internal_is_timed_out(uint32_t timeout_ms, uint32_t elapsed_ms)
  * @return k_rx_ok to continue searching
  * @return k_rx_err_timeout if timed out or no time interface
  */
-static rx_err_t
-internal_handle_no_sync(rx_usb_comm_handle_t* handle, uint32_t timeout_ms, uint32_t* elapsed_ms)
+static rx_err_t internal_handle_no_sync(rx_usb_comm_handle_t* handle,
+                                        const uint32_t        timeout_ms,
+                                        uint32_t*             elapsed_ms)
 {
   /* Buffer full and no sync - discard one byte to advance sliding window */
   if (handle->rx_buffer_len >= k_usb_comm_rx_buffer_size) {
@@ -347,8 +348,9 @@ internal_handle_no_sync(rx_usb_comm_handle_t* handle, uint32_t timeout_ms, uint3
  * @return k_rx_ok to continue waiting
  * @return k_rx_err_timeout if timed out or no time interface
  */
-static rx_err_t
-internal_wait_for_data(rx_usb_comm_handle_t* handle, uint32_t timeout_ms, uint32_t* elapsed_ms)
+static rx_err_t internal_wait_for_data(rx_usb_comm_handle_t* handle,
+                                       const uint32_t        timeout_ms,
+                                       uint32_t*             elapsed_ms)
 {
   if (internal_is_timed_out(timeout_ms, *elapsed_ms)) {
     return k_rx_err_timeout;
@@ -372,10 +374,10 @@ internal_wait_for_data(rx_usb_comm_handle_t* handle, uint32_t timeout_ms, uint32
  * @return Error code from rx_frame_decode on failure
  */
 static rx_err_t
-internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, uint32_t total_size)
+internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint32_t total_size)
 {
-  uint8_t* hdr    = handle->rx_buffer + handle->rx_buffer_pos;
-  uint32_t offset = 0;
+  const uint8_t* hdr    = handle->rx_buffer + handle->rx_buffer_pos;
+  uint32_t       offset = 0;
 
   /* Decode header */
   rx_err_t err = internal_decode_header(hdr, total_size, frame, &offset);
@@ -428,7 +430,7 @@ typedef enum : uint8_t {
  * @param[in,out] handle USB communication handle
  * @param[in] sync_pos Position of sync word in buffer
  */
-static void internal_align_to_sync(rx_usb_comm_handle_t* handle, int32_t sync_pos)
+static void internal_align_to_sync(rx_usb_comm_handle_t* handle, const int32_t sync_pos)
 {
   if ((uint32_t)sync_pos > handle->rx_buffer_pos) {
     handle->rx_buffer_pos = (uint32_t)sync_pos;
@@ -446,8 +448,8 @@ static void internal_align_to_sync(rx_usb_comm_handle_t* handle, int32_t sync_po
 static bool
 internal_parse_header(rx_usb_comm_handle_t* handle, uint16_t* payload_len, uint32_t* total_size)
 {
-  uint8_t* hdr = handle->rx_buffer + handle->rx_buffer_pos;
-  *payload_len = rx_frame_read_be16(&hdr[k_hdr_len_offset]);
+  const uint8_t* hdr = handle->rx_buffer + handle->rx_buffer_pos;
+  *payload_len       = rx_frame_read_be16(&hdr[k_hdr_len_offset]);
 
   if (*payload_len > k_frame_max_payload) {
     rx_log_warn(s_tag, "Invalid payload length, skipping");
@@ -473,7 +475,7 @@ internal_parse_header(rx_usb_comm_handle_t* handle, uint16_t* payload_len, uint3
  */
 static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* handle,
                                                       rx_frame_t*           frame,
-                                                      uint32_t              timeout_ms,
+                                                      const uint32_t        timeout_ms,
                                                       uint32_t*             elapsed_ms,
                                                       rx_err_t*             err)
 {
@@ -604,10 +606,10 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
  */
 
 rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
-                          rx_frame_type_t       type,
-                          uint8_t               flags,
+                          const rx_frame_type_t type,
+                          const uint8_t         flags,
                           const uint8_t*        payload,
-                          uint32_t              payload_len)
+                          const uint32_t        payload_len)
 {
   if (handle == NULL) {
     return k_rx_err_invalid_arg;
@@ -672,7 +674,7 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
   return k_rx_ok;
 }
 
-rx_err_t rx_usb_comm_send_ack(rx_usb_comm_handle_t* handle, uint16_t sequence)
+rx_err_t rx_usb_comm_send_ack(rx_usb_comm_handle_t* handle, const uint16_t sequence)
 {
   if (handle == NULL) {
     return k_rx_err_invalid_arg;
@@ -704,7 +706,8 @@ rx_err_t rx_usb_comm_send_ack(rx_usb_comm_handle_t* handle, uint16_t sequence)
   return rx_usb_write(handle->tx_buffer, wire_len);
 }
 
-rx_err_t rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, uint8_t flags)
+rx_err_t
+rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, const uint16_t sequence, const uint8_t flags)
 {
   if (handle == NULL) {
     return k_rx_err_invalid_arg;
@@ -741,7 +744,8 @@ rx_err_t rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, 
  * =============================================================================
  */
 
-rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms)
+rx_err_t
+rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint32_t timeout_ms)
 {
   /* Pre-condition 1: Handle must be valid */
   if (handle == NULL) {
@@ -786,7 +790,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
   return k_rx_err_timeout;
 }
 
-rx_err_t rx_usb_comm_data_available(rx_usb_comm_handle_t* handle, bool* available)
+rx_err_t rx_usb_comm_data_available(const rx_usb_comm_handle_t* handle, bool* available)
 {
   if (handle == NULL || available == NULL) {
     return k_rx_err_invalid_arg;
@@ -810,7 +814,7 @@ rx_err_t rx_usb_comm_data_available(rx_usb_comm_handle_t* handle, bool* availabl
   return k_rx_ok;
 }
 
-rx_err_t rx_usb_comm_is_ready(rx_usb_comm_handle_t* handle, bool* ready)
+rx_err_t rx_usb_comm_is_ready(const rx_usb_comm_handle_t* handle, bool* ready)
 {
   if (handle == NULL || ready == NULL) {
     return k_rx_err_invalid_arg;

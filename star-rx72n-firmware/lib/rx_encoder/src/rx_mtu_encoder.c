@@ -112,7 +112,7 @@ static int32_t            s_last_count[k_encoder_max_channels]          = {0};
 
 static rx_err_t internal_enable_mtu_module(rx_mtu_channel_t channel);
 static rx_err_t internal_configure_encoder_timer(volatile rx_mtu_channel_regs_t* mtu);
-static rx_err_t internal_verify_timer_counting(volatile rx_mtu_channel_regs_t* mtu);
+static rx_err_t internal_verify_timer_counting(const volatile rx_mtu_channel_regs_t* mtu);
 static rx_err_t internal_initialize_encoder_state(rx_mtu_channel_t           channel,
                                                   const rx_encoder_config_t* config);
 static rx_err_t internal_update_state_from_count(rx_mtu_channel_t    channel,
@@ -128,7 +128,7 @@ static bool internal_is_valid_channel(rx_mtu_channel_t channel);
  *
  * @return Pointer to MTU register base, or NULL if invalid
  */
-static volatile rx_mtu_channel_regs_t* internal_get_mtu_base(rx_mtu_channel_t channel)
+static volatile rx_mtu_channel_regs_t* internal_get_mtu_base(const rx_mtu_channel_t channel)
 {
   switch (channel) {
     case k_mtu_channel_0:
@@ -150,7 +150,7 @@ static volatile rx_mtu_channel_regs_t* internal_get_mtu_base(rx_mtu_channel_t ch
   }
 }
 
-static bool internal_is_valid_channel(rx_mtu_channel_t channel)
+static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
 {
   return internal_get_mtu_base(channel) != NULL;
 }
@@ -224,7 +224,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
   return k_rx_ok;
 }
 
-rx_err_t rx_encoder_read_raw(rx_mtu_channel_t channel, uint16_t* count)
+rx_err_t rx_encoder_read_raw(const rx_mtu_channel_t channel, uint16_t* count)
 {
   volatile rx_mtu_channel_regs_t* mtu;
 
@@ -241,7 +241,7 @@ rx_err_t rx_encoder_read_raw(rx_mtu_channel_t channel, uint16_t* count)
   return k_rx_ok;
 }
 
-rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* state)
+rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_t* state)
 {
   volatile rx_mtu_channel_regs_t* mtu;
 
@@ -260,7 +260,9 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   return internal_update_state_from_count(channel, current_count, state);
 }
 
-rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, float* velocity_rps)
+rx_err_t rx_encoder_read_velocity(const rx_mtu_channel_t channel,
+                                  const float            delta_time_s,
+                                  float*                 velocity_rps)
 {
   volatile rx_mtu_channel_regs_t* mtu;
   rx_encoder_state_t              state;
@@ -304,7 +306,7 @@ rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, 
   return k_rx_ok;
 }
 
-rx_err_t rx_encoder_reset(rx_mtu_channel_t channel)
+rx_err_t rx_encoder_reset(const rx_mtu_channel_t channel)
 {
   volatile rx_mtu_channel_regs_t* mtu;
 
@@ -328,7 +330,7 @@ rx_err_t rx_encoder_reset(rx_mtu_channel_t channel)
   return k_rx_ok;
 }
 
-rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
+rx_err_t rx_encoder_set_count(const rx_mtu_channel_t channel, const int32_t count)
 {
   volatile rx_mtu_channel_regs_t* mtu;
 
@@ -358,7 +360,7 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
   return k_rx_ok;
 }
 
-rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel)
+rx_err_t rx_encoder_deinit(const rx_mtu_channel_t channel)
 {
   if (!internal_is_valid_channel(channel)) {
     return k_rx_err_invalid_arg;
@@ -392,7 +394,7 @@ rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel)
  *
  * @return k_rx_ok on success
  */
-static rx_err_t internal_enable_mtu_module(rx_mtu_channel_t channel)
+static rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t channel)
 {
   volatile rx_mtu_channel_regs_t* mtu;
 
@@ -459,7 +461,7 @@ static rx_err_t internal_configure_encoder_timer(volatile rx_mtu_channel_regs_t*
  * @return k_rx_ok if timer is counting
  * @return k_rx_err_hw_init_failed if timer not counting
  */
-static rx_err_t internal_verify_timer_counting(volatile rx_mtu_channel_regs_t* mtu)
+static rx_err_t internal_verify_timer_counting(const volatile rx_mtu_channel_regs_t* mtu)
 {
   /* Note: This verification is optional and may not work if encoder is stationary.
    * In production, consider removing this check or only enabling in debug builds.
@@ -477,7 +479,7 @@ static rx_err_t internal_verify_timer_counting(volatile rx_mtu_channel_regs_t* m
  *
  * @return k_rx_ok on success
  */
-static rx_err_t internal_initialize_encoder_state(rx_mtu_channel_t           channel,
+static rx_err_t internal_initialize_encoder_state(const rx_mtu_channel_t     channel,
                                                   const rx_encoder_config_t* config)
 {
   if (config == NULL || !internal_is_valid_channel(channel)) {
@@ -498,9 +500,9 @@ static rx_err_t internal_initialize_encoder_state(rx_mtu_channel_t           cha
   return k_rx_ok;
 }
 
-static rx_err_t internal_update_state_from_count(rx_mtu_channel_t    channel,
-                                                 uint16_t            current_count,
-                                                 rx_encoder_state_t* state)
+static rx_err_t internal_update_state_from_count(const rx_mtu_channel_t channel,
+                                                 const uint16_t         current_count,
+                                                 rx_encoder_state_t*    state)
 {
   const uint16_t last_count = s_encoder_state[channel].last_raw_count;
 

@@ -276,7 +276,7 @@ rx_err_t rx_iwdt_task_heartbeat(const char* task_name)
   return k_rx_ok;
 }
 
-rx_err_t rx_iwdt_set_timeout_for_state(system_state_t state, uint32_t timeout_ms)
+rx_err_t rx_iwdt_set_timeout_for_state(const system_state_t state, const uint32_t timeout_ms)
 {
   /* Validate inputs */
   if (state >= k_system_state_count) {
@@ -302,7 +302,7 @@ rx_err_t rx_iwdt_set_timeout_for_state(system_state_t state, uint32_t timeout_ms
   return k_rx_ok;
 }
 
-rx_err_t rx_iwdt_set_state(system_state_t state)
+rx_err_t rx_iwdt_set_state(const system_state_t state)
 {
   /* Validate inputs */
   if (state >= k_system_state_count) {

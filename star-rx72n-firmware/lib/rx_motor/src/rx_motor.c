@@ -69,7 +69,7 @@ static const float s_duty_zero = 0.0f;
  *
  * @return Clamped duty cycle (-100 to +100)
  */
-static float internal_clamp_duty(float duty)
+static float internal_clamp_duty(const float duty)
 {
   /* Safety check for invalid float values (NASA Rule 5 compliance) */
   if (isnan(duty) || isinf(duty)) {
@@ -95,9 +95,9 @@ static float internal_clamp_duty(float duty)
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t internal_init_gptw_outputs(rx_gptw_channel_t       channel,
-                                           rx_gptw_output_t        output_a,
-                                           rx_gptw_output_t        output_b,
+static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t channel,
+                                           const rx_gptw_output_t  output_a,
+                                           const rx_gptw_output_t  output_b,
                                            const rx_gptw_config_t* gptw_config)
 {
   rx_err_t err = rx_gptw_init_pwm(channel, gptw_config);
@@ -294,7 +294,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
   return k_rx_ok;
 }
 
-rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
+rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 

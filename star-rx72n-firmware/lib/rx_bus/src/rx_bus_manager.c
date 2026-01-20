@@ -290,10 +290,10 @@ rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_conf
   return k_rx_err_not_found;
 }
 
-rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
-                                 const char*       name,
-                                 rx_bus_callback_t callback,
-                                 void*             user_ctx)
+rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t*       manager,
+                                 const char*             name,
+                                 const rx_bus_callback_t callback,
+                                 void*                   user_ctx)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is NULL");
   RX_CHECK_NULL_PTR(name, s_tag, "Name pointer is NULL");

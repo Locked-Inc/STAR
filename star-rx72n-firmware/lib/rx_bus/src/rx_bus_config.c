@@ -21,7 +21,8 @@
 
 static const char* s_tag = "BUS_CFG";
 
-static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin_num, const char* context_tag)
+static rx_err_t
+internal_validate_port_pin(const uint8_t port, const uint8_t pin_num, const char* context_tag)
 {
   if (port > k_rx_port_j) {
     rx_log_error_str(s_tag, "Invalid port", context_tag, (uint32_t)strlen(context_tag));
@@ -81,9 +82,9 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
 
 rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
                                 const char*      name,
-                                uint8_t          unit,
-                                uint8_t          channel,
-                                uint8_t          bits)
+                                const uint8_t    unit,
+                                const uint8_t    channel,
+                                const uint8_t    bits)
 {
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
@@ -133,13 +134,13 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * =============================================================================
  */
 
-rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
-                                const char*      name,
-                                uint8_t          channel,
-                                uint8_t          device_addr,
-                                rx_port_pin_t    sda_pin,
-                                rx_port_pin_t    scl_pin,
-                                uint32_t         frequency_hz)
+rx_err_t rx_bus_config_init_i2c(rx_bus_config_t*    config,
+                                const char*         name,
+                                const uint8_t       channel,
+                                const uint8_t       device_addr,
+                                const rx_port_pin_t sda_pin,
+                                const rx_port_pin_t scl_pin,
+                                const uint32_t      frequency_hz)
 {
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
@@ -200,14 +201,14 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
  * =============================================================================
  */
 
-rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
-                                  const char*      name,
-                                  uint8_t          channel,
-                                  uint8_t          device_addr,
-                                  rx_port_pin_t    sda_pin,
-                                  rx_port_pin_t    scl_pin,
-                                  uint32_t         frequency_hz,
-                                  bool             use_pec)
+rx_err_t rx_bus_config_init_smbus(rx_bus_config_t*    config,
+                                  const char*         name,
+                                  const uint8_t       channel,
+                                  const uint8_t       device_addr,
+                                  const rx_port_pin_t sda_pin,
+                                  const rx_port_pin_t scl_pin,
+                                  const uint32_t      frequency_hz,
+                                  const bool          use_pec)
 {
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
@@ -269,12 +270,12 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
  * =============================================================================
  */
 
-rx_err_t rx_bus_config_init_uart(rx_bus_config_t* config,
-                                 const char*      name,
-                                 uint8_t          channel,
-                                 rx_port_pin_t    tx_pin,
-                                 rx_port_pin_t    rx_pin,
-                                 uint32_t         baudrate)
+rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
+                                 const char*         name,
+                                 const uint8_t       channel,
+                                 const rx_port_pin_t tx_pin,
+                                 const rx_port_pin_t rx_pin,
+                                 const uint32_t      baudrate)
 {
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");

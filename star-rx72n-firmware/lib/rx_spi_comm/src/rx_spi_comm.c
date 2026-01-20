@@ -55,7 +55,7 @@ typedef enum : uint8_t {
 } frame_header_offset_t;
 
 static rx_err_t internal_decode_header(const uint8_t* data,
-                                       uint32_t       data_len,
+                                       const uint32_t data_len,
                                        rx_frame_t*    frame,
                                        uint32_t*      offset_out)
 {
@@ -145,7 +145,7 @@ typedef enum : uint16_t {
  * Prevents infinite wait states when host never signals readiness.
  * Uses precise time measurement on RX72N and iteration count for host tests.
  */
-static rx_err_t internal_wait_for_ack(rx_spi_comm_handle_t* handle, uint32_t timeout_ms)
+static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32_t timeout_ms)
 {
 #ifdef __RX__
   /* RX72N: Use ThreadX time measurement for precise timeout */
@@ -198,9 +198,9 @@ static rx_err_t internal_wait_for_ack(rx_spi_comm_handle_t* handle, uint32_t tim
  */
 static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
                                       const uint8_t*        tx_data,
-                                      uint32_t              tx_len,
+                                      const uint32_t        tx_len,
                                       uint8_t*              rx_data,
-                                      uint32_t              rx_len)
+                                      const uint32_t        rx_len)
 {
   uint32_t transfer_len;
   rx_err_t wait_err;
@@ -333,10 +333,10 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  */
 
 static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
-                                     rx_frame_type_t             type,
-                                     uint8_t                     flags,
+                                     const rx_frame_type_t       type,
+                                     const uint8_t               flags,
                                      const uint8_t*              payload,
-                                     uint32_t                    payload_len,
+                                     const uint32_t              payload_len,
                                      rx_frame_t*                 frame)
 {
   if (handle == NULL || frame == NULL) {
@@ -370,10 +370,10 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
 }
 
 rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
-                          rx_frame_type_t       type,
-                          uint8_t               flags,
+                          const rx_frame_type_t type,
+                          const uint8_t         flags,
                           const uint8_t*        payload,
-                          uint32_t              payload_len)
+                          const uint32_t        payload_len)
 {
   rx_frame_t frame;
   uint8_t    wire_buffer[k_frame_max_size];
@@ -428,7 +428,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   return k_rx_ok;
 }
 
-rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence)
+rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, const uint16_t sequence)
 {
   if (handle == NULL) {
     return k_rx_err_invalid_arg;
@@ -464,7 +464,7 @@ rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence)
   return internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
 }
 
-rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, uint8_t flags)
+rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, const uint16_t sequence, uint8_t flags)
 {
   if (handle == NULL) {
     return k_rx_err_invalid_arg;
@@ -512,7 +512,8 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, 
  * @param timeout_ms Maximum time to wait in milliseconds (0 = no wait)
  * @return k_rx_ok if data available, k_rx_err_timeout if timeout expired
  */
-static rx_err_t internal_wait_for_data(rx_spi_comm_handle_t* handle, uint32_t timeout_ms)
+static rx_err_t internal_wait_for_data(const rx_spi_comm_handle_t* handle,
+                                       const uint32_t              timeout_ms)
 {
   bool     available = false;
   rx_err_t err       = rspi_peripheral_read_available(handle->channel, &available);
@@ -592,8 +593,9 @@ internal_read_frame_header(rx_spi_comm_handle_t* handle, uint8_t* header_buf, ui
   return k_rx_ok;
 }
 
-static rx_err_t
-internal_decode_frame(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t total_size)
+static rx_err_t internal_decode_frame(const rx_spi_comm_handle_t* handle,
+                                      rx_frame_t*                 frame,
+                                      const uint32_t              total_size)
 {
   uint32_t offset = 0;
 
@@ -622,7 +624,8 @@ internal_decode_frame(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t 
  * =============================================================================
  */
 
-rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms)
+rx_err_t
+rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint32_t timeout_ms)
 {
   if (handle == NULL || frame == NULL) {
     return k_rx_err_invalid_arg;
@@ -677,7 +680,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
   return k_rx_ok;
 }
 
-rx_err_t rx_spi_comm_data_available(rx_spi_comm_handle_t* handle, bool* available)
+rx_err_t rx_spi_comm_data_available(const rx_spi_comm_handle_t* handle, bool* available)
 {
   if (handle == NULL || available == NULL) {
     return k_rx_err_invalid_arg;

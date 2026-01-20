@@ -101,7 +101,7 @@ static bool s_riic_channel_initialized[k_riic_max_channels] = {false, false, fal
  *
  * @return Pointer to RIIC register base, or NULL if invalid channel
  */
-static volatile rx_riic_regs_t* internal_get_riic_base(uint8_t channel)
+static volatile rx_riic_regs_t* internal_get_riic_base(const uint8_t channel)
 {
   switch (channel) {
     case k_riic_channel_0: {
@@ -128,7 +128,8 @@ static volatile rx_riic_regs_t* internal_get_riic_base(uint8_t channel)
  *
  * @return k_rx_ok on success, error code otherwise
  */
-static rx_err_t internal_calculate_bit_rate(uint32_t frequency_hz, uint8_t* icbrl, uint8_t* icbrh)
+static rx_err_t
+internal_calculate_bit_rate(const uint32_t frequency_hz, uint8_t* icbrl, uint8_t* icbrh)
 {
   /* PCLKB is used for RIIC (60 MHz on RX72N) */
   const uint32_t pclk = k_pclkb_hz;
@@ -157,7 +158,7 @@ static rx_err_t internal_calculate_bit_rate(uint32_t frequency_hz, uint8_t* icbr
  *
  * @return k_rx_ok on success, k_rx_err_timeout on timeout
  */
-static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
+static rx_err_t internal_wait_bus_ready(const volatile rx_riic_regs_t* riic)
 {
   uint32_t timeout = k_riic_timeout_us;
 
@@ -239,7 +240,7 @@ static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
  *
  * @return k_rx_ok on success, k_rx_err_nack if NACK received
  */
-static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, uint8_t data)
+static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, const uint8_t data)
 {
   /* Wait for transmit data empty */
   uint32_t timeout = k_riic_timeout_us;
@@ -280,7 +281,8 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, uint8_t data)
  *
  * @return k_rx_ok on success, error code otherwise
  */
-static rx_err_t internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, bool send_ack)
+static rx_err_t
+internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send_ack)
 {
   /* Wait for receive data full */
   uint32_t timeout = k_riic_timeout_us;
@@ -311,7 +313,7 @@ static rx_err_t internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data,
  * =============================================================================
  */
 
-rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
+rx_err_t riic_init(const uint8_t channel, const uint32_t frequency_hz)
 {
   /* Validate channel */
   if (channel >= k_riic_max_channels) {
@@ -374,7 +376,8 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   return k_rx_ok;
 }
 
-rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, uint16_t length)
+rx_err_t
+riic_write(const uint8_t channel, uint8_t device_addr, const uint8_t* data, uint16_t length)
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
 
@@ -421,7 +424,7 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
   return k_rx_ok;
 }
 
-rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t length)
+rx_err_t riic_read(const uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t length)
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
 
@@ -469,12 +472,12 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
   return k_rx_ok;
 }
 
-rx_err_t riic_write_read(uint8_t        channel,
-                         uint8_t        device_addr,
+rx_err_t riic_write_read(const uint8_t  channel,
+                         const uint8_t  device_addr,
                          const uint8_t* write_data,
-                         uint16_t       write_length,
+                         const uint16_t write_length,
                          uint8_t*       read_data,
-                         uint16_t       read_length)
+                         const uint16_t read_length)
 {
   RX_CHECK_NULL_PTR(write_data, s_tag, "Write data pointer is NULL");
   RX_CHECK_NULL_PTR(read_data, s_tag, "Read data pointer is NULL");

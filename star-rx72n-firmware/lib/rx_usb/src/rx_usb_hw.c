@@ -363,7 +363,7 @@ rx_usb_state_t rx_usb_hw_get_bus_state(void)
 /**
  * @brief Set USB address (called during enumeration)
  */
-void rx_usb_hw_set_address(uint8_t address)
+void rx_usb_hw_set_address(const uint8_t address)
 {
   usb0()->usbaddr = address & k_usb_address_mask_hw;
   rx_log_debug(s_tag, "USB address set");
@@ -372,11 +372,11 @@ void rx_usb_hw_set_address(uint8_t address)
 /**
  * @brief Configure a pipe for bulk/interrupt transfer
  */
-rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
-                                  uint8_t  endpoint,
-                                  bool     is_in,
-                                  uint16_t type,
-                                  uint16_t max_packet)
+rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
+                                  const uint8_t  endpoint,
+                                  const bool     is_in,
+                                  const uint16_t type,
+                                  const uint16_t max_packet)
 {
   /* Rule 5: Pre-condition validation */
   if (pipe == k_usb_pipe_min || pipe > k_usb_pipe_max) {

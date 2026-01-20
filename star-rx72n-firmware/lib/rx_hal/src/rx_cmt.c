@@ -109,7 +109,7 @@ static void*             s_cmt_user_data[k_cmt_max_channels]   = {NULL};
  *
  * @return Pointer to CMT register base, or NULL if invalid
  */
-static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(rx_cmt_channel_t channel)
+static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(const rx_cmt_channel_t channel)
 {
   switch (channel) {
     case k_cmt_channel_0:
@@ -135,7 +135,7 @@ static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(rx_cmt_channel_t ch
  * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t
-internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t* cmcor)
+internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uint16_t* cmcor)
 {
   const uint32_t pclkb = k_pclkb_hz;
 
@@ -176,7 +176,8 @@ internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t*
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t internal_configure_cmt_interrupt(rx_cmt_channel_t channel, uint8_t priority)
+static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_channel_t channel,
+                                                 const uint8_t          priority)
 {
   const uint8_t vector    = k_vect_cmt0_cmi0 + channel;
   const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
@@ -232,7 +233,7 @@ void cmt3_isr(void)
  * =============================================================================
  */
 
-rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
+rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* config)
 {
   volatile rx_cmt_channel_regs_t* cmt;
   uint8_t                         divider;
@@ -310,7 +311,7 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   return k_rx_ok;
 }
 
-rx_err_t rx_cmt_start(rx_cmt_channel_t channel)
+rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
 {
   uint8_t cmstr_value;
 
@@ -359,7 +360,7 @@ rx_err_t rx_cmt_start(rx_cmt_channel_t channel)
   return k_rx_ok;
 }
 
-rx_err_t rx_cmt_stop(rx_cmt_channel_t channel)
+rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
 {
   uint8_t cmstr_value;
 
@@ -404,7 +405,7 @@ rx_err_t rx_cmt_stop(rx_cmt_channel_t channel)
   return k_rx_ok;
 }
 
-rx_err_t rx_cmt_get_count(rx_cmt_channel_t channel, uint16_t* count)
+rx_err_t rx_cmt_get_count(const rx_cmt_channel_t channel, uint16_t* count)
 {
   RX_CHECK_NULL_PTR(count, s_tag, "count pointer is NULL");
 
@@ -412,7 +413,7 @@ rx_err_t rx_cmt_get_count(rx_cmt_channel_t channel, uint16_t* count)
     return k_rx_err_invalid_state;
   }
 
-  volatile rx_cmt_channel_regs_t* cmt = internal_get_cmt_base(channel);
+  const volatile rx_cmt_channel_regs_t* cmt = internal_get_cmt_base(channel);
   if (cmt == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -421,7 +422,7 @@ rx_err_t rx_cmt_get_count(rx_cmt_channel_t channel, uint16_t* count)
   return k_rx_ok;
 }
 
-rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel)
+rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
 {
   if ((int32_t)channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;

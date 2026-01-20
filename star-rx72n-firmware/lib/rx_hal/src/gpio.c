@@ -45,10 +45,10 @@ typedef enum : uint8_t {
  *
  * @return k_rx_ok if valid, error code otherwise
  */
-static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
+static rx_err_t internal_validate_port_pin(const uint8_t port, const uint8_t pin)
 {
   /* Validate port */
-  volatile rx_port_regs_t* port_base = rx_port_get_base(port);
+  const volatile rx_port_regs_t* port_base = rx_port_get_base(port);
   if (port_base == NULL) {
     rx_log_error("GPIO", "Invalid port number");
     return k_rx_err_gpio_invalid_port;
@@ -68,12 +68,12 @@ static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
  * =============================================================================
  */
 
-rx_err_t gpio_set_output(rx_port_pin_t pin)
+rx_err_t gpio_set_output(const rx_port_pin_t pin)
 {
   /* Extract port and pin number from rx_port_pin_t */
-  const uint8_t       port      = rx_port_from_pin(pin);
-  const uint8_t       pin_num   = rx_pin_from_pin(pin);
-  rx_pin_interface_t* pin_iface = NULL;
+  const uint8_t             port      = rx_port_from_pin(pin);
+  const uint8_t             pin_num   = rx_pin_from_pin(pin);
+  const rx_pin_interface_t* pin_iface = NULL;
 
   /* Validate parameters */
   rx_err_t err = internal_validate_port_pin(port, pin_num);
@@ -103,12 +103,12 @@ rx_err_t gpio_set_output(rx_port_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_set_input(rx_port_pin_t pin)
+rx_err_t gpio_set_input(const rx_port_pin_t pin)
 {
   /* Extract port and pin number from rx_port_pin_t */
-  const uint8_t       port      = rx_port_from_pin(pin);
-  const uint8_t       pin_num   = rx_pin_from_pin(pin);
-  rx_pin_interface_t* pin_iface = NULL;
+  const uint8_t             port      = rx_port_from_pin(pin);
+  const uint8_t             pin_num   = rx_pin_from_pin(pin);
+  const rx_pin_interface_t* pin_iface = NULL;
 
   /* Validate parameters */
   rx_err_t err = internal_validate_port_pin(port, pin_num);
@@ -138,7 +138,7 @@ rx_err_t gpio_set_input(rx_port_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_write_high(rx_port_pin_t pin)
+rx_err_t gpio_write_high(const rx_port_pin_t pin)
 {
   /* Extract port and pin number from rx_port_pin_t */
   const uint8_t port    = rx_port_from_pin(pin);
@@ -156,7 +156,7 @@ rx_err_t gpio_write_high(rx_port_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_write_low(rx_port_pin_t pin)
+rx_err_t gpio_write_low(const rx_port_pin_t pin)
 {
   /* Extract port and pin number from rx_port_pin_t */
   const uint8_t port    = rx_port_from_pin(pin);
@@ -174,7 +174,7 @@ rx_err_t gpio_write_low(rx_port_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_toggle(rx_port_pin_t pin)
+rx_err_t gpio_toggle(const rx_port_pin_t pin)
 {
   /* Extract port and pin number from rx_port_pin_t */
   const uint8_t port    = rx_port_from_pin(pin);
@@ -192,7 +192,7 @@ rx_err_t gpio_toggle(rx_port_pin_t pin)
   return k_rx_ok;
 }
 
-rx_err_t gpio_read(rx_port_pin_t pin, bool* value)
+rx_err_t gpio_read(const rx_port_pin_t pin, bool* value)
 {
   /* Check null pointer */
   RX_CHECK_NULL_PTR(value, "GPIO", "Value pointer is NULL");
@@ -206,7 +206,7 @@ rx_err_t gpio_read(rx_port_pin_t pin, bool* value)
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */
-  volatile rx_port_regs_t* port_base = rx_port_get_base(port);
+  const volatile rx_port_regs_t* port_base = rx_port_get_base(port);
 
   *value = (port_base->pidr & (k_gpio_bit_set << pin_num)) != k_gpio_bit_clear;
 
