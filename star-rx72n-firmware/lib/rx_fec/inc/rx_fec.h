@@ -29,6 +29,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "rx_bit_constants.h"
 #include "rx_err.h"
 
 #ifdef __cplusplus
@@ -156,8 +157,13 @@ uint32_t rx_fec_encoded_len(uint32_t input_len);
  * Round up to 8200 for safe margin.
  */
 typedef enum : uint16_t {
-  k_fec_max_symbols = 8200, /**< Maximum symbols for static allocation */
+  k_fec_max_symbols     = 8200, /**< Maximum symbols for static allocation */
+  k_fec_max_input_bytes = (uint16_t)((k_fec_max_symbols - k_fec_tail_bits) / k_rx_bits_per_byte),
 } rx_fec_buffer_limits_t;
+
+_Static_assert(k_fec_max_input_bytes ==
+                 (uint16_t)((k_fec_max_symbols - k_fec_tail_bits) / k_rx_bits_per_byte),
+               "k_fec_max_input_bytes mismatch with k_fec_max_symbols");
 
 /**
  * @brief FEC decoder state

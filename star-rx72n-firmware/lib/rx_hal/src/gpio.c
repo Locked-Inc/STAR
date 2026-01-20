@@ -71,15 +71,16 @@ static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
 rx_err_t gpio_set_output(rx_port_pin_t pin)
 {
   /* Extract port and pin number from rx_port_pin_t */
-  const uint8_t port    = rx_port_from_pin(pin);
-  const uint8_t pin_num = rx_pin_from_pin(pin);
+  const uint8_t       port      = rx_port_from_pin(pin);
+  const uint8_t       pin_num   = rx_pin_from_pin(pin);
+  rx_pin_interface_t* pin_iface = NULL;
 
   /* Validate parameters */
   rx_err_t err = internal_validate_port_pin(port, pin_num);
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Reserve pin through global pin validator */
-  rx_pin_interface_t* pin_iface = rx_infrastructure_get_pin_interface();
+  pin_iface = rx_infrastructure_get_pin_interface();
   if (pin_iface != NULL) {
     err = pin_iface->reserve_pin(pin_iface->ctx, port, pin_num, "GPIO_OUT");
     if (err != k_rx_ok && err != k_rx_err_gpio_conflict) {
@@ -105,15 +106,16 @@ rx_err_t gpio_set_output(rx_port_pin_t pin)
 rx_err_t gpio_set_input(rx_port_pin_t pin)
 {
   /* Extract port and pin number from rx_port_pin_t */
-  const uint8_t port    = rx_port_from_pin(pin);
-  const uint8_t pin_num = rx_pin_from_pin(pin);
+  const uint8_t       port      = rx_port_from_pin(pin);
+  const uint8_t       pin_num   = rx_pin_from_pin(pin);
+  rx_pin_interface_t* pin_iface = NULL;
 
   /* Validate parameters */
   rx_err_t err = internal_validate_port_pin(port, pin_num);
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Reserve pin through global pin validator */
-  rx_pin_interface_t* pin_iface = rx_infrastructure_get_pin_interface();
+  pin_iface = rx_infrastructure_get_pin_interface();
   if (pin_iface != NULL) {
     err = pin_iface->reserve_pin(pin_iface->ctx, port, pin_num, "GPIO_IN");
     if (err != k_rx_ok && err != k_rx_err_gpio_conflict) {

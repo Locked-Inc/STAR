@@ -175,6 +175,11 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
 static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   gpio_read_ctx_t* ctx = (gpio_read_ctx_t*)user_ctx;
+  rx_err_t         err = k_rx_err_hw_error;
+
+  RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is NULL");
+  RX_CHECK_NULL_PTR(ctx, s_tag, "user_ctx pointer is NULL");
+  RX_CHECK_NULL_PTR(ctx->value, s_tag, "value pointer is NULL");
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
@@ -184,7 +189,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Read GPIO value */
-  const rx_err_t err = gpio_read(bus_config->proto.gpio.pin, ctx->value);
+  err = gpio_read(bus_config->proto.gpio.pin, ctx->value);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO read failed");

@@ -137,7 +137,7 @@ static rx_err_t internal_calculate_bit_rate(uint32_t frequency_hz, uint8_t* icbr
    * I2C_CLK = PCLK / (2 * (ICBRL + 1) + (ICBRH + 1))
    * Simplified: ICBRL = ICBRH for 50% duty cycle
    */
-  uint32_t divisor = (pclk / frequency_hz) / k_riic_brr_divisor;
+  const uint32_t divisor = (pclk / frequency_hz) / k_riic_brr_divisor;
 
   if (divisor < k_riic_brr_min || divisor > k_riic_brr_max) {
     rx_log_error(s_tag, "Invalid frequency for PCLKB");
@@ -350,8 +350,8 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   riic->iccr1 = k_riic_timeout_zero;
 
   /* Calculate bit rate */
-  uint8_t  icbrl, icbrh;
-  rx_err_t err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
+  uint8_t        icbrl, icbrh;
+  const rx_err_t err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
   RX_RETURN_ON_ERROR(err, s_tag, "Bit rate calculation failed");
 
   /* Configure bit rate */

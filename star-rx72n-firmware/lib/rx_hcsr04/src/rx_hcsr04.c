@@ -215,11 +215,11 @@ static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
  */
 static rx_err_t internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
 {
-  uint32_t start_time = hcsr04_hal_get_time_us();
-  uint32_t elapsed    = 0;
-  uint32_t i          = 0;
-  bool     pin_state  = false;
-  rx_err_t read_err   = k_rx_ok;
+  const uint32_t start_time = hcsr04_hal_get_time_us();
+  uint32_t       elapsed    = 0;
+  uint32_t       i          = 0;
+  bool           pin_state  = false;
+  rx_err_t       read_err   = k_rx_ok;
 
   for (i = 0; i < k_echo_poll_max_iterations; i++) {
     /* Check for cancellation request */
@@ -640,6 +640,10 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
 rx_err_t
 rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void* user_data)
 {
+  rx_err_t           err;
+  UINT               status;
+  rx_hcsr04_result_t result;
+
   if (handle == NULL || callback == NULL) {
     return k_rx_err_null_ptr;
   }
@@ -677,8 +681,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
     tx_mutex_put(&s_pending_mutex);
 
     /* Signal worker thread - function returns immediately */
-    const UINT status =
-      tx_event_flags_set(&s_measurement_request, k_event_measurement_request, TX_OR);
+    status = tx_event_flags_set(&s_measurement_request, k_event_measurement_request, TX_OR);
 
     if (status != TX_SUCCESS) {
       /* Rollback on failure */
@@ -692,15 +695,14 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
     return k_rx_ok; /* Callback will be invoked from worker thread */
   }
   /* Fallback sync mode: perform measurement inline (backward compatible) */
-  rx_hcsr04_result_t result;
-  rx_hcsr04_measure(handle, &result);
+  err = rx_hcsr04_measure(handle, &result);
 
   handle->measurement_active = false;
 
   /* Invoke callback before return (synchronous) */
   callback(handle, &result, user_data);
 
-  return k_rx_ok;
+  return err;
 }
 
 bool rx_hcsr04_is_busy(const rx_hcsr04_t* handle)

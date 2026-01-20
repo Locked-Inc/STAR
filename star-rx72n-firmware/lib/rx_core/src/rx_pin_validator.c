@@ -52,7 +52,7 @@ static uint8_t internal_port_to_index(uint8_t port)
  */
 static rx_err_t internal_validate_port(uint8_t port)
 {
-  uint8_t index = internal_port_to_index(port);
+  const uint8_t index = internal_port_to_index(port);
   if (index == k_invalid_port) {
     return k_rx_err_gpio_invalid_port;
   }
@@ -226,7 +226,7 @@ static bool impl_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
     return false;
   }
 
-  bool reserved = validator->reservations[port_index][pin].reserved;
+  const bool reserved = validator->reservations[port_index][pin].reserved;
 
   /* Release mutex */
   tx_mutex_put(&validator->mutex);
@@ -331,7 +331,7 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
   memset(validator, 0, sizeof(pin_validator_t));
 
   /* Create mutex */
-  UINT status = tx_mutex_create(&validator->mutex, "PinValidatorMutex", TX_NO_INHERIT);
+  const UINT status = tx_mutex_create(&validator->mutex, "PinValidatorMutex", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     rx_log_error("PIN_VALIDATOR", "Failed to create mutex");
     return k_rx_err_rtos_mutex;
@@ -368,6 +368,8 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
 
 rx_err_t pin_validator_deinit(pin_validator_t* validator)
 {
+  UINT status;
+
   RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is NULL");
 
   if (!validator->initialized) {
@@ -375,7 +377,10 @@ rx_err_t pin_validator_deinit(pin_validator_t* validator)
   }
 
   /* Delete mutex */
-  tx_mutex_delete(&validator->mutex);
+  status = tx_mutex_delete(&validator->mutex);
+  if (status != TX_SUCCESS) {
+    rx_log_warn("PIN_VALIDATOR", "Failed to delete mutex during deinit");
+  }
 
   /* Clear state */
   validator->initialized = false;

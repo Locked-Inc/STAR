@@ -51,7 +51,7 @@ internal_encode_string_callback(pb_ostream_t* stream, const pb_field_t* field, v
     return true; /* Empty string is valid */
   }
 
-  uint32_t len = strlen(str);
+  const uint32_t len = strlen(str);
   if (!pb_encode_tag_for_field(stream, field)) {
     return false;
   }

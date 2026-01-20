@@ -165,12 +165,10 @@ rx_err_t rx_mpc_set_adc(rx_port_pin_t pin);
  * Configures pin for SCI transmit or receive.
  *
  * @param[in] pin GPIO pin enum (encodes port and pin number)
- * @param[in] is_tx True for TX, false for RX
- *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_sci(rx_port_pin_t pin, bool is_tx);
+rx_err_t rx_mpc_set_sci(rx_port_pin_t pin);
 
 /**
  * @brief Configure pin for RIIC (I2C) function

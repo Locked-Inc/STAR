@@ -29,6 +29,13 @@ typedef enum : uint8_t {
   k_adc_timeout_ms   = 100, /**< ADC conversion timeout (ms) */
 } adc_constants_t;
 
+/** @brief ADC unit and bit constants */
+typedef enum : uint8_t {
+  k_adc_unit_0  = 0U, /**< ADC unit 0 */
+  k_adc_unit_1  = 1U, /**< ADC unit 1 */
+  k_adc_bit_one = 1U, /**< Single-bit value */
+} adc_unit_constants_t;
+
 /** @brief ADC resolution options */
 typedef enum : uint8_t {
   k_adc_resolution_8bit  = 8,  /**< 8-bit ADC resolution */
@@ -94,16 +101,48 @@ static bool s_adc_unit_initialized[k_adc_max_units] = {false, false};
 static volatile rx_s12ad_regs_t* internal_get_adc_base(uint8_t unit)
 {
   switch (unit) {
-    case 0: {
+    case k_adc_unit_0: {
       return s12ad0();
     }
-    case 1: {
+    case k_adc_unit_1: {
       return s12ad1();
     }
     default: {
       return NULL;
     }
   }
+}
+
+static rx_err_t
+internal_configure_adc_unit(uint8_t unit, volatile rx_s12ad_regs_t* adc, uint8_t bits)
+{
+  uint16_t adcer;
+
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
+
+  if (unit == k_adc_unit_0) {
+    system_regs()->mstpcra &= ~((uint32_t)k_adc_bit_one << k_adc_mstpra_s12ad0);
+  } else {
+    system_regs()->mstpcra &= ~((uint32_t)k_adc_bit_one << k_adc_mstpra_s12ad1);
+  }
+
+  system_regs()->prcr = k_rx_prcr_lock;
+
+  adcer = adc->adcer;
+  adcer &= ~(k_adc_adcer_adprc_mask << k_adc_adcer_adprc_shift);
+  if (bits == k_adc_resolution_8bit) {
+    adcer |= k_adc_adcer_adprc_8bit;
+  } else if (bits == k_adc_resolution_10bit) {
+    adcer |= k_adc_adcer_adprc_10bit;
+  } else {
+    adcer |= k_adc_adcer_adprc_12bit;
+  }
+  adc->adcer = adcer;
+
+  s_adc_unit_initialized[unit] = true;
+  rx_log_debug(s_tag, "ADC unit initialized");
+
+  return k_rx_ok;
 }
 
 /**
@@ -138,8 +177,11 @@ static rx_err_t internal_validate_unit_channel(uint8_t unit, uint8_t channel)
 
 rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
 {
+  volatile rx_s12ad_regs_t* adc = NULL;
+  rx_err_t                  err;
+
   /* Validate parameters */
-  const rx_err_t err = internal_validate_unit_channel(unit, channel);
+  err = internal_validate_unit_channel(unit, channel);
   RX_RETURN_ON_ERROR(err, s_tag, "Unit/channel validation failed");
 
   /* Validate resolution */
@@ -150,49 +192,24 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   }
 
   /* Get ADC base */
-  volatile rx_s12ad_regs_t* adc = internal_get_adc_base(unit);
+  adc = internal_get_adc_base(unit);
   if (adc == NULL) {
     return k_rx_err_invalid_arg;
   }
 
   /* Initialize ADC unit if not already initialized */
   if (!s_adc_unit_initialized[unit]) {
-    /* Unlock module stop control */
-    system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
-
-    /* Enable ADC module (clear module stop bit) */
-    if (unit == 0) {
-      system_regs()->mstpcra &= ~(1UL << k_adc_mstpra_s12ad0);
-    } else {
-      system_regs()->mstpcra &= ~(1UL << k_adc_mstpra_s12ad1);
+    err = internal_configure_adc_unit(unit, adc, bits);
+    if (err != k_rx_ok) {
+      return err;
     }
-
-    /* Lock module stop control */
-    system_regs()->prcr = k_rx_prcr_lock;
-
-    /* Configure ADC resolution */
-    uint16_t adcer = adc->adcer;
-    adcer &= ~(k_adc_adcer_adprc_mask << k_adc_adcer_adprc_shift);
-    if (bits == k_adc_resolution_8bit) {
-      adcer |= k_adc_adcer_adprc_8bit;
-    } else if (bits == k_adc_resolution_10bit) {
-      adcer |= k_adc_adcer_adprc_10bit;
-    } else {
-      adcer |= k_adc_adcer_adprc_12bit;
-    }
-    adc->adcer = adcer;
-
-    /* Mark unit as initialized */
-    s_adc_unit_initialized[unit] = true;
-
-    rx_log_debug(s_tag, "ADC unit initialized");
   }
 
   /* Enable the specified channel */
   if (channel <= k_adc_channel_adansa0_max) {
-    adc->adansa0 |= (1 << channel);
+    adc->adansa0 |= ((uint16_t)k_adc_bit_one << channel);
   } else {
-    adc->adansa1 |= (1 << (channel - k_adc_channel_adansa1_base));
+    adc->adansa1 |= ((uint16_t)k_adc_bit_one << (channel - k_adc_channel_adansa1_base));
   }
 
   rx_log_debug(s_tag, "ADC channel enabled");
@@ -205,7 +222,7 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
   /* Validate parameters */
   RX_CHECK_NULL_PTR(value, s_tag, "Value pointer is NULL");
 
-  rx_err_t err = internal_validate_unit_channel(unit, channel);
+  const rx_err_t err = internal_validate_unit_channel(unit, channel);
   RX_RETURN_ON_ERROR(err, s_tag, "Unit/channel validation failed");
 
   /* Check if unit is initialized */
@@ -273,13 +290,13 @@ rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32
   RX_CHECK_NULL_PTR(voltage_mv, s_tag, "Voltage pointer is NULL");
 
   /* Read raw ADC value */
-  uint16_t raw_value;
-  rx_err_t err = adc_read(unit, channel, &raw_value);
+  uint16_t       raw_value;
+  const rx_err_t err = adc_read(unit, channel, &raw_value);
   RX_RETURN_ON_ERROR(err, s_tag, "ADC read failed");
 
   /* Calculate voltage (using ADC reference voltage) */
-  uint32_t max_value = (1 << bits) - 1;
-  *voltage_mv        = ((uint32_t)raw_value * k_adc_reference_voltage_mv) / max_value;
+  const uint32_t max_value = (1 << bits) - 1;
+  *voltage_mv              = ((uint32_t)raw_value * k_adc_reference_voltage_mv) / max_value;
 
   return k_rx_ok;
 }

@@ -54,6 +54,9 @@ typedef enum : uint32_t {
   k_motor_max_dead_time = 10000, /**< Maximum dead-time (10 us) */
 } motor_validation_limits_t;
 
+/* Zero duty for stopped outputs (floats can't be enums). */
+static const float s_duty_zero = 0.0f;
+
 /* =============================================================================
  * Internal Helper Functions
  * =============================================================================
@@ -82,6 +85,44 @@ static float internal_clamp_duty(float duty)
   return duty;
 }
 
+/**
+ * @brief Initialize GPTW and set initial outputs
+ *
+ * @param[in] channel GPTW channel
+ * @param[in] output_a PH output
+ * @param[in] output_b EN output
+ * @param[in] gptw_config GPTW configuration
+ *
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t internal_init_gptw_outputs(rx_gptw_channel_t       channel,
+                                           rx_gptw_output_t        output_a,
+                                           rx_gptw_output_t        output_b,
+                                           const rx_gptw_config_t* gptw_config)
+{
+  rx_err_t err = rx_gptw_init_pwm(channel, gptw_config);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to initialize GPTW PWM");
+    return err;
+  }
+
+  err = rx_gptw_set_duty(channel, output_a, s_duty_zero);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set output_a initial duty");
+    (void)rx_gptw_deinit(channel);
+    return err;
+  }
+
+  err = rx_gptw_set_duty(channel, output_b, s_duty_zero);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set output_b initial duty");
+    (void)rx_gptw_deinit(channel);
+    return err;
+  }
+
+  return k_rx_ok;
+}
+
 /* =============================================================================
  * Public API Implementation
  * =============================================================================
@@ -89,6 +130,9 @@ static float internal_clamp_duty(float duty)
 
 rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* config)
 {
+  rx_err_t         err;
+  rx_gptw_config_t gptw_config;
+
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
@@ -113,31 +157,16 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   rx_log_info(s_tag, "Initializing motor");
 
   /* Initialize GPTW PWM */
-  rx_gptw_config_t gptw_config = {
+  gptw_config = (rx_gptw_config_t){
     .frequency_hz         = config->pwm_freq_hz,
     .deadtime_ns          = config->dead_time_ns,
     .enable_complementary = false, /* We control direction manually */
     .invert_polarity      = config->invert_pwm,
   };
 
-  rx_err_t err = rx_gptw_init_pwm(config->channel, &gptw_config);
+  err =
+    internal_init_gptw_outputs(config->channel, config->output_a, config->output_b, &gptw_config);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to initialize GPTW PWM");
-    return err;
-  }
-
-  /* Initialize both outputs to 0% duty (stopped) - NASA Rule 7 compliance */
-  err = rx_gptw_set_duty(config->channel, config->output_a, 0.0f);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to set output_a initial duty");
-    rx_gptw_deinit(config->channel);
-    return err;
-  }
-
-  err = rx_gptw_set_duty(config->channel, config->output_b, 0.0f);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to set output_b initial duty");
-    rx_gptw_deinit(config->channel);
     return err;
   }
 
@@ -146,7 +175,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   handle->output_a     = config->output_a;
   handle->output_b     = config->output_b;
   handle->pwm_freq_hz  = config->pwm_freq_hz;
-  handle->current_duty = 0.0f;
+  handle->current_duty = s_duty_zero;
   handle->invert_pwm   = config->invert_pwm;
   handle->initialized  = true;
 
@@ -163,6 +192,8 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
 
 rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 {
+  rx_err_t err;
+
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
@@ -171,10 +202,17 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
   }
 
   /* Stop motor before deinit */
-  rx_motor_stop(handle, false);
+  err = rx_motor_stop(handle, false);
+  if (err != k_rx_ok) {
+    rx_log_warn(s_tag, "Failed to stop motor during deinit");
+  }
 
   /* Deinitialize GPTW (note: this affects the entire channel) */
-  rx_gptw_deinit(handle->channel);
+  err = rx_gptw_deinit(handle->channel);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to deinitialize GPTW");
+    return err;
+  }
 
   handle->initialized = false;
 
@@ -271,19 +309,19 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
   }
 
   /* Coast mode: set both outputs to LOW for high impedance - NASA Rule 7 compliance */
-  rx_err_t err = rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
+  rx_err_t err = rx_gptw_set_duty(handle->channel, handle->output_a, s_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_a during stop");
     return err;
   }
 
-  err = rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
+  err = rx_gptw_set_duty(handle->channel, handle->output_b, s_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_b during stop");
     return err;
   }
 
-  handle->current_duty = 0.0f;
+  handle->current_duty = s_duty_zero;
 
   return k_rx_ok;
 }
@@ -305,6 +343,9 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
 
 rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
 {
+  rx_err_t result = k_rx_ok;
+  rx_err_t err;
+
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
@@ -313,21 +354,51 @@ rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
   }
 
   /* Immediately set duty to 0% */
-  rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
-  rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
+  err = rx_gptw_set_duty(handle->channel, handle->output_a, s_duty_zero);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "E-STOP: Failed to clear output_a duty");
+    if (result == k_rx_ok) {
+      result = err;
+    }
+  }
+  err = rx_gptw_set_duty(handle->channel, handle->output_b, s_duty_zero);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "E-STOP: Failed to clear output_b duty");
+    if (result == k_rx_ok) {
+      result = err;
+    }
+  }
 
   /* Disable GPTW outputs at hardware level */
-  rx_gptw_enable_output(handle->channel, handle->output_a, false);
-  rx_gptw_enable_output(handle->channel, handle->output_b, false);
+  err = rx_gptw_enable_output(handle->channel, handle->output_a, false);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "E-STOP: Failed to disable output_a");
+    if (result == k_rx_ok) {
+      result = err;
+    }
+  }
+  err = rx_gptw_enable_output(handle->channel, handle->output_b, false);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "E-STOP: Failed to disable output_b");
+    if (result == k_rx_ok) {
+      result = err;
+    }
+  }
 
   /* Stop timer to prevent glitches */
-  rx_gptw_stop(handle->channel);
+  err = rx_gptw_stop(handle->channel);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "E-STOP: Failed to stop GPTW timer");
+    if (result == k_rx_ok) {
+      result = err;
+    }
+  }
 
   /* Mark as no longer initialized - requires re-init to use */
   handle->initialized  = false;
-  handle->current_duty = 0.0f;
+  handle->current_duty = s_duty_zero;
 
   rx_log_warn(s_tag, "EMERGENCY STOP - motor disabled");
 
-  return k_rx_ok;
+  return result;
 }
