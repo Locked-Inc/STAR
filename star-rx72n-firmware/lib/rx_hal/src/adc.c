@@ -98,7 +98,7 @@ static bool s_adc_unit_initialized[k_adc_max_units] = {false, false};
  *
  * @return Pointer to ADC register base, or NULL if invalid unit
  */
-static volatile rx_s12ad_regs_t* internal_get_adc_base(uint8_t unit)
+static volatile rx_s12ad_regs_t* internal_get_adc_base(const uint8_t unit)
 {
   switch (unit) {
     case k_adc_unit_0: {
@@ -114,7 +114,7 @@ static volatile rx_s12ad_regs_t* internal_get_adc_base(uint8_t unit)
 }
 
 static rx_err_t
-internal_configure_adc_unit(uint8_t unit, volatile rx_s12ad_regs_t* adc, uint8_t bits)
+internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, uint8_t bits)
 {
   uint16_t adcer;
 
@@ -153,7 +153,7 @@ internal_configure_adc_unit(uint8_t unit, volatile rx_s12ad_regs_t* adc, uint8_t
  *
  * @return k_rx_ok if valid, error code otherwise
  */
-static rx_err_t internal_validate_unit_channel(uint8_t unit, uint8_t channel)
+static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t channel)
 {
   /* Validate unit */
   if (unit >= k_adc_max_units) {
@@ -175,7 +175,7 @@ static rx_err_t internal_validate_unit_channel(uint8_t unit, uint8_t channel)
  * =============================================================================
  */
 
-rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
+rx_err_t adc_init(const uint8_t unit, uint8_t channel, const uint8_t bits)
 {
   volatile rx_s12ad_regs_t* adc = NULL;
   rx_err_t                  err;
@@ -217,7 +217,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   return k_rx_ok;
 }
 
-rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
+rx_err_t adc_read(const uint8_t unit, uint8_t channel, uint16_t* value)
 {
   /* Validate parameters */
   RX_CHECK_NULL_PTR(value, s_tag, "Value pointer is NULL");
@@ -285,7 +285,8 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
   return k_rx_ok;
 }
 
-rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32_t* voltage_mv)
+rx_err_t
+adc_read_voltage_mv(const uint8_t unit, uint8_t channel, uint8_t bits, uint32_t* voltage_mv)
 {
   RX_CHECK_NULL_PTR(voltage_mv, s_tag, "Voltage pointer is NULL");
 

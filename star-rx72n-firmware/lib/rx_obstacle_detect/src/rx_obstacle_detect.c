@@ -56,12 +56,12 @@ typedef enum : uint16_t {
 
 static void     internal_detection_task_entry(ULONG input);
 static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* config);
-static rx_err_t internal_stop_all_motors(rx_obstacle_detect_t* handle);
+static rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle);
 static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle);
-static void     internal_invoke_callback(rx_obstacle_detect_t* handle,
-                                         bool                  obstacle_detected,
-                                         uint8_t               sensor_idx,
-                                         float                 distance_cm);
+static void     internal_invoke_callback(const rx_obstacle_detect_t* handle,
+                                         bool                        obstacle_detected,
+                                         uint8_t                     sensor_idx,
+                                         float                       distance_cm);
 
 /* =============================================================================
  * Public API - Initialization
@@ -360,7 +360,7 @@ typedef enum : uint8_t {
   k_min_sleep_ticks = 1, /**< Minimum sleep duration in ticks */
 } task_constants_t;
 
-static void internal_detection_task_entry(ULONG input)
+static void internal_detection_task_entry(const ULONG input)
 {
   rx_obstacle_detect_t* handle       = NULL;
   ULONG                 actual_flags = 0;
@@ -583,7 +583,7 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
   return k_rx_ok;
 }
 
-static rx_err_t internal_stop_all_motors(rx_obstacle_detect_t* handle)
+static rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle)
 {
   rx_err_t ret       = k_rx_ok;
   rx_err_t first_err = k_rx_ok;
@@ -609,10 +609,10 @@ static rx_err_t internal_stop_all_motors(rx_obstacle_detect_t* handle)
   return first_err;
 }
 
-static void internal_invoke_callback(rx_obstacle_detect_t* handle,
-                                     bool                  obstacle_detected,
-                                     uint8_t               sensor_idx,
-                                     float                 distance_cm)
+static void internal_invoke_callback(const rx_obstacle_detect_t* handle,
+                                     const bool                  obstacle_detected,
+                                     const uint8_t               sensor_idx,
+                                     const float                 distance_cm)
 {
   if (handle == NULL || handle->callback == NULL) {
     return;

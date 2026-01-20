@@ -43,7 +43,7 @@ typedef enum : uint8_t {
  */
 static bool internal_check_porf(void)
 {
-  volatile rx_rstsr01_regs_t* regs = rstsr01();
+  const volatile rx_rstsr01_regs_t* regs = rstsr01();
 
   /* Precondition: Register pointer must be valid (compile-time constant address) */
   RX_ASSERT(regs != NULL, "RSTSR01 register pointer is NULL");
@@ -71,12 +71,12 @@ static bool internal_check_porf(void)
  * @param[in] flag_mask The bit mask for the flag to check
  * @return true if flag is clear (0), false if flag is set (1)
  */
-static bool internal_check_rstsr2_flag_clear(uint8_t flag_mask)
+static bool internal_check_rstsr2_flag_clear(const uint8_t flag_mask)
 {
   /* Precondition: flag_mask must be non-zero */
   RX_ASSERT(flag_mask != 0, "Precondition: flag_mask must not be zero");
 
-  volatile uint8_t* reg = rstsr2();
+  const volatile uint8_t* reg = rstsr2();
 
   /* Precondition: Register pointer must be valid (compile-time constant address) */
   RX_ASSERT(reg != NULL, "RSTSR2 register pointer is NULL");
@@ -139,7 +139,7 @@ static bool internal_check_swrf(void)
  */
 static bool internal_check_lvd0rf(void)
 {
-  volatile rx_rstsr01_regs_t* regs = rstsr01();
+  const volatile rx_rstsr01_regs_t* regs = rstsr01();
 
   /* Precondition: Register pointer must be valid */
   RX_ASSERT(regs != NULL, "RSTSR01 register pointer is NULL");
@@ -167,7 +167,7 @@ static bool internal_check_lvd0rf(void)
  */
 static bool internal_check_cwsf(void)
 {
-  volatile rx_rstsr01_regs_t* regs = rstsr01();
+  const volatile rx_rstsr01_regs_t* regs = rstsr01();
 
   /* Precondition: Register pointer must be valid */
   RX_ASSERT(regs != NULL, "RSTSR01 register pointer is NULL");

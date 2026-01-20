@@ -209,7 +209,7 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake);
  * @return k_rx_err_null_ptr if handle or out_current is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
-rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current);
+rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_current);
 
 /**
  * @brief Get fault status

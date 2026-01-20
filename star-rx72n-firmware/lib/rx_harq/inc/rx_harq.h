@@ -135,8 +135,9 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
  * @return k_rx_err_invalid_arg if any pointer is NULL
  * @return k_rx_err_invalid_state if no soft bits have been added
  */
-rx_err_t
-rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output, uint32_t* len);
+rx_err_t rx_chase_combiner_combined(const rx_chase_combiner_t* combiner,
+                                    rx_soft_bit_t*             output,
+                                    uint32_t*                  len);
 
 /**
  * @brief Reset combiner for new frame

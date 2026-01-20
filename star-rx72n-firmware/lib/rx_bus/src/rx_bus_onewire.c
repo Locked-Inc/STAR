@@ -196,8 +196,9 @@ static inline onewire_runtime_state_t* internal_get_state(rx_bus_config_t* bus_c
  *
  * @return k_rx_ok on success
  */
-static rx_err_t
-internal_set_drive_mode(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool output)
+static rx_err_t internal_set_drive_mode(rx_bus_config_t*         bus_config,
+                                        onewire_runtime_state_t* state,
+                                        const bool               output)
 {
   if (output && !state->line_is_output) {
     const rx_err_t err = gpio_set_output(bus_config->proto.onewire.pin);
@@ -300,7 +301,7 @@ internal_reset_pulse(rx_bus_config_t* bus_config, onewire_runtime_state_t* state
  * @brief Write a single bit on the OneWire bus.
  */
 static rx_err_t
-internal_write_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool bit)
+internal_write_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, const bool bit)
 {
   rx_err_t err = internal_drive_low(bus_config, state);
   if (err != k_rx_ok) {
@@ -366,7 +367,7 @@ internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, b
  * @brief Write a byte (LSB first).
  */
 static rx_err_t
-internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, uint8_t byte)
+internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, const uint8_t byte)
 {
   for (uint8_t i = 0; i < k_bits_per_byte; ++i) {
     const bool     bit = ((byte >> i) & k_onewire_single_bit_mask) != 0U;
@@ -1209,7 +1210,7 @@ rx_err_t rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_nam
 rx_err_t rx_bus_onewire_write(rx_bus_manager_t* manager,
                               const char*       bus_name,
                               const uint8_t*    data,
-                              uint32_t          length)
+                              const uint32_t    length)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -1286,7 +1287,7 @@ rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager, const char* bus_name
 rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
                                const char*       bus_name,
                                uint8_t*          roms,
-                               uint32_t          max_devices,
+                               const uint32_t    max_devices,
                                uint32_t*         num_devices)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");

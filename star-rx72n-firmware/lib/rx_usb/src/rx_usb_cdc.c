@@ -604,7 +604,7 @@ static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uin
 /**
  * @brief Handle GET_DESCRIPTOR request
  */
-static void internal_handle_get_descriptor(uint16_t usb_value, uint16_t usb_length)
+static void internal_handle_get_descriptor(const uint16_t usb_value, const uint16_t usb_length)
 {
   const uint8_t desc_type  = (usb_value >> k_bit_shift_byte_1) & k_byte_mask;
   const uint8_t desc_index = usb_value & k_byte_mask;
@@ -657,7 +657,7 @@ static void internal_handle_get_descriptor(uint16_t usb_value, uint16_t usb_leng
 /**
  * @brief Handle SET_ADDRESS request
  */
-static void internal_handle_set_address(uint16_t usb_value)
+static void internal_handle_set_address(const uint16_t usb_value)
 {
   const uint8_t address = usb_value & k_usb_address_mask;
 
@@ -677,7 +677,7 @@ static void internal_handle_set_address(uint16_t usb_value)
 /**
  * @brief Handle SET_CONFIGURATION request
  */
-static void internal_handle_set_configuration(uint16_t usb_value)
+static void internal_handle_set_configuration(const uint16_t usb_value)
 {
   const uint8_t config = usb_value & k_byte_mask;
 
@@ -792,7 +792,7 @@ static void internal_handle_get_line_coding(void)
 /**
  * @brief Handle CDC SET_CONTROL_LINE_STATE request
  */
-static void internal_handle_set_control_line_state(uint16_t usb_value)
+static void internal_handle_set_control_line_state(const uint16_t usb_value)
 {
   s_control_line_state = usb_value;
 
@@ -835,7 +835,7 @@ rx_err_t rx_usb_cdc_init(void)
  * @brief Handle standard USB requests
  */
 static void
-internal_handle_standard_request(uint8_t usb_request, uint16_t usb_value, uint16_t usb_length)
+internal_handle_standard_request(const uint8_t usb_request, uint16_t usb_value, uint16_t usb_length)
 {
   switch (usb_request) {
     case k_usb_req_get_descriptor:
@@ -868,7 +868,7 @@ internal_handle_standard_request(uint8_t usb_request, uint16_t usb_value, uint16
 /**
  * @brief Handle CDC class-specific requests
  */
-static void internal_handle_class_request(uint8_t usb_request, uint16_t usb_value)
+static void internal_handle_class_request(const uint8_t usb_request, const uint16_t usb_value)
 {
   switch (usb_request) {
     case k_cdc_set_line_coding:

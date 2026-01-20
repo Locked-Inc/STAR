@@ -63,7 +63,7 @@ static const float s_mv_to_v_divisor = 1000.0f;
  */
 
 static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle);
-static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle);
+static rx_err_t internal_drv8243_configure_fault_pin(const rx_drv8243_handle_t* handle);
 
 /* =============================================================================
  * Public API Implementation
@@ -204,7 +204,7 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
   return k_rx_ok;
 }
 
-rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake)
+rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, const bool brake)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
@@ -224,7 +224,7 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake)
   return k_rx_ok;
 }
 
-rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current)
+rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_current)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
   RX_CHECK_NULL_PTR(out_current, s_tag, "out_current pointer is NULL");
@@ -273,13 +273,14 @@ rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_faul
   }
 
   /* Read nFAULT pin (active low) using PORT register */
-  volatile rx_port_regs_t* port = rx_port_get_base(handle->port_nfault);
+  const volatile rx_port_regs_t* port = rx_port_get_base(handle->port_nfault);
   if (port == NULL) {
     rx_log_error(s_tag, "Invalid port number for nFAULT pin");
     return k_rx_err_invalid_arg;
   }
 
-  if (handle->pin_nfault < k_rx_pin_0 || handle->pin_nfault > k_rx_pin_max) {
+  if ((int32_t)handle->pin_nfault < (int32_t)k_rx_pin_0 ||
+      (int32_t)handle->pin_nfault > (int32_t)k_rx_pin_max) {
     rx_log_error(s_tag, "Invalid pin number for nFAULT pin");
     return k_rx_err_invalid_arg;
   }
@@ -312,7 +313,7 @@ rx_err_t rx_drv8243_get_speed(const rx_drv8243_handle_t* handle, float* out_spee
   return k_rx_ok;
 }
 
-rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limit_ma)
+rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, const uint16_t limit_ma)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
@@ -370,7 +371,7 @@ static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if invalid port number
  */
-static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle)
+static rx_err_t internal_drv8243_configure_fault_pin(const rx_drv8243_handle_t* handle)
 {
   volatile rx_port_regs_t* port = rx_port_get_base(handle->port_nfault);
   if (port == NULL) {
@@ -378,7 +379,8 @@ static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle
     return k_rx_err_invalid_arg;
   }
 
-  if (handle->pin_nfault < k_rx_pin_0 || handle->pin_nfault > k_rx_pin_max) {
+  if ((int32_t)handle->pin_nfault < (int32_t)k_rx_pin_0 ||
+      (int32_t)handle->pin_nfault > (int32_t)k_rx_pin_max) {
     rx_log_error(s_tag, "Invalid pin number for nFAULT pin configuration");
     return k_rx_err_invalid_arg;
   }

@@ -394,7 +394,7 @@ rx_err_t rx_bus_uart_init(rx_bus_manager_t* manager, const char* bus_name)
 rx_err_t rx_bus_uart_write(rx_bus_manager_t* manager,
                            const char*       bus_name,
                            const uint8_t*    data,
-                           uint16_t          length)
+                           const uint16_t    length)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -415,7 +415,7 @@ rx_err_t rx_bus_uart_write(rx_bus_manager_t* manager,
 rx_err_t rx_bus_uart_read(rx_bus_manager_t* manager,
                           const char*       bus_name,
                           uint8_t*          data,
-                          uint16_t          length,
+                          const uint16_t    length,
                           uint16_t*         bytes_read)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");

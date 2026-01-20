@@ -29,7 +29,7 @@
  * =============================================================================
  */
 
-rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
+rx_err_t hcsr04_hal_gpio_set_output(const rx_port_pin_t pin)
 {
   uint8_t port    = 0;
   uint8_t pin_num = 0;
@@ -54,7 +54,7 @@ rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
   return gpio_set_output(pin);
 }
 
-rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
+rx_err_t hcsr04_hal_gpio_set_input(const rx_port_pin_t pin)
 {
   uint8_t port    = 0;
   uint8_t pin_num = 0;
@@ -77,7 +77,7 @@ rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
   return gpio_set_input(pin);
 }
 
-rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
+rx_err_t hcsr04_hal_gpio_write_high(const rx_port_pin_t pin)
 {
   uint8_t port    = 0;
   uint8_t pin_num = 0;
@@ -100,7 +100,7 @@ rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
   return gpio_write_high(pin);
 }
 
-rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin)
+rx_err_t hcsr04_hal_gpio_write_low(const rx_port_pin_t pin)
 {
   uint8_t port    = 0;
   uint8_t pin_num = 0;
@@ -123,7 +123,7 @@ rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin)
   return gpio_write_low(pin);
 }
 
-rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
+rx_err_t hcsr04_hal_gpio_read(const rx_port_pin_t pin, bool* value)
 {
   uint8_t port    = 0;
   uint8_t pin_num = 0;
@@ -150,7 +150,7 @@ rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
   return gpio_read(pin, value);
 }
 
-rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
+rx_err_t hcsr04_hal_gpio_deinit(const rx_port_pin_t pin)
 {
   uint8_t port    = 0;
   uint8_t pin_num = 0;

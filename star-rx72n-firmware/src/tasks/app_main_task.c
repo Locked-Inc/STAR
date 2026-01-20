@@ -45,7 +45,7 @@ static bool      s_app_main_created = false;
  * =============================================================================
  */
 
-static void internal_app_main_task_entry(ULONG input)
+static void internal_app_main_task_entry(const ULONG input)
 {
   (void)input;
 

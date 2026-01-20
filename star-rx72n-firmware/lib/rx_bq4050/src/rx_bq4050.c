@@ -85,7 +85,7 @@ typedef enum : uint8_t {
  * @param[in] temp_0_1k Temperature in 0.1K units
  * @return Temperature in degrees Celsius
  */
-static int16_t internal_convert_temperature(uint16_t temp_0_1k)
+static int16_t internal_convert_temperature(const uint16_t temp_0_1k)
 {
   /* Convert from 0.1K to 0.1°C by subtracting 2731 (273.1K) */
   const int32_t temp_0_1c = (int32_t)temp_0_1k - k_temp_kelvin_offset;
@@ -142,7 +142,7 @@ rx_bq4050_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t
 rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
                                       const char*       bus_name,
                                       uint16_t*         cell_voltages,
-                                      uint8_t           num_cells)
+                                      const uint8_t     num_cells)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -303,7 +303,7 @@ rx_err_t rx_bq4050_read_capacity(rx_bus_manager_t* manager,
 static rx_err_t internal_read_electrical_status(rx_bus_manager_t*   manager,
                                                 const char*         bus_name,
                                                 rx_bq4050_status_t* status,
-                                                uint8_t             num_cells)
+                                                const uint8_t       num_cells)
 {
   rx_err_t err;
 
@@ -425,8 +425,8 @@ static rx_err_t internal_read_status_flags(rx_bus_manager_t*   manager,
                                            const char*         bus_name,
                                            rx_bq4050_status_t* status)
 {
-  uint16_t status_flags;
-  rx_err_t err =
+  uint16_t       status_flags;
+  const rx_err_t err =
     rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_battery_status, &status_flags);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read battery status");
@@ -444,7 +444,7 @@ static rx_err_t internal_read_status_flags(rx_bus_manager_t*   manager,
 rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
                                const char*         bus_name,
                                rx_bq4050_status_t* status,
-                               uint8_t             num_cells)
+                               const uint8_t       num_cells)
 {
   rx_err_t err;
 

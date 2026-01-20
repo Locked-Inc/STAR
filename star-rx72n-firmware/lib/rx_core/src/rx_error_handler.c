@@ -162,8 +162,8 @@ static uint32_t impl_get_component_error_count(void* ctx, const char* component)
     return 0;
   }
 
-  uint32_t                 count = 0;
-  error_component_state_t* comp  = internal_find_component(handler, component);
+  uint32_t                       count = 0;
+  const error_component_state_t* comp  = internal_find_component(handler, component);
   if (comp != NULL) {
     count = comp->error_count;
   }
@@ -228,8 +228,8 @@ static bool impl_is_retry_limit_reached(void* ctx, const char* component)
     return true; /* Fail-safe */
   }
 
-  bool                     limit_reached = false;
-  error_component_state_t* comp          = internal_find_component(handler, component);
+  bool                           limit_reached = false;
+  const error_component_state_t* comp          = internal_find_component(handler, component);
   if (comp != NULL) {
     limit_reached = (comp->retry_count >= handler->max_retries);
   }
@@ -285,8 +285,8 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
     return 0;
   }
 
-  uint32_t                 delay_ms = 0;
-  error_component_state_t* comp     = internal_find_component(handler, component);
+  uint32_t                       delay_ms = 0;
+  const error_component_state_t* comp     = internal_find_component(handler, component);
   if (comp != NULL && comp->retry_count > 0) {
     /* Exponential backoff: delay = initial * 2^(retry_count - 1)
      * Capped at max_backoff_ms */
@@ -312,9 +312,9 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
  */
 
 rx_err_t error_handler_init(error_handler_t* handler,
-                            uint32_t         max_retries,
-                            uint32_t         initial_backoff_ms,
-                            uint32_t         max_backoff_ms)
+                            const uint32_t   max_retries,
+                            const uint32_t   initial_backoff_ms,
+                            const uint32_t   max_backoff_ms)
 {
   RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is NULL");
 
