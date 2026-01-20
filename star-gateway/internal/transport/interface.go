@@ -30,4 +30,7 @@ type Device interface {
 	// Close releases the device resources.
 	// Should be called when done with the device.
 	Close() error
+
+	// IsOpen returns whether the device is currently connected.
+	IsOpen() bool
 }

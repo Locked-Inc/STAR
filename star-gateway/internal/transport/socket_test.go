@@ -9,6 +9,7 @@ import (
 	"errors"
 	"io"
 	"net"
+	"os"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -129,17 +130,35 @@ func TestSocketTransport_CloseNotOpen(t *testing.T) {
 }
 
 func TestSocketTransport_ContextCanceled(t *testing.T) {
-	transport := NewSocketTransport("/tmp/test.sock")
+	// Create a temporary listener so Open() succeeds
+	// Use explicit short path for macOS socket length limits
+	dir, err := os.MkdirTemp("/tmp", "star_socket_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(dir)
+
+	socketPath := filepath.Join(dir, "test.sock")
+	ln, err := net.Listen("unix", socketPath)
+	if err != nil {
+		t.Fatalf("Failed to create temporary listener: %v", err)
+	}
+	defer ln.Close()
+
+	transport := NewSocketTransport(socketPath)
+	if err := transport.Open(); err != nil {
+		t.Fatalf("Failed to open transport: %v", err)
+	}
+	defer transport.Close()
 
 	// Create a canceled context
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	// Even if not open, context error should be checked
-	// In this case, we'll get ErrDeviceNotOpen first since that check happens first
-	_, err := transport.Transfer(ctx, []byte{0x01})
-	if err != ErrDeviceNotOpen {
-		t.Errorf("Expected ErrDeviceNotOpen, got %v", err)
+	// Context error should be checked before operation
+	_, err = transport.Transfer(ctx, []byte{0x01})
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("Expected context.Canceled, got %v", err)
 	}
 }
 
@@ -260,7 +279,13 @@ func TestSocketTransport_ContextTimeout(t *testing.T) {
 	}
 
 	// Create a temporary Unix socket listener that intentionally delays response
-	dir := t.TempDir()
+	// Use explicit short path for macOS socket length limits
+	dir, err := os.MkdirTemp("/tmp", "star_socket_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(dir)
+
 	socketPath := filepath.Join(dir, "slow.sock")
 	ln, err := net.Listen("unix", socketPath)
 	if err != nil {

@@ -61,7 +61,15 @@ func run() error {
 	// Layer 1: Transport (SPI or Socket for simulation)
 	// ========================================
 	var deviceTransport transport.Device
-	simulationMode, _ := strconv.ParseBool(os.Getenv("STAR_SIMULATION_MODE"))
+	var simulationMode bool
+
+	if val, ok := os.LookupEnv("STAR_SIMULATION_MODE"); ok {
+		var err error
+		simulationMode, err = strconv.ParseBool(val)
+		if err != nil {
+			return fmt.Errorf("invalid STAR_SIMULATION_MODE %q: %w", val, err)
+		}
+	}
 
 	if simulationMode {
 		log.Println("WARNING: RUNNING IN SIMULATION MODE (Virtual RX72N)")

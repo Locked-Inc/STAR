@@ -6,7 +6,7 @@ The STAR Gateway supports Hardware-in-the-Loop (HIL) simulation, allowing you to
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │  Development Environment (Your Laptop)                      │
 │                                                              │
@@ -36,7 +36,7 @@ The STAR Gateway supports Hardware-in-the-Loop (HIL) simulation, allowing you to
 
 **vs. Production (on Robot):**
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │  Raspberry Pi 5 (Production)                                │
 │                                                              │
@@ -75,7 +75,8 @@ go run ./cmd/virtual_rx72n/
 ```
 
 **Expected Output:**
-```
+
+```text
 Virtual RX72N Started. Waiting for Gateway...
    Socket: /tmp/star_rx72n.sock
    Max Frame Size: 2048 bytes
@@ -90,7 +91,8 @@ go run ./cmd/star-gateway/
 ```
 
 **Expected Output:**
-```
+
+```text
 WARNING: RUNNING IN SIMULATION MODE (Virtual RX72N)
     Connecting to socket: /tmp/star_rx72n.sock
 Initializing frame encoder/decoder...
@@ -147,7 +149,8 @@ go test ./internal/transport/ -run TestSocketTransport_WithVirtualRX72N -v
 ```
 
 **Expected Test Output:**
-```
+
+```text
 === RUN   TestSocketTransport_WithVirtualRX72N
 --- PASS: TestSocketTransport_WithVirtualRX72N (0.00s)
 PASS
@@ -187,7 +190,7 @@ The Virtual RX72N simulator:
 
 ### Example Log Output
 
-```
+```text
 Virtual RX72N Started. Waiting for Gateway...
    Socket: /tmp/star_rx72n.sock
    Max Frame Size: 2048 bytes
@@ -224,11 +227,14 @@ Gateway disconnected
 This implementation follows strict coding standards:
 
 ### SOLID Principles
+
 - **Interface Segregation**: `Device` interface with minimal methods (`Open`, `Transfer`, `Close`)
 - **Dependency Inversion**: Gateway depends on `Device` interface, not concrete types
 
 ### Zero Magic Numbers
+
 All constants are named:
+
 ```go
 // ❌ BAD
 conn.SetDeadline(time.Now().Add(100 * time.Millisecond))
@@ -238,7 +244,9 @@ conn.SetDeadline(time.Now().Add(DefaultSocketTimeout))
 ```
 
 ### Error Handling
+
 All errors are wrapped:
+
 ```go
 // ❌ BAD
 return nil, err
@@ -248,6 +256,7 @@ return nil, fmt.Errorf("failed to connect to socket %s: %w", s.path, err)
 ```
 
 ### Inclusive Terminology
+
 - **Controller/Peripheral** (not master/slave)
 - **COPI/CIPO** (not MOSI/MISO)
 

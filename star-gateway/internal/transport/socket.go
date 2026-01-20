@@ -60,7 +60,7 @@ func (s *SocketTransport) Open() error {
 	}
 
 	// Connect to the "Virtual RX72N" process
-	conn, err := net.Dial("unix", s.path)
+	conn, err := net.DialTimeout("unix", s.path, DefaultSocketTimeout)
 	if err != nil {
 		return fmt.Errorf("failed to connect to socket %s: %w", s.path, err)
 	}
@@ -76,8 +76,13 @@ func (s *SocketTransport) Open() error {
 // NOTE: SPI is synchronous. We expect exactly len(txData) bytes back
 // to match the full-duplex behavior of real SPI hardware.
 func (s *SocketTransport) Transfer(ctx context.Context, txData []byte) ([]byte, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	// Check context cancellation before locking
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	if !s.isOpen {
 		return nil, ErrDeviceNotOpen

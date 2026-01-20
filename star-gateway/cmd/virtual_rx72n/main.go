@@ -63,23 +63,47 @@ func main() {
 	log.Printf("   Socket: %s", SocketPath)
 	log.Printf("   Max Frame Size: %d bytes", MaxFrameSize)
 
+	// Channel to signal graceful shutdown
+	done := make(chan struct{})
+
 	// Handle Ctrl+C gracefully
 	sigChan := make(chan os.Signal, SignalBufferSize)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-sigChan
 		log.Println("\nShutting down Virtual RX72N...")
+		// Signal main loop to stop
+		close(done)
+		// Close listener to unblock Accept()
 		listener.Close()
 		if err := os.Remove(SocketPath); err != nil {
 			log.Printf("Warning: failed to remove socket: %v", err)
 		}
-		os.Exit(0)
 	}()
 
 	// Accept connections in a loop
 	for {
+		// Check if we are shutting down
+		select {
+		case <-done:
+			return
+		default:
+		}
+
 		conn, err := listener.Accept()
 		if err != nil {
+			// Check for shutdown-related errors
+			select {
+			case <-done:
+				return
+			default:
+			}
+
+			// If unexpected error, verify if it's a closed network connection
+			if errors.Is(err, net.ErrClosed) {
+				return
+			}
+
 			log.Printf("Connection error: %v", err)
 			continue
 		}
