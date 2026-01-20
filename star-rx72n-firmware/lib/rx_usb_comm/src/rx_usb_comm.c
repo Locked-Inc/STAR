@@ -348,9 +348,9 @@ static rx_err_t internal_handle_no_sync(rx_usb_comm_handle_t* handle,
  * @return k_rx_ok to continue waiting
  * @return k_rx_err_timeout if timed out or no time interface
  */
-static rx_err_t internal_wait_for_data(rx_usb_comm_handle_t* handle,
-                                       const uint32_t        timeout_ms,
-                                       uint32_t*             elapsed_ms)
+static rx_err_t internal_wait_for_data(const rx_usb_comm_handle_t* handle,
+                                       const uint32_t              timeout_ms,
+                                       uint32_t*                   elapsed_ms)
 {
   if (internal_is_timed_out(timeout_ms, *elapsed_ms)) {
     return k_rx_err_timeout;

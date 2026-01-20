@@ -27,7 +27,12 @@
  * @code
  * // Production code uses real error handler:
  * error_handler_t real_handler;
- * error_handler_init(&real_handler, 3, 100, 5000);
+ * const error_handler_config_t config = {
+ *   .max_retries        = 3,
+ *   .initial_backoff_ms = 100,
+ *   .max_backoff_ms     = 5000,
+ * };
+ * error_handler_init(&real_handler, &config);
  * rx_error_interface_t error_iface;
  * error_handler_get_interface(&error_iface, &real_handler);
  *

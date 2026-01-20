@@ -100,7 +100,17 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t channel,
                                            const rx_gptw_output_t  output_b,
                                            const rx_gptw_config_t* gptw_config)
 {
-  rx_err_t err = rx_gptw_init_pwm(channel, gptw_config);
+  rx_err_t err = k_rx_err_invalid_state;
+
+  RX_CHECK_NULL_PTR(gptw_config, s_tag, "gptw_config pointer is NULL");
+
+  if ((output_a != k_gptw_output_a && output_a != k_gptw_output_b) ||
+      (output_b != k_gptw_output_a && output_b != k_gptw_output_b)) {
+    rx_log_error(s_tag, "Invalid GPTW output selection");
+    return k_rx_err_invalid_arg;
+  }
+
+  err = rx_gptw_init_pwm(channel, gptw_config);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize GPTW PWM");
     return err;
@@ -296,6 +306,8 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 
 rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
 {
+  rx_err_t err = k_rx_err_invalid_state;
+
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
@@ -309,7 +321,7 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
   }
 
   /* Coast mode: set both outputs to LOW for high impedance - NASA Rule 7 compliance */
-  rx_err_t err = rx_gptw_set_duty(handle->channel, handle->output_a, s_duty_zero);
+  err = rx_gptw_set_duty(handle->channel, handle->output_a, s_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_a during stop");
     return err;

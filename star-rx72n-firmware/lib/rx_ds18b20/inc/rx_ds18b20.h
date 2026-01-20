@@ -269,7 +269,7 @@ rx_err_t rx_ds18b20_deinit(rx_ds18b20_handle_t* handle);
  * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  */
-rx_err_t rx_ds18b20_trigger_conversion(rx_ds18b20_handle_t* handle);
+rx_err_t rx_ds18b20_trigger_conversion(const rx_ds18b20_handle_t* handle);
 
 /**
  * @brief Read temperature in Celsius
@@ -344,7 +344,7 @@ rx_err_t rx_ds18b20_get_resolution(const rx_ds18b20_handle_t* handle,
  * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  */
-rx_err_t rx_ds18b20_save_config(rx_ds18b20_handle_t* handle);
+rx_err_t rx_ds18b20_save_config(const rx_ds18b20_handle_t* handle);
 
 /**
  * @brief Recall configuration from EEPROM
@@ -358,7 +358,7 @@ rx_err_t rx_ds18b20_save_config(rx_ds18b20_handle_t* handle);
  * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  */
-rx_err_t rx_ds18b20_recall_config(rx_ds18b20_handle_t* handle);
+rx_err_t rx_ds18b20_recall_config(const rx_ds18b20_handle_t* handle);
 
 /**
  * @brief Read power supply mode
@@ -372,7 +372,7 @@ rx_err_t rx_ds18b20_recall_config(rx_ds18b20_handle_t* handle);
  * @return k_rx_err_null_ptr if any pointer is NULL
  * @return k_rx_err_invalid_state if not initialized or device not present
  */
-rx_err_t rx_ds18b20_read_power_mode(rx_ds18b20_handle_t* handle, bool* external_power);
+rx_err_t rx_ds18b20_read_power_mode(const rx_ds18b20_handle_t* handle, bool* external_power);
 
 /**
  * @brief Read scratchpad memory

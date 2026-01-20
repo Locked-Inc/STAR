@@ -302,6 +302,7 @@ static void hcsr04_worker_entry(const ULONG input)
   ULONG              actual_flags;
   rx_hcsr04_result_t result;
   UINT               status;
+  rx_err_t           err;
 
   while (true) {
     /* Wait for measurement request OR shutdown request */
@@ -321,7 +322,10 @@ static void hcsr04_worker_entry(const ULONG input)
     }
 
     /* Perform blocking measurement */
-    rx_hcsr04_measure(s_pending.handle, &result);
+    err = rx_hcsr04_measure(s_pending.handle, &result);
+    if (err != k_rx_ok) {
+      result.status = err;
+    }
 
     /* Clear active flag */
     s_pending.handle->measurement_active = false;

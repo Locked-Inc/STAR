@@ -330,7 +330,7 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec);
  */
 rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
                          const uint8_t*            data,
-                         uint32_t                  data_len,
+                         const uint32_t            data_len,
                          rx_frame_t*               frame);
 
 /* =============================================================================

@@ -27,6 +27,7 @@
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
+#include "rx_port_constants.h"
 
 static const char* s_tag = "MPC";
 
@@ -37,35 +38,34 @@ static const char* s_tag = "MPC";
 
 /** @brief MPC pin validation constants */
 typedef enum : uint8_t {
-  k_mpc_max_pin = 7, /**< Maximum valid pin number (pins 0-7) */
+  k_mpc_max_pin = k_rx_pin_max, /**< Maximum valid pin number */
 } mpc_pin_constants_t;
 
 /** @brief MPC PFS register address offset */
 typedef enum : uint8_t {
-  k_mpc_pfs_base_offset = 0x21, /**< Offset from MPC_BASE to P00PFS register */
+  k_mpc_pfs_base_offset = 33, /**< Offset from MPC_BASE to P00PFS register */
 } mpc_pfs_offset_t;
 
 /** @brief MPC port number constants */
 typedef enum : uint8_t {
-  k_mpc_port_0 = 0,    /**< Port 0 */
-  k_mpc_port_1 = 1,    /**< Port 1 */
-  k_mpc_port_2 = 2,    /**< Port 2 */
-  k_mpc_port_3 = 3,    /**< Port 3 */
-  k_mpc_port_4 = 4,    /**< Port 4 */
-  k_mpc_port_5 = 5,    /**< Port 5 */
-  k_mpc_port_6 = 6,    /**< Port 6 */
-  k_mpc_port_7 = 7,    /**< Port 7 */
-  k_mpc_port_8 = 8,    /**< Port 8 */
-  k_mpc_port_9 = 9,    /**< Port 9 */
-  k_mpc_port_a = 0x0A, /**< Port A */
-  k_mpc_port_b = 0x0B, /**< Port B */
-  k_mpc_port_c = 0x0C, /**< Port C */
-  k_mpc_port_d = 0x0D, /**< Port D */
-  k_mpc_port_e = 0x0E, /**< Port E */
-  k_mpc_port_f = 0x0F, /**< Port F */
-  k_mpc_port_g = 0x10, /**< Port G */
-  k_mpc_port_h = 0x11, /**< Port H */
-  k_mpc_port_j = 0x12, /**< Port J */
+  k_mpc_port_0 = k_rx_port_0, /**< Port 0 */
+  k_mpc_port_1 = k_rx_port_1, /**< Port 1 */
+  k_mpc_port_2 = k_rx_port_2, /**< Port 2 */
+  k_mpc_port_3 = k_rx_port_3, /**< Port 3 */
+  k_mpc_port_4 = k_rx_port_4, /**< Port 4 */
+  k_mpc_port_5 = k_rx_port_5, /**< Port 5 */
+  k_mpc_port_6 = k_rx_port_6, /**< Port 6 */
+  k_mpc_port_7 = k_rx_port_7, /**< Port 7 */
+  k_mpc_port_8 = k_rx_port_8, /**< Port 8 */
+  k_mpc_port_9 = k_rx_port_9, /**< Port 9 */
+  k_mpc_port_a = k_rx_port_a, /**< Port A */
+  k_mpc_port_b = k_rx_port_b, /**< Port B */
+  k_mpc_port_c = k_rx_port_c, /**< Port C */
+  k_mpc_port_d = k_rx_port_d, /**< Port D */
+  k_mpc_port_e = k_rx_port_e, /**< Port E */
+  k_mpc_port_f = k_rx_port_f, /**< Port F */
+  k_mpc_port_g = k_rx_port_g, /**< Port G */
+  k_mpc_port_j = k_rx_port_j, /**< Port J */
 } mpc_port_number_t;
 
 /** @brief MPC PFS port offset values
@@ -97,17 +97,17 @@ typedef enum : uint16_t {
 
 /** @brief MPC PSEL maximum value */
 typedef enum : uint8_t {
-  k_mpc_psel_max = 0x1F, /**< Maximum valid PSEL value (5 bits) */
+  k_mpc_psel_max = 31, /**< Maximum valid PSEL value (5 bits) */
 } mpc_psel_constants_t;
 
 /** @brief MPC PFS register GPIO mode value */
 typedef enum : uint8_t {
-  k_mpc_pfs_gpio = 0x00, /**< GPIO mode: PSEL = 0, ISEL = 0, ASEL = 0 */
+  k_mpc_pfs_gpio = 0, /**< GPIO mode: PSEL = 0, ISEL = 0, ASEL = 0 */
 } mpc_pfs_gpio_t;
 
 /** @brief MPC PWPR register clear value */
 typedef enum : uint8_t {
-  k_mpc_pwpr_clear = 0x00, /**< Clear PWPR register */
+  k_mpc_pwpr_clear = 0, /**< Clear PWPR register */
 } mpc_pwpr_t;
 
 /* =============================================================================
@@ -187,7 +187,6 @@ static volatile uint8_t* internal_get_pfs_register(const uint8_t port, uint8_t p
       break;
     case k_mpc_port_f:
     case k_mpc_port_g:
-    case k_mpc_port_h:
       /* Ports F, G, H not available on 100-pin LFQFP package */
       rx_log_error(s_tag, "Port not available on this package");
       return NULL;

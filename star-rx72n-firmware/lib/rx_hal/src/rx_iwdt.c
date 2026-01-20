@@ -32,15 +32,8 @@
  * =============================================================================
  */
 
-/** @brief IWDT clock and size constants */
-typedef enum : uint32_t {
-  k_iwdt_clock_hz = 120000, /**< IWDT clock frequency in Hz */
-} iwdt_clock_constants_t;
-
 /** @brief IWDT validation constants */
-typedef enum : uint32_t {
-  k_iwdt_timeout_min_ms = 1, /**< Minimum valid timeout */
-} iwdt_validation_constants_t;
+static const uint32_t k_iwdt_timeout_min_ms = 1; /**< Minimum valid timeout */
 
 /** @brief IWDT initialization state */
 typedef enum : uint8_t {
@@ -434,12 +427,14 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 
 void rx_iwdt_task_heartbeat(const char* task_name)
 {
+  int32_t idx = k_task_not_found;
+
   if (task_name == NULL) {
     rx_log_error(s_tag, "Heartbeat called with NULL task_name");
     return;
   }
 
-  const int32_t idx = internal_find_task(task_name);
+  idx = internal_find_task(task_name);
 
   if (idx == k_task_not_found) {
     /* Task not registered - log warning but don't fail */

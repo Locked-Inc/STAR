@@ -18,6 +18,10 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
+typedef enum : uint32_t {
+  k_exponential_backoff_multiplier = 2, /**< Exponential backoff multiplier */
+} error_handler_backoff_constants_t;
+
 /* =============================================================================
  * Internal Helper Functions
  * =============================================================================
@@ -111,7 +115,7 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
   }
 
   /* Release mutex */
-  tx_mutex_put(&handler->mutex);
+  (void)tx_mutex_put(&handler->mutex);
 
   /* Log the error */
   rx_log_error(component, message);
@@ -140,7 +144,7 @@ static uint32_t impl_get_error_count(void* ctx)
   const uint32_t count = handler->total_error_count;
 
   /* Release mutex */
-  tx_mutex_put(&handler->mutex);
+  (void)tx_mutex_put(&handler->mutex);
 
   return count;
 }
@@ -169,7 +173,7 @@ static uint32_t impl_get_component_error_count(void* ctx, const char* component)
   }
 
   /* Release mutex */
-  tx_mutex_put(&handler->mutex);
+  (void)tx_mutex_put(&handler->mutex);
 
   return count;
 }
@@ -201,7 +205,7 @@ static rx_err_t impl_clear_errors(void* ctx)
   }
 
   /* Release mutex */
-  tx_mutex_put(&handler->mutex);
+  (void)tx_mutex_put(&handler->mutex);
 
   return k_rx_ok;
 }
@@ -235,7 +239,7 @@ static bool impl_is_retry_limit_reached(void* ctx, const char* component)
   }
 
   /* Release mutex */
-  tx_mutex_put(&handler->mutex);
+  (void)tx_mutex_put(&handler->mutex);
 
   return limit_reached;
 }
@@ -263,7 +267,7 @@ static rx_err_t impl_reset_retry_counter(void* ctx, const char* component)
   }
 
   /* Release mutex */
-  tx_mutex_put(&handler->mutex);
+  (void)tx_mutex_put(&handler->mutex);
 
   return k_rx_ok;
 }
@@ -292,7 +296,7 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
      * Capped at max_backoff_ms */
     delay_ms = handler->initial_backoff_ms;
     for (uint32_t i = 1; i < comp->retry_count; i++) {
-      delay_ms *= 2;
+      delay_ms *= k_exponential_backoff_multiplier;
       if (delay_ms >= handler->max_backoff_ms) {
         delay_ms = handler->max_backoff_ms;
         break;
@@ -301,7 +305,7 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
   }
 
   /* Release mutex */
-  tx_mutex_put(&handler->mutex);
+  (void)tx_mutex_put(&handler->mutex);
 
   return delay_ms;
 }
@@ -311,20 +315,18 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
  * =============================================================================
  */
 
-rx_err_t error_handler_init(error_handler_t* handler,
-                            const uint32_t   max_retries,
-                            const uint32_t   initial_backoff_ms,
-                            const uint32_t   max_backoff_ms)
+rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config_t* config)
 {
   RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is NULL");
+  RX_CHECK_NULL_PTR(config, "ERROR_HANDLER", "Config pointer is NULL");
 
   /* Clear all state */
   memset(handler, 0, sizeof(error_handler_t));
 
   /* Initialize configuration */
-  handler->max_retries        = max_retries;
-  handler->initial_backoff_ms = initial_backoff_ms;
-  handler->max_backoff_ms     = max_backoff_ms;
+  handler->max_retries        = config->max_retries;
+  handler->initial_backoff_ms = config->initial_backoff_ms;
+  handler->max_backoff_ms     = config->max_backoff_ms;
 
   /* Create mutex */
   const UINT status = tx_mutex_create(&handler->mutex, "ErrorHandlerMutex", TX_NO_INHERIT);
@@ -372,7 +374,7 @@ rx_err_t error_handler_deinit(error_handler_t* handler)
   }
 
   /* Delete mutex */
-  tx_mutex_delete(&handler->mutex);
+  (void)tx_mutex_delete(&handler->mutex);
 
   /* Clear state */
   handler->initialized = false;

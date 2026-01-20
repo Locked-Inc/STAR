@@ -14,17 +14,13 @@
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+#include "rx_port_constants.h"
 #include "rx_port_utils.h"
 
 /* =============================================================================
  * Constants
  * =============================================================================
  */
-
-/** @brief GPIO pin validation constants */
-typedef enum : uint8_t {
-  k_gpio_max_pin = 7, /**< Maximum valid pin number (pins 0-7) */
-} gpio_pin_constants_t;
 
 /** @brief GPIO register bit manipulation constants */
 typedef enum : uint8_t {
@@ -55,7 +51,7 @@ static rx_err_t internal_validate_port_pin(const uint8_t port, const uint8_t pin
   }
 
   /* Validate pin */
-  if (pin > k_gpio_max_pin) {
+  if ((pin < k_rx_pin_0) || (pin > k_rx_pin_max)) {
     rx_log_error("GPIO", "Invalid pin number");
     return k_rx_err_gpio_invalid_pin;
   }
