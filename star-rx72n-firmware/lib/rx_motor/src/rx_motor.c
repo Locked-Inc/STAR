@@ -55,7 +55,7 @@ typedef enum : uint32_t {
 } motor_validation_limits_t;
 
 /* Zero duty for stopped outputs (floats can't be enums). */
-static const float s_duty_zero = 0.0f;
+static const float s_duty_zero = 0.0F;
 
 /* =============================================================================
  * Internal Helper Functions
@@ -241,7 +241,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 
 rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 {
-  float   speed_pwm;
+  float    speed_pwm = 0.0f;
   rx_err_t err;
 
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");

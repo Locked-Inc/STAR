@@ -25,8 +25,10 @@ set(CMAKE_SIZE         "${GNURX_ROOT}/bin/rx-elf-size")
 set(CMAKE_RANLIB       "${GNURX_ROOT}/bin/rx-elf-ranlib")
 
 # Target specifications for RX72N (RXv3 core, 32-bit single-precision FPU)
+# NOTE: GCC compiler doesn't support -mcpu=rxv3, but assembler does
+# Use rx610 for C code (closest available) and rxv3-dfpu for assembly
 set(CPU_FLAGS "-mcpu=rx610 -mlittle-endian-data")
-set(ASM_CPU_FLAGS "-Wa,--mcpu=rx610 -mlittle-endian-data")
+set(ASM_CPU_FLAGS "-Wa,--mcpu=rxv3-dfpu -mlittle-endian-data")
 
 # Compiler flags
 set(CMAKE_C_FLAGS_INIT "${CPU_FLAGS} -ffunction-sections -fdata-sections")

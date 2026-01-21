@@ -233,15 +233,15 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
  */
 void hcsr04_hal_delay_us(uint32_t us)
 {
+  char     message[k_hcsr04_log_msg_max];
+  uint32_t message_len  = 0U;
+  int      snprintf_result = 0;
+
   if (us == k_hcsr04_delay_none) {
     return;
   }
 
   if (us > k_hcsr04_delay_max_us) {
-    char     message[k_hcsr04_log_msg_max];
-    uint32_t message_len      = 0U;
-    int      snprintf_result = 0;
-
     snprintf_result = snprintf(message,
                   sizeof(message),
                   "Delay request %lu exceeds max %lu us",
