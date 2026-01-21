@@ -86,6 +86,12 @@ const (
 
 	// dummyBatterySOC is the simulated battery state of charge in percent.
 	dummyBatterySOC = 85
+
+	// Motor IDs
+	motorIDFrontLeft  = 0
+	motorIDFrontRight = 1
+	motorIDBackLeft   = 2
+	motorIDBackRight  = 3
 )
 
 func main() {
@@ -348,25 +354,25 @@ func generateTelemetryData(timestampUs int64) *starv1.TelemetryData {
 		MotorLoadPercent:   motorLoadPercent,
 		TimestampUs:        timestampUs,
 		EncoderFrontLeft: &starv1.EncoderData{
-			MotorId:     0,
+			MotorId:     motorIDFrontLeft,
 			Ticks:       encoderFrontLeftTicks,
 			VelocityMps: encoderFrontLeftVel,
 			TimestampUs: timestampUs,
 		},
 		EncoderFrontRight: &starv1.EncoderData{
-			MotorId:     1,
+			MotorId:     motorIDFrontRight,
 			Ticks:       encoderFrontRightTicks,
 			VelocityMps: encoderFrontRightVel,
 			TimestampUs: timestampUs,
 		},
 		EncoderBackLeft: &starv1.EncoderData{
-			MotorId:     2,
+			MotorId:     motorIDBackLeft,
 			Ticks:       encoderBackLeftTicks,
 			VelocityMps: encoderBackLeftVel,
 			TimestampUs: timestampUs,
 		},
 		EncoderBackRight: &starv1.EncoderData{
-			MotorId:     3,
+			MotorId:     motorIDBackRight,
 			Ticks:       encoderBackRightTicks,
 			VelocityMps: encoderBackRightVel,
 			TimestampUs: timestampUs,

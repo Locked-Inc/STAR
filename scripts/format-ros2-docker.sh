@@ -41,7 +41,7 @@ elif command -v docker &> /dev/null; then
     fi
 
     echo "Found devcontainer: $CONTAINER_ID"
-    docker exec -it "$CONTAINER_ID" /bin/bash -c "cd /workspaces/STAR && ./scripts/format-ros2.sh $*"
+    docker exec -it "$CONTAINER_ID" /workspaces/STAR/scripts/format-ros2.sh "$@"
 else
     echo "Error: Neither devcontainer nor docker found."
     echo ""

@@ -690,8 +690,8 @@ func TestSPITransport_MockClose_Failure(t *testing.T) {
 	if err == nil {
 		t.Error("Expected Close to fail with mock error")
 	}
-	if !errors.Is(err, mockPort.closeError) && err.Error() != "failed to close SPI port: failed to close SPI port" {
-		t.Errorf("Unexpected error: %v", err)
+	if !errors.Is(err, mockPort.closeError) {
+		t.Errorf("Unexpected error: %v, want %v", err, mockPort.closeError)
 	}
 }
 

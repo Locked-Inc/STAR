@@ -1,13 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Auto-run cpplint on save for ROS2 C++ files
 # Usage: Add this to your VS Code tasks and run on file save
 
-set -e
+set -euo pipefail
 
-FILE="$1"
+file="${1:-}"
+
+# Check if file is provided and exists
+if [[ -z "$file" ]] || [[ ! -f "$file" ]]; then
+    echo "Error: Input file missing or invalid: $file" >&2
+    exit 1
+fi
 
 # Check if file is in star-ros2 and is a C++ file
-if [[ "$FILE" != *"star-ros2"* ]] || [[ ! "$FILE" =~ \.(cpp|hpp)$ ]]; then
+if [[ "$file" != *"star-ros2"* ]] || [[ ! "$file" =~ \.(cpp|hpp)$ ]]; then
     exit 0
 fi
 
@@ -23,8 +29,15 @@ if ! command -v ament_cpplint &> /dev/null; then
 fi
 
 # Run cpplint on the file
-echo "🔍 Checking $FILE..."
-if ament_cpplint "$FILE" 2>&1 | grep -v "^Done processing"; then
+echo "🔍 Checking $file..."
+set +e
+output=$(ament_cpplint "$file" 2>&1)
+exit_code=$?
+set -e
+
+echo "$output" | grep -v "^Done processing"
+
+if [ $exit_code -eq 0 ]; then
     echo "✅ Style check passed"
 else
     echo "❌ Style violations found - see above"

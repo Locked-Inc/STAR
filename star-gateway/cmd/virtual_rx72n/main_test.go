@@ -54,13 +54,13 @@ func TestGenerateTelemetryResponse(t *testing.T) {
 	encoder := frame.NewEncoder()
 	seqNum := uint16(10)
 	timestamp := int64(1000)
-	responseLen := 256
+	const testResponseLen = 256
 
 	// Test normal generation
-	resp := generateTelemetryResponse(encoder, &seqNum, &timestamp, responseLen)
+	resp := generateTelemetryResponse(encoder, &seqNum, &timestamp, testResponseLen)
 
-	if len(resp) != responseLen {
-		t.Errorf("Response length = %d, want %d", len(resp), responseLen)
+	if len(resp) != testResponseLen {
+		t.Errorf("Response length = %d, want %d", len(resp), testResponseLen)
 	}
 
 	if seqNum != 11 {

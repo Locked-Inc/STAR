@@ -40,6 +40,9 @@ const (
 	// Timeout for graceful gateway shutdown
 	gatewayShutdownTimeout = 20 * time.Second
 
+	// Telemetry retry interval
+	telemetryRetryInterval = 100 * time.Millisecond
+
 	// Mock telemetry IMU gravity constant
 	standardGravityMps2 = 9.81
 
@@ -309,7 +312,6 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	telemetryClient := starv1.NewTelemetryServiceClient(conn)
 
 	// 4. Test GetTelemetry (verify we receive valid telemetry data)
-	// 4. Test GetTelemetry (verify we receive valid telemetry data)
 	// Retry loop to allow time for first telemetry frame to arrive
 	var telemetryResp *starv1.GetTelemetryResponse
 	telemetryReq := &starv1.GetTelemetryRequest{
@@ -333,7 +335,7 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 				t.Fatal("GetTelemetry returned empty response after timeout")
 			}
 		}
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(telemetryRetryInterval)
 	}
 
 	if telemetryResp.Telemetry == nil {

@@ -78,14 +78,16 @@ The node subscribes to `/diagnostics` and tracks the timestamp of the last recei
 Recovery requires:
 
 1. Heartbeat to be restored
-2. Time elapsed >= `estop_recovery_delay`
+2. Time elapsed since heartbeat restoration >= `estop_recovery_delay`
 
 ### Velocity Limit Enforcement
 
 The node calculates the magnitude of linear and angular velocities from odometry messages:
 
-- Linear velocity: √(vx² + vy² + vz²)
-- Angular velocity: √(ωx² + ωy² + ωz²)
+```
+Linear Speed  = sqrt(vx^2 + vy^2 + vz^2)  (unit: m/s,   frame: base_link)
+Angular Speed = sqrt(ωx^2 + ωy^2 + ωz^2)  (unit: rad/s, frame: base_link)
+```
 
 If either exceeds configured limits, the `velocity_exceeded` flag is set and a warning is logged.
 

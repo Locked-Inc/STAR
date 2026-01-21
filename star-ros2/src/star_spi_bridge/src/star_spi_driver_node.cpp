@@ -8,6 +8,8 @@ using namespace std::chrono_literals;
 
 namespace star_spi_bridge
 {
+static constexpr int kLogThrottleMs = 1000;
+
 StarSpiDriverNode::StarSpiDriverNode(const rclcpp::NodeOptions & options)
 : rclcpp_lifecycle::LifecycleNode("star_spi_driver", options)
 {
@@ -188,21 +190,21 @@ void StarSpiDriverNode::timer_callback()
   // Perform full-duplex SPI transfer
   std::vector<uint8_t> rx_frame;
   if (!spi_driver_->transfer(tx_frame, rx_frame)) {
-    RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 1000,
+    RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
                           "SPI Transfer Failed");
     return;
   }
 
   // Decode received frame
-  uint16_t decoded_seq_;
+  uint16_t decoded_seq;
   FrameType rx_type;
-  uint8_t decoded_flags_;
+  uint8_t decoded_flags;
   std::vector<uint8_t> rx_payload;
 
-  if (!SpiDriver::decode_frame(rx_frame, decoded_seq_, rx_type, decoded_flags_,
+  if (!SpiDriver::decode_frame(rx_frame, decoded_seq, rx_type, decoded_flags,
                                rx_payload))
   {
-    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
                          "SPI Frame Decode Failed (CRC mismatch or garbage)");
     return;
   }
@@ -213,7 +215,7 @@ void StarSpiDriverNode::timer_callback()
     if (telemetry.ParseFromArray(rx_payload.data(), rx_payload.size())) {
       // Check emergency stop flag from motor controller
       if (telemetry.emergency_stop()) {
-        RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 1000,
+        RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
                               "RX72N EMERGENCY STOP ACTIVE");
       }
 
