@@ -85,6 +85,9 @@ static const uint32_t s_rspi_bit_set = 1UL;
 /** @brief RSPI transfer limits */
 static const uint16_t s_rspi_transfer_len_max = 65535U;
 
+/** @brief SPCMD register initial value (all mode bits clear) */
+static const uint16_t s_rspi_spcmd_init = 0U;
+
 /* =============================================================================
  * Static Variables
  * =============================================================================
@@ -160,8 +163,43 @@ static void internal_set_mstpcrb_for_channel(const uint8_t channel, const bool e
  * =============================================================================
  */
 
+/**
+ * @brief Initialize RSPI peripheral mode for RPi5 SPI communication
+ *
+ * Configures the specified RSPI channel as a SPI peripheral (slave) to communicate
+ * with the Raspberry Pi 5 (acting as SPI controller/master). Enables the peripheral
+ * in the configured SPI mode (0-3) with optional 8-bit or 16-bit data frames.
+ * Uses register protection unlock/lock for module stop control.
+ *
+ * @param[in] channel RSPI channel number (0-2, corresponding to RSPI0/RSPI1/RSPI2)
+ * @param[in] config Pointer to rspi_config_t configuration structure
+ *                   @c config must contain:
+ *                   - @c spi_mode: SPI mode (0-3) controlling CPOL and CPHA bits
+ *                   - @c use_16bit: True for 16-bit data frames, false for 8-bit
+ *
+ * @return k_rx_ok if initialization successful and channel marked as initialized
+ * @return k_rx_err_invalid_arg if:
+ *         - @c config pointer is NULL
+ *         - @c channel is out of range (>= 3)
+ *         - @c config->spi_mode exceeds maximum (> 3)
+ *         - RSPI base address lookup fails for the channel
+ *
+ * @pre config pointer must be non-NULL
+ * @pre channel must be in range [0, k_rspi_max_channels)
+ * @pre config->spi_mode must be in range [0, 3]
+ *
+ * @post If successful:
+ *       - RSPI module is enabled (module stop bit cleared via register protection)
+ *       - SPI mode (CPOL/CPHA) is configured per config->spi_mode
+ *       - Data frame length (8-bit or 16-bit) is set per config->use_16bit
+ *       - SPI is enabled in peripheral (slave) mode (SPCR.MSTR = 0)
+ *       - s_rspi_channel_initialized[channel] is set to true
+ *       - Peripheral is ready to receive transfers from SPI controller
+ */
 rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config)
 {
+  uint16_t spcmd = s_rspi_spcmd_init;
+
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
   /* Validate channel */
@@ -195,7 +233,6 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
   rspi->spcr = s_rspi_spcr_disabled;
 
   /* Configure SPI mode (CPOL and CPHA) */
-  uint16_t spcmd = 0;
   if (config->spi_mode & k_rspi_spcmd_cpol_mask) {
     spcmd |= (uint16_t)(s_rspi_bit_set << k_rspi_spcmd_cpol_pos); /* CPOL = 1 */
   }
