@@ -377,7 +377,7 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 		if err != nil {
 			t.Errorf("Gateway shutdown error: %v", err)
 		}
-	case <-time.After(2 * time.Second):
+	case <-time.After(gatewayShutdownTimeout):
 		t.Fatal("Gateway did not shut down in time")
 	}
 }
