@@ -92,12 +92,12 @@ func (m *mockSPIConn) TxPackets(p []spi.Packet) error {
 
 // mockSPIPort implements spi.PortCloser for testing.
 type mockSPIPort struct {
-	mu          sync.Mutex
-	conn        *mockSPIConn
-	closeError  error
-	closeCount  int
-	connectErr  error
-	closed      bool
+	mu         sync.Mutex
+	conn       *mockSPIConn
+	closeError error
+	closeCount int
+	connectErr error
+	closed     bool
 }
 
 // String implements spi.PortCloser.String.

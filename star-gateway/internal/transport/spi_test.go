@@ -739,7 +739,7 @@ func TestSPITransport_MockMultipleOperations(t *testing.T) {
 		}
 
 		// Transfer
-		txData := []byte{byte(i*2), byte(i*3)}
+		txData := []byte{byte(i * 2), byte(i * 3)}
 		rxData, err = transport.Transfer(context.Background(), txData)
 		if err != nil {
 			t.Fatalf("Iteration %d: Transfer failed: %v", i, err)
