@@ -161,25 +161,10 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
                                       uint16_t*         cell_voltages,
                                       const uint8_t     num_cells)
 {
-  RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
-  RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
-  RX_CHECK_NULL_PTR(cell_voltages, s_tag, "cell_voltages pointer is NULL");
-
-  if ((num_cells < s_bq4050_min_cells) || (num_cells > k_bq4050_max_cells)) {
-    char      log_msg[80];
-    const int snprintf_result = snprintf(log_msg,
-                                         sizeof(log_msg),
-                                         "num_cells out of range: %u (allowed %u..%u)",
-                                         (unsigned)num_cells,
-                                         (unsigned)s_bq4050_min_cells,
-                                         (unsigned)k_bq4050_max_cells);
-    if (snprintf_result > 0 && (uint32_t)snprintf_result < sizeof(log_msg)) {
-      rx_log_error(s_tag, log_msg);
-    }
-    return k_rx_err_invalid_arg;
-  }
-
-  /* BQ4050 cell voltage registers are 0x3F (cell 1) to 0x3C (cell 4) */
+  char           log_msg[80];
+  int            snprintf_result = 0;
+  uint8_t        i;
+  rx_err_t       err;
   static const uint8_t s_cell_reg_map[k_bq4050_max_cells] = {
     [k_cell_idx_1] = k_sbs_cell_voltage_1, /* Cell 1 at 0x3F */
     [k_cell_idx_2] = k_sbs_cell_voltage_2, /* Cell 2 at 0x3E */
@@ -187,12 +172,28 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
     [k_cell_idx_4] = k_sbs_cell_voltage_4, /* Cell 4 at 0x3C */
   };
 
-  for (uint8_t i = k_cell_idx_1; i < k_bq4050_max_cells; i++) {
+  RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
+  RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
+  RX_CHECK_NULL_PTR(cell_voltages, s_tag, "cell_voltages pointer is NULL");
+
+  if ((num_cells < s_bq4050_min_cells) || (num_cells > k_bq4050_max_cells)) {
+    snprintf_result = snprintf(log_msg,
+                               sizeof(log_msg),
+                               "num_cells out of range: %u (allowed %u..%u)",
+                               (unsigned)num_cells,
+                               (unsigned)s_bq4050_min_cells,
+                               (unsigned)k_bq4050_max_cells);
+    if (snprintf_result > 0 && (uint32_t)snprintf_result < sizeof(log_msg)) {
+      rx_log_error(s_tag, log_msg);
+    }
+    return k_rx_err_invalid_arg;
+  }
+
+  for (i = k_cell_idx_1; i < k_bq4050_max_cells; i++) {
     if (i >= num_cells) {
       break;
     }
-    const rx_err_t err =
-      rx_bus_smbus_read_word_data(manager, bus_name, s_cell_reg_map[i], &cell_voltages[i]);
+    err = rx_bus_smbus_read_word_data(manager, bus_name, s_cell_reg_map[i], &cell_voltages[i]);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to read cell voltage");
       return err;
@@ -564,6 +565,8 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
                                rx_bq4050_status_t* status,
                                const uint8_t       num_cells)
 {
+  char     log_msg[80];
+  int      snprintf_result = 0;
   rx_err_t err;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
@@ -571,13 +574,12 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
   RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
 
   if ((num_cells < s_bq4050_min_cells) || (num_cells > k_bq4050_max_cells)) {
-    char      log_msg[80];
-    const int snprintf_result = snprintf(log_msg,
-                                         sizeof(log_msg),
-                                         "num_cells out of range: %u (allowed %u..%u)",
-                                         (unsigned)num_cells,
-                                         (unsigned)s_bq4050_min_cells,
-                                         (unsigned)k_bq4050_max_cells);
+    snprintf_result = snprintf(log_msg,
+                               sizeof(log_msg),
+                               "num_cells out of range: %u (allowed %u..%u)",
+                               (unsigned)num_cells,
+                               (unsigned)s_bq4050_min_cells,
+                               (unsigned)k_bq4050_max_cells);
     if (snprintf_result > 0 && (uint32_t)snprintf_result < sizeof(log_msg)) {
       rx_log_error(s_tag, log_msg);
     }
