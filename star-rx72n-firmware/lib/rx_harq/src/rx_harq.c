@@ -24,6 +24,11 @@ typedef enum : uint16_t {
   k_harq_tail_bytes          = 2, /**< Tail overhead in bytes */
 } harq_fec_constants_t;
 
+typedef enum : uint8_t {
+  k_harq_false = 0U,
+  k_harq_true  = 1U,
+} harq_bool_t;
+
 /* =============================================================================
  * Chase Combiner Implementation
  * =============================================================================
@@ -41,7 +46,7 @@ rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, const uint8_t max
   combiner->expected_len = 0;
   combiner->count        = 0;
   combiner->max_combines = (max_combines > 0) ? max_combines : k_harq_default_combines;
-  combiner->initialized  = 1;
+  combiner->initialized  = k_harq_true;
 
   return k_rx_ok;
 }
@@ -52,7 +57,7 @@ rx_err_t rx_chase_combiner_deinit(rx_chase_combiner_t* combiner)
     return k_rx_err_invalid_arg;
   }
 
-  combiner->initialized = 0;
+  combiner->initialized = k_harq_false;
   return k_rx_ok;
 }
 
@@ -63,7 +68,7 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
     return k_rx_err_invalid_arg;
   }
 
-  if (combiner->initialized == 0) {
+  if (combiner->initialized == k_harq_false) {
     return k_rx_err_invalid_state;
   }
 
@@ -114,7 +119,7 @@ rx_err_t rx_chase_combiner_combined(const rx_chase_combiner_t* combiner,
     return k_rx_err_invalid_arg;
   }
 
-  if (combiner->initialized == 0) {
+  if (combiner->initialized == k_harq_false) {
     return k_rx_err_invalid_state;
   }
 
@@ -153,7 +158,7 @@ rx_err_t rx_chase_combiner_reset(rx_chase_combiner_t* combiner)
     return k_rx_err_invalid_arg;
   }
 
-  if (combiner->initialized == 0) {
+  if (combiner->initialized == k_harq_false) {
     return k_rx_err_invalid_state;
   }
 
@@ -167,7 +172,7 @@ rx_err_t rx_chase_combiner_reset(rx_chase_combiner_t* combiner)
 
 bool rx_chase_combiner_can_add(const rx_chase_combiner_t* combiner)
 {
-  if (combiner == NULL || combiner->initialized == 0) {
+  if (combiner == NULL || combiner->initialized == k_harq_false) {
     return false;
   }
   return combiner->count < combiner->max_combines;
@@ -207,7 +212,7 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
     harq->fec_enabled = config->fec_enabled;
   } else {
     harq->max_retries = k_harq_default_retries;
-    harq->fec_enabled = 1; /* FEC enabled by default */
+    harq->fec_enabled = k_harq_true; /* FEC enabled by default */
   }
 
   /* Initialize Chase Combiner */
@@ -219,21 +224,22 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
   }
 
   /* Initialize FEC encoder if enabled */
-  if (harq->fec_enabled) {
+  if (harq->fec_enabled == k_harq_true) {
     err = rx_fec_encoder_init(&harq->encoder);
     if (err != k_rx_ok) {
       return err;
     }
 
     /* Initialize FEC decoder with survivors buffer */
-    err = rx_fec_decoder_init(&harq->decoder, harq->decoder_survivors, k_harq_soft_buffer_size / 2);
+    err =
+      rx_fec_decoder_init(&harq->decoder, harq->decoder_survivors, k_harq_survivors_buffer_size);
     if (err != k_rx_ok) {
       rx_fec_encoder_deinit(&harq->encoder);
       return err;
     }
   }
 
-  harq->initialized = 1;
+  harq->initialized = k_harq_true;
   return k_rx_ok;
 }
 
@@ -243,14 +249,14 @@ rx_err_t rx_harq_deinit(rx_harq_handle_t* harq)
     return k_rx_err_invalid_arg;
   }
 
-  if (harq->fec_enabled) {
+  if (harq->fec_enabled == k_harq_true) {
     rx_fec_encoder_deinit(&harq->encoder);
     rx_fec_decoder_deinit(&harq->decoder);
   }
 
   rx_chase_combiner_deinit(&harq->combiner);
 
-  harq->initialized = 0;
+  harq->initialized = k_harq_false;
   return k_rx_ok;
 }
 
@@ -270,7 +276,7 @@ rx_err_t rx_harq_reset(rx_harq_handle_t* harq)
     return k_rx_err_invalid_arg;
   }
 
-  if (harq->initialized == 0) {
+  if (harq->initialized == k_harq_false) {
     return k_rx_err_invalid_state;
   }
 
@@ -298,7 +304,7 @@ rx_err_t rx_harq_encode(const rx_harq_handle_t* harq,
     return k_rx_err_invalid_arg;
   }
 
-  if (harq->initialized == 0) {
+  if (harq->initialized == k_harq_false) {
     return k_rx_err_invalid_state;
   }
 
@@ -307,7 +313,7 @@ rx_err_t rx_harq_encode(const rx_harq_handle_t* harq,
   }
 
   /* If FEC is disabled, just copy payload */
-  if (harq->fec_enabled == 0) {
+  if (harq->fec_enabled == k_harq_false) {
     /* Validate output buffer can hold payload */
     if (output_size < payload_len) {
       return k_rx_err_invalid_size;
@@ -348,18 +354,18 @@ typedef enum : uint8_t {
 /**
  * @brief Convert combined soft bits to hard bits (non-FEC path)
  *
- * @param[in]  soft_bits   Combined soft bits
- * @param[in]  soft_len    Number of soft bits
- * @param[in]  max_out_len Maximum output length (0 = unlimited)
- * @param[out] output      Output hard bits (packed bytes)
- * @param[out] output_len  Actual output length
+ * @param[in]  soft_bits        Combined soft bits
+ * @param[in]  soft_bit_count   Number of soft bits
+ * @param[in]  max_output_bytes Maximum output length (bytes, must be > 0)
+ * @param[out] output           Output hard bits (packed bytes)
+ * @param[out] output_len       Actual output length
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if any pointer is NULL
  */
 static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
-                                      const uint32_t       soft_len,
-                                      const uint32_t       max_out_len,
+                                      const uint32_t       soft_bit_count,
+                                      const uint32_t       max_output_bytes,
                                       uint8_t*             output,
                                       uint32_t*            output_len)
 {
@@ -369,11 +375,14 @@ static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
   if (soft_bits == NULL || output == NULL || output_len == NULL) {
     return k_rx_err_invalid_arg;
   }
+  if (max_output_bytes == 0) {
+    return k_rx_err_invalid_arg;
+  }
 
   /* Calculate output bytes with ceiling division */
-  out_bytes = (soft_len + k_rounding_adjustment) / k_rx_bits_per_byte;
-  if (out_bytes > max_out_len && max_out_len > 0) {
-    out_bytes = max_out_len;
+  out_bytes = (soft_bit_count + k_rounding_adjustment) / k_rx_bits_per_byte;
+  if (out_bytes > max_output_bytes) {
+    out_bytes = max_output_bytes;
   }
   memset(output, 0, out_bytes);
 
@@ -382,7 +391,7 @@ static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
    * Loop terminates when i >= soft_len OR when byte index exceeds out_bytes.
    * Maximum iterations: min(soft_len, out_bytes * k_rx_bits_per_byte).
    */
-  for (uint32_t i = 0; i < soft_len && (i / k_rx_bits_per_byte) < out_bytes; i++) {
+  for (uint32_t i = 0; i < soft_bit_count && (i / k_rx_bits_per_byte) < out_bytes; i++) {
     if (soft_bits[i] >= k_soft_bit_zero_thresh) {
       const uint32_t byte_idx = i / k_rx_bits_per_byte;
       const uint32_t bit_pos  = k_msb_position - (i % k_rx_bits_per_byte);
@@ -449,7 +458,7 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
   if (harq == NULL || params == NULL || output == NULL || output_len == NULL) {
     return k_rx_err_invalid_arg;
   }
-  if (harq->initialized == 0) {
+  if (harq->initialized == k_harq_false) {
     return k_rx_err_invalid_state;
   }
   if (params->soft_bits == NULL || params->soft_len == 0) {
@@ -469,7 +478,7 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
   }
 
   /* Non-FEC path: direct soft-to-hard conversion */
-  if (harq->fec_enabled == 0) {
+  if (harq->fec_enabled == k_harq_false) {
     err = internal_soft_to_hard(harq->decode_buffer,
                                 combined_len,
                                 params->expected_output_len,
@@ -509,7 +518,7 @@ uint8_t rx_harq_get_retry_count(const rx_harq_handle_t* harq)
 
 bool rx_harq_can_retry(const rx_harq_handle_t* harq)
 {
-  if (harq == NULL || harq->initialized == 0) {
+  if (harq == NULL || harq->initialized == k_harq_false) {
     return false;
   }
   return (harq->retry_count < harq->max_retries) && rx_chase_combiner_can_add(&harq->combiner);

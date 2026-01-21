@@ -115,10 +115,16 @@ typedef enum : uint16_t {
 } wdt_wdtcr_bits_t;
 
 /* WDT Status Register (WDTSR) Bit Definitions */
+/* Bit position constants for WDTSR flags */
+enum {
+  k_wdt_sr_undff_pos = 14, /**< Underflow flag bit position */
+  k_wdt_sr_refef_pos = 15, /**< Refresh error flag bit position */
+};
+
 typedef enum : uint16_t {
-  k_wdt_sr_cntval_mask = 0x3FFF,    /**< Down counter value (bits 13:0) */
-  k_wdt_sr_undff       = (1 << 14), /**< Underflow flag (reset occurred) */
-  k_wdt_sr_refef       = (1 << 15), /**< Refresh error flag (window violation) */
+  k_wdt_sr_cntval_mask = 0x3FFF,                      /**< Down counter value (bits 13:0) */
+  k_wdt_sr_undff       = (1 << k_wdt_sr_undff_pos),  /**< Underflow flag (reset occurred) */
+  k_wdt_sr_refef       = (1 << k_wdt_sr_refef_pos),  /**< Refresh error flag (window violation) */
 } wdt_wdtsr_bits_t;
 
 /* WDT Reset Control Register (WDTRCR) Bit Definitions */

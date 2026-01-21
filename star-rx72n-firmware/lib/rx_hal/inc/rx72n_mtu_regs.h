@@ -230,8 +230,10 @@ typedef enum : uint8_t {
 
 /* Timer Start Register B (TSTRB) bits - MTU6-7 */
 typedef enum : uint8_t {
-  k_mtu_tstr_cst6 = (1 << 6), /**< Counter Start 6 (TSTRB bit 6) */
-  k_mtu_tstr_cst7 = (1 << 7), /**< Counter Start 7 (TSTRB bit 7) */
+  k_mtu_tstr_cst6_shift = 6, /**< Counter Start 6 bit position */
+  k_mtu_tstr_cst7_shift = 7, /**< Counter Start 7 bit position */
+  k_mtu_tstr_cst6       = (1U << k_mtu_tstr_cst6_shift), /**< Counter Start 6 (TSTRB bit 6) */
+  k_mtu_tstr_cst7       = (1U << k_mtu_tstr_cst7_shift), /**< Counter Start 7 (TSTRB bit 7) */
 } mtu_tstrb_bits_t;
 
 /* =============================================================================

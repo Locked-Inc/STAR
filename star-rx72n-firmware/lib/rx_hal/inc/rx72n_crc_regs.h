@@ -43,7 +43,7 @@ typedef enum : uint32_t {
 /** @brief CRC register reserved field sizes */
 typedef enum : uint8_t {
   k_crc_reserved_after_crccr_bytes = 3, /**< Reserved bytes after CRCCR */
-} crc_reserved_sizes_t;
+} rx_crc_reserved_sizes_t;
 
 /**
  * @brief CRC Register Map

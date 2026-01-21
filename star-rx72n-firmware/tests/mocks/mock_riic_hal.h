@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hardware.h"
 #include "rx_err.h"
 
 #ifdef __cplusplus
@@ -233,8 +234,10 @@ void mock_riic_clear_history(void);
  */
 
 rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz);
-rx_err_t
-riic_write(uint8_t channel, const uint8_t device_addr, const uint8_t* data, const uint16_t length);
+rx_err_t riic_write(riic_channel_t       channel,
+                    i2c_device_addr_t    device_addr,
+                    const uint8_t*       data,
+                    const uint16_t       length);
 rx_err_t
 riic_read(uint8_t channel, const uint8_t device_addr, uint8_t* data, const uint16_t length);
 rx_err_t riic_write_read(uint8_t        channel,

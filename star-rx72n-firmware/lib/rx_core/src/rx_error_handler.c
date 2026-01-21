@@ -308,6 +308,10 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
                   : handler->max_retries;
     retries   = (comp->retry_count > retry_cap) ? retry_cap : comp->retry_count;
     for (uint32_t i = 1; i < retries; i++) {
+      if (delay_ms > handler->max_backoff_ms / k_exponential_backoff_multiplier) {
+        delay_ms = handler->max_backoff_ms;
+        break;
+      }
       delay_ms *= k_exponential_backoff_multiplier;
       if (delay_ms >= handler->max_backoff_ms) {
         delay_ms = handler->max_backoff_ms;

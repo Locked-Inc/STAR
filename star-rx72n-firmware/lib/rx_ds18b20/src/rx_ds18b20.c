@@ -21,6 +21,7 @@
 #include "rx_log.h"
 
 static const char* s_tag = "DS18B20";
+static const uint8_t s_ds18b20_family_code = 0x28U; /**< DS18B20 family code in ROM */
 
 /* Temperature conversion constants (floating-point) */
 static const float s_temp_conversion_divisor =
@@ -228,7 +229,8 @@ rx_err_t rx_ds18b20_set_resolution(rx_ds18b20_handle_t*       handle,
 
   CHECK_DS18B20_HANDLE(handle, s_tag);
 
-  if (resolution > k_ds18b20_resolution_12bit) {
+  if (resolution != k_ds18b20_resolution_9bit && resolution != k_ds18b20_resolution_10bit &&
+      resolution != k_ds18b20_resolution_11bit && resolution != k_ds18b20_resolution_12bit) {
     rx_log_error(s_tag, "Invalid resolution value");
     return k_rx_err_invalid_arg;
   }
@@ -381,7 +383,7 @@ rx_err_t rx_ds18b20_read_scratchpad(rx_ds18b20_handle_t* handle,
 uint32_t rx_ds18b20_get_conversion_time_ms(const rx_ds18b20_handle_t* handle)
 {
   if (handle == NULL || !handle->initialized) {
-    return k_ds18b20_conversion_time_invalid;
+    return s_ds18b20_conversion_time_invalid_u32;
   }
 
   switch (handle->resolution) {
@@ -394,7 +396,7 @@ uint32_t rx_ds18b20_get_conversion_time_ms(const rx_ds18b20_handle_t* handle)
     case k_ds18b20_resolution_12bit:
       return k_ds18b20_conv_time_12bit_ms;
     default:
-      return k_ds18b20_conversion_time_invalid;
+      return s_ds18b20_conversion_time_invalid_u32;
   }
 }
 
@@ -428,6 +430,11 @@ static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* conf
 
   if (config->resolution > k_ds18b20_resolution_12bit) {
     rx_log_error(s_tag, "Invalid resolution setting");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (config->use_rom_matching && config->rom[0] != s_ds18b20_family_code) {
+    rx_log_error(s_tag, "Invalid DS18B20 family code");
     return k_rx_err_invalid_arg;
   }
 
@@ -530,6 +537,9 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* 
   uint8_t  crc_calc   = 0;
   uint8_t  crc_device = 0;
 
+  RX_CHECK_NULL_PTR(handle, s_tag, "handle is NULL");
+  RX_CHECK_NULL_PTR(scratchpad, s_tag, "scratchpad is NULL");
+
   /* Reset and check presence */
   err = rx_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
   if (err != k_rx_ok || !presence) {
@@ -571,7 +581,7 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* 
   }
 
   /* Post-condition: Validate scratchpad structure (reserved byte should be 0xFF) */
-  if (scratchpad[k_ds18b20_scratch_reserved1] != k_ds18b20_reserved_byte_value) {
+  if (scratchpad[k_ds18b20_scratch_reserved1] != s_ds18b20_reserved_byte_value) {
     rx_log_warn(s_tag, "Scratchpad reserved byte unexpected value");
   }
 
@@ -594,8 +604,10 @@ static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t*    
   rx_err_t err      = k_rx_ok;
   uint8_t  write_buf[k_ds18b20_scratchpad_write_bytes];
 
+  RX_CHECK_NULL_PTR(handle, s_tag, "handle is NULL");
   if (scratchpad == NULL) {
-    return k_rx_err_invalid_arg;
+    rx_log_error(s_tag, "scratchpad is NULL");
+    return k_rx_err_null_ptr;
   }
 
   /* Reset and check presence */
@@ -690,6 +702,11 @@ static uint16_t internal_ds18b20_get_temp_mask(const ds18b20_resolution_t resolu
  */
 static float internal_ds18b20_raw_to_celsius(const int16_t raw_temp)
 {
+  if (raw_temp < k_ds18b20_temp_min_raw || raw_temp > k_ds18b20_temp_max_raw) {
+    rx_log_error(s_tag, "Raw temperature out of range");
+    return 0.0f;
+  }
+
   /* Convert from 1/16°C to °C */
   return (float)raw_temp / s_temp_conversion_divisor;
 }

@@ -11,7 +11,7 @@ ARG MAKE_JOBS=1
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
     build-essential \
     bison \
     flex \
@@ -121,21 +121,21 @@ FROM ubuntu:22.04
 
 # Install build dependencies (cached in image)
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     make \
     git \
-    libisl23 \
-    libgmp10 \
-    libmpfr6 \
-    libmpc3 \
-    libzstd1 \
+    libisl23=0.24-2build1 \
+    libgmp10=2:6.2.1+dfsg-3ubuntu1 \
+    libmpfr6=4.1.0-3build3 \
+    libmpc3=1.2.1-2build1 \
+    libzstd1=1.4.8+dfsg-3build1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install modern CMake (>= 3.20)
 ARG CMAKE_VERSION=3.27.9
-RUN ARCH="$(uname -m)" && \
+RUN /bin/bash -euo pipefail -c 'ARCH="$(uname -m)" && \
     case "$ARCH" in \
       x86_64) CMAKE_ARCH=linux-x86_64 ;; \
       aarch64|arm64) CMAKE_ARCH=linux-aarch64 ;; \
@@ -145,10 +145,10 @@ RUN ARCH="$(uname -m)" && \
       -o /tmp/cmake.tar.gz && \
     curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-SHA-256.txt" \
       -o /tmp/cmake.sha256 && \
-    grep "cmake-${CMAKE_VERSION}-${CMAKE_ARCH}.tar.gz" /tmp/cmake.sha256 | awk '{print $1}' > /tmp/cmake.expected && \
+    grep "cmake-${CMAKE_VERSION}-${CMAKE_ARCH}.tar.gz" /tmp/cmake.sha256 | awk "{print \$1}" > /tmp/cmake.expected && \
     echo "$(cat /tmp/cmake.expected)  /tmp/cmake.tar.gz" | sha256sum -c - && \
     tar -xzf /tmp/cmake.tar.gz --strip-components=1 -C /usr/local && \
-    rm -rf /tmp/cmake.tar.gz /tmp/cmake.sha256 /tmp/cmake.expected
+    rm -rf /tmp/cmake.tar.gz /tmp/cmake.sha256 /tmp/cmake.expected'
 
 # Copy toolchain from builder
 COPY --from=toolchain /opt/rx-elf-gcc /opt/rx-elf-gcc

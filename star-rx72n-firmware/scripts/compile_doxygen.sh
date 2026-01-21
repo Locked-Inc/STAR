@@ -4,6 +4,10 @@
 
 set -e  # Exit on any error
 
+# Graceful exit on interrupt
+# This ensures that Ctrl+C will stop the script immediately.
+trap 'echo -e "\n\n${RED}[INTERRUPT] Script interrupted by user. Exiting gracefully.${NC}\n"; exit 1;' SIGINT SIGTERM
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -16,6 +20,7 @@ OUTPUT_DIR="docs/doxygen"
 CLEAN_FIRST=false
 OPEN_BROWSER=false
 VERBOSE=false
+GENERATE_PDF=false
 
 # Print usage information
 usage() {
@@ -26,6 +31,7 @@ usage() {
     echo "Options:"
     echo "  -o, --output DIR   Set output directory (default: docs/doxygen)"
     echo "  -c, --clean        Clean output directory before generation"
+    echo "  -p, --pdf          Generate PDF from LaTeX output"
     echo "  -b, --browser      Open documentation in browser after generation"
     echo "  -v, --verbose      Enable verbose output"
     echo "  -h, --help         Show this help message"
@@ -33,6 +39,7 @@ usage() {
     echo "Examples:"
     echo "  $0                 # Generate docs in default location"
     echo "  $0 --clean         # Clean and regenerate docs"
+    echo "  $0 --pdf           # Generate HTML and PDF"
     echo "  $0 -cb             # Clean, generate, and open in browser"
     echo "  $0 -o custom/path  # Generate in custom directory"
 }
@@ -73,6 +80,24 @@ check_doxygen() {
     fi
 }
 
+# Check for PDF generation dependencies
+check_pdf_deps() {
+    if [ "$GENERATE_PDF" = true ]; then
+        if ! command -v pdflatex &> /dev/null; then
+            print_error "pdflatex not found, which is required for PDF generation."
+            echo ""
+            echo "Please install a LaTeX distribution:"
+            echo "  macOS: brew install --cask mactex"
+            echo "  Ubuntu/Debian: sudo apt-get install texlive-full"
+            echo "  Fedora: sudo dnf install texlive-scheme-full"
+            exit 1
+        fi
+        if [ "$VERBOSE" = true ]; then
+            print_status "Found pdflatex for PDF generation"
+        fi
+    fi
+}
+
 # Check if Doxyfile exists
 check_doxyfile() {
     if [ ! -f "Doxyfile" ]; then
@@ -97,6 +122,10 @@ parse_args() {
                 ;;
             -c|--clean)
                 CLEAN_FIRST=true
+                shift
+                ;;
+            -p|--pdf)
+                GENERATE_PDF=true
                 shift
                 ;;
             -b|--browser)
@@ -165,6 +194,50 @@ generate_docs() {
     fi
 }
 
+# Generate PDF from LaTeX
+generate_pdf() {
+    if [ "$GENERATE_PDF" = false ]; then
+        return
+    fi
+    
+    local latex_dir="$OUTPUT_DIR/latex"
+    if [ ! -d "$latex_dir" ] || [ ! -f "$latex_dir/Makefile" ]; then
+        print_warning "LaTeX output not found. Skipping PDF generation."
+        print_warning "Ensure GENERATE_LATEX is enabled in Doxyfile."
+        return
+    fi
+    
+    print_status "Generating PDF from LaTeX output..."
+    cd "$latex_dir"
+    
+    local output
+    local exit_code
+
+    if [ "$VERBOSE" = true ]; then
+        # In verbose mode, stream output directly
+        make
+        exit_code=$?
+    else
+        # In quiet mode, capture output and show only on error
+        output=$(make 2>&1)
+        exit_code=$?
+    fi
+    
+    cd - > /dev/null # Go back to original directory silently
+    
+    if [ $exit_code -eq 0 ] && [ -f "$latex_dir/refman.pdf" ]; then
+        print_success "PDF generated successfully!"
+    else
+        print_error "PDF generation failed."
+        # Show captured output if we are not in verbose mode and there was output
+        if [ "$VERBOSE" = false ] && [ -n "$output" ]; then
+            echo -e "${RED}--- LaTeX Output ---${NC}\n$output\n${RED}--------------------${NC}"
+        fi
+        print_error "Try running 'make' manually in '$latex_dir' to debug."
+        return $exit_code
+    fi
+}
+
 # Get the main HTML file path
 get_main_html() {
     local html_file="$OUTPUT_DIR/html/index.html"
@@ -174,6 +247,17 @@ get_main_html() {
         echo ""
     fi
 }
+
+# Get the main PDF file path
+get_main_pdf() {
+    local pdf_file="$OUTPUT_DIR/latex/refman.pdf"
+    if [ -f "$pdf_file" ]; then
+        echo "$(realpath "$pdf_file")"
+    else
+        echo ""
+    fi
+}
+
 
 # Open documentation in browser
 open_docs() {
@@ -212,13 +296,26 @@ show_summary() {
     local html_file
     html_file=$(get_main_html)
     
-    if [ -n "$html_file" ]; then
+    local pdf_file
+    pdf_file=$(get_main_pdf)
+    
+    if [ -n "$html_file" ] || [ -n "$pdf_file" ]; then
         echo ""
         echo "Documentation available at:"
-        echo "  HTML: $html_file"
+        if [ -n "$html_file" ]; then
+            echo "  HTML: $html_file"
+        fi
+        if [ -n "$pdf_file" ]; then
+            echo "  PDF:  $pdf_file"
+        fi
         echo ""
         echo "Quick access commands:"
-        echo "  Open in browser: open '$html_file'"
+        if [ -n "$html_file" ]; then
+            echo "  Open in browser: open '$html_file'"
+        fi
+        if [ -n "$pdf_file" ]; then
+            echo "  Open PDF:        open '$pdf_file'"
+        fi
         echo "  View directory:  ls -la '$OUTPUT_DIR'"
     fi
     
@@ -240,6 +337,7 @@ main() {
     
     # Check prerequisites
     check_doxygen
+    check_pdf_deps
     check_doxyfile
     
     # Prepare output directory
@@ -248,6 +346,9 @@ main() {
     
     # Generate documentation
     generate_docs
+    
+    # Generate PDF if requested
+    generate_pdf
     
     # Open in browser if requested
     open_docs

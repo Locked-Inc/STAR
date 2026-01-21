@@ -127,10 +127,9 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Write I2C data */
-  const rx_err_t err = riic_write(bus_config->proto.i2c.channel,
-                                  bus_config->proto.i2c.device_addr,
-                                  ctx->data,
-                                  ctx->length);
+  const riic_channel_t riic_channel = { .value = bus_config->proto.i2c.channel };
+  const i2c_device_addr_t device_addr = { .value = bus_config->proto.i2c.device_addr };
+  const rx_err_t err = riic_write(riic_channel, device_addr, ctx->data, ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C write failed");

@@ -56,6 +56,8 @@ typedef enum : uint8_t {
   k_test_config_12bit         = 0x7F,
 } ds18b20_mock_constants_t;
 
+static const uint8_t s_ds18b20_family_code = 0x28U; /**< DS18B20 family code */
+
 /** @brief ROM byte indices for default ROM population */
 typedef enum : uint8_t {
   k_rom_idx_family   = 0,
@@ -77,7 +79,9 @@ typedef enum : uint8_t {
 } mock_serial_bytes_t;
 
 /** @brief Mocked DS18B20 device count returned by search */
-static const uint32_t s_mock_ds18b20_device_count = 1;
+enum {
+  k_mock_ds18b20_device_count = 1
+};
 /** @brief Temperature comparison tolerance (°C) */
 static const float s_temp_tolerance_c = 0.1F;
 
@@ -91,6 +95,13 @@ static const char*      s_test_bus_name = "test_onewire";
 
 /* Mock bus_onewire functions - these replace the real implementations during testing */
 
+/**
+ * @brief Mock OneWire init
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name Bus name string
+ * @return k_rx_ok on success, k_rx_err_null_ptr on NULL, k_rx_err_invalid_state if already init
+ */
 rx_err_t rx_bus_onewire_init(rx_bus_manager_t* manager, const char* bus_name)
 {
   if ((manager == NULL) || (bus_name == NULL)) {
@@ -105,6 +116,14 @@ rx_err_t rx_bus_onewire_init(rx_bus_manager_t* manager, const char* bus_name)
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock OneWire reset
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name Bus name string
+ * @param[out] presence Presence detect flag
+ * @return k_rx_ok on success, k_rx_err_null_ptr on NULL, k_rx_err_invalid_state if not init
+ */
 rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, bool* presence)
 {
   if ((manager == NULL) || (bus_name == NULL) || (presence == NULL)) {
@@ -119,6 +138,14 @@ rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, b
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock OneWire write byte
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name Bus name string
+ * @param[in] byte Byte to write (unused in mock)
+ * @return k_rx_ok on success, k_rx_err_null_ptr on NULL, k_rx_err_invalid_state if not init
+ */
 rx_err_t rx_bus_onewire_write_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t byte)
 {
   (void)byte;
@@ -134,6 +161,14 @@ rx_err_t rx_bus_onewire_write_byte(rx_bus_manager_t* manager, const char* bus_na
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock OneWire read byte
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name Bus name string
+ * @param[out] byte Output byte
+ * @return k_rx_ok on success, k_rx_err_null_ptr on NULL, k_rx_err_invalid_state if not init
+ */
 rx_err_t rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t* byte)
 {
   if ((manager == NULL) || (bus_name == NULL) || (byte == NULL)) {
@@ -148,6 +183,14 @@ rx_err_t rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_nam
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock OneWire read bit
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name Bus name string
+ * @param[out] bit Output bit
+ * @return k_rx_ok on success, k_rx_err_null_ptr on NULL, k_rx_err_invalid_state if not init
+ */
 rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name, bool* bit)
 {
   if ((manager == NULL) || (bus_name == NULL) || (bit == NULL)) {
@@ -162,6 +205,15 @@ rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock OneWire read block
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name Bus name string
+ * @param[out] data Output buffer
+ * @param[in] length Requested length
+ * @return k_rx_ok on success, k_rx_err_null_ptr on NULL, k_rx_err_invalid_state if not init
+ */
 rx_err_t
 rx_bus_onewire_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, uint32_t length)
 {
@@ -181,14 +233,20 @@ rx_bus_onewire_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* da
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock OneWire write block
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name Bus name string
+ * @param[in] data Input buffer
+ * @param[in] length Input length
+ * @return k_rx_ok on success, k_rx_err_null_ptr on NULL, k_rx_err_invalid_state if not init
+ */
 rx_err_t rx_bus_onewire_write(rx_bus_manager_t* manager,
                               const char*       bus_name,
                               const uint8_t*    data,
                               uint32_t          length)
 {
-  (void)data;
-  (void)length;
-
   if ((manager == NULL) || (bus_name == NULL) || (data == NULL)) {
     return k_rx_err_null_ptr;
   }
@@ -197,9 +255,20 @@ rx_err_t rx_bus_onewire_write(rx_bus_manager_t* manager,
     return k_rx_err_invalid_state;
   }
 
+  if (length == 0U) {
+    return k_rx_ok;
+  }
+
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock OneWire skip ROM
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name Bus name string
+ * @return k_rx_ok on success, k_rx_err_null_ptr on NULL, k_rx_err_invalid_state if not init
+ */
 rx_err_t rx_bus_onewire_skip_rom(rx_bus_manager_t* manager, const char* bus_name)
 {
   if ((manager == NULL) || (bus_name == NULL)) {
@@ -213,6 +282,14 @@ rx_err_t rx_bus_onewire_skip_rom(rx_bus_manager_t* manager, const char* bus_name
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock OneWire match ROM
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name Bus name string
+ * @param[in] rom ROM code
+ * @return k_rx_ok on success, k_rx_err_null_ptr on NULL, k_rx_err_invalid_state if not init
+ */
 rx_err_t rx_bus_onewire_match_rom(rx_bus_manager_t* manager,
                                   const char*       bus_name,
                                   const uint8_t     rom[k_onewire_rom_bytes])
@@ -228,6 +305,14 @@ rx_err_t rx_bus_onewire_match_rom(rx_bus_manager_t* manager,
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock OneWire read ROM
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name Bus name string
+ * @param[out] rom ROM output buffer
+ * @return k_rx_ok on success, k_rx_err_null_ptr on NULL, k_rx_err_invalid_state if not init
+ */
 rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
                                  const char*       bus_name,
                                  uint8_t           rom[k_onewire_rom_bytes])
@@ -244,6 +329,16 @@ rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock OneWire search ROM
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name Bus name string
+ * @param[out] roms ROM output buffer
+ * @param[in] max_devices Maximum devices to return
+ * @param[out] num_devices Number of devices found
+ * @return k_rx_ok on success, k_rx_err_null_ptr on NULL, k_rx_err_invalid_state if not init
+ */
 rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
                                const char*       bus_name,
                                uint8_t*          roms,
@@ -261,7 +356,7 @@ rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
     return k_rx_err_invalid_state;
   }
 
-  *num_devices = s_mock_ds18b20_device_count;
+  *num_devices = k_mock_ds18b20_device_count;
   return k_rx_ok;
 }
 
@@ -274,17 +369,20 @@ rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
  * @brief Create valid scratchpad with CRC
  *
  * @param[out] scratchpad 9-byte scratchpad buffer
- * @param[in] temp_lsb Temperature LSB
- * @param[in] temp_msb Temperature MSB
+ * @param[in] temp_raw Temperature raw bytes
  * @param[in] config Configuration register value
  */
+typedef struct {
+  uint8_t lsb; /**< Temperature LSB */
+  uint8_t msb; /**< Temperature MSB */
+} temp_raw_t;
+
 static void internal_create_valid_scratchpad(uint8_t scratchpad[k_ds18b20_scratchpad_bytes],
-                                             uint8_t temp_lsb,
-                                             uint8_t temp_msb,
+                                             temp_raw_t temp_raw,
                                              uint8_t config)
 {
-  scratchpad[k_ds18b20_scratch_temp_lsb]  = temp_lsb;
-  scratchpad[k_ds18b20_scratch_temp_msb]  = temp_msb;
+  scratchpad[k_ds18b20_scratch_temp_lsb]  = temp_raw.lsb;
+  scratchpad[k_ds18b20_scratch_temp_msb]  = temp_raw.msb;
   scratchpad[k_ds18b20_scratch_th_reg]    = k_ds18b20_default_th_tl;
   scratchpad[k_ds18b20_scratch_tl_reg]    = k_ds18b20_default_th_tl;
   scratchpad[k_ds18b20_scratch_config]    = config;
@@ -305,13 +403,13 @@ static void internal_reset_mock_state(void)
   s_mock_state.initialized       = false;
 
   /* Default scratchpad: +25.0°C at 12-bit resolution */
-  internal_create_valid_scratchpad(s_mock_state.scratchpad,
-                                   k_test_temp_25c_lsb,
-                                   k_test_temp_25c_msb,
-                                   k_test_config_12bit);
+  internal_create_valid_scratchpad(
+    s_mock_state.scratchpad,
+    (temp_raw_t){.lsb = k_test_temp_25c_lsb, .msb = k_test_temp_25c_msb},
+    k_test_config_12bit);
 
   /* Default ROM: DS18B20 family code */
-  s_mock_state.rom[k_rom_idx_family]   = k_ds18b20_family_code;
+  s_mock_state.rom[k_rom_idx_family]   = s_ds18b20_family_code;
   s_mock_state.rom[k_rom_idx_serial_0] = k_mock_serial_byte_0;
   s_mock_state.rom[k_rom_idx_serial_1] = k_mock_serial_byte_1;
   s_mock_state.rom[k_rom_idx_serial_2] = k_mock_serial_byte_2;
@@ -469,10 +567,10 @@ void test_ds18b20_read_temperature_25c(void)
   internal_init_handle(&handle);
 
   /* Scratchpad for +25.0°C: 0x0190 = 400 decimal = 25.0°C */
-  internal_create_valid_scratchpad(s_mock_state.scratchpad,
-                                   k_test_temp_25c_lsb,
-                                   k_test_temp_25c_msb,
-                                   k_test_config_12bit);
+  internal_create_valid_scratchpad(
+    s_mock_state.scratchpad,
+    (temp_raw_t){.lsb = k_test_temp_25c_lsb, .msb = k_test_temp_25c_msb},
+    k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
@@ -496,8 +594,8 @@ void test_ds18b20_read_temperature_0c(void)
 
   /* 0°C: 0x0000 */
   internal_create_valid_scratchpad(s_mock_state.scratchpad,
-                                   k_test_temp_0c_lsb,
-                                   k_test_temp_0c_msb,
+                                   (temp_raw_t){.lsb = k_test_temp_0c_lsb,
+                                                .msb = k_test_temp_0c_msb},
                                    k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
@@ -522,8 +620,8 @@ void test_ds18b20_read_temperature_minus_55c(void)
 
   /* -55°C: 0xFC90 (two's complement) */
   internal_create_valid_scratchpad(s_mock_state.scratchpad,
-                                   k_test_temp_minus_55c_lsb,
-                                   k_test_temp_minus_55c_msb,
+                                   (temp_raw_t){.lsb = k_test_temp_minus_55c_lsb,
+                                                .msb = k_test_temp_minus_55c_msb},
                                    k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
@@ -548,8 +646,8 @@ void test_ds18b20_read_temperature_125c(void)
 
   /* +125°C: 0x07D0 = 2000 decimal = 125.0°C */
   internal_create_valid_scratchpad(s_mock_state.scratchpad,
-                                   k_test_temp_125c_lsb,
-                                   k_test_temp_125c_msb,
+                                   (temp_raw_t){.lsb = k_test_temp_125c_lsb,
+                                                .msb = k_test_temp_125c_msb},
                                    k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);

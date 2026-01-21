@@ -71,6 +71,7 @@ static const double s_test_yaw_rad                  = 1.57;
 static const double s_test_accel_z_mps2             = 9.81;
 static const float  s_test_float_tolerance          = 0.0001F;
 
+/* Parameter order: front_left_mps, front_right_mps, back_left_mps, back_right_mps (FL, FR, BL, BR). */
 static rx_velocity_command_params_t internal_make_velocity_params(double   front_left_mps,
                                                                   double   front_right_mps,
                                                                   double   back_left_mps,
@@ -359,7 +360,7 @@ void test_decode_velocity_request_oversized_buffer(void)
   star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
 
   /* Length exceeds k_nanopb_buffer_size */
-  rx_err_t err = rx_nanopb_decode_velocity_request(s_buffer, k_nanopb_buffer_size + 1, &msg);
+  rx_err_t err = rx_nanopb_decode_velocity_request(s_buffer, s_nanopb_buffer_size + 1, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -638,7 +639,7 @@ void test_decode_estop_request_oversized_buffer(void)
   star_v1_EmergencyStopRequest msg = star_v1_EmergencyStopRequest_init_zero;
 
   /* Length exceeds k_nanopb_buffer_size */
-  rx_err_t err = rx_nanopb_decode_estop_request(s_buffer, k_nanopb_buffer_size + 1, &msg);
+  rx_err_t err = rx_nanopb_decode_estop_request(s_buffer, s_nanopb_buffer_size + 1, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1252,7 +1253,7 @@ void test_velocity_request_fits_in_buffer(void)
   rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_LESS_THAN(k_nanopb_buffer_size, len);
+  TEST_ASSERT_LESS_THAN(s_nanopb_buffer_size, len);
 }
 
 /**
@@ -1292,7 +1293,7 @@ void test_telemetry_fits_in_buffer(void)
   rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_LESS_THAN(k_nanopb_buffer_size, len);
+  TEST_ASSERT_LESS_THAN(s_nanopb_buffer_size, len);
 }
 
 /* =============================================================================

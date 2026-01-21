@@ -111,16 +111,19 @@ typedef enum : uint16_t {
 
 /* IWDT Status Register (IWDTSR) Bit Definitions */
 typedef enum : uint16_t {
-  k_iwdt_sr_cntval_mask = 0x3FFF,    /**< Down counter value (bits 13:0) */
-  k_iwdt_sr_undff       = (1 << 14), /**< Underflow flag (reset occurred) */
-  k_iwdt_sr_refef       = (1 << 15), /**< Refresh error flag (window violation) */
+  k_iwdt_sr_cntval_mask   = 0x3FFF, /**< Down counter value (bits 13:0) */
+  k_iwdt_sr_undff_shift   = 14,     /**< Underflow flag bit position */
+  k_iwdt_sr_refef_shift   = 15,     /**< Refresh error flag bit position */
+  k_iwdt_sr_undff         = (1U << k_iwdt_sr_undff_shift), /**< Underflow flag (reset occurred) */
+  k_iwdt_sr_refef         = (1U << k_iwdt_sr_refef_shift), /**< Refresh error flag (window violation) */
 } iwdt_iwdtsr_bits_t;
 
 /* IWDT Reset Control Register (IWDTRCR) Bit Definitions */
 typedef enum : uint8_t {
-  k_iwdt_rcr_rstirqs_mask = (1 << 7), /**< Reset/Interrupt Select bit mask */
-  k_iwdt_rstirqs_reset    = (1 << 7), /**< Generate reset on timeout */
-  k_iwdt_rstirqs_nmi      = 0x00,     /**< Generate NMI on timeout */
+  k_iwdt_rstirqs_pos      = 7, /**< Reset/Interrupt Select bit position */
+  k_iwdt_rcr_rstirqs_mask = (1U << k_iwdt_rstirqs_pos), /**< Reset/Interrupt Select bit mask */
+  k_iwdt_rstirqs_reset    = (1U << k_iwdt_rstirqs_pos), /**< Generate reset on timeout */
+  k_iwdt_rstirqs_nmi      = 0x00, /**< Generate NMI on timeout */
 } iwdt_iwdtrcr_bits_t;
 
 /* IWDT Count Stop Control Register (IWDTCSTPR) Bit Definitions */

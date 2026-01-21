@@ -25,6 +25,11 @@
 #include "rx_check.h"
 #include "rx_err.h"
 
+/** @brief SCKCR3 reset/unconfigured state value */
+enum {
+  k_sckcr3_reset_state = 0 /**< SCKCR3 value before clock initialization */
+};
+
 /**
  * @brief Initialize application-specific hardware
  *
@@ -51,7 +56,7 @@ rx_err_t hardware_init(void)
 
   /* Precondition: Verify that system clocks have been initialized
    * Clock initialization must complete before peripheral setup */
-  RX_ASSERT((system_regs() != NULL) && (system_regs()->sckcr3 != 0),
+  RX_ASSERT((system_regs() != NULL) && (system_regs()->sckcr3 != k_sckcr3_reset_state),
             "Precondition: Clock system not properly initialized");
 
   /* =========================================================================

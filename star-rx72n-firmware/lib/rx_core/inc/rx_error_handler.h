@@ -61,6 +61,7 @@
 
 #include "rx_err.h"
 #include "rx_error_interface.h"
+#include "rx_gpio_constants.h"
 #include "tx_api.h"
 
 #ifdef __cplusplus

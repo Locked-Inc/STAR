@@ -66,6 +66,38 @@ typedef enum : uint8_t {
 } rx_gptw_output_t;
 
 /**
+ * @brief GPTW channel wrapper type (prevents accidental argument swaps)
+ */
+typedef struct {
+  rx_gptw_channel_t value; /**< GPTW channel */
+} rx_gptw_channel_id_t;
+
+/**
+ * @brief GPTW output wrapper type (prevents accidental argument swaps)
+ */
+typedef struct {
+  rx_gptw_output_t value; /**< GPTW output */
+} rx_gptw_output_id_t;
+
+/**
+ * @brief Helper to construct a GPTW channel wrapper
+ */
+static inline rx_gptw_channel_id_t rx_gptw_channel_id(rx_gptw_channel_t value)
+{
+  rx_gptw_channel_id_t id = {.value = value};
+  return id;
+}
+
+/**
+ * @brief Helper to construct a GPTW output wrapper
+ */
+static inline rx_gptw_output_id_t rx_gptw_output_id(rx_gptw_output_t value)
+{
+  rx_gptw_output_id_t id = {.value = value};
+  return id;
+}
+
+/**
  * @brief GPTW PWM configuration
  */
 typedef struct {
@@ -110,7 +142,9 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
  * @return k_rx_err_invalid_arg if channel, output, or duty is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float duty_percent);
+rx_err_t rx_gptw_set_duty(rx_gptw_channel_id_t channel,
+                          rx_gptw_output_id_t  output,
+                          float               duty_percent);
 
 /**
  * @brief Set PWM duty cycle (raw count value)

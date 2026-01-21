@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hardware.h"
 #include "rx_err.h"
 
 #ifdef __cplusplus
@@ -203,7 +204,7 @@ void mock_adc_clear_history(void);
 
 rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits);
 rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value);
-rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32_t* voltage_mv);
+rx_err_t adc_read_voltage_mv(uint8_t unit, adc_channel_t channel, adc_resolution_t bits, uint32_t* voltage_mv);
 
 #ifdef __cplusplus
 }

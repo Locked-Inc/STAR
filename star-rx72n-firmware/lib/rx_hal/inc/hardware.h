@@ -140,6 +140,16 @@ rx_err_t timer_get_count(uint16_t* count);
  */
 
 /**
+ * @brief ADC channel wrapper type (prevents accidental argument swaps)
+ */
+typedef uint8_t adc_channel_t;
+
+/**
+ * @brief ADC resolution wrapper type (prevents accidental argument swaps)
+ */
+typedef uint8_t adc_resolution_t;
+
+/**
  * @brief Initialize ADC unit and channel
  *
  * @param[in] unit ADC unit (0 or 1)
@@ -181,12 +191,27 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value);
  *         k_rx_err_invalid_state if ADC unit not initialized,
  *         k_rx_err_timeout if conversion times out
  */
-rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32_t* voltage_mv);
+rx_err_t
+adc_read_voltage_mv(uint8_t unit, adc_channel_t channel, adc_resolution_t bits, uint32_t* voltage_mv);
 
 /* =============================================================================
  * RIIC (I2C) Functions
  * =============================================================================
  */
+
+/**
+ * @brief RIIC channel wrapper type (prevents accidental argument swaps)
+ */
+typedef struct {
+  uint8_t value; /**< RIIC channel number (0-2) */
+} riic_channel_t;
+
+/**
+ * @brief I2C device address wrapper type (prevents accidental argument swaps)
+ */
+typedef struct {
+  uint8_t value; /**< 7-bit I2C device address */
+} i2c_device_addr_t;
 
 /**
  * @brief Initialize RIIC channel for I2C communication
@@ -214,7 +239,10 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz);
  *         k_rx_err_nack if device NACK received
  */
 rx_err_t
-riic_write(uint8_t channel, const uint8_t device_addr, const uint8_t* data, const uint16_t length);
+riic_write(riic_channel_t       channel,
+           i2c_device_addr_t    device_addr,
+           const uint8_t*       data,
+           const uint16_t       length);
 
 /**
  * @brief Read data from I2C device
@@ -332,21 +360,17 @@ rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready);
 rx_err_t rspi_deinit(uint8_t channel);
 
 /* =============================================================================
- * UART Functions (Multi-Channel)
+ * UART Configuration Types
  * =============================================================================
  */
 
 /**
  * @brief Default debug UART channel (SCI9 - CY7C65213 USB bridge)
  */
+/** @brief Default UART channel for uart_channel_config_t and debug init helpers */
 typedef enum : uint8_t {
   k_uart_debug_channel = 9, /**< Debug UART on SCI9 (PB7/TXD9, PB6/RXD9) */
 } uart_defaults_t;
-
-/* =============================================================================
- * UART Configuration Types
- * =============================================================================
- */
 
 /**
  * @brief UART channel configuration structure

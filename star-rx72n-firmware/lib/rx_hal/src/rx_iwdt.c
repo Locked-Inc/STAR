@@ -33,8 +33,10 @@
  */
 
 /** @brief IWDT validation constants */
-static const uint32_t k_iwdt_timeout_min_ms = 1;     /**< Minimum valid timeout */
-static const uint32_t k_iwdt_timeout_max_ms = 16384; /**< Maximum valid timeout */
+enum {
+  k_iwdt_timeout_min_ms = 1,     /**< Minimum valid timeout */
+  k_iwdt_timeout_max_ms = 16384, /**< Maximum valid timeout */
+};
 
 /** @brief IWDT initialization state */
 typedef enum : uint8_t {
@@ -81,8 +83,9 @@ static const iwdt_timeout_entry_t s_timeout_table[] = {
 };
 
 /** @brief Number of entries in timeout table */
-static const uint32_t s_iwdt_timeout_table_size =
-  sizeof(s_timeout_table) / sizeof(s_timeout_table[0]);
+enum {
+  s_iwdt_timeout_table_size = sizeof(s_timeout_table) / sizeof(s_timeout_table[0])
+};
 
 /* =============================================================================
  * Module State
@@ -112,20 +115,11 @@ static iwdt_init_state_t s_iwdt_initialized = k_iwdt_not_initialized;
 static rx_err_t internal_find_timeout_config(const uint32_t               timeout_ms,
                                              const iwdt_timeout_entry_t** entry)
 {
-  uint32_t min_timeout;
-  uint32_t max_timeout;
-
   if (s_iwdt_timeout_table_size == 0U) {
     return k_rx_err_invalid_arg;
   }
 
   if (entry == NULL) {
-    return k_rx_err_invalid_arg;
-  }
-
-  min_timeout = s_timeout_table[0].timeout_ms;
-  max_timeout = s_timeout_table[s_iwdt_timeout_table_size - 1U].timeout_ms;
-  if (timeout_ms < min_timeout || timeout_ms > max_timeout) {
     return k_rx_err_invalid_arg;
   }
 
@@ -137,9 +131,8 @@ static rx_err_t internal_find_timeout_config(const uint32_t               timeou
     }
   }
 
-  /* Use maximum timeout if requested exceeds all entries */
-  *entry = &s_timeout_table[s_iwdt_timeout_table_size - 1];
-  return k_rx_ok;
+  /* No suitable configuration found */
+  return k_rx_err_invalid_arg;
 }
 
 /* =============================================================================
@@ -148,14 +141,23 @@ static rx_err_t internal_find_timeout_config(const uint32_t               timeou
  */
 
 #ifdef __RX__
-static void internal_configure_iwdt_control_register(const iwdt_timeout_entry_t* config)
+/**
+ * @brief Configure IWDT control register (IWDTCR) from timeout table entry
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if config is NULL
+ * @return k_rx_err_hw_unmapped if IWDT registers are unavailable
+ *
+ * @note Requires iwdt() to return a valid register pointer.
+ */
+static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entry_t* config)
 {
   if (config == NULL) {
-    return; /* Defensive: should never happen if called correctly */
+    return k_rx_err_invalid_arg;
   }
 
   if (iwdt() == NULL) {
-    return; /* Defensive: peripheral pointer must be valid */
+    return k_rx_err_hw_unmapped;
   }
 
   uint16_t iwdtcr = 0;
@@ -165,16 +167,26 @@ static void internal_configure_iwdt_control_register(const iwdt_timeout_entry_t*
   iwdtcr |= k_iwdt_rpss_100; /* Window start at 100% (full) */
 
   iwdt()->iwdtcr = iwdtcr;
+  return k_rx_ok;
 }
 
-static void internal_configure_iwdt_registers(void)
+/**
+ * @brief Configure IWDT reset and sleep-count behavior registers
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_hw_unmapped if IWDT registers are unavailable
+ *
+ * @note Requires iwdt() to return a valid register pointer.
+ */
+static rx_err_t internal_configure_iwdt_registers(void)
 {
   if (iwdt() == NULL) {
-    return; /* Defensive: peripheral pointer must be valid */
+    return k_rx_err_hw_unmapped;
   }
 
   iwdt()->iwdtrcr   = k_iwdt_rstirqs_reset;
   iwdt()->iwdtcstpr = k_iwdt_slcstp_continue;
+  return k_rx_ok;
 }
 #endif
 
@@ -208,7 +220,10 @@ rx_err_t rx_iwdt_init(const uint32_t timeout_ms)
    * Bits [9:8]   RPES  - Window End Position (0x03 = 0%, window disabled)
    * Bits [13:12] RPSS  - Window Start Position (0x00 = 100%, full window)
    */
-  internal_configure_iwdt_control_register(config);
+  err = internal_configure_iwdt_control_register(config);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /*
    * Configure Reset Control Register (IWDTRCR)
@@ -219,7 +234,10 @@ rx_err_t rx_iwdt_init(const uint32_t timeout_ms)
    *
    * We use reset (1) for safety - NMI could be masked or ignored.
    */
-  internal_configure_iwdt_registers();
+  err = internal_configure_iwdt_registers();
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /*
    * Configure Count Stop Control Register (IWDTCSTPR)
@@ -401,10 +419,7 @@ static int32_t internal_find_task(const char* task_name)
     return k_task_not_found; /* Empty task name invalid */
   }
 
-  for (uint32_t i = (uint32_t)k_task_idx_min; i < k_iwdt_max_tasks; i++) {
-    if (i >= s_task_monitor.task_count) {
-      break;
-    }
+  for (uint32_t i = (uint32_t)k_task_idx_min; i < s_task_monitor.task_count; i++) {
     if (strncmp(s_task_monitor.tasks[i].task_name, task_name, k_task_name_cmp_len) == 0) {
       return (int32_t)i;
     }
@@ -421,6 +436,10 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
   }
 
   if (task_name[0] == '\0') {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (timeout_ms == 0) {
     return k_rx_err_invalid_arg;
   }
 
@@ -475,10 +494,10 @@ rx_err_t rx_iwdt_check_tasks(void)
 {
   uint32_t              current_time_ms;
   rx_err_t              result;
-  const task_monitor_t* task;
+  const task_monitor_t* task = NULL;
   uint32_t              elapsed_ms;
   char                  log_msg[k_log_msg_buffer_size];
-  uint32_t              written;
+  int                   snprintf_result;
 
   if (s_iwdt_initialized != k_iwdt_initialized) {
     return k_rx_err_invalid_state;
@@ -491,22 +510,19 @@ rx_err_t rx_iwdt_check_tasks(void)
   current_time_ms = tx_time_get();
   result          = k_rx_ok;
 
-  for (uint32_t i = (uint32_t)k_task_idx_min; i < k_iwdt_max_tasks; i++) {
-    if (i >= s_task_monitor.task_count) {
-      break;
-    }
+  for (uint32_t i = (uint32_t)k_task_idx_min; i < s_task_monitor.task_count; i++) {
     task       = &s_task_monitor.tasks[i];
     elapsed_ms = current_time_ms - task->last_heartbeat_ms;
 
     if (elapsed_ms > task->timeout_ms) {
       /* Task has exceeded heartbeat timeout - deadlock detected */
-      written = (uint32_t)snprintf(log_msg,
-                                   sizeof(log_msg),
-                                   "Task deadlock: %s (timeout %" PRIu32 " ms)",
-                                   task->task_name,
-                                   task->timeout_ms);
+      snprintf_result = snprintf(log_msg,
+                                 sizeof(log_msg),
+                                 "Task deadlock: %s (timeout %" PRIu32 " ms)",
+                                 task->task_name,
+                                 task->timeout_ms);
 
-      if (written > 0 && written < sizeof(log_msg)) {
+      if (snprintf_result > 0 && (uint32_t)snprintf_result < sizeof(log_msg)) {
         rx_log_error(s_tag, log_msg);
       }
 
