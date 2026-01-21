@@ -32,11 +32,11 @@
  * =============================================================================
  */
 
-/** @brief IWDT validation constants */
-enum {
-  k_iwdt_timeout_min_ms = 1,     /**< Minimum valid timeout */
-  k_iwdt_timeout_max_ms = 16384, /**< Maximum valid timeout */
-};
+/** @brief IWDT timeout validation limits */
+typedef enum : int {
+  k_iwdt_timeout_min_ms = 1,     /**< Minimum valid timeout in milliseconds */
+  k_iwdt_timeout_max_ms = 16384, /**< Maximum valid timeout in milliseconds */
+} iwdt_timeout_limits_t;
 
 /** @brief IWDT initialization state */
 typedef enum : uint8_t {
@@ -83,9 +83,7 @@ static const iwdt_timeout_entry_t s_timeout_table[] = {
 };
 
 /** @brief Number of entries in timeout table */
-enum {
-  s_iwdt_timeout_table_size = sizeof(s_timeout_table) / sizeof(s_timeout_table[0])
-};
+static const uint32_t s_iwdt_timeout_table_size = sizeof(s_timeout_table) / sizeof(s_timeout_table[0]);
 
 /* =============================================================================
  * Module State
