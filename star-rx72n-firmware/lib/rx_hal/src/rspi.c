@@ -265,6 +265,39 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
   return k_rx_ok;
 }
 
+/**
+ * @brief Perform full-duplex SPI transfer in peripheral mode
+ *
+ * Executes a full-duplex (simultaneous transmit and receive) SPI transfer
+ * on the specified RSPI channel operating in peripheral (slave) mode.
+ * Transfers data byte-by-byte with timeout protection on both transmit
+ * buffer ready and receive buffer full operations.
+ *
+ * @param[in]  channel RSPI channel number (0-2)
+ * @param[in]  tx_data Pointer to transmit data buffer (not NULL)
+ * @param[out] rx_data Pointer to receive data buffer (not NULL)
+ * @param[in]  length Number of bytes to transfer (1 to 65535)
+ *
+ * @return k_rx_ok if transfer completed successfully
+ * @return k_rx_err_invalid_arg if:
+ *         - @c tx_data or @c rx_data pointer is NULL
+ *         - @c length is zero or exceeds maximum (65535 bytes)
+ *         - RSPI base address lookup fails for the channel
+ * @return k_rx_err_invalid_state if:
+ *         - @c channel is out of range (>= 3)
+ *         - @c channel is not initialized via rspi_init_peripheral()
+ * @return k_rx_err_timeout if:
+ *         - Transmit buffer does not become ready within timeout
+ *         - Receive buffer does not fill within timeout
+ *
+ * @pre channel must be initialized via rspi_init_peripheral() before calling
+ * @pre tx_data pointer must be non-NULL
+ * @pre rx_data pointer must be non-NULL
+ * @pre length must be in range [1, 65535]
+ *
+ * @post If successful, rx_data buffer is filled with received bytes
+ *       corresponding to transmitted data at each byte offset
+ */
 rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
                                   const uint8_t* tx_data,
                                   uint8_t*       rx_data,
@@ -329,6 +362,22 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
   return k_rx_ok;
 }
 
+/**
+ * @brief Check if data is available in the RSPI receive buffer
+ *
+ * Polls the RSPI status register to determine if the receive buffer contains
+ * data ready for reading. Returns the status without blocking.
+ *
+ * @param[in] channel RSPI channel number (0, 1, or 2)
+ * @param[out] available Pointer to bool flag set to true if data is available, false otherwise
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is invalid or base address retrieval fails
+ * @return k_rx_err_invalid_state if channel is not initialized
+ *
+ * @pre Channel must be initialized via rspi_init_peripheral() before calling this function
+ * @pre available must be a valid non-NULL pointer
+ */
 rx_err_t rspi_peripheral_read_available(const uint8_t channel, bool* available)
 {
   RX_CHECK_NULL_PTR(available, s_tag, "Available pointer is NULL");
@@ -352,6 +401,22 @@ rx_err_t rspi_peripheral_read_available(const uint8_t channel, bool* available)
   return k_rx_ok;
 }
 
+/**
+ * @brief Check if the RSPI transmit buffer is ready for writing
+ *
+ * Polls the RSPI status register to determine if the transmit buffer is empty
+ * and ready to accept new data. Returns the status without blocking.
+ *
+ * @param[in] channel RSPI channel number (0, 1, or 2)
+ * @param[out] ready Pointer to bool flag set to true if transmit buffer is empty, false otherwise
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is invalid or base address retrieval fails
+ * @return k_rx_err_invalid_state if channel is not initialized
+ *
+ * @pre Channel must be initialized via rspi_init_peripheral() before calling this function
+ * @pre ready must be a valid non-NULL pointer
+ */
 rx_err_t rspi_peripheral_write_ready(const uint8_t channel, bool* ready)
 {
   RX_CHECK_NULL_PTR(ready, s_tag, "Ready pointer is NULL");
@@ -375,6 +440,26 @@ rx_err_t rspi_peripheral_write_ready(const uint8_t channel, bool* ready)
   return k_rx_ok;
 }
 
+/**
+ * @brief Deinitialize and disable RSPI peripheral
+ *
+ * Disables the specified RSPI channel, clears the initialization flag, and
+ * optionally disables the module (via module stop bit) to reduce power consumption.
+ *
+ * @param[in] channel RSPI channel number (0, 1, or 2)
+ *
+ * @return k_rx_ok if deinitialization successful
+ * @return k_rx_err_invalid_arg if:
+ *         - @c channel is out of range (>= 3)
+ *         - RSPI base address lookup fails for the channel
+ *
+ * @pre Channel should have been initialized via rspi_init_peripheral() previously
+ *
+ * @post If successful:
+ *       - RSPI peripheral is disabled (SPCR.SPE = 0)
+ *       - s_rspi_channel_initialized[channel] is set to false
+ *       - Channel is no longer available for SPI operations
+ */
 rx_err_t rspi_deinit(const uint8_t channel)
 {
   /* Validate channel */
