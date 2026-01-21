@@ -42,9 +42,11 @@ typedef enum : uint8_t {
   k_onewire_first_bit_number      = 1U,
   k_onewire_rom_bit_mask_reset    = 1U,
   k_onewire_no_discrepancy        = 0U,
-  k_onewire_max_buf_bytes         = 256U,
+  k_onewire_max_buf_bytes         = 255U,
   k_onewire_bit_mask_lsb          = 1U,
   k_onewire_crc_offset            = 1U,
+  k_onewire_rom_family_code_idx   = 0U,
+  k_onewire_invalid_family_code   = 0x00U,
 } onewire_driver_constants_t;
 
 /**
@@ -743,7 +745,10 @@ static rx_err_t internal_onewire_init_callback(rx_bus_config_t* bus_config, void
 
 static rx_err_t internal_onewire_reset_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_reset_ctx_t* ctx = (onewire_reset_ctx_t*)user_ctx;
+  onewire_reset_ctx_t*    ctx   = (onewire_reset_ctx_t*)user_ctx;
+  onewire_runtime_state_t* state = NULL;
+  bool                     presence = false;
+  rx_err_t                 err   = k_rx_ok;
 
   CHECK_ONEWIRE_BUS(bus_config, ctx, true);
 
@@ -753,14 +758,13 @@ static rx_err_t internal_onewire_reset_callback(rx_bus_config_t* bus_config, voi
     return ctx->result;
   }
 
-  onewire_runtime_state_t* state = internal_get_state(bus_config);
+  state = internal_get_state(bus_config);
   if (state == NULL) {
     ctx->result = k_rx_err_invalid_state;
     return ctx->result;
   }
 
-  bool           presence = false;
-  const rx_err_t err      = internal_reset_pulse(bus_config, state, &presence);
+  err = internal_reset_pulse(bus_config, state, &presence);
   if (err != k_rx_ok) {
     ctx->result = err;
     return err;
@@ -775,6 +779,8 @@ static rx_err_t internal_onewire_reset_callback(rx_bus_config_t* bus_config, voi
 static rx_err_t internal_onewire_write_bit_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   onewire_write_bit_ctx_t* ctx = (onewire_write_bit_ctx_t*)user_ctx;
+  onewire_runtime_state_t* state = NULL;
+  rx_err_t                 err   = k_rx_ok;
 
   if (bus_config->type != k_bus_type_onewire) {
     rx_log_error(s_tag, "Bus is not OneWire type");
@@ -787,13 +793,13 @@ static rx_err_t internal_onewire_write_bit_callback(rx_bus_config_t* bus_config,
     return ctx->result;
   }
 
-  onewire_runtime_state_t* state = internal_get_state(bus_config);
+  state = internal_get_state(bus_config);
   if (state == NULL) {
     ctx->result = k_rx_err_invalid_state;
     return ctx->result;
   }
 
-  const rx_err_t err = internal_write_bit(bus_config, state, ctx->bit);
+  err = internal_write_bit(bus_config, state, ctx->bit);
 
   if (err != k_rx_ok) {
     ctx->result = err;
@@ -812,7 +818,10 @@ static rx_err_t internal_onewire_write_bit_callback(rx_bus_config_t* bus_config,
 
 static rx_err_t internal_onewire_read_bit_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_read_bit_ctx_t* ctx = (onewire_read_bit_ctx_t*)user_ctx;
+  onewire_read_bit_ctx_t*  ctx = (onewire_read_bit_ctx_t*)user_ctx;
+  onewire_runtime_state_t* state = NULL;
+  bool                     bit   = false;
+  rx_err_t                 err   = k_rx_ok;
 
   if (bus_config->type != k_bus_type_onewire) {
     rx_log_error(s_tag, "Bus is not OneWire type");
@@ -831,14 +840,13 @@ static rx_err_t internal_onewire_read_bit_callback(rx_bus_config_t* bus_config, 
     return ctx->result;
   }
 
-  onewire_runtime_state_t* state = internal_get_state(bus_config);
+  state = internal_get_state(bus_config);
   if (state == NULL) {
     ctx->result = k_rx_err_invalid_state;
     return ctx->result;
   }
 
-  bool           bit = false;
-  const rx_err_t err = internal_read_bit(bus_config, state, &bit);
+  err = internal_read_bit(bus_config, state, &bit);
   if (err == k_rx_ok) {
     *ctx->bit = bit;
   }
@@ -882,7 +890,10 @@ static rx_err_t internal_onewire_write_byte_callback(rx_bus_config_t* bus_config
 
 static rx_err_t internal_onewire_read_byte_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_read_byte_ctx_t* ctx = (onewire_read_byte_ctx_t*)user_ctx;
+  onewire_read_byte_ctx_t*  ctx   = (onewire_read_byte_ctx_t*)user_ctx;
+  onewire_runtime_state_t*  state = NULL;
+  uint8_t                   byte  = 0;
+  rx_err_t                  err   = k_rx_ok;
 
   if (bus_config->type != k_bus_type_onewire || !bus_config->initialized) {
     rx_log_error(s_tag, "Bus invalid or not initialized");
@@ -896,14 +907,13 @@ static rx_err_t internal_onewire_read_byte_callback(rx_bus_config_t* bus_config,
     return ctx->result;
   }
 
-  onewire_runtime_state_t* state = internal_get_state(bus_config);
+  state = internal_get_state(bus_config);
   if (state == NULL) {
     ctx->result = k_rx_err_invalid_state;
     return ctx->result;
   }
 
-  uint8_t        byte = 0;
-  const rx_err_t err  = internal_read_byte(bus_config, state, &byte);
+  err = internal_read_byte(bus_config, state, &byte);
   if (err == k_rx_ok) {
     *ctx->byte = byte;
   }
@@ -957,7 +967,12 @@ static rx_err_t internal_onewire_write_buffer_callback(rx_bus_config_t* bus_conf
 
 static rx_err_t internal_onewire_read_buffer_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_read_buf_ctx_t* ctx = (onewire_read_buf_ctx_t*)user_ctx;
+  onewire_read_buf_ctx_t*  ctx = (onewire_read_buf_ctx_t*)user_ctx;
+  onewire_runtime_state_t* state = NULL;
+  uint32_t                 len = 0;
+  uint32_t                 i = 0;
+  uint8_t                  byte = 0;
+  rx_err_t                 err = k_rx_ok;
 
   if (ctx->length == 0U) {
     ctx->result = k_rx_ok;
@@ -980,15 +995,18 @@ static rx_err_t internal_onewire_read_buffer_callback(rx_bus_config_t* bus_confi
     return ctx->result;
   }
 
-  onewire_runtime_state_t* state = internal_get_state(bus_config);
+  state = internal_get_state(bus_config);
   if (state == NULL) {
     ctx->result = k_rx_err_invalid_state;
     return ctx->result;
   }
 
-  for (uint32_t i = 0; (i < k_onewire_max_buf_bytes) && (i < ctx->length); ++i) {
-    uint8_t        byte = 0;
-    const rx_err_t err  = internal_read_byte(bus_config, state, &byte);
+  /* Validated runtime-bounded transfer length */
+  len = ctx->length;
+
+  for (i = 0; (i < k_onewire_max_buf_bytes) && (i < len); ++i) {
+    byte = 0;
+    err = internal_read_byte(bus_config, state, &byte);
     if (err != k_rx_ok) {
       ctx->result = err;
       return err;
@@ -1144,7 +1162,7 @@ static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, 
   }
 
   /* Post-condition: Verify ROM has non-zero family code (first byte) */
-  if (ctx->rom[0] == 0x00U) {
+  if (ctx->rom[k_onewire_rom_family_code_idx] == k_onewire_invalid_family_code) {
     rx_log_warn(s_tag, "OneWire ROM has invalid family code");
     /* Continue anyway - CRC passed, may be valid edge case */
   }

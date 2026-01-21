@@ -425,7 +425,7 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc)
 
 uint32_t rx_fec_encoded_len(const uint32_t input_len)
 {
-  if (input_len == 0) {
+  if (input_len == k_fec_zero) {
     return 0;
   }
 
@@ -509,6 +509,34 @@ rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
  * =============================================================================
  */
 
+/**
+ * @brief Validate decode parameters before Viterbi decoding
+ *
+ * Pre-conditions:
+ * - dec, params, num_symbols_out must be non-NULL
+ * - dec must be initialized
+ * - params->soft_bits, output, output_len must be non-NULL
+ * - params->soft_len must be non-zero and divisible by 2 (G1, G2 pairs)
+ *
+ * Validation checks:
+ * - Calculated num_symbols from expected_output_len must be valid and within bounds
+ * - Sufficient soft bits must be available for calculated num_symbols
+ *   (NOT silently reduced - caller error if params are inconsistent)
+ * - Survivors buffer must be large enough for num_symbols
+ *
+ * Post-condition:
+ * - If successful, num_symbols_out contains the number of symbols to decode
+ * - If parameters are invalid or inconsistent, returns appropriate error code
+ *
+ * @param[in]  dec Pointer to FEC decoder (must be initialized)
+ * @param[in]  params Soft-bit decode parameters
+ * @param[out] num_symbols_out Calculated number of symbols to decode
+ *
+ * @return k_rx_ok on successful validation
+ * @return k_rx_err_invalid_arg if pointer checks or soft_len checks fail
+ * @return k_rx_err_invalid_state if decoder not initialized
+ * @return k_rx_err_invalid_size if calculated symbols out of range or insufficient soft bits
+ */
 static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*                  dec,
                                                 const rx_fec_decode_soft_params_t* params,
                                                 uint32_t*                          num_symbols_out)
@@ -545,9 +573,14 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
     return k_rx_err_invalid_size;
   }
 
-  /* Ensure we have enough soft bits */
+  /* Verify sufficient soft bits are available for the calculated num_symbols.
+   * This is NOT a fallback condition - if the caller provides inconsistent
+   * expected_output_len and soft_len parameters (e.g., expects to decode 100
+   * bytes but only provides soft bits for 50 bytes), that is a programming error
+   * that must be caught and reported, not silently degraded. Graceful degradation
+   * would hide bugs in parameter preparation. */
   if (num_symbols * k_fec_num_outputs > params->soft_len) {
-    num_symbols = (uint32_t)(params->soft_len / k_fec_num_outputs);
+    return k_rx_err_invalid_size;
   }
 
   /* Check survivors buffer is large enough */
@@ -641,7 +674,7 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_para
     return k_rx_err_invalid_state;
   }
 
-  if (params->data_len == 0) {
+  if (params->data_len == k_fec_zero) {
     return k_rx_err_invalid_arg;
   }
 

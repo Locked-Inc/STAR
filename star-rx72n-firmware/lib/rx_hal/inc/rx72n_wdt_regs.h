@@ -27,6 +27,7 @@
 #ifndef STAR_RX72N_WDT_REGS_H
 #define STAR_RX72N_WDT_REGS_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -123,7 +124,7 @@ typedef enum : uint16_t {
 
 /* WDT Status Register (WDTSR) Bit Definitions */
 /* Bit position constants for WDTSR flags */
-enum {
+enum : uint8_t {
   k_wdt_sr_undff_pos = 14, /**< Underflow flag bit position */
   k_wdt_sr_refef_pos = 15, /**< Refresh error flag bit position */
 };

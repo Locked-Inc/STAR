@@ -33,6 +33,7 @@
 #include "rx_check.h"
 #include "rx_gpio_constants.h"
 #include "rx_log.h"
+#include "rx_register_protection.h"
 
 static const char* s_tag = "MTU_ENCODER";
 
@@ -56,9 +57,6 @@ typedef enum : uint32_t {
   /* Module stop control bits */
   k_mtu_mstpcra_mtu0_4_bit = 9, /**< MSTPCRA bit for MTU0-MTU4 */
   k_mtu_mstpcra_mtu6_7_bit = 8, /**< MSTPCRA bit for MTU6-MTU7 */
-
-  /* PRCR (Protect Register) values */
-  k_prcr_unlock_mtu = 15, /**< Unlock PRC0, PRC1, PRC3 for MTU config (0xA50F) */
 
   /* Timer control defaults */
   k_tcr_external_clock_no_prescaler = 0x00, /**< External clock, no prescaler */
@@ -411,8 +409,7 @@ static rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t channel)
   }
 
   /* Enable MTU module (clear module stop bit) */
-  system_regs()->prcr =
-    (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_mtu; /* Enable writes to MSTPCR */
+  system_regs()->prcr = k_rx_prcr_unlock_all; /* Enable writes to MSTPCR (0xA50F) */
 
   if (channel <= k_mtu_channel_4) {
     system_regs()->mstpcra &= ~(1 << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
@@ -420,7 +417,7 @@ static rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t channel)
     system_regs()->mstpcra &= ~(1 << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
   }
 
-  system_regs()->prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR */
+  system_regs()->prcr = k_rx_prcr_lock; /* Lock MSTPCR (0xA500) */
 
   return k_rx_ok;
 }
@@ -460,24 +457,33 @@ static rx_err_t internal_configure_encoder_timer(volatile rx_mtu_channel_regs_t*
 }
 
 /**
- * @brief Verify timer is counting after initialization
+ * @brief Verify timer configuration after initialization (NASA Rule 5: min 2 checks)
+ *
+ * Since encoder counting verification requires encoder motion which may not be
+ * available at initialization time, this function validates the timer configuration
+ * instead of actual counting.
  *
  * @param[in] mtu Pointer to MTU channel registers
  *
- * @return k_rx_ok if timer is counting
- * @return k_rx_err_hw_init_failed if timer not counting
+ * @return k_rx_ok if timer configuration is valid
+ * @return k_rx_err_null_ptr if mtu is NULL
+ * @return k_rx_err_hw_init_failed if timer mode is incorrectly configured
  */
 static rx_err_t internal_verify_timer_counting(const volatile rx_mtu_channel_regs_t* mtu)
 {
+  /* Pre-condition: Validate input pointer (Rule 5 check 1) */
   if (mtu == NULL) {
-    return k_rx_err_invalid_arg;
+    return k_rx_err_null_ptr;
   }
 
-  /* Note: This verification is optional and may not work if encoder is stationary.
-   * In production, consider removing this check or only enabling in debug builds.
-   * For now, we'll skip this check as it requires encoder movement.
-   */
-  (void)mtu; /* Unused - timer verification would require encoder motion */
+  /* Post-condition: Verify timer mode register is configured for phase counting (Rule 5 check 2)
+   * TMDR should be set to k_tmdr_phase_counting_mode_1 (0x04) after initialization.
+   * This confirms the hardware accepted our configuration. */
+  if (mtu->tmdr != k_tmdr_phase_counting_mode_1) {
+    rx_log_error(s_tag, "Timer mode register not configured for phase counting");
+    return k_rx_err_hw_init_failed;
+  }
+
   return k_rx_ok;
 }
 

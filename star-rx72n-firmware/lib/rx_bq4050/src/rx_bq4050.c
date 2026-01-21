@@ -47,16 +47,28 @@ typedef enum : uint8_t {
   s_bq4050_smbus_address = 11U,
 } bq4050_init_constants_t;
 
-typedef enum : uint8_t {
-  k_bq4050_smbus_addr_hex_width = 2, /**< SMBus address width in hex digits */
+typedef enum : uint16_t {
+  k_bq4050_smbus_addr_hex_width    = 2,  /**< SMBus address width in hex digits */
+  k_bq4050_log_msg_size            = 80, /**< Buffer size for formatted log messages */
+  k_bq4050_snprintf_success_threshold = 0, /**< Minimum snprintf return value for success */
 } bq4050_log_constants_t;
 
 /**
  * @brief Temperature conversion constants
+ *
+ * SBS temperature format: 0.1 Kelvin units (uint16_t)
+ * Conversion: temp_0_1c = (temp_0.1k - 2731), then temp_c = temp_0_1c / 10
+ * Input range: 0K to 65535 (0.1K units)
+ * Intermediate range: -2731 to 62804 (0.1°C units after offset subtraction)
+ * Output range: -273 to 6280 (whole degrees Celsius)
  */
-typedef enum : uint16_t {
-  k_temp_kelvin_offset = 2731, /**< Offset: 0.1K to 0.1°C (273.15K × 10) */
-  k_temp_decimal_scale = 10,   /**< Scale: 0.1 units to whole units */
+typedef enum : int32_t {
+  k_temp_kelvin_offset = 2731,      /**< Offset: 0.1K to 0.1°C (273.15K × 10) */
+  k_temp_decimal_scale = 10,        /**< Scale: 0.1 units to whole units */
+  k_temp_min_valid_0_1k = 0,        /**< Minimum temperature in 0.1K (absolute zero) */
+  k_temp_max_valid_0_1k = 65535,    /**< Maximum temperature in 0.1K (uint16_t max) */
+  k_temp_min_0_1c = -2731,          /**< Min intermediate (0 - 2731): −273.1 in 0.1°C units */
+  k_temp_max_0_1c = 62804,          /**< Max intermediate (65535 - 2731): 6280.4 in 0.1°C units */
 } bq4050_temp_constants_t;
 
 /**
@@ -88,21 +100,58 @@ typedef enum : uint8_t {
  */
 
 /**
- * @brief Convert temperature from 0.1K units to degrees Celsius
+ * @brief Convert temperature from 0.1K units to degrees Celsius (NASA Rule 5: Validation)
  *
  * SBS temperature format: 16-bit unsigned integer in 0.1 Kelvin units
- * Conversion: temp_c = (temp_0.1k * 0.1) - 273.15
+ * Conversion: temp_c = (temp_0.1k - 2731) / 10 degrees Celsius
  *
- * @param[in] temp_0_1k Temperature in 0.1K units
- * @return Temperature in degrees Celsius
+ * Validates both intermediate and final ranges to ensure safe conversion.
+ * Pre-condition: Verify input temp_0_1k is within valid bounds (0-65535 0.1K)
+ * Post-condition: Verify output fits in int16_t range after division
+ *
+ * @param[in] temp_0_1k Temperature in 0.1K units (uint16_t range)
+ * @param[out] temp_celsius_out Pointer to store converted temperature in degrees Celsius
+ *
+ * @return k_rx_ok if conversion succeeds
+ * @return k_rx_err_null_ptr if temp_celsius_out is NULL
+ * @return k_rx_err_out_of_range if intermediate or final result exceeds int16_t bounds
  */
-static int16_t internal_convert_temperature(const uint16_t temp_0_1k)
+static rx_err_t internal_convert_temperature(const uint16_t temp_0_1k, int16_t* temp_celsius_out)
 {
-  /* Convert from 0.1K to 0.1°C by subtracting 2731 (273.1K) */
-  const int32_t temp_0_1c = (int32_t)temp_0_1k - k_temp_kelvin_offset;
+  int32_t temp_0_1c;
+  int32_t temp_celsius_unchecked;
 
-  /* Convert to whole degrees Celsius */
-  return (int16_t)(temp_0_1c / k_temp_decimal_scale);
+  /* Pre-condition: Validate output pointer (Rule 5: Check all parameters) */
+  RX_CHECK_NULL_PTR(temp_celsius_out, s_tag, "temp_celsius_out pointer is NULL");
+
+  /* Pre-condition: Verify input is within valid range for conversion (Rule 5) */
+  if (temp_0_1k > k_temp_max_valid_0_1k) {
+    rx_log_error(s_tag, "Temperature input exceeds maximum valid uint16_t value");
+    return k_rx_err_out_of_range;
+  }
+
+  /* Perform intermediate conversion: 0.1K to 0.1°C (Rule 5: Track intermediate values) */
+  temp_0_1c = (int32_t)temp_0_1k - k_temp_kelvin_offset;
+
+  /* Post-condition: Verify intermediate result is within valid conversion range (Rule 5) */
+  if (temp_0_1c < k_temp_min_0_1c || temp_0_1c > k_temp_max_0_1c) {
+    rx_log_error(s_tag, "Temperature intermediate value exceeds valid conversion range");
+    return k_rx_err_out_of_range;
+  }
+
+  /* Convert from 0.1°C to whole degrees Celsius */
+  temp_celsius_unchecked = temp_0_1c / k_temp_decimal_scale;
+
+  /* Post-condition: Verify final result fits in int16_t (Rule 5: Bounds check before assignment) */
+  if (temp_celsius_unchecked < INT16_MIN || temp_celsius_unchecked > INT16_MAX) {
+    rx_log_error(s_tag, "Temperature final result exceeds int16_t range");
+    return k_rx_err_out_of_range;
+  }
+
+  /* Safe to assign: both intermediate and final checks passed */
+  *temp_celsius_out = (int16_t)temp_celsius_unchecked;
+
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -161,10 +210,10 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
                                       uint16_t*         cell_voltages,
                                       const uint8_t     num_cells)
 {
-  char           log_msg[80];
-  int            snprintf_result = 0;
-  uint8_t        i;
-  rx_err_t       err;
+  char                 log_msg[k_bq4050_log_msg_size];
+  int                  snprintf_result = 0;
+  uint8_t              i               = 0;
+  rx_err_t             err             = k_rx_ok;
   static const uint8_t s_cell_reg_map[k_bq4050_max_cells] = {
     [k_cell_idx_1] = k_sbs_cell_voltage_1, /* Cell 1 at 0x3F */
     [k_cell_idx_2] = k_sbs_cell_voltage_2, /* Cell 2 at 0x3E */
@@ -183,7 +232,7 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
                                (unsigned)num_cells,
                                (unsigned)s_bq4050_min_cells,
                                (unsigned)k_bq4050_max_cells);
-    if (snprintf_result > 0 && (uint32_t)snprintf_result < sizeof(log_msg)) {
+    if (snprintf_result > k_bq4050_snprintf_success_threshold && (uint32_t)snprintf_result < sizeof(log_msg)) {
       rx_log_error(s_tag, log_msg);
     }
     return k_rx_err_invalid_arg;
@@ -290,19 +339,27 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
 rx_err_t
 rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int16_t* temperature_c)
 {
+  rx_err_t       err;
+  uint16_t       temp_0_1k;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(temperature_c, s_tag, "temperature_c pointer is NULL");
 
-  uint16_t       temp_0_1k;
-  const rx_err_t err =
-    rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_temperature, &temp_0_1k);
-
-  if (err == k_rx_ok) {
-    *temperature_c = internal_convert_temperature(temp_0_1k);
+  /* Read temperature from BQ4050 in 0.1K units */
+  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_temperature, &temp_0_1k);
+  if (err != k_rx_ok) {
+    return err;
   }
 
-  return err;
+  /* Convert temperature with validation (NASA Rule 5: Check result of conversion) */
+  err = internal_convert_temperature(temp_0_1k, temperature_c);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Temperature conversion validation failed");
+    return err;
+  }
+
+  return k_rx_ok;
 }
 
 rx_err_t rx_bq4050_read_capacity(rx_bus_manager_t* manager,
@@ -565,9 +622,9 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
                                rx_bq4050_status_t* status,
                                const uint8_t       num_cells)
 {
-  char     log_msg[80];
+  char     log_msg[k_bq4050_log_msg_size];
   int      snprintf_result = 0;
-  rx_err_t err;
+  rx_err_t err             = k_rx_ok;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -580,7 +637,7 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
                                (unsigned)num_cells,
                                (unsigned)s_bq4050_min_cells,
                                (unsigned)k_bq4050_max_cells);
-    if (snprintf_result > 0 && (uint32_t)snprintf_result < sizeof(log_msg)) {
+    if (snprintf_result > k_bq4050_snprintf_success_threshold && (uint32_t)snprintf_result < sizeof(log_msg)) {
       rx_log_error(s_tag, log_msg);
     }
     return k_rx_err_invalid_arg;

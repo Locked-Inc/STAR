@@ -75,9 +75,9 @@ EXT_LINKS_IN_WINDOW    = NO
 GENERATE_LATEX         = YES
 LATEX_OUTPUT           = latex
 PDF_HYPERLINKS         = YES
-USE_PDFLATEX           = YES
-LATEX_MAKEFILE         = Makefile
-LATEX_CMD_NAME         = pdflatex
+USE_PDFLATEX           = NO
+LATEX_CMD_NAME         = "xelatex -shell-escape -halt-on-error"
+EXTRA_PACKAGES         = etex fontspec
 
 #---------------------------------------------------------------------------
 # Configuration options related to the RTF output

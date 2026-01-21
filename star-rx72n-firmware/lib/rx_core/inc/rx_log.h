@@ -659,8 +659,24 @@ static inline void internal_rx_log_verbose_str(const char* tag,
  * Automatically selects the correct typed logging function based on the
  * value's type at compile time. Supported types:
  * - uint8_t, uint16_t, uint32_t (unsigned integers)
- * - int32_t (signed integer)
- * - rx_err_t (error codes)
+ * - int32_t → formatted as hex (error codes)
+ * - rx_err_t → formatted as hex (error codes)
+ *
+ * **IMPORTANT - Type Limitation:**
+ * Because `rx_err_t` is defined as `typedef int32_t`, C's `_Generic` cannot
+ * distinguish between `rx_err_t` and raw `int32_t` values. Both are routed
+ * to hex formatting (error code format). This means:
+ * - rx_err_t values display correctly as hex error codes
+ * - Raw signed integers should NOT be passed to rx_log_*_val() macros
+ *   (they will display as hex instead of decimal)
+ *
+ * **Workaround for signed integers:**
+ * Cast to uint32_t or use explicit decimal formatting:
+ * ```c
+ * int32_t value = -42;
+ * rx_log_info(tag, "Value as unsigned");
+ * rx_log_val(info, tag, "Value", (uint32_t)value);
+ * ```
  *
  * @param[in] level Log level name (error, warn, info, debug, verbose)
  * @param[in] tag Component tag string

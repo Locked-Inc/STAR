@@ -251,6 +251,10 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
 
   /* Get RSPI base */
   volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
+  if (rspi == NULL) {
+    rx_log_error(s_tag, "Failed to get RSPI base address");
+    return k_rx_err_invalid_arg;
+  }
 
   for (uint16_t i = 0; i < length; i++) {
     /* Wait for transmit buffer empty */

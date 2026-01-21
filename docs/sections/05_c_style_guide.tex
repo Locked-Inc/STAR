@@ -6383,10 +6383,10 @@ This section establishes configuration requirements for Protocol Buffer messages
 \textbf{nanopb} is a small, portable Protocol Buffers implementation designed for embedded systems:
 
 \begin{itemize}
-  \item \textbf{Static Allocation}: All buffers allocated at compile time (no malloc)
-  \item \textbf{Small Code Size}: Minimal flash/RAM footprint
-  \item \textbf{C Language}: Compatible with C23 (not C++ required)
-  \item \textbf{Field Size Constraints}: Maximum sizes configured in \texttt{.options} files
+  \item \emph{Static Allocation}: All buffers allocated at compile time (no malloc)
+  \item \emph{Small Code Size}: Minimal flash/RAM footprint
+  \item \emph{C Language}: Compatible with C99 (optional C11 features; not C++)
+  \item \emph{Field Size Constraints}: Maximum sizes configured in \texttt{.options} files
 \end{itemize}
 
 \subsection{Why Static Allocation?}

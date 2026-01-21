@@ -99,6 +99,7 @@ typedef enum : uint8_t {
   k_rx_pin_6 = 6, /**< Pin 6 */
   k_rx_pin_7 = 7, /**< Pin 7 */
 
+  k_rx_pin_min = 0, /**< Minimum pin number (for validation) */
   k_rx_pin_max = 7, /**< Maximum pin number (for validation) */
 } rx_pin_number_t;
 
@@ -349,6 +350,7 @@ _Static_assert(k_rx_port_j == 0x13, "Port J must be 0x13 (not contiguous)");
 _Static_assert(k_rx_pin_0 == 0, "Pin 0 must be 0");
 _Static_assert(k_rx_pin_2 == 2, "Pin 2 must be 2");
 _Static_assert(k_rx_pin_7 == 7, "Pin 7 must be 7");
+_Static_assert(k_rx_pin_min == 0, "Minimum pin number must be 0");
 _Static_assert(k_rx_pin_max == 7, "Maximum pin number must be 7");
 
 /*
