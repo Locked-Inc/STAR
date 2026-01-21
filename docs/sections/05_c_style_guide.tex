@@ -1244,7 +1244,7 @@ switch (config->type) {
 Enums can be forward-declared for header dependency reduction.
 
 \begin{lstlisting}[language=C]
-/* Forward declaration (C11 or later with explicit underlying type) */
+/* Forward declaration (C23 or later with explicit underlying type) */
 typedef enum star_bus_type star_bus_type_t;
 
 /* Or use typedef in header, full definition in source */
@@ -6384,7 +6384,7 @@ This section establishes configuration requirements for Protocol Buffer messages
 \begin{itemize}
   \item \textbf{Static Allocation}: All buffers allocated at compile time (no malloc)
   \item \textbf{Small Code Size}: Minimal flash/RAM footprint
-  \item \textbf{C Language}: Compatible with C99 (not C++ required)
+  \item \textbf{C Language}: Compatible with C23 (not C++ required)
   \item \textbf{Field Size Constraints}: Maximum sizes configured in \texttt{.options} files
 \end{itemize}
 

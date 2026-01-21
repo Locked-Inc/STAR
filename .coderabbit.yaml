@@ -48,6 +48,61 @@ reviews:
     - path: "star-rx72n-firmware/**/*.{c,h}"
       instructions: |
         Review C firmware code with STRICT compliance checking:
+        - Language standard: C23 (enum underlying type syntax like `typedef enum : uint8_t` is valid)
+        - C99-style for-loop declarations are allowed; do not require C89 loop style
+        - ALL enums must specify a C23 underlying type (e.g., `typedef enum : uint8_t { ... } name_t;`)
+        - ALL functions must include Doxygen comments
+
+        NASA Power of 10 Rules (CRITICAL - REJECT violations):
+        - Rule 1: No goto, setjmp/longjmp, or recursion
+        - Rule 2: All loops must have statically provable bounds (use enums for limits)
+        - Rule 3: Zero malloc/free/realloc (static allocation only)
+        - Rule 4: Functions must be ≤60 lines
+        - Rule 5: Minimum 2 assertions per function (pre/post conditions using RX_CHECK macros)
+        - Rule 8: Enums for ALL integer constants (ZERO TOLERANCE for magic numbers)
+        - Rule 9: Function pointers ALLOWED for Dependency Inversion Principle (intentional deviation)
+        - Rule 10: Must compile with -Wall -Wextra -Werror (zero warnings)
+
+        Inclusive Terminology (CRITICAL - REJECT violations):
+        - FORBIDDEN: master/slave, MOSI/MISO, blacklist/whitelist
+        - REQUIRED: Controller/Peripheral, COPI/CIPO, denylist/allowlist
+
+        Code Style (MANDATORY):
+        - Naming: snake_case for functions/variables, SCREAMING_SNAKE_CASE for macros/enums
+        - Enums for ALL integer constants including: array indices, bit shifts, protocol offsets, bit masks
+        - const float ONLY for floating-point (enum cannot represent floats)
+        - Macros ONLY for: reducing code duplication, conditional compilation, build configuration flags
+        - Hardware register access: Use inline accessor functions with enum addresses (NEVER macros)
+        - No backward compatibility shims (project has no releases yet)
+        - Include guards: STAR_RX72N_FILENAME_H format
+        - Doxygen: /** for multi-line blocks, /**< for inline comments
+        - Line limit: 100 characters maximum
+
+        Magic Numbers (ZERO TOLERANCE):
+        - ALL numeric literals must be named enums or const
+        - This includes: 0, 1, array indices, bit positions, timeouts, buffer sizes
+        - Example: buf[k_idx_high_byte] not buf[0]
+        - Example: (val >> k_shift_byte) not (val >> 8)
+
+        SOLID Principles:
+        - Single Responsibility: One module = one purpose (e.g., rx_pid only does PID math)
+        - Open/Closed: Extensible via config structs (rx_pid_config_t)
+        - Liskov Substitution: Bus interface implementations interchangeable
+        - Interface Segregation: Small focused APIs (rx_pid has 7 functions)
+        - Dependency Inversion: Use function pointer interfaces for hardware abstraction
+
+        Validation Requirements:
+        - Pre-conditions: NULL checks, state validation, range checks
+        - Post-conditions: Output bounds, invariant validation
+        - Use RX_CHECK_NULL_PTR, RX_RETURN_ON_ERROR macros
+
+    - path: "lib/**/*.{c,h}"
+      instructions: |
+        Review C firmware code with STRICT compliance checking:
+        - Language standard: C23 (enum underlying type syntax like `typedef enum : uint8_t` is valid)
+        - C99-style for-loop declarations are allowed; do not require C89 loop style
+        - ALL enums must specify a C23 underlying type (e.g., `typedef enum : uint8_t { ... } name_t;`)
+        - ALL functions must include Doxygen comments
 
         NASA Power of 10 Rules (CRITICAL - REJECT violations):
         - Rule 1: No goto, setjmp/longjmp, or recursion
@@ -418,6 +473,9 @@ reviews:
     # Include paths
     - "star-gateway/**"
     - "star-rx72n-firmware/**"
+    - "lib/**"
+    - "src/**"
+    - "tests/**"
     - "star-ros2/**"
     - "star-proto/**"
     - "docs/**"

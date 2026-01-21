@@ -67,13 +67,6 @@ extern "C" {
  */
 
 /**
- * @brief DS18B20 family code (first byte of ROM)
- */
-typedef enum : uint8_t {
-  k_ds18b20_family_code = 0x28, /**< DS18B20 family code in ROM */
-} ds18b20_family_code_t;
-
-/**
  * @brief DS18B20 function commands
  */
 typedef enum : uint8_t {
@@ -170,24 +163,23 @@ typedef enum : uint8_t {
 /**
  * @brief DS18B20 expected byte values
  */
-typedef enum : uint8_t {
-  k_ds18b20_reserved_byte_value = 0xFF, /**< Expected value for reserved byte */
-} ds18b20_expected_values_t;
+static const uint8_t s_ds18b20_reserved_byte_value = 0xFFU; /**< Expected value for reserved byte */
 
 /**
  * @brief DS18B20 initialization values
  */
 typedef enum : uint8_t {
   k_ds18b20_config_register_cleared = 0, /**< Cleared config register value */
-  k_ds18b20_conversion_time_invalid = 0, /**< Invalid conversion time return value */
 } ds18b20_init_values_t;
+
+static const uint32_t s_ds18b20_conversion_time_invalid_u32 = 0U; /**< Invalid conversion time */
 
 /**
  * @brief DS18B20 power supply modes
  */
 typedef enum : uint8_t {
-  k_ds18b20_power_parasitic = false, /**< Parasitic power mode */
-  k_ds18b20_power_external  = true,  /**< External power mode */
+  k_ds18b20_power_parasitic = 0, /**< Parasitic power mode */
+  k_ds18b20_power_external  = 1, /**< External power mode */
 } ds18b20_power_mode_t;
 
 /* =============================================================================

@@ -82,7 +82,7 @@ static rx_err_t internal_validate_pin(const uint8_t pin)
 /**
  * @brief Validate pin implementation
  */
-static rx_err_t impl_validate_pin(void* ctx, const uint8_t port, uint8_t pin)
+static rx_err_t impl_validate_pin(void* ctx, const uint8_t port, const uint8_t pin)
 {
   const pin_validator_t* validator = (pin_validator_t*)ctx;
 
@@ -158,7 +158,7 @@ impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* f
 /**
  * @brief Release pin implementation
  */
-static rx_err_t impl_release_pin(void* ctx, const uint8_t port, uint8_t pin)
+static rx_err_t impl_release_pin(void* ctx, const uint8_t port, const uint8_t pin)
 {
   pin_validator_t* validator = (pin_validator_t*)ctx;
 

@@ -41,7 +41,7 @@ typedef enum : uint8_t {
   k_adc_resolution_8bit  = 8,  /**< 8-bit ADC resolution */
   k_adc_resolution_10bit = 10, /**< 10-bit ADC resolution */
   k_adc_resolution_12bit = 12, /**< 12-bit ADC resolution (default) */
-} adc_resolution_t;
+} adc_resolution_bits_t;
 
 /** @brief ADC module stop bit positions in MSTPCRA */
 typedef enum : uint8_t {
@@ -125,10 +125,33 @@ static volatile rx_s12ad_regs_t* internal_get_adc_base(const uint8_t unit)
   }
 }
 
-static rx_err_t
-internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, uint8_t bits)
+/**
+ * @brief Configure ADC unit control registers and enable module clock
+ *
+ * @param[in] unit ADC unit number (k_adc_unit_0 or k_adc_unit_1)
+ * @param[in] adc Pointer to ADC register base
+ * @param[in] bits Resolution setting (k_adc_resolution_8bit/10bit/12bit)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if adc is NULL
+ * @return k_rx_err_invalid_arg if unit or bits are invalid
+ */
+static rx_err_t internal_configure_adc_unit(const uint8_t             unit,
+                                            volatile rx_s12ad_regs_t* adc,
+                                            const uint8_t             bits)
 {
   uint16_t adcer;
+
+  if (adc == NULL) {
+    return k_rx_err_null_ptr;
+  }
+  if (unit > k_adc_unit_1) {
+    return k_rx_err_invalid_arg;
+  }
+  if (bits != k_adc_resolution_8bit && bits != k_adc_resolution_10bit &&
+      bits != k_adc_resolution_12bit) {
+    return k_rx_err_invalid_arg;
+  }
 
   system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
@@ -168,13 +191,13 @@ internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, u
 static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t channel)
 {
   /* Validate unit */
-  if (unit >= k_adc_max_units) {
+  if (unit > k_adc_unit_1) {
     rx_log_error(s_tag, "Invalid ADC unit");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate channel */
-  if (channel >= k_adc_max_channels) {
+  if (channel > k_adc_channel_7) {
     rx_log_error(s_tag, "Invalid ADC channel");
     return k_rx_err_invalid_arg;
   }
@@ -301,8 +324,10 @@ rx_err_t adc_read(const uint8_t unit, uint8_t channel, uint16_t* value)
   return k_rx_ok;
 }
 
-rx_err_t
-adc_read_voltage_mv(const uint8_t unit, uint8_t channel, uint8_t bits, uint32_t* voltage_mv)
+rx_err_t adc_read_voltage_mv(const uint8_t   unit,
+                             adc_channel_t   channel,
+                             adc_resolution_t bits,
+                             uint32_t*       voltage_mv)
 {
   uint16_t raw_value;
   rx_err_t err;

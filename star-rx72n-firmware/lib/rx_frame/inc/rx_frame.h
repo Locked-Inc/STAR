@@ -50,6 +50,7 @@ typedef enum : uint16_t {
   k_frame_flags_size  = (1),      /**< FLAGS field size */
   k_frame_crc_size    = (4),      /**< CRC-32 field size */
   k_frame_header_size = (6),      /**< SEQ+LEN+TYPE+FLAGS */
+  k_frame_min_payload = (0),      /**< Minimum payload bytes */
   k_frame_max_payload = (1024),   /**< Maximum payload bytes */
   k_frame_min_size    = (12),     /**< SYNC+Header+CRC (no payload) */
   k_frame_max_size    = (1036),   /**< Min + MaxPayload */

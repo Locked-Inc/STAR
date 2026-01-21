@@ -10,8 +10,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_APP_MAIN_TASK_H
-#define STAR_APP_MAIN_TASK_H
+#ifndef STAR_RX72N_INCLUDE_TASKS_APP_MAIN_TASK_H
+#define STAR_RX72N_INCLUDE_TASKS_APP_MAIN_TASK_H
 
 #include "rx_err.h"
 
@@ -22,7 +22,9 @@ extern "C" {
 /**
  * @brief Create the main application thread
  *
- * @return k_rx_ok on success, error code on failure
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_state if the task was already created
+ * @return k_rx_err_rtos_error if ThreadX thread creation fails
  */
 rx_err_t app_main_task_create(void);
 
@@ -30,4 +32,4 @@ rx_err_t app_main_task_create(void);
 }
 #endif
 
-#endif /* STAR_APP_MAIN_TASK_H */
+#endif /* STAR_RX72N_INCLUDE_TASKS_APP_MAIN_TASK_H */

@@ -54,6 +54,19 @@ typedef enum : uint8_t {
   k_hdr_flags     = 7, /**< Frame flags */
 } frame_header_offset_t;
 
+/**
+ * @brief Decode and validate a SPI frame header
+ *
+ * @param[in]  data       Raw frame data buffer
+ * @param[in]  data_len   Length of data buffer in bytes
+ * @param[out] frame      Frame to populate (header fields)
+ * @param[out] offset_out Optional pointer to receive payload offset
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if data or frame is NULL
+ * @return k_rx_err_invalid_size if data_len is too small or payload too large
+ * @return k_rx_err_protocol_error if sync word is invalid
+ */
 static rx_err_t internal_decode_header(const uint8_t* data,
                                        const uint32_t data_len,
                                        rx_frame_t*    frame,
@@ -62,6 +75,10 @@ static rx_err_t internal_decode_header(const uint8_t* data,
   uint32_t offset;
   uint16_t sync_word;
   uint32_t expected_size;
+
+  if (data == NULL || frame == NULL) {
+    return k_rx_err_invalid_arg;
+  }
 
   if (data_len < k_frame_min_size) {
     return k_rx_err_invalid_size;
@@ -103,8 +120,25 @@ static rx_err_t internal_decode_header(const uint8_t* data,
   return k_rx_ok;
 }
 
+/**
+ * @brief Verify CRC for a received SPI frame
+ *
+ * @param[in]  data   Raw frame data buffer
+ * @param[in]  offset Offset to CRC field in data
+ * @param[out] crc_out Optional pointer to receive CRC (can be NULL)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if data is NULL
+ * @return k_rx_err_crc_mismatch if CRC does not match
+ *
+ * @note Thread-safe if caller serializes access to the shared buffer.
+ */
 static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32_t* crc_out)
 {
+  if (data == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
   const uint32_t received_crc   = rx_frame_read_le32(&data[offset]);
   const uint32_t calculated_crc = rx_crc32_ieee(data, offset);
 
@@ -121,7 +155,9 @@ static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32
 
 #ifdef __RX__
 /** @brief Sleep duration for polling loop (1 tick) */
-static const uint32_t s_poll_sleep_ticks = 1;
+enum {
+  s_poll_sleep_ticks = 1
+};
 #endif
 
 /** @brief ACK/ready wait timing constants */
@@ -593,11 +629,30 @@ internal_read_frame_header(rx_spi_comm_handle_t* handle, uint8_t* header_buf, ui
   return k_rx_ok;
 }
 
+/**
+ * @brief Decode and verify a received SPI frame
+ *
+ * @param[in]  handle     SPI communication handle
+ * @param[out] frame      Frame to populate (header, payload, CRC)
+ * @param[in]  total_size Total frame size in bytes (header + payload + CRC)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if inputs are NULL
+ * @return k_rx_err_invalid_size or k_rx_err_protocol_error from internal_decode_header
+ * @return k_rx_err_crc_mismatch from internal_verify_crc
+ *
+ * @note Delegates header validation to internal_decode_header and CRC validation
+ *       to internal_verify_crc.
+ */
 static rx_err_t internal_decode_frame(const rx_spi_comm_handle_t* handle,
                                       rx_frame_t*                 frame,
                                       const uint32_t              total_size)
 {
   uint32_t offset = 0;
+
+  if (handle == NULL || frame == NULL) {
+    return k_rx_err_invalid_arg;
+  }
 
   rx_err_t err = internal_decode_header(handle->rx_buffer, total_size, frame, &offset);
   if (err != k_rx_ok) {

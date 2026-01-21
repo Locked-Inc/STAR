@@ -255,7 +255,7 @@ uint32_t mock_uart_hw_get_baudrate(uint8_t channel)
 rx_err_t uart_init_channel(const uart_channel_config_t* config)
 {
   if (config == NULL) {
-    return k_rx_err_invalid_arg;
+    return k_rx_err_null_ptr;
   }
 
   uint8_t  channel  = config->channel;

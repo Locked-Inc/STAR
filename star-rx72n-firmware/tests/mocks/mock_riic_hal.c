@@ -241,10 +241,17 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   return k_rx_ok;
 }
 
-rx_err_t
-riic_write(uint8_t channel, const uint8_t device_addr, const uint8_t* data, const uint16_t length)
+rx_err_t riic_write(riic_channel_t       channel,
+                    i2c_device_addr_t    device_addr,
+                    const uint8_t*       data,
+                    const uint16_t       length)
 {
-  internal_record_call(k_mock_riic_call_write, channel, device_addr, length, 0);
+  internal_record_call(
+    k_mock_riic_call_write,
+    channel.value,
+    device_addr.value,
+    length,
+    0);
 
   rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {
@@ -257,12 +264,12 @@ riic_write(uint8_t channel, const uint8_t device_addr, const uint8_t* data, cons
   }
 
   /* Validate channel */
-  if (channel >= k_mock_riic_max_channels) {
+  if (channel.value >= k_mock_riic_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
   /* Check initialization */
-  if (!g_mock_riic.channels[channel].initialized) {
+  if (!g_mock_riic.channels[channel.value].initialized) {
     return k_rx_err_invalid_state;
   }
 
@@ -273,11 +280,11 @@ riic_write(uint8_t channel, const uint8_t device_addr, const uint8_t* data, cons
   }
 
   /* Store transmitted data */
-  mock_riic_channel_state_t* ch = &g_mock_riic.channels[channel];
+  mock_riic_channel_state_t* ch = &g_mock_riic.channels[channel.value];
   uint16_t to_copy = (length < k_mock_riic_buffer_size) ? length : k_mock_riic_buffer_size;
   memcpy(ch->tx_buffer, data, to_copy);
   ch->tx_length        = to_copy;
-  ch->last_device_addr = device_addr;
+  ch->last_device_addr = device_addr.value;
 
   return k_rx_ok;
 }

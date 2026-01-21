@@ -38,7 +38,7 @@ static const char* s_tag = "PID";
  *
  * @return Clamped value
  */
-static inline float internal_clamp(const float value, float min, float max)
+static inline float internal_clamp(const float value, const float min, const float max)
 {
   if (value < min) {
     return min;
@@ -194,7 +194,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
   return k_rx_ok;
 }
 
-rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, float ki, const float kd)
+rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float ki, const float kd)
 {
   /* Pre-condition 1: NULL pointer check */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");

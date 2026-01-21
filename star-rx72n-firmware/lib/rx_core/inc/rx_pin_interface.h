@@ -71,7 +71,7 @@ typedef struct rx_pin_interface rx_pin_interface_t;
  */
 typedef enum : uint8_t {
   k_pin_function_name_max_len =
-    32, /**< Maximum length of pin function name (e.g., "SPI_MOSI", "UART_TX") */
+    32, /**< Maximum length of pin function name (e.g., "SPI_COPI", "UART_TX") */
 } pin_interface_limits_t;
 
 /* =============================================================================
@@ -90,7 +90,7 @@ typedef enum : uint8_t {
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
-typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, uint8_t port, uint8_t pin);
+typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, const uint8_t port, const uint8_t pin);
 
 /**
  * @brief Reserve a pin for a specific function
@@ -106,7 +106,10 @@ typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, uint8_t port, uint8_t pin);
  *         k_rx_err_gpio_invalid_pin if pin invalid,
  *         k_rx_err_invalid_arg if function is NULL
  */
-typedef rx_err_t (*rx_pin_reserve_fn)(void* ctx, uint8_t port, uint8_t pin, const char* function);
+typedef rx_err_t (*rx_pin_reserve_fn)(void*             ctx,
+                                      const uint8_t     port,
+                                      const uint8_t     pin,
+                                      const char*       function);
 
 /**
  * @brief Release a previously reserved pin
@@ -120,7 +123,7 @@ typedef rx_err_t (*rx_pin_reserve_fn)(void* ctx, uint8_t port, uint8_t pin, cons
  *         k_rx_err_gpio_invalid_port if port invalid,
  *         k_rx_err_gpio_invalid_pin if pin invalid
  */
-typedef rx_err_t (*rx_pin_release_fn)(void* ctx, uint8_t port, uint8_t pin);
+typedef rx_err_t (*rx_pin_release_fn)(void* ctx, const uint8_t port, const uint8_t pin);
 
 /**
  * @brief Check if a pin is currently reserved
@@ -131,7 +134,7 @@ typedef rx_err_t (*rx_pin_release_fn)(void* ctx, uint8_t port, uint8_t pin);
  *
  * @return true if pin is reserved, false if available
  */
-typedef bool (*rx_pin_is_reserved_fn)(void* ctx, uint8_t port, uint8_t pin);
+typedef bool (*rx_pin_is_reserved_fn)(void* ctx, const uint8_t port, const uint8_t pin);
 
 /**
  * @brief Get the function name for a reserved pin
@@ -149,11 +152,11 @@ typedef bool (*rx_pin_is_reserved_fn)(void* ctx, uint8_t port, uint8_t pin);
  *         k_rx_err_gpio_invalid_port if port invalid,
  *         k_rx_err_gpio_invalid_pin if pin invalid
  */
-typedef rx_err_t (*rx_pin_get_function_fn)(void*    ctx,
-                                           uint8_t  port,
-                                           uint8_t  pin,
-                                           char*    function_out,
-                                           uint32_t function_len);
+typedef rx_err_t (*rx_pin_get_function_fn)(void*          ctx,
+                                           const uint8_t  port,
+                                           const uint8_t  pin,
+                                           char*          function_out,
+                                           const uint32_t function_len);
 
 /**
  * @brief Clear all pin reservations

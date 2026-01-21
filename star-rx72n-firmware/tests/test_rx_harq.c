@@ -32,10 +32,27 @@ typedef enum : uint8_t {
   k_bit_mask      = 1, /**< Mask to extract single bit */
 } bit_manipulation_t;
 
+/**
+ * @brief Create HARQ decode parameters structure
+ *
+ * Helper function to construct decode parameters with explicit ordering.
+ * soft_len (bytes) then expected_output_len (bytes) — prefer passing a
+ * rx_harq_decode_params_t directly where possible.
+ *
+ * @param[in] soft_bits           Pointer to soft-bit values array
+ * @param[in] soft_len            Number of soft-bit elements in the array
+ * @param[in] expected_output_len Expected decoded output length in bytes
+ * @return Initialized rx_harq_decode_params_t structure
+ */
 static rx_harq_decode_params_t internal_make_decode_params(const rx_soft_bit_t* soft_bits,
                                                            uint32_t             soft_len,
                                                            uint32_t             expected_output_len)
 {
+  /* Validate parameters to catch obvious mis-uses at test time */
+  TEST_ASSERT_NOT_NULL(soft_bits);
+  TEST_ASSERT_GREATER_THAN_UINT32(0U, soft_len);
+  TEST_ASSERT_GREATER_THAN_UINT32(0U, expected_output_len);
+
   rx_harq_decode_params_t params = {
     .soft_bits           = soft_bits,
     .soft_len            = soft_len,
@@ -573,7 +590,11 @@ void test_harq_decode_zero_length(void)
   rx_soft_bit_t           soft[32] = {0};
   uint8_t                 output[16];
   uint32_t                len;
-  rx_harq_decode_params_t params = internal_make_decode_params(soft, 0, 2);
+  rx_harq_decode_params_t params = {
+    .soft_bits           = soft,
+    .soft_len            = 0,
+    .expected_output_len = 2,
+  };
 
   /* Zero soft_len returns k_rx_err_invalid_arg */
   rx_err_t err = rx_harq_decode(&s_harq, &params, output, &len);

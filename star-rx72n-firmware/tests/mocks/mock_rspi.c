@@ -331,19 +331,19 @@ void mock_rspi_record_call(mock_rspi_t* mock,
 
 rx_err_t rspi_init_peripheral(uint8_t channel, const rspi_config_t* config)
 {
-  mock_rspi_t* m = &g_mock_rspi;
+  mock_rspi_t* mock = &g_mock_rspi;
 
-  m->init_calls++;
+  mock->init_calls++;
 
   if (config == NULL) {
     rx_err_t ret = k_rx_err_null_ptr;
-    mock_rspi_record_call(m, "rspi_init_peripheral", channel, 0, 0, ret);
+    mock_rspi_record_call(mock, "rspi_init_peripheral", channel, 0, 0, ret);
     return ret;
   }
 
   if (channel >= k_mock_rspi_max_channels) {
     rx_err_t ret = k_rx_err_invalid_arg;
-    mock_rspi_record_call(m,
+    mock_rspi_record_call(mock,
                           "rspi_init_peripheral",
                           channel,
                           config->spi_mode,
@@ -352,16 +352,16 @@ rx_err_t rspi_init_peripheral(uint8_t channel, const rspi_config_t* config)
     return ret;
   }
 
-  rx_err_t ret = m->next_init_return;
+  rx_err_t ret = mock->next_init_return;
 
   if (ret == k_rx_ok) {
-    m->channels[channel].initialized = true;
-    m->channels[channel].spi_mode    = config->spi_mode;
-    m->channels[channel].use_16bit   = config->use_16bit;
-    m->channels[channel].write_ready = true;
+    mock->channels[channel].initialized = true;
+    mock->channels[channel].spi_mode    = config->spi_mode;
+    mock->channels[channel].use_16bit   = config->use_16bit;
+    mock->channels[channel].write_ready = true;
   }
 
-  mock_rspi_record_call(m,
+  mock_rspi_record_call(mock,
                         "rspi_init_peripheral",
                         channel,
                         config->spi_mode,
@@ -369,7 +369,7 @@ rx_err_t rspi_init_peripheral(uint8_t channel, const rspi_config_t* config)
                         ret);
 
   /* Reset to default for next call */
-  m->next_init_return = k_rx_ok;
+  mock->next_init_return = k_rx_ok;
 
   return ret;
 }
@@ -377,25 +377,25 @@ rx_err_t rspi_init_peripheral(uint8_t channel, const rspi_config_t* config)
 rx_err_t
 rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_data, uint16_t length)
 {
-  mock_rspi_t* m = &g_mock_rspi;
+  mock_rspi_t* mock = &g_mock_rspi;
 
-  m->transfer_calls++;
+  mock->transfer_calls++;
 
   if (channel >= k_mock_rspi_max_channels) {
     rx_err_t ret = k_rx_err_invalid_arg;
-    mock_rspi_record_call(m, "rspi_peripheral_transfer", channel, length, 0, ret);
+    mock_rspi_record_call(mock, "rspi_peripheral_transfer", channel, length, 0, ret);
     return ret;
   }
 
-  mock_rspi_channel_t* ch = &m->channels[channel];
+  mock_rspi_channel_t* ch = &mock->channels[channel];
 
   if (!ch->initialized) {
     rx_err_t ret = k_rx_err_invalid_state;
-    mock_rspi_record_call(m, "rspi_peripheral_transfer", channel, length, 0, ret);
+    mock_rspi_record_call(mock, "rspi_peripheral_transfer", channel, length, 0, ret);
     return ret;
   }
 
-  rx_err_t ret = m->next_transfer_return;
+  rx_err_t ret = mock->next_transfer_return;
 
   if (ret == k_rx_ok) {
     /* Capture TX data */
@@ -427,120 +427,120 @@ rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_da
     }
   }
 
-  mock_rspi_record_call(m, "rspi_peripheral_transfer", channel, length, 0, ret);
+  mock_rspi_record_call(mock, "rspi_peripheral_transfer", channel, length, 0, ret);
 
   /* Reset to default for next call */
-  m->next_transfer_return = k_rx_ok;
+  mock->next_transfer_return = k_rx_ok;
 
   return ret;
 }
 
 rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available)
 {
-  mock_rspi_t* m = &g_mock_rspi;
+  mock_rspi_t* mock = &g_mock_rspi;
 
-  m->available_calls++;
+  mock->available_calls++;
 
   if (available == NULL) {
     rx_err_t ret = k_rx_err_invalid_arg;
-    mock_rspi_record_call(m, "rspi_peripheral_read_available", channel, 0, 0, ret);
+    mock_rspi_record_call(mock, "rspi_peripheral_read_available", channel, 0, 0, ret);
     return ret;
   }
 
   if (channel >= k_mock_rspi_max_channels) {
     rx_err_t ret = k_rx_err_invalid_arg;
-    mock_rspi_record_call(m, "rspi_peripheral_read_available", channel, 0, 0, ret);
+    mock_rspi_record_call(mock, "rspi_peripheral_read_available", channel, 0, 0, ret);
     return ret;
   }
 
-  mock_rspi_channel_t* ch = &m->channels[channel];
+  mock_rspi_channel_t* ch = &mock->channels[channel];
 
   if (!ch->initialized) {
     rx_err_t ret = k_rx_err_invalid_state;
-    mock_rspi_record_call(m, "rspi_peripheral_read_available", channel, 0, 0, ret);
+    mock_rspi_record_call(mock, "rspi_peripheral_read_available", channel, 0, 0, ret);
     return ret;
   }
 
-  rx_err_t ret = m->next_available_return;
+  rx_err_t ret = mock->next_available_return;
 
   if (ret == k_rx_ok) {
     *available = ch->data_available;
   }
 
-  mock_rspi_record_call(m, "rspi_peripheral_read_available", channel, 0, 0, ret);
+  mock_rspi_record_call(mock, "rspi_peripheral_read_available", channel, 0, 0, ret);
 
   /* Reset to default for next call */
-  m->next_available_return = k_rx_ok;
+  mock->next_available_return = k_rx_ok;
 
   return ret;
 }
 
 rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready)
 {
-  mock_rspi_t* m = &g_mock_rspi;
+  mock_rspi_t* mock = &g_mock_rspi;
 
-  m->ready_calls++;
+  mock->ready_calls++;
 
   if (ready == NULL) {
     rx_err_t ret = k_rx_err_invalid_arg;
-    mock_rspi_record_call(m, "rspi_peripheral_write_ready", channel, 0, 0, ret);
+    mock_rspi_record_call(mock, "rspi_peripheral_write_ready", channel, 0, 0, ret);
     return ret;
   }
 
   if (channel >= k_mock_rspi_max_channels) {
     rx_err_t ret = k_rx_err_invalid_arg;
-    mock_rspi_record_call(m, "rspi_peripheral_write_ready", channel, 0, 0, ret);
+    mock_rspi_record_call(mock, "rspi_peripheral_write_ready", channel, 0, 0, ret);
     return ret;
   }
 
-  mock_rspi_channel_t* ch = &m->channels[channel];
+  mock_rspi_channel_t* ch = &mock->channels[channel];
 
   if (!ch->initialized) {
     rx_err_t ret = k_rx_err_invalid_state;
-    mock_rspi_record_call(m, "rspi_peripheral_write_ready", channel, 0, 0, ret);
+    mock_rspi_record_call(mock, "rspi_peripheral_write_ready", channel, 0, 0, ret);
     return ret;
   }
 
-  rx_err_t ret = m->next_ready_return;
+  rx_err_t ret = mock->next_ready_return;
 
   if (ret == k_rx_ok) {
     *ready = ch->write_ready;
   }
 
-  mock_rspi_record_call(m, "rspi_peripheral_write_ready", channel, 0, 0, ret);
+  mock_rspi_record_call(mock, "rspi_peripheral_write_ready", channel, 0, 0, ret);
 
   /* Reset to default for next call */
-  m->next_ready_return = k_rx_ok;
+  mock->next_ready_return = k_rx_ok;
 
   return ret;
 }
 
 rx_err_t rspi_deinit(uint8_t channel)
 {
-  mock_rspi_t* m = &g_mock_rspi;
+  mock_rspi_t* mock = &g_mock_rspi;
 
-  m->deinit_calls++;
+  mock->deinit_calls++;
 
   if (channel >= k_mock_rspi_max_channels) {
     rx_err_t ret = k_rx_err_invalid_arg;
-    mock_rspi_record_call(m, "rspi_deinit", channel, 0, 0, ret);
+    mock_rspi_record_call(mock, "rspi_deinit", channel, 0, 0, ret);
     return ret;
   }
 
-  rx_err_t ret = m->next_deinit_return;
+  rx_err_t ret = mock->next_deinit_return;
 
   if (ret == k_rx_ok) {
-    mock_rspi_channel_t* ch = &m->channels[channel];
+    mock_rspi_channel_t* ch = &mock->channels[channel];
 
     ch->initialized    = false;
     ch->data_available = false;
     ch->write_ready    = false;
   }
 
-  mock_rspi_record_call(m, "rspi_deinit", channel, 0, 0, ret);
+  mock_rspi_record_call(mock, "rspi_deinit", channel, 0, 0, ret);
 
   /* Reset to default for next call */
-  m->next_deinit_return = k_rx_ok;
+  mock->next_deinit_return = k_rx_ok;
 
   return ret;
 }

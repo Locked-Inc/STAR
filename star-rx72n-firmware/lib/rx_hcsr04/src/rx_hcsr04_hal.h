@@ -20,6 +20,7 @@
 #ifndef RX_HCSR04_HAL_H
 #define RX_HCSR04_HAL_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"

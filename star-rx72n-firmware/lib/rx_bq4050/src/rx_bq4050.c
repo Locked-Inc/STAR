@@ -33,14 +33,23 @@
 
 #include "rx_bq4050.h"
 
+#include <stdio.h>
+
 #include "rx_bq4050_constants.h"
 #include "rx_bus_smbus.h"
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char*   s_tag                  = "BQ4050";
-static const uint8_t k_bq4050_min_cells     = 1;
-static const uint8_t s_bq4050_smbus_address = 11U;
+static const char* s_tag = "BQ4050";
+
+typedef enum : uint8_t {
+  s_bq4050_min_cells     = 1,
+  s_bq4050_smbus_address = 11U,
+} bq4050_init_constants_t;
+
+typedef enum : uint8_t {
+  k_bq4050_smbus_addr_hex_width = 2, /**< SMBus address width in hex digits */
+} bq4050_log_constants_t;
 
 /**
  * @brief Temperature conversion constants
@@ -125,11 +134,14 @@ rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_
     rx_log_error_hex(s_tag,
                      "Failed to communicate with BQ4050 at address",
                      s_bq4050_smbus_address,
-                     2);
+                     k_bq4050_smbus_addr_hex_width);
     return err;
   }
 
-  rx_log_info_hex(s_tag, "BQ4050 initialized successfully at address", s_bq4050_smbus_address, 2);
+  rx_log_info_hex(s_tag,
+                  "BQ4050 initialized successfully at address",
+                  s_bq4050_smbus_address,
+                  k_bq4050_smbus_addr_hex_width);
 
   return k_rx_ok;
 }
@@ -153,8 +165,17 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(cell_voltages, s_tag, "cell_voltages pointer is NULL");
 
-  if ((num_cells < k_bq4050_min_cells) || (num_cells > k_bq4050_max_cells)) {
-    rx_log_error(s_tag, "num_cells exceeds maximum (4 cells)");
+  if ((num_cells < s_bq4050_min_cells) || (num_cells > k_bq4050_max_cells)) {
+    char      log_msg[80];
+    const int snprintf_result = snprintf(log_msg,
+                                         sizeof(log_msg),
+                                         "num_cells out of range: %u (allowed %u..%u)",
+                                         (unsigned)num_cells,
+                                         (unsigned)s_bq4050_min_cells,
+                                         (unsigned)k_bq4050_max_cells);
+    if (snprintf_result > 0 && (uint32_t)snprintf_result < sizeof(log_msg)) {
+      rx_log_error(s_tag, log_msg);
+    }
     return k_rx_err_invalid_arg;
   }
 
@@ -166,7 +187,10 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
     [k_cell_idx_4] = k_sbs_cell_voltage_4, /* Cell 4 at 0x3C */
   };
 
-  for (uint8_t i = 0; i < num_cells; i++) {
+  for (uint8_t i = k_cell_idx_1; i < k_bq4050_max_cells; i++) {
+    if (i >= num_cells) {
+      break;
+    }
     const rx_err_t err =
       rx_bus_smbus_read_word_data(manager, bus_name, s_cell_reg_map[i], &cell_voltages[i]);
     if (err != k_rx_ok) {
@@ -313,12 +337,33 @@ rx_err_t rx_bq4050_read_capacity(rx_bus_manager_t* manager,
  * =============================================================================
  */
 
+/**
+ * @brief Read electrical status fields (voltage, current, cell voltages)
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name SMBus name
+ * @param[out] status Status structure to populate
+ * @param[in] num_cells Number of cells (s_bq4050_min_cells..k_bq4050_max_cells)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if manager, bus_name, or status is NULL
+ * @return k_rx_err_invalid_arg if num_cells is out of range
+ * @return Other rx_err_t values propagated from SMBus reads
+ */
 static rx_err_t internal_read_electrical_status(rx_bus_manager_t*   manager,
                                                 const char*         bus_name,
                                                 rx_bq4050_status_t* status,
                                                 const uint8_t       num_cells)
 {
   rx_err_t err;
+
+  RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
+  RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
+  RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
+  if ((num_cells < s_bq4050_min_cells) || (num_cells > k_bq4050_max_cells)) {
+    rx_log_error(s_tag, "num_cells parameter out of range");
+    return k_rx_err_invalid_arg;
+  }
 
   err = rx_bq4050_read_voltage(manager, bus_name, &status->voltage_mv);
   if (err != k_rx_ok) {
@@ -347,11 +392,26 @@ static rx_err_t internal_read_electrical_status(rx_bus_manager_t*   manager,
   return k_rx_ok;
 }
 
+/**
+ * @brief Read SOC and temperature status fields
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name SMBus name
+ * @param[out] status Status structure to populate
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if manager, bus_name, or status is NULL
+ * @return Other rx_err_t values propagated from SMBus reads
+ */
 static rx_err_t internal_read_soc_status(rx_bus_manager_t*   manager,
                                          const char*         bus_name,
                                          rx_bq4050_status_t* status)
 {
   rx_err_t err;
+
+  RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
+  RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
+  RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
 
   err = rx_bq4050_read_relative_soc(manager, bus_name, &status->relative_soc);
   if (err != k_rx_ok) {
@@ -374,11 +434,26 @@ static rx_err_t internal_read_soc_status(rx_bus_manager_t*   manager,
   return k_rx_ok;
 }
 
+/**
+ * @brief Read capacity-related status fields
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name SMBus name
+ * @param[out] status Status structure to populate
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if manager, bus_name, or status is NULL
+ * @return Other rx_err_t values propagated from SMBus reads
+ */
 static rx_err_t internal_read_capacity_status(rx_bus_manager_t*   manager,
                                               const char*         bus_name,
                                               rx_bq4050_status_t* status)
 {
   rx_err_t err;
+
+  RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
+  RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
+  RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
 
   err = rx_bq4050_read_capacity(manager,
                                 bus_name,
@@ -407,11 +482,26 @@ static rx_err_t internal_read_capacity_status(rx_bus_manager_t*   manager,
   return k_rx_ok;
 }
 
+/**
+ * @brief Read timing-related status fields
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name SMBus name
+ * @param[out] status Status structure to populate
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if manager, bus_name, or status is NULL
+ * @return Other rx_err_t values propagated from SMBus reads
+ */
 static rx_err_t internal_read_timing_status(rx_bus_manager_t*   manager,
                                             const char*         bus_name,
                                             rx_bq4050_status_t* status)
 {
   rx_err_t err;
+
+  RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
+  RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
+  RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
 
   err = rx_bus_smbus_read_word_data(manager,
                                     bus_name,
@@ -434,11 +524,26 @@ static rx_err_t internal_read_timing_status(rx_bus_manager_t*   manager,
   return k_rx_ok;
 }
 
+/**
+ * @brief Read battery status flag fields
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name SMBus name
+ * @param[out] status Status structure to populate
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if manager, bus_name, or status is NULL
+ * @return Other rx_err_t values propagated from SMBus reads
+ */
 static rx_err_t internal_read_status_flags(rx_bus_manager_t*   manager,
                                            const char*         bus_name,
                                            rx_bq4050_status_t* status)
 {
-  uint16_t       status_flags;
+  uint16_t status_flags;
+  RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
+  RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
+  RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
+
   const rx_err_t err =
     rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_battery_status, &status_flags);
   if (err != k_rx_ok) {
@@ -465,8 +570,17 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
 
-  if ((num_cells < k_bq4050_min_cells) || (num_cells > k_bq4050_max_cells)) {
-    rx_log_error(s_tag, "num_cells parameter exceeds k_bq4050_max_cells");
+  if ((num_cells < s_bq4050_min_cells) || (num_cells > k_bq4050_max_cells)) {
+    char      log_msg[80];
+    const int snprintf_result = snprintf(log_msg,
+                                         sizeof(log_msg),
+                                         "num_cells out of range: %u (allowed %u..%u)",
+                                         (unsigned)num_cells,
+                                         (unsigned)s_bq4050_min_cells,
+                                         (unsigned)k_bq4050_max_cells);
+    if (snprintf_result > 0 && (uint32_t)snprintf_result < sizeof(log_msg)) {
+      rx_log_error(s_tag, log_msg);
+    }
     return k_rx_err_invalid_arg;
   }
 

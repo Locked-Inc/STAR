@@ -272,7 +272,7 @@ static void internal_configure_port_pins(const rx_gptw_channel_t channel)
 static void internal_enable_gptw_module_clock(void)
 {
   system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
-  system_regs()->mstpcrc &= ~(1UL << k_mstpc_gptw);
+  system_regs()->mstpcrc &= ~((uint32_t)k_gptw_bit_set << k_mstpc_gptw);
   system_regs()->prcr = k_rx_prcr_lock;
 }
 
@@ -417,12 +417,16 @@ rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_set_duty(const rx_gptw_channel_t channel,
-                          const rx_gptw_output_t  output,
-                          const float             duty_percent)
+rx_err_t rx_gptw_set_duty(const rx_gptw_channel_id_t channel,
+                          const rx_gptw_output_id_t  output,
+                          const float                duty_percent)
 {
-  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
-      ((int32_t)channel >= (int32_t)k_gptw_max_channels) || !s_gptw_initialized[channel]) {
+  const rx_gptw_channel_t channel_value = channel.value;
+  const rx_gptw_output_t  output_value  = output.value;
+
+  if (((int32_t)channel_value < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel_value >= (int32_t)k_gptw_max_channels) ||
+      !s_gptw_initialized[channel_value]) {
     return k_rx_err_invalid_state;
   }
 
@@ -432,10 +436,10 @@ rx_err_t rx_gptw_set_duty(const rx_gptw_channel_t channel,
   }
 
   /* Convert percentage to count value */
-  const uint32_t period     = s_gptw_period[channel];
+  const uint32_t period     = s_gptw_period[channel_value];
   const uint32_t duty_count = (uint32_t)((duty_percent * period) / (float)k_gptw_duty_divisor);
 
-  return rx_gptw_set_duty_raw(channel, output, duty_count);
+  return rx_gptw_set_duty_raw(channel_value, output_value, duty_count);
 }
 
 rx_err_t

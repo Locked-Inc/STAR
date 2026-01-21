@@ -90,9 +90,10 @@ typedef enum : uint8_t {
 } tx_status;
 
 /** @brief ThreadX wait options */
-typedef ULONG               tx_wait_option;
-static const tx_wait_option TX_NO_WAIT      = 0U;
-static const tx_wait_option TX_WAIT_FOREVER = 0xFFFFFFFFUL;
+typedef enum tx_wait_option : uint32_t {
+  TX_NO_WAIT      = 0U,
+  TX_WAIT_FOREVER = 0xFFFFFFFFU,
+} tx_wait_option;
 
 /** @brief ThreadX inheritance options */
 typedef enum : uint8_t {
@@ -100,14 +101,23 @@ typedef enum : uint8_t {
   TX_INHERIT    = 1U,
 } tx_inherit_option;
 
-/** @brief ThreadX thread constants */
+/** @brief ThreadX time slice options */
 typedef enum : uint8_t {
-  TX_NO_TIME_SLICE = 0U,
-  TX_AUTO_START    = 1U,
-  TX_DONT_START    = 0U,
-  TX_AUTO_ACTIVATE = 1U,
+  TX_NO_TIME_SLICE   = 0U,
+  TX_AUTO_TIME_SLICE = 1U,
+} tx_time_slice_option_t;
+
+/** @brief ThreadX thread start options */
+typedef enum : uint8_t {
+  TX_DONT_START = 0U,
+  TX_AUTO_START = 1U,
+} tx_thread_start_option_t;
+
+/** @brief ThreadX thread activation options */
+typedef enum : uint8_t {
   TX_NO_ACTIVATE   = 0U,
-} tx_thread_constants_t;
+  TX_AUTO_ACTIVATE = 1U,
+} tx_thread_activate_option_t;
 
 /** @brief ThreadX event flags constants */
 typedef enum : uint8_t {
@@ -123,6 +133,7 @@ typedef enum : uint32_t {
   k_tx_mutex_magic       = 0x4D555458, /**< "MUTX" ASCII magic ID */
   k_tx_thread_magic      = 0x54485244, /**< "THRD" ASCII magic ID */
   k_tx_event_flags_magic = 0x4556544E, /**< "EVTN" ASCII magic ID */
+  k_tx_semaphore_magic   = 0x53454D41, /**< "SEMA" ASCII magic ID */
 } tx_magic_ids_t;
 
 /* =============================================================================
@@ -138,6 +149,15 @@ typedef struct TX_MUTEX_STRUCT {
   UINT  tx_mutex_id;   /**< Mutex ID */
   bool  locked;        /**< Lock state (mock) */
 } TX_MUTEX;
+
+/**
+ * @brief Mock ThreadX semaphore structure
+ */
+typedef struct TX_SEMAPHORE_STRUCT {
+  CHAR* tx_semaphore_name; /**< Semaphore name */
+  UINT  tx_semaphore_id;   /**< Semaphore ID */
+  UINT  count;             /**< Current count */
+} TX_SEMAPHORE;
 
 /**
  * @brief Mock ThreadX thread structure
@@ -208,11 +228,11 @@ static inline tx_status tx_mutex_delete(TX_MUTEX* mutex_ptr)
   if (mutex_ptr->tx_mutex_id != k_tx_mutex_magic) {
     return TX_DELETED;
   }
-  mutex_ptr->tx_mutex_id = k_tx_invalid_id;
-  mutex_ptr->locked      = false;
-  if (mutex_ptr->tx_mutex_id == k_tx_mutex_magic || mutex_ptr->locked) {
+  if (mutex_ptr->locked) {
     return TX_PTR_ERROR;
   }
+  mutex_ptr->tx_mutex_id = k_tx_invalid_id;
+  mutex_ptr->locked      = false;
   return TX_SUCCESS;
 }
 
@@ -277,16 +297,16 @@ static inline tx_status tx_mutex_put(TX_MUTEX* mutex_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline tx_status tx_thread_create(TX_THREAD* thread_ptr,
-                                         CHAR*      name_ptr,
+static inline tx_status tx_thread_create(TX_THREAD*                thread_ptr,
+                                         CHAR*                     name_ptr,
                                          VOID (*entry_function)(ULONG),
-                                         ULONG entry_input,
-                                         VOID* stack_start,
-                                         ULONG stack_size,
-                                         UINT  priority,
-                                         UINT  preempt_threshold,
-                                         ULONG time_slice,
-                                         UINT  auto_start)
+                                         ULONG                     entry_input,
+                                         VOID*                     stack_start,
+                                         ULONG                     stack_size,
+                                         UINT                      priority,
+                                         UINT                      preempt_threshold,
+                                         tx_time_slice_option_t    time_slice,
+                                         tx_thread_start_option_t  auto_start)
 {
   (void)entry_function;
   (void)entry_input;
@@ -328,13 +348,10 @@ static inline tx_status tx_thread_delete(TX_THREAD* thread_ptr)
   }
 
   if (thread_ptr->tx_thread_id != k_tx_thread_magic) {
-    return TX_DELETED;
+    return TX_PTR_ERROR;
   }
 
   thread_ptr->tx_thread_id = k_tx_invalid_id;
-  if (thread_ptr->tx_thread_id == k_tx_thread_magic) {
-    return TX_PTR_ERROR;
-  }
   return TX_SUCCESS;
 }
 
@@ -438,6 +455,108 @@ static inline tx_status tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, C
 }
 
 /**
+ * @brief Create a semaphore
+ *
+ * @param[in] sem_ptr Pointer to semaphore control block
+ * @param[in] name_ptr Semaphore name
+ * @param[in] initial_count Initial count
+ *
+ * @return TX_SUCCESS on success
+ */
+static inline tx_status tx_semaphore_create(TX_SEMAPHORE* sem_ptr,
+                                            CHAR*        name_ptr,
+                                            UINT         initial_count)
+{
+  if (sem_ptr == NULL) {
+    return TX_NOT_AVAILABLE;
+  }
+
+  sem_ptr->tx_semaphore_name = name_ptr;
+  sem_ptr->tx_semaphore_id   = k_tx_semaphore_magic;
+  sem_ptr->count             = initial_count;
+
+  if (sem_ptr->tx_semaphore_id != k_tx_semaphore_magic) {
+    return TX_PTR_ERROR;
+  }
+
+  return TX_SUCCESS;
+}
+
+/**
+ * @brief Delete a semaphore
+ *
+ * @param[in] sem_ptr Pointer to semaphore control block
+ *
+ * @return TX_SUCCESS on success
+ */
+static inline tx_status tx_semaphore_delete(TX_SEMAPHORE* sem_ptr)
+{
+  if (sem_ptr == NULL) {
+    return TX_NOT_AVAILABLE;
+  }
+
+  if (sem_ptr->tx_semaphore_id != k_tx_semaphore_magic) {
+    return TX_PTR_ERROR;
+  }
+
+  sem_ptr->tx_semaphore_id = k_tx_invalid_id;
+  sem_ptr->count           = 0;
+  return TX_SUCCESS;
+}
+
+/**
+ * @brief Get a semaphore (decrement count if available)
+ *
+ * @param[in] sem_ptr Pointer to semaphore control block
+ * @param[in] wait_option Wait option (ignored in mock)
+ *
+ * @return TX_SUCCESS on success
+ */
+static inline tx_status tx_semaphore_get(TX_SEMAPHORE* sem_ptr, tx_wait_option wait_option)
+{
+  (void)wait_option;
+
+  if (sem_ptr == NULL) {
+    return TX_NOT_AVAILABLE;
+  }
+
+  if (sem_ptr->tx_semaphore_id != k_tx_semaphore_magic) {
+    return TX_PTR_ERROR;
+  }
+
+  if (sem_ptr->count == 0U) {
+    if (wait_option == TX_NO_WAIT) {
+      return TX_NO_INSTANCE;
+    }
+    return TX_SUCCESS;
+  }
+
+  sem_ptr->count--;
+  return TX_SUCCESS;
+}
+
+/**
+ * @brief Put a semaphore (increment count)
+ *
+ * @param[in] sem_ptr Pointer to semaphore control block
+ *
+ * @return TX_SUCCESS on success
+ */
+static inline tx_status tx_semaphore_put(TX_SEMAPHORE* sem_ptr)
+{
+  if (sem_ptr == NULL) {
+    return TX_NOT_AVAILABLE;
+  }
+
+  if (sem_ptr->tx_semaphore_id != k_tx_semaphore_magic) {
+    return TX_PTR_ERROR;
+  }
+
+  sem_ptr->count++;
+  return TX_SUCCESS;
+}
+
+/**
  * @brief Delete an event flags group
  *
  * @param[in] group_ptr Event flags group control block
@@ -451,15 +570,11 @@ static inline tx_status tx_event_flags_delete(TX_EVENT_FLAGS_GROUP* group_ptr)
   }
 
   if (group_ptr->tx_event_flags_id != k_tx_event_flags_magic) {
-    return TX_DELETED;
+    return TX_PTR_ERROR;
   }
 
   group_ptr->tx_event_flags_id = k_tx_invalid_id;
   group_ptr->tx_event_flags    = 0;
-
-  if (group_ptr->tx_event_flags_id == k_tx_event_flags_magic) {
-    return TX_PTR_ERROR;
-  }
 
   return TX_SUCCESS;
 }

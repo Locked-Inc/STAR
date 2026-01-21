@@ -95,8 +95,8 @@ rx_err_t rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name,
  *
  * @param[in] manager Bus manager instance
  * @param[in] bus_name SMBUS bus name
- * @param[in] command Register/command code
- * @param[in] data Data byte to write
+ * @param[in] command SMBus register/command byte
+ * @param[in] data SMBus payload byte to write
  *
  * @return k_rx_ok on success
  * @return k_rx_err_null_ptr if manager or bus_name is NULL

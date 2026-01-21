@@ -39,13 +39,12 @@ extern "C" {
  * Example usage:
  * @code
  * // Convert 500ms to ThreadX ticks
- * uint32_t ticks = (500 * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+ * uint32_t ticks = (500 * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
  * tx_thread_sleep(ticks);  // Sleep for 500ms
  * @endcode
  */
-typedef enum : uint16_t {
-  k_rx_threadx_tick_rate_hz = 100, /**< ThreadX tick frequency: 100 Hz (10ms period) */
-} rx_threadx_timing_t;
+static const uint16_t s_rx_threadx_tick_rate_hz =
+  100U; /**< ThreadX tick frequency: 100 Hz (10ms period) */
 
 #ifdef __cplusplus
 }

@@ -18,6 +18,7 @@
 
 #include <string.h>
 
+#include "rx_check.h"
 #include "rx_crc.h"
 #include "rx_log.h"
 #include "rx_usb.h"
@@ -37,7 +38,10 @@ static const char* s_tag = "USB_COMM";
  */
 
 /** @brief Total header size including sync word: SYNC(2) + SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) */
-static const uint32_t s_frame_header_total = 8;
+enum {
+  k_frame_header_total = k_frame_sync_size + k_frame_seq_size + k_frame_len_size +
+                         k_frame_type_size + k_frame_flags_size
+};
 
 static rx_err_t internal_decode_header(const uint8_t* data,
                                        const uint32_t data_len,
@@ -47,6 +51,12 @@ static rx_err_t internal_decode_header(const uint8_t* data,
   uint32_t offset;
   uint16_t sync_word;
   uint32_t expected_size;
+
+  RX_ASSERT(data != NULL, "Data pointer is NULL");
+  RX_ASSERT(frame != NULL, "Frame pointer is NULL");
+  if (data == NULL || frame == NULL) {
+    return k_rx_err_invalid_arg;
+  }
 
   if (data_len < k_frame_min_size) {
     return k_rx_err_invalid_size;
@@ -90,6 +100,11 @@ static rx_err_t internal_decode_header(const uint8_t* data,
 
 static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32_t* crc_out)
 {
+  RX_ASSERT(data != NULL, "Data pointer is NULL");
+  if (data == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
   const uint32_t received_crc   = rx_frame_read_le32(&data[offset]);
   const uint32_t calculated_crc = rx_crc32_ieee(data, offset);
 
@@ -105,7 +120,9 @@ static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32
 }
 
 /** @brief Sleep interval for receive polling (ms) */
-static const uint32_t s_sleep_interval_ms = 10;
+enum {
+  k_sleep_interval_ms = 10
+};
 
 /**
  * @brief Sequence number constants
@@ -282,8 +299,8 @@ static rx_err_t internal_find_sync(const rx_usb_comm_handle_t* handle, int32_t* 
 static bool internal_sleep_and_advance(const rx_usb_comm_handle_t* handle, uint32_t* elapsed_ms)
 {
   if (handle->time_iface != NULL && handle->time_iface->sleep_ms != NULL) {
-    handle->time_iface->sleep_ms(handle->time_iface->ctx, s_sleep_interval_ms);
-    *elapsed_ms += s_sleep_interval_ms;
+    handle->time_iface->sleep_ms(handle->time_iface->ctx, k_sleep_interval_ms);
+    *elapsed_ms += k_sleep_interval_ms;
     return true;
   }
   return false;
@@ -457,7 +474,7 @@ internal_parse_header(rx_usb_comm_handle_t* handle, uint16_t* payload_len, uint3
     return false;
   }
 
-  *total_size = s_frame_header_total + *payload_len + k_frame_crc_size;
+  *total_size = k_frame_header_total + *payload_len + k_frame_crc_size;
   return true;
 }
 
@@ -505,7 +522,7 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
 
   /* Check if we have enough data for header */
   available = handle->rx_buffer_len - handle->rx_buffer_pos;
-  if (available < s_frame_header_total) {
+  if (available < k_frame_header_total) {
     *err = internal_wait_for_data(handle, timeout_ms, elapsed_ms);
     return (*err != k_rx_ok) ? k_receive_error : k_receive_continue;
   }

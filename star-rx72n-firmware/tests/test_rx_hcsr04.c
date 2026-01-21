@@ -36,6 +36,10 @@
 static rx_hcsr04_t        s_sensor;
 static rx_hcsr04_config_t s_config;
 
+typedef enum : uint32_t {
+  k_hcsr04_timeout_us = 30000, /**< Default timeout in microseconds */
+} hcsr04_test_constants_t;
+
 /**
  * @brief Setup function run before each test
  */
@@ -51,7 +55,7 @@ void setUp(void)
   /* Setup default config for sensor 1 (J24) using type-safe GPIO enum */
   s_config.trigger_pin = k_rx_pc_6; /* PMOD JB GPIO0 */
   s_config.echo_pin    = k_rx_p5_5; /* PMOD JB GPIO1 */
-  s_config.timeout_us  = 30000;
+  s_config.timeout_us  = k_hcsr04_timeout_us;
 }
 
 /**
@@ -532,7 +536,7 @@ void test_hcsr04_set_temperature_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(rx_hcsr04_is_temp_compensation_enabled(&s_sensor));
 
-  float temp = 0.0f;
+  float temp = 0.0F;
   rx_hcsr04_get_temperature(&s_sensor, &temp);
   TEST_ASSERT_FLOAT_WITHIN(0.01f, 25.0f, temp);
 }

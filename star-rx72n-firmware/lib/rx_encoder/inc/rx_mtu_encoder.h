@@ -121,9 +121,9 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
  * Calculates velocity based on count change over time period.
  * Assumes periodic calls at known rate (e.g., 250Hz control loop).
  *
+ * @param[out] velocity_rps Pointer to store velocity in revolutions per second
  * @param[in] channel MTU channel
  * @param[in] delta_time_s Time since last call in seconds
- * @param[out] velocity_rps Pointer to store velocity in revolutions per second
  *
  * @return k_rx_ok on success
  * @return k_rx_err_null_ptr if velocity_rps is NULL
@@ -131,7 +131,7 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
  * @return k_rx_err_invalid_state if encoder not initialized
  */
 rx_err_t
-rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, float* velocity_rps);
+rx_encoder_read_velocity(float* velocity_rps, rx_mtu_channel_t channel, float delta_time_s);
 
 /**
  * @brief Reset encoder count to zero
@@ -152,14 +152,14 @@ rx_err_t rx_encoder_reset(rx_mtu_channel_t channel);
  * Sets both hardware counter and accumulated count.
  * Useful for homing or calibration.
  *
- * @param[in] channel MTU channel
  * @param[in] count Count value to set
+ * @param[in] channel MTU channel
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if channel is invalid
  * @return k_rx_err_invalid_state if encoder not initialized
  */
-rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count);
+rx_err_t rx_encoder_set_count(int32_t count, rx_mtu_channel_t channel);
 
 /**
  * @brief Deinitialize encoder

@@ -44,8 +44,8 @@ typedef enum : uint16_t {
  * @brief Worker thread event flags
  */
 typedef enum : uint8_t {
-  k_event_measurement_request = 0x01, /**< Measurement request pending */
-  k_event_shutdown_request    = 0x02, /**< Worker shutdown requested */
+  k_event_measurement_request = 1U, /**< Measurement request pending */
+  k_event_shutdown_request    = 2U, /**< Worker shutdown requested */
 } rx_hcsr04_event_flags_t;
 
 /**
@@ -79,27 +79,27 @@ typedef enum : uint16_t {
 /**
  * @brief Speed of sound base constant (m/s at 0°C)
  */
-static const float s_speed_of_sound_base_mps = 331.3f;
+static const float s_speed_of_sound_base_mps = 331.3F;
 
 /**
  * @brief Speed of sound temperature coefficient (m/s per °C)
  */
-static const float s_speed_of_sound_coeff = 0.606f;
+static const float s_speed_of_sound_coeff = 0.606F;
 
 /**
  * @brief Default temperature for distance calculations (°C)
  */
-static const float s_default_temperature_celsius = 20.0f;
+static const float s_default_temperature_celsius = 20.0F;
 
 /**
  * @brief Minimum valid temperature (°C) - DS18B20 sensor lower limit
  */
-static const float s_min_temp_celsius = -40.0f;
+static const float s_min_temp_celsius = -40.0F;
 
 /**
  * @brief Maximum valid temperature (°C) - DS18B20 sensor upper limit
  */
-static const float s_max_temp_celsius = 85.0f;
+static const float s_max_temp_celsius = 85.0F;
 
 /**
  * @brief Conversion factor from m/s to cm/us (1 m/s = 0.0001 cm/us)
@@ -143,6 +143,11 @@ static uint8_t s_worker_stack[k_worker_stack_size];
 static TX_EVENT_FLAGS_GROUP s_measurement_request;
 
 /**
+ * @brief Semaphore for worker shutdown completion
+ */
+static TX_SEMAPHORE s_worker_shutdown_sem;
+
+/**
  * @brief Mutex protecting access to pending measurement context
  */
 static TX_MUTEX s_pending_mutex;
@@ -182,8 +187,8 @@ static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 
   port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
   pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
-  if ((port < k_rx_port_0) || (port > k_rx_port_j) || (port > k_rx_port_g && port < k_rx_port_j) ||
-      (pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
+  if ((port > k_rx_port_j) || (port > k_rx_port_g && port < k_rx_port_j) ||
+      (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -317,6 +322,7 @@ static void hcsr04_worker_entry(const ULONG input)
 
     /* Check for shutdown request */
     if (actual_flags & k_event_shutdown_request) {
+      (void)tx_semaphore_put(&s_worker_shutdown_sem);
       break; /* Exit loop gracefully */
     }
 
@@ -336,9 +342,9 @@ static void hcsr04_worker_entry(const ULONG input)
      * Clear pending handle to signal worker is idle and ready for next request.
      * Protected by mutex to prevent race with rx_hcsr04_measure_async().
      */
-    tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
+    (void)tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
     s_pending.handle = NULL;
-    tx_mutex_put(&s_pending_mutex);
+    (void)tx_mutex_put(&s_pending_mutex);
   }
 }
 
@@ -369,6 +375,14 @@ rx_err_t rx_hcsr04_worker_init(void)
     return k_rx_err_rtos_error;
   }
 
+  /* Create semaphore for shutdown completion */
+  status = tx_semaphore_create(&s_worker_shutdown_sem, "HCSR04_Shutdown", 0);
+  if (status != TX_SUCCESS) {
+    tx_event_flags_delete(&s_measurement_request);
+    tx_mutex_delete(&s_pending_mutex);
+    return k_rx_err_rtos_error;
+  }
+
   /* Initialize pending context (worker is idle) */
   s_pending.handle    = NULL;
   s_pending.callback  = NULL;
@@ -389,6 +403,7 @@ rx_err_t rx_hcsr04_worker_init(void)
   if (status != TX_SUCCESS) {
     /* Cleanup on failure */
     tx_event_flags_delete(&s_measurement_request);
+    tx_semaphore_delete(&s_worker_shutdown_sem);
     tx_mutex_delete(&s_pending_mutex);
     return k_rx_err_rtos_error;
   }
@@ -416,12 +431,8 @@ rx_err_t rx_hcsr04_worker_deinit(void)
     return k_rx_err_rtos_error;
   }
 
-  /*
-   * Wait for worker thread to exit gracefully.
-   * In production, we'd use a semaphore or check thread state.
-   * For simplicity, we assume the worker exits quickly (< 30ms measurement).
-   */
-  status = tx_thread_sleep(k_shutdown_wait_ticks);
+  /* Wait for worker thread to exit gracefully (signaled by semaphore). */
+  status = tx_semaphore_get(&s_worker_shutdown_sem, (ULONG)k_shutdown_wait_ticks);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -434,6 +445,12 @@ rx_err_t rx_hcsr04_worker_deinit(void)
 
   /* Delete event flags */
   status = tx_event_flags_delete(&s_measurement_request);
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_error;
+  }
+
+  /* Delete shutdown semaphore */
+  status = tx_semaphore_delete(&s_worker_shutdown_sem);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -592,8 +609,8 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
   }
 
   /* Initialize result */
-  result->distance_cm  = 0.0f;
-  result->distance_in  = 0.0f;
+  result->distance_cm  = 0.0F;
+  result->distance_in  = 0.0F;
   result->echo_time_us = 0;
   result->status       = k_rx_ok;
 
@@ -668,11 +685,15 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback
      * True async mode: queue measurement request for worker thread.
      * Use mutex to prevent race condition with worker thread.
      */
-    tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
+    status = tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
+    if (status != TX_SUCCESS) {
+      handle->measurement_active = false;
+      return k_rx_err_rtos_error;
+    }
 
     /* Check if worker is already busy with another sensor */
     if (s_pending.handle != NULL) {
-      tx_mutex_put(&s_pending_mutex);
+      (void)tx_mutex_put(&s_pending_mutex);
       handle->measurement_active = false;
       return k_rx_err_busy;
     }
@@ -682,16 +703,16 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback
     s_pending.callback  = callback;
     s_pending.user_data = user_data;
 
-    tx_mutex_put(&s_pending_mutex);
+    (void)tx_mutex_put(&s_pending_mutex);
 
     /* Signal worker thread - function returns immediately */
     status = tx_event_flags_set(&s_measurement_request, k_event_measurement_request, TX_OR);
 
     if (status != TX_SUCCESS) {
       /* Rollback on failure */
-      tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
+      (void)tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
       s_pending.handle = NULL;
-      tx_mutex_put(&s_pending_mutex);
+      (void)tx_mutex_put(&s_pending_mutex);
       handle->measurement_active = false;
       return k_rx_err_rtos_error;
     }
@@ -869,7 +890,7 @@ float rx_hcsr04_echo_to_cm_with_temp(const uint32_t echo_time_us, float temp_cel
 
   /* Pre-condition: Validate echo time */
   if (echo_time_us == 0 || echo_time_us > k_hcsr04_echo_timeout_us) {
-    return 0.0f;
+    return 0.0F;
   }
 
   speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
@@ -877,8 +898,8 @@ float rx_hcsr04_echo_to_cm_with_temp(const uint32_t echo_time_us, float temp_cel
   distance_cm = ((float)echo_time_us * speed_cm_us) / s_roundtrip_divisor;
 
   /* Post-condition: Ensure non-negative result */
-  if (distance_cm < 0.0f) {
-    return 0.0f;
+  if (distance_cm < 0.0F) {
+    return 0.0F;
   }
 
   return distance_cm;

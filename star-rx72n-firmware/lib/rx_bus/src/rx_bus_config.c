@@ -21,21 +21,25 @@
 
 static const char* s_tag = "BUS_CFG";
 
-static rx_err_t
-internal_validate_port_pin(const uint8_t port, const uint8_t pin_num, const char* context_tag)
-{
-  if (port < k_rx_port_0) {
-    rx_log_error_str(s_tag, "Invalid port", context_tag, (uint32_t)strlen(context_tag));
-    return k_rx_err_invalid_arg;
-  }
+typedef uint8_t rx_port_t;
+typedef uint8_t rx_pin_t;
 
+/**
+ * @brief Validate decoded port and pin numbers
+ *
+ * @param[in] port Port number (k_rx_port_0..k_rx_port_j)
+ * @param[in] pin_num Pin number (k_rx_pin_0..k_rx_pin_max)
+ * @param[in] context_tag Context string for log messages
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if port or pin_num is out of range
+ */
+static rx_err_t internal_validate_port_pin(const rx_port_t port,
+                                           const rx_pin_t  pin_num,
+                                           const char*     context_tag)
+{
   if (port > k_rx_port_j) {
     rx_log_error_str(s_tag, "Invalid port", context_tag, (uint32_t)strlen(context_tag));
-    return k_rx_err_invalid_arg;
-  }
-
-  if (pin_num < k_rx_pin_0) {
-    rx_log_error_str(s_tag, "Invalid pin", context_tag, (uint32_t)strlen(context_tag));
     return k_rx_err_invalid_arg;
   }
 
@@ -54,8 +58,8 @@ internal_validate_port_pin(const uint8_t port, const uint8_t pin_num, const char
 
 rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t pin)
 {
-  uint8_t  port    = 0;
-  uint8_t  pin_num = 0;
+  rx_port_t port    = 0;
+  rx_pin_t  pin_num = 0;
   rx_err_t err     = k_rx_err_invalid_state;
 
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");

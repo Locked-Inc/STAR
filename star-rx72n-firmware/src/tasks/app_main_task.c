@@ -29,6 +29,7 @@ typedef enum : uint16_t {
   k_app_main_stack_size  = 1024, /**< Stack size in bytes */
   k_app_main_priority    = 10,   /**< ThreadX priority (lower is higher) */
   k_app_main_sleep_ticks = 10,   /**< Sleep period in ThreadX ticks */
+  k_app_main_thread_input = 0,   /**< Thread input parameter (unused) */
 } app_main_task_config_t;
 
 /* =============================================================================
@@ -45,8 +46,17 @@ static bool      s_app_main_created = false;
  * =============================================================================
  */
 
-static void internal_app_main_task_entry(const ULONG input)
+/**
+ * @brief Main application task entry loop
+ *
+ * @param[in] input ThreadX entry parameter (expected k_app_main_thread_input)
+ *
+ * @note This task idles to keep the scheduler active.
+ */
+static void internal_app_main_task_entry(ULONG input)
 {
+  RX_ASSERT(input == k_app_main_thread_input, "Unexpected thread input");
+  RX_ASSERT(k_app_main_sleep_ticks > 0, "Sleep ticks must be non-zero");
   (void)input;
 
   while (true) {
@@ -66,10 +76,11 @@ rx_err_t app_main_task_create(void)
     return k_rx_err_invalid_state;
   }
 
+  UINT thread_state = TX_TERMINATED;
   const UINT status = tx_thread_create(&s_app_main_thread,
                                        "AppMain",
                                        internal_app_main_task_entry,
-                                       0,
+                                       k_app_main_thread_input,
                                        s_app_main_stack,
                                        k_app_main_stack_size,
                                        k_app_main_priority,
@@ -82,6 +93,17 @@ rx_err_t app_main_task_create(void)
   }
 
   s_app_main_created = true;
-  RX_ASSERT(s_app_main_created, "Task creation flag must be set");
+  (void)tx_thread_info_get(&s_app_main_thread,
+                           TX_NULL,
+                           &thread_state,
+                           TX_NULL,
+                           TX_NULL,
+                           TX_NULL,
+                           TX_NULL,
+                           TX_NULL,
+                           TX_NULL);
+  RX_ASSERT((status == TX_SUCCESS) &&
+              (thread_state != TX_TERMINATED) && (thread_state != TX_COMPLETED),
+            "Task must be created and scheduled");
   return k_rx_ok;
 }

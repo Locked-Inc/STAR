@@ -6,13 +6,6 @@ version: "1.0"
 linter: qodana-cpp
 profile:
   name: qodana.recommended
-include:
-  - name: firmware-sources
-    paths:
-      - lib
-      - src
-      - include
-      - tests
 exclude:
   - name: generated-and-third-party
     paths:

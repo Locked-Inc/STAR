@@ -37,6 +37,7 @@ static const char* s_tag = "DRV8243";
  */
 typedef enum : int16_t {
   k_drv8243_default_ki_propi = 525,   /**< 525 A/V IPROPI ratio (typical) */
+  k_drv8243_min_pwm_freq_hz  = 1000,  /**< 1 kHz min recommended PWM */
   k_drv8243_max_pwm_freq_hz  = 25000, /**< 25 kHz max recommended PWM */
 } drv8243_motor_constants_t;
 
@@ -44,6 +45,10 @@ typedef enum : int16_t {
   k_speed_min_percent = -100, /**< Minimum speed percentage (full reverse) */
   k_speed_max_percent = 100,  /**< Maximum speed percentage (full forward) */
 } drv8243_speed_constants_t;
+
+typedef enum : uint16_t {
+  k_drv8243_max_current_limit_ma = 10000, /**< 10A max current limit */
+} drv8243_current_constants_t;
 
 static const bool    s_pwm_not_inverted = false; /**< PWM output not inverted */
 static const bool    s_motor_coast      = false; /**< Motor coast (no brake) */
@@ -90,8 +95,9 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   }
 
   /* Validate PWM frequency */
-  if (config->pwm_freq_hz > k_drv8243_max_pwm_freq_hz) {
-    rx_log_error(s_tag, "PWM frequency exceeds 25 kHz limit");
+  if (config->pwm_freq_hz < k_drv8243_min_pwm_freq_hz ||
+      config->pwm_freq_hz > k_drv8243_max_pwm_freq_hz) {
+    rx_log_error(s_tag, "PWM frequency out of range (1kHz-25kHz)");
     return k_rx_err_invalid_arg;
   }
 
@@ -135,6 +141,11 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   handle->current_speed = 0.0f;
   handle->fault_active  = false;
   handle->initialized   = true;
+
+  if (!handle->initialized || handle->bus_manager != config->bus_manager) {
+    rx_log_error(s_tag, "Post-condition failed: handle not properly initialized");
+    return k_rx_err_invalid_state;
+  }
 
   rx_log_info(s_tag, "DRV8243 initialized");
 
@@ -331,6 +342,11 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, const uint16_
   if (!handle->initialized) {
     rx_log_error(s_tag, "DRV8243 not initialized");
     return k_rx_err_invalid_state;
+  }
+
+  if (limit_ma > k_drv8243_max_current_limit_ma) {
+    rx_log_error(s_tag, "Current limit exceeds maximum");
+    return k_rx_err_invalid_arg;
   }
 
   handle->current_limit_ma = limit_ma;

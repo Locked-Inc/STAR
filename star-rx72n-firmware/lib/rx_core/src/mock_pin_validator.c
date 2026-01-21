@@ -88,7 +88,7 @@ static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
 /**
  * @brief Validate pin implementation
  */
-static rx_err_t impl_validate_pin(void* ctx, uint8_t port, uint8_t pin)
+static rx_err_t impl_validate_pin(void* ctx, const uint8_t port, const uint8_t pin)
 {
   mock_pin_validator_t* validator = (mock_pin_validator_t*)ctx;
 
@@ -115,7 +115,8 @@ static rx_err_t impl_validate_pin(void* ctx, uint8_t port, uint8_t pin)
 /**
  * @brief Reserve pin implementation
  */
-static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const char* function)
+static rx_err_t
+impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* function)
 {
   mock_pin_validator_t* validator = (mock_pin_validator_t*)ctx;
 
@@ -151,7 +152,7 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
 /**
  * @brief Release pin implementation
  */
-static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
+static rx_err_t impl_release_pin(void* ctx, const uint8_t port, const uint8_t pin)
 {
   mock_pin_validator_t* validator = (mock_pin_validator_t*)ctx;
 
@@ -186,7 +187,7 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
 /**
  * @brief Check if pin is reserved implementation
  */
-static bool impl_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
+static bool impl_is_pin_reserved(void* ctx, const uint8_t port, const uint8_t pin)
 {
   mock_pin_validator_t* validator = (mock_pin_validator_t*)ctx;
 
@@ -210,11 +211,11 @@ static bool impl_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
 /**
  * @brief Get pin function implementation
  */
-static rx_err_t impl_get_pin_function(void*    ctx,
-                                      uint8_t  port,
-                                      uint8_t  pin,
-                                      char*    function_out,
-                                      uint32_t function_len)
+static rx_err_t impl_get_pin_function(void*          ctx,
+                                      const uint8_t  port,
+                                      const uint8_t  pin,
+                                      char*          function_out,
+                                      const uint32_t function_len)
 {
   mock_pin_validator_t* validator = (mock_pin_validator_t*)ctx;
 

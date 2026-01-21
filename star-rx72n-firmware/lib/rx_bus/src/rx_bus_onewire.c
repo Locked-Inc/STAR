@@ -36,8 +36,11 @@ static const uint32_t s_onewire_max_search_devices = 64U;
 
 /** @brief OneWire driver constants. */
 typedef enum : uint8_t {
-  k_onewire_max_instances   = k_max_buses,
-  k_onewire_single_bit_mask = 0x01U,
+  k_onewire_max_instances         = k_max_buses,
+  k_onewire_single_bit_mask       = 0x01U,
+  k_onewire_search_last_zero_init = 0U,
+  k_onewire_bit_mask_lsb          = 1U,
+  k_onewire_crc_offset            = 1U,
 } onewire_driver_constants_t;
 
 /**
@@ -201,16 +204,14 @@ static rx_err_t internal_set_drive_mode(const rx_bus_config_t*   bus_config,
                                         onewire_runtime_state_t* state,
                                         const bool               output)
 {
-  rx_err_t err = k_rx_err_invalid_state;
-
   if (output && !state->line_is_output) {
-    err = gpio_set_output(bus_config->proto.onewire.pin);
+    const rx_err_t err = gpio_set_output(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
       return err;
     }
     state->line_is_output = true;
   } else if (!output && state->line_is_output) {
-    err = gpio_set_input(bus_config->proto.onewire.pin);
+    const rx_err_t err = gpio_set_input(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
       return err;
     }
@@ -443,9 +444,9 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
 
   memset(rom, 0, k_onewire_rom_bytes);
 
-  uint8_t       last_zero      = 0;
+  uint8_t       last_zero      = k_onewire_search_last_zero_init;
   uint8_t       rom_byte_index = 0;
-  uint8_t       rom_bit_mask   = 1;
+  uint8_t       rom_bit_mask   = k_onewire_bit_mask_lsb;
   const uint8_t total_bits     = k_onewire_rom_bytes * k_bits_per_byte;
 
   for (uint8_t bit_number = 1; bit_number <= total_bits; ++bit_number) {
@@ -508,8 +509,8 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
 
   memcpy(state->last_rom, rom, k_onewire_rom_bytes);
 
-  const uint8_t crc = rx_crc8_maxim(rom, k_onewire_rom_bytes - 1U);
-  if (crc != rom[k_onewire_rom_bytes - 1U]) {
+  const uint8_t crc = rx_crc8_maxim(rom, k_onewire_rom_bytes - k_onewire_crc_offset);
+  if (crc != rom[k_onewire_rom_bytes - k_onewire_crc_offset]) {
     return k_rx_err_crc_mismatch;
   }
 
@@ -1037,8 +1038,8 @@ static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, 
     ctx->rom[i] = byte;
   }
 
-  const uint8_t crc = rx_crc8_maxim(ctx->rom, k_onewire_rom_bytes - 1U);
-  if (crc != ctx->rom[k_onewire_rom_bytes - 1U]) {
+  const uint8_t crc = rx_crc8_maxim(ctx->rom, k_onewire_rom_bytes - k_onewire_crc_offset);
+  if (crc != ctx->rom[k_onewire_rom_bytes - k_onewire_crc_offset]) {
     ctx->result = k_rx_err_crc_mismatch;
     return ctx->result;
   }
