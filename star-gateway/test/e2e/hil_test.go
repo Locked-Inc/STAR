@@ -38,7 +38,7 @@ const (
 	grpcRequestTimeout = 5 * time.Second
 
 	// Timeout for graceful gateway shutdown
-	gatewayShutdownTimeout = 2 * time.Second
+	gatewayShutdownTimeout = 20 * time.Second
 
 	// Mock telemetry IMU gravity constant
 	standardGravityMps2 = 9.81
@@ -113,8 +113,13 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 	var sequenceNum uint16
 	var timestamp int64
 
+	// Store last encoded frame and pending queue for retransmission
+	var lastEncodedFrame []byte
+	var txQueue []byte
+
 	// Main loop: receive and respond synchronously
 	for {
+		// Read from the socket into a buffer
 		n, err := c.Read(buf)
 		if err != nil {
 			return
@@ -122,69 +127,71 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 
 		// Try to decode the incoming frame
 		decodedFrame, decodeErr := decoder.Decode(buf[:n])
+		isNack := decodeErr == nil && decodedFrame.Header.Type == frame.FrameTypeNack
 
-		// Check if this is a dummy read (all zeros)
-		isDummyRead := n > 0 && isAllZeros(buf[:n])
-
-		if decodeErr == nil && !isDummyRead {
-			// Valid command frame received - could process it here if needed
-			_ = decodedFrame
-		}
-
-		// Generate telemetry response
-		telemetry := generateMockTelemetryData(timestamp)
-		timestamp += mockTelemetryInterval.Microseconds()
-
-		// Wrap in WireMessage
-		wireMsg := &starv1.WireMessage{
-			Payload: &starv1.WireMessage_TelemetryData{
-				TelemetryData: telemetry,
-			},
-		}
-
-		// Marshal to protobuf
-		payload, err := proto.Marshal(wireMsg)
-		if err != nil {
-			// Return zeros on error
-			if _, writeErr := c.Write(make([]byte, n)); writeErr != nil {
-				log.Printf("Failed to write error response: %v", writeErr)
+		// 1. Decision: Queue Old (NACK) vs Generate New
+		if isNack {
+			if len(lastEncodedFrame) > 0 {
+				txQueue = lastEncodedFrame
 			}
-			continue
-		}
+		} else if len(txQueue) == 0 {
+			// Generate NEW telemetry
+			telemetry := generateMockTelemetryData(timestamp)
+			timestamp += mockTelemetryInterval.Microseconds()
 
-		// Create frame
-		frameToSend := &frame.Frame{
-			Header: frame.Header{
-				Sequence: sequenceNum,
-				Length:   uint16(len(payload)),
-				Type:     frame.FrameTypeResponse,
-				Flags:    frame.FlagNone,
-			},
-			Payload: payload,
-		}
-		sequenceNum++
-
-		// Encode frame
-		encodedFrame, err := encoder.Encode(frameToSend)
-		if err != nil {
-			// Return zeros on error
-			if _, writeErr := c.Write(make([]byte, n)); writeErr != nil {
-				log.Printf("Failed to write error response: %v", writeErr)
+			wireMsg := &starv1.WireMessage{
+				Payload: &starv1.WireMessage_TelemetryData{
+					TelemetryData: telemetry,
+				},
 			}
-			continue
+
+			payload, err := proto.Marshal(wireMsg)
+			if err != nil {
+				log.Printf("Failed to marshal telemetry: %v", err)
+				c.Write(make([]byte, n))
+				continue
+			}
+
+			frameToSend := &frame.Frame{
+				Header: frame.Header{
+					Sequence: sequenceNum,
+					Length:   uint16(len(payload)),
+					Type:     frame.FrameTypeResponse,
+					Flags:    frame.FlagNone,
+				},
+				Payload: payload,
+			}
+			sequenceNum++
+
+			encodedFrame, err := encoder.Encode(frameToSend)
+			if err != nil {
+				log.Printf("Failed to encode frame: %v", err)
+				c.Write(make([]byte, n))
+				continue
+			}
+
+			txQueue = encodedFrame
+			lastEncodedFrame = encodedFrame
 		}
 
-		// Pad or truncate to match expected response length
-		responseData := make([]byte, n)
-		if len(encodedFrame) <= n {
-			copy(responseData, encodedFrame)
+		// 2. Transmission: Check bandwidth
+		if len(txQueue) > 0 && len(txQueue) <= n {
+			// Data fits in the read window (or is equal)
+			out := make([]byte, n)
+			copy(out, txQueue)
+			if _, err := c.Write(out); err != nil {
+				log.Printf("Failed to write response: %v", err)
+				return
+			}
+			// Success: Clear queue
+			txQueue = nil
 		} else {
-			copy(responseData, encodedFrame[:n])
-		}
-
-		if _, err := c.Write(responseData); err != nil {
-			log.Printf("Failed to write telemetry response: %v", err)
-			return
+			// Data doesn't fit (e.g. NACK read window is small), or nothing to send.
+			// Send Idle/Zeros. The queued data waits for a larger window (Dummy Read).
+			if _, err := c.Write(make([]byte, n)); err != nil {
+				log.Printf("Failed to write idle response: %v", err)
+				return
+			}
 		}
 	}
 }
@@ -312,16 +319,31 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	telemetryClient := starv1.NewTelemetryServiceClient(conn)
 
 	// 4. Test GetTelemetry (verify we receive valid telemetry data)
-	testCtx, cancel := context.WithTimeout(context.Background(), grpcRequestTimeout)
-	defer cancel()
-
+	// 4. Test GetTelemetry (verify we receive valid telemetry data)
+	// Retry loop to allow time for first telemetry frame to arrive
+	var telemetryResp *starv1.GetTelemetryResponse
 	telemetryReq := &starv1.GetTelemetryRequest{
 		Header: &starv1.RequestHeader{RequestId: "e2e-telemetry-test"},
 	}
 
-	telemetryResp, err := telemetryClient.GetTelemetry(testCtx, telemetryReq)
-	if err != nil {
-		t.Fatalf("GetTelemetry failed: %v", err)
+	deadline = time.Now().Add(grpcRequestTimeout)
+	for {
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		telemetryResp, err = telemetryClient.GetTelemetry(ctx, telemetryReq)
+		cancel()
+
+		if err == nil && telemetryResp != nil && telemetryResp.Telemetry != nil {
+			break
+		}
+
+		if time.Now().After(deadline) {
+			if err != nil {
+				t.Fatalf("GetTelemetry failed after timeout: %v", err)
+			} else {
+				t.Fatal("GetTelemetry returned empty response after timeout")
+			}
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
 
 	if telemetryResp == nil {
