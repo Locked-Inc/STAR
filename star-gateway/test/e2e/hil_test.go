@@ -196,16 +196,6 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 	}
 }
 
-// isAllZeros checks if a byte slice contains only zeros.
-func isAllZeros(data []byte) bool {
-	for _, b := range data {
-		if b != 0 {
-			return false
-		}
-	}
-	return true
-}
-
 // generateMockTelemetryData creates dummy telemetry data for testing.
 func generateMockTelemetryData(timestampUs int64) *starv1.TelemetryData {
 	return &starv1.TelemetryData{
@@ -344,10 +334,6 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 			}
 		}
 		time.Sleep(100 * time.Millisecond)
-	}
-
-	if telemetryResp == nil {
-		t.Fatal("Expected non-nil telemetry response")
 	}
 
 	if telemetryResp.Telemetry == nil {
