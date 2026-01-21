@@ -70,17 +70,20 @@ colcon test-result --verbose
 ### Heartbeat Monitoring
 
 The node subscribes to `/diagnostics` and tracks the timestamp of the last received diagnostic message. If no diagnostics are received within `heartbeat_timeout_ms`, the node:
+
 1. Logs a warning
 2. Sets `heartbeat_timeout_triggered` flag
 3. Triggers emergency stop if `enable_auto_estop` is true
 
 Recovery requires:
+
 1. Heartbeat to be restored
 2. Time elapsed >= `estop_recovery_delay`
 
 ### Velocity Limit Enforcement
 
 The node calculates the magnitude of linear and angular velocities from odometry messages:
+
 - Linear velocity: √(vx² + vy² + vz²)
 - Angular velocity: √(ωx² + ωy² + ωz²)
 
@@ -89,6 +92,7 @@ If either exceeds configured limits, the `velocity_exceeded` flag is set and a w
 ### Diagnostic Publishing
 
 The node publishes diagnostic status messages containing:
+
 1. **System Health**: Overall status (OK/WARN/ERROR) with detailed message
 2. **Heartbeat Status**: Last seen timestamp for each tracked node
 3. **Velocity Data**: Current linear/angular velocities and limit status
@@ -97,6 +101,7 @@ The node publishes diagnostic status messages containing:
 ### Lifecycle Management
 
 The node uses ROS2 lifecycle (rclcpp_lifecycle) for proper state management:
+
 - **UNCONFIGURED** → **INACTIVE**: Load parameters, create publishers/subscribers
 - **INACTIVE** → **ACTIVE**: Start monitoring timers
 - **ACTIVE** → **INACTIVE**: Stop timers, deactivate publishers
