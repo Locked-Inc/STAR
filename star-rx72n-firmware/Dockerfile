@@ -55,43 +55,44 @@ RUN apt-get update && \
 WORKDIR /tmp/src
 
 # Download and verify toolchain sources with SHA256 checksums
-RUN /bin/bash -euo pipefail -c '\
+RUN /bin/bash -euo pipefail -c " \
     set -x && \
-    BINUTILS_FILE="binutils-${BINUTILS_VERSION}.tar.xz" && \
-    GCC_FILE="gcc-${GCC_VERSION}.tar.xz" && \
-    NEWLIB_FILE="newlib-${NEWLIB_VERSION}.tar.gz" && \
+    BINUTILS_FILE=\"binutils-${BINUTILS_VERSION}.tar.xz\" && \
+    GCC_FILE=\"gcc-${GCC_VERSION}.tar.xz\" && \
+    NEWLIB_FILE=\"newlib-${NEWLIB_VERSION}.tar.gz\" && \
     \
     # Download all tarballs
-    wget -q "https://ftp.gnu.org/gnu/binutils/${BINUTILS_FILE}" || exit 1 && \
-    wget -q "https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/${GCC_FILE}" || exit 1 && \
-    wget -q "https://sourceware.org/pub/newlib/${NEWLIB_FILE}" || exit 1 && \
+    wget -q \"https://ftp.gnu.org/gnu/binutils/\${BINUTILS_FILE}\" || exit 1 && \
+    wget -q \"https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/\${GCC_FILE}\" || exit 1 && \
+    wget -q \"https://sourceware.org/pub/newlib/\${NEWLIB_FILE}\" || exit 1 && \
     \
     # Create SHA256 manifest
     cat > SHA256SUMS <<EOF
-${BINUTILS_SHA256}  ${BINUTILS_FILE}
-${GCC_SHA256}  ${GCC_FILE}
-${NEWLIB_SHA256}  ${NEWLIB_FILE}
-EOF && \
+${BINUTILS_SHA256}  \${BINUTILS_FILE}
+${GCC_SHA256}  \${GCC_FILE}
+${NEWLIB_SHA256}  \${NEWLIB_FILE}
+EOF
+    && \
     \
     # Verify all checksums
-    echo "Verifying SHA256 checksums..." && \
+    echo \"Verifying SHA256 checksums...\" && \
     if ! sha256sum -c SHA256SUMS; then \
-      echo "ERROR: Checksum verification failed for toolchain sources!" >&2 && \
-      rm -f ${BINUTILS_FILE} ${GCC_FILE} ${NEWLIB_FILE} SHA256SUMS && \
+      echo \"ERROR: Checksum verification failed for toolchain sources!\" >&2 && \
+      rm -f \${BINUTILS_FILE} \${GCC_FILE} \${NEWLIB_FILE} SHA256SUMS && \
       exit 1; \
     fi && \
-    echo "Checksums verified successfully" && \
+    echo \"Checksums verified successfully\" && \
     \
     # Extract only after successful verification
-    tar -xf "${BINUTILS_FILE}" && \
-    tar -xf "${GCC_FILE}" && \
-    tar -xf "${NEWLIB_FILE}" && \
+    tar -xf \"\${BINUTILS_FILE}\" && \
+    tar -xf \"\${GCC_FILE}\" && \
+    tar -xf \"\${NEWLIB_FILE}\" && \
     \
     # Clean up verification manifest and archives (keep extracted sources)
-    rm -f SHA256SUMS ${BINUTILS_FILE} ${GCC_FILE} ${NEWLIB_FILE} && \
+    rm -f SHA256SUMS \${BINUTILS_FILE} \${GCC_FILE} \${NEWLIB_FILE} && \
     \
-    echo "Toolchain sources extracted and verified"
-  '
+    echo \"Toolchain sources extracted and verified\"
+  "
 
 # Build and install binutils
 RUN mkdir -p /tmp/build/binutils && \
