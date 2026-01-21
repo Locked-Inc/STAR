@@ -709,6 +709,8 @@ func TestSPITransport_MockOpen_ConnectFailure(t *testing.T) {
 }
 
 func TestSPITransport_MockMultipleOperations(t *testing.T) {
+	const iterations = 5 // Number of Send/Receive/Transfer cycles
+
 	mockPort := newMockSPIPort()
 	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
 	if err != nil {
@@ -717,7 +719,7 @@ func TestSPITransport_MockMultipleOperations(t *testing.T) {
 	defer transport.Close()
 
 	// Perform multiple different operations
-	for i := range 5 {
+	for i := range iterations {
 		testData := []byte{byte(i), 0xAA}
 
 		// Send

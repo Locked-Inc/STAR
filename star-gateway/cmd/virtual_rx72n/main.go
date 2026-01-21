@@ -49,6 +49,29 @@ const (
 	// MaxFrameSize is the maximum expected frame size (must match frame.MaxFrameSize).
 	MaxFrameSize = frame.MaxFrameSize
 
+	// Telemetry simulation constants
+	imuPitchRad            = 0.01
+	imuRollRad             = -0.02
+	imuYawRad              = 1.57
+	imuAccelXMps2          = 0.1
+	imuAccelYMps2          = 0.0
+	imuAccelZMps2          = 9.81 // gravity
+	imuGyroXRadPerS        = 0.0
+	imuGyroYRadPerS        = 0.0
+	imuGyroZRadPerS        = 0.0
+	wifiSignalDbm          = -45
+	cpuUsagePercent        = 25.5
+	temperatureCelsius     = 35.2
+	motorLoadPercent       = 15.0
+	encoderFrontLeftTicks  = 1000
+	encoderFrontLeftVel    = 0.5
+	encoderFrontRightTicks = 1020
+	encoderFrontRightVel   = 0.51
+	encoderBackLeftTicks   = 990
+	encoderBackLeftVel     = 0.49
+	encoderBackRightTicks  = 1010
+	encoderBackRightVel    = 0.50
+
 	// SignalBufferSize is the buffer size for OS signal channel.
 	SignalBufferSize = 1
 
@@ -267,9 +290,9 @@ func generateTelemetryResponse(encoder frame.Encoder, seqNum *uint16, timestamp 
 		copy(padded, encodedFrame)
 		return padded
 	} else if len(encodedFrame) > responseLen {
-		// Truncate (should not happen in practice)
-		log.Printf("WARNING: Frame too large (%d > %d), truncating", len(encodedFrame), responseLen)
-		return encodedFrame[:responseLen]
+		// Frame too large - log error and return zeros to preserve protocol integrity
+		log.Printf("ERROR: Encoded frame too large (%d > %d), cannot fit in response", len(encodedFrame), responseLen)
+		return make([]byte, responseLen)
 	}
 
 	return encodedFrame
@@ -308,44 +331,44 @@ func processWireMessage(wireMsg *starv1.WireMessage) {
 func generateTelemetryData(timestampUs int64) *starv1.TelemetryData {
 	return &starv1.TelemetryData{
 		Imu: &starv1.ImuData{
-			PitchRad:     0.01,
-			RollRad:      -0.02,
-			YawRad:       1.57,
-			AccelXMps2:   0.1,
-			AccelYMps2:   0.0,
-			AccelZMps2:   9.81,
-			GyroXRadPerS: 0.0,
-			GyroYRadPerS: 0.0,
-			GyroZRadPerS: 0.0,
+			PitchRad:     imuPitchRad,
+			RollRad:      imuRollRad,
+			YawRad:       imuYawRad,
+			AccelXMps2:   imuAccelXMps2,
+			AccelYMps2:   imuAccelYMps2,
+			AccelZMps2:   imuAccelZMps2,
+			GyroXRadPerS: imuGyroXRadPerS,
+			GyroYRadPerS: imuGyroYRadPerS,
+			GyroZRadPerS: imuGyroZRadPerS,
 		},
 		BatteryPercent:     float64(dummyBatterySOC),
-		WifiSignalDbm:      -45,
-		CpuUsagePercent:    25.5,
-		TemperatureCelsius: 35.2,
-		MotorLoadPercent:   15.0,
+		WifiSignalDbm:      wifiSignalDbm,
+		CpuUsagePercent:    cpuUsagePercent,
+		TemperatureCelsius: temperatureCelsius,
+		MotorLoadPercent:   motorLoadPercent,
 		TimestampUs:        timestampUs,
 		EncoderFrontLeft: &starv1.EncoderData{
 			MotorId:     0,
-			Ticks:       1000,
-			VelocityMps: 0.5,
+			Ticks:       encoderFrontLeftTicks,
+			VelocityMps: encoderFrontLeftVel,
 			TimestampUs: timestampUs,
 		},
 		EncoderFrontRight: &starv1.EncoderData{
 			MotorId:     1,
-			Ticks:       1020,
-			VelocityMps: 0.51,
+			Ticks:       encoderFrontRightTicks,
+			VelocityMps: encoderFrontRightVel,
 			TimestampUs: timestampUs,
 		},
 		EncoderBackLeft: &starv1.EncoderData{
 			MotorId:     2,
-			Ticks:       990,
-			VelocityMps: 0.49,
+			Ticks:       encoderBackLeftTicks,
+			VelocityMps: encoderBackLeftVel,
 			TimestampUs: timestampUs,
 		},
 		EncoderBackRight: &starv1.EncoderData{
 			MotorId:     3,
-			Ticks:       1010,
-			VelocityMps: 0.50,
+			Ticks:       encoderBackRightTicks,
+			VelocityMps: encoderBackRightVel,
 			TimestampUs: timestampUs,
 		},
 		EmergencyStop:     false,

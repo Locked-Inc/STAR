@@ -9,6 +9,7 @@ package e2e_test
 
 import (
 	"context"
+	"log"
 	"net"
 	"os"
 	"path/filepath"
@@ -21,6 +22,32 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/proto"
+)
+
+const (
+	// Telemetry interval for mock device response rate
+	mockTelemetryInterval = 10 * time.Millisecond
+
+	// Gateway initialization timeout
+	gatewayStartupTimeout = 2 * time.Second
+
+	// Time to allow telemetry to settle before assertions
+	telemetrySettleTime = 500 * time.Millisecond
+
+	// Timeout for individual gRPC requests
+	grpcRequestTimeout = 5 * time.Second
+
+	// Timeout for graceful gateway shutdown
+	gatewayShutdownTimeout = 2 * time.Second
+
+	// Mock telemetry IMU gravity constant
+	standardGravityMps2 = 9.81
+
+	// Mock telemetry motor IDs
+	motorIDFrontLeft  = 0
+	motorIDFrontRight = 1
+	motorIDBackLeft   = 2
+	motorIDBackRight  = 3
 )
 
 // MockRX72N simulates the RX72N firmware behavior on a socket.
@@ -86,9 +113,6 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 	var sequenceNum uint16
 	var timestamp int64
 
-	// Telemetry generation interval
-	telemetryInterval := 10 * time.Millisecond
-
 	// Main loop: receive and respond synchronously
 	for {
 		n, err := c.Read(buf)
@@ -109,7 +133,7 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 
 		// Generate telemetry response
 		telemetry := generateMockTelemetryData(timestamp)
-		timestamp += telemetryInterval.Microseconds()
+		timestamp += mockTelemetryInterval.Microseconds()
 
 		// Wrap in WireMessage
 		wireMsg := &starv1.WireMessage{
@@ -122,7 +146,9 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 		payload, err := proto.Marshal(wireMsg)
 		if err != nil {
 			// Return zeros on error
-			c.Write(make([]byte, n))
+			if _, writeErr := c.Write(make([]byte, n)); writeErr != nil {
+				log.Printf("Failed to write error response: %v", writeErr)
+			}
 			continue
 		}
 
@@ -142,7 +168,9 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 		encodedFrame, err := encoder.Encode(frameToSend)
 		if err != nil {
 			// Return zeros on error
-			c.Write(make([]byte, n))
+			if _, writeErr := c.Write(make([]byte, n)); writeErr != nil {
+				log.Printf("Failed to write error response: %v", writeErr)
+			}
 			continue
 		}
 
@@ -154,7 +182,10 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			copy(responseData, encodedFrame[:n])
 		}
 
-		c.Write(responseData)
+		if _, err := c.Write(responseData); err != nil {
+			log.Printf("Failed to write telemetry response: %v", err)
+			return
+		}
 	}
 }
 
@@ -177,7 +208,7 @@ func generateMockTelemetryData(timestampUs int64) *starv1.TelemetryData {
 			YawRad:       1.57,
 			AccelXMps2:   0.1,
 			AccelYMps2:   0.0,
-			AccelZMps2:   9.81,
+			AccelZMps2:   standardGravityMps2,
 			GyroXRadPerS: 0.0,
 			GyroYRadPerS: 0.0,
 			GyroZRadPerS: 0.0,
@@ -189,25 +220,25 @@ func generateMockTelemetryData(timestampUs int64) *starv1.TelemetryData {
 		MotorLoadPercent:   15.0,
 		TimestampUs:        timestampUs,
 		EncoderFrontLeft: &starv1.EncoderData{
-			MotorId:     0,
+			MotorId:     motorIDFrontLeft,
 			Ticks:       1000,
 			VelocityMps: 0.5,
 			TimestampUs: timestampUs,
 		},
 		EncoderFrontRight: &starv1.EncoderData{
-			MotorId:     1,
+			MotorId:     motorIDFrontRight,
 			Ticks:       1020,
 			VelocityMps: 0.51,
 			TimestampUs: timestampUs,
 		},
 		EncoderBackLeft: &starv1.EncoderData{
-			MotorId:     2,
+			MotorId:     motorIDBackLeft,
 			Ticks:       990,
 			VelocityMps: 0.49,
 			TimestampUs: timestampUs,
 		},
 		EncoderBackRight: &starv1.EncoderData{
-			MotorId:     3,
+			MotorId:     motorIDBackRight,
 			Ticks:       1010,
 			VelocityMps: 0.50,
 			TimestampUs: timestampUs,
@@ -249,20 +280,34 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 		errChan <- app.Run(ctx, cfg)
 	}()
 
-	// Wait for Gateway to initialize (TODO: implement proper health check polling)
-	time.Sleep(2 * time.Second)
+	// Wait for Gateway to initialize with polling health check
+	deadline := time.Now().Add(gatewayStartupTimeout)
+	var conn *grpc.ClientConn
+	var err error
+	for time.Now().Before(deadline) {
+		// Check if Gateway crashed early
+		select {
+		case crashErr := <-errChan:
+			t.Fatalf("Gateway crashed: %v", crashErr)
+		default:
+		}
 
-	// Check if Gateway crashed early
-	select {
-	case err := <-errChan:
-		t.Fatalf("Gateway crashed: %v", err)
-	default:
+		// Attempt to connect to gRPC endpoint
+		dialCtx, cancel := context.WithTimeout(context.Background(), grpcRequestTimeout)
+		conn, err = grpc.NewClient("[::1]:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		cancel()
+
+		if err == nil {
+			// Connection successful, gateway is ready
+			break
+		}
+
+		// Retry after a short delay
+		time.Sleep(telemetrySettleTime)
 	}
 
-	// 3. Connect gRPC Client (Simulating ROS2 Bridge)
-	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		t.Fatalf("Failed to connect to Gateway gRPC: %v", err)
+	if conn == nil {
+		t.Fatalf("Failed to connect to Gateway within timeout: %v", err)
 	}
 	defer conn.Close()
 
@@ -270,16 +315,14 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	telemetryClient := starv1.NewTelemetryServiceClient(conn)
 
 	// 4. Test GetTelemetry (verify we receive valid telemetry data)
+	testCtx, cancel := context.WithTimeout(context.Background(), grpcRequestTimeout)
+	defer cancel()
+
 	telemetryReq := &starv1.GetTelemetryRequest{
 		Header: &starv1.RequestHeader{RequestId: "e2e-telemetry-test"},
 	}
 
-	// Wait a bit for telemetry to be received by dispatcher
-	time.Sleep(500 * time.Millisecond)
-
-	telemetryCtx, telemetryCancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer telemetryCancel()
-	telemetryResp, err := telemetryClient.GetTelemetry(telemetryCtx, telemetryReq)
+	telemetryResp, err := telemetryClient.GetTelemetry(testCtx, telemetryReq)
 	if err != nil {
 		t.Fatalf("GetTelemetry failed: %v", err)
 	}
