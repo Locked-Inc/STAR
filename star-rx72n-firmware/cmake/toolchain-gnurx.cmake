@@ -24,8 +24,8 @@ set(CMAKE_OBJDUMP      "${GNURX_ROOT}/bin/rx-elf-objdump")
 set(CMAKE_SIZE         "${GNURX_ROOT}/bin/rx-elf-size")
 set(CMAKE_RANLIB       "${GNURX_ROOT}/bin/rx-elf-ranlib")
 
-# Target specifications for RX72N (RXv3 ISA via -misa=v3 and --mcpu=rxv3)
-set(CPU_FLAGS "-misa=v3 -fpu -mlittle-endian-data")
+# Target specifications for RX72N (RXv3 ISA via -mcpu=rxv3)
+set(CPU_FLAGS "-mcpu=rxv3 -fpu -mlittle-endian-data")
 set(ASM_CPU_FLAGS "-Wa,--mcpu=rxv3 -fpu -mlittle-endian-data")
 
 # Compiler flags
