@@ -283,7 +283,6 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	// Wait for Gateway to initialize with polling health check
 	deadline := time.Now().Add(gatewayStartupTimeout)
 	var conn *grpc.ClientConn
-	var err error
 	for time.Now().Before(deadline) {
 		// Check if Gateway crashed early
 		select {
@@ -293,9 +292,7 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 		}
 
 		// Attempt to connect to gRPC endpoint
-		dialCtx, cancel := context.WithTimeout(context.Background(), grpcRequestTimeout)
 		conn, err = grpc.NewClient("[::1]:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
-		cancel()
 
 		if err == nil {
 			// Connection successful, gateway is ready
