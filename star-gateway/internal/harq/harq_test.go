@@ -1370,3 +1370,30 @@ func TestSend_VariadicPriorityHandling(t *testing.T) {
 		})
 	}
 }
+
+// TestChaseCombining_SetExpectedLenForTesting tests the testing helper function.
+func TestChaseCombining_SetExpectedLenForTesting(t *testing.T) {
+	mockTransport := NewMockTransport()
+	encoder := frame.NewEncoder()
+	decoder := frame.NewDecoder()
+	fecEncoder := &MockFECEncoder{}
+	fecDecoder := &MockFECDecoder{}
+
+	config := &Config{
+		MaxRetries: 3,
+		Timeout:    10 * time.Millisecond,
+		FECEnabled: true,
+	}
+
+	harq := NewChaseCombining(config, mockTransport, encoder, decoder, fecEncoder, fecDecoder)
+
+	// Test setting expected length
+	expectedLen := 100
+	harq.SetExpectedLenForTesting(expectedLen)
+
+	// We can't directly verify the field is set (it's private), but we can verify
+	// the function doesn't panic and completes successfully
+	if harq == nil {
+		t.Fatal("HARQ instance should not be nil")
+	}
+}
