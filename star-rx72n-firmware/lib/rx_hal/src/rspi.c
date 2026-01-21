@@ -51,10 +51,10 @@ typedef enum : uint8_t {
 } rspi_module_stop_bits_t;
 
 /** @brief SPI mode limits */
-enum rspi_mode_limits : uint8_t {
+typedef enum : uint8_t {
   k_rspi_mode_min = 0, /**< Minimum valid SPI mode (0) */
   k_rspi_mode_max = 3, /**< Maximum valid SPI mode (0-3) */
-};
+} rspi_mode_limits_t;
 
 /** @brief SPCMD register bit positions and masks */
 typedef enum : uint16_t {
@@ -171,7 +171,7 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
   }
 
   /* Validate mode (0-3) */
-  if (config->spi_mode > k_rspi_mode_max) {
+  if (config->spi_mode < k_rspi_mode_min || config->spi_mode > k_rspi_mode_max) {
     rx_log_error(s_tag, "Invalid SPI mode (must be 0-3)");
     return k_rx_err_invalid_arg;
   }
