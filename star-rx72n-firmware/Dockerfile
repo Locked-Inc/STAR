@@ -67,12 +67,9 @@ RUN /bin/bash -euo pipefail -c " \
     wget -q \"https://sourceware.org/pub/newlib/\${NEWLIB_FILE}\" || exit 1 && \
     \
     # Create SHA256 manifest
-    cat > SHA256SUMS <<EOF
-${BINUTILS_SHA256}  \${BINUTILS_FILE}
-${GCC_SHA256}  \${GCC_FILE}
-${NEWLIB_SHA256}  \${NEWLIB_FILE}
-EOF
-    && \
+    printf '%s  %s\n' '${BINUTILS_SHA256}' '\${BINUTILS_FILE}' > SHA256SUMS && \
+    printf '%s  %s\n' '${GCC_SHA256}' '\${GCC_FILE}' >> SHA256SUMS && \
+    printf '%s  %s\n' '${NEWLIB_SHA256}' '\${NEWLIB_FILE}' >> SHA256SUMS && \
     \
     # Verify all checksums
     echo \"Verifying SHA256 checksums...\" && \
@@ -90,8 +87,7 @@ EOF
     \
     # Clean up verification manifest and archives (keep extracted sources)
     rm -f SHA256SUMS \${BINUTILS_FILE} \${GCC_FILE} \${NEWLIB_FILE} && \
-    \
-    echo \"Toolchain sources extracted and verified\"
+    echo \"Toolchain sources extracted and verified\" \
   "
 
 # Build and install binutils
