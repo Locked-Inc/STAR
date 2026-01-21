@@ -46,12 +46,13 @@ static const char* s_tag = "CMT";
 
 /** @brief CMT channel and divider constants */
 typedef enum : uint8_t {
-  k_cmt_max_channels = 4, /**< CMT0, CMT1, CMT2, CMT3 */
-  k_cmt_div_8        = 0, /**< PCLKB/8 divider setting */
-  k_cmt_div_32       = 1, /**< PCLKB/32 divider setting */
-  k_cmt_div_128      = 2, /**< PCLKB/128 divider setting */
-  k_cmt_div_512      = 3, /**< PCLKB/512 divider setting */
-  k_cmt_num_dividers = 4, /**< Number of available dividers */
+  k_cmt_max_channels    = 4, /**< CMT0, CMT1, CMT2, CMT3 */
+  k_cmt_divider_start   = 0, /**< Starting index for divider iteration loop */
+  k_cmt_div_8           = 0, /**< PCLKB/8 divider setting */
+  k_cmt_div_32          = 1, /**< PCLKB/32 divider setting */
+  k_cmt_div_128         = 2, /**< PCLKB/128 divider setting */
+  k_cmt_div_512         = 3, /**< PCLKB/512 divider setting */
+  k_cmt_num_dividers    = 4, /**< Number of available dividers */
 } cmt_constants_t;
 
 /** @brief CMT divider values (actual divisor values) */
@@ -164,7 +165,7 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
   }
 
   /* Try each divider to find one that fits in 16-bit */
-  for (uint8_t i = 0; i < k_cmt_num_dividers; i++) {
+  for (uint8_t i = k_cmt_divider_start; i < k_cmt_num_dividers; i++) {
     period_calc = (pclkb / dividers[i]) / frequency_hz;
 
     /* Check if period fits in 16-bit and is reasonable */
@@ -230,10 +231,10 @@ static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t
   uint8_t ier_index;
   uint8_t ier_bit;
 
-  if ((int32_t)config.channel >= k_cmt_max_channels) {
+  if (config.channel < k_cmt_channel_0 || config.channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
   }
-  if (config.priority > k_ipr_level_max) {
+  if (config.priority < k_ipr_level_min || config.priority > k_ipr_level_max) {
     return k_rx_err_invalid_arg;
   }
 
@@ -307,7 +308,7 @@ static rx_err_t internal_validate_cmt_init_params(const rx_cmt_channel_t   chann
     return k_rx_err_null_ptr;
   }
 
-  if ((int32_t)channel >= k_cmt_max_channels) {
+  if (channel < k_cmt_channel_0 || channel >= k_cmt_max_channels) {
     rx_log_error(s_tag, "Invalid CMT channel");
     return k_rx_err_invalid_arg;
   }
@@ -318,7 +319,7 @@ static rx_err_t internal_validate_cmt_init_params(const rx_cmt_channel_t   chann
     return k_rx_err_conflict;
   }
 
-  if (config->priority > k_ipr_level_max) {
+  if (config->priority < k_ipr_level_min || config->priority > k_ipr_level_max) {
     rx_log_error(s_tag, "Invalid interrupt priority");
     return k_rx_err_invalid_arg;
   }
