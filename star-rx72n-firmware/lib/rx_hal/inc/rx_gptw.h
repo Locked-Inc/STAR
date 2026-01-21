@@ -37,6 +37,7 @@
 #include <stdint.h>
 
 #include "rx_err.h"
+#include "rx_check.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,7 +85,10 @@ typedef struct {
  */
 static inline rx_gptw_channel_id_t rx_gptw_channel_id(rx_gptw_channel_t value)
 {
+  RX_ASSERT((value >= k_gptw_channel_0) && (value <= k_gptw_channel_3),
+            "GPTW channel out of range");
   rx_gptw_channel_id_t id = {.value = value};
+  RX_ASSERT(id.value == value, "GPTW channel wrapper mismatch");
   return id;
 }
 
@@ -93,7 +97,10 @@ static inline rx_gptw_channel_id_t rx_gptw_channel_id(rx_gptw_channel_t value)
  */
 static inline rx_gptw_output_id_t rx_gptw_output_id(rx_gptw_output_t value)
 {
+  RX_ASSERT((value >= k_gptw_output_a) && (value <= k_gptw_output_b),
+            "GPTW output out of range");
   rx_gptw_output_id_t id = {.value = value};
+  RX_ASSERT(id.value == value, "GPTW output wrapper mismatch");
   return id;
 }
 

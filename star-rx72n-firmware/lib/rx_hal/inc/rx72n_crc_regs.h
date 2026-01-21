@@ -73,7 +73,7 @@ typedef enum : uint8_t {
   k_crc_crccr_gps_crc32 = 0x03,     /**< CRC-32 IEEE 802.3 polynomial */
   k_crc_crccr_lms       = (1 << 6), /**< LSB/MSB First (1=LSB first, reflected) */
   k_crc_crccr_dorclr    = (1 << 7), /**< Data Output Register Clear */
-} crc_crccr_bits_t;
+} rx_crc_crccr_bits_t;
 
 /* =============================================================================
  * Static Assertions - Verify Register Layout at Compile Time

@@ -86,7 +86,8 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Initialize RIIC channel */
-  err = riic_init(bus_config->proto.i2c.channel, bus_config->proto.i2c.frequency_hz);
+  const riic_channel_t riic_channel = { .value = bus_config->proto.i2c.channel };
+  err = riic_init(riic_channel, bus_config->proto.i2c.frequency_hz);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "RIIC HAL initialization failed");
@@ -126,6 +127,13 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
     return k_rx_err_invalid_state;
   }
 
+  /* Pre-condition: Validate data pointer when length > 0 */
+  if (ctx->length > 0 && ctx->data == NULL) {
+    rx_log_error(s_tag, "I2C write data pointer is NULL");
+    ctx->result = k_rx_err_invalid_arg;
+    return k_rx_err_invalid_arg;
+  }
+
   /* Write I2C data */
   const riic_channel_t riic_channel = { .value = bus_config->proto.i2c.channel };
   const i2c_device_addr_t device_addr = { .value = bus_config->proto.i2c.device_addr };
@@ -135,12 +143,6 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
     rx_log_error(s_tag, "I2C write failed");
     ctx->result = err;
     return err;
-  }
-
-  /* Post-condition: Verify data buffer is valid */
-  if (ctx->length > 0 && ctx->data == NULL) {
-    rx_log_warn(s_tag, "I2C write succeeded despite NULL data pointer");
-    /* Continue - operation completed, but unexpected state */
   }
 
   ctx->result = k_rx_ok;
@@ -166,22 +168,22 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
     return k_rx_err_invalid_state;
   }
 
+  /* Pre-condition: Validate data pointer when length > 0 */
+  if (ctx->length > 0 && ctx->data == NULL) {
+    rx_log_error(s_tag, "I2C read data pointer is NULL");
+    ctx->result = k_rx_err_invalid_arg;
+    return k_rx_err_invalid_arg;
+  }
+
   /* Read I2C data */
-  const rx_err_t err = riic_read(bus_config->proto.i2c.channel,
-                                 bus_config->proto.i2c.device_addr,
-                                 ctx->data,
-                                 ctx->length);
+  const riic_channel_t riic_channel = { .value = bus_config->proto.i2c.channel };
+  const i2c_device_addr_t device_addr = { .value = bus_config->proto.i2c.device_addr };
+  const rx_err_t err = riic_read(riic_channel, device_addr, ctx->data, ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C read failed");
     ctx->result = err;
     return err;
-  }
-
-  /* Post-condition: Verify data buffer received data */
-  if (ctx->length > 0 && ctx->data == NULL) {
-    rx_log_warn(s_tag, "I2C read succeeded despite NULL data pointer");
-    /* Continue - operation completed, but unexpected state */
   }
 
   ctx->result = k_rx_ok;
@@ -208,8 +210,10 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
   }
 
   /* I2C write-read operation */
-  const rx_err_t err = riic_write_read(bus_config->proto.i2c.channel,
-                                       bus_config->proto.i2c.device_addr,
+  const riic_channel_t riic_channel = { .value = bus_config->proto.i2c.channel };
+  const i2c_device_addr_t device_addr = { .value = bus_config->proto.i2c.device_addr };
+  const rx_err_t err = riic_write_read(riic_channel,
+                                       device_addr,
                                        ctx->write_data,
                                        ctx->write_length,
                                        ctx->read_data,

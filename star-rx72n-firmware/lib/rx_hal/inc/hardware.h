@@ -160,7 +160,7 @@ typedef uint8_t adc_resolution_t;
  *         k_rx_err_invalid_arg if unit, channel, or bits is invalid,
  *         k_rx_err_gpio_conflict if pin already reserved
  */
-rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits);
+rx_err_t adc_init(uint8_t unit, adc_channel_t channel, adc_resolution_t bits);
 
 /**
  * @brief Read ADC value
@@ -175,7 +175,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits);
  *         k_rx_err_invalid_state if ADC unit not initialized,
  *         k_rx_err_timeout if conversion times out
  */
-rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value);
+rx_err_t adc_read(uint8_t unit, adc_channel_t channel, uint16_t* value);
 
 /**
  * @brief Read ADC value and convert to millivolts
@@ -222,7 +222,7 @@ typedef struct {
  * @return k_rx_ok on success,
  *         k_rx_err_invalid_arg if channel or frequency is invalid
  */
-rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz);
+rx_err_t riic_init(riic_channel_t channel, uint32_t frequency_hz);
 
 /**
  * @brief Write data to I2C device
@@ -258,8 +258,10 @@ riic_write(riic_channel_t       channel,
  *         k_rx_err_timeout if bus timeout,
  *         k_rx_err_nack if device NACK received
  */
-rx_err_t
-riic_read(uint8_t channel, const uint8_t device_addr, uint8_t* data, const uint16_t length);
+rx_err_t riic_read(riic_channel_t    channel,
+                   i2c_device_addr_t device_addr,
+                   uint8_t*          data,
+                   const uint16_t    length);
 
 /**
  * @brief Write then read from I2C device (combined transaction)
@@ -279,12 +281,12 @@ riic_read(uint8_t channel, const uint8_t device_addr, uint8_t* data, const uint1
  *         k_rx_err_timeout if bus timeout,
  *         k_rx_err_nack if device NACK received
  */
-rx_err_t riic_write_read(uint8_t        channel,
-                         uint8_t        device_addr,
-                         const uint8_t* write_data,
-                         uint16_t       write_length,
-                         uint8_t*       read_data,
-                         uint16_t       read_length);
+rx_err_t riic_write_read(riic_channel_t    channel,
+                         i2c_device_addr_t device_addr,
+                         const uint8_t*    write_data,
+                         uint16_t          write_length,
+                         uint8_t*          read_data,
+                         uint16_t          read_length);
 
 /* =============================================================================
  * RSPI (SPI) Functions - Peripheral Mode

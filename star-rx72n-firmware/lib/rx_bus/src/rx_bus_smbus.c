@@ -154,8 +154,8 @@ static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* 
   }
 
   /* Initialize underlying I2C channel */
-  err = riic_init(bus_config->proto.smbus.i2c_config.channel,
-                  bus_config->proto.smbus.i2c_config.frequency_hz);
+  const riic_channel_t riic_channel = { .value = bus_config->proto.smbus.i2c_config.channel };
+  err = riic_init(riic_channel, bus_config->proto.smbus.i2c_config.frequency_hz);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "RIIC initialization failed");
@@ -239,10 +239,9 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
   }
 
   length = bus_config->proto.smbus.use_pec ? k_smbus_byte_buf_size : k_smbus_single_byte;
-  err    = riic_read(bus_config->proto.smbus.i2c_config.channel,
-                  bus_config->proto.smbus.i2c_config.device_addr,
-                  data,
-                  length);
+  const riic_channel_t riic_channel = { .value = bus_config->proto.smbus.i2c_config.channel };
+  const i2c_device_addr_t device_addr = { .value = bus_config->proto.smbus.i2c_config.device_addr };
+  err = riic_read(riic_channel, device_addr, data, length);
 
   if (err != k_rx_ok) {
     ctx->result = err;
@@ -292,8 +291,10 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
 
   write_data  = ctx->command;
   read_length = bus_config->proto.smbus.use_pec ? k_smbus_word_buf_size : k_smbus_word_data_bytes;
-  err         = riic_write_read(bus_config->proto.smbus.i2c_config.channel,
-                        bus_config->proto.smbus.i2c_config.device_addr,
+  const riic_channel_t riic_channel = { .value = bus_config->proto.smbus.i2c_config.channel };
+  const i2c_device_addr_t device_addr = { .value = bus_config->proto.smbus.i2c_config.device_addr };
+  err = riic_write_read(riic_channel,
+                        device_addr,
                         &write_data,
                         k_smbus_single_byte,
                         read_data,

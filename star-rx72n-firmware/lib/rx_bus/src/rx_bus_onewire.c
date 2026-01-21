@@ -39,6 +39,9 @@ typedef enum : uint8_t {
   k_onewire_max_instances         = k_max_buses,
   k_onewire_single_bit_mask       = 0x01U,
   k_onewire_search_last_zero_init = 0U,
+  k_onewire_first_bit_number      = 1U,
+  k_onewire_rom_bit_mask_reset    = 1U,
+  k_onewire_no_discrepancy        = 0U,
   k_onewire_bit_mask_lsb          = 1U,
   k_onewire_crc_offset            = 1U,
 } onewire_driver_constants_t;
@@ -85,7 +88,15 @@ typedef enum : uint32_t {
   k_onewire_timer_counter_max   = 0xFFFF,
   k_onewire_us_per_second       = 1000000UL,
   k_onewire_timer_rounding      = k_onewire_us_per_second - 1UL,
+  k_onewire_bit_set             = 1U,
+  k_onewire_counter_reset       = 0U,
+  k_onewire_zero_microseconds   = 0U,
 } onewire_delay_hw_constants_t;
+
+typedef enum : uint64_t {
+  k_onewire_ticks_zero = 0ULL,
+  k_onewire_min_ticks  = 1ULL,
+} onewire_delay_tick_constants_t;
 
 static bool s_delay_timer_initialized = false;
 
@@ -98,21 +109,25 @@ static void internal_delay_timer_init(void)
     return;
   }
 
+  RX_ASSERT(system_regs() != NULL, "System registers unavailable");
+  RX_ASSERT(cmt_ctrl() != NULL, "CMT control registers unavailable");
+  RX_ASSERT(cmt3() != NULL, "CMT3 registers unavailable");
+
   /* Enable CMT module clock */
   system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
-  system_regs()->mstpcrb &= ~(1UL << k_onewire_mstpb_cmt_bit);
+  system_regs()->mstpcrb &= ~((uint32_t)k_onewire_bit_set << k_onewire_mstpb_cmt_bit);
   system_regs()->prcr = k_rx_prcr_lock;
 
   /* Stop CMT3 before reconfiguration */
-  cmt_ctrl()->cmstr1 &= ~(1U << k_onewire_cmt3_start_bit);
+  cmt_ctrl()->cmstr1 &= ~((uint16_t)k_onewire_bit_set << k_onewire_cmt3_start_bit);
 
   /* Configure free-running counter (no interrupts) */
   cmt3()->cmcr  = (uint16_t)(k_onewire_cmt_divider_setting << k_onewire_cmt_clk_shift);
   cmt3()->cmcor = k_onewire_timer_counter_max;
-  cmt3()->cmcnt = 0;
+  cmt3()->cmcnt = k_onewire_counter_reset;
 
   /* Start timer */
-  cmt_ctrl()->cmstr1 |= (1U << k_onewire_cmt3_start_bit);
+  cmt_ctrl()->cmstr1 |= ((uint16_t)k_onewire_bit_set << k_onewire_cmt3_start_bit);
 
   s_delay_timer_initialized = true;
 }
@@ -122,7 +137,7 @@ static void internal_delay_timer_init(void)
  */
 static void internal_delay_us(uint32_t microseconds)
 {
-  if (microseconds == 0U) {
+  if (microseconds == k_onewire_zero_microseconds) {
     return;
   }
 
@@ -131,11 +146,11 @@ static void internal_delay_us(uint32_t microseconds)
   const uint32_t timer_hz = k_pclkb_hz / k_onewire_cmt_divider_value;
   uint64_t       ticks = ((uint64_t)microseconds * (uint64_t)timer_hz + k_onewire_timer_rounding) /
                    k_onewire_us_per_second;
-  if (ticks == 0ULL) {
-    ticks = 1ULL;
+  if (ticks == k_onewire_ticks_zero) {
+    ticks = k_onewire_min_ticks;
   }
 
-  while (ticks > 0ULL) {
+  while (ticks > k_onewire_ticks_zero) {
     uint32_t wait_ticks =
       (ticks > k_onewire_timer_counter_max) ? k_onewire_timer_counter_max : (uint32_t)ticks;
     uint16_t start = cmt3()->cmcnt;
@@ -204,14 +219,16 @@ static rx_err_t internal_set_drive_mode(const rx_bus_config_t*   bus_config,
                                         onewire_runtime_state_t* state,
                                         const bool               output)
 {
+  rx_err_t err = k_rx_ok;
+
   if (output && !state->line_is_output) {
-    const rx_err_t err = gpio_set_output(bus_config->proto.onewire.pin);
+    err = gpio_set_output(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
       return err;
     }
     state->line_is_output = true;
   } else if (!output && state->line_is_output) {
-    const rx_err_t err = gpio_set_input(bus_config->proto.onewire.pin);
+    err = gpio_set_input(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
       return err;
     }
@@ -373,9 +390,12 @@ internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, b
 static rx_err_t
 internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, const uint8_t byte)
 {
+  bool     bit = false;
+  rx_err_t err = k_rx_ok;
+
   for (uint8_t i = 0; i < k_bits_per_byte; ++i) {
-    const bool     bit = ((byte >> i) & k_onewire_single_bit_mask) != 0U;
-    const rx_err_t err = internal_write_bit(bus_config, state, bit);
+    bit = ((byte >> i) & k_onewire_single_bit_mask) != 0U;
+    err = internal_write_bit(bus_config, state, bit);
     if (err != k_rx_ok) {
       return err;
     }
@@ -391,16 +411,18 @@ static rx_err_t
 internal_read_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, uint8_t* byte)
 {
   uint8_t value = 0;
+  bool    bit   = false;
+  rx_err_t err  = k_rx_ok;
 
   for (uint8_t i = 0; i < k_bits_per_byte; ++i) {
-    bool           bit = false;
-    const rx_err_t err = internal_read_bit(bus_config, state, &bit);
+    bit = false;
+    err = internal_read_bit(bus_config, state, &bit);
     if (err != k_rx_ok) {
       return err;
     }
 
     if (bit) {
-      value |= (uint8_t)(1U << i);
+      value |= (uint8_t)(k_onewire_bit_mask_lsb << i);
     }
   }
 
@@ -432,7 +454,7 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
   }
 
   if (!presence) {
-    state->last_discrepancy = 0;
+    state->last_discrepancy = k_onewire_no_discrepancy;
     state->last_device_flag = true;
     return k_rx_ok;
   }
@@ -449,7 +471,7 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
   uint8_t       rom_bit_mask   = k_onewire_bit_mask_lsb;
   const uint8_t total_bits     = k_onewire_rom_bytes * k_bits_per_byte;
 
-  for (uint8_t bit_number = 1; bit_number <= total_bits; ++bit_number) {
+  for (uint8_t bit_number = k_onewire_first_bit_number; bit_number <= total_bits; ++bit_number) {
     bool bit = false;
     bool comp_bit;
 
@@ -495,15 +517,15 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
       return err;
     }
 
-    rom_bit_mask <<= 1;
-    if (rom_bit_mask == 0U) {
+    rom_bit_mask <<= k_onewire_bit_mask_lsb;
+    if (rom_bit_mask == k_onewire_no_discrepancy) {
       rom_byte_index++;
-      rom_bit_mask = 1;
+      rom_bit_mask = k_onewire_rom_bit_mask_reset;
     }
   }
 
   state->last_discrepancy = last_zero;
-  if (state->last_discrepancy == 0) {
+  if (state->last_discrepancy == k_onewire_no_discrepancy) {
     state->last_device_flag = true;
   }
 

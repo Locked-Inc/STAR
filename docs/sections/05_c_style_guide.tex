@@ -1245,6 +1245,7 @@ Enums can be forward-declared for header dependency reduction.
 
 \begin{lstlisting}[language=C]
 /* Forward declaration (C23 or later with explicit underlying type) */
+enum star_bus_type : int;
 typedef enum star_bus_type star_bus_type_t;
 
 /* Or use typedef in header, full definition in source */

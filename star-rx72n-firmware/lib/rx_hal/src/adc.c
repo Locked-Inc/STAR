@@ -210,7 +210,7 @@ static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t chann
  * =============================================================================
  */
 
-rx_err_t adc_init(const uint8_t unit, uint8_t channel, const uint8_t bits)
+rx_err_t adc_init(const uint8_t unit, const adc_channel_t channel, const adc_resolution_t bits)
 {
   volatile rx_s12ad_regs_t* adc = NULL;
   rx_err_t                  err;
@@ -252,7 +252,7 @@ rx_err_t adc_init(const uint8_t unit, uint8_t channel, const uint8_t bits)
   return k_rx_ok;
 }
 
-rx_err_t adc_read(const uint8_t unit, uint8_t channel, uint16_t* value)
+rx_err_t adc_read(const uint8_t unit, const adc_channel_t channel, uint16_t* value)
 {
   volatile rx_s12ad_regs_t* adc;
   rx_err_t                  err;

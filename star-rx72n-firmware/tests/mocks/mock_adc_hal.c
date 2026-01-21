@@ -183,7 +183,7 @@ void mock_adc_clear_history(void)
  * =============================================================================
  */
 
-rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
+rx_err_t adc_init(uint8_t unit, adc_channel_t channel, adc_resolution_t bits)
 {
   internal_record_call(k_mock_adc_call_init, unit, channel, bits);
 
@@ -220,7 +220,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   return k_rx_ok;
 }
 
-rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
+rx_err_t adc_read(uint8_t unit, adc_channel_t channel, uint16_t* value)
 {
   internal_record_call(k_mock_adc_call_read, unit, channel, k_mock_adc_bits_unused);
 

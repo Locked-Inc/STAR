@@ -96,9 +96,14 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
 {
   error_handler_t* handler = (error_handler_t*)ctx;
   UINT             status;
+  error_component_state_t* comp;
 
-  if (handler == NULL || component == NULL || message == NULL) {
-    return k_rx_err_null_ptr;
+  RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is NULL");
+  RX_CHECK_NULL_PTR(component, "ERROR_HANDLER", "Component pointer is NULL");
+  RX_CHECK_NULL_PTR(message, "ERROR_HANDLER", "Message pointer is NULL");
+  if (!handler->initialized) {
+    rx_log_error("ERROR_HANDLER", "Handler not initialized");
+    return k_rx_err_invalid_state;
   }
 
   /* Acquire mutex */
@@ -111,7 +116,7 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
   handler->total_error_count++;
 
   /* Find or create component */
-  error_component_state_t* comp = internal_find_or_create_component(handler, component);
+  comp = internal_find_or_create_component(handler, component);
   if (comp != NULL) {
     comp->error_count++;
     comp->retry_count++;
@@ -133,18 +138,23 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
 static uint32_t impl_get_error_count(void* ctx)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
+  UINT             status;
+  uint32_t         count;
 
   if (handler == NULL) {
     return 0;
   }
+  if (!handler->initialized) {
+    return 0;
+  }
 
   /* Acquire mutex */
-  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return 0;
   }
 
-  const uint32_t count = handler->total_error_count;
+  count = handler->total_error_count;
 
   /* Release mutex */
   (void)tx_mutex_put(&handler->mutex);
@@ -158,19 +168,25 @@ static uint32_t impl_get_error_count(void* ctx)
 static uint32_t impl_get_component_error_count(void* ctx, const char* component)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
+  UINT             status;
+  uint32_t         count;
+  const error_component_state_t* comp;
 
   if (handler == NULL || component == NULL) {
     return 0;
   }
+  if (!handler->initialized) {
+    return 0;
+  }
 
   /* Acquire mutex */
-  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return 0;
   }
 
-  uint32_t                       count = 0;
-  const error_component_state_t* comp  = internal_find_component(handler, component);
+  count = 0;
+  comp  = internal_find_component(handler, component);
   if (comp != NULL) {
     count = comp->error_count;
   }
@@ -187,13 +203,16 @@ static uint32_t impl_get_component_error_count(void* ctx, const char* component)
 static rx_err_t impl_clear_errors(void* ctx)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
+  UINT             status;
 
-  if (handler == NULL) {
-    return k_rx_err_null_ptr;
+  RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is NULL");
+  if (!handler->initialized) {
+    rx_log_error("ERROR_HANDLER", "Handler not initialized");
+    return k_rx_err_invalid_state;
   }
 
   /* Acquire mutex */
-  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -219,9 +238,15 @@ static rx_err_t impl_clear_errors(void* ctx)
 static bool impl_is_retry_limit_reached(void* ctx, const char* component)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
+  UINT             status;
+  bool             limit_reached;
+  const error_component_state_t* comp;
 
   if (handler == NULL || component == NULL) {
     return true; /* Fail-safe: consider limit reached if invalid params */
+  }
+  if (!handler->initialized) {
+    return true;
   }
 
   /* If max_retries is 0, no limit */
@@ -230,13 +255,13 @@ static bool impl_is_retry_limit_reached(void* ctx, const char* component)
   }
 
   /* Acquire mutex */
-  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return true; /* Fail-safe */
   }
 
-  bool                           limit_reached = false;
-  const error_component_state_t* comp          = internal_find_component(handler, component);
+  limit_reached = false;
+  comp          = internal_find_component(handler, component);
   if (comp != NULL) {
     limit_reached = (comp->retry_count >= handler->max_retries);
   }
@@ -253,18 +278,23 @@ static bool impl_is_retry_limit_reached(void* ctx, const char* component)
 static rx_err_t impl_reset_retry_counter(void* ctx, const char* component)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
+  UINT             status;
+  error_component_state_t* comp;
 
-  if (handler == NULL || component == NULL) {
-    return k_rx_err_null_ptr;
+  RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is NULL");
+  RX_CHECK_NULL_PTR(component, "ERROR_HANDLER", "Component pointer is NULL");
+  if (!handler->initialized) {
+    rx_log_error("ERROR_HANDLER", "Handler not initialized");
+    return k_rx_err_invalid_state;
   }
 
   /* Acquire mutex */
-  const UINT status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
+  status = tx_mutex_get(&handler->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
-  error_component_state_t* comp = internal_find_component(handler, component);
+  comp = internal_find_component(handler, component);
   if (comp != NULL) {
     comp->retry_count = 0;
   }
@@ -288,6 +318,9 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
   uint32_t                       retries;
 
   if (handler == NULL || component == NULL) {
+    return 0;
+  }
+  if (!handler->initialized) {
     return 0;
   }
 
@@ -333,8 +366,18 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
 
 rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config_t* config)
 {
+  UINT status;
+
   RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is NULL");
   RX_CHECK_NULL_PTR(config, "ERROR_HANDLER", "Config pointer is NULL");
+  if (config->max_backoff_ms < config->initial_backoff_ms) {
+    rx_log_error("ERROR_HANDLER", "Backoff range invalid");
+    return k_rx_err_invalid_arg;
+  }
+  if (config->initial_backoff_ms > 0 && config->max_backoff_ms == 0) {
+    rx_log_error("ERROR_HANDLER", "Max backoff is zero");
+    return k_rx_err_invalid_arg;
+  }
 
   /* Clear all state */
   memset(handler, 0, sizeof(error_handler_t));
@@ -345,7 +388,7 @@ rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config
   handler->max_backoff_ms     = config->max_backoff_ms;
 
   /* Create mutex */
-  const UINT status = tx_mutex_create(&handler->mutex, "ErrorHandlerMutex", TX_NO_INHERIT);
+  status = tx_mutex_create(&handler->mutex, "ErrorHandlerMutex", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     rx_log_error("ERROR_HANDLER", "Failed to create mutex");
     return k_rx_err_rtos_mutex;
