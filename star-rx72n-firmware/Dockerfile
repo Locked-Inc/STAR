@@ -18,38 +18,27 @@ ARG BINUTILS_SHA256=e2caa33c1a53708eb9bdf1d4c5a0fd9b3e0d47f3aa3a17e94fe2fad19f9d
 ARG GCC_SHA256=dba20a7cf0d98bf4f39a1da1d3e8c12ff48d5b2b3003f36c7308fbab8b55f2c89
 ARG NEWLIB_SHA256=cbe1e34d80c3dbafc3e7e2e93fd371fa7fed5135d1a0d4d5a9e3dff4f80c0d58
 
-# Pinned Debian package versions from ubuntu:22.04 for reproducible builds
-# These versions must match the runtime libraries installed in the final stage
-ARG GCC_PKG_VERSION=11.4.0-1ubuntu1~22.04
-ARG LIBGMP_DEV_VERSION=2:6.2.1+dfsg-3ubuntu1
-ARG LIBMPFR_DEV_VERSION=4.1.0-3build3
-ARG LIBMPC_DEV_VERSION=1.2.1-2build1
-ARG LIBISL_DEV_VERSION=0.24-2build1
-ARG LIBZSTD_DEV_VERSION=1.4.8+dfsg-3build1
-ARG BISON_VERSION=2:3.8.2+dfsg-1
-ARG FLEX_VERSION=2.6.4-8.2
-ARG TEXINFO_VERSION=6.8-4build1
-ARG PYTHON3_VERSION=3.10.12-1~22.04
-
+# Build dependencies (compatible with both x86_64 and arm64)
+# Use loose version constraints to ensure availability on all architectures
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    gcc=${GCC_PKG_VERSION} \
-    g++=${GCC_PKG_VERSION} \
-    bison=${BISON_VERSION} \
-    flex=${FLEX_VERSION} \
-    texinfo=${TEXINFO_VERSION} \
+    gcc \
+    g++ \
+    bison \
+    flex \
+    texinfo \
     wget \
     curl \
     ca-certificates \
     xz-utils \
-    python3=${PYTHON3_VERSION} \
-    libgmp-dev=${LIBGMP_DEV_VERSION} \
-    libmpfr-dev=${LIBMPFR_DEV_VERSION} \
-    libmpc-dev=${LIBMPC_DEV_VERSION} \
-    libisl-dev=${LIBISL_DEV_VERSION} \
-    libzstd-dev=${LIBZSTD_DEV_VERSION} \
+    python3 \
+    libgmp-dev \
+    libmpfr-dev \
+    libmpc-dev \
+    libisl-dev \
+    libzstd-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /tmp/src
@@ -171,29 +160,19 @@ RUN mkdir -p /tmp/build/gcc-final && \
 
 FROM ubuntu:22.04
 
-# Pinned runtime library and tool versions from ubuntu:22.04 for reproducible builds
-# Library versions must match the -dev package versions in the builder stage
-# Tool versions ensure consistent build environment across all builds
-ARG LIBISL23_VERSION=0.24-2build1
-ARG LIBGMP10_VERSION=2:6.2.1+dfsg-3ubuntu1
-ARG LIBMPFR6_VERSION=4.1.0-3build3
-ARG LIBMPC3_VERSION=1.2.1-2build1
-ARG LIBZSTD1_VERSION=1.4.8+dfsg-3build1
-ARG MAKE_VERSION=4.3-4.1
-ARG GIT_VERSION=1:2.34.1-1ubuntu1
-
-# Install runtime dependencies (cached in image)
+# Install runtime dependencies (compatible with both x86_64 and arm64)
+# Use loose version constraints to ensure availability on all architectures
 RUN apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
-    make=${MAKE_VERSION} \
-    git=${GIT_VERSION} \
-    libisl23=${LIBISL23_VERSION} \
-    libgmp10=${LIBGMP10_VERSION} \
-    libmpfr6=${LIBMPFR6_VERSION} \
-    libmpc3=${LIBMPC3_VERSION} \
-    libzstd1=${LIBZSTD1_VERSION} \
+    make \
+    git \
+    libisl23 \
+    libgmp10 \
+    libmpfr6 \
+    libmpc3 \
+    libzstd1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install modern CMake (>= 3.20)
