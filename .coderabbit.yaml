@@ -48,10 +48,11 @@ reviews:
     - path: "star-rx72n-firmware/**/*.{c,h}"
       instructions: |
         Review C firmware code with STRICT compliance checking:
-        - Language standard: C23 (enum underlying type syntax like `typedef enum : uint8_t` is valid)
+        - Language standard: C23 ONLY (ignore any C11/C89-related warnings or comments)
+        - Enum underlying type syntax like `typedef enum : uint8_t` is valid and REQUIRED
         - C99-style for-loop declarations are allowed; do not require C89 loop style
         - ALL enums must specify a C23 underlying type (e.g., `typedef enum : uint8_t { ... } name_t;`)
-        - ALL functions must include Doxygen comments
+        - ALL functions/methods must include Doxygen comments
 
         NASA Power of 10 Rules (CRITICAL - REJECT violations):
         - Rule 1: No goto, setjmp/longjmp, or recursion
@@ -99,10 +100,11 @@ reviews:
     - path: "lib/**/*.{c,h}"
       instructions: |
         Review C firmware code with STRICT compliance checking:
-        - Language standard: C23 (enum underlying type syntax like `typedef enum : uint8_t` is valid)
+        - Language standard: C23 ONLY (ignore any C11/C89-related warnings or comments)
+        - Enum underlying type syntax like `typedef enum : uint8_t` is valid and REQUIRED
         - C99-style for-loop declarations are allowed; do not require C89 loop style
         - ALL enums must specify a C23 underlying type (e.g., `typedef enum : uint8_t { ... } name_t;`)
-        - ALL functions must include Doxygen comments
+        - ALL functions/methods must include Doxygen comments
 
         NASA Power of 10 Rules (CRITICAL - REJECT violations):
         - Rule 1: No goto, setjmp/longjmp, or recursion

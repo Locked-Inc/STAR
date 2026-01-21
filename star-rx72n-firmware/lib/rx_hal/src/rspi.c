@@ -181,6 +181,9 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
   if (rspi == NULL) {
     return k_rx_err_invalid_arg;
   }
+  if (rspi == NULL) {
+    return k_rx_err_invalid_arg;
+  }
 
   /* Enable RSPI module (clear module stop bit) */
   system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;

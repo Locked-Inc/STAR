@@ -58,7 +58,7 @@ typedef enum : uint32_t {
   k_mtu_mstpcra_mtu6_7_bit = 8, /**< MSTPCRA bit for MTU6-MTU7 */
 
   /* PRCR (Protect Register) values */
-  k_prcr_unlock_mtu = 0x0B, /**< Unlock PRC0, PRC1, PRC3 for MTU config */
+  k_prcr_unlock_mtu = 15, /**< Unlock PRC0, PRC1, PRC3 for MTU config (0xA50F) */
 
   /* Timer control defaults */
   k_tcr_external_clock_no_prescaler = 0x00, /**< External clock, no prescaler */
@@ -469,6 +469,10 @@ static rx_err_t internal_configure_encoder_timer(volatile rx_mtu_channel_regs_t*
  */
 static rx_err_t internal_verify_timer_counting(const volatile rx_mtu_channel_regs_t* mtu)
 {
+  if (mtu == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
   /* Note: This verification is optional and may not work if encoder is stationary.
    * In production, consider removing this check or only enabling in debug builds.
    * For now, we'll skip this check as it requires encoder movement.

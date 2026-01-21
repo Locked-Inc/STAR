@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include "rx_crc.h"
+#include "rx_check.h"
 
 /* =============================================================================
  * Byte Serialization Constants
@@ -59,16 +60,18 @@ typedef enum : uint8_t {
  * @param[out] buf Output buffer (at least 4 bytes)
  * @param[in]  val Value to write
  */
-static void internal_write_le32(uint8_t* buf, const uint32_t val)
+static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const uint32_t val)
 {
-  if (buf == NULL) {
-    return;
+  RX_CHECK_NULL_PTR(buf, "FRAME", "LE32 write buffer is NULL");
+  if (buf_len < k_frame_crc_size) {
+    return k_rx_err_invalid_size;
   }
 
   buf[k_le32_byte_0] = (uint8_t)(val & k_rx_byte_mask);
   buf[k_le32_byte_1] = (uint8_t)((val >> k_shift_byte_1) & k_rx_byte_mask);
   buf[k_le32_byte_2] = (uint8_t)((val >> k_shift_byte_2) & k_rx_byte_mask);
   buf[k_le32_byte_3] = (uint8_t)((val >> k_shift_byte_3) & k_rx_byte_mask);
+  return k_rx_ok;
 }
 
 /**
@@ -77,15 +80,20 @@ static void internal_write_le32(uint8_t* buf, const uint32_t val)
  * @param[in] buf Input buffer (at least 4 bytes)
  * @return Decoded value
  */
-static uint32_t internal_read_le32(const uint8_t* buf)
+static rx_err_t
+internal_read_le32(const uint8_t* buf, const uint32_t buf_len, uint32_t* out_val)
 {
-  if (buf == NULL) {
-    return 0;
+  RX_CHECK_NULL_PTR(buf, "FRAME", "LE32 read buffer is NULL");
+  RX_CHECK_NULL_PTR(out_val, "FRAME", "LE32 output pointer is NULL");
+  if (buf_len < k_frame_crc_size) {
+    return k_rx_err_invalid_size;
   }
 
-  return (uint32_t)buf[k_le32_byte_0] | ((uint32_t)buf[k_le32_byte_1] << k_shift_byte_1) |
-         ((uint32_t)buf[k_le32_byte_2] << k_shift_byte_2) |
-         ((uint32_t)buf[k_le32_byte_3] << k_shift_byte_3);
+  *out_val = (uint32_t)buf[k_le32_byte_0] |
+             ((uint32_t)buf[k_le32_byte_1] << k_shift_byte_1) |
+             ((uint32_t)buf[k_le32_byte_2] << k_shift_byte_2) |
+             ((uint32_t)buf[k_le32_byte_3] << k_shift_byte_3);
+  return k_rx_ok;
 }
 
 static rx_err_t internal_decode_header(const uint8_t* data,
@@ -146,6 +154,7 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
 {
   uint32_t received_crc   = 0;
   uint32_t calculated_crc = 0;
+  rx_err_t err;
 
   if (data == NULL || crc_out == NULL) {
     return k_rx_err_invalid_arg;
@@ -155,7 +164,10 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
     return k_rx_err_invalid_size;
   }
 
-  received_crc   = internal_read_le32(&data[offset]);
+  err = internal_read_le32(&data[offset], data_len - offset, &received_crc);
+  if (err != k_rx_ok) {
+    return err;
+  }
   calculated_crc = rx_crc32_ieee(data, offset);
 
   if (received_crc != calculated_crc) {
@@ -205,6 +217,7 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
 {
   uint32_t frame_size;
   uint32_t offset;
+  rx_err_t err;
 
   if (enc == NULL || frame == NULL || output == NULL || output_len == NULL) {
     return k_rx_err_invalid_arg;
@@ -253,7 +266,10 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
   const uint32_t crc = rx_crc32_ieee(output, offset);
 
   /* Write CRC-32 (little-endian to match IEEE 802.3 LSB-first order) */
-  internal_write_le32(&output[offset], crc);
+  err = internal_write_le32(&output[offset], frame_size - offset, crc);
+  if (err != k_rx_ok) {
+    return err;
+  }
   offset += k_frame_crc_size;
 
   *output_len = frame_size;

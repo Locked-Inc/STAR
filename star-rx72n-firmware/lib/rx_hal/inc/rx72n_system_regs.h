@@ -151,23 +151,23 @@ static inline volatile uint8_t* rstsr2(void)
 
 /* RSTSR0 bit definitions (page 286) */
 typedef enum : uint8_t {
-  k_rstsr0_porf    = (1 << 0), /**< Power-On Reset Detect Flag */
-  k_rstsr0_lvd0rf  = (1 << 1), /**< Voltage-Monitoring 0 Reset Detect Flag */
-  k_rstsr0_lvd1rf  = (1 << 2), /**< Voltage-Monitoring 1 Reset Detect Flag */
-  k_rstsr0_lvd2rf  = (1 << 3), /**< Voltage-Monitoring 2 Reset Detect Flag */
-  k_rstsr0_dpsrstf = (1 << 7), /**< Deep Software Standby Reset Flag */
+  k_rstsr0_porf    = 1U,   /**< Power-On Reset Detect Flag */
+  k_rstsr0_lvd0rf  = 2U,   /**< Voltage-Monitoring 0 Reset Detect Flag */
+  k_rstsr0_lvd1rf  = 4U,   /**< Voltage-Monitoring 1 Reset Detect Flag */
+  k_rstsr0_lvd2rf  = 8U,   /**< Voltage-Monitoring 2 Reset Detect Flag */
+  k_rstsr0_dpsrstf = 128U, /**< Deep Software Standby Reset Flag */
 } rstsr0_bits_t;
 
 /* RSTSR1 bit definitions (page 288) */
 typedef enum : uint8_t {
-  k_rstsr1_cwsf = (1 << 0), /**< Cold/Warm Start Determination Flag */
+  k_rstsr1_cwsf = 1U, /**< Cold/Warm Start Determination Flag */
 } rstsr1_bits_t;
 
 /* RSTSR2 bit definitions (page 289) */
 typedef enum : uint8_t {
-  k_rstsr2_iwdtrf = (1 << 0), /**< Independent Watchdog Timer Reset Detect Flag */
-  k_rstsr2_wdtrf  = (1 << 1), /**< Watchdog Timer Reset Detect Flag */
-  k_rstsr2_swrf   = (1 << 2), /**< Software Reset Detect Flag */
+  k_rstsr2_iwdtrf = 1U, /**< Independent Watchdog Timer Reset Detect Flag */
+  k_rstsr2_wdtrf  = 2U, /**< Watchdog Timer Reset Detect Flag */
+  k_rstsr2_swrf   = 4U, /**< Software Reset Detect Flag */
 } rstsr2_bits_t;
 
 #ifdef __cplusplus
