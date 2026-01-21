@@ -42,6 +42,7 @@ typedef enum : uint8_t {
   k_onewire_first_bit_number      = 1U,
   k_onewire_rom_bit_mask_reset    = 1U,
   k_onewire_no_discrepancy        = 0U,
+  k_onewire_max_buf_bytes         = 256U,
   k_onewire_bit_mask_lsb          = 1U,
   k_onewire_crc_offset            = 1U,
 } onewire_driver_constants_t;
@@ -431,6 +432,120 @@ internal_read_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, 
 }
 
 /**
+ * @brief Process one ROM search bit position.
+ *
+ * @param[in] bus_config Bus configuration node
+ * @param[in] state Runtime OneWire state
+ * @param[in,out] rom ROM buffer under construction
+ * @param[in] bit_number Current bit index (1..64)
+ * @param[in,out] rom_byte_index Current ROM byte index
+ * @param[in,out] rom_bit_mask Current ROM bit mask
+ * @param[in,out] last_zero Last discrepancy bit index
+ *
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t internal_search_step(rx_bus_config_t*         bus_config,
+                                     onewire_runtime_state_t* state,
+                                     uint8_t                  rom[k_onewire_rom_bytes],
+                                     const uint8_t            bit_number,
+                                     uint8_t*                 rom_byte_index,
+                                     uint8_t*                 rom_bit_mask,
+                                     uint8_t*                 last_zero)
+{
+  bool     bit = false;
+  bool     comp_bit = false;
+  bool     search_direction;
+  rx_err_t err;
+
+  RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is NULL");
+  RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
+  err = internal_read_bit(bus_config, state, &bit);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  err = internal_read_bit(bus_config, state, &comp_bit);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  if (bit && comp_bit) {
+    return k_rx_err_hw_error;
+  }
+
+  if (!bit && !comp_bit) {
+    if (bit_number == state->last_discrepancy) {
+      search_direction = true;
+    } else if (bit_number > state->last_discrepancy) {
+      search_direction = false;
+    } else {
+      search_direction = ((state->last_rom[*rom_byte_index] & *rom_bit_mask) != 0U);
+    }
+    if (!search_direction) {
+      *last_zero = bit_number;
+    }
+  } else {
+    search_direction = bit;
+  }
+
+  if (search_direction) {
+    rom[*rom_byte_index] |= *rom_bit_mask;
+  } else {
+    rom[*rom_byte_index] &= (uint8_t)~(*rom_bit_mask);
+  }
+
+  err = internal_write_bit(bus_config, state, search_direction);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  *rom_bit_mask <<= k_onewire_bit_mask_lsb;
+  if (*rom_bit_mask == k_onewire_no_discrepancy) {
+    (*rom_byte_index)++;
+    *rom_bit_mask = k_onewire_rom_bit_mask_reset;
+  }
+  return k_rx_ok;
+}
+
+/**
+ * @brief Execute the ROM search bit loop.
+ *
+ * @param[in] bus_config Bus configuration node
+ * @param[in] state Runtime OneWire state
+ * @param[out] rom ROM buffer under construction
+ * @param[out] last_zero Last discrepancy bit index
+ *
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t internal_search_bits(rx_bus_config_t*         bus_config,
+                                     onewire_runtime_state_t* state,
+                                     uint8_t                  rom[k_onewire_rom_bytes],
+                                     uint8_t*                 last_zero)
+{
+  uint8_t total_bits     = k_onewire_rom_bytes * k_bits_per_byte;
+  uint8_t rom_byte_index = 0;
+  uint8_t rom_bit_mask   = k_onewire_bit_mask_lsb;
+
+  RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is NULL");
+  RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
+  RX_CHECK_NULL_PTR(rom, s_tag, "rom pointer is NULL");
+  RX_CHECK_NULL_PTR(last_zero, s_tag, "last_zero pointer is NULL");
+
+  for (uint8_t bit_number = k_onewire_first_bit_number; bit_number <= total_bits; ++bit_number) {
+    rx_err_t err = internal_search_step(bus_config,
+                                        state,
+                                        rom,
+                                        bit_number,
+                                        &rom_byte_index,
+                                        &rom_bit_mask,
+                                        last_zero);
+    if (err != k_rx_ok) {
+      return err;
+    }
+  }
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Perform a single pass of the ROM search algorithm.
  *
  * @param[out] rom Newly discovered ROM (if any)
@@ -441,6 +556,13 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
                                           uint8_t                  rom[k_onewire_rom_bytes],
                                           bool*                    device_found)
 {
+  uint8_t last_zero = k_onewire_search_last_zero_init;
+
+  RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is NULL");
+  RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
+  RX_CHECK_NULL_PTR(rom, s_tag, "rom pointer is NULL");
+  RX_CHECK_NULL_PTR(device_found, s_tag, "device_found pointer is NULL");
+
   *device_found = false;
 
   if (state->last_device_flag) {
@@ -466,62 +588,9 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
 
   memset(rom, 0, k_onewire_rom_bytes);
 
-  uint8_t       last_zero      = k_onewire_search_last_zero_init;
-  uint8_t       rom_byte_index = 0;
-  uint8_t       rom_bit_mask   = k_onewire_bit_mask_lsb;
-  const uint8_t total_bits     = k_onewire_rom_bytes * k_bits_per_byte;
-
-  for (uint8_t bit_number = k_onewire_first_bit_number; bit_number <= total_bits; ++bit_number) {
-    bool bit = false;
-    bool comp_bit;
-
-    err = internal_read_bit(bus_config, state, &bit);
-    if (err != k_rx_ok) {
-      return err;
-    }
-
-    err = internal_read_bit(bus_config, state, &comp_bit);
-    if (err != k_rx_ok) {
-      return err;
-    }
-
-    if (bit && comp_bit) {
-      return k_rx_err_hw_error; /* No devices responded */
-    }
-
-    bool search_direction;
-    if (!bit && !comp_bit) {
-      if (bit_number == state->last_discrepancy) {
-        search_direction = true;
-      } else if (bit_number > state->last_discrepancy) {
-        search_direction = false;
-      } else {
-        search_direction = ((state->last_rom[rom_byte_index] & rom_bit_mask) != 0U);
-      }
-
-      if (!search_direction) {
-        last_zero = bit_number;
-      }
-    } else {
-      search_direction = bit;
-    }
-
-    if (search_direction) {
-      rom[rom_byte_index] |= rom_bit_mask;
-    } else {
-      rom[rom_byte_index] &= (uint8_t)~rom_bit_mask;
-    }
-
-    err = internal_write_bit(bus_config, state, search_direction);
-    if (err != k_rx_ok) {
-      return err;
-    }
-
-    rom_bit_mask <<= k_onewire_bit_mask_lsb;
-    if (rom_bit_mask == k_onewire_no_discrepancy) {
-      rom_byte_index++;
-      rom_bit_mask = k_onewire_rom_bit_mask_reset;
-    }
+  err = internal_search_bits(bus_config, state, rom, &last_zero);
+  if (err != k_rx_ok) {
+    return err;
   }
 
   state->last_discrepancy = last_zero;
@@ -851,6 +920,10 @@ static rx_err_t internal_onewire_write_buffer_callback(rx_bus_config_t* bus_conf
     ctx->result = k_rx_ok;
     return k_rx_ok;
   }
+  if (ctx->length > k_onewire_max_buf_bytes) {
+    ctx->result = k_rx_err_invalid_size;
+    return ctx->result;
+  }
 
   if (bus_config->type != k_bus_type_onewire || !bus_config->initialized) {
     rx_log_error(s_tag, "Bus invalid or not initialized");
@@ -870,7 +943,7 @@ static rx_err_t internal_onewire_write_buffer_callback(rx_bus_config_t* bus_conf
     return ctx->result;
   }
 
-  for (uint32_t i = 0; i < ctx->length; ++i) {
+  for (uint32_t i = 0; (i < k_onewire_max_buf_bytes) && (i < ctx->length); ++i) {
     const rx_err_t err = internal_write_byte(bus_config, state, ctx->data[i]);
     if (err != k_rx_ok) {
       ctx->result = err;
@@ -889,6 +962,10 @@ static rx_err_t internal_onewire_read_buffer_callback(rx_bus_config_t* bus_confi
   if (ctx->length == 0U) {
     ctx->result = k_rx_ok;
     return k_rx_ok;
+  }
+  if (ctx->length > k_onewire_max_buf_bytes) {
+    ctx->result = k_rx_err_invalid_size;
+    return ctx->result;
   }
 
   if (bus_config->type != k_bus_type_onewire || !bus_config->initialized) {
@@ -909,7 +986,7 @@ static rx_err_t internal_onewire_read_buffer_callback(rx_bus_config_t* bus_confi
     return ctx->result;
   }
 
-  for (uint32_t i = 0; i < ctx->length; ++i) {
+  for (uint32_t i = 0; (i < k_onewire_max_buf_bytes) && (i < ctx->length); ++i) {
     uint8_t        byte = 0;
     const rx_err_t err  = internal_read_byte(bus_config, state, &byte);
     if (err != k_rx_ok) {
