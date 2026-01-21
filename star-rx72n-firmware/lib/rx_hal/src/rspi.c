@@ -402,19 +402,19 @@ rx_err_t rspi_peripheral_read_available(const uint8_t channel, bool* available)
 }
 
 /**
- * @brief Check if the RSPI transmit buffer is ready for writing
+ * @brief Check if transmit buffer is ready for data
  *
  * Polls the RSPI status register to determine if the transmit buffer is empty
  * and ready to accept new data. Returns the status without blocking.
  *
- * @param[in] channel RSPI channel number (0, 1, or 2)
- * @param[out] ready Pointer to bool flag set to true if transmit buffer is empty, false otherwise
+ * @param[in] channel RSPI channel number (0-2)
+ * @param[out] ready Set to true if ready to transmit, false otherwise
  *
- * @return k_rx_ok on success
+ * @return k_rx_ok on success, error code otherwise
  * @return k_rx_err_invalid_arg if channel is invalid or base address retrieval fails
  * @return k_rx_err_invalid_state if channel is not initialized
  *
- * @pre Channel must be initialized via rspi_init_peripheral() before calling this function
+ * @pre Channel must be initialized via rspi_init_peripheral()
  * @pre ready must be a valid non-NULL pointer
  */
 rx_err_t rspi_peripheral_write_ready(const uint8_t channel, bool* ready)
