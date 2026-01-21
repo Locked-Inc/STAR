@@ -14,12 +14,11 @@ ARG MAKE_JOBS=1
 #   gcc:      https://ftp.gnu.org/gnu/gcc/gcc-VERSION/
 #   newlib:   https://sourceware.org/pub/newlib/
 # Verify: sha256sum binutils-VERSION.tar.xz, etc.
-ARG BINUTILS_SHA256=e2caa33c1a53708eb9bdf1d4c5a0fd9b3e0d47f3aa3a17e94fe2fad19f9dc6a0
-ARG GCC_SHA256=dba20a7cf0d98bf4f39a1da1d3e8c12ff48d5b2b3003f36c7308fbab8b55f2c89
-ARG NEWLIB_SHA256=cbe1e34d80c3dbafc3e7e2e93fd371fa7fed5135d1a0d4d5a9e3dff4f80c0d58
+ARG BINUTILS_SHA256=ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450
+ARG GCC_SHA256=e275e76442a6067341a27f04c5c6b83d8613144004c0413528863dc6b5c743da
+ARG NEWLIB_SHA256=83a62a99af59e38eb9b0c58ed092ee24d700fff43a22c03e433955113ef35150
 
 # Build dependencies (compatible with both x86_64 and arm64)
-# Use loose version constraints to ensure availability on all architectures
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
@@ -44,40 +43,24 @@ RUN apt-get update && \
 WORKDIR /tmp/src
 
 # Download and verify toolchain sources with SHA256 checksums
-RUN /bin/bash -euo pipefail -c " \
-    set -x && \
-    BINUTILS_FILE=\"binutils-${BINUTILS_VERSION}.tar.xz\" && \
-    GCC_FILE=\"gcc-${GCC_VERSION}.tar.xz\" && \
-    NEWLIB_FILE=\"newlib-${NEWLIB_VERSION}.tar.gz\" && \
+RUN set -e && \
+    BINUTILS_FILE="binutils-${BINUTILS_VERSION}.tar.xz" && \
+    GCC_FILE="gcc-${GCC_VERSION}.tar.xz" && \
+    NEWLIB_FILE="newlib-${NEWLIB_VERSION}.tar.gz" && \
     \
-    # Download all tarballs
-    wget -q \"https://ftp.gnu.org/gnu/binutils/\${BINUTILS_FILE}\" || exit 1 && \
-    wget -q \"https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/\${GCC_FILE}\" || exit 1 && \
-    wget -q \"https://sourceware.org/pub/newlib/\${NEWLIB_FILE}\" || exit 1 && \
+    wget -q "https://ftp.gnu.org/gnu/binutils/${BINUTILS_FILE}" && \
+    wget -q "https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/${GCC_FILE}" && \
+    wget -q "https://sourceware.org/pub/newlib/${NEWLIB_FILE}" && \
     \
-    # Create SHA256 manifest
-    printf '%s  %s\n' '${BINUTILS_SHA256}' '\${BINUTILS_FILE}' > SHA256SUMS && \
-    printf '%s  %s\n' '${GCC_SHA256}' '\${GCC_FILE}' >> SHA256SUMS && \
-    printf '%s  %s\n' '${NEWLIB_SHA256}' '\${NEWLIB_FILE}' >> SHA256SUMS && \
+    echo "${BINUTILS_SHA256}  ${BINUTILS_FILE}" | sha256sum -c - && \
+    echo "${GCC_SHA256}  ${GCC_FILE}" | sha256sum -c - && \
+    echo "${NEWLIB_SHA256}  ${NEWLIB_FILE}" | sha256sum -c - && \
     \
-    # Verify all checksums
-    echo \"Verifying SHA256 checksums...\" && \
-    if ! sha256sum -c SHA256SUMS; then \
-      echo \"ERROR: Checksum verification failed for toolchain sources!\" >&2 && \
-      rm -f \${BINUTILS_FILE} \${GCC_FILE} \${NEWLIB_FILE} SHA256SUMS && \
-      exit 1; \
-    fi && \
-    echo \"Checksums verified successfully\" && \
+    tar -xf "${BINUTILS_FILE}" && \
+    tar -xf "${GCC_FILE}" && \
+    tar -xf "${NEWLIB_FILE}" && \
     \
-    # Extract only after successful verification
-    tar -xf \"\${BINUTILS_FILE}\" && \
-    tar -xf \"\${GCC_FILE}\" && \
-    tar -xf \"\${NEWLIB_FILE}\" && \
-    \
-    # Clean up verification manifest and archives (keep extracted sources)
-    rm -f SHA256SUMS \${BINUTILS_FILE} \${GCC_FILE} \${NEWLIB_FILE} && \
-    echo \"Toolchain sources extracted and verified\" \
-  "
+    rm "${BINUTILS_FILE}" "${GCC_FILE}" "${NEWLIB_FILE}"
 
 # Build and install binutils
 RUN mkdir -p /tmp/build/binutils && \
@@ -161,7 +144,6 @@ RUN mkdir -p /tmp/build/gcc-final && \
 FROM ubuntu:22.04
 
 # Install runtime dependencies (compatible with both x86_64 and arm64)
-# Use loose version constraints to ensure availability on all architectures
 RUN apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
