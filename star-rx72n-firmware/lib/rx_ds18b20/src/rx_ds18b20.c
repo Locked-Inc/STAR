@@ -13,6 +13,7 @@
 
 #include "rx_ds18b20.h"
 
+#include <math.h>
 #include <string.h>
 
 #include "rx_bus_onewire.h"
@@ -703,8 +704,8 @@ static uint16_t internal_ds18b20_get_temp_mask(const ds18b20_resolution_t resolu
 static float internal_ds18b20_raw_to_celsius(const int16_t raw_temp)
 {
   if (raw_temp < k_ds18b20_temp_min_raw || raw_temp > k_ds18b20_temp_max_raw) {
-    rx_log_error(s_tag, "Raw temperature out of range");
-    return 0.0f;
+    rx_log_error(s_tag, "Raw temperature out of range - returning NaN sentinel");
+    return NAN;
   }
 
   /* Convert from 1/16°C to °C */

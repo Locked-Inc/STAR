@@ -96,6 +96,24 @@ internal_read_le32(const uint8_t* buf, const uint32_t buf_len, uint32_t* out_val
   return k_rx_ok;
 }
 
+/**
+ * @brief Decode frame header from raw data buffer
+ *
+ * Extracts and validates frame header fields (sync word, sequence, length, type, flags)
+ * from the beginning of a raw data buffer. Verifies the sync word matches expected value
+ * and validates payload length is within bounds. Outputs the offset where payload data
+ * begins for subsequent processing.
+ *
+ * @param[in]  data       Input data buffer containing encoded frame
+ * @param[in]  data_len   Length of input buffer in bytes
+ * @param[out] frame      Frame structure to populate with decoded header fields
+ * @param[out] offset_out Offset in buffer where payload begins (after header and sync)
+ *
+ * @return k_rx_ok on successful header decode
+ * @retval k_rx_err_invalid_arg if data, frame, or offset_out is NULL
+ * @retval k_rx_err_invalid_size if data_len is too small or decoded payload length is out of bounds
+ * @retval k_rx_err_protocol_error if sync word does not match expected value (k_frame_sync_word)
+ */
 static rx_err_t internal_decode_header(const uint8_t* data,
                                        const uint32_t data_len,
                                        rx_frame_t*    frame,
@@ -150,6 +168,24 @@ static rx_err_t internal_decode_header(const uint8_t* data,
   return k_rx_ok;
 }
 
+/**
+ * @brief Verify CRC-32 checksum at specified offset in data buffer
+ *
+ * Reads the CRC-32 value stored at the specified offset in the buffer, calculates
+ * the expected CRC over the data preceding it, and compares for match. Uses IEEE 802.3
+ * CRC-32 polynomial (0x04C11DB7), compatible with Go's crc32.ChecksumIEEE(). On success,
+ * outputs the received CRC value for caller inspection.
+ *
+ * @param[in]  data    Input data buffer containing payload followed by CRC
+ * @param[in]  data_len Total length of input buffer in bytes
+ * @param[in]  offset  Byte offset in buffer where CRC value is stored
+ * @param[out] crc_out Pointer to store received CRC value from buffer
+ *
+ * @return k_rx_ok on successful CRC verification (received matches calculated)
+ * @retval k_rx_err_invalid_arg if data or crc_out is NULL
+ * @retval k_rx_err_invalid_size if offset + CRC size exceeds buffer length or data_len too small
+ * @retval k_rx_err_crc_mismatch if calculated CRC does not match received CRC value
+ */
 static rx_err_t
 internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uint32_t* crc_out)
 {

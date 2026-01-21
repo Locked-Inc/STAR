@@ -395,7 +395,7 @@ rx_err_t riic_write(const riic_channel_t    channel,
                     const uint16_t          length)
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
-  RX_ASSERT(channel.value < k_riic_max_channels, "RIIC channel out of range");
+  RX_CHECK_RANGE_TAG(channel.value, 0, k_riic_max_channels - 1, k_rx_err_invalid_arg, s_tag);
 
   if (device_addr.value > k_riic_addr_max_7bit) {
     rx_log_error(s_tag, "Invalid device address");
@@ -458,7 +458,7 @@ rx_err_t riic_read(const riic_channel_t    channel,
                    const uint16_t          length)
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
-  RX_ASSERT(channel.value < k_riic_max_channels, "RIIC channel out of range");
+  RX_CHECK_RANGE_TAG(channel.value, 0, k_riic_max_channels - 1, k_rx_err_invalid_arg, s_tag);
 
   if (device_addr.value > k_riic_addr_max_7bit) {
     rx_log_error(s_tag, "Invalid device address");
@@ -527,7 +527,7 @@ rx_err_t riic_write_read(const riic_channel_t    channel,
 
   RX_CHECK_NULL_PTR(write_data, s_tag, "Write data pointer is NULL");
   RX_CHECK_NULL_PTR(read_data, s_tag, "Read data pointer is NULL");
-  RX_ASSERT(channel.value < k_riic_max_channels, "RIIC channel out of range");
+  RX_CHECK_RANGE_TAG(channel.value, 0, k_riic_max_channels - 1, k_rx_err_invalid_arg, s_tag);
 
   if (device_addr.value > k_riic_addr_max_7bit) {
     rx_log_error(s_tag, "Invalid device address");

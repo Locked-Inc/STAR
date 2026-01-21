@@ -287,6 +287,60 @@ void cmt3_isr(void)
 }
 
 /* =============================================================================
+ * Additional Internal Helpers for rx_cmt_init
+ * =============================================================================
+ */
+
+/**
+ * @brief Validate CMT channel and config parameters
+ *
+ * @param[in] channel CMT channel
+ * @param[in] config CMT configuration
+ *
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t internal_validate_cmt_init_params(const rx_cmt_channel_t   channel,
+                                                  const rx_cmt_config_t* config)
+{
+  if (config == NULL) {
+    rx_log_error(s_tag, "config pointer is NULL");
+    return k_rx_err_null_ptr;
+  }
+
+  if ((int32_t)channel >= k_cmt_max_channels) {
+    rx_log_error(s_tag, "Invalid CMT channel");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* CMT0 is reserved for ThreadX system tick */
+  if (channel == k_cmt_channel_0) {
+    rx_log_error(s_tag, "CMT0 is reserved for ThreadX");
+    return k_rx_err_conflict;
+  }
+
+  if (config->priority > k_ipr_level_max) {
+    rx_log_error(s_tag, "Invalid interrupt priority");
+    return k_rx_err_invalid_arg;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Save callback and mark channel as initialized
+ *
+ * @param[in] channel CMT channel
+ * @param[in] config CMT configuration
+ */
+static void internal_save_cmt_callback(const rx_cmt_channel_t  channel,
+                                       const rx_cmt_config_t* config)
+{
+  s_cmt_callback[channel]    = config->callback;
+  s_cmt_user_data[channel]   = config->user_data;
+  s_cmt_initialized[channel] = true;
+}
+
+/* =============================================================================
  * Public API Implementation
  * =============================================================================
  */
@@ -298,22 +352,10 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
   uint16_t                        cmcor;
   rx_err_t                        err;
 
-  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
-
-  if ((int32_t)channel >= k_cmt_max_channels) {
-    rx_log_error(s_tag, "Error occurred");
-    return k_rx_err_invalid_arg;
-  }
-
-  /* CMT0 is reserved for ThreadX system tick */
-  if (channel == k_cmt_channel_0) {
-    rx_log_error(s_tag, "CMT0 is reserved for ThreadX");
-    return k_rx_err_conflict;
-  }
-
-  if (config->priority > k_ipr_level_max) {
-    rx_log_error(s_tag, "Error occurred");
-    return k_rx_err_invalid_arg;
+  /* Validate parameters */
+  err = internal_validate_cmt_init_params(channel, config);
+  if (err != k_rx_ok) {
+    return err;
   }
 
   cmt = internal_get_cmt_base(channel);
@@ -336,18 +378,18 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
     return err;
   }
 
+  /* Configure timer registers */
   internal_configure_cmt_timer_registers(cmt, divider, cmcor);
 
   /* Configure interrupt */
-  err = internal_configure_cmt_interrupt((rx_cmt_interrupt_config_t){.channel = channel, .priority = config->priority});
+  err = internal_configure_cmt_interrupt(
+    (rx_cmt_interrupt_config_t){.channel = channel, .priority = config->priority});
   if (err != k_rx_ok) {
     return err;
   }
 
-  /* Save callback */
-  s_cmt_callback[channel]    = config->callback;
-  s_cmt_user_data[channel]   = config->user_data;
-  s_cmt_initialized[channel] = true;
+  /* Save callback and mark initialized */
+  internal_save_cmt_callback(channel, config);
 
   /* Start timer */
   err = rx_cmt_start(channel);
