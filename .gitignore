@@ -145,3 +145,4 @@ conductor/
 
 # Other tools
 core
+.cache/

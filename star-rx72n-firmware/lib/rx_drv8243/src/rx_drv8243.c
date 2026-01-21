@@ -47,13 +47,19 @@ typedef enum : int16_t {
 } drv8243_speed_constants_t;
 
 typedef enum : uint16_t {
+  k_drv8243_min_current_limit_ma = 0,     /**< 0mA min current limit (0 = no limit) */
   k_drv8243_max_current_limit_ma = 10000, /**< 10A max current limit */
 } drv8243_current_constants_t;
 
-static const bool    s_pwm_not_inverted = false; /**< PWM output not inverted */
-static const bool    s_motor_coast      = false; /**< Motor coast (no brake) */
-static const uint8_t s_gpio_level_low   = 0;     /**< GPIO logic level low */
-static const uint8_t s_bit_mask_single  = 1;     /**< Single bit mask */
+/**
+ * @brief DRV8243 configuration and control constants
+ */
+typedef enum : uint8_t {
+  k_pwm_not_inverted = 0,      /**< PWM output not inverted (false) */
+  k_motor_coast      = 0,      /**< Motor coast mode (no brake, false) */
+  k_gpio_level_low   = 0,      /**< GPIO logic level low */
+  k_bit_mask_single  = 1,      /**< Single bit mask */
+} drv8243_config_constants_t;
 
 /**
  * @brief Speed reduction factor when current limit is exceeded
@@ -121,7 +127,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
     .output_b     = config->output_en,
     .pwm_freq_hz  = config->pwm_freq_hz,
     .dead_time_ns = config->dead_time_ns,
-    .invert_pwm   = s_pwm_not_inverted,
+    .invert_pwm   = (bool)k_pwm_not_inverted,
   };
 
   err = rx_motor_init(&handle->motor, &motor_config);
@@ -164,7 +170,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
   }
 
   /* Stop motor (best effort - log but continue if error) */
-  err = rx_drv8243_stop(handle, s_motor_coast);
+  err = rx_drv8243_stop(handle, (bool)k_motor_coast);
   RX_ERROR_CHECK_WITHOUT_ABORT(err);
 
   /* Deinitialize motor controller (best effort - log but continue if error) */
@@ -303,15 +309,15 @@ rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* ou
     return k_rx_err_invalid_arg;
   }
 
-  if (handle->pin_nfault > k_rx_pin_max) {
-    rx_log_error(s_tag, "Invalid pin number for nFAULT pin");
+  if (handle->pin_nfault < k_rx_pin_min || handle->pin_nfault > k_rx_pin_max) {
+    rx_log_error(s_tag, "Invalid pin number for nFAULT pin (valid range 0-7)");
     return k_rx_err_invalid_arg;
   }
 
-  const uint8_t level = (port->pidr >> handle->pin_nfault) & s_bit_mask_single;
+  const uint8_t level = (port->pidr >> handle->pin_nfault) & (uint8_t)k_bit_mask_single;
 
   /* Fault is active when pin is LOW */
-  *out_fault = (level == s_gpio_level_low);
+  *out_fault = (level == (uint8_t)k_gpio_level_low);
 
   if (*out_fault) {
     rx_log_warn(s_tag, "DRV8243 fault detected on nFAULT pin");
@@ -344,8 +350,8 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, const uint16_
     return k_rx_err_invalid_state;
   }
 
-  if (limit_ma > k_drv8243_max_current_limit_ma) {
-    rx_log_error(s_tag, "Current limit exceeds maximum");
+  if (limit_ma < k_drv8243_min_current_limit_ma || limit_ma > k_drv8243_max_current_limit_ma) {
+    rx_log_error(s_tag, "Current limit out of valid range (0-10000mA)");
     return k_rx_err_invalid_arg;
   }
 
@@ -412,16 +418,16 @@ static rx_err_t internal_drv8243_configure_fault_pin(const rx_drv8243_handle_t* 
     return k_rx_err_invalid_arg;
   }
 
-  if (handle->pin_nfault > k_rx_pin_max) {
-    rx_log_error(s_tag, "Invalid pin number for nFAULT pin configuration");
+  if (handle->pin_nfault < k_rx_pin_min || handle->pin_nfault > k_rx_pin_max) {
+    rx_log_error(s_tag, "Invalid pin number for nFAULT pin configuration (valid range 0-7)");
     return k_rx_err_invalid_arg;
   }
 
   /* Configure as input */
-  port->pdr &= ~((uint32_t)s_bit_mask_single << handle->pin_nfault);
+  port->pdr &= ~((uint32_t)k_bit_mask_single << handle->pin_nfault);
 
   /* Enable pull-up (active low fault signal) */
-  port->pcr |= ((uint32_t)s_bit_mask_single << handle->pin_nfault);
+  port->pcr |= ((uint32_t)k_bit_mask_single << handle->pin_nfault);
 
   return k_rx_ok;
 }

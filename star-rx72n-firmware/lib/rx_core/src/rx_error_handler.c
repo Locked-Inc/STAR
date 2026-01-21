@@ -21,6 +21,7 @@
 typedef enum : uint32_t {
   k_exponential_backoff_multiplier = 2,  /**< Exponential backoff multiplier */
   k_error_handler_no_retry_limit   = 0,  /**< No retry limit when max_retries is zero */
+  k_error_handler_first_retry      = 1,  /**< First retry iteration index (loop start) */
   k_error_handler_max_retries      = 32, /**< Max retries cap for backoff loop */
 } error_handler_backoff_constants_t;
 
@@ -340,7 +341,12 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
                   ? k_error_handler_max_retries
                   : handler->max_retries;
     retries   = (comp->retry_count > retry_cap) ? retry_cap : comp->retry_count;
-    for (uint32_t i = 1; i < retries; i++) {
+    /* Statically bounded loop: iterate from first retry to max retries cap (NASA Rule 2) */
+    for (uint32_t i = k_error_handler_first_retry; i < k_error_handler_max_retries; ++i) {
+      /* Explicit bounds check: break if reached actual retry limit */
+      if (i >= retries) {
+        break;
+      }
       if (delay_ms > handler->max_backoff_ms / k_exponential_backoff_multiplier) {
         delay_ms = handler->max_backoff_ms;
         break;

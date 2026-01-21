@@ -36,11 +36,19 @@ extern "C" {
  * - Tick period = 10 ms
  * - CMT0 configured for 100 Hz interrupt
  *
- * Example usage:
+ * Example usage (with literal milliseconds per second):
  * @code
  * // Convert 500ms to ThreadX ticks
- * uint32_t ticks = (500 * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+ * uint32_t ticks = (500 * s_rx_threadx_tick_rate_hz) / 1000;
  * tx_thread_sleep(ticks);  // Sleep for 500ms
+ * @endcode
+ *
+ * @note In real code, use the symbolic constant @c k_rx_ms_per_second (defined
+ * in @c rx_time_constants.h) instead of the literal @c 1000 for improved
+ * maintainability and clarity. Example:
+ * @code
+ * #include "rx_time_constants.h"
+ * uint32_t ticks = (500 * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
  * @endcode
  */
 static const uint16_t s_rx_threadx_tick_rate_hz =

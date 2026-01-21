@@ -294,9 +294,19 @@ typedef struct {
  * @brief Bus manager configuration constants
  */
 #ifdef __cplusplus
-inline constexpr uint16_t k_bus_manager_mutex_timeout_ms = 1000U; /**< Default mutex timeout (ms) */
+/**
+ * @brief Default mutex timeout for bus operations (C++ enum)
+ */
+enum : uint16_t {
+  k_bus_manager_mutex_timeout_ms = 1000U, /**< Default mutex timeout in milliseconds */
+};
 #else
-static const uint16_t k_bus_manager_mutex_timeout_ms = 1000U; /**< Default mutex timeout (ms) */
+/**
+ * @brief Default mutex timeout for bus operations (C enum)
+ */
+enum {
+  k_bus_manager_mutex_timeout_ms = 1000U, /**< Default mutex timeout in milliseconds */
+};
 #endif
 
 #ifdef __cplusplus

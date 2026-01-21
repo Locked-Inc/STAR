@@ -82,25 +82,57 @@ typedef struct {
 
 /**
  * @brief Helper to construct a GPTW channel wrapper
+ *
+ * @details Provides type-safe wrapper construction with NASA Power of 10 Rule 5
+ * validation (minimum 2 checks per function):
+ * - Pre-condition: Input value is within valid channel range [0-3]
+ * - Post-condition: Wrapper correctly stores the input value
+ *
+ * @param[in] value GPTW channel enum value (k_gptw_channel_0 to k_gptw_channel_3)
+ *
+ * @return Wrapped channel ID for type-safe function calls
+ *
+ * @note Asserts on invalid input - use only with known-valid enum values
  */
 static inline rx_gptw_channel_id_t rx_gptw_channel_id(rx_gptw_channel_t value)
 {
+  /* Pre-condition: channel must be in valid range */
   RX_ASSERT((value >= k_gptw_channel_0) && (value <= k_gptw_channel_3),
             "GPTW channel out of range");
+
   rx_gptw_channel_id_t id = {.value = value};
+
+  /* Post-condition: wrapper must store value correctly */
   RX_ASSERT(id.value == value, "GPTW channel wrapper mismatch");
+
   return id;
 }
 
 /**
  * @brief Helper to construct a GPTW output wrapper
+ *
+ * @details Provides type-safe wrapper construction with NASA Power of 10 Rule 5
+ * validation (minimum 2 checks per function):
+ * - Pre-condition: Input value is within valid output range [A-B]
+ * - Post-condition: Wrapper correctly stores the input value
+ *
+ * @param[in] value GPTW output enum value (k_gptw_output_a or k_gptw_output_b)
+ *
+ * @return Wrapped output ID for type-safe function calls
+ *
+ * @note Asserts on invalid input - use only with known-valid enum values
  */
 static inline rx_gptw_output_id_t rx_gptw_output_id(rx_gptw_output_t value)
 {
+  /* Pre-condition: output must be in valid range */
   RX_ASSERT((value >= k_gptw_output_a) && (value <= k_gptw_output_b),
             "GPTW output out of range");
+
   rx_gptw_output_id_t id = {.value = value};
+
+  /* Post-condition: wrapper must store value correctly */
   RX_ASSERT(id.value == value, "GPTW output wrapper mismatch");
+
   return id;
 }
 

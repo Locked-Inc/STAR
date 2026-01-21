@@ -209,26 +209,34 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
     return k_rx_err_invalid_state;
   }
 
+  /* Pre-condition: Validate write data pointer when write_length > 0 */
+  if (ctx->write_length > 0 && ctx->write_data == NULL) {
+    rx_log_error(s_tag, "I2C write-read write_data pointer is NULL");
+    ctx->result = k_rx_err_invalid_arg;
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition: Validate read data pointer when read_length > 0 */
+  if (ctx->read_length > 0 && ctx->read_data == NULL) {
+    rx_log_error(s_tag, "I2C write-read read_data pointer is NULL");
+    ctx->result = k_rx_err_invalid_arg;
+    return k_rx_err_invalid_arg;
+  }
+
   /* I2C write-read operation */
-  const riic_channel_t riic_channel = { .value = bus_config->proto.i2c.channel };
-  const i2c_device_addr_t device_addr = { .value = bus_config->proto.i2c.device_addr };
-  const rx_err_t err = riic_write_read(riic_channel,
-                                       device_addr,
-                                       ctx->write_data,
-                                       ctx->write_length,
-                                       ctx->read_data,
-                                       ctx->read_length);
+  const riic_channel_t    riic_channel = {.value = bus_config->proto.i2c.channel};
+  const i2c_device_addr_t device_addr  = {.value = bus_config->proto.i2c.device_addr};
+  const rx_err_t          err          = riic_write_read(riic_channel,
+                                                device_addr,
+                                                ctx->write_data,
+                                                ctx->write_length,
+                                                ctx->read_data,
+                                                ctx->read_length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C write-read failed");
     ctx->result = err;
     return err;
-  }
-
-  /* Post-condition: Verify read buffer received data */
-  if (ctx->read_length > 0 && ctx->read_data == NULL) {
-    rx_log_warn(s_tag, "I2C write-read succeeded despite NULL read buffer");
-    /* Continue - operation completed, but unexpected state */
   }
 
   ctx->result = k_rx_ok;

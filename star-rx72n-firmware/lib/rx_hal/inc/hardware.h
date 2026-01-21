@@ -140,12 +140,23 @@ rx_err_t timer_get_count(uint16_t* count);
  */
 
 /**
+ * @brief ADC unit wrapper type (prevents accidental argument swaps)
+ *
+ * Valid values: 0 (S12AD0) or 1 (S12AD1)
+ */
+typedef uint8_t adc_unit_t;
+
+/**
  * @brief ADC channel wrapper type (prevents accidental argument swaps)
+ *
+ * Valid values: 0-7 (channels per ADC unit)
  */
 typedef uint8_t adc_channel_t;
 
 /**
  * @brief ADC resolution wrapper type (prevents accidental argument swaps)
+ *
+ * Valid values: 8, 10, or 12 (bits)
  */
 typedef uint8_t adc_resolution_t;
 
@@ -160,7 +171,7 @@ typedef uint8_t adc_resolution_t;
  *         k_rx_err_invalid_arg if unit, channel, or bits is invalid,
  *         k_rx_err_gpio_conflict if pin already reserved
  */
-rx_err_t adc_init(uint8_t unit, adc_channel_t channel, adc_resolution_t bits);
+rx_err_t adc_init(adc_unit_t unit, adc_channel_t channel, adc_resolution_t bits);
 
 /**
  * @brief Read ADC value
@@ -175,7 +186,7 @@ rx_err_t adc_init(uint8_t unit, adc_channel_t channel, adc_resolution_t bits);
  *         k_rx_err_invalid_state if ADC unit not initialized,
  *         k_rx_err_timeout if conversion times out
  */
-rx_err_t adc_read(uint8_t unit, adc_channel_t channel, uint16_t* value);
+rx_err_t adc_read(adc_unit_t unit, adc_channel_t channel, uint16_t* value);
 
 /**
  * @brief Read ADC value and convert to millivolts
@@ -191,8 +202,10 @@ rx_err_t adc_read(uint8_t unit, adc_channel_t channel, uint16_t* value);
  *         k_rx_err_invalid_state if ADC unit not initialized,
  *         k_rx_err_timeout if conversion times out
  */
-rx_err_t
-adc_read_voltage_mv(uint8_t unit, adc_channel_t channel, adc_resolution_t bits, uint32_t* voltage_mv);
+rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
+                             adc_channel_t    channel,
+                             adc_resolution_t bits,
+                             uint32_t*        voltage_mv);
 
 /* =============================================================================
  * RIIC (I2C) Functions
@@ -201,6 +214,24 @@ adc_read_voltage_mv(uint8_t unit, adc_channel_t channel, adc_resolution_t bits, 
 
 /**
  * @brief RIIC channel wrapper type (prevents accidental argument swaps)
+ *
+ * @note Uses struct wrapper (not typedef) for stronger type checking.
+ *       Unlike ADC wrapper types (simple typedefs), RIIC types use struct
+ *       wrappers because:
+ *       1. I2C has multiple similar uint8_t parameters (channel, address)
+ *          that are easily confused
+ *       2. Struct wrappers prevent implicit conversions between types
+ *       3. ADC uses simpler typedefs since parameters are more distinct
+ *          (unit vs channel vs resolution bits)
+ *
+ * @code{.c}
+ * // Correct usage - struct initialization required
+ * riic_channel_t ch = {.value = 0};
+ * i2c_device_addr_t addr = {.value = 0x48};
+ *
+ * // Compiler error if arguments swapped (unlike plain uint8_t)
+ * riic_write(addr, ch, data, len);  // Error: type mismatch
+ * @endcode
  */
 typedef struct {
   uint8_t value; /**< RIIC channel number (0-2) */
@@ -208,6 +239,8 @@ typedef struct {
 
 /**
  * @brief I2C device address wrapper type (prevents accidental argument swaps)
+ *
+ * @note Uses struct wrapper for type safety. See riic_channel_t for rationale.
  */
 typedef struct {
   uint8_t value; /**< 7-bit I2C device address */

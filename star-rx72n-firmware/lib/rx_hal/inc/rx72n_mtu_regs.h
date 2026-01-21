@@ -14,6 +14,7 @@
 #ifndef STAR_RX72N_MTU_REGS_H
 #define STAR_RX72N_MTU_REGS_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -135,7 +136,24 @@ static inline volatile rx_mtu_channel_regs_t* mtu2(void)
 
 /**
  * @brief Get pointer to MTU3 registers
- * @return Volatile pointer to MTU3 register structure
+ *
+ * @details MTU3 and MTU4 share the same base address (0x000C1200) by hardware design.
+ * This is intentional per the RX72N hardware manual - MTU3 and MTU4 are a "paired"
+ * timer unit designed for complementary PWM generation.
+ *
+ * The MTU3/MTU4 register layout within the shared base address:
+ * - MTU3 registers: Offsets 0x00-0x16 (TCR, TMDR, TIORH, TIORL, TIER, TSR, TCNT, TGRx, etc.)
+ * - MTU4 registers: Offsets 0x01-0x17 (interleaved with MTU3)
+ *
+ * Both mtu3() and mtu4() return the same base pointer because the rx_mtu34_channel_regs_t
+ * structure represents the combined MTU3/MTU4 register block. The caller accesses
+ * MTU3-specific or MTU4-specific registers through the same structure.
+ *
+ * The static assertions at lines 283-284 verify this shared base address is intentional.
+ *
+ * @return Volatile pointer to MTU3/MTU4 register structure
+ *
+ * @see RX72N Hardware Manual Section 22.2.7 for MTU3/MTU4 register map
  */
 static inline volatile rx_mtu34_channel_regs_t* mtu3(void)
 {
@@ -144,7 +162,24 @@ static inline volatile rx_mtu34_channel_regs_t* mtu3(void)
 
 /**
  * @brief Get pointer to MTU4 registers
- * @return Volatile pointer to MTU4 register structure
+ *
+ * @details MTU3 and MTU4 share the same base address (0x000C1200) by hardware design.
+ * This is intentional per the RX72N hardware manual - MTU3 and MTU4 are a "paired"
+ * timer unit designed for complementary PWM generation.
+ *
+ * Both mtu3() and mtu4() return the same base pointer because the rx_mtu34_channel_regs_t
+ * structure represents the combined MTU3/MTU4 register block. Within this block:
+ * - MTU3 registers are at even offsets (TCR3 at 0x00, TMDR3 at 0x02, etc.)
+ * - MTU4 registers are at odd offsets (TCR4 at 0x01, TMDR4 at 0x03, etc.)
+ *
+ * The static assertions at lines 283-284 verify this shared base address is intentional.
+ *
+ * @note For most applications, use mtu3() for both MTU3 and MTU4 access since they
+ * share the register structure. The mtu4() function is provided for API symmetry.
+ *
+ * @return Volatile pointer to MTU3/MTU4 register structure (same as mtu3())
+ *
+ * @see RX72N Hardware Manual Section 22.2.7 for MTU3/MTU4 register map
  */
 static inline volatile rx_mtu34_channel_regs_t* mtu4(void)
 {

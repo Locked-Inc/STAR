@@ -60,6 +60,7 @@ typedef enum : uint16_t {
 
 /** @brief ADC Control/Status Register (ADCSR) bit masks */
 typedef enum : uint16_t {
+  k_adc_adcsr_idle = 0U,    /**< ADC idle state (ADST bit cleared, conversion complete) */
   k_adc_adcsr_adst = 4096U, /**< A/D Conversion Start (bit 12) */
 } adc_adcsr_bits_t;
 
@@ -145,7 +146,7 @@ static rx_err_t internal_configure_adc_unit(const uint8_t             unit,
   if (adc == NULL) {
     return k_rx_err_null_ptr;
   }
-  if (unit > k_adc_unit_1) {
+  if (unit < k_adc_unit_0 || unit > k_adc_unit_1) {
     return k_rx_err_invalid_arg;
   }
   if (bits != k_adc_resolution_8bit && bits != k_adc_resolution_10bit &&
@@ -191,15 +192,68 @@ static rx_err_t internal_configure_adc_unit(const uint8_t             unit,
 static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t channel)
 {
   /* Validate unit */
-  if (unit > k_adc_unit_1) {
+  if (unit < k_adc_unit_0 || unit > k_adc_unit_1) {
     rx_log_error(s_tag, "Invalid ADC unit");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate channel */
-  if (channel > k_adc_channel_7) {
+  if (channel < k_adc_channel_0 || channel > k_adc_channel_7) {
     rx_log_error(s_tag, "Invalid ADC channel");
     return k_rx_err_invalid_arg;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Read raw ADC value from a specific channel data register
+ *
+ * Helper function to extract channel-specific register access from adc_read().
+ * This supports NASA Power of 10 Rule 4 by keeping functions under 60 lines.
+ *
+ * @param[in] adc Pointer to ADC register base (must not be NULL)
+ * @param[in] channel ADC channel to read from (0-7)
+ * @param[out] value Pointer to store the raw ADC value (must not be NULL)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is out of range
+ *
+ * @pre adc and value must be valid non-NULL pointers (caller responsibility)
+ * @pre ADC conversion must be complete before calling this function
+ */
+static rx_err_t internal_read_channel_value(volatile rx_s12ad_regs_t* adc,
+                                            const adc_channel_t       channel,
+                                            uint16_t*                 value)
+{
+  switch (channel) {
+    case k_adc_channel_0:
+      *value = adc->addr0;
+      break;
+    case k_adc_channel_1:
+      *value = adc->addr1;
+      break;
+    case k_adc_channel_2:
+      *value = adc->addr2;
+      break;
+    case k_adc_channel_3:
+      *value = adc->addr3;
+      break;
+    case k_adc_channel_4:
+      *value = adc->addr4;
+      break;
+    case k_adc_channel_5:
+      *value = adc->addr5;
+      break;
+    case k_adc_channel_6:
+      *value = adc->addr6;
+      break;
+    case k_adc_channel_7:
+      *value = adc->addr7;
+      break;
+    default:
+      rx_log_error(s_tag, "Unsupported channel");
+      return k_rx_err_invalid_arg;
   }
 
   return k_rx_ok;
@@ -210,7 +264,32 @@ static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t chann
  * =============================================================================
  */
 
-rx_err_t adc_init(const uint8_t unit, const adc_channel_t channel, const adc_resolution_t bits)
+/**
+ * @brief Initialize ADC unit and enable a specific channel
+ *
+ * Configures the S12ADFa peripheral for A/D conversion. The ADC unit
+ * is initialized on first use with the specified resolution. Subsequent
+ * calls enable additional channels on the same unit.
+ *
+ * @param[in] unit ADC unit number (0 for S12AD0, 1 for S12AD1)
+ * @param[in] channel ADC channel to enable (0-7)
+ * @param[in] bits Resolution setting (8, 10, or 12 bits)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if unit, channel, or bits is invalid
+ *
+ * @note Resolution is set only on first initialization of each unit.
+ *       Subsequent calls ignore the bits parameter for that unit.
+ *
+ * @code{.c}
+ * // Initialize ADC unit 0, channel 2 with 12-bit resolution
+ * rx_err_t err = adc_init(0, 2, 12);
+ * if (err != k_rx_ok) {
+ *     // Handle error
+ * }
+ * @endcode
+ */
+rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_resolution_t bits)
 {
   volatile rx_s12ad_regs_t* adc = NULL;
   rx_err_t                  err;
@@ -252,7 +331,33 @@ rx_err_t adc_init(const uint8_t unit, const adc_channel_t channel, const adc_res
   return k_rx_ok;
 }
 
-rx_err_t adc_read(const uint8_t unit, const adc_channel_t channel, uint16_t* value)
+/**
+ * @brief Read raw ADC conversion value from specified channel
+ *
+ * Performs a single-scan A/D conversion and returns the raw digital value.
+ * The conversion is synchronous (blocking) with a configurable timeout.
+ *
+ * @param[in] unit ADC unit number (0 for S12AD0, 1 for S12AD1)
+ * @param[in] channel ADC channel to read (0-7)
+ * @param[out] value Pointer to store the raw ADC value (12/10/8-bit depending on init)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if value is NULL
+ * @return k_rx_err_invalid_arg if unit or channel is invalid
+ * @return k_rx_err_invalid_state if ADC unit not initialized
+ * @return k_rx_err_timeout if conversion times out
+ *
+ * @pre ADC unit must be initialized via adc_init()
+ *
+ * @code{.c}
+ * uint16_t raw_value;
+ * rx_err_t err = adc_read(0, 2, &raw_value);
+ * if (err == k_rx_ok) {
+ *     // Use raw_value (0-4095 for 12-bit)
+ * }
+ * @endcode
+ */
+rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* value)
 {
   volatile rx_s12ad_regs_t* adc;
   rx_err_t                  err;
@@ -281,7 +386,7 @@ rx_err_t adc_read(const uint8_t unit, const adc_channel_t channel, uint16_t* val
 
   /* Wait for conversion to complete (poll ADCSR.ADST bit) */
   timeout = k_adc_timeout_ms * k_adc_timeout_multiplier;
-  while ((adc->adcsr & k_adc_adcsr_adst) != 0 && timeout > k_adc_timeout_expired) {
+  while ((adc->adcsr & k_adc_adcsr_adst) != k_adc_adcsr_idle && timeout > k_adc_timeout_expired) {
     timeout--;
   }
 
@@ -291,43 +396,43 @@ rx_err_t adc_read(const uint8_t unit, const adc_channel_t channel, uint16_t* val
   }
 
   /* Read conversion result from appropriate data register */
-  switch (channel) {
-    case k_adc_channel_0:
-      *value = adc->addr0;
-      break;
-    case k_adc_channel_1:
-      *value = adc->addr1;
-      break;
-    case k_adc_channel_2:
-      *value = adc->addr2;
-      break;
-    case k_adc_channel_3:
-      *value = adc->addr3;
-      break;
-    case k_adc_channel_4:
-      *value = adc->addr4;
-      break;
-    case k_adc_channel_5:
-      *value = adc->addr5;
-      break;
-    case k_adc_channel_6:
-      *value = adc->addr6;
-      break;
-    case k_adc_channel_7:
-      *value = adc->addr7;
-      break;
-    default:
-      rx_log_error(s_tag, "Unsupported channel");
-      return k_rx_err_invalid_arg;
-  }
-
-  return k_rx_ok;
+  return internal_read_channel_value(adc, channel, value);
 }
 
-rx_err_t adc_read_voltage_mv(const uint8_t   unit,
-                             adc_channel_t   channel,
+/**
+ * @brief Read ADC value and convert to millivolts
+ *
+ * Performs an A/D conversion and scales the result to millivolts based on
+ * the reference voltage (3.3V) and configured resolution.
+ *
+ * @param[in] unit ADC unit number (0 for S12AD0, 1 for S12AD1)
+ * @param[in] channel ADC channel to read (0-7)
+ * @param[in] bits Resolution used during initialization (8, 10, or 12)
+ * @param[out] voltage_mv Pointer to store voltage in millivolts (0-3300)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if voltage_mv is NULL
+ * @return k_rx_err_invalid_arg if unit, channel, or bits is invalid
+ * @return k_rx_err_invalid_state if ADC unit not initialized
+ * @return k_rx_err_timeout if conversion times out
+ *
+ * @pre ADC unit and channel must be initialized via adc_init()
+ * @pre Resolution (bits) must match the value used in adc_init()
+ *
+ * @note Uses 3.3V reference voltage (k_adc_reference_voltage_mv = 3300)
+ *
+ * @code{.c}
+ * uint32_t voltage;
+ * rx_err_t err = adc_read_voltage_mv(0, 2, 12, &voltage);
+ * if (err == k_rx_ok) {
+ *     // voltage is in millivolts (0-3300)
+ * }
+ * @endcode
+ */
+rx_err_t adc_read_voltage_mv(const adc_unit_t unit,
+                             adc_channel_t    channel,
                              adc_resolution_t bits,
-                             uint32_t*       voltage_mv)
+                             uint32_t*        voltage_mv)
 {
   uint16_t raw_value;
   rx_err_t err;
