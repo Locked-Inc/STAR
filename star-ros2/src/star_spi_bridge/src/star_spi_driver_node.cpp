@@ -6,9 +6,11 @@
 
 using namespace std::chrono_literals;
 
-namespace star_spi_bridge {
-StarSpiDriverNode::StarSpiDriverNode(const rclcpp::NodeOptions &options)
-    : rclcpp_lifecycle::LifecycleNode("star_spi_driver", options) {
+namespace star_spi_bridge
+{
+StarSpiDriverNode::StarSpiDriverNode(const rclcpp::NodeOptions & options)
+: rclcpp_lifecycle::LifecycleNode("star_spi_driver", options)
+{
   // Declare parameters
   declare_parameter("spi_device_path", "/dev/spidev0.0");
   declare_parameter("spi_speed_hz", 10000000); // 10 MHz
@@ -18,7 +20,8 @@ StarSpiDriverNode::StarSpiDriverNode(const rclcpp::NodeOptions &options)
   declare_parameter("ticks_per_rev", 11599);
 }
 
-StarSpiDriverNode::~StarSpiDriverNode() {
+StarSpiDriverNode::~StarSpiDriverNode()
+{
   // Ensure cleanup
   if (spi_driver_) {
     spi_driver_->close_device();
@@ -26,7 +29,8 @@ StarSpiDriverNode::~StarSpiDriverNode() {
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-StarSpiDriverNode::on_configure(const rclcpp_lifecycle::State &) {
+StarSpiDriverNode::on_configure(const rclcpp_lifecycle::State &)
+{
   RCLCPP_INFO(get_logger(), "Configuring StarSpiDriverNode...");
 
   // Load parameters
@@ -47,15 +51,15 @@ StarSpiDriverNode::on_configure(const rclcpp_lifecycle::State &) {
     RCLCPP_ERROR(get_logger(), "Failed to initialize SPI driver on %s",
                  spi_device_path_.c_str());
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::
-        CallbackReturn::FAILURE;
+           CallbackReturn::FAILURE;
   }
 
   // Create publishers
   odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("odom/unfiltered", 10);
   joint_state_pub_ =
-      create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+    create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
   battery_pub_ =
-      create_publisher<sensor_msgs::msg::BatteryState>("battery_state", 10);
+    create_publisher<sensor_msgs::msg::BatteryState>("battery_state", 10);
 
   // Create subscription
   cmd_vel_sub_ = create_subscription<geometry_msgs::msg::Twist>(
@@ -67,11 +71,12 @@ StarSpiDriverNode::on_configure(const rclcpp_lifecycle::State &) {
   last_cmd_vel_time_ = get_clock()->now();
 
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::
-      CallbackReturn::SUCCESS;
+         CallbackReturn::SUCCESS;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-StarSpiDriverNode::on_activate(const rclcpp_lifecycle::State &) {
+StarSpiDriverNode::on_activate(const rclcpp_lifecycle::State &)
+{
   RCLCPP_INFO(get_logger(), "Activating StarSpiDriverNode...");
 
   odom_pub_->on_activate();
@@ -83,11 +88,12 @@ StarSpiDriverNode::on_activate(const rclcpp_lifecycle::State &) {
       10ms, std::bind(&StarSpiDriverNode::timer_callback, this));
 
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::
-      CallbackReturn::SUCCESS;
+         CallbackReturn::SUCCESS;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State &) {
+StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
+{
   RCLCPP_INFO(get_logger(), "Deactivating StarSpiDriverNode...");
 
   // Stop timer
@@ -108,11 +114,12 @@ StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State &) {
   battery_pub_->on_deactivate();
 
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::
-      CallbackReturn::SUCCESS;
+         CallbackReturn::SUCCESS;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-StarSpiDriverNode::on_cleanup(const rclcpp_lifecycle::State &) {
+StarSpiDriverNode::on_cleanup(const rclcpp_lifecycle::State &)
+{
   RCLCPP_INFO(get_logger(), "Cleaning up StarSpiDriverNode...");
 
   spi_driver_->close_device();
@@ -125,22 +132,25 @@ StarSpiDriverNode::on_cleanup(const rclcpp_lifecycle::State &) {
   cmd_vel_sub_.reset();
 
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::
-      CallbackReturn::SUCCESS;
+         CallbackReturn::SUCCESS;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-StarSpiDriverNode::on_shutdown(const rclcpp_lifecycle::State &prev_state) {
+StarSpiDriverNode::on_shutdown(const rclcpp_lifecycle::State & prev_state)
+{
   RCLCPP_INFO(get_logger(), "Shutting down StarSpiDriverNode...");
   return on_cleanup(prev_state);
 }
 
 void StarSpiDriverNode::cmd_vel_callback(
-    const geometry_msgs::msg::Twist::SharedPtr msg) {
+  const geometry_msgs::msg::Twist::SharedPtr msg)
+{
   current_cmd_vel_ = *msg;
   last_cmd_vel_time_ = get_clock()->now();
 }
 
-void StarSpiDriverNode::timer_callback() {
+void StarSpiDriverNode::timer_callback()
+{
   // Check for command velocity timeout (watchdog safety)
   auto now = get_clock()->now();
   double time_since_cmd = (now - last_cmd_vel_time_).seconds();
@@ -190,7 +200,8 @@ void StarSpiDriverNode::timer_callback() {
   std::vector<uint8_t> rx_payload;
 
   if (!SpiDriver::decode_frame(rx_frame, decoded_seq_, rx_type, decoded_flags_,
-                               rx_payload)) {
+                               rx_payload))
+  {
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
                          "SPI Frame Decode Failed (CRC mismatch or garbage)");
     return;
