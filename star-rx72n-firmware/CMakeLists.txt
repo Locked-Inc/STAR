@@ -357,44 +357,24 @@ message(STATUS "Build Type:       ${CMAKE_BUILD_TYPE}")
 message(STATUS "C Compiler:       ${CMAKE_C_COMPILER}")
 message(STATUS "==============================================")
 message(STATUS "Libraries:")
-message(STATUS "  rx_hal         - Hardware abstraction (GPTW, MTU, CMT, GPIO, UART)")
-message(STATUS "  rx_core        - Core infrastructure (error, logging, DIP)")
-message(STATUS "  rx_bus         - Bus manager (GPIO, ADC, I2C, SMBUS)")
-message(STATUS "  rx_motor       - Motor control (GPTW PWM)")
-message(STATUS "  rx_encoder     - Encoder (MTU phase counting)")
-message(STATUS "  rx_pid         - PID controller")
-message(STATUS "  rx_fec         - FEC codec (K=7 convolutional + Viterbi)")
-message(STATUS "  rx_harq        - HARQ protocol (Chase Combining)")
-message(STATUS "  rx_frame       - Frame layer (SYNC, CRC-32, header)")
-message(STATUS "  rx_nanopb      - Protocol Buffers (nanopb integration)")
-message(STATUS "  rx_spi_comm    - SPI communication layer")
-message(STATUS "  rx_usb         - USB CDC-ACM driver")
-message(STATUS "  rx_usb_comm    - USB communication layer")
-message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
-message(STATUS "  rx_bq4050      - BQ4050 battery fuel gauge (SBS 1.1)")
-message(STATUS "  rx_ds18b20     - DS18B20 1-Wire temperature sensor")
-message(STATUS "  rx_hcsr04      - HC-SR04 ultrasonic distance sensor")
-message(STATUS "  rx_obstacle_detect - Obstacle detection with emergency stop")
+message(STATUS "  rx_hal                 - Hardware abstraction (GPTW, MTU, CMT, GPIO, UART)")
+message(STATUS "  rx_core                - Core infrastructure (error, logging, DIP)")
+message(STATUS "  rx_bus                 - Bus manager (GPIO, ADC, I2C, SMBUS)")
+message(STATUS "  rx_motor               - Motor control (GPTW PWM)")
+message(STATUS "  rx_encoder             - Encoder (MTU phase counting)")
+message(STATUS "  rx_pid                 - PID controller")
+message(STATUS "  rx_fec                 - FEC codec (K=7 convolutional + Viterbi)")
+message(STATUS "  rx_harq                - HARQ protocol (Chase Combining)")
+message(STATUS "  rx_frame               - Frame layer (SYNC, CRC-32, header)")
+message(STATUS "  rx_nanopb              - Protocol Buffers (nanopb integration)")
+message(STATUS "  rx_spi_comm            - SPI communication layer")
+message(STATUS "  rx_usb                 - USB CDC-ACM driver")
+message(STATUS "  rx_usb_comm            - USB communication layer")
+message(STATUS "  rx_drv8243             - DRV8243 H-bridge driver")
+message(STATUS "  rx_bq4050              - BQ4050 battery fuel gauge (SBS 1.1)")
+message(STATUS "  rx_ds18b20             - DS18B20 1-Wire temperature sensor")
+message(STATUS "  rx_hcsr04              - HC-SR04 ultrasonic distance sensor")
+message(STATUS "  rx_obstacle_detect     - Obstacle detection with emergency stop")
 message(STATUS "==============================================")
-
-# =============================================================================
-# Hardware Access (Flash/Debug)
-# =============================================================================
-#
-# Professional embedded workflow:
-# - BUILD in Docker (reproducible, cross-platform)
-# - FLASH/DEBUG on host (requires USB hardware access)
-#
-# Use provided scripts instead of make targets:
-#   ./flash.sh  - Flash firmware via E2 Lite (runs rfp-cli on host)
-#   ./debug.sh  - Start GDB session (connects to J-Link/E2 on host)
-#
-# Why not 'make flash'?
-# - Docker containers cannot access USB devices reliably
-# - Host scripts provide better error messages and setup guidance
-# - Consistent across Mac/Linux/Windows
-#
-# =============================================================================
-
 message(STATUS "Flash/Debug:      Use ./flash.sh and ./debug.sh (host scripts)")
 message(STATUS "                  Hardware access requires running on host, not in Docker")
