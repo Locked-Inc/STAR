@@ -24,9 +24,9 @@ set(CMAKE_OBJDUMP      "${GNURX_ROOT}/bin/rx-elf-objdump")
 set(CMAKE_SIZE         "${GNURX_ROOT}/bin/rx-elf-size")
 set(CMAKE_RANLIB       "${GNURX_ROOT}/bin/rx-elf-ranlib")
 
-# Target specifications for RX72N (RXv3 core via -mcpu=rx610, FPU enabled)
-set(CPU_FLAGS "-mcpu=rx610 -fpu -mlittle-endian-data")
-set(ASM_CPU_FLAGS "-Wa,--mcpu=rx610 -fpu -mlittle-endian-data")
+# Target specifications for RX72N (RXv3 core, 32-bit single-precision FPU)
+set(CPU_FLAGS "-mcpu=rx610 -mlittle-endian-data")
+set(ASM_CPU_FLAGS "-Wa,--mcpu=rx610 -mlittle-endian-data")
 
 # Compiler flags
 set(CMAKE_C_FLAGS_INIT "${CPU_FLAGS} -ffunction-sections -fdata-sections")
