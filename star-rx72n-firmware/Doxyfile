@@ -77,7 +77,7 @@ LATEX_OUTPUT           = latex
 PDF_HYPERLINKS         = YES
 USE_PDFLATEX           = YES
 LATEX_MAKEFILE         = Makefile
-LATEX_CMD_NAME         = latex
+LATEX_CMD_NAME         = pdflatex
 
 #---------------------------------------------------------------------------
 # Configuration options related to the RTF output

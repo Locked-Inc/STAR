@@ -102,8 +102,8 @@ static void internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uin
   /* Pre-condition 1: output must be valid */
   assert(output != NULL);
 
-  /* Pre-condition 2: value must be 0 or 1 (normalize if needed) */
-  assert((value == 0) || (value == k_fec_bit_mask) || (value != 0));
+  /* Pre-condition 2: bit index must be within maximum symbol range */
+  assert(bit_idx < (k_fec_max_symbols * k_rx_bits_per_byte));
   value = (value != 0) ? k_fec_bit_mask : 0;
 
   const uint32_t byte_idx = bit_idx / k_rx_bits_per_byte;
@@ -217,6 +217,10 @@ static int32_t internal_branch_metric(const rx_soft_bit_t soft0,
                                       const uint8_t       exp0,
                                       const uint8_t       exp1)
 {
+  /* Pre-conditions: expected bits must be 0 or 1 */
+  assert((exp0 == 0) || (exp0 == k_fec_bit_mask));
+  assert((exp1 == 0) || (exp1 == k_fec_bit_mask));
+
   /* Convert expected bits to soft values: 0 -> -127, 1 -> +127 */
   const int32_t exp0_soft = (exp0 != 0) ? k_soft_bit_max : k_soft_bit_min;
   const int32_t exp1_soft = (exp1 != 0) ? k_soft_bit_max : k_soft_bit_min;
@@ -350,6 +354,7 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
                                        const uint32_t          output_bytes)
 {
   uint32_t limit;
+  uint8_t  state;
 
   assert(dec != NULL);
   assert(output != NULL);
@@ -364,7 +369,7 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
   }
 
   /* Start from state 0 (encoder is flushed to zero by tail bits) */
-  uint8_t state = 0;
+  state = 0;
 
   /* Traceback: work backwards through the trellis */
   limit = (num_symbols < k_fec_max_symbols) ? num_symbols : k_fec_max_symbols;
@@ -403,6 +408,7 @@ rx_err_t rx_fec_encoder_init(rx_fec_encoder_t* enc)
   }
 
   enc->initialized = true;
+  assert(enc->initialized == true);
   return k_rx_ok;
 }
 
@@ -413,6 +419,7 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc)
   }
 
   enc->initialized = false;
+  assert(enc->initialized == false);
   return k_rx_ok;
 }
 

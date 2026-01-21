@@ -233,19 +233,21 @@ void mock_riic_clear_history(void);
  * =============================================================================
  */
 
-rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz);
+rx_err_t riic_init(riic_channel_t channel, uint32_t frequency_hz);
 rx_err_t riic_write(riic_channel_t       channel,
                     i2c_device_addr_t    device_addr,
                     const uint8_t*       data,
                     const uint16_t       length);
-rx_err_t
-riic_read(uint8_t channel, const uint8_t device_addr, uint8_t* data, const uint16_t length);
-rx_err_t riic_write_read(uint8_t        channel,
-                         uint8_t        device_addr,
-                         const uint8_t* write_data,
-                         uint16_t       write_length,
-                         uint8_t*       read_data,
-                         uint16_t       read_length);
+rx_err_t riic_read(riic_channel_t    channel,
+                   i2c_device_addr_t device_addr,
+                   uint8_t*          data,
+                   const uint16_t    length);
+rx_err_t riic_write_read(riic_channel_t    channel,
+                         i2c_device_addr_t device_addr,
+                         const uint8_t*    write_data,
+                         uint16_t          write_length,
+                         uint8_t*          read_data,
+                         uint16_t          read_length);
 
 #ifdef __cplusplus
 }

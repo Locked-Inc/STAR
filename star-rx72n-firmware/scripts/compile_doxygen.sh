@@ -4,9 +4,31 @@
 
 set -e  # Exit on any error
 
+g_child_pid=0
+g_log_file=""
+
 # Graceful exit on interrupt
-# This ensures that Ctrl+C will stop the script immediately.
-trap 'echo -e "\n\n${RED}[INTERRUPT] Script interrupted by user. Exiting gracefully.${NC}\n"; exit 1;' SIGINT SIGTERM
+cleanup() {
+    echo -e "\n\n${RED}[INTERRUPT] Script interrupted by user. Exiting gracefully...${NC}\n"
+    
+    if [[ -n "$g_child_pid" && "$g_child_pid" -ne 0 ]]; then
+        kill -SIGTERM "$g_child_pid" 2>/dev/null
+    fi
+
+    # Check if there is a log file to display from a background process
+    if [[ -n "$g_log_file" && -f "$g_log_file" ]]; then
+        local output
+        output=$(cat "$g_log_file")
+        if [ -n "$output" ]; then
+            echo -e "${YELLOW}--- Interrupted LaTeX Output ---${NC}\n$output\n${YELLOW}--------------------------------${NC}"
+        fi
+        rm -f "$g_log_file" # Clean up the log file
+    fi
+
+    exit 130
+}
+
+trap cleanup SIGINT SIGTERM
 
 # Colors for output
 RED='\033[0;31m'
@@ -209,28 +231,50 @@ generate_pdf() {
     
     print_status "Generating PDF from LaTeX output..."
     cd "$latex_dir"
-    
-    local output
+
     local exit_code
+    local log_file_name="make_pdflatex.log"
+    local output=""
+
+    # Set global log file path (absolute) for the trap handler
+    g_log_file="$(pwd)/$log_file_name"
+
+    # Run make in the background and capture its PID
+    make > "$log_file_name" 2>&1 &
+    g_child_pid=$!
 
     if [ "$VERBOSE" = true ]; then
-        # In verbose mode, stream output directly
-        make
-        exit_code=$?
-    else
-        # In quiet mode, capture output and show only on error
-        output=$(make 2>&1)
-        exit_code=$?
+        # Stream the log file for verbose mode
+        tail -f "$log_file_name" &
+        local tail_pid=$!
+    fi
+
+    # Wait for make to finish. The trap will handle Ctrl+C.
+    wait "$g_child_pid"
+    exit_code=$?
+
+    # Reset globals now that the process is done
+    g_child_pid=0
+    g_log_file=""
+
+    if [ "$VERBOSE" = true ] && ps -p $tail_pid > /dev/null 2>&1; then
+        kill "$tail_pid"
     fi
     
     cd - > /dev/null # Go back to original directory silently
-    
+
+    # The trap handles the interrupt case. We just handle normal success/failure.
+    local log_path="$latex_dir/$log_file_name"
+    if [ -f "$log_path" ]; then
+        output=$(cat "$log_path")
+        rm "$log_path"
+    fi
+
     if [ $exit_code -eq 0 ] && [ -f "$latex_dir/refman.pdf" ]; then
         print_success "PDF generated successfully!"
-    else
-        print_error "PDF generation failed."
-        # Show captured output if we are not in verbose mode and there was output
-        if [ "$VERBOSE" = false ] && [ -n "$output" ]; then
+    elif [ $exit_code -ne 130 ]; then # 130 is the exit code for being interrupted
+        print_error "PDF generation failed with exit code $exit_code."
+        if [ -n "$output" ]; then
             echo -e "${RED}--- LaTeX Output ---${NC}\n$output\n${RED}--------------------${NC}"
         fi
         print_error "Try running 'make' manually in '$latex_dir' to debug."

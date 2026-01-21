@@ -180,6 +180,44 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
 }
 
 /**
+ * @brief Enable the CMT module clock.
+ */
+static void internal_enable_cmt_module_clock(void)
+{
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
+  system_regs()->mstpcrb &= ~((uint32_t)k_cmt_bit_mask_lsb << k_cmt_mstpb_cmt);
+  system_regs()->prcr = k_rx_prcr_lock;
+}
+
+/**
+ * @brief Configure CMT timer registers.
+ *
+ * @param[in] cmt CMT channel registers
+ * @param[in] divider Clock divider setting
+ * @param[in] cmcor Compare match value
+ */
+static void internal_configure_cmt_timer_registers(volatile rx_cmt_channel_regs_t* cmt,
+                                                   const uint8_t                   divider,
+                                                   const uint16_t                  cmcor)
+{
+  RX_ASSERT(cmt != NULL, "CMT registers are NULL");
+
+  /* Configure timer control register
+   * - Set clock divider
+   * - Enable compare match interrupt
+   */
+  cmt->cmcr =
+    (divider << k_cmt_cmcr_cks_shift) |          /* CKS: Clock Select */
+    (k_cmt_bit_mask_lsb << k_cmt_cmcr_cmie_pos); /* CMIE: Compare Match Interrupt Enable */
+
+  /* Set compare match value (period - 1) */
+  cmt->cmcor = cmcor - k_cmt_period_adj;
+
+  /* Clear counter */
+  cmt->cmcnt = k_cmt_value_zero;
+}
+
+/**
  * @brief Configure CMT interrupt routing and priority
  *
  * @param[in] config Interrupt configuration
@@ -290,9 +328,7 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
   }
 
   /* Enable CMT module (clear module stop bit) */
-  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
-  system_regs()->mstpcrb &= ~((uint32_t)k_cmt_bit_mask_lsb << k_cmt_mstpb_cmt);
-  system_regs()->prcr = k_rx_prcr_lock;
+  internal_enable_cmt_module_clock();
 
   /* Stop timer before configuration */
   err = rx_cmt_stop(channel);
@@ -300,19 +336,7 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
     return err;
   }
 
-  /* Configure timer control register
-   * - Set clock divider
-   * - Enable compare match interrupt
-   */
-  cmt->cmcr =
-    (divider << k_cmt_cmcr_cks_shift) |          /* CKS: Clock Select */
-    (k_cmt_bit_mask_lsb << k_cmt_cmcr_cmie_pos); /* CMIE: Compare Match Interrupt Enable */
-
-  /* Set compare match value (period - 1) */
-  cmt->cmcor = cmcor - k_cmt_period_adj;
-
-  /* Clear counter */
-  cmt->cmcnt = k_cmt_value_zero;
+  internal_configure_cmt_timer_registers(cmt, divider, cmcor);
 
   /* Configure interrupt */
   err = internal_configure_cmt_interrupt((rx_cmt_interrupt_config_t){.channel = channel, .priority = config->priority});

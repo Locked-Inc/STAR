@@ -179,7 +179,7 @@ typedef enum : uint8_t {
   k_i2c_write_bit        = 0,    /**< I2C write bit (R/W = 0) */
   k_i2c_read_bit         = 1,    /**< I2C read bit (R/W = 1) */
   k_i2c_addr_shift       = 1,    /**< Bit shift for 7-bit address */
-  k_i2c_addr_max_7bit    = 0x7F, /**< Maximum 7-bit I2C address (127) */
+  k_i2c_addr_max_7bit    = 127,  /**< Maximum 7-bit I2C address (127) */
   k_bits_per_byte        = 8,    /**< Bits per byte */
   k_smbus_max_block_size = 32,   /**< SMBUS maximum block transfer size */
 } rx_i2c_constants_t;
@@ -188,8 +188,8 @@ typedef enum : uint8_t {
  * @brief Bit manipulation masks
  */
 typedef enum : uint8_t {
-  k_byte_mask     = 0xFF, /**< Full byte mask (all 8 bits) */
-  k_byte_msb_mask = 0x80, /**< Most significant bit of a byte (bit 7) */
+  k_byte_mask     = 255,  /**< Full byte mask (all 8 bits) */
+  k_byte_msb_mask = 128,  /**< Most significant bit of a byte (bit 7) */
 } bit_masks_t;
 
 /**

@@ -326,10 +326,10 @@ internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send
  * =============================================================================
  */
 
-rx_err_t riic_init(const uint8_t channel, const uint32_t frequency_hz)
+rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
 {
   /* Validate channel */
-  if (channel >= k_riic_max_channels) {
+  if (channel.value >= k_riic_max_channels) {
     rx_log_error(s_tag, "Invalid RIIC channel");
     return k_rx_err_invalid_arg;
   }
@@ -342,7 +342,7 @@ rx_err_t riic_init(const uint8_t channel, const uint32_t frequency_hz)
   }
 
   /* Get RIIC base */
-  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel);
+  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel.value);
   if (riic == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -350,9 +350,9 @@ rx_err_t riic_init(const uint8_t channel, const uint32_t frequency_hz)
   /* Enable RIIC module (clear module stop bit) */
   system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
-  if (channel == k_riic_channel_0) {
+  if (channel.value == k_riic_channel_0) {
     system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic0);
-  } else if (channel == k_riic_channel_1) {
+  } else if (channel.value == k_riic_channel_1) {
     system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic1);
   } else {
     system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic2);
@@ -382,7 +382,7 @@ rx_err_t riic_init(const uint8_t channel, const uint32_t frequency_hz)
   riic->iccr1 = k_riic_iccr1_ice;
 
   /* Mark channel as initialized */
-  s_riic_channel_initialized[channel] = true;
+  s_riic_channel_initialized[channel.value] = true;
 
   rx_log_debug(s_tag, "RIIC channel initialized");
 
@@ -452,12 +452,15 @@ rx_err_t riic_write(const riic_channel_t    channel,
   return k_rx_ok;
 }
 
-rx_err_t
-riic_read(const uint8_t channel, const uint8_t device_addr, uint8_t* data, const uint16_t length)
+rx_err_t riic_read(const riic_channel_t    channel,
+                   const i2c_device_addr_t device_addr,
+                   uint8_t*                data,
+                   const uint16_t          length)
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
+  RX_ASSERT(channel.value < k_riic_max_channels, "RIIC channel out of range");
 
-  if (device_addr > k_riic_addr_max_7bit) {
+  if (device_addr.value > k_riic_addr_max_7bit) {
     rx_log_error(s_tag, "Invalid device address");
     return k_rx_err_invalid_arg;
   }
@@ -468,13 +471,13 @@ riic_read(const uint8_t channel, const uint8_t device_addr, uint8_t* data, const
   }
 
   /* Validate channel */
-  if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
+  if (channel.value >= k_riic_max_channels || !s_riic_channel_initialized[channel.value]) {
     rx_log_error(s_tag, "RIIC channel not initialized");
     return k_rx_err_invalid_state;
   }
 
   /* Get RIIC base */
-  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel);
+  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel.value);
 
   /* Wait for bus ready */
   rx_err_t err = internal_wait_bus_ready(riic);
@@ -488,7 +491,9 @@ riic_read(const uint8_t channel, const uint8_t device_addr, uint8_t* data, const
   RX_RETURN_ON_ERROR(err, s_tag, "Start condition failed");
 
   /* Send device address (read) */
-  err = internal_write_byte(riic, (device_addr << k_riic_addr_shift) | k_riic_addr_read_bit);
+  err = internal_write_byte(
+    riic,
+    (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
   if (err != k_rx_ok) {
     internal_send_stop(riic);
     return err;
@@ -511,19 +516,20 @@ riic_read(const uint8_t channel, const uint8_t device_addr, uint8_t* data, const
   return k_rx_ok;
 }
 
-rx_err_t riic_write_read(const uint8_t  channel,
-                         const uint8_t  device_addr,
-                         const uint8_t* write_data,
-                         const uint16_t write_length,
-                         uint8_t*       read_data,
-                         const uint16_t read_length)
+rx_err_t riic_write_read(const riic_channel_t    channel,
+                         const i2c_device_addr_t device_addr,
+                         const uint8_t*          write_data,
+                         const uint16_t          write_length,
+                         uint8_t*                read_data,
+                         const uint16_t          read_length)
 {
   uint32_t timeout;
 
   RX_CHECK_NULL_PTR(write_data, s_tag, "Write data pointer is NULL");
   RX_CHECK_NULL_PTR(read_data, s_tag, "Read data pointer is NULL");
+  RX_ASSERT(channel.value < k_riic_max_channels, "RIIC channel out of range");
 
-  if (device_addr > k_riic_addr_max_7bit) {
+  if (device_addr.value > k_riic_addr_max_7bit) {
     rx_log_error(s_tag, "Invalid device address");
     return k_rx_err_invalid_arg;
   }
@@ -534,13 +540,13 @@ rx_err_t riic_write_read(const uint8_t  channel,
   }
 
   /* Validate channel */
-  if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
+  if (channel.value >= k_riic_max_channels || !s_riic_channel_initialized[channel.value]) {
     rx_log_error(s_tag, "RIIC channel not initialized");
     return k_rx_err_invalid_state;
   }
 
   /* Get RIIC base */
-  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel);
+  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel.value);
 
   /* Wait for bus ready */
   rx_err_t err = internal_wait_bus_ready(riic);
@@ -556,7 +562,9 @@ rx_err_t riic_write_read(const uint8_t  channel,
   RX_RETURN_ON_ERROR(err, s_tag, "Start condition failed");
 
   /* Send device address (write) */
-  err = internal_write_byte(riic, (device_addr << k_riic_addr_shift) | k_riic_addr_write_bit);
+  err = internal_write_byte(
+    riic,
+    (device_addr.value << k_riic_addr_shift) | k_riic_addr_write_bit);
   if (err != k_rx_ok) {
     internal_send_stop(riic);
     return err;
@@ -593,7 +601,9 @@ rx_err_t riic_write_read(const uint8_t  channel,
   riic->iccr2 = k_riic_iccr2_mst;
 
   /* Send device address (read) */
-  err = internal_write_byte(riic, (device_addr << k_riic_addr_shift) | k_riic_addr_read_bit);
+  err = internal_write_byte(
+    riic,
+    (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
   if (err != k_rx_ok) {
     internal_send_stop(riic);
     return err;

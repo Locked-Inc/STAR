@@ -126,11 +126,16 @@ typedef enum : uint8_t {
   k_iwdt_rstirqs_nmi      = 0x00, /**< Generate NMI on timeout */
 } iwdt_iwdtrcr_bits_t;
 
+/** @brief IWDTCSTPR bit field positions */
+typedef enum : uint8_t {
+  k_iwdt_cstpr_slcstp_pos = 7, /**< Sleep Mode Count Stop bit position */
+} iwdt_iwdtcstpr_shifts_t;
+
 /* IWDT Count Stop Control Register (IWDTCSTPR) Bit Definitions */
 typedef enum : uint8_t {
-  k_iwdt_cstpr_slcstp_mask = (1 << 7), /**< Sleep Mode Count Stop bit mask */
-  k_iwdt_slcstp_stop       = (1 << 7), /**< Stop counting during sleep */
-  k_iwdt_slcstp_continue   = 0x00,     /**< Continue counting during sleep */
+  k_iwdt_cstpr_slcstp_mask = (1U << k_iwdt_cstpr_slcstp_pos), /**< Sleep Mode Count Stop bit mask */
+  k_iwdt_slcstp_stop       = (1U << k_iwdt_cstpr_slcstp_pos), /**< Stop counting during sleep */
+  k_iwdt_slcstp_continue   = 0x00, /**< Continue counting during sleep */
 } iwdt_iwdtcstpr_bits_t;
 
 /* =============================================================================
