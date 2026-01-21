@@ -25,30 +25,61 @@
 #include "tx_api.h"
 
 /* =============================================================================
+ * Internal Helper Functions
+ * =============================================================================
+ */
+
+/**
+ * @brief Validate pin and extract port/pin numbers
+ *
+ * @param[in]  pin     Port pin to validate
+ * @param[out] port    Pointer to receive port number (can be NULL)
+ * @param[out] pin_num Pointer to receive pin number (can be NULL)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if pin is out of range
+ */
+static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin,
+                                           uint8_t*            port,
+                                           uint8_t*            pin_num)
+{
+  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  const uint8_t local_port    = rx_port_from_pin(pin);
+  const uint8_t local_pin_num = rx_pin_from_pin(pin);
+
+  if ((local_port < k_rx_port_0) || (local_port > k_rx_port_j)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if ((local_pin_num < k_rx_pin_0) || (local_pin_num > k_rx_pin_max)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (port != NULL) {
+    *port = local_port;
+  }
+
+  if (pin_num != NULL) {
+    *pin_num = local_pin_num;
+  }
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
  * GPIO Functions
  * =============================================================================
  */
 
 rx_err_t hcsr04_hal_gpio_set_output(const rx_port_pin_t pin)
 {
-  uint8_t port    = 0;
-  uint8_t pin_num = 0;
+  const rx_err_t err = internal_validate_port_pin(pin, NULL, NULL);
 
-  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  port    = rx_port_from_pin(pin);
-  pin_num = rx_pin_from_pin(pin);
-
-  /* Validate port range (0x00 - k_rx_port_j=0x13) */
-  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Validate pin range (0 - k_rx_pin_max=7) */
-  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
-    return k_rx_err_invalid_arg;
+  if (err != k_rx_ok) {
+    return err;
   }
 
   return gpio_set_output(pin);
@@ -56,22 +87,10 @@ rx_err_t hcsr04_hal_gpio_set_output(const rx_port_pin_t pin)
 
 rx_err_t hcsr04_hal_gpio_set_input(const rx_port_pin_t pin)
 {
-  uint8_t port    = 0;
-  uint8_t pin_num = 0;
+  const rx_err_t err = internal_validate_port_pin(pin, NULL, NULL);
 
-  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  port    = rx_port_from_pin(pin);
-  pin_num = rx_pin_from_pin(pin);
-
-  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
-    return k_rx_err_invalid_arg;
+  if (err != k_rx_ok) {
+    return err;
   }
 
   return gpio_set_input(pin);
@@ -79,22 +98,10 @@ rx_err_t hcsr04_hal_gpio_set_input(const rx_port_pin_t pin)
 
 rx_err_t hcsr04_hal_gpio_write_high(const rx_port_pin_t pin)
 {
-  uint8_t port    = 0;
-  uint8_t pin_num = 0;
+  const rx_err_t err = internal_validate_port_pin(pin, NULL, NULL);
 
-  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  port    = rx_port_from_pin(pin);
-  pin_num = rx_pin_from_pin(pin);
-
-  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
-    return k_rx_err_invalid_arg;
+  if (err != k_rx_ok) {
+    return err;
   }
 
   return gpio_write_high(pin);
@@ -102,22 +109,10 @@ rx_err_t hcsr04_hal_gpio_write_high(const rx_port_pin_t pin)
 
 rx_err_t hcsr04_hal_gpio_write_low(const rx_port_pin_t pin)
 {
-  uint8_t port    = 0;
-  uint8_t pin_num = 0;
+  const rx_err_t err = internal_validate_port_pin(pin, NULL, NULL);
 
-  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  port    = rx_port_from_pin(pin);
-  pin_num = rx_pin_from_pin(pin);
-
-  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
-    return k_rx_err_invalid_arg;
+  if (err != k_rx_ok) {
+    return err;
   }
 
   return gpio_write_low(pin);
@@ -125,26 +120,15 @@ rx_err_t hcsr04_hal_gpio_write_low(const rx_port_pin_t pin)
 
 rx_err_t hcsr04_hal_gpio_read(const rx_port_pin_t pin, bool* value)
 {
-  uint8_t port    = 0;
-  uint8_t pin_num = 0;
+  rx_err_t err;
 
   if (value == NULL) {
     return k_rx_err_null_ptr;
   }
 
-  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  port    = rx_port_from_pin(pin);
-  pin_num = rx_pin_from_pin(pin);
-
-  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
-    return k_rx_err_invalid_arg;
+  err = internal_validate_port_pin(pin, NULL, NULL);
+  if (err != k_rx_ok) {
+    return err;
   }
 
   return gpio_read(pin, value);
@@ -152,22 +136,10 @@ rx_err_t hcsr04_hal_gpio_read(const rx_port_pin_t pin, bool* value)
 
 rx_err_t hcsr04_hal_gpio_deinit(const rx_port_pin_t pin)
 {
-  uint8_t port    = 0;
-  uint8_t pin_num = 0;
+  const rx_err_t err = internal_validate_port_pin(pin, NULL, NULL);
 
-  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  port    = rx_port_from_pin(pin);
-  pin_num = rx_pin_from_pin(pin);
-
-  if ((port < k_rx_port_0) || (port > k_rx_port_j)) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if ((pin_num < k_rx_pin_0) || (pin_num > k_rx_pin_max)) {
-    return k_rx_err_invalid_arg;
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /*

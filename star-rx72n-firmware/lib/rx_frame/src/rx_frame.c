@@ -61,6 +61,10 @@ typedef enum : uint8_t {
  */
 static void internal_write_le32(uint8_t* buf, const uint32_t val)
 {
+  if (buf == NULL) {
+    return;
+  }
+
   buf[k_le32_byte_0] = (uint8_t)(val & k_rx_byte_mask);
   buf[k_le32_byte_1] = (uint8_t)((val >> k_shift_byte_1) & k_rx_byte_mask);
   buf[k_le32_byte_2] = (uint8_t)((val >> k_shift_byte_2) & k_rx_byte_mask);
@@ -75,6 +79,10 @@ static void internal_write_le32(uint8_t* buf, const uint32_t val)
  */
 static uint32_t internal_read_le32(const uint8_t* buf)
 {
+  if (buf == NULL) {
+    return 0;
+  }
+
   return (uint32_t)buf[k_le32_byte_0] | ((uint32_t)buf[k_le32_byte_1] << k_shift_byte_1) |
          ((uint32_t)buf[k_le32_byte_2] << k_shift_byte_2) |
          ((uint32_t)buf[k_le32_byte_3] << k_shift_byte_3);
@@ -154,9 +162,7 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
     return k_rx_err_crc_mismatch;
   }
 
-  if (crc_out != NULL) {
-    *crc_out = received_crc;
-  }
+  *crc_out = received_crc;
 
   return k_rx_ok;
 }

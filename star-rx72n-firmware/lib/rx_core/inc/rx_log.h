@@ -5,12 +5,12 @@
  * @brief Type-Safe Logging System for RX72N Firmware
  * @details
  * Modern logging system designed specifically for RX72N bare-metal firmware.
- * Uses C11 _Generic for automatic type dispatch and compile-time filtering
+ * Uses C23 _Generic for automatic type dispatch and compile-time filtering
  * for zero overhead when logs are disabled.
  *
  * Key Features:
  * - Compile-time log level filtering (zero overhead for disabled logs)
- * - C11 _Generic automatic type dispatch (no manual type suffixes needed)
+ * - C23 _Generic automatic type dispatch (no manual type suffixes needed)
  * - Type-safe with explicit-width integer types (uint8_t, uint16_t, uint32_t, int32_t)
  * - Bounded string safety (explicit lengths required, NASA Power of 10 compliant)
  * - UART-only output (no printf, suitable for bare-metal)
@@ -649,12 +649,12 @@ static inline void internal_rx_log_verbose_str(const char* tag,
 }
 
 /* =============================================================================
- * C11 _Generic Type Dispatch Helpers
+ * C23 _Generic Type Dispatch Helpers
  * =============================================================================
  */
 
 /**
- * @brief Internal macro for C11 _Generic type dispatch
+ * @brief Internal macro for C23 _Generic type dispatch
  *
  * Automatically selects the correct typed logging function based on the
  * value's type at compile time. Supported types:
@@ -697,7 +697,7 @@ static inline void internal_rx_log_verbose_str(const char* tag,
 /**
  * @brief Log error with typed value (automatic type dispatch)
  *
- * Uses C11 _Generic to automatically select the correct logging function
+ * Uses C23 _Generic to automatically select the correct logging function
  * based on the value's type. Supported types: uint8_t, uint16_t, uint32_t,
  * int32_t, rx_err_t.
  *

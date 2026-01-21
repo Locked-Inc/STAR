@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "rx72n_regs.h"
+#include "rx_check.h"
 #include "rx_log.h"
 #include "rx_usb.h"
 
@@ -679,7 +680,12 @@ static void internal_handle_set_address(const uint16_t usb_value)
  */
 static void internal_handle_set_configuration(const uint16_t usb_value)
 {
+  RX_ASSERT((usb_value & ~k_byte_mask) == 0U, "USB configuration uses upper byte");
+
   const uint8_t config = usb_value & k_byte_mask;
+
+  RX_ASSERT((config == k_usb_config_unconfigured) || (config == k_usb_config_value_1),
+            "USB configuration out of range");
 
   if (config == k_usb_config_value_1) {
     /* Configure data endpoints */

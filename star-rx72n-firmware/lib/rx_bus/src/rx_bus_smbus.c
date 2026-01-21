@@ -200,10 +200,9 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
     length                 = k_smbus_byte_buf_size;
   }
 
-  err = riic_write(bus_config->proto.smbus.i2c_config.channel,
-                   bus_config->proto.smbus.i2c_config.device_addr,
-                   data,
-                   length);
+  const riic_channel_t riic_channel = { .value = bus_config->proto.smbus.i2c_config.channel };
+  const i2c_device_addr_t device_addr = { .value = bus_config->proto.smbus.i2c_config.device_addr };
+  err = riic_write(riic_channel, device_addr, data, length);
 
   if (err != k_rx_ok) {
     ctx->result = err;

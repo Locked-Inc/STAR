@@ -182,7 +182,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
   }
 
   /* Convert timeout from ms to ThreadX ticks */
-  timeout_ticks = (k_bus_manager_mutex_timeout_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+  timeout_ticks = (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
   status = tx_mutex_get(&manager->mutex, timeout_ticks);
@@ -232,7 +232,7 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
   RX_CHECK_NULL_PTR(name, s_tag, "Name pointer is NULL");
 
   /* Convert timeout from ms to ThreadX ticks */
-  timeout_ticks = (k_bus_manager_mutex_timeout_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+  timeout_ticks = (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
   status = tx_mutex_get(&manager->mutex, timeout_ticks);
@@ -282,7 +282,7 @@ rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_conf
   RX_CHECK_NULL_PTR(bus_config, s_tag, "Bus config output pointer is NULL");
 
   /* Convert timeout from ms to ThreadX ticks */
-  timeout_ticks = (k_bus_manager_mutex_timeout_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+  timeout_ticks = (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
   status = tx_mutex_get(&manager->mutex, timeout_ticks);
@@ -323,7 +323,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t*       manager,
   RX_CHECK_NULL_PTR(callback, s_tag, "Callback pointer is NULL");
 
   /* Convert timeout from ms to ThreadX ticks */
-  timeout_ticks = (k_bus_manager_mutex_timeout_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+  timeout_ticks = (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
   status = tx_mutex_get(&manager->mutex, timeout_ticks);

@@ -86,26 +86,32 @@ static float internal_clamp_duty(const float duty)
 }
 
 /**
+ * @brief GPTW output pair
+ */
+typedef struct {
+  rx_gptw_output_t a; /**< Output A */
+  rx_gptw_output_t b; /**< Output B */
+} rx_gptw_output_pair_t;
+
+/**
  * @brief Initialize GPTW and set initial outputs
  *
  * @param[in] channel GPTW channel
- * @param[in] output_a PH output
- * @param[in] output_b EN output
+ * @param[in] outputs Output pair (A/B)
  * @param[in] gptw_config GPTW configuration
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t channel,
-                                           const rx_gptw_output_t  output_a,
-                                           const rx_gptw_output_t  output_b,
-                                           const rx_gptw_config_t* gptw_config)
+static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t   channel,
+                                           const rx_gptw_output_pair_t outputs,
+                                           const rx_gptw_config_t*   gptw_config)
 {
   rx_err_t err = k_rx_err_invalid_state;
 
   RX_CHECK_NULL_PTR(gptw_config, s_tag, "gptw_config pointer is NULL");
 
-  if ((output_a != k_gptw_output_a && output_a != k_gptw_output_b) ||
-      (output_b != k_gptw_output_a && output_b != k_gptw_output_b)) {
+  if ((outputs.a != k_gptw_output_a && outputs.a != k_gptw_output_b) ||
+      (outputs.b != k_gptw_output_a && outputs.b != k_gptw_output_b)) {
     rx_log_error(s_tag, "Invalid GPTW output selection");
     return k_rx_err_invalid_arg;
   }
@@ -116,14 +122,16 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t channel,
     return err;
   }
 
-  err = rx_gptw_set_duty(channel, output_a, s_duty_zero);
+  err =
+    rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.a), s_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_a initial duty");
     (void)rx_gptw_deinit(channel);
     return err;
   }
 
-  err = rx_gptw_set_duty(channel, output_b, s_duty_zero);
+  err =
+    rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.b), s_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_b initial duty");
     (void)rx_gptw_deinit(channel);
@@ -174,8 +182,8 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
     .invert_polarity      = config->invert_pwm,
   };
 
-  err =
-    internal_init_gptw_outputs(config->channel, config->output_a, config->output_b, &gptw_config);
+  const rx_gptw_output_pair_t outputs = {.a = config->output_a, .b = config->output_b};
+  err = internal_init_gptw_outputs(config->channel, outputs, &gptw_config);
   if (err != k_rx_ok) {
     return err;
   }
@@ -233,6 +241,9 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 
 rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 {
+  float   speed_pwm;
+  rx_err_t err;
+
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
@@ -262,31 +273,38 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
    * Duty sign determines PH (+ = forward/HIGH, - = reverse/LOW).
    * EN always receives positive PWM duty proportional to speed.
    */
-  const float speed_pwm = fabsf(duty);
-  rx_err_t    err;
+  speed_pwm = fabsf(duty);
 
   if (duty >= (float)k_motor_duty_zero) {
     /* Forward: PH = HIGH, EN = PWM - NASA Rule 7 compliance */
-    err = rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_high);
+    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                           rx_gptw_output_id(handle->output_a),
+                           (float)k_motor_ph_high);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to set PH output (forward)");
       return err;
     }
 
-    err = rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
+    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                           rx_gptw_output_id(handle->output_b),
+                           speed_pwm);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to set EN output (forward)");
       return err;
     }
   } else {
     /* Reverse: PH = LOW, EN = PWM - NASA Rule 7 compliance */
-    err = rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_low);
+    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                           rx_gptw_output_id(handle->output_a),
+                           (float)k_motor_ph_low);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to set PH output (reverse)");
       return err;
     }
 
-    err = rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
+    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                           rx_gptw_output_id(handle->output_b),
+                           speed_pwm);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to set EN output (reverse)");
       return err;
@@ -321,13 +339,17 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
   }
 
   /* Coast mode: set both outputs to LOW for high impedance - NASA Rule 7 compliance */
-  err = rx_gptw_set_duty(handle->channel, handle->output_a, s_duty_zero);
+  err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                         rx_gptw_output_id(handle->output_a),
+                         s_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_a during stop");
     return err;
   }
 
-  err = rx_gptw_set_duty(handle->channel, handle->output_b, s_duty_zero);
+  err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                         rx_gptw_output_id(handle->output_b),
+                         s_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_b during stop");
     return err;
@@ -366,14 +388,18 @@ rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
   }
 
   /* Immediately set duty to 0% */
-  err = rx_gptw_set_duty(handle->channel, handle->output_a, s_duty_zero);
+  err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                         rx_gptw_output_id(handle->output_a),
+                         s_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "E-STOP: Failed to clear output_a duty");
     if (result == k_rx_ok) {
       result = err;
     }
   }
-  err = rx_gptw_set_duty(handle->channel, handle->output_b, s_duty_zero);
+  err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                         rx_gptw_output_id(handle->output_b),
+                         s_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "E-STOP: Failed to clear output_b duty");
     if (result == k_rx_ok) {

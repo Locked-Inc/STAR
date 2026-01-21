@@ -72,7 +72,12 @@ EXT_LINKS_IN_WINDOW    = NO
 #---------------------------------------------------------------------------
 # Configuration options related to the LaTeX output
 #---------------------------------------------------------------------------
-GENERATE_LATEX         = NO
+GENERATE_LATEX         = YES
+LATEX_OUTPUT           = latex
+PDF_HYPERLINKS         = YES
+USE_PDFLATEX           = YES
+LATEX_MAKEFILE         = Makefile
+LATEX_CMD_NAME         = latex
 
 #---------------------------------------------------------------------------
 # Configuration options related to the RTF output

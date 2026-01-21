@@ -67,6 +67,12 @@ typedef enum : uint8_t {
   k_cmt_mstpb_cmt = 15, /**< CMT0-CMT3 module stop bit */
 } cmt_module_stop_bits_t;
 
+/** @brief CMT interrupt configuration */
+typedef struct {
+  rx_cmt_channel_t channel;  /**< CMT channel */
+  uint8_t          priority; /**< Interrupt priority */
+} rx_cmt_interrupt_config_t;
+
 /** @brief CMCR register bit positions */
 typedef enum : uint8_t {
   k_cmt_cmcr_cks_shift = 0, /**< CKS (clock select) bit shift */
@@ -91,8 +97,6 @@ typedef enum : uint8_t {
   k_cmt_bit_mask_lsb = 1, /**< Single bit set for shifts */
   k_cmt_value_zero   = 0, /**< Zero value for comparisons */
 } cmt_bit_constants_t;
-
-/** @brief IER register calculation constants */
 
 /* =============================================================================
  * Static Variables
@@ -178,23 +182,28 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
 /**
  * @brief Configure CMT interrupt routing and priority
  *
- * @param[in] channel CMT channel
- * @param[in] priority Interrupt priority
+ * @param[in] config Interrupt configuration
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_channel_t channel,
-                                                 const uint8_t          priority)
+static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t config)
 {
   uint8_t vector;
   uint8_t ier_index;
   uint8_t ier_bit;
 
-  vector    = k_vect_cmt0_cmi0 + channel;
+  if ((int32_t)config.channel >= k_cmt_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+  if (config.priority > k_ipr_level_max) {
+    return k_rx_err_invalid_arg;
+  }
+
+  vector    = k_vect_cmt0_cmi0 + config.channel;
   ier_index = vector / k_icu_ier_bits_per_reg;
   ier_bit   = vector % k_icu_ier_bits_per_reg;
 
-  icu()->ipr[vector] = priority;
+  icu()->ipr[vector] = config.priority;
   icu()->ier[ier_index] |= (k_cmt_bit_mask_lsb << ier_bit);
   icu()->ir[vector] = k_cmt_value_zero;
 
@@ -306,7 +315,7 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
   cmt->cmcnt = k_cmt_value_zero;
 
   /* Configure interrupt */
-  err = internal_configure_cmt_interrupt(channel, config->priority);
+  err = internal_configure_cmt_interrupt((rx_cmt_interrupt_config_t){.channel = channel, .priority = config->priority});
   if (err != k_rx_ok) {
     return err;
   }
@@ -451,7 +460,7 @@ rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
   }
 
   /* Stop timer */
-  rx_cmt_stop(channel);
+  (void)rx_cmt_stop(channel);
 
   /* Disable interrupt */
   vector    = k_vect_cmt0_cmi0 + channel;

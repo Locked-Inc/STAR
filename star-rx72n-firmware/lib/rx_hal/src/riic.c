@@ -24,9 +24,11 @@
 
 /** @brief RIIC channel and timeout constants */
 typedef enum : uint32_t {
-  k_riic_max_channels = 3,     /**< RIIC0, RIIC1, RIIC2 */
-  k_riic_timeout_us   = 10000, /**< 10ms timeout for operations */
-  k_riic_timeout_zero = 0,     /**< Timeout expired value */
+  k_riic_max_channels      = 3,     /**< RIIC0, RIIC1, RIIC2 */
+  k_riic_timeout_us        = 10000, /**< 10ms timeout for operations */
+  k_riic_timeout_zero      = 0,     /**< Timeout expired value */
+  k_riic_length_zero       = 0,     /**< Zero-length sentinel for transfers */
+  k_riic_last_index_offset = 1,     /**< Offset for last-byte index calculations */
 } riic_constants_t;
 
 /** @brief RIIC channel numbers for switch statements */
@@ -70,8 +72,8 @@ typedef enum : uint8_t {
 
 /** @brief ICMR3 register ACK/NACK bit */
 typedef enum : uint8_t {
-  k_riic_icmr3_ackbt_pos  = 3,         /**< ACKBT bit position in ICMR3 */
-  k_riic_icmr3_ackbt_mask = (1U << 3), /**< ACKBT bit mask in ICMR3 */
+  k_riic_icmr3_ackbt_pos  = 3,                              /**< ACKBT bit position in ICMR3 */
+  k_riic_icmr3_ackbt_mask = (1U << k_riic_icmr3_ackbt_pos), /**< ACKBT bit mask in ICMR3 */
 } riic_icmr3_bits_t;
 
 /** @brief I2C address constants */
@@ -387,26 +389,32 @@ rx_err_t riic_init(const uint8_t channel, const uint32_t frequency_hz)
   return k_rx_ok;
 }
 
-rx_err_t riic_write(const uint8_t  channel,
-                    const uint8_t  device_addr,
-                    const uint8_t* data,
-                    const uint16_t length)
+rx_err_t riic_write(const riic_channel_t    channel,
+                    const i2c_device_addr_t device_addr,
+                    const uint8_t*          data,
+                    const uint16_t          length)
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
+  RX_ASSERT(channel.value < k_riic_max_channels, "RIIC channel out of range");
 
-  if (length == k_riic_timeout_zero) {
+  if (device_addr.value > k_riic_addr_max_7bit) {
+    rx_log_error(s_tag, "Invalid device address");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (length == k_riic_length_zero) {
     rx_log_error(s_tag, "Write length cannot be zero");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate channel */
-  if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
+  if (channel.value >= k_riic_max_channels || !s_riic_channel_initialized[channel.value]) {
     rx_log_error(s_tag, "RIIC channel not initialized");
     return k_rx_err_invalid_state;
   }
 
   /* Get RIIC base */
-  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel);
+  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel.value);
 
   /* Wait for bus ready */
   rx_err_t err = internal_wait_bus_ready(riic);
@@ -420,7 +428,9 @@ rx_err_t riic_write(const uint8_t  channel,
   RX_RETURN_ON_ERROR(err, s_tag, "Start condition failed");
 
   /* Send device address (write) */
-  err = internal_write_byte(riic, (device_addr << k_riic_addr_shift) | k_riic_addr_write_bit);
+  err = internal_write_byte(
+    riic,
+    (device_addr.value << k_riic_addr_shift) | k_riic_addr_write_bit);
   if (err != k_rx_ok) {
     internal_send_stop(riic);
     return err;
@@ -447,7 +457,12 @@ riic_read(const uint8_t channel, const uint8_t device_addr, uint8_t* data, const
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
 
-  if (length == k_riic_timeout_zero) {
+  if (device_addr > k_riic_addr_max_7bit) {
+    rx_log_error(s_tag, "Invalid device address");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (length == k_riic_length_zero) {
     rx_log_error(s_tag, "Read length cannot be zero");
     return k_rx_err_invalid_arg;
   }
@@ -481,7 +496,7 @@ riic_read(const uint8_t channel, const uint8_t device_addr, uint8_t* data, const
 
   /* Receive data bytes */
   for (uint16_t i = 0; i < length; i++) {
-    const bool send_ack = (i < length - 1); /* NACK on last byte */
+    const bool send_ack = (i < length - k_riic_last_index_offset); /* NACK on last byte */
     err                 = internal_read_byte(riic, &data[i], send_ack);
     if (err != k_rx_ok) {
       internal_send_stop(riic);
@@ -513,7 +528,7 @@ rx_err_t riic_write_read(const uint8_t  channel,
     return k_rx_err_invalid_arg;
   }
 
-  if (write_length == k_riic_timeout_zero || read_length == k_riic_timeout_zero) {
+  if (write_length == k_riic_length_zero || read_length == k_riic_length_zero) {
     rx_log_error(s_tag, "Read/write length cannot be zero");
     return k_rx_err_invalid_arg;
   }
@@ -586,7 +601,7 @@ rx_err_t riic_write_read(const uint8_t  channel,
 
   /* Receive data bytes */
   for (uint16_t i = 0; i < read_length; i++) {
-    const bool send_ack = (i < read_length - 1); /* NACK on last byte */
+    const bool send_ack = (i < read_length - k_riic_last_index_offset); /* NACK on last byte */
     err                 = internal_read_byte(riic, &read_data[i], send_ack);
     if (err != k_rx_ok) {
       internal_send_stop(riic);

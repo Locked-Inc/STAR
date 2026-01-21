@@ -6,8 +6,10 @@
 cmake_minimum_required(VERSION 3.20)
 project(star_rx72n_tests C)
 
-set(CMAKE_C_STANDARD 23)
-set(CMAKE_C_STANDARD_REQUIRED ON)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.21")
+    set(CMAKE_C_STANDARD 23)
+    set(CMAKE_C_STANDARD_REQUIRED ON)
+endif()
 
 # Helper function to apply strict warnings/defines to our test targets only
 function(apply_strict_warnings target)

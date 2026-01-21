@@ -144,6 +144,7 @@ static bool internal_check_lvd0rf(void)
   /* Precondition: Register pointer must be valid */
   RX_ASSERT(regs != NULL, "RSTSR01 register pointer is NULL");
 
+  /* Read twice to catch unstable/rolling reads from volatile status register. */
   const uint8_t rstsr0_val  = regs->rstsr0;
   const uint8_t rstsr0_val2 = regs->rstsr0;
 
@@ -227,10 +228,17 @@ static rx_err_t internal_check_startup_flags(void)
  */
 void tx_application_define(void* first_unused_memory)
 {
-  (void)first_unused_memory; /* Unused parameter */
+  rx_err_t err;
+
+  /* Precondition: first_unused_memory parameter is provided by ThreadX */
+  RX_ASSERT(first_unused_memory != NULL, "Precondition: first_unused_memory must be valid");
 
   /* Create application threads */
-  RX_ERROR_CHECK(app_main_task_create());
+  err = app_main_task_create();
+  RX_ERROR_CHECK(err);
+
+  /* Postcondition: Task creation must succeed */
+  RX_ASSERT(err == k_rx_ok, "Postcondition: app_main_task_create must succeed");
 }
 
 /**

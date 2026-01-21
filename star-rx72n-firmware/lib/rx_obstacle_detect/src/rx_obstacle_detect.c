@@ -376,7 +376,7 @@ static void internal_detection_task_entry(const ULONG input)
   }
 
   /* Convert poll interval to ticks */
-  sleep_ticks = (handle->poll_interval_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+  sleep_ticks = (handle->poll_interval_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
   if (sleep_ticks == 0) {
     sleep_ticks = k_min_sleep_ticks;
   }

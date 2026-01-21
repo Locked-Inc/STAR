@@ -38,6 +38,7 @@ static const char* s_tag = "MPC";
 
 /** @brief MPC pin validation constants */
 typedef enum : uint8_t {
+  k_mpc_min_pin = 0,             /**< Minimum valid pin number */
   k_mpc_max_pin = k_rx_pin_max, /**< Maximum valid pin number */
 } mpc_pin_constants_t;
 
@@ -48,7 +49,8 @@ typedef enum : uint8_t {
 
 /** @brief MPC port number constants */
 typedef enum : uint8_t {
-  k_mpc_port_0 = k_rx_port_0, /**< Port 0 */
+  k_mpc_port_start = k_rx_port_0, /**< First valid port */
+  k_mpc_port_0     = k_rx_port_0, /**< Port 0 */
   k_mpc_port_1 = k_rx_port_1, /**< Port 1 */
   k_mpc_port_2 = k_rx_port_2, /**< Port 2 */
   k_mpc_port_3 = k_rx_port_3, /**< Port 3 */
@@ -263,8 +265,8 @@ rx_err_t rx_mpc_set_gpio(const rx_port_pin_t pin)
   const uint8_t pin_num = rx_pin_from_pin(pin);
 
   /* Pre-condition: port and pin must be in valid range */
-  RX_CHECK_RANGE_TAG(port, k_mpc_port_0, k_mpc_port_j, k_rx_err_invalid_arg, s_tag);
-  RX_CHECK_RANGE_TAG(pin_num, 0, k_mpc_max_pin, k_rx_err_invalid_arg, s_tag);
+  RX_CHECK_RANGE_TAG(port, k_mpc_port_start, k_mpc_port_j, k_rx_err_invalid_arg, s_tag);
+  RX_CHECK_RANGE_TAG(pin_num, k_mpc_min_pin, k_mpc_max_pin, k_rx_err_invalid_arg, s_tag);
 
   /* GPIO mode: PSEL = 0, ISEL = 0, ASEL = 0 */
   return internal_write_pfs(port, pin_num, k_mpc_pfs_gpio);

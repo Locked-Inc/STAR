@@ -25,7 +25,6 @@ static const char* s_tag = "BUS_UART";
  */
 
 static const uint8_t s_uart_ascii_max  = 127; /**< Max 7-bit ASCII value */
-static const uint8_t s_sci_channel_min = 0;   /**< Minimum SCI channel */
 
 /* =============================================================================
  * Callback Context Structures
@@ -115,9 +114,8 @@ static rx_err_t internal_uart_init_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Pre-condition: Verify UART channel is within valid range */
-  if (bus_config->proto.uart.channel < s_sci_channel_min ||
-      bus_config->proto.uart.channel >= k_sci_channel_count) {
-    rx_log_error(s_tag, "UART channel exceeds maximum SCI channel count");
+  if (bus_config->proto.uart.channel >= k_sci_channel_count) {
+    rx_log_error(s_tag, "UART channel out of range");
     ctx->result = k_rx_err_invalid_arg;
     return k_rx_err_invalid_arg;
   }
@@ -164,6 +162,12 @@ static rx_err_t internal_uart_write_callback(rx_bus_config_t* bus_config, void* 
     return k_rx_err_invalid_state;
   }
 
+  if (ctx->length > 0 && ctx->data == NULL) {
+    rx_log_error(s_tag, "UART write data pointer is NULL");
+    ctx->result = k_rx_err_invalid_arg;
+    return k_rx_err_invalid_arg;
+  }
+
   /* Write UART data */
   const rx_err_t err = uart_write_channel(bus_config->proto.uart.channel, ctx->data, ctx->length);
 
@@ -171,12 +175,6 @@ static rx_err_t internal_uart_write_callback(rx_bus_config_t* bus_config, void* 
     rx_log_error(s_tag, "UART write failed");
     ctx->result = err;
     return err;
-  }
-
-  /* Post-condition: Verify data buffer is valid */
-  if (ctx->length > 0 && ctx->data == NULL) {
-    rx_log_warn(s_tag, "UART write succeeded despite NULL data pointer");
-    /* Continue anyway - operation completed, but unexpected state */
   }
 
   ctx->result = k_rx_ok;
@@ -286,12 +284,6 @@ static rx_err_t internal_uart_puts_callback(rx_bus_config_t* bus_config, void* u
     rx_log_error(s_tag, "UART puts failed");
     ctx->result = err;
     return err;
-  }
-
-  /* Post-condition: Verify string pointer is still valid */
-  if (ctx->str == NULL) {
-    rx_log_warn(s_tag, "UART puts succeeded despite NULL string pointer");
-    /* Continue anyway - operation completed, but unexpected state */
   }
 
   ctx->result = k_rx_ok;

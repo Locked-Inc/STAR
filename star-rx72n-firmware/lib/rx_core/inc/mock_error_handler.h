@@ -86,6 +86,7 @@
 
 #include "rx_err.h"
 #include "rx_error_interface.h"
+#include "rx_gpio_constants.h"
 
 #ifdef __cplusplus
 extern "C" {

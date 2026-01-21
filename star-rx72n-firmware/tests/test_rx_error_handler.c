@@ -18,6 +18,8 @@
 
 #include "unity.h"
 
+#include "rx_check.h"
+
 /* Include mock implementations first to override real headers */
 #include "tx_api.h"
 
@@ -58,14 +60,31 @@ typedef enum : uint16_t {
   k_test_zero_retries       = 0,
 } test_constants_t;
 
+/**
+ * @brief Initialize error handler for tests
+ *
+ * @param[in,out] handler Error handler instance
+ * @param[in] max_retries Maximum retries to configure
+ *
+ * @return k_rx_ok on success, error code on failure
+ */
 static rx_err_t internal_init_handler(error_handler_t* handler, uint32_t max_retries)
 {
+  RX_ASSERT((handler == NULL) || (max_retries > k_test_zero_retries),
+            "max_retries must be > 0");
+  RX_ASSERT((handler == NULL) || (max_retries <= k_test_max_retries),
+            "max_retries exceeds test max");
+
   error_handler_config_t config = {
     .max_retries        = max_retries,
     .initial_backoff_ms = k_test_initial_backoff_ms,
     .max_backoff_ms     = k_test_max_backoff_ms,
   };
-  return error_handler_init(handler, &config);
+  const rx_err_t err = error_handler_init(handler, &config);
+  if (handler != NULL) {
+    RX_ASSERT((err != k_rx_ok) || handler->initialized, "Handler must be initialized on success");
+  }
+  return err;
 }
 
 /* =============================================================================

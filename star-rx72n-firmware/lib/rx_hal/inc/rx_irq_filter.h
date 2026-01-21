@@ -71,9 +71,7 @@ typedef enum : uint8_t {
 } rx_irq_filter_clk_t;
 
 /** @brief IRQ pin limits */
-typedef enum : uint8_t {
-  k_irq_max = 15, /**< Maximum IRQ number (0-15) */
-} rx_irq_limits_t;
+static const uint8_t s_irq_max = 15U; /**< Maximum IRQ number (0-15) */
 
 /* =============================================================================
  * Public API
