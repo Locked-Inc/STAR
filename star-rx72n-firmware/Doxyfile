@@ -79,6 +79,8 @@ LATEX_PDF_SIZE         = LETTER
 LATEX_GRAPH_MAX_WIDTH  = 90%
 PDF_HYPERLINKS         = YES
 USE_PDFLATEX           = NO
+LATEX_MAKEFILE         = Makefile
+LATEX_EXTRA_STYLESHEET = my_doxy_style.sty
 EXTRA_PACKAGES         = etex fontspec
 
 # Doxygen layout file
@@ -131,9 +133,8 @@ EXTERNAL_GROUPS        = YES
 #---------------------------------------------------------------------------
 HAVE_DOT               = YES
 DOT_NUM_THREADS        = 0
-DOT_FONTNAME           = "DejaVuSans"
-DOT_FONTSIZE           = 10
-DOT_FONTPATH           =
+DOT_FONTNAME           = DejaVuSans
+DOT_FONTPATH           = /System/Library/Fonts/
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = YES
 GROUP_GRAPHS           = YES
