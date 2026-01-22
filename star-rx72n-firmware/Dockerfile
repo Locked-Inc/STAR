@@ -44,7 +44,9 @@ RUN apt-get update && \
 WORKDIR /tmp/src
 
 # Download and verify toolchain sources with SHA256 checksums
-RUN set -e && \
+# Use pipefail to ensure download/sha256sum failures cause the step to fail
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+RUN \
     BINUTILS_FILE="binutils-${BINUTILS_VERSION}.tar.xz" && \
     GCC_FILE="gcc-${GCC_VERSION}.tar.xz" && \
     NEWLIB_FILE="newlib-${NEWLIB_VERSION}.tar.gz" && \

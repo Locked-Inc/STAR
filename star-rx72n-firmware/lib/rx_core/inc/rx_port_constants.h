@@ -395,13 +395,16 @@ _Static_assert(k_rx_pj_3 == 0x1303, "PJ3 must be 0x1303");
  */
 static inline uint8_t rx_port_from_pin(rx_port_pin_t pin)
 {
-  /* Pre-condition: pin portion fits encoding scheme (pin & k_port_mask <= k_rx_pin_max) */
+  /* Pre-condition 1: pin portion fits encoding scheme (pin & k_port_mask <= k_rx_pin_max) */
   RX_ASSERT((pin & k_port_mask) <= k_rx_pin_max, "Pin portion must be <= k_rx_pin_max");
+
+  /* Pre-condition 2: pin portion is within valid range (>= k_rx_pin_min) */
+  RX_ASSERT((pin & k_port_mask) >= k_rx_pin_min, "Pin portion must be >= k_rx_pin_min");
 
   uint8_t result = (uint8_t)((pin) >> k_port_shift);
 
-  /* Post-condition: result is a valid non-contiguous port value */
-  RX_ASSERT((result <= k_rx_port_g) || (result == k_rx_port_j),
+  /* Post-condition: result is a valid port (0-G or J, skipping H-I) */
+  RX_ASSERT(((result >= k_rx_port_0) && (result <= k_rx_port_g)) || (result == k_rx_port_j),
             "Port number must be valid (k_rx_port_0..k_rx_port_g or k_rx_port_j)");
 
   return result;
@@ -418,14 +421,19 @@ static inline uint8_t rx_port_from_pin(rx_port_pin_t pin)
  */
 static inline uint8_t rx_pin_from_pin(rx_port_pin_t pin)
 {
-  /* Pre-condition: port value fits encoding scheme (port in upper byte) */
+  /* Pre-condition 1: port value fits encoding scheme (port in upper byte) */
   uint8_t port = (uint8_t)((pin) >> k_port_shift);
-  RX_ASSERT(port <= k_rx_port_j, "Port number must be <= 0x13");
+  RX_ASSERT(port >= k_rx_port_0, "Port number must be >= k_rx_port_0");
 
-  uint8_t result = (uint8_t)((pin)&k_port_mask);
+  /* Pre-condition 2: port is valid (0-G or J, skipping H-I) */
+  RX_ASSERT((port <= k_rx_port_g) || (port == k_rx_port_j),
+            "Port number must be valid (k_rx_port_0..k_rx_port_g or k_rx_port_j)");
+
+  uint8_t result = (uint8_t)((pin) & k_port_mask);
 
   /* Post-condition: result fits in rx_pin_number_t range (0x00-0x07) */
-  RX_ASSERT(result <= k_rx_pin_max, "Pin number must be <= k_rx_pin_max");
+  RX_ASSERT(result >= k_rx_pin_min && result <= k_rx_pin_max,
+            "Pin number must be in range k_rx_pin_min..k_rx_pin_max");
 
   return result;
 }

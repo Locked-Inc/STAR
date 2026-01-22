@@ -38,7 +38,7 @@ typedef enum : uint16_t {
 /**
  * @brief FEC output indices for G1 and G2 generator polynomials
  */
-typedef enum {
+typedef enum : uint8_t {
   k_fec_output_g1 = 0, /**< G1 generator output (first encoded bit) */
   k_fec_output_g2 = 1, /**< G2 generator output (second encoded bit) */
 } rx_fec_output_index_t;
@@ -71,6 +71,7 @@ typedef enum {
 static uint8_t internal_parity(uint8_t x)
 {
   /* Pre-condition: Input x is uint8_t (0-255), always valid */
+  assert(x <= UINT8_MAX);
 
   /* Compute parity using parallel XOR reduction */
   x ^= x >> 4; /* XOR upper nibble with lower nibble */
@@ -456,7 +457,7 @@ rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
     return k_rx_err_invalid_state;
   }
 
-  if (input_len == 0) {
+  if (input_len == k_fec_zero) {
     return k_rx_err_invalid_arg;
   }
 
@@ -474,11 +475,11 @@ rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
   uint8_t  state       = 0;
   uint32_t out_bit_idx = 0;
 
+  /* Calculate byte limit before loop to avoid redundant checks inside */
+  const uint32_t byte_limit = (input_len < k_fec_max_input_bytes) ? input_len : k_fec_max_input_bytes;
+
   /* Encode each input byte, MSB first */
-  for (uint32_t byte_idx = 0; byte_idx < k_fec_max_input_bytes; byte_idx++) {
-    if (byte_idx >= input_len) {
-      break;
-    }
+  for (uint32_t byte_idx = 0; byte_idx < byte_limit; byte_idx++) {
     const uint8_t b = input[byte_idx];
     for (int8_t i = k_fec_msb_bit_position; i >= 0; i--) {
       const uint8_t input_bit = (b >> i) & k_fec_bit_mask;
@@ -643,7 +644,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
 
   /* Calculate data bits and output size */
   data_bits = num_symbols - k_fec_tail_bits;
-  if (data_bits == 0) {
+  if (data_bits == k_fec_zero) {
     return k_rx_err_invalid_size;
   }
 

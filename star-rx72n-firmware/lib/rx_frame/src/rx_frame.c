@@ -57,8 +57,13 @@ typedef enum : uint8_t {
 /**
  * @brief Write uint32 in little-endian format (for CRC-32)
  *
- * @param[out] buf Output buffer (at least 4 bytes)
- * @param[in]  val Value to write
+ * @param[out] buf     Output buffer (at least 4 bytes)
+ * @param[in]  buf_len Size of output buffer in bytes (must be >= 4)
+ * @param[in]  val     Value to write
+ *
+ * @return k_rx_ok on success
+ * @retval k_rx_err_invalid_arg if buf is NULL
+ * @retval k_rx_err_invalid_size if buf_len < 4
  */
 static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const uint32_t val)
 {
@@ -77,8 +82,13 @@ static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const 
 /**
  * @brief Read uint32 in little-endian format (for CRC-32)
  *
- * @param[in] buf Input buffer (at least 4 bytes)
- * @return Decoded value
+ * @param[in]  buf     Input buffer (at least 4 bytes)
+ * @param[in]  buf_len Size of input buffer in bytes (must be >= 4)
+ * @param[out] out_val Pointer to store decoded value
+ *
+ * @return k_rx_ok on success
+ * @retval k_rx_err_invalid_arg if buf or out_val is NULL
+ * @retval k_rx_err_invalid_size if buf_len < 4
  */
 static rx_err_t
 internal_read_le32(const uint8_t* buf, const uint32_t buf_len, uint32_t* out_val)
@@ -221,6 +231,18 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
  * =============================================================================
  */
 
+/**
+ * @brief Initialize a frame encoder instance
+ *
+ * Prepares the encoder for use by setting the initialized flag and verifying
+ * the initialization completed successfully (redundant validation per Rule 5).
+ *
+ * @param[out] enc Encoder instance to initialize
+ *
+ * @return k_rx_ok on successful initialization
+ * @retval k_rx_err_invalid_arg if enc is NULL
+ * @retval k_rx_err_validation_failed if initialization verification fails
+ */
 rx_err_t rx_frame_encoder_init(rx_frame_encoder_t* enc)
 {
   if (enc == NULL) {
@@ -234,6 +256,18 @@ rx_err_t rx_frame_encoder_init(rx_frame_encoder_t* enc)
   return k_rx_ok;
 }
 
+/**
+ * @brief Deinitialize a frame encoder instance
+ *
+ * Marks the encoder as uninitialized, preventing further use.
+ * Verifies deinitialization completed successfully (redundant validation per Rule 5).
+ *
+ * @param[out] enc Encoder instance to deinitialize
+ *
+ * @return k_rx_ok on successful deinitialization
+ * @retval k_rx_err_invalid_arg if enc is NULL
+ * @retval k_rx_err_validation_failed if deinitialization verification fails
+ */
 rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc)
 {
   if (enc == NULL) {
@@ -254,6 +288,7 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
 {
   uint32_t frame_size;
   uint32_t offset;
+  uint32_t crc;
   rx_err_t err;
 
   if (enc == NULL || frame == NULL || output == NULL || output_len == NULL) {
@@ -301,7 +336,7 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
   }
 
   /* Calculate CRC-32 over SYNC + Header + Payload (IEEE 802.3 polynomial) */
-  const uint32_t crc = rx_crc32_ieee(output, offset);
+  crc = rx_crc32_ieee(output, offset);
 
   /* Write CRC-32 (little-endian to match IEEE 802.3 LSB-first order) */
   err = internal_write_le32(&output[offset], frame_size - offset, crc);
@@ -319,6 +354,18 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
  * =============================================================================
  */
 
+/**
+ * @brief Initialize a frame decoder instance
+ *
+ * Prepares the decoder for use by setting the initialized flag and verifying
+ * the initialization completed successfully (redundant validation per Rule 5).
+ *
+ * @param[out] dec Decoder instance to initialize
+ *
+ * @return k_rx_ok on successful initialization
+ * @retval k_rx_err_invalid_arg if dec is NULL
+ * @retval k_rx_err_validation_failed if initialization verification fails
+ */
 rx_err_t rx_frame_decoder_init(rx_frame_decoder_t* dec)
 {
   if (dec == NULL) {
@@ -332,6 +379,18 @@ rx_err_t rx_frame_decoder_init(rx_frame_decoder_t* dec)
   return k_rx_ok;
 }
 
+/**
+ * @brief Deinitialize a frame decoder instance
+ *
+ * Marks the decoder as uninitialized, preventing further use.
+ * Verifies deinitialization completed successfully (redundant validation per Rule 5).
+ *
+ * @param[out] dec Decoder instance to deinitialize
+ *
+ * @return k_rx_ok on successful deinitialization
+ * @retval k_rx_err_invalid_arg if dec is NULL
+ * @retval k_rx_err_validation_failed if deinitialization verification fails
+ */
 rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
 {
   if (dec == NULL) {
@@ -345,6 +404,29 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
   return k_rx_ok;
 }
 
+/**
+ * @brief Decode a frame from raw data
+ *
+ * Validates the decoder state, extracts the frame header, copies the payload,
+ * and verifies the CRC-32 checksum.
+ *
+ * @param[in]  dec       Initialized frame decoder instance
+ * @param[in]  data      Raw frame data buffer
+ * @param[in]  data_len  Length of data buffer in bytes
+ * @param[out] frame     Decoded frame (header, payload, CRC)
+ *
+ * @return k_rx_ok on successful decode
+ * @return k_rx_err_invalid_arg if any pointer is NULL or decoder not initialized
+ * @return k_rx_err_invalid_state if decoder not initialized
+ * @return k_rx_err_crc if CRC-32 verification fails
+ * @return k_rx_err_invalid_size if payload exceeds maximum frame size
+ *
+ * @note This function performs validation at multiple points:
+ *       - Null pointer checks on all parameters
+ *       - Decoder initialization check
+ *       - Header parsing via internal_decode_header()
+ *       - CRC verification via internal_verify_crc()
+ */
 rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
                          const uint8_t*            data,
                          const uint32_t            data_len,
@@ -384,6 +466,20 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  * =============================================================================
  */
 
+/**
+ * @brief Create an ACK (acknowledgment) frame
+ *
+ * Constructs a frame with type=ACK, empty payload, and the specified sequence number.
+ * The ACK response frames are used by the receiver to confirm successful reception
+ * of a command or data frame from the sender.
+ *
+ * @param[out] frame    Frame structure to populate with ACK
+ * @param[in]  sequence Sequence number of the frame being acknowledged
+ *
+ * @return k_rx_ok on successful frame creation
+ * @retval k_rx_err_invalid_arg if frame is NULL
+ * @retval k_rx_err_validation_failed if ACK type verification fails
+ */
 rx_err_t rx_frame_create_ack(rx_frame_t* frame, const uint16_t sequence)
 {
   if (frame == NULL) {
@@ -403,6 +499,21 @@ rx_err_t rx_frame_create_ack(rx_frame_t* frame, const uint16_t sequence)
   return k_rx_ok;
 }
 
+/**
+ * @brief Create a NACK (negative acknowledgment) frame
+ *
+ * Constructs a frame with type=NACK, empty payload, the specified sequence number,
+ * and error/status flags. NACK frames are sent by the receiver to indicate that a
+ * frame was not processed successfully due to an error condition (specified in flags).
+ *
+ * @param[out] frame    Frame structure to populate with NACK
+ * @param[in]  sequence Sequence number of the frame being negative-acknowledged
+ * @param[in]  flags    Status/error flags indicating reason for NACK
+ *
+ * @return k_rx_ok on successful frame creation
+ * @retval k_rx_err_invalid_arg if frame is NULL
+ * @retval k_rx_err_validation_failed if NACK type verification fails
+ */
 rx_err_t rx_frame_create_nack(rx_frame_t* frame, const uint16_t sequence, uint8_t flags)
 {
   if (frame == NULL) {

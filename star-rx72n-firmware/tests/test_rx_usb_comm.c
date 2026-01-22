@@ -1087,7 +1087,7 @@ void test_usb_comm_receive_buffer_compaction(void)
     uint8_t    payload[20];
 
     /* Fill payload with sequence number pattern */
-    memset(payload, (int)seq, sizeof(payload));
+    memset(payload, (uint8_t)seq, sizeof(payload));
 
     rx_err_t err = helper_create_encoded_frame(&tx_frame,
                                                seq,

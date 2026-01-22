@@ -12,14 +12,9 @@ project(star-rx72n-firmware
     DESCRIPTION "STAR Robot RX72N Motor Control Firmware"
 )
 
-# C standard
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.21")
-    set(CMAKE_C_STANDARD 23)
-    set(CMAKE_C_STANDARD_REQUIRED ON)
-endif()
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    add_compile_options($<$<COMPILE_LANGUAGE:C>:-std=gnu2x>)
-endif()
+# C standard (C23 required for enum : uint8_t syntax)
+set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)  # GNU extensions for embedded
 
 # Build type default

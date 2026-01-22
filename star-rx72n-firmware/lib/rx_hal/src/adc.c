@@ -99,6 +99,12 @@ static const char* s_tag = "ADC";
 /* Track initialized ADC units */
 static bool s_adc_unit_initialized[k_adc_max_units] = {false, false};
 
+/* Track resolution for each ADC unit (initialized to 12-bit default) */
+static adc_resolution_t s_adc_unit_resolution[k_adc_max_units] = {
+    k_adc_resolution_12bit,
+    k_adc_resolution_12bit
+};
+
 /* =============================================================================
  * Internal Helper Functions
  * =============================================================================
@@ -226,6 +232,9 @@ static rx_err_t internal_read_channel_value(volatile rx_s12ad_regs_t* adc,
                                             const adc_channel_t       channel,
                                             uint16_t*                 value)
 {
+  RX_CHECK_NULL_PTR(adc, s_tag, "ADC register pointer is NULL");
+  RX_CHECK_NULL_PTR(value, s_tag, "value pointer is NULL");
+
   switch (channel) {
     case k_adc_channel_0:
       *value = adc->addr0;
@@ -313,9 +322,18 @@ rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_
 
   /* Initialize ADC unit if not already initialized */
   if (!s_adc_unit_initialized[unit]) {
+    /* Store resolution for validation on subsequent calls */
+    s_adc_unit_resolution[unit] = bits;
+
     err = internal_configure_adc_unit(unit, adc, bits);
     if (err != k_rx_ok) {
       return err;
+    }
+  } else {
+    /* Unit already initialized - verify resolution matches */
+    if (bits != s_adc_unit_resolution[unit]) {
+      rx_log_error(s_tag, "ADC resolution mismatch on subsequent init");
+      return k_rx_err_invalid_arg;
     }
   }
 
@@ -444,6 +462,17 @@ rx_err_t adc_read_voltage_mv(const adc_unit_t unit,
   if (bits != k_adc_resolution_8bit && bits != k_adc_resolution_10bit &&
       bits != k_adc_resolution_12bit) {
     rx_log_error(s_tag, "Invalid resolution (must be 8, 10, or 12 bits)");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate that passed resolution matches unit's configured resolution */
+  if (unit < k_adc_unit_0 || unit > k_adc_unit_1) {
+    rx_log_error(s_tag, "Invalid ADC unit");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (bits != s_adc_unit_resolution[unit]) {
+    rx_log_error(s_tag, "ADC resolution mismatch in voltage read");
     return k_rx_err_invalid_arg;
   }
 

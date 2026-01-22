@@ -67,6 +67,7 @@ typedef enum : uint32_t {
  * @brief Encoder calculation constants
  */
 typedef enum : uint16_t {
+  k_turns_multiplier       = 2,   /**< Multiplier for turns range validation (±720°) */
   k_degrees_per_revolution = 360, /**< Degrees in one full revolution */
 } encoder_calc_constants_t;
 
@@ -294,6 +295,14 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
 
   /* Convert to revolutions per second */
   const uint16_t counts_per_rev = s_counts_per_rev[channel];
+
+  /* Guard division: Validate counts_per_rev is within acceptable range */
+  if (counts_per_rev < k_encoder_min_counts_per_rev ||
+      counts_per_rev > k_encoder_max_counts_per_rev) {
+    rx_log_error(s_tag, "counts_per_rev out of valid range");
+    return k_rx_err_invalid_state;
+  }
+
   const float    delta_revs     = (float)delta_count / counts_per_rev;
   *velocity_rps                 = delta_revs / delta_time_s;
 
@@ -402,9 +411,16 @@ static rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t channel)
 {
   volatile rx_mtu_channel_regs_t* mtu;
 
-  /* Pre-condition: channel must be valid */
+  /* Pre-condition: channel must be within valid MTU channel enum range */
+  if (channel > k_mtu_channel_7) {
+    rx_log_error(s_tag, "Channel exceeds maximum MTU channel");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition: channel must map to a valid MTU base address */
   mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
+    rx_log_error(s_tag, "Invalid MTU channel - no base address");
     return k_rx_err_invalid_arg;
   }
 
@@ -452,6 +468,18 @@ static rx_err_t internal_configure_encoder_timer(volatile rx_mtu_channel_regs_t*
 
   /* Clear counter */
   mtu->tcnt = k_encoder_count_reset;
+
+  /* Post-condition: Verify configuration was latched (NASA Rule 5)
+   * Read back TCR and TMDR to ensure hardware accepted the writes */
+  if (mtu->tcr != k_tcr_external_clock_no_prescaler) {
+    rx_log_error(s_tag, "TCR configuration not latched");
+    return k_rx_err_hw_init_failed;
+  }
+
+  if (mtu->tmdr != k_tmdr_phase_counting_mode_1) {
+    rx_log_error(s_tag, "TMDR configuration not latched");
+    return k_rx_err_hw_init_failed;
+  }
 
   return k_rx_ok;
 }
@@ -502,6 +530,13 @@ static rx_err_t internal_initialize_encoder_state(const rx_mtu_channel_t     cha
     return k_rx_err_invalid_arg;
   }
 
+  /* Validate counts_per_rev is within acceptable range */
+  if (config->counts_per_rev < k_encoder_min_counts_per_rev ||
+      config->counts_per_rev > k_encoder_max_counts_per_rev) {
+    rx_log_error(s_tag, "counts_per_rev out of valid range");
+    return k_rx_err_invalid_arg;
+  }
+
   /* Initialize state */
   s_encoder_state[channel].total_count    = k_encoder_initial_count;
   s_encoder_state[channel].last_raw_count = k_encoder_count_reset;
@@ -522,6 +557,12 @@ static rx_err_t internal_update_state_from_count(rx_encoder_state_t*    state,
 {
   if (!internal_is_valid_channel(channel) || state == NULL) {
     return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition: Ensure encoder is initialized (NASA Rule 5 compliance) */
+  if (!s_encoder_initialized[channel]) {
+    rx_log_error(s_tag, "Encoder not initialized");
+    return k_rx_err_invalid_state;
   }
 
   const uint16_t last_count = s_encoder_state[channel].last_raw_count;
@@ -552,7 +593,15 @@ static rx_err_t internal_update_state_from_count(rx_encoder_state_t*    state,
   s_encoder_state[channel].last_raw_count = current_count;
 
   /* Calculate revolutions and position */
-  const uint16_t counts_per_rev        = s_counts_per_rev[channel];
+  const uint16_t counts_per_rev = s_counts_per_rev[channel];
+
+  /* Guard division: Validate counts_per_rev is within acceptable range (NASA Rule 5) */
+  if (counts_per_rev < k_encoder_min_counts_per_rev ||
+      counts_per_rev > k_encoder_max_counts_per_rev) {
+    rx_log_error(s_tag, "counts_per_rev out of valid range");
+    return k_rx_err_invalid_state;
+  }
+
   s_encoder_state[channel].revolutions = s_encoder_state[channel].total_count / counts_per_rev;
 
   const int32_t remainder_counts = s_encoder_state[channel].total_count % counts_per_rev;
@@ -562,7 +611,8 @@ static rx_err_t internal_update_state_from_count(rx_encoder_state_t*    state,
   /* Post-condition: Validate position is within reasonable range
    * Note: Position can be negative for backward counts, so we check absolute value.
    * Position beyond ±720° would indicate a calculation error. */
-  if (fabsf(s_encoder_state[channel].position_deg) > (2 * k_degrees_per_revolution)) {
+  if (fabsf(s_encoder_state[channel].position_deg) >
+      (k_turns_multiplier * k_degrees_per_revolution)) {
     rx_log_error(s_tag, "Position calculation overflow - exceeds ±720°");
     return k_rx_err_out_of_range;
   }

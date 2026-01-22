@@ -33,7 +33,7 @@
  */
 
 /** @brief IWDT timeout validation limits */
-typedef enum : int {
+typedef enum : uint32_t {
   k_iwdt_timeout_min_ms = 1,     /**< Minimum valid timeout in milliseconds */
   k_iwdt_timeout_max_ms = 16384, /**< Maximum valid timeout in milliseconds */
 } iwdt_timeout_limits_t;
@@ -150,6 +150,8 @@ static rx_err_t internal_find_timeout_config(const uint32_t               timeou
  */
 static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entry_t* config)
 {
+  uint16_t iwdtcr = 0;
+
   if (config == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -157,8 +159,6 @@ static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entr
   if (iwdt() == NULL) {
     return k_rx_err_hw_unmapped;
   }
-
-  uint16_t iwdtcr = 0;
   iwdtcr |= config->tops;    /* Timeout period */
   iwdtcr |= config->cks;     /* Clock divisor */
   iwdtcr |= k_iwdt_rpes_0;   /* Window end at 0% (disabled) */
@@ -180,6 +180,10 @@ static rx_err_t internal_configure_iwdt_registers(void)
 {
   if (iwdt() == NULL) {
     return k_rx_err_hw_unmapped;
+  }
+
+  if (s_iwdt_initialized == k_iwdt_initialized) {
+    return k_rx_err_invalid_state;
   }
 
   iwdt()->iwdtrcr   = k_iwdt_rstirqs_reset;
@@ -495,7 +499,7 @@ rx_err_t rx_iwdt_check_tasks(void)
   const task_monitor_t* task = NULL;
   uint32_t              elapsed_ms;
   char                  log_msg[k_log_msg_buffer_size];
-  int                   snprintf_result;
+  int32_t               snprintf_result;
 
   if (s_iwdt_initialized != k_iwdt_initialized) {
     return k_rx_err_invalid_state;
