@@ -45,7 +45,7 @@
 			)
 		)
 		(property "Description" "Motor / Motion / Ignition Controllers & Drivers Automotive 40-V, 12-A H-bridge driver with integrated current sensing and feedback"
-			(at 0.762 9.906 0)
+			(at 2.286 9.652 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -388,7 +388,7 @@
 			(pin passive line
 				(at 35.56 0 180)
 				(length 5.08)
-				(name "CIPO"
+				(name "COPI"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -406,7 +406,7 @@
 			(pin passive line
 				(at 35.56 -2.54 180)
 				(length 5.08)
-				(name "COPI"
+				(name "CIPO"
 					(effects
 						(font
 							(size 1.27 1.27)
