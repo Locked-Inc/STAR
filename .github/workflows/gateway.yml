@@ -71,7 +71,7 @@ jobs:
         run: go build -v -o star-gateway ./cmd/star-gateway
 
       - name: Run unit tests
-        run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+        run: go test -v -race -coverprofile=coverage.out -covermode=atomic -coverpkg=./... ./...
 
       - name: Calculate coverage
         id: coverage

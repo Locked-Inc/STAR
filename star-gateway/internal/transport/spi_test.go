@@ -6,6 +6,7 @@ package transport
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 )
@@ -438,5 +439,343 @@ func TestSPITransport_CustomConfig(t *testing.T) {
 	_, err = transport.Transfer(context.Background(), testData)
 	if err != nil {
 		t.Fatalf("Transfer with custom config failed: %v", err)
+	}
+}
+
+// ============================================================================
+// Mock-based tests (run without hardware)
+// These tests use mocks to achieve full coverage without requiring /dev/spidev0.0
+// ============================================================================
+
+func TestSPITransport_MockSend_Success(t *testing.T) {
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+	defer transport.Close()
+
+	testData := []byte{0x55, 0xAA, 0x01, 0x02}
+	n, err := transport.Send(testData)
+	if err != nil {
+		t.Fatalf("Send failed: %v", err)
+	}
+	if n != len(testData) {
+		t.Errorf("Expected to send %d bytes, got %d", len(testData), n)
+	}
+
+	// Verify mock received the data
+	if mockPort.conn.txCallCount != 1 {
+		t.Errorf("Expected 1 Tx call, got %d", mockPort.conn.txCallCount)
+	}
+}
+
+func TestSPITransport_MockSend_Failure(t *testing.T) {
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+	defer transport.Close()
+
+	// Inject error into the connection after it's created
+	mockPort.conn.mu.Lock()
+	mockPort.conn.txError = errors.New("SPI transmission error")
+	mockPort.conn.mu.Unlock()
+
+	testData := []byte{0x01, 0x02}
+	_, err = transport.Send(testData)
+	if err == nil {
+		t.Error("Expected Send to fail with mock error")
+	}
+	if err.Error() != "SPI send failed: SPI transmission error" {
+		t.Errorf("Unexpected error: %v", err)
+	}
+}
+
+func TestSPITransport_MockReceive_Success(t *testing.T) {
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+	defer transport.Close()
+
+	// Set mock response data
+	mockPort.conn.rxData = []byte{0xDE, 0xAD, 0xBE, 0xEF}
+
+	rxData, err := transport.Receive(4)
+	if err != nil {
+		t.Fatalf("Receive failed: %v", err)
+	}
+	if len(rxData) != 4 {
+		t.Errorf("Expected 4 bytes, got %d", len(rxData))
+	}
+	// Check first byte matches mock data
+	if rxData[0] != 0xDE {
+		t.Errorf("Expected first byte 0xDE, got 0x%02X", rxData[0])
+	}
+}
+
+func TestSPITransport_MockReceive_WithDeadline_NotExpired(t *testing.T) {
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+	defer transport.Close()
+
+	// Set future deadline
+	futureDeadline := time.Now().Add(1 * time.Hour)
+	err = transport.SetReadDeadline(futureDeadline)
+	if err != nil {
+		t.Fatalf("SetReadDeadline failed: %v", err)
+	}
+
+	// Should succeed because deadline hasn't passed
+	_, err = transport.Receive(10)
+	if err != nil {
+		t.Fatalf("Receive should succeed with future deadline: %v", err)
+	}
+}
+
+func TestSPITransport_MockReceive_WithDeadline_Expired(t *testing.T) {
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+	defer transport.Close()
+
+	// Set past deadline
+	pastDeadline := time.Now().Add(-1 * time.Second)
+	err = transport.SetReadDeadline(pastDeadline)
+	if err != nil {
+		t.Fatalf("SetReadDeadline failed: %v", err)
+	}
+
+	// Should fail with timeout
+	_, err = transport.Receive(10)
+	if err != ErrTimeout {
+		t.Errorf("Expected ErrTimeout with expired deadline, got %v", err)
+	}
+}
+
+func TestSPITransport_MockReceive_Failure(t *testing.T) {
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+	defer transport.Close()
+
+	// Inject error into the connection after it's created
+	mockPort.conn.mu.Lock()
+	mockPort.conn.txError = errors.New("SPI receive error")
+	mockPort.conn.mu.Unlock()
+
+	_, err = transport.Receive(10)
+	if err == nil {
+		t.Error("Expected Receive to fail with mock error")
+	}
+	if err.Error() != "SPI receive failed: SPI receive error" {
+		t.Errorf("Unexpected error: %v", err)
+	}
+}
+
+func TestSPITransport_MockTransfer_Success(t *testing.T) {
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+	defer transport.Close()
+
+	txData := []byte{0x01, 0x02, 0x03, 0x04}
+	rxData, err := transport.Transfer(context.Background(), txData)
+	if err != nil {
+		t.Fatalf("Transfer failed: %v", err)
+	}
+	if len(rxData) != len(txData) {
+		t.Errorf("Expected %d bytes, got %d", len(txData), len(rxData))
+	}
+}
+
+func TestSPITransport_MockTransfer_ContextCanceled(t *testing.T) {
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+	defer transport.Close()
+
+	// Create canceled context
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	txData := []byte{0x01, 0x02}
+	_, err = transport.Transfer(ctx, txData)
+	if err == nil {
+		t.Error("Expected Transfer to fail with canceled context")
+	}
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("Expected context.Canceled error, got %v", err)
+	}
+}
+
+func TestSPITransport_MockTransfer_Failure(t *testing.T) {
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+	defer transport.Close()
+
+	// Inject error into the connection after it's created
+	mockPort.conn.mu.Lock()
+	mockPort.conn.txError = errors.New("SPI transfer error")
+	mockPort.conn.mu.Unlock()
+
+	_, err = transport.Transfer(context.Background(), []byte{0x01})
+	if err == nil {
+		t.Error("Expected Transfer to fail with mock error")
+	}
+	if err.Error() != "SPI transfer failed: SPI transfer error" {
+		t.Errorf("Unexpected error: %v", err)
+	}
+}
+
+func TestSPITransport_MockClose_Success(t *testing.T) {
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+
+	if !transport.IsOpen() {
+		t.Error("Expected transport to be open")
+	}
+
+	err = transport.Close()
+	if err != nil {
+		t.Fatalf("Close failed: %v", err)
+	}
+
+	if transport.IsOpen() {
+		t.Error("Expected transport to be closed")
+	}
+
+	// Verify port.Close() was called
+	if mockPort.closeCount != 1 {
+		t.Errorf("Expected 1 Close call, got %d", mockPort.closeCount)
+	}
+
+	// Verify idempotent close
+	err = transport.Close()
+	if err != nil {
+		t.Errorf("Second Close should be idempotent, got error: %v", err)
+	}
+}
+
+func TestSPITransport_MockClose_Failure(t *testing.T) {
+	mockPort := newMockSPIPort()
+	mockPort.closeError = errors.New("failed to close SPI port")
+
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+
+	err = transport.Close()
+	if err == nil {
+		t.Error("Expected Close to fail with mock error")
+	}
+	if !errors.Is(err, mockPort.closeError) {
+		t.Errorf("Unexpected error: %v, want %v", err, mockPort.closeError)
+	}
+}
+
+func TestSPITransport_MockOpen_ConnectFailure(t *testing.T) {
+	mockPort := newMockSPIPort()
+	mockPort.connectErr = errors.New("failed to configure SPI")
+
+	_, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err == nil {
+		t.Error("Expected newSPITransportWithMockPort to fail with connect error")
+	}
+	if !errors.Is(err, mockPort.connectErr) {
+		t.Errorf("Expected connect error, got: %v", err)
+	}
+}
+
+func TestSPITransport_MockMultipleOperations(t *testing.T) {
+	const iterations = 5 // Number of Send/Receive/Transfer cycles
+
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+	defer transport.Close()
+
+	// Perform multiple different operations
+	for i := range iterations {
+		testData := []byte{byte(i), 0xAA}
+
+		// Send
+		n, err := transport.Send(testData)
+		if err != nil {
+			t.Fatalf("Iteration %d: Send failed: %v", i, err)
+		}
+		if n != len(testData) {
+			t.Errorf("Iteration %d: Expected to send %d bytes, got %d", i, len(testData), n)
+		}
+
+		// Receive
+		rxData, err := transport.Receive(2)
+		if err != nil {
+			t.Fatalf("Iteration %d: Receive failed: %v", i, err)
+		}
+		if len(rxData) != 2 {
+			t.Errorf("Iteration %d: Expected 2 bytes, got %d", i, len(rxData))
+		}
+
+		// Transfer
+		txData := []byte{byte(i * 2), byte(i * 3)}
+		rxData, err = transport.Transfer(context.Background(), txData)
+		if err != nil {
+			t.Fatalf("Iteration %d: Transfer failed: %v", i, err)
+		}
+		if len(rxData) != len(txData) {
+			t.Errorf("Iteration %d: Expected %d bytes, got %d", i, len(txData), len(rxData))
+		}
+	}
+}
+
+func TestSPITransport_MockEmptyTransfer(t *testing.T) {
+	mockPort := newMockSPIPort()
+	transport, err := newSPITransportWithMockPort(DefaultConfig(), mockPort)
+	if err != nil {
+		t.Fatalf("Failed to create transport with mock: %v", err)
+	}
+	defer transport.Close()
+
+	// Test with empty data
+	txData := []byte{}
+	rxData, err := transport.Transfer(context.Background(), txData)
+	if err != nil {
+		t.Fatalf("Empty transfer failed: %v", err)
+	}
+	if len(rxData) != 0 {
+		t.Errorf("Expected 0 bytes for empty transfer, got %d", len(rxData))
+	}
+
+	// Test empty send
+	n, err := transport.Send([]byte{})
+	if err != nil {
+		t.Fatalf("Empty send failed: %v", err)
+	}
+	if n != 0 {
+		t.Errorf("Expected to send 0 bytes, got %d", n)
 	}
 }
