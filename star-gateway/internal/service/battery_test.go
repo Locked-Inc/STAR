@@ -128,15 +128,12 @@ func createTestDeviceInfo() *starv1.BmsDeviceInfo {
 
 func TestNewBatteryService(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
-	ready := make(chan struct{})
+	ready := make(chan struct{}, 1) // Buffered to prevent blocking
 	mockDispatcher := &testutil.MockDispatcher{
 		SubscribeFunc: func(_ dispatcher.MessageType) <-chan *starv1.WireMessage {
 			ch := make(chan *starv1.WireMessage)
 			// Signal that subscription happened (goroutine started)
-			select {
-			case ready <- struct{}{}:
-			default:
-			}
+			ready <- struct{}{}
 			return ch
 		},
 	}

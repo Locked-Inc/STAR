@@ -30,6 +30,9 @@ const (
 	// httpShutdownTimeout is the maximum time allowed for HTTP server graceful shutdown.
 	httpShutdownTimeout = 5 * time.Second
 
+	// grpcShutdownTimeout is the maximum time allowed for gRPC server graceful shutdown.
+	grpcShutdownTimeout = 5 * time.Second
+
 	// grpcListenPort is the TCP port for gRPC services.
 	grpcListenPort = ":50051"
 
@@ -314,8 +317,19 @@ func shutdownServers(httpServer *http.Server, grpcServer *grpc.Server, shutdownR
 
 	// Shutdown gRPC server
 	log.Printf("Shutting down gRPC server...")
-	grpcServer.GracefulStop()
-	log.Println("gRPC server stopped")
+	stopped := make(chan struct{})
+	go func() {
+		grpcServer.GracefulStop()
+		close(stopped)
+	}()
+
+	select {
+	case <-stopped:
+		log.Println("gRPC server stopped gracefully")
+	case <-time.After(grpcShutdownTimeout):
+		log.Println("gRPC server graceful shutdown timed out, forcing stop")
+		grpcServer.Stop()
+	}
 
 	// Shutdown services in reverse order (LIFO)
 	log.Println("Shutting down services...")

@@ -48,6 +48,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 ## Protocol Specifications
 
 ### SPI Frame Format
+
 ```
 [SYNC: 0x55AA (2B, BE)]
 [SEQ: sequence number (2B, BE)]
@@ -59,6 +60,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 ```
 
 ### Communication Parameters
+
 - **Rate**: 100 Hz (10ms period) - MUST maintain to prevent E-STOP
 - **SPI Speed**: 10 MHz
 - **SPI Mode**: Mode 0 (CPOL=0, CPHA=0)
@@ -66,6 +68,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 - **Timeout**: 500ms on RX72N triggers emergency stop
 
 ### Robot Configuration
+
 - **Motors**: 4-wheel differential drive (FL, FR, BL, BR)
 - **Encoders**: 341 PPR Hall encoders × 34.02 gear ratio = 11,599 ticks/revolution
 - **Wheels**: 65mm diameter (0.0325m radius)
@@ -79,7 +82,9 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 **Goal**: Establish package and implement low-level SPI communication.
 
 **Tasks**:
+
 1. Create package directory structure:
+
    ```
    star-ros2/src/star_spi_bridge/
    ├── CMakeLists.txt
@@ -114,11 +119,13 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
    - Sequence number tracking
 
 **Reference Files**:
+
 - `/Users/cesarmagana/Documents/GitHub/STAR/star-ros2/src/star_gateway_bridge/CMakeLists.txt` - Build pattern
 - `/Users/cesarmagana/Documents/GitHub/STAR/star-ros2/src/star_gateway_bridge/package.xml` - Dependencies
 - `/Users/cesarmagana/Documents/GitHub/STAR/docs/sections/01_nanopb_protocol.tex` - Protocol spec
 
 **Success Criteria**:
+
 - [ ] Package builds with `colcon build --packages-select star_spi_bridge`
 - [ ] Unit tests pass: `colcon test --packages-select star_spi_bridge`
 - [ ] CRC-32 matches expected test vector
@@ -130,6 +137,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 **Goal**: Implement bidirectional ROS2 ↔ Protobuf conversion with robot kinematics.
 
 **Tasks**:
+
 1. Implement `SpiMessageConverter::twist_to_velocity_command()`:
    - Extract `linear.x` and `angular.z` from Twist
    - Validate for NaN/infinity (reject if invalid)
@@ -168,17 +176,20 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
    - Populate BatteryState message
 
 **Unit Tests**:
+
 - Pure rotation: `linear.x=0, angular.z=1.0` → `left=-wheelbase/2, right=+wheelbase/2`
 - Pure translation: `linear.x=1.0, angular.z=0` → `left=right=1.0`
 - NaN rejection: `linear.x=NaN` → conversion fails
 - Odometry integration: Simulate encoder ticks, verify pose accumulation
 
 **Reference Files**:
+
 - `/Users/cesarmagana/Documents/GitHub/STAR/star-ros2/src/star_gateway_bridge/src/message_converter.cpp` - Conversion pattern
 - `/Users/cesarmagana/Documents/GitHub/STAR/star-proto/gen/cpp/star/v1/motor_control.pb.h` - VelocityCommand
 - `/Users/cesarmagana/Documents/GitHub/STAR/star-proto/gen/cpp/star/v1/telemetry.pb.h` - TelemetryData
 
 **Success Criteria**:
+
 - [ ] Unit tests pass for kinematics (all Twist → VelocityCommand scenarios)
 - [ ] Unit tests pass for odometry integration
 - [ ] NaN/infinity validation works
@@ -190,6 +201,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 **Goal**: Integrate SPI driver and message converter into a ROS2 lifecycle node.
 
 **Tasks**:
+
 1. Implement `StarSpiDriverNode` lifecycle transitions:
    - **on_configure()**:
      - Validate `/dev/spidev0.0` exists
@@ -229,6 +241,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
    - Configure lifecycle manager (optional)
 
 **Parameters**:
+
 ```python
 parameters=[{
     'spi_device_path': '/dev/spidev0.0',
@@ -241,10 +254,12 @@ parameters=[{
 ```
 
 **Reference Files**:
+
 - `/Users/cesarmagana/Documents/GitHub/STAR/star-ros2/src/star_gateway_bridge/src/star_gateway_bridge_node.cpp` - Node pattern
 - `/Users/cesarmagana/Documents/GitHub/STAR/star-ros2/src/star_gateway_bridge/src/main.cpp` - Entrypoint
 
 **Success Criteria**:
+
 - [ ] Node transitions through lifecycle states: `ros2 lifecycle set /star_spi_driver configure`
 - [ ] 100 Hz timer runs: `ros2 topic hz /odom/unfiltered` shows ~100 Hz
 - [ ] `/cmd_vel` timeout triggers zero velocity (test by not publishing for >500ms)
@@ -257,7 +272,9 @@ parameters=[{
 **Goal**: Connect to real RX72N hardware and verify end-to-end communication.
 
 **Tasks**:
+
 1. Enable real SPI I/O in `SpiDriver::spi_transfer()`:
+
    ```cpp
    struct spi_ioc_transfer xfer{};
    xfer.tx_buf = reinterpret_cast<uintptr_t>(tx_frame.data());
@@ -289,6 +306,7 @@ parameters=[{
    - Emergency stop → stop sending commands, log error
 
 **Success Criteria**:
+
 - [ ] SPI communication works (frames exchanged with RX72N at 100 Hz)
 - [ ] Encoder data in `/joint_states` matches physical rotation
 - [ ] Motors respond to `/cmd_vel` commands
@@ -303,6 +321,7 @@ parameters=[{
 **Goal**: Robust communication with automatic retry and performance tuning.
 
 **Tasks** (lower priority, can be deferred):
+
 1. Implement Stop-and-Wait HARQ:
    - Retry on CRC error (up to 3 attempts, 3ms timeout each)
    - Track ACK/NACK frames
@@ -318,6 +337,7 @@ parameters=[{
    - Viterbi decoding with FEC (rate-1/2 convolutional code)
 
 **Success Criteria**:
+
 - [ ] Retry logic improves frame success rate to >99.9%
 - [ ] CPU usage <10% on RPi5
 - [ ] No missed 100 Hz deadlines
@@ -327,6 +347,7 @@ parameters=[{
 ## Critical File Paths
 
 ### Source Files (to create)
+
 ```
 /Users/cesarmagana/Documents/GitHub/STAR/star-ros2/src/star_spi_bridge/
 ├── CMakeLists.txt                          # Build configuration
@@ -348,6 +369,7 @@ parameters=[{
 ```
 
 ### Reference Files (existing)
+
 ```
 /Users/cesarmagana/Documents/GitHub/STAR/star-ros2/src/star_gateway_bridge/
 ├── CMakeLists.txt                          # Build pattern reference
@@ -370,13 +392,15 @@ parameters=[{
 Follow `/Users/cesarmagana/Documents/GitHub/STAR/CLAUDE.md`:
 
 ### ROS2 C++ Style
+
 - **Classes**: CamelCase (`StarSpiDriverNode`, `SpiMessageConverter`)
 - **Methods**: snake_case (`twist_to_velocity_command()`, `spi_timer_callback()`)
-- **Member variables**: snake_case with trailing underscore (`spi_driver_`, `wheel_base_`)
+- **Member variables**: snake*case with trailing underscore (`spi_driver*`, `wheel*base*`)
 - **Constants**: ALL_CAPITALS or enums (`k_max_frame_size`, `k_spi_speed_hz`)
 - **Line limit**: 120 characters (star-ros2/.clang-format)
 
 ### Key Principles
+
 - **Inclusive terminology**: Controller/Peripheral (NOT master/slave), COPI/CIPO (NOT MOSI/MISO)
 - **NO magic numbers**: All numeric literals must be named enums
 - **Input validation**: Check for NaN/infinity in all ROS2 → Protobuf conversions
@@ -386,6 +410,7 @@ Follow `/Users/cesarmagana/Documents/GitHub/STAR/CLAUDE.md`:
 ## Verification Steps
 
 ### Unit Tests
+
 ```bash
 cd /Users/cesarmagana/Documents/GitHub/STAR/star-ros2
 colcon build --packages-select star_spi_bridge
@@ -394,12 +419,14 @@ colcon test-result --verbose
 ```
 
 Expected test coverage:
+
 - Frame encoding/decoding (CRC-32 validation)
 - Kinematics (Twist → 4-wheel velocities)
 - Odometry integration (encoder ticks → pose)
 - NaN/infinity rejection
 
 ### Manual Testing (Hardware Required)
+
 ```bash
 # Terminal 1: Launch node
 ros2 launch star_spi_bridge star_spi_bridge.launch.py
@@ -420,6 +447,7 @@ ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z:
 ```
 
 ### Integration Tests
+
 1. **Communication**: Verify SPI frames at 100 Hz without CRC errors
 2. **Kinematics**: Publish `/cmd_vel` with pure rotation, verify left/right wheels opposite
 3. **Odometry**: Drive 1 meter forward, verify `/odom/unfiltered` shows ~1m displacement
@@ -428,18 +456,19 @@ ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z:
 
 ## Risks & Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| `/dev/spidev0.0` permission denied | Node crashes on startup | Add user to spi group, document udev rule |
-| CRC-32 endianness mismatch | All frames rejected | Unit test with known vector, verify with RX72N |
-| 100 Hz timer jitter | E-STOP triggered | Use `create_wall_timer()`, monitor with `ros2 topic hz` |
-| Protobuf serialization overhead | Missed deadlines | Profile with `rclcpp::Clock`, use arena allocator if needed |
-| Encoder overflow | Incorrect odometry | Use int64 (practically impossible to overflow) |
-| Odometry drift | Poor localization | Document need for sensor fusion (EKF with IMU) |
+| Risk                               | Impact                  | Mitigation                                                  |
+| ---------------------------------- | ----------------------- | ----------------------------------------------------------- |
+| `/dev/spidev0.0` permission denied | Node crashes on startup | Add user to spi group, document udev rule                   |
+| CRC-32 endianness mismatch         | All frames rejected     | Unit test with known vector, verify with RX72N              |
+| 100 Hz timer jitter                | E-STOP triggered        | Use `create_wall_timer()`, monitor with `ros2 topic hz`     |
+| Protobuf serialization overhead    | Missed deadlines        | Profile with `rclcpp::Clock`, use arena allocator if needed |
+| Encoder overflow                   | Incorrect odometry      | Use int64 (practically impossible to overflow)              |
+| Odometry drift                     | Poor localization       | Document need for sensor fusion (EKF with IMU)              |
 
 ## Success Metrics
 
 **Minimum Viable Product (MVP)**:
+
 - [ ] Package builds without errors
 - [ ] Unit tests pass (CRC-32, kinematics, odometry)
 - [ ] Node completes lifecycle transitions
@@ -449,6 +478,7 @@ ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z:
 - [ ] Odometry published at 100 Hz
 
 **Production Ready**:
+
 - [ ] Frame success rate >99% at 100 Hz
 - [ ] Round-trip latency <10ms (99th percentile)
 - [ ] Emergency stop detection works
@@ -463,6 +493,7 @@ ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z:
 2. Implement phases 1-3 (package + ROS2 integration)
 3. Commit incrementally with descriptive messages
 4. Open PR to `main` branch with description:
+
    ```
    ## Summary
    Implements star_spi_bridge ROS2 node for SPI communication with RX72N motor controller.
@@ -482,6 +513,7 @@ ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z:
 
    Closes #137
    ```
+
 5. Hardware testing (Phase 4) done after PR merged
 
 ---
