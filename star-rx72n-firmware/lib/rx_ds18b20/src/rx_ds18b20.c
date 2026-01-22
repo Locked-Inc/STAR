@@ -703,11 +703,21 @@ static uint16_t internal_ds18b20_get_temp_mask(const ds18b20_resolution_t resolu
  */
 static float internal_ds18b20_raw_to_celsius(const int16_t raw_temp)
 {
+  float result;
+
   if (raw_temp < k_ds18b20_temp_min_raw || raw_temp > k_ds18b20_temp_max_raw) {
     rx_log_error(s_tag, "Raw temperature out of range - returning NaN sentinel");
     return NAN;
   }
 
   /* Convert from 1/16°C to °C */
-  return (float)raw_temp / s_temp_conversion_divisor;
+  result = (float)raw_temp / s_temp_conversion_divisor;
+
+  /* Post-condition: Validate result is finite (not NaN or Inf) */
+  if (!isfinite(result)) {
+    rx_log_error(s_tag, "Computed Celsius not finite - returning NaN sentinel");
+    return NAN;
+  }
+
+  return result;
 }

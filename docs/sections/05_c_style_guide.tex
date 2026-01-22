@@ -1244,16 +1244,21 @@ switch (config->type) {
 Enums can be forward-declared for header dependency reduction.
 
 \begin{lstlisting}[language=C]
-/* Forward declaration (C23 or later with explicit underlying type) */
-enum star_bus_type : int;
+/* Define enum with explicit underlying type (C23) before typedef */
+enum star_bus_type : int32_t {
+  k_star_bus_type_none,
+  k_star_bus_type_i2c,
+  /* ... */
+};
 typedef enum star_bus_type star_bus_type_t;
 
-/* Or use typedef in header, full definition in source */
+/* Or forward-declare in header, define in source (C23 with underlying type) */
 /* In header: */
+enum star_bus_type : int32_t;  /* Forward declaration with explicit type */
 typedef enum star_bus_type star_bus_type_t;
 
-/* In source or types header: */
-enum star_bus_type {
+/* In source: */
+enum star_bus_type : int32_t {
   k_star_bus_type_none,
   k_star_bus_type_i2c,
   /* ... */

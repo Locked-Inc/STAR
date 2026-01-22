@@ -171,6 +171,8 @@ static rx_err_t internal_wait_bus_ready(const volatile rx_riic_regs_t* riic)
 {
   uint32_t timeout = k_riic_timeout_us;
 
+  RX_CHECK_NULL_PTR(riic, s_tag, "RIIC peripheral base is NULL");
+
   while ((riic->iccr2 & k_riic_iccr2_bbsy) && timeout > k_riic_timeout_zero) {
     timeout--;
   }
@@ -193,6 +195,8 @@ static rx_err_t internal_wait_bus_ready(const volatile rx_riic_regs_t* riic)
 static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
 {
   uint32_t timeout;
+
+  RX_CHECK_NULL_PTR(riic, s_tag, "RIIC peripheral base is NULL");
 
   /* Issue start condition */
   riic->iccr2 |= k_riic_iccr2_st;
@@ -224,6 +228,8 @@ static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
 static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
 {
   uint32_t timeout;
+
+  RX_CHECK_NULL_PTR(riic, s_tag, "RIIC peripheral base is NULL");
 
   /* Issue stop condition */
   riic->iccr2 |= k_riic_iccr2_sp;
@@ -299,6 +305,10 @@ internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send
 {
   /* Wait for receive data full */
   uint32_t timeout = k_riic_timeout_us;
+
+  RX_CHECK_NULL_PTR(riic, s_tag, "RIIC peripheral base is NULL");
+  RX_CHECK_NULL_PTR(data, s_tag, "data pointer is NULL");
+
   while (!(riic->icsr2 & k_riic_icsr2_rdrf) && timeout > k_riic_timeout_zero) {
     timeout--;
   }
@@ -321,6 +331,116 @@ internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send
   return k_rx_ok;
 }
 
+/**
+ * @brief Perform I2C write phase for write-read transfer
+ *
+ * Sends address with write bit and writes data bytes.
+ *
+ * @param[in] riic Pointer to RIIC register base
+ * @param[in] device_addr I2C device address (7-bit)
+ * @param[in] write_data Pointer to write data buffer
+ * @param[in] write_length Number of bytes to write
+ *
+ * @return k_rx_ok on success
+ * @return Other rx_err_t values on error
+ */
+static rx_err_t internal_riic_write_phase(volatile rx_riic_regs_t*  riic,
+                                          const i2c_device_addr_t   device_addr,
+                                          const uint8_t*            write_data,
+                                          const uint16_t            write_length)
+{
+  rx_err_t err;
+
+  /* Set controller transmit mode */
+  riic->iccr2 = k_riic_iccr2_mst | k_riic_iccr2_trx;
+
+  /* Send start condition */
+  err = internal_send_start(riic);
+  RX_RETURN_ON_ERROR(err, s_tag, "Start condition failed");
+
+  /* Send device address (write) */
+  err = internal_write_byte(
+    riic,
+    (device_addr.value << k_riic_addr_shift) | k_riic_addr_write_bit);
+  if (err != k_rx_ok) {
+    internal_send_stop(riic);
+    return err;
+  }
+
+  /* Send write data */
+  for (uint16_t i = 0; i < write_length; i++) {
+    err = internal_write_byte(riic, write_data[i]);
+    if (err != k_rx_ok) {
+      internal_send_stop(riic);
+      return err;
+    }
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Perform I2C read phase for write-read transfer
+ *
+ * Sends repeated start, address with read bit, and reads data bytes.
+ *
+ * @param[in] riic Pointer to RIIC register base
+ * @param[in] device_addr I2C device address (7-bit)
+ * @param[out] read_data Pointer to read data buffer
+ * @param[in] read_length Number of bytes to read
+ *
+ * @return k_rx_ok on success
+ * @return Other rx_err_t values on error
+ */
+static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t*  riic,
+                                         const i2c_device_addr_t   device_addr,
+                                         uint8_t*                  read_data,
+                                         const uint16_t            read_length)
+{
+  uint32_t timeout;
+  rx_err_t err;
+
+  /* Send repeated start condition */
+  riic->iccr2 |= k_riic_iccr2_rs;
+
+  timeout = k_riic_timeout_us;
+  while (!(riic->icsr2 & k_riic_icsr2_start) && timeout > k_riic_timeout_zero) {
+    timeout--;
+  }
+
+  if (timeout == k_riic_timeout_zero) {
+    internal_send_stop(riic);
+    rx_log_error(s_tag, "Repeated start timeout");
+    return k_rx_err_timeout;
+  }
+
+  riic->icsr2 &= ~k_riic_icsr2_start;
+
+  /* Set controller receive mode */
+  riic->iccr2 = k_riic_iccr2_mst;
+
+  /* Send device address (read) */
+  err = internal_write_byte(
+    riic,
+    (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
+  if (err != k_rx_ok) {
+    internal_send_stop(riic);
+    return err;
+  }
+
+  /* Receive data bytes */
+  for (uint16_t i = 0; i < read_length; i++) {
+    const bool send_ack = (i < read_length - k_riic_last_index_offset); /* NACK on last byte */
+    err                 = internal_read_byte(riic, &read_data[i], send_ack);
+    if (err != k_rx_ok) {
+      internal_send_stop(riic);
+      return err;
+    }
+  }
+
+  return k_rx_ok;
+}
+
 /* =============================================================================
  * Public API Implementation
  * =============================================================================
@@ -328,6 +448,11 @@ internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send
 
 rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
 {
+  uint8_t        icbrl;
+  uint8_t        icbrh;
+  rx_err_t       err;
+  volatile rx_riic_regs_t* riic;
+
   /* Validate channel */
   if (channel.value >= k_riic_max_channels) {
     rx_log_error(s_tag, "Invalid RIIC channel");
@@ -342,7 +467,7 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
   }
 
   /* Get RIIC base */
-  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel.value);
+  riic = internal_get_riic_base(channel.value);
   if (riic == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -365,8 +490,7 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
   riic->iccr1 = k_riic_timeout_zero;
 
   /* Calculate bit rate */
-  uint8_t        icbrl, icbrh;
-  const rx_err_t err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
+  err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
   RX_RETURN_ON_ERROR(err, s_tag, "Bit rate calculation failed");
 
   /* Configure bit rate */
@@ -523,8 +647,6 @@ rx_err_t riic_write_read(const riic_channel_t    channel,
                          uint8_t*                read_data,
                          const uint16_t          read_length)
 {
-  uint32_t timeout;
-
   RX_CHECK_NULL_PTR(write_data, s_tag, "Write data pointer is NULL");
   RX_CHECK_NULL_PTR(read_data, s_tag, "Read data pointer is NULL");
   RX_CHECK_RANGE_TAG(channel.value, 0, k_riic_max_channels - 1, k_rx_err_invalid_arg, s_tag);
@@ -552,71 +674,16 @@ rx_err_t riic_write_read(const riic_channel_t    channel,
   rx_err_t err = internal_wait_bus_ready(riic);
   RX_RETURN_ON_ERROR(err, s_tag, "Bus not ready");
 
-  /* === Write Phase === */
-
-  /* Set controller transmit mode */
-  riic->iccr2 = k_riic_iccr2_mst | k_riic_iccr2_trx;
-
-  /* Send start condition */
-  err = internal_send_start(riic);
-  RX_RETURN_ON_ERROR(err, s_tag, "Start condition failed");
-
-  /* Send device address (write) */
-  err = internal_write_byte(
-    riic,
-    (device_addr.value << k_riic_addr_shift) | k_riic_addr_write_bit);
+  /* Perform write phase */
+  err = internal_riic_write_phase(riic, device_addr, write_data, write_length);
   if (err != k_rx_ok) {
-    internal_send_stop(riic);
     return err;
   }
 
-  /* Send write data */
-  for (uint16_t i = 0; i < write_length; i++) {
-    err = internal_write_byte(riic, write_data[i]);
-    if (err != k_rx_ok) {
-      internal_send_stop(riic);
-      return err;
-    }
-  }
-
-  /* === Read Phase === */
-
-  /* Send repeated start condition */
-  riic->iccr2 |= k_riic_iccr2_rs;
-
-  timeout = k_riic_timeout_us;
-  while (!(riic->icsr2 & k_riic_icsr2_start) && timeout > k_riic_timeout_zero) {
-    timeout--;
-  }
-
-  if (timeout == k_riic_timeout_zero) {
-    internal_send_stop(riic);
-    rx_log_error(s_tag, "Repeated start timeout");
-    return k_rx_err_timeout;
-  }
-
-  riic->icsr2 &= ~k_riic_icsr2_start;
-
-  /* Set controller receive mode */
-  riic->iccr2 = k_riic_iccr2_mst;
-
-  /* Send device address (read) */
-  err = internal_write_byte(
-    riic,
-    (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
+  /* Perform read phase */
+  err = internal_riic_read_phase(riic, device_addr, read_data, read_length);
   if (err != k_rx_ok) {
-    internal_send_stop(riic);
     return err;
-  }
-
-  /* Receive data bytes */
-  for (uint16_t i = 0; i < read_length; i++) {
-    const bool send_ack = (i < read_length - k_riic_last_index_offset); /* NACK on last byte */
-    err                 = internal_read_byte(riic, &read_data[i], send_ack);
-    if (err != k_rx_ok) {
-      internal_send_stop(riic);
-      return err;
-    }
   }
 
   /* Send stop condition */

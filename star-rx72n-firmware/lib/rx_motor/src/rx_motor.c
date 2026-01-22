@@ -116,6 +116,12 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t   channel,
     return k_rx_err_invalid_arg;
   }
 
+  /* Safety check: Ensure outputs A and B are different (NASA Rule 5 compliance) */
+  if (outputs.a == outputs.b) {
+    rx_log_error(s_tag, "Output A and B must be different");
+    return k_rx_err_invalid_arg;
+  }
+
   err = rx_gptw_init_pwm(channel, gptw_config);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize GPTW PWM");
@@ -148,8 +154,9 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t   channel,
 
 rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* config)
 {
-  rx_err_t         err;
-  rx_gptw_config_t gptw_config;
+  rx_err_t                err;
+  rx_gptw_config_t        gptw_config;
+  rx_gptw_output_pair_t   outputs;
 
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
@@ -182,7 +189,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
     .invert_polarity      = config->invert_pwm,
   };
 
-  const rx_gptw_output_pair_t outputs = {.a = config->output_a, .b = config->output_b};
+  outputs = (rx_gptw_output_pair_t){.a = config->output_a, .b = config->output_b};
   err = internal_init_gptw_outputs(config->channel, outputs, &gptw_config);
   if (err != k_rx_ok) {
     return err;
@@ -241,7 +248,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 
 rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 {
-  float    speed_pwm = 0.0f;
+  float    speed_pwm = 0.0F;
   rx_err_t err;
 
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");

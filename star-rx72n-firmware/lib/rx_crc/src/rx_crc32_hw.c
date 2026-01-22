@@ -43,7 +43,7 @@
  * Note: k_prcr_key, k_prcr_key_shift, and k_prcr_lock_all are from rx_gpio_constants.h
  */
 typedef enum : int32_t {
-  k_crc_ieee_final_xor = -1,   /**< IEEE 802.3 CRC-32 final XOR (0xFFFFFFFF as signed int) */
+  k_crc_ieee_final_xor = -1,   /**< IEEE 802.3 CRC-32 final XOR (0xFFFFFFFF as signed int32_t) */
   k_prcr_unlock_crc    = 0x0B, /**< Unlock PRC0, PRC1, PRC3 for CRC config */
 } rx_crc_hw_constants_t;
 
