@@ -80,6 +80,13 @@ typedef enum : uint8_t {
   k_iwdt_refresh_end   = 0xFF, /**< Second write value */
 } iwdt_refresh_sequence_t;
 
+/** @brief IWDT Control Register (IWDTCR) Bit Shift Positions */
+typedef enum : uint8_t {
+  k_iwdt_iwdtcr_cks_shift  = 4,  /**< Clock Division Ratio (CKS) bit shift */
+  k_iwdt_iwdtcr_rpes_shift = 8,  /**< Window Start Position (RPES) bit shift */
+  k_iwdt_iwdtcr_rpss_shift = 12, /**< Window End Position (RPSS) bit shift */
+} iwdt_iwdtcr_shifts_t;
+
 /* IWDT Control Register (IWDTCR) Bit Definitions */
 typedef enum : uint16_t {
   /* Timeout Period Select (TOPS) - bits 1:0 */
@@ -89,24 +96,24 @@ typedef enum : uint16_t {
   k_iwdt_tops_16384 = 0x0003, /**< 16384 cycles (~137ms) */
 
   /* Clock Division Ratio (CKS) - bits 7:4 */
-  k_iwdt_cks_div_1   = (0x00 << 4), /**< IWDTCLK/1 */
-  k_iwdt_cks_div_16  = (0x02 << 4), /**< IWDTCLK/16 */
-  k_iwdt_cks_div_32  = (0x03 << 4), /**< IWDTCLK/32 */
-  k_iwdt_cks_div_64  = (0x04 << 4), /**< IWDTCLK/64 */
-  k_iwdt_cks_div_128 = (0x0F << 4), /**< IWDTCLK/128 (~1s at 16384 cycles) */
-  k_iwdt_cks_div_256 = (0x05 << 4), /**< IWDTCLK/256 */
+  k_iwdt_cks_div_1   = (0x00 << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/1 */
+  k_iwdt_cks_div_16  = (0x02 << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/16 */
+  k_iwdt_cks_div_32  = (0x03 << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/32 */
+  k_iwdt_cks_div_64  = (0x04 << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/64 */
+  k_iwdt_cks_div_128 = (0x0F << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/128 (~1s at 16384 cycles) */
+  k_iwdt_cks_div_256 = (0x05 << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/256 */
 
   /* Window Start Position (RPES) - bits 9:8 */
-  k_iwdt_rpes_75 = (0x00 << 8), /**< 75% (refresh allowed after 25% elapsed) */
-  k_iwdt_rpes_50 = (0x01 << 8), /**< 50% */
-  k_iwdt_rpes_25 = (0x02 << 8), /**< 25% */
-  k_iwdt_rpes_0  = (0x03 << 8), /**< 0% (refresh allowed immediately) */
+  k_iwdt_rpes_75 = (0x00 << k_iwdt_iwdtcr_rpes_shift), /**< 75% (refresh allowed after 25% elapsed) */
+  k_iwdt_rpes_50 = (0x01 << k_iwdt_iwdtcr_rpes_shift), /**< 50% */
+  k_iwdt_rpes_25 = (0x02 << k_iwdt_iwdtcr_rpes_shift), /**< 25% */
+  k_iwdt_rpes_0  = (0x03 << k_iwdt_iwdtcr_rpes_shift), /**< 0% (refresh allowed immediately) */
 
   /* Window End Position (RPSS) - bits 13:12 */
-  k_iwdt_rpss_100 = (0x00 << 12), /**< 100% (no early cutoff) */
-  k_iwdt_rpss_75  = (0x01 << 12), /**< 75% */
-  k_iwdt_rpss_50  = (0x02 << 12), /**< 50% */
-  k_iwdt_rpss_25  = (0x03 << 12), /**< 25% */
+  k_iwdt_rpss_100 = (0x00 << k_iwdt_iwdtcr_rpss_shift), /**< 100% (no early cutoff) */
+  k_iwdt_rpss_75  = (0x01 << k_iwdt_iwdtcr_rpss_shift), /**< 75% */
+  k_iwdt_rpss_50  = (0x02 << k_iwdt_iwdtcr_rpss_shift), /**< 50% */
+  k_iwdt_rpss_25  = (0x03 << k_iwdt_iwdtcr_rpss_shift), /**< 25% */
 } iwdt_iwdtcr_bits_t;
 
 /* IWDT Status Register (IWDTSR) Bit Definitions */

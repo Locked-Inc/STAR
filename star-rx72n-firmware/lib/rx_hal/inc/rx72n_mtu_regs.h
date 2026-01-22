@@ -32,7 +32,7 @@ typedef enum : uint32_t {
   k_mtu1_base_addr      = 0x000C1380, /**< MTU1 register base address */
   k_mtu2_base_addr      = 0x000C1400, /**< MTU2 register base address */
   k_mtu3_base_addr      = 0x000C1200, /**< MTU3 register base address */
-  k_mtu4_base_addr      = 0x000C1200, /**< MTU4 register base address (shares with MTU3) */
+  k_mtu4_base_addr      = (k_mtu3_base_addr + 1U), /**< MTU4 register base address (interleaved with MTU3) */
   k_mtu5u_base_addr     = 0x000C1C80, /**< MTU5U register base address */
   k_mtu5v_base_addr     = 0x000C1C90, /**< MTU5V register base address */
   k_mtu5w_base_addr     = 0x000C1CA0, /**< MTU5W register base address */
@@ -47,12 +47,13 @@ typedef enum : uint32_t {
  * @brief MTU Channel Register Map (MTU0-MTU2, MTU6-MTU7)
  * @details
  * Multi-Function Timer Unit channel registers for PWM and timer functions.
- * Base addresses:
- * - MTU0: 0x000C1300
- * - MTU1: 0x000C1380
- * - MTU2: 0x000C1400
- * - MTU6: 0x000C1A00
- * - MTU7: 0x000C1A00 (shares with MTU6)
+ * Each channel has standardized register layout:
+ * - TCR:   Timer Control Register (prescaler, edge, clear)
+ * - TMDR:  Timer Mode Register (PWM mode select)
+ * - TIOR:  Timer I/O Control Register (output compare)
+ * - TIER:  Timer Interrupt Enable Register
+ * - TCNT:  Timer Counter
+ * - TGR:   Timer General Register (compare/capture)
  */
 typedef struct {
   volatile uint8_t  tcr;   /**< Timer Control Register (prescaler, edge, clear) */
@@ -71,10 +72,10 @@ typedef struct {
 /**
  * @brief MTU3/MTU4 Extended Channel Register Map
  * @details
- * MTU3 and MTU4 have additional registers for extended functionality.
- * Base addresses:
- * - MTU3: 0x000C1200
- * - MTU4: 0x000C1200 (shares with MTU3, adjacent registers)
+ * MTU3 and MTU4 have additional registers for extended functionality including
+ * TGR E/F for complementary PWM output control.
+ * MTU3 and MTU4 registers are interleaved in memory, with MTU4 starting one byte
+ * after MTU3 to support their coupled counter functionality.
  */
 typedef struct {
   volatile uint8_t  tcr;   /**< Timer Control Register (prescaler, edge, clear) */
@@ -314,9 +315,9 @@ _Static_assert((k_mtu3_base_addr & 0xFFFF0000) == 0x000C0000,
 _Static_assert((k_mtu6_base_addr & 0xFFFF0000) == 0x000C0000,
                "MTU6 base address not in MTU peripheral space");
 
-/* Verify MTU3 and MTU4 share the same base address */
-_Static_assert(k_mtu3_base_addr == k_mtu4_base_addr,
-               "MTU3 and MTU4 must share base address (adjacent registers)");
+/* Verify MTU3 and MTU4 are interleaved (MTU4 = MTU3 + 1 byte) */
+_Static_assert(k_mtu4_base_addr == (k_mtu3_base_addr + 1U),
+               "MTU3 and MTU4 must be interleaved (MTU4 = MTU3 + 1 byte)");
 
 /* Verify MTU6 and MTU7 share the same base address */
 _Static_assert(k_mtu6_base_addr == k_mtu7_base_addr,

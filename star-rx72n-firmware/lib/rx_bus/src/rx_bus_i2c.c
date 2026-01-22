@@ -77,6 +77,7 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
 {
   i2c_init_ctx_t* ctx = (i2c_init_ctx_t*)user_ctx;
   rx_err_t        err;
+  riic_channel_t  riic_channel;
 
   /* Validate bus type */
   if (bus_config->type != k_bus_type_i2c) {
@@ -86,8 +87,8 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Initialize RIIC channel */
-  const riic_channel_t riic_channel = { .value = bus_config->proto.i2c.channel };
-  err = riic_init(riic_channel, bus_config->proto.i2c.frequency_hz);
+  riic_channel.value = bus_config->proto.i2c.channel;
+  err                = riic_init(riic_channel, bus_config->proto.i2c.frequency_hz);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "RIIC HAL initialization failed");
@@ -118,7 +119,10 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
  */
 static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  i2c_write_ctx_t* ctx = (i2c_write_ctx_t*)user_ctx;
+  i2c_write_ctx_t*  ctx = (i2c_write_ctx_t*)user_ctx;
+  riic_channel_t    riic_channel;
+  i2c_device_addr_t device_addr;
+  rx_err_t          err;
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
@@ -135,9 +139,9 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Write I2C data */
-  const riic_channel_t riic_channel = { .value = bus_config->proto.i2c.channel };
-  const i2c_device_addr_t device_addr = { .value = bus_config->proto.i2c.device_addr };
-  const rx_err_t err = riic_write(riic_channel, device_addr, ctx->data, ctx->length);
+  riic_channel.value = bus_config->proto.i2c.channel;
+  device_addr.value  = bus_config->proto.i2c.device_addr;
+  err                = riic_write(riic_channel, device_addr, ctx->data, ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C write failed");
@@ -159,7 +163,10 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
  */
 static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  i2c_read_ctx_t* ctx = (i2c_read_ctx_t*)user_ctx;
+  i2c_read_ctx_t*   ctx = (i2c_read_ctx_t*)user_ctx;
+  riic_channel_t    riic_channel;
+  i2c_device_addr_t device_addr;
+  rx_err_t          err;
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
@@ -176,9 +183,9 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Read I2C data */
-  const riic_channel_t riic_channel = { .value = bus_config->proto.i2c.channel };
-  const i2c_device_addr_t device_addr = { .value = bus_config->proto.i2c.device_addr };
-  const rx_err_t err = riic_read(riic_channel, device_addr, ctx->data, ctx->length);
+  riic_channel.value = bus_config->proto.i2c.channel;
+  device_addr.value  = bus_config->proto.i2c.device_addr;
+  err                = riic_read(riic_channel, device_addr, ctx->data, ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C read failed");
@@ -201,6 +208,9 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
 static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   i2c_write_read_ctx_t* ctx = (i2c_write_read_ctx_t*)user_ctx;
+  riic_channel_t        riic_channel;
+  i2c_device_addr_t     device_addr;
+  rx_err_t              err;
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
@@ -224,9 +234,9 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
   }
 
   /* I2C write-read operation */
-  const riic_channel_t    riic_channel = {.value = bus_config->proto.i2c.channel};
-  const i2c_device_addr_t device_addr  = {.value = bus_config->proto.i2c.device_addr};
-  const rx_err_t          err          = riic_write_read(riic_channel,
+  riic_channel.value = bus_config->proto.i2c.channel;
+  device_addr.value  = bus_config->proto.i2c.device_addr;
+  err                = riic_write_read(riic_channel,
                                                 device_addr,
                                                 ctx->write_data,
                                                 ctx->write_length,

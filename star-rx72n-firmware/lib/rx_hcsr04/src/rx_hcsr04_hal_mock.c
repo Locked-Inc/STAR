@@ -71,7 +71,13 @@ static rx_err_t internal_validate_and_extract_pin(rx_port_pin_t pin,
   *port    = rx_port_from_pin(pin);
   *pin_num = rx_pin_from_pin(pin);
 
-  if (*port > k_rx_port_j || *pin_num > k_rx_pin_max) {
+  /* Validate port: must be k_rx_port_0 through k_rx_port_g, or k_rx_port_j */
+  if (*port < k_rx_port_0 || (*port > k_rx_port_g && *port != k_rx_port_j)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate pin: must be within k_rx_pin_min to k_rx_pin_max */
+  if (*pin_num < k_rx_pin_min || *pin_num > k_rx_pin_max) {
     return k_rx_err_invalid_arg;
   }
 
@@ -235,7 +241,7 @@ void hcsr04_hal_delay_us(uint32_t us)
 {
   char     message[k_hcsr04_log_msg_max];
   uint32_t message_len  = 0U;
-  int      snprintf_result = 0;
+  int32_t  snprintf_result = 0;
 
   if (us == k_hcsr04_delay_none) {
     return;

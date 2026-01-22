@@ -176,10 +176,22 @@ static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* 
 
 static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  smbus_write_byte_ctx_t* ctx = (smbus_write_byte_ctx_t*)user_ctx;
+  smbus_write_byte_ctx_t* ctx;
   uint8_t                 data[k_smbus_byte_buf_size];
-  uint8_t                 length = k_smbus_single_byte;
-  rx_err_t                err    = k_rx_err_invalid_state;
+  uint8_t                 length;
+  rx_err_t                err;
+  uint8_t                 crc;
+  uint8_t                 addr_byte;
+  riic_channel_t          riic_channel;
+  i2c_device_addr_t       device_addr;
+
+  ctx = (smbus_write_byte_ctx_t*)user_ctx;
+  length = k_smbus_single_byte;
+  err = k_rx_err_invalid_state;
+  crc = k_smbus_crc8_init;
+  addr_byte = 0;
+  riic_channel.value = 0;
+  device_addr.value = 0;
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");
@@ -191,17 +203,15 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
 
   /* Calculate PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
-    uint8_t       crc = k_smbus_crc8_init;
-    const uint8_t addr_byte =
-      (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_write_bit;
-    crc                    = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
-    crc                    = internal_crc8(crc, data, k_smbus_single_byte);
+    addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_write_bit;
+    crc = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
+    crc = internal_crc8(crc, data, k_smbus_single_byte);
     data[k_smbus_byte_pec] = crc;
-    length                 = k_smbus_byte_buf_size;
+    length = k_smbus_byte_buf_size;
   }
 
-  const riic_channel_t riic_channel = { .value = bus_config->proto.smbus.i2c_config.channel };
-  const i2c_device_addr_t device_addr = { .value = bus_config->proto.smbus.i2c_config.device_addr };
+  riic_channel.value = bus_config->proto.smbus.i2c_config.channel;
+  device_addr.value = bus_config->proto.smbus.i2c_config.device_addr;
   err = riic_write(riic_channel, device_addr, data, length);
 
   if (err != k_rx_ok) {
@@ -221,10 +231,22 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
 
 static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  smbus_read_byte_ctx_t* ctx = (smbus_read_byte_ctx_t*)user_ctx;
+  smbus_read_byte_ctx_t* ctx;
   uint8_t                data[k_smbus_byte_buf_size];
-  uint8_t                length = k_smbus_single_byte;
-  rx_err_t               err    = k_rx_err_invalid_state;
+  uint8_t                length;
+  rx_err_t               err;
+  uint8_t                crc;
+  uint8_t                addr_byte;
+  riic_channel_t         riic_channel;
+  i2c_device_addr_t      device_addr;
+
+  ctx = (smbus_read_byte_ctx_t*)user_ctx;
+  length = k_smbus_single_byte;
+  err = k_rx_err_invalid_state;
+  crc = k_smbus_crc8_init;
+  addr_byte = 0;
+  riic_channel.value = 0;
+  device_addr.value = 0;
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");
@@ -239,8 +261,8 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
   }
 
   length = bus_config->proto.smbus.use_pec ? k_smbus_byte_buf_size : k_smbus_single_byte;
-  const riic_channel_t riic_channel = { .value = bus_config->proto.smbus.i2c_config.channel };
-  const i2c_device_addr_t device_addr = { .value = bus_config->proto.smbus.i2c_config.device_addr };
+  riic_channel.value = bus_config->proto.smbus.i2c_config.channel;
+  device_addr.value = bus_config->proto.smbus.i2c_config.device_addr;
   err = riic_read(riic_channel, device_addr, data, length);
 
   if (err != k_rx_ok) {
@@ -250,9 +272,7 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
 
   /* Verify PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
-    uint8_t       crc = k_smbus_crc8_init;
-    const uint8_t addr_byte =
-      (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_read_bit;
+    addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_read_bit;
     crc = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
     crc = internal_crc8(crc, data, k_smbus_single_byte);
 
@@ -271,11 +291,24 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
 
 static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  smbus_read_word_data_ctx_t* ctx        = (smbus_read_word_data_ctx_t*)user_ctx;
-  uint8_t                     write_data = 0;
+  smbus_read_word_data_ctx_t* ctx;
+  uint8_t                     write_data;
   uint8_t                     read_data[k_smbus_word_buf_size];
-  uint8_t                     read_length = 0;
-  rx_err_t                    err         = k_rx_err_invalid_state;
+  uint8_t                     read_length;
+  rx_err_t                    err;
+  uint8_t                     crc;
+  uint8_t                     addr_byte;
+  riic_channel_t              riic_channel;
+  i2c_device_addr_t           device_addr;
+
+  ctx = (smbus_read_word_data_ctx_t*)user_ctx;
+  write_data = 0;
+  read_length = 0;
+  err = k_rx_err_invalid_state;
+  crc = k_smbus_crc8_init;
+  addr_byte = 0;
+  riic_channel.value = 0;
+  device_addr.value = 0;
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");
@@ -289,10 +322,10 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
     return k_rx_err_invalid_arg;
   }
 
-  write_data  = ctx->command;
+  write_data = ctx->command;
   read_length = bus_config->proto.smbus.use_pec ? k_smbus_word_buf_size : k_smbus_word_data_bytes;
-  const riic_channel_t riic_channel = { .value = bus_config->proto.smbus.i2c_config.channel };
-  const i2c_device_addr_t device_addr = { .value = bus_config->proto.smbus.i2c_config.device_addr };
+  riic_channel.value = bus_config->proto.smbus.i2c_config.channel;
+  device_addr.value = bus_config->proto.smbus.i2c_config.device_addr;
   err = riic_write_read(riic_channel,
                         device_addr,
                         &write_data,
@@ -307,13 +340,10 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
 
   /* Verify PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
-    uint8_t crc = k_smbus_crc8_init;
-    uint8_t addr_byte =
-      (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_write_bit;
+    addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_write_bit;
     crc = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
     crc = internal_crc8(crc, &write_data, k_smbus_single_byte);
-    addr_byte =
-      (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_read_bit;
+    addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_read_bit;
     crc = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
     crc = internal_crc8(crc, read_data, k_smbus_word_data_bytes);
 

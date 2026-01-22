@@ -24,6 +24,7 @@
 #ifndef STAR_RX72N_CRC_REGS_H
 #define STAR_RX72N_CRC_REGS_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -68,11 +69,23 @@ static inline volatile rx_crc_regs_t* crc_regs(void)
   return (volatile rx_crc_regs_t*)k_crc_base_addr;
 }
 
+/** @brief CRC Control Register (CRCCR) bit shift positions */
+typedef enum : uint8_t {
+  k_crc_crccr_lms_shift   = 6, /**< LMS field shift position */
+  k_crc_crccr_dorclr_shift = 7, /**< DORCLR field shift position */
+} rx_crc_crccr_shifts_t;
+
+/** @brief CRC Control Register (CRCCR) bit masks */
+typedef enum : uint8_t {
+  k_crc_crccr_lms_mask = (1 << k_crc_crccr_lms_shift),   /**< LSB/MSB First mask */
+  k_crc_crccr_dorclr_mask = (1 << k_crc_crccr_dorclr_shift), /**< DORCLR mask */
+} rx_crc_crccr_masks_t;
+
 /* CRC Control Register (CRCCR) bit definitions - CRC-32 only */
 typedef enum : uint8_t {
-  k_crc_crccr_gps_crc32 = 0x03,     /**< CRC-32 IEEE 802.3 polynomial */
-  k_crc_crccr_lms       = (1 << 6), /**< LSB/MSB First (1=LSB first, reflected) */
-  k_crc_crccr_dorclr    = (1 << 7), /**< Data Output Register Clear */
+  k_crc_crccr_gps_crc32 = 0x03,               /**< CRC-32 IEEE 802.3 polynomial */
+  k_crc_crccr_lms       = k_crc_crccr_lms_mask,     /**< LSB/MSB First (1=LSB first, reflected) */
+  k_crc_crccr_dorclr    = k_crc_crccr_dorclr_mask,  /**< Data Output Register Clear */
 } rx_crc_crccr_bits_t;
 
 /* =============================================================================

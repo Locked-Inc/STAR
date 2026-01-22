@@ -26,6 +26,9 @@
 /* Port/pin constants and types */
 #include "rx_port_constants.h"
 
+/* Bus types (includes ADC enums) */
+#include "rx_bus_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -140,25 +143,33 @@ rx_err_t timer_get_count(uint16_t* count);
  */
 
 /**
- * @brief ADC unit wrapper type (prevents accidental argument swaps)
+ * @brief ADC unit enumeration with type safety
  *
- * Valid values: 0 (S12AD0) or 1 (S12AD1)
+ * Prevents accidental argument swaps and provides compile-time type checking.
  */
-typedef uint8_t adc_unit_t;
+typedef enum : uint8_t {
+  k_adc_unit_0 = 0, /**< S12AD0 */
+  k_adc_unit_1 = 1  /**< S12AD1 */
+} adc_unit_t;
 
 /**
- * @brief ADC channel wrapper type (prevents accidental argument swaps)
+ * @brief ADC channel enumeration with type safety
  *
- * Valid values: 0-7 (channels per ADC unit)
+ * Prevents accidental argument swaps and provides compile-time type checking.
  */
-typedef uint8_t adc_channel_t;
+typedef enum : uint8_t {
+  k_adc_channel_0 = 0,
+  k_adc_channel_1 = 1,
+  k_adc_channel_2 = 2,
+  k_adc_channel_3 = 3,
+  k_adc_channel_4 = 4,
+  k_adc_channel_5 = 5,
+  k_adc_channel_6 = 6,
+  k_adc_channel_7 = 7
+} adc_channel_t;
 
-/**
- * @brief ADC resolution wrapper type (prevents accidental argument swaps)
- *
- * Valid values: 8, 10, or 12 (bits)
- */
-typedef uint8_t adc_resolution_t;
+/* ADC resolution type alias (enum defined in rx_bus_types.h) */
+typedef rx_adc_resolution_t adc_resolution_t;
 
 /**
  * @brief Initialize ADC unit and channel
@@ -327,6 +338,19 @@ rx_err_t riic_write_read(riic_channel_t    channel,
  */
 
 /**
+ * @brief RSPI (SPI) mode enumeration with type safety
+ *
+ * Defines SPI clock polarity (CPOL) and phase (CPHA) combinations.
+ * Prevents accidental argument swaps and provides type checking.
+ */
+typedef enum : uint8_t {
+  k_rspi_mode_0 = 0, /**< CPOL=0, CPHA=0 (SPI Mode 0) */
+  k_rspi_mode_1 = 1, /**< CPOL=0, CPHA=1 (SPI Mode 1) */
+  k_rspi_mode_2 = 2, /**< CPOL=1, CPHA=0 (SPI Mode 2) */
+  k_rspi_mode_3 = 3  /**< CPOL=1, CPHA=1 (SPI Mode 3) */
+} rspi_mode_t;
+
+/**
  * @brief Initialize RSPI in peripheral mode for RPi5 communication
  *
  * @param[in] channel RSPI channel (0-2)
@@ -336,8 +360,8 @@ rx_err_t riic_write_read(riic_channel_t    channel,
  *         k_rx_err_invalid_arg if channel or mode is invalid
  */
 typedef struct {
-  uint8_t spi_mode;  /**< SPI mode (0-3): CPOL and CPHA configuration */
-  bool    use_16bit; /**< True for 16-bit frames, false for 8-bit frames */
+  rspi_mode_t spi_mode;  /**< SPI mode (0-3): CPOL and CPHA configuration */
+  bool        use_16bit; /**< True for 16-bit frames, false for 8-bit frames */
 } rspi_config_t;
 
 rx_err_t rspi_init_peripheral(uint8_t channel, const rspi_config_t* config);
@@ -402,10 +426,31 @@ rx_err_t rspi_deinit(uint8_t channel);
 /**
  * @brief Default debug UART channel (SCI9 - CY7C65213 USB bridge)
  */
-/** @brief Default UART channel for uart_channel_config_t and debug init helpers */
 typedef enum : uint8_t {
-  k_uart_debug_channel = 9, /**< Debug UART on SCI9 (PB7/TXD9, PB6/RXD9) */
+  k_uart_debug_channel = 9 /**< Debug UART on SCI9 (PB7/TXD9, PB6/RXD9) */
 } uart_defaults_t;
+
+/**
+ * @brief UART channel enumeration with type safety
+ *
+ * Prevents accidental argument swaps and provides compile-time type checking.
+ * RX72N has SCI channels 0-12 (13 channels total).
+ */
+typedef enum : uint8_t {
+  k_uart_channel_0 = 0,
+  k_uart_channel_1 = 1,
+  k_uart_channel_2 = 2,
+  k_uart_channel_3 = 3,
+  k_uart_channel_4 = 4,
+  k_uart_channel_5 = 5,
+  k_uart_channel_6 = 6,
+  k_uart_channel_7 = 7,
+  k_uart_channel_8 = 8,
+  k_uart_channel_9 = 9,
+  k_uart_channel_10 = 10,
+  k_uart_channel_11 = 11,
+  k_uart_channel_12 = 12
+} uart_channel_t;
 
 /**
  * @brief UART channel configuration structure
@@ -415,10 +460,10 @@ typedef enum : uint8_t {
  * parameter swapping and makes the API more maintainable.
  */
 typedef struct {
-  uint8_t       channel;  /**< SCI channel (0-12) */
-  uint32_t      baudrate; /**< Baud rate (e.g., 9600, 115200) */
-  rx_port_pin_t tx_gpio;  /**< TX pin (rx_port_pin_t) */
-  rx_port_pin_t rx_gpio;  /**< RX pin (rx_port_pin_t) */
+  uart_channel_t channel;  /**< SCI channel (0-12) */
+  uint32_t       baudrate; /**< Baud rate (e.g., 9600, 115200) */
+  rx_port_pin_t  tx_gpio;  /**< TX pin (rx_port_pin_t) */
+  rx_port_pin_t  rx_gpio;  /**< RX pin (rx_port_pin_t) */
 } uart_channel_config_t;
 
 /* =============================================================================
@@ -451,7 +496,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config);
  * @return k_rx_ok on success,
  *         k_rx_err_invalid_arg if channel is invalid
  */
-rx_err_t uart_deinit_channel(uint8_t channel);
+rx_err_t uart_deinit_channel(uart_channel_t channel);
 
 /**
  * @brief Transmit a single character on specified channel
@@ -463,7 +508,7 @@ rx_err_t uart_deinit_channel(uint8_t channel);
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t uart_putc_channel(uint8_t channel, char data);
+rx_err_t uart_putc_channel(uart_channel_t channel, char data);
 
 /**
  * @brief Transmit a null-terminated string on specified channel
@@ -476,7 +521,7 @@ rx_err_t uart_putc_channel(uint8_t channel, char data);
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t uart_puts_channel(uint8_t channel, const char* str);
+rx_err_t uart_puts_channel(uart_channel_t channel, const char* str);
 
 /**
  * @brief Write buffer to specified channel
@@ -490,7 +535,7 @@ rx_err_t uart_puts_channel(uint8_t channel, const char* str);
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t length);
+rx_err_t uart_write_channel(uart_channel_t channel, const uint8_t* data, uint16_t length);
 
 /**
  * @brief Receive a single character from specified channel (non-blocking)
@@ -504,7 +549,7 @@ rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t lengt
  *         k_rx_err_invalid_state if channel not initialized,
  *         k_rx_err_empty if no data available
  */
-rx_err_t uart_getc_channel(uint8_t channel, char* data);
+rx_err_t uart_getc_channel(uart_channel_t channel, char* data);
 
 /**
  * @brief Read available data from specified channel (non-blocking)
@@ -521,7 +566,7 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data);
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
+rx_err_t uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
 
 /**
  * @brief Check if receive data is available on channel
@@ -534,7 +579,7 @@ rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t uart_rx_available(uint8_t channel, bool* available);
+rx_err_t uart_rx_available(uart_channel_t channel, bool* available);
 
 /* =============================================================================
  * UART Functions (Legacy Debug Output - SCI9)
