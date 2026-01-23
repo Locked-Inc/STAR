@@ -58,7 +58,7 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
   mock_error_handler_t* handler = (mock_error_handler_t*)ctx;
 
   if (handler == NULL || component == NULL || message == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Get next write position (circular buffer) */
@@ -119,7 +119,7 @@ static rx_err_t impl_clear_errors(void* ctx)
   mock_error_handler_t* handler = (mock_error_handler_t*)ctx;
 
   if (handler == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Clear all error records */

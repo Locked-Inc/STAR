@@ -23,7 +23,7 @@
  */
 
 /** @brief Mock GPTW channel and output constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_gptw_max_channels   = 4, /**< Number of GPTW channels (0-3) */
   k_mock_gptw_outputs_per_ch = 2, /**< Outputs per channel (A and B) */
   k_mock_gptw_output_a       = 0, /**< Output A array index */
@@ -31,7 +31,7 @@ typedef enum {
 } mock_gptw_constants_t;
 
 /** @brief Duty cycle percentage constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_duty_percent_max = 100, /**< Maximum duty cycle percentage */
 } mock_duty_constants_t;
 
@@ -120,7 +120,7 @@ bool mock_gptw_is_running(rx_gptw_channel_t channel)
 rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* config)
 {
   if (config == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if ((int32_t)channel >= k_mock_gptw_max_channels) {
@@ -147,13 +147,17 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float duty_percent)
+rx_err_t
+rx_gptw_set_duty(rx_gptw_channel_id_t channel, rx_gptw_output_id_t output, float duty_percent)
 {
-  if ((int32_t)channel >= k_mock_gptw_max_channels || !s_initialized[channel]) {
+  const rx_gptw_channel_t channel_value = channel.value;
+  const rx_gptw_output_t  output_value  = output.value;
+
+  if ((int32_t)channel_value >= k_mock_gptw_max_channels || !s_initialized[channel_value]) {
     return k_rx_err_invalid_state;
   }
 
-  if ((int32_t)output >= k_mock_gptw_outputs_per_ch) {
+  if ((int32_t)output_value >= k_mock_gptw_outputs_per_ch) {
     return k_rx_err_invalid_arg;
   }
 
@@ -161,7 +165,7 @@ rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
     return k_rx_err_invalid_arg;
   }
 
-  s_duty[channel][output] = duty_percent;
+  s_duty[channel_value][output_value] = duty_percent;
   return k_rx_ok;
 }
 
@@ -188,7 +192,7 @@ rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_
 rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float* duty_percent)
 {
   if (duty_percent == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if ((int32_t)channel >= k_mock_gptw_max_channels || !s_initialized[channel]) {
@@ -206,7 +210,7 @@ rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
 rx_err_t rx_gptw_get_period(rx_gptw_channel_t channel, uint32_t* period_count)
 {
   if (period_count == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if ((int32_t)channel >= k_mock_gptw_max_channels || !s_initialized[channel]) {

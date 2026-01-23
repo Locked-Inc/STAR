@@ -58,7 +58,7 @@ typedef int32_t rx_err_t;
  * - 0x4xx: Communication errors
  * - 0x5xx: Validation errors
  */
-typedef enum {
+typedef enum : uint16_t {
   k_rx_ok = 0, /**< Success */
 
   /* Generic Errors (0x100 - 0x1FF) */
@@ -87,6 +87,7 @@ typedef enum {
   k_rx_err_gpio_invalid_port = 0x206, /**< Invalid GPIO port */
   k_rx_err_gpio_invalid_pin  = 0x207, /**< Invalid GPIO pin */
   k_rx_err_out_of_range      = 0x208, /**< Sensor value out of range */
+  k_rx_err_hw_unmapped       = 0x209, /**< Hardware register block unmapped */
 
   /* RTOS Errors (0x300 - 0x3FF) */
   k_rx_err_rtos_error         = 0x301, /**< RTOS error */
@@ -111,7 +112,7 @@ typedef enum {
   k_rx_err_validation_failed  = 0x501, /**< Validation failed */
   k_rx_err_checksum_mismatch  = 0x502, /**< Checksum mismatch */
   k_rx_err_range_check_failed = 0x503, /**< Range check failed */
-  k_rx_err_null_pointer       = 0x504, /**< Null pointer */
+  k_rx_err_null_ptr           = 0x504, /**< Null pointer */
 } rx_err_codes_t;
 
 /* =============================================================================

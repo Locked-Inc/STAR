@@ -28,7 +28,7 @@
 /**
  * @brief Counter wrap constant
  */
-typedef enum {
+typedef enum : uint32_t {
   k_counter_max  = 65536,  /**< 16-bit counter maximum + 1 */
   k_counter_mask = 0xFFFF, /**< 16-bit mask */
 } counter_constants_t;
@@ -130,14 +130,10 @@ void mock_encoder_advance_counter(rx_mtu_channel_t channel, int32_t delta)
   if (idx >= 0) {
     int32_t current = (int32_t)g_mock_mtu_regs[idx].tcnt;
     int32_t new_val = current + delta;
+    const int32_t max = (int32_t)k_counter_max;
 
-    /* Handle 16-bit wraparound */
-    while (new_val < 0) {
-      new_val += k_counter_max;
-    }
-    while (new_val >= k_counter_max) {
-      new_val -= k_counter_max;
-    }
+    /* Handle 16-bit wraparound with bounded modulo arithmetic */
+    new_val = ((new_val % max) + max) % max;
 
     g_mock_mtu_regs[idx].tcnt               = (uint16_t)new_val;
     g_mock_encoder_state.channels[idx].tcnt = (uint16_t)new_val;

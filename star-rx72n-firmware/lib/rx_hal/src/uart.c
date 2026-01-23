@@ -18,7 +18,6 @@
 #include <stdint.h>
 
 #include "hardware.h"
-#include "hardware_pinout.h"
 #include "rx72n_clock.h"
 #include "rx72n_regs.h"
 #include "rx_mpc.h"
@@ -31,18 +30,14 @@
  */
 
 /** @brief UART configuration constants */
-typedef enum {
-  k_uart_default_baudrate = 115200, /**< Default baud rate: 115200 bps */
-} uart_config_t;
+static const uint32_t s_uart_default_baudrate = 115200; /**< Default baud rate: 115200 bps */
 
 /** @brief UART timing constants */
-typedef enum {
-  k_uart_bit_time_delay_cycles =
-    1000, /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
-} uart_timing_t;
+static const uint16_t s_uart_bit_time_delay_cycles =
+  1000; /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
 
 /** @brief SCI register values */
-typedef enum {
+typedef enum : uint8_t {
   k_sci_scr_disabled     = 0x00, /**< SCR: All functions disabled */
   k_sci_scr_tx_enabled   = 0x20, /**< SCR: Transmit enabled (TE=1) */
   k_sci_scr_rx_enabled   = 0x10, /**< SCR: Receive enabled (RE=1) */
@@ -58,13 +53,13 @@ typedef enum {
 } sci_register_values_t;
 
 /** @brief Integer to string buffer constants */
-typedef enum {
+typedef enum : uint8_t {
   k_uart_int_buffer_size = 12, /**< Buffer size for int32 to string (enough for -2147483648) */
   k_uart_base_10         = 10, /**< Base 10 for decimal conversion */
 } uart_int_constants_t;
 
 /** @brief Hex digit constants */
-typedef enum {
+typedef enum : uint8_t {
   k_uart_hex_max_digits  = 8,    /**< Maximum hex digits to print (32-bit value) */
   k_uart_hex_min_digits  = 1,    /**< Minimum hex digits to print */
   k_uart_hex_zero_digits = 0,    /**< Zero digits value */
@@ -73,27 +68,50 @@ typedef enum {
 } uart_hex_constants_t;
 
 /** @brief BRR calculation constants */
-typedef enum {
+typedef enum : uint16_t {
   k_brr_divisor_n0 = 32,  /**< Divisor for n=0 (CKS=00): 64 * 2^(2n-1) = 32 */
   k_brr_multiplier = 4,   /**< Multiplier per CKS increment (2^2) */
   k_brr_max_value  = 255, /**< Maximum BRR register value */
   k_brr_min_value  = 0,   /**< Minimum BRR register value */
 } brr_constants_t;
 
-/** @brief Maximum SCI channels */
-typedef enum {
-  k_uart_max_channels = 13, /**< SCI channels 0-12 */
-} uart_channel_limits_t;
+/** @brief Maximum SCI channels (array size, must be enum for compile-time constant) */
+typedef enum : uint8_t {
+  k_uart_channel_min       = 0,  /**< Minimum UART channel (SCI0) */
+  k_uart_array_size        = 13, /**< Array size for s_channel_initialized */
+  k_uart_max_mstpb_channel = 11, /**< Maximum channel in MSTPCRB (SCI12 uses MSTPCRC) */
+} uart_internal_constants_t;
+
+/** @brief Maximum valid channel value (for validation) */
+static const uint8_t s_uart_max_channels = 13; /**< SCI channels 0-12 */
+
+typedef enum : uint32_t {
+  k_uart_baudrate_min = 1,
+  k_uart_baudrate_max = (k_pclkb_hz / k_brr_divisor_n0),
+} uart_validation_limits_t;
 
 /** @brief UART timeout constants */
-typedef enum {
+typedef enum : uint32_t {
   k_uart_tx_timeout        = 100000, /**< Transmit buffer wait timeout (prevents infinite loop) */
   k_uart_timeout_expired   = 0,      /**< Timeout counter expired value */
   k_uart_timeout_decrement = 1,      /**< Timeout counter decrement value */
 } uart_timeout_t;
 
+/** @brief UART buffer and string size limits */
+typedef enum : uint32_t {
+  k_uart_max_str_len      = 256,  /**< Maximum string length for uart_puts_channel */
+  k_uart_int_buffer_size  = 12,   /**< Buffer size for integer to string conversion (fits INT32_MIN) */
+  k_uart_hex_max_digits   = 8,    /**< Maximum hex digits for uint32_t */
+} uart_buffer_limits_t;
+
+/** @brief Pin number validation constants */
+typedef enum : uint8_t {
+  k_rx_pin_0   = 0, /**< Minimum pin number */
+  k_rx_pin_max = 7, /**< Maximum pin number (pins 0-7) */
+} rx_pin_limits_t;
+
 /** @brief SCI module stop bit positions in MSTPCRB */
-typedef enum {
+typedef enum : uint8_t {
   k_sci_mstpb_sci0  = 31, /**< SCI0 module stop bit */
   k_sci_mstpb_sci1  = 30, /**< SCI1 module stop bit */
   k_sci_mstpb_sci2  = 29, /**< SCI2 module stop bit */
@@ -109,10 +127,10 @@ typedef enum {
 } sci_mstpb_bits_t;
 
 /** @brief Debug UART pins (SCI9 on RX72N) */
-typedef enum {
-  k_uart_debug_tx_gpio = k_rx_pb_7, /**< PB7 = TXD9 (from rx_port_constants.h) */
-  k_uart_debug_rx_gpio = k_rx_pb_6, /**< PB6 = RXD9 (from rx_port_constants.h) */
-} uart_debug_pins_t;
+static const rx_port_pin_t k_uart_debug_tx_gpio =
+  k_rx_pb_7; /**< PB7 = TXD9 (from rx_port_constants.h) */
+static const rx_port_pin_t k_uart_debug_rx_gpio =
+  k_rx_pb_6; /**< PB6 = RXD9 (from rx_port_constants.h) */
 
 /** @brief GPIO register bit manipulation constant */
 static const uint8_t k_uart_gpio_bit_set = 1;
@@ -123,7 +141,7 @@ static const uint8_t k_uart_gpio_bit_set = 1;
  */
 
 /** @brief Per-channel initialization state */
-static bool s_channel_initialized[k_uart_max_channels] = {false};
+static bool s_channel_initialized[k_uart_array_size] = {false};
 
 /* =============================================================================
  * Private Functions
@@ -139,14 +157,14 @@ static bool s_channel_initialized[k_uart_max_channels] = {false};
  * @param[in] baudrate Target baud rate
  * @return BRR register value
  */
-static uint8_t internal_calculate_brr(uint32_t baudrate)
+static uint8_t internal_calculate_brr(const uint32_t baudrate)
 {
   if (baudrate == 0) {
     return k_brr_max_value;
   }
 
   /* For n=0 (CKS=00): BRR = (PCLKB / (32 * B)) - 1 */
-  uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
+  const uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
 
   if (brr_value > k_brr_max_value) {
     return k_brr_max_value;
@@ -177,10 +195,10 @@ static void internal_clear_errors(volatile rx_sci_regs_t* sci)
  *
  * @return Bit position in MSTPCRB, or -1 if invalid channel
  */
-static int8_t internal_get_mstpb_bit(uint8_t channel)
+static int8_t internal_get_mstpb_bit(const uint8_t channel)
 {
   /* SCI12 is in MSTPCRC, not supported here */
-  if (channel > 11) {
+  if (channel > k_uart_max_mstpb_channel) {
     return -1;
   }
 
@@ -195,9 +213,9 @@ static int8_t internal_get_mstpb_bit(uint8_t channel)
  *
  * @return k_rx_ok on success, k_rx_err_invalid_arg if channel invalid
  */
-static rx_err_t internal_enable_sci_clock(uint8_t channel)
+static rx_err_t internal_enable_sci_clock(const uint8_t channel)
 {
-  int8_t mstpb_bit = internal_get_mstpb_bit(channel);
+  const int8_t mstpb_bit = internal_get_mstpb_bit(channel);
   if (mstpb_bit < 0) {
     return k_rx_err_invalid_arg;
   }
@@ -219,21 +237,22 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
  *
  * Sets up MPC (pin mux) and GPIO registers for TX/RX pins.
  *
- * @param[in] tx_gpio TX pin (gpio_pin_t from hardware_pinout.h)
- * @param[in] rx_gpio RX pin (gpio_pin_t from hardware_pinout.h)
+ * @param[in] tx_gpio TX pin (rx_port_pin_t from rx_port_constants.h)
+ * @param[in] rx_gpio RX pin (rx_port_pin_t from rx_port_constants.h)
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t internal_configure_uart_pins(gpio_pin_t tx_gpio, gpio_pin_t rx_gpio)
+static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_port_pin_t rx_gpio)
 {
   /* Extract port and pin numbers for hardware register access */
-  uint8_t tx_port = gpio_pin_get_port(tx_gpio);
-  uint8_t tx_pin  = gpio_pin_get_pin(tx_gpio);
-  uint8_t rx_port = gpio_pin_get_port(rx_gpio);
-  uint8_t rx_pin  = gpio_pin_get_pin(rx_gpio);
+  const uint8_t tx_port = rx_port_from_pin(tx_gpio);
+  const uint8_t tx_pin  = rx_pin_from_pin(tx_gpio);
+  const uint8_t rx_port = rx_port_from_pin(rx_gpio);
+  const uint8_t rx_pin  = rx_pin_from_pin(rx_gpio);
 
   /* Validate pin numbers */
-  if (tx_pin > 7 || rx_pin > 7) {
+  if (tx_pin < k_rx_pin_0 || tx_pin > k_rx_pin_max || rx_pin < k_rx_pin_0 ||
+      rx_pin > k_rx_pin_max) {
     return k_rx_err_invalid_arg;
   }
 
@@ -246,12 +265,12 @@ static rx_err_t internal_configure_uart_pins(gpio_pin_t tx_gpio, gpio_pin_t rx_g
   }
 
   /* Configure MPC for SCI function */
-  rx_err_t err = rx_mpc_set_sci(tx_gpio, true);
+  rx_err_t err = rx_mpc_set_sci(tx_gpio);
   if (err != k_rx_ok) {
     return err;
   }
 
-  err = rx_mpc_set_sci(rx_gpio, false);
+  err = rx_mpc_set_sci(rx_gpio);
   if (err != k_rx_ok) {
     return err;
   }
@@ -272,33 +291,42 @@ static rx_err_t internal_configure_uart_pins(gpio_pin_t tx_gpio, gpio_pin_t rx_g
  * =============================================================================
  */
 
-rx_err_t
-uart_init_channel(uint8_t channel, uint32_t baudrate, gpio_pin_t tx_gpio, gpio_pin_t rx_gpio)
+rx_err_t uart_init_channel(const uart_channel_config_t* config)
 {
+  /* Validate config pointer */
+  if (config == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
   /* Validate channel */
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)config->channel < k_uart_channel_min ||
+      (uint8_t)config->channel >= s_uart_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if ((config->baudrate < k_uart_baudrate_min) || (config->baudrate > k_uart_baudrate_max)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Get SCI register base */
-  volatile rx_sci_regs_t* sci = sci_get_channel(channel);
+  volatile rx_sci_regs_t* sci = sci_get_channel(config->channel);
   if (sci == (volatile rx_sci_regs_t*)0) {
     return k_rx_err_invalid_arg;
   }
 
   /* Check if already initialized */
-  if (s_channel_initialized[channel]) {
+  if (s_channel_initialized[config->channel]) {
     return k_rx_err_invalid_state;
   }
 
   /* Enable SCI module clock (clear module stop bit) */
-  rx_err_t err = internal_enable_sci_clock(channel);
+  rx_err_t err = internal_enable_sci_clock(config->channel);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Configure TX/RX pins (MPC and GPIO) */
-  err = internal_configure_uart_pins(tx_gpio, rx_gpio);
+  err = internal_configure_uart_pins(config->tx_gpio, config->rx_gpio);
   if (err != k_rx_ok) {
     return err;
   }
@@ -310,11 +338,11 @@ uart_init_channel(uint8_t channel, uint32_t baudrate, gpio_pin_t tx_gpio, gpio_p
   sci->smr = k_sci_smr_async_8n1;
 
   /* Set baud rate */
-  sci->brr = internal_calculate_brr(baudrate);
+  sci->brr = internal_calculate_brr(config->baudrate);
 
   /* Wait for at least 1 bit time */
   /* NOTE: Busy-wait required - may run before ThreadX initialization */
-  for (volatile uint32_t i = 0; i < k_uart_bit_time_delay_cycles; i++) {
+  for (volatile uint32_t i = 0; i < s_uart_bit_time_delay_cycles; i++) {
     __asm__ volatile("nop");
   }
 
@@ -325,15 +353,15 @@ uart_init_channel(uint8_t channel, uint32_t baudrate, gpio_pin_t tx_gpio, gpio_p
   sci->semr = k_sci_semr_default;
 
   /* Mark channel as initialized */
-  s_channel_initialized[channel] = true;
+  s_channel_initialized[config->channel] = true;
 
   return k_rx_ok;
 }
 
-rx_err_t uart_deinit_channel(uint8_t channel)
+rx_err_t uart_deinit_channel(const uart_channel_t channel)
 {
   /* Validate channel */
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -352,10 +380,10 @@ rx_err_t uart_deinit_channel(uint8_t channel)
   return k_rx_ok;
 }
 
-rx_err_t uart_putc_channel(uint8_t channel, char data)
+rx_err_t uart_putc_channel(const uart_channel_t channel, const char data)
 {
   /* Validate channel */
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -386,20 +414,20 @@ rx_err_t uart_putc_channel(uint8_t channel, char data)
   sci->tdr = (uint8_t)data;
 
   /* Clear TDRE flag by reading SSR then writing 0 */
-  volatile uint8_t ssr = sci->ssr;
-  sci->ssr             = (uint8_t)(ssr & ~k_sci_ssr_tdre_flag);
+  const uint8_t ssr = sci->ssr;
+  sci->ssr          = (uint8_t)(ssr & ~k_sci_ssr_tdre_flag);
 
   return k_rx_ok;
 }
 
-rx_err_t uart_puts_channel(uint8_t channel, const char* str)
+rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
 {
   /* Validate parameters */
   if (str == (const char*)0) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -407,31 +435,35 @@ rx_err_t uart_puts_channel(uint8_t channel, const char* str)
     return k_rx_err_invalid_state;
   }
 
-  /* Transmit string with \n to \r\n conversion */
-  while (*str) {
-    if (*str == '\n') {
-      rx_err_t err = uart_putc_channel(channel, '\r');
+  /* Transmit string with \n to \r\n conversion (statically bounded) */
+  for (size_t i = 0; i < k_uart_max_str_len; ++i) {
+    if (str[i] == '\0') {
+      return k_rx_ok; /* Terminator found, success */
+    }
+    if (str[i] == '\n') {
+      const rx_err_t err = uart_putc_channel(channel, '\r');
       if (err != k_rx_ok) {
         return err;
       }
     }
-    rx_err_t err = uart_putc_channel(channel, *str++);
+    const rx_err_t err = uart_putc_channel(channel, str[i]);
     if (err != k_rx_ok) {
       return err;
     }
   }
 
-  return k_rx_ok;
+  /* Reached limit without finding terminator */
+  return k_rx_err_invalid_size;
 }
 
-rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t length)
+rx_err_t uart_write_channel(const uart_channel_t channel, const uint8_t* data, uint16_t length)
 {
   /* Validate parameters */
   if (data == (const uint8_t*)0) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -441,7 +473,7 @@ rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t lengt
 
   /* Write each byte */
   for (uint16_t i = 0; i < length; i++) {
-    rx_err_t err = uart_putc_channel(channel, (char)data[i]);
+    const rx_err_t err = uart_putc_channel(channel, (char)data[i]);
     if (err != k_rx_ok) {
       return err;
     }
@@ -450,14 +482,14 @@ rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t lengt
   return k_rx_ok;
 }
 
-rx_err_t uart_getc_channel(uint8_t channel, char* data)
+rx_err_t uart_getc_channel(const uart_channel_t channel, char* data)
 {
   /* Validate parameters */
   if (data == (char*)0) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -486,20 +518,21 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data)
 
   /* Clear RDRF flag by reading SSR then writing 0 */
   /* Some RX MCUs require explicit clear after reading RDR */
-  volatile uint8_t ssr = sci->ssr;
-  sci->ssr             = (uint8_t)(ssr & ~k_sci_ssr_rdrf_flag);
+  const uint8_t ssr = sci->ssr;
+  sci->ssr          = (uint8_t)(ssr & ~k_sci_ssr_rdrf_flag);
 
   return k_rx_ok;
 }
 
-rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read)
+rx_err_t
+uart_read_channel(const uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read)
 {
   /* Validate parameters */
   if (data == (uint8_t*)0 || bytes_read == (uint16_t*)0) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -510,8 +543,8 @@ rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint
   /* Read available bytes */
   *bytes_read = 0;
   for (uint16_t i = 0; i < length; i++) {
-    char     c;
-    rx_err_t err = uart_getc_channel(channel, &c);
+    char           c;
+    const rx_err_t err = uart_getc_channel(channel, &c);
     if (err == k_rx_err_empty) {
       /* No more data available */
       break;
@@ -526,14 +559,14 @@ rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint
   return k_rx_ok;
 }
 
-rx_err_t uart_rx_available(uint8_t channel, bool* available)
+rx_err_t uart_rx_available(const uart_channel_t channel, bool* available)
 {
   /* Validate parameters */
   if (available == (bool*)0) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -542,7 +575,7 @@ rx_err_t uart_rx_available(uint8_t channel, bool* available)
   }
 
   /* Get SCI register base */
-  volatile rx_sci_regs_t* sci = sci_get_channel(channel);
+  const volatile rx_sci_regs_t* sci = sci_get_channel(channel);
   if (sci == (volatile rx_sci_regs_t*)0) {
     return k_rx_err_invalid_arg;
   }
@@ -560,16 +593,19 @@ rx_err_t uart_rx_available(uint8_t channel, bool* available)
 
 rx_err_t uart_init(void)
 {
-  return uart_init_channel(k_uart_debug_channel,
-                           k_uart_default_baudrate,
-                           k_uart_debug_tx_gpio,
-                           k_uart_debug_rx_gpio);
+  const uart_channel_config_t config = {
+    .channel  = (uart_channel_t)k_uart_debug_channel,
+    .baudrate = s_uart_default_baudrate,
+    .tx_gpio  = k_uart_debug_tx_gpio,
+    .rx_gpio  = k_uart_debug_rx_gpio,
+  };
+  return uart_init_channel(&config);
 }
 
-void uart_putc(char data)
+void uart_putc(const char data)
 {
   /* For legacy function, ignore errors (used in early init before error handling) */
-  (void)uart_putc_channel(k_uart_debug_channel, data);
+  (void)uart_putc_channel((uart_channel_t)k_uart_debug_channel, data);
 }
 
 void uart_puts(const char* str)
@@ -587,7 +623,7 @@ void uart_puts(const char* str)
   }
 }
 
-void uart_putint(int32_t value)
+void uart_putint(const int32_t value)
 {
   char     buffer[k_uart_int_buffer_size]; /* Enough for -2147483648 */
   char*    p = buffer + sizeof(buffer) - 1;
@@ -597,7 +633,7 @@ void uart_putint(int32_t value)
   /* Handle negative numbers */
   if (value < 0) {
     is_negative = true;
-    abs_value   = (uint32_t)(-value);
+    abs_value   = (uint32_t)(-(int64_t)value);
   } else {
     abs_value = (uint32_t)value;
   }
@@ -605,24 +641,32 @@ void uart_putint(int32_t value)
   /* Null terminate */
   *p = '\0';
 
-  /* Convert to string (reverse order) */
-  do {
-    *--p = '0' + (abs_value % k_uart_base_10);
+  /* Convert to string (reverse order, statically bounded) */
+  for (size_t i = 0; i < k_uart_int_buffer_size - 1; ++i) {
+    *(--p) = (char)('0' + (abs_value % k_uart_base_10));
     abs_value /= k_uart_base_10;
-  } while (abs_value > 0);
+    if (abs_value == 0) {
+      break; /* All digits processed */
+    }
+    if (p <= buffer) {
+      break; /* Buffer limit reached (should not happen with correct sizing) */
+    }
+  }
 
   /* Add minus sign if negative */
-  if (is_negative) {
-    *--p = '-';
+  if (is_negative && p > buffer) {
+    *(--p) = '-';
   }
 
   /* Transmit the string */
   uart_puts(p);
 }
 
-void uart_puthex(uint32_t value, uint8_t digits)
+void uart_puthex(const uint32_t value, uint8_t digits)
 {
   static const char s_hex[] = "0123456789ABCDEF";
+  int32_t           i;
+  uint8_t           nibble;
 
   uart_puts("0x");
 
@@ -634,9 +678,11 @@ void uart_puthex(uint32_t value, uint8_t digits)
     digits = k_uart_hex_min_digits;
   }
 
-  /* Print hex digits from most significant */
-  for (int32_t i = digits - 1; i >= 0; i--) {
-    uint8_t nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
-    uart_putc(s_hex[nibble]);
+  /* Print hex digits from most significant (statically bounded) */
+  for (i = k_uart_hex_max_digits - 1; i >= 0; i--) {
+    if (i < digits) {
+      nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
+      uart_putc(s_hex[nibble]);
+    }
   }
 }

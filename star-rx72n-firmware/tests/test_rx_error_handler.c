@@ -18,6 +18,8 @@
 
 #include "unity.h"
 
+#include "rx_check.h"
+
 /* Include mock implementations first to override real headers */
 #include "tx_api.h"
 
@@ -51,12 +53,39 @@ void tearDown(void)
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_test_max_retries        = 3,
   k_test_initial_backoff_ms = 100,
   k_test_max_backoff_ms     = 5000,
   k_test_zero_retries       = 0,
 } test_constants_t;
+
+/**
+ * @brief Initialize error handler for tests
+ *
+ * @param[in,out] handler Error handler instance
+ * @param[in] max_retries Maximum retries to configure
+ *
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t internal_init_handler(error_handler_t* handler, uint32_t max_retries)
+{
+  RX_ASSERT((handler == NULL) || (max_retries > k_test_zero_retries),
+            "max_retries must be > 0");
+  RX_ASSERT((handler == NULL) || (max_retries <= k_test_max_retries),
+            "max_retries exceeds test max");
+
+  error_handler_config_t config = {
+    .max_retries        = max_retries,
+    .initial_backoff_ms = k_test_initial_backoff_ms,
+    .max_backoff_ms     = k_test_max_backoff_ms,
+  };
+  const rx_err_t err = error_handler_init(handler, &config);
+  if (handler != NULL) {
+    RX_ASSERT((err != k_rx_ok) || handler->initialized, "Handler must be initialized on success");
+  }
+  return err;
+}
 
 /* =============================================================================
  * Initialization Tests
@@ -68,10 +97,7 @@ typedef enum {
  */
 void test_error_handler_init_success(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_handler.initialized);
@@ -86,10 +112,9 @@ void test_error_handler_init_success(void)
  */
 void test_error_handler_init_null_pointer(void)
 {
-  rx_err_t err =
-    error_handler_init(NULL, k_test_max_retries, k_test_initial_backoff_ms, k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(NULL, k_test_max_retries);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -97,10 +122,7 @@ void test_error_handler_init_null_pointer(void)
  */
 void test_error_handler_init_zero_retries(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_zero_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_zero_retries);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT32(k_test_zero_retries, s_handler.max_retries);
@@ -111,10 +133,7 @@ void test_error_handler_init_zero_retries(void)
  */
 void test_error_handler_init_clears_components(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
@@ -135,10 +154,7 @@ void test_error_handler_init_clears_components(void)
  */
 void test_error_handler_deinit_success(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_handler.initialized);
 
@@ -153,7 +169,7 @@ void test_error_handler_deinit_success(void)
 void test_error_handler_deinit_null_pointer(void)
 {
   rx_err_t err = error_handler_deinit(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -176,10 +192,7 @@ void test_error_handler_deinit_already_deinitialized(void)
  */
 void test_error_handler_get_interface_success(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -201,14 +214,11 @@ void test_error_handler_get_interface_success(void)
  */
 void test_error_handler_get_interface_null_iface(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = error_handler_get_interface(NULL, &s_handler);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -218,7 +228,7 @@ void test_error_handler_get_interface_null_handler(void)
 {
   rx_error_interface_t iface;
   rx_err_t             err = error_handler_get_interface(&iface, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -241,10 +251,7 @@ void test_error_handler_get_interface_not_initialized(void)
  */
 void test_error_handler_report_increments_total_count(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -266,10 +273,7 @@ void test_error_handler_report_increments_total_count(void)
  */
 void test_error_handler_report_increments_component_count(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -294,10 +298,7 @@ void test_error_handler_report_increments_component_count(void)
  */
 void test_error_handler_component_count_nonexistent(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -317,10 +318,7 @@ void test_error_handler_component_count_nonexistent(void)
  */
 void test_error_handler_clear_errors(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -349,10 +347,7 @@ void test_error_handler_clear_errors(void)
  */
 void test_error_handler_retry_limit_reached(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -377,10 +372,7 @@ void test_error_handler_retry_limit_reached(void)
  */
 void test_error_handler_reset_retry_counter(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -403,10 +395,7 @@ void test_error_handler_reset_retry_counter(void)
  */
 void test_error_handler_unlimited_retries(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_zero_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_zero_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -429,10 +418,7 @@ void test_error_handler_unlimited_retries(void)
  */
 void test_error_handler_exponential_backoff(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -460,14 +446,16 @@ void test_error_handler_exponential_backoff(void)
 void test_error_handler_backoff_capped(void)
 {
   /* Use small max to test capping */
-  enum {
+  enum : uint16_t {
     k_small_max_backoff = 300,
   };
 
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_small_max_backoff);
+  error_handler_config_t config = {
+    .max_retries        = k_test_max_retries,
+    .initial_backoff_ms = k_test_initial_backoff_ms,
+    .max_backoff_ms     = k_small_max_backoff,
+  };
+  rx_err_t err = error_handler_init(&s_handler, &config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -495,10 +483,7 @@ void test_error_handler_backoff_capped(void)
  */
 void test_error_handler_backoff_nonexistent_component(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -518,10 +503,7 @@ void test_error_handler_backoff_nonexistent_component(void)
  */
 void test_error_handler_multiple_components(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -550,10 +532,7 @@ void test_error_handler_multiple_components(void)
  */
 void test_error_handler_max_components(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -587,10 +566,7 @@ void test_error_handler_max_components(void)
  */
 void test_error_interface_validate_success(void)
 {
-  rx_err_t err = error_handler_init(&s_handler,
-                                    k_test_max_retries,
-                                    k_test_initial_backoff_ms,
-                                    k_test_max_backoff_ms);
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_error_interface_t iface;
@@ -606,7 +582,7 @@ void test_error_interface_validate_success(void)
 void test_error_interface_validate_null(void)
 {
   rx_err_t err = rx_error_interface_validate(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**

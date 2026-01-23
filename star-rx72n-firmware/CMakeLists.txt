@@ -3,7 +3,7 @@
 # ThreadX-based motor control for Renesas RX72N
 # =============================================================================
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 
 # Project definition
 project(star-rx72n-firmware
@@ -12,8 +12,8 @@ project(star-rx72n-firmware
     DESCRIPTION "STAR Robot RX72N Motor Control Firmware"
 )
 
-# C standard
-set(CMAKE_C_STANDARD 11)
+# C standard (C23 required for enum : uint8_t syntax)
+set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)  # GNU extensions for embedded
 
@@ -54,7 +54,8 @@ add_compile_options(
     -Wextra
     -Wpedantic
     -Werror                # Treat warnings as errors
-    -Wno-unused-parameter
+    -Wno-error=type-limits # Rule 10: ThreadX POSIX compat (lib/threadx/utility/rtos_compatibility_layers/posix/px_sig_*.c) triggers unsigned < 0 checks; vendor code, pending upstream fix
+    -Wno-unused-parameter  # Required for fixed callback signatures in HAL/ThreadX APIs
     -Wno-missing-braces    # nanopb generates these
     -Wno-comment           # ThreadX has nested comments in assembly
     -fshort-enums          # Use smallest type for enums (embedded optimization)
@@ -119,6 +120,7 @@ add_library(rx_hal STATIC
 )
 target_include_directories(rx_hal PUBLIC
     lib/rx_hal/inc
+    lib/rx_bus/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/include  # For tx_user.h
 )
 target_link_libraries(rx_hal PUBLIC rx_core threadx)
@@ -278,7 +280,9 @@ target_link_libraries(rx_obstacle_detect PUBLIC rx_hcsr04 rx_motor rx_core)
 
 set(APP_SOURCES
     src/main.c
-    src/system_init.c
+    src/rx_clock_power_init.c
+    src/hardware_init.c
+    src/tasks/app_main_task.c
 )
 
 # =============================================================================
@@ -349,44 +353,24 @@ message(STATUS "Build Type:       ${CMAKE_BUILD_TYPE}")
 message(STATUS "C Compiler:       ${CMAKE_C_COMPILER}")
 message(STATUS "==============================================")
 message(STATUS "Libraries:")
-message(STATUS "  rx_hal         - Hardware abstraction (GPTW, MTU, CMT, GPIO, UART)")
-message(STATUS "  rx_core        - Core infrastructure (error, logging, DIP)")
-message(STATUS "  rx_bus         - Bus manager (GPIO, ADC, I2C, SMBUS)")
-message(STATUS "  rx_motor       - Motor control (GPTW PWM)")
-message(STATUS "  rx_encoder     - Encoder (MTU phase counting)")
-message(STATUS "  rx_pid         - PID controller")
-message(STATUS "  rx_fec         - FEC codec (K=7 convolutional + Viterbi)")
-message(STATUS "  rx_harq        - HARQ protocol (Chase Combining)")
-message(STATUS "  rx_frame       - Frame layer (SYNC, CRC-32, header)")
-message(STATUS "  rx_nanopb      - Protocol Buffers (nanopb integration)")
-message(STATUS "  rx_spi_comm    - SPI communication layer")
-message(STATUS "  rx_usb         - USB CDC-ACM driver")
-message(STATUS "  rx_usb_comm    - USB communication layer")
-message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
-message(STATUS "  rx_bq4050      - BQ4050 battery fuel gauge (SBS 1.1)")
-message(STATUS "  rx_ds18b20     - DS18B20 1-Wire temperature sensor")
-message(STATUS "  rx_hcsr04      - HC-SR04 ultrasonic distance sensor")
-message(STATUS "  rx_obstacle_detect - Obstacle detection with emergency stop")
+message(STATUS "  rx_hal                 - Hardware abstraction (GPTW, MTU, CMT, GPIO, UART)")
+message(STATUS "  rx_core                - Core infrastructure (error, logging, DIP)")
+message(STATUS "  rx_bus                 - Bus manager (GPIO, ADC, I2C, SMBUS)")
+message(STATUS "  rx_motor               - Motor control (GPTW PWM)")
+message(STATUS "  rx_encoder             - Encoder (MTU phase counting)")
+message(STATUS "  rx_pid                 - PID controller")
+message(STATUS "  rx_fec                 - FEC codec (K=7 convolutional + Viterbi)")
+message(STATUS "  rx_harq                - HARQ protocol (Chase Combining)")
+message(STATUS "  rx_frame               - Frame layer (SYNC, CRC-32, header)")
+message(STATUS "  rx_nanopb              - Protocol Buffers (nanopb integration)")
+message(STATUS "  rx_spi_comm            - SPI communication layer")
+message(STATUS "  rx_usb                 - USB CDC-ACM driver")
+message(STATUS "  rx_usb_comm            - USB communication layer")
+message(STATUS "  rx_drv8243             - DRV8243 H-bridge driver")
+message(STATUS "  rx_bq4050              - BQ4050 battery fuel gauge (SBS 1.1)")
+message(STATUS "  rx_ds18b20             - DS18B20 1-Wire temperature sensor")
+message(STATUS "  rx_hcsr04              - HC-SR04 ultrasonic distance sensor")
+message(STATUS "  rx_obstacle_detect     - Obstacle detection with emergency stop")
 message(STATUS "==============================================")
-
-# =============================================================================
-# Hardware Access (Flash/Debug)
-# =============================================================================
-#
-# Professional embedded workflow:
-# - BUILD in Docker (reproducible, cross-platform)
-# - FLASH/DEBUG on host (requires USB hardware access)
-#
-# Use provided scripts instead of make targets:
-#   ./flash.sh  - Flash firmware via E2 Lite (runs rfp-cli on host)
-#   ./debug.sh  - Start GDB session (connects to J-Link/E2 on host)
-#
-# Why not 'make flash'?
-# - Docker containers cannot access USB devices reliably
-# - Host scripts provide better error messages and setup guidance
-# - Consistent across Mac/Linux/Windows
-#
-# =============================================================================
-
 message(STATUS "Flash/Debug:      Use ./flash.sh and ./debug.sh (host scripts)")
 message(STATUS "                  Hardware access requires running on host, not in Docker")

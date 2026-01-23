@@ -44,7 +44,7 @@ extern "C" {
  * @param[in] bus_name UART bus name
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_arg if bus is not UART type
  * @return k_rx_err_timeout if mutex timeout
@@ -61,7 +61,7 @@ rx_err_t rx_bus_uart_init(rx_bus_manager_t* manager, const char* bus_name);
  * @param[in] length Number of bytes to write
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or data is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or data is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if UART timeout or mutex timeout
@@ -84,7 +84,7 @@ rx_err_t rx_bus_uart_write(rx_bus_manager_t* manager,
  * @param[out] bytes_read Actual number of bytes read (can be 0 if no data)
  *
  * @return k_rx_ok on success (check bytes_read for actual count)
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
@@ -103,7 +103,7 @@ rx_err_t rx_bus_uart_read(rx_bus_manager_t* manager,
  * @param[in] c Character to write
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if UART timeout or mutex timeout
@@ -120,7 +120,7 @@ rx_err_t rx_bus_uart_putc(rx_bus_manager_t* manager, const char* bus_name, char 
  * @param[in] str Null-terminated string to write
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if UART timeout or mutex timeout
@@ -137,7 +137,7 @@ rx_err_t rx_bus_uart_puts(rx_bus_manager_t* manager, const char* bus_name, const
  * @param[out] c Character received
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_empty if no data available
@@ -153,7 +153,7 @@ rx_err_t rx_bus_uart_getc(rx_bus_manager_t* manager, const char* bus_name, char*
  * @param[out] available True if at least one byte is available
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_null_ptr if any pointer parameter is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout

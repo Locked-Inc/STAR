@@ -38,18 +38,23 @@ static const char* s_tag = "MTU";
  */
 
 /** @brief MTU general constants */
-typedef enum {
-  k_mtu_max_channels = 7, /**< MTU0-MTU4, MTU6-MTU7 (sparse indexing) */
+typedef enum : uint8_t {
+  k_mtu_max_channels = 8, /**< MTU0-MTU4, MTU6-MTU7 (sparse indexing, max index is 7) */
 } mtu_constants_t;
 
 /** @brief MTU module stop bit positions in MSTPCRA */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_mstpa_mtu0_4 = 9, /**< MTU0-MTU4 module stop bit */
   k_mtu_mstpa_mtu6_7 = 8, /**< MTU6-MTU7 module stop bit */
 } mtu_module_stop_bits_t;
 
+/** @brief Bit manipulation constants */
+typedef enum : uint32_t {
+  k_mtu_bit_one = 1UL, /**< Single bit value for shifts */
+} mtu_bit_constants_t;
+
 /** @brief Period calculation constants */
-typedef enum {
+typedef enum : uint16_t {
   k_mtu_period_divisor = 2,      /**< Triangle wave period divisor */
   k_mtu_period_max     = 0xFFFF, /**< Maximum valid period (16-bit) */
   k_mtu_period_min     = 10,     /**< Minimum valid period */
@@ -57,24 +62,24 @@ typedef enum {
 } mtu_period_constants_t;
 
 /** @brief TIOR register shift positions */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_tior_low_shift  = 0, /**< Low nibble shift (MTIOCA/MTIOCC) */
   k_mtu_tior_high_shift = 4, /**< High nibble shift (MTIOCB/MTIOCD) */
 } mtu_tior_shift_t;
 
 /** @brief TIOR register mask values */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_tior_low_mask  = 0xF0, /**< Mask for low nibble */
   k_mtu_tior_high_mask = 0x0F, /**< Mask for high nibble */
 } mtu_tior_mask_t;
 
 /** @brief TIOR output disabled value */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_tior_disabled = 0x00, /**< Output disabled */
 } mtu_tior_disabled_t;
 
 /** @brief Duty cycle calculation constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_duty_min     = 0,   /**< Minimum duty cycle (0%) */
   k_mtu_duty_max     = 100, /**< Maximum duty cycle (100%) */
   k_mtu_duty_divisor = 100, /**< Divisor for percentage conversion */
@@ -101,7 +106,7 @@ static uint16_t s_mtu_period[k_mtu_max_channels]      = {0};
  *
  * @return Pointer to MTU register base, or NULL if invalid
  */
-static volatile void* internal_get_mtu_base(rx_mtu_channel_t channel)
+static volatile void* internal_get_mtu_base(const rx_mtu_channel_t channel)
 {
   switch (channel) {
     case k_mtu_channel_0:
@@ -123,6 +128,25 @@ static volatile void* internal_get_mtu_base(rx_mtu_channel_t channel)
   }
 }
 
+static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
+{
+  return internal_get_mtu_base(channel) != NULL;
+}
+
+static rx_err_t internal_clear_tstr_bit(volatile rx_mtu_tstr_regs_t* tstr, const uint8_t mask)
+{
+  if (tstr == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  tstr->tstr &= (uint8_t)~mask;
+  if ((tstr->tstr & mask) != 0) {
+    return k_rx_err_hw_error;
+  }
+
+  return k_rx_ok;
+}
+
 /**
  * @brief Calculate period register value from frequency
  *
@@ -131,19 +155,25 @@ static volatile void* internal_get_mtu_base(rx_mtu_channel_t channel)
  *
  * @return k_rx_ok on success, k_rx_err_invalid_arg if frequency too high/low
  */
-static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint16_t* period)
+static rx_err_t internal_calculate_period(const uint32_t frequency_hz, uint16_t* period)
 {
+  uint32_t period_calc;
+
   /* For PWM mode 1 (triangle wave):
    * Period = PCLKA / (2 * frequency)
    * PCLKA = 120 MHz
    */
   const uint32_t pclka = k_pclka_hz;
 
+  if (period == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
   if (frequency_hz == k_mtu_period_zero) {
     return k_rx_err_invalid_arg;
   }
 
-  uint32_t period_calc = pclka / (k_mtu_period_divisor * frequency_hz);
+  period_calc = pclka / (k_mtu_period_divisor * frequency_hz);
 
   /* Check if period fits in 16-bit register */
   if (period_calc > k_mtu_period_max) {
@@ -169,8 +199,12 @@ static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint16_t* perio
  * @return Pointer to TGR register, or NULL if invalid
  */
 static volatile uint16_t* internal_get_tgr_register(volatile rx_mtu_channel_regs_t* mtu,
-                                                    rx_mtu_output_t                 output)
+                                                    const rx_mtu_output_t           output)
 {
+  if (mtu == NULL) {
+    return NULL;
+  }
+
   switch (output) {
     case k_mtu_output_a:
       return &mtu->tgra;
@@ -185,29 +219,44 @@ static volatile uint16_t* internal_get_tgr_register(volatile rx_mtu_channel_regs
   }
 }
 
+static rx_err_t internal_set_duty_raw_mtu(volatile rx_mtu_channel_regs_t* mtu,
+                                          const rx_mtu_output_t           output,
+                                          const uint16_t                  duty_count)
+{
+  if (mtu == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  volatile uint16_t* tgr = internal_get_tgr_register(mtu, output);
+  if (tgr == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Update duty cycle (buffered, takes effect on next period) */
+  *tgr = duty_count;
+  return k_rx_ok;
+}
+
 /* =============================================================================
  * Public API Implementation
  * =============================================================================
  */
 
-rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config)
+rx_err_t rx_mtu_init_pwm(const rx_mtu_channel_t channel, const rx_mtu_config_t* config)
 {
-  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
+  volatile rx_mtu_channel_regs_t* mtu;
+  uint16_t                        period;
+  rx_err_t                        err;
 
-  if ((int32_t)channel >= k_mtu_max_channels) {
-    rx_log_error(s_tag, "Invalid MTU channel");
-    return k_rx_err_invalid_arg;
-  }
+  RX_VALIDATE_PTR(config, s_tag, "config pointer is NULL");
 
-  volatile rx_mtu_channel_regs_t* mtu =
-    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
 
   /* Calculate period from frequency */
-  uint16_t period;
-  rx_err_t err = internal_calculate_period(config->frequency_hz, &period);
+  err = internal_calculate_period(config->frequency_hz, &period);
   if (err != k_rx_ok) {
     return err;
   }
@@ -218,15 +267,18 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
   system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
 
   if (channel <= k_mtu_channel_4) {
-    system_regs()->mstpcra &= ~(1UL << k_mtu_mstpa_mtu0_4);
+    system_regs()->mstpcra &= ~(k_mtu_bit_one << k_mtu_mstpa_mtu0_4);
   } else {
-    system_regs()->mstpcra &= ~(1UL << k_mtu_mstpa_mtu6_7);
+    system_regs()->mstpcra &= ~(k_mtu_bit_one << k_mtu_mstpa_mtu6_7);
   }
 
   system_regs()->prcr = k_rx_prcr_lock;
 
   /* Stop timer before configuration */
-  rx_mtu_stop(channel);
+  err = rx_mtu_stop(channel);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Configure timer control register
    * - PCLKA/1 (120 MHz)
@@ -265,18 +317,29 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
   s_mtu_initialized[channel] = true;
 
   /* Start timer */
-  rx_mtu_start(channel);
+  err = rx_mtu_start(channel);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   rx_log_info(s_tag, "MTU initialized successfully");
 
   return k_rx_ok;
 }
 
-rx_err_t rx_mtu_set_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float duty_percent)
+rx_err_t
+rx_mtu_set_duty(const rx_mtu_channel_t channel, rx_mtu_output_t output, const float duty_percent)
 {
-  if ((int32_t)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
-    return k_rx_err_invalid_state;
+  volatile rx_mtu_channel_regs_t* mtu;
+  uint16_t                        period;
+  uint16_t                        duty_count;
+
+  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  if (mtu == NULL) {
+    return k_rx_err_invalid_arg;
   }
+
+  RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
 
   if (duty_percent < (float)k_mtu_duty_min || duty_percent > (float)k_mtu_duty_max) {
     rx_log_error(s_tag, "Invalid duty cycle");
@@ -284,95 +347,93 @@ rx_err_t rx_mtu_set_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
   }
 
   /* Convert percentage to count value */
-  uint16_t period     = s_mtu_period[channel];
-  uint16_t duty_count = (uint16_t)((duty_percent * period) / (float)k_mtu_duty_divisor);
+  period     = s_mtu_period[channel];
+  duty_count = (uint16_t)((duty_percent * period) / (float)k_mtu_duty_divisor);
 
-  return rx_mtu_set_duty_raw(channel, output, duty_count);
+  return internal_set_duty_raw_mtu(mtu, output, duty_count);
 }
 
-rx_err_t rx_mtu_set_duty_raw(rx_mtu_channel_t channel, rx_mtu_output_t output, uint16_t duty_count)
+rx_err_t
+rx_mtu_set_duty_raw(const rx_mtu_channel_t channel, rx_mtu_output_t output, uint16_t duty_count)
 {
-  if ((int32_t)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
-    return k_rx_err_invalid_state;
-  }
+  volatile rx_mtu_channel_regs_t* mtu;
+  uint16_t                        period;
 
-  volatile rx_mtu_channel_regs_t* mtu =
-    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
 
+  RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
+
   /* Clamp to period */
-  uint16_t period = s_mtu_period[channel];
+  period = s_mtu_period[channel];
   if (duty_count > period) {
     duty_count = period;
   }
 
-  /* Get TGR register for this output */
-  volatile uint16_t* tgr = internal_get_tgr_register(mtu, output);
-  if (tgr == NULL) {
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Update duty cycle (buffered, takes effect on next period) */
-  *tgr = duty_count;
-
-  return k_rx_ok;
+  return internal_set_duty_raw_mtu(mtu, output, duty_count);
 }
 
-rx_err_t rx_mtu_get_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float* duty_percent)
+rx_err_t
+rx_mtu_get_duty(const rx_mtu_channel_t channel, const rx_mtu_output_t output, float* duty_percent)
 {
-  RX_CHECK_NULL_PTR(duty_percent, s_tag, "duty_percent pointer is NULL");
+  volatile rx_mtu_channel_regs_t* mtu;
+  const volatile uint16_t*        tgr;
+  uint16_t                        period;
+  uint16_t                        duty_count;
 
-  if ((int32_t)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
-    return k_rx_err_invalid_state;
-  }
+  RX_VALIDATE_PTR(duty_percent, s_tag, "duty_percent pointer is NULL");
 
-  volatile rx_mtu_channel_regs_t* mtu =
-    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
 
-  volatile uint16_t* tgr = internal_get_tgr_register(mtu, output);
+  RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
+
+  tgr = internal_get_tgr_register(mtu, output);
   if (tgr == NULL) {
     return k_rx_err_invalid_arg;
   }
 
-  uint16_t period     = s_mtu_period[channel];
-  uint16_t duty_count = *tgr;
+  period     = s_mtu_period[channel];
+  duty_count = *tgr;
 
   *duty_percent = (float)(duty_count * (float)k_mtu_duty_max) / period;
 
   return k_rx_ok;
 }
 
-rx_err_t rx_mtu_get_period(rx_mtu_channel_t channel, uint16_t* period_count)
+rx_err_t rx_mtu_get_period(const rx_mtu_channel_t channel, uint16_t* period_count)
 {
-  RX_CHECK_NULL_PTR(period_count, s_tag, "period_count pointer is NULL");
+  RX_VALIDATE_PTR(period_count, s_tag, "period_count pointer is NULL");
 
-  if ((int32_t)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
-    return k_rx_err_invalid_state;
+  if (!internal_is_valid_channel(channel)) {
+    return k_rx_err_invalid_arg;
   }
+
+  RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
 
   *period_count = s_mtu_period[channel];
   return k_rx_ok;
 }
 
-rx_err_t rx_mtu_enable_output(rx_mtu_channel_t channel, rx_mtu_output_t output, bool enable)
+rx_err_t
+rx_mtu_enable_output(const rx_mtu_channel_t channel, rx_mtu_output_t output, const bool enable)
 {
-  if ((int32_t)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
-    return k_rx_err_invalid_state;
-  }
+  volatile rx_mtu_channel_regs_t* mtu;
+  uint8_t                         tior_value;
 
-  volatile rx_mtu_channel_regs_t* mtu =
-    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
 
+  RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
+
   /* Enable/disable output by modifying TIOR registers */
-  uint8_t tior_value = enable ? k_mtu_tior_init_low : k_mtu_tior_disabled;
+  tior_value = enable ? k_mtu_tior_init_low : k_mtu_tior_disabled;
 
   switch (output) {
     case k_mtu_output_a:
@@ -394,11 +455,13 @@ rx_err_t rx_mtu_enable_output(rx_mtu_channel_t channel, rx_mtu_output_t output, 
   return k_rx_ok;
 }
 
-rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
+rx_err_t rx_mtu_start(const rx_mtu_channel_t channel)
 {
-  if ((int32_t)channel >= k_mtu_max_channels) {
+  if (!internal_is_valid_channel(channel)) {
     return k_rx_err_invalid_arg;
   }
+
+  RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
 
   /* Set corresponding bit in TSTR register */
   switch (channel) {
@@ -430,62 +493,81 @@ rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
   return k_rx_ok;
 }
 
-rx_err_t rx_mtu_stop(rx_mtu_channel_t channel)
+rx_err_t rx_mtu_stop(const rx_mtu_channel_t channel)
 {
-  if ((int32_t)channel >= k_mtu_max_channels) {
+  rx_err_t err;
+
+  if (!internal_is_valid_channel(channel)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Clear corresponding bit in TSTR register */
   switch (channel) {
     case k_mtu_channel_0:
-      mtu_tstra()->tstr &= ~k_mtu_tstr_cst0;
+      err = internal_clear_tstr_bit(mtu_tstra(), k_mtu_tstr_cst0);
       break;
     case k_mtu_channel_1:
-      mtu_tstra()->tstr &= ~k_mtu_tstr_cst1;
+      err = internal_clear_tstr_bit(mtu_tstra(), k_mtu_tstr_cst1);
       break;
     case k_mtu_channel_2:
-      mtu_tstra()->tstr &= ~k_mtu_tstr_cst2;
+      err = internal_clear_tstr_bit(mtu_tstra(), k_mtu_tstr_cst2);
       break;
     case k_mtu_channel_3:
-      mtu_tstra()->tstr &= ~k_mtu_tstr_cst3;
+      err = internal_clear_tstr_bit(mtu_tstra(), k_mtu_tstr_cst3);
       break;
     case k_mtu_channel_4:
-      mtu_tstra()->tstr &= ~k_mtu_tstr_cst4;
+      err = internal_clear_tstr_bit(mtu_tstra(), k_mtu_tstr_cst4);
       break;
     case k_mtu_channel_6:
-      mtu_tstrb()->tstr &= ~k_mtu_tstr_cst6;
+      err = internal_clear_tstr_bit(mtu_tstrb(), k_mtu_tstr_cst6);
       break;
     case k_mtu_channel_7:
-      mtu_tstrb()->tstr &= ~k_mtu_tstr_cst7;
+      err = internal_clear_tstr_bit(mtu_tstrb(), k_mtu_tstr_cst7);
       break;
     default:
       return k_rx_err_invalid_arg;
   }
 
-  return k_rx_ok;
+  return err;
 }
 
-rx_err_t rx_mtu_deinit(rx_mtu_channel_t channel)
+rx_err_t rx_mtu_deinit(const rx_mtu_channel_t channel)
 {
-  if ((int32_t)channel >= k_mtu_max_channels) {
+  rx_err_t err;
+
+  if (!internal_is_valid_channel(channel)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Stop timer */
-  rx_mtu_stop(channel);
+  err = rx_mtu_stop(channel);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Disable all outputs */
-  rx_mtu_enable_output(channel, k_mtu_output_a, false);
-  rx_mtu_enable_output(channel, k_mtu_output_b, false);
-  rx_mtu_enable_output(channel, k_mtu_output_c, false);
-  rx_mtu_enable_output(channel, k_mtu_output_d, false);
+  err = rx_mtu_enable_output(channel, k_mtu_output_a, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  err = rx_mtu_enable_output(channel, k_mtu_output_b, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  err = rx_mtu_enable_output(channel, k_mtu_output_c, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  err = rx_mtu_enable_output(channel, k_mtu_output_d, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Mark as uninitialized */
   s_mtu_initialized[channel] = false;
   s_mtu_period[channel]      = k_mtu_period_zero;
 
-  rx_log_info(s_tag, "Info");
+  rx_log_info(s_tag, "MTU channel deinitialized");
 
   return k_rx_ok;
 }

@@ -96,7 +96,7 @@ extern "C" {
 /**
  * @brief Mock pin validator configuration constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_mock_pin_validator_max_pins =
     256, /**< Maximum number of pins to track (covers RX72N's 182 pins) */
   k_mock_pin_validator_function_name_max = 32, /**< Maximum function name length */
@@ -142,7 +142,7 @@ typedef struct {
  * @param[in,out] validator Validator instance to initialize
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if validator is NULL
+ *         k_rx_err_null_ptr if validator is NULL
  */
 rx_err_t mock_pin_validator_init(mock_pin_validator_t* validator);
 
@@ -153,7 +153,7 @@ rx_err_t mock_pin_validator_init(mock_pin_validator_t* validator);
  * @param[in,out] validator Mock validator instance
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_null_ptr if either parameter is NULL,
  *         k_rx_err_invalid_state if validator not initialized
  */
 rx_err_t mock_pin_validator_get_interface(rx_pin_interface_t*   iface,
@@ -252,7 +252,7 @@ uint32_t mock_pin_validator_get_release_call_count(mock_pin_validator_t* validat
  * @param[in,out] validator Validator to clear
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if validator is NULL
+ *         k_rx_err_null_ptr if validator is NULL
  */
 rx_err_t mock_pin_validator_clear(mock_pin_validator_t* validator);
 
@@ -262,7 +262,7 @@ rx_err_t mock_pin_validator_clear(mock_pin_validator_t* validator);
  * @param[in,out] validator Validator to deinitialize
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if validator is NULL
+ *         k_rx_err_null_ptr if validator is NULL
  */
 rx_err_t mock_pin_validator_deinit(mock_pin_validator_t* validator);
 

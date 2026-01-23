@@ -139,3 +139,12 @@ log/
 
 # Dev container (personal config - do not share)
 .devcontainer/
+
+# Conductor (AI orchestrator state and history)
+conductor/
+
+# Other tools
+core
+.cache/
+opencode.json
+star-rx72n-firmware/.doxygen_cache

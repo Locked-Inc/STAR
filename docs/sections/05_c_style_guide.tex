@@ -1244,15 +1244,21 @@ switch (config->type) {
 Enums can be forward-declared for header dependency reduction.
 
 \begin{lstlisting}[language=C]
-/* Forward declaration (C11 or later with explicit underlying type) */
+/* Define enum with explicit underlying type (C23) before typedef */
+enum star_bus_type : int32_t {
+  k_star_bus_type_none,
+  k_star_bus_type_i2c,
+  /* ... */
+};
 typedef enum star_bus_type star_bus_type_t;
 
-/* Or use typedef in header, full definition in source */
+/* Or forward-declare in header, define in source (C23 with underlying type) */
 /* In header: */
+enum star_bus_type : int32_t;  /* Forward declaration with explicit type */
 typedef enum star_bus_type star_bus_type_t;
 
-/* In source or types header: */
-enum star_bus_type {
+/* In source: */
+enum star_bus_type : int32_t {
   k_star_bus_type_none,
   k_star_bus_type_i2c,
   /* ... */
@@ -6382,10 +6388,10 @@ This section establishes configuration requirements for Protocol Buffer messages
 \textbf{nanopb} is a small, portable Protocol Buffers implementation designed for embedded systems:
 
 \begin{itemize}
-  \item \textbf{Static Allocation}: All buffers allocated at compile time (no malloc)
-  \item \textbf{Small Code Size}: Minimal flash/RAM footprint
-  \item \textbf{C Language}: Compatible with C99 (not C++ required)
-  \item \textbf{Field Size Constraints}: Maximum sizes configured in \texttt{.options} files
+  \item \emph{Static Allocation}: All buffers allocated at compile time (no malloc)
+  \item \emph{Small Code Size}: Minimal flash/RAM footprint
+  \item \emph{C Language}: Compatible with C99 (optional C11 features; not C++)
+  \item \emph{Field Size Constraints}: Maximum sizes configured in \texttt{.options} files
 \end{itemize}
 
 \subsection{Why Static Allocation?}

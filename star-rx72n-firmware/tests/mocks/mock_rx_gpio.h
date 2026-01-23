@@ -17,8 +17,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hardware_pinout.h"
 #include "rx_err.h"
+#include "rx_port_constants.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,9 +32,16 @@ extern "C" {
 /**
  * @brief Mock GPIO constants
  */
-typedef enum {
-  k_mock_gpio_max_pins  = 256, /**< Maximum trackable pins (16 ports x 16 pins) */
-  k_gpio_port_shift     = 4,   /**< Bit shift to pack port into upper nibble */
+typedef enum : uint32_t {
+  /* Size must accommodate internal_pin_to_index: (port << k_port_shift) | pin_num
+   * With k_port_shift == 8 and k_pin_bits == 8, maximum index is
+   * (0xFF << 8) | 0xFF = 0xFFFF + 1 = 65536
+   * Compute as: (1u << (k_port_shift + k_pin_bits)) to track the port-shift encoding
+   */
+  k_pin_bits = 8, /**< Number of bits used for the pin field in rx_port_pin_t encoding */
+  k_mock_gpio_max_pins =
+    (1u << (k_port_shift +
+            k_pin_bits)), /**< Full index space for (port<<k_port_shift)|pin encoding */
 } mock_gpio_constants_t;
 
 /* =============================================================================
@@ -60,7 +67,7 @@ void mock_gpio_deinit(void);
  * @param[in] pin GPIO pin enum
  * @param[in] high True for high, false for low
  */
-void mock_gpio_set_read_value(gpio_pin_t pin, bool high);
+void mock_gpio_set_read_value(rx_port_pin_t pin, bool high);
 
 /**
  * @brief Get the last written value for a pin
@@ -69,7 +76,7 @@ void mock_gpio_set_read_value(gpio_pin_t pin, bool high);
  *
  * @return Last written value (true = high, false = low)
  */
-bool mock_gpio_get_written_value(gpio_pin_t pin);
+bool mock_gpio_get_written_value(rx_port_pin_t pin);
 
 /**
  * @brief Check if pin is configured as output
@@ -78,7 +85,7 @@ bool mock_gpio_get_written_value(gpio_pin_t pin);
  *
  * @return True if pin is output, false if input
  */
-bool mock_gpio_is_output(gpio_pin_t pin);
+bool mock_gpio_is_output(rx_port_pin_t pin);
 
 /**
  * @brief Set next error to return from GPIO operations
@@ -139,7 +146,7 @@ void mock_gpio_reset_counters(void);
  *
  * @return k_rx_ok on success, or injected error
  */
-rx_err_t gpio_set_output(gpio_pin_t pin);
+rx_err_t gpio_set_output(rx_port_pin_t pin);
 
 /**
  * @brief Set GPIO pin as input
@@ -148,7 +155,7 @@ rx_err_t gpio_set_output(gpio_pin_t pin);
  *
  * @return k_rx_ok on success, or injected error
  */
-rx_err_t gpio_set_input(gpio_pin_t pin);
+rx_err_t gpio_set_input(rx_port_pin_t pin);
 
 /**
  * @brief Write GPIO pin low
@@ -157,7 +164,7 @@ rx_err_t gpio_set_input(gpio_pin_t pin);
  *
  * @return k_rx_ok on success, or injected error
  */
-rx_err_t gpio_write_low(gpio_pin_t pin);
+rx_err_t gpio_write_low(rx_port_pin_t pin);
 
 /**
  * @brief Write GPIO pin high
@@ -166,7 +173,7 @@ rx_err_t gpio_write_low(gpio_pin_t pin);
  *
  * @return k_rx_ok on success, or injected error
  */
-rx_err_t gpio_write_high(gpio_pin_t pin);
+rx_err_t gpio_write_high(rx_port_pin_t pin);
 
 /**
  * @brief Read GPIO pin state
@@ -176,7 +183,7 @@ rx_err_t gpio_write_high(gpio_pin_t pin);
  *
  * @return k_rx_ok on success, or injected error
  */
-rx_err_t gpio_read(gpio_pin_t pin, bool* high);
+rx_err_t gpio_read(rx_port_pin_t pin, bool* high);
 
 #ifdef __cplusplus
 }

@@ -175,6 +175,11 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
 static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   gpio_read_ctx_t* ctx = (gpio_read_ctx_t*)user_ctx;
+  rx_err_t         err = k_rx_err_hw_error;
+
+  RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is NULL");
+  RX_CHECK_NULL_PTR(ctx, s_tag, "user_ctx pointer is NULL");
+  RX_CHECK_NULL_PTR(ctx->value, s_tag, "value pointer is NULL");
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
@@ -184,7 +189,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Read GPIO value */
-  rx_err_t err = gpio_read(bus_config->proto.gpio.pin, ctx->value);
+  err = gpio_read(bus_config->proto.gpio.pin, ctx->value);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO read failed");
@@ -260,7 +265,8 @@ rx_err_t rx_bus_gpio_init(rx_bus_manager_t* manager, const char* bus_name, bool 
 
   gpio_init_ctx_t ctx = {.output = output, .result = k_rx_err_hw_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_gpio_init_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_gpio_init_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -276,7 +282,8 @@ rx_err_t rx_bus_gpio_write(rx_bus_manager_t* manager, const char* bus_name, bool
 
   gpio_write_ctx_t ctx = {.value = value, .result = k_rx_err_hw_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_gpio_write_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_gpio_write_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -293,7 +300,8 @@ rx_err_t rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool*
 
   gpio_read_ctx_t ctx = {.value = value, .result = k_rx_err_hw_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_gpio_read_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_gpio_read_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -309,7 +317,8 @@ rx_err_t rx_bus_gpio_toggle(rx_bus_manager_t* manager, const char* bus_name)
 
   gpio_toggle_ctx_t ctx = {.result = k_rx_err_hw_error};
 
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_gpio_toggle_callback, &ctx);
+  const rx_err_t err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_gpio_toggle_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;

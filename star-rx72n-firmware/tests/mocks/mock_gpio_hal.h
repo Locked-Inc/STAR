@@ -22,8 +22,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hardware_pinout.h"
 #include "rx_err.h"
+#include "rx_port_constants.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,14 +35,14 @@ extern "C" {
  */
 
 /** @brief Mock GPIO constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_gpio_max_ports         = 20, /**< Maximum port numbers */
   k_mock_gpio_pins_per_port     = 8,  /**< Pins per port */
   k_mock_gpio_call_history_size = 64, /**< Call history buffer size */
 } mock_gpio_constants_t;
 
 /** @brief GPIO direction enum for mock tracking */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_gpio_dir_undefined = 0, /**< Direction not set */
   k_mock_gpio_dir_input     = 1, /**< Input direction */
   k_mock_gpio_dir_output    = 2, /**< Output direction */
@@ -54,7 +54,7 @@ typedef enum {
  */
 
 /** @brief GPIO HAL function call types */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_gpio_call_set_output,
   k_mock_gpio_call_set_input,
   k_mock_gpio_call_write_high,
@@ -66,7 +66,7 @@ typedef enum {
 /** @brief GPIO HAL function call record */
 typedef struct {
   mock_gpio_call_type_t type; /**< Call type */
-  gpio_pin_t            pin;  /**< Pin that was operated on */
+  rx_port_pin_t         pin;  /**< Pin that was operated on */
 } mock_gpio_call_t;
 
 /** @brief Per-pin GPIO state */
@@ -121,7 +121,7 @@ void mock_gpio_reset(void);
  * @param[in] pin GPIO pin
  * @param[in] value Simulated input value (true=high, false=low)
  */
-void mock_gpio_set_input_value(gpio_pin_t pin, bool value);
+void mock_gpio_set_input_value(rx_port_pin_t pin, bool value);
 
 /**
  * @brief Set error to return on next GPIO HAL call
@@ -147,7 +147,7 @@ void mock_gpio_clear_error(void);
  *
  * @return Pin direction
  */
-mock_gpio_direction_t mock_gpio_get_direction(gpio_pin_t pin);
+mock_gpio_direction_t mock_gpio_get_direction(rx_port_pin_t pin);
 
 /**
  * @brief Get pin output value
@@ -156,7 +156,7 @@ mock_gpio_direction_t mock_gpio_get_direction(gpio_pin_t pin);
  *
  * @return Output value (true=high, false=low)
  */
-bool mock_gpio_get_output_value(gpio_pin_t pin);
+bool mock_gpio_get_output_value(rx_port_pin_t pin);
 
 /* =============================================================================
  * Call History Functions
@@ -189,12 +189,12 @@ void mock_gpio_clear_history(void);
  * =============================================================================
  */
 
-rx_err_t gpio_set_output(gpio_pin_t pin);
-rx_err_t gpio_set_input(gpio_pin_t pin);
-rx_err_t gpio_write_high(gpio_pin_t pin);
-rx_err_t gpio_write_low(gpio_pin_t pin);
-rx_err_t gpio_toggle(gpio_pin_t pin);
-rx_err_t gpio_read(gpio_pin_t pin, bool* value);
+rx_err_t gpio_set_output(rx_port_pin_t pin);
+rx_err_t gpio_set_input(rx_port_pin_t pin);
+rx_err_t gpio_write_high(rx_port_pin_t pin);
+rx_err_t gpio_write_low(rx_port_pin_t pin);
+rx_err_t gpio_toggle(rx_port_pin_t pin);
+rx_err_t gpio_read(rx_port_pin_t pin, bool* value);
 
 #ifdef __cplusplus
 }

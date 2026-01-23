@@ -40,13 +40,13 @@
  *   pin_validator_get_interface(&pin_iface, &s_pin_validator);
  *
  *   // 4. Reserve pins
- *   err = pin_iface.reserve_pin(pin_iface.ctx, 0xA, 5, "SPI_MOSI");
+ *   err = pin_iface.reserve_pin(pin_iface.ctx, k_rx_port_a, k_rx_pin_5, "SPI_COPI");
  *   if (err == k_rx_err_gpio_conflict) {
  *       // Pin already reserved
  *   }
  *
  *   // 5. Release when done
- *   pin_iface.release_pin(pin_iface.ctx, 0xA, 5);
+ *   pin_iface.release_pin(pin_iface.ctx, k_rx_port_a, k_rx_pin_5);
  * @endcode
  *
  * @date 2026-01-01
@@ -76,7 +76,7 @@ extern "C" {
 /**
  * @brief Pin validator configuration constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_pin_validator_max_ports = 17, /**< Maximum port number (0-16 for 0-9, A-G) */
   k_pin_validator_max_pins  = 8,  /**< Maximum pins per port */
 } pin_validator_limits_t;
@@ -91,7 +91,7 @@ typedef enum {
  */
 typedef struct {
   bool reserved;                              /**< Is this pin reserved? */
-  char function[k_pin_function_name_max_len]; /**< Function name (e.g., "SPI_MOSI", "GPIO_OUT") */
+  char function[k_pin_function_name_max_len]; /**< Function name (e.g., "SPI_COPI", "GPIO_OUT") */
 } pin_reservation_t;
 
 /* =============================================================================
@@ -124,7 +124,7 @@ typedef struct {
  * @param[in,out] validator Validator instance to initialize
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if validator is NULL,
+ *         k_rx_err_null_ptr if validator is NULL,
  *         k_rx_err_rtos_mutex if mutex creation fails
  */
 rx_err_t pin_validator_init(pin_validator_t* validator);
@@ -136,7 +136,7 @@ rx_err_t pin_validator_init(pin_validator_t* validator);
  * @param[in,out] validator Concrete validator instance
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_null_ptr if either parameter is NULL,
  *         k_rx_err_invalid_state if validator not initialized
  */
 rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t* validator);
@@ -147,7 +147,7 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
  * @param[in,out] validator Validator to deinitialize
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if validator is NULL
+ *         k_rx_err_null_ptr if validator is NULL
  */
 rx_err_t pin_validator_deinit(pin_validator_t* validator);
 

@@ -1,0 +1,9 @@
+Manufacturer=Microchip Technology
+PartNumber=MIC5205-2.5YM5-TR
+PartCategory=Voltage Regulator
+PackageCategory=SOT
+PinCount=5
+Version=1.0
+Released=2026-01-22 14:57:00
+Downloaded=2026-01-22 14:57:00
+3D=Y
