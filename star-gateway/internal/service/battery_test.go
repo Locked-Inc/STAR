@@ -273,7 +273,7 @@ func TestStreamBatteryState_ValidRate(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	batteryCh := make(chan *dispatcher.DispatchedMessage, 10)
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgtype dispatcher.MessageType,) <-chan *dispatcher.DispatchedMessage {
+		SubscribeFunc: func(msgtype dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 			return batteryCh
 		},
 	}

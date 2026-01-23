@@ -90,7 +90,7 @@ func TestGetConfiguration_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(_ context.Context) ( *harq.ReceiveResult, error) {
+		ReceiveFunc: func(_ context.Context) (*harq.ReceiveResult, error) {
 			return &harq.ReceiveResult{Payload: responsePayload, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}

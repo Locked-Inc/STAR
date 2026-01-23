@@ -241,11 +241,11 @@ func generateTelemetryResponse() *starv1.WireMessage {
 		Payload: &starv1.WireMessage_TelemetryData{
 			TelemetryData: &starv1.TelemetryData{
 				TimestampUs:        time.Now().UnixMicro(),
-				BatteryPercent:     85.0,           // 85% state of charge
-				CpuUsagePercent:    32.1,           // Light CPU load
-				TemperatureCelsius: 28.5,           // Room temperature
-				MotorLoadPercent:   50.0,           // Medium motor load
-				WifiSignalDbm:      -45,            // Strong WiFi signal
+				BatteryPercent:     85.0, // 85% state of charge
+				CpuUsagePercent:    32.1, // Light CPU load
+				TemperatureCelsius: 28.5, // Room temperature
+				MotorLoadPercent:   50.0, // Medium motor load
+				WifiSignalDbm:      -45,  // Strong WiFi signal
 				Imu: &starv1.ImuData{
 					PitchRad:   0.01,  // Nearly level
 					RollRad:    -0.02, // Slight roll
@@ -266,9 +266,9 @@ func generateEmergencyStopResponse() *starv1.WireMessage {
 			TelemetryData: &starv1.TelemetryData{
 				TimestampUs:        time.Now().UnixMicro(),
 				BatteryPercent:     85.0,
-				CpuUsagePercent:    15.0,           // CPU drops after motors stop
+				CpuUsagePercent:    15.0, // CPU drops after motors stop
 				TemperatureCelsius: 28.5,
-				MotorLoadPercent:   0.0,            // Motors stopped
+				MotorLoadPercent:   0.0, // Motors stopped
 				WifiSignalDbm:      -45,
 				Imu: &starv1.ImuData{
 					PitchRad:   0.0,

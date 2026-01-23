@@ -99,10 +99,10 @@ const (
 
 // FrameMetadata contains frame-level information for diagnostics.
 type FrameMetadata struct {
-	Sequence     uint16    // Frame sequence number
-	ReceivedAt   time.Time // When frame was received
-	Retransmits  int       // Number of retransmission attempts
-	FECDecoded   bool      // Whether FEC decoding was used
+	Sequence    uint16    // Frame sequence number
+	ReceivedAt  time.Time // When frame was received
+	Retransmits int       // Number of retransmission attempts
+	FECDecoded  bool      // Whether FEC decoding was used
 }
 
 // ReceiveResult bundles payload with frame metadata.

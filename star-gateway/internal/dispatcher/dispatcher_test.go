@@ -243,7 +243,7 @@ func TestDispatcherMultipleSubscribers(t *testing.T) {
 
 	receiveChan := make(chan *harq.ReceiveResult, 1)
 	receiveChan <- &harq.ReceiveResult{
-		Payload: data,
+		Payload:  data,
 		Metadata: harq.FrameMetadata{Sequence: 0},
 	}
 
