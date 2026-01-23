@@ -389,8 +389,9 @@ func (d *dispatcher) extractPayload(msg *starv1.WireMessage) (MessageType, inter
 // dispatchMessage sends a message to all subscribers of that type.
 func (d *dispatcher) dispatchMessage(msgType MessageType, msg *starv1.WireMessage, metadata *harq.FrameMetadata) {
 	d.mu.RLock()
+	defer d.mu.RUnlock()
+
 	subscribers, exists := d.subscribers[msgType]
-	d.mu.RUnlock()
 
 	if !exists || len(subscribers) == 0 {
 		d.logger.Debug("no subscribers for message type", slog.String("message_type", fmt.Sprintf("%d", msgType)))

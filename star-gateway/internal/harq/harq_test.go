@@ -1379,3 +1379,30 @@ func TestSend_VariadicPriorityHandling(t *testing.T) {
 		})
 	}
 }
+
+// TestChaseCombining_SetExpectedLenForTesting tests the testing helper function.
+func TestChaseCombining_SetExpectedLenForTesting(t *testing.T) {
+	const testExpectedLen = 100
+
+	mockTransport := NewMockTransport()
+	encoder := frame.NewEncoder()
+	decoder := frame.NewDecoder()
+	fecEncoder := &MockFECEncoder{}
+	fecDecoder := &MockFECDecoder{}
+
+	config := &Config{
+		MaxRetries: 3,
+		Timeout:    10 * time.Millisecond,
+		FECEnabled: true,
+	}
+
+	harq := NewChaseCombining(config, mockTransport, encoder, decoder, fecEncoder, fecDecoder)
+
+	// Test setting expected length
+	harq.SetExpectedLenForTesting(testExpectedLen)
+
+	// Verify the expected length was set correctly
+	if gotLen := harq.GetExpectedLenForTesting(); gotLen != testExpectedLen {
+		t.Fatalf("GetExpectedLenForTesting() = %d, want %d", gotLen, testExpectedLen)
+	}
+}

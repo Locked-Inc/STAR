@@ -642,6 +642,13 @@ func (h *ChaseCombining) SetExpectedLenForTesting(expectedLen int) {
 	h.expectedLen = expectedLen
 }
 
+// GetExpectedLenForTesting returns the expected decoded length for testing.
+func (h *ChaseCombining) GetExpectedLenForTesting() int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return h.expectedLen
+}
+
 // waitForAck waits for an ACK/NACK response with timeout.
 func (h *ChaseCombining) waitForAck(ctx context.Context) (*frame.Frame, error) {
 	if ctx == nil {
