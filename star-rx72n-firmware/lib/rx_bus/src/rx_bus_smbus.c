@@ -144,8 +144,12 @@ typedef struct {
 
 static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  rx_err_t          err = k_rx_err_invalid_state;
-  smbus_init_ctx_t* ctx = (smbus_init_ctx_t*)user_ctx;
+  rx_err_t          err;
+  smbus_init_ctx_t* ctx;
+  riic_channel_t    riic_channel;
+
+  err = k_rx_err_invalid_state;
+  ctx = (smbus_init_ctx_t*)user_ctx;
 
   if (bus_config->type != k_bus_type_smbus) {
     rx_log_error(s_tag, "Bus is not SMBUS type");
@@ -154,7 +158,7 @@ static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* 
   }
 
   /* Initialize underlying I2C channel */
-  const riic_channel_t riic_channel = { .value = bus_config->proto.smbus.i2c_config.channel };
+  riic_channel.value = bus_config->proto.smbus.i2c_config.channel;
   err = riic_init(riic_channel, bus_config->proto.smbus.i2c_config.frequency_hz);
 
   if (err != k_rx_ok) {
@@ -412,11 +416,14 @@ rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
                                       const uint8_t     command,
                                       const uint8_t     data)
 {
+  uint8_t write_buf[k_smbus_byte_buf_size];
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
   /* Use I2C write for byte data (command + data) */
-  const uint8_t write_buf[k_smbus_byte_buf_size] = {command, data};
+  write_buf[k_smbus_byte_data] = command;
+  write_buf[k_smbus_byte_pec]  = data;
   return rx_bus_i2c_write(manager, bus_name, write_buf, k_smbus_byte_buf_size);
 }
 
@@ -443,13 +450,15 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
                                       const uint8_t     command,
                                       const uint16_t    data)
 {
+  uint8_t write_buf[k_smbus_word_buf_size];
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
   /* Little-endian */
-  const uint8_t write_buf[k_smbus_word_buf_size] = {command,
-                                                    (uint8_t)(data & k_byte_mask),
-                                                    (uint8_t)(data >> k_bits_per_byte)};
+  write_buf[k_smbus_word_cmd] = command;
+  write_buf[k_smbus_word_lsb] = (uint8_t)(data & k_byte_mask);
+  write_buf[k_smbus_word_msb] = (uint8_t)(data >> k_bits_per_byte);
   return rx_bus_i2c_write(manager, bus_name, write_buf, k_smbus_word_buf_size);
 }
 

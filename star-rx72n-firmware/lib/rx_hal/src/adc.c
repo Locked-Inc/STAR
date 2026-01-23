@@ -130,14 +130,12 @@ static rx_err_t internal_configure_adc_unit(const uint8_t             unit,
 {
   uint16_t adcer;
 
-  if (adc == NULL) {
-    return k_rx_err_null_ptr;
-  }
-  if (unit < k_adc_unit_0 || unit > k_adc_unit_1) {
-    return k_rx_err_invalid_arg;
-  }
+  RX_CHECK_NULL_PTR(adc, s_tag, "ADC register pointer is NULL");
+  RX_CHECK_RANGE_TAG(unit, k_adc_unit_0, k_adc_unit_1, k_rx_err_invalid_arg, s_tag);
+
   if (bits != k_adc_resolution_8bit && bits != k_adc_resolution_10bit &&
       bits != k_adc_resolution_12bit) {
+    rx_log_error(s_tag, "Invalid ADC resolution");
     return k_rx_err_invalid_arg;
   }
 

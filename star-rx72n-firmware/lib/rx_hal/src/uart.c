@@ -77,6 +77,7 @@ typedef enum : uint16_t {
 
 /** @brief Maximum SCI channels (array size, must be enum for compile-time constant) */
 typedef enum : uint8_t {
+  k_uart_channel_min       = 0,  /**< Minimum UART channel (SCI0) */
   k_uart_array_size        = 13, /**< Array size for s_channel_initialized */
   k_uart_max_mstpb_channel = 11, /**< Maximum channel in MSTPCRB (SCI12 uses MSTPCRC) */
 } uart_internal_constants_t;
@@ -95,6 +96,19 @@ typedef enum : uint32_t {
   k_uart_timeout_expired   = 0,      /**< Timeout counter expired value */
   k_uart_timeout_decrement = 1,      /**< Timeout counter decrement value */
 } uart_timeout_t;
+
+/** @brief UART buffer and string size limits */
+typedef enum : uint32_t {
+  k_uart_max_str_len      = 256,  /**< Maximum string length for uart_puts_channel */
+  k_uart_int_buffer_size  = 12,   /**< Buffer size for integer to string conversion (fits INT32_MIN) */
+  k_uart_hex_max_digits   = 8,    /**< Maximum hex digits for uint32_t */
+} uart_buffer_limits_t;
+
+/** @brief Pin number validation constants */
+typedef enum : uint8_t {
+  k_rx_pin_0   = 0, /**< Minimum pin number */
+  k_rx_pin_max = 7, /**< Maximum pin number (pins 0-7) */
+} rx_pin_limits_t;
 
 /** @brief SCI module stop bit positions in MSTPCRB */
 typedef enum : uint8_t {
@@ -236,8 +250,9 @@ static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_por
   const uint8_t rx_port = rx_port_from_pin(rx_gpio);
   const uint8_t rx_pin  = rx_pin_from_pin(rx_gpio);
 
-  /* Validate pin numbers (unsigned types, only check upper bound) */
-  if (tx_pin > k_rx_pin_max || rx_pin > k_rx_pin_max) {
+  /* Validate pin numbers */
+  if (tx_pin < k_rx_pin_0 || tx_pin > k_rx_pin_max || rx_pin < k_rx_pin_0 ||
+      rx_pin > k_rx_pin_max) {
     return k_rx_err_invalid_arg;
   }
 
@@ -283,8 +298,9 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
     return k_rx_err_null_ptr;
   }
 
-  /* Validate channel (enum type is unsigned, only check upper bound) */
-  if ((uint8_t)config->channel >= s_uart_max_channels) {
+  /* Validate channel */
+  if ((uint8_t)config->channel < k_uart_channel_min ||
+      (uint8_t)config->channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -345,7 +361,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
 rx_err_t uart_deinit_channel(const uart_channel_t channel)
 {
   /* Validate channel */
-  if ((uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -367,7 +383,7 @@ rx_err_t uart_deinit_channel(const uart_channel_t channel)
 rx_err_t uart_putc_channel(const uart_channel_t channel, const char data)
 {
   /* Validate channel */
-  if ((uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -411,7 +427,7 @@ rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -419,21 +435,25 @@ rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
     return k_rx_err_invalid_state;
   }
 
-  /* Transmit string with \n to \r\n conversion */
-  while (*str) {
-    if (*str == '\n') {
+  /* Transmit string with \n to \r\n conversion (statically bounded) */
+  for (size_t i = 0; i < k_uart_max_str_len; ++i) {
+    if (str[i] == '\0') {
+      return k_rx_ok; /* Terminator found, success */
+    }
+    if (str[i] == '\n') {
       const rx_err_t err = uart_putc_channel(channel, '\r');
       if (err != k_rx_ok) {
         return err;
       }
     }
-    const rx_err_t err = uart_putc_channel(channel, *str++);
+    const rx_err_t err = uart_putc_channel(channel, str[i]);
     if (err != k_rx_ok) {
       return err;
     }
   }
 
-  return k_rx_ok;
+  /* Reached limit without finding terminator */
+  return k_rx_err_invalid_size;
 }
 
 rx_err_t uart_write_channel(const uart_channel_t channel, const uint8_t* data, uint16_t length)
@@ -443,7 +463,7 @@ rx_err_t uart_write_channel(const uart_channel_t channel, const uint8_t* data, u
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -469,7 +489,7 @@ rx_err_t uart_getc_channel(const uart_channel_t channel, char* data)
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -512,7 +532,7 @@ uart_read_channel(const uart_channel_t channel, uint8_t* data, uint16_t length, 
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -546,7 +566,7 @@ rx_err_t uart_rx_available(const uart_channel_t channel, bool* available)
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -621,14 +641,20 @@ void uart_putint(const int32_t value)
   /* Null terminate */
   *p = '\0';
 
-  /* Convert to string (reverse order) */
-  do {
+  /* Convert to string (reverse order, statically bounded) */
+  for (size_t i = 0; i < k_uart_int_buffer_size - 1; ++i) {
     *(--p) = (char)('0' + (abs_value % k_uart_base_10));
     abs_value /= k_uart_base_10;
-  } while (abs_value > 0);
+    if (abs_value == 0) {
+      break; /* All digits processed */
+    }
+    if (p <= buffer) {
+      break; /* Buffer limit reached (should not happen with correct sizing) */
+    }
+  }
 
   /* Add minus sign if negative */
-  if (is_negative) {
+  if (is_negative && p > buffer) {
     *(--p) = '-';
   }
 
@@ -639,6 +665,8 @@ void uart_putint(const int32_t value)
 void uart_puthex(const uint32_t value, uint8_t digits)
 {
   static const char s_hex[] = "0123456789ABCDEF";
+  int32_t           i;
+  uint8_t           nibble;
 
   uart_puts("0x");
 
@@ -650,9 +678,11 @@ void uart_puthex(const uint32_t value, uint8_t digits)
     digits = k_uart_hex_min_digits;
   }
 
-  /* Print hex digits from most significant */
-  for (int32_t i = digits - 1; i >= 0; i--) {
-    const uint8_t nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
-    uart_putc(s_hex[nibble]);
+  /* Print hex digits from most significant (statically bounded) */
+  for (i = k_uart_hex_max_digits - 1; i >= 0; i--) {
+    if (i < digits) {
+      nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
+      uart_putc(s_hex[nibble]);
+    }
   }
 }

@@ -55,6 +55,13 @@ typedef enum : uint8_t {
  */
 
 /**
+ * @brief Battery status flag check constants
+ */
+typedef enum : uint16_t {
+  k_bq4050_status_flag_clear = 0, /**< Status flag clear value (for != comparisons) */
+} bq4050_status_check_constants_t;
+
+/**
  * @brief Battery status flags (SBS register 0x16)
  */
 typedef enum : uint8_t {

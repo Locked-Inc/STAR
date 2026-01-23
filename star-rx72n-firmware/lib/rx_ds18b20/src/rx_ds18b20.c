@@ -606,10 +606,7 @@ static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t*    
   uint8_t  write_buf[k_ds18b20_scratchpad_write_bytes];
 
   RX_CHECK_NULL_PTR(handle, s_tag, "handle is NULL");
-  if (scratchpad == NULL) {
-    rx_log_error(s_tag, "scratchpad is NULL");
-    return k_rx_err_null_ptr;
-  }
+  RX_CHECK_NULL_PTR(scratchpad, s_tag, "scratchpad is NULL");
 
   /* Reset and check presence */
   err = rx_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
@@ -703,7 +700,7 @@ static uint16_t internal_ds18b20_get_temp_mask(const ds18b20_resolution_t resolu
  */
 static float internal_ds18b20_raw_to_celsius(const int16_t raw_temp)
 {
-  float result;
+  float result = NAN;
 
   if (raw_temp < k_ds18b20_temp_min_raw || raw_temp > k_ds18b20_temp_max_raw) {
     rx_log_error(s_tag, "Raw temperature out of range - returning NaN sentinel");
