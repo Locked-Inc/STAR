@@ -173,7 +173,7 @@ func handleConnection(conn net.Conn) {
 		}
 
 		// 3. Process the command and generate response
-		responseMsg := processCommand(&wireMsg, &decodedFrame.Header)
+		responseMsg := processCommand(&wireMsg)
 
 		// 4. Encode the response
 		responsePayload, err := proto.Marshal(responseMsg)
@@ -212,7 +212,7 @@ func handleConnection(conn net.Conn) {
 }
 
 // processCommand handles incoming commands and generates appropriate responses.
-func processCommand(wireMsg *starv1.WireMessage, header *frame.Header) *starv1.WireMessage {
+func processCommand(wireMsg *starv1.WireMessage) *starv1.WireMessage {
 	// Check which type of command was received
 	switch payload := wireMsg.Payload.(type) {
 	case *starv1.WireMessage_VelocityCommand:

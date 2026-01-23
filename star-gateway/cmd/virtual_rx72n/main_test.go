@@ -3,7 +3,6 @@ package main
 import (
 	"testing"
 
-	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 )
 
@@ -36,12 +35,8 @@ func TestProcessCommand(t *testing.T) {
 			VelocityCommand: cmd,
 		},
 	}
-	header := &frame.Header{
-		Sequence: 1,
-		Type:     frame.FrameTypeCommand,
-	}
 
-	resp := processCommand(wireMsg, header)
+	resp := processCommand(wireMsg)
 	if resp == nil {
 		t.Fatal("processCommand returned nil for VelocityCommand")
 	}
@@ -59,7 +54,7 @@ func TestProcessCommand(t *testing.T) {
 		},
 	}
 
-	respEstop := processCommand(wireMsgEstop, header)
+	respEstop := processCommand(wireMsgEstop)
 	if respEstop == nil {
 		t.Fatal("processCommand returned nil for EmergencyStopCommand")
 	}
@@ -69,7 +64,7 @@ func TestProcessCommand(t *testing.T) {
 
 	// Test unknown message (default case)
 	emptyMsg := &starv1.WireMessage{}
-	respUnknown := processCommand(emptyMsg, header)
+	respUnknown := processCommand(emptyMsg)
 	if respUnknown == nil {
 		t.Fatal("processCommand returned nil for unknown message")
 	}
