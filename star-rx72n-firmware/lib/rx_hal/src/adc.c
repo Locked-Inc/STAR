@@ -81,10 +81,8 @@ static const char* s_tag = "ADC";
 static bool s_adc_unit_initialized[k_adc_max_units] = {false, false};
 
 /* Track resolution for each ADC unit (initialized to 12-bit default) */
-static adc_resolution_t s_adc_unit_resolution[k_adc_max_units] = {
-    k_adc_resolution_12bit,
-    k_adc_resolution_12bit
-};
+static adc_resolution_t s_adc_unit_resolution[k_adc_max_units] = {k_adc_resolution_12bit,
+                                                                  k_adc_resolution_12bit};
 
 /* =============================================================================
  * Internal Helper Functions
@@ -124,9 +122,8 @@ static volatile rx_s12ad_regs_t* internal_get_adc_base(const uint8_t unit)
  * @return k_rx_err_null_ptr if adc is NULL
  * @return k_rx_err_invalid_arg if unit or bits are invalid
  */
-static rx_err_t internal_configure_adc_unit(const uint8_t             unit,
-                                            volatile rx_s12ad_regs_t* adc,
-                                            const uint8_t             bits)
+static rx_err_t
+internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, const uint8_t bits)
 {
   uint16_t adcer;
 

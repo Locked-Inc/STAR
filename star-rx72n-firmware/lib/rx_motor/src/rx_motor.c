@@ -102,9 +102,9 @@ typedef struct {
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t   channel,
+static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
                                            const rx_gptw_output_pair_t outputs,
-                                           const rx_gptw_config_t*   gptw_config)
+                                           const rx_gptw_config_t*     gptw_config)
 {
   rx_err_t err = k_rx_err_invalid_state;
 
@@ -128,16 +128,14 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t   channel,
     return err;
   }
 
-  err =
-    rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.a), s_duty_zero);
+  err = rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.a), s_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_a initial duty");
     (void)rx_gptw_deinit(channel);
     return err;
   }
 
-  err =
-    rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.b), s_duty_zero);
+  err = rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.b), s_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_b initial duty");
     (void)rx_gptw_deinit(channel);
@@ -154,9 +152,9 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t   channel,
 
 rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* config)
 {
-  rx_err_t                err;
-  rx_gptw_config_t        gptw_config;
-  rx_gptw_output_pair_t   outputs;
+  rx_err_t              err;
+  rx_gptw_config_t      gptw_config;
+  rx_gptw_output_pair_t outputs;
 
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
@@ -190,7 +188,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   };
 
   outputs = (rx_gptw_output_pair_t){.a = config->output_a, .b = config->output_b};
-  err = internal_init_gptw_outputs(config->channel, outputs, &gptw_config);
+  err     = internal_init_gptw_outputs(config->channel, outputs, &gptw_config);
   if (err != k_rx_ok) {
     return err;
   }

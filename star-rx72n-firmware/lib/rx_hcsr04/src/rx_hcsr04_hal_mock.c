@@ -41,10 +41,8 @@ enum : uint16_t {
  */
 static inline bool internal_is_valid_pin(rx_port_pin_t pin)
 {
-  RX_ASSERT(((uint16_t)pin & k_port_mask) <= k_rx_pin_max,
-            "Pin portion must be <= k_rx_pin_max");
-  RX_ASSERT(((uint16_t)pin >> k_port_shift) <= k_rx_port_j,
-            "Port portion must be <= k_rx_port_j");
+  RX_ASSERT(((uint16_t)pin & k_port_mask) <= k_rx_pin_max, "Pin portion must be <= k_rx_pin_max");
+  RX_ASSERT(((uint16_t)pin >> k_port_shift) <= k_rx_port_j, "Port portion must be <= k_rx_port_j");
   return (pin >= k_rx_p0_0 && pin <= k_rx_pj_7);
 }
 
@@ -56,9 +54,8 @@ static inline bool internal_is_valid_pin(rx_port_pin_t pin)
  * @param[out] pin_num Pointer to receive pin number
  * @return k_rx_ok on success, k_rx_err_invalid_arg on invalid pin/port
  */
-static rx_err_t internal_validate_and_extract_pin(rx_port_pin_t pin,
-                                                  uint8_t*      port,
-                                                  uint8_t*      pin_num)
+static rx_err_t
+internal_validate_and_extract_pin(rx_port_pin_t pin, uint8_t* port, uint8_t* pin_num)
 {
   if (!internal_is_valid_pin(pin)) {
     return k_rx_err_invalid_arg;
@@ -240,7 +237,7 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
 void hcsr04_hal_delay_us(uint32_t us)
 {
   char     message[k_hcsr04_log_msg_max];
-  uint32_t message_len  = 0U;
+  uint32_t message_len     = 0U;
   int32_t  snprintf_result = 0;
 
   if (us == k_hcsr04_delay_none) {
@@ -249,10 +246,10 @@ void hcsr04_hal_delay_us(uint32_t us)
 
   if (us > k_hcsr04_delay_max_us) {
     snprintf_result = snprintf(message,
-                  sizeof(message),
-                  "Delay request %lu exceeds max %lu us",
-                  (unsigned long)us,
-                  (unsigned long)k_hcsr04_delay_max_us);
+                               sizeof(message),
+                               "Delay request %lu exceeds max %lu us",
+                               (unsigned long)us,
+                               (unsigned long)k_hcsr04_delay_max_us);
     if (snprintf_result < 0) {
       rx_log_error_str("HCSR04", "Delay request formatting error", "", 0U);
       message_len = (uint32_t)(k_hcsr04_log_msg_max - k_hcsr04_log_null_terminator);

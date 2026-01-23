@@ -99,16 +99,8 @@ typedef enum : uint32_t {
 
 /** @brief UART buffer and string size limits */
 typedef enum : uint32_t {
-  k_uart_max_str_len      = 256,  /**< Maximum string length for uart_puts_channel */
-  k_uart_int_buffer_size  = 12,   /**< Buffer size for integer to string conversion (fits INT32_MIN) */
-  k_uart_hex_max_digits   = 8,    /**< Maximum hex digits for uint32_t */
+  k_uart_max_str_len = 256, /**< Maximum string length for uart_puts_channel */
 } uart_buffer_limits_t;
-
-/** @brief Pin number validation constants */
-typedef enum : uint8_t {
-  k_rx_pin_0   = 0, /**< Minimum pin number */
-  k_rx_pin_max = 7, /**< Maximum pin number (pins 0-7) */
-} rx_pin_limits_t;
 
 /** @brief SCI module stop bit positions in MSTPCRB */
 typedef enum : uint8_t {
@@ -524,8 +516,10 @@ rx_err_t uart_getc_channel(const uart_channel_t channel, char* data)
   return k_rx_ok;
 }
 
-rx_err_t
-uart_read_channel(const uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read)
+rx_err_t uart_read_channel(const uart_channel_t channel,
+                           uint8_t*             data,
+                           uint16_t             length,
+                           uint16_t*            bytes_read)
 {
   /* Validate parameters */
   if (data == (uint8_t*)0 || bytes_read == (uint16_t*)0) {

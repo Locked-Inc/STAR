@@ -141,13 +141,13 @@ void test_gpio_set_output_call_history(void)
   TEST_ASSERT_EQUAL(2, mock_gpio_get_call_count());
 
   const mock_gpio_call_t* call0 = NULL;
-  call0 = mock_gpio_get_call(0);
+  call0                         = mock_gpio_get_call(0);
   TEST_ASSERT_NOT_NULL(call0);
   TEST_ASSERT_EQUAL(k_mock_gpio_call_set_output, call0->type);
   TEST_ASSERT_EQUAL(k_rx_pb_2, call0->pin);
 
   const mock_gpio_call_t* call1 = NULL;
-  call1 = mock_gpio_get_call(1);
+  call1                         = mock_gpio_get_call(1);
   TEST_ASSERT_NOT_NULL(call1);
   TEST_ASSERT_EQUAL(k_mock_gpio_call_set_output, call1->type);
   TEST_ASSERT_EQUAL(k_rx_pa_0, call1->pin);

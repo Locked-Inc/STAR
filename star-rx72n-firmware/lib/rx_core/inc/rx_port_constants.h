@@ -429,7 +429,7 @@ static inline uint8_t rx_pin_from_pin(rx_port_pin_t pin)
   RX_ASSERT((port <= k_rx_port_g) || (port == k_rx_port_j),
             "Port number must be valid (k_rx_port_0..k_rx_port_g or k_rx_port_j)");
 
-  uint8_t result = (uint8_t)((pin) & k_port_mask);
+  uint8_t result = (uint8_t)((pin)&k_port_mask);
 
   /* Post-condition: result fits in rx_pin_number_t range (0x00-0x07) */
   RX_ASSERT(result >= k_rx_pin_min && result <= k_rx_pin_max,
