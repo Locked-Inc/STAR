@@ -27,6 +27,10 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
+	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -147,37 +151,134 @@ func handleConnection(conn net.Conn) {
 
 		rxData := buffer[:n]
 
-		// --- LOGIC SIMULATION HERE ---
+		// --- FRAME PARSING AND RESPONSE GENERATION ---
 
-		// 1. Deserialize the frame (mocking HARQ/Protobuf unwrapping)
-		// frame := decodeFrame(rxData)
-
-		// 2. Determine response based on input
-		// responseFrame := generateResponse(frame)
-
-		// For demonstration, we echo back modified data
-		// indicating "I am the Virtual RX72N"
-		log.Printf("Received %d bytes: %x", n, rxData)
-
-		// Simulate processing time (optional)
-		// time.Sleep(1 * time.Millisecond)
-
-		// 3. Send Telemetry Back
-		// In real SPI, you send bytes continuously.
-		// Here, we write back the response.
-		txData := make([]byte, n)
-		copy(txData, rxData)
-
-		// Flip MSB of first byte to prove it's the simulator
-		if len(txData) > 0 {
-			txData[0] = SimulatorMarker
+		// 1. Decode the frame
+		decoder := frame.NewDecoder()
+		decodedFrame, err := decoder.Decode(rxData)
+		if err != nil {
+			log.Printf("Frame decode error: %v", err)
+			continue
 		}
 
-		log.Printf("Sending %d bytes: %x", len(txData), txData)
+		log.Printf("Received frame: seq=%d, type=%s, flags=%d, payload_len=%d",
+			decodedFrame.Header.Sequence, decodedFrame.Header.Type.String(),
+			decodedFrame.Header.Flags, len(decodedFrame.Payload))
 
+		// 2. Parse the protobuf payload
+		var wireMsg starv1.WireMessage
+		if err := proto.Unmarshal(decodedFrame.Payload, &wireMsg); err != nil {
+			log.Printf("Protobuf unmarshal error: %v", err)
+			continue
+		}
+
+		// 3. Process the command and generate response
+		responseMsg := processCommand(&wireMsg, &decodedFrame.Header)
+
+		// 4. Encode the response
+		responsePayload, err := proto.Marshal(responseMsg)
+		if err != nil {
+			log.Printf("Protobuf marshal error: %v", err)
+			continue
+		}
+
+		// 5. Encode the response frame (increment sequence)
+		encoder := frame.NewEncoder()
+		responseFrame := &frame.Frame{
+			Header: frame.Header{
+				Sequence: decodedFrame.Header.Sequence + 1,
+				Length:   uint16(len(responsePayload)),
+				Type:     frame.FrameTypeResponse,
+				Flags:    frame.FlagNone,
+			},
+			Payload: responsePayload,
+		}
+
+		txData, err := encoder.Encode(responseFrame)
+		if err != nil {
+			log.Printf("Frame encode error: %v", err)
+			continue
+		}
+
+		log.Printf("Sending frame: seq=%d, type=%s, payload_len=%d",
+			responseFrame.Header.Sequence, responseFrame.Header.Type.String(), len(responsePayload))
+
+		// 6. Send the response
 		if _, err := conn.Write(txData); err != nil {
 			log.Printf("Write error: %v", err)
 			return
 		}
+	}
+}
+
+// processCommand handles incoming commands and generates appropriate responses.
+func processCommand(wireMsg *starv1.WireMessage, header *frame.Header) *starv1.WireMessage {
+	// Check which type of command was received
+	switch payload := wireMsg.Payload.(type) {
+	case *starv1.WireMessage_VelocityCommand:
+		log.Printf("VelocityCommand: FL=%.2f, FR=%.2f, BL=%.2f, BR=%.2f m/s",
+			payload.VelocityCommand.FrontLeftVelocityMps,
+			payload.VelocityCommand.FrontRightVelocityMps,
+			payload.VelocityCommand.BackLeftVelocityMps,
+			payload.VelocityCommand.BackRightVelocityMps)
+
+		// Generate telemetry response with simulated data
+		return generateTelemetryResponse()
+
+	case *starv1.WireMessage_EmergencyStopCommand:
+		log.Printf("EmergencyStopCommand received: %s", payload.EmergencyStopCommand.Reason)
+		return generateEmergencyStopResponse()
+
+	default:
+		log.Printf("Unknown command type, generating default telemetry")
+		return generateTelemetryResponse()
+	}
+}
+
+// generateTelemetryResponse creates a realistic telemetry data response.
+func generateTelemetryResponse() *starv1.WireMessage {
+	return &starv1.WireMessage{
+		Payload: &starv1.WireMessage_TelemetryData{
+			TelemetryData: &starv1.TelemetryData{
+				TimestampUs:        time.Now().UnixMicro(),
+				BatteryPercent:     85.0,           // 85% state of charge
+				CpuUsagePercent:    32.1,           // Light CPU load
+				TemperatureCelsius: 28.5,           // Room temperature
+				MotorLoadPercent:   50.0,           // Medium motor load
+				WifiSignalDbm:      -45,            // Strong WiFi signal
+				Imu: &starv1.ImuData{
+					PitchRad:   0.01,  // Nearly level
+					RollRad:    -0.02, // Slight roll
+					YawRad:     0.0,
+					AccelXMps2: 0.05,
+					AccelYMps2: -0.02,
+					AccelZMps2: 9.81, // Gravity
+				},
+			},
+		},
+	}
+}
+
+// generateEmergencyStopResponse creates a telemetry response indicating emergency stop.
+func generateEmergencyStopResponse() *starv1.WireMessage {
+	return &starv1.WireMessage{
+		Payload: &starv1.WireMessage_TelemetryData{
+			TelemetryData: &starv1.TelemetryData{
+				TimestampUs:        time.Now().UnixMicro(),
+				BatteryPercent:     85.0,
+				CpuUsagePercent:    15.0,           // CPU drops after motors stop
+				TemperatureCelsius: 28.5,
+				MotorLoadPercent:   0.0,            // Motors stopped
+				WifiSignalDbm:      -45,
+				Imu: &starv1.ImuData{
+					PitchRad:   0.0,
+					RollRad:    0.0,
+					YawRad:     0.0,
+					AccelXMps2: 0.0,
+					AccelYMps2: 0.0,
+					AccelZMps2: 9.81, // Gravity
+				},
+			},
+		},
 	}
 }

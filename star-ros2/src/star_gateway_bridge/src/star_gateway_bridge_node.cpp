@@ -162,11 +162,19 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
     this->create_wall_timer(std::chrono::milliseconds(watchdog_period_ms),
                             std::bind(&StarGatewayBridgeNode::connection_watchdog_callback, this));
 
+  // Create diagnostics publisher
+  diagnostics_pub_ = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
+
+  // Create diagnostics timer (1 Hz for human readability)
+  diagnostics_timer_ = this->create_wall_timer(
+    std::chrono::seconds(1), std::bind(&StarGatewayBridgeNode::publish_diagnostics, this));
+
   RCLCPP_INFO(this->get_logger(),
               "ROS2 interfaces initialized: telemetry=%dms, teleop=%dms, watchdog=%dms",
               telemetry_period_ms,
               teleop_period_ms,
               watchdog_period_ms);
+  RCLCPP_INFO(this->get_logger(), "Diagnostics publisher initialized");
 }
 
 // ===========================================================================
@@ -270,6 +278,11 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
                            "ForwardTelemetry gRPC failed: %s",
                            status.error_message().c_str());
       grpc_connected_ = false;
+    } else {
+      // Check telemetry sequence continuity for frame drop detection
+      if (response.has_telemetry() && response.telemetry().has_frame_sequence()) {
+        check_telemetry_sequence_continuity(response.telemetry().frame_sequence());
+      }
     }
   }
 
@@ -349,6 +362,11 @@ void StarGatewayBridgeNode::teleop_poll_timer_callback()
   // Convert and publish fresh command
   geometry_msgs::msg::Twist twist;
   if (converter_.velocity_command_to_twist(response.command(), twist, wheel_base_)) {
+    // Check sequence continuity for frame drop detection
+    if (response.command().has_sequence()) {
+      check_teleop_sequence_continuity(response.command().sequence());
+    }
+
     teleop_cmd_vel_pub_->publish(twist);
   } else {
     RCLCPP_WARN(this->get_logger(), "Failed to convert VelocityCommand to Twist");
@@ -408,6 +426,183 @@ bool StarGatewayBridgeNode::is_grpc_connected() const
 
   auto state = grpc_channel_->GetState(false);  // false = don't try to connect
   return  state == GRPC_CHANNEL_READY;
+}
+
+void StarGatewayBridgeNode::check_teleop_sequence_continuity(uint32_t current_sequence)
+{
+  if (first_teleop_frame_) {
+    last_teleop_sequence_ = current_sequence;
+    first_teleop_frame_ = false;
+    RCLCPP_INFO(this->get_logger(), "First teleop frame received, sequence=%u", current_sequence);
+  } else {
+    uint32_t expected_seq = last_teleop_sequence_ + 1;
+
+    // Detect sequence gap (accounting for uint32 wraparound)
+    if (current_sequence != expected_seq) {
+      uint32_t gap = current_sequence - expected_seq;
+
+      // Sanity check: ignore huge gaps (likely system reset or wraparound)
+      if (gap < 10000) {
+        teleop_frames_dropped_ += gap;
+        RCLCPP_WARN(this->get_logger(),
+                    "Teleop frame drop: expected seq %u, got %u (gap=%u, total_dropped=%lu)",
+                    expected_seq,
+                    current_sequence,
+                    gap,
+                    teleop_frames_dropped_);
+      } else {
+        RCLCPP_WARN(this->get_logger(),
+                    "Teleop sequence reset detected: %u -> %u (ignoring as system restart)",
+                    last_teleop_sequence_,
+                    current_sequence);
+      }
+    }
+
+    last_teleop_sequence_ = current_sequence;
+  }
+
+  total_teleop_frames_++;
+}
+
+void StarGatewayBridgeNode::check_telemetry_sequence_continuity(uint32_t current_sequence)
+{
+  if (first_telemetry_frame_) {
+    last_telemetry_sequence_ = current_sequence;
+    first_telemetry_frame_ = false;
+    RCLCPP_INFO(this->get_logger(), "First telemetry frame received, sequence=%u", current_sequence);
+  } else {
+    uint32_t expected_seq = last_telemetry_sequence_ + 1;
+
+    // Detect sequence gap (accounting for uint32 wraparound)
+    if (current_sequence != expected_seq) {
+      uint32_t gap = current_sequence - expected_seq;
+
+      // Sanity check: ignore huge gaps (likely system reset or wraparound)
+      if (gap < 10000) {
+        telemetry_frames_dropped_ += gap;
+        RCLCPP_WARN(this->get_logger(),
+                    "Telemetry frame drop: expected seq %u, got %u (gap=%u, total_dropped=%lu)",
+                    expected_seq,
+                    current_sequence,
+                    gap,
+                    telemetry_frames_dropped_);
+      } else {
+        RCLCPP_WARN(this->get_logger(),
+                    "Telemetry sequence reset detected: %u -> %u (ignoring as system restart)",
+                    last_telemetry_sequence_,
+                    current_sequence);
+      }
+    }
+
+    last_telemetry_sequence_ = current_sequence;
+  }
+
+  total_telemetry_frames_++;
+}
+
+void StarGatewayBridgeNode::publish_diagnostics()
+{
+  auto diag_array = diagnostic_msgs::msg::DiagnosticArray();
+  diag_array.header.stamp = this->now();
+
+  diagnostic_msgs::msg::DiagnosticStatus status;
+  status.name = "star_gateway_bridge/teleop_command_drops";
+  status.hardware_id = "gateway_bridge";
+
+  // Determine severity level
+  if (total_teleop_frames_ == 0) {
+    status.level = diagnostic_msgs::msg::DiagnosticStatus::STALE;
+    status.message = "No teleop commands received yet";
+  } else if (teleop_frames_dropped_ == 0) {
+    status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
+    status.message = "No teleop frame drops detected";
+  } else {
+    double drop_rate = (teleop_frames_dropped_ * 100.0) / total_teleop_frames_;
+
+    if (drop_rate < 1.0) {
+      status.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+      status.message =
+        "Minor teleop drops (" + std::to_string(drop_rate) + "%)";
+    } else {
+      status.level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
+      status.message =
+        "Critical teleop loss (" + std::to_string(drop_rate) + "%)";
+    }
+  }
+
+  // Add detailed metrics as key-value pairs
+  diagnostic_msgs::msg::KeyValue kv;
+
+  kv.key = "total_frames";
+  kv.value = std::to_string(total_teleop_frames_);
+  status.values.push_back(kv);
+
+  kv.key = "dropped_frames";
+  kv.value = std::to_string(teleop_frames_dropped_);
+  status.values.push_back(kv);
+
+  double drop_rate =
+    total_teleop_frames_ > 0 ? (teleop_frames_dropped_ * 100.0) / total_teleop_frames_ : 0.0;
+  kv.key = "drop_rate_percent";
+  kv.value = std::to_string(drop_rate);
+  status.values.push_back(kv);
+
+  kv.key = "last_sequence";
+  kv.value = std::to_string(last_teleop_sequence_);
+  status.values.push_back(kv);
+
+  diag_array.status.push_back(status);
+
+  // Add telemetry diagnostics
+  diagnostic_msgs::msg::DiagnosticStatus telemetry_status;
+  telemetry_status.name = "star_gateway_bridge/telemetry_frame_drops";
+  telemetry_status.hardware_id = "gateway_bridge";
+
+  if (total_telemetry_frames_ == 0) {
+    telemetry_status.level = diagnostic_msgs::msg::DiagnosticStatus::STALE;
+    telemetry_status.message = "No telemetry frames received";
+  } else if (telemetry_frames_dropped_ == 0) {
+    telemetry_status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
+    telemetry_status.message = "No telemetry drops";
+  } else {
+    double telemetry_drop_rate = (telemetry_frames_dropped_ * 100.0) / total_telemetry_frames_;
+
+    if (telemetry_drop_rate < 5.0) {
+      telemetry_status.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+      telemetry_status.message =
+        "Minor telemetry drops (" + std::to_string(telemetry_drop_rate) + "%)";
+    } else {
+      telemetry_status.level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
+      telemetry_status.message =
+        "Critical telemetry loss (" + std::to_string(telemetry_drop_rate) + "%)";
+    }
+  }
+
+  // Add telemetry metrics
+  diagnostic_msgs::msg::KeyValue telemetry_kv;
+
+  telemetry_kv.key = "total_frames";
+  telemetry_kv.value = std::to_string(total_telemetry_frames_);
+  telemetry_status.values.push_back(telemetry_kv);
+
+  telemetry_kv.key = "dropped_frames";
+  telemetry_kv.value = std::to_string(telemetry_frames_dropped_);
+  telemetry_status.values.push_back(telemetry_kv);
+
+  double telemetry_drop_rate = total_telemetry_frames_ > 0 ?
+    (telemetry_frames_dropped_ * 100.0) / total_telemetry_frames_ : 0.0;
+  telemetry_kv.key = "drop_rate_percent";
+  telemetry_kv.value = std::to_string(telemetry_drop_rate);
+  telemetry_status.values.push_back(telemetry_kv);
+
+  telemetry_kv.key = "last_sequence";
+  telemetry_kv.value = std::to_string(last_telemetry_sequence_);
+  telemetry_status.values.push_back(telemetry_kv);
+
+  diag_array.status.push_back(telemetry_status);
+
+  // Publish combined diagnostics
+  diagnostics_pub_->publish(diag_array);
 }
 
 }  // namespace star

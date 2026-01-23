@@ -97,6 +97,20 @@ const (
 	PriorityValueNormal    uint8 = 2
 )
 
+// FrameMetadata contains frame-level information for diagnostics.
+type FrameMetadata struct {
+	Sequence     uint16    // Frame sequence number
+	ReceivedAt   time.Time // When frame was received
+	Retransmits  int       // Number of retransmission attempts
+	FECDecoded   bool      // Whether FEC decoding was used
+}
+
+// ReceiveResult bundles payload with frame metadata.
+type ReceiveResult struct {
+	Payload  []byte
+	Metadata FrameMetadata
+}
+
 // HARQ defines the interface for the HARQ protocol handler.
 type HARQ interface {
 	// Send transmits data with HARQ reliability.
@@ -108,8 +122,8 @@ type HARQ interface {
 	// Receive waits for data with HARQ handling.
 	// Applies FEC decoding and soft bit combining on retransmissions.
 	// Sends ACK on successful decode, NACK on error.
-	// Returns the decoded data and any error.
-	Receive(ctx context.Context) ([]byte, error)
+	// Returns the decoded data with frame metadata and any error.
+	Receive(ctx context.Context) (*ReceiveResult, error)
 
 	// GetState returns the current HARQ state.
 	GetState() State
@@ -297,7 +311,7 @@ func (h *ChaseCombining) Send(ctx context.Context, data []byte, p ...Priority) e
 // On receive, attempts FEC decode. On failure, stores soft bits and waits
 // for retransmission. Combines soft bits from multiple transmissions.
 // Validates CRC and sequence number, sends ACK for valid frames.
-func (h *ChaseCombining) Receive(ctx context.Context) ([]byte, error) {
+func (h *ChaseCombining) Receive(ctx context.Context) (*ReceiveResult, error) {
 	if ctx == nil {
 		return nil, ErrNilContext
 	}
@@ -500,7 +514,7 @@ func (h *ChaseCombining) receiveFrame(ctx context.Context) (*frame.Frame, error)
 	return f, nil
 }
 
-func (h *ChaseCombining) handleReceivedFrame(f *frame.Frame) ([]byte, error) {
+func (h *ChaseCombining) handleReceivedFrame(f *frame.Frame) (*ReceiveResult, error) {
 	h.mu.Lock()
 	receivedSeq := f.Header.Sequence
 	expectedSeq := h.rxSequence
@@ -519,8 +533,10 @@ func (h *ChaseCombining) handleReceivedFrame(f *frame.Frame) ([]byte, error) {
 	return nil, ErrInvalidSequence
 }
 
-func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) ([]byte, error) {
+func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) (*ReceiveResult, error) {
 	var decoded []byte
+	fecDecoded := false
+
 	if h.config.FECEnabled && (f.Header.Flags&frame.FlagFECEnabled) != 0 {
 		softBits := bytesToSoftBits(f.Payload)
 		if err := h.softCombiner.Add(softBits); err != nil {
@@ -541,6 +557,7 @@ func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) ([]byte, error) {
 			return nil, ErrDecodeFailed
 		}
 
+		fecDecoded = true
 		h.softCombiner.Reset()
 	} else {
 		decoded = f.Payload
@@ -552,7 +569,19 @@ func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) ([]byte, error) {
 	h.mu.Unlock()
 
 	_ = h.sendAck(f.Header.Sequence)
-	return decoded, nil
+
+	// Build metadata for diagnostics
+	metadata := FrameMetadata{
+		Sequence:    f.Header.Sequence,
+		ReceivedAt:  time.Now(),
+		Retransmits: 0, // Track this during ACK/NACK loops if needed
+		FECDecoded:  fecDecoded,
+	}
+
+	return &ReceiveResult{
+		Payload:  decoded,
+		Metadata: metadata,
+	}, nil
 }
 
 // GetState returns the current HARQ state.

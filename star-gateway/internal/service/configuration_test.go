@@ -90,8 +90,8 @@ func TestGetConfiguration_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(_ context.Context) ([]byte, error) {
-			return responsePayload, nil
+		ReceiveFunc: func(_ context.Context) ( *harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: responsePayload, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{}
@@ -189,8 +189,8 @@ func TestSetConfiguration_ValidConfig(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(_ context.Context) ([]byte, error) {
-			return responsePayload, nil
+		ReceiveFunc: func(_ context.Context) (*harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: responsePayload, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{}
@@ -514,8 +514,8 @@ func TestResetToDefaults_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(_ context.Context) ([]byte, error) {
-			return responsePayload, nil
+		ReceiveFunc: func(_ context.Context) (*harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: responsePayload, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{}
@@ -607,8 +607,8 @@ func TestSaveConfiguration_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(_ context.Context) ([]byte, error) {
-			return responsePayload, nil
+		ReceiveFunc: func(_ context.Context) (*harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: responsePayload, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{}
@@ -699,8 +699,8 @@ func TestGetMotorPidConfig_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(_ context.Context) ([]byte, error) {
-			return responsePayload, nil
+		ReceiveFunc: func(_ context.Context) (*harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: responsePayload, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{}
@@ -807,8 +807,8 @@ func TestSetMotorPidConfig_Success(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(_ context.Context) ([]byte, error) {
-			return savePayload, nil
+		ReceiveFunc: func(_ context.Context) (*harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: savePayload, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{}
@@ -856,8 +856,8 @@ func TestSetMotorPidConfig_RuntimeUpdate(t *testing.T) {
 			sentPayloads = append(sentPayloads, data)
 			return nil
 		},
-		ReceiveFunc: func(_ context.Context) ([]byte, error) {
-			return savePayload, nil
+		ReceiveFunc: func(_ context.Context) (*harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: savePayload, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{}
@@ -945,8 +945,8 @@ func TestSetMotorPidConfig_ZeroKiValid(t *testing.T) {
 	}
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(_ context.Context) ([]byte, error) {
-			return savePayload, nil
+		ReceiveFunc: func(_ context.Context) (*harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: savePayload, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{}
@@ -1218,7 +1218,7 @@ func TestValidateConfiguration_AllTimingParametersInvalid(t *testing.T) {
 
 func TestGetConfiguration_HarqReceiveError(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(_ context.Context) ([]byte, error) {
+		ReceiveFunc: func(_ context.Context) (*harq.ReceiveResult, error) {
 			return nil, errors.New("receive timeout")
 		},
 	}
@@ -1257,8 +1257,8 @@ func TestSetConfiguration_HarqSendError(t *testing.T) {
 
 func TestGetMotorPidConfig_UnmarshalError(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(_ context.Context) ([]byte, error) {
-			return []byte("garbage data"), nil
+		ReceiveFunc: func(_ context.Context) (*harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: []byte("garbage data"), Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{}

@@ -12,6 +12,7 @@
   <!-- ROS2 dependencies -->
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>diagnostic_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>

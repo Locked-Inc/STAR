@@ -19,6 +19,9 @@
 #include "star_gateway_bridge/message_converter.hpp"
 
 #include <grpcpp/grpcpp.h>  // NOLINT(build/include_order)
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <diagnostic_msgs/msg/key_value.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/battery_state.hpp>
@@ -236,6 +239,25 @@ private:
 
   // Message converter (stateless utility)
   MessageConverter converter_;
+
+  // Frame drop detection for teleop commands and telemetry
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostics_pub_;
+  rclcpp::TimerBase::SharedPtr diagnostics_timer_;
+
+  uint32_t last_teleop_sequence_{0};
+  uint64_t total_teleop_frames_{0};
+  uint64_t teleop_frames_dropped_{0};
+  bool first_teleop_frame_{true};
+
+  uint32_t last_telemetry_sequence_{0};
+  uint64_t total_telemetry_frames_{0};
+  uint64_t telemetry_frames_dropped_{0};
+  bool first_telemetry_frame_{true};
+
+  // Methods
+  void publish_diagnostics();
+  void check_teleop_sequence_continuity(uint32_t current_sequence);
+  void check_telemetry_sequence_continuity(uint32_t current_sequence);
 };
 
 }  // namespace star

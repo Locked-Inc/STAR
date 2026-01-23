@@ -1,5 +1,5 @@
 // configuration.proto - STAR Configuration Protocol Buffer Definitions
-// Runtime NVS configuration management for ESP32 motor controller.
+// Runtime NVS configuration management for RX72N motor controller.
 //
 // Following Boston Dynamics style guide:
 // - Proto3 only, 100 char line limit, 4 space indent

@@ -27,6 +27,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// DispatchedMessage bundles a WireMessage with frame metadata for diagnostics.
+// Exported so services can access the metadata.
+type DispatchedMessage struct {
+	WireMsg  *starv1.WireMessage
+	Metadata *harq.FrameMetadata
+}
+
 // Configuration constants.
 const (
 	// DefaultShutdownTimeout is the default maximum time to wait for graceful shutdown.
@@ -83,13 +90,13 @@ var (
 // Dispatcher defines the interface for centralized message routing.
 type Dispatcher interface {
 	// Subscribe registers a channel to receive messages of a specific type.
-	// Returns a channel that will receive WireMessage pointers.
+	// Returns a channel that will receive DispatchedMessage pointers.
 	// The caller should drain this channel and call Unsubscribe when done.
-	Subscribe(msgType MessageType) <-chan *starv1.WireMessage
+	Subscribe(msgType MessageType) <-chan *DispatchedMessage
 
 	// Unsubscribe removes a subscription.
 	// Safe to call multiple times or with channels not subscribed.
-	Unsubscribe(msgType MessageType, ch <-chan *starv1.WireMessage)
+	Unsubscribe(msgType MessageType, ch <-chan *DispatchedMessage)
 
 	// Start begins the receive loop in a goroutine.
 	// Returns immediately. The dispatcher will continue until Stop() is called
@@ -130,7 +137,7 @@ type dispatcher struct {
 
 	mu              sync.RWMutex
 	state           State
-	subscribers     map[MessageType][]chan *starv1.WireMessage
+	subscribers     map[MessageType][]chan *DispatchedMessage
 	stopCh          chan struct{}
 	stoppedCh       chan struct{}
 	shutdownTimeout time.Duration
@@ -166,7 +173,7 @@ func NewDispatcher(h harq.HARQ, logger *slog.Logger, cfg *Config) (Dispatcher, e
 		harq:            h,
 		logger:          logger,
 		state:           StateIdle,
-		subscribers:     make(map[MessageType][]chan *starv1.WireMessage),
+		subscribers:     make(map[MessageType][]chan *DispatchedMessage),
 		stopCh:          make(chan struct{}),
 		stoppedCh:       make(chan struct{}),
 		shutdownTimeout: shutdownTimeout,
@@ -174,12 +181,12 @@ func NewDispatcher(h harq.HARQ, logger *slog.Logger, cfg *Config) (Dispatcher, e
 }
 
 // Subscribe registers a channel for a message type.
-func (d *dispatcher) Subscribe(msgType MessageType) <-chan *starv1.WireMessage {
+func (d *dispatcher) Subscribe(msgType MessageType) <-chan *DispatchedMessage {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
 	// Create buffered channel to prevent blocking senders
-	ch := make(chan *starv1.WireMessage, DefaultSubscriberBufferSize)
+	ch := make(chan *DispatchedMessage, DefaultSubscriberBufferSize)
 	d.subscribers[msgType] = append(d.subscribers[msgType], ch)
 
 	d.logger.Debug("subscriber registered", slog.String("message_type", fmt.Sprintf("%d", msgType)))
@@ -188,7 +195,7 @@ func (d *dispatcher) Subscribe(msgType MessageType) <-chan *starv1.WireMessage {
 }
 
 // Unsubscribe removes a subscription.
-func (d *dispatcher) Unsubscribe(msgType MessageType, ch <-chan *starv1.WireMessage) {
+func (d *dispatcher) Unsubscribe(msgType MessageType, ch <-chan *DispatchedMessage) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -198,7 +205,7 @@ func (d *dispatcher) Unsubscribe(msgType MessageType, ch <-chan *starv1.WireMess
 	}
 
 	// Remove the channel from subscribers list
-	filtered := make([]chan *starv1.WireMessage, 0, len(subscribers))
+	filtered := make([]chan *DispatchedMessage, 0, len(subscribers))
 	for _, sub := range subscribers {
 		if sub != ch {
 			filtered = append(filtered, sub)
@@ -279,7 +286,7 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 				close(ch)
 			}
 		}
-		d.subscribers = make(map[MessageType][]chan *starv1.WireMessage)
+		d.subscribers = make(map[MessageType][]chan *DispatchedMessage)
 		d.state = StateStopped
 		d.mu.Unlock()
 
@@ -299,7 +306,7 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 		}
 
 		// Receive from HARQ (blocking call with internal timeout)
-		data, err := d.harq.Receive(ctx)
+		result, err := d.harq.Receive(ctx)
 		if err != nil {
 			// Check for cancellation before handling error
 			select {
@@ -339,7 +346,7 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 
 		// Unmarshal WireMessage
 		var wrapper starv1.WireMessage
-		if err := proto.Unmarshal(data, &wrapper); err != nil {
+		if err := proto.Unmarshal(result.Payload, &wrapper); err != nil {
 			d.logger.Warn("failed to unmarshal wire message", slog.String("error", err.Error()))
 			continue
 		}
@@ -351,7 +358,7 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 			continue
 		}
 
-		d.dispatchMessage(msgType, &wrapper)
+		d.dispatchMessage(msgType, &wrapper, &result.Metadata)
 	}
 }
 
@@ -380,7 +387,7 @@ func (d *dispatcher) extractPayload(msg *starv1.WireMessage) (MessageType, inter
 }
 
 // dispatchMessage sends a message to all subscribers of that type.
-func (d *dispatcher) dispatchMessage(msgType MessageType, msg *starv1.WireMessage) {
+func (d *dispatcher) dispatchMessage(msgType MessageType, msg *starv1.WireMessage, metadata *harq.FrameMetadata) {
 	d.mu.RLock()
 	subscribers, exists := d.subscribers[msgType]
 	d.mu.RUnlock()
@@ -390,10 +397,16 @@ func (d *dispatcher) dispatchMessage(msgType MessageType, msg *starv1.WireMessag
 		return
 	}
 
+	// Bundle message with metadata
+	dispMsg := &DispatchedMessage{
+		WireMsg:  msg,
+		Metadata: metadata,
+	}
+
 	// Send to all subscribers (non-blocking)
 	for _, ch := range subscribers {
 		select {
-		case ch <- msg:
+		case ch <- dispMsg:
 			// Message sent
 		default:
 			// Channel full, drop oldest message to make room
@@ -405,7 +418,7 @@ func (d *dispatcher) dispatchMessage(msgType MessageType, msg *starv1.WireMessag
 			}
 			// Try again
 			select {
-			case ch <- msg:
+			case ch <- dispMsg:
 			default:
 				d.logger.Error("failed to send message after draining channel",
 					slog.String("message_type", fmt.Sprintf("%d", msgType)))

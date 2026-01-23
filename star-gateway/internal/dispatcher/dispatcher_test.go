@@ -26,13 +26,13 @@ const (
 // MockHARQ is a mock implementation of the harq.HARQ interface for testing.
 // Note: Kept local to avoid import cycle with testutil (which imports dispatcher for MockDispatcher).
 type MockHARQ struct {
-	ReceiveFunc  func(ctx context.Context) ([]byte, error)
+	ReceiveFunc  func(ctx context.Context) (*harq.ReceiveResult, error)
 	SendFunc     func(ctx context.Context, data []byte, p ...harq.Priority) error
 	GetStateFunc func() harq.State
 	GetTxSeqFunc func() uint16
 	GetRxSeqFunc func() uint16
 	ResetFunc    func()
-	receiveChan  chan []byte
+	receiveChan  chan *harq.ReceiveResult
 	LastSentData []byte
 }
 
@@ -44,7 +44,7 @@ func (m *MockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) er
 	return nil
 }
 
-func (m *MockHARQ) Receive(ctx context.Context) ([]byte, error) {
+func (m *MockHARQ) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	if m.ReceiveFunc != nil {
 		return m.ReceiveFunc(ctx)
 	}
@@ -52,8 +52,8 @@ func (m *MockHARQ) Receive(ctx context.Context) ([]byte, error) {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
-		case data := <-m.receiveChan:
-			return data, nil
+		case result := <-m.receiveChan:
+			return result, nil
 		case <-time.After(testHARQTimeout):
 			return nil, harq.ErrTimeout
 		}
@@ -175,8 +175,14 @@ func TestDispatcherBasicRouting(t *testing.T) {
 	}
 
 	// Create mock HARQ that returns the telemetry message
-	receiveChan := make(chan []byte, 1)
-	receiveChan <- data
+	receiveChan := make(chan *harq.ReceiveResult, 1)
+	receiveChan <- &harq.ReceiveResult{
+		Payload: data,
+		Metadata: harq.FrameMetadata{
+			Sequence:   0,
+			FECDecoded: false,
+		},
+	}
 
 	mockHARQ := &MockHARQ{
 		receiveChan: receiveChan,
@@ -201,10 +207,10 @@ func TestDispatcherBasicRouting(t *testing.T) {
 	// Wait for message
 	select {
 	case msg := <-telemetryCh:
-		if msg == nil {
+		if msg == nil || msg.WireMsg == nil {
 			t.Fatal("Received nil message")
 		}
-		receivedTelem := msg.GetTelemetryData()
+		receivedTelem := msg.WireMsg.GetTelemetryData()
 		if receivedTelem == nil {
 			t.Fatal("Expected TelemetryData, got nil")
 		}
@@ -235,8 +241,11 @@ func TestDispatcherMultipleSubscribers(t *testing.T) {
 		t.Fatalf("Failed to marshal test data: %v", err)
 	}
 
-	receiveChan := make(chan []byte, 1)
-	receiveChan <- data
+	receiveChan := make(chan *harq.ReceiveResult, 1)
+	receiveChan <- &harq.ReceiveResult{
+		Payload: data,
+		Metadata: harq.FrameMetadata{Sequence: 0},
+	}
 
 	mockHARQ := &MockHARQ{receiveChan: receiveChan}
 
@@ -307,8 +316,11 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to marshal test data: %v", err)
 			}
-			mockHARQ := &MockHARQ{receiveChan: make(chan []byte, 1)}
-			mockHARQ.receiveChan <- data
+			mockHARQ := &MockHARQ{receiveChan: make(chan *harq.ReceiveResult, 1)}
+			mockHARQ.receiveChan <- &harq.ReceiveResult{
+				Payload:  data,
+				Metadata: harq.FrameMetadata{Sequence: 0},
+			}
 
 			d, err := NewDispatcher(mockHARQ, logger, nil)
 			if err != nil {
@@ -346,7 +358,7 @@ func TestDispatcherErrorHandling(t *testing.T) {
 	t.Run("HARQ Error State", func(t *testing.T) {
 		callCount := 0
 		mockHARQ := &MockHARQ{
-			ReceiveFunc: func(ctx context.Context) ([]byte, error) {
+			ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
 				callCount++
 				if callCount == 1 {
 					return nil, harq.ErrInErrorState
@@ -371,8 +383,11 @@ func TestDispatcherErrorHandling(t *testing.T) {
 	})
 
 	t.Run("Invalid WireMessage", func(t *testing.T) {
-		mockHARQ := &MockHARQ{receiveChan: make(chan []byte, 1)}
-		mockHARQ.receiveChan <- []byte{0xFF, 0xFF, 0xFF} // Invalid protobuf
+		mockHARQ := &MockHARQ{receiveChan: make(chan *harq.ReceiveResult, 1)}
+		mockHARQ.receiveChan <- &harq.ReceiveResult{
+			Payload:  []byte{0xFF, 0xFF, 0xFF}, // Invalid protobuf
+			Metadata: harq.FrameMetadata{Sequence: 0},
+		}
 
 		d, _ := NewDispatcher(mockHARQ, logger, nil)
 		ctx, cancel := context.WithCancel(context.Background())
@@ -391,8 +406,11 @@ func TestDispatcherErrorHandling(t *testing.T) {
 			t.Fatalf("Failed to marshal test data: %v", err)
 		}
 
-		mockHARQ := &MockHARQ{receiveChan: make(chan []byte, 1)}
-		mockHARQ.receiveChan <- data
+		mockHARQ := &MockHARQ{receiveChan: make(chan *harq.ReceiveResult, 1)}
+		mockHARQ.receiveChan <- &harq.ReceiveResult{
+			Payload:  data,
+			Metadata: harq.FrameMetadata{Sequence: 0},
+		}
 
 		d, _ := NewDispatcher(mockHARQ, logger, nil)
 		ctx, cancel := context.WithCancel(context.Background())
@@ -419,9 +437,12 @@ func TestDispatcherChannelBackpressure(t *testing.T) {
 	}
 
 	// Send testBackpressureMsgs messages rapidly to fill the DefaultSubscriberBufferSize channel
-	mockHARQ := &MockHARQ{receiveChan: make(chan []byte, testBackpressureMsgs)}
+	mockHARQ := &MockHARQ{receiveChan: make(chan *harq.ReceiveResult, testBackpressureMsgs)}
 	for i := 0; i < testBackpressureMsgs; i++ {
-		mockHARQ.receiveChan <- data
+		mockHARQ.receiveChan <- &harq.ReceiveResult{
+			Payload:  data,
+			Metadata: harq.FrameMetadata{Sequence: uint16(i)},
+		}
 	}
 
 	d, _ := NewDispatcher(mockHARQ, logger, nil)
