@@ -415,11 +415,11 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
  * @param[in]  data_len  Length of data buffer in bytes
  * @param[out] frame     Decoded frame (header, payload, CRC)
  *
- * @return k_rx_ok on successful decode
- * @return k_rx_err_invalid_arg if any pointer is NULL or decoder not initialized
- * @return k_rx_err_invalid_state if decoder not initialized
- * @return k_rx_err_crc if CRC-32 verification fails
- * @return k_rx_err_invalid_size if payload exceeds maximum frame size
+ * @retval k_rx_ok Success - frame decoded and CRC verified
+ * @retval k_rx_err_invalid_arg Any pointer parameter is NULL or other invalid arguments
+ * @retval k_rx_err_invalid_state Decoder not initialized
+ * @retval k_rx_err_crc CRC-32 verification failed
+ * @retval k_rx_err_invalid_size Payload exceeds maximum frame size
  *
  * @note This function performs validation at multiple points:
  *       - Null pointer checks on all parameters

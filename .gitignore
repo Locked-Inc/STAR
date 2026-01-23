@@ -146,3 +146,5 @@ conductor/
 # Other tools
 core
 .cache/
+opencode.json
+star-rx72n-firmware/.doxygen_cache

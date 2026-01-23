@@ -24,11 +24,12 @@
 
 /** @brief RIIC channel and timeout constants */
 typedef enum : uint32_t {
-  k_riic_max_channels      = 3,     /**< RIIC0, RIIC1, RIIC2 */
-  k_riic_timeout_us        = 10000, /**< 10ms timeout for operations */
-  k_riic_timeout_zero      = 0,     /**< Timeout expired value */
-  k_riic_length_zero       = 0,     /**< Zero-length sentinel for transfers */
-  k_riic_last_index_offset = 1,     /**< Offset for last-byte index calculations */
+  k_riic_max_channels        = 3,     /**< RIIC0, RIIC1, RIIC2 */
+  k_riic_timeout_us          = 10000, /**< 10ms timeout for operations */
+  k_riic_timeout_zero        = 0,     /**< Timeout expired value */
+  k_riic_length_zero         = 0,     /**< Zero-length sentinel for transfers */
+  k_riic_last_index_offset   = 1,     /**< Offset for last-byte index calculations */
+  k_riic_max_transfer_length = 256,   /**< Maximum transfer length per operation */
 } riic_constants_t;
 
 /** @brief RIIC channel numbers for switch statements */
@@ -363,7 +364,8 @@ static rx_err_t internal_riic_write_phase(volatile rx_riic_regs_t*  riic,
     riic,
     (device_addr.value << k_riic_addr_shift) | k_riic_addr_write_bit);
   if (err != k_rx_ok) {
-    internal_send_stop(riic);
+    rx_err_t stop_err = internal_send_stop(riic);
+    (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
     return err;
   }
 
@@ -371,7 +373,8 @@ static rx_err_t internal_riic_write_phase(volatile rx_riic_regs_t*  riic,
   for (uint16_t i = 0; i < write_length; i++) {
     err = internal_write_byte(riic, write_data[i]);
     if (err != k_rx_ok) {
-      internal_send_stop(riic);
+      rx_err_t stop_err = internal_send_stop(riic);
+      (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
       return err;
     }
   }
@@ -409,7 +412,8 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t*  riic,
   }
 
   if (timeout == k_riic_timeout_zero) {
-    internal_send_stop(riic);
+    rx_err_t stop_err = internal_send_stop(riic);
+    (void)stop_err; /* Best-effort cleanup on timeout */
     rx_log_error(s_tag, "Repeated start timeout");
     return k_rx_err_timeout;
   }
@@ -424,7 +428,8 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t*  riic,
     riic,
     (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
   if (err != k_rx_ok) {
-    internal_send_stop(riic);
+    rx_err_t stop_err = internal_send_stop(riic);
+    (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
     return err;
   }
 
@@ -433,7 +438,8 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t*  riic,
     const bool send_ack = (i < read_length - k_riic_last_index_offset); /* NACK on last byte */
     err                 = internal_read_byte(riic, &read_data[i], send_ack);
     if (err != k_rx_ok) {
-      internal_send_stop(riic);
+      rx_err_t stop_err = internal_send_stop(riic);
+      (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
       return err;
     }
   }
@@ -519,7 +525,11 @@ rx_err_t riic_write(const riic_channel_t    channel,
                     const uint16_t          length)
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
-  RX_CHECK_RANGE_TAG(channel.value, 0, k_riic_max_channels - 1, k_rx_err_invalid_arg, s_tag);
+  RX_CHECK_RANGE_TAG(channel.value,
+                     k_riic_channel_0,
+                     (uint8_t)(k_riic_max_channels - k_riic_last_index_offset),
+                     k_rx_err_invalid_arg,
+                     s_tag);
 
   if (device_addr.value > k_riic_addr_max_7bit) {
     rx_log_error(s_tag, "Invalid device address");
@@ -528,6 +538,11 @@ rx_err_t riic_write(const riic_channel_t    channel,
 
   if (length == k_riic_length_zero) {
     rx_log_error(s_tag, "Write length cannot be zero");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (length > k_riic_max_transfer_length) {
+    rx_log_error(s_tag, "Write length exceeds maximum");
     return k_rx_err_invalid_arg;
   }
 
@@ -556,7 +571,8 @@ rx_err_t riic_write(const riic_channel_t    channel,
     riic,
     (device_addr.value << k_riic_addr_shift) | k_riic_addr_write_bit);
   if (err != k_rx_ok) {
-    internal_send_stop(riic);
+    rx_err_t stop_err = internal_send_stop(riic);
+    (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
     return err;
   }
 
@@ -564,7 +580,8 @@ rx_err_t riic_write(const riic_channel_t    channel,
   for (uint16_t i = 0; i < length; i++) {
     err = internal_write_byte(riic, data[i]);
     if (err != k_rx_ok) {
-      internal_send_stop(riic);
+      rx_err_t stop_err = internal_send_stop(riic);
+      (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
       return err;
     }
   }
@@ -582,7 +599,11 @@ rx_err_t riic_read(const riic_channel_t    channel,
                    const uint16_t          length)
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
-  RX_CHECK_RANGE_TAG(channel.value, 0, k_riic_max_channels - 1, k_rx_err_invalid_arg, s_tag);
+  RX_CHECK_RANGE_TAG(channel.value,
+                     k_riic_channel_0,
+                     (uint8_t)(k_riic_max_channels - k_riic_last_index_offset),
+                     k_rx_err_invalid_arg,
+                     s_tag);
 
   if (device_addr.value > k_riic_addr_max_7bit) {
     rx_log_error(s_tag, "Invalid device address");
@@ -591,6 +612,11 @@ rx_err_t riic_read(const riic_channel_t    channel,
 
   if (length == k_riic_length_zero) {
     rx_log_error(s_tag, "Read length cannot be zero");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (length > k_riic_max_transfer_length) {
+    rx_log_error(s_tag, "Read length exceeds maximum");
     return k_rx_err_invalid_arg;
   }
 
@@ -619,7 +645,8 @@ rx_err_t riic_read(const riic_channel_t    channel,
     riic,
     (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
   if (err != k_rx_ok) {
-    internal_send_stop(riic);
+    rx_err_t stop_err = internal_send_stop(riic);
+    (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
     return err;
   }
 
@@ -628,7 +655,8 @@ rx_err_t riic_read(const riic_channel_t    channel,
     const bool send_ack = (i < length - k_riic_last_index_offset); /* NACK on last byte */
     err                 = internal_read_byte(riic, &data[i], send_ack);
     if (err != k_rx_ok) {
-      internal_send_stop(riic);
+      rx_err_t stop_err = internal_send_stop(riic);
+      (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
       return err;
     }
   }
@@ -649,7 +677,11 @@ rx_err_t riic_write_read(const riic_channel_t    channel,
 {
   RX_CHECK_NULL_PTR(write_data, s_tag, "Write data pointer is NULL");
   RX_CHECK_NULL_PTR(read_data, s_tag, "Read data pointer is NULL");
-  RX_CHECK_RANGE_TAG(channel.value, 0, k_riic_max_channels - 1, k_rx_err_invalid_arg, s_tag);
+  RX_CHECK_RANGE_TAG(channel.value,
+                     k_riic_channel_0,
+                     (uint8_t)(k_riic_max_channels - k_riic_last_index_offset),
+                     k_rx_err_invalid_arg,
+                     s_tag);
 
   if (device_addr.value > k_riic_addr_max_7bit) {
     rx_log_error(s_tag, "Invalid device address");
@@ -658,6 +690,11 @@ rx_err_t riic_write_read(const riic_channel_t    channel,
 
   if (write_length == k_riic_length_zero || read_length == k_riic_length_zero) {
     rx_log_error(s_tag, "Read/write length cannot be zero");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (write_length > k_riic_max_transfer_length || read_length > k_riic_max_transfer_length) {
+    rx_log_error(s_tag, "Read/write length exceeds maximum");
     return k_rx_err_invalid_arg;
   }
 

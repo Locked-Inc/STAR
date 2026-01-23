@@ -357,7 +357,11 @@ internal_write_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, 
 static rx_err_t
 internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* bit)
 {
-  rx_err_t err = internal_drive_low(bus_config, state);
+  rx_err_t       err;
+  uint32_t       sample_delay_us;
+  bool           line_high;
+
+  err = internal_drive_low(bus_config, state);
   if (err != k_rx_ok) {
     return err;
   }
@@ -369,13 +373,13 @@ internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, b
     return err;
   }
 
-  const uint32_t sample_delay_us = (k_onewire_read_sample_us > k_onewire_read_init_us)
-                                     ? (k_onewire_read_sample_us - k_onewire_read_init_us)
-                                     : k_onewire_read_sample_us;
+  sample_delay_us = (k_onewire_read_sample_us > k_onewire_read_init_us)
+                      ? (k_onewire_read_sample_us - k_onewire_read_init_us)
+                      : k_onewire_read_sample_us;
   internal_delay_us(sample_delay_us);
 
-  bool line_high = true;
-  err            = internal_read_line(bus_config, &line_high);
+  line_high = true;
+  err       = internal_read_line(bus_config, &line_high);
   if (err != k_rx_ok) {
     return err;
   }
@@ -925,7 +929,11 @@ static rx_err_t internal_onewire_read_byte_callback(rx_bus_config_t* bus_config,
 
 static rx_err_t internal_onewire_write_buffer_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_write_buf_ctx_t* ctx = (onewire_write_buf_ctx_t*)user_ctx;
+  onewire_write_buf_ctx_t* ctx;
+  onewire_runtime_state_t* state;
+  rx_err_t                 err;
+
+  ctx = (onewire_write_buf_ctx_t*)user_ctx;
 
   if (ctx->length == 0U) {
     ctx->result = k_rx_ok;
@@ -948,14 +956,14 @@ static rx_err_t internal_onewire_write_buffer_callback(rx_bus_config_t* bus_conf
     return ctx->result;
   }
 
-  onewire_runtime_state_t* state = internal_get_state(bus_config);
+  state = internal_get_state(bus_config);
   if (state == NULL) {
     ctx->result = k_rx_err_invalid_state;
     return ctx->result;
   }
 
   for (uint32_t i = 0; (i < k_onewire_max_buf_bytes) && (i < ctx->length); ++i) {
-    const rx_err_t err = internal_write_byte(bus_config, state, ctx->data[i]);
+    err = internal_write_byte(bus_config, state, ctx->data[i]);
     if (err != k_rx_ok) {
       ctx->result = err;
       return err;
@@ -968,11 +976,17 @@ static rx_err_t internal_onewire_write_buffer_callback(rx_bus_config_t* bus_conf
 
 static rx_err_t internal_onewire_read_buffer_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_read_buf_ctx_t*  ctx = (onewire_read_buf_ctx_t*)user_ctx;
-  onewire_runtime_state_t* state = NULL;
-  uint32_t                 len = 0;
-  uint8_t                  byte = 0;
-  rx_err_t                 err = k_rx_ok;
+  onewire_read_buf_ctx_t*  ctx;
+  onewire_runtime_state_t* state;
+  uint32_t                 len;
+  uint8_t                  byte;
+  rx_err_t                 err;
+
+  ctx   = (onewire_read_buf_ctx_t*)user_ctx;
+  state = NULL;
+  len   = 0;
+  byte  = 0;
+  err   = k_rx_ok;
 
   if (ctx->length == 0U) {
     ctx->result = k_rx_ok;

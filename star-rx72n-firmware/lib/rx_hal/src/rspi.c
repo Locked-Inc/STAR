@@ -34,6 +34,7 @@ typedef enum : uint32_t {
   k_rspi_timeout_us   = 10000, /**< 10ms timeout for operations */
   k_rspi_timeout_zero = 0,     /**< Timeout expired value */
   k_rspi_len_zero     = 0,     /**< Zero-length transfer */
+  k_rspi_zero_u32     = 0,     /**< Zero constant for uint32_t */
 } rspi_constants_t;
 
 /** @brief RSPI channel numbers for switch statements */
@@ -136,10 +137,10 @@ static volatile rx_rspi_regs_t* internal_get_rspi_base(const uint8_t channel)
  */
 static void internal_set_mstpcrb_for_channel(const uint8_t channel, const bool enable)
 {
-  uint32_t mask = 0U;
+  uint32_t mask = k_rspi_zero_u32;
 
   RX_ASSERT(system_regs() != NULL, "system_regs is NULL");
-  RX_ASSERT(s_rspi_bit_set != 0U, "RSPI bit constant is zero");
+  RX_ASSERT(s_rspi_bit_set != k_rspi_zero_u32, "RSPI bit constant is zero");
   RX_ASSERT((channel == k_rspi_channel_0) || (channel == k_rspi_channel_1) ||
               (channel == k_rspi_channel_2),
             "Invalid RSPI channel");
@@ -166,8 +167,8 @@ static void internal_set_mstpcrb_for_channel(const uint8_t channel, const bool e
 /**
  * @brief Initialize RSPI peripheral mode for RPi5 SPI communication
  *
- * Configures the specified RSPI channel as a SPI peripheral (slave) to communicate
- * with the Raspberry Pi 5 (acting as SPI controller/master). Enables the peripheral
+ * Configures the specified RSPI channel as a SPI peripheral to communicate
+ * with the Raspberry Pi 5 (acting as SPI Controller). Enables the peripheral
  * in the configured SPI mode (0-3) with optional 8-bit or 16-bit data frames.
  * Uses register protection unlock/lock for module stop control.
  *
@@ -192,7 +193,7 @@ static void internal_set_mstpcrb_for_channel(const uint8_t channel, const bool e
  *       - RSPI module is enabled (module stop bit cleared via register protection)
  *       - SPI mode (CPOL/CPHA) is configured per config->spi_mode
  *       - Data frame length (8-bit or 16-bit) is set per config->use_16bit
- *       - SPI is enabled in peripheral (slave) mode (SPCR.MSTR = 0)
+ *       - SPI is enabled in peripheral mode (SPCR.MSTR = 0)
  *       - s_rspi_channel_initialized[channel] is set to true
  *       - Peripheral is ready to receive transfers from SPI controller
  */
@@ -216,6 +217,9 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
 
   /* Get RSPI base */
   volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
+  if (rspi == NULL) {
+    return k_rx_err_invalid_arg;
+  }
 
   /* Enable RSPI module (clear module stop bit) */
   system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
@@ -260,10 +264,54 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
 }
 
 /**
+ * @brief Wait for transmit buffer to become empty
+ *
+ * @param[in] rspi Pointer to RSPI registers
+ *
+ * @return k_rx_ok if buffer became empty within timeout
+ * @return k_rx_err_timeout if timeout expired
+ */
+static rx_err_t internal_wait_tx_ready(volatile rx_rspi_regs_t* rspi)
+{
+  uint32_t timeout = k_rspi_timeout_us;
+  while (!(rspi->spsr & k_rspi_spsr_sptef) && timeout > k_rspi_timeout_zero) {
+    timeout--;
+  }
+
+  if (timeout == k_rspi_timeout_zero) {
+    return k_rx_err_timeout;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Wait for receive buffer to become full
+ *
+ * @param[in] rspi Pointer to RSPI registers
+ *
+ * @return k_rx_ok if buffer became full within timeout
+ * @return k_rx_err_timeout if timeout expired
+ */
+static rx_err_t internal_wait_rx_ready(volatile rx_rspi_regs_t* rspi)
+{
+  uint32_t timeout = k_rspi_timeout_us;
+  while (!(rspi->spsr & k_rspi_spsr_sprf) && timeout > k_rspi_timeout_zero) {
+    timeout--;
+  }
+
+  if (timeout == k_rspi_timeout_zero) {
+    return k_rx_err_timeout;
+  }
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Perform full-duplex SPI transfer in peripheral mode
  *
  * Executes a full-duplex (simultaneous transmit and receive) SPI transfer
- * on the specified RSPI channel operating in peripheral (slave) mode.
+ * on the specified RSPI channel operating in peripheral mode.
  * Transfers data byte-by-byte with timeout protection on both transmit
  * buffer ready and receive buffer full operations.
  *
@@ -297,7 +345,8 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
                                   uint8_t*       rx_data,
                                   const uint16_t length)
 {
-  uint32_t timeout;
+  rx_err_t                 err;
+  volatile rx_rspi_regs_t* rspi;
 
   RX_CHECK_NULL_PTR(tx_data, s_tag, "TX data pointer is NULL");
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is NULL");
@@ -314,36 +363,33 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
   }
 
   /* Get RSPI base */
-  volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
+  rspi = internal_get_rspi_base(channel);
   if (rspi == NULL) {
     rx_log_error(s_tag, "Failed to get RSPI base address");
     return k_rx_err_invalid_arg;
   }
 
-  for (uint16_t i = 0; i < length; i++) {
-    /* Wait for transmit buffer empty */
-    timeout = k_rspi_timeout_us;
-    while (!(rspi->spsr & k_rspi_spsr_sptef) && timeout > k_rspi_timeout_zero) {
-      timeout--;
+  /* NASA Rule 2: Statically bounded loop */
+  for (uint16_t i = 0; i < s_rspi_transfer_len_max; i++) {
+    if (i >= length) {
+      break;
     }
 
-    if (timeout == k_rspi_timeout_zero) {
+    /* Wait for transmit buffer empty */
+    err = internal_wait_tx_ready(rspi);
+    if (err != k_rx_ok) {
       rx_log_error(s_tag, "SPI transmit timeout");
-      return k_rx_err_timeout;
+      return err;
     }
 
     /* Write transmit data */
     rspi->spdr = tx_data[i];
 
     /* Wait for receive buffer full */
-    timeout = k_rspi_timeout_us;
-    while (!(rspi->spsr & k_rspi_spsr_sprf) && timeout > k_rspi_timeout_zero) {
-      timeout--;
-    }
-
-    if (timeout == k_rspi_timeout_zero) {
+    err = internal_wait_rx_ready(rspi);
+    if (err != k_rx_ok) {
       rx_log_error(s_tag, "SPI receive timeout");
-      return k_rx_err_timeout;
+      return err;
     }
 
     /* Read receive data */
