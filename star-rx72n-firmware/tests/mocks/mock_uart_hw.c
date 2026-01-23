@@ -535,7 +535,7 @@ typedef enum : uint32_t {
 rx_err_t uart_init(void)
 {
   const uart_channel_config_t config = {
-    .channel  = k_debug_uart_channel,
+    .channel  = (uart_channel_t)k_debug_uart_channel,
     .baudrate = k_debug_uart_baudrate,
     .tx_gpio  = k_rx_pb_7,
     .rx_gpio  = k_rx_pb_6,

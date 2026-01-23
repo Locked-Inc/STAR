@@ -176,20 +176,20 @@ typedef enum : uint8_t {
  * @brief I2C/SMBUS protocol constants
  */
 typedef enum : uint8_t {
-  k_i2c_write_bit        = 0,    /**< I2C write bit (R/W = 0) */
-  k_i2c_read_bit         = 1,    /**< I2C read bit (R/W = 1) */
-  k_i2c_addr_shift       = 1,    /**< Bit shift for 7-bit address */
-  k_i2c_addr_max_7bit    = 127,  /**< Maximum 7-bit I2C address (127) */
-  k_bits_per_byte        = 8,    /**< Bits per byte */
-  k_smbus_max_block_size = 32,   /**< SMBUS maximum block transfer size */
+  k_i2c_write_bit        = 0,   /**< I2C write bit (R/W = 0) */
+  k_i2c_read_bit         = 1,   /**< I2C read bit (R/W = 1) */
+  k_i2c_addr_shift       = 1,   /**< Bit shift for 7-bit address */
+  k_i2c_addr_max_7bit    = 127, /**< Maximum 7-bit I2C address (127) */
+  k_bits_per_byte        = 8,   /**< Bits per byte */
+  k_smbus_max_block_size = 32,  /**< SMBUS maximum block transfer size */
 } rx_i2c_constants_t;
 
 /**
  * @brief Bit manipulation masks
  */
 typedef enum : uint8_t {
-  k_byte_mask     = 255,  /**< Full byte mask (all 8 bits) */
-  k_byte_msb_mask = 128,  /**< Most significant bit of a byte (bit 7) */
+  k_byte_mask     = 255, /**< Full byte mask (all 8 bits) */
+  k_byte_msb_mask = 128, /**< Most significant bit of a byte (bit 7) */
 } bit_masks_t;
 
 /**
@@ -197,26 +197,27 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_smbus_single_byte     = 1, /**< Single byte transfer size */
-  k_smbus_byte_buf_size   = 2, /**< Byte operation buffer (data + PEC) */
+  k_smbus_byte_buf_size   = 2, /**< Byte operation buffer (command + data) */
   k_smbus_word_data_bytes = 2, /**< Word data size (LSB + MSB) */
-  k_smbus_word_buf_size   = 3, /**< Word operation buffer (LSB + MSB + PEC) */
+  k_smbus_word_buf_size   = 4, /**< Word operation buffer (command + LSB + MSB + PEC) */
 } smbus_sizes_t;
 
 /**
- * @brief SMBUS byte operation buffer indices (data + optional PEC)
+ * @brief SMBUS byte operation buffer indices (command + data)
  */
 typedef enum : uint8_t {
-  k_smbus_byte_data = 0, /**< Data byte index */
+  k_smbus_byte_data = 0, /**< Command/data byte index */
   k_smbus_byte_pec  = 1, /**< PEC (CRC-8) index */
 } smbus_byte_pec_idx_t;
 
 /**
- * @brief SMBUS word operation buffer indices (LSB + MSB + optional PEC)
+ * @brief SMBUS word operation buffer indices (command + LSB + MSB + PEC)
  */
 typedef enum : uint8_t {
-  k_smbus_word_lsb = 0, /**< Low byte (LSB) index */
-  k_smbus_word_msb = 1, /**< High byte (MSB) index */
-  k_smbus_word_pec = 2, /**< PEC (CRC-8) index */
+  k_smbus_word_cmd = 0, /**< Command byte index */
+  k_smbus_word_lsb = 1, /**< Low byte (LSB) index */
+  k_smbus_word_msb = 2, /**< High byte (MSB) index */
+  k_smbus_word_pec = 3, /**< PEC (CRC-8) index */
 } smbus_word_pec_idx_t;
 
 /* =============================================================================

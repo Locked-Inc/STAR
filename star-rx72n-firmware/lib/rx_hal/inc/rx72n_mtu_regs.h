@@ -28,11 +28,12 @@ extern "C" {
 
 /** @brief MTU base addresses */
 typedef enum : uint32_t {
-  k_mtu0_base_addr      = 0x000C1300, /**< MTU0 register base address */
-  k_mtu1_base_addr      = 0x000C1380, /**< MTU1 register base address */
-  k_mtu2_base_addr      = 0x000C1400, /**< MTU2 register base address */
-  k_mtu3_base_addr      = 0x000C1200, /**< MTU3 register base address */
-  k_mtu4_base_addr      = (k_mtu3_base_addr + 1U), /**< MTU4 register base address (interleaved with MTU3) */
+  k_mtu0_base_addr = 0x000C1300, /**< MTU0 register base address */
+  k_mtu1_base_addr = 0x000C1380, /**< MTU1 register base address */
+  k_mtu2_base_addr = 0x000C1400, /**< MTU2 register base address */
+  k_mtu3_base_addr = 0x000C1200, /**< MTU3 register base address */
+  k_mtu4_base_addr =
+    (k_mtu3_base_addr + 1U),          /**< MTU4 register base address (interleaved with MTU3) */
   k_mtu5u_base_addr     = 0x000C1C80, /**< MTU5U register base address */
   k_mtu5v_base_addr     = 0x000C1C90, /**< MTU5V register base address */
   k_mtu5w_base_addr     = 0x000C1CA0, /**< MTU5W register base address */
@@ -234,25 +235,26 @@ static inline volatile rx_mtu_tstr_regs_t* mtu_tstrb(void)
 
 /* Timer Control Register (TCR) bits */
 typedef enum : uint8_t {
-  k_mtu_tcr_cclr_shift = 5,          /**< Counter Clear Source bit position */
-  k_mtu_tcr_tpsc_mask  = 0x07,       /**< Timer Prescaler mask (bits 0-2) */
-  k_mtu_tcr_ckeg_mask  = 0x18,       /**< Clock Edge mask (bits 3-4) */
-  k_mtu_tcr_cclr_mask  = 0xE0,       /**< Counter Clear Source mask (bits 5-7) */
-  k_mtu_tcr_tpsc_1     = 0x00,       /**< PCLKA/1 */
-  k_mtu_tcr_tpsc_4     = 0x01,       /**< PCLKA/4 */
-  k_mtu_tcr_tpsc_16    = 0x02,       /**< PCLKA/16 */
-  k_mtu_tcr_tpsc_64    = 0x03,       /**< PCLKA/64 */
-  k_mtu_tcr_cclr_tgra  = (k_mtu_bit_value_set << k_mtu_tcr_cclr_shift), /**< Clear on TGRA compare match */
+  k_mtu_tcr_cclr_shift = 5,    /**< Counter Clear Source bit position */
+  k_mtu_tcr_tpsc_mask  = 0x07, /**< Timer Prescaler mask (bits 0-2) */
+  k_mtu_tcr_ckeg_mask  = 0x18, /**< Clock Edge mask (bits 3-4) */
+  k_mtu_tcr_cclr_mask  = 0xE0, /**< Counter Clear Source mask (bits 5-7) */
+  k_mtu_tcr_tpsc_1     = 0x00, /**< PCLKA/1 */
+  k_mtu_tcr_tpsc_4     = 0x01, /**< PCLKA/4 */
+  k_mtu_tcr_tpsc_16    = 0x02, /**< PCLKA/16 */
+  k_mtu_tcr_tpsc_64    = 0x03, /**< PCLKA/64 */
+  k_mtu_tcr_cclr_tgra =
+    (k_mtu_bit_value_set << k_mtu_tcr_cclr_shift), /**< Clear on TGRA compare match */
 } mtu_tcr_bits_t;
 
 /* Timer Mode Register (TMDR) bits */
 typedef enum : uint8_t {
-  k_mtu_tmdr_bfa_shift = 4,          /**< Buffer mode A bit position */
-  k_mtu_tmdr_bfb_shift = 5,          /**< Buffer mode B bit position */
-  k_mtu_tmdr_md_mask   = 0x0F,       /**< Mode select mask (bits 0-3) */
-  k_mtu_tmdr_md_normal = 0x00,       /**< Normal mode */
-  k_mtu_tmdr_md_pwm1   = 0x02,       /**< PWM mode 1 */
-  k_mtu_tmdr_md_pwm2   = 0x03,       /**< PWM mode 2 */
+  k_mtu_tmdr_bfa_shift = 4,    /**< Buffer mode A bit position */
+  k_mtu_tmdr_bfb_shift = 5,    /**< Buffer mode B bit position */
+  k_mtu_tmdr_md_mask   = 0x0F, /**< Mode select mask (bits 0-3) */
+  k_mtu_tmdr_md_normal = 0x00, /**< Normal mode */
+  k_mtu_tmdr_md_pwm1   = 0x02, /**< PWM mode 1 */
+  k_mtu_tmdr_md_pwm2   = 0x03, /**< PWM mode 2 */
   k_mtu_tmdr_bfa       = (k_mtu_bit_value_set << k_mtu_tmdr_bfa_shift), /**< Buffer mode A */
   k_mtu_tmdr_bfb       = (k_mtu_bit_value_set << k_mtu_tmdr_bfb_shift), /**< Buffer mode B */
 } mtu_tmdr_bits_t;
@@ -274,20 +276,28 @@ typedef enum : uint8_t {
   k_mtu_tstr_cst8_shift = 3, /**< Counter Start 8 bit position */
   k_mtu_tstr_cst3_shift = 6, /**< Counter Start 3 bit position */
   k_mtu_tstr_cst4_shift = 7, /**< Counter Start 4 bit position */
-  k_mtu_tstr_cst0       = (k_mtu_bit_value_set << k_mtu_tstr_cst0_shift), /**< Counter Start 0 (TSTRA bit 0) */
-  k_mtu_tstr_cst1       = (k_mtu_bit_value_set << k_mtu_tstr_cst1_shift), /**< Counter Start 1 (TSTRA bit 1) */
-  k_mtu_tstr_cst2       = (k_mtu_bit_value_set << k_mtu_tstr_cst2_shift), /**< Counter Start 2 (TSTRA bit 2) */
-  k_mtu_tstr_cst3       = (k_mtu_bit_value_set << k_mtu_tstr_cst3_shift), /**< Counter Start 3 (TSTRA bit 6) */
-  k_mtu_tstr_cst4       = (k_mtu_bit_value_set << k_mtu_tstr_cst4_shift), /**< Counter Start 4 (TSTRA bit 7) */
-  k_mtu_tstr_cst8       = (k_mtu_bit_value_set << k_mtu_tstr_cst8_shift), /**< Counter Start 8 (TSTRA bit 3) */
+  k_mtu_tstr_cst0 =
+    (k_mtu_bit_value_set << k_mtu_tstr_cst0_shift), /**< Counter Start 0 (TSTRA bit 0) */
+  k_mtu_tstr_cst1 =
+    (k_mtu_bit_value_set << k_mtu_tstr_cst1_shift), /**< Counter Start 1 (TSTRA bit 1) */
+  k_mtu_tstr_cst2 =
+    (k_mtu_bit_value_set << k_mtu_tstr_cst2_shift), /**< Counter Start 2 (TSTRA bit 2) */
+  k_mtu_tstr_cst3 =
+    (k_mtu_bit_value_set << k_mtu_tstr_cst3_shift), /**< Counter Start 3 (TSTRA bit 6) */
+  k_mtu_tstr_cst4 =
+    (k_mtu_bit_value_set << k_mtu_tstr_cst4_shift), /**< Counter Start 4 (TSTRA bit 7) */
+  k_mtu_tstr_cst8 =
+    (k_mtu_bit_value_set << k_mtu_tstr_cst8_shift), /**< Counter Start 8 (TSTRA bit 3) */
 } mtu_tstr_bits_t;
 
 /* Timer Start Register B (TSTRB) bits - MTU6-7 */
 typedef enum : uint8_t {
   k_mtu_tstr_cst6_shift = 6, /**< Counter Start 6 bit position */
   k_mtu_tstr_cst7_shift = 7, /**< Counter Start 7 bit position */
-  k_mtu_tstr_cst6       = (k_mtu_bit_value_set << k_mtu_tstr_cst6_shift), /**< Counter Start 6 (TSTRB bit 6) */
-  k_mtu_tstr_cst7       = (k_mtu_bit_value_set << k_mtu_tstr_cst7_shift), /**< Counter Start 7 (TSTRB bit 7) */
+  k_mtu_tstr_cst6 =
+    (k_mtu_bit_value_set << k_mtu_tstr_cst6_shift), /**< Counter Start 6 (TSTRB bit 6) */
+  k_mtu_tstr_cst7 =
+    (k_mtu_bit_value_set << k_mtu_tstr_cst7_shift), /**< Counter Start 7 (TSTRB bit 7) */
 } mtu_tstrb_bits_t;
 
 /* =============================================================================

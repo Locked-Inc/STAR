@@ -30,6 +30,7 @@
 #include <stddef.h>
 
 #include "rx72n_regs.h"
+#include "rx_check.h"
 #include "rx_gpio_constants.h"
 #include "rx_register_protection.h"
 
@@ -51,11 +52,11 @@ typedef enum : int32_t {
  * @brief CRC calculation limits and indices
  */
 typedef enum : uint32_t {
-  k_crc_len_min         = 1,     /**< Minimum valid data length */
-  k_crc_len_max         = 65535, /**< Maximum CRC data length (bounded loop) */
-  k_crc_idx_start       = 0,     /**< Loop start index */
-  k_crc_result_invalid  = 0,     /**< Invalid CRC result (error case) */
-  k_crc_bit_set         = 1,     /**< Bit set value for register manipulation */
+  k_crc_len_min        = 1,     /**< Minimum valid data length */
+  k_crc_len_max        = 65535, /**< Maximum CRC data length (bounded loop) */
+  k_crc_idx_start      = 0,     /**< Loop start index */
+  k_crc_result_invalid = 0,     /**< Invalid CRC result (error case) */
+  k_crc_bit_set        = 1,     /**< Bit set value for register manipulation */
 } rx_crc_loop_constants_t;
 
 /* =============================================================================
@@ -84,17 +85,18 @@ static bool s_crc_initialized = false;
 rx_err_t rx_crc_init(void)
 {
   /* Pre-condition: Validate system registers are accessible (NASA Rule 5) */
-  RX_CHECK_NULL_PTR(system_regs(), NULL, "System registers not accessible");
-  RX_CHECK_NULL_PTR(crc_regs(), NULL, "CRC registers not accessible");
+  RX_CHECK_NULL_PTR(system_regs(), "CRC", "System registers not accessible");
+  RX_CHECK_NULL_PTR(crc_regs(), "CRC", "CRC registers not accessible");
 
   if (s_crc_initialized) {
     return k_rx_ok;
   }
 
   /* Enable CRC module by clearing module stop bit */
-  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;  /* Unlock PRC1+PRC3 for MSTPCR */
-  system_regs()->mstpcrb &= ~((uint32_t)k_crc_bit_set << k_mstpb_crc);   /* Clear bit 23 to enable CRC */
-  system_regs()->prcr = k_rx_prcr_lock;              /* Lock protection */
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3; /* Unlock PRC1+PRC3 for MSTPCR */
+  system_regs()->mstpcrb &=
+    ~((uint32_t)k_crc_bit_set << k_mstpb_crc); /* Clear bit 23 to enable CRC */
+  system_regs()->prcr = k_rx_prcr_lock;        /* Lock protection */
 
   /*
      * Configure CRC peripheral for IEEE 802.3:
@@ -139,10 +141,10 @@ rx_err_t rx_crc_deinit(void)
      */
 
   /* Pre-condition: Validate module was initialized (NASA Rule 5) */
-  RX_CHECK(s_crc_initialized, NULL, "CRC module not initialized");
+  RX_VALIDATE_INIT(s_crc_initialized, "CRC", "CRC module not initialized");
 
   /* Post-condition: Module state unchanged */
-  RX_CHECK(s_crc_initialized, NULL, "CRC module state corrupted");
+  RX_VALIDATE_INIT(s_crc_initialized, "CRC", "CRC module state corrupted");
 
   return k_rx_ok;
 }
@@ -170,9 +172,8 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
   uint32_t          i;
 
   /* Pre-condition: Validate input parameters (NASA Rule 5) */
-  RX_CHECK_NULL_PTR(data, NULL, "CRC data pointer is NULL");
-  RX_CHECK((len >= k_crc_len_min) && (len <= k_crc_len_max), NULL,
-           "CRC length out of valid range");
+  RX_CHECK_NULL_PTR(data, "CRC", "CRC data pointer is NULL");
+  RX_CHECK_RANGE_TAG(len, k_crc_len_min, k_crc_len_max, k_crc_result_invalid, "CRC");
 
   /* Ensure CRC module is initialized */
   if (!s_crc_initialized) {
@@ -260,9 +261,8 @@ uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)
      */
 
   /* Pre-condition: Validate input parameters (NASA Rule 5) */
-  RX_CHECK_NULL_PTR(data, NULL, "CRC update data pointer is NULL");
-  RX_CHECK((len >= k_crc_len_min) && (len <= k_crc_len_max), NULL,
-           "CRC update length out of valid range");
+  RX_CHECK_NULL_PTR(data, "CRC", "CRC update data pointer is NULL");
+  RX_CHECK_RANGE_TAG(len, k_crc_len_min, k_crc_len_max, k_crc_result_invalid, "CRC");
 
   /* Delegate to software implementation */
   return rx_crc32_update_sw(crc, data, len);

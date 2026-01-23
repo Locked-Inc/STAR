@@ -95,8 +95,8 @@ static error_component_state_t* internal_find_or_create_component(error_handler_
 static rx_err_t
 impl_report_error(void* ctx, rx_err_t err, const char* component, const char* message)
 {
-  error_handler_t* handler = (error_handler_t*)ctx;
-  UINT             status;
+  error_handler_t*         handler = (error_handler_t*)ctx;
+  UINT                     status;
   error_component_state_t* comp;
 
   RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is NULL");
@@ -168,9 +168,9 @@ static uint32_t impl_get_error_count(void* ctx)
  */
 static uint32_t impl_get_component_error_count(void* ctx, const char* component)
 {
-  error_handler_t* handler = (error_handler_t*)ctx;
-  UINT             status;
-  uint32_t         count;
+  error_handler_t*               handler = (error_handler_t*)ctx;
+  UINT                           status;
+  uint32_t                       count;
   const error_component_state_t* comp;
 
   if (handler == NULL || component == NULL) {
@@ -238,9 +238,9 @@ static rx_err_t impl_clear_errors(void* ctx)
  */
 static bool impl_is_retry_limit_reached(void* ctx, const char* component)
 {
-  error_handler_t* handler = (error_handler_t*)ctx;
-  UINT             status;
-  bool             limit_reached;
+  error_handler_t*               handler = (error_handler_t*)ctx;
+  UINT                           status;
+  bool                           limit_reached;
   const error_component_state_t* comp;
 
   if (handler == NULL || component == NULL) {
@@ -278,8 +278,8 @@ static bool impl_is_retry_limit_reached(void* ctx, const char* component)
  */
 static rx_err_t impl_reset_retry_counter(void* ctx, const char* component)
 {
-  error_handler_t* handler = (error_handler_t*)ctx;
-  UINT             status;
+  error_handler_t*         handler = (error_handler_t*)ctx;
+  UINT                     status;
   error_component_state_t* comp;
 
   RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is NULL");

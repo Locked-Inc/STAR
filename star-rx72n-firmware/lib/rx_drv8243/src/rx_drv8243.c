@@ -55,10 +55,10 @@ typedef enum : uint16_t {
  * @brief DRV8243 configuration and control constants
  */
 typedef enum : uint8_t {
-  k_pwm_not_inverted = 0,      /**< PWM output not inverted (false) */
-  k_motor_coast      = 0,      /**< Motor coast mode (no brake, false) */
-  k_gpio_level_low   = 0,      /**< GPIO logic level low */
-  k_bit_mask_single  = 1,      /**< Single bit mask */
+  k_pwm_not_inverted = 0, /**< PWM output not inverted (false) */
+  k_motor_coast      = 0, /**< Motor coast mode (no brake, false) */
+  k_gpio_level_low   = 0, /**< GPIO logic level low */
+  k_bit_mask_single  = 1, /**< Single bit mask */
 } drv8243_config_constants_t;
 
 /**

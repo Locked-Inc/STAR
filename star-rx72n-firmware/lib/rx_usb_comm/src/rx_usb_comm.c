@@ -39,8 +39,8 @@ static const char* s_tag = "USB_COMM";
 
 /** @brief Total header size including sync word: SYNC(2) + SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) */
 enum {
-  k_frame_header_total = k_frame_sync_size + k_frame_seq_size + k_frame_len_size +
-                         k_frame_type_size + k_frame_flags_size
+  k_frame_header_total =
+    k_frame_sync_size + k_frame_seq_size + k_frame_len_size + k_frame_type_size + k_frame_flags_size
 };
 
 static rx_err_t internal_decode_header(const uint8_t* data,
@@ -120,9 +120,7 @@ static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32
 }
 
 /** @brief Sleep interval for receive polling (ms) */
-enum {
-  k_sleep_interval_ms = 10
-};
+enum { k_sleep_interval_ms = 10 };
 
 /**
  * @brief Sequence number constants

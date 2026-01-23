@@ -297,16 +297,16 @@ static inline tx_status tx_mutex_put(TX_MUTEX* mutex_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline tx_status tx_thread_create(TX_THREAD*                thread_ptr,
-                                         CHAR*                     name_ptr,
+static inline tx_status tx_thread_create(TX_THREAD* thread_ptr,
+                                         CHAR*      name_ptr,
                                          VOID (*entry_function)(ULONG),
-                                         ULONG                     entry_input,
-                                         VOID*                     stack_start,
-                                         ULONG                     stack_size,
-                                         UINT                      priority,
-                                         UINT                      preempt_threshold,
-                                         tx_time_slice_option_t    time_slice,
-                                         tx_thread_start_option_t  auto_start)
+                                         ULONG                    entry_input,
+                                         VOID*                    stack_start,
+                                         ULONG                    stack_size,
+                                         UINT                     priority,
+                                         UINT                     preempt_threshold,
+                                         tx_time_slice_option_t   time_slice,
+                                         tx_thread_start_option_t auto_start)
 {
   (void)entry_function;
   (void)entry_input;
@@ -463,9 +463,8 @@ static inline tx_status tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, C
  *
  * @return TX_SUCCESS on success
  */
-static inline tx_status tx_semaphore_create(TX_SEMAPHORE* sem_ptr,
-                                            CHAR*        name_ptr,
-                                            UINT         initial_count)
+static inline tx_status
+tx_semaphore_create(TX_SEMAPHORE* sem_ptr, CHAR* name_ptr, UINT initial_count)
 {
   if (sem_ptr == NULL) {
     return TX_NOT_AVAILABLE;

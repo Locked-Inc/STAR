@@ -83,7 +83,8 @@ static const iwdt_timeout_entry_t s_timeout_table[] = {
 };
 
 /** @brief Number of entries in timeout table */
-static const uint32_t s_iwdt_timeout_table_size = sizeof(s_timeout_table) / sizeof(s_timeout_table[0]);
+static const uint32_t s_iwdt_timeout_table_size =
+  sizeof(s_timeout_table) / sizeof(s_timeout_table[0]);
 
 /* =============================================================================
  * Module State

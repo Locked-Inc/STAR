@@ -128,9 +128,9 @@ void mock_encoder_advance_counter(rx_mtu_channel_t channel, int32_t delta)
 {
   int32_t idx = internal_channel_to_index(channel);
   if (idx >= 0) {
-    int32_t current = (int32_t)g_mock_mtu_regs[idx].tcnt;
-    int32_t new_val = current + delta;
-    const int32_t max = (int32_t)k_counter_max;
+    int32_t       current = (int32_t)g_mock_mtu_regs[idx].tcnt;
+    int32_t       new_val = current + delta;
+    const int32_t max     = (int32_t)k_counter_max;
 
     /* Handle 16-bit wraparound with bounded modulo arithmetic */
     new_val = ((new_val % max) + max) % max;

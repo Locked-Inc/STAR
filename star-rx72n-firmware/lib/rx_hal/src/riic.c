@@ -345,10 +345,10 @@ internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send
  * @return k_rx_ok on success
  * @return Other rx_err_t values on error
  */
-static rx_err_t internal_riic_write_phase(volatile rx_riic_regs_t*  riic,
-                                          const i2c_device_addr_t   device_addr,
-                                          const uint8_t*            write_data,
-                                          const uint16_t            write_length)
+static rx_err_t internal_riic_write_phase(volatile rx_riic_regs_t* riic,
+                                          const i2c_device_addr_t  device_addr,
+                                          const uint8_t*           write_data,
+                                          const uint16_t           write_length)
 {
   rx_err_t err;
 
@@ -360,9 +360,7 @@ static rx_err_t internal_riic_write_phase(volatile rx_riic_regs_t*  riic,
   RX_RETURN_ON_ERROR(err, s_tag, "Start condition failed");
 
   /* Send device address (write) */
-  err = internal_write_byte(
-    riic,
-    (device_addr.value << k_riic_addr_shift) | k_riic_addr_write_bit);
+  err = internal_write_byte(riic, (device_addr.value << k_riic_addr_shift) | k_riic_addr_write_bit);
   if (err != k_rx_ok) {
     rx_err_t stop_err = internal_send_stop(riic);
     (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
@@ -395,10 +393,10 @@ static rx_err_t internal_riic_write_phase(volatile rx_riic_regs_t*  riic,
  * @return k_rx_ok on success
  * @return Other rx_err_t values on error
  */
-static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t*  riic,
-                                         const i2c_device_addr_t   device_addr,
-                                         uint8_t*                  read_data,
-                                         const uint16_t            read_length)
+static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
+                                         const i2c_device_addr_t  device_addr,
+                                         uint8_t*                 read_data,
+                                         const uint16_t           read_length)
 {
   uint32_t timeout;
   rx_err_t err;
@@ -424,9 +422,7 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t*  riic,
   riic->iccr2 = k_riic_iccr2_mst;
 
   /* Send device address (read) */
-  err = internal_write_byte(
-    riic,
-    (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
+  err = internal_write_byte(riic, (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
   if (err != k_rx_ok) {
     rx_err_t stop_err = internal_send_stop(riic);
     (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
@@ -454,9 +450,9 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t*  riic,
 
 rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
 {
-  uint8_t        icbrl;
-  uint8_t        icbrh;
-  rx_err_t       err;
+  uint8_t                  icbrl;
+  uint8_t                  icbrh;
+  rx_err_t                 err;
   volatile rx_riic_regs_t* riic;
 
   /* Validate channel */
@@ -567,9 +563,7 @@ rx_err_t riic_write(const riic_channel_t    channel,
   RX_RETURN_ON_ERROR(err, s_tag, "Start condition failed");
 
   /* Send device address (write) */
-  err = internal_write_byte(
-    riic,
-    (device_addr.value << k_riic_addr_shift) | k_riic_addr_write_bit);
+  err = internal_write_byte(riic, (device_addr.value << k_riic_addr_shift) | k_riic_addr_write_bit);
   if (err != k_rx_ok) {
     rx_err_t stop_err = internal_send_stop(riic);
     (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
@@ -641,9 +635,7 @@ rx_err_t riic_read(const riic_channel_t    channel,
   RX_RETURN_ON_ERROR(err, s_tag, "Start condition failed");
 
   /* Send device address (read) */
-  err = internal_write_byte(
-    riic,
-    (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
+  err = internal_write_byte(riic, (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
   if (err != k_rx_ok) {
     rx_err_t stop_err = internal_send_stop(riic);
     (void)stop_err; /* Preserve original error, stop is best-effort cleanup */

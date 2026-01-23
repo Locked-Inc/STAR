@@ -68,7 +68,7 @@ void tearDown(void)
 void test_uart_init_channel_success(void)
 {
   const uart_channel_config_t config = {
-    .channel  = k_test_channel_sci9,
+    .channel  = (uart_channel_t)k_test_channel_sci9,
     .baudrate = k_test_baudrate_115200,
     .tx_gpio  = k_test_tx_gpio,
     .rx_gpio  = k_test_rx_gpio,
@@ -82,7 +82,7 @@ void test_uart_init_channel_success(void)
 void test_uart_init_channel_sci0(void)
 {
   const uart_channel_config_t config = {
-    .channel  = k_test_channel_sci0,
+    .channel  = (uart_channel_t)k_test_channel_sci0,
     .baudrate = k_test_baudrate_9600,
     .tx_gpio  = k_rx_p0_2,
     .rx_gpio  = k_rx_p0_1,
@@ -96,7 +96,7 @@ void test_uart_init_channel_sci0(void)
 void test_uart_init_channel_invalid(void)
 {
   const uart_channel_config_t config = {
-    .channel  = k_test_channel_invalid,
+    .channel  = (uart_channel_t)k_test_channel_invalid,
     .baudrate = k_test_baudrate_115200,
     .tx_gpio  = k_test_tx_gpio,
     .rx_gpio  = k_test_rx_gpio,
@@ -108,7 +108,7 @@ void test_uart_init_channel_invalid(void)
 void test_uart_init_channel_already_initialized(void)
 {
   const uart_channel_config_t config = {
-    .channel  = k_test_channel_sci9,
+    .channel  = (uart_channel_t)k_test_channel_sci9,
     .baudrate = k_test_baudrate_115200,
     .tx_gpio  = k_test_tx_gpio,
     .rx_gpio  = k_test_rx_gpio,
@@ -124,7 +124,7 @@ void test_uart_init_channel_already_initialized(void)
 void test_uart_deinit_channel_success(void)
 {
   uart_channel_config_t cfg = {
-    .channel  = k_test_channel_sci9,
+    .channel  = (uart_channel_t)k_test_channel_sci9,
     .baudrate = k_test_baudrate_115200,
     .tx_gpio  = k_test_tx_gpio,
     .rx_gpio  = k_test_rx_gpio,
@@ -150,7 +150,7 @@ void test_uart_deinit_channel_invalid(void)
 
 void test_uart_putc_channel_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -180,7 +180,7 @@ void test_uart_putc_channel_invalid_channel(void)
 
 void test_uart_putc_channel_tdre_timeout(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -196,7 +196,7 @@ void test_uart_putc_channel_tdre_timeout(void)
 
 void test_uart_puts_channel_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -214,7 +214,7 @@ void test_uart_puts_channel_success(void)
 
 void test_uart_puts_channel_newline_conversion(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -235,7 +235,7 @@ void test_uart_puts_channel_newline_conversion(void)
 
 void test_uart_puts_channel_null_string(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -253,7 +253,7 @@ void test_uart_puts_channel_not_initialized(void)
 
 void test_uart_write_channel_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -272,7 +272,7 @@ void test_uart_write_channel_success(void)
 
 void test_uart_write_channel_null_data(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -289,7 +289,7 @@ void test_uart_write_channel_null_data(void)
 
 void test_uart_getc_channel_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -308,7 +308,7 @@ void test_uart_getc_channel_success(void)
 
 void test_uart_getc_channel_no_data(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -321,7 +321,7 @@ void test_uart_getc_channel_no_data(void)
 
 void test_uart_getc_channel_null_buffer(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -340,7 +340,7 @@ void test_uart_getc_channel_not_initialized(void)
 
 void test_uart_read_channel_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -361,7 +361,7 @@ void test_uart_read_channel_success(void)
 
 void test_uart_read_channel_partial(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -386,7 +386,7 @@ void test_uart_read_channel_partial(void)
 
 void test_uart_read_channel_null_buffer(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -399,7 +399,7 @@ void test_uart_read_channel_null_buffer(void)
 
 void test_uart_read_channel_null_bytes_read(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -412,7 +412,7 @@ void test_uart_read_channel_null_bytes_read(void)
 
 void test_uart_rx_available_success(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -434,7 +434,7 @@ void test_uart_rx_available_success(void)
 
 void test_uart_rx_available_null(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -452,14 +452,14 @@ void test_uart_rx_available_null(void)
 void test_uart_channel_isolation(void)
 {
   /* Initialize channel 0 with config struct */
-  uart_channel_config_t cfg0 = {.channel  = k_test_channel_sci0,
+  uart_channel_config_t cfg0 = {.channel  = (uart_channel_t)k_test_channel_sci0,
                                 .baudrate = k_test_baudrate_9600,
                                 .tx_gpio  = k_rx_p0_2,
                                 .rx_gpio  = k_rx_p0_1};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg0));
 
   /* Initialize channel 9 */
-  uart_channel_config_t cfg9 = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg9 = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                 .baudrate = k_test_baudrate_115200,
                                 .tx_gpio  = k_test_tx_gpio,
                                 .rx_gpio  = k_test_rx_gpio};
@@ -486,14 +486,14 @@ void test_uart_channel_isolation(void)
 void test_uart_rx_channel_isolation(void)
 {
   /* Initialize channel 0 with config struct */
-  uart_channel_config_t cfg0 = {.channel  = k_test_channel_sci0,
+  uart_channel_config_t cfg0 = {.channel  = (uart_channel_t)k_test_channel_sci0,
                                 .baudrate = k_test_baudrate_9600,
                                 .tx_gpio  = k_rx_p0_2,
                                 .rx_gpio  = k_rx_p0_1};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg0));
 
   /* Initialize channel 9 */
-  uart_channel_config_t cfg9 = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg9 = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                 .baudrate = k_test_baudrate_115200,
                                 .tx_gpio  = k_test_tx_gpio,
                                 .rx_gpio  = k_test_rx_gpio};
@@ -525,7 +525,7 @@ void test_uart_rx_channel_isolation(void)
 void test_uart_init_error_injection(void)
 {
   mock_uart_hw_set_next_error(k_rx_err_hw_error);
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -535,7 +535,7 @@ void test_uart_init_error_injection(void)
 
 void test_uart_write_error_injection(void)
 {
-  uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                .baudrate = k_test_baudrate_115200,
                                .tx_gpio  = k_test_tx_gpio,
                                .rx_gpio  = k_test_rx_gpio};
@@ -622,7 +622,7 @@ void test_uart_puthex(void)
 
 void test_uart_call_history(void)
 {
-  const uart_channel_config_t cfg = {.channel  = k_test_channel_sci9,
+  const uart_channel_config_t cfg = {.channel  = (uart_channel_t)k_test_channel_sci9,
                                      .baudrate = k_test_baudrate_115200,
                                      .tx_gpio  = k_test_tx_gpio,
                                      .rx_gpio  = k_test_rx_gpio};

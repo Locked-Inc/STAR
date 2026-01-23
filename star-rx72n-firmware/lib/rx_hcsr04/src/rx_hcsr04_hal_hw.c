@@ -39,9 +39,7 @@
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if pin is out of range
  */
-static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin,
-                                           uint8_t*            port,
-                                           uint8_t*            pin_num)
+static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, uint8_t* port, uint8_t* pin_num)
 {
   if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
     return k_rx_err_invalid_arg;

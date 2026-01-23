@@ -96,15 +96,16 @@ typedef enum : uint16_t {
   k_iwdt_tops_16384 = 0x0003, /**< 16384 cycles (~137ms) */
 
   /* Clock Division Ratio (CKS) - bits 7:4 */
-  k_iwdt_cks_div_1   = (0x00 << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/1 */
-  k_iwdt_cks_div_16  = (0x02 << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/16 */
-  k_iwdt_cks_div_32  = (0x03 << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/32 */
-  k_iwdt_cks_div_64  = (0x04 << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/64 */
-  k_iwdt_cks_div_128 = (0x0F << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/128 (~1s at 16384 cycles) */
-  k_iwdt_cks_div_256 = (0x05 << k_iwdt_iwdtcr_cks_shift),  /**< IWDTCLK/256 */
+  k_iwdt_cks_div_1   = (0x00 << k_iwdt_iwdtcr_cks_shift), /**< IWDTCLK/1 */
+  k_iwdt_cks_div_16  = (0x02 << k_iwdt_iwdtcr_cks_shift), /**< IWDTCLK/16 */
+  k_iwdt_cks_div_32  = (0x03 << k_iwdt_iwdtcr_cks_shift), /**< IWDTCLK/32 */
+  k_iwdt_cks_div_64  = (0x04 << k_iwdt_iwdtcr_cks_shift), /**< IWDTCLK/64 */
+  k_iwdt_cks_div_128 = (0x0F << k_iwdt_iwdtcr_cks_shift), /**< IWDTCLK/128 (~1s at 16384 cycles) */
+  k_iwdt_cks_div_256 = (0x05 << k_iwdt_iwdtcr_cks_shift), /**< IWDTCLK/256 */
 
   /* Window Start Position (RPES) - bits 9:8 */
-  k_iwdt_rpes_75 = (0x00 << k_iwdt_iwdtcr_rpes_shift), /**< 75% (refresh allowed after 25% elapsed) */
+  k_iwdt_rpes_75 =
+    (0x00 << k_iwdt_iwdtcr_rpes_shift), /**< 75% (refresh allowed after 25% elapsed) */
   k_iwdt_rpes_50 = (0x01 << k_iwdt_iwdtcr_rpes_shift), /**< 50% */
   k_iwdt_rpes_25 = (0x02 << k_iwdt_iwdtcr_rpes_shift), /**< 25% */
   k_iwdt_rpes_0  = (0x03 << k_iwdt_iwdtcr_rpes_shift), /**< 0% (refresh allowed immediately) */
@@ -118,19 +119,19 @@ typedef enum : uint16_t {
 
 /* IWDT Status Register (IWDTSR) Bit Definitions */
 typedef enum : uint16_t {
-  k_iwdt_sr_cntval_mask   = 0x3FFF, /**< Down counter value (bits 13:0) */
-  k_iwdt_sr_undff_shift   = 14,     /**< Underflow flag bit position */
-  k_iwdt_sr_refef_shift   = 15,     /**< Refresh error flag bit position */
-  k_iwdt_sr_undff         = (1U << k_iwdt_sr_undff_shift), /**< Underflow flag (reset occurred) */
-  k_iwdt_sr_refef         = (1U << k_iwdt_sr_refef_shift), /**< Refresh error flag (window violation) */
+  k_iwdt_sr_cntval_mask = 0x3FFF,                        /**< Down counter value (bits 13:0) */
+  k_iwdt_sr_undff_shift = 14,                            /**< Underflow flag bit position */
+  k_iwdt_sr_refef_shift = 15,                            /**< Refresh error flag bit position */
+  k_iwdt_sr_undff       = (1U << k_iwdt_sr_undff_shift), /**< Underflow flag (reset occurred) */
+  k_iwdt_sr_refef = (1U << k_iwdt_sr_refef_shift), /**< Refresh error flag (window violation) */
 } iwdt_iwdtsr_bits_t;
 
 /* IWDT Reset Control Register (IWDTRCR) Bit Definitions */
 typedef enum : uint8_t {
-  k_iwdt_rstirqs_pos      = 7, /**< Reset/Interrupt Select bit position */
+  k_iwdt_rstirqs_pos      = 7,                          /**< Reset/Interrupt Select bit position */
   k_iwdt_rcr_rstirqs_mask = (1U << k_iwdt_rstirqs_pos), /**< Reset/Interrupt Select bit mask */
   k_iwdt_rstirqs_reset    = (1U << k_iwdt_rstirqs_pos), /**< Generate reset on timeout */
-  k_iwdt_rstirqs_nmi      = 0x00, /**< Generate NMI on timeout */
+  k_iwdt_rstirqs_nmi      = 0x00,                       /**< Generate NMI on timeout */
 } iwdt_iwdtrcr_bits_t;
 
 /** @brief IWDTCSTPR bit field positions */
@@ -142,7 +143,7 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_iwdt_cstpr_slcstp_mask = (1U << k_iwdt_cstpr_slcstp_pos), /**< Sleep Mode Count Stop bit mask */
   k_iwdt_slcstp_stop       = (1U << k_iwdt_cstpr_slcstp_pos), /**< Stop counting during sleep */
-  k_iwdt_slcstp_continue   = 0x00, /**< Continue counting during sleep */
+  k_iwdt_slcstp_continue   = 0x00,                            /**< Continue counting during sleep */
 } iwdt_iwdtcstpr_bits_t;
 
 /* =============================================================================

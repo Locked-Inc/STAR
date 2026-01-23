@@ -38,7 +38,7 @@ static const char* s_tag = "MPC";
 
 /** @brief MPC pin validation constants */
 typedef enum : uint8_t {
-  k_mpc_min_pin = 0,             /**< Minimum valid pin number */
+  k_mpc_min_pin = 0,            /**< Minimum valid pin number */
   k_mpc_max_pin = k_rx_pin_max, /**< Maximum valid pin number */
 } mpc_pin_constants_t;
 
@@ -51,23 +51,23 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_mpc_port_start = k_rx_port_0, /**< First valid port */
   k_mpc_port_0     = k_rx_port_0, /**< Port 0 */
-  k_mpc_port_1 = k_rx_port_1, /**< Port 1 */
-  k_mpc_port_2 = k_rx_port_2, /**< Port 2 */
-  k_mpc_port_3 = k_rx_port_3, /**< Port 3 */
-  k_mpc_port_4 = k_rx_port_4, /**< Port 4 */
-  k_mpc_port_5 = k_rx_port_5, /**< Port 5 */
-  k_mpc_port_6 = k_rx_port_6, /**< Port 6 */
-  k_mpc_port_7 = k_rx_port_7, /**< Port 7 */
-  k_mpc_port_8 = k_rx_port_8, /**< Port 8 */
-  k_mpc_port_9 = k_rx_port_9, /**< Port 9 */
-  k_mpc_port_a = k_rx_port_a, /**< Port A */
-  k_mpc_port_b = k_rx_port_b, /**< Port B */
-  k_mpc_port_c = k_rx_port_c, /**< Port C */
-  k_mpc_port_d = k_rx_port_d, /**< Port D */
-  k_mpc_port_e = k_rx_port_e, /**< Port E */
-  k_mpc_port_f = k_rx_port_f, /**< Port F */
-  k_mpc_port_g = k_rx_port_g, /**< Port G */
-  k_mpc_port_j = k_rx_port_j, /**< Port J */
+  k_mpc_port_1     = k_rx_port_1, /**< Port 1 */
+  k_mpc_port_2     = k_rx_port_2, /**< Port 2 */
+  k_mpc_port_3     = k_rx_port_3, /**< Port 3 */
+  k_mpc_port_4     = k_rx_port_4, /**< Port 4 */
+  k_mpc_port_5     = k_rx_port_5, /**< Port 5 */
+  k_mpc_port_6     = k_rx_port_6, /**< Port 6 */
+  k_mpc_port_7     = k_rx_port_7, /**< Port 7 */
+  k_mpc_port_8     = k_rx_port_8, /**< Port 8 */
+  k_mpc_port_9     = k_rx_port_9, /**< Port 9 */
+  k_mpc_port_a     = k_rx_port_a, /**< Port A */
+  k_mpc_port_b     = k_rx_port_b, /**< Port B */
+  k_mpc_port_c     = k_rx_port_c, /**< Port C */
+  k_mpc_port_d     = k_rx_port_d, /**< Port D */
+  k_mpc_port_e     = k_rx_port_e, /**< Port E */
+  k_mpc_port_f     = k_rx_port_f, /**< Port F */
+  k_mpc_port_g     = k_rx_port_g, /**< Port G */
+  k_mpc_port_j     = k_rx_port_j, /**< Port J */
 } mpc_port_number_t;
 
 /** @brief MPC PFS port offset values

@@ -130,9 +130,9 @@ enum : uint8_t {
 };
 
 typedef enum : uint16_t {
-  k_wdt_sr_cntval_mask = 0x3FFF,                      /**< Down counter value (bits 13:0) */
-  k_wdt_sr_undff       = (1 << k_wdt_sr_undff_pos),  /**< Underflow flag (reset occurred) */
-  k_wdt_sr_refef       = (1 << k_wdt_sr_refef_pos),  /**< Refresh error flag (window violation) */
+  k_wdt_sr_cntval_mask = 0x3FFF,                    /**< Down counter value (bits 13:0) */
+  k_wdt_sr_undff       = (1 << k_wdt_sr_undff_pos), /**< Underflow flag (reset occurred) */
+  k_wdt_sr_refef       = (1 << k_wdt_sr_refef_pos), /**< Refresh error flag (window violation) */
 } wdt_wdtsr_bits_t;
 
 /* WDT Reset Control Register (WDTRCR) Bit Definitions */
@@ -143,7 +143,7 @@ enum : uint8_t {
 typedef enum : uint8_t {
   k_wdt_rcr_rstirqs_mask = (1 << k_wdt_rcr_rstirqs_pos), /**< Reset/Interrupt Select bit mask */
   k_wdt_rstirqs_reset    = (1 << k_wdt_rcr_rstirqs_pos), /**< Generate reset on timeout */
-  k_wdt_rstirqs_nmi      = 0x00,     /**< Generate NMI on timeout */
+  k_wdt_rstirqs_nmi      = 0x00,                         /**< Generate NMI on timeout */
 } wdt_wdtrcr_bits_t;
 
 /* =============================================================================
