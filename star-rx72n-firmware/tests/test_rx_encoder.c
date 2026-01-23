@@ -561,13 +561,13 @@ void test_encoder_read_velocity_success(void)
   /* First call establishes baseline */
   float    velocity_rps;
   float    delta_time = 0.01f; /* 10ms = 100Hz control loop */
-  rx_err_t err        = rx_encoder_read_velocity(&velocity_rps, s_config.channel, delta_time);
+  rx_err_t err        = rx_encoder_read_velocity(&velocity_rps, delta_time, s_config.channel);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, 0.0f, velocity_rps);
 
   /* Simulate 136.4 counts = 0.1 revolutions in 10ms = 10 RPS */
   mock_encoder_set_counter(s_config.channel, 136);
-  err = rx_encoder_read_velocity(&velocity_rps, s_config.channel, delta_time);
+  err = rx_encoder_read_velocity(&velocity_rps, delta_time, s_config.channel);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* 136 counts / 1364 counts_per_rev / 0.01s = ~9.97 RPS */
@@ -578,7 +578,7 @@ void test_encoder_read_velocity_null_pointer_fails(void)
 {
   rx_encoder_init(&s_config);
 
-  rx_err_t err = rx_encoder_read_velocity(NULL, s_config.channel, 0.01f);
+  rx_err_t err = rx_encoder_read_velocity(NULL, 0.01f, s_config.channel);
 
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
@@ -586,7 +586,7 @@ void test_encoder_read_velocity_null_pointer_fails(void)
 void test_encoder_read_velocity_not_initialized_fails(void)
 {
   float    velocity_rps;
-  rx_err_t err = rx_encoder_read_velocity(&velocity_rps, s_config.channel, 0.01f);
+  rx_err_t err = rx_encoder_read_velocity(&velocity_rps, 0.01f, s_config.channel);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -596,7 +596,7 @@ void test_encoder_read_velocity_zero_time_fails(void)
   rx_encoder_init(&s_config);
 
   float    velocity_rps;
-  rx_err_t err = rx_encoder_read_velocity(&velocity_rps, s_config.channel, 0.0f);
+  rx_err_t err = rx_encoder_read_velocity(&velocity_rps, 0.0f, s_config.channel);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -606,7 +606,7 @@ void test_encoder_read_velocity_negative_time_fails(void)
   rx_encoder_init(&s_config);
 
   float    velocity_rps;
-  rx_err_t err = rx_encoder_read_velocity(&velocity_rps, s_config.channel, -0.01f);
+  rx_err_t err = rx_encoder_read_velocity(&velocity_rps, -0.01f, s_config.channel);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -618,11 +618,11 @@ void test_encoder_read_velocity_one_revolution_per_second(void)
   /* First call establishes baseline */
   float velocity_rps;
   float delta_time = 1.0f; /* 1 second */
-  rx_encoder_read_velocity(&velocity_rps, s_config.channel, delta_time);
+  rx_encoder_read_velocity(&velocity_rps, delta_time, s_config.channel);
 
   /* Move exactly one revolution */
   mock_encoder_set_counter(s_config.channel, k_test_counts_per_rev);
-  rx_err_t err = rx_encoder_read_velocity(&velocity_rps, s_config.channel, delta_time);
+  rx_err_t err = rx_encoder_read_velocity(&velocity_rps, delta_time, s_config.channel);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, 1.0f, velocity_rps);
@@ -636,11 +636,11 @@ void test_encoder_read_velocity_reverse(void)
   mock_encoder_set_counter(s_config.channel, 1000);
   float velocity_rps;
   float delta_time = 0.1f; /* 100ms */
-  rx_encoder_read_velocity(&velocity_rps, s_config.channel, delta_time);
+  rx_encoder_read_velocity(&velocity_rps, delta_time, s_config.channel);
 
   /* Move backward by 136 counts (0.1 revolutions) */
   mock_encoder_set_counter(s_config.channel, 864);
-  rx_err_t err = rx_encoder_read_velocity(&velocity_rps, s_config.channel, delta_time);
+  rx_err_t err = rx_encoder_read_velocity(&velocity_rps, delta_time, s_config.channel);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* -136 counts / 1364 cpr / 0.1s = ~-0.997 RPS */

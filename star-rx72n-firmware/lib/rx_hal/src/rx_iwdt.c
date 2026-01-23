@@ -430,6 +430,20 @@ static int32_t internal_find_task(const char* task_name)
   return k_task_not_found;
 }
 
+/**
+ * @brief Register a task for watchdog monitoring
+ *
+ * Registers a task with the watchdog timer for monitoring. The task must
+ * check in periodically using rx_iwdt_check_in() before the timeout expires.
+ *
+ * @param[in] task_name Non-empty task identifier string (must be unique)
+ * @param[in] timeout_ms Timeout in milliseconds (1-16384 ms)
+ *
+ * @retval k_rx_ok Task registered successfully
+ * @retval k_rx_err_invalid_arg task_name is NULL, empty, or timeout_ms out of range
+ * @retval k_rx_err_no_mem Maximum number of tasks already registered
+ * @retval k_rx_err_exists Task with same name already registered
+ */
 rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 {
   /* Validate parameters */
@@ -441,7 +455,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
     return k_rx_err_invalid_arg;
   }
 
-  if (timeout_ms == 0) {
+  if (timeout_ms < k_iwdt_timeout_min_ms || timeout_ms > k_iwdt_timeout_max_ms) {
     return k_rx_err_invalid_arg;
   }
 
@@ -471,6 +485,19 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
   return k_rx_ok;
 }
 
+/**
+ * @brief Record a task heartbeat
+ *
+ * Updates the last heartbeat timestamp for the specified task.
+ * Should be called periodically by monitored tasks to indicate liveness.
+ *
+ * @param[in] task_name Name of task sending heartbeat (must match registered name)
+ *
+ * @pre task_name must be non-NULL
+ * @pre Task must be registered via rx_iwdt_register_task()
+ *
+ * @post Task's last_heartbeat_ms updated to current time
+ */
 void rx_iwdt_task_heartbeat(const char* task_name)
 {
   int32_t idx = k_task_not_found;
@@ -492,6 +519,20 @@ void rx_iwdt_task_heartbeat(const char* task_name)
   s_task_monitor.tasks[idx].last_heartbeat_ms = tx_time_get();
 }
 
+/**
+ * @brief Check all monitored tasks for timeout violations
+ *
+ * Iterates through registered tasks and compares elapsed time since last
+ * heartbeat against configured timeout. Logs and records any failed tasks.
+ *
+ * @return k_rx_ok if all tasks are alive
+ * @return k_rx_err_timeout if one or more tasks exceeded timeout
+ * @return k_rx_err_invalid_state if IWDT not initialized or state corrupted
+ *
+ * @pre IWDT must be initialized via rx_iwdt_init()
+ *
+ * @post If timeout detected, failed task name recorded in s_task_monitor.failed_task
+ */
 rx_err_t rx_iwdt_check_tasks(void)
 {
   uint32_t              current_time_ms;
@@ -540,6 +581,18 @@ rx_err_t rx_iwdt_check_tasks(void)
   return result;
 }
 
+/**
+ * @brief Get name of last failed task
+ *
+ * Returns the name of the task that most recently exceeded its heartbeat
+ * timeout. Used for post-mortem debugging after watchdog reset.
+ *
+ * @return Pointer to failed task name string, or NULL if no failure recorded
+ *
+ * @pre IWDT must be initialized
+ *
+ * @post Returns pointer to internal buffer (do not modify or free)
+ */
 const char* rx_iwdt_get_failed_task(void)
 {
   if (s_iwdt_initialized != k_iwdt_initialized) {

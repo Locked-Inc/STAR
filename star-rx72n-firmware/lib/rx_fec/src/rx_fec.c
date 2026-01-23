@@ -78,7 +78,8 @@ static uint8_t internal_parity(uint8_t x)
   const uint8_t result = x & k_fec_bit_mask;
 
   /* Post-condition: Result must be 0 or 1 */
-  RX_ASSERT((result == 0) || (result == k_fec_bit_mask), "Parity result must be 0 or 1");
+  RX_ASSERT((result == k_fec_zero) || (result == k_fec_bit_mask), "Parity result must be 0 or 1");
+  RX_ASSERT(result <= k_fec_bit_mask, "Parity result must be within bit mask");
 
   return result;
 }
@@ -135,7 +136,7 @@ static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
   const uint8_t result = (data[byte_idx] >> bit_pos) & k_fec_bit_mask;
 
   /* Post-condition: result must be 0 or 1 */
-  RX_ASSERT((result == 0) || (result == k_fec_bit_mask), "Bit result must be 0 or 1");
+  RX_ASSERT((result == k_fec_zero) || (result == k_fec_bit_mask), "Bit result must be 0 or 1");
 
   return result;
 }
@@ -158,7 +159,7 @@ internal_encode_bit(uint8_t* state, const uint8_t input_bit, uint8_t* out0, uint
   RX_ASSERT(out1 != NULL, "Output 1 pointer must not be NULL");
 
   /* Pre-condition 2: input_bit must be 0 or 1 */
-  RX_ASSERT((input_bit == 0) || (input_bit == k_fec_bit_mask), "Input bit must be 0 or 1");
+  RX_ASSERT((input_bit == k_fec_zero) || (input_bit == k_fec_bit_mask), "Input bit must be 0 or 1");
 
   /* Shift in the new bit (input is MSB of the combined state) */
   const uint8_t combined = (uint8_t)((input_bit << k_fec_shift_register_bits) | *state);
@@ -184,8 +185,8 @@ static void internal_init_branch_table(
   /* Pre-condition: branch_table array parameter is always valid in C */
   /* Loop bounds guarantee state < k_fec_num_states and input < k_fec_num_input_values */
 
-  for (uint8_t state = 0; state < k_fec_num_states; state++) {
-    for (uint8_t input = 0; input < k_fec_num_input_values; input++) {
+  for (uint8_t state = k_fec_zero; state < k_fec_num_states; state++) {
+    for (uint8_t input = k_fec_zero; input < k_fec_num_input_values; input++) {
       const uint8_t combined =
         (uint8_t)(((uint8_t)input << k_fec_shift_register_bits) | (uint8_t)state);
       branch_table[state][input][k_fec_output_g1] = internal_parity(combined & k_fec_g1_octal);
@@ -212,8 +213,8 @@ static int32_t internal_branch_metric(const rx_soft_bit_t soft0,
                                       const uint8_t       exp1)
 {
   /* Pre-conditions: expected bits must be 0 or 1 */
-  RX_ASSERT((exp0 == 0) || (exp0 == k_fec_bit_mask), "Expected bit 0 must be 0 or 1");
-  RX_ASSERT((exp1 == 0) || (exp1 == k_fec_bit_mask), "Expected bit 1 must be 0 or 1");
+  RX_ASSERT((exp0 == k_fec_zero) || (exp0 == k_fec_bit_mask), "Expected bit 0 must be 0 or 1");
+  RX_ASSERT((exp1 == k_fec_zero) || (exp1 == k_fec_bit_mask), "Expected bit 1 must be 0 or 1");
 
   /* Convert expected bits to soft values: 0 -> -127, 1 -> +127 */
   const int32_t exp0_soft = (exp0 != 0) ? k_soft_bit_max : k_soft_bit_min;
@@ -246,7 +247,7 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
   RX_ASSERT(symbol_idx < dec->survivors_len, "Symbol index exceeds survivors buffer length");
 
   /* Reset new path metrics */
-  for (uint8_t i = 0; i < k_fec_num_states; i++) {
+  for (uint8_t i = k_fec_zero; i < k_fec_num_states; i++) {
     dec->new_path_metrics[i] = INT32_MAX;
   }
 
@@ -254,13 +255,13 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
   dec->survivors[symbol_idx] = k_fec_zero;
 
   /* For each current state, compute transitions */
-  for (uint8_t state = 0; state < k_fec_num_states; state++) {
+  for (uint8_t state = k_fec_zero; state < k_fec_num_states; state++) {
     if (dec->path_metrics[state] == INT32_MAX) {
       continue;
     }
 
     /* Try both input bits (0 and 1) */
-    for (uint8_t input = 0; input < k_fec_num_input_values; input++) {
+    for (uint8_t input = k_fec_zero; input < k_fec_num_input_values; input++) {
       /* Get expected output bits for this transition */
       const uint8_t exp0 = dec->branch_table[state][input][k_fec_output_g1];
       const uint8_t exp1 = dec->branch_table[state][input][k_fec_output_g2];
@@ -289,7 +290,7 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
   }
 
   /* Swap path metrics */
-  for (uint8_t i = 0; i < k_fec_num_states; i++) {
+  for (uint8_t i = k_fec_zero; i < k_fec_num_states; i++) {
     dec->path_metrics[i]     = dec->new_path_metrics[i];
     dec->new_path_metrics[i] = INT32_MAX;
   }
@@ -308,21 +309,19 @@ static void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
                                           const rx_soft_bit_t* soft_bits,
                                           const uint32_t       num_symbols)
 {
-  uint32_t limit;
-
   /* Pre-conditions */
   RX_ASSERT(dec != NULL, "Decoder handle must not be NULL");
   RX_ASSERT(soft_bits != NULL, "Soft bits buffer must not be NULL");
 
   /* Initialize path metrics: state 0 = 0, others = MAX */
-  for (uint8_t i = 0; i < k_fec_num_states; i++) {
+  for (uint8_t i = k_fec_zero; i < k_fec_num_states; i++) {
     dec->path_metrics[i] = INT32_MAX;
   }
-  dec->path_metrics[0] = 0;
+  dec->path_metrics[k_fec_zero] = k_fec_zero;
 
   /* Process each symbol pair through the trellis */
-  limit = (num_symbols < k_fec_max_symbols) ? num_symbols : k_fec_max_symbols;
-  for (uint32_t t = 0; t < limit; t++) {
+  const uint32_t limit = (num_symbols < k_fec_max_symbols) ? num_symbols : k_fec_max_symbols;
+  for (uint32_t t = k_fec_zero; t < limit; t++) {
     const rx_soft_bit_t soft0 = soft_bits[t * k_fec_num_outputs + k_fec_output_g1];
     const rx_soft_bit_t soft1 = soft_bits[t * k_fec_num_outputs + k_fec_output_g2];
     internal_viterbi_process_symbol(dec, soft0, soft1, t);
@@ -347,38 +346,35 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
                                        uint8_t*                output,
                                        const uint32_t          output_bytes)
 {
-  uint32_t limit;
-  uint8_t  state;
-
   RX_ASSERT(dec != NULL, "Decoder handle must not be NULL");
   RX_ASSERT(output != NULL, "Output buffer must not be NULL");
   RX_ASSERT(output_bytes > k_fec_zero, "Output bytes must be greater than zero");
   RX_ASSERT(num_symbols <= dec->survivors_len, "Number of symbols exceeds survivors buffer");
 
   /* Clear output buffer */
-  memset(output, 0, output_bytes);
+  memset(output, k_fec_zero, output_bytes);
 
   if (num_symbols == k_fec_zero) {
     return;
   }
 
   /* Start from state 0 (encoder is flushed to zero by tail bits) */
-  state = 0;
+  uint8_t state = k_fec_zero;
 
   /* Traceback: work backwards through the trellis */
-  limit = (num_symbols < k_fec_max_symbols) ? num_symbols : k_fec_max_symbols;
-  for (uint32_t t = limit; t > 0; t--) {
-    const uint32_t t_idx = t - 1;
+  const uint32_t limit = (num_symbols < k_fec_max_symbols) ? num_symbols : k_fec_max_symbols;
+  for (uint32_t t = limit; t > k_fec_zero; t--) {
+    const uint32_t t_idx = t - k_fec_bit_mask;
 
     /* The input bit is the MSB of the current state */
     const uint8_t input_bit = (uint8_t)((state >> k_fec_state_shift_amount) & k_fec_bit_mask);
 
     /* Store decoded bit if it's a data bit (not tail bit) */
     if (t_idx < data_bits) {
-      if (input_bit != 0) {
+      if (input_bit != k_fec_zero) {
         const uint32_t byte_idx = t_idx / k_rx_bits_per_byte;
         const uint32_t bit_pos  = k_fec_msb_bit_position - (t_idx % k_rx_bits_per_byte);
-        output[byte_idx] |= (uint8_t)(1U << bit_pos);
+        output[byte_idx] |= (uint8_t)(k_fec_bit_mask << bit_pos);
       }
     }
 
@@ -415,14 +411,26 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc)
   return k_rx_ok;
 }
 
+/**
+ * @brief Calculate encoded output length for given input
+ *
+ * Computes the number of bytes required for FEC-encoded output
+ * based on input data length. Accounts for tail bits and rate-1/2 encoding.
+ *
+ * @param[in] input_len Length of input data in bytes
+ *
+ * @return Encoded output length in bytes, or 0 if input length invalid
+ *
+ * @pre input_len must be in range [1, k_fec_max_input_bytes]
+ */
 uint32_t rx_fec_encoded_len(const uint32_t input_len)
 {
   if (input_len == k_fec_zero) {
-    return 0;
+    return k_fec_zero;
   }
 
   if (input_len > k_fec_max_input_bytes) {
-    return 0;
+    return k_fec_zero;
   }
 
   /* Output bits = (input bits + tail bits) * 2 */
@@ -434,6 +442,30 @@ uint32_t rx_fec_encoded_len(const uint32_t input_len)
   return (total_output_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
 }
 
+/**
+ * @brief Encode data using convolutional FEC
+ *
+ * Applies rate-1/2, constraint-length-7 convolutional encoding
+ * to input data. Output length is approximately 2x input length.
+ *
+ * @param[in]  enc Pointer to initialized encoder
+ * @param[in]  input Pointer to input data buffer
+ * @param[in]  input_len Length of input data (1 to k_fec_max_input_bytes)
+ * @param[out] output Pointer to output buffer (must be >= rx_fec_encoded_len(input_len))
+ * @param[out] output_len Pointer to store actual output length
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL or input_len is 0
+ * @return k_rx_err_invalid_state if encoder not initialized
+ * @return k_rx_err_invalid_size if input_len exceeds maximum
+ *
+ * @pre enc must be initialized via rx_fec_encoder_init()
+ * @pre All pointers must be non-NULL
+ * @pre input_len in range [1, k_fec_max_input_bytes]
+ *
+ * @post output buffer contains FEC-encoded data
+ * @post *output_len set to actual encoded length
+ */
 rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
                        const uint8_t*          input,
                        const uint32_t          input_len,
@@ -460,21 +492,23 @@ rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
   const uint32_t expected_output_len = rx_fec_encoded_len(input_len);
 
   /* Clear output buffer */
-  memset(output, 0, expected_output_len);
+  memset(output, k_fec_zero, expected_output_len);
 
   /* Reset encoder state */
-  uint8_t  state       = 0;
-  uint32_t out_bit_idx = 0;
+  uint8_t  state       = k_fec_zero;
+  uint32_t out_bit_idx = k_fec_zero;
 
   /* Calculate byte limit before loop to avoid redundant checks inside */
-  const uint32_t byte_limit = (input_len < k_fec_max_input_bytes) ? input_len : k_fec_max_input_bytes;
+  const uint32_t byte_limit =
+    (input_len < k_fec_max_input_bytes) ? input_len : k_fec_max_input_bytes;
 
   /* Encode each input byte, MSB first */
-  for (uint32_t byte_idx = 0; byte_idx < byte_limit; byte_idx++) {
+  for (uint32_t byte_idx = k_fec_zero; byte_idx < byte_limit; byte_idx++) {
     const uint8_t b = input[byte_idx];
-    for (int8_t i = k_fec_msb_bit_position; i >= 0; i--) {
+    for (int8_t i = (int8_t)k_fec_msb_bit_position; i >= (int8_t)k_fec_zero; i--) {
       const uint8_t input_bit = (b >> i) & k_fec_bit_mask;
-      uint8_t       out0, out1;
+      uint8_t       out0;
+      uint8_t       out1;
 
       internal_encode_bit(&state, input_bit, &out0, &out1);
 
@@ -485,9 +519,10 @@ rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
   }
 
   /* Append tail bits (zeros) to flush encoder to zero state */
-  for (uint8_t i = 0; i < k_fec_tail_bits; i++) {
-    uint8_t out0, out1;
-    internal_encode_bit(&state, 0, &out0, &out1);
+  for (uint8_t i = k_fec_zero; i < k_fec_tail_bits; i++) {
+    uint8_t out0;
+    uint8_t out1;
+    internal_encode_bit(&state, k_fec_zero, &out0, &out1);
     internal_set_output_bit(output, out_bit_idx++, out0);
     internal_set_output_bit(output, out_bit_idx++, out1);
   }
@@ -548,14 +583,14 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
   }
 
   /* Soft bits must come in pairs (G1, G2) */
-  if (params->soft_len == 0 || (params->soft_len % k_fec_num_outputs) != 0) {
+  if (params->soft_len == k_fec_zero || (params->soft_len % k_fec_num_outputs) != k_fec_zero) {
     return k_rx_err_invalid_arg;
   }
 
-  num_symbols = (params->expected_output_len > 0)
+  num_symbols = (params->expected_output_len > k_fec_zero)
                   ? (uint32_t)((params->expected_output_len * k_rx_bits_per_byte) +
                                k_fec_tail_bits)
-                  : 0U;
+                  : k_fec_zero;
 
   if (num_symbols < k_fec_tail_bits) {
     return k_rx_err_invalid_size;
@@ -584,6 +619,26 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
   return k_rx_ok;
 }
 
+/**
+ * @brief Initialize FEC decoder
+ *
+ * Initializes decoder state and associates it with provided survivors buffer.
+ * The buffer is used for Viterbi algorithm path storage.
+ *
+ * @param[in,out] dec Pointer to decoder structure
+ * @param[in]     survivors_buf Pointer to survivors buffer for Viterbi algorithm
+ * @param[in]     survivors_len Length of survivors buffer in uint64_t entries
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if dec or survivors_buf is NULL
+ * @return k_rx_err_invalid_size if survivors_len is 0
+ *
+ * @pre dec and survivors_buf must be non-NULL
+ * @pre survivors_len must be > 0 (minimum 1 entry per symbol)
+ *
+ * @post dec->initialized set to true
+ * @post Branch table initialized
+ */
 rx_err_t
 rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, const uint32_t survivors_len)
 {
@@ -592,7 +647,7 @@ rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, const uint32
   }
 
   /* Minimum survivors buffer size: at least 1 entry per symbol */
-  if (survivors_len == 0) {
+  if (survivors_len == k_fec_zero) {
     return k_rx_err_invalid_size;
   }
 
@@ -613,7 +668,7 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
   }
 
   dec->survivors     = NULL;
-  dec->survivors_len = 0;
+  dec->survivors_len = k_fec_zero;
   dec->initialized   = false;
   return k_rx_ok;
 }
@@ -682,7 +737,7 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_para
     return k_rx_err_invalid_size;
   }
 
-  for (uint32_t i = 0; i < num_bits; i++) {
+  for (uint32_t i = k_fec_zero; i < num_bits; i++) {
     const uint8_t bit           = internal_get_bit(params->data, i);
     params->soft_bits_buffer[i] = rx_fec_hard_to_soft(bit);
   }

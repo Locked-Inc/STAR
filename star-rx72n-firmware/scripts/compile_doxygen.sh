@@ -10,7 +10,7 @@ g_log_file=""
 # Graceful exit on interrupt
 cleanup() {
     echo -e "\n\n${RED}[INTERRUPT] Script interrupted by user. Exiting gracefully...${NC}\n"
-    
+
     if [[ -n "$g_child_pid" && "$g_child_pid" -ne 0 ]]; then
         kill -SIGTERM "$g_child_pid" 2>/dev/null
     fi
@@ -23,6 +23,11 @@ cleanup() {
             echo -e "${YELLOW}--- Interrupted LaTeX Output ---${NC}\n$output\n${YELLOW}--------------------------------${NC}"
         fi
         rm -f "$g_log_file" # Clean up the log file
+    fi
+
+    # Clean up temporary Doxyfile if it exists
+    if [[ -n "$TEMP_DOXYFILE" && -f "$TEMP_DOXYFILE" ]]; then
+        rm -f "$TEMP_DOXYFILE"
     fi
 
     exit 130
@@ -43,6 +48,10 @@ CLEAN_FIRST=false
 OPEN_BROWSER=false
 VERBOSE=false
 GENERATE_PDF=false
+FORCE_REGENERATE=false
+INCLUDE_THIRD_PARTY=false
+CACHE_FILE=".doxygen_cache"
+TEMP_DOXYFILE=""
 
 # Print usage information
 usage() {
@@ -51,19 +60,22 @@ usage() {
     echo "Usage: $0 [options]"
     echo ""
     echo "Options:"
-    echo "  -o, --output DIR   Set output directory (default: docs/doxygen)"
-    echo "  -c, --clean        Clean output directory before generation"
-    echo "  -p, --pdf          Generate PDF from LaTeX output"
-    echo "  -b, --browser      Open documentation in browser after generation"
-    echo "  -v, --verbose      Enable verbose output"
-    echo "  -h, --help         Show this help message"
+    echo "  -o, --output DIR          Set output directory (default: docs/doxygen)"
+    echo "  -c, --clean               Clean output directory before generation"
+    echo "  -p, --pdf                 Generate PDF from LaTeX output"
+    echo "  -b, --browser             Open documentation in browser after generation"
+    echo "  -f, --force               Force regeneration (ignore cache)"
+    echo "  -t, --include-third-party Include third-party libraries (ThreadX, nanopb)"
+    echo "  -v, --verbose             Enable verbose output"
+    echo "  -h, --help                Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0                 # Generate docs in default location"
-    echo "  $0 --clean         # Clean and regenerate docs"
-    echo "  $0 --pdf           # Generate HTML and PDF"
-    echo "  $0 -cb             # Clean, generate, and open in browser"
-    echo "  $0 -o custom/path  # Generate in custom directory"
+    echo "  $0                        # Generate docs in default location"
+    echo "  $0 --clean                # Clean and regenerate docs"
+    echo "  $0 --pdf                  # Generate HTML and PDF"
+    echo "  $0 -cb                    # Clean, generate, and open in browser"
+    echo "  $0 --include-third-party  # Include ThreadX and nanopb in docs"
+    echo "  $0 -o custom/path         # Generate in custom directory"
 }
 
 # Print colored output
@@ -114,6 +126,13 @@ check_pdf_deps() {
             echo "  Fedora: sudo dnf install texlive-scheme-full"
             exit 1
         fi
+
+        if ! command -v make &> /dev/null; then
+            print_error "make not found, which is required for PDF generation."
+            echo "Please install make."
+            exit 1
+        fi
+
         if [ "$VERBOSE" = true ]; then
             print_status "Found pdflatex for PDF generation"
         fi
@@ -154,6 +173,14 @@ parse_args() {
                 OPEN_BROWSER=true
                 shift
                 ;;
+            -f|--force)
+                FORCE_REGENERATE=true
+                shift
+                ;;
+            -t|--include-third-party)
+                INCLUDE_THIRD_PARTY=true
+                shift
+                ;;
             -v|--verbose)
                 VERBOSE=true
                 shift
@@ -176,8 +203,9 @@ clean_output() {
     if [ "$CLEAN_FIRST" = true ] && [ -d "$OUTPUT_DIR" ]; then
         print_status "Cleaning output directory: $OUTPUT_DIR"
         rm -rf "$OUTPUT_DIR"
+        rm -f "$CACHE_FILE"
         if [ "$VERBOSE" = true ]; then
-            print_success "Output directory cleaned"
+            print_success "Output directory and cache cleaned"
         fi
     fi
 }
@@ -192,24 +220,112 @@ create_output_dir() {
     fi
 }
 
+# Compute hash of source files to detect changes
+compute_source_hash() {
+    # Hash all .h and .c files, Doxyfile, and other config
+    {
+        find include/ src/ tests/ lib/ -type f \( -name "*.h" -o -name "*.c" \) 2>/dev/null | sort | xargs md5sum 2>/dev/null
+        md5sum Doxyfile 2>/dev/null
+        # Include configuration flags in the hash to ensure cache is invalidated when options change
+        echo "INCLUDE_THIRD_PARTY=${INCLUDE_THIRD_PARTY}"
+        echo "GENERATE_PDF=${GENERATE_PDF}"
+    } | md5sum | awk '{print $1}'
+}
+
+# Check if cache is valid
+is_cache_valid() {
+    if [ "$FORCE_REGENERATE" = true ]; then
+        if [ "$VERBOSE" = true ]; then
+            print_status "Force regeneration requested (--force)"
+        fi
+        return 1  # Cache invalid
+    fi
+    
+    if [ ! -f "$CACHE_FILE" ] || [ ! -d "$OUTPUT_DIR/html" ]; then
+        if [ "$VERBOSE" = true ]; then
+            print_status "No cache found or output missing"
+        fi
+        return 1  # Cache invalid
+    fi
+    
+    local cached_hash
+    cached_hash=$(cat "$CACHE_FILE")
+    local current_hash
+    current_hash=$(compute_source_hash)
+    
+    if [ "$cached_hash" = "$current_hash" ]; then
+        print_status "Source files unchanged, using cached documentation"
+        return 0  # Cache valid
+    else
+        if [ "$VERBOSE" = true ]; then
+            print_status "Source files changed. Regenerating documentation."
+            echo "  Old hash: $cached_hash"
+            echo "  New hash: $current_hash"
+        fi
+        return 1  # Cache invalid
+    fi
+}
+
+# Update cache after successful generation
+update_cache() {
+    compute_source_hash > "$CACHE_FILE"
+    if [ "$VERBOSE" = true ]; then
+        print_status "Cache updated: $CACHE_FILE"
+    fi
+}
+
 # Generate documentation
 generate_docs() {
+    # Check cache first
+    if is_cache_valid; then
+        return 0  # Skip generation, use cached output
+    fi
+
     print_status "Generating Doxygen documentation..."
-    
+
     if [ "$VERBOSE" = true ]; then
         print_status "Output will be generated in: $(realpath "$OUTPUT_DIR")"
     fi
-    
+
+    # Determine which Doxyfile to use
+    local doxyfile_to_use="Doxyfile"
+
+    # Create temporary Doxyfile if including third-party libraries
+    if [ "$INCLUDE_THIRD_PARTY" = true ]; then
+        print_status "Including third-party libraries (ThreadX, nanopb)"
+        TEMP_DOXYFILE="Doxyfile.tmp"
+
+        # Remove exclusion patterns for threadx and nanopb by replacing them with empty strings
+        # We escape the * characters because they are regex metacharacters
+        sed 's|\*/threadx/\*||g; s|\*/rx_nanopb/nanopb/\*||g' Doxyfile > "$TEMP_DOXYFILE"
+
+        doxyfile_to_use="$TEMP_DOXYFILE"
+
+        if [ "$VERBOSE" = true ]; then
+            print_status "Created temporary Doxyfile without third-party exclusions"
+        fi
+    fi
+
     # Run Doxygen
     if [ "$VERBOSE" = true ]; then
-        doxygen Doxyfile
+        doxygen "$doxyfile_to_use"
     else
-        doxygen Doxyfile 2>/dev/null
+        doxygen "$doxyfile_to_use" 2>/dev/null
     fi
-    
+
     local exit_code=$?
+
+    # Clean up temporary Doxyfile
+    if [ -n "$TEMP_DOXYFILE" ] && [ -f "$TEMP_DOXYFILE" ]; then
+        rm -f "$TEMP_DOXYFILE"
+        if [ "$VERBOSE" = true ]; then
+            print_status "Cleaned up temporary Doxyfile"
+        fi
+    fi
+
     if [ $exit_code -eq 0 ]; then
         print_success "Documentation generated successfully!"
+        update_cache
     else
         print_error "Doxygen generation failed with exit code $exit_code"
         return $exit_code
@@ -236,34 +352,32 @@ generate_pdf() {
     local log_file_name="make_pdflatex.log"
     local output=""
 
-    # Set global log file path (absolute) for the trap handler
-    g_log_file="$(pwd)/$log_file_name"
-
-    # Run make in the background and capture its PID
-    make > "$log_file_name" 2>&1 &
-    g_child_pid=$!
-
     if [ "$VERBOSE" = true ]; then
-        # Stream the log file for verbose mode
-        tail -f "$log_file_name" &
-        local tail_pid=$!
-    fi
+        # Verbose: Run in foreground and pipe to tee to show output immediately
+        # We use PIPESTATUS[0] to get make's exit code, not tee's
+        print_status "Running make (output to terminal)..."
+        make 2>&1 | tee "$log_file_name"
+        exit_code=${PIPESTATUS[0]}
+    else
+        # Silent: Run in background and capture output
+        g_log_file="$(pwd)/$log_file_name"
+        make > "$log_file_name" 2>&1 &
+        g_child_pid=$!
 
-    # Wait for make to finish. The trap will handle Ctrl+C.
-    wait "$g_child_pid"
-    exit_code=$?
-
-    # Reset globals now that the process is done
-    g_child_pid=0
-    g_log_file=""
-
-    if [ "$VERBOSE" = true ] && ps -p $tail_pid > /dev/null 2>&1; then
-        kill "$tail_pid"
+        # Wait for make to finish. The trap will handle Ctrl+C.
+        # Disable set -e temporarily to capture exit code
+        set +e
+        wait "$g_child_pid"
+        exit_code=$?
+        set -e
+        
+        # Reset globals
+        g_child_pid=0
+        g_log_file=""
     fi
     
     cd - > /dev/null # Go back to original directory silently
 
-    # The trap handles the interrupt case. We just handle normal success/failure.
     local log_path="$latex_dir/$log_file_name"
     if [ -f "$log_path" ]; then
         output=$(cat "$log_path")
@@ -274,7 +388,8 @@ generate_pdf() {
         print_success "PDF generated successfully!"
     elif [ $exit_code -ne 130 ]; then # 130 is the exit code for being interrupted
         print_error "PDF generation failed with exit code $exit_code."
-        if [ -n "$output" ]; then
+        if [ "$VERBOSE" = false ] && [ -n "$output" ]; then
+            # Only print output here if we were silent (verbose already saw it)
             echo -e "${RED}--- LaTeX Output ---${NC}\n$output\n${RED}--------------------${NC}"
         fi
         print_error "Try running 'make' manually in '$latex_dir' to debug."

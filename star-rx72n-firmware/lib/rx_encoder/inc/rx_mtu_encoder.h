@@ -121,9 +121,11 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
  * Calculates velocity based on count change over time period.
  * Assumes periodic calls at known rate (e.g., 250Hz control loop).
  *
+ * NOTE: Parameter order changed to prevent accidental swapping of channel/delta_time_s.
+ *
  * @param[out] velocity_rps Pointer to store velocity in revolutions per second
- * @param[in] channel MTU channel
  * @param[in] delta_time_s Time since last call in seconds
+ * @param[in] channel MTU channel
  *
  * @return k_rx_ok on success
  * @return k_rx_err_null_ptr if velocity_rps is NULL
@@ -131,7 +133,7 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
  * @return k_rx_err_invalid_state if encoder not initialized
  */
 rx_err_t
-rx_encoder_read_velocity(float* velocity_rps, rx_mtu_channel_t channel, float delta_time_s);
+rx_encoder_read_velocity(float* velocity_rps, float delta_time_s, rx_mtu_channel_t channel);
 
 /**
  * @brief Reset encoder count to zero

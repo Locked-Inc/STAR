@@ -48,9 +48,11 @@ typedef enum : uint8_t {
 } bq4050_init_constants_t;
 
 typedef enum : uint16_t {
-  k_bq4050_smbus_addr_hex_width    = 2,  /**< SMBus address width in hex digits */
-  k_bq4050_log_msg_size            = 80, /**< Buffer size for formatted log messages */
-  k_bq4050_snprintf_success_threshold = 0, /**< Minimum snprintf return value for success */
+  k_bq4050_smbus_addr_hex_width       = 2,  /**< SMBus address width in hex digits */
+  k_bq4050_log_msg_size               = 80, /**< Buffer size for formatted log messages */
+  k_bq4050_snprintf_success_threshold = 0,  /**< Minimum snprintf return value for success */
+  k_bq4050_snprintf_init              = 0,  /**< snprintf result initialization value */
+  k_bq4050_loop_init                  = 0,  /**< Loop counter initialization value */
 } bq4050_log_constants_t;
 
 /**
@@ -69,6 +71,8 @@ typedef enum : int32_t {
   k_temp_max_valid_0_1k = 65535,    /**< Maximum temperature in 0.1K (uint16_t max) */
   k_temp_min_0_1c = -2731,          /**< Min intermediate (0 - 2731): −273.1 in 0.1°C units */
   k_temp_max_0_1c = 62804,          /**< Max intermediate (65535 - 2731): 6280.4 in 0.1°C units */
+  k_temp_celsius_min_int16 = -32768, /**< int16_t minimum */
+  k_temp_celsius_max_int16 = 32767,  /**< int16_t maximum */
 } bq4050_temp_constants_t;
 
 /**
@@ -125,8 +129,8 @@ static rx_err_t internal_convert_temperature(const uint16_t temp_0_1k, int16_t* 
   RX_CHECK_NULL_PTR(temp_celsius_out, s_tag, "temp_celsius_out pointer is NULL");
 
   /* Pre-condition: Verify input is within valid range for conversion (Rule 5) */
-  if (temp_0_1k > k_temp_max_valid_0_1k) {
-    rx_log_error(s_tag, "Temperature input exceeds maximum valid uint16_t value");
+  if (temp_0_1k < k_temp_min_valid_0_1k || temp_0_1k > k_temp_max_valid_0_1k) {
+    rx_log_error(s_tag, "Temperature input exceeds valid uint16_t range");
     return k_rx_err_out_of_range;
   }
 
@@ -143,7 +147,8 @@ static rx_err_t internal_convert_temperature(const uint16_t temp_0_1k, int16_t* 
   temp_celsius_unchecked = temp_0_1c / k_temp_decimal_scale;
 
   /* Post-condition: Verify final result fits in int16_t (Rule 5: Bounds check before assignment) */
-  if (temp_celsius_unchecked < INT16_MIN || temp_celsius_unchecked > INT16_MAX) {
+  if (temp_celsius_unchecked < k_temp_celsius_min_int16 ||
+      temp_celsius_unchecked > k_temp_celsius_max_int16) {
     rx_log_error(s_tag, "Temperature final result exceeds int16_t range");
     return k_rx_err_out_of_range;
   }
@@ -159,9 +164,17 @@ static rx_err_t internal_convert_temperature(const uint16_t temp_0_1k, int16_t* 
  * =============================================================================
  */
 
+/**
+ * @brief Initialize BQ4050 fuel gauge
+ *
+ * See rx_bq4050.h for full documentation.
+ */
 rx_err_t
 rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_config_t* config)
 {
+  rx_err_t err;
+  uint16_t voltage_mv;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
@@ -170,14 +183,13 @@ rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_
   rx_log_info(s_tag, "Initializing BQ4050 fuel gauge");
 
   /* Initialize SMBus */
-  rx_err_t err = rx_bus_smbus_init(manager, bus_name);
+  err = rx_bus_smbus_init(manager, bus_name);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SMBus initialization failed");
     return err;
   }
 
   /* Verify communication by reading voltage */
-  uint16_t voltage_mv;
   err = rx_bq4050_read_voltage(manager, bus_name, &voltage_mv);
   if (err != k_rx_ok) {
     rx_log_error_hex(s_tag,
@@ -195,6 +207,11 @@ rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_
   return k_rx_ok;
 }
 
+/**
+ * @brief Read battery pack voltage
+ *
+ * See rx_bq4050.h for full documentation.
+ */
 rx_err_t
 rx_bq4050_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t* voltage_mv)
 {
@@ -205,14 +222,19 @@ rx_bq4050_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t
   return rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_voltage, voltage_mv);
 }
 
+/**
+ * @brief Read individual cell voltages
+ *
+ * See rx_bq4050.h for full documentation.
+ */
 rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
                                       const char*       bus_name,
                                       uint16_t*         cell_voltages,
                                       const uint8_t     num_cells)
 {
   char                 log_msg[k_bq4050_log_msg_size];
-  int                  snprintf_result = 0;
-  uint8_t              i               = 0;
+  int                  snprintf_result = k_bq4050_snprintf_init;
+  uint8_t              i               = k_bq4050_loop_init;
   rx_err_t             err             = k_rx_ok;
   static const uint8_t s_cell_reg_map[k_bq4050_max_cells] = {
     [k_cell_idx_1] = k_sbs_cell_voltage_1, /* Cell 1 at 0x3F */
@@ -252,16 +274,23 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
   return k_rx_ok;
 }
 
+/**
+ * @brief Read battery current
+ *
+ * See rx_bq4050.h for full documentation.
+ */
 rx_err_t
 rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t* current_ma)
 {
+  uint16_t       raw_current;
+  const rx_err_t err;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(current_ma, s_tag, "current_ma pointer is NULL");
 
   /* Read as unsigned, interpret as signed (SBS current is signed 16-bit) */
-  uint16_t       raw_current;
-  const rx_err_t err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_current, &raw_current);
+  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_current, &raw_current);
 
   if (err == k_rx_ok) {
     *current_ma = (int16_t)raw_current;
@@ -270,18 +299,24 @@ rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t*
   return err;
 }
 
+/**
+ * @brief Read average battery current
+ *
+ * See rx_bq4050.h for full documentation.
+ */
 rx_err_t rx_bq4050_read_average_current(rx_bus_manager_t* manager,
                                         const char*       bus_name,
                                         int16_t*          avg_current_ma)
 {
+  uint16_t       raw_current;
+  const rx_err_t err;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(avg_current_ma, s_tag, "avg_current_ma pointer is NULL");
 
   /* Read as unsigned, interpret as signed */
-  uint16_t       raw_current;
-  const rx_err_t err =
-    rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_average_current, &raw_current);
+  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_average_current, &raw_current);
 
   if (err == k_rx_ok) {
     *avg_current_ma = (int16_t)raw_current;
@@ -290,16 +325,22 @@ rx_err_t rx_bq4050_read_average_current(rx_bus_manager_t* manager,
   return err;
 }
 
+/**
+ * @brief Read relative state of charge
+ *
+ * See rx_bq4050.h for full documentation.
+ */
 rx_err_t
 rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc_percent)
 {
+  uint16_t       soc_word;
+  const rx_err_t err;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(soc_percent, s_tag, "soc_percent pointer is NULL");
 
-  uint16_t       soc_word;
-  const rx_err_t err =
-    rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_relative_state_of_charge, &soc_word);
+  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_relative_state_of_charge, &soc_word);
 
   if (err == k_rx_ok) {
     /* Clamp to 0-100 range (SBS allows > 100% in some conditions) */
@@ -313,16 +354,22 @@ rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uin
   return err;
 }
 
+/**
+ * @brief Read absolute state of charge
+ *
+ * See rx_bq4050.h for full documentation.
+ */
 rx_err_t
 rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc_percent)
 {
+  uint16_t       soc_word;
+  const rx_err_t err;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(soc_percent, s_tag, "soc_percent pointer is NULL");
 
-  uint16_t       soc_word;
-  const rx_err_t err =
-    rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_absolute_state_of_charge, &soc_word);
+  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_absolute_state_of_charge, &soc_word);
 
   if (err == k_rx_ok) {
     /* Clamp to 0-100 range */
@@ -336,6 +383,11 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
   return err;
 }
 
+/**
+ * @brief Read battery temperature
+ *
+ * See rx_bq4050.h for full documentation.
+ */
 rx_err_t
 rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int16_t* temperature_c)
 {
@@ -362,19 +414,25 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
   return k_rx_ok;
 }
 
+/**
+ * @brief Read battery capacity information
+ *
+ * See rx_bq4050.h for full documentation.
+ */
 rx_err_t rx_bq4050_read_capacity(rx_bus_manager_t* manager,
                                  const char*       bus_name,
                                  uint16_t*         remaining_mah,
                                  uint16_t*         full_mah)
 {
+  rx_err_t err;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(remaining_mah, s_tag, "remaining_mah pointer is NULL");
   RX_CHECK_NULL_PTR(full_mah, s_tag, "full_mah pointer is NULL");
 
   /* Read remaining capacity */
-  rx_err_t err =
-    rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_remaining_capacity, remaining_mah);
+  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_remaining_capacity, remaining_mah);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read remaining capacity");
     return err;
@@ -597,33 +655,39 @@ static rx_err_t internal_read_status_flags(rx_bus_manager_t*   manager,
                                            const char*         bus_name,
                                            rx_bq4050_status_t* status)
 {
-  uint16_t status_flags;
+  uint16_t       status_flags;
+  const rx_err_t err;
+
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
 
-  const rx_err_t err =
-    rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_battery_status, &status_flags);
+  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_battery_status, &status_flags);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read battery status");
     return err;
   }
 
   status->is_charging         = !(status_flags & k_bq4050_status_discharging);
-  status->is_fully_charged    = (status_flags & k_bq4050_status_fully_charged) != 0;
-  status->is_fully_discharged = (status_flags & k_bq4050_status_fully_discharged) != 0;
-  status->is_low_capacity     = (status_flags & k_bq4050_status_remaining_capacity_alarm) != 0;
+  status->is_fully_charged    = (status_flags & k_bq4050_status_fully_charged) != k_bq4050_status_flag_clear;
+  status->is_fully_discharged = (status_flags & k_bq4050_status_fully_discharged) != k_bq4050_status_flag_clear;
+  status->is_low_capacity     = (status_flags & k_bq4050_status_remaining_capacity_alarm) != k_bq4050_status_flag_clear;
 
   return k_rx_ok;
 }
 
+/**
+ * @brief Read complete battery status
+ *
+ * See rx_bq4050.h for full documentation.
+ */
 rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
                                const char*         bus_name,
                                rx_bq4050_status_t* status,
                                const uint8_t       num_cells)
 {
   char     log_msg[k_bq4050_log_msg_size];
-  int      snprintf_result = 0;
+  int      snprintf_result = k_bq4050_snprintf_init;
   rx_err_t err             = k_rx_ok;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");

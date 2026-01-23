@@ -69,16 +69,17 @@ static inline volatile rx_crc_regs_t* crc_regs(void)
   return (volatile rx_crc_regs_t*)k_crc_base_addr;
 }
 
-/** @brief CRC Control Register (CRCCR) bit shift positions */
+/** @brief CRC Control Register (CRCCR) bit shift positions and constants */
 typedef enum : uint8_t {
+  k_crc_bit_mask           = 1, /**< Single-bit mask */
   k_crc_crccr_lms_shift   = 6, /**< LMS field shift position */
   k_crc_crccr_dorclr_shift = 7, /**< DORCLR field shift position */
 } rx_crc_crccr_shifts_t;
 
 /** @brief CRC Control Register (CRCCR) bit masks */
 typedef enum : uint8_t {
-  k_crc_crccr_lms_mask = (1 << k_crc_crccr_lms_shift),   /**< LSB/MSB First mask */
-  k_crc_crccr_dorclr_mask = (1 << k_crc_crccr_dorclr_shift), /**< DORCLR mask */
+  k_crc_crccr_lms_mask = (k_crc_bit_mask << k_crc_crccr_lms_shift),   /**< LSB/MSB First mask */
+  k_crc_crccr_dorclr_mask = (k_crc_bit_mask << k_crc_crccr_dorclr_shift), /**< DORCLR mask */
 } rx_crc_crccr_masks_t;
 
 /* CRC Control Register (CRCCR) bit definitions - CRC-32 only */

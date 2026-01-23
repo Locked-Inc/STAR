@@ -138,9 +138,9 @@ static volatile rx_mtu_channel_regs_t* internal_get_mtu_base(const rx_mtu_channe
     case k_mtu_channel_2:
       return (volatile rx_mtu_channel_regs_t*)mtu2();
     case k_mtu_channel_3:
-      return (volatile rx_mtu_channel_regs_t*)((volatile uint8_t*)mtu3());
+      return (volatile rx_mtu_channel_regs_t*)mtu3();
     case k_mtu_channel_4:
-      return (volatile rx_mtu_channel_regs_t*)((volatile uint8_t*)mtu4());
+      return (volatile rx_mtu_channel_regs_t*)mtu4();
     case k_mtu_channel_6:
       return (volatile rx_mtu_channel_regs_t*)mtu6();
     case k_mtu_channel_7:
@@ -262,8 +262,8 @@ rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_
 }
 
 rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
-                                  const rx_mtu_channel_t channel,
-                                  const float            delta_time_s)
+                                  const float            delta_time_s,
+                                  const rx_mtu_channel_t channel)
 {
   volatile rx_mtu_channel_regs_t* mtu;
   rx_encoder_state_t              state;
@@ -271,17 +271,23 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
 
   RX_VALIDATE_PTR(velocity_rps, s_tag, "velocity_rps pointer is NULL");
 
+  /* Runtime validation to catch accidental parameter swaps */
+  if (delta_time_s <= k_min_delta_time_s || delta_time_s > k_max_delta_time_s) {
+    rx_log_error(s_tag, "Invalid delta time for velocity calculation");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!internal_is_valid_channel(channel)) {
+    rx_log_error(s_tag, "Invalid channel - possible parameter swap");
+    return k_rx_err_invalid_arg;
+  }
+
   mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
 
   RX_VALIDATE_INIT(s_encoder_initialized[channel], s_tag, "Encoder not initialized");
-
-  if (delta_time_s <= k_min_delta_time_s || delta_time_s > k_max_delta_time_s) {
-    rx_log_error(s_tag, "Invalid delta time for velocity calculation");
-    return k_rx_err_invalid_arg;
-  }
 
   /* Read current count */
   err = internal_update_state_from_count(&state, channel, mtu->tcnt);
@@ -360,8 +366,9 @@ rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channe
 
   /* Recalculate position */
   const uint16_t counts_per_rev = s_counts_per_rev[channel];
-  if (counts_per_rev == 0) {
-    rx_log_error(s_tag, "counts_per_rev is zero - state corrupted");
+  if (counts_per_rev < k_encoder_min_counts_per_rev ||
+      counts_per_rev > k_encoder_max_counts_per_rev) {
+    rx_log_error(s_tag, "counts_per_rev out of valid range - state corrupted");
     return k_rx_err_invalid_state;
   }
   s_encoder_state[channel].revolutions = count / counts_per_rev;
@@ -380,7 +387,8 @@ rx_err_t rx_encoder_deinit(const rx_mtu_channel_t channel)
   }
 
   if (!s_encoder_initialized[channel]) {
-    rx_log_warn(s_tag, "Deinit called on uninitialized channel");
+    rx_log_error(s_tag, "Deinit called on uninitialized channel");
+    return k_rx_err_invalid_state;
   }
 
   /* Stop timer (explicitly ignore return value on cleanup path) */
