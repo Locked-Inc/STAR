@@ -129,13 +129,13 @@ void test_obstacle_detect_init_success(void)
 void test_obstacle_detect_init_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_init(NULL, &s_config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_obstacle_detect_init_null_config_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_init(&s_handle, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_obstacle_detect_init_already_initialized_fails(void)
@@ -151,7 +151,7 @@ void test_obstacle_detect_init_null_sensors_fails(void)
 {
   s_config.sensors = NULL;
   rx_err_t err     = rx_obstacle_detect_init(&s_handle, &s_config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_obstacle_detect_init_zero_sensors_fails(void)
@@ -172,7 +172,7 @@ void test_obstacle_detect_init_null_motors_fails(void)
 {
   s_config.motors = NULL;
   rx_err_t err    = rx_obstacle_detect_init(&s_handle, &s_config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_obstacle_detect_init_zero_motors_fails(void)
@@ -229,7 +229,7 @@ void test_obstacle_detect_deinit_success(void)
 void test_obstacle_detect_deinit_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_deinit(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_obstacle_detect_deinit_not_initialized_fails(void)
@@ -256,7 +256,7 @@ void test_obstacle_detect_start_success(void)
 void test_obstacle_detect_start_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_start(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_obstacle_detect_start_not_initialized_fails(void)
@@ -278,7 +278,7 @@ void test_obstacle_detect_stop_success(void)
 void test_obstacle_detect_stop_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_stop(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -301,14 +301,14 @@ void test_obstacle_detect_get_state_null_handle_fails(void)
 {
   rx_obstacle_detect_state_t state;
   rx_err_t                   err = rx_obstacle_detect_get_state(NULL, &state);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_obstacle_detect_get_state_null_output_fails(void)
 {
   rx_obstacle_detect_init(&s_handle, &s_config);
   rx_err_t err = rx_obstacle_detect_get_state(&s_handle, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_obstacle_detect_is_obstacle_detected_false_initially(void)
@@ -350,7 +350,7 @@ void test_obstacle_detect_get_stats_null_handle_fails(void)
 {
   uint32_t stats = 0;
   rx_err_t err   = rx_obstacle_detect_get_stats(NULL, &stats, &stats, &stats);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_obstacle_detect_reset_stats_success(void)
@@ -372,7 +372,7 @@ void test_obstacle_detect_reset_stats_success(void)
 void test_obstacle_detect_reset_stats_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_reset_stats(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -399,7 +399,7 @@ void test_obstacle_detect_clear_obstacle_success(void)
 void test_obstacle_detect_clear_obstacle_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_clear_obstacle(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================

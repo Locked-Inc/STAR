@@ -13,7 +13,7 @@
  *
  * Pin reservation prevents conflicts when multiple peripherals or drivers
  * attempt to use the same GPIO pin. This is especially important for:
- * - Peripheral function selection (UART TX/RX, SPI MOSI/MISO, etc.)
+ * - Peripheral function selection (UART TX/RX, SPI COPI/CIPO, etc.)
  * - GPIO output conflicts (two drivers trying to control same pin)
  * - Debugging pin usage conflicts
  *
@@ -35,7 +35,7 @@
  *   bus_manager_init(&bus_mgr, &error_iface, &iface);
  *
  *   // 4. Use through interface
- *   rx_err_t err = iface.reserve_pin(iface.ctx, 0xA, 5, "SPI_MOSI");
+ *   rx_err_t err = iface.reserve_pin(iface.ctx, k_rx_port_a, k_rx_pin_5, "SPI_COPI");
  *   if (err != k_rx_ok) {
  *       // Pin already reserved or invalid
  *   }
@@ -69,9 +69,9 @@ typedef struct rx_pin_interface rx_pin_interface_t;
 /**
  * @brief Pin interface configuration constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_pin_function_name_max_len =
-    32, /**< Maximum length of pin function name (e.g., "SPI_MOSI", "UART_TX") */
+    32, /**< Maximum length of pin function name (e.g., "SPI_COPI", "UART_TX") */
 } pin_interface_limits_t;
 
 /* =============================================================================
@@ -90,7 +90,7 @@ typedef enum {
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
-typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, uint8_t port, uint8_t pin);
+typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, const uint8_t port, const uint8_t pin);
 
 /**
  * @brief Reserve a pin for a specific function
@@ -106,7 +106,10 @@ typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, uint8_t port, uint8_t pin);
  *         k_rx_err_gpio_invalid_pin if pin invalid,
  *         k_rx_err_invalid_arg if function is NULL
  */
-typedef rx_err_t (*rx_pin_reserve_fn)(void* ctx, uint8_t port, uint8_t pin, const char* function);
+typedef rx_err_t (*rx_pin_reserve_fn)(void*             ctx,
+                                      const uint8_t     port,
+                                      const uint8_t     pin,
+                                      const char*       function);
 
 /**
  * @brief Release a previously reserved pin
@@ -120,7 +123,7 @@ typedef rx_err_t (*rx_pin_reserve_fn)(void* ctx, uint8_t port, uint8_t pin, cons
  *         k_rx_err_gpio_invalid_port if port invalid,
  *         k_rx_err_gpio_invalid_pin if pin invalid
  */
-typedef rx_err_t (*rx_pin_release_fn)(void* ctx, uint8_t port, uint8_t pin);
+typedef rx_err_t (*rx_pin_release_fn)(void* ctx, const uint8_t port, const uint8_t pin);
 
 /**
  * @brief Check if a pin is currently reserved
@@ -131,7 +134,7 @@ typedef rx_err_t (*rx_pin_release_fn)(void* ctx, uint8_t port, uint8_t pin);
  *
  * @return true if pin is reserved, false if available
  */
-typedef bool (*rx_pin_is_reserved_fn)(void* ctx, uint8_t port, uint8_t pin);
+typedef bool (*rx_pin_is_reserved_fn)(void* ctx, const uint8_t port, const uint8_t pin);
 
 /**
  * @brief Get the function name for a reserved pin
@@ -144,16 +147,16 @@ typedef bool (*rx_pin_is_reserved_fn)(void* ctx, uint8_t port, uint8_t pin);
  *
  * @return k_rx_ok if function retrieved,
  *         k_rx_err_invalid_state if pin not reserved,
- *         k_rx_err_null_pointer if function_out is NULL,
+ *         k_rx_err_null_ptr if function_out is NULL,
  *         k_rx_err_invalid_size if buffer too small,
  *         k_rx_err_gpio_invalid_port if port invalid,
  *         k_rx_err_gpio_invalid_pin if pin invalid
  */
-typedef rx_err_t (*rx_pin_get_function_fn)(void*   ctx,
-                                           uint8_t port,
-                                           uint8_t pin,
-                                           char*   function_out,
-                                           size_t  function_len);
+typedef rx_err_t (*rx_pin_get_function_fn)(void*          ctx,
+                                           const uint8_t  port,
+                                           const uint8_t  pin,
+                                           char*          function_out,
+                                           const uint32_t function_len);
 
 /**
  * @brief Clear all pin reservations
@@ -199,18 +202,19 @@ struct rx_pin_interface {
  *
  * @param[in] iface Interface to validate
  *
- * @return k_rx_ok if valid, k_rx_err_null_pointer if NULL,
+ * @return k_rx_ok if valid, k_rx_err_null_ptr if NULL,
  *         k_rx_err_invalid_state if missing function pointers
  */
 static inline rx_err_t rx_pin_interface_validate(const rx_pin_interface_t* iface)
 {
   if (iface == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Check required function pointers */
   if (iface->validate_pin == NULL || iface->reserve_pin == NULL || iface->release_pin == NULL ||
-      iface->is_pin_reserved == NULL) {
+      iface->is_pin_reserved == NULL || iface->get_pin_function == NULL ||
+      iface->clear_all_reservations == NULL) {
     return k_rx_err_invalid_state;
   }
 

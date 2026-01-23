@@ -4,6 +4,7 @@
 #ifndef PB_STAR_V1_STAR_V1_GATEWAY_SERVICE_PB_H_INCLUDED
 #define PB_STAR_V1_STAR_V1_GATEWAY_SERVICE_PB_H_INCLUDED
 #include <pb.h>
+
 #include "star/v1/battery_management.pb.h"
 #include "star/v1/common.pb.h"
 #include "star/v1/motor_control.pb.h"
@@ -16,171 +17,202 @@
 /* Struct definitions */
 /* Request to forward telemetry from ROS2 to Gateway. */
 typedef struct _star_v1_ForwardTelemetryRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-    /* Robot system status (mode, connections, uptime).
+  /* Standard request header. */
+  bool                  has_header;
+  star_v1_RequestHeader header;
+  /* Robot system status (mode, connections, uptime).
  Forwarded from /robot_status ROS2 topic. */
-    bool has_system_status;
-    star_v1_SystemStatus system_status;
-    /* Battery state (voltage, current, SOC, temperature).
+  bool                 has_system_status;
+  star_v1_SystemStatus system_status;
+  /* Battery state (voltage, current, SOC, temperature).
  Forwarded from /battery_state ROS2 topic. */
-    bool has_battery_state;
-    star_v1_BatteryState battery_state;
-    /* Optional: Additional telemetry data (IMU, GPS, etc.).
+  bool                 has_battery_state;
+  star_v1_BatteryState battery_state;
+  /* Optional: Additional telemetry data (IMU, GPS, etc.).
  Can be added in future without breaking changes. */
-    bool has_telemetry;
-    star_v1_TelemetryData telemetry;
+  bool                  has_telemetry;
+  star_v1_TelemetryData telemetry;
 } star_v1_ForwardTelemetryRequest;
 
 /* Response to telemetry forwarding. */
 typedef struct _star_v1_ForwardTelemetryResponse {
-    /* Standard response header. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* True if telemetry was successfully cached for UI streaming. */
-    bool cached;
-    /* Number of active UI WebSocket clients receiving this telemetry. */
-    int32_t active_clients;
+  /* Standard response header. */
+  bool                   has_header;
+  star_v1_ResponseHeader header;
+  /* True if telemetry was successfully cached for UI streaming. */
+  bool cached;
+  /* Number of active UI WebSocket clients receiving this telemetry. */
+  int32_t active_clients;
 } star_v1_ForwardTelemetryResponse;
 
 /* Request for latest teleop command from Gateway. */
 typedef struct _star_v1_GetTeleopCommandRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
+  /* Standard request header. */
+  bool                  has_header;
+  star_v1_RequestHeader header;
 } star_v1_GetTeleopCommandRequest;
 
 /* Response with latest teleop command. */
 typedef struct _star_v1_GetTeleopCommandResponse {
-    /* Standard response header. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* Latest velocity command from UI.
+  /* Standard response header. */
+  bool                   has_header;
+  star_v1_ResponseHeader header;
+  /* Latest velocity command from UI.
  If no command received yet, contains zero velocities. */
-    bool has_command;
-    star_v1_VelocityCommand command;
-    /* True if a valid command is available (not just zeros). */
-    bool command_available;
-    /* Age of command in milliseconds (for staleness checking).
+  bool                    has_command;
+  star_v1_VelocityCommand command;
+  /* True if a valid command is available (not just zeros). */
+  bool command_available;
+  /* Age of command in milliseconds (for staleness checking).
  ROS2 should reject commands older than 500ms. */
-    int64_t command_age_ms;
+  int64_t command_age_ms;
 } star_v1_GetTeleopCommandResponse;
 
 /* Request to set PID gains for motor velocity control. */
 typedef struct _star_v1_SetPIDGainsRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-    /* PID configuration to apply. */
-    bool has_pid_config;
-    star_v1_PidConfig pid_config;
-    /* Motor ID to configure (0 = left, 1 = right, -1 = both). */
-    int32_t motor_id;
+  /* Standard request header. */
+  bool                  has_header;
+  star_v1_RequestHeader header;
+  /* PID configuration to apply. */
+  bool              has_pid_config;
+  star_v1_PidConfig pid_config;
+  /* Motor ID to configure (0 = left, 1 = right, -1 = both). */
+  int32_t motor_id;
 } star_v1_SetPIDGainsRequest;
 
 /* Response to PID gains update. */
 typedef struct _star_v1_SetPIDGainsResponse {
-    /* Standard response header. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* True if gains were successfully applied to motor controller. */
-    bool success;
-    /* Human-readable message (e.g., "PID gains updated for both motors"). */
-    pb_callback_t message;
+  /* Standard response header. */
+  bool                   has_header;
+  star_v1_ResponseHeader header;
+  /* True if gains were successfully applied to motor controller. */
+  bool success;
+  /* Human-readable message (e.g., "PID gains updated for both motors"). */
+  pb_callback_t message;
 } star_v1_SetPIDGainsResponse;
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Initializer values for message structs */
-#define star_v1_ForwardTelemetryRequest_init_default {false, star_v1_RequestHeader_init_default, false, star_v1_SystemStatus_init_default, false, star_v1_BatteryState_init_default, false, star_v1_TelemetryData_init_default}
-#define star_v1_ForwardTelemetryResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, 0}
+#define star_v1_ForwardTelemetryRequest_init_default                                               \
+  {false,                                                                                          \
+   star_v1_RequestHeader_init_default,                                                             \
+   false,                                                                                          \
+   star_v1_SystemStatus_init_default,                                                              \
+   false,                                                                                          \
+   star_v1_BatteryState_init_default,                                                              \
+   false,                                                                                          \
+   star_v1_TelemetryData_init_default}
+#define star_v1_ForwardTelemetryResponse_init_default                                              \
+  {false, star_v1_ResponseHeader_init_default, 0, 0}
 #define star_v1_GetTeleopCommandRequest_init_default {false, star_v1_RequestHeader_init_default}
-#define star_v1_GetTeleopCommandResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_VelocityCommand_init_default, 0, 0}
-#define star_v1_SetPIDGainsRequest_init_default  {false, star_v1_RequestHeader_init_default, false, star_v1_PidConfig_init_default, 0}
-#define star_v1_SetPIDGainsResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, {{NULL}, NULL}}
-#define star_v1_ForwardTelemetryRequest_init_zero {false, star_v1_RequestHeader_init_zero, false, star_v1_SystemStatus_init_zero, false, star_v1_BatteryState_init_zero, false, star_v1_TelemetryData_init_zero}
+#define star_v1_GetTeleopCommandResponse_init_default                                              \
+  {false, star_v1_ResponseHeader_init_default, false, star_v1_VelocityCommand_init_default, 0, 0}
+#define star_v1_SetPIDGainsRequest_init_default                                                    \
+  {false, star_v1_RequestHeader_init_default, false, star_v1_PidConfig_init_default, 0}
+#define star_v1_SetPIDGainsResponse_init_default                                                   \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0,                                                 \
+    {                                                                                              \
+      {NULL}, NULL                                                                                 \
+    }                                                                                              \
+  }
+#define star_v1_ForwardTelemetryRequest_init_zero                                                  \
+  {false,                                                                                          \
+   star_v1_RequestHeader_init_zero,                                                                \
+   false,                                                                                          \
+   star_v1_SystemStatus_init_zero,                                                                 \
+   false,                                                                                          \
+   star_v1_BatteryState_init_zero,                                                                 \
+   false,                                                                                          \
+   star_v1_TelemetryData_init_zero}
 #define star_v1_ForwardTelemetryResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0, 0}
-#define star_v1_GetTeleopCommandRequest_init_zero {false, star_v1_RequestHeader_init_zero}
-#define star_v1_GetTeleopCommandResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_VelocityCommand_init_zero, 0, 0}
-#define star_v1_SetPIDGainsRequest_init_zero     {false, star_v1_RequestHeader_init_zero, false, star_v1_PidConfig_init_zero, 0}
-#define star_v1_SetPIDGainsResponse_init_zero    {false, star_v1_ResponseHeader_init_zero, 0, {{NULL}, NULL}}
+#define star_v1_GetTeleopCommandRequest_init_zero  {false, star_v1_RequestHeader_init_zero}
+#define star_v1_GetTeleopCommandResponse_init_zero                                                 \
+  {false, star_v1_ResponseHeader_init_zero, false, star_v1_VelocityCommand_init_zero, 0, 0}
+#define star_v1_SetPIDGainsRequest_init_zero                                                       \
+  {false, star_v1_RequestHeader_init_zero, false, star_v1_PidConfig_init_zero, 0}
+#define star_v1_SetPIDGainsResponse_init_zero                                                      \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0,                                                    \
+    {                                                                                              \
+      {NULL}, NULL                                                                                 \
+    }                                                                                              \
+  }
 
 /* Field tags (for use in manual encoding/decoding) */
-#define star_v1_ForwardTelemetryRequest_header_tag 1
-#define star_v1_ForwardTelemetryRequest_system_status_tag 2
-#define star_v1_ForwardTelemetryRequest_battery_state_tag 3
-#define star_v1_ForwardTelemetryRequest_telemetry_tag 4
-#define star_v1_ForwardTelemetryResponse_header_tag 1
-#define star_v1_ForwardTelemetryResponse_cached_tag 2
-#define star_v1_ForwardTelemetryResponse_active_clients_tag 3
-#define star_v1_GetTeleopCommandRequest_header_tag 1
-#define star_v1_GetTeleopCommandResponse_header_tag 1
-#define star_v1_GetTeleopCommandResponse_command_tag 2
+#define star_v1_ForwardTelemetryRequest_header_tag             1
+#define star_v1_ForwardTelemetryRequest_system_status_tag      2
+#define star_v1_ForwardTelemetryRequest_battery_state_tag      3
+#define star_v1_ForwardTelemetryRequest_telemetry_tag          4
+#define star_v1_ForwardTelemetryResponse_header_tag            1
+#define star_v1_ForwardTelemetryResponse_cached_tag            2
+#define star_v1_ForwardTelemetryResponse_active_clients_tag    3
+#define star_v1_GetTeleopCommandRequest_header_tag             1
+#define star_v1_GetTeleopCommandResponse_header_tag            1
+#define star_v1_GetTeleopCommandResponse_command_tag           2
 #define star_v1_GetTeleopCommandResponse_command_available_tag 3
-#define star_v1_GetTeleopCommandResponse_command_age_ms_tag 4
-#define star_v1_SetPIDGainsRequest_header_tag    1
-#define star_v1_SetPIDGainsRequest_pid_config_tag 2
-#define star_v1_SetPIDGainsRequest_motor_id_tag  3
-#define star_v1_SetPIDGainsResponse_header_tag   1
-#define star_v1_SetPIDGainsResponse_success_tag  2
-#define star_v1_SetPIDGainsResponse_message_tag  3
+#define star_v1_GetTeleopCommandResponse_command_age_ms_tag    4
+#define star_v1_SetPIDGainsRequest_header_tag                  1
+#define star_v1_SetPIDGainsRequest_pid_config_tag              2
+#define star_v1_SetPIDGainsRequest_motor_id_tag                3
+#define star_v1_SetPIDGainsResponse_header_tag                 1
+#define star_v1_SetPIDGainsResponse_success_tag                2
+#define star_v1_SetPIDGainsResponse_message_tag                3
 
 /* Struct field encoding specification for nanopb */
-#define star_v1_ForwardTelemetryRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  system_status,     2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  battery_state,     3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  telemetry,         4)
-#define star_v1_ForwardTelemetryRequest_CALLBACK NULL
-#define star_v1_ForwardTelemetryRequest_DEFAULT NULL
-#define star_v1_ForwardTelemetryRequest_header_MSGTYPE star_v1_RequestHeader
+#define star_v1_ForwardTelemetryRequest_FIELDLIST(X, a)                                            \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, system_status, 2)                                                \
+  X(a, STATIC, OPTIONAL, MESSAGE, battery_state, 3)                                                \
+  X(a, STATIC, OPTIONAL, MESSAGE, telemetry, 4)
+#define star_v1_ForwardTelemetryRequest_CALLBACK              NULL
+#define star_v1_ForwardTelemetryRequest_DEFAULT               NULL
+#define star_v1_ForwardTelemetryRequest_header_MSGTYPE        star_v1_RequestHeader
 #define star_v1_ForwardTelemetryRequest_system_status_MSGTYPE star_v1_SystemStatus
 #define star_v1_ForwardTelemetryRequest_battery_state_MSGTYPE star_v1_BatteryState
-#define star_v1_ForwardTelemetryRequest_telemetry_MSGTYPE star_v1_TelemetryData
+#define star_v1_ForwardTelemetryRequest_telemetry_MSGTYPE     star_v1_TelemetryData
 
-#define star_v1_ForwardTelemetryResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   SINGULAR, BOOL,     cached,            2) \
-X(a, STATIC,   SINGULAR, INT32,    active_clients,    3)
-#define star_v1_ForwardTelemetryResponse_CALLBACK NULL
-#define star_v1_ForwardTelemetryResponse_DEFAULT NULL
+#define star_v1_ForwardTelemetryResponse_FIELDLIST(X, a)                                           \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, SINGULAR, BOOL, cached, 2)                                                          \
+  X(a, STATIC, SINGULAR, INT32, active_clients, 3)
+#define star_v1_ForwardTelemetryResponse_CALLBACK       NULL
+#define star_v1_ForwardTelemetryResponse_DEFAULT        NULL
 #define star_v1_ForwardTelemetryResponse_header_MSGTYPE star_v1_ResponseHeader
 
-#define star_v1_GetTeleopCommandRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1)
-#define star_v1_GetTeleopCommandRequest_CALLBACK NULL
-#define star_v1_GetTeleopCommandRequest_DEFAULT NULL
-#define star_v1_GetTeleopCommandRequest_header_MSGTYPE star_v1_RequestHeader
+#define star_v1_GetTeleopCommandRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
+#define star_v1_GetTeleopCommandRequest_CALLBACK        NULL
+#define star_v1_GetTeleopCommandRequest_DEFAULT         NULL
+#define star_v1_GetTeleopCommandRequest_header_MSGTYPE  star_v1_RequestHeader
 
-#define star_v1_GetTeleopCommandResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  command,           2) \
-X(a, STATIC,   SINGULAR, BOOL,     command_available,   3) \
-X(a, STATIC,   SINGULAR, INT64,    command_age_ms,    4)
-#define star_v1_GetTeleopCommandResponse_CALLBACK NULL
-#define star_v1_GetTeleopCommandResponse_DEFAULT NULL
-#define star_v1_GetTeleopCommandResponse_header_MSGTYPE star_v1_ResponseHeader
+#define star_v1_GetTeleopCommandResponse_FIELDLIST(X, a)                                           \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, command, 2)                                                      \
+  X(a, STATIC, SINGULAR, BOOL, command_available, 3)                                               \
+  X(a, STATIC, SINGULAR, INT64, command_age_ms, 4)
+#define star_v1_GetTeleopCommandResponse_CALLBACK        NULL
+#define star_v1_GetTeleopCommandResponse_DEFAULT         NULL
+#define star_v1_GetTeleopCommandResponse_header_MSGTYPE  star_v1_ResponseHeader
 #define star_v1_GetTeleopCommandResponse_command_MSGTYPE star_v1_VelocityCommand
 
-#define star_v1_SetPIDGainsRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  pid_config,        2) \
-X(a, STATIC,   SINGULAR, INT32,    motor_id,          3)
-#define star_v1_SetPIDGainsRequest_CALLBACK NULL
-#define star_v1_SetPIDGainsRequest_DEFAULT NULL
-#define star_v1_SetPIDGainsRequest_header_MSGTYPE star_v1_RequestHeader
+#define star_v1_SetPIDGainsRequest_FIELDLIST(X, a)                                                 \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, pid_config, 2)                                                   \
+  X(a, STATIC, SINGULAR, INT32, motor_id, 3)
+#define star_v1_SetPIDGainsRequest_CALLBACK           NULL
+#define star_v1_SetPIDGainsRequest_DEFAULT            NULL
+#define star_v1_SetPIDGainsRequest_header_MSGTYPE     star_v1_RequestHeader
 #define star_v1_SetPIDGainsRequest_pid_config_MSGTYPE star_v1_PidConfig
 
-#define star_v1_SetPIDGainsResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   SINGULAR, BOOL,     success,           2) \
-X(a, CALLBACK, SINGULAR, STRING,   message,           3)
-#define star_v1_SetPIDGainsResponse_CALLBACK pb_default_field_callback
-#define star_v1_SetPIDGainsResponse_DEFAULT NULL
+#define star_v1_SetPIDGainsResponse_FIELDLIST(X, a)                                                \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, SINGULAR, BOOL, success, 2)                                                         \
+  X(a, CALLBACK, SINGULAR, STRING, message, 3)
+#define star_v1_SetPIDGainsResponse_CALLBACK       pb_default_field_callback
+#define star_v1_SetPIDGainsResponse_DEFAULT        NULL
 #define star_v1_SetPIDGainsResponse_header_MSGTYPE star_v1_ResponseHeader
 
 extern const pb_msgdesc_t star_v1_ForwardTelemetryRequest_msg;
@@ -191,26 +223,28 @@ extern const pb_msgdesc_t star_v1_SetPIDGainsRequest_msg;
 extern const pb_msgdesc_t star_v1_SetPIDGainsResponse_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
-#define star_v1_ForwardTelemetryRequest_fields &star_v1_ForwardTelemetryRequest_msg
+#define star_v1_ForwardTelemetryRequest_fields  &star_v1_ForwardTelemetryRequest_msg
 #define star_v1_ForwardTelemetryResponse_fields &star_v1_ForwardTelemetryResponse_msg
-#define star_v1_GetTeleopCommandRequest_fields &star_v1_GetTeleopCommandRequest_msg
+#define star_v1_GetTeleopCommandRequest_fields  &star_v1_GetTeleopCommandRequest_msg
 #define star_v1_GetTeleopCommandResponse_fields &star_v1_GetTeleopCommandResponse_msg
-#define star_v1_SetPIDGainsRequest_fields &star_v1_SetPIDGainsRequest_msg
-#define star_v1_SetPIDGainsResponse_fields &star_v1_SetPIDGainsResponse_msg
+#define star_v1_SetPIDGainsRequest_fields       &star_v1_SetPIDGainsRequest_msg
+#define star_v1_SetPIDGainsResponse_fields      &star_v1_SetPIDGainsResponse_msg
 
 /* Maximum encoded size of messages (where known) */
 /* star_v1_SetPIDGainsResponse_size depends on runtime parameters */
-#if defined(star_v1_RequestHeader_size) && defined(star_v1_SystemStatus_size) && defined(star_v1_BatteryState_size)
+#if defined(star_v1_RequestHeader_size) && defined(star_v1_SystemStatus_size) &&                   \
+  defined(star_v1_BatteryState_size)
 #define STAR_V1_STAR_V1_GATEWAY_SERVICE_PB_H_MAX_SIZE star_v1_ForwardTelemetryRequest_size
-#define star_v1_ForwardTelemetryRequest_size     (439 + star_v1_RequestHeader_size + star_v1_SystemStatus_size + star_v1_BatteryState_size)
+#define star_v1_ForwardTelemetryRequest_size                                                       \
+  (439 + star_v1_RequestHeader_size + star_v1_SystemStatus_size + star_v1_BatteryState_size)
 #endif
 #if defined(star_v1_ResponseHeader_size)
-#define star_v1_ForwardTelemetryResponse_size    (19 + star_v1_ResponseHeader_size)
-#define star_v1_GetTeleopCommandResponse_size    (74 + star_v1_ResponseHeader_size)
+#define star_v1_ForwardTelemetryResponse_size (19 + star_v1_ResponseHeader_size)
+#define star_v1_GetTeleopCommandResponse_size (74 + star_v1_ResponseHeader_size)
 #endif
 #if defined(star_v1_RequestHeader_size)
-#define star_v1_GetTeleopCommandRequest_size     (6 + star_v1_RequestHeader_size)
-#define star_v1_SetPIDGainsRequest_size          (82 + star_v1_RequestHeader_size)
+#define star_v1_GetTeleopCommandRequest_size (6 + star_v1_RequestHeader_size)
+#define star_v1_SetPIDGainsRequest_size      (82 + star_v1_RequestHeader_size)
 #endif
 
 #ifdef __cplusplus

@@ -68,7 +68,7 @@ extern "C" {
 /**
  * @brief USB event types for callback notification
  */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_event_attached   = (0), /**< USB cable attached (VBUS detected) */
   k_usb_event_detached   = (1), /**< USB cable detached */
   k_usb_event_reset      = (2), /**< USB bus reset received */
@@ -82,7 +82,7 @@ typedef enum {
 /**
  * @brief USB device state
  */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_state_detached   = (0), /**< No USB cable connected */
   k_usb_state_attached   = (1), /**< Cable connected, waiting for reset */
   k_usb_state_powered    = (2), /**< Powered, waiting for bus reset */
@@ -140,7 +140,7 @@ typedef struct {
 /**
  * @brief USB buffer and endpoint configuration
  */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_rx_buffer_size  = (512), /**< Receive ring buffer size (bytes) */
   k_usb_tx_buffer_size  = (512), /**< Transmit ring buffer size (bytes) */
   k_usb_max_packet_size = (64),  /**< Full-speed bulk max packet size */
@@ -152,7 +152,7 @@ typedef enum {
  * These defaults are used during USB initialization before the host
  * sends SET_LINE_CODING. They represent a standard 115200 8N1 configuration.
  */
-typedef enum {
+typedef enum : uint32_t {
   k_usb_default_baud_rate = (115200), /**< Default baud rate: 115200 bps */
   k_usb_default_stop_bits = (0),      /**< Default stop bits: 1 stop bit */
   k_usb_default_parity    = (0),      /**< Default parity: None */
@@ -217,7 +217,7 @@ rx_usb_state_t rx_usb_get_state(void);
  * @return k_rx_ok on success (all data queued)
  * @return k_rx_err_busy if TX buffer is full (partial or no data queued)
  * @return k_rx_err_invalid_state if USB not configured
- * @return k_rx_err_null_pointer if data is NULL
+ * @return k_rx_err_null_ptr if data is NULL
  */
 rx_err_t rx_usb_write(const uint8_t* data, uint32_t len);
 
@@ -231,7 +231,7 @@ rx_err_t rx_usb_write(const uint8_t* data, uint32_t len);
  * @param[in] max_len Maximum number of bytes to read
  * @param[out] actual_len Actual number of bytes read (can be 0)
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if data or actual_len is NULL
+ * @return k_rx_err_null_ptr if data or actual_len is NULL
  */
 rx_err_t rx_usb_read(uint8_t* data, uint32_t max_len, uint32_t* actual_len);
 
@@ -240,7 +240,7 @@ rx_err_t rx_usb_read(uint8_t* data, uint32_t max_len, uint32_t* actual_len);
  *
  * @param[out] available Number of bytes available in RX buffer
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if available is NULL
+ * @return k_rx_err_null_ptr if available is NULL
  */
 rx_err_t rx_usb_rx_available(uint32_t* available);
 
@@ -249,7 +249,7 @@ rx_err_t rx_usb_rx_available(uint32_t* available);
  *
  * @param[out] available Number of bytes available in TX buffer
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if available is NULL
+ * @return k_rx_err_null_ptr if available is NULL
  */
 rx_err_t rx_usb_tx_available(uint32_t* available);
 
@@ -272,7 +272,7 @@ rx_err_t rx_usb_flush(uint32_t timeout_ms);
  *
  * @param[out] line_coding Line coding structure to fill
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if line_coding is NULL
+ * @return k_rx_err_null_ptr if line_coding is NULL
  */
 rx_err_t rx_usb_get_line_coding(rx_usb_line_coding_t* line_coding);
 
@@ -281,7 +281,7 @@ rx_err_t rx_usb_get_line_coding(rx_usb_line_coding_t* line_coding);
  *
  * @param[out] stats Statistics structure to fill
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if stats is NULL
+ * @return k_rx_err_null_ptr if stats is NULL
  */
 rx_err_t rx_usb_get_stats(rx_usb_stats_t* stats);
 

@@ -17,9 +17,9 @@
  * =============================================================================
  */
 
-typedef enum {
-  k_max_stop_calls = 100, /**< Maximum stop calls to track */
-} mock_motor_constants_t;
+typedef enum : uint8_t {
+  s_max_stop_calls = 100U, /**< Maximum stop calls to track */
+} mock_motor_limits_t;
 
 typedef struct {
   const rx_motor_handle_t* motor_handle; /**< Motor handle that was stopped */
@@ -27,7 +27,7 @@ typedef struct {
 } stop_call_t;
 
 static rx_err_t    s_stop_return_value = k_rx_ok;
-static stop_call_t s_stop_calls[k_max_stop_calls];
+static stop_call_t s_stop_calls[s_max_stop_calls];
 static uint32_t    s_stop_call_count = 0;
 
 /* =============================================================================
@@ -94,11 +94,11 @@ void mock_rx_motor_reset(void)
 rx_err_t rx_motor_stop(rx_motor_handle_t* motor, bool immediate)
 {
   if (motor == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Record the stop call */
-  if (s_stop_call_count < k_max_stop_calls) {
+  if (s_stop_call_count < s_max_stop_calls) {
     s_stop_calls[s_stop_call_count].motor_handle = motor;
     s_stop_calls[s_stop_call_count].immediate    = immediate;
     s_stop_call_count++;

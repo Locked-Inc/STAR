@@ -13,7 +13,6 @@
 
 #include <string.h>
 
-#include "hardware_pinout.h"
 #include "rx_bus_command.h"
 #include "rx_bus_config.h"
 #include "rx_bus_manager.h"
@@ -29,7 +28,7 @@
 /**
  * @brief Test constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_test_max_buses_to_add = 35, /**< More than k_max_buses to test overflow */
 } test_constants_t;
 
@@ -95,7 +94,7 @@ void test_rx_bus_manager_init_success(void)
 void test_rx_bus_manager_init_null_manager(void)
 {
   rx_err_t err = rx_bus_manager_init(NULL, "TEST", NULL, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -104,7 +103,7 @@ void test_rx_bus_manager_init_null_manager(void)
 void test_rx_bus_manager_init_null_tag(void)
 {
   rx_err_t err = rx_bus_manager_init(&s_test_manager, NULL, NULL, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -131,7 +130,7 @@ void test_rx_bus_manager_deinit_success(void)
 void test_rx_bus_manager_deinit_null_manager(void)
 {
   rx_err_t err = rx_bus_manager_deinit(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -149,7 +148,7 @@ void test_rx_bus_manager_add_bus_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Create GPIO bus config */
-  err = rx_bus_config_init_gpio(&s_gpio_config, "test_gpio", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "test_gpio", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Add bus */
@@ -171,19 +170,19 @@ void test_rx_bus_manager_add_multiple_buses(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Create and add GPIO bus */
-  err = rx_bus_config_init_gpio(&s_gpio_config, "gpio_bus", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "gpio_bus", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Create and add OneWire bus */
-  err = rx_bus_config_init_onewire(&s_onewire_config, "onewire_bus", k_gpio_p05);
+  err = rx_bus_config_init_onewire(&s_onewire_config, "onewire_bus", k_rx_p0_5);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_onewire_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Create and add UART bus */
-  err = rx_bus_config_init_uart(&s_uart_config, "uart_bus", 9, k_gpio_pb7, k_gpio_pb6, 115200);
+  err = rx_bus_config_init_uart(&s_uart_config, "uart_bus", 9, k_rx_pb_7, k_rx_pb_6, 115200);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_uart_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -197,11 +196,11 @@ void test_rx_bus_manager_add_multiple_buses(void)
  */
 void test_rx_bus_manager_add_bus_null_manager(void)
 {
-  rx_err_t err = rx_bus_config_init_gpio(&s_gpio_config, "test_gpio", k_gpio_pc6);
+  rx_err_t err = rx_bus_config_init_gpio(&s_gpio_config, "test_gpio", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(NULL, &s_gpio_config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -213,7 +212,7 @@ void test_rx_bus_manager_add_bus_null_config(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -259,13 +258,13 @@ void test_rx_bus_manager_add_bus_duplicate_name(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Add first bus */
-  err = rx_bus_config_init_gpio(&s_gpio_config, "duplicate_name", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "duplicate_name", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Try to add second bus with same name */
-  err = rx_bus_config_init_onewire(&s_onewire_config, "duplicate_name", k_gpio_p05);
+  err = rx_bus_config_init_onewire(&s_onewire_config, "duplicate_name", k_rx_p0_5);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_onewire_config);
   TEST_ASSERT_EQUAL(k_rx_err_exists, err);
@@ -308,7 +307,7 @@ void test_rx_bus_manager_add_bus_max_reached(void)
   TEST_ASSERT_EQUAL(k_max_buses, s_test_manager.bus_count);
 
   /* Try to add one more - should fail */
-  err = rx_bus_config_init_gpio(&s_gpio_config, "overflow_bus", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "overflow_bus", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_err_no_mem, err);
@@ -328,7 +327,7 @@ void test_rx_bus_manager_remove_bus_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Add a bus */
-  err = rx_bus_config_init_gpio(&s_gpio_config, "test_gpio", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "test_gpio", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -346,7 +345,7 @@ void test_rx_bus_manager_remove_bus_success(void)
 void test_rx_bus_manager_remove_bus_null_manager(void)
 {
   rx_err_t err = rx_bus_manager_remove_bus(NULL, "test_gpio");
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -358,7 +357,7 @@ void test_rx_bus_manager_remove_bus_null_name(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_remove_bus(&s_test_manager, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -382,17 +381,17 @@ void test_rx_bus_manager_remove_bus_from_middle(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Add multiple buses */
-  err = rx_bus_config_init_gpio(&s_gpio_config, "bus_1", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "bus_1", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = rx_bus_config_init_onewire(&s_onewire_config, "bus_2", k_gpio_p05);
+  err = rx_bus_config_init_onewire(&s_onewire_config, "bus_2", k_rx_p0_5);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_onewire_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = rx_bus_config_init_uart(&s_uart_config, "bus_3", 9, k_gpio_pb7, k_gpio_pb6, 115200);
+  err = rx_bus_config_init_uart(&s_uart_config, "bus_3", 9, k_rx_pb_7, k_rx_pb_6, 115200);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_uart_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -430,7 +429,7 @@ void test_rx_bus_manager_find_bus_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Add a bus */
-  err = rx_bus_config_init_gpio(&s_gpio_config, "find_me", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "find_me", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -451,7 +450,7 @@ void test_rx_bus_manager_find_bus_null_manager(void)
 {
   rx_bus_config_t* found = NULL;
   rx_err_t         err   = rx_bus_manager_find_bus(NULL, "test", &found);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -464,7 +463,7 @@ void test_rx_bus_manager_find_bus_null_name(void)
 
   rx_bus_config_t* found = NULL;
   err                    = rx_bus_manager_find_bus(&s_test_manager, NULL, &found);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -476,7 +475,7 @@ void test_rx_bus_manager_find_bus_null_output(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_find_bus(&s_test_manager, "test", NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -534,7 +533,7 @@ void test_rx_bus_manager_with_bus_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Add a bus */
-  err = rx_bus_config_init_gpio(&s_gpio_config, "callback_test", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "callback_test", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -556,7 +555,7 @@ void test_rx_bus_manager_with_bus_callback_error(void)
   rx_err_t err = rx_bus_manager_init(&s_test_manager, "TEST", NULL, NULL);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = rx_bus_config_init_gpio(&s_gpio_config, "error_test", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "error_test", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -579,7 +578,7 @@ void test_rx_bus_manager_with_bus_null_manager(void)
   callback_ctx_t ctx = {.callback_called = false, .callback_return = k_rx_ok, .bus_name_seen = ""};
 
   rx_err_t err = rx_bus_manager_with_bus(NULL, "test", test_callback, &ctx);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_FALSE(ctx.callback_called);
 }
 
@@ -594,7 +593,7 @@ void test_rx_bus_manager_with_bus_null_name(void)
   callback_ctx_t ctx = {.callback_called = false, .callback_return = k_rx_ok, .bus_name_seen = ""};
 
   err = rx_bus_manager_with_bus(&s_test_manager, NULL, test_callback, &ctx);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_FALSE(ctx.callback_called);
 }
 
@@ -606,13 +605,13 @@ void test_rx_bus_manager_with_bus_null_callback(void)
   rx_err_t err = rx_bus_manager_init(&s_test_manager, "TEST", NULL, NULL);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = rx_bus_config_init_gpio(&s_gpio_config, "null_cb_test", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "null_cb_test", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_with_bus(&s_test_manager, "null_cb_test", NULL, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -676,7 +675,7 @@ void test_rx_bus_manager_execute_command_success(void)
   rx_err_t err = rx_bus_manager_init(&s_test_manager, "TEST", NULL, NULL);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = rx_bus_config_init_gpio(&s_gpio_config, "cmd_test", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "cmd_test", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -701,7 +700,7 @@ void test_rx_bus_manager_execute_command_error(void)
   rx_err_t err = rx_bus_manager_init(&s_test_manager, "TEST", NULL, NULL);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = rx_bus_config_init_gpio(&s_gpio_config, "cmd_err_test", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "cmd_err_test", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -727,7 +726,7 @@ void test_rx_bus_manager_execute_command_null_manager(void)
   rx_bus_command_init(&cmd, test_command_execute, &data);
 
   rx_err_t err = rx_bus_manager_execute_command(NULL, "test", &cmd);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_FALSE(data.executed);
 }
 
@@ -744,7 +743,7 @@ void test_rx_bus_manager_execute_command_null_name(void)
   rx_bus_command_init(&cmd, test_command_execute, &data);
 
   err = rx_bus_manager_execute_command(&s_test_manager, NULL, &cmd);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_FALSE(data.executed);
 }
 
@@ -756,13 +755,13 @@ void test_rx_bus_manager_execute_command_null_command(void)
   rx_err_t err = rx_bus_manager_init(&s_test_manager, "TEST", NULL, NULL);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = rx_bus_config_init_gpio(&s_gpio_config, "null_cmd_test", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "null_cmd_test", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_execute_command(&s_test_manager, "null_cmd_test", NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -773,7 +772,7 @@ void test_rx_bus_manager_execute_command_null_execute(void)
   rx_err_t err = rx_bus_manager_init(&s_test_manager, "TEST", NULL, NULL);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = rx_bus_config_init_gpio(&s_gpio_config, "null_exec_test", k_gpio_pc6);
+  err = rx_bus_config_init_gpio(&s_gpio_config, "null_exec_test", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -785,7 +784,7 @@ void test_rx_bus_manager_execute_command_null_execute(void)
   cmd.result  = k_rx_ok;
 
   err = rx_bus_manager_execute_command(&s_test_manager, "null_exec_test", &cmd);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**

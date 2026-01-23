@@ -26,13 +26,13 @@ extern "C" {
  */
 
 /** @brief S12ADFa base addresses */
-typedef enum {
+typedef enum : uint32_t {
   k_s12ad0_base_addr = 0x00089000, /**< S12AD0 register base address */
   k_s12ad1_base_addr = 0x00089100, /**< S12AD1 register base address */
 } rx_s12ad_addresses_t;
 
 /** @brief S12ADFa register reserved field sizes */
-typedef enum {
+typedef enum : uint8_t {
   k_s12ad_reserved_after_adcsr_bytes   = 2, /**< Reserved bytes after ADCSR */
   k_s12ad_reserved_after_adadc_bytes   = 1, /**< Reserved byte after ADADC */
   k_s12ad_reserved_after_adstrgr_bytes = 4, /**< Reserved bytes after ADSTRGR */

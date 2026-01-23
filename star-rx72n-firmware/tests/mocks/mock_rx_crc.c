@@ -21,7 +21,7 @@
 /**
  * @brief CRC-8 Maxim constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_crc8_maxim_poly = 0x8C, /**< Reversed polynomial 0x31 */
   k_bits_per_byte   = 8,    /**< Number of bits in a byte */
   k_crc8_lsb_mask   = 0x01, /**< Mask for LSB */

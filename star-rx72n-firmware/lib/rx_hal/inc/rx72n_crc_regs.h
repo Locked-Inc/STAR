@@ -24,6 +24,7 @@
 #ifndef STAR_RX72N_CRC_REGS_H
 #define STAR_RX72N_CRC_REGS_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -36,14 +37,14 @@ extern "C" {
  */
 
 /** @brief CRC base address */
-typedef enum {
+typedef enum : uint32_t {
   k_crc_base_addr = 0x00088280, /**< CRC register base address */
 } rx_crc_addresses_t;
 
 /** @brief CRC register reserved field sizes */
-typedef enum {
+typedef enum : uint8_t {
   k_crc_reserved_after_crccr_bytes = 3, /**< Reserved bytes after CRCCR */
-} crc_reserved_sizes_t;
+} rx_crc_reserved_sizes_t;
 
 /**
  * @brief CRC Register Map
@@ -68,12 +69,25 @@ static inline volatile rx_crc_regs_t* crc_regs(void)
   return (volatile rx_crc_regs_t*)k_crc_base_addr;
 }
 
+/** @brief CRC Control Register (CRCCR) bit shift positions and constants */
+typedef enum : uint8_t {
+  k_crc_bit_mask           = 1, /**< Single-bit mask */
+  k_crc_crccr_lms_shift   = 6, /**< LMS field shift position */
+  k_crc_crccr_dorclr_shift = 7, /**< DORCLR field shift position */
+} rx_crc_crccr_shifts_t;
+
+/** @brief CRC Control Register (CRCCR) bit masks */
+typedef enum : uint8_t {
+  k_crc_crccr_lms_mask = (k_crc_bit_mask << k_crc_crccr_lms_shift),   /**< LSB/MSB First mask */
+  k_crc_crccr_dorclr_mask = (k_crc_bit_mask << k_crc_crccr_dorclr_shift), /**< DORCLR mask */
+} rx_crc_crccr_masks_t;
+
 /* CRC Control Register (CRCCR) bit definitions - CRC-32 only */
-typedef enum {
-  k_crc_crccr_gps_crc32 = 0x03,     /**< CRC-32 IEEE 802.3 polynomial */
-  k_crc_crccr_lms       = (1 << 6), /**< LSB/MSB First (1=LSB first, reflected) */
-  k_crc_crccr_dorclr    = (1 << 7), /**< Data Output Register Clear */
-} crc_crccr_bits_t;
+typedef enum : uint8_t {
+  k_crc_crccr_gps_crc32 = 0x03,               /**< CRC-32 IEEE 802.3 polynomial */
+  k_crc_crccr_lms       = k_crc_crccr_lms_mask,     /**< LSB/MSB First (1=LSB first, reflected) */
+  k_crc_crccr_dorclr    = k_crc_crccr_dorclr_mask,  /**< Data Output Register Clear */
+} rx_crc_crccr_bits_t;
 
 /* =============================================================================
  * Static Assertions - Verify Register Layout at Compile Time

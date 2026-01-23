@@ -61,7 +61,7 @@ typedef struct {
 /**
  * @brief Timer constants for auto-increment behavior
  */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_onewire_timer_auto_increment = 100, /**< Timer ticks added on each access */
 } mock_onewire_timer_constants_t;
 

@@ -39,7 +39,7 @@ extern "C" {
  */
 
 /** @brief PORT register block base addresses (organized by register type) */
-typedef enum {
+typedef enum : uint32_t {
   k_port_pdr_base  = 0x0008C000, /**< PDR (Port Direction) base - all ports contiguous */
   k_port_podr_base = 0x0008C020, /**< PODR (Port Output Data) base */
   k_port_pidr_base = 0x0008C040, /**< PIDR (Port Input Data) base */
@@ -51,7 +51,7 @@ typedef enum {
 } rx_port_reg_bases_t;
 
 /** @brief Port number offsets for register access (100-pin LFQFP only) */
-typedef enum {
+typedef enum : uint8_t {
   k_port_offset_0 = 0x00, /**< Port 0 offset (limited: P05, P07 only) */
   k_port_offset_1 = 0x01, /**< Port 1 offset (limited: P12-P17 only) */
   k_port_offset_2 = 0x02, /**< Port 2 offset (full: P20-P27) */

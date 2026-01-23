@@ -25,12 +25,12 @@ extern "C" {
  */
 
 /** @brief System register base address */
-typedef enum {
+typedef enum : uint32_t {
   k_system_base_addr = 0x00080000, /**< System register base address */
 } rx_system_addresses_t;
 
 /** @brief System register reserved field sizes */
-typedef enum {
+typedef enum : uint8_t {
   k_system_reserved_after_syscr1_bytes   = 2, /**< Reserved bytes after SYSCR1 */
   k_system_reserved_after_sbycr_bytes    = 2, /**< Reserved bytes after SBYCR */
   k_system_reserved_after_prcr_bytes     = 2, /**< Reserved bytes after PRCR */
@@ -90,13 +90,13 @@ static inline volatile rx_system_regs_t* system_regs(void)
   return (volatile rx_system_regs_t*)k_system_base_addr;
 }
 
-/* Module stop bits for MSTPCRA register */
-typedef enum {
+/** @brief Module stop bits for MSTPCRA register */
+typedef enum : uint8_t {
   k_mstpa_cmt23 = 14, /**< CMT2/CMT3 module stop bit in MSTPCRA */
 } rx_module_stop_bits_a_t;
 
-/* Module stop bits for MSTPCRB register */
-typedef enum {
+/** @brief Module stop bits for MSTPCRB register */
+typedef enum : uint8_t {
   k_mstpb_usb0 = 19, /**< USB0 module stop bit in MSTPCRB */
   k_mstpb_crc  = 23, /**< CRC module stop bit in MSTPCRB */
 } rx_module_stop_bits_b_t;
@@ -114,7 +114,7 @@ typedef enum {
  * - RSTSR2 is at a separate address 0x000800C0
  * Verified against RX72N Group User's Manual Hardware (R01UH0824EJ0120 Rev.1.20)
  */
-typedef enum {
+typedef enum : uint32_t {
   k_rstsr0_addr = 0x0008C290, /**< Reset Status Register 0 address (page 286) */
   k_rstsr1_addr = 0x0008C291, /**< Reset Status Register 1 address (page 288) */
   k_rstsr2_addr = 0x000800C0, /**< Reset Status Register 2 address (page 289) */
@@ -150,24 +150,24 @@ static inline volatile uint8_t* rstsr2(void)
 }
 
 /* RSTSR0 bit definitions (page 286) */
-typedef enum {
-  k_rstsr0_porf    = (1 << 0), /**< Power-On Reset Detect Flag */
-  k_rstsr0_lvd0rf  = (1 << 1), /**< Voltage-Monitoring 0 Reset Detect Flag */
-  k_rstsr0_lvd1rf  = (1 << 2), /**< Voltage-Monitoring 1 Reset Detect Flag */
-  k_rstsr0_lvd2rf  = (1 << 3), /**< Voltage-Monitoring 2 Reset Detect Flag */
-  k_rstsr0_dpsrstf = (1 << 7), /**< Deep Software Standby Reset Flag */
+typedef enum : uint8_t {
+  k_rstsr0_porf    = 1U,   /**< Power-On Reset Detect Flag */
+  k_rstsr0_lvd0rf  = 2U,   /**< Voltage-Monitoring 0 Reset Detect Flag */
+  k_rstsr0_lvd1rf  = 4U,   /**< Voltage-Monitoring 1 Reset Detect Flag */
+  k_rstsr0_lvd2rf  = 8U,   /**< Voltage-Monitoring 2 Reset Detect Flag */
+  k_rstsr0_dpsrstf = 128U, /**< Deep Software Standby Reset Flag */
 } rstsr0_bits_t;
 
 /* RSTSR1 bit definitions (page 288) */
-typedef enum {
-  k_rstsr1_cwsf = (1 << 0), /**< Cold/Warm Start Determination Flag */
+typedef enum : uint8_t {
+  k_rstsr1_cwsf = 1U, /**< Cold/Warm Start Determination Flag */
 } rstsr1_bits_t;
 
 /* RSTSR2 bit definitions (page 289) */
-typedef enum {
-  k_rstsr2_iwdtrf = (1 << 0), /**< Independent Watchdog Timer Reset Detect Flag */
-  k_rstsr2_wdtrf  = (1 << 1), /**< Watchdog Timer Reset Detect Flag */
-  k_rstsr2_swrf   = (1 << 2), /**< Software Reset Detect Flag */
+typedef enum : uint8_t {
+  k_rstsr2_iwdtrf = 1U, /**< Independent Watchdog Timer Reset Detect Flag */
+  k_rstsr2_wdtrf  = 2U, /**< Watchdog Timer Reset Detect Flag */
+  k_rstsr2_swrf   = 4U, /**< Software Reset Detect Flag */
 } rstsr2_bits_t;
 
 #ifdef __cplusplus

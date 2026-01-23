@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TXS0102DCUT
+PartCategory=Level Shifter
+PackageCategory=SOP
+PinCount=8
+Version=1.0
+Released=2026-01-22 14:57:00
+Downloaded=2026-01-22 14:57:00
+3D=Y

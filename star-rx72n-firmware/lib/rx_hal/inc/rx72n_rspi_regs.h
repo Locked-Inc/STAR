@@ -26,7 +26,7 @@ extern "C" {
  */
 
 /** @brief RSPI base addresses (verified against RX72N Hardware Manual) */
-typedef enum {
+typedef enum : uint32_t {
   k_rspi0_base_addr = 0x000D0100, /**< RSPI0 register base address */
   k_rspi1_base_addr = 0x000D0140, /**< RSPI1 register base address */
   k_rspi2_base_addr = 0x000D0300, /**< RSPI2 register base address */
@@ -89,7 +89,7 @@ static inline volatile rx_rspi_regs_t* rspi2(void)
 }
 
 /* RSPI Control Register (SPCR) Bit Definitions */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_spcr_sprie = (1 << 7), /**< Receive Interrupt Enable */
   k_rspi_spcr_spe   = (1 << 6), /**< SPI Function Enable */
   k_rspi_spcr_sptie = (1 << 5), /**< Transmit Interrupt Enable */
@@ -101,7 +101,7 @@ typedef enum {
 } rspi_spcr_bits_t;
 
 /* RSPI Status Register (SPSR) Bit Definitions */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_spsr_sprf  = (1 << 7), /**< Receive Buffer Full Flag */
   k_rspi_spsr_sptef = (1 << 5), /**< Transmit Buffer Empty Flag */
   k_rspi_spsr_perf  = (1 << 3), /**< Parity Error Flag */
@@ -111,14 +111,14 @@ typedef enum {
 } rspi_spsr_bits_t;
 
 /* RSPI Pin Control Register (SPPCR) Bit Definitions */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_sppcr_moife = (1 << 6), /**< COPI Idle Fixed Value Enable */
   k_rspi_sppcr_moifv = (1 << 5), /**< COPI Idle Fixed Value */
   k_rspi_sppcr_splp  = (1 << 0), /**< Loopback Mode */
 } rspi_sppcr_bits_t;
 
 /* RSPI Data Control Register (SPDCR) Bit Definitions */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_spdcr_sprdtd = (1 << 5), /**< Receive Data Ready Detection */
   k_rspi_spdcr_splw   = (1 << 4), /**< Word Access Mode (1=Word, 0=Byte) */
 } rspi_spdcr_bits_t;

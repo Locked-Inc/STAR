@@ -70,7 +70,7 @@ void test_mock_time_get_interface_null_fails(void)
 {
   rx_err_t err = mock_time_get_interface(NULL, &s_mock);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_mock_time_get_interface_populates_iface(void)
@@ -247,7 +247,7 @@ void test_time_interface_validate_null_fails(void)
 {
   rx_err_t err = rx_time_interface_validate(NULL);
 
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_time_interface_validate_success(void)

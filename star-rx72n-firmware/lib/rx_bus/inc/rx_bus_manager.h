@@ -50,7 +50,7 @@ extern "C" {
  * @param[in] pin_iface Pin validator interface (DIP, can be NULL)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or tag is NULL
+ * @return k_rx_err_null_ptr if manager or tag is NULL
  * @return k_rx_err_threadx if ThreadX mutex creation fails
  */
 rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
@@ -66,7 +66,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
  * @param[in,out] manager Bus manager instance
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager is NULL
+ * @return k_rx_err_null_ptr if manager is NULL
  */
 rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager);
 
@@ -85,7 +85,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager);
  * @param[in] bus_config Bus configuration to add (manager takes ownership)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_config is NULL
+ * @return k_rx_err_null_ptr if manager or bus_config is NULL
  * @return k_rx_err_invalid_arg if bus name is NULL or empty
  * @return k_rx_err_exists if bus with same name already exists
  * @return k_rx_err_no_mem if maximum buses reached
@@ -101,7 +101,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
  * @param[in] name Bus name
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or name is NULL
+ * @return k_rx_err_null_ptr if manager or name is NULL
  * @return k_rx_err_not_found if bus not found
  */
 rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name);
@@ -122,7 +122,7 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name);
  * @param[out] bus_config Pointer to bus configuration (if found)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any parameter is NULL
+ * @return k_rx_err_null_ptr if any parameter is NULL
  * @return k_rx_err_not_found if bus not found
  */
 rx_err_t
@@ -150,7 +150,7 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  * @param[in] user_ctx User context passed to callback
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, name, or callback is NULL
+ * @return k_rx_err_null_ptr if manager, name, or callback is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_timeout if mutex timeout
  * @return Error code from callback if callback fails
@@ -183,7 +183,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
  * @param[in,out] command Command to execute (result stored in command->result)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, name, or command is NULL
+ * @return k_rx_err_null_ptr if manager, name, or command is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_timeout if mutex timeout
  * @return Command execution result (stored in command->result)

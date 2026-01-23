@@ -212,7 +212,7 @@ Helper functions check the main struct pointer but skip validation on primitive 
 ### Rule 6: Declare Data at Smallest Scope
 **Status:** COMPLIANT
 
-All local variables are declared at function scope (C89-style), which is acceptable and consistent with project standards.
+All local variables are declared at function scope, which is acceptable and consistent with project C23 standards.
 
 ---
 

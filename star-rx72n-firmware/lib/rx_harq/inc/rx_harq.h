@@ -45,12 +45,13 @@ extern "C" {
 /**
  * @brief HARQ protocol parameters
  */
-typedef enum {
-  k_harq_max_payload      = 1024,  /**< Maximum payload size in bytes */
-  k_harq_default_retries  = 3,     /**< Default maximum retries */
-  k_harq_default_combines = 3,     /**< Default max combining attempts */
-  k_harq_soft_buffer_size = 16400, /**< Max soft buffer size for Chase Combining
+typedef enum : uint16_t {
+  k_harq_max_payload           = 1024,  /**< Maximum payload size in bytes */
+  k_harq_default_retries       = 3,     /**< Default maximum retries */
+  k_harq_default_combines      = 3,     /**< Default max combining attempts */
+  k_harq_soft_buffer_size      = 16400, /**< Max soft buffer size for Chase Combining
                                      * (1024*8+6)*2 = 16396 bits, rounded to 16400 */
+  k_harq_survivors_buffer_size = k_harq_soft_buffer_size / 2U, /**< Survivors buffer size */
 } rx_harq_params_t;
 
 /* =============================================================================
@@ -61,7 +62,7 @@ typedef enum {
 /**
  * @brief HARQ state machine states
  */
-typedef enum {
+typedef enum : uint8_t {
   k_harq_state_idle        = 0, /**< Ready for new transmission */
   k_harq_state_waiting_ack = 1, /**< Waiting for ACK */
   k_harq_state_combining   = 2, /**< Combining retransmissions */
@@ -135,8 +136,9 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
  * @return k_rx_err_invalid_arg if any pointer is NULL
  * @return k_rx_err_invalid_state if no soft bits have been added
  */
-rx_err_t
-rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output, uint32_t* len);
+rx_err_t rx_chase_combiner_combined(const rx_chase_combiner_t* combiner,
+                                    rx_soft_bit_t*             output,
+                                    uint32_t*                  len);
 
 /**
  * @brief Reset combiner for new frame
@@ -187,10 +189,10 @@ typedef struct {
   rx_chase_combiner_t combiner;    /**< Chase Combiner */
   rx_fec_encoder_t    encoder;     /**< FEC encoder */
   rx_fec_decoder_t    decoder;     /**< FEC decoder */
-  uint64_t            decoder_survivors[k_harq_soft_buffer_size / 2]; /**< Decoder buf */
-  rx_soft_bit_t       decode_buffer[k_harq_soft_buffer_size];         /**< Combined soft bits buf */
-  uint8_t             fec_enabled; /**< Non-zero if FEC is enabled */
-  uint8_t             initialized; /**< Non-zero if initialized */
+  uint64_t            decoder_survivors[k_harq_survivors_buffer_size]; /**< Decoder buf */
+  rx_soft_bit_t       decode_buffer[k_harq_soft_buffer_size]; /**< Combined soft bits buf */
+  uint8_t             fec_enabled;                            /**< Non-zero if FEC is enabled */
+  uint8_t             initialized;                            /**< Non-zero if initialized */
 } rx_harq_handle_t;
 
 /**
@@ -201,6 +203,15 @@ typedef struct {
   uint8_t fec_enabled;  /**< Non-zero to enable FEC encoding/decoding */
   uint8_t max_combines; /**< Maximum combining attempts (0 = default) */
 } rx_harq_config_t;
+
+/**
+ * @brief HARQ decode parameters
+ */
+typedef struct {
+  const rx_soft_bit_t* soft_bits;           /**< Received soft bits */
+  uint32_t             soft_len;            /**< Number of soft bits */
+  uint32_t             expected_output_len; /**< Expected decoded length */
+} rx_harq_decode_params_t;
 
 /**
  * @brief Initialize HARQ handle
@@ -257,12 +268,12 @@ rx_err_t rx_harq_reset(rx_harq_handle_t* harq);
  * @return k_rx_err_invalid_size if output buffer too small
  * @return k_rx_err_invalid_state if not initialized
  */
-rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
-                        const uint8_t*    payload,
-                        uint32_t          payload_len,
-                        uint8_t*          output,
-                        uint32_t          output_size,
-                        uint32_t*         output_len);
+rx_err_t rx_harq_encode(const rx_harq_handle_t* harq,
+                        const uint8_t*          payload,
+                        uint32_t                payload_len,
+                        uint8_t*                output,
+                        uint32_t                output_size,
+                        uint32_t*               output_len);
 
 /**
  * @brief Decode soft bits with combining and FEC
@@ -270,9 +281,7 @@ rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
  * Adds soft bits to combiner, attempts decode. On failure, keeps accumulating.
  *
  * @param[in]  harq HARQ handle
- * @param[in]  soft_bits Received soft bits
- * @param[in]  soft_len Number of soft bits
- * @param[in]  expected_output_len Expected decoded length
+ * @param[in]  params Decode parameters
  * @param[out] output Decoded output buffer
  * @param[out] output_len Actual decoded length
  *
@@ -281,12 +290,10 @@ rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
  * @return k_rx_err_invalid_arg if any pointer is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
-rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
-                        const rx_soft_bit_t* soft_bits,
-                        uint32_t             soft_len,
-                        uint32_t             expected_output_len,
-                        uint8_t*             output,
-                        uint32_t*            output_len);
+rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
+                        const rx_harq_decode_params_t* params,
+                        uint8_t*                       output,
+                        uint32_t*                      output_len);
 
 /**
  * @brief Get current retry count

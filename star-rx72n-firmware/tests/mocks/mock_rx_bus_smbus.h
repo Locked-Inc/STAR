@@ -31,7 +31,7 @@ extern "C" {
 /**
  * @brief Mock SMBus buffer and limit constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_mock_smbus_max_regs      = 256, /**< Maximum number of registers */
   k_mock_smbus_max_block_len = 32,  /**< Maximum block read length */
 } mock_smbus_constants_t;

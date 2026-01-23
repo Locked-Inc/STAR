@@ -36,12 +36,12 @@
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_float_tolerance_percent = 1, /**< 0.01 tolerance for percentage comparisons */
 } test_constants_t;
 
 /** @brief Common test PWM frequencies in Hz */
-typedef enum {
+typedef enum : uint16_t {
   k_test_freq_20khz = 20000, /**< Standard motor PWM frequency */
   k_test_freq_25khz = 25000, /**< Alternative motor PWM frequency */
   k_test_freq_1khz  = 1000,  /**< Low frequency for testing */
@@ -49,7 +49,7 @@ typedef enum {
 } test_frequencies_t;
 
 /** @brief Common test dead-time values in nanoseconds */
-typedef enum {
+typedef enum : uint16_t {
   k_test_deadtime_0ns    = 0,    /**< No dead-time */
   k_test_deadtime_500ns  = 500,  /**< 500ns dead-time */
   k_test_deadtime_1000ns = 1000, /**< 1us dead-time */
@@ -57,7 +57,7 @@ typedef enum {
 } test_deadtimes_t;
 
 /** @brief Duty cycle test values */
-typedef enum {
+typedef enum : int16_t {
   k_duty_full_forward = 100,  /**< Full forward duty */
   k_duty_half         = 50,   /**< Half duty */
   k_duty_quarter      = 25,   /**< Quarter duty */
@@ -124,13 +124,13 @@ void test_motor_init_success(void)
 void test_motor_init_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_init(NULL, &s_config);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_init_null_config_fails(void)
 {
   rx_err_t err = rx_motor_init(&s_motor, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_init_gptw_initialized(void)
@@ -236,7 +236,7 @@ void test_motor_deinit_success(void)
 void test_motor_deinit_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_deinit(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_deinit_not_initialized_fails(void)
@@ -619,7 +619,7 @@ void test_motor_stop_coast_from_reverse(void)
 void test_motor_stop_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_stop(NULL, false);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_stop_not_initialized_fails(void)
@@ -673,7 +673,7 @@ void test_motor_get_duty_null_handle_fails(void)
 {
   float    duty;
   rx_err_t err = rx_motor_get_duty(NULL, &duty);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_get_duty_null_output_fails(void)
@@ -681,7 +681,7 @@ void test_motor_get_duty_null_output_fails(void)
   rx_motor_init(&s_motor, &s_config);
 
   rx_err_t err = rx_motor_get_duty(&s_motor, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_get_duty_not_initialized_fails(void)
@@ -709,7 +709,7 @@ void test_motor_get_duty_initial_zero(void)
 void test_motor_set_duty_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_set_duty(NULL, 50.0f);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_set_duty_not_initialized_fails(void)
@@ -983,7 +983,7 @@ void test_motor_emergency_stop_disables_outputs(void)
 void test_motor_emergency_stop_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_emergency_stop(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_emergency_stop_not_initialized_fails(void)

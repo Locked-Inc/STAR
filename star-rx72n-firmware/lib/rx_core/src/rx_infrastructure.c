@@ -53,6 +53,13 @@ static bool s_infrastructure_initialized = false;
 
 rx_err_t rx_infrastructure_init(void)
 {
+  const error_handler_config_t config = {
+    .max_retries        = k_error_handler_default_max_retries,
+    .initial_backoff_ms = k_error_handler_default_initial_backoff_ms,
+    .max_backoff_ms     = k_error_handler_default_max_backoff_ms,
+  };
+  rx_err_t err;
+
   if (s_infrastructure_initialized) {
     rx_log_warn("INFRA", "Infrastructure already initialized");
     return k_rx_ok;
@@ -61,10 +68,7 @@ rx_err_t rx_infrastructure_init(void)
   rx_log_info("INFRA", "Initializing global infrastructure");
 
   /* Initialize error handler */
-  rx_err_t err = error_handler_init(&s_global_error_handler,
-                                    k_error_handler_default_max_retries,
-                                    k_error_handler_default_initial_backoff_ms,
-                                    k_error_handler_default_max_backoff_ms);
+  err = error_handler_init(&s_global_error_handler, &config);
   if (err != k_rx_ok) {
     rx_log_error("INFRA", "Failed to initialize error handler");
     return err;

@@ -35,10 +35,10 @@
 /**
  * @brief CRC-32 software implementation constants
  */
-typedef enum {
+typedef enum : int32_t {
   k_crc32_table_size   = 256, /**< Number of entries in lookup table */
   k_crc_byte_shift     = 8,   /**< Bit shift for table lookup */
-  k_crc_ieee_final_xor = -1,  /**< IEEE 802.3 CRC-32 final XOR (0xFFFFFFFF as signed int) */
+  k_crc_ieee_final_xor = -1,  /**< IEEE 802.3 CRC-32 final XOR (0xFFFFFFFF as signed int32_t) */
 } rx_crc32_sw_constants_t;
 
 /* =============================================================================
@@ -112,8 +112,8 @@ uint32_t rx_crc32_update_sw(uint32_t crc, const uint8_t* data, uint32_t len)
 
   /* Process each byte using the lookup table */
   for (uint32_t i = 0; i < len; i++) {
-    uint8_t table_idx = (uint8_t)(crc ^ data[i]);
-    crc               = s_crc32_table[table_idx] ^ (crc >> k_crc_byte_shift);
+    const uint8_t table_idx = (uint8_t)(crc ^ data[i]);
+    crc                     = s_crc32_table[table_idx] ^ (crc >> k_crc_byte_shift);
   }
 
   /* Finalize */
@@ -154,8 +154,8 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 
   /* Process each byte using the lookup table */
   for (uint32_t i = 0; i < len; i++) {
-    uint8_t table_idx = (uint8_t)(crc ^ data[i]);
-    crc               = s_crc32_table[table_idx] ^ (crc >> k_crc_byte_shift);
+    const uint8_t table_idx = (uint8_t)(crc ^ data[i]);
+    crc                     = s_crc32_table[table_idx] ^ (crc >> k_crc_byte_shift);
   }
 
   /* Final XOR with all bits set (standard IEEE 802.3 finalization) */

@@ -5,12 +5,12 @@
  * @brief Type-Safe Logging System for RX72N Firmware
  * @details
  * Modern logging system designed specifically for RX72N bare-metal firmware.
- * Uses C11 _Generic for automatic type dispatch and compile-time filtering
+ * Uses C23 _Generic for automatic type dispatch and compile-time filtering
  * for zero overhead when logs are disabled.
  *
  * Key Features:
  * - Compile-time log level filtering (zero overhead for disabled logs)
- * - C11 _Generic automatic type dispatch (no manual type suffixes needed)
+ * - C23 _Generic automatic type dispatch (no manual type suffixes needed)
  * - Type-safe with explicit-width integer types (uint8_t, uint16_t, uint32_t, int32_t)
  * - Bounded string safety (explicit lengths required, NASA Power of 10 compliant)
  * - UART-only output (no printf, suitable for bare-metal)
@@ -73,7 +73,7 @@ void uart_puthex(uint32_t value, uint8_t digits);
 /**
  * @brief Log levels (priority from low to high)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_log_none    = 0, /**< No logging */
   k_log_error   = 1, /**< Critical errors only */
   k_log_warn    = 2, /**< Errors and warnings */
@@ -649,18 +649,34 @@ static inline void internal_rx_log_verbose_str(const char* tag,
 }
 
 /* =============================================================================
- * C11 _Generic Type Dispatch Helpers
+ * C23 _Generic Type Dispatch Helpers
  * =============================================================================
  */
 
 /**
- * @brief Internal macro for C11 _Generic type dispatch
+ * @brief Internal macro for C23 _Generic type dispatch
  *
  * Automatically selects the correct typed logging function based on the
  * value's type at compile time. Supported types:
  * - uint8_t, uint16_t, uint32_t (unsigned integers)
- * - int32_t (signed integer)
- * - rx_err_t (error codes)
+ * - int32_t → formatted as hex (error codes)
+ * - rx_err_t → formatted as hex (error codes)
+ *
+ * **IMPORTANT - Type Limitation:**
+ * Because `rx_err_t` is defined as `typedef int32_t`, C's `_Generic` cannot
+ * distinguish between `rx_err_t` and raw `int32_t` values. Both are routed
+ * to hex formatting (error code format). This means:
+ * - rx_err_t values display correctly as hex error codes
+ * - Raw signed integers should NOT be passed to rx_log_*_val() macros
+ *   (they will display as hex instead of decimal)
+ *
+ * **Workaround for signed integers:**
+ * Cast to uint32_t or use explicit decimal formatting:
+ * ```c
+ * int32_t value = -42;
+ * rx_log_info(tag, "Value as unsigned");
+ * rx_log_val(info, tag, "Value", (uint32_t)value);
+ * ```
  *
  * @param[in] level Log level name (error, warn, info, debug, verbose)
  * @param[in] tag Component tag string
@@ -697,7 +713,7 @@ static inline void internal_rx_log_verbose_str(const char* tag,
 /**
  * @brief Log error with typed value (automatic type dispatch)
  *
- * Uses C11 _Generic to automatically select the correct logging function
+ * Uses C23 _Generic to automatically select the correct logging function
  * based on the value's type. Supported types: uint8_t, uint16_t, uint32_t,
  * int32_t, rx_err_t.
  *
