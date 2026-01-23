@@ -107,7 +107,7 @@ if [ ! -f "$PROJECT_ROOT/star-gateway/star-gateway" ]; then
     exit 1
 fi
 
-./star-gateway > "$OUTPUT_DIR/gateway.log" 2>&1 &
+STAR_SIMULATION_MODE=true ./star-gateway > "$OUTPUT_DIR/gateway.log" 2>&1 &
 GATEWAY_PID=$!
 echo "  Started (PID: $GATEWAY_PID)"
 sleep 3
@@ -130,8 +130,10 @@ if [ ! -d "install/star_gateway_bridge" ]; then
     exit 1
 fi
 
-# Source ROS2 setup
+# Source ROS2 setup (temporarily disable strict mode for setup.bash)
+set +u
 source install/setup.bash
+set -u
 
 # Start the bridge
 ros2 run star_gateway_bridge star_gateway_bridge_node > "$OUTPUT_DIR/ros2_bridge.log" 2>&1 &
