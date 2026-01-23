@@ -29,19 +29,10 @@ typedef enum : uint8_t {
   k_adc_timeout_ms   = 100, /**< ADC conversion timeout (ms) */
 } adc_constants_t;
 
-/** @brief ADC unit and bit constants */
+/** @brief ADC bit constants (units/resolution defined in rx_bus_types.h) */
 typedef enum : uint8_t {
-  k_adc_unit_0  = 0U, /**< ADC unit 0 */
-  k_adc_unit_1  = 1U, /**< ADC unit 1 */
   k_adc_bit_one = 1U, /**< Single-bit value */
-} adc_unit_constants_t;
-
-/** @brief ADC resolution options */
-typedef enum : uint8_t {
-  k_adc_resolution_8bit  = 8,  /**< 8-bit ADC resolution */
-  k_adc_resolution_10bit = 10, /**< 10-bit ADC resolution */
-  k_adc_resolution_12bit = 12, /**< 12-bit ADC resolution (default) */
-} adc_resolution_bits_t;
+} adc_bit_constants_t;
 
 /** @brief ADC module stop bit positions in MSTPCRA */
 typedef enum : uint8_t {
@@ -70,17 +61,7 @@ typedef enum : uint8_t {
   k_adc_channel_adansa1_base = 16, /**< Base channel for ADANSA1 (channels 16+) */
 } adc_channel_boundaries_t;
 
-/** @brief ADC channel indices */
-typedef enum : uint8_t {
-  k_adc_channel_0 = 0U, /**< ADC channel 0 */
-  k_adc_channel_1 = 1U, /**< ADC channel 1 */
-  k_adc_channel_2 = 2U, /**< ADC channel 2 */
-  k_adc_channel_3 = 3U, /**< ADC channel 3 */
-  k_adc_channel_4 = 4U, /**< ADC channel 4 */
-  k_adc_channel_5 = 5U, /**< ADC channel 5 */
-  k_adc_channel_6 = 6U, /**< ADC channel 6 */
-  k_adc_channel_7 = 7U, /**< ADC channel 7 */
-} adc_channel_index_t;
+/* ADC channel indices defined in hardware.h (via rx_bus_types.h) */
 
 /** @brief ADC timeout and voltage constants */
 typedef enum : uint16_t {
@@ -338,10 +319,10 @@ rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_
   }
 
   /* Enable the specified channel */
-  if (channel <= k_adc_channel_adansa0_max) {
+  if ((uint8_t)channel <= k_adc_channel_adansa0_max) {
     adc->adansa0 |= ((uint16_t)k_adc_bit_one << channel);
   } else {
-    adc->adansa1 |= ((uint16_t)k_adc_bit_one << (channel - k_adc_channel_adansa1_base));
+    adc->adansa1 |= ((uint16_t)k_adc_bit_one << ((uint8_t)channel - k_adc_channel_adansa1_base));
   }
 
   rx_log_debug(s_tag, "ADC channel enabled");
