@@ -27720,6 +27720,16 @@
 	)
 	(wire
 		(pts
+			(xy 208.28 335.28) (xy 224.79 335.28)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ea754f8d-323c-42b7-8a40-686e3801e3d4")
+	)
+	(wire
+		(pts
 			(xy 502.92 321.31) (xy 519.43 321.31)
 		)
 		(stroke
@@ -34119,6 +34129,16 @@
 			(justify left bottom)
 		)
 		(uuid "d13b7196-d55b-41ec-9a30-84addabdd4d7")
+	)
+	(label "RX72N_PIN_4"
+		(at 208.28 335.28 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "d202ba8a-9c30-4460-97a7-4090f407f9b4")
 	)
 	(label "PI_PIN_27"
 		(at 60.96 87.63 0)
@@ -130150,6 +130170,125 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "R25")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "3825:3825")
+		(at 224.79 335.28 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "aae28491-007e-4dc2-8b92-7f0cd69fba7e")
+		(property "Reference" "TP75"
+			(at 241.3 334.0099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "3825"
+			(at 241.3 336.5499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "3825"
+			(at 241.3 430.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://cdn-shop.adafruit.com/product-files/3825/3825_diagram.PDF"
+			(at 241.3 530.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Test Plugs & Test Jacks Small PCB Test Points (100 pack) - Red"
+			(at 224.79 335.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "4.72"
+			(at 241.3 730.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 241.3 830.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Adafruit/3825?qs=%252BEew9%252B0nqrAn6n76%252BB5vZg%3D%3D"
+			(at 241.3 930.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Name" "Adafruit"
+			(at 241.3 1030.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "3825"
+			(at 241.3 1130.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f0282abd-e177-4d44-8f79-8c491cc1344f")
+		)
+		(instances
+			(project "STAR_MCU"
+				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
+					(reference "TP75")
 					(unit 1)
 				)
 			)
