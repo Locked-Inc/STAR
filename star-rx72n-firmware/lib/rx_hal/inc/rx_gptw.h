@@ -37,6 +37,7 @@
 #include <stdint.h>
 
 #include "rx_err.h"
+#include "rx_check.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,7 +51,7 @@ extern "C" {
 /**
  * @brief GPTW channel identifiers
  */
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_channel_0 = 0, /**< GPTW0 - Motor 0 */
   k_gptw_channel_1 = 1, /**< GPTW1 - Motor 1 */
   k_gptw_channel_2 = 2, /**< GPTW2 - Motor 2 */
@@ -60,10 +61,80 @@ typedef enum {
 /**
  * @brief GPTW output channel (for complementary PWM)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_output_a = 0, /**< GTIOCA output */
   k_gptw_output_b = 1, /**< GTIOCB output */
 } rx_gptw_output_t;
+
+/**
+ * @brief GPTW channel wrapper type (prevents accidental argument swaps)
+ */
+typedef struct {
+  rx_gptw_channel_t value; /**< GPTW channel */
+} rx_gptw_channel_id_t;
+
+/**
+ * @brief GPTW output wrapper type (prevents accidental argument swaps)
+ */
+typedef struct {
+  rx_gptw_output_t value; /**< GPTW output */
+} rx_gptw_output_id_t;
+
+/**
+ * @brief Helper to construct a GPTW channel wrapper
+ *
+ * @details Provides type-safe wrapper construction with NASA Power of 10 Rule 5
+ * validation (minimum 2 checks per function):
+ * - Pre-condition: Input value is within valid channel range [0-3]
+ * - Post-condition: Wrapper correctly stores the input value
+ *
+ * @param[in] value GPTW channel enum value (k_gptw_channel_0 to k_gptw_channel_3)
+ *
+ * @return Wrapped channel ID for type-safe function calls
+ *
+ * @note Asserts on invalid input - use only with known-valid enum values
+ */
+static inline rx_gptw_channel_id_t rx_gptw_channel_id(rx_gptw_channel_t value)
+{
+  /* Pre-condition: channel must be in valid range */
+  RX_ASSERT((value >= k_gptw_channel_0) && (value <= k_gptw_channel_3),
+            "GPTW channel out of range");
+
+  rx_gptw_channel_id_t id = {.value = value};
+
+  /* Post-condition: wrapper must store value correctly */
+  RX_ASSERT(id.value == value, "GPTW channel wrapper mismatch");
+
+  return id;
+}
+
+/**
+ * @brief Helper to construct a GPTW output wrapper
+ *
+ * @details Provides type-safe wrapper construction with NASA Power of 10 Rule 5
+ * validation (minimum 2 checks per function):
+ * - Pre-condition: Input value is within valid output range [A-B]
+ * - Post-condition: Wrapper correctly stores the input value
+ *
+ * @param[in] value GPTW output enum value (k_gptw_output_a or k_gptw_output_b)
+ *
+ * @return Wrapped output ID for type-safe function calls
+ *
+ * @note Asserts on invalid input - use only with known-valid enum values
+ */
+static inline rx_gptw_output_id_t rx_gptw_output_id(rx_gptw_output_t value)
+{
+  /* Pre-condition: output must be in valid range */
+  RX_ASSERT((value >= k_gptw_output_a) && (value <= k_gptw_output_b),
+            "GPTW output out of range");
+
+  rx_gptw_output_id_t id = {.value = value};
+
+  /* Post-condition: wrapper must store value correctly */
+  RX_ASSERT(id.value == value, "GPTW output wrapper mismatch");
+
+  return id;
+}
 
 /**
  * @brief GPTW PWM configuration
@@ -110,7 +181,9 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
  * @return k_rx_err_invalid_arg if channel, output, or duty is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float duty_percent);
+rx_err_t rx_gptw_set_duty(rx_gptw_channel_id_t channel,
+                          rx_gptw_output_id_t  output,
+                          float               duty_percent);
 
 /**
  * @brief Set PWM duty cycle (raw count value)
@@ -138,7 +211,7 @@ rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_
  * @param[out] duty_percent Pointer to store duty cycle in percent
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if duty_percent is NULL
+ * @return k_rx_err_null_ptr if duty_percent is NULL
  * @return k_rx_err_invalid_arg if channel or output is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
@@ -153,7 +226,7 @@ rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
  * @param[out] period_count Pointer to store period count
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if period_count is NULL
+ * @return k_rx_err_null_ptr if period_count is NULL
  * @return k_rx_err_invalid_arg if channel is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */

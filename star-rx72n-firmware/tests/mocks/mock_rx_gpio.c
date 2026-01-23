@@ -48,14 +48,14 @@ static mock_gpio_state_t s_mock_gpio;
  */
 
 /**
- * @brief Convert gpio_pin_t to array index
+ * @brief Convert rx_port_pin_t to array index
  */
-static uint16_t internal_pin_to_index(gpio_pin_t pin)
+static uint32_t internal_pin_to_index(rx_port_pin_t pin)
 {
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  uint8_t port    = rx_port_from_pin(pin);
+  uint8_t pin_num = rx_pin_from_pin(pin);
 
-  return (uint16_t)((port << k_gpio_port_shift) | pin_num);
+  return (uint32_t)((port << k_port_shift) | pin_num);
 }
 
 /* =============================================================================
@@ -79,26 +79,26 @@ void mock_gpio_deinit(void)
   memset(&s_mock_gpio, 0, sizeof(s_mock_gpio));
 }
 
-void mock_gpio_set_read_value(gpio_pin_t pin, bool high)
+void mock_gpio_set_read_value(rx_port_pin_t pin, bool high)
 {
-  uint16_t idx = internal_pin_to_index(pin);
+  uint32_t idx = internal_pin_to_index(pin);
   if (idx < k_mock_gpio_max_pins) {
     s_mock_gpio.pins[idx].read_value = high;
   }
 }
 
-bool mock_gpio_get_written_value(gpio_pin_t pin)
+bool mock_gpio_get_written_value(rx_port_pin_t pin)
 {
-  uint16_t idx = internal_pin_to_index(pin);
+  uint32_t idx = internal_pin_to_index(pin);
   if (idx < k_mock_gpio_max_pins) {
     return s_mock_gpio.pins[idx].output_value;
   }
   return false;
 }
 
-bool mock_gpio_is_output(gpio_pin_t pin)
+bool mock_gpio_is_output(rx_port_pin_t pin)
 {
-  uint16_t idx = internal_pin_to_index(pin);
+  uint32_t idx = internal_pin_to_index(pin);
   if (idx < k_mock_gpio_max_pins) {
     return s_mock_gpio.pins[idx].is_output;
   }
@@ -149,7 +149,7 @@ void mock_gpio_reset_counters(void)
  * =============================================================================
  */
 
-rx_err_t gpio_set_output(gpio_pin_t pin)
+rx_err_t gpio_set_output(rx_port_pin_t pin)
 {
   s_mock_gpio.set_output_count++;
 
@@ -159,15 +159,17 @@ rx_err_t gpio_set_output(gpio_pin_t pin)
     return err;
   }
 
-  uint16_t idx = internal_pin_to_index(pin);
-  if (idx < k_mock_gpio_max_pins) {
-    s_mock_gpio.pins[idx].is_output = true;
+  uint32_t idx = internal_pin_to_index(pin);
+  if (idx >= k_mock_gpio_max_pins) {
+    return k_rx_err_out_of_range;
   }
+
+  s_mock_gpio.pins[idx].is_output = true;
 
   return k_rx_ok;
 }
 
-rx_err_t gpio_set_input(gpio_pin_t pin)
+rx_err_t gpio_set_input(rx_port_pin_t pin)
 {
   s_mock_gpio.set_input_count++;
 
@@ -177,15 +179,17 @@ rx_err_t gpio_set_input(gpio_pin_t pin)
     return err;
   }
 
-  uint16_t idx = internal_pin_to_index(pin);
-  if (idx < k_mock_gpio_max_pins) {
-    s_mock_gpio.pins[idx].is_output = false;
+  uint32_t idx = internal_pin_to_index(pin);
+  if (idx >= k_mock_gpio_max_pins) {
+    return k_rx_err_out_of_range;
   }
+
+  s_mock_gpio.pins[idx].is_output = false;
 
   return k_rx_ok;
 }
 
-rx_err_t gpio_write_low(gpio_pin_t pin)
+rx_err_t gpio_write_low(rx_port_pin_t pin)
 {
   s_mock_gpio.write_low_count++;
 
@@ -195,15 +199,17 @@ rx_err_t gpio_write_low(gpio_pin_t pin)
     return err;
   }
 
-  uint16_t idx = internal_pin_to_index(pin);
-  if (idx < k_mock_gpio_max_pins) {
-    s_mock_gpio.pins[idx].output_value = false;
+  uint32_t idx = internal_pin_to_index(pin);
+  if (idx >= k_mock_gpio_max_pins) {
+    return k_rx_err_out_of_range;
   }
+
+  s_mock_gpio.pins[idx].output_value = false;
 
   return k_rx_ok;
 }
 
-rx_err_t gpio_write_high(gpio_pin_t pin)
+rx_err_t gpio_write_high(rx_port_pin_t pin)
 {
   s_mock_gpio.write_high_count++;
 
@@ -213,21 +219,23 @@ rx_err_t gpio_write_high(gpio_pin_t pin)
     return err;
   }
 
-  uint16_t idx = internal_pin_to_index(pin);
-  if (idx < k_mock_gpio_max_pins) {
-    s_mock_gpio.pins[idx].output_value = true;
+  uint32_t idx = internal_pin_to_index(pin);
+  if (idx >= k_mock_gpio_max_pins) {
+    return k_rx_err_out_of_range;
   }
+
+  s_mock_gpio.pins[idx].output_value = true;
 
   return k_rx_ok;
 }
 
-rx_err_t gpio_read(gpio_pin_t pin, bool* high)
+rx_err_t gpio_read(rx_port_pin_t pin, bool* high)
 {
   s_mock_gpio.read_count++;
 
   /* Pre-condition: Validate output pointer */
   if (high == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Check for injected error */
@@ -238,7 +246,7 @@ rx_err_t gpio_read(gpio_pin_t pin, bool* high)
   }
 
   /* Bounds validation: Verify pin index is within valid range */
-  uint16_t idx = internal_pin_to_index(pin);
+  uint32_t idx = internal_pin_to_index(pin);
   if (idx >= k_mock_gpio_max_pins) {
     return k_rx_err_out_of_range;
   }

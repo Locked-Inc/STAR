@@ -739,7 +739,7 @@ uart_puts("\r\n");
 
 Monitor via serial:
 ```bash
-screen /dev/tty.usbserial-XXXXXXXX 115200
+screen /dev/tty.usbserial-<serial> 115200
 ```
 
 ### GDB Debugging

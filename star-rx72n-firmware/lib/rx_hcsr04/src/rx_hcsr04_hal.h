@@ -20,10 +20,11 @@
 #ifndef RX_HCSR04_HAL_H
 #define RX_HCSR04_HAL_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
-#include "hardware_pinout.h"
 #include "rx_err.h"
+#include "rx_port_constants.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,7 +42,7 @@ extern "C" {
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_set_output(gpio_pin_t pin);
+rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin);
 
 /**
  * @brief Configure GPIO pin as input
@@ -50,7 +51,7 @@ rx_err_t hcsr04_hal_gpio_set_output(gpio_pin_t pin);
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_set_input(gpio_pin_t pin);
+rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin);
 
 /**
  * @brief Write GPIO pin high
@@ -59,7 +60,7 @@ rx_err_t hcsr04_hal_gpio_set_input(gpio_pin_t pin);
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_write_high(gpio_pin_t pin);
+rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin);
 
 /**
  * @brief Write GPIO pin low
@@ -68,7 +69,7 @@ rx_err_t hcsr04_hal_gpio_write_high(gpio_pin_t pin);
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_write_low(gpio_pin_t pin);
+rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin);
 
 /**
  * @brief Read GPIO pin state
@@ -78,7 +79,7 @@ rx_err_t hcsr04_hal_gpio_write_low(gpio_pin_t pin);
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_read(gpio_pin_t pin, bool* value);
+rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value);
 
 /**
  * @brief Deinitialize GPIO pin
@@ -87,7 +88,7 @@ rx_err_t hcsr04_hal_gpio_read(gpio_pin_t pin, bool* value);
  *
  * @return k_rx_ok on success, error code otherwise
  */
-rx_err_t hcsr04_hal_gpio_deinit(gpio_pin_t pin);
+rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin);
 
 /* =============================================================================
  * Timing Functions

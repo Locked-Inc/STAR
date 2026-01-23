@@ -40,19 +40,14 @@ void tearDown(void)
 /**
  * @brief Test vector size constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_rom_code_size        = 8, /**< OneWire ROM code: family + serial + CRC */
   k_scratchpad_size      = 9, /**< DS18B20 scratchpad with CRC */
   k_rom_data_size        = 7, /**< ROM code without CRC byte */
   k_scratchpad_data_size = 8, /**< Scratchpad without CRC byte */
 } test_size_constants_t;
 
-/**
- * @brief DS18B20 family code
- */
-typedef enum {
-  k_ds18b20_family_code = 0x28,
-} onewire_family_codes_t;
+static const uint8_t s_ds18b20_family_code = 0x28U; /**< DS18B20 family code */
 
 /* =============================================================================
  * Edge Case Tests
@@ -136,7 +131,7 @@ void test_crc8_single_lsb_set(void)
  */
 void test_crc8_ds18b20_family_code(void)
 {
-  uint8_t data[] = {k_ds18b20_family_code};
+  uint8_t data[] = {s_ds18b20_family_code};
   uint8_t crc    = rx_crc8_maxim(data, 1);
   TEST_ASSERT_EQUAL_HEX8(0xE1, crc);
 }

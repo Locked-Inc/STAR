@@ -33,6 +33,7 @@
 #include "rx_check.h"
 #include "rx_gpio_constants.h"
 #include "rx_log.h"
+#include "rx_register_protection.h"
 
 static const char* s_tag = "MTU_ENCODER";
 
@@ -44,8 +45,8 @@ static const char* s_tag = "MTU_ENCODER";
 /**
  * @brief Encoder configuration and hardware constants
  */
-typedef enum {
-  k_encoder_max_channels       = 7,    /**< Maximum MTU channels for encoders */
+typedef enum : uint32_t {
+  k_encoder_max_channels       = 8,    /**< Maximum MTU channels for encoders (max index 7) */
   k_tmdr_phase_counting_mode_1 = 0x04, /**< Phase counting mode 1 (4x decoding) */
 
   /* 16-bit counter limits */
@@ -57,9 +58,6 @@ typedef enum {
   k_mtu_mstpcra_mtu0_4_bit = 9, /**< MSTPCRA bit for MTU0-MTU4 */
   k_mtu_mstpcra_mtu6_7_bit = 8, /**< MSTPCRA bit for MTU6-MTU7 */
 
-  /* PRCR (Protect Register) values */
-  k_prcr_unlock_mtu = 0x0B, /**< Unlock PRC0, PRC1, PRC3 for MTU config */
-
   /* Timer control defaults */
   k_tcr_external_clock_no_prescaler = 0x00, /**< External clock, no prescaler */
   k_tior_disabled                   = 0x00, /**< I/O control disabled */
@@ -68,30 +66,33 @@ typedef enum {
 /**
  * @brief Encoder calculation constants
  */
-typedef enum {
+typedef enum : uint16_t {
+  k_turns_multiplier       = 2,   /**< Multiplier for turns range validation (±720°) */
   k_degrees_per_revolution = 360, /**< Degrees in one full revolution */
 } encoder_calc_constants_t;
 
 /**
  * @brief Encoder initialization values
  */
-typedef enum {
-  k_encoder_count_reset        = 0, /**< Counter reset value */
-  k_encoder_initial_count      = 0, /**< Initial total count */
-  k_encoder_initial_rev        = 0, /**< Initial revolution count */
-  k_encoder_min_counts_per_rev = 1, /**< Minimum valid counts per revolution */
+typedef enum : uint16_t {
+  k_encoder_count_reset        = 0,     /**< Counter reset value */
+  k_encoder_initial_count      = 0,     /**< Initial total count */
+  k_encoder_initial_rev        = 0,     /**< Initial revolution count */
+  k_encoder_min_counts_per_rev = 1,     /**< Minimum valid counts per revolution */
+  k_encoder_max_counts_per_rev = 65535, /**< Maximum valid counts per revolution */
 } encoder_init_values_t;
 
 /**
  * @brief Encoder velocity limits
  */
-typedef enum {
+typedef enum : uint16_t {
   k_max_realistic_velocity_rps = 100, /**< Maximum realistic velocity (6000 RPM) */
 } encoder_velocity_limits_t;
 
 /* Floating-point constants (enums can't hold floats) */
 static const float k_encoder_initial_position_deg = 0.0f; /**< Initial position in degrees */
-static const float k_min_delta_time_s = 0.0f; /**< Minimum delta time for velocity calculation */
+static const float k_min_delta_time_s = 0.0f;  /**< Minimum delta time for velocity calculation */
+static const float k_max_delta_time_s = 10.0f; /**< Maximum delta time for velocity calculation */
 
 /* =============================================================================
  * Static Variables
@@ -111,9 +112,14 @@ static int32_t            s_last_count[k_encoder_max_channels]          = {0};
 
 static rx_err_t internal_enable_mtu_module(rx_mtu_channel_t channel);
 static rx_err_t internal_configure_encoder_timer(volatile rx_mtu_channel_regs_t* mtu);
-static rx_err_t internal_verify_timer_counting(volatile rx_mtu_channel_regs_t* mtu);
+static rx_err_t internal_verify_timer_counting(const volatile rx_mtu_channel_regs_t* mtu);
 static rx_err_t internal_initialize_encoder_state(rx_mtu_channel_t           channel,
                                                   const rx_encoder_config_t* config);
+static rx_err_t internal_update_state_from_count(rx_encoder_state_t* state,
+                                                 rx_mtu_channel_t    channel,
+                                                 uint16_t            current_count);
+
+static bool internal_is_valid_channel(rx_mtu_channel_t channel);
 
 /**
  * @brief Get MTU channel base address
@@ -122,7 +128,7 @@ static rx_err_t internal_initialize_encoder_state(rx_mtu_channel_t           cha
  *
  * @return Pointer to MTU register base, or NULL if invalid
  */
-static volatile rx_mtu_channel_regs_t* internal_get_mtu_base(rx_mtu_channel_t channel)
+static volatile rx_mtu_channel_regs_t* internal_get_mtu_base(const rx_mtu_channel_t channel)
 {
   switch (channel) {
     case k_mtu_channel_0:
@@ -132,9 +138,9 @@ static volatile rx_mtu_channel_regs_t* internal_get_mtu_base(rx_mtu_channel_t ch
     case k_mtu_channel_2:
       return (volatile rx_mtu_channel_regs_t*)mtu2();
     case k_mtu_channel_3:
-      return (volatile rx_mtu_channel_regs_t*)((volatile uint8_t*)mtu3());
+      return (volatile rx_mtu_channel_regs_t*)mtu3();
     case k_mtu_channel_4:
-      return (volatile rx_mtu_channel_regs_t*)((volatile uint8_t*)mtu4());
+      return (volatile rx_mtu_channel_regs_t*)mtu4();
     case k_mtu_channel_6:
       return (volatile rx_mtu_channel_regs_t*)mtu6();
     case k_mtu_channel_7:
@@ -144,6 +150,11 @@ static volatile rx_mtu_channel_regs_t* internal_get_mtu_base(rx_mtu_channel_t ch
   }
 }
 
+static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
+{
+  return internal_get_mtu_base(channel) != NULL;
+}
+
 /* =============================================================================
  * Public API Implementation
  * =============================================================================
@@ -151,24 +162,21 @@ static volatile rx_mtu_channel_regs_t* internal_get_mtu_base(rx_mtu_channel_t ch
 
 rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
 {
-  rx_err_t err = k_rx_ok;
+  rx_err_t                        err = k_rx_ok;
+  volatile rx_mtu_channel_regs_t* mtu;
 
   /* Validate inputs */
-  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
+  RX_VALIDATE_PTR(config, s_tag, "config pointer is NULL");
 
-  rx_mtu_channel_t channel = config->channel;
+  const rx_mtu_channel_t channel = config->channel;
 
-  if ((int32_t)channel >= k_encoder_max_channels) {
-    rx_log_error(s_tag, "Invalid MTU channel");
-    return k_rx_err_invalid_arg;
-  }
-
-  if (config->counts_per_rev < k_encoder_min_counts_per_rev) {
+  if (config->counts_per_rev < k_encoder_min_counts_per_rev ||
+      config->counts_per_rev > k_encoder_max_counts_per_rev) {
     rx_log_error(s_tag, "Invalid counts per revolution");
     return k_rx_err_invalid_arg;
   }
 
-  volatile rx_mtu_channel_regs_t* mtu = internal_get_mtu_base(channel);
+  mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -217,115 +225,92 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
   return k_rx_ok;
 }
 
-rx_err_t rx_encoder_read_raw(rx_mtu_channel_t channel, uint16_t* count)
+rx_err_t rx_encoder_read_raw(const rx_mtu_channel_t channel, uint16_t* count)
 {
-  RX_CHECK_NULL_PTR(count, s_tag, "count pointer is NULL");
+  volatile rx_mtu_channel_regs_t* mtu;
 
-  if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
-    return k_rx_err_invalid_state;
-  }
+  RX_VALIDATE_PTR(count, s_tag, "count pointer is NULL");
 
-  volatile rx_mtu_channel_regs_t* mtu = internal_get_mtu_base(channel);
+  mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
+
+  RX_VALIDATE_INIT(s_encoder_initialized[channel], s_tag, "Encoder not initialized");
 
   *count = mtu->tcnt;
   return k_rx_ok;
 }
 
-rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* state)
+rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_t* state)
 {
-  RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
+  volatile rx_mtu_channel_regs_t* mtu;
 
-  if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
-    return k_rx_err_invalid_state;
-  }
+  RX_VALIDATE_PTR(state, s_tag, "state pointer is NULL");
 
-  volatile rx_mtu_channel_regs_t* mtu = internal_get_mtu_base(channel);
+  mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
 
+  RX_VALIDATE_INIT(s_encoder_initialized[channel], s_tag, "Encoder not initialized");
+
   /* Read current counter value */
-  uint16_t current_count = mtu->tcnt;
-  uint16_t last_count    = s_encoder_state[channel].last_raw_count;
+  const uint16_t current_count = mtu->tcnt;
 
-  /* Calculate delta (handling 16-bit wraparound) */
-  int32_t delta;
-  if (current_count >= last_count) {
-    /* Normal case: no wraparound */
-    delta = current_count - last_count;
-  } else {
-    /* Wraparound occurred */
-    delta = (k_encoder_counter_max - last_count) + current_count;
-  }
-
-  /* Check for reverse wraparound */
-  if (delta > k_encoder_counter_half) {
-    /* Large positive delta means we actually went backwards */
-    delta = delta - k_encoder_counter_max;
-  }
-
-  /* Invert direction if configured */
-  if (s_invert_direction[channel]) {
-    delta = -delta;
-  }
-
-  /* Update total count */
-  s_encoder_state[channel].total_count += delta;
-  s_encoder_state[channel].last_raw_count = current_count;
-
-  /* Calculate revolutions and position */
-  uint16_t counts_per_rev              = s_counts_per_rev[channel];
-  s_encoder_state[channel].revolutions = s_encoder_state[channel].total_count / counts_per_rev;
-
-  int32_t remainder_counts = s_encoder_state[channel].total_count % counts_per_rev;
-  s_encoder_state[channel].position_deg =
-    (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
-
-  /* Post-condition: Validate position is within reasonable range
-   * Note: Position can be negative for backward counts, so we check absolute value.
-   * Position beyond ±720° would indicate a calculation error. */
-  if (fabsf(s_encoder_state[channel].position_deg) > (2 * k_degrees_per_revolution)) {
-    rx_log_error(s_tag, "Position calculation overflow - exceeds ±720°");
-    return k_rx_err_out_of_range;
-  }
-
-  /* Copy to output */
-  *state = s_encoder_state[channel];
-
-  return k_rx_ok;
+  return internal_update_state_from_count(state, channel, current_count);
 }
 
-rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, float* velocity_rps)
+rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
+                                  const float            delta_time_s,
+                                  const rx_mtu_channel_t channel)
 {
-  RX_CHECK_NULL_PTR(velocity_rps, s_tag, "velocity_rps pointer is NULL");
+  volatile rx_mtu_channel_regs_t* mtu;
+  rx_encoder_state_t              state;
+  rx_err_t                        err;
 
-  if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
-    return k_rx_err_invalid_state;
-  }
+  RX_VALIDATE_PTR(velocity_rps, s_tag, "velocity_rps pointer is NULL");
 
-  if (delta_time_s <= k_min_delta_time_s) {
+  /* Runtime validation to catch accidental parameter swaps */
+  if (delta_time_s <= k_min_delta_time_s || delta_time_s > k_max_delta_time_s) {
     rx_log_error(s_tag, "Invalid delta time for velocity calculation");
     return k_rx_err_invalid_arg;
   }
 
+  if (!internal_is_valid_channel(channel)) {
+    rx_log_error(s_tag, "Invalid channel - possible parameter swap");
+    return k_rx_err_invalid_arg;
+  }
+
+  mtu = internal_get_mtu_base(channel);
+  if (mtu == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  RX_VALIDATE_INIT(s_encoder_initialized[channel], s_tag, "Encoder not initialized");
+
   /* Read current count */
-  rx_encoder_state_t state;
-  rx_err_t           err = rx_encoder_read_count(channel, &state);
+  err = internal_update_state_from_count(&state, channel, mtu->tcnt);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Calculate velocity based on count change */
-  int32_t delta_count   = state.total_count - s_last_count[channel];
-  s_last_count[channel] = state.total_count;
+  const int32_t delta_count = state.total_count - s_last_count[channel];
+  s_last_count[channel]     = state.total_count;
 
   /* Convert to revolutions per second */
-  uint16_t counts_per_rev = s_counts_per_rev[channel];
-  float    delta_revs     = (float)delta_count / counts_per_rev;
-  *velocity_rps           = delta_revs / delta_time_s;
+  const uint16_t counts_per_rev = s_counts_per_rev[channel];
+
+  /* Guard division: Validate counts_per_rev is within acceptable range */
+  if (counts_per_rev < k_encoder_min_counts_per_rev ||
+      counts_per_rev > k_encoder_max_counts_per_rev) {
+    rx_log_error(s_tag, "counts_per_rev out of valid range");
+    return k_rx_err_invalid_state;
+  }
+
+  const float    delta_revs     = (float)delta_count / counts_per_rev;
+  *velocity_rps                 = delta_revs / delta_time_s;
 
   /* Post-condition: Validate velocity is realistic */
   if (fabsf(*velocity_rps) > k_max_realistic_velocity_rps) {
@@ -336,16 +321,16 @@ rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, 
   return k_rx_ok;
 }
 
-rx_err_t rx_encoder_reset(rx_mtu_channel_t channel)
+rx_err_t rx_encoder_reset(const rx_mtu_channel_t channel)
 {
-  if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
-    return k_rx_err_invalid_state;
-  }
+  volatile rx_mtu_channel_regs_t* mtu;
 
-  volatile rx_mtu_channel_regs_t* mtu = internal_get_mtu_base(channel);
+  mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
+
+  RX_VALIDATE_INIT(s_encoder_initialized[channel], s_tag, "Encoder not initialized");
 
   /* Reset hardware counter */
   mtu->tcnt = k_encoder_count_reset;
@@ -360,16 +345,16 @@ rx_err_t rx_encoder_reset(rx_mtu_channel_t channel)
   return k_rx_ok;
 }
 
-rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
+rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channel)
 {
-  if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
-    return k_rx_err_invalid_state;
-  }
+  volatile rx_mtu_channel_regs_t* mtu;
 
-  volatile rx_mtu_channel_regs_t* mtu = internal_get_mtu_base(channel);
+  mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
+
+  RX_VALIDATE_INIT(s_encoder_initialized[channel], s_tag, "Encoder not initialized");
 
   /* Set hardware counter (limited to 16-bit) */
   mtu->tcnt = (uint16_t)(count & k_encoder_16bit_mask);
@@ -380,20 +365,30 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
   s_last_count[channel]                   = count;
 
   /* Recalculate position */
-  uint16_t counts_per_rev              = s_counts_per_rev[channel];
+  const uint16_t counts_per_rev = s_counts_per_rev[channel];
+  if (counts_per_rev < k_encoder_min_counts_per_rev ||
+      counts_per_rev > k_encoder_max_counts_per_rev) {
+    rx_log_error(s_tag, "counts_per_rev out of valid range - state corrupted");
+    return k_rx_err_invalid_state;
+  }
   s_encoder_state[channel].revolutions = count / counts_per_rev;
 
-  int32_t remainder_counts = count % counts_per_rev;
+  const int32_t remainder_counts = count % counts_per_rev;
   s_encoder_state[channel].position_deg =
     (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
 
   return k_rx_ok;
 }
 
-rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel)
+rx_err_t rx_encoder_deinit(const rx_mtu_channel_t channel)
 {
-  if ((int32_t)channel >= k_encoder_max_channels) {
+  if (!internal_is_valid_channel(channel)) {
     return k_rx_err_invalid_arg;
+  }
+
+  if (!s_encoder_initialized[channel]) {
+    rx_log_error(s_tag, "Deinit called on uninitialized channel");
+    return k_rx_err_invalid_state;
   }
 
   /* Stop timer (explicitly ignore return value on cleanup path) */
@@ -420,11 +415,25 @@ rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel)
  *
  * @return k_rx_ok on success
  */
-static rx_err_t internal_enable_mtu_module(rx_mtu_channel_t channel)
+static rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t channel)
 {
+  volatile rx_mtu_channel_regs_t* mtu;
+
+  /* Pre-condition: channel must be within valid MTU channel enum range */
+  if (channel > k_mtu_channel_7) {
+    rx_log_error(s_tag, "Channel exceeds maximum MTU channel");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition: channel must map to a valid MTU base address */
+  mtu = internal_get_mtu_base(channel);
+  if (mtu == NULL) {
+    rx_log_error(s_tag, "Invalid MTU channel - no base address");
+    return k_rx_err_invalid_arg;
+  }
+
   /* Enable MTU module (clear module stop bit) */
-  system_regs()->prcr =
-    (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_mtu; /* Enable writes to MSTPCR */
+  system_regs()->prcr = k_rx_prcr_unlock_all; /* Enable writes to MSTPCR (0xA50F) */
 
   if (channel <= k_mtu_channel_4) {
     system_regs()->mstpcra &= ~(1 << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
@@ -432,7 +441,7 @@ static rx_err_t internal_enable_mtu_module(rx_mtu_channel_t channel)
     system_regs()->mstpcra &= ~(1 << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
   }
 
-  system_regs()->prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR */
+  system_regs()->prcr = k_rx_prcr_lock; /* Lock MSTPCR (0xA500) */
 
   return k_rx_ok;
 }
@@ -446,6 +455,10 @@ static rx_err_t internal_enable_mtu_module(rx_mtu_channel_t channel)
  */
 static rx_err_t internal_configure_encoder_timer(volatile rx_mtu_channel_regs_t* mtu)
 {
+  if (mtu == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
   /* Configure Timer Control Register (TCR)
    * - No prescaler (count directly on phase inputs)
    * - External clock on MTCLKA/B
@@ -464,24 +477,49 @@ static rx_err_t internal_configure_encoder_timer(volatile rx_mtu_channel_regs_t*
   /* Clear counter */
   mtu->tcnt = k_encoder_count_reset;
 
+  /* Post-condition: Verify configuration was latched (NASA Rule 5)
+   * Read back TCR and TMDR to ensure hardware accepted the writes */
+  if (mtu->tcr != k_tcr_external_clock_no_prescaler) {
+    rx_log_error(s_tag, "TCR configuration not latched");
+    return k_rx_err_hw_init_failed;
+  }
+
+  if (mtu->tmdr != k_tmdr_phase_counting_mode_1) {
+    rx_log_error(s_tag, "TMDR configuration not latched");
+    return k_rx_err_hw_init_failed;
+  }
+
   return k_rx_ok;
 }
 
 /**
- * @brief Verify timer is counting after initialization
+ * @brief Verify timer configuration after initialization (NASA Rule 5: min 2 checks)
+ *
+ * Since encoder counting verification requires encoder motion which may not be
+ * available at initialization time, this function validates the timer configuration
+ * instead of actual counting.
  *
  * @param[in] mtu Pointer to MTU channel registers
  *
- * @return k_rx_ok if timer is counting
- * @return k_rx_err_hw_init_failed if timer not counting
+ * @return k_rx_ok if timer configuration is valid
+ * @return k_rx_err_null_ptr if mtu is NULL
+ * @return k_rx_err_hw_init_failed if timer mode is incorrectly configured
  */
-static rx_err_t internal_verify_timer_counting(volatile rx_mtu_channel_regs_t* mtu)
+static rx_err_t internal_verify_timer_counting(const volatile rx_mtu_channel_regs_t* mtu)
 {
-  /* Note: This verification is optional and may not work if encoder is stationary.
-   * In production, consider removing this check or only enabling in debug builds.
-   * For now, we'll skip this check as it requires encoder movement.
-   */
-  (void)mtu; /* Unused - timer verification would require encoder motion */
+  /* Pre-condition: Validate input pointer (Rule 5 check 1) */
+  if (mtu == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
+  /* Post-condition: Verify timer mode register is configured for phase counting (Rule 5 check 2)
+   * TMDR should be set to k_tmdr_phase_counting_mode_1 (0x04) after initialization.
+   * This confirms the hardware accepted our configuration. */
+  if (mtu->tmdr != k_tmdr_phase_counting_mode_1) {
+    rx_log_error(s_tag, "Timer mode register not configured for phase counting");
+    return k_rx_err_hw_init_failed;
+  }
+
   return k_rx_ok;
 }
 
@@ -493,9 +531,20 @@ static rx_err_t internal_verify_timer_counting(volatile rx_mtu_channel_regs_t* m
  *
  * @return k_rx_ok on success
  */
-static rx_err_t internal_initialize_encoder_state(rx_mtu_channel_t           channel,
+static rx_err_t internal_initialize_encoder_state(const rx_mtu_channel_t     channel,
                                                   const rx_encoder_config_t* config)
 {
+  if (config == NULL || !internal_is_valid_channel(channel)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate counts_per_rev is within acceptable range */
+  if (config->counts_per_rev < k_encoder_min_counts_per_rev ||
+      config->counts_per_rev > k_encoder_max_counts_per_rev) {
+    rx_log_error(s_tag, "counts_per_rev out of valid range");
+    return k_rx_err_invalid_arg;
+  }
+
   /* Initialize state */
   s_encoder_state[channel].total_count    = k_encoder_initial_count;
   s_encoder_state[channel].last_raw_count = k_encoder_count_reset;
@@ -506,6 +555,78 @@ static rx_err_t internal_initialize_encoder_state(rx_mtu_channel_t           cha
   s_invert_direction[channel]    = config->invert_direction;
   s_last_count[channel]          = k_encoder_initial_count;
   s_encoder_initialized[channel] = true;
+
+  return k_rx_ok;
+}
+
+static rx_err_t internal_update_state_from_count(rx_encoder_state_t*    state,
+                                                 const rx_mtu_channel_t channel,
+                                                 const uint16_t         current_count)
+{
+  if (!internal_is_valid_channel(channel) || state == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition: Ensure encoder is initialized (NASA Rule 5 compliance) */
+  if (!s_encoder_initialized[channel]) {
+    rx_log_error(s_tag, "Encoder not initialized");
+    return k_rx_err_invalid_state;
+  }
+
+  const uint16_t last_count = s_encoder_state[channel].last_raw_count;
+
+  /* Calculate delta (handling 16-bit wraparound) */
+  int32_t delta;
+  if (current_count >= last_count) {
+    /* Normal case: no wraparound */
+    delta = current_count - last_count;
+  } else {
+    /* Wraparound occurred */
+    delta = (k_encoder_counter_max - last_count) + current_count;
+  }
+
+  /* Check for reverse wraparound */
+  if (delta > (int32_t)k_encoder_counter_half) {
+    /* Large positive delta means we actually went backwards */
+    delta = delta - (int32_t)k_encoder_counter_max;
+  }
+
+  /* Invert direction if configured */
+  if (s_invert_direction[channel]) {
+    delta = -delta;
+  }
+
+  /* Update total count */
+  s_encoder_state[channel].total_count += delta;
+  s_encoder_state[channel].last_raw_count = current_count;
+
+  /* Calculate revolutions and position */
+  const uint16_t counts_per_rev = s_counts_per_rev[channel];
+
+  /* Guard division: Validate counts_per_rev is within acceptable range (NASA Rule 5) */
+  if (counts_per_rev < k_encoder_min_counts_per_rev ||
+      counts_per_rev > k_encoder_max_counts_per_rev) {
+    rx_log_error(s_tag, "counts_per_rev out of valid range");
+    return k_rx_err_invalid_state;
+  }
+
+  s_encoder_state[channel].revolutions = s_encoder_state[channel].total_count / counts_per_rev;
+
+  const int32_t remainder_counts = s_encoder_state[channel].total_count % counts_per_rev;
+  s_encoder_state[channel].position_deg =
+    (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
+
+  /* Post-condition: Validate position is within reasonable range
+   * Note: Position can be negative for backward counts, so we check absolute value.
+   * Position beyond ±720° would indicate a calculation error. */
+  if (fabsf(s_encoder_state[channel].position_deg) >
+      (k_turns_multiplier * k_degrees_per_revolution)) {
+    rx_log_error(s_tag, "Position calculation overflow - exceeds ±720°");
+    return k_rx_err_out_of_range;
+  }
+
+  /* Copy to output */
+  *state = s_encoder_state[channel];
 
   return k_rx_ok;
 }

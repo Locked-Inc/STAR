@@ -29,8 +29,7 @@
 static const char* s_tag = "USB_HW";
 
 /** @brief USB timing constants for initialization delays */
-typedef enum {
-  k_threadx_ms_per_tick        = 10, /**< Milliseconds per tick at 100 Hz */
+typedef enum : uint16_t {
   k_usb_pll_stabilization_ms   = 10, /**< USB PLL stabilization time (10ms) */
   k_usb_clock_stabilization_ms = 10, /**< USB clock stabilization time (10ms) */
   k_min_sleep_ticks            = 1,  /**< Minimum sleep duration (1 tick) */
@@ -38,30 +37,30 @@ typedef enum {
 } usb_hw_timing_t;
 
 /** @brief USB SYSCFG register values */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_syscfg_disabled = 0x0000, /**< USB module disabled (all bits clear) */
 } usb_syscfg_value_t;
 
 /** @brief FIFO operation timeouts and masks */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_fifo_timeout_iterations = 1000, /**< FIFO ready timeout (busy-wait iterations) */
   k_usb_fifo_timeout_expired    = 0,    /**< Timeout counter expired */
   k_usb_fifo_byte_mask          = 0xFF, /**< Byte mask for 8-bit FIFO read */
 } usb_fifo_constants_t;
 
 /** @brief USB address mask */
-typedef enum {
+typedef enum : uint8_t {
   k_usb_address_mask_hw = 0x7F, /**< USB address mask (7 bits, 0-127) */
 } usb_address_mask_t;
 
 /** @brief Interrupt Controller (ICU) configuration constants */
-typedef enum {
+typedef enum : uint8_t {
   k_icu_bits_per_ier_register = 8, /**< Number of interrupt enable bits per IER register */
   k_usb_interrupt_priority    = 6, /**< USB interrupt priority (moderate, below motor control) */
 } usb_icu_config_t;
 
 /** @brief USB pipe and endpoint validation limits */
-typedef enum {
+typedef enum : uint16_t {
   k_usb_pipe_min            = 0,   /**< Minimum pipe number (DCP) */
   k_usb_pipe_max            = 9,   /**< Maximum pipe number */
   k_usb_endpoint_max        = 15,  /**< Maximum endpoint number (0-15) */
@@ -342,8 +341,8 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
  */
 rx_usb_state_t rx_usb_hw_get_bus_state(void)
 {
-  uint16_t intsts0 = usb0()->intsts0;
-  uint16_t dvsq    = (intsts0 & k_usb_intsts0_dvsq_mask);
+  const uint16_t intsts0 = usb0()->intsts0;
+  const uint16_t dvsq    = (intsts0 & k_usb_intsts0_dvsq_mask);
 
   switch (dvsq) {
     case k_usb_intsts0_dvsq_powered:
@@ -364,7 +363,7 @@ rx_usb_state_t rx_usb_hw_get_bus_state(void)
 /**
  * @brief Set USB address (called during enumeration)
  */
-void rx_usb_hw_set_address(uint8_t address)
+void rx_usb_hw_set_address(const uint8_t address)
 {
   usb0()->usbaddr = address & k_usb_address_mask_hw;
   rx_log_debug(s_tag, "USB address set");
@@ -373,11 +372,11 @@ void rx_usb_hw_set_address(uint8_t address)
 /**
  * @brief Configure a pipe for bulk/interrupt transfer
  */
-rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
-                                  uint8_t  endpoint,
-                                  bool     is_in,
-                                  uint16_t type,
-                                  uint16_t max_packet)
+rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
+                                  const uint8_t  endpoint,
+                                  const bool     is_in,
+                                  const uint16_t type,
+                                  const uint16_t max_packet)
 {
   /* Rule 5: Pre-condition validation */
   if (pipe == k_usb_pipe_min || pipe > k_usb_pipe_max) {

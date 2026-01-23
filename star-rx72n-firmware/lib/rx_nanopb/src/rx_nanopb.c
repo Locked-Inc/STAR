@@ -27,6 +27,9 @@
 /** Module initialization flag */
 static bool s_initialized = false;
 
+static const double k_velocity_mps_min = -1000.0;
+static const double k_velocity_mps_max = 1000.0;
+
 /* =============================================================================
  * Internal Helpers
  * =============================================================================
@@ -46,12 +49,20 @@ static bool s_initialized = false;
 static bool
 internal_encode_string_callback(pb_ostream_t* stream, const pb_field_t* field, void* const* arg)
 {
+  if (stream == NULL || field == NULL || arg == NULL) {
+    return false;
+  }
+
   const char* str = (const char*)*arg;
   if (str == NULL) {
     return true; /* Empty string is valid */
   }
 
-  uint32_t len = strlen(str);
+  const size_t str_len = strlen(str);
+  if (str_len > s_nanopb_buffer_size) {
+    return false;
+  }
+  const uint32_t len = (uint32_t)str_len;
   if (!pb_encode_tag_for_field(stream, field)) {
     return false;
   }
@@ -98,7 +109,7 @@ void rx_nanopb_test_reset_state(void)
 
 rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg,
                                            uint8_t*                          buffer,
-                                           uint32_t                          buffer_size,
+                                           const uint32_t                    buffer_size,
                                            uint32_t*                         len)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -112,7 +123,7 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
   }
 
   /* Pre-condition 3: Buffer size validation (NASA Rule 5 - buffer overflow prevention) */
-  if (buffer_size < k_nanopb_buffer_size) {
+  if (buffer_size < s_nanopb_buffer_size) {
     return k_rx_err_invalid_size;
   }
 
@@ -125,7 +136,7 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
   *len = stream.bytes_written;
 
   /* Post-condition: Encoded length within bounds */
-  if (*len > k_nanopb_buffer_size) {
+  if (*len > s_nanopb_buffer_size) {
     return k_rx_err_invalid_size;
   }
 
@@ -133,7 +144,7 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
 }
 
 rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
-                                           uint32_t                    len,
+                                           const uint32_t              len,
                                            star_v1_SetVelocityRequest* msg)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -142,7 +153,7 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
   }
 
   /* Pre-condition 2: Length validation */
-  if (len == 0 || len > k_nanopb_buffer_size) {
+  if (len == 0 || len > s_nanopb_buffer_size) {
     return k_rx_err_invalid_arg;
   }
 
@@ -170,7 +181,7 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
 
 rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
                                             uint8_t*                           buffer,
-                                            uint32_t                           buffer_size,
+                                            const uint32_t                     buffer_size,
                                             uint32_t*                          len)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -184,7 +195,7 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
   }
 
   /* Pre-condition 3: Buffer size validation (NASA Rule 5 - buffer overflow prevention) */
-  if (buffer_size < k_nanopb_buffer_size) {
+  if (buffer_size < s_nanopb_buffer_size) {
     return k_rx_err_invalid_size;
   }
 
@@ -197,7 +208,7 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
   *len = stream.bytes_written;
 
   /* Post-condition: Encoded length within bounds */
-  if (*len > k_nanopb_buffer_size) {
+  if (*len > s_nanopb_buffer_size) {
     return k_rx_err_invalid_size;
   }
 
@@ -210,7 +221,7 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
  */
 
 rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
-                                        uint32_t                      len,
+                                        const uint32_t                len,
                                         star_v1_EmergencyStopRequest* msg)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -219,7 +230,7 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
   }
 
   /* Pre-condition 2: Length validation */
-  if (len == 0 || len > k_nanopb_buffer_size) {
+  if (len == 0 || len > s_nanopb_buffer_size) {
     return k_rx_err_invalid_arg;
   }
 
@@ -242,7 +253,7 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
 
 rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
                                          uint8_t*                             buffer,
-                                         uint32_t                             buffer_size,
+                                         const uint32_t                       buffer_size,
                                          uint32_t*                            len)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -256,7 +267,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
   }
 
   /* Pre-condition 3: Buffer size validation (NASA Rule 5 - buffer overflow prevention) */
-  if (buffer_size < k_nanopb_buffer_size) {
+  if (buffer_size < s_nanopb_buffer_size) {
     return k_rx_err_invalid_size;
   }
 
@@ -269,7 +280,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
   *len = stream.bytes_written;
 
   /* Post-condition: Encoded length within bounds */
-  if (*len > k_nanopb_buffer_size) {
+  if (*len > s_nanopb_buffer_size) {
     return k_rx_err_invalid_size;
   }
 
@@ -283,7 +294,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
 
 rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
                                     uint8_t*                     buffer,
-                                    uint32_t                     buffer_size,
+                                    const uint32_t               buffer_size,
                                     uint32_t*                    len)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -297,7 +308,7 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
   }
 
   /* Pre-condition 3: Buffer size validation (NASA Rule 5 - buffer overflow prevention) */
-  if (buffer_size < k_nanopb_buffer_size) {
+  if (buffer_size < s_nanopb_buffer_size) {
     return k_rx_err_invalid_size;
   }
 
@@ -310,7 +321,7 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
   *len = stream.bytes_written;
 
   /* Post-condition: Encoded length within bounds */
-  if (*len > k_nanopb_buffer_size) {
+  if (*len > s_nanopb_buffer_size) {
     return k_rx_err_invalid_size;
   }
 
@@ -322,42 +333,64 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
  * =============================================================================
  */
 
-void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
-                                       double                   front_left_mps,
-                                       double                   front_right_mps,
-                                       double                   back_left_mps,
-                                       double                   back_right_mps,
-                                       uint32_t                 sequence)
+rx_err_t rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            cmd,
+                                           const rx_velocity_command_params_t* params)
 {
-  if (cmd == NULL) {
-    return;
+  if (cmd == NULL || params == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if ((params->front_left_mps < k_velocity_mps_min) ||
+      (params->front_left_mps > k_velocity_mps_max) ||
+      (params->front_right_mps < k_velocity_mps_min) ||
+      (params->front_right_mps > k_velocity_mps_max) ||
+      (params->back_left_mps < k_velocity_mps_min) ||
+      (params->back_left_mps > k_velocity_mps_max) ||
+      (params->back_right_mps < k_velocity_mps_min) ||
+      (params->back_right_mps > k_velocity_mps_max)) {
+    return k_rx_err_invalid_arg;
   }
 
   *cmd                          = (star_v1_VelocityCommand)star_v1_VelocityCommand_init_zero;
-  cmd->front_left_velocity_mps  = front_left_mps;
-  cmd->front_right_velocity_mps = front_right_mps;
-  cmd->back_left_velocity_mps   = back_left_mps;
-  cmd->back_right_velocity_mps  = back_right_mps;
-  cmd->sequence                 = sequence;
+  cmd->front_left_velocity_mps  = params->front_left_mps;
+  cmd->front_right_velocity_mps = params->front_right_mps;
+  cmd->back_left_velocity_mps   = params->back_left_mps;
+  cmd->back_right_velocity_mps  = params->back_right_mps;
+  cmd->sequence                 = params->sequence;
   cmd->timestamp_us             = 0; /* Set by caller if needed */
+  return k_rx_ok;
 }
 
-void rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand* cmd,
-                                                  double                   left_mps,
-                                                  double                   right_mps,
-                                                  uint32_t                 sequence)
+rx_err_t rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand*               cmd,
+                                                      const rx_velocity_diff_drive_params_t* params)
 {
+  rx_velocity_command_params_t params_t;
+
+  if (cmd == NULL || params == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
   /* Differential drive mode: Lock left 2 motors together, right 2 motors together
    * Front Left & Back Left = Left side
    * Front Right & Back Right = Right side */
-  rx_nanopb_create_velocity_command(cmd, left_mps, right_mps, left_mps, right_mps, sequence);
+  params_t.front_left_mps  = params->left_mps;
+  params_t.front_right_mps = params->right_mps;
+  params_t.back_left_mps   = params->left_mps;
+  params_t.back_right_mps  = params->right_mps;
+  params_t.sequence        = params->sequence;
+
+  return rx_nanopb_create_velocity_command(cmd, &params_t);
 }
 
 void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
-                                      star_v1_Status          status,
+                                      const star_v1_Status    status,
                                       const char*             request_id)
 {
   if (header == NULL) {
+    return;
+  }
+
+  if (request_id != NULL && strlen(request_id) > s_nanopb_buffer_size) {
     return;
   }
 

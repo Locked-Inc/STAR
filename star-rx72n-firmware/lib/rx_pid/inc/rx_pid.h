@@ -115,7 +115,7 @@ typedef struct {
  * @param[in]  config Pointer to PID configuration. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle or config is NULL
+ * @return k_rx_err_null_ptr if handle or config is NULL
  * @return k_rx_err_invalid_arg if output_max <= output_min or integral_max <= integral_min
  */
 rx_err_t rx_pid_init(rx_pid_handle_t* handle, const rx_pid_config_t* config);
@@ -126,7 +126,7 @@ rx_err_t rx_pid_init(rx_pid_handle_t* handle, const rx_pid_config_t* config);
  * @param[in] handle Pointer to initialized PID handle. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_pid_deinit(rx_pid_handle_t* handle);
@@ -149,7 +149,7 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle);
  * @param[out] output    Pointer to store PID output. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle or output is NULL
+ * @return k_rx_err_null_ptr if handle or output is NULL
  * @return k_rx_err_invalid_state if not initialized
  * @return k_rx_err_invalid_arg if dt <= 0
  */
@@ -165,7 +165,7 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
  * @param[in] handle Pointer to initialized PID handle. Must not be NULL.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_pid_reset(rx_pid_handle_t* handle);
@@ -182,12 +182,12 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle);
  * @param[in] kd     New derivative gain (must be >= 0 and finite).
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  * @return k_rx_err_invalid_arg if any gain is negative or non-finite (NaN/Inf)
  * @return k_rx_fail if gain storage verification fails
  */
-rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, float kp, float ki, float kd);
+rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float ki, const float kd);
 
 /**
  * @brief Update PID output limits at runtime
@@ -199,7 +199,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, float kp, float ki, float kd)
  * @param[in] output_max New maximum output limit.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  * @return k_rx_err_invalid_arg if output_max <= output_min
  */
@@ -215,7 +215,7 @@ rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle, float output_min, flo
  * @param[in] integral_max New maximum integral limit.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_null_ptr if handle is NULL
  * @return k_rx_err_invalid_state if not initialized
  * @return k_rx_err_invalid_arg if integral_max <= integral_min
  */

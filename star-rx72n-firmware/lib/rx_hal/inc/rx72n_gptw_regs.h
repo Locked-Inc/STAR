@@ -125,7 +125,7 @@ typedef struct {
  */
 
 /** @brief GPTW hardware addresses (verified against RX72N Hardware Manual) */
-typedef enum {
+typedef enum : uint32_t {
   k_gptw_channel_offset = 0x100,      /**< Channel spacing between GPTW registers */
   k_gptw0_base_addr     = 0x000C2000, /**< GPTW channel 0 base address */
   k_gptw1_base_addr     = 0x000C2100, /**< GPTW channel 1 base address */
@@ -159,7 +159,7 @@ static inline volatile rx_gptw_channel_regs_t* gptw3(void)
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_gptw_gtwp_wp0    = (1 << 0), /**< Register write protect bit 0 */
   k_gptw_gtwp_wp1    = (1 << 1), /**< Register write protect bit 1 */
   k_gptw_gtwp_wp2    = (1 << 2), /**< Register write protect bit 2 */
@@ -173,7 +173,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint32_t {
   /* Counter Start bit */
   k_gptw_gtcr_cst = (1 << 0), /**< Counter Start (0=stop, 1=count) */
 
@@ -201,7 +201,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint32_t {
   /* GTIOCA Output Control (bits 0-4) */
   k_gptw_gtior_oa_shift      = 0,
   k_gptw_gtior_oa_mask       = 0x1F,
@@ -234,7 +234,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint32_t {
   k_gptw_gtber_ccra_buf = (1 << 0),  /**< GTCCRA buffer enable */
   k_gptw_gtber_ccrb_buf = (1 << 1),  /**< GTCCRB buffer enable */
   k_gptw_gtber_pr_buf   = (1 << 16), /**< GTPR buffer enable */
@@ -245,7 +245,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_gtdtcr_tde  = (1 << 0), /**< Dead time enable */
   k_gptw_gtdtcr_tdfe = (1 << 4), /**< Dead time buffer enable */
 } gptw_gtdtcr_bits_t;
@@ -255,7 +255,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   k_gptw_gtst_tcfa  = (1 << 0),  /**< Compare match flag A */
   k_gptw_gtst_tcfb  = (1 << 1),  /**< Compare match flag B */
   k_gptw_gtst_tcfc  = (1 << 2),  /**< Compare match flag C */
@@ -272,7 +272,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_gtstr_cst0 = (1 << 0), /**< Channel 0 count start */
   k_gptw_gtstr_cst1 = (1 << 1), /**< Channel 1 count start */
   k_gptw_gtstr_cst2 = (1 << 2), /**< Channel 2 count start */
@@ -284,7 +284,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   /**
    * @brief GPTW module stop bit in MSTPCRC
    * @warning Verify this bit position against RX72N Hardware Manual.
@@ -298,7 +298,7 @@ typedef enum {
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   /**
    * @brief Peripheral select value for GPTW outputs on Port E
    * @warning Verify this value against RX72N Hardware Manual.

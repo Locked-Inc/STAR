@@ -40,7 +40,7 @@ static const char* s_tag = "GPTW";
  */
 
 /** @brief GPTW general constants */
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_max_channels        = 4, /**< GPTW0-GPTW3 */
   k_gptw_outputs_per_channel = 2, /**< GTIOCA and GTIOCB */
 } gptw_constants_t;
@@ -49,24 +49,49 @@ typedef enum {
 static const uint32_t s_gptw_period_max    = 0xFFFFFFFFUL;  /**< Maximum valid period (32-bit) */
 static const uint64_t s_gptw_ns_per_second = 1000000000ULL; /**< Nanoseconds per second */
 
-typedef enum {
-  k_gptw_period_min  = 10, /**< Minimum valid period */
-  k_gptw_period_zero = 0,  /**< Zero period value */
+typedef enum : uint16_t {
+  k_gptw_period_min        = 10, /**< Minimum valid period */
+  k_gptw_period_zero       = 0,  /**< Zero period value */
+  k_gptw_deadtime_disabled = 0,  /**< No dead time */
 } gptw_period_constants_t;
 
 /** @brief Duty cycle calculation constants */
-typedef enum {
+typedef enum : uint8_t {
   k_gptw_duty_min     = 0,   /**< Minimum duty cycle (0%) */
   k_gptw_duty_max     = 100, /**< Maximum duty cycle (100%) */
   k_gptw_duty_divisor = 100, /**< Divisor for percentage conversion */
 } gptw_duty_constants_t;
 
 /** @brief MPC configuration constants */
-typedef enum {
+typedef enum : uint8_t {
   k_mpc_pwpr_b0wi_clear = 0x00, /**< Clear B0WI to enable PFSWE write */
   k_mpc_pwpr_pfswe_set  = 0x40, /**< Set PFSWE to enable PFS write */
   k_mpc_pwpr_lock       = 0x80, /**< Set B0WI to lock PFS */
 } mpc_pwpr_constants_t;
+
+/** @brief MPC PFS register offset constants */
+typedef enum : uint16_t {
+  k_mpc_pfs_base_offset = 0x40, /**< Base offset for PFS registers */
+  k_mpc_port_e_index    = 0x0E, /**< Port E index */
+  k_mpc_pfs_port_stride = 8,    /**< Bytes between port PFS groups */
+} mpc_pfs_offset_constants_t;
+
+/** @brief Single-bit value for shift operations */
+typedef enum : uint8_t {
+  k_gptw_bit_set = 1, /**< Value for single bit in shift operations */
+} gptw_bit_constants_t;
+
+/** @brief Port E pin indices for GPTW motor outputs */
+typedef enum : uint8_t {
+  k_porte_gptw0_a = 5, /**< PE5/GTIOC0A - Motor 0 phase */
+  k_porte_gptw0_b = 2, /**< PE2/GTIOC0B - Motor 0 enable */
+  k_porte_gptw1_a = 4, /**< PE4/GTIOC1A - Motor 1 phase */
+  k_porte_gptw1_b = 1, /**< PE1/GTIOC1B - Motor 1 enable */
+  k_porte_gptw2_a = 3, /**< PE3/GTIOC2A - Motor 2 phase */
+  k_porte_gptw2_b = 0, /**< PE0/GTIOC2B - Motor 2 enable */
+  k_porte_gptw3_a = 7, /**< PE7/GTIOC3A - Motor 3 phase */
+  k_porte_gptw3_b = 6, /**< PE6/GTIOC3B - Motor 3 enable */
+} porte_gptw_pin_t;
 
 /* =============================================================================
  * Static Variables
@@ -90,7 +115,7 @@ static uint32_t s_gptw_period[k_gptw_max_channels] = {0};
  *
  * @return Pointer to GPTW register base, or NULL if invalid
  */
-static volatile rx_gptw_channel_regs_t* internal_get_gptw_base(rx_gptw_channel_t channel)
+static volatile rx_gptw_channel_regs_t* internal_get_gptw_base(const rx_gptw_channel_t channel)
 {
   switch (channel) {
     case k_gptw_channel_0:
@@ -114,7 +139,7 @@ static volatile rx_gptw_channel_regs_t* internal_get_gptw_base(rx_gptw_channel_t
  *
  * @return k_rx_ok on success, k_rx_err_invalid_arg if frequency too high/low
  */
-static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint32_t* period)
+static rx_err_t internal_calculate_period(const uint32_t frequency_hz, uint32_t* period)
 {
   /* For PWM mode (sawtooth wave):
    * Period = PCLKA / frequency
@@ -126,7 +151,7 @@ static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint32_t* perio
     return k_rx_err_invalid_arg;
   }
 
-  uint32_t period_calc = pclka / frequency_hz;
+  const uint32_t period_calc = pclka / frequency_hz;
 
   /* Check if period fits in 32-bit register */
   if (period_calc > s_gptw_period_max) {
@@ -152,7 +177,7 @@ static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint32_t* perio
  *
  * @return k_rx_ok on success
  */
-static rx_err_t internal_configure_mpc(rx_gptw_channel_t channel)
+static rx_err_t internal_configure_mpc(const rx_gptw_channel_t channel)
 {
   /* MPC Pin Function Select values for GPTW on Port E
    * Each channel uses 2 pins (GTIOCA and GTIOCB)
@@ -172,28 +197,29 @@ static rx_err_t internal_configure_mpc(rx_gptw_channel_t channel)
    * PSEL value for GPTW is 0x14 (verify against HW manual)
    * Note: Port E PFS registers not in rx_mpc_regs_t structure,
    * so we use base + offset calculation */
-  volatile uint8_t* pe_pfs = (volatile uint8_t*)((uintptr_t)mpc() + 0x40 + 0xE * 8);
+  volatile uint8_t* pe_pfs = (volatile uint8_t*)((uintptr_t)mpc() + k_mpc_pfs_base_offset +
+                                                 k_mpc_port_e_index * k_mpc_pfs_port_stride);
 
   switch (channel) {
     case k_gptw_channel_0:
       /* PE5/GTIOC0A and PE2/GTIOC0B */
-      pe_pfs[5] = k_pfs_psel_gptw;
-      pe_pfs[2] = k_pfs_psel_gptw;
+      pe_pfs[k_porte_gptw0_a] = k_pfs_psel_gptw;
+      pe_pfs[k_porte_gptw0_b] = k_pfs_psel_gptw;
       break;
     case k_gptw_channel_1:
       /* PE4/GTIOC1A and PE1/GTIOC1B */
-      pe_pfs[4] = k_pfs_psel_gptw;
-      pe_pfs[1] = k_pfs_psel_gptw;
+      pe_pfs[k_porte_gptw1_a] = k_pfs_psel_gptw;
+      pe_pfs[k_porte_gptw1_b] = k_pfs_psel_gptw;
       break;
     case k_gptw_channel_2:
       /* PE3/GTIOC2A and PE0/GTIOC2B */
-      pe_pfs[3] = k_pfs_psel_gptw;
-      pe_pfs[0] = k_pfs_psel_gptw;
+      pe_pfs[k_porte_gptw2_a] = k_pfs_psel_gptw;
+      pe_pfs[k_porte_gptw2_b] = k_pfs_psel_gptw;
       break;
     case k_gptw_channel_3:
       /* PE7/GTIOC3A and PE6/GTIOC3B */
-      pe_pfs[7] = k_pfs_psel_gptw;
-      pe_pfs[6] = k_pfs_psel_gptw;
+      pe_pfs[k_porte_gptw3_a] = k_pfs_psel_gptw;
+      pe_pfs[k_porte_gptw3_b] = k_pfs_psel_gptw;
       break;
     default:
       mpc()->pwpr = k_mpc_pwpr_lock; /* Lock before returning error */
@@ -206,44 +232,32 @@ static rx_err_t internal_configure_mpc(rx_gptw_channel_t channel)
   return k_rx_ok;
 }
 
-/** @brief Port E pin indices for GPTW motor outputs */
-typedef enum {
-  k_porte_gptw0_a = 5, /**< PE5/GTIOC0A - Motor 0 phase */
-  k_porte_gptw0_b = 2, /**< PE2/GTIOC0B - Motor 0 enable */
-  k_porte_gptw1_a = 4, /**< PE4/GTIOC1A - Motor 1 phase */
-  k_porte_gptw1_b = 1, /**< PE1/GTIOC1B - Motor 1 enable */
-  k_porte_gptw2_a = 3, /**< PE3/GTIOC2A - Motor 2 phase */
-  k_porte_gptw2_b = 0, /**< PE0/GTIOC2B - Motor 2 enable */
-  k_porte_gptw3_a = 7, /**< PE7/GTIOC3A - Motor 3 phase */
-  k_porte_gptw3_b = 6, /**< PE6/GTIOC3B - Motor 3 enable */
-} porte_gptw_pin_t;
-
 /**
  * @brief Configure Port E pins as peripheral outputs
  *
  * @param[in] channel GPTW channel
  */
-static void internal_configure_port_pins(rx_gptw_channel_t channel)
+static void internal_configure_port_pins(const rx_gptw_channel_t channel)
 {
   /* Set pins as output and enable peripheral function
    * PMR = 1 (peripheral mode), PDR = 1 (output)
    */
   switch (channel) {
     case k_gptw_channel_0:
-      porte()->pmr |= (1 << k_porte_gptw0_a) | (1 << k_porte_gptw0_b);
-      porte()->pdr |= (1 << k_porte_gptw0_a) | (1 << k_porte_gptw0_b);
+      porte()->pmr |= (k_gptw_bit_set << k_porte_gptw0_a) | (k_gptw_bit_set << k_porte_gptw0_b);
+      porte()->pdr |= (k_gptw_bit_set << k_porte_gptw0_a) | (k_gptw_bit_set << k_porte_gptw0_b);
       break;
     case k_gptw_channel_1:
-      porte()->pmr |= (1 << k_porte_gptw1_a) | (1 << k_porte_gptw1_b);
-      porte()->pdr |= (1 << k_porte_gptw1_a) | (1 << k_porte_gptw1_b);
+      porte()->pmr |= (k_gptw_bit_set << k_porte_gptw1_a) | (k_gptw_bit_set << k_porte_gptw1_b);
+      porte()->pdr |= (k_gptw_bit_set << k_porte_gptw1_a) | (k_gptw_bit_set << k_porte_gptw1_b);
       break;
     case k_gptw_channel_2:
-      porte()->pmr |= (1 << k_porte_gptw2_a) | (1 << k_porte_gptw2_b);
-      porte()->pdr |= (1 << k_porte_gptw2_a) | (1 << k_porte_gptw2_b);
+      porte()->pmr |= (k_gptw_bit_set << k_porte_gptw2_a) | (k_gptw_bit_set << k_porte_gptw2_b);
+      porte()->pdr |= (k_gptw_bit_set << k_porte_gptw2_a) | (k_gptw_bit_set << k_porte_gptw2_b);
       break;
     case k_gptw_channel_3:
-      porte()->pmr |= (1 << k_porte_gptw3_a) | (1 << k_porte_gptw3_b);
-      porte()->pdr |= (1 << k_porte_gptw3_a) | (1 << k_porte_gptw3_b);
+      porte()->pmr |= (k_gptw_bit_set << k_porte_gptw3_a) | (k_gptw_bit_set << k_porte_gptw3_b);
+      porte()->pdr |= (k_gptw_bit_set << k_porte_gptw3_a) | (k_gptw_bit_set << k_porte_gptw3_b);
       break;
     default:
       break;
@@ -258,7 +272,7 @@ static void internal_configure_port_pins(rx_gptw_channel_t channel)
 static void internal_enable_gptw_module_clock(void)
 {
   system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
-  system_regs()->mstpcrc &= ~(1UL << k_mstpc_gptw);
+  system_regs()->mstpcrc &= ~((uint32_t)k_gptw_bit_set << k_mstpc_gptw);
   system_regs()->prcr = k_rx_prcr_lock;
 }
 
@@ -273,7 +287,7 @@ static void internal_enable_gptw_module_clock(void)
  */
 static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gptw,
                                              const rx_gptw_config_t*          config,
-                                             uint32_t                         period)
+                                             const uint32_t                   period)
 {
   /* Unlock write protection for this channel */
   gptw->gtwp = k_gptw_gtwp_unlock;
@@ -305,9 +319,9 @@ static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gp
   gptw->gtber = k_gptw_gtber_ccra_buf | k_gptw_gtber_ccrb_buf;
 
   /* Configure dead time if requested */
-  if (config->deadtime_ns > 0) {
+  if (config->deadtime_ns > k_gptw_deadtime_disabled) {
     /* Calculate dead time count: deadtime_ns * (PCLKA / 1e9) */
-    uint32_t deadtime_count =
+    const uint32_t deadtime_count =
       (uint32_t)((uint64_t)config->deadtime_ns * k_pclka_hz / s_gptw_ns_per_second);
     gptw->gtdvu  = deadtime_count;
     gptw->gtdvd  = deadtime_count;
@@ -318,30 +332,46 @@ static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gp
   gptw->gtwp = k_gptw_gtwp_lock;
 }
 
+static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t           channel,
+                                               const rx_gptw_config_t*           config,
+                                               volatile rx_gptw_channel_regs_t** gptw_out,
+                                               uint32_t*                         period_out)
+{
+  rx_err_t err;
+
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels)) {
+    rx_log_error(s_tag, "Invalid GPTW channel");
+    return k_rx_err_invalid_arg;
+  }
+
+  *gptw_out = internal_get_gptw_base(channel);
+  if (*gptw_out == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  err = internal_calculate_period(config->frequency_hz, period_out);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return k_rx_ok;
+}
+
 /* =============================================================================
  * Public API Implementation
  * =============================================================================
  */
 
-rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* config)
+rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_t* config)
 {
-  rx_err_t err;
+  volatile rx_gptw_channel_regs_t* gptw;
+  uint32_t                         period;
+  rx_err_t                         err;
 
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
-  if ((int32_t)channel >= k_gptw_max_channels) {
-    rx_log_error(s_tag, "Invalid GPTW channel");
-    return k_rx_err_invalid_arg;
-  }
-
-  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
-  if (gptw == NULL) {
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Calculate period from frequency */
-  uint32_t period;
-  err = internal_calculate_period(config->frequency_hz, &period);
+  err = internal_prepare_gptw_pwm_init(channel, config, &gptw, &period);
   if (err != k_rx_ok) {
     return err;
   }
@@ -352,7 +382,11 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
   internal_enable_gptw_module_clock();
 
   /* Stop timer before configuration */
-  rx_gptw_stop(channel);
+  err = rx_gptw_stop(channel);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to stop GPTW");
+    return err;
+  }
 
   /* Configure GPTW hardware registers */
   internal_configure_gptw_hardware(gptw, config, period);
@@ -372,16 +406,27 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
   s_gptw_initialized[channel] = true;
 
   /* Start timer */
-  rx_gptw_start(channel);
+  err = rx_gptw_start(channel);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to start GPTW");
+    return err;
+  }
 
   rx_log_info(s_tag, "GPTW initialized successfully");
 
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float duty_percent)
+rx_err_t rx_gptw_set_duty(const rx_gptw_channel_id_t channel,
+                          const rx_gptw_output_id_t  output,
+                          const float                duty_percent)
 {
-  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+  const rx_gptw_channel_t channel_value = channel.value;
+  const rx_gptw_output_t  output_value  = output.value;
+
+  if (((int32_t)channel_value < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel_value >= (int32_t)k_gptw_max_channels) ||
+      !s_gptw_initialized[channel_value]) {
     return k_rx_err_invalid_state;
   }
 
@@ -391,16 +436,17 @@ rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
   }
 
   /* Convert percentage to count value */
-  uint32_t period     = s_gptw_period[channel];
-  uint32_t duty_count = (uint32_t)((duty_percent * period) / (float)k_gptw_duty_divisor);
+  const uint32_t period     = s_gptw_period[channel_value];
+  const uint32_t duty_count = (uint32_t)((duty_percent * period) / (float)k_gptw_duty_divisor);
 
-  return rx_gptw_set_duty_raw(channel, output, duty_count);
+  return rx_gptw_set_duty_raw(channel_value, output_value, duty_count);
 }
 
 rx_err_t
-rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count)
+rx_gptw_set_duty_raw(const rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count)
 {
-  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels) || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
@@ -410,7 +456,7 @@ rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_
   }
 
   /* Clamp to period */
-  uint32_t period = s_gptw_period[channel];
+  const uint32_t period = s_gptw_period[channel];
   if (duty_count > period) {
     duty_count = period;
   }
@@ -430,21 +476,24 @@ rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float* duty_percent)
+rx_err_t rx_gptw_get_duty(const rx_gptw_channel_t channel,
+                          const rx_gptw_output_t  output,
+                          float*                  duty_percent)
 {
   RX_CHECK_NULL_PTR(duty_percent, s_tag, "duty_percent pointer is NULL");
 
-  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels) || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
-  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
+  const volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
   if (gptw == NULL) {
     return k_rx_err_invalid_arg;
   }
 
-  uint32_t period     = s_gptw_period[channel];
-  uint32_t duty_count = 0;
+  const uint32_t period     = s_gptw_period[channel];
+  uint32_t       duty_count = 0;
 
   switch (output) {
     case k_gptw_output_a:
@@ -462,11 +511,12 @@ rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_get_period(rx_gptw_channel_t channel, uint32_t* period_count)
+rx_err_t rx_gptw_get_period(const rx_gptw_channel_t channel, uint32_t* period_count)
 {
   RX_CHECK_NULL_PTR(period_count, s_tag, "period_count pointer is NULL");
 
-  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels) || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
@@ -474,9 +524,11 @@ rx_err_t rx_gptw_get_period(rx_gptw_channel_t channel, uint32_t* period_count)
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t output, bool enable)
+rx_err_t
+rx_gptw_enable_output(const rx_gptw_channel_t channel, const rx_gptw_output_t output, bool enable)
 {
-  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels) || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
@@ -514,9 +566,10 @@ rx_err_t rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t outpu
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_start(rx_gptw_channel_t channel)
+rx_err_t rx_gptw_start(const rx_gptw_channel_t channel)
 {
-  if ((int32_t)channel >= k_gptw_max_channels) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -533,9 +586,10 @@ rx_err_t rx_gptw_start(rx_gptw_channel_t channel)
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_stop(rx_gptw_channel_t channel)
+rx_err_t rx_gptw_stop(const rx_gptw_channel_t channel)
 {
-  if ((int32_t)channel >= k_gptw_max_channels) {
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -552,18 +606,30 @@ rx_err_t rx_gptw_stop(rx_gptw_channel_t channel)
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_deinit(rx_gptw_channel_t channel)
+rx_err_t rx_gptw_deinit(const rx_gptw_channel_t channel)
 {
-  if ((int32_t)channel >= k_gptw_max_channels) {
+  rx_err_t err;
+
+  if (((int32_t)channel < (int32_t)k_gptw_channel_0) ||
+      ((int32_t)channel >= (int32_t)k_gptw_max_channels)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Stop timer */
-  rx_gptw_stop(channel);
+  err = rx_gptw_stop(channel);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Disable outputs */
-  rx_gptw_enable_output(channel, k_gptw_output_a, false);
-  rx_gptw_enable_output(channel, k_gptw_output_b, false);
+  err = rx_gptw_enable_output(channel, k_gptw_output_a, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  err = rx_gptw_enable_output(channel, k_gptw_output_b, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Mark as uninitialized */
   s_gptw_initialized[channel] = false;

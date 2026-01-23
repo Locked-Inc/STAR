@@ -16,19 +16,20 @@
 
 #include <string.h>
 
+#include "rx_time_constants.h"
+
 #ifndef UNIT_TEST
 #include "rx72n_regs.h"
 #include "rx_log.h"
 #include "rx_threadx_config.h"
-#include "rx_time_constants.h"
 #include "tx_api.h"
 #else
 /* Mock includes for unit testing */
 #include "mock_usb0_regs.h"
-#define rx_log_info(tag, msg)  ((void)0)
-#define rx_log_warn(tag, msg)  ((void)0)
-#define rx_log_error(tag, msg) ((void)0)
-#define rx_log_debug(tag, msg) ((void)0)
+#define rx_log_info(tag, msg)  ((void)(tag), (void)(msg))
+#define rx_log_warn(tag, msg)  ((void)(tag), (void)(msg))
+#define rx_log_error(tag, msg) ((void)(tag), (void)(msg))
+#define rx_log_debug(tag, msg) ((void)(tag), (void)(msg))
 #define tx_thread_sleep(ticks) ((void)0)
 #endif
 
@@ -54,13 +55,12 @@
 static const char* s_tag = "USB";
 
 /** @brief USB flush timing constants */
-typedef enum {
-  k_threadx_ms_per_tick    = 10, /**< Milliseconds per tick at 100 Hz */
+typedef enum : uint16_t {
   k_flush_poll_interval_ms = 10, /**< Poll TX buffer every 10ms */
 } threadx_flush_timing_t;
 
 /** @brief Ring buffer operation constants */
-typedef enum {
+typedef enum : uint8_t {
   k_ring_buffer_empty     = 0, /**< Empty buffer count */
   k_ring_buffer_increment = 1, /**< Increment value for buffer indices */
   k_min_transfer_size     = 0, /**< Minimum data transfer size (no data) */
@@ -151,7 +151,7 @@ STATIC_TESTABLE uint32_t internal_ring_buffer_free(const ring_buffer_t* buf)
 
 STATIC_TESTABLE uint32_t internal_ring_buffer_write(ring_buffer_t* buf,
                                                     const uint8_t* data,
-                                                    uint32_t       len)
+                                                    const uint32_t len)
 {
   /* Rule 5: Pre-condition validation */
   if (buf == NULL || data == NULL || len == k_min_transfer_size) {
@@ -172,7 +172,7 @@ STATIC_TESTABLE uint32_t internal_ring_buffer_write(ring_buffer_t* buf,
 
 STATIC_TESTABLE uint32_t internal_ring_buffer_read(ring_buffer_t* buf,
                                                    uint8_t*       data,
-                                                   uint32_t       max_len)
+                                                   const uint32_t max_len)
 {
   /* Rule 5: Pre-condition validation */
   if (buf == NULL || data == NULL || max_len == k_min_transfer_size) {
@@ -264,7 +264,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize USB CDC");
     /* Cleanup: deinit hardware (Rule 7: check return even in error path) */
-    rx_err_t deinit_err = rx_usb_hw_deinit();
+    const rx_err_t deinit_err = rx_usb_hw_deinit();
     if (deinit_err != k_rx_ok) {
       rx_log_warn(s_tag, "Hardware deinit failed during cleanup");
     }
@@ -276,7 +276,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to attach to USB bus");
     /* Cleanup: deinit hardware (Rule 7: check return even in error path) */
-    rx_err_t deinit_err = rx_usb_hw_deinit();
+    const rx_err_t deinit_err = rx_usb_hw_deinit();
     if (deinit_err != k_rx_ok) {
       rx_log_warn(s_tag, "Hardware deinit failed during cleanup");
     }
@@ -300,13 +300,13 @@ rx_err_t rx_usb_deinit(void)
   rx_log_info(s_tag, "Deinitializing USB CDC driver");
 
   /* Detach from USB bus (Rule 7: check return value) */
-  rx_err_t detach_err = rx_usb_hw_detach();
+  const rx_err_t detach_err = rx_usb_hw_detach();
   if (detach_err != k_rx_ok) {
     rx_log_warn(s_tag, "USB detach failed during deinit");
   }
 
   /* Deinitialize hardware (Rule 7: check return value) */
-  rx_err_t deinit_err = rx_usb_hw_deinit();
+  const rx_err_t deinit_err = rx_usb_hw_deinit();
   if (deinit_err != k_rx_ok) {
     rx_log_warn(s_tag, "Hardware deinit failed");
   }
@@ -331,7 +331,7 @@ rx_usb_state_t rx_usb_get_state(void)
 rx_err_t rx_usb_write(const uint8_t* data, uint32_t len)
 {
   if (data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_usb.initialized) {
@@ -343,7 +343,7 @@ rx_err_t rx_usb_write(const uint8_t* data, uint32_t len)
   }
 
   /* Write to TX ring buffer */
-  uint32_t written = internal_ring_buffer_write(&s_usb.tx_buffer, data, len);
+  const uint32_t written = internal_ring_buffer_write(&s_usb.tx_buffer, data, len);
 
   s_usb.stats.bytes_tx += written;
 
@@ -358,10 +358,10 @@ rx_err_t rx_usb_write(const uint8_t* data, uint32_t len)
   return k_rx_ok;
 }
 
-rx_err_t rx_usb_read(uint8_t* data, uint32_t max_len, uint32_t* actual_len)
+rx_err_t rx_usb_read(uint8_t* data, const uint32_t max_len, uint32_t* actual_len)
 {
   if (data == NULL || actual_len == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *actual_len = internal_ring_buffer_read(&s_usb.rx_buffer, data, max_len);
@@ -372,7 +372,7 @@ rx_err_t rx_usb_read(uint8_t* data, uint32_t max_len, uint32_t* actual_len)
 rx_err_t rx_usb_rx_available(uint32_t* available)
 {
   if (available == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *available = internal_ring_buffer_available(&s_usb.rx_buffer);
@@ -383,7 +383,7 @@ rx_err_t rx_usb_rx_available(uint32_t* available)
 rx_err_t rx_usb_tx_available(uint32_t* available)
 {
   if (available == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *available = internal_ring_buffer_free(&s_usb.tx_buffer);
@@ -391,7 +391,7 @@ rx_err_t rx_usb_tx_available(uint32_t* available)
   return k_rx_ok;
 }
 
-rx_err_t rx_usb_flush(uint32_t timeout_ms)
+rx_err_t rx_usb_flush(const uint32_t timeout_ms)
 {
   if (!s_usb.initialized) {
     return k_rx_err_invalid_state;
@@ -431,7 +431,7 @@ rx_err_t rx_usb_flush(uint32_t timeout_ms)
 rx_err_t rx_usb_get_line_coding(rx_usb_line_coding_t* line_coding)
 {
   if (line_coding == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *line_coding = s_usb.line_coding;
@@ -442,7 +442,7 @@ rx_err_t rx_usb_get_line_coding(rx_usb_line_coding_t* line_coding)
 rx_err_t rx_usb_get_stats(rx_usb_stats_t* stats)
 {
   if (stats == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   *stats = s_usb.stats;
@@ -463,7 +463,7 @@ void rx_usb_reset_stats(void)
 /**
  * @brief Set USB device state (called by hardware/CDC modules)
  */
-void rx_usb_set_state(rx_usb_state_t state)
+void rx_usb_set_state(const rx_usb_state_t state)
 {
   if (s_usb.state != state) {
     rx_log_debug(s_tag, "USB state change");
@@ -509,7 +509,7 @@ void rx_usb_set_line_coding(const rx_usb_line_coding_t* coding)
  */
 uint32_t rx_usb_rx_push(const uint8_t* data, uint32_t len)
 {
-  uint32_t written = internal_ring_buffer_write(&s_usb.rx_buffer, data, len);
+  const uint32_t written = internal_ring_buffer_write(&s_usb.rx_buffer, data, len);
 
   s_usb.stats.bytes_rx += written;
 
@@ -528,7 +528,7 @@ uint32_t rx_usb_rx_push(const uint8_t* data, uint32_t len)
 /**
  * @brief Get data from TX buffer for transmission (called by CDC/ISR)
  */
-uint32_t rx_usb_tx_pop(uint8_t* data, uint32_t max_len)
+uint32_t rx_usb_tx_pop(uint8_t* data, const uint32_t max_len)
 {
   return internal_ring_buffer_read(&s_usb.tx_buffer, data, max_len);
 }

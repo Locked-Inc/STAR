@@ -20,7 +20,12 @@
  * @code
  *   // 1. Create concrete implementation
  *   error_handler_t handler;
- *   error_handler_init(&handler, ...);
+ *   const error_handler_config_t config = {
+ *     .max_retries        = k_error_handler_default_max_retries,
+ *     .initial_backoff_ms = k_error_handler_default_initial_backoff_ms,
+ *     .max_backoff_ms     = k_error_handler_default_max_backoff_ms,
+ *   };
+ *   error_handler_init(&handler, &config);
  *
  *   // 2. Get interface
  *   rx_error_interface_t iface;
@@ -148,14 +153,15 @@ typedef uint32_t (*rx_error_get_backoff_delay_fn)(void* ctx, const char* compone
  */
 struct rx_error_interface {
   void*                 ctx; /**< Implementation context (opaque pointer to concrete handler) */
-  rx_error_report_fn    report_error;    /**< Report an error */
-  rx_error_get_count_fn get_error_count; /**< Get total error count */
+  rx_error_report_fn    report_error;    /**< Report an error (REQUIRED) */
+  rx_error_get_count_fn get_error_count; /**< Get total error count (REQUIRED) */
   rx_error_get_component_count_fn
-                    get_component_error_count; /**< Get component-specific error count */
-  rx_error_clear_fn clear_errors;              /**< Clear all error counters */
-  rx_error_is_retry_limit_reached_fn is_retry_limit_reached; /**< Check if retry limit reached */
-  rx_error_reset_retry_fn            reset_retry_counter;    /**< Reset retry counter */
-  rx_error_get_backoff_delay_fn      get_backoff_delay;      /**< Get backoff delay */
+                    get_component_error_count; /**< Get component-specific error count (optional) */
+  rx_error_clear_fn clear_errors;              /**< Clear all error counters (REQUIRED) */
+  rx_error_is_retry_limit_reached_fn
+                          is_retry_limit_reached;  /**< Check if retry limit reached (optional) */
+  rx_error_reset_retry_fn reset_retry_counter;     /**< Reset retry counter (optional) */
+  rx_error_get_backoff_delay_fn get_backoff_delay; /**< Get backoff delay (optional) */
 };
 
 /* =============================================================================
@@ -168,13 +174,13 @@ struct rx_error_interface {
  *
  * @param[in] iface Interface to validate
  *
- * @return k_rx_ok if valid, k_rx_err_null_pointer if NULL,
+ * @return k_rx_ok if valid, k_rx_err_null_ptr if NULL,
  *         k_rx_err_invalid_state if missing function pointers
  */
 static inline rx_err_t rx_error_interface_validate(const rx_error_interface_t* iface)
 {
   if (iface == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Check required function pointers */

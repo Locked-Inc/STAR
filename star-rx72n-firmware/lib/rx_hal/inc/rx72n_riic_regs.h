@@ -26,7 +26,7 @@ extern "C" {
  */
 
 /** @brief RIIC base addresses */
-typedef enum {
+typedef enum : uint32_t {
   k_riic0_base_addr = 0x00088300, /**< RIIC0 register base address */
   k_riic1_base_addr = 0x00088320, /**< RIIC1 register base address */
   k_riic2_base_addr = 0x00088340, /**< RIIC2 register base address */
@@ -92,14 +92,14 @@ static inline volatile rx_riic_regs_t* riic2(void)
 }
 
 /* RIIC Control Register 1 (ICCR1) Bit Definitions */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_iccr1_ice      = (1 << 7), /**< I2C Bus Interface Enable */
   k_riic_iccr1_iicrst   = (1 << 6), /**< I2C Bus Interface Internal Reset */
   k_riic_iccr1_clk_mask = 0x0F,     /**< Clock Select Mask (bits 0-3) */
 } riic_iccr1_bits_t;
 
 /* RIIC Control Register 2 (ICCR2) Bit Definitions */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_iccr2_bbsy = (1 << 7), /**< Bus Busy Detection Flag */
   k_riic_iccr2_mst  = (1 << 6), /**< Controller Mode */
   k_riic_iccr2_trx  = (1 << 5), /**< Transmit/Receive Mode (1=TX, 0=RX) */
@@ -109,12 +109,12 @@ typedef enum {
 } riic_iccr2_bits_t;
 
 /* RIIC Status Register 1 (ICSR1) Bit Definitions */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_icsr1_ackbr = (1 << 0), /**< ACK Bit Receive Flag */
 } riic_icsr1_bits_t;
 
 /* RIIC Status Register 2 (ICSR2) Bit Definitions */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_icsr2_nackf = (1 << 4), /**< NACK Detection Flag */
   k_riic_icsr2_stop  = (1 << 3), /**< Stop Condition Detection Flag */
   k_riic_icsr2_start = (1 << 2), /**< Start Condition Detection Flag */

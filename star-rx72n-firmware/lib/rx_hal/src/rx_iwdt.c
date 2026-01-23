@@ -32,16 +32,23 @@
  * =============================================================================
  */
 
-/** @brief IWDT clock and size constants */
-typedef enum {
-  k_iwdt_clock_hz = 120000, /**< IWDT clock frequency in Hz */
-} iwdt_clock_constants_t;
+/** @brief IWDT timeout validation limits */
+typedef enum : uint32_t {
+  k_iwdt_timeout_min_ms = 1,     /**< Minimum valid timeout in milliseconds */
+  k_iwdt_timeout_max_ms = 16384, /**< Maximum valid timeout in milliseconds */
+} iwdt_timeout_limits_t;
+
+/** @brief IWDT initialization state */
+typedef enum : uint8_t {
+  k_iwdt_not_initialized = 0, /**< IWDT not initialized */
+  k_iwdt_initialized     = 1, /**< IWDT initialized */
+} iwdt_init_state_t;
 
 /** @brief Task monitoring string buffer sizes */
-typedef enum {
-  k_task_name_max_len = 16,     /**< Maximum task name length (including null) */
-  k_task_name_cmp_len = 15,     /**< Length for strncmp (excluding null) */
-  k_log_msg_buffer_size = 64,   /**< Log message buffer size */
+typedef enum : uint8_t {
+  k_task_name_max_len   = 16, /**< Maximum task name length (including null) */
+  k_task_name_cmp_len   = 15, /**< Length for strncmp (excluding null) */
+  k_log_msg_buffer_size = 64, /**< Log message buffer size */
 } iwdt_buffer_size_constants_t;
 
 /** @brief Timeout configuration lookup table entry */
@@ -76,8 +83,7 @@ static const iwdt_timeout_entry_t s_timeout_table[] = {
 };
 
 /** @brief Number of entries in timeout table */
-static const uint32_t k_iwdt_timeout_table_size =
-  sizeof(s_timeout_table) / sizeof(s_timeout_table[0]);
+static const uint32_t s_iwdt_timeout_table_size = sizeof(s_timeout_table) / sizeof(s_timeout_table[0]);
 
 /* =============================================================================
  * Module State
@@ -85,10 +91,10 @@ static const uint32_t k_iwdt_timeout_table_size =
  */
 
 /** @brief Log tag for IWDT module */
-static char* s_tag = "iwdt";
+static const char* const s_tag = "iwdt";
 
 /** @brief Flag indicating IWDT has been initialized */
-static uint8_t s_iwdt_initialized = 0;
+static iwdt_init_state_t s_iwdt_initialized = k_iwdt_not_initialized;
 
 /* =============================================================================
  * Internal Helpers
@@ -104,27 +110,26 @@ static uint8_t s_iwdt_initialized = 0;
  * @return k_rx_ok if valid configuration found
  * @return k_rx_err_invalid_arg if timeout out of range
  */
-static rx_err_t internal_find_timeout_config(uint32_t                     timeout_ms,
+static rx_err_t internal_find_timeout_config(const uint32_t               timeout_ms,
                                              const iwdt_timeout_entry_t** entry)
 {
+  if (s_iwdt_timeout_table_size == 0U) {
+    return k_rx_err_invalid_arg;
+  }
+
   if (entry == NULL) {
     return k_rx_err_invalid_arg;
   }
 
   /* Find first entry with timeout >= requested */
-  for (uint32_t i = 0; i < k_iwdt_timeout_table_size; i++) {
+  for (uint32_t i = 0; i < s_iwdt_timeout_table_size; i++) {
     if (s_timeout_table[i].timeout_ms >= timeout_ms) {
       *entry = &s_timeout_table[i];
       return k_rx_ok;
     }
   }
 
-  /* Use maximum timeout if requested is too large */
-  if (timeout_ms > s_timeout_table[k_iwdt_timeout_table_size - 1].timeout_ms) {
-    *entry = &s_timeout_table[k_iwdt_timeout_table_size - 1];
-    return k_rx_ok;
-  }
-
+  /* No suitable configuration found */
   return k_rx_err_invalid_arg;
 }
 
@@ -133,14 +138,72 @@ static rx_err_t internal_find_timeout_config(uint32_t                     timeou
  * =============================================================================
  */
 
-rx_err_t rx_iwdt_init(uint32_t timeout_ms)
-{
 #ifdef __RX__
-  if (s_iwdt_initialized) {
+/**
+ * @brief Configure IWDT control register (IWDTCR) from timeout table entry
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if config is NULL
+ * @return k_rx_err_hw_unmapped if IWDT registers are unavailable
+ *
+ * @note Requires iwdt() to return a valid register pointer.
+ */
+static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entry_t* config)
+{
+  uint16_t iwdtcr = 0;
+
+  if (config == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (iwdt() == NULL) {
+    return k_rx_err_hw_unmapped;
+  }
+  iwdtcr |= config->tops;    /* Timeout period */
+  iwdtcr |= config->cks;     /* Clock divisor */
+  iwdtcr |= k_iwdt_rpes_0;   /* Window end at 0% (disabled) */
+  iwdtcr |= k_iwdt_rpss_100; /* Window start at 100% (full) */
+
+  iwdt()->iwdtcr = iwdtcr;
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure IWDT reset and sleep-count behavior registers
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_hw_unmapped if IWDT registers are unavailable
+ *
+ * @note Requires iwdt() to return a valid register pointer.
+ */
+static rx_err_t internal_configure_iwdt_registers(void)
+{
+  if (iwdt() == NULL) {
+    return k_rx_err_hw_unmapped;
+  }
+
+  if (s_iwdt_initialized == k_iwdt_initialized) {
     return k_rx_err_invalid_state;
   }
 
-  if (timeout_ms == 0) {
+  iwdt()->iwdtrcr   = k_iwdt_rstirqs_reset;
+  iwdt()->iwdtcstpr = k_iwdt_slcstp_continue;
+  return k_rx_ok;
+}
+#endif
+
+rx_err_t rx_iwdt_init(const uint32_t timeout_ms)
+{
+#ifdef __RX__
+  if (s_iwdt_initialized == k_iwdt_initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (timeout_ms < k_iwdt_timeout_min_ms) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (timeout_ms > k_iwdt_timeout_max_ms) {
     return k_rx_err_invalid_arg;
   }
 
@@ -159,13 +222,10 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
    * Bits [9:8]   RPES  - Window End Position (0x03 = 0%, window disabled)
    * Bits [13:12] RPSS  - Window Start Position (0x00 = 100%, full window)
    */
-  uint16_t iwdtcr = 0;
-  iwdtcr |= config->tops;    /* Timeout period */
-  iwdtcr |= config->cks;     /* Clock divisor */
-  iwdtcr |= k_iwdt_rpes_0;   /* Window end at 0% (disabled) */
-  iwdtcr |= k_iwdt_rpss_100; /* Window start at 100% (full) */
-
-  iwdt()->iwdtcr = iwdtcr;
+  err = internal_configure_iwdt_control_register(config);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /*
    * Configure Reset Control Register (IWDTRCR)
@@ -176,7 +236,10 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
    *
    * We use reset (1) for safety - NMI could be masked or ignored.
    */
-  iwdt()->iwdtrcr = k_iwdt_rstirqs_reset;
+  err = internal_configure_iwdt_registers();
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /*
    * Configure Count Stop Control Register (IWDTCSTPR)
@@ -187,8 +250,6 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
    *
    * We continue counting during sleep for safety.
    */
-  iwdt()->iwdtcstpr = k_iwdt_slcstp_continue;
-
   /*
    * Start the IWDT by performing first refresh
    *
@@ -197,13 +258,13 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
    */
   rx_iwdt_feed();
 
-  s_iwdt_initialized = 1;
+  s_iwdt_initialized = k_iwdt_initialized;
   return k_rx_ok;
 
 #else
   /* Host-side stub for unit testing */
   (void)timeout_ms;
-  s_iwdt_initialized = 1;
+  s_iwdt_initialized = k_iwdt_initialized;
   return k_rx_ok;
 #endif
 }
@@ -308,22 +369,34 @@ void rx_iwdt_clear_status(void)
 #include "rx_log.h"
 #include "tx_api.h"
 
+/** @brief Task registration state constants */
+typedef enum : uint8_t {
+  k_task_not_registered = 0, /**< Task not registered */
+  k_task_registered     = 1, /**< Task registered */
+} task_registration_state_t;
+
+/** @brief Task search constants */
+typedef enum : int32_t {
+  k_task_not_found = -1, /**< Task not found sentinel */
+  k_task_idx_min   = 0,  /**< Minimum valid task index */
+} task_search_constants_t;
+
 /**
  * @brief Task monitoring state for a single task
  */
 typedef struct {
-  char     task_name[k_task_name_max_len]; /**< Task name (truncated if needed) */
-  uint32_t timeout_ms;                     /**< Heartbeat timeout in milliseconds */
-  uint32_t last_heartbeat_ms;              /**< Last heartbeat timestamp */
-  uint8_t  registered;                     /**< 1 if task is registered */
+  char                      task_name[k_task_name_max_len]; /**< Task name (truncated if needed) */
+  uint32_t                  timeout_ms;        /**< Heartbeat timeout in milliseconds */
+  uint32_t                  last_heartbeat_ms; /**< Last heartbeat timestamp */
+  task_registration_state_t registered;        /**< Task registration state */
 } task_monitor_t;
 
 /**
  * @brief Task monitoring module state
  */
 typedef struct {
-  task_monitor_t tasks[k_iwdt_max_tasks];       /**< Array of monitored tasks */
-  uint8_t        task_count;                    /**< Number of registered tasks */
+  task_monitor_t tasks[k_iwdt_max_tasks];          /**< Array of monitored tasks */
+  uint8_t        task_count;                       /**< Number of registered tasks */
   char           failed_task[k_task_name_max_len]; /**< Name of last failed task */
 } task_monitor_state_t;
 
@@ -341,22 +414,48 @@ static task_monitor_state_t s_task_monitor = {0};
 static int32_t internal_find_task(const char* task_name)
 {
   if (task_name == NULL) {
-    return -1;
+    return k_task_not_found;
   }
 
-  for (uint32_t i = 0; i < s_task_monitor.task_count; i++) {
+  if (task_name[0] == '\0') {
+    return k_task_not_found; /* Empty task name invalid */
+  }
+
+  for (uint32_t i = (uint32_t)k_task_idx_min; i < s_task_monitor.task_count; i++) {
     if (strncmp(s_task_monitor.tasks[i].task_name, task_name, k_task_name_cmp_len) == 0) {
       return (int32_t)i;
     }
   }
 
-  return -1;
+  return k_task_not_found;
 }
 
+/**
+ * @brief Register a task for watchdog monitoring
+ *
+ * Registers a task with the watchdog timer for monitoring. The task must
+ * check in periodically using rx_iwdt_check_in() before the timeout expires.
+ *
+ * @param[in] task_name Non-empty task identifier string (must be unique)
+ * @param[in] timeout_ms Timeout in milliseconds (1-16384 ms)
+ *
+ * @retval k_rx_ok Task registered successfully
+ * @retval k_rx_err_invalid_arg task_name is NULL, empty, or timeout_ms out of range
+ * @retval k_rx_err_no_mem Maximum number of tasks already registered
+ * @retval k_rx_err_exists Task with same name already registered
+ */
 rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 {
   /* Validate parameters */
   if (task_name == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (task_name[0] == '\0') {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (timeout_ms < k_iwdt_timeout_min_ms || timeout_ms > k_iwdt_timeout_max_ms) {
     return k_rx_err_invalid_arg;
   }
 
@@ -365,7 +464,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
   }
 
   /* Check for duplicate registration */
-  if (internal_find_task(task_name) >= 0) {
+  if (internal_find_task(task_name) != k_task_not_found) {
     return k_rx_err_exists;
   }
 
@@ -377,7 +476,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 
   task->timeout_ms        = timeout_ms;
   task->last_heartbeat_ms = tx_time_get();
-  task->registered        = 1;
+  task->registered        = k_task_registered;
 
   s_task_monitor.task_count++;
 
@@ -386,11 +485,31 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
   return k_rx_ok;
 }
 
+/**
+ * @brief Record a task heartbeat
+ *
+ * Updates the last heartbeat timestamp for the specified task.
+ * Should be called periodically by monitored tasks to indicate liveness.
+ *
+ * @param[in] task_name Name of task sending heartbeat (must match registered name)
+ *
+ * @pre task_name must be non-NULL
+ * @pre Task must be registered via rx_iwdt_register_task()
+ *
+ * @post Task's last_heartbeat_ms updated to current time
+ */
 void rx_iwdt_task_heartbeat(const char* task_name)
 {
-  const int32_t idx = internal_find_task(task_name);
+  int32_t idx = k_task_not_found;
 
-  if (idx < 0) {
+  if (task_name == NULL) {
+    rx_log_error(s_tag, "Heartbeat called with NULL task_name");
+    return;
+  }
+
+  idx = internal_find_task(task_name);
+
+  if (idx == k_task_not_found) {
     /* Task not registered - log warning but don't fail */
     rx_log_error(s_tag, "Heartbeat from unregistered task");
     return;
@@ -400,25 +519,53 @@ void rx_iwdt_task_heartbeat(const char* task_name)
   s_task_monitor.tasks[idx].last_heartbeat_ms = tx_time_get();
 }
 
+/**
+ * @brief Check all monitored tasks for timeout violations
+ *
+ * Iterates through registered tasks and compares elapsed time since last
+ * heartbeat against configured timeout. Logs and records any failed tasks.
+ *
+ * @return k_rx_ok if all tasks are alive
+ * @return k_rx_err_timeout if one or more tasks exceeded timeout
+ * @return k_rx_err_invalid_state if IWDT not initialized or state corrupted
+ *
+ * @pre IWDT must be initialized via rx_iwdt_init()
+ *
+ * @post If timeout detected, failed task name recorded in s_task_monitor.failed_task
+ */
 rx_err_t rx_iwdt_check_tasks(void)
 {
-  const uint32_t current_time_ms = tx_time_get();
-  rx_err_t       result          = k_rx_ok;
+  uint32_t              current_time_ms;
+  rx_err_t              result;
+  const task_monitor_t* task = NULL;
+  uint32_t              elapsed_ms;
+  char                  log_msg[k_log_msg_buffer_size];
+  int32_t               snprintf_result;
 
-  for (uint32_t i = 0; i < s_task_monitor.task_count; i++) {
-    const task_monitor_t* task       = &s_task_monitor.tasks[i];
-    const uint32_t        elapsed_ms = current_time_ms - task->last_heartbeat_ms;
+  if (s_iwdt_initialized != k_iwdt_initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (s_task_monitor.task_count > k_iwdt_max_tasks) {
+    return k_rx_err_invalid_state; /* Corrupted state */
+  }
+
+  current_time_ms = tx_time_get();
+  result          = k_rx_ok;
+
+  for (uint32_t i = (uint32_t)k_task_idx_min; i < s_task_monitor.task_count; i++) {
+    task       = &s_task_monitor.tasks[i];
+    elapsed_ms = current_time_ms - task->last_heartbeat_ms;
 
     if (elapsed_ms > task->timeout_ms) {
       /* Task has exceeded heartbeat timeout - deadlock detected */
-      char           log_msg[k_log_msg_buffer_size];
-      const uint32_t written = (uint32_t)snprintf(log_msg,
-                                                   sizeof(log_msg),
-                                                   "Task deadlock: %s (timeout %" PRIu32 " ms)",
-                                                   task->task_name,
-                                                   task->timeout_ms);
+      snprintf_result = snprintf(log_msg,
+                                 sizeof(log_msg),
+                                 "Task deadlock: %s (timeout %" PRIu32 " ms)",
+                                 task->task_name,
+                                 task->timeout_ms);
 
-      if (written > 0 && written < sizeof(log_msg)) {
+      if (snprintf_result > 0 && (uint32_t)snprintf_result < sizeof(log_msg)) {
         rx_log_error(s_tag, log_msg);
       }
 
@@ -434,8 +581,24 @@ rx_err_t rx_iwdt_check_tasks(void)
   return result;
 }
 
+/**
+ * @brief Get name of last failed task
+ *
+ * Returns the name of the task that most recently exceeded its heartbeat
+ * timeout. Used for post-mortem debugging after watchdog reset.
+ *
+ * @return Pointer to failed task name string, or NULL if no failure recorded
+ *
+ * @pre IWDT must be initialized
+ *
+ * @post Returns pointer to internal buffer (do not modify or free)
+ */
 const char* rx_iwdt_get_failed_task(void)
 {
+  if (s_iwdt_initialized != k_iwdt_initialized) {
+    return NULL;
+  }
+
   if (s_task_monitor.failed_task[0] != '\0') {
     return s_task_monitor.failed_task;
   }

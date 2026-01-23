@@ -20,9 +20,27 @@
  */
 
 /** @brief ADC reference voltage in millivolts */
-typedef enum {
+typedef enum : uint16_t {
   k_mock_adc_vref_mv = 3300, /**< 3.3V reference */
 } mock_adc_voltage_t;
+
+/** @brief Valid ADC resolution values in bits */
+typedef enum : uint8_t {
+  k_mock_adc_resolution_8bit  = 8,
+  k_mock_adc_resolution_10bit = 10,
+  k_mock_adc_resolution_12bit = 12,
+} mock_adc_resolution_t;
+
+/** @brief ADC bits parameter constants */
+typedef enum : uint8_t {
+  k_mock_adc_bits_unused = 0, /**< Bits parameter not applicable for this call type */
+} mock_adc_bits_t;
+
+/** @brief Bit manipulation constants for ADC calculations */
+typedef enum : uint8_t {
+  k_mock_adc_bit_shift_base   = 1, /**< Base value for 2^n calculation */
+  k_mock_adc_max_value_offset = 1, /**< Offset to get max value from 2^n */
+} mock_adc_bit_constants_t;
 
 /* =============================================================================
  * Global State
@@ -165,7 +183,7 @@ void mock_adc_clear_history(void)
  * =============================================================================
  */
 
-rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
+rx_err_t adc_init(uint8_t unit, adc_channel_t channel, adc_resolution_t bits)
 {
   internal_record_call(k_mock_adc_call_init, unit, channel, bits);
 
@@ -185,7 +203,8 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   }
 
   /* Validate resolution */
-  if (bits != 8 && bits != 10 && bits != 12) {
+  if (bits != k_mock_adc_resolution_8bit && bits != k_mock_adc_resolution_10bit &&
+      bits != k_mock_adc_resolution_12bit) {
     return k_rx_err_invalid_arg;
   }
 
@@ -201,9 +220,9 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   return k_rx_ok;
 }
 
-rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
+rx_err_t adc_read(uint8_t unit, adc_channel_t channel, uint16_t* value)
 {
-  internal_record_call(k_mock_adc_call_read, unit, channel, 0);
+  internal_record_call(k_mock_adc_call_read, unit, channel, k_mock_adc_bits_unused);
 
   rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {
@@ -212,7 +231,7 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
 
   /* Null pointer check */
   if (value == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Validate unit */
@@ -241,30 +260,39 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
   return k_rx_ok;
 }
 
-rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32_t* voltage_mv)
+rx_err_t adc_read_voltage_mv(uint8_t unit, adc_channel_t channel, adc_resolution_t bits, uint32_t* voltage_mv)
 {
+  rx_err_t err;
+  uint16_t raw_value;
+  uint32_t max_value;
+
   internal_record_call(k_mock_adc_call_read_voltage_mv, unit, channel, bits);
 
-  rx_err_t err = internal_check_error();
+  err = internal_check_error();
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Null pointer check */
   if (voltage_mv == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
+  }
+
+  /* Validate resolution */
+  if (bits != k_mock_adc_resolution_8bit && bits != k_mock_adc_resolution_10bit &&
+      bits != k_mock_adc_resolution_12bit) {
+    return k_rx_err_invalid_arg;
   }
 
   /* Read raw ADC value */
-  uint16_t raw_value;
   err = adc_read(unit, channel, &raw_value);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Calculate voltage */
-  uint32_t max_value = (1UL << bits) - 1;
-  *voltage_mv        = ((uint32_t)raw_value * k_mock_adc_vref_mv) / max_value;
+  max_value   = ((uint32_t)k_mock_adc_bit_shift_base << bits) - k_mock_adc_max_value_offset;
+  *voltage_mv = ((uint32_t)raw_value * k_mock_adc_vref_mv) / max_value;
 
   return k_rx_ok;
 }

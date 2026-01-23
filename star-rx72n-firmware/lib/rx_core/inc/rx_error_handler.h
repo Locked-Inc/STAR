@@ -26,7 +26,12 @@
  *   static error_handler_t s_error_handler;
  *
  *   // 2. Initialize
- *   rx_err_t err = error_handler_init(&s_error_handler, 3, 100, 5000);
+ *   const error_handler_config_t config = {
+ *     .max_retries        = k_error_handler_default_max_retries,
+ *     .initial_backoff_ms = k_error_handler_default_initial_backoff_ms,
+ *     .max_backoff_ms     = k_error_handler_default_max_backoff_ms,
+ *   };
+ *   rx_err_t err = error_handler_init(&s_error_handler, &config);
  *   RX_ERROR_CHECK(err);
  *
  *   // 3. Get interface
@@ -56,6 +61,7 @@
 
 #include "rx_err.h"
 #include "rx_error_interface.h"
+#include "rx_gpio_constants.h"
 #include "tx_api.h"
 
 #ifdef __cplusplus
@@ -70,7 +76,7 @@ extern "C" {
 /**
  * @brief Error handler configuration constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_error_handler_max_components =
     16, /**< Maximum number of components to track (each gets error counter and retry state) */
   k_error_handler_component_name_max = 32, /**< Maximum component name length */
@@ -114,6 +120,15 @@ typedef struct {
   bool     initialized;        /**< Is the handler initialized? */
 } error_handler_t;
 
+/**
+ * @brief Error handler initialization parameters
+ */
+typedef struct {
+  uint32_t max_retries;        /**< Maximum retry attempts (0 = no retry limit) */
+  uint32_t initial_backoff_ms; /**< Initial backoff delay in milliseconds */
+  uint32_t max_backoff_ms;     /**< Maximum backoff delay in milliseconds */
+} error_handler_config_t;
+
 /* =============================================================================
  * Public API
  * =============================================================================
@@ -123,18 +138,13 @@ typedef struct {
  * @brief Initialize error handler
  *
  * @param[in,out] handler Handler instance to initialize
- * @param[in] max_retries Maximum retry attempts (0 = no retry limit)
- * @param[in] initial_backoff_ms Initial backoff delay in milliseconds
- * @param[in] max_backoff_ms Maximum backoff delay in milliseconds
+ * @param[in] config Initialization configuration
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if handler is NULL,
+ *         k_rx_err_null_ptr if handler is NULL,
  *         k_rx_err_rtos_mutex if mutex creation fails
  */
-rx_err_t error_handler_init(error_handler_t* handler,
-                            uint32_t         max_retries,
-                            uint32_t         initial_backoff_ms,
-                            uint32_t         max_backoff_ms);
+rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config_t* config);
 
 /**
  * @brief Get interface from concrete handler
@@ -143,7 +153,7 @@ rx_err_t error_handler_init(error_handler_t* handler,
  * @param[in,out] handler Concrete handler instance
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_null_ptr if either parameter is NULL,
  *         k_rx_err_invalid_state if handler not initialized
  */
 rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_t* handler);
@@ -154,7 +164,7 @@ rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_
  * @param[in,out] handler Handler to deinitialize
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if handler is NULL
+ *         k_rx_err_null_ptr if handler is NULL
  */
 rx_err_t error_handler_deinit(error_handler_t* handler);
 

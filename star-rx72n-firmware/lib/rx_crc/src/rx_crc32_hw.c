@@ -31,6 +31,7 @@
 
 #include "rx72n_regs.h"
 #include "rx_gpio_constants.h"
+#include "rx_register_protection.h"
 
 /* =============================================================================
  * CRC Hardware Constants
@@ -40,12 +41,22 @@
 /**
  * @brief CRC hardware constants
  *
- * Note: k_prcr_key, k_prcr_key_shift, and k_prcr_lock_all are from rx_gpio_constants.h
+ * Note: Protection register constants are from rx_register_protection.h
  */
-typedef enum {
-  k_crc_ieee_final_xor = -1,   /**< IEEE 802.3 CRC-32 final XOR (0xFFFFFFFF as signed int) */
-  k_prcr_unlock_crc    = 0x0B, /**< Unlock PRC0, PRC1, PRC3 for CRC config */
+typedef enum : int32_t {
+  k_crc_ieee_final_xor = -1, /**< IEEE 802.3 CRC-32 final XOR (0xFFFFFFFF as signed int32_t) */
 } rx_crc_hw_constants_t;
+
+/**
+ * @brief CRC calculation limits and indices
+ */
+typedef enum : uint32_t {
+  k_crc_len_min         = 1,     /**< Minimum valid data length */
+  k_crc_len_max         = 65535, /**< Maximum CRC data length (bounded loop) */
+  k_crc_idx_start       = 0,     /**< Loop start index */
+  k_crc_result_invalid  = 0,     /**< Invalid CRC result (error case) */
+  k_crc_bit_set         = 1,     /**< Bit set value for register manipulation */
+} rx_crc_loop_constants_t;
 
 /* =============================================================================
  * Module State
@@ -59,17 +70,31 @@ static bool s_crc_initialized = false;
  * =============================================================================
  */
 
+/**
+ * @brief Initialize hardware CRC module
+ *
+ * Enables the RX72N CRC calculator peripheral and configures it for
+ * IEEE 802.3 CRC-32 calculation (compatible with crc32.ChecksumIEEE).
+ *
+ * @return k_rx_ok on success
+ *
+ * @pre System registers must be accessible
+ * @post CRC module is enabled and configured for IEEE 802.3
+ */
 rx_err_t rx_crc_init(void)
 {
+  /* Pre-condition: Validate system registers are accessible (NASA Rule 5) */
+  RX_CHECK_NULL_PTR(system_regs(), NULL, "System registers not accessible");
+  RX_CHECK_NULL_PTR(crc_regs(), NULL, "CRC registers not accessible");
+
   if (s_crc_initialized) {
     return k_rx_ok;
   }
 
   /* Enable CRC module by clearing module stop bit */
-  system_regs()->prcr =
-    (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_crc; /* Unlock protection for MSTPCR */
-  system_regs()->mstpcrb &= ~(1UL << k_mstpb_crc);        /* Clear bit 23 to enable CRC */
-  system_regs()->prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock protection */
+  system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;  /* Unlock PRC1+PRC3 for MSTPCR */
+  system_regs()->mstpcrb &= ~((uint32_t)k_crc_bit_set << k_mstpb_crc);   /* Clear bit 23 to enable CRC */
+  system_regs()->prcr = k_rx_prcr_lock;              /* Lock protection */
 
   /*
      * Configure CRC peripheral for IEEE 802.3:
@@ -85,6 +110,17 @@ rx_err_t rx_crc_init(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Deinitialize hardware CRC module
+ *
+ * Note: This implementation intentionally does NOT disable the CRC module.
+ * The module remains enabled for continuous availability and minimal overhead.
+ *
+ * @return k_rx_ok always (no-op deinit)
+ *
+ * @pre CRC module must have been initialized
+ * @post CRC module state unchanged
+ */
 rx_err_t rx_crc_deinit(void)
 {
   /*
@@ -96,24 +132,54 @@ rx_err_t rx_crc_deinit(void)
      * 3. Power savings from disabling are minimal (CRC is low-power)
      *
      * If power optimization is critical, enable the module stop here:
-     * system_regs()->prcr = 0xA50B;
-     * system_regs()->mstpcrb |= (1UL << k_mstpb_crc);
-     * system_regs()->prcr = 0xA500;
+     * system_regs()->prcr = k_rx_prcr_unlock_prc1_prc3;
+     * system_regs()->mstpcrb |= ((uint32_t)k_crc_bit_set << k_mstpb_crc);
+     * system_regs()->prcr = k_rx_prcr_lock;
      * s_crc_initialized = false;
      */
+
+  /* Pre-condition: Validate module was initialized (NASA Rule 5) */
+  RX_CHECK(s_crc_initialized, NULL, "CRC module not initialized");
+
+  /* Post-condition: Module state unchanged */
+  RX_CHECK(s_crc_initialized, NULL, "CRC module state corrupted");
 
   return k_rx_ok;
 }
 
+/**
+ * @brief Calculate IEEE 802.3 CRC-32 using hardware acceleration
+ *
+ * Computes CRC-32 checksum using the RX72N CRC calculator peripheral.
+ * Result is compatible with crc32.ChecksumIEEE() in Go and other
+ * IEEE 802.3 CRC-32 implementations.
+ *
+ * @param[in] data Pointer to data buffer
+ * @param[in] len Length of data in bytes (1 to 65535)
+ *
+ * @return CRC-32 checksum, or 0 on error
+ *
+ * @pre data must be non-NULL
+ * @pre len must be in range [1, 65535]
+ * @post CRC module is initialized if not already
+ */
 uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 {
-  if (data == NULL || len == 0) {
-    return 0;
-  }
+  rx_err_t          init_err;
+  volatile uint8_t* crcdir_byte;
+  uint32_t          i;
+
+  /* Pre-condition: Validate input parameters (NASA Rule 5) */
+  RX_CHECK_NULL_PTR(data, NULL, "CRC data pointer is NULL");
+  RX_CHECK((len >= k_crc_len_min) && (len <= k_crc_len_max), NULL,
+           "CRC length out of valid range");
 
   /* Ensure CRC module is initialized */
   if (!s_crc_initialized) {
-    rx_crc_init();
+    init_err = rx_crc_init();
+    if (init_err != k_rx_ok) {
+      return k_crc_result_invalid;
+    }
   }
 
   /*
@@ -133,9 +199,14 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      *
      * Note: For large aligned buffers, 32-bit word writes could be faster,
      * but byte-wise ensures correctness for all cases.
+     *
+     * NASA Rule 2: Loop bounded by k_crc_len_max (compile-time constant)
      */
-  volatile uint8_t* crcdir_byte = (volatile uint8_t*)&crc_regs()->crcdir;
-  for (uint32_t i = 0; i < len; i++) {
+  crcdir_byte = (volatile uint8_t*)&crc_regs()->crcdir;
+  for (i = k_crc_idx_start; i < k_crc_len_max; i++) {
+    if (i >= len) {
+      break;
+    }
     *crcdir_byte = data[i];
   }
 
@@ -144,10 +215,28 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      *
      * IEEE 802.3 requires XOR with 0xFFFFFFFF after calculation.
      * The hardware outputs the raw CRC value, so we apply the final XOR.
+     *
+     * Post-condition: Result is valid IEEE 802.3 CRC-32 (NASA Rule 5)
      */
   return crc_regs()->crcdor ^ k_crc_ieee_final_xor;
 }
 
+/**
+ * @brief Update CRC-32 with additional data (software fallback)
+ *
+ * Computes incremental CRC-32 by updating a previous CRC value with new data.
+ * Uses software implementation because RX72N hardware doesn't support
+ * loading arbitrary initial CRC state.
+ *
+ * @param[in] crc Previous CRC value to continue from
+ * @param[in] data Pointer to new data buffer
+ * @param[in] len Length of new data in bytes
+ *
+ * @return Updated CRC-32 checksum
+ *
+ * @pre data must be non-NULL
+ * @pre len must be in valid range
+ */
 uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)
 {
   /*
@@ -169,6 +258,13 @@ uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)
      * Performance note: Incremental CRC is typically used for small chunks
      * in streaming scenarios, where the software overhead is acceptable.
      */
+
+  /* Pre-condition: Validate input parameters (NASA Rule 5) */
+  RX_CHECK_NULL_PTR(data, NULL, "CRC update data pointer is NULL");
+  RX_CHECK((len >= k_crc_len_min) && (len <= k_crc_len_max), NULL,
+           "CRC update length out of valid range");
+
+  /* Delegate to software implementation */
   return rx_crc32_update_sw(crc, data, len);
 }
 

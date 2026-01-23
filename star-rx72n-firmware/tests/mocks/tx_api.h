@@ -43,81 +43,97 @@ typedef void VOID;
 /* =============================================================================
  * ThreadX Constants
  *
- * INTENTIONAL DEVIATION from NASA Power of 10 Rule 8:
- * These constants are defined as macros (not enums) to maintain exact
- * compatibility with the real ThreadX API. The real ThreadX uses #define
- * for all these values. In STAR production code, these would be enums.
- *
- * This mock must match the real API signatures to ensure tests accurately
- * reflect production behavior when the firmware links against real ThreadX.
+ * NOTE: ThreadX uses SCREAMING_SNAKECASE names. We preserve the names but use
+ * enums to comply with the no-magic-number policy in the firmware codebase.
  * =============================================================================
  */
 
 /** @brief ThreadX return codes (must match real ThreadX API values) */
-#define TX_SUCCESS           ((UINT)0x00)
-#define TX_DELETED           ((UINT)0x01)
-#define TX_POOL_ERROR        ((UINT)0x02)
-#define TX_PTR_ERROR         ((UINT)0x03)
-#define TX_WAIT_ERROR        ((UINT)0x04)
-#define TX_SIZE_ERROR        ((UINT)0x05)
-#define TX_GROUP_ERROR       ((UINT)0x06)
-#define TX_NO_EVENTS         ((UINT)0x07)
-#define TX_OPTION_ERROR      ((UINT)0x08)
-#define TX_QUEUE_ERROR       ((UINT)0x09)
-#define TX_QUEUE_EMPTY       ((UINT)0x0A)
-#define TX_QUEUE_FULL        ((UINT)0x0B)
-#define TX_SEMAPHORE_ERROR   ((UINT)0x0C)
-#define TX_NO_INSTANCE       ((UINT)0x0D)
-#define TX_THREAD_ERROR      ((UINT)0x0E)
-#define TX_PRIORITY_ERROR    ((UINT)0x0F)
-#define TX_NO_MEMORY         ((UINT)0x10)
-#define TX_START_ERROR       ((UINT)0x10)
-#define TX_DELETE_ERROR      ((UINT)0x11)
-#define TX_RESUME_ERROR      ((UINT)0x12)
-#define TX_CALLER_ERROR      ((UINT)0x13)
-#define TX_SUSPEND_ERROR     ((UINT)0x14)
-#define TX_TIMER_ERROR       ((UINT)0x15)
-#define TX_TICK_ERROR        ((UINT)0x16)
-#define TX_ACTIVATE_ERROR    ((UINT)0x17)
-#define TX_THRESH_ERROR      ((UINT)0x18)
-#define TX_SUSPEND_LIFTED    ((UINT)0x19)
-#define TX_WAIT_ABORTED      ((UINT)0x1A)
-#define TX_WAIT_ABORT_ERROR  ((UINT)0x1B)
-#define TX_MUTEX_ERROR       ((UINT)0x1C)
-#define TX_NOT_AVAILABLE     ((UINT)0x1D)
-#define TX_NOT_OWNED         ((UINT)0x1E)
-#define TX_INHERIT_ERROR     ((UINT)0x1F)
-#define TX_NOT_DONE          ((UINT)0x20)
-#define TX_CEILING_EXCEEDED  ((UINT)0x21)
-#define TX_INVALID_CEILING   ((UINT)0x22)
-#define TX_FEATURE_NOT_ENABLED ((UINT)0xFF)
+typedef enum : uint8_t {
+  TX_SUCCESS             = 0x00U,
+  TX_DELETED             = 0x01U,
+  TX_POOL_ERROR          = 0x02U,
+  TX_PTR_ERROR           = 0x03U,
+  TX_WAIT_ERROR          = 0x04U,
+  TX_SIZE_ERROR          = 0x05U,
+  TX_GROUP_ERROR         = 0x06U,
+  TX_NO_EVENTS           = 0x07U,
+  TX_OPTION_ERROR        = 0x08U,
+  TX_QUEUE_ERROR         = 0x09U,
+  TX_QUEUE_EMPTY         = 0x0AU,
+  TX_QUEUE_FULL          = 0x0BU,
+  TX_SEMAPHORE_ERROR     = 0x0CU,
+  TX_NO_INSTANCE         = 0x0DU,
+  TX_THREAD_ERROR        = 0x0EU,
+  TX_PRIORITY_ERROR      = 0x0FU,
+  TX_NO_MEMORY           = 0x10U,
+  TX_START_ERROR         = 0x10U,
+  TX_DELETE_ERROR        = 0x11U,
+  TX_RESUME_ERROR        = 0x12U,
+  TX_CALLER_ERROR        = 0x13U,
+  TX_SUSPEND_ERROR       = 0x14U,
+  TX_TIMER_ERROR         = 0x15U,
+  TX_TICK_ERROR          = 0x16U,
+  TX_ACTIVATE_ERROR      = 0x17U,
+  TX_THRESH_ERROR        = 0x18U,
+  TX_SUSPEND_LIFTED      = 0x19U,
+  TX_WAIT_ABORTED        = 0x1AU,
+  TX_WAIT_ABORT_ERROR    = 0x1BU,
+  TX_MUTEX_ERROR         = 0x1CU,
+  TX_NOT_AVAILABLE       = 0x1DU,
+  TX_NOT_OWNED           = 0x1EU,
+  TX_INHERIT_ERROR       = 0x1FU,
+  TX_NOT_DONE            = 0x20U,
+  TX_CEILING_EXCEEDED    = 0x21U,
+  TX_INVALID_CEILING     = 0x22U,
+  TX_FEATURE_NOT_ENABLED = 0xFFU,
+} tx_status;
 
 /** @brief ThreadX wait options */
-#define TX_NO_WAIT       ((ULONG)0)
-#define TX_WAIT_FOREVER  ((ULONG)0xFFFFFFFFUL)
+typedef enum tx_wait_option : uint32_t {
+  TX_NO_WAIT      = 0U,
+  TX_WAIT_FOREVER = 0xFFFFFFFFU,
+} tx_wait_option;
 
 /** @brief ThreadX inheritance options */
-#define TX_NO_INHERIT    ((UINT)0)
-#define TX_INHERIT       ((UINT)1)
+typedef enum : uint8_t {
+  TX_NO_INHERIT = 0U,
+  TX_INHERIT    = 1U,
+} tx_inherit_option;
 
-/** @brief ThreadX thread constants */
-#define TX_NO_TIME_SLICE ((ULONG)0)
-#define TX_AUTO_START    ((UINT)1)
-#define TX_DONT_START    ((UINT)0)
-#define TX_AUTO_ACTIVATE ((UINT)1)
-#define TX_NO_ACTIVATE   ((UINT)0)
+/** @brief ThreadX time slice options */
+typedef enum : uint8_t {
+  TX_NO_TIME_SLICE   = 0U,
+  TX_AUTO_TIME_SLICE = 1U,
+} tx_time_slice_option_t;
+
+/** @brief ThreadX thread start options */
+typedef enum : uint8_t {
+  TX_DONT_START = 0U,
+  TX_AUTO_START = 1U,
+} tx_thread_start_option_t;
+
+/** @brief ThreadX thread activation options */
+typedef enum : uint8_t {
+  TX_NO_ACTIVATE   = 0U,
+  TX_AUTO_ACTIVATE = 1U,
+} tx_thread_activate_option_t;
 
 /** @brief ThreadX event flags constants */
-#define TX_OR        ((UINT)0)
-#define TX_OR_CLEAR  ((UINT)1)
-#define TX_AND       ((UINT)2)
-#define TX_AND_CLEAR ((UINT)3)
+typedef enum : uint8_t {
+  TX_OR        = 0U,
+  TX_OR_CLEAR  = 1U,
+  TX_AND       = 2U,
+  TX_AND_CLEAR = 3U,
+} tx_event_flags_option_t;
 
 /** @brief ThreadX magic ID constants for object validation */
-typedef enum {
+typedef enum : uint32_t {
+  k_tx_invalid_id        = 0U,         /**< Invalid/uninitialized object ID */
   k_tx_mutex_magic       = 0x4D555458, /**< "MUTX" ASCII magic ID */
   k_tx_thread_magic      = 0x54485244, /**< "THRD" ASCII magic ID */
   k_tx_event_flags_magic = 0x4556544E, /**< "EVTN" ASCII magic ID */
+  k_tx_semaphore_magic   = 0x53454D41, /**< "SEMA" ASCII magic ID */
 } tx_magic_ids_t;
 
 /* =============================================================================
@@ -133,6 +149,15 @@ typedef struct TX_MUTEX_STRUCT {
   UINT  tx_mutex_id;   /**< Mutex ID */
   bool  locked;        /**< Lock state (mock) */
 } TX_MUTEX;
+
+/**
+ * @brief Mock ThreadX semaphore structure
+ */
+typedef struct TX_SEMAPHORE_STRUCT {
+  CHAR* tx_semaphore_name; /**< Semaphore name */
+  UINT  tx_semaphore_id;   /**< Semaphore ID */
+  UINT  count;             /**< Current count */
+} TX_SEMAPHORE;
 
 /**
  * @brief Mock ThreadX thread structure
@@ -165,7 +190,8 @@ typedef struct TX_EVENT_FLAGS_GROUP_STRUCT {
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_mutex_create(TX_MUTEX* mutex_ptr, CHAR* name_ptr, UINT inherit)
+static inline tx_status
+tx_mutex_create(TX_MUTEX* mutex_ptr, CHAR* name_ptr, tx_inherit_option inherit)
 {
   (void)inherit;
 
@@ -194,12 +220,18 @@ static inline UINT tx_mutex_create(TX_MUTEX* mutex_ptr, CHAR* name_ptr, UINT inh
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_mutex_delete(TX_MUTEX* mutex_ptr)
+static inline tx_status tx_mutex_delete(TX_MUTEX* mutex_ptr)
 {
   if (mutex_ptr == NULL) {
     return TX_NOT_AVAILABLE;
   }
-  mutex_ptr->tx_mutex_id = 0;
+  if (mutex_ptr->tx_mutex_id != k_tx_mutex_magic) {
+    return TX_DELETED;
+  }
+  if (mutex_ptr->locked) {
+    return TX_PTR_ERROR;
+  }
+  mutex_ptr->tx_mutex_id = k_tx_invalid_id;
   mutex_ptr->locked      = false;
   return TX_SUCCESS;
 }
@@ -212,7 +244,7 @@ static inline UINT tx_mutex_delete(TX_MUTEX* mutex_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_mutex_get(TX_MUTEX* mutex_ptr, ULONG wait_option)
+static inline tx_status tx_mutex_get(TX_MUTEX* mutex_ptr, tx_wait_option wait_option)
 {
   (void)wait_option;
   if (mutex_ptr == NULL) {
@@ -232,7 +264,7 @@ static inline UINT tx_mutex_get(TX_MUTEX* mutex_ptr, ULONG wait_option)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_mutex_put(TX_MUTEX* mutex_ptr)
+static inline tx_status tx_mutex_put(TX_MUTEX* mutex_ptr)
 {
   if (mutex_ptr == NULL) {
     return TX_NOT_AVAILABLE;
@@ -265,16 +297,16 @@ static inline UINT tx_mutex_put(TX_MUTEX* mutex_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_thread_create(TX_THREAD* thread_ptr,
-                                    CHAR*      name_ptr,
-                                    VOID (*entry_function)(ULONG),
-                                    ULONG entry_input,
-                                    VOID* stack_start,
-                                    ULONG stack_size,
-                                    UINT  priority,
-                                    UINT  preempt_threshold,
-                                    UINT  time_slice,
-                                    UINT  auto_start)
+static inline tx_status tx_thread_create(TX_THREAD*                thread_ptr,
+                                         CHAR*                     name_ptr,
+                                         VOID (*entry_function)(ULONG),
+                                         ULONG                     entry_input,
+                                         VOID*                     stack_start,
+                                         ULONG                     stack_size,
+                                         UINT                      priority,
+                                         UINT                      preempt_threshold,
+                                         tx_time_slice_option_t    time_slice,
+                                         tx_thread_start_option_t  auto_start)
 {
   (void)entry_function;
   (void)entry_input;
@@ -309,13 +341,17 @@ static inline UINT tx_thread_create(TX_THREAD* thread_ptr,
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_thread_delete(TX_THREAD* thread_ptr)
+static inline tx_status tx_thread_delete(TX_THREAD* thread_ptr)
 {
   if (thread_ptr == NULL) {
     return TX_NOT_AVAILABLE;
   }
 
-  thread_ptr->tx_thread_id = 0;
+  if (thread_ptr->tx_thread_id != k_tx_thread_magic) {
+    return TX_PTR_ERROR;
+  }
+
+  thread_ptr->tx_thread_id = k_tx_invalid_id;
   return TX_SUCCESS;
 }
 
@@ -326,10 +362,17 @@ static inline UINT tx_thread_delete(TX_THREAD* thread_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_thread_terminate(TX_THREAD* thread_ptr)
+static inline tx_status tx_thread_terminate(TX_THREAD* thread_ptr)
 {
+  UINT original_id = 0;
+
   if (thread_ptr == NULL) {
     return TX_NOT_AVAILABLE;
+  }
+
+  original_id = thread_ptr->tx_thread_id;
+  if (original_id != k_tx_thread_magic) {
+    return TX_DELETED;
   }
 
   return TX_SUCCESS;
@@ -342,10 +385,17 @@ static inline UINT tx_thread_terminate(TX_THREAD* thread_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_thread_resume(TX_THREAD* thread_ptr)
+static inline tx_status tx_thread_resume(TX_THREAD* thread_ptr)
 {
+  UINT original_id = 0;
+
   if (thread_ptr == NULL) {
     return TX_THREAD_ERROR;
+  }
+
+  original_id = thread_ptr->tx_thread_id;
+  if (original_id != k_tx_thread_magic) {
+    return TX_DELETED;
   }
 
   return TX_SUCCESS;
@@ -358,9 +408,16 @@ static inline UINT tx_thread_resume(TX_THREAD* thread_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_thread_sleep(ULONG timer_ticks)
+static inline tx_status tx_thread_sleep(ULONG timer_ticks)
 {
-  (void)timer_ticks; /* No actual sleep in mock environment */
+  if (timer_ticks == TX_WAIT_FOREVER) {
+    return TX_WAIT_ERROR;
+  }
+
+  if (timer_ticks == TX_NO_WAIT) {
+    return TX_SUCCESS;
+  }
+
   return TX_SUCCESS;
 }
 
@@ -377,7 +434,7 @@ static inline UINT tx_thread_sleep(ULONG timer_ticks)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, CHAR* name_ptr)
+static inline tx_status tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, CHAR* name_ptr)
 {
   /* Pre-condition: Validate input pointer */
   if (group_ptr == NULL) {
@@ -398,19 +455,125 @@ static inline UINT tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, CHAR* 
 }
 
 /**
+ * @brief Create a semaphore
+ *
+ * @param[in] sem_ptr Pointer to semaphore control block
+ * @param[in] name_ptr Semaphore name
+ * @param[in] initial_count Initial count
+ *
+ * @return TX_SUCCESS on success
+ */
+static inline tx_status tx_semaphore_create(TX_SEMAPHORE* sem_ptr,
+                                            CHAR*        name_ptr,
+                                            UINT         initial_count)
+{
+  if (sem_ptr == NULL) {
+    return TX_NOT_AVAILABLE;
+  }
+
+  sem_ptr->tx_semaphore_name = name_ptr;
+  sem_ptr->tx_semaphore_id   = k_tx_semaphore_magic;
+  sem_ptr->count             = initial_count;
+
+  if (sem_ptr->tx_semaphore_id != k_tx_semaphore_magic) {
+    return TX_PTR_ERROR;
+  }
+
+  return TX_SUCCESS;
+}
+
+/**
+ * @brief Delete a semaphore
+ *
+ * @param[in] sem_ptr Pointer to semaphore control block
+ *
+ * @return TX_SUCCESS on success
+ */
+static inline tx_status tx_semaphore_delete(TX_SEMAPHORE* sem_ptr)
+{
+  if (sem_ptr == NULL) {
+    return TX_NOT_AVAILABLE;
+  }
+
+  if (sem_ptr->tx_semaphore_id != k_tx_semaphore_magic) {
+    return TX_PTR_ERROR;
+  }
+
+  sem_ptr->tx_semaphore_id = k_tx_invalid_id;
+  sem_ptr->count           = 0;
+  return TX_SUCCESS;
+}
+
+/**
+ * @brief Get a semaphore (decrement count if available)
+ *
+ * @param[in] sem_ptr Pointer to semaphore control block
+ * @param[in] wait_option Wait option (ignored in mock)
+ *
+ * @return TX_SUCCESS on success
+ */
+static inline tx_status tx_semaphore_get(TX_SEMAPHORE* sem_ptr, tx_wait_option wait_option)
+{
+  (void)wait_option;
+
+  if (sem_ptr == NULL) {
+    return TX_NOT_AVAILABLE;
+  }
+
+  if (sem_ptr->tx_semaphore_id != k_tx_semaphore_magic) {
+    return TX_PTR_ERROR;
+  }
+
+  if (sem_ptr->count == 0U) {
+    if (wait_option == TX_NO_WAIT) {
+      return TX_NO_INSTANCE;
+    }
+    return TX_SUCCESS;
+  }
+
+  sem_ptr->count--;
+  return TX_SUCCESS;
+}
+
+/**
+ * @brief Put a semaphore (increment count)
+ *
+ * @param[in] sem_ptr Pointer to semaphore control block
+ *
+ * @return TX_SUCCESS on success
+ */
+static inline tx_status tx_semaphore_put(TX_SEMAPHORE* sem_ptr)
+{
+  if (sem_ptr == NULL) {
+    return TX_NOT_AVAILABLE;
+  }
+
+  if (sem_ptr->tx_semaphore_id != k_tx_semaphore_magic) {
+    return TX_PTR_ERROR;
+  }
+
+  sem_ptr->count++;
+  return TX_SUCCESS;
+}
+
+/**
  * @brief Delete an event flags group
  *
  * @param[in] group_ptr Event flags group control block
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_event_flags_delete(TX_EVENT_FLAGS_GROUP* group_ptr)
+static inline tx_status tx_event_flags_delete(TX_EVENT_FLAGS_GROUP* group_ptr)
 {
   if (group_ptr == NULL) {
     return TX_NOT_AVAILABLE;
   }
 
-  group_ptr->tx_event_flags_id = 0;
+  if (group_ptr->tx_event_flags_id != k_tx_event_flags_magic) {
+    return TX_PTR_ERROR;
+  }
+
+  group_ptr->tx_event_flags_id = k_tx_invalid_id;
   group_ptr->tx_event_flags    = 0;
 
   return TX_SUCCESS;
@@ -425,7 +588,7 @@ static inline UINT tx_event_flags_delete(TX_EVENT_FLAGS_GROUP* group_ptr)
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT
+static inline tx_status
 tx_event_flags_set(TX_EVENT_FLAGS_GROUP* group_ptr, ULONG flags_to_set, UINT set_option)
 {
   if (group_ptr == NULL) {
@@ -456,11 +619,11 @@ tx_event_flags_set(TX_EVENT_FLAGS_GROUP* group_ptr, ULONG flags_to_set, UINT set
  *
  * @return TX_SUCCESS on success
  */
-static inline UINT tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
-                                      ULONG                 requested_flags,
-                                      UINT                  get_option,
-                                      ULONG*                actual_flags_ptr,
-                                      ULONG                 wait_option)
+static inline tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
+                                           ULONG                 requested_flags,
+                                           UINT                  get_option,
+                                           ULONG*                actual_flags_ptr,
+                                           tx_wait_option        wait_option)
 {
   (void)wait_option;
 

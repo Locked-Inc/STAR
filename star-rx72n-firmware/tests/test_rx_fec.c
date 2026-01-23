@@ -543,7 +543,7 @@ void test_roundtrip_larger_payload(void)
   uint32_t enc_len, dec_len;
 
   /* Fill with ascending pattern */
-  for (int i = 0; i < 32; i++) {
+  for (uint32_t i = 0; i < 32; i++) {
     input[i] = (uint8_t)i;
   }
 

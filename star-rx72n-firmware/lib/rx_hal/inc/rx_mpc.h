@@ -29,12 +29,29 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hardware_pinout.h"
 #include "rx_err.h"
+#include "rx_port_constants.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* =============================================================================
+ * Configuration Structures
+ * =============================================================================
+ */
+
+/**
+ * @brief MPC peripheral configuration structure
+ *
+ * This structure groups related parameters to prevent accidental
+ * parameter swapping when calling rx_mpc_set_peripheral.
+ * Provides type safety and explicit parameter documentation.
+ */
+typedef struct {
+  rx_port_pin_t pin;  /**< GPIO pin to configure */
+  uint8_t       psel; /**< Peripheral select code */
+} rx_mpc_peripheral_config_t;
 
 /* =============================================================================
  * Pin Function Codes
@@ -47,7 +64,7 @@ extern "C" {
  * These codes are written to PFS registers to select pin functions.
  * Values are device-specific - consult RX72N hardware manual Table 21.5.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_pin_function_gpio   = 0x00, /**< GPIO mode (default) */
   k_pin_function_periph = 0x01, /**< Peripheral function (auto-detect from PSEL) */
 } rx_pin_function_t;
@@ -58,7 +75,7 @@ typedef enum {
  * These are written to the PSEL field of PFS registers.
  * Actual values depend on specific pin - see hardware manual.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_psel_mtu_ioc   = 0x01, /**< MTU I/O compare/PWM output (MTIOC) */
   k_psel_mtu_clk   = 0x02, /**< MTU clock input (MTCLK) */
   k_psel_mtu_phase = 0x03, /**< MTU encoder phase input */
@@ -71,31 +88,6 @@ typedef enum {
   k_psel_rspi_cipo = 0x0D, /**< RSPI controller in peripheral out */
   k_psel_adc       = 0x00, /**< ADC input (disable digital) */
 } rx_pin_psel_t;
-
-/**
- * @brief Port numbers for RX72N
- */
-typedef enum {
-  k_port_0 = 0,
-  k_port_1 = 1,
-  k_port_2 = 2,
-  k_port_3 = 3,
-  k_port_4 = 4,
-  k_port_5 = 5,
-  k_port_6 = 6,
-  k_port_7 = 7,
-  k_port_8 = 8,
-  k_port_9 = 9,
-  k_port_a = 0x0A,
-  k_port_b = 0x0B,
-  k_port_c = 0x0C,
-  k_port_d = 0x0D,
-  k_port_e = 0x0E,
-  k_port_f = 0x0F,
-  k_port_g = 0x10,
-  k_port_h = 0x11,
-  k_port_j = 0x12,
-} rx_port_t;
 
 /* =============================================================================
  * Public API
@@ -112,20 +104,21 @@ typedef enum {
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_gpio(gpio_pin_t pin);
+rx_err_t rx_mpc_set_gpio(rx_port_pin_t pin);
 
 /**
  * @brief Configure pin for peripheral function
  *
  * Sets pin to peripheral mode with specified function code.
+ * Uses a config structure to prevent accidental parameter swapping.
  *
- * @param[in] pin GPIO pin enum (encodes port and pin number)
- * @param[in] psel Peripheral select code (see hardware manual)
+ * @param[in] config Pointer to MPC peripheral configuration structure
+ *                   containing pin and PSEL values
  *
  * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if port or pin is invalid
+ * @return k_rx_err_invalid_arg if config is NULL, port/pin is invalid, or PSEL exceeds max
  */
-rx_err_t rx_mpc_set_peripheral(gpio_pin_t pin, uint8_t psel);
+rx_err_t rx_mpc_set_peripheral(const rx_mpc_peripheral_config_t* config);
 
 /**
  * @brief Configure pin for MTU PWM output
@@ -138,7 +131,7 @@ rx_err_t rx_mpc_set_peripheral(gpio_pin_t pin, uint8_t psel);
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_mtu_pwm(gpio_pin_t pin);
+rx_err_t rx_mpc_set_mtu_pwm(rx_port_pin_t pin);
 
 /**
  * @brief Configure pin for MTU encoder input
@@ -151,7 +144,7 @@ rx_err_t rx_mpc_set_mtu_pwm(gpio_pin_t pin);
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_mtu_encoder(gpio_pin_t pin);
+rx_err_t rx_mpc_set_mtu_encoder(rx_port_pin_t pin);
 
 /**
  * @brief Configure pin for ADC input
@@ -164,7 +157,7 @@ rx_err_t rx_mpc_set_mtu_encoder(gpio_pin_t pin);
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_adc(gpio_pin_t pin);
+rx_err_t rx_mpc_set_adc(rx_port_pin_t pin);
 
 /**
  * @brief Configure pin for SCI UART function
@@ -172,12 +165,10 @@ rx_err_t rx_mpc_set_adc(gpio_pin_t pin);
  * Configures pin for SCI transmit or receive.
  *
  * @param[in] pin GPIO pin enum (encodes port and pin number)
- * @param[in] is_tx True for TX, false for RX
- *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_sci(gpio_pin_t pin, bool is_tx);
+rx_err_t rx_mpc_set_sci(rx_port_pin_t pin);
 
 /**
  * @brief Configure pin for RIIC (I2C) function
@@ -185,12 +176,10 @@ rx_err_t rx_mpc_set_sci(gpio_pin_t pin, bool is_tx);
  * Configures pin for RIIC SCL or SDA.
  *
  * @param[in] pin GPIO pin enum (encodes port and pin number)
- * @param[in] is_scl True for SCL, false for SDA
- *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_riic(gpio_pin_t pin, bool is_scl);
+rx_err_t rx_mpc_set_riic(rx_port_pin_t pin);
 
 /**
  * @brief Configure pin for RSPI (SPI) function
@@ -202,7 +191,7 @@ rx_err_t rx_mpc_set_riic(gpio_pin_t pin, bool is_scl);
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin is invalid
  */
-rx_err_t rx_mpc_set_rspi(gpio_pin_t pin);
+rx_err_t rx_mpc_set_rspi(rx_port_pin_t pin);
 
 #ifdef __cplusplus
 }

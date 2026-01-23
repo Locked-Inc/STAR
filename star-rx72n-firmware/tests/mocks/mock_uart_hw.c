@@ -14,6 +14,7 @@
 
 #include <string.h>
 
+#include "hardware.h"
 #include "mock_sci_regs.h"
 
 /* =============================================================================
@@ -74,7 +75,7 @@ static uint16_t internal_fifo_space(uint16_t head, uint16_t tail)
   return k_mock_uart_fifo_size - 1 - internal_fifo_count(head, tail);
 }
 
-typedef enum {
+typedef enum : uint32_t {
   k_mock_uart_tdre_timeout = 100000,
 } mock_uart_timeout_t;
 
@@ -251,18 +252,18 @@ uint32_t mock_uart_hw_get_baudrate(uint8_t channel)
 #include "mock_sci_regs.h"
 #include "rx_err.h"
 
-rx_err_t uart_init_channel(uint8_t  channel,
-                           uint32_t baudrate,
-                           uint8_t  tx_port,
-                           uint8_t  tx_pin,
-                           uint8_t  rx_port,
-                           uint8_t  rx_pin)
+rx_err_t uart_init_channel(const uart_channel_config_t* config)
 {
+  if (config == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
+  uint8_t  channel  = config->channel;
+  uint32_t baudrate = config->baudrate;
+
   /* Pin parameters are ignored in mock - no actual hardware config */
-  (void)tx_port;
-  (void)tx_pin;
-  (void)rx_port;
-  (void)rx_pin;
+  (void)config->tx_gpio;
+  (void)config->rx_gpio;
 
   internal_record_call(k_mock_uart_call_init, channel, baudrate);
 
@@ -361,7 +362,7 @@ rx_err_t uart_puts_channel(uint8_t channel, const char* str)
   }
 
   if (str == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_mock_uart_channel_count) {
@@ -399,7 +400,7 @@ rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t lengt
   }
 
   if (data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_mock_uart_channel_count) {
@@ -431,7 +432,7 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data)
   }
 
   if (data == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_mock_uart_channel_count) {
@@ -464,7 +465,7 @@ rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint
   }
 
   if (data == NULL || bytes_read == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_mock_uart_channel_count) {
@@ -503,7 +504,7 @@ rx_err_t uart_rx_available(uint8_t channel, bool* available)
   }
 
   if (available == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (channel >= k_mock_uart_channel_count) {
@@ -525,14 +526,27 @@ rx_err_t uart_rx_available(uint8_t channel, bool* available)
  * =============================================================================
  */
 
+/** @brief Debug UART configuration constants */
+typedef enum : uint32_t {
+  k_debug_uart_channel  = 9,      /**< SCI9 channel for debug UART */
+  k_debug_uart_baudrate = 115200, /**< 115200 baud for debug console */
+} debug_uart_config_t;
+
 rx_err_t uart_init(void)
 {
-  return uart_init_channel(9, 115200, 0x0B, 7, 0x0B, 6);
+  const uart_channel_config_t config = {
+    .channel  = k_debug_uart_channel,
+    .baudrate = k_debug_uart_baudrate,
+    .tx_gpio  = k_rx_pb_7,
+    .rx_gpio  = k_rx_pb_6,
+  };
+
+  return uart_init_channel(&config);
 }
 
 void uart_putc(char data)
 {
-  (void)uart_putc_channel(9, data);
+  (void)uart_putc_channel(k_debug_uart_channel, data);
 }
 
 void uart_puts(const char* str)
