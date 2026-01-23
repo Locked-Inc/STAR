@@ -34,9 +34,8 @@ typedef uint8_t rx_pin_t;
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port or pin_num is out of range
  */
-static rx_err_t internal_validate_port_pin(const rx_port_t port,
-                                           const rx_pin_t  pin_num,
-                                           const char*     context_tag)
+static rx_err_t
+internal_validate_port_pin(const rx_port_t port, const rx_pin_t pin_num, const char* context_tag)
 {
   if (port > k_rx_port_j) {
     rx_log_error_str(s_tag, "Invalid port", context_tag, (uint32_t)strlen(context_tag));
@@ -60,7 +59,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
 {
   rx_port_t port    = 0;
   rx_pin_t  pin_num = 0;
-  rx_err_t err     = k_rx_err_invalid_state;
+  rx_err_t  err     = k_rx_err_invalid_state;
 
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");

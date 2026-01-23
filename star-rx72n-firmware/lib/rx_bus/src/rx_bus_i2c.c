@@ -244,11 +244,11 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
   riic_channel.value = bus_config->proto.i2c.channel;
   device_addr.value  = bus_config->proto.i2c.device_addr;
   err                = riic_write_read(riic_channel,
-                                                device_addr,
-                                                ctx->write_data,
-                                                ctx->write_length,
-                                                ctx->read_data,
-                                                ctx->read_length);
+                        device_addr,
+                        ctx->write_data,
+                        ctx->write_length,
+                        ctx->read_data,
+                        ctx->read_length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C write-read failed");

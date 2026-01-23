@@ -65,12 +65,12 @@ typedef enum : uint16_t {
  * Output range: -273 to 6280 (whole degrees Celsius)
  */
 typedef enum : int32_t {
-  k_temp_kelvin_offset = 2731,      /**< Offset: 0.1K to 0.1°C (273.15K × 10) */
-  k_temp_decimal_scale = 10,        /**< Scale: 0.1 units to whole units */
-  k_temp_min_valid_0_1k = 0,        /**< Minimum temperature in 0.1K (absolute zero) */
-  k_temp_max_valid_0_1k = 65535,    /**< Maximum temperature in 0.1K (uint16_t max) */
-  k_temp_min_0_1c = -2731,          /**< Min intermediate (0 - 2731): −273.1 in 0.1°C units */
-  k_temp_max_0_1c = 62804,          /**< Max intermediate (65535 - 2731): 6280.4 in 0.1°C units */
+  k_temp_kelvin_offset     = 2731,   /**< Offset: 0.1K to 0.1°C (273.15K × 10) */
+  k_temp_decimal_scale     = 10,     /**< Scale: 0.1 units to whole units */
+  k_temp_min_valid_0_1k    = 0,      /**< Minimum temperature in 0.1K (absolute zero) */
+  k_temp_max_valid_0_1k    = 65535,  /**< Maximum temperature in 0.1K (uint16_t max) */
+  k_temp_min_0_1c          = -2731,  /**< Min intermediate (0 - 2731): −273.1 in 0.1°C units */
+  k_temp_max_0_1c          = 62804,  /**< Max intermediate (65535 - 2731): 6280.4 in 0.1°C units */
   k_temp_celsius_min_int16 = -32768, /**< int16_t minimum */
   k_temp_celsius_max_int16 = 32767,  /**< int16_t maximum */
 } bq4050_temp_constants_t;
@@ -233,9 +233,9 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
                                       const uint8_t     num_cells)
 {
   char                 log_msg[k_bq4050_log_msg_size];
-  int                  snprintf_result = k_bq4050_snprintf_init;
-  uint8_t              i               = k_bq4050_loop_init;
-  rx_err_t             err             = k_rx_ok;
+  int                  snprintf_result                    = k_bq4050_snprintf_init;
+  uint8_t              i                                  = k_bq4050_loop_init;
+  rx_err_t             err                                = k_rx_ok;
   static const uint8_t s_cell_reg_map[k_bq4050_max_cells] = {
     [k_cell_idx_1] = k_sbs_cell_voltage_1, /* Cell 1 at 0x3F */
     [k_cell_idx_2] = k_sbs_cell_voltage_2, /* Cell 2 at 0x3E */
@@ -254,7 +254,8 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
                                (unsigned)num_cells,
                                (unsigned)s_bq4050_min_cells,
                                (unsigned)k_bq4050_max_cells);
-    if (snprintf_result > k_bq4050_snprintf_success_threshold && (uint32_t)snprintf_result < sizeof(log_msg)) {
+    if (snprintf_result > k_bq4050_snprintf_success_threshold &&
+        (uint32_t)snprintf_result < sizeof(log_msg)) {
       rx_log_error(s_tag, log_msg);
     }
     return k_rx_err_invalid_arg;
@@ -282,8 +283,8 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
 rx_err_t
 rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t* current_ma)
 {
-  uint16_t       raw_current;
-  const rx_err_t err;
+  uint16_t raw_current;
+  rx_err_t err;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -308,8 +309,8 @@ rx_err_t rx_bq4050_read_average_current(rx_bus_manager_t* manager,
                                         const char*       bus_name,
                                         int16_t*          avg_current_ma)
 {
-  uint16_t       raw_current;
-  const rx_err_t err;
+  uint16_t raw_current;
+  rx_err_t err;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -333,8 +334,8 @@ rx_err_t rx_bq4050_read_average_current(rx_bus_manager_t* manager,
 rx_err_t
 rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc_percent)
 {
-  uint16_t       soc_word;
-  const rx_err_t err;
+  uint16_t soc_word;
+  rx_err_t err;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -362,8 +363,8 @@ rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uin
 rx_err_t
 rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc_percent)
 {
-  uint16_t       soc_word;
-  const rx_err_t err;
+  uint16_t soc_word;
+  rx_err_t err;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -391,8 +392,8 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
 rx_err_t
 rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int16_t* temperature_c)
 {
-  rx_err_t       err;
-  uint16_t       temp_0_1k;
+  rx_err_t err;
+  uint16_t temp_0_1k;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -655,8 +656,8 @@ static rx_err_t internal_read_status_flags(rx_bus_manager_t*   manager,
                                            const char*         bus_name,
                                            rx_bq4050_status_t* status)
 {
-  uint16_t       status_flags;
-  const rx_err_t err;
+  uint16_t status_flags;
+  rx_err_t err;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -668,10 +669,13 @@ static rx_err_t internal_read_status_flags(rx_bus_manager_t*   manager,
     return err;
   }
 
-  status->is_charging         = !(status_flags & k_bq4050_status_discharging);
-  status->is_fully_charged    = (status_flags & k_bq4050_status_fully_charged) != k_bq4050_status_flag_clear;
-  status->is_fully_discharged = (status_flags & k_bq4050_status_fully_discharged) != k_bq4050_status_flag_clear;
-  status->is_low_capacity     = (status_flags & k_bq4050_status_remaining_capacity_alarm) != k_bq4050_status_flag_clear;
+  status->is_charging = !(status_flags & k_bq4050_status_discharging);
+  status->is_fully_charged =
+    (status_flags & k_bq4050_status_fully_charged) != k_bq4050_status_flag_clear;
+  status->is_fully_discharged =
+    (status_flags & k_bq4050_status_fully_discharged) != k_bq4050_status_flag_clear;
+  status->is_low_capacity =
+    (status_flags & k_bq4050_status_remaining_capacity_alarm) != k_bq4050_status_flag_clear;
 
   return k_rx_ok;
 }
@@ -701,7 +705,8 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
                                (unsigned)num_cells,
                                (unsigned)s_bq4050_min_cells,
                                (unsigned)k_bq4050_max_cells);
-    if (snprintf_result > k_bq4050_snprintf_success_threshold && (uint32_t)snprintf_result < sizeof(log_msg)) {
+    if (snprintf_result > k_bq4050_snprintf_success_threshold &&
+        (uint32_t)snprintf_result < sizeof(log_msg)) {
       rx_log_error(s_tag, log_msg);
     }
     return k_rx_err_invalid_arg;

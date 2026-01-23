@@ -309,8 +309,8 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
     return k_rx_err_invalid_state;
   }
 
-  const float    delta_revs     = (float)delta_count / counts_per_rev;
-  *velocity_rps                 = delta_revs / delta_time_s;
+  const float delta_revs = (float)delta_count / counts_per_rev;
+  *velocity_rps          = delta_revs / delta_time_s;
 
   /* Post-condition: Validate velocity is realistic */
   if (fabsf(*velocity_rps) > k_max_realistic_velocity_rps) {

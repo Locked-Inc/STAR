@@ -198,13 +198,14 @@ rx_err_t adc_init(uint8_t unit, adc_channel_t channel, adc_resolution_t bits)
   }
 
   /* Validate channel */
-  if (channel >= k_mock_adc_max_channels) {
+  if ((uint8_t)channel >= k_mock_adc_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
   /* Validate resolution */
-  if (bits != k_mock_adc_resolution_8bit && bits != k_mock_adc_resolution_10bit &&
-      bits != k_mock_adc_resolution_12bit) {
+  if ((uint8_t)bits != (uint8_t)k_mock_adc_resolution_8bit &&
+      (uint8_t)bits != (uint8_t)k_mock_adc_resolution_10bit &&
+      (uint8_t)bits != (uint8_t)k_mock_adc_resolution_12bit) {
     return k_rx_err_invalid_arg;
   }
 
@@ -240,7 +241,7 @@ rx_err_t adc_read(uint8_t unit, adc_channel_t channel, uint16_t* value)
   }
 
   /* Validate channel */
-  if (channel >= k_mock_adc_max_channels) {
+  if ((uint8_t)channel >= k_mock_adc_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -260,7 +261,10 @@ rx_err_t adc_read(uint8_t unit, adc_channel_t channel, uint16_t* value)
   return k_rx_ok;
 }
 
-rx_err_t adc_read_voltage_mv(uint8_t unit, adc_channel_t channel, adc_resolution_t bits, uint32_t* voltage_mv)
+rx_err_t adc_read_voltage_mv(uint8_t          unit,
+                             adc_channel_t    channel,
+                             adc_resolution_t bits,
+                             uint32_t*        voltage_mv)
 {
   rx_err_t err;
   uint16_t raw_value;
@@ -279,8 +283,9 @@ rx_err_t adc_read_voltage_mv(uint8_t unit, adc_channel_t channel, adc_resolution
   }
 
   /* Validate resolution */
-  if (bits != k_mock_adc_resolution_8bit && bits != k_mock_adc_resolution_10bit &&
-      bits != k_mock_adc_resolution_12bit) {
+  if ((uint8_t)bits != (uint8_t)k_mock_adc_resolution_8bit &&
+      (uint8_t)bits != (uint8_t)k_mock_adc_resolution_10bit &&
+      (uint8_t)bits != (uint8_t)k_mock_adc_resolution_12bit) {
     return k_rx_err_invalid_arg;
   }
 

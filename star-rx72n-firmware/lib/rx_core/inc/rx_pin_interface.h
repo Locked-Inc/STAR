@@ -106,10 +106,10 @@ typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, const uint8_t port, const uint
  *         k_rx_err_gpio_invalid_pin if pin invalid,
  *         k_rx_err_invalid_arg if function is NULL
  */
-typedef rx_err_t (*rx_pin_reserve_fn)(void*             ctx,
-                                      const uint8_t     port,
-                                      const uint8_t     pin,
-                                      const char*       function);
+typedef rx_err_t (*rx_pin_reserve_fn)(void*         ctx,
+                                      const uint8_t port,
+                                      const uint8_t pin,
+                                      const char*   function);
 
 /**
  * @brief Release a previously reserved pin
