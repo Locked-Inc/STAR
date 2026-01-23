@@ -120,6 +120,7 @@ add_library(rx_hal STATIC
 )
 target_include_directories(rx_hal PUBLIC
     lib/rx_hal/inc
+    lib/rx_bus/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/include  # For tx_user.h
 )
 target_link_libraries(rx_hal PUBLIC rx_core threadx)

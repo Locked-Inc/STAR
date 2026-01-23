@@ -75,12 +75,14 @@ typedef enum : uint16_t {
   k_brr_min_value  = 0,   /**< Minimum BRR register value */
 } brr_constants_t;
 
-/** @brief Maximum SCI channels */
+/** @brief Maximum SCI channels (array size, must be enum for compile-time constant) */
 typedef enum : uint8_t {
-  k_uart_min_channel       = 0,  /**< Minimum SCI channel */
-  k_uart_max_channels      = 13, /**< SCI channels 0-12 */
+  k_uart_array_size        = 13, /**< Array size for s_channel_initialized */
   k_uart_max_mstpb_channel = 11, /**< Maximum channel in MSTPCRB (SCI12 uses MSTPCRC) */
-} uart_channel_limits_t;
+} uart_internal_constants_t;
+
+/** @brief Maximum valid channel value (for validation) */
+static const uint8_t s_uart_max_channels = 13; /**< SCI channels 0-12 */
 
 typedef enum : uint32_t {
   k_uart_baudrate_min = 1,
@@ -125,7 +127,7 @@ static const uint8_t k_uart_gpio_bit_set = 1;
  */
 
 /** @brief Per-channel initialization state */
-static bool s_channel_initialized[k_uart_max_channels] = {false};
+static bool s_channel_initialized[k_uart_array_size] = {false};
 
 /* =============================================================================
  * Private Functions
@@ -234,9 +236,8 @@ static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_por
   const uint8_t rx_port = rx_port_from_pin(rx_gpio);
   const uint8_t rx_pin  = rx_pin_from_pin(rx_gpio);
 
-  /* Validate pin numbers */
-  if (tx_pin < k_rx_pin_0 || tx_pin > k_rx_pin_max || rx_pin < k_rx_pin_0 ||
-      rx_pin > k_rx_pin_max) {
+  /* Validate pin numbers (unsigned types, only check upper bound) */
+  if (tx_pin > k_rx_pin_max || rx_pin > k_rx_pin_max) {
     return k_rx_err_invalid_arg;
   }
 
@@ -282,8 +283,8 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
     return k_rx_err_null_ptr;
   }
 
-  /* Validate channel */
-  if ((config->channel < k_uart_min_channel) || (config->channel >= k_uart_max_channels)) {
+  /* Validate channel (enum type is unsigned, only check upper bound) */
+  if ((uint8_t)config->channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -341,10 +342,10 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
   return k_rx_ok;
 }
 
-rx_err_t uart_deinit_channel(const uint8_t channel)
+rx_err_t uart_deinit_channel(const uart_channel_t channel)
 {
   /* Validate channel */
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -363,10 +364,10 @@ rx_err_t uart_deinit_channel(const uint8_t channel)
   return k_rx_ok;
 }
 
-rx_err_t uart_putc_channel(const uint8_t channel, const char data)
+rx_err_t uart_putc_channel(const uart_channel_t channel, const char data)
 {
   /* Validate channel */
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -403,14 +404,14 @@ rx_err_t uart_putc_channel(const uint8_t channel, const char data)
   return k_rx_ok;
 }
 
-rx_err_t uart_puts_channel(const uint8_t channel, const char* str)
+rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
 {
   /* Validate parameters */
   if (str == (const char*)0) {
     return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -435,14 +436,14 @@ rx_err_t uart_puts_channel(const uint8_t channel, const char* str)
   return k_rx_ok;
 }
 
-rx_err_t uart_write_channel(const uint8_t channel, const uint8_t* data, uint16_t length)
+rx_err_t uart_write_channel(const uart_channel_t channel, const uint8_t* data, uint16_t length)
 {
   /* Validate parameters */
   if (data == (const uint8_t*)0) {
     return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -461,14 +462,14 @@ rx_err_t uart_write_channel(const uint8_t channel, const uint8_t* data, uint16_t
   return k_rx_ok;
 }
 
-rx_err_t uart_getc_channel(const uint8_t channel, char* data)
+rx_err_t uart_getc_channel(const uart_channel_t channel, char* data)
 {
   /* Validate parameters */
   if (data == (char*)0) {
     return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -504,14 +505,14 @@ rx_err_t uart_getc_channel(const uint8_t channel, char* data)
 }
 
 rx_err_t
-uart_read_channel(const uint8_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read)
+uart_read_channel(const uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read)
 {
   /* Validate parameters */
   if (data == (uint8_t*)0 || bytes_read == (uint16_t*)0) {
     return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -538,14 +539,14 @@ uart_read_channel(const uint8_t channel, uint8_t* data, uint16_t length, uint16_
   return k_rx_ok;
 }
 
-rx_err_t uart_rx_available(const uint8_t channel, bool* available)
+rx_err_t uart_rx_available(const uart_channel_t channel, bool* available)
 {
   /* Validate parameters */
   if (available == (bool*)0) {
     return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -573,7 +574,7 @@ rx_err_t uart_rx_available(const uint8_t channel, bool* available)
 rx_err_t uart_init(void)
 {
   const uart_channel_config_t config = {
-    .channel  = k_uart_debug_channel,
+    .channel  = (uart_channel_t)k_uart_debug_channel,
     .baudrate = s_uart_default_baudrate,
     .tx_gpio  = k_uart_debug_tx_gpio,
     .rx_gpio  = k_uart_debug_rx_gpio,
@@ -584,7 +585,7 @@ rx_err_t uart_init(void)
 void uart_putc(const char data)
 {
   /* For legacy function, ignore errors (used in early init before error handling) */
-  (void)uart_putc_channel(k_uart_debug_channel, data);
+  (void)uart_putc_channel((uart_channel_t)k_uart_debug_channel, data);
 }
 
 void uart_puts(const char* str)
