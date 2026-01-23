@@ -165,7 +165,10 @@ func TestHandlerWithGateway(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to dial: %v", err)
 	}
-	defer c.Close(websocket.StatusNormalClosure, "")
+	defer func() {
+		//nolint:staticcheck
+		_ = c.Close(websocket.StatusNormalClosure, "")
+	}()
 
 	// 3. Send Message
 	msg := &starv1.ControllerState{
@@ -175,7 +178,9 @@ func TestHandlerWithGateway(t *testing.T) {
 	}
 	bytes, _ := proto.Marshal(msg)
 	//nolint:staticcheck
-	c.Write(ctx, websocket.MessageBinary, bytes)
+	if err := c.Write(ctx, websocket.MessageBinary, bytes); err != nil {
+		t.Fatalf("failed to write: %v", err)
+	}
 
 	// 4. Verify Gateway received the command
 	time.Sleep(100 * time.Millisecond)

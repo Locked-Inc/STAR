@@ -151,7 +151,7 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			payload, err := proto.Marshal(wireMsg)
 			if err != nil {
 				log.Printf("Failed to marshal telemetry: %v", err)
-				c.Write(make([]byte, n))
+				_, _ = c.Write(make([]byte, n))
 				continue
 			}
 
@@ -169,7 +169,7 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			encodedFrame, err := encoder.Encode(frameToSend)
 			if err != nil {
 				log.Printf("Failed to encode frame: %v", err)
-				c.Write(make([]byte, n))
+				_, _ = c.Write(make([]byte, n))
 				continue
 			}
 

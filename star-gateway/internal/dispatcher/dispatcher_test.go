@@ -222,7 +222,9 @@ func TestDispatcherBasicRouting(t *testing.T) {
 	}
 
 	// Stop dispatcher
-	d.Stop()
+	if err := d.Stop(); err != nil {
+		t.Errorf("Failed to stop dispatcher: %v", err)
+	}
 
 	if d.GetState() != StateStopped {
 		t.Errorf("Expected state Stopped, got %v", d.GetState())
@@ -258,7 +260,9 @@ func TestDispatcherMultipleSubscribers(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), testMediumTimeout)
 	defer cancel()
 
-	d.Start(ctx)
+	if err := d.Start(ctx); err != nil {
+		t.Fatalf("Failed to start dispatcher: %v", err)
+	}
 
 	// Both should receive
 	receivedCount := 0
@@ -275,7 +279,9 @@ func TestDispatcherMultipleSubscribers(t *testing.T) {
 		}
 	}
 
-	d.Stop()
+	if err := d.Stop(); err != nil {
+		t.Errorf("Failed to stop dispatcher: %v", err)
+	}
 }
 
 // TestDispatcherAllMessageTypes tests message routing for all message types.
@@ -337,7 +343,11 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 			if err := d.Start(ctx); err != nil {
 				t.Fatalf("Failed to start dispatcher: %v", err)
 			}
-			defer d.Stop()
+			defer func() {
+				if err := d.Stop(); err != nil {
+					t.Errorf("Failed to stop dispatcher: %v", err)
+				}
+			}()
 
 			select {
 			case msg := <-ch:
@@ -372,10 +382,14 @@ func TestDispatcherErrorHandling(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		d.Start(ctx)
+		if err := d.Start(ctx); err != nil {
+			t.Fatalf("Failed to start dispatcher: %v", err)
+		}
 		time.Sleep(testHARQTimeout)
 		cancel()
-		d.Stop()
+		if err := d.Stop(); err != nil {
+			t.Errorf("Failed to stop dispatcher: %v", err)
+		}
 
 		if callCount < 2 {
 			t.Error("Expected HARQ to be reset and retried")
@@ -393,10 +407,14 @@ func TestDispatcherErrorHandling(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		d.Start(ctx)
+		if err := d.Start(ctx); err != nil {
+			t.Fatalf("Failed to start dispatcher: %v", err)
+		}
 		time.Sleep(testHARQTimeout)
 		cancel()
-		d.Stop()
+		if err := d.Stop(); err != nil {
+			t.Errorf("Failed to stop dispatcher: %v", err)
+		}
 	})
 
 	t.Run("Empty WireMessage", func(t *testing.T) {
@@ -416,10 +434,14 @@ func TestDispatcherErrorHandling(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		d.Start(ctx)
+		if err := d.Start(ctx); err != nil {
+			t.Fatalf("Failed to start dispatcher: %v", err)
+		}
 		time.Sleep(testHARQTimeout)
 		cancel()
-		d.Stop()
+		if err := d.Stop(); err != nil {
+			t.Errorf("Failed to stop dispatcher: %v", err)
+		}
 	})
 }
 
@@ -449,8 +471,14 @@ func TestDispatcherChannelBackpressure(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	d.Start(ctx)
-	defer d.Stop()
+	if err := d.Start(ctx); err != nil {
+		t.Fatalf("Failed to start dispatcher: %v", err)
+	}
+	defer func() {
+		if err := d.Stop(); err != nil {
+			t.Errorf("Failed to stop dispatcher: %v", err)
+		}
+	}()
 
 	ch := d.Subscribe(MessageTypeTelemetryData)
 	defer d.Unsubscribe(MessageTypeTelemetryData, ch)
