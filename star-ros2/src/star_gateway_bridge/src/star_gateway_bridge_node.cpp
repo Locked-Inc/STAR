@@ -163,7 +163,8 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
                             std::bind(&StarGatewayBridgeNode::connection_watchdog_callback, this));
 
   // Create diagnostics publisher
-  diagnostics_pub_ = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
+  diagnostics_pub_ = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics",
+      10);
 
   // Create diagnostics timer (1 Hz for human readability)
   diagnostics_timer_ = this->create_wall_timer(
@@ -469,7 +470,8 @@ void StarGatewayBridgeNode::check_telemetry_sequence_continuity(uint32_t current
   if (first_telemetry_frame_) {
     last_telemetry_sequence_ = current_sequence;
     first_telemetry_frame_ = false;
-    RCLCPP_INFO(this->get_logger(), "First telemetry frame received, sequence=%u", current_sequence);
+    RCLCPP_INFO(this->get_logger(), "First telemetry frame received, sequence=%u",
+        current_sequence);
   } else {
     uint32_t expected_seq = last_telemetry_sequence_ + 1;
 
