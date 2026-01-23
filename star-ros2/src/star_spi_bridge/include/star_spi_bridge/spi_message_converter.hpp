@@ -1,7 +1,7 @@
 // Copyright 2026 Locked Inc.
 
-#ifndef STAR_SPI_BRIDGE__SPI_MESSAGE_CONVERTER_HPP_
-#define STAR_SPI_BRIDGE__SPI_MESSAGE_CONVERTER_HPP_
+#ifndef STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_MESSAGE_CONVERTER_HPP_
+#define STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_MESSAGE_CONVERTER_HPP_
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -14,8 +14,7 @@
 namespace star_spi_bridge
 {
 
-class SpiMessageConverter
-{
+class SpiMessageConverter {
 public:
   struct Parameters
   {
@@ -38,7 +37,8 @@ public:
   void telemetry_to_joint_state(
     const star::v1::TelemetryData & telemetry,
     sensor_msgs::msg::JointState & joint_state);
-  void telemetry_to_battery_state(
+  void
+  telemetry_to_battery_state(
     const star::v1::TelemetryData & telemetry,
     sensor_msgs::msg::BatteryState & battery_state);
 
@@ -60,6 +60,6 @@ private:
   static double normalize_angle(double angle);
 };
 
-}  // namespace star_spi_bridge
+} // namespace star_spi_bridge
 
-#endif  // STAR_SPI_BRIDGE__SPI_MESSAGE_CONVERTER_HPP_
+#endif // STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_MESSAGE_CONVERTER_HPP_
