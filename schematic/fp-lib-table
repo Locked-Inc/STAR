@@ -122,4 +122,6 @@
   (lib (name "SSW-106-02-G-D-RA")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SSW-106-02-G-D-RA")(options "")(descr ""))
   (lib (name "SSW-106-02-G-S-RA")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SSW-106-02-G-S-RA")(options "")(descr ""))
   (lib (name "LVK12R010FER")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LVK12R010FER")(options "")(descr ""))
+  (lib (name "MIC5205-2.5YM5-TR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/MIC5205-2.5YM5-TR")(options "")(descr ""))
+  (lib (name "TXS0102DCUT")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TXS0102DCUT")(options "")(descr ""))
 )

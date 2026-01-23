@@ -13,10 +13,10 @@
 
 #include "rx_fec.h"
 
-#include <assert.h>
 #include <string.h>
 
 #include "rx_bit_constants.h"
+#include "rx_check.h"
 
 /* =============================================================================
  * Private Constants
@@ -70,9 +70,6 @@ typedef enum : uint8_t {
  */
 static uint8_t internal_parity(uint8_t x)
 {
-  /* Pre-condition: Input x is uint8_t (0-255), always valid */
-  assert(x <= UINT8_MAX);
-
   /* Compute parity using parallel XOR reduction */
   x ^= x >> 4; /* XOR upper nibble with lower nibble */
   x ^= x >> 2; /* XOR bit pairs */
@@ -81,7 +78,7 @@ static uint8_t internal_parity(uint8_t x)
   const uint8_t result = x & k_fec_bit_mask;
 
   /* Post-condition: Result must be 0 or 1 */
-  assert((result == 0) || (result == k_fec_bit_mask));
+  RX_ASSERT((result == 0) || (result == k_fec_bit_mask), "Parity result must be 0 or 1");
 
   return result;
 }
@@ -101,10 +98,10 @@ static uint8_t internal_parity(uint8_t x)
 static void internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uint8_t value)
 {
   /* Pre-condition 1: output must be valid */
-  assert(output != NULL);
+  RX_ASSERT(output != NULL, "Output buffer must not be NULL");
 
   /* Pre-condition 2: bit index must be within maximum symbol range */
-  assert(bit_idx < (k_fec_max_symbols * k_rx_bits_per_byte));
+  RX_ASSERT(bit_idx < (k_fec_max_symbols * k_rx_bits_per_byte), "Bit index out of range");
   value = (value != 0) ? k_fec_bit_mask : 0;
 
   const uint32_t byte_idx = bit_idx / k_rx_bits_per_byte;
@@ -130,7 +127,7 @@ static void internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uin
 static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
 {
   /* Pre-condition: data must be valid */
-  assert(data != NULL);
+  RX_ASSERT(data != NULL, "Data buffer must not be NULL");
 
   const uint32_t byte_idx = bit_idx / k_rx_bits_per_byte;
   const uint32_t bit_pos  = k_fec_msb_bit_position - (bit_idx % k_rx_bits_per_byte); /* MSB first */
@@ -138,7 +135,7 @@ static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
   const uint8_t result = (data[byte_idx] >> bit_pos) & k_fec_bit_mask;
 
   /* Post-condition: result must be 0 or 1 */
-  assert((result == 0) || (result == k_fec_bit_mask));
+  RX_ASSERT((result == 0) || (result == k_fec_bit_mask), "Bit result must be 0 or 1");
 
   return result;
 }
@@ -156,12 +153,12 @@ static void
 internal_encode_bit(uint8_t* state, const uint8_t input_bit, uint8_t* out0, uint8_t* out1)
 {
   /* Pre-condition 1: All pointers must be valid */
-  assert(state != NULL);
-  assert(out0 != NULL);
-  assert(out1 != NULL);
+  RX_ASSERT(state != NULL, "State pointer must not be NULL");
+  RX_ASSERT(out0 != NULL, "Output 0 pointer must not be NULL");
+  RX_ASSERT(out1 != NULL, "Output 1 pointer must not be NULL");
 
   /* Pre-condition 2: input_bit must be 0 or 1 */
-  assert((input_bit == 0) || (input_bit == k_fec_bit_mask));
+  RX_ASSERT((input_bit == 0) || (input_bit == k_fec_bit_mask), "Input bit must be 0 or 1");
 
   /* Shift in the new bit (input is MSB of the combined state) */
   const uint8_t combined = (uint8_t)((input_bit << k_fec_shift_register_bits) | *state);
@@ -185,14 +182,10 @@ static void internal_init_branch_table(
   uint8_t branch_table[k_fec_num_states][k_fec_num_input_values][k_fec_num_outputs])
 {
   /* Pre-condition: branch_table array parameter is always valid in C */
-  /* Loop invariant: state and input values are within valid bounds */
+  /* Loop bounds guarantee state < k_fec_num_states and input < k_fec_num_input_values */
 
   for (uint8_t state = 0; state < k_fec_num_states; state++) {
     for (uint8_t input = 0; input < k_fec_num_input_values; input++) {
-      /* Verify loop invariants */
-      assert(state < k_fec_num_states);
-      assert(input < k_fec_num_input_values);
-
       const uint8_t combined =
         (uint8_t)(((uint8_t)input << k_fec_shift_register_bits) | (uint8_t)state);
       branch_table[state][input][k_fec_output_g1] = internal_parity(combined & k_fec_g1_octal);
@@ -219,8 +212,8 @@ static int32_t internal_branch_metric(const rx_soft_bit_t soft0,
                                       const uint8_t       exp1)
 {
   /* Pre-conditions: expected bits must be 0 or 1 */
-  assert((exp0 == 0) || (exp0 == k_fec_bit_mask));
-  assert((exp1 == 0) || (exp1 == k_fec_bit_mask));
+  RX_ASSERT((exp0 == 0) || (exp0 == k_fec_bit_mask), "Expected bit 0 must be 0 or 1");
+  RX_ASSERT((exp1 == 0) || (exp1 == k_fec_bit_mask), "Expected bit 1 must be 0 or 1");
 
   /* Convert expected bits to soft values: 0 -> -127, 1 -> +127 */
   const int32_t exp0_soft = (exp0 != 0) ? k_soft_bit_max : k_soft_bit_min;
@@ -249,8 +242,8 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
                                             const uint32_t      symbol_idx)
 {
   /* Pre-conditions */
-  assert(dec != NULL);
-  assert(symbol_idx < dec->survivors_len);
+  RX_ASSERT(dec != NULL, "Decoder handle must not be NULL");
+  RX_ASSERT(symbol_idx < dec->survivors_len, "Symbol index exceeds survivors buffer length");
 
   /* Reset new path metrics */
   for (uint8_t i = 0; i < k_fec_num_states; i++) {
@@ -318,8 +311,8 @@ static void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
   uint32_t limit;
 
   /* Pre-conditions */
-  assert(dec != NULL);
-  assert(soft_bits != NULL);
+  RX_ASSERT(dec != NULL, "Decoder handle must not be NULL");
+  RX_ASSERT(soft_bits != NULL, "Soft bits buffer must not be NULL");
 
   /* Initialize path metrics: state 0 = 0, others = MAX */
   for (uint8_t i = 0; i < k_fec_num_states; i++) {
@@ -357,10 +350,10 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
   uint32_t limit;
   uint8_t  state;
 
-  assert(dec != NULL);
-  assert(output != NULL);
-  assert(output_bytes > k_fec_zero);
-  assert(num_symbols <= dec->survivors_len);
+  RX_ASSERT(dec != NULL, "Decoder handle must not be NULL");
+  RX_ASSERT(output != NULL, "Output buffer must not be NULL");
+  RX_ASSERT(output_bytes > k_fec_zero, "Output bytes must be greater than zero");
+  RX_ASSERT(num_symbols <= dec->survivors_len, "Number of symbols exceeds survivors buffer");
 
   /* Clear output buffer */
   memset(output, 0, output_bytes);
@@ -409,7 +402,6 @@ rx_err_t rx_fec_encoder_init(rx_fec_encoder_t* enc)
   }
 
   enc->initialized = true;
-  assert(enc->initialized == true);
   return k_rx_ok;
 }
 
@@ -420,7 +412,6 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc)
   }
 
   enc->initialized = false;
-  assert(enc->initialized == false);
   return k_rx_ok;
 }
 
