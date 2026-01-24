@@ -67,6 +67,17 @@ typedef enum : uint8_t {
 } rx_gptw_output_t;
 
 /**
+ * @brief GPTW PWM waveform mode
+ * @see RX72N Hardware Manual Section 26.2.12 (GTCR.MD bits)
+ */
+typedef enum : uint8_t {
+  k_gptw_wave_saw_pwm  = 0, /**< Sawtooth-wave PWM (edge-aligned) */
+  k_gptw_wave_tri_pwm1 = 1, /**< Triangle-wave PWM mode 1: transfer at trough */
+  k_gptw_wave_tri_pwm2 = 2, /**< Triangle-wave PWM mode 2: transfer at crest and trough */
+  k_gptw_wave_tri_pwm3 = 3, /**< Triangle-wave PWM mode 3: 64-bit transfer at trough */
+} rx_gptw_wave_mode_t;
+
+/**
  * @brief GPTW channel wrapper type (prevents accidental argument swaps)
  */
 typedef struct {
@@ -140,10 +151,11 @@ static inline rx_gptw_output_id_t rx_gptw_output_id(rx_gptw_output_t value)
  * @brief GPTW PWM configuration
  */
 typedef struct {
-  uint32_t frequency_hz;         /**< PWM frequency in Hz (e.g., 20000 for 20kHz) */
-  uint16_t deadtime_ns;          /**< Deadtime in nanoseconds (e.g., 1000 for 1us) */
-  bool     enable_complementary; /**< Enable complementary outputs */
-  bool     invert_polarity;      /**< Invert PWM polarity */
+  uint32_t            frequency_hz;         /**< PWM frequency in Hz (e.g., 20000 for 20kHz) */
+  uint16_t            deadtime_ns;          /**< Deadtime in nanoseconds (e.g., 1000 for 1us) */
+  rx_gptw_wave_mode_t wave_mode;            /**< Waveform mode (sawtooth or triangle) */
+  bool                enable_complementary; /**< Enable complementary outputs */
+  bool                invert_polarity;      /**< Invert PWM polarity */
 } rx_gptw_config_t;
 
 /* =============================================================================

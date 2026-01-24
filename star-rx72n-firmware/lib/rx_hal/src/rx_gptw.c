@@ -52,9 +52,11 @@ static const uint32_t s_gptw_period_max    = 0xFFFFFFFFUL;  /**< Maximum valid p
 static const uint64_t s_gptw_ns_per_second = 1000000000ULL; /**< Nanoseconds per second */
 
 typedef enum : uint16_t {
-  k_gptw_period_min        = 10, /**< Minimum valid period */
-  k_gptw_period_zero       = 0,  /**< Zero period value */
-  k_gptw_deadtime_disabled = 0,  /**< No dead time */
+  k_gptw_period_divisor_saw = 1,  /**< Sawtooth: period = PCLKA / freq */
+  k_gptw_period_divisor_tri = 2,  /**< Triangle: period = PCLKA / (2 * freq) */
+  k_gptw_period_min         = 10, /**< Minimum valid period */
+  k_gptw_period_zero        = 0,  /**< Zero period value */
+  k_gptw_deadtime_disabled  = 0,  /**< No dead time */
 } gptw_period_constants_t;
 
 /** @brief Duty cycle calculation constants */
@@ -134,26 +136,67 @@ static volatile rx_gptw_channel_regs_t* internal_get_gptw_base(const rx_gptw_cha
 }
 
 /**
+ * @brief Check if wave mode is triangle (center-aligned)
+ *
+ * @param[in] mode Waveform mode
+ *
+ * @return true if triangle mode, false if sawtooth
+ */
+static inline bool internal_is_triangle_mode(const rx_gptw_wave_mode_t mode)
+{
+  return (mode == k_gptw_wave_tri_pwm1) || (mode == k_gptw_wave_tri_pwm2) ||
+         (mode == k_gptw_wave_tri_pwm3);
+}
+
+/**
+ * @brief Get GTCR mode bits for wave mode
+ *
+ * @param[in] mode Waveform mode
+ *
+ * @return GTCR.MD bits for the specified mode
+ */
+static uint32_t internal_get_gtcr_mode(const rx_gptw_wave_mode_t mode)
+{
+  switch (mode) {
+    case k_gptw_wave_tri_pwm1:
+      return k_gptw_gtcr_md_tri_pwm1;
+    case k_gptw_wave_tri_pwm2:
+      return k_gptw_gtcr_md_tri_pwm2;
+    case k_gptw_wave_tri_pwm3:
+      return k_gptw_gtcr_md_tri_pwm3;
+    case k_gptw_wave_saw_pwm:
+    default:
+      return k_gptw_gtcr_md_saw_pwm;
+  }
+}
+
+/**
  * @brief Calculate period register value from frequency
  *
  * @param[in] frequency_hz Desired PWM frequency in Hz
- * @param[out] period Pointer to store period value
+ * @param[in] wave_mode    Waveform mode (affects period calculation)
+ * @param[out] period      Pointer to store period value
  *
  * @return k_rx_ok on success, k_rx_err_invalid_arg if frequency too high/low
  */
-static rx_err_t internal_calculate_period(const uint32_t frequency_hz, uint32_t* period)
+static rx_err_t internal_calculate_period(const uint32_t            frequency_hz,
+                                          const rx_gptw_wave_mode_t wave_mode,
+                                          uint32_t*                 period)
 {
-  /* For PWM mode (sawtooth wave):
-   * Period = PCLKA / frequency
+  /* Period calculation depends on waveform mode:
+   * - Sawtooth: Period = PCLKA / frequency
+   * - Triangle: Period = PCLKA / (2 * frequency), because counter goes up then down
    * PCLKA = 120 MHz
    */
   const uint32_t pclka = k_pclka_hz;
+  const uint32_t divisor =
+    internal_is_triangle_mode(wave_mode) ? k_gptw_period_divisor_tri : k_gptw_period_divisor_saw;
 
   if (frequency_hz == k_gptw_period_zero) {
     return k_rx_err_invalid_arg;
   }
 
-  const uint32_t period_calc = pclka / frequency_hz;
+  const uint32_t period_calc = pclka / (divisor * frequency_hz);
 
   /* Check if period fits in 32-bit register */
   if (period_calc > s_gptw_period_max) {
@@ -286,19 +329,34 @@ static void internal_enable_gptw_module_clock(void)
  * @param[in] gptw   Pointer to GPTW channel registers
  * @param[in] config Configuration parameters
  * @param[in] period Calculated period value
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if gptw or config is NULL
+ * @return k_rx_err_invalid_arg if period is out of range
  */
-static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gptw,
-                                             const rx_gptw_config_t*          config,
-                                             const uint32_t                   period)
+static rx_err_t internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gptw,
+                                                 const rx_gptw_config_t*          config,
+                                                 const uint32_t                   period)
 {
+  /* Pre-condition: validate pointers (NASA Power of 10 Rule 5) */
+  RX_CHECK_NULL_PTR(gptw, s_tag, "gptw pointer is NULL");
+  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
+
+  /* Pre-condition: validate period range */
+  if ((period < k_gptw_period_min) || (period > s_gptw_period_max)) {
+    rx_log_error(s_tag, "Period out of range");
+    return k_rx_err_invalid_arg;
+  }
+
   /* Unlock write protection for this channel */
   gptw->gtwp = k_gptw_gtwp_unlock;
 
   /* Configure control register
    * - PCLKA/1 (120 MHz)
-   * - Sawtooth-wave PWM mode (edge-aligned)
+   * - Waveform mode from config (sawtooth or triangle)
    */
-  gptw->gtcr = k_gptw_gtcr_tpcs_1 | k_gptw_gtcr_md_saw_pwm;
+  const uint32_t gtcr_mode = internal_get_gtcr_mode(config->wave_mode);
+  gptw->gtcr               = k_gptw_gtcr_tpcs_1 | gtcr_mode;
 
   /* Configure I/O control register
    * - Initial low, toggle on compare match for both outputs
@@ -332,6 +390,8 @@ static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gp
 
   /* Lock write protection */
   gptw->gtwp = k_gptw_gtwp_lock;
+
+  return k_rx_ok;
 }
 
 static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t           channel,
@@ -351,7 +411,7 @@ static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t          
     return k_rx_err_invalid_arg;
   }
 
-  err = internal_calculate_period(config->frequency_hz, period_out);
+  err = internal_calculate_period(config->frequency_hz, config->wave_mode, period_out);
   if (err != k_rx_ok) {
     return err;
   }
@@ -390,7 +450,11 @@ rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_
   }
 
   /* Configure GPTW hardware registers */
-  internal_configure_gptw_hardware(gptw, config, period);
+  err = internal_configure_gptw_hardware(gptw, config, period);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to configure GPTW hardware");
+    return err;
+  }
 
   /* Configure MPC for Port E alternate functions */
   err = internal_configure_mpc(channel);
