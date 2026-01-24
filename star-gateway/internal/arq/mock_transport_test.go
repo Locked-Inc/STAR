@@ -5,6 +5,7 @@
 package arq
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -66,6 +67,7 @@ type MockDecoder struct {
 // Verify MockDecoder implements frame.Decoder.
 var _ frame.Decoder = (*MockDecoder)(nil)
 
+// Decode records the data and returns the configured frame or error.
 func (m *MockDecoder) Decode(data []byte) (*frame.Frame, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -75,6 +77,19 @@ func (m *MockDecoder) Decode(data []byte) (*frame.Frame, error) {
 	}
 	// Default behavior: return empty frame
 	return &frame.Frame{}, nil
+}
+
+// Open marks the transport as open.
+func (m *MockTransport) Open() error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.isOpen {
+		return nil // Idempotent
+	}
+
+	m.isOpen = true
+	return nil
 }
 
 // Send records the data and returns the configured error.
@@ -120,7 +135,7 @@ func (m *MockTransport) Receive(maxLen int) ([]byte, error) {
 }
 
 // Transfer performs a full-duplex transfer (not used in ARQ tests).
-func (m *MockTransport) Transfer(txData []byte) ([]byte, error) {
+func (m *MockTransport) Transfer(context.Context, []byte) ([]byte, error) {
 	return nil, transport.ErrNotImplemented
 }
 

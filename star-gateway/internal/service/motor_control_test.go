@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
@@ -67,7 +68,7 @@ func TestSetVelocity(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockHARQ := &testutil.MockHARQ{
-				SendFunc: func(ctx context.Context, data []byte) error {
+				SendFunc: func(ctx context.Context, data []byte, _ ...harq.Priority) error {
 					return tc.mockSendErr
 				},
 			}
@@ -416,7 +417,7 @@ func TestControlStream_BasicFlow(t *testing.T) {
 	var mu sync.Mutex
 
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(ctx context.Context, data []byte) error {
+		SendFunc: func(ctx context.Context, data []byte, _ ...harq.Priority) error {
 			mu.Lock()
 			sendCalls++
 			mu.Unlock()
@@ -506,7 +507,7 @@ func TestControlStream_HarqSendError(t *testing.T) {
 
 	// Mock HARQ that fails to send
 	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(ctx context.Context, data []byte) error {
+		SendFunc: func(ctx context.Context, data []byte, _ ...harq.Priority) error {
 			return errors.New("send failed")
 		},
 		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
@@ -636,4 +637,46 @@ func TestStreamEncoders_Concurrent(t *testing.T) {
 	}
 
 	wg.Wait()
+}
+
+func TestSetMotorPower(t *testing.T) {
+	mockHARQ := &testutil.MockHARQ{}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
+	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
+
+	req := &starv1.SetMotorPowerRequest{}
+	resp, err := svc.SetMotorPower(context.Background(), req)
+
+	if status.Code(err) != codes.Unimplemented {
+		t.Errorf("Expected Unimplemented, got %v", status.Code(err))
+	}
+	if resp != nil {
+		t.Error("Expected nil response")
+	}
+}
+
+func TestMotorControl_ValidateRateHz(t *testing.T) {
+	mockHARQ := &testutil.MockHARQ{}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
+	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
+
+	// Valid rate
+	rate := svc.validateRateHz(50)
+	if rate != 50 {
+		t.Errorf("Expected 50, got %v", rate)
+	}
+
+	// Rate too low (should return default 10)
+	rate = svc.validateRateHz(0)
+	if rate != 10 {
+		t.Errorf("Expected 10, got %v", rate)
+	}
+
+	// Rate too high (should return default 10)
+	rate = svc.validateRateHz(500)
+	if rate != 10 {
+		t.Errorf("Expected 10, got %v", rate)
+	}
 }

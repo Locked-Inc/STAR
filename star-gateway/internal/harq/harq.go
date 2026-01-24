@@ -1,7 +1,7 @@
 // Package harq implements Hybrid Automatic Repeat reQuest (HARQ) protocol
 // for reliable frame delivery over the SPI transport.
 //
-// The HARQ mechanism uses Chase Combining (Type I) with the following properties:
+// The HARQ mechanism use`s Chase Combining (Type I) with the following properties:
 //   - 16-bit sequence numbers with wraparound
 //   - ACK/NACK response frames
 //   - Configurable retry count and timeout
@@ -81,13 +81,29 @@ func (s State) String() string {
 	}
 }
 
+// Priority represents the priority level of a HARQ transmission.
+type Priority uint8
+
+const (
+	PriorityEmergency Priority = 0
+	PriorityHigh      Priority = 1
+	PriorityNormal    Priority = 2
+)
+
+// Protocol wire format values for priority levels
+const (
+	PriorityValueEmergency uint8 = 0
+	PriorityValueHigh      uint8 = 1
+	PriorityValueNormal    uint8 = 2
+)
+
 // HARQ defines the interface for the HARQ protocol handler.
 type HARQ interface {
 	// Send transmits data with HARQ reliability.
 	// Applies FEC encoding before transmission.
 	// Handles retransmission on timeout or NACK.
 	// Returns an error if max retries exceeded.
-	Send(ctx context.Context, data []byte) error
+	Send(ctx context.Context, data []byte, p ...Priority) error
 
 	// Receive waits for data with HARQ handling.
 	// Applies FEC decoding and soft bit combining on retransmissions.
@@ -233,7 +249,8 @@ func NewChaseCombining(
 // Send transmits data with HARQ reliability.
 // Applies FEC encoding, wraps in a command frame, and waits for ACK.
 // Retransmits the same encoded frame on timeout or NACK up to MaxRetries.
-func (h *ChaseCombining) Send(ctx context.Context, data []byte) error {
+// Priority defaults to PriorityNormal if not specified.
+func (h *ChaseCombining) Send(ctx context.Context, data []byte, p ...Priority) error {
 	if ctx == nil {
 		return ErrNilContext
 	}
@@ -241,7 +258,13 @@ func (h *ChaseCombining) Send(ctx context.Context, data []byte) error {
 		return err
 	}
 
-	currentSeq, err := h.prepareSend(data)
+	// Extract priority with default
+	priority := PriorityNormal
+	if len(p) > 0 {
+		priority = p[0]
+	}
+
+	currentSeq, err := h.prepareSend(data, priority)
 	if err != nil {
 		return err
 	}
@@ -314,7 +337,7 @@ func (h *ChaseCombining) validateSendDependencies() error {
 	return nil
 }
 
-func (h *ChaseCombining) prepareSend(data []byte) (uint16, error) {
+func (h *ChaseCombining) prepareSend(data []byte, priority Priority) (uint16, error) {
 	h.mu.Lock()
 	if err := h.validateSendDependencies(); err != nil {
 		h.mu.Unlock()
@@ -338,6 +361,9 @@ func (h *ChaseCombining) prepareSend(data []byte) (uint16, error) {
 	}
 	f.Header.Sequence = h.txSequence
 	f.Header.Flags = frame.FlagRequiresAck
+	if priority != PriorityNormal {
+		f.Header.Flags |= frame.FlagPriority
+	}
 	if h.config.FECEnabled {
 		f.Header.Flags |= frame.FlagFECEnabled
 	}
@@ -587,6 +613,13 @@ func (h *ChaseCombining) SetExpectedLenForTesting(expectedLen int) {
 	h.expectedLen = expectedLen
 }
 
+// GetExpectedLenForTesting returns the expected decoded length for testing.
+func (h *ChaseCombining) GetExpectedLenForTesting() int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return h.expectedLen
+}
+
 // waitForAck waits for an ACK/NACK response with timeout.
 func (h *ChaseCombining) waitForAck(ctx context.Context) (*frame.Frame, error) {
 	if ctx == nil {
@@ -600,20 +633,20 @@ func (h *ChaseCombining) waitForAck(ctx context.Context) (*frame.Frame, error) {
 	data, err := h.transport.Receive(frame.MaxFrameSize)
 	if err != nil {
 		errCtx := ctx.Err()
-		switch errCtx {
-		case context.DeadlineExceeded:
+		switch {
+		case errors.Is(errCtx, context.DeadlineExceeded):
 			return nil, ErrTimeout
-		case context.Canceled:
+		case errors.Is(errCtx, context.Canceled):
 			return nil, errCtx
 		default:
 		}
 		return nil, err
 	}
 	if errCtx := ctx.Err(); errCtx != nil {
-		switch errCtx {
-		case context.DeadlineExceeded:
+		switch {
+		case errors.Is(errCtx, context.DeadlineExceeded):
 			return nil, ErrTimeout
-		case context.Canceled:
+		case errors.Is(errCtx, context.Canceled):
 			return nil, errCtx
 		default:
 			return nil, errCtx
