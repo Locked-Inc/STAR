@@ -1,5 +1,6 @@
 {
   "name": "Existing Dockerfile",
+  "initializeCommand": "powershell -Command \"New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.gemini', '${localEnv:HOME}${localEnv:USERPROFILE}/.claude' -ItemType Directory -Force; if (-not (Test-Path '${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json')) { New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json' -ItemType File }\" || (mkdir -p \"${localEnv:HOME}${localEnv:USERPROFILE}/.gemini\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.claude\" && touch \"${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json\")",
   "build": {
     "context": "..",
     "dockerfile": "../Dockerfile"
@@ -22,9 +23,9 @@
     }
   },
   "mounts": [
-    "source=${localEnv:HOME}/.gemini,target=/home/star/.gemini,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.claude,target=/home/star/.claude,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.claude.json,target=/home/star/.claude.json,type=bind,consistency=cached"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gemini,target=/home/star/.gemini,type=bind",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/star/.claude,type=bind",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json,target=/home/star/.claude.json,type=bind"
   ],
   "postCreateCommand": "sudo apt-get update && sudo apt-get install -y clang-format clang clangd && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8",
   "customizations": {
@@ -49,10 +50,16 @@
         "gruntfuggly.todo-tree",
         "streetsidesoftware.code-spell-checker",
         "EditorConfig.EditorConfig",
-        "usernamehw.errorlens"
+        "usernamehw.errorlens",
+        "formulahendry.code-runner",
+        "coderabbit.coderabbit-vscode",
+        "ms-vscode.cpptools-extension-pack",
+        "google.gemini-cli-vscode-ide-companion"
       ],
       "settings": {
-        "cmake.configureArgs": ["-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"],
+        "cmake.configureArgs": [
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
         "clangd.arguments": [
           "--compile-commands-dir=${workspaceFolder}/star-ros2/build",
           "--background-index",
