@@ -24,6 +24,14 @@ RUN apt-get update && apt-get install -y \
     clangd \
     && rm -rf /var/lib/apt/lists/*
 
+# Install nanopb for Protocol Buffer C code generation
+# Required for star-rx72n-firmware embedded target
+RUN rm -f /usr/lib/python*/EXTERNALLY-MANAGED && \
+    python3 -m pip install --no-cache-dir nanopb
+
+# Verify nanopb installation (fails fast if installation broken)
+RUN python3 -m pip show nanopb > /dev/null || (echo "ERROR: nanopb installation failed" && exit 1)
+
 # Install buf
 ARG BUF_VERSION=1.28.1
 RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" -o /usr/local/bin/buf \
