@@ -39,22 +39,22 @@
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if pin is out of range
  */
-static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin,
-                                           uint8_t*            port,
-                                           uint8_t*            pin_num)
+static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, uint8_t* port, uint8_t* pin_num)
 {
-  if ((pin < k_rx_p0_0) || (pin > k_rx_pj_7)) {
+  /* Lower bound checks omitted - all types are unsigned and minimums are 0,
+   * so comparisons would always be true, causing -Wtype-limits warnings */
+  if (pin > k_rx_pj_7) {
     return k_rx_err_invalid_arg;
   }
 
   const uint8_t local_port    = rx_port_from_pin(pin);
   const uint8_t local_pin_num = rx_pin_from_pin(pin);
 
-  if ((local_port < k_rx_port_0) || (local_port > k_rx_port_j)) {
+  if (local_port > k_rx_port_j) {
     return k_rx_err_invalid_arg;
   }
 
-  if ((local_pin_num < k_rx_pin_0) || (local_pin_num > k_rx_pin_max)) {
+  if (local_pin_num > k_rx_pin_max) {
     return k_rx_err_invalid_arg;
   }
 

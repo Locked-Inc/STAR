@@ -79,9 +79,7 @@ typedef enum : uint8_t {
 } mock_serial_bytes_t;
 
 /** @brief Mocked DS18B20 device count returned by search */
-enum {
-  k_mock_ds18b20_device_count = 1
-};
+enum { k_mock_ds18b20_device_count = 1 };
 /** @brief Temperature comparison tolerance (°C) */
 static const float s_temp_tolerance_c = 0.1F;
 
@@ -377,9 +375,9 @@ typedef struct {
   uint8_t msb; /**< Temperature MSB */
 } temp_raw_t;
 
-static void internal_create_valid_scratchpad(uint8_t scratchpad[k_ds18b20_scratchpad_bytes],
+static void internal_create_valid_scratchpad(uint8_t    scratchpad[k_ds18b20_scratchpad_bytes],
                                              temp_raw_t temp_raw,
-                                             uint8_t config)
+                                             uint8_t    config)
 {
   scratchpad[k_ds18b20_scratch_temp_lsb]  = temp_raw.lsb;
   scratchpad[k_ds18b20_scratch_temp_msb]  = temp_raw.msb;
@@ -593,10 +591,10 @@ void test_ds18b20_read_temperature_0c(void)
   internal_init_handle(&handle);
 
   /* 0°C: 0x0000 */
-  internal_create_valid_scratchpad(s_mock_state.scratchpad,
-                                   (temp_raw_t){.lsb = k_test_temp_0c_lsb,
-                                                .msb = k_test_temp_0c_msb},
-                                   k_test_config_12bit);
+  internal_create_valid_scratchpad(
+    s_mock_state.scratchpad,
+    (temp_raw_t){.lsb = k_test_temp_0c_lsb, .msb = k_test_temp_0c_msb},
+    k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
@@ -619,10 +617,10 @@ void test_ds18b20_read_temperature_minus_55c(void)
   internal_init_handle(&handle);
 
   /* -55°C: 0xFC90 (two's complement) */
-  internal_create_valid_scratchpad(s_mock_state.scratchpad,
-                                   (temp_raw_t){.lsb = k_test_temp_minus_55c_lsb,
-                                                .msb = k_test_temp_minus_55c_msb},
-                                   k_test_config_12bit);
+  internal_create_valid_scratchpad(
+    s_mock_state.scratchpad,
+    (temp_raw_t){.lsb = k_test_temp_minus_55c_lsb, .msb = k_test_temp_minus_55c_msb},
+    k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
@@ -645,10 +643,10 @@ void test_ds18b20_read_temperature_125c(void)
   internal_init_handle(&handle);
 
   /* +125°C: 0x07D0 = 2000 decimal = 125.0°C */
-  internal_create_valid_scratchpad(s_mock_state.scratchpad,
-                                   (temp_raw_t){.lsb = k_test_temp_125c_lsb,
-                                                .msb = k_test_temp_125c_msb},
-                                   k_test_config_12bit);
+  internal_create_valid_scratchpad(
+    s_mock_state.scratchpad,
+    (temp_raw_t){.lsb = k_test_temp_125c_lsb, .msb = k_test_temp_125c_msb},
+    k_test_config_12bit);
 
   rx_ds18b20_init(&handle, &config);
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);

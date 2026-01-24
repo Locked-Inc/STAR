@@ -52,7 +52,7 @@ static rx_spi_comm_handle_t s_handle;
 static void helper_init_rspi_channel(uint8_t channel)
 {
   const rspi_config_t config = {
-    .spi_mode  = k_spi_comm_default_mode,
+    .spi_mode  = (rspi_mode_t)k_spi_comm_default_mode,
     .use_16bit = false,
   };
   rspi_init_peripheral(channel, &config);

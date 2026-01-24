@@ -282,11 +282,10 @@ rx_err_t riic_init(riic_channel_t channel, uint32_t frequency_hz);
  *         k_rx_err_timeout if bus timeout,
  *         k_rx_err_nack if device NACK received
  */
-rx_err_t
-riic_write(riic_channel_t       channel,
-           i2c_device_addr_t    device_addr,
-           const uint8_t*       data,
-           const uint16_t       length);
+rx_err_t riic_write(riic_channel_t    channel,
+                    i2c_device_addr_t device_addr,
+                    const uint8_t*    data,
+                    const uint16_t    length);
 
 /**
  * @brief Read data from I2C device
@@ -437,16 +436,16 @@ typedef enum : uint8_t {
  * RX72N has SCI channels 0-12 (13 channels total).
  */
 typedef enum : uint8_t {
-  k_uart_channel_0 = 0,
-  k_uart_channel_1 = 1,
-  k_uart_channel_2 = 2,
-  k_uart_channel_3 = 3,
-  k_uart_channel_4 = 4,
-  k_uart_channel_5 = 5,
-  k_uart_channel_6 = 6,
-  k_uart_channel_7 = 7,
-  k_uart_channel_8 = 8,
-  k_uart_channel_9 = 9,
+  k_uart_channel_0  = 0,
+  k_uart_channel_1  = 1,
+  k_uart_channel_2  = 2,
+  k_uart_channel_3  = 3,
+  k_uart_channel_4  = 4,
+  k_uart_channel_5  = 5,
+  k_uart_channel_6  = 6,
+  k_uart_channel_7  = 7,
+  k_uart_channel_8  = 8,
+  k_uart_channel_9  = 9,
   k_uart_channel_10 = 10,
   k_uart_channel_11 = 11,
   k_uart_channel_12 = 12
@@ -566,7 +565,8 @@ rx_err_t uart_getc_channel(uart_channel_t channel, char* data);
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
+rx_err_t
+uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
 
 /**
  * @brief Check if receive data is available on channel

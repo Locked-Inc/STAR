@@ -209,8 +209,9 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
     return k_rx_err_invalid_arg;
   }
 
-  /* Validate mode (0-3) */
-  if ((uint8_t)config->spi_mode < k_rspi_mode_min || (uint8_t)config->spi_mode > k_rspi_mode_max) {
+  /* Validate mode (0-3) - lower bound check omitted since spi_mode is uint8_t and
+   * k_rspi_mode_min == 0, so spi_mode >= k_rspi_mode_min is always true (-Wtype-limits) */
+  if ((uint8_t)config->spi_mode > k_rspi_mode_max) {
     rx_log_error(s_tag, "Invalid SPI mode (must be 0-3)");
     return k_rx_err_invalid_arg;
   }

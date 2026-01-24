@@ -15,8 +15,8 @@
 
 #include <string.h>
 
-#include "rx_crc.h"
 #include "rx_check.h"
+#include "rx_crc.h"
 
 /* =============================================================================
  * Byte Serialization Constants
@@ -90,8 +90,7 @@ static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const 
  * @retval k_rx_err_invalid_arg if buf or out_val is NULL
  * @retval k_rx_err_invalid_size if buf_len < 4
  */
-static rx_err_t
-internal_read_le32(const uint8_t* buf, const uint32_t buf_len, uint32_t* out_val)
+static rx_err_t internal_read_le32(const uint8_t* buf, const uint32_t buf_len, uint32_t* out_val)
 {
   RX_CHECK_NULL_PTR(buf, "FRAME", "LE32 read buffer is NULL");
   RX_CHECK_NULL_PTR(out_val, "FRAME", "LE32 output pointer is NULL");
@@ -99,8 +98,7 @@ internal_read_le32(const uint8_t* buf, const uint32_t buf_len, uint32_t* out_val
     return k_rx_err_invalid_size;
   }
 
-  *out_val = (uint32_t)buf[k_le32_byte_0] |
-             ((uint32_t)buf[k_le32_byte_1] << k_shift_byte_1) |
+  *out_val = (uint32_t)buf[k_le32_byte_0] | ((uint32_t)buf[k_le32_byte_1] << k_shift_byte_1) |
              ((uint32_t)buf[k_le32_byte_2] << k_shift_byte_2) |
              ((uint32_t)buf[k_le32_byte_3] << k_shift_byte_3);
   return k_rx_ok;
@@ -155,8 +153,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
   frame->header.length = rx_frame_read_be16(&data[offset]);
   offset += k_frame_len_size;
 
-  if (((k_frame_min_payload > 0U) && (frame->header.length < k_frame_min_payload)) ||
-      (frame->header.length > k_frame_max_payload)) {
+  if (frame->header.length > k_frame_max_payload) {
     return k_rx_err_invalid_size;
   }
 
@@ -300,8 +297,7 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
   }
 
   /* Validate payload size */
-  if (((k_frame_min_payload > 0U) && (frame->header.length < k_frame_min_payload)) ||
-      (frame->header.length > k_frame_max_payload)) {
+  if (frame->header.length > k_frame_max_payload) {
     return k_rx_err_invalid_size;
   }
 
