@@ -10,8 +10,8 @@
 // Copyright 2026 STAR Project
 // January 2026
 
-#ifndef STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
-#define STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
+#ifndef STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
+#define STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
 
 #include <memory>
 #include <mutex>
@@ -31,7 +31,8 @@
 #include "star/v1/gateway_service.grpc.pb.h"
 #include "star_gateway_bridge/message_converter.hpp"
 
-namespace star {
+namespace star
+{
 
 /**
  * @brief ROS2 node that bridges the ROS2 ecosystem with the Go gateway service
@@ -78,7 +79,7 @@ public:
    * @param options ROS2 node options for component configuration
    */
   explicit StarGatewayBridgeNode(
-      const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+    const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   /**
    * @brief Destructor - sends stop command and shuts down gracefully.
@@ -141,8 +142,8 @@ private:
    * @param response Service response
    */
   void set_pid_gains_callback(
-      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-      std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
   // ===========================================================================
   // Timer Callbacks
@@ -202,7 +203,7 @@ private:
   // ROS2 Subscribers
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_status_sub_;
   rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr
-      battery_state_sub_;
+    battery_state_sub_;
 
   // ROS2 Services
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr set_pid_gains_service_;
@@ -243,7 +244,7 @@ private:
 
   // Frame drop detection for teleop commands and telemetry
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr
-      diagnostics_pub_;
+    diagnostics_pub_;
   rclcpp::TimerBase::SharedPtr diagnostics_timer_;
 
   uint32_t last_teleop_sequence_{0};
@@ -264,4 +265,4 @@ private:
 
 } // namespace star
 
-#endif // STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
+#endif // STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_

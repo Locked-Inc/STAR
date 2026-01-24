@@ -9,15 +9,17 @@
 #include "star_gateway_bridge/message_converter.hpp"
 
 #include <chrono>
-namespace star {
+namespace star
+{
 
 // ===========================================================================
 // ROS2 → Protobuf Conversions
 // ===========================================================================
 
 bool MessageConverter::twist_to_velocity_command(
-    const geometry_msgs::msg::Twist &twist, star::v1::VelocityCommand &command,
-    double wheel_base, uint32_t sequence) {
+  const geometry_msgs::msg::Twist & twist, star::v1::VelocityCommand & command,
+  double wheel_base, uint32_t sequence)
+{
   // Validate inputs for NaN/infinity
   if (!is_valid_double(twist.linear.x) || !is_valid_double(twist.angular.z)) {
     RCLCPP_WARN(rclcpp::get_logger("message_converter"),
@@ -33,9 +35,9 @@ bool MessageConverter::twist_to_velocity_command(
 
   // Clamp input velocities to safe ranges
   double linear =
-      clamp(twist.linear.x, -k_max_velocity_mps, k_max_velocity_mps);
+    clamp(twist.linear.x, -k_max_velocity_mps, k_max_velocity_mps);
   double angular =
-      clamp(twist.angular.z, -k_max_angular_vel, k_max_angular_vel);
+    clamp(twist.angular.z, -k_max_angular_vel, k_max_angular_vel);
 
   // Differential drive kinematics: (linear, angular) → (left, right)
   // left_vel = linear - (angular * wheel_base / 2)
@@ -47,7 +49,7 @@ bool MessageConverter::twist_to_velocity_command(
   // Clamp wheel velocities to VelocityCommand valid range [-2.0, 2.0] m/s
   left_velocity = clamp(left_velocity, -k_max_velocity_mps, k_max_velocity_mps);
   right_velocity =
-      clamp(right_velocity, -k_max_velocity_mps, k_max_velocity_mps);
+    clamp(right_velocity, -k_max_velocity_mps, k_max_velocity_mps);
 
   // Populate protobuf message
   // Note: front_left/back_left = left side, front_right/back_right = right side
@@ -62,15 +64,16 @@ bool MessageConverter::twist_to_velocity_command(
   auto now = std::chrono::system_clock::now();
   auto us = std::chrono::duration_cast<std::chrono::microseconds>(
                 now.time_since_epoch())
-                .count();
+    .count();
   command.set_timestamp_us(us);
 
   return true;
 }
 
 bool MessageConverter::battery_state_to_proto(
-    const sensor_msgs::msg::BatteryState &ros_battery,
-    star::v1::BatteryState &proto_battery) {
+  const sensor_msgs::msg::BatteryState & ros_battery,
+  star::v1::BatteryState & proto_battery)
+{
   // ROS2 sensor_msgs/BatteryState uses NaN to indicate "unknown" values
   // We need to check each field before conversion
 
@@ -130,46 +133,47 @@ bool MessageConverter::battery_state_to_proto(
   // Power state mapping (ROS2 → Protobuf enum)
   auto *status = proto_battery.mutable_status();
   switch (ros_battery.power_supply_status) {
-  case sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING:
-    status->set_state(star::v1::BATTERY_STATE_ENUM_CHARGING);
-    status->set_charging(true);
-    status->set_discharging(false);
-    break;
-  case sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_DISCHARGING:
-    status->set_state(star::v1::BATTERY_STATE_ENUM_DISCHARGING);
-    status->set_charging(false);
-    status->set_discharging(true);
-    break;
-  case sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_FULL:
-    status->set_state(star::v1::BATTERY_STATE_ENUM_FULL);
-    status->set_fully_charged(true);
-    break;
-  case sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING:
-    status->set_state(star::v1::BATTERY_STATE_ENUM_IDLE);
-    break;
-  default:
-    status->set_state(star::v1::BATTERY_STATE_ENUM_UNKNOWN);
-    break;
+    case sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING:
+      status->set_state(star::v1::BATTERY_STATE_ENUM_CHARGING);
+      status->set_charging(true);
+      status->set_discharging(false);
+      break;
+    case sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_DISCHARGING:
+      status->set_state(star::v1::BATTERY_STATE_ENUM_DISCHARGING);
+      status->set_charging(false);
+      status->set_discharging(true);
+      break;
+    case sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_FULL:
+      status->set_state(star::v1::BATTERY_STATE_ENUM_FULL);
+      status->set_fully_charged(true);
+      break;
+    case sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING:
+      status->set_state(star::v1::BATTERY_STATE_ENUM_IDLE);
+      break;
+    default:
+      status->set_state(star::v1::BATTERY_STATE_ENUM_UNKNOWN);
+      break;
   }
 
   // Timestamp in microseconds
   auto now = std::chrono::system_clock::now();
   auto us = std::chrono::duration_cast<std::chrono::microseconds>(
                 now.time_since_epoch())
-                .count();
+    .count();
   proto_battery.set_timestamp_us(us);
 
   return true;
 }
 
 bool MessageConverter::string_to_system_status(
-    const std_msgs::msg::String &status_msg,
-    star::v1::SystemStatus &system_status) {
+  const std_msgs::msg::String & status_msg,
+  star::v1::SystemStatus & system_status)
+{
   // For now, implement basic string parsing
   // In production, use a JSON library (e.g., nlohmann/json) for robust parsing
   // This is a placeholder implementation
 
-  const std::string &data = status_msg.data;
+  const std::string & data = status_msg.data;
 
   // Simple keyword-based parsing (not robust, but sufficient for MVP)
   if (data.find("MANUAL") != std::string::npos) {
@@ -201,18 +205,19 @@ bool MessageConverter::string_to_system_status(
 // ===========================================================================
 
 bool MessageConverter::velocity_command_to_twist(
-    const star::v1::VelocityCommand &command, geometry_msgs::msg::Twist &twist,
-    double wheel_base) {
+  const star::v1::VelocityCommand & command, geometry_msgs::msg::Twist & twist,
+  double wheel_base)
+{
   // Validate protobuf inputs
   // Note: front_left/back_left = left side, front_right/back_right = right side
   // for differential drive Average left/right side velocities for differential
   // drive
   double left_vel =
-      (command.front_left_velocity_mps() + command.back_left_velocity_mps()) /
-      2.0;
+    (command.front_left_velocity_mps() + command.back_left_velocity_mps()) /
+    2.0;
   double right_vel =
-      (command.front_right_velocity_mps() + command.back_right_velocity_mps()) /
-      2.0;
+    (command.front_right_velocity_mps() + command.back_right_velocity_mps()) /
+    2.0;
 
   if (!is_valid_double(left_vel) || !is_valid_double(right_vel)) {
     RCLCPP_WARN(rclcpp::get_logger("message_converter"),
@@ -245,7 +250,8 @@ bool MessageConverter::velocity_command_to_twist(
 }
 
 bool MessageConverter::pid_config_to_gains(
-    const star::v1::PidConfig &pid_config, double &kp, double &ki, double &kd) {
+  const star::v1::PidConfig & pid_config, double & kp, double & ki, double & kd)
+{
   // Extract gains from protobuf (no unit conversion needed)
   kp = pid_config.kp();
   ki = pid_config.ki();
@@ -265,7 +271,8 @@ bool MessageConverter::pid_config_to_gains(
 // Utility Functions
 // ===========================================================================
 
-int64_t MessageConverter::ros_time_to_us(const rclcpp::Time &time) {
+int64_t MessageConverter::ros_time_to_us(const rclcpp::Time & time)
+{
   return time.nanoseconds() / 1000;
 }
 

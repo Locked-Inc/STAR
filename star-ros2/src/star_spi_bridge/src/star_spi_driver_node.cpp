@@ -197,16 +197,16 @@ void StarSpiDriverNode::timer_callback()
 
   // Decode received frame
 
-  uint16_t rx_seq;
+  uint16_t rx_seq_;
 
-  FrameType rx_type;
+  FrameType rx_type_;
 
-  uint8_t rx_flags;
+  uint8_t rx_flags_;
 
-  std::vector<uint8_t> rx_payload;
+  std::vector<uint8_t> rx_payload_;
 
-  if (!SpiDriver::decode_frame(rx_frame, rx_seq, rx_type, rx_flags,
-                               rx_payload))
+  if (!SpiDriver::decode_frame(rx_frame, rx_seq_, rx_type_, rx_flags_,
+                               rx_payload_))
   {
     RCLCPP_WARN_THROTTLE(
         get_logger(), *get_clock(), kLogThrottleMs,
@@ -216,9 +216,9 @@ void StarSpiDriverNode::timer_callback()
   }
 
   // Parse telemetry and publish ROS2 messages
-  if (rx_type == FrameType::TelemetryData) {
+  if (rx_type_ == FrameType::TelemetryData) {
     star::v1::TelemetryData telemetry;
-    if (telemetry.ParseFromArray(rx_payload.data(), rx_payload.size())) {
+    if (telemetry.ParseFromArray(rx_payload_.data(), rx_payload_.size())) {
       // Check emergency stop flag from motor controller
       if (telemetry.emergency_stop()) {
         RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
