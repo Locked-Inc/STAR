@@ -98,9 +98,7 @@ typedef enum : uint32_t {
 } uart_timeout_t;
 
 /** @brief UART buffer and string size limits */
-typedef enum : uint32_t {
-  k_uart_max_str_len = 256, /**< Maximum string length for uart_puts_channel */
-} uart_buffer_limits_t;
+static const uint32_t k_uart_max_str_len = 256; /**< Maximum string length for uart_puts_channel */
 
 /** @brief SCI module stop bit positions in MSTPCRB */
 typedef enum : uint8_t {
