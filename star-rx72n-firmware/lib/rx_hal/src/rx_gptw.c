@@ -6,18 +6,20 @@
  * @details
  * General PWM Timer driver for brushed DC motors on RX72N.
  *
- * PWM Mode (Sawtooth Wave - Edge-Aligned):
- * - Counter counts up from 0 to GTPR (period)
- * - GTCCRA/GTCCRB control duty cycle
- * - Efficient for H-bridge motor control
+ * Supported PWM Modes:
  *
- * For 20kHz PWM with PCLKA=120MHz:
- * - Period = PCLKA / frequency = 120MHz / 20kHz = 6000
- * - Resolution = 6000 counts (approximately 12.5-bit)
- * - Duty cycle range: 0-6000
+ * 1. Sawtooth-wave PWM (edge-aligned):
+ *    - Counter: 0 -> GTPR -> 0 (reset)
+ *    - Period = PCLKA / frequency
+ *    - For 20kHz: period = 120MHz / 20kHz = 6000 counts (~12.5-bit resolution)
  *
- * @warning Base addresses derived from hirakuni45/RX framework.
- * Verify against RX72N Hardware Manual before production use.
+ * 2. Triangle-wave PWM (center-aligned):
+ *    - Counter: 0 -> GTPR -> 0 (up/down)
+ *    - Period = PCLKA / (2 * frequency)
+ *    - For 20kHz: period = 120MHz / 40kHz = 3000 counts (~11.5-bit resolution)
+ *    - Lower EMI, reduced current ripple, optimal for H-bridge
+ *
+ * @see RX72N Hardware Manual Section 26.2.12 (GTCR register)
  *
  * @date 2026-01-04
  * @copyright Copyright (c) 2026 STAR Project
@@ -294,9 +296,9 @@ static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gp
 
   /* Configure control register
    * - PCLKA/1 (120 MHz)
-   * - Sawtooth wave continuous mode
+   * - Sawtooth-wave PWM mode (edge-aligned)
    */
-  gptw->gtcr = k_gptw_gtcr_tpcs_1 | k_gptw_gtcr_md_saw_cont;
+  gptw->gtcr = k_gptw_gtcr_tpcs_1 | k_gptw_gtcr_md_saw_pwm;
 
   /* Configure I/O control register
    * - Initial low, toggle on compare match for both outputs
