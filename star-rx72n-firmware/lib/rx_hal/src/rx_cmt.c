@@ -46,13 +46,13 @@ static const char* s_tag = "CMT";
 
 /** @brief CMT channel and divider constants */
 typedef enum : uint8_t {
-  k_cmt_max_channels    = 4, /**< CMT0, CMT1, CMT2, CMT3 */
-  k_cmt_divider_start   = 0, /**< Starting index for divider iteration loop */
-  k_cmt_div_8           = 0, /**< PCLKB/8 divider setting */
-  k_cmt_div_32          = 1, /**< PCLKB/32 divider setting */
-  k_cmt_div_128         = 2, /**< PCLKB/128 divider setting */
-  k_cmt_div_512         = 3, /**< PCLKB/512 divider setting */
-  k_cmt_num_dividers    = 4, /**< Number of available dividers */
+  k_cmt_max_channels  = 4, /**< CMT0, CMT1, CMT2, CMT3 */
+  k_cmt_divider_start = 0, /**< Starting index for divider iteration loop */
+  k_cmt_div_8         = 0, /**< PCLKB/8 divider setting */
+  k_cmt_div_32        = 1, /**< PCLKB/32 divider setting */
+  k_cmt_div_128       = 2, /**< PCLKB/128 divider setting */
+  k_cmt_div_512       = 3, /**< PCLKB/512 divider setting */
+  k_cmt_num_dividers  = 4, /**< Number of available dividers */
 } cmt_constants_t;
 
 /** @brief CMT divider values (actual divisor values) */
@@ -231,7 +231,9 @@ static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t
   uint8_t ier_index;
   uint8_t ier_bit;
 
-  if ((uint8_t)config.channel < (uint8_t)k_cmt_channel_0 || (uint8_t)config.channel >= (uint8_t)k_cmt_max_channels) {
+  /* Note: Lower bound check omitted - config.channel is uint8_t, k_cmt_channel_0 == 0,
+   * so config.channel >= k_cmt_channel_0 is always true (-Wtype-limits) */
+  if ((uint8_t)config.channel >= (uint8_t)k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
   }
   if (config.priority < k_ipr_level_min || config.priority > k_ipr_level_max) {
@@ -300,7 +302,7 @@ void cmt3_isr(void)
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t internal_validate_cmt_init_params(const rx_cmt_channel_t   channel,
+static rx_err_t internal_validate_cmt_init_params(const rx_cmt_channel_t channel,
                                                   const rx_cmt_config_t* config)
 {
   if (config == NULL) {
@@ -308,7 +310,9 @@ static rx_err_t internal_validate_cmt_init_params(const rx_cmt_channel_t   chann
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel < (uint8_t)k_cmt_channel_0 || (uint8_t)channel >= (uint8_t)k_cmt_max_channels) {
+  /* Note: Lower bound check omitted - channel is uint8_t, k_cmt_channel_0 == 0,
+   * so channel >= k_cmt_channel_0 is always true (-Wtype-limits) */
+  if ((uint8_t)channel >= (uint8_t)k_cmt_max_channels) {
     rx_log_error(s_tag, "Invalid CMT channel");
     return k_rx_err_invalid_arg;
   }
@@ -333,7 +337,7 @@ static rx_err_t internal_validate_cmt_init_params(const rx_cmt_channel_t   chann
  * @param[in] channel CMT channel
  * @param[in] config CMT configuration
  */
-static void internal_save_cmt_callback(const rx_cmt_channel_t  channel,
+static void internal_save_cmt_callback(const rx_cmt_channel_t channel,
                                        const rx_cmt_config_t* config)
 {
   s_cmt_callback[channel]    = config->callback;

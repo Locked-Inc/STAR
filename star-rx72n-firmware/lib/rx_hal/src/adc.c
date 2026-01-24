@@ -81,10 +81,8 @@ static const char* s_tag = "ADC";
 static bool s_adc_unit_initialized[k_adc_max_units] = {false, false};
 
 /* Track resolution for each ADC unit (initialized to 12-bit default) */
-static adc_resolution_t s_adc_unit_resolution[k_adc_max_units] = {
-    k_adc_resolution_12bit,
-    k_adc_resolution_12bit
-};
+static adc_resolution_t s_adc_unit_resolution[k_adc_max_units] = {k_adc_resolution_12bit,
+                                                                  k_adc_resolution_12bit};
 
 /* =============================================================================
  * Internal Helper Functions
@@ -124,9 +122,8 @@ static volatile rx_s12ad_regs_t* internal_get_adc_base(const uint8_t unit)
  * @return k_rx_err_null_ptr if adc is NULL
  * @return k_rx_err_invalid_arg if unit or bits are invalid
  */
-static rx_err_t internal_configure_adc_unit(const uint8_t             unit,
-                                            volatile rx_s12ad_regs_t* adc,
-                                            const uint8_t             bits)
+static rx_err_t
+internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, const uint8_t bits)
 {
   uint16_t adcer;
 
@@ -177,13 +174,13 @@ static rx_err_t internal_configure_adc_unit(const uint8_t             unit,
 static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t channel)
 {
   /* Validate unit */
-  if (unit < k_adc_unit_0 || unit > k_adc_unit_1) {
+  if (unit > k_adc_unit_1) {
     rx_log_error(s_tag, "Invalid ADC unit");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate channel */
-  if (channel < k_adc_channel_0 || channel > k_adc_channel_7) {
+  if (channel > k_adc_channel_7) {
     rx_log_error(s_tag, "Invalid ADC channel");
     return k_rx_err_invalid_arg;
   }
@@ -445,7 +442,7 @@ rx_err_t adc_read_voltage_mv(const adc_unit_t unit,
   }
 
   /* Validate that passed resolution matches unit's configured resolution */
-  if (unit < k_adc_unit_0 || unit > k_adc_unit_1) {
+  if (unit > k_adc_unit_1) {
     rx_log_error(s_tag, "Invalid ADC unit");
     return k_rx_err_invalid_arg;
   }

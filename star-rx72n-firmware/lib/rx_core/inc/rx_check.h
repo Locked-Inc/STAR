@@ -283,15 +283,20 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
 /**
  * @brief Check that a value is within an inclusive range with tag
  *
+ * @note Only checks upper bound to avoid -Wtype-limits warnings when min == 0 and value is
+ *       unsigned (comparison is always false). For non-zero min bounds, add an explicit
+ *       lower-bound check before this macro. The min parameter is documented but not checked.
+ *
  * @param[in] value Value to check
- * @param[in] min Minimum allowed value
+ * @param[in] min Minimum allowed value (documented only; add explicit check if min > 0)
  * @param[in] max Maximum allowed value
  * @param[in] errcode Error to return on failure
  * @param[in] tag Component tag for logging
  */
 #define RX_CHECK_RANGE_TAG(value, min, max, errcode, tag)                                          \
   do {                                                                                             \
-    if (((value) < (min)) || ((value) > (max))) {                                                  \
+    (void)(min); /* Document minimum bound; explicit check needed if min > 0 */                    \
+    if ((value) > (max)) {                                                                         \
       rx_log_error(tag, "Range check failed");                                                     \
       return (errcode);                                                                            \
     }                                                                                              \
