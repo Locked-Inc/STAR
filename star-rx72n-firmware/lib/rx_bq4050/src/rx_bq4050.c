@@ -128,7 +128,9 @@ static rx_err_t internal_convert_temperature(const uint16_t temp_0_1k, int16_t* 
   /* Pre-condition: Validate output pointer (Rule 5: Check all parameters) */
   RX_CHECK_NULL_PTR(temp_celsius_out, s_tag, "temp_celsius_out pointer is NULL");
 
-  /* Note: Range check removed - temp_0_1k is uint16_t, so it's always in [0, 65535] range */
+  /* Note: Input range check omitted - temp_0_1k is uint16_t which inherently has range [0, 65535],
+   * matching [k_temp_min_valid_0_1k, k_temp_max_valid_0_1k]. Explicit checks would trigger
+   * -Wtype-limits warnings since comparisons are always true/false for this type. */
 
   /* Perform intermediate conversion: 0.1K to 0.1°C (Rule 5: Track intermediate values) */
   temp_0_1c = (int32_t)temp_0_1k - k_temp_kelvin_offset;

@@ -170,8 +170,10 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
 
   const rx_mtu_channel_t channel = config->channel;
 
+  /* Upper bound check omitted - counts_per_rev is uint16_t, k_encoder_max_counts_per_rev == 65535
+   * (uint16_t max), so counts_per_rev > k_encoder_max_counts_per_rev is always false (-Wtype-limits) */
   if (config->counts_per_rev < k_encoder_min_counts_per_rev) {
-    rx_log_error(s_tag, "Invalid counts per revolution");
+    rx_log_error(s_tag, "counts_per_rev must be >= 1");
     return k_rx_err_invalid_arg;
   }
 
@@ -301,9 +303,11 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
   /* Convert to revolutions per second */
   const uint16_t counts_per_rev = s_counts_per_rev[channel];
 
-  /* Guard division: Validate counts_per_rev is within acceptable range */
+  /* Guard division: Validate counts_per_rev is within acceptable range
+   * Upper bound check omitted - counts_per_rev is uint16_t, k_encoder_max_counts_per_rev == 65535
+   * (uint16_t max), so counts_per_rev > k_encoder_max_counts_per_rev is always false (-Wtype-limits) */
   if (counts_per_rev < k_encoder_min_counts_per_rev) {
-    rx_log_error(s_tag, "counts_per_rev out of valid range");
+    rx_log_error(s_tag, "counts_per_rev must be >= 1");
     return k_rx_err_invalid_state;
   }
 
@@ -362,10 +366,10 @@ rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channe
   s_encoder_state[channel].last_raw_count = (uint16_t)(count & k_encoder_16bit_mask);
   s_last_count[channel]                   = count;
 
-  /* Recalculate position */
+  /* Recalculate position - upper bound check omitted (uint16_t can't exceed 65535) */
   const uint16_t counts_per_rev = s_counts_per_rev[channel];
   if (counts_per_rev < k_encoder_min_counts_per_rev) {
-    rx_log_error(s_tag, "counts_per_rev out of valid range - state corrupted");
+    rx_log_error(s_tag, "counts_per_rev must be >= 1 - state corrupted");
     return k_rx_err_invalid_state;
   }
   s_encoder_state[channel].revolutions = count / counts_per_rev;
@@ -535,9 +539,10 @@ static rx_err_t internal_initialize_encoder_state(const rx_mtu_channel_t     cha
     return k_rx_err_invalid_arg;
   }
 
-  /* Validate counts_per_rev is within acceptable range */
+  /* Validate counts_per_rev is within acceptable range
+   * Upper bound check omitted - uint16_t can't exceed k_encoder_max_counts_per_rev (65535) */
   if (config->counts_per_rev < k_encoder_min_counts_per_rev) {
-    rx_log_error(s_tag, "counts_per_rev out of valid range");
+    rx_log_error(s_tag, "counts_per_rev must be >= 1");
     return k_rx_err_invalid_arg;
   }
 
@@ -599,9 +604,10 @@ static rx_err_t internal_update_state_from_count(rx_encoder_state_t*    state,
   /* Calculate revolutions and position */
   const uint16_t counts_per_rev = s_counts_per_rev[channel];
 
-  /* Guard division: Validate counts_per_rev is within acceptable range (NASA Rule 5) */
+  /* Guard division: Validate counts_per_rev (NASA Rule 5)
+   * Upper bound check omitted - uint16_t can't exceed k_encoder_max_counts_per_rev (65535) */
   if (counts_per_rev < k_encoder_min_counts_per_rev) {
-    rx_log_error(s_tag, "counts_per_rev out of valid range");
+    rx_log_error(s_tag, "counts_per_rev must be >= 1");
     return k_rx_err_invalid_state;
   }
 

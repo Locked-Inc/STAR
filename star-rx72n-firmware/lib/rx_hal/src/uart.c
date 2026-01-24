@@ -240,7 +240,8 @@ static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_por
   const uint8_t rx_port = rx_port_from_pin(rx_gpio);
   const uint8_t rx_pin  = rx_pin_from_pin(rx_gpio);
 
-  /* Validate pin numbers */
+  /* Validate pin numbers (lower bound checks omitted - pins are uint8_t, k_rx_pin_min == 0,
+   * so pin >= k_rx_pin_min is always true, avoiding -Wtype-limits warning) */
   if (tx_pin > k_rx_pin_max || rx_pin > k_rx_pin_max) {
     return k_rx_err_invalid_arg;
   }
@@ -424,7 +425,7 @@ rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
   }
 
   /* Transmit string with \n to \r\n conversion (statically bounded) */
-  for (size_t i = 0; i < s_uart_max_str_len; ++i) {
+  for (uint32_t i = 0; i < s_uart_max_str_len; ++i) {
     if (str[i] == '\0') {
       return k_rx_ok; /* Terminator found, success */
     }
