@@ -357,9 +357,9 @@ internal_write_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, 
 static rx_err_t
 internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* bit)
 {
-  rx_err_t       err;
-  uint32_t       sample_delay_us;
-  bool           line_high;
+  rx_err_t err;
+  uint32_t sample_delay_us;
+  bool     line_high;
 
   err = internal_drive_low(bus_config, state);
   if (err != k_rx_ok) {
@@ -417,9 +417,9 @@ internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state,
 static rx_err_t
 internal_read_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, uint8_t* byte)
 {
-  uint8_t value = 0;
-  bool    bit   = false;
-  rx_err_t err  = k_rx_ok;
+  uint8_t  value = 0;
+  bool     bit   = false;
+  rx_err_t err   = k_rx_ok;
 
   for (uint8_t i = 0; i < k_bits_per_byte; ++i) {
     bit = false;
@@ -458,7 +458,7 @@ static rx_err_t internal_search_step(rx_bus_config_t*         bus_config,
                                      uint8_t*                 rom_bit_mask,
                                      uint8_t*                 last_zero)
 {
-  bool     bit = false;
+  bool     bit      = false;
   bool     comp_bit = false;
   bool     search_direction;
   rx_err_t err;
@@ -495,7 +495,7 @@ static rx_err_t internal_search_step(rx_bus_config_t*         bus_config,
   if (search_direction) {
     rom[*rom_byte_index] |= *rom_bit_mask;
   } else {
-    rom[*rom_byte_index] &= (uint8_t)~(*rom_bit_mask);
+    rom[*rom_byte_index] &= (uint8_t) ~(*rom_bit_mask);
   }
 
   err = internal_write_bit(bus_config, state, search_direction);
@@ -750,10 +750,10 @@ static rx_err_t internal_onewire_init_callback(rx_bus_config_t* bus_config, void
 
 static rx_err_t internal_onewire_reset_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_reset_ctx_t*    ctx   = (onewire_reset_ctx_t*)user_ctx;
-  onewire_runtime_state_t* state = NULL;
+  onewire_reset_ctx_t*     ctx      = (onewire_reset_ctx_t*)user_ctx;
+  onewire_runtime_state_t* state    = NULL;
   bool                     presence = false;
-  rx_err_t                 err   = k_rx_ok;
+  rx_err_t                 err      = k_rx_ok;
 
   CHECK_ONEWIRE_BUS(bus_config, ctx, true);
 
@@ -783,7 +783,7 @@ static rx_err_t internal_onewire_reset_callback(rx_bus_config_t* bus_config, voi
 
 static rx_err_t internal_onewire_write_bit_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_write_bit_ctx_t* ctx = (onewire_write_bit_ctx_t*)user_ctx;
+  onewire_write_bit_ctx_t* ctx   = (onewire_write_bit_ctx_t*)user_ctx;
   onewire_runtime_state_t* state = NULL;
   rx_err_t                 err   = k_rx_ok;
 
@@ -823,7 +823,7 @@ static rx_err_t internal_onewire_write_bit_callback(rx_bus_config_t* bus_config,
 
 static rx_err_t internal_onewire_read_bit_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_read_bit_ctx_t*  ctx = (onewire_read_bit_ctx_t*)user_ctx;
+  onewire_read_bit_ctx_t*  ctx   = (onewire_read_bit_ctx_t*)user_ctx;
   onewire_runtime_state_t* state = NULL;
   bool                     bit   = false;
   rx_err_t                 err   = k_rx_ok;
@@ -895,10 +895,10 @@ static rx_err_t internal_onewire_write_byte_callback(rx_bus_config_t* bus_config
 
 static rx_err_t internal_onewire_read_byte_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_read_byte_ctx_t*  ctx   = (onewire_read_byte_ctx_t*)user_ctx;
-  onewire_runtime_state_t*  state = NULL;
-  uint8_t                   byte  = 0;
-  rx_err_t                  err   = k_rx_ok;
+  onewire_read_byte_ctx_t* ctx   = (onewire_read_byte_ctx_t*)user_ctx;
+  onewire_runtime_state_t* state = NULL;
+  uint8_t                  byte  = 0;
+  rx_err_t                 err   = k_rx_ok;
 
   if (bus_config->type != k_bus_type_onewire || !bus_config->initialized) {
     rx_log_error(s_tag, "Bus invalid or not initialized");
@@ -1020,7 +1020,7 @@ static rx_err_t internal_onewire_read_buffer_callback(rx_bus_config_t* bus_confi
 
   for (uint32_t i = 0; (i < k_onewire_max_buf_bytes) && (i < len); ++i) {
     byte = 0;
-    err = internal_read_byte(bus_config, state, &byte);
+    err  = internal_read_byte(bus_config, state, &byte);
     if (err != k_rx_ok) {
       ctx->result = err;
       return err;
@@ -1122,7 +1122,7 @@ static rx_err_t internal_onewire_match_rom_callback(rx_bus_config_t* bus_config,
 
 static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_read_rom_ctx_t* ctx = (onewire_read_rom_ctx_t*)user_ctx;
+  onewire_read_rom_ctx_t* ctx  = (onewire_read_rom_ctx_t*)user_ctx;
   uint8_t                 byte = 0;
   uint8_t                 crc  = 0;
 

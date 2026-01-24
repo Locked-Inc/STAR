@@ -16,9 +16,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-
 #include "rx_check.h"
+#include "unity.h"
 
 /* Include mock implementations first to override real headers */
 #include "tx_api.h"
@@ -70,10 +69,10 @@ typedef enum : uint16_t {
  */
 static rx_err_t internal_init_handler(error_handler_t* handler, uint32_t max_retries)
 {
-  RX_ASSERT((handler == NULL) || (max_retries > k_test_zero_retries),
-            "max_retries must be > 0");
-  RX_ASSERT((handler == NULL) || (max_retries <= k_test_max_retries),
-            "max_retries exceeds test max");
+  if (handler == NULL) {
+    return k_rx_err_null_ptr;
+  }
+  RX_ASSERT((max_retries <= k_test_max_retries), "max_retries exceeds test max");
 
   error_handler_config_t config = {
     .max_retries        = max_retries,

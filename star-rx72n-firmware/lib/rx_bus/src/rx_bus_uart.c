@@ -24,7 +24,7 @@ static const char* s_tag = "BUS_UART";
  * =============================================================================
  */
 
-static const uint8_t s_uart_ascii_max  = 127; /**< Max 7-bit ASCII value */
+static const uint8_t s_uart_ascii_max = 127; /**< Max 7-bit ASCII value */
 
 /* =============================================================================
  * Callback Context Structures

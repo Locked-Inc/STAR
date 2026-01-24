@@ -261,13 +261,13 @@ uint32_t mock_uart_hw_get_baudrate(uint8_t channel);
  */
 
 rx_err_t uart_init_channel(const uart_channel_config_t* config);
-rx_err_t uart_deinit_channel(uint8_t channel);
-rx_err_t uart_putc_channel(uint8_t channel, char data);
-rx_err_t uart_puts_channel(uint8_t channel, const char* str);
-rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t length);
-rx_err_t uart_getc_channel(uint8_t channel, char* data);
-rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
-rx_err_t uart_rx_available(uint8_t channel, bool* available);
+rx_err_t uart_deinit_channel(uart_channel_t channel);
+rx_err_t uart_putc_channel(uart_channel_t channel, char data);
+rx_err_t uart_puts_channel(uart_channel_t channel, const char* str);
+rx_err_t uart_write_channel(uart_channel_t channel, const uint8_t* data, uint16_t length);
+rx_err_t uart_getc_channel(uart_channel_t channel, char* data);
+rx_err_t uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
+rx_err_t uart_rx_available(uart_channel_t channel, bool* available);
 
 /* Legacy debug UART functions */
 rx_err_t uart_init(void);

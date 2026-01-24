@@ -55,10 +55,10 @@ typedef enum : uint16_t {
  * @brief DRV8243 configuration and control constants
  */
 typedef enum : uint8_t {
-  k_pwm_not_inverted = 0,      /**< PWM output not inverted (false) */
-  k_motor_coast      = 0,      /**< Motor coast mode (no brake, false) */
-  k_gpio_level_low   = 0,      /**< GPIO logic level low */
-  k_bit_mask_single  = 1,      /**< Single bit mask */
+  k_pwm_not_inverted = 0, /**< PWM output not inverted (false) */
+  k_motor_coast      = 0, /**< Motor coast mode (no brake, false) */
+  k_gpio_level_low   = 0, /**< GPIO logic level low */
+  k_bit_mask_single  = 1, /**< Single bit mask */
 } drv8243_config_constants_t;
 
 /**
@@ -309,7 +309,9 @@ rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* ou
     return k_rx_err_invalid_arg;
   }
 
-  if (handle->pin_nfault < k_rx_pin_min || handle->pin_nfault > k_rx_pin_max) {
+  /* Lower bound check omitted - pin_nfault is uint8_t, k_rx_pin_min == 0,
+   * so pin_nfault >= k_rx_pin_min is always true (-Wtype-limits) */
+  if (handle->pin_nfault > k_rx_pin_max) {
     rx_log_error(s_tag, "Invalid pin number for nFAULT pin (valid range 0-7)");
     return k_rx_err_invalid_arg;
   }
@@ -350,7 +352,9 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, const uint16_
     return k_rx_err_invalid_state;
   }
 
-  if (limit_ma < k_drv8243_min_current_limit_ma || limit_ma > k_drv8243_max_current_limit_ma) {
+  /* Lower bound check omitted - limit_ma is uint16_t, k_drv8243_min_current_limit_ma == 0,
+   * so limit_ma >= k_drv8243_min_current_limit_ma is always true (-Wtype-limits) */
+  if (limit_ma > k_drv8243_max_current_limit_ma) {
     rx_log_error(s_tag, "Current limit out of valid range (0-10000mA)");
     return k_rx_err_invalid_arg;
   }
@@ -418,7 +422,9 @@ static rx_err_t internal_drv8243_configure_fault_pin(const rx_drv8243_handle_t* 
     return k_rx_err_invalid_arg;
   }
 
-  if (handle->pin_nfault < k_rx_pin_min || handle->pin_nfault > k_rx_pin_max) {
+  /* Lower bound check omitted - pin_nfault is uint8_t, k_rx_pin_min == 0,
+   * so pin_nfault >= k_rx_pin_min is always true (-Wtype-limits) */
+  if (handle->pin_nfault > k_rx_pin_max) {
     rx_log_error(s_tag, "Invalid pin number for nFAULT pin configuration (valid range 0-7)");
     return k_rx_err_invalid_arg;
   }

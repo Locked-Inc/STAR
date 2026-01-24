@@ -36,8 +36,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "rx_err.h"
 #include "rx_check.h"
+#include "rx_err.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -97,8 +97,8 @@ typedef struct {
 static inline rx_gptw_channel_id_t rx_gptw_channel_id(rx_gptw_channel_t value)
 {
   /* Pre-condition: channel must be in valid range */
-  RX_ASSERT((value >= k_gptw_channel_0) && (value <= k_gptw_channel_3),
-            "GPTW channel out of range");
+  /* Note: value >= k_gptw_channel_0 is always true for uint8_t since k_gptw_channel_0 == 0 */
+  RX_ASSERT(value <= k_gptw_channel_3, "GPTW channel out of range");
 
   rx_gptw_channel_id_t id = {.value = value};
 
@@ -125,8 +125,8 @@ static inline rx_gptw_channel_id_t rx_gptw_channel_id(rx_gptw_channel_t value)
 static inline rx_gptw_output_id_t rx_gptw_output_id(rx_gptw_output_t value)
 {
   /* Pre-condition: output must be in valid range */
-  RX_ASSERT((value >= k_gptw_output_a) && (value <= k_gptw_output_b),
-            "GPTW output out of range");
+  /* Note: value >= k_gptw_output_a is always true for uint8_t since k_gptw_output_a == 0 */
+  RX_ASSERT(value <= k_gptw_output_b, "GPTW output out of range");
 
   rx_gptw_output_id_t id = {.value = value};
 
@@ -181,9 +181,8 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
  * @return k_rx_err_invalid_arg if channel, output, or duty is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t rx_gptw_set_duty(rx_gptw_channel_id_t channel,
-                          rx_gptw_output_id_t  output,
-                          float               duty_percent);
+rx_err_t
+rx_gptw_set_duty(rx_gptw_channel_id_t channel, rx_gptw_output_id_t output, float duty_percent);
 
 /**
  * @brief Set PWM duty cycle (raw count value)

@@ -26,10 +26,10 @@
  */
 
 typedef enum : uint16_t {
-  k_app_main_stack_size  = 1024, /**< Stack size in bytes */
-  k_app_main_priority    = 10,   /**< ThreadX priority (lower is higher) */
-  k_app_main_sleep_ticks = 10,   /**< Sleep period in ThreadX ticks */
-  k_app_main_thread_input = 0,   /**< Thread input parameter (unused) */
+  k_app_main_stack_size   = 1024, /**< Stack size in bytes */
+  k_app_main_priority     = 10,   /**< ThreadX priority (lower is higher) */
+  k_app_main_sleep_ticks  = 10,   /**< Sleep period in ThreadX ticks */
+  k_app_main_thread_input = 0,    /**< Thread input parameter (unused) */
 } app_main_task_config_t;
 
 /* =============================================================================
@@ -76,8 +76,8 @@ rx_err_t app_main_task_create(void)
     return k_rx_err_invalid_state;
   }
 
-  UINT thread_state = TX_TERMINATED;
-  const UINT status = tx_thread_create(&s_app_main_thread,
+  UINT       thread_state = TX_TERMINATED;
+  const UINT status       = tx_thread_create(&s_app_main_thread,
                                        "AppMain",
                                        internal_app_main_task_entry,
                                        k_app_main_thread_input,
@@ -102,8 +102,8 @@ rx_err_t app_main_task_create(void)
                            TX_NULL,
                            TX_NULL,
                            TX_NULL);
-  RX_ASSERT((status == TX_SUCCESS) &&
-              (thread_state != TX_TERMINATED) && (thread_state != TX_COMPLETED),
+  RX_ASSERT((status == TX_SUCCESS) && (thread_state != TX_TERMINATED) &&
+              (thread_state != TX_COMPLETED),
             "Task must be created and scheduled");
   return k_rx_ok;
 }
