@@ -15,7 +15,7 @@ StarSpiDriverNode::StarSpiDriverNode(const rclcpp::NodeOptions & options)
 {
   // Declare parameters
   declare_parameter("spi_device_path", "/dev/spidev0.0");
-  declare_parameter("spi_speed_hz", 10000000); // 10 MHz
+  declare_parameter("spi_speed_hz", 10000000);  // 10 MHz
   declare_parameter("cmd_vel_timeout_ms", 500);
   declare_parameter("wheel_base", 0.150);
   declare_parameter("wheel_radius", 0.0325);
@@ -208,11 +208,8 @@ void StarSpiDriverNode::timer_callback()
   if (!SpiDriver::decode_frame(rx_frame, rx_seq, rx_type, rx_flags,
                                rx_payload))
   {
-
     RCLCPP_WARN_THROTTLE(
-
         get_logger(), *get_clock(), kLogThrottleMs,
-
         "SPI Frame Decode Failed (CRC mismatch or garbage)");
 
     return;
@@ -251,4 +248,4 @@ void StarSpiDriverNode::timer_callback()
   }
 }
 
-} // namespace star_spi_bridge
+}  // namespace star_spi_bridge

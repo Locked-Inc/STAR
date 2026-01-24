@@ -1,7 +1,7 @@
 // Copyright 2026 Locked Inc.
 
-#ifndef STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_STAR_SPI_DRIVER_NODE_HPP_
-#define STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_STAR_SPI_DRIVER_NODE_HPP_
+#ifndef STAR_SPI_BRIDGE__STAR_SPI_DRIVER_NODE_HPP_
+#define STAR_SPI_BRIDGE__STAR_SPI_DRIVER_NODE_HPP_
 
 #include <memory>
 #include <string>
@@ -40,7 +40,7 @@ public:
 private:
   // Callbacks
   void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
-  void timer_callback(); // 100 Hz loop
+  void timer_callback();  // 100 Hz loop
 
   // Components
   std::unique_ptr<SpiDriver> spi_driver_;
@@ -67,6 +67,6 @@ private:
   int cmd_vel_timeout_ms_;
 };
 
-} // namespace star_spi_bridge
+}  // namespace star_spi_bridge
 
-#endif // STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_STAR_SPI_DRIVER_NODE_HPP_
+#endif  // STAR_SPI_BRIDGE__STAR_SPI_DRIVER_NODE_HPP_
