@@ -495,7 +495,7 @@ static rx_err_t internal_search_step(rx_bus_config_t*         bus_config,
   if (search_direction) {
     rom[*rom_byte_index] |= *rom_bit_mask;
   } else {
-    rom[*rom_byte_index] &= (uint8_t)~(*rom_bit_mask);
+    rom[*rom_byte_index] &= (uint8_t) ~(*rom_bit_mask);
   }
 
   err = internal_write_bit(bus_config, state, search_direction);

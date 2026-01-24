@@ -170,8 +170,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
 
   const rx_mtu_channel_t channel = config->channel;
 
-  if (config->counts_per_rev < k_encoder_min_counts_per_rev ||
-      config->counts_per_rev > k_encoder_max_counts_per_rev) {
+  if (config->counts_per_rev < k_encoder_min_counts_per_rev) {
     rx_log_error(s_tag, "Invalid counts per revolution");
     return k_rx_err_invalid_arg;
   }
@@ -303,8 +302,7 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
   const uint16_t counts_per_rev = s_counts_per_rev[channel];
 
   /* Guard division: Validate counts_per_rev is within acceptable range */
-  if (counts_per_rev < k_encoder_min_counts_per_rev ||
-      counts_per_rev > k_encoder_max_counts_per_rev) {
+  if (counts_per_rev < k_encoder_min_counts_per_rev) {
     rx_log_error(s_tag, "counts_per_rev out of valid range");
     return k_rx_err_invalid_state;
   }
@@ -366,8 +364,7 @@ rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channe
 
   /* Recalculate position */
   const uint16_t counts_per_rev = s_counts_per_rev[channel];
-  if (counts_per_rev < k_encoder_min_counts_per_rev ||
-      counts_per_rev > k_encoder_max_counts_per_rev) {
+  if (counts_per_rev < k_encoder_min_counts_per_rev) {
     rx_log_error(s_tag, "counts_per_rev out of valid range - state corrupted");
     return k_rx_err_invalid_state;
   }
@@ -539,8 +536,7 @@ static rx_err_t internal_initialize_encoder_state(const rx_mtu_channel_t     cha
   }
 
   /* Validate counts_per_rev is within acceptable range */
-  if (config->counts_per_rev < k_encoder_min_counts_per_rev ||
-      config->counts_per_rev > k_encoder_max_counts_per_rev) {
+  if (config->counts_per_rev < k_encoder_min_counts_per_rev) {
     rx_log_error(s_tag, "counts_per_rev out of valid range");
     return k_rx_err_invalid_arg;
   }
@@ -604,8 +600,7 @@ static rx_err_t internal_update_state_from_count(rx_encoder_state_t*    state,
   const uint16_t counts_per_rev = s_counts_per_rev[channel];
 
   /* Guard division: Validate counts_per_rev is within acceptable range (NASA Rule 5) */
-  if (counts_per_rev < k_encoder_min_counts_per_rev ||
-      counts_per_rev > k_encoder_max_counts_per_rev) {
+  if (counts_per_rev < k_encoder_min_counts_per_rev) {
     rx_log_error(s_tag, "counts_per_rev out of valid range");
     return k_rx_err_invalid_state;
   }
