@@ -222,9 +222,8 @@ rx_err_t rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            c
  *
  * @return k_rx_ok on success, error code on failure
  */
-rx_err_t
-rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand*               cmd,
-                                             const rx_velocity_diff_drive_params_t* params);
+rx_err_t rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand*               cmd,
+                                                      const rx_velocity_diff_drive_params_t* params);
 
 /**
  * @brief Create ResponseHeader with status

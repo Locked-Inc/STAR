@@ -98,7 +98,7 @@ typedef enum : uint32_t {
 } uart_timeout_t;
 
 /** @brief UART buffer and string size limits */
-static const uint32_t k_uart_max_str_len = 256; /**< Maximum string length for uart_puts_channel */
+static const uint32_t s_uart_max_str_len = 256; /**< Maximum string length for uart_puts_channel */
 
 /** @brief SCI module stop bit positions in MSTPCRB */
 typedef enum : uint8_t {
@@ -426,7 +426,7 @@ rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
   }
 
   /* Transmit string with \n to \r\n conversion (statically bounded) */
-  for (size_t i = 0; i < k_uart_max_str_len; ++i) {
+  for (size_t i = 0; i < s_uart_max_str_len; ++i) {
     if (str[i] == '\0') {
       return k_rx_ok; /* Terminator found, success */
     }
