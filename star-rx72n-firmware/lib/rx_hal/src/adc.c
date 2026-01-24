@@ -174,13 +174,13 @@ internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, c
 static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t channel)
 {
   /* Validate unit */
-  if (unit < k_adc_unit_0 || unit > k_adc_unit_1) {
+  if (unit > k_adc_unit_1) {
     rx_log_error(s_tag, "Invalid ADC unit");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate channel */
-  if (channel < k_adc_channel_0 || channel > k_adc_channel_7) {
+  if (channel > k_adc_channel_7) {
     rx_log_error(s_tag, "Invalid ADC channel");
     return k_rx_err_invalid_arg;
   }
@@ -442,7 +442,7 @@ rx_err_t adc_read_voltage_mv(const adc_unit_t unit,
   }
 
   /* Validate that passed resolution matches unit's configured resolution */
-  if (unit < k_adc_unit_0 || unit > k_adc_unit_1) {
+  if (unit > k_adc_unit_1) {
     rx_log_error(s_tag, "Invalid ADC unit");
     return k_rx_err_invalid_arg;
   }

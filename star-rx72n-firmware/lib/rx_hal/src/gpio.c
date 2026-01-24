@@ -51,7 +51,7 @@ static rx_err_t internal_validate_port_pin(const uint8_t port, const uint8_t pin
   }
 
   /* Validate pin */
-  if ((pin < k_rx_pin_0) || (pin > k_rx_pin_max)) {
+  if (pin > k_rx_pin_max) {
     rx_log_error("GPIO", "Invalid pin number");
     return k_rx_err_gpio_invalid_pin;
   }

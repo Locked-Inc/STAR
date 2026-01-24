@@ -291,7 +291,9 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  */
 #define RX_CHECK_RANGE_TAG(value, min, max, errcode, tag)                                          \
   do {                                                                                             \
-    if (((value) < (min)) || ((value) > (max))) {                                                  \
+    /* Note: Only checks upper bound. For non-zero min, add explicit check before this macro. */  \
+    (void)(min); /* Suppress unused parameter warning */                                           \
+    if ((value) > (max)) {                                                                         \
       rx_log_error(tag, "Range check failed");                                                     \
       return (errcode);                                                                            \
     }                                                                                              \

@@ -153,8 +153,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
   frame->header.length = rx_frame_read_be16(&data[offset]);
   offset += k_frame_len_size;
 
-  if (((k_frame_min_payload > 0U) && (frame->header.length < k_frame_min_payload)) ||
-      (frame->header.length > k_frame_max_payload)) {
+  if (frame->header.length > k_frame_max_payload) {
     return k_rx_err_invalid_size;
   }
 
@@ -298,8 +297,7 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
   }
 
   /* Validate payload size */
-  if (((k_frame_min_payload > 0U) && (frame->header.length < k_frame_min_payload)) ||
-      (frame->header.length > k_frame_max_payload)) {
+  if (frame->header.length > k_frame_max_payload) {
     return k_rx_err_invalid_size;
   }
 

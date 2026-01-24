@@ -404,7 +404,8 @@ static inline uint8_t rx_port_from_pin(rx_port_pin_t pin)
   uint8_t result = (uint8_t)((pin) >> k_port_shift);
 
   /* Post-condition: result is a valid port (0-G or J, skipping H-I) */
-  RX_ASSERT(((result >= k_rx_port_0) && (result <= k_rx_port_g)) || (result == k_rx_port_j),
+  /* Note: result >= k_rx_port_0 is always true for uint8_t since k_rx_port_0 == 0 */
+  RX_ASSERT((result <= k_rx_port_g) || (result == k_rx_port_j),
             "Port number must be valid (k_rx_port_0..k_rx_port_g or k_rx_port_j)");
 
   return result;
@@ -423,7 +424,7 @@ static inline uint8_t rx_pin_from_pin(rx_port_pin_t pin)
 {
   /* Pre-condition 1: port value fits encoding scheme (port in upper byte) */
   uint8_t port = (uint8_t)((pin) >> k_port_shift);
-  RX_ASSERT(port >= k_rx_port_0, "Port number must be >= k_rx_port_0");
+  /* Note: port >= k_rx_port_0 is always true for uint8_t since k_rx_port_0 == 0 */
 
   /* Pre-condition 2: port is valid (0-G or J, skipping H-I) */
   RX_ASSERT((port <= k_rx_port_g) || (port == k_rx_port_j),
@@ -432,7 +433,8 @@ static inline uint8_t rx_pin_from_pin(rx_port_pin_t pin)
   uint8_t result = (uint8_t)((pin)&k_port_mask);
 
   /* Post-condition: result fits in rx_pin_number_t range (0x00-0x07) */
-  RX_ASSERT(result >= k_rx_pin_min && result <= k_rx_pin_max,
+  /* Note: result >= k_rx_pin_min is always true for uint8_t since k_rx_pin_min == 0 */
+  RX_ASSERT(result <= k_rx_pin_max,
             "Pin number must be in range k_rx_pin_min..k_rx_pin_max");
 
   return result;
