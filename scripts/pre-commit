@@ -51,26 +51,12 @@ cpp_files=$(echo "$staged_files" | grep -E "\.(cpp|hpp|cc|h)$" || true)
 if [[ -n "$cpp_files" ]]; then
     echo "🦕 Checking C++ files..."
 
-    # Check clang-format
-    for file in $cpp_files; do
-        if ! clang-format --dry-run --Werror "$file"; then
-            echo "❌ Formatting error in: $file"
-            echo "   Run: clang-format -i $file"
-            error_found=1
-        fi
-    done
-
-    # Run cpplint
-    if command -v ament_cpplint &> /dev/null; then
-        for file in $cpp_files; do
-            # Only check files inside star-ros2
-            if [[ "$file" == *"star-ros2"* ]]; then
-                 if ! ament_cpplint "$file" >/dev/null; then
-                    echo "❌ cpplint error in: $file"
-                    error_found=1
-                 fi
-            fi
-        done
+    # Use the official format-ros2.sh script in check mode
+    # This uses ament_uncrustify and checks header guards
+    if ! ./scripts/format-ros2.sh --check --verbose; then
+        echo "❌ C++ formatting or header guard check failed."
+        echo "   Run: ./scripts/format-ros2.sh"
+        error_found=1
     fi
 fi
 

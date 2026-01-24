@@ -255,18 +255,24 @@ check_package_cpplint() {
 }
 
 # Get expected header guard for a file
-# Pattern: FULL_PATH_FROM_SRC_HPP_
+# Pattern: PACKAGE__FILENAME_HPP_
 # Example: star_spi_bridge/include/star_spi_bridge/spi_driver.hpp
-#       -> STAR_SPI_BRIDGE_INCLUDE_STAR_SPI_BRIDGE_SPI_DRIVER_HPP_
+#       -> STAR_SPI_BRIDGE__SPI_DRIVER_HPP_
 get_expected_guard() {
     local file="$1"
     local rel_path="${file#"$ROS2_DIR"/}"
 
-    # Convert to uppercase and replace separators (/ . -) with underscore
+    local package_name="${rel_path%%/*}"
+    local file_base
+    file_base=$(basename "$rel_path")
+    local file_stem="${file_base%.*}"
+
     local guard
-    guard=$(echo "$rel_path" | tr '[:lower:]' '[:upper:]' | tr '/.-' '___')
+    guard=$(printf '%s__%s_HPP_' "$package_name" "$file_stem" \
+      | tr '[:lower:]' '[:upper:]' \
+      | tr '-' '_')
     
-    echo "${guard}_"
+    echo "$guard"
 }
 
 # Check header guards

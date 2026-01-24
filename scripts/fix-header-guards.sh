@@ -43,9 +43,13 @@ while IFS= read -r -d '' file; do
     # Extract package name from path: star-ros2/src/PACKAGE/...
     rel_path="${file#star-ros2/src/}"
     
-    # Expected guard: FULL_PATH_FROM_SRC_HPP_
-    expected_guard=$(echo "$rel_path" | tr '[:lower:]' '[:upper:]' | tr '/.-' '___')
-    expected_guard="${expected_guard}_"
+    # Expected guard: PACKAGE__FILENAME_HPP_
+    package_name=${rel_path%%/*}
+    file_base=$(basename "$rel_path")
+    file_stem=${file_base%.*}
+    expected_guard=$(printf '%s__%s_HPP_' "$package_name" "$file_stem" \
+      | tr '[:lower:]' '[:upper:]' \
+      | tr '-' '_')
     
     # Read current guard from file
     current_guard=$(grep -m1 "^#ifndef " "$file" 2>/dev/null | sed 's/#ifndef //' || true)
