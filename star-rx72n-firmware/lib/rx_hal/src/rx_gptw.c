@@ -165,7 +165,10 @@ static uint32_t internal_get_gtcr_mode(const rx_gptw_wave_mode_t mode)
     case k_gptw_wave_tri_pwm3:
       return k_gptw_gtcr_md_tri_pwm3;
     case k_gptw_wave_saw_pwm:
+      return k_gptw_gtcr_md_saw_pwm;
     default:
+      /* Should never reach here if wave_mode was validated upstream (NASA Rule 5) */
+      RX_ASSERT(false, "Unexpected wave mode in internal_get_gtcr_mode");
       return k_gptw_gtcr_md_saw_pwm;
   }
 }
