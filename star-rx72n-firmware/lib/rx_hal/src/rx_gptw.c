@@ -188,10 +188,16 @@ static rx_err_t internal_calculate_period(const uint32_t            frequency_hz
   /* Pre-condition: validate pointer (NASA Power of 10 Rule 5) */
   RX_CHECK_NULL_PTR(period, s_tag, "period pointer is NULL");
 
-  /* Pre-condition: validate wave_mode range */
-  if (wave_mode > k_gptw_wave_tri_pwm3) {
-    rx_log_error(s_tag, "Invalid wave mode");
-    return k_rx_err_invalid_arg;
+  /* Pre-condition: validate wave_mode using exhaustive switch (catches invalid/negative values) */
+  switch (wave_mode) {
+    case k_gptw_wave_saw_pwm:
+    case k_gptw_wave_tri_pwm1:
+    case k_gptw_wave_tri_pwm2:
+    case k_gptw_wave_tri_pwm3:
+      break;
+    default:
+      rx_log_error(s_tag, "Invalid wave mode");
+      return k_rx_err_invalid_arg;
   }
 
   /* Period calculation depends on waveform mode:
