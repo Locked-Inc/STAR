@@ -1,6 +1,6 @@
 {
   "name": "Existing Dockerfile",
-  "initializeCommand": "powershell -Command \"New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.gemini', '${localEnv:HOME}${localEnv:USERPROFILE}/.claude' -ItemType Directory -Force; if (-not (Test-Path '${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json')) { New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json' -ItemType File }\" || (mkdir -p \"${localEnv:HOME}${localEnv:USERPROFILE}/.gemini\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.claude\" && touch \"${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json\")",
+  "initializeCommand": "powershell -Command \"New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.ssh', '${localEnv:HOME}${localEnv:USERPROFILE}/.gemini', '${localEnv:HOME}${localEnv:USERPROFILE}/.claude' -ItemType Directory -Force; if (-not (Test-Path '${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig')) { New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig' -ItemType File }; if (-not (Test-Path '${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json')) { New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json' -ItemType File }\" || (mkdir -p \"${localEnv:HOME}${localEnv:USERPROFILE}/.ssh\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.gemini\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.claude\" && touch \"${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json\")",
   "build": {
     "context": "..",
     "dockerfile": "../Dockerfile"
@@ -23,6 +23,8 @@
     }
   },
   "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/star/.gitconfig,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/star/.ssh,type=bind,consistency=cached",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gemini,target=/home/star/.gemini,type=bind",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/star/.claude,type=bind",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json,target=/home/star/.claude.json,type=bind"
