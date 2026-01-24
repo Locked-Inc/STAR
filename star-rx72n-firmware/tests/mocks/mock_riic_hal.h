@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hardware.h"
 #include "rx_err.h"
 
 #ifdef __cplusplus
@@ -35,7 +36,7 @@ extern "C" {
  */
 
 /** @brief Mock RIIC constants */
-typedef enum {
+typedef enum : uint16_t {
   k_mock_riic_max_channels      = 3,   /**< RIIC channels (0-2) */
   k_mock_riic_buffer_size       = 256, /**< TX/RX buffer size */
   k_mock_riic_call_history_size = 64,  /**< Call history buffer size */
@@ -47,7 +48,7 @@ typedef enum {
  */
 
 /** @brief RIIC HAL function call types */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_riic_call_init,
   k_mock_riic_call_write,
   k_mock_riic_call_read,
@@ -232,15 +233,21 @@ void mock_riic_clear_history(void);
  * =============================================================================
  */
 
-rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz);
-rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, uint16_t length);
-rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t length);
-rx_err_t riic_write_read(uint8_t        channel,
-                         uint8_t        device_addr,
-                         const uint8_t* write_data,
-                         uint16_t       write_length,
-                         uint8_t*       read_data,
-                         uint16_t       read_length);
+rx_err_t riic_init(riic_channel_t channel, uint32_t frequency_hz);
+rx_err_t riic_write(riic_channel_t    channel,
+                    i2c_device_addr_t device_addr,
+                    const uint8_t*    data,
+                    const uint16_t    length);
+rx_err_t riic_read(riic_channel_t    channel,
+                   i2c_device_addr_t device_addr,
+                   uint8_t*          data,
+                   const uint16_t    length);
+rx_err_t riic_write_read(riic_channel_t    channel,
+                         i2c_device_addr_t device_addr,
+                         const uint8_t*    write_data,
+                         uint16_t          write_length,
+                         uint8_t*          read_data,
+                         uint16_t          read_length);
 
 #ifdef __cplusplus
 }

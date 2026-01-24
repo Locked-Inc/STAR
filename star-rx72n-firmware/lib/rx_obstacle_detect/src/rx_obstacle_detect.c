@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include "rx_check.h"
 #include "rx_threadx_config.h"
 #include "rx_time_constants.h"
 
@@ -31,7 +32,7 @@
 /**
  * @brief Event flag bit definitions
  */
-typedef enum {
+typedef enum : uint8_t {
   k_event_flag_start = 0x01, /**< Start detection */
   k_event_flag_stop  = 0x02, /**< Stop detection */
 } event_flags_t;
@@ -39,7 +40,7 @@ typedef enum {
 /**
  * @brief Validation constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_min_threshold_cm  = 2,    /**< Minimum detection threshold (HC-SR04 min range) */
   k_max_threshold_cm  = 400,  /**< Maximum detection threshold (HC-SR04 max range) */
   k_min_poll_interval = 10,   /**< Minimum poll interval in ms */
@@ -55,12 +56,12 @@ typedef enum {
 
 static void     internal_detection_task_entry(ULONG input);
 static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* config);
-static rx_err_t internal_stop_all_motors(rx_obstacle_detect_t* handle);
+static rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle);
 static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle);
-static void     internal_invoke_callback(rx_obstacle_detect_t* handle,
-                                         bool                  obstacle_detected,
-                                         uint8_t               sensor_idx,
-                                         float                 distance_cm);
+static void     internal_invoke_callback(const rx_obstacle_detect_t* handle,
+                                         bool                        obstacle_detected,
+                                         uint8_t                     sensor_idx,
+                                         float                       distance_cm);
 
 /* =============================================================================
  * Public API - Initialization
@@ -75,7 +76,7 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
 
   /* Validate inputs */
   if (handle == NULL || config == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (handle->initialized) {
@@ -148,7 +149,7 @@ rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
 
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -198,7 +199,7 @@ rx_err_t rx_obstacle_detect_start(rx_obstacle_detect_t* handle)
 
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -228,7 +229,7 @@ rx_err_t rx_obstacle_detect_stop(rx_obstacle_detect_t* handle)
 
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -249,7 +250,7 @@ rx_err_t rx_obstacle_detect_clear_obstacle(rx_obstacle_detect_t* handle)
 {
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -280,7 +281,7 @@ rx_err_t rx_obstacle_detect_get_state(const rx_obstacle_detect_t* handle,
 {
   /* Validate inputs */
   if (handle == NULL || out_state == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -308,7 +309,7 @@ rx_err_t rx_obstacle_detect_get_stats(const rx_obstacle_detect_t* handle,
 {
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -335,7 +336,7 @@ rx_err_t rx_obstacle_detect_reset_stats(rx_obstacle_detect_t* handle)
 {
   /* Validate inputs */
   if (handle == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!handle->initialized) {
@@ -355,7 +356,11 @@ rx_err_t rx_obstacle_detect_reset_stats(rx_obstacle_detect_t* handle)
  * =============================================================================
  */
 
-static void internal_detection_task_entry(ULONG input)
+typedef enum : uint8_t {
+  k_min_sleep_ticks = 1, /**< Minimum sleep duration in ticks */
+} task_constants_t;
+
+static void internal_detection_task_entry(const ULONG input)
 {
   rx_obstacle_detect_t* handle       = NULL;
   ULONG                 actual_flags = 0;
@@ -365,11 +370,15 @@ static void internal_detection_task_entry(ULONG input)
   bool                  running      = false;
 
   handle = (rx_obstacle_detect_t*)input;
+  RX_ASSERT(handle != NULL, "Obstacle detect handle is NULL");
+  if (handle == NULL) {
+    return;
+  }
 
   /* Convert poll interval to ticks */
-  sleep_ticks = (handle->poll_interval_ms * k_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+  sleep_ticks = (handle->poll_interval_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
   if (sleep_ticks == 0) {
-    sleep_ticks = 1;
+    sleep_ticks = k_min_sleep_ticks;
   }
 
   while (true) {
@@ -431,7 +440,7 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
 {
   /* Validate sensor configuration */
   if (config->sensors == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (config->sensor_count == 0 || config->sensor_count > k_obstacle_detect_max_sensors) {
@@ -440,13 +449,13 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
 
   for (uint8_t i = 0; i < config->sensor_count; i++) {
     if (config->sensors[i] == NULL) {
-      return k_rx_err_null_pointer;
+      return k_rx_err_null_ptr;
     }
   }
 
   /* Validate motor configuration */
   if (config->motors == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (config->motor_count == 0 || config->motor_count > k_obstacle_detect_max_motors) {
@@ -455,7 +464,7 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
 
   for (uint8_t i = 0; i < config->motor_count; i++) {
     if (config->motors[i] == NULL) {
-      return k_rx_err_null_pointer;
+      return k_rx_err_null_ptr;
     }
   }
 
@@ -484,10 +493,19 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
 
 static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 {
-  float    distance_cm         = 0.0f;
-  rx_err_t ret                 = k_rx_ok;
-  bool     was_obstacle_active = false;
-  bool     is_obstacle_active  = false;
+  float              distance_cm                = 0.0F;
+  rx_err_t           ret                        = k_rx_ok;
+  bool               was_obstacle_active        = false;
+  bool               is_obstacle_active         = false;
+  static const float s_clear_distance_offset_cm = 1.0F;
+
+  if (handle == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
 
   handle->total_polls++;
 
@@ -498,7 +516,7 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
     /* Handle measurement errors */
     if (ret == k_rx_err_timeout) {
       /* No echo = no object (treat as clear) */
-      distance_cm = handle->detection_threshold_cm + 1.0f;
+      distance_cm = handle->detection_threshold_cm + s_clear_distance_offset_cm;
     } else if (ret != k_rx_ok) {
       /* Other errors = skip this sensor */
       continue;
@@ -565,27 +583,40 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
   return k_rx_ok;
 }
 
-static rx_err_t internal_stop_all_motors(rx_obstacle_detect_t* handle)
+static rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle)
 {
-  rx_err_t ret = k_rx_ok;
+  rx_err_t ret       = k_rx_ok;
+  rx_err_t first_err = k_rx_ok;
+
+  if (handle == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
 
   for (uint8_t i = 0; i < handle->motor_count; i++) {
     ret = rx_motor_stop(handle->motors[i], true);
     if (ret != k_rx_ok) {
-      /* Log error but continue stopping other motors */
-      continue;
+      /* Record first error but continue stopping other motors */
+      if (first_err == k_rx_ok) {
+        first_err = ret;
+      }
     }
   }
 
-  return k_rx_ok;
+  return first_err;
 }
 
-static void internal_invoke_callback(rx_obstacle_detect_t* handle,
-                                     bool                  obstacle_detected,
-                                     uint8_t               sensor_idx,
-                                     float                 distance_cm)
+static void internal_invoke_callback(const rx_obstacle_detect_t* handle,
+                                     const bool                  obstacle_detected,
+                                     const uint8_t               sensor_idx,
+                                     const float                 distance_cm)
 {
-  if (handle->callback != NULL) {
-    handle->callback(obstacle_detected, sensor_idx, distance_cm, handle->user_data);
+  if (handle == NULL || handle->callback == NULL) {
+    return;
   }
+
+  handle->callback(obstacle_detected, sensor_idx, distance_cm, handle->user_data);
 }

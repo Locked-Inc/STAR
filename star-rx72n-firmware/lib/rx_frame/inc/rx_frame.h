@@ -41,7 +41,7 @@ extern "C" {
 /**
  * @brief Frame structure constants
  */
-typedef enum {
+typedef enum : uint16_t {
   k_frame_sync_word   = (0x55AA), /**< Frame sync marker */
   k_frame_sync_size   = (2),      /**< SYNC field size */
   k_frame_seq_size    = (2),      /**< SEQ field size */
@@ -50,6 +50,7 @@ typedef enum {
   k_frame_flags_size  = (1),      /**< FLAGS field size */
   k_frame_crc_size    = (4),      /**< CRC-32 field size */
   k_frame_header_size = (6),      /**< SEQ+LEN+TYPE+FLAGS */
+  k_frame_min_payload = (0),      /**< Minimum payload bytes */
   k_frame_max_payload = (1024),   /**< Maximum payload bytes */
   k_frame_min_size    = (12),     /**< SYNC+Header+CRC (no payload) */
   k_frame_max_size    = (1036),   /**< Min + MaxPayload */
@@ -58,7 +59,7 @@ typedef enum {
 /**
  * @brief Frame types (matches Go FrameType)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_frame_type_unknown  = (0), /**< Invalid frame type */
   k_frame_type_command  = (1), /**< Command from controller */
   k_frame_type_response = (2), /**< Response from peripheral */
@@ -69,7 +70,7 @@ typedef enum {
 /**
  * @brief Frame flags (matches Go FrameFlags)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_frame_flag_none         = (0x00), /**< No flags */
   k_frame_flag_requires_ack = (0x01), /**< Frame requires ACK */
   k_frame_flag_retransmit   = (0x02), /**< Retransmission */
@@ -153,10 +154,10 @@ rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc);
  * @return k_rx_err_invalid_state if encoder not initialized
  * @return k_rx_err_invalid_size if payload exceeds max
  */
-rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
-                         const rx_frame_t*   frame,
-                         uint8_t*            output,
-                         uint32_t*           output_len);
+rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
+                         const rx_frame_t*         frame,
+                         uint8_t*                  output,
+                         uint32_t*                 output_len);
 
 /* =============================================================================
  * Utility Functions (Static Inline)
@@ -206,7 +207,7 @@ static inline uint32_t rx_frame_encoded_size(uint32_t payload_len)
  * In big-endian format, the high byte (MSB) is stored at index 0 and the
  * low byte (LSB) is stored at index 1.
  */
-typedef enum {
+typedef enum : uint8_t {
   k_be16_byte_high = 0, /**< High byte (MSB) at index 0 */
   k_be16_byte_low  = 1, /**< Low byte (LSB) at index 1 */
 } rx_be16_byte_idx_t;
@@ -214,10 +215,30 @@ typedef enum {
 /**
  * @brief Byte manipulation constants for endianness conversions
  */
-typedef enum {
+typedef enum : uint8_t {
   k_rx_be16_high_shift = (8),     /**< Bit shift for high byte in 16-bit value */
   k_rx_byte_mask       = (0xFFU), /**< Mask to extract one byte */
 } rx_byte_order_constants_t;
+
+/**
+ * @brief Byte indices for 32-bit little-endian serialization
+ */
+typedef enum : uint8_t {
+  k_le32_byte_0 = 0, /**< Byte 0 (LSB) */
+  k_le32_byte_1 = 1, /**< Byte 1 */
+  k_le32_byte_2 = 2, /**< Byte 2 */
+  k_le32_byte_3 = 3, /**< Byte 3 (MSB) */
+} rx_le32_byte_idx_t;
+
+/**
+ * @brief Bit shift amounts for extracting bytes from 32-bit values
+ */
+typedef enum : uint8_t {
+  k_rx_le32_shift_0 = 0,  /**< Shift 0 bits for byte 0 */
+  k_rx_le32_shift_1 = 8,  /**< Shift 8 bits for byte 1 */
+  k_rx_le32_shift_2 = 16, /**< Shift 16 bits for byte 2 */
+  k_rx_le32_shift_3 = 24, /**< Shift 24 bits for byte 3 */
+} rx_le32_shift_t;
 
 /**
  * @brief Read uint16 from big-endian buffer
@@ -253,6 +274,21 @@ static inline void rx_frame_write_be16(uint8_t* buf, uint16_t val)
 {
   buf[k_be16_byte_high] = (uint8_t)(val >> k_rx_be16_high_shift);
   buf[k_be16_byte_low]  = (uint8_t)(val & k_rx_byte_mask);
+}
+
+/**
+ * @brief Read uint32 from little-endian buffer
+ *
+ * Reads a 32-bit unsigned integer from a buffer in little-endian format.
+ *
+ * @param[in] buf Input buffer (at least 4 bytes)
+ * @return Decoded 32-bit value in host byte order
+ */
+static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
+{
+  return (uint32_t)buf[k_le32_byte_0] | ((uint32_t)buf[k_le32_byte_1] << k_rx_le32_shift_1) |
+         ((uint32_t)buf[k_le32_byte_2] << k_rx_le32_shift_2) |
+         ((uint32_t)buf[k_le32_byte_3] << k_rx_le32_shift_3);
 }
 
 /* =============================================================================
@@ -293,8 +329,10 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec);
  * @return k_rx_err_protocol_error if SYNC word invalid
  * @return k_rx_err_crc_mismatch if CRC validation fails
  */
-rx_err_t
-rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len, rx_frame_t* frame);
+rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
+                         const uint8_t*            data,
+                         const uint32_t            data_len,
+                         rx_frame_t*               frame);
 
 /* =============================================================================
  * Frame Helper Functions

@@ -155,7 +155,7 @@ static inline volatile mock_system_regs_t* system_regs(void)
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint16_t {
   /* PIPECTR register bits */
   k_usb_pipectr_pid_mask  = 0x0003,    /**< Response PID mask */
   k_usb_pipectr_pid_nak   = 0x0000,    /**< NAK response */
@@ -165,16 +165,19 @@ typedef enum {
   k_usb_pipectr_bsts      = (1 << 15), /**< Buffer Status */
 
   /* INTSTS0 register bits */
-  k_usb_intsts0_ctsq_mask  = 0x0007,   /**< Control Transfer Stage mask */
-  k_usb_intsts0_dvsq_mask  = 0x0070,   /**< Device State mask */
-  k_usb_intsts0_dvsq_shift = 4,        /**< Device State bit shift */
+  k_usb_intsts0_ctsq_mask  = 0x0007, /**< Control Transfer Stage mask */
+  k_usb_ctsq_max_value     = 0x07,   /**< Maximum valid CTSQ value (3 bits) */
+  k_usb_intsts0_dvsq_mask  = 0x0070, /**< Device State mask */
+  k_usb_intsts0_dvsq_shift = 4,      /**< Device State bit shift */
+  k_usb_dvsq_max_value     = 0x07,   /**< Maximum valid DVSQ value (3 bits) */
 
   /* CFIFOCTR register bits */
-  k_usb_cfifoctr_dtln_mask = 0x01FF,   /**< Data Length mask */
-  k_usb_cfifoctr_frdy      = (1 << 13),/**< FIFO Ready flag */
+  k_usb_cfifoctr_dtln_mask = 0x01FF,    /**< Data Length mask */
+  k_usb_dtln_max_value     = 0x1FF,     /**< Maximum valid DTLN value (9 bits) */
+  k_usb_cfifoctr_frdy      = (1 << 13), /**< FIFO Ready flag */
 
   /* USB default values */
-  k_usb_dcpmaxp_default    = 64,       /**< Default max packet size for control endpoint */
+  k_usb_dcpmaxp_default = 64, /**< Default max packet size for control endpoint */
 } usb_register_bits_t;
 
 /* =============================================================================
@@ -200,14 +203,14 @@ void mock_usb0_set_intsts0(uint16_t value);
 /**
  * @brief Set device state (DVSQ field in INTSTS0)
  *
- * @param dvsq Device state value (0-4 shifted to bit position)
+ * @param dvsq Device state value (0-7)
  */
 void mock_usb0_set_dvsq(uint16_t dvsq);
 
 /**
  * @brief Set control transfer stage (CTSQ field in INTSTS0)
  *
- * @param ctsq Control stage value (0-6)
+ * @param ctsq Control stage value (0-7)
  */
 void mock_usb0_set_ctsq(uint16_t ctsq);
 

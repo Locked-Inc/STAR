@@ -42,7 +42,7 @@ extern "C" {
 /**
  * @brief MTU channel identifiers
  */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_channel_0 = 0,
   k_mtu_channel_1 = 1,
   k_mtu_channel_2 = 2,
@@ -55,7 +55,7 @@ typedef enum {
 /**
  * @brief MTU output channel (for complementary PWM)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_mtu_output_a = 0, /**< MTIOCA output */
   k_mtu_output_b = 1, /**< MTIOCB output */
   k_mtu_output_c = 2, /**< MTIOCC output */
@@ -133,7 +133,7 @@ rx_err_t rx_mtu_set_duty_raw(rx_mtu_channel_t channel, rx_mtu_output_t output, u
  * @param[out] duty_percent Pointer to store duty cycle in percent
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if duty_percent is NULL
+ * @return k_rx_err_null_ptr if duty_percent is NULL
  * @return k_rx_err_invalid_arg if channel or output is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
@@ -148,7 +148,7 @@ rx_err_t rx_mtu_get_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
  * @param[out] period_count Pointer to store period count
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if period_count is NULL
+ * @return k_rx_err_null_ptr if period_count is NULL
  * @return k_rx_err_invalid_arg if channel is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */

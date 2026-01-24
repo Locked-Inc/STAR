@@ -118,7 +118,7 @@ static void test_register_task_null_name(void)
 
   rx_iwdt_init(NULL);
   rx_err_t err = rx_iwdt_register_task(NULL, 1000);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_register_task_success(void)
@@ -162,7 +162,7 @@ static void test_heartbeat_null_name(void)
 
   rx_iwdt_init(NULL);
   rx_err_t err = rx_iwdt_task_heartbeat(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_heartbeat_unregistered_task(void)
@@ -228,7 +228,7 @@ static void test_get_status_null_pointer(void)
 
   rx_iwdt_init(NULL);
   rx_err_t err = rx_iwdt_get_status(NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 static void test_get_status_success(void)

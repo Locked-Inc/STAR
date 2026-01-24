@@ -23,11 +23,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "hardware_pinout.h"
 #include "rx_err.h"
 #include "rx_error_interface.h"
 #include "rx_gpio_constants.h"
 #include "rx_pin_interface.h"
+#include "rx_port_constants.h"
 #include "tx_api.h" /* ThreadX */
 
 #ifdef __cplusplus
@@ -42,7 +42,7 @@ extern "C" {
 /**
  * @brief Supported bus/protocol types
  */
-typedef enum {
+typedef enum : uint8_t {
   k_bus_type_gpio = 0, /**< GPIO (digital I/O) */
   k_bus_type_adc,      /**< ADC (analog input) */
   k_bus_type_i2c,      /**< I2C (RIIC peripheral) */
@@ -62,7 +62,7 @@ typedef enum {
  * @brief GPIO bus configuration
  */
 typedef struct {
-  gpio_pin_t pin; /**< GPIO pin (type-safe enum from hardware_pinout.h) */
+  rx_port_pin_t pin; /**< GPIO pin (rx_port_pin_t) */
 } rx_gpio_bus_config_t;
 
 /**
@@ -78,11 +78,11 @@ typedef struct {
  * @brief I2C bus configuration
  */
 typedef struct {
-  uint8_t    channel;      /**< RIIC channel (0-2) */
-  gpio_pin_t sda_pin;      /**< SDA pin (type-safe enum) */
-  gpio_pin_t scl_pin;      /**< SCL pin (type-safe enum) */
-  uint32_t   frequency_hz; /**< Clock frequency (100kHz, 400kHz, 1MHz) */
-  uint8_t    device_addr;  /**< 7-bit device address */
+  uint8_t       channel;      /**< RIIC channel (0-2) */
+  rx_port_pin_t sda_pin;      /**< SDA pin (type-safe enum) */
+  rx_port_pin_t scl_pin;      /**< SCL pin (type-safe enum) */
+  uint32_t      frequency_hz; /**< Clock frequency (100kHz, 400kHz, 1MHz) */
+  uint8_t       device_addr;  /**< 7-bit device address */
 } rx_i2c_bus_config_t;
 
 /**
@@ -97,30 +97,30 @@ typedef struct {
  * @brief SPI bus configuration
  */
 typedef struct {
-  uint8_t    channel;      /**< RSPI channel (0-2) */
-  gpio_pin_t copi_pin;     /**< COPI (MOSI) pin (type-safe enum) */
-  gpio_pin_t cipo_pin;     /**< CIPO (MISO) pin (type-safe enum) */
-  gpio_pin_t sck_pin;      /**< SCK pin (type-safe enum) */
-  gpio_pin_t cs_pin;       /**< CS pin (type-safe enum) */
-  uint32_t   frequency_hz; /**< SPI clock frequency */
-  uint8_t    mode;         /**< SPI mode (0-3) */
+  uint8_t       channel;      /**< RSPI channel (0-2) */
+  rx_port_pin_t copi_pin;     /**< COPI (MOSI) pin (type-safe enum) */
+  rx_port_pin_t cipo_pin;     /**< CIPO (MISO) pin (type-safe enum) */
+  rx_port_pin_t sck_pin;      /**< SCK pin (type-safe enum) */
+  rx_port_pin_t cs_pin;       /**< CS pin (type-safe enum) */
+  uint32_t      frequency_hz; /**< SPI clock frequency */
+  uint8_t       mode;         /**< SPI mode (0-3) */
 } rx_spi_bus_config_t;
 
 /**
  * @brief UART bus configuration
  */
 typedef struct {
-  uint8_t    channel;  /**< SCI channel (0-12) */
-  gpio_pin_t tx_pin;   /**< TX pin (type-safe enum) */
-  gpio_pin_t rx_pin;   /**< RX pin (type-safe enum) */
-  uint32_t   baudrate; /**< Baud rate (9600, 115200, etc.) */
+  uint8_t       channel;  /**< SCI channel (0-12) */
+  rx_port_pin_t tx_pin;   /**< TX pin (type-safe enum) */
+  rx_port_pin_t rx_pin;   /**< RX pin (type-safe enum) */
+  uint32_t      baudrate; /**< Baud rate (9600, 115200, etc.) */
 } rx_uart_bus_config_t;
 
 /**
  * @brief 1-Wire bus configuration
  */
 typedef struct {
-  gpio_pin_t pin; /**< 1-Wire data pin (type-safe enum) */
+  rx_port_pin_t pin; /**< 1-Wire data pin (type-safe enum) */
 } rx_onewire_bus_config_t;
 
 /* =============================================================================
@@ -131,42 +131,42 @@ typedef struct {
 /**
  * @brief RX72N RIIC channel count
  */
-typedef enum {
+typedef enum : uint8_t {
   k_riic_channel_count = 3, /**< RIIC channels 0-2 */
 } rx_riic_limits_t;
 
 /**
  * @brief RX72N RSPI channel count
  */
-typedef enum {
+typedef enum : uint8_t {
   k_rspi_channel_count = 3, /**< RSPI channels 0-2 */
 } rx_rspi_limits_t;
 
 /**
  * @brief RX72N ADC unit count
  */
-typedef enum {
+typedef enum : uint8_t {
   k_adc_unit_count = 2, /**< ADC units 0-1 */
 } rx_adc_limits_t;
 
 /**
  * @brief RX72N SCI channel count
  */
-typedef enum {
+typedef enum : uint8_t {
   k_sci_channel_count = 13, /**< SCI channels 0-12 */
 } rx_sci_limits_t;
 
 /**
  * @brief RX72N ADC channel limits
  */
-typedef enum {
+typedef enum : uint8_t {
   k_adc_channel_max = 7, /**< ADC channels 0-7 */
 } rx_adc_channel_limits_t;
 
 /**
  * @brief RX72N ADC resolution options
  */
-typedef enum {
+typedef enum : uint8_t {
   k_adc_resolution_8bit  = 8,  /**< 8-bit resolution */
   k_adc_resolution_10bit = 10, /**< 10-bit resolution */
   k_adc_resolution_12bit = 12, /**< 12-bit resolution */
@@ -175,27 +175,27 @@ typedef enum {
 /**
  * @brief I2C/SMBUS protocol constants
  */
-typedef enum {
-  k_i2c_write_bit        = 0,    /**< I2C write bit (R/W = 0) */
-  k_i2c_read_bit         = 1,    /**< I2C read bit (R/W = 1) */
-  k_i2c_addr_shift       = 1,    /**< Bit shift for 7-bit address */
-  k_i2c_addr_max_7bit    = 0x7F, /**< Maximum 7-bit I2C address (127) */
-  k_bits_per_byte        = 8,    /**< Bits per byte */
-  k_smbus_max_block_size = 32,   /**< SMBUS maximum block transfer size */
+typedef enum : uint8_t {
+  k_i2c_write_bit        = 0,   /**< I2C write bit (R/W = 0) */
+  k_i2c_read_bit         = 1,   /**< I2C read bit (R/W = 1) */
+  k_i2c_addr_shift       = 1,   /**< Bit shift for 7-bit address */
+  k_i2c_addr_max_7bit    = 127, /**< Maximum 7-bit I2C address (127) */
+  k_bits_per_byte        = 8,   /**< Bits per byte */
+  k_smbus_max_block_size = 32,  /**< SMBUS maximum block transfer size */
 } rx_i2c_constants_t;
 
 /**
  * @brief Bit manipulation masks
  */
-typedef enum {
-  k_byte_mask     = 0xFF, /**< Full byte mask (all 8 bits) */
-  k_byte_msb_mask = 0x80, /**< Most significant bit of a byte (bit 7) */
+typedef enum : uint8_t {
+  k_byte_mask     = 255, /**< Full byte mask (all 8 bits) */
+  k_byte_msb_mask = 128, /**< Most significant bit of a byte (bit 7) */
 } bit_masks_t;
 
 /**
  * @brief SMBUS buffer and transfer sizes
  */
-typedef enum {
+typedef enum : uint8_t {
   k_smbus_single_byte     = 1, /**< Single byte transfer size */
   k_smbus_byte_buf_size   = 2, /**< Byte operation buffer (data + PEC) */
   k_smbus_word_data_bytes = 2, /**< Word data size (LSB + MSB) */
@@ -205,7 +205,7 @@ typedef enum {
 /**
  * @brief SMBUS byte operation buffer indices (data + optional PEC)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_smbus_byte_data = 0, /**< Data byte index */
   k_smbus_byte_pec  = 1, /**< PEC (CRC-8) index */
 } smbus_byte_pec_idx_t;
@@ -213,7 +213,7 @@ typedef enum {
 /**
  * @brief SMBUS word operation buffer indices (LSB + MSB + optional PEC)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_smbus_word_lsb = 0, /**< Low byte (LSB) index */
   k_smbus_word_msb = 1, /**< High byte (MSB) index */
   k_smbus_word_pec = 2, /**< PEC (CRC-8) index */
@@ -259,7 +259,7 @@ typedef struct rx_bus_config {
 /**
  * @brief Maximum buses supported
  */
-typedef enum {
+typedef enum : uint8_t {
   k_max_buses        = 32, /**< Maximum number of buses */
   k_max_bus_name_len = 31, /**< Maximum bus name length (excl. null terminator) */
 } bus_manager_limits_t;
@@ -293,9 +293,12 @@ typedef struct {
 /**
  * @brief Bus manager configuration constants
  */
-typedef enum {
-  k_bus_manager_mutex_timeout_ms = 1000, /**< Default mutex timeout (ms) */
-} rx_bus_manager_config_t;
+/**
+ * @brief Default mutex timeout for bus operations
+ */
+typedef enum : uint16_t {
+  k_bus_manager_mutex_timeout_ms = 1000U, /**< Default mutex timeout in milliseconds */
+} bus_manager_timeout_t;
 
 #ifdef __cplusplus
 }

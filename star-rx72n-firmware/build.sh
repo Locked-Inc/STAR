@@ -11,7 +11,7 @@ docker run --rm -v "$(pwd):/work" -w /work rx72n-build bash -c "
     mkdir -p build
     cd build
     cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain-gnurx.cmake ..
-    make -j$(nproc)
+    make -j\${MAKE_JOBS:-\$(nproc)}
 "
 
 echo ""

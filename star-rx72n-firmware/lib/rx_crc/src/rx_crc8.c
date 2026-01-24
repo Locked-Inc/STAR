@@ -18,7 +18,7 @@
 /**
  * @brief Constants for the Maxim CRC-8 algorithm (LSB-first).
  */
-typedef enum {
+typedef enum : uint8_t {
   k_crc8_initial_value = 0x00,
   k_crc8_bit_mask      = 0x01,
   k_crc8_polynomial    = 0x8C, /**< Reflected form of x^8 + x^5 + x^4 + 1 */

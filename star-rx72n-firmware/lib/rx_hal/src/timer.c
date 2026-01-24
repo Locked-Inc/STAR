@@ -15,6 +15,7 @@
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+#include "rx_check.h"
 #include "tx_api.h"
 
 /* =============================================================================
@@ -33,28 +34,28 @@
  *         = (60,000,000 / 128 / 100) - 1
  *         = 4687
  */
-typedef enum {
+typedef enum : uint16_t {
   k_cmt0_compare_match = 4687, /**< Compare match value for 100 Hz */
   k_cmt0_irq_priority  = 3,    /**< Interrupt priority (0-15, higher = more urgent) */
 } cmt0_config_t;
 
 /** @brief CMT0 register configuration values */
-typedef enum {
+typedef enum : uint16_t {
   k_cmt0_cmcr_config = 0x0042, /**< CMCR: CKS[1:0]=10 (PCLK/128), CMIE=1 (interrupt enable) */
 } cmt0_cmcr_values_t;
 
 /** @brief CMSTR0 register bit positions */
-typedef enum {
+typedef enum : uint8_t {
   k_cmt0_cmstr_start_bit = 0x01, /**< CMT0 start bit in CMSTR0 */
 } cmt0_cmstr_bits_t;
 
 /** @brief ICU IER register calculation constants */
-typedef enum {
-  k_cmt0_ier_bits_per_reg = 8, /**< Bits per IER register */
+typedef enum : uint8_t {
+  k_ier_bit_enable_base = 1, /**< Base value for IER bit enable shift */
 } cmt0_ier_constants_t;
 
 /** @brief Timer counter initial value */
-typedef enum {
+typedef enum : uint16_t {
   k_cmt0_counter_init = 0, /**< Counter initial/clear value */
 } cmt0_counter_values_t;
 
@@ -67,6 +68,13 @@ extern void _tx_timer_interrupt(void);
  */
 
 /**
+ * @brief ICU interrupt request flag values
+ */
+typedef enum : uint8_t {
+  k_icu_ir_clear = 0, /**< Clear ICU IR flag */
+} icu_ir_values_t;
+
+/**
  * @brief CMT0 compare match interrupt handler
  *
  * This is called 100 times per second and drives the ThreadX scheduler.
@@ -75,8 +83,8 @@ extern void _tx_timer_interrupt(void);
  */
 void cmt0_isr(void)
 {
-  /* Clear interrupt flag (write 0 to BSR bit) */
-  (void)cmt0()->cmcr; /* Read to clear interrupt flag */
+  /* Clear ICU interrupt request flag */
+  icu()->ir[k_vect_cmt0_cmi0] = k_icu_ir_clear;
 
   /* Call ThreadX timer interrupt handler */
   _tx_timer_interrupt();
@@ -102,6 +110,10 @@ void cmt0_isr(void)
  */
 rx_err_t timer_init(void)
 {
+  if (cmt_ctrl() == NULL || cmt0() == NULL) {
+    return k_rx_err_invalid_state;
+  }
+
   rx_log_info("TIMER", "Initializing CMT0 for ThreadX tick");
 
   /* Stop CMT0 if running */
@@ -120,19 +132,25 @@ rx_err_t timer_init(void)
 
   /* Configure interrupt controller (ICU) */
   /* Clear any pending interrupt */
-  icu()->ir[k_vect_cmt0_cmi0] = k_cmt0_counter_init;
+  icu()->ir[k_vect_cmt0_cmi0] = k_icu_ir_clear;
 
   /* Set interrupt priority (3 out of 15) */
   icu()->ipr[k_vect_cmt0_cmi0] = k_cmt0_irq_priority;
 
   /* Enable CMT0 interrupt in ICU */
-  icu()->ier[k_vect_cmt0_cmi0 / k_cmt0_ier_bits_per_reg] |=
-    (1 << (k_vect_cmt0_cmi0 % k_cmt0_ier_bits_per_reg));
+  icu()->ier[k_vect_cmt0_cmi0 / k_icu_ier_bits_per_reg] |=
+    (k_ier_bit_enable_base << (k_vect_cmt0_cmi0 % k_icu_ier_bits_per_reg));
 
   /* Start CMT0 */
   cmt_ctrl()->cmstr0 |= k_cmt0_cmstr_start_bit;
 
+  if ((cmt_ctrl()->cmstr0 & k_cmt0_cmstr_start_bit) == 0) {
+    return k_rx_err_hw_error;
+  }
+
   /* Enable interrupts globally (set I flag in PSW) */
+  /* Enable interrupts globally via PSW I-flag
+   * Note: Direct assembly required as RX GCC has no built-in for PSW manipulation */
   __asm__ volatile("setpsw i");
 
   rx_log_info("TIMER", "CMT0 initialized successfully");
@@ -147,10 +165,22 @@ rx_err_t timer_init(void)
  */
 rx_err_t timer_stop(void)
 {
+  if (cmt_ctrl() == NULL) {
+    return k_rx_err_hw_unmapped;
+  }
+
+  if ((cmt_ctrl()->cmstr0 & k_cmt0_cmstr_start_bit) == 0) {
+    return k_rx_err_invalid_state;
+  }
+
   rx_log_info("TIMER", "Stopping CMT0");
 
   /* Stop CMT0 */
   cmt_ctrl()->cmstr0 &= ~k_cmt0_cmstr_start_bit;
+
+  if ((cmt_ctrl()->cmstr0 & k_cmt0_cmstr_start_bit) != 0) {
+    return k_rx_err_hw_error;
+  }
 
   return k_rx_ok;
 }
@@ -161,13 +191,22 @@ rx_err_t timer_stop(void)
  * @param[out] count Pointer to store counter value
  *
  * @return k_rx_ok on success,
- *         k_rx_err_null_pointer if count is NULL
+ *         k_rx_err_null_ptr if count is NULL
  */
 rx_err_t timer_get_count(uint16_t* count)
 {
   RX_CHECK_NULL_PTR(count, "TIMER", "Count pointer is NULL");
 
+  if (cmt0() == NULL) {
+    rx_log_error("TIMER", "CMT0 register block is NULL");
+    return k_rx_err_hw_unmapped;
+  }
+
   *count = cmt0()->cmcnt;
+
+  if (*count > k_cmt0_compare_match) {
+    return k_rx_err_hw_error;
+  }
 
   return k_rx_ok;
 }

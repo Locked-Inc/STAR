@@ -38,7 +38,7 @@ static const char* s_tag = "PID";
  *
  * @return Clamped value
  */
-static inline float internal_clamp(float value, float min, float max)
+static inline float internal_clamp(const float value, const float min, const float max)
 {
   if (value < min) {
     return min;
@@ -112,8 +112,11 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
   return k_rx_ok;
 }
 
-rx_err_t
-rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt, float* output)
+rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
+                        const float      setpoint,
+                        const float      measured,
+                        const float      dt,
+                        float*           output)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
   RX_CHECK_NULL_PTR(output, s_tag, "output pointer is NULL");
@@ -129,22 +132,22 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
   }
 
   /* Calculate error */
-  float error = setpoint - measured;
+  const float error = setpoint - measured;
 
   /* Proportional term */
-  float p_term = handle->kp * error;
+  const float p_term = handle->kp * error;
 
   /* Integral term with anti-windup */
   handle->integral += error * dt;
-  handle->integral = internal_clamp(handle->integral, handle->integral_min, handle->integral_max);
-  float i_term     = handle->ki * handle->integral;
+  handle->integral   = internal_clamp(handle->integral, handle->integral_min, handle->integral_max);
+  const float i_term = handle->ki * handle->integral;
 
   /* Derivative term */
-  float derivative = (error - handle->prev_error) / dt;
-  float d_term     = handle->kd * derivative;
+  const float derivative = (error - handle->prev_error) / dt;
+  const float d_term     = handle->kd * derivative;
 
   /* Compute total output */
-  float raw_output = p_term + i_term + d_term;
+  const float raw_output = p_term + i_term + d_term;
 
   /* Clamp output to limits */
   *output = internal_clamp(raw_output, handle->output_min, handle->output_max);
@@ -191,7 +194,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
   return k_rx_ok;
 }
 
-rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, float kp, float ki, float kd)
+rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float ki, const float kd)
 {
   /* Pre-condition 1: NULL pointer check */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
@@ -229,7 +232,8 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, float kp, float ki, float kd)
   return k_rx_ok;
 }
 
-rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle, float output_min, float output_max)
+rx_err_t
+rx_pid_set_output_limits(rx_pid_handle_t* handle, const float output_min, const float output_max)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
@@ -251,7 +255,9 @@ rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle, float output_min, flo
   return k_rx_ok;
 }
 
-rx_err_t rx_pid_set_integral_limits(rx_pid_handle_t* handle, float integral_min, float integral_max)
+rx_err_t rx_pid_set_integral_limits(rx_pid_handle_t* handle,
+                                    const float      integral_min,
+                                    const float      integral_max)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 

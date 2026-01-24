@@ -14,7 +14,6 @@
 
 #include <string.h>
 
-#include "hardware_pinout.h"
 #include "mock_rx_crc.h"
 #include "mock_rx_gpio.h"
 #include "mock_rx_onewire_hw.h"
@@ -32,7 +31,7 @@
 /**
  * @brief Test constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_test_rom_bytes          = 8, /**< OneWire ROM size in bytes */
   k_test_max_search_devices = 4, /**< Max devices for search tests */
 } test_constants_t;
@@ -52,7 +51,7 @@ static rx_bus_config_t s_onewire_config;
 static const char* s_test_bus_name = "test_onewire";
 
 /** @brief Test GPIO pin for OneWire */
-static const gpio_pin_t s_test_pin = k_gpio_p05; /* Standard temp sensor pin */
+static const rx_port_pin_t s_test_pin = k_rx_p0_5; /* Standard temp sensor pin */
 
 /**
  * @brief Set up test fixtures before each test
@@ -114,7 +113,7 @@ void test_rx_bus_onewire_init_success(void)
 void test_rx_bus_onewire_init_null_manager(void)
 {
   rx_err_t err = rx_bus_onewire_init(NULL, s_test_bus_name);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -123,7 +122,7 @@ void test_rx_bus_onewire_init_null_manager(void)
 void test_rx_bus_onewire_init_null_bus_name(void)
 {
   rx_err_t err = rx_bus_onewire_init(&s_test_manager, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -142,7 +141,7 @@ void test_rx_bus_onewire_init_wrong_bus_type(void)
 {
   /* Create a GPIO bus (not OneWire) */
   static rx_bus_config_t gpio_config;
-  rx_err_t               err = rx_bus_config_init_gpio(&gpio_config, "gpio_bus", k_gpio_pc6);
+  rx_err_t               err = rx_bus_config_init_gpio(&gpio_config, "gpio_bus", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, &gpio_config);
@@ -214,7 +213,7 @@ void test_rx_bus_onewire_reset_null_presence(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_onewire_reset(&s_test_manager, s_test_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -235,7 +234,7 @@ void test_rx_bus_onewire_reset_null_manager(void)
 {
   bool     presence = false;
   rx_err_t err      = rx_bus_onewire_reset(NULL, s_test_bus_name, &presence);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -291,7 +290,7 @@ void test_rx_bus_onewire_write_bit_not_initialized(void)
 void test_rx_bus_onewire_write_bit_null_manager(void)
 {
   rx_err_t err = rx_bus_onewire_write_bit(NULL, s_test_bus_name, true);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -337,7 +336,7 @@ void test_rx_bus_onewire_read_bit_null_output(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_onewire_read_bit(&s_test_manager, s_test_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -387,7 +386,7 @@ void test_rx_bus_onewire_write_byte_not_initialized(void)
 void test_rx_bus_onewire_write_byte_null_manager(void)
 {
   rx_err_t err = rx_bus_onewire_write_byte(NULL, s_test_bus_name, 0x00);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -433,7 +432,7 @@ void test_rx_bus_onewire_read_byte_null_output(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_onewire_read_byte(&s_test_manager, s_test_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -486,7 +485,7 @@ void test_rx_bus_onewire_write_buffer_null_data(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_onewire_write(&s_test_manager, s_test_bus_name, NULL, 5);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -540,7 +539,7 @@ void test_rx_bus_onewire_read_buffer_null_data(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_onewire_read(&s_test_manager, s_test_bus_name, NULL, 5);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -594,7 +593,7 @@ void test_rx_bus_onewire_skip_rom_no_device(void)
 void test_rx_bus_onewire_skip_rom_null_manager(void)
 {
   rx_err_t err = rx_bus_onewire_skip_rom(NULL, s_test_bus_name);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -652,7 +651,7 @@ void test_rx_bus_onewire_match_rom_null_rom(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_onewire_match_rom(&s_test_manager, s_test_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -695,7 +694,7 @@ void test_rx_bus_onewire_read_rom_null_rom(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_onewire_read_rom(&s_test_manager, s_test_bus_name, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -715,7 +714,7 @@ void test_rx_bus_onewire_read_rom_null_manager(void)
 {
   uint8_t  rom[k_test_rom_bytes] = {0};
   rx_err_t err                   = rx_bus_onewire_read_rom(NULL, s_test_bus_name, rom);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -777,7 +776,7 @@ void test_rx_bus_onewire_search_null_roms(void)
                               NULL,
                               k_test_max_search_devices,
                               &num_devices);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -791,7 +790,7 @@ void test_rx_bus_onewire_search_null_num_devices(void)
   uint8_t roms[k_test_max_search_devices * k_test_rom_bytes];
   err =
     rx_bus_onewire_search(&s_test_manager, s_test_bus_name, roms, k_test_max_search_devices, NULL);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /**
@@ -820,7 +819,7 @@ void test_rx_bus_onewire_search_null_manager(void)
 
   rx_err_t err =
     rx_bus_onewire_search(NULL, s_test_bus_name, roms, k_test_max_search_devices, &num_devices);
-  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================

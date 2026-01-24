@@ -41,7 +41,7 @@ typedef mock_system_regs_t rx_system_regs_t;
  * =============================================================================
  */
 
-typedef enum {
+typedef enum : uint8_t {
   k_mstpb_usb0 = 19, /**< USB0 module stop bit in MSTPCRB */
   k_mstpb_crc  = 23, /**< CRC module stop bit in MSTPCRB */
 } rx_module_stop_bits_t;

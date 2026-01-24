@@ -51,14 +51,14 @@ extern "C" {
 /**
  * @brief BQ4050 I2C address (7-bit)
  */
-typedef enum {
+typedef enum : uint8_t {
   k_bq4050_i2c_addr = 0x0B, /**< BQ4050 default I2C address */
 } bq4050_i2c_constants_t;
 
 /**
  * @brief BQ4050 cell configuration
  */
-typedef enum {
+typedef enum : uint8_t {
   k_bq4050_max_cells = 4, /**< Maximum number of battery cells (1-4 series) */
 } bq4050_cell_constants_t;
 
@@ -120,7 +120,7 @@ typedef struct {
  * @param[in] config BQ4050 configuration (optional, can be NULL for defaults)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_null_ptr if manager or bus_name is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBus timeout
@@ -139,7 +139,7 @@ rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_
  * @param[out] voltage_mv Pointer to store voltage in millivolts
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or voltage_mv is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or voltage_mv is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBus timeout
@@ -160,7 +160,7 @@ rx_bq4050_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t
  * @param[in] num_cells Number of cells to read (1-4)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or cell_voltages is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or cell_voltages is NULL
  * @return k_rx_err_invalid_arg if num_cells > k_bq4050_max_cells
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
@@ -184,7 +184,7 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
  *                        (+ = charging, - = discharging)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or current_ma is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or current_ma is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBus timeout
@@ -203,7 +203,7 @@ rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t*
  * @param[out] avg_current_ma Pointer to store average current in milliamps
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or avg_current_ma is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or avg_current_ma is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBus timeout
@@ -224,7 +224,7 @@ rx_err_t rx_bq4050_read_average_current(rx_bus_manager_t* manager,
  * @param[out] soc_percent Pointer to store state of charge (0-100%)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or soc_percent is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or soc_percent is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBus timeout
@@ -244,7 +244,7 @@ rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  * @param[out] soc_percent Pointer to store absolute SOC (0-100%)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or soc_percent is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or soc_percent is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBus timeout
@@ -264,7 +264,7 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  * @param[out] temperature_c Pointer to store temperature in degrees Celsius
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or temperature_c is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or temperature_c is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBus timeout
@@ -285,7 +285,7 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
  * @param[out] full_mah Pointer to store full charge capacity (mAh)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if any pointer is NULL
+ * @return k_rx_err_null_ptr if any pointer is NULL
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if SMBus timeout
@@ -308,7 +308,7 @@ rx_err_t rx_bq4050_read_capacity(rx_bus_manager_t* manager,
  * @param[in] num_cells Number of cells to read (1-4)
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if manager, bus_name, or status is NULL
+ * @return k_rx_err_null_ptr if manager, bus_name, or status is NULL
  * @return k_rx_err_invalid_arg if num_cells > k_bq4050_max_cells
  * @return k_rx_err_not_found if bus not found
  * @return k_rx_err_invalid_state if bus not initialized

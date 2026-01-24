@@ -15,8 +15,6 @@
 
 #include "rx_bus_manager.h"
 
-static const char* s_tag = "MOCK_BUS_MGR";
-
 /* =============================================================================
  * Public API Implementation
  * =============================================================================
@@ -28,7 +26,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
                              rx_pin_interface_t*   pin_iface)
 {
   if (manager == NULL || tag == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Clear manager state */
@@ -52,7 +50,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
 rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
 {
   if (manager == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Clear all state */
@@ -66,7 +64,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
 rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_config)
 {
   if (manager == NULL || bus_config == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (bus_config->name == NULL || bus_config->name[0] == '\0') {
@@ -98,7 +96,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
 rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
 {
   if (manager == NULL || name == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   rx_bus_config_t** pp = &manager->buses;
@@ -120,7 +118,7 @@ rx_err_t
 rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_config_t** bus_config)
 {
   if (manager == NULL || name == NULL || bus_config == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   rx_bus_config_t* current = manager->buses;
@@ -141,7 +139,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
                                  void*             user_ctx)
 {
   if (manager == NULL || name == NULL || callback == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Find the bus */
@@ -168,11 +166,11 @@ rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
                                         rx_bus_command_t* command)
 {
   if (manager == NULL || name == NULL || command == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (command->execute == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   /* Find the bus */

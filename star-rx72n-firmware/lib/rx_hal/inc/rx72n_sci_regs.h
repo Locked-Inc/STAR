@@ -27,7 +27,7 @@ extern "C" {
  */
 
 /** @brief SCI base addresses (verified against RX72N Hardware Manual) */
-typedef enum {
+typedef enum : uint32_t {
   k_sci0_base_addr  = 0x0008A000, /**< SCI0 register base address */
   k_sci1_base_addr  = 0x0008A020, /**< SCI1 register base address */
   k_sci2_base_addr  = 0x0008A040, /**< SCI2 register base address */
@@ -202,7 +202,7 @@ static inline volatile rx_sci_regs_t* sci12(void)
 /**
  * @brief SCI channel count
  */
-typedef enum {
+typedef enum : uint8_t {
   k_sci_channel_max = 13, /**< Total SCI channels (0-12) */
 } sci_channel_limits_t;
 

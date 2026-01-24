@@ -71,7 +71,7 @@ extern "C" {
  * Based on the 120 kHz internal IWDT clock (IWDTCLK) with various
  * cycle counts and divisors.
  */
-typedef enum {
+typedef enum : uint16_t {
   k_iwdt_timeout_128ms   = 128,   /**< Minimum timeout */
   k_iwdt_timeout_512ms   = 512,   /**< Short timeout */
   k_iwdt_timeout_1000ms  = 1000,  /**< Default timeout (1 second) */
@@ -83,7 +83,7 @@ typedef enum {
 /**
  * @brief IWDT reset cause information
  */
-typedef enum {
+typedef enum : uint8_t {
   k_iwdt_reset_none          = 0, /**< No watchdog reset occurred */
   k_iwdt_reset_underflow     = 1, /**< Reset due to counter underflow */
   k_iwdt_reset_refresh_error = 2, /**< Reset due to invalid refresh */
@@ -207,7 +207,7 @@ void rx_iwdt_clear_status(void);
 /**
  * @brief Maximum number of tasks that can be monitored
  */
-typedef enum {
+typedef enum : uint8_t {
   k_iwdt_max_tasks = 8, /**< Support up to 8 monitored tasks */
 } rx_iwdt_limits_t;
 

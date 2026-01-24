@@ -208,7 +208,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 
   /* Validate inputs */
   if (task_name == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_iwdt_state.initialized) {
@@ -256,7 +256,7 @@ rx_err_t rx_iwdt_task_heartbeat(const char* task_name)
 
   /* Validate inputs */
   if (task_name == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_iwdt_state.initialized) {
@@ -276,7 +276,7 @@ rx_err_t rx_iwdt_task_heartbeat(const char* task_name)
   return k_rx_ok;
 }
 
-rx_err_t rx_iwdt_set_timeout_for_state(system_state_t state, uint32_t timeout_ms)
+rx_err_t rx_iwdt_set_timeout_for_state(const system_state_t state, const uint32_t timeout_ms)
 {
   /* Validate inputs */
   if (state >= k_system_state_count) {
@@ -302,7 +302,7 @@ rx_err_t rx_iwdt_set_timeout_for_state(system_state_t state, uint32_t timeout_ms
   return k_rx_ok;
 }
 
-rx_err_t rx_iwdt_set_state(system_state_t state)
+rx_err_t rx_iwdt_set_state(const system_state_t state)
 {
   /* Validate inputs */
   if (state >= k_system_state_count) {
@@ -329,7 +329,7 @@ rx_err_t rx_iwdt_get_status(rx_iwdt_status_t* status)
 {
   /* Validate inputs */
   if (status == NULL) {
-    return k_rx_err_null_pointer;
+    return k_rx_err_null_ptr;
   }
 
   if (!s_iwdt_state.initialized) {
@@ -358,6 +358,11 @@ bool rx_iwdt_was_reset(void)
 
 rx_err_t rx_iwdt_check_tasks(void)
 {
+  uint32_t current_tick;
+  uint32_t elapsed_ticks;
+  uint32_t timeout_in_ticks;
+  bool     any_timeout = false;
+
   if (!s_iwdt_state.initialized) {
     return k_rx_err_not_initialized;
   }
@@ -366,8 +371,7 @@ rx_err_t rx_iwdt_check_tasks(void)
     return k_rx_ok;
   }
 
-  uint32_t current_tick = internal_get_tick_count();
-  bool     any_timeout  = false;
+  current_tick = internal_get_tick_count();
 
   /* Check each registered task */
   for (uint32_t i = 0; i < k_iwdt_max_tasks; i++) {
@@ -376,8 +380,8 @@ rx_err_t rx_iwdt_check_tasks(void)
     }
 
     /* Calculate elapsed time */
-    uint32_t elapsed_ticks = current_tick - s_iwdt_state.tasks[i].last_heartbeat_tick;
-    uint32_t timeout_in_ticks =
+    elapsed_ticks = current_tick - s_iwdt_state.tasks[i].last_heartbeat_tick;
+    timeout_in_ticks =
       (s_iwdt_state.tasks[i].timeout_ms * TX_TIMER_TICKS_PER_SECOND) / k_ms_per_second;
 
     /* Check for timeout */

@@ -29,6 +29,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hardware.h"
 #include "rx_err.h"
 
 #ifdef __cplusplus
@@ -41,7 +42,7 @@ extern "C" {
  */
 
 /** @brief Mock UART constants */
-typedef enum {
+typedef enum : uint16_t {
   k_mock_uart_fifo_size       = 256, /**< Size of TX/RX FIFO per channel */
   k_mock_uart_channel_count   = 13,  /**< Number of UART channels (0-12) */
   k_mock_uart_call_history_sz = 64,  /**< Size of call history buffer */
@@ -53,7 +54,7 @@ typedef enum {
  */
 
 /** @brief UART HAL function call types (for call history) */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_uart_call_init,
   k_mock_uart_call_deinit,
   k_mock_uart_call_putc,
@@ -259,12 +260,7 @@ uint32_t mock_uart_hw_get_baudrate(uint8_t channel);
  * =============================================================================
  */
 
-rx_err_t uart_init_channel(uint8_t  channel,
-                           uint32_t baudrate,
-                           uint8_t  tx_port,
-                           uint8_t  tx_pin,
-                           uint8_t  rx_port,
-                           uint8_t  rx_pin);
+rx_err_t uart_init_channel(const uart_channel_config_t* config);
 rx_err_t uart_deinit_channel(uint8_t channel);
 rx_err_t uart_putc_channel(uint8_t channel, char data);
 rx_err_t uart_puts_channel(uint8_t channel, const char* str);

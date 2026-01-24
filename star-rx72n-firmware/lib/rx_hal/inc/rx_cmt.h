@@ -45,7 +45,7 @@ extern "C" {
 /**
  * @brief CMT channel identifiers
  */
-typedef enum {
+typedef enum : uint8_t {
   k_cmt_channel_0 = 0, /**< CMT0 (used by ThreadX) */
   k_cmt_channel_1 = 1, /**< CMT1 (motor control) */
   k_cmt_channel_2 = 2, /**< CMT2 (available) */
@@ -84,7 +84,7 @@ typedef struct {
  * @param[in] config CMT configuration
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if config is NULL
+ * @return k_rx_err_null_ptr if config is NULL
  * @return k_rx_err_invalid_arg if channel, frequency, or priority is invalid
  * @return k_rx_err_conflict if channel is CMT0 (reserved)
  */
@@ -124,7 +124,7 @@ rx_err_t rx_cmt_stop(rx_cmt_channel_t channel);
  * @param[out] count Pointer to store counter value
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_pointer if count is NULL
+ * @return k_rx_err_null_ptr if count is NULL
  * @return k_rx_err_invalid_arg if channel is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */

@@ -24,10 +24,10 @@
 
 #include <stddef.h>
 
-#include "hardware_pinout.h"
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
+#include "rx_port_constants.h"
 
 static const char* s_tag = "MPC";
 
@@ -37,36 +37,37 @@ static const char* s_tag = "MPC";
  */
 
 /** @brief MPC pin validation constants */
-typedef enum {
-  k_mpc_max_pin = 7, /**< Maximum valid pin number (pins 0-7) */
+typedef enum : uint8_t {
+  k_mpc_min_pin = 0,             /**< Minimum valid pin number */
+  k_mpc_max_pin = k_rx_pin_max, /**< Maximum valid pin number */
 } mpc_pin_constants_t;
 
 /** @brief MPC PFS register address offset */
-typedef enum {
-  k_mpc_pfs_base_offset = 0x21, /**< Offset from MPC_BASE to P00PFS register */
+typedef enum : uint8_t {
+  k_mpc_pfs_base_offset = 33, /**< Offset from MPC_BASE to P00PFS register */
 } mpc_pfs_offset_t;
 
 /** @brief MPC port number constants */
-typedef enum {
-  k_mpc_port_0 = 0,    /**< Port 0 */
-  k_mpc_port_1 = 1,    /**< Port 1 */
-  k_mpc_port_2 = 2,    /**< Port 2 */
-  k_mpc_port_3 = 3,    /**< Port 3 */
-  k_mpc_port_4 = 4,    /**< Port 4 */
-  k_mpc_port_5 = 5,    /**< Port 5 */
-  k_mpc_port_6 = 6,    /**< Port 6 */
-  k_mpc_port_7 = 7,    /**< Port 7 */
-  k_mpc_port_8 = 8,    /**< Port 8 */
-  k_mpc_port_9 = 9,    /**< Port 9 */
-  k_mpc_port_a = 0x0A, /**< Port A */
-  k_mpc_port_b = 0x0B, /**< Port B */
-  k_mpc_port_c = 0x0C, /**< Port C */
-  k_mpc_port_d = 0x0D, /**< Port D */
-  k_mpc_port_e = 0x0E, /**< Port E */
-  k_mpc_port_f = 0x0F, /**< Port F */
-  k_mpc_port_g = 0x10, /**< Port G */
-  k_mpc_port_h = 0x11, /**< Port H */
-  k_mpc_port_j = 0x12, /**< Port J */
+typedef enum : uint8_t {
+  k_mpc_port_start = k_rx_port_0, /**< First valid port */
+  k_mpc_port_0     = k_rx_port_0, /**< Port 0 */
+  k_mpc_port_1 = k_rx_port_1, /**< Port 1 */
+  k_mpc_port_2 = k_rx_port_2, /**< Port 2 */
+  k_mpc_port_3 = k_rx_port_3, /**< Port 3 */
+  k_mpc_port_4 = k_rx_port_4, /**< Port 4 */
+  k_mpc_port_5 = k_rx_port_5, /**< Port 5 */
+  k_mpc_port_6 = k_rx_port_6, /**< Port 6 */
+  k_mpc_port_7 = k_rx_port_7, /**< Port 7 */
+  k_mpc_port_8 = k_rx_port_8, /**< Port 8 */
+  k_mpc_port_9 = k_rx_port_9, /**< Port 9 */
+  k_mpc_port_a = k_rx_port_a, /**< Port A */
+  k_mpc_port_b = k_rx_port_b, /**< Port B */
+  k_mpc_port_c = k_rx_port_c, /**< Port C */
+  k_mpc_port_d = k_rx_port_d, /**< Port D */
+  k_mpc_port_e = k_rx_port_e, /**< Port E */
+  k_mpc_port_f = k_rx_port_f, /**< Port F */
+  k_mpc_port_g = k_rx_port_g, /**< Port G */
+  k_mpc_port_j = k_rx_port_j, /**< Port J */
 } mpc_port_number_t;
 
 /** @brief MPC PFS port offset values
@@ -74,7 +75,7 @@ typedef enum {
  * PFS registers are contiguous in memory. Each port has 8 register slots,
  * even if not all pins are physically present.
  */
-typedef enum {
+typedef enum : uint16_t {
   k_mpc_port0_offset = 0,   /**< Port 0 offset (P00-P07 = 8 pins) */
   k_mpc_port1_offset = 8,   /**< Port 1 offset (P10-P17 = 8 pins) */
   k_mpc_port2_offset = 16,  /**< Port 2 offset (P20-P27 = 8 pins) */
@@ -97,18 +98,18 @@ typedef enum {
 } mpc_port_offset_t;
 
 /** @brief MPC PSEL maximum value */
-typedef enum {
-  k_mpc_psel_max = 0x1F, /**< Maximum valid PSEL value (5 bits) */
+typedef enum : uint8_t {
+  k_mpc_psel_max = 31, /**< Maximum valid PSEL value (5 bits) */
 } mpc_psel_constants_t;
 
 /** @brief MPC PFS register GPIO mode value */
-typedef enum {
-  k_mpc_pfs_gpio = 0x00, /**< GPIO mode: PSEL = 0, ISEL = 0, ASEL = 0 */
+typedef enum : uint8_t {
+  k_mpc_pfs_gpio = 0, /**< GPIO mode: PSEL = 0, ISEL = 0, ASEL = 0 */
 } mpc_pfs_gpio_t;
 
 /** @brief MPC PWPR register clear value */
-typedef enum {
-  k_mpc_pwpr_clear = 0x00, /**< Clear PWPR register */
+typedef enum : uint8_t {
+  k_mpc_pwpr_clear = 0, /**< Clear PWPR register */
 } mpc_pwpr_t;
 
 /* =============================================================================
@@ -124,7 +125,7 @@ typedef enum {
  *
  * @return Pointer to PFS register, or NULL if invalid
  */
-static volatile uint8_t* internal_get_pfs_register(uint8_t port, uint8_t pin)
+static volatile uint8_t* internal_get_pfs_register(const uint8_t port, uint8_t pin)
 {
   /* Validate pin number */
   if (pin > k_mpc_max_pin) {
@@ -188,7 +189,6 @@ static volatile uint8_t* internal_get_pfs_register(uint8_t port, uint8_t pin)
       break;
     case k_mpc_port_f:
     case k_mpc_port_g:
-    case k_mpc_port_h:
       /* Ports F, G, H not available on 100-pin LFQFP package */
       rx_log_error(s_tag, "Port not available on this package");
       return NULL;
@@ -238,7 +238,7 @@ static void internal_mpc_lock(void)
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t internal_write_pfs(uint8_t port, uint8_t pin, uint8_t value)
+static rx_err_t internal_write_pfs(const uint8_t port, uint8_t pin, uint8_t value)
 {
   volatile uint8_t* pfs_reg = internal_get_pfs_register(port, pin);
   if (pfs_reg == NULL) {
@@ -258,42 +258,62 @@ static rx_err_t internal_write_pfs(uint8_t port, uint8_t pin, uint8_t value)
  * =============================================================================
  */
 
-rx_err_t rx_mpc_set_gpio(gpio_pin_t pin)
+rx_err_t rx_mpc_set_gpio(const rx_port_pin_t pin)
 {
-  /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  /* Extract port and pin number from rx_port_pin_t */
+  const uint8_t port    = rx_port_from_pin(pin);
+  const uint8_t pin_num = rx_pin_from_pin(pin);
+
+  /* Pre-condition: port and pin must be in valid range */
+  RX_CHECK_RANGE_TAG(port, k_mpc_port_start, k_mpc_port_j, k_rx_err_invalid_arg, s_tag);
+  RX_CHECK_RANGE_TAG(pin_num, k_mpc_min_pin, k_mpc_max_pin, k_rx_err_invalid_arg, s_tag);
 
   /* GPIO mode: PSEL = 0, ISEL = 0, ASEL = 0 */
   return internal_write_pfs(port, pin_num, k_mpc_pfs_gpio);
 }
 
-rx_err_t rx_mpc_set_peripheral(gpio_pin_t pin, uint8_t psel)
+rx_err_t rx_mpc_set_peripheral(const rx_mpc_peripheral_config_t* config)
 {
-  if (psel > k_mpc_psel_max) {
-    rx_log_error(s_tag, "Error occurred");
+  if (config == NULL) {
+    rx_log_error(s_tag, "Invalid configuration pointer");
     return k_rx_err_invalid_arg;
   }
 
-  /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  if (config->psel > k_mpc_psel_max) {
+    rx_log_error(s_tag, "Invalid PSEL value exceeds maximum");
+    rx_log_error_val(s_tag, "  psel=", config->psel);
+    rx_log_error_val(s_tag, "  k_mpc_psel_max=", (uint8_t)k_mpc_psel_max);
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Extract port and pin number from rx_port_pin_t */
+  const uint8_t port    = rx_port_from_pin(config->pin);
+  const uint8_t pin_num = rx_pin_from_pin(config->pin);
+
+  /* Validate the decoded port and pin are in valid range */
+  if (port > k_mpc_port_j || pin_num > k_mpc_max_pin) {
+    rx_log_error(s_tag, "Invalid port or pin number");
+    rx_log_error_val(s_tag, "  port=", port);
+    rx_log_error_val(s_tag, "  pin=", pin_num);
+    return k_rx_err_invalid_arg;
+  }
 
   /* Peripheral mode: PSEL = specified, ISEL = 0, ASEL = 0 */
-  return internal_write_pfs(port, pin_num, psel);
+  return internal_write_pfs(port, pin_num, config->psel);
 }
 
-rx_err_t rx_mpc_set_mtu_pwm(gpio_pin_t pin)
+rx_err_t rx_mpc_set_mtu_pwm(const rx_port_pin_t pin)
 {
   /* MTU PWM (MTIOC) pins typically use PSEL = 0x01
    * Common pins:
    * - P14-P17: MTU3 MTIOCA/B/C/D
    * - P24-P27: MTU4 MTIOCA/B/C/D
    */
-  return rx_mpc_set_peripheral(pin, k_psel_mtu_ioc);
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_ioc};
+  return rx_mpc_set_peripheral(&config);
 }
 
-rx_err_t rx_mpc_set_mtu_encoder(gpio_pin_t pin)
+rx_err_t rx_mpc_set_mtu_encoder(const rx_port_pin_t pin)
 {
   /* MTU encoder (MTCLK) pins typically use PSEL = 0x02 or 0x03
    * Common pins:
@@ -302,14 +322,21 @@ rx_err_t rx_mpc_set_mtu_encoder(gpio_pin_t pin)
    *
    * For phase counting mode, use PSEL = 0x03
    */
-  return rx_mpc_set_peripheral(pin, k_psel_mtu_phase);
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_phase};
+  return rx_mpc_set_peripheral(&config);
 }
 
-rx_err_t rx_mpc_set_adc(gpio_pin_t pin)
+rx_err_t rx_mpc_set_adc(const rx_port_pin_t pin)
 {
   /* Extract port and pin number from type-safe enum */
-  uint8_t port    = gpio_pin_get_port(pin);
-  uint8_t pin_num = gpio_pin_get_pin(pin);
+  const uint8_t port    = rx_port_from_pin(pin);
+  const uint8_t pin_num = rx_pin_from_pin(pin);
+
+  /* Validate the decoded port and pin are in valid range */
+  if (port > k_mpc_port_j || pin_num > k_mpc_max_pin) {
+    rx_log_error(s_tag, "Invalid port or pin number");
+    return k_rx_err_invalid_arg;
+  }
 
   /* ADC mode: Set ASEL = 1 to disable digital I/O
    * Common ADC pins: P40-P47 (AN000-AN007)
@@ -317,28 +344,29 @@ rx_err_t rx_mpc_set_adc(gpio_pin_t pin)
   return internal_write_pfs(port, pin_num, k_pfs_asel);
 }
 
-rx_err_t rx_mpc_set_sci(gpio_pin_t pin, bool is_tx)
+rx_err_t rx_mpc_set_sci(const rx_port_pin_t pin)
 {
   /* SCI pins use PSEL = 0x0A
    * TX and RX use the same PSEL code
    */
-  (void)is_tx; /* Not used - same PSEL for TX/RX */
-  return rx_mpc_set_peripheral(pin, k_psel_sci_tx);
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_sci_tx};
+  return rx_mpc_set_peripheral(&config);
 }
 
-rx_err_t rx_mpc_set_riic(gpio_pin_t pin, bool is_scl)
+rx_err_t rx_mpc_set_riic(const rx_port_pin_t pin)
 {
   /* RIIC pins use PSEL = 0x0F
    * SCL and SDA use the same PSEL code
    */
-  (void)is_scl; /* Not used - same PSEL for SCL/SDA */
-  return rx_mpc_set_peripheral(pin, k_psel_riic_scl);
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_riic_scl};
+  return rx_mpc_set_peripheral(&config);
 }
 
-rx_err_t rx_mpc_set_rspi(gpio_pin_t pin)
+rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
 {
   /* RSPI pins use PSEL = 0x0D
    * All RSPI signals (CLK, COPI, CIPO, SSL) use same PSEL
    */
-  return rx_mpc_set_peripheral(pin, k_psel_rspi_clk);
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_rspi_clk};
+  return rx_mpc_set_peripheral(&config);
 }

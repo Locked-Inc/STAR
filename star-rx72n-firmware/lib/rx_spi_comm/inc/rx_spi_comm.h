@@ -43,7 +43,7 @@ extern "C" {
 /**
  * @brief SPI communication parameters
  */
-typedef enum {
+typedef enum : uint16_t {
   k_spi_comm_default_channel = 0,    /**< Default RSPI channel */
   k_spi_comm_default_mode    = 0,    /**< SPI mode 0 (CPOL=0, CPHA=0) */
   k_spi_comm_rx_buffer_size  = 2048, /**< RX staging buffer size */
@@ -191,7 +191,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
  *
  * @return k_rx_ok on success
  */
-rx_err_t rx_spi_comm_data_available(rx_spi_comm_handle_t* handle, bool* available);
+rx_err_t rx_spi_comm_data_available(const rx_spi_comm_handle_t* handle, bool* available);
 
 /* =============================================================================
  * Utility Functions

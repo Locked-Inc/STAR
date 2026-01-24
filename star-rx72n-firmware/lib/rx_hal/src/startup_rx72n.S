@@ -166,7 +166,7 @@ _init:
     .type _Default_Handler, @function
 _Default_Handler:
     wait
-    bra.s   _Default_Handler
+    bra     _Default_Handler
 
     .size _Default_Handler, . - _Default_Handler
 

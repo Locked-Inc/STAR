@@ -39,7 +39,7 @@ extern "C" {
 /**
  * @brief Mock configuration constants
  */
-typedef enum {
+typedef enum : uint8_t {
   k_mock_hcsr04_max_calls     = 64, /**< Maximum call records to track */
   k_mock_hcsr04_func_name_max = 32, /**< Max function name length */
   k_mock_hcsr04_max_pins      = 8,  /**< Max pins per sensor tracked */
