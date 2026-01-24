@@ -1,30 +1,109 @@
-#!/bin/bash
-# Pre-commit hook for STAR project
-# Checks ROS2 code formatting and header guards before allowing commits
-#
-# To install: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
-# Or: ln -sf ../../scripts/pre-commit .git/hooks/pre-commit
+#!/usr/bin/env bash
+# Pre-commit hook to match CI/CD pipelines
+# Checks Go (fmt/lint), C++ (clang-format/cpplint), Proto (buf)
 
-set -e
+set -uo pipefail
 
-# Only check if there are staged ROS2 files
-STAGED_ROS2_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^star-ros2/.*\.(cpp|hpp)$' || true)
-
-if [ -z "$STAGED_ROS2_FILES" ]; then
+# Allow skipping checks
+if [[ "${1:-}" == "--no-verify" ]]; then
     exit 0
 fi
 
-echo "🔍 Checking ROS2 code formatting and header guards..."
+# Get list of staged files
+staged_files=$(git diff --cached --name-only --diff-filter=ACMR)
 
-# Run format check via Docker (using Make)
-if ! make check >/dev/null 2>&1; then
-    echo ""
-    echo "❌ Pre-commit check failed!"
-    echo ""
-    echo "Run 'make format' to fix formatting and header guards."
-    echo "Then 'git add' the fixed files and commit again."
-    echo ""
+# Flags to track errors
+error_found=0
+
+echo "🔍 Running pre-commit checks..."
+
+# -----------------------------------------------------------------------------
+# GO CHECKS
+# -----------------------------------------------------------------------------
+go_files=$(echo "$staged_files" | grep "\.go$" || true)
+if [[ -n "$go_files" ]]; then
+    echo "🐹 Checking Go files..."
+    
+    # Check formatting
+    unformatted=$(gofmt -l $go_files)
+    if [[ -n "$unformatted" ]]; then
+        echo "❌ Unformatted Go files:"
+        echo "$unformatted"
+        echo "   Run: gofmt -w $unformatted"
+        error_found=1
+    fi
+
+    # Run linting (fast mode for speed)
+    # We run this on the whole module usually, but let's try to be specific if possible
+    # golangci-lint works best on packages.
+    pushd star-gateway >/dev/null
+    if ! golangci-lint run --fast --timeout=2m ./...; then
+        echo "❌ Go linting failed."
+        error_found=1
+    fi
+    popd >/dev/null
+fi
+
+# -----------------------------------------------------------------------------
+# C++ CHECKS
+# -----------------------------------------------------------------------------
+cpp_files=$(echo "$staged_files" | grep -E "\.(cpp|hpp|cc|h)$" || true)
+if [[ -n "$cpp_files" ]]; then
+    echo "🦕 Checking C++ files..."
+
+    # Check clang-format
+    for file in $cpp_files; do
+        if ! clang-format --dry-run --Werror "$file"; then
+            echo "❌ Formatting error in: $file"
+            echo "   Run: clang-format -i $file"
+            error_found=1
+        fi
+    done
+
+    # Run cpplint
+    if command -v ament_cpplint &> /dev/null; then
+        for file in $cpp_files; do
+            # Only check files inside star-ros2
+            if [[ "$file" == *"star-ros2"* ]]; then
+                 if ! ament_cpplint "$file" >/dev/null; then
+                    echo "❌ cpplint error in: $file"
+                    error_found=1
+                 fi
+            fi
+        done
+    fi
+fi
+
+# -----------------------------------------------------------------------------
+# PROTOBUF CHECKS
+# -----------------------------------------------------------------------------
+proto_files=$(echo "$staged_files" | grep "\.proto$" || true)
+if [[ -n "$proto_files" ]]; then
+    echo "📦 Checking Protobuf files..."
+
+    # Check formatting
+    pushd star-proto >/dev/null
+    if ! buf format --diff --exit-code; then
+        echo "❌ Protobuf formatting failed."
+        echo "   Run: buf format -w"
+        error_found=1
+    fi
+
+    # Check linting
+    if ! buf lint; then
+        echo "❌ Protobuf linting failed."
+        error_found=1
+    fi
+    popd >/dev/null
+fi
+
+# -----------------------------------------------------------------------------
+# CONCLUSION
+# -----------------------------------------------------------------------------
+if [[ $error_found -ne 0 ]]; then
+    echo "⛔ Commit rejected due to linting/formatting errors."
     exit 1
 fi
 
-echo "✅ ROS2 code checks passed!"
+echo "✅ All checks passed."
+exit 0

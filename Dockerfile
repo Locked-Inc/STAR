@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y \
     protobuf-compiler-grpc \
     libgrpc-dev \
     curl \
+    clangd \
     && rm -rf /var/lib/apt/lists/*
 
 # Install buf

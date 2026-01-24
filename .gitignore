@@ -137,5 +137,23 @@ PR_REVIEWS.md
 install/
 log/
 
-# Dev container (personal config - do not share)
-.devcontainer/
+# Personal VS Code settings (NOT workspace settings)
+.vscode/settings.local.json
+.vscode/*.local.json
+
+# Personal environment overrides
+.devcontainer/devcontainer.local.json
+
+# Credentials (though yours are bind-mounted, so this is safe)
+.env.local
+*.local
+
+# Build artifacts
+**/build/
+**/dist/
+**/coverage.out
+**/.cache/
+
+# OS files
+.DS_Store
+Thumbs.db
