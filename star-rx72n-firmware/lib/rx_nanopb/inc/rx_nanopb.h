@@ -219,6 +219,8 @@ rx_err_t rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            c
  *
  * @param[out] cmd Output command structure
  * @param[in]  params Differential drive parameters
+ *
+ * @return k_rx_ok on success, error code on failure
  */
 rx_err_t
 rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand*               cmd,

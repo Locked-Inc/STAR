@@ -38,6 +38,10 @@ typedef enum : uint8_t {
   k_smbus_block_len_min = 1, /**< Minimum SMBUS block length */
 } smbus_block_constants_t;
 
+typedef enum : uint8_t {
+  k_smbus_u8_zero = 0, /**< Zero initialization constant */
+} smbus_common_constants_t;
+
 /**
  * @brief Calculate CRC-8 for SMBUS PEC
  *
@@ -193,9 +197,9 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
   length             = k_smbus_single_byte;
   err                = k_rx_err_invalid_state;
   crc                = k_smbus_crc8_init;
-  addr_byte          = 0;
-  riic_channel.value = 0;
-  device_addr.value  = 0;
+  addr_byte          = k_smbus_u8_zero;
+  riic_channel.value = k_smbus_u8_zero;
+  device_addr.value  = k_smbus_u8_zero;
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");
@@ -249,9 +253,9 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
   length             = k_smbus_single_byte;
   err                = k_rx_err_invalid_state;
   crc                = k_smbus_crc8_init;
-  addr_byte          = 0;
-  riic_channel.value = 0;
-  device_addr.value  = 0;
+  addr_byte          = k_smbus_u8_zero;
+  riic_channel.value = k_smbus_u8_zero;
+  device_addr.value  = k_smbus_u8_zero;
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");
@@ -312,9 +316,9 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
   read_length        = 0;
   err                = k_rx_err_invalid_state;
   crc                = k_smbus_crc8_init;
-  addr_byte          = 0;
-  riic_channel.value = 0;
-  device_addr.value  = 0;
+  addr_byte          = k_smbus_u8_zero;
+  riic_channel.value = k_smbus_u8_zero;
+  device_addr.value  = k_smbus_u8_zero;
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");

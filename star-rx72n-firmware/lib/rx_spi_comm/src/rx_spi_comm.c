@@ -155,7 +155,7 @@ static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32
 
 #ifdef __RX__
 /** @brief Sleep duration for polling loop (1 tick) */
-enum { s_poll_sleep_ticks = 1 };
+static const uint32_t s_poll_sleep_ticks = 1;
 #endif
 
 /** @brief ACK/ready wait timing constants */
