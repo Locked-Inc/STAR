@@ -200,7 +200,7 @@ static void internal_handle_brdy_interrupt(void)
       }
 
       /* Clear pipe buffer ready flag */
-      usb0()->brdysts = (uint16_t)~(1U << pipe);
+      usb0()->brdysts = (uint16_t) ~(1U << pipe);
     }
   }
 }
@@ -224,7 +224,7 @@ static void internal_handle_bemp_interrupt(void)
       }
 
       /* Clear pipe buffer empty flag */
-      usb0()->bempsts = (uint16_t)~(1U << pipe);
+      usb0()->bempsts = (uint16_t) ~(1U << pipe);
     }
   }
 }
