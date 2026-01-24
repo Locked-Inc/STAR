@@ -171,29 +171,51 @@ typedef enum : uint16_t {
 /* =============================================================================
  * Control Register (GTCR) Bits
  * =============================================================================
+ * Reference: RX72N Hardware Manual R01UH0824EJ0120 Rev.1.20, Section 26.2.12
  */
 
 typedef enum : uint32_t {
-  /* Counter Start bit */
+  /* b0: CST - Count Start */
   k_gptw_gtcr_cst = (1 << 0), /**< Counter Start (0=stop, 1=count) */
 
-  /* Timer Prescaler Select (bits 24-26) */
-  k_gptw_gtcr_tpcs_shift = 24,
-  k_gptw_gtcr_tpcs_mask  = (0x07 << 24),
-  k_gptw_gtcr_tpcs_1     = (0x00 << 24), /**< PCLKA/1 */
-  k_gptw_gtcr_tpcs_4     = (0x01 << 24), /**< PCLKA/4 */
-  k_gptw_gtcr_tpcs_16    = (0x02 << 24), /**< PCLKA/16 */
-  k_gptw_gtcr_tpcs_64    = (0x03 << 24), /**< PCLKA/64 */
-  k_gptw_gtcr_tpcs_256   = (0x04 << 24), /**< PCLKA/256 */
-  k_gptw_gtcr_tpcs_1024  = (0x05 << 24), /**< PCLKA/1024 */
+  /* b8: ICDS - Input Capture Operation Select at Count Stop */
+  k_gptw_gtcr_icds = (1 << 8), /**< 0=capture at stop, 1=no capture at stop */
 
-  /* Mode Select (bits 16-18) */
-  k_gptw_gtcr_md_shift     = 16,
-  k_gptw_gtcr_md_mask      = (0x07 << 16),
-  k_gptw_gtcr_md_saw_1shot = (0x00 << 16), /**< Sawtooth wave one-shot */
-  k_gptw_gtcr_md_saw_cont  = (0x01 << 16), /**< Sawtooth wave continuous */
-  k_gptw_gtcr_md_tri_1shot = (0x04 << 16), /**< Triangle wave one-shot */
-  k_gptw_gtcr_md_tri_cont  = (0x05 << 16), /**< Triangle wave continuous */
+  /* b18-b16: MD[2:0] - Mode Select */
+  k_gptw_gtcr_md_shift = 16,
+  k_gptw_gtcr_md_mask  = (0x07 << 16),
+
+  /** Sawtooth-wave PWM mode (single buffer or double buffer possible) */
+  k_gptw_gtcr_md_saw_pwm = (0x00 << 16),
+  /** Sawtooth-wave one-shot pulse mode (fixed buffer operation) */
+  k_gptw_gtcr_md_saw_oneshot = (0x01 << 16),
+  /* 0x02 (010): Setting prohibited */
+  /* 0x03 (011): Setting prohibited */
+  /** Triangle-wave PWM mode 1: 32-bit transfer at trough (single/double buffer) */
+  k_gptw_gtcr_md_tri_pwm1 = (0x04 << 16),
+  /** Triangle-wave PWM mode 2: 32-bit transfer at crest and trough (single/double buffer) */
+  k_gptw_gtcr_md_tri_pwm2 = (0x05 << 16),
+  /** Triangle-wave PWM mode 3: 64-bit transfer at trough (fixed buffer operation) */
+  k_gptw_gtcr_md_tri_pwm3 = (0x06 << 16),
+  /* 0x07 (111): Setting prohibited */
+
+  /* b26-b23: TPCS[3:0] - Timer Prescaler Select */
+  k_gptw_gtcr_tpcs_shift = 23,
+  k_gptw_gtcr_tpcs_mask  = (0x0F << 23),
+
+  k_gptw_gtcr_tpcs_1    = (0x00 << 23), /**< PCLKA/1 (120 MHz) */
+  k_gptw_gtcr_tpcs_2    = (0x01 << 23), /**< PCLKA/2 */
+  k_gptw_gtcr_tpcs_4    = (0x02 << 23), /**< PCLKA/4 */
+  k_gptw_gtcr_tpcs_8    = (0x03 << 23), /**< PCLKA/8 */
+  k_gptw_gtcr_tpcs_16   = (0x04 << 23), /**< PCLKA/16 */
+  k_gptw_gtcr_tpcs_32   = (0x05 << 23), /**< PCLKA/32 */
+  k_gptw_gtcr_tpcs_64   = (0x06 << 23), /**< PCLKA/64 */
+  /* 0x07 (0111): Setting prohibited */
+  k_gptw_gtcr_tpcs_256  = (0x08 << 23), /**< PCLKA/256 */
+  /* 0x09 (1001): Setting prohibited */
+  k_gptw_gtcr_tpcs_1024 = (0x0A << 23), /**< PCLKA/1024 */
+  /* 0x0B (1011): Setting prohibited */
+  /* 0x0C-0x0F: GTETRGA/B/C/D via POEG (external clock) */
 } gptw_gtcr_bits_t;
 
 /* =============================================================================
