@@ -9,7 +9,6 @@
 #define STAR_GATEWAY_BRIDGE_INCLUDE_STAR_GATEWAY_BRIDGE_MESSAGE_CONVERTER_HPP_
 
 #include <cmath>
-#include <string>
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <rclcpp/rclcpp.hpp>

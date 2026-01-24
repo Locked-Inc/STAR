@@ -9,9 +9,6 @@
 #include "star_gateway_bridge/message_converter.hpp"
 
 #include <chrono>
-
-#include "rclcpp/rclcpp.hpp"
-
 namespace star {
 
 // ===========================================================================
