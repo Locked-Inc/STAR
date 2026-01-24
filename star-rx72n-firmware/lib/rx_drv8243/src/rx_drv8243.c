@@ -309,6 +309,8 @@ rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* ou
     return k_rx_err_invalid_arg;
   }
 
+  /* Lower bound check omitted - pin_nfault is uint8_t, k_rx_pin_min == 0,
+   * so pin_nfault >= k_rx_pin_min is always true (-Wtype-limits) */
   if (handle->pin_nfault > k_rx_pin_max) {
     rx_log_error(s_tag, "Invalid pin number for nFAULT pin (valid range 0-7)");
     return k_rx_err_invalid_arg;
@@ -350,6 +352,8 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, const uint16_
     return k_rx_err_invalid_state;
   }
 
+  /* Lower bound check omitted - limit_ma is uint16_t, k_drv8243_min_current_limit_ma == 0,
+   * so limit_ma >= k_drv8243_min_current_limit_ma is always true (-Wtype-limits) */
   if (limit_ma > k_drv8243_max_current_limit_ma) {
     rx_log_error(s_tag, "Current limit out of valid range (0-10000mA)");
     return k_rx_err_invalid_arg;
@@ -418,6 +422,8 @@ static rx_err_t internal_drv8243_configure_fault_pin(const rx_drv8243_handle_t* 
     return k_rx_err_invalid_arg;
   }
 
+  /* Lower bound check omitted - pin_nfault is uint8_t, k_rx_pin_min == 0,
+   * so pin_nfault >= k_rx_pin_min is always true (-Wtype-limits) */
   if (handle->pin_nfault > k_rx_pin_max) {
     rx_log_error(s_tag, "Invalid pin number for nFAULT pin configuration (valid range 0-7)");
     return k_rx_err_invalid_arg;
