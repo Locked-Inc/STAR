@@ -69,7 +69,9 @@ typedef enum : uint16_t {
  */
 static rx_err_t internal_init_handler(error_handler_t* handler, uint32_t max_retries)
 {
-  RX_ASSERT(handler != NULL, "handler cannot be NULL");
+  if (handler == NULL) {
+    return k_rx_err_null_ptr;
+  }
   RX_ASSERT((max_retries <= k_test_max_retries), "max_retries exceeds test max");
 
   error_handler_config_t config = {

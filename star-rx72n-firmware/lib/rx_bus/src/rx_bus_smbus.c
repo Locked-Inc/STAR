@@ -312,8 +312,8 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
   i2c_device_addr_t           device_addr;
 
   ctx                = (smbus_read_word_data_ctx_t*)user_ctx;
-  write_data         = 0;
-  read_length        = 0;
+  write_data         = k_smbus_u8_zero;
+  read_length        = k_smbus_u8_zero;
   err                = k_rx_err_invalid_state;
   crc                = k_smbus_crc8_init;
   addr_byte          = k_smbus_u8_zero;
