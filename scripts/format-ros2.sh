@@ -255,20 +255,27 @@ check_package_cpplint() {
 }
 
 # Get expected header guard for a file
-# Pattern: PACKAGE__FILENAME_HPP_
+# Pattern: PACKAGE__FILE_HPP_ (ROS2 standard with double underscore)
+# Example: star_spi_bridge/include/star_spi_bridge/spi_driver.hpp
+#       -> STAR_SPI_BRIDGE__SPI_DRIVER_HPP_
 get_expected_guard() {
     local file="$1"
     local rel_path="${file#"$ROS2_DIR"/}"
-    local package_name="${rel_path%%/*}"
-    local filename
-    filename=$(basename "$file" .hpp)
-    
-    local package_upper
-    package_upper=$(echo "$package_name" | tr '[:lower:]-' '[:upper:]_')
-    local filename_upper
-    filename_upper=$(echo "$filename" | tr '[:lower:]-' '[:upper:]_')
-    
-    echo "${package_upper}__${filename_upper}_HPP_"
+
+    # Extract package name (first directory component)
+    local package_name
+    package_name=$(echo "$rel_path" | cut -d'/' -f1)
+
+    # Extract file name (basename)
+    local file_name
+    file_name=$(basename "$file")
+
+    # Convert to uppercase and replace . with _
+    package_name=$(echo "$package_name" | tr '[:lower:]' '[:upper:]')
+    file_name=$(echo "$file_name" | tr '[:lower:].' '[:upper:]_')
+
+    # ROS2 standard format: PACKAGE__FILE_
+    echo "${package_name}__${file_name}_"
 }
 
 # Check header guards

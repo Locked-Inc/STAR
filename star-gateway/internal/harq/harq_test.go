@@ -301,11 +301,12 @@ func TestDecrementSequence(t *testing.T) {
 func TestSend_Success(t *testing.T) {
 	harq, mock := createTestHARQ(nil)
 	payload := []byte{0x01, 0x02, 0x03}
+	priority := PriorityNormal
 
 	// Queue ACK response with sequence 0
 	mock.QueueResponse(createAckFrame(0))
 
-	err := harq.Send(context.Background(), payload)
+	err := harq.Send(context.Background(), payload, priority)
 
 	if err != nil {
 		t.Errorf("Send() error = %v, want nil", err)
@@ -1166,5 +1167,233 @@ func TestChaseCombining_FEC_NilFECDecoder(t *testing.T) {
 
 	if !errors.Is(err, ErrFECDecoderNil) {
 		t.Errorf("Receive() error = %v, want ErrFECDecoderNil", err)
+	}
+}
+
+// ============================================================================
+// Priority Flag Tests
+// ============================================================================
+
+func TestPriorityConstants(t *testing.T) {
+	tests := []struct {
+		name     string
+		priority Priority
+		expected uint8
+	}{
+		{"Emergency", PriorityEmergency, PriorityValueEmergency},
+		{"High", PriorityHigh, PriorityValueHigh},
+		{"Normal", PriorityNormal, PriorityValueNormal},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if uint8(tc.priority) != tc.expected {
+				t.Errorf("Priority value = %d, want %d", uint8(tc.priority), tc.expected)
+			}
+		})
+	}
+}
+
+func TestSend_PriorityEmergencyPreservedOnRetransmit(t *testing.T) {
+	const (
+		testMaxRetries   = 3
+		testTimeout      = 5 * time.Millisecond
+		testPollInterval = 1 * time.Millisecond
+		testWaitTimeout  = 100 * time.Millisecond
+	)
+
+	config := &Config{
+		MaxRetries: testMaxRetries,
+		Timeout:    testTimeout,
+	}
+	harq, mock := createTestHARQ(config)
+	payload := []byte{0x01, 0x02, 0x03}
+
+	// Use channel-based synchronization to deterministically trigger ACK after retransmit
+	retransmitDetected := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(testPollInterval)
+		defer ticker.Stop()
+		defer close(retransmitDetected)
+
+		timeout := time.After(testWaitTimeout)
+
+		for {
+			select {
+			case <-ticker.C:
+				sentData := mock.GetSentData()
+				if len(sentData) >= 2 {
+					mock.QueueResponse(createAckFrame(0))
+					return
+				}
+			case <-timeout:
+				t.Errorf("timeout waiting for retransmission after %v", testWaitTimeout)
+				return
+			}
+		}
+	}()
+
+	// Send with PriorityEmergency
+	err := harq.Send(context.Background(), payload, PriorityEmergency)
+
+	if err != nil {
+		t.Errorf("Send() error = %v, want nil", err)
+	}
+
+	// Wait for retransmit detection to complete
+	<-retransmitDetected
+
+	// Verify priority flag is set on both original and retransmitted frames
+	sentData := mock.GetSentData()
+	if len(sentData) < 2 {
+		t.Fatalf("expected at least 2 sent frames, got %d", len(sentData))
+	}
+
+	decoder := frame.NewDecoder()
+	for i, data := range sentData {
+		f, err := decoder.Decode(data)
+		if err != nil {
+			t.Fatalf("failed to decode frame %d: %v", i, err)
+		}
+
+		if f.Header.Flags&frame.FlagPriority == 0 {
+			t.Errorf("Frame %d should have FlagPriority set for PriorityEmergency", i)
+		}
+	}
+}
+
+func TestSend_PriorityHighWithFEC(t *testing.T) {
+	config := &Config{
+		MaxRetries: 3,
+		Timeout:    50 * time.Millisecond,
+		FECEnabled: true,
+	}
+	mock := NewMockTransport()
+	encoder := frame.NewEncoder()
+	decoder := frame.NewDecoder()
+	fecEncoder := &MockFECEncoder{}
+	fecDecoder := &MockFECDecoder{}
+	harq := NewChaseCombining(config, mock, encoder, decoder, fecEncoder, fecDecoder)
+
+	mock.QueueResponse(createAckFrame(0))
+
+	payload := []byte("high-priority-message")
+	err := harq.Send(context.Background(), payload, PriorityHigh)
+
+	if err != nil {
+		t.Errorf("Send() error = %v, want nil", err)
+	}
+
+	sentData := mock.GetSentData()
+	if len(sentData) == 0 {
+		t.Fatal("expected at least 1 sent frame, got 0")
+	}
+
+	// Decode and verify priority flag is set along with FEC flag
+	f, err := decoder.Decode(sentData[0])
+	if err != nil {
+		t.Fatalf("failed to decode frame: %v", err)
+	}
+
+	hasPriorityFlag := f.Header.Flags&frame.FlagPriority != 0
+	hasFECFlag := f.Header.Flags&frame.FlagFECEnabled != 0
+
+	if !hasPriorityFlag {
+		t.Error("PriorityHigh should set FlagPriority")
+	}
+	if !hasFECFlag {
+		t.Error("FEC enabled should set FlagFECEnabled")
+	}
+}
+
+func TestSend_VariadicPriorityHandling(t *testing.T) {
+	tests := []struct {
+		name            string
+		priority        []Priority
+		expectedFlagSet bool
+		description     string
+	}{
+		{
+			name:            "no_priority_arg",
+			priority:        []Priority{},
+			expectedFlagSet: false,
+			description:     "Should default to PriorityNormal and not set flag",
+		},
+		{
+			name:            "single_priority_normal",
+			priority:        []Priority{PriorityNormal},
+			expectedFlagSet: false,
+			description:     "PriorityNormal should not set flag",
+		},
+		{
+			name:            "single_priority_high",
+			priority:        []Priority{PriorityHigh},
+			expectedFlagSet: true,
+			description:     "PriorityHigh should set flag",
+		},
+		{
+			name:            "single_priority_emergency",
+			priority:        []Priority{PriorityEmergency},
+			expectedFlagSet: true,
+			description:     "PriorityEmergency should set flag",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			harq, mock := createTestHARQ(nil)
+			mock.QueueResponse(createAckFrame(0))
+
+			payload := []byte{0xFF}
+			var err error
+			if len(tc.priority) == 0 {
+				err = harq.Send(context.Background(), payload)
+			} else {
+				err = harq.Send(context.Background(), payload, tc.priority[0])
+			}
+
+			if err != nil {
+				t.Errorf("Send() error = %v, want nil", err)
+			}
+
+			sentData := mock.GetSentData()
+			decoder := frame.NewDecoder()
+			f, err := decoder.Decode(sentData[0])
+			if err != nil {
+				t.Fatalf("failed to decode frame: %v", err)
+			}
+
+			flagSet := f.Header.Flags&frame.FlagPriority != 0
+			if flagSet != tc.expectedFlagSet {
+				t.Errorf("%s: FlagPriority=%v, want=%v", tc.description, flagSet, tc.expectedFlagSet)
+			}
+		})
+	}
+}
+
+// TestChaseCombining_SetExpectedLenForTesting tests the testing helper function.
+func TestChaseCombining_SetExpectedLenForTesting(t *testing.T) {
+	const testExpectedLen = 100
+
+	mockTransport := NewMockTransport()
+	encoder := frame.NewEncoder()
+	decoder := frame.NewDecoder()
+	fecEncoder := &MockFECEncoder{}
+	fecDecoder := &MockFECDecoder{}
+
+	config := &Config{
+		MaxRetries: 3,
+		Timeout:    10 * time.Millisecond,
+		FECEnabled: true,
+	}
+
+	harq := NewChaseCombining(config, mockTransport, encoder, decoder, fecEncoder, fecDecoder)
+
+	// Test setting expected length
+	harq.SetExpectedLenForTesting(testExpectedLen)
+
+	// Verify the expected length was set correctly
+	if gotLen := harq.GetExpectedLenForTesting(); gotLen != testExpectedLen {
+		t.Fatalf("GetExpectedLenForTesting() = %d, want %d", gotLen, testExpectedLen)
 	}
 }

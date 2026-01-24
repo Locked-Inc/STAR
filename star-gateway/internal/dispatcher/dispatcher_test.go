@@ -24,9 +24,10 @@ const (
 )
 
 // MockHARQ is a mock implementation of the harq.HARQ interface for testing.
+// Note: Kept local to avoid import cycle with testutil (which imports dispatcher for MockDispatcher).
 type MockHARQ struct {
 	ReceiveFunc  func(ctx context.Context) ([]byte, error)
-	SendFunc     func(ctx context.Context, data []byte) error
+	SendFunc     func(ctx context.Context, data []byte, p ...harq.Priority) error
 	GetStateFunc func() harq.State
 	GetTxSeqFunc func() uint16
 	GetRxSeqFunc func() uint16
@@ -35,10 +36,10 @@ type MockHARQ struct {
 	LastSentData []byte
 }
 
-func (m *MockHARQ) Send(ctx context.Context, data []byte) error {
+func (m *MockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
 	m.LastSentData = data
 	if m.SendFunc != nil {
-		return m.SendFunc(ctx, data)
+		return m.SendFunc(ctx, data, p...)
 	}
 	return nil
 }

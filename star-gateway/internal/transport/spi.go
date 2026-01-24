@@ -10,6 +10,7 @@
 package transport
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -49,10 +50,13 @@ type Transport interface {
 	// Returns the received data and any error.
 	Receive(maxLen int) ([]byte, error)
 
-	// Transfer performs a full-duplex SPI transfer.
+	// Transfer performs a full-duplex transfer with context for cancellation.
 	// Sends txData while simultaneously receiving data.
 	// Returns the received data and any error.
-	Transfer(txData []byte) ([]byte, error)
+	Transfer(ctx context.Context, txData []byte) ([]byte, error)
+
+	// Open initializes the transport connection.
+	Open() error
 
 	// Close releases transport resources.
 	Close() error
@@ -102,8 +106,13 @@ var (
 	ErrTransferFailed = errors.New("transport: transfer failed")
 )
 
-// SPITransport implements the Transport interface using periph.io for SPI communication.
-// The Raspberry Pi 5 acts as the SPI controller, communicating with the RX72N at 10 MHz.
+// SPITransport implements both the Transport and Device interfaces using periph.io
+// for SPI communication. The Raspberry Pi 5 acts as the SPI controller,
+// communicating with the RX72N at 10 MHz.
+//
+// Implements:
+//   - Transport interface (legacy, for backward compatibility)
+//   - Device interface (new, context-aware for HIL simulation)
 type SPITransport struct {
 	mu     sync.RWMutex // protects isOpen, conn, port
 	config *SPIConfig
@@ -221,10 +230,18 @@ func (s *SPITransport) SetReadDeadline(deadline time.Time) error {
 	return nil
 }
 
-// Transfer performs full-duplex SPI transfer.
+// Transfer performs full-duplex SPI transfer with context support.
 // Sends txData while simultaneously receiving data of the same length.
 // This is the native SPI operation mode.
-func (s *SPITransport) Transfer(txData []byte) ([]byte, error) {
+//
+// The context deadline is checked before the transfer. Note that SPI
+// transactions are synchronous and cannot be interrupted once started.
+func (s *SPITransport) Transfer(ctx context.Context, txData []byte) ([]byte, error) {
+	// Check context before transfer
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
