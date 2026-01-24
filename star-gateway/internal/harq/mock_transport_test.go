@@ -5,6 +5,7 @@
 package harq
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -78,6 +79,19 @@ func (m *MockDecoder) Decode(data []byte) (*frame.Frame, error) {
 	return &frame.Frame{}, nil
 }
 
+// Open marks the transport as open.
+func (m *MockTransport) Open() error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.isOpen {
+		return nil // Idempotent
+	}
+
+	m.isOpen = true
+	return nil
+}
+
 // Send records the data and returns the configured error.
 func (m *MockTransport) Send(data []byte) (int, error) {
 	m.mu.Lock()
@@ -133,7 +147,7 @@ func (m *MockTransport) Receive(maxLen int) ([]byte, error) {
 }
 
 // Transfer performs a full-duplex transfer (not used in HARQ tests).
-func (m *MockTransport) Transfer(txData []byte) ([]byte, error) {
+func (m *MockTransport) Transfer(context.Context, []byte) ([]byte, error) {
 	return nil, transport.ErrNotImplemented
 }
 

@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/service"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/protobuf/proto"
 	"nhooyr.io/websocket" //nolint:staticcheck
@@ -144,5 +145,50 @@ func TestWebSocketHandler_Watchdog(t *testing.T) {
 	state = handler.GetSafeState()
 	if state.LinearVel != 0.0 {
 		t.Errorf("After timeout: got %v, want 0.0", state.LinearVel)
+	}
+}
+
+func TestHandlerWithGateway(t *testing.T) {
+	// 1. Setup
+	gw := service.NewGatewayService()
+	handler := NewHandlerWithGateway(gw)
+	s := httptest.NewServer(http.HandlerFunc(handler.ServeHTTP))
+	defer s.Close()
+
+	// 2. Connect
+	wsURL := "ws" + strings.TrimPrefix(s.URL, "http")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	//nolint:staticcheck
+	c, _, err := websocket.Dial(ctx, wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to dial: %v", err)
+	}
+	defer c.Close(websocket.StatusNormalClosure, "")
+
+	// 3. Send Message
+	msg := &starv1.ControllerState{
+		LinearVel:  1.0,
+		AngularVel: 0.0,
+		Timestamp:  time.Now().UnixMilli(),
+	}
+	bytes, _ := proto.Marshal(msg)
+	//nolint:staticcheck
+	c.Write(ctx, websocket.MessageBinary, bytes)
+
+	// 4. Verify Gateway received the command
+	time.Sleep(100 * time.Millisecond)
+	resp, err := gw.GetTeleopCommand(context.Background(), &starv1.GetTeleopCommandRequest{
+		Header: &starv1.RequestHeader{RequestId: "test-req"},
+	})
+	if err != nil {
+		t.Fatalf("GetTeleopCommand failed: %v", err)
+	}
+	if resp == nil || resp.Command == nil {
+		t.Fatal("gateway did not return command")
+	}
+	if resp.Command.FrontLeftVelocityMps != 1.0 {
+		t.Errorf("expected 1.0 mps, got %v", resp.Command.FrontLeftVelocityMps)
 	}
 }
