@@ -183,37 +183,37 @@ typedef enum : uint32_t {
 
   /* b18-b16: MD[2:0] - Mode Select */
   k_gptw_gtcr_md_shift = 16,
-  k_gptw_gtcr_md_mask  = (0x07 << 16),
+  k_gptw_gtcr_md_mask  = (0x07 << k_gptw_gtcr_md_shift),
 
   /** Sawtooth-wave PWM mode (single buffer or double buffer possible) */
-  k_gptw_gtcr_md_saw_pwm = (0x00 << 16),
+  k_gptw_gtcr_md_saw_pwm = (0x00 << k_gptw_gtcr_md_shift),
   /** Sawtooth-wave one-shot pulse mode (fixed buffer operation) */
-  k_gptw_gtcr_md_saw_oneshot = (0x01 << 16),
+  k_gptw_gtcr_md_saw_oneshot = (0x01 << k_gptw_gtcr_md_shift),
   /* 0x02 (010): Setting prohibited */
   /* 0x03 (011): Setting prohibited */
   /** Triangle-wave PWM mode 1: 32-bit transfer at trough (single/double buffer) */
-  k_gptw_gtcr_md_tri_pwm1 = (0x04 << 16),
+  k_gptw_gtcr_md_tri_pwm1 = (0x04 << k_gptw_gtcr_md_shift),
   /** Triangle-wave PWM mode 2: 32-bit transfer at crest and trough (single/double buffer) */
-  k_gptw_gtcr_md_tri_pwm2 = (0x05 << 16),
+  k_gptw_gtcr_md_tri_pwm2 = (0x05 << k_gptw_gtcr_md_shift),
   /** Triangle-wave PWM mode 3: 64-bit transfer at trough (fixed buffer operation) */
-  k_gptw_gtcr_md_tri_pwm3 = (0x06 << 16),
+  k_gptw_gtcr_md_tri_pwm3 = (0x06 << k_gptw_gtcr_md_shift),
   /* 0x07 (111): Setting prohibited */
 
   /* b26-b23: TPCS[3:0] - Timer Prescaler Select */
   k_gptw_gtcr_tpcs_shift = 23,
-  k_gptw_gtcr_tpcs_mask  = (0x0F << 23),
+  k_gptw_gtcr_tpcs_mask  = (0x0F << k_gptw_gtcr_tpcs_shift),
 
-  k_gptw_gtcr_tpcs_1    = (0x00 << 23), /**< PCLKA/1 (120 MHz) */
-  k_gptw_gtcr_tpcs_2    = (0x01 << 23), /**< PCLKA/2 */
-  k_gptw_gtcr_tpcs_4    = (0x02 << 23), /**< PCLKA/4 */
-  k_gptw_gtcr_tpcs_8    = (0x03 << 23), /**< PCLKA/8 */
-  k_gptw_gtcr_tpcs_16   = (0x04 << 23), /**< PCLKA/16 */
-  k_gptw_gtcr_tpcs_32   = (0x05 << 23), /**< PCLKA/32 */
-  k_gptw_gtcr_tpcs_64   = (0x06 << 23), /**< PCLKA/64 */
+  k_gptw_gtcr_tpcs_1    = (0x00 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/1 (120 MHz) */
+  k_gptw_gtcr_tpcs_2    = (0x01 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/2 */
+  k_gptw_gtcr_tpcs_4    = (0x02 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/4 */
+  k_gptw_gtcr_tpcs_8    = (0x03 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/8 */
+  k_gptw_gtcr_tpcs_16   = (0x04 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/16 */
+  k_gptw_gtcr_tpcs_32   = (0x05 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/32 */
+  k_gptw_gtcr_tpcs_64   = (0x06 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/64 */
   /* 0x07 (0111): Setting prohibited */
-  k_gptw_gtcr_tpcs_256  = (0x08 << 23), /**< PCLKA/256 */
+  k_gptw_gtcr_tpcs_256  = (0x08 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/256 */
   /* 0x09 (1001): Setting prohibited */
-  k_gptw_gtcr_tpcs_1024 = (0x0A << 23), /**< PCLKA/1024 */
+  k_gptw_gtcr_tpcs_1024 = (0x0A << k_gptw_gtcr_tpcs_shift), /**< PCLKA/1024 */
   /* 0x0B (1011): Setting prohibited */
   /* 0x0C-0x0F: GTETRGA/B/C/D via POEG (external clock) */
 } gptw_gtcr_bits_t;
