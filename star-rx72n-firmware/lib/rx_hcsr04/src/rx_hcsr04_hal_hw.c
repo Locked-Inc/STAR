@@ -41,6 +41,8 @@
  */
 static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, uint8_t* port, uint8_t* pin_num)
 {
+  /* Lower bound checks omitted - all types are unsigned and minimums are 0,
+   * so comparisons would always be true, causing -Wtype-limits warnings */
   if (pin > k_rx_pj_7) {
     return k_rx_err_invalid_arg;
   }

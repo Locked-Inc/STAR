@@ -102,7 +102,7 @@ rx_err_t rx_irq_filter_disable(uint8_t irq_num)
   uint8_t bit_pos = irq_num % k_irq_filter_irqs_per_reg;
 
   /* Clear filter enable bit */
-  icu()->irqflte[reg_idx] &= (uint8_t)~(1 << bit_pos);
+  icu()->irqflte[reg_idx] &= (uint8_t) ~(1 << bit_pos);
 
 #endif
 
