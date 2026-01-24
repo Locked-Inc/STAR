@@ -256,6 +256,7 @@ target_link_libraries(test_rx_crc8 unity)
 add_executable(test_rx_frame
     test_rx_frame.c
     ${RX_FRAME_SRC}
+    ${MOCK_UART_SRC}
 )
 apply_strict_warnings(test_rx_frame)
 apply_test_includes(test_rx_frame)
@@ -265,6 +266,7 @@ target_link_libraries(test_rx_frame unity)
 add_executable(test_rx_fec
     test_rx_fec.c
     ${RX_FEC_SRC}
+    ${MOCK_UART_SRC}
 )
 apply_strict_warnings(test_rx_fec)
 apply_test_includes(test_rx_fec)
@@ -274,6 +276,7 @@ target_link_libraries(test_rx_fec unity)
 add_executable(test_rx_harq
     test_rx_harq.c
     ${RX_HARQ_SRC}
+    ${MOCK_UART_SRC}
 )
 apply_strict_warnings(test_rx_harq)
 apply_test_includes(test_rx_harq)

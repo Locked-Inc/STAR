@@ -21,7 +21,7 @@
 #include "rx_crc.h"
 #include "rx_log.h"
 
-static const char* s_tag = "DS18B20";
+static const char*   s_tag                 = "DS18B20";
 static const uint8_t s_ds18b20_family_code = 0x28U; /**< DS18B20 family code in ROM */
 
 /* Temperature conversion constants (floating-point) */
