@@ -131,7 +131,7 @@ uint16_t mock_uart_hw_inject_rx_data(uint8_t channel, const uint8_t* data, uint1
 
 uint16_t mock_uart_hw_rx_available(uint8_t channel)
 {
-  if (channel >= k_mock_uart_channel_count) {
+  if ((uint8_t)channel >= k_mock_uart_channel_count) {
     return 0;
   }
 
@@ -164,7 +164,7 @@ uint16_t mock_uart_hw_get_tx_data(uint8_t channel, uint8_t* data, uint16_t max_l
 
 uint16_t mock_uart_hw_tx_count(uint8_t channel)
 {
-  if (channel >= k_mock_uart_channel_count) {
+  if ((uint8_t)channel >= k_mock_uart_channel_count) {
     return 0;
   }
 
@@ -272,7 +272,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
     return err;
   }
 
-  if (channel >= k_mock_uart_channel_count) {
+  if ((uint8_t)channel >= k_mock_uart_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -291,16 +291,16 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
   return k_rx_ok;
 }
 
-rx_err_t uart_deinit_channel(uint8_t channel)
+rx_err_t uart_deinit_channel(uart_channel_t channel)
 {
-  internal_record_call(k_mock_uart_call_deinit, channel, 0);
+  internal_record_call(k_mock_uart_call_deinit, (uint8_t)channel, 0);
 
   rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {
     return err;
   }
 
-  if (channel >= k_mock_uart_channel_count) {
+  if ((uint8_t)channel >= k_mock_uart_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -314,16 +314,16 @@ rx_err_t uart_deinit_channel(uint8_t channel)
   return k_rx_ok;
 }
 
-rx_err_t uart_putc_channel(uint8_t channel, char data)
+rx_err_t uart_putc_channel(uart_channel_t channel, char data)
 {
-  internal_record_call(k_mock_uart_call_putc, channel, (uint8_t)data);
+  internal_record_call(k_mock_uart_call_putc, (uint8_t)channel, (uint8_t)data);
 
   rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {
     return err;
   }
 
-  if (channel >= k_mock_uart_channel_count) {
+  if ((uint8_t)channel >= k_mock_uart_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -352,9 +352,9 @@ rx_err_t uart_putc_channel(uint8_t channel, char data)
   return k_rx_ok;
 }
 
-rx_err_t uart_puts_channel(uint8_t channel, const char* str)
+rx_err_t uart_puts_channel(uart_channel_t channel, const char* str)
 {
-  internal_record_call(k_mock_uart_call_puts, channel, 0);
+  internal_record_call(k_mock_uart_call_puts, (uint8_t)channel, 0);
 
   rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {
@@ -365,7 +365,7 @@ rx_err_t uart_puts_channel(uint8_t channel, const char* str)
     return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_mock_uart_channel_count) {
+  if ((uint8_t)channel >= k_mock_uart_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -390,9 +390,9 @@ rx_err_t uart_puts_channel(uint8_t channel, const char* str)
   return k_rx_ok;
 }
 
-rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t length)
+rx_err_t uart_write_channel(uart_channel_t channel, const uint8_t* data, uint16_t length)
 {
-  internal_record_call(k_mock_uart_call_write, channel, length);
+  internal_record_call(k_mock_uart_call_write, (uint8_t)channel, length);
 
   rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {
@@ -403,7 +403,7 @@ rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t lengt
     return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_mock_uart_channel_count) {
+  if ((uint8_t)channel >= k_mock_uart_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -422,9 +422,9 @@ rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t lengt
   return k_rx_ok;
 }
 
-rx_err_t uart_getc_channel(uint8_t channel, char* data)
+rx_err_t uart_getc_channel(uart_channel_t channel, char* data)
 {
-  internal_record_call(k_mock_uart_call_getc, channel, 0);
+  internal_record_call(k_mock_uart_call_getc, (uint8_t)channel, 0);
 
   rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {
@@ -435,7 +435,7 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data)
     return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_mock_uart_channel_count) {
+  if ((uint8_t)channel >= k_mock_uart_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -455,9 +455,9 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data)
   return k_rx_ok;
 }
 
-rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read)
+rx_err_t uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read)
 {
-  internal_record_call(k_mock_uart_call_read, channel, length);
+  internal_record_call(k_mock_uart_call_read, (uint8_t)channel, length);
 
   rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {
@@ -468,7 +468,7 @@ rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint
     return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_mock_uart_channel_count) {
+  if ((uint8_t)channel >= k_mock_uart_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -494,9 +494,9 @@ rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint
   return k_rx_ok;
 }
 
-rx_err_t uart_rx_available(uint8_t channel, bool* available)
+rx_err_t uart_rx_available(uart_channel_t channel, bool* available)
 {
-  internal_record_call(k_mock_uart_call_rx_available, channel, 0);
+  internal_record_call(k_mock_uart_call_rx_available, (uint8_t)channel, 0);
 
   rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {
@@ -507,7 +507,7 @@ rx_err_t uart_rx_available(uint8_t channel, bool* available)
     return k_rx_err_null_ptr;
   }
 
-  if (channel >= k_mock_uart_channel_count) {
+  if ((uint8_t)channel >= k_mock_uart_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -546,7 +546,7 @@ rx_err_t uart_init(void)
 
 void uart_putc(char data)
 {
-  (void)uart_putc_channel(k_debug_uart_channel, data);
+  (void)uart_putc_channel((uart_channel_t)k_debug_uart_channel, data);
 }
 
 void uart_puts(const char* str)

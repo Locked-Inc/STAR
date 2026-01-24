@@ -231,8 +231,7 @@ static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t
   uint8_t ier_index;
   uint8_t ier_bit;
 
-  if ((uint8_t)config.channel < (uint8_t)k_cmt_channel_0 ||
-      (uint8_t)config.channel >= (uint8_t)k_cmt_max_channels) {
+  if ((uint8_t)config.channel >= (uint8_t)k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
   }
   if (config.priority < k_ipr_level_min || config.priority > k_ipr_level_max) {
@@ -309,8 +308,7 @@ static rx_err_t internal_validate_cmt_init_params(const rx_cmt_channel_t channel
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel < (uint8_t)k_cmt_channel_0 ||
-      (uint8_t)channel >= (uint8_t)k_cmt_max_channels) {
+  if ((uint8_t)channel >= (uint8_t)k_cmt_max_channels) {
     rx_log_error(s_tag, "Invalid CMT channel");
     return k_rx_err_invalid_arg;
   }

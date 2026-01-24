@@ -34,14 +34,16 @@
 static const rx_port_pin_t k_test_tx_gpio = k_rx_pb_7; /**< PB7 TX pin (from rx_port_constants.h) */
 static const rx_port_pin_t k_test_rx_gpio = k_rx_pb_6; /**< PB6 RX pin (from rx_port_constants.h) */
 
-/** @brief UART test constants */
+/** @brief UART test channel constants - must match uart_channel_t */
+static const uart_channel_t k_test_channel_sci9    = (uart_channel_t)9;
+static const uart_channel_t k_test_channel_sci0    = (uart_channel_t)0;
+static const uart_channel_t k_test_channel_invalid = (uart_channel_t)13;
+
+/** @brief UART test baudrate constants */
 typedef enum : uint32_t {
-  k_test_channel_sci9    = 9,
-  k_test_channel_sci0    = 0,
-  k_test_channel_invalid = 13,
   k_test_baudrate_115200 = 115200,
   k_test_baudrate_9600   = 9600,
-} test_uart_constants_t;
+} test_uart_baudrate_t;
 
 /* =============================================================================
  * Test Fixtures

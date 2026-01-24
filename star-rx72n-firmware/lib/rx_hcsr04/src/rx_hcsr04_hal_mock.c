@@ -43,7 +43,7 @@ static inline bool internal_is_valid_pin(rx_port_pin_t pin)
 {
   RX_ASSERT(((uint16_t)pin & k_port_mask) <= k_rx_pin_max, "Pin portion must be <= k_rx_pin_max");
   RX_ASSERT(((uint16_t)pin >> k_port_shift) <= k_rx_port_j, "Port portion must be <= k_rx_port_j");
-  return (pin >= k_rx_p0_0 && pin <= k_rx_pj_7);
+  return (pin <= k_rx_pj_7);
 }
 
 /**
@@ -69,12 +69,14 @@ internal_validate_and_extract_pin(rx_port_pin_t pin, uint8_t* port, uint8_t* pin
   *pin_num = rx_pin_from_pin(pin);
 
   /* Validate port: must be k_rx_port_0 through k_rx_port_g, or k_rx_port_j */
-  if (*port < k_rx_port_0 || (*port > k_rx_port_g && *port != k_rx_port_j)) {
+  /* Note: *port >= k_rx_port_0 check omitted - always true since k_rx_port_0 == 0 */
+  if ((*port > k_rx_port_g && *port != k_rx_port_j)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Validate pin: must be within k_rx_pin_min to k_rx_pin_max */
-  if (*pin_num < k_rx_pin_min || *pin_num > k_rx_pin_max) {
+  /* Note: *pin_num >= k_rx_pin_min check omitted - always true since k_rx_pin_min == 0 */
+  if (*pin_num > k_rx_pin_max) {
     return k_rx_err_invalid_arg;
   }
 

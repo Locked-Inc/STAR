@@ -241,8 +241,7 @@ static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_por
   const uint8_t rx_pin  = rx_pin_from_pin(rx_gpio);
 
   /* Validate pin numbers */
-  if (tx_pin < k_rx_pin_0 || tx_pin > k_rx_pin_max || rx_pin < k_rx_pin_0 ||
-      rx_pin > k_rx_pin_max) {
+  if (tx_pin > k_rx_pin_max || rx_pin > k_rx_pin_max) {
     return k_rx_err_invalid_arg;
   }
 
@@ -289,8 +288,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
   }
 
   /* Validate channel */
-  if ((uint8_t)config->channel < k_uart_channel_min ||
-      (uint8_t)config->channel >= s_uart_max_channels) {
+  if ((uint8_t)config->channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -351,7 +349,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
 rx_err_t uart_deinit_channel(const uart_channel_t channel)
 {
   /* Validate channel */
-  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -373,7 +371,7 @@ rx_err_t uart_deinit_channel(const uart_channel_t channel)
 rx_err_t uart_putc_channel(const uart_channel_t channel, const char data)
 {
   /* Validate channel */
-  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -417,7 +415,7 @@ rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -453,7 +451,7 @@ rx_err_t uart_write_channel(const uart_channel_t channel, const uint8_t* data, u
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -479,7 +477,7 @@ rx_err_t uart_getc_channel(const uart_channel_t channel, char* data)
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -524,7 +522,7 @@ rx_err_t uart_read_channel(const uart_channel_t channel,
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -558,7 +556,7 @@ rx_err_t uart_rx_available(const uart_channel_t channel, bool* available)
     return k_rx_err_null_ptr;
   }
 
-  if ((uint8_t)channel < k_uart_channel_min || (uint8_t)channel >= s_uart_max_channels) {
+  if ((uint8_t)channel >= s_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
