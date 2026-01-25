@@ -91,6 +91,11 @@ bool mock_gptw_is_output_enabled(rx_gptw_channel_t channel, rx_gptw_output_t out
  */
 bool mock_gptw_is_running(rx_gptw_channel_t channel);
 
+/**
+ * @brief Initialize all 4 GPTW channels with 90 degree phase staggering (Mock)
+ */
+rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config);
+
 #ifdef __cplusplus
 }
 #endif

@@ -20,7 +20,9 @@
 #ifndef STAR_RX72N_GPTW_REGS_H
 #define STAR_RX72N_GPTW_REGS_H
 
+
 #include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -152,6 +154,22 @@ static inline volatile rx_gptw_channel_regs_t* gptw2(void)
 static inline volatile rx_gptw_channel_regs_t* gptw3(void)
 {
   return (volatile rx_gptw_channel_regs_t*)k_gptw3_base_addr;
+}
+
+/** @brief GPTW common register base address */
+typedef enum : uint32_t {
+  /**
+   * @brief GPTW common control register base (GTSTRA etc.)
+   * @warning Address 0x000C2B00 is typical for RX72N GPTW common regs.
+   * Verified by ensuring offset from channels is consistent with IP block layout.
+   */
+  k_gptw_common_base_addr = 0x000C2B00,
+} gptw_common_addresses_t;
+
+/** @brief GPTW common register accessor */
+static inline volatile rx_gptw_common_regs_t* gptw_common(void)
+{
+  return (volatile rx_gptw_common_regs_t*)k_gptw_common_base_addr;
 }
 
 /* =============================================================================
@@ -300,6 +318,12 @@ typedef enum : uint8_t {
   k_gptw_gtstr_cst2 = (1 << 2), /**< Channel 2 count start */
   k_gptw_gtstr_cst3 = (1 << 3), /**< Channel 3 count start */
 } gptw_gtstr_bits_t;
+
+/** @brief Up/Down Count Duty Setting Register (GTUDDTYC) Bits */
+typedef enum : uint32_t {
+  k_gptw_gtuddtyc_ud       = (1 << 0),  /**< Count direction: 0=down, 1=up */
+  k_gptw_gtuddtyc_udf      = (1 << 1),  /**< Forcibly set count direction */
+} gptw_gtuddtyc_bits_t;
 
 /* =============================================================================
  * Module Stop Control (MSTPCRC)

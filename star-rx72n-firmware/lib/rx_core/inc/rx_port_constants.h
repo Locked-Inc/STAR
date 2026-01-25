@@ -434,8 +434,7 @@ static inline uint8_t rx_pin_from_pin(rx_port_pin_t pin)
 
   /* Post-condition: result fits in rx_pin_number_t range (0x00-0x07) */
   /* Note: result >= k_rx_pin_min is always true for uint8_t since k_rx_pin_min == 0 */
-  RX_ASSERT(result <= k_rx_pin_max,
-            "Pin number must be in range k_rx_pin_min..k_rx_pin_max");
+  RX_ASSERT(result <= k_rx_pin_max, "Pin number must be in range k_rx_pin_min..k_rx_pin_max");
 
   return result;
 }
