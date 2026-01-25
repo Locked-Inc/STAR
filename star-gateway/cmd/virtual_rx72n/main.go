@@ -38,7 +38,7 @@ const (
 	SocketPath = "/tmp/star_rx72n.sock"
 
 	// MaxFrameSize is the maximum expected frame size (must match frame.MaxPayloadSize + overhead).
-	MaxFrameSize = 2048
+	MaxFrameSize = frame.MaxFrameSize
 
 	// SimulatorMarker is the value written to the first byte to prove simulator processed the frame.
 	SimulatorMarker = 0xFF
@@ -184,9 +184,11 @@ func handleConnection(conn net.Conn) {
 
 		// 5. Encode the response frame (increment sequence)
 		encoder := frame.NewEncoder()
+		// Calculate next sequence number with explicit wraparound handling (uint16)
+		nextSeq := uint16((uint32(decodedFrame.Header.Sequence) + 1) & 0xFFFF)
 		responseFrame := &frame.Frame{
 			Header: frame.Header{
-				Sequence: decodedFrame.Header.Sequence + 1,
+				Sequence: nextSeq,
 				Length:   uint16(len(responsePayload)),
 				Type:     frame.FrameTypeResponse,
 				Flags:    frame.FlagNone,

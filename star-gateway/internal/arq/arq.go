@@ -91,6 +91,10 @@ type ARQ interface {
 
 	// Reset resets the ARQ state machine.
 	Reset()
+
+	// InitializeConnection resets state for a new connection.
+	// Should be called after establishing transport connection.
+	InitializeConnection() error
 }
 
 // Config holds ARQ configuration parameters.
@@ -387,6 +391,13 @@ func (s *StopAndWait) Reset() {
 	s.rxSequence = 0
 	s.retryCount = 0
 	s.pendingFrame = nil
+}
+
+// InitializeConnection resets the ARQ state for a new connection.
+// This ensures both sides start with synchronized sequence numbers.
+func (s *StopAndWait) InitializeConnection() error {
+	s.Reset()
+	return nil
 }
 
 // Config returns the current ARQ configuration.

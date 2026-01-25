@@ -23,9 +23,9 @@ linters-settings:
       - name: package-comments
         disabled: true
       - name: exported
-        disabled: true
+        disabled: false
       - name: var-naming
-        disabled: true
+        disabled: false
 
 issues:
   max-issues-per-linter: 0

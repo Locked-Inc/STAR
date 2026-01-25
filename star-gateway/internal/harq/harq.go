@@ -1,7 +1,7 @@
 // Package harq implements Hybrid Automatic Repeat reQuest (HARQ) protocol
 // for reliable frame delivery over the SPI transport.
 //
-// The HARQ mechanism use`s Chase Combining (Type I) with the following properties:
+// The HARQ mechanism uses Chase Combining (Type I) with the following properties:
 //   - 16-bit sequence numbers with wraparound
 //   - ACK/NACK response frames
 //   - Configurable retry count and timeout
@@ -228,6 +228,9 @@ type ChaseCombining struct {
 	pendingFrame   *frame.Frame
 	pendingEncoded []byte // FEC-encoded payload for retransmission
 	expectedLen    int    // Expected decoded length for current frame
+
+	// Full-duplex SPI: Store response received during transmit
+	lastRxData []byte
 }
 
 // NewChaseCombining creates a new Chase Combining HARQ handler.
@@ -286,7 +289,7 @@ func (h *ChaseCombining) Send(ctx context.Context, data []byte, p ...Priority) e
 	// Retry loop (Chase Combining: same encoded frame each time)
 	for attempt := 0; attempt <= h.config.MaxRetries; attempt++ {
 		frameToSend := h.frameForAttempt(attempt)
-		if err := h.transmitFrame(frameToSend); err != nil {
+		if err := h.transmitFrame(ctx, frameToSend); err != nil {
 			return err
 		}
 
@@ -323,16 +326,15 @@ func (h *ChaseCombining) Receive(ctx context.Context) (*ReceiveResult, error) {
 	if cancel != nil {
 		defer cancel()
 	}
-	if err := h.validateReceiveDependencies(); err != nil {
-		return nil, err
-	}
 
 	f, err := h.receiveFrame(rcvCtx)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return h.handleReceivedFrame(f)
+	result, err := h.handleReceivedFrame(f)
+	return result, err
 }
 
 func (h *ChaseCombining) validateSendDependencies() error {
@@ -403,18 +405,25 @@ func (h *ChaseCombining) frameForAttempt(attempt int) *frame.Frame {
 	return frameToSend
 }
 
-func (h *ChaseCombining) transmitFrame(frameToSend *frame.Frame) error {
+func (h *ChaseCombining) transmitFrame(ctx context.Context, frameToSend *frame.Frame) error {
 	encoded, err := h.encoder.Encode(frameToSend)
 	if err != nil {
 		h.setErrorState()
 		return fmt.Errorf("harq: failed to encode frame: %w", err)
 	}
 
-	_, err = h.transport.Send(encoded)
+	// Full-duplex SPI: Send command and receive response atomically
+	// The RX72N will send its telemetry frame back during our command transmission
+	rxData, err := h.transport.Transfer(ctx, encoded)
 	if err != nil {
 		h.setErrorState()
-		return fmt.Errorf("harq: transport send failed: %w", err)
+		return fmt.Errorf("harq: transport transfer failed: %w", err)
 	}
+
+	// Store the received data for waitForAck to process
+	h.mu.Lock()
+	h.lastRxData = rxData
+	h.mu.Unlock()
 
 	return nil
 }
@@ -458,7 +467,7 @@ func (h *ChaseCombining) processAckFrame(ackFrame *frame.Frame, currentSeq uint1
 
 func (h *ChaseCombining) receiveContext(ctx context.Context) (context.Context, context.CancelFunc) {
 	if _, ok := ctx.Deadline(); !ok && h.config != nil && h.config.Timeout > 0 {
-		return context.WithTimeout(ctx, h.config.Timeout)
+		return context.WithTimeout(ctx, h.config.Timeout) // 10ms timeout
 	}
 	return ctx, nil
 }
@@ -480,25 +489,30 @@ func (h *ChaseCombining) validateReceiveDependencies() error {
 }
 
 func (h *ChaseCombining) receiveFrame(ctx context.Context) (*frame.Frame, error) {
-	applyReadDeadline(ctx, h.transport)
-	data, err := h.transport.Receive(frame.MaxFrameSize)
-	if err != nil {
-		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-			return nil, ErrTimeout
+	// Full-duplex SPI: Check if we have a stored response from previous Transfer()
+	h.mu.Lock()
+	data := h.lastRxData
+	h.lastRxData = nil // Clear after consuming
+	h.mu.Unlock()
+
+	// If no stored data, perform a new receive
+	if data == nil {
+		applyReadDeadline(ctx, h.transport)
+		var err error
+		data, err = h.transport.Receive(frame.MaxFrameSize)
+		if err != nil {
+			if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+				return nil, ErrTimeout
+			}
+			if errors.Is(ctx.Err(), context.Canceled) {
+				return nil, ctx.Err()
+			}
+			return nil, fmt.Errorf("harq: transport receive failed: %w", err)
 		}
-		if errors.Is(ctx.Err(), context.Canceled) {
-			return nil, ctx.Err()
-		}
-		return nil, fmt.Errorf("harq: transport receive failed: %w", err)
-	}
-	if err := ctx.Err(); err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			return nil, ErrTimeout
-		}
-		return nil, err
 	}
 
 	f, err := h.decoder.Decode(data)
+
 	if err != nil {
 		h.mu.Lock()
 		seq := h.rxSequence
@@ -519,6 +533,7 @@ func (h *ChaseCombining) handleReceivedFrame(f *frame.Frame) (*ReceiveResult, er
 	receivedSeq := f.Header.Sequence
 	expectedSeq := h.rxSequence
 	previousSeq := decrementSequence(h.rxSequence)
+
 	h.mu.Unlock()
 
 	if receivedSeq == expectedSeq {
@@ -658,19 +673,31 @@ func (h *ChaseCombining) waitForAck(ctx context.Context) (*frame.Frame, error) {
 		return nil, err
 	}
 
-	applyReadDeadline(ctx, h.transport)
-	data, err := h.transport.Receive(frame.MaxFrameSize)
-	if err != nil {
-		errCtx := ctx.Err()
-		switch {
-		case errors.Is(errCtx, context.DeadlineExceeded):
-			return nil, ErrTimeout
-		case errors.Is(errCtx, context.Canceled):
-			return nil, errCtx
-		default:
+	// Full-duplex SPI: Use the response already received during transmitFrame()
+	// In real SPI, the RX72N sent its response simultaneously with our command
+	h.mu.Lock()
+	data := h.lastRxData
+	h.lastRxData = nil // Clear after consuming
+	h.mu.Unlock()
+
+	if data == nil {
+		// Fallback to legacy behavior if no stored data
+		applyReadDeadline(ctx, h.transport)
+		var err error
+		data, err = h.transport.Receive(frame.MaxFrameSize)
+		if err != nil {
+			errCtx := ctx.Err()
+			switch {
+			case errors.Is(errCtx, context.DeadlineExceeded):
+				return nil, ErrTimeout
+			case errors.Is(errCtx, context.Canceled):
+				return nil, errCtx
+			default:
+			}
+			return nil, err
 		}
-		return nil, err
 	}
+
 	if errCtx := ctx.Err(); errCtx != nil {
 		switch {
 		case errors.Is(errCtx, context.DeadlineExceeded):
@@ -703,16 +730,20 @@ func applyReadDeadline(ctx context.Context, t transport.Transport) {
 
 // sendNack sends a NACK frame.
 func (h *ChaseCombining) sendNack(seq uint16) error {
-	return h.sendControlFrame(frame.FrameTypeNack, seq)
+	// Use a short timeout for control frames to avoid blocking
+	ctx, cancel := context.WithTimeout(context.Background(), h.config.Timeout)
+	defer cancel()
+	return h.sendControlFrame(ctx, frame.FrameTypeNack, seq)
 }
 
-// sendAck sends an ACK frame.
 func (h *ChaseCombining) sendAck(seq uint16) error {
-	return h.sendControlFrame(frame.FrameTypeAck, seq)
+	ctx, cancel := context.WithTimeout(context.Background(), h.config.Timeout)
+	defer cancel()
+	err := h.sendControlFrame(ctx, frame.FrameTypeAck, seq)
+	return err
 }
 
-// sendControlFrame sends an ACK or NACK frame.
-func (h *ChaseCombining) sendControlFrame(frameType frame.FrameType, seq uint16) error {
+func (h *ChaseCombining) sendControlFrame(ctx context.Context, frameType frame.FrameType, seq uint16) error {
 	if h.transport == nil {
 		return ErrTransportNil
 	}
@@ -731,8 +762,18 @@ func (h *ChaseCombining) sendControlFrame(frameType frame.FrameType, seq uint16)
 		return err
 	}
 
-	_, err = h.transport.Send(encoded)
-	return err
+	// Full-duplex SPI: Send ACK/NACK and receive next frame atomically
+	rxData, err := h.transport.Transfer(ctx, encoded)
+	if err != nil {
+		return err
+	}
+
+	// Store the received data for the next Receive() call to process
+	h.mu.Lock()
+	h.lastRxData = rxData
+	h.mu.Unlock()
+
+	return nil
 }
 
 // setErrorState transitions to error state (thread-safe).

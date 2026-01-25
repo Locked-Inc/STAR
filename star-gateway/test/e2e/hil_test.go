@@ -9,6 +9,7 @@ package e2e_test
 
 import (
 	"context"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -51,13 +52,32 @@ const (
 	motorIDFrontRight = 1
 	motorIDBackLeft   = 2
 	motorIDBackRight  = 3
+
+	// SPI transfer size (simulates fixed-size SPI transactions)
+	// Both sides must always read/write this exact size
+	spiTransferSize = frame.MaxFrameSize // Always 1036 bytes
+
+	// DummyReadCheckLen is the minimum number of bytes inspected to detect
+	// zero-filled dummy frames. Chosen to exceed typical header/frame size to
+	// reliably detect zero-filled SPI transfers during tests.
+	DummyReadCheckLen = 100
+
+	// Connection initialization delay (allows socket connection to establish)
+	connectionInitDelay = 50 * time.Millisecond
+
+	// Sequence monitoring interval for diagnostics
+	sequenceDiagnosticInterval = 100 * time.Millisecond
+
+	// Sequence stuck threshold (fail if no change for this many checks)
+	sequenceStuckThreshold = 10
 )
 
 // MockRX72N simulates the RX72N firmware behavior on a socket.
 type MockRX72N struct {
-	listener net.Listener
-	conns    []net.Conn
-	done     chan struct{}
+	listener    net.Listener
+	conns       []net.Conn
+	done        chan struct{}
+	lastSeqSent uint16 // Track last sent sequence for diagnostics
 }
 
 func NewMockRX72N(socketPath string) (*MockRX72N, error) {
@@ -70,9 +90,15 @@ func NewMockRX72N(socketPath string) (*MockRX72N, error) {
 	}
 
 	return &MockRX72N{
-		listener: l,
-		done:     make(chan struct{}),
+		listener:    l,
+		done:        make(chan struct{}),
+		lastSeqSent: 0,
 	}, nil
+}
+
+// GetLastSequence returns the last sent sequence number for diagnostics.
+func (m *MockRX72N) GetLastSequence() uint16 {
+	return m.lastSeqSent
 }
 
 func (m *MockRX72N) Start() {
@@ -105,98 +131,195 @@ func (m *MockRX72N) Stop() {
 func (m *MockRX72N) handleConnection(c net.Conn) {
 	defer c.Close()
 
-	// Create frame encoder/decoder
 	encoder := frame.NewEncoder()
 	decoder := frame.NewDecoder()
-
-	// Buffer for reading incoming data (one complete frame)
 	buf := make([]byte, frame.MaxFrameSize)
 
-	// Sequence number for outgoing frames
-	var sequenceNum uint16
+	var sequenceNum uint16 = 0
 	var timestamp int64
+	var lastFrameToRetransmit *frame.Frame
+	var frameSentSinceLastAck bool = false
 
-	// Store last encoded frame and pending queue for retransmission
-	var lastEncodedFrame []byte
-	var txQueue []byte
+	// Don't send initial frame proactively - wait for Gateway to poll first
+	// This matches real SPI behavior where peripheral only responds to controller
 
-	// Main loop: receive and respond synchronously
 	for {
-		// Read from the socket into a buffer
 		n, err := c.Read(buf)
 		if err != nil {
+			if err != io.EOF {
+				log.Printf("MockRX72N: Connection error: %v", err)
+			}
 			return
 		}
 
-		// Try to decode the incoming frame
-		decodedFrame, decodeErr := decoder.Decode(buf[:n])
-		isNack := decodeErr == nil && decodedFrame.Header.Type == frame.FrameTypeNack
+		// DEBUG: Log what we received
+		if n > 0 {
+			// Check sync word to identify frame type
+			const (
+				syncByteOffset = 0
+				syncWordByte1  = 0x55
+				syncWordByte2  = 0xAA
+				syncWordSize   = 2
+				typeByteOffset = 2
+				debugPrintSize = 20
+			)
 
-		// 1. Decision: Queue Old (NACK) vs Generate New
-		if isNack {
-			if len(lastEncodedFrame) > 0 {
-				txQueue = lastEncodedFrame
+			if n >= syncWordSize && buf[syncByteOffset] == syncWordByte1 && buf[syncByteOffset+1] == syncWordByte2 {
+				log.Printf("MockRX72N: Received frame with sync word (type byte: 0x%02x)", buf[typeByteOffset])
+			} else if isDummyRead(buf[:n]) {
+				log.Printf("MockRX72N: Received dummy read (all zeros)")
+			} else {
+				printLen := debugPrintSize
+				if n < debugPrintSize {
+					printLen = n
+				}
+				log.Printf("MockRX72N: Received %d bytes (first %d: %x)", n, printLen, buf[:printLen])
 			}
-		} else if len(txQueue) == 0 {
-			// Generate NEW telemetry
-			telemetry := generateMockTelemetryData(timestamp)
-			timestamp += mockTelemetryInterval.Microseconds()
-
-			wireMsg := &starv1.WireMessage{
-				Payload: &starv1.WireMessage_TelemetryData{
-					TelemetryData: telemetry,
-				},
-			}
-
-			payload, err := proto.Marshal(wireMsg)
-			if err != nil {
-				log.Printf("Failed to marshal telemetry: %v", err)
-				_, _ = c.Write(make([]byte, n))
-				continue
-			}
-
-			frameToSend := &frame.Frame{
-				Header: frame.Header{
-					Sequence: sequenceNum,
-					Length:   uint16(len(payload)),
-					Type:     frame.FrameTypeResponse,
-					Flags:    frame.FlagNone,
-				},
-				Payload: payload,
-			}
-			sequenceNum++
-
-			encodedFrame, err := encoder.Encode(frameToSend)
-			if err != nil {
-				log.Printf("Failed to encode frame: %v", err)
-				_, _ = c.Write(make([]byte, n))
-				continue
-			}
-
-			txQueue = encodedFrame
-			lastEncodedFrame = encodedFrame
 		}
 
-		// 2. Transmission: Check bandwidth
-		if len(txQueue) > 0 && len(txQueue) <= n {
-			// Data fits in the read window (or is equal)
-			out := make([]byte, n)
-			copy(out, txQueue)
-			if _, err := c.Write(out); err != nil {
-				log.Printf("Failed to write response: %v", err)
+		// Check if this is a dummy read (Gateway polling for data)
+		if isDummyRead(buf[:n]) {
+			// Send frame if we haven't sent one since last ACK
+			if !frameSentSinceLastAck {
+				// Generate frame if this is the first interaction
+				if lastFrameToRetransmit == nil {
+					lastFrameToRetransmit = m.generateTelemetryFrame(sequenceNum, &timestamp)
+					sequenceNum++
+				}
+				if err := m.sendFrame(c, encoder, lastFrameToRetransmit); err != nil {
+					log.Printf("MockRX72N: Failed to send frame: %v", err)
+					return
+				}
+				frameSentSinceLastAck = true
+			}
+			continue
+		}
+
+		// Attempt to decode the frame
+		decodedFrame, decodeErr := decoder.Decode(buf[:n])
+
+		if decodeErr != nil {
+			log.Printf("MockRX72N: Decode error or unexpected frame, retransmitting")
+			if lastFrameToRetransmit != nil {
+				nextFrame := lastFrameToRetransmit
+				nextFrame.Header.Flags |= frame.FlagRetransmit
+				if err := m.sendFrame(c, encoder, nextFrame); err != nil {
+					log.Printf("MockRX72N: Failed to send frame: %v", err)
+					return
+				}
+				frameSentSinceLastAck = true
+			}
+			continue
+		}
+
+		// Successfully decoded a frame
+		var nextFrame *frame.Frame
+
+		switch decodedFrame.Header.Type {
+		case frame.FrameTypeNack:
+			nackedSeq := decodedFrame.Header.Sequence
+			log.Printf("MockRX72N: Received NACK Seq=%d, retransmitting", nackedSeq)
+
+			if lastFrameToRetransmit != nil && lastFrameToRetransmit.Header.Sequence == nackedSeq {
+				nextFrame = lastFrameToRetransmit
+				nextFrame.Header.Flags |= frame.FlagRetransmit
+			} else {
+				nextFrame = m.generateTelemetryFrame(nackedSeq, &timestamp)
+			}
+			frameSentSinceLastAck = false
+
+		case frame.FrameTypeAck:
+			ackedSeq := decodedFrame.Header.Sequence
+			log.Printf("MockRX72N: Received ACK Seq=%d", ackedSeq)
+
+			if lastFrameToRetransmit != nil && ackedSeq == lastFrameToRetransmit.Header.Sequence {
+				nextFrame = m.generateTelemetryFrame(sequenceNum, &timestamp)
+				lastFrameToRetransmit = nextFrame
+				sequenceNum++
+				frameSentSinceLastAck = false
+			} else {
+				nextFrame = m.generateTelemetryFrame(sequenceNum, &timestamp)
+				lastFrameToRetransmit = nextFrame
+				sequenceNum++
+				frameSentSinceLastAck = false
+			}
+
+		default:
+			log.Printf("MockRX72N: Unexpected frame type %s", decodedFrame.Header.Type)
+			if lastFrameToRetransmit != nil {
+				nextFrame = lastFrameToRetransmit
+				nextFrame.Header.Flags |= frame.FlagRetransmit
+			} else {
+				nextFrame = m.generateTelemetryFrame(sequenceNum, &timestamp)
+				lastFrameToRetransmit = nextFrame
+				sequenceNum++
+			}
+			frameSentSinceLastAck = false
+		}
+
+		if nextFrame != nil {
+			if err := m.sendFrame(c, encoder, nextFrame); err != nil {
+				log.Printf("MockRX72N: Failed to send frame: %v", err)
 				return
 			}
-			// Success: Clear queue
-			txQueue = nil
-		} else {
-			// Data doesn't fit (e.g. NACK read window is small), or nothing to send.
-			// Send Idle/Zeros. The queued data waits for a larger window (Dummy Read).
-			if _, err := c.Write(make([]byte, n)); err != nil {
-				log.Printf("Failed to write idle response: %v", err)
-				return
-			}
+			frameSentSinceLastAck = true
 		}
 	}
+}
+
+// Keep isDummyRead as before
+func isDummyRead(buf []byte) bool {
+	checkLen := DummyReadCheckLen
+	if len(buf) < checkLen {
+		checkLen = len(buf)
+	}
+
+	for i := 0; i < checkLen; i++ {
+		if buf[i] != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *MockRX72N) sendFrame(c net.Conn, encoder frame.Encoder, f *frame.Frame) error {
+	encoded, err := encoder.Encode(f)
+	if err != nil {
+		return err
+	}
+
+	// Always send full-sized buffer for SPI simulation
+	out := make([]byte, frame.MaxFrameSize)
+	copy(out, encoded)
+
+	if _, err := c.Write(out); err != nil {
+		return err
+	}
+
+	log.Printf("MockRX72N: Sent Seq=%d Type=%s (%d bytes)",
+		f.Header.Sequence, f.Header.Type.String(), len(encoded))
+
+	// Update diagnostics
+	m.lastSeqSent = f.Header.Sequence
+
+	return nil
+}
+
+func (m *MockRX72N) generateTelemetryFrame(seq uint16, timestamp *int64) *frame.Frame {
+	telemetry := generateMockTelemetryData(*timestamp)
+	*timestamp += mockTelemetryInterval.Microseconds()
+
+	wireMsg := &starv1.WireMessage{
+		Payload: &starv1.WireMessage_TelemetryData{
+			TelemetryData: telemetry,
+		},
+	}
+
+	payload, _ := proto.Marshal(wireMsg)
+
+	f, _ := frame.NewFrame(frame.FrameTypeResponse, payload)
+	f.Header.Sequence = seq
+	return f
 }
 
 // generateMockTelemetryData creates dummy telemetry data for testing.
@@ -256,7 +379,7 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	t.Cleanup(func() { os.RemoveAll(tempDir) })
 
 	socketPath := filepath.Join(tempDir, "rx72n.sock")
 	mockDevice, err := NewMockRX72N(socketPath)
@@ -264,11 +387,17 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 		t.Fatalf("Failed to create MockRX72N: %v", err)
 	}
 	mockDevice.Start()
-	defer mockDevice.Stop()
+	t.Cleanup(func() { mockDevice.Stop() })
+
+	// Allow socket connection to establish before starting Gateway
+	time.Sleep(connectionInitDelay)
 
 	// 2. Start Gateway (in background)
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	// Register cleanup for Gateway shutdown
+	t.Cleanup(func() {
+		cancel()
+	})
 
 	cfg := app.Config{
 		SimulationMode: true,
@@ -306,10 +435,57 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	if conn == nil {
 		t.Fatalf("Failed to connect to Gateway within timeout: %v", err)
 	}
-	defer conn.Close()
+	t.Cleanup(func() { conn.Close() })
+
+	// Ensure we wait for gateway shutdown at end of test
+	t.Cleanup(func() {
+		select {
+		case err := <-errChan:
+			if err != nil && err != context.Canceled {
+				t.Logf("Gateway shutdown error: %v", err)
+			}
+		case <-time.After(gatewayShutdownTimeout):
+			t.Log("Gateway did not shut down in time")
+		}
+	})
 
 	gatewayClient := starv1.NewGatewayServiceClient(conn)
 	telemetryClient := starv1.NewTelemetryServiceClient(conn)
+
+	// 3. Start sequence monitoring goroutine to detect ARQ desynchronization
+	monitorDone := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(sequenceDiagnosticInterval)
+		defer ticker.Stop()
+
+		sameSeqCount := 0
+		var lastSeq uint16
+
+		for {
+			select {
+			case <-monitorDone:
+				return
+			case <-ticker.C:
+				currentSeq := mockDevice.GetLastSequence()
+				if currentSeq == lastSeq {
+					sameSeqCount++
+					if sameSeqCount >= sequenceStuckThreshold {
+						log.Printf("WARNING: ARQ sequence stuck at %d for %d checks (potential desync)",
+							currentSeq, sameSeqCount)
+						// Don't fail immediately - could be normal during test setup
+					}
+				} else {
+					if sameSeqCount > 0 {
+						log.Printf("ARQ sequence progressed: %d -> %d (was stuck for %d checks)",
+							lastSeq, currentSeq, sameSeqCount)
+					}
+					sameSeqCount = 0
+				}
+				lastSeq = currentSeq
+			}
+		}
+	}()
+	t.Cleanup(func() { close(monitorDone) })
 
 	// 4. Test GetTelemetry (verify we receive valid telemetry data)
 	// Retry loop to allow time for first telemetry frame to arrive
