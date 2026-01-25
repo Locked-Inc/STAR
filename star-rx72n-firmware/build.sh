@@ -1,17 +1,15 @@
 #!/bin/bash
 # Quick build script for RX72N firmware
+# NOTE: Protocol buffers should be generated before running this script
+# (via 'make proto-gen' or 'make proto-gen-firmware')
 
 set -e
 
 # Build Docker image (cached after first run)
 docker build -t rx72n-build .
 
-# Run build (includes proto generation inside container)
+# Run build in Docker container
 docker run --rm -v "$(pwd):/work" -w /work rx72n-build bash -c "
-    # Regenerate protocol buffers before building (nanopb for firmware)
-    echo 'Ensuring protocol buffers are up to date...'
-    cd /work/.. && make proto-gen-firmware && cd /work
-
     # Build firmware
     mkdir -p build
     cd build
