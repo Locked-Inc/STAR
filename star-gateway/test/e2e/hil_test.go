@@ -53,10 +53,6 @@ const (
 	motorIDBackLeft   = 2
 	motorIDBackRight  = 3
 
-	// SPI transfer size (simulates fixed-size SPI transactions)
-	// Both sides must always read/write this exact size
-	spiTransferSize = frame.MaxFrameSize // Always 1036 bytes
-
 	// DummyReadCheckLen is the minimum number of bytes inspected to detect
 	// zero-filled dummy frames. Chosen to exceed typical header/frame size to
 	// reliably detect zero-filled SPI transfers during tests.

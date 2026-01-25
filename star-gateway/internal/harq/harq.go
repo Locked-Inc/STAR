@@ -322,6 +322,10 @@ func (h *ChaseCombining) Receive(ctx context.Context) (*ReceiveResult, error) {
 		return nil, err
 	}
 
+	if err := h.validateReceiveDependencies(); err != nil {
+		return nil, err
+	}
+
 	rcvCtx, cancel := h.receiveContext(ctx)
 	if cancel != nil {
 		defer cancel()
@@ -349,6 +353,24 @@ func (h *ChaseCombining) validateSendDependencies() error {
 	}
 	if h.state == StateError {
 		return ErrInErrorState
+	}
+	return nil
+}
+
+func (h *ChaseCombining) validateReceiveDependencies() error {
+	h.mu.Lock()
+	if h.state == StateError {
+		h.mu.Unlock()
+		return ErrInErrorState
+	}
+	if h.transport == nil {
+		return ErrTransportNil
+	}
+	if h.decoder == nil {
+		return ErrDecoderNil
+	}
+	if h.config.FECEnabled && h.fecDecoder == nil {
+		return ErrFECDecoderNil
 	}
 	return nil
 }
@@ -472,22 +494,6 @@ func (h *ChaseCombining) receiveContext(ctx context.Context) (context.Context, c
 	return ctx, nil
 }
 
-func (h *ChaseCombining) validateReceiveDependencies() error {
-	if h.transport == nil {
-		return ErrTransportNil
-	}
-	if h.decoder == nil {
-		return ErrDecoderNil
-	}
-	if h.encoder == nil {
-		return ErrEncoderNil
-	}
-	if h.config.FECEnabled && h.fecDecoder == nil {
-		return ErrFECDecoderNil
-	}
-	return nil
-}
-
 func (h *ChaseCombining) receiveFrame(ctx context.Context) (*frame.Frame, error) {
 	// Full-duplex SPI: Check if we have a stored response from previous Transfer()
 	h.mu.Lock()
@@ -497,6 +503,9 @@ func (h *ChaseCombining) receiveFrame(ctx context.Context) (*frame.Frame, error)
 
 	// If no stored data, perform a new receive
 	if data == nil {
+		if h.transport == nil {
+			return nil, ErrTransportNil
+		}
 		applyReadDeadline(ctx, h.transport)
 		var err error
 		data, err = h.transport.Receive(frame.MaxFrameSize)
@@ -553,6 +562,13 @@ func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) (*ReceiveResult, er
 	fecDecoded := false
 
 	if h.config.FECEnabled && (f.Header.Flags&frame.FlagFECEnabled) != 0 {
+		if h.fecDecoder == nil {
+			h.mu.Lock()
+			h.state = StateError
+			h.mu.Unlock()
+			_ = h.sendNack(f.Header.Sequence)
+			return nil, ErrFECDecoderNil
+		}
 		softBits := bytesToSoftBits(f.Payload)
 		if err := h.softCombiner.Add(softBits); err != nil {
 			h.mu.Lock()
@@ -743,7 +759,7 @@ func (h *ChaseCombining) sendAck(seq uint16) error {
 	return err
 }
 
-func (h *ChaseCombining) sendControlFrame(ctx context.Context, frameType frame.FrameType, seq uint16) error {
+func (h *ChaseCombining) sendControlFrame(ctx context.Context, frameType frame.Type, seq uint16) error {
 	if h.transport == nil {
 		return ErrTransportNil
 	}

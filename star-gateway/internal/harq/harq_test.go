@@ -568,9 +568,14 @@ func TestSendControlFrame_Errors(t *testing.T) {
 	t.Run("EncoderNil", func(t *testing.T) {
 		harq := NewStopAndWait(nil, mock, nil, frame.NewDecoder())
 		mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
-		_, err := harq.Receive(context.Background())
-		if !errors.Is(err, ErrEncoderNil) {
-			t.Errorf("Receive() error = %v, want ErrEncoderNil", err)
+		result, err := harq.Receive(context.Background())
+		// With best-effort ACK, encoder nil errors are ignored.
+		// The payload should still be returned successfully.
+		if err != nil {
+			t.Errorf("Receive() error = %v, want nil (ACK errors are best-effort)", err)
+		}
+		if result == nil {
+			t.Error("Receive() result = nil, want result despite ACK encoder nil")
 		}
 	})
 

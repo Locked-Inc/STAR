@@ -454,7 +454,7 @@ func (s *StopAndWait) sendAck(seq uint16) error {
 }
 
 // sendControlFrame sends an ACK or NACK frame.
-func (s *StopAndWait) sendControlFrame(frameType frame.FrameType, seq uint16) error {
+func (s *StopAndWait) sendControlFrame(frameType frame.Type, seq uint16) error {
 	if s.transport == nil {
 		return ErrTransportNil
 	}
