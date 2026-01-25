@@ -14,6 +14,9 @@ Testing/
 *.d
 *.a
 
+# Generated nanopb headers/sources (copied from star-proto)
+lib/rx_nanopb/inc/gen/
+
 # CLion
 .idea/
 cmake-build-debug/
