@@ -109,6 +109,32 @@ void test_staggered_init_null_config_fails(void)
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
+/**
+ * @brief Test that zero frequency is rejected with k_rx_err_invalid_arg
+ *
+ * Verifies that rx_gptw_init_all_staggered() correctly rejects a configuration
+ * with frequency_hz = 0 (invalid frequency) and returns the appropriate error
+ * code.
+ */
+void test_staggered_init_zero_frequency_fails(void)
+{
+  rx_gptw_config_t config;
+  rx_err_t         err;
+
+  /* Initialize config structure with valid values except frequency */
+  config.frequency_hz         = 0;  /* Invalid: zero frequency */
+  config.wave_mode            = k_gptw_wave_tri_pwm3;
+  config.invert_polarity      = false;
+  config.deadtime_ns          = 0;
+  config.enable_complementary = false;
+
+  /* Call the API under test */
+  err = rx_gptw_init_all_staggered(&config);
+
+  /* Verify it returns invalid argument error */
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
 /* =============================================================================
  * Main Test Runner
  * =============================================================================
@@ -127,6 +153,7 @@ int main(void)
 
   RUN_TEST(test_staggered_init_success);
   RUN_TEST(test_staggered_init_null_config_fails);
+  RUN_TEST(test_staggered_init_zero_frequency_fails);
 
   return UNITY_END();
 }
