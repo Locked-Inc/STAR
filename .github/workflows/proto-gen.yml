@@ -1,0 +1,46 @@
+name: Protocol Buffer Generation
+
+on:
+  push:
+    paths:
+      - 'star-proto/proto/**/*.proto'
+  pull_request:
+    paths:
+      - 'star-proto/proto/**/*.proto'
+
+jobs:
+  generate-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+
+      - name: Generate protocol buffers
+        run: make proto-gen
+
+      - name: Buf format check
+        run: buf format proto --diff --exit-code
+        working-directory: star-proto
+
+      - name: Buf lint
+        run: buf lint proto
+        working-directory: star-proto
+
+      - name: Buf breaking against main
+        run: buf breaking proto --against '.git#branch=main'
+        working-directory: star-proto
+
+      - name: Check for uncommitted changes
+        run: |
+          git diff --exit-code star-proto/gen/ star-rx72n-firmware/lib/rx_nanopb/inc/gen/
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-protos
+          path: star-rx72n-firmware/lib/rx_nanopb/inc/gen/

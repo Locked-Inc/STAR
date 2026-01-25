@@ -1,0 +1,10 @@
+repos:
+  - repo: https://github.com/bufbuild/buf
+    rev: v1.50.1
+    hooks:
+      - id: buf-lint
+        args: ["star-proto/proto"]
+      - id: buf-format
+        args: ["star-proto/proto"]
+      - id: buf-generate
+        args: ["star-proto/proto"]

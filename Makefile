@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2
 
 help:
 	@echo "STAR Project Development Helper"
@@ -70,3 +70,27 @@ stop:
 	@echo "Stopping $(CONTAINER_NAME)..."
 	@docker stop $(CONTAINER_NAME) || true
 	@docker rm $(CONTAINER_NAME) || true
+
+# ------------------------------------------------------------
+# Protocol Buffer Generation (monorepo-wide)
+# ------------------------------------------------------------
+
+# Aggregate target: generate for all consumers
+proto-gen: proto-gen-go proto-gen-ros2 proto-gen-firmware
+
+# Generate code using buf for all configured plugins (runs in star-proto)
+proto-gen-go:
+	@echo "Generating protocol buffers (Go, TS, C, C++)..."
+	@cd star-proto && buf generate proto
+	@echo "✓ Code generated under star-proto/gen/"
+
+# Placeholder for ROS2-specific generation (if distinct tooling is added)
+proto-gen-ros2:
+	@echo "ROS2 proto generation is handled via buf; no separate step."
+
+# Copy nanopb outputs to firmware include directory
+proto-gen-firmware: proto-gen-go
+	@echo "Preparing firmware nanopb headers/sources..."
+	@mkdir -p star-rx72n-firmware/lib/rx_nanopb/inc/gen
+	@cp -v star-proto/gen/nanopb/star/v1/*.pb.h star-proto/gen/nanopb/star/v1/*.pb.c star-rx72n-firmware/lib/rx_nanopb/inc/gen/
+	@echo "✓ Firmware protos updated: star-rx72n-firmware/lib/rx_nanopb/inc/gen"

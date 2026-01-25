@@ -3,6 +3,10 @@
 
 set -e
 
+# Regenerate protocol buffers before building (nanopb for firmware)
+echo "Ensuring protocol buffers are up to date..."
+make -C .. proto-gen-firmware
+
 # Build Docker image (cached after first run)
 docker build -t rx72n-build .
 
