@@ -251,9 +251,14 @@ extern "C" {
 #define star_v1_SystemStatus_mode_ENUMTYPE              star_v1_RobotMode
 
 /* Initializer values for message structs */
-#define star_v1_GetTelemetryRequest_init_default {false, star_v1_RequestHeader_init_default}
+#define star_v1_GetTelemetryRequest_init_default                                                   \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_GetTelemetryResponse_init_default                                                  \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_TelemetryData_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_TelemetryData_init_default          \
+  }
 #define star_v1_StreamTelemetryRequest_init_default                                                \
   {                                                                                                \
     false, star_v1_RequestHeader_init_default, 0,                                                  \
@@ -261,41 +266,41 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_GetSystemStatusRequest_init_default {false, star_v1_RequestHeader_init_default}
+#define star_v1_GetSystemStatusRequest_init_default                                                \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_GetSystemStatusResponse_init_default                                               \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_SystemStatus_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_SystemStatus_init_default           \
+  }
 #define star_v1_TelemetryData_init_default                                                         \
-  {false,                                                                                          \
-   star_v1_ImuData_init_default,                                                                   \
-   false,                                                                                          \
-   star_v1_GpsData_init_default,                                                                   \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   false,                                                                                          \
-   google_protobuf_Timestamp_init_default,                                                         \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   false,                                                                                          \
-   star_v1_EncoderData_init_default,                                                               \
-   false,                                                                                          \
-   star_v1_EncoderData_init_default,                                                               \
-   false,                                                                                          \
-   star_v1_EncoderData_init_default,                                                               \
-   false,                                                                                          \
-   star_v1_EncoderData_init_default}
-#define star_v1_ImuData_init_default {0, 0, 0, 0, 0, 0, 0, 0, 0}
-#define star_v1_GpsData_init_default {0, 0, 0, 0, 0, _star_v1_GpsFix_MIN}
+  {                                                                                                \
+    false, star_v1_ImuData_init_default, false, star_v1_GpsData_init_default, 0, 0, 0, 0, 0,       \
+      false, google_protobuf_Timestamp_init_default, 0, 0, 0, 0, 0, false,                         \
+      star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false,            \
+      star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default                    \
+  }
+#define star_v1_ImuData_init_default                                                               \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0, 0, 0, 0                                                                      \
+  }
+#define star_v1_GpsData_init_default                                                               \
+  {                                                                                                \
+    0, 0, 0, 0, 0, _star_v1_GpsFix_MIN                                                             \
+  }
 #define star_v1_SystemStatus_init_default                                                          \
-  {_star_v1_ConnectionStatus_MIN, _star_v1_RobotMode_MIN, 0, 0, 0, {{NULL}, NULL}, 0, 0}
-#define star_v1_GetTelemetryRequest_init_zero {false, star_v1_RequestHeader_init_zero}
+  {                                                                                                \
+    _star_v1_ConnectionStatus_MIN, _star_v1_RobotMode_MIN, 0, 0, 0, {{NULL}, NULL}, 0, 0           \
+  }
+#define star_v1_GetTelemetryRequest_init_zero                                                      \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
 #define star_v1_GetTelemetryResponse_init_zero                                                     \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_TelemetryData_init_zero}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_TelemetryData_init_zero                \
+  }
 #define star_v1_StreamTelemetryRequest_init_zero                                                   \
   {                                                                                                \
     false, star_v1_RequestHeader_init_zero, 0,                                                     \
@@ -303,38 +308,33 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_GetSystemStatusRequest_init_zero {false, star_v1_RequestHeader_init_zero}
+#define star_v1_GetSystemStatusRequest_init_zero                                                   \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
 #define star_v1_GetSystemStatusResponse_init_zero                                                  \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemStatus_init_zero}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemStatus_init_zero                 \
+  }
 #define star_v1_TelemetryData_init_zero                                                            \
-  {false,                                                                                          \
-   star_v1_ImuData_init_zero,                                                                      \
-   false,                                                                                          \
-   star_v1_GpsData_init_zero,                                                                      \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   false,                                                                                          \
-   google_protobuf_Timestamp_init_zero,                                                            \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   false,                                                                                          \
-   star_v1_EncoderData_init_zero,                                                                  \
-   false,                                                                                          \
-   star_v1_EncoderData_init_zero,                                                                  \
-   false,                                                                                          \
-   star_v1_EncoderData_init_zero,                                                                  \
-   false,                                                                                          \
-   star_v1_EncoderData_init_zero}
-#define star_v1_ImuData_init_zero {0, 0, 0, 0, 0, 0, 0, 0, 0}
-#define star_v1_GpsData_init_zero {0, 0, 0, 0, 0, _star_v1_GpsFix_MIN}
+  {                                                                                                \
+    false, star_v1_ImuData_init_zero, false, star_v1_GpsData_init_zero, 0, 0, 0, 0, 0, false,      \
+      google_protobuf_Timestamp_init_zero, 0, 0, 0, 0, 0, false, star_v1_EncoderData_init_zero,    \
+      false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false,           \
+      star_v1_EncoderData_init_zero                                                                \
+  }
+#define star_v1_ImuData_init_zero                                                                  \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0, 0, 0, 0                                                                      \
+  }
+#define star_v1_GpsData_init_zero                                                                  \
+  {                                                                                                \
+    0, 0, 0, 0, 0, _star_v1_GpsFix_MIN                                                             \
+  }
 #define star_v1_SystemStatus_init_zero                                                             \
-  {_star_v1_ConnectionStatus_MIN, _star_v1_RobotMode_MIN, 0, 0, 0, {{NULL}, NULL}, 0, 0}
+  {                                                                                                \
+    _star_v1_ConnectionStatus_MIN, _star_v1_RobotMode_MIN, 0, 0, 0, {{NULL}, NULL}, 0, 0           \
+  }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_GetTelemetryRequest_header_tag        1

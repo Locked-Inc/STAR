@@ -1,0 +1,74 @@
+# .golangci.yml - Workspace-level golangci-lint configuration for STAR
+# Applies to all Go code in the workspace, excluding generated protobuf files.
+#
+# STAR Project - Texas A&M University
+# January 2026
+
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+
+linters:
+  enable:
+    - errcheck      # Check for unchecked errors
+    - govet         # Go vet
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Static analysis
+    - unused        # Detect unused constants, variables, functions
+
+linters-settings:
+  errcheck:
+    check-blank: false
+    check-type-assertions: false
+    exclude-functions:
+      - fmt.Print
+      - fmt.Println
+      - fmt.Printf
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-dirs:
+    - gen
+    - vendor
+    - node_modules
+  exclude-rules:
+    # Exclude generated protobuf files
+    - path: '\.pb\.go$'
+      linters:
+        - errcheck
+        - govet
+        - ineffassign
+        - staticcheck
+        - unused
+        - stylecheck
+        - revive
+    # Exclude vendor directory
+    - path: 'vendor/'
+      linters:
+        - errcheck
+        - govet
+        - ineffassign
+        - staticcheck
+        - unused
+        - stylecheck
+        - revive
+    # Exclude generated code directory
+    - path: 'gen/'
+      linters:
+        - errcheck
+        - govet
+        - ineffassign
+        - staticcheck
+        - unused
+        - stylecheck
+        - revive
+    # Exclude test files from certain checks
+    - path: '_test\.go$'
+      linters:
+        - errcheck
+        - unused

@@ -137,6 +137,11 @@ message TelemetryData {
   // Battery state of charge percentage (RX72N specific - BQ4050).
   // Range: 0 to 100 percent.
   uint32 battery_soc_percent = 13;
+
+  // Frame sequence number from transport layer for drop detection.
+  // Increments with each transmitted frame. Used by diagnostics to detect
+  // missing frames in the telemetry stream.
+  uint32 frame_sequence = 19;
 }
 
 // IMU sensor data (orientation, velocity, acceleration).
@@ -229,8 +234,8 @@ message SystemStatus {
   // Current operating mode.
   RobotMode mode = 2;
 
-  // ESP32 motor controller connected.
-  bool esp32_connected = 3;
+  // RX72N motor controller connected.
+  bool rx72n_connected = 3;
 
   // LiDAR sensor connected.
   bool lidar_connected = 4;
@@ -238,7 +243,7 @@ message SystemStatus {
   // ROS2 bridge connected.
   bool ros_connected = 5;
 
-  // ESP32 firmware version string.
+  // RX72N firmware version string.
   string firmware_version = 6;
 
   // System uptime in seconds.

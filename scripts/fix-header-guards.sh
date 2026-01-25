@@ -42,13 +42,14 @@ fixed_count=0
 while IFS= read -r -d '' file; do
     # Extract package name from path: star-ros2/src/PACKAGE/...
     rel_path="${file#star-ros2/src/}"
-    package_name="${rel_path%%/*}"
     
-    # Expected guard: PACKAGE__FILENAME_HPP_ (ROS2 standard double underscore)
-    # Example: star_pkg/include/star_pkg/header.hpp -> STAR_PKG__HEADER_HPP_
-    package=$(echo "$package_name" | tr '[:lower:]-' '[:upper:]_')
-    filename=$(basename "$file" .hpp | tr '[:lower:]-' '[:upper:]_')
-    expected_guard="${package}__${filename}_HPP_"
+    # Expected guard: PACKAGE__FILENAME_HPP_
+    package_name=${rel_path%%/*}
+    file_base=$(basename "$rel_path")
+    file_stem=${file_base%.*}
+    expected_guard=$(printf '%s__%s_HPP_' "$package_name" "$file_stem" \
+      | tr '[:lower:]' '[:upper:]' \
+      | tr '-' '_')
     
     # Read current guard from file
     current_guard=$(grep -m1 "^#ifndef " "$file" 2>/dev/null | sed 's/#ifndef //' || true)
@@ -77,7 +78,7 @@ while IFS= read -r -d '' file; do
                 sed -i "s/#define $current_guard/#define $expected_guard/" "$file"
                 sed -i "s|// $current_guard|// $expected_guard|" "$file"
             fi
-            ((fixed_count++))
+            fixed_count=$((fixed_count + 1))
             print_status "Fixed: $file"
         fi
     fi

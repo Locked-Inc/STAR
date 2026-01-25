@@ -14,8 +14,7 @@
 namespace star_spi_bridge
 {
 
-class SpiMessageConverter
-{
+class SpiMessageConverter {
 public:
   struct Parameters
   {
@@ -38,7 +37,8 @@ public:
   void telemetry_to_joint_state(
     const star::v1::TelemetryData & telemetry,
     sensor_msgs::msg::JointState & joint_state);
-  void telemetry_to_battery_state(
+  void
+  telemetry_to_battery_state(
     const star::v1::TelemetryData & telemetry,
     sensor_msgs::msg::BatteryState & battery_state);
 

@@ -398,65 +398,109 @@ extern "C" {
 #define star_v1_BatteryStatus_state_ENUMTYPE star_v1_BatteryStateEnum
 
 /* Initializer values for message structs */
-#define star_v1_GetBatteryStateRequest_init_default {false, star_v1_RequestHeader_init_default}
+#define star_v1_GetBatteryStateRequest_init_default                                                \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_GetBatteryStateResponse_init_default                                               \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_BatteryState_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_BatteryState_init_default           \
+  }
 #define star_v1_StreamBatteryStateRequest_init_default                                             \
-  {false, star_v1_RequestHeader_init_default, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0                                                   \
+  }
 #define star_v1_BatteryState_init_default                                                          \
-  {false,                                                                                          \
-   star_v1_CellData_init_default,                                                                  \
-   false,                                                                                          \
-   star_v1_TemperatureData_init_default,                                                           \
-   false,                                                                                          \
-   star_v1_CurrentData_init_default,                                                               \
-   false,                                                                                          \
-   star_v1_StateOfChargeData_init_default,                                                         \
-   false,                                                                                          \
-   star_v1_BatteryStatus_init_default,                                                             \
-   0}
-#define star_v1_CellData_init_default          {{{NULL}, NULL}, 0, 0, 0, 0, 0}
-#define star_v1_TemperatureData_init_default   {{{NULL}, NULL}, 0, 0, 0, 0}
-#define star_v1_CurrentData_init_default       {0, 0, 0, 0}
-#define star_v1_StateOfChargeData_init_default {0, 0, 0, 0, 0, 0}
+  {                                                                                                \
+    false, star_v1_CellData_init_default, false, star_v1_TemperatureData_init_default, false,      \
+      star_v1_CurrentData_init_default, false, star_v1_StateOfChargeData_init_default, false,      \
+      star_v1_BatteryStatus_init_default, 0                                                        \
+  }
+#define star_v1_CellData_init_default                                                              \
+  {                                                                                                \
+    {{NULL}, NULL}, 0, 0, 0, 0, 0                                                                  \
+  }
+#define star_v1_TemperatureData_init_default                                                       \
+  {                                                                                                \
+    {{NULL}, NULL}, 0, 0, 0, 0                                                                     \
+  }
+#define star_v1_CurrentData_init_default                                                           \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
+#define star_v1_StateOfChargeData_init_default                                                     \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0                                                                               \
+  }
 #define star_v1_BatteryStatus_init_default                                                         \
-  {0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   0,                                                                                              \
-   false,                                                                                          \
-   star_v1_SafetyFaults_init_default,                                                              \
-   _star_v1_BatteryStateEnum_MIN}
-#define star_v1_SafetyFaults_init_default         {0, 0, 0, 0, 0, 0, 0, 0}
-#define star_v1_ProtectionThresholds_init_default {0, 0, 0, 0, 0, 0}
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, false, star_v1_SafetyFaults_init_default,                           \
+      _star_v1_BatteryStateEnum_MIN                                                                \
+  }
+#define star_v1_SafetyFaults_init_default                                                          \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0, 0, 0                                                                         \
+  }
+#define star_v1_ProtectionThresholds_init_default                                                  \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0                                                                               \
+  }
 #define star_v1_GetProtectionThresholdsRequest_init_default                                        \
-  {false, star_v1_RequestHeader_init_default}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_GetProtectionThresholdsResponse_init_default                                       \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_ProtectionThresholds_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_ProtectionThresholds_init_default   \
+  }
 #define star_v1_SetProtectionThresholdsRequest_init_default                                        \
-  {false, star_v1_RequestHeader_init_default, false, star_v1_ProtectionThresholds_init_default}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, false, star_v1_ProtectionThresholds_init_default    \
+  }
 #define star_v1_SetProtectionThresholdsResponse_init_default                                       \
-  {false, star_v1_ResponseHeader_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default                                                     \
+  }
 #define star_v1_EnableCellBalancingRequest_init_default                                            \
-  {false, star_v1_RequestHeader_init_default, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0                                                   \
+  }
 #define star_v1_EnableCellBalancingResponse_init_default                                           \
-  {false, star_v1_ResponseHeader_init_default}
-#define star_v1_DisableCellBalancingRequest_init_default {false, star_v1_RequestHeader_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default                                                     \
+  }
+#define star_v1_DisableCellBalancingRequest_init_default                                           \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_DisableCellBalancingResponse_init_default                                          \
-  {false, star_v1_ResponseHeader_init_default}
-#define star_v1_GetBalancingStatusRequest_init_default {false, star_v1_RequestHeader_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default                                                     \
+  }
+#define star_v1_GetBalancingStatusRequest_init_default                                             \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_GetBalancingStatusResponse_init_default                                            \
-  {false, star_v1_ResponseHeader_init_default, 0}
-#define star_v1_ControlFetsRequest_init_default   {false, star_v1_RequestHeader_init_default, 0, 0}
-#define star_v1_ControlFetsResponse_init_default  {false, star_v1_ResponseHeader_init_default, 0, 0}
-#define star_v1_GetDeviceInfoRequest_init_default {false, star_v1_RequestHeader_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0                                                  \
+  }
+#define star_v1_ControlFetsRequest_init_default                                                    \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0, 0                                                \
+  }
+#define star_v1_ControlFetsResponse_init_default                                                   \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0, 0                                               \
+  }
+#define star_v1_GetDeviceInfoRequest_init_default                                                  \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_GetDeviceInfoResponse_init_default                                                 \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_BmsDeviceInfo_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_BmsDeviceInfo_init_default          \
+  }
 #define star_v1_BmsDeviceInfo_init_default                                                         \
   {                                                                                                \
     0, 0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL},                                                    \
@@ -464,49 +508,117 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_ResetDeviceRequest_init_default  {false, star_v1_RequestHeader_init_default}
-#define star_v1_ResetDeviceResponse_init_default {false, star_v1_ResponseHeader_init_default, 0}
-#define star_v1_GetBatteryStateRequest_init_zero {false, star_v1_RequestHeader_init_zero}
+#define star_v1_ResetDeviceRequest_init_default                                                    \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
+#define star_v1_ResetDeviceResponse_init_default                                                   \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0                                                  \
+  }
+#define star_v1_GetBatteryStateRequest_init_zero                                                   \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
 #define star_v1_GetBatteryStateResponse_init_zero                                                  \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_BatteryState_init_zero}
-#define star_v1_StreamBatteryStateRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_BatteryState_init_zero                 \
+  }
+#define star_v1_StreamBatteryStateRequest_init_zero                                                \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0                                                      \
+  }
 #define star_v1_BatteryState_init_zero                                                             \
-  {false,                                                                                          \
-   star_v1_CellData_init_zero,                                                                     \
-   false,                                                                                          \
-   star_v1_TemperatureData_init_zero,                                                              \
-   false,                                                                                          \
-   star_v1_CurrentData_init_zero,                                                                  \
-   false,                                                                                          \
-   star_v1_StateOfChargeData_init_zero,                                                            \
-   false,                                                                                          \
-   star_v1_BatteryStatus_init_zero,                                                                \
-   0}
-#define star_v1_CellData_init_zero          {{{NULL}, NULL}, 0, 0, 0, 0, 0}
-#define star_v1_TemperatureData_init_zero   {{{NULL}, NULL}, 0, 0, 0, 0}
-#define star_v1_CurrentData_init_zero       {0, 0, 0, 0}
-#define star_v1_StateOfChargeData_init_zero {0, 0, 0, 0, 0, 0}
+  {                                                                                                \
+    false, star_v1_CellData_init_zero, false, star_v1_TemperatureData_init_zero, false,            \
+      star_v1_CurrentData_init_zero, false, star_v1_StateOfChargeData_init_zero, false,            \
+      star_v1_BatteryStatus_init_zero, 0                                                           \
+  }
+#define star_v1_CellData_init_zero                                                                 \
+  {                                                                                                \
+    {{NULL}, NULL}, 0, 0, 0, 0, 0                                                                  \
+  }
+#define star_v1_TemperatureData_init_zero                                                          \
+  {                                                                                                \
+    {{NULL}, NULL}, 0, 0, 0, 0                                                                     \
+  }
+#define star_v1_CurrentData_init_zero                                                              \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
+#define star_v1_StateOfChargeData_init_zero                                                        \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0                                                                               \
+  }
 #define star_v1_BatteryStatus_init_zero                                                            \
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, false, star_v1_SafetyFaults_init_zero, _star_v1_BatteryStateEnum_MIN}
-#define star_v1_SafetyFaults_init_zero                   {0, 0, 0, 0, 0, 0, 0, 0}
-#define star_v1_ProtectionThresholds_init_zero           {0, 0, 0, 0, 0, 0}
-#define star_v1_GetProtectionThresholdsRequest_init_zero {false, star_v1_RequestHeader_init_zero}
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, false, star_v1_SafetyFaults_init_zero,                              \
+      _star_v1_BatteryStateEnum_MIN                                                                \
+  }
+#define star_v1_SafetyFaults_init_zero                                                             \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0, 0, 0                                                                         \
+  }
+#define star_v1_ProtectionThresholds_init_zero                                                     \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0                                                                               \
+  }
+#define star_v1_GetProtectionThresholdsRequest_init_zero                                           \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
 #define star_v1_GetProtectionThresholdsResponse_init_zero                                          \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_ProtectionThresholds_init_zero}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_ProtectionThresholds_init_zero         \
+  }
 #define star_v1_SetProtectionThresholdsRequest_init_zero                                           \
-  {false, star_v1_RequestHeader_init_zero, false, star_v1_ProtectionThresholds_init_zero}
-#define star_v1_SetProtectionThresholdsResponse_init_zero {false, star_v1_ResponseHeader_init_zero}
-#define star_v1_EnableCellBalancingRequest_init_zero      {false, star_v1_RequestHeader_init_zero, 0}
-#define star_v1_EnableCellBalancingResponse_init_zero     {false, star_v1_ResponseHeader_init_zero}
-#define star_v1_DisableCellBalancingRequest_init_zero     {false, star_v1_RequestHeader_init_zero}
-#define star_v1_DisableCellBalancingResponse_init_zero    {false, star_v1_ResponseHeader_init_zero}
-#define star_v1_GetBalancingStatusRequest_init_zero       {false, star_v1_RequestHeader_init_zero}
-#define star_v1_GetBalancingStatusResponse_init_zero      {false, star_v1_ResponseHeader_init_zero, 0}
-#define star_v1_ControlFetsRequest_init_zero              {false, star_v1_RequestHeader_init_zero, 0, 0}
-#define star_v1_ControlFetsResponse_init_zero             {false, star_v1_ResponseHeader_init_zero, 0, 0}
-#define star_v1_GetDeviceInfoRequest_init_zero            {false, star_v1_RequestHeader_init_zero}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, false, star_v1_ProtectionThresholds_init_zero          \
+  }
+#define star_v1_SetProtectionThresholdsResponse_init_zero                                          \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero                                                        \
+  }
+#define star_v1_EnableCellBalancingRequest_init_zero                                               \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0                                                      \
+  }
+#define star_v1_EnableCellBalancingResponse_init_zero                                              \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero                                                        \
+  }
+#define star_v1_DisableCellBalancingRequest_init_zero                                              \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
+#define star_v1_DisableCellBalancingResponse_init_zero                                             \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero                                                        \
+  }
+#define star_v1_GetBalancingStatusRequest_init_zero                                                \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
+#define star_v1_GetBalancingStatusResponse_init_zero                                               \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0                                                     \
+  }
+#define star_v1_ControlFetsRequest_init_zero                                                       \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0, 0                                                   \
+  }
+#define star_v1_ControlFetsResponse_init_zero                                                      \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0, 0                                                  \
+  }
+#define star_v1_GetDeviceInfoRequest_init_zero                                                     \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
 #define star_v1_GetDeviceInfoResponse_init_zero                                                    \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_BmsDeviceInfo_init_zero}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_BmsDeviceInfo_init_zero                \
+  }
 #define star_v1_BmsDeviceInfo_init_zero                                                            \
   {                                                                                                \
     0, 0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL},                                                    \
@@ -514,8 +626,14 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_ResetDeviceRequest_init_zero  {false, star_v1_RequestHeader_init_zero}
-#define star_v1_ResetDeviceResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0}
+#define star_v1_ResetDeviceRequest_init_zero                                                       \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
+#define star_v1_ResetDeviceResponse_init_zero                                                      \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0                                                     \
+  }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_GetBatteryStateRequest_header_tag               1
