@@ -28,4 +28,4 @@ buf generate /tmp/star-proto --template /tmp/buf.gen.ros2.yaml
 # Build ROS2
 cd /workspaces/STAR/star-ros2
 source /opt/ros/jazzy/setup.bash
-colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON

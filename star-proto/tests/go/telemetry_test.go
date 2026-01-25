@@ -1,3 +1,5 @@
+// Package starproto_test provides serialization and functionality tests for STAR Protocol Buffer messages.
+// Tests verify RX72N telemetry encoding, battery monitoring, encoder data, and safety fields.
 package starproto_test
 
 import (

@@ -1,5 +1,6 @@
 // message_converter.hpp - ROS2 ↔ Protobuf Message Converter
-// Bidirectional conversion between ROS2 standard messages and STAR Protocol Buffers.
+// Bidirectional conversion between ROS2 standard messages and STAR Protocol
+// Buffers.
 //
 // STAR Project - Texas A&M University
 // January 2026
@@ -8,12 +9,11 @@
 #define STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
 
 #include <cmath>
-#include <string>
 
-#include "geometry_msgs/msg/twist.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/battery_state.hpp"
-#include "std_msgs/msg/string.hpp"
+#include <geometry_msgs/msg/twist.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/battery_state.hpp>
+#include <std_msgs/msg/string.hpp>
 
 #include "star/v1/battery_management.pb.h"
 #include "star/v1/motor_control.pb.h"
@@ -25,11 +25,11 @@ namespace star
 /**
  * @brief Message converter for ROS2 ↔ Protobuf translation.
  *
- * Provides stateless conversion functions with input validation and unit conversions.
- * All conversions validate for NaN/infinity and clamp values to safe ranges.
+ * Provides stateless conversion functions with input validation and unit
+ * conversions. All conversions validate for NaN/infinity and clamp values to
+ * safe ranges.
  */
-class MessageConverter
-{
+class MessageConverter {
 public:
   // ===========================================================================
   // ROS2 → Protobuf Conversions
@@ -38,9 +38,10 @@ public:
   /**
    * @brief Convert ROS2 Twist message to Protobuf VelocityCommand.
    *
-   * Maps differential drive velocities from ROS2 standard Twist to STAR VelocityCommand.
-   * Uses differential drive kinematics: (linear, angular) → (motor_0, motor_1) wheel velocities.
-   * Note: motor_0 = left wheel, motor_1 = right wheel for differential drive.
+   * Maps differential drive velocities from ROS2 standard Twist to STAR
+   * VelocityCommand. Uses differential drive kinematics: (linear, angular) →
+   * (motor_0, motor_1) wheel velocities. Note: motor_0 = left wheel, motor_1 =
+   * right wheel for differential drive.
    *
    * Conversions:
    * - Linear velocity (m/s) → motor_0/motor_1 wheel velocities (m/s)
@@ -79,7 +80,8 @@ public:
    * @param proto_battery Output BatteryState protobuf
    * @return true if conversion successful, false if input validation failed
    */
-  static bool battery_state_to_proto(
+  static bool
+  battery_state_to_proto(
     const sensor_msgs::msg::BatteryState & ros_battery,
     star::v1::BatteryState & proto_battery);
 
@@ -121,7 +123,8 @@ public:
    * @param wheel_base Distance between wheels in meters (default: 0.150m)
    * @return true if conversion successful, false if input validation failed
    */
-  static bool velocity_command_to_twist(
+  static bool
+  velocity_command_to_twist(
     const star::v1::VelocityCommand & command,
     geometry_msgs::msg::Twist & twist,
     double wheel_base = 0.150);
@@ -138,10 +141,9 @@ public:
    * @param kd Output derivative gain
    * @return true if conversion successful, false if input validation failed
    */
-  static bool
-  pid_config_to_gains(
-    const star::v1::PidConfig & pid_config, double & kp, double & ki,
-    double & kd);
+  static bool pid_config_to_gains(
+    const star::v1::PidConfig & pid_config,
+    double & kp, double & ki, double & kd);
 
   // ===========================================================================
   // Validation Helpers
@@ -152,10 +154,7 @@ public:
    * @param value Value to validate
    * @return true if value is finite (not NaN, not infinity)
    */
-  static bool is_valid_double(double value)
-  {
-    return std::isfinite(value);
-  }
+  static bool is_valid_double(double value) {return std::isfinite(value);}
 
   /**
    * @brief Clamp value to range [min, max].
@@ -178,20 +177,23 @@ public:
 
 private:
   // Differential drive kinematics constants
-  static constexpr double k_max_velocity_mps = 2.0;  // VelocityCommand valid range
-  static constexpr double k_max_angular_vel = 4.0;   // Maximum angular velocity (rad/s)
+  static constexpr double k_max_velocity_mps =
+    2.0;   // VelocityCommand valid range
+  static constexpr double k_max_angular_vel =
+    4.0;   // Maximum angular velocity (rad/s)
 
-  // Battery state constants (ROS2 sensor_msgs/BatteryState uses NaN for unknown)
+  // Battery state constants (ROS2 sensor_msgs/BatteryState uses NaN for
+  // unknown)
   static constexpr float k_battery_nan_sentinel = NAN;
 
   // Unit conversion factors
-  static constexpr double k_v_to_mv = 1000.0;        // Volts to millivolts
-  static constexpr double k_a_to_ma = 1000.0;        // Amps to milliamps
-  static constexpr double k_ah_to_mah = 1000.0;      // Amp-hours to milliamp-hours
-  static constexpr double k_c_to_decic = 10.0;       // Celsius to deci-Celsius
-  static constexpr double k_percent_to_int = 100.0;  // 0-1 to 0-100%
+  static constexpr double k_v_to_mv = 1000.0;   // Volts to millivolts
+  static constexpr double k_a_to_ma = 1000.0;   // Amps to milliamps
+  static constexpr double k_ah_to_mah = 1000.0; // Amp-hours to milliamp-hours
+  static constexpr double k_c_to_decic = 10.0;  // Celsius to deci-Celsius
+  static constexpr double k_percent_to_int = 100.0; // 0-1 to 0-100%
 };
 
-}  // namespace star
+} // namespace star
 
-#endif  // STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
+#endif // STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_

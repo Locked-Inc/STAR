@@ -21,7 +21,16 @@ RUN apt-get update && apt-get install -y \
     protobuf-compiler-grpc \
     libgrpc-dev \
     curl \
+    clangd \
     && rm -rf /var/lib/apt/lists/*
+
+# Install nanopb for Protocol Buffer C code generation
+# Required for star-rx72n-firmware embedded target
+RUN rm -f /usr/lib/python*/EXTERNALLY-MANAGED && \
+    python3 -m pip install --no-cache-dir nanopb
+
+# Verify nanopb installation (fails fast if installation broken)
+RUN python3 -m pip show nanopb > /dev/null || (echo "ERROR: nanopb installation failed" && exit 1)
 
 # Install buf
 ARG BUF_VERSION=1.28.1

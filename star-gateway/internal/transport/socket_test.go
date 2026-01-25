@@ -219,7 +219,7 @@ func TestSocketTransport_SendReceive(t *testing.T) {
 				t.Errorf("Failed to close connection: %v", err)
 			}
 		}(conn)
-		io.Copy(conn, conn) // Echo
+		_, _ = io.Copy(conn, conn) // Echo
 	}()
 
 	transport := NewSocketTransport(socketPath)
@@ -298,12 +298,14 @@ func TestSocketTransport_TransferErrors(t *testing.T) {
 	}(ln2)
 
 	transport2 := NewSocketTransport(socketPath)
-	transport2.Open()
+	if err := transport2.Open(); err != nil {
+		t.Errorf("Failed to open transport2: %v", err)
+	}
 	defer transport2.Close()
 
 	go func() {
 		conn, _ := ln2.Accept()
-		conn.Read(make([]byte, 10))
+		_, _ = conn.Read(make([]byte, 10))
 		conn.Close() // Close without writing enough back
 	}()
 

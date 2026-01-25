@@ -1,3 +1,5 @@
+// Package starproto_test provides serialization and functionality tests for STAR Protocol Buffer messages.
+// This file tests motor control commands including velocity commands for 4-motor differential drive.
 package starproto_test
 
 import (
