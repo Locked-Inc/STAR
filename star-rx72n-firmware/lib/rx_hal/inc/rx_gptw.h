@@ -164,6 +164,34 @@ typedef struct {
  */
 
 /**
+ * @brief Initialize all 4 GPTW channels with 90 degree phase staggering
+ *
+ * Configures GPTW0-3 for synchronized PWM with phase offsets:
+ * - Channel 0: 0 deg
+ * - Channel 1: 90 deg
+ * - Channel 2: 180 deg
+ * - Channel 3: 270 deg
+ *
+ * Reduces peak current draw and EMI. Used instead of rx_gptw_init_pwm().
+ *
+ * Parameter validation performed:
+ * - config must be non-NULL
+ * - config->frequency_hz must be > 0
+ * - config->wave_mode must be a valid rx_gptw_wave_mode_t value
+ *
+ * @param[in] config Common configuration for all channels (frequency, wave mode, etc.)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if config is NULL
+ * @return k_rx_err_invalid_arg if config->frequency_hz is zero or config->wave_mode is invalid
+ * @return k_rx_err_hw_error if hardware initialization fails (e.g., gptw_common() returns NULL)
+ *
+ * @note Propagates rx_err_t codes from internal_calculate_period(),
+ *       internal_configure_gptw_hardware(), and internal_configure_mpc().
+ */
+rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config);
+
+/**
  * @brief Initialize GPTW channel for PWM output
  *
  * Configures GPTW channel for PWM mode (sawtooth or triangle wave).
