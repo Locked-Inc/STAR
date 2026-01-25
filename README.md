@@ -42,6 +42,16 @@ Each component has its own build system and documentation:
 
 Refer to component-specific README or CLAUDE.md files for detailed setup instructions.
 
+## GitHub CLI Authentication
+
+The first time you open this devcontainer, you'll need to authenticate GitHub CLI:
+
+```bash
+gh auth login
+```
+
+Follow the web browser flow. Your authentication will persist across container rebuilds thanks to the mounted `~/.config/gh` directory.
+
 ## Technology Stack
 
 - **Embedded:** C with ThreadX RTOS, Protocol Buffers (nanopb)
