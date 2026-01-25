@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 build-rx72n test-rx72n clean-rx72n
 
 help:
 	@echo "STAR Project Development Helper"
@@ -16,6 +16,13 @@ help:
 	@echo "  make build        - Build the ROS2 project (runs ./build-ros2.sh in Docker)"
 	@echo "  make format       - Format code (runs ./scripts/format-ros2.sh in Docker)"
 	@echo "  make shell        - Start an interactive shell in a new ephemeral container"
+	@echo ""
+	@echo "RX72N Firmware:"
+	@echo "  make build-rx72n  - Build RX72N firmware (regenerates protos first)"
+	@echo "  make test-rx72n   - Run RX72N unit tests (regenerates protos first)"
+	@echo ""
+	@echo "Protocol Buffers:"
+	@echo "  make proto-gen    - Generate all proto code (Go, TypeScript, C/nanopb)"
 	@echo ""
 	@echo "Persistent Container (optional):"
 	@echo "  make up           - Start a persistent background container named '$(CONTAINER_NAME)'"
@@ -94,3 +101,19 @@ proto-gen-firmware: proto-gen-go
 	@mkdir -p star-rx72n-firmware/lib/rx_nanopb/inc/gen
 	@cp -v star-proto/gen/nanopb/star/v1/*.pb.h star-proto/gen/nanopb/star/v1/*.pb.c star-rx72n-firmware/lib/rx_nanopb/inc/gen/
 	@echo "✓ Firmware protos updated: star-rx72n-firmware/lib/rx_nanopb/inc/gen"
+
+# Build RX72N firmware (regenerates protos first)
+build-rx72n: proto-gen
+	@echo "Building RX72N firmware..."
+	@cd star-rx72n-firmware && bash build.sh
+
+# Test RX72N firmware (regenerates protos first)
+test-rx72n: proto-gen
+	@echo "Running RX72N unit tests..."
+	@cd star-rx72n-firmware/tests && bash run_tests.sh
+
+# Clean RX72N build artifacts
+clean-rx72n:
+	@echo "Cleaning RX72N build directory..."
+	@cd star-rx72n-firmware && bash clean.sh
+	@echo "✓ RX72N build cleaned"
