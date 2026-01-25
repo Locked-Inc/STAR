@@ -11,6 +11,9 @@ on:
 jobs:
   generate-and-validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,6 +28,10 @@ jobs:
 
       - name: Buf format check
         run: buf format proto --diff --exit-code
+        working-directory: star-proto
+
+      - name: Buf build
+        run: buf build proto
         working-directory: star-proto
 
       - name: Buf lint
