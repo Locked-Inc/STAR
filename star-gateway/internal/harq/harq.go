@@ -359,8 +359,9 @@ func (h *ChaseCombining) validateSendDependencies() error {
 
 func (h *ChaseCombining) validateReceiveDependencies() error {
 	h.mu.Lock()
+	defer h.mu.Unlock()
+
 	if h.state == StateError {
-		h.mu.Unlock()
 		return ErrInErrorState
 	}
 	if h.transport == nil {

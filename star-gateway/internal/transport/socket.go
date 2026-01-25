@@ -161,6 +161,7 @@ func (s *SocketTransport) Send(data []byte) (int, error) {
 
 // Receive implements the legacy Transport interface.
 // Sends zeros and receives TransferSize bytes response.
+// Returns up to maxLen bytes from the response.
 func (s *SocketTransport) Receive(maxLen int) ([]byte, error) {
 
 	txBuf := make([]byte, TransferSize)
@@ -169,5 +170,11 @@ func (s *SocketTransport) Receive(maxLen int) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Truncate to maxLen if specified
+	if maxLen > 0 && len(rxBuf) > maxLen {
+		return rxBuf[:maxLen], nil
+	}
+
 	return rxBuf, nil
 }
