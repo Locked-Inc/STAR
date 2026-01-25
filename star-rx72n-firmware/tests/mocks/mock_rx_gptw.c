@@ -147,6 +147,34 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
   return k_rx_ok;
 }
 
+rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
+{
+  rx_err_t             err;
+  const uint32_t       max_channels = k_mock_gptw_max_channels;
+  rx_gptw_channel_t    channel;
+
+  /* Pre-condition: validate config pointer (NASA Power of 10 Rule 5) */
+  if (config == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
+  /* Pre-condition: validate frequency is non-zero */
+  if (config->frequency_hz == 0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Simulate initializing all channels */
+  for (uint32_t i = 0; i < max_channels; i++) {
+    channel = (rx_gptw_channel_t)i;
+    err     = rx_gptw_init_pwm(channel, config);
+    if (err != k_rx_ok) {
+      return err;
+    }
+  }
+
+  return k_rx_ok;
+}
+
 rx_err_t
 rx_gptw_set_duty(rx_gptw_channel_id_t channel, rx_gptw_output_id_t output, float duty_percent)
 {
