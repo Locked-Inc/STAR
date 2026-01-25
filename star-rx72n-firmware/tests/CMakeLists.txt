@@ -579,6 +579,7 @@ add_test(NAME test_rx_error_handler COMMAND test_rx_error_handler)
 add_test(NAME test_rx_pin_validator COMMAND test_rx_pin_validator)
 add_test(NAME test_rx_register_guard COMMAND test_rx_register_guard)
 add_test(NAME test_rx_nanopb COMMAND test_rx_nanopb)
+add_test(NAME test_rx_gptw_staggered COMMAND test_rx_gptw_staggered)
 
 # =============================================================================
 # Convenience Targets
@@ -586,7 +587,7 @@ add_test(NAME test_rx_nanopb COMMAND test_rx_nanopb)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS test_rx_crc32 test_rx_crc8 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_rx_obstacle_detect test_uart_hal test_gpio_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid test_rx_encoder test_rx_bq4050 test_rx_ds18b20 test_rx_error_handler test_rx_pin_validator test_rx_register_guard test_rx_nanopb
+    DEPENDS test_rx_crc32 test_rx_crc8 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_rx_obstacle_detect test_uart_hal test_gpio_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid test_rx_encoder test_rx_bq4050 test_rx_ds18b20 test_rx_error_handler test_rx_pin_validator test_rx_register_guard test_rx_nanopb test_rx_gptw_staggered
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests..."
 )

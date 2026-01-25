@@ -85,6 +85,16 @@ typedef enum : uint8_t {
   k_gptw_bit_set = 1, /**< Value for single bit in shift operations */
 } gptw_bit_constants_t;
 
+/** @brief GPTW channel mask for start/stop operations */
+typedef enum : uint8_t {
+  k_gptw_all_channels_mask = 0x0F, /**< Bitmask for all 4 GPTW channels (Ch0-3) */
+} gptw_channel_mask_t;
+
+/** @brief GPTW count direction values for GTUDDTYC register */
+typedef enum : uint32_t {
+  k_gptw_gtuddtyc_ud_down = 0, /**< Count direction down (UD bit = 0) */
+} gptw_direction_constants_t;
+
 /** @brief Port E pin indices for GPTW motor outputs */
 typedef enum : uint8_t {
   k_porte_gptw0_a = 5, /**< PE5/GTIOC0A - Motor 0 phase */
@@ -692,23 +702,31 @@ rx_err_t rx_gptw_stop(const rx_gptw_channel_t channel)
  * =============================================================================
  */
 
-/** @brief Phase offset divisors for staggered PWM */
+/**
+ * @brief Phase divisors for staggered PWM initialization
+ * @details Values represent the divisor used to calculate counter offset from period.
+ * k_phase_divisor_none=1 for 0-degree (no division needed, offset=0).
+ * Division by these values yields the phase offset in counts.
+ */
 typedef enum : uint8_t {
-  k_phase_offset_0   = 0, /**< No offset (0 deg) */
-  k_phase_offset_90  = 4, /**< 90 deg = period/4 */
-  k_phase_offset_180 = 2, /**< 180 deg = period/2 */
-  k_phase_offset_270 = 4, /**< 270 deg = 3*period/4 (handled specially) */
-} phase_offset_divisor_t;
+  k_phase_divisor_none    = 1, /**< 0 deg: no offset (safe default, never causes div-by-zero) */
+  k_phase_divisor_quarter = 4, /**< 90 deg = period/4 */
+  k_phase_divisor_half    = 2, /**< 180 deg = period/2 */
+  k_phase_divisor_three_quarter = 4, /**< 270 deg = 3*period/4 (multiplied by 3 then divided) */
+} gptw_phase_divisor_t;
 
 /**
  * @brief Calculate initial counter value and direction for phase staggering
  *
- * @param[in] channel GPTW channel
- * @param[in] period PWM period in counts
+ * @param[in] channel GPTW channel (must be k_gptw_channel_0 to k_gptw_channel_3)
+ * @param[in] period PWM period in counts (must be > 0)
  * @param[in] is_triangle True if triangle mode (center-aligned)
- * @param[out] init_count Pointer to store initial counter value
+ * @param[out] init_count Pointer to store initial counter value (must be non-NULL)
  * @param[out] init_dir_up Pointer to store initial direction (true=up, false=down)
- *                         Only valid for triangle mode.
+ *                         Only valid for triangle mode. (must be non-NULL)
+ *
+ * @note If any validation fails, outputs are set to safe defaults (0, true)
+ *       and the function returns early.
  */
 static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
                                             const uint32_t          period,
@@ -716,6 +734,26 @@ static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
                                             uint32_t*               init_count,
                                             bool*                   init_dir_up)
 {
+  /* Pre-condition: validate output pointers (NASA Power of 10 Rule 5) */
+  if (init_count == NULL || init_dir_up == NULL) {
+    /* Cannot proceed without valid output pointers - caller error */
+    return;
+  }
+
+  /* Pre-condition: validate period is non-zero to avoid division by zero */
+  if (period == 0) {
+    *init_count  = 0;
+    *init_dir_up = true;
+    return;
+  }
+
+  /* Pre-condition: validate channel is in valid range */
+  if ((int32_t)channel >= (int32_t)k_gptw_max_channels) {
+    *init_count  = 0;
+    *init_dir_up = true;
+    return;
+  }
+
   *init_dir_up = true; /* Default to counting up */
 
   if (!is_triangle) {
@@ -730,13 +768,13 @@ static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
         *init_count = 0;
         break;
       case k_gptw_channel_1:
-        *init_count = period / k_phase_offset_90;
+        *init_count = period / k_phase_divisor_quarter;
         break;
       case k_gptw_channel_2:
-        *init_count = period / k_phase_offset_180;
+        *init_count = period / k_phase_divisor_half;
         break;
       case k_gptw_channel_3:
-        *init_count = (period * 3) / k_phase_offset_270;
+        *init_count = (period * 3) / k_phase_divisor_three_quarter;
         break;
       default:
         *init_count = 0;
@@ -762,7 +800,7 @@ static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
         *init_dir_up = true;
         break;
       case k_gptw_channel_1:
-        *init_count  = period / 2;
+        *init_count  = period / k_phase_divisor_half;
         *init_dir_up = true;
         break;
       case k_gptw_channel_2:
@@ -770,7 +808,7 @@ static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
         *init_dir_up = false; /* Start at top, go down */
         break;
       case k_gptw_channel_3:
-        *init_count  = period / 2;
+        *init_count  = period / k_phase_divisor_half;
         *init_dir_up = false; /* Start at mid, go down */
         break;
       default:
@@ -780,12 +818,116 @@ static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
   }
 }
 
+/**
+ * @brief Configure a single GPTW channel for staggered PWM
+ *
+ * Performs hardware configuration, MPC setup, pin configuration, and phase
+ * staggering for one GPTW channel.
+ *
+ * @param[in] channel     GPTW channel to configure
+ * @param[in] config      Configuration parameters
+ * @param[in] period      Pre-calculated period value
+ * @param[in] is_triangle True if using triangle wave mode
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if gptw base is NULL
+ * @return Propagated error codes from internal_configure_gptw_hardware or internal_configure_mpc
+ */
+static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t channel,
+                                                     const rx_gptw_config_t* config,
+                                                     const uint32_t          period,
+                                                     const bool              is_triangle)
+{
+  rx_err_t err;
+
+  /* Pre-condition: validate channel range (NASA Power of 10 Rule 5) */
+  if ((int32_t)channel >= (int32_t)k_gptw_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
+
+  /* Pre-condition: validate gptw pointer */
+  if (gptw == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Base hardware configuration */
+  err = internal_configure_gptw_hardware(gptw, config, period);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Configure MPC and Pins */
+  err = internal_configure_mpc(channel);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  internal_configure_port_pins(channel);
+
+  /* Apply Phase Staggering */
+  uint32_t init_count = 0;
+  bool     dir_up     = true;
+
+  internal_calculate_phase_offset(channel, period, is_triangle, &init_count, &dir_up);
+
+  /* Modify counter value (unlocked by configure function, but we need to unlock again
+   * since internal_configure_gptw_hardware locks it at the end)
+   */
+  gptw->gtwp  = k_gptw_gtwp_unlock;
+  gptw->gtcnt = init_count;
+
+  /* Handle Direction Seeding for Triangle Mode */
+  if (is_triangle) {
+    /* Use GTUDDTYC to force initial direction
+     * UD (bit 0): 0=Down, 1=Up
+     * UDF (bit 1): 1=Force
+     * Sequence: Set Force -> Clear Force (latch direction)
+     * Note: Manual verification confirmed UD=bit0, UDF=bit1.
+     */
+    uint32_t ud_val = dir_up ? k_gptw_gtuddtyc_ud : k_gptw_gtuddtyc_ud_down;
+
+    /* Force direction */
+    gptw->gtuddtyc = k_gptw_gtuddtyc_udf | ud_val;
+
+    /* Clear force bit to allow normal counting operation */
+    gptw->gtuddtyc = ud_val;
+  }
+
+  gptw->gtwp = k_gptw_gtwp_lock;
+
+  /* Update internal state */
+  s_gptw_period[channel]      = period;
+  s_gptw_initialized[channel] = true;
+
+  return k_rx_ok;
+}
+
 rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
 {
   rx_err_t err;
   uint32_t period;
 
+  /* Pre-condition: validate config pointer (NASA Power of 10 Rule 5) */
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
+
+  /* Pre-condition: validate frequency is non-zero */
+  if (config->frequency_hz == 0) {
+    rx_log_error(s_tag, "frequency_hz is zero");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition: validate wave_mode is within allowed values */
+  switch (config->wave_mode) {
+    case k_gptw_wave_saw_pwm:
+    case k_gptw_wave_tri_pwm1:
+    case k_gptw_wave_tri_pwm2:
+    case k_gptw_wave_tri_pwm3:
+      break;
+    default:
+      rx_log_error(s_tag, "Invalid wave_mode");
+      return k_rx_err_invalid_arg;
+  }
 
   rx_log_info(s_tag, "Initializing all GPTW channels (staggered)");
 
@@ -793,10 +935,8 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
   internal_enable_gptw_module_clock();
 
   /* Stop all channels atomically to ensure clean config */
-  /* GTSTPA register in common block controls stop for all channels */
-  /* Writes to this register stop the counters */
   if (gptw_common() != NULL) {
-    gptw_common()->gtstpa = 0x0F; /* Stop Ch0-3 */
+    gptw_common()->gtstpa = k_gptw_all_channels_mask; /* Stop Ch0-3 */
   }
 
   /* Calculate period once (assumes same frequency for all) */
@@ -807,66 +947,20 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
 
   const bool is_triangle = internal_is_triangle_mode(config->wave_mode);
 
-  /* Configure each channel */
+  /* Configure each channel using helper function */
   for (uint8_t i = 0; i < k_gptw_max_channels; i++) {
-    rx_gptw_channel_t                channel = (rx_gptw_channel_t)i;
-    volatile rx_gptw_channel_regs_t* gptw    = internal_get_gptw_base(channel);
+    rx_gptw_channel_t channel = (rx_gptw_channel_t)i;
 
-    if (gptw == NULL)
-      continue;
-
-    /* Base hardware configuration */
-    err = internal_configure_gptw_hardware(gptw, config, period);
-    if (err != k_rx_ok)
+    err = internal_configure_channel_staggered(channel, config, period, is_triangle);
+    if (err != k_rx_ok) {
       return err;
-
-    /* Configure MPC and Pins */
-    err = internal_configure_mpc(channel);
-    if (err != k_rx_ok)
-      return err;
-    internal_configure_port_pins(channel);
-
-    /* Apply Phase Staggering */
-    uint32_t init_count = 0;
-    bool     dir_up     = true;
-
-    internal_calculate_phase_offset(channel, period, is_triangle, &init_count, &dir_up);
-
-    /* Modify counter value (unlocked by configure function, but we need to unlock again?)
-     * internal_configure_gptw_hardware locks it at the end.
-     */
-    gptw->gtwp  = k_gptw_gtwp_unlock;
-    gptw->gtcnt = init_count;
-
-    /* Handle Direction Seeding for Triangle Mode */
-    if (is_triangle) {
-      /* Use GTUDDTYC to force initial direction
-         * UD (bit 0): 0=Down, 1=Up
-         * UDF (bit 1): 1=Force
-         * Sequence: Set Force -> Clear Force (latch direction?)
-         * Note: Manual verification confirmed UD=bit0, UDF=bit1.
-         */
-      uint32_t ud_val = dir_up ? k_gptw_gtuddtyc_ud : 0;
-
-      /* Force direction */
-      gptw->gtuddtyc = k_gptw_gtuddtyc_udf | ud_val;
-
-      /* Clear force bit to allow normal counting operation */
-      /* Preserving the UD bit state just in case, though UDF=0 should disable force */
-      gptw->gtuddtyc = ud_val;
     }
-
-    gptw->gtwp = k_gptw_gtwp_lock;
-
-    /* Update internal state */
-    s_gptw_period[channel]      = period;
-    s_gptw_initialized[channel] = true;
   }
 
   /* Start all channels atomically */
   if (gptw_common() != NULL) {
     rx_log_info(s_tag, "Global start of GPTW channels");
-    gptw_common()->gtstra = 0x0F; /* Start Ch0-3 */
+    gptw_common()->gtstra = k_gptw_all_channels_mask; /* Start Ch0-3 */
   } else {
     return k_rx_err_hw_error;
   }
