@@ -194,8 +194,16 @@ check_file_organization() {
     local bad_guards=0
     if [ -n "$hpp_files" ]; then
         while IFS= read -r file; do
+            local rel_path="${file#star-ros2/src/}"
+            local package_name="${rel_path%%/*}"
+            local file_base
+            file_base=$(basename "$rel_path")
+            local file_stem="${file_base%.*}"
             local expected_guard
-            expected_guard=$(echo "$file" | sed 's|star-ros2/src/||' | sed 's|/|_|g' | tr '[:lower:]' '[:upper:]' | sed 's|\.HPP|_HPP_|')
+            expected_guard=$(printf '%s__%s_HPP_' "$package_name" "$file_stem" \
+              | tr '[:lower:]' '[:upper:]' \
+              | tr '-' '_')
+            
             if ! grep -q "#ifndef $expected_guard" "$file" 2>/dev/null; then
                 bad_guards=$((bad_guards + 1))
                 add_issue "  - Incorrect include guard: $file (expected: $expected_guard)"

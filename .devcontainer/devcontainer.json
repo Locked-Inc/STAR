@@ -1,0 +1,73 @@
+{
+  "name": "Existing Dockerfile",
+  "initializeCommand": "powershell -Command \"New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.ssh', '${localEnv:HOME}${localEnv:USERPROFILE}/.gemini', '${localEnv:HOME}${localEnv:USERPROFILE}/.claude' -ItemType Directory -Force; if (-not (Test-Path '${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig')) { New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig' -ItemType File }; if (-not (Test-Path '${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json')) { New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json' -ItemType File }\" || (mkdir -p \"${localEnv:HOME}${localEnv:USERPROFILE}/.ssh\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.gemini\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.claude\" && touch \"${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json\")",
+  "build": {
+    "context": "..",
+    "dockerfile": "../Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/git-lfs:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/go:1": {},
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/python:1": {},
+    "ghcr.io/devcontainers-extra/features/act:1": {},
+    "ghcr.io/devcontainers-extra/features/actionlint:1": {},
+    "ghcr.io/devcontainers-extra/features/claude-code:1": {},
+    "ghcr.io/siri404/devcontainer-ai-features/gemini-cli:1": {},
+    "ghcr.io/devcontainer-config/features/dot-config:3": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "enableNonRootDocker": "true",
+      "moby": "true"
+    }
+  },
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/star/.gitconfig,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/star/.ssh,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gemini,target=/home/star/.gemini,type=bind",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/star/.claude,type=bind",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json,target=/home/star/.claude.json,type=bind"
+  ],
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y clang-format clang clangd && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && cd star-proto/proto && buf mod update && cd ../..",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "bufbuild.vscode-buf",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "vitest.explorer",
+        "llvm-vs-code-extensions.vscode-clangd",
+        "vadimcn.vscode-lldb",
+        "ms-vscode.cmake-tools",
+        "ms-iot.vscode-ros",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "ryanluker.vscode-coverage-gutters",
+        "redhat.vscode-yaml",
+        "yzhang.markdown-all-in-one",
+        "gruntfuggly.todo-tree",
+        "streetsidesoftware.code-spell-checker",
+        "EditorConfig.EditorConfig",
+        "usernamehw.errorlens",
+        "formulahendry.code-runner",
+        "coderabbit.coderabbit-vscode",
+        "ms-vscode.cpptools-extension-pack",
+        "google.gemini-cli-vscode-ide-companion"
+      ],
+      "settings": {
+        "cmake.configureArgs": [
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
+        "clangd.arguments": [
+          "--compile-commands-dir=${workspaceFolder}/star-ros2/build",
+          "--background-index",
+          "--clang-tidy"
+        ]
+      }
+    }
+  }
+}

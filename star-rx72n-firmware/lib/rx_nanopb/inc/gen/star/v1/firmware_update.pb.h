@@ -365,40 +365,41 @@ extern "C" {
 
 /* Initializer values for message structs */
 #define star_v1_BeginUpdateRequest_init_default                                                    \
-  {false, star_v1_RequestHeader_init_default, 0, {{NULL}, NULL}, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0, {{NULL}, NULL}, 0                                \
+  }
 #define star_v1_BeginUpdateResponse_init_default                                                   \
-  {false,                                                                                          \
-   star_v1_ResponseHeader_init_default,                                                            \
-   0,                                                                                              \
-   0,                                                                                              \
-   {{NULL}, NULL},                                                                                 \
-   false,                                                                                          \
-   star_v1_FirmwareUpdateError_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0, 0, {{NULL}, NULL}, false,                       \
+      star_v1_FirmwareUpdateError_init_default                                                     \
+  }
 #define star_v1_WriteChunkRequest_init_default                                                     \
-  {false, star_v1_RequestHeader_init_default, false, star_v1_FirmwareChunk_init_default}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, false, star_v1_FirmwareChunk_init_default           \
+  }
 #define star_v1_WriteChunkResponse_init_default                                                    \
-  {false,                                                                                          \
-   star_v1_ResponseHeader_init_default,                                                            \
-   0,                                                                                              \
-   false,                                                                                          \
-   star_v1_FirmwareUpdateProgress_init_default}
-#define star_v1_FirmwareChunk_init_default {{{NULL}, NULL}, 0, 0, 0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0, false,                                          \
+      star_v1_FirmwareUpdateProgress_init_default                                                  \
+  }
+#define star_v1_FirmwareChunk_init_default                                                         \
+  {                                                                                                \
+    {{NULL}, NULL}, 0, 0, 0                                                                        \
+  }
 #define star_v1_StreamChunksResponse_init_default                                                  \
-  {false,                                                                                          \
-   star_v1_ResponseHeader_init_default,                                                            \
-   0,                                                                                              \
-   false,                                                                                          \
-   star_v1_FirmwareUpdateProgress_init_default,                                                    \
-   false,                                                                                          \
-   star_v1_FirmwareUpdateError_init_default}
-#define star_v1_FinalizeUpdateRequest_init_default {false, star_v1_RequestHeader_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0, false,                                          \
+      star_v1_FirmwareUpdateProgress_init_default, false, star_v1_FirmwareUpdateError_init_default \
+  }
+#define star_v1_FinalizeUpdateRequest_init_default                                                 \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_FinalizeUpdateResponse_init_default                                                \
-  {false,                                                                                          \
-   star_v1_ResponseHeader_init_default,                                                            \
-   0,                                                                                              \
-   0,                                                                                              \
-   false,                                                                                          \
-   star_v1_FirmwareUpdateError_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0, 0, false,                                       \
+      star_v1_FirmwareUpdateError_init_default                                                     \
+  }
 #define star_v1_AbortUpdateRequest_init_default                                                    \
   {                                                                                                \
     false, star_v1_RequestHeader_init_default,                                                     \
@@ -406,17 +407,38 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_AbortUpdateResponse_init_default      {false, star_v1_ResponseHeader_init_default, 0}
-#define star_v1_GetUpdateProgressRequest_init_default {false, star_v1_RequestHeader_init_default}
+#define star_v1_AbortUpdateResponse_init_default                                                   \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0                                                  \
+  }
+#define star_v1_GetUpdateProgressRequest_init_default                                              \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_GetUpdateProgressResponse_init_default                                             \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_FirmwareUpdateProgress_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_FirmwareUpdateProgress_init_default \
+  }
 #define star_v1_StreamUpdateProgressRequest_init_default                                           \
-  {false, star_v1_RequestHeader_init_default, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0                                                   \
+  }
 #define star_v1_FirmwareUpdateProgress_init_default                                                \
-  {0, 0, 0, 0, _star_v1_FirmwareUpdateState_MIN, 0, 0, 0}
-#define star_v1_RebootRequest_init_default   {false, star_v1_RequestHeader_init_default, 0}
-#define star_v1_RebootResponse_init_default  {false, star_v1_ResponseHeader_init_default, 0, 0}
-#define star_v1_RollbackRequest_init_default {false, star_v1_RequestHeader_init_default}
+  {                                                                                                \
+    0, 0, 0, 0, _star_v1_FirmwareUpdateState_MIN, 0, 0, 0                                          \
+  }
+#define star_v1_RebootRequest_init_default                                                         \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0                                                   \
+  }
+#define star_v1_RebootResponse_init_default                                                        \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0, 0                                               \
+  }
+#define star_v1_RollbackRequest_init_default                                                       \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_RollbackResponse_init_default                                                      \
   {                                                                                                \
     false, star_v1_ResponseHeader_init_default, 0,                                                 \
@@ -424,18 +446,23 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_MarkValidRequest_init_default       {false, star_v1_RequestHeader_init_default}
-#define star_v1_MarkValidResponse_init_default      {false, star_v1_ResponseHeader_init_default, 0}
-#define star_v1_GetFirmwareInfoRequest_init_default {false, star_v1_RequestHeader_init_default}
+#define star_v1_MarkValidRequest_init_default                                                      \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
+#define star_v1_MarkValidResponse_init_default                                                     \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0                                                  \
+  }
+#define star_v1_GetFirmwareInfoRequest_init_default                                                \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_GetFirmwareInfoResponse_init_default                                               \
-  {false,                                                                                          \
-   star_v1_ResponseHeader_init_default,                                                            \
-   false,                                                                                          \
-   star_v1_FirmwareInfo_init_default,                                                              \
-   false,                                                                                          \
-   star_v1_FirmwareInfo_init_default,                                                              \
-   0,                                                                                              \
-   0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_FirmwareInfo_init_default, false,   \
+      star_v1_FirmwareInfo_init_default, 0, 0                                                      \
+  }
 #define star_v1_FirmwareInfo_init_default                                                          \
   {                                                                                                \
     {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0, {{NULL}, NULL},                          \
@@ -444,33 +471,43 @@ extern "C" {
     }                                                                                              \
   }
 #define star_v1_FirmwareUpdateError_init_default                                                   \
-  {_star_v1_FirmwareUpdateErrorCode_MIN, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0}
+  {                                                                                                \
+    _star_v1_FirmwareUpdateErrorCode_MIN, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0                     \
+  }
 #define star_v1_BeginUpdateRequest_init_zero                                                       \
-  {false, star_v1_RequestHeader_init_zero, 0, {{NULL}, NULL}, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0, {{NULL}, NULL}, 0                                   \
+  }
 #define star_v1_BeginUpdateResponse_init_zero                                                      \
-  {false,                                                                                          \
-   star_v1_ResponseHeader_init_zero,                                                               \
-   0,                                                                                              \
-   0,                                                                                              \
-   {{NULL}, NULL},                                                                                 \
-   false,                                                                                          \
-   star_v1_FirmwareUpdateError_init_zero}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0, 0, {{NULL}, NULL}, false,                          \
+      star_v1_FirmwareUpdateError_init_zero                                                        \
+  }
 #define star_v1_WriteChunkRequest_init_zero                                                        \
-  {false, star_v1_RequestHeader_init_zero, false, star_v1_FirmwareChunk_init_zero}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, false, star_v1_FirmwareChunk_init_zero                 \
+  }
 #define star_v1_WriteChunkResponse_init_zero                                                       \
-  {false, star_v1_ResponseHeader_init_zero, 0, false, star_v1_FirmwareUpdateProgress_init_zero}
-#define star_v1_FirmwareChunk_init_zero {{{NULL}, NULL}, 0, 0, 0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0, false, star_v1_FirmwareUpdateProgress_init_zero    \
+  }
+#define star_v1_FirmwareChunk_init_zero                                                            \
+  {                                                                                                \
+    {{NULL}, NULL}, 0, 0, 0                                                                        \
+  }
 #define star_v1_StreamChunksResponse_init_zero                                                     \
-  {false,                                                                                          \
-   star_v1_ResponseHeader_init_zero,                                                               \
-   0,                                                                                              \
-   false,                                                                                          \
-   star_v1_FirmwareUpdateProgress_init_zero,                                                       \
-   false,                                                                                          \
-   star_v1_FirmwareUpdateError_init_zero}
-#define star_v1_FinalizeUpdateRequest_init_zero {false, star_v1_RequestHeader_init_zero}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0, false, star_v1_FirmwareUpdateProgress_init_zero,   \
+      false, star_v1_FirmwareUpdateError_init_zero                                                 \
+  }
+#define star_v1_FinalizeUpdateRequest_init_zero                                                    \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
 #define star_v1_FinalizeUpdateResponse_init_zero                                                   \
-  {false, star_v1_ResponseHeader_init_zero, 0, 0, false, star_v1_FirmwareUpdateError_init_zero}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0, 0, false, star_v1_FirmwareUpdateError_init_zero    \
+  }
 #define star_v1_AbortUpdateRequest_init_zero                                                       \
   {                                                                                                \
     false, star_v1_RequestHeader_init_zero,                                                        \
@@ -478,16 +515,38 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_AbortUpdateResponse_init_zero      {false, star_v1_ResponseHeader_init_zero, 0}
-#define star_v1_GetUpdateProgressRequest_init_zero {false, star_v1_RequestHeader_init_zero}
+#define star_v1_AbortUpdateResponse_init_zero                                                      \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0                                                     \
+  }
+#define star_v1_GetUpdateProgressRequest_init_zero                                                 \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
 #define star_v1_GetUpdateProgressResponse_init_zero                                                \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_FirmwareUpdateProgress_init_zero}
-#define star_v1_StreamUpdateProgressRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_FirmwareUpdateProgress_init_zero       \
+  }
+#define star_v1_StreamUpdateProgressRequest_init_zero                                              \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0                                                      \
+  }
 #define star_v1_FirmwareUpdateProgress_init_zero                                                   \
-  {0, 0, 0, 0, _star_v1_FirmwareUpdateState_MIN, 0, 0, 0}
-#define star_v1_RebootRequest_init_zero   {false, star_v1_RequestHeader_init_zero, 0}
-#define star_v1_RebootResponse_init_zero  {false, star_v1_ResponseHeader_init_zero, 0, 0}
-#define star_v1_RollbackRequest_init_zero {false, star_v1_RequestHeader_init_zero}
+  {                                                                                                \
+    0, 0, 0, 0, _star_v1_FirmwareUpdateState_MIN, 0, 0, 0                                          \
+  }
+#define star_v1_RebootRequest_init_zero                                                            \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0                                                      \
+  }
+#define star_v1_RebootResponse_init_zero                                                           \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0, 0                                                  \
+  }
+#define star_v1_RollbackRequest_init_zero                                                          \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
 #define star_v1_RollbackResponse_init_zero                                                         \
   {                                                                                                \
     false, star_v1_ResponseHeader_init_zero, 0,                                                    \
@@ -495,18 +554,23 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_MarkValidRequest_init_zero       {false, star_v1_RequestHeader_init_zero}
-#define star_v1_MarkValidResponse_init_zero      {false, star_v1_ResponseHeader_init_zero, 0}
-#define star_v1_GetFirmwareInfoRequest_init_zero {false, star_v1_RequestHeader_init_zero}
+#define star_v1_MarkValidRequest_init_zero                                                         \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
+#define star_v1_MarkValidResponse_init_zero                                                        \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0                                                     \
+  }
+#define star_v1_GetFirmwareInfoRequest_init_zero                                                   \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
 #define star_v1_GetFirmwareInfoResponse_init_zero                                                  \
-  {false,                                                                                          \
-   star_v1_ResponseHeader_init_zero,                                                               \
-   false,                                                                                          \
-   star_v1_FirmwareInfo_init_zero,                                                                 \
-   false,                                                                                          \
-   star_v1_FirmwareInfo_init_zero,                                                                 \
-   0,                                                                                              \
-   0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_FirmwareInfo_init_zero, false,         \
+      star_v1_FirmwareInfo_init_zero, 0, 0                                                         \
+  }
 #define star_v1_FirmwareInfo_init_zero                                                             \
   {                                                                                                \
     {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0, {{NULL}, NULL},                          \
@@ -515,7 +579,9 @@ extern "C" {
     }                                                                                              \
   }
 #define star_v1_FirmwareUpdateError_init_zero                                                      \
-  {_star_v1_FirmwareUpdateErrorCode_MIN, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0}
+  {                                                                                                \
+    _star_v1_FirmwareUpdateErrorCode_MIN, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0                     \
+  }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_BeginUpdateRequest_header_tag                          1

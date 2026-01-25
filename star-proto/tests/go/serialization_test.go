@@ -304,7 +304,7 @@ func TestSystemStatusRoundTrip(t *testing.T) {
 		name            string
 		connStatus      starv1.ConnectionStatus
 		mode            starv1.RobotMode
-		esp32Connected  bool
+		rx72nConnected  bool
 		lidarConnected  bool
 		rosConnected    bool
 		firmwareVersion string
@@ -322,7 +322,7 @@ func TestSystemStatusRoundTrip(t *testing.T) {
 			status := &starv1.SystemStatus{
 				ConnectionStatus: tc.connStatus,
 				Mode:             tc.mode,
-				Esp32Connected:   tc.esp32Connected,
+				Rx72NConnected:   tc.rx72nConnected,
 				LidarConnected:   tc.lidarConnected,
 				RosConnected:     tc.rosConnected,
 				FirmwareVersion:  tc.firmwareVersion,
@@ -338,7 +338,7 @@ func TestSystemStatusRoundTrip(t *testing.T) {
 
 			assert.Equal(t, tc.connStatus, parsed.ConnectionStatus)
 			assert.Equal(t, tc.mode, parsed.Mode)
-			assert.Equal(t, tc.esp32Connected, parsed.Esp32Connected)
+			assert.Equal(t, tc.rx72nConnected, parsed.Rx72NConnected)
 			assert.Equal(t, tc.lidarConnected, parsed.LidarConnected)
 			assert.Equal(t, tc.rosConnected, parsed.RosConnected)
 			assert.Equal(t, tc.firmwareVersion, parsed.FirmwareVersion)

@@ -255,27 +255,24 @@ check_package_cpplint() {
 }
 
 # Get expected header guard for a file
-# Pattern: PACKAGE__FILE_HPP_ (ROS2 standard with double underscore)
+# Pattern: PACKAGE__FILENAME_HPP_
 # Example: star_spi_bridge/include/star_spi_bridge/spi_driver.hpp
 #       -> STAR_SPI_BRIDGE__SPI_DRIVER_HPP_
 get_expected_guard() {
     local file="$1"
     local rel_path="${file#"$ROS2_DIR"/}"
 
-    # Extract package name (first directory component)
-    local package_name
-    package_name=$(echo "$rel_path" | cut -d'/' -f1)
+    local package_name="${rel_path%%/*}"
+    local file_base
+    file_base=$(basename "$rel_path")
+    local file_stem="${file_base%.*}"
 
-    # Extract file name (basename)
-    local file_name
-    file_name=$(basename "$file")
-
-    # Convert to uppercase and replace . with _
-    package_name=$(echo "$package_name" | tr '[:lower:]' '[:upper:]')
-    file_name=$(echo "$file_name" | tr '[:lower:].' '[:upper:]_')
-
-    # ROS2 standard format: PACKAGE__FILE_
-    echo "${package_name}__${file_name}_"
+    local guard
+    guard=$(printf '%s__%s_HPP_' "$package_name" "$file_stem" \
+      | tr '[:lower:]' '[:upper:]' \
+      | tr '-' '_')
+    
+    echo "$guard"
 }
 
 # Check header guards
@@ -361,9 +358,10 @@ fix_header_guards() {
                 sed -i "s/#ifndef $escaped_current_guard/#ifndef $escaped_expected_guard/" "$file"
                 sed -i "s/#define $escaped_current_guard/#define $escaped_expected_guard/" "$file"
                 sed -i "s|// $escaped_current_guard|// $escaped_expected_guard|" "$file"
-            fi
-            ((fixed_count++))
-            if [ "$VERBOSE" = true ]; then
+                        fi
+                        fixed_count=$((fixed_count + 1))
+                        if [ "$VERBOSE" = true ]; then
+            
                 print_status "Fixed guard: $file"
             fi
         fi

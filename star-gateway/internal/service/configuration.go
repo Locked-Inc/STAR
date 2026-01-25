@@ -467,7 +467,7 @@ func (s *ConfigurationService) receiveProtoMessage(ctx context.Context, target p
 		return err
 	}
 
-	payload, err := s.harqHandler.Receive(ctx)
+	result, err := s.harqHandler.Receive(ctx)
 	if err != nil {
 		return err
 	}
@@ -475,7 +475,7 @@ func (s *ConfigurationService) receiveProtoMessage(ctx context.Context, target p
 		return err
 	}
 
-	return proto.Unmarshal(payload, target)
+	return proto.Unmarshal(result.Payload, target)
 }
 
 // validateConfiguration validates all configuration parameters.

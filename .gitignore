@@ -137,14 +137,23 @@ PR_REVIEWS.md
 install/
 log/
 
-# Dev container (personal config - do not share)
-.devcontainer/
+# Personal VS Code settings (NOT workspace settings)
+.vscode/settings.local.json
+.vscode/*.local.json
 
-# Conductor (AI orchestrator state and history)
-conductor/
+# Personal environment overrides
+.devcontainer/devcontainer.local.json
 
-# Other tools
-core
-.cache/
-opencode.json
-star-rx72n-firmware/.doxygen_cache
+# Credentials (though yours are bind-mounted, so this is safe)
+.env.local
+*.local
+
+# Build artifacts
+**/build/
+**/dist/
+**/coverage.out
+**/.cache/
+
+# OS files
+.DS_Store
+Thumbs.db

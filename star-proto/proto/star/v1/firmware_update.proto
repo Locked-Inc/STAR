@@ -1,5 +1,5 @@
 // firmware_update.proto - STAR Firmware Update Protocol Buffer Definitions
-// OTA firmware update service for ESP32 motor controller.
+// OTA firmware update service for RX72N motor controller.
 //
 // Following Boston Dynamics style guide:
 // - Proto3 only, 100 char line limit, 4 space indent

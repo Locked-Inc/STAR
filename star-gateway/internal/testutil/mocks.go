@@ -13,7 +13,6 @@ import (
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
-	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 )
 
 const (
@@ -24,7 +23,7 @@ const (
 // MockHARQ is a mock implementation of the harq.HARQ interface.
 type MockHARQ struct {
 	SendFunc        func(ctx context.Context, data []byte, p ...harq.Priority) error
-	ReceiveFunc     func(ctx context.Context) ([]byte, error)
+	ReceiveFunc     func(ctx context.Context) (*harq.ReceiveResult, error)
 	GetStateFunc    func() harq.State
 	GetTxSeqFunc    func() uint16
 	GetRxSeqFunc    func() uint16
@@ -33,7 +32,7 @@ type MockHARQ struct {
 
 	// ReceiveChan is an optional channel for simulating HARQ receive operations.
 	// If set, Receive will pull from this channel instead of calling ReceiveFunc.
-	ReceiveChan chan []byte
+	ReceiveChan chan *harq.ReceiveResult
 }
 
 func (m *MockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
@@ -44,7 +43,7 @@ func (m *MockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) er
 	return nil
 }
 
-func (m *MockHARQ) Receive(ctx context.Context) ([]byte, error) {
+func (m *MockHARQ) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	if m.ReceiveFunc != nil {
 		return m.ReceiveFunc(ctx)
 	}
@@ -52,8 +51,8 @@ func (m *MockHARQ) Receive(ctx context.Context) ([]byte, error) {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
-		case data := <-m.ReceiveChan:
-			return data, nil
+		case result := <-m.ReceiveChan:
+			return result, nil
 		case <-time.After(DefaultHARQTimeout):
 			return nil, harq.ErrTimeout
 		}
@@ -90,15 +89,15 @@ func (m *MockHARQ) Reset() {
 
 // MockDispatcher is a mock implementation of the dispatcher.Dispatcher interface.
 type MockDispatcher struct {
-	SubscribeChan   chan *starv1.WireMessage
-	SubscribeFunc   func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage
-	UnsubscribeFunc func(msgType dispatcher.MessageType, ch <-chan *starv1.WireMessage)
+	SubscribeChan   chan *dispatcher.DispatchedMessage
+	SubscribeFunc   func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage
+	UnsubscribeFunc func(msgType dispatcher.MessageType, ch <-chan *dispatcher.DispatchedMessage)
 	StartFunc       func() error
 	StopFunc        func() error
 	GetStateFunc    func() dispatcher.State
 }
 
-func (m *MockDispatcher) Subscribe(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+func (m *MockDispatcher) Subscribe(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 	if m.SubscribeFunc != nil {
 		return m.SubscribeFunc(msgType)
 	}
@@ -106,11 +105,11 @@ func (m *MockDispatcher) Subscribe(msgType dispatcher.MessageType) <-chan *starv
 		return m.SubscribeChan
 	}
 	// Return a channel that never sends to avoid blocking tests
-	ch := make(chan *starv1.WireMessage)
+	ch := make(chan *dispatcher.DispatchedMessage)
 	return ch
 }
 
-func (m *MockDispatcher) Unsubscribe(msgType dispatcher.MessageType, ch <-chan *starv1.WireMessage) {
+func (m *MockDispatcher) Unsubscribe(msgType dispatcher.MessageType, ch <-chan *dispatcher.DispatchedMessage) {
 	if m.UnsubscribeFunc != nil {
 		m.UnsubscribeFunc(msgType, ch)
 	}

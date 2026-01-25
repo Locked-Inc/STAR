@@ -95,6 +95,7 @@ type BatteryService struct {
 	ctx           context.Context
 	cancel        context.CancelFunc
 	wg            sync.WaitGroup
+	started       chan struct{} // Signal when background goroutine initialized
 }
 
 // NewBatteryService creates a new BatteryService.
@@ -121,11 +122,20 @@ func NewBatteryService(ctx context.Context, h harq.HARQ, d dispatcher.Dispatcher
 		latestBattery: &batteryHolder{},
 		ctx:           ctx,
 		cancel:        cancel,
+		started:       make(chan struct{}),
 	}
 
 	// Start background goroutine to update cached battery state
 	svc.wg.Add(1)
 	go svc.updateBatteryCache()
+
+	// Wait for background goroutine to initialize (with timeout)
+	select {
+	case <-svc.started:
+		// Goroutine initialized successfully
+	case <-time.After(5 * time.Second):
+		panic("battery service background goroutine failed to start within 5 seconds")
+	}
 
 	return svc
 }
@@ -137,23 +147,32 @@ func (s *BatteryService) updateBatteryCache() {
 	batteryCh := s.dispatcher.Subscribe(dispatcher.MessageTypeBatteryData)
 	defer s.dispatcher.Unsubscribe(dispatcher.MessageTypeBatteryData, batteryCh)
 
+	// Signal that initialization is complete
+	close(s.started)
+
 	for {
 		select {
 		case <-s.ctx.Done():
 			return
-		case wireMsg, ok := <-batteryCh:
+		case dispMsg, ok := <-batteryCh:
 			if !ok {
 				return
 			}
-			if wireMsg == nil {
-				s.logger.Warn("received nil wire message from dispatcher in battery cache update")
+			if dispMsg == nil || dispMsg.WireMsg == nil {
+				s.logger.Warn("received nil message from dispatcher in battery cache update")
 				continue
 			}
-			batteryState := wireMsg.GetBatteryState()
+			batteryState := dispMsg.WireMsg.GetBatteryState()
 			if batteryState == nil {
 				s.logger.Warn("received wire message with nil battery state in cache update")
 				continue
 			}
+
+			// TODO: Populate frame sequence when BatteryState protobuf gets frame_sequence field
+			// if dispMsg.Metadata != nil {
+			//     batteryState.FrameSequence = uint32(dispMsg.Metadata.Sequence)
+			// }
+
 			s.latestBattery.Store(batteryState)
 		}
 	}
@@ -183,13 +202,13 @@ func (s *BatteryService) sendProtoMessage(ctx context.Context, msg proto.Message
 
 // receiveProtoMessage receives data via HARQ and unmarshals into the target message.
 func (s *BatteryService) receiveProtoMessage(ctx context.Context, target proto.Message) error {
-	data, err := s.harqHandler.Receive(ctx)
+	result, err := s.harqHandler.Receive(ctx)
 	if err != nil {
 		s.logger.Error("HARQ receive failed", slog.String("error", err.Error()))
 		return fmt.Errorf("HARQ receive: %w", err)
 	}
 
-	if err := proto.Unmarshal(data, target); err != nil {
+	if err := proto.Unmarshal(result.Payload, target); err != nil {
 		s.logger.Error("failed to unmarshal proto message", slog.String("error", err.Error()))
 		return fmt.Errorf("unmarshal proto: %w", err)
 	}
@@ -600,27 +619,32 @@ func (s *BatteryService) StreamBatteryState(req *starv1.StreamBatteryStateReques
 }
 
 // receiveStreamBatteryLoop continuously receives battery state from Dispatcher and updates latest value.
-func (s *BatteryService) receiveStreamBatteryLoop(ctx context.Context, batteryCh <-chan *starv1.WireMessage, holder *batteryHolder) {
+func (s *BatteryService) receiveStreamBatteryLoop(ctx context.Context, batteryCh <-chan *dispatcher.DispatchedMessage, holder *batteryHolder) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case wireMsg, ok := <-batteryCh:
+		case dispMsg, ok := <-batteryCh:
 			if !ok {
 				s.logger.Debug("battery subscription channel closed in stream")
 				return
 			}
 
-			if wireMsg == nil {
-				s.logger.Warn("received nil wire message from dispatcher in stream")
+			if dispMsg == nil || dispMsg.WireMsg == nil {
+				s.logger.Warn("received nil message from dispatcher in stream")
 				continue
 			}
 
-			batteryState := wireMsg.GetBatteryState()
+			batteryState := dispMsg.WireMsg.GetBatteryState()
 			if batteryState == nil {
 				s.logger.Warn("received wire message with nil battery state in stream")
 				continue
 			}
+
+			// TODO: Populate frame sequence when BatteryState protobuf gets frame_sequence field
+			// if dispMsg.Metadata != nil {
+			//     batteryState.FrameSequence = uint32(dispMsg.Metadata.Sequence)
+			// }
 
 			holder.Store(batteryState)
 		}

@@ -61,11 +61,11 @@ func (d *DefaultDecoder) Decode(data []byte) (*Frame, error) {
 	}
 
 	// Parse TYPE (1 byte)
-	frameType := FrameType(data[offset])
+	frameType := Type(data[offset])
 	offset += TypeSize
 
 	// Parse FLAGS (1 byte)
-	flags := FrameFlags(data[offset])
+	flags := Flags(data[offset])
 	offset += FlagsSize
 
 	// Verify frame completeness

@@ -6,9 +6,6 @@
 #include <memory>
 #include <string>
 
-#include "star_spi_bridge/spi_driver.hpp"
-#include "star_spi_bridge/spi_message_converter.hpp"
-
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -16,13 +13,16 @@
 #include <sensor_msgs/msg/battery_state.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 
+#include "star_spi_bridge/spi_driver.hpp"
+#include "star_spi_bridge/spi_message_converter.hpp"
+
 namespace star_spi_bridge
 {
 
-class StarSpiDriverNode : public rclcpp_lifecycle::LifecycleNode
-{
+class StarSpiDriverNode : public rclcpp_lifecycle::LifecycleNode {
 public:
-  explicit StarSpiDriverNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit StarSpiDriverNode(
+    const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
   ~StarSpiDriverNode() override;
 
   // Lifecycle transitions
@@ -48,9 +48,12 @@ private:
 
   // ROS handles
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
-  rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::BatteryState>::SharedPtr battery_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>::SharedPtr
+    odom_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::JointState>::SharedPtr
+    joint_state_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<
+    sensor_msgs::msg::BatteryState>::SharedPtr battery_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   // State

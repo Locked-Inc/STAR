@@ -1,6 +1,6 @@
 module github.com/Locked-Inc/STAR/star-gateway
 
-go 1.24.11
+go 1.24.12
 
 require (
 	github.com/Locked-Inc/star-proto/gen/go v0.0.0

@@ -141,6 +141,98 @@ colcon test-result --verbose
 
 ---
 
+## Performance Baseline Collection
+
+The STAR system includes frame drop diagnostics to monitor communication reliability between ROS2, the Gateway, and the Virtual RX72N simulator. Before integration testing, establish performance baselines to validate system behavior.
+
+### Quick Start
+
+```bash
+# Navigate to scripts directory
+cd star-ros2/scripts
+
+# Run idle baseline (30 minutes, no commands)
+./collect_baseline_metrics.sh 30 idle
+
+# Run active control baseline (30 minutes, 50 Hz commands)
+# In separate terminal: ros2 topic pub -r 50 /cmd_vel geometry_msgs/msg/Twist "linear: {x: 0.5}"
+./collect_baseline_metrics.sh 30 active_control
+
+# Run stress test (15 minutes, 100 Hz commands + subscribers)
+# In separate terminals:
+#   ros2 topic echo /odom/unfiltered
+#   ros2 topic echo /robot_status
+#   ros2 topic pub -r 100 /cmd_vel geometry_msgs/msg/Twist "linear: {x: 1.0}"
+./collect_baseline_metrics.sh 15 stress_test
+```
+
+### Prerequisites
+
+Before running baseline collection:
+
+1. **Build the Gateway binaries:**
+   ```bash
+   cd ../star-gateway
+   go build ./cmd/star-gateway
+   go build ./cmd/virtual_rx72n
+   ```
+
+2. **Build ROS2 packages:**
+   ```bash
+   cd ../star-ros2
+   colcon build --packages-select star_gateway_bridge
+   source install/setup.bash
+   ```
+
+### What Gets Collected
+
+The baseline script automatically:
+- Starts Virtual RX72N simulator
+- Starts Gateway service
+- Starts ROS2 gateway bridge
+- Records diagnostics from `/diagnostics` topic
+- Collects logs from all components
+- Analyzes frame drop statistics
+- Generates summary report
+
+**Output Location:** `star-ros2/baselines/<scenario>_<timestamp>/`
+
+**Output Files:**
+- `virtual_rx72n.log` - Virtual RX72N simulator output
+- `gateway.log` - Gateway service output
+- `ros2_bridge.log` - ROS2 bridge output
+- `diagnostics.log` - Frame drop statistics
+- `SUMMARY.txt` - Analyzed results and performance assessment
+
+### Performance Acceptance Criteria
+
+| Scenario | Metric | Target | Status |
+|----------|--------|--------|--------|
+| Idle | Telemetry drop rate | < 1% | ✅ Expected |
+| Active Control | Teleop drop rate | < 1% | ✅ Critical |
+| Active Control | Telemetry drop rate | < 5% | ✅ Acceptable |
+| Stress Test | Telemetry drop rate | < 10% | ⚠️ Degraded but acceptable |
+
+### Monitoring During Collection
+
+In a separate terminal, monitor real-time diagnostics:
+
+```bash
+# Watch diagnostics (updates every 1 second)
+ros2 topic echo /diagnostics
+
+# Watch for frame drops
+ros2 topic echo /diagnostics | grep -E "(drop|WARN|ERROR)"
+```
+
+### Detailed Documentation
+
+For complete baseline methodology, analysis procedures, and troubleshooting:
+
+**See:** [BASELINE_METRICS.md](./BASELINE_METRICS.md)
+
+---
+
 ## Package Status
 
 **This PR (#141) - Infrastructure Only**

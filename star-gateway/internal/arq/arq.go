@@ -91,6 +91,10 @@ type ARQ interface {
 
 	// Reset resets the ARQ state machine.
 	Reset()
+
+	// InitializeConnection resets state for a new connection.
+	// Should be called after establishing transport connection.
+	InitializeConnection() error
 }
 
 // Config holds ARQ configuration parameters.
@@ -389,6 +393,13 @@ func (s *StopAndWait) Reset() {
 	s.pendingFrame = nil
 }
 
+// InitializeConnection resets the ARQ state for a new connection.
+// This ensures both sides start with synchronized sequence numbers.
+func (s *StopAndWait) InitializeConnection() error {
+	s.Reset()
+	return nil
+}
+
 // Config returns the current ARQ configuration.
 func (s *StopAndWait) Config() *Config {
 	return s.config
@@ -443,7 +454,7 @@ func (s *StopAndWait) sendAck(seq uint16) error {
 }
 
 // sendControlFrame sends an ACK or NACK frame.
-func (s *StopAndWait) sendControlFrame(frameType frame.FrameType, seq uint16) error {
+func (s *StopAndWait) sendControlFrame(frameType frame.Type, seq uint16) error {
 	if s.transport == nil {
 		return ErrTransportNil
 	}
