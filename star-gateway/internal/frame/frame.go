@@ -47,12 +47,12 @@ const (
 	MinFrameSize = SyncSize + HeaderSize + CRCSize // 12 bytes
 )
 
-// FrameType indicates the type of frame being transmitted.
-type FrameType uint8
+// Type indicates the type of frame being transmitted.
+type Type uint8
 
 const (
 	// FrameTypeUnknown is the zero value (invalid frame type).
-	FrameTypeUnknown FrameType = iota
+	FrameTypeUnknown Type = iota
 
 	// FrameTypeCommand is a command frame from controller to peripheral.
 	FrameTypeCommand
@@ -68,7 +68,7 @@ const (
 )
 
 // String returns the string representation of a FrameType.
-func (ft FrameType) String() string {
+func (ft Type) String() string {
 	switch ft {
 	case FrameTypeCommand:
 		return "COMMAND"
@@ -84,26 +84,26 @@ func (ft FrameType) String() string {
 }
 
 // FrameFlags contains frame-level control flags.
-type FrameFlags uint8
+type Flags uint8
 
 const (
 	// FlagNone indicates no flags set.
-	FlagNone FrameFlags = 0x00
+	FlagNone Flags = 0x00
 
 	// FlagRequiresAck indicates the frame requires acknowledgment.
-	FlagRequiresAck FrameFlags = 0x01
+	FlagRequiresAck Flags = 0x01
 
 	// FlagRetransmit indicates this frame is a retransmission.
-	FlagRetransmit FrameFlags = 0x02
+	FlagRetransmit Flags = 0x02
 
 	// FlagPriority indicates high-priority frame (e.g., emergency stop).
-	FlagPriority FrameFlags = 0x04
+	FlagPriority Flags = 0x04
 
 	// FlagFECEnabled indicates the payload is FEC-encoded (HARQ).
-	FlagFECEnabled FrameFlags = 0x08
+	FlagFECEnabled Flags = 0x08
 
 	// FlagSoftNACK indicates NACK with soft bit information (HARQ).
-	FlagSoftNACK FrameFlags = 0x10
+	FlagSoftNACK Flags = 0x10
 )
 
 // Header contains the frame header fields.
@@ -115,10 +115,10 @@ type Header struct {
 	Length uint16
 
 	// Type is the frame type.
-	Type FrameType
+	Type Type
 
 	// Flags contains frame control flags.
-	Flags FrameFlags
+	Flags Flags
 }
 
 // Frame represents a complete communication frame.
@@ -153,7 +153,7 @@ var (
 
 // NewFrame creates a new Frame with the given type and payload.
 // Returns an error if the payload exceeds MaxPayloadSize.
-func NewFrame(frameType FrameType, payload []byte) (*Frame, error) {
+func NewFrame(frameType Type, payload []byte) (*Frame, error) {
 	if len(payload) > MaxPayloadSize {
 		return nil, ErrPayloadTooLarge
 	}

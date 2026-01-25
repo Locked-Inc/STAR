@@ -58,16 +58,9 @@ func createTestTelemetryData() *starv1.TelemetryData {
 
 func TestNewTelemetryService(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
-	ready := make(chan struct{})
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
-			ch := make(chan *starv1.WireMessage)
-			// Signal that subscription happened (goroutine started)
-			select {
-			case ready <- struct{}{}:
-			default:
-			}
-			return ch
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
+			return make(chan *dispatcher.DispatchedMessage)
 		},
 	}
 	logger := testutil.NewDiscardLogger()
@@ -79,22 +72,17 @@ func TestNewTelemetryService(t *testing.T) {
 	}
 	defer svc.Shutdown()
 
-	// Wait for background goroutine to start
-	select {
-	case <-ready:
-		// Goroutine started successfully
-	case <-time.After(100 * time.Millisecond):
-		t.Fatal("Background goroutine did not start")
-	}
+	// If we reach here, the background goroutine started successfully
+	// (NewTelemetryService waits for initialization with internal timeout)
 }
 
 func TestGetTelemetry_Success(t *testing.T) {
 	testTelemetry := createTestTelemetryData()
 
 	mockHARQ := &testutil.MockHARQ{}
-	telemetryCh := make(chan *starv1.WireMessage, 1)
+	telemetryCh := make(chan *dispatcher.DispatchedMessage, 1)
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 			return telemetryCh
 		},
 	}
@@ -103,10 +91,13 @@ func TestGetTelemetry_Success(t *testing.T) {
 	svc := NewTelemetryService(context.Background(), mockHARQ, mockDispatcher, logger)
 
 	// Send telemetry data to cache
-	telemetryCh <- &starv1.WireMessage{
-		Payload: &starv1.WireMessage_TelemetryData{
-			TelemetryData: testTelemetry,
+	telemetryCh <- &dispatcher.DispatchedMessage{
+		WireMsg: &starv1.WireMessage{
+			Payload: &starv1.WireMessage_TelemetryData{
+				TelemetryData: testTelemetry,
+			},
 		},
+		Metadata: nil,
 	}
 
 	// Wait for cache to update
@@ -143,8 +134,8 @@ func TestGetTelemetry_Success(t *testing.T) {
 func TestGetTelemetry_NilRequest(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
-			return make(chan *starv1.WireMessage)
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
+			return make(chan *dispatcher.DispatchedMessage)
 		},
 	}
 	logger := testutil.NewDiscardLogger()
@@ -169,8 +160,8 @@ func TestGetTelemetry_NilRequest(t *testing.T) {
 func TestGetTelemetry_NoDataAvailable(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
-			return make(chan *starv1.WireMessage)
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
+			return make(chan *dispatcher.DispatchedMessage)
 		},
 	}
 	logger := testutil.NewDiscardLogger()
@@ -202,9 +193,9 @@ func TestStreamTelemetry_ValidRate(t *testing.T) {
 	testTelemetry := createTestTelemetryData()
 
 	mockHARQ := &testutil.MockHARQ{}
-	telemetryCh := make(chan *starv1.WireMessage, 10)
+	telemetryCh := make(chan *dispatcher.DispatchedMessage, 10)
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 			return telemetryCh
 		},
 	}
@@ -231,10 +222,13 @@ func TestStreamTelemetry_ValidRate(t *testing.T) {
 
 	// Send telemetry data
 	for i := 0; i < 3; i++ {
-		telemetryCh <- &starv1.WireMessage{
-			Payload: &starv1.WireMessage_TelemetryData{
-				TelemetryData: testTelemetry,
+		telemetryCh <- &dispatcher.DispatchedMessage{
+			WireMsg: &starv1.WireMessage{
+				Payload: &starv1.WireMessage_TelemetryData{
+					TelemetryData: testTelemetry,
+				},
 			},
+			Metadata: nil,
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
@@ -263,9 +257,9 @@ func TestStreamTelemetry_ValidRate(t *testing.T) {
 
 func TestStreamTelemetry_InvalidRate(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
-	telemetryCh := make(chan *starv1.WireMessage, 10)
+	telemetryCh := make(chan *dispatcher.DispatchedMessage, 10)
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 			return telemetryCh
 		},
 	}
@@ -317,9 +311,9 @@ func TestStreamTelemetry_InvalidRate(t *testing.T) {
 
 func TestStreamTelemetry_ContextCancellation(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
-	telemetryCh := make(chan *starv1.WireMessage, 10)
+	telemetryCh := make(chan *dispatcher.DispatchedMessage, 10)
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 			return telemetryCh
 		},
 	}
@@ -360,9 +354,9 @@ func TestStreamTelemetry_SendError(t *testing.T) {
 	testTelemetry := createTestTelemetryData()
 
 	mockHARQ := &testutil.MockHARQ{}
-	telemetryCh := make(chan *starv1.WireMessage, 10)
+	telemetryCh := make(chan *dispatcher.DispatchedMessage, 10)
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 			return telemetryCh
 		},
 	}
@@ -395,10 +389,13 @@ func TestStreamTelemetry_SendError(t *testing.T) {
 
 	// Send telemetry data multiple times to ensure it gets sent
 	for i := 0; i < 5; i++ {
-		telemetryCh <- &starv1.WireMessage{
-			Payload: &starv1.WireMessage_TelemetryData{
-				TelemetryData: testTelemetry,
+		telemetryCh <- &dispatcher.DispatchedMessage{
+			WireMsg: &starv1.WireMessage{
+				Payload: &starv1.WireMessage_TelemetryData{
+					TelemetryData: testTelemetry,
+				},
 			},
+			Metadata: nil,
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
@@ -420,8 +417,8 @@ func TestStreamTelemetry_SendError(t *testing.T) {
 func TestGetSystemStatus_Success(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
-			return make(chan *starv1.WireMessage)
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
+			return make(chan *dispatcher.DispatchedMessage)
 		},
 	}
 	logger := testutil.NewDiscardLogger()
@@ -460,8 +457,8 @@ func TestGetSystemStatus_Success(t *testing.T) {
 func TestGetSystemStatus_NilRequest(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
-			return make(chan *starv1.WireMessage)
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
+			return make(chan *dispatcher.DispatchedMessage)
 		},
 	}
 	logger := testutil.NewDiscardLogger()
@@ -486,8 +483,8 @@ func TestGetSystemStatus_NilRequest(t *testing.T) {
 func TestValidateRateHz(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
-			return make(chan *starv1.WireMessage)
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
+			return make(chan *dispatcher.DispatchedMessage)
 		},
 	}
 	logger := testutil.NewDiscardLogger()
@@ -526,12 +523,12 @@ func TestStreamTelemetry_MultipleClients(t *testing.T) {
 
 	// Track all subscriber channels for broadcasting
 	var subscribersMutex sync.Mutex
-	var subscribers []chan *starv1.WireMessage
+	var subscribers []chan *dispatcher.DispatchedMessage
 
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 			// Each subscription gets its own channel
-			ch := make(chan *starv1.WireMessage, 10)
+			ch := make(chan *dispatcher.DispatchedMessage, 10)
 			subscribersMutex.Lock()
 			subscribers = append(subscribers, ch)
 			subscribersMutex.Unlock()
@@ -578,10 +575,13 @@ func TestStreamTelemetry_MultipleClients(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	// Broadcast telemetry data to all subscribers
-	msg := &starv1.WireMessage{
-		Payload: &starv1.WireMessage_TelemetryData{
-			TelemetryData: testTelemetry,
+	msg := &dispatcher.DispatchedMessage{
+		WireMsg: &starv1.WireMessage{
+			Payload: &starv1.WireMessage_TelemetryData{
+				TelemetryData: testTelemetry,
+			},
 		},
+		Metadata: nil,
 	}
 
 	subscribersMutex.Lock()

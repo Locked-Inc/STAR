@@ -568,9 +568,14 @@ func TestSendControlFrame_Errors(t *testing.T) {
 	t.Run("EncoderNil", func(t *testing.T) {
 		harq := NewStopAndWait(nil, mock, nil, frame.NewDecoder())
 		mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
-		_, err := harq.Receive(context.Background())
-		if !errors.Is(err, ErrEncoderNil) {
-			t.Errorf("Receive() error = %v, want ErrEncoderNil", err)
+		result, err := harq.Receive(context.Background())
+		// With best-effort ACK, encoder nil errors are ignored.
+		// The payload should still be returned successfully.
+		if err != nil {
+			t.Errorf("Receive() error = %v, want nil (ACK errors are best-effort)", err)
+		}
+		if result == nil {
+			t.Error("Receive() result = nil, want result despite ACK encoder nil")
 		}
 	})
 
@@ -611,13 +616,19 @@ func TestReceive_Success(t *testing.T) {
 	// Queue command frame with sequence 0
 	mock.QueueResponse(createCommandFrame(0, expectedPayload))
 
-	payload, err := harq.Receive(context.Background())
+	result, err := harq.Receive(context.Background())
 
 	if err != nil {
 		t.Errorf("Receive() error = %v, want nil", err)
 	}
-	if string(payload) != string(expectedPayload) {
-		t.Errorf("Receive() payload = %v, want %v", payload, expectedPayload)
+	if result == nil {
+		t.Fatal("Receive() result = nil, want non-nil")
+	}
+	if string(result.Payload) != string(expectedPayload) {
+		t.Errorf("Receive() payload = %v, want %v", result.Payload, expectedPayload)
+	}
+	if result.Metadata.Sequence != 0 {
+		t.Errorf("Receive() metadata.Sequence = %d, want 0", result.Metadata.Sequence)
 	}
 	if harq.GetRxSequence() != 1 {
 		t.Errorf("GetRxSequence() = %d, want 1", harq.GetRxSequence())
@@ -824,12 +835,15 @@ func TestSendReceive_FullRoundTrip(t *testing.T) {
 
 	// Receive a response
 	mock.QueueResponse(createCommandFrame(0, []byte("world")))
-	payload, err := harq.Receive(context.Background())
+	result, err := harq.Receive(context.Background())
 	if err != nil {
 		t.Fatalf("Receive() error = %v", err)
 	}
-	if string(payload) != "world" {
-		t.Errorf("payload = %s, want world", string(payload))
+	if result == nil {
+		t.Fatal("Receive() result = nil, want non-nil")
+	}
+	if string(result.Payload) != "world" {
+		t.Errorf("payload = %s, want world", string(result.Payload))
 	}
 
 	// Verify final state

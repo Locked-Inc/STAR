@@ -196,23 +196,24 @@ func TestStreamEncoders(t *testing.T) {
 	}
 
 	// Create channel to send telemetry messages
-	telemetryChan := make(chan *starv1.WireMessage, 10)
+	// telemetryChan := make(chan *dispatcher.DispatchedMessage, 10)
 
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
-			// Send initial telemetry data
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
+			ch := make(chan *dispatcher.DispatchedMessage, 10)
 			go func() {
 				for i := 0; i < 5; i++ {
 					select {
-					case telemetryChan <- wireMsg:
+					case ch <- &dispatcher.DispatchedMessage{WireMsg: wireMsg}:
 					case <-ctx.Done():
 						return
 					}
 					time.Sleep(5 * time.Millisecond)
 				}
+				close(ch)
 			}()
-			return telemetryChan
+			return ch
 		},
 	}
 	logger := testutil.NewDiscardLogger()
@@ -316,11 +317,11 @@ func TestControlStream_GoroutineCleanup(t *testing.T) {
 	}
 
 	// Create channel to send telemetry messages
-	telemetryChan := make(chan *starv1.WireMessage, 10)
+	telemetryChan := make(chan *dispatcher.DispatchedMessage, 10)
 
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 			// Send telemetry data continuously
 			go func() {
 				ticker := time.NewTicker(10 * time.Millisecond)
@@ -331,7 +332,7 @@ func TestControlStream_GoroutineCleanup(t *testing.T) {
 						return
 					case <-ticker.C:
 						select {
-						case telemetryChan <- wireMsg:
+						case telemetryChan <- &dispatcher.DispatchedMessage{WireMsg: wireMsg}:
 						case <-ctx.Done():
 							return
 						}
@@ -411,7 +412,7 @@ func TestControlStream_BasicFlow(t *testing.T) {
 	}
 
 	// Create channel to send telemetry messages
-	telemetryChan := make(chan *starv1.WireMessage, 10)
+	telemetryChan := make(chan *dispatcher.DispatchedMessage, 10)
 
 	var sendCalls int
 	var mu sync.Mutex
@@ -425,7 +426,7 @@ func TestControlStream_BasicFlow(t *testing.T) {
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *starv1.WireMessage {
+		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 			// Send telemetry data continuously
 			go func() {
 				ticker := time.NewTicker(10 * time.Millisecond)
@@ -436,7 +437,7 @@ func TestControlStream_BasicFlow(t *testing.T) {
 						return
 					case <-ticker.C:
 						select {
-						case telemetryChan <- wireMsg:
+						case telemetryChan <- &dispatcher.DispatchedMessage{WireMsg: wireMsg}:
 						case <-ctx.Done():
 							return
 						}
@@ -510,7 +511,7 @@ func TestControlStream_HarqSendError(t *testing.T) {
 		SendFunc: func(ctx context.Context, data []byte, _ ...harq.Priority) error {
 			return errors.New("send failed")
 		},
-		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
+		ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
 			// Return error to avoid infinite loop
 			time.Sleep(10 * time.Millisecond)
 			return nil, errors.New("receive error")
@@ -562,8 +563,8 @@ func TestControlStream_ClientSendError(t *testing.T) {
 	marshaledData, _ := proto.Marshal(telemetry)
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
-			return marshaledData, nil
+		ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: marshaledData, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{}
@@ -608,8 +609,8 @@ func TestStreamEncoders_Concurrent(t *testing.T) {
 	marshaledData, _ := proto.Marshal(telemetry)
 
 	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(ctx context.Context) ([]byte, error) {
-			return marshaledData, nil
+		ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: marshaledData, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
 		},
 	}
 	mockDispatcher := &testutil.MockDispatcher{}

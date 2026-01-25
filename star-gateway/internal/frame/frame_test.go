@@ -45,7 +45,7 @@ func TestFrameConstants(t *testing.T) {
 
 func TestFrameTypeString(t *testing.T) {
 	tests := []struct {
-		frameType FrameType
+		frameType Type
 		expected  string
 	}{
 		{FrameTypeUnknown, "UNKNOWN"},
@@ -67,7 +67,7 @@ func TestFrameTypeString(t *testing.T) {
 func TestFrameFlagValues(t *testing.T) {
 	tests := []struct {
 		name     string
-		flag     FrameFlags
+		flag     Flags
 		expected uint8
 	}{
 		{"FlagNone", FlagNone, 0x00},
@@ -92,7 +92,7 @@ func TestFrameFlagValues(t *testing.T) {
 func TestNewFrame(t *testing.T) {
 	tests := []struct {
 		name        string
-		frameType   FrameType
+		frameType   Type
 		payload     []byte
 		expectError bool
 	}{
@@ -139,9 +139,9 @@ func TestNewFrame(t *testing.T) {
 func TestEncoderEncode(t *testing.T) {
 	tests := []struct {
 		name      string
-		frameType FrameType
+		frameType Type
 		seq       uint16
-		flags     FrameFlags
+		flags     Flags
 		payload   []byte
 	}{
 		{"empty_payload", FrameTypeCommand, 0, FlagNone, []byte{}},
@@ -194,12 +194,12 @@ func TestEncoderEncode(t *testing.T) {
 			}
 
 			// Verify TYPE
-			if FrameType(encoded[6]) != tc.frameType {
+			if Type(encoded[6]) != tc.frameType {
 				t.Errorf("TYPE = %d, want %d", encoded[6], tc.frameType)
 			}
 
 			// Verify FLAGS
-			if FrameFlags(encoded[7]) != tc.flags {
+			if Flags(encoded[7]) != tc.flags {
 				t.Errorf("FLAGS = 0x%02X, want 0x%02X", encoded[7], tc.flags)
 			}
 
@@ -256,9 +256,9 @@ func TestEncoderErrors(t *testing.T) {
 func TestDecoderDecode(t *testing.T) {
 	tests := []struct {
 		name      string
-		frameType FrameType
+		frameType Type
 		seq       uint16
-		flags     FrameFlags
+		flags     Flags
 		payload   []byte
 	}{
 		{"empty_payload", FrameTypeCommand, 0, FlagNone, []byte{}},
@@ -381,9 +381,9 @@ func TestEncodeDecodeRoundTrip(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		frameType FrameType
+		frameType Type
 		seq       uint16
-		flags     FrameFlags
+		flags     Flags
 		payload   []byte
 	}{
 		{"command_with_data", FrameTypeCommand, 12345, FlagRequiresAck, []byte("motor command data")},
