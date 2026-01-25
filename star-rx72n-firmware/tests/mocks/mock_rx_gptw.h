@@ -93,6 +93,18 @@ bool mock_gptw_is_running(rx_gptw_channel_t channel);
 
 /**
  * @brief Initialize all 4 GPTW channels with 90 degree phase staggering (Mock)
+ *
+ * Mock implementation for unit testing. Simulates initializing all 4 GPTW
+ * channels (0-3) with the provided configuration. In the mock, each channel
+ * is initialized via rx_gptw_init_pwm().
+ *
+ * @param[in] config Pointer to configuration structure containing frequency,
+ *                   wave mode, and other PWM settings for all 4 channels.
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if config is NULL
+ * @return k_rx_err_invalid_arg if config->frequency_hz is zero
+ * @return Propagated error codes from rx_gptw_init_pwm() on failure
  */
 rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config);
 
