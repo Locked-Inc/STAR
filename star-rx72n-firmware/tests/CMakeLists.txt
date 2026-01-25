@@ -386,6 +386,16 @@ apply_strict_warnings(test_rx_motor)
 apply_test_includes(test_rx_motor)
 target_link_libraries(test_rx_motor unity m)
 
+# Test: GPTW Staggered Init API
+add_executable(test_rx_gptw_staggered
+    test_rx_gptw_staggered.c
+    ${MOCK_GPTW_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_gptw_staggered)
+apply_test_includes(test_rx_gptw_staggered)
+target_link_libraries(test_rx_gptw_staggered unity m)
+
 # =============================================================================
 # Bus Manager and OneWire Tests
 # =============================================================================

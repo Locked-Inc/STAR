@@ -147,6 +147,23 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
   return k_rx_ok;
 }
 
+rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
+{
+  if (config == NULL) {
+    return k_rx_err_null_ptr;
+  }
+
+  /* Simulate initializing all channels */
+  for (int i = 0; i < k_mock_gptw_max_channels; i++) {
+    rx_err_t err = rx_gptw_init_pwm((rx_gptw_channel_t)i, config);
+    if (err != k_rx_ok) {
+      return err;
+    }
+  }
+  
+  return k_rx_ok;
+}
+
 rx_err_t
 rx_gptw_set_duty(rx_gptw_channel_id_t channel, rx_gptw_output_id_t output, float duty_percent)
 {
