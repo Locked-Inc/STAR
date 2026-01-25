@@ -28,8 +28,14 @@ extern "C" {
 #endif
 
 /* Initializer values for message structs */
-#define star_v1_ControllerState_init_default {0, 0, 0, 0}
-#define star_v1_ControllerState_init_zero    {0, 0, 0, 0}
+#define star_v1_ControllerState_init_default                                                       \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
+#define star_v1_ControllerState_init_zero                                                          \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_ControllerState_linear_vel_tag  1

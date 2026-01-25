@@ -348,45 +348,73 @@ extern "C" {
 #define star_v1_ConfigValidationError_error_code_ENUMTYPE star_v1_ConfigErrorCode
 
 /* Initializer values for message structs */
-#define star_v1_GetConfigurationRequest_init_default {false, star_v1_RequestHeader_init_default}
+#define star_v1_GetConfigurationRequest_init_default                                               \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_GetConfigurationResponse_init_default                                              \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_SystemConfiguration_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_SystemConfiguration_init_default    \
+  }
 #define star_v1_SetConfigurationRequest_init_default                                               \
-  {false, star_v1_RequestHeader_init_default, false, star_v1_SystemConfiguration_init_default, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, false, star_v1_SystemConfiguration_init_default, 0  \
+  }
 #define star_v1_SetConfigurationResponse_init_default                                              \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default}
-#define star_v1_ResetToDefaultsRequest_init_default {false, star_v1_RequestHeader_init_default, 0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default \
+  }
+#define star_v1_ResetToDefaultsRequest_init_default                                                \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0                                                   \
+  }
 #define star_v1_ResetToDefaultsResponse_init_default                                               \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_SystemConfiguration_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_SystemConfiguration_init_default    \
+  }
 #define star_v1_ValidateConfigurationRequest_init_default                                          \
-  {false, star_v1_RequestHeader_init_default, false, star_v1_SystemConfiguration_init_default}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, false, star_v1_SystemConfiguration_init_default     \
+  }
 #define star_v1_ValidateConfigurationResponse_init_default                                         \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default}
-#define star_v1_SaveConfigurationRequest_init_default {false, star_v1_RequestHeader_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default \
+  }
+#define star_v1_SaveConfigurationRequest_init_default                                              \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_SaveConfigurationResponse_init_default                                             \
-  {false, star_v1_ResponseHeader_init_default, 0, 0}
-#define star_v1_GetMotorPidConfigRequest_init_default {false, star_v1_RequestHeader_init_default, 0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0, 0                                               \
+  }
+#define star_v1_GetMotorPidConfigRequest_init_default                                              \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0                                                   \
+  }
 #define star_v1_GetMotorPidConfigResponse_init_default                                             \
-  {false, star_v1_ResponseHeader_init_default, 0, false, star_v1_PidConfig_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0, false, star_v1_PidConfig_init_default           \
+  }
 #define star_v1_SetMotorPidConfigRequest_init_default                                              \
-  {false, star_v1_RequestHeader_init_default, 0, false, star_v1_PidConfig_init_default, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0, false, star_v1_PidConfig_init_default, 0         \
+  }
 #define star_v1_SetMotorPidConfigResponse_init_default                                             \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default \
+  }
 #define star_v1_SystemConfiguration_init_default                                                   \
-  {{{NULL}, NULL},                                                                                 \
-   false,                                                                                          \
-   star_v1_CurrentSensorCalibration_init_default,                                                  \
-   false,                                                                                          \
-   star_v1_TemperatureCalibration_init_default,                                                    \
-   false,                                                                                          \
-   star_v1_SafetyThresholds_init_default,                                                          \
-   false,                                                                                          \
-   star_v1_EncoderConfiguration_init_default,                                                      \
-   false,                                                                                          \
-   star_v1_TimingConfiguration_init_default,                                                       \
-   0,                                                                                              \
-   0}
-#define star_v1_MotorPidConfiguration_init_default {0, false, star_v1_PidConfig_init_default}
+  {                                                                                                \
+    {{NULL}, NULL}, false, star_v1_CurrentSensorCalibration_init_default, false,                   \
+      star_v1_TemperatureCalibration_init_default, false, star_v1_SafetyThresholds_init_default,   \
+      false, star_v1_EncoderConfiguration_init_default, false,                                     \
+      star_v1_TimingConfiguration_init_default, 0, 0                                               \
+  }
+#define star_v1_MotorPidConfiguration_init_default                                                 \
+  {                                                                                                \
+    0, false, star_v1_PidConfig_init_default                                                       \
+  }
 #define star_v1_CurrentSensorCalibration_init_default                                              \
   {                                                                                                \
     {{NULL}, NULL},                                                                                \
@@ -394,10 +422,22 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_TemperatureCalibration_init_default {0}
-#define star_v1_SafetyThresholds_init_default       {0, 0, 0}
-#define star_v1_EncoderConfiguration_init_default   {0, 0, 0}
-#define star_v1_TimingConfiguration_init_default    {0, 0, 0, 0}
+#define star_v1_TemperatureCalibration_init_default                                                \
+  {                                                                                                \
+    0                                                                                              \
+  }
+#define star_v1_SafetyThresholds_init_default                                                      \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_EncoderConfiguration_init_default                                                  \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_TimingConfiguration_init_default                                                   \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
 #define star_v1_ConfigValidationResult_init_default                                                \
   {                                                                                                \
     _star_v1_ConfigValidationStatus_MIN,                                                           \
@@ -412,44 +452,72 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_GetConfigurationRequest_init_zero {false, star_v1_RequestHeader_init_zero}
+#define star_v1_GetConfigurationRequest_init_zero                                                  \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
 #define star_v1_GetConfigurationResponse_init_zero                                                 \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemConfiguration_init_zero}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemConfiguration_init_zero          \
+  }
 #define star_v1_SetConfigurationRequest_init_zero                                                  \
-  {false, star_v1_RequestHeader_init_zero, false, star_v1_SystemConfiguration_init_zero, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, false, star_v1_SystemConfiguration_init_zero, 0        \
+  }
 #define star_v1_SetConfigurationResponse_init_zero                                                 \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero}
-#define star_v1_ResetToDefaultsRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero       \
+  }
+#define star_v1_ResetToDefaultsRequest_init_zero                                                   \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0                                                      \
+  }
 #define star_v1_ResetToDefaultsResponse_init_zero                                                  \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemConfiguration_init_zero}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemConfiguration_init_zero          \
+  }
 #define star_v1_ValidateConfigurationRequest_init_zero                                             \
-  {false, star_v1_RequestHeader_init_zero, false, star_v1_SystemConfiguration_init_zero}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, false, star_v1_SystemConfiguration_init_zero           \
+  }
 #define star_v1_ValidateConfigurationResponse_init_zero                                            \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero}
-#define star_v1_SaveConfigurationRequest_init_zero  {false, star_v1_RequestHeader_init_zero}
-#define star_v1_SaveConfigurationResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0, 0}
-#define star_v1_GetMotorPidConfigRequest_init_zero  {false, star_v1_RequestHeader_init_zero, 0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero       \
+  }
+#define star_v1_SaveConfigurationRequest_init_zero                                                 \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
+#define star_v1_SaveConfigurationResponse_init_zero                                                \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0, 0                                                  \
+  }
+#define star_v1_GetMotorPidConfigRequest_init_zero                                                 \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0                                                      \
+  }
 #define star_v1_GetMotorPidConfigResponse_init_zero                                                \
-  {false, star_v1_ResponseHeader_init_zero, 0, false, star_v1_PidConfig_init_zero}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0, false, star_v1_PidConfig_init_zero                 \
+  }
 #define star_v1_SetMotorPidConfigRequest_init_zero                                                 \
-  {false, star_v1_RequestHeader_init_zero, 0, false, star_v1_PidConfig_init_zero, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0, false, star_v1_PidConfig_init_zero, 0               \
+  }
 #define star_v1_SetMotorPidConfigResponse_init_zero                                                \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero       \
+  }
 #define star_v1_SystemConfiguration_init_zero                                                      \
-  {{{NULL}, NULL},                                                                                 \
-   false,                                                                                          \
-   star_v1_CurrentSensorCalibration_init_zero,                                                     \
-   false,                                                                                          \
-   star_v1_TemperatureCalibration_init_zero,                                                       \
-   false,                                                                                          \
-   star_v1_SafetyThresholds_init_zero,                                                             \
-   false,                                                                                          \
-   star_v1_EncoderConfiguration_init_zero,                                                         \
-   false,                                                                                          \
-   star_v1_TimingConfiguration_init_zero,                                                          \
-   0,                                                                                              \
-   0}
-#define star_v1_MotorPidConfiguration_init_zero {0, false, star_v1_PidConfig_init_zero}
+  {                                                                                                \
+    {{NULL}, NULL}, false, star_v1_CurrentSensorCalibration_init_zero, false,                      \
+      star_v1_TemperatureCalibration_init_zero, false, star_v1_SafetyThresholds_init_zero, false,  \
+      star_v1_EncoderConfiguration_init_zero, false, star_v1_TimingConfiguration_init_zero, 0, 0   \
+  }
+#define star_v1_MotorPidConfiguration_init_zero                                                    \
+  {                                                                                                \
+    0, false, star_v1_PidConfig_init_zero                                                          \
+  }
 #define star_v1_CurrentSensorCalibration_init_zero                                                 \
   {                                                                                                \
     {{NULL}, NULL},                                                                                \
@@ -457,10 +525,22 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_TemperatureCalibration_init_zero {0}
-#define star_v1_SafetyThresholds_init_zero       {0, 0, 0}
-#define star_v1_EncoderConfiguration_init_zero   {0, 0, 0}
-#define star_v1_TimingConfiguration_init_zero    {0, 0, 0, 0}
+#define star_v1_TemperatureCalibration_init_zero                                                   \
+  {                                                                                                \
+    0                                                                                              \
+  }
+#define star_v1_SafetyThresholds_init_zero                                                         \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_EncoderConfiguration_init_zero                                                     \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_TimingConfiguration_init_zero                                                      \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
 #define star_v1_ConfigValidationResult_init_zero                                                   \
   {                                                                                                \
     _star_v1_ConfigValidationStatus_MIN,                                                           \

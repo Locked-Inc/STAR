@@ -146,9 +146,46 @@ func (m *MockTransport) Receive(maxLen int) ([]byte, error) {
 	}
 }
 
-// Transfer performs a full-duplex transfer (not used in HARQ tests).
-func (m *MockTransport) Transfer(context.Context, []byte) ([]byte, error) {
-	return nil, transport.ErrNotImplemented
+// Transfer performs a full-duplex transfer (send and receive atomically).
+// This simulates SPI full-duplex behavior where TX and RX happen simultaneously.
+// In real SPI, TX always succeeds, but RX might return zeros if peripheral isn't ready.
+func (m *MockTransport) Transfer(ctx context.Context, data []byte) ([]byte, error) {
+	m.mu.Lock()
+
+	// Check for send error first (simulates SPI hardware failure)
+	if m.sendErr != nil {
+		err := m.sendErr
+		m.mu.Unlock()
+		return nil, err
+	}
+
+	// Record the sent data (TX always succeeds in SPI)
+	dataCopy := make([]byte, len(data))
+	copy(dataCopy, data)
+	m.sendData = append(m.sendData, dataCopy)
+
+	// Get the next queued response (simulates simultaneous RX)
+	var rxData []byte
+	if len(m.receiveQueue) > 0 {
+		rxData = m.receiveQueue[0]
+		m.receiveQueue = m.receiveQueue[1:]
+		m.mu.Unlock()
+		return rxData, nil
+	}
+
+	// If receiveErr is set, it means RX failed but TX succeeded
+	// Return nil data (no ACK received) rather than failing the whole Transfer
+	// This allows HARQ retry logic to handle it
+	if m.receiveErr != nil {
+		m.mu.Unlock()
+		return nil, nil
+	}
+
+	m.mu.Unlock()
+
+	// No response available yet - return nil to trigger fallback to Receive()
+	// This simulates peripheral not having data ready during the Transfer
+	return nil, nil
 }
 
 // Close marks the transport as closed.

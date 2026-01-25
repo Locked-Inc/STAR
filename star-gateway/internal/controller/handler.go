@@ -35,9 +35,10 @@ func NewHandlerWithGateway(gatewaySvc *service.GatewayService) *Handler {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	//nolint:staticcheck // library is deprecated but migration is out of scope
 	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 		InsecureSkipVerify: true,
-	}) //nolint:staticcheck // library is deprecated but migration is out of scope
+	})
 	if err != nil {
 		log.Printf("failed to accept websocket: %v", err)
 		return

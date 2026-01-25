@@ -2,10 +2,12 @@
 // Bridges ROS2 ecosystem with Go gateway service via gRPC.
 //
 // This node handles bidirectional communication:
-// - ROS2 → Gateway: Forward telemetry (robot status, battery state) for UI display
+// - ROS2 → Gateway: Forward telemetry (robot status, battery state) for UI
+// display
 // - Gateway → ROS2: Poll teleop commands and PID gain updates from UI
 //
 // STAR Project - Texas A&M University
+// Copyright 2026 STAR Project
 // January 2026
 
 #ifndef STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
@@ -16,25 +18,25 @@
 #include <optional>
 #include <string>
 
-#include "star_gateway_bridge/message_converter.hpp"
-
-#include <grpcpp/grpcpp.h>  // NOLINT(build/include_order)
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <diagnostic_msgs/msg/key_value.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <grpcpp/grpcpp.h> // NOLINT(build/include_order)
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/battery_state.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/set_bool.hpp>
-#include "star/v1/battery_management.pb.h"
+
 #include "star/v1/gateway_service.grpc.pb.h"
-#include "star/v1/gateway_service.pb.h"
-#include "star/v1/motor_control.pb.h"
-#include "star/v1/telemetry.pb.h"
+#include "star_gateway_bridge/message_converter.hpp"
 
 namespace star
 {
 
 /**
- * @brief ROS2 node that bridges the ROS2 ecosystem with the Go gateway service via gRPC.
+ * @brief ROS2 node that bridges the ROS2 ecosystem with the Go gateway service
+ * via gRPC.
  *
  * Architecture:
  *   ROS2 Topics/Services ↔ StarGatewayBridgeNode ↔ gRPC ↔ Go Gateway ↔ UI
@@ -60,8 +62,7 @@ namespace star
  *     rpc SetPIDGains(PIDGainsRequest) returns (PIDGainsResponse);
  *   }
  */
-class StarGatewayBridgeNode : public rclcpp::Node
-{
+class StarGatewayBridgeNode : public rclcpp::Node {
 public:
   /**
    * @brief Construct StarGatewayBridgeNode with ROS2 and gRPC initialization.
@@ -77,7 +78,8 @@ public:
    *
    * @param options ROS2 node options for component configuration
    */
-  explicit StarGatewayBridgeNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit StarGatewayBridgeNode(
+    const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   /**
    * @brief Destructor - sends stop command and shuts down gracefully.
@@ -100,7 +102,8 @@ private:
   bool initialize_grpc_client();
 
   /**
-   * @brief Initialize ROS2 interfaces (subscribers, publishers, services, timers).
+   * @brief Initialize ROS2 interfaces (subscribers, publishers, services,
+   * timers).
    */
   void initialize_ros_interfaces();
 
@@ -126,7 +129,8 @@ private:
    *
    * @param msg Battery state message
    */
-  void battery_state_callback(const sensor_msgs::msg::BatteryState::SharedPtr msg);
+  void
+  battery_state_callback(const sensor_msgs::msg::BatteryState::SharedPtr msg);
 
   /**
    * @brief Service callback for /set_pid_gains (std_srvs/SetBool placeholder).
@@ -198,7 +202,8 @@ private:
 
   // ROS2 Subscribers
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_status_sub_;
-  rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_state_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr
+    battery_state_sub_;
 
   // ROS2 Services
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr set_pid_gains_service_;
@@ -236,8 +241,28 @@ private:
 
   // Message converter (stateless utility)
   MessageConverter converter_;
+
+  // Frame drop detection for teleop commands and telemetry
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr
+    diagnostics_pub_;
+  rclcpp::TimerBase::SharedPtr diagnostics_timer_;
+
+  uint32_t last_teleop_sequence_{0};
+  uint64_t total_teleop_frames_{0};
+  uint64_t teleop_frames_dropped_{0};
+  bool first_teleop_frame_{true};
+
+  uint32_t last_telemetry_sequence_{0};
+  uint64_t total_telemetry_frames_{0};
+  uint64_t telemetry_frames_dropped_{0};
+  bool first_telemetry_frame_{true};
+
+  // Methods
+  void publish_diagnostics();
+  void check_teleop_sequence_continuity(uint32_t current_sequence);
+  void check_telemetry_sequence_continuity(uint32_t current_sequence);
 };
 
-}  // namespace star
+} // namespace star
 
-#endif  // STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
+#endif // STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_

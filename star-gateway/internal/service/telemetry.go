@@ -63,6 +63,8 @@ type TelemetryService struct {
 	latestTelemetry *telemetryHolder
 	ctx             context.Context
 	cancel          context.CancelFunc
+	wg              sync.WaitGroup
+	started         chan struct{} // Signal when background goroutine initialized
 }
 
 // NewTelemetryService creates a new TelemetryService.
@@ -77,10 +79,20 @@ func NewTelemetryService(ctx context.Context, h harq.HARQ, d dispatcher.Dispatch
 		latestTelemetry: &telemetryHolder{},
 		ctx:             ctx,
 		cancel:          cancel,
+		started:         make(chan struct{}),
 	}
 
 	// Start background goroutine to update cached telemetry
+	svc.wg.Add(1)
 	go svc.updateTelemetryCache()
+
+	// Wait for background goroutine to initialize (with timeout)
+	select {
+	case <-svc.started:
+		// Goroutine initialized successfully
+	case <-time.After(5 * time.Second):
+		panic("telemetry service background goroutine failed to start within 5 seconds")
+	}
 
 	return svc
 }
@@ -88,22 +100,32 @@ func NewTelemetryService(ctx context.Context, h harq.HARQ, d dispatcher.Dispatch
 // updateTelemetryCache continuously receives telemetry from Dispatcher and updates cache.
 // This goroutine runs until the service context is cancelled.
 func (s *TelemetryService) updateTelemetryCache() {
+	defer s.wg.Done()
 	telemetryCh := s.dispatcher.Subscribe(dispatcher.MessageTypeTelemetryData)
 	defer s.dispatcher.Unsubscribe(dispatcher.MessageTypeTelemetryData, telemetryCh)
+
+	// Signal that initialization is complete
+	close(s.started)
 
 	for {
 		select {
 		case <-s.ctx.Done():
 			return
-		case wireMsg, ok := <-telemetryCh:
+		case dispMsg, ok := <-telemetryCh:
 			if !ok {
 				return
 			}
-			telemetry := wireMsg.GetTelemetryData()
+			telemetry := dispMsg.WireMsg.GetTelemetryData()
 			if telemetry == nil {
 				s.logger.Warn("received wire message with nil telemetry data in cache update")
 				continue
 			}
+
+			// Populate frame sequence from metadata
+			if dispMsg.Metadata != nil {
+				telemetry.FrameSequence = uint32(dispMsg.Metadata.Sequence)
+			}
+
 			s.latestTelemetry.Store(telemetry)
 		}
 	}
@@ -112,6 +134,7 @@ func (s *TelemetryService) updateTelemetryCache() {
 // Shutdown gracefully stops the TelemetryService background goroutines.
 func (s *TelemetryService) Shutdown() {
 	s.cancel()
+	s.wg.Wait()
 }
 
 // GetTelemetry returns a snapshot of the latest telemetry data.
@@ -174,21 +197,26 @@ func (s *TelemetryService) validateRateHz(rateHz int32) int32 {
 }
 
 // receiveStreamTelemetryLoop continuously receives telemetry from Dispatcher and updates latest value.
-func (s *TelemetryService) receiveStreamTelemetryLoop(ctx context.Context, telemetryCh <-chan *starv1.WireMessage, holder *telemetryHolder) {
+func (s *TelemetryService) receiveStreamTelemetryLoop(ctx context.Context, telemetryCh <-chan *dispatcher.DispatchedMessage, holder *telemetryHolder) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case wireMsg, ok := <-telemetryCh:
+		case dispMsg, ok := <-telemetryCh:
 			if !ok {
 				s.logger.Debug("telemetry subscription channel closed in stream")
 				return
 			}
 
-			telemetry := wireMsg.GetTelemetryData()
+			telemetry := dispMsg.WireMsg.GetTelemetryData()
 			if telemetry == nil {
 				s.logger.Warn("received wire message with nil telemetry data in stream")
 				continue
+			}
+
+			// Populate frame sequence from metadata
+			if dispMsg.Metadata != nil {
+				telemetry.FrameSequence = uint32(dispMsg.Metadata.Sequence)
 			}
 
 			holder.Store(telemetry)
@@ -233,12 +261,11 @@ func (s *TelemetryService) GetSystemStatus(_ context.Context, req *starv1.GetSys
 	systemStatus := &starv1.SystemStatus{
 		ConnectionStatus: starv1.ConnectionStatus_CONNECTION_STATUS_CONNECTED,
 		Mode:             starv1.RobotMode_ROBOT_MODE_IDLE,
-		Esp32Connected:   true,
+		Rx72NConnected:   true,
 		LidarConnected:   false,
 		RosConnected:     true,
 		FirmwareVersion:  "v0.1.0-dev",
 		UptimeS:          0,
-		FreeHeapBytes:    0,
 	}
 
 	// Safely extract request ID, handling nil Header

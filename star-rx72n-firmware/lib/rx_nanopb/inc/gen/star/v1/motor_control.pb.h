@@ -210,7 +210,9 @@ extern "C" {
 
 /* Initializer values for message structs */
 #define star_v1_SetVelocityRequest_init_default                                                    \
-  {false, star_v1_RequestHeader_init_default, false, star_v1_VelocityCommand_init_default}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, false, star_v1_VelocityCommand_init_default         \
+  }
 #define star_v1_SetVelocityResponse_init_default                                                   \
   {                                                                                                \
     false, star_v1_ResponseHeader_init_default,                                                    \
@@ -218,7 +220,10 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_VelocityCommand_init_default {0, 0, 0, 0, 0, 0}
+#define star_v1_VelocityCommand_init_default                                                       \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0                                                                               \
+  }
 #define star_v1_EmergencyStopRequest_init_default                                                  \
   {                                                                                                \
     false, star_v1_RequestHeader_init_default,                                                     \
@@ -226,17 +231,42 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_EmergencyStopResponse_init_default {false, star_v1_ResponseHeader_init_default, 0}
+#define star_v1_EmergencyStopResponse_init_default                                                 \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0                                                  \
+  }
 #define star_v1_SetMotorPowerRequest_init_default                                                  \
-  {false, star_v1_RequestHeader_init_default, false, star_v1_MotorPowerCommand_init_default}
-#define star_v1_SetMotorPowerResponse_init_default {false, star_v1_ResponseHeader_init_default}
-#define star_v1_MotorPowerCommand_init_default     {0, 0}
-#define star_v1_StreamEncodersRequest_init_default {false, star_v1_RequestHeader_init_default, 0}
-#define star_v1_EncoderData_init_default           {0, 0, 0, 0}
-#define star_v1_MotorStatus_init_default           {0, 0, 0, 0, 0, 0, 0, _star_v1_MotorState_MIN}
-#define star_v1_PidConfig_init_default             {0, 0, 0, 0, 0, 0, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, false, star_v1_MotorPowerCommand_init_default       \
+  }
+#define star_v1_SetMotorPowerResponse_init_default                                                 \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default                                                     \
+  }
+#define star_v1_MotorPowerCommand_init_default                                                     \
+  {                                                                                                \
+    0, 0                                                                                           \
+  }
+#define star_v1_StreamEncodersRequest_init_default                                                 \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0                                                   \
+  }
+#define star_v1_EncoderData_init_default                                                           \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
+#define star_v1_MotorStatus_init_default                                                           \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0, 0, _star_v1_MotorState_MIN                                                   \
+  }
+#define star_v1_PidConfig_init_default                                                             \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0, 0                                                                            \
+  }
 #define star_v1_SetVelocityRequest_init_zero                                                       \
-  {false, star_v1_RequestHeader_init_zero, false, star_v1_VelocityCommand_init_zero}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, false, star_v1_VelocityCommand_init_zero               \
+  }
 #define star_v1_SetVelocityResponse_init_zero                                                      \
   {                                                                                                \
     false, star_v1_ResponseHeader_init_zero,                                                       \
@@ -244,7 +274,10 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_VelocityCommand_init_zero {0, 0, 0, 0, 0, 0}
+#define star_v1_VelocityCommand_init_zero                                                          \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0                                                                               \
+  }
 #define star_v1_EmergencyStopRequest_init_zero                                                     \
   {                                                                                                \
     false, star_v1_RequestHeader_init_zero,                                                        \
@@ -252,15 +285,38 @@ extern "C" {
       {NULL}, NULL                                                                                 \
     }                                                                                              \
   }
-#define star_v1_EmergencyStopResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0}
+#define star_v1_EmergencyStopResponse_init_zero                                                    \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0                                                     \
+  }
 #define star_v1_SetMotorPowerRequest_init_zero                                                     \
-  {false, star_v1_RequestHeader_init_zero, false, star_v1_MotorPowerCommand_init_zero}
-#define star_v1_SetMotorPowerResponse_init_zero {false, star_v1_ResponseHeader_init_zero}
-#define star_v1_MotorPowerCommand_init_zero     {0, 0}
-#define star_v1_StreamEncodersRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0}
-#define star_v1_EncoderData_init_zero           {0, 0, 0, 0}
-#define star_v1_MotorStatus_init_zero           {0, 0, 0, 0, 0, 0, 0, _star_v1_MotorState_MIN}
-#define star_v1_PidConfig_init_zero             {0, 0, 0, 0, 0, 0, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, false, star_v1_MotorPowerCommand_init_zero             \
+  }
+#define star_v1_SetMotorPowerResponse_init_zero                                                    \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero                                                        \
+  }
+#define star_v1_MotorPowerCommand_init_zero                                                        \
+  {                                                                                                \
+    0, 0                                                                                           \
+  }
+#define star_v1_StreamEncodersRequest_init_zero                                                    \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0                                                      \
+  }
+#define star_v1_EncoderData_init_zero                                                              \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
+#define star_v1_MotorStatus_init_zero                                                              \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0, 0, _star_v1_MotorState_MIN                                                   \
+  }
+#define star_v1_PidConfig_init_zero                                                                \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0, 0                                                                            \
+  }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_SetVelocityResponse_header_tag               1
