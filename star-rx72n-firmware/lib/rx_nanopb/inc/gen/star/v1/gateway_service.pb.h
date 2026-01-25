@@ -97,21 +97,26 @@ extern "C" {
 
 /* Initializer values for message structs */
 #define star_v1_ForwardTelemetryRequest_init_default                                               \
-  {false,                                                                                          \
-   star_v1_RequestHeader_init_default,                                                             \
-   false,                                                                                          \
-   star_v1_SystemStatus_init_default,                                                              \
-   false,                                                                                          \
-   star_v1_BatteryState_init_default,                                                              \
-   false,                                                                                          \
-   star_v1_TelemetryData_init_default}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, false, star_v1_SystemStatus_init_default, false,    \
+      star_v1_BatteryState_init_default, false, star_v1_TelemetryData_init_default                 \
+  }
 #define star_v1_ForwardTelemetryResponse_init_default                                              \
-  {false, star_v1_ResponseHeader_init_default, 0, 0}
-#define star_v1_GetTeleopCommandRequest_init_default {false, star_v1_RequestHeader_init_default}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0, 0                                               \
+  }
+#define star_v1_GetTeleopCommandRequest_init_default                                               \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
 #define star_v1_GetTeleopCommandResponse_init_default                                              \
-  {false, star_v1_ResponseHeader_init_default, false, star_v1_VelocityCommand_init_default, 0, 0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_VelocityCommand_init_default, 0, 0  \
+  }
 #define star_v1_SetPIDGainsRequest_init_default                                                    \
-  {false, star_v1_RequestHeader_init_default, false, star_v1_PidConfig_init_default, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, false, star_v1_PidConfig_init_default, 0            \
+  }
 #define star_v1_SetPIDGainsResponse_init_default                                                   \
   {                                                                                                \
     false, star_v1_ResponseHeader_init_default, 0,                                                 \
@@ -120,20 +125,26 @@ extern "C" {
     }                                                                                              \
   }
 #define star_v1_ForwardTelemetryRequest_init_zero                                                  \
-  {false,                                                                                          \
-   star_v1_RequestHeader_init_zero,                                                                \
-   false,                                                                                          \
-   star_v1_SystemStatus_init_zero,                                                                 \
-   false,                                                                                          \
-   star_v1_BatteryState_init_zero,                                                                 \
-   false,                                                                                          \
-   star_v1_TelemetryData_init_zero}
-#define star_v1_ForwardTelemetryResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0, 0}
-#define star_v1_GetTeleopCommandRequest_init_zero  {false, star_v1_RequestHeader_init_zero}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, false, star_v1_SystemStatus_init_zero, false,          \
+      star_v1_BatteryState_init_zero, false, star_v1_TelemetryData_init_zero                       \
+  }
+#define star_v1_ForwardTelemetryResponse_init_zero                                                 \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0, 0                                                  \
+  }
+#define star_v1_GetTeleopCommandRequest_init_zero                                                  \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
 #define star_v1_GetTeleopCommandResponse_init_zero                                                 \
-  {false, star_v1_ResponseHeader_init_zero, false, star_v1_VelocityCommand_init_zero, 0, 0}
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_VelocityCommand_init_zero, 0, 0        \
+  }
 #define star_v1_SetPIDGainsRequest_init_zero                                                       \
-  {false, star_v1_RequestHeader_init_zero, false, star_v1_PidConfig_init_zero, 0}
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, false, star_v1_PidConfig_init_zero, 0                  \
+  }
 #define star_v1_SetPIDGainsResponse_init_zero                                                      \
   {                                                                                                \
     false, star_v1_ResponseHeader_init_zero, 0,                                                    \

@@ -1,7 +1,7 @@
 # STAR ROS2 Implementation Roadmap
 
-**Last Updated:** 2026-01-19
-**Status:** Phase 4 Safety Systems Complete - Hardware Integration Ready
+**Last Updated:** 2026-01-22
+**Status:** Virtual RX72N Simulator Complete - HIL Testing Ready
 
 ## Overview
 
@@ -31,9 +31,9 @@ RX72N Motor Controller
 
 ---
 
-## Executive Summary (2026-01-19)
+## Executive Summary (2026-01-22)
 
-**Overall Completion: 83%** (20/24 major tasks complete)
+**Overall Completion: 87%** (21/24 major tasks complete)
 
 | Component | Status | Completion |
 |-----------|--------|------------|
@@ -45,21 +45,24 @@ RX72N Motor Controller
 | **SLAM Configuration** | ❌ Not Started | 0% (hardware-dependent) |
 | **Hardware Testing** | ⚠️ Ready | 0% (pending hardware) |
 
-**Major Accomplishments (Last 5 Days):**
+**Major Accomplishments (Last 7 Days):**
 - ✅ PR #184: TelemetryService + ConfigurationService (1072 lines)
 - ✅ PR #191: BatteryManagementService (656 lines, 80% test coverage)
 - ✅ PR #192: SPI Transport with periph.io (276 lines, production-ready)
 - ✅ PR #199: star_safety_monitor (1558 lines, 7 passing tests)
 - ✅ PR #200: HIL Simulation (Virtual RX72N, Socket Transport, Service Tests)
+- ✅ PR #202: Virtual RX72N Full Protocol Stack (HARQ + Protobuf, 81.8% coverage)
 - ✅ Issue #176: E-Stop Priority Queue (variadic priority in HARQ.Send)
 
 **Critical Path to MVP:**
 1. ~~Implement `star_safety_monitor` node (Issue #139)~~ ✅ Complete
 2. ~~Add E-Stop priority queue (Issue #176)~~ ✅ Complete
-3. Simulated Integration Tests (Virtual RX72N)
-4. Hardware integration tests on RPi5 (Issue #180)
+3. ~~Virtual RX72N Full Protocol Stack (PR #202)~~ ✅ Complete
+4. **Fix Flaky Battery Test** (TestNewBatteryService race condition) 🔥
+5. Simulated Integration Tests (Virtual RX72N + ROS2)
+6. Hardware integration tests on RPi5 (Issue #180)
 
-**Estimated Time to Production MVP:** ~1 week
+**Estimated Time to Production MVP:** ~3-5 days (pending battery test fix + HIL tests)
 
 ---
 
@@ -79,6 +82,7 @@ RX72N Motor Controller
 | SPI Transport Layer | #192 | ✅ Merged | 276 | 2026-01-17 |
 | `star_safety_monitor` | #199 | ✅ Merged | 1558 | 2026-01-19 |
 | HIL Sim + Socket Transport | #200 | ✅ Merged | 1000+ | 2026-01-19 |
+| Virtual RX72N Full Stack | #202 | ✅ Merged | 800+ | 2026-01-22 |
 
 **Infrastructure Complete:**
 - ✅ Dockerfile (ROS2 Jazzy + gRPC + Protobuf)
@@ -1016,9 +1020,16 @@ Phase 6: Integration Testing ─────────────────
 
 ## Next Actions (Updated 2026-01-19)
 
-### Immediate Priority (Week of 2026-01-20)
+### Immediate Priority (Week of 2026-01-22)
 
-1. **Simulated Integration Tests** (Virtual RX72N) - 1-2 days 🔥 **START HERE**
+1. **Fix Flaky Battery Test** (TestNewBatteryService) - 0.5 days 🔥 **URGENT**
+   - Race condition: Background goroutine not starting within 500ms timeout
+   - Affects CI reliability (intermittent failures on PR #202)
+   - Solution: Increase timeout OR add synchronization signal OR refactor test
+   - File: `star-gateway/internal/service/battery_test.go:129-158`
+   - Issue: Blocking CI merges
+
+2. **Simulated Integration Tests** (Virtual RX72N) - 1-2 days 🔥 **START HERE**
    - Verify `star_gateway_bridge` connects to Gateway (Sim Mode)
    - Verify Telemetry/Command flow end-to-end (ROS2 <-> Gateway <-> Virtual RX72N)
    - Verify Safety Monitor E-Stop triggering in simulation
@@ -1064,7 +1075,10 @@ Phase 6: Integration Testing ─────────────────
 - ✅ **Phase 4 Complete:** Safety monitoring with platform integrity checks
 - ⏸️ **Phase 5-6:** Blocked on hardware availability (RPi5 + RX72N)
 
-**Total Estimated Effort to Production MVP:** ~2-3 days (hardware testing only)
+**Total Estimated Effort to Production MVP:** ~3-5 days
+- 🔥 **Immediate:** Fix flaky battery test (0.5 days)
+- ⚠️ **Next:** HIL integration tests with Virtual RX72N (1-2 days)
+- ⏸️ **Blocked:** Hardware integration tests on RPi5+RX72N (2-3 days)
 
 ---
 

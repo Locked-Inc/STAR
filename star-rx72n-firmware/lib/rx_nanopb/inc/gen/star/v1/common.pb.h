@@ -128,41 +128,57 @@ extern "C" {
 
 /* Initializer values for message structs */
 #define star_v1_RequestHeader_init_default                                                         \
-  {{{NULL}, NULL},                                                                                 \
-   false,                                                                                          \
-   google_protobuf_Timestamp_init_default,                                                         \
-   {{NULL}, NULL},                                                                                 \
-   false,                                                                                          \
-   google_protobuf_Duration_init_default}
+  {                                                                                                \
+    {{NULL}, NULL}, false, google_protobuf_Timestamp_init_default, {{NULL}, NULL}, false,          \
+      google_protobuf_Duration_init_default                                                        \
+  }
 #define star_v1_ResponseHeader_init_default                                                        \
-  {{{NULL}, NULL},                                                                                 \
-   false,                                                                                          \
-   google_protobuf_Timestamp_init_default,                                                         \
-   _star_v1_Status_MIN,                                                                            \
-   {{NULL}, NULL},                                                                                 \
-   0}
-#define star_v1_Vector3_init_default     {0, 0, 0}
-#define star_v1_Quaternion_init_default  {0, 0, 0, 0}
-#define star_v1_SE2Pose_init_default     {0, 0, 0}
-#define star_v1_SE2Velocity_init_default {0, 0, 0}
+  {                                                                                                \
+    {{NULL}, NULL}, false, google_protobuf_Timestamp_init_default, _star_v1_Status_MIN,            \
+      {{NULL}, NULL}, 0                                                                            \
+  }
+#define star_v1_Vector3_init_default                                                               \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_Quaternion_init_default                                                            \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
+#define star_v1_SE2Pose_init_default                                                               \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_SE2Velocity_init_default                                                           \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
 #define star_v1_RequestHeader_init_zero                                                            \
-  {{{NULL}, NULL},                                                                                 \
-   false,                                                                                          \
-   google_protobuf_Timestamp_init_zero,                                                            \
-   {{NULL}, NULL},                                                                                 \
-   false,                                                                                          \
-   google_protobuf_Duration_init_zero}
+  {                                                                                                \
+    {{NULL}, NULL}, false, google_protobuf_Timestamp_init_zero, {{NULL}, NULL}, false,             \
+      google_protobuf_Duration_init_zero                                                           \
+  }
 #define star_v1_ResponseHeader_init_zero                                                           \
-  {{{NULL}, NULL},                                                                                 \
-   false,                                                                                          \
-   google_protobuf_Timestamp_init_zero,                                                            \
-   _star_v1_Status_MIN,                                                                            \
-   {{NULL}, NULL},                                                                                 \
-   0}
-#define star_v1_Vector3_init_zero     {0, 0, 0}
-#define star_v1_Quaternion_init_zero  {0, 0, 0, 0}
-#define star_v1_SE2Pose_init_zero     {0, 0, 0}
-#define star_v1_SE2Velocity_init_zero {0, 0, 0}
+  {                                                                                                \
+    {{NULL}, NULL}, false, google_protobuf_Timestamp_init_zero, _star_v1_Status_MIN,               \
+      {{NULL}, NULL}, 0                                                                            \
+  }
+#define star_v1_Vector3_init_zero                                                                  \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_Quaternion_init_zero                                                               \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
+#define star_v1_SE2Pose_init_zero                                                                  \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_SE2Velocity_init_zero                                                              \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_RequestHeader_request_id_tag        1

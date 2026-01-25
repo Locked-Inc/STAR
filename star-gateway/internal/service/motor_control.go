@@ -170,18 +170,18 @@ func (s *MotorControlService) validateRateHz(rateHz int32) int32 {
 }
 
 // receiveTelemetryLoop continuously receives telemetry from Dispatcher and updates latest value.
-func (s *MotorControlService) receiveTelemetryLoop(ctx context.Context, telemetryCh <-chan *starv1.WireMessage, latestTelemetry **starv1.TelemetryData, mu *sync.RWMutex) {
+func (s *MotorControlService) receiveTelemetryLoop(ctx context.Context, telemetryCh <-chan *dispatcher.DispatchedMessage, latestTelemetry **starv1.TelemetryData, mu *sync.RWMutex) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case wireMsg, ok := <-telemetryCh:
+		case dispMsg, ok := <-telemetryCh:
 			if !ok {
 				s.logger.Debug("telemetry subscription channel closed")
 				return
 			}
 
-			telemetry := wireMsg.GetTelemetryData()
+			telemetry := dispMsg.WireMsg.GetTelemetryData()
 			if telemetry == nil {
 				s.logger.Warn("received wire message with nil telemetry data")
 				continue
@@ -293,7 +293,7 @@ func (s *MotorControlService) forwardVelocityCommand(ctx context.Context, cmd *s
 }
 
 // sendTelemetryLoop receives telemetry from Dispatcher and sends encoder feedback to client.
-func (s *MotorControlService) sendTelemetryLoop(ctx context.Context, stream starv1.MotorControlService_ControlStreamServer, telemetryCh <-chan *starv1.WireMessage, errChan <-chan error) error {
+func (s *MotorControlService) sendTelemetryLoop(ctx context.Context, stream starv1.MotorControlService_ControlStreamServer, telemetryCh <-chan *dispatcher.DispatchedMessage, errChan <-chan error) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -301,13 +301,13 @@ func (s *MotorControlService) sendTelemetryLoop(ctx context.Context, stream star
 			return ctx.Err()
 		case err := <-errChan:
 			return err
-		case wireMsg, ok := <-telemetryCh:
+		case dispMsg, ok := <-telemetryCh:
 			if !ok {
 				s.logger.Debug("telemetry subscription channel closed in control stream")
 				return nil
 			}
 
-			telemetry := wireMsg.GetTelemetryData()
+			telemetry := dispMsg.WireMsg.GetTelemetryData()
 			if telemetry == nil {
 				s.logger.Warn("received wire message with nil telemetry data in control stream")
 				continue

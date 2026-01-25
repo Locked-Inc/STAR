@@ -19,6 +19,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -82,6 +83,7 @@ target_include_directories(star_gateway_bridge_component PUBLIC
 ament_target_dependencies(star_gateway_bridge_component
   rclcpp
   rclcpp_components
+  diagnostic_msgs
   geometry_msgs
   std_msgs
   sensor_msgs

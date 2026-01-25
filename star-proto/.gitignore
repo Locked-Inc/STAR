@@ -1,5 +1,4 @@
 # Generated code (created by buf generate)
-gen/go/*
 gen/typescript/*
 gen/nanopb/*
 gen/cpp/*
