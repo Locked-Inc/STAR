@@ -318,7 +318,7 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 	if activeWrapper == nil {
 		return nil, errors.New("no active transport available")
 	}
-	
+
 	// Validate decoder
 	if activeWrapper.Decoder == nil {
 		err := errors.New("transport decoder not initialized")
@@ -327,10 +327,10 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 	}
 
 	start := time.Now()
-	
+
 	// Use StreamDecoder instead of direct transport.Receive()
 	decodedFrame, err := activeWrapper.Decoder.Decode()
-	
+
 	latency := time.Since(start)
 	tm.recordOperation(activeName, err, latency, false)
 

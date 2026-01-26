@@ -61,7 +61,7 @@ func (r *HARQReader) Read(p []byte) (int, error) {
 	defer cancel()
 
 	result, err := r.h.Receive(ctx)
-	
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

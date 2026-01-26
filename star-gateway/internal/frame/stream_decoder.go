@@ -63,7 +63,7 @@ func (d *StreamDecoder) Decode() (*Frame, error) {
 		// Read 2 bytes for SyncWord.
 		// Since we need to byte-scan if match fails, we'll read one byte, then another.
 		// Optimized: Peek 2 bytes. If match, consume. If not, advance 1 byte.
-		
+
 		// Ensure we have at least 2 bytes (SyncSize)
 		peekBuf, err := d.r.Peek(SyncSize)
 		if err != nil {
@@ -116,10 +116,10 @@ func (d *StreamDecoder) Decode() (*Frame, error) {
 		// We need to read Header + Payload + CRC.
 		// Construct full buffer for CRC check: SYNC + Header + Payload.
 		totalRemaining := HeaderSize + int(payloadLen) + CRCSize
-		
+
 		frameBuf := make([]byte, SyncSize+totalRemaining)
 		binary.BigEndian.PutUint16(frameBuf[0:], SyncWord) // Reconstruct SYNC
-		
+
 		// Read the rest
 		_, err = io.ReadFull(d.r, frameBuf[SyncSize:])
 		if err != nil {

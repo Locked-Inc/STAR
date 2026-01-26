@@ -22,10 +22,10 @@ func TestHealthMonitor_Recovery(t *testing.T) {
 	// Setup TransportManager
 	tm := NewTransportManager(DefaultConfig())
 	mockTransport := &MockHARQ{}
-	
+
 	// Register a transport (it will be active)
 	tm.RegisterTransport("test-transport", mockTransport, 10)
-	
+
 	// Create another transport that is inactive
 	mockTransport2 := &MockHARQ{}
 	tm.RegisterTransport("inactive-transport", mockTransport2, 5)
