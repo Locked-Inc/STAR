@@ -1,0 +1,7571 @@
+RX72N Group
+
+52. 2D Drawing Engine (DRW2D)
+
+52.
+
+2D Drawing Engine (DRW2D)
+
+52.1
+
+Overview
+
+This MCU incorporates a 2D drawing engine (DRW2D). Table 52.1 lists the DRW2D specifications.
+Table 52.1
+
+DRW2D Specifications
+
+Item
+
+Descriptions
+
+Vector drawing engine
+
+Extended rendering primitives supported in hardware
+ Lines
+ Polygons
+ Circles and ellipses
+ Quadratic Béziers
+ Texture mapping
+
+BitBLT function
+
+Seven types of BitBLT operations
+ Fill
+ Copy
+ Stretch BitBLT
+ Rotate and scale
+ Alpha blending
+ Bilinear filtering
+ Color conversion
+
+Color format
+
+Frame buffer
+
+Four types
+ A(8)
+ RGB(565)
+ ARGB(4444)
+ ARGB(8888)
+
+Texture
+
+11 types
+ CLUT(1)
+ CLUT(2)
+ CLUT(4)
+ CLUT(8)
+ A(8)
+ ACLUT(44)
+ RGB(565)
+ ARGB(4444)
+ ARGB(1555)
+ RBG(888)
+ ARGB(8888)
+
+Texture
+
+ Run-length encoding (RLE) unit
+ 256-entry color look-up table (CLUT)
+ Chroma keying unit
+
+Render
+
+Two modes for rendering process
+ Register mode
+ Display list mode
+
+Data arrangement
+
+Little endian
+
+Performance counter
+
+ Two independent 32-bit counters
+ Trigger is selectable from 14 events
+
+Interrupt sources
+
+Two interrupt sources
+ Enumeration finished interrupt (DRWENUIR)
+ Display list finished interrupt (DRWDLIR)
+
+The DRW2D provides two inputs (texture read and frame buffer read) and one output (frame buffer write). The internal
+color format is always ARGB(8888). The color formats from the inputs are converted to the internal format on read and
+converted back on write.
+Figure 52.1 shows examples of objects that can be drawn in hardware with the DRW2D and Figure 52.2 shows the
+block diagram of the module.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2745 of 3240
+
+RX72N Group
+
+Figure 52.1
+
+52. 2D Drawing Engine (DRW2D)
+
+Examples of Drawing Objects
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2746 of 3240
+
+RX72N Group
+
+52. 2D Drawing Engine (DRW2D)
+
+Internal peripheral bus
+
+Slave bus
+interface
+
+PCLKA
+
+Registers
+
+Performance counters
+
+Display list FIFO
+
+PCLKA
+
+Pixel selection
+
+Master bus interface
+
+Texture data
+
+Pixel selection FIFO
+
+RLE unit
+with
+prefetch
+FIFO
+
+Texture unit
+Texture
+cache
+
+DRWIRQ
+CLUT
+
+Color unit
+
+Color unit FIFO
+
+Frame buffer,
+display list
+
+Internal main bus 2
+
+Display list reader
+
+Frame buffer read
+
+Frame buffer
+cache
+
+Blend unit
+
+Frame buffer write
+
+Figure 52.2
+
+Block Diagram of the DRW2D
+
+The DRW2D accesses internal main bus 2 as bus master through each caches for:
+ Reading and writing pixel data from and to the frame buffer
+ Reading textures
+ Reading display lists
+The registers are accessed through the internal peripheral bus.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2747 of 3240
+
+RX72N Group
+
+52.2
+
+52. 2D Drawing Engine (DRW2D)
+
+Register Descriptions
+
+52.2.1
+
+Geometry Control Register (CONTROL)
+
+Address(es): DRW2D.CONTROL 000E 3000h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+SPANS SPANA UNION UNION UNION UNION UNION BAND2
+TR
+BT
+CD
+AB
+56
+34
+12
+EN
+
+BAND1 LIM6TH LIM5TH LIM4TH LIM3TH LIM2TH LIM1TH QUAD3 QUAD2 QUAD1 LIM6E LIM5E LIM4E LIM3E LIM2E LIM1E
+EN
+EN
+EN
+EN
+N
+N
+N
+N
+N
+N
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+LIM1EN
+
+Limiter 1 Enable
+
+0: Disable
+1: Enable
+
+W
+
+b1
+
+LIM2EN
+
+Limiter 2 Enable
+
+0: Disable
+1: Enable
+
+W
+
+b2
+
+LIM3EN
+
+Limiter 3 Enable
+
+0: Disable
+1: Enable
+
+W
+
+b3
+
+LIM4EN
+
+Limiter 4 Enable
+
+0: Disable
+1: Enable
+
+W
+
+b4
+
+LIM5EN
+
+Limiter 5 Enable
+
+0: Disable
+1: Enable
+
+W
+
+b5
+
+LIM6EN
+
+Limiter 6 Enable
+
+0: Disable
+1: Enable
+
+W
+
+b6
+
+QUAD1EN
+
+Limiters 1 and 2 Quadratic
+Coupling Enable
+
+0: Disable (Linear equation mode)
+1: Enable (Quadratic equation mode)
+
+W
+
+b7
+
+QUAD2EN
+
+Limiters 3 and 4 Quadratic
+Coupling Enable
+
+0: Disable (Linear equation mode)
+1: Enable (Quadratic equation mode)
+
+W
+
+b8
+
+QUAD3EN
+
+Limiters 5 and 6 Quadratic
+Coupling Enable
+
+0: Disable (Linear equation mode)
+1: Enable (Quadratic equation mode)
+
+W
+
+b9
+
+LIM1TH
+
+Limiter 1 Threshold Mode
+Enable
+
+0: Disable
+1: Enable
+
+W
+
+b10
+
+LIM2TH
+
+Limiter 2 Threshold Mode
+Enable
+
+0: Disable
+1: Enable
+
+W
+
+b11
+
+LIM3TH
+
+Limiter 3 Threshold Mode
+Enable
+
+0: Disable
+1: Enable
+
+W
+
+b12
+
+LIM4TH
+
+Limiter 4 Threshold Mode
+Enable
+
+0: Disable
+1: Enable
+
+W
+
+b13
+
+LIM5TH
+
+Limiter 5 Threshold Mode
+Enable
+
+0: Disable
+1: Enable
+
+W
+
+b14
+
+LIM6TH
+
+Limiter 6 Threshold Mode
+Enable
+
+0: Disable
+1: Enable
+
+W
+
+b15
+
+BAND1EN
+
+Limiter 1 Band Filter Enable
+
+0: Disable (half plane intersection)
+1: Enable
+
+W
+
+b16
+
+BAND2EN
+
+Limiter 2 Band Filter Enable
+
+0: Disable (half plane intersection)
+1: Enable
+
+W
+
+b17
+
+UNION12
+
+Limiters 1 and 2 Combiner
+Operation Select
+
+0: Combine limiters 1 and 2 as intersect (Output is called
+A)
+1: Combine limiters 1 and 2 as union (Output is called A)
+
+W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2748 of 3240
+
+RX72N Group
+
+52. 2D Drawing Engine (DRW2D)
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b18
+
+UNION34
+
+Limiters 3 and 4 Combiner
+Operation Select
+
+0: Combine limiters 3 and 4 as intersect (Output is called
+B)
+1: Combine limiters 3 and 4 as union (Output is called B)
+
+W
+
+b19
+
+UNION56
+
+Limiters 5 and 6 Combiner
+Operation Select
+
+0: Combine limiters 5 and 6 as intersect (Output is called
+D)
+1: Combine limiters 5 and 6 as union (Output is called D)
+
+W
+
+b20
+
+UNIONAB
+
+Outputs A and B Combiner
+Operation Select
+
+0: Combine outputs A and B as intersect (Output is called W
+C)
+1: Combine outputs A and B as union (Output is called C)
+
+b21
+
+UNIONCD
+
+Outputs C and D Combiner
+Operation Select
+
+0: Combine outputs C and D as intersect (Output is final)
+1: Combine outputs C and D as union (Output is final)
+
+W
+
+b22
+
+SPANABT
+
+Spanabort Enable
+
+0: Disable
+1: Enable
+
+W
+
+b23
+
+SPANSTR
+
+Spanstore Enable
+
+0: Disable
+1: Enable
+
+W
+
+b31 to b24
+
+—
+
+Reserved
+
+The write value should be 0.
+
+W
+
+Note:
+
+This register is write-only and reading returns the value of the STATUS register. Do not use a bit processing instruction but the
+MOV instruction to set this register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2749 of 3240
+
+RX72N Group
+
+52.2.2
+
+52. 2D Drawing Engine (DRW2D)
+
+Surface Control Register (CONTROL2)
+
+Address(es): DRW2D.CONTROL2 000E 3004h
+b31
+
+Value after reset:
+
+b30
+
+b29
+
+b28
+
+RLEPIXW[1:0]
+
+BDIA
+
+BSIA
+
+b26
+
+b25
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+0
+
+0
+
+b24
+
+b23
+
+b22
+
+CLUTF COLKE CLUTE RLEEN WRALPHA[1:0]
+ORM
+YEN
+N
+
+0
+
+TEXCL TEXCL
+PY
+PX
+Value after reset:
+
+b27
+
+BC2
+
+BDI
+
+BSI
+
+BDF
+
+BSF
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b21
+
+b20
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+0
+
+TEXFIL TEXFIL
+TY
+TX
+
+0
+
+0
+
+0
+
+b16
+
+0
+
+0
+
+0
+
+b17
+
+RDFMT[1:0]
+
+0
+
+BSFA
+
+b18
+
+WRFMT[1:0]
+
+0
+
+WRFM BDFA
+T2
+
+b19
+
+RDFMT2[1:0]
+0
+
+0
+
+USEAC PTNSR TEXEN PTNEN
+B
+CL5
+A
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+PTNEN
+
+Pattern Color Enable
+
+0: Disable pattern
+1: Enable pattern (Pixel source is a pattern color (blend of
+registers COLOR1 and COLOR2 depending on the
+PATTERN register and pattern index))
+
+W
+
+b1
+
+TEXENA
+
+Texture Enable
+
+0: Disable texture
+1: Enable texture (Pixel source is read from texture and used
+as an alpha to blend between registers COLOR1 and
+COLOR2)
+
+W
+
+b2
+
+PTNSRCL5
+
+Limiter 5 Pattern Index
+Enable
+
+0: U-limiter is used as pattern index
+1: Limiter 5 is used as pattern index
+
+W
+
+b3
+
+USEACB
+
+Alpha Blend Mode Select
+
+0: Use write-alpha mode (The frame buffer format should
+include an alpha channel)
+1: Use full alpha channel blending mode
+
+W
+
+b5, b4
+
+RDFMT2[1:0]
+
+Texture Format Select Upper
+
+Upper 2 bits of the texture buffer format select bits. See the
+RDFMT[1:0] bits below for description.
+
+W
+
+b6
+
+BSFA
+
+Alpha Channel Source Blend
+Factor Select
+
+Valid when the USEACB bit is 1 (full alpha channel blending
+mode).
+0: Use 1.0 as source blend factor for alpha channel
+1: Use alpha as source blend factor for alpha channel
+
+W
+
+b7
+
+BDFA
+
+Alpha Channel Destination
+Blend Factor Select
+
+Valid when the USEACB bit is 1 (full alpha channel blending
+mode).
+0: Use 1.0 as destination blend factor for alpha channel
+1: Use alpha as destination blend factor for alpha channel
+
+W
+
+b8
+
+WRFMT2
+
+Frame Buffer Format Select
+Upper
+
+Upper bit of the frame buffer format select bits. See the
+WRFMT[1:0] bits below for description.
+
+W
+
+b9
+
+BSF
+
+Source Blend Factor Select
+
+0: Use 1.0 as source blend factor for color channel
+1: Use alpha as source blend factor for color channel
+
+W
+
+b10
+
+BDF
+
+Destination Blend Factor
+Select
+
+0: Use 1.0 as destination blend factor for color channel
+1: Use alpha as destination blend factor for color channel
+
+W
+
+b11
+
+BSI
+
+Source Blend Factor Invert
+
+0: Use blend factor as specified through the BSF bit
+1: Invert source blend factor (1 – x)
+
+W
+
+b12
+
+BDI
+
+Destination Blend Factor
+Invert
+
+0: Use blend factor as specified through the BDF bit
+1: Invert destination blend factor (1 – x)
+
+W
+
+b13
+
+BC2
+
+Blend Color2 Select
+
+0: Use pixel from frame buffer as destination for color
+channel
+1: Use value of the COLOR2 register as destination for color
+channel
+
+W
+
+b14
+
+TEXCLPX
+
+U Limiter Texture Clamp
+Mode Select
+
+This bit specifies the operation of texture mapping in U
+coordinate (X coordinate in texture space).
+0: Mask mode: repeat texture pattern in U direction
+1: Clamp mode: repeat last texture data in U direction
+
+W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2750 of 3240
+
+RX72N Group
+
+52. 2D Drawing Engine (DRW2D)
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15
+
+TEXCLPY
+
+V Limiter Texture Clamp
+Mode Select
+
+This bit specifies the operation of texture mapping in V
+coordinate (Y coordinate in texture space).
+0: Mask mode: repeat texture pattern in V direction
+1: Clamp mode: repeat last texture data in V direction
+
+W
+
+b16
+
+TEXFILTX
+
+U Axis Texture Filter Enable
+
+0: No filtering on texture U axis
+1: Linear filtering on texture U axis
+
+W
+
+b17
+
+TEXFILTY
+
+V Axis Texture Filter Enable
+
+0: No filtering on texture V axis
+1: Linear filtering on texture V axis
+
+W
+
+b19, b18
+
+RDFMT[1:0]
+
+Texture Format Select
+
+Pixel format of the texture buffer.
+
+W
+
+b5 b4 b19 b18
+
+0 0 0 0: A(8) (8 bpp)
+0 0 0 1: RGB(565) (16 bpp)
+0 0 1 0: ARGB(8888) (32 bpp)
+0 0 1 1: ARGB(4444) (16 bpp)
+0 1 0 0: ARGB(1555) (16 bpp)
+0 1 0 1: ACLUT(44), 4-bit alpha and 4-bit indexed color (8
+bpp)
+1 0 0 1: CLUT(8), 8-bit indexed color (8 bpp)
+1 0 1 0: CLUT(4), 4-bit indexed color (4 bpp)
+1 0 1 1: CLUT(2), 2-bit indexed color (2 bpp)
+1 1 0 0: CLUT(1), 1-bit indexed color (1 bpp)
+Settings other than above are prohibited.
+
+b21, b20
+
+WRFMT[1:0]
+
+Frame Buffer Format Select
+
+W
+
+Pixel format of the frame buffer.
+b8 b21 b20
+
+0 0 0: A(8) (8 bpp)
+0 0 1: RGB(565) (16 bpp)
+0 1 0: ARGB(8888) (32 bpp)
+0 1 1: ARGB(4444) (16 bpp)
+Settings other than above are prohibited.
+
+b23, b22
+
+WRALPHA[1:0]
+
+Alpha Source Select
+
+When the USEACB bit is 0 (write-alpha mode):
+Sets the alpha source for the frame buffer.
+
+W
+
+b23 b22
+
+0 0: Use alpha from the COLOR2 register
+0 1: Use source alpha (pixel coverage)
+1 0: Use 0.0 as alpha
+1 1: Use alpha from frame buffer
+When the USEACB bit is 1 (full alpha channel blending
+mode):
+b23 b22
+
+0
+0
+1
+1
+
+0: Use alpha from the COLOR2 register as destination
+1: Use alpha from frame buffer as destination
+0: Use alpha from frame buffer as destination
+1: Use alpha from frame buffer as destination
+
+b24
+
+RLEEN
+
+RLE Enable
+
+0: RLE unit is disabled
+1: RLE unit is enabled
+
+W
+
+b25
+
+CLUTEN
+
+CLUT Enable
+
+0: CLUT is disabled, the index is directly put on the internal
+R, G, B channels
+1: CLUT is enabled
+
+W
+
+b26
+
+COLKEYEN
+
+Chroma Keying Enable
+
+0: Chroma keying unit is disabled
+1: Chroma keying unit is enabled
+
+W
+
+b27
+
+CLUTFORM
+
+CLUT Format Select
+
+0: ARGB(8888)
+1: RGB(565) × 2 (specifies two entries per 32 bits)
+
+W
+
+b28
+
+BSIA
+
+Alpha Channel Source Blend
+Factor Invert
+
+Valid when the USEACB bit is 1 (full alpha channel blending
+mode).
+0: Use blend factor as specified through the BSFA bit
+1: Invert source blend factor (1 – x)
+
+W
+
+b29
+
+BDIA
+
+Alpha Channel Destination
+Blend Factor Invert
+
+Valid when the USEACB bit is 1 (full alpha channel blending
+mode).
+0: Use blend factor as specified through the BDFA bit
+1: Invert destination blend factor (1 – x)
+
+W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2751 of 3240
+
+RX72N Group
+
+52. 2D Drawing Engine (DRW2D)
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b31, b30
+
+RLEPIXW[1:0]
+
+RLE Texel Width Setting
+
+Specifies the width of a texel for the RLE unit.
+
+W
+
+b31 b30
+
+0
+0
+1
+1
+
+Note:
+
+0: 1 byte per texel
+1: 2 bytes per texel
+0: 3 bytes per texel
+1: 4 bytes per texel
+
+This register is write-only and reading returns the value of the HWVER register. Do not use a bit processing instruction but the
+MOV instruction to set this register.
+
+52.2.3
+
+Interrupt Control Register (IRQCTL)
+
+Address(es): DRW2D.IRQCTL 000E 30C0h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+DLIRCL ENUIR DLIRE ENUIR
+R
+CLR
+N
+EN
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+ENUIREN
+
+Enumeration Finished Interrupt
+Enable
+
+0: Enumeration finished interrupt is disabled
+1: Enumeration finished interrupt is enabled
+
+W
+
+b1
+
+DLIREN
+
+Display List Finished Interrupt
+Enable
+
+0: Display list finished interrupt is disabled
+1: Display list finished interrupt is enabled
+
+W
+
+b2
+
+ENUIRCLR
+
+Enumeration Finished Interrupt
+Clear
+
+0: Do not clear enumeration finished interrupt
+1: Clear enumeration finished interrupt
+
+W
+
+b3
+
+DLIRCLR
+
+Display List Finished Interrupt
+Clear
+
+0: Do not clear display list finished interrupt
+1: Clear display list finished interrupt
+
+W
+
+b31 to b4
+
+—
+
+Reserved
+
+The write value should be 0.
+
+W
+
+Note:
+
+This register is write-only and read as undefined. Do not use a bit processing instruction but the MOV instruction to set this
+register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2752 of 3240
+
+RX72N Group
+
+52.2.4
+
+52. 2D Drawing Engine (DRW2D)
+
+Cache Control Register (CACHECTL)
+
+Address(es): DRW2D.CACHECTL 000E 30C4h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+CFLUT CENTX CFLUF CENFX
+X
+X
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+CENFX
+
+Frame Buffer Cache Enable
+
+0: Disable the frame buffer cache
+1: Enable the frame buffer cache
+
+W
+
+b1
+
+CFLUFX
+
+Frame Buffer Cache Flush
+
+0: Do not flush the frame buffer cache
+1: Flush the frame buffer cache
+
+W
+
+b2
+
+CENTX
+
+Texture Cache Enable
+
+0: Disable the texture cache
+1: Enable the texture cache
+
+W
+
+b3
+
+CFLUTX
+
+Texture Cache Flush
+
+0: Do not flush the texture cache
+1: Flush the texture cache
+
+W
+
+b31 to b4
+
+—
+
+Reserved
+
+The write value should be 0.
+
+W
+
+Note:
+
+This register is write-only and read as undefined. Do not use a bit processing instruction but the MOV instruction to set this
+register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2753 of 3240
+
+RX72N Group
+
+52.2.5
+
+52. 2D Drawing Engine (DRW2D)
+
+Status Register (STATUS)
+
+Address(es): DRW2D.STATUS 000E 3000h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DLIR
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ENUIR DLSTA CACHE BSYW BSYEN
+CT
+DTY
+R
+UM
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+b0
+
+BSYENUM
+
+Enumeration Unit Busy Flag
+
+0: Enumeration unit idle
+R
+1: Enumeration unit busy, new primitive cannot be started
+
+b1
+
+BSYWR
+
+Frame Buffer Writeback Busy
+Flag
+
+0: Frame Buffer writeback finished
+1: Frame Buffer writeback busy, frame buffer type cannot
+be changed
+
+R
+
+b2
+
+CACHEDTY
+
+Frame Buffer Cache Dirty Flag
+
+0: Frame Buffer cache is not dirty
+1: Frame Buffer cache is dirty, and frame should not be
+flipped
+
+R
+
+b3
+
+DLSTACT
+
+Display List Reader Busy Flag
+
+0: Display list reader is idle
+1: Display list reader busy, and no direct write access to
+registers allowed
+
+R
+
+b4
+
+ENUIR
+
+Enumeration Finished Interrupt
+Flag
+
+0: Enumeration not finished or interrupt disabled
+1: Enumeration finished interrupt triggered
+
+R
+
+b5
+
+DLIR
+
+Display List Finished Interrupt
+Flag
+
+0: Display list not finished or interrupt disabled
+1: Display list finished interrupt triggered
+
+R
+
+b31 to b6
+
+—
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+R/W
+
+Page 2754 of 3240
+
+RX72N Group
+
+52.2.6
+
+52. 2D Drawing Engine (DRW2D)
+
+Hardware Version Register (HWVER)
+
+Address(es): DRW2D.HWVER 000E 3004h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+—
+
+—
+
+—
+
+—
+
+ACBLD
+
+—
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+0
+
+1
+
+1
+
+1
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+COLKE TEXCL RLEUN
+Y
+UT256
+IT
+
+b22
+—
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+DLR
+
+—
+
+1
+
+1
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+1
+
+1
+
+1
+
+TEXCL PERFC TXCAC FBCAC
+UT
+NT
+HE
+HE
+
+REV[11:0]
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b11 to b0
+
+REV[11:0]
+
+Revision Number
+
+Revision number of DRW2D is stored.
+
+R
+
+b16 to b12
+
+—
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+b17
+
+DLR
+
+Display List Reader Available
+
+0: No display list reader
+1: Display list reader is available
+
+R
+
+b18
+
+FBCACHE
+
+Frame Buffer Cache Available
+
+0: No frame buffer cache
+1: Frame buffer cache is available
+
+R
+
+b19
+
+TXCACHE
+
+Texture Cache Available
+
+0: No texture cache
+1: Texture cache is available
+
+R
+
+b20
+
+PERFCNT
+
+Performance Counter Available
+
+0: No performance counter
+1: Two performance counters are available
+
+R
+
+b21
+
+TEXCLUT
+
+Texture CLUT Available
+
+0: No texture CLUT
+1: Texture CLUT is available
+
+R
+
+b22
+
+—
+
+Reserved
+
+This bit is read as 0.
+
+R
+
+b23
+
+RLEUNIT
+
+RLE Unit Available
+
+0: No RLE unit
+1: RLE unit is available
+
+R
+
+b24
+
+TEXCLUT256
+
+Texture CLUT Size
+
+0: Texture CLUT size is 16 entries
+1: Texture CLUT size is 256 entries
+
+R
+
+b25
+
+COLKEY
+
+Chroma Key Available
+
+0: No chroma keying
+1: Chroma keying is available
+
+R
+
+b26
+
+—
+
+Reserved
+
+This bit is read as 1.
+
+R
+
+b27
+
+ACBLD
+
+Alpha Channel Blending
+Available
+
+0: Full alpha channel blending is not available
+1: Full alpha channel blending is available
+
+R
+
+b31 to b28
+
+—
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2755 of 3240
+
+RX72N Group
+
+52.2.7
+
+52. 2D Drawing Engine (DRW2D)
+
+Base Color Register (COLOR1)
+
+Address(es): DRW2D.COLOR1 000E 3064h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+COL1A[7:0]
+Value after reset:
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+b7 to b0
+
+COL1B[7:0]
+
+b15 to b8
+
+COL1G[7:0]
+
+b23 to b16
+
+COL1R[7:0]
+
+b31 to b24
+
+COL1A[7:0]
+
+Note:
+
+b19
+
+COL1R[7:0]
+
+COL1G[7:0]
+Value after reset:
+
+b20
+
+0
+
+0
+
+0
+
+COL1B[7:0]
+0
+
+0
+
+Bit Name
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Description
+
+R/W
+
+Color1 Blue Channel Setting
+
+Specifies blue channel of color1.
+
+W
+
+Color1 Green Channel Setting
+
+Specifies green channel of color1.
+
+W
+
+Color1 Red Channel Setting
+
+Specifies red channel of color1.
+
+W
+
+Color1 Alpha Channel Setting
+
+Specifies alpha channel of color1.
+00h: Transparent
+...
+FFh: Opaque
+
+W
+
+This register is write-only and read as undefined. Do not use a bit processing instruction but the MOV instruction to set this
+register.
+
+52.2.8
+
+Secondary Color Register (COLOR2)
+
+Address(es): DRW2D.COLOR2 000E 3068h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+COL2A[7:0]
+Value after reset:
+
+b19
+
+b18
+
+b17
+
+b16
+
+COL2R[7:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+COL2G[7:0]
+Value after reset:
+
+b20
+
+0
+
+0
+
+0
+
+0
+
+0
+
+COL2B[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+COL2B[7:0]
+
+Color2 Blue Channel Setting
+
+Specifies blue channel of color2.
+
+W
+
+b15 to b8
+
+COL2G[7:0]
+
+Color2 Green Channel Setting
+
+Specifies green channel of color2.
+
+W
+
+b23 to b16
+
+COL2R[7:0]
+
+Color2 Red Channel Setting
+
+Specifies red channel of color2.
+
+W
+
+b31 to b24
+
+COL2A[7:0]
+
+Color2 Alpha Channel Setting
+
+Specifies alpha channel of color2.
+00h: Transparent
+...
+FFh: Opaque
+
+W
+
+Note:
+
+This register is write-only and read as undefined. Do not use a bit processing instruction but the MOV instruction to set this
+register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2756 of 3240
+
+RX72N Group
+
+52.2.9
+
+52. 2D Drawing Engine (DRW2D)
+
+Pattern Register (PATTERN)
+
+Address(es): DRW2D.PATTERN 000E 3074h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+PATTERN[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+PATTERN[7:0]
+
+Pattern Bitmap Setting
+
+Specifies bitmap of the pattern. Each bit is interpreted as
+a reference to one of the two color registers (0: COLOR1,
+1: COLOR2)
+
+W
+
+b31 to b8
+
+—
+
+Reserved
+
+The write value should be 0.
+
+W
+
+52.2.10
+
+Limiter n Start Value Register (LnSTART) (n = 1 to 6)
+
+Address(es): DRW2D.L1START 000E 3010h, DRW2D.L2START 000E 3014h, DRW2D.L3START 000E 3018h,
+DRW2D.L4START 000E 301Ch, DRW2D.L5START 000E 3020h, DRW2D.L6START 000E 3024h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the start value of limiter n (n = 1 to 6) used for rasterization.
+The start value is a 16:16 fixed point number valid at the first pixel of the bounding box.
+The LnSTART registers are write-only and read as undefined.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2757 of 3240
+
+RX72N Group
+
+52.2.11
+
+52. 2D Drawing Engine (DRW2D)
+
+Limiter n X-Axis Increment Register (LnXADD) (n = 1 to 6)
+
+Address(es): DRW2D.L1XADD 000E 3028h, DRW2D.L2XADD 000E 302Ch, DRW2D.L3XADD 000E 3030h,
+DRW2D.L4XADD 000E 3034h, DRW2D.L5XADD 000E 3038h, DRW2D.L6XADD 000E 303Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the X-axis increment value of limiter n (n = 1 to 6) used for rasterization.
+The X-axis inclement value is the 16:16 fixed point difference between two samples with a distance of 1 pixel along the
+X axis.
+The LnXADD registers are write-only and read as undefined.
+
+52.2.12
+
+Limiter n Y-Axis Increment Register (LnYADD) (n = 1 to 6)
+
+Address(es): DRW2D.L1YADD 000E 3040h, DRW2D.L2YADD 000E 3044h, DRW2D.L3YADD 000E 3048h,
+DRW2D.L4YADD 000E 304Ch, DRW2D.L5YADD 000E 3050h, DRW2D.L6YADD 000E 3054h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the Y-axis increment value of limiter n (n = 1 to 6) used for rasterization.
+The Y-axis inclement value is the 16:16 fixed point difference between two samples with a distance of 1 pixel along the
+Y axis.
+The LnYADD registers are write-only and read as undefined.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2758 of 3240
+
+RX72N Group
+
+52.2.13
+
+52. 2D Drawing Engine (DRW2D)
+
+Limiter m Band Width Parameter Register (LmBAND) (m = 1, 2)
+
+Address(es): DRW2D.L1BAND 000E 3058h, DRW2D.L2BAND 000E 305Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the inner width of band region when the CONTROL.BANDmEN bit (m = 1, 2) is 1 (band output
+filtering for limiter m is enabled).
+The band width is the 16:16 fixed point number.
+The LmBAND registers are write-only and read as undefined.
+
+52.2.14
+
+Texture Base Address Register (TEXORG)
+
+Address(es): DRW2D.TEXORG 000E 30BCh
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the address of the upper left corner texel (texture base address).
+The TEXORG register is write-only and read as undefined.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2759 of 3240
+
+RX72N Group
+
+52.2.15
+
+52. 2D Drawing Engine (DRW2D)
+
+Texels Per Texture Line Register (TEXPITCH)
+
+Address(es): DRW2D.TEXPITCH 000E 30B4h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+This register specifies the texels per texture line. The valid range is 0 to 2047.
+The TEXPITCH register is write-only and read as undefined.
+
+52.2.16
+
+Texture Mask Register (TEXMSK)
+
+Address(es): DRW2D.TEXMSK 000E 30B8h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+TEXVMSK[20:5]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+TEXVMSK[4:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+TEXUMSK[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+TEXUMSK[10:0]
+
+U Mask Setting
+
+When the CONTROL2.TEXCLPX bit is 0 (mask mode):
+These bits function as mask bits in U coordinate. Set to
+power of 2 – 1.
+When the CONTROL2.TEXCLPX bit is 1 (clamp mode):
+Set to texture width – 1. The maximum value of texture
+width is 2048.
+
+W
+
+b31 to b11
+
+TEXVMSK[20:0]
+
+V Mask Setting
+
+When the CONTROL2.TEXCLPX bit is 0 (mask mode):
+These bits function as mask bits in V coordinate. Set to
+power of 2 – 1.
+When the CONTROL2.TEXCLPX bit is 1 (clamp mode):
+Set to texture height – 1. The maximum value of texture
+height is 1024.
+
+W
+
+Note:
+
+This register is write-only and read as undefined. Do not use a bit processing instruction but the MOV instruction to set this
+register.
+
+This register is used to specify the texture size when the CONTROL2.TEXCLPX bit is 1 or specify masks for U and V
+separately to wraparound values of U and V when the TEXCLPX bit is 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2760 of 3240
+
+RX72N Group
+
+52.2.17
+
+52. 2D Drawing Engine (DRW2D)
+
+U Limiter Start Value Register (LUST)
+
+Address(es): DRW2D.LUST 000E 3090h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the start value of U limiter used for texture mapping.
+The start value is a 16:16 fixed point number valid at the first pixel of the bounding box.
+The LUST register is write-only and read as undefined.
+
+52.2.18
+
+U Limiter X-Axis Increment Register (LUXADD)
+
+Address(es): DRW2D.LUXADD 000E 3094h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the X-axis increment value of U limiter used for texture mapping.
+The X-axis inclement value is the 16:16 fixed point difference between two samples with a distance of 1 pixel along the
+X axis.
+The LUXADD register is write-only and read as undefined.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2761 of 3240
+
+RX72N Group
+
+52.2.19
+
+52. 2D Drawing Engine (DRW2D)
+
+U Limiter Y-Axis Increment Register (LUYADD)
+
+Address(es): DRW2D.LUYADD 000E 3098h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the Y-axis increment value of U limiter used for texture mapping.
+The Y-axis inclement value is the 16:16 fixed point difference between two samples with a distance of 1 pixel along the
+Y axis.
+The LUYADD register is write-only and read as undefined.
+
+52.2.20
+
+V Limiter Start Value Integer Part Register (LVSTI)
+
+Address(es): DRW2D.LVSTI 000E 309Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the integer part of the start value of V limiter used for texture mapping.
+The start value is a 32:16 fixed point number valid at the first pixel of the bounding box.
+The LVSTI register is write-only and read as undefined.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2762 of 3240
+
+RX72N Group
+
+52.2.21
+
+52. 2D Drawing Engine (DRW2D)
+
+V Limiter Start Value Fractional Part Register (LVSTF)
+
+Address(es): DRW2D.LVSTF 000E 30A0h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+LVSTF[15:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15 to b0
+
+LVSTF[15:0]
+
+V Limiter Start Value Fractional
+Part Setting
+
+Specifies fractional part of V limiter start value.
+
+W
+
+b31 to b16
+
+—
+
+Reserved
+
+The write value should be 0.
+
+W
+
+This register specifies the fractional part of the start value of V limiter used for texture mapping.
+The start value is a 32:16 fixed point number valid at the first pixel of the bounding box.
+The LVSTF register is write-only and read as undefined.
+
+52.2.22
+
+V Limiter X-Axis Increment Integer Part Register (LVXADDI)
+
+Address(es): DRW2D.LVXADDI 000E 30A4h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the integer part of X-axis increment value of V limiter used for texture mapping.
+The X-axis inclement value is the 32:16 fixed point difference between two samples with a distance of 1 pixel along the
+X axis.
+The LVXADDI register is write-only and read as undefined.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2763 of 3240
+
+RX72N Group
+
+52.2.23
+
+52. 2D Drawing Engine (DRW2D)
+
+V Limiter Y-Axis Increment Integer Part Register (LVYADDI)
+
+Address(es): DRW2D.LVYADDI 000E 30A8h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the integer part of Y-axis increment value of V limiter used for texture mapping.
+The Y-axis inclement value is the 32:16 fixed point difference between two samples with a distance of 1 pixel along the
+Y axis.
+The LVYADDI register is write-only and read as undefined.
+
+52.2.24
+
+V Limiter Increment Fractional Parts Register (LVYXADDF)
+
+Address(es): DRW2D.LVYXADDF 000E 30ACh
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+LVYADDF[15:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+LVXADDF[15:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15 to b0
+
+LVXADDF[15:0]
+
+V Limiter X-Axis Increment
+Fractional Part Setting
+
+Specifies fractional part of V limiter X-axis increment.
+
+W
+
+b31 to b16
+
+LVYADDF[15:0]
+
+V Limiter Y-Axis Increment
+Fractional Part Setting
+
+Specifies fractional part of V limiter Y-axis increment.
+
+W
+
+Note:
+
+This register is write-only and read as undefined. Do not use a bit processing instruction but the MOV instruction to set this
+register.
+
+This register specifies both fractional parts of X-axis and Y-axis increment values of V limiter used for texture mapping.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2764 of 3240
+
+RX72N Group
+
+52.2.25
+
+52. 2D Drawing Engine (DRW2D)
+
+CLUT Start Address Register (TEXCLADDR)
+
+Address(es): DRW2D.TEXCLADDR 000E 30DCh
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+CLADDR[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+CLADDR[7:0]
+
+CLUT Start Address Setting
+
+Specifies the write starting address of CLUT for the
+indexed texture format
+
+W
+
+b31 to b8
+
+—
+
+Reserved
+
+The write value should be 0.
+
+W
+
+52.2.26
+
+CLUT Data Register (TEXCLDATA)
+
+Address(es): DRW2D.TEXCLDATA 000E 30E0h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register is used to set the write data to the address specified by the TEXCLADDR register.
+When the CONTROL2.CLUTFORM bit is 0 (ARGB(8888)), write CLUT data to b31 to b0. When 1 (RGB(565)), write
+data in 32-bit unit by setting CLUT data for even index to b15 to b0 and CLUT data for odd index to b31 to b16.
+After writing each data, the TEXCLADDR register is incremented by 1.
+The TEXCLDATA register is write-only and read as undefined.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2765 of 3240
+
+RX72N Group
+
+52.2.27
+
+52. 2D Drawing Engine (DRW2D)
+
+CLUT Offset Register (TEXCLOFST)
+
+Address(es): DRW2D.TEXCLOFST 000E 30E4h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+CLOFST[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+CLOFST[7:0]
+
+CLUT Offset Setting
+
+Specifies CLUT offset.
+The CLOFST[7:0] bits are combined with the original index
+by a bitwise OR operation.
+
+W
+
+b31 to b8
+
+—
+
+Reserved
+
+The write value should be 0.
+
+W
+
+This register is used to specify the offset to the texture index for the indexed texture formats CLUT(8), CLUT(4),
+CLUT(2), CLUT(1), and ACLUT(44) to allow selecting an offset part of the CLUT.
+
+52.2.28
+
+Chroma Key Register (COLKEY)
+
+Address(es): DRW2D.COLKEY 000E 30E8h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+0
+
+0
+
+0
+
+0
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+R[7:0]
+
+G[7:0]
+Value after reset:
+
+b19
+
+B[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+B[7:0]
+
+Chroma Key Blue Channel Setting
+
+Specifies blue channel of chroma key.
+
+W
+
+b15 to b8
+
+G[7:0]
+
+Chroma Key Green Channel Setting
+
+Specifies green channel of chroma key.
+
+W
+
+b23 to b16
+
+R[7:0]
+
+Chroma Key Red Channel Setting
+
+Specifies red channel of chroma key.
+
+W
+
+b31 to b24
+
+—
+
+Reserved
+
+The write value should be 0.
+
+W
+
+Note:
+
+This register is write-only and read as undefined. Do not use a bit processing instruction but the MOV instruction to set this
+register.
+
+The R, G, and B components of the internal color representation of a texel are compared with the chroma key. If the
+values are equal then A, R, G, and B are set to 00h (transparent), else A is set to FFh.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2766 of 3240
+
+RX72N Group
+
+52.2.29
+
+52. 2D Drawing Engine (DRW2D)
+
+Bounding Box Dimension Register (SIZE)
+
+Address(es): DRW2D.SIZE 000E 3078h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+Y[15:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+X[15:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15 to b0
+
+X[15:0]
+
+Bounding Box Width Setting
+
+Specifies width of the bounding box in pixels. Valid range
+is 0 to 1023.
+
+W
+
+b31 to b16
+
+Y[15:0]
+
+Bounding Box Height Setting
+
+Specifies height of the bounding box in pixels. Valid range
+is 0 to 1023.
+
+W
+
+Note:
+
+This register is write-only and read as undefined. Do not use a bit processing instruction but the MOV instruction to set this
+register.
+
+52.2.30
+
+Frame Buffer Pitch Register (PITCH)
+
+Address(es): DRW2D.PITCH 000E 307Ch
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+SSD[15:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+PITCH[15:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15 to b0
+
+PITCH[15:0]
+
+Frame Buffer Pitch Setting
+
+Specifies the width of one frame buffer scanline in pixels.
+A negative width can be used to render bottom-up
+instead of top-down.
+
+W
+
+b31 to b16
+
+SSD[15:0]
+
+Spanstore Delay Setting
+
+Specifies the number of scanlines to delay spanstore
+operations.
+
+W
+
+Note:
+
+This register is write-only and read as undefined. Do not use a bit processing instruction but the MOV instruction to set this
+register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2767 of 3240
+
+RX72N Group
+
+52.2.31
+
+52. 2D Drawing Engine (DRW2D)
+
+Frame Buffer Base Address Register (ORIGIN)
+
+Address(es): DRW2D.ORIGIN 000E 3080h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the address of the first pixel in frame buffer (frame buffer base address).
+Writing to this register triggers DRW2D to start rendering.
+The ORIGIN register is write-only and read as undefined.
+
+52.2.32
+
+Display List Start Address Register (DLISTST)
+
+Address(es): DRW2D.DLISTST 000E 30C8h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specifies the start address of display list.
+Setting a new display list start address to this register triggers execution of the new display list.
+When setting a new display list start address to this register, confirm that the execution of the previous display list is
+finished.
+The DLISTST register is write-only and read as undefined.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2768 of 3240
+
+RX72N Group
+
+52.2.33
+
+52. 2D Drawing Engine (DRW2D)
+
+Performance Counters Control Register (PERFTRG)
+
+Address(es): DRW2D.PERFTRG 000E 30D4h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+TRG2[15:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+TRG1[15:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+b15 to b0
+
+TRG1[15:0]
+
+Performance Counter 1
+Trigger Setting
+
+W
+Selects the internal event that increments the PERFCNT1
+register.
+0: Performance counter 1 is disabled
+1: DRW2D active cycles
+2: Frame buffer read access
+3: Frame buffer write access
+4: Texture read access
+5: Invisible pixels (enumerated but selected with alpha 0%)
+6: Invisible pixels while internal FIFO is empty (lost cycles)
+7: Display list reader active cycles
+8: Frame buffer read hits
+9: Frame buffer read misses
+10: Frame buffer write hits
+11: Frame buffer write misses
+12: Texture read hits
+13: Texture read misses
+31: Every clock cycle (for use as timer)
+Settings other than above are prohibited.
+
+b31 to b16
+
+TRG2[15:0]
+
+Performance Counter 2
+Trigger Setting
+
+Same as for the TRG1[15:0] bits, but for the PERFCNT2
+register.
+
+Note:
+
+R/W
+
+W
+
+This register is write-only and read as undefined. Do not use a bit processing instruction but the MOV instruction to set this
+register.
+
+52.2.34
+
+Performance Counter k (PERFCNTk) (k = 1, 2)
+
+Address(es): DRW2D.PERFCNT1 000E 30CCh, DRW2D.PERFCNT2 000E 30D0h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Reading this register returns the actual value of the performance counter that is incremented on every event selected by
+the PERFTRG register.
+Writing “0000 0000h” to this register clears the performance counter.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2769 of 3240
+
+RX72N Group
+
+52.3
+
+52. 2D Drawing Engine (DRW2D)
+
+Drawing Features
+
+52.3.1
+
+Drawing Features Summary
+
+52.3.1.1
+
+Color Formats
+
+Supported color formats are:
+Frame Buffer formats
+ 8-bit: A(8)
+ 16-bit: RGB(565), ARGB(4444)
+ 32-bit: ARGB(8888)
+Texture formats
+ 1-bit: CLUT(1)
+ 2-bit: CLUT(2)
+ 4-bit: CLUT(4)
+ 8-bit: A(8), CLUT(8), ACLUT(44)
+ 16-bit: ARGB(4444), ARGB(1555), RGB(565)
+ 24-bit: RGB(888) (RLE unit)
+ 32-bit: ARGB(8888)
+CLUT formats use a 256-entry color lookup table.
+
+52.3.1.2
+
+Vector Drawing Features
+
+The vector drawing engine uses a half-plane rendering approach, which simplifies implementation of edge anti-aliasing
+and blurring features without much overhead. When combining some of its functional units, the module can draw not
+only linear primitives such as lines or polygons, but also quadratic equation-based primitives such as circles and
+ellipsoids. The following primitives and texture mapping are supported:
+ Lines
+ Polygons
+ Circles and ellipses
+ Quadratic curves (software driver support)
+ 2D texture mapping
+ Bilinear filtering of the textures
+
+52.3.1.3
+
+BitBLT Features
+
+The DRW2D supports the BitBLT features using its vector drawing function to draw a rectangle and texture it based on
+the selected BitBLT function. This approach results in the following BitBLT features:
+ Fill
+ Copy
+ Stretch BitBLT
+ Rotate and scale
+ Alpha blending
+ Bilinear filtering
+ Color conversion
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2770 of 3240
+
+RX72N Group
+
+52.3.2
+
+52. 2D Drawing Engine (DRW2D)
+
+Vector Drawing
+
+Supported vector drawing includes:
+Lines
+ Arbitrary width
+ Round endpoints
+ Truncated endpoints
+ Alpha gradients
+ Soft edges (blurring)
+ Render attribute: color, pattern, or texture
+Polygons
+ Triangles and quadrangles (complex polygons are tessellated by software)
+ Alpha gradients
+ Soft edges (blurring)
+ Per edge controls for anti-aliasing
+ Render attribute: color, pattern, or texture
+Circles and ellipses
+ All conic sections
+ Filled or with arbitrary width
+ Arcs of 0° to 360°
+ Soft edges
+ Alpha gradients
+ Render attribute: color, pattern, or texture
+Quadratic Béziers
+ Approximated by circle arcs
+ Arbitrary width
+ Round or truncated endpoints
+ Outlines, blurring
+ Alpha gradients
+ Render attribute: color
+Texture mapping
+ 2D array of pixels that can be mapped implicitly or explicitly on all primitives provided by the DRW2D
+ Translation, rotation, and scaling/shearing
+ Bilinear filtering of the textures
+ 3D-like texturing accomplished with line-by-line mapping, if constant in one axis
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2771 of 3240
+
+RX72N Group
+
+52.4
+
+52. 2D Drawing Engine (DRW2D)
+
+Rendering Modes
+
+The rendering process can be performed in two different modes, register mode and display list mode.
+
+52.4.1
+
+Register Mode
+
+In register mode, when operation is based on register settings, the CPU configures and initiates each render process
+separately. To start a new render process, the CPU must wait until the previous one is completed. In this mode, the CPU
+is heavily engaged throughout the entire drawing procedure and is consequently to a large extent unavailable for other
+tasks.
+The CPU must set up all registers for performing a certain drawing operation before it can start the rendering process. A
+new register setup can only be started when the previous render process has completed. Before starting a new register
+setup, make sure that:
+ STATUS.DLSTACT = 0: Display list reader is idle
+ STATUS.BSYENUM = 0: Pixel selection unit is idle.
+Lastly, write the frame buffer start address to the ORIGIN register. This write triggers the DRW2D to start rendering.
+
+52.4.2
+
+Display List Mode
+
+In display list mode, the CPU creates a display list in memory prior to starting the DRW2D. Such a display contains a
+bundle of render operations. When started, the DRW2D executes the display list autonomously in parallel with the CPU,
+which is not involved with drawing operations most of the time. Use of a display list allows a fully asynchronous
+operation of the CPU and the DRW2D and offers the best possible system performance.
+In this mode, the display list reader reads a memory block containing instructions on how to set the DRW2D control
+registers and executes these control register writes accordingly.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2772 of 3240
+
+RX72N Group
+
+52.5
+
+52. 2D Drawing Engine (DRW2D)
+
+Interrupts
+
+The DRW2D generates two interrupts:
+ DRWENUIR interrupt
+ DRWDLIR interrupt
+
+52.5.1
+(1)
+
+Interrupt Sources
+
+DRWENUIR Interrupt
+
+This is the current render process finished interrupt.
+
+(2)
+
+DRWDLIR Interrupt
+
+This is the display list finished interrupt. It is asserted on completion of a display list process. DRWDLIR is activated if
+one of the following is true:
+ The entire display list is complete
+ The display list processing stops because a new display list start is triggered by a write to the DLISTST register.
+
+52.5.2
+
+Interrupt Control
+
+The two DRW2D interrupts are combined into a single shared interrupt, DRWIRQ, to the CPU. Each interrupt can be
+disabled or enabled by setting its associated enable bit in the IRQCTL register.
+The occurrence of an enabled interrupt (one with its enable bit set to 1 in the IRQCTL register) is monitored in the
+STATUS register with its associated interrupt status bit is set to 1. The shared DRW2D interrupt DRWIRQ is then
+generated.
+To clear the interrupt, write 1 to the interrupt clear bit in the IRQCTL register. The interrupt clear bit returns to 0
+automatically.
+
+DRW2D.IRQCTL
+
+DRW2D.STATUS
+
+DRWENUIR
+ENUIREN
+
+Figure 52.3
+
+DLIRCLR
+
+ENUIR
+
+OR
+
+DLIREN
+
+Hold/clear
+
+DLIR
+
+Mask
+
+DRWDLIR
+
+DRWIRQ
+
+ENUIRCLR
+
+Interrupt Controller Unit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2773 of 3240
+
+RX72N Group
+
+52.6
+52.6.1
+
+52. 2D Drawing Engine (DRW2D)
+
+Usage Notes
+Notes for Endian Setting
+
+DRW2D accesses a memory on the premise that all data are stored in little-endian format. When using the DRW2D, set
+the MDE.MDE[2:0] bits to 111b (little endian). Refer to section 7, Option-Setting Memory (OFSM) for details on the
+MDE register.
+
+52.6.2
+
+DRW2D Library
+
+Use of the DRW2D requires the DRW2D library provided by Renesas Electronics. Please contact our sales office for
+information regarding the DRW2D library.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2774 of 3240
+
+

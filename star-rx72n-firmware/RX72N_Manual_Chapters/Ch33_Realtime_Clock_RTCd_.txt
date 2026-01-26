@@ -1,0 +1,5884 @@
+RX72N Group
+
+33.
+
+33. Realtime Clock (RTCd)
+
+Realtime Clock (RTCd)
+
+In this section, “PCLK” is used to refer to PCLKB.
+
+33.1
+
+Overview
+
+The RTC has two types of counting modes: calendar count mode and binary count mode. They are used by switching the
+register settings.
+For calendar count mode, the RTC has a 100 year calendar from 2000 to 2099 and automatically adjusts dates for leap
+years.
+For binary count mode, the RTC does not count in terms of years, months, dates, day-of-week, hours, or minutes; it
+counts seconds, and retains the information as a serial value. This mode can be used for calendars other than the
+Gregorian calendar.
+The count source of the time counters is selectable as the sub-clock or main clock.
+The RTC uses the 128-Hz clock which is acquired by the count source divided by the prescaler as the reference clock.
+Year, month, date, day-of-week, a.m./p.m. (in 12-hour mode), hour, minute, second, or 32-bit binary is counted in 1/128
+second units.
+
+Table 33.1 lists the specifications of the RTC, Figure 33.1 shows a block diagram of the RTC, and Table 33.2 shows
+the pin configuration of the RTC.
+Table 33.1
+
+RTC Specifications
+
+Item
+
+Description
+
+Count mode
+
+Calendar count mode/binary count mode
+
+Count source*1
+
+Sub-clock (XCIN) or main clock (EXTAL)
+
+Clock and calendar
+functions
+
+ Calendar count mode
+Year, month, date, day-of-week, hour, minute, second are counted, BCD display
+12 hours/24 hours mode switching function
+30 seconds adjustment function (a number less than 30 is rounded down to 00 seconds, and 30 seconds or
+more are rounded up to one minute)
+Automatic adjustment function for leap years
+ Binary count mode
+Count seconds in 32 bits, binary display
+ Common to both modes
+Start/stop function
+The sub-second digit is displayed in binary units (1 Hz, 2 Hz, 4 Hz, 8 Hz, 16 Hz, 32 Hz, or 64 Hz).
+Clock error correction function
+Clock (1 Hz/64 Hz) output
+
+Interrupts
+
+ Alarm interrupt (ALM)
+As an alarm interrupt condition, selectable which of the below is compared with:
+- Calendar count mode: Year, month, date, day-of-week, hour, minute, or second can be selected
+- Binary count mode: Each bit of the 32-bit binary counter
+ Periodic interrupt (PRD)
+2 seconds, 1 second, 1/2 second, 1/4 second, 1/8 second, 1/16 second, 1/32 second, 1/64 second, 1/128
+second, or 1/256 second can be selected as an interrupt period.
+ Carry interrupt (CUP)
+An interrupt is generated at either of the following timings:
+- When a carry from the 64-Hz counter to the second counter is generated.
+- When the 64-Hz counter is changed and the R64CNT register is read at the same time.
+ Recovery from software standby mode or deep software standby mode can be performed by an alarm
+interrupt or periodic interrupt
+
+Time capture function
+
+ Times can be captured when the edge of the time capture event input pin is detected.
+For every event input, month, date, hour, minute, and second are captured or 32-bit binary counter value is
+captured.
+
+Event link function
+
+Periodic event output
+
+Note 1. Satisfy the frequency of the peripheral module clock (PCLKB) ≥ the frequency of the count source.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1616 of 3240
+
+RX72N Group
+
+33. Realtime Clock (RTCd)
+
+Internal peripheral bus
+
+Realtime clock (RTC)
+Bus interface
+To each
+function
+Prescaler
+
+RCR2
+XCIN
+
+Sub-clock
+oscillator
+
+XCOUT
+
+32.768 kHz
+
+128-Hz generation
+
+Time counter 1-Hz/64-Hz output
+128 Hz
+
+for XCIN
+
+RADJ
+
+R64CNT
+
+RSECCNT/
+BCNT0
+
+RHRCNT/
+BCNT2
+
+RMINCNT/
+BCNT1
+
+RDAYCNT
+
+RWKCNT/
+BCNT3
+
+RMONCNT
+
+RYRCNT
+
+RCR3
+RCR4
+EXTAL
+
+Main clock
+oscillator
+
+XTAL
+
+Up to 16 MHz
+
+128-Hz generation
+
+Alarm function
+
+RTCOUT
+
+RSECAR/ RMINAR/
+BCNT0AR BCNT1AR
+RHRAR/
+RWKAR/
+BCNT2AR BCNT3AR
+RDAYAR/ RMONAR/
+BCNT0AER BCNT1AER
+RYRAR/ RYRAREN/
+BCNT2AER BCNT3AER
+Alarm comparison
+Interrupt control
+
+for EXTAL
+
+RFRH/
+RFRL
+
+RCR1
+
+ALM
+PRD
+CUP
+Event signal output
+
+Time capture control unit
+
+RSECCPn/ RMINCPn/
+BCNT0CPn BCNT1CPn
+RHRCPn/ RDAYCPn/
+BCNT2CPn BCNT3CPn
+RMONCPn
+
+Time capture
+event input pins
+RTCICn
+
+RTCCRn
+
+R64CNT:
+64-Hz counter
+RSECCNT/BCNT0: Second counter/Binary counter 0
+RMINCNT/BCNT1: Minute counter/Binary counter 1
+RHRCNT/BCNT2: Hour counter/Binary counter 2
+RWKCNT/BCNT3: Day-of-week counter/Binary counter 3
+RDAYCNT:
+Date counter
+RMONCNT:
+Month counter
+RYRCNT:
+Year counter
+RCR1:
+RTC control register 1
+RCR2:
+RTC control register 2
+RCR3:
+RTC control register 3
+RCR4:
+RTC control register 4
+RFRH/RFRL:
+Frequency register H/L
+RADJ:
+Time error adjustment register
+
+Figure 33.1
+
+Block Diagram of RTC (n = 0 to 2)
+
+Table 33.2
+
+Pin Configuration of RTC
+
+Pin Name
+
+I/O
+
+XTAL
+
+Output
+
+EXTAL
+
+Input
+
+XCIN
+
+Input
+
+RSECAR/BCNT0AR:
+Second alarm register/Binary counter 0 alarm register
+RMINAR/BCNT1AR:
+Minute alarm register/Binary counter 1 alarm register
+RHRAR/BCNT2AR:
+Hour alarm register/Binary counter 2 alarm register
+RWKAR/BCNT3AR:
+Day-of-week alarm register/Binary counter 3 alarm register
+RDAYAR/BCNT0AER: Date alarm register/Binary counter 0 alarm enable register
+RMONAR/BCNT1AER: Month alarm register/Binary counter 1 alarm enable register
+RYRAR/BCNT2AER:
+Year alarm register/Binary counter 2 alarm enable register
+RYRAREN/BCNT3AER: Year alarm enable register/Binary counter 3 alarm enable register
+RTCCRn:
+Time capture control register n
+RSECCPn/BCNT0CPn: Second capture register n/BCNT0 capture register n
+RMINCPn/BCNT1CPn: Minute capture register n/BCNT1 capture register n
+RHRCPn/BCNT2CPn: Hour capture register n/BCNT2 capture register n
+RDAYCPn/BCNT3CPn: Date capture register n/BCNT3 capture register n
+RMONCPn:
+Month capture register n
+
+Function
+
+These pins are used to connect a crystal.
+The EXTAL pin can also be used to input an external clock. For details, refer to section 9.3.2,
+External Clock Input.
+Connect a 32.768-kHz crystal to these pins.
+
+XCOUT
+
+Output
+
+RTCOUT
+
+Output
+
+This pin is used to output a 1-Hz/64-Hz waveform, but not in deep software standby mode.
+
+RTCIC0
+
+Input
+
+Time capture event input pins
+
+RTCIC1
+
+Input
+
+RTCIC2
+
+Input
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1617 of 3240
+
+RX72N Group
+
+33.2
+
+33. Realtime Clock (RTCd)
+
+Register Descriptions
+
+When writing to or reading from RTC registers, do so in accordance with section 33.6.5, Notes on Writing to and
+Reading from Registers.
+If the value in an RTC register after a reset is given as x (undefined bits) in the list, it is not initialized by a reset. When
+RTC enters the reset state or a low power consumption state during counting operations (i.e. while the RCR2.START bit
+is 1), the year, month, day of the week, date, hours, minutes, seconds, and 64-Hz counters continue to operate. However,
+when the count source is the main clock, the main clock is not stopped by a reset other than a deep software standby
+reset. For details, refer to Table 6.2, Targets to be Initialized by Each Reset Source. Note that a reset generated
+during writing to or updating of a register might destroy the register value. In addition, do not allow the chip to enter
+software standby mode or deep software standby mode immediately after setting any of these registers. For details, refer
+to section 33.6.4, Transitions to Low Power Consumption Modes after Setting Registers.
+
+33.2.1
+
+64-Hz Counter (R64CNT)
+
+Address(es): RTC.R64CNT 0008 C400h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+—
+
+F1HZ
+
+F2HZ
+
+F4HZ
+
+F8HZ
+
+0
+
+x
+
+x
+
+x
+
+x
+
+b2
+
+b1
+
+b0
+
+F16HZ F32HZ F64HZ
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+b0
+b1
+
+R/W
+
+F64HZ
+
+64 Hz
+
+Indicate the state between 1 Hz and 64 Hz of the sub-second digit. R
+
+F32HZ
+
+32 Hz
+
+R
+
+b2
+
+F16HZ
+
+16 Hz
+
+R
+
+b3
+
+F8HZ
+
+8 Hz
+
+R
+
+b4
+
+F4HZ
+
+4 Hz
+
+R
+
+b5
+
+F2HZ
+
+2 Hz
+
+R
+
+b6
+
+F1HZ
+
+1 Hz
+
+b7
+
+—
+
+Reserved
+
+R
+This bit is read as 0. Writing to this bit has no effect.
+
+R
+
+The R64CNT counter is used in both calendar count mode and in binary count mode.
+The 64-Hz counter (R64CNT) generates a period of one second by counting the 128-Hz reference clock.
+The state in the sub-second range can be confirmed by reading this counter.
+This counter is set to 00h by an RTC software reset or executing 30-second adjustment.
+To read this counter, follow the procedure in section 33.3.5, Reading 64-Hz Counter and Time.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1618 of 3240
+
+RX72N Group
+
+33.2.2
+(1)
+
+33. Realtime Clock (RTCd)
+
+Second Counter (RSECCNT)/Binary Counter 0 (BCNT0)
+
+In calendar count mode:
+
+Address(es): RTC.RSECCNT 0008 C402h
+b7
+
+b6
+
+—
+
+b4
+
+b3
+
+SEC10[2:0]
+
+x
+
+Value after reset:
+
+b5
+
+x
+
+x
+
+b2
+
+b1
+
+b0
+
+SEC1[3:0]
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+SEC1[3:0]
+
+1-Second Count
+
+Counts from 0 to 9 every second. When a carry is generated, 1 is
+added to the tens place.
+
+R/W
+
+b6 to b4
+
+SEC10[2:0]
+
+10-Second Count
+
+Counts from 0 to 5 for 60-second counting.
+
+R/W
+
+b7
+
+—
+
+Reserved
+
+Set this bit to 0. It is read as the set value.
+
+R/W
+
+The RSECCNT counter is used for setting and counting the BCD-coded second value. It counts carries generated once
+per second in the 64-Hz counter.
+The setting range is decimal 00 to 59. The RTC will not operate normally if any other value is set. Before writing to this
+register, be sure to stop the count operation through the setting of the START bit in RCR2.
+After writing to the RSECCNT register, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT0 0008 C402h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNT[7:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT0 counter is a readable/writable 32-bit binary counter b7 to b0.
+The 32-bit binary counter performs count operation by a carry generating for each second of the 64-Hz counter.
+Before writing to this register, be sure to stop the count operation through the setting of the START bit in RCR2.
+To read this counter, follow the procedure in section 33.3.5, Reading 64-Hz Counter and Time.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1619 of 3240
+
+RX72N Group
+
+33.2.3
+(1)
+
+33. Realtime Clock (RTCd)
+
+Minute Counter (RMINCNT)/Binary Counter 1 (BCNT1)
+
+In calendar count mode:
+
+Address(es): RTC.RMINCNT 0008 C404h
+b7
+
+b6
+
+—
+x
+
+Value after reset:
+
+b5
+
+b4
+
+b3
+
+MIN10[2:0]
+x
+
+x
+
+b2
+
+b1
+
+b0
+
+MIN1[3:0]
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+MIN1[3:0]
+
+1-Minute Count
+
+Counts from 0 to 9 every minute. When a carry is generated, 1 is
+added to the tens place.
+
+R/W
+
+b6 to b4
+
+MIN10[2:0]
+
+10-Minute Count
+
+Counts from 0 to 5 for 60-minute counting.
+
+R/W
+
+b7
+
+—
+
+Reserved
+
+Set this bit to 0. It is read as the set value.
+
+R/W
+
+The RMINCNT counter is used for setting and counting the BCD-coded minute value. It counts carries generated once
+per minute in the second counter.
+A value from 00 through 59 (in BCD) can be specified; if a value outside of this range is specified, the RTC does not
+operate correctly. Before writing to this register, be sure to stop the count operation through the setting of the START bit
+in RCR2.
+After writing to the RMINCNT counter, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT1 0008 C404h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNT[15:8]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT1 counter is a readable/writable 32-bit binary counter b15 to b8.
+The 32-bit binary counter performs count operation by a carry generating for each second of the 64-Hz counter.
+Before writing to this register, be sure to stop the count operation through the setting of the START bit in RCR2.
+To read this counter, follow the procedure in section 33.3.5, Reading 64-Hz Counter and Time.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1620 of 3240
+
+RX72N Group
+
+33.2.4
+(1)
+
+33. Realtime Clock (RTCd)
+
+Hour Counter (RHRCNT)/Binary Counter 2 (BCNT2)
+
+In calendar count mode:
+
+Address(es): RTC.RHRCNT 0008 C406h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+PM
+
+HR10[1:0]
+
+x
+
+x
+
+x
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+HR1[3:0]
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+HR1[3:0]
+
+1-Hour Count
+
+Counts from 0 to 9 once per hour. When a carry is generated, 1 is
+added to the tens place.
+
+R/W
+
+b5, b4
+
+HR10[1:0]
+
+10-Hour Count
+
+Counts from 0 to 2 once per carry from the ones place.
+
+R/W
+
+b6
+
+PM
+
+PM
+
+Time Counter Setting for a.m./p.m.
+0: a.m.
+1: p.m.
+
+R/W
+
+b7
+
+—
+
+Reserved
+
+Set this bit to 0. It is read as the set value.
+
+R/W
+
+The RHRCNT counter is used for setting and counting the BCD-coded hour value. It counts carries generated once per
+hour in the minute counter.
+The specifiable time differs according to the setting in the hours mode bit (RCR2.HR24).
+When the RCR2.HR24 bit is 0: From 00 to 11 (in BCD)
+When the RCR2.HR24 bit is 1: From 00 to 23 (in BCD)
+If a value outside of this range is specified, the RTC does not operate correctly. Before writing to this register, be sure to
+stop the count operation through the setting of the START bit in RCR2.
+The PM bit is only enabled when the RCR2.HR24 bit is 0. Otherwise, the setting in the PM bit has no effect.
+After writing to the RHRCNT counter, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT2 0008 C406h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNT[23:16]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT2 counter is a readable/writable 32-bit binary counter b23 to b16.
+The 32-bit binary counter performs count operation by a carry generating for each second of the 64-Hz counter.
+Before writing to this register, be sure to stop the count operation through the setting of the START bit in RCR2.
+To read this counter, follow the procedure in section 33.3.5, Reading 64-Hz Counter and Time.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1621 of 3240
+
+RX72N Group
+
+33.2.5
+(1)
+
+33. Realtime Clock (RTCd)
+
+Day-of-Week Counter (RWKCNT)/Binary Counter 3 (BCNT3)
+
+In calendar count mode:
+
+Address(es): RTC.RWKCNT 0008 C408h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+—
+
+—
+
+—
+
+—
+
+—
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b2
+
+b1
+
+b0
+
+DAYW[2:0]
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+DAYW[2:0]
+
+Day-of-Week Counting
+
+b2
+
+R/W
+
+b7 to b3
+
+—
+
+Reserved
+
+Set these bits to 0. They are read as the set value.
+
+b0
+
+0 0 0: Sunday
+0 0 1: Monday
+0 1 0: Tuesday
+0 1 1: Wednesday
+1 0 0: Thursday
+1 0 1: Friday
+1 1 0: Saturday
+1 1 1: Setting Prohibited
+
+R/W
+
+The RWKCNT counter is used for setting and counting in the coded day-of-week value. It counts carries generated once
+per day in the hour counter.
+A value from 0 through 6 can be specified; if a value outside of this range is specified, the RTC does not operate
+correctly. Before writing to this register, be sure to stop the count operation through the setting of the START bit in
+RCR2.
+Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing registers.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT3 0008 C408h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNT[31:24]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT3 counter is a readable/writable 32-bit binary counter b31 to b24.
+The 32-bit binary counter performs count operation by a carry generating for each second of the 64-Hz counter.
+Before writing to this register, be sure to stop the count operation through the setting of the START bit in RCR2.
+To read this counter, follow the procedure in section 33.3.5, Reading 64-Hz Counter and Time.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1622 of 3240
+
+RX72N Group
+
+33.2.6
+
+33. Realtime Clock (RTCd)
+
+Date Counter (RDAYCNT)
+
+Address(es): RTC.RDAYCNT 0008 C40Ah
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+DATE10[1:0]
+
+0
+
+0
+
+x
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+DATE1[3:0]
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+DATE1[3:0]
+
+1-Day Count
+
+Counts from 0 to 9 once per day. When a carry is generated, 1 is
+added to the tens place.
+
+R/W
+
+b5, b4
+
+DATE10[1:0]
+
+10-Day Count
+
+Counts from 0 to 3 once per carry from the ones place.
+
+R/W
+
+b7, b6
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+The RDAYCNT counter is used in calendar count mode.
+The RDAYCNT counter is used for setting and counting the BCD-coded date value. It counts carries generated once per
+day in the hour counter. The count operation depends on the month and whether the year is a leap year.
+Leap years are determined according to whether the year counter (RYRCNT) value is divisible by 400, 100, and 4.
+A value from 01 through 31 (in BCD) can be specified; if a value outside of this range is specified, the RTC does not
+operate correctly. (When specifying a value, note that the range of specifiable days depends on the month and whether
+the year is a leap year.) Before writing to this register, be sure to stop the count operation through the setting of the
+START bit in RCR2.
+After writing to the RHRCNT counter, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1623 of 3240
+
+RX72N Group
+
+33.2.7
+
+33. Realtime Clock (RTCd)
+
+Month Counter (RMONCNT)
+
+Address(es): RTC.RMONCNT 0008 C40Ch
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+—
+
+MON10
+
+0
+
+0
+
+0
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+MON1[3:0]
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+MON1[3:0]
+
+1-Month Count
+
+Counts from 0 to 9 once per month. When a carry is generated, 1
+is added to the tens place.
+
+R/W
+
+b4
+
+MON10
+
+10-Month Count
+
+Counts from 0 to 1 once per carry from the ones place.
+
+R/W
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+The RMONCNT counter is used in calendar count mode.
+The RMONCNT counter is used for setting and counting the BCD-coded month value. It counts carries generated once
+per month in the date counter.
+A value from 01 through 12 (in BCD) can be specified; if a value outside of this range is specified, the RTC does not
+operate correctly. Before writing to this register, be sure to stop the count operation through the setting of the START bit
+in RCR2.
+After writing to the RMONCNT counter, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1624 of 3240
+
+RX72N Group
+
+33.2.8
+
+33. Realtime Clock (RTCd)
+
+Year Counter (RYRCNT)
+
+Address(es): RTC.RYRCNT 0008 C40Eh
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+YR10[3:0]
+x
+
+x
+
+x
+
+b2
+
+b1
+
+b0
+
+YR1[3:0]
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+YR1[3:0]
+
+1-Year Count
+
+Counts from 0 to 9 once per year. When a carry is generated, 1 is
+added to the tens place.
+
+R/W
+
+b7 to b4
+
+YR10[3:0]
+
+10-Year Count
+
+Counts from 0 to 9 once per carry from ones place. When a carry
+is generated in the tens place, 1 is added to the hundreds place.
+
+R/W
+
+b15 to b8
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+The RYRCNT counter is used in calendar count mode.
+The RYRCNT counter is used for setting and counting the BCD-coded year value. It counts carries generated once per
+year in the month counter.
+A value from 00 through 99 (in BCD) can be specified; if a value outside of this range is specified, the RTC does not
+operate correctly. Before writing to this register, be sure to stop the count operation through the setting of the START bit
+in RCR2.
+After writing to the RYRCNT counter, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1625 of 3240
+
+RX72N Group
+
+33.2.9
+(1)
+
+33. Realtime Clock (RTCd)
+
+Second Alarm Register (RSECAR)/
+Binary Counter 0 Alarm Register (BCNT0AR)
+
+In calendar count mode:
+
+Address(es): RTC.RSECAR 0008 C410h
+b7
+
+b6
+
+ENB
+Value after reset:
+
+b5
+
+b4
+
+b3
+
+SEC10[2:0]
+
+x
+
+x
+
+b2
+
+b1
+
+b0
+
+SEC1[3:0]
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+SEC1[3:0]
+
+1 Second
+
+Value for the ones place of seconds
+
+R/W
+
+b6 to b4
+
+SEC10[2:0]
+
+10 Seconds
+
+Value for the tens place of seconds
+
+R/W
+
+b7
+
+ENB
+
+ENB
+
+0: The register value is not compared with the RSECCNT counter value.
+1: The register value is compared with the RSECCNT counter value.
+
+R/W
+
+The RSECAR register is an alarm register corresponding to the BCD-coded second counter RSECCNT. When the ENB
+bit is set to 1, the RSECAR value is compared with the RSECCNT value. From among the alarm registers (RSECAR,
+RMINAR, RHRAR, RWKAR, RDAYAR, RMONAR, and RYRAREN), only those selected with the ENB bits set to 1
+are compared with the corresponding counters. When the respective values all match, the IR flag corresponding to the
+ALM interrupt is set to 1.
+RSECAR values from 00 through 59 (in BCD) can be specified; if a value outside of this range is specified, the RTC
+does not operate correctly.
+After writing to the RSECAR register, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+This register is set to 00h by an RTC software reset.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT0AR 0008 C410h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNTAR[7:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT0AR counter is a readable/writable alarm register corresponding to 32-bit binary counter b7 to b0.
+This register is set to 00h by an RTC software reset.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1626 of 3240
+
+RX72N Group
+
+33.2.10
+(1)
+
+33. Realtime Clock (RTCd)
+
+Minute Alarm Register (RMINAR)/
+Binary Counter 1 Alarm Register (BCNT1AR)
+
+In calendar count mode:
+
+Address(es): RTC.RMINAR 0008 C412h
+b7
+
+b6
+
+ENB
+Value after reset:
+
+x
+
+b5
+
+b4
+
+b3
+
+MIN10[2:0]
+x
+
+b2
+
+b1
+
+b0
+
+MIN1[3:0]
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+MIN1[3:0]
+
+1 Minute
+
+Value for the ones place of minutes
+
+R/W
+
+b6 to b4
+
+MIN10[2:0]
+
+10 Minutes
+
+Value for the tens place of minutes
+
+R/W
+
+b7
+
+ENB
+
+ENB
+
+0: The register value is not compared with the RMINCNT counter value.
+1: The register value is compared with the RMINCNT counter value.
+
+R/W
+
+The RMINAR register is an alarm register corresponding to the BCD-coded minute counter RMINCNT. When the ENB
+bit is set to 1, the RMINAR value is compared with the RMINCNT value. From among the alarm registers (RSECAR,
+RMINAR, RHRAR, RWKAR, RDAYAR, RMONAR, and RYRAREN), only those selected with the ENB bits set to 1
+are compared with the corresponding counters. When the respective values all match, the IR flag corresponding to the
+ALM interrupt is set to 1.
+RMINAR values from 00 through 59 (in BCD) can be specified; if a value outside of this range is specified, the RTC
+does not operate correctly.
+After writing to the RMINAR register, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+This register is set to 00h by an RTC software reset.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT1AR 0008 C412h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNTAR[15:8]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT1AR counter is a readable/writable alarm register corresponding to 32-bit binary counter b15 to b8.
+This register is set to 00h by an RTC software reset.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1627 of 3240
+
+RX72N Group
+
+33. Realtime Clock (RTCd)
+
+33.2.11
+(1)
+
+Hour Alarm Register (RHRAR)/
+Binary Counter 2 Alarm Register (BCNT2AR)
+
+In calendar count mode:
+
+Address(es): RTC.RHRAR 0008 C414h
+b7
+
+b6
+
+b5
+
+ENB
+
+PM
+
+HR10[1:0]
+
+x
+
+x
+
+x
+
+Value after reset:
+
+b4
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+HR1[3:0]
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+HR1[3:0]
+
+1 Hour
+
+Value for the ones place of hours
+
+R/W
+
+b5, b4
+
+HR10[1:0]
+
+10 Hours
+
+Value for the tens place of hours
+
+R/W
+
+b6
+
+PM
+
+PM
+
+Time Alarm Setting for a.m./p.m.
+0: a.m.
+1: p.m.
+
+R/W
+
+b7
+
+ENB
+
+ENB
+
+0: The register value is not compared with the RHRCNT counter value.
+1: The register value is compared with the RHRCNT counter value.
+
+R/W
+
+The RHRAR register is an alarm register corresponding to the BCD-coded hour counter RHRCNT. When the ENB bit is
+set to 1, the RHRAR value is compared with the RHRCNT value. From among the alarm registers (RSECAR, RMINAR,
+RHRAR, RWKAR, RDAYAR, RMONAR, and RYRAREN), only those selected with the ENB bits set to 1 are compared
+with the corresponding counters. When the respective values all match, the IR flag corresponding to the ALM interrupt is
+set to 1.
+The specifiable time differs according to the setting in the hours mode bit (RCR2.HR24).
+When the RCR2.HR24 bit is 0: From 00 to 11 (in BCD)
+When the RCR2.HR24 bit is 1: From 00 to 23 (in BCD)
+If a value outside of this range is specified, the RTC does not operate correctly.
+When the RCR2.HR24 bit is 0, be sure to set the PM bit.
+When the RCR2.HR24 bit is 1, the setting in the PM bit has no effect.
+After writing to the RHRAR register, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+This register is set to 00h by an RTC software reset.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT2AR 0008 C414h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNTAR[23:16]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT2AR counter is a readable/writable alarm register corresponding to 32-bit binary counter b23 to b16.
+This register is set to 00h by an RTC software reset.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1628 of 3240
+
+RX72N Group
+
+33.2.12
+(1)
+
+33. Realtime Clock (RTCd)
+
+Day-of-Week Alarm Register (RWKAR)/
+Binary Counter 3 Alarm Register (BCNT3AR)
+
+In calendar count mode:
+
+Address(es): RTC.RWKAR 0008 C416h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+ENB
+
+—
+
+—
+
+—
+
+—
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b2
+
+b1
+
+b0
+
+DAYW[2:0]
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+DAYW[2:0]
+
+Day-of-Week Setting
+
+b2
+
+R/W
+
+b0
+
+0 0 0: Sunday
+0 0 1: Monday
+0 1 0: Tuesday
+0 1 1: Wednesday
+1 0 0: Thursday
+1 0 1: Friday
+1 1 0: Saturday
+1 1 1: Setting Prohibited
+
+b6 to b3
+
+—
+
+Reserved
+
+Set these bits to 0. They are read as the set value.
+
+R/W
+
+b7
+
+ENB
+
+ENB
+
+0: The register value is not compared with the RWKCNT counter value.
+1: The register value is compared with the RWKCNT counter value.
+
+R/W
+
+The RWKAR register is an alarm register corresponding to the coded day-of-week counter RWKCNT. When the ENB bit
+is set to 1, the RWKAR value is compared with the RWKCNT value. From among the alarm registers (RSECAR,
+RMINAR, RHRAR, RWKAR, RDAYAR, RMONAR, and RYRAREN), only those selected with the ENB bits set to 1
+are compared with the corresponding counters. When the respective values all match, the IR flag corresponding to the
+ALM interrupt is set to 1.
+RWKAR values from 0 through 6 (in BCD) can be specified; if a value outside of this range is specified, the RTC does
+not operate correctly.
+After writing to the RWKAR register, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+This register is set to 00h by an RTC software reset.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT3AR 0008 C416h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNTAR[31:24]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT3AR counter is a readable/writable alarm register corresponding to 32-bit binary counter b31 to b24.
+This register is set to 00h by an RTC software reset.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1629 of 3240
+
+RX72N Group
+
+33.2.13
+(1)
+
+33. Realtime Clock (RTCd)
+
+Date Alarm Register (RDAYAR)/
+Binary Counter 0 Alarm Enable Register (BCNT0AER)
+
+In calendar count mode:
+
+Address(es): RTC.RDAYAR 0008 C418h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+ENB
+
+—
+
+DATE10[1:0]
+
+x
+
+x
+
+x
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+DATE1[3:0]
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+DATE1[3:0]
+
+1 Day
+
+Value for the ones place of days
+
+R/W
+
+b5, b4
+
+DATE10[1:0]
+
+10 Days
+
+Value for the tens place of days
+
+R/W
+
+b6
+
+—
+
+Reserved
+
+Set this bit to 0. It is read as the set value.
+
+R/W
+
+b7
+
+ENB
+
+ENB
+
+0: The register value is not compared with the RDAYCNT counter value.
+1: The register value is compared with the RDAYCNT counter value.
+
+R/W
+
+The RDAYAR register is an alarm register corresponding to the BCD-coded date counter RDAYCNT. When the ENB bit
+is set to 1, the RDAYAR value is compared with the RDAYCNT value. From among the alarm registers (RSECAR,
+RMINAR, RHRAR, RWKAR, RDAYAR, RMONAR, and RYRAREN), only those selected with the ENB bits set to 1
+are compared with the corresponding counters. When the respective values all match, the IR flag corresponding to the
+ALM interrupt is set to 1.
+RDAYAR values from 01 through 31 (in BCD) can be specified; if a value outside of this range is specified, the RTC
+does not operate correctly.
+After writing to the RDAYAR register, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+This register is set to 00h by an RTC software reset.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT0AER 0008 C418h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+ENB[7:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT0AER register is a readable/writable register for setting the alarm enable corresponding to 32-bit binary
+counter b7 to b0. Among the ENB[31:0] bits, the binary counter (BCNT[31:0]) corresponding to the bits which are set to
+1 and the binary alarm register (BCNTAR[31:0]) are compared, and when all match, the IR flag corresponding to the
+ALM interrupt becomes 1.
+This register is set to 00h by an RTC software reset.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1630 of 3240
+
+RX72N Group
+
+33.2.14
+(1)
+
+33. Realtime Clock (RTCd)
+
+Month Alarm Register (RMONAR)/
+Binary Counter 1 Alarm Enable Register (BCNT1AER)
+
+In calendar count mode:
+
+Address(es): RTC.RMONAR 0008 C41Ah
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+ENB
+
+—
+
+—
+
+MON10
+
+x
+
+x
+
+x
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+MON1[3:0]
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+MON1[3:0]
+
+1 Month
+
+Value for the ones place of months
+
+R/W
+
+b4
+
+MON10
+
+10 Months
+
+Value for the tens place of months
+
+R/W
+
+b6, b5
+
+—
+
+Reserved
+
+Set these bits to 0. They are read as the set value.
+
+R/W
+
+b7
+
+ENB
+
+ENB
+
+0: The register value is not compared with the RMONCNT counter value.
+1: The register value is compared with the RMONCNT counter value.
+
+R/W
+
+The RMONAR register is an alarm register corresponding to the BCD-coded month counter RMONCNT. When the
+ENB bit is set to 1, the RMONAR value is compared with the RMONCNT value. From among the alarm registers
+(RSECAR, RMINAR, RHRAR, RWKAR, RDAYAR, RMONAR, and RYRAREN), only those selected with the ENB
+bits set to 1 are compared with the corresponding counters. When the respective values all match, the IR flag
+corresponding to the ALM interrupt is set to 1.
+RMONAR values from 01 through 12 (in BCD) can be specified; if a value outside of this range is specified, the RTC
+does not operate correctly.
+After writing to the RMONAR register, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+This register is set to 00h by an RTC software reset.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT1AER 0008 C41Ah
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+ENB[15:8]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT1AER register is a readable/writable register for setting the alarm enable corresponding to 32-bit binary
+counter b15 to b8. Among the ENB[31:0] bits, the binary counter (BCNT[31:0]) corresponding to the bits which are set
+to 1 and the binary alarm register (BCNTAR[31:0]) are compared, and when all match, the IR flag corresponding to the
+ALM interrupt becomes 1.
+This register is set to 00h by an RTC software reset.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1631 of 3240
+
+RX72N Group
+
+33.2.15
+(1)
+
+33. Realtime Clock (RTCd)
+
+Year Alarm Register (RYRAR)/
+Binary Counter 2 Alarm Enable Register (BCNT2AER)
+
+In calendar count mode:
+
+Address(es): RTC.RYRAR 0008 C41Ch
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+YR10[3:0]
+x
+
+x
+
+x
+
+b2
+
+b1
+
+b0
+
+YR1[3:0]
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+YR1[3:0]
+
+1 Year
+
+Value for the ones place of years
+
+R/W
+
+b7 to b4
+
+YR10[3:0]
+
+10 Years
+
+Value for the tens place of years
+
+R/W
+
+b15 to b8
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+The RYRAR register is an alarm register corresponding to the BCD-coded year counter RYRCNT.
+RYRAR values from 00 through 99 (in BCD) can be specified; if a value outside of this range is specified, the RTC does
+not operate correctly.
+After writing to the RYRAR register, confirm that its value has actually changed before proceeding with further
+processing. Refer to section 33.6.5, Notes on Writing to and Reading from Registers for notes on accessing
+registers.
+This register is set to 0000h by an RTC software reset.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT2AER 0008 C41Ch
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+ENB[23:16]
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT2AER register is a readable/writable register for setting the alarm enable corresponding to 32-bit binary
+counter b23 to b16. Among the ENB[31:0] bits, the binary counter (BCNT[31:0]) corresponding to the bits which are set
+to 1 and the binary alarm register (BCNTAR[31:0]) are compared, and when all match, the IR flag corresponding to the
+ALM interrupt becomes 1.
+This register is set to 0000h by an RTC software reset.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1632 of 3240
+
+RX72N Group
+
+33.2.16
+(1)
+
+33. Realtime Clock (RTCd)
+
+Year Alarm Enable Register (RYRAREN)/
+Binary Counter 3 Alarm Enable Register (BCNT3AER)
+
+In calendar count mode:
+
+Address(es): RTC.RYRAREN 0008 C41Eh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+ENB
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b6 to b0
+
+—
+
+Reserved
+
+Set these bits to 0. They are read as the set value.
+
+R/W
+
+b7
+
+ENB
+
+ENB
+
+0: The register value is not compared with the RYRCNT counter value.
+1: The register value is compared with the RYRCNT counter value.
+
+R/W
+
+When the ENB bit in the RYRAREN register is set to 1, the RYRAR value is compared with the RYRCNT value. From
+among the alarm registers (RSECAR, RMINAR, RHRAR, RWKAR, RDAYAR, RMONAR, and RYRAREN), only
+those selected with the ENB bits set to 1 are compared with the corresponding counters. When the respective values all
+match, the IR flag corresponding to the ALM interrupt is set to 1.
+This register is set to 00h by an RTC software reset.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT3AER 0008 C41Eh
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+ENB[31:24]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+The BCNT3AER register is a readable/writable register for setting the alarm enable corresponding to 32-bit binary
+counter b31 to b24. Among the ENB[31:0] bits, the binary counter (BCNT[31:0]) corresponding to the bits which are set
+to 1 and the binary alarm register (BCNTAR[31:0]) are compared, and when all match, the IR flag corresponding to the
+ALM interrupt becomes 1.
+This register is set to 00h by an RTC software reset.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1633 of 3240
+
+RX72N Group
+
+33.2.17
+
+33. Realtime Clock (RTCd)
+
+RTC Control Register 1 (RCR1)
+
+Address(es): RTC.RCR1 0008 C422h
+b7
+
+b6
+
+b5
+
+b4
+
+PES[3:0]
+x
+
+Value after reset:
+
+x
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+RTCOS
+
+PIE
+
+CIE
+
+AIE
+
+0
+
+x
+
+0
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+AIE
+
+Alarm Interrupt Enable
+
+0: An alarm interrupt request is disabled.
+1: An alarm interrupt request is enabled.
+
+R/W
+
+b1
+
+CIE
+
+Carry Interrupt Enable
+
+0: A carry interrupt request is disabled.
+1: A carry interrupt request is enabled.
+
+R/W
+
+b2
+
+PIE
+
+Periodic Interrupt Enable
+
+0: A periodic interrupt request is disabled.
+1: A periodic interrupt request is enabled.
+
+R/W
+
+b3
+
+RTCOS
+
+RTCOUT Output Select
+
+0: RTCOUT outputs 1 Hz.
+1: RTCOUT outputs 64 Hz.
+
+R/W
+
+b7 to b4
+
+PES[3:0]
+
+Periodic Interrupt Select
+
+b7
+
+R/W
+
+b4
+
+0 1 1 0: A periodic interrupt is generated every 1/256 second.*1
+0 1 1 1: A periodic interrupt is generated every 1/128 second.
+1 0 0 0: A periodic interrupt is generated every 1/64 second.
+1 0 0 1: A periodic interrupt is generated every 1/32 second.
+1 0 1 0: A periodic interrupt is generated every 1/16 second.
+1 0 1 1: A periodic interrupt is generated every 1/8 second.
+1 1 0 0: A periodic interrupt is generated every 1/4 second.
+1 1 0 1: A periodic interrupt is generated every 1/2 second.
+1 1 1 0: A periodic interrupt is generated every 1 second.
+1 1 1 1: A periodic interrupt is generated every 2 seconds.
+Other than above: No periodic interrupts are generated.
+
+Note 1. When the main clock is selected (RCR4.RCKSEL bit = 1) while the PES[3:0] bits are 0110b, a periodic interrupt is generated
+every 1/128 second.
+
+The RCR1 register is used in both calendar count mode and in binary count mode.
+Bits AIE, PIE, and PES[3:0] are updated synchronously with the count source. When the RCR1 register is modified,
+check that all the bits have been updated before proceeding to the next processing.
+AIE Bit (Alarm Interrupt Enable)
+This bit enables or disables alarm interrupt requests.
+If the times indicated by the counters and alarm settings match in deep software standby mode, the MCU returns from the
+mode regardless of the value of the AIE bit.
+CIE Bit (Carry Interrupt Enable)
+This bit enables and disables interrupt requests when a carry to the RSECCNT/BCNT0 register occurs, or when a carry
+to the 64-Hz counter (R64CNT) occurs while reading the 64-Hz counter.
+PIE Bit (Periodic Interrupt Enable)
+This bit enables or disabled a periodic interrupt.
+If the periods indicated by the counters and PES[3:0] settings match in deep software standby mode, the MCU returns
+from the mode regardless of the value of the PIE bit.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1634 of 3240
+
+RX72N Group
+
+33. Realtime Clock (RTCd)
+
+RTCOS Bit (RTCOUT Output Select)
+This bit selects the RTCOUT output period. The RTCOS bit must be rewritten while count operation is stopped (the
+RCR2.START bit is 0) and RTCOUT output is disabled (the RCR2.RTCOE bit is 0). When the RTCOUT is output to an
+external pin, the RCR2.RTCOE bit must be enabled. For details on controlling I/O ports, refer to section 23.4.1,
+Procedure for Specifying Input/Output Pin Function.
+PES[3:0] Bits (Periodic Interrupt Select)
+These bits specify the period for the periodic interrupt. A periodic interrupt is generated with the period specified by
+these bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1635 of 3240
+
+RX72N Group
+
+33.2.18
+
+33. Realtime Clock (RTCd)
+
+RTC Control Register 2 (RCR2)
+
+Address(es): RTC.RCR2 0008 C424h
+b7
+CNTM
+D
+Value after reset:
+
+x
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+HR24 AADJP AADJE RTCOE ADJ30 RESET START
+x
+
+x
+
+x
+
+0
+
+0
+
+0
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+START
+
+Start*4
+
+0: Prescaler and counter are stopped.
+1: Prescaler and counter operate normally.
+
+R/W
+
+b1
+
+RESET
+
+RTC Software Reset
+
+ In writing
+0: Writing is invalid.
+1: The prescaler and the target registers for RTC software
+reset*1 are initialized.
+ In reading
+0: In normal time operation, or an RTC software reset has
+completed.
+1: During an RTC software reset
+
+R/W
+
+b2
+
+ADJ30
+
+30-Second Adjustment*2
+
+ In writing
+0: Writing is invalid.
+1: 30-second adjustment is executed.
+ In reading
+0: In normal time operation, or 30-second adjustment has
+completed.
+1: During 30-second adjustment
+
+R/W
+
+b3
+
+RTCOE
+
+RTCOUT Output Enable
+
+0: RTCOUT output disabled.
+1: RTCOUT output enabled.
+
+R/W
+
+b4
+
+AADJE
+
+Automatic Adjustment Enable*3,
+*4
+
+0: Automatic adjustment is disabled.
+1: Automatic adjustment is enabled.
+
+R/W
+
+b5
+
+AADJP
+
+Automatic Adjustment Period
+Select*3, *4
+
+0: The RADJ.ADJ[5:0] setting value is adjusted from the count
+value of the prescaler every minute (every 32 seconds in
+binary counter mode).
+1: The RADJ.ADJ[5:0] setting value is adjusted from the count
+value of the prescaler every 10 seconds (every 8 seconds
+in binary counter mode).
+
+R/W
+
+b6
+
+HR24
+
+Hours Mode*2, *4
+
+0: The RTC operates in 12-hour mode.
+1: The RTC operates in 24-hour mode.
+
+R/W
+
+b7
+
+CNTMD
+
+Count Mode Select*4
+
+0: The calendar count mode.
+1: The binary count mode.
+
+R/W
+
+Note 1. R64CNT, RSECAR/BCNT0AR, RMINAR/BCNT1AR, RHRAR/BCNT2AR, RWKAR/BCNT3AR, RDAYAR/BCNT0AER,
+RMONAR/BCNT1AER, RYRAR/BCNT2AER, RYRAREN/BCNT3AER, RADJ, RTCCRn, RSECCPn/BCNT0CPn, RMINCPn/
+BCNT1CPn, RHRCPn/BCNT2CPn, RDAYCPn/BCNT3CPn, RMONCPn, RCR2.ADJ30, RCR2.AADJE, RCR2.AADJP
+Note 2. This bit is reserved in binary counter mode. The write value should be 0.
+Note 3. When the main clock is selected, the setting of this bit is disabled.
+Note 4. After writing to this bit, confirm that its value has actually changed before proceeding with further processing.
+Refer to section 33.6.5, Notes on Writing to and Reading from Registers regarding changes to the values of the AADJE, AADJP,
+and HR24 bits.
+
+The RCR2 register is related to hours mode, automatic adjustment function, enabling the RTCOUT output, 30-second
+adjustment, RTC software reset, and controlling count operation.
+START Bit (Start)
+This bit stops or restarts the prescaler or counter (clock) operation.
+The START bit is updated in synchronization with the count source. When the START bit is modified, check that the bit
+is updated before proceeding to the next processing.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1636 of 3240
+
+RX72N Group
+
+33. Realtime Clock (RTCd)
+
+RESET Bit (RTC Software Reset)
+This bit initializes the prescaler and registers to be reset by RTC software reset.
+When 1 is written to the RESET bit, the initialization starts in synchronization with the count source. When the
+initialization is completed, the RESET bit is automatically set to 0.
+When 1 is written to the RESET bit, check that the bit is set to 0, and then make next settings.
+ADJ30 Bit (30-Second Adjustment)
+This bit is for 30-second adjustment.
+When 1 is written to the ADJ30 bit, the RSECCNT value of 30 seconds or less is rounded down to 00 second and the
+value of 30 seconds or more is rounded up to 1 minute.
+The 30-second adjustment is performed in synchronization with the count source. When 1 is written to this bit, the
+ADJ30 bit is automatically set to 0 after the 30-second adjustment is completed. In case when 1 is written to the ADJ30
+bit, check that the bit is set to 0, and then make next settings.
+When the 30-second adjustment is performed, the prescaler and R64CNT are also reset.
+The ADJ30 bit is set to 0 by an RTC software reset.
+This bit is reserved in binary counter mode. The write value should be 0.
+RTCOE Bit (RTCOUT Output Enable)
+This bit enables output of a 1-Hz/64-Hz clock signal from the RTCOUT pin.
+Use the START bit to stop counting by the counters before changing the value of the RTCOE bit. Do not stop counting
+(write 0 to the START bit) and change the value of the RTCOE bit at the same time.
+When RTCOUT signal is to be output from an external pin, set the RTCOE bit to 1 and set up the port control for the pin.
+AADJE Bit (Automatic Adjustment Enable)
+This bit controls (enables or disables) automatic adjustment.
+Set the plus–minus bits (RADJ.PMADJ[1:0]) to 00b (adjustment is not performed) before changing the value of the
+AADJE bit.
+The AADJE bit is set to 0 by an RTC software reset.
+AADJP Bit (Automatic Adjustment Period Select)
+This bit selects the automatic-adjustment period.
+Set the plus–minus bits (RADJ.PMADJ[1:0]) to 00b (adjustment is not performed) before changing the value of the
+AADJP bit.
+The AADJP bit is set to 0 by an RTC software reset.
+HR24 Bit (Hours Mode)
+This bit specifies whether the RTC will operate in 12- or 24-hour mode.
+Use the START bit to stop counting by the counters before changing the value of the HR24 bit. Do not stop counting
+(write 0 to the START bit) and change the value of the HR24 bit at the same time.
+This bit is reserved in binary counter mode. The write value should be 0.
+CNTMD Bit (Count Mode Select)
+This bit specifies whether the RTC count mode is operated in calendar count mode or in binary count mode.
+After setting the count mode, execute an RTC software reset and start again from the initial settings.
+The CNTMD bit is updated in synchronization with the count source, so when the value of the CNTMD bit has been
+changed, check that the value of the bit has actually been updated before applying the RTC software reset. The count
+mode changes to that which was specified beforehand in the CNTMD bit after the RTC software reset is applied.
+For details on initial settings, refer to section 33.3.1, Outline of Initial Settings of Registers after Power On.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1637 of 3240
+
+RX72N Group
+
+33.2.19
+
+33. Realtime Clock (RTCd)
+
+RTC Control Register 3 (RCR3)
+
+Address(es): RTC.RCR3 0008 C426h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+RTCDV[2:0]
+x
+
+x
+
+RTCEN
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+RTCEN
+
+Sub-Clock Oscillator Control
+
+0: Sub-clock oscillator is stopped.
+1: Sub-clock oscillator is operating.
+
+R/W
+
+b3 to b1
+
+RTCDV[2:0]
+
+Sub-Clock Oscillator Drive
+Capacity Control
+
+b3
+
+R/W
+
+b7 to b4
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+b1
+
+0 0 1: Drive capacity for low CL
+1 1 0: Drive capacity for standard CL
+Settings other than above are prohibited.
+
+R/W
+
+The RCR3 register is used for controlling the sub-clock oscillator in the clock generation circuit. For details on
+controlling the sub-clock oscillator, refer to section 9, Clock Generation Circuit.
+This register is a function common to calendar count mode and binary count mode.
+When this register is modified, check that all the bits have been updated before proceeding to the next processing.
+RTCEN Bit (Sub-Clock Oscillator Control)
+The RTCEN bit and a clock generation circuit register (the SOSCCR.SOSTP bit) control whether to operate or stop the
+sub-clock oscillator. If one of the bits is set so as to enable the operation, the sub-clock oscillator runs.
+When using the sub-clock as the count source to the RTC, set the sub-clock oscillator using the RTCEN bit.
+When the main clock is selected (RCR4.RCKSEL bit = 1), making the sub-clock oscillator run or stop is controlled only
+by the SOSCCR.SOSTP bit regardless of the value set in the RTCEN bit.
+RTCDV[2:0] Bits (Sub-Clock Oscillator Drive Capacity Control)
+These bits control the drive capacity of the sub-clock oscillator.
+Before modifying the RTCDV[2:0] bits, be sure to stop the sub-clock oscillator. When the main clock is selected
+(RCR4.RCKSEL bit = 1), making the sub-clock oscillator run or stop is controlled only by the SOSCCR.SOSTP bit
+regardless of the value set in the RTCEN bit.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1638 of 3240
+
+RX72N Group
+
+33.2.19.1
+
+33. Realtime Clock (RTCd)
+
+Notes on using a low CL crystal unit
+
+When the RCR3.RTCDV[2:0] bits are 001b (drive capacity for low CL), the oscillator is susceptible to noise. Especially
+when the signal level of any pin near the XCIN or XCOUT pin is changed, the oscillation accuracy of the sub-clock
+oscillator may be affected. The accuracy is affected differently depending on the board traces and how the signal level of
+any pin near the XCIN or XCOUT pin is changed. When designing a board using a low CL crystal unit, refer to the
+application note “Design Guide for Low CL Sub-clock Circuits” (R01AN1187EJ) to reduce the influence from noise.
+The following are examples that may significantly affect oscillation accuracy:
+
+(1)
+
+When connecting an on-chip debugging emulator to the FINED pin
+
+Since the FINED pin (FINE interface pin) is near the XCIN and XCOUT pins, the oscillation accuracy of the sub-clock
+oscillator is affected when using the FINED pin in debugging. When using the FINED pin in debugging, set the
+RCR3.RTCDV[2:0] bits to 001b (drive capacity for low CL) and debug at the room temperature.
+
+(2)
+
+When supplying an external clock to the main clock oscillator
+
+When inputting an external clock to the EXTAL pin, the oscillation accuracy of the sub-clock oscillator may be affected.
+When inputting an inverted external clock to the XTAL pin, the oscillation accuracy will be affected more significantly.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1639 of 3240
+
+RX72N Group
+
+33.2.20
+
+33. Realtime Clock (RTCd)
+
+RTC Control Register 4 (RCR4)
+
+Address(es): RTC.RCR4 0008 C428h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+RCKSE
+L
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+RCKSEL
+
+Count Source Select
+
+0: Sub-clock oscillator is selected.
+1: Main clock oscillator is selected.
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+The RCR4 register is used for selecting the count source. This function is used in both calendar count mode and binary
+count mode.
+When the RCKSEL bit is set to 0, the time is counted with the sub-clock. When the bit is set to 1, the time is counted with
+the main clock.
+RCKSEL Bit (Count Source Select)
+This bit selects the count source from the sub-clock and the main clock.
+The count source should be selected only once before the initial settings of the RTC registers at power on.
+
+33.2.21
+
+Frequency Register H/L (RFRH/RFRL)
+
+Address(es): RTC.RFRH 0008 C42Ah
+b15
+
+Value after reset:
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+RFC[16
+]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+x
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+Address(es): RTC.RFRL 0008 C42Ch
+b15
+
+b14
+
+b13
+
+RFC[15:0]
+x
+
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+ RFRH register
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+RFC[16]
+
+Frequency Divide Ratio
+Setting
+
+Set the divide ratio of the main clock to generate the reference
+clock of 128 Hz. If the setting value in the RFC[16:0] bits is n, the
+prescaler divides the main clock by n + 1.
+
+R/W
+
+b15 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1640 of 3240
+
+RX72N Group
+
+33. Realtime Clock (RTCd)
+
+ RFRL register
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15 to b0
+
+RFC[15:0]
+
+Frequency Divide Ratio
+Setting
+
+Set the divide ratio of the main clock to generate the reference
+clock of 128 Hz. If the setting value in the RFC[16:0] bits is n, the
+prescaler divides the main clock by n + 1.
+
+R/W
+
+RFRH/RFRL is a register for controlling the prescaler when the main clock is selected.
+The RTC time counter operates on a 128-Hz clock signal as the reference clock. Therefore, when the main clock is
+selected, the main clock is divided by the prescaler to generate a 128-Hz clock signal. Set the frequency divide ratio in
+the RFC[16:0] bits to generate a 128-Hz clock from the main clock frequency. As for the calculation method, refer to the
+formula below.
+A value from 0 0007h through 1 FFFFh can be specified in the RFC[16:0] bits; if a value outside of this range is
+specified, the RTC does not operate correctly. Rewrite this register while the RCR2.START bit is 0 (counter is stopped).
+In addition, the range of the main clock frequency that can be used to generate a 128-Hz clock is 1.024 kHz to 16.778
+MHz.
+The frequency of the peripheral module clock and the main clock should be in the relationship that the peripheral module
+clock ≥ the main clock.
+ Calculation method of frequency comparison value
+RFC[16:0] = (Main clock frequency) ÷ 128 – 1
+Table 33.3
+
+RFRH/RFRL Register Settings by the Main Clock Frequency
+
+Main Clock Frequency
+
+RFRH/RFRL Register Setting Value
+
+4 MHz
+
+0000 7A11h
+
+8 MHz
+
+0000 F423h
+
+10 MHz
+
+0001 312Ch
+
+12 MHz
+
+0001 6E35h
+
+16 MHz
+
+0001 E847h
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1641 of 3240
+
+RX72N Group
+
+33.2.22
+
+33. Realtime Clock (RTCd)
+
+Time Error Adjustment Register (RADJ)
+
+Address(es): RTC.RADJ 0008 C42Eh
+b7
+
+b6
+
+b5
+
+b4
+
+PMADJ[1:0]
+Value after reset:
+
+x
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+ADJ[5:0]
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b5 to b0
+
+ADJ[5:0]
+
+Adjustment Value
+
+These bits specify the adjustment value from the prescaler.
+
+R/W
+
+b7, b6
+
+PMADJ[1:0]
+
+Plus–Minus
+
+b7 b6
+
+R/W
+
+0 0: Adjustment is not performed.
+0 1: Adjustment is performed by the addition to the prescaler.
+1 0: Adjustment is performed by the subtraction from the prescaler.
+1 1: Setting prohibited
+
+Adjustment is performed by the addition to or subtraction from the prescaler.
+In case when the automatic adjustment enable (RCR2.AADJE) bit is 0, adjustment is performed when writing to the
+RADJ.
+In case when the RCR2.AADJE bit is 1, adjustment is performed in the interval specified by the automatic adjustment
+period select (RCR2.AADJP) bit.
+The current adjustment by software (disabling automatic adjustment) may be invalid if the following adjustment value is
+specified within 320 cycles of the count source after the register setting. To perform adjustment consecutively, wait for
+320 cycles or more of the count source after the register setting and then specify the next adjustment value.
+RADJ is updated in synchronization with the count source. When RADJ is modified, check that all the bits have been
+updated before continuing with further processing.
+This register is set to 00h by an RTC software reset.
+The setting of this register is enabled only when the sub-clock is selected.
+When the main clock is selected, adjustment is not performed.
+ADJ[5:0] Bits (Adjustment Value)
+These bits specify the adjustment value (the number of sub-clock cycles) from the prescaler.
+PMADJ[1:0] Bits (Plus–Minus)
+These bits select whether the clock is set ahead or back depending on the error-adjustment value set in the ADJ[5:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1642 of 3240
+
+RX72N Group
+
+33.2.23
+
+33. Realtime Clock (RTCd)
+
+Time Capture Control Register n (RTCCRn) (n = 0 to 2)
+
+Address(es): RTC.RTCCR0 0008 C440h, RTC.RTCCR1 0008 C442h, RTC.RTCCR2 0008 C444h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+TCEN
+
+—
+
+TCNF[1:0]
+
+—
+
+TCST
+
+x
+
+0
+
+x
+
+0
+
+x
+
+Value after reset:
+
+x
+
+b1
+
+b0
+
+TCCT[1:0]
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+TCCT[1:0]
+
+Time Capture Control
+
+b1 b0
+
+R/W
+
+b2
+
+TCST
+
+Time Capture Status Flag
+
+0: No event is detected.
+1: An event is detected.
+
+R/(W)
+
+0 0: No event is detected.
+0 1: Rising edge is detected.
+1 0: Falling edge is detected.
+1 1: Both edges are detected.
+
+*1
+
+b3
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b5, b4
+
+TCNF[1:0]
+
+Time Capture Noise Filter
+Control
+
+b5 b4
+
+R/W
+
+0 0: The noise filter is off.
+0 1: Setting prohibited
+1 0: The noise filter is on (count source).
+1 1: The noise filter is on (count source by divided by 32).
+
+b6
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b7
+
+TCEN
+
+Time Capture Event Input
+Pin Enable
+
+0: The RTCICn pin is disabled as the time capture event input.
+1: The RTCICn pin is enabled as the time capture event input.
+
+R/W
+
+Note 1. Writing 1 has no effect. This flag is cleared by writing 0.
+
+The RTCCRn register is used both in calendar count mode and in binary count mode.
+RTCCR0, RTCCR1, and RTCCR2 control the RTCIC0, RTCIC1, and RTCIC2 pins, respectively.
+RTCCRn is updated in synchronization with the count source. When RTCCRn is modified, check that all the bits except
+for the TCST flag have been updated before continuing with further processing.
+This register is set to 00h by an RTC software reset.
+TCCT[1:0] Bits (Time Capture Control)
+These bits control the edge detection of the time capture event input pins (RTCIC0, RTCIC1, and RTCIC2). The
+detection edge is selectable. The TCCT[1:0] bits should be set while the TCEN bit is 1.
+TCST Flag (Time Capture Status Flag)
+This flag indicates that an event of the time capture event input pins (RTCIC0, RTCIC1, and RTCIC2) has been detected.
+When the TCST flag is 0, no event is detected.
+When the TCST flag is 1, this flag indicates that an event of the corresponding pin has been detected and the capture
+register is valid. When multiple events have been detected, the capture time for the first event is retained. If an event is
+detected while the count operation is stopped (the RCR2.START bit is 0), the captured value is not guaranteed. In this
+case, set the TCST flag to 0 for deleting the captured value.
+Writing 0 sets the TCST flag to 0. In addition, writing any other value except 0 has no effect.
+Set the TCST flag while the TCCT[1:0] bits are 00b (no event is detected).
+The TCST flag is set to 0 in synchronization with the count source. When the TCST flag is set to 0, check that the flag
+has been updated before continuing with further processing.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1643 of 3240
+
+RX72N Group
+
+33. Realtime Clock (RTCd)
+
+TCNF[1:0] Bits (Time Capture Noise Filter Control)
+These bits control the noise filter of the time capture event input pins (RTCIC0, RTCIC1, and RTCIC2).
+When the noise filter is on, the count source divided by 1 or divided by 32 is selectable. In this case, when the input level
+on the time capture event input pin matches three consecutive times at the set sampling period, the input level is
+determined.
+Set the TCNF[1:0] bits while the TCCT[1:0] bits are 00b (no event is detected). When the noise filter is used, set the
+TCEN bit to 1, set the TCNF[1:0] bits, wait for three cycles of the specified sampling period, and then set the TCCT[1:0]
+bits.
+TCEN Bit (Time Capture Event Input Pin Enable)
+This bit enables or disables the time capture event input pins (RTCIC0, RTCIC1, and RTCIC2).
+When the sub-clock is selected (RCR4.RCKSEL bit = 0) and the sub-clock oscillator is stopped (RCR3.RTCEN bit = 0),
+the time capture event input pins (RTCIC0, RTCIC1, and RTCIC2) are disabled regardless of the value of the TCEN bit.
+When the time capture event input pin functions (RTCIC0, RTCIC1, and RTCIC2) are allocated to the same pins as other
+multiplexed functions, make the general input port pin settings for the corresponding pins and then set this bit to 1. If the
+TCEN bit is set to 0, set also the TCCT[1:0] bits to 00b.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1644 of 3240
+
+RX72N Group
+
+33.2.24
+(1)
+
+33. Realtime Clock (RTCd)
+
+Second Capture Register n (RSECCPn) (n = 0 to 2)/
+BCNT0 Capture Register n (BCNT0CPn) (n = 0 to 2)
+
+In calendar count mode:
+
+Address(es): RTC.RSECCP0 0008 C452h, RTC.RSECCP1 0008 C462h, RTC.RSECCP2 0008 C472h
+b7
+
+b6
+
+—
+
+b4
+
+b3
+
+SEC10[2:0]
+
+x
+
+Value after reset:
+
+b5
+
+x
+
+x
+
+b2
+
+b1
+
+b0
+
+SEC1[3:0]
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+SEC1[3:0]
+
+1-Second Capture
+
+Capture value for the ones place of seconds
+
+R
+
+b6 to b4
+
+SEC10[2:0]
+
+10-Second Capture
+
+Capture value for the tens place of seconds
+
+R
+
+b7
+
+—
+
+Reserved
+
+This bit is read as 0 after an RTC software reset.
+
+R
+
+RSECCPn is a read-only register that captures the RSECCNT value when a time capture event is detected.
+The event detection times detected by the RTCIC0, RTCIC1, and RTCIC2 pins are stored in the RSECCP0, RSECCP1,
+and RSECCP2 registers, respectively.
+This register is set to 00h by an RTC software reset.
+Before reading from this register, be sure to stop the time capture event detection through the setting of the
+RTCCRn.TCCT[1:0] bits.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT0CP0 0008 C452h, RTC.BCNT0CP1 0008 C462h, RTC.BCNT0CP2 0008 C472h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNTCPn[7:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+BCNT0CPn is a read-only register that captures the BCNT0 value when a time capture event is detected.
+The event detection times detected by the RTCIC0, RTCIC1, and RTCIC2 pins are stored in the BCNT0CP0,
+BCNT0CP1, and BCNT0CP2 registers, respectively.
+This register is set to 00h by an RTC software reset.
+Before reading from this register, be sure to stop the time capture event detection through the setting of the
+RTCCRn.TCCT[1:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1645 of 3240
+
+RX72N Group
+
+33.2.25
+(1)
+
+33. Realtime Clock (RTCd)
+
+Minute Capture Register n (RMINCPn) (n = 0 to 2)/
+BCNT1 Capture Register n (BCNT1CPn) (n = 0 to 2)
+
+In calendar count mode:
+
+Address(es): RTC.RMINCP0 0008 C454h, RTC.RMINCP1 0008 C464h, RTC.RMINCP2 0008 C474h
+b7
+
+b6
+
+—
+x
+
+Value after reset:
+
+b5
+
+b4
+
+b3
+
+MIN10[2:0]
+x
+
+x
+
+b2
+
+b1
+
+b0
+
+MIN1[3:0]
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+MIN1[3:0]
+
+1-Minute Capture
+
+Capture value for the ones place of minutes
+
+R
+
+b6 to b4
+
+MIN10[2:0]
+
+10-Minute Capture
+
+Capture value for the tens place of minutes
+
+R
+
+b7
+
+—
+
+Reserved
+
+This bit is read as 0 after an RTC software reset.
+
+R
+
+RMINCPn is a read-only register that captures the RMINCNT value when a time capture event is detected.
+The event detection times detected by the RTCIC0, RTCIC1, and RTCIC2 pins are stored in the RMINCP0, RMINCP1,
+and RMINCP2 registers, respectively.
+This register is set to 00h by an RTC software reset.
+Before reading from this register, be sure to stop the time capture event detection through the setting of the
+RTCCRn.TCCT[1:0] bits.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT1CP0 0008 C454h, RTC.BCNT1CP1 0008 C464h, RTC.BCNT1CP2 0008 C474h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNTCPn[15:8]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+BCNT1CPn is a read-only register that captures the BCNT1 value when a time capture event is detected.
+The event detection times detected by the RTCIC0, RTCIC1, and RTCIC2 pins are stored in the BCNT1CP0,
+BCNT1CP1, and BCNT1CP2 registers, respectively.
+This register is set to 00h by an RTC software reset.
+Before reading from this register, be sure to stop the time capture event detection through the setting of the
+RTCCRn.TCCT[1:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1646 of 3240
+
+RX72N Group
+
+33.2.26
+(1)
+
+33. Realtime Clock (RTCd)
+
+Hour Capture Register n (RHRCPn) (n = 0 to 2)/
+BCNT2 Capture Register n (BCNT2CPn) (n = 0 to 2)
+
+In calendar count mode:
+
+Address(es): RTC.RHRCP0 0008 C456h, RTC.RHRCP1 0008 C466h, RTC.RHRCP2 0008 C476h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+PM
+
+HR10[1:0]
+
+x
+
+x
+
+x
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+HR1[3:0]
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+HR1[3:0]
+
+1-Hour Capture
+
+Capture value for the ones place of hours
+
+R
+
+b5, b4
+
+HR10[1:0]
+
+10-Hour Capture
+
+Capture value for the tens place of hours
+
+R
+
+b6
+
+PM
+
+PM
+
+0: a.m.
+1: p.m.
+
+R
+
+b7
+
+—
+
+Reserved
+
+This bit is read as 0 after an RTC software reset.
+
+R
+
+RHRCPn is a read-only register that captures the RHRCNT value when a time capture event is detected.
+The event detection times detected by the RTCIC0, RTCIC1, and RTCIC2 pins are stored in the RHRCP0, RHRCP1, and
+RHRCP2 registers, respectively.
+The PM bit is only enabled when the RCR2.HR24 bit is 0 (in 12-hour mode).
+This register is set to 00h by an RTC software reset.
+Before reading from this register, be sure to stop the time capture event detection through the setting of the
+RTCCRn.TCCT[1:0] bits.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT2CP0 0008 C456h, RTC.BCNT2CP1 0008 C466h, RTC.BCNT2CP2 0008 C476h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNTCPn[23:16]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+BCNT2CPn is a read-only register that captures the BCNT2 value when a time capture event is detected.
+The event detection times detected by the RTCIC0, RTCIC1, and RTCIC2 pins are stored in the BCNT2CP0,
+BCNT2CP1, and BCNT2CP2 registers, respectively.
+This register is set to 00h by an RTC software reset.
+Before reading from this register, be sure to stop the time capture event detection through the setting of the
+RTCCRn.TCCT[1:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1647 of 3240
+
+RX72N Group
+
+33.2.27
+(1)
+
+33. Realtime Clock (RTCd)
+
+Date Capture Register n (RDAYCPn) (n = 0 to 2)/
+BCNT3 Capture Register n (BCNT3CPn) (n = 0 to 2)
+
+In calendar count mode:
+
+Address(es): RTC.RDAYCP0 0008 C45Ah, RTC.RDAYCP1 0008 C46Ah, RTC.RDAYCP2 0008 C47Ah
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+DATE10[1:0]
+
+x
+
+x
+
+x
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+DATE1[3:0]
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+DATE1[3:0]
+
+1-Day Capture
+
+Capture value for the ones place of days
+
+R
+
+b5, b4
+
+DATE10[1:0]
+
+10-Day Capture
+
+Capture value for the tens place of days
+
+R
+
+b7, b6
+
+—
+
+Reserved
+
+These bits are read as 0 after an RTC software reset.
+
+R
+
+RDAYCPn is a read-only register that captures the RDAYCNT value when a time capture event is detected.
+The event detection times detected by the RTCIC0, RTCIC1, and RTCIC2 pins are stored in the RDAYCP0, RDAYCP1,
+and RDAYCP2 registers, respectively.
+This register is set to 00h by an RTC software reset.
+Before reading from this register, be sure to stop the time capture event detection through the setting of the
+RTCCRn.TCCT[1:0] bits.
+
+(2)
+
+In binary count mode:
+
+Address(es): RTC.BCNT3CP0 0008 C45Ah, RTC.BCNT3CP1 0008 C46Ah, RTC.BCNT3CP2 0008 C47Ah
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+BCNTCPn[31:24]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+BCNT3CPn is a read-only register that captures the BCNT3 value when a time capture event is detected.
+The event detection times detected by the RTCIC0, RTCIC1, and RTCIC2 pins are stored in the BCNT3CP0,
+BCNT3CP1, and BCNT3CP2 registers, respectively.
+This register is set to 00h by an RTC software reset.
+Before reading from this register, be sure to stop the time capture event detection through the setting of the
+RTCCRn.TCCT[1:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1648 of 3240
+
+RX72N Group
+
+33.2.28
+
+33. Realtime Clock (RTCd)
+
+Month Capture Register n (RMONCPn) (n = 0 to 2)
+
+Address(es): RTC.RMONCP0 0008 C45Ch, RTC.RMONCP1 0008 C46Ch, RTC.RMONCP2 0008 C47Ch
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+—
+
+MON10
+
+0
+
+0
+
+0
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+MON1[3:0]
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+MON1[3:0]
+
+1-Month Capture
+
+Capture value for the ones place of months
+
+R
+
+b4
+
+MON10
+
+10-Month Capture
+
+Capture value for the tens place of months
+
+R
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0
+
+R
+
+RMONCPn is a read-only register that captures the RMONCNT value when a time capture event is detected.
+The event detection times detected by the RTCIC0, RTCIC1, and RTCIC2 pins are stored in the RMONCP0,
+RMONCP1, and RMONCP2 registers, respectively.
+This register is set to 00h by an RTC software reset.
+Before reading from this register, be sure to stop the time capture event detection through the setting of the
+RTCCRn.TCCT[1:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1649 of 3240
+
+RX72N Group
+
+33.3
+
+33. Realtime Clock (RTCd)
+
+Operation
+
+33.3.1
+
+Outline of Initial Settings of Registers after Power On
+
+After the power is turned on, the initial settings for the clock setting, count mode setting, time error adjustment, time
+setting, alarm, interrupt, and time capture control register should be performed.
+
+Power on
+
+Clock and count mode settings
+
+Clock supply setting and count mode setting
+
+Set the time
+
+Time setting in the clock counter and initial
+setting of the time error adjustment register
+
+Set the alarm
+
+Initial setting of the alarm register
+
+Set the interrupt
+
+Initial setting of the interrupt control register
+
+Set the time capture control register
+
+Figure 33.2
+
+Initial setting of the time capture control register
+
+Outline of Initial Settings after Power On
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1650 of 3240
+
+RX72N Group
+
+33.3.2
+
+33. Realtime Clock (RTCd)
+
+Clock and Count Mode Setting Procedure
+
+Figure 33.3 shows how to set the clock and the count mode.
+
+Select the count source
+
+RCKSEL = 0?
+
+RCR4.RCKSEL bit setting
+No (Main clock)
+
+Yes (Sub-clock)
+Set the sub-clock oscillator
+
+Set the RCR3 register
+
+Supply 6 clocks of the count source
+
+Supply 6 clocks of the clock selected by the
+RCR4.RCKSEL bit
+
+Set the START bit to 0
+
+No
+
+START = 0?
+
+Wait for the RCR2.START bit to become 0
+
+Yes
+No (Main clock)
+RCKSEL = 0?
+Set frequency register H/L
+
+Yes (Sub-clock)
+
+Select count mode
+
+No
+
+CNTMD = the set value?
+
+RCR2.CNTMD bit setting*1
+
+Wait until the RCR2.CNTMD bit has the
+newly set value
+
+Yes
+Execute RTC software reset
+
+No
+
+RESET = 0?
+
+Write 1 to the RCR2.RESET bit
+
+Wait for the RCR2.RESET bit to become 0
+
+Yes
+
+Note 1. This step is not necessary if the count mode has been set concurrently with setting the START bit to 0.
+A value corresponding to the count mode setting must be written to the RCR2.CNTMD bit.
+
+Figure 33.3
+
+Clock and Count Mode Setting Procedure
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1651 of 3240
+
+RX72N Group
+
+33.3.3
+
+33. Realtime Clock (RTCd)
+
+Setting the Time
+
+Figure 33.4 shows how to set the time.
+
+Set the START bit to 0
+
+No
+
+START = 0?
+
+Write 0 to the RCR2.START bit
+
+Wait for the RCR2.START bit to become 0
+
+Yes
+Execute an RTC software reset
+
+No
+
+RESET = 0?
+
+Write 1 to the RCR2.RESET bit*1
+
+Wait for the RCR2.RESET bit to become 0
+
+Yes
+Set the year, month, day of the week,
+date, hour, minute, and second/binary
+counters 3 to 0
+
+Settings in arbitrary order is possible
+
+No (Main clock)
+RCKSEL = 0?
+Yes (Sub-clock)
+Set clock error adjustment values
+
+Set the START bit to 1
+
+No
+
+START = 1?
+
+Set clock error
+adjustment values
+
+Write 1 to the RCR2.START bit
+
+Wait for the RCR2.START bit to become 1
+
+Yes
+Note 1. This step is not necessary for the time-setting procedure because an RTC software reset is
+executed in the clock setting procedure of the initial settings for the power supply.
+
+Figure 33.4
+
+Setting the Time
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1652 of 3240
+
+RX72N Group
+
+33.3.4
+
+33. Realtime Clock (RTCd)
+
+30-Second Adjustment
+
+Figure 33.5 shows how to execute 30-second adjustment.
+
+Clock is in operation
+
+Set the RCR2.ADJ30 bit to 1
+
+No
+
+ADJ30 = 0?
+
+Execute 30-second adjustment while the clock is in operation
+(the RCR2.START bit is 1)
+
+Write 1 to the RCR2.ADJ30 bit
+
+Wait for the RCR2.ADJ30 bit to become 0
+
+Yes
+
+Figure 33.5
+
+30-Second Adjustment
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1653 of 3240
+
+RX72N Group
+
+33.3.5
+
+33. Realtime Clock (RTCd)
+
+Reading 64-Hz Counter and Time
+
+Figure 33.6 shows how to read the 64-Hz counter and time.
+
+(a) To read the time without using interrupt
+
+Disable a carry interrupt request on ICU side
+
+Write 0 to the ICU.IERm.IENj bit corresponding to
+the CUP interrupt
+
+Enable a carry interrupt request on RTC side
+
+Write 1 to the RCR1.CIE bit
+
+Clear the interrupt status flag
+
+Write 0 to the ICU.IRn.IR flag corresponding to
+the CUP interrupt
+
+Read the counter
+
+Yes
+
+IR flag = 1?
+
+Read the counter again when the IR flag
+corresponding to the CUP interrupt is 1
+
+No
+
+(b) To read the time using interrupts
+
+Clear the interrupt status flag
+
+Write 0 to the ICU.IRn.IR flag corresponding to
+the CUP interrupt
+
+Enable a carry interrupt request on ICU side
+
+Write 1 to the ICU.IERm.IENj bit corresponding to
+the CUP interrupt
+
+Enable a carry interrupt request on RTC side
+
+Write 1 to the RCR1.CIE bit
+
+Clear the interrupt status flag
+
+Write 0 to the ICU.IRn.IR flag corresponding to
+the CUP interrupt
+
+Read the counter
+
+Yes
+
+Interrupt?
+No
+
+Disable a carry interrupt request on RTC side
+
+Write 0 to the RCR1.CIE bit*1
+Note 1. Disable the interrupt if necessary.
+
+Figure 33.6
+
+Reading Time
+
+If a carry occurs while the 64-Hz counter and time are being read, the correct time will not be obtained, so they must be
+read again. The procedure for reading the time without using interrupts is shown in (a) in Figure 33.6, and the procedure
+using carry interrupts in (b). To keep the program simple, method (a) should be used in most cases.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1654 of 3240
+
+RX72N Group
+
+33.3.6
+
+33. Realtime Clock (RTCd)
+
+Alarm Function
+
+Figure 33.7 shows how to use the alarm function.
+
+Confirm that the RCR2.START bit is 1 (the clock is operating)
+
+Check if the clock is operationg
+Disable an alarm interrupt request on ICU side
+
+Write 0 to the ICU.IERm.IENj bit corresponding to the ALM interrupt
+
+Set the time of the alarm
+
+Set the alarm time and enable the alarm at the same time or later
+
+Enable an alarm interrupt request on RTC side
+
+AIE = 1?
+
+No
+
+Set the RCR1.AIE bit to 1
+
+Wait until the RCR1.AIE bit becomes 1
+
+Yes
+Wait for the alarm interrupt to be determined
+
+Wait for the output of the ALM interrupt request to stabilize
+Wait 1/256 seconds in software, or set the RCR1.PES[3:0] bits and
+wait for two periodic interrupts
+
+Clear the interrupt status flag
+
+Set the ICU.IRn.IR flag corresponding to the ALM interrupt to 0 in case
+the flag becomes 1 during the alarm time setting
+
+Enable an alarm interrupt request on ICU side
+
+Write 1 to the ICU.IERm.IENj bit corresponding to the ALM interrupt
+
+Monitor the alarm set time
+(Wait for an interrupt,
+or poll the interrupt status flag)
+
+Wait for the generation of an alarm interrupt or until the ICU.IRn.IR flag
+corresponding to the ALM interrupt becomes 1
+
+Figure 33.7
+
+Using Alarm Function
+
+In calendar count mode, an alarm can be generated by any one of year, month, date, day-of-week, hour, minute or second,
+or any combination of those. Write 1 to the ENB bit in the alarm registers involved in the alarm setting, and set the alarm
+time in the lower bits. Write 0 to the ENB bit in registers not involved in the alarm setting.
+In binary count mode, an alarm can be generated in any bit combination of 32 bits. Write 1 to the ENB bit of the alarm
+enable register corresponding to the target bit of the alarm, and set the alarm time to the alarm register. For bits that are
+not target of the alarm, write 0 to the ENB bit of the alarm enable register.
+When the counter and the alarm time match, the IR flag corresponding to the ALM interrupt is set to 1. Alarm detection
+can be confirmed by reading this bit, but an interrupt should be used in most cases. If 1 has been set in the interrupt
+request enable bit corresponding to the ALM interrupt, an alarm interrupt is generated in the event of alarm, enabling the
+alarm to be detected.
+Writing 0 sets the IR flag corresponding to the ALM interrupt to 0.
+When the counter and the alarm time match in a low power consumption state, the MCU returns from the low power
+consumption state. In deep software standby mode, the MCU returns from the deep software standby mode even when
+the alarm interrupt request is disabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1655 of 3240
+
+RX72N Group
+
+33.3.7
+
+33. Realtime Clock (RTCd)
+
+Procedure for Disabling Alarm Interrupt
+
+Figure 33.8 shows the procedure for disabling the enabled alarm interrupt request.
+
+An alarm interrupt is enabled
+
+Disable an alarm interrupt request on ICU side
+
+Write 0 to the ICU.IERm.IENj bit corresponding to
+the ALM interrupt
+
+Disable an alarm interrupt request of RTC side
+
+Write 0 to the RCR1.AIE bit
+
+No
+
+AIE bit = 0?
+Yes
+Clear the interrupt status flag
+
+Figure 33.8
+
+33.3.8
+
+Start while the RCR1.AIE bit is 1
+
+Wait for the RCR1.AIE bit to become 0
+
+Set the ICU.IRn.IR flag corresponding to the ALM
+interrupt to 0 in case the flag becomes 1 before
+the RCR1.AIE bit becomes 0
+
+Procedure for Disabling Alarm Interrupt Request
+
+Time Error Adjustment Function
+
+The time error adjustment function is used to correct errors (running fast or slow) in the time due to the precision of
+oscillation by the sub-clock. Since 32,768 cycles of the sub-clock constitute 1 second of operation when the sub-clock is
+selected, the clock runs fast if the sub-clock frequency is high and slow if the sub-clock frequency is low. This function
+can be used to correct errors due to the clock running fast or slow.
+Two types of time error adjustment functions are provided: automatic adjustment and adjustment by software.
+Use the RCR2.AADJE bit to select automatic adjustment or adjustment by software.
+
+33.3.8.1
+
+Automatic Adjustment
+
+Enable automatic adjustment by setting the RCR2.AADJE bit to 1.
+Automatic adjustment is the addition or subtraction of the value counted by the prescaler to or from the value in the
+RADJ register every time the adjustment period selected by the RCR2.AADJE bit elapses.
+Examples are shown below.
+[Example 1] Sub-clock running at 32.769 kHz
+Adjustment procedure:
+When the sub-clock is running at 32.769 kHz, 1 second elapses every 32,769 clock cycles. The RTC is meant to run at
+32,768 clock cycles, so the clock runs fast by one clock cycle every second. The time on the clock is fast by 60 clock
+cycles per minute, so adjustment can take the form of setting the clock back by 60 cycles every minute.
+Register settings: (when RCR2.CNTMD = 0)
+ RCR2.AADJP = 0 (adjustment every minute)
+ RADJ.PMADJ[1:0] = 10b (adjustment is performed by the subtraction from the prescaler.)
+ RADJ.ADJ[5:0] = 60 (3Ch)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1656 of 3240
+
+RX72N Group
+
+33. Realtime Clock (RTCd)
+
+[Example 2] Sub-clock running at 32.766 kHz
+Adjustment procedure:
+When the sub-clock is running at 32.766 kHz, 1 second elapses every 32,766 clock cycles. The RTC is meant to run at
+32,768 clock cycles, so the clock runs slow by two clock cycles every second. The time on the clock is slow by 20 clock
+cycles every 10 seconds, so adjustment can take the form of setting the clock forward by 20 cycles every 10 seconds.
+Register settings: (when RCR2.CNTMD = 0)
+ RCR2.AADJP = 1 (adjustment every 10 seconds)
+ RADJ.PMADJ[1:0] = 01b (adjustment is performed by the addition to the prescaler.)
+ RADJ.ADJ[5:0] = 20 (14h)
+[Example 3] Sub-clock running at 32.764 kHz
+Adjustment procedure:
+At 32.764 kHz, 1 second elapses on 32,764 clock cycles. Since the RTC operates for 32,768 clock cycles as 1 second, the
+clock is delayed for four clock cycles per second. In 8 seconds, the delay is 32 clock cycles, so correction can be made by
+proceeding the clock for 32 clock cycles every 8 seconds.
+Register settings when the RCR2.CNTMD bit is 1
+ RCR2.AADJP = 1 (adjustment every 8 seconds)
+ RADJ.PMADJ[1:0] = 01b (adjustment is performed by the addition to the prescaler.)
+ RADJ.ADJ[5:0] = 32 (20h)
+
+33.3.8.2
+
+Adjustment by Software
+
+Enable adjustment by software by setting the RCR2.AADJE bit to 0.
+Adjustment by software is the addition or subtraction of the value counted by the prescaler to or from the value in the
+RADJ register at the time of execution of an instruction for writing to the RADJ register.
+An example is shown below.
+[Example 1] Sub-clock running at 32.769 kHz
+Adjustment procedure:
+When the sub-clock is running at 32.769 kHz, 1 second elapses every 32,769 clock cycles. The RTC is meant to run at
+32,768 clock cycles, so the clock runs fast by one clock cycle every second. The time on the clock is fast by one clock
+cycle per second, so adjustment can take the form of setting the clock back by one cycle every second.
+Register settings:
+ RADJ.PMADJ[1:0] = 10b (adjustment is performed by the subtraction from the prescaler.)
+ RADJ.ADJ[5:0] = 1 (01h)
+This is written to the RADJ register once per 1-second interrupt.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1657 of 3240
+
+RX72N Group
+
+33.3.8.3
+
+33. Realtime Clock (RTCd)
+
+Procedure for Changing the Mode of Adjustment
+
+When changing the mode of adjustment, change the value of the AADJE bit in RCR2 after setting the
+RADJ.PMADJ[1:0] bits to 00b (adjustment is not performed).
+Changing from adjustment by software to automatic adjustment:
+(1) Set the RADJ.PMADJ[1:0] bits to 00b (adjustment is not performed).
+(2) Set the RCR2.AADJE bit to 1 (automatic adjustment is enabled).
+(3) Use the RCR2.AADJP bit to select the period of adjustment.
+(4) In RADJ, set the PMADJ[1:0] bits for addition or subtraction and the ADJ[5:0] bits to the value for use in time error
+adjustment.
+Changing from adjustment by software to automatic adjustment:
+(1) Set the RADJ.PMADJ[1:0] bits to 00b (adjustment is not performed).
+(2) Set the RCR2.AADJE bit to 0 (adjustment by software is enabled).
+(3) Proceed with adjustment by setting the RADJ.PMADJ[1:0] bits for addition or subtraction and the RADJ.ADJ[5:0]
+bits to the value for use in time error adjustment at the desired time. After that, the time is adjusted every time a
+value is written to the RADJ register.
+
+33.3.8.4
+
+Procedure for Stopping Adjustment
+
+Stop adjustment by setting the RADJ.PMADJ[1:0] bits to 00b (adjustment is not performed).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1658 of 3240
+
+RX72N Group
+
+33.3.9
+
+33. Realtime Clock (RTCd)
+
+Time Capture Function
+
+The RTC is capable of storing the month, date, hour, minute and second/binary counters 3 to 0 by detecting an edge of a
+signal on a time capture event input pin.
+A noise filter can also be used on a time capture event input pin. If the noise filter is enabled, the TCST flag is set to 1
+when the input level on the pin matches three times.
+The noise filter can be switched on or off for each of the time capture event input pins. Operation when the noise filter is
+off is shown in Figure 33.9 and operation when the noise filter is on is shown in Figure 33.10.
+
+Count source
+RTCICn
+Internal event-input signal
+Time counters
+Capture register
+
+AAAA
+
+BBBB
+
+0
+
+AAAA
+
+TCST
+No capturing when
+TCST = 1
+
+Detection of the
+rising edge
+
+Figure 33.9
+
+Timing of a Time Capture Operation (with the Filter Off) (n = 0 to 2)
+
+Count source
+RTCICn
+Internal event-input signal
+
+(1)
+
+(2)
+
+(1)
+
+(2)
+
+(1)
+
+Since the level has only matched
+twice, it is not conveyed to the
+internal circuits.
+
+(2)
+
+(3)
+Since the level has matched three
+times, it is conveyed to the internal
+circuits.
+
+Internal event-detection signal
+Time counters
+Capture register
+
+AAAA
+
+BBBB
+0
+
+BBBB
+
+TCST
+Detection of the rising edge
+
+Figure 33.10
+
+Timing of a Time Capture Operation (with the Filter On) (n = 0 to 2)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1659 of 3240
+
+RX72N Group
+
+33.4
+
+33. Realtime Clock (RTCd)
+
+Interrupt Sources
+
+There are three interrupt sources in the realtime clock. Table 33.4 lists interrupt sources for the RTC.
+Table 33.4
+
+RTC Interrupt Sources
+
+Name
+
+Interrupt Sources
+
+ALM
+
+Alarm interrupt
+
+PRD
+
+Periodic interrupt
+
+CUP
+
+Carry interrupt
+
+(1)
+
+Alarm interrupt (ALM)
+
+This interrupt is generated according to the result of comparison between the alarm registers and realtime clock counters
+(for details, refer to section 33.3.6, Alarm Function).
+Since there is a possibility that the interrupt flag may be set to 1 when the settings of the alarm registers match the clock
+counters, wait for the alarm time settings to be confirmed and set the IR flag corresponding to the ALM interrupt to 0
+again after modifying values of the alarm registers. Once the interrupt flag for the alarm interrupt has been set to 1 and
+the state has returned to non-matching of the alarm registers and clock counters, the flag will not be set again until there
+is a further match or the values of the alarm registers are modified again.
+
+Sequence for setting the alarm
+Alarm-register settings
+in progress
+
+Wait until the alarm
+time setting is
+confirmed
+
+Alarm registers
+Clock counters
+Match while settings are being made
+
+Interrupt flag
+(the IR flag
+corresponding to
+the ALM interrupt *1)
+Flag clearing by
+software
+
+Alarm interrupt
+accepted
+
+Note 1. Refer to the Interrupt Controller section for details on the corresponding interrupt vector number.
+
+Figure 33.11
+
+(2)
+
+Timing Chart for the Alarm Interrupt (ALM)
+
+Periodic interrupt (PRD)
+
+This interrupt is generated at intervals of 2 seconds, 1 second, 1/2 second, 1/4 second, 1/8 second, 1/16 second, 1/32
+second, 1/64 second, 1/128 second, or 1/256 second. The interrupt interval can be selected through the RCR1.PES[3:0]
+bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1660 of 3240
+
+RX72N Group
+
+(3)
+
+33. Realtime Clock (RTCd)
+
+Carry interrupt (CUP)
+
+This interrupt is generated when a carry to the second counter/binary counter 0 occurred or a carry to the R64CNT
+counter occurred during read access to the 64-Hz counter.
+
+R64CNT
+signal
+
+64 Hz
+
+Interrupt generated by the simultaneous
+occurrence of the selected edge of the
+64-Hz signal and register reading
+
+1 Hz
+
+An interrupt is generated by a
+carry to the second counter/
+binary counter 0
+
+Interrupt
+
+Detail
+Rising edges of the R64CNT signals
+are detected in the same way.
+
+64-Hz signal in R64CNT
+Detection of the selected
+edge of the 64-Hz signal
+Register reading by the CPU
+
+Interrupt generated by the simultaneous occurrence of
+the edge of the 64-Hz signal and reading of R64CNT
+R64CNT
+
+Interrupt
+(the IR flag corresponding to
+the CUP interrupt *1)
+Note 1. Refer to the Interrupt Controller section for details on the corresponding interrupt vector number.
+
+Figure 33.12
+
+Carry Interrupt (CUP) Timing Chart
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1661 of 3240
+
+RX72N Group
+
+33.5
+
+33. Realtime Clock (RTCd)
+
+Event Link Output
+
+The RTC outputs the following event signals for the event link controller (ELC), and these can be used to initiate
+operations by other modules selected in advance.
+(1) Periodic event output
+The periodic event signal is output at the interval selected from among 1/256, 1/128, 1/64, 1/32, 1/16, 1/8, 1/4, 1/2, 1, and
+2 seconds by the setting of the RCR1.PES[3:0] bits.
+The event generation period immediately after the event generation is selected is not guaranteed.
+Note:
+
+33.5.1
+
+If event linking from the RTC is to be used, only make the ELC settings after making the RTC settings
+(initialization, time settings, etc.). Making the RTC settings after the ELC settings can lead to the output of
+unexpected event signals.
+
+Interrupt Handling and Event Linking
+
+The RTC has a bit to enable or disable periodic interrupts. An interrupt request signal is output for the CPU when an
+interrupt source is generated while the corresponding enable bit is enabled.
+In contrast, an event link output signal is sent to other modules as an event signal via the ELC when an interrupt source is
+generated, regardless of the setting of the corresponding interrupt enable bit.
+Note:
+
+Although alarm and periodic interrupts can still be output during software standby or deep software standby, the
+periodic event signals for the ELC are not output.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1662 of 3240
+
+RX72N Group
+
+33.6
+
+33. Realtime Clock (RTCd)
+
+Usage Notes
+
+33.6.1
+
+Register Writing during Counting
+
+The following registers should not be written to during counting (while the RCR2.START bit = 1).
+RSECCNT/BCNT0, RMINCNT/BCNT1, RHRCNT/BCNT2, RDAYCNT, RWKCNT/BCNT3, RMONCNT, RYRCNT,
+RCR1.RTCOS, RCR2.RTCOE, RCR2.HR24, RFRH, RFRL
+The counter must be stopped before writing to any of the above registers.
+
+33.6.2
+
+Use of Periodic Interrupts
+
+The procedure for using periodic interrupts is shown in Figure 33.13.
+The generation and period of the periodic interrupt can be changed by the setting of the RCR1.PES[3:0] bits. However,
+since the prescaler, R64CNT, and RSECCNT/BCNT0 are used to generate interrupts, the interrupt period is not
+guaranteed immediately after setting of the RCR1.PES[3:0] bits.
+Furthermore, stopping/restarting or resetting counter operation, reset by RTC software, and the 30-second adjustment by
+changing the RCR2 value affects the interrupt period. When the time error adjustment function is used, the interrupt
+generation period after adjustment is added or subtracted according to the adjustment value.
+
+Set the period and enable interrupt requests
+The period
+is not
+guaranteed.
+The first interrupt is generated
+
+Interrupts
+are
+generated
+with the
+specified
+period.
+
+Set the RCR1.PES[3:0] bits and
+write 1 to the RCR1.PIE bit
+
+Confirm generation of the first periodic interrupt*1
+
+The set period elapses
+
+An interrupt is generated
+
+Confirm generation of a periodic interrupt
+
+Note 1. When a interrupt generation period is changed while the periodic interrupt is used, an interrupt
+may be generated at the completion of the setting. If the interrupt is generated immediately after
+the setting, the period is not guaranteed for two interrupts including the current interrupt.
+
+Figure 33.13
+
+33.6.3
+
+Using Periodic Interrupt Function
+
+RTCOUT (1-Hz/64-Hz) Clock Output
+
+Stopping/restarting or resetting counter operation, reset by RTC software, and the 30-second adjustment by changing the
+RCR2 value affects the period of RTCOUT (1-Hz/64-Hz) output. When the time error adjustment function is used, the
+period of RTCOUT (1-Hz/64-Hz) output after adjustment is added or subtracted according to the adjustment value.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1663 of 3240
+
+RX72N Group
+
+33.6.4
+
+33. Realtime Clock (RTCd)
+
+Transitions to Low Power Consumption Modes after Setting Registers
+
+A transition to a low power consumption state (software standby mode, deep software standby mode, or battery backup)
+during writing to or updating of an RTC register might destroy the register’s value. After setting a register, confirm that
+the setting is in place before initiating a transition to a low power consumption state.
+
+33.6.5
+
+Notes on Writing to and Reading from Registers
+
+ When reading a counter register such as the second counter/binary counter 0 after having written to the counter
+register, follow the procedure in section 33.3.5, Reading 64-Hz Counter and Time.
+ The value written to the count registers, alarm registers, year alarm enable register, bits RCR2.AADJE, AADJP, and
+HR24, RCR3, RCR4, RFRH, or RFRL register is reflected when four read operations are performed after writing.
+ The values written to the RCR1.CIE, RTCOS, and RCR2.RTCOE bits can be read immediately after writing.
+ To read the value from the timer counter after return from a reset, deep software standby mode, software standby
+mode, or the battery backup state, wait for 1/128 second while the clock is operating (RCR2.START bit = 1).
+ After a reset is generated, write to the RTC register when six cycles of the count source have elapsed.
+
+33.6.6
+
+Changing the Count Mode
+
+When changing the count mode (calendar/binary), set the RCR2.START bit to 0, stop counting operation, then start again
+from the initial setting. For details on initial setting, refer to section 33.3.1, Outline of Initial Settings of Registers
+after Power On.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1664 of 3240
+
+RX72N Group
+
+33.6.7
+
+33. Realtime Clock (RTCd)
+
+Initialization Procedure When the Realtime Clock is Not to be Used
+
+Registers in the RTC are not initialized by a reset. Accordingly, depending on the initial state, the generation of an
+unintentional interrupt request or operation of the counter may lead to increased power consumption.
+For products that do not require a realtime clock, initialize the registers by following the initialization procedure shown
+in Figure 33.14.
+Alternatively, when the sub-clock is not used as the system clock or realtime clock, the counter can be stopped by writing
+0 (sub-clock oscillator is selected) to the RCR4.RCKSEL bit and stopping the sub-clock.
+When making the setting to stop the sub-clock, write 0 to the RCR3.RTCEN bit and write 1 to the SOSCCR.SOSTP bit.
+For details on the setting of the SOSCCR.SOSTP bit, refer to section 9, Clock Generation Circuit.
+
+RCR4.RCKSEL bit setting
+
+Select the count source
+
+RCKSEL = 0?
+
+No (Main clock)
+
+Yes (Sub-clock)
+Set the sub-clock oscillator
+
+Supply 6 clocks of the count source
+
+Set the RCR3 register
+
+Supply 6 clocks of the clock selected by the
+RCR4.RCKSEL bit
+
+Set the RCR2 register to 00h
+
+No
+
+RCR2 = 00h?
+
+Wait for the RCR2 register to become 00h
+
+Yes
+Execute RTC software reset
+
+No
+
+RESET = 0?
+
+Write 1 to the RCR2.RESET bit
+
+Wait for the RCR2.RESET bit to become 0
+
+Yes
+Disable interrupt requests
+
+Figure 33.14
+
+Write 0 to the RCR1.AIE, CIE, and PIE bits.
+
+Initialization Procedure
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1665 of 3240
+
+

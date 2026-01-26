@@ -1,0 +1,22521 @@
+RX72N Group
+
+1. Overview
+
+1.
+
+Overview
+
+1.1
+
+Outline of Specifications
+
+Table 1.1 lists the specifications in outline, and Table 1.2 give a comparison of the functions of products in different
+packages.
+Table 1.1 is an outline of maximum specifications, and the peripheral modules and the number of channels of the
+modules differ depending on the number of pins on the package and the capacity of the code flash memory. For details,
+refer to Table 1.2, Comparison of Functions for Different Packages.
+Table 1.1
+
+Outline of Specifications (1/11)
+
+Classification
+
+Module/Function
+
+Description
+
+CPU
+
+CPU
+
+ Maximum operating frequency: 240 MHz
+ 32-bit RX CPU (RXv3)
+ Minimum instruction execution time: One instruction per state (cycle of the system
+clock)
+ Address space: 4-Gbyte linear
+ Register set of the CPU
+General purpose: Sixteen 32-bit registers
+Control: Ten 32-bit registers
+Accumulator: Two 72-bit registers
+ 113 instructions
+Instructions installed as standard: 111
+Basic instructions: 77
+Single-precision floating-point operation instructions: 11
+DSP instructions: 23
+Instructions for register bank save function: 2
+ Addressing modes: 11
+ Data arrangement
+Instructions: Little endian
+Data: Selectable as little endian or big endian
+ On-chip 32-bit multiplier: 32 × 32 → 64 bits
+ On-chip divider: 32 / 32 → 32 bits
+ Barrel shifter: 32 bits
+
+FPU
+
+ Single-precision floating-point numbers (32 bits) and double-precision floating-point
+numbers (64 bits)
+ Data types and floating-point exceptions in conformance with the IEEE754 standard
+
+Double-precision
+floating point
+coprocessor
+
+ Double-precision floating-point register set
+Double-precision floating-point data registers: 16, each with 64-bit width
+Double-precision floating-point control registers: Four, each with 32-bit width
+ Double-precision floating-point processing instructions: 21
+ Notifying the interrupt controller of double-precision floating-point exceptions
+
+Register bank save
+function
+
+ Fast collective saving and restoration of the values of CPU registers
+ 16 save register banks
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 76 of 3240
+
+RX72N Group
+Table 1.1
+
+1. Overview
+Outline of Specifications (2/11)
+
+Classification
+
+Module/Function
+
+Description
+
+Memory
+
+Code flash memory
+
+ Capacity: 2 Mbytes/4 Mbytes
+ ROM cache: 8 Kbytes
+ 120 MHz ≤ No-wait cycle access,
+120 MHz > One-wait cycle access
+ Instructions hitting the ROM cache or operand = 240 MHz: No-wait access
+ On-board programming: Four types
+ Off-board programming (parallel programmer mode)
+ Instructions are executable only for the program stored in the TM target area by using
+the Trusted Memory (TM) function and protection against data reading is realized.
+ A dual-bank structure allows programming during reading or exchanging the start-up
+areas
+
+Data flash memory
+
+ Capacity: 32 Kbytes
+ Programming/erasing: 100,000 times
+
+Unique ID
+
+ 16-byte unique ID for each device
+
+RAM
+
+ Capacity: 512 Kbytes
+ Up to 240 MHz, no-wait access
+
+Expansion RAM
+
+ Capacity: 512 Kbytes
+ 120 MHz ≤ No-wait cycle access,
+120 MHz > One-wait cycle access
+
+ECC RAM
+
+ Capacity: 32 Kbytes
+ If the operating frequency is no greater than 120 MHz, one-wait cycle access,
+if greater than 120MHz, two-wait cycle access in the case of reading, and three-wait
+cycle access in the case of writing
+ SEC-DED (single-bit error correction and double-bit error detection)
+
+Standby RAM
+
+ Capacity: 8 Kbytes
+ Operation synchronized with PCLKB: Up to 60 MHz, two-cycle access
+ Operating modes by the mode-setting pins at the time of release from the reset state
+Single-chip mode
+Boot mode (for the SCI interface)
+Boot mode (for the USB interface)
+Boot mode (for the FINE interface)
+ Selection of operating mode by register setting
+Single-chip mode
+On-chip ROM disabled extended mode
+On-chip ROM enabled extended mode
+ Endian selectable
+
+Operating modes
+
+Clock
+
+Clock generation circuit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+ Main clock oscillator, sub-clock oscillator, low-speed/high-speed on-chip oscillator, PLL
+frequency synthesizer (two circuits), and IWDT-dedicated on-chip oscillator
+ The peripheral module clocks can be set to frequencies above that of the system clock.
+ Main-clock oscillation stoppage detection
+ Separate frequency-division and multiplication settings for the system clock (ICLK),
+peripheral module clocks (PCLKA, PCLKB, PCLKC, PCLKD), flash-IF clock (FCLK) and
+external bus clock (BCLK)
+The CPU and other bus masters run in synchronization with the system clock (ICLK): Up
+to 240 MHz
+Peripheral modules of MTU, RSPI, SCIi, ETHERC, EPTPC, PMGI, EDMAC, GPTW,
+GLCDC, and DRW2D, run in synchronization with PCLKA, which operates at up to 120
+MHz.
+Other peripheral modules run in synchronization with PCLKB: Up to 60 MHz
+ADCLK in the S12AD (unit 0) runs in synchronization with PCLKC: Up to 60 MHz
+ADCLK in the S12AD (unit 1) runs in synchronization with PCLKD: Up to 60 MHz
+Flash IF run in synchronization with the flash-IF clock (FCLK): Up to 60 MHz
+Devices connected to the external bus run in synchronization with the external bus clock
+(BCLK): Up to 80 MHz
+ The high-speed on-chip oscillator (HOCO) can be obtained through frequencymultiplication of the PLL or PPLL reference clock
+ External clock input frequency: 30 MHz (max)
+ Clock output function
+
+Page 77 of 3240
+
+RX72N Group
+Table 1.1
+Classification
+
+1. Overview
+Outline of Specifications (3/11)
+Module/Function
+
+Description
+
+Reset
+
+Nine types of reset
+ RES# pin reset: Generated when the RES# pin is driven low.
+ Power-on reset: Generated when the RES# pin is driven high and VCC = AVCC0 =
+AVCC1 rises.
+ Voltage-monitoring 0 reset: Generated when VCC = AVCC0 = AVCC1 falls.
+ Voltage-monitoring 1 reset: Generated when VCC = AVCC0 = AVCC1 falls.
+ Voltage-monitoring 2 reset: Generated when VCC = AVCC0 = AVCC1 falls.
+ Deep software standby reset: Generated in response to an interrupt to trigger release
+from deep software standby.
+ Independent watchdog timer reset: Generated when the independent watchdog timer
+underflows, or a refresh error occurs.
+ Watchdog timer reset: Generated when the watchdog timer underflows, or a refresh
+error occurs.
+ Software reset: Generated by register setting.
+
+Power-on reset
+
+ If the RES# pin is at the high level when power is supplied, an internal reset is
+generated.
+After VCC = AVCC0 = AVCC1 has exceeded the voltage detection level and the
+specified period has elapsed, the reset is cancelled.
+
+Voltage detection circuit (LVDA)
+
+Monitors the voltage being input to the VCC = AVCC0 = AVCC1 pins and generates an
+internal reset or interrupt.
+ Voltage detection circuit 0
+Capable of generating an internal reset
+The option-setting memory can be used to select enabling or disabling of the reset.
+Voltage detection level: Selectable from three different levels (2.94 V, 2.87 V, 2.80 V)
+ Voltage detection circuits 1 and 2
+Voltage detection level: Selectable from three different levels (2.99 V, 2.92 V, 2.85 V)
+Digital filtering (1/2, 1/4, 1/8, and 1/16 LOCO frequency)
+Capable of generating an internal reset
+ Two types of timing are selectable for release from reset
+An internal interrupt can be requested.
+ Detection of voltage rising above and falling below thresholds is selectable.
+ Maskable or non-maskable interrupt is selectable
+Voltage detection monitoring
+Event linking
+
+Low power
+consumption
+
+Low power consumption
+function
+
+ Module stop function
+ Four low power consumption modes
+Sleep mode, all-module clock stop mode, software standby mode, and deep software
+standby mode
+
+Battery backup function
+
+ When the voltage on the VCC pin drops, battery power from the VBATT pin is supplied
+to keep the real-time clock (RTC) operating.
+
+Interrupt controller
+(ICUD)
+
+ Number of interrupt vectors: 256
+ External interrupts: 16 (pins IRQ0 to IRQ15)
+ Software interrupts: 2 sources
+ Non-maskable interrupts: 8 sources
+ Sixteen levels specifiable for the order of priority
+ Method of interrupt source selection:
+The interrupt vectors consist of 256 vectors (128 sources are fixed. The remaining 128
+vectors are selected from among the other 163 sources.)
+
+Interrupt
+
+External bus extension
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+ The external address space can be divided into eight areas (CS0 to CS7), each with
+independent control of access settings.
+Capacity of each area: 16 Mbytes (CS0 to CS7)
+A chip-select signal (CS0# to CS7#) can be output for each area.
+Each area is specifiable as an 8-, 16-, or 32-bit bus space.
+The data arrangement in each area is selectable as little or big endian (only for data).
+ SDRAM interface connectable
+ Bus format: Separate bus, multiplex bus
+ Wait control
+ Write buffer facility
+
+Page 78 of 3240
+
+RX72N Group
+Table 1.1
+
+1. Overview
+Outline of Specifications (4/11)
+
+Classification
+
+Module/Function
+
+Description
+
+DMA
+
+DMA controller
+(DMACAa)
+
+ 8 channels
+ Three transfer modes: Normal transfer, repeat transfer, and block transfer
+ Activation sources: Software trigger and interrupt requests from peripheral functions
+
+EXDMA controller
+(EXDMACa)
+
+ 2 channels
+Four transfer modes: Normal transfer, repeat transfer, block transfer, and cluster
+transfer
+ Single-address transfer enabled with the EDACKn signal
+ Request sources: Software trigger, external DMA requests (EDREQn), and interrupt
+requests from peripheral functions
+
+Data transfer controller
+(DTCb)
+
+ Three transfer modes: Normal transfer, repeat transfer, and block transfer
+ Request sources: External interrupts and interrupt requests from peripheral functions
+ Sequence transfer
+
+Programmable I/O ports
+
+ I/O ports for the 224-pin LFBGA
+I/O pins: 182
+Input pin: 1
+Pull-up resistors: 182
+Open-drain outputs: 182
+5-V tolerance: 19
+ I/O ports for the 176-pin LFBGA and 176-pin LFQFP
+I/O pins: 136
+Input pin: 1
+Pull-up resistors: 136
+Open-drain outputs: 136
+5-V tolerance: 19
+ I/O ports for the 145-pin TFLGA and 144-pin LFQFP
+I/O pins: 111
+Input pin: 1
+Pull-up resistors: 111
+Open-drain outputs: 111
+5-V tolerance: 18
+ I/O ports for the 100-pin LFQFP
+I/O pins: 78
+Input pin: 1
+Pull-up resistors: 78
+Open-drain outputs: 78
+5-V tolerance: 17
+
+I/O ports
+
+Event link controller (ELC)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+ Event signals such as interrupt request signals can be interlinked with the operation of
+functions such as timer counting, eliminating the need for intervention by the CPU to
+control the functions.
+ 135 internal event signals can be freely combined for interlinked operation with
+connected functions.
+ Event signals from peripheral modules can be used to change the states of output pins
+(of ports B and E).
+ Changes in the states of pins (of ports B and E) being used as inputs can be interlinked
+with the operation of peripheral modules.
+
+Page 79 of 3240
+
+RX72N Group
+Table 1.1
+
+1. Overview
+Outline of Specifications (5/11)
+
+Classification
+
+Module/Function
+
+Description
+
+Timers
+
+16-bit timer pulse unit
+(TPUa)
+
+ (16 bits × 6 channels) × 1 unit
+ Maximum of 16 pulse-input/output possible
+ Select from among seven or eight counter-input clock signals for each channel
+ Input capture/output compare function
+ Output of PWM waveforms in up to 15 phases in PWM mode
+ Support for buffered operation, phase-counting mode (two phase encoder input) and
+cascade-connected operation (32 bits × 2 channels) depending on the channel.
+ PPG output trigger can be generated
+ Capable of generating conversion start triggers for the A/D converters
+ Digital filtering of signals from the input capture pins
+ Event linking by the ELC
+
+Multifunction timer pulse
+unit (MTU3a)
+
+ 9 channels (16 bits × 8 channels, 32 bits × 1 channel)
+ Maximum of 28 pulse-input/output and 3 pulse-input possible
+ Select from among 14 counter-input clock signals for each channel (PCLKA/1, PCLKA/
+2, PCLKA/4, PCLKA/8, PCLKA/16, PCLK/A32, PCLKA/64, PCLKA/256, PCLKA/1024,
+MTCLKA, MTCLKB, MTCLKC, MTCLKD, MTIOC1A)
+14 of the signals are available for channel 0, 11 are available for channels 1, 3, 4, 6 to 8,
+12 are available for channel 2, and 10 are available for channel 5.
+ Input capture function
+ 39 output compare/input capture registers
+ Counter clear operation (synchronous clearing by compare match/input capture)
+ Simultaneous writing to multiple timer counters (TCNT)
+ Simultaneous register input/output by synchronous counter operation
+ Buffered operation
+ Support for cascade-connected operation
+ 43 interrupt sources
+ Automatic transfer of register data
+ Pulse output mode
+Toggle/PWM/complementary PWM/reset-synchronized PWM
+ Complementary PWM output mode
+Outputs non-overlapping waveforms for controlling 3-phase inverters
+Automatic specification of dead times
+PWM duty cycle: Selectable as any value from 0% to 100%
+Delay can be applied to requests for A/D conversion.
+Non-generation of interrupt requests at peak or trough values of counters can be
+selected.
+Double buffer configuration
+ Reset synchronous PWM mode
+Three phases of positive and negative PWM waveforms can be output with desired duty
+cycles.
+ Phase-counting mode: 16-bit mode (channels 1 and 2); 32-bit mode (channels 1 and 2)
+ Counter functionality for dead-time compensation
+ Generation of triggers for A/D converter conversion
+ A/D converter start triggers can be skipped
+ Digital filter function for signals on the input capture and external counter clock pins
+ PPG output trigger can be generated
+ Event linking by the ELC
+
+Port output enable 3
+(POE3a)
+
+ Control of the high-impedance state of the MTU waveform output pins
+ 5 pins for input from signal sources: POE0#, POE4#, POE8#, POE10#, POE11#
+ Initiation on detection of short-circuited outputs (detection of simultaneous PWM output
+to the active level)
+ Initiation by oscillation-stoppage detection or software
+ Additional programming of output control target pins is enabled
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 80 of 3240
+
+RX72N Group
+Table 1.1
+
+1. Overview
+Outline of Specifications (6/11)
+
+Classification
+
+Module/Function
+
+Description
+
+Timers
+
+General PWM timer
+(GPTW)
+
+ 32 bits × 4 channels (GPTW0 to GPTW3)
+ Counting up or down (sawtooth-wave), counting up and down (triangle-wave) selectable
+for all channels
+ Clock sources independently selectable for each channel
+ 2 input/output pins per channel
+ 2 output compare/input capture registers per channel
+ For the 2 output compare/input capture registers of each channel, 4 registers are
+provided as buffer registers and are capable of operating as comparison registers when
+buffering is not in use.
+ In output compare operation, buffer switching can be at crests or troughs, enabling the
+generation of laterally asymmetrically PWM waveforms.
+ Registers for setting up frame intervals on each channel (with capability for generating
+interrupts on overflow or underflow)
+ Generation of dead times in PWM operation
+ Capable of synchronous start, stop, or clearing of counter for any channel
+ Capable of a start, stop, clearing, or up-/down-counting of the counter supporting input
+level comparison
+ Capable of a start, stop, clearing, or up-/down-counting of the counter supporting
+maximum of 4 external triggers
+ Output pin disabling function by a dead time error or a short circuit detection among
+output pins
+ Capable of generating conversion start triggers for the A/D converters as well as
+monitoring external pins for a start timing of conversion.
+ Capable of outputting events, such as compare-match from A to F and overflow/
+underflow, to ELC
+ Capable of using noise filter of input capture
+
+Port output enable for
+GPTW (POEG)
+
+ Controlling the output disable for GPTW waveform output
+ Initiation by input level detection of GTETRG pins
+ Initiation by output disable request from GPTW
+ Initiation by detection of oscillation stop or by software
+
+Programmable pulse
+generator (PPG)
+
+ (4 bits × 4 groups) × 2 units
+ Pulse output with the MTU or TPU output as a trigger
+ Maximum of 32 pulse-output possible
+
+8-bit timers (TMR)
+
+ (8 bits × 2 channels) × 2 units
+ Select from among seven internal clock signals (PCLKB/1, PCLKB/2, PCLKB/8,
+PCLKB/32, PCLKB/64, PCLKB/1024, PCLKB/8192) and one external clock signal
+ Capable of output of pulse trains with desired duty cycles or of PWM signals
+ The 2 channels of each unit can be cascaded to create a 16-bit timer
+ Generation of triggers for A/D converter conversion
+ Capable of generating baud-rate clocks for SCI5, SCI6, and SCI12
+ Event linking by the ELC
+
+Compare match timer
+(CMT)
+
+ (16 bits × 2 channels) × 2 units
+ Select from among four internal clock signals (PCLKB/8, PCLKB/32, PCLKB/128,
+PCLKB/512)
+
+Compare match timer W
+(CMTW)
+
+ (32 bits × 1 channel) × 2 units
+ Compare-match, input-capture input, and output-comparison output are available.
+ Select from among four internal clock signals (PCLKB/8, PCLKB/32, PCLKB/128,
+PCLKB/512)
+ Interrupt requests can be output in response to compare-match, input-capture, and
+output-comparison events.
+ Event linking by the ELC
+
+Realtime clock (RTCd)*1  Clock sources: Main clock, sub-clock
+ Selection of the 32-bit binary count in time count/second unit possible
+ Clock and calendar functions
+ Interrupt sources: Alarm interrupt, periodic interrupt, and carry interrupt
+ Battery backup operation
+ Time-capture facility for three values
+ Event linking by the ELC
+Watchdog timer (WDTA)  14 bits × 1 channel
+ Select from among 6 counter-input clock signals (PCLKB/4, PCLKB/64, PCLKB/128,
+PCLKB/512, PCLKB/2048, PCLKB/8192)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 81 of 3240
+
+RX72N Group
+Table 1.1
+
+1. Overview
+Outline of Specifications (7/11)
+
+Classification
+
+Module/Function
+
+Description
+
+Timers
+
+Independent watchdog
+timer (IWDTa)
+
+ 14 bits × 1 channel
+ Counter-input clock: IWDT-dedicated on-chip oscillator
+ Dedicated clock/1, dedicated clock/16, dedicated clock/32, dedicated clock/64,
+dedicated clock/128, dedicated clock/256
+ Window function: The positions where the window starts and ends are specifiable (the
+window defines the timing with which refreshing is enabled and disabled).
+ Event linking by the ELC
+
+Communication
+function
+
+Ethernet controller
+(ETHERC)
+
+ 2 channels
+ Input and output of Ethernet/IEEE 802.3 frames
+ Transfer at 10 or 100 Mbps
+ Full- and half-duplex modes
+ MII (Media Independent Interface) and RMII (Reduced Media Independent Interface) as
+defined in IEEE 802.3u
+ Detection of Magic PacketsTM*2 or output of a “wake-on-LAN” signal (WOL)
+ Compliance with flow control as defined in IEEE 802.3x standards
+ Filtering of multicast frames is supported.
+ Frame data can be directly transferred between 2 channels by cut-through switching.
+
+PHY management
+interface (PMGI)
+
+ 2 channels
+ This module is compliant with the MII (Media Independent Interface) as defined in the
+IEEE 802.3u standard.
+ Transmission and reception of management frames through PHY-LSI chips having an
+MII or RMII interface is supported.
+ Alleviates load on the CPU by shifting it to dedicated hardware
+ The timing of management data is adjustable.
+ Preambles can be deleted.
+
+PTP module for the
+ethernet controller
+(EPTPCb)
+
+ In connection with the Ethernet controller (ETHERC), this module is compliant with the
+IEEE1588 standard.
+ Matching with time stamps can be used to trigger counting by the MTU and GPTW.
+
+DMA controller for
+ethernet controller
+(EDMACa)
+
+ 3 channels (each EDMAC determines the order of priority by a round-robin algorithm)
+For ETHERC: 2 channels, for EPTPC: 1 channel
+ Alleviation of CPU load by the descriptor control method
+ Transmission FIFO: 2 Kbytes; Reception FIFO: 4 Kbytes
+
+USB 2.0 FS host/
+function module (USBb)
+
+ Includes a UDC (USB Device Controller) and transceiver for USB 2.0 FS
+ One port
+ Compliance with the USB 2.0 specification
+ Transfer rate: Full speed (12 Mbps), low speed (1.5 Mbps) (host only)
+ Both self-power mode and bus-power mode are supported
+ OTG (On the Go) operation is possible (low-speed is not supported)
+ Incorporates 2 Kbytes of RAM as a transfer buffer
+ External pull-up and pull-down resistors are not required
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 82 of 3240
+
+RX72N Group
+Table 1.1
+
+1. Overview
+Outline of Specifications (8/11)
+
+Classification
+
+Module/Function
+
+Description
+
+Communication
+function
+
+Serial communications
+interfaces
+(SCIj, SCIi, SCIh)
+
+ 13 channels (SCIj: 7 channels + SCIi: 5 channels + SCIh: 1 channel)
+ SCIj, SCIi, SCIh
+Serial communications modes: Asynchronous, clock synchronous, and smart-card
+interface
+Multi-processor function
+On-chip baud rate generator allows selection of the desired bit rate
+Choice of LSB-first or MSB-first transfer
+Start-bit detection: Level or edge detection is selectable.
+Simple I2C
+Simple SPI
+7- to 9-bit transfer mode
+Bit rate modulation
+Double-speed mode
+Detecting matches of data is supported (other than for SCI12)
+ SCIj, SCIh
+Average transfer rate clock can be input from TMR timers for SCI5, SCI6, and SCI12
+Event linking by the ELC (only on channel 5)
+ SCIh
+Supports the serial communications protocol, which contains the start frame and
+information frame
+Supports the LIN format
+ SCIi
+Data can be transmitted or received in sequence by the 16-byte FIFO buffers of the
+transmission and reception unit
+
+I2C bus interface (RIICa)  3 channels (only channel 0 can be used in fast-mode plus)
+Communication formats
+I2C bus format/SMBus format
+Supports the multi-master
+Max. transfer rate: 1 Mbps (channel 0)
+ Event linking by the ELC
+CAN module (CAN)
+
+ 3 channels
+ Compliance with the ISO11898-1 specification (standard frame and extended frame)
+ 32 mailboxes per channel
+
+Serial peripheral
+interface (RSPIc)
+
+ 3 channels
+ RSPI transfer facility
+Using the MOSI (master out, slave in), MISO (master in, slave out), SSL (slave select),
+and RSPCK (RSPI clock) signals enables serial transfer through SPI operation (four
+lines) or clock-synchronous operation (three lines)
+Capable of handling serial transfer as a master or slave
+ Data formats
+Switching between MSB first and LSB first
+The number of bits in each transfer can be changed to any number of bits from 8 to 16,
+or to 20, 24, or 32 bits.
+128-bit buffers for transmission and reception
+Up to four frames can be transmitted or received in a single transfer operation (with
+each frame having up to 32 bits)
+Transit/receive data can be swapped in byte units
+ Buffered structure
+Double buffers for both transmission and reception
+ RSPCK can be stopped with the receive buffer full for master reception.
+ Event linking by the ELC
+
+Quad serial peripheral
+interface (QSPI)
+
+ 1 channel
+ Connectable with serial flash memory equipped with multiple input and output lines (i.e.
+for single, dual, or quad operation)
+ Programmable bit length and selectable active sense and phase of the clock signal
+ Sequential execution of transfer
+ LSB or MSB first is selectable
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 83 of 3240
+
+RX72N Group
+Table 1.1
+Classification
+
+1. Overview
+Outline of Specifications (9/11)
+Module/Function
+
+Description
+
+Extended serial sound interface (SSIE)
+
+ 2 channels
+ Full-duplex transmission (only for channel 0)
+ Various types of serial audio formatting are supported.
+ Master and slave operations are supported.
+ The bit-clock frequency is selectable from among 13 frequencies (1/1, 1/2, 1/4, 1/6, 1/8,
+1/12, 1/16, 1/24, 1/32, 1/48, 1/64, 1/96, or 1/128).
+ Data formats with 8, 16, 18, 20, 22, 24, and 32 bits are supported.
+ 32-stage FIFO buffers for transmission and reception
+ Stopping or not stopping the SSILRCK signal on stopping of data transmission is
+selectable.
+
+SD host interface (SDHI)
+
+ 1 channel
+ Transfer speed: Supports high-speed mode (25 MB/s) and default speed mode
+(12.5 MB/s)
+ One interface for SD memory and I/O cards (supporting 1- and 4-bit SD buses)
+ SD specifications
+Part 1: Physical Layer Specification Ver. 3.01 compliant (DDR not supported)
+Part E1: SDIO Specification Ver. 3.00
+ Error checking: CRC7 for commands and CRC16 for data
+ Interrupt requests: Card access interrupt, SDIO access interrupt, card detection
+interrupt, interrupt of SD buffer access
+ DMA transfer requests: SD_BUF write and SD_BUF read
+ Support for card detection and write protection
+
+MMC host interface (MMCIF)
+
+ 1 channel
+ Transfer speed: Data transfer mode (30 MB/s), backward compatible mode (25 MB/s)
+ Compliant with JEDEC STANDARD JESD84-A441 (DDR is not supported)
+ Interface for Multimedia Cards (MMCs)
+ Data buses: Support for 1-, 4-, and 8-bit MMC buses
+ Interrupt requests: Card detection interrupt, error/timeout interrupt, normal operation
+interrupt, interrupt of MMCIF buffer access
+ DMA transfer requests: CE_DATA write and CE_DATA read
+ Support for card detection, boot operation, high priority interrupt (HPI)
+
+The arithmetic unit for trigonometric
+functions (TFU)
+
+ Sine, cosine, arctangent, x 2 + y 2
+Simultaneous calculation of sine and cosine
+Simultaneous calculation of arctangent and x 2 + y 2
+
+Parallel data capture unit (PDC)
+
+ 1 channel
+ Acquisition of synchronization through external 8-bit horizontal and vertical
+synchronization signals
+ Setting of the image size when clipping of the output for a one-frame image is required
+
+Graphic-LCD controller (GLCDC)
+
+ 1 channel
+ Various data formats and LCD panels are supported
+ Superposition of 3 planes (single-color background, graphic 1, graphic 2)
+ 32- and 16-bpp graphics data and 8-, 4-, and 1-bit CLUT data formats are supported
+
+2D drawing engine (DRW2D)
+
+ 1 channel
+ Vector drawing (straight lines, triangles, and circles)
+ Bit blitting (with support for filling, copying, stretching, and rotation)
+ Bus master function for input and output of frame buffer data
+32-, 16-, and 8-bit pixel graphics data are supported
+ Bus master function for input of texture data
+Input of texture data (32, 24, 16, 8, 4, 2, or 1 bit) are supported.
+Run length encoding is supported
+A CLUT is installed and index data can be converted into color data
+ Two rendering modes are supported (register mode and display list mode)
+ Performance counting
+ Interrupts in response to completion of rendering and processing of the display list
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 84 of 3240
+
+RX72N Group
+Table 1.1
+Classification
+
+1. Overview
+Outline of Specifications (10/11)
+Module/Function
+
+Description
+
+12-bit A/D converter (S12ADFa)
+
+ 12 bits × 2 units (unit 0: 8 channels; unit 1: 21 channels)
+ 12-bit resolution (switchable between 8, 10, and 12 bits)
+ Conversion time
+0.48 µs per channel (for 12-bit conversion)
+0.45 µs per channel (for 10-bit conversion)
+0.42 µs per channel (for 8-bit conversion)
+ Operating mode
+Scan mode (single scan mode, continuous scan mode, or 3 group scan mode)
+Group priority control (only for 3 group scan mode)
+ Sample-and-hold function
+Common sample-and-hold circuit included
+In addition, channel-dedicated sample-and-hold function (3 channels: in unit 0 only)
+included
+ Sampling variable
+Sampling time can be set up for each channel.
+ Digital comparison
+Method: Comparison to detect voltages above or below thresholds and window
+comparison
+Measurement: Comparison of two results of conversion or comparison of a value in the
+comparison register and a result of conversion
+ Self-diagnostic function
+The self-diagnostic function internally generates three analog input voltages
+(unit 0: VREFL0, VREFH0 × 1/2, VREFH0; unit 1: AVSS1, AVCC1 × 1/2, AVCC1)
+ Double trigger mode (A/D conversion data duplicated)
+ Detection of analog input disconnection
+ Three ways to start A/D conversion
+Software trigger, timer (MTU, TMR, TPU) trigger, external trigger
+ Event linking by the ELC
+
+12-bit D/A converter (R12DAa)
+
+ 2 channels
+ 12-bit resolution
+ Output voltage: 0.2 V to AVCC1 – 0.2 V (buffered output), 0 V to AVCC1 (unbuffered
+output)
+ Buffered output or unbuffered output can be selected.
+ Event linking by the ELC
+
+Temperature sensor
+
+ 1 channel
+ Relative precision: ± 1°C
+ The voltage of the temperature is converted into a digital value by the 12-bit A/D
+converter (unit 1).
+
+Safety
+
+Memory protection unit
+(MPU)
+
+ Protection area: Eight areas (max.) can be specified in the range from 0000 0000h to
+FFFF FFFFh.
+ Minimum protection unit: 16 bytes
+ Reading from, writing to, and enabling the execution access can be specified for each
+area.
+ An access exception occurs when the detected access is not in the permitted area.
+
+Trusted Memory (TM)
+Function
+
+ Programs in the TM target area in the code flash memory are protected against reading
+ Instruction fetching by the CPU is the only form of access to these areas when the TM
+function is enabled.
+
+Register write protection
+function
+
+ Protects important registers from being overwritten for in case a program runs out of
+control.
+
+CRC calculator (CRCA)
+
+ Generation of CRC codes for 8-/32-bit data
+8-bit data
+Selectable from the following three polynomials
+X8 + X2 + X + 1, X16 + X15 + X2 + 1, X16 + X12 + X5 + 1
+32-bit data
+Selectable from the following two polynomials
+X32 + X26 + X23 + X22 + X16 + X12 + X11 + X10 + X8 + X7 + X5 + X4 + X2 + X + 1,
+X32 + X28 + X27 + X26 + X25 + X23 + X22 + X20 + X19 + X18 + X14 + X13 + X11 + X10 + X9 +
+X8 + X6 + 1
+ Generation of CRC codes for use with LSB-first or MSB-first communications is
+selectable
+
+Main clock oscillation
+stop detection
+
+ Main clock oscillation stop detection: Available
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 85 of 3240
+
+RX72N Group
+Table 1.1
+
+1. Overview
+Outline of Specifications (11/11)
+
+Classification
+
+Module/Function
+
+Description
+
+Safety
+
+Clock frequency
+accuracy measurement
+circuit (CAC)
+
+ Monitors the clock output from the main clock oscillator, sub-clock oscillator, low- and
+high-speed on-chip oscillators, IWDT-dedicated on-chip oscillator, USB clock, EthernetPHY external clock, and PCLKB, and generates interrupts when the setting range is
+exceeded.
+
+Data operation circuit
+(DOC)
+
+ The function to compare, add, or subtract 16-bit data
+
+Trusted Secure IP
+(TSIP)*3
+
+ Security algorithm
+Common key encryption: AES (compliant with NIST FIPS PUB 197), TDES, ARC4
+Non-common key encryption: RSA
+ Other features
+TRNG (true-random number generator)
+Hash value generation: SHA1, SHA224, SHA256, MD5, GHASH
+Prevention of the illicit copying of keys
+
+Encryption
+function
+
+Operating frequency
+
+Up to 240 MHz
+
+Power supply voltage
+
+VCC = AVCC0 = AVCC1 = VCC_USB = 2.7 to 3.6 V, 2.7 ≤ VREFH0 ≤ AVCC0,
+VBATT = 1.62 to 3.6 V*4
+
+Operating temperature
+
+D-version: –40 to +85°C
+G-version: –40 to +105°C
+
+Package
+
+224-pin LFBGA (PLBG0224GA-A)
+176-pin LFBGA (PLBG0176GA-A)
+176-pin LFQFP (PLQP0176KB-C)
+145-pin TFLGA (PTLG0145KA-A)
+144-pin LFQFP (PLQP0144KA-B)
+100-pin LFQFP (PLQP0100KB-B)
+
+On-chip debugging system
+
+ E1 emulator (JTAG and FINE interfaces)
+
+Note 1. When the realtime clock is not used, initialize the registers in the time clock according to description in section 33.6.7,
+Initialization Procedure When the Realtime Clock is Not to be Used.
+Note 2. Magic PacketTM is a registered trademark of Advanced Micro Devices, Inc.
+Note 3. The product part number differs according to whether or not the MCU includes the encryption function.
+Note 4. The low CL crystal unit cannot be used when the VBATT voltage is less than 2.0 V.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 86 of 3240
+
+RX72N Group
+
+Table 1.2
+
+1. Overview
+
+Comparison of Functions for Different Packages (1/2)
+
+Functions
+
+RX72N
+
+Package
+
+224 Pins
+
+External bus
+
+External bus width
+SDRAM area controller
+
+DMA
+
+Timers
+
+Communication
+function
+
+176 Pins
+
+144 Pins/145 Pins
+
+32 bits/16 bits/8 bits
+
+16 bits/8 bits
+
+Available
+
+Not available
+
+DMA controller
+
+Ch. 0 to 7
+
+Data transfer controller
+
+Available
+
+EXDMA controller
+
+Ch. 0 and 1
+
+16-bit timer pulse unit
+
+Ch. 0 to 5
+
+Multi-function timer pulse unit 3
+
+Ch. 0 to 8
+
+General PWM timer
+
+Ch. 0 to 3
+
+Port output enable 3
+
+Available
+
+Port output enable for GPTW
+
+Available
+
+Programmable pulse generator
+
+Ch. 0 and 1
+
+8-bit timers
+
+Ch. 0 to 3
+
+Compare match timer
+
+Ch. 0 to 3
+
+Compare match timer W
+
+Ch. 0 and 1
+
+Realtime clock
+
+Available
+
+Watchdog timer
+
+Available
+
+Independent watchdog timer
+
+Available
+
+Ethernet controller
+
+Ch. 0 and 1
+
+Ch. 0
+
+PHY management interface
+
+Ch. 0 and 1
+
+Ch. 0
+
+PTP controller for the ethernet
+controller
+DMA controller for the ethernet
+controller
+
+Available
+Ch. 0 and 1 (ETHERC) and 2 (EPTPC)
+
+USB2.0 FS host/function module
+
+Ch. 0
+Ch. 0 to 6
+
+Ch. 0 to 3, 5,
+and 6
+
+Serial communications interfaces (SCIi)
+
+Ch. 7 to 11
+
+Ch. 8 to 11
+
+Serial communications interfaces
+(SCIh)
+
+Ch. 12
+
+I2C bus interfaces
+
+Ch. 0 to 2
+
+Serial peripheral interface
+
+Ch. 0 to 2
+Ch. 0 to 2
+
+Ch. 0 and 1
+
+Quad serial peripheral interface
+
+Ch. 0
+
+Expansion serial sound interface
+
+Ch. 0 and 1
+
+SD host interface
+
+Ch. 0
+
+Multimediacard interface
+
+Ch. 0
+
+Parallel data capture unit
+
+12-bit A/D
+converter
+
+Ch. 0 (ETHERC)
+and 2 (EPTPC)
+
+Serial communications interfaces (SCIj)
+
+CAN module
+
+Graphics
+
+100 Pins
+
+Available
+
+Not available
+
+Graphic-LCD controller
+
+Available
+
+2D drawing engine
+
+Available
+
+Unit 0
+Unit 1
+
+12-bit D/A converter
+
+AN000 to AN007 (8 channels)
+AN100 to AN120 (21 channels)
+
+AN100 to AN113
+(14 channels)
+
+Ch. 0 and 1
+
+Ch. 1
+
+Temperature sensor
+
+Available
+
+Arithmetic unit for trigonometric functions
+
+Available
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 87 of 3240
+
+RX72N Group
+Table 1.2
+
+1. Overview
+Comparison of Functions for Different Packages (2/2)
+
+Functions
+
+RX72N
+
+Package
+
+224 Pins
+
+176 Pins
+
+144 Pins/145 Pins
+
+CRC calculator
+
+Available
+
+Data operation circuit
+
+Available
+
+Clock frequency accuracy measurement circuit
+
+Available
+
+Trusted Secure IP
+
+Available/Not available
+
+Event link controller
+
+Available
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+100 Pins
+
+Page 88 of 3240
+
+RX72N Group
+
+1.2
+
+1. Overview
+
+List of Products
+
+Table 1.3 is a list of products, and Figure 1.1 shows how to read the product part no.
+Table 1.3
+
+List of Products (1/2)
+Code Flash
+Memory
+Capacity
+
+RAM
+Capacity
+
+Data Flash
+Memory
+Capacity
+
+Operating
+Frequency
+(Max.)
+
+Encryption
+Module
+
+Operating
+temperature
+(°C)
+
+Not available
+
+–40 to +85
+
+Group
+
+Part No.
+
+Package
+
+RX72N
+(D-version)
+
+R5F572NNDDFC
+
+PLQP0176KB-C
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+R5F572NNHDFC
+
+PLQP0176KB-C
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NDDDFC
+
+PLQP0176KB-C
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +85
+
+R5F572NDHDFC
+
+PLQP0176KB-C
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NNDDFB
+
+PLQP0144KA-B
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +85
+
+R5F572NNHDFB
+
+PLQP0144KA-B
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NDDDFB
+
+PLQP0144KA-B
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +85
+
+R5F572NDHDFB
+
+PLQP0144KA-B
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NNDDFP
+
+PLQP0100KB-B
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +85
+
+R5F572NNHDFP
+
+PLQP0100KB-B
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NDDDFP
+
+PLQP0100KB-B
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +85
+
+RX72N
+(G-version)
+
+R5F572NDHDFP
+
+PLQP0100KB-B
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NNDDBD
+
+PLBG0224GA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +85
+
+R5F572NNHDBD
+
+PLBG0224GA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NDDDBD
+
+PLBG0224GA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +85
+
+R5F572NDHDBD
+
+PLBG0224GA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NNDDBG
+
+PLBG0176GA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +85
+
+R5F572NNHDBG
+
+PLBG0176GA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NDDDBG
+
+PLBG0176GA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +85
+
+R5F572NDHDBG
+
+PLBG0176GA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NNDDLK
+
+PTLG0145KA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +85
+
+R5F572NNHDLK
+
+PTLG0145KA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NDDDLK
+
+PTLG0145KA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +85
+
+R5F572NDHDLK
+
+PTLG0145KA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +85
+
+R5F572NNDGFC
+
+PLQP0176KB-C
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +105
+
+R5F572NNHGFC
+
+PLQP0176KB-C
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R5F572NDDGFC
+
+PLQP0176KB-C
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +105
+
+R5F572NDHGFC
+
+PLQP0176KB-C
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R5F572NNDGFB
+
+PLQP0144KA-B
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +105
+
+R5F572NNHGFB
+
+PLQP0144KA-B
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R5F572NDDGFB
+
+PLQP0144KA-B
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +105
+
+R5F572NDHGFB
+
+PLQP0144KA-B
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R5F572NNDGFP
+
+PLQP0100KB-B
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +105
+
+R5F572NNHGFP
+
+PLQP0100KB-B
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R5F572NDDGFP
+
+PLQP0100KB-B
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +105
+
+R5F572NDHGFP
+
+PLQP0100KB-B
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R5F572NNDGBD
+
+PLBG0224GA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +105
+
+R5F572NNHGBD
+
+PLBG0224GA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R5F572NDDGBD
+
+PLBG0224GA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +105
+
+R5F572NDHGBD
+
+PLBG0224GA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R5F572NNDGBG
+
+PLBG0176GA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +105
+
+R5F572NNHGBG
+
+PLBG0176GA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R5F572NDDGBG
+
+PLBG0176GA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +105
+
+R5F572NDHGBG
+
+PLBG0176GA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 89 of 3240
+
+RX72N Group
+Table 1.3
+
+1. Overview
+List of Products (2/2)
+Code Flash
+Memory
+Capacity
+
+RAM
+Capacity
+
+Data Flash
+Memory
+Capacity
+
+Operating
+Frequency
+(Max.)
+
+Encryption
+Module
+
+Operating
+temperature
+(°C)
+–40 to +105
+
+Group
+
+Part No.
+
+Package
+
+RX72N
+(G-version)
+
+R5F572NNDGLK
+
+PTLG0145KA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+R5F572NNHGLK
+
+PTLG0145KA-A
+
+4 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R5F572NDDGLK
+
+PTLG0145KA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Not available
+
+–40 to +105
+
+R5F572NDHGLK
+
+PTLG0145KA-A
+
+2 Mbytes
+
+1 Mbyte
+
+32 Kbytes
+
+240 MHz
+
+Available
+
+–40 to +105
+
+R
+
+5
+
+F
+
+5 7
+
+2 N
+
+N
+
+D
+
+D
+
+B D
+Package type, number of pins, and pin pitch
+BD: LFBGA/224/0.80
+FC: LFQFP/176/0.50
+BG: LFBGA/176/0.80
+FB : LFQFP/144/0.50
+LK : TFLGA/145/0.50
+FP : LFQFP/100/0.50
+D : Operating peripheral temperature: –40 to +85°C
+G : Operating peripheral temperature: –40 to +105°C
+D : Encryption module not included
+H : Encryption module included
+Code flash memory, RAM, and data flash memory capacity
+N : 4 Mbytes/1 Mbyte/32 Kbytes
+D : 2 Mbytes/1 Mbyte/32 Kbytes
+Group name
+RX72N Group
+Series name
+RX700 Series
+Type of memory
+F : Flash memory version
+Renesas MCU
+
+Renesas semiconductor product
+
+Figure 1.1
+
+How to Read the Product Part Number
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 90 of 3240
+
+RX72N Group
+
+1.3
+
+1. Overview
+
+Block Diagram
+
+DMAC × 8 channels
+DTC
+EDMAC × 3 channels
+GLCDC
+DRW2D
+
+RAM
+
+Internal main bus 2
+
+Operand bus
+
+ECCRAM
+
+Instruction bus
+
+Expansion
+RAM
+
+ROM
+
+RX CPU
+MPU
+Clock
+generation
+circuit
+
+Internal main bus 1
+
+ROM Cache
+
+Internal peripheral buses 1 to 6
+
+Figure 1.2 shows a block diagram.
+
+CAC
+ICU
+ELC
+MTU × 9 channels
+POE3
+GPTW × 4 channels
+POEG
+TPU × 6 channels (unit 0)
+PPG (unit 0)
+PPG (unit 1)
+TMR × 2 channels (unit 0)
+TMR × 2 channels (unit 1)
+CMT × 2 channels (unit 0)
+CMT × 2 channels (unit 1)
+CMTW × 1 channel (unit 0)
+CMTW × 1 channel (unit 1)
+RTC
+WDT
+IWDT
+ETHERC × 2 channels
+EPTPC
+PMGI × 2 channels
+USB × 1 port
+SCIh × 1 channel
+SCIi × 5 channels
+SCIj × 7 channels
+RIIC × 3 channels
+CAN × 3 channels
+SSIE × 2 channels
+RSPI × 3 channels
+QSPI
+CRC
+SDHI
+MMCIF
+PDC
+TFU
+Trusted Secure IP*1
+12-bit A/D converter × 8 channels (unit 0)
+12-bit A/D converter × 21 channels (unit 1)
+
+12-bit D/A converter × 2 channels
+Temperature sensor
+DOC
+Standby RAM
+Data flash
+EXDMAC
+
+CAC:
+Clock frequency accuracy measurement circuit
+ICU:
+Interrupt controller
+BSC:
+Bus controller
+MPU:
+Memory protection unit
+DMAC:
+DMA controller
+EXDMAC: EXDMA controller
+DTC:
+Data transfer controller
+ELC:
+Event link controller
+MTU:
+Multi-function timer pulse unit 3
+POE3:
+Port output enable 3
+GPTW:
+General PWM timer
+POEG:
+GPTW port output enable
+TPU:
+16-bit timer pulse unit
+PPG:
+Programmable pulse unit
+TMR:
+8-bit timer
+CMT:
+Compare match timer
+CMTW:
+Compare match timer W
+RTC:
+Realtime clock
+WDT:
+Watchdog timer
+IWDT:
+Independent watchdog timer
+ETHERC: Ethernet controller
+
+BSC
+
+External bus
+
+Port 0
+Port 1
+Port 2
+Port 3
+Port 4
+Port 5
+Port 6
+Port 7
+Port 8
+Port 9
+Port A
+Port B
+Port C
+Port D
+Port E
+Port F
+Port G
+Port H
+Port J
+Port K
+Port L
+Port M
+Port N
+Port Q
+
+EPTPC:
+PTP module for the ethernet controller
+EDMAC: DMA controller for the ethernet controller
+PMGI:
+Phy management interface
+USB:
+USB2.0 FS host/function module
+SCIj, SCIi, SCIh: Serial communications interface
+RIIC:
+I2C-bus interface
+CAN:
+CAN module
+SSIE:
+Serial sound interface enhanced
+RSPI:
+Serial communications interface
+QSPI:
+Quad serial peripheral interface
+CRC:
+CRC calculator
+SDHI:
+SD host interface
+MMCIF:
+MultiMediaCard interface
+PDC:
+Parallel data capture unit
+GLCDC: Graphic LCD controller
+DRW2D: 2D drawing engine
+TFU:
+Arithmetic unit for trigonometric functions
+Trusted Secure IP: Trusted secure IP*1
+DOC:
+Data operation circuit
+
+Note 1. Optional
+
+Figure 1.2
+
+Block Diagram
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 91 of 3240
+
+RX72N Group
+
+1.4
+
+1. Overview
+
+Pin Functions
+
+Table 1.4 lists the pin functions.
+Table 1.4
+
+Pin Functions (1/8)
+
+Classifications
+
+Pin Name
+
+I/O
+
+Description
+
+Digital power supply
+
+VCC
+
+Input
+
+Power supply pin. Connect this pin to the system power supply.
+Connect the pin to VSS via a 0.1-µF multilayer ceramic
+capacitor. The capacitor should be placed close to the pin.
+
+VCL
+
+Input
+
+Connect this pin to VSS via a 0.22-µF multilayer ceramic
+capacitor. The capacitor should be placed close to the pin.
+
+VSS
+
+Input
+
+Ground pin. Connect it to the system power supply (0 V).
+
+VBATT
+
+Input
+
+Backup power pin
+
+XTAL
+
+Output
+
+EXTAL
+
+Input
+
+Input/output pins for a crystal resonator. An external clock signal
+can be input through the EXTAL pin.
+
+BCLK
+
+Output
+
+Outputs the external bus clock for external devices.
+
+SDCLK
+
+Output
+
+Outputs the SDRAM-dedicated clock.
+
+XCOUT
+
+Output
+
+XCIN
+
+Input
+
+Input/output pins for the sub-clock oscillator. Connect a crystal
+resonator between XCOUT and XCIN.
+
+CLKOUT
+
+Output
+
+Clock output pin.
+
+Clock frequency accuracy
+measurement
+
+CACREF
+
+Input
+
+Reference clock input pin for the clock frequency accuracy
+measurement circuit
+
+Operating mode control
+
+MD
+
+Input
+
+Input pin for setting the operating mode. The signal level on this
+pin must not be changed during operation.
+
+Clock
+
+UB
+
+Input
+
+USB boot mode enable pin
+
+UPSEL
+
+Input
+
+Selects the power supply method in USB boot mode.
+The low level selects self-power mode and the high level selects
+bus power mode.
+
+RES#
+
+Input
+
+Reset signal input pin. This MCU enters the reset state when
+this signal goes low.
+
+EMLE
+
+Input
+
+Input pin for the on-chip emulator enable signal. When the onchip emulator is used, this pin should be driven high. When not
+used, it should be driven low.
+
+BSCANP
+
+Input
+
+Boundary scan enable pin. Boundary scan is enabled when this
+pin goes high. When not used, it should be driven low.
+
+FINED
+
+I/O
+
+FINE interface pin
+
+TRST#
+
+Input
+
+TMS
+
+Input
+
+On-chip emulator or boundary scan pins. When the EMLE pin is
+driven high, these pins are dedicated for the on-chip emulator.
+
+TDI
+
+Input
+
+TCK
+
+Input
+
+TDO
+
+Output
+
+TRCLK
+
+Output
+
+This pin outputs the clock for synchronization with the trace
+data.
+
+TRSYNC, TRSYNC1
+
+Output
+
+These pins indicate that output from the TRDATA0 to TRDATA7
+pins is valid.
+
+TRDATA0 to TRDATA7
+
+Output
+
+These pins output the trace information.
+
+Address bus
+
+A0 to A23
+
+Output
+
+Output pins for the address
+
+Data bus
+
+D0 to D31
+
+I/O
+
+Input and output pins for the bidirectional data bus
+
+Multiplexed bus
+
+A0/D0 to A15/D15
+
+I/O
+
+Address/data multiplexed bus
+
+System control
+
+On-chip emulator
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 92 of 3240
+
+RX72N Group
+Table 1.4
+
+1. Overview
+Pin Functions (2/8)
+
+Classifications
+
+Pin Name
+
+I/O
+
+Description
+
+Bus control
+
+RD#
+
+Output
+
+Strobe signal which indicates that reading from the external bus
+interface space is in progress
+
+WR#
+
+Output
+
+Strobe signal which indicates that writing to the external bus
+interface space is in progress, in 1-write strobe mode
+
+WR0# to WR3#
+
+Output
+
+Strobe signals which indicate that either group of data bus pins
+(D7 to D0, D15 to D8, D23 to D16 and D31 to D24) is valid in
+writing to the external bus interface space, in byte strobe mode
+
+BC0# to BC3#
+
+Output
+
+Strobe signals which indicate that either group of data bus pins
+(D7 to D0, D15 to D8, D23 to D16 and D31 to D24) is valid in
+access to the external bus interface space, in 1-write strobe
+mode
+
+ALE
+
+Output
+
+Address latch signal when address/data multiplexed bus is
+selected
+
+WAIT#
+
+Input
+
+Input pin for wait request signals in access to the external space
+
+CS0# to CS7#
+
+Output
+
+Select signals for CS areas
+
+SDRAM interface
+
+EXDMA controller
+
+Interrupt
+
+Multi-function timer pulse
+unit 3
+
+Port output enable 3
+
+CKE
+
+Output
+
+SDRAM clock enable signal
+
+SDCS#
+
+Output
+
+SDRAM chip select signal
+
+RAS#
+
+Output
+
+SDRAM row address strobe signal
+
+CAS#
+
+Output
+
+SDRAM column address strove signal
+
+WE#
+
+Output
+
+SDRAM write enable pin
+
+DQM0 to DQM3
+
+Output
+
+SDRAM I/O data mask enable signals
+
+EDREQ0, EDREQ1
+
+Input
+
+External DMA transfer request pins
+
+EDACK0, EDACK1
+
+Output
+
+Single address transfer acknowledge signals
+
+NMI
+
+Input
+
+Non-maskable interrupt request pin
+
+IRQ0 to IRQ15, IRQ0-DS to
+IRQ15-DS
+
+Input
+
+Maskable interrupt request pins
+
+MTIOC0A, MTIOC0B,
+MTIOC0C, MTIOC0D
+
+I/O
+
+The TGRA0 to TGRD0 input capture input/output compare
+output/PWM output pins
+
+MTIOC1A, MTIOC1B
+
+I/O
+
+The TGRA1 and TGRB1 input capture input/output compare
+output/PWM output pins
+
+MTIOC2A, MTIOC2B
+
+I/O
+
+The TGRA2 and TGRB2 input capture input/output compare
+output/PWM output pins
+
+MTIOC3A, MTIOC3B,
+MTIOC3C, MTIOC3D
+
+I/O
+
+The TGRA3 to TGRD3 input capture input/output compare
+output/PWM output pins
+
+MTIOC4A, MTIOC4B,
+MTIOC4C, MTIOC4D
+
+I/O
+
+The TGRA4 to TGRD4 input capture input/output compare
+output/PWM output pins
+
+MTIC5U, MTIC5V, MTIC5W
+
+Input
+
+The TGRU5, TGRV5, and TGRW5 input capture input/dead
+time compensation input pins
+
+MTIOC6A, MTIOC6B,
+MTIOC6C, MTIOC6D
+
+I/O
+
+The TGRA6 to TGRD6 input capture input/output compare
+output/PWM output pins
+
+MTIOC7A, MTIOC7B,
+MTIOC7C, MTIOC7D
+
+I/O
+
+The TGRA7 to TGRD7 input capture input/output compare
+output/PWM output pins
+
+MTIOC8A, MTIOC8B,
+MTIOC8C, MTIOC8D
+
+I/O
+
+The TGRA8 to TGRD8 input capture input/output compare
+output/PWM output pins
+
+MTCLKA, MTCLKB, MTCLKC,
+MTCLKD
+
+Input
+
+Input pins for external clock signals or for phase counting mode
+clock signals
+
+POE0#, POE4#, POE8#,
+POE10#, POE11#
+
+Input
+
+Input pins for request signals to place the MTU in the high
+impedance state
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 93 of 3240
+
+RX72N Group
+Table 1.4
+
+1. Overview
+Pin Functions (3/8)
+
+Classifications
+
+Pin Name
+
+I/O
+
+Description
+
+General PWM timer W
+
+GTETRGA, GTETRGB,
+GTETRGC, GTETRGD
+
+Input
+
+Input pins for the external trigger signals
+
+GTIOC0A to GTIOC3A,
+GTIOC0B to GTIOC3B
+
+I/O
+
+Input capture input/output compare output/PWM output pins
+
+GTADSM0, GTADSM1
+
+Output
+
+Output pins for monitoring A/D conversion start requests.
+
+TIOCA0, TIOCB0, TIOCC0,
+TIOCD0
+
+I/O
+
+The TGRA0 to TGRD0 input capture input/output compare
+output/PWM output pins
+
+TIOCA1, TIOCB1
+
+I/O
+
+The TGRA1 and TGRB1 input capture input/output compare
+output/PWM output pins
+
+TIOCA2, TIOCB2
+
+I/O
+
+The TGRA2 and TGRB2 input capture input/output compare
+output/PWM output pins
+
+TIOCA3, TIOCB3, TIOCC3,
+TIOCD3
+
+I/O
+
+The TGRA3 to TGRD3 input capture input/output compare
+output/PWM output pins
+
+TIOCA4, TIOCB4
+
+I/O
+
+The TGRA4 and TGRB4 input capture input/output compare
+output/PWM output pins
+
+TIOCA5, TIOCB5
+
+I/O
+
+The TGRA5 and TGRB5 input capture input/output compare
+output/PWM output pins
+
+TCLKA, TCLKB, TCLKC,
+TCLKD
+
+Input
+
+Input pins for external clock signals or for phase counting mode
+clock signals
+
+Programmable pulse
+generator
+
+PO0 to PO31
+
+Output
+
+Output pins for the pulse signals
+
+8-bit timer
+
+TMO0 to TMO3
+
+Output
+
+Compare match output pins
+
+16-bit timer pulse unit
+
+Compare match timer W
+
+Serial communications
+interface (SCIj)
+
+TMCI0 to TMCI3
+
+Input
+
+Input pins for external clocks to be input to the counter
+
+TMRI0 to TMRI3
+
+Input
+
+Input pins for the counter reset
+
+TIC0 to TIC3
+
+Input
+
+Input pins for CMTW
+
+TOC0 to TOC3
+
+Output
+
+Output pins for CMTW
+
+ Asynchronous mode/clock synchronous mode
+SCK0 to SCK6
+
+I/O
+
+Input/output pins for the clock
+
+RXD0 to RXD6
+
+Input
+
+Input pins for received data
+
+TXD0 to TXD6
+
+Output
+
+Output pins for transmitted data
+
+CTS0# to CTS6#
+
+Input
+
+Input pins for controlling the start of transmission and reception
+
+RTS0# to RTS6#
+
+Output
+
+Output pins for controlling the start of transmission and
+reception
+
+SSCL0 to SSCL6
+
+I/O
+
+Input/output pins for the I2C clock
+
+SSDA0 to SSDA6
+
+I/O
+
+Input/output pins for the I2C data
+
+SCK0 to SCK6
+
+I/O
+
+Input/output pins for the clock
+
+SMISO0 to SMISO6
+
+I/O
+
+Input/output pins for slave transmission of data
+
+ Simple I2C mode
+
+ Simple SPI mode
+
+SMOSI0 to SMOSI6
+
+I/O
+
+Input/output pins for master transmission of data
+
+SS0# to SS6#
+
+Input
+
+Chip-select input pins
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 94 of 3240
+
+RX72N Group
+Table 1.4
+
+1. Overview
+Pin Functions (4/8)
+
+Classifications
+
+Pin Name
+
+I/O
+
+Description
+
+Serial communications
+interface (SCIh)
+
+ Asynchronous mode/clock synchronous mode
+SCK12
+
+I/O
+
+Input/output pin for the clock
+
+RXD12
+
+Input
+
+Input pin for received data
+
+TXD12
+
+Output
+
+Output pin for transmitted data
+
+CTS12#
+
+Input
+
+Input pin for controlling the start of transmission and reception
+
+RTS12#
+
+Output
+
+Output pin for controlling the start of transmission and reception
+
+SSCL12
+
+I/O
+
+Input/output pin for the I2C clock
+
+SSDA12
+
+I/O
+
+Input/output pin for the I2C data
+
+ Simple I2C mode
+
+ Simple SPI mode
+SCK12
+
+I/O
+
+Input/output pin for the clock
+
+SMISO12
+
+I/O
+
+Input/output pin for slave transmission of data
+
+SMOSI12
+
+I/O
+
+Input/output pin for master transmission of data
+
+SS12#
+
+Input
+
+Chip-select input pin
+
+RXDX12
+
+Input
+
+Input pin for received data
+
+TXDX12
+
+Output
+
+Output pin for transmitted data
+
+SIOX12
+
+I/O
+
+Input/output pin for received or transmitted data
+
+ Extended serial mode
+
+Serial communications
+interface (SCIi)
+
+ Asynchronous mode/clock synchronous mode
+SCK7 to SCK11
+
+I/O
+
+Input/output pins for the clock
+
+RXD7 to RXD11
+
+Input
+
+Input pins for received data
+
+TXD7 to TXD11
+
+Output
+
+Output pins for transmitted data
+
+CTS7# to CTS11#
+
+Input
+
+Input pins for controlling the start of transmission and reception
+
+RTS7# to RTS11#
+
+Output
+
+Output pins for controlling the start of transmission and
+reception
+
+SSCL7 to SSCL11
+
+I/O
+
+Input/output pins for the I2C clock
+
+SSDA7 to SSDA11
+
+I/O
+
+Input/output pins for the I2C data
+
+ Simple I2C mode
+
+ Simple SPI mode
+
+I2C bus interface
+
+SCK7 to SCK11
+
+I/O
+
+Input/output pins for the clock
+
+SMISO7 to SMISO11
+
+I/O
+
+Input/output pins for slave transmission of data
+
+SMOSI7 to SMOSI11
+
+I/O
+
+Input/output pins for master transmission of data
+
+SS7# to SS11#
+
+Input
+
+Chip-select input pins
+
+SCL0[FM+], SCL1, SCL2,
+SCL2-DS
+
+I/O
+
+Input/output pins for clocks. Bus can be directly driven by
+the N-channel open drain
+
+SDA0[FM+], SDA1, SDA2,
+SDA2-DS
+
+I/O
+
+Input/output pins for data. Bus can be directly driven by
+the N-channel open drain
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 95 of 3240
+
+RX72N Group
+Table 1.4
+
+1. Overview
+Pin Functions (5/8)
+
+Classifications
+
+Pin Name
+
+I/O
+
+Description
+
+Ethernet controller
+
+REF50CK0, REF50CK1
+
+Input
+
+50-MHz reference clocks. These pins input reference signals for
+transmission/reception timings in RMII mode.
+
+RMII0_CRS_DV,
+RMII1_CRS_DV
+
+Input
+
+These pins indicate that there are carrier detection signals and
+valid receive data on RMIIn_RXD1 and RMIIn_RXD0 in RMII
+mode.
+
+RMII0_TXD0, RMII0_TXD1,
+RMII1_TXD0, RMII1_TXD1
+
+Output
+
+2-bit transmit data in RMII mode
+
+RMII0_RXD0, RMII0_RXD1,
+RMII1_RXD0, RMII1_RXD1
+
+Input
+
+2-bit receive data in RMII mode
+
+RMII0_TXD_EN,
+RMII1_TXD_EN
+
+Output
+
+Output pins for data transmit enable signals in RMII mode
+
+RMII0_RX_ER,
+RMII1_RX_ER
+
+Input
+
+These pins indicate an error has occurred during reception of
+data in RMII mode.
+
+ET0_CRS, ET1_CRS
+
+Input
+
+Carrier detection/data reception enable pins
+
+ET0_RX_DV, ET1_RX_DV
+
+Input
+
+These pins indicate that there are valid receive data on
+ETn_ERXD3 to ETn_ERXD0.
+
+ET0_EXOUT, ET1_EXOUT
+
+Output
+
+General-purpose external output pins
+
+ET0_LINKSTA, ET1_LINKSTA
+
+Input
+
+Input link status from the PHY-LSI.
+
+ET0_ETXD0 to ET0_ETXD3,
+ET1_ETXD0 to ET1_ETXD3
+
+Output
+
+4 bits of MII transmit data
+
+ET0_ERXD0 to ET0_ERXD3,
+ET1_ERXD0 to ET1_ERXD3
+
+Input
+
+4 bits of MII receive data
+
+ET0_TX_EN, ET1_TX_EN
+
+Output
+
+Transmit enable pins. These pins function as signals indicating
+that transmit data are ready on ETn_ETXD3 to ETn_ETXD0.
+
+ET0_TX_ER, ET1_TX_ER
+
+Output
+
+Transmit error pins. These pins function as signals notifying the
+PHY-LSI of an error during transmission.
+
+ET0_RX_ER, ET1_RX_ER
+
+Input
+
+Receive error pins. These pins function as signals to recognize
+an error during reception.
+
+ET0_TX_CLK, ET1_RX_CLK
+
+Input
+
+Transmit clock pins. These pins input reference signals for
+output timings from ETn_TX_EN, ETn_ETXD3 to ETn_ETXD0,
+and ETn_TX_ER.
+
+ET0_RX_CLK, ET1_RX_CLK
+
+Input
+
+Receive clock pins. These pins input reference signals for input
+timings to ETn_RX_DV, ETn_ERXD3 to ETn_ERXD0, and
+ETn_RX_ER.
+
+PHY management
+interface
+
+ET0_COL, ET1_COL
+
+Input
+
+Input collision detection signals.
+
+ET0_WOL, ET1_WOL
+
+Output
+
+Receive Magic packets.
+
+ET0_MDC, ET1_MDC
+
+Output
+
+Output reference clock signals for information transfer via
+ETn_MDIO.
+
+ET0_MDIO, ET1_MDIO
+
+I/O
+
+Input or output bidirectional signals for exchange of
+management information between this MCU and the PHY-LSI.
+
+CLKOUT25M
+
+Output
+
+25-MHz clock output pin for PHY clock input
+
+EPLSOUT0, EPLSOUT1
+
+Output
+
+Pulse output signals for time synchronization
+
+PMGI0_MDC, PMGI1_MDC
+
+Output
+
+Reference clock signals for information transfer by
+PMGIn_MDIO
+
+PMGI0_MDIO, PMGI1_MDIO
+
+I/O
+
+Bi-directional signals for the exchange of management
+information between the PHY LSI chip and this MCU
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 96 of 3240
+
+RX72N Group
+Table 1.4
+
+1. Overview
+Pin Functions (6/8)
+
+Classifications
+
+Pin Name
+
+I/O
+
+Description
+
+USB 2.0 host/function
+module
+
+VCC_USB
+
+Input
+
+Power supply pin
+
+VSS_USB
+
+Input
+
+Ground pin
+
+USB0_DP
+
+I/O
+
+Input or output USB transceiver D+ data.
+
+USB0_DM
+
+I/O
+
+Input or output USB transceiver D- data.
+
+USB0_EXICEN
+
+Output
+
+Connect to the OTG power IC.
+
+USB0_ID
+
+Input
+
+Connect to the OTG power IC.
+
+USB0_VBUSEN
+
+Output
+
+USB VBUS power enable pin
+
+USB0_OVRCURA/
+USB0_OVRCURB
+
+Input
+
+USB overcurrent pins
+
+USB0_VBUS
+
+Input
+
+USB cable connection/disconnection detection input pin
+
+CRX0, CRX1, CRX2,
+CRX1-DS
+
+Input
+
+Input pins
+
+CAN module
+
+Serial peripheral interface
+
+Quad serial peripheral
+interface
+
+Serial sound interface
+enhanced
+
+CTX0, CTX1, CTX2
+
+Output
+
+Output pins
+
+RSPCKA-A/RSPCKA-B/
+RSPCKB-A/RSPCKB-B/
+RSPCKC-A/RSPCKC-B
+
+I/O
+
+Clock input/output pins
+
+MOSIA-A/MOSIA-B/
+MOSIB-A/MOSIB-B/
+MOSIC-A/MOSIC-B
+
+I/O
+
+Input or output data output from the master
+
+MISOA-A/MISOA-B/
+MISOB-A/MISOB-B/
+MISOC-A/MISOC-B
+
+I/O
+
+Input or output data output from the slave
+
+SSLA0-A/SSLA0-B/
+SSLB0-A/SSLB0-B/
+SSLC0-A/SSLC0-B
+
+I/O
+
+Input or output pins for slave selection
+
+SSLA1-A/SSLA1-B/
+SSLB1-A/SSLB1-B/
+SSLC1-A/SSLC1-B,
+SSLA2-A/SSLA2-B/
+SSLB2-A/SSLB2-B/
+SSLC2-A/SSLC2-B,
+SSLA3-A/SSLA3-B/
+SSLB3-A/SSLB3-B/
+SSLC3-A/SSLC3-B
+
+Output
+
+Output pins for slave selection
+
+QSPCLK-A/QSPCLK-B/
+QSPCLK-C
+
+Output
+
+QSPI clock output pins
+
+QSSL-A/QSSL-B/QSSL-C
+
+Output
+
+QSPI slave output pins
+
+QMO-A/QMO-B/QMO-C,
+QIO0-A/QIO0-B/QIO0-C
+
+I/O
+
+Master transmit data/data 0
+
+QMI-A/QMI-B/QMI-C,
+QIO1-A/QIO1-B/QIO1-C
+
+I/O
+
+Master input data/data 1
+
+QIO2-A/QIO2-B/QIO2-C,
+QIO3-A/QIO3-B/QIO3-C
+
+I/O
+
+Data 2, data 3
+
+SSIBCK0, SSIBCK1
+
+I/O
+
+SSIE serial bit-clock pins
+
+SSILRCK0, SSILRCK1
+
+I/O
+
+LR clock
+
+SSITXD0
+
+Output
+
+Serial data output pin
+
+SSIRXD0
+
+Input
+
+Serial data input pin
+
+SSIDATA1
+
+I/O
+
+Serial data input/output pin
+
+AUDIO_CLK
+
+Input
+
+External clock pin for audio
+(input for an oversampling clock)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 97 of 3240
+
+RX72N Group
+Table 1.4
+
+1. Overview
+Pin Functions (7/8)
+
+Classifications
+
+Pin Name
+
+I/O
+
+Description
+
+MMC host interface
+
+MMC_CLK-A/MMC_CLK-B
+
+Output
+
+MMC clock pins
+
+SD host interface
+
+Parallel data capture unit
+
+Graphic-LCD controller
+
+Realtime clock
+
+12-bit A/D converter
+
+12-bit D/A converter
+
+MMC_CMD-A/MMC_CMD-B
+
+I/O
+
+Command/response pins
+
+MMC_D7-A/MMC_D7-B to
+MMC_D0-A/MMC_D0-B
+
+I/O
+
+Transmit data/receive data
+
+MMC_CD-A/MMC_CD-B
+
+Input
+
+Card detection pins
+
+MMC_RES#-A/MMC_RES#-B
+
+Output
+
+MMC reset output pins
+
+SDHI_CLK-A/SDHI_CLK-B/
+SDHI_CLK-C/SDHI_CLK-D
+
+Output
+
+SD clock output pins
+
+SDHI_CMD-A/SDHI_CMD-B/
+SDHI_CMD-C/SDHI_CMD-D
+
+I/O
+
+SD command output, response input signal pins
+
+SDHI_D3-A/SDHI_D3-B/
+SDHI_D3-C/SDHI_D3-D to
+SDHI_D0-A/SDHI_D0-B/
+SDHI_D0-C/SDHI_D0-D
+
+I/O
+
+SD data bus pins
+
+SDHI_CD
+
+Input
+
+SD card detection pin
+
+SDHI_WP
+
+Input
+
+SD write-protect signal
+
+PIXCLK
+
+Input
+
+Image transfer clock pin
+
+VSYNC
+
+Input
+
+Vertical synchronization signal pin
+
+HSYNC
+
+Input
+
+Horizontal synchronization signal pin
+
+PIXD0 to PIXD7
+
+Input
+
+8-bit image data pins
+
+PCKO
+
+Output
+
+Output pin for dot clock
+
+LCD_CLK-A, LCD_CLK-B
+
+Output
+
+Panel clock output pins
+
+LCD_TCON3-A/
+LCD_TCON3-B to
+LCD_TCON0-A/
+LCD_TCON0-B
+
+Output
+
+Control signal output pins
+
+LCD_DATA23-A/
+LCD_DATA23-B to
+LCD_DATA0-A/
+LCD_DATA0-B
+
+Output
+
+LCD signal output pins
+
+LCD_EXTCLK-A,
+LCD_EXTCLK-B
+
+Input
+
+Panel clock source input pins
+
+RTCOUT
+
+Output
+
+Output pin for 1-Hz/64-Hz clock
+
+RTCIC0 to RTCIC2
+
+Input
+
+Time capture event input pins
+
+AN000 to AN007,
+AN100 to AN120
+
+Input
+
+Input pins for the analog signals to be processed by the A/D
+converter
+
+ADTRG0#, ADTRG1#
+
+Input
+
+Input pins for the external trigger signals that start the A/D
+conversion
+
+ANEX0
+
+Output
+
+Extended analog output pin
+
+ANEX1
+
+Input
+
+Extended analog input pin
+
+DA0, DA1
+
+Output
+
+Output pins for the analog signals to be processed by the D/A
+converter
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 98 of 3240
+
+RX72N Group
+Table 1.4
+
+1. Overview
+Pin Functions (8/8)
+
+Classifications
+
+Pin Name
+
+I/O
+
+Description
+
+Analog power supply
+
+AVCC0
+
+Input
+
+Analog voltage supply pin for the 12-bit A/D converter (unit 0).
+Connect this pin to a branch from the VCC power supply.
+Connect the pin to AVSS0 via a 0.1-µF multilayer ceramic
+capacitor. The capacitor should be placed close to the pin.
+
+AVSS0
+
+Input
+
+Analog ground pin for the 12-bit A/D converter (unit 0). Connect
+this pin to a branch from the VSS ground power supply.
+Connect the pin to AVCC0 via a 0.1-µF multilayer ceramic
+capacitor. The capacitor should be placed close to the pin.
+
+VREFH0
+
+Input
+
+Analog reference voltage supply pin for the 12-bit A/D converter
+(unit 0). Connect this pin to VCC if the 12-bit A/D converter is
+not to be used.
+
+VREFL0
+
+Input
+
+Analog reference ground pin for the 12-bit A/D converter (unit
+0). Connect this pin to VSS if the 12-bit A/D converter is not to
+be used.
+
+AVCC1
+
+Input
+
+Analog voltage supply and reference voltage supply pin for the
+12-bit A/D converter (unit 1) and D/A converter. This pin also
+supplies the analog voltage to the temperature sensor. Connect
+this pin to a branch from the VCC power supply. Connect the
+pin to AVSS1 via a 0.1-µF multilayer ceramic capacitor. The
+capacitor should be placed close to the pin.
+
+AVSS1
+
+Input
+
+Analog voltage supply and reference voltage supply pin for the
+12-bit A/D converter (unit 1) and D/A converter. This pin also
+supplies the analog ground voltage to the temperature sensor.
+Connect this pin to a branch from the VSS ground power
+supply. Connect the pin to AVCC1 via a 0.1-µF multilayer
+ceramic capacitor. The capacitor should be placed close to the
+pin.
+
+P00 to P03, P05, P07
+
+I/O
+
+6-bit input/output pins
+
+P10 to P17
+
+I/O
+
+8-bit input/output pins
+
+I/O ports
+
+Note:
+
+P20 to P27
+
+I/O
+
+8-bit input/output pins
+
+P30 to P37
+
+I/O
+
+8-bit input/output pins (P35: input pin)
+
+P40 to P47
+
+I/O
+
+8-bit input/output pins
+
+P50 to P57
+
+I/O
+
+8-bit input/output pins
+
+P60 to P67
+
+I/O
+
+8-bit input/output pins
+
+P70 to P77
+
+I/O
+
+8-bit input/output pins
+
+P80 to P87
+
+I/O
+
+8-bit input/output pins
+
+P90 to P97
+
+I/O
+
+8-bit input/output pins
+
+PA0 to PA7
+
+I/O
+
+8-bit input/output pins
+
+PB0 to PB7
+
+I/O
+
+8-bit input/output pins
+
+PC0 to PC7
+
+I/O
+
+8-bit input/output pins
+
+PD0 to PD7
+
+I/O
+
+8-bit input/output pins
+
+PE0 to PE7
+
+I/O
+
+8-bit input/output pins
+
+PF0 to PF5
+
+I/O
+
+6-bit input/output pins
+
+PG0 to PG7
+
+I/O
+
+8-bit input/output pins
+
+PJ0 to PJ3, PJ5
+
+I/O
+
+5-bit input/output pins
+
+PH0 to PH7
+
+I/O
+
+8-bit input/output pins
+
+PK0 to PK7
+
+I/O
+
+8-bit input/output pins
+
+PL0 to PL7
+
+I/O
+
+8-bit input/output pins
+
+PM0 to PM7
+
+I/O
+
+8-bit input/output pins
+
+PN0 to PN5
+
+I/O
+
+6-bit input/output pins
+
+PQ0 to PQ7
+
+I/O
+
+8-bit input/output pins
+
+Note the following regarding pin names. For details, refer to section 1.5, Pin Assignments.
+- We recommend using pins that have a letter (“-A”, “-B”, etc.) to indicate group membership appended to their names as
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 99 of 3240
+
+RX72N Group
+
+1. Overview
+
+groups.
+For the RSPI, QSPI, SDHI, MMC, and GLCDC interfaces, the AC portion of the electrical characteristics is measured for each
+group.
+- When the pin functions have “-DS” appended to their names, they can also be used as triggers for release from deep software
+standby.
+- RIIC pin functions that have [FM+] appended to their names support fast-mode plus.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 100 of 3240
+
+RX72N Group
+
+1.5
+
+1. Overview
+
+Pin Assignments
+
+1.5.1
+
+224-Pin LFBGA
+
+RX72N Group
+PLBG0224GA-A (224-pin LFBGA)
+(Upper Perspective View)
+A
+
+B
+
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+J
+
+K
+
+L
+
+M
+
+N
+
+P
+
+R
+
+15
+
+P70
+
+PE7
+
+P66
+
+P67
+
+PG4
+
+PG7
+
+PA4
+
+PA5
+
+PA7
+
+P72
+
+PB4
+
+PB6
+
+PB7
+
+PM3
+
+PM5
+
+15
+
+14
+
+PE1
+
+PE4
+
+P65
+
+PG2
+
+PG5
+
+PG6
+
+PA3
+
+PA6
+
+PB0
+
+PB3
+
+PB2
+
+PC0
+
+PC1
+
+PM4
+
+P74
+
+14
+
+13
+
+P62
+
+PE2
+
+PE5
+
+VSS
+
+PE6
+
+PG3
+
+PA2
+
+VSS
+
+P71
+
+PB5
+
+VCC
+
+PM7
+
+PM6
+
+PC2
+
+P75
+
+13
+
+12
+
+P61
+
+P63
+
+VSS
+
+PE3
+
+VCC
+
+PA0
+
+PA1
+
+VCC
+
+PB1
+
+VSS
+
+PN4
+
+PL6
+
+P76
+
+PL2
+
+PL4
+
+12
+
+11
+
+PD7
+
+VCC
+
+P64
+
+PE0
+
+PQ4
+
+PM1
+
+PM0
+
+PL0
+
+PN5
+
+PM2
+
+P77
+
+PL5
+
+PK2
+
+PC4
+
+PC3
+
+11
+
+10
+
+PG0
+
+PD6
+
+P60
+
+PG1
+
+PQ5
+
+VSS
+
+VCC
+
+P73
+
+PL1
+
+PL3
+
+PL7
+
+PK0
+
+P80
+
+P82
+
+PC5
+
+10
+
+9
+
+PD3
+
+PD4
+
+P97
+
+PD5
+
+PQ3
+
+PQ6
+
+PN2
+
+PN3
+
+PK3
+
+PK1
+
+P81
+
+P83
+
+PC7
+
+VSS
+
+PC6
+
+9
+
+8
+
+P96
+
+P95
+
+VCC
+
+VSS
+
+PQ1
+
+PN1
+
+PQ2
+
+PQ7
+
+P53*1
+
+P50
+
+P52
+
+P51
+
+VCC
+
+P11
+
+P55
+
+8
+
+7
+
+PD2
+
+P94
+
+PD1
+
+P93
+
+PQ0
+
+PK6
+
+RES#
+
+PJ3
+
+P15
+
+P10
+
+VCC
+
+VSS
+
+P56
+
+P57
+
+P54
+
+7
+
+6
+
+PD0
+
+VCC
+
+P90
+
+P02
+
+PN0
+
+EMLE
+
+PF5
+
+BSCANP
+
+PH2
+
+PH1
+
+PJ2
+
+P84
+
+PJ1
+
+VSS_US USB0_D
+6
+B
+P
+
+5
+
+P92
+
+P91
+
+VSS
+
+P01
+
+P07
+
+PK5
+
+PJ5
+
+P32
+
+P30
+
+PF0
+
+VCC
+
+PJ0
+
+P13
+
+VCC_US USB0_D
+5
+B
+M
+
+4
+
+P41
+
+P46
+
+P44
+
+P40
+
+P43
+
+PK4
+
+MD/
+FINED
+
+P33
+
+P31
+
+PH5
+
+P24
+
+VSS
+
+P85
+
+P14
+
+P12
+
+4
+
+3 VREFL0
+
+P42
+
+P05
+
+P03
+
+P00
+
+PF4
+
+VCC
+
+P35
+
+PF3
+
+PH4
+
+PF1
+
+P25
+
+P86
+
+P20
+
+P16
+
+3
+
+2 VREFH0 AVCC0
+
+AVCC1
+
+P47
+
+VSS
+
+VBATT
+
+VSS
+
+P34
+
+PF2
+
+PH6
+
+P27
+
+P23
+
+PH0
+
+P17
+
+P87
+
+2
+
+1
+
+1
+
+NC
+
+AVSS0
+
+AVSS1
+
+P45
+
+VCL
+
+XCIN
+
+XCOUT
+
+XTAL
+
+EXTAL
+
+PH7
+
+PH3
+
+P26
+
+P22
+
+PK7
+
+P21
+
+A
+
+B
+
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+J
+
+K
+
+L
+
+M
+
+N
+
+P
+
+R
+
+Note:
+
+This figure indicates the power supply pins and I/O port pins. For the pin configuration, refer to Table 1.5, List
+of Pin and Pin Functions (224-Pin LFBGA).
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external bus is
+enabled.
+
+Figure 1.3
+
+Pin Assignment (224-Pin LFBGA)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 101 of 3240
+
+RX72N Group
+
+1.5.2
+
+1. Overview
+
+176-Pin LFBGA
+
+A
+
+B
+
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+J
+
+K
+
+L
+
+M
+
+N
+
+P
+
+R
+
+15
+
+PE2
+
+PE3
+
+P70
+
+P65
+
+P67
+
+VSS
+
+VCC
+
+PG7
+
+PA6
+
+PB0
+
+P72
+
+PB4
+
+VSS
+
+VCC
+
+PC1
+
+15
+
+14
+
+PE1
+
+PE0
+
+VSS
+
+PE7
+
+PG3
+
+PA0
+
+PA1
+
+PA2
+
+PA7
+
+VCC
+
+PB1
+
+PB5
+
+P73
+
+P75
+
+P74
+
+14
+
+13
+
+P63
+
+P64
+
+PE4
+
+VCC
+
+PG2
+
+PG4
+
+PG6
+
+PA3
+
+VSS
+
+P71
+
+PB3
+
+PB7
+
+PC0
+
+PC2
+
+P76
+
+13
+
+12
+
+P60
+
+VSS
+
+P62
+
+PE5
+
+PE6
+
+P66
+
+PG5
+
+PA4
+
+PA5
+
+PB2
+
+PB6
+
+P77
+
+PC3
+
+PC4
+
+P80
+
+12
+
+11
+
+PD6
+
+PG1
+
+VCC
+
+P61
+
+P81
+
+P82
+
+PC6
+
+VCC
+
+11
+
+10
+
+P97
+
+PD4
+
+PG0
+
+PD7
+
+PC5
+
+PC7
+
+P83
+
+VSS
+
+10
+
+9
+
+VCC
+
+P96
+
+PD3
+
+PD5
+
+P50
+
+P51
+
+P52
+
+P53*1
+
+9
+
+8
+
+P94
+
+PD1
+
+PD2
+
+VSS
+
+P55
+
+P54
+
+P10
+
+P11
+
+8
+
+7
+
+VSS
+
+P92
+
+PD0
+
+P95
+
+P85
+
+P84
+
+P57
+
+P56
+
+7
+
+6
+
+VCC
+
+P91
+
+P90
+
+P93
+
+PJ1
+
+PJ0
+
+VSS_
+USB
+
+USB0_
+DP
+
+6
+
+5
+
+P46
+
+P47
+
+P45
+
+P44
+
+PJ2
+
+P12
+
+VCC_
+USB
+
+USB0_
+DM
+
+5
+
+4
+
+P42
+
+P41
+
+P43
+
+P00
+
+VSS
+
+BSCANP
+
+PF4
+
+P35
+
+PF3
+
+PF1
+
+P25
+
+P86
+
+P15
+
+P14
+
+P13
+
+4
+
+3 VREFL0
+
+P40
+
+VREFH0
+
+P03
+
+PF5
+
+PJ3
+
+MD/
+FINED
+
+RES#
+
+P34
+
+PF2
+
+PF0
+
+P24
+
+P22
+
+P87
+
+P16
+
+3
+
+2 AVCC0
+
+P07
+
+AVCC1
+
+P02
+
+EMLE
+
+VCL
+
+XCOUT
+
+VSS
+
+VCC
+
+P32
+
+P30
+
+P26
+
+P23
+
+P17
+
+P20
+
+2
+
+1
+
+AVSS0
+
+P05
+
+AVSS1
+
+P01
+
+PJ5
+
+VBATT
+
+XCIN
+
+XTAL
+
+EXTAL
+
+P33
+
+P31
+
+P27
+
+VCC
+
+VSS
+
+P21
+
+1
+
+A
+
+B
+
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+J
+
+K
+
+L
+
+M
+
+N
+
+P
+
+R
+
+RX72N Group
+PTBG0176GA-A
+(176-pin LFBGA)
+(Upper Perspective View)
+
+Note:
+
+This figure indicates the power supply pins and I/O port pins. For the pin configuration, refer to Table 1.6, List
+of Pin and Pin Functions (176-Pin LFBGA).
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external bus is
+enabled.
+
+Figure 1.4
+
+Pin Assignment (176-Pin LFBGA)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 102 of 3240
+
+RX72N Group
+
+176-Pin LFQFP
+
+89
+
+90
+
+91
+
+92
+
+93
+
+94
+
+95
+
+96
+
+97
+
+98
+
+99
+
+100
+
+101
+
+102
+
+103
+
+104
+
+105
+
+106
+
+107
+
+108
+
+109
+
+110
+
+111
+
+112
+
+113
+
+114
+
+115
+
+116
+
+117
+
+118
+
+119
+
+120
+
+121
+
+122
+
+123
+
+124
+
+125
+
+126
+
+127
+
+128
+
+129
+
+130
+
+131
+
+133
+
+88
+
+134
+
+87
+
+135
+
+86
+
+136
+
+85
+
+137
+
+84
+
+138
+
+83
+
+139
+
+82
+
+140
+
+81
+
+141
+
+80
+
+142
+
+79
+
+143
+
+78
+
+144
+
+77
+
+145
+
+76
+
+146
+
+75
+
+147
+
+74
+
+148
+
+73
+
+149
+
+72
+
+150
+
+71
+
+RX72N Group
+PLQP0176KB-C
+(176-pin LFQFP)
+(Top view)
+
+151
+152
+153
+154
+155
+156
+157
+158
+
+70
+69
+68
+67
+66
+65
+64
+63
+
+44
+
+43
+
+42
+
+41
+
+40
+
+39
+
+38
+
+37
+
+36
+
+35
+
+34
+
+33
+
+32
+
+31
+
+30
+
+29
+
+28
+
+27
+
+26
+
+25
+
+24
+
+23
+
+22
+
+21
+
+P74
+P75
+PC2
+P76
+P77
+PC3
+PC4
+P80
+P81
+P82
+PC5
+PC6
+PC7
+VCC
+P83
+VSS
+P50
+P51
+P52
+P53*1
+P10
+P11
+P54
+P55
+P56
+P57
+P84
+P85
+PJ0
+PJ1
+PJ2
+VSS_USB
+USB0_DP
+USB0_DM
+VCC_USB
+P12
+P13
+P14
+P15
+P86
+P16
+P87
+P17
+P20
+
+AVSS0
+P05
+AVCC1
+P03
+AVSS1
+P02
+P01
+P00
+PF5
+EMLE
+PJ5
+VSS
+PJ3
+VCL
+VBATT
+NC
+PF4
+MD/FINED
+XCIN
+XCOUT
+RES#
+P37/XTAL
+VSS
+P36/EXTAL
+VCC
+P35
+P34
+P33
+P32
+PF3
+PF2
+P31
+P30
+PF1
+PF0
+P27
+P26
+P25
+VCC
+P24
+VSS
+P23
+P22
+P21
+
+20
+
+45
+
+19
+
+46
+
+176
+
+18
+
+47
+
+175
+17
+
+48
+
+174
+
+16
+
+49
+
+173
+
+15
+
+50
+
+172
+
+14
+
+51
+
+171
+
+13
+
+52
+
+170
+
+12
+
+53
+
+169
+
+11
+
+54
+
+168
+
+10
+
+55
+
+167
+
+9
+
+56
+
+166
+
+8
+
+57
+
+165
+
+7
+
+58
+
+164
+
+6
+
+59
+
+163
+
+5
+
+60
+
+162
+
+4
+
+61
+
+161
+
+3
+
+62
+
+160
+
+2
+
+159
+
+1
+
+PE2
+PE1
+PE0
+P64
+P63
+P62
+P61
+VSS
+P60
+VCC
+PD7
+PG1
+PD6
+PG0
+PD5
+PD4
+P97
+PD3
+VSS
+P96
+VCC
+PD2
+P95
+PD1
+P94
+PD0
+P93
+P92
+P91
+VSS
+P90
+VCC
+P47
+P46
+P45
+P44
+P43
+P42
+P41
+VREFL0
+P40
+VREFH0
+AVCC0
+P07
+
+132
+
+PE3
+PE4
+PE5
+VSS
+P70
+VCC
+PE6
+PE7
+P65
+PG2
+P66
+PG3
+P67
+PG4
+PA0
+VSS
+PG5
+VCC
+PA1
+PG6
+PA2
+PG7
+PA3
+PA4
+PA5
+PA6
+PA7
+VSS
+PB0
+VCC
+P71
+P72
+PB1
+PB2
+PB3
+PB4
+PB5
+PB6
+PB7
+P73
+VSS
+PC0
+VCC
+PC1
+
+1.5.3
+
+1. Overview
+
+Note:
+
+This figure indicates the power supply pins and I/O port pins. For the pin configuration, refer to Table 1.7, List
+of Pin and Pin Functions (176-Pin LFQFP).
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external bus is
+enabled.
+
+Figure 1.5
+
+Pin Assignment (176-Pin LFQFP)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 103 of 3240
+
+RX72N Group
+
+1.5.4
+
+1. Overview
+
+145-Pin TFLGA
+
+A
+
+B
+
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+J
+
+K
+
+L
+
+M
+
+N
+
+13
+
+PE3
+
+PE4
+
+VSS
+
+PE6
+
+P67
+
+PA2
+
+PA4
+
+PA7
+
+PB1
+
+PB5
+
+VSS
+
+VCC
+
+P74
+
+13
+
+12
+
+PE1
+
+PE2
+
+P70
+
+PE5
+
+P65
+
+PA1
+
+VCC
+
+PB0
+
+PB2
+
+PB6
+
+P73
+
+PC1
+
+P75
+
+12
+
+11
+
+P62
+
+P61
+
+PE0
+
+VCC
+
+P66
+
+VSS
+
+PA6
+
+P71
+
+PB4
+
+PB7
+
+PC2
+
+PC0
+
+PC3
+
+11
+
+10
+
+VSS
+
+VCC
+
+P63
+
+PE7
+
+PA0
+
+PA3
+
+PA5
+
+P72
+
+PB3
+
+P76
+
+PC4
+
+P77
+
+P82
+
+10
+
+9
+
+PD6
+
+PD4
+
+PD7
+
+P64
+
+P80
+
+PC5
+
+P81
+
+PC7
+
+9
+
+8
+
+PD2
+
+PD0
+
+PD3
+
+P60
+
+VCC
+
+P83
+
+PC6
+
+VSS
+
+8
+
+7
+
+P92
+
+P91
+
+PD1
+
+PD5
+
+P51
+
+P52
+
+P50
+
+P55
+
+7
+
+6
+
+P90
+
+P47
+
+VSS
+
+P93
+
+P53*1
+
+P56
+
+VSS_
+USB
+
+USB0_
+DP
+
+6
+
+5
+
+P45
+
+P43
+
+P46
+
+VCC
+
+P44
+
+P54
+
+P13
+
+VCC_
+USB
+
+USB0_
+DM
+
+5
+
+4
+
+P42
+
+VREFL0
+
+P41
+
+P01
+
+EMLE
+
+VBATT
+
+BSCANP
+
+P35
+
+P30
+
+P15
+
+P24
+
+P12
+
+P14
+
+4
+
+3
+
+P40
+
+P05
+
+VREFH0
+
+P03
+
+PJ5
+
+PJ3
+
+MD/
+FINED
+
+VSS
+
+P32
+
+P31
+
+P16
+
+P86
+
+P87
+
+3
+
+2
+
+P07
+
+AVCC0
+
+P02
+
+PF5
+
+VCL
+
+XCOUT
+
+RES#
+
+VCC
+
+P33
+
+P26
+
+P23
+
+P17
+
+P20
+
+2
+
+1
+
+AVSS0
+
+AVCC1
+
+AVSS1
+
+P00
+
+VSS
+
+XCIN
+
+XTAL
+
+EXTAL
+
+P34
+
+P27
+
+P25
+
+P22
+
+P21
+
+1
+
+A
+
+B
+
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+J
+
+K
+
+L
+
+M
+
+N
+
+RX72N Group
+PTLG0145KA-A
+(145-pin TFLGA)
+(Upper Perspective View)
+
+Note:
+
+This figure indicates the power supply pins and I/O port pins. For the pin configuration,
+refer to Table 1.8, List of Pin and Pin Functions (145-Pin TFLGA).
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external
+bus is enabled.
+
+Figure 1.6
+
+Pin Assignment (145-Pin TFLGA)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 104 of 3240
+
+RX72N Group
+
+PA4
+
+VCC
+
+PA5
+
+PA6
+
+PA7
+
+PB0
+P71
+
+P72
+PB1
+
+PB2
+PB3
+
+PB4
+PB5
+
+PB6
+PB7
+
+P73
+
+VSS
+
+PC0
+
+VCC
+PC1
+
+92
+
+91
+
+90
+
+89
+
+88
+
+87
+
+85
+
+83
+
+81
+
+79
+
+77
+
+76
+
+75
+
+74
+
+73
+
+PA3
+VSS
+94
+
+78
+
+PA1
+PA2
+96
+
+80
+
+PA0
+97
+
+82
+
+P66
+P67
+99
+
+84
+
+P65
+100
+
+86
+
+PE7
+101
+
+93
+
+PE6
+102
+
+95
+
+P70
+VCC
+104
+
+98
+
+PE5
+VSS
+
+103
+
+PE4
+
+106
+
+105
+
+PE3
+
+107
+
+144-Pin LFQFP
+
+108
+
+1.5.5
+
+1. Overview
+
+PE2
+
+109
+
+PE1
+
+110
+
+71
+
+P75
+
+PE0
+
+111
+
+70
+
+PC2
+
+P64
+
+112
+
+69
+
+P76
+
+P63
+
+113
+
+68
+
+P62
+
+114
+
+67
+
+P77
+PC3
+
+P61
+VSS
+
+115
+
+66
+
+PC4
+
+116
+
+65
+
+P80
+
+P60
+
+117
+
+64
+
+P81
+
+VCC
+
+118
+
+63
+
+P82
+
+PD7
+
+119
+
+62
+
+PC5
+
+PD6
+
+120
+
+61
+
+PC6
+
+PD5
+
+121
+
+60
+
+PC7
+
+PD4
+
+122
+
+59
+
+PD3
+
+123
+
+58
+
+VCC
+P83
+
+PD2
+
+124
+
+PD1
+PD0
+
+125
+
+P93
+
+127
+
+P92
+
+128
+
+RX72N Group
+PLQP0144KA-B
+(144-pin LFQFP)
+(Top view)
+
+126
+
+72
+
+57
+
+P74
+
+56
+
+VSS
+P50
+
+55
+
+P51
+
+54
+
+P52
+
+53
+
+P53*1
+
+52
+
+P54
+
+26
+
+27
+
+28
+
+29
+
+30
+
+31
+
+32
+
+33
+
+34
+
+35
+
+36
+
+P31
+
+P30
+
+P27
+
+P26
+P25
+
+P24
+
+P23
+
+P22
+
+P21
+
+9
+
+P32
+
+P01
+P00
+
+P33
+
+P20
+
+25
+
+37
+
+24
+
+144
+
+P34
+
+P07
+
+P35
+
+P87
+P17
+
+23
+
+38
+
+VCC
+
+39
+
+143
+22
+
+142
+
+P36/EXTAL
+
+P16
+
+21
+
+40
+
+VSS
+
+141
+
+20
+
+P86
+
+P40
+VREFH0
+AVCC0
+
+P37/XTAL
+
+41
+
+19
+
+P15
+
+140
+
+18
+
+42
+
+17
+
+139
+
+XCIN
+
+P14
+
+P41
+VREFL0
+
+XCOUT
+RES#
+
+43
+
+16
+
+138
+
+15
+
+P13
+
+P42
+
+MD/FINED
+
+44
+
+14
+
+137
+
+13
+
+P12
+
+P43
+
+12
+
+VCC_USB
+
+45
+
+PJ3
+VCL
+VBATT
+
+46
+
+136
+
+VSS
+
+135
+
+P44
+
+11
+
+P45
+
+PJ5
+
+USB0_DP
+USB0_DM
+
+10
+
+47
+
+PF5
+EMLE
+
+134
+
+8
+
+P46
+
+7
+
+48
+
+6
+
+133
+
+5
+
+VSS_USB
+
+P47
+
+AVSS1
+P02
+
+49
+
+4
+
+P56
+
+132
+
+P03
+
+50
+
+3
+
+131
+
+AVCC1
+
+P55
+
+P90
+VCC
+
+2
+
+51
+
+1
+
+130
+
+P05
+
+VSS
+
+AVSS0
+
+P91
+
+129
+
+Note:
+
+This figure indicates the power supply pins and I/O port pins. For the pin configuration,
+refer to Table 1.9, List of Pin and Pin Functions (144-Pin LFQFP).
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external bus is enabled.
+
+Figure 1.7
+
+Pin Assignment (144-Pin LFQFP)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 105 of 3240
+
+RX72N Group
+
+PE3
+
+PE4
+
+PE5
+
+PE6
+
+PE7
+
+PA0
+
+PA1
+
+PA2
+
+PA3
+
+PA4
+
+PA5
+
+PA6
+
+PA7
+
+VSS
+
+PB0
+
+VCC
+
+PB1
+
+PB2
+
+PB3
+
+PB4
+
+PB5
+
+PB6
+
+PB7
+
+PC0
+
+PC1
+
+75
+
+74
+
+73
+
+72
+
+71
+
+70
+
+69
+
+68
+
+67
+
+66
+
+65
+
+64
+
+63
+
+62
+
+61
+
+60
+
+59
+
+58
+
+57
+
+56
+
+55
+
+54
+
+53
+
+52
+
+51
+
+100-Pin LFQFP
+
+PE2
+
+76
+
+50
+
+PE1
+
+77
+
+49
+
+PC2
+PC3
+
+PE0
+
+78
+
+48
+
+PC4
+
+PD7
+
+79
+
+47
+
+PC5
+
+PD6
+
+80
+
+46
+
+PC6
+
+PD5
+
+81
+
+45
+
+PC7
+
+PD4
+
+82
+
+44
+
+P50
+
+PD3
+
+83
+
+43
+
+P51
+
+PD2
+
+84
+
+42
+
+P52
+
+PD1
+
+85
+
+41
+
+P53*1
+
+PD0
+
+86
+
+40
+
+P54
+
+P47
+
+87
+
+39
+
+P55
+
+P46
+
+88
+
+38
+
+VSS_USB
+
+P45
+
+89
+
+37
+
+USB0_DP
+
+P44
+
+90
+
+36
+
+USB0_DM
+
+P43
+
+91
+
+35
+
+VCC_USB
+
+P42
+
+92
+
+34
+
+P12
+
+P41
+
+93
+
+33
+
+P13
+
+VREFL0
+
+94
+
+32
+
+P14
+
+P40
+
+95
+
+31
+
+P15
+
+VREFH0
+
+96
+
+30
+
+P16
+
+AVCC0
+
+97
+
+29
+
+P17
+
+P07
+
+98
+
+28
+
+P20
+
+AVSS0
+
+99
+
+27
+
+P21
+
+P05
+
+100
+
+26
+
+P22
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+VCC
+
+P35
+
+P34
+
+P33
+
+P32
+
+P31
+
+P30
+
+P27
+
+P26
+
+P25
+
+P24
+
+P23
+
+9
+
+XCOUT
+
+13
+
+8
+
+XCIN
+
+P36/EXTAL
+
+7
+
+MD/FINED
+
+12
+
+6
+
+VBATT
+
+VSS
+
+5
+
+VCL
+
+11
+
+4
+
+PJ3
+
+P37/XTAL
+
+3
+
+AVSS1
+
+10
+
+2
+
+RES#
+
+1
+
+EMLE
+
+RX72N Group
+PLQP0100KB-B
+(100-pin LFQFP)
+(Top view)
+
+AVCC1
+
+1.5.6
+
+1. Overview
+
+Note:
+
+This figure indicates the power supply pins and I/O port pins. For the pin configuration, refer to Table 1.10, List of Pin
+and Pin Functions (100-Pin LFQFP).
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external bus is enabled.
+
+Figure 1.8
+
+Pin Assignment (100-Pin LFQFP)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 106 of 3240
+
+RX72N Group
+
+1.6
+
+1. Overview
+
+List of Pin and Pin Functions
+
+1.6.1
+
+224-Pin LFBGA
+
+Table 1.5
+
+List of Pin and Pin Functions (224-Pin LFBGA) (1/11)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+224-Pin System
+LFBGA Control
+A1
+
+NC
+
+A2
+
+VREFH0
+
+A3
+
+VREFL0
+
+Timer
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+RXD7/
+SMISO7/
+SSCL7
+
+ET1_CRS/
+RMII1_CR
+S_DV
+
+A4
+
+P41
+
+A5
+
+P92
+
+D18/A18
+
+POE4#
+
+A6
+
+PD0
+
+D0[A0/D0]
+
+POE4#
+
+GTIOC1B
+
+A7
+
+PD2
+
+D2[A2/D2]
+
+MTIOC4D/
+TIC2
+
+GTIOC0B MISOC-A/
+CRX0
+
+A8
+
+TRDATA5 P96
+
+A9
+
+PD3
+
+A10
+
+TRDATA6 PG0
+
+A11
+
+PD7
+
+D7[A7/D7]
+
+A12
+
+P61
+
+SDCS#/
+D0[A0/D0]/
+CS1#
+
+ET1_ERXD
+1/
+RMII1_RX
+D1
+
+A13
+
+P62
+
+RAS#/
+D1[A1/D1]/
+CS2#
+
+ET1_ERXD
+0/
+RMII1_RX
+D0
+
+A14
+
+PE1
+
+D9[A9/D9]/
+D1[A1/D1]
+
+P70
+
+SDCLK
+
+A15
+B1
+
+AVSS0
+
+B2
+
+AVCC0
+
+Memory I/F
+Camera I/F
+
+Interrupt
+
+IRQ9-DS
+
+D22/A22
+D3[A3/D3]
+
+A/D
+D/A
+
+AN001
+AN116
+
+LCD_EXT IRQ0
+CLK-B
+
+AN108
+
+LCD_DAT IRQ2
+A22-B
+
+AN110
+
+LCD_DAT IRQ3
+A21-B
+
+AN111
+
+ET1_RX_E QMI-B/QIO1- LCD_DAT IRQ7
+R/
+B/SDHI_D1-B/ A17-B
+RMII1_RX_ MMC_D1-B
+ER
+
+AN107
+
+ET1_EXOU QIO2-B/
+T
+SDHI_D2-B/
+MMC_D2-B
+ET1_ERXD
+2
+
+MTIOC8D/
+TOC2/POE8#
+
+GTIOC0A RSPCKC-A
+
+D24
+
+ET1_WOL
+
+QIO3-B/
+SDHI_D3-B/
+MMC_D3-B
+
+ET1_RX_C
+LK/
+REF50CK1
+MTIC5U/
+POE0#
+
+MTIOC4C/
+MTIOC3B/
+PO18
+
+SSLC3-A
+
+MMC_D5-B
+
+GTIOC1B TXD12/
+SMOSI12/
+SSDA12/
+TXDX12/
+SIOX12/
+SSLB2-B
+
+LCD_DAT
+A15-B
+
+ANEX1
+
+B3
+
+P42
+
+IRQ10-DS AN002
+
+B4
+
+P46
+
+IRQ14-DS AN006
+
+B5
+
+P91
+
+D17/A17
+
+B7
+
+P94
+
+D20/A20
+
+ET1_ERXD
+0/
+RMII1_RX
+D0
+
+B8
+
+TRDATA4 P95
+
+D21/A21
+
+ET1_ERXD
+1/
+RMII1_RX
+D1
+
+B6
+
+SCK7
+
+ET1_COL
+
+AN115
+
+VCC
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 107 of 3240
+
+RX72N Group
+Table 1.5
+
+1. Overview
+List of Pin and Pin Functions (224-Pin LFBGA) (2/11)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+224-Pin System
+LFBGA Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+B9
+
+PD4
+
+D4[A4/D4]
+
+MTIOC8B/
+POE11#
+
+SSLC0-A
+
+ET1_MDIO QSSL-B/
+LCD_DAT IRQ4
+/
+SDHI_CMD-B/ A20-B
+PMGI1_MD MMC_CMD-B
+IO
+
+AN112
+
+B10
+
+PD6
+
+D6[A6/D6]
+
+MTIC5V/
+MTIOC8A/
+POE4#
+
+SSLC2-A
+
+ET1_RX_C QMO-B/QIO0- LCD_DAT IRQ6
+LK/
+B/SDHI_D0-B/ A18-B
+REF50CK1 MMC_D0-B
+
+AN106
+
+B12
+
+P63
+
+CAS#/
+D2[A2/D2]/
+CS3#
+
+B13
+
+PE2
+
+D10[A10/
+MTIOC4A/
+D10]/D2[A2/ PO23/TIC3
+D2]
+
+GTIOC0B RXD12/
+SMISO12/
+SSCL12/
+RXDX12/
+SSLB3-B
+
+B14
+
+PE4
+
+D12[A12/
+MTIOC4D/
+D12]/D4[A4/ MTIOC1A/
+D4]
+PO28
+
+GTIOC1A SSLB0-B
+
+B15
+
+PE7
+
+D15[A15/
+MTIOC6A/
+D15]/D7[A7/ TOC1
+D7]
+
+GTIOC3A MISOB-B
+
+SDHI_WP/
+LCD_DAT IRQ7
+MMC_RES#-B A9-B
+
+SSILRCK1
+
+IRQ13
+
+B11
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+VCC
+
+C1
+
+AVSS1
+
+C2
+
+AVCC1
+
+C3
+
+ET1_ETXD
+1/
+RMII1_TXD
+1
+
+P05
+
+C4
+C5
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+MMC_D6-B
+
+ET0_ERXD
+2
+
+P44
+
+LCD_DAT IRQ7-DS
+A14-B
+
+AN100
+
+LCD_DAT
+A12-B
+
+AN102
+
+AN105
+
+DA1
+
+IRQ12-DS AN004
+
+VSS
+
+C6
+
+P90
+
+D16/A16
+
+C7
+
+PD1
+
+D1[A1/D1]
+
+C8
+
+VCC
+
+C9
+
+TRSYNC1 P97
+
+C10
+
+C11
+
+TXD7/
+SMOSI7/
+SSDA7
+MTIOC4B/
+POE0#
+
+ET1_RX_D
+V
+
+AN114
+
+GTIOC1A MOSIC-A/
+CTX0
+
+LCD_DAT IRQ1
+A23-B
+
+AN109
+
+LCD_DAT IRQ5
+A11-B
+
+AN103
+
+D23/A23
+
+ET1_ERXD
+3
+
+P60
+
+CS0#
+
+ET1_TX_E
+N/
+RMII1_TXD
+_EN
+
+P64
+
+WE#/D3[A3/
+D3]/CS4#
+
+ET1_ETXD
+0/
+RMII1_TXD
+0
+
+C13
+
+PE5
+
+D13[A13/
+MTIOC4C/
+D13]/D5[A5/ MTIOC2B
+D5]
+
+C14
+
+P65
+
+CKE/CS5#
+
+C15
+
+P66
+
+DQM0/
+CS6#
+
+D1
+
+P45
+
+IRQ13-DS AN005
+
+D2
+
+P47
+
+IRQ15-DS AN007
+
+C12
+
+VSS
+
+D3
+
+P03
+
+D4
+
+P40
+
+D5
+
+P01
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+MTIOC7D
+
+GTIOC0A RSPCKB-B
+
+ET0_RX_C
+LK/
+REF50CK0
+
+GTIOC2B CTX2
+
+SSIDATA1
+
+TMCI0
+
+RXD6/
+SMISO6/
+SSCL6/
+SSIBCK0
+
+QIO3-C
+
+IRQ11
+
+DA0
+
+IRQ8-DS
+
+AN000
+
+IRQ9
+
+AN119
+
+Page 108 of 3240
+
+RX72N Group
+Table 1.5
+
+1. Overview
+List of Pin and Pin Functions (224-Pin LFBGA) (3/11)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+224-Pin System
+LFBGA Control
+
+I/O Port
+
+D6
+
+P02
+
+D7
+
+P93
+
+D9
+
+PD5
+
+D10
+
+TRDATA7 PG1
+
+D11
+
+PE0
+
+D8[A8/D8]/
+D0[A0/D0]
+
+D12
+
+PE3
+
+D11[A11/
+MTIOC4B/
+D11]/D3[A3/ PO26/TOC3/
+D3]
+POE8#
+
+D8
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+TMCI1
+
+SCK6/
+SSIBCK1
+
+D19/A19
+
+POE0#
+
+CTS7#/
+ET1_LINK
+RTS7#/SS7# STA
+
+D5[A5/D5]
+
+MTIC5W/
+MTIOC8C/
+MTCLKA/
+POE10#
+
+SSLC1-A
+
+Interrupt
+
+A/D
+D/A
+
+IRQ10
+
+AN120
+AN117
+
+VSS
+
+D13
+
+VSS
+
+D14
+
+TRDATA0 PG2
+
+D15
+
+P67
+
+E1
+
+VCL
+
+E2
+
+VSS
+
+D25
+
+LCD_DAT IRQ5
+A19-B
+
+AN113
+
+ET1_RX_E
+R/
+RMII1_RX_
+ER
+MTIOC3D
+
+GTIOC2B SCK12/
+SSLB1-B
+
+MMC_D4-B
+
+LCD_DAT
+A16-B
+
+ANEX0
+
+GTIOC2A CTS12#/
+RTS12#/
+SS12#
+
+ET0_ERXD MMC_D7-B
+3
+
+LCD_DAT
+A13-B
+
+AN101
+
+D26
+DQM1/
+CS7#
+
+ET1_MDC/ QSPCLK-B/
+PMGI1_MD SDHI_CLK-B/
+C
+MMC_CLK-B
+
+ET1_TX_C
+LK
+MTIOC7C
+
+TMRI0
+
+GTIOC1B CRX2
+
+EPLSOUT1
+
+E3
+
+P00
+
+E4
+
+P43
+
+E5
+
+P07
+
+E6
+
+PN0
+
+E7
+
+PQ0
+
+SCK11
+
+ET1_CRS/
+RMII1_CR
+S_DV
+
+E8
+
+PQ1
+
+SMISO11/
+SSCL11/
+RXD11
+
+ET1_COL
+
+E9
+
+PQ3
+
+RTS11#/
+CTS11#/
+SS11#
+
+ET1_TX_E
+R
+
+E10
+
+PQ5
+
+ET1_ETXD
+0/
+RMII1_TXD
+0
+
+E11
+
+PQ4
+
+ET1_RX_C
+LK/
+REF50CK1
+
+E12
+
+Memory I/F
+Camera I/F
+
+TXD6/
+SMOSI6/
+SSDA6/
+AUDIO_CLK
+
+IRQ15
+
+QIO2-C
+
+IRQ8
+
+AN118
+
+IRQ11-DS AN003
+IRQ15
+
+ADTRG0#
+
+ET1_ETXD
+2
+
+VCC
+
+E13
+
+PE6
+
+D14[A14/
+MTIOC6C/
+D14]/D6[A6/ TIC1
+D6]
+
+GTIOC3B MOSIB-B
+
+SDHI_CD/
+MMC_CD-B
+
+E14
+
+TRCLK
+
+PG5
+
+D29
+
+ET1_ETXD
+2
+
+E15
+
+TRSYNC
+
+PG4
+
+D28
+
+ET1_ETXD
+1/
+RMII1_TXD
+1
+
+F1
+
+XCIN
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+LCD_DAT IRQ6
+A10-B
+
+AN104
+
+Page 109 of 3240
+
+RX72N Group
+Table 1.5
+
+1. Overview
+List of Pin and Pin Functions (224-Pin LFBGA) (4/11)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+224-Pin System
+LFBGA Control
+F2
+
+VBATT
+
+F3
+
+TRST#
+
+Timer
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+PK4
+
+GTADSM0 SSLB1
+
+ET0_ERXD
+2
+
+F5
+
+PK5
+
+GTADSM1 SSLB2
+
+ET0_ERXD
+3
+
+F7
+
+PK6
+
+GTIOC1A SSLB3
+
+F8
+
+PN1
+
+ET1_ETXD
+3
+
+F9
+
+PQ6
+
+ET1_ETXD
+1/
+RMII1_TXD
+1
+
+F10
+
+VSS
+PM1
+
+F12
+
+PA0
+
+F13
+
+TRDATA1 PG3
+
+D27
+
+ET1_ETXD
+0/
+RMII1_TXD
+0
+
+F14
+
+TRDATA2 PG6
+
+D30
+
+ET1_ETXD
+3
+
+F15
+
+TRDATA3 PG7
+
+D31
+
+ET1_TX_E
+R
+
+G1
+
+XCOUT
+
+G2
+
+VSS
+
+G3
+
+VCC
+
+G4
+
+MD/FINED
+
+G5
+
+TOC3
+
+DQM2/
+BC0#/A0
+
+PJ5
+
+G6
+
+PF5
+
+GTETRGB SMISO10/
+SSCL10/
+RXD10
+
+MTIOC4A/
+GTIOC0B SSLA1-B
+MTIOC6D/
+TIOCA0/PO16/
+CACREF
+
+POE8#
+
+WAIT#
+
+CTS2#/
+RTS2#/
+SS2#/
+SSIRXD0
+
+ET1_ERXD SDHI_CMD-D/
+1/
+QSSL-A
+RMII1_RX
+D1
+ET0_TX_E
+N/
+RMII0_TXD
+_EN
+
+LCD_DAT
+A8-B
+
+EPLSOUT0 QMI-C/QIO1-C
+
+SSILRCK0
+
+IRQ4
+
+RES#
+
+G8
+
+PQ2
+
+G9
+
+PN2
+
+G10
+
+A/D
+D/A
+
+EMLE
+
+F11
+
+G7
+
+Interrupt
+
+PF4
+
+F4
+
+F6
+
+Memory I/F
+Camera I/F
+
+SMOSI11/
+SSDA11/
+TXD11
+
+ET1_RX_D
+V
+ET1_TX_C
+LK
+
+VCC
+
+G11
+
+PM0
+
+TIC3
+
+G12
+
+PA1
+
+DQM3/A1
+
+MTIOC0B/
+GTIOC2A SCK5/
+MTCLKC/
+SSLA2-B
+MTIOC7B/
+TIOCB0/PO17
+
+G13
+
+PA2
+
+A2
+
+MTIOC7A/
+PO18
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+GTETRGA SCK10
+
+GTIOC1A RXD5/
+SMISO5/
+SSCL5/
+SSLA3-B
+
+ET1_ERXD SDHI_CLK-D/
+0/
+QSPCLK-A
+RMII1_RX
+D0
+ET0_WOL
+
+LCD_DAT IRQ11
+A7-B
+
+LCD_DAT
+A6-B
+
+Page 110 of 3240
+
+RX72N Group
+Table 1.5
+
+1. Overview
+List of Pin and Pin Functions (224-Pin LFBGA) (5/11)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+224-Pin System
+LFBGA Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+G14
+
+PA3
+
+A3
+
+MTIOC0D/
+MTCLKD/
+TIOCD0/
+TCLKB/PO19
+
+RXD5/
+SMISO5/
+SSCL5
+
+ET0_MDIO
+/
+PMGI0_MD
+IO
+
+LCD_DAT IRQ6-DS
+A5-B
+
+G15
+
+PA4
+
+A4
+
+MTIC5U/
+MTCLKA/
+TIOCA1/
+TMRI0/PO20
+
+TXD5/
+SMOSI5/
+SSDA5/
+SSLA0-B
+
+ET0_MDC/
+PMGI0_MD
+C
+
+LCD_DAT IRQ5-DS
+A4-B
+
+MTIOC0A/
+TMCI3/PO12/
+POE10#
+
+SCK6/SCK0 ET0_LINK
+STA
+
+H1
+
+XTAL
+
+H2
+
+H3
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+IRQ4
+
+P35
+
+H4
+
+P33
+
+H5
+
+P32
+
+H6
+
+(GPTW,
+POEG)
+
+P37
+P34
+
+UPSEL
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+NMI
+EDREQ1
+
+MTIOC0D/
+TIOCD0/
+TMRI3/PO11/
+POE4#/
+POE11#
+
+RXD6/
+SMISO6/
+SSCL6/
+RXD0/
+SMISO0/
+SSCL0/
+CRX0
+
+PCKO
+
+IRQ3-DS
+
+MTIOC0C/
+TIOCC0/
+TMO3/PO10/
+RTCIC2/
+RTCOUT/
+POE0#/
+POE10#
+
+TXD6/
+SMOSI6/
+SSDA6/
+TXD0/
+SMOSI0/
+SSDA0/
+CTX0/
+USB0_VBUS
+EN
+
+VSYNC
+
+IRQ2-DS
+
+MTIOC3C
+
+CTS6#/
+RTS6#/
+SS6#/
+CTS0#/
+RTS0#/
+SS0#/
+SSITXD0
+
+BSCANP
+
+H7
+
+PJ3
+
+H8
+
+PQ7
+
+ET1_TX_E
+N/
+RMII1_TXD
+_EN
+
+H9
+
+PN3
+
+ET1_RX_E
+R/
+RMII1_RX_
+ER
+
+H10
+
+P73
+
+H11
+
+PL0
+
+H12
+
+VCC
+
+H13
+
+VSS
+
+EDACK1
+
+CS3#
+
+PO16
+
+ET0_WOL
+GTETRGA SCK9/
+RSPCKC
+
+ET0_ERXD
+0/
+RMII0_RX
+D0
+
+GTETRGB CTS5#/
+RTS5#/
+SS5#/
+MOSIA-B
+
+ET0_EXOU
+T
+
+LCD_DAT
+A2-B
+
+ET0_LINK
+STA
+
+LCD_DAT
+A3-B
+
+PA6
+
+A6
+
+MTIC5V/
+MTCLKB/
+TIOCA2/
+TMCI3/PO22/
+POE10#
+
+H15
+
+PA5
+
+A5
+
+MTIOC6B/
+GTIOC0A RSPCKA-B
+TIOCB1/PO21
+
+EXTAL
+
+P36
+
+J2
+
+TDI
+
+PF2
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+LCD_EXT
+CLK-A
+
+TIC2
+
+H14
+
+J1
+
+ET0_EXOU QMO-C/QIO0T
+C
+
+RXD1/
+SMISO1/
+SSCL1
+
+Page 111 of 3240
+
+RX72N Group
+Table 1.5
+
+1. Overview
+List of Pin and Pin Functions (224-Pin LFBGA) (6/11)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+224-Pin System
+LFBGA Control
+J3
+
+TMS
+
+Timer
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+PF3
+
+J4
+
+P31
+
+MTIOC4D/
+TMCI2/PO9/
+RTCIC1
+
+CTS1#/
+RTS1#/
+SS1#/
+SSLB0-A
+
+ET1_MDC/
+PMGI1_MD
+C
+
+IRQ1-DS
+
+J5
+
+P30
+
+MTIOC4B/
+TMRI3/PO8/
+RTCIC0/
+POE8#
+
+RXD1/
+SMISO1/
+SSCL1/
+MISOB-A
+
+ET1_MDIO
+/
+PMGI1_MD
+IO
+
+IRQ0-DS
+
+J6
+
+PH2
+
+GTETRG
+C
+
+J7
+
+P15
+
+MTIOC0B/
+GTETRGA RXD1/
+MTCLKB/
+SMISO1/
+TIOCB2/
+SSCL1/
+TCLKB/TMCI2/
+SCK3/CRX1PO13
+DS/
+SSILRCK1
+
+J8
+
+P53*1
+
+J9
+
+PK3
+
+J10
+
+PL1
+
+J11
+
+PN5
+
+J12
+
+PB1
+
+A9
+
+J13
+
+P71
+
+A18/CS1#
+
+J14
+
+PB0
+
+A8
+
+MTIC5W/
+TIOCA3/PO24
+
+RXD4/
+SMISO4/
+SSCL4/
+RXD6/
+SMISO6/
+SSCL6
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+
+LCD_DAT IRQ12
+A0-B
+
+J15
+
+PA7
+
+A7
+
+TIOCB2/PO23
+
+MISOA-B
+
+ET0_WOL
+
+LCD_DAT
+A1-B
+
+K1
+
+CLKOUT2 PH7
+5M
+
+K2
+
+CLKOUT
+
+K3
+K4
+K5
+
+TDO
+
+A/D
+D/A
+
+SMOSI7/
+SSDA7/
+TXD7/MISOA
+
+GTETRG
+D
+TOC2
+
+RTS8#/
+ET0_TX_E
+CTS8#/
+R
+SS8#/SSLB0
+
+GTETRGB SMISO9/
+SSCL9/
+RXD9/
+MOSIC
+
+MTIOC0C/
+MTIOC4C/
+TIOCB3/
+TMCI0/PO25
+
+TXD4/
+SMOSI4/
+SSDA4/
+TXD6/
+SMOSI6/
+SSDA6
+
+LCD_TCO IRQ4-DS
+N3-B
+
+GTIOC0B
+GTIOC0A SSLA3
+
+PH5
+
+GTADSM1 SSLA2
+
+PF0
+
+P10
+
+ET0_ERXD
+0/
+RMII0_RX
+D0
+
+ET0_MDIO
+/
+PMGI0_MD
+IO
+
+GTADSM0 SSLA1
+
+K7
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+ET1_MDC/ QSSL-C
+PMGI1_MD
+C
+
+PH6
+
+PH1
+
+IRQ5
+
+BCLK
+
+PH4
+
+K6
+
+PIXD0
+
+TXD1/
+SMOSI1/
+SSDA1
+TOC0
+
+ALE
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+MTIC5W/
+TMRI3
+
+GTETRGB SMISO7/
+SSCL7/
+RXD7/
+MOSIA
+IRQ0
+
+Page 112 of 3240
+
+RX72N Group
+Table 1.5
+
+1. Overview
+List of Pin and Pin Functions (224-Pin LFBGA) (7/11)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+224-Pin System
+LFBGA Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+K8
+
+P50
+
+WR0#/WR#
+
+K9
+
+PK1
+
+K10
+
+PL3
+
+GTETRG
+D
+
+RTS9#/
+ET0_RX_C
+CTS9#/
+LK/
+SS9#/SSLC0 REF50CK0
+
+K11
+
+PM2
+
+GTETRG
+C
+
+SMOSI10/
+SSDA10/
+TXD10
+
+ET1_ERXD SDHI_D0-D/
+2
+QMO-A/QIO0A
+
+K12
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+A/D
+D/A
+
+TXD2/
+SMOSI2/
+SSDA2/
+SSLB1-A
+TOC1
+
+GTETRGB SMISO8/
+SSCL8/
+RXD8/
+MOSIB
+
+ET0_COL
+
+VSS
+
+K13
+
+PB5
+
+A13
+
+MTIOC2A/
+MTIOC1B/
+TIOCB4/
+TMRI1/PO29/
+POE4#
+
+SCK9/
+RTS9#/
+SCK11
+
+ET0_ETXD
+0/
+RMII0_TXD
+0
+
+LCD_CLKB
+
+K14
+
+PB3
+
+A11
+
+MTIOC0A/
+MTIOC4A/
+TIOCD3/
+TCLKD/TMO0/
+PO27/POE11#
+
+SCK4/SCK6 ET0_RX_E
+R/
+RMII0_RX_
+ER
+
+LCD_TCO
+N1-B
+
+K15
+
+P72
+
+A19/CS2#
+
+ET0_MDC/
+PMGI0_MD
+C
+
+LCD_DAT
+A23-A
+
+L1
+
+PH3
+
+L2
+
+P27
+
+L3
+
+Interrupt
+
+TCK
+
+L4
+
+GTETRG
+D
+CS7#
+
+MTIOC2B/
+TMCI3/PO7
+
+SCK1/
+RSPCKB-A
+
+CS4#/
+EDREQ1
+
+MTIOC4A/
+MTCLKA/
+TIOCB4/
+TMRI1/PO4
+
+SCK3/
+USB0_VBUS
+EN/SSIBCK1
+
+PF1
+P24
+
+L5
+
+VCC
+
+L6
+
+CLKOUT2 PJ2
+5M
+
+L7
+
+VCC
+
+RTS7#/
+CTS7#/
+SS7#/SSLA0
+ET1_WOL
+
+SCK1
+SDHI_WP/
+PIXCLK
+
+TXD8/
+SMOSI8/
+SSDA8/
+SSLC3-B
+
+L8
+
+P52
+
+RD#
+
+L9
+
+P81
+
+EDACK0
+
+L10
+
+PL7
+
+L11
+
+P77
+
+L12
+
+PN4
+
+CS7#
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+LCD_TCO
+N2-A
+
+RXD2/
+SMISO2/
+SSCL2/
+SSLB3-A
+MTIOC3D/
+PO27
+
+PO23
+
+GTIOC0B SMISO10/
+SSCL10/
+RXD10
+
+ET0_ETXD QIO3-A/
+0/
+SDHI_CD/
+RMII0_TXD MMC_D3-A
+0
+
+GTIOC2B
+
+ET0_MDIO
+/
+PMGI0_MD
+IO
+SMOSI11/
+SSDA11/
+TXD11
+
+ET0_RX_E QSPCLK-A/
+R/
+SDHI_CLK-A/
+RMII0_RX_ MMC_CLK-A
+ER
+
+LCD_DAT
+A13-A
+
+LCD_DAT
+A17-A
+
+ET1_MDIO QSPCLK-C
+/
+PMGI1_MD
+IO
+
+Page 113 of 3240
+
+RX72N Group
+Table 1.5
+
+1. Overview
+List of Pin and Pin Functions (224-Pin LFBGA) (8/11)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+224-Pin System
+LFBGA Control
+
+Timer
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+Memory I/F
+Camera I/F
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+L14
+
+PB2
+
+A10
+
+TIOCC3/
+TCLKC/PO26
+
+CTS4#/
+ET0_RX_C
+RTS4#/
+LK/
+SS4#/
+REF50CK0
+CTS6#/
+RTS6#/SS6#
+
+LCD_TCO
+N2-B
+
+L15
+
+PB4
+
+A12
+
+TIOCA4/PO28
+
+CTS9#/
+ET0_TX_E
+SS9#/SS11#/ N/
+CTS11#/
+RMII0_TXD
+RTS11#
+_EN
+
+LCD_TCO
+N0-B
+
+M1
+
+P26
+
+CS6#
+
+MTIOC2A/
+TMO1/PO6
+
+TXD1/
+SMOSI1/
+SSDA1/
+CTS3#/
+RTS3#/
+SS3#/
+MOSIB-A
+
+M2
+
+P23
+
+EDACK0
+
+MTIOC3D/
+MTCLKD/
+TIOCD3/PO3
+
+P25
+
+CS5#/
+EDACK1
+
+MTIOC4C/
+MTCLKB/
+TIOCA4/PO5
+
+RXD3/
+SMISO3/
+SSCL3/
+SSIDATA1
+
+SCK8/
+SSLC1-B
+
+L13
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+VCC
+
+M3
+
+CLKOUT
+
+M4
+
+VSS
+
+M5
+
+PJ0
+
+MTIOC6B
+
+M6
+
+P84
+
+MTIOC6D
+
+M7
+
+(GPTW,
+POEG)
+
+ET1_EXOU
+T
+
+GTIOC0A TXD3/
+SMOSI3/
+SSDA3/
+CTS0#/
+RTS0#/
+SS0#/CTX1/
+SSIBCK0
+
+SDHI_D1-C/
+PIXD7
+
+SDHI_CD/
+HSYNC
+
+ADTRG0#
+
+EPLSOUT0
+
+LCD_DAT
+A0-A
+
+ET1_LINK
+STA
+
+LCD_DAT
+A2-A
+
+LCD_DAT
+A8-A
+
+VSS
+
+M8
+
+P51
+
+WR1#/
+BC1#/
+WAIT#
+
+M9
+
+P83
+
+EDACK1
+
+M10
+
+PK0
+
+M11
+
+SCK2/
+SSLB2-A
+MTIOC4C
+
+GTIOC0A SCK10/
+SS10#/
+CTS10#
+
+ET0_CRS/
+RMII0_CR
+S_DV
+
+TIC1
+
+GTETRGA SCK8/
+RSPCKB
+
+ET0_MDC/
+PMGI0_MD
+C
+
+PL5
+
+GTADSM1 SSLC2
+
+ET0_ETXD
+1/
+RMII0_TXD
+1
+
+M12
+
+PL6
+
+GTIOC2A SSLC3
+
+ET0_TX_E
+N/
+RMII0_TXD
+_EN
+
+M13
+
+PM7
+
+GTIOC3B
+
+ET0_CRS/ SDHI_WP
+RMII0_CR
+S_DV
+
+M14
+
+PC0
+
+A16
+
+MTIOC3C/
+TCLKC/PO17
+
+CTS5#/
+RTS5#/
+SS5#/
+SSLA1-A
+
+ET0_ERXD
+3
+
+M15
+
+PB6
+
+A14
+
+MTIOC3D/
+TIOCA5/PO30
+
+RXD9/
+SMISO9/
+SSCL9/
+SMISO11/
+SSCL11/
+RXD11
+
+ET0_ETXD
+1/
+RMII0_TXD
+1
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+IRQ14
+
+Page 114 of 3240
+
+RX72N Group
+Table 1.5
+
+1. Overview
+List of Pin and Pin Functions (224-Pin LFBGA) (9/11)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+224-Pin System
+LFBGA Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+N1
+
+P22
+
+EDREQ0
+
+N2
+
+Communication
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+MTIOC3B/
+MTCLKC/
+TIOCC3/
+TMO0/PO2
+
+GTIOC1A SCK0/
+USB0_OVRC
+URB/
+AUDIO_CLK
+
+PH0
+
+TIC0
+
+GTETRGA SCK7/
+RSPCKA
+
+N3
+
+P86
+
+MTIOC4D/
+TIOCA0
+
+GTIOC2B SMISO10/
+SSCL10/
+RXD10
+
+N4
+
+P85
+
+MTIOC6C/
+TIOCC0
+
+N5
+
+P13
+
+N6
+
+PJ1
+
+N7
+
+CLKOUT2 P56
+5M
+
+N8
+
+VCC
+
+N9
+
+UB
+
+WR2#/BC2# MTIOC0B/
+TIOCA5/
+TMO3/PO13
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+SDHI_D0-C/
+PIXD6
+
+PIXD1
+
+LCD_DAT
+A1-A
+GTADSM1 TXD2/
+SMOSI2/
+SSDA2/
+SDA0[FM+]
+
+LCD_TCO IRQ3
+N0-A
+
+MTIOC6A
+
+RXD8/
+SMISO8/
+SSCL8/
+SSLC2-B
+
+EDACK1
+
+MTIOC3C/
+TIOCA1
+
+SCK7/
+RSPCKC-B
+
+PC7
+
+A23/CS0#
+
+MTIOC3A/
+MTCLKB/
+TMO2/PO31/
+TOC0/
+CACREF
+
+N10
+
+P80
+
+EDREQ0
+
+MTIOC3B/
+PO26
+
+N11
+
+PK2
+
+N12
+
+P76
+
+N13
+
+PM6
+
+N14
+
+PC1
+
+A17
+
+MTIOC3A/
+TCLKD/PO18
+
+SCK5/
+SSLA2-A
+
+ET0_ERXD
+2
+
+N15
+
+PB7
+
+A15
+
+MTIOC3B/
+TIOCB5/PO31
+
+TXD9/
+SMOSI9/
+SSDA9/
+SMOSI11/
+SSDA11/
+TXD11
+
+ET0_CRS/
+RMII0_CR
+S_DV
+
+P1
+
+PK7
+
+GTIOC1B
+
+P2
+
+P17
+
+MTIOC3A/
+GTIOC0B
+MTIOC3B/
+MTIOC4B/
+TIOCB0/
+TCLKD/TMO1/
+PO15/POE8#
+
+SCK1/TXD3/ EPLSOUT0 SDHI_D3-C/
+SMOSI3/
+PIXD3
+SSDA3/
+SDA2-DS/
+SSITXD0
+
+IRQ7
+
+P3
+
+P20
+
+MTIOC1A/
+TIOCB3/
+TMRI0/PO0
+
+TXD0/
+SMOSI0/
+SSDA0/
+SDA1/
+USB0_ID/
+SSIRXD0
+
+IRQ8
+
+GTIOC3A TXD8/
+SMOSI8/
+SSDA8/
+SMOSI10/
+SSDA10/
+TXD10/
+MISOA-A
+SCK10/
+RTS10#
+
+GTETRG
+C
+CS6#
+
+PO22
+
+EPLSOUT1
+
+ADTRG1#
+
+LCD_TCO
+N3-A
+
+LCD_DAT
+A4-A
+
+ET0_COL
+
+MMC_D7-A
+
+ET0_TX_E QIO2-A/
+N/
+SDHI_WP/
+RMII0_TXD MMC_D2-A
+_EN
+
+LCD_DAT IRQ14
+A9-A
+
+LCD_DAT
+A14-A
+
+SMOSI8/
+ET0_RX_D
+SSDA8/
+V
+TXD8/MISOB
+SMISO11/
+SSCL11/
+RXD11
+
+GTIOC3A
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+A/D
+D/A
+
+ET0_RX_C QSSL-A/
+LCD_DAT
+LK/
+SDHI_CMD-A/ A18-A
+REF50CK0 MMC_CMD-A
+ET0_TX_C SDHI_CD
+LK
+LCD_DAT IRQ12
+A22-A
+
+SDHI_CMD-C/
+PIXD4
+
+ADTRG1#
+
+Page 115 of 3240
+
+RX72N Group
+Table 1.5
+
+1. Overview
+List of Pin and Pin Functions (224-Pin LFBGA) (10/11)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+224-Pin System
+LFBGA Control
+
+I/O Port
+
+P4
+
+P14
+
+P5
+
+VCC_USB
+
+P6
+
+VSS_USB
+
+P7
+
+P57
+
+P8
+
+P11
+
+P9
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+MTIOC3A/
+GTETRG
+MTCLKA/
+D
+TIOCB5/
+TCLKA/TMRI2/
+PO15
+
+MTIC5V/
+TMCI3
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+CTS1#/
+RTS1#/
+SS1#/CTX1/
+USB0_OVRC
+URA
+
+LCD_CLK- IRQ4
+A
+
+RXD7/
+SMISO7/
+SSCL7/
+SSLC0-B
+
+LCD_DAT
+A3-A
+
+SCK2
+
+EPLSOUT1
+
+LCD_DAT IRQ1
+A7-A
+
+ET0_ETXD MMC_D4-A
+1/
+RMII0_TXD
+1
+
+LCD_DAT
+A12-A
+
+A/D
+D/A
+
+VSS
+
+P10
+
+P82
+
+EDREQ1
+
+MTIOC4A/
+PO28
+
+GTIOC2A SMOSI10/
+SSDA10/
+TXD10
+
+P11
+
+PC4
+
+A20/CS3#
+
+MTIOC3D/
+MTCLKC/
+TMCI1/PO25/
+POE0#
+
+GTETRG
+C
+
+SCK5/
+ET0_TX_C QMI-A/QIO1- LCD_DAT
+CTS8#/
+LK
+A/SDHI_D1-A/ A15-A
+SS8#/SS10#/
+MMC_D1-A
+CTS10#/
+RTS10#/
+SSLA0-A
+
+P12
+
+PL2
+
+GTETRG
+C
+
+SMOSI9/
+SSDA9/
+TXD9/
+MISOC
+
+P13
+
+PC2
+
+P14
+
+A18
+
+MTIOC4B/
+TCLKA/PO21
+
+ET0_RX_E
+R/
+RMII0_RX_
+ER
+
+GTIOC2B RXD5/
+SMISO5/
+SSCL5/
+SSLA3-A
+
+ET0_RX_D SDHI_D3-A/
+V
+MMC_CD-A
+
+PM4
+
+GTADSM0
+
+ET0_ETXD SDHI_D2-D/
+2
+QIO2-A
+
+P15
+
+PM3
+
+GTETRG
+D
+
+R1
+
+P21
+
+MTIOC1B/
+MTIOC4A/
+TIOCA3/
+TMCI0/PO1
+
+GTIOC2A RXD0/
+SMISO0/
+SSCL0/
+SCL1/
+USB0_EXIC
+EN/
+SSILRCK0
+
+R2
+
+P87
+
+MTIOC4C/
+TIOCA2
+
+GTIOC1B SMOSI10/
+SSDA10/
+TXD10
+
+R3
+
+P16
+
+MTIOC3C/
+MTIOC3D/
+TIOCB1/
+TCLKC/TMO2/
+PO14/
+RTCOUT
+
+R4
+
+P12
+
+WR3#/BC3# MTIC5U/
+TMCI1
+
+RTS10#/
+CTS10#/
+SS10#
+
+TXD1/
+SMOSI1/
+SSDA1/
+RXD3/
+SMISO3/
+SSCL3/
+SCL2-DS/
+USB0_VBUS
+EN/
+USB0_VBUS
+/
+USB0_OVRC
+URB
+GTADSM0 RXD2/
+SMISO2/
+SSCL2/
+SCL0[FM+]
+
+R5
+
+USB0_DM
+
+R6
+
+USB0_DP
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+LCD_DAT
+A19-A
+
+ET1_ERXD SDHI_D1-D/
+3
+QMI-A/QIO1-A
+SDHI_CLK-C/
+PIXD5
+
+IRQ9
+
+EPLSOUT1 SDHI_D2-C/
+PIXD2
+IRQ6
+
+ADTRG0#
+
+LCD_TCO IRQ2
+N1-A
+
+Page 116 of 3240
+
+RX72N Group
+Table 1.5
+
+1. Overview
+List of Pin and Pin Functions (224-Pin LFBGA) (11/11)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+224-Pin System
+LFBGA Control
+
+I/O Port
+
+R7
+
+P54
+
+D1[A1/D1]/
+EDACK0/
+ALE
+
+MTIOC4B/
+TMCI1
+
+CTS2#/
+RTS2#/
+SS2#/
+MOSIC-B/
+CTX1
+
+ET0_LINK
+STA
+
+LCD_DAT
+A6-A
+
+R8
+
+P55
+
+D0[A0/D0]/
+EDREQ0/
+WAIT#
+
+MTIOC4D/
+TMO3
+
+TXD7/
+SMOSI7/
+SSDA7/
+MISOC-B/
+CRX1
+
+ET0_EXOU
+T
+
+LCD_DAT IRQ10
+A5-A
+
+R9
+
+PC6
+
+D2[A2/D2]/
+A22/CS1#
+
+MTIOC3C/
+MTCLKA/
+TMCI2/PO30/
+TIC0
+
+GTIOC3B RXD8/
+SMISO8/
+SSCL8/
+SMISO10/
+SSCL10/
+RXD10/
+MOSIA-A
+
+ET0_ETXD MMC_D6-A
+3
+
+LCD_DAT IRQ13
+A10-A
+
+R10
+
+PC5
+
+D3[A3/D3]/
+A21/CS2#/
+WAIT#
+
+MTIOC3B/
+MTCLKD/
+TMRI2/PO29
+
+GTIOC1A SCK8/
+RTS8#/
+SCK10/
+RSPCKA-A
+
+ET0_ETXD MMC_D5-A
+2
+
+LCD_DAT
+A11-A
+
+R11
+
+PC3
+
+A19
+
+MTIOC4D/
+TCLKB/PO24
+
+GTIOC1B TXD5/
+SMOSI5/
+SSDA5
+
+ET0_TX_E QMO-A/QIO0- LCD_DAT
+R
+A/SDHI_D0-A/ A16-A
+MMC_D0-A
+
+R12
+
+PL4
+
+GTADSM0 SSLC1
+
+ET0_ETXD
+0/
+RMII0_TXD
+0
+
+R13
+
+P75
+
+CS5#
+
+PO20
+
+SCK11/
+RTS11#
+
+ET0_ERXD SDHI_D2-A/
+LCD_DAT
+0/
+MMC_RES#-A A20-A
+RMII0_RX
+D0
+
+R14
+
+P74
+
+A20/CS4#
+
+PO19
+
+SS11#/
+CTS11#
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+
+R15
+
+PM5
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+GTADSM1
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+LCD_DAT
+A21-A
+
+ET0_ETXD SDHI_D3-D/
+3
+QIO3-A
+
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external bus is enabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 117 of 3240
+
+RX72N Group
+
+1. Overview
+
+1.6.2
+
+176-Pin LFBGA
+
+Table 1.6
+
+List of Pin and Pin Functions (176-Pin LFBGA) (1/9)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+176-Pin System
+LFBGA Control
+A1
+
+AVSS0
+
+A2
+
+AVCC0
+
+A3
+
+VREFL0
+
+A4
+A5
+A6
+
+VCC
+
+A7
+
+VSS
+
+A8
+
+Timer
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+P42
+
+IRQ10-DS AN002
+
+P46
+
+IRQ14-DS AN006
+
+P94
+
+D20/A20
+
+ET1_ERXD
+0/
+RMII1_RX
+D0
+
+A9
+
+VCC
+
+A10
+
+TRSYNC1 P97
+
+D23/A23
+
+ET1_ERXD
+3
+
+A11
+
+PD6
+
+D6[A6/D6]
+
+A12
+
+P60
+
+CS0#
+
+ET1_TX_E
+N/
+RMII1_TXD
+_EN
+
+A13
+
+P63
+
+CAS#/
+D2[A2/D2]/
+CS3#
+
+ET1_ETXD
+1/
+RMII1_TXD
+1
+
+A14
+
+PE1
+
+D9[A9/D9]/
+D1[A1/D1]
+
+MTIOC4C/
+MTIOC3B/
+PO18
+
+GTIOC1B TXD12/
+SMOSI12/
+SSDA12/
+TXDX12/
+SIOX12/
+SSLB2-B
+
+MMC_D5-B
+
+LCD_DAT
+A15-B
+
+ANEX1
+
+A15
+
+PE2
+
+D10[A10/
+MTIOC4A/
+D10]/D2[A2/ PO23/TIC3
+D2]
+
+GTIOC0B RXD12/
+SMISO12/
+SSCL12/
+RXDX12/
+SSLB3-B
+
+MMC_D6-B
+
+LCD_DAT IRQ7-DS
+A14-B
+
+AN100
+
+B1
+
+P05
+
+IRQ13
+
+DA1
+
+B2
+
+P07
+
+IRQ15
+
+ADTRG0#
+
+B3
+
+P40
+
+IRQ8-DS
+
+AN000
+
+B4
+
+P41
+
+IRQ9-DS
+
+AN001
+
+B5
+
+P47
+
+IRQ15-DS AN007
+
+B6
+
+P91
+
+D17/A17
+
+B7
+
+P92
+
+D18/A18
+
+POE4#
+
+B8
+
+PD1
+
+D1[A1/D1]
+
+MTIOC4B/
+POE0#
+
+B9
+
+TRDATA5 P96
+
+B10
+
+PD4
+
+MTIC5V/
+MTIOC8A/
+POE4#
+
+SSLC2-A
+
+ET1_RX_C QMO-B/QIO0- LCD_DAT IRQ6
+LK/
+B/SDHI_D0-B/ A18-B
+REF50CK1 MMC_D0-B
+
+SSILRCK1
+
+SCK7
+
+ET1_COL
+
+AN115
+
+RXD7/
+SMISO7/
+SSCL7
+
+ET1_CRS/
+RMII1_CR
+S_DV
+
+AN116
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+LCD_DAT IRQ1
+A23-B
+
+AN109
+
+ET1_MDIO QSSL-B/
+LCD_DAT IRQ4
+/
+SDHI_CMD-B/ A20-B
+PMGI1_MD MMC_CMD-B
+IO
+
+AN112
+
+GTIOC1A MOSIC-A/
+CTX0
+
+D22/A22
+D4[A4/D4]
+
+AN106
+
+ET1_ERXD
+2
+MTIOC8B/
+POE11#
+
+SSLC0-A
+
+Page 118 of 3240
+
+RX72N Group
+Table 1.6
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFBGA) (2/9)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+176-Pin System
+LFBGA Control
+
+Timer
+
+I/O Port
+
+B11
+
+TRDATA7 PG1
+
+B12
+
+VSS
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+B14
+
+PE0
+
+D8[A8/D8]/
+D0[A0/D0]
+
+B15
+
+PE3
+
+D11[A11/
+MTIOC4B/
+D11]/D3[A3/ PO26/TOC3/
+D3]
+POE8#
+
+AVCC1
+
+C3
+
+VREFH0
+
+MTIOC3D
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+ET1_ETXD
+0/
+RMII1_TXD
+0
+
+WE#/D3[A3/
+D3]/CS4#
+
+AVSS1
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+ET1_RX_E
+R/
+RMII1_RX_
+ER
+
+P64
+
+C2
+
+(GPTW,
+POEG)
+
+D25
+
+B13
+
+C1
+
+Communication
+
+Interrupt
+
+A/D
+D/A
+
+GTIOC2B SCK12/
+SSLB1-B
+
+MMC_D4-B
+
+LCD_DAT
+A16-B
+
+ANEX0
+
+GTIOC2A CTS12#/
+RTS12#/
+SS12#
+
+ET0_ERXD MMC_D7-B
+3
+
+LCD_DAT
+A13-B
+
+AN101
+
+C4
+
+P43
+
+IRQ11-DS AN003
+
+C5
+
+P45
+
+IRQ13-DS AN005
+
+C6
+
+P90
+
+D16/A16
+
+C7
+
+PD0
+
+D0[A0/D0]
+
+POE4#
+
+GTIOC1B
+
+C8
+
+PD2
+
+D2[A2/D2]
+
+MTIOC4D/
+TIC2
+
+GTIOC0B MISOC-A/
+CRX0
+
+C9
+
+PD3
+
+D3[A3/D3]
+
+MTIOC8D/
+TOC2/POE8#
+
+GTIOC0A RSPCKC-A
+
+C10
+
+TRDATA6 PG0
+
+C11
+
+VCC
+
+TXD7/
+SMOSI7/
+SSDA7
+
+ET1_RX_D
+V
+
+AN114
+
+LCD_EXT IRQ0
+CLK-B
+
+AN108
+
+ET1_EXOU QIO2-B/
+T
+SDHI_D2-B/
+MMC_D2-B
+
+LCD_DAT IRQ2
+A22-B
+
+AN110
+
+ET1_WOL
+
+LCD_DAT IRQ3
+A21-B
+
+AN111
+
+LCD_DAT
+A12-B
+
+AN102
+
+D24
+
+ET1_RX_C
+LK/
+REF50CK1
+
+ET1_ERXD
+0/
+RMII1_RX
+D0
+
+QIO3-B/
+SDHI_D3-B/
+MMC_D3-B
+
+C12
+
+P62
+
+RAS#/
+D1[A1/D1]/
+CS2#
+
+C13
+
+PE4
+
+D12[A12/
+MTIOC4D/
+D12]/D4[A4/ MTIOC1A/
+D4]
+PO28
+
+C15
+
+P70
+
+SDCLK
+
+D1
+
+P01
+
+TMCI0
+
+RXD6/
+SMISO6/
+SSCL6/
+SSIBCK0
+
+IRQ9
+
+AN119
+
+D2
+
+P02
+
+TMCI1
+
+SCK6/
+SSIBCK1
+
+IRQ10
+
+AN120
+
+SSIDATA1
+
+IRQ11
+
+DA0
+
+TMRI0
+
+TXD6/
+SMOSI6/
+SSDA6/
+AUDIO_CLK
+
+IRQ8
+
+AN118
+
+POE0#
+
+CTS7#/
+ET1_LINK
+RTS7#/SS7# STA
+
+C14
+
+GTIOC1A SSLB0-B
+
+ET0_ERXD
+2
+
+VSS
+
+D3
+
+P03
+
+D4
+
+P00
+
+D5
+
+P44
+
+D6
+
+P93
+
+IRQ12-DS AN004
+D19/A19
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+AN117
+
+Page 119 of 3240
+
+RX72N Group
+Table 1.6
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFBGA) (3/9)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+176-Pin System
+LFBGA Control
+
+Timer
+
+I/O Port
+
+D7
+
+TRDATA4 P95
+
+D8
+
+VSS
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+D21/A21
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+ET1_ERXD
+1/
+RMII1_RX
+D1
+
+D9
+
+PD5
+
+D5[A5/D5]
+
+MTIC5W/
+MTIOC8C/
+MTCLKA/
+POE10#
+
+SSLC1-A
+
+ET1_MDC/ QSPCLK-B/
+PMGI1_MD SDHI_CLK-B/
+C
+MMC_CLK-B
+
+LCD_DAT IRQ5
+A19-B
+
+AN113
+
+D10
+
+PD7
+
+D7[A7/D7]
+
+MTIC5U/
+POE0#
+
+SSLC3-A
+
+ET1_RX_E QMI-B/QIO1- LCD_DAT IRQ7
+R/
+B/SDHI_D1-B/ A17-B
+RMII1_RX_ MMC_D1-B
+ER
+
+AN107
+
+D11
+
+P61
+
+SDCS#/
+D0[A0/D0]/
+CS1#
+
+D12
+
+PE5
+
+D13[A13/
+MTIOC4C/
+D13]/D5[A5/ MTIOC2B
+D5]
+
+GTIOC0A RSPCKB-B
+
+PE7
+
+D15[A15/
+MTIOC6A/
+D15]/D7[A7/ TOC1
+D7]
+
+GTIOC3A MISOB-B
+
+D15
+
+P65
+
+CKE/CS5#
+
+E1
+
+PJ5
+
+D13
+
+ET0_RX_C
+LK/
+REF50CK0
+
+POE8#
+
+CTS2#/
+RTS2#/
+SS2#/
+SSIRXD0
+
+WAIT#
+
+E12
+
+PE6
+
+D14[A14/
+MTIOC6C/
+D14]/D6[A6/ TIC1
+D6]
+
+E13
+
+TRDATA0 PG2
+
+D26
+
+ET1_TX_C
+LK
+
+E14
+
+TRDATA1 PG3
+
+D27
+
+ET1_ETXD
+0/
+RMII1_TXD
+0
+
+E15
+
+P67
+
+DQM1/
+CS7#
+
+MTIOC7C
+
+AN105
+
+SSILRCK0
+
+IRQ4
+
+PJ3
+
+EDACK1
+
+MTIOC3C
+
+P66
+
+DQM0/
+CS6#
+
+MTIOC7D
+
+PG4
+
+D28
+
+VSS
+
+F1
+
+VBATT
+
+F2
+
+VCL
+
+F3
+
+GTIOC3B MOSIB-B
+
+GTIOC1B CRX2
+
+CTS6#/
+RTS6#/
+SS6#/
+CTS0#/
+RTS0#/
+SS0#/
+SSITXD0
+
+SDHI_CD/
+MMC_CD-B
+
+EPLSOUT1
+
+LCD_DAT IRQ6
+A10-B
+
+AN104
+
+IRQ15
+
+ET0_EXOU
+T
+
+BSCANP
+
+F12
+F13
+
+SDHI_WP/
+LCD_DAT IRQ7
+MMC_RES#-B A9-B
+
+EPLSOUT0
+
+PF5
+
+F4
+
+AN103
+
+EMLE
+
+E3
+E4
+
+LCD_DAT IRQ5
+A11-B
+
+VCC
+
+D14
+
+E2
+
+ET1_ERXD
+1/
+RMII1_RX
+D1
+
+TRSYNC
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+GTIOC2B CTX2
+ET1_ETXD
+1/
+RMII1_TXD
+1
+
+Page 120 of 3240
+
+RX72N Group
+Table 1.6
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFBGA) (4/9)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+176-Pin System
+LFBGA Control
+
+I/O Port
+
+F14
+
+PA0
+
+F15
+
+Bus
+EXDMAC
+SDRAMC
+DQM2/
+BC0#/A0
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+MTIOC4A/
+GTIOC0B SSLA1-B
+MTIOC6D/
+TIOCA0/PO16/
+CACREF
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+ET0_TX_E
+N/
+RMII0_TXD
+_EN
+
+Interrupt
+
+LCD_DAT
+A8-B
+
+VSS
+
+G1
+
+XCIN
+
+G2
+
+XCOUT
+
+G3
+
+MD/FINED
+
+G4
+
+TRST#
+
+PF4
+
+G12
+
+TRCLK
+
+PG5
+
+D29
+
+ET1_ETXD
+2
+
+G13
+
+TRDATA2 PG6
+
+D30
+
+ET1_ETXD
+3
+
+G14
+
+PA1
+
+G15
+
+VCC
+
+H1
+
+XTAL
+
+H2
+
+VSS
+
+H3
+
+RES#
+
+H4
+
+UPSEL
+
+DQM3/A1
+
+MTIOC0B/
+GTIOC2A SCK5/
+MTCLKC/
+SSLA2-B
+MTIOC7B/
+TIOCB0/PO17
+
+ET0_WOL
+
+LCD_DAT IRQ11
+A7-B
+
+P37
+
+P35
+
+NMI
+
+H12
+
+PA4
+
+A4
+
+MTIC5U/
+MTCLKA/
+TIOCA1/
+TMRI0/PO20
+
+TXD5/
+SMOSI5/
+SSDA5/
+SSLA0-B
+
+ET0_MDC/
+PMGI0_MD
+C
+
+LCD_DAT IRQ5-DS
+A4-B
+
+H13
+
+PA3
+
+A3
+
+MTIOC0D/
+MTCLKD/
+TIOCD0/
+TCLKB/PO19
+
+RXD5/
+SMISO5/
+SSCL5
+
+ET0_MDIO
+/
+PMGI0_MD
+IO
+
+LCD_DAT IRQ6-DS
+A5-B
+
+H14
+
+PA2
+
+A2
+
+MTIOC7A/
+PO18
+
+H15
+
+TRDATA3 PG7
+
+D31
+
+J1
+
+EXTAL
+
+J2
+
+VCC
+
+J3
+
+J4
+
+TMS
+
+GTIOC1A RXD5/
+SMISO5/
+SSCL5/
+SSLA3-B
+
+LCD_DAT
+A6-B
+
+ET1_TX_E
+R
+
+P36
+
+P34
+
+J12
+
+MTIOC0A/
+TMCI3/PO12/
+POE10#
+
+SCK6/SCK0 ET0_LINK
+STA
+
+IRQ4
+
+PF3
+PA5
+
+A5
+
+MTIOC6B/
+GTIOC0A RSPCKA-B
+TIOCB1/PO21
+
+ET0_LINK
+STA
+
+LCD_DAT
+A3-B
+
+J14
+
+PA7
+
+A7
+
+TIOCB2/PO23
+
+MISOA-B
+
+ET0_WOL
+
+LCD_DAT
+A1-B
+
+J15
+
+PA6
+
+A6
+
+MTIC5V/
+MTCLKB/
+TIOCA2/
+TMCI3/PO22/
+POE10#
+
+GTETRGB CTS5#/
+RTS5#/
+SS5#/
+MOSIA-B
+
+ET0_EXOU
+T
+
+LCD_DAT
+A2-B
+
+K1
+
+P33
+
+EDREQ1
+
+MTIOC0D/
+TIOCD0/
+TMRI3/PO11/
+POE4#/
+POE11#
+
+RXD6/
+SMISO6/
+SSCL6/
+RXD0/
+SMISO0/
+SSCL0/
+CRX0
+
+J13
+
+A/D
+D/A
+
+VSS
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+PCKO
+
+IRQ3-DS
+
+Page 121 of 3240
+
+RX72N Group
+Table 1.6
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFBGA) (5/9)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+176-Pin System
+LFBGA Control
+
+I/O Port
+
+K2
+
+P32
+
+K3
+
+TDI
+
+K4
+
+TCK
+
+Bus
+EXDMAC
+SDRAMC
+
+MTIOC0C/
+TIOCC0/
+TMO3/PO10/
+RTCIC2/
+RTCOUT/
+POE0#/
+POE10#
+
+PF2
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+TXD6/
+SMOSI6/
+SSDA6/
+TXD0/
+SMOSI0/
+SSDA0/
+CTX0/
+USB0_VBUS
+EN
+
+VSYNC
+
+Interrupt
+
+A/D
+D/A
+
+IRQ2-DS
+
+RXD1/
+SMISO1/
+SSCL1
+
+PF1
+
+SCK1
+
+K12
+
+PB2
+
+A10
+
+K13
+
+P71
+
+A18/CS1#
+
+K15
+
+PB0
+
+A8
+
+L1
+
+L2
+
+K14
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+TIOCC3/
+TCLKC/PO26
+
+CTS4#/
+ET0_RX_C
+RTS4#/
+LK/
+SS4#/
+REF50CK0
+CTS6#/
+RTS6#/SS6#
+
+LCD_TCO
+N2-B
+
+ET0_MDIO
+/
+PMGI0_MD
+IO
+
+VCC
+MTIC5W/
+TIOCA3/PO24
+
+RXD4/
+SMISO4/
+SSCL4/
+RXD6/
+SMISO6/
+SSCL6
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+
+P31
+
+MTIOC4D/
+TMCI2/PO9/
+RTCIC1
+
+CTS1#/
+RTS1#/
+SS1#/
+SSLB0-A
+
+ET1_MDC/
+PMGI1_MD
+C
+
+IRQ1-DS
+
+P30
+
+MTIOC4B/
+TMRI3/PO8/
+RTCIC0/
+POE8#
+
+RXD1/
+SMISO1/
+SSCL1/
+MISOB-A
+
+ET1_MDIO
+/
+PMGI1_MD
+IO
+
+IRQ0-DS
+
+LCD_DAT IRQ12
+A0-B
+
+L3
+
+TDO
+
+PF0
+
+TXD1/
+SMOSI1/
+SSDA1
+
+L4
+
+CLKOUT
+
+P25
+
+CS5#/
+EDACK1
+
+MTIOC4C/
+MTCLKB/
+TIOCA4/PO5
+
+RXD3/
+SMISO3/
+SSCL3/
+SSIDATA1
+
+L12
+
+PB6
+
+A14
+
+MTIOC3D/
+TIOCA5/PO30
+
+RXD9/
+SMISO9/
+SSCL9/
+SMISO11/
+SSCL11/
+RXD11
+
+L13
+
+PB3
+
+A11
+
+MTIOC0A/
+MTIOC4A/
+TIOCD3/
+TCLKD/TMO0/
+PO27/POE11#
+
+SCK4/SCK6 ET0_RX_E
+R/
+RMII0_RX_
+ER
+
+LCD_TCO
+N1-B
+
+L14
+
+PB1
+
+A9
+
+MTIOC0C/
+MTIOC4C/
+TIOCB3/
+TMCI0/PO25
+
+TXD4/
+SMOSI4/
+SSDA4/
+TXD6/
+SMOSI6/
+SSDA6
+
+ET0_ERXD
+0/
+RMII0_RX
+D0
+
+LCD_TCO IRQ4-DS
+N3-B
+
+L15
+
+P72
+
+A19/CS2#
+
+ET0_MDC/
+PMGI0_MD
+C
+
+LCD_DAT
+A23-A
+
+M1
+
+P27
+
+CS7#
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+MTIOC2B/
+TMCI3/PO7
+
+SCK1/
+RSPCKB-A
+
+SDHI_CD/
+HSYNC
+
+ADTRG0#
+
+ET0_ETXD
+1/
+RMII0_TXD
+1
+
+ET1_WOL
+
+Page 122 of 3240
+
+RX72N Group
+Table 1.6
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFBGA) (6/9)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Power
+Supply
+Clock
+176-Pin System
+LFBGA Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+M2
+
+P26
+
+CS6#
+
+MTIOC2A/
+TMO1/PO6
+
+TXD1/
+SMOSI1/
+SSDA1/
+CTS3#/
+RTS3#/
+SS3#/
+MOSIB-A
+
+M3
+
+P24
+
+CS4#/
+EDREQ1
+
+MTIOC4A/
+MTCLKA/
+TIOCB4/
+TMRI1/PO4
+
+SCK3/
+USB0_VBUS
+EN/SSIBCK1
+
+M4
+
+P86
+
+M5
+
+CLKOUT2 PJ2
+5M
+
+M6
+
+PJ1
+
+MTIOC6A
+
+M7
+
+P85
+
+MTIOC6C/
+TIOCC0
+
+M8
+
+P55
+
+D0[A0/D0]/
+EDREQ0/
+WAIT#
+
+M9
+
+P50
+
+WR0#/WR#
+
+M10
+
+PC5
+
+D3[A3/D3]/
+A21/CS2#/
+WAIT#
+
+MTIOC3B/
+MTCLKD/
+TMRI2/PO29
+
+M11
+
+P81
+
+EDACK0
+
+MTIOC3D/
+PO27
+
+M12
+
+P77
+
+CS7#
+
+PO23
+
+M13
+
+PB7
+
+A15
+
+M14
+
+PB5
+
+M15
+
+PB4
+
+N1
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+MTIOC4D/
+TIOCA0
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+SDHI_WP/
+PIXCLK
+
+PIXD1
+
+TXD8/
+SMOSI8/
+SSDA8/
+SSLC3-B
+
+MTIOC4D/
+TMO3
+
+A/D
+D/A
+
+ET1_EXOU
+T
+
+GTIOC2B SMISO10/
+SSCL10/
+RXD10
+
+RXD8/
+SMISO8/
+SSCL8/
+SSLC2-B
+
+Interrupt
+
+LCD_TCO
+N2-A
+
+EPLSOUT1
+
+LCD_TCO
+N3-A
+
+LCD_DAT
+A1-A
+TXD7/
+SMOSI7/
+SSDA7/
+MISOC-B/
+CRX1
+
+ET0_EXOU
+T
+
+LCD_DAT IRQ10
+A5-A
+
+GTIOC1A SCK8/
+RTS8#/
+SCK10/
+RSPCKA-A
+
+ET0_ETXD MMC_D5-A
+2
+
+LCD_DAT
+A11-A
+
+GTIOC0B SMISO10/
+SSCL10/
+RXD10
+
+ET0_ETXD QIO3-A/
+0/
+SDHI_CD/
+RMII0_TXD MMC_D3-A
+0
+
+LCD_DAT
+A13-A
+
+SMOSI11/
+SSDA11/
+TXD11
+
+ET0_RX_E QSPCLK-A/
+R/
+SDHI_CLK-A/
+RMII0_RX_ MMC_CLK-A
+ER
+
+LCD_DAT
+A17-A
+
+MTIOC3B/
+TIOCB5/PO31
+
+TXD9/
+SMOSI9/
+SSDA9/
+SMOSI11/
+SSDA11/
+TXD11
+
+ET0_CRS/
+RMII0_CR
+S_DV
+
+A13
+
+MTIOC2A/
+MTIOC1B/
+TIOCB4/
+TMRI1/PO29/
+POE4#
+
+SCK9/
+RTS9#/
+SCK11
+
+ET0_ETXD
+0/
+RMII0_TXD
+0
+
+LCD_CLKB
+
+A12
+
+TIOCA4/PO28
+
+CTS9#/
+ET0_TX_E
+SS9#/SS11#/ N/
+CTS11#/
+RMII0_TXD
+RTS11#
+_EN
+
+LCD_TCO
+N0-B
+
+TXD2/
+SMOSI2/
+SSDA2/
+SSLB1-A
+
+VCC
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 123 of 3240
+
+RX72N Group
+Table 1.6
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFBGA) (7/9)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+176-Pin System
+LFBGA Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+N2
+
+P23
+
+EDACK0
+
+MTIOC3D/
+MTCLKD/
+TIOCD3/PO3
+
+GTIOC0A TXD3/
+SMOSI3/
+SSDA3/
+CTS0#/
+RTS0#/
+SS0#/CTX1/
+SSIBCK0
+
+SDHI_D1-C/
+PIXD7
+
+N3
+
+P22
+
+EDREQ0
+
+MTIOC3B/
+MTCLKC/
+TIOCC3/
+TMO0/PO2
+
+GTIOC1A SCK0/
+USB0_OVRC
+URB/
+AUDIO_CLK
+
+SDHI_D0-C/
+PIXD6
+
+N4
+
+P15
+
+N5
+
+P12
+
+WR3#/BC3# MTIC5U/
+TMCI1
+
+N6
+
+PJ0
+
+MTIOC6B
+
+N7
+
+P84
+
+MTIOC6D
+
+N8
+
+P54
+
+D1[A1/D1]/
+EDACK0/
+ALE
+
+N9
+
+P51
+
+WR1#/
+BC1#/
+WAIT#
+
+PC7
+
+A23/CS0#
+
+MTIOC3A/
+MTCLKB/
+TMO2/PO31/
+TOC0/
+CACREF
+
+GTIOC3A TXD8/
+SMOSI8/
+SSDA8/
+SMOSI10/
+SSDA10/
+TXD10/
+MISOA-A
+
+ET0_COL
+
+N11
+
+P82
+
+EDREQ1
+
+MTIOC4A/
+PO28
+
+GTIOC2A SMOSI10/
+SSDA10/
+TXD10
+
+ET0_ETXD MMC_D4-A
+1/
+RMII0_TXD
+1
+
+N12
+
+PC3
+
+A19
+
+MTIOC4D/
+TCLKB/PO24
+
+GTIOC1B TXD5/
+SMOSI5/
+SSDA5
+
+ET0_TX_E QMO-A/QIO0- LCD_DAT
+R
+A/SDHI_D0-A/ A16-A
+MMC_D0-A
+
+N13
+
+PC0
+
+A16
+
+MTIOC3C/
+TCLKC/PO17
+
+CTS5#/
+RTS5#/
+SS5#/
+SSLA1-A
+
+N14
+
+P73
+
+CS3#
+
+PO16
+
+N10
+
+UB
+
+N15
+
+VSS
+
+P1
+
+VSS
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+MTIOC0B/
+GTETRGA RXD1/
+MTCLKB/
+SMISO1/
+TIOCB2/
+SSCL1/
+TCLKB/TMCI2/
+SCK3/CRX1PO13
+DS/
+SSILRCK1
+GTADSM0 RXD2/
+SMISO2/
+SSCL2/
+SCL0[FM+]
+SCK8/
+SSLC1-B
+
+MTIOC4B/
+TMCI1
+
+CTS2#/
+RTS2#/
+SS2#/
+MOSIC-B/
+CTX1
+
+A/D
+D/A
+
+IRQ5
+
+LCD_TCO IRQ2
+N1-A
+
+EPLSOUT0
+
+LCD_DAT
+A0-A
+
+ET1_LINK
+STA
+
+LCD_DAT
+A2-A
+
+ET0_LINK
+STA
+
+LCD_DAT
+A6-A
+
+SCK2/
+SSLB2-A
+MMC_D7-A
+
+P17
+
+MTIOC3A/
+GTIOC0B
+MTIOC3B/
+MTIOC4B/
+TIOCB0/
+TCLKD/TMO1/
+PO15/POE8#
+
+P3
+
+P87
+
+MTIOC4C/
+TIOCA2
+
+SCK1/TXD3/ EPLSOUT0 SDHI_D3-C/
+SMOSI3/
+PIXD3
+SSDA3/
+SDA2-DS/
+SSITXD0
+
+GTIOC1B SMOSI10/
+SSDA10/
+TXD10
+
+LCD_DAT IRQ14
+A9-A
+
+LCD_DAT
+A12-A
+
+ET0_ERXD
+3
+
+ET0_WOL
+
+P2
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+PIXD0
+
+Interrupt
+
+IRQ14
+
+LCD_EXT
+CLK-A
+
+IRQ7
+
+ADTRG1#
+
+EPLSOUT1 SDHI_D2-C/
+PIXD2
+
+Page 124 of 3240
+
+RX72N Group
+Table 1.6
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFBGA) (8/9)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+176-Pin System
+LFBGA Control
+
+I/O Port
+
+P4
+
+P14
+
+P5
+
+VCC_USB
+
+P6
+
+VSS_USB
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+MTIOC3A/
+GTETRG
+MTCLKA/
+D
+TIOCB5/
+TCLKA/TMRI2/
+PO15
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+CTS1#/
+RTS1#/
+SS1#/CTX1/
+USB0_OVRC
+URA
+
+LCD_CLK- IRQ4
+A
+
+RXD7/
+SMISO7/
+SSCL7/
+SSLC0-B
+
+LCD_DAT
+A3-A
+
+P7
+
+P57
+
+P8
+
+P10
+
+ALE
+
+P9
+
+P52
+
+RD#
+
+P10
+
+P83
+
+EDACK1
+
+MTIOC4C
+
+GTIOC0A SCK10/
+SS10#/
+CTS10#
+
+ET0_CRS/
+RMII0_CR
+S_DV
+
+LCD_DAT
+A8-A
+
+P11
+
+PC6
+
+D2[A2/D2]/
+A22/CS1#
+
+MTIOC3C/
+MTCLKA/
+TMCI2/PO30/
+TIC0
+
+GTIOC3B RXD8/
+SMISO8/
+SSCL8/
+SMISO10/
+SSCL10/
+RXD10/
+MOSIA-A
+
+ET0_ETXD MMC_D6-A
+3
+
+LCD_DAT IRQ13
+A10-A
+
+P12
+
+PC4
+
+A20/CS3#
+
+MTIOC3D/
+MTCLKC/
+TMCI1/PO25/
+POE0#
+
+GTETRG
+C
+
+P13
+
+PC2
+
+A18
+
+MTIOC4B/
+TCLKA/PO21
+
+GTIOC2B RXD5/
+SMISO5/
+SSCL5/
+SSLA3-A
+
+P14
+
+P75
+
+CS5#
+
+PO20
+
+P15
+
+MTIC5W/
+TMRI3
+
+A/D
+D/A
+
+IRQ0
+RXD2/
+SMISO2/
+SSCL2/
+SSLB3-A
+
+SCK5/
+ET0_TX_C QMI-A/QIO1- LCD_DAT
+CTS8#/
+LK
+A/SDHI_D1-A/ A15-A
+SS8#/SS10#/
+MMC_D1-A
+CTS10#/
+RTS10#/
+SSLA0-A
+
+SCK11/
+RTS11#
+
+ET0_RX_D SDHI_D3-A/
+V
+MMC_CD-A
+
+LCD_DAT
+A19-A
+
+ET0_ERXD SDHI_D2-A/
+LCD_DAT
+0/
+MMC_RES#-A A20-A
+RMII0_RX
+D0
+
+VCC
+
+R1
+
+P21
+
+MTIOC1B/
+MTIOC4A/
+TIOCA3/
+TMCI0/PO1
+
+R2
+
+P20
+
+MTIOC1A/
+TIOCB3/
+TMRI0/PO0
+
+TXD0/
+SMOSI0/
+SSDA0/
+SDA1/
+USB0_ID/
+SSIRXD0
+
+R3
+
+P16
+
+MTIOC3C/
+MTIOC3D/
+TIOCB1/
+TCLKC/TMO2/
+PO14/
+RTCOUT
+
+TXD1/
+SMOSI1/
+SSDA1/
+RXD3/
+SMISO3/
+SSCL3/
+SCL2-DS/
+USB0_VBUS
+EN/
+USB0_VBUS
+/
+USB0_OVRC
+URB
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+GTIOC2A RXD0/
+SMISO0/
+SSCL0/
+SCL1/
+USB0_EXIC
+EN/
+SSILRCK0
+
+SDHI_CLK-C/
+PIXD5
+
+IRQ9
+
+SDHI_CMD-C/
+PIXD4
+
+IRQ8
+
+IRQ6
+
+ADTRG0#
+
+Page 125 of 3240
+
+RX72N Group
+Table 1.6
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFBGA) (9/9)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+176-Pin System
+LFBGA Control
+
+I/O Port
+
+R4
+
+P13
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+WR2#/BC2# MTIOC0B/
+TIOCA5/
+TMO3/PO13
+
+R5
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+GTADSM1 TXD2/
+SMOSI2/
+SSDA2/
+SDA0[FM+]
+
+Interrupt
+
+LCD_TCO IRQ3
+N0-A
+
+A/D
+D/A
+ADTRG1#
+
+USB0_DM
+
+R6
+
+USB0_DP
+
+R7
+
+CLKOUT2 P56
+5M
+
+MTIOC3C/
+TIOCA1
+
+SCK7/
+RSPCKC-B
+
+R8
+
+P11
+
+MTIC5V/
+TMCI3
+
+SCK2
+
+EPLSOUT1
+
+LCD_DAT IRQ1
+A7-A
+
+R9
+
+P53*1
+
+BCLK
+
+R12
+
+P80
+
+EDREQ0
+
+MTIOC3B/
+PO26
+
+SCK10/
+RTS10#
+
+ET0_TX_E QIO2-A/
+N/
+SDHI_WP/
+RMII0_TXD MMC_D2-A
+_EN
+
+LCD_DAT
+A14-A
+
+R13
+
+P76
+
+CS6#
+
+PO22
+
+SMISO11/
+SSCL11/
+RXD11
+
+ET0_RX_C QSSL-A/
+LCD_DAT
+LK/
+SDHI_CMD-A/ A18-A
+REF50CK0 MMC_CMD-A
+
+R14
+
+P74
+
+A20/CS4#
+
+PO19
+
+SS11#/
+CTS11#
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+
+LCD_DAT
+A21-A
+
+R15
+
+PC1
+
+A17
+
+MTIOC3A/
+TCLKD/PO18
+
+SCK5/
+SSLA2-A
+
+ET0_ERXD
+2
+
+LCD_DAT IRQ12
+A22-A
+
+R10
+
+VSS
+
+R11
+
+VCC
+
+EDACK1
+
+LCD_DAT
+A4-A
+
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external bus is enabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 126 of 3240
+
+RX72N Group
+
+1. Overview
+
+1.6.3
+
+176-Pin LFQFP
+
+Table 1.7
+
+List of Pin and Pin Functions (176-Pin LFQFP) (1/9)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+176-Pin System
+LFQFP Control
+1
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+P05
+
+SSILRCK1
+
+IRQ13
+
+DA1
+
+P03
+
+SSIDATA1
+
+IRQ11
+
+DA0
+
+AVCC1
+
+4
+5
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+Communication
+
+AVSS0
+
+2
+3
+
+Timer
+
+AVSS1
+
+6
+
+P02
+
+TMCI1
+
+SCK6/
+SSIBCK1
+
+IRQ10
+
+AN120
+
+7
+
+P01
+
+TMCI0
+
+RXD6/
+SMISO6/
+SSCL6/
+SSIBCK0
+
+IRQ9
+
+AN119
+
+8
+
+P00
+
+TMRI0
+
+TXD6/
+SMOSI6/
+SSDA6/
+AUDIO_CLK
+
+IRQ8
+
+AN118
+
+9
+
+PF5
+
+SSILRCK0
+
+IRQ4
+
+10
+
+EMLE
+
+11
+
+12
+
+WAIT#
+
+PJ5
+
+POE8#
+
+CTS2#/
+RTS2#/
+SS2#/
+SSIRXD0
+
+EPLSOUT0
+
+MTIOC3C
+
+CTS6#/
+RTS6#/
+SS6#/
+CTS0#/
+RTS0#/
+SS0#/
+SSITXD0
+
+ET0_EXOU
+T
+
+MTIOC0A/
+TMCI3/PO12/
+POE10#
+
+SCK6/SCK0 ET0_LINK
+STA
+
+MTIOC0D/
+TIOCD0/
+TMRI3/PO11/
+POE4#/
+POE11#
+
+RXD6/
+SMISO6/
+SSCL6/
+RXD0/
+SMISO0/
+SSCL0/
+CRX0
+
+VSS
+
+13
+
+PJ3
+
+14
+
+VCL
+
+15
+
+VBATT
+
+16
+
+NC
+
+17
+
+TRST#
+
+18
+
+MD/FINED
+
+19
+
+XCIN
+
+20
+
+XCOUT
+
+21
+
+RES#
+
+22
+
+XTAL
+
+23
+
+VSS
+
+24
+
+EXTAL
+
+25
+
+VCC
+
+26
+
+UPSEL
+
+EDACK1
+
+PF4
+
+P37
+
+P36
+
+P35
+
+27
+
+P34
+
+28
+
+P33
+
+NMI
+
+EDREQ1
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+IRQ4
+
+PCKO
+
+IRQ3-DS
+
+Page 127 of 3240
+
+RX72N Group
+Table 1.7
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFQFP) (2/9)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+176-Pin System
+LFQFP Control
+
+I/O Port
+
+29
+
+P32
+
+30
+
+TMS
+
+PF3
+
+31
+
+TDI
+
+PF2
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+MTIOC0C/
+TIOCC0/
+TMO3/PO10/
+RTCIC2/
+RTCOUT/
+POE0#/
+POE10#
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+TXD6/
+SMOSI6/
+SSDA6/
+TXD0/
+SMOSI0/
+SSDA0/
+CTX0/
+USB0_VBUS
+EN
+
+VSYNC
+
+Interrupt
+IRQ2-DS
+
+RXD1/
+SMISO1/
+SSCL1
+
+32
+
+P31
+
+MTIOC4D/
+TMCI2/PO9/
+RTCIC1
+
+CTS1#/
+RTS1#/
+SS1#/
+SSLB0-A
+
+ET1_MDC/
+PMGI1_MD
+C
+
+IRQ1-DS
+
+33
+
+P30
+
+MTIOC4B/
+TMRI3/PO8/
+RTCIC0/
+POE8#
+
+RXD1/
+SMISO1/
+SSCL1/
+MISOB-A
+
+ET1_MDIO
+/
+PMGI1_MD
+IO
+
+IRQ0-DS
+
+34
+
+TCK
+
+PF1
+
+SCK1
+
+35
+
+TDO
+
+PF0
+
+TXD1/
+SMOSI1/
+SSDA1
+
+36
+
+P27
+
+CS7#
+
+MTIOC2B/
+TMCI3/PO7
+
+SCK1/
+RSPCKB-A
+
+ET1_WOL
+
+37
+
+P26
+
+CS6#
+
+MTIOC2A/
+TMO1/PO6
+
+TXD1/
+SMOSI1/
+SSDA1/
+CTS3#/
+RTS3#/
+SS3#/
+MOSIB-A
+
+ET1_EXOU
+T
+
+P25
+
+CS5#/
+EDACK1
+
+MTIOC4C/
+MTCLKB/
+TIOCA4/PO5
+
+RXD3/
+SMISO3/
+SSCL3/
+SSIDATA1
+
+SDHI_CD/
+HSYNC
+
+P24
+
+CS4#/
+EDREQ1
+
+MTIOC4A/
+MTCLKA/
+TIOCB4/
+TMRI1/PO4
+
+SCK3/
+USB0_VBUS
+EN/SSIBCK1
+
+SDHI_WP/
+PIXCLK
+
+42
+
+P23
+
+EDACK0
+
+MTIOC3D/
+MTCLKD/
+TIOCD3/PO3
+
+GTIOC0A TXD3/
+SMOSI3/
+SSDA3/
+CTS0#/
+RTS0#/
+SS0#/CTX1/
+SSIBCK0
+
+SDHI_D1-C/
+PIXD7
+
+43
+
+P22
+
+EDREQ0
+
+MTIOC3B/
+MTCLKC/
+TIOCC3/
+TMO0/PO2
+
+GTIOC1A SCK0/
+USB0_OVRC
+URB/
+AUDIO_CLK
+
+SDHI_D0-C/
+PIXD6
+
+44
+
+P21
+
+MTIOC1B/
+MTIOC4A/
+TIOCA3/
+TMCI0/PO1
+
+GTIOC2A RXD0/
+SMISO0/
+SSCL0/
+SCL1/
+USB0_EXIC
+EN/
+SSILRCK0
+
+SDHI_CLK-C/
+PIXD5
+
+38
+
+CLKOUT
+
+39
+
+VCC
+
+40
+
+41
+
+A/D
+D/A
+
+ADTRG0#
+
+VSS
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+IRQ9
+
+Page 128 of 3240
+
+RX72N Group
+Table 1.7
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFQFP) (3/9)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+176-Pin System
+LFQFP Control
+
+I/O Port
+
+45
+
+P20
+
+MTIOC1A/
+TIOCB3/
+TMRI0/PO0
+
+TXD0/
+SMOSI0/
+SSDA0/
+SDA1/
+USB0_ID/
+SSIRXD0
+
+46
+
+P17
+
+MTIOC3A/
+GTIOC0B
+MTIOC3B/
+MTIOC4B/
+TIOCB0/
+TCLKD/TMO1/
+PO15/POE8#
+
+SCK1/TXD3/ EPLSOUT0 SDHI_D3-C/
+SMOSI3/
+PIXD3
+SSDA3/
+SDA2-DS/
+SSITXD0
+
+47
+
+P87
+
+MTIOC4C/
+TIOCA2
+
+48
+
+P16
+
+MTIOC3C/
+MTIOC3D/
+TIOCB1/
+TCLKC/TMO2/
+PO14/
+RTCOUT
+
+49
+
+P86
+
+MTIOC4D/
+TIOCA0
+
+50
+
+P15
+
+MTIOC0B/
+GTETRGA RXD1/
+MTCLKB/
+SMISO1/
+TIOCB2/
+SSCL1/
+TCLKB/TMCI2/
+SCK3/CRX1PO13
+DS/
+SSILRCK1
+
+51
+
+P14
+
+MTIOC3A/
+GTETRG
+MTCLKA/
+D
+TIOCB5/
+TCLKA/TMRI2/
+PO15
+
+52
+
+P13
+
+WR2#/BC2# MTIOC0B/
+TIOCA5/
+TMO3/PO13
+
+GTADSM1 TXD2/
+SMOSI2/
+SSDA2/
+SDA0[FM+]
+
+LCD_TCO IRQ3
+N0-A
+
+53
+
+P12
+
+WR3#/BC3# MTIC5U/
+TMCI1
+
+GTADSM0 RXD2/
+SMISO2/
+SSCL2/
+SCL0[FM+]
+
+LCD_TCO IRQ2
+N1-A
+
+54
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+GTIOC1B SMOSI10/
+SSDA10/
+TXD10
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+SDHI_CMD-C/
+PIXD4
+
+Interrupt
+
+A/D
+D/A
+
+IRQ8
+
+IRQ7
+
+ADTRG1#
+
+IRQ6
+
+ADTRG0#
+
+EPLSOUT1 SDHI_D2-C/
+PIXD2
+
+TXD1/
+SMOSI1/
+SSDA1/
+RXD3/
+SMISO3/
+SSCL3/
+SCL2-DS/
+USB0_VBUS
+EN/
+USB0_VBUS
+/
+USB0_OVRC
+URB
+GTIOC2B SMISO10/
+SSCL10/
+RXD10
+
+PIXD1
+
+PIXD0
+
+CTS1#/
+RTS1#/
+SS1#/CTX1/
+USB0_OVRC
+URA
+
+IRQ5
+
+LCD_CLK- IRQ4
+A
+
+ADTRG1#
+
+VCC_USB
+
+55
+
+USB0_DM
+
+56
+
+USB0_DP
+
+57
+
+VSS_USB
+
+58
+
+CLKOUT2 PJ2
+5M
+
+59
+
+PJ1
+
+MTIOC6A
+
+RXD8/
+SMISO8/
+SSCL8/
+SSLC2-B
+
+EPLSOUT1
+
+LCD_TCO
+N3-A
+
+60
+
+PJ0
+
+MTIOC6B
+
+SCK8/
+SSLC1-B
+
+EPLSOUT0
+
+LCD_DAT
+A0-A
+
+61
+
+P85
+
+MTIOC6C/
+TIOCC0
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+TXD8/
+SMOSI8/
+SSDA8/
+SSLC3-B
+
+LCD_TCO
+N2-A
+
+LCD_DAT
+A1-A
+
+Page 129 of 3240
+
+RX72N Group
+Table 1.7
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFQFP) (4/9)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+176-Pin System
+LFQFP Control
+
+I/O Port
+
+62
+
+P84
+
+63
+
+P57
+
+64
+
+CLKOUT2 P56
+5M
+
+65
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+MTIOC6D
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+ET1_LINK
+STA
+
+Interrupt
+
+LCD_DAT
+A2-A
+
+RXD7/
+SMISO7/
+SSCL7/
+SSLC0-B
+
+LCD_DAT
+A3-A
+
+LCD_DAT
+A4-A
+
+EDACK1
+
+MTIOC3C/
+TIOCA1
+
+SCK7/
+RSPCKC-B
+
+P55
+
+D0[A0/D0]/
+EDREQ0/
+WAIT#
+
+MTIOC4D/
+TMO3
+
+TXD7/
+SMOSI7/
+SSDA7/
+MISOC-B/
+CRX1
+
+ET0_EXOU
+T
+
+LCD_DAT IRQ10
+A5-A
+
+66
+
+P54
+
+D1[A1/D1]/
+EDACK0/
+ALE
+
+MTIOC4B/
+TMCI1
+
+CTS2#/
+RTS2#/
+SS2#/
+MOSIC-B/
+CTX1
+
+ET0_LINK
+STA
+
+LCD_DAT
+A6-A
+
+67
+
+P11
+
+MTIC5V/
+TMCI3
+
+SCK2
+
+EPLSOUT1
+
+LCD_DAT IRQ1
+A7-A
+
+68
+
+P10
+
+ALE
+
+69
+
+P53*1
+
+BCLK
+
+70
+
+P52
+
+RD#
+
+RXD2/
+SMISO2/
+SSCL2/
+SSLB3-A
+
+71
+
+P51
+
+WR1#/
+BC1#/
+WAIT#
+
+SCK2/
+SSLB2-A
+
+72
+
+P50
+
+WR0#/WR#
+
+TXD2/
+SMOSI2/
+SSDA2/
+SSLB1-A
+
+P83
+
+EDACK1
+
+MTIOC4C
+
+GTIOC0A SCK10/
+SS10#/
+CTS10#
+
+ET0_CRS/
+RMII0_CR
+S_DV
+
+PC7
+
+A23/CS0#
+
+MTIOC3A/
+MTCLKB/
+TMO2/PO31/
+TOC0/
+CACREF
+
+GTIOC3A TXD8/
+SMOSI8/
+SSDA8/
+SMOSI10/
+SSDA10/
+TXD10/
+MISOA-A
+
+ET0_COL
+
+MMC_D7-A
+
+LCD_DAT IRQ14
+A9-A
+
+77
+
+PC6
+
+D2[A2/D2]/
+A22/CS1#
+
+MTIOC3C/
+MTCLKA/
+TMCI2/PO30/
+TIC0
+
+GTIOC3B RXD8/
+SMISO8/
+SSCL8/
+SMISO10/
+SSCL10/
+RXD10/
+MOSIA-A
+
+ET0_ETXD MMC_D6-A
+3
+
+LCD_DAT IRQ13
+A10-A
+
+78
+
+PC5
+
+D3[A3/D3]/
+A21/CS2#/
+WAIT#
+
+MTIOC3B/
+MTCLKD/
+TMRI2/PO29
+
+GTIOC1A SCK8/
+RTS8#/
+SCK10/
+RSPCKA-A
+
+ET0_ETXD MMC_D5-A
+2
+
+LCD_DAT
+A11-A
+
+79
+
+P82
+
+EDREQ1
+
+MTIOC4A/
+PO28
+
+GTIOC2A SMOSI10/
+SSDA10/
+TXD10
+
+ET0_ETXD MMC_D4-A
+1/
+RMII0_TXD
+1
+
+LCD_DAT
+A12-A
+
+80
+
+P81
+
+EDACK0
+
+MTIOC3D/
+PO27
+
+GTIOC0B SMISO10/
+SSCL10/
+RXD10
+
+ET0_ETXD QIO3-A/
+0/
+SDHI_CD/
+RMII0_TXD MMC_D3-A
+0
+
+LCD_DAT
+A13-A
+
+73
+
+A/D
+D/A
+
+MTIC5W/
+TMRI3
+
+IRQ0
+
+VSS
+
+74
+
+75
+
+VCC
+
+76
+
+UB
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+LCD_DAT
+A8-A
+
+Page 130 of 3240
+
+RX72N Group
+Table 1.7
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFQFP) (5/9)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+176-Pin System
+LFQFP Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+81
+
+P80
+
+EDREQ0
+
+MTIOC3B/
+PO26
+
+82
+
+PC4
+
+A20/CS3#
+
+MTIOC3D/
+MTCLKC/
+TMCI1/PO25/
+POE0#
+
+GTETRG
+C
+
+83
+
+PC3
+
+A19
+
+MTIOC4D/
+TCLKB/PO24
+
+GTIOC1B TXD5/
+SMOSI5/
+SSDA5
+
+84
+
+P77
+
+CS7#
+
+PO23
+
+SMOSI11/
+SSDA11/
+TXD11
+
+ET0_RX_E QSPCLK-A/
+R/
+SDHI_CLK-A/
+RMII0_RX_ MMC_CLK-A
+ER
+
+85
+
+P76
+
+CS6#
+
+PO22
+
+SMISO11/
+SSCL11/
+RXD11
+
+ET0_RX_C QSSL-A/
+LCD_DAT
+LK/
+SDHI_CMD-A/ A18-A
+REF50CK0 MMC_CMD-A
+
+86
+
+PC2
+
+A18
+
+MTIOC4B/
+TCLKA/PO21
+
+87
+
+P75
+
+CS5#
+
+PO20
+
+SCK11/
+RTS11#
+
+ET0_ERXD SDHI_D2-A/
+LCD_DAT
+0/
+MMC_RES#-A A20-A
+RMII0_RX
+D0
+
+88
+
+P74
+
+A20/CS4#
+
+PO19
+
+SS11#/
+CTS11#
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+
+LCD_DAT
+A21-A
+
+89
+
+PC1
+
+A17
+
+MTIOC3A/
+TCLKD/PO18
+
+SCK5/
+SSLA2-A
+
+ET0_ERXD
+2
+
+LCD_DAT IRQ12
+A22-A
+
+PC0
+
+A16
+
+MTIOC3C/
+TCLKC/PO17
+
+CTS5#/
+RTS5#/
+SS5#/
+SSLA1-A
+
+ET0_ERXD
+3
+
+IRQ14
+
+93
+
+P73
+
+CS3#
+
+PO16
+
+94
+
+PB7
+
+A15
+
+MTIOC3B/
+TIOCB5/PO31
+
+TXD9/
+SMOSI9/
+SSDA9/
+SMOSI11/
+SSDA11/
+TXD11
+
+ET0_CRS/
+RMII0_CR
+S_DV
+
+95
+
+PB6
+
+A14
+
+MTIOC3D/
+TIOCA5/PO30
+
+RXD9/
+SMISO9/
+SSCL9/
+SMISO11/
+SSCL11/
+RXD11
+
+ET0_ETXD
+1/
+RMII0_TXD
+1
+
+96
+
+PB5
+
+A13
+
+MTIOC2A/
+MTIOC1B/
+TIOCB4/
+TMRI1/PO29/
+POE4#
+
+SCK9/
+RTS9#/
+SCK11
+
+ET0_ETXD
+0/
+RMII0_TXD
+0
+
+LCD_CLKB
+
+97
+
+PB4
+
+A12
+
+TIOCA4/PO28
+
+CTS9#/
+ET0_TX_E
+SS9#/SS11#/ N/
+CTS11#/
+RMII0_TXD
+RTS11#
+_EN
+
+LCD_TCO
+N0-B
+
+90
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+SCK10/
+RTS10#
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+ET0_TX_E QIO2-A/
+N/
+SDHI_WP/
+RMII0_TXD MMC_D2-A
+_EN
+
+Interrupt
+
+A/D
+D/A
+
+LCD_DAT
+A14-A
+
+SCK5/
+ET0_TX_C QMI-A/QIO1- LCD_DAT
+CTS8#/
+LK
+A/SDHI_D1-A/ A15-A
+SS8#/SS10#/
+MMC_D1-A
+CTS10#/
+RTS10#/
+SSLA0-A
+
+GTIOC2B RXD5/
+SMISO5/
+SSCL5/
+SSLA3-A
+
+ET0_TX_E QMO-A/QIO0- LCD_DAT
+R
+A/SDHI_D0-A/ A16-A
+MMC_D0-A
+
+ET0_RX_D SDHI_D3-A/
+V
+MMC_CD-A
+
+LCD_DAT
+A17-A
+
+LCD_DAT
+A19-A
+
+VCC
+
+91
+
+92
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+VSS
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+ET0_WOL
+
+LCD_EXT
+CLK-A
+
+Page 131 of 3240
+
+RX72N Group
+Table 1.7
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFQFP) (6/9)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+176-Pin System
+LFQFP Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+98
+
+PB3
+
+A11
+
+MTIOC0A/
+MTIOC4A/
+TIOCD3/
+TCLKD/TMO0/
+PO27/POE11#
+
+SCK4/SCK6 ET0_RX_E
+R/
+RMII0_RX_
+ER
+
+LCD_TCO
+N1-B
+
+99
+
+PB2
+
+A10
+
+TIOCC3/
+TCLKC/PO26
+
+CTS4#/
+ET0_RX_C
+RTS4#/
+LK/
+SS4#/
+REF50CK0
+CTS6#/
+RTS6#/SS6#
+
+LCD_TCO
+N2-B
+
+100
+
+PB1
+
+A9
+
+MTIOC0C/
+MTIOC4C/
+TIOCB3/
+TMCI0/PO25
+
+TXD4/
+SMOSI4/
+SSDA4/
+TXD6/
+SMOSI6/
+SSDA6
+
+ET0_ERXD
+0/
+RMII0_RX
+D0
+
+LCD_TCO IRQ4-DS
+N3-B
+
+101
+
+P72
+
+A19/CS2#
+
+ET0_MDC/
+PMGI0_MD
+C
+
+LCD_DAT
+A23-A
+
+102
+
+P71
+
+A18/CS1#
+
+ET0_MDIO
+/
+PMGI0_MD
+IO
+
+PB0
+
+A8
+
+MTIC5W/
+TIOCA3/PO24
+
+RXD4/
+SMISO4/
+SSCL4/
+RXD6/
+SMISO6/
+SSCL6
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+
+LCD_DAT IRQ12
+A0-B
+
+106
+
+PA7
+
+A7
+
+TIOCB2/PO23
+
+MISOA-B
+
+ET0_WOL
+
+LCD_DAT
+A1-B
+
+107
+
+PA6
+
+A6
+
+MTIC5V/
+MTCLKB/
+TIOCA2/
+TMCI3/PO22/
+POE10#
+
+GTETRGB CTS5#/
+RTS5#/
+SS5#/
+MOSIA-B
+
+ET0_EXOU
+T
+
+LCD_DAT
+A2-B
+
+108
+
+PA5
+
+A5
+
+MTIOC6B/
+GTIOC0A RSPCKA-B
+TIOCB1/PO21
+
+ET0_LINK
+STA
+
+LCD_DAT
+A3-B
+
+109
+
+PA4
+
+A4
+
+MTIC5U/
+MTCLKA/
+TIOCA1/
+TMRI0/PO20
+
+TXD5/
+SMOSI5/
+SSDA5/
+SSLA0-B
+
+ET0_MDC/
+PMGI0_MD
+C
+
+LCD_DAT IRQ5-DS
+A4-B
+
+110
+
+PA3
+
+A3
+
+MTIOC0D/
+MTCLKD/
+TIOCD0/
+TCLKB/PO19
+
+RXD5/
+SMISO5/
+SSCL5
+
+ET0_MDIO
+/
+PMGI0_MD
+IO
+
+LCD_DAT IRQ6-DS
+A5-B
+
+111
+
+TRDATA3 PG7
+
+D31
+
+112
+
+PA2
+
+A2
+
+113
+
+TRDATA2 PG6
+
+D30
+
+114
+
+PA1
+
+DQM3/A1
+
+PG5
+
+D29
+
+103
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+VCC
+
+104
+
+105
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+VSS
+
+115
+
+VCC
+
+116
+
+TRCLK
+
+117
+
+VSS
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+ET1_TX_E
+R
+MTIOC7A/
+PO18
+
+GTIOC1A RXD5/
+SMISO5/
+SSCL5/
+SSLA3-B
+
+LCD_DAT
+A6-B
+
+ET1_ETXD
+3
+MTIOC0B/
+GTIOC2A SCK5/
+MTCLKC/
+SSLA2-B
+MTIOC7B/
+TIOCB0/PO17
+
+ET0_WOL
+
+LCD_DAT IRQ11
+A7-B
+
+ET1_ETXD
+2
+
+Page 132 of 3240
+
+RX72N Group
+Table 1.7
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFQFP) (7/9)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+176-Pin System
+LFQFP Control
+
+I/O Port
+
+118
+
+PA0
+
+DQM2/
+BC0#/A0
+
+PG4
+
+D28
+
+120
+
+P67
+
+DQM1/
+CS7#
+
+121
+
+TRDATA1 PG3
+
+122
+
+P66
+
+123
+
+TRDATA0 PG2
+
+124
+
+P65
+
+CKE/CS5#
+
+125
+
+PE7
+
+D15[A15/
+MTIOC6A/
+D15]/D7[A7/ TOC1
+D7]
+
+GTIOC3A MISOB-B
+
+SDHI_WP/
+LCD_DAT IRQ7
+MMC_RES#-B A9-B
+
+AN105
+
+126
+
+PE6
+
+D14[A14/
+MTIOC6C/
+D14]/D6[A6/ TIC1
+D6]
+
+GTIOC3B MOSIB-B
+
+SDHI_CD/
+MMC_CD-B
+
+LCD_DAT IRQ6
+A10-B
+
+AN104
+
+P70
+
+SDCLK
+
+130
+
+PE5
+
+D13[A13/
+MTIOC4C/
+D13]/D5[A5/ MTIOC2B
+D5]
+
+GTIOC0A RSPCKB-B
+
+ET0_RX_C
+LK/
+REF50CK0
+
+LCD_DAT IRQ5
+A11-B
+
+AN103
+
+131
+
+PE4
+
+D12[A12/
+MTIOC4D/
+D12]/D4[A4/ MTIOC1A/
+D4]
+PO28
+
+GTIOC1A SSLB0-B
+
+ET0_ERXD
+2
+
+LCD_DAT
+A12-B
+
+AN102
+
+132
+
+PE3
+
+D11[A11/
+MTIOC4B/
+D11]/D3[A3/ PO26/TOC3/
+D3]
+POE8#
+
+GTIOC2A CTS12#/
+RTS12#/
+SS12#
+
+ET0_ERXD MMC_D7-B
+3
+
+LCD_DAT
+A13-B
+
+AN101
+
+133
+
+PE2
+
+D10[A10/
+MTIOC4A/
+D10]/D2[A2/ PO23/TIC3
+D2]
+
+GTIOC0B RXD12/
+SMISO12/
+SSCL12/
+RXDX12/
+SSLB3-B
+
+MMC_D6-B
+
+LCD_DAT IRQ7-DS
+A14-B
+
+AN100
+
+134
+
+PE1
+
+D9[A9/D9]/
+D1[A1/D1]
+
+MTIOC4C/
+MTIOC3B/
+PO18
+
+GTIOC1B TXD12/
+SMOSI12/
+SSDA12/
+TXDX12/
+SIOX12/
+SSLB2-B
+
+MMC_D5-B
+
+LCD_DAT
+A15-B
+
+ANEX1
+
+135
+
+PE0
+
+D8[A8/D8]/
+D0[A0/D0]
+
+MTIOC3D
+
+GTIOC2B SCK12/
+SSLB1-B
+
+MMC_D4-B
+
+LCD_DAT
+A16-B
+
+ANEX0
+
+136
+
+P64
+
+WE#/D3[A3/
+D3]/CS4#
+
+ET1_ETXD
+0/
+RMII1_TXD
+0
+
+137
+
+P63
+
+CAS#/
+D2[A2/D2]/
+CS3#
+
+ET1_ETXD
+1/
+RMII1_TXD
+1
+
+138
+
+P62
+
+RAS#/
+D1[A1/D1]/
+CS2#
+
+ET1_ERXD
+0/
+RMII1_RX
+D0
+
+119
+
+127
+
+TRSYNC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+MTIOC4A/
+GTIOC0B SSLA1-B
+MTIOC6D/
+TIOCA0/PO16/
+CACREF
+
+ET0_TX_E
+N/
+RMII0_TXD
+_EN
+
+Interrupt
+
+A/D
+D/A
+
+LCD_DAT
+A8-B
+
+ET1_ETXD
+1/
+RMII1_TXD
+1
+MTIOC7C
+
+GTIOC1B CRX2
+
+D27
+
+DQM0/
+CS6#
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+EPLSOUT1
+
+IRQ15
+
+ET1_ETXD
+0/
+RMII1_TXD
+0
+MTIOC7D
+
+GTIOC2B CTX2
+
+D26
+
+ET1_TX_C
+LK
+
+VCC
+
+128
+129
+
+Bus
+EXDMAC
+SDRAMC
+
+VSS
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 133 of 3240
+
+RX72N Group
+Table 1.7
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFQFP) (8/9)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+176-Pin System
+LFQFP Control
+
+I/O Port
+
+139
+
+P61
+
+SDCS#/
+D0[A0/D0]/
+CS1#
+
+ET1_ERXD
+1/
+RMII1_RX
+D1
+
+P60
+
+CS0#
+
+ET1_TX_E
+N/
+RMII1_TXD
+_EN
+
+143
+
+PD7
+
+D7[A7/D7]
+
+144
+
+TRDATA7 PG1
+
+145
+
+PD6
+
+146
+
+TRDATA6 PG0
+
+147
+
+PD5
+
+D5[A5/D5]
+
+MTIC5W/
+MTIOC8C/
+MTCLKA/
+POE10#
+
+SSLC1-A
+
+ET1_MDC/ QSPCLK-B/
+PMGI1_MD SDHI_CLK-B/
+C
+MMC_CLK-B
+
+LCD_DAT IRQ5
+A19-B
+
+AN113
+
+148
+
+PD4
+
+D4[A4/D4]
+
+MTIOC8B/
+POE11#
+
+SSLC0-A
+
+ET1_MDIO QSSL-B/
+LCD_DAT IRQ4
+/
+SDHI_CMD-B/ A20-B
+PMGI1_MD MMC_CMD-B
+IO
+
+AN112
+
+149
+
+TRSYNC1 P97
+
+150
+
+PD3
+
+140
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+VSS
+
+141
+
+142
+
+Bus
+EXDMAC
+SDRAMC
+
+VCC
+
+151
+
+VSS
+
+152
+
+TRDATA5 P96
+
+153
+
+VCC
+
+MTIC5U/
+POE0#
+
+SSLC3-A
+
+D25
+
+D6[A6/D6]
+
+MTIC5V/
+MTIOC8A/
+POE4#
+
+SSLC2-A
+
+ET1_RX_C QMO-B/QIO0- LCD_DAT IRQ6
+LK/
+B/SDHI_D0-B/ A18-B
+REF50CK1 MMC_D0-B
+
+AN106
+
+ET1_RX_C
+LK/
+REF50CK1
+
+D23/A23
+
+ET1_ERXD
+3
+MTIOC8D/
+TOC2/POE8#
+
+GTIOC0A RSPCKC-A
+
+D22/A22
+
+D2[A2/D2]
+
+AN107
+
+ET1_RX_E
+R/
+RMII1_RX_
+ER
+
+D24
+
+D3[A3/D3]
+
+ET1_RX_E QMI-B/QIO1- LCD_DAT IRQ7
+R/
+B/SDHI_D1-B/ A17-B
+RMII1_RX_ MMC_D1-B
+ER
+
+ET1_WOL
+
+QIO3-B/
+SDHI_D3-B/
+MMC_D3-B
+
+LCD_DAT IRQ3
+A21-B
+
+AN111
+
+ET1_EXOU QIO2-B/
+T
+SDHI_D2-B/
+MMC_D2-B
+
+LCD_DAT IRQ2
+A22-B
+
+AN110
+
+LCD_DAT IRQ1
+A23-B
+
+AN109
+
+LCD_EXT IRQ0
+CLK-B
+
+AN108
+
+ET1_ERXD
+2
+
+154
+
+PD2
+
+MTIOC4D/
+TIC2
+
+GTIOC0B MISOC-A/
+CRX0
+
+155
+
+TRDATA4 P95
+
+156
+
+PD1
+
+D1[A1/D1]
+
+157
+
+P94
+
+D20/A20
+
+158
+
+PD0
+
+D0[A0/D0]
+
+POE4#
+
+159
+
+P93
+
+D19/A19
+
+POE0#
+
+CTS7#/
+ET1_LINK
+RTS7#/SS7# STA
+
+AN117
+
+160
+
+P92
+
+D18/A18
+
+POE4#
+
+RXD7/
+SMISO7/
+SSCL7
+
+ET1_CRS/
+RMII1_CR
+S_DV
+
+AN116
+
+161
+
+P91
+
+D17/A17
+
+SCK7
+
+ET1_COL
+
+AN115
+
+D21/A21
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+ET1_ERXD
+1/
+RMII1_RX
+D1
+MTIOC4B/
+POE0#
+
+GTIOC1A MOSIC-A/
+CTX0
+ET1_ERXD
+0/
+RMII1_RX
+D0
+GTIOC1B
+
+Page 134 of 3240
+
+RX72N Group
+Table 1.7
+
+1. Overview
+List of Pin and Pin Functions (176-Pin LFQFP) (9/9)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+176-Pin System
+LFQFP Control
+162
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+P90
+
+D16/A16
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+VSS
+
+163
+
+164
+
+Timer
+
+TXD7/
+SMOSI7/
+SSDA7
+
+ET1_RX_D
+V
+
+AN114
+
+VCC
+
+165
+
+P47
+
+IRQ15-DS AN007
+
+166
+
+P46
+
+IRQ14-DS AN006
+
+167
+
+P45
+
+IRQ13-DS AN005
+
+168
+
+P44
+
+IRQ12-DS AN004
+
+169
+
+P43
+
+IRQ11-DS AN003
+
+170
+
+P42
+
+IRQ10-DS AN002
+
+171
+
+P41
+
+IRQ9-DS
+
+AN001
+
+P40
+
+IRQ8-DS
+
+AN000
+
+P07
+
+IRQ15
+
+ADTRG0#
+
+172
+
+VREFL0
+
+173
+174
+
+VREFH0
+
+175
+
+AVCC0
+
+176
+
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external bus is enabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 135 of 3240
+
+RX72N Group
+
+1. Overview
+
+1.6.4
+
+145-Pin TFLGA
+
+Table 1.8
+
+List of Pin and Pin Functions (145-Pin TFLGA) (1/7)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+145-Pin System
+TFLGA Control
+A1
+
+Timer
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+AVSS0
+
+A2
+
+P07
+
+IRQ15
+
+ADTRG0#
+
+A3
+
+P40
+
+IRQ8-DS
+
+AN000
+
+A4
+
+P42
+
+IRQ10-DS AN002
+
+A5
+
+P45
+
+A6
+
+P90
+
+A16
+
+A7
+
+P92
+
+A18
+
+POE4#
+
+A8
+
+PD2
+
+D2[A2/D2]
+
+MTIOC4D/
+TIC2
+
+GTIOC0B MISOC-A/
+CRX0
+
+A9
+
+PD6
+
+D6[A6/D6]
+
+MTIC5V/
+MTIOC8A/
+POE4#
+
+SSLC2-A
+
+A11
+
+P62
+
+RAS#/
+D1[A1/D1]/
+CS2#
+
+A12
+
+PE1
+
+D9[A9/D9]/
+D1[A1/D1]
+
+A13
+
+PE3
+
+D11[A11/
+MTIOC4B/
+D11]/D3[A3/ PO26/TOC3/
+D3]
+POE8#
+
+A10
+
+RXD7/
+SMISO7/
+SSCL7
+
+AN114
+
+RMII1_CR
+S_DV
+
+AN116
+
+ET1_EXOU QIO2-B/
+T
+SDHI_D2-B/
+MMC_D2-B
+
+LCD_DAT IRQ2
+A22-B
+
+AN110
+
+REF50CK1 QMO-B/QIO0- LCD_DAT IRQ6
+B/SDHI_D0-B/ A18-B
+MMC_D0-B
+
+AN106
+
+VSS
+
+B1
+
+AVCC1
+
+B2
+
+AVCC0
+
+RMII1_RX
+D0
+MTIOC4C/
+MTIOC3B/
+PO18
+
+GTIOC1B TXD12/
+SMOSI12/
+SSDA12/
+TXDX12/
+SIOX12/
+SSLB2-B
+
+MMC_D5-B
+
+LCD_DAT
+A15-B
+
+ANEX1
+
+GTIOC2A CTS12#/
+RTS12#/
+SS12#
+
+ET0_ERXD MMC_D7-B
+3
+
+LCD_DAT
+A13-B
+
+AN101
+
+P05
+
+B3
+B4
+
+IRQ13-DS AN005
+TXD7/
+SMOSI7/
+SSDA7
+
+SSILRCK1
+
+IRQ13
+
+DA1
+
+VREFL0
+
+B5
+
+P43
+
+IRQ11-DS AN003
+
+B6
+
+P47
+
+IRQ15-DS AN007
+
+B7
+
+P91
+
+A17
+
+B8
+
+PD0
+
+D0[A0/D0]
+
+POE4#
+
+B9
+
+PD4
+
+D4[A4/D4]
+
+MTIOC8B/
+POE11#
+
+B11
+
+P61
+
+SDCS#/
+D0[A0/D0]/
+CS1#
+
+B12
+
+PE2
+
+D10[A10/
+MTIOC4A/
+D10]/D2[A2/ PO23/TIC3
+D2]
+
+GTIOC0B RXD12/
+SMISO12/
+SSCL12/
+RXDX12/
+SSLB3-B
+
+B13
+
+PE4
+
+D12[A12/
+MTIOC4D/
+D12]/D4[A4/ MTIOC1A/
+D4]
+PO28
+
+GTIOC1A SSLB0-B
+
+B10
+
+C1
+
+SCK7
+
+AN115
+
+GTIOC1B
+SSLC0-A
+
+LCD_EXT IRQ0
+CLK-B
+
+AN108
+
+ET1_MDIO QSSL-B/
+LCD_DAT IRQ4
+/
+SDHI_CMD-B/ A20-B
+PMGI1_MD MMC_CMD-B
+IO
+
+AN112
+
+VCC
+RMII1_RX
+D1
+MMC_D6-B
+
+ET0_ERXD
+2
+
+LCD_DAT IRQ7-DS
+A14-B
+
+AN100
+
+LCD_DAT
+A12-B
+
+AN102
+
+AVSS1
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 136 of 3240
+
+RX72N Group
+Table 1.8
+
+1. Overview
+List of Pin and Pin Functions (145-Pin TFLGA) (2/7)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+145-Pin System
+TFLGA Control
+
+I/O Port
+
+C2
+
+P02
+
+C3
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+TMCI1
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+SCK6/
+SSIBCK1
+
+Interrupt
+
+A/D
+D/A
+
+IRQ10
+
+AN120
+
+AN001
+
+VREFH0
+
+C4
+
+P41
+
+IRQ9-DS
+
+C5
+
+P46
+
+IRQ14-DS AN006
+
+C6
+
+VSS
+
+C7
+
+PD1
+
+D1[A1/D1]
+
+MTIOC4B/
+POE0#
+
+GTIOC1A MOSIC-A/
+CTX0
+
+C8
+
+PD3
+
+D3[A3/D3]
+
+MTIOC8D/
+TOC2/POE8#
+
+GTIOC0A RSPCKC-A
+
+C9
+
+PD7
+
+D7[A7/D7]
+
+MTIC5U/
+POE0#
+
+C10
+
+P63
+
+CAS#/
+D2[A2/D2]/
+CS3#
+
+C11
+
+PE0
+
+D8[A8/D8]/
+D0[A0/D0]
+
+P70
+
+SDCLK
+
+C12
+C13
+
+AN109
+
+LCD_DAT IRQ3
+A21-B
+
+AN111
+
+RMII1_RX_ QMI-B/QIO1- LCD_DAT IRQ7
+ER
+B/SDHI_D1-B/ A17-B
+MMC_D1-B
+
+AN107
+
+ET1_WOL
+
+P00
+
+D2
+
+PF5
+
+D3
+
+P03
+
+D4
+
+P01
+
+RMII1_TXD
+1
+MTIOC3D
+
+GTIOC2B SCK12/
+SSLB1-B
+
+MMC_D4-B
+
+TMRI0
+
+WAIT#
+
+TXD6/
+SMOSI6/
+SSDA6/
+AUDIO_CLK
+
+ANEX0
+
+AN118
+
+SSILRCK0
+
+IRQ4
+
+SSIDATA1
+
+IRQ11
+
+DA0
+
+TMCI0
+
+RXD6/
+SMISO6/
+SSCL6/
+SSIBCK0
+
+IRQ9
+
+AN119
+
+VCC
+P93
+
+A19
+
+POE0#
+
+CTS7#/
+ET1_LINK
+RTS7#/SS7# STA
+
+D7
+
+PD5
+
+D5[A5/D5]
+
+MTIC5W/
+MTIOC8C/
+MTCLKA/
+POE10#
+
+SSLC1-A
+
+D8
+
+P60
+
+CS0#
+
+RMII1_TXD
+_EN
+
+D9
+
+P64
+
+WE#/
+D3[A3/D3]/
+CS4#
+
+RMII1_TXD
+0
+
+D10
+
+PE7
+
+D15[A15/
+MTIOC6A/
+D15]/D7[A7/ TOC1
+D7]
+
+GTIOC3A MISOB-B
+
+D12
+
+PE5
+
+D13[A13/
+MTIOC4C/
+D13]/D5[A5/ MTIOC2B
+D5]
+
+GTIOC0A RSPCKB-B
+
+D13
+
+PE6
+
+D14[A14/
+MTIOC6C/
+D14]/D6[A6/ TIC1
+D6]
+
+GTIOC3B MOSIB-B
+
+AN117
+
+ET1_MDC/ QSPCLK-B/
+PMGI1_MD SDHI_CLK-B/
+C
+MMC_CLK-B
+
+LCD_DAT IRQ5
+A19-B
+
+AN113
+
+SDHI_WP/
+LCD_DAT IRQ7
+MMC_RES#-B A9-B
+
+AN105
+
+LCD_DAT IRQ5
+A11-B
+
+AN103
+
+LCD_DAT IRQ6
+A10-B
+
+AN104
+
+VCC
+
+E1
+
+VSS
+
+E2
+
+VCL
+
+E3
+
+E4
+
+LCD_DAT
+A16-B
+
+IRQ8
+
+D6
+
+D11
+
+QIO3-B/
+SDHI_D3-B/
+MMC_D3-B
+
+VSS
+
+D1
+
+D5
+
+SSLC3-A
+
+LCD_DAT IRQ1
+A23-B
+
+PJ5
+
+POE8#
+
+CTS2#/
+RTS2#/
+SS2#/
+SSIRXD0
+
+ET0_RX_C
+LK/
+REF50CK0
+SDHI_CD/
+MMC_CD-B
+
+EPLSOUT0
+
+EMLE
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 137 of 3240
+
+RX72N Group
+Table 1.8
+
+1. Overview
+List of Pin and Pin Functions (145-Pin TFLGA) (3/7)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+145-Pin System
+TFLGA Control
+
+I/O Port
+
+E5
+
+P44
+
+E10
+
+PA0
+
+BC0#/A0
+
+MTIOC4A/
+GTIOC0B SSLA1-B
+MTIOC6D/
+TIOCA0/PO16/
+CACREF
+
+E11
+
+P66
+
+DQM0/
+CS6#
+
+MTIOC7D
+
+GTIOC2B CTX2
+
+E12
+
+P65
+
+CKE/CS5#
+
+E13
+
+P67
+
+DQM1/
+CS7#
+
+MTIOC7C
+
+GTIOC1B CRX2
+
+PJ3
+
+EDACK1
+
+MTIOC3C
+
+CTS6#/
+RTS6#/
+SS6#/
+CTS0#/
+RTS0#/
+SS0#/
+SSITXD0
+
+ET0_EXOU
+T
+
+PA3
+
+A3
+
+MTIOC0D/
+MTCLKD/
+TIOCD0/
+TCLKB/PO19
+
+RXD5/
+SMISO5/
+SSCL5
+
+ET0_MDIO
+/
+PMGI0_MD
+IO
+
+LCD_DAT IRQ6-DS
+A5-B
+
+F12
+
+PA1
+
+A1
+
+MTIOC0B/
+GTIOC2A SCK5/
+MTCLKC/
+SSLA2-B
+MTIOC7B/
+TIOCB0/PO17
+
+ET0_WOL
+
+LCD_DAT IRQ11
+A7-B
+
+F13
+
+PA2
+
+A2
+
+MTIOC7A/
+PO18
+
+F1
+
+XCIN
+
+F2
+
+XCOUT
+
+F3
+
+F4
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+IRQ12-DS AN004
+ET0_TX_E
+N/
+RMII0_TXD
+_EN
+
+LCD_DAT
+A8-B
+
+EPLSOUT1
+
+IRQ15
+
+VSS
+
+G1
+
+XTAL
+
+G2
+
+RES#
+
+G3
+
+MD/FINED
+
+G4
+
+BSCANP
+
+GTIOC1A RXD5/
+SMISO5/
+SSCL5/
+SSLA3-B
+
+LCD_DAT
+A6-B
+
+P37
+
+G10
+
+PA5
+
+A5
+
+MTIOC6B/
+GTIOC0A RSPCKA-B
+TIOCB1/PO21
+
+ET0_LINK
+STA
+
+LCD_DAT
+A3-B
+
+G11
+
+PA6
+
+A6
+
+MTIC5V/
+MTCLKB/
+TIOCA2/
+TMCI3/PO22/
+POE10#
+
+GTETRGB CTS5#/
+RTS5#/
+SS5#/
+MOSIA-B
+
+ET0_EXOU
+T
+
+LCD_DAT
+A2-B
+
+PA4
+
+A4
+
+MTIC5U/
+MTCLKA/
+TIOCA1/
+TMRI0/PO20
+
+TXD5/
+SMOSI5/
+SSDA5/
+SSLA0-B
+
+ET0_MDC/
+PMGI0_MD
+C
+
+LCD_DAT IRQ5-DS
+A4-B
+
+G12
+
+A/D
+D/A
+
+VBATT
+
+F10
+
+F11
+
+Bus
+EXDMAC
+SDRAMC
+
+VCC
+
+G13
+
+H1
+
+EXTAL
+
+H2
+
+VCC
+
+H3
+
+VSS
+
+H4
+
+UPSEL
+
+P36
+
+P35
+
+NMI
+
+H10
+
+P72
+
+A19/CS2#
+
+ET0_MDC/
+PMGI0_MD
+C
+
+H11
+
+P71
+
+A18/CS1#
+
+ET0_MDIO
+/
+PMGI0_MD
+IO
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 138 of 3240
+
+RX72N Group
+Table 1.8
+
+1. Overview
+List of Pin and Pin Functions (145-Pin TFLGA) (4/7)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+145-Pin System
+TFLGA Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+H12
+
+PB0
+
+A8
+
+MTIC5W/
+TIOCA3/PO24
+
+RXD4/
+SMISO4/
+SSCL4/
+RXD6/
+SMISO6/
+SSCL6
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+
+LCD_DAT IRQ12
+A0-B
+
+H13
+
+PA7
+
+A7
+
+TIOCB2/PO23
+
+MISOA-B
+
+ET0_WOL
+
+LCD_DAT
+A1-B
+
+MTIOC0A/
+TMCI3/PO12/
+POE10#
+
+SCK6/SCK0 ET0_LINK
+STA
+
+MTIOC0D/
+TIOCD0/
+TMRI3/PO11/
+POE4#/
+POE11#
+
+RXD6/
+SMISO6/
+SSCL6/
+RXD0/
+SMISO0/
+SSCL0/
+CRX0
+
+PCKO
+
+IRQ3-DS
+
+VSYNC
+
+IRQ2-DS
+
+J1
+
+TRST#
+
+P34
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+J2
+
+P33
+
+J3
+
+P32
+
+MTIOC0C/
+TIOCC0/
+TMO3/PO10/
+RTCIC2/
+RTCOUT/
+POE0#/
+POE10#
+
+TXD6/
+SMOSI6/
+SSDA6/
+TXD0/
+SMOSI0/
+SSDA0/
+CTX0/
+USB0_VBUS
+EN
+
+P30
+
+MTIOC4B/
+TMRI3/PO8/
+RTCIC0/
+POE8#
+
+RXD1/
+SMISO1/
+SSCL1/
+MISOB-A
+
+J4
+
+TDI
+
+EDREQ1
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+IRQ4
+
+ET1_MDIO
+/
+PMGI1_MD
+IO
+
+IRQ0-DS
+
+J10
+
+PB3
+
+A11
+
+MTIOC0A/
+MTIOC4A/
+TIOCD3/
+TCLKD/TMO0/
+PO27/POE11#
+
+SCK4/SCK6 ET0_RX_E
+R/
+RMII0_RX_
+ER
+
+LCD_TCO
+N1-B
+
+J11
+
+PB4
+
+A12
+
+TIOCA4/PO28
+
+CTS9#/
+ET0_TX_E
+SS9#/SS11#/ N/
+CTS11#/
+RMII0_TXD
+RTS11#
+_EN
+
+LCD_TCO
+N0-B
+
+J12
+
+PB2
+
+A10
+
+TIOCC3/
+TCLKC/PO26
+
+CTS4#/
+ET0_RX_C
+RTS4#/
+LK/
+SS4#/
+REF50CK0
+CTS6#/
+RTS6#/SS6#
+
+LCD_TCO
+N2-B
+
+J13
+
+PB1
+
+A9
+
+MTIOC0C/
+MTIOC4C/
+TIOCB3/
+TMCI0/PO25
+
+TXD4/
+SMOSI4/
+SSDA4/
+TXD6/
+SMOSI6/
+SSDA6
+
+ET0_ERXD
+0/
+RMII0_RX
+D0
+
+LCD_TCO IRQ4-DS
+N3-B
+
+K1
+
+TCK
+
+P27
+
+CS7#
+
+MTIOC2B/
+TMCI3/PO7
+
+SCK1/
+RSPCKB-A
+
+ET1_WOL
+
+K2
+
+TDO
+
+P26
+
+CS6#
+
+MTIOC2A/
+TMO1/PO6
+
+TXD1/
+SMOSI1/
+SSDA1/
+CTS3#/
+RTS3#/
+SS3#/
+MOSIB-A
+
+ET1_EXOU
+T
+
+K3
+
+TMS
+
+P31
+
+MTIOC4D/
+TMCI2/PO9/
+RTCIC1
+
+CTS1#/
+RTS1#/
+SS1#/
+SSLB0-A
+
+ET1_MDC/
+PMGI1_MD
+C
+
+P15
+
+MTIOC0B/
+GTETRGA RXD1/
+MTCLKB/
+SMISO1/
+TIOCB2/
+SSCL1/
+TCLKB/TMCI2/
+SCK3/CRX1PO13
+DS/
+SSILRCK1
+
+K4
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+A/D
+D/A
+
+IRQ1-DS
+
+PIXD0
+
+IRQ5
+
+Page 139 of 3240
+
+RX72N Group
+Table 1.8
+
+1. Overview
+List of Pin and Pin Functions (145-Pin TFLGA) (5/7)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+145-Pin System
+TFLGA Control
+K5
+
+Timer
+
+I/O Port
+
+TRDATA2 P54
+
+Bus
+EXDMAC
+SDRAMC
+ALE/
+D1[A1/D1]/
+EDACK0
+
+K6
+
+P53*1
+
+BCLK
+
+K7
+
+P51
+
+WR1#/
+BC1#/
+WAIT#
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+MTIOC4B/
+TMCI1
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+CTS2#/
+RTS2#/
+SS2#/CTX1
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+SCK2/
+SSLB2-A
+
+VCC
+
+K9
+
+TRDATA0 P80
+
+EDREQ0
+
+MTIOC3B/
+PO26
+
+SCK10/
+RTS10#
+
+ET0_TX_E QIO2-A/
+N/
+SDHI_WP/
+RMII0_TXD MMC_D2-A
+_EN
+
+K10
+
+TRDATA6 P76
+
+CS6#
+
+PO22
+
+SMISO11/
+SSCL11/
+RXD11
+
+ET0_RX_C QSSL-A/
+LK/
+SDHI_CMD-A/
+REF50CK0 MMC_CMD-A
+
+K11
+
+PB7
+
+A15
+
+MTIOC3B/
+TIOCB5/PO31
+
+TXD9/
+SMOSI9/
+SSDA9/
+SMOSI11/
+SSDA11/
+TXD11
+
+ET0_CRS/
+RMII0_CR
+S_DV
+
+K12
+
+PB6
+
+A14
+
+MTIOC3D/
+TIOCA5/PO30
+
+RXD9/
+SMISO9/
+SSCL9/
+SMISO11/
+SSCL11/
+RXD11
+
+ET0_ETXD
+1/
+RMII0_TXD
+1
+
+K13
+
+PB5
+
+A13
+
+MTIOC2A/
+MTIOC1B/
+TIOCB4/
+TMRI1/PO29/
+POE4#
+
+SCK9/
+RTS9#/
+SCK11
+
+ET0_ETXD
+0/
+RMII0_TXD
+0
+
+P25
+
+CS5#/
+EDACK1
+
+MTIOC4C/
+MTCLKB/
+TIOCA4/PO5
+
+RXD3/
+SMISO3/
+SSCL3/
+SSIDATA1
+
+L2
+
+P23
+
+EDACK0
+
+MTIOC3D/
+MTCLKD/
+TIOCD3/PO3
+
+GTIOC0A TXD3/
+SMOSI3/
+SSDA3/
+CTS0#/
+RTS0#/
+SS0#/CTX1/
+SSIBCK0
+
+L3
+
+P16
+
+MTIOC3C/
+MTIOC3D/
+TIOCB1/
+TCLKC/TMO2/
+PO14/
+RTCOUT
+
+TXD1/
+SMOSI1/
+SSDA1/
+RXD3/
+SMISO3/
+SSCL3/
+SCL2-DS/
+USB0_VBUS
+EN/
+USB0_VBUS
+/
+USB0_OVRC
+URB
+
+L4
+
+P24
+
+MTIOC4A/
+MTCLKA/
+TIOCB4/
+TMRI1/PO4
+
+SCK3/
+USB0_VBUS
+EN/SSIBCK1
+
+L5
+
+P13
+
+MTIOC0B/
+TIOCA5/
+TMO3/PO13
+
+GTADSM1 TXD2/
+SMOSI2/
+SSDA2/
+SDA0[FM+]
+
+L6
+
+CLKOUT2 P56
+5M
+
+CLKOUT
+
+CS4#/
+EDREQ1
+
+EDACK1
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+A/D
+D/A
+
+ET0_LINK
+STA
+
+K8
+
+L1
+
+Interrupt
+
+MTIOC3C/
+TIOCA1
+
+LCD_CLKB
+
+SDHI_CD/
+HSYNC
+
+ADTRG0#
+
+SDHI_D1-C/
+PIXD7
+
+IRQ6
+
+ADTRG0#
+
+IRQ3
+
+ADTRG1#
+
+SDHI_WP/
+PIXCLK
+
+SCK7
+
+Page 140 of 3240
+
+RX72N Group
+Table 1.8
+
+1. Overview
+List of Pin and Pin Functions (145-Pin TFLGA) (6/7)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+145-Pin System
+TFLGA Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+L7
+
+P52
+
+RD#
+
+P83
+
+EDACK1
+
+MTIOC4C
+
+GTIOC0A SCK10/
+SS10#/
+CTS10#
+
+ET0_CRS/
+RMII0_CR
+S_DV
+
+L9
+
+PC5
+
+D3[A3/D3]/
+A21/CS2#/
+WAIT#
+
+MTIOC3B/
+MTCLKD/
+TMRI2/PO29
+
+GTIOC1A SCK8/
+RTS8#/
+SCK10/
+RSPCKA-A
+
+ET0_ETXD MMC_D5-A
+2
+
+L10
+
+PC4
+
+A20/CS3#
+
+MTIOC3D/
+MTCLKC/
+TMCI1/PO25/
+POE0#
+
+GTETRG
+C
+
+L11
+
+PC2
+
+A18
+
+MTIOC4B/
+TCLKA/PO21
+
+GTIOC2B RXD5/
+SMISO5/
+SSCL5/
+SSLA3-A
+
+L12
+
+TRDATA4 P73
+
+CS3#
+
+PO16
+
+L13
+
+VSS
+EDREQ0
+
+MTIOC3B/
+MTCLKC/
+TIOCC3/
+TMO0/PO2
+
+L8
+
+TRCLK
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+SCK5/
+ET0_TX_C
+CTS8#/
+LK
+SS8#/SS10#/
+CTS10#/
+RTS10#/
+SSLA0-A
+
+M2
+
+P17
+
+MTIOC3A/
+GTIOC0B
+MTIOC3B/
+MTIOC4B/
+TIOCB0/
+TCLKD/TMO1/
+PO15/POE8#
+
+M3
+
+P86
+
+MTIOC4D/
+TIOCA0
+
+GTIOC2B SMISO10/
+SSCL10/
+RXD10
+
+M4
+
+P12
+
+TMCI1
+
+GTADSM0 RXD2/
+SMISO2/
+SSCL2/
+SCL0[FM+]
+
+VCC_USB
+VSS_USB
+
+IRQ7
+
+ADTRG1#
+
+QMI-A/
+QIO1-A/
+SDHI_D1-A/
+MMC_D1-A
+
+ET0_RX_D SDHI_D3-A/
+V
+MMC_CD-A
+
+GTIOC1A SCK0/
+USB0_OVRC
+URB/
+AUDIO_CLK
+
+SDHI_D0-C/
+PIXD6
+
+SCK1/TXD3/ EPLSOUT0 SDHI_D3-C/
+SMOSI3/
+PIXD3
+SSDA3/
+SDA2-DS/
+SSITXD0
+PIXD1
+
+IRQ2
+
+M7
+
+P50
+
+WR0#/WR#
+
+M8
+
+PC6
+
+D2[A2/D2]/
+A22/CS1#
+
+MTIOC3C/
+MTCLKA/
+TMCI2/PO30/
+TIC0
+
+GTIOC3B RXD8/
+SMISO8/
+SSCL8/
+SMISO10/
+SSCL10/
+RXD10/
+MOSIA-A
+
+ET0_ETXD MMC_D6-A
+3
+
+M9
+
+TRDATA1 P81
+
+EDACK0
+
+MTIOC3D/
+PO27
+
+GTIOC0B SMISO10/
+SSCL10/
+RXD10
+
+ET0_ETXD QIO3-A/
+0/
+SDHI_CD/
+RMII0_TXD MMC_D3-A
+0
+
+M10
+
+TRDATA7 P77
+
+CS7#
+
+PO23
+
+SMOSI11/
+SSDA11/
+TXD11
+
+ET0_RX_E QSPCLK-A/
+R/
+SDHI_CLK-A/
+RMII0_RX_ MMC_CLK-A
+ER
+
+M11
+
+PC0
+
+A16
+
+MTIOC3C/
+TCLKC/PO17
+
+CTS5#/
+RTS5#/
+SS5#/
+SSLA1-A
+
+ET0_ERXD
+3
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+A/D
+D/A
+
+ET0_WOL
+
+P22
+
+M6
+
+Interrupt
+
+RXD2/
+SMISO2/
+SSCL2/
+SSLB3-A
+
+M1
+
+M5
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+TXD2/
+SMOSI2/
+SSDA2/
+SSLB1-A
+IRQ13
+
+IRQ14
+
+Page 141 of 3240
+
+RX72N Group
+Table 1.8
+
+1. Overview
+List of Pin and Pin Functions (145-Pin TFLGA) (7/7)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+145-Pin System
+TFLGA Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+M12
+
+PC1
+
+A17
+
+M13
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+MTIOC3A/
+TCLKD/PO18
+
+Memory I/F
+Camera I/F
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+SCK5/
+SSLA2-A
+
+ET0_ERXD
+2
+
+Interrupt
+
+A/D
+D/A
+
+IRQ12
+
+VCC
+
+N1
+
+P21
+
+MTIOC1B/
+MTIOC4A/
+TIOCA3/
+TMCI0/PO1
+
+N2
+
+P20
+
+MTIOC1A/
+TIOCB3/
+TMRI0/PO0
+
+TXD0/
+SMOSI0/
+SSDA0/
+SDA1/
+USB0_ID/
+SSIRXD0
+
+N3
+
+P87
+
+MTIOC4C/
+TIOCA2
+
+GTIOC1B SMOSI10/
+SSDA10/
+TXD10
+
+N4
+
+P14
+
+MTIOC3A/
+GTETRG
+MTCLKA/
+D
+TIOCB5/
+TCLKA/TMRI2/
+PO15
+
+N5
+
+GTIOC2A RXD0/
+SMISO0/
+SSCL0/
+SCL1/
+USB0_EXIC
+EN/
+SSILRCK0
+
+SDHI_CLK-C/
+PIXD5
+
+IRQ9
+
+SDHI_CMD-C/
+PIXD4
+
+IRQ8
+
+EPLSOUT1 SDHI_D2-C/
+PIXD2
+
+CTS1#/
+RTS1#/
+SS1#/CTX1/
+USB0_OVRC
+URA
+
+IRQ4
+
+USB0_DM
+
+N6
+
+USB0_DP
+
+N7
+
+TRDATA3 P55
+
+D0[A0/D0]/
+WAIT#/
+EDREQ0
+
+MTIOC4D/
+TMO3
+
+N8
+
+VSS
+
+N9
+
+UB
+
+N10
+
+TRSYNC
+
+TXD7/
+SMOSI7/
+SSDA7/
+CRX1
+
+PC7
+
+A23/CS0#
+
+MTIOC3A/
+MTCLKB/
+TMO2/PO31/
+TOC0/
+CACREF
+
+GTIOC3A TXD8/
+SMOSI8/
+SSDA8/
+SMOSI10/
+SSDA10/
+TXD10/
+MISOA-A
+
+ET0_COL
+
+P82
+
+EDREQ1
+
+MTIOC4A/
+PO28
+
+GTIOC2A SMOSI10/
+SSDA10/
+TXD10
+
+ET0_ETXD MMC_D4-A
+1/
+RMII0_TXD
+1
+
+N11
+
+PC3
+
+A19
+
+MTIOC4D/
+TCLKB/PO24
+
+GTIOC1B TXD5/
+SMOSI5/
+SSDA5
+
+ET0_TX_E QMO-A/QIO0R
+A/SDHI_D0-A/
+MMC_D0-A
+
+N12
+
+TRSYNC1 P75
+
+CS5#
+
+PO20
+
+SCK11/
+RTS11#
+
+ET0_ERXD SDHI_D2-A/
+0/
+MMC_RES#-A
+RMII0_RX
+D0
+
+N13
+
+TRDATA5 P74
+
+A20/CS4#
+
+PO19
+
+SS11#/
+CTS11#
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+
+ET0_EXOU
+T
+
+IRQ10
+
+MMC_D7-A
+
+IRQ14
+
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external bus is enabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 142 of 3240
+
+RX72N Group
+
+1. Overview
+
+1.6.5
+
+144-Pin LFQFP
+
+Table 1.9
+
+List of Pin and Pin Functions (144-Pin LFQFP) (1/7)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+144-Pin System
+LFQFP Control
+1
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+P05
+
+SSILRCK1
+
+IRQ13
+
+DA1
+
+P03
+
+SSIDATA1
+
+IRQ11
+
+DA0
+
+AVCC1
+
+4
+5
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+Communication
+
+AVSS0
+
+2
+3
+
+Timer
+
+AVSS1
+
+6
+
+P02
+
+TMCI1
+
+SCK6/
+SSIBCK1
+
+IRQ10
+
+AN120
+
+7
+
+P01
+
+TMCI0
+
+RXD6/
+SMISO6/
+SSCL6/
+SSIBCK0
+
+IRQ9
+
+AN119
+
+8
+
+P00
+
+TMRI0
+
+TXD6/
+SMOSI6/
+SSDA6/
+AUDIO_CLK
+
+IRQ8
+
+AN118
+
+9
+
+PF5
+
+SSILRCK0
+
+IRQ4
+
+10
+
+EMLE
+
+11
+
+12
+
+PJ5
+
+POE8#
+
+CTS2#/
+RTS2#/
+SS2#/
+SSIRXD0
+
+EPLSOUT0
+
+MTIOC3C
+
+CTS6#/
+RTS6#/
+SS6#/
+CTS0#/
+RTS0#/
+SS0#/
+SSITXD0
+
+ET0_EXOU
+T
+
+VSS
+
+13
+
+PJ3
+
+14
+
+VCL
+
+15
+
+VBATT
+
+16
+
+MD/FINED
+
+17
+
+XCIN
+
+18
+
+XCOUT
+
+19
+
+RES#
+
+20
+
+XTAL
+
+21
+
+VSS
+
+EDACK1
+
+P37
+
+22
+
+EXTAL
+
+23
+
+VCC
+
+24
+
+UPSEL
+
+P35
+
+25
+
+TRST#
+
+P34
+
+26
+
+WAIT#
+
+P36
+
+P33
+
+NMI
+
+EDREQ1
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+MTIOC0A/
+TMCI3/PO12/
+POE10#
+
+SCK6/SCK0 ET0_LINK
+STA
+
+MTIOC0D/
+TIOCD0/
+TMRI3/PO11/
+POE4#/
+POE11#
+
+RXD6/
+SMISO6/
+SSCL6/
+RXD0/
+SMISO0/
+SSCL0/
+CRX0
+
+IRQ4
+
+PCKO
+
+IRQ3-DS
+
+Page 143 of 3240
+
+RX72N Group
+Table 1.9
+
+1. Overview
+List of Pin and Pin Functions (144-Pin LFQFP) (2/7)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Power
+Supply
+Clock
+144-Pin System
+LFQFP Control
+
+I/O Port
+
+27
+
+P32
+
+MTIOC0C/
+TIOCC0/
+TMO3/PO10/
+RTCIC2/
+RTCOUT/
+POE0#/
+POE10#
+
+TXD6/
+SMOSI6/
+SSDA6/
+TXD0/
+SMOSI0/
+SSDA0/
+CTX0/
+USB0_VBUS
+EN
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+VSYNC
+
+Interrupt
+IRQ2-DS
+
+28
+
+TMS
+
+P31
+
+MTIOC4D/
+TMCI2/PO9/
+RTCIC1
+
+CTS1#/
+RTS1#/
+SS1#/
+SSLB0-A
+
+ET1_MDC/
+PMGI1_MD
+C
+
+IRQ1-DS
+
+29
+
+TDI
+
+P30
+
+MTIOC4B/
+TMRI3/PO8/
+RTCIC0/
+POE8#
+
+RXD1/
+SMISO1/
+SSCL1/
+MISOB-A
+
+ET1_MDIO
+/
+PMGI1_MD
+IO
+
+IRQ0-DS
+
+30
+
+TCK
+
+P27
+
+CS7#
+
+MTIOC2B/
+TMCI3/PO7
+
+SCK1/
+RSPCKB-A
+
+ET1_WOL
+
+31
+
+TDO
+
+P26
+
+CS6#
+
+MTIOC2A/
+TMO1/PO6
+
+TXD1/
+SMOSI1/
+SSDA1/
+CTS3#/
+RTS3#/
+SS3#/
+MOSIB-A
+
+ET1_EXOU
+T
+
+32
+
+CLKOUT
+
+P25
+
+CS5#/
+EDACK1
+
+MTIOC4C/
+MTCLKB/
+TIOCA4/PO5
+
+RXD3/
+SMISO3/
+SSCL3/
+SSIDATA1
+
+SDHI_CD/
+HSYNC
+
+33
+
+P24
+
+CS4#/
+EDREQ1
+
+MTIOC4A/
+MTCLKA/
+TIOCB4/
+TMRI1/PO4
+
+SCK3/
+USB0_VBUS
+EN/SSIBCK1
+
+SDHI_WP/
+PIXCLK
+
+34
+
+P23
+
+EDACK0
+
+MTIOC3D/
+MTCLKD/
+TIOCD3/PO3
+
+GTIOC0A TXD3/
+SMOSI3/
+SSDA3/
+CTS0#/
+RTS0#/
+SS0#/CTX1/
+SSIBCK0
+
+SDHI_D1-C/
+PIXD7
+
+35
+
+P22
+
+EDREQ0
+
+MTIOC3B/
+MTCLKC/
+TIOCC3/
+TMO0/PO2
+
+GTIOC1A SCK0/
+USB0_OVRC
+URB/
+AUDIO_CLK
+
+SDHI_D0-C/
+PIXD6
+
+36
+
+P21
+
+MTIOC1B/
+MTIOC4A/
+TIOCA3/
+TMCI0/PO1
+
+GTIOC2A RXD0/
+SMISO0/
+SSCL0/
+SCL1/
+USB0_EXIC
+EN/
+SSILRCK0
+
+SDHI_CLK-C/
+PIXD5
+
+IRQ9
+
+37
+
+P20
+
+MTIOC1A/
+TIOCB3/
+TMRI0/PO0
+
+TXD0/
+SMOSI0/
+SSDA0/
+SDA1/
+USB0_ID/
+SSIRXD0
+
+SDHI_CMD-C/
+PIXD4
+
+IRQ8
+
+38
+
+P17
+
+MTIOC3A/
+GTIOC0B
+MTIOC3B/
+MTIOC4B/
+TIOCB0/
+TCLKD/TMO1/
+PO15/POE8#
+
+SCK1/TXD3/ EPLSOUT0 SDHI_D3-C/
+SMOSI3/
+PIXD3
+SSDA3/
+SDA2-DS/
+SSITXD0
+
+39
+
+P87
+
+MTIOC4C/
+TIOCA2
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+GTIOC1B SMOSI10/
+SSDA10/
+TXD10
+
+A/D
+D/A
+
+ADTRG0#
+
+IRQ7
+
+ADTRG1#
+
+EPLSOUT1 SDHI_D2-C/
+PIXD2
+
+Page 144 of 3240
+
+RX72N Group
+Table 1.9
+
+1. Overview
+List of Pin and Pin Functions (144-Pin LFQFP) (3/7)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+144-Pin System
+LFQFP Control
+
+I/O Port
+
+40
+
+P16
+
+MTIOC3C/
+MTIOC3D/
+TIOCB1/
+TCLKC/TMO2/
+PO14/
+RTCOUT
+
+41
+
+P86
+
+MTIOC4D/
+TIOCA0
+
+42
+
+P15
+
+MTIOC0B/
+GTETRGA RXD1/
+MTCLKB/
+SMISO1/
+TIOCB2/
+SSCL1/
+TCLKB/TMCI2/
+SCK3/CRX1PO13
+DS/
+SSILRCK1
+
+43
+
+P14
+
+MTIOC3A/
+GTETRG
+MTCLKA/
+D
+TIOCB5/
+TCLKA/TMRI2/
+PO15
+
+44
+
+P13
+
+MTIOC0B/
+TIOCA5/
+TMO3/PO13
+
+GTADSM1 TXD2/
+SMOSI2/
+SSDA2/
+SDA0[FM+]
+
+IRQ3
+
+45
+
+P12
+
+TMCI1
+
+GTADSM0 RXD2/
+SMISO2/
+SSCL2/
+SCL0[FM+]
+
+IRQ2
+
+46
+
+Bus
+EXDMAC
+SDRAMC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+TXD1/
+SMOSI1/
+SSDA1/
+RXD3/
+SMISO3/
+SSCL3/
+SCL2-DS/
+USB0_VBUS
+EN/
+USB0_VBUS
+/
+USB0_OVRC
+URB
+GTIOC2B SMISO10/
+SSCL10/
+RXD10
+
+Interrupt
+
+A/D
+D/A
+
+IRQ6
+
+ADTRG0#
+
+PIXD1
+
+PIXD0
+
+CTS1#/
+RTS1#/
+SS1#/CTX1/
+USB0_OVRC
+URA
+
+IRQ5
+
+IRQ4
+
+ADTRG1#
+
+VCC_USB
+
+47
+
+USB0_DM
+
+48
+
+USB0_DP
+
+49
+
+VSS_USB
+
+50
+
+CLKOUT2 P56
+5M
+
+EDACK1
+
+MTIOC3C/
+TIOCA1
+
+SCK7
+
+51
+
+TRDATA3 P55
+
+D0[A0/D0]/
+WAIT#/
+EDREQ0
+
+MTIOC4D/
+TMO3
+
+TXD7/
+SMOSI7/
+SSDA7/
+CRX1
+
+ET0_EXOU
+T
+
+52
+
+TRDATA2 P54
+
+ALE/D1[A1/ MTIOC4B/
+D1]/
+TMCI1
+EDACK0
+
+CTS2#/
+RTS2#/
+SS2#/CTX1
+
+ET0_LINK
+STA
+
+53
+
+P53*1
+
+BCLK
+
+54
+
+P52
+
+RD#
+
+RXD2/
+SMISO2/
+SSCL2/
+SSLB3-A
+
+55
+
+P51
+
+WR1#/
+BC1#/
+WAIT#
+
+SCK2/
+SSLB2-A
+
+56
+
+P50
+
+WR0#/WR#
+
+TXD2/
+SMOSI2/
+SSDA2/
+SSLB1-A
+
+P83
+
+EDACK1
+
+57
+
+VSS
+
+58
+
+TRCLK
+
+59
+
+VCC
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+MTIOC4C
+
+GTIOC0A SCK10/
+SS10#/
+CTS10#
+
+IRQ10
+
+ET0_CRS/
+RMII0_CR
+S_DV
+
+Page 145 of 3240
+
+RX72N Group
+Table 1.9
+
+1. Overview
+List of Pin and Pin Functions (144-Pin LFQFP) (4/7)
+
+Pin
+Number
+
+Timer
+
+Power
+Supply
+Clock
+144-Pin System
+LFQFP Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+60
+
+PC7
+
+A23/CS0#
+
+MTIOC3A/
+MTCLKB/
+TMO2/PO31/
+TOC0/
+CACREF
+
+61
+
+PC6
+
+D2[A2/D2]/
+A22/CS1#
+
+62
+
+PC5
+
+UB
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+GTIOC3A TXD8/
+SMOSI8/
+SSDA8/
+SMOSI10/
+SSDA10/
+TXD10/
+MISOA-A
+
+ET0_COL
+
+MMC_D7-A
+
+IRQ14
+
+MTIOC3C/
+MTCLKA/
+TMCI2/PO30/
+TIC0
+
+GTIOC3B RXD8/
+SMISO8/
+SSCL8/
+SMISO10/
+SSCL10/
+RXD10/
+MOSIA-A
+
+ET0_ETXD MMC_D6-A
+3
+
+IRQ13
+
+D3[A3/D3]/
+A21/CS2#/
+WAIT#
+
+MTIOC3B/
+MTCLKD/
+TMRI2/PO29
+
+GTIOC1A SCK8/
+RTS8#/
+SCK10/
+RSPCKA-A
+
+ET0_ETXD MMC_D5-A
+2
+
+63
+
+TRSYNC
+
+P82
+
+EDREQ1
+
+MTIOC4A/
+PO28
+
+GTIOC2A SMOSI10/
+SSDA10/
+TXD10
+
+ET0_ETXD MMC_D4-A
+1/
+RMII0_TXD
+1
+
+64
+
+TRDATA1 P81
+
+EDACK0
+
+MTIOC3D/
+PO27
+
+GTIOC0B SMISO10/
+SSCL10/
+RXD10
+
+ET0_ETXD QIO3-A/
+0/
+SDHI_CD/
+RMII0_TXD MMC_D3-A
+0
+
+65
+
+TRDATA0 P80
+
+EDREQ0
+
+MTIOC3B/
+PO26
+
+66
+
+PC4
+
+A20/CS3#
+
+MTIOC3D/
+MTCLKC/
+TMCI1/PO25/
+POE0#
+
+GTETRG
+C
+
+67
+
+PC3
+
+A19
+
+MTIOC4D/
+TCLKB/PO24
+
+GTIOC1B TXD5/
+SMOSI5/
+SSDA5
+
+ET0_TX_E QMO-A/QIO0R
+A/SDHI_D0-A/
+MMC_D0-A
+
+68
+
+TRDATA7 P77
+
+CS7#
+
+PO23
+
+SMOSI11/
+SSDA11/
+TXD11
+
+ET0_RX_E QSPCLK-A/
+SDHI_CLK-A/
+R/
+RMII0_RX_ MMC_CLK-A
+ER
+
+69
+
+TRDATA6 P76
+
+CS6#
+
+PO22
+
+SMISO11/
+SSCL11/
+RXD11
+
+ET0_RX_C QSSL-A/
+LK/
+SDHI_CMD-A/
+REF50CK0 MMC_CMD-A
+
+70
+
+PC2
+
+A18
+
+MTIOC4B/
+TCLKA/PO21
+
+71
+
+TRSYNC1 P75
+
+CS5#
+
+PO20
+
+SCK11/
+RTS11#
+
+ET0_ERXD SDHI_D2-A/
+0/
+MMC_RES#-A
+RMII0_RX
+D0
+
+72
+
+TRDATA5 P74
+
+A20/CS4#
+
+PO19
+
+SS11#/
+CTS11#
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+
+73
+
+PC1
+
+A17
+
+MTIOC3A/
+TCLKD/PO18
+
+SCK5/
+SSLA2-A
+
+ET0_ERXD
+2
+
+IRQ12
+
+PC0
+
+A16
+
+MTIOC3C/
+TCLKC/PO17
+
+CTS5#/
+RTS5#/
+SS5#/
+SSLA1-A
+
+ET0_ERXD
+3
+
+IRQ14
+
+CS3#
+
+PO16
+
+74
+
+SCK10/
+RTS10#
+
+ET0_TX_E QIO2-A/
+N/
+SDHI_WP/
+RMII0_TXD MMC_D2-A
+_EN
+
+SCK5/
+ET0_TX_C
+CTS8#/
+LK
+SS8#/SS10#/
+CTS10#/
+RTS10#/
+SSLA0-A
+
+GTIOC2B RXD5/
+SMISO5/
+SSCL5/
+SSLA3-A
+
+A/D
+D/A
+
+QMI-A/
+QIO1-A/
+SDHI_D1-A/
+MMC_D1-A
+
+ET0_RX_D SDHI_D3-A/
+V
+MMC_CD-A
+
+VCC
+
+75
+
+76
+
+VSS
+
+77
+
+TRDATA4 P73
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+ET0_WOL
+
+Page 146 of 3240
+
+RX72N Group
+Table 1.9
+
+1. Overview
+List of Pin and Pin Functions (144-Pin LFQFP) (5/7)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+144-Pin System
+LFQFP Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+78
+
+PB7
+
+A15
+
+MTIOC3B/
+TIOCB5/PO31
+
+TXD9/
+SMOSI9/
+SSDA9/
+SMOSI11/
+SSDA11/
+TXD11
+
+ET0_CRS/
+RMII0_CR
+S_DV
+
+79
+
+PB6
+
+A14
+
+MTIOC3D/
+TIOCA5/PO30
+
+RXD9/
+SMISO9/
+SSCL9/
+SMISO11/
+SSCL11/
+RXD11
+
+ET0_ETXD
+1/
+RMII0_TXD
+1
+
+80
+
+PB5
+
+A13
+
+MTIOC2A/
+MTIOC1B/
+TIOCB4/
+TMRI1/PO29/
+POE4#
+
+SCK9/
+RTS9#/
+SCK11
+
+ET0_ETXD
+0/
+RMII0_TXD
+0
+
+LCD_CLKB
+
+81
+
+PB4
+
+A12
+
+TIOCA4/PO28
+
+CTS9#/
+ET0_TX_E
+SS9#/SS11#/ N/
+CTS11#/
+RMII0_TXD
+RTS11#
+_EN
+
+LCD_TCO
+N0-B
+
+82
+
+PB3
+
+A11
+
+MTIOC0A/
+MTIOC4A/
+TIOCD3/
+TCLKD/TMO0/
+PO27/POE11#
+
+SCK4/SCK6 ET0_RX_E
+R/
+RMII0_RX_
+ER
+
+LCD_TCO
+N1-B
+
+83
+
+PB2
+
+A10
+
+TIOCC3/
+TCLKC/PO26
+
+CTS4#/
+ET0_RX_C
+RTS4#/
+LK/
+SS4#/
+REF50CK0
+CTS6#/
+RTS6#/SS6#
+
+LCD_TCO
+N2-B
+
+84
+
+PB1
+
+A9
+
+MTIOC0C/
+MTIOC4C/
+TIOCB3/
+TMCI0/PO25
+
+TXD4/
+SMOSI4/
+SSDA4/
+TXD6/
+SMOSI6/
+SSDA6
+
+LCD_TCO IRQ4-DS
+N3-B
+
+85
+
+P72
+
+A19/CS2#
+
+ET0_MDC/
+PMGI0_MD
+C
+
+86
+
+P71
+
+A18/CS1#
+
+ET0_MDIO
+/
+PMGI0_MD
+IO
+
+87
+
+PB0
+
+A8
+
+MTIC5W/
+TIOCA3/PO24
+
+RXD4/
+SMISO4/
+SSCL4/
+RXD6/
+SMISO6/
+SSCL6
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+
+LCD_DAT IRQ12
+A0-B
+
+88
+
+PA7
+
+A7
+
+TIOCB2/PO23
+
+MISOA-B
+
+ET0_WOL
+
+LCD_DAT
+A1-B
+
+89
+
+PA6
+
+A6
+
+MTIC5V/
+MTCLKB/
+TIOCA2/
+TMCI3/PO22/
+POE10#
+
+GTETRGB CTS5#/
+RTS5#/
+SS5#/
+MOSIA-B
+
+ET0_EXOU
+T
+
+LCD_DAT
+A2-B
+
+90
+
+PA5
+
+A5
+
+MTIOC6B/
+GTIOC0A RSPCKA-B
+TIOCB1/PO21
+
+ET0_LINK
+STA
+
+LCD_DAT
+A3-B
+
+PA4
+
+A4
+
+MTIC5U/
+MTCLKA/
+TIOCA1/
+TMRI0/PO20
+
+ET0_MDC/
+PMGI0_MD
+C
+
+LCD_DAT IRQ5-DS
+A4-B
+
+91
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+ET0_ERXD
+0/
+RMII0_RX
+D0
+
+Interrupt
+
+A/D
+D/A
+
+VCC
+
+92
+
+93
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+TXD5/
+SMOSI5/
+SSDA5/
+SSLA0-B
+
+VSS
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 147 of 3240
+
+RX72N Group
+Table 1.9
+
+1. Overview
+List of Pin and Pin Functions (144-Pin LFQFP) (6/7)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+144-Pin System
+LFQFP Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+94
+
+PA3
+
+A3
+
+MTIOC0D/
+MTCLKD/
+TIOCD0/
+TCLKB/PO19
+
+95
+
+PA2
+
+A2
+
+MTIOC7A/
+PO18
+
+96
+
+PA1
+
+A1
+
+MTIOC0B/
+GTIOC2A SCK5/
+MTCLKC/
+SSLA2-B
+MTIOC7B/
+TIOCB0/PO17
+
+ET0_WOL
+
+LCD_DAT IRQ11
+A7-B
+
+97
+
+PA0
+
+BC0#/A0
+
+MTIOC4A/
+GTIOC0B SSLA1-B
+MTIOC6D/
+TIOCA0/PO16/
+CACREF
+
+ET0_TX_E
+N/
+RMII0_TXD
+_EN
+
+LCD_DAT
+A8-B
+
+98
+
+P67
+
+DQM1/
+CS7#
+
+MTIOC7C
+
+GTIOC1B CRX2
+
+EPLSOUT1
+
+99
+
+P66
+
+DQM0/
+CS6#
+
+MTIOC7D
+
+GTIOC2B CTX2
+
+100
+
+P65
+
+CKE/CS5#
+
+101
+
+PE7
+
+D15[A15/
+MTIOC6A/
+D15]/D7[A7/ TOC1
+D7]
+
+GTIOC3A MISOB-B
+
+SDHI_WP/
+LCD_DAT IRQ7
+MMC_RES#-B A9-B
+
+AN105
+
+102
+
+PE6
+
+D14[A14/
+MTIOC6C/
+D14]/D6[A6/ TIC1
+D6]
+
+GTIOC3B MOSIB-B
+
+SDHI_CD/
+MMC_CD-B
+
+LCD_DAT IRQ6
+A10-B
+
+AN104
+
+P70
+
+SDCLK
+
+106
+
+PE5
+
+D13[A13/
+MTIOC4C/
+D13]/D5[A5/ MTIOC2B
+D5]
+
+GTIOC0A RSPCKB-B
+
+ET0_RX_C
+LK/
+REF50CK0
+
+LCD_DAT IRQ5
+A11-B
+
+AN103
+
+107
+
+PE4
+
+D12[A12/
+MTIOC4D/
+D12]/D4[A4/ MTIOC1A/
+D4]
+PO28
+
+GTIOC1A SSLB0-B
+
+ET0_ERXD
+2
+
+LCD_DAT
+A12-B
+
+AN102
+
+108
+
+PE3
+
+D11[A11/
+MTIOC4B/
+D11]/D3[A3/ PO26/TOC3/
+D3]
+POE8#
+
+GTIOC2A CTS12#/
+RTS12#/
+SS12#
+
+ET0_ERXD MMC_D7-B
+3
+
+LCD_DAT
+A13-B
+
+AN101
+
+109
+
+PE2
+
+D10[A10/
+MTIOC4A/
+D10]/D2[A2/ PO23/TIC3
+D2]
+
+GTIOC0B RXD12/
+SMISO12/
+SSCL12/
+RXDX12/
+SSLB3-B
+
+MMC_D6-B
+
+LCD_DAT IRQ7-DS
+A14-B
+
+AN100
+
+110
+
+PE1
+
+D9[A9/D9]/
+D1[A1/D1]
+
+MTIOC4C/
+MTIOC3B/
+PO18
+
+GTIOC1B TXD12/
+SMOSI12/
+SSDA12/
+TXDX12/
+SIOX12/
+SSLB2-B
+
+MMC_D5-B
+
+LCD_DAT
+A15-B
+
+ANEX1
+
+111
+
+PE0
+
+D8[A8/D8]/
+D0[A0/D0]
+
+MTIOC3D
+
+GTIOC2B SCK12/
+SSLB1-B
+
+MMC_D4-B
+
+LCD_DAT
+A16-B
+
+ANEX0
+
+112
+
+P64
+
+WE#/D3[A3/
+D3]/CS4#
+
+RMII1_TXD
+0
+
+113
+
+P63
+
+CAS#/
+D2[A2/D2]/
+CS3#
+
+RMII1_TXD
+1
+
+114
+
+P62
+
+RAS#/
+D1[A1/D1]/
+CS2#
+
+RMII1_RX
+D0
+
+115
+
+P61
+
+SDCS#/
+D0[A0/D0]/
+CS1#
+
+RMII1_RX
+D1
+
+103
+
+116
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+RXD5/
+SMISO5/
+SSCL5
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+ET0_MDIO
+/
+PMGI0_MD
+IO
+
+Interrupt
+
+A/D
+D/A
+
+LCD_DAT IRQ6-DS
+A5-B
+
+GTIOC1A RXD5/
+SMISO5/
+SSCL5/
+SSLA3-B
+
+LCD_DAT
+A6-B
+
+IRQ15
+
+VCC
+
+104
+105
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+VSS
+
+VSS
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 148 of 3240
+
+RX72N Group
+Table 1.9
+
+1. Overview
+List of Pin and Pin Functions (144-Pin LFQFP) (7/7)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+144-Pin System
+LFQFP Control
+
+I/O Port
+
+Bus
+EXDMAC
+SDRAMC
+
+117
+
+P60
+
+CS0#
+
+119
+
+PD7
+
+D7[A7/D7]
+
+MTIC5U/
+POE0#
+
+SSLC3-A
+
+RMII1_RX_ QMI-B/
+ER
+QIO1-B/
+SDHI_D1-B/
+MMC_D1-B
+
+LCD_DAT IRQ7
+A17-B
+
+AN107
+
+120
+
+PD6
+
+D6[A6/D6]
+
+MTIC5V/
+MTIOC8A/
+POE4#
+
+SSLC2-A
+
+REF50CK1 QMO-B/QIO0- LCD_DAT IRQ6
+B/SDHI_D0-B/ A18-B
+MMC_D0-B
+
+AN106
+
+121
+
+PD5
+
+D5[A5/D5]
+
+MTIC5W/
+MTIOC8C/
+MTCLKA/
+POE10#
+
+SSLC1-A
+
+ET1_MDC/ QSPCLK-B/
+PMGI1_MD SDHI_CLK-B/
+C
+MMC_CLK-B
+
+LCD_DAT IRQ5
+A19-B
+
+AN113
+
+122
+
+PD4
+
+D4[A4/D4]
+
+MTIOC8B/
+POE11#
+
+SSLC0-A
+
+ET1_MDIO QSSL-B/
+LCD_DAT IRQ4
+/
+SDHI_CMD-B/ A20-B
+PMGI1_MD MMC_CMD-B
+IO
+
+AN112
+
+123
+
+PD3
+
+D3[A3/D3]
+
+MTIOC8D/
+TOC2/POE8#
+
+GTIOC0A RSPCKC-A
+
+ET1_WOL
+
+QIO3-B/
+SDHI_D3-B/
+MMC_D3-B
+
+LCD_DAT IRQ3
+A21-B
+
+AN111
+
+124
+
+PD2
+
+D2[A2/D2]
+
+MTIOC4D/
+TIC2
+
+GTIOC0B MISOC-A/
+CRX0
+
+ET1_EXOU QIO2-B/
+T
+SDHI_D2-B/
+MMC_D2-B
+
+LCD_DAT IRQ2
+A22-B
+
+AN110
+
+125
+
+PD1
+
+D1[A1/D1]
+
+MTIOC4B/
+POE0#
+
+GTIOC1A MOSIC-A/
+CTX0
+
+LCD_DAT IRQ1
+A23-B
+
+AN109
+
+126
+
+PD0
+
+D0[A0/D0]
+
+POE4#
+
+GTIOC1B
+
+LCD_EXT IRQ0
+CLK-B
+
+AN108
+
+127
+
+P93
+
+A19
+
+POE0#
+
+CTS7#/
+ET1_LINK
+RTS7#/SS7# STA
+
+AN117
+
+128
+
+P92
+
+A18
+
+POE4#
+
+RXD7/
+SMISO7/
+SSCL7
+
+AN116
+
+P91
+
+A17
+
+SCK7
+
+AN115
+
+P90
+
+A16
+
+TXD7/
+SMOSI7/
+SSDA7
+
+AN114
+
+118
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF, PDC) GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+RMII1_TXD
+_EN
+
+RMII1_CR
+S_DV
+
+VSS
+
+131
+
+132
+
+(GPTW,
+POEG)
+
+VCC
+
+129
+130
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+VCC
+
+133
+
+P47
+
+IRQ15-DS AN007
+
+134
+
+P46
+
+IRQ14-DS AN006
+
+135
+
+P45
+
+IRQ13-DS AN005
+
+136
+
+P44
+
+IRQ12-DS AN004
+
+137
+
+P43
+
+IRQ11-DS AN003
+
+138
+
+P42
+
+IRQ10-DS AN002
+
+139
+
+P41
+
+IRQ9-DS
+
+AN001
+
+P40
+
+IRQ8-DS
+
+AN000
+
+P07
+
+IRQ15
+
+ADTRG0#
+
+140
+
+VREFL0
+
+141
+142
+
+VREFH0
+
+143
+
+AVCC0
+
+144
+
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external bus is enabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 149 of 3240
+
+RX72N Group
+
+1. Overview
+
+1.6.6
+
+100-Pin LFQFP
+
+Table 1.10
+
+List of Pin and Pin Functions (100-Pin LFQFP) (1/6)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+100-Pin System
+LFQFP Control
+1
+
+AVCC1
+
+2
+
+EMLE
+
+3
+
+AVSS1
+
+4
+
+5
+
+VCL
+
+6
+
+VBATT
+
+7
+
+MD/FINED
+
+8
+
+XCIN
+
+9
+
+XCOUT
+
+10
+
+RES#
+
+11
+
+XTAL
+
+12
+
+VSS
+
+Timer
+
+I/O Port
+
+Bus
+EXDMAC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+PJ3
+
+EDACK1
+
+MTIOC3C
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+CTS6#/
+RTS6#/
+SS6#/
+CTS0#/
+RTS0#/
+SS0#/
+SSITXD0
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF)
+
+GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+ET0_EXOU
+T
+
+P37
+
+13
+
+EXTAL
+
+14
+
+VCC
+
+P36
+
+15
+
+UPSEL
+
+P35
+
+16
+
+TRST#
+
+P34
+
+NMI
+
+EDREQ1
+
+MTIOC0A/
+TMCI3/PO12/
+POE10#
+
+SCK6/SCK0 ET0_LINK
+STA
+
+IRQ4
+
+MTIOC0D/
+TIOCD0/
+TMRI3/PO11/
+POE4#/
+POE11#
+
+RXD6/
+SMISO6/
+SSCL6/
+RXD0/
+SMISO0/
+SSCL0/
+CRX0
+
+IRQ3-DS
+
+17
+
+P33
+
+18
+
+P32
+
+MTIOC0C/
+TIOCC0/
+TMO3/PO10/
+RTCIC2/
+RTCOUT/
+POE0#/
+POE10#
+
+TXD6/
+SMOSI6/
+SSDA6/
+TXD0/
+SMOSI0/
+SSDA0/
+CTX0/
+USB0_VBUS
+EN
+
+IRQ2-DS
+
+19
+
+TMS
+
+P31
+
+MTIOC4D/
+TMCI2/PO9/
+RTCIC1
+
+CTS1#/
+RTS1#/
+SS1#/
+SSLB0-A
+
+IRQ1-DS
+
+20
+
+TDI
+
+P30
+
+MTIOC4B/
+TMRI3/PO8/
+RTCIC0/
+POE8#
+
+RXD1/
+SMISO1/
+SSCL1/
+MISOB-A
+
+IRQ0-DS
+
+21
+
+TCK
+
+P27
+
+CS7#
+
+MTIOC2B/
+TMCI3/PO7
+
+SCK1/
+RSPCKB-A
+
+22
+
+TDO
+
+P26
+
+CS6#
+
+MTIOC2A/
+TMO1/PO6
+
+TXD1/
+SMOSI1/
+SSDA1/
+CTS3#/
+RTS3#/
+SS3#/
+MOSIB-A
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 150 of 3240
+
+RX72N Group
+Table 1.10
+
+1. Overview
+List of Pin and Pin Functions (100-Pin LFQFP) (2/6)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+100-Pin System
+LFQFP Control
+
+I/O Port
+
+23
+
+P25
+
+CS5#/
+EDACK1
+
+MTIOC4C/
+MTCLKB/
+TIOCA4/PO5
+
+RXD3/
+SMISO3/
+SSCL3/
+SSIDATA1
+
+24
+
+P24
+
+CS4#/
+EDREQ1
+
+MTIOC4A/
+MTCLKA/
+TIOCB4/
+TMRI1/PO4
+
+SCK3/
+USB0_VBUS
+EN/SSIBCK1
+
+25
+
+P23
+
+EDACK0
+
+MTIOC3D/
+MTCLKD/
+TIOCD3/PO3
+
+GTIOC0A TXD3/
+SMOSI3/
+SSDA3/
+CTS0#/
+RTS0#/
+SS0#/CTX1/
+SSIBCK0
+
+26
+
+P22
+
+EDREQ0
+
+MTIOC3B/
+MTCLKC/
+TIOCC3/
+TMO0/PO2
+
+GTIOC1A SCK0/
+USB0_OVRC
+URB/
+AUDIO_CLK
+
+27
+
+P21
+
+MTIOC1B/
+MTIOC4A/
+TIOCA3/
+TMCI0/PO1
+
+GTIOC2A RXD0/
+SMISO0/
+SSCL0/
+USB0_EXIC
+EN/
+SSILRCK0/
+SCL1
+
+28
+
+P20
+
+MTIOC1A/
+TIOCB3/
+TMRI0/PO0
+
+TXD0/
+SMOSI0/
+SSDA0/
+USB0_ID/
+SSIRXD0/
+SDA1
+
+IRQ8
+
+29
+
+P17
+
+MTIOC3A/
+GTIOC0B
+MTIOC3B/
+MTIOC4B/
+TIOCB0/
+TCLKD/TMO1/
+PO15/POE8#
+
+SCK1/TXD3/ EPLSOUT0
+SMOSI3/
+SSDA3/
+SDA2-DS/
+SSITXD0
+
+IRQ7
+
+ADTRG1#
+
+30
+
+P16
+
+MTIOC3C/
+MTIOC3D/
+TIOCB1/
+TCLKC/TMO2/
+PO14/
+RTCOUT
+
+TXD1/
+SMOSI1/
+SSDA1/
+RXD3/
+SMISO3/
+SSCL3/
+SCL2-DS/
+USB0_VBUS
+EN/
+USB0_VBUS
+/
+USB0_OVRC
+URB
+
+IRQ6
+
+ADTRG0#
+
+31
+
+P15
+
+MTIOC0B/
+GTETRGA RXD1/
+MTCLKB/
+SMISO1/
+TIOCB2/
+SSCL1/
+TCLKB/TMCI2/
+SCK3/
+PO13
+CRX1-DS/
+SSILRCK1
+
+IRQ5
+
+32
+
+P14
+
+MTIOC3A/
+GTETRG
+MTCLKA/
+D
+TIOCB5/
+TCLKA/TMRI2/
+PO15
+
+IRQ4
+
+33
+
+P13
+
+MTIOC0B/
+TIOCA5/
+TMO3/PO13
+
+GTADSM1 TXD2/
+SMOSI2/
+SSDA2/
+SDA0[FM+]
+
+IRQ3
+
+34
+
+P12
+
+TMCI1
+
+GTADSM0 RXD2/
+SMISO2/
+SSCL2/
+SCL0[FM+]
+
+IRQ2
+
+CLKOUT
+
+Bus
+EXDMAC
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+CTS1#/
+RTS1#/
+SS1#/CTX1/
+USB0_OVRC
+URA
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF)
+
+GLCDC
+
+Interrupt
+
+A/D
+D/A
+ADTRG0#
+
+IRQ9
+
+ADTRG1#
+
+Page 151 of 3240
+
+RX72N Group
+Table 1.10
+
+1. Overview
+List of Pin and Pin Functions (100-Pin LFQFP) (3/6)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+100-Pin System
+LFQFP Control
+35
+
+Timer
+
+I/O Port
+
+Bus
+EXDMAC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF)
+
+GLCDC
+
+Interrupt
+
+USB0_DM
+
+37
+
+USB0_DP
+VSS_USB
+
+39
+
+P55
+
+D0[A0/D0]/
+WAIT#/
+EDREQ0
+
+MTIOC4D/
+TMO3
+
+CRX1
+
+ET0_EXOU
+T
+
+40
+
+P54
+
+ALE/
+D1[A1/D1]/
+EDACK0
+
+MTIOC4B/
+TMCI1
+
+CTS2#/
+RTS2#/
+SS2#/CTX1
+
+ET0_LINK
+STA
+
+41
+
+P53*1
+
+BCLK
+
+42
+
+P52
+
+RD#
+
+RXD2/
+SMISO2/
+SSCL2/
+SSLB3-A
+
+43
+
+P51
+
+WR1#/
+BC1#/
+WAIT#
+
+SCK2/
+SSLB2-A
+
+44
+
+P50
+
+WR0#/WR#
+
+TXD2/
+SMOSI2/
+SSDA2/
+SSLB1-A
+
+PC7
+
+A23/CS0#
+
+MTIOC3A/
+MTCLKB/
+TMO2/PO31/
+TOC0/
+CACREF
+
+GTIOC3A TXD8/
+SMOSI8/
+SSDA8/
+SMOSI10/
+SSDA10/
+TXD10/
+MISOA-A
+
+ET0_COL
+
+IRQ14
+
+46
+
+PC6
+
+D2[A2/D2]/
+A22/CS1#
+
+MTIOC3C/
+MTCLKA/
+TMCI2/PO30/
+TIC0
+
+GTIOC3B RXD8/
+SMISO8/
+SSCL8/
+SMISO10/
+SSCL10/
+RXD10/
+MOSIA-A
+
+ET0_ETXD
+3
+
+IRQ13
+
+47
+
+PC5
+
+D3[A3/D3]/
+A21/CS2#/
+WAIT#
+
+MTIOC3B/
+MTCLKD/
+TMRI2/PO29
+
+GTIOC1A SCK8/
+RTS8#/
+SCK10/
+RSPCKA-A
+
+ET0_ETXD
+2
+
+48
+
+PC4
+
+A20/CS3#
+
+MTIOC3D/
+MTCLKC/
+TMCI1/PO25/
+POE0#
+
+GTETRG
+C
+
+49
+
+PC3
+
+A19
+
+MTIOC4D/
+TCLKB/PO24
+
+GTIOC1B TXD5/
+SMOSI5/
+SSDA5
+
+ET0_TX_E
+R
+
+50
+
+PC2
+
+A18
+
+MTIOC4B/
+TCLKA/PO21
+
+GTIOC2B RXD5/
+SMISO5/
+SSCL5/
+SSLA3-A
+
+ET0_RX_D
+V
+
+51
+
+PC1
+
+A17
+
+MTIOC3A/
+TCLKD/PO18
+
+SCK5/
+SSLA2-A
+
+ET0_ERXD
+2
+
+IRQ12
+
+52
+
+PC0
+
+A16
+
+MTIOC3C/
+TCLKC/PO17
+
+CTS5#/
+RTS5#/
+SS5#/
+SSLA1-A
+
+ET0_ERXD
+3
+
+IRQ14
+
+53
+
+PB7
+
+A15
+
+MTIOC3B/
+TIOCB5/PO31
+
+TXD9/
+SMOSI9/
+SSDA9/
+SMOSI11/
+SSDA11/
+TXD11
+
+ET0_CRS/
+RMII0_CR
+S_DV
+
+45
+
+A/D
+D/A
+
+VCC_USB
+
+36
+
+38
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+UB
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+IRQ10
+
+SCK5/
+ET0_TX_C
+CTS8#/
+LK
+SS8#/SS10#/
+CTS10#/
+RTS10#/
+SSLA0-A
+
+Page 152 of 3240
+
+RX72N Group
+Table 1.10
+
+1. Overview
+List of Pin and Pin Functions (100-Pin LFQFP) (4/6)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Memory I/F
+Camera I/F
+
+Power
+Supply
+Clock
+100-Pin System
+LFQFP Control
+
+I/O Port
+
+Bus
+EXDMAC
+
+54
+
+PB6
+
+A14
+
+MTIOC3D/
+TIOCA5/PO30
+
+RXD9/
+SMISO9/
+SSCL9/
+SMISO11/
+SSCL11/
+RXD11
+
+ET0_ETXD
+1/
+RMII0_TXD
+1
+
+55
+
+PB5
+
+A13
+
+MTIOC2A/
+MTIOC1B/
+TIOCB4/
+TMRI1/PO29/
+POE4#
+
+SCK9/
+RTS9#/
+SCK11
+
+ET0_ETXD
+0/
+RMII0_TXD
+0
+
+LCD_CLKB
+
+56
+
+PB4
+
+A12
+
+TIOCA4/PO28
+
+CTS9#/
+ET0_TX_E
+SS9#/SS11#/ N/
+CTS11#/
+RMII0_TXD
+RTS11#
+_EN
+
+LCD_TCO
+N0-B
+
+57
+
+PB3
+
+A11
+
+MTIOC0A/
+MTIOC4A/
+TIOCD3/
+TCLKD/TMO0/
+PO27/POE11#
+
+SCK6
+
+ET0_RX_E
+R/
+RMII0_RX_
+ER
+
+LCD_TCO
+N1-B
+
+58
+
+PB2
+
+A10
+
+TIOCC3/
+TCLKC/PO26
+
+CTS6#/
+ET0_RX_C
+RTS6#/SS6# LK/
+REF50CK0
+
+LCD_TCO
+N2-B
+
+59
+
+PB1
+
+A9
+
+MTIOC0C/
+MTIOC4C/
+TIOCB3/
+TMCI0/PO25
+
+TXD6/
+SMOSI6/
+SSDA6
+
+ET0_ERXD
+0/
+RMII0_RX
+D0
+
+LCD_TCO IRQ4-DS
+N3-B
+
+PB0
+
+A8
+
+MTIC5W/
+TIOCA3/PO24
+
+RXD6/
+SMISO6/
+SSCL6
+
+ET0_ERXD
+1/
+RMII0_RX
+D1
+
+LCD_DAT IRQ12
+A0-B
+
+63
+
+PA7
+
+A7
+
+TIOCB2/PO23
+
+MISOA-B
+
+ET0_WOL
+
+LCD_DAT
+A1-B
+
+64
+
+PA6
+
+A6
+
+MTIC5V/
+MTCLKB/
+TIOCA2/
+TMCI3/PO22/
+POE10#
+
+GTETRGB CTS5#/
+RTS5#/
+SS5#/
+MOSIA-B
+
+ET0_EXOU
+T
+
+LCD_DAT
+A2-B
+
+65
+
+PA5
+
+A5
+
+MTIOC6B/
+GTIOC0A RSPCKA-B
+TIOCB1/PO21
+
+ET0_LINK
+STA
+
+LCD_DAT
+A3-B
+
+66
+
+PA4
+
+A4
+
+MTIC5U/
+MTCLKA/
+TIOCA1/
+TMRI0/PO20
+
+TXD5/
+SMOSI5/
+SSDA5/
+SSLA0-B
+
+ET0_MDC/
+PMGI0_MD
+C
+
+LCD_DAT IRQ5-DS
+A4-B
+
+67
+
+PA3
+
+A3
+
+MTIOC0D/
+MTCLKD/
+TIOCD0/
+TCLKB/PO19
+
+RXD5/
+SMISO5/
+SSCL5
+
+ET0_MDIO
+/
+PMGI0_MD
+IO
+
+LCD_DAT IRQ6-DS
+A5-B
+
+68
+
+PA2
+
+A2
+
+MTIOC7A/
+PO18
+
+69
+
+PA1
+
+A1
+
+MTIOC0B/
+GTIOC2A SCK5/
+MTCLKC/
+SSLA2-B
+MTIOC7B/
+TIOCB0/PO17
+
+ET0_WOL
+
+LCD_DAT IRQ11
+A7-B
+
+70
+
+PA0
+
+BC0#/A0
+
+MTIOC4A/
+GTIOC0B SSLA1-B
+MTIOC6D/
+TIOCA0/PO16/
+CACREF
+
+ET0_TX_E
+N/
+RMII0_TXD
+_EN
+
+LCD_DAT
+A8-B
+
+71
+
+PE7
+
+D15[A15/
+MTIOC6A/
+D15]/D7[A7/ TOC1
+D7]
+
+60
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF)
+
+GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+VCC
+
+61
+
+62
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+VSS
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+GTIOC1A RXD5/
+SMISO5/
+SSCL5/
+SSLA3-B
+
+GTIOC3A MISOB-B
+
+LCD_DAT
+A6-B
+
+SDHI_WP/
+LCD_DAT IRQ7
+MMC_RES#-B A9-B
+
+AN105
+
+Page 153 of 3240
+
+RX72N Group
+Table 1.10
+
+1. Overview
+List of Pin and Pin Functions (100-Pin LFQFP) (5/6)
+
+Pin
+Number
+
+Timer
+
+Communication
+
+Power
+Supply
+Clock
+100-Pin System
+LFQFP Control
+
+I/O Port
+
+72
+
+PE6
+
+D14[A14/
+MTIOC6C/
+D14]/D6[A6/ TIC1
+D6]
+
+GTIOC3B MOSIB-B
+
+73
+
+PE5
+
+D13[A13/
+MTIOC4C/
+D13]/D5[A5/ MTIOC2B
+D5]
+
+GTIOC0A RSPCKB-B
+
+74
+
+PE4
+
+D12[A12/
+MTIOC4D/
+D12]/D4[A4/ MTIOC1A/
+D4]
+PO28
+
+75
+
+PE3
+
+76
+
+Bus
+EXDMAC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF)
+SDHI_CD/
+MMC_CD-B
+
+GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+LCD_DAT IRQ6
+A10-B
+
+AN104
+
+ET0_RX_C
+LK/
+REF50CK0
+
+LCD_DAT IRQ5
+A11-B
+
+AN103
+
+GTIOC1A SSLB0-B
+
+ET0_ERXD
+2
+
+LCD_DAT
+A12-B
+
+AN102
+
+D11[A11/
+MTIOC4B/
+D11]/D3[A3/ PO26/TOC3/
+D3]
+POE8#
+
+GTIOC2A CTS12#/
+RTS12#/
+SS12#
+
+ET0_ERXD MMC_D7-B
+3
+
+LCD_DAT
+A13-B
+
+AN101
+
+PE2
+
+D10[A10/
+MTIOC4A/
+D10]/D2[A2/ PO23/TIC3
+D2]
+
+GTIOC0B RXD12/
+SMISO12/
+SSCL12/
+RXDX12/
+SSLB3-B
+
+MMC_D6-B
+
+LCD_DAT IRQ7-DS
+A14-B
+
+AN100
+
+77
+
+PE1
+
+D9[A9/D9]/
+D1[A1/D1]
+
+MTIOC4C/
+MTIOC3B/
+PO18
+
+GTIOC1B TXD12/
+SMOSI12/
+SSDA12/
+TXDX12/
+SIOX12/
+SSLB2-B
+
+MMC_D5-B
+
+LCD_DAT
+A15-B
+
+ANEX1
+
+78
+
+PE0
+
+D8[A8/D8]/
+D0[A0/D0]
+
+MTIOC3D
+
+GTIOC2B SCK12/
+SSLB1-B
+
+MMC_D4-B
+
+LCD_DAT
+A16-B
+
+ANEX0
+
+79
+
+PD7
+
+D7[A7/D7]
+
+MTIC5U/
+POE0#
+
+SSLC3-A
+
+QMI-B/QIO1- LCD_DAT IRQ7
+B/SDHI_D1-B/ A17-B
+MMC_D1-B
+
+AN107
+
+80
+
+PD6
+
+D6[A6/D6]
+
+MTIC5V/
+MTIOC8A/
+POE4#
+
+SSLC2-A
+
+QMO-B/QIO0- LCD_DAT IRQ6
+B/SDHI_D0-B/ A18-B
+MMC_D0-B
+
+AN106
+
+81
+
+PD5
+
+D5[A5/D5]
+
+MTIC5W/
+MTIOC8C/
+MTCLKA/
+POE10#
+
+SSLC1-A
+
+QSPCLK-B/
+SDHI_CLK-B/
+MMC_CLK-B
+
+LCD_DAT IRQ5
+A19-B
+
+AN113
+
+82
+
+PD4
+
+D4[A4/D4]
+
+MTIOC8B/
+POE11#
+
+SSLC0-A
+
+QSSL-B/
+LCD_DAT IRQ4
+SDHI_CMD-B/ A20-B
+MMC_CMD-B
+
+AN112
+
+83
+
+PD3
+
+D3[A3/D3]
+
+MTIOC8D/
+TOC2/POE8#
+
+GTIOC0A RSPCKC-A
+
+QIO3-B/
+SDHI_D3-B/
+MMC_D3-B
+
+LCD_DAT IRQ3
+A21-B
+
+AN111
+
+84
+
+PD2
+
+D2[A2/D2]
+
+MTIOC4D/
+TIC2
+
+GTIOC0B MISOC-A/
+CRX0
+
+QIO2-B/
+SDHI_D2-B/
+MMC_D2-B
+
+LCD_DAT IRQ2
+A22-B
+
+AN110
+
+85
+
+PD1
+
+D1[A1/D1]
+
+MTIOC4B/
+POE0#
+
+GTIOC1A MOSIC-A/
+CTX0
+
+LCD_DAT IRQ1
+A23-B
+
+AN109
+
+86
+
+PD0
+
+D0[A0/D0]
+
+POE4#
+
+GTIOC1B
+
+LCD_EXT IRQ0
+CLK-B
+
+AN108
+
+87
+
+P47
+
+IRQ15-DS AN007
+
+88
+
+P46
+
+IRQ14-DS AN006
+
+89
+
+P45
+
+IRQ13-DS AN005
+
+90
+
+P44
+
+IRQ12-DS AN004
+
+91
+
+P43
+
+IRQ11-DS AN003
+
+92
+
+P42
+
+IRQ10-DS AN002
+
+P41
+
+IRQ9-DS
+
+AN001
+
+P40
+
+IRQ8-DS
+
+AN000
+
+P07
+
+IRQ15
+
+ADTRG0#
+
+93
+94
+
+VREFL0
+
+95
+96
+
+VREFH0
+
+97
+
+AVCC0
+
+98
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 154 of 3240
+
+RX72N Group
+Table 1.10
+
+1. Overview
+List of Pin and Pin Functions (100-Pin LFQFP) (6/6)
+
+Pin
+Number
+
+Power
+Supply
+Clock
+100-Pin System
+LFQFP Control
+99
+100
+
+Timer
+
+I/O Port
+
+Bus
+EXDMAC
+
+(MTU, TPU,
+TMR, PPG,
+RTC, CMTW,
+POE, CAC)
+
+Communication
+
+(GPTW,
+POEG)
+
+(SCI, RSPI,
+RIIC, CAN,
+USB, SSIE)
+
+Memory I/F
+Camera I/F
+
+(ETHERC, (QSPI, SDHI,
+PMGI)
+MMCIF)
+
+GLCDC
+
+Interrupt
+
+A/D
+D/A
+
+IRQ13
+
+DA1
+
+AVSS0
+P05
+
+SSILRCK1
+
+Note 1. P53 is multiplexed with the BCLK pin function, so cannot be used as an I/O port pin when the external bus is enabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 155 of 3240
+
+

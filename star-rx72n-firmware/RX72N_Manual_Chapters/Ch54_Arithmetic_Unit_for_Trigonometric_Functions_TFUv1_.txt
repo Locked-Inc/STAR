@@ -1,0 +1,139 @@
+RX72N Group
+
+54.
+
+54. Arithmetic Unit for Trigonometric Functions (TFUv1)
+
+Arithmetic Unit for Trigonometric Functions (TFUv1)
+
+This MCU has an arithmetic unit for trigonometric functions (TFU).
+The TFU handles the high-speed calculation of sinf, cosf, atan2f, and hypotf functions.
+An option must be specified to make the C or C++ compiler produce instructions that use the TFU. For details, refer to
+the manual for the compiler you are using.
+The ICLK is used as the operating clock for the TFU.
+
+54.1
+
+Overview
+
+Table 54.1 lists the specifications of the TFU.
+Table 54.1
+
+TFU specifications
+
+Item
+
+Description
+
+Arithmetic Processing
+
+Calculation of sine, cosine, arctangent, and hypotenuse
+ A sine and cosine can be simultaneously calculated.
+ An arctangent and hypotenuse can be simultaneously calculated.
+
+Range and Unit of Values
+
+Arithmetic Processing
+Calculating sine
+
+I/O
+
+Range
+
+Unit
+
+Input
+
+Angle θ
+
+–float_max ≤ θ ≤ float_max*1
+
+radians
+
+Output
+
+sinθ
+
+–1.0 ≤ sinθ ≤ 1.0
+
+—
+
+Angle θ
+
+–float_max ≤ θ ≤ float_max*1
+
+radians
+
+Calculating cosine
+
+Input
+Output
+
+cosθ
+
+–1.0 ≤ cosθ ≤ 1.0
+
+—
+
+Calculating arctangent
+
+Input
+
+x and y
+coordinates
+
+–float_max ≤ x ≤ float_max*1
+–float_max ≤ y ≤ float_max*1
+
+—
+
+Output
+
+atan(y/x)
+
+–π ≤ atan(y/x) ≤ π
+
+radians
+
+Input
+
+x and y
+coordinates
+
+–float_max ≤ x ≤ float_max*1
+–float_max ≤ y ≤ float_max*1
+
+—
+
+Output
+
+x2 + y2
+
+Calculating hypotenuse
+
+Data Type for Processing
+
+Single-precision floating-point
+
+Number of cycles for
+calculation
+
+Sine: 14
+Cosine: 14
+Arctangent: 14
+Hypotenuse: 14 + 2 for software processing
+
+0≤
+
+x2 + y2 ≤ ∞
+
+—
+
+Note 1. float_max is the maximum value that can be expressed as single-precision floating-point: (2 – 2–23) × 2127.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2798 of 3240
+
+

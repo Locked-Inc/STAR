@@ -1,0 +1,1910 @@
+RX72N Group
+
+46.
+
+46. CRC Calculator (CRCA)
+
+CRC Calculator (CRCA)
+
+The CRC (Cyclic Redundancy Check) calculator generates CRC codes.
+
+46.1
+
+Overview
+
+Table 46.1 lists the specifications of the CRC calculator, and Figure 46.1 shows a block diagram of the CRC calculator.
+Table 46.1
+
+CRC Specifications
+
+Item
+
+Description
+
+Data size
+
+8 bits
+
+32 bits
+
+Data for CRC calculation*1 CRC codes are generated for any desired data in
+8n-bit units (where n is a whole number)
+
+CRC codes are generated for any desired data in
+32n-bit units (where n is a whole number)
+
+CRC processor unit
+
+8-bit parallel processing
+
+32-bit parallel processing
+
+CRC generating
+polynomial
+
+One of three generating polynomials is selectable
+ 8-bit CRC
+X8 + X2 + X + 1
+ 16-bit CRC
+X16 + X15 + X2 + 1
+X16 + X12 + X5 + 1
+
+One of two generating polynomials is selectable
+ 32-bit CRC
+X32 + X26 + X23 + X22 + X16 + X12 + X11 + X10 + X8
++ X7 + X5 + X4 + X2 + X + 1
+X32 + X28 + X27 + X26 + X25 + X23 + X22 + X20 + X19
++ X18 + X14 + X13 + X11 + X10 + X9 + X8 + X6 + 1
+
+CRC calculation switching
+
+The order of the bits produced by CRC calculation can be switched for LSB first or MSB first
+communication
+
+Low power consumption
+
+Module stop state can be set.
+
+Note 1. The circuit does not have a function to divide data for calculation into CRC calculation units. Write data in 8-bit or 32-bit units.
+
+Data bus
+
+CRCCR
+CRCDOR
+
+CRC code
+Generation circuit
+
+Control signal
+
+CRCDIR
+
+CRCCR: CRC control register
+CRCDIR: CRC data input register
+CRCDOR: CRC data output register
+
+Figure 46.1
+
+CRC Block Diagram
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2480 of 3240
+
+RX72N Group
+
+46.2
+
+46. CRC Calculator (CRCA)
+
+Register Descriptions
+
+46.2.1
+
+CRC Control Register (CRCCR)
+
+Address(es): CRC.CRCCR 0008 8280h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+DORCL
+R
+
+LMS
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+b2
+
+b1
+
+b0
+
+GPS[2:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+GPS[2:0]
+
+CRC Generating Polynomial
+Switching
+
+b2
+
+R/W
+
+b5 to b3
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b6
+
+LMS
+
+CRC Calculation Switching
+
+0: Generates CRC for LSB first communication.
+1: Generates CRC for MSB first communication.
+
+R/W
+
+b7
+
+DORCLR
+
+CRCDOR Register Clear
+
+1: Clears the CRCDOR register.
+This bit is read as 0.
+
+W*1
+
+0
+0
+0
+0
+1
+
+0
+0
+1
+1
+0
+
+b0
+
+0: No calculation is executed.
+1: 8-bit CRC (X8 + X2 + X + 1)
+0: 16-bit CRC (X16 + X15 + X2 + 1)
+1: 16-bit CRC (X16 + X12 + X5 + 1)
+0: 32-bit CRC (X32 + X26 + X23 + X22 + X16 + X12 + X11 + X10 +
+X8 + X7 + X5 + X4 + X2 + X + 1)
+1 0 1 : 32-bit CRC (X32 + X28 + X27 + X26 + X25 + X23 + X22 + X20 +
+X19 + X18 + X14 + X13 + X11 + X10 + X9 + X8 + X6 + 1)
+1 1 0: No calculation is executed.
+1 1 1: No calculation is executed.
+
+Note 1. Only 1 can be written.
+
+LMS Bit (CRC Calculation Switching)
+The setting this bit selects the order of the bits of generated CRC codes. The bit selects transmission of the lower-order
+byte of the CRC code first for LSB first communication, or the higher-order byte first for MSB first communication. For
+details on the transmission and reception of CRC codes, refer to section 46.3, Operation.
+DORCLR Bit (CRCDOR Register Clear)
+Write 1 to this bit so that the CRCDOR register is set to 0000 0000h.
+This bit is read as 0. Writing 0 to this bit has no effect.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2481 of 3240
+
+RX72N Group
+
+46.2.2
+
+46. CRC Calculator (CRCA)
+
+CRC Data Input Register (CRCDIR)
+
+ When 32-bit CRC is selected
+Address(es): CRC.CRCDIR 0008 8284h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ When 16-bit or 8-bit CRC is selected
+Address(es): CRC.CRCDIR 0008 8284h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The CRCDIR register is a readable and writable register. Write data for CRC calculation to this register.
+When generating a 32-bit CRC, the CRCDIR register should be accessed in longword units. When generating a 8-bit or
+16-bit CRC, the CRCDIR register should be accessed in byte units.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2482 of 3240
+
+RX72N Group
+
+46.2.3
+
+46. CRC Calculator (CRCA)
+
+CRC Data Output Register (CRCDOR)
+
+ When 32-bit CRC is selected
+Address(es): CRC.CRCDOR 0008 8288h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ When 16-bit CRC is selected
+Address(es): CRC.CRCDOR 0008 8288h
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ When 8-bit CRC is selected
+Address(es): CRC.CRCDOR 0008 8288h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The CRCDOR register is a readable and writable register.
+The value after a reset is 0000 0000h. When calculating with the initial value set to a value other than 0000 0000h,
+rewrite the CRCDOR register.
+Writing data to the CRCDIR register stores result of calculation in the CRCDOR register. In addition, following
+communication data, when a CRC code is written to the CRCDIR register and if the calculation result is 0000 0000h,
+there is no error in the communication data.
+When a 32-bit CRC is selected, the CRCDOR register should be accessed in longword units. When a 16-bit CRC is
+selected, the CRCDOR register should be accessed in word units. When an 8-bit CRC is selected, the CRCDOR register
+should be accessed in byte units.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2483 of 3240
+
+RX72N Group
+
+46.3
+
+46. CRC Calculator (CRCA)
+
+Operation
+
+The CRC calculator generates CRC codes for use in LSB first or MSB first communication.
+The following shows examples of generating the CRC code for input data (F0h) using the 16-bit CRC generating
+polynomial (X16 + X12 + X5 + 1). In these examples, the value of the CRC data output register (CRCDOR) is cleared by
+setting the DORCLR bit to 1 to set the initial value for CRC calculation to 0000 0000h.
+
+1. Write 83h to the CRC control register (CRCCR)
+CRCCR
+b7
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b0
+
+CRCDOR
+b15
+
+1
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b8
+
+b7
+
+0
+
+0
+
+b8
+
+b7
+
+1
+
+1
+
+0
+
+b0
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+0
+
+Clear CRCDOR
+2. Write F0h to the CRC data input register (CRCDIR)
+CRCDIR
+b7
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+b0
+
+CRCDOR
+b15
+
+0
+
+1
+
+0
+
+1
+
+1
+
+1
+
+0
+
+1
+
+1
+
+b0
+1
+
+CRC code generation
+3. Read the calculation result in the CRC data output register (CRCDOR)
+CRC code = F78Fh
+4. 8-bit serial transmission (LSB first)
+CRC code
+
+Data
+
+b0 b7
+
+b7
+1
+
+1
+
+1
+
+1
+
+0
+
+1
+
+F
+Figure 46.2
+
+1
+
+1
+
+1
+
+0
+
+7
+
+0
+
+0
+
+1
+
+1
+
+1
+
+8
+
+b0
+
+b7
+
+1
+
+1
+
+b0
+1
+
+1
+
+F
+
+1
+
+0
+
+0
+
+F
+
+0
+
+Output
+
+0
+
+0
+
+LSB First Data Transmission
+
+1. Write C3h to the CRC control register (CRCCR)
+CRCCR
+CRCDOR
+b7
+b0
+b15
+1
+
+1
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+0
+
+0
+
+b8 b7
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+0
+
+0
+
+b8
+
+b7
+
+1
+
+0
+
+b0
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+1
+
+0
+
+Clear CRCDOR
+2. Write F0h to the CRC data input register (CRCDIR)
+CRCDIR
+b7
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+b0
+
+CRCDOR
+b15
+
+0
+
+1
+
+1
+
+1
+
+b0
+1
+
+CRC code generation
+3. Read the calculation result in the CRC data output register (CRCDOR)
+CRC code = EF1Fh
+4. 8-bit serial transmission (MSB first)
+Data
+
+CRC code
+
+b7
+Output
+
+1
+
+1
+
+1
+F
+
+Figure 46.3
+
+1
+
+0
+
+0
+
+b0
+
+b7
+
+0
+
+1
+
+0
+0
+
+b0 b7
+1
+
+1
+E
+
+0
+
+1
+
+1
+
+1
+F
+
+1
+
+0
+
+b0
+0
+
+0
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+F
+
+MSB First Data Transmission
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2484 of 3240
+
+RX72N Group
+
+46. CRC Calculator (CRCA)
+
+1. 8-bit serial reception (LSB first)
+CRC code
+b7
+1
+
+1
+
+1
+
+1
+
+0
+
+1
+
+F
+
+1
+
+b0
+
+b7
+
+1
+
+1
+
+7
+
+Data
+0
+
+0
+
+0
+
+1
+
+1
+
+8
+
+1
+
+b0
+
+b7
+
+1
+
+1
+
+b0
+1
+
+F
+
+1
+
+1
+
+0
+
+0
+
+F
+
+0
+
+Input
+
+0
+
+0
+
+2. Write 83h to the CRC control register (CRCCR)
+CRCCR
+
+CRCDOR
+
+b7
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+b0
+
+b15
+
+1
+
+0
+
+b8 b7
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b0
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Clear CRCDOR
+3. Write F0h to the CRC data input register (CRCDIR)
+CRCDIR
+
+CRCDOR
+
+b7
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+b0
+
+b15
+
+0
+
+1
+
+b8 b7
+1
+
+1
+
+1
+
+0
+
+1
+
+1
+
+1
+
+1
+
+b0
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+1
+
+CRC code generation
+4. Write 8Fh to the CRC data input register (CRCDIR)
+CRCDIR
+
+CRCDOR
+
+b7
+1
+
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+b0
+
+15
+
+1
+
+0
+
+b8 b7
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+b8
+
+b7
+
+0
+
+0
+
+b0
+1
+
+1
+
+1
+
+0
+
+1
+
+1
+
+1
+
+CRC code generation
+5. Write F7h to the CRC data input register (CRCDIR)
+CRCDIR
+
+CRCDOR
+
+b7
+1
+
+1
+
+1
+
+1
+
+0
+
+1
+
+1
+
+b0
+
+b15
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b0
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+CRC code generation
+6. Read the calculation result in the CRC data output register (CRCDOR)
+CRC code = 0000h  no error
+
+Figure 46.4
+
+LSB First Data Reception
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2485 of 3240
+
+RX72N Group
+
+46. CRC Calculator (CRCA)
+
+1. 8-bit serial reception (MSB first)
+CRC code
+
+Data
+b7
+Input
+
+1
+
+b0 b7
+1
+
+1
+
+1
+
+0
+
+0
+
+F
+
+0
+
+0
+
+1
+
+1
+
+0
+
+1
+
+0
+
+1
+
+1
+
+E
+
+1
+
+b0
+
+b7
+
+1
+
+0
+
+b0
+0
+
+F
+
+0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+F
+
+2. Write C3h to the CRC control register (CRCCR)
+CRCCR
+
+CRCDOR
+
+b7
+1
+
+1
+
+0
+
+0
+
+0
+
+0
+
+1
+
+b0
+
+b15
+
+1
+
+0
+
+b8 b7
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b0
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Clear CRCDOR
+3. Write F0h to the CRC data input register (CRCDIR)
+CRCDIR
+
+CRCDOR
+
+b7
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+b0
+
+b15
+
+0
+
+1
+
+b8 b7
+1
+
+1
+
+0
+
+1
+
+1
+
+1
+
+0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+0
+
+b0
+0
+
+0
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+CRC code generation
+4. Write EFh to the CRC data input register (CRCDIR)
+CRCDOR
+
+CRCDIR
+b7
+1
+
+1
+
+1
+
+0
+
+1
+
+1
+
+1
+
+b0
+
+b15
+
+1
+
+0
+
+b8 b7
+0
+
+1
+
+0
+
+b0
+0
+
+CRC code generation
+5. Write 1Fh to the CRC data input register (CRCDIR)
+CRCDIR
+
+CRCDOR
+
+b7
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+1
+
+b0
+
+b15
+
+1
+
+0
+
+b8 b7
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b0
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+CRC code generation
+6. Read the calculation result in the CRC data output register (CRCDOR)
+CRC code = 0000h  no error
+
+Figure 46.5
+
+MSB First Data Reception
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2486 of 3240
+
+RX72N Group
+
+46.4
+
+46. CRC Calculator (CRCA)
+
+Usage Notes
+
+46.4.1
+
+Module Stop Function Setting
+
+Operation of the CRC calculator can be disabled or enabled using the module stop control register B (MSTPCRB). After
+a reset, the CRC is in the module stop state. Register access is enabled by releasing the module stop state.
+For details, refer to section 11, Low Power Consumption.
+
+46.4.2
+
+Note on Transmission
+
+Note that the sequence of transmission for the CRC code differs according to whether transmission is LSB first or MSB
+first.
+
+When transmitting 32-bit data
+1. CRC code
+After specifying the method for generation calculation, write data to the CRCDIR register in the
+order of (1), (2), (3), and (4).
+b7
+b0
+(1)
+
+CRCDIR
+b7
+
+b0
+(2)
+
+CRCDIR
+b7
+
+b0
+(3)
+
+CRCDIR
+b7
+
+b0
+(4)
+
+CRCDIR
+
+CRC code generation
+b8 b7
+
+b15
+
+CRC code (L)
+
+CRC code (H)
+
+CRCDOR
+
+b0
+
+2. Transmit data
+(i) When transmission is LSB first
+CRC code
+b7
+
+b0 b7
+(H)
+
+b0 b7
+(L)
+
+b0 b7
+
+b0 b7
+(4)
+
+(3)
+
+(ii) When transmission is MSB first
+b7
+Output
+
+Figure 46.6
+
+b0
+(1)
+
+Output
+
+CRC code
+
+b0 b7
+(1)
+
+b0 b7
+(2)
+
+b0 b7
+(2)
+
+b0 b7
+(3)
+
+b0 b7
+(4)
+
+b0 b7
+(H)
+
+b0
+(L)
+
+LSB First and MSB First Data Transmission
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2487 of 3240
+
+

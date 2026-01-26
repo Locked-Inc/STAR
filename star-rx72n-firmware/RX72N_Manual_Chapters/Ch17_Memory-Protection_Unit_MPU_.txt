@@ -1,0 +1,3242 @@
+RX72N Group
+
+17. Memory-Protection Unit (MPU)
+
+17.
+
+Memory-Protection Unit (MPU)
+
+17.1
+
+Overview
+
+The RXv3 CPU incorporates a memory-protection unit that checks the addresses of CPU access to the overall address
+space (0000 0000h to FFFF FFFFh).
+Access-control information can be set for up to eight regions, and permission for access to each region is in accord with
+this information. The default response to the detection of access to a region where permission has not been set is the
+generation of a memory-protection error.
+The supported access-control information for the individual regions consists of permission to read, permission to write,
+and permission to execute. This access-control information is effective when the processor mode of the CPU is user
+mode. Memory protection is not applied when the CPU is in supervisor mode.
+Table 17.1 lists the specifications of the memory-protection unit, and Figure 17.1 shows a block diagram of the
+memory-protection unit.
+Table 17.1
+
+Specifications of Memory Protection
+
+Specifications
+
+Description
+
+Region to be covered by memory protection
+and processor mode
+
+0000 0000h to FFFF FFFFh (in user mode)
+No memory protection in supervisor mode
+
+Number of regions
+
+8
+
+Page size (smallest unit of protection)
+
+16 bytes
+
+Specifying addresses of individual regions
+
+Setting the page numbers where regions start and end
+
+Setting to make memory protection effective
+or ineffective in individual regions
+
+A V (valid) bit in each region-n end page number register (REPAGEn) makes the
+settings effective or ineffective for the corresponding region (n = 0 to 7).
+
+Access-control information settings for
+individual regions
+
+Instruction execution: Permission to execute
+Operand access: Permission to read, permission to write
+
+Start of memory-protection operations
+
+After the memory-protection unit has been enabled, access monitoring starting up with
+the transition to user mode.
+
+Memory-protection error processing
+
+Generation of access exceptions
+
+Addresses where memory-protection errors
+are generated
+
+Address in instruction execution: The PC value is preserved on the stack.
+Address in operand access: The address is stored in the data memory-protection error
+address register (MPDEA).
+
+Determining the reasons for memoryprotection errors
+
+The memory-protection error status register (MPESTS) holds indicators of the reason.
+
+Background region setting
+
+Access-control information can be set for the background region (the whole address
+space).
+
+Processing where regions overlap
+
+The access-control information for access to an overlap between regions is the logical
+OR of the attributes for the given regions, and permission is given priority.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 657 of 3240
+
+RX72N Group
+
+17. Memory-Protection Unit (MPU)
+
+A31
+
+A4 A0
+CPU instruction address
+A4 A0
+
+A31
+
+CPU operand access address
+
+Processor mode
+
+2
+Background access-control register
+End page number register
+
+Start page number register
+31
+Region 0
+to
+Region 7
+
+4
+
+0
+
+Access control
+
+31
+
+Start page number
+
+4
+
+3
+
+End page number
+
+1
+
+0
+
+Access control
+
+V
+
+Region 0
+Region 7
+
+
+
+
+
+Region hit
+Checking of accesscontrol information
+
+
+
+Access
+determination
+
+
+Region hit
+Checking of accesscontrol information
+
+Access
+determination
+
+Instruction memory-protection error
+Data memory-protection error
+
+Figure 17.1
+
+Block Diagram of the Memory-Protection Unit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 658 of 3240
+
+RX72N Group
+
+17.1.1
+
+17. Memory-Protection Unit (MPU)
+
+Types of Access Control
+
+There are three types of access control information: permission for instruction execution, permission to read operands,
+and permission to write operands. Violations of these types of access control are only detected when programs are
+running in user mode. Violations are not detected when programs are running in supervisor mode.
+
+17.1.2
+
+Regions for Access Control
+
+Up to eight regions for access control are definable. Settings of the range of memory for each access-control region are
+made in the corresponding region-n start page number register (RSPAGEn) and region-n end page number register
+(REPAGEn), where n = 0 to 7.
+The minimum unit for control of access is the “page”, by which the address space is divided into 16-byte units. The 28
+higher-order bits ([31:4]) of the address [31:0] bits correspond to the page number.
+The REPAGEn register specifies the access-control information for each area and whether the area is enabled or not.
+
+17.1.3
+
+Background Region
+
+“Background region” refers to the whole address space (0000 0000h to FFFF FFFFh). Access-control information for the
+background region is set in the background-region access-control register (MPBAC). In contrast to the access-control
+information for the eight individual regions, protection information for the background region is effective as long as
+memory protection is enabled (the MPEN bit in the MPEN register is 1).
+
+17.1.4
+
+Overlap between Regions
+
+In cases of overlap between multiple regions, the access-control information becomes the logical OR of the accesscontrol bits for the overlapping regions (including the background region), with permission given priority.
+
+17.1.5
+
+Instructions and Data that Span Regions
+
+Operations in response to the detection of memory-protection errors when instructions or data span regions for which
+different access-control settings have been made are undefined. Ensure that instructions and data do not span regions for
+which different access-control settings have been made.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 659 of 3240
+
+RX72N Group
+
+17.2
+
+17. Memory-Protection Unit (MPU)
+
+Register Descriptions
+
+17.2.1
+
+Region-n Start Page Number Register (RSPAGEn) (n = 0 to 7)
+
+Address(es): RSPAGE0 0008 6400h, RSPAGE1 0008 6408h, RSPAGE2 0008 6410h, RSPAGE3 0008 6418h,
+RSPAGE4 0008 6420h, RSPAGE5 0008 6428h, RSPAGE6 0008 6430h, RSPAGE7 0008 6438h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+RSPN[27:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+RSPN[27:0]
+x
+
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b31 to b4
+
+RSPN[27:0]
+
+Region-Start Page Number
+
+Page number where the region starts, for use in region
+determination
+
+R/W
+
+RSPN[27:0] Bits (Region-Start Page Number)
+These bits specify the page number where the region starts.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 660 of 3240
+
+RX72N Group
+
+17.2.2
+
+17. Memory-Protection Unit (MPU)
+
+Region-n End Page Number Register (REPAGEn) (n = 0 to 7)
+
+Address(es): REPAGE0 0008 6404h, REPAGE1 0008 640Ch, REPAGE2 0008 6414h, REPAGE3 0008 641Ch,
+REPAGE4 0008 6424h, REPAGE5 0008 642Ch, REPAGE6 0008 6434h, REPAGE7 0008 643Ch
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+REPN[27:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+REPN[27:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+UAC[2:0]
+x
+
+x
+
+x
+
+x
+
+x
+
+0
+
+0
+
+V
+0
+
+0
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+V
+
+Valid Bit
+
+0: Region setting invalid
+1: Region setting valid
+
+R/W
+
+b3 to b1
+
+UAC[2:0]
+
+Access Control Bits in
+User Mode
+
+b3
+
+R/W
+
+0: Reading prohibited
+1: Reading permitted
+b2
+
+0: Writing prohibited
+1: Writing permitted
+b1
+
+0: Execution prohibited
+1: Execution permitted
+b31 to b4
+
+REPN[27:0]
+
+Region-End Page Number
+
+Page number where the region ends, for use in region determination R/W
+
+V Bit (Valid Bit)
+This bit enables or disables the settings for the corresponding region.
+This bit is set to 0 when the region invalidation operation register (MPOPI) invalidates all access-controlled areas.
+UAC[2:0] Bits (Access Control Bits in User Mode)
+These bits specify the access control in user mode.
+REPN[27:0] Bits (Region-End Page Number)
+These bits specify the page number where the region ends.
+Specify a value that is greater than or equal to the page number where the corresponding region starts. The page specified
+by the region-end page number is part of the target region for memory protection.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 661 of 3240
+
+RX72N Group
+
+17.2.3
+
+17. Memory-Protection Unit (MPU)
+
+Memory-Protection Enable Register (MPEN)
+
+Address(es): 0008 6500h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+MPEN
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+MPEN
+
+Memory-Protection Enable
+
+0: The memory protection is disabled.
+1: The memory protection is enabled.
+
+R/W
+
+b31 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+MPEN Bit (Memory-Protection Enable)
+This bit enables or disables the memory protection.
+After 1 has been written to this bit, address checking for memory protection by the CPU starts on the execution of a
+branch instruction (RTE or RTFI) that shifts operation to the user mode.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 662 of 3240
+
+RX72N Group
+
+17.2.4
+
+17. Memory-Protection Unit (MPU)
+
+Background Access Control Register (MPBAC)
+
+Address(es): 0008 6504h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+UBAC[2:0]
+0
+
+0
+
+—
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b3 to b1
+
+UBAC[2:0]
+
+Background Access Control Bits in
+User Mode
+
+b3
+
+R/W
+
+0: Reading prohibited
+1: Reading permitted
+b2
+
+0: Writing prohibited
+1: Writing permitted
+b1
+
+0: Execution prohibited
+1: Execution permitted
+b31 to b4
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+UBAC[2:0] Bits (Background Access Control Bits in User Mode)
+These bits specify the background access control in user mode.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 663 of 3240
+
+RX72N Group
+
+17.2.5
+
+17. Memory-Protection Unit (MPU)
+
+Memory-Protection Error Status-Clearing Register (MPECLR)
+
+Address(es): 0008 6508h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+CLR
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+CLR
+
+Error Status-Clearing
+
+[Reading]
+0: Fixed value for reading
+[Writing]
+0: Nothing is done.
+1: The DRW, DMPER and IMPER bits in MPESTS are set to 0.
+
+R/W
+
+b31 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+CLR Bit (Error Status-Clearing)
+This bit clears the data read/write bit (DRW), the data memory-protection error generation bit (DMPER), and the
+instruction memory-protection error generation bit (IMPER) in the memory-protection error status register (MPESTS) to
+0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 664 of 3240
+
+RX72N Group
+
+17.2.6
+
+17. Memory-Protection Unit (MPU)
+
+Memory-Protection Error Status Register (MPESTS)
+
+Address(es): 0008 650Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DRW DMPER IMPER
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+IMPER
+
+Instruction Memory-Protection
+Error Generation
+
+0: No instruction memory-protection error was generated.
+1: Instruction memory-protection error was generated.
+
+R
+
+b1
+
+DMPER
+
+Data Memory-Protection Error
+Generation
+
+0: No data memory-protection error was generated.
+1: Data memory-protection error was generated.
+
+R
+
+b2
+
+DRW
+
+Data Read/Write
+
+0: Data were read.
+1: Data were written.
+
+R
+
+b31 to b3
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+IMPER Bit (Instruction Memory-Protection Error Generation)
+This bit indicates the state of memory-protection error generation by instruction execution.
+Setting the error status-clearing bit (CLR) in the memory-protection error status-clearing register (MPECLR) to 1 clears
+this bit to 0.
+DMPER Bit (Data Memory-Protection Error Generation)
+This bit indicates the state of memory-protection error generation by operand access.
+Setting the error status-clearing bit (CLR) in the memory-protection error status-clearing register (MPECLR) to 1 clears
+this bit to 0.
+DRW Bit (Data Read/Write)
+For a memory-protection error produced by operand access, this bit indicates the read/write attribute of the access
+operation. This bit is only valid when the DMPER bit is 1.
+Setting the error status-clearing bit (CLR) in the memory-protection error status-clearing register (MPECLR) to 1 clears
+this bit to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 665 of 3240
+
+RX72N Group
+
+17.2.7
+
+17. Memory-Protection Unit (MPU)
+
+Data Memory-Protection Error Address Register (MPDEA)
+
+Address(es): 0008 6514h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+DEA[31:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+DEA[31:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b31 to b0
+
+DEA[31:0]
+
+Data Memory-Protection Error Address
+
+Data memory-protection error address
+
+R
+
+DEA[31:0] Bits (Data Memory-Protection Error Address)
+These bits retain the address for which operand access generated a memory-protection error.
+
+17.2.8
+
+Region Search Address Register (MPSA)
+
+Address(es): 0008 6520h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+SA[31:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+SA[31:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b31 to b0
+
+SA[31:0]
+
+Region Search Address
+
+Address for region searching
+
+R/W
+
+SA[31:0] Bits (Region Search Address)
+These bits specify the address for use in comparison with region-start addresses in the region-n start page number
+registers (RSPAGEn) and region-end addresses in the region-n end page number registers (REPAGEn).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 666 of 3240
+
+RX72N Group
+
+17.2.9
+
+17. Memory-Protection Unit (MPU)
+
+Region Search Operation Register (MPOPS)
+
+Address(es): 0008 6524h
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+S
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+S
+
+Region Search Operation
+
+[Reading]
+0: Fixed value for reading
+[Writing]
+0: Nothing is done.
+1: A region-search operation proceeds.
+
+R/W
+
+b15 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+S Bit (Region Search Operation)
+Setting this bit to 1 makes the memory-protection unit perform a region-search operation. The address specified in the
+region search address register (MPSA) is compared with the address information for individual regions to search for a
+hitting region.
+The result of searching is stored in the data-hit region bits (HITD[7:0]) of the data-hit region register (MHITD).
+Moreover, the logical OR of the respective access control bits for hitting regions is stored in the data-hit region access
+control bits (UHACD[2:0]) in user mode.
+
+17.2.10
+
+Region Invalidation Operation Register (MPOPI)
+
+Address(es): 0008 6526h
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+INV
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+INV
+
+Region Invalidate Start
+
+[Reading]
+0: Fixed value for reading
+[Writing]
+0: Nothing is done.
+1: All access-controlled areas are invalidated.
+
+R/W
+
+b15 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+INV Bit (Region Invalidate Start)
+Setting this bit to 1 clears the valid (V) bits in all of the region-n end page number registers (REPAGEn) to 0. After a V
+bit is set to 0, all settings other than background access-control settings are invalid.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 667 of 3240
+
+RX72N Group
+
+17.2.11
+
+17. Memory-Protection Unit (MPU)
+
+Instruction-Hit Region Register (MHITI)
+
+Address(es): 0008 6528h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+HITI[7:0]
+
+UHACI[2:0]
+0
+
+0
+
+—
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b3 to b1
+
+UHACI[2:0]
+
+Instruction-Hit Region
+Access Control Bits in
+User Mode
+
+b3
+
+R
+
+0: Reading prohibited
+1: Read permitted
+b2
+
+0: Writing prohibited
+1: Writing permitted
+b1
+
+0: Execution prohibited
+1: Execution is permitted.
+b15 to b4
+
+—
+
+b23 to b16 HITI[7:0]
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Instruction-Hit Region
+
+When the instruction memory-protection error generation bit
+(MPESTS.IMPER) = 1, [b23:b16] = 0000 0000b indicates that attempted
+access to the background region led to an instruction memory-protection
+error.
+
+R
+
+Other than above
+b23
+
+0: Instruction memory-protection error was not generated in region 7.
+1: Instruction memory-protection error was generated in region 7.
+b22
+
+0: Instruction memory-protection error was not generated in region 6.
+1: Instruction memory-protection error was generated in region 6.
+b21
+
+0: Instruction memory-protection error was not generated in region 5.
+1: Instruction memory-protection error was generated in region 5.
+b20
+
+0: Instruction memory-protection error was not generated in region 4.
+1: Instruction memory-protection error was generated in region 4.
+b19
+
+0: Instruction memory-protection error was not generated in region 3.
+1: Instruction memory-protection error was generated in region 3.
+b18
+
+0: Instruction memory-protection error was not generated in region 2.
+1: Instruction memory-protection error was generated in region 2.
+b17
+
+0: Instruction memory-protection error was not generated in region 1.
+1: Instruction memory-protection error was generated in region 1.
+b16
+
+0: Instruction memory-protection error was not generated in region 0.
+1: Instruction memory-protection error was generated in region 0.
+b31 to b24 —
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+UHACI[2:0] Bits (Instruction-Hit Region Access Control Bits in User Mode)
+These bits hold the user-mode access control bits (REPAGEn.UAC[2:0]) for the region where the instruction memoryprotection error was generated.
+If the error was generated in an overlap between regions, the value stored here is the logical OR of the user-mode access
+control bits for the corresponding regions (including the background region).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 668 of 3240
+
+RX72N Group
+
+17. Memory-Protection Unit (MPU)
+
+HITI[7:0] Bits (Instruction-Hit Region)
+These bits indicate the region where an instruction memory-protection error was generated. These bits are set to 0000
+0000b in response to the generation of an instruction memory-protection error in the background region.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 669 of 3240
+
+RX72N Group
+
+17.2.12
+
+17. Memory-Protection Unit (MPU)
+
+Data-Hit Region Register (MHITD)
+
+Address(es): 0008 652Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+HITD[7:0]
+
+UHACD[2:0]
+0
+
+0
+
+—
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b3 to b1
+
+UHACD[2:0]
+
+Data-Hit Region
+Access Control Bits in
+User Mode
+
+b3
+
+R
+
+0: Reading prohibited
+1: Reading permitted
+b2
+
+0: Writing prohibited
+1: Writing permitted
+b1
+
+0: Execution prohibited
+1: Execution permitted
+b15 to b4
+
+—
+
+b23 to b16 HITD[7:0]
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Data-Hit Region
+
+When the data memory-protection error generation bit (MPESTS.DMPER)
+= 1, [b23:b16] = 0000 0000b indicates that attempted access to the
+background region led to a data memory-protection error.
+
+R
+
+Other than above
+b23
+
+0: Neither a data memory-protection error nor a search hit was generated
+in region 7.
+1: A data memory-protection error or search hit was generated in region 7.
+b22
+
+0: Neither a data memory-protection error nor a search hit was generated
+in region 6.
+1: A data memory-protection error or search hit was generated in region 6.
+b21
+
+0: Neither a data memory-protection error nor a search hit was generated
+in region 5.
+1: A data memory-protection error or search hit was generated in region 5.
+b20
+
+0: Neither a data memory-protection error nor a search hit was generated
+in region 4.
+1: A data memory-protection error or search hit was generated in region 4.
+b19
+
+0: Neither a data memory-protection error nor a search hit was generated
+in region 3.
+1: A data memory-protection error or search hit was generated in region 3.
+b18
+
+0: Neither a data memory-protection error nor a search hit was generated
+in region 2.
+1: A data memory-protection error or search hit was generated in region 2.
+b17
+
+0: Neither a data memory-protection error nor a search hit was generated
+in region 1.
+1: A data memory-protection error or search hit was generated in region 1.
+b16
+
+0: Neither a data memory-protection error nor a search hit was generated
+in region 0.
+1: A data memory-protection error or search hit was generated in region 0.
+b31 to b24 —
+
+Reserved
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Page 670 of 3240
+
+RX72N Group
+
+17. Memory-Protection Unit (MPU)
+
+UHACD[2:0] Bits (Data-Hit Region Access Control Bits in User Mode)
+These bits hold the user-mode access control bits (REPAGEn.UAC[2:0]) that have been set for the region where a data
+memory-protection error was generated or the region that produced a hit in region searching.
+When an error is generated in an overlap between regions or a hit was generated in region searching, the value stored
+here is the logical OR of the user-mode access control bits for the corresponding regions (including the background
+region).
+HITD[7:0] Bits (Data-Hit Region)
+These bits indicate the region where a data memory-protection error was generated or the region that produced a hit in a
+region search. These bits are set to 0000 0000b for a data memory-protection error generated in the background region.
+Note:
+
+When access to a register of memory protection unit in user mode generates a data memory-protection error, the
+value in this register is set to 0000 0000h.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 671 of 3240
+
+RX72N Group
+
+17.3
+17.3.1
+
+17. Memory-Protection Unit (MPU)
+
+Functions
+Memory Protection
+
+Memory protection means monitoring, in accord with the access-control information that has been set for the individual
+access-control regions and the background region, whether or not access by programs running in user mode violates the
+access-control settings. The memory-protection unit notifies the CPU of access-control violations (or memory-protection
+errors) when they are detected, causing the CPU to start access-exception processing.
+Memory protection is enabled by setting the memory-protection enable (MPEN) bit in the memory-protection enable
+(MPEN) register to 1.
+An instruction memory-protection error is generated on detection of an instruction-execution violation and a data
+memory-protection error is generated on detection of an operand-access reading or writing violation. Operand access that
+leads to a data memory-protection error is not actually executed.
+
+17.3.2
+
+Region Search
+
+Region search means enquiry as to which of the eight specified access regions was “hit” and how the access-control
+information (permission to execute, to read, and to write) is set.
+When the region search operation (S) bit in the region-search operation (MPOPS) register is set to 1, the address
+specified in the region search address (MPSA) register is compared with the addresses for the individual regions. After a
+region search is executed, the data-hit region register (MHITD) indicates the logical OR of the access-control
+information for the region which was “hit” and for the other regions.
+
+17.3.3
+
+Protection of Registers Related to the Memory-Protection Unit
+
+Registers related to the memory-protection unit are not accessible through means of access other than operand access by
+the CPU (i.e. by instruction fetching or DMA). The registers related to the memory-protection unit are only accessible in
+supervisor mode. Attempted access to registers related to the memory-protection unit in user mode through operand
+access by the CPU leads to a data memory-protection error regardless of whether or not memory protection is in effect at
+the given location.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 672 of 3240
+
+RX72N Group
+
+17.3.4
+
+17. Memory-Protection Unit (MPU)
+
+Flow for Determination of Access by the Memory-Protection Function
+
+Figure 17.2 shows the flow of determination in the case of data access and Figure 17.3 shows the flow of determination
+in the case of instruction access.
+
+Data access by the CPU
+
+Processor mode?
+
+Supervisor mode
+
+Permit data access
+User mode
+
+Is access to an
+MPU-related register?
+
+No
+
+Yes
+Is memory protection
+enabled?
+
+Generate a data memoryprotection error
+
+No
+
+Permit data access
+Yes
+
+Is access to an accesscontrol region?
+
+No
+
+Yes
+
+Determination in accord with
+the access-control information for
+the given region*1
+
+Access prohibited
+
+Access permitted
+
+Permit data access
+
+Note 1.
+
+Figure 17.2
+
+Determination in accord with
+the access-control information for
+the background region
+
+Access prohibited
+(default)
+
+Access permitted
+
+Generate a data memoryprotection error
+
+Permit data access
+
+Generate a data memoryprotection error
+
+Permission takes priority when the settings lead to overlapping regions overlap and are different for the given regions
+(this includes the background region).
+
+Flow of Determination for Data Access
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 673 of 3240
+
+RX72N Group
+
+17. Memory-Protection Unit (MPU)
+
+Instruction access by the CPU
+
+Processor mode?
+
+User mode
+
+Is memory protection
+enabled?
+
+Supervisor mode
+
+Permit instruction access
+
+No
+Permit instruction access
+
+Yes
+
+Is access to an accesscontrol region?
+
+No
+
+Yes
+
+Determination in accord with
+the access-control information
+for the given region*1
+
+Access prohibited
+
+Access permitted
+
+Permit instruction access
+
+Note 1.
+
+Figure 17.3
+
+Determination in accord with
+The access-control information
+for the background region
+
+Access prohibited
+(default)
+
+Access permitted
+Generate an instruction
+memory-protection error
+
+Permit instruction access
+
+Generate an instruction
+memory-protection error
+
+Permission takes priority when the settings lead to overlapping regions overlap and are not the same for the given regions
+(this includes the background region).
+
+Flow of Determination for Instruction Access
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 674 of 3240
+
+RX72N Group
+
+17. Memory-Protection Unit (MPU)
+
+17.4
+
+Procedures for Using Memory Protection
+
+17.4.1
+
+Setting Access-Control Information
+
+Access-control information for the various regions is set in supervisor mode.
+Settings for up to eight access-control regions are made in the region-n start page number registers (RSPAGEn) and
+region-n end page number registers (REPAGEn), where n = 0 to 7.
+Settings for the background access-control region are made in the background access-control register (MPBAC).
+
+17.4.2
+
+Enabling Memory Protection
+
+Setting the memory-protection enable (MPEN) bit in the memory-protection enable (MPEN) register to 1 while
+operation is in supervisor mode enables memory protection.
+
+17.4.3
+
+Transition to User Mode
+
+After updating the registers related to the memory-protection unit, read any of these registers and check that the settings
+have been made before the transition to user mode.
+Either of the methods below can be used for the transition from supervisor mode to user mode.
+
+• Set the processor mode setting (PM) bit in the copy of the processor status word (PSW) saved in the stack area to 1
+(the setting for user mode) and then execute an RTE instruction.
+
+• Set the PM bit in the backup processor status word (BPSW) to 1 and then execute an RTFI instruction.
+Note:
+
+Using an MVTC or POPC instruction to write to the PSW.PM bit is invalid. Use an RTE or RTFI instruction to
+update the value of the PSW.PM bit.
+
+The memory-protection unit starts checking instruction-execution access and operand access by the CPU on the
+transition to user mode.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 675 of 3240
+
+RX72N Group
+
+17.4.4
+
+17. Memory-Protection Unit (MPU)
+
+Processing in Response to Memory-Protection Errors
+
+The CPU starts access-exception processing on detection of a violation of protection set up by the access-control
+information (i.e. a memory-protection error). For details on CPU operations in access-exception processing, refer to
+section 14, Exception Handling.
+To determine whether an instruction memory-protection error or data memory-protection error has been generated, check
+the values of the instruction memory-protection error generation (IMPER) and data memory-protection error generation
+(DMPER) bits in the memory-protection error status register (MPESTS) from within the exception-processing routine.
+After confirming the type of error, clear the memory-protection error status register (MPESTS) by writing 1 to the status
+clearing (CLR) bit in the memory-protection error status clearing register (MPECLR).
+
+(1)
+
+When a data memory-protection error is generated
+
+Access-exception processing by the CPU saves the address of the instruction that led to the memory-protection error on
+the stack. Furthermore, the address of the operand for which access led to a memory-protection error is stored in the data
+memory-protection error address register (MPDEA) and the region information for the region where the memoryprotection error was generated is stored in the data-hit region register (MHITD).
+ Violations of access control in access to valid regions 0 to 7
+The data-hit region bits (MHITD.HITD[7:0]) with the same region number as the region where the error occurred is set
+to 1. In user mode, the logical “or” of the region access-control information for the location where the error occurred is
+set in the data-hit region access-control bits (MHITD.UHACD[2:0]).
+ Violations of access control for the background region, besides access to outside valid regions 0 to 7
+The data-hit region bits (MHITD.HITD[7:0]) are set to 0000 0000b. In user mode, the access-control information for the
+background region is set in the data-hit region access-control bits (MHITD.UHACD[2:0]).
+Referring to this information can pinpoint the sources of errors.
+
+(2)
+
+When an instruction memory-protection error is generated
+
+Access-exception processing by the CPU saves the address of the instruction that led to the memory-protection error on
+the stack. Furthermore, the region information for the region where the memory-protection error was generated is stored
+in the instruction-hit region register (MHITI).
+ Violations of access control in access to valid regions 0 to 7
+The instruction-hit region bit (MHITI.HITI[7:0]) with the same region number as the region where the error occurred is
+set to 1. In user mode, the logical “or” of the region access-control information for the location where the error occurred
+is set in the instruction-hit region access-control bits (MHITI.UHACI[2:0]).
+ Violations of access control for the background region, besides access to outside valid regions 0 to 7
+The instruction-hit region bits (MHITI.HITI[7:0]) are set to 0000 0000b. In user mode, the access-control information
+for the background region is set in the instruction-hit region access-control bits (MHITI.UHACI[2:0]).
+Referring to this information can pinpoint the sources of errors.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 676 of 3240
+
+
