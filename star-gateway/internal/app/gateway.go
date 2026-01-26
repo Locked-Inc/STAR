@@ -86,6 +86,9 @@ func Run(ctx context.Context, cfg Config) error {
 		// New code path with TransportManager
 		harqHandler, err = initTransportManager(ctx, cfg)
 	}
+	if err != nil {
+		return err
+	}
 
 	// ========================================
 	// Structured Logger

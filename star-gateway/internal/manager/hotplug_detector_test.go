@@ -30,7 +30,7 @@ func TestNewHotPlugDetector_ValidInterval(t *testing.T) {
 	interval := 1 * time.Second
 	hpd := NewHotPlugDetector(interval, 0x1234, 0x5678)
 	if hpd == nil {
-		t.Errorf("NewHotPlugDetector() returned nil for valid interval")
+		t.Fatalf("NewHotPlugDetector() returned nil for valid interval")
 	}
 	if hpd.pollInterval != interval {
 		t.Errorf("expected pollInterval %v, got %v", interval, hpd.pollInterval)
