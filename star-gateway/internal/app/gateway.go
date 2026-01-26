@@ -20,6 +20,7 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/fec"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/manager"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/service"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
@@ -58,6 +59,8 @@ type Shutdownable interface {
 type Config struct {
 	SimulationMode bool
 	SocketPath     string
+	TransportMode  manager.TransportMode
+	// "auto", "prefer-usb", "force-usb", "force-spi"
 }
 
 // Run starts the gateway application.
@@ -74,9 +77,14 @@ func Run(ctx context.Context, cfg Config) error {
 	// ========================================
 	// Layer 2-4: Protocol Stack (HARQ)
 	// ========================================
-	harqHandler, err := initHARQ(deviceTransport)
-	if err != nil {
-		return err
+	var harqHandler harq.HARQ
+
+	if cfg.TransportMode == manager.ModeForceSPI {
+		// Existing code path (no changes)
+		harqHandler, err = initHARQ(deviceTransport)
+	} else {
+		// New code path with TransportManager
+		harqHandler, err = initTransportManager(ctx, cfg)
 	}
 
 	// ========================================
@@ -173,6 +181,55 @@ func initTransport(cfg Config) (transport.Device, func(), error) {
 	}
 
 	return deviceTransport, cleanup, nil
+}
+
+func initTransportManager(ctx context.Context, cfg Config) (harq.HARQ, error) {
+	tmConfig := manager.DefaultConfig()
+	tmConfig.Mode = manager.TransportMode(cfg.TransportMode)
+
+	tm := manager.NewTransportManager(tmConfig)
+
+	// Register SPI
+	if spiTransport, err := createSPITransport(); err == nil {
+		spiLink := createSPILink(spiTransport)
+		tm.RegisterTransport("spi", spiLink, 5)
+	}
+
+	// Register USB (if available)
+	// This will be added in Phase 2-3
+
+	if err := tm.Start(ctx); err != nil {
+		return nil, err
+	}
+
+	return tm, nil
+}
+
+// createSPITransport creates and opens an SPI transport for use with TransportManager.
+// Returns the transport and any error during initialization.
+func createSPITransport() (*transport.SPITransport, error) {
+	spiTransport := transport.NewSPITransport(transport.DefaultConfig())
+	if err := spiTransport.Open(); err != nil {
+		return nil, fmt.Errorf("failed to open SPI transport: %w", err)
+	}
+	return spiTransport, nil
+}
+
+// createSPILink wraps an SPI transport in a full HARQ stack for TransportManager.
+// This includes frame encoding/decoding and FEC, matching the pattern in initHARQ.
+func createSPILink(spiTransport *transport.SPITransport) harq.HARQ {
+	frameEncoder := frame.NewEncoder()
+	frameDecoder := frame.NewDecoder()
+	fecEncoder := fec.NewConvolutionalEncoder()
+	fecDecoder := fec.NewViterbiDecoder()
+	return harq.NewChaseCombining(
+		harq.DefaultConfig(),
+		spiTransport, // SPITransport implements transport.Transport
+		frameEncoder,
+		frameDecoder,
+		fecEncoder,
+		fecDecoder,
+	)
 }
 
 func initHARQ(deviceTransport transport.Device) (harq.HARQ, error) {
