@@ -1,0 +1,9083 @@
+RX72N Group
+
+28.
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+16-Bit Timer Pulse Unit (TPUa)
+
+This MCU has on-chip 16-bit timer pulse units (TPU) comprising six-channel 16-bit timers.
+In this section, “PCLK” is used to refer to PCLKB.
+
+28.1
+
+Overview
+
+Specifications of the TPU are listed in Table 28.1. Functions of TPU are listed in Table 28.2.
+Figure 28.1 shows a block diagram of TPU.
+Table 28.1
+
+Specifications of TPU
+
+Item
+
+Description
+
+Pulse input/output
+
+Maximum 16
+
+Count clocks
+
+Seven or eight types are provided for each channel.
+
+Settable operations
+
+ Waveform output at compare match
+ Input capture function (noise filters can be set)
+ Counter clear operation
+ Simultaneous writing to multiple timer counters (TCNT)
+ Simultaneous clearing by compare match and input capture
+ Synchronous input/output for registers by counter synchronous operation
+ Maximum of 15-phase PWM output by combination with synchronous operation
+ Cascaded operation
+
+TPU0 and TPU3
+
+Buffer operation can be set.
+
+TPU1, TPU2, TPU4, and TPU5
+
+Phase counting mode can be set.
+
+Interrupt sources
+
+26 sources
+
+Buffer operation
+
+Automatic transfer of register data
+
+Generation of trigger
+
+Programmable pulse generator (PPG) output trigger can be generated.
+Conversion start trigger for the A/D converter can be generated.
+
+Event linking (output)
+
+Six types of event signal can be output to the ELC.
+ Compare match A (TPU0 to TPU3)
+ Compare match B (TPU0 to TPU3)
+ Compare match C (TPU0, TPU3)
+ Compare match D (TPU0, TPU3)
+ Overflow (TPU0 to TPU3)
+ Underflow (TPU1, TPU2)
+
+Event linking (input)
+
+Any of the three operations in response to event input is possible.
+ Starting counts (TPU0 to TPU3)
+ Restarting counts (TPU0 to TPU3)
+ Input capture operation (TPU0 to TPU3)
+
+Low power consumption function
+
+Module stop state can be set.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1442 of 3240
+
+RX72N Group
+
+Table 28.2
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+TPU Functions (1/2)
+
+Item
+
+TPU0
+
+TPU1
+
+TPU2
+
+TPU3
+
+TPU4
+
+TPU5
+
+Count clocks
+
+PCLK/1
+PCLK/4
+PCLK/16
+PCLK/64
+TCLKA
+TCLKB
+TCLKC
+TCLKD
+
+PCLK/1
+PCLK/4
+PCLK/16
+PCLK/64
+PCLK/256
+TCLKA
+TCLKB
+
+PCLK/1
+PCLK/4
+PCLK/16
+PCLK/64
+PCLK/1024
+TCLKA
+TCLKB
+TCLKC
+
+PCLK/1
+PCLK/4
+PCLK/16
+PCLK/64
+PCLK/256
+PCLK/1024
+PCLK/4096
+TCLKA
+
+PCLK/1
+PCLK/4
+PCLK/16
+PCLK/64
+PCLK/1024
+TCLKA
+TCLKC
+
+PCLK/1
+PCLK/4
+PCLK/16
+PCLK/64
+PCLK/256
+TCLKA
+TCLKC
+TCLKD
+
+TCLKA
+TCLKB
+
+TCLKC
+TCLKD
+
+TCLKC
+TCLKD
+
+TCLKA
+TCLKB
+
+External clocks for
+phase counting mode
+
+Not possible
+
+Not possible
+
+Timer general registers
+
+TGRA
+TGRB
+TGRC*1
+TGRD*1
+
+TGRA
+TGRB
+
+TGRA
+TGRB
+
+TGRA
+TGRB
+TGRC*1
+TGRD*1
+
+TGRA
+TGRB
+
+TGRA
+TGRB
+
+I/O pins
+
+TIOCA0
+TIOCB0
+TIOCC0
+TIOCD0
+
+TIOCA1
+TIOCB1
+
+TIOCA2
+TIOCB2
+
+TIOCA3
+TIOCB3
+TIOCC3
+TIOCD3
+
+TIOCA4
+TIOCB4
+
+TIOCA5
+TIOCB5
+
+Counter clear function
+(y = A to D)
+
+TGRy compare
+match or input
+capture
+
+TGRy compare
+match or input
+capture
+
+TGRy compare
+match or input
+capture
+
+TGRy compare
+match or input
+capture
+
+TGRy compare
+match or input
+capture
+
+TGRy compare
+match or input
+capture
+
+Compare Low output
+match
+High output
+output
+Toggle
+output
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Input capture function
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Synchronous operation
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+PWM mode
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Possible
+
+Not possible
+
+Possible
+
+Possible
+
+Not possible
+
+Possible
+
+Possible
+
+Phase counting mode
+Buffer operation
+
+Possible
+
+Not possible
+
+Not possible
+
+Possible
+
+Not possible
+
+Not possible
+
+DTC activation
+(y = A to D)
+
+TGRy compare
+match or input
+capture
+
+TGRy compare
+match or input
+capture
+
+TGRy compare
+match or input
+capture
+
+TGRy compare
+match or input
+capture
+
+TGRy compare
+match or input
+capture
+
+TGRy compare
+match or input
+capture
+
+DMAC activation
+
+TGRA compare
+match or input
+capture
+
+TGRA compare
+match or input
+capture
+
+TGRA compare
+match or input
+capture
+
+TGRA compare
+match or input
+capture
+
+TGRA compare
+match or input
+capture
+
+TGRA compare
+match or input
+capture
+
+A/D conversion start
+trigger
+
+TGRA compare
+match or input
+capture
+
+TGRA compare
+match or input
+capture
+
+TGRA compare
+match or input
+capture
+
+TGRA compare
+match or input
+capture
+
+TGRA compare
+match or input
+capture
+
+Not possible
+
+PPG trigger
+
+TGRA/TGRB
+compare match
+or input capture
+
+TGRA/TGRB
+compare match
+or input capture
+
+TGRA/TGRB
+compare match
+or input capture
+
+TGRA/TGRB
+compare match
+or input capture
+
+Not possible
+
+Not possible
+
+Interrupt sources
+
+5 sources
+ Compare
+match or input
+capture 0A
+ Compare
+match or input
+capture 0B
+ Compare
+match or input
+capture 0C
+ Compare
+match or input
+capture 0D
+ Overflow
+
+4 sources
+ Compare
+match or input
+capture 1A
+ Compare
+match or input
+capture 1B
+ Overflow
+ Underflow
+
+4 sources
+ Compare
+match or input
+capture 2A
+ Compare
+match or input
+capture 2B
+ Overflow
+ Underflow
+
+5 sources
+ Compare
+match or input
+capture 3A
+ Compare
+match or input
+capture 3B
+ Compare
+match or input
+capture 3C
+ Compare
+match or input
+capture 3D
+ Overflow
+
+4 sources
+ Compare
+match or input
+capture 4A
+ Compare
+match or input
+capture 4B
+ Overflow
+ Underflow
+
+4 sources
+ Compare
+match or input
+capture 5A
+ Compare
+match or input
+capture 5B
+ Overflow
+ Underflow
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1443 of 3240
+
+RX72N Group
+Table 28.2
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+TPU Functions (2/2)
+
+Item
+
+TPU0
+
+TPU1
+
+TPU2
+
+TPU3
+
+Event linking (output)
+
+5 sources
+ Compare
+match 0A
+ Compare
+match 0B
+ Compare
+match 0C
+ Compare
+match 0D
+ Overflow
+
+4 sources
+ Compare
+match 1A
+ Compare
+match 1B
+ Overflow
+ Underflow
+
+4 sources
+ Compare
+match 2A
+ Compare
+match 2B
+ Overflow
+ Underflow
+
+5 sources
+ Compare
+match 3A
+ Compare
+match 3B
+ Compare
+match 3C
+ Compare
+match 3D
+ Overflow
+
+Event linking (input)
+
+ Starting counts  Starting counts  Starting counts  Starting counts
+ Restarting
+ Restarting
+ Restarting
+ Restarting
+counts
+counts
+counts
+counts
+ Input capture
+ Input capture
+ Input capture
+ Input capture
+operation
+operation
+operation
+operation
+(data is
+(data is
+(data is
+(data is
+captured in
+captured in
+captured in
+captured in
+TGRA)
+TGRA)
+TGRA)
+TGRA)
+
+Module stop setting*2
+
+TPU4
+
+TPU5
+
+Not possible
+
+Not possible
+
+Not possible
+
+Not possible
+
+MSTPCRA.MSTPA13 bit
+
+Note 1. TGRC and TGRD can be set as a buffer register.
+Note 2. For details, see section 11, Low Power Consumption.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1444 of 3240
+
+TGRD
+
+TGRB
+
+TGRC
+
+TCNT
+
+TGRA
+
+TSR
+NFCR
+TIER
+
+TCNT
+
+TGRA
+
+TGRB
+
+TCNT
+
+TGRB
+
+NFCR
+TIER
+TSR
+TIER
+
+TGRA
+
+[Interrupt request signals]
+
+TSR
+
+TMDR
+TCR
+
+TIOR
+
+TMDR
+NFCR
+
+[Clock input]
+Internal clock: PCLK/1
+PCLK/4
+PCLK/8
+PCLK/16
+PCLK/32
+PCLK/64
+PCLK/256
+PCLK/1024
+PCLK/4096
+External clock: TCLKA
+TCLKB
+TCLKC
+TCLKD
+
+TCR
+TIOR
+
+[Event signal input]
+TPU3: Event input signal
+
+TPU5
+
+Control logic for TPU3 to TPU5
+
+TPU3: TIOCA3
+TIOCB3
+TIOCC3
+TIOCD3
+TPU4: TIOCA4
+TIOCB4
+TPU5: TIOCA5
+TIOCB5
+
+TPU4
+
+[Input/output pins]
+
+TCR TMDR
+TIORH TIORL
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+TPU3
+
+RX72N Group
+
+TPU3:TGI3A
+TGI3B
+TGI3C
+TGI3D
+TCI3V
+TPU4:TGI4A
+TGI4B
+TCI4V
+TCI4U
+TPU5:TGI5A
+TGI5B
+TCI5V
+TCI5U
+
+[Event signal output]
+
+Bus interface
+
+[Interrupt request signals]
+TPU0:TGI0A
+TGI0B
+TGI0C
+TGI0D
+TCI0V
+TPU1:TGI1A
+TGI1B
+TCI1V
+TCI1U
+TPU2:TGI2A
+TGI2B
+TCI2V
+TCI2U
+
+A/D conversion start
+request signal
+PPG output trigger signal
+
+TGRB
+
+TCNT
+
+Internal data bus
+
+TGRA
+
+Module data bus
+
+TSYR
+TIER
+
+NFCR
+
+TSR
+
+TSTR
+
+Control
+logic
+TMDR
+TCR
+
+TIOR
+
+TPU2
+
+Common
+
+TPU3: Event output signal
+
+TSTR:
+TSYR:
+TCR:
+TMDR:
+TIOR (H, L):
+
+Figure 28.1
+
+TGRD
+
+TGRB
+TGRB
+
+TGRC
+
+TCNT
+
+TGRA
+
+TCNT
+
+TGRA
+
+TSR
+TIER
+
+NFCR
+TIER
+
+TCR
+
+TSR
+
+TCR TMDR
+TIOR
+NFCR
+TIORH TIORL
+
+Timer start register
+Timer synchronous register
+Timer control register
+Timer mode register
+Timer I/O control registers (H, L)
+
+TMDR
+
+TPU1
+
+Control logic for TPU0 to TPU2
+
+[Event signal input]
+TPU0: Event input signal
+TPU1: Event input signal
+TPU2: Event input signal
+
+TPU0
+
+[Input/output pins]
+TPU0: TIOCA0
+TIOCB0
+TIOCC0
+TIOCD0
+TPU1: TIOCA1
+TIOCB1
+TPU2: TIOCA2
+TIOCB2
+
+[Event signal output]
+TPU0: Event output signal
+TPU1: Event output signal
+TPU2: Event output signal
+
+TIER:
+Timer interrupt enable register
+TSR:
+Timer status register
+TGR (A, B, C, D): Timer general registers (A, B, C, D)
+TCNT:
+Timer counter
+NFCR:
+Noise filter control register
+
+Block Diagram of TPU
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1445 of 3240
+
+RX72N Group
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Table 28.3 lists the input/output pins of the TPU.
+Table 28.3
+
+Pin Configuration of TPU
+
+Channel
+
+Pin Name
+
+I/O
+
+Description
+
+Common
+
+TCLKA
+
+Input
+
+External clock A input pin (TPU1 and TPU5 phase counting mode A phase input)
+
+TPU0
+
+TPU1
+
+TPU2
+
+TPU3
+
+TPU4
+
+TPU5
+
+TCLKB
+
+Input
+
+External clock B input pin (TPU1 and TPU5 phase counting mode B phase input)
+
+TCLKC
+
+Input
+
+External clock C input pin (TPU2 and TPU4 phase counting mode A phase input)
+
+TCLKD
+
+Input
+
+External clock D input pin (TPU2 and TPU4 phase counting mode B phase input)
+
+TIOCA0
+
+I/O
+
+TPU0.TGRA input capture input/output compare output/PWM output pin
+
+TIOCB0
+
+I/O
+
+TPU0.TGRB input capture input/output compare output/PWM output pin
+
+TIOCC0
+
+I/O
+
+TPU0.TGRC input capture input/output compare output/PWM output pin
+
+TIOCD0
+
+I/O
+
+TPU0.TGRD input capture input/output compare output/PWM output pin
+
+TIOCA1
+
+I/O
+
+TPU1.TGRA input capture input/output compare output/PWM output pin
+
+TIOCB1
+
+I/O
+
+TPU1.TGRB input capture input/output compare output/PWM output pin
+
+TIOCA2
+
+I/O
+
+TPU2.TGRA input capture input/output compare output/PWM output pin
+
+TIOCB2
+
+I/O
+
+TPU2.TGRB input capture input/output compare output/PWM output pin
+
+TIOCA3
+
+I/O
+
+TPU3.TGRA input capture input/output compare output/PWM output pin
+
+TIOCB3
+
+I/O
+
+TPU3.TGRB input capture input/output compare output/PWM output pin
+
+TIOCC3
+
+I/O
+
+TPU3.TGRC input capture input/output compare output/PWM output pin
+
+TIOCD3
+
+I/O
+
+TPU3.TGRD input capture input/output compare output/PWM output pin
+
+TIOCA4
+
+I/O
+
+TPU4.TGRA input capture input/output compare output/PWM output pin
+
+TIOCB4
+
+I/O
+
+TPU4.TGRB input capture input/output compare output/PWM output pin
+
+TIOCA5
+
+I/O
+
+TPU5.TGRA input capture input/output compare output/PWM output pin
+
+TIOCB5
+
+I/O
+
+TPU5.TGRB input capture input/output compare output/PWM output pin
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1446 of 3240
+
+RX72N Group
+
+28.2
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Register Descriptions
+
+28.2.1
+
+Timer Control Register (TCR)
+
+Address(es): TPU0.TCR 0008 8110h, TPU1.TCR 0008 8120h, TPU2.TCR 0008 8130h,
+TPU3.TCR 0008 8140h, TPU4.TCR 0008 8150h, TPU5.TCR 0008 8160h
+b7
+
+b6
+
+b5
+
+CCLR[2:0]
+Value after reset:
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+CKEG[1:0]
+0
+
+0
+
+0
+
+b1
+
+b0
+
+TPSC[2:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+TPSC[2:0]
+
+Timer Prescaler Select
+
+See Table 28.4 to Table 28.9.
+
+R/W
+
+b4, b3
+
+CKEG[1:0]
+
+Input Clock Edge Select
+
+See Table 28.10.
+
+R/W
+
+b7 to b5
+
+CCLR[2:0]
+
+Counter Clear Source Select*1
+
+See Table 28.11 and Table 28.12.
+
+R/W
+
+Note 1. Bit 7 is reserved in TPU1, TPU2, TPU4, and TPU5. These bits are read as 0. The write value should be 0.
+
+TPUm.TCR settings should be made while TPUm.TCNT operation is stopped.
+TPSC[2:0] Bits (Timer Prescaler Select)
+These bits select the TCNT clock. The clock source can be selected independently for each channel.
+To select the external clock as the clock source, set the bit in the port direction register (PDR) for the corresponding pin
+to 0 (input port), and set the bit in the port mode register (PMR) to 1 (uses the pin as an I/O port for peripheral functions).
+For details, see section 22, I/O Ports.
+CKEG[1:0] Bits (Input Clock Edge Select)
+These bits select the input clock edge.
+When the internal clock is counted using both edges, the input clock period is halved (e.g. Both edges of PCLK/4 =
+PCLK/2 rising edge).
+Internal clock edge selection is valid when the input clock is PCLK/4 or slower. This setting is ignored if the input clock
+is PCLK/1, or when overflow/underflow of another channel is selected.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1447 of 3240
+
+RX72N Group
+
+Table 28.4
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Bits TPSC[2:0] (TPU0)
+Bits TPSC[2:0]
+
+Channel
+
+b2
+
+b1
+
+b0
+
+Description
+
+TPU0
+
+0
+
+0
+
+0
+
+Internal clock: counts on PCLK/1
+
+0
+
+0
+
+1
+
+Internal clock: counts on PCLK/4
+
+0
+
+1
+
+0
+
+Internal clock: counts on PCLK/16
+
+0
+
+1
+
+1
+
+Internal clock: counts on PCLK/64
+
+1
+
+0
+
+0
+
+External clock: counts on TCLKA pin input
+
+1
+
+0
+
+1
+
+External clock: counts on TCLKB pin input
+
+1
+
+1
+
+0
+
+External clock: counts on TCLKC pin input
+
+1
+
+1
+
+1
+
+External clock: counts on TCLKD pin input
+
+Table 28.5
+
+Bits TPSC[2:0] (TPU1)
+Bits TPSC[2:0]
+
+Channel
+
+b2
+
+b1
+
+b0
+
+Description
+
+TPU1
+
+0
+
+0
+
+0
+
+Internal clock: counts on PCLK/1
+
+0
+
+0
+
+1
+
+Internal clock: counts on PCLK/4
+
+0
+
+1
+
+0
+
+Internal clock: counts on PCLK/16
+
+0
+
+1
+
+1
+
+Internal clock: counts on PCLK/64
+
+1
+
+0
+
+0
+
+External clock: counts on TCLKA pin input
+
+1
+
+0
+
+1
+
+External clock: counts on TCLKB pin input
+
+1
+
+1
+
+0
+
+Internal clock: counts on PCLK/256
+
+1
+
+1
+
+1
+
+Counts on TPU2.TCNT overflow/underflow
+
+Note:
+
+This setting is invalid when TPU1 is in phase counting mode.
+
+Table 28.6
+
+Bits TPSC[2:0] (TPU2)
+Bits TPSC[2:0]
+
+Channel
+
+b2
+
+b1
+
+b0
+
+Description
+
+TPU2
+
+0
+
+0
+
+0
+
+Internal clock: counts on PCLK/1
+
+0
+
+0
+
+1
+
+Internal clock: counts on PCLK/4
+
+0
+
+1
+
+0
+
+Internal clock: counts on PCLK/16
+
+0
+
+1
+
+1
+
+Internal clock: counts on PCLK/64
+
+1
+
+0
+
+0
+
+External clock: counts on TCLKA pin input
+
+1
+
+0
+
+1
+
+External clock: counts on TCLKB pin input
+
+1
+
+1
+
+0
+
+External clock: counts on TCLKC pin input
+
+1
+
+1
+
+1
+
+Internal clock: counts on PCLK/1024
+
+Note:
+
+This setting is invalid when TPU2 is in phase counting mode.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1448 of 3240
+
+RX72N Group
+
+Table 28.7
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Bits TPSC[2:0] (TPU3)
+Bits TPSC[2:0]
+
+Channel
+
+b2
+
+b1
+
+b0
+
+Description
+
+TPU3
+
+0
+
+0
+
+0
+
+Internal clock: counts on PCLK/1
+
+0
+
+0
+
+1
+
+Internal clock: counts on PCLK/4
+
+0
+
+1
+
+0
+
+Internal clock: counts on PCLK/16
+
+0
+
+1
+
+1
+
+Internal clock: counts on PCLK/64
+
+1
+
+0
+
+0
+
+External clock: counts on TCLKA pin input
+
+1
+
+0
+
+1
+
+Internal clock: counts on PCLK/1024
+
+1
+
+1
+
+0
+
+Internal clock: counts on PCLK/256
+
+1
+
+1
+
+1
+
+Internal clock: counts on PCLK/4096
+
+Table 28.8
+
+Bits TPSC[2:0] (TPU4)
+Bits TPSC[2:0]
+
+Channel
+
+b2
+
+b1
+
+b0
+
+Description
+
+TPU4
+
+0
+
+0
+
+0
+
+Internal clock: counts on PCLK/1
+
+0
+
+0
+
+1
+
+Internal clock: counts on PCLK/4
+
+0
+
+1
+
+0
+
+Internal clock: counts on PCLK/16
+
+0
+
+1
+
+1
+
+Internal clock: counts on PCLK/64
+
+1
+
+0
+
+0
+
+External clock: counts on TCLKA pin input
+
+1
+
+0
+
+1
+
+External clock: counts on TCLKC pin input
+
+1
+
+1
+
+0
+
+Internal clock: counts on PCLK/1024
+
+1
+
+1
+
+1
+
+Counts on TPU5.TCNT overflow/underflow
+
+Note:
+
+This setting is invalid when TPU4 is in phase counting mode.
+
+Table 28.9
+
+Bits TPSC[2:0] (TPU5)
+Bits TPSC[2:0]
+
+Channel
+
+b2
+
+b1
+
+b0
+
+Description
+
+TPU5
+
+0
+
+0
+
+0
+
+Internal clock: counts on PCLK/1
+
+0
+
+0
+
+1
+
+Internal clock: counts on PCLK/4
+
+0
+
+1
+
+0
+
+Internal clock: counts on PCLK/16
+
+0
+
+1
+
+1
+
+Internal clock: counts on PCLK/64
+
+1
+
+0
+
+0
+
+External clock: counts on TCLKA pin input
+
+1
+
+0
+
+1
+
+External clock: counts on TCLKC pin input
+
+1
+
+1
+
+0
+
+Internal clock: counts on PCLK/256
+
+1
+
+1
+
+1
+
+External clock: counts on TCLKD pin input
+
+Note:
+
+This setting is invalid when TPU5 is in phase counting mode.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1449 of 3240
+
+RX72N Group
+
+Table 28.10
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Bits CKEG[1:0]
+
+Bits CKEG[1:0]
+
+Input Clock
+
+b4
+
+b3
+
+Internal Clock
+
+External clock
+
+0
+
+0
+
+Counted at falling edge
+
+Counted at rising edge
+
+0
+
+1
+
+Counted at rising edge
+
+Counted at falling edge
+
+1
+
+0
+
+Counted at both edges
+
+Counted at both edges
+
+1
+
+1
+
+Counted at both edges
+
+Counted at both edges
+
+Table 28.11
+
+Bits CCLR[2:0] (TPU0, TPU3)
+Bits CCLR[2:0]
+
+Channel
+
+TPU0, TPU3
+
+b7
+
+b6
+
+b5
+
+Description
+
+0
+
+0
+
+0
+
+TCNT clearing disabled
+
+0
+
+0
+
+1
+
+TCNT cleared by TGRA compare match/input capture
+
+0
+
+1
+
+0
+
+TCNT cleared by TGRB compare match/input capture
+
+0
+
+1
+
+1
+
+TCNT cleared by counter clearing for another channel performing synchronous clearing/
+synchronous operation*2
+
+1
+
+0
+
+0
+
+TCNT clearing disabled
+
+1
+
+0
+
+1
+
+TCNT cleared by TGRC compare match/input capture*1
+
+1
+
+1
+
+0
+
+TCNT cleared by TGRD compare match/input capture*1
+
+1
+
+1
+
+1
+
+TCNT cleared by counter clearing for another channel performing synchronous clearing/
+synchronous operation*2
+
+Note 1. When TGRC or TGRD is used as a buffer register, TCNT is not cleared because the buffer register setting has priority, and
+compare match/input capture does not occur.
+Note 2. Synchronous operation is selected by setting the TPUA.TSYR.SYNCj bit (j = 0, 3) to 1.
+
+Table 28.12
+
+Bits CCLR[2:0] (TPU1, TPU2, TPU4, TPU5)
+
+Channel
+
+b7*1
+
+b6
+
+b5
+
+Description
+
+TPU1, TPU2,
+TPU4, TPU5
+
+0
+
+0
+
+0
+
+TCNT clearing disabled
+
+0
+
+0
+
+1
+
+TCNT cleared by TGRA compare match/input capture
+
+0
+
+1
+
+0
+
+TCNT cleared by TGRB compare match/input capture
+
+0
+
+1
+
+1
+
+TCNT cleared by counter clearing for another channel performing synchronous clearing/
+synchronous operation*2
+
+1
+
+0
+
+0
+
+Setting prohibited
+
+1
+
+0
+
+1
+
+Setting prohibited
+
+1
+
+1
+
+0
+
+Setting prohibited
+
+1
+
+1
+
+1
+
+Setting prohibited
+
+Bits CCLR[2:0]
+
+Note 1. This bit is reserved in TPU1, TPU2, TPU4, and TPU5. This bit is read as 0. The write value should be 0.
+Note 2. Synchronous operation is selected by setting the TPUA.TSYR.SYNCj bit (j = 1, 2, 4, 5) to 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1450 of 3240
+
+RX72N Group
+
+28.2.2
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Timer Mode Register (TMDR)
+
+Address(es): TPU0.TMDR 0008 8111h, TPU1.TMDR 0008 8121h, TPU2.TMDR 0008 8131h,
+TPU3.TMDR 0008 8141h, TPU4.TMDR 0008 8151h, TPU5.TMDR 0008 8161h
+b7
+
+b6
+
+ICSEL ICSELB
+D
+Value after reset:
+
+0
+
+0
+
+b5
+
+b4
+
+BFB
+
+BFA
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+MD[3:0]
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+MD[3:0]
+
+Mode Select
+
+b3
+
+R/W
+
+b4
+
+BFA
+
+Buffer Operation A*2
+
+0: TPUm.TGRA operates normally
+1: TPUm.TGRA and TPUm.TGRC used together for buffer operation
+(m = 0, 3)
+
+R/W
+
+b5
+
+BFB
+
+Buffer Operation B*2
+
+0: TPUm.TGRB operates normally
+1: TPUm.TGRB and TPUm.TGRD used together for buffer operation
+(m = 0, 3)
+
+R/W
+
+b6
+
+ICSELB
+
+TGRB Input Capture Input
+Select
+
+0: Input capture input source is TIOCBn pin
+1: Input capture input source is TIOCAn pin
+(n = 0 to 5)
+
+R/W
+
+b7
+
+ICSELD
+
+TGRD Input Capture Input
+Select*2
+
+0: Input capture input source is TIOCDn pin
+1: Input capture input source is TIOCCn pin
+(n = 0, 3)
+
+R/W
+
+b0
+
+0 0 0 0: Normal operation
+0 0 0 1: Setting prohibited
+0 0 1 0: PWM mode 1
+0 0 1 1: PWM mode 2
+0 1 0 0: Phase counting mode 1*1
+0 1 0 1: Phase counting mode 2*1
+0 1 1 0: Phase counting mode 3*1
+0 1 1 1: Phase counting mode 4*1
+Settings other than above are prohibited.
+
+Note 1. Phase counting mode cannot be set for TPU0 and TPU3. A 0 should be written to bit 2 for them.
+Note 2. These bits are reserved in TPU1, TPU2, TPU4, and TPU5. These bits are read as 0. The write value should be 0.
+
+TPUm.TMDR settings should be made while TPUm.TCNT operation is stopped.
+BFA Bit (Buffer Operation A)
+Specifies whether TPUm.TGRA (m = 0, 3) is to normally operate, or TPUm.TGRA and TPUm.TGRC (m = 0, 3) are to
+be used together for buffer operation.
+When TGRC is used as a buffer register, TGRC input capture/output compare is not generated.
+BFB Bit (Buffer Operation B)
+Specifies whether TPUm.TGRB (m = 0, 3) is to normally operate, or TPUm.TGRB and TPUm.TGRD (m = 0, 3) are to
+be used together for buffer operation.
+When TGRD is used as a buffer register, TGRD input capture/output compare is not generated.
+ICSELB Bit (TGRB Input Capture Input Select)
+Selects the input capture input for TPUm.TGRB (m = 0 to 5).
+This function allows measurement of high-level width and period of the input pulse on a TIOCAn input pin.
+ICSELD Bit (TGRD Input Capture Input Select)
+Selects the input capture input for TPUm.TGRD (m = 0, 3).
+This function allows measurement of high-level width and period of the input pulse on a TIOCCn input pin.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1451 of 3240
+
+RX72N Group
+
+28.2.3
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Timer I/O Control Register (TIORH, TIORL, TIOR)
+
+ TPU0.TIORH, TPU1.TIOR, TPU2.TIOR, TPU3.TIORH, TPU4.TIOR, TPU5.TIOR
+Address(es): TPU0.TIORH 0008 8112h, TPU1.TIOR 0008 8122h, TPU2.TIOR 0008 8132h,
+TPU3.TIORH 0008 8142h, TPU4.TIOR 0008 8152h, TPU5.TIOR 0008 8162h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+IOB[3:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+b1
+
+b0
+
+IOA[3:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+IOA[3:0]
+
+TGRA Control
+
+See Table 28.13 to Table 28.18.*1
+
+R/W
+
+TGRB Control
+
+See Table 28.13 to Table 28.18.*1
+
+R/W
+
+b7 to b4
+
+IOB[3:0]
+
+Note 1. If the IOn[3:0] bit (n = A, B) values are changed to output disabled (0000b or 0100b) during low/high/toggle output on compare
+match, the TIOCAn/TIOCBn pin (n = 0 to 5) is placed in high impedance state.
+
+ TPU0.TIORL, TPU3.TIORL
+Address(es): TPU0.TIORL 0008 8113h, TPU3.TIORL 0008 8143h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+IOD[3:0]
+Value after reset:
+
+Bit
+
+0
+
+Symbol
+
+0
+
+0
+
+b1
+
+b0
+
+IOC[3:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit Name
+
+Description
+
+R/W
+
+R/W
+R/W
+
+b3 to b0
+
+IOC[3:0]
+
+TGRC Control
+
+See Table 28.19 and Table 28.20.*1
+
+b7 to b4
+
+IOD[3:0]
+
+TGRD Control
+
+See Table 28.19 and Table 28.20.*1
+
+Note 1. If the IOn[3:0] bit (n = C, D) values are changed to output disabled (0000b or 0100b) during low/high/toggle output on compare
+match, the TIOCCn/TIOCDn pin (n = 0, 3) is placed in high impedance state.
+
+TPU has two TIORH registers, one for TPU0 and TPU3, and two TIORL registers, one for TPU0 and TPU3, and also
+has four TIOR registers, one for TPU1, TPU2, TPU4, and TPU5. Thus the TPU has eight timer I/O control registers in
+total.
+TIORH, TIORL, and TIOR control registers TGRA, TGRB, TGRC, and TGRD.
+Note that TIORH, TIORL, and TIOR are affected by the TMDR setting. For details, see Table 28.13 to Table 28.20.
+The initial output specified by TIORH, TIORL, and TIOR is valid when the counter is stopped (the TPUA.TSTR.CSTj
+bit (j = 0 to 5) is cleared to 0). In PWM mode 2, the output at the time when the TCNT is cleared to 0 is specified as the
+initial output.
+When buffer operation has been selected for register TGRC or TGRD, the settings of the IOC[3:0] or IOD[3:0] bits
+become ineffective, and the TGRC or TGRD register simply operates as a buffer.
+To specify the input capture pin in TIORH, TIORL, or TIOR, set the bit in the port direction register (PDR) for the
+corresponding pin to 0 (input port), and set the bit in the port mode register (PMR) to 1 (uses the pin as an I/O port for
+peripheral functions). For details, see section 22, I/O Ports.
+IOA[3:0] Bits (TGRA Control)
+Select the function of TPUm.TGRA (m = 0 to 5).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1452 of 3240
+
+RX72N Group
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+IOB[3:0] Bits (TGRB Control)
+Select the function of TPUm.TGRB (m = 0 to 5).
+IOC[3:0] Bits (TGRC Control)
+Select the function of TPUm.TGRC (m = 0, 3).
+IOD[3:0] Bits (TGRD Control)
+Select the function of TPUm.TGRD (m = 0, 3).
+Table 28.13
+
+TPU0.TIORH
+
+Bits IOA[3:0]
+
+Description
+
+b3
+
+b2
+
+b1
+
+b0
+
+TPU0.TGRA Function
+
+TIOCA0 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCA0 pin; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCA0 pin; input capture at both edges
+
+1
+
+1
+
+x
+
+x
+
+Capture input source is TPU1 count clock; input capture at TPU1.TCNT count-up/
+count-down*1
+
+Bits IOB[3:0]
+
+Initial output is high output; toggle output at compare match
+Input capture register
+
+Capture input source is TIOCA0 pin; input capture at rising edge
+
+Description
+
+b7
+
+b6
+
+b5
+
+b4
+
+TPU0.TGRB Function
+
+TIOCB0 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCB0 or TIOCA0 pin*2; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCB0 or TIOCA0 pin*2; input capture at both edges
+
+1
+
+1
+
+x
+
+x
+
+Capture input source is TPU1 count clock; input capture at TPU1.TCNT count-up/
+count-down*1
+
+Initial output is high output; toggle output at compare match
+Input capture register
+
+Capture input source is TIOCB0 or TIOCA0 pin*2; input capture at rising edge
+
+x: Don’t care
+Note 1. When the TPSC[2:0] bits in TPU1.TCR are set to 000b and PCLK/1 is used as the TPU1.TCNT count clock, this setting is invalid
+and input capture is not generated.
+Note 2. Selected by the ICSELB bit in TPU0.TMDR.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1453 of 3240
+
+RX72N Group
+
+Table 28.14
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+TPU1.TIOR
+
+Bits IOA[3:0]
+
+Description
+
+b3
+
+b2
+
+b1
+
+b0
+
+TPU1.TGRA Function
+
+TIOCA1 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCA1 pin; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCA1 pin; input capture at both edges
+
+1
+
+1
+
+x
+
+x
+
+Capture input source is TPU0.TGRA compare match/input capture; input capture at
+generation of TPU0.TGRA compare match/input capture
+
+Bits IOB[3:0]
+
+Initial output is high output; toggle output at compare match
+Input capture register
+
+Capture input source is TIOCA1 pin; input capture at rising edge
+
+Description
+
+b7
+
+b6
+
+b5
+
+b4
+
+TPU1.TGRB Function
+
+TIOCB1 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+Initial output is high output; toggle output at compare match
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCB1 or TIOCA1 pin*1; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCB1 or TIOCA1 pin*1; input capture at both edges
+
+1
+
+1
+
+x
+
+x
+
+Capture input source is TPU0.TGRC compare match/input capture; input capture at
+generation of TPU0.TGRC compare match/input capture
+
+Input capture register
+
+Capture input source is TIOCB1 or TIOCA1 pin*1; input capture at rising edge
+
+x: Don’t care
+Note 1. Selected by the ICSELB bit in TPU1.TMDR.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1454 of 3240
+
+RX72N Group
+
+Table 28.15
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+TPU2.TIOR
+
+Bits IOA[3:0]
+
+Description
+
+b3
+
+b2
+
+b1
+
+b0
+
+TPU2.TGRA Function
+
+TIOCA2 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+1
+
+x
+
+0
+
+0
+
+1
+
+x
+
+0
+
+1
+
+Capture input source is TIOCA2 pin; input capture at falling edge
+
+1
+
+x
+
+1
+
+x
+
+Capture input source is TIOCA2 pin; input capture at both edges
+
+Bits IOB[3:0]
+
+Initial output is high output; toggle output at compare match
+Input capture register
+
+Capture input source is TIOCA2 pin; input capture at rising edge
+
+Description
+
+b7
+
+b6
+
+b5
+
+b4
+
+TPU2.TGRB Function
+
+TIOCB2 Pin (Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+Initial output is high output; toggle output at compare match
+
+1
+
+x
+
+0
+
+0
+
+1
+
+x
+
+0
+
+1
+
+Capture input source is TIOCB2 or TIOCA2 pin*1; input capture at falling edge
+
+1
+
+x
+
+1
+
+x
+
+Capture input source is TIOCB2 or TIOCA2 pin*1; input capture at both edges
+
+Input capture register
+
+Capture input source is TIOCB2 or TIOCA2 pin*1; input capture at rising edge
+
+x: Don’t care
+Note 1. Selected by the ICSELB bit in TPU2.TMDR.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1455 of 3240
+
+RX72N Group
+
+Table 28.16
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+TPU3.TIORH
+
+Bits IOA[3:0]
+
+Description
+
+b3
+
+b2
+
+b1
+
+b0
+
+TPU3.TGRA Function
+
+TIOCA3 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCA3 pin; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCA3 pin; input capture at both edges
+
+1
+
+1
+
+x
+
+x
+
+Capture input source is TPU4 count clock; input capture at TPU4.TCNT count-up/
+count-down*1
+
+Bits IOB[3:0]
+
+Initial output is high output; toggle output at compare match
+Input capture register
+
+Capture input source is TIOCA3 pin; input capture at rising edge
+
+Description
+
+b7
+
+b6
+
+b5
+
+b4
+
+TPU3.TGRB Function
+
+TIOCB3 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+Initial output is high output; toggle output at compare match
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCB3 or TIOCA3 pin*2; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCB3 or TIOCA3 pin*2; input capture at both edges
+
+1
+
+1
+
+x
+
+x
+
+Capture input source is TPU4 count clock; input capture at TPU4.TCNT count-up/
+count-down*1
+
+Input capture register
+
+Capture input source is TIOCB3 or TIOCA3 pin*2; input capture at rising edge
+
+x: Don’t care
+Note 1. When the TPSC[2:0] bits in TPU4.TCR are set to 000b and PCLK/1 is used as the TPU4.TCNT count clock, this setting is invalid
+and input capture is not generated.
+Note 2. Selected by the ICSELB bit in TPU3.TMDR.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1456 of 3240
+
+RX72N Group
+
+Table 28.17
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+TPU4.TIOR
+
+Bits IOA[3:0]
+
+Description
+
+b3
+
+b2
+
+b1
+
+b0
+
+TPU4.TGRA Function
+
+TIOCA4 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCA4 pin; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCA4 pin; input capture at both edges
+
+1
+
+1
+
+x
+
+x
+
+Capture input source is TPU3.TGRA compare match/input capture; input capture at
+generation of TPU3.TGRA compare match/input capture
+
+Bits IOB[3:0]
+
+Initial output is high output; toggle output at compare match
+Input capture register
+
+Capture input source is TIOCA4 pin; input capture at rising edge
+
+Description
+
+b7
+
+b6
+
+b5
+
+b4
+
+TPU4.TGRB Function
+
+TIOCB4 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+Initial output is high output; toggle output at compare match
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCB4 or TIOCA4 pin*1; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCB4 or TIOCA4 pin*1; input capture at both edges
+
+1
+
+1
+
+x
+
+x
+
+Capture input source is TPU3.TGRC compare match/input capture; input capture at
+generation of TPU3.TGRC compare match/input capture
+
+Input capture register
+
+Capture input source is TIOCB4 or TIOCA4 pin*1; input capture at rising edge
+
+x: Don’t care
+Note 1. Selected by the ICSELB bit in TPU4.TMDR.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1457 of 3240
+
+RX72N Group
+
+Table 28.18
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+TPU5.TIOR
+
+Bits IOA[3:0]
+
+Description
+
+b3
+
+b2
+
+b1
+
+b0
+
+TPU5.TGRA Function
+
+TIOCA5 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+1
+
+x
+
+0
+
+0
+
+1
+
+x
+
+0
+
+1
+
+Capture input source is TIOCA5 pin; input capture at falling edge
+
+1
+
+x
+
+1
+
+x
+
+Capture input source is TIOCA5 pin; input capture at both edges
+
+Bits IOB[3:0]
+
+Initial output is high output; toggle output at compare match
+Input capture register
+
+Capture input source is TIOCA5 pin; input capture at rising edge
+
+Description
+
+b7
+
+b6
+
+b5
+
+b4
+
+TPU5.TGRB Function
+
+TIOCB5 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+Initial output is high output; toggle output at compare match
+
+1
+
+x
+
+0
+
+0
+
+1
+
+x
+
+0
+
+1
+
+Capture input source is TIOCB5 or TIOCA5 pin*1; input capture at falling edge
+
+1
+
+x
+
+1
+
+x
+
+Capture input source is TIOCB5 or TIOCA5 pin*1; input capture at both edges
+
+Input capture register
+
+Capture input source is TIOCB5 or TIOCA5 pin*1; input capture at rising edge
+
+x: Don’t care
+Note 1. Selected by the ICSELB bit in TPU5.TMDR.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1458 of 3240
+
+RX72N Group
+
+Table 28.19
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+TPU0.TIORL
+
+Bits IOC[3:0]
+
+Description
+
+b3
+
+b2
+
+b1
+
+b0
+
+TPU0.TGRC Function
+
+TIOCC0 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register*1
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCC0 pin; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCC0 pin; input capture at both edges
+
+1
+
+1
+
+x
+
+x
+
+Capture input source is TPU1 count clock; input capture at TPU1.TCNT count-up/
+count-down*3
+
+Bits IOD[3:0]
+b7
+
+b6
+
+b5
+
+Initial output is high output; toggle output at compare match
+Input capture register*1
+
+Capture input source is TIOCC0 pin; input capture at rising edge
+
+Description
+b4
+
+TPU0.TGRD Function
+
+Output compare register*2
+
+TIOCD0 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+Output disabled
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+Initial output is high output; toggle output at compare match
+Input capture register*2
+
+Capture input source is TIOCD0 or TIOCC0 pin*4; input capture at rising edge
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCD0 or TIOCC0 pin*4; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCD0 or TIOCC0 pin*4; input capture at both edges
+
+1
+
+1
+
+x
+
+x
+
+Capture input source is TPU1 count clock; input capture at TPU1.TCNT count-up/
+count-down*3
+
+x: Don’t care
+Note 1. When the BFA bit in TPU0.TMDR is set to 1 (TPU0.TGRA and TPU0.TGRC are used for buffer operation) and TPU0.TGRC is
+used as a buffer register, this setting is invalid and input capture/output compare is not generated.
+Note 2. When the BFB bit in TPU0.TMDR is set to 1 (TPU0.TGRB and TPU0.TGRD are used for buffer operation) and TPU0.TGRD is
+used as a buffer register, this setting is invalid and input capture/output compare is not generated.
+Note 3. When the TPSC[2:0] bits in TPU1.TCR are set to 000b and PCLK/1 is used as the TPU0.TCNT count clock, this setting is invalid
+and input capture is not generated.
+Note 4. Selected by the ICSELD bit in TPU0.TMDR.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1459 of 3240
+
+RX72N Group
+
+Table 28.20
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+TPU3.TIORL
+
+Bits IOC[3:0]
+
+Description
+
+b3
+
+b2
+
+b1
+
+b0
+
+TPU3.TGRC Function
+
+TIOCC3 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+Output compare register*1
+
+Output disabled
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCC3 pin; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCC3 pin; input capture at both edges
+
+1
+
+1
+
+x
+
+x
+
+Capture input source is TPU4 count clock; input capture at TPU4.TCNT count-up/
+count-down*3
+
+Bits IOD[3:0]
+b7
+
+b6
+
+b5
+
+Initial output is high output; toggle output at compare match
+Input capture register*1
+
+Capture input source is TIOCC3 pin; input capture at rising edge
+
+Description
+b4
+
+TPU3.TGRD Function
+
+Output compare register*2
+
+TIOCD3 Pin Function and Related Issue
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+Initial output is low output; low output at compare match
+
+Output disabled
+
+0
+
+0
+
+1
+
+0
+
+Initial output is low output; high output at compare match
+
+0
+
+0
+
+1
+
+1
+
+Initial output is low output; toggle output at compare match
+
+0
+
+1
+
+0
+
+0
+
+Output disabled
+
+0
+
+1
+
+0
+
+1
+
+Initial output is high output; low output at compare match
+
+0
+
+1
+
+1
+
+0
+
+Initial output is high output; high output at compare match
+
+0
+
+1
+
+1
+
+1
+
+Initial output is high output; toggle output at compare match
+Input capture register*2
+
+Capture input source is TIOCD3 or TIOCC3 pin*4; input capture at rising edge
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+1
+
+Capture input source is TIOCD3 or TIOCC3 pin*4; input capture at falling edge
+
+1
+
+0
+
+1
+
+x
+
+Capture input source is TIOCD3 or TIOCC3 pin*4; input capture at both edges
+
+1
+
+1
+
+X
+
+x
+
+Capture input source is TPU4 count clock; input capture at TPU4.TCNT count-up/
+count-down*3
+
+x: Don’t care
+Note 1. When the BFA bit in TPU3.TMDR is set to 1 (TPU3.TGRA and TPU3.TGRC are used for buffer operation) and TPU3.TGRC is
+used as a buffer register, this setting is invalid and input capture/output compare is not generated.
+Note 2. When the BFB bit in TPU3.TMDR is set to 1 (TPU3.TGRB and TPU3.TGRD are used for buffer operation) and TPU3.TGRD is
+used as a buffer register, this setting is invalid and input capture/output compare is not generated.
+Note 3. When the TPSC[2:0] bits in TPU4.TCR are set to 000b and PCLK/1 is used as the TPU3.TCNT count clock, this setting is invalid
+and input capture is not generated.
+Note 4. Selected by the ICSELD bit in TPU3.TMDR.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1460 of 3240
+
+RX72N Group
+
+28.2.4
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Timer Interrupt Enable Register (TIER)
+
+Address(es): TPU0.TIER 0008 8114h, TPU1.TIER 0008 8124h, TPU2.TIER 0008 8134h,
+TPU3.TIER 0008 8144h, TPU4.TIER 0008 8154h, TPU5.TIER 0008 8164h
+b7
+
+b6
+
+TTGE
+
+—
+
+0
+
+1
+
+Value after reset:
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+TCIEU TCIEV TGIED TGIEC TGIEB TGIEA
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+TGIEA
+
+TGRA Interrupt Enable
+
+0: Interrupt requests (TGImA) disabled
+1: Interrupt requests (TGImA) enabled
+(m = 0 to 5)
+
+R/W
+
+b1
+
+TGIEB
+
+TGRB Interrupt Enable
+
+0: Interrupt requests (TGImB) disabled
+1: Interrupt requests (TGImB) enabled
+(m = 0 to 5)
+
+R/W
+
+b2
+
+TGIEC
+
+TGRC Interrupt Enable*1
+
+0: Interrupt requests (TGImC) disabled
+1: Interrupt requests (TGImC) enabled
+(m = 0, 3)
+
+R/W
+
+b3
+
+TGIED
+
+TGRD Interrupt Enable*1
+
+0: Interrupt requests (TGImD) disabled
+1: Interrupt requests (TGImD) enabled
+(m = 0, 3)
+
+R/W
+
+b4
+
+TCIEV
+
+Overflow Interrupt Enable
+
+0: Interrupt requests (TCImV) disabled
+1: Interrupt requests (TCImV) enabled
+(m = 0 to 5)
+
+R/W
+
+b5
+
+TCIEU
+
+Underflow Interrupt Enable*2
+
+0: Interrupt requests (TCImU) disabled
+1: Interrupt requests (TCImU) enabled
+(m = 1, 2, 4, 5)
+
+R/W
+
+b6
+
+—
+
+Reserved
+
+This bit is read as 1. The write value should be 1.
+
+R/W
+
+b7
+
+TTGE
+
+A/D Conversion Start Request Enable*3
+
+0: A/D conversion start request generation disabled
+1: A/D conversion start request generation enabled
+
+R/W
+
+Note 1. These bits are reserved in TPU1, TPU2, TPU4, and TPU5. These bits are read as 0. The write value should be 0.
+Note 2. This bit is reserved in TPU0 and TPU3. This bit is read as 0. The write value should be 0.
+Note 3. This bit is reserved in TPU5. This bit is read as 0. The write value should be 0.
+
+TTGE Bit (A/D Conversion Start Request Enable)
+Enables/disables generation of A/D conversion start requests by TPUm.TGRA (m = 0 to 4) input capture/compare
+match.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1461 of 3240
+
+RX72N Group
+
+28.2.5
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Timer Status Register (TSR)
+
+Address(es): TPU0.TSR 0008 8115h, TPU1.TSR 0008 8125h, TPU2.TSR 0008 8135h,
+TPU3.TSR 0008 8145h, TPU4.TSR 0008 8155h, TPU5.TSR 0008 8165h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+TCFD
+
+—
+
+TCFU
+
+TCFV
+
+TGFD
+
+TGFC
+
+TGFB
+
+TGFA
+
+1
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+TGFA
+
+Input Capture/Output Compare
+Flag A
+
+0: Input capture to TPUm.TGRA or compare match with
+TPUm.TGRA has not occurred.
+1: Input capture to TPUm.TGRA or compare match with
+TPUm.TGRA has occurred.
+(m = 0 to 5)
+
+R/W*1
+
+b1
+
+TGFB
+
+Input Capture/Output Compare
+Flag B
+
+0: Input capture to TPUm.TGRB or compare match with
+TPUm.TGRB has not occurred.
+1: Input capture to TPUm.TGRB or compare match with
+TPUm.TGRB has occurred.
+(m = 0 to 5)
+
+R/W*1
+
+b2
+
+TGFC
+
+Input Capture/Output Compare
+Flag C*2
+
+0: Input capture to TPUm.TGRC or compare match with
+TPUm.TGRC has not occurred.
+1: Input capture to TPUm.TGRC or compare match with
+TPUm.TGRC has occurred.
+(m = 0, 3)
+
+R/W*1
+
+b3
+
+TGFD
+
+Input Capture/Output Compare
+Flag D*2
+
+0: Input capture to TPUm.TGRD or compare match with
+TPUm.TGRD has not occurred.
+1: Input capture to TPUm.TGRD or compare match with
+TPUm.TGRD has occurred.
+(m = 0, 3)
+
+R/W*1
+
+b4
+
+TCFV
+
+Overflow Flag
+
+0: TPUm.TCNT has not overflowed.
+1: TPUm.TCNT has overflowed.
+(m = 0 to 5)
+
+R/W*1
+
+b5
+
+TCFU
+
+Underflow Flag*3
+
+0: TPUm.TCNT has not underflowed.
+1: TPUm.TCNT has underflowed.
+(m = 1, 2, 4, 5)
+
+R/W*1
+
+b6
+
+—
+
+Reserved
+
+This bit is read as 1. The write value should be 1.
+
+R/W
+
+b7
+
+TCFD
+
+Counting Direction Flag*4
+
+0: TPUm.TCNT counts down.
+1: TPUm.TCNT counts up.
+(m = 1, 2, 4, 5)
+
+R
+
+Note 1.
+Note 2.
+Note 3.
+Note 4.
+
+Only writing 0 to this bit is possible; this clears the flag.
+These bits are reserved in TPU1, TPU2, TPU4, and TPU5. The bits are read as 0. The write value should be 0.
+This bit is reserved in TPU0 and TPU3. The bit is read as 0. The write value should be 0.
+This bit is reserved in TPU0 and TPU3. The bit is read as 1. The write value should be 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1462 of 3240
+
+RX72N Group
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+TGFA Flag (Input Capture/Output Compare Flag A)
+This status flag indicates that input capture to TPUm.TGRA or compare match with TPUm.TGRA (m = 0 to 5) has
+occurred.
+[Setting conditions]
+ When TPUm.TGRA holds the value for comparison in output-compare operations, TPUm.TCNT matches
+TPUm.TGRA.
+ When TPUm.TGRA is serving as an input-capture register, the input-capture signal has caused transfer of the value
+in TPUm.TCNT to TPUm.TGRA.
+[Clearing conditions]
+ Activation of the DTC by the TGImA interrupt and clearing of the DTC.MRB.DISEL bit.
+ Writing 0 to TGFA after reading its value as 1.
+TGFB Flag (Input Capture/Output Compare Flag B)
+This status flag indicates that input capture to TPUm.TGRB or compare match with TPUm.TGRB (m = 0 to 5) has
+occurred.
+[Setting conditions]
+ When TPUm.TGRB holds the value for comparison in output-compare operations, TPUm.TCNT matches
+TPUm.TGRB.
+ When TPUm.TGRB is serving as an input-capture register, the input-capture signal has caused transfer of the value
+in TPUm.TCNT to TPUm.TGRB.
+[Clearing conditions]
+ Activation of the DTC by the TGImB interrupt and clearing of the DTC.MRB.DISEL bit.
+ Writing 0 to TGFB after reading its value as 1.
+TGFC Flag (Input Capture/Output Compare Flag C)
+This status flag indicates that input capture to TPUm.TGRC or compare match with TPUm.TGRC (m = 0, 3) has
+occurred.
+[Setting conditions]
+ When TPUm.TGRC holds the value for comparison in output-compare operations, TPUm.TCNT matches
+TPUm.TGRC.
+ When TPUm.TGRC is serving as an input-capture register, the input-capture signal has caused transfer of the value
+in TPUm.TCNT to TPUm.TGRC.
+[Clearing conditions]
+ Activation of the DTC by the TGImC interrupt and clearing of the DTC.MRB.DISEL bit.
+ Writing 0 to TGFC after reading its value as 1.
+TGFD Flag (Input Capture/Output Compare Flag D)
+This status flag indicates that input capture to TPUm.TGRD or compare match with TPUm.TGRD (m = 0, 3) has
+occurred.
+[Setting conditions]
+ When TPUm.TGRD holds the value for comparison in output-compare operations, TPUm.TCNT matches
+TPUm.TGRD.
+ When TPUm.TGRD is serving as an input-capture register, the input-capture signal has caused transfer of the value
+in TPUm.TCNT to TPUm.TGRD.
+[Clearing conditions]
+ Activation of the DTC by the TGImD interrupt and clearing of the DTC.MRB.DISEL bit.
+ Writing 0 to TGFD after reading its value as 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1463 of 3240
+
+RX72N Group
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+TCFV Flag (Overflow Flag)
+This status flag indicates an overflow of TPUm.TCNT (m = 0 to 5).
+[Setting condition]
+ Overflow of the value in TPUm.TCNT (TCNT counted from FFFFh to 0000h).
+[Clearing condition]
+ Writing 0 to TCFV after reading its value as 1.
+TCFU Flag (Underflow Flag)
+This status flag indicates an underflow of TPUm.TCNT (m = 1, 2, 4, 5).
+[Setting condition]
+ Underflow of the value in TPUm.TCNT (TCNT counted from 0000h to FFFFh).
+[Clearing condition]
+ Writing 0 to TCFU after reading its value as 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1464 of 3240
+
+RX72N Group
+
+28.2.6
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Timer Counter (TCNT)
+
+Address(es): TPU0.TCNT 0008 8116h, TPU1.TCNT 0008 8126h, TPU2.TCNT 0008 8136h,
+TPU3.TCNT 0008 8146h, TPU4.TCNT 0008 8156h, TPU5.TCNT 0008 8166h
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+TPUm.TCNT is a readable/writable counter that counts the internal clock or external events.
+
+28.2.7
+
+Timer General Register A (TGRA), Timer General Register B (TGRB),
+Timer General Register C (TGRC), Timer General Register D (TGRD)
+
+Address(es): TPU0.TGRA 0008 8118h, TPU0.TGRB 0008 811Ah, TPU0.TGRC 0008 811Ch, TPU0.TGRD 0008 811Eh,
+TPU1.TGRA 0008 8128h, TPU1.TGRB 0008 812Ah,
+TPU2.TGRA 0008 8138h, TPU2.TGRB 0008 813Ah,
+TPU3.TGRA 0008 8148h, TPU3.TGRB 0008 814Ah, TPU3.TGRC 0008 814Ch, TPU3.TGRD 0008 814Eh,
+TPU4.TGRA 0008 8158h, TPU4.TGRB 0008 815Ah,
+TPU5.TGRA 0008 8168h, TPU5.TGRB 0008 816Ah
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+TPU has 16 TGR registers in total, four each for TPU0 and TPU3, and two each for TPU1, TPU2, TPU4, and TPU5.
+TPUm.TGRA (m = 0 to 5), TPUm.TGRB (m = 0 to 5), TPUm.TGRC (m = 0, 3), and TPUm.TGRD (m = 0, 3) are
+readable/writable registers with a dual function as output compare and input capture registers.
+TPUm.TGRC and TPUm.TGRD can also be specified for operation as buffer registers. Register combinations during
+buffer operations are TPUm.TGRA—TPUm.TGRC and TPUm.TGRB—TPUm.TGRD.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1465 of 3240
+
+RX72N Group
+
+28.2.8
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Timer Start Register (TSTR)
+
+Address(es): TPUA.TSTR 0008 8100h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+CST5
+
+CST4
+
+CST3
+
+CST2
+
+CST1
+
+CST0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+CST0
+
+Counter Start 0
+
+R/W
+
+b1
+
+CST1
+
+Counter Start 1
+
+0: TCNT count operation is stopped
+1: TCNT performs count operation
+
+b2
+
+CST2
+
+Counter Start 2
+
+R/W
+
+b3
+
+CST3
+
+Counter Start 3
+
+R/W
+
+b4
+
+CST4
+
+Counter Start 4
+
+R/W
+
+b5
+
+CST5
+
+Counter Start 5
+
+R/W
+
+b7, b6
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+R/W
+
+TPUA.TSTR starts or stops TCNT operation for TPU0 to TPU5.
+Before setting the operating mode in TPUm.TMDR or setting the TPUm.TCNT count clock in TPUm.TCR, stop the
+TPUm.TCNT operation.
+CSTn Bit (Counter Start n) (n = 0 to 5)
+This bit starts or stop the TCNT.
+When the CSTn bit is cleared to 0 with CSTn = 1 and the corresponding TIOCyn pin (y = A to D; n = 0 to 5) specified for
+output, count operation stops but the output compare output level of the corresponding TIOCyn pin is retained.
+If TIORH, TIORL, or TIOR is written to when the CSTn bit is 0, the pin output level will be changed to the set initial
+output value.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1466 of 3240
+
+RX72N Group
+
+28.2.9
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Timer Synchronous Register (TSYR)
+
+Address(es): TPUA.TSYR 0008 8101h
+
+Value after reset:
+
+b7
+
+b6
+
+—
+
+—
+
+0
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+SYNC5 SYNC4 SYNC3 SYNC2 SYNC1 SYNC0
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SYNC0
+
+Timer Synchronization 0
+
+R/W
+
+b1
+
+SYNC1
+
+Timer Synchronization 1
+
+b2
+
+SYNC2
+
+Timer Synchronization 2
+
+0: TCNT operates independently
+(TCNT setting/clearing is unrelated to other channels)
+1: TCNT performs synchronous operation*1
+(TCNT synchronous setting/synchronous clearing is possible)
+
+b3
+
+SYNC3
+
+Timer Synchronization 3
+
+R/W
+
+b4
+
+SYNC4
+
+Timer Synchronization 4
+
+R/W
+
+b5
+
+SYNC5
+
+Timer Synchronization 5
+
+R/W
+
+b7, b6
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+R/W
+
+R/W
+
+Note 1. To set synchronous operation, the SYNCn bit (n = 0 to 5) for at least two channels must be set to 1. To set synchronous
+clearing, the TCNT clearing source must also be set by the TCR.CCLR[2:0] bits in addition to the SYNCn bit.
+
+TPUA.TSYR selects independent operation or synchronous operation for TCNT of TPU0 to TPU5.
+SYNCn Bit (Timer Synchronization n) (n = 0 to 5)
+This bit selects whether the TCNT operation is independent of or synchronized with TCNT of other channels.
+When synchronous operation is selected, synchronous setting of multiple TCNT and synchronous clearing through
+counter clearing on another channel are possible.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1467 of 3240
+
+RX72N Group
+
+28.2.10
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Noise Filter Control Register (NFCR)
+
+Address(es): TPU0.NFCR 0008 8108h, TPU1.NFCR 0008 8109h, TPU2.NFCR 0008 810Ah,
+TPU3.NFCR 0008 810Bh, TPU4.NFCR 0008 810Ch, TPU5.NFCR 0008 810Dh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+NFCS[1:0]
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+NFDEN NFCEN NFBEN NFAEN
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NFAEN
+
+Noise Filter Enable A
+
+0: The noise filter for TIOCAm is disabled.
+1: The noise filter for TIOCAm is enabled.
+(m = 0 to 5)
+
+R/W
+
+b1
+
+NFBEN
+
+Noise Filter Enable B
+
+0: The noise filter for TIOCBm is disabled.
+1: The noise filter for TIOCBm is enabled.
+(m = 0 to 5)
+
+R/W
+
+b2
+
+NFCEN
+
+Noise Filter Enable C*1
+
+0: The noise filter for TIOCCm is disabled.
+1: The noise filter for TIOCCm is enabled.
+(m = 0, 3)
+
+R/W
+
+b3
+
+NFDEN
+
+Noise Filter Enable D*1
+
+0: The noise filter for TIOCDm is disabled.
+1: The noise filter for TIOCDm is enabled.
+(m = 0, 3)
+
+R/W
+
+b5, b4
+
+NFCS[1:0]
+
+Noise Filter Clock Select
+
+b5 b4
+
+R/W
+
+b7, b6
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits is not possible.
+
+R
+
+0 0: PCLK/1
+0 1: PCLK/8
+1 0: PCLK/32
+1 1: Clock source that drives counting
+
+Note 1. These bits are reserved in TPU1, TPU2, TPU4, and TPU5. The bits are read as 0. Writing to these bits is not possible.
+
+Only set the TPUm.NFCR registers while the TPUm.TCNT is stopped.
+NFAEN Bit (Noise Filter Enable A)
+This bit disables or enables the noise filter for the TIOCAm pin (m = 0 to 5).
+Since unexpected edges may be internally generated when the value of NFAEN is changed, select the output compare
+function in the timer I/O control register before changing the NFAEN value.
+NFBEN Bit (Noise Filter Enable B)
+This bit disables or enables the noise filter for the TIOCBm pin (m = 0 to 5).
+Since unexpected edges may be internally generated when the value of NFBEN is changed, select the output compare
+function in the timer I/O control register before changing the NFBEN value.
+NFCEN Bit (Noise Filter Enable C)
+This bit disables or enables the noise filter for the TIOCCm pin (m = 0, 3).
+Since unexpected edges may be internally generated when the value of NFCEN is changed, select the output compare
+function in the timer I/O control register before changing the NFCEN value.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1468 of 3240
+
+RX72N Group
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+NFDEN Bit (Noise Filter Enable D)
+This bit disables or enables the noise filter for the TIOCDm pin (m = 0, 3).
+Since unexpected edges may be internally generated when the value of NFDEN is changed, select the output compare
+function in the timer I/O control register before changing the NFDEN value.
+NFCS[1:0] Bits (Noise Filter Clock Select)
+These bits select the sampling clock for the noise filter.
+When the count source is selected with NFCS[1:0] bits set to 11b, the clock that can be used as sampling clock are the
+internal clocks other than PCLK/1 specified with the TPSC[2:0] bits and the external clock. To select the PCLK/1 as both
+the count clock and the sampling clock, set the NFCS[1:0] bits to 00b.
+The input-capture signal is sampled on rising edges of the selected clock signal. If the sampled levels match three times
+in a row, the given level is passed through as the input-capture signal. If the levels do not match, the existing value is
+retained.
+After setting the NFCS[1:0] bits, wait for two selected sampling periods before setting the input capture function.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1469 of 3240
+
+RX72N Group
+
+28.3
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Operation
+
+28.3.1
+
+Basic Functions
+
+Each channel has a TPUm.TCNT and a TPUm.TGRy register (y = A to D).
+TCNT is a 16-bit up-counter, which can function as a free-running counter, periodic counter, or event counter.
+TGRy can be used as an input capture register or output compare register.
+
+(1)
+
+Counter Operation
+
+When the CSTj bit (j = 0 to 5) in TPUA.TSTR is set to 1, the TCNT for the corresponding channel starts counting.
+
+(a)
+
+Example of count operation setting procedure
+
+Figure 28.2 shows an example of the count operation setting procedure.
+
+Operation selection
+
+Select count clock
+
+Periodic counter
+
+Select counter clearing source
+
+[1] Select the count clock with the
+TPSC[2:0] bits in TCR. At the same
+time, select the input clock edge with
+the CKEG[1:0] bits in TCR.
+
+[1]
+
+[2] For periodic counter operation, select
+the TGRy register to be used as the
+TCNT clearing source with the
+CCLR[2:0] bits in TCR.
+
+Free-run counter
+
+[2]
+[3] Set the TGRy register selected in [2] as
+an output compare register with TIOR
+(y = A to D).
+
+Select output compare register
+
+[3]
+[4] Set the periodic counter cycle in the
+TGRy register selected in [2].
+
+Set period
+
+[4]
+
+Start count
+
+[5]
+
+<Periodic counter>
+
+Figure 28.2
+
+[5] Set the TPUA.TSTR.CSTj bit (j = 0 to 5)
+to 1 to start the counter operation.
+Start count
+
+[5]
+
+<Free-running counter>
+
+Example of Counter Operation Setting Procedure
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1470 of 3240
+
+RX72N Group
+
+(b)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Free-running count operation and periodic count operation
+
+Immediately after a reset, TPUm.TCNT are all set as free-running counters. When the relevant bit in TPUA.TSTR is set
+to 1, the corresponding TCNT starts up-count operation as a free-running counter. When TCNT overflows (changes from
+FFFFh to 0000h), the TPU requests an interrupt. After an overflow, TCNT restarts counting up from 0000h.
+Figure 28.3 shows free-running counter operation.
+
+TCNT value
+FFFFh
+
+0000h
+
+Time
+
+TPUA.TSTR.CSTj bit
+
+TCImV interrupt
+
+Figure 28.3
+
+Free-Running Counter Operation
+
+When compare match is selected as the TCNT clearing source, the TCNT for the relevant channel performs periodic
+count operation. The TPUm.TGRy for setting the period is set as an output compare register, and counter clearing by
+compare match is selected by the TPUm.TCR.CCLR[2:0] bits. After the settings have been made, TCNT starts count-up
+operation as a periodic counter when the corresponding bit in TPUA.TSTR is set to 1. When the count value matches the
+TGRy value, TCNT is cleared to 0000h.
+At this time, the TPU requests an interrupt. After a compare match, TCNT restarts counting up from 0000h.
+Figure 28.4 shows periodic counter operation.
+
+TCNT value
+
+Counter cleared by TGRy compare match
+
+C000h
+
+0000h
+
+Time
+
+TPUA.TSTR.CSTj bit
+
+TGImy interrupt
+
+Figure 28.4
+
+Periodic Counter Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1471 of 3240
+
+RX72N Group
+
+(2)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Waveform Output by Compare Match
+
+The TPU can perform low, high, or toggle output from the corresponding output pin using a compare match.
+
+(a)
+
+Example of setting procedure for waveform output by compare match
+
+Figure 28.5 shows an example of the setting procedure for waveform output by a compare match.
+
+Output selection
+
+Select waveform output mode
+
+Set output timing
+
+[1] Select an initial output value (low or high) and a
+compare match output value (low, high, or toggle)
+by setting TIOR. The set initial value is output to
+the TIOCyn pin until the first compare match
+occurs (y = A to D; n = 0 to 5).
+
+[1]
+
+[2] Set the timing for generating a compare match in
+TGRy.
+
+[2]
+
+[3] Set the TPUA.TSTR.CSTj bit (j = 0 to 5) to 1 to
+start the counter operation.
+
+Start count
+
+[3]
+
+<Waveform output>
+
+Figure 28.5
+
+(b)
+
+Example of Setting Procedure for Waveform Output by Compare Match
+
+Examples of waveform output operation
+
+Figure 28.6 shows an example of low output/high output.
+In this example, TPUm.TCNT has been set as a free-running counter, and settings have been made so that high is output
+by compare match A and low is output by compare match B. When the set level and the pin level match, the pin level
+does not change.
+
+TCNT value
+FFFFh
+TGRA
+TGRB
+Time
+
+0000h
+
+No change
+
+No change
+High output
+
+TIOCAn
+No change
+
+TIOCBn
+
+Figure 28.6
+
+No change
+
+Low output
+
+Example of Low-Output/High-Output Operation (n = 0 to 5)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1472 of 3240
+
+RX72N Group
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Figure 28.7 shows an example of toggle output.
+In this example, TPUm.TCNT has been set as a periodic counter (with counter clearing performed by compare match B),
+and settings have been made so that output is toggled by both compare match A and compare match B.
+
+TCNT value
+Counter cleared by TGRB compare match
+FFFFn
+TGRB
+TGRA
+Time
+
+0000h
+
+Toggle output
+
+TIOCBn
+
+Toggle output
+
+TIOCAn
+
+Figure 28.7
+
+(3)
+
+Example of Toggle Output Operation (n = 0 to 5)
+
+Input Capture Function
+
+The TPUm.TCNT value can be transferred to TPUm.TGRy on detection of the TIOCyn pin (y = A to D; n = 0 to 5) input
+edge.
+The rising edge, the falling edge, or both edges can be selected as the detection edge. It is also possible to specify the
+count clock or compare match signal of TPU0, TPU1, TPU3, and TPU4 as the input capture source. Noise filtering can
+be applied to the input capture input.
+Note:
+Note:
+
+Even if the counter is halted, an input capture is generated, and flag and interrupt signals are generated.
+When another channel's count clock is used as the input capture input for TPU0 and TPU3, PCLK/1 should not
+be selected as the count clock used for input capture input. Input capture will not be generated if PCLK/1 is
+selected.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1473 of 3240
+
+RX72N Group
+
+(a)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Example of setting procedure for input capture operation
+
+Figure 28.8 shows an example of the setting procedure for input capture operation.
+
+Input selection
+
+Set the noise filter
+
+[1]
+
+Select input capture input
+
+[2]
+
+Start count
+
+[3]
+
+[1] Enable or disable the noise filter by setting the
+NFAEN to NFDEN bits in NFCR while an output
+compare function is set for the corresponding pins
+with TIOR or a mode other than normal operation
+(0000b) is set with the TMDR.MD[3:0] bits. When
+enabling the noise filter, select the sampling clock
+by the NFCS[1:0] bits.
+[2] Set TGRy as an input capture register by TIOR,
+and select the input capture source and input
+signal edge (rising edge, falling edge, or both
+edges (y = A to D).
+[3] Set the TPUA.TSTR.CSTj bit (j = 0 to 5) to 1 to
+start the counter operation.
+
+<Input capture operation>
+
+Figure 28.8
+
+Example of Setting Procedure for Input Capture Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1474 of 3240
+
+RX72N Group
+
+(b)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Example of input capture operation
+
+Figure 28.9 shows an example of input capture operation when the noise filter is stopped.
+In this example, both rising and falling edges have been selected as the TIOCAn pin input capture input edge, the falling
+edge has been selected as the TIOCBn pin input capture input edge, and counter clearing by TPUm.TGRB input capture
+has been set for TPUm.TCNT.
+
+Counter cleared by TIOCB input
+(falling edge)
+
+TCNT value
+0180h
+0160h
+
+0010h
+0005h
+Time
+
+0000h
+
+TIOCAn
+
+TGRA
+
+0005h
+
+0160h
+
+0010h
+
+TIOCBn
+TGRB
+
+Figure 28.9
+
+0180h
+
+Example of Input Capture Operation (with Noise Filter Stopped) (n = 0 to 5)
+
+When noise filtering is enabled, see Figure 28.30.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1475 of 3240
+
+RX72N Group
+
+28.3.2
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Synchronous Operation
+
+In synchronous operation, the values in multiple TPUm.TCNT can be rewritten simultaneously (synchronous setting).
+Also, multiple TCNT can be cleared simultaneously (synchronous clearing) by making the appropriate setting in
+TPUm.TCR.
+Synchronous operation enables TPUm.TGRy to be incremented with respect to a single time base.
+TPU0 to TPU5 can all be set for synchronous operation.
+
+(1)
+
+Example of Synchronous Operation Setting Procedure
+
+Figure 28.10 shows an example of the synchronous operation setting procedure.
+
+Synchronous operation
+selection
+
+Set synchronous operation
+
+[1]
+
+Synchronous setting
+
+Set TCNT
+
+Synchronous clearing
+
+[2]
+
+Clearing source
+generation channel?
+
+No
+
+Yes
+
+<Synchronous setting>
+
+Select counter clearing source
+
+[3]
+
+Set synchronous counter
+clearing
+
+[4]
+
+Start count
+
+[5]
+
+Start count
+
+[5]
+
+<Counter clearing>
+
+<Synchronous clearing>
+
+[1] Set the TPUA.TSYR.SYNCj bit (j = 0 to 5) corresponding to the channels to be set for synchronous operation to 1.
+[2] When any of TCNT of the channels set for synchronous operation is written to, the same value is simultaneously written to
+the other TCNT.
+[3] Use the CCLR[2:0] bits in TCR to specify TCNT clearing by input capture/output compare, etc.
+[4] Use the CCLR[2:0] bits in TCR to specify synchronous clearing for the counter clearing source.
+[5] Set the TPUA.TSTR.CSTj bit (j = 0 to 5) corresponding to the target channel to 1 to start the counter operation.
+
+Figure 28.10
+
+Example of Synchronous Operation Setting Procedure
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1476 of 3240
+
+RX72N Group
+
+(2)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Example of Synchronous Operation
+
+Figure 28.11 shows an example of synchronous operation.
+In this example, synchronous operation and PWM mode 1 have been set for TPU0 to TPU2, TPU0.TGRB compare
+match has been set as the TPU0 counter clearing source, and synchronous clearing has been set for the TPU1 and TPU2
+counter clearing source.
+Three-phase PWM waveforms are output from pins TIOCA0, TIOCA1, and TIOCA2. At this time, synchronous setting
+and synchronous clearing by TPU0.TGRB compare match are performed for TPUm.TCNT of TPU0 to TPU2, and the
+data set in TPU0.TGRB is used as the PWM cycle.
+For details on PWM modes, see section 28.3.5, PWM Modes.
+
+Synchronous clearing by TPU0.TGRB compare match
+TPU0.TCNT to TPU2.TCNT values
+TPU0.TGRB
+TPU1.TGRB
+TPU0.TGRA
+TPU2.TGRB
+TPU1.TGRA
+TPU2.TGRA
+0000h
+
+Time
+
+TIOCA0
+TIOCA1
+TIOCA2
+
+Figure 28.11
+
+Example of Synchronous Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1477 of 3240
+
+RX72N Group
+
+28.3.3
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Buffer Operation
+
+Buffer operation, provided for TPU0 and TPU3, enables TPUm.TGRC and TPUm.TGRD to be used as buffer registers.
+Buffer operation differs depending on whether TPUm.TGRy has been set as an input capture register or a compare match
+register.
+Table 28.21 lists the register combinations used in buffer operation.
+Table 28.21
+
+Register Combinations
+
+Channel
+
+Timer General Register
+
+Buffer Register
+
+TPU0
+
+TPU0.TGRA
+
+TPU0.TGRC
+
+TPU0.TGRB
+
+TPU0.TGRD
+
+TPU3.TGRA
+
+TPU3.TGRC
+
+TPU3.TGRB
+
+TPU3.TGRD
+
+TPU3
+
+ When TPUm.TGRy is an output compare register
+When a compare match occurs, the value in the buffer register for the corresponding channel is transferred to the timer
+general register.
+This operation is shown in Figure 28.12.
+
+Compare match signal
+
+Buffer register
+
+Figure 28.12
+
+Timer general
+register
+
+Comparator
+
+TCNT
+
+Compare Match Buffer Operation
+
+ When TPUm.TGRy is an input capture register
+When input capture occurs, the value in TPUm.TCNT is transferred to TGRy and the value previously held in TGRy is
+simultaneously transferred to the buffer register.
+This operation is shown in Figure 28.13.
+
+Input capture
+signal
+
+Buffer register
+
+Figure 28.13
+
+Timer general
+register
+
+TCNT
+
+Input Capture Buffer Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1478 of 3240
+
+RX72N Group
+
+(1)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Example of Buffer Operation Setting Procedure
+
+Figure 28.14 shows an example of the buffer operation setting procedure.
+
+Buffer operation
+
+Select TGRy function
+
+[1]
+
+[1] Set TGRy as an input capture register or output
+compare register by TIOR (y = A to D).
+[2] Set TGRy for buffer operation with bits BFA and
+BFB in TMDR.
+
+Set buffer operation
+
+[2]
+
+Start count
+
+[3]
+
+[3] Set the TPUA.TSTR.CSTj bit (j = 0 to 5) to 1 to start
+the counter operation.
+
+<Buffer operation>
+
+Figure 28.14
+
+Example of Buffer Operation Setting Procedure
+
+(2)
+
+Examples of Buffer Operation
+
+(a)
+
+When TPUm.TGRy is an output compare register
+
+Figure 28.15 shows an operation example in which PWM mode 1 has been set for TPU0, and buffer operation has been
+set for TPU0.TGRA and TPU0.TGRC. The settings used in this example are TPU0.TCNT clearing by compare match B,
+high output at compare match A, and low output at compare match B.
+As buffer operation has been set, when compare match A occurs, the output changes and the TPU0.TGRC value is
+simultaneously transferred to TPU0.TGRA. This operation is repeated each time compare match A occurs.
+For details on PWM modes, see section 28.3.5, PWM Modes.
+
+TCNT value
+TPU0.TGRB
+
+0520h
+
+0450h
+0200h
+
+TPU0.TGRA
+Time
+
+0000h
+TPU0.TGRC
+
+0450h
+
+0200h
+
+0520h
+
+Transfer
+TPU0.TGRA
+
+0200h
+
+0450h
+
+TIOCA0
+
+Figure 28.15
+
+Example of Buffer Operation (1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1479 of 3240
+
+RX72N Group
+
+(b)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+When TPUm.TGRy is an input capture register
+
+Figure 28.16 shows an operation example in which TPUm.TGRA has been set as an input capture register, and buffer
+operation has been set for the TGRA register and TPUm.TGRC.
+Counter clearing by TGRA input capture has been set for TPUm.TCNT, and both rising and falling edges have been
+selected as the TIOCAn pin input capture input edge.
+As buffer operation has been set, when the TCNT value is stored in TGRA upon occurrence of input capture A, the value
+previously stored in TGRA is simultaneously transferred to TGRC.
+
+TCNT value
+0F07h
+
+09FBh
+0532h
+0000h
+
+Time
+
+TIOCAn
+
+0532h
+
+TGRA
+
+TGRC
+
+Figure 28.16
+
+0F07h
+
+09FBh
+
+0532h
+
+0F07h
+
+Example of Buffer Operation (2) (n = 0 to 5)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1480 of 3240
+
+RX72N Group
+
+28.3.4
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Cascaded Operation
+
+In cascaded operation, two 16-bit counters for different channels are used together as a 32-bit counter.
+This function works by counting the TPU1 (TPU4) count clock at overflow/underflow of TPU2.TCNT (TPU5.TCNT) as
+set by the TPSC[2:0] bits in TPU1.TCR (TPSC[2:0] bits in TPU4.TCR).
+Underflow occurs only when the lower 16-bit TPUm.TCNT is in phase counting mode.
+Table 28.22 lists the register combinations used in cascaded operation.
+Note:
+
+When phase counting mode is set for TPU1 or TPU4, the count clock setting is invalid and the counter operates
+independently in phase counting mode.
+
+Table 28.22
+
+Cascaded Combinations
+
+Combination
+
+Upper 16 Bits
+
+Lower 16 Bits
+
+TPU1 and TPU2
+
+TPU1.TCNT
+
+TPU2.TCNT
+
+TPU4 and TPU5
+
+TPU4.TCNT
+
+TPU5.TCNT
+
+(1)
+
+Example of Cascaded Operation Setting Procedure
+
+Figure 28.17 shows an example of the setting procedure for cascaded operation.
+
+Cascaded operation
+
+Set cascading
+
+Start counting
+
+[1]
+
+[2]
+
+[1] Set the TPSC[2:0] bits in TCR of TPU1 (TPU4) to
+111b to select TPU2.TCNT (TPU5.TCNT)
+overflow/underflow counting.
+[2] Set the TPUA.TSTR.CSTj bit (j = 0 to 5) for the
+upper and lower channels to 1 to start count
+operation.
+
+<Cascaded operation>
+
+Figure 28.17
+
+Cascaded Operation Setting Procedure
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1481 of 3240
+
+RX72N Group
+
+(2)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Examples of Cascaded Operation
+
+Figure 28.18 shows the operation when counting upon TPU2.TCNT overflow/underflow has been set for TPU1.TCNT,
+TPU1.TGRA and TPU2.TGRA have been set as input capture registers, and the rising edge of the TIOCA1 and TIOCA2
+pins has been selected.
+When a rising edge is input to the TIOCA1 and TIOCA2 pins simultaneously, the upper 16 bits of the 32-bit data are
+transferred to TPU1.TGRA, and the lower 16 bits to TPU2.TGRA. Note that a point for caution applies to simultaneous
+input capture in cascade operation, as described in section 28.10.11, TCNT Simultaneous Input Capture in
+
+Cascade Operation.
+
+TPU1.TCNT clock
+
+TPU1.TCNT
+
+03A1h
+
+03A2h
+
+TPU2.TCNT clock
+
+TPU2.TCNT
+
+FFFFh
+
+0000h
+
+0001h
+
+TIOCA1, TIOCA2
+
+TPU1.TGRA
+
+03A2h
+
+TPU2.TGRA
+
+0000h
+
+Figure 28.18
+
+Example of Cascaded Operation (1)
+
+Figure 28.19 shows the operation when counting upon TPU2.TCNT overflow/underflow has been set for TPU1.TCNT,
+and phase counting mode 1 has been specified for TPU2.
+TPU1.TCNT is incremented by TPU2.TCNT overflow and decremented by TPU2.TCNT underflow.
+
+TCLKC
+
+TCLKD
+
+TPU2.TCNT
+
+FFFDh
+
+FFFFh
+
+0000h
+
+0000h
+
+TPU1.TCNT
+
+Figure 28.19
+
+FFFEh
+
+0001h
+
+0002h
+
+0001h
+
+0001h
+
+0000h
+
+FFFFh
+
+0000h
+
+Example of Cascaded Operation (2)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1482 of 3240
+
+RX72N Group
+
+28.3.5
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+PWM Modes
+
+In PWM mode, PWM waveforms are output from the output pins. low, high, or toggle output can be selected as the
+output level in response to compare match of each TPUm.TGRy.
+Settings of TGRy registers can output a PWM waveform in the range of 0% to 100% duty cycle.
+Specifying TGRy compare match as the counter clearing source enables the cycle to be set in that register. All channels
+can be set for PWM mode independently. Synchronous operation is also possible.
+There are two PWM modes, as described below.
+1. PWM mode 1
+PWM waveform is generated from the TIOCAn and TIOCCn pins by pairing TPUm.TGRA with TPUm.TGRB and
+TPUm.TGRC with TPUm.TGRD. The outputs specified by the IOA[3:0] bits in TPUm.TIOR(H) and IOC[3:0] bits
+in TPUm.TIORL are output from the TIOCAn and TIOCCn pins at compare matches A and C, respectively. The
+outputs specified by the IOB[3:0] bits in TPUm.TIOR(H) and IOD[3:0] bits in TPUm.TIORL are output from the
+TIOCAn and TIOCCn pins at compare matches B and D, respectively. The initial output value is the value set in
+TGRA or TGRC. If the set values of paired TGRy registers are identical, the output value does not change even
+when a compare match occurs.
+In PWM mode 1, a maximum 8-phase PWM output is possible.
+2. PWM mode 2
+PWM waveform is generated by using one TPUm.TGRy as the cycle register and the others as duty cycle registers.
+The output specified in TPUm.TIORH, TPUm.TIORL, or TPUm.TIOR is performed by compare matches. Upon
+counter clearing by a synchronous register compare match, the output value of each pin is the initial value set in
+TIORH, TIORL, or TIOR. If the set values of the cycle register and duty cycle register are identical, the output
+value does not change even when a compare match occurs.
+In PWM mode 2, a maximum 15-phase PWM waveform is possible by combined use with synchronous operation.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1483 of 3240
+
+RX72N Group
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+The correspondence between PWM output pins and registers is listed in Table 28.23.
+Table 28.23
+
+PWM Output Registers and Output Pins
+Output Pin
+
+Channel
+
+Register
+
+PWM Mode 1
+
+PWM Mode 2
+
+TPU0
+
+TPU0.TGRA
+
+TIOCA0
+
+TIOCA0
+
+TPU0.TGRB
+TPU0.TGRC
+
+TIOCB0
+TIOCC0
+
+TPU0.TGRD
+TPU1
+
+TPU1.TGRA
+
+TIOCD0
+TIOCA1
+
+TIOCA1
+
+TIOCA2
+
+TIOCA2
+
+TPU1.TGRB
+TPU2
+
+TPU2.TGRA
+
+TIOCB1
+
+TPU2.TGRB
+TPU3
+
+TPU3.TGRA
+
+TIOCB2
+TIOCA3
+
+TPU3.TGRB
+TPU3.TGRC
+
+TPU4.TGRA
+
+TIOCC3
+
+TIOCC3
+
+TIOCA4
+
+TIOCA4
+
+TIOCD3
+
+TPU4.TGRB
+TPU5
+
+TPU5.TGRA
+TPU5.TGRB
+
+Note:
+
+TIOCA3
+TIOCB3
+
+TPU3.TGRD
+TPU4
+
+TIOCC0
+
+TIOCB4
+TIOCA5
+
+TIOCA5
+TIOCB5
+
+In PWM mode 2, PWM waveform output is not possible for the TPUm.TGRy register in which the cycle is set.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1484 of 3240
+
+RX72N Group
+
+(1)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Example of PWM Mode Setting Procedure
+
+Figure 28.20 shows an example of the PWM mode setting procedure.
+
+PWM mode
+
+Select count clock
+
+[1]
+
+[1] Select the count clock with the TPSC[2:0] bits in
+TCR. At the same time, select the input clock
+edge with the CKEG[1:0] bits in TCR.
+
+Select counter clearing source
+
+[2]
+
+[2] Select the TGRy register to be used as the
+TCNT clearing source with the CCLR[2:0] bits in
+TCR (y = A to D).
+
+Select waveform output level
+
+[3]
+
+[3] Set TGRy as an output compare register by
+TIOR, and select the initial value and output
+value.
+
+Set TGRy
+
+[4]
+
+[4] Set the cycle in TGRy selected in [2], and set the
+duty in the other TGRy registers.
+[5] Select the PWM mode with the MD[3:0] bits in
+TMDR.
+
+Set PWM mode
+
+[5]
+
+Start counting
+
+[6]
+
+[6] Set the TPUA.TSTR.CSTj bit (j = 0 to 5) to 1 to
+start the counter operation.
+
+<PWM mode>
+
+Figure 28.20
+
+Example of PWM Mode Setting Procedure
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1485 of 3240
+
+RX72N Group
+
+(2)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Examples of PWM Mode Operation
+
+Figure 28.21 shows an example of PWM mode 1 operation.
+In this example, TPUm.TGRA compare match is set as the TPUm.TCNT clearing source, low is set for the TGRA initial
+output value and output value, and high is set as the TPUm.TGRB output value.
+In this case, the value set in TGRA is used as the cycle, and the value set in TGRB is used as the duty cycle.
+
+TCNT value
+
+Counter cleared by TGRA compare match
+
+TGRA
+
+TGRB
+0000h
+
+Time
+
+TIOCAn
+
+Figure 28.21
+
+Example of PWM Mode Operation (1) (n = 0 to 5)
+
+Figure 28.22 shows an example of PWM mode 2 operation.
+In this example, synchronous operation is specified for TPU0 and TPU1, TPU1.TGRB compare match is set as the
+TPUm.TCNT clearing source, and low is set for the initial output value and high for the output value of the other
+TPUm.TGRy registers (TPU0.TGRA to TPU0.TGRD and TPU1.TGRA), to output a 5-phase PWM waveform.
+In this case, the value set in TPU1.TGRB is used as the cycle, and the values set in the other TGRy registers are used as
+the duty cycle.
+
+TCNT value
+
+Counter cleared by TPU1.TGRB compare match
+
+TPU1.TGRB
+TPU1.TGRA
+TPU0.TGRD
+TPU0.TGRC
+TPU0.TGRB
+TPU0.TGRA
+0000h
+Time
+TIOCA0
+
+TIOCB0
+
+TIOCC0
+
+TIOCD0
+
+TIOCA1
+
+Figure 28.22
+
+Example of PWM Mode Operation (2)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1486 of 3240
+
+RX72N Group
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Figure 28.23 shows examples of PWM waveform output with 0% duty cycle and 100% duty cycle in PWM mode.
+
+TCNT value
+
+TGRB changed
+
+TGRA
+
+TGRB changed
+
+TGRB
+
+TGRB changed
+
+0000h
+
+Time
+0% duty cycle
+
+TIOCAn
+
+Output does not change when compare matches in cycle register
+and duty register occur simultaneously.
+
+TCNT value
+TGRB changed
+
+TGRA
+
+TGRB changed
+TGRB
+
+TGRB changed
+
+0000h
+
+Time
+100% duty cycle
+
+TIOCAn
+
+Output does not change when compare matches in cycle register
+and duty register occur simultaneously.
+TCNT value
+TGRA
+
+TGRB changed
+TGRB changed
+
+TGRB
+
+TGRB changed
+Time
+
+0000h
+
+100% duty cycle
+
+TIOCAn
+
+Figure 28.23
+
+0% duty cycle
+
+Example of PWM Mode Operation (3) (n = 0 to 5)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1487 of 3240
+
+RX72N Group
+
+28.3.6
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Phase Counting Mode
+
+In phase counting mode, the phase difference between two external clock inputs is detected by the settings for channels
+1, 2, 4, and 5, and TPUm.TCNT is incremented/decremented accordingly.
+When phase counting mode is set, an external clock is selected as the count clock and TCNT operates as an up-/downcounter regardless of the setting of the TPSC[2:0] bits and CKEG[1:0] bits in TPUm.TCR. However, the lower 2 bits of
+the CCLR[2:0] bits in TPUm.TCR and the functions of TPUm.TIORH, TPUm.TIORL, TPUm.TIOR, TPUm.TIER, and
+TPUm.TGRy are valid, and therefore input capture/compare match and interrupt functions are available.
+When an overflow occurs while TCNT is counting up, a TCIV interrupt request is generated; when an underflow occurs
+while TCNT is counting down, a TCIU interrupt request is generated. The TCFD bit in TPUm.TSR is the count direction
+flag. Reading the TCFD flag provides an indication of whether TCNT is counting up or down.
+In phase counting mode, the external clock pins TCLKA, TCLKB, TCLKC, and TCLKD can be used as 2-phase encoder
+pulse input.
+Table 28.24 lists the correspondence between external clock pins and channels.
+Table 28.24
+
+Clock Input Pins in Phase Counting Mode
+External Clock Pins
+
+Channel
+
+A-Phase
+
+B-Phase
+
+When TPU1 or TPU5 is set to phase counting mode
+
+TCLKA
+
+TCLKB
+
+When TPU2 or TPU4 is set to phase counting mode
+
+TCLKC
+
+TCLKD
+
+(1)
+
+Example of Phase Counting Mode Setting Procedure
+
+Figure 28.24 shows an example of the phase counting mode setting procedure.
+
+Phase counting mode
+
+Select phase counting mode
+
+[1]
+
+[1] Select phase counting mode with the MD[3:0] bits in
+TMDR.
+[2] Set the TPUA.TSTR.CSTj bit (j = 1, 2, 4, 5) to 1 to
+start the counter operation.
+
+Start counting
+
+[2]
+
+<Phase counting mode>
+
+Figure 28.24
+
+Example of Phase Counting Mode Setting Procedure
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1488 of 3240
+
+RX72N Group
+
+(2)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Examples of Phase Counting Mode Operation
+
+In phase counting mode, TPUm.TCNT counts up or down according to the phase difference between two external clocks.
+There are four modes, according to the count conditions.
+
+(a)
+
+Phase counting mode 1
+
+Figure 28.25 shows an example of phase counting mode 1 operation, and Table 28.25 lists the TPUm.TCNT up-/
+down-count conditions.
+
+TCLKA (TPU1, TPU5)
+TCLKC (TPU2, TPU4)
+
+TCLKB (TPU1, TPU5)
+TCLKD (TPU2, TPU4)
+
+TCNT value
+
+Up-count
+
+Down-count
+
+Time
+
+Figure 28.25
+
+Example of Phase Counting Mode 1 Operation
+
+Table 28.25
+
+Up-/Down-Count Conditions in Phase Counting Mode 1
+
+TCLKA (TPU1, TPU5)
+TCLKC (TPU2, TPU4)
+
+TCLKB (TPU1, TPU5)
+TCLKD (TPU2, TPU4)
+
+Operation
+
+Up-count
+
+High
+Low
+Low
+High
+
+Down-count
+
+High
+Low
+High
+Low
+
+: Rising edge
+: Falling edge
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1489 of 3240
+
+RX72N Group
+
+(b)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Phase counting mode 2
+
+Figure 28.26 shows an example of phase counting mode 2 operation, and Table 28.26 lists the TPUm.TCNT up-/
+down-count conditions.
+
+TCLKA (TPU1, TPU5)
+TCLKC (TPU2, TPU4)
+
+TCLKB (TPU1, TPU5)
+TCLKD (TPU2, TPU4)
+TCNT value
+Up-count
+
+Down-count
+
+Time
+
+Figure 28.26
+
+Example of Phase Counting Mode 2 Operation
+
+Table 28.26
+
+Up-/Down-Count Conditions in Phase Counting Mode 2
+
+TCLKA (TPU1, TPU5)
+TCLKC (TPU2, TPU4)
+
+TCLKB (TPU1, TPU5)
+TCLKD (TPU2, TPU4)
+
+Operation
+
+High
+
+Don’t care
+
+Low
+
+Don’t care
+Low
+
+Don’t care
+
+High
+
+Up-count
+
+High
+
+Don’t care
+
+Low
+
+Don’t care
+High
+
+Don’t care
+
+Low
+
+Down-count
+
+: Rising edge
+: Falling edge
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1490 of 3240
+
+RX72N Group
+
+(c)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Phase counting mode 3
+
+Figure 28.27 shows an example of phase counting mode 3 operation, and Table 28.27 lists the TPUm.TCNT up-/
+down-count conditions.
+
+TCLKA (TPU1, TPU5)
+TCLKC (TPU2, TPU4)
+
+TCLKB (TPU1, TPU5)
+TCLKD (TPU2, TPU4)
+TCNT value
+
+Up-count
+
+Down-count
+
+Time
+
+Figure 28.27
+
+Example of Phase Counting Mode 3 Operation
+
+Table 28.27
+
+Up-/Down-Count Conditions in Phase Counting Mode 3
+
+TCLKA (TPU1, TPU5)
+TCLKC (TPU2, TPU4)
+
+TCLKB (TPU1, TPU5)
+TCLKD (TPU2, TPU4)
+
+Operation
+
+High
+
+Don’t care
+
+Low
+
+Don’t care
+Low
+
+Don’t care
+
+High
+
+Up-count
+
+High
+
+Down-count
+
+Low
+
+Don’t care
+High
+
+Don’t care
+
+Low
+
+Don’t care
+
+: Rising edge
+: Falling edge
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1491 of 3240
+
+RX72N Group
+
+(d)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Phase counting mode 4
+
+Figure 28.28 shows an example of phase counting mode 4 operation, and Table 28.28 lists the TPUm.TCNT up-/
+down-count conditions.
+
+TCLKA (TPU1, TPU5)
+TCLKC (TPU2, TPU4)
+
+TCLKB (TPU1, TPU5)
+TCLKD (TPU2, TPU4)
+TCNT value
+Up-count
+
+Down-count
+
+Time
+
+Figure 28.28
+
+Example of Phase Counting Mode 4 Operation
+
+Table 28.28
+
+Up-/Down-Count Conditions in Phase Counting Mode 4
+
+TCLKA (TPU1, TPU5)
+TCLKC (TPU2, TPU4)
+
+TCLKB (TPU1, TPU5)
+TCLKD (TPU2, TPU4)
+
+High
+
+Operation
+
+Up-count
+
+Low
+Low
+
+Don’t care
+
+High
+High
+
+Down-count
+
+Low
+High
+
+Don’t care
+
+Low
+
+: Rising edge
+: Falling edge
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1492 of 3240
+
+RX72N Group
+
+28.3.6.1
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Phase Counting Mode Application Example
+
+Figure 28.29 shows an example in which phase counting mode is set for TPU1, and TPU1 is coupled with TPU0 to
+input servo motor 2-phase encoder pulses in order to detect the position or speed.
+TPU1 is set to phase counting mode 1, and the encoder pulse A-phase and B-phase are input to the TCLKA and TCLKB
+pins.
+TPU0 operates with TPU0.TCNT clearing by TPU0.TGRC compare match; TPU0.TGRA and TPU0.TGRC are used for
+the compare match function and are set with the speed control cycle and position control cycle. TPU0.TGRB is used for
+input capture, with TPU0.TGRB and TPU0.TGRD operating in buffer mode. The TPU1 count clock is specified as the
+TPU0.TGRB input capture source, and the pulse width of 2-phase encoder 4-multiplication pulses is detected.
+TPU1.TGRA and TPU1.TGRB for TPU1 are specified for input capture, TPU0.TGRA and TPU0.TGRC compare
+matches are selected as the input capture source, and the up-/down-counter values for the control cycles are stored.
+This procedure enables accurate position/speed detection to be achieved.
+
+TPU1
+TCLKA
+TCLKB
+
+Edge
+detection
+circuit
+
+Count clock
+
+TPU1.TCNT
+Input capture
+TPU1.TGRA
+(speed cycle capture)
+Input capture
+TPU1.TGRB
+(position cycle capture)
+
+Counter clear
+TPU0.TCNT
+Compare
+match
+TPU0.TGRA
+(speed control cycle)
+
+TPU0.TGRC
+(position control cycle)
+
+Compare
+match
+
+Input capture
+TPU0.TGRB
+(pulse width capture)
+
+TPU0.TGRD
+(buffer operation)
+TPU0
+
+Figure 28.29
+
+Phase Counting Mode Application Example
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1493 of 3240
+
+RX72N Group
+
+28.3.7
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Noise Filters
+
+Each pin for use in input capture by TPU is equipped with a noise filter. The noise filter samples the level on the pin three
+times at the selected sampling interval, conveys the level to the internal circuits if the samples match, and continues to
+convey that level until the other level is sampled from the pins three times in a row. The noise filter function can be
+enabled or disabled for each pin. Furthermore, sampling clock settings can be made for each channel.
+Figure 28.30 is a timing chart for the noise filter.
+
+Sampling clock
+Noise filter function
+enable register
+Input-capture input
+
+Pulses
+removed
+The level
+matches
+three times
+
+Signal conveyed to
+internal block
+Noise filter function disabled
+
+Figure 28.30
+
+Noise filter function enabled
+
+Timing Chart for the Noise Filter
+
+If noise filtering is set, input capture operation is performed on the edges of noise-filtered signal after a minimum delay
+of (sampling interval × 2 + PCLK) due to noise filtering for the input capture input.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1494 of 3240
+
+RX72N Group
+
+28.4
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Interrupt Sources
+
+There are three kinds of TPU interrupt sources: TPUm.TGRy input capture/compare match, TPUm.TCNT overflow, and
+TPUm.TCNT underflow.
+Relative channel priority levels can be changed by the interrupt controller, but the priority within a channel is fixed. For
+details, see section 15, Interrupt Controller (ICUD).
+Table 28.29 lists the TPU interrupt sources.
+Table 28.29
+
+TPU Interrupt Sources
+
+Channel
+
+Name
+
+Interrupt Source
+
+DTC Activation
+
+DMAC Activation
+
+TPU0
+
+TGI0A
+
+TPU0.TGRA input capture/compare match
+
+Possible
+
+Possible
+
+TGI0B
+
+TPU0.TGRB input capture/compare match
+
+Possible
+
+Not possible
+
+TGI0C
+
+TPU0.TGRC input capture/compare match
+
+Possible
+
+Not possible
+
+TGI0D
+
+TPU0.TGRD input capture/compare match
+
+Possible
+
+Not possible
+
+TCI0V
+
+TPU0.TCNT overflow
+
+Not possible
+
+Not possible
+
+TGI1A
+
+TPU1.TGRA input capture/compare match
+
+Possible
+
+Possible
+
+TGI1B
+
+TPU1.TGRB input capture/compare match
+
+Possible
+
+Not possible
+
+TCI1V
+
+TPU1.TCNT overflow
+
+Not possible
+
+Not possible
+
+TCI1U
+
+TPU1.TCNT underflow
+
+Not possible
+
+Not possible
+
+TPU1
+
+TPU2
+
+TPU3
+
+TPU4
+
+TPU5
+
+Note:
+
+TGI2A
+
+TPU2.TGRA input capture/compare match
+
+Possible
+
+Possible
+
+TGI2B
+
+TPU2.TGRB input capture/compare match
+
+Possible
+
+Not possible
+
+TCI2V
+
+TPU2.TCNT overflow
+
+Not possible
+
+Not possible
+
+TCI2U
+
+TPU2.TCNT underflow
+
+Not possible
+
+Not possible
+
+TGI3A
+
+TPU3.TGRA input capture/compare match
+
+Possible
+
+Possible
+
+TGI3B
+
+TPU3.TGRB input capture/compare match
+
+Possible
+
+Not possible
+
+TGI3C
+
+TPU3.TGRC input capture/compare match
+
+Possible
+
+Not possible
+
+TGI3D
+
+TPU3.TGRD input capture/compare match
+
+Possible
+
+Not possible
+
+TCI3V
+
+TPU3.TCNT overflow
+
+Not possible
+
+Not possible
+
+TGI4A
+
+TPU4.TGRA input capture/compare match
+
+Possible
+
+Possible
+
+TGI4B
+
+TPU4.TGRB input capture/compare match
+
+Possible
+
+Not possible
+
+TCI4V
+
+TPU4.TCNT overflow
+
+Not possible
+
+Not possible
+
+TCI4U
+
+TPU4.TCNT underflow
+
+Not possible
+
+Not possible
+
+TGI5A
+
+TPU5.TGRA input capture/compare match
+
+Possible
+
+Possible
+
+TGI5B
+
+TPU5.TGRB input capture/compare match
+
+Possible
+
+Not possible
+
+TCI5V
+
+TPU5.TCNT overflow
+
+Not possible
+
+Not possible
+
+TCI5U
+
+TPU5.TCNT underflow
+
+Not possible
+
+Not possible
+
+This table lists the initial state immediately after a reset. The relative channel priority levels can be changed by the interrupt
+controller.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1495 of 3240
+
+RX72N Group
+
+(1)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Input Capture/Compare Match Interrupt
+
+An interrupt is requested when the TGIEy bit (y = A, B, C, D) in TPUm.TIER is set to 1 by the occurrence of a
+TPUm.TGRy input capture/compare match on a channel. The TPU has 16 input capture/compare match interrupts, four
+each for TPU0 and TPU3, and two each for TPU1, TPU2, TPU4, and TPU5.
+
+(2)
+
+Overflow Interrupt
+
+An interrupt is requested when the TCIEV bit in TPUm.TIER is set to 1 by the occurrence of a TPUm.TCNT overflow
+on a channel. The TPU has six overflow interrupts, one for each channel.
+
+(3)
+
+Underflow Interrupt
+
+An interrupt is requested when the TCIEU bit in TPUm.TIER is set to 1 by the occurrence of a TPUm.TCNT underflow
+on a channel. The TPU has four underflow interrupts, one each for TPU1, TPU2, TPU4, and TPU5.
+
+28.5
+
+DTC Activation
+
+The DTC can be activated by the TPUm.TGRy input capture/compare match interrupt of each channel. For details, see
+section 20, Data Transfer Controller (DTCb).
+A total of 16 input capture/compare match interrupts can be used as DTC activation sources, four each for TPU0 and
+TPU3, and two each for TPU1, TPU2, TPU4, and TPU5.
+
+28.6
+
+DMAC Activation
+
+The DMAC can be activated by the TPUm.TGRA input capture/compare match interrupt of each channel. For details,
+see section 18, DMA Controller (DMACAa).
+A total of six TPUm.TGRA input capture/compare match interrupts can be used as DMAC activation sources, one for
+each channel.
+
+28.7
+
+A/D Converter Activation
+
+The TPU can activate the A/D converter by the TPUm.TGRA input capture/compare match for each channel.
+When the TTGE bit in TPUm.TIER is set to 1, the TPU requests the A/D converter to start A/D conversion by the
+occurrence of a TPUm.TGRA input capture/compare match on a particular channel.
+
+28.8
+
+PPG Trigger
+
+Input capture to or compare match with TGRA and TGRB in TPU0 to TPU3 can be made to act as a PPG1 waveform
+trigger. For details, see section 29, Programmable Pulse Generator (PPG).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1496 of 3240
+
+RX72N Group
+
+28.9
+
+Operation Timing
+
+28.9.1
+(1)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Input/Output Timing
+
+TPUm.TCNT Count Timing
+
+Figure 28.31 shows TPUm.TCNT count timing in internal clock operation, and Figure 28.32 shows TCNT count
+timing in external clock operation.
+
+PCLK
+
+Falling edge
+
+Internal clock
+
+Rising edge
+
+Falling edge
+
+TCNT input clock
+
+N–1
+
+TCNT
+
+Figure 28.31
+
+N
+
+N+1
+
+N+2
+
+Count Timing in Internal Clock Operation
+
+PCLK
+
+External
+clock
+
+Falling edge
+
+Rising edge
+
+Falling edge
+
+N
+
+N+1
+
+TCNT input
+clock
+
+TCNT
+
+Figure 28.32
+
+N–1
+
+N+2
+
+Count Timing in External Clock Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1497 of 3240
+
+RX72N Group
+
+(2)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Output Compare Output Timing
+
+A compare match signal is generated in the final state in which TPUm.TCNT and TPUm.TGRy match (the point at
+which the count value matched by TCNT is updated). When a compare match signal is generated, the output value set in
+TPUm.TIORH, TPUm.TIORL, or TPUm.TIOR is output to the output compare output pin TIOCyn (y = A to D; n = 0 to
+5). After a match between TCNT and TGRy, the compare match signal is not generated until the TCNT input clock is
+generated.
+
+Figure 28.33 shows output compare output timing.
+
+PCLK
+
+TCNT input clock
+
+TPUm.TCNT
+
+N
+
+TPUm.TGRy
+
+N+1
+
+N
+
+Compare match signal
+
+TIOCyn pin
+
+Figure 28.33
+
+(3)
+
+Output Compare Output Timing
+
+Input Capture Signal Timing
+
+Figure 28.34 shows input capture signal timing.
+
+PCLK
+Input capture
+input
+Input capture
+signal
+N
+
+TPUm.TCNT
+
+N+2
+N
+
+TPUm.TGRy
+
+Figure 28.34
+
+N+1
+
+N+2
+
+Input Capture Signal Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1498 of 3240
+
+RX72N Group
+
+(4)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Timing for Counter Clearing by Compare Match/Input Capture
+
+Figure 28.35 shows the timing when counter clearing by compare match occurrence is specified, and Figure 28.36
+shows the timing when counter clearing by input capture occurrence is specified.
+
+PCLK
+
+Compare match signal
+
+Counter clear signal
+
+Figure 28.35
+
+TPUm.TCNT
+
+N
+
+TPUm.TGRy
+
+N
+
+0000h
+
+Counter Clear Timing (Compare Match)
+
+PCLK
+
+Input capture signal
+
+Counter clear signal
+
+TPUm.TCNT
+
+N
+
+TPUm.TGRy
+
+Figure 28.36
+
+0000h
+
+N
+
+Counter Clear Timing (Input Capture)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1499 of 3240
+
+RX72N Group
+
+(5)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Buffer Operation Timing
+
+Figure 28.37 and Figure 28.38 show the timings in buffer operation.
+
+PCLK
+
+n
+
+TCNT
+
+N+1
+
+Compare match signal
+
+TGRA, TGRB
+
+n
+
+TGRC, TGRD
+
+Figure 28.37
+
+N
+
+N
+
+Buffer Operation Timing (Compare Match)
+
+PCLK
+
+Input capture signal
+
+TCNT
+
+N
+
+TGRA, TGRB
+
+n
+
+TGRC, TGRD
+
+Figure 28.38
+
+N+1
+
+N
+
+N+1
+
+n
+
+N
+
+Buffer Operation Timing (Input Capture)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1500 of 3240
+
+RX72N Group
+
+28.9.2
+(1)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Interrupt Signal Timing
+
+Timing of Interrupt Signal Setting on Compare Match
+
+Figure 28.39 shows the timing for setting the interrupt signal by compare match occurrence.
+
+PCLK
+
+TCNT input clock
+
+N
+
+TCNT
+
+N+1
+
+N
+
+TGRy
+
+Compare match signal
+
+Interrupt signal
+
+Figure 28.39
+
+(2)
+
+TGImy Interrupt Timing (Compare Match)
+
+Timing of Interrupt Signal Setting on Input Capture
+
+Figure 28.40 shows the timing for setting the interrupt signal by input capture occurrence.
+
+PCLK
+
+Input capture signal
+
+TCNT
+
+N
+
+TGRy
+
+n
+
+N
+
+Interrupt signal
+
+Figure 28.40
+
+TGImy Interrupt Timing (Input Capture)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1501 of 3240
+
+RX72N Group
+
+(3)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Timing of TCImV/TCImU Interrupt Signal Setting
+
+Figure 28.41 shows the timing for generating the TCImV interrupt signal by overflow occurrence.
+Figure 28.42 shows the timing for generating the TCImU interrupt signal by underflow occurrence.
+
+PCLK
+
+TCNT input clock
+
+TCNT (overflow)
+
+FFFFh
+
+0000h
+
+Overflow signal
+
+Interrupt signal
+
+Figure 28.41
+
+TCImV Interrupt Setting Timing
+
+PCLK
+
+TCNT input clock
+
+TCNT (underflow)
+
+0000h
+
+FFFFh
+
+Underflow signal
+
+Interrupt signal
+
+Figure 28.42
+
+TCImU Interrupt Setting Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1502 of 3240
+
+RX72N Group
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+28.10 Usage Notes
+28.10.1
+
+Module Stop Function Setting
+
+Operation of the TPU can be disabled or enabled using the module stop control register. The TPU does not operate with
+the initial setting. Register access is enabled by releasing the module stop state. For details, see section 11, Low Power
+Consumption.
+
+28.10.2
+
+Input Clock Restrictions
+
+The input clock pulse width must be at least 1.5 PCLK cycles in the case of single-edge detection, and at least 2.5 PCLK
+cycles in the case of both-edge detection. The TPU will not operate properly with a narrower pulse width.
+In phase counting mode, the phase difference and overlap between the two input clocks must be at least 1.5 PCLK
+cycles, and the pulse width must be at least 2.5 PCLK cycles. Figure 28.43 shows the input clock conditions in phase
+counting mode.
+
+Overlap
+
+Phase
+difference
+
+Overlap
+
+Phase
+difference
+Pulse width
+
+Pulse width
+
+TCLKA (TCLKC)
+
+TCLKB (TCLKD)
+
+Pulse width
+
+Note:
+
+Figure 28.43
+
+28.10.3
+
+Pulse width
+
+Phase difference, Overlap: At least 1.5 PCLK cycles
+Pulse width:
+At least 2.5 PCLK cycles
+
+Phase Difference, Overlap, and Pulse Width in Phase Counting Mode
+
+Notes on Cycle Setting
+
+When counter clearing by compare match is set, TPUm.TCNT is cleared in the final state in which it matches the
+TPUm.TGRy value (the point at which the count value matched by TCNT is updated). Consequently, the actual counter
+frequency is given by the following formula:
+
+f=
+
+fTCNT_CLK
+(N + 1)
+
+f:
+fTCNT_CLK:
+N:
+
+Counter frequency
+Count clock frequency
+TGRy set value
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1503 of 3240
+
+RX72N Group
+
+28.10.4
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Conflict between TPUm.TCNT Write and Clear Operations
+
+If the counter clearing signal is generated in a TCNT write cycle, TCNT clearing takes precedence and the TCNT write
+is not performed. Figure 28.44 shows the timing in this case.
+
+TCNT write by CPU
+
+PCLK
+
+Counter clear signal
+
+TCNT
+
+Figure 28.44
+
+28.10.5
+
+N
+
+0000h
+
+Conflict between TPUm.TCNT Write and Clear Operations
+
+Conflict between TPUm.TCNT Write and Increment Operations
+
+If incrementing occurs in a TCNT write cycle, the TCNT write takes precedence and TCNT is not incremented. Figure
+28.45 shows the timing in this case.
+
+TCNT write by CPU
+
+PCLK
+
+TCNT input clock
+
+TCNT
+
+X
+
+M
+
+TCNT write data
+
+Figure 28.45
+
+Conflict between TPUm.TCNT Write and Increment Operations
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1504 of 3240
+
+RX72N Group
+
+28.10.6
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Conflict between TPUm.TGRy Write and Compare Match
+
+If a compare match occurs in a TGRy write cycle, the TGRy write takes precedence and the compare match signal is
+disabled. A compare match also does not occur when the same value as before is written.
+Figure 28.46 shows the timing in this case.
+
+TGR write by CPU
+
+PCLK
+
+Disabled
+
+Compare match signal
+
+TCNT
+
+N
+
+N+1
+
+TGRy
+
+N
+
+M
+
+TGRy write data
+
+Figure 28.46
+
+28.10.7
+
+Conflict between TPUm.TGRy Write and Compare Match
+
+Conflict between Buffer Register Write and Compare Match
+
+If a compare match occurs in a TPUm.TGRy write cycle, the data transferred to TGRy by the buffer operation will be the
+data before writing.
+Figure 28.47 shows the timing in this case.
+
+Buffer register write by CPU
+
+PCLK
+
+Compare match signal
+Buffer register write data
+Buffer register
+
+N
+
+TGRy
+
+Figure 28.47
+
+M
+
+N
+
+Conflict between Buffer Register Write and Compare Match
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1505 of 3240
+
+RX72N Group
+
+28.10.8
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Conflict between TPUm.TGRy Read and Input Capture
+
+If the input capture signal is generated in a TGRy read cycle, the data that is read will be the data before input capture
+transfer.
+Figure 28.48 shows the timing in this case.
+
+Buffer register read by CPU
+
+PCLK
+
+Input capture signal
+
+TGRy
+
+Internal data bus
+
+Figure 28.48
+
+28.10.9
+
+N
+
+M
+
+N
+
+Conflict between TPUm.TGRy Read and Input Capture
+
+Conflict between TPUm.TGRy Write and Input Capture
+
+If the input capture signal is generated in a TGRy write cycle, the input capture operation takes precedence and the write
+to TGRy is not performed. Figure 28.49 shows the timing in this case.
+
+TCNT write by CPU
+
+PCLK
+
+Input capture signal
+
+TCNT
+
+M
+
+TGRy
+
+Figure 28.49
+
+M
+
+Conflict between TPUm.TGRy Write and Input Capture
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1506 of 3240
+
+RX72N Group
+
+28.10.10
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Conflict between Buffer Register Write and Input Capture
+
+If the input capture signal is generated in a buffer register write cycle, the buffer operation takes precedence and the write
+to the buffer register is not performed. Figure 28.50 shows the timing in this case.
+
+Buffer register write by CPU
+
+PCLK
+
+Input capture signal
+
+N
+
+TCNT
+
+TGRy
+
+M
+
+Buffer register
+
+Figure 28.50
+
+28.10.11
+
+N
+
+M
+
+Conflict between Buffer Register Write and Input Capture
+
+TCNT Simultaneous Input Capture in Cascade Operation
+
+When TPU1.TCNT and TPU2.TCNT are cascaded for operation as a 32-bit counter, the counter value may not be
+captured correctly even if the input capture signal is input to the TIOC1A and TIOC2A pins or the TIOC1B and TIOC2B
+pins at the same time. This is because a difference of up to 1 clock cycle in the timing of the capture signal to input to
+TPU1.TCNT and TPU2.TCNT may occur due to internal delays.
+For example, the counter value is captured at an overflow of TPU2.TCNT as in counting up from 0A31 FFFFh to
+0A32 0000h, the value captured may be 0A31 0000h or 0A32 FFFFh.
+The same applies to cascaded operation of TPU4.TCNT and TPU5.TCNT.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1507 of 3240
+
+RX72N Group
+
+28.10.12
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Conflict between Overflow/Underflow and Counter Clearing
+
+If overflow/underflow and counter clearing*1 occur simultaneously, TPUm.TCNT is cleared with the generation of the
+compare match interrupt and an overflow interrupt is generated.
+Figure 28.51 shows the operation timing when a TPUm.TGRy compare match is specified as the clearing source and
+FFFFh is set in TGRy.
+Note 1. There are four counter clearing sources:
+• Compare match
+• Input capture
+• Synchronous clearing
+• Counter restart operation by an event signal
+
+PCLK
+
+TCNT input clock
+
+TCNT
+
+FFFFh
+
+0000h
+
+Counter clear signal
+
+Compare match interrupt signal
+
+Overflow interrupt signal
+
+Figure 28.51
+
+Conflict between Overflow and Counter Clearing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1508 of 3240
+
+RX72N Group
+
+28.10.13
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Conflict between TPUm.TCNT Write and Overflow/Underflow
+
+If an overflow/underflow occurs due to increment/decrement in a TCNT write cycle, the TCNT write takes precedence.
+Figure 28.52 shows the operation timing when there is conflict between TCNT write and overflow.
+
+TCNT write by CPU
+
+PCLK
+TCNT write data
+TCNT
+
+FFFFh
+
+M
+
+Interrupt signal
+
+Figure 28.52
+
+28.10.14
+
+Conflict between TPUm.TCNT Write and Overflow
+
+Multiplexing of I/O Pins
+
+In this MCU, the TCLKA input pin is multiplexed with the TIOCB5 I/O pin, the TCLKB input pin with the TIOCB2 I/O
+pin, the TCLKC input pin with the TIOCB1 I/O pin, the TCLKD input pin with the TIOCB0 I/O pin, the TCLKB input
+pin with the TIOCD0 I/O pin, the TCLKC input pin with the TIOCC3 I/O pin, and the TCLKD input pin with the
+TIOCD3 I/O pin. When an external clock is input, compare match output should not be performed from a multiplexed
+pin.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1509 of 3240
+
+RX72N Group
+
+28.10.15
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Continuous Output of Compare-Match Pulse Interrupt Signal
+
+When TGR is set to 0000h, PCLK/1 is set as the count clock, and compare match is set as the counter clear source, the
+TCNT remains 0000h and is not updated, and a compare-match pulse interrupt signal is output continuously to form a
+flat signal level.
+When a pulse interrupt signal is used, the interrupt controller cannot detect the second and subsequent interrupts.
+Figure 28.53 shows an operation timing when the compare-match pulse interrupt signal is continuously output.
+Write to the timer start register by the CPU
+
+PCLK
+TSTR.CST
+TCNT
+
+0000h
+
+TGR
+
+0000h
+
+Counter clear signal
+Compare match signal
+Compare-match pulse
+interrupt signal
+
+Figure 28.53
+
+Continuous Output of Compare-Match Pulse Interrupt Signal
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1510 of 3240
+
+RX72N Group
+
+28.10.16
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Continuous Output of Input-Capture Pulse Interrupt Signal
+
+When input-capture signal is set on both edges and when the pulse width of the input-capture input equals to one PCLK
+cycle detected by internal sampling, input capture is generated continuously on the rising and falling edges. Therefore, an
+input-capture pulse interrupt signal is output continuously to form a flat signal level.
+When a pulse interrupt signal is used, the interrupt controller cannot detect the second and subsequent interrupts.
+Figure 28.54 shows an operation timing when the input-capture pulse interrupt signal is output continuously.
+
+PCLK
+Input-capture input
+
+Input capture on rising edge
+Input capture on falling edge
+
+Input-capture signal
+Input-capture pulse
+interrupt signal
+
+Figure 28.54
+
+Continuous Output of Input-Capture Pulse Interrupt Signal
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1511 of 3240
+
+RX72N Group
+
+28.10.17
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Continuous Output of Underflow Pulse Interrupt Signal
+
+If two external clock signals' same direction edges to be phase counted are generated within two PCLK cycles in phase
+counting mode 1, with TGR being 0000h, and compare match set as the counter clear source, the TCNT remains 0000h
+and is not updated, and a compare-match pulse interrupt signal and an underflow interrupt signal are output continuously
+to form a flat signal level.
+When a pulse interrupt signal is used, the interrupt controller cannot detect the second and subsequent interrupts.
+Figure 28.55 shows an operation timing when the underflow pulse interrupt signal is output continuously.
+
+Less than 2 PCLK cycles Less than 2 PCLK cycles
+
+PCLK
+
+TCLKA
+TCLKB
+
+Count-down signal
+Compare match
+(counter clear) signal
+Underflow signal
+TCNT
+
+0000h
+
+TGRA
+
+0000h
+
+Compare-match pulse
+interrupt signal
+Underflow pulse
+interrupt signal
+
+Figure 28.55
+
+Continuous Output of Underflow Pulse Interrupt Signal
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1512 of 3240
+
+RX72N Group
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+28.11 Event Link Operation
+28.11.1
+
+Event Signal Output to ELC
+
+The TPU uses the ELC (event link controller) to perform link operation to the previously specified module using the
+interrupt request signal as the event signal.
+The event signal can be output regardless of the setting of the corresponding interrupt request enable bits (TGIEA,
+TGIEB, TGIEC, or TGIED, and TCIEV, or TCIEU).
+
+28.11.2
+
+Event Signal Input from ELC
+
+The TPU can perform any of the following three operations using the event link setting register of the ELC (event link
+controller).
+
+(1)
+
+Start Counting
+
+When an event signal is input while the TPU count start operation is selected, the CSTn bit in TSTRA register (the timer
+start register) is set to 1 and counting starts.
+However, if this event is generated for the channels when the CSTn bit is set to 1, the event is ignored.
+Table 28.30 lists the TSTRA.CSTn bit used for each channel.
+Figure 28.56 shows the timing of the count start operation.
+For details on the setting procedure to start counting, see section 28.3.1, (1) Counter Operation.
+Table 28.30
+
+Correspondence between Channels and TSTRA.CSTn bit
+
+Channel No.
+
+TSTRA.CSTn bit
+
+TPU0
+
+CST0
+
+TPU1
+
+CST1
+
+TPU2
+
+CST2
+
+TPU3
+
+CST3
+
+PCLK
+
+TCNT input clock
+
+Count start event
+select signal
+
+Event signal
+
+CST bit
+
+TCNT
+
+Figure 28.56
+
+N
+
+N+1
+
+Start Counting on Input of the Event Signal
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1513 of 3240
+
+RX72N Group
+
+(2)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Restart Counting
+
+When an event signal is input while the TPU count restart operation is selected, the value of TCNTn counter (the timer
+start register) is returned to its initial value (0000h). If the CSTn bit in TSTRA register (the timer start register) is set to 1,
+however, counting operation will then continue.
+Table 28.30 lists the TSTRA.CSTn bit used for each channel.
+Figure 28.57 shows the timing of the count restart operation.
+
+PCLK
+
+TCNT input clock
+
+Count restart event
+select signal
+
+Event signal
+
+TCNT
+
+Figure 28.57
+
+(3)
+
+N
+
+0000h
+
+0001h
+
+Restart Counting on Input of the Event Signal
+
+Input Capture Operation
+
+When an event signal is input while the TPU input capture operation is selected, the value of TCNT counter (the timer
+count register) for the corresponding channel is captured in TGR register (the timer general register). When using input
+capture due to the event link, set the bit in TIOR (the timer I/O control register) to specify input capture, and then set the
+CSTn bit in TSTRA register (the timer start register) to 1 to start counting.
+Table 28.31 lists TGR register and TIOR register bits used for each channel. For the TSTRA.CSTn bit used for each
+channel, see Table 28.30.
+Figure 28.58 shows the timing of input capture operation.
+When input capture operation by event linking is selected, the setting of TIOR register and the corresponding input
+capture (the linkage of the TIOCnA pin (input capture pin) input with the specific operation of other channels) are not
+effective (this also applies when the event select signal is set to 1 at the same time).
+For details on the setting procedure for input capture, see section 28.3.1, (3) Input Capture Function.
+Table 28.31
+
+TGR and TIOR Used for Input Capture by ELC
+
+Channel No.
+
+Capture Destination Registers
+
+Bits in TIOR
+
+TPU0
+
+TGRA register (channel 0)
+
+IOA[3:0] bits (TIORH0)
+
+TPU1
+
+TGRA register (channel 1)
+
+IOA[3:0] bits (TIOR1)
+
+TPU2
+
+TGRA register (channel 2)
+
+IOA[3:0] bits (TIOR2)
+
+TPU3
+
+TGRA register (channel 3)
+
+IOA[3:0] bits (TIORH3)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1514 of 3240
+
+RX72N Group
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+PCLK
+
+TCNT input clock
+
+Input capture event
+select signal
+
+Event signal
+
+Figure 28.58
+
+28.11.3
+
+TCNT
+
+N
+
+N+1
+
+TGRA
+
+M
+
+N
+
+Input Capture on Input of the Event Signal
+
+Usage Notes on Operation on Input of the Event Signal
+
+The followings are the notes on using the TPU for event link operations.
+
+(1)
+
+Start Counting
+
+When writing to the TSTRA.CSTn bit (the timer start register) and a counting start are in contention, writing to the CSTn
+bit does not proceed since setting of the CSTn bit to 1 in response to the event takes priority.
+Figure 28.59 shows the timing in this case.
+Furthermore, even when a counting start due to the event link is selected, CPU writing to the TSTRA.CSTn bit proceeds
+if the event signal is low.
+
+Write to the CST bit by CPU
+
+PCLK
+
+Count start event
+select signal
+
+Event signal
+
+CST bit
+
+Figure 28.59
+
+Conflict between Writing to the CSTn Bit and Counting Start
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1515 of 3240
+
+RX72N Group
+
+(2)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Restart Counting
+
+When a TCNTn counter (the timer count register) write cycle and a counting restart are in contention, writing to TCNTn
+counter does not proceed since the counter value initialization in response to the counting restart takes priority.
+Figure 28.60 shows the timing in this case.
+Furthermore, even when a counting restart due to the event link is selected, CPU writing to TCNTn counter proceeds if
+the event signal is low.
+
+TCNT write by CPU
+
+PCLK
+
+Count restart event
+select signal
+Event signal
+
+TCNT
+
+Figure 28.60
+
+(3)
+
+N
+
+0000h
+
+Conflict between TCNTn Write Cycle and Counting Restart
+
+Input Capture Operation
+
+If a TGRA register (the timer general register) read/write cycle and input capture operation are in contention, operation
+proceeds as follows:
+
+(a)
+
+Conflict between TGR Read Cycle and Input Capture
+
+The internal data bus reads the data before input capture transfer.
+Figure 28.61 shows the timing in this case.
+
+TGR read by CPU
+
+PCLK
+
+Input capture event
+select signal
+Event signal
+
+TGR
+
+Internal data bus
+
+Figure 28.61
+
+N
+
+M
+
+N
+
+Conflict between TGR Read Cycle and Input Capture Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1516 of 3240
+
+RX72N Group
+
+(b)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Conflict between TGR Write Cycle and Input Capture
+
+Writing to TGRA register does not proceed since input capture takes priority.
+Figure 28.62 shows the timing in this case.
+Furthermore, even when input capture operation due to the event link is selected, CPU writing to TGR proceeds if the
+event signal is low.
+
+TGR write by CPU
+
+PCLK
+Input capture event
+select signal
+Event signal
+
+TCNT
+
+M
+
+TGR
+
+Figure 28.62
+
+M
+
+Conflict between TGR Write Cycle and Input Capture Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1517 of 3240
+
+RX72N Group
+
+28.11.4
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Notes on Output of the Event Signal
+
+The followings are the notes on output of the event signal.
+
+(1)
+
+Output of the Compare Match Event Signal
+
+When the TGR register is set to 0000h, PCLK/1 is set as the counter clock, and compare match is set as the trigger for
+clearing of the counter clock (TCRn.TPSC[2:0] = 000b), the value of the TCNT remains 0000h, and the event output
+signal will be output continuously (i.e. its level will be flat) rather than output over a single cycle.
+Figure 28.63 shows the timing for continuous output of the event output signal in response to a compare match.
+
+Write to the timer start register by CPU
+
+PCLK
+
+TSTRA.CST
+
+TCNT
+
+0000h
+
+TGR
+
+0000h
+
+Counter clear signal
+
+Compare match
+signal
+Compare match
+event output signal
+
+Figure 28.63
+
+Continuous Output of the Compare Match Event Output Signal
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1518 of 3240
+
+RX72N Group
+
+(2)
+
+28. 16-Bit Timer Pulse Unit (TPUa)
+
+Output of the Underflow Event Signal
+
+If two external clock signals' same direction edges to be phase counted are generated within two PCLK cycles in phase
+counting mode 1, with TGR being 0000h, and compare match set as the counter clear source, the TCNT counter remains
+0000h, and a compare-match event signal and an underflow event signal are output continuously to form a flat signal
+level.
+Figure 28.64 shows the timing for continuous output of the event output signal in response to underflow.
+
+Less than 2
+states
+
+Less than 2
+states
+
+PCLK
+
+TCLKA
+
+TCLKB
+
+Count-down signal
+
+Compare match
+(counter clear) signal
+
+Underflow signal
+
+TCNT
+
+0000h
+
+TGRA
+
+0000h
+
+Compare match
+event output signal
+Underflow event
+output signal
+
+Figure 28.64
+
+Continuous Output of the Underflow Event Output Signal
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1519 of 3240
+
+

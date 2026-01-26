@@ -1,0 +1,138 @@
+RX72N Group
+
+12. Battery Backup Function
+
+12.
+
+Battery Backup Function
+
+12.1
+
+Overview
+
+When the voltage at the VCC pin is dropped, power can be supplied to the realtime clock (RTC) and sub-clock oscillator
+from the dedicated battery backup power pin (VBATT pin). When the voltage drop at the VCC pin is detected,
+connection to power is switched to the VBATT pin.
+Figure 12.1 shows the configuration of the battery backup function.
+
+Voltage drop detection
+VCC
+
+VBATT
+
+XCIN
+
+XCOUT
+
+Sub-clock oscillator
+
+Switch control
+
+RTC
+
+Pins RTCIC0 to RTCIC2
+Backup power area
+
+Figure 12.1
+
+Configuration of Battery Backup Function
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 450 of 3240
+
+RX72N Group
+
+12.2
+
+12. Battery Backup Function
+
+Operation
+
+12.2.1
+
+Battery Backup Function
+
+When the voltage at the VCC pin is dropped, power can be supplied to the RTC and sub-clock oscillator from the
+VBATT pin. When the power supply reduction from the VCC pin is detected, connection to power is switched to the
+power supply from the VBATT pin. The power supply from the VCC pin is resumed when the voltage at the VCC pin
+exceeds VDETBATT while the RTC is operating on the power supply from the VBATT pin. This power supply change
+does not affect the RTC operation. When the voltage level at the VBATT pin voltage falls below the operation
+guaranteed voltage, operation of the RTC cannot be guaranteed.
+In addition, the battery backup function should be used after the voltage monitoring 0 reset is enabled.
+The power is supplied to the following modules from the VBATT pin.
+ RTC
+ Sub-clock oscillator (including XCIN and XCOUT pins)
+ P30, P31, and P32 input pins
+
+Figure 12.2 shows the operation for switching to the battery backup function.
+
+Power supply from VCC pin is halted
+
+LVD0 detection level
+
+VCC
+VCC pin voltage
+VBATT pin voltage
+
+VDETBATT*1
+VBATT
+Reset by LVD0
+
+VCC
+
+Automatically switched
+
+Voltage of backup
+power area
+VBATT
+
+Power supply from
+VCC pin
+
+Power supply from
+VBATT pin
+
+Power supply from
+VCC pin
+
+Note:
+For details on electrical characteristics, refer to section 63, Electrical Characteristics.
+Note 1. VDETBATT indicates the judgment level of the power supply change between the VCC pin and the VBATT pin.
+
+Figure 12.2
+
+Operation for Switching to Battery Backup Function
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 451 of 3240
+
+RX72N Group
+
+12.3
+
+12. Battery Backup Function
+
+Usage Notes
+
+1. When the VBATT pin is not in use, connect the VBATT pin to the VCC pin.
+2. When the voltage level at the VBATT is lower than the guaranteed operation range, operation of the sub-clock and
+RTC cannot be guaranteed. The RTC must be initialized to restart power supply after the VBATT pin falls below
+the operation guaranteed voltage.
+3. Writing to the RTC registers should be performed while power is being supplied from the VCC pin.
+4. When VCC is higher than VDETBATT, the VCC pin and VBATT pin are not connected by means of circuitry.
+When VCC is lower than VDETBATT and the switch is connected to the VBATT pin, if the voltage at the VBATT
+pin becomes lower than (the range from VCC to 0.6 V), current may flow into the VBATT pin through the parasitic
+diode between the VCC and VBATT pins.
+5. During RTC operation using the voltage from the VBATT pin, I/O ports (P30, P31, and P32) within the backup
+power supply area can only be used as time capture event input pins for the RTC.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 452 of 3240
+
+

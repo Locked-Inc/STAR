@@ -1,0 +1,694 @@
+RX72N Group
+
+59. Data Operation Circuit (DOC)
+
+59.
+
+Data Operation Circuit (DOC)
+
+59.1
+
+Overview
+
+The data operation circuit (DOC) is used to compare, add, or subtract 16-bit values.
+Table 59.1 lists the specifications of the DOC and Figure 59.1 is a block diagram of the DOC.
+An interrupt can be generated if the result of 16-bit comparison meets one of the set interrupt conditions.
+Table 59.1
+
+DOC Specifications
+
+Item
+
+Description
+
+Data operation function
+
+16-bit data comparison, addition, and subtraction
+
+Lower power consumption function
+
+The DOC can be placed in a module-stop state.
+
+Interrupts
+
+ The result of data comparison meets the detection condition.
+ The result of data addition is greater than FFFFh, which is an overflow.
+ The result of data subtraction is less than 0000h, which is an underflow.
+
+Event link function (output)
+
+ The result of data comparison meets the detection condition.
+ The result of data addition is greater than FFFFh, which is an overflow.
+ The result of data subtraction is less than 0000h, which is an underflow.
+
+Event output
+
+Internal peripheral bus
+
+DODIR
+Operation
+circuit
+
+Interrupt
+control circuit
+
+Interrupt requests
+
+DODSR
+
+OMS[1:0]
+
+DOPCIE
+
+DOCR
+
+DOCR: DOC control register
+DODIR: DOC data input register
+DODSR: DOC data setting register
+
+Figure 59.1
+
+DOC Block Diagram
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2970 of 3240
+
+RX72N Group
+
+59.2
+
+59. Data Operation Circuit (DOC)
+
+Register Descriptions
+
+59.2.1
+
+DOC Control Register (DOCR)
+
+Address(es): DOC.DOCR 0008 B080h
+b7
+—
+Value after reset:
+
+b6
+
+b5
+
+b4
+
+DOPCF DOPCF DOPCI
+CL
+E
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+—
+
+DCSEL
+
+0
+
+0
+
+b1
+
+b0
+
+OMS[1:0]
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+OMS[1:0]
+
+Operating Mode Select
+
+b1 b0
+
+R/W
+
+b2
+
+DCSEL
+
+Detection Condition Select *1
+
+0: ‘Not equal to’ is to be detected.
+1: ‘Equal to’ is to be detected.
+
+R/W
+
+b3
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b4
+
+DOPCIE
+
+Data Operation Circuit
+Interrupt Enable
+
+0: Interrupt disabled
+1: Interrupt enabled
+
+R/W
+
+b5
+
+DOPCF
+
+Data Operation Result Flag
+
+Indicates the result of an operation.
+
+R
+
+b6
+
+DOPCFCL
+
+Data Operation Result Clear
+
+0: Retain the value of the DOPCF flag.
+1: Clears the DOPCF flag.
+
+R/W
+
+b7
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+0
+0
+1
+1
+
+0: Data comparison mode
+1: Data addition mode
+0: Data subtraction mode
+1: Setting prohibited
+
+Note 1. Valid only when data comparison mode is selected.
+
+The DOCR register specifies the operation of DOC, or enabling or disabling of the interrupt.
+OMS[1:0] Bits (Operating Mode Select)
+These bits select the operating mode of the DOC.
+DCSEL Bit (Detection Condition Select)
+This bit is valid only when data comparison mode is selected.
+This bit selects the condition for detection in data comparison mode.
+DOPCIE Bit (Data Operation Circuit Interrupt Enable)
+Setting this bit to 1 enables interrupts from the DOC.
+DOPCF Flag (Data Operation Result Flag)
+[Setting conditions]
+ The condition selected by the DCSEL bit is met
+ A result of data addition is greater than FFFFh
+ A result of data subtraction is less than 0000h
+[Clearing condition]
+ Writing 1 to the DOPCFCL bit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2971 of 3240
+
+RX72N Group
+
+59. Data Operation Circuit (DOC)
+
+DOPCFCL Bit (Data Operation Result Clear)
+Writing 1 to this bit clears the DOPCF flag.
+This bit is read as 0.
+
+59.2.2
+
+DOC Data Input Register (DODIR)
+
+Address(es): DOC.DODIR 0008 B082h
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The DODIR register is a readable and writable register that holds values for use in operations.
+
+59.2.3
+
+DOC Data Setting Register (DODSR)
+
+Address(es): DOC.DODSR 0008 B084h
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The DODSR register is a readable and writable register that holds values for use in comparison or the results of other
+operations.
+In data comparison mode, store the standard value for use in comparison in this register.
+In data addition or data subtraction mode, this register holds the results of operations.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2972 of 3240
+
+RX72N Group
+
+59.3
+
+59. Data Operation Circuit (DOC)
+
+Operation
+
+59.3.1
+
+Data Comparison Mode
+
+Figure 59.2 shows an example of the steps involved in data comparison mode operation by the DOC.
+An example of operation when DCSEL is set to 0 (‘not equal to’ is to be detected as the result of data comparison) is
+shown below.
+(1)
+(2)
+(3)
+(4)
+(5)
+
+Writing 00b to the DOCR.OMS[1:0] bits places the DOC in the data comparison mode.
+Specify the standard value for comparison in the DODSR register.
+Write the value for comparison in the DODIR register.
+Write all values for use in comparison to the DODIR register.
+If the value written to the DODIR register is not equal to the value set in the DODSR register, the DOCR.DOPCF
+flag becomes 1. If the DOCR.DOPCIE bit is 1, a data operation circuit interrupt is also issued.
+
+DOCR.OMS[1:0] bits
+
+xxb
+
+00b
+xxxxh
+
+DODSR register
+
+AAAAh
+xxxxh
+
+DODIR register
+
+AAAAh
+
+5555h
+
+AAAAh
+
+Write 1 to
+DOCR.DOPCFCL bit
+DOCR.DOPCF flag
+
+(1)
+
+Figure 59.2
+
+(2)
+
+(3)
+
+(4)
+
+(5)
+
+Example of Operation in Data Comparison Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2973 of 3240
+
+RX72N Group
+
+59.3.2
+
+59. Data Operation Circuit (DOC)
+
+Data Addition Mode
+
+Figure 59.3 shows an example of the steps involved in data addition mode operation by the DOC.
+(1)
+(2)
+(3)
+(4)
+(5)
+
+Writing 01b to the DOCR.OMS[1:0] bits selects data addition mode.
+Set the initial value in the DODSR register.
+Write the value for addition in the DODIR register. The result of the operation is stored in DODSR.
+Write all values for use in addition to the DODIR register.
+If the result of the operation is greater than FFFFh, the DOCR.DOPCF flag becomes 1. If the DOCR.DOPCIE bit is
+1, a data operation circuit interrupt is also issued.
+
+DOCR.OMS[1:0] bits
+
+xxb
+
+01b
+xxxxh
+
+DODSR register
+DODIR register
+
+FFF0h
+
+FFF4h
+
+FFFAh
+
+0002h
+
+xxxxh
+
+0004h
+
+0006h
+
+0008h
+Write 1 to
+DOCR.DOPCFCL bit
+
+DOCR.DOPCF flag
+
+(1)
+
+Figure 59.3
+
+(2)
+
+(3)
+
+(4)
+
+(5)
+
+Example of Operation in Data Addition Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2974 of 3240
+
+RX72N Group
+
+59.3.3
+
+59. Data Operation Circuit (DOC)
+
+Data Subtraction Mode
+
+Figure 59.4 shows an example of the steps involved in data subtraction mode operation by the DOC.
+(1)
+(2)
+(3)
+(4)
+(5)
+
+Writing 10b to the DOCR.OMS[1:0] bits selects data subtraction mode.
+Set the initial value in the DODSR register.
+Write the value for subtraction in the DODIR register. The result of the operation is stored in DODSR.
+Write all values for use in subtraction to the DODIR register.
+If the result of the operation is less than 0000h, the DOCR.DOPCF flag becomes 1. If the DOCR.DOPCIE bit is 1, a
+data operation circuit interrupt is also issued.
+
+DOCR.OMS[1:0] bits
+
+xxb
+
+10b
+
+DODSR register
+
+xxxxh
+
+000Fh
+
+000Bh
+
+0005h
+
+FFFDh
+
+xxxxh
+
+0004h
+
+0006h
+
+0008h
+
+DODIR register
+
+Write 1 to
+DOCR.DOPCFCL bit
+DOCR.DOPCF flag
+
+(1)
+
+Figure 59.4
+
+59.4
+
+(2)
+
+(3)
+
+(4)
+
+(5)
+
+Example of Operation in Data Subtraction Mode
+
+Interrupt Requests
+
+The data operation circuit interrupt (DOPCI) is the interrupt request generated by the DOC. The DOCR.DOPCF flag
+becomes 1 when the interrupt source condition is satisfied.
+Table 59.2 lists the details of the interrupt request.
+Table 59.2
+
+Interrupt Request from DOC
+
+Interrupt Request
+
+Data Operation Result Flag
+
+Interrupt Generation Timing
+
+Data operation circuit
+interrupt (DOPCI)
+
+DOPCF
+
+ The result of data comparison meets the detection condition.
+ The result of data addition is greater than FFFFh.
+ The result of data subtraction is less than 0000h.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2975 of 3240
+
+RX72N Group
+
+59.5
+
+59. Data Operation Circuit (DOC)
+
+Event Link Output
+
+The DOC outputs event signals for the event link controller (ELC) under the following conditions, and these can be used
+to initiate operations by other modules selected in advance.
+ The result of data comparison meets the detection condition.
+ The result of data addition is greater than FFFFh.
+ The result of data subtraction is less than 0000h.
+
+59.5.1
+
+Interrupt Handling and Event Linking
+
+The DOC has a bit to enable or disable interrupts. When an interrupt source condition is satisfied while the interrupt is
+enabled, the interrupt request signal is issued to the CPU.
+In contrast, an event link output signal is sent to other modules as an event signal via the ELC when an interrupt source is
+generated, regardless of the setting of the corresponding interrupt enable bit.
+
+59.6
+59.6.1
+
+Usage Note
+Module Stop Function Setting
+
+Operation of the DOC can be enabled or disabled by setting the MSTPB6 bit in module stop control register B
+(MSTPCRB). The DOC is initially disabled after a reset. Register access is enabled by releasing the module stop state.
+For details, refer to section 11, Low Power Consumption.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2976 of 3240
+
+

@@ -1,0 +1,19045 @@
+RX72N Group
+
+51.
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic LCD Controller (GLCDC)
+
+The multi-function Graphic LCD Controller (GLCDC) supports various color formats and LCD panels. The GLCDC
+supports the following functions:
+ Extended bus master function for accessing graphics data
+ Hardware compositing of three graphic screens (single color background, graphic 1, and graphic 2)
+ Supports various 32- and 16-bpp (bits per pixel) color formats and 8-, 4-, and 1-bit CLUT (color look-up table)
+color formats
+ Digital RGB interface
+
+Figure 51.1 shows the block diagram of the GLCDC.
+
+Output control block
+
+Internal main bus 2
+
+Background
+generating block
+Video timing
+generating
+block
+
+Registers
+
+VS, HS,
+VE, HE
+
+Graphics data
+interface block
+
+Alpha blending
+block
+
+Image
+data
+Update
+control
+
+Graphic 2
+
+Graphic 1
+
+TCON block
+
+VS, HS,
+VE, HE
+
+Graphics data
+interface block
+
+Alpha blending
+block
+
+Image
+data
+
+Registers
+
+Data format
+conversion
+block
+VS, HS,
+VE, HE
+
+Image
+data
+
+Registers
+
+Vertical/horizontal
+synchronization
+signals
+LCD_TCON0
+LCD_TCON1
+LCD_TCON2
+LCD_TCON3
+LCD_DATA23
+:
+LCD_DATA0
+
+Panel
+adjustment
+block
+
+Registers
+
+Internal peripheral bus
+
+Registers
+
+Registers
+System controller
+
+LCD_EXTCLK
+PLL clock
+
+Selector and
+divider block
+Clock generator
+
+Figure 51.1
+
+GR2UF
+GR1UF
+VPOS
+
+PXCLK (pixel clock)
+LCD_CLK
+(panel clock)
+
+GLCDC Block Diagram
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2654 of 3240
+
+RX72N Group
+
+51.1
+
+51. Graphic LCD Controller (GLCDC)
+
+Functional Overview
+
+Table 51.1 lists a functional overview of GLCDC.
+Table 51.1
+
+Functional Overview of GLCDC (1/2)
+
+Parameter
+
+Graphics
+
+Function
+
+Graphic screens
+
+Single color background (lowest layer) and two graphic screens
+ Graphic screens can be alpha-blended with the lower-layer screen
+
+Color format
+
+RGB(-888) progressive format (–: 8 bits, R: 8 bits, G: 8 bits, B: 8 bits; 32 bits in total)
+ARGB(8888) progressive format (A: 8 bits, R: 8 bits, G: 8 bits, B: 8 bits; 32 bits in total)
+RGB(565) progressive format (R: 5 bits, G: 6 bits, B: 5 bits; 16 bits in total)
+ARGB(1555) progressive format
+(A: CLUT 1 bit, R: 5 bits, G: 5 bits, B: 5 bits; 16 bits in total)
+ARGB(4444) progressive format (A: 4 bits, R: 4 bits, G: 4 bits, B: 4 bits; 16 bits in total)
+CLUT(8) progressive format (CLUT index: 8 bits (256 entries))
+CLUT(4) progressive format (CLUT index: 4 bits (16 entries))
+CLUT(1) progressive format (CLUT index: 1 bit (2 entries))
+
+CLUT memory
+
+256 words × 32 bits × 2 sets for each graphic screen
+Data format: ARGB(8888)
+
+Frame buffer control
+
+The following parameters can be set for the frame buffer:
+ Base address:
+Start address of the frame buffer, aligned with a 64-byte
+boundary
+ Macro line offset:
+Offset address between macro lines, aligned with a 64byte boundary
+ Number of data transfers: Number of data transfers per macro line
+ Number of macro lines:
+Number of macro lines per frame
+
+Alpha blending
+
+Rectangular alpha blending (blend ratio: 0 to 255)
+Per-pixel alpha blending (blend ratio: 0 to 255)
+RGB reference chroma key (replaced with the specified color when the object color
+matches the preselected color)
+
+Screen format
+
+Data format
+conversion
+
+Total vertical lines: Up to 1024 lines
+Active vertical lines: 16 to 1020 lines (resolution: 1 line)
+Vertical front porch: at least 2 lines
+Vertical back porch: at least 1 line
+Vertical sync pulse width: fixed to 1 line
+Total horizontal pixels: Up to 1024 pixels
+Active horizontal pixels: 16 to 1016 pixels (resolution: 2 pixels)
+Horizontal front porch: at least 3 pixels
+Horizontal back porch: at least 1 pixel
+Horizontal sync pulse width: fixed to 4 pixels
+Display screen size: from 16 pixels × 16 lines to 1016 pixels × 1020 lines
+Output data format
+
+Four data formats
+ RGB(888) (parallel 24 bits)
+ RGB(666) (parallel 18 bits)
+ RGB(565) (parallel 16 bits)
+ RGB(888) (serial 8 bits); panel clock period is four times the pixel clock period
+Programmable bit endian and B/R signal order
+
+Dither processing
+
+Rounds 10-bit color depth (output from panel adjustment block) to 8-, 6-, or 5-bit color
+depth (output data format)
+Supports the following three modes:
+ Truncate mode
+ Round-off mode
+ 2×2 pattern dither mode
+
+Synchronization signal
+output
+
+Up to four synchronization signals can be output:
+ Vertical synchronization signal
+ Horizontal synchronization signal
+ Vertical display enable/data enable signal
+ Horizontal display enable/data enable signal
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2655 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+Table 51.1
+
+Functional Overview of GLCDC (2/2)
+
+Parameter
+
+Function
+
+Panel
+adjustment
+processing
+
+Brightness and contrast
+
+10-bit internal processing; the sequence of this processing and gamma correction can
+be swapped.
+ Brightness: DC bias adjustment range: from –512 (LSB) to +511 (LSB)
+ Contrast: gain adjustment range: from 0 to 2 times (from 0/128 to 255/128)
+
+Gamma correction
+
+10-bit internal processing; the input values are divided into 16 areas and are corrected
+for linearity in the respective areas.
+Gain adjustment range in every area: from 0 to 2 times (from 0/1024 to 2047/1024)
+
+Clock generator
+
+Generates the pixel clock (PXCLK) and the panel clock (LCD_CLK).
+ The maximum frequency of the LCD_CLK is 30 MHz.
+ The frequency of the PXCLK is the same (parallel RGB) as or 1/4 (serial RGB) of the
+LCD_CLK.
+ The maximum frequency of the PXCLK is 1/2 of the PCLKA.
+
+Interrupts
+
+ Specified line detection interrupt (VPOS)
+ Graphic 1 underflow interrupt (GR1UF)
+ Graphic 2 underflow interrupt (GR2UF)
+
+Table 51.2
+
+GLCDC I/O Pins
+
+Pin name
+
+I/O
+
+Function
+
+LCD_EXTCLK
+
+Input
+
+Panel clock source input pin
+
+LCD_CLK
+
+Output
+
+Panel clock output pin
+
+LCD_DATA23 to LCD_DATA0
+
+Output
+
+LCD signal output pins
+ RGB(888) signal
+R/G/B: 8 bits each
+ RGB(666) signal
+R/G/B: 6 bits each
+ RGB(565) signal
+R/B: 5 bits each, G: 6 bits
+ Serial RGB signal R/G/B/–: 8 bits each
+
+LCD_TCON3
+
+Output
+
+Synchronization signal (TCON3) output pin
+
+LCD_TCON2
+
+Output
+
+Synchronization signal (TCON2) output pin
+
+LCD_TCON1
+
+Output
+
+Synchronization signal (TCON1) output pin
+
+LCD_TCON0
+
+Output
+
+Synchronization signal (TCON0) output pin
+
+51.1.1
+
+GLCDC Structure
+
+Figure 51.2 shows the structure of the GLCDC.
+The GLCDC includes the following blocks:
+ Background generating block:
+Generates the background screen (including the blanking interval), specifies the background color,
+and generates the synchronization signals for controlling the screens.
+ Graphics data interface blocks (2 blocks):
+Convert the graphics data read from the frame buffer into ARGB(8888) data for internal
+processing, and perform asynchronous data transfer from peripheral module clock (PCLKA)
+domain to pixel clock (PXCLK) domain.
+ Alpha blending blocks (2 blocks):
+Combine graphics data with the lower-layer screen and perform alpha blending based on the
+register settings and the alpha values in the current graphics data.
+ TCON block:
+
+Generates the vertical and horizontal synchronization and enable signals suited for the
+specifications of the connected LCD panel, from the internal vertical and horizontal
+synchronization signals.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2656 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+ Data format conversion block:
+Convert the internal data format into the specific data format suited for the specifications of the
+LCD panel. Can perform dithering depending on the color depth of the output data format.
+ Panel adjustment block:
+Adjust brightness and contrast, and performs gamma correction suited for the characteristics of the
+connected LCD panel. The sequence of gamma correction and brightness/contrast adjustment can
+be reversed.
+ Clock generator block:
+Generates the pixel clock (PXCLK) and the panel clock (LCD_CLK) from either LCD_EXTCLK
+or PLL clock.
+
+Output control block
+TCON block
+
+Video timing
+generating
+block
+
+Registers
+
+VS, HS,
+VE, HE
+
+Image
+data
+
+Access control
+
+Data buffer
+
+Data buffer
+
+CLUT access
+Extend color depth
+
+CLUT access
+Extend color depth
+
+Clock domain
+crossing
+PCLKA to PXCLK
+
+Clock domain
+crossing
+PCLKA to PXCLK
+
+Alpha blending block
+Screen Composi
+definition
+tion
+
+Update
+control
+
+Registers
+
+VS, HS,
+VE, HE
+
+Image
+data
+
+Data format
+conversion block
+
+Alpha blending block
+Screen Composi
+definition
+tion
+
+Registers
+
+VS, HS,
+VE, HE
+
+Image
+data
+
+Dither
+
+Format
+
+Gamma
+correction
+
+Background
+generating block
+
+Access control
+
+Graphics data
+interface block
+
+Brightness/
+contrast
+
+PCLKA
+
+Graphics data
+interface block
+
+Signal
+Signal
+generation selection
+
+Graphic 2
+
+Graphic 1
+
+Internal main bus 2
+
+Panel adjustment block
+
+Vertical/horizontal
+synchronization
+signals
+LCD_TCON0
+LCD_TCON1
+LCD_TCON2
+LCD_TCON3
+LCD_CLK
+LCD_DATA23
+:
+LCD_DATA0
+
+PXCLK
+
+Registers
+
+Internal peripheral bus
+PCLKA
+Registers
+
+Registers
+System controller
+
+LCD_EXTCLK
+PLL clock
+
+Selector and
+divider block
+Clock generator
+
+Figure 51.2
+
+GR2UF
+GR1UF
+VPOS
+
+PXCLK (pixel clock)
+LCD_CLK
+(panel clock)
+
+GLCDC Structure
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2657 of 3240
+
+RX72N Group
+
+51.1.2
+
+51. Graphic LCD Controller (GLCDC)
+
+Screen Format
+
+Figure 51.3 shows the screen format overview of the GLCDC.
+
+Max. 1024 pixels
+HE
+Reference point of
+background generation
+HS
+
+4 pixels
+
+VS
+
+VE
+
+1 to 15 pixels
+
+Min. 1 pixel
+
+Min. 2 pixels
+
+1H
+
+1 to 15H
+
+Whole control screen
+Reference point other than background
+
+16 to 1016 pixels, 2 pixels unit
+
+Min. 1H
+
+Min.128 pixels required for gamma correction pre-processing
+
+Graphic 1, 2 screen
+(inside background screen)
+
+16 to 1020H
+
+16 to 1020H
+
+Max. 1024H
+
+16 to 1016 pixels, 2 pixels unit
+
+Min. 0H
+
+Min. 1H
+
+Figure 51.3
+
+Min. 0H
+
+Background screen
+
+Min. 0 pixels
+
+Min. 0 pixels
+
+Transition timing of VS signal is the same as HS assertion.
+
+Screen Format
+
+The background generating block generates the reference timing signals for operations in GLCDC. The graphics data
+interface blocks, alpha blending blocks, panel adjustment block, data format conversion block, and TCON block operate
+based on the synchronization and enable signals, which are sequentially propagated from the background generating
+block.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2658 of 3240
+
+RX72N Group
+
+51.1.3
+
+51. Graphic LCD Controller (GLCDC)
+
+Frame Buffer Format
+
+Figure 51.4 shows an example of the frame buffer settings when macro lines are not in use (1 macro line = 1 line).
+
+GRnFLM2
+
+Frame buffer
+Invalid data
+
+GRnFLM3.LNOFF[15:0]
+GRnFLM5.LNNUM[10:0] + 1
+
+GRnAB3.GRCHW[10:0]
+
+GRnAB2.GRCVW[10:0]
+
+Display area
+
+GRnFLM5.DATANUM[15:0] + 1
+
+Figure 51.4
+
+Example of Frame Buffer Settings When Macro Lines are not in Use
+
+The GLCDC reads the frame buffer in 64-byte units, so set the GRnFLM2 register and the LNOFF[10:0] bits to
+multiples of 64.
+The width and height of the frame buffer should be set to at least the numbers obtained by (DATANUM[15:0] + 1) × 64
+and LNNUM[10:0] + 1, respectively.
+The following is an example of settings when the frame buffer size is 1024 pixels × 512 lines, the active display size is
+480 pixels × 272 lines, and the color format is CLUT(8).
+LNOFF[15:0] = 1024 × 1 = 1024 = 0400h
+DATANUM[15:0] = round(480 × 1 ÷ 64) – 1 = 7 = 0007h
+LNNUM[10:0] = 272 – 1 = 271 = 10Fh
+GRCHW[10:0] = 480 = 1E0h
+GRCVW[10:0] = 272 = 110h
+In this case, data for 512 pixels are read from the frame buffer per line. The data for 32 pixels (invalid data) which are
+beyond the value set in the GRCHW[10:0] bits are discarded.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2659 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+Figure 51.5 shows an example of the frame buffer settings when macro lines are in use (1 macro line = multiple lines).
+
+Frame buffer
+
+Invalid data
+
+GRnFLM2
+Macro line 0
+
+GRnFLM3.LNOFF[15:0]
+
+GRnFLM5.DATANUM[15:0] + 1
+GRnAB2.GRCVW[10:0]
+
+Macro line 1
+
+Display area
+
+Macro line m
+
+GRnAB3.GRCHW[10:0]
+
+Figure 51.5
+
+GRnFLM5.LNNUM[10:0] = m
+
+Example of Frame Buffer Settings When Macro Lines are in Use
+
+When macro lines are in use, addresses from line to line should be consecutive because there are no registers for
+specifying the offset between lines. There is no change in terms of the GLCDC reading the frame buffer in 64-byte units
+and the data which are beyond the value set in the GRCHW[10:0] bits being discarded.
+Set the frame buffer width to the smallest value that is a multiple of 64 and greater than or equal to the active display
+width.
+
+Table 51.3 lists setting examples when the active display size is 480 pixels × 272 lines and the color format is CLUT(8).
+Set the GRCHW[10:0] bits to 480 (= 1E0h) and the GRCVW[10:0] bits to 272 (= 110h) in every example below.
+Table 51.3
+
+Example of Frame Buffer Settings (480 pixels × 272 lines and 8 bpp)
+
+Number of lines
+per macro line
+
+Number of macro
+lines per frame
+
+Setting of the
+LNNUM[10:0] bits
+
+Data size
+per line
+
+Data size per
+macro line
+
+Setting of the
+LNOFF[15:0] bits
+
+Setting of the
+DATANUM[15:0] bits
+
+1
+
+272
+
+10Fh
+
+512 bytes
+
+512 bytes
+
+Depend on the
+frame buffer width
+
+0007h
+
+2
+
+136
+
+087h
+
+1024 bytes
+
+0400h
+
+000Fh
+
+4
+
+68
+
+043h
+
+2048 bytes
+
+0800h
+
+001Fh
+
+8
+
+34
+
+021h
+
+4096 bytes
+
+1000h
+
+003Fh
+
+16
+
+17
+
+010h
+
+8192 bytes
+
+2000h
+
+007Fh
+
+17
+
+16
+
+00Fh
+
+8704 bytes
+
+2200h
+
+0087h
+
+34
+
+8
+
+007h
+
+17408 bytes
+
+4400h
+
+010Fh
+
+272
+
+1
+
+000h
+
+139264 bytes
+
+0000h
+
+087Fh
+
+By setting the LNOFF[15:0] bits to 0000h, the same macro line can be repeatedly displayed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2660 of 3240
+
+RX72N Group
+
+51.1.4
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphics and Color Look-Up Table (CLUT) Data Formats
+
+The GLCDC has three display screens including a background screen.
+Frame data for the background screen is RGB(888) format graphics data stored in the register.
+Frame data for the other two screens, graphic 1 and 2, are stored in the memory connected via the internal main bus 2 as
+32- or 16-bpp direct color or 8-, 4-, or 1-bpp index color graphics data. Frame data for each screen is read by the graphics
+data interface block, and extended/converted to ARGB(8888) data for compositing and blending.
+Figure 51.6 shows the frame data color formats.
+
+Address
+OFSM.MDE[2:0] = 111b
+
++3
+
++2
+
++1
+
+OFSM.MDE[2:0] = 000b
+
++0
+
++1
+
++2
+
+b31
+
+b24 b23
+
++0
++3
+
+b16 b15
+
+b8 b7
+
+b0
+
+ARGB(8888) (32 bpp)
+
+A[7:0]
+
+R[7:0]
+
+G[7:0]
+
+B[7:0]
+
+RGB(888) (32 bpp)
+
+Unused data 8 bits
+
+R[7:0]
+
+G[7:0]
+
+B[7:0]
+
+(n+1)th pixel
+
+ARGB(4444) (16 bpp)
+
+A[7:4]
+
+R[7:4]
+
+nth pixel
+
+G[7:4]
+
+B[7:4]
+
+A[7:4]
+
+R[7:4]
+
+(n+1)th pixel
+
+ARGB(1555) (16 bpp)
+
+R[7:3]
+
+CLUT(8) (8 bpp)
+
+CLUT(4) (4 bpp)
+
+B[7:3]
+
+R[7:3]
+
+G[7:3]
+
+CLUT[7]
+
+(n+1)th pixel
+
+R[7:3]
+
+RGB(565) (16 bpp)
+
+B[7:4]
+
+nth pixel
+
+G[7:3]
+
+CLUT[7]
+
+G[7:4]
+
+G[7:2]
+
+B[7:3]
+
+B[7:3]
+
+nth pixel
+
+R[7:3]
+
+G[7:2]
+
+B[7:3]
+
+(n+3)th pixel
+
+(n+2)th pixel
+
+(n+1)th pixel
+
+nth pixel
+
+CLUT[7:0]
+
+CLUT[7:0]
+
+CLUT[7:0]
+
+CLUT[7:0]
+
+(n+7)th pixel
+
+(n+6)th pixel
+
+CLUT[3:0]
+
+CLUT[3:0]
+
+(n+30)th pixel
+(n+31)th pixel
+
+CLUT[3:0]
+
+CLUT[3:0]
+
+CLUT[3:0]
+
+CLUT[3:0]
+
+(n+1)th pixel
+
+nth pixel
+
+CLUT[3:0]
+
+CLUT[3:0]
+nth pixel
+(n+1)th pixel
+
+CLUT(1) (1 bpp)
+CLUT[0]
+
+Figure 51.6
+
+CLUT[0]
+
+Frame Data Color Formats
+
+The A value (alpha value) represents the ratio of combining (blending) pixel data of current graphic screens with the
+lower-layer graphic screen. The blending process is performed in accordance with the equations given in section
+51.1.8, Graphics Data Interfaces. The CLUT value represents the address of the CLUT memory (CLUT 0 or 1 is
+selected by the registers), and the data in the CLUT memory is ARGB(8888) (32 bpp) format data. Addresses 01h/00h
+are accessed in CLUT(1) format, 0Fh to 00h in CLUT(4), and FFh to 00h in CLUT(8). Addresses 80h/00h are accessed
+in ARGB(1555) format.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2661 of 3240
+
+RX72N Group
+
+51.1.5
+
+51. Graphic LCD Controller (GLCDC)
+
+Output Control (Data Format)
+
+The GLCDC can output data in accordance with the following formats:
+ Data formats
+
+Parallel: RGB(888), RGB(666), and RGB(565)
+Serial: RGB(888)
+Lower bits are processed in one of the following modes when 10-bit values are rounded to
+8-, 6-, or 5- bit values:
+• Truncate mode
+• Round-off mode
+• 2×2 pattern dither processing + truncate mode
+
+ Pixel order
+
+R-G-B or B-G-R
+
+ Scan direction for serial RGB(888)
+
+Forward scan or reverse scan
+
+ Data output delay of serial RGB(888)
+
+0 to 3 clock cycles
+
+ Pin assignment
+
+Little endian or big endian
+
+For details on dither processing, refer to section 51.2.47, Panel Dither Control Register (PANELDTHA).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2662 of 3240
+
+RX72N Group
+
+(1)
+
+51. Graphic LCD Controller (GLCDC)
+
+Bit Assignment of LCD Signals for Parallel RGB(888) Format
+
+Table 51.4 shows RGB signal inputs assigned to the LCD signal outputs for the parallel RGB(888) output format.
+Table 51.4
+
+Bit Assignment of RGB Signal Inputs for Parallel RGB(888) Format
+Pixel Order
+
+Note:
+
+R-G-B
+
+B-G-R
+
+Pin Assignment
+
+Little Endian
+
+Big Endian
+
+Little Endian
+
+Big Endian
+
+LCD_DATA23
+
+R[7]
+
+R[0]
+
+B[7]
+
+B[0]
+
+LCD_DATA22
+
+R[6]
+
+R[1]
+
+B[6]
+
+B[1]
+
+LCD_DATA21
+
+R[5]
+
+R[2]
+
+B[5]
+
+B[2]
+
+LCD_DATA20
+
+R[4]
+
+R[3]
+
+B[4]
+
+B[3]
+
+LCD_DATA19
+
+R[3]
+
+R[4]
+
+B[3]
+
+B[4]
+
+LCD_DATA18
+
+R[2]
+
+R[5]
+
+B[2]
+
+B[5]
+
+LCD_DATA17
+
+R[1]
+
+R[6]
+
+B[1]
+
+B[6]
+
+LCD_DATA16
+
+R[0]
+
+R[7]
+
+B[0]
+
+B[7]
+
+LCD_DATA15
+
+G[7]
+
+G[0]
+
+G[7]
+
+G[0]
+
+LCD_DATA14
+
+G[6]
+
+G[1]
+
+G[6]
+
+G[1]
+
+LCD_DATA13
+
+G[5]
+
+G[2]
+
+G[5]
+
+G[2]
+
+LCD_DATA12
+
+G[4]
+
+G[3]
+
+G[4]
+
+G[3]
+
+LCD_DATA11
+
+G[3]
+
+G[4]
+
+G[3]
+
+G[4]
+
+LCD_DATA10
+
+G[2]
+
+G[5]
+
+G[2]
+
+G[5]
+
+LCD_DATA9
+
+G[1]
+
+G[6]
+
+G[1]
+
+G[6]
+
+LCD_DATA8
+
+G[0]
+
+G[7]
+
+G[0]
+
+G[7]
+
+LCD_DATA7
+
+B[7]
+
+B[0]
+
+R[7]
+
+R[0]
+
+LCD_DATA6
+
+B[6]
+
+B[1]
+
+R[6]
+
+R[1]
+
+LCD_DATA5
+
+B[5]
+
+B[2]
+
+R[5]
+
+R[2]
+
+LCD_DATA4
+
+B[4]
+
+B[3]
+
+R[4]
+
+R[3]
+
+LCD_DATA3
+
+B[3]
+
+B[4]
+
+R[3]
+
+R[4]
+
+LCD_DATA2
+
+B[2]
+
+B[5]
+
+R[2]
+
+R[5]
+
+LCD_DATA1
+
+B[1]
+
+B[6]
+
+R[1]
+
+R[6]
+
+LCD_DATA0
+
+B[0]
+
+B[7]
+
+R[0]
+
+R[7]
+
+R[7:0], G[7:0], and B[7:0] are RGB pixel data that have been internally processed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2663 of 3240
+
+RX72N Group
+
+(2)
+
+51. Graphic LCD Controller (GLCDC)
+
+Bit Assignment of LCD Signals for Parallel RGB(666) Format
+
+Table 51.5 shows RGB signal inputs assigned to the LCD signal outputs for the parallel RGB(666) output format.
+Table 51.5
+
+Bit Assignment of RGB Signal Inputs for Parallel RGB(666) Format
+Pixel Order
+
+Note:
+
+R-G-B
+
+B-G-R
+
+Pin Assignment
+
+Little Endian
+
+Big Endian
+
+Little Endian
+
+Big Endian
+
+LCD_DATA23
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA22
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA21
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA20
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA19
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA18
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA17
+
+R[7]
+
+R[2]
+
+B[7]
+
+B[2]
+
+LCD_DATA16
+
+R[6]
+
+R[3]
+
+B[6]
+
+B[3]
+
+LCD_DATA15
+
+R[5]
+
+R[4]
+
+B[5]
+
+B[4]
+
+LCD_DATA14
+
+R[4]
+
+R[5]
+
+B[4]
+
+B[5]
+
+LCD_DATA13
+
+R[3]
+
+R[6]
+
+B[3]
+
+B[6]
+
+LCD_DATA12
+
+R[2]
+
+R[7]
+
+B[2]
+
+B[7]
+
+LCD_DATA11
+
+G[7]
+
+G[2]
+
+G[7]
+
+G[2]
+
+LCD_DATA10
+
+G[6]
+
+G[3]
+
+G[6]
+
+G[3]
+
+LCD_DATA9
+
+G[5]
+
+G[4]
+
+G[5]
+
+G[4]
+
+LCD_DATA8
+
+G[4]
+
+G[5]
+
+G[4]
+
+G[5]
+
+LCD_DATA7
+
+G[3]
+
+G[6]
+
+G[3]
+
+G[6]
+
+LCD_DATA6
+
+G[2]
+
+G[7]
+
+G[2]
+
+G[7]
+
+LCD_DATA5
+
+B[7]
+
+B[2]
+
+R[7]
+
+R[2]
+
+LCD_DATA4
+
+B[6]
+
+B[3]
+
+R[6]
+
+R[3]
+
+LCD_DATA3
+
+B[5]
+
+B[4]
+
+R[5]
+
+R[4]
+
+LCD_DATA2
+
+B[4]
+
+B[5]
+
+R[4]
+
+R[5]
+
+LCD_DATA1
+
+B[3]
+
+B[6]
+
+R[3]
+
+R[6]
+
+LCD_DATA0
+
+B[2]
+
+B[7]
+
+R[2]
+
+R[7]
+
+R[7:2], G[7:2], and B[7:2] are RGB pixel data that have been internally processed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2664 of 3240
+
+RX72N Group
+
+(3)
+
+51. Graphic LCD Controller (GLCDC)
+
+Bit Assignment of LCD Signals for Parallel RGB(565) Format
+
+Table 51.6 shows RGB signal inputs assigned to the LCD signal outputs for the parallel RGB(565) output format.
+Table 51.6
+
+Bit Assignment of RGB Signal Inputs for Parallel RGB(565) Format
+Pixel Order
+
+Note:
+
+R-G-B
+
+B-G-R
+
+Pin Assignment
+
+Little Endian
+
+Big Endian
+
+Little Endian
+
+Big Endian
+
+LCD_DATA23
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA22
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA21
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA20
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA19
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA18
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA17
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA16
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+Fixed to 0
+
+LCD_DATA15
+
+R[7]
+
+R[3]
+
+B[7]
+
+B[3]
+
+LCD_DATA14
+
+R[6]
+
+R[4]
+
+B[6]
+
+B[4]
+
+LCD_DATA13
+
+R[5]
+
+R[5]
+
+B[5]
+
+B[5]
+
+LCD_DATA12
+
+R[4]
+
+R[6]
+
+B[4]
+
+B[6]
+
+LCD_DATA11
+
+R[3]
+
+R[7]
+
+B[3]
+
+B[7]
+
+LCD_DATA10
+
+G[7]
+
+G[2]
+
+G[7]
+
+G[2]
+
+LCD_DATA9
+
+G[6]
+
+G[3]
+
+G[6]
+
+G[3]
+
+LCD_DATA8
+
+G[5]
+
+G[4]
+
+G[5]
+
+G[4]
+
+LCD_DATA7
+
+G[4]
+
+G[5]
+
+G[4]
+
+G[5]
+
+LCD_DATA6
+
+G[3]
+
+G[6]
+
+G[3]
+
+G[6]
+
+LCD_DATA5
+
+G[2]
+
+G[7]
+
+G[2]
+
+G[7]
+
+LCD_DATA4
+
+B[7]
+
+B[3]
+
+R[7]
+
+R[3]
+
+LCD_DATA3
+
+B[6]
+
+B[4]
+
+R[6]
+
+R[4]
+
+LCD_DATA2
+
+B[5]
+
+B[5]
+
+R[5]
+
+R[5]
+
+LCD_DATA1
+
+B[4]
+
+B[6]
+
+R[4]
+
+R[6]
+
+LCD_DATA0
+
+B[3]
+
+B[7]
+
+R[3]
+
+R[7]
+
+R[7:3], G[7:2], and B[7:3] are RGB pixel data that have been internally processed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2665 of 3240
+
+RX72N Group
+
+(4)
+
+51. Graphic LCD Controller (GLCDC)
+
+Bit Assignment of RGB Signal Inputs for Serial RGB(888) Format
+
+Table 51.7 and Table 51.8 show RGB signal inputs assigned to the LCD signal outputs for the serial RGB(888) output
+format.
+Table 51.7
+
+Bit Assignment of RGB Signal Inputs for Serial RGB(888) Format (1)
+
+Pixel Order
+
+R-G-B
+
+Pin
+Assignment
+
+Little Endian
+
+Scan
+Direction
+
+Reverse Scan
+
+Big Endian
+Forward Scan
+
+Cycle
+
+1st
+
+2nd
+
+3rd
+
+4th
+
+1st
+
+2nd
+
+LCD_DATA23
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+:
+:
+
+:
+:
+
+1st
+
+2nd
+
+3rd
+
+4th
+
+1st
+
+2nd
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+:
+:
+0
+
+0
+
+0
+
+0
+
+Forward Scan
+
+4th
+
+:
+:
+
+0
+
+0
+
+0
+
+0
+
+3rd
+
+4th
+
+0
+
+0
+
+:
+:
+
+LCD_DATA8
+
+0
+
+LCD_DATA7
+
+Undefined
+
+B[7] G[7] R[7] R[7] G[7] B[7] Undefined
+
+Undefined
+
+B[0] G[0] R[0] R[0] G[0] B[0] Undefined
+
+LCD_DATA6
+
+Undefined
+
+B[6] G[6] R[6] R[6] G[6] B[6] Undefined
+
+Undefined
+
+B[1] G[1] R[1] R[1] G[1] B[1] Undefined
+
+LCD_DATA5
+
+Undefined
+
+B[5] GI5] R[5] R[5] GI5] B[5] Undefined
+
+Undefined
+
+B[2] G[2] R[2] R[2] G[2] B[2] Undefined
+
+LCD_DATA4
+
+Undefined
+
+B[4] G[4] R[4] R[4] G[4] B[4] Undefined
+
+Undefined
+
+B[3] G[3] R[3] R[3] G[3] B[3] Undefined
+
+LCD_DATA3
+
+Undefined
+
+B[3] G[3] R[3] R[3] G[3] B[3] Undefined
+
+Undefined
+
+B[4] G[4] R[4] R[4] G[4] B[4] Undefined
+
+LCD_DATA2
+
+Undefined
+
+B[2] G[2] R[2] R[2] G[2] B[2] Undefined
+
+Undefined
+
+B[5] G[5] R[5] R[5] G[5] B[5] Undefined
+
+LCD_DATA1
+
+Undefined
+
+B[1] G[1] R[1] R[1] G[1] B[1] Undefined
+
+Undefined
+
+B[6] G[6] R[6] R[6] G[6] B[6] Undefined
+
+LCD_DATA0
+
+Undefined
+
+B[0] G[0] R[0] R[0] G[0] B[0] Undefined
+
+Undefined
+
+B[7] G[7] R[7] R[7] G[7] B[7] Undefined
+
+Note:
+
+0
+
+Reverse Scan
+
+3rd
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+R[7:0], G[7:0], and B[7:0] are RGB pixel data that have been internally processed.
+
+Table 51.8
+
+Bit Assignment of RGB Signal Inputs for Serial RGB(888) Format (2)
+
+Pixel Order
+
+B-G-R
+
+Pin
+Assignment
+
+Little Endian
+
+Scan
+Direction
+
+Reverse Scan
+
+Big Endian
+Forward Scan
+
+Reverse Scan
+
+Forward Scan
+
+Cycle
+
+1st
+
+2nd
+
+3rd
+
+4th
+
+1st
+
+2nd
+
+3rd
+
+4th
+
+1st
+
+2nd
+
+3rd
+
+4th
+
+1st
+
+2nd
+
+3rd
+
+4th
+
+LCD_DATA23
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+:
+:
+
+:
+:
+0
+
+0
+
+0
+
+0
+
+0
+
+:
+:
+0
+
+0
+
+0
+
+:
+:
+
+LCD_DATA8
+
+0
+
+LCD_DATA7
+
+Undefined
+
+R[7] G[7] B[7] B[7] G[7] R[7] Undefined Undefined R[0] G[0] B[0] B[0] G[0] R[0] Undefined
+
+LCD_DATA6
+
+Undefined
+
+R[6] G[6] B[6] B[6] G[6] R[6] Undefined Undefined R[1] G[1] B[1] B[1] G[1] R[1] Undefined
+
+LCD_DATA5
+
+Undefined
+
+R[5] GI5] B[5] B[5] GI5] R[5] Undefined Undefined R[2] G[2] B[2] B[2] G[2] R[2] Undefined
+
+LCD_DATA4
+
+Undefined
+
+R[4] G[4] B[4] B[4] G[4] R[4] Undefined Undefined R[3] G[3] B[3] B[3] G[3] R[3] Undefined
+
+LCD_DATA3
+
+Undefined
+
+R[3] G[3] B[3] B[3] G[3] R[3] Undefined Undefined R[4] G[4] B[4] B[4] G[4] R[4] Undefined
+
+LCD_DATA2
+
+Undefined
+
+R[2] G[2] B[2] B[2] G[2] R[2] Undefined Undefined R[5] G[5] B[5] B[5] G[5] R[5] Undefined
+
+LCD_DATA1
+
+Undefined
+
+R[1] G[1] B[1] B[1] G[1] R[1] Undefined Undefined R[6] G[6] B[6] B[6] G[6] R[6] Undefined
+
+LCD_DATA0
+
+Undefined
+
+R[0] G[0] B[0] B[0] G[0] R[0] Undefined Undefined R[7] G[7] B[7] B[7] G[7] R[7] Undefined
+
+Note:
+
+0
+
+:
+:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+R[7:0], G[7:0], and B[7:0] are RGB pixel data that have been internally processed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2666 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+PXCLK
+LCD_CLK
+HE
+1st/2nd/3rd/4th data
+
+OUTSET.PHASE[1:0] = 00b (no delay)
+LCD_DATA7 to LCD_DATA0
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+r
+
+g
+
+b
+
+x
+
+r
+
+g
+
+b
+
+x
+
+r
+
+g
+
+b
+
+x
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+r
+
+g
+
+b
+
+x
+
+r
+
+g
+
+b
+
+x
+
+r
+
+g
+
+b
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+r
+
+g
+
+b
+
+x
+
+r
+
+g
+
+b
+
+x
+
+r
+
+g
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+··
+
+r
+
+g
+
+b
+
+x
+
+r
+
+g
+
+b
+
+x
+
+r
+
+OUTSET.PHASE[1:0] = 01b (1-cycle delay)
+LCD_DATA7 to LCD_DATA0
+OUTSET.PHASE[1:0] = 10b (2-cycle delay)
+LCD_DATA7 to LCD_DATA0
+OUTSET.PHASE[1:0] = 11b (3-cycle delay)
+LCD_DATA7 to LCD_DATA0
+
+This is when the OUTSET.SWAPON bit is 0 (pixel order is R-G-B) and the OUTSET.DIRSEL bit is 0 (forward scan).
+x: unused data
+
+Figure 51.7
+
+Serial RGB(888) (4× Speed) Output Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2667 of 3240
+
+RX72N Group
+
+51.1.6
+
+51. Graphic LCD Controller (GLCDC)
+
+Output Control (Panel Adjustment Process)
+
+The panel adjustment includes the processes of brightness adjustment, contrast adjustment, and RGB gamma correction.
+Brightness adjustment always precedes contrast adjustment, but RGB gamma correction can either precede or follow
+brightness and contrast adjustment. In panel adjustment, 10-bit RGB data obtained by extending 8-bit RGB data output
+from graphic 2 is used, and 10-bit RGB data is also output to the data format conversion block. Figure 51.8 shows the
+structure of the panel adjustment block.
+
+To data format conversion block
+
+RGB(10,10,10)
+
+1
+
+0
+
+RGB(10,10,10)
+
+Round to nearest
+10-bit integer
+Saturation
+
+Round to nearest
+10-bit integer
+Saturation
+VS
+
+Contrast adjustment
+Multiply gain to each color
+0  gain < 2
+
+Gamma Gamma Gamma
+correction correction correction
+R
+G
+B
+
+Brightness adjustment
+
+Offset for
+each area
+
+Gamma
+preprocess
+
+Add DC bias
+to each color
+RGB(10,10,10)
+
+R(10)
+
+G(10)
+
+B(10)
+
+CLKPHASE.FRONTGAM
+
+Registers
+0
+
+1
+
+0
+
+1
+
+Bit extension (8 bits to 10 bits)
+Zero extension to lower bit
+From Graphic 2
+RGB(888)
+
+Figure 51.8
+
+51.1.7
+
+Structure of Panel Adjustment Block
+
+Output Control (TCON)
+
+Any of the five signals (STVA, STVB, STHA, STHB, and DE) generated from the internal vertical and horizontal
+synchronization signals (VS and HS) that have passed through the data format conversion block can be selected for
+output on four pins: LCD_TCON0, LCD_TCON1, LCD_TCON2, and LCD_TCON3.
+The generated signals are completely independent of the image data. They are not affected by the output image format or
+any internal data process, and no register settings for signal generation affect the output image format or any internal data
+process. The data enable signal DE, which is to be generated by the TCON block, is the logical AND of the two signals
+STVB and STHB, which were previously generated by the TCON block. In general, three signals, which includes the
+signals corresponding to the VS and HS signals plus the DE signal, are used to output the DE signal.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2668 of 3240
+
+RX72N Group
+
+51.1.8
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphics Data Interfaces
+
+Two circuits (graphic 1 and 2) are provided for reading graphics data, each of which incorporates an access control block,
+data buffer, CLUT memory, data extension block, and clock domain crossing block.
+
+(1)
+
+Access Control Block
+
+After release from the reset state, when the necessary register settings are made and operation of the GLCDC is enabled,
+this block waits for the input of the VS (vertical synchronization) signal. Every time the VS signal is asserted, the
+internal states are initialized and access to internal main bus 2 proceeds. Internal main bus 2 is read in 16-beat increments
+and in 32-bit units (4 bytes × 16 beats = 64 bytes). All read data are stored in the data buffer, including the invalid data at
+the end of the line.
+
+(2)
+
+Data Buffer
+
+The data buffer is read via a 64-bit read buffer. Reading of the invalid data at the end of the line is skipped. The upper bit
+in the data stored in the read buffer is used for access to CLUT or data extension, the next data is filled from the data
+buffer. Filling data to the read buffer takes precedence over writing to the data buffer in case of a conflict.
+
+(3)
+
+CLUT Memory
+
+When the pixel data read from the data buffer contains CLUT indices (addresses for accessing to the CLUT memory),
+the GLCDC accesses to the CLUT memory by reading the corresponding data as the addresses, and stores all read data
+(in the ARGB(8888) format) or only alpha values (in case of ARGB(1555)) in the buffer of the clock domain crossing
+block.
+Write the data in the CLUT memory via internal peripheral bus.
+
+(4)
+
+Data Extension Block
+
+If the pixel data read from the data buffer contains the directly color data, the GLCDC sends the corresponding data to
+the data extension block. The block extends the data in the ARGB(8888) format and stores them in the buffer of the clock
+domain crossing block.
+When the data contain both of the CLUT indices and direct color data (in case of ARGB(1555)), an A value obtained
+from the CLUT memory is combined with an RGB value acquired from the data extension block, and is stored in the
+buffer of the clock domain crossing block.
+
+(5)
+
+Clock Domain Crossing Block
+
+This block is a circuit which performs asynchronous transfer of the pixel data (in the ARGB(8888) format) from the
+peripheral module clock (PCLKA) domain to the pixel clock (PXCLK) domain. The block is composed of a 4-pixel ring
+buffer. When data for 1 pixel are transferred to the alpha blending block, a sequence of operations consisting of reading
+from the read buffer, access to CLUT memory, extension of data, combining graphics data, and storage in the ring buffer
+proceeds with steps included as required, after which 1 pixel data is filled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2669 of 3240
+
+RX72N Group
+
+51.1.9
+
+51. Graphic LCD Controller (GLCDC)
+
+Blending
+
+The following three types of processing proceed for the graphics areas specified in the registers. The lower-layer
+graphics or the background color data of current graphics is output without any processing in the display area outside the
+graphics area.
+ Display screen selection
+ RGB reference chroma key
+ Alpha blending
+
+(1)
+
+Display Screen Selection
+
+Based on the GRnAB1.DISPSEL[1:0] bits settings (n = 1, 2), any of the following data is output to the graphics area:
+ Background color:
+
+Image data specified in the GRnBASE register.
+
+ Lower-layer graphics: Image data input from the previous block
+Output from the background generating block for graphic 1
+Output from graphic 1 for graphic 2
+ Current graphics:
+
+Image data obtained from the graphics data interface block extending the pixel data read by
+the graphic 1 or 2 block via the internal main bus 2 to ARGB(8888) format data.
+
+ Blending:
+
+Image data obtained by blending current graphics data and the lower-layer graphics data
+based on the alpha values or the register settings.
+
+It is possible to rewrite the GRnAB1 register while display operation is in progress. Setting the BGEN.VEN or
+GRnVEN.VEN bit to 1 leads to a reflection of the update value to the internal operations when the VS (vertical
+synchronization) signal is asserted.
+
+(2)
+
+RGB Reference Chroma Key
+
+If the RGB value of the ARGB(8888) data input from the graphics data interface block matches the value set in the
+GRnAB8 register, the ARGB(8888) data is entirely replaced with the value preset in the GRnAB9 register. All the
+ARGB(8888) data input from the graphics data interface block is subject to this process. If your application excludes
+CLUT memory output from this process, set the GRnAB7.CKON bit to 0 (disable RGB reference chroma key).
+
+(3)
+
+Alpha Blending
+
+If the GRnAB1.DISPSEL[1:0] bits are set to 11b (blending), current graphics and lower-layer graphics are alpha-blended
+based on the register settings using either of the following two functions.
+
+(a)
+
+Rectangular Alpha Blending
+
+The following process is performed for the rectangular area (in the graphics area) preset in the GRnAB4 and GRnAB5
+registers:
+(1) Current graphics is blended with the lower-layer graphics according to the A value set in the
+GRnAB7.ARCDEF[7:0] bits.
+(2) After processing of the number of frames specified in the GRnAB6.ARCRATE[7:0] bits, the value specified in the
+GRnAB6.ARCCOEF[8:0] bits is added to or subtracted from A value.
+(3) Current graphics is blended with the lower-layer graphics according to this updated A value.
+(4) Repeat (2) and (3). The A value is clipped in the range from 0 to 255.
+
+(b)
+
+Per-pixel Alpha Blending
+
+Current graphics is blended with the lower-layer graphics according to the A value of the ARGB(8888) data input from
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2670 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+the graphics data interface block.
+Figure 51.9 shows the relation between the graphic display selection and rectangular alpha blending area.
+Figure 51.10 shows the update of the alpha value in the rectangular alpha blending area.
+Alpha blending is performed based on the following formulas:
+ When A value is 255
+Rout = Rin1
+Gout = Gin1
+Bout = Bin1
+ When A value is not 255
+Rout = (Rin1 × A + Rin0 × (256 – A)) / 256
+Gout = (Gin1 × A + Gin0 × (256 – A)) / 256
+Bout = (Bin1 × A + Bin0 × (256 – A)) / 256
+where,
+A: alpha value, which is equivalent to Ain1 for per-pixel alpha blending.
+Rin1/Gin1/Bin1: current graphics data
+Rin0/Gin0/Bin0: lower-layer graphics data
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2671 of 3240
+
+RX72N Group
+
+51.2
+
+51. Graphic LCD Controller (GLCDC)
+
+Register Descriptions
+
+51.2.1
+
+Graphic n Color Look-up Table m[k] (GRnCLUTm[k]) (n = 1, 2; m = 0, 1; k = 0 to
+255)
+
+ Graphic 1 Color Look-up Table 0[k] (GR1CLUT0[k])
+Address(es): GLCDC.GR1CLUT0[0] 000E 0000h to GLCDC.GR1CLUT0[255] 000E 03FCh
+
+ Graphic 1 Color Look-up Table 1[k] (GR1CLUT1[k])
+Address(es): GLCDC.GR1CLUT1[0] 000E 0400h to GLCDC.GR1CLUT1[255] 000E 07FCh
+
+ Graphic 2 Color Look-up Table 0[k] (GR2CLUT0[k])
+Address(es): GLCDC.GR2CLUT0[0] 000E 0800h to GLCDC.GR2CLUT0[255] 000E 0BFCh
+
+ Graphic 2 Color Look-up Table 1[k] (GR2CLUT1[k])
+Address(es): GLCDC.GR2CLUT1[0] 000E 0C00h to GLCDC.GR2CLUT1[255] 000E 0FFCh
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+A[7:0]
+Value after reset:
+
+b18
+
+b17
+
+b16
+
+R[7:0]
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+G[7:0]
+Value after reset:
+
+b19
+
+x
+
+x
+
+x
+
+x
+
+B[7:0]
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+B[7:0]
+
+Color Look-up Table B Value
+Setting
+
+Set the B value for index value k of color look-up table
+
+R/W
+
+b15 to b8
+
+G[7:0]
+
+Color Look-up Table G Value
+Setting
+
+Set the G value for index value k of color look-up table
+
+R/W
+
+b23 to b16 R[7:0]
+
+Color Look-up Table R Value
+Setting
+
+Set the R value for index value k of color look-up table
+
+R/W
+
+b31 to b24 A[7:0]
+
+Color Look-up Table A Value
+Setting
+
+Set the A value for index value k of color look-up table
+
+R/W
+
+The CLUT memory can be rewritten at any time regardless of the setting of the GRnCLUTINT.SEL bit. The updates are
+reflected to the internal operations directly, not in synchronization with the VS (vertical synchronization) signal. To keep
+reflection of the CLUT memory contents to the internal operations in synchronization with the VS signal, first rewrite
+data to the CLUT memory that is not being used for internal operations, and then modify the GRnCLUTINT.SEL bit.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2672 of 3240
+
+RX72N Group
+
+51.2.2
+
+51. Graphic LCD Controller (GLCDC)
+
+Background Generating Block Operation Control Register (BGEN)
+
+Address(es): GLCDC.BGEN 000E 1000h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+SWRS
+T
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+VEN
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+EN
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+EN
+
+Background Generating Block
+Operation Enable
+
+0: Disable background generating block operation
+1: Enable background generating block operation
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b8
+
+VEN
+
+Register Value Reflection
+Enable
+
+0: Disable the reflection of the register values
+1: Enable the reflection of the register values (This bit
+automatically becomes 0)
+
+b15 to b9
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b16
+
+SWRST
+
+GLCDC Software Reset
+Release
+
+0: Execute GLCDC software reset
+1: Release GLCDC software reset
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b31 to b17 —
+
+R/W
+
+R/W
+
+This register controls the GLCDC states. The internal states can be read from the BGMON register and BGEN.VEN.
+Because the GLCDC, which operates on multiple clocks, requires a certain period for state transition, confirm that the
+internal state has stabilized when settings are modified. Operation is not guaranteed if settings are modified again before
+the internal state stabilizes. However, setting the SWRST bit to 0 immediately makes the whole GLCDC reset
+independently of PXCLK, setting it to 1 releases the reset state.
+EN Bit (Background Generating Block Operation Enable)
+The EN bit enables or disables the operation of the background generating block. When this bit is set to 0, the operation
+of the entire GLCDC stops because the reference signal for internal operations generated by the background generating
+block is no longer being generated.
+When setting this bit to 1, set the BGEN.VEN bit to 1 simultaneously to enable register value reflection to internal
+operations. When setting this bit to 0, set the BGEN.VEN bit to 0 at the same time.
+When this bit is changed from 1 to 0, the operation stops at the end of screen generation, unlike the SWRST bit.
+When setting this bit to 0, confirm that the BGMON.EN flag has become 0. Operation is not guaranteed if this bit and/or
+the BGEN.VEN bit are set to 1, or if the settings in other registers are modified before the BGMON.EN flag becomes 0.
+VEN Bit (Register Value Reflection Enable)
+The VEN bit enables or disables reflection of the GLCDC internal register to the GLCDC internal operation on assertion
+of the VS (vertical synchronization) signal.
+When this bit is set to 1, the signal of GLCDC internal register values reflection control becomes 1 at the immediate start
+of the background frame, and becomes 0 at the end of the vertical active pixel of the same frame. This internal signal can
+be monitored with the BGMON.VEN flag. This bit becomes 0 at the same time as the VEN flag.
+Set this bit to 1 only when this bit is 0. Operation is not guaranteed if this bit is set to 1 when 1. Also, while this bit is 1,
+do not modify any register whose value is reflected to the internal operations at the start of the background frame or on
+assertion of the VS signal. Otherwise, operation is not guaranteed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2673 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+SWRST Bit (GLCDC Software Reset Release)
+The SWRST bit controls a software reset of the entire GLCDC, not only the background generating block.
+When this bit is set to 0, the GLCDC enters the reset state from any operation state. This bit must be set to 1 before the
+registers are set or operation enabled. The registers can be set while this bit is 1.
+Before setting the EN or VEN bit to 1, confirm that PXCLK and LCD_CLK are supplied and that the BGMON.SWRST
+flag is 1. Operation is not guaranteed if the EN or VEN bit is set to 1 while PXCLK and LCD_CLK are not supplied or
+the BGMON.SWRST flag is not 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2674 of 3240
+
+RX72N Group
+
+51.2.3
+
+51. Graphic LCD Controller (GLCDC)
+
+Free-Running Period Register (BGPERI)
+
+Address(es): GLCDC.BGPERI 000E 1004h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+1
+
+0
+
+1
+
+1
+
+1
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+1
+
+0
+
+1
+
+1
+
+1
+
+FV[10:0]
+
+FH[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+FH[10:0]
+
+Horizontal Synchronization
+Signal Period Setting
+
+017h: 24 pixels
+:
+3FFh: 1024 pixels
+Settings other than the above are prohibited.
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 FV[10:0]
+
+Vertical Synchronization Signal
+Period Setting
+
+013h: 20 lines (20H)
+:
+3FFh: 1024 lines (1024H)
+Settings other than the above are prohibited.
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+
+FH[10:0] Bits (Horizontal Synchronization Signal Period Setting)
+These bits specify the period of the HS (horizontal synchronization) signal to be generated in the background generating
+block in pixel units (cycles of the PXCLK). The valid range is 017h to 3FFh. Operation is not guaranteed if a value out of
+the valid range is set.
+FV[10:0] Bits (Vertical Synchronization Signal Period Setting)
+These bits specify the period of the VS (vertical synchronization) signal to be generated in the background generating
+block in line units. The valid range is 013h to 3FFh. Operation is not guaranteed if a value out of the valid range is set.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2675 of 3240
+
+RX72N Group
+
+51.2.4
+
+51. Graphic LCD Controller (GLCDC)
+
+Synchronization Position Register (BGSYNC)
+
+Address(es): GLCDC.BGSYNC 000E 1008h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+VP[3:0]
+
+HP[3:0]
+0
+
+0
+
+0
+
+1
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+HP[3:0]
+
+Horizontal Synchronization
+Signal Assertion Position
+Setting
+
+0h: Setting prohibited
+1h: 1 pixel
+:
+Fh: 15 pixels
+
+R/W
+
+b15 to b4
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b19 to b16 VP[3:0]
+
+Vertical Synchronization Signal
+Assertion Position Setting
+
+0h: Setting prohibited
+1h: 1 line (1H)
+:
+Fh: 15 lines (15H)
+
+b31 to b20 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+
+HP[3:0] Bits (Horizontal Synchronization Signal Assertion Position Setting)
+The HP[3:0] bits specify the period before the HS (horizontal synchronization) signal, to be generated in the background
+generating block, is asserted. The pulse width of the HS signal is fixed to four pixels.
+VP[3:0] Bits (Vertical Synchronization Signal Assertion Position Setting)
+The VP[3:0] bits specify the period before the VS (vertical synchronization) signal, to be generated in the background
+generating block, is asserted. The pulse width of the VS signal is fixed to 1H, and the assertion timing is same as the HS
+signal.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2676 of 3240
+
+RX72N Group
+
+51.2.5
+
+51. Graphic LCD Controller (GLCDC)
+
+Vertical Size Register (BGVSIZE)
+
+Address(es): GLCDC.BGVSIZE 000E 100Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+VP[10:0]
+
+VW[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+VW[10:0]
+
+Vertical Active Display Width
+Setting
+
+010h: 16 lines (16H)
+:
+3FCh: 1020 lines (1020H)
+Settings other than the above are prohibited.
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 VP[10:0]
+
+Vertical Active Display Start
+Position Setting
+
+003h: 3 lines (3H)
+:
+3EFh: 1007 lines (1007H)
+Settings other than the above are prohibited.
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+
+This register specifies the waveform of the VE (vertical data enable) signal generated in the background generating
+block. The vertical size and position of the display area can be specified.
+Specify the vertical active display area between (the assertion position of the VS signal + 2)th line and the (background
+frame end – 1)th line. Operation is not guaranteed if the area is specified out of the range.
+VW[10:0] Bits (Vertical Active Display Width Setting)
+The VW[10:0] bits specify the vertical active display lines (high pulse width of the VE signal) in the background screen.
+The valid range is 010h to 3FCh. Operation is not guaranteed if a value out of the valid range is set. The value of the
+[BGVSIZE.VP[10:0] + BGVSIZE.VW[10:0] + 1] must be less than or equal to the value of the BGPERI.FV[10:0] bits.
+VP[10:0] Bits (Vertical Active Display Start Position Setting)
+The VP[10:0] bits specify the vertical active display line start position (the period until the VE signal is asserted) in the
+background screen. The valid range is 003h to 3EFh. Operation is not guaranteed if a value out of the valid range is set.
+Set a value greater than or equal to [BGSYNC.VP[3:0] + 2] to these bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2677 of 3240
+
+RX72N Group
+
+51.2.6
+
+51. Graphic LCD Controller (GLCDC)
+
+Horizontal Size Register (BGHSIZE)
+
+Address(es): GLCDC.BGHSIZE 000E 1010h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+1
+
+1
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+HP[10:0]
+
+HW[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+HW[10:0]
+
+Horizontal Active Pixel Width
+Setting
+
+010h: 16 pixels
+:
+3F8h: 1016 pixels
+Set an even value only in the above range.
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 HP[10:0]
+
+Horizontal Active Pixel Start
+Position Setting
+
+006h: 6 pixels
+:
+3EEh: 1006 pixels
+Settings other than the above are prohibited.
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+
+This register specifies the waveform of the HE (horizontal data enable) signal generated in the background generating
+block. The horizontal size and position of the display area can be specified.
+Specify the horizontal active display area between (the assertion position of the HS signal + 5)th pixel and (line end –
+2)th pixel. Operation is not guaranteed if the area is specified out of the range.
+HW[10:0] Bits (Horizontal Active Pixel Width Setting)
+The HW[10:0] bits specify the horizontal active display pixels (high pulse width of the HE signal) in the background
+screen. The field can be set to any even number from 010h to 3F8h. Operation is not guaranteed if a value out of the valid
+range is set. The value of the [BGHSIZE.HP[10:0] + BGHSIZE.HW[10:0] + 2] must be less than or equal to the value of
+the BGPERI.FH[10:0] bits. When serial RGB is selected as the output data format, set the value [the actual horizontal
+active display pixels + 2] to these bits.
+HP[10:0] Bits (Horizontal Active Pixel Start Position Setting)
+The HP[10:0] bits specify the horizontal active display pixel start position (the period until the HE signal is asserted) in
+the background screen. The valid range is 006h to 3EEh. Operation is not guaranteed if a value out of the valid range is
+set. Set a value greater than or equal to [BGSYNC.HP[3:0] + 5] to these bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2678 of 3240
+
+RX72N Group
+
+51.2.7
+
+51. Graphic LCD Controller (GLCDC)
+
+Background Color Register (BGCOLOR)
+
+Address(es): GLCDC.BGCOLOR 000E 1014h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+0
+
+0
+
+0
+
+0
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+R[7:0]
+
+G[7:0]
+Value after reset:
+
+b19
+
+B[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+B[7:0]
+
+Background Color B Value
+Setting
+
+Set a value for B channel of the background color to be
+displayed on the background screen.
+
+R/W
+
+b15 to b8
+
+G[7:0]
+
+Background Color G Value
+Setting
+
+Set a value for G channel of the background color to be
+displayed on the background screen.
+
+R/W
+
+b23 to b16 R[7:0]
+
+Background Color R Value
+Setting
+
+Set a value for R channel of the background color to be
+displayed on the background screen.
+
+R/W
+
+b31 to b24 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+This register specifies the background color displayed on the active display area (background screen) defined by the
+BGVSIZE and BGHSIZE registers. Black (000000h) is output to the area other than the active display area (blanking
+interval).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2679 of 3240
+
+RX72N Group
+
+51.2.8
+
+51. Graphic LCD Controller (GLCDC)
+
+Background Generating Block Status Monitor Register (BGMON)
+
+Address(es): GLCDC.BGMON 000E 1018h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+SWRS
+T
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+VEN
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+EN
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+EN
+
+Background Generating Block
+Operation Monitor Flag
+
+0: Operation of the background generating block is being
+stopped
+1: Operation of the background generating block is in
+progress
+
+R
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+b8
+
+VEN
+
+Register Value Reflection
+Enable Monitor Flag
+
+0: The reflection of the register values is disabled
+1: The reflection of the register values is enabled
+
+R
+
+b15 to b9
+
+—
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+b16
+
+SWRST
+
+Software Reset Status Monitor
+Flag
+
+0: GLCDC is in software reset state
+1: GLCDC is released from software reset state
+
+R
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+b31 to b17 —
+
+EN Flag (Background Generating Block Operation Monitor Flag)
+This flag indicates whether the background generating block is operating or not.
+When setting the BGEN.EN bit to 0 (disable background generating block operation), read this flag to confirm that the
+operation is stopped. Setting the BGEN.EN bit to 0 does not stop the operation until the end of the background frame,
+unlike when the BGEN.SWRST bit is set to 0.
+VEN Flag (Register Value Reflection Enable Monitor Flag)
+This flag indicates the status of the signal used for controlling the reflection of the GLCDC internal register values to the
+internal operations. This signal is asserted at the start of a background frame immediately after setting the BGEN.VEN
+bit to 1 and negated at the timing of the VE negation.
+SWRST Flag (Software Reset Status Monitor Flag)
+This flag indicates the software reset state of GLCDC. This bit value indicates the result of the peripheral module clock
+(PCLKA) resampling the result of the PXCLK sampling the BGEN.SWRST bit. Even if PXCLK is not supplied, setting
+the BGEN.SWRST bit to 0 sets this flag to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2680 of 3240
+
+RX72N Group
+
+51.2.9
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Register Update Control Register (GRnVEN) (n = 1, 2)
+
+Address(es): GLCDC.GR1VEN 000E 1100h, GLCDC.GR2VEN 000E 1200h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+VEN
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+VEN
+
+Graphic n Register Value
+Reflection Enable*1
+
+0: Disable reflection of register values
+1: Enable reflection of register values (This bit automatically
+becomes 0)
+
+R/W
+
+b31 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note 1. Do not set this bit to 1 when the BGEN.VEN bit is 1.
+
+VEN Bit (Graphic n Register Value Reflection Enable)
+This bit enables or disables reflection of the register values to the graphic n internal operations on assertion of the VS
+(vertical synchronization) signal.
+When the VS signal is asserted immediately after this bit is set to 1, the values set in the GRnFLM2, GRnFLM3,
+GRnFLM5, GRnFLM6, GRnAB1 to GRnAB9, GRnBASE, and GRnCLUTINT registers are reflected to the internal
+operations, and then the bit automatically becomes 0. When the BGEN.VEN bit is 1, the register values are reflected to
+the internal operations on assertion of the VS signal, regardless of the value of this bit.
+Set this bit to 1 only when the BGEN.VEN bit and this bit are both 0. Operation is not guaranteed when setting this bit to
+1 while one of the bits is 1.
+While the BGEN.VEN bit or this bit is 1, do not modify registers GRnFLM2, GRnFLM3, GRnFLM5, GRnFLM6,
+GRnAB1 to GRnAB9, GRnBASE, and GRnCLUTINT. Otherwise, operation is not guaranteed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2681 of 3240
+
+RX72N Group
+
+51.2.10
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Frame Buffer Read Control Register (GRnFLMRD) (n = 1, 2)
+
+Address(es): GLCDC.GR1FLMRD 000E 1104h, GLCDC.GR2FLMRD 000E 1204h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+RENB
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+RENB
+
+Frame Buffer Read Enable
+
+0: Disable reading of the frame buffer
+1: Enable reading of the frame buffer
+
+R/W
+
+b31 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+
+RENB Bit (Frame Buffer Read Enable)
+This bit enables or disables reading of the graphics data on the frame buffer (memory connected via the internal main bus
+2).
+If the current graphics screen is to be displayed, set this bit to 1 before setting the BGEN.EN bit to 1.
+If the current graphics screen is not to be displayed, set this bit to 0 before setting the BGEN.EN bit to 1.
+
+51.2.11
+
+Graphic n Frame Buffer Control Register 2 (GRnFLM2) (n = 1, 2)
+
+Address(es): GLCDC.GR1FLM2 000E 110Ch, GLCDC.GR2FLM2 000E 120Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+This register specify the start address of the frame buffer.
+Set the lower 6 bits to 0.
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or
+the BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2682 of 3240
+
+RX72N Group
+
+51.2.12
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Frame Buffer Control Register 3 (GRnFLM3) (n = 1, 2)
+
+Address(es): GLCDC.GR1FLM3 000E 1110h, GLCDC.GR2FLM3 000E 1210h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+LNOFF[15:0]
+Value after reset:
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b9 to b0
+
+R/W
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+b15 to b10 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b31 to b16 LNOFF[15:0]
+
+Macro Line Offset Setting
+
+Set the offset value between lines (macro lines) on the frame
+buffer. 16-bit signed integer.
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+LNOFF[15:0] Bits (Macro Line Offset Setting)
+These bits specify the offset from the first address of the line in the frame buffer (macro line) to the first address of the
+next macro line as a two’s complement numbers. Set the lower 6 bits to 0.
+The first addresses for each of the macro lines are calculated in the way shown below.
+1st line:
+GRnFLM2
+2nd line: GRnFLM2 + LNOFF[15:0] × 1
+3rd line: GRnFLM2 + LNOFF[15:0] × 2
+...
+m-th line: GRnFLM2 + LNOFF[15:0] × (m – 1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2683 of 3240
+
+RX72N Group
+
+51.2.13
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Frame Buffer Control Register 5 (GRnFLM5) (n = 1, 2)
+
+Address(es): GLCDC.GR1FLM5 000E 1118h, GLCDC.GR2FLM5 000E 1218h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+1
+
+1
+
+1
+
+1
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+LNNUM[10:0]
+
+DATANUM[15:0]
+0
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15 to b0
+
+DATANUM[15:0]
+
+Single Line Data Transfer
+Count Setting
+
+0000h: Once (64 bytes)
+:
+FFFFh: 65536 times (4 Mbytes)
+
+R/W
+
+b26 to b16 LNNUM[10:0]
+
+Single Frame Line Count
+Setting
+
+000h: 1 macro line
+:
+3FBh: 1020 macro lines
+Settings other than the above are prohibited.
+
+R/W
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+DATANUM[15:0] Bits (Single Line Data Transfer Count Setting)
+These bits specify the number of data transfers for one line in the frame buffer (one macro line). 64 bytes (4 bytes (32
+bits) × 16 words) of data can be read in each single transfer. If the number of bytes per macro line cannot be divided by
+64, set these bits for the nearest integer produced by rounding up.
+When the number of data transfers set in these bits is completed, the internal address pointer is overwritten by the first
+address of the next macro line.
+LNNUM[10:0] Bits (Single Frame Line Count Setting)
+These bits specify the number of macro lines on the frame buffer.
+When graphics data for the number of macro lines set in these bits is read, the frame end signal is output and the value of
+the GRnFLM2 register is reloaded to the internal address pointer.
+The followings are two setting examples of this register. In these examples, the active display size is 480 pixels × 272
+lines and the color depth is 16 bpp.
+Ex. 1) One macro line is configured of 480 pixels.
+DATANUM[15:0] = 480 × 2 ÷ 64 – 1 = 14 = 000Eh
+LNNUM[10:0] = 272 – 1 = 271 = 10Fh
+Ex. 2) One macro line is configured of 16 scanlines (480 × 16 pixels).
+DATANUM[15:0] = 480 × 2 × 16 ÷ 64 – 1 = 239 = 00EFh
+LNNUM[10:0] = 272 ÷ 16 – 1 = 16 = 010h
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2684 of 3240
+
+RX72N Group
+
+51.2.14
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Frame Buffer Control Register 6 (GRnFLM6) (n = 1, 2)
+
+Address(es): GLCDC.GR1FLM6 000E 111Ch, GLCDC.GR2FLM6 000E 121Ch
+b31
+
+b30
+
+—
+Value after reset:
+
+Value after reset:
+
+b29
+
+b28
+
+FORMAT[2:0]
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+b27 to b0
+
+—
+
+Bit Name
+
+Description
+
+R/W
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b30 to b28 FORMAT[2:0]
+
+Frame Buffer Color Format
+Setting
+
+b30
+
+b31
+
+Reserved
+
+This bit is read as 0. Writing to this bit has no effect.
+
+Note:
+
+—
+
+b28
+
+0 0 0: RGB(565) (16 bpp)
+0 0 1: RGB(-888) (32 bpp, the upper 8 bits are invalid)
+0 1 0: ARGB(1555) (16 bpp, 1 bit of A is CLUT index)
+0 1 1: ARGB(4444) (16 bpp)
+1 0 0: ARGB(8888) (32 bpp)
+1 0 1: CLUT(8) (8 bpp)
+1 1 0: CLUT(4) (4 bpp)
+1 1 1: CLUT(1) (1 bpp)
+
+R/W
+
+R
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+FORMAT[2:0] Bits (Frame Buffer Color Format Setting)
+These bits specify the color format of the graphics data stored in the corresponding frame buffer.
+The CLUT indices 1 or 0, Fh to 0h, and FFh to 00h are stored in CLUT(1), CLUT(4), and CLUT(8) respectively, and
+used as addresses in CLUT memory access (01h or 00h, 0Fh to 00h, and FFh to 00h respectively).
+For ARGB(1555), RGB data (5 bits per color channel) are stored in the 15 bits following the CLUT index with the upper
+bit 1 or 0 (the CLUT address is 80h or 00h).
+For ARGB(8888) and ARGB(4444), the alpha values are stored in the upper 8 or 4 bits and RGB values are stored in the
+other bits.
+RGB(-888) and RGB(565) contain RGB data only.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2685 of 3240
+
+RX72N Group
+
+51.2.15
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Alpha Blending Control Register 1 (GRnAB1) (n = 1, 2)
+
+Address(es): GLCDC.GR1AB1 000E 1120h, GLCDC.GR2AB1 000E 1220h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+ARCO
+N
+
+—
+
+—
+
+—
+
+ARCDI
+SPON
+
+—
+
+—
+
+—
+
+GRCDI
+SPON
+
+—
+
+—
+
+DISPSEL[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+DISPSEL[1:0]
+
+Display Screen Control
+
+b1 b0
+
+R/W
+
+b3, b2
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b4
+
+GRCDISPON
+
+Graphics Area Frame Display
+Control
+
+0: The frame of the graphics area is not displayed
+1: The frame of the graphics area is displayed
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b8
+
+ARCDISPON
+
+Rectangular Alpha Blending
+Area Frame Display Control
+
+0: The frame of the rectangular alpha blending area is not
+displayed
+1: The frame of the rectangular alpha blending area is
+displayed
+
+b11 to b9
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b12
+
+ARCON
+
+Alpha Blending Control
+
+0: Per-pixel alpha blending
+1: Rectangular alpha blending
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b31 to b13 —
+Note:
+
+0 0: Displays the background color (value set in the
+GRnBASE register)
+0 1: Displays lower-layer graphics
+1 0: Displays current graphics
+1 1: Blended display of current graphics with lower-layer
+graphics
+
+R/W
+
+R/W
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+DISPSEL[1:0] Bits (Display Screen Control)
+These bits control the graphic display screen. When the bits are 00b (background color), the background color specified
+in the GRnBASE register is displayed. When the bits are 01b (lower-layer graphics), the image data input from the
+previous block is displayed (the background screen for graphic 1, and the output from graphic 1 for graphic 2). When the
+bits are 10b (current graphics), RGB(888) in data in the ARGB(8888) format, which is generated in the graphics data
+interface block, is displayed. Table 51.9 lists the relations between the register settings and display on the screen and
+Figure 51.9 shows the relations among the areas.
+GRCDISPON Bit (Graphics Area Frame Display Control)
+This bit specifies whether or not the given frame is displayed in the graphic area. When the bit is 1 (displayed), the frame
+in the graphics area is enclosed by the lines in the color FFh (for each of R, G, and B). The lines around the outer
+boundaries are 1-pixel wide.
+ARCDISPON Bit (Rectangular Alpha Blending Area Frame Display Control)
+This bit specifies whether or not the given frame is displayed in the rectangular alpha blending area. When this bit is 1
+(displayed), the frame in the rectangular alpha blending area is enclosed by the lines in the color FFh (for each of R, G,
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2686 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+and B). The lines around the outer boundaries are 1-pixel wide.
+ARCON Bit (Alpha Blending Control)
+This bit controls the alpha blending method in a rectangular alpha blending area. When this bit is 1 (rectangular alpha
+blending), alpha blending is processed in accordance with the alpha value for the rectangular alpha blending, not in
+accordance with the alpha value for each pixel generated by the graphics data interface block. In the areas outside the
+rectangular alpha blending area within the graphics area, alpha blending is processed in accordance with the alpha value
+for each pixel generated by the graphics data interface block.
+Table 51.9
+
+Display Screen Selections (n = 1, 2)
+
+GRnAB1.DISPSEL[1:0] GRnAB1.ARCON
+bits
+bit
+GRnAB7.CKON bit
+
+Within Rectangular Alpha
+Blending Area
+
+Outside Rectangular Alpha
+Blending Area, but within
+Graphics Area
+
+Outside Graphics
+Area, but within
+Display Area
+
+00b (back ground color)
+
+0 (per-pixel alpha
+blending)
+
+0 (no chroma keying)
+
+— (no areas)
+
+Background color
+
+Background color
+
+01b (lower-layer
+graphics)
+
+0 (per-pixel alpha
+blending)
+
+0 (no chroma keying)
+
+— (no areas)
+
+Lower-layer graphics
+
+Lower-layer
+graphics
+
+10b (current graphics)
+
+0 (per-pixel alpha
+blending)
+
+0 (no chroma keying)
+
+— (no areas)
+
+Current graphics
+
+Background color
+
+11b (blended display)
+
+0 (per-pixel alpha
+blending)
+
+0 (no chroma keying)
+
+— (no areas)
+
+Per-pixel alpha blending of
+current graphics and lowerlayer graphics
+
+Lower-layer
+graphics
+
+11b (blended display)
+
+0 (per-pixel alpha
+blending)
+
+1 (chroma keying)
+
+— (no areas)
+
+Per-pixel alpha blending of
+chroma keyed current graphics
+and lower-layer graphics
+
+Lower-layer
+graphics
+
+11b (blended display)
+
+1 (rectangular
+alpha blending)
+
+0 (no chroma keying)
+
+Rectangular alpha blending
+of current graphics and
+lower-layer graphics
+
+Per-pixel alpha blending of
+current graphics and lowerlayer graphics
+
+Lower-layer
+graphics
+
+11b (blended display)
+
+1 (rectangular
+alpha blending)
+
+1 (chroma keying)
+
+Rectangular alpha blending
+of current graphics and
+lower-layer graphics
+
+Per-pixel alpha blending of
+chroma keyed current graphics
+and lower-layer graphics
+
+Lower-layer
+graphics
+
+Note:
+
+Operation is not guaranteed when any other value is set.
+
+HS
+GRnAB4.ARCVS[10:0]
+
+BGVSIZE.VP[10:0]
+
+GRnAB2.GRCVS[10:0]
+
+VS
+
+Select display plane by the
+GRnAB1.DISPSEL[1:0] bits
+
+Display area (background screen active pixels)
+Graphics area
+
+GRnAB4.ARCVW[10:0]
+
+Figure 51.9
+
+GRnAB2.GRCVW[10:0]
+
+BGVSIZE.VW[10:0]
+
+GRnAB5.ARCHS[10:0]
+
+Rectangular alpha blending area
+
+00b: Background color
+01b: Lower-layer graphics
+10b: Current graphics
+11b: Pixel-by-pixel alpha blending
+of lower-layer graphics and
+current graphics
+Display plane is changed according
+to the GRnAB1.DISPSEL[1:0] bits
+00b: Background color
+01b: Lower-layer graphics
+10b: Background color
+11b: Lower-layer graphics
+
+GRnAB5.ARCHW[10:0]
+
+GRnAB3.GRCHS[10:0]
+
+GRnAB3.GRCHW[10:0]
+
+BGHSIZE.HP[10:0]
+
+BGHSIZE.HW[10:0]
+
+Enabled when the
+GRnAB1.DISPSEL[1:0] bits are 11b
+and the ARCON bit is 1.
+Rectangular alpha blending of lowerlayer graphics and current graphics
+
+Selection of Graphic Display Screen (n = 1, 2)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2687 of 3240
+
+RX72N Group
+
+51.2.16
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Alpha Blending Control Register 2 (GRnAB2) (n = 1, 2)
+
+Address(es): GLCDC.GR1AB2 000E 1124h, GLCDC.GR2AB2 000E 1224h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+1
+
+1
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+GRCVS[10:0]
+
+GRCVW[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+GRCVW[10:0]
+
+Graphics Area Vertical Width
+Setting
+
+010h: 16 lines (16H)
+:
+3FCh: 1020 lines (1020H)
+Settings other than the above are prohibited.
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 GRCVS[10:0]
+
+Graphics Area Vertical Start
+Position Setting
+
+002h: 2 lines (2H)
+:
+3EEh: 1006 lines (1006H)
+Settings other than the above are prohibited.
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+GRCVW[10:0] Bits (Graphics Area Vertical Width Setting)
+These bits specify the vertical active scanlines in the graphics area.
+GRCVS[10:0] Bits (Graphics Area Vertical Start Position Setting)
+These bits specify the vertical starting point for active scanlines in the graphics area. The reference point is the point of
+assertion of the VS (vertical synchronization) signal.
+For the relations between the register settings and the graphics area size, refer to Figure 51.9.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2688 of 3240
+
+RX72N Group
+
+51.2.17
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Alpha Blending Control Register 3 (GRnAB3) (n = 1, 2)
+
+Address(es): GLCDC.GR1AB3 000E 1128h, GLCDC.GR2AB3 000E 1228h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+1
+
+0
+
+1
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+GRCHS[10:0]
+
+GRCHW[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+GRCHW[10:0]
+
+Graphics Area Horizontal Width
+Setting
+
+010h: 16 pixels
+:
+3F8h: 1016 pixels
+Settings other than the above are prohibited.
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 GRCHS[10:0]
+
+Graphics Area Horizontal Start
+Position Setting
+
+005h: 5 pixels
+:
+3EDh: 1005 pixels
+Settings other than the above are prohibited.
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+GRCHW[10:0] Bits (Graphics Area Horizontal Width Setting)
+These bits specify the horizontal active pixels of the graphics area. Set an even value to the bits.
+GRCHS[10:0] Bits (Graphics Area Horizontal Start Position Setting)
+These bits specify the horizontal start position of the active pixels of the graphics area. The reference point is the
+assertion of the HS (horizontal synchronization) signal.
+For the relation between the register settings and the graphics area size, refer to Figure 51.9.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2689 of 3240
+
+RX72N Group
+
+51.2.18
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Alpha Blending Control Register 4 (GRnAB4) (n = 1, 2)
+
+Address(es): GLCDC.GR1AB4 000E 112Ch, GLCDC.GR2AB4 000E 122Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+1
+
+1
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+ARCVS[10:0]
+
+ARCVW[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+ARCVW[10:0]
+
+Rectangular Alpha Blending
+Area Vertical Width Setting
+
+001h: 1 line (1H)
+:
+3FCh: 1020 lines (1020H)
+Settings other than the above are prohibited.
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 ARCVS[10:0]
+
+Rectangular Alpha Blending
+Area Vertical Start Position
+Setting
+
+002h: 2 lines (2H)
+:
+3EEh: 1006 lines (1006H)
+Settings other than the above are prohibited.
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+ARCVW[10:0] Bits (Rectangular Alpha Blending Area Vertical Width Setting)
+These bits specify the vertical active scanlines of the rectangular alpha blending area.
+ARCVS[10:0] Bits (Rectangular Alpha Blending Area Vertical Start Position Setting)
+These bits specify the vertical start position of the active scanlines of the rectangular alpha blending area. The reference
+point is the assertion of the VS (vertical synchronization) signal.
+For the relation between the register settings and the graphics area size, refer to Figure 51.9.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2690 of 3240
+
+RX72N Group
+
+51.2.19
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Alpha Blending Control Register 5 (GRnAB5) (n = 1, 2)
+
+Address(es): GLCDC.GR1AB5 000E 1130h, GLCDC.GR2AB5 000E 1230h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+1
+
+0
+
+1
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+ARCHS[10:0]
+
+ARCHW[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+ARCHW[10:0]
+
+Rectangular Alpha Blending
+Area Horizontal Width Setting
+
+001h: 1 pixel
+:
+3F8h: 1016 pixels
+Settings other than the above are prohibited.
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 ARCHS[10:0]
+
+Rectangular Alpha Blending
+Area Horizontal Start Position
+Setting
+
+005h: 5 pixels
+:
+3EDh: 1005 pixels
+Settings other than the above are prohibited.
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+ARCHW[10:0] Bits (Rectangular Alpha Blending Area Horizontal Width Setting)
+These bits specify the horizontal active pixels of the rectangular alpha blending area.
+ARCHS[10:0] Bits (Rectangular Alpha Blending Area Horizontal Start Position Setting)
+These bits specify the horizontal start position of the active pixels of the rectangular alpha blending area. The reference
+point is the assertion of the HS (horizontal synchronization) signal.
+For the relation between the register settings and the graphics area size, refer to Figure 51.9.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2691 of 3240
+
+RX72N Group
+
+51.2.20
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Alpha Blending Control Register 6 (GRnAB6) (n = 1, 2)
+
+Address(es): GLCDC.GR1AB6 000E 1134h, GLCDC.GR2AB6 000E 1234h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+ARCCOEF[8:0]
+
+ARCRATE[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+ARCRATE[7:0]
+
+Alpha Blending Updating Rate
+Setting
+
+00h: 1 frame
+:
+FFh: 256 frames
+
+R/W
+
+b15 to b8
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b24
+
+ARCCOEF[8]
+
+Alpha Coefficient Setting
+
+This bit specifies the sign, i.e. whether the ARCCOEF[7:0]
+bits indicate an increase or decrease in the alpha value.
+0: Add
+1: Subtract
+
+R/W
+
+These bits specify the absolute value of the change in the
+alpha value.
+The valid range is from 0 to 255.
+
+R/W
+
+b23 to b16 ARCCOEF[7:0]
+
+b31 to b25 —
+Note:
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+ARCRATE[7:0] Bits (Alpha Blending Updating Rate Setting)
+These bits specify the updating rate of alpha value for rectangular alpha blending in frame units.
+ARCCOEF[8:0] Bits (Alpha Coefficient Setting)
+These bits specify the alpha coefficient for rectangular alpha blending.
+The ARCCOEF[8] bit represents the sign and the ARCCOEF[7:0] bits represent the value added to or subtracted by.
+In rectangular alpha blending, current graphics are faded in or out with the GRnAB7.ARCDEF[7:0],
+GRnAB6.ARCCOEF[8:0], and GRnAB6.ARCRATE[7:0] bits. When the GRnAB1.ARCON bit is set to 1 after setting
+the initial alpha value in the GRnAB7.ARCDEF[7:0] bits, the value in GRnAB6.ARCCOEF[8:0] is added to or
+subtracted from the alpha value each time the VS signal is asserted the number of times set in the
+GRnAB6.ARCRATE[7:0] bits. Figure 51.10 shows change of the alpha value.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2692 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+GRnAB1.ARCON bit
+
+GRnAB6.ARCCOEF[8:0] bits
+
+=0
+
+0
+
+>0
+
+<0
+
+0
+
+GRnMON.ARCST flag
+
+255
+
+GRnAB6.ARCCOEF[7:0]
+
+Alpha value
+GRnAB7.ARCDEF[7:0]
+
+GRnAB6.ARCRATE[7:0]
+
+Time
+
+0
+Lower-layer
+graphics
+
+Figure 51.10
+
+Faded-in
+
+Current graphics
+
+Faded-out
+
+Lower-layer
+graphics
+
+Updating of Alpha Value (n = 1, 2)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2693 of 3240
+
+RX72N Group
+
+51.2.21
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Alpha Blending Control Register 7 (GRnAB7) (n = 1, 2)
+
+Address(es): GLCDC.GR1AB7 000E 1138h, GLCDC.GR2AB7 000E 1238h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+CKON
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ARCDEF[7:0]
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+CKON
+
+Chroma Key Compositing
+Control
+
+0: Disable RGB reference chroma key compositing
+1: Enable RGB reference chroma key compositing
+
+R/W
+
+b15 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b23 to b16 ARCDEF[7:0]
+
+Initial Alpha Value Setting
+
+Set the initial alpha value for rectangular alpha blending
+
+b31 to b24 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+CKON Bit (Chroma Key Compositing Control)
+This bit enables or disables RGB reference chroma key compositing. This function is enabled only for the area that is
+outside the alpha blending area and within the graphics area, when this bit is 1 and the GRnAB1.DISPSEL[1:0] bits are
+11b (blended display). For details, refer to Table 51.9.
+ARCDEF[7:0] Bits (Initial Alpha Value Setting)
+These bits specify the initial alpha value for rectangular alpha blending. For changes in the alpha value during fade-in or
+fade-out processing of the current graphics by using these bits, refer to Figure 51.10.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2694 of 3240
+
+RX72N Group
+
+51.2.22
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Alpha Blending Control Register 8 (GRnAB8) (n = 1, 2)
+
+Address(es): GLCDC.GR1AB8 000E 113Ch, GLCDC.GR2AB8 000E 123Ch
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+CKKG[7:0]
+
+CKKB[7:0]
+Value after reset:
+
+b20
+
+CKKR[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+CKKR[7:0]
+
+Chroma Key Compositing
+Target R Value Setting
+
+Set the R value to be compared with the R value of the
+current graphics.
+
+R/W
+
+b15 to b8
+
+CKKB[7:0]
+
+Chroma Key Compositing
+Target B Value Setting
+
+Set the B value to be compared with the B value of the
+current graphics.
+
+R/W
+
+b23 to b16 CKKG[7:0]
+
+Chroma Key Compositing
+Target G Value Setting
+
+Set the G value to be compared with the G value of the
+current graphics.
+
+R/W
+
+b31 to b24 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+When the RGB values in the pixel data (ARGB(8888)) of the current graphics match the values set in this register while
+the GRnAB7.CKON bit is 1 (RGB reference chroma key compositing is enabled), the pixel data is replaced by the values
+set in the GRnAB9 register. In per-pixel alpha blending at later stages, the replaced alpha value is used.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2695 of 3240
+
+RX72N Group
+
+51.2.23
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Alpha Blending Control Register 9 (GRnAB9) (n = 1, 2)
+
+Address(es): GLCDC.GR1AB9 000E 1140h, GLCDC.GR2AB9 000E 1240h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+CKA[7:0]
+Value after reset:
+
+b19
+
+b18
+
+b17
+
+b16
+
+CKG[7:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+CKB[7:0]
+Value after reset:
+
+b20
+
+0
+
+0
+
+0
+
+0
+
+0
+
+CKR[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+CKR[7:0]
+
+Chroma Key Compositing
+Replacing R Value Setting
+
+Specify an R value after replacement in RGB reference
+chroma key compositing.
+
+R/W
+
+b15 to b8
+
+CKB[7:0]
+
+Chroma Key Compositing
+Replacing B Value Setting
+
+Specify a B value after replacement in RGB reference
+chroma key compositing.
+
+R/W
+
+b23 to b16 CKG[7:0]
+
+Chroma Key Compositing
+Replacing G Value Setting
+
+Specify a G value after replacement in RGB reference
+chroma key compositing.
+
+R/W
+
+b31 to b24 CKA[7:0]
+
+Chroma Key Compositing
+Replacing A Value Setting
+
+Specify an A value after replacement in RGB reference
+chroma key compositing.
+
+R/W
+
+Note:
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+When the pixel data is to be replaced (an RGB value of the current graphics matches with the value set in the GRnAB8
+register) while the GRnAB7.CKON bit is 1 (RGB reference chroma key compositing is enabled), the pixel data is
+replaced by the set value in this register. In per-pixel alpha blending at later stages, the values set in this register is used.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2696 of 3240
+
+RX72N Group
+
+51.2.24
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Background Color Control Register (GRnBASE) (n = 1, 2)
+
+Address(es): GLCDC.GR1BASE 000E 114Ch, GLCDC.GR2BASE 000E 124Ch
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+0
+
+0
+
+0
+
+0
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+G[7:0]
+
+B[7:0]
+Value after reset:
+
+b19
+
+R[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+R[7:0]
+
+Background Color R Value
+Setting
+
+Set the R value of the Background color.
+
+R/W
+
+b15 to b8
+
+B[7:0]
+
+Background Color B Value
+Setting
+
+Set the B value of the Background color.
+
+R/W
+
+b23 to b16 G[7:0]
+
+Background Color G Value
+Setting
+
+Set the G value of the Background color.
+
+R/W
+
+b31 to b24 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+When the GRnAB1.DISPSEL[1:0] bits are set to 00b (background color), the RGB data set in this register is output to
+the entire display area. When the GRnAB1.DISPSEL[1:0] bits are set to 10b (current graphics), the RGB data is output
+to the outside the graphics area within the display area.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2697 of 3240
+
+RX72N Group
+
+51.2.25
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n CLUT/Interrupt Control Register (GRnCLUTINT) (n = 1, 2)
+
+Address(es): GLCDC.GR1CLUTINT 000E 1150h, GLCDC.GR2CLUTINT 000E 1250h
+
+Value after reset:
+
+Value after reset:
+
+Bit
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+SEL
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+LINE[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+LINE[10:0]
+
+Detecting Scanline Setting*1
+
+000h: 1st line
+:
+3FFh: 1024th line
+Settings other than the above are prohibited.
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b16
+
+SEL
+
+CLUT Control
+
+0: Select Color Look-up Table 0
+1: Select Color Look-up Table 1
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b31 to b17 —
+
+R/W
+
+Note:
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GRnVEN.VEN bit or the
+BGEN.VEN bit is 1.
+Note 1. These bits are only effective for graphic 2.
+
+LINE[10:0] Bits (Detecting Scanline Setting)
+These bits specify the scanline which generates a VPOS interrupt. When operation reaches the scanline specified in these
+bits, the detection signal is informed to the system control block on the HS signal assertion. To catch the informed
+detection signal and request the VPOS interrupt, set the DTCTEN.VPOSDTC and INTEN.VPOSINTEN bits to 1.
+For the first frame after a software reset, the specified line notification signal is informed at the first scanline regardless
+of the setting of these bits.
+The VPOS interrupt request can be generated only in graphic 2.
+SEL Bit (CLUT Control)
+This bit selects the color look-up table (CLUT) to be used in graphics data interface block. The CLUT memory can be
+rewritten any time regardless of the setting in this bit, and the rewritten value is not to be synchronized with the VS signal
+and to be reflected to the internal operations immediately.
+When reflecting the contents of the CLUT memory to the internal operations on the assertion of the VS signal, rewrite
+the data of the CLUT memory which is not selected and change the value of the bit after completion of the rewriting.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2698 of 3240
+
+RX72N Group
+
+51.2.26
+
+51. Graphic LCD Controller (GLCDC)
+
+Graphic n Status Monitor Register (GRnMON) (n = 1, 2)
+
+Address(es): GLCDC.GR1MON 000E 1154h, GLCDC.GR2MON 000E 1254h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+UFST
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+ARCST
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+ARCST
+
+Alpha Blending Status Flag
+
+0: Fade-in/fade-out not in progress for rectangular alpha
+blending
+1: Fade-in/fade-out in progress for rectangular alpha
+blending
+
+R
+
+b15 to b1
+
+—
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+b16
+
+UFST
+
+Underflow Status Flag
+
+0: No underflow has occurred
+1: Underflow has occurred
+
+R
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+b31 to b17 —
+
+ARCST Flag (Alpha Blending Status Flag)
+This flag indicates whether or not fade-in or fade-out is in progress for rectangular alpha blending. When the
+GRnAB1.ARCON bit is 1 (rectangular alpha blending) and the BGEN.VEN bit or GRnVEN.VEN bit is set to 1 (enable
+reflection of register values on assertion of the VS signal), then this flag becomes 1 at the immediate assertion of the VS
+signal. When the GRnAB1.ARCON bit is 0 (per-pixel alpha blending) or when the fade-in or fade-out is completed
+(alpha value reaches the FFh or 00h), this flag becomes 0. If the value of the GRnAB6.ARCCOEF[8:0] bits are 000h and
+the value of the GRnAB7.ARCDEF[7:0] bits are any value other than FFh or 00h, the alpha value does not reach the FFh
+or 00h, thus this flag remains 1 (timeout processing is not performed).
+UFST Flag (Underflow Status Flag)
+This flag becomes 1 when data supply required in the graphics data interface block was delayed (occurrence of an
+underflow).
+The STMON.GRnUF flag becomes 1 when an underflow occurs, and retains its value until it is cleared by software.
+However, this flag automatically becomes 0 when the graphics data interface block is initialized on assertion of the VS
+signal.
+Even when the current graphics data is not required (the GRnAB1.DISPSEL[1:0] bits are 00b (background color) or 01b
+(lower-layer graphics)), this flag becomes 1 during the period from the start of the graphics area to the assertion timing of
+the VS signal for next frame. In addition, for the first frame after a software reset, this flag may become 1 before the VS
+signal is asserted depending on the value set in the BGSYNC.VP[3:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2699 of 3240
+
+RX72N Group
+
+51.2.27
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Block Register Update Control Register (GAMxVEN) (x =
+G, B, R)
+
+Address(es): GLCDC.GAMGVEN 000E 1300h, GLCDC.GAMBVEN 000E 1340h, GLCDC.GAMRVEN 000E 1380h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+VEN
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+VEN
+
+Gamma Correction x Block
+Register Value Reflection
+Enable
+
+0: Disable the reflection of the register values
+1: Enable the reflection of the register values (This bit
+automatically becomes 0)
+
+R/W
+
+b31 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+VEN Bit (Gamma Correction x Block Register Value Reflection Enable)
+This bit enables or disables reflection of the register values to the gamma correction x block internal operations on
+assertion of the VS (vertical synchronization) signal.
+When this bit is set to 1, the values of registers GAMSW, GAMxLUT1 to GAMxLUT8, and GAMxAREA1 to
+GAMxAREA5 are reflected to the internal operations on assertion of the immediate VS signal, and then this bit
+automatically becomes 0. When the BGEN.VEN bit is 1, the register values are reflected to the internal operations on
+assertion of the VS signal, regardless of the value of this bit.
+Set this bit to 1 only when the BGEN.VEN bit and this bit are both 0. Operation is not guaranteed when setting this bit to
+1 while one of the bits is 1.
+While the BGEN.VEN bit or this bit is 1, do not modify registers GAMSW, GAMxLUT1 to GAMxLUT8, and
+GAMxAREA1 to GAMxAREA5. Otherwise, operation is not guaranteed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2700 of 3240
+
+RX72N Group
+
+51.2.28
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction Block Function Switch Register (GAMSW)
+
+Address(es): GLCDC.GAMSW 000E 1304h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+GAMO
+N
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+GAMON
+
+Gamma Correction Enable
+
+0: Disables gamma correction
+1: Enables gamma correction
+
+R/W
+
+b31 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMGVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2701 of 3240
+
+RX72N Group
+
+51.2.29
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Table Setting Register 1 (GAMxLUT1) (x = G, B, R)
+
+Address(es): GLCDC.GAMGLUT1 000E 1308h, GLCDC.GAMBLUT1 000E 1348h, GLCDC.GAMRLUT1 000E 1388h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GAIN00[10:0]
+
+GAIN01[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+GAIN01[10:0]
+
+Area 1 Gain Setting
+
+Set the gain value for area 1 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b10
+and b9.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 GAIN00[10:0]
+
+Area 0 Gain Setting
+
+Set the gain value for area 0 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b26
+and b25.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2702 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma correction for each color is performed as follows (n = 0 to 15):
+Dout = (Din – THn) × GAINn + OFFSETn
+OFFSETn = OFFSETn–1 + (THn – THn–1) × GAINn–1
+Din:
+
+Dout:
+THn:
+
+Input signal. 10 bits. When the CLKPHASE.FRONTGAM bit is 1 (Process gamma correction prior to
+brightness/contrast correction), 00b is added to the lower 2 bits of the output data of graphic 2 for
+extension (refer to Figure 51.8).
+Output signal. 10 bits.
+Threshold for area n. 10 bits (set in the GAMxAREAi registers (i = 1 to 5)). Up to 15 can be set (TH 0 =
+
+GAINn:
+
+0).
+Gain for area n. 0/1024 to 2047/1024 for each area (set in the GAMxLUTj registers (j = 1 to 8)). Can be
+
+set for up to 16 areas.
+OFFSETn: Offset value for area n. 21 bits (result of internal calculation; up to 15 points (OFFSET0 = 0)). The
+values are automatically calculated from the assertion of the VS signal to the start of active pixels.
+Note:
+
+Because the gain is a positive number (≥ 0), the correction curve shows a monotonic increase.
+
+IN 2
+GA
+
+G
+AI
+N
+
+0
+
+OFFSET3
+
+OFFSET1
+
+OFFSET2
+
+GA
+IN
+
+1
+
+Output (Dout)
+
+Correction curve
+
+0
+(TH0)
+
+Figure 51.11
+
+Area 0
+
+TH1
+
+Area 1
+
+TH2
+Input (Din)
+
+Area 2
+
+TH3
+
+Calculation of Gamma Correction Value
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2703 of 3240
+
+RX72N Group
+
+51.2.30
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Table Setting Register 2 (GAMxLUT2) (x = G, B, R)
+
+Address(es): GLCDC.GAMGLUT2 000E 130Ch, GLCDC.GAMBLUT2 000E 134Ch, GLCDC.GAMRLUT2 000E 138Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GAIN02[10:0]
+
+GAIN03[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+GAIN03[10:0]
+
+Area 3 Gain Setting
+
+Set the gain value for area 3 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b10
+and b9.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 GAIN02[10:0]
+
+Area 2 Gain Setting
+
+Set the gain value for area 2 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b26
+and b25.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2704 of 3240
+
+RX72N Group
+
+51.2.31
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Table Setting Register 3 (GAMxLUT3) (x = G, B, R)
+
+Address(es): GLCDC.GAMGLUT3 000E 1310h, GLCDC.GAMBLUT3 000E 1350h, GLCDC.GAMRLUT3 000E 1390h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GAIN04[10:0]
+
+GAIN05[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+GAIN05[10:0]
+
+Area 5 Gain Setting
+
+Set the gain value for area 5 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b10
+and b9.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 GAIN04[10:0]
+
+Area 4 Gain Setting
+
+Set the gain value for area 4 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b26
+and b25.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2705 of 3240
+
+RX72N Group
+
+51.2.32
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Table Setting Register 4 (GAMxLUT4) (x = G, B, R)
+
+Address(es): GLCDC.GAMGLUT4 000E 1314h, GLCDC.GAMBLUT4 000E 1354h, GLCDC.GAMRLUT4 000E 1394h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GAIN06[10:0]
+
+GAIN07[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+GAIN07[10:0]
+
+Area 7 Gain Setting
+
+Set the gain value for area 7 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b10
+and b9.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 GAIN06[10:0]
+
+Area 6 Gain Setting
+
+Set the gain value for area 6 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b26
+and b25.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2706 of 3240
+
+RX72N Group
+
+51.2.33
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Table Setting Register 5 (GAMxLUT5) (x = G, B, R)
+
+Address(es): GLCDC.GAMGLUT5 000E 1318h, GLCDC.GAMBLUT5 000E 1358h, GLCDC.GAMRLUT5 000E 1398h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GAIN08[10:0]
+
+GAIN09[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+GAIN09[10:0]
+
+Area 9 Gain Setting
+
+Set the gain value for area 9 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b10
+and b9.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 GAIN08[10:0]
+
+Area 8 Gain Setting
+
+Set the gain value for area 8 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b26
+and b25.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2707 of 3240
+
+RX72N Group
+
+51.2.34
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Table Setting Register 6 (GAMxLUT6) (x = G, B, R)
+
+Address(es): GLCDC.GAMGLUT6 000E 131Ch, GLCDC.GAMBLUT6 000E 135Ch, GLCDC.GAMRLUT6 000E 139Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GAIN10[10:0]
+
+GAIN11[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+GAIN11[10:0]
+
+Area 11 Gain Setting
+
+Set the gain value for area 11 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b10
+and b9.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 GAIN10[10:0]
+
+Area 10 Gain Setting
+
+Set the gain value for area 10 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b26
+and b25.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2708 of 3240
+
+RX72N Group
+
+51.2.35
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Table Setting Register 7 (GAMxLUT7) (x = G, B, R)
+
+Address(es): GLCDC.GAMGLUT7 000E 1320h, GLCDC.GAMBLUT7 000E 1360h, GLCDC.GAMRLUT7 000E 13A0h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GAIN12[10:0]
+
+GAIN13[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+GAIN13[10:0]
+
+Area 13 Gain Setting
+
+Set the gain value for area 13 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b10
+and b9.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 GAIN12[10:0]
+
+Area 12 Gain Setting
+
+Set the gain value for area 12 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b26
+and b25.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2709 of 3240
+
+RX72N Group
+
+51.2.36
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Table Setting Register 8 (GAMxLUT8) (x = G, B, R)
+
+Address(es): GLCDC.GAMGLUT8 000E 1324h, GLCDC.GAMBLUT8 000E 1364h, GLCDC.GAMRLUT8 000E 13A4h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GAIN14[10:0]
+
+GAIN15[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+GAIN15[10:0]
+
+Area 15 Gain Setting
+
+Set the gain value for area 15 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b10
+and b9.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 GAIN14[10:0]
+
+Area 14 Gain Setting
+
+Set the gain value for area 14 in 11-bit unsigned fixed point
+number. The location of the decimal point is between b26
+and b25.
+000h: 0.000 (0/1024)
+:
+400h: 1.000 (1024/1024)
+:
+7FFh: 1.999 (2047/1024)
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2710 of 3240
+
+RX72N Group
+
+51.2.37
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Area Setting Register 1 (GAMxAREA1) (x = G, B, R)
+
+Address(es): GLCDC.GAMGAREA1 000E 1328h, GLCDC.GAMBAREA1 000E 1368h, GLCDC.GAMRAREA1 000E 13A8h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+TH01[9:0]
+
+0
+
+0
+
+b18
+
+b17
+
+b16
+
+TH02[9:6]
+
+TH02[5:0]
+Value after reset:
+
+b21
+
+TH03[9:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b9 to b0
+
+TH03[9:0]
+
+Area 3 Start Threshold Setting
+
+Set the start threshold (intensity for each color) of area 3 in
+10-bit unsigned integer.
+
+R/W
+
+b19 to b10 TH02[9:0]
+
+Area 2 Start Threshold Setting
+
+Set the start threshold (intensity for each color) of area 2 in
+10-bit unsigned integer.
+
+R/W
+
+b29 to b20 TH01[9:0]
+
+Area 1 Start Threshold Setting
+
+Set the start threshold (intensity for each color) of area 1 in
+10-bit unsigned integer.
+
+R/W
+
+b31, b30
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+—
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+Set the start threshold THn of area n (n = 0 to 15) to satisfy the condition THn < THn+1 (TH0 = 000h, TH16 = 3FFh).
+Otherwise, operation is not guaranteed.
+Only if THn is set to 3FFh, the setting of THn = THn+1 is available.
+For details on calculation of the gamma correction value, refer to section 51.2.29, Gamma Correction x Table
+Setting Register 1 (GAMxLUT1) (x = G, B, R), and Figure 51.11.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2711 of 3240
+
+RX72N Group
+
+51.2.38
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Area Setting Register 2 (GAMxAREA2) (x = G, B, R)
+
+Address(es): GLCDC.GAMGAREA2 000E 132Ch, GLCDC.GAMBAREA2 000E 136Ch, GLCDC.GAMRAREA2 000E 13ACh
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+TH04[9:0]
+
+0
+
+0
+
+b18
+
+b17
+
+b16
+
+TH05[9:6]
+
+TH05[5:0]
+Value after reset:
+
+b21
+
+TH06[9:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b9 to b0
+
+TH06[9:0]
+
+Area 6 Start Threshold Setting
+
+Set the start threshold (intensity for each color) of area 6 in
+10-bit unsigned integer.
+
+R/W
+
+b19 to b10 TH05[9:0]
+
+Area 5 Start Threshold Setting
+
+Set the start threshold (intensity for each color) of area 5 in
+10-bit unsigned integer.
+
+R/W
+
+b29 to b20 TH04[9:0]
+
+Area 4 Start Threshold Setting
+
+Set the start threshold (intensity for each color) of area 4 in
+10-bit unsigned integer.
+
+R/W
+
+b31, b30
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+—
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+51.2.39
+
+Gamma Correction x Area Setting Register 3 (GAMxAREA3) (x = G, B, R)
+
+Address(es): GLCDC.GAMGAREA3 000E 1330h, GLCDC.GAMBAREA3 000E 1370h, GLCDC.GAMRAREA3 000E 13B0h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+TH07[9:0]
+
+0
+
+0
+
+b18
+
+b17
+
+b16
+
+TH08[9:6]
+
+TH08[5:0]
+Value after reset:
+
+b21
+
+TH09[9:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b9 to b0
+
+TH09[9:0]
+
+Area 9 Start Threshold Setting
+
+Set the start threshold (intensity for each color) of area 9 in
+10-bit unsigned integer.
+
+R/W
+
+b19 to b10 TH08[9:0]
+
+Area 8 Start Threshold Setting
+
+Set the start threshold (intensity for each color) of area 8 in
+10-bit unsigned integer.
+
+R/W
+
+b29 to b20 TH07[9:0]
+
+Area 7 Start Threshold Setting
+
+Set the start threshold (intensity for each color) of area 7 in
+10-bit unsigned integer.
+
+R/W
+
+b31, b30
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+—
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2712 of 3240
+
+RX72N Group
+
+51.2.40
+
+51. Graphic LCD Controller (GLCDC)
+
+Gamma Correction x Area Setting Register 4 (GAMxAREA4) (x = G, B, R)
+
+Address(es): GLCDC.GAMGAREA4 000E 1334h, GLCDC.GAMBAREA4 000E 1374h, GLCDC.GAMRAREA4 000E 13B4h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+TH10[9:0]
+
+0
+
+0
+
+b18
+
+b17
+
+b16
+
+TH11[9:6]
+
+TH11[5:0]
+Value after reset:
+
+b21
+
+TH12[9:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b9 to b0
+
+TH12[9:0]
+
+Area 12 Start Threshold
+Setting
+
+Set the start threshold (intensity for each color) of area 12 in
+10-bit unsigned integer.
+
+R/W
+
+b19 to b10 TH11[9:0]
+
+Area 11 Start Threshold Setting
+
+Set the start threshold (intensity for each color) of area 11 in
+10-bit unsigned integer.
+
+R/W
+
+b29 to b20 TH10[9:0]
+
+Area 10 Start Threshold
+Setting
+
+Set the start threshold (intensity for each color) of area 10 in
+10-bit unsigned integer.
+
+R/W
+
+b31, b30
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+—
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+51.2.41
+
+Gamma Correction x Area Setting Register 5 (GAMxAREA5) (x = G, B, R)
+
+Address(es): GLCDC.GAMGAREA5 000E 1338h, GLCDC.GAMBAREA5 000E 1378h, GLCDC.GAMRAREA5 000E 13B8h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+TH13[9:0]
+
+0
+
+0
+
+b18
+
+b17
+
+b16
+
+TH14[9:6]
+
+TH14[5:0]
+Value after reset:
+
+b21
+
+TH15[9:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b9 to b0
+
+TH15[9:0]
+
+Area 15 Start Threshold
+Setting
+
+Set the start threshold (intensity for each color) of area 15 in
+10-bit unsigned integer.
+
+R/W
+
+b19 to b10 TH14[9:0]
+
+Area 14 Start Threshold
+Setting
+
+Set the start threshold (intensity for each color) of area 14 in
+10-bit unsigned integer.
+
+R/W
+
+b29 to b20 TH13[9:0]
+
+Area 13 Start Threshold
+Setting
+
+Set the start threshold (intensity for each color) of area 13 in
+10-bit unsigned integer.
+
+R/W
+
+b31, b30
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+—
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the GAMxVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2713 of 3240
+
+RX72N Group
+
+51.2.42
+
+51. Graphic LCD Controller (GLCDC)
+
+Output Control Block Register Update Control Register (OUTVEN)
+
+Address(es): GLCDC.OUTVEN 000E 13C0h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+VEN
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+VEN
+
+Output Control Block Register
+Value Reflection Enable
+
+0: Disable the reflection of the register values
+1: Enable the reflection of the register values (This bit
+automatically becomes 0)
+
+R/W
+
+b31 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+VEN Bit (Output Control Block Register Value Reflection Enable)
+This bit enables or disables reflection of the register values to the output control block internal operations on assertion of
+the VS (vertical synchronization) signal.
+When this bit is set to 1, the values of registers BRIGHT1, BRIGHT2, CONTRAST, PANELDTHA, and CLKPHASE
+are reflected to the internal operations on assertion of the immediate VS signal, and then this bit automatically becomes
+0. When the BGEN.VEN bit is 1, the register values are reflected to the internal operations on assertion of the VS signal,
+regardless of the value of this bit.
+Set this bit to 1 only when the BGEN.VEN bit and this bit are both 0. Operation is not guaranteed when setting this bit to
+1 while one of the bits is 1.
+While the BGEN.VEN bit or this bit is 1, do not modify registers BRIGHT1, BRIGHT2, CONTRAST, PANELDTHA,
+and CLKPHASE. Otherwise, operation is not guaranteed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2714 of 3240
+
+RX72N Group
+
+51.2.43
+
+51. Graphic LCD Controller (GLCDC)
+
+Output Interface Register (OUTSET)
+
+Address(es): GLCDC.OUTSET 000E 13C4h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+ENDIA
+NON
+
+—
+
+—
+
+—
+
+SWAP
+ON
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+FORMAT[1:0]
+
+—
+
+—
+
+FRQSE
+L
+
+—
+
+—
+
+—
+
+—
+
+DIRSE
+L
+
+—
+
+—
+
+PHASE[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+PHASE[1:0]
+
+Serial RGB Data Output Delay
+Control
+
+b1 b0
+
+R/W
+
+b3, b2
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b4
+
+DIRSEL
+
+Serial RGB Scan Direction
+Select
+
+0: Forward scan
+1: Reverse scan
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b8
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b9
+
+FRQSEL
+
+Pixel Clock Division Control*1
+
+0: No division (parallel RGB)
+1: Divide-by-4 (serial RGB)
+
+R/W
+
+b11, b10
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b13, b12
+
+FORMAT[1:0]
+
+Output Data Format Select*2
+
+b13 b12
+
+b23 to b14 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b24
+
+Pixel Order Control
+
+0: R-G-B order
+1: B-G-R order
+
+b27 to b25 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b28
+
+Bit Endian Control
+
+0: Little endian
+1: Big endian
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+SWAPON
+
+ENDIANON
+
+b31 to b29 —
+
+0 0: 0 cycles
+0 1: 1 cycle
+1 0: 2 cycles
+1 1: 3 cycles
+
+0 0: RGB(888)
+0 1: RGB(666)
+1 0: RGB(565)
+1 1: Serial RGB
+
+R/W
+
+R/W
+
+R/W
+
+R/W
+
+Note:
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+Note 1. Set the same value as the PANELCLK.PIXSEL bit.
+Note 2. Match the contents of the settings of these bits with the those of the PANELDTHA.FORM[1:0] bits. However, if these bits are
+11b (serial RGB), set the FORM[1:0] bits to 00b.
+
+This register specifies the format of LCD_DATA23 to LCD_DATA0 to be output from the data format conversion block.
+For the relation between the settings for each bit except the FRQSEL bit and assignment of the output pins
+(LCD_DATA23 to LCD_DATA0), refer to Table 51.4 to Table 51.8. In addition, refer to Figure 51.7 for the value set
+in the PHASE[1:0] bits and output timing of the data.
+PHASE[1:0] Bits (Serial RGB Data Output Delay Control)
+These bits control data output delay in serial RGB format. When these bits are 00b (0 cycles), pixel data (R, B, or invalid
+data, depending on the setting in this register) is output one pixel clock (PXCLK) after the HE (horizontal data enable)
+signal. When these bits are any value other than 00b, pixel data output is delayed for a specified number of LCD_CLK
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2715 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+cycles.
+DIRSEL Bit (Serial RGB Scan Direction Select)
+This bit controls the assignment of invalid data for the serial RGB format. When this bit is 1 (reverse scan), invalid data
+is output before valid data. When the bit is 0 (forward scan), invalid data is output after valid data.
+FRQSEL Bit (Pixel Clock Division Control)
+This bit specifies division ratio of the PXCLK (pixel clock) for the LCD_CLK (panel clock). Set this bit to 1 to set the
+PXCLK frequency to a quarter of the LCD_CLK frequency only when the OUTSET.FORMAT[1:0] bits are 11b (serial
+RGB format). Set this bit to 0 to set the PXCLK frequency to the same as the LCD_CLK frequency when the
+OUTSET.FORMAT[1:0] bits are 00b, 01b, or 10b (parallel RGB format). Otherwise, operation is not guaranteed.
+FORMAT[1:0] Bits (Output Data Format Select)
+These bits select the format of RGB data output to LCD panel. Set the value of the PANELDTHA.FORM[1:0] bits in
+accordance with the format selected in these bits. When these bits are set to 11b (serial RGB format), set the
+PANELDTHA.FORM[1:0] bits to 00b (RGB(888)). Otherwise, operation is not guaranteed.
+SWAPON Bit (Pixel Order Control)
+This bit controls the pixel order of RGB data output to LCD panel. When this bit is set to 1, data is assigned to the output
+pins in B-G-R order, and when this bit is 0, data is assigned in the R-G-B order. In the parallel RGB format, data is
+assigned to the output pins in a preset order from the MSB side (LCD_DATA23). In the serial RGB format, data is
+assigned in order of time.
+ENDIANON Bit (Bit Endian Control)
+This bit controls the bit order of RGB data output to LCD panel. When this bit is 1, data is assigned to the output pins in
+big endian (LCD_DATA23 side to the least significant bit of R, G, or B), and when this bit is 0, data is assigned in little
+endian (LCD_DATA23 side to the most significant bit of R, G, or B).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2716 of 3240
+
+RX72N Group
+
+51.2.44
+
+51. Graphic LCD Controller (GLCDC)
+
+Brightness Adjustment Register 1 (BRIGHT1)
+
+Address(es): GLCDC.BRIGHT1 000E 13C8h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+BRTG[9:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b9 to b0
+
+BRTG[9:0]
+
+G Channel Brightness
+Adjustment Value Setting
+
+Set the brightness adjustment value for G channel with +512
+offset.
+000h: –512
+:
+200h: 0
+:
+3FFh: +511
+
+R/W
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b31 to b10 —
+Note:
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the OUTVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+Brightness adjustment for the G channel is performed as follows:
+Gout = Gin + BRTG[9:0] – 512
+Gout:
+Gin:
+
+Output of brightness adjustment (input of contrast adjustment); 10-bit unsigned integer
+Input of brightness adjustment; 10-bit unsigned integer
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2717 of 3240
+
+RX72N Group
+
+51.2.45
+
+51. Graphic LCD Controller (GLCDC)
+
+Brightness Adjustment Register 2 (BRIGHT2)
+
+Address(es): GLCDC.BRIGHT2 000E 13CCh
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+BRTB[9:0]
+
+BRTR[9:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b9 to b0
+
+BRTR[9:0]
+
+R Channel Brightness
+Adjustment Value Setting
+
+Set the brightness adjustment value for R channel with +512
+offset.
+000h: –512
+:
+200h: 0
+:
+3FFh: +511
+
+R/W
+
+b15 to b10 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b25 to b16 BRTB[9:0]
+
+B Channel Brightness
+Adjustment Value Setting
+
+Set the brightness adjustment value for B channel with +512
+offset.
+000h: –512
+:
+200h: 0
+:
+3FFh: +511
+
+b31 to b26 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the OUTVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+Brightness adjustment for the R channel is performed as follows:
+Rout = Rin + BRTR[9:0] – 512
+Rout:
+Rin:
+
+Output of brightness adjustment (input of contrast adjustment); 10-bit unsigned integer
+Input of brightness adjustment; 10-bit unsigned integer
+
+Brightness adjustment for the B channel is performed as follows:
+Bout = Bin + BRTB[9:0] – 512
+Bout:
+Bin:
+
+Output of brightness adjustment (input of contrast adjustment); 10-bit unsigned integer
+Input of brightness adjustment; 10-bit unsigned integer
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2718 of 3240
+
+RX72N Group
+
+51.2.46
+
+51. Graphic LCD Controller (GLCDC)
+
+Contrast Adjustment Register (CONTRAST)
+
+Address(es): GLCDC.CONTRAST 000E 13D0h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+CONTG[7:0]
+
+CONTB[7:0]
+Value after reset:
+
+b20
+
+CONTR[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+CONTR[7:0]
+
+R Channel Contrast
+Adjustment Value Setting
+
+Set the contrast adjustment value for R channel in 8-bit
+unsigned fixed point number. The location of the decimal
+point is between b7 and b6.
+00h: 0/128 = 0.000
+:
+80h: 128/128 = 1.000
+:
+FFh: 255/128 = 1.992
+
+R/W
+
+b15 to b8
+
+CONTB[7:0]
+
+B Channel Contrast
+Adjustment Value Setting
+
+Set the contrast adjustment value for B channel in 8-bit
+unsigned fixed point number. The location of the decimal
+point is between b15 and b14.
+00h: 0/128 = 0.000
+:
+80h: 128/128 = 1.000
+:
+FFh: 255/128 = 1.992
+
+R/W
+
+b23 to b16 CONTG[7:0]
+
+G Channel Contrast
+Adjustment Value Setting
+
+Set the contrast adjustment value for G channel in 8-bit
+unsigned fixed point number. The location of the decimal
+point is between b23 and b22.
+00h: 0/128 = 0.000
+:
+80h: 128/128 = 1.000
+:
+FFh: 255/128 = 1.992
+
+R/W
+
+b31 to b24 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the OUTVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+Contrast adjustment of each channel is performed as follows (x = R, G, B):
+Dxout = Dxin × CONTx[7:0]
+Dxout:
+Dxin:
+
+Output of contrast adjustment; 10-bit unsigned integer
+Input of contrast adjustment (output of brightness adjustment); 10-bit unsigned integer
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2719 of 3240
+
+RX72N Group
+
+51.2.47
+
+51. Graphic LCD Controller (GLCDC)
+
+Panel Dither Control Register (PANELDTHA)
+
+Address(es): GLCDC.PANELDTHA 000E 13D4h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+PA[1:0]
+0
+
+0
+
+PB[1:0]
+0
+
+0
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+SEL[1:0]
+
+—
+
+—
+
+FORM[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+PC[1:0]
+
+—
+
+—
+
+PD[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b16
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+PD[1:0]
+
+Dither Pattern Value D Setting
+
+Set the pattern value D of 2×2 pattern dither. The
+recommended value is 01b.
+
+R/W
+
+b3, b2
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b5, b4
+
+PC[1:0]
+
+Dither Pattern Value C Setting
+
+Set the pattern value C of 2×2 pattern dither. The
+recommended value is 10b
+
+R/W
+
+b7, b6
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b9, b8
+
+PB[1:0]
+
+Dither Pattern Value B Setting
+
+Set the pattern value B of 2×2 pattern dither. The
+recommended value is 00b
+
+b11, b10
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b13, b12
+
+PA[1:0]
+
+Dither Pattern Value A Setting
+
+Set the pattern value A of 2×2 pattern dither. The
+recommended value is 11b
+
+b15, b14
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b17, b16
+
+FORM[1:0]
+
+Output Format Select*1
+
+b17 b16
+
+b19, b18
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b21, b20
+
+SEL[1:0]
+
+Rounding Mode Setting
+
+b21 b20
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b31 to b22 —
+
+0
+0
+1
+1
+
+0
+0
+1
+1
+
+0: RGB(888)
+1: RGB(666)
+0: RGB(565)
+1: Setting prohibited
+
+0: Truncate
+1: Round-off
+0: 2×2 pattern dither
+1: Setting prohibited
+
+R/W
+
+R/W
+
+R/W
+
+R/W
+
+Note:
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the OUTVEN.VEN bit or the
+BGEN.VEN bit is 1.
+Note 1. Match the contents of the settings of these bits with the those of the OUTSET.FORMAT[1:0] bits. However, if the FORMAT[1:0]
+bits are 11b (serial RGB), set these bits to 00b.
+
+This register controls the operation of the dithering block. Figure 51.12 shows the structure of the dithering block.
+FORM[1:0] Bits (Output Format Select)
+These bits specify the position for the execution of rounding in the dithering block. These bits must be set in accordance
+with the OUTSET.FORMAT[1:0] bits. When the OUTSET.FORMAT[1:0] bits are 11b (serial RGB), set these bits to 00b
+(RGB(888)). Otherwise, operation is not guaranteed.
+SEL[1:0] Bits (Rounding Mode Setting)
+These bits specify the dither operation mode. Dithering is performed for the bits whose color depth is below the level
+specified in the FORM[1:0] bits. The dither pattern set in the PANELDTHA.PA[1:0], PB[1:0], PC[1:0], and PD[1:0] bits
+are used for 2×2 pattern dither.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2720 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+00b
+
+00b, 01b
+
+PA PB PC PD
+
+10b
+
+Select addition value in the SEL[1:0] bits
+Truncation/round-off:
+2 × 2 pattern dither:
+Shifter
+
+From panel adjustment block
+RGB(10,10,10)
+
+00b
+PA[1:0]/PB[1:0]/PC[1:0]/PD[1:0]
+
+Select the amount of shifting in the FORM[1:0] bits
+8-bit color depth:
+no shifting
+6-bit color depth:
+shifting left by two bits
+5-bit color depth:
+shifting left by three bits
+
+10 bits
+Rounding
+8 bits
+To format conversion block
+RGB(888)
+
+Select the operation in the SEL[1:0] bits and
+select the number of significant digit in the FORM[1:0] bits
+Truncation:
+Round-off:
+2 × 2 pattern dither:
+
+Figure 51.12
+
+Truncate the lower 2 bits and
+replace bits other than the valid
+bits to 0
+Round-off the lower bits of the
+valid bits, and replace bits other
+than the valid bits to 0
+same operation as truncation
+
+Structure of Dithering Block
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2721 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+Figure 51.13 shows the addition value selection method for 2×2 pattern dither.
+
+Repeat
+Upper left corner
+of display
+
+B
+
+Repeat
+
+A:
+B:
+C:
+D:
+
+Figure 51.13
+
+C
+
+D
+
+A
+
+B
+
+C
+
+D
+
+A
+
+D
+
+A
+
+B
+
+C
+
+D
+
+A
+
+B
+
+C
+
+B
+
+C
+
+D
+
+A
+
+B
+
+C
+
+D
+
+A
+
+D
+
+A
+
+B
+
+C
+
+D
+
+A
+
+B
+
+C
+
+Basic pattern
+
+The value shifted from the value of the PANELDTHA.PA[1:0] bits according to the color depth
+The value shifted from the value of the PANELDTHA.PB[1:0] bits according to the color depth
+The value shifted from the value of the PANELDTHA.PC[1:0] bits according to the color depth
+The value shifted from the value of the PANELDTHA.PD[1:0] bits according to the color depth
+
+Addition Value Selection Method for 2×2 Pattern Dither
+
+The basic pattern is shifted within a frame as shown below and this is repeated every four frames.
+
+B C D A
+D A B C
+
+C D A B
+A B C D
+
+D A B C
+B C D A
+
+A B C D
+C D A B
+
+1st Frame
+
+2nd Frame
+
+3rd Frame
+
+4th Frame
+
+Shift-left by one pixel every frame
+Shift-left by one pixel every frame
+
+When 2×2 pattern dither is used, the active display area of the background screen must be an integer multiple of the basic
+pattern (a multiple of 4 for horizontal and a multiple of 2 for vertical). If serial RGB is selected as the output format, set
+[horizontal active pixels (multiple of 4) + 2] to the BGHSIZE.HW[10:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2722 of 3240
+
+RX72N Group
+
+51.2.48
+
+51. Graphic LCD Controller (GLCDC)
+
+Output Phase Control Register (CLKPHASE)
+
+Address(es): GLCDC.CLKPHASE 000E 13E4h
+
+Value after reset:
+
+Value after reset:
+
+Bit
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+FRONT
+GAM
+
+—
+
+—
+
+—
+
+LCDED
+G
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Symbol
+
+Bit Name
+
+TCON0 TCON1 TCON2 TCON3
+EDG
+EDG
+EDG
+EDG
+0
+
+0
+
+0
+
+0
+
+Description
+
+R/W
+
+b2 to b0
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b3
+
+TCON3EDG
+
+TCON3 Output Phase Control
+
+0: The output of LCD_TCON3 is synchronized with rising
+edges of LCD_CLK
+1: The output of LCD_TCON3 is synchronized with falling
+edges of LCD_CLK
+
+R/W
+
+b4
+
+TCON2EDG
+
+TCON2 Output Phase Control
+
+0: The output of LCD_TCON2 is synchronized with rising
+edges of LCD_CLK
+1: The output of LCD_TCON2 is synchronized with falling
+edges of LCD_CLK
+
+R/W
+
+b5
+
+TCON1EDG
+
+TCON1 Output Phase Control
+
+0: The output of LCD_TCON1 is synchronized with rising
+edges of LCD_CLK
+1: The output of LCD_TCON1 is synchronized with falling
+edges of LCD_CLK
+
+R/W
+
+b6
+
+TCON0EDG
+
+TCON0 Output Phase Control
+
+0: The output of LCD_TCON0 is synchronized with rising
+edges of LCD_CLK
+1: The output of LCD_TCON0 is synchronized with falling
+edges of LCD_CLK
+
+R/W
+
+b7
+
+—
+
+Reserved
+
+This bit is read as 0. Writing to this bit has no effect.
+
+R
+
+b8
+
+LCDEDG
+
+DATA Output Phase Control
+
+0: The outputs of LCD_DATA are synchronized with rising
+edges of LCD_CLK
+1: The outputs of LCD_DATA are synchronized with falling
+edges of LCD_CLK
+
+R/W
+
+b11 to b9
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b12
+
+FRONTGAM
+
+Correction Sequence Control
+
+0: Process brightness/contrast adjustment prior to gamma
+correction
+1: Process gamma correction prior to brightness/contrast
+adjustment
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b31 to b13 —
+Note:
+
+R/W
+
+This register setting is reflected to the internal operations when the VS signal is asserted while the OUTVEN.VEN bit or the
+BGEN.VEN bit is 1.
+
+FRONTGAM Bit (Correction Sequence Control)
+This bit controls the order of processing in the panel adjustment block. When this bit is set to 1, gamma correction is
+followed by brightness and contrast adjustment, and when it is set to 0, gamma correction follows brightness and contrast
+adjustment. In both cases, each RGB data output from the graphic 2 block is extended from 8 bits to 10 bits (with 00b
+appended to the lower side). The output of the panel adjustment block is rounded to 10 bits and is input to the dithering
+block. Although the sequence of gamma correction and brightness/contrast adjustment can be reversed using this bit,
+brightness adjustment always precedes contrast adjustment.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2723 of 3240
+
+RX72N Group
+
+51.2.49
+
+51. Graphic LCD Controller (GLCDC)
+
+Reference Timing Setting Register (TCONTIM)
+
+Address(es): GLCDC.TCONTIM 000E 1404h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+HALF[10:0]
+
+OFFSET[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+OFFSET[10:0]
+
+Horizontal Synchronization
+Signal Reference Timing
+Setting
+
+000h: 1 pixel
+:
+3FFh: 1024 pixels
+Settings other than the above are prohibited.
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 HALF[10:0]
+
+Vertical Synchronization Signal
+Transition Timing Setting
+
+000h: 1 pixel (no delay)
+:
+3FFh: 1024 pixels
+Settings other than the above are prohibited.
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+
+OFFSET[10:0] Bits (Horizontal Synchronization Signal Reference Timing Setting)
+These bits specify the reference timing position for generating the horizontal synchronization signal in the TCON block.
+Set the offset from the internal HS (horizontal synchronization) signal in pixels. Figure 51.14 shows the horizontal
+synchronization signal generation timing in the TCON block.
+
+PXCLK
+HS
+HREF
+TCONTIM.OFFSET[10:0]
+(1) TCONSTHy2.HSSEL bit is 0
+
+TCONSTHy1.HW[10:0]
+
+STHy
+TCONSTHy1.HS[10:0]
+(2) TCONSTHy2.HSSEL bit is 1
+
+TCONSTHy1.HW[10:0]
+
+STHy
+TCONSTHy1.HS[10:0]
+
+Figure 51.14
+
+Horizontal Synchronization Signal Generation Timing in the TCON Block (y = A, B)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2724 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+HALF[10:0] Bits (Vertical Synchronization Signal Transition Timing Setting)
+These bits specify the waveform transition position within a single horizontal line for generating the vertical
+synchronization signal in the TCON block. Set the transition timing as a delay from the internal HS (horizontal
+synchronization) signal in pixel units.
+When a value other than 000h is set to these bits, the internal line counter runs at twice the speed. In this case, set a value
+of twice the desired number of lines to the TCONSTVy1 register.
+Figure 51.15 shows the vertical synchronization signal transition timing in the TCON block.
+
+PXCLK
+HS
+VS
+HS_HALF
+TCONTIM.HALF[10:0]
+(1) TCONTIM.HALF[10:0] bits are equal to 000h
+STVy
+Internal
+line counter
+
+1
+
+2
+
+(2) TCONTIM.HALF[10:0] bits are greater than 000h
+STVy
+Internal
+line counter
+
+Figure 51.15
+
+1
+
+2
+
+3
+
+Vertical Synchronization Signal Transition Timing in the TCON Block (y = A, B)
+
+Figure 51.16 shows the structure of the output control block and the signal flow.
+The pixel data and control signals are output to the external pins along different paths. They are generated based on the
+same signal and the internal delay is the same 3 PXCLK cycles. Therefore, differences in delay due to the settings of the
+respective registers become deferences in the timing of operations of the external pins.
+
+VS
+HS
+VE
+HE
+
+Panel
+adjustment
+block
+
+Dither
+processing
+block
+
+VS
+HS
+VE
+HE
+
+RGB(888)
+
+Format conversion block
+
+3 PXCLK cycles
+Serial RGB
+3 PXCLK cycles
+
+RGB(10,10,10)
+
+LCD_DATA23
+
+parallel RGB
+
+LCD_DATA0
+
+RGB(888)
+TCON block
+
+Sync.
+block
+
+LCD_TCON3
+LCD_TCON2
+LCD_TCON1
+LCD_TCON0
+
+3 PXCLK cycles
+
+Figure 51.16
+
+Internal Structure of Output Control Block
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2725 of 3240
+
+RX72N Group
+
+51.2.50
+
+51. Graphic LCD Controller (GLCDC)
+
+Vertical Timing Setting Register y1 (TCONSTVy1) (y = A, B)
+
+Address(es): GLCDC.TCONSTVA1 000E 1408h, GLCDC.TCONSTVB1 000E 1410h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+VS[10:0]
+
+VW[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+VW[10:0]
+
+STVy Signal Pulse Width
+Setting*1
+
+000h: 0 lines (0H) (STVy signal is not asserted)
+:
+7FFh: 2047 lines (2047H)
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 VS[10:0]
+
+STVy Signal Assertion Timing
+Setting*1
+
+000h: 0 lines (0H) (no delay)
+:
+7FFh: 2047 lines (2047H)
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+R/W
+
+Note:
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+Note 1. When setting the TCONTIM.HALF[10:0] bits to any value other than 000h, set these bits to twice the desired lines.
+
+VW[10:0] Bits (STVy Signal Pulse Width Setting)
+These bits specify the assertion width of the STVy (vertical synchronization) signal generated in the TCON block in line
+units. When the setting of these bits is 000h, the STVy signal is not asserted.
+VS[10:0] Bits (STVy Signal Assertion Timing Setting)
+These bits specify the assertion timing of the STVy signal generated in the TCON block as a delay in unit of lines from
+assertion of the VS signal. The transition position in a scanline is specified in the TCONTIM.HALF[10:0] bits.
+
+Figure 51.17 shows the transition timing of STVy signal to be generated.
+
+HS
+VS
+STVy
+TCONSTVy1.VS[10:0]
+
+TCONSTVy1.VW[10:0]
+
+TCONTIM.HALF[10:0]
+
+Figure 51.17
+
+Generation of STVy Signal (y = A, B)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2726 of 3240
+
+RX72N Group
+
+51.2.51
+
+51. Graphic LCD Controller (GLCDC)
+
+Vertical Timing Setting Register y2 (TCONSTVy2) (y = A, B)
+
+Address(es): GLCDC.TCONSTVA2 000E 140Ch, GLCDC.TCONSTVB2 000E 1414h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+INV
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+SEL[2:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+SEL[2:0]
+
+Output Signal Select
+
+b2
+
+R/W
+
+b3
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to this bit has no effect.
+
+R
+
+b4
+
+INV
+
+STVy Signal Polarity Inversion
+
+0: Do not invert the STVy signal
+1: Invert the STVy signal
+
+R/W
+
+b31 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+b0
+
+0 0 0: STVA
+0 0 1: STVB
+0 1 0: STHA
+0 1 1: STHB
+1 0 0: Setting prohibited
+1 0 1: Setting prohibited
+1 1 0: Setting prohibited
+1 1 1: DE
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+
+SEL[2:0] Bits (Output Signal Select)
+These bits select the output signal for the LCD_TCON0 and LCD_TCON1 pin. TCONSTVA2.SEL[2:0] bits are used to
+select signal for LCD_TCON0 pin, and TCONSTVB2.SEL[2:0] bits are for the LCD_TCON1 pin.
+
+Figure 51.18 shows the structure of inversion control and output signal selection.
+
+STVA
+
+VS
+HS
+
+Signal
+generation
+
+STVB
+STHA
+STHB
+
+Inverting
+control
+
+DE
+
+Figure 51.18
+
+Selector
+
+Selector
+
+Selector
+
+Selector
+
+TCON0
+
+TCON1
+
+TCON2
+
+TCON3
+
+Structure of Inversion Control and Output Signal Selects
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2727 of 3240
+
+RX72N Group
+
+51.2.52
+
+51. Graphic LCD Controller (GLCDC)
+
+Horizontal Timing Setting Register y1 (TCONSTHy1) (y = A, B)
+
+Address(es): GLCDC.TCONSTHA1 000E 1418h, GLCDC.TCONSTHB1 000E 1420h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+HS[10:0]
+
+HW[10:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b10 to b0
+
+HW[10:0]
+
+STHy Signal Pulse Width
+Setting
+
+000h: 0 pixels (STHy signal is not asserted)
+:
+3FFh: 1023 pixels
+Settings other than the above are prohibited.
+
+R/W
+
+b15 to b11
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b26 to b16 HS[10:0]
+
+STHy Signal Assertion Timing
+Setting
+
+000h: 0 pixels (no delay)
+:
+3FFh: 1023 pixels
+Settings other than the above are prohibited.
+
+b31 to b27 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+R/W
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+
+HW[10:0] Bits (STHy Signal Pulse Width Setting)
+These bits specify the assertion width of the STHy (horizontal synchronization) signal generated in the TCON block in
+pixel units. When setting these bits to 000h, STHy signal is not asserted.
+HS[10:0] Bits (STHy Signal Assertion Timing Setting)
+These bits specify the assertion timing of the STHy signal generated in the TCON block as a delay from the HS signal or
+the offset reference position specified by the TCONTIM.OFFSET[10:0] bits, in unit of pixels.
+
+Figure 51.14 shows the STHy signal generation timing.
+Setting the TCONTIM.OFFSET[10:0], HW[10:0], and HS[10:0] bits appropriately leads to the generation of an STHy
+signal having a width spanning an interval from a point before assertion to a point after negation of the HS signal
+(spanning the HS signal).
+When an STHy signal spanning the HS signal is generated, the horizontal synchronization signal of the last line of the
+frame extends into the first line of the next frame. In this case, when the BGEN.EN bit is set to 0 to stop operation of the
+GLCDC, the STHy signal is not negated at the end of the frame and remains asserted up to the point set in the HW[10:0]
+bits. However, setting the BGEN.SWRST bit to 0 returns the STHy signal back to the initial state immediately.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2728 of 3240
+
+RX72N Group
+
+51.2.53
+
+51. Graphic LCD Controller (GLCDC)
+
+Horizontal Timing Setting Register y2 (TCONSTHy2) (y = A, B)
+
+Address(es): GLCDC.TCONSTHA2 000E 141Ch, GLCDC.TCONSTHB2 000E 1424h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+HSSEL
+
+—
+
+—
+
+—
+
+INV
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+SEL[2:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+SEL[2:0]
+
+Output Signal Select
+
+b2
+
+R/W
+
+b3
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to this bit has no effect.
+
+R
+
+b4
+
+INV
+
+STHy Signal Polarity Inversion
+
+0: Do not invert the STHy signal
+1: Invert the STHy signal
+
+R/W
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b8
+
+HSSEL
+
+STHy Signal Reference Timing
+Select
+
+0: Select HS signal as reference for signal generation
+1: Select the offset position specified in the
+TCONTIM.OFFSET[10:0] bits as reference for signal
+generation
+
+b31 to b9
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+b0
+
+0 0 0: STVA
+0 0 1: STVB
+0 1 0: STHA
+0 1 1: STHB
+1 0 0: Setting prohibited
+1 0 1: Setting prohibited
+1 1 0: Setting prohibited
+1 1 1: DE
+
+R/W
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+
+SEL[2:0] Bits (Output Signal Select)
+These bits select the output signal for the LCD_TCON2 and LCD_TCON3 pin. TCONSTHA2.SEL[2:0] bits are used to
+select signal for LCD_TCON2 pin, and TCONSTHB2.SEL[2:0] bits are for the LCD_TCON3 pin.
+HSSEL Bit (STHy Signal Reference Timing Select)
+This bit selects the reference timing for generating the STHy (horizontal synchronization) signal. For details on the
+relation between this bit setting and the generated STHy signal, refer to Figure 51.14.
+For the structure of the inversion control and output signal select, refer to Figure 51.18.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2729 of 3240
+
+RX72N Group
+
+51.2.54
+
+51. Graphic LCD Controller (GLCDC)
+
+Data Enable Polarity Setting Register (TCONDE)
+
+Address(es): GLCDC.TCONDE 000E 1428h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+INV
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+INV
+
+DE Signal Polarity Inversion
+
+0: Do not invert the DE signal
+1: Invert the DE signal
+
+R/W
+
+b31 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+Note:
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+
+INV Bit (DE Signal Polarity Inversion)
+This bit controls polarity inversion of the data enable signal (DE). The DE signal is the logical AND of the STVB and
+STHB signals.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2730 of 3240
+
+RX72N Group
+
+51.2.55
+
+51. Graphic LCD Controller (GLCDC)
+
+Status Detection Control Register (DTCTEN)
+
+Address(es): GLCDC.DTCTEN 000E 1440h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GR2UF GR1UF VPOSD
+DTC
+DTC
+TC
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+VPOSDTC
+
+Specified Line Notification
+Detection Enable
+
+0: Disable detection of specified line notification
+1: Enable detection of specified line notification
+
+R/W
+
+b1
+
+GR1UFDTC
+
+Graphic 1 Underflow Detection
+Enable
+
+0: Disable detection of graphic 1 underflow
+1: Enable detection of graphic 1 underflow
+
+R/W
+
+b2
+
+GR2UFDTC
+
+Graphic 2 Underflow Detection
+Enable
+
+0: Disable detection of graphic 2 underflow
+1: Enable detection of graphic 2 underflow
+
+R/W
+
+b31 to b3
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+VPOSDTC Bit (Specified Line Notification Detection Enable)
+This bit enables or disables detection of the specified line notification from graphic 2. When this bit is 1, the
+STMON.VPOS flag becomes 1 when a specified line notification from graphic 2 is detected. When it is 0, the VPOS flag
+does not become 1 even when a specified line notification from graphic 2 is detected.
+GR1UFDTC Bit (Graphic 1 Underflow Detection Enable)
+This bit enables or disables detection of the graphic 1 underflow. When this bit is 1, the STMON.GR1UF flag becomes 1
+when an underflow occurs in graphic 1. When it is 0, the GR1UF flag does not become 1 even when an underflow occurs
+in graphic 1. The underflow status in graphic 1 is automatically cleared on assertion of the VS signal regardless of the
+value of this bit, and normal operation is recovered.
+GR2UFDTC Bit (Graphic 2 Underflow Detection Enable)
+This bit enables or disables detection of the graphic 2 underflow. When this bit is 1, the STMON.GR2UF flag becomes 1
+when an underflow occurs in graphic 2. When it is 0, the GR2UF flag does not become 1 even when an underflow occurs
+in graphic 2. The underflow status in graphic 2 is automatically cleared on assertion of the VS signal regardless of the
+value of this bit, and normal operation is recovered.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2731 of 3240
+
+RX72N Group
+
+51.2.56
+
+51. Graphic LCD Controller (GLCDC)
+
+Interrupt Request Enable Control Register (INTEN)
+
+Address(es): GLCDC.INTEN 000E 1444h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GR2UF GR1UF VPOSI
+INTEN INTEN NTEN
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+VPOSINTEN
+
+VPOS Interrupt Enable
+
+0: Disable VPOS interrupt request
+1: Enable VPOS interrupt request
+
+R/W
+
+b1
+
+GR1UFINTEN
+
+GR1UF Interrupt Enable
+
+0: Disable GR1UF interrupt request
+1: Enable GR1UF interrupt request
+
+R/W
+
+b2
+
+GR2UFINTEN
+
+GR2UF Interrupt Enable
+
+0: Disable GR2UF interrupt request
+1: Enable GR2UF interrupt request
+
+R/W
+
+b31 to b3
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+VPOSINTEN Bit (VPOS Interrupt Enable)
+This bit enables or disables the VPOS interrupt request. When this bit is 1, the VPOS interrupt request is output when the
+STMON.VPOS flag becomes 1. When it is 0, the VPOS interrupt request is not output even when the VPOS flag
+becomes 1. If this bit is set to 0 during the VPOS interrupt request is output, the VPOS flag does not change, but the
+VPOS interrupt request is negated.
+GR1UFINTEN Bit (GR1UF Interrupt Enable)
+This bit enables or disables the GR1UF interrupt request. When this bit is 1, the GR1UF interrupt request is output when
+the STMON.GR1UF flag becomes 1. When it is 0, the GR1UF interrupt request is not output even when the GR1UF flag
+becomes 1. If this bit is set to 0 during the GR1UF interrupt request is output, the GR1UF flag does not change, but the
+GR1UF interrupt request is negated.
+GR2UFINTEN Bit (GR2UF Interrupt Enable)
+This bit enables or disables the GR2UF interrupt request. When this bit is 1, the GR2UF interrupt request is asserted
+when the STMON.GR2UF flag becomes 1. When it is 0, the GR2UF interrupt request is not output even when the
+GR2UF flag becomes 1. If this bit is set to 0 during the GR2UF interrupt request is output, the GR2UF flag does not
+change, but the GR2UF interrupt request is negated.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2732 of 3240
+
+RX72N Group
+
+51.2.57
+
+51. Graphic LCD Controller (GLCDC)
+
+Detected Status Clear Register (STCLR)
+
+Address(es): GLCDC.STCLR 000E 1448h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GR2UF GR1UF VPOSC
+CLR
+CLR
+LR
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+VPOSCLR
+
+VPOS Flag Clear
+
+Writing 1 to this bit clears the STMON.VPOS flag. Writing 0
+has no effect. The read value is 0.
+
+R/W
+
+b1
+
+GR1UFCLR
+
+GR1UF Flag Clear
+
+Writing 1 to this bit clears the STMON.GR1UF flag. Writing 0
+has no effect. The read value is 0.
+
+R/W
+
+b2
+
+GR2UFCLR
+
+GR2UF Flag Clear
+
+Writing 1 to this bit clears the STMON.GR2UF flag. Writing 0
+has no effect. The read value is 0.
+
+R/W
+
+b31 to b3
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+VPOSCLR Bit (VPOS Flag Clear)
+Writing 1 to this bit clears the STMON.VPOS flag. This bit is only valid for the VPOS flag, and does not directly affect
+the other status and interrupt request signals. However, a VPOS interrupt request is negated by clearing the VPOS flag
+while the INTEN.VPOSINTEN bit is 1.
+GR1UFCLR Bit (GR1UF Flag Clear)
+Writing 1 to this bit clears the STMON.GR1UF flag. This bit is only valid for the GR1UF flag, and does not directly
+affect the other status and interrupt request signals. However, a GR1UF interrupt request is negated by clearing the
+GR1UF flag while the INTEN.GR1UFINTEN bit is 1.
+GR2UFCLR Bit (GR2UF Flag Clear)
+Writing 1 to this bit clears the STMON.GR2UF flag. This bit is only valid for the GR2UF flag, and does not directly
+affect the other status and interrupt request signals. However, a GR2UF interrupt request is negated by clearing the
+GR2UF flag while the INTEN.GR2UFINTEN bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2733 of 3240
+
+RX72N Group
+
+51.2.58
+
+51. Graphic LCD Controller (GLCDC)
+
+Detected Status Monitor Register (STMON)
+
+Address(es): GLCDC.STMON 000E 144Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+GR2UF GR1UF VPOS
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+VPOS
+
+Specified Line Notification
+Detection Flag
+
+0: Specified line notification has not detected
+1: Specified line notification has detected
+
+R
+
+b1
+
+GR1UF
+
+Graphic 1 Underflow Detection
+Flag
+
+0: No underflow detected in graphic 1
+1: Underflow detected in graphic 1
+
+R
+
+b2
+
+GR2UF
+
+Graphic 2 Underflow Detection
+Flag
+
+0: No underflow detected in graphic 2
+1: Underflow detected in graphic 2
+
+R
+
+b31 to b3
+
+—
+
+Reserved
+
+These bits are read as 0
+
+R
+
+VPOS Flag (Specified Line Notification Detection Flag)
+This flag indicates that the specified line notification was detected in graphic 2. When this flag is 1, it indicates that the
+specified line notification was detected in graphic 2 at some time in the past. It does not necessarily mean that graphic 2
+is currently processing the specified line. When this flag is 0, it indicates that no specified line notification was detected
+after the GLCDC operation was enabled. When the interrupt request signal is enabled and is cleared while this flag is 1,
+the corresponding interrupt request signal VPOS is negated, but this does not affect the status of graphic 2.
+In addition, for the first frame after a software reset, the specified line notification signal is informed at the first scanline
+regardless of the value set in the GR2CLUTINT.LINE[10:0] bits. At this time, if the DTCTEN.VPOSDTC bit is set to 1,
+this flag is set to 1. Clear the flag without any processing required for the specified line notification. For detailed
+procedure, refer to section 51.3.1.1, Start of Operation.
+GRnUF Flag (Graphic n Underflow Detection Flag) (n = 1, 2)
+These flags indicate the detection of underflow of graphic n. When this flag is 1, it indicates that an underflow was
+detected in graphic n at some time in the past. It does not necessarily mean that graphic n is currently in the underflow
+status. When this flag is 0, it indicates that no underflow was detected after the GLCDC operation was enabled.
+When setting the STCLR.GRnUFCLR bit to 1 while the INTEN.GRnUFINTEN bit is 1 and this flag is 1, the GRnUF
+interrupt request is negated, but this does not affect the status of graphic n.
+Even if the current graphics data is not required (the GR1AB1.DISPSEL[1:0] bit are 00b (background color) of 01b
+(lower-layer graphics)), if the DTCTEN.GRnUFDTC bit is 1 (detection is enabled), this flag becomes 1 at the start of the
+graphics area. To avoid unnecessary detection flag settings or interrupt request signal assertions, when the current
+graphics data is not required, set the DTCTEN.GRnUFDTC bit and the INTEN.GRnUFINTEN bit to 0.
+In addition, for the first frame after a software reset, the GRnMON.UFST flag may become 1 before the VS signal is
+asserted depending on the value set in the BGSYNC.VP[3:0] bits. At this time, if the DTCTEN.GRnUFDTC bit is 1, this
+flag becomes 1. Clear the flag without any processing for underflow. For detailed procedure, refer to section 51.3.1.1,
+Start of Operation.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2734 of 3240
+
+RX72N Group
+
+51.2.59
+
+51. Graphic LCD Controller (GLCDC)
+
+Panel Clock Control Register (PANELCLK)
+
+Address(es): GLCDC.PANELCLK 000E 1450h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+PIXSEL
+
+—
+
+—
+
+—
+
+CLKSE
+L
+
+—
+
+CLKEN
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+DCDR[5:0]
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b5 to b0
+
+DCDR[5:0]
+
+Clock Division Ratio Setting
+*1, *2
+
+b5
+
+R/W
+
+b6
+
+CLKEN
+
+Panel Clock Output Enable
+
+0: Disable LCD_CLK output
+1: Enable LCD_CLK output
+
+R/W
+
+b7
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b8
+
+CLKSEL
+
+Clock Source Select*1
+
+0: Select LCD_EXTCLK (external clock)
+1: Select PLL clock
+
+R/W
+
+b11 to b9
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+PIXSEL
+
+Pixel Clock Select*1, *3
+
+0: No frequency division (parallel RGB)
+1: Divided-by-4 (serial RGB)
+
+R/W
+
+b15 to b13 —
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b19 to b16 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b20
+
+Reserved
+
+This bit is read as 1. Writing to this bit has no effect.
+
+b23 to b21 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b24
+
+—
+
+Reserved
+
+This bit is read as 1. Writing to this bit has no effect.
+
+b31 to b25 —
+
+Reserved
+
+These bits are read as 0. Writing to these bits have no effect. R
+
+b12
+
+—
+
+b0
+
+000000: Divide-by-2
+000001: No division
+000010: Divide-by-2
+000011: Divide-by-3
+000100: Divide-by-4
+000101: Divide-by-5
+000110: Divide-by-6
+000111: Divide-by-7
+001000: Divide-by-8
+001001: Divide-by-9
+001100: Divide-by-12
+010000: Divide-by-16
+011000: Divide-by-24
+100000: Divide-by-32
+Settings other than the above are prohibited.
+
+R
+
+R
+
+Note:
+
+Do not rewrite this register while the BGMON.EN flag is 1 (in operation). Set the required settings before setting the BGEN.EN
+bit to 1 (enable operation). Operation is not guaranteed if the register is rewritten during operation.
+Note 1. Rewrite these bits when the CLKEN bit is 0
+Note 2. The frequency of the LCD_CLK should not exceed 30 MHz when these bits are set.
+Note 3. Set the same value as the OUTSET.FRQSEL bit.
+
+DCDR[5:0] Bits (Clock Division Ratio Setting)
+These bits are used to set the division ratio of the LCD_CLK (panel clock). Set the bits after selecting the clock source by
+the CLKSEL bit. Operation is not guaranteed if a value not listed is set or if the frequency of the LCD_CLK exceeds
+30 MHz.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2735 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+CLKEN Bit (Panel Clock Output Enable)
+This bit enables or disables the LCD_CLK (panel clock) output. When the LCD_CLK is enabled, the PXCLK (pixel
+clock) is generated according to the setting of the PIXSEL bit.
+Set this bit to 0 before changing the PIXSEL bit, the CLKSEL bit, or the DCDR[5:0] bits. Operation is not guaranteed if
+any setting is changed while the LCD_CLK is being output.
+CLKSEL Bit (Clock Source Select)
+This bit selects the clock source of the LCD_CLK and PXCLK from either the LCD_EXTCLK or PLL clock.
+PIXSEL Bit (Pixel Clock Select)
+This bit selects the frequency of the PXCLK. For parallel RGB output, set this bit to 0 to set the frequency of the PXCLK
+to be the same as the LCD_CLK frequency (no frequency division). For serial RGB output, set this bit to 1 to set the
+frequency of the PXCLK to one quarter of the LCD_CLK frequency.
+The setting of this bit must match the setting of the OUTSET.FRQSEL bit. Set this bit to the same value as that of the
+FRQSEL bit. Otherwise, operation is not guaranteed.
+
+Figure 51.19 shows the structure of the pixel/panel clock generator.
+
+CLKSEL
+PLL clock
+
+1
+
+LCD_EXTCLK
+
+0
+
+Figure 51.19
+
+1/1
+1/2
+1/3
+1/4
+1/5
+1/6
+1/7
+1/8
+1/9
+1/12
+1/16
+1/24
+1/32
+
+DCDR[5:0]
+PIXSEL
+1/4
+
+1
+0
+
+Selector
+
+Divider
+
+PXCLK
+(pixel clock)
+LCD_CLK
+(panel clock)
+
+Structure of Clock Generator
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2736 of 3240
+
+RX72N Group
+
+51.3
+
+51. Graphic LCD Controller (GLCDC)
+
+Operation
+
+51.3.1
+
+Overall Controls
+
+The GLCDC consists of six blocks and each block has the independent functions as shown in Figure 51.20. The vertical
+and horizontal synchronization signal (VS, HS, VE, and HE) and image data in the RGB(888) format shown in Figure
+51.21 are conveyed between the four blocks where image data are processed.
+The image data are processed in synchronization with the pixel clock (PXCLK). The LCD_CLK (panel clock) is
+synchronized with the PXCLK and the frequency of the LCD_CLK is the same as or (for serial RGB(888)) four times
+that of PXCLK.
+The registers that control operations and specify the parameters are connected to the internal peripheral bus and operated
+in synchronization with PCLKA (peripheral bus clock). The circuits for reading the graphics data from internal main bus
+2, access to the CLUT memory, and extending the graphics data to the ARGB(8888) format also run in synchronization
+with PCLKA.
+
+Output control block
+
+: Path of image data
+
+TCON block
+
+Video timing
+generating
+block
+
+Registers
+
+VS, HS,
+VE, HE
+
+Image
+data
+
+Access control
+
+Data buffer
+
+Data buffer
+
+CLUT access
+Extend color depth
+
+CLUT access
+Extend color depth
+
+Clock domain
+crossing
+PCLKA to PXCLK
+
+Clock domain
+crossing
+PCLKA to PXCLK
+
+Alpha blending block
+Screen Composi
+definition
+tion
+
+Update
+control
+
+Registers
+
+VS, HS,
+VE, HE
+
+Image
+data
+
+Data format
+conversion block
+
+Alpha blending block
+Screen Composi
+definition
+tion
+
+Registers
+
+VS, HS,
+VE, HE
+
+Image
+data
+
+Dither
+
+Format
+
+Gamma
+correction
+
+Background
+generation block
+
+Access control
+
+Graphics data
+interface block
+
+Brightness/
+contrast
+
+PCLKA
+
+Graphics data
+interface block
+
+Signal
+Signal
+generation selection
+
+Graphic 2
+
+Graphic 1
+
+Internal main bus 2
+
+Panel adjustment block
+
+Vertical/horizontal
+synchronization
+signals
+LCD_TCON0
+LCD_TCON1
+LCD_TCON2
+LCD_TCON3
+LCD_CLK
+LCD_DATA23
+:
+LCD_DATA0
+
+PXCLK
+
+Registers
+
+Internal peripheral bus
+PCLKA
+Registers
+
+Registers
+System controller
+
+LCD_EXTCLK
+PLL clock
+
+Selector and
+divider block
+Clock generator
+
+Figure 51.20
+
+GR2UF
+GR1UF
+VPOS
+
+PXCLK (pixel clock)
+LCD_CLK
+(panel clock)
+
+GLCDC Structure
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2737 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+20H to 1024H
+HS
+HE
+VS
+VE
+
+Active pixels
+
+Image data
+1H Min. 1H
+
+16H to 1020H
+
+Min. 2H
+
+PXCLK
+
+PXCLK
+
+HS
+
+HS
+
+HE
+
+HE
+
+VS
+
+VE
+4 pixels
+
+Min.
+1 pixel
+
+16 to 1016
+Min.
+pixels
+3 pixels
+
+Image data
+
+24 to 1024 pixels
+
+Figure 51.21
+
+Image Data Carrier Signals in the GLCDC
+
+The graphic 1, graphic 2, and output control blocks have no individual operation enable bits. When the software reset is
+released in the background generation block, these blocks wait for VS, HS, VE and HE signals, and for input of the
+image data (RGB(888)). Once the blocks detect the assertion of the VS signal, they start to operate in frame units
+according to the settings of the registers. For the system control block, releasing the software reset in the background
+generating block allows it to monitor the status of graphic 1 and 2 in accordance with the register settings and assert
+interrupt request signals. These status flags are intended for observing the internal status and do not affect the internal
+operations. The operation between start and stop of the GLCDC is outlined in this section.
+
+51.3.1.1
+
+Start of Operation
+
+The procedure for starting the GLCDC is described as follows.
+(1) After releasing the GLCDC from the module stop state, set the BGEN.SWRST bit to 1 to release the GLCDC from
+a software reset.
+(2) Select the output data format. Set the frequency of the LCD_CLK and PXCLK to suit the format and set the
+PANELCLK.CLKEN bit to 1. If frequency settings which are not suitable for the output data format are attempted,
+operation is not guaranteed. Wait until PXCLK and LCD_CLK are supplied and the BGMON.SWRST flag
+becomes 1.
+(3) Set values in the registers that are required for operations. No particular rules apply to the order of setting of the
+registers. However, do not set the BGEN.EN, BGEN.VEN, GRnVEN.VEN, GAMxVEN.VEN, OUTVEN.VEN,
+and INTEN.GRnUFINTEN bits to 1 (n = 1, 2; x = G, B, R).
+ When displaying the graphics data on the frame buffer by graphic 1 and 2, set 1 to the GRnFLMRD.RENB bit
+(graphics data read enable).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2738 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+ When using the index color, write the color data to the CLUT memory (the GRnCLUTm[k] registers (n = 1, 2; m =
+0, 1; k = 0 to 255)). ARGB(1555) uses registers GRnCLUTm[0] and GRnCLUTm[128], CLUT(1) uses registers
+GRnCLUTm[0] and GRnCLUTm[1], CLUT(4) uses registers from GRnCLUTm[0] to GRnCLUTm[15], and
+CLUT(8) uses registers from GRnCLUTm[0] to GRnCLUTm[255].
+ Set the DTCTEN.VPOSDTC bit to 1 (enable detection of specified line notification). When an interrupt is to be
+used, also set the INTEN.VPOSINTEN bit to 1.
+(4) Set the BGEN.VEN bit and the BGEN.EN bit to 1 at the same time. This setting allows output of the signals VS,
+HS, VE, and HE, and the image data (RGB(888)) from the background generating block. The image data is that of
+the BGCOLOR register in the active pixel area (in which both VE and HE are 1) and 000000h (black) in the
+blanking interval.
+(5) The STMON.VPOS flag becomes 1 at the first scanline of the first frame. Confirm that the flag is 1 and then write
+0000 0007h in the STCLR register to clear all flags. After that, re-configure the DTCTEN and INTEN registers
+according to your application.
+(6) Each block detects the assertion of the VS signal output from its previous stage (background generating block for
+graphic 1, graphic 1 for graphic 2, and graphic 2 for the output control block) and starts operation in accordance
+with its register settings. Each block completes its operation frame by frame. When the assertion of the VS signal is
+detected, each block recognizes it as start of frame and initializes the status. When the VEN bit is 1, the value of the
+register is reflected to the internal operations.
+
+51.3.1.2
+
+Rewriting Registers During Operations
+
+The GLCDC has registers, which values can be updated and reflected in internal operations without stopping the
+operation of individual blocks. Setting the VEN bit to 1 in the block to be updated leads to a reflection of the value of an
+updated register to the internal operations immediately after assertion of the VS signal.
+However, if the contents of the CLUT memory in use (selected by the GRnCLUTINT.SEL bit) are changed, the value
+will be reflected to the internal operations immediately after the change without waiting for assertion of the VS signal.
+To update the value of the CLUT memory in synchronization with the VS signal, rewrite the contents of the CLUT
+memory which is not in use, and then switch the CLUT memory to be used by using the GRnCLUTINT.SEL bit. After
+that, set the BGEN.VEN bit or GRnVEN.VEN bit to 1.
+The procedure for changing parameters during operations is as follows.
+(1) Confirm that the VEN bit in the target block is 0. Operation is not guaranteed if the register is modified while the
+VEN bit in the target block or the BGEN.VEN bit is 1.
+(2) Rewrite the value of the target registers.
+(3) To reflect the value of the register only in a target block, set the VEN bit of the block to 1. When the register values
+in multiple blocks are to be reflected, set the BGEN.VEN bit to 1.
+(4) Confirm that the VEN bit that was changed to 1 has returned to 0. Once the value of this bit is 0, the value of the
+target register will have been reflected in internal operations. If this bit is still 1, then the change may not have been
+reflected. In addition, the VEN bit in each block is cleared to 0 once the value of the target register is internally
+reflected, but the BGEN.VEN bit will not be cleared to 0 until the VE signal is negated.
+
+Figure 51.22 shows the operation of the signals output by the background generating block and the status flags.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2739 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+HS
+HE
+VS
+VE
+
+Active pixels
+
+Image data
+BGEN.VEN bit
+Set to 1 by program
+
+Becomes 1 at start of control screen
+
+Becomes 0 at negation
+of VE signal
+
+BGMON.VEN flag
+
+Figure 51.22
+
+Control Signals for Register Value Reflection to Internal Operations
+
+51.3.1.3
+
+Stopping and restarting in normal operation
+
+The procedure for stopping and restarting the GLCDC is as follows.
+(1) Confirm that the VEN bit of each block is set to 0.
+(2) Set the BGEN.EN bit to 0.
+(3) Confirm that the BGMON.EN flag has been set to 0. Operation of the GLCDC has not stopped until the value of this
+flag becomes 0. In addition, the EN flag is set to 0 at the end of the frame in the background generating block, not of
+that in the signals output to the LCD panel. When completion of operation of all blocks is needed, wait for a certain
+period (e.g. time equivalent to a single horizontal line) after the EN flag has been set to 0. In general, if the
+BGEN.SWRST bit is set to 0 (software reset) immediately after confirming that the BGMON.EN flag has been set
+to 0, there should not be any problems due to the vertical blanking interval.
+(4) Set the BGEN.SWRST bit to 0 to apply a software reset to the GLCDC. Registers other than the CLUT memory are
+initialized by a software reset.
+(5) Start the GLCDC in accordance with section 51.3.1.1, Start of Operation.
+When restarting the GLCDC after rewriting to a register without a software reset, wait till the end of the frame in the
+output signals to the LCD panel before starting the GLCDC. There is no problem for the GLCDC itself to start operation
+in response to the assertion of the VS signal. However, if the vertical blanking interval or a single horizontal line is short,
+this may affect the operation of the LCD panel. For details, check the specifications of the LCD panel.
+
+Figure 51.23 shows the changes in signal lines and flags for stopping and restarting normal operation. When access to
+the frame buffer has not been completed by the frame end because an underflow occurs in graphic 1 or 2, or register
+settings are inadequate for access to the graphics data, the GLCDC enters the state of an abnormal stop even if the
+BGEN.EN bit is set to 0 to stop the background generating block.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2740 of 3240
+
+RX72N Group
+
+51. Graphic LCD Controller (GLCDC)
+
+HS
+HE
+VS
+VE
+
+Active pixels
+
+Active pixels
+
+Image data
+Set to 1 by program
+
+BGEN.EN bit
+Set to 0 by program
+
+Becomes 0 at the frame end
+
+BGMON.EN flag
+Rewrite registers in this period
+
+Figure 51.23
+
+Stop and Restart in Normal Operation
+
+51.3.1.4
+
+Restarting in abnormal operation
+
+The GLCDC stops operation due to abnormality in the following cases.
+(a) When the BGEN.SWRST bit is set to 0 (software reset) or a hardware reset is applied while the BGEN.EN bit or
+BGMON.EN flag is 1 (in operation).
+(b) When an unintended access to the frame buffer is made even after the BGEN.EN bit is set to 0 and the
+BGMON.EN flag has become 0.
+Either of the cases, the internal state of the GLCDC has been initialized and the registers can normally be accessed
+(except for hardware resets). However, in the case of (b), access to the frame buffer may not finish. Therefore, even after
+setting the BGEN.EN bit to 0 and confirming that the BGMON.EN flag has become 0, set the BGEN.SWRST bit to 0
+(software reset). Afterwards, start the GLCDC in accordance with section 51.3.1.1, Start of Operation.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2741 of 3240
+
+RX72N Group
+
+51.3.2
+
+51. Graphic LCD Controller (GLCDC)
+
+Screen Definition
+
+The reference signals for GLCDC operations are generated by the background generating block, and the graphic 1 and 2
+blocks and output control block operate based on the sequentially propagated VS (vertical synchronization) signal and
+HS (horizontal synchronization) signal, VE (vertical data enable) signal and HE (horizontal data enable) signal.
+Figure 51.24 shows the definition of the screen. The reference point (frame start point) of the background screen cannot
+be determined by the output signals. The point shown in the figure is virtual and provided only for register settings. The
+reference points of the graphic 1 and 2 blocks and output control block are the assertion of the VS signal, which is input
+from the previous block.
+The active display area or rectangular alpha blending area are specified by setting the position and width from this
+reference point for graphic 1 and 2 blocks. In the panel adjustment block, adjustment is performed by using the VE and
+HE signals for the entire active display area which is output from graphic 2. The control signals to be output to the LCD
+panel are generated in the TCON block based on the VS and HS signals.
+
+BGPERI.FH[10:0], 24 to 1024 pixels
+BGHSIZE.HW[10:0], 16 to 1016 pixel, 2 pixels unit
+
+BGHSIZE.HP[10:0],
+6 to 1006 pixels
+
+HE
+BGSYNC.HP[3:0],
+1 to 15 pixels
+
+Reference point of
+background generation
+HS
+
+4 pixels
+
+VS
+
+VE
+
+Min. 1 pixel
+
+Background screen
+Graphic 1, 2 screen
+
+Rectangular alpha blending area
+GRnAB4.ARCVW[10:0],
+1 to 1020H
+
+GRnAB5.ARCHS[10:0],
+5 to 1005 pixels
+
+GRnAB4.ARCVS[10:0],
+2 to 1006H
+
+GRnAB2.GRCVW[10:0],
+16 to 1020H
+
+BGVSIZE.VW[10:0], 16 to 1020H
+
+BGPERI.FV[10:0], 20 to 1024H
+
+GRnAB2.GRCVS[10:0],
+2 to 1006H
+
+1H
+
+Min. 1H
+BGSYNC.VP[3:0],
+1 to 15H
+
+BGVSIZE.VP[10:0],
+3 to 1007H
+
+Whole control screen
+Reference point of graphic 1 and 2
+
+GRnAB3.GRCHS[10:0],
+5 to 1005 pixels
+Min. 1H
+
+Figure 51.24
+
+Min. 2 pixels
+
+GRnAB5.ARCHW[10:0],
+1 to 1016 pixels
+
+GRnAB3.GRCHW[10:0], 16 to 1016 pixels, 2 pixels unit
+
+Transition timing of VS signal is the same as HS assertion
+
+Definition of Screen
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2742 of 3240
+
+RX72N Group
+
+51.3.3
+
+51. Graphic LCD Controller (GLCDC)
+
+Status Detection and Interrupts
+
+The GLCDC can detect the three types of status described in this section. To detect each status, set the corresponding bit
+in the DTCTEN register to 1.
+
+51.3.3.1
+
+Graphic n Underflow Detection (n = 1, 2)
+
+This function is equipped with both graphic 1 and 2.
+When the graphics data interface block fails to supply required graphic data to the alpha blending block (the valid data
+was not stored in the 4-stage ring buffer), the STMON.GRnUF is set to 1. The underflow status in the graphic n is cleared
+when the VS (vertical synchronization) signal is asserted, but the STMON.GRnUF flag is not cleared until the
+STCLR.GRnUFCLR bit is set to 1.
+
+51.3.3.2
+
+Specified Line Detection
+
+This function detects that the target of data to be processed by graphic 2 is the line specified in the
+GR2CLUTINT.LINE[10:0] bits. In fact, the detection by using the VS and HS signals is applied regardless of whether
+graphic 2 operations are actually to proceed. Detection proceeds on the assertion of the HS (horizontal synchronization)
+signal, but not at the start of the processing of active pixels. Every time the HS signal for the specified line is asserted, the
+STMON.VPOS flag is set to 1. To clear the STMON.VPOS flag, the STCLR.VPOSCLR bit must be set to 1.
+
+51.3.3.3
+
+Interrupts
+
+The GLCDC has three interrupt request output signals (GR2UF, GR1UF, and VPOS) that correspond to the three states
+above. Setting the corresponding bit in the INTEN register to 1 leads to the output of the interrupt request signal on
+detection of the corresponding state. When the corresponding bit in the STCLR register is set to 1 and the corresponding
+flag in the STMON register is cleared, or the corresponding bit in the INTEN register is set to 0 (disable interrupts) while
+the interrupt request output signal is being output, the interrupt request signal can be negated.
+The interrupt request signal generating circuit is configured as shown in Figure 51.25.
+
+DTCTEN register
+
+STCLR register
+
+INTEN register
+
+VPOSDTC
+
+VPOSCLR
+
+VPOSINTEN
+
+GR1UFDTC
+
+GR1UFCLR
+
+GR1UFINTEN
+
+GR2UFDTC
+
+GR2UFCLR
+
+GR2UFINTEN
+
+Interrupt request
+signals
+D
+
+Q
+
+VPOS
+
+Q
+
+GR1UF
+
+Q
+
+GR2UF
+
+T
+D
+STMON register
+Specified line
+detection
+Graphic 1
+underflow
+Graphic 2
+underflow
+
+T
+
+VPOS
+GR1UF
+
+D
+
+GR2UF
+T
+PCLKA
+
+Figure 51.25
+
+Interrupt Request Signal Generating Circuit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2743 of 3240
+
+RX72N Group
+
+51.4
+51.4.1
+
+51. Graphic LCD Controller (GLCDC)
+
+Usage Notes
+Setting the Priority Order of the Bus Masters
+
+The GLCDC acquires graphics data from the frame buffer through internal main bus 2. The graphic 1 (GLCDC-GRA1)
+and graphic 2 (GLCDC-GRA2) blocks in the GLCDC, the texture and RLE interface (DRW2D-TX) and display-list and
+frame-buffer interface (DRW2D-FB) in the DRW2D, the EDMAC, DMAC, and DTC can operate as bus masters of the
+internal main bus.
+After a reset, the priority order of these bus masters is as follows:
+GLCDC-GRA1 > DRW2D-TX > DRW2D-FB > GLCDC-GRA2 > EDMAC > DMAC > DTC.
+In some cases, using the bus masters with this order of priority may lead to underflows of data for graphic 2. Change the
+priority order of the bus masters as required.
+For details, refer to section 16, Buses, or section 18, DMA Controller (DMACAa).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2744 of 3240
+
+

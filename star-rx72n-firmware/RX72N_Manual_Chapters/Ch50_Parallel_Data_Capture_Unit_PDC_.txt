@@ -1,0 +1,3387 @@
+RX72N Group
+
+50. Parallel Data Capture Unit (PDC)
+
+50.
+
+Parallel Data Capture Unit (PDC)
+
+50.1
+
+Overview
+
+This MCU includes a single parallel data capture unit (PDC).
+The PDC has the function of communicating with the external I/O devices including image sensors, and specifically
+transferring parallel data such as an image output from the external I/O devices via the DTC or DMAC to the on-chip
+RAM and external address spaces (the CS and SDRAM areas).
+Table 50.1
+
+PDC Specifications
+
+Item
+
+Description
+
+Capture Range
+
+ Desired amounts of parallel data within the following ranges in the vertical
+and horizontal directions.
+Vertical direction: 1 to 4095 lines
+Horizontal direction: 4 to 4095 bytes
+
+Parallel data transfer clock (PIXCLK)
+
+ Operating frequency: 1 to 27 MHz*1
+
+Interrupt Sources
+
+ Receive data ready
+ Frame end
+ Overrun
+ Underrun
+ Error in the setting for the number of lines
+ Error in setting for the number of bytes per line
+
+Startup of DTC/DMAC
+
+ The receive data ready interrupt is capable of starting the DTC or DMAC
+
+Parallel data transfer clock output (PCKO)
+
+ Operating frequency: 1 to 30 MHz*2
+ Clock source: Peripheral module clock B (PCLKB)
+ Frequency division ratio: Selectable from 2, 4, 6, 8, 10, 12, 14, and 16.
+
+Others
+
+ PDC reset function
+ Selectable active sense for the VSYNC and HSYNC signals
+ Monitoring of the VSYNC and HSYNC signals
+ Endian selection
+
+Reducing Power Consumption
+
+ The PDC can be placed in the module stop state.
+
+Internal Bus Interface
+
+ The PDC is connected with internal peripheral bus 3
+
+Note 1. The frequency of the parallel data transfer clock (PIXCLK) should be equal to or less than 0.6 × PCLKB (peripheral module
+clock).
+Note 2. The operating frequency is 30 MHz when that of the peripheral module clock B (PCLKB) is 60 MHz and the frequency division
+ratio is 2.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2627 of 3240
+
+RX72N Group
+
+50. Parallel Data Capture Unit (PDC)
+
+PCDFI
+PCFEI
+PCERI
+
+Interrupt
+Controller
+
+PCCR0
+PCCR1
+HCR
+
+PCMONR
+PCDR Register
+
+VSYNC
+HSYNC
+
+Interface
+Controller
+
+22-stage FIFO
+(32-bit size)
+
+PCDR
+
+PIXCLK
+
+Internal Peripheral Bus 3
+
+PCSR
+
+Bus Interface Controller
+
+VCR
+
+PIXD7 to
+PIXD0
+
+PCKO
+
+Prescaler
+
+Figure 50.1
+
+Block Diagram of the PDC
+
+Table 50.2
+
+Input and Output Pins of the PDC
+
+Peripheral Module Clock B
+(PCLKB)
+
+Pin Name
+
+Input/Output
+
+Description
+
+PIXCLK
+
+Input
+
+Parallel data transfer clock
+
+VSYNC
+
+Input
+
+Vertical synchronization signal
+
+HSYNC
+
+Input
+
+Horizontal synchronization signal
+
+PIXD7 to PIXD0
+
+Input
+
+8-bit data
+
+PCKO
+
+Output
+
+Output of the parallel data transfer clock
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2628 of 3240
+
+RX72N Group
+
+50.2
+
+50. Parallel Data Capture Unit (PDC)
+
+Register Descriptions
+
+50.2.1
+
+PDC Control Register 0 (PCCR0)
+
+Address(es): 000A 0500h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+EDS
+
+OVIE
+
+FEIE
+
+DFIE
+
+PRST
+
+HPS
+
+VPS
+
+PCKE
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+PCKDIV[2:0]
+0
+
+0
+
+PCKOE HERIE VERIE UDRIE
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+PCKE
+
+PIXCLK Input Enable
+
+0: PIXCLK input is disabled.
+1: PIXCLK input is enabled.
+
+R/W
+
+b1
+
+VPS
+
+VSYNC Signal Polarity Select
+
+0: VSYNC signal is active high.
+1: VSYNC signal is active low.
+
+R/W
+
+b2
+
+HPS
+
+HSYNC Signal Polarity Select
+
+0: HSYNC signal is active high.
+1: HSYNC signal is active low.
+
+R/W
+
+b3
+
+PRST
+
+PDC Reset
+
+0: PDC reset is not applied.
+1: PDC is reset.
+
+R/(W)
+*1
+
+b4
+
+DFIE
+
+Receive Data Ready Interrupt Enable
+
+0: Generation of receive data ready interrupt requests
+is disabled.
+1: Generation of receive data ready interrupt requests
+is enabled.
+
+R/W
+
+b5
+
+FEIE
+
+Frame End Interrupt Enable
+
+0: Generation of frame end interrupt requests is disabled. R/W
+1: Generation of frame end interrupt requests is enabled.
+
+b6
+
+OVIE
+
+Overrun Interrupt Enable
+
+0: Generation of overrun interrupt requests is disabled. R/W
+1: Generation of overrun interrupt requests is enabled.
+
+b7
+
+UDRIE
+
+Underrun Interrupt Enable
+
+0: Generation of underrun interrupt requests is disabled. R/W
+1: Generation of underrun interrupt requests is enabled.
+
+b8
+
+VERIE
+
+Vertical Line Number Setting Error Interrupt
+Enable
+
+0: Generation of vertical line number setting error
+interrupt requests is disabled.
+1: Generation of vertical line number setting error
+interrupt requests is enabled.
+
+R/W
+
+b9
+
+HERIE
+
+Horizontal Byte Number Setting Error
+Interrupt Enable
+
+0: Generation of horizontal byte number setting error
+interrupt requests is disabled.
+1: Generation of horizontal byte number setting error
+interrupt requests is enabled.
+
+R/W
+
+b10
+
+PCKOE
+
+PCKO Output Enable
+
+0: PCKO output is disabled (fixed to the high level)
+1: PCKO output is enabled.
+
+R/W
+
+b13 to b11
+
+PCKDIV[
+2:0]
+
+PCKO Frequency Division Ratio Select
+
+b13 b11
+
+R/W
+
+b14
+
+EDS
+
+Endian Select
+
+0: Little endian
+1: Big endian
+
+R/W
+
+b31 to b15
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0. R/W
+
+0 0 0: PCKO/2
+0 0 1: PCKO/4
+0 1 0: PCKO/6
+0 1 1: PCKO/8
+1 0 0: PCKO/10
+1 0 1: PCKO/12
+1 1 0: PCKO/14
+1 1 1: PCKO/16
+
+Note 1. Only 1 can be written to this bit.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2629 of 3240
+
+RX72N Group
+
+50. Parallel Data Capture Unit (PDC)
+
+The PCCR0 register should only be set while the PCE bit in the PCCR1 register is 0.
+PCKE Bit (PIXCLK Input Enable)
+This bit enables and disables the input through the PIXCLK pin.
+Set this bit to 1 before enabling reception. After enabling input through the PIXCLK pin, use the PRST bit to initialize
+the PDC.
+When setting this bit to 0, do so after disabling reception operations.
+VPS Bit (VSYNC Signal Polarity Select)
+This bit selects the active sense of the VSYNC signal.
+HPS Bit (HSYNC Signal Polarity Select)
+This bit selects the active sense of the HSYNC signal.
+PRST Bit (PDC Reset)
+This bit initializes the internal status of the PDC and the target registers of the PDC reset. Refer to section 50.3.11,
+Reset State for the target registers.
+The PDC should be reset after setting the PCKE bit to 1.
+When 1 is written to the PRST bit, initialization is started in synchronization with the PIXCLK. After completion of the
+initialization, the PRST bit is automatically cleared to 0. When the PDC is reset, ensure that the PIXCLK pin has an input
+signal. Also, after 1 has been written to the PRST bit, do not proceed to the next step until verifying that the bit has
+returned to 0.
+In the case of consecutive PDC resets, wait for at least one cycle of PIXCLK after verifying that the PRST bit has
+returned to 0.
+DFIE Bit (Receive Data Ready Interrupt Enable)
+This bit enables and disables the generation of receive data ready interrupt requests.
+FEIE Bit (Frame End Interrupt Enable)
+This bit enables and disables the generation of frame end interrupt requests.
+OVIE Bit (Overrun Interrupt Enable)
+This bit enables and disables the generation of overrun interrupt requests.
+UDRIE Bit (Underrun Interrupt Enable)
+This bit enables and disables the generation of underrun interrupt requests.
+VERIE Bit (Vertical Line Number Setting Error Interrupt Enable)
+This bit enables and disables the generation of vertical line number setting error interrupt requests.
+HERIE Bit (Horizontal Byte Number Setting Error Interrupt Enable)
+This bit enables and disables the generation of horizontal byte number setting error interrupt requests.
+PCKOE Bit (PCKO Output Enable)
+This bit enables and disables an output from PCKO.
+When the PCKOE bit is cleared to 0 during low output of PCKO, it may cause high output at the time of clearing,
+resulting in spoiling the duty factor.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2630 of 3240
+
+RX72N Group
+
+50. Parallel Data Capture Unit (PDC)
+
+PCKDIV[2:0] Bits (PCKO Frequency Division Ratio Select)
+This bit selects the frequency division ratio of the PCKO.
+The PCKO output is a clock signal derived by dividing the PCLKB clock signal by the value from 2 to 16 corresponding
+to the setting of the PCKDIV[2:0] bits.
+The operating frequency should be set in accord with that of PCLKB to a value within the range from 1 to 30 MHz.
+EDS Bit (Endian Select)
+This bit selects an endian for the captured data.
+
+50.2.2
+
+PDC Control Register 1 (PCCR1)
+
+Address(es): 000A 0504h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+PCE
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+PCE
+
+PDC Operation Enable
+
+0: Operations for reception are disabled.
+1: Operations for reception are enabled.
+
+R/W
+
+b31 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0. R/W
+
+PCE Bit (PDC Operation Enable)
+This bit enables and disables operations for reception.
+When the PCE bit is set to 1 during assertion of the VSYNC signal, the PDC starts operations for reception from the next
+effective edge of the VSYNC signal.
+The PCE bit should only be cleared to 0 while operations for reception or continued reception are stopped, including the
+frame end interrupt and so on. Regarding operations for continued reception, refer to section 50.3.6, Operations for
+Continued Reception at the Time of Frame End.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2631 of 3240
+
+RX72N Group
+
+50.2.3
+
+50. Parallel Data Capture Unit (PDC)
+
+PDC Status Register (PCSR)
+
+Address(es): 000A 0508h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+HERF
+
+VERF
+
+UDRF
+
+OVRF
+
+FEF
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+FEMPF FBSY
+1
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+FBSY
+
+Frame Busy Flag
+
+0: Operations for reception are stopped.
+1: Operations for reception are ongoing.
+
+R
+
+b1
+
+FEMPF
+
+FIFO Empty Flag
+
+0: FIFO is not empty.
+1: FIFO is empty.
+
+R
+
+b2
+
+FEF
+
+Frame End Flag
+
+0: Frame end has not been generated.
+1: Frame end has been generated.
+
+R/(W)
+*1
+
+b3
+
+OVRF
+
+Overrun Flag
+
+0: FIFO overrun has not been generated.
+1: FIFO overrun has been generated.
+
+R/(W)
+*1
+
+b4
+
+UDRF
+
+Underrun Flag
+
+0: Underrun has not been generated.
+1: Underrun has been generated.
+
+R/(W)
+*1
+
+b5
+
+VERF
+
+Vertical Line Number Setting Error Flag
+
+0: Vertical line number setting error has not been
+generated.
+1: Vertical line number setting error has been
+generated.
+
+R/(W)
+*1
+
+b6
+
+HERF
+
+Horizontal Byte Number Setting Error Flag
+
+0: Horizontal byte number setting error has not been
+generated.
+1: Horizontal byte number setting error has been
+generated.
+
+R/(W)
+*1
+
+b31 to b7
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0. R
+
+Note 1. 0 can only be written to these bits to clear these flags after they have been read out as 1.
+
+FBSY Flag (Frame Busy Flag)
+This flag indicates the state of PDC operations.
+[Setting Condition]
+ Detection of the effective edge of the VSYNC signal after the enabling of operations for reception.
+[Clearing Conditions]
+ Reception of one-frame of data according to the settings of the VCR and HCR registers being completed.*1
+ When an error (overrun, underrun, vertical line number setting error, or horizontal byte number setting error) occurs
+ When the PCCR1.PCE bit is 0
+Note 1. This flag is 0 during operations for continued reception.
+
+FEMPF Flag (FIFO Empty Flag)
+This flag indicates the state of the FIFO.
+This flag indicates the state of the FIFO at the time when a vertical line number setting error or a horizontal byte number
+setting error occurs and is 0 following an overrun and undefined following an underrun.
+[Setting Conditions]*1
+ Reading of the PCDR register while the FIFO is empty.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2632 of 3240
+
+RX72N Group
+
+50. Parallel Data Capture Unit (PDC)
+
+ Detection of an effective edge of the VSYNC signal.
+ The PDC being reset.
+[Clearing Condition]*1
+ Storage of the data captured in the FIFO.
+Note 1.
+
+This flag is undefined following an underrun, and is set to either 0 or 1.
+
+FEF Flag (Frame End Flag)
+This flag indicates the end of a frame.
+[Setting Condition]
+ Reception of one frame of data in accord with the settings of the VCR and HCR registers.*1
+[Clearing Conditions]
+ The PDC being reset.
+ Writing of 0 to the bit after it has been read as 1.
+Note 1.
+
+In the case of operations for continued reception, this flag will be 1 after their completion.
+
+OVRF Flag (Overrun Flag)
+This flag indicates an overrun.
+[Setting Condition]
+ Data for reception arriving while the FIFO is full.
+[Clearing Conditions]
+ The PDC being reset.
+ Writing of 0 to the bit after it has been read as 1.
+UDRF Flag (Underrun Flag)
+This flag indicates an underrun.
+[Setting Condition]
+ Reading of the PCDR register while the FIFO is empty.
+[Clearing Conditions]
+ The PDC being reset.
+ Writing of 0 to the bit after it has been read as 1.
+VERF Flag (Vertical Line Number Setting Error Flag)
+This flag indicates an error in the setting for the number of lines.
+[Setting Condition]
+ The VSYNC signal is negated because fewer lines have been captured than the value in the VCR register.
+[Clearing Conditions]
+ The PDC being reset.
+ Writing of 0 to the bit after it has been read as 1.
+HERF Flag (Horizontal Byte Number Setting Error Flag)
+This flag indicates an error in the setting for the number of bytes in a line.
+[Setting Condition]
+ The HSYNC signal is negated because fewer bytes in a line have been captured than the value in the HCR register.
+[Clearing Conditions]
+ The PDC being reset.
+ Writing of 0 to the bit after it has been read as 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2633 of 3240
+
+RX72N Group
+
+50.2.4
+
+50. Parallel Data Capture Unit (PDC)
+
+PDC Pin Monitor Register (PCMONR)
+
+Address(es): 000A 050Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+HSYNC VSYNC
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+VSYNC
+
+VSYNC Signal Status Flag
+
+0: VSYNC signal is at the low level.
+1: VSYNC signal is at the high level.
+
+R
+
+b1
+
+HSYNC
+
+HSYNC Signal Status Flag
+
+0: HSYNC signal is at the low level.
+1: HSYNC signal is at the high level.
+
+R
+
+b31 to b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0. R
+
+VSYNC Flag (VSYNC Signal Status Flag)
+This flag indicates the state of the VSYNC signal.
+HSYNC Flag (HSYNC Signal Status Flag)
+This flag indicates the state of the HSYNC signal.
+
+50.2.5
+
+PDC Receive Data Register (PCDR)
+
+Address(es): 000A 0510h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The PDC includes a 32-bit, 22-stage FIFO buffer for the storage of captured data. The FIFO buffer is mapped to the 4byte PCDR register, and captured data are read from this register in 4-byte units. The receive data ready flag is set for
+every 32 bytes of received data, and this also leads to a receive data ready interrupt if the DFIE bit in the PCCR0 register
+is set to 1. When a receive data ready interrupt is generated, read the PCDR register eight times. Figure 50.2 shows a
+schematic view of the PCDR register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2634 of 3240
+
+RX72N Group
+
+50. Parallel Data Capture Unit (PDC)
+
+Internal Peripheral Bus 3
+
+PCDR Register
+
+VSYNC
+
+22-stage FIFO
+(32-bit size)
+
+Interface
+Controller
+
+HSYNC
+
+PCDR
+
+PIXCLK
+
+PIXD7 to
+PIXD0
+
+Figure 50.2
+
+Schematic View of the PCDR Register
+
+For the format of the captured data, either big or little endian can be selected by the EDS bit of the PCCR0 register.
+Figure 50.3 shows the arrangements of data according to the endian formats.
+
+Big Endian
+Reading of
+the PCDR register
+
+Little Endian
+
+31
+
+0
+
+31
+
+0
+
+First time
+
+0 byte
+
+1 byte
+
+2 byte
+
+3 byte
+
+3 byte
+
+2 byte
+
+1 byte
+
+0 byte
+
+Second time
+
+4 byte
+
+5 byte
+
+6 byte
+
+7 byte
+
+7 byte
+
+6 byte
+
+5 byte
+
+4 byte
+
+n*1 time
+
+4(n-1) byte
+
+4(n-1) + 1 byte 4(n-1) + 2 byte 4(n-1) + 3 byte
+
+4(n-1) + 3 byte 4(n-1) + 2 byte 4(n-1) + 1 byte
+
+4(n-1) byte
+
+Note 1. n = Number of reading of the PCDR register
+
+Figure 50.3
+
+Endian Formats
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2635 of 3240
+
+RX72N Group
+
+50.2.6
+
+50. Parallel Data Capture Unit (PDC)
+
+Vertical Capture Register (VCR)
+
+Address(es): 000A 0514h
+b31
+
+b30
+
+b29
+
+b28
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+VSZ[11:0]
+
+VST[11:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b11 to b0
+
+VST[11:0]
+
+Vertical Capture Start Line Position
+
+Number of the line where capture is to start.
+
+R/W
+
+b15 to b12
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0. R/W
+
+b27 to b16
+
+VSZ[11:0]
+
+Vertical Capture Size
+
+Number of lines to be captured.
+
+b31 to b28
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0. R/W
+
+R/W
+
+For the relationship between the VCR register setting and the captured range, refer to section 50.3.3, Settings of the
+VCR and HCR Registers and the Captured Range.
+The VCR register should be set while the PCE bit in the PCCR1 register is 0.
+VST[11:0] Bit (Vertical Capture Start Line Position)
+These bits set the number of the line where capture is to start.
+To set the first line, these bits should be 000h; to set the 4095th line, they should be FFEh.
+The setting of the VST[11:0] bits should be within the range from 000h to FFEh and, in combination with that of the
+VSZ[11:0] bits, satisfy the following relation:
+Setting range of the VST[11:0] bits: 1 ≤ VST[11:0] + VSZ[11:0] ≤ FFFh.
+VSZ[11:0] Bit (Vertical Capture Size)
+These bits set the number of lines to be captured.
+To set one line, these bits should be 001h; to set 4095 lines, they should be FFFh.
+The setting of the VSZ[11:0] bits should be within the range from 001h to FFFh and, in combination with that of the
+VST[11:0] bits, satisfy the following relation:
+Setting range of the VSZ[11:0] bits: 1 ≤ VST[11:0] + VSZ[11:0] ≤ FFFh.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2636 of 3240
+
+RX72N Group
+
+50.2.7
+
+50. Parallel Data Capture Unit (PDC)
+
+Horizontal Capture Register (HCR)
+
+Address(es): 000A 0518h
+b31
+
+b30
+
+b29
+
+b28
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+HSZ[11:0]
+
+HST[11:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b11 to b0
+
+HST[11:0]
+
+Horizontal Capture Start Byte Position
+
+Horizontal position in bytes where capture is to start.
+
+R/W
+
+b15 to b12
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0. R/W
+
+b27 to b16
+
+HSZ[11:0]
+
+Horizontal Capture Size
+
+Number of bytes to be captured horizontally.
+
+b31 to b28
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0. R/W
+
+R/W
+
+For the relationship between the HCR register setting and the captured range, refer to section 50.3.3, Settings of the
+VCR and HCR Registers and the Captured Range.
+The HCR register should be set while the PCE bit in the PCCR1 register is 0.
+HST[11:0] Bit (Horizontal Capture Start Byte Position)
+These bits set the horizontal position in bytes where capture is to start.
+To set the first byte, these bits should be 000h; to set the 4092th byte, they should be FFBh.
+The setting of the HST[11:0] bits should be within the range from 000h to FFBh and, in combination with that of the
+HSZ[11:0] bits, satisfy the following relation:
+Setting range of the HST[11:0] bits: 4 ≤ HST[11:0] + HSZ[11:0] ≤ FFFh.
+HSZ[11:0] Bit (Horizontal Capture Size)
+These bits set the number of bytes to be captured per line.
+To set four bytes, these bits should be 004h; to set 4095 bytes, they should be FFFh.
+The setting of the HSZ[11:0] bits should be within the range from 004h to FFFh and, in combination with that of the
+HST[11:0] bits, satisfy the following relation:
+Setting range of the HSZ[11:0] bits: 4 ≤ HST[11:0] + HSZ[11:0] ≤ FFFh.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2637 of 3240
+
+RX72N Group
+
+50.3
+
+50. Parallel Data Capture Unit (PDC)
+
+Operation
+
+50.3.1
+
+Transfer Formats
+
+The PDC supports the four transfer formats shown in Figure 50.4 to Figure 50.7. The format is determined by the
+setting of the VPS and HPS bits in the PCCR0 register.
+
+PIXCLK
+VSYNC
+HSYNC
+PIXD7 to
+PIXD0
+PIXD validity period
+
+Figure 50.4
+
+PIXD validity period
+
+PIXD validity period
+
+PDC Transfer Format (for VPS=0, HPS=0)
+
+PIXCLK
+VSYNC
+HSYNC
+PIXD7 to
+PIXD0
+PIXD validity period
+
+Figure 50.5
+
+PIXD validity period
+
+PIXD validity period
+
+PDC Transfer Format (for VPS=1, HPS=0)
+
+PIXCLK
+VSYNC
+HSYNC
+PIXD7 to
+PIXD0
+PIXD validity period
+
+Figure 50.6
+
+PIXD validity period
+
+PIXD validity period
+
+PDC Transfer Format (for VPS=0, HPS=1)
+
+PIXCLK
+VSYNC
+HSYNC
+PIXD7 to
+PIXD0
+PIXD validity period
+
+Figure 50.7
+
+PIXD validity period
+
+PIXD validity period
+
+PDC Transfer Format (for VPS=1, HPS=1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2638 of 3240
+
+RX72N Group
+
+50.3.2
+
+50. Parallel Data Capture Unit (PDC)
+
+Transfer Timing
+
+Figure 50.8 and Table 50.3 show the timing of transfer by the PDC.
+
+t VACT
+t VBL
+
+t VBP
+
+t HACT
+
+t HBL
+
+t VFP
+
+PIXCLK
+VSYNC
+HSYNC
+PIXD7 to
+PIXD0
+
+Figure 50.8
+
+PDC Transfer Timing
+
+Table 50.3
+
+PDC Transfer Timing
+
+Item
+
+Symbol
+
+Min*1
+
+Max
+
+Unit
+
+Vertical Blanking Period
+
+tVBL
+
+128
+
+—
+
+PIXCLK
+
+Vertical Backporch
+
+tVBP
+
+10
+
+—
+
+PIXCLK
+
+Horizontal Valid Period
+
+tHACT
+
+4
+
+4095
+
+PIXCLK
+
+Horizontal Blanking Period
+
+tHBL
+
+128
+
+—
+
+PIXCLK
+
+Vertical Frontporch
+
+tVFP
+
+10
+
+—
+
+PIXCLK
+
+Vertical Valid Period
+
+tVACT
+
+1
+
+4095
+
+Line
+
+Note 1. The minimum values are the lowest of which this MCU circuit is capable. They are not values which guarantee the avoidance of
+overruns, vertical line number setting errors, or horizontal byte number setting errors.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2639 of 3240
+
+RX72N Group
+
+50.3.3
+
+50. Parallel Data Capture Unit (PDC)
+
+Settings of the VCR and HCR Registers and the Captured Range
+
+Figure 50.9 and Figure 50.10 show the relationship between the settings of the VCR and HCR registers and the
+captured range.
+
+t VBP
+1
+
+2
+
+4094 4095
+
+Capture range
+4095× 4095
+
+1
+
+2
+
+4095(VCR.VSZ=FFFh)
+t VACT
+
+4094 4095
+t VFP
+
+4095(HCR.HSZ=FFFh)
+t HACT
+Figure 50.9
+
+tHBL
+
+Settings of the VCR and HCR Registers and the Captured Range
+(VCR = 0FFF 0000h, HCR = 0FFF 0000h)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2640 of 3240
+
+RX72N Group
+
+50. Parallel Data Capture Unit (PDC)
+
+t VBP
+1
+
+2
+
+3
+
+1282
+
+4095
+
+1
+
+2
+
+3
+
+1282
+
+4095
+
+1
+
+2
+
+3
+
+1282
+
+4095
+
+Capture range
+1280 × 480
+VGA (YUV422)
+
+1
+
+2
+
+3
+
+2 (VCR.VST = 002h)
+
+t VACT
+480 (VCR.VSZ = 1E0h)
+
+1282
+
+4095
+
+2 (HCR.HST = 002h) 1280 (HCR.HSZ = 500h)
+
+1
+
+2
+
+3
+
+4094 4095
+t VFP
+
+t HACT
+Figure 50.10
+
+t HBL
+
+Settings of the VCR and HCR Registers and the Captured Range
+(VCR = 01E0 0002h, HCR = 0500 0002h)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2641 of 3240
+
+RX72N Group
+
+50.3.4
+
+50. Parallel Data Capture Unit (PDC)
+
+Operations for Reception
+
+Figure 50.11 shows an example of operations for reception when receive data ready interrupts (to start up the DTC or
+DMAC) and frame end interrupts are in use.
+
+PIXCLK
+VSYNC
+HSYNC
+PIXD7 to
+PIXD0
+(4)
+
+PCCR1.PCE
+(3)
+
+(1)
+
+PCSR.FBSY
+PCSR.FEMPF
+Receive data ready interrupt
+
+(2)
+
+PCSR.FEF
+
+Figure 50.11
+
+(3)
+
+(4)
+
+Example of Operations for Reception
+
+The actual operations at the times indicated by (1), (2), (3), and (4) in Figure 50.11 are described below.
+(1) When an effective edge of the VSYNC signal is detected after the PCE bit in the PCCR1 register is set to 1, the
+FEMPF flag in the PCSR register is set to 1 and the FIFO is initialized. Concurrently, the FBSY flag in the PCSR
+register is set to 1 and operations for reception start.
+(2) When data within the range for capture set in the VCR and HCR registers is received, the data are stored in the
+FIFO. The PDC generates a receive data ready interrupt every time it receives 32 bytes of data, and the interrupt
+starts transfer of the captured data by the DTC or DMAC to the on-chip RAM or an external address space. The
+FIFO is likely to overrun if reading of the PCDR register takes more time than reception of the data. Check the
+OVRF flag in the PCSR register to verify an overrun.
+(3) After reception of the last byte of data is completed, the FBSY flag in the PCSR register is cleared to 0 and the FEF
+flag in the PCSR register is set to 1 so that a receive data ready interrupt and frame end interrupt are generated.
+(4) The FEMPF flag in the PCSR register is polled by the frame end interrupt, after which the completion of data
+transfer by the DTC or DMAC should be verified. After the PCE bit in the PCCR1 register is cleared to 0, the FEF
+flag in the PCSR register is also cleared to 0, and the reception of one frame of data is complete.
+If an underrun occurs while the PCSR.FEMPF flag is being polled, setting of the PCSR.FEMPF flag may not
+proceed. Accordingly, also check the PCSR.UDRF flag during polling, and if an underrun occurs, run appropriate
+error processing.
+If the FEF flag in the PCSR register has been set to 1 before the PCE bit in the PCCR1 register is set to 1, effective edges
+of the VSYNC signal are not detected and operations for reception will not be started. Clear the FEF flag in the PCSR
+register to 0 to start operations for data reception.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2642 of 3240
+
+RX72N Group
+
+50.3.5
+
+50. Parallel Data Capture Unit (PDC)
+
+Operation during the Horizontal Blanking Period
+
+If the horizontal blanking period begins but the number of the received data bytes has not reached 32 bytes since the
+previous receive data ready, the count of the number of received data bytes is retained and carried over to the next
+horizontal valid period. Figure 50.12 shows an example of operation during the horizontal blanking period.
+
+16
+
+0
+
+Number of writing to the FIFO
+
+16
+
+32
+
+PIXCLK
+VSYNC
+HSYNC
+16 bytes
+
+16 bytes
+
+PIXD7 to
+PIXD0
+PCSR.FBSY
+PCSR.FEMPF
+Receive data ready interrupt
+PCSR.FEF
+
+Figure 50.12
+
+50.3.6
+
+Example of Operation during the Horizontal Blanking Period
+
+Operations for Continued Reception at the Time of Frame End
+
+When the last of the data have been received but the number of bytes of data received since the previous receive data
+ready has not reached 32, the PDC continues to receive data (hereinafter referred to as “continued reception”) until the
+number reaches 32. After that, it generates a receive data ready and a frame end. The PIXCLK should be input during
+operations for continued reception. If the data stored in the FIFO are read out during operations for continued reception,
+the values read are undefined. Figure 50.13 shows an example of operations at the time of frame end.
+
+Number of writing to the FIFO
+
+16
+
+0
+
+20
+
+25
+
+30
+
+32
+
+PIXCLK
+VSYNC
+HSYNC
+16 bytes
+
+PIXD7 to
+PIXD0
+PCSR.FBSY
+PCSR.FEMPF
+Receive data ready interrupt
+PCSR.FEF
+
+Figure 50.13
+
+Example of Continued Reception at the Time of Frame End
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2643 of 3240
+
+RX72N Group
+
+50.3.7
+
+50. Parallel Data Capture Unit (PDC)
+
+Error Detection
+
+The PDC has functions for error detection so that the software can apply control in response to errors during operations
+for reception. Table 50.4 summarizes the conditions under which each type of error is detected and the interrupt flags set
+in response.
+Table 50.4
+
+Error Detection
+
+Error Factor
+
+Conditions of Error Detection
+
+Interrupt Flag
+
+Example of
+Operation
+
+Overrun
+
+Data for reception arriving while the FIFO is full.*1
+
+PCSR.OVRF
+
+Figure 50.14
+
+Underrun
+
+The PCDR register being read while the FIFO is empty.
+
+PCSR.UDRF
+
+Figure 50.15
+
+Vertical line number
+setting error
+
+Negation of the VSYNC signal when the number of captured
+lines is less than the value set in the VCR register.
+
+PCSR.VERF
+
+Figure 50.16
+
+Horizontal byte number
+setting error
+
+Negation of the HSYNC signal when the number of bytes
+captured in a line is less than the value set in the HCR
+register.
+
+PCSR.HERF
+
+Figure 50.17
+
+Note 1. This includes data reception during operations for continued reception.
+
+When an error is detected, the PDC sets the corresponding interrupt flag to 1 to stop operations for reception. While the
+interrupt flag is set to 1, the PDC does not detect effective edges of the VSYNC signal and does not start operations for
+reception. Clear all error source interrupt flags to 0 to start operations for reception.
+In addition, when an error occurs, data stored in the FIFO is disabled.
+
+Writing to the FIFO is generated
+while FIFO is full.
+
+PIXCLK
+VSYNC
+HSYNC
+PIXD7 to
+PIXD0
+PCSR.FBSY
+PCSR.FEMPF
+Receive data ready interrupt
+PCSR.OVRF
+PCSR.UDRF
+
+Figure 50.14
+
+Overrun Detected
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2644 of 3240
+
+RX72N Group
+
+50. Parallel Data Capture Unit (PDC)
+
+Reading of the PCDR register
+while the FIFO is empty.
+
+PIXCLK
+VSYNC
+HSYNC
+PIXD7 to
+PIXD0
+PCSR.FBSY
+PCSR.FEMPF
+
+Undefined
+
+Receive data ready interrupt
+PCSR.OVRF
+PCSR.UDRF
+
+Figure 50.15
+
+Underrun Detected
+
+The VSYNC signal is negated because
+fewer lines have been captured than the
+value in the VCR register.
+
+Waveform that would be expected
+from the setting in the VCR register
+
+PIXCLK
+VSYNC
+HSYNC
+PIXD7 to
+PIXD0
+PCSR.FBSY
+PCSR.FEMPF
+Receive data ready interrupt
+PCSR.FEF
+PCSR.VERF
+
+Figure 50.16
+
+Vertical Line Number Setting Error Detected
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2645 of 3240
+
+RX72N Group
+
+50. Parallel Data Capture Unit (PDC)
+
+The HSYNC signal is negated because
+fewer bytes in the line are captured than
+the value in the HCR register.
+
+Waveform that would be expected
+from the setting in the HCR register
+
+PIXCLK
+VSYNC
+HSYNC
+PIXD7 to
+PIXD0
+PCSR.FBSY
+PCSR.FEMPF
+Receive data ready interrupt
+PCSR.FEF
+PCSR.HERF
+
+Figure 50.17
+
+Horizontal Byte Number Setting Error Detected
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2646 of 3240
+
+RX72N Group
+
+50.3.8
+
+50. Parallel Data Capture Unit (PDC)
+
+Initial Settings
+
+Figure 50.18 is a sample flowchart for initial settings. For a description of how to set up the input and output ports and
+the interrupt controller, refer to the descriptions given in the sections on the relevant blocks.
+
+Start of initialization
+Set the input/output ports.
+Set the interrupt controller.
+
+No
+
+PCCR1.PCE=0
+
+[1]
+
+[1] Disable PDC operation.
+
+Set the PCCR0 register.
+(PCKOE, PCKDIV[2:0])
+
+[2]
+
+PCCR0.PCKE=1
+
+[3]
+
+[2] Set the frequency division rate of the PCKO register
+and enable or disable an output of the PCKO register.
+(Set as required.)
+[3] Enable a PIXCLK input.
+
+PCCR0.PRST=1
+
+[4]
+
+[4] Reset the PDC.
+
+Set the VCR and HCR registers.
+
+[5]
+
+[5] Set the vertical and horizontal capture ranges.
+
+Set the PCCR0 register.
+(VPS, HPS, DFIE, FEIE,
+OVIE, UDRIE, VERIE,
+HERIE, EDS)
+
+[6]
+
+[6] Set the polarity of the VSYNC and HSYNC signals
+(VPS, HPS).
+Enable/disable an interrupt
+(DFIE, FEIE, OVIE, UDRIE, VERIE, HERIE).
+Set the endian (EDS).
+
+PCCR0.PRST == 0
+Yes
+
+End of initialization
+
+Figure 50.18
+
+Sample Flowchart for Initial Setting of the PDC
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2647 of 3240
+
+RX72N Group
+
+50.3.9
+
+50. Parallel Data Capture Unit (PDC)
+
+Flows of Operations
+
+Figure 50.19 shows an example of the flows of operations when the receive data ready interrupt (to start up the DTC or
+DMAC) and frame end interrupt are in use. For a description of how to set up the DTC or DMAC, refer to section 18,
+DMA Controller (DMACAa) and section 20, Data Transfer Controller (DTCb).
+
+Main Routine
+
+DTC/DMAC
+
+Completion of initial setting
+and data reception
+
+Completion of the
+DTC or DMAC setting
+
+Set the DTC or DMAC.
+
+[1]
+
+[1]
+No
+
+PCCR1.PCE=1
+
+[2]
+
+Start of data reception
+
+Request of the DTC
+or DMAC startup
+Yes
+Transfer the data in the
+PCDR register to the
+destination address.
+
+Receive data.
+
+[4]
+
+[3]
+
+[1] Setting of the DTC or DMAC:
+Set the DTC or DMAC according to the size of the
+captured image.
+
+Interrupt processing
+Start of frame end
+interrupt
+
+PCSR.UDRF==1
+
+Yes
+
+[5]
+
+No
+
+No
+
+PCSR.FEMPF==1
+
+[5]
+
+Yes
+PCCR1.PCE=0
+
+[6]
+
+Clear the
+PCSR.FEF flag to 0.
+
+Clear the
+PCSR.FEF flag to 0.
+
+Completion of frame
+end interrupt
+Completion of data
+reception
+
+Start of error
+processing
+
+[2] Enabling of PDC operation:
+Set the PCE bit in the PCCR1 register to 1 to enable
+PDC operation.
+[3] Data reception:
+Receive the data from the external I/O and wait for
+generation of a receive data ready interrupt (DTC/DMAC
+startup) or a frame end interrupt.
+[4] Transfer by the DTC or DMAC:
+Transfer the data in the PCDR register to the destination
+address in response to a receive data ready interrupt
+(DTC/DMAC startup).
+Read the PCDR register in longword access and transfer
+32 bytes of data per receive data ready interrupt.
+[5] Frame end interrupt:
+Read the FEMPF flag in the PCSR register and verify
+completion of the DTC or DMAC transfer.
+If an underrun occurs during DTC or DMAC transfer,
+setting of the FEMPF flag may not proceed. When an
+underrun occurs, clear the FEF flag to 0 and branch to
+the appropriate error processing routine.
+[6] Completion of data reception:
+After completion of the transfer, clear the PCE bit in the
+PCCR1 register to 0, and then clear the FEF flag in the
+PCSR register to 0. This completes handling of the
+frame end interrupt and data reception.
+
+Figure 50.19
+
+Example of Flows of Operations
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2648 of 3240
+
+RX72N Group
+
+50. Parallel Data Capture Unit (PDC)
+
+Figure 50.20 shows an example of the flow of operations in response to an error interrupt.
+
+Start of error processing
+
+No
+
+PCCR1.PCE=0
+
+[1]
+
+Disable the DTC or DMAC transfer.
+
+[2]
+
+PCSR.OVRF == 1
+
+[3]
+
+Overrun error processing*1
+Clear the PCSR.OVRF flag to 0.
+
+PCSR.UDRF == 1
+
+[4]
+
+Yes
+
+Clear the PCSR.UDRF flag to 0.
+
+PCSR.VERF == 1
+
+[4] Checking the underrun flag:
+Read the PCSR register to check the state of
+the UDRF flag. If the flag is set, processing to
+handle the underrun error proceeds and the
+flag is then cleared.
+[5] Checking the vertical line setting error flag:
+Read the PCSR register to check the state of
+the VERF flag. If the flag is set, processing to
+handle the vertical line setting error proceeds
+and the flag is then cleared.
+
+Underrun error processing*1
+
+No
+
+[2] Disabling of the DTC or DMAC transfer:
+Disable the transfer of the DTC or DMAC.
+[3] Checking the overrun flag:
+Read the PCSR register to check the state of
+the OVRF flag. If the flag is set, processing to
+handle the overrun error proceeds and the flag
+is then cleared.
+
+Yes
+
+No
+
+[1] Disabling of PDC operation:
+Clear the PCE bit in the PCCR1 register to 0 to
+disable PDC operation.
+
+[5]
+
+Yes
+
+[6] Checking the horizontal byte setting error flag:
+Read the PCSR register to check the status of
+the HERF flag. If the flag is set, processing to
+handle the horizontal byte setting error
+proceeds and the flag is then cleared.
+
+Vertical line setting error processing*1
+Clear the PCSR.VERF flag to 0.
+
+No
+
+PCSR.HERF == 1
+
+[6]
+
+Yes
+Horizontal byte setting error processing*1
+Clear the PCSR.HERF flag to 0.
+
+Note 1. Processing for each type of error is defined
+by the user, so the user needs to prepare
+error processing for each.
+Note 2. If the CPU, DTC, or DMAC reads the PCDR
+register after an error interrupt has occurred
+in response to an interrupt source other
+than an underrun, an underrun may occur.
+If an underrun occurs on completion of error
+processing, run the error processing again
+and clear the UDRF flag.
+Since an underrun after error processing
+still requires detection, do not prohibit the
+underrun interrupt before the error
+processing.
+
+Completion of error processing*2
+
+Completion of data reception
+
+Figure 50.20
+
+Example of Error Processing Flow
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2649 of 3240
+
+RX72N Group
+
+50.3.10
+
+50. Parallel Data Capture Unit (PDC)
+
+Interrupt Source
+
+The interrupt sources of the PDC are receive data ready, frame end, overrun, underrun, vertical line number setting error,
+and horizontal byte number setting error. The PDC can start up the DTC or DMAC in response to a receive data ready
+interrupt request for the transfer of data.
+Table 50.5 summarizes the interrupt sources of the PDC. When an interrupt condition listed in Table 50.5 is satisfied,
+the corresponding interrupt is generated. In the case of receive data ready, the interrupt source flag is cleared by reading
+of the PCDR register. For the interrupt source flag for frame end, the FEF flag in the PCSR register is cleared. For an
+overrun, underrun, vertical line number setting error, or a horizontal byte number setting error, the flags must be checked
+to identify the error source flag because their interrupt vectors are allocated to the same address by the PCERI. Once
+identified, the corresponding error interrupt source flag (the OVRF, UDRF, VERF, or HERF flag) in the PCSR register
+should be cleared.
+When the DTC or DMAC is to handle data transfer, whichever is selected should be set up first. After enabling the block
+to handle transfer, set up the PDC. For descriptions of how to set up the DTC and DMAC, refer to section 18, DMA
+Controller (DMACAa) and section 20, Data Transfer Controller (DTCb).
+In addition, for receive data ready, if the ICU.IRn.IR flag is 1, the interrupt request signal is retained internally but an
+interrupt request is not output to the ICU, even if the interrupt condition is satisfied. In this case, however, only one
+interrupt request signal can be retained internally. If the ICU.IRn.IR flag is 0, the retained interrupt request signal is
+output to the ICU. After completion of output, the request flag is automatically cleared. An interrupt request signal
+retained internally can also be cleared by setting the corresponding interrupt enable bit (the DFIE bit in the PCCR0
+register) to 0.
+When the receive data ready interrupt is disabled from the enabled state, set the ICU.IRn.IR flag to 0 according to the
+following procedure.
+1. Set the IERn.IENj bit to the value that disables interrupt requests.
+2. Set the receive data ready interrupt enable bit (the DFIE bit) to “disabled” and read out the register after writing to
+verify that the bit has the new value.
+3. Set the ICU.IRn.IR flag to 0.
+Table 50.5
+
+PDC Interrupt Source
+
+Interrupt Source
+
+Abbre
+-viation
+
+Interrupt Conditions
+
+Receive Data Ready
+
+PCDFI
+
+Receive data ready occurring while the DFIE bit in the PCCR0 register is 1. Possible
+
+Frame End
+
+PCFEI
+
+Frame end occurring while the FEIE bit in the PCCR0 register is 1.
+
+Impossible
+
+Errors
+
+PCERI
+
+An overrun occurring while the OVIE bit in the PCCR0 register is 1.
+An underrun occurring while the UDRIE bit in the PCCR0 register is 1.
+A vertical line number setting error occurring while the VERIE bit in the
+PCCR0 register is 1.
+A horizontal byte number setting error occurring while the HERIE bit in the
+PCCR0 register is 1.
+
+Impossible
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+DTC/DMAC
+Startup
+
+Page 2650 of 3240
+
+RX72N Group
+
+50.3.11
+
+50. Parallel Data Capture Unit (PDC)
+
+Reset State
+
+Resetting of the PDC is divided into two types, PDC reset and other reset. Other resets include RES# pin reset, power-on
+reset, voltage monitoring reset 0, voltage monitoring reset 1, voltage monitoring reset 2, deep software standby reset,
+independent watchdog timer reset, watchdog timer reset, and software reset. Table 50.6 lists the range and states
+following the two types of reset.
+Table 50.6
+
+Reset State
+PDC Reset
+
+Other reset
+
+PCCR0
+
+Retained
+
+Reset
+
+PCCR1
+
+Retained
+
+Reset
+
+PCSR
+
+Reset
+
+Reset
+
+PCMONR
+
+Retained
+
+Reset
+
+PCDR
+
+Retained
+
+Reset
+
+VCR
+
+Retained
+
+Reset
+
+HCR
+
+Retained
+
+Reset
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2651 of 3240
+
+RX72N Group
+
+50.4
+50.4.1
+
+50. Parallel Data Capture Unit (PDC)
+
+Usage Notes
+Setting of the Module Stop Function
+
+The module stop control register B (MSTPCRB) enables or disables operation of the PDC. Operation of the PDC is
+stopped when the value is that following a reset. The register becomes accessible following release from the module stop
+state. For details, refer to section 11, Low Power Consumption.
+
+50.4.2
+
+Notes on the Power Consumption Reduction Function
+
+When power consumption by the PDC is to be reduced by using the power consumption reduction function, set the PCE
+bit in the PCCR1 register to 0 to disable operations for reception, and set the PCKE bit in the PCCR0 register to 0 to
+disable input through the PIXCLK pin. After that, use the power consumption reduction function.
+If the setting of the PCKOE bit in the PCCR0 register is 1, it should be set to 0 to stop output of the PCKO signal, and
+input through the PIXCLK pin should be disabled in the way described above. After that, use the power consumption
+reduction function.
+On return from the low power consumption state, set the PCKE bit to 1, and after enabling input through the PIXCLK
+pin, use the PRST bit to initialize the PDC.
+
+50.4.3
+
+Notes on Error Interrupts
+
+When an error interrupt occurs, there is a possibility that the DTC or DMAC might be transmitting parallel data
+depending on their operation state. Therefore, transmitting executed by the DTC or DMAC should be prohibited after the
+PDC operation is prohibited at the top of the error interrupt processing routine (PCCR1.PCE = 0).
+
+50.4.4
+
+Notes on Use of the DTC
+
+When the DTC is used with the receive data ready interrupt, set the DISEL bit in the MRB register to 0 and the SZ bit in
+the MRA register to 10b.
+The maximum number of blocks the DTC can transfer in block transfer mode is 65536. If 32 bytes are transferred per
+block transfer, this represents a total of up to 2097152 bytes. If more data are to be transferred, set up the DTC again
+during the horizontal blanking period.
+
+50.4.5
+
+Notes on Use of the DMAC
+
+When the DMAC is used with the receive data ready interrupt, set the DISEL bit in the DMCSL register to 0, set the SZ
+bit in the DMTMD register to 10b, and set the IPRn.IPR[3:0] bit responding to an ICU receive data ready interrupt to
+level 0 (the interrupt is prohibited).
+The maximum number of blocks the DMAC can transfer in block transfer mode is 65536. If 32 bytes are transferred per
+block transfer, this represents a total of up to 2097152 bytes. If more data are to be transferred, set up the DMAC again
+during the horizontal blanking period.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2652 of 3240
+
+RX72N Group
+
+50.4.6
+
+50. Parallel Data Capture Unit (PDC)
+
+Notes on Start of Transfer
+
+When transfer starts while the ICU.IRn.IR flag is 1, an interrupt request signal is internally retained after the start of
+transfer. This may cause the ICU.IRn.IR flag to behave in an unexpected way.
+In such cases, therefore, clear the interrupt request flag by following the procedures below before enabling operations
+(i.e. before setting the PCE bit in the PCCR1 to 1).
+(1)
+(2)
+(3)
+(4)
+
+Ensure that transfer is stopped (the PCE bit in the PCCR1 is 0).
+Set the corresponding interrupt enable bit (the DFIE bit in the PCCR0 register) to 0.
+Read out the corresponding interrupt enable bit (the DFIE bit in the PCCR0 register) to ensure that it is 0.
+Set the ICU.IRn.IR flag to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2653 of 3240
+
+

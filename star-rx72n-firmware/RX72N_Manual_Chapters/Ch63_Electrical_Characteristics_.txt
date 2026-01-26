@@ -1,0 +1,17490 @@
+RX72N Group
+
+63. Electrical Characteristics
+
+63.
+
+Electrical Characteristics
+
+63.1
+
+Absolute Maximum Ratings
+
+Table 63.1
+
+Absolute Maximum Rating
+
+Conditions: VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V
+Item
+
+Symbol
+
+Value
+
+Unit
+
+VCC, VCC_USB
+
+–0.3 to +4.0
+
+V
+
+VBATT
+
+–0.3 to +4.0
+
+V
+
+Input voltage (except for ports for 5 V tolerant*1)
+
+Vin
+
+–0.3 to VCC + 0.3 (up to 4.0)
+
+V
+
+Input voltage (ports for 5 V tolerant*1)
+
+Vin
+
+–0.3 to VCC + 4.0 (up to 5.8)
+
+V
+
+VREFH0
+
+–0.3 to AVCC0 + 0.3 (up to 4.0)
+
+V
+
+Power supply voltage
+VBATT power supply voltage
+
+Reference power supply voltage
+Analog power supply voltage
+Analog input voltage
+Junction temperature
+
+D version
+G version
+
+Storage temperature
+
+AVCC0, AVCC1*2
+
+–0.3 to +4.0
+
+V
+
+VAN
+
+–0.3 to AVCC + 0.3 (up to 4.0)
+
+V
+
+Tj
+
+–40 to +105
+
+°C
+
+Tj
+
+–40 to +125
+
+°C
+
+Tstg
+
+–55 to +125
+
+°C
+
+Caution: Permanent damage to the LSI may result if absolute maximum ratings are exceeded.
+Note 1. P07, P11 to P17, P20, P21, P30 to P33, P67, and PC0 to PC3 are 5 V tolerant.
+Note 2. Connect the AVCC0, AVCC1, and VCC_USB pins to VCC, and the AVSS0, AVSS1, and VSS_USB pins to VSS.
+When the A/D converter unit 0 is not to be used, connect the VREFH0 pin to VCC and the VREFL0 pin to VSS, respectively.
+Do not leave these pins open. Insert capacitors of high frequency characteristics between the AVCC0 and AVSS0 pins, or
+AVCC1 and AVSS1 pins. Place capacitors of about 0.1 µF as close as possible to every power supply pin and use the shortest
+and heaviest possible traces.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3126 of 3240
+
+RX72N Group
+
+63.2
+
+63. Electrical Characteristics
+
+Recommended Operating Conditions
+
+Table 63.2
+
+Recommended Operating Conditions (1)
+Item
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+VCC
+
+2.7
+
+—
+
+3.6
+
+V
+
+VSS
+
+—
+
+0
+
+—
+
+VBATT power supply voltage
+
+VBATT
+
+1.62*2
+
+—
+
+3.6
+
+V
+
+USB power supply voltage
+
+VCC_USB
+
+—
+
+VCC
+
+—
+
+V
+
+VSS_USB
+
+—
+
+0
+
+—
+
+AVCC0
+
+—
+
+VCC
+
+—
+
+AVSS0
+
+—
+
+0
+
+—
+
+AVCC1
+
+—
+
+VCC
+
+—
+
+Power supply voltage*1
+
+Analog power supply voltage*1, *3
+
+V
+
+AVSS1
+
+—
+
+0
+
+—
+
+VREFH0
+
+2.7
+
+—
+
+AVCC0
+
+VREFL0
+
+—
+
+0
+
+—
+
+Vin
+
+–0.3
+
+—
+
+VCC + 0.3
+
+V
+
+Input voltage (P03, P05 and P40 to P47)
+
+Vin
+
+–0.3
+
+—
+
+AVCC0 + 0.3
+
+V
+
+Input voltage (5V tolerant ports: P11 to P17, P20, P21,
+P30 to P33, P67, and PC0 to PC3)*5
+
+Vin
+
+–0.3
+
+—
+
+VCC + 3.6 (up to 5.5)
+
+V
+
+Input voltage (5V tolerant port: P07)
+
+Vin
+
+–0.3
+
+—
+
+AVCC0 + 3.6 (up to 5.5)
+
+V
+
+Operating temperature (D version)
+
+Topr
+
+–40
+
+—
+
+85
+
+°C
+
+Operating temperature (G version)
+
+Topr
+
+–40
+
+—
+
+105
+
+°C
+
+Input voltage (except for 5 V tolerant ports,
+except for P03, P05 and P40 to P47)*4
+
+Note 1.
+Note 2.
+Note 3.
+Note 4.
+Note 5.
+
+Comply with the following potential condition: VCC = AVCC0 = AVCC1 = VCC_USB
+The low CL crystal unit cannot be used when the VBATT voltage is less than 2.0 V.
+For details, refer to section 56.6.11, Voltage Range of Analog Power Supply Pins.
+P07, P11 to P17, P20, P21, P30 to P33, P67, and PC0 to PC3 are 5 V tolerant.
+For P30 to P32, input as follows when the VBATT power supply is selected.
+Vin Min. = –0.3, Max. = VBATT + 0.3 (VBATT = 1.62 to 3.6 V)
+
+Table 63.3
+
+Recommended Operating Conditions (2)
+Item
+
+Decoupling capacitance for stabilizing the internal voltage
+
+Symbol
+
+Value
+
+CVCL
+
+0.22 µF ± 30%*1
+
+Note 1. Use a multilayer ceramic capacitor with a nominal capacitance of 0.22 µF, for which the sum of the capacitance tolerance and
+change in the capacitance under the usage conditions will be no greater than ±30%.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3127 of 3240
+
+RX72N Group
+
+63.3
+
+63. Electrical Characteristics
+
+DC Characteristics
+
+Table 63.4
+
+DC Characteristics (1)
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+Schmitt trigger
+input voltage
+
+IRQ input pin*1,
+MTU input pin*1,
+POE input pin*1,
+TPU input pin*1,
+TMR input pin*1,
+CMTW input pin*1,
+SCI input pin*1,
+CAN input pin*1,
+CAC input pin*1,
+ADTRG# input pin*1,
+QSPI input pin*1,
+SSIE input pin*1,
+GPTW input pin*1,
+POEG input pin*1,
+RES#, NMI, TCK
+RIIC input pin
+(except for SMBus)
+
+High level input
+voltage (except for
+Schmitt trigger
+input pin)
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+VIH
+
+0.8 × VCC
+
+—
+
+—
+
+V
+
+VIL
+
+—
+
+—
+
+0.2 × VCC
+
+ΔVT
+
+0.06 × VCC
+
+—
+
+—
+
+VIH
+
+0.7 × VCC
+
+—
+
+—
+
+VIL
+
+—
+
+—
+
+0.3 × VCC
+
+ΔVT
+
+0.05 × VCC
+
+—
+
+—
+
+Ports for 5 V tolerant*2
+
+VIH
+
+0.8 × VCC
+
+—
+
+—
+
+VIL
+
+—
+
+—
+
+0.2 × VCC
+
+Other input pins excluding ports
+for 5 V tolerant*3
+
+VIH
+
+0.8 × VCC
+
+—
+
+—
+
+VIL
+
+—
+
+—
+
+0.2 × VCC
+
+MD pin, EMLE
+
+VIH
+
+0.9 × VCC
+
+—
+
+—
+
+0.8 × VCC
+
+—
+
+—
+
+2.3
+
+—
+
+—
+
+0.7 × VCC
+
+—
+
+—
+
+EXTAL, RSPI input pin,
+EXDMAC input pin, WAIT#,
+SDHI input pin, MMC input pin,
+PDC input pin, PMGI input pin
+ETHERC input pin
+D0 to D31
+RIIC (SMBus)
+
+Low level input
+voltage (except for
+Schmitt trigger
+input pin)
+
+MD pin, EMLE
+EXTAL, RSPI input pin,
+ETHERC input pin,
+EXDMAC input pin, WAIT#,
+SDHI input pin, MMC input pin,
+PDC input pin, PMGI input pin
+
+VIL
+
+2.1
+
+—
+
+—
+
+—
+
+—
+
+0.1 × VCC
+
+—
+
+—
+
+0.2 × VCC
+
+D0 to D31
+
+—
+
+—
+
+0.3 × VCC
+
+RIIC (SMBus)
+
+—
+
+—
+
+0.8
+
+Test
+Conditions
+
+V
+
+V
+
+Note 1. This does not include the pins, which are multiplexed as ports for 5 V tolerant.
+Note 2. P07, P11 to P17, P20, P21, P30 to P33, P67, and PC0 to PC3 are 5 V tolerant.
+Note 3. For P30 to P32, input as follows when the VBATT power supply is selected.
+VIH Min. = VBATT × 0.8, VIL Max. = VBATT × 0.2 (VBATT = 1.62 to 3.6 V)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3128 of 3240
+
+RX72N Group
+
+Table 63.5
+
+63. Electrical Characteristics
+
+DC Characteristics (2)
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Test Conditions
+
+Output high voltage
+
+All output pins
+
+VOH
+
+VCC – 0.5
+
+—
+
+—
+
+V
+
+IOH = –1 mA
+
+Output low voltage
+
+All output pins
+(except for RIIC pins and
+ETHERC output pin)
+
+VOL
+
+—
+
+—
+
+0.5
+
+V
+
+IOL = 1.0 mA
+
+—
+
+—
+
+0.4
+
+IOL = 3.0 mA
+
+—
+
+—
+
+0.6
+
+IOL = 6.0 mA
+
+—
+
+—
+
+0.4
+
+—
+
+0.4
+
+—
+
+RIIC output pin
+
+RIIC output pin
+(only P12 and P13 in channel 0)
+
+Input leakage current
+
+V
+
+IOL = 15.0 mA
+(ICFER.FMPE = 1)
+IOL = 20.0 mA
+(ICFER.FMPE = 1)
+
+ETHERC output pin
+
+VOL
+
+—
+
+—
+
+0.4
+
+V
+
+IOL = 1.0 mA
+
+RES#, MD pin, EMLE*1,
+
+| Iin |
+
+—
+
+—
+
+1.0
+
+µA
+
+Vin = 0 V
+Vin = VCC
+
+| ITSI |
+
+—
+
+—
+
+1.0
+
+µA
+
+Vin = 0 V
+Vin = VCC
+
+—
+
+—
+
+5.0
+
+BSCANP*1, NMI
+Three-state leakage
+current (off state)
+
+VOL
+
+Other than ports for 5 V tolerant
+Ports for 5 V tolerant
+
+Vin = 0 V
+Vin = 5.5 V
+
+Input pull-up resistor
+current
+
+Other than P35
+
+Ip
+
+–300
+
+—
+
+–10
+
+µA
+
+VCC = 2.7 to 3.6 V
+Vin = 0 V
+
+Input pull-down
+resistor current
+
+EMLE, BSCANP
+
+Ip
+
+10
+
+—
+
+300
+
+µA
+
+Vin = VCC
+
+Input capacitance
+
+All input pins
+(except for P03, P05, P12, P13,
+P16, P17, P20, P21, EMLE,
+BSCANP, USB0_DP, and
+USB0_DM)
+
+Cin
+
+—
+
+—
+
+8
+
+pF
+
+Vbias = 0 V
+Vamp = 20 mV
+f = 1 MHz
+Ta = 25°C
+
+—
+
+—
+
+16
+
+—
+
+1.18
+
+—
+
+P03, P05, P12, P13, P16, P17,
+P20, P21, EMLE, BSCANP,
+USB0_DP, and USB0_DM
+Output voltage of the VCL pin
+
+VCL
+
+V
+
+Note 1. The input leakage current value at the EMLE and BSCANP pins are only when Vin = 0 V.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3129 of 3240
+
+RX72N Group
+
+Table 63.6
+
+63. Electrical Characteristics
+
+DC Characteristics (3)
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+
+Symbol
+
+Full operation*2
+
+High-speed operating mode
+
+Supply
+current
+*1
+
+ICC*3
+
+D version
+
+G version
+
+Typ.
+
+Max.
+
+Typ.
+
+Max.
+
+—
+
+261
+
+—
+
+319
+
+Normal
+Peripheral module clocks are supplied
+operation *4
+
+61
+
+—
+
+61
+
+—
+
+Peripheral module clocks are stopped
+*4, *5
+
+30
+
+—
+
+30
+
+—
+
+Peripheral module clocks are stopped
+*4, *5
+
+37
+
+—
+
+37
+
+—
+
+Sleep mode: Peripheral module clocks are
+supplied*4
+
+42
+
+144
+
+42
+
+196
+
+All module clock stop mode (reference value)
+
+14
+
+115
+
+14
+
+167
+
+Increased by BGO
+operation*8
+
+Reading from the code flash
+memory while the data flash
+memory is being programmed
+
+6
+
+—
+
+6
+
+—
+
+Reading from the code flash
+memory while the code flash
+memory is being programmed
+
+7
+
+—
+
+7
+
+—
+
+Core
+Mark
+
+Test Conditions
+
+mA
+
+ICLK = 240 MHz,
+PCLKA = 120 MHz,
+PCLKB = 60 MHz,
+PCLKC = 60 MHz,
+PCLKD = 60 MHz,
+FCLK = 60 MHz,
+BCLK = 120 MHz,
+BCLK pin = 60 MHz
+
+—
+
+15
+
+—
+
+15
+
+Low-speed operating mode 1: Peripheral module clocks
+are stopped*4
+
+4.2
+
+—
+
+4.2
+
+—
+
+All clocks 1 MHz
+
+Low-speed operating mode 2: Peripheral module clocks
+are stopped*4
+
+4.2
+
+—
+
+4.2
+
+—
+
+All clocks 32.768
+kHz
+
+Software standby mode
+
+3.95
+
+107
+
+3.95
+
+155
+
+15.5
+
+70
+
+15.5
+
+98
+
+Deep software standby mode
+
+Increased by Trusted Secure IP operation
+
+Unit
+
+Power is supplied to the standby RAM and USB
+resume detecting unit (USB0 only)
+
+µA
+
+Power is not
+supplied to the
+standby RAM and
+USB resume
+detecting unit
+(USB0 only)
+
+Low power consumption
+function of the power-on reset
+circuit is disabled*6
+
+11.5
+
+42
+
+11.5
+
+58
+
+Low power consumption
+function of the power-on reset
+circuit is enabled*7
+
+4.9
+
+32
+
+4.9
+
+47
+
+Increase current
+by operating RTC
+
+When a low CL crystal is in
+use
+
+1
+
+—
+
+1
+
+—
+
+When a standard CL crystal is
+in use
+
+2
+
+—
+
+2
+
+—
+
+When a low CL crystal is in
+use
+
+0.9
+
+—
+
+0.9
+
+—
+
+VBATT = 2.0 V,
+VCC = 0 V
+
+1.6
+
+—
+
+1.6
+
+—
+
+VBATT = 3.3 V,
+VCC = 0 V
+
+1.6
+
+—
+
+1.6
+
+—
+
+VBATT = 1.62 V,
+VCC = 0 V
+
+1.7
+
+—
+
+1.7
+
+—
+
+VBATT = 2.0 V,
+VCC = 0 V
+
+3.3
+
+—
+
+3.3
+
+—
+
+VBATT = 3.3 V,
+VCC = 0 V
+
+—
+
+211
+
+—
+
+211
+
+When the RTC is
+operating while VCC is
+not supplied (Only the
+RTC and sub-clock
+oscillator operate with
+the battery backup
+function)
+
+Inrush current on
+returning from deep
+software standby mode
+
+When a standard CL crystal is
+in use
+
+Inrush current*9
+
+IRUSH
+
+mA
+
+Note 1. Supply current values are measured when all output pins are unloaded and all input pull-up resistors are disabled.
+Note 2. Peripheral module clocks are supplied.
+Note 3. ICC depends on the f (ICLK) as follows.
+(when ICLK : PCLKA : PCLKB/PCLKC/PCLKD : BCLK : BCLK pin = 4 : 2 : 1 : 2 : 1 and EXTAL = 12 MHz)
+ D version
+ICC max. = 0.62 × f + 113 (full operation in high-speed operating mode)
+ICC typ. = 0.22 × f + 7 (normal operation in high-speed operating mode)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3130 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+ICC typ. = 0.50 × f + 3.7 (ICLK 1 MHz max) (low-speed operating mode 1)
+ICC max. = 0.13 × f + 113 (sleep mode)
+ G version
+ICC max. = 0.65 × f + 164 (full operation in high-speed operating mode)
+ICC typ. = 0.22 × f + 7 (normal operation in high-speed operating mode)
+ICC typ. = 0.50 × f + 3.7 (ICLK 1 MHz max) (low-speed operating mode 1)
+ICC max. = 0.13 × f + 164 (sleep mode)
+Note 4. Whether the peripheral module clocks are supplied or stopped is controlled only by the bit settings in the module stop control
+registers A to D.
+Note 5. When the peripheral module clock is stopped, the settings of the clock frequency are as follows:
+ICLK = 240 MHz and PCLKA = PCLKB = PCLKC = PCLKD = FCLK = BCLK = BCLK pin = 3.75 MHz (divided by 64).
+Note 6. When the low power consumption function is disabled, the DEEPCUT[1:0] bits are set to 01b.
+Note 7. When the low power consumption function is enabled, the DEEPCUT[1:0] bits are set to 11b.
+Note 8. These are the increases during programming of the code flash memory after the code flash memory (limitations apply to the
+combinations of address ranges of the program area and the readable area) or the data flash memory has been programmed or
+erased.
+Note 9. Reference value
+
+Table 63.7
+
+DC Characteristics (4)
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+
+Symbol
+
+During 12-bit A/D conversion (unit 0)
+Analog
+power
+During 12-bit A/D conversion (unit 0)
+supply
+with channel-dedicated sample-andcurrent*1, *3
+hold circuits (3 channels)
+
+AICC
+
+Min.
+
+Typ.
+
+—
+—
+
+During 12-bit A/D conversion (unit 1)
+During 12-bit A/D conversion (unit 1)
++ temperature sensor
+During D/A
+conversion
+(2 channels)
+
+Reference
+power
+supply
+current
+
+D version
+
+G version
+Max.
+
+Unit
+
+Test Conditions
+
+mA
+
+IAVCC0_AD
+
+Max.
+
+Min.
+
+Typ.
+
+0.8
+
+1
+
+—
+
+0.8
+
+1
+
+1.7
+
+2.5
+
+—
+
+1.7
+
+2.5
+
+IAVCC0_AD + SH
+
+—
+
+0.6
+
+1
+
+—
+
+0.6
+
+1
+
+IAVCC1_AD
+
+—
+
+0.7
+
+1.1
+
+—
+
+0.7
+
+1.1
+
+IAVCC1_AD +
+TEMP
+IAVCC1_DA
+
+Unbuffered output
+
+—
+
+0.25
+
+0.4
+
+—
+
+0.25
+
+0.4
+
+Buffered output
+
+—
+
+0.75
+
+1.1
+
+—
+
+0.75
+
+1.1
+
+Waiting for A/D, D/A, and
+temperature sensor conversion
+(all units)
+
+—
+
+0.9
+
+1.4
+
+—
+
+0.9
+
+1.4
+
+A/D, D/A, and temperature sensor
+are in standby mode (all units)
+
+—
+
+1.4
+
+6.7
+
+—
+
+1.4
+
+9.0
+
+µA
+
+IAVCC0 +
+IAVCC1
+
+—
+
+38
+
+60
+
+—
+
+38
+
+60
+
+µA
+
+IVREFH0
+
+Waiting for 12-bit A/D conversion
+(unit 0)
+
+—
+
+0.07
+
+0.5
+
+—
+
+0.07
+
+0.6
+
+IVREFH0
+
+12-bit A/D converter in module stop
+mode (unit 0)
+
+—
+
+0.07
+
+0.4
+
+—
+
+0.07
+
+0.5
+
+IVREFH0
+
+During 12-bit A/D conversion (unit 0)
+
+AIREFH
+
+IAVCC0 +
+IAVCC1
+
+Low speed
+
+USB0
+
+ICCUSBLS
+
+—
+
+3.7
+
+6.5
+
+—
+
+3.7
+
+6.5
+
+mA
+
+VCC_USB
+
+Full speed
+
+USB0
+
+ICCUSBFS
+
+—
+
+4.2
+
+10
+
+—
+
+4.2
+
+10
+
+mA
+
+VCC_USB
+
+RAM retension voltage
+
+VRAM
+
+2.7
+
+—
+
+—
+
+2.7
+
+—
+
+—
+
+V
+
+VCC rising gradient
+
+SrVCC
+
+8.4
+
+—
+
+20000
+
+8.4
+
+—
+
+VCC falling gradient*2
+
+SfVCC
+
+8.4
+
+—
+
+—
+
+8.4
+
+—
+
+USB
+operating
+current
+
+20000 µs/V
+—
+
+µs/V
+
+Note 1. The reference power supply current is included in the power supply current value for 12-bit A/D converter (unit 1) and D/A
+converter.
+Note 2. This applies when VBATT is used.
+Note 3. Supply current values are measured when all output pins are unloaded.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3131 of 3240
+
+RX72N Group
+
+Table 63.8
+
+63. Electrical Characteristics
+
+Permissible Output Currents
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+Permissible output low current
+(average value per pin)
+
+Permissible output low current
+(max. value per pin)
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+IOL
+
+—
+
+—
+
+2.0
+
+mA
+
+All output pins*1
+
+Normal drive
+
+All output pins*2
+
+High drive
+
+—
+
+—
+
+3.8
+
+All output pins*3
+
+High-speed interface
+high-drive
+
+—
+
+—
+
+7.5
+
+All output pins*1
+
+Normal drive
+
+—
+
+—
+
+4.0
+
+All output pins*2
+
+High drive
+
+—
+
+—
+
+7.6
+
+All output pins*3
+
+High-speed interface
+high-drive
+
+—
+
+—
+
+15
+
+ΣIOL
+
+—
+
+—
+
+80
+
+mA
+
+IOH
+
+mA
+
+IOL
+
+Permissible output low current (total)
+
+Total of all output pins
+
+Permissible output high current
+(average value per pin)
+
+All output pins*1
+
+Normal drive
+
+—
+
+—
+
+–2.0
+
+All output pins*2
+
+High drive
+
+—
+
+—
+
+–3.8
+
+All output pins*3
+
+High-speed interface
+high-drive
+
+—
+
+—
+
+–7.5
+
+All output pins*1
+
+Normal drive
+
+—
+
+—
+
+–4.0
+
+All output pins*2
+
+High drive
+
+—
+
+—
+
+–7.6
+
+All output pins*3
+
+High-speed interface
+high-drive
+
+—
+
+—
+
+–15
+
+—
+
+—
+
+–80
+
+Permissible output high current
+(max. value per pin)
+
+Permissible output high current (total)
+
+IOH
+
+Total of all output pins
+
+ΣIOH
+
+mA
+
+mA
+
+mA
+
+Caution: To protect the MCU’s reliability, the output current values should not exceed the values in Table 63.8.
+Note 1. This is the value when normal driving ability is set with a pin for which normal driving ability is selectable.
+Note 2. This is the value when high driving ability is set with a pin for which normal driving ability is selectable or the value of the pin to
+which high driving ability is fixed.
+Note 3. This is the value when high-speed interface high-driving ability is set with a pin for which high-speed interface high-driving ability
+is selectable.
+
+Table 63.9
+
+Thermal Resistance Value (Reference)
+
+Item
+Thermal resistance
+
+Package
+176-pin LFQFP (PLQP0176KB-C)
+
+Symbol
+
+ja
+
+Unit
+
+Test Conditions
+
+31.5
+
+°C/W
+
+JESD51-2 and
+JESD51-7 compliant
+
+144-pin LFQFP (PLQP0144KA-B)
+
+32.6
+
+100-pin LFQFP (PLQP0100KB-B)
+
+34.0
+
+224-pin LFBGA (PLBG0224GA-A)
+
+23.1
+
+176-pin LFBGA (PLBG0176GA-A)
+
+30.5
+
+145-pin TFLGA (PTLG0145KA-A)
+176-pin LFQFP (PLQP0176KB-C)
+
+Note:
+
+Max.
+
+JESD51-2 and
+JESD51-9 compliant
+
+22.9
+
+jt
+
+0.4
+
+144-pin LFQFP (PLQP0144KA-B)
+
+0.5
+
+100-pin LFQFP (PLQP0100KB-B)
+
+0.6
+
+224-pin LFBGA (PLBG0224GA-A)
+
+0.2
+
+176-pin LFBGA (PLBG0176GA-A)
+
+0.3
+
+145-pin TFLGA (PTLG0145KA-A)
+
+0.2
+
+°C/W
+
+JESD51-2 and
+JESD51-7 compliant
+
+JESD51-2 and
+JESD51-9 compliant
+
+The values are reference values when the 4-layer board is used. Thermal resistance depends on the number of layers or size of
+the board. For details, refer to the JEDEC standards.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3132 of 3240
+
+RX72N Group
+
+63.4
+
+63. Electrical Characteristics
+
+AC Characteristics
+
+Table 63.10
+
+Operating Frequency (High-Speed Operating Mode)
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+Operating
+frequency
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+f
+
+—
+
+—
+
+240
+
+MHz
+
+System clock (ICLK)
+Peripheral module clock (PCLKA)
+
+—
+
+—
+
+120
+
+Peripheral module clock (PCLKB)
+
+—
+
+—
+
+60
+
+Peripheral module clock (PCLKC)
+
+—
+
+—
+
+60
+
+Peripheral module clock (PCLKD)
+
+—
+
+—
+
+60
+
+Flash-IF clock (FCLK)
+
+—*1
+
+—
+
+60
+
+—
+
+—
+
+120
+
+External bus clock (BCLK)
+
+Package of 144 pins or more
+100-pin package
+
+—
+
+—
+
+60
+
+BCLK pin output
+
+Package of 144 pins or more
+
+—
+
+—
+
+80
+
+100-pin package
+
+—
+
+—
+
+30
+
+SDRAM clock (SDCLK)
+
+Package of 144 pins or more
+
+—
+
+—
+
+80
+
+SDCLK pin output
+
+Package of 144 pins or more
+
+—
+
+—
+
+80
+
+Note 1. The FCLK must run at a frequency of at least 4 MHz when changing the flash memory contents.
+
+Table 63.11
+
+Operating Frequency (Low-Speed Operating Mode 1)
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+Operating
+frequency
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+f
+
+—
+
+—
+
+1
+
+MHz
+
+Peripheral module clock (PCLKA)
+
+—
+
+—
+
+1
+
+Peripheral module clock (PCLKB)
+
+—
+
+—
+
+1
+
+Peripheral module clock (PCLKC)*1
+
+—
+
+—
+
+1
+
+System clock (ICLK)
+
+Peripheral module clock (PCLKD)*1
+
+—
+
+—
+
+1
+
+Flash-IF clock (FCLK)
+
+—
+
+—
+
+1
+
+External bus clock (BCLK)
+
+—
+
+—
+
+1
+
+BCLK pin output
+
+—
+
+—
+
+1
+
+SDRAM clock (SDCLK)
+
+Package of 144 pins or more
+
+—
+
+—
+
+1
+
+SDCLK pin output
+
+Package of 144 pins or more
+
+—
+
+—
+
+1
+
+Note 1. When the 12-bit A/D converter is used, the frequency must be set to at least 1 MHz.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3133 of 3240
+
+RX72N Group
+
+Table 63.12
+
+63. Electrical Characteristics
+
+Operating Frequency (Low-Speed Operating Mode 2)
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+Operating
+frequency
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+f
+
+32
+
+—
+
+264
+
+kHz
+
+Peripheral module clock (PCLKA)
+
+—
+
+—
+
+264
+
+Peripheral module clock (PCLKB)
+
+—
+
+—
+
+264
+
+Peripheral module clock (PCLKC)*1
+
+—
+
+—
+
+264
+
+System clock (ICLK)
+
+Peripheral module clock (PCLKD)*1
+
+—
+
+—
+
+264
+
+Flash-IF clock (FCLK)
+
+32
+
+—
+
+264
+
+External bus clock (BCLK)
+
+—
+
+—
+
+264
+
+BCLK pin output
+
+—
+
+—
+
+264
+
+SDRAM clock (SDCLK)
+
+Package of 144 pins or more
+
+—
+
+—
+
+264
+
+SDCLK pin output
+
+Package of 144 pins or more
+
+—
+
+—
+
+264
+
+Note 1. The 12-bit A/D converter cannot be used.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3134 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.1
+
+Reset Timing
+
+Table 63.13
+
+Reset Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Test
+Conditions
+
+Power-on
+
+tRESWP
+
+1
+
+—
+
+—
+
+ms
+
+Figure 63.1
+
+Deep software standby mode
+
+tRESWD
+
+0.6
+
+—
+
+—
+
+ms
+
+Figure 63.2
+
+Software standby mode, low-speed operating
+mode 2
+
+tRESWS
+
+0.3
+
+—
+
+—
+
+ms
+
+Programming or erasure of the code flash
+memory, or programming, erasure or blank
+checking of the data flash memory
+
+tRESWF
+
+200
+
+—
+
+—
+
+µs
+
+Item
+RES# pulse
+width
+
+Other than above
+
+tRESW
+
+200
+
+—
+
+—
+
+µs
+
+Waiting time after release from the RES# pin reset
+
+tRESWT
+
+54
+
+—
+
+55
+
+tLcyc
+
+Internal reset time
+(independent watchdog timer reset, watchdog timer reset,
+software reset)
+
+tRESW2
+
+100
+
+—
+
+108
+
+tLcyc
+
+Figure 63.1
+
+VCC
+
+RES#
+
+Internal reset signal
+(Low is valid)
+
+tRESWP
+
+tRESWT
+
+Figure 63.1
+
+Reset Input Timing at Power-On
+
+tRESWD, tRESWS, tRESWF, tRESW
+RES#
+
+Internal reset signal
+(Low is valid)
+
+tRESWT
+
+Figure 63.2
+
+Reset Input Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3135 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.2
+
+Clock Timing
+
+Table 63.14
+
+BCLK Pin Output, SDCLK Pin Output Clock Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+BCLK pin output cycle time
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Test
+Conditions
+
+tBcyc
+
+12.5
+
+—
+
+—
+
+ns
+
+Figure 63.3
+
+Package of 144 pins or
+more
+
+33.2
+
+—
+
+—
+
+BCLK pin output high pulse width
+
+100-pin package
+tCH
+
+3.25
+
+—
+
+—
+
+ns
+
+BCLK pin output low pulse width
+
+tCL
+
+3.25
+
+—
+
+—
+
+ns
+
+BCLK pin output rising time
+
+tCr
+
+—
+
+—
+
+3
+
+ns
+
+BCLK pin output falling time
+
+tCf
+
+—
+
+—
+
+3
+
+ns
+
+tBcyc
+
+12.5
+
+—
+
+—
+
+ns
+
+SDCLK pin output cycle time
+SDCLK pin output high pulse width
+
+Package of 144 pins or
+more
+
+tCH
+
+3.25
+
+—
+
+—
+
+ns
+
+SDCLK pin output low pulse width
+
+tCL
+
+3.25
+
+—
+
+—
+
+ns
+
+SDCLK pin output rising time
+
+tCr
+
+—
+
+—
+
+3
+
+ns
+
+SDCLK pin output falling time
+
+tCf
+
+—
+
+—
+
+3
+
+ns
+
+tBcyc, tSDcyc
+tCH
+
+tCf
+
+BCLK pin output, SDCLK pin output
+tCL
+
+tCr
+
+Test conditions: VOH = 0.7 × VCC, VOL = 0.3 × VCC, C = 30 pF
+
+Figure 63.3
+
+BCLK Pin and SDCLK Pin Output Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3136 of 3240
+
+RX72N Group
+
+Table 63.15
+
+63. Electrical Characteristics
+
+EXTAL Clock Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+
+Symbol
+
+fEXMAIN ≤ 24 MHz
+Min.
+
+Typ.
+
+fEXMAIN > 24 MHz
+
+Max.
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Test
+Conditions
+Figure 63.4
+
+EXTAL external clock input cycle time
+
+tEXcyc
+
+41.66
+
+—
+
+—
+
+33.33
+
+—
+
+—
+
+ns
+
+EXTAL external clock input frequency
+
+fEXMAIN
+
+—
+
+—
+
+24
+
+—
+
+—
+
+30
+
+MHz
+
+EXTAL external clock input high pulse width
+
+tEXH
+
+15.83
+
+—
+
+—
+
+13.33
+
+—
+
+—
+
+ns
+
+EXTAL external clock input low pulse width
+
+tEXL
+
+15.83
+
+—
+
+—
+
+13.33
+
+—
+
+—
+
+ns
+
+EXTAL external clock rising time
+
+tEXr
+
+—
+
+—
+
+5
+
+—
+
+—
+
+5
+
+ns
+
+EXTAL external clock falling time
+
+tEXf
+
+—
+
+—
+
+5
+
+—
+
+—
+
+5
+
+ns
+
+tEXcyc
+tEXH
+
+tEXL
+
+EXTAL external clock input
+
+0.5 × VCC
+tEXr
+
+Figure 63.4
+
+EXTAL External Clock Input Timing
+
+Table 63.16
+
+Main Clock Timing
+
+tEXf
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+
+Symbol
+
+Main clock oscillation frequency
+Main clock oscillator stabilization time (crystal)
+Main clock oscillation stabilization wait time (crystal)
+
+Min.
+
+Typ.
+
+fMAIN
+
+8
+
+tMAINOSC
+
+—
+
+tMAINOSCWT
+
+—
+
+Max.
+
+Unit
+
+—
+
+24
+
+MHz
+
+—
+
+—*1
+
+ms
+
+—
+
+—*2
+
+ms
+
+Test
+Conditions
+
+Figure 63.5
+
+Note 1. When using a main clock, ask the manufacturer of the oscillator to evaluate its oscillation. Refer to the results of evaluation
+provided by the manufacturer for the oscillation stabilization time.
+Note 2. The number of cycles selected by the value of the MOSCWTCR.MSTS[7:0] bits determines the main clock oscillation
+stabilization wait time in accord with the formula below.
+tMAINOSCWT = [(MSTS[7:0] bits × 32) + 10] / fLOCO
+
+MOSCCR.MOSTP
+tMAINOSC
+Main clock oscillator output
+tMAINOSCWT
+OSCOVFSR.MOOVF
+
+Main clock
+
+Figure 63.5
+
+Main Clock Oscillation Start Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3137 of 3240
+
+RX72N Group
+
+Table 63.17
+
+63. Electrical Characteristics
+
+LOCO and IWDT-Dedicated Low-Speed Clock Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+LOCO clock cycle time
+
+tLcyc
+
+4.63
+
+4.16
+
+3.78
+
+µs
+
+LOCO clock oscillation frequency
+
+fLOCO
+
+216
+
+240
+
+264
+
+kHz
+
+LOCO clock oscillation stabilization wait time
+
+tLOCOWT
+
+—
+
+—
+
+44
+
+µs
+
+IWDT-dedicated low-speed clock cycle time
+
+tILcyc
+
+9.26
+
+8.33
+
+7.57
+
+µs
+
+IWDT-dedicated low-speed clock oscillation frequency
+
+fILOCO
+
+108
+
+120
+
+132
+
+kHz
+
+IWDT-dedicated low-speed clock oscillation stabilization wait
+time
+
+tILOCOWT
+
+—
+
+142
+
+190
+
+µs
+
+Test
+Conditions
+
+Figure 63.6
+
+Figure 63.7
+
+LOCOCR.LCSTP
+
+On-chip oscillator output
+tLOCOWT
+LOCO clock
+
+Figure 63.6
+
+LOCO Clock Oscillation Start Timing
+
+ILOCOCR.ILCSTP
+IWDT-dedicated on-chip
+oscillator output
+tILOCOWT
+OSCOVFSR.ILCOVF
+IWDT-dedicated
+low-speed clock
+
+Figure 63.7
+
+IWDT-dedicated Low-Speed Clock Oscillation Start Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3138 of 3240
+
+RX72N Group
+
+Table 63.18
+
+63. Electrical Characteristics
+
+HOCO Clock Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+HOCO clock oscillation frequency
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+fHOCO
+
+15.61
+
+16
+
+16.39
+
+MHz
+
+17.56
+
+18
+
+18.44
+
+19.52
+
+20
+
+20.48
+
+15.52
+
+16
+
+16.48
+
+17.46
+
+18
+
+18.54
+
+19.4
+
+20
+
+20.6
+
+Test Conditions
+Ta ≥ –20°C
+
+–40°C ≤ Ta < –20°C
+
+HOCO clock oscillation stabilization wait time
+
+tHOCOWT
+
+—
+
+105
+
+149
+
+µs
+
+Figure 63.8
+
+HOCO clock power supply stabilization time
+
+tHOCOP
+
+—
+
+—
+
+150
+
+µs
+
+Figure 63.9
+
+HOCOCR.HCSTP
+High-speed on-chip
+oscillator output
+tHOCOWT
+OSCOVFSR.HCOVF
+HOCO clock
+
+Figure 63.8
+
+HOCO Clock Oscillation Start Timing (Oscillation is Started by Setting the HOCOCR.HCSTP Bit)
+
+HOCOPCR.HOCOPCNT
+
+HOCOCR.HCSTP
+tHOCOP
+Internal power supply for
+high-speed on-chip oscillator
+
+Figure 63.9
+
+High-Speed On-Chip Oscillator Power Supply Control Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3139 of 3240
+
+RX72N Group
+
+Table 63.19
+
+63. Electrical Characteristics
+
+PLL/PPLL Clock Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+
+Test
+Conditions
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+PLL/PPLL clock oscillation frequency
+
+fPLL
+
+120
+
+—
+
+240
+
+MHz
+
+PLL/PPLL clock oscillation stabilization wait time
+
+tPLLWT
+
+—
+
+259
+
+320
+
+µs
+
+Figure 63.10
+
+Test
+Conditions
+
+PLLCR2.PLLEN
+PPLLCR2.PPLLEN
+PLL/PPLL circuit output
+tPLLWT
+OSCOVFSR.PLOVF
+OSCOVFSR.PPLOVF
+
+PLL/PPLL clock
+
+Figure 63.10
+
+PLL/PPLL Clock Oscillation Start Timing
+
+Table 63.20
+
+Sub-Clock Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+VBATT = 1.62 to 3.6 V, Ta = Topr
+Item
+Sub-clock oscillation frequency
+Sub-clock oscillation stabilization time
+Sub-clock oscillation stabilization wait time
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+fSUB
+
+—
+
+32.768
+
+—
+
+kHz
+
+tSUBOSC
+
+—
+
+—
+
+*1
+
+s
+
+—
+
+*2
+
+s
+
+tSUBOSCWT
+
+—
+
+Figure 63.11
+
+Note 1. When using a sub-clock, ask the manufacturer of the oscillator to evaluate its oscillation. Refer to the results of evaluation
+provided by the manufacturer for the oscillation stabilization time.
+Note 2. The number of cycles selected by the value of the SOSCWTCR.SSTS[7:0] bits determines the sub-clock oscillation stabilization
+wait time in accord with the formula below.
+tSUBOSCWT = [(SSTS[7:0] bits × 16384) + 10] / fLOCO
+
+SOSCCR.SOSTP
+tSUBOSC
+Sub-clock oscillator output
+tSUBOSCWT
+OSCOVFSR.SOOVF
+
+Sub-clock
+
+Figure 63.11
+
+Sub-Clock Oscillation Start Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3140 of 3240
+
+RX72N Group
+
+Table 63.21
+
+63. Electrical Characteristics
+
+CLKOUT Pin Output Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr,
+High-drive output is selected by the drive capacity control register
+Item
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+CLKOUT pin output cycle time
+
+tCcyc
+
+25
+
+—
+
+—
+
+ns
+
+CLKOUT pin output high pulse width*1
+
+tCH
+
+5
+
+—
+
+—
+
+ns
+
+CLKOUT pin output low pulse width*1
+
+tCL
+
+5
+
+—
+
+—
+
+ns
+
+CLKOUT pin output rising time
+
+tCr
+
+—
+
+—
+
+5
+
+ns
+
+CLKOUT pin output falling time
+
+tCf
+
+—
+
+—
+
+5
+
+ns
+
+Test
+Conditions
+Figure 63.12
+tCcyc = 25 ns
+
+Note 1. If the main clock oscillator is selected by the CLKOUT output source select bit (CKOCR.CKOSEL[2:0]) and the external clock
+input is selected by the main clock oscillator switching bit (MOFCR.MOSEL), the pulse width depends on the input clock wave
+form.
+
+tCcyc
+tCH
+
+tCf
+
+CLKOUT pin output
+tCr
+
+tCL
+
+Test Conditions VOH = 0.7 × VCC, VOL = 0.3 × VCC, C = 30pF
+
+Figure 63.12
+
+CLKOUT Pin Output Timing
+
+Table 63.22
+
+CLKOUT25M Pin Output Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr,
+High-speed interface high-drive is selected by the drive capacity control register
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Test
+Conditions
+
+tCcyc
+
+—
+
+40
+
+—
+
+ns
+
+Figure 63.13
+
+tCH
+
+13
+
+—
+
+—
+
+ns
+
+CLKOUT25M pin output low pulse width
+
+tCL
+
+13
+
+—
+
+—
+
+ns
+
+CLKOUT25M pin output rising time
+
+tCr
+
+—
+
+—
+
+3
+
+ns
+
+CLKOUT25M pin output falling time
+
+tCf
+
+—
+
+—
+
+3
+
+ns
+
+Item
+
+Symbol
+
+CLKOUT25M pin output cycle time
+CLKOUT25M pin output high pulse width
+
+tCcyc
+tCH
+
+tCf
+
+CLKOUT25M pin output
+tCL
+
+tCr
+
+Test Conditions VOH = 0.7 × VCC, VOL = 0.3 × VCC, C = 30pF
+
+Figure 63.13
+
+CLKOUT25M Pin Output Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3141 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.3
+
+Timing of Recovery from Low Power Consumption Modes
+
+Table 63.23
+
+Timing of Recovery from Low Power Consumption Modes (1)
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+Recovery time
+from software
+standby mode
+*1
+
+Crystal
+resonator
+connected to
+main clock
+oscillator
+
+Symbol Min. Typ.
+—
+
+—
+
+Max.
+tSBYOSCWT*2
+
+tSBYSEQ*3
+
+{(MSTS[7:0] bit × 32)
++ 76} / 0.216
+
+100 + 7 / fICLK +
+2n / fMAIN
+
+Main clock
+oscillator
+operating
+
+tSBYMC
+
+Main clock
+oscillator and
+PLL circuit
+operating
+
+tSBYPC
+
+{(MSTS[7:0] bit × 32)
++ 138} / 0.216
+
+100 + 7 / fICLK +
+2n / fPLL
+
+tSBYEX
+
+352
+
+100 + 7 / fICLK +
+2n / fEXMAIN
+
+Main clock
+oscillator and
+PLL circuit
+operating
+
+tSBYPE
+
+639
+
+100 + 7 / fICLK +
+2n / fPLL
+
+Sub-clock oscillator operating
+
+tSBYSC
+
+{(SSTS[7:0] bit ×
+16384) + 13} / 0.216
++ 10 / fFCLK
+
+100 + 4 / fICLK +
+2n / fSUE
+
+High-speed
+on-chip
+oscillator
+operating
+
+High-speed
+on-chip
+oscillator
+operating
+
+tSBYHO
+
+454
+
+100 + 7 / fICLK +
+2n / fHOCO
+
+High-speed
+on-chip
+oscillator
+operating and
+PLL circuit
+operating
+
+tSBYPH
+
+741
+
+100 + 7 / fICLK +
+2n / fPLL
+
+tSBYLO
+
+338
+
+100 + 7 / fICLK +
+2n / fLOCO
+
+External clock Main clock
+input to main
+oscillator
+clock oscillator operating
+
+Low-speed on-chip oscillator
+operating*4
+
+Unit
+µs
+
+Test
+Conditions
+Figure
+63.14
+
+Note 1. The time for recovery from software standby mode is determined by the value obtained by adding the oscillation stabilization
+waiting time (tSBYOSCWT) and the time required for operations by the software standby release sequencer (tSBYSEQ).
+Note 2. When several oscillators were running before the transition to software standby, the greatest value of the oscillation stabilization
+waiting time tSBYOSCWT is selected.
+Note 3. For n, the greatest value is selected from among the internal clock division settings.
+Note 4. This condition applies when fICLK:fFCLK = 1:1, 2:1, or 4:1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3142 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+Oscillator
+(System clock)
+tSBYOSCWT
+
+tSBYSEQ
+
+Oscillator
+(Other than the system clock)
+
+ICLK
+
+IRQ
+
+Software standby mode
+tSBYMC, tSBYEX, tSBYPC, tSBYPE,
+tSBYPH, tSBYSC, tSBYHO, tSBYLO
+
+When stabilization of the system clock oscillator is slower
+
+Oscillator
+(System clock)
+tSBYOSCWT
+
+tSBYSEQ
+
+Oscillator
+(Other than the system clock)
+tSBYOSCWT
+ICLK
+
+IRQ
+Software standby mode
+tSBYMC, tSBYEX, tSBYPC, tSBYPE,
+tSBYPH, tSBYSC, tSBYHO, tSBYLO
+
+When stabilization of an oscillator other than the system clock is slower
+Figure 63.14
+
+Software Standby Mode Recovery Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3143 of 3240
+
+RX72N Group
+
+Table 63.24
+
+63. Electrical Characteristics
+
+Timing of Recovery from Low Power Consumption Modes (2)
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Recovery time from deep software standby mode
+
+tDSBY
+
+—
+
+—
+
+0.9
+
+ms
+
+Wait time after recovery from deep software standby mode
+
+tDSBYWT
+
+23
+
+—
+
+24
+
+tLcyc
+
+Test
+Conditions
+Figure
+63.15
+
+Oscillator
+
+IRQ
+
+Deep software standby reset
+(Low is valid)
+Internal reset
+(Low is valid)
+Deep software standby mode
+tDSBY
+
+tDSBYWT
+
+Reset exception handling start
+
+Figure 63.15
+
+Deep Software Standby Mode Recovery Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3144 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.4
+
+Control Signal Timing
+
+Table 63.25
+
+Control Signal Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKB = 8 to 60 MHz, Ta = Topr
+Item
+
+Symbol
+
+Min.*1
+
+Typ.
+
+Max.
+
+Unit
+
+NMI pulse width
+
+tNMIW
+
+200
+
+—
+
+—
+
+ns
+
+IRQ pulse width
+
+tIRQW
+
+tPBcyc × 2
+
+—
+
+—
+
+200
+
+—
+
+—
+
+tPBcyc × 2
+
+—
+
+—
+
+Test Conditions*1
+tPBcyc × 2 ≤ 200 ns, Figure 63.16
+tPBcyc × 2 > 200 ns, Figure 63.16
+
+ns
+
+tPBcyc × 2 ≤ 200 ns, Figure 63.17
+tPBcyc × 2 > 200 ns, Figure 63.17
+
+Note 1. tPBcyc: PCLKB cycle
+
+NMI
+
+Figure 63.16
+
+tNMIW
+
+tNMIW
+
+tIRQW
+
+tIRQW
+
+NMI Interrupt Input Timing
+
+IRQn
+
+Figure 63.17
+
+IRQ Interrupt Input Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3145 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.5
+
+Bus Timing
+
+Table 63.26
+
+Bus Timing
+
+Conditions 1: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+ICLK = 8 to 240 MHz, PCLKA = 8 to 120 MHz, PCLKB = BCLK = SDCLK = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Conditions 2: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 3.0 to 3.6 V, 3.0 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+ICLK = 60 to 240 MHz, PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, 60 MHz < BCLK = SDCLK ≤ 80 MHz,
+Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC,
+C = 15 pF for the SDCLK pin, C = 30 pF for other pins.
+To control the drive capacity when using the SDRAM: set the PFBCR3.SDCLKDRV bit in external bus control
+register 1 to 1 to select the drive capacity of the SDCLK pin,
+and set the SDRAM pins other than the SDCLK pin as highspeed-interface driving outputs.
+Item
+
+Symbol
+
+Address delay time
+Byte control delay time
+CS# delay time
+
+Conditions 1
+
+Conditions 2
+
+Unit
+
+Test Conditions
+
+12.5
+
+ns
+
+12.5
+
+ns
+
+Figure 63.18 to
+Figure 63.23
+
+—
+
+12.5
+
+ns
+
+12.5
+
+—
+
+12.5
+
+ns
+
+12.5
+
+—
+
+12.5
+
+ns
+
+—
+
+12.5
+
+—
+
+ns
+
+Min.
+
+Max.
+
+Min.
+
+Max.
+
+tAD
+
+—
+
+12.5
+
+—
+
+tBCD
+
+—
+
+12.5
+
+—
+
+tCSD
+
+—
+
+12.5
+
+ALE delay time
+
+tALED
+
+—
+
+RD# delay time
+
+tRSD
+
+—
+
+Read data setup time
+
+tRDS
+
+12.5
+
+Read data hold time
+
+tRDH
+
+0
+
+—
+
+0
+
+—
+
+ns
+
+WR# delay time
+
+tWRD
+
+—
+
+12.5
+
+—
+
+12.5
+
+ns
+
+Write data delay time
+
+tWDD
+
+—
+
+12.5
+
+—
+
+12.5
+
+ns
+
+Write data hold time
+
+tWDH
+
+0
+
+—
+
+0
+
+—
+
+ns
+
+WAIT# setup time
+
+tWTS
+
+12.5
+
+—
+
+12.5
+
+—
+
+ns
+
+WAIT# hold time
+
+tWTH
+
+0
+
+—
+
+0
+
+—
+
+ns
+
+Address delay time 2 (SDRAM)
+
+tAD2
+
+1
+
+12.5
+
+1
+
+10.0
+
+ns
+
+CS# delay time 2 (SDRAM)
+
+tCSD2
+
+1
+
+12.5
+
+1
+
+10.0
+
+ns
+
+DQM delay time (SDRAM)
+
+tDQMD
+
+1
+
+12.5
+
+1
+
+10.0
+
+ns
+
+CKE delay time (SDRAM)
+
+tCKED
+
+1
+
+12.5
+
+1
+
+10.0
+
+ns
+
+Read data setup time 2 (SDRAM)
+
+tRDS2
+
+10
+
+—
+
+6.0
+
+—
+
+ns
+
+Read data hold time 2 (SDRAM)
+
+tRDH2
+
+0
+
+—
+
+0
+
+—
+
+ns
+
+Write data delay time 2 (SDRAM)
+
+tWDD2
+
+—
+
+12.5
+
+—
+
+10.0
+
+ns
+
+Write data hold time 2 (SDRAM)
+
+tWDH2
+
+1
+
+—
+
+1
+
+—
+
+ns
+
+WE# delay time (SDRAM)
+
+tWED
+
+1
+
+12.5
+
+1
+
+10.0
+
+ns
+
+RAS# delay time (SDRAM)
+
+tRASD
+
+1
+
+12.5
+
+1
+
+10.0
+
+ns
+
+CAS# delay time (SDRAM)
+
+tCASD
+
+1
+
+12.5
+
+1
+
+10.0
+
+ns
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Figure 63.24
+
+Figure 63.25 to
+Figure 63.31
+
+Page 3146 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+Data cycle
+
+Address cycle
+Ta1
+
+Ta1
+
+Tan
+
+TW1
+
+TW2
+
+TW3
+
+TW4
+
+Tend
+
+TW5
+
+Tn1
+
+Tn2
+
+BCLK
+
+tAD
+Address bus
+
+tAD
+
+Address bus/
+data bus
+
+tRDS
+
+tAD
+
+tRDH
+
+tALED
+
+tALED
+Address latch
+(ALE)
+
+tRSD
+
+tRSD
+
+Data read
+(RD#)
+
+Figure 63.18
+
+tCSD
+
+tCSD
+
+Chip select
+(CS1#)
+
+Address/Data Multiplexed Bus Read Access Timing
+
+Data cycle
+
+Address cycle
+Ta1
+
+Ta1
+
+Tan
+
+TW1
+
+TW2
+
+TW3
+
+TW4
+
+TW5
+
+tAD
+
+tWDD
+
+Tend
+
+Tn1
+
+Tn2
+
+Tn3
+
+BCLK
+
+tAD
+Address bus
+
+Address bus/
+data bus
+
+tAD
+
+tALED
+
+tWDH
+
+tALED
+
+Address latch
+(ALE)
+
+tWRD
+
+tWRD
+
+Data write
+(WRm#)
+tCSD
+
+Chip select
+(CS1#)
+
+Figure 63.19
+
+tCSD
+
+Address/Data Multiplexed Bus Write Access Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3147 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+CSRWAIT:2
+RDON:1
+
+CSROFF:2
+
+CSON:0
+TW1
+
+TW2
+
+Tend
+
+Tn1
+
+Tn2
+
+BCLK
+
+Byte strobe mode
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tBCD
+
+tBCD
+
+tCSD
+
+tCSD
+
+A23 to A0
+
+1-write strobe mode
+
+A23 to A1
+
+BC3# to BC0#
+
+Common to both byte strobe mode
+and 1-write strobe mode
+
+CS7# to CS0#
+tRSD
+
+tRSD
+
+RD# (Read)
+
+tRDS
+
+tRDH
+
+D31 to D0 (Read)
+
+Figure 63.20
+
+External Bus Timing/Normal Read Cycle (Bus Clock Synchronized)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3148 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+CSWWAIT:2
+WRON:1
+WDON:1 *1
+
+CSWOFF:2
+WDOFF:1 *1
+
+CSON:0
+TW1
+
+TW2
+
+Tend
+
+Tn1
+
+Tn2
+
+BCLK
+
+Byte strobe mode
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tBCD
+
+tBCD
+
+tCSD
+
+tCSD
+
+A23 to A0
+
+1-write strobe mode
+
+A23 to A1
+
+BC3# to BC0#
+
+Common to both byte strobe mode
+and 1-write strobe mode
+
+CS7# to CS0#
+
+tWRD
+
+tWRD
+
+WR3# to WR0#, WR# (Write)
+
+tWDD
+tWDH
+D31 to D0 (Write)
+
+Note 1. Be sure to specify WDON and WDOFF as at least one cycle of BCLK.
+
+Figure 63.21
+
+External Bus Timing/Normal Write Cycle (Bus Clock Synchronized)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3149 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+CSRWAIT:2
+
+CSON:0
+
+CSPRWAIT:2
+
+CSPRWAIT:2
+
+RDON:1
+
+RDON:1
+
+TW1
+
+TW2
+
+Tend
+
+CSPRWAIT:2
+
+RDON:1
+
+Tpw1
+
+Tpw2
+
+Tend
+
+CSROFF:2
+
+RDON:1
+
+Tpw1
+
+Tpw2
+
+Tend
+
+Tpw1
+
+Tpw2
+
+Tend
+
+Tn1
+
+Tn2
+
+BCLK
+Byte strobe mode
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+A23 to A0
+1-write strobe mode
+A23 to A1
+
+tBCD
+
+tBCD
+
+tCSD
+
+tCSD
+
+BC3# to BC0#
+
+Common to both byte strobe mode
+and 1-write strobe mode
+
+CS7# to CS0#
+tRSD
+
+tRSD
+
+tRSD
+
+tRSD
+
+tRSD
+
+tRSD
+
+tRSD
+
+tRSD
+
+RD# (Read)
+
+tRDS
+
+tRDH
+
+tRDS
+
+tRDH
+
+tRDS
+
+tRDH
+
+tRDS
+
+tRDH
+
+D31 to D0 (Read)
+
+Figure 63.22
+
+External Bus Timing/Page Read Cycle (Bus Clock Synchronized)
+
+CSPWWAIT:2
+
+CSWWAIT:2
+WRON:1
+WDON:1 *1
+
+WDOFF:1
+
+CSON:0 TW1
+
+TW2
+
+Tend
+
+Tdw1
+
+*1
+
+WRON:1
+WDON:1 *1
+Tpw1
+
+CSPWWAIT:2
+WDOFF:1
+
+Tpw2
+
+Tend
+
+*1
+
+Tdw1
+
+WRON:1
+WDON:1 *1
+Tpw1
+
+CSWOFF:2
+WDOFF:1 *1
+
+Tpw2
+
+Tend
+
+Tn1
+
+Tn2
+
+BCLK
+Byte strobe mode
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+tAD
+
+A23 to A0
+1-write strobe mode
+A23 to A1
+
+tBCD
+
+tBCD
+
+tCSD
+
+tCSD
+
+BC3# to BC0#
+
+Common to both byte strobe mode
+and 1-write strobe mode
+CS7# to CS0#
+
+tWRD
+
+tWRD
+
+tWRD
+
+tWRD
+
+tWRD
+
+tWRD
+
+WR3# to WR0#, WR# (Write)
+tWDD
+
+tWDH
+
+tWDD
+
+tWDH
+
+tWDD
+
+tWDH
+
+D31 to D0 (Write)
+
+Note 1. Be sure to specify WDON and WDOFF as at least one cycle of BCLK.
+
+Figure 63.23
+
+External Bus Timing/Page Write Cycle (Bus Clock Synchronized)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3150 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+CSRWAIT:3
+CSWWAIT:3
+TW1
+
+TW2
+
+TW3
+
+(Tend)
+
+Tend
+
+Tn1
+
+Tn2
+
+BCLK
+
+A23 to A0
+
+CS7# to CS0#
+
+RD# (Read)
+
+WR# (Write)
+External wait
+tWTS tWTH
+
+tWTS tWTH
+
+WAIT#
+
+Figure 63.24
+
+External Bus Timing/External Wait Control
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3151 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+SDRAM command
+
+ACT
+
+RD
+
+PRA
+
+SDCLK pin
+tAD2
+
+tAD2
+Row
+address
+
+A18 to A0
+tAD2
+
+tAD2
+
+tAD2
+
+tAD2
+
+tAD2
+
+Column address
+
+tAD2
+
+AP*1
+
+PRA
+command
+
+tCSD2
+
+tCSD2
+
+tRASD
+
+tRASD
+
+tCSD2
+
+tCSD2
+
+tCSD2
+
+tCSD2
+
+tRASD
+
+tRASD
+
+tWED
+
+tWED
+
+SDCS#
+
+RAS#
+tCASD
+
+tCASD
+
+CAS#
+
+WE#
+(High)
+
+CKE
+tDQMD
+DQMn
+
+tRDS2
+
+tRDH2
+
+D31 to D0
+
+Note 1. Address pins for output of the precharge-setting command (Precharge-sel) for SDRAM.
+
+Figure 63.25
+
+SDRAM Space Single Read Bus Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3152 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+SDRAM command
+
+ACT
+
+WR
+
+PRA
+
+SDCLK pin
+tAD2
+
+tAD2
+Row
+address
+
+A18 to A0
+tAD2
+
+tAD2
+
+tAD2
+
+tAD2
+
+tAD2
+
+Column address
+
+tAD2
+
+AP*1
+
+PRA
+command
+
+tCSD2
+
+tCSD2
+
+tRASD
+
+tRASD
+
+tCSD2
+
+tCSD2
+
+tCSD2
+
+tCSD2
+
+tRASD
+
+tRASD
+
+tWED
+
+tWED
+
+SDCS#
+
+RAS#
+tCASD
+
+tCASD
+
+tWED
+
+tWED
+
+CAS#
+
+WE#
+(High)
+
+CKE
+tDQMD
+DQMn
+
+tWDD2
+
+tWDH2
+
+D31 to D0
+
+Note 1. Address pins for output of the precharge-setting command (Precharge-sel) for SDRAM.
+
+Figure 63.26
+
+SDRAM Space Single Write Bus Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3153 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+ACT
+
+RD
+
+RD
+
+RD
+
+RD PRA
+
+SDCLK pin
+
+A18 to A0
+
+tAD2 tAD2
+
+tAD2 tAD2
+
+Row
+address
+
+C1
+
+C0
+(column address)
+
+C2
+
+tAD2 tAD2 tAD2
+
+tAD2
+
+C3
+
+tAD2 tAD2
+
+tAD2 tAD2
+
+AP*1
+
+tAD2
+
+PRA
+command
+
+tCSD2 tCSD2 tCSD2
+
+tCSD2
+
+tCSD2
+
+tRASD tRASD
+
+tRASD
+
+tCASD
+
+tCASD
+
+SDCS#
+tRASD tRASD
+RAS#
+
+tCASD
+
+CAS#
+tWED tWED
+WE#
+(High)
+
+CKE
+tDQMD
+
+tDQMD
+
+DQMn
+tRDS2 tRDH2
+
+tRDS2 tRDH2
+
+D31 to D0
+
+Note 1. Address pins for output of the precharge-setting command (Precharge-sel) for SDRAM.
+
+Figure 63.27
+
+SDRAM Space Multiple Read Bus Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3154 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+WR WR WR WR PRA
+
+ACT
+SDCLK pin
+tAD2
+A18 to A0
+
+Row
+address
+
+tAD2
+
+tAD2 tAD2
+
+tAD2
+
+C0
+(column address)
+
+C1
+
+C2
+
+tAD2
+
+tAD2
+
+tAD2 tAD2
+
+C3
+
+tAD2
+
+AP*1
+
+tAD2
+
+tAD2 tAD2
+
+PRA
+command
+
+tCSD2 tCSD2 tCSD2
+
+tCSD2 tCSD2
+
+SDCS#
+tRASD tRASD
+
+tRASD tRASD tRASD
+
+RAS#
+tCASD
+
+tCASD
+
+tCASD
+
+CAS#
+tWED
+
+tWED
+
+WE#
+(High)
+
+CKE
+tDQMD
+
+tDQMD
+DQMn
+tWDD2 tWDH2
+
+tWDD2 tWDH2
+
+D31 to D0
+Note 1. Address pins for output of the precharge-setting command (Precharge-sel) for SDRAM.
+
+Figure 63.28
+
+SDRAM Space Multiple Write Bus Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3155 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+SDRAM command
+
+ACT
+
+RD
+
+RD
+
+RD
+
+RD
+
+PRA
+
+t AD2
+
+t AD2
+
+t AD2
+
+t AD2
+
+ACT
+
+RD
+
+RD
+
+RD
+
+RD
+
+t AD2
+
+t AD2
+
+t AD2
+
+PRA
+
+SDCLK pin
+t AD2
+
+A18 to A0
+
+t AD2
+
+Row
+address
+
+t AD2
+
+C0
+(column address 0)
+
+C1
+
+C2
+
+t AD2
+
+C3
+
+t AD2
+
+t AD2
+C4
+
+R1
+t AD2
+
+AP*1
+
+t AD2
+
+t AD2
+
+t AD2
+
+C5
+
+C6
+
+t AD2
+C7
+
+t AD2
+
+t AD2
+
+PRA
+command
+
+t CSD2 t CSD2 t CSD2
+
+t CSD2 t CSD2 t CSD2
+
+t AD2
+
+t AD2
+
+PRA
+command
+
+t CSD2
+
+t CSD2
+
+SDCS#
+t RASD t RASD
+
+t RASD t RASD t RASD t RASD
+
+t RASD t RASD
+
+RAS#
+t CASD
+
+t CASD
+
+t CASD
+
+t CASD
+
+CAS#
+t WED
+
+t WED
+
+t WED
+
+t WED
+
+WE#
+(High)
+
+CKE
+tDQMD
+
+DQMn
+t RDS2 t RDH2
+
+t RDS2 t RDH2
+
+t RDS2 t RDH2
+
+t RDS2 t RDH2
+
+D31 to D0
+
+Note 1. Address pins for output of the precharge-setting command (Precharge-sel) for SDRAM.
+
+Figure 63.29
+
+SDRAM Space Multiple Read Line Stride Bus Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3156 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+MRS
+
+SDRAM command
+SDCLK pin
+t AD2
+
+t AD2
+
+t AD2
+
+t AD2
+
+t CSD2
+
+t CSD2
+
+t RASD
+
+t RASD
+
+t CASD
+
+t CASD
+
+t WED
+
+t WED
+
+A18 to A0
+
+AP*1
+
+SDCS#
+
+RAS#
+
+CAS#
+
+WE#
+(High)
+
+CKE
+
+DQMn
+
+(Hi-Z)
+
+D31 to D0
+
+Note 1. Address pins for output of the precharge-setting command (Precharge-sel) for SDRAM.
+
+Figure 63.30
+
+SDRAM Space Mode Register Set Bus Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3157 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+SDRAM command
+
+Ts
+
+(RFA)
+
+(RFS)
+
+(RFX)
+
+(RFA)
+
+SDCLK pin
+t AD2
+
+t AD2
+
+t AD2
+
+t AD2
+
+A18 to A0
+
+AP*1
+t CSD2 t CSD2
+
+t CSD2
+
+t CSD2
+
+t CSD2 t CSD2 t CSD2
+
+t RASD t RASD
+
+t RASD
+
+t RASD
+
+t RASD t RASD t RASD
+
+t CASD
+
+t CASD
+
+t CASD
+
+t CASD t CASD t CASD
+
+SDCS#
+
+RAS#
+t CASD
+
+CAS#
+(High)
+
+WE#
+t CKED
+
+t CKED
+
+CKE
+t DQMD
+
+t DQMD
+
+DQMn
+
+(Hi-Z)
+
+D31 to D0
+
+Note 1. Address pins for output of the precharge-setting command (Precharge-sel) for SDRAM.
+
+Figure 63.31
+
+SDRAM Space Self-Refresh Bus Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3158 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.6
+
+EXDMAC Timing
+
+Table 63.27
+
+EXDMAC Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+ICLK = 8 to 240 MHz, PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, BCLK = SDCLK = 8 to 80 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+
+EXDMAC
+
+Item
+
+Symbol
+
+Min.
+
+Max.
+
+Unit
+
+Test Conditions
+
+EDREQ setup time
+
+tEDRQS
+
+13
+
+—
+
+ns
+
+Figure 63.32
+
+EDREQ hold time
+
+tEDRQH
+
+2
+
+—
+
+ns
+
+EDACK delay time
+
+tEDACD
+
+—
+
+13
+
+ns
+
+Figure 63.33,
+Figure 63.34
+
+BCLK pin
+tEDRQS tEDRQH
+EDREQ0,
+EDREQ1
+
+Figure 63.32
+
+EDREQ0 and EDREQ1 Input Timing
+
+BCLK pin
+tEDACD
+
+tEDACD
+
+EDACK0,
+EDACK1
+
+Figure 63.33
+
+EDACK0 and EDACK1 Single-Address Transfer Timing (for a CS Area)
+
+BCLK pin
+tEDACD
+
+tEDACD
+
+EDACK0,
+EDACK1
+
+Figure 63.34
+
+EDACK0 and EDACK1 Single-Address Transfer Timing (for SDRAM)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3159 of 3240
+
+RX72N Group
+
+63.4.7
+
+63. Electrical Characteristics
+
+Timing of On-Chip Peripheral Modules
+
+63.4.7.1
+
+I/O Port
+
+Table 63.28
+
+I/O Port Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+I/O ports
+
+Input data pulse width
+
+Symbol
+
+Min.
+
+Max.
+
+Unit*1
+
+Test Conditions
+
+tPRW
+
+1.5
+
+—
+
+tPBcyc
+
+Figure 63.35
+
+Note 1. tPBcyc: PCLKB cycle
+
+PCLKB
+
+Port
+tPRW
+
+Figure 63.35
+
+I/O Port Input Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3160 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.2
+
+TPU
+
+Table 63.29
+
+TPU Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+TPU
+
+Input capture input pulse
+width
+Timer clock pulse width
+
+Symbol
+Single-edge setting
+
+tTICW
+
+Both-edge setting
+Single-edge setting
+Both-edge setting
+Phase counting mode
+
+tTCKWH,
+tTCKWL
+
+Min.
+
+Max.
+
+Unit*1
+
+Test
+Conditions
+
+tPBcyc
+
+Figure 63.36
+
+tPBcyc
+
+Figure 63.37
+
+1.5
+
+—
+
+2.5
+
+—
+
+1.5
+
+—
+
+2.5
+
+—
+
+2.5
+
+—
+
+Note 1. tPBcyc: PCLKB cycle
+
+PCLKB
+
+Input capture
+input
+
+Figure 63.36
+
+tTICW
+
+TPU Input Capture Input Timing
+
+PCLKB
+
+TCLKA to
+TCLKD
+tTCKWL
+
+Figure 63.37
+
+tTCKWH
+
+TPU Clock Input Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3161 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.3
+
+TMR
+
+Table 63.30
+
+TMR Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+TMR
+
+Timer clock pulse width
+
+Single-edge setting
+Both-edge setting
+
+Max.
+
+Unit*1
+
+Test
+Conditions
+
+1.5
+
+—
+
+tPBcyc
+
+Figure 63.38
+
+2.5
+
+—
+
+Symbol
+
+Min.
+
+tTMCWH,
+tTMCWL
+
+Note 1. tPBcyc: PCLKB cycle
+
+PCLKB
+
+TMCI0 to TMCI3
+
+tTMCWL
+
+Figure 63.38
+
+TMR Clock Input Timing
+
+63.4.7.4
+
+CMTW
+
+Table 63.31
+
+CMTW Timing
+
+tTMCWH
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+CMTW
+
+Input capture input pulse
+width
+
+Single-edge setting
+Both-edge setting
+
+Symbol
+
+Min.
+
+Max.
+
+Unit*1
+
+Test
+Conditions
+
+tCMTWTICW
+
+1.5
+
+—
+
+tPBcyc
+
+Figure 63.39
+
+2.5
+
+—
+
+Note 1. tPBcyc: PCLKB cycle
+
+PCLKB
+
+Input capture
+input
+
+Figure 63.39
+
+tCMTWICW
+
+CMTW Input Capture Input Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3162 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.5
+
+MTU
+
+Table 63.32
+
+MTU Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+MTU
+
+Input capture input pulse
+width
+Timer clock pulse width
+
+Symbol
+Single-edge setting
+
+tMTICW
+
+Both-edge setting
+Single-edge setting
+Both-edge setting
+Phase counting mode
+
+tMTCKWH,
+tMTCKWL
+
+Min.
+
+Max.
+
+Unit*1
+
+Test
+Conditions
+
+tPAcyc
+
+Figure 63.40
+
+tPAcyc
+
+Figure 63.41
+
+1.5
+
+—
+
+2.5
+
+—
+
+1.5
+
+—
+
+2.5
+
+—
+
+2.5
+
+—
+
+Note 1. tPAcyc: PCLKA cycle
+
+PCLKA
+
+Input capture
+input
+
+Figure 63.40
+
+tMTICW
+
+MTU Input Capture Input Timing
+
+PCLKA
+
+MTCLKA to
+MTCLKD,
+MTIOC1A
+tMTCKWL
+
+Figure 63.41
+
+tMTCKWH
+
+MTU Clock Input Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3163 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.6
+
+POE
+
+Table 63.33
+
+POE Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Symbol
+
+Min. Typ.
+
+Max.
+
+Unit*1
+
+POEn# input pulse width
+(n = 0, 4, 8, 10, 11)
+
+tPOEW
+
+1.5
+
+—
+
+—
+
+tPBcyc Figure 63.42
+
+Output
+disable time
+
+Transition of the POEn#
+signal level
+
+tPOEDI
+
+—
+
+—
+
+5 PCLKB + 0.24
+
+µs
+
+Figure 63.43
+When detecting falling edges
+(ICSRm.POEnM[3:0] = 0000
+(m = 1 to 5; n = 0, 4, 8, 10, 11))
+
+Simultaneous conduction
+of output pins
+
+tPOEDO
+
+—
+
+—
+
+3 PCLKB + 0.2
+
+µs
+
+Figure 63.44
+
+Register setting
+
+tPOEDS
+
+—
+
+—
+
+1 PCLKB + 0.2
+
+µs
+
+Figure 63.45
+Time for access to the register
+is not included.
+
+Oscillation stop detection
+
+tPOEDOS
+
+—
+
+—
+
+21
+
+µs
+
+Figure 63.46
+
+Item
+POE
+
+Test Conditions
+
+Note 1. tPBcyc: PCLKB cycle
+
+PCLKB
+
+POEn# input
+(n = 0, 4, 8, 10, 11)
+tPOEW
+
+Figure 63.42
+
+POE# Input Timing
+
+POEn# input
+(n = 0, 4, 8, 10, 11)
+tPOEW
+Outputs disabled
+
+MTU PWM output pins
+tPOEDI
+
+Figure 63.43
+
+Output Disable Time for POE in Response to Transition of the POEn# Signal Level
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3164 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+Simultaneous active-level outputs detected*1
+
+Outputs
+disabled
+
+MTU PWM output pins
+
+tPOEDO
+Note 1.
+
+Figure 63.44
+
+When the active level is set to low.
+
+Output Disable Time for POE in Response to the Simultaneous Conduction of Output Pins
+
+Corresponding bit in
+the SPOER register
+
+Outputs disabled
+
+MTU PWM output pins
+tPOEDS
+
+Figure 63.45
+
+Output Disable Time for POE in Response to the Register Setting
+
+Main clock
+
+Oscillation stop detection
+signal (internal signal)
+
+Outputs disabled
+
+MTU PWM output pins
+tPOEDOS
+
+Figure 63.46
+
+Output Disable Time for POE in Response to the Oscillation Stop Detection
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3165 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.7
+
+POEG
+
+Table 63.34
+
+POEG Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Symbol
+
+Min. Typ.
+
+Max.
+
+Unit*1
+
+GTETRGn input pulse width (n = A to D)
+
+tPOEGW
+
+1.5
+
+—
+
+—
+
+tPBcyc Figure 63.47
+
+Output
+disable time
+
+Input level detection of the
+GTETRGn pin (via flag)
+
+tPOEGDI
+
+—
+
+—
+
+3 PCLKB + 0.34
+
+µs
+
+Figure 63.48
+When the digital noise filter is
+not in use (POEGGn.NFEN = 0
+(n = A to D))
+
+Detection of the output
+stopping signal from
+GPTW (deadtime error,
+simultaneous high output,
+or simultaneous low
+output)
+
+tPOEGDE
+
+—
+
+—
+
+0.5
+
+µs
+
+Figure 63.49
+
+Register setting
+
+tPOEGDS
+
+—
+
+—
+
+1 PCLKB + 0.3
+
+µs
+
+Figure 63.50
+Time for access to the register
+is not included.
+
+Oscillation stop detection
+
+tPOEGDOS
+
+—
+
+—
+
+21
+
+µs
+
+Figure 63.51
+
+Item
+POEG
+
+Test Conditions
+
+Note 1. tPBcyc: PCLKB cycle
+
+PCLKB
+GTETRGn input
+(n = A to D)
+tPOEGW
+
+Figure 63.47
+
+POEG Input Timing
+
+GTETRGn input
+(n = A to D)
+tPOEGW
+POEGGn.PIDF flag
+(n = A to D)
+
+Outputs disabled
+
+GPTW PWM output pins
+tPOEGDI
+
+Figure 63.48
+
+Output Disable Time for POEG via Detection Flag in Response to the Input Level Detection of the
+GTETRGn pin
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3166 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+Output stopping signal
+from GPTW*1
+
+Outputs disabled
+
+GPTW PWM output pins
+tPOEGDE
+Note 1.
+
+Figure 63.49
+
+GPTWn.GTST.DTEF (dead time error flag), GPTWn.GTST.OABLF (simultaneous low output flag),
+or GPTWn.GTST.OABHF (simultaneous high output flag)
+
+Output Disable Time for POEG in Response to Detection of the Output Stopping Signal from
+GPTW
+
+POEGGn.SSF bit
+(n = A to D)
+
+Outputs disabled
+
+GPTW PWM output pins
+tPOEGDS
+
+Figure 63.50
+
+Output Disable Time for POEG in Response to the Register Setting
+
+Main clock
+
+Oscillation stop detection
+signal (internal signal)
+
+Outputs disabled
+
+GPTW PWM output pins
+tPOEGDOS
+
+Figure 63.51
+
+Output Disable Time of POEG in Response to the Oscillation Stop Detection
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3167 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.8
+
+GPTW
+
+Table 63.35
+
+GPTW Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+GPTW
+
+Input capture input pulse width
+
+Symbol
+Single-edge setting
+
+tGTICW
+
+Both-edge setting
+External trigger input pulse width Single-edge setting
+Both-edge setting
+
+tGTEW
+
+Min.
+
+Max.
+
+Unit*1, *2
+
+Test
+Conditions
+
+tPAcyc
+
+Figure 63.52
+
+tPBcyc
+
+Figure 63.53
+
+1.5
+
+—
+
+2.5
+
+—
+
+1.5
+
+—
+
+2.5
+
+—
+
+Note 1. tPAcyc: PCLKA cycle
+Note 2. tPBcyc: PCLKB cycle
+
+PCLKA
+
+Input capture
+input
+
+Figure 63.52
+
+tGTICW
+
+GPTW Input Capture Input Timing
+
+PCLKB
+
+GTETRGn input
+(n = A to D)
+tGTEW
+
+Figure 63.53
+
+GPTW External Trigger Input Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3168 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.9
+
+SCI
+
+Table 63.36
+
+SCI Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+SCIh, SCIj
+
+Input clock cycle
+
+Symbol
+Asynchronous
+
+tScyc
+
+Clock
+synchronous
+
+Max.
+
+Unit*1
+
+Test
+Conditions
+
+tPBcyc
+
+Figure 63.54
+
+4
+
+—
+
+6
+
+—
+
+Input clock pulse width
+
+tSCKW
+
+0.4
+
+0.6
+
+tScyc
+
+Input clock rise time
+
+tSCKr
+
+—
+
+5
+
+ns
+
+tSCKf
+
+—
+
+5
+
+ns
+tPBcyc
+
+Input clock fall time
+Output clock cycle
+
+Asynchronous*2
+
+tScyc
+
+Clock
+synchronous
+
+8
+
+—
+
+4
+
+—
+
+Output clock pulse width
+
+tSCKW
+
+0.4
+
+0.6
+
+tScyc
+
+Output clock rise time
+
+tSCKr
+
+—
+
+5
+
+ns
+
+tSCKf
+
+—
+
+5
+
+ns
+
+Transmit data delay time
+
+Clock
+synchronous
+
+tTXD
+
+—
+
+28
+
+ns
+
+Receive data setup time
+
+Clock
+synchronous
+
+tRXS
+
+15
+
+—
+
+ns
+
+Receive data hold time
+
+Clock
+synchronous
+
+tRXH
+
+5
+
+—
+
+ns
+
+Input clock cycle
+
+Asynchronous
+
+tScyc
+
+tPAcyc
+
+Output clock fall time
+
+SCIi
+
+Min.
+
+Clock
+synchronous
+
+4
+
+—
+
+12
+
+—
+
+Input clock pulse width
+
+tSCKW
+
+0.4
+
+0.6
+
+tScyc
+
+Input clock rise time
+
+tSCKr
+
+—
+
+5
+
+ns
+
+tSCKf
+
+—
+
+5
+
+ns
+
+tScyc
+
+8
+
+—
+
+tPAcyc
+
+8
+
+—
+
+Input clock fall time
+Output clock cycle
+
+Asynchronous*2
+Clock
+synchronous
+
+Output clock pulse width
+
+tSCKW
+
+0.4
+
+0.6
+
+tScyc
+
+Output clock rise time
+
+tSCKr
+
+—
+
+5
+
+ns
+
+tSCKf
+
+—
+
+5
+
+ns
+
+tTXD
+
+—
+
+15
+
+ns
+
+—
+
+28
+
+Output clock fall time
+Transmit data delay time
+
+Master
+Slave
+
+Receive data setup time
+
+Clock
+synchronous
+
+tRXS
+
+20
+
+—
+
+Receive data hold time
+
+Clock
+synchronous
+
+tRXH
+
+5
+
+—
+
+Figure 63.55
+
+Figure 63.54
+
+Figure 63.55
+
+ns
+
+Note 1. tPBcyc: PCLKB cycle; tPAcyc: PCLKA cycle
+Note 2. When the SEMR.ABCS and SEMR.BGDM bits are set to 1
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3169 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+tSCKW
+
+tSCKr
+
+tSCKf
+
+SCKn
+(n = 0 to 12)
+tScyc
+
+Figure 63.54
+
+SCK Clock Input Timing
+
+SCKn
+
+tTXD
+TXDn
+tRXS tRXH
+
+RXDn
+
+(n = 0 to 12)
+
+Figure 63.55
+
+SCI Input/Output Timing: Clock Synchronous Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3170 of 3240
+
+RX72N Group
+
+Table 63.37
+
+63. Electrical Characteristics
+
+Simple IIC Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+High-drive output is selected by the drive capacity control register.
+
+Simple IIC
+(Standard-mode)
+
+Simple IIC
+(Fast-mode)
+
+Item
+
+Symbol
+
+Min.
+
+Max.
+
+Unit
+
+Test
+Conditions
+
+SSDA input rise time
+
+tSr
+
+—
+
+1000
+
+ns
+
+Figure 63.56
+
+SSDA input fall time
+
+tSf
+
+—
+
+300
+
+ns
+
+SSDA input spike pulse removal time
+
+tSP
+
+0
+
+4 × tPBcyc
+
+ns
+
+Data input setup time
+
+tSDAS
+
+250
+
+—
+
+ns
+
+Data input hold time
+
+tSDAH
+
+0
+
+—
+
+ns
+
+SSCL, SSDA capacitive load
+
+Cb*1
+
+—
+
+400
+
+pF
+
+SSCL, SSDA input rise time
+
+tSr
+
+—
+
+300
+
+ns
+
+SSCL, SSDA input fall time
+
+tSf
+
+—
+
+300
+
+ns
+
+SSCL, SSDA input spike pulse removal
+time
+
+tSP
+
+0
+
+4 × tPBcyc
+
+ns
+
+Data input setup time
+
+tSDAS
+
+100
+
+—
+
+ns
+
+Data input hold time
+
+tSDAH
+
+0
+
+—
+
+ns
+
+SSCL, SSDA capacitive load
+
+Cb*1
+
+—
+
+400
+
+pF
+
+Note:
+tPBcyc: PCLKB cycle
+Note 1. Cb is the total capacitance of the bus lines.
+
+VIH
+SSDA0 to SSDA12
+
+VIL
+tBUF
+
+tSCLH
+
+tSTAH
+
+tSTAS
+
+tSTOS
+
+tSP
+
+SSCL0 to SSCL12
+P*1
+
+S*1
+tSf
+
+tSCLL
+
+tSr
+tSCL
+
+tSDAS
+tSDAH
+
+Note 1. S, P, and Sr indicate the following conditions.
+S: Start condition
+P: Stop condition
+Sr: Restart condition
+
+Figure 63.56
+
+P*1
+
+Sr*1
+
+Test conditions
+VIH = 0.7 × VCC, VIL = 0.3 × VCC
+VOL = 0.6 V, IOL = 6 mA
+
+Simple IIC Bus Interface Input/Output Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3171 of 3240
+
+RX72N Group
+
+Table 63.38
+
+63. Electrical Characteristics
+
+Simple SPI Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+
+Simple
+SPI
+
+Item
+
+Symbol
+
+SCK clock cycle output (master)
+
+tSPcyc
+
+Min.
+
+Unit*1
+
+Test
+Conditions
+
+tPAcyc
+
+Figure 63.57
+
+4
+
+65536
+
+8
+
+65536
+
+tSPCKWH
+
+0.4
+
+0.6
+
+tSPcyc
+
+SCK clock cycle input (slave)
+SCK clock high pulse width
+
+Max.
+
+SCK clock low pulse width
+
+tSPCKWL
+
+0.4
+
+0.6
+
+tSPcyc
+
+SCK clock rise/fall time
+
+tSPCKr, tSPCKf
+
+—
+
+20
+
+ns
+
+Data input setup time
+
+tSU
+
+33.3
+
+—
+
+ns
+
+Data input hold time
+
+tH
+
+33.3
+
+—
+
+ns
+
+SS input setup time
+
+tLEAD
+
+1
+
+—
+
+tSPcyc
+
+SS input hold time
+
+tLAG
+
+1
+
+—
+
+tSPcyc
+
+Data output delay time
+
+tOD
+
+—
+
+33.3
+
+ns
+
+Data output hold time
+
+tOH
+
+–10
+
+—
+
+ns
+
+Data rise/fall time
+
+tDr, tDf
+
+—
+
+16.6
+
+ns
+
+SS input rise/fall time
+
+tSSLr, tSSLf
+
+—
+
+16.6
+
+ns
+
+Slave access time
+
+tSA
+
+—
+
+5
+
+tPBcyc
+
+Slave output release time
+
+tREL
+
+—
+
+5
+
+tPBcyc
+
+Figure 63.58 to
+Figure 63.61
+
+Figure 63.60,
+Figure 63.61
+
+Note 1. tPAcyc: PCLKA cycle, tPBcyc: PCLKB cycle
+
+tSPCKr
+
+tSPCKWH
+SCKn
+master select
+output
+
+VOH
+
+VOH
+VOL
+
+tSPCKf
+VOH
+
+VOH
+
+VOL
+tSPCKWL
+
+VOL
+tSPcyc
+tSPCKr
+
+tSPCKWH
+VIH
+SCKn
+slave select input
+
+VIH
+VIL
+
+(n = 0 to 12)
+
+tSPCKf
+VIH
+
+VIL
+tSPCKWL
+
+VIH
+VIL
+
+tSPcyc
+
+VOH = 0.7 × VCC, VOL = 0.3 × VCC, VIH = 0.7 × VCC, VIL = 0.3 × VCC
+
+Figure 63.57
+
+Simple SPI Clock Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3172 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+tTD
+SSn#
+output
+
+tLEAD
+
+tLAG
+tSSLr, tSSLf
+
+SCKn
+CKPOL = 0
+output
+SCKn
+CKPOL = 1
+output
+
+tSU
+SMISOn
+input
+
+tH
+
+MSB IN
+
+DATA
+
+tDr, tDf
+SMOSIn
+output
+
+LSB IN
+
+tOH
+MSB OUT
+
+MSB IN
+
+tOD
+DATA
+
+LSB OUT
+
+IDLE
+
+MSB OUT
+
+(n = 0 to 12)
+
+Figure 63.58
+
+Simple SPI Timing (Master, CKPH = 1)
+
+tTD
+SSn#
+output
+
+tLEAD
+
+tLAG
+tSSLr, tSSLf
+
+SCKn
+CKPOL = 1
+output
+SCKn
+CKPOL = 0
+output
+
+tSU
+SMISOn
+input
+
+tH
+
+MSB IN
+
+tOH
+SMOSIn
+output
+
+DATA
+
+LSB IN
+
+tOD
+MSB OUT
+
+MSB IN
+
+tDr, tDf
+DATA
+
+LSB OUT
+
+IDLE
+
+MSB OUT
+
+(n = 0 to 12)
+
+Figure 63.59
+
+Simple SPI Timing (Master, CKPH = 0)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3173 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+tTD
+SSn#
+input
+
+tLEAD
+
+tLAG
+
+SCKn
+CKPOL = 0
+input
+SCKn
+CKPOL = 1
+input
+
+tSA
+
+tOH
+
+SMISOn
+output
+
+tOD
+
+MSB OUT
+
+tSU
+SMOSIn
+input
+
+tREL
+
+DATA
+
+LSB OUT
+
+tH
+
+Invaild DATA
+
+MSB OUT
+
+tDr, tDf
+
+MSB IN
+
+DATA
+
+LSB IN
+
+MSB IN
+
+(n = 0 to 12)
+
+Figure 63.60
+
+Simple SPI Timing (Slave, CKPH = 1)
+
+tTD
+SSn#
+input
+
+tLEAD
+
+tLAG
+
+SCKn
+CKPOL = 1
+input
+SCKn
+CKPOL = 0
+input
+
+tSA
+SMISOn
+output
+
+tOH
+
+tOD
+
+Invaild DATA
+
+MSB OUT
+
+tSU
+SMOSIn
+input
+
+tREL
+DATA
+
+tH
+
+MSB IN
+
+LSB OUT
+
+MSB OUT
+
+tDr, tDf
+DATA
+
+LSB IN
+
+MSB IN
+
+(n = 0 to 12)
+
+Figure 63.61
+
+Simple SPI Timing (Slave, CKPH = 0)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3174 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.10
+
+RIIC
+
+Table 63.39
+
+RIIC Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+High-drive output is selected by the drive capacity control register.
+Item
+
+Symbol
+
+Min.*1
+
+Max.
+
+Unit
+
+Test
+Conditions
+Figure 63.62
+
+tSCL
+
+6(12) × tIICcyc + 1300
+
+—
+
+ns
+
+tSCLH
+
+3(6) × tIICcyc + 300
+
+—
+
+ns
+
+tSCLL
+
+3(6) × tIICcyc + 300
+
+—
+
+ns
+
+SCL, SDA input rise time
+
+tSr
+
+—
+
+1000
+
+ns
+
+SCL, SDA input fall time
+
+tSf
+
+—
+
+300
+
+ns
+
+RIIC
+SCL input cycle time
+(Standard-mode,
+SCL input high pulse width
+SMBus)
+ICFER.FMPE = 0 SCL input low pulse width
+
+SCL, SDA input spike pulse removal time
+
+tSP
+
+0
+
+1(4) × tIICcyc
+
+ns
+
+SDA input bus free time
+
+tBUF
+
+3(6) × tIICcyc + 300
+
+—
+
+ns
+
+Start condition input hold time
+
+tSTAH
+
+tIICcyc + 300
+
+—
+
+ns
+
+Restart condition input setup time
+
+tSTAS
+
+1000
+
+—
+
+ns
+
+Stop condition input setup time
+
+tSTOS
+
+1000
+
+—
+
+ns
+
+Data input setup time
+
+tSDAS
+
+tIICcyc + 50
+
+—
+
+ns
+
+Data input hold time
+
+tSDAH
+
+0
+
+—
+
+ns
+
+SCL, SDA capacitive load
+
+Cb*2
+
+—
+
+400
+
+pF
+
+RIIC
+SCL input cycle time
+(Fast-mode)
+SCL input high pulse width
+ICFER.FMPE = 0
+SCL input low pulse width
+
+tSCL
+
+6(12) × tIICcyc + 600
+
+—
+
+ns
+
+tSCLH
+
+3(6) × tIICcyc + 300
+
+—
+
+ns
+
+tSCLL
+
+3(6) × tIICcyc + 300
+
+—
+
+ns
+
+SCL, SDA input rise time
+
+tSr
+
+20 × (External pull-up
+voltage/5.5V)
+
+300
+
+ns
+
+SCL, SDA input fall time
+
+tSf
+
+20 × (External pull-up
+voltage/5.5V)
+
+300
+
+ns
+
+SCL, SDA input spike pulse removal time
+
+tSP
+
+0
+
+1(4) × tIICcyc
+
+ns
+
+SDA input bus free time
+
+tBUF
+
+3(6) × tIICcyc + 300
+
+—
+
+ns
+
+Start condition input hold time
+
+tSTAH
+
+tIICcyc + 300
+
+—
+
+ns
+
+Restart condition input setup time
+
+tSTAS
+
+300
+
+—
+
+ns
+
+Stop condition input setup time
+
+tSTOS
+
+300
+
+—
+
+ns
+
+Data input setup time
+
+tSDAS
+
+tIICcyc + 50
+
+—
+
+ns
+
+Data input hold time
+
+tSDAH
+
+0
+
+—
+
+ns
+
+SCL, SDA capacitive load
+
+Cb*2
+
+—
+
+400
+
+pF
+
+RIIC
+SCL input cycle time
+(Fast-mode+)
+SCL input high pulse width
+ICFER.FMPE = 1
+SCL input low pulse width
+
+tSCL
+
+6(12) × tIICcyc + 240
+
+—
+
+ns
+
+tSCLH
+
+3(6) × tIICcyc + 120
+
+—
+
+ns
+
+tSCLL
+
+3(6) × tIICcyc + 120
+
+—
+
+ns
+
+tSr
+
+—
+
+120
+
+ns
+
+SCL, SDA input fall time
+
+tSf
+
+—
+
+120
+
+ns
+
+SCL, SDA input spike pulse removal time
+
+tSP
+
+0
+
+1(4) × tIICcyc
+
+ns
+
+SDA input bus free time
+
+tBUF
+
+3(6) × tIICcyc + 120
+
+—
+
+ns
+
+Start condition input hold time
+
+tSTAH
+
+tIICcyc + 120
+
+—
+
+ns
+
+Restart condition input setup time
+
+tSTAS
+
+120
+
+—
+
+ns
+
+Stop condition input setup time
+
+tSTOS
+
+120
+
+—
+
+ns
+
+SCL, SDA input rise time
+
+Data input setup time
+
+tSDAS
+
+tIICcyc + 20
+
+—
+
+ns
+
+Data input hold time
+
+tSDAH
+
+0
+
+—
+
+ns
+
+SCL, SDA capacitive load
+
+Cb*2
+
+—
+
+550
+
+pF
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3175 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+Note:
+tIICcyc: RIIC internal reference clock (IICφ) cycle
+Note 1. The value within parentheses is applicable when the value of the ICMR3.NF[1:0] bits is 11b while the digital filter is enabled by
+the setting ICFER.NFE = 1.
+Note 2. Cb is the total capacitance of the bus lines.
+
+VIH
+SDA0 to SDA2
+
+VIL
+tBUF
+
+tSCLH
+
+tSTAH
+
+tSTAS
+
+tSTOS
+
+tSP
+
+SCL0 to SCL2
+P*1
+
+S*1
+tSf
+
+tSCLL
+
+tSr
+tSCL
+
+tSDAS
+tSDAH
+
+Note 1. S, P, and Sr indicate the following conditions.
+S: Start condition
+P: Stop condition
+Sr: Restart condition
+
+Figure 63.62
+
+P*1
+
+Sr*1
+
+Test conditions
+VIH = 0.7 × VCC, VIL = 0.3 × VCC
+VOL = 0.6 V, IOL = 6 mA (ICFER.FMPE = 0)
+VOL = 0.4 V, IOL = 15 mA (ICFER.FMPE = 1)
+
+RIIC Bus Interface Input/Output Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3176 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.11
+
+RSPI
+
+Table 63.40
+
+RSPI Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+RSPI
+
+RSPCK clock cycle
+
+Symbol
+Master
+
+tSPcyc
+
+Slave
+RSPCK clock high pulse
+width
+
+Master
+
+tSPCKWH
+
+Slave
+RSPCK clock low pulse
+width
+
+Master
+
+tSPCKWL
+
+Slave
+RSPCK clock rise/fall time
+
+Output
+
+Data input setup time
+Data input hold time
+
+Master
+
+(tSPcyc – tSPCKr
+– tSPCKf) / 2 – 3
+
+—
+
+(tSPcyc – tSPCKr
+– tSPCKf) / 2
+
+—
+
+(tSPcyc – tSPCKr
+– tSPCKf) / 2 – 3
+
+—
+
+(tSPcyc – tSPCKr
+– tSPCKf) / 2
+
+—
+
+—
+
+5
+
+ns
+
+ns
+
+ns
+
+1
+
+µs
+
+—
+
+ns
+
+8.3
+
+—
+
+PCLKA division ratio set to
+1/2
+
+tHF
+
+0
+
+—
+
+PCLKA division ratio set to
+a value other
+than 1/2
+
+tH
+
+tPAcyc
+
+—
+
+8.3
+
+—
+
+Master
+
+tLEAD
+
+Master
+
+tLAG
+
+Master
+
+tOD
+
+Master
+Master
+
+Output
+
+1
+
+8
+
+tSPcyc
+
+—
+
+tPAcyc
+
+1
+
+8
+
+tSPcyc
+
+6
+
+—
+
+tPAcyc
+ns
+
+—
+
+6.3
+28
+
+tOH
+
+0
+
+—
+
+0
+
+—
+
+tTD
+
+tSPcyc + 2 × tPAcyc
+
+8 × tSPcyc
++ 2 × tPAcyc
+
+6 × tPAcyc
+
+—
+
+tDr, tDf
+
+Input
+
+Figure 63.64 to
+Figure 63.69
+
+ns
+
+6
+
+—
+
+Slave
+
+SSL
+rise/fall time
+
+—
+
+6
+
+Slave
+
+MOSI and MISO
+rise/fall time
+
+Figure 63.63
+
+—
+
+—
+
+Slave
+
+Successive transmission
+delay time
+
+tPAcyc
+
+2
+4
+
+tSU
+
+Slave
+
+Data output hold time
+
+Test
+Conditions*2
+
+Input
+
+Slave
+
+Data output delay time
+
+Unit*1
+
+Master
+
+Slave
+
+SSL hold time
+
+Max.*1
+
+tSPCKr,
+tSPCKf
+
+Slave
+
+SSL setup time
+
+Min.*1
+
+ns
+ns
+
+—
+
+5
+
+ns
+
+—
+
+1
+
+µs
+
+5
+
+ns
+
+Output
+
+tSSLr,
+
+—
+
+Input
+
+tSSLf
+
+—
+
+1
+
+µs
+
+Slave access time
+
+tSA
+
+—
+
+2 × tPAcyc
++ 28
+
+ns
+
+Slave output release time
+
+tREL
+
+—
+
+2 × tPAcyc
++ 28
+
+ns
+
+Figure 63.68,
+Figure 63.69
+
+Note 1. tPAcyc: PCLKA cycle
+Note 2. We recommend using pins that have a letter (“-A”, “-B”, etc.) to indicate group membership appended to their names as groups.
+For the RSPI interface, the AC portion of the electrical characteristics is measured for each group.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3177 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+tSPCKr
+
+tSPCKWH
+VOH
+
+RSPCKA
+master select
+output
+
+VOH
+VOL
+
+tSPCKf
+VOH
+
+VOH
+
+VOL
+tSPCKWL
+
+VOL
+tSPcyc
+tSPCKr
+
+tSPCKWH
+VIH
+
+VIH
+
+RSPCKA
+slave select input
+
+VIL
+
+tSPCKf
+VIH
+
+VIL
+tSPCKWL
+
+VIH
+VIL
+
+tSPcyc
+
+VOH = 0.7 × VCC, VOL = 0.3 × VCC, VIH = 0.7 × VCC, VIL = 0.3 × VCC
+
+Figure 63.63
+
+RSPI Clock Timing
+
+tTD
+SSLA0 to
+SSLA3
+output
+
+tLEAD
+
+tLAG
+tSSLr, tSSLf
+
+RSPCKA
+CPOL = 0
+output
+RSPCKA
+CPOL = 1
+output
+
+tSU
+MISOA
+input
+
+tH
+
+MSB IN
+
+tDr, tDf
+MOSIA
+output
+
+Figure 63.64
+
+DATA
+
+tOH
+MSB OUT
+
+LSB IN
+
+MSB IN
+
+tOD
+DATA
+
+LSB OUT
+
+IDLE
+
+MSB OUT
+
+RSPI Timing (Master, CPHA = 0) (Bit Rate: PCLKA Division Ratio Set to a Value Other Than 1/2)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3178 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+tTD
+SSLA0 to
+SSLA3
+output
+
+tLEAD
+
+tLAG
+tSSLr, tSSLf
+
+RSPCKA
+CPOL = 0
+output
+RSPCKA
+CPOL = 1
+output
+
+tSU
+MISOA
+input
+
+tHF
+MSB IN
+
+DATA
+
+tDr, tDf
+MOSIA
+output
+
+Figure 63.65
+
+tHF
+
+tOH
+MSB OUT
+
+LSB IN
+
+MSB IN
+
+tOD
+DATA
+
+LSB OUT
+
+IDLE
+
+MSB OUT
+
+RSPI Timing (Master, CPHA = 0) (Bit Rate: PCLKA Division Ratio Set to 1/2)
+
+tTD
+SSLA0 to
+SSLA3
+output
+
+tLEAD
+
+tLAG
+tSSLr, tSSLf
+
+RSPCKA
+CPOL = 0
+output
+RSPCKA
+CPOL = 1
+output
+
+tSU
+MISOA
+input
+
+tH
+
+MSB IN
+
+tOH
+MOSIA
+output
+
+Figure 63.66
+
+DATA
+
+LSB IN
+
+tOD
+MSB OUT
+
+MSB IN
+
+tDr, tDf
+DATA
+
+LSB OUT
+
+IDLE
+
+MSB OUT
+
+RSPI Timing (Master, CPHA = 1) (Bit Rate: PCLKA Division Ratio Set to a Value Other Than 1/2)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3179 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+tTD
+SSLA0 to
+SSLA3
+output
+
+tLEAD
+
+tLAG
+tSSLr, tSSLf
+
+RSPCKA
+CPOL = 0
+output
+RSPCKA
+CPOL = 1
+output
+
+tSU
+MISOA
+input
+
+tHF
+MSB IN
+
+tOH
+
+DATA
+
+LSB IN
+
+tOD
+
+MOSIA
+output
+
+Figure 63.67
+
+tH
+MSB IN
+
+tDr, tDf
+
+MSB OUT
+
+DATA
+
+LSB OUT
+
+IDLE
+
+MSB OUT
+
+RSPI Timing (Master, CPHA = 1) (Bit Rate: PCLKA Division Ratio Set to 1/2)
+
+tTD
+SSLA0
+input
+
+tLEAD
+
+tLAG
+
+RSPCKA
+CPOL = 0
+input
+RSPCKA
+CPOL = 1
+input
+
+tSA
+
+tOH
+
+MISOA
+output
+
+MSB OUT
+
+tSU
+MOSIA
+input
+
+Figure 63.68
+
+tOD
+DATA
+
+tREL
+LSB OUT
+
+tH
+
+MSB IN
+
+Invaild DATA
+
+MSB OUT
+
+tDr, tDf
+DATA
+
+LSB IN
+
+MSB IN
+
+RSPI Timing (Slave, CPHA = 0)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3180 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+tTD
+SSLA0
+input
+
+tLEAD
+
+tLAG
+
+RSPCKA
+CPOL = 0
+input
+RSPCKA
+CPOL = 1
+input
+
+tSA
+MISOA
+output
+
+tOH
+
+tOD
+
+Invaild DATA
+
+MSB OUT
+
+tSU
+MOSIA
+input
+
+Figure 63.69
+
+tREL
+
+tH
+
+MSB IN
+
+LSB OUT
+
+DATA
+
+MSB OUT
+
+tDr, tDf
+DATA
+
+LSB IN
+
+MSB IN
+
+RSPI Timing (Slave, CPHA = 1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3181 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.12
+
+QSPI
+
+Table 63.41
+
+QSPI Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+
+QSPI
+
+Item
+
+Symbol
+
+Min.
+
+Max.
+
+Unit*1
+
+Test
+Conditions*2
+
+QSPCLK clock cycle
+
+tQScyc
+
+2
+
+4080
+
+tPBcyc
+
+Figure 63.70
+
+Data input setup time
+
+tSu
+
+6.5
+
+—
+
+ns
+
+Data input hold time
+
+tIH
+
+5
+
+—
+
+ns
+
+Figure 63.71,
+Figure 63.72
+
+SS setup time
+
+tLEAD
+
+1.5
+
+8.5
+
+tQScyc
+
+SS hold time
+
+tLAG
+
+1
+
+8
+
+tQScyc
+
+Data output delay time
+
+tOD
+
+—
+
+10.0
+
+ns
+
+Data output hold time
+
+tOH
+
+–5
+
+—
+
+ns
+
+Successive transmission delay time
+
+tTD
+
+1
+
+8
+
+tQScyc
+
+Note 1. tPBcyc: PCLKB cycle
+Note 2. We recommend using pins that have a letter (“-A”, “-B”, etc.) to indicate group membership appended to their names as groups.
+For the QSPI interface, the AC portion of the electrical characteristics is measured for each group.
+
+QSPCLK
+output
+
+tQScyc
+
+Figure 63.70
+
+QSPI Clock Timing
+
+tTD
+QSSL
+output
+QSPCLK
+CPOL = 0
+output
+
+tLEAD
+
+QSPCLK
+CPOL = 1
+output
+
+QMI,
+QIO0 to QIO3
+input
+QMO,
+QIO0 to QIO3
+output
+
+Figure 63.71
+
+tLAG
+
+tSU
+
+tIH
+
+MSB IN
+
+DATA
+tOH
+
+MSB OUT
+
+LSB IN
+tOD
+
+DATA
+
+LSB OUT
+
+IDLE
+
+Transmit/Receive Timing (CPHA = 0)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3182 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+tTD
+QSSL
+output
+QSPCLK
+CPOL = 0
+output
+
+tLEAD
+
+tLAG
+
+QSPCLK
+CPOL = 1
+output
+
+tSU
+
+QMI,
+QIO0 to QIO3
+input
+
+tIH
+
+MSB IN
+tOH
+
+QMO,
+QIO0 to QIO3
+output
+
+Figure 63.72
+
+DATA
+
+LSB IN
+
+tOD
+
+MSB OUT
+
+DATA
+
+LSB OUT
+
+IDLE
+
+Transmit/Receive Timing (CPHA = 1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3183 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.13
+
+SSIE
+
+Table 63.42
+
+Expansion Serial Sound Interface Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, VREFH0 = 2.7 V to AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+AUDIO_CLK
+
+Symbol
+
+Unit
+
+Test
+Conditions
+Figure 63.73
+
+tEXcyc
+
+20
+
+—
+
+ns
+
+0.4
+
+0.6
+
+tEXcyc
+
+Master
+
+tO
+
+80
+
+—
+
+ns
+
+Slave
+
+tI
+
+80
+
+—
+
+ns
+
+Master
+
+tHC
+
+0.35
+
+—
+
+tO
+
+tLC
+
+0.35
+
+—
+
+tO
+
+tHC
+
+0.35
+
+—
+
+tI
+
+tLC
+
+0.35
+
+—
+
+tI
+
+Master
+
+tRC
+
+—
+
+0.15
+
+tO
+
+tFC
+
+—
+
+0.15
+
+tO
+
+Slave
+
+tRC
+
+—
+
+0.15
+
+tI
+
+tFC
+
+—
+
+0.15
+
+tI
+
+Input setup time
+
+Master
+
+tSR
+
+12
+
+—
+
+ns
+
+Input hold time
+
+Master
+
+Cycle
+Output clock high level
+Output clock low level
+Input clock high level
+
+Slave
+
+Input clock low level
+Output clock rise time
+Output clock fall time
+Input clock rise time
+Input clock fall time
+SSILRCKn,SSITXD0,
+SSIRXD0, SSIDATA1
+
+Max.
+
+tEXL/tEXH
+
+Cycle
+High/low level
+
+SSIBCKn
+
+Min.
+
+Slave
+
+12
+
+—
+
+ns
+
+tHR
+
+8
+
+—
+
+ns
+
+15
+
+—
+
+ns
+
+tDTR
+
+–10
+
+5
+
+ns
+
+0
+
+20
+
+ns
+
+tDTRW
+
+—
+
+20
+
+ns
+
+Slave
+Output delay time
+
+Master
+Slave
+
+Output delay time from when an
+SSILRCK0 signal is changed*1
+
+Slave
+
+Figure 63.74
+
+Figure 63.75,
+Figure 63.76
+
+Figure 63.77
+
+n = 0, 1
+Note 1. The SSIE has a single path for transmission in slave mode. To generate the data for transmission, the signals input through the
+SSILRCKn pin through the abovementioned path are used. After that, the data for transmission proceed to be used as the
+logical outputs to the SSITXD0 or SSIDATA1 pin.
+
+tEXcyc
+tEXH
+
+tEXL
+
+AUDIO_CLK
+(input)
+
+1/2 VCC
+
+tEXf
+
+Figure 63.73
+
+tEXr
+
+Clock Input Timing
+
+tHC
+
+tRC
+
+tFC
+
+tLC
+SSIBCKn
+
+tI, tO
+(n = 0, 1)
+
+Figure 63.74
+
+SSIE Clock Input/Output Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3184 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+SSIBCKn
+(input or output)
+
+SSILRCKn (input),
+SSIRXD0, SSIDATA1 (input)
+
+tSR
+
+tHR
+
+SSILRCKn (output),
+SSITXD0, SSIDATA1 (output)
+(n = 0, 1)
+
+Figure 63.75
+
+tDTR
+
+Transmission and Reception Timing for the SSIE Data When the SSICR.BCKP Bit is 0
+
+SSIBCKn
+(input or output)
+
+SSILRCKn (input),
+SSIRXD0, SSIDATA1 (input)
+
+tSR
+
+tHR
+
+SSILRCKn (output),
+SSITXD0, SSIDATA1 (output)
+(n = 0, 1)
+
+Figure 63.76
+
+tDTR
+
+Transmission and Reception Timing for the SSIE Data When the SSICR.BCKP Bit is 1
+
+SSILRCKn (input)
+
+SSITXD0, SSIDATA1 (output)
+
+(n = 0, 1)
+
+tDTRW
+
+MSB bit output timing in slave transmission from SSILRCKn with the settings
+of DEL = 1, SDTA = 0, or DEL = 1, SDTA = 1, SWL[2:0] = DWL[2:0]
+
+Figure 63.77
+
+Output Delay of the SSIE Data from When an SSILRCKn Signal is Changed
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3185 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.14
+
+PMGI
+
+Table 63.43
+
+PMGI Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+ICLK = PCLKA = 8 to 120 MHz, PCLKB = BCLK = SDCLK = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+PMGI
+
+Unit
+
+Test
+Conditions
+
+—
+
+ns
+
+Figure 63.78
+
+—
+
+ns
+
+Symbol
+
+Min.
+
+Max.
+
+PMGIn_MDC output cycle
+
+tMDC
+
+80
+
+PMGIn_MDIO setup time (relative to PMGIn_MDC↑)
+
+tSMDIO
+
+20
+
+PMGIn_MDIO hold time (relative to PMGIn_MDC↑)
+
+tHMDIO
+
+0
+
+—
+
+ns
+
+PMGIn_MDIO output delay time (relative to PMGIn_MDC↑)
+
+tDMDIO
+
+0
+
+20
+
+ns
+
+n = 0, 1
+
+tMDC
+PMGIn_MDC
+(output)
+tSMDIO
+tHMDIO
+
+PMGIn_MDIO
+PMGIn_MDIO
+(input)
+(input)
+tDMDIO
+
+tDMDIO
+
+PMGIn_MDIO
+PMGIn_MDIO
+(output)
+(output)
+(n = 0, 1)
+
+Figure 63.78
+
+Timing of Serial Management Access
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3186 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.15
+
+MMC
+
+Table 63.44
+
+MMC Host Interface Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+MMCIF MMC_CLK clock cycle
+
+Symbol
+
+Min.*1
+
+Max.
+
+Unit
+
+Test
+Conditions*2
+Figure 63.79
+
+tMMCPP
+
+2 × tPBcyc
+
+—
+
+ns
+
+MMC_CLK clock high level width
+
+tMMCWH
+
+6.5
+
+—
+
+ns
+
+MMC_CLK clock low level width
+
+tMMCWL
+
+6.5
+
+—
+
+ns
+
+MMC_CLK clock rising time
+
+tMMCLH
+
+—
+
+3
+
+ns
+
+MMC_CLK clock falling time
+
+tMMCHL
+
+—
+
+3
+
+ns
+
+MMC_CMD, MMC_D7 to MMC_D0 output data delay
+(data transfer mode)
+
+tMMCODLY
+
+–6.6
+
+6.6
+
+ns
+
+MMC_CMD, MMC_D7 to MMC_D0 input data setup
+
+tMMCISU
+
+8
+
+—
+
+ns
+
+MMC_CMD, MMC_D7 to MMC_D0 input data hold
+
+tMMCIH
+
+2.5
+
+—
+
+ns
+
+Note 1. tPBcyc: PCLKB cycle
+Note 2. We recommend using pins that have a letter (“-A”, “-B”, etc.) to indicate group membership appended to their names as groups.
+For the MMC interface, the AC portion of the electrical characteristics is measured for each group.
+
+tMMCPP
+tMMCWL
+
+tMMCWH
+
+MMC_CLK
+
+tMMCHL
+
+tMMCLH
+tMMCISU
+
+tMMCIH
+
+MMC_CMD,
+MMC_D7 to MMC_D0 input
+
+MMC_CMD,
+MMC_D7 to MMC_D0 output
+
+tMMCODLY (max)
+
+Figure 63.79
+
+tMMCODLY (min)
+
+MMC Interface
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3187 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.16
+
+SDHI
+
+Table 63.45
+
+SDHI Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6V, 2.7V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30pF
+High-drive output is selected by the drive capacity control register.
+Item
+SDHI
+
+Symbol
+
+Min.
+
+Max.
+
+Unit
+
+Test
+Conditions*1
+Figure 63.80
+
+SDHI_CLK output cycle time
+
+tPP(SD)
+
+20
+
+—
+
+ns
+
+SDHI_CLK output width at high level
+
+tWH(SD)
+
+0.4 × tPP(SD)
+
+—
+
+ns
+
+SDHI_CLK output width at low level
+
+tWL(SD)
+
+0.4 × tPP(SD)
+
+—
+
+ns
+
+SDHI_CLK output rising time
+
+tTLH(SD)
+
+—
+
+3
+
+ns
+
+SDHI_CLK output falling time
+
+tTHL(SD)
+
+—
+
+3
+
+ns
+
+SDHI_CMD, SDHI_D3 to SDHI_D0 output data delay (data
+transfer mode)
+
+tODLY(SD)
+
+–6.5
+
+4
+
+ns
+
+SDHI_CMD, SDHI_D3 to SDHI_D0 input data setup time
+
+tISU(SD)
+
+6
+
+—
+
+ns
+
+SDHI_CMD, SDHI_D3 to SDHI_D0 input data hold time
+
+tIH(SD)
+
+2
+
+—
+
+ns
+
+Note 1. We recommend using pin names that have a letter (“-A”, “-B”, etc.) to indicate group membership per group in the test.
+For the SDHI, the AC portion of the electrical characteristics is measured per group.
+
+tPP(SD)
+tWL(SD)
+SDHI_CLK output
+
+VIH
+50% VCC
+
+VIH
+VIH
+50% VCC
+VL
+
+tTHL(SD)
+
+tWH(SD)
+
+VL
+
+VL
+
+tTLH(SD)
+tISU(SD) tIH(SD)
+
+SDHI_CMD, SDHI_D3 to SDHI_D0 input
+
+tODLY(SD)
+
+tODLY(SD)
+
+SDHI_CMD, SDHI_D3 to SDHI_D0 output
+
+Figure 63.80
+
+SD Host Interface Input/Output Signal Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3188 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.17
+
+ETHERC
+
+Table 63.46
+
+ETHERC Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+RMII: High-drive output for the high-speed interface is selected in the drive capacity control register.
+MII: High-drive output is selected by the drive capacity control register.
+Item
+ETHERC
+(RMII)
+
+Symbol
+
+Min.
+
+Max.
+
+Unit
+
+REF50CK cycle time
+
+Tck
+
+20
+
+—
+
+ns
+
+REF50CK frequency Typ. 50 MHz
+
+—
+
+—
+
+50 + 100 ppm
+
+MHz
+
+REF50CK duty
+REF50CK rise/fall time
+RMIIn_xxxx*1 output delay time
+
+ETHERC
+(MII)
+
+—
+
+35
+
+65
+
+%
+
+Tckr/ckf
+
+0.5
+
+3.5
+
+ns
+
+Tco
+
+2.5
+
+15.0
+
+ns
+
+RMIIn_xxxx*2 setup time
+
+Tsu
+
+3
+
+—
+
+ns
+
+RMIIn_xxxx*2 hold time
+
+Thd
+
+1
+
+—
+
+ns
+
+RMIIn_xxxx*1, *2 rise/fall time
+
+Tr/Tf
+
+—
+
+5
+
+ns
+
+Test
+Conditions
+Figure 63.81 to
+Figure 63.84
+
+ETn_WOL output delay time
+
+tWOLd
+
+1
+
+23.5
+
+ns
+
+Figure 63.85
+
+ETn_TX_CLK cycle time
+
+tTcyc
+
+40
+
+—
+
+ns
+
+—
+
+ETn_TX_EN output delay time
+
+tTENd
+
+1
+
+20
+
+ns
+
+Figure 63.86
+
+ETn_ETXD0 to ETn_ETXD3 output delay time
+
+tMTDd
+
+1
+
+20
+
+ns
+
+ETn_CRS setup time
+
+tCRSs
+
+10
+
+—
+
+ns
+
+ETn_CRS hold time
+
+tCRSh
+
+10
+
+—
+
+ns
+
+ETn_COL setup time
+
+tCOLs
+
+10
+
+—
+
+ns
+
+ETn_COL hold time
+
+tCOLh
+
+10
+
+—
+
+ns
+
+ETn_RX_CLK cycle time
+
+tTRcyc
+
+40
+
+—
+
+ns
+
+—
+
+ETn_RX_DV setup time
+
+tRDVs
+
+10
+
+—
+
+ns
+
+Figure 63.88
+
+ETn_RX_DV hold time
+
+tRDVh
+
+10
+
+—
+
+ns
+
+ETn_ERXD0 to ETn_ERXD3 setup time
+
+tMRDs
+
+10
+
+—
+
+ns
+
+ETn_ERXD0 to ETn_ERXD3 hold time
+
+tMRDh
+
+10
+
+—
+
+ns
+
+ETn_RX_ER setup time
+
+tRERs
+
+10
+
+—
+
+ns
+
+ETn_RX_ER hold time
+
+tRERh
+
+10
+
+—
+
+ns
+
+ETn_WOL output delay time
+
+tWOLd
+
+1
+
+23.5
+
+ns
+
+Figure 63.87
+
+Figure 63.89
+
+Figure 63.90
+
+n = 0, 1
+Note 1. RMIIn_TXD_EN, RMIIn_TXD1, RMIIn_TXD0
+Note 2. RMIIn_CRS_DV, RMIIn_RXD1, RMIIn_RXD0, RMIIn_RX_ER
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3189 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+Tck
+90%
+
+Tckr
+
+REF50CK 50%
+Tckf
+10%
+Tco
+Tf
+
+Tr
+
+Tsu
+
+Thd
+
+70%
+*11
+
+RMIIn_xxxx*
+RMII0_xxxx
+
+50% Change in
+
+Signal
+
+signal level
+
+Change in
+signal level
+
+Change in
+signal level
+
+Signal
+
+30%
+(n = 0, 1)
+Note 1.
+
+RMIIn_TXD_EN, RMIIn_TXD1, RMIIn_TXD0, RMIIn_CRS_DV, RMIIn_RXD1, RMIIn_RXD0, RMIIn_RX_ER
+
+Figure 63.81
+
+Timing with the REF50CK and RMII Signals
+
+TCK
+REF50CK
+TCO
+
+RMIIn_TXD_EN
+RMII0_TXD_EN
+TCO
+
+RMIIn_TXD_1,
+RMII0_TXD1,
+RMIIn_TXD_0
+RMII0_TXD0
+
+Preamble
+
+SFD
+
+DATA
+
+CRC
+
+(n = 0, 1)
+
+Figure 63.82
+
+RMII Transmission Timing
+
+REF50CK
+Thd
+
+Tsu
+RMII0_CRS_DV
+RMIIn_CRS_DV
+Tsu
+
+RMIIn_RXD_1,
+RMII0_RXD1,
+RMIIn_RXD_0
+RMII0_RXD0
+
+Thd
+
+Preamble
+
+DATA
+
+CRC
+
+SFD
+
+RMIIn_RX_ER
+RMII0_RX_ER
+
+L
+
+(n = 0, 1)
+
+Figure 63.83
+
+RMII Reception Timing (Normal Operation)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3190 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+REF50CK
+
+RMIIn_CRS_DV
+RMII0_CRS_DV
+
+RMII0_RXD1,
+RMIIn_RXD_1,
+RMII0_RXD0
+RMIIn_RXD_0
+
+Preamble
+
+SFD
+
+DATA
+
+xxxx
+Thd
+
+Tsu
+
+RMIIn_RX_ER
+RMII0_RX_ER
+(n = 0, 1)
+
+Figure 63.84
+
+RMII Reception Timing (Error Occurrence)
+
+REF50CK
+tWOLd
+
+ETn_WOL
+ET0_WOL
+(n = 0, 1)
+
+Figure 63.85
+
+WOL Output Timing (RMII)
+
+ETn_TX_CLK
+ET0_TX_CLK
+tTENd
+
+ETn_TX_EN
+ET0_TX_EN
+tMTDd
+
+ETn_ETXD[3:0]
+ET0_ETXD[3:0]
+
+Preamble
+
+SFD
+
+DATA
+
+CRC
+
+ETn_TX_ER
+ET0_TX_ER
+tCRSs
+
+tCRSh
+
+ETn_CRS
+ET0_CRS
+
+ETn_COL
+ET0_COL
+(n = 0, 1)
+
+Figure 63.86
+
+MII Transmission Timing (Normal Operation)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3191 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+ETn_TX_CLK
+ET0_TX_CLK
+
+ETn_TX_EN
+ET0_TX_EN
+
+ETn_ETXD[3:0]
+ET0_ETXD[3:0]
+
+Preamble
+
+JAM
+
+ETn_TX_ER
+ET0_TX_ER
+
+ETn_CRS
+ET0_CRS
+
+tCOLs
+
+tCOLh
+
+ETn_COL
+ET0_COL
+(n = 0, 1)
+
+Figure 63.87
+
+MII Transmission Timing (Conflict Occurrence)
+
+ETn_RX_CLK
+ET0_RX_CLK
+tRDVs
+
+tRDVh
+
+ETn_RX_DV
+ET0_RX_DV
+tMRDh
+
+tMRDs
+
+ETn_ERXD[3:0]
+ET0_ERXD[3:0]
+
+Preamble
+
+SFD
+
+DATA
+
+CRC
+
+ETn_RX_ER
+ET0_RX_ER
+(n = 0, 1)
+
+Figure 63.88
+
+MII Reception Timing (Normal Operation)
+
+ETn_RX_CLK
+ET0_RX_CLK
+
+ETn_RX_DV
+ET0_RX_DV
+
+ET0_ERXD[3:0]
+ETn_ERXD[3:0]
+
+Preamble
+
+SFD
+
+DATA
+
+xxxx
+tRERh
+
+tRERs
+
+ETn_RX_ER
+ET0_RX_ER
+(n = 0, 1)
+
+Figure 63.89
+
+MII Reception Timing (Error Occurrence)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3192 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+ETn_RX_CLK
+ET0_RX_CLK
+tWOLd
+
+ETn_WOL
+ET0_WOL
+(n = 0, 1)
+
+Figure 63.90
+
+WOL Output Timing (MII)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3193 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.18
+
+PDC
+
+Table 63.47
+
+PDC Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+PDC
+
+Symbol
+
+Min.*1
+
+Max.
+
+Unit
+
+Test
+Conditions
+Figure 63.91
+
+PIXCLK input cycle time
+
+tPIXcyc
+
+37
+
+—
+
+ns
+
+PIXCLK input high pulse width
+
+tPIXH
+
+10
+
+—
+
+ns
+
+PIXCLK input low pulse width
+
+tPIXL
+
+10
+
+—
+
+ns
+
+PIXCLK rising time
+
+tPIXr
+
+—
+
+5
+
+ns
+
+PIXCLK falling time
+
+tPIXf
+
+—
+
+5
+
+ns
+
+PCKO output cycle time
+
+tPCKcyc
+
+2 × tPBcyc
+
+—
+
+ns
+
+PCKO output high pulse width
+
+tPCKH
+
+(tPCKcyc – tPCKr – tPCKf)/2 – 3
+
+—
+
+ns
+
+PCKO output low pulse width
+
+tPCKL
+
+(tPCKcyc – tPCKr – tPCKf)/2 – 3
+
+—
+
+ns
+
+PCKO rising time
+
+tPCKr
+
+—
+
+5
+
+ns
+
+PCKO falling time
+
+tPCKf
+
+—
+
+5
+
+ns
+
+VSYNC/HSYNC input setup time
+
+tSYNCS
+
+10
+
+—
+
+ns
+
+VSYNC/HSYNC input hold time
+
+tSYNCH
+
+5
+
+—
+
+ns
+
+PIXD input setup time
+
+tPIXDS
+
+10
+
+—
+
+ns
+
+PIXD input hold time
+
+tPIXDH
+
+5
+
+—
+
+ns
+
+Figure 63.92
+
+Figure 63.93
+
+Note 1. tPBcyc: PCLKB cycle
+
+tPIXcyc
+tPIXH
+
+tPIXf
+
+PIXCLK input
+tPIXr
+tPIXL
+
+Figure 63.91
+
+PDC Input Clock Timing
+
+tPCKcyc
+tPCKH
+
+tPCKf
+
+PCKO pin output
+tPCKr
+tPCKL
+
+Figure 63.92
+
+PDC Output Clock Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3194 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+PIXCLK
+tSYNCS
+
+tSYNCH
+
+VSYNC
+tSYNCS
+
+tSYNCH
+
+HSYNC
+tPIXDS
+
+tPIXDH
+
+PIXD7 to PIXD0
+
+Figure 63.93
+
+PDC AC Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3195 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.19
+
+GLCDC
+
+Table 63.48
+
+GLCDC Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF
+Item
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+MHz
+
+LCD_EXTCLK Input clock frequency
+
+tEcyc
+
+—
+
+—
+
+30*1
+
+LCD_EXTCLK Input clock Low pulse width
+
+tWL
+
+0.45
+
+—
+
+0.55
+
+tEcyc
+
+LCD_EXTCLK Input clock High pulse width
+
+tWH
+
+0.45
+
+—
+
+0.55
+
+tEcyc
+MHz
+
+LCD_CLK Output clock frequency
+
+tLcyc
+
+—
+
+—
+
+30*1
+
+LCD_CLK Output clock Low pulse width
+
+tLOL
+
+0.4
+
+—
+
+0.6
+
+tLcyc
+
+LCD_CLK Output clock High pulse width
+
+tLOH
+
+0.4
+
+—
+
+0.6
+
+tLcyc
+
+LCD_CLK Output clock rise time
+
+tLOR
+
+—
+
+—
+
+5
+
+ns
+
+LCD_CLK Output clock fall time
+
+tLOF
+
+—
+
+—
+
+5
+
+ns
+
+tDD
+
+–3.5*2
+
+—
+
+4*2
+
+ns
+
+LCD data output Delay timing
+
+Test Conditions
+Figure 63.94
+
+Figure 63.95
+
+Figure 63.96
+
+Note 1. Parallel RGB888,666,565: Max. 27 MHz
+Serial RGB888: Max. 30 MHz (4x speed)
+Note 2. We recommend using pins that have a letter (“-A”, “-B”, etc) to indicate group membership appended to their names as groups.
+For the GLCDC interface, the AC portion of the electrical characteristics is measured for each group.
+If we use group “-A” and “-B” combination, “LCD data output Delay timing (tDD)” is Min = –5.0 ns, Max = 5.5 ns.
+
+tDcyc, tEcyc
+tWH
+1/2 Vcc
+
+VIH
+
+tWL
+VIH
+VIL
+
+LCD_EXTCLK
+
+Figure 63.94
+
+VIL
+
+LCD_EXTCLK Clock Input Timing
+
+tLcyc
+tLOL
+
+tLOH
+
+LCD_CLK
+tLOF
+
+Figure 63.95
+
+tLOR
+
+LCD_CLK Clock Output Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3196 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+LCD_CLK
+tDD
+Output on
+falling edge
+LCD_DATA23 to
+LCD_DATA0,
+LCD_TCON3 to
+LCD_TCON0
+
+Figure 63.96
+
+tDD
+Output on
+rising edge
+
+LCD Output Data Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3197 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.20
+
+A/D Converter Trigger
+
+Table 63.49
+
+A/D Converter Trigger Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+A/D converter
+
+A/D converter trigger input pulse width
+
+Symbol
+
+Min.
+
+Max.
+
+Unit*1
+
+Test Conditions
+
+tTRGW
+
+1.5
+
+—
+
+tPBcyc
+
+Figure 63.97
+
+Note 1. tPBcyc: PCLKB cycle
+
+PCLKB
+
+ADTRG0#,
+ADTRG1#
+tTRGW
+
+Figure 63.97
+
+A/D Converter Trigger Input Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3198 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.4.7.21
+
+CAC
+
+Table 63.50
+
+CAC Timing
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKA = 8 to 120 MHz, PCLKB = 8 to 60 MHz, Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item*1, *2
+CAC
+
+CACREF input pulse width
+
+tPBcyc ≤ tcac
+tPBcyc > tcac
+
+Symbol
+
+Min.*1, *2
+
+Max.
+
+Unit
+
+tCACREF
+
+4.5 tcac +
+3 tPBcyc
+
+—
+
+ns
+
+5 tcac +
+6.5 tPBcyc
+
+—
+
+Test
+Conditions
+
+Note 1. tPBcyc: PCLKB cycle
+Note 2. tcac: CAC count clock source cycle
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3199 of 3240
+
+RX72N Group
+
+63.5
+
+63. Electrical Characteristics
+
+USB Characteristics
+
+Table 63.51
+
+On-Chip USB Low Speed (Host Only) Characteristics (DP and DM Pin Characteristics)
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 3.0 to 3.6 V, 3.0 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+UCLK = 48 MHz, PCLKA = 8 to 120 MHz,
+PCLKB = 8 to 60 MHz, Ta = Topr
+Item
+Input
+characteristics
+
+Output
+characteristics
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Input high level voltage
+
+VIH
+
+2.0
+
+Input low level voltage
+
+VIL
+
+—
+
+Differential input sensitivity
+
+VDI
+
+Differential common mode range
+Output high level voltage
+
+—
+
+—
+
+V
+
+—
+
+0.8
+
+V
+
+0.2
+
+—
+
+—
+
+V
+
+VCM
+
+0.8
+
+—
+
+2.5
+
+V
+
+VOH
+
+2.8
+
+—
+
+3.6
+
+V
+
+IOH = –200 µA
+
+Output low level voltage
+
+VOL
+
+0.0
+
+—
+
+0.3
+
+V
+
+IOL = 2 mA
+
+Cross-over voltage
+
+VCRS
+
+1.3
+
+—
+
+2.0
+
+V
+
+Figure 63.98
+
+Rise time
+
+tLR
+
+75
+
+—
+
+300
+
+ns
+
+Fall time
+Rise/fall time ratio
+Pull-down
+characteristics
+
+tLF
+
+75
+
+—
+
+300
+
+ns
+
+tLR / tLF
+
+80
+
+—
+
+125
+
+%
+
+Rpd
+
+14.25
+
+—
+
+24.80
+
+kΩ
+
+DP/DM pull-down resistance
+(when the host controller function is
+selected)
+
+DP, DM
+
+VCRS
+
+90%
+
+| DP – DM |
+
+tLR/ tLF
+
+90%
+
+10%
+
+10%
+
+tLR
+
+Figure 63.98
+
+Test Conditions
+
+tLF
+
+DP and DM Output Timing (Low Speed)
+
+dp
+
+27
+
+Observation
+point
+
+200 pF to
+600 pF
+dm
+
+3.6 V
+1.5 k
+
+27
+200 pF to
+600 pF
+
+Figure 63.99
+
+Test Circuit (Low Speed)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3200 of 3240
+
+RX72N Group
+
+Table 63.52
+
+63. Electrical Characteristics
+
+On-Chip USB Full-Speed Characteristics (DP and DM Pin Characteristics)
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 3.0 to 3.6 V, 3.0 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+UCLK = 48 MHz, PCLKA = 8 to 120 MHz,
+PCLKB = 8 to 60 MHz, Ta = Topr
+Item
+Input
+characteristics
+
+Output
+characteristics
+
+Min.
+
+Typ.
+
+Unit
+
+Test Conditions
+
+Input high level voltage
+
+VIH
+
+2.0
+
+—
+
+—
+
+V
+
+VIL
+
+—
+
+—
+
+0.8
+
+V
+
+Differential input sensitivity
+
+VDI
+
+0.2
+
+—
+
+—
+
+V
+
+Differential common mode range
+
+VCM
+
+0.8
+
+—
+
+2.5
+
+V
+
+Output high level voltage
+
+VOH
+
+2.8
+
+—
+
+3.6
+
+V
+
+IOH = –200 µA
+
+Output low level voltage
+
+VOL
+
+0.0
+
+—
+
+0.3
+
+V
+
+IOL = 2 mA
+
+Cross-over voltage
+
+VCRS
+
+1.3
+
+—
+
+2.0
+
+V
+
+Figure 63.100
+
+Rise time
+
+tFR
+
+4
+
+—
+
+20
+
+ns
+
+| DP – DM |
+
+tFF
+
+4
+
+—
+
+20
+
+ns
+
+Rise/fall time ratio
+
+tFR / tFF
+
+90
+
+—
+
+111.11
+
+%
+
+tFR/ tFF
+
+Output resistance
+
+ZDRV
+
+28
+
+—
+
+44
+
+Ω
+
+Rs = 27 Ω included
+
+DP pull-up resistance
+(when the function controller function
+is selected)
+
+Rpu
+
+0.900
+
+—
+
+1.575
+
+kΩ
+
+Idle state
+
+1.425
+
+—
+
+3.090
+
+DP/DM pull-down resistance
+(when the host controller function is
+selected)
+
+Rpd
+
+14.25
+
+—
+
+24.80
+
+DP, DM
+
+VCRS
+
+90%
+
+At transmission and
+reception
+kΩ
+
+90%
+
+10%
+
+10%
+
+tFR
+
+Figure 63.100
+
+Max.
+
+Input low level voltage
+
+Fall time
+
+Pull-up and
+pull-down
+characteristics
+
+Symbol
+
+tFF
+
+DP and DM Output Timing (Full-Speed)
+
+dp
+
+27
+
+Observation
+point
+
+50 pF
+dm
+
+27
+50 pF
+
+Figure 63.101
+
+Test Circuit (Full-Speed)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3201 of 3240
+
+RX72N Group
+
+63.6
+
+63. Electrical Characteristics
+
+A/D Conversion Characteristics
+
+Table 63.53
+
+12-Bit A/D (Unit 0) Conversion Characteristics
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKB = PCLKC = 1 MHz to 60 MHz, Ta = Topr, Source impedance = 1.0 kΩ
+Item
+Resolution
+Analog input capacitance
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+8
+
+—
+
+12
+
+Bit
+
+Test Conditions
+
+—
+
+—
+
+30
+
+pF
+
+Channel-dediConversion time*1
+cated sample-and- (Operation at PCLKC = 60 MHz)
+hold circuits in use
+(AN000 to AN002)
+
+1.06
+(0.4 + 0.25)
+*2
+
+—
+
+—
+
+µs
+
+ Sampling of channeldedicated sample-andhold circuits in 24 states
+ Sampling in 15 states
+
+Offset error
+
+—
+
+±1.5
+
+±3.5
+
+LSB
+
+AN000 to AN002 = 0.25 V
+
+Full-scale error
+
+—
+
+±1.5
+
+±3.5
+
+LSB
+
+AN000 to AN002 = VREFH0
+– 0.25 V
+
+Quantization error
+
+—
+
+±0.5
+
+—
+
+LSB
+
+Absolute accuracy
+
+—
+
+±3.0
+
+±5.5
+
+LSB
+
+DNL differential nonlinearity error
+
+—
+
+±1.0
+
+±2.0
+
+LSB
+
+INL integral nonlinearity error
+
+—
+
+±1.5
+
+±3.0
+
+LSB
+
+Holding characteristics of sample-andhold circuits
+
+—
+
+—
+
+20
+
+µs
+
+Dynamic range
+
+0.25
+
+—
+
+VREFH0
+– 0.25
+
+V
+
+0.48
+(0.267)*2
+
+—
+
+—
+
+µs
+
+Offset error
+
+—
+
+±1.0
+
+±2.5
+
+LSB
+
+Full-scale error
+
+—
+
+±1.0
+
+±2.5
+
+LSB
+
+Quantization error
+
+—
+
+±0.5
+
+—
+
+LSB
+
+Absolute accuracy
+
+—
+
+±2.5
+
+±4.5
+
+LSB
+
+DNL differential nonlinearity error
+
+—
+
+±0.5
+
+±1.5
+
+LSB
+
+INL integral nonlinearity error
+
+—
+
+±1.0
+
+±2.5
+
+LSB
+
+Channel-dedicated sample-andhold circuits not in
+use
+(AN000 to AN007)
+
+Conversion time*1
+(Operation at PCLKC = 60 MHz)
+
+Sampling in 16 states
+
+Note:
+
+The above specification values apply when there is no access to the external bus during A/D conversion. If access proceeds
+during A/D conversion, values may not fall within the above ranges.
+Note 1. The conversion time includes the sampling time and the comparison time. As the test conditions, the number of sampling states
+is indicated.
+Note 2. The value in parentheses indicates the sampling time.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3202 of 3240
+
+RX72N Group
+
+Table 63.54
+
+63. Electrical Characteristics
+
+12-Bit A/D (Unit 1) Conversion Characteristics
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKB = PCLKD = 1 MHz to 60 MHz, Ta = Topr, Source impedance = 1.0 kΩ
+Item
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+8
+
+—
+
+12
+
+Bit
+
+0.88
+(0.633)*2
+
+—
+
+—
+
+µs
+
+(Operation at PCLKD = 60 MHz)
+
+Sampling in 38 states
+(ADSAM.SAM = 1)
+
+Conversion time*1
+(Operation at PCLKD = 30 MHz)
+
+1
+(0.500)*2
+
+—
+
+—
+
+µs
+
+Sampling in 15 states
+(ADSAM.SAM = 1)
+
+—
+
+—
+
+30
+
+pF
+
+Resolution
+Conversion time*1
+
+Analog input capacitance
+Offset error
+
+—
+
+±2.0
+
+±3.5
+
+LSB
+
+Full-scale error
+
+—
+
+±2.0
+
+±3.5
+
+LSB
+
+Quantization error
+
+—
+
+±0.5
+
+—
+
+LSB
+
+Absolute accuracy
+
+—
+
+±4.0
+
+±6.0
+
+LSB
+
+DNL differential nonlinearity error
+(Operation at PCLKD = 60 MHz)
+
+—
+
+±1.5
+
+±4.0
+
+LSB
+
+DNL differential nonlinearity error
+(Operation at PCLKD = 30 MHz)
+
+—
+
+±1.5
+
+±2.5
+
+LSB
+
+INL integral nonlinearity error
+(Operation at PCLKD = 60 MHz)
+
+—
+
+±2.0
+
+±4.0
+
+LSB
+
+INL integral nonlinearity error
+(Operation at PCLKD = 30 MHz)
+
+—
+
+±2.0
+
+±3.5
+
+LSB
+
+Test Conditions
+
+Note:
+
+The above specification values apply when there is no access to the external bus during A/D conversion. If access proceeds
+during A/D conversion, values may not fall within the above ranges.
+Note 1. The conversion time includes the sampling time and the comparison time. As the test conditions, the number of sampling states
+is indicated.
+Note 2. The value in parentheses indicates the sampling time.
+
+Table 63.55
+
+A/D Internal Reference Voltage Characteristics
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+PCLKB = PCLKD = 60 MHz, Ta = Topr
+Item
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+A/D internal reference voltage
+
+1.13
+
+1.18
+
+1.23
+
+V
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Test Conditions
+
+Page 3203 of 3240
+
+RX72N Group
+
+63.7
+
+63. Electrical Characteristics
+
+D/A Conversion Characteristics
+
+Table 63.56
+
+D/A Conversion Characteristics
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Resolution
+
+—
+
+12
+
+12
+
+12
+
+Bit
+
+Unbuffered output Absolute accuracy
+
+—
+
+—
+
+—
+
+±6.0
+
+LSB
+
+2-MΩ resistive load
+10-bit conversion
+2-MΩ resistive load
+
+Buffered output
+
+63.8
+
+Differential nonlinearity error
+
+DNL
+
+—
+
+±1.0
+
+±2.0
+
+LSB
+
+Output resistance
+
+RO
+
+—
+
+8.6
+
+—
+
+kΩ
+
+Setting time
+
+tS
+
+—
+
+—
+
+3
+
+µs
+
+Load resistance
+
+RL
+
+5
+
+—
+
+—
+
+kΩ
+
+Load capacitance
+
+CL
+
+—
+
+—
+
+50
+
+pF
+
+Output voltage
+
+VO
+
+0.2
+
+—
+
+AVCC1 –
+0.2
+
+V
+
+Differential nonlinearity error
+
+DNL
+
+—
+
+±1.0
+
+±2.0
+
+LSB
+
+Integral nonlinearity error
+
+INL
+
+—
+
+±2.0
+
+±4.0
+
+LSB
+
+Setting time
+
+tS
+
+—
+
+—
+
+4
+
+µs
+
+Test Conditions
+
+20-pF capacitive load
+
+Temperature Sensor Characteristics
+
+Table 63.57
+
+Temperature Sensor Characteristics
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Relative accuracy
+
+Item
+
+—
+
+±1
+
+—
+
+°C
+
+Temperature slope
+
+—
+
+4
+
+—
+
+mV/°C
+
+Output voltage
+
+—
+
+1.21
+
+—
+
+V
+
+Temperature sensor start time
+
+—
+
+—
+
+30
+
+µs
+
+Sampling time*1
+
+4.15
+
+—
+
+—
+
+µs
+
+Test Conditions
+
+Ta = 25°C
+
+Note 1. Set the S12AD1.ADSSTRT register such that the sampling time of the 12-bit A/D converter satisfies this specification.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3204 of 3240
+
+RX72N Group
+
+63.9
+
+63. Electrical Characteristics
+
+Power-on Reset Circuit and Voltage Detection Circuit Characteristics
+
+Table 63.58
+
+Power-on Reset Circuit and Voltage Detection Circuit Characteristics
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+Voltage detection
+level
+
+Power-on
+reset (POR)
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Test
+Conditions
+
+VPOR
+
+2.5
+
+2.6
+
+2.7
+
+V
+
+Figure 63.102
+
+1.8
+
+2.25
+
+2.7
+
+Low power consumption
+function disabled*1
+Low power consumption
+function enabled*2
+
+Voltage detection circuit (LVD0)
+
+Vdet0_1
+
+2.84
+
+2.94
+
+3.04
+
+Vdet0_2
+
+2.77
+
+2.87
+
+2.97
+
+Vdet0_3
+
+2.70
+
+2.80
+
+2.90
+
+Vdet1_1
+
+2.89
+
+2.99
+
+3.09
+
+Vdet1_2
+
+2.82
+
+2.92
+
+3.02
+
+Vdet1_3
+
+2.75
+
+2.85
+
+2.95
+
+Vdet2_1
+
+2.89
+
+2.99
+
+3.09
+
+Vdet2_2
+
+2.82
+
+2.92
+
+3.02
+
+Vdet2_3
+
+2.75
+
+2.85
+
+2.95
+
+Power-on reset time
+
+tPOR
+
+—
+
+4.6
+
+—
+
+LVD0 reset time
+
+tLVD0
+
+—
+
+0.70
+
+—
+
+Figure 63.103
+
+LVD1 reset time
+
+tLVD1
+
+—
+
+0.57
+
+—
+
+Figure 63.104
+
+Voltage detection circuit (LVD1)
+
+Voltage detection circuit (LVD2)
+
+Internal reset time
+
+LVD2 reset time
+
+Figure 63.103
+
+Figure 63.104
+
+Figure 63.105
+
+ms
+
+Figure 63.102
+
+tLVD2
+
+—
+
+0.57
+
+—
+
+Minimum VCC down time
+
+tVOFF
+
+200
+
+—
+
+—
+
+µs
+
+Figure 63.102,
+Figure 63.103
+
+Response delay time
+
+tdet
+
+—
+
+—
+
+200
+
+µs
+
+Figure 63.102
+to
+Figure 63.105
+
+LVD operation stabilization time (after LVD is enabled)
+
+td(E-A)
+
+—
+
+—
+
+10
+
+µs
+
+Hysteresis width (LVD1 and LVD2)
+
+V LVH
+
+—
+
+70
+
+—
+
+mV
+
+Figure 63.104,
+Figure 63.105
+
+Figure 63.105
+
+Note:
+
+The minimum VCC down time indicates the time when VCC is below the minimum value of voltage detection levels VPOR, Vdet1,
+and Vdet2 for the POR/ LVD.
+Note 1. The low power consumption function is disabled and DEEPCUT[1:0] = 00b or 01b.
+Note 2. The low power consumption function is enabled and DEEPCUT[1:0] = 11b.
+
+tVOFF
+
+VPOR
+VCC
+
+Internal reset signal
+(Low is valid)
+tdet
+
+Figure 63.102
+
+tPOR
+
+tdet
+
+tdet
+
+tPOR
+
+Power-on Reset Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3205 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+tVOFF
+
+VCC
+
+Vdet0
+
+Internal reset signal
+(Low is valid)
+tdet
+
+Figure 63.103
+
+tdet
+
+tLVD0
+
+Voltage Detection Circuit Timing (Vdet0)
+
+tVOFF
+
+VCC
+
+VLVH
+
+Vdet1
+
+LVD1E
+Td(E-A)
+LVD1
+Comparator output
+
+LVD1CMPE
+
+LVD1MON
+Internal reset signal
+(Low is valid)
+When LVD1RN = L
+tdet
+
+tdet
+
+tLVD1
+
+When LVD1RN = H
+tLVD1
+
+Figure 63.104
+
+Voltage Detection Circuit Timing (Vdet1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3206 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+tVOFF
+
+VCC
+
+VLVH
+
+Vdet2
+
+LVD2E
+
+LVD2
+Comparator output
+
+Td(E-A)
+
+LVD2CMPE
+
+LVD2MON
+Internal reset signal
+(Low is valid)
+When LVD2RN = L
+tdet
+
+tdet
+
+tLVD2
+
+When LVD2RN = H
+tLVD2
+
+Figure 63.105
+
+Voltage Detection Circuit Timing (Vdet2)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3207 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.10 Oscillation Stop Detection Timing
+Table 63.59
+
+Oscillation Stop Detection Circuit Characteristics
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr
+Item
+Detection time
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Test Conditions
+
+tdr
+
+—
+
+—
+
+1
+
+ms
+
+Figure 63.106
+
+Main clock or
+PLL clock
+tdr
+OSTDSR.OSTDF
+
+LOCO clock
+
+ICLK
+
+Figure 63.106
+
+Oscillation Stop Detection Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3208 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.11 Battery Backup Function Characteristics
+Table 63.60
+
+Battery Backup Function Characteristics
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+VBATT = 1.62 to 3.6 V, Ta = Topr
+Item
+
+Symbol
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Voltage level for switching to battery backup
+
+VDETBATT
+
+2.50
+
+2.60
+
+2.70
+
+V
+
+Lower-limit VBATT voltage for power supply switching due to
+VCC voltage drop
+
+VBATTSW
+
+2.70
+
+—
+
+—
+
+VCC-off period for starting power supply switching
+
+tVOFFBATT
+
+200
+
+—
+
+—
+
+Note:
+
+Test
+Conditions
+Figure
+63.107
+
+µs
+
+The VCC-off period for starting power supply switching indicates the period in which VCC is below the minimum value of the
+voltage level for switching to battery backup (VDETBATT).
+
+tVOFFBATT
+
+VDETBATT
+
+VCC
+
+VBATT
+
+Backup power
+area
+
+VCC voltage
+guaranteed range
+
+VBATTSW
+VBATT
+Switching
+prohibited
+
+VCC supply
+
+VBATT
+Switching
+prohibited
+
+VBATT supply
+
+VBATT voltage
+guaranteed range
+
+VCC supply
+
+Note. The VBATT voltage when the supplied power source switches from VCC to VBATT should not be lower than VBATTSW,
+the lower-limit VBATT voltage for switching between power supplies due to a drop in the VCC voltage.
+
+Figure 63.107
+
+Battery Backup Function Characteristics
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3209 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.12 Flash Memory Characteristics
+Table 63.61
+
+Code Flash Memory Characteristics
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Temperature range for programming/erasure: Ta = Topr
+Item
+
+Symbol
+
+FCLK = 4 MHz
+
+FCLK = 15 MHz
+
+20 MHz ≤ FCLK ≤ 60 MHz
+
+Min.
+
+Typ.
+
+Max.
+
+Min.
+
+Typ.
+
+Max.
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+128 bytes
+
+tP128
+
+—
+
+0.75
+
+13.2
+
+—
+
+0.38
+
+6.6
+
+—
+
+0.34
+
+6
+
+ms
+
+8 Kbytes
+
+tP8K
+
+—
+
+49
+
+176
+
+—
+
+25
+
+88
+
+—
+
+22
+
+80
+
+ms
+
+32 Kbytes
+
+tP32K
+
+—
+
+194
+
+704
+
+—
+
+97
+
+352
+
+—
+
+88
+
+320
+
+ms
+
+128 bytes
+
+tP128
+
+—
+
+0.91
+
+15.8
+
+—
+
+0.46
+
+8
+
+—
+
+0.41
+
+7.2
+
+ms
+
+8 Kbytes
+
+tP8K
+
+—
+
+60
+
+212
+
+—
+
+30
+
+106
+
+—
+
+27
+
+96
+
+ms
+
+32 Kbytes
+
+tP32K
+
+—
+
+234
+
+848
+
+—
+
+117
+
+424
+
+—
+
+106
+
+384
+
+ms
+
+Erasure time
+NPEC ≤ 100 times
+
+8 Kbytes
+
+tE8K
+
+—
+
+78
+
+216
+
+—
+
+48
+
+132
+
+—
+
+43
+
+120
+
+ms
+
+32 Kbytes
+
+tE32K
+
+—
+
+283
+
+864
+
+—
+
+173
+
+528
+
+—
+
+157
+
+480
+
+ms
+
+Erasure time
+NPEC > 100 times
+
+8 Kbytes
+
+tE8K
+
+—
+
+94
+
+260
+
+—
+
+58
+
+158
+
+—
+
+52
+
+144
+
+ms
+
+Programming time
+NPEC ≤ 100 times
+
+Programming time
+NPEC > 100 times
+
+32 Kbytes
+
+tE32K
+
+—
+
+341
+
+1040
+
+—
+
+208
+
+632
+
+—
+
+189
+
+576
+
+ms
+
+Reprogramming/erasure cycle*1
+
+NPEC
+
+10000
+*2
+
+—
+
+—
+
+10000
+*2
+
+—
+
+—
+
+10000
+*2
+
+—
+
+—
+
+Times
+
+Suspend delay time during
+programming
+
+tSPD
+
+—
+
+—
+
+264
+
+—
+
+—
+
+132
+
+—
+
+—
+
+120
+
+µs
+
+First suspend delay time during
+erasing
+(in suspend priority mode)
+
+tSESD1
+
+—
+
+—
+
+216
+
+—
+
+—
+
+132
+
+—
+
+—
+
+120
+
+µs
+
+Second suspend delay time
+during erasure
+(in suspend priority mode)
+
+tSESD2
+
+—
+
+—
+
+1.7
+
+—
+
+—
+
+1.7
+
+—
+
+—
+
+1.7
+
+ms
+
+Suspend delay time during
+erasure
+(in erasure priority mode)
+
+tSEED
+
+—
+
+—
+
+1.7
+
+—
+
+—
+
+1.7
+
+—
+
+—
+
+1.7
+
+ms
+
+Forced stop command
+
+tFD
+
+—
+
+—
+
+32
+
+—
+
+—
+
+22
+
+—
+
+—
+
+20
+
+µs
+
+Data retention*3, *4
+
+tDRP
+
+20
+
+—
+
+—
+
+20
+
+—
+
+—
+
+20
+
+—
+
+—
+
+Year
+
+10
+
+—
+
+—
+
+10
+
+—
+
+—
+
+10
+
+—
+
+—
+
+Conditions
+
+Ta ≤ 85°C
+Ta ≤ 105°C
+
+Note 1. Definition of reprogram/erase cycle:
+The program/erase cycle is the number of erasing for each block. When the number of program/erase cycles is n, each block
+can be erased n times. For instance, when 128-byte program is performed 64 times for different addresses in 8-Kbyte block and
+then the block is erased, the program/erase cycle is counted as one. However, the same address cannot be programmed more
+than once before the next erase cycle (overwriting is prohibited).
+Note 2. Characteristics are degraded as the number of program/erase increases. This is the minimum value of program/erase cycles to
+guarantee all characteristics listed in this table.
+Note 3. This shows the characteristics when a self-programming library provided by Renesas Electronics or a flash programmer is used
+and the program/erase cycle does not exceed the specified value.
+Note 4. This result is obtained from reliability testing.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3210 of 3240
+
+RX72N Group
+
+Table 63.62
+
+63. Electrical Characteristics
+
+Data Flash Memory Characteristics
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Temperature range for programming/erasure: Ta = Topr
+Item
+
+Symbol
+
+FCLK = 4 MHz
+
+FCLK = 15 MHz
+
+20 MHz ≤ FCLK ≤ 60 MHz
+
+Min.
+
+Typ.
+
+Max.
+
+Min.
+
+Typ.
+
+Max.
+
+Min.
+
+Typ.
+
+Max.
+
+Unit
+
+Programming time
+
+4 bytes
+
+tDP4
+
+—
+
+0.36
+
+3.8
+
+—
+
+0.18
+
+1.9
+
+—
+
+0.16
+
+1.7
+
+ms
+
+Erasure time
+
+64 bytes
+
+tDP64
+
+—
+
+3.1
+
+18
+
+—
+
+1.9
+
+11
+
+—
+
+1.7
+
+10
+
+ms
+
+128 bytes
+
+tDP128
+
+—
+
+4.7
+
+27
+
+—
+
+2.9
+
+16
+
+—
+
+2.6
+
+15
+
+ms
+
+256 bytes
+
+tDP256
+
+—
+
+8.9
+
+50
+
+—
+
+5.4
+
+31
+
+—
+
+4.9
+
+28
+
+ms
+
+4 bytes
+
+tDBC4
+
+—
+
+—
+
+84
+
+—
+
+—
+
+33
+
+—
+
+—
+
+30
+
+µs
+
+64 bytes
+
+tDBC64
+
+—
+
+—
+
+280
+
+—
+
+—
+
+110
+
+—
+
+—
+
+100
+
+µs
+
+2 Kbytes
+
+tDBC2K
+
+—
+
+—
+
+6160
+
+—
+
+—
+
+2420
+
+—
+
+—
+
+2200
+
+µs
+
+Reprogramming/erasure cycle*1
+
+NDPEC
+
+100000
+*2
+
+—
+
+—
+
+100000
+*2
+
+—
+
+—
+
+100000
+*2
+
+—
+
+—
+
+Times
+
+Suspend delay time during
+programming
+
+tDSPD
+
+—
+
+—
+
+264
+
+—
+
+—
+
+132
+
+—
+
+—
+
+120
+
+µs
+
+Blank check time
+
+First suspend delay
+time during erasure
+(in suspend priority
+mode)
+
+64 bytes
+
+—
+
+—
+
+—
+
+216
+
+—
+
+—
+
+132
+
+—
+
+—
+
+120
+
+µs
+
+128 bytes
+
+—
+
+—
+
+—
+
+216
+
+—
+
+—
+
+132
+
+—
+
+—
+
+120
+
+µs
+
+256 bytes
+
+—
+
+—
+
+—
+
+216
+
+—
+
+—
+
+132
+
+—
+
+—
+
+120
+
+µs
+
+Second suspend
+delay time during
+erasure (in suspend
+priority mode)
+
+64 bytes
+
+—
+
+—
+
+—
+
+300
+
+—
+
+—
+
+300
+
+—
+
+—
+
+300
+
+µs
+
+128 bytes
+
+—
+
+—
+
+—
+
+390
+
+—
+
+—
+
+390
+
+—
+
+—
+
+390
+
+µs
+
+256 bytes
+
+—
+
+—
+
+—
+
+570
+
+—
+
+—
+
+570
+
+—
+
+—
+
+570
+
+µs
+
+Suspend delay time
+during erasing
+(in suspend priority
+mode)
+
+64 bytes
+
+—
+
+—
+
+—
+
+300
+
+—
+
+—
+
+300
+
+—
+
+—
+
+300
+
+µs
+
+128 bytes
+
+—
+
+—
+
+—
+
+390
+
+—
+
+—
+
+390
+
+—
+
+—
+
+390
+
+µs
+
+—
+
+—
+
+—
+
+570
+
+—
+
+—
+
+570
+
+—
+
+—
+
+570
+
+µs
+
+Forced stop command
+
+256 bytes
+
+tFD
+
+—
+
+—
+
+32
+
+—
+
+—
+
+22
+
+—
+
+—
+
+20
+
+µs
+
+Data retention*3, *4
+
+tDDRP
+
+Year
+
+20
+
+—
+
+—
+
+20
+
+—
+
+—
+
+20
+
+—
+
+—
+
+10
+
+—
+
+—
+
+10
+
+—
+
+—
+
+10
+
+—
+
+—
+
+Conditions
+
+Ta ≤ 85°C
+Ta ≤ 105°C
+
+Note 1. Definition of reprogram/erase cycle:
+The program/erase cycle is the number of erasing for each block. When the number of program/erase cycles is n, each block
+can be erased n times. For instance, when 4-byte program is performed 512 times for different addresses in 2-Kbyte block and
+then the block is erased, the program/erase cycle is counted as one. However, the same address cannot be programmed more
+than once before the next erase cycle (overwriting is prohibited).
+Note 2. Characteristics are degraded as the number of program/erase increases. This is the minimum value of program/erase cycles to
+guarantee all characteristics listed in this table.
+Note 3. This shows the characteristics when a self-programming library provided by Renesas Electronics or a flash programmer is used
+and the program/erase cycle does not exceed the specified value.
+Note 4. This result is obtained from reliability testing.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3211 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+• Suspension during programming
+FCU command
+
+Program
+
+Suspend
+tSPD
+
+FSTATR.FRDY
+
+Ready
+
+Programming pulse
+
+Not Ready
+
+Ready
+
+Programming
+
+• Suspension during erasure in suspend priority mode
+FCU command
+
+Erase
+
+Suspend
+
+Resume
+
+Suspend
+
+tSESD1
+FSTATR.FRDY
+
+Ready
+
+Erasure pulse
+
+Not Ready
+
+tSESD2
+Ready
+
+Erasing
+
+Not Ready
+
+Erasing
+
+• Suspension during erasure in erasure priority mode
+FCU command
+
+Erase
+
+Suspend
+tSEED
+
+FSTATR.FRDY
+
+Ready
+
+Erasure pulse
+
+Figure 63.108
+
+Not Ready
+
+Ready
+
+Erasing
+
+Flash Memory Programming/Erasure Suspension Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3212 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+63.13 Boundary Scan
+Table 63.63
+
+Boundary Scan Characteristics
+
+Conditions: VCC = AVCC0 = AVCC1 = VCC_USB = VBATT = 2.7 to 3.6 V, 2.7 V ≤ VREFH0 ≤ AVCC0,
+VSS = AVSS0 = AVSS1 = VREFL0 = VSS_USB = 0 V,
+Ta = Topr,
+Output load conditions: VOH = 0.5 × VCC, VOL = 0.5 × VCC, C = 30 pF,
+High-drive output is selected by the drive capacity control register.
+Item
+
+Typ.
+
+Unit
+
+Test
+Conditions
+
+—
+
+ns
+
+Figure 63.109
+
+—
+
+ns
+
+Symbol
+
+Min.
+
+Max.
+
+TCK clock cycle time
+
+tTCKcyc
+
+100
+
+—
+
+TCK clock high pulse width
+
+tTCKH
+
+45
+
+—
+
+TCK clock low pulse width
+
+tTCKL
+
+45
+
+—
+
+—
+
+ns
+
+TCK clock rise time
+
+tTCKr
+
+—
+
+—
+
+5
+
+ns
+
+TCK clock fall time
+
+tTCKf
+
+—
+
+—
+
+5
+
+ns
+
+TRST# pulse width
+
+tTRSTW
+
+20
+
+—
+
+—
+
+tTCKcyc
+
+Figure 63.110
+Figure 63.111
+
+TMS setup time
+
+tTMSS
+
+20
+
+—
+
+—
+
+ns
+
+TMS hold time
+
+tTMSH
+
+20
+
+—
+
+—
+
+ns
+
+TDI setup time
+
+tTDIS
+
+20
+
+—
+
+—
+
+ns
+
+TDI hold time
+
+tTDIH
+
+20
+
+—
+
+—
+
+ns
+
+TDO data delay time
+
+tTDOD
+
+—
+
+—
+
+40
+
+ns
+
+tTCKcyc
+tTCKH
+
+TCK
+
+tTCKf
+
+tTCKL
+
+Figure 63.109
+
+tTCKr
+
+Boundary Scan TCK Timing
+
+TCK
+
+RES#
+
+TRST#
+
+tTRSTW
+
+Figure 63.110
+
+Boundary Scan TRST# Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3213 of 3240
+
+RX72N Group
+
+63. Electrical Characteristics
+
+TCK
+
+tTMSS
+
+tTMSH
+
+tTDIS
+
+tTDIH
+
+TMS
+
+TDI
+tTDOD
+
+TDO
+
+Figure 63.111
+
+Boundary Scan Input/Output Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3214 of 3240
+
+RX72N Group
+
+Appendix 1. Port States in Each Processing Mode
+
+Appendix 1. Port States in Each Processing Mode
+Port States in Each Processing State (1/6)
+
+Software Standby Mode
+
+Deep Software
+Standby Mode
+IOKEEP = 1/0
+
+After Deep Software Standby
+Mode is Canceled
+(Return to Start-up Mode)
+
+Port Name/
+Pin Name
+
+Operating Mode According to
+Registers Setting
+
+Reset
+
+Table 1.1
+
+IOKEEP = 1*1
+
+IOKEEP = 0
+
+P00/IRQ8,
+P01/IRQ9,
+P02/IRQ10
+
+All
+
+Hi-Z
+
+Keep-O*2
+
+Keep
+
+Keep
+
+Hi-Z
+
+Hi-Z
+
+DA output retained
+
+Hi-Z
+
+Hi-Z
+
+Hi-Z
+
+Keep-O*2
+
+Keep
+
+Keep
+
+DA output retained
+
+Hi-Z
+
+Hi-Z
+
+Keep-O*2
+
+Keep
+
+Keep
+
+P03/DA0/
+IRQ11
+
+All
+
+DA0 output
+(DAOE0 = 1)
+Other than the
+above (DAOE0
+= 0)
+
+P05/DA1/
+IRQ13
+
+All
+
+DA1 output
+(DAOE1 = 1)
+
+Hi-Z
+
+Other than the
+above (DAOE1
+= 0)
+
+OPE = 1
+
+OPE = 0
+
+Hi-Z
+
+P07/IRQ15
+
+All
+
+Hi-Z
+
+Keep-O*2
+
+Keep
+
+Keep
+
+Hi-Z
+
+P10/
+IRQ0-DS/
+ALE
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+Keep-O*2
+
+Keep-O*3
+
+Keep
+
+Hi-Z
+
+P11/
+IRQ1-DS
+P12/IRQ2/
+WR3#/BC3#
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+[ALE output]
+H
+[Other than the above]
+Keep-O*2
+
+All
+
+Hi-Z
+
+Keep-O*2
+
+Keep-O*3
+
+Keep
+
+Hi-Z
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+Keep-O*2
+
+Keep-O
+
+Keep
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+P13/IRQ3/
+WR2#/BC2#
+
+[ALE output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+
+Single-chip mode
+(EXBE = 0)
+
+[WR3#/BC3# output]
+H
+[Other than the above]
+Keep-O*2
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+[WR3#/BC3# output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+
+Keep-O*2
+[WR2#/BC2# output]
+H
+[Other than the above]
+Keep-O*2
+
+[WR2#/BC2# output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+
+P14/IRQ4/
+USB0_OVRC
+URA,
+P15/IRQ5/
+CRX1-DS,
+P16/IRQ6/
+SCL2-DS/
+USB0_VBUS/
+USB0_OVRC
+URB,
+P17/IRQ7/
+SDA2-DS
+
+All
+
+Hi-Z
+
+Keep-O*2
+
+Keep-O*3
+
+Keep
+
+Hi-Z
+
+P20/IRQ8,
+P21/IRQ9,
+P22/USB0_
+OVRCURB,
+P23
+
+All
+
+Hi-Z
+
+Keep-O*2
+
+Keep-O*3
+
+Keep
+
+Hi-Z
+
+P24/CS4#,
+P25/CS5#,
+P26/CS6#,
+P27/CS7#
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+[CSn# output]
+H
+[Other than the above]
+Keep-O
+
+[CSn# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Page 3215 of 3240
+
+RX72N Group
+
+Port Name/
+Pin Name
+
+P30/
+IRQ0-DS/
+RTCIC0,
+P31/
+IRQ1-DS/
+RTCIC1,
+P32/
+IRQ2-DS/
+RTCIC2,
+P33/
+IRQ3-DS,
+P34/IRQ4,
+P35/NMI
+
+Port States in Each Processing State (2/6)
+
+Operating Mode According to
+Registers Setting
+
+All
+
+Reset
+
+Table 1.1
+
+Appendix 1. Port States in Each Processing Mode
+
+Hi-Z
+
+Software Standby Mode
+OPE = 1
+
+OPE = 0
+
+Keep-O*2
+
+Deep Software
+Standby Mode
+IOKEEP = 1/0
+
+After Deep Software Standby
+Mode is Canceled
+(Return to Start-up Mode)
+IOKEEP = 1*1
+
+IOKEEP = 0
+
+Keep-O*3
+
+Keep
+
+Hi-Z
+
+P36, P37
+
+All
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+P40/
+IRQ8-DS,
+P41/
+IRQ9-DS,
+P42/
+IRQ10-DS,
+P43/
+IRQ11-DS,
+P44/
+IRQ12-DS,
+P45/
+IRQ13-DS,
+P46/
+IRQ14-DS,
+P47/
+IRQ15-DS
+
+All
+
+Hi-Z
+
+Keep-O*2
+
+Keep-O*3
+
+Keep
+
+Hi-Z
+
+P50/WR0#/
+WR#
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+P51/WR1#/
+BC1#
+
+Single-chip mode
+(EXBE = 0)
+
+[WR0#/WR# output]
+H
+[Other than the above]
+Keep-O
+Hi-Z
+
+On-chip ROM enabled/disabled
+extended (EXBE = 1)
+
+P52/RD#
+
+Single-chip mode
+(EXBE = 0)
+
+Keep-O
+[WR1#/BC1# output]
+H
+[Other than the above]
+Keep-O
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+[WR0#/WR# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+[WR1#/BC1# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Keep-O
+[RD# output]
+H
+[Other than the above]
+Keep-O
+
+[RD# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+P53/BCLK
+
+All
+
+Hi-Z
+
+[Clock output]
+H
+[Other than the above]
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+P54/ALE
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+P55/IRQ10
+
+Single-chip mode
+(EXBE = 0)
+
+[ALE output]
+L
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+P56, P57
+
+All
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+[ALE output]
+Hi-Z
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Keep-O*2
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Hi-Z
+
+Keep-O
+
+Page 3216 of 3240
+
+RX72N Group
+Port States in Each Processing State (3/6)
+
+Port Name/
+Pin Name
+
+Operating Mode According to
+Registers Setting
+
+P60/CS0#
+
+Single-chip mode
+(EXBE = 0)
+
+Reset
+
+Table 1.1
+
+Appendix 1. Port States in Each Processing Mode
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+P61/CS1#/
+SDCS#
+
+P62/CS2#/
+RAS#
+
+P63/CS3#/
+CAS#
+
+P64/CS4#/
+WE#
+
+Single-chip mode
+(EXBE = 0)
+
+Software Standby Mode
+OPE = 1
+
+OPE = 0
+
+Keep-O
+[CS0# output]
+H
+[Other than the above]
+Keep-O
+
+Hi-Z
+
+Keep-O
+[CS1# output]
+H
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+[CS1# output]
+Hi-Z
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+disabled
+(SDSELF.
+SFEN = 0)
+
+[SDCS# output]
+H
+[Other than the above]
+Keep-O
+
+[SDCS# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+enabled
+(SDSELF.
+SFEN = 1)
+
+[SDCS# output]
+L
+[Other than the above]
+Keep-O
+Hi-Z
+
+Keep-O
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+[CS2# output]
+H
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+[CS2# output]
+Hi-Z
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+disabled
+(SDSELF.
+SFEN = 0)
+
+[RAS# output]
+H
+[Other than the above]
+Keep-O
+
+[RAS# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+enabled
+(SDSELF.
+SFEN = 1)
+
+[RAS# output]
+L
+[Other than the above]
+Keep-O
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+Keep-O
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+[CS3# output]
+H
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+[CS3# output]
+Hi-Z
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+disabled
+(SDSELF.
+SFEN = 0)
+
+[CAS# output]
+H
+[Other than the above]
+Keep-O
+
+[CAS# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+enabled
+(SDSELF.
+SFEN = 1)
+
+[CAS# output]
+L
+[Other than the above]
+Keep-O
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+After Deep Software Standby
+Mode is Canceled
+(Return to Start-up Mode)
+IOKEEP = 1*1
+
+IOKEEP = 0
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+[CS0# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+Single-chip mode
+(EXBE = 0)
+
+Deep Software
+Standby Mode
+IOKEEP = 1/0
+
+Keep-O
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+[CS4# output]
+H
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+[CS4# output]
+Hi-Z
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+disabled
+(SDSELF.
+SFEN = 0)
+
+[WE# output]
+H
+[Other than the above]
+Keep-O
+
+[WE# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+enabled
+(SDSELF.
+SFEN = 1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3217 of 3240
+
+RX72N Group
+Port States in Each Processing State (4/6)
+
+Port Name/
+Pin Name
+
+Operating Mode According to
+Registers Setting
+
+P65/CS5#/
+CKE
+
+Single-chip mode
+(EXBE = 0)
+
+P66/CS6#/
+DQM0
+
+Reset
+
+Table 1.1
+
+Appendix 1. Port States in Each Processing Mode
+
+Hi-Z
+
+Software Standby Mode
+OPE = 1
+
+OPE = 0
+
+Keep-O
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+[CS5# output]
+H
+[Other than the above]
+Keep-O
+
+[CS5# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+disabled
+(SDSELF.
+SFEN = 0)
+
+[CKE output]
+H
+[Other than the above]
+Keep-O
+
+[CKE output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+enabled
+(SDSELF.
+SFEN = 1)
+
+[CKE output]
+L
+[Other than the above]
+Keep-O
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+Keep-O
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+[CS6# output]
+H
+[Other than the above]
+Keep-O
+
+[CS6# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+disabled
+(SDSELF.
+SFEN = 0)
+
+[DQM0 output]
+DQM0 output retained
+[Other than the above]
+Keep-O
+
+[DQM0 output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Deep Software
+Standby Mode
+IOKEEP = 1/0
+
+After Deep Software Standby
+Mode is Canceled
+(Return to Start-up Mode)
+IOKEEP = 1*1
+
+IOKEEP = 0
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+Self-Refresh
+enabled
+(SDSELF.
+SFEN = 1)
+P67/CS7#/
+IRQ15/DQM1
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+Keep-O*2
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+[CS7# output]
+H
+[Other than the above]
+Keep-O*2
+
+[CS7# output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+
+Self-Refresh
+disabled
+(SDSELF.
+SFEN = 0)
+
+[DQM1 output]
+DQM1 output retained
+[Other than the above]
+Keep-O*2
+
+[DQM1 output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+
+Self-Refresh
+enabled
+(SDSELF.
+SFEN = 1)
+P70/SDCLK
+
+All
+
+Hi-Z
+
+[Clock output]
+H
+[Other than the above]
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+P71/CS1#,
+P72/CS2#
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+P73/CS3#
+
+Single-chip mode
+(EXBE = 0)
+
+[CSn# output]
+H
+[Address output]
+Address output retained
+[Other than the above]
+Keep-O
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+P74/CS4#
+
+Single-chip mode
+(EXBE = 0)
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Keep-O
+[CS3# output]
+H
+[Other than the above]
+Keep-O
+
+Hi-Z
+
+[CSn# output]
+Hi-Z
+[Address output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+[CS3# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Keep-O
+[CS4# output]
+H
+[Address output]
+Address output retained
+[Other than the above]
+Keep-O
+
+[CS4# output]
+Hi-Z
+[Address output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Page 3218 of 3240
+
+RX72N Group
+Port States in Each Processing State (5/6)
+
+Port Name/
+Pin Name
+
+Operating Mode According to
+Registers Setting
+
+P75/CS5#,
+P76/CS6#,
+P77/CS7#
+
+Single-chip mode
+(EXBE = 0)
+
+Reset
+
+Table 1.1
+
+Appendix 1. Port States in Each Processing Mode
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+Software Standby Mode
+OPE = 1
+
+OPE = 0
+
+Keep-O
+[CSn# output]
+H
+[Other than the above]
+Keep-O
+
+Deep Software
+Standby Mode
+IOKEEP = 1/0
+
+After Deep Software Standby
+Mode is Canceled
+(Return to Start-up Mode)
+IOKEEP = 1*1
+
+IOKEEP = 0
+
+Keep
+
+Keep
+
+Hi-Z
+
+[CSn# output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Port 8
+
+All
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+Port 9
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep-O*3
+
+Keep
+
+Hi-Z
+
+Keep-O*3
+
+Keep
+
+Hi-Z
+
+Keep
+
+Keep
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+PA0/DQM2
+
+Single-chip mode
+(EXBE = 0)
+
+[Address output]
+Address output retained
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+Hi-Z
+
+[Address output]
+Hi-Z
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Keep-O
+
+On-chip ROM enabled/
+disabled extended (EXBE = 1)
+
+[Address output]
+Address output retained
+[Other than the above]
+Keep-O
+
+[Address output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+disabled
+(SDSELF.
+SFEN = 0)
+
+[DQM2 output]
+DQM2 output retained
+[Other than the above]
+Keep-O
+
+[DQM2 output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Self-Refresh
+enabled
+(SDSELF.
+SFEN = 1)
+PA1/IRQ11/
+DQM3
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended
+(EXBE = 1)
+Self-Refresh
+disabled
+(SDSELF.
+SFEN = 0)
+
+Keep-O*2
+[Address output]
+Address output retained
+[Other than the above]
+Keep-O*2
+
+[Address output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+
+[DQM3 output]
+DQM3 output retained
+[Other than the above]
+Keep-O*2
+
+[DQM3 output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+
+Self-Refresh
+enabled
+(SDSELF.
+SFEN = 1)
+PA2, PA3/
+IRQ6-DS,
+PA4/
+IRQ5-DS,
+PA5 to PA7
+
+PB0/IRQ12,
+PB1/
+IRQ4-DS,
+PB2 to PB7
+
+PC0/IRQ14,
+PC1/IRQ12,
+PC2, PC3,
+PC4/CS3#,
+PC5/CS2#,
+PC6/IRQ13/
+CS1#,
+PC7/IRQ14/
+CS0#
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended
+(EXBE = 1)
+Single-chip mode
+(EXBE = 0)
+
+[Address output]
+Address output retained
+[Other than the above]
+Keep-O*2
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended
+(EXBE = 1)
+Single-chip mode (EXBE = 0)
+On-chip ROM enabled/
+disabled extended
+(EXBE = 1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Keep-O*2
+
+Keep-O*2
+[Address output]
+Address output retained
+[Other than the above]
+Keep-O*2
+
+Hi-Z
+
+[Address output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+
+[Address output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+
+Keep-O*2
+[Address output]
+Address output retained
+[CSn# output]
+H
+[Other than the above]
+Keep-O*2
+
+[Address output]
+Hi-Z
+[CSn# output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+
+Page 3219 of 3240
+
+RX72N Group
+
+Port Name/
+Pin Name
+
+PD0/IRQ0,
+PD1/IRQ1,
+PD2/IRQ2,
+PD3/IRQ3,
+PD4/IRQ4,
+PD5/IRQ5,
+PD6/IRQ6,
+PD7/IRQ7
+PE0, PE1,
+PE2/
+IRQ7-DS,
+PE3, PE4,
+PE5/IRQ5,
+PE6/IRQ6,
+PE7/IRQ7
+
+PF0, PF1,
+PF2, PF3,
+PF4,
+PF5/IRQ4
+Port G
+
+Port States in Each Processing State (6/6)
+
+Operating Mode According to
+Registers Setting
+
+Single-chip mode
+(EXBE = 0)
+
+Reset
+
+Table 1.1
+
+Appendix 1. Port States in Each Processing Mode
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended
+(EXBE = 1)
+
+Single-chip mode
+(EXBE = 0)
+On-chip ROM
+enabled/
+disabled
+extended
+(EXBE = 1)
+
+Software Standby Mode
+OPE = 1
+
+OPE = 0
+
+Deep Software
+Standby Mode
+IOKEEP = 1/0
+
+Keep-O*2
+
+After Deep Software Standby
+Mode is Canceled
+(Return to Start-up Mode)
+IOKEEP = 1*1
+
+IOKEEP = 0
+
+Keep
+
+Keep
+
+Hi-Z
+
+Keep-O*3
+
+Keep
+
+Hi-Z
+
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+Hi-Z
+
+Keep-O*2
+
+8 bits in width
+of bus
+
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O*2
+
+16 bits in width
+of bus
+
+[Data output]
+Hi-Z
+
+All
+
+Hi-Z
+
+Keep-O*2
+
+Keep
+
+Keep
+
+Hi-Z
+
+Single-chip mode
+(EXBE = 0)
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+On-chip ROM enabled/
+disabled extended
+(EXBE = 1)
+
+[Data output]
+Hi-Z
+[Other than the above]
+Keep-O
+
+Port H
+
+All
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+Port J
+
+All
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+Port K
+
+All
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+Port L
+
+All
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+Port M
+
+All
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+Port N
+
+All
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+Hi-Z
+
+Port Q
+
+All
+
+Hi-Z
+
+Keep-O
+
+Keep
+
+Keep
+
+USB0_DM
+
+All
+
+Hi-Z
+
+Keep-O*4
+
+Hi-Z*3
+
+Hi-Z
+
+USB0_DP
+
+All
+
+Hi-Z
+
+Keep-O*4
+
+Hi-Z*3
+
+Hi-Z
+
+Hi-Z
+
+H: High-level
+L: Low-level
+Keep-O: Output pins retain their previous values, and input pins become high-impedance.
+Keep: Pin states are retained during periods on software standby.
+Hi-Z: High-impedance
+Note 1.
+Note 2.
+Note 3.
+Note 4.
+
+The I/O port state is retained until the DPSBYCR.IOKEEP bit is cleared to 0.
+Input is enabled if the pin is specified as the software standby cancelling source while it is used as an external interrupt pin.
+Input is enabled if the pin is specified as the deep software standby cancelling source.
+Input is enabled while the pin is used as an input pin.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3220 of 3240
+
+RX72N Group
+
+Appendix 2. Package Dimensions
+
+Appendix 2. Package Dimensions
+Information on the latest version of the package dimensions or mountings has been displayed in “Packages” on Renesas
+Electronics Corporation website.
+
+JEITA Package Code
+
+RENESAS Code
+
+Previous Code
+
+MASS (Typ) [g]
+
+P-LFBGA224-13x13-0.80
+
+PLBG0224GA-A
+
+224FHE
+
+0.4
+Unit: mm
+
+E
+
+B
+
+A
+
+D
+
+INDEX AREA
+
+y1 S
+A
+
+S
+A1
+
+y CZ
+e
+
+(ZE)
+
+e
+
+R
+P
+N
+
+Reference Dimensions in millimeters
+Symbol
+
+M
+
+Min
+
+Nom
+
+Max
+
+D
+
+12.9
+
+13.0
+
+13.1
+
+E
+
+12.9
+
+13.0
+
+13.1
+
+A
+
+
+
+
+
+1.40
+
+F
+
+A1
+
+0.30
+
+0.35
+
+0.40
+
+E
+
+e
+
+
+
+0.80
+
+
+
+b
+
+0.40
+
+0.45
+
+0.50
+
+L
+K
+J
+H
+G
+
+D
+(ZD)
+
+C
+B
+A
+1 2
+
+3 4 5
+
+6 7
+
+n x ݊b
+
+8 9 10 11 12 13 14 15
+
+x1
+x2
+
+S A
+S
+
+B
+
+x1
+
+
+
+
+
+0.15
+
+x2
+
+
+
+
+
+0.08
+
+y
+
+
+
+
+
+0.10
+
+y1
+
+
+
+
+
+0.20
+
+n
+
+
+
+224
+
+
+
+ZD
+
+
+
+0.90
+
+
+
+ZE
+
+
+
+0.90
+
+
+
+Figure A 224-Pin LFBGA (PLBG0224GA-A)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3221 of 3240
+
+RX72N Group
+
+Appendix 2. Package Dimensions
+
+Figure B 176-Pin LFBGA (PLBG0176GA-A)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3222 of 3240
+
+RX72N Group
+
+Appendix 2. Package Dimensions
+
+Figure C 176-Pin LFQFP (PLQP0176KB-C)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3223 of 3240
+
+RX72N Group
+
+Appendix 2. Package Dimensions
+
+JEITA Package Code
+P-TFLGA145-7x7-0.50
+
+RENESAS Code
+PTLG0145KA-A
+
+Previous Code
+145F0G
+
+MASS[Typ.]
+0.1g
+
+w S B
+
+φb1
+D
+
+φ
+φb
+
+φ
+
+w S A
+ZD
+
+A
+
+M S AB
+M
+
+S AB
+e
+
+A
+
+e
+
+N
+M
+L
+K
+J
+
+E
+
+H
+
+B
+
+G
+F
+E
+D
+C
+B
+
+x4
+v
+
+Index mark
+(Laser mark)
+
+S
+
+ZE
+
+A
+
+y S
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10 11 12 13
+
+Reference Dimension in Millimeters
+Symbol
+
+Min
+
+D
+E
+v
+w
+A
+e
+b
+b1
+x
+y
+ZD
+ZE
+
+Nom
+7.0
+7.0
+
+Max
+
+0.15
+0.20
+1.05
+0.21
+0.29
+
+0.5
+0.25
+0.34
+
+0.29
+0.39
+0.08
+0.08
+
+0.5
+0.5
+
+Figure D 145-Pin TFLGA (PTLG0145KA-A)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3224 of 3240
+
+RX72N Group
+
+Appendix 2. Package Dimensions
+
+Figure E 144-Pin LFQFP (PLQP0144KA-B)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3225 of 3240
+
+RX72N Group
+
+Appendix 2. Package Dimensions
+
+Figure F 100-Pin LFQFP (PLQP0100KB-B)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3226 of 3240
+
+REVISION HISTORY
+RX72N Group
+
+REVISION HISTORY
+
+REVISION HISTORY
+
+RX72N Group User’s Manual: Hardware
+
+Classifications
+- Items with Technical Update document number: Changes according to the corresponding issued Technical Update
+- Items without Technical Update document number: Minor changes that do not require Technical Update to be issued
+Rev.
+1.00
+1.11
+
+Description
+Page
+Summary
+May 31, 2019
+—
+First edition, issued
+Feb 26, 2021 1. Overview
+88, 89
+Table 1.3 List of Products, changed
+135, 136, 138 Table 1.8 List of Pin and Pin Functions (145-Pin TFLGA), changed
+143, 148
+Table 1.9 List of Pin and Pin Functions (144-Pin LFQFP), changed
+9. Clock Generation Circuit
+335
+Table 9.1 Specifications of Clock Generation Circuit (1/2), changed
+376
+Table 9.7 Internal Clocks and Supply Destination Modules (1/2), changed
+383
+9.10.2 Note on Rewriting the SCKCR3 Register, added
+10. Clock Frequency Accuracy Measurement Circuit (CAC)
+398
+10.3.1 Measuring Clock Frequency, changed
+13. Register Write Protection Function
+453
+Table 13.1 Association between PRCR Bits and Registers to be Protected,
+changed
+15. Interrupt Controller (ICUD)
+467
+Table 15.1 ICU Specifications (2/2), changed
+496
+15.2.26 Software Configurable Interrupt B Request Register k (PIBRk) (k =
+0h to Bh), Note1, changed
+497
+15.2.27 Software Configurable Interrupt A Request Register k (PIARk) (k =
+0h to Ah, Ch), Note 1, changed
+502
+Table 15.3 Interrupt Sources for Software Configurable Interrupt B (3/3),
+changed
+519 to 521 Table 15.7 Group Interrupt Requests, changed
+539
+15.7.7.1 Polling for Software Configurable Interrupts, Note 1, changed
+16. Buses
+548
+Table 16.6 Pin Configuration of the External Bus (1/2), changed
+583, 584, 576 16.4.1 Data Alignment Control for CS Area, changed
+20. Data Transfer Controller (DTCb)
+787
+Figure 20.1 DTC Block Diagram, changed
+796
+20.2.9 DTC Vector Base Register (DTCVBR), changed
+799
+20.2.13 DTC Index Table Base Register (DTCIBR), changed
+21. Event Link Controller (ELC)
+839, 840
+Table 21.3 Correspondence between Values Set in ELSRn.ELS[7:0] Bits and
+Event Signals, changed
+23. Multi-Function Pin Controller (MPC)
+897, 898
+Table 23.1 Functions Assigned to Each Multiplexed Pin (15/27) to (16/27),
+changed
+902 to 905 Table 23.1 Functions Assigned to Each Multiplexed Pin (20/27) to (22/27),
+changed
+909
+Table 23.1 Functions Assigned to Each Multiplexed Pin, Note2, deleted
+914
+23.2.3 P1n Pin Function Control Register (P1nPFS) (n = 0 to 7)
+Table 23.4 Register Settings for Input/Output Pin Function in 224-/176-Pin
+LFBGA, 176-Pin LFQFP, changed
+915
+Table 23.5 Register Settings for Input/Output Pin Function in 145-Pin
+TFLGA, 144-/100-Pin LFQFP, changed
+916
+23.2.4 P2n Pin Function Control Register (P2nPFS) (n = 0 to 7)
+Table 23.6 Register Settings for Input/Output Pin Function in 224-/176-Pin
+LFBGA, 176-/144-Pin LFQFP, 145-Pin TFLGA, changed
+917
+23.2.5 P3n Pin Function Control Register (P3nPFS) (n = 0 to 4)
+Table 23.7 Register Settings for Input/Output Pin Function in 224-/176-Pin
+LFBGA, 176-/144-/100-Pin LFQFP, 145-Pin TFLGA, changed
+Date
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Classification
+
+TN-RX*-A0222A/E
+
+TN-RX*-A0224B/E
+
+TN-RX*-A0222A/E
+
+TN-RX*-A0222A/E
+
+Page 3227 of 3240
+
+RX72N Group
+
+Rev.
+
+Date
+
+1.11
+
+Feb 26, 2021
+
+REVISION HISTORY
+Description
+Summary
+23.2.10 P8n Pin Function Control Register (P8nPFS) (n = 0 to 7)
+Table 23.13 Register Settings for Input/Output Pin Function in 224-/176-Pin
+LFBGA, 176-Pin LFQFP, changed
+924
+Table 23.14 Register Settings for Input/Output Pin Function in 145-Pin
+TFLGA, 144-Pin LFQFP, changed
+925
+23.2.11 P9n Pin Function Control Register (P9nPFS) (n = 0 to 7)
+Table 23.16 Register Settings for Input/Output Pin Function in 145-Pin
+TFLGA, 144-Pin LFQFP, changed
+928
+23.2.14 PCn Pin Function Control Register (PCnPFS) (n = 0 to 7)
+Table 23.19 Register Settings for Input/Output Pin Function in 224-/176-Pin
+LFBGA, 176-/144-Pin LFQFP, 145-Pin TFLGA, changed
+930
+23.2.15 PDn Pin Function Control Register (PDnPFS) (n = 0 to 7)
+Table 23.20 Register Settings for Input/Output Pin Function in 224-/176-Pin
+LFBGA, 176-/144-Pin LFQFP, 145-Pin TFLGA, changed
+932
+23.2.16 PEn Pin Function Control Register (PEnPFS) (n = 0 to 7)
+Table 23.21 Register Settings for Input/Output Pin Function in 224-/176-Pin
+LFBGA, 176-/144-Pin LFQFP, 145-Pin TFLGA, changed
+940
+23.2.23 PMn Pin Function Control Register (PMnPFS) (n = 0 to 7)
+Table 23.31 Register Settings for Input/Output Pin Function in 224-Pin
+LFBGA, changed
+24. Multi-Function Timer Pulse Unit 3 (MTU3a)
+962
+Table 24.2 MTU Functions, changed
+967
+Table 24.5 CCLR[2:0] (MTU1 and MTU2), changed
+979
+Table 24.15 TIOR (MTU1), changed
+986
+Table 24.29 TIOR (MTU1), changed
+1004
+24.2.16 Timer Longword General Registers (TGRALW, TGRBLW), changed
+1025
+24.2.32 Timer Waveform Control Registers (TWCRA, TWCRB), changed
+25. Port Output Enable 3 (POE3a)
+1219
+25.2.15 MTU0 Pin Select Register 1 (M0SELR1), changed
+1220
+25.2.16 MTU0 Pin Select Register 2 (M0SELR2), changed
+1221
+25.2.17 MTU3 Pin Select Register (M3SELR), changed
+1222
+25.2.18 MTU4 Pin Select Register 1 (M4SELR1), changed
+1223
+25.2.19 MTU4 Pin Select Register 2 (M4SELR2), changed
+1224
+25.2.20 MTU6 Pin Select Register (M6SELR), changed
+1230
+Table 25.4 Correspondence between MTU Pins, changed
+1231
+25.3.2 Input-Level Detection Operation, changed
+(1) Falling Edge Detection, changed
+1232
+(2) Low-Level Detection, changed
+1233
+25.3.6 Additional Functions for High-Impedance Control, changed
+30. 8-Bit Timer (TMRb)
+All
+Terms unified:
+baud rate clock → base clock
+1553
+Chapter title, changed
+1558
+30.2.1 Timer Counter (TCNT), changed
+1559
+30.2.2 Time Constant Register A (TCORA), changed
+30.2.3 Time Constant Register B (TCORB), changed
+1560
+30.2.4 Timer Control Register (TCR), changed
+33. Realtime Clock (RTCd)
+1634
+33.2.17 RTC Control Register 1 (RCR1), changed
+1636, 1637 33.2.18 RTC Control Register 2 (RCR2), changed
+1644
+33.2.23 Time Capture Control Register n (RTCCRn) (n = 0 to 2), changed
+1651
+Figure 33.3 Clock and Count Mode Setting Procedure, changed
+1652
+Figure 33.4 Setting the Time, changed
+1653
+Figure 33.5 30-Second Adjustment, changed
+1659
+33.3.9 Time Capture Function, changed
+1664
+33.6.5 Notes on Writing to and Reading from Registers, changed
+1665
+Figure 33.14 Initialization Procedure, changed
+Page
+923
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Classification
+
+TN-RX*-A0222A/E
+
+TN-RX*-A0236B/E
+TN-RX*-A0236B/E
+
+TN-RX*-A0236B/E
+
+Page 3228 of 3240
+
+RX72N Group
+
+Rev.
+
+Date
+
+1.11
+
+Feb 26, 2021
+
+REVISION HISTORY
+Description
+Page
+Summary
+40. USB 2.0 FS Host/Function Module (USBb)
+All
+Terms unified:
+PIPEn → Pipe n
+1928
+40.1 Overview, changed
+Table 40.1 USB Specifications, changed
+1929
+Table 40.2 USB Pin Configuration, changed
+1932, 1933 40.2.2 System Configuration Status Register 0 (SYSSTS0), changed
+1934
+40.2.3 Device State Control Register 0 (DVSTCTR0), changed
+1937, 1938 40.2.4 CFIFO Port Register (CFIFO), D0FIFO Port Register (D0FIFO),
+D1FIFO Port Register (D1FIFO)
+(2) When the MBW bit is 0, changed
+1941, 1942 40.2.5 CFIFO Port Select Register (CFIFOSEL), D0FIFO Port Select
+Register (D0FIFOSEL), D1FIFO Port Select Register (D1FIFOSEL)
+• D0FIFOSEL, D1FIFOSEL, changed
+1944
+40.2.6 CFIFO Port Control Register (CFIFOCTR), D0FIFO Port Control
+Register (D0FIFOCTR), D1FIFO Port Control Register (D1FIFOCTR),
+changed
+1945
+40.2.7 Interrupt Enable Register 0 (INTENB0), Note 1, changed
+1946
+40.2.8 Interrupt Enable Register 1 (INTENB1), Note 1, changed
+1988
+40.2.37 Deep Standby USB Transceiver Control/Pin Monitoring Register
+(DPUSR0R), changed
+1989, 1990 40.2.38 Deep Standby USB Suspend/Resume Interrupt Register
+(DPUSR1R), changed
+1991
+40.3.1.2 Controller Function Selection, changed
+40.3.1.3 Controlling USB Data Bus Resistors, changed
+1996
+40.3.1.5 Release from Deep Software Standby Mode Due to USB Suspend/
+Resume Interrupts, changed
+Figure 40.6 Overview of Connection between USB Resume Detecting Unit
+and USB0 I/O Pins, title, changed
+1997
+Table 40.12 USB0 Suspend/Resume Interrupt Sources and Corresponding
+I/O Pins, title changed
+Figure 40.7 USB Setting Flowchart for Transition to Deep Software Standby
+Mode as Host/Function Controller, changed
+1998
+Figure 40.8 USB Setting Flowchart for Canceling Deep Software Standby
+Mode as Host Controller, changed
+1999
+Figure 40.9 USB Setting Flowchart for Canceling Deep Software Standby
+Mode as Function Controller, changed
+2000
+Table 40.13 Interrupt Sources, changed
+2001
+Figure 40.10 Circuits Related to Interrupts in USB, changed
+2036
+40.4.1 Setting the Module-Stop Function, changed
+41. Serial Communications Interface (SCIj, SCIi, SCIh)
+2041
+Table 41.3 SCIh Specifications (2/2), changed
+2055
+41.2.7 Transmit FIFO Data Register (FTDR), changed
+2056
+41.2.9 Serial Mode Register (SMR)
+(1) Non-Smart Card Interface Mode (SCMR.SMIF = 0), Note 4, changed
+2058
+(2) Smart Card Interface Mode (SCMR.SMIF = 1), Note 2, changed
+2060, 2061 41.2.10 Serial Control Register (SCR)
+(1) Non-Smart Card Interface Mode (SCMR.SMIF = 0), changed
+2071
+41.2.11 Serial Status Register (SSR/SSRFIFO)
+(3) Non-Smart Card Interface Mode and FIFO Mode (SCMR.SMIF = 0 and
+FCR.FM = 1), changed
+2072
+41.2.12 Smart Card Mode Register (SCMR), changed
+2088
+41.2.15 Serial Extended Mode Register (SEMR), Note 1, changed
+2102
+41.2.24 Line Status Register (LSR), changed
+2105
+41.2.27 Serial Port Register (SPTR), changed
+Table 41.30 Controlling the TXDn pin, changed
+2119
+41.3.2 Receive Data Sampling Timing and Reception Margin in
+Asynchronous Mode, Note 1, changed
+2121
+41.3.5 CTS and RTS Functions, changed
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Classification
+
+Page 3229 of 3240
+
+RX72N Group
+
+Rev.
+
+Date
+
+1.11
+
+Feb 26, 2021
+
+REVISION HISTORY
+Description
+Classification
+Summary
+41.3.7 SCI Initialization (Asynchronous Mode), changed
+Figure 41.11 Sample SCI Initialization Flowchart (Asynchronous Mode)
+(for SCI0 to SCI6 and SCI12), changed
+2126
+Figure 41.12 Sample SCI Initialization Flowchart (Asynchronous Mode,
+FIFO enabled) (for SCI7 to SCI11), changed
+2132
+41.3.8 Serial Data Transmission (Asynchronous Mode)
+(2) SCI7 to SCI11 When FIFO is Enabled, changed
+2134
+Table 41.33 Status Flags in the SSR Register and Receive Data Handling,
+title changed
+2145
+41.5.2 CTS and RTS Functions, changed
+2146
+41.5.3 SCI Initialization (Clock Synchronous Mode), changed
+Figure 41.28 Example of SCI Initialization Flowchart (Clock Synchronous
+Mode), changed
+2151
+41.5.4 Serial Data Transmission (Clock Synchronous Mode)
+(2) SCI7 to SCI11 When FIFO is Enabled, changed
+2152, 2153 41.5.5 Serial Data Reception (Clock Synchronous Mode)
+(1) SCI0 to SCI6 and SCI12, and SCI7 to SCI11 when FIFO is Disabled,
+changed
+2154
+Figure 41.35 Example Flowchart of Serial Reception in Clock Synchronous
+Mode, changed
+2156
+Figure 41.36 Example Flowchart of Simultaneous Serial Transmission and
+Reception in Clock Synchronous Mode, changed
+2161
+Figure 41.42 Example of SCI Initialization Flowchart (Smart Card Interface
+Mode), changed
+2166
+41.6.7 Serial Data Reception (Except in Block Transfer Mode), changed
+2176
+Figure 41.55 Example of the Flowchart of SCI Initialization (for Simple I2C
+Mode), changed
+2174
+Figure 41.58 Example of the Procedure for Master Transmission Operations
+in Simple I2C Mode (with Transmission Interrupts and Reception Interrupts
+in Use), changed
+2183
+41.8.5 SCI Initialization (Simple SPI Mode), changed
+2200
+Figure 41.79 Block Diagram of Digital Noise Filter, title changed
+2201
+41.12.2 Interrupts in Asynchronous Mode, Clock Synchronous Mode, and
+Simple SPI Mode
+(1) SCI0 to SCI6 and SCI12, and SCI7 to SCI11 when FIFO is Disabled,
+changed
+2202
+(2) SCI7 to SCI11 When FIFO is Enabled, changed
+2216
+41.14.14 Note on Transmit Enable Bit (TE Bit), Note 1, changed
+42. I2C-bus Interface (RIICa)
+All
+Term unified
+Notation unified
+2217, 2218 Table 42.1 RIIC Specifications, changed
+2218
+Figure 42.1 RIIC Block Diagram (n = 0 to 2), changed
+2219
+Figure 42.2 I/O Pin Connection to the External Circuit (I2C-bus Configuration
+Example), changed
+2220
+42.2.1 I2C-bus Control Register 1 (ICCR1), changed
+2225
+42.2.2 I2C-bus Control Register 2 (ICCR2), changed
+2228
+42.2.4 I2C-bus Mode Register 2 (ICMR2), changed
+2240, 2242 42.2.10 I2C-bus Status Register 2 (ICSR2), changed
+2269
+Figure 42.25 AASy Flag Set Timing with 10-Bit Address Format Selected,
+changed
+2271
+42.7.3 Device-ID Address Detection
+TN-RX*-A0227A/E
+2272
+Figure 42.28 Set/Clear Timing of the AASy and DID Flags during Reception
+of Device-ID Address, changed
+2275
+42.8.2 NACK Reception Transfer Suspension Function, changed
+Figure 42.31 Suspension of Data Transmission When NACK is Received
+(NACKE = 1), changed
+2286
+42.11.2 Additional SCL Output Function, changed
+Figure 42.40 Additional SCL Output Function (CLO Bit), changed
+2291
+Table 42.7 Reset States of Registers and Functions When a Reset is Applied
+or a Condition is Detected, changed
+Page
+2125
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3230 of 3240
+
+RX72N Group
+
+Rev.
+1.11
+
+REVISION HISTORY
+
+Description
+Page
+Summary
+Feb 26, 2021 44. Serial Peripheral Interface (RSPIc)
+2349
+44.1 Overview, changed
+2349, 2350 Table 44.1 RSPI Specifications, changed
+2353, 2354 44.2.1 RSPI Control Register (SPCR), changed
+2355
+44.2.2 RSPI Slave Select Polarity Register (SSLP), changed
+2356
+44.2.3 RSPI Pin Control Register (SPPCR), changed
+2357 to 2359 44.2.4 RSPI Status Register (SPSR), changed
+2367
+44.2.9 RSPI Data Control Register (SPDCR), changed
+2372
+44.2.13 RSPI Control Register 2 (SPCR2), changed
+2373
+44.2.14 RSPI Command Register m (SPCMDm) (m = 0 to 7), changed
+2377
+Table 44.5 Relationship between RSPI Modes and SPCR Settings and
+Description of Each Mode, Note, changed
+2378
+44.3.2 Controlling RSPI Pins, changed
+2387
+44.3.4.1 When Parity is Disabled (SPCR2.SPPE = 0)
+(2) MSB First Transfer (24-Bit Data), changed
+2389
+(4) LSB First Transfer (24-Bit Data), changed
+2391
+44.3.4.2 When Parity is Enabled (SPCR2.SPPE = 1)
+(2) MSB First Transfer (24-Bit Data), changed
+2398
+44.3.6 Communications Operating Mode, changed
+44.3.6.1 Full-Duplex Communications (SPCR.TXMD = 0), changed
+Figure 44.26 Operation Example of SPCR.TXMD = 0, changed
+2399
+44.3.6.2 Transmit-only Simplex Communications (SPCR.TXMD = 1),
+changed
+2400
+44.3.7 Transmit Buffer Empty/Receive Buffer Full Interrupts, changed
+2401
+44.3.8 Idle Interrupt, added
+2402
+44.3.9 Error Detection, changed
+Table 44.8 Relationship between Non-Normal Transfer Operations and RSPI
+Error Detection Function, changed
+2403
+44.3.9.1 Overrun Error, changed
+2405
+44.3.9.2 Parity Error, changed
+2406
+44.3.9.4 Underrun Error, changed
+2407
+44.3.10.1 Initialization by Clearing the SPE Bit, changed
+2411
+44.3.11.1 Master Mode Operation
+(4) Burst Transfer, changed
+2414
+Figure 44.37 Example of Initialization Flowchart in Master Mode (SPI
+Operation), changed
+2415
+(9) Software Processing Flow
+(a) Transmit Processing Flow, changed
+2416
+(b) Receive Processing Flow, changed
+2417
+(c) Flow of Error Processing, changed
+2420
+44.3.11.2 Slave Mode Operation
+(6) Software Processing Flow
+(b) Receive Processing Flow, changed
+2421
+(c) Flow of Error Processing, changed
+2422
+44.3.12 Clock Synchronous Operation, changed
+2426
+44.3.12.1 Master Mode Operation
+(5) Flow of Software Processing, changed
+2427
+44.3.12.2 Slave Mode Operation
+(4) Flow of Software Processing, changed
+2429
+Figure 44.51 Flowchart for Self-Diagnosis of Parity Circuit, changed
+2430
+44.3.15 Interrupt Sources, changed
+Table 44.13 Interrupt Sources of RSPI, changed
+2432
+44.4.4 Idle Event Output, changed
+44.4.5 Transmit End Event Output, changed
+Table 44.15 Generating Conditions of Transmit End Event (Slave mode),
+changed
+47. Enhanced Serial Sound Interface (SSIE)
+2488
+47.1 Overview, changed
+Table 47.1 Features of SSIE, changed
+2489
+Figure 47.1 Definitions of Terms Related to Data Format, changed
+Date
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Classification
+
+Page 3231 of 3240
+
+RX72N Group
+
+Rev.
+1.11
+
+REVISION HISTORY
+
+Description
+Summary
+Feb 26, 2021
+47.2.1 Control Register (SSICR), changed
+Table 47.4 The Value of the LRCKP Bit and Responses to the States of the
+LR clock, changed
+2514
+47.3.2.1 Mute Function, changed
+2516
+Table 47.10 Control Bits Valid in Each Transfer Mode, changed
+55. Trusted Secure IP (TSIP)
+2799
+Table 55.1 Specifications of Trusted Secure IP (1/2), changed
+2800
+Figure 55.1 Trusted Secure IP Block Diagram, changed
+56. 12-Bit A/D Converter (S12ADFa)
+2816
+56.2.1 A/D Data Registers y (ADDRy) (y = 0 to 20),
+A/D Data Duplication Register (ADDBLDR),
+A/D Data Duplication Register A (ADDBLDRA),
+A/D Data Duplication Register B (ADDBLDRB),
+A/D Temperature Sensor Data Register (ADTSDR),
+A/D Internal Reference Voltage Data Register (ADOCDR), changed
+2878, 2879 56.2.36 A/D Comparison Function Window B Channel Select Register
+(ADCMPBNSR), changed
+2908
+56.3.3.7 A/D Conversion With Temperature Sensor Output/Internal
+Reference Voltage Selected, changed
+58. Temperature Sensor (TEMPS)
+2967
+58.3.2 Setting of 12-Bit A/D Converter Unit 1, changed
+59. Data Operation Circuit (DOC)
+All
+Term unified
+Notation unified
+62. Flash Memory (FLASH)
+2993
+Table 62.1 Specifications of Flash Memory, changed
+3022
+62.4.23 Unique ID Register n (UIDRn) (n = 0 to 3), changed
+3029
+Table 62.10 List of FACI Commands, changed
+3063
+Table 62.17 I/O Pins Used in Boot Mode, changed
+3064
+62.11.2 Boot Mode (for the USB Interface), changed
+Figure 62.35 System Configuration in Boot Mode (for the USB Interface),
+changed
+Table 62.18 Enumeration Information, changed
+3075
+62.15.4 Packet Format
+(1) Command packet, changed
+(2) Status packet and data packet, changed
+3108
+62.15.26 Area Information Acquisition Command
+Data packet in linear mode, changed
+3109
+Data packet in dual mode, changed
+3116
+62.18.2 Reading Data Flash Memory, changed
+3117
+Figure 62.53 Cases where CPU is Allowed to Operate in Relation to the TM
+Area when the TM Function is Enabled, changed
+63. Electrical Characteristics
+3128, 3129 Table 63.6 DC Characteristics (3), Note 3, changed
+3137
+Table 63.18 HOCO Clock Timing, changed
+3144
+Table 63.26 Bus Timing, Conditions 1, Conditions 2, changed
+3147
+Figure 63.21 External Bus Timing/Normal Write Cycle (Bus Clock
+Synchronized), changed
+3148
+Figure 63.23 External Bus Timing/Page Write Cycle (Bus Clock
+Synchronized), changed
+3157
+Table 63.27 EXDMAC Timing, Conditions, changed
+3158 to 3197 63.4.7 Timing of On-Chip Peripheral Modules, order of tables changed
+3161
+Figure 63.41 MTU Clock Input Timing, changed
+3165
+Figure 63.51 Output Disable Time of POEG in Response to the Oscillation
+Stop Detection, changed
+3169
+Figure 63.56 Simple IIC Bus Interface Input/Output Timing, added
+3194
+Table 63.48 GLCDC Timing, changed
+Date
+
+Page
+2493, 2494
+2495
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Classification
+
+TN-RX*-A0223A/E
+
+TN-RX*-A0222A/E
+TN-RX*-A0243A/E
+
+TN-RX*-A0243A/E
+TN-RX*-A0243A/E
+
+Page 3232 of 3240
+
+RX72N Group
+
+Rev.
+
+Date
+
+1.20
+
+Nov 15, 2023
+
+REVISION HISTORY
+Description
+Classification
+Page
+Summary
+1. Overview
+86
+Table 1.1 Outline of Specifications (11/11), changed
+TN-RX*-A0252A/E
+7. Option-Setting Memory (OFSM)
+297
+Figure 7.1 Option-Setting Memory, changed
+298
+7.2.1 Serial Programmer Command Control Register (SPCC), changed
+299
+7.2.2 OCD/Serial Programmer ID Setting Register (OSIS), changed
+300 to 303 7.2.3 Option Function Select Register 0 (OFS0), changed
+304
+7.2.4 Option Function Select Register 1 (OFS1), changed
+305
+7.2.5 Endian Select Register (MDE), changed
+306
+7.2.6 TM Enable Flag Register (TMEF), changed
+307
+7.2.7 TM Identification Data Register (TMINF), changed
+308
+7.2.8 Bank Select Register (BANKSEL), changed
+309, 310
+7.2.9 Flash Access Window Setting Register (FAW), changed
+311
+7.2.10 ROM Code Protection Register (ROMCODE), changed
+Table 7.1 Specifications for ROM Code Protection, changed
+312
+7.3 Programming and Erasing of the Option-Setting Memory in Individual
+Operating Modes, changed
+Table 7.2 Programming and Erasing of the Option-Setting Memory in
+Individual Operating Modes, changed
+313
+7.4 Settings of the Option-Setting Memory and Read, Program, and Erase
+Operations, changed
+Table 7.3 Settings of the Option-Setting Memory and Read, Program, and
+Erase Operations When the MCU is Connected to a Serial Programmer,
+changed
+314
+7.5.1 Allocation of Data in the Option-Setting Memory, changed
+8. Voltage Detection Circuit (LVDA)
+316
+Table 8.1 Voltage Detection Circuit Specifications, changed
+9. Clock Generation Circuit
+385
+Figure 9.13 Example of Initialization Flowchart When Sub-Clock is Used as TN-RX*-A0257A/E
+the Source to Drive Counting by the Realtime Clock, changed
+386
+Figure 9.14 Example of Initialization Flowchart When Sub-Clock is Used
+Only as the System Clock, changed
+15. Interrupt Controller (ICUD)
+471
+15.2.3 Interrupt Source Priority Register r (IPRr) (r = 000 to 255), changed
+472
+15.2.4 Fast Interrupt Set Register (FIR), changed
+476
+15.2.9 IRQ Control Register i (IRQCRi) (i = 0 to 15), changed
+496
+15.2.26 Software Configurable Interrupt B Request Register k (PIBRk) (k =
+0h to Bh), changed
+497
+15.2.27 Software Configurable Interrupt A Request Register k (PIARk) (k =
+0h to Ch), changed
+519 to 521 Table 15.7 Group Interrupt Requests, changed
+525
+Figure 15.7 Timing to Set the IRn.IR Flag Again, changed
+534
+15.7.1 Enabling Interrupt Requests, changed
+15.7.2 Disabling Interrupt Requests, changed
+535
+15.7.3.1 Interrupt Request Destination Setting Procedure
+(1) Setting Interrupt Sources as the DMAC trigger, changed
+536
+15.7.3.3 Changing the Interrupt Request Destination, changed
+537
+15.7.4 Setting the External Pin Interrupt, changed
+538
+15.7.7 Setting Software Configurable Interrupts, changed
+540
+15.10.1 Exiting Sleep Mode
+(2) Interrupts, changed
+15.10.2 Exiting All-Module Clock Stop Mode
+(2) Interrupts, changed
+541
+15.10.3 Exiting Software Standby Mode, changed
+(2) Interrupts, changed
+21. Event Link Controller (ELC)
+840
+Table 21.3 Correspondence between Values Set in ELSRn.ELS[7:0] Bits and
+Event Signals (2/4), changed
+847
+Table 21.4 Registers Related to Port Groups and Corresponding Port
+Numbers, changed
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 3233 of 3240
+
+RX72N Group
+
+Rev.
+1.20
+
+REVISION HISTORY
+
+Description
+Page
+Summary
+Nov 15, 2023 24. Multi-Function Timer Pulse Unit 3 (MTU3a)
+960
+Table 24.1 MTU Specifications, changed
+961, 962
+Table 24.2 MTU Functions, changed
+963
+Figure 24.1 Block Diagram of MTU (MTU0 to MTU4, MTU8), changed
+964
+Figure 24.2 Block Diagram of MTU (MTU5 to MTU7), changed
+967
+Table 24.4 CCLR[2:0] (MTU0, MTU3, MTU4, MTU6, MTU7, MTU8),
+changed
+Table 24.5 CCLR[2:0] (MTU1 and MTU2), changed
+974
+24.2.4 Timer Mode Register 2m (TMDR2m) (m = A, B), changed
+977
+24.2.6 Timer I/O Control Register (TIOR)
+• MTU5.TIORU, MTU5.TIORV, MTU5.TIORW, changed
+979
+Table 24.15 TIOR (MTU1), changed
+986
+Table 24.29 TIOR (MTU1), changed
+994 to 996 24.2.8 Timer Interrupt Enable Register (TIER), changed
+1003
+24.2.15 Timer General Register m (TGRm) (m = A, B, C, D, E, F, U, V, W),
+changed
+1004
+24.2.16 Timer Longword General Register m (TGRmLW) (m = A, B),
+changed
+1007, 1008 24.2.18 Timer Synchronous Register m (TSYRm) (m = A, B), changed
+1011
+24.2.20 Timer Read/Write Enable Register m (TRWERm) (m = A, B),
+changed
+1012, 1013 24.2.21 Timer Output Master Enable Register m (TOERm) (m = A, B),
+changed
+1014, 1015 24.2.22 Timer Output Control Register 1m (TOCR1m) (m = A, B), changed
+1016 to 1018 24.2.23 Timer Output Control Register 2m (TOCR2m) (m = A, B), changed
+1019
+24.2.24 Timer Output Level Buffer Register m (TOLBRm) (m = A, B),
+changed
+1021
+24.2.26 Timer Subcounter m (TCNTSm) (m = A, B), changed
+24.2.27 Timer Period Data Register m (TCDRm) (m = A, B), changed
+1022
+24.2.28 Timer Period Buffer Register m (TCBRm) (m = A, B), changed
+24.2.29 Timer Dead Time Data Register m (TDDRm) (m = A, B), changed
+1023
+24.2.30 Timer Dead Time Enable Register m (TDERm) (m = A, B), changed
+1024
+24.2.31 Timer Buffer Transfer Set Register m (TBTERm) (m = A, B),
+changed
+1025, 1026 24.2.32 Timer Waveform Control Register m (TWCRm) (m = A, B), changed
+1030 to 1033 24.2.35 Timer A/D Conversion Start Request Control Register (TADCR),
+changed
+1034
+24.2.36 Timer A/D Conversion Start Request Cycle Set Register m
+(TADCORm) (m = A, B), changed
+24.2.37 Timer A/D Conversion Start Request Cycle Set Buffer Register m
+(TADCOBRm) (m = A, B), changed
+1035
+24.2.38 Timer Interrupt Skipping Mode Register m (TITMRm) (m = A, B),
+changed
+1036, 1037 24.2.39 Timer Interrupt Skipping Set Register 1m (TITCR1m) (m = A, B),
+changed
+1038, 1039 24.2.40 Timer Interrupt Skipping Counter 1m (TITCNT1m) (m = A, B),
+changed
+1040, 1041 24.2.41 Timer Interrupt Skipping Set Register 2m (TITCR2m) (m = A, B),
+changed
+1042, 1043 24.2.42 Timer Interrupt Skipping Counter 2m (TITCNT2m) (m = A, B),
+changed
+1080
+Table 24.71 Output Pins for Reset-Synchronized PWM Mode, changed
+1086
+Figure 24.46 Block Diagram of MTU3 and MTU4 in Complementary PWM
+Mode, changed
+1087
+Figure 24.47 Block Diagram of MTU6 and MTU7 in Complementary PWM
+Mode, changed
+1088
+Figure 24.48 Example of Complementary PWM Mode Setting Procedure,
+changed
+1091
+Figure 24.50 Example of Operation in Complementary PWM Mode (MTU3
+and MTU4), changed
+Date
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Classification
+
+Page 3234 of 3240
+
+RX72N Group
+
+Rev.
+
+Date
+
+1.20
+
+Nov 15, 2023
+
+REVISION HISTORY
+Description
+Summary
+Figure 24.51 Example of Operation without Dead Time (MTU3 and MTU4),
+changed
+1094
+Figure 24.52 Example of PWM Period Updating (MTU3 and MTU4),
+changed
+1096
+Figure 24.53 Example of Data Updating in Complementary PWM Mode
+(MTU3 and MTU4), changed
+1116
+24.3.8 Complementary PWM Mode
+(2) Outline of Complementary PWM Mode Operation
+(r) A/D Conversion Start Request Setting, changed
+(s) Double Buffer Function in Complementary PWM Mode, changed
+1117
+Figure 24.83 Example of Double Buffer Operation, changed
+Figure 24.84 Example of Double Buffer Operation (Buffer Write Value is
+Smaller than TDDRA), changed
+1118
+Figure 24.85 Example of Double Buffer Operation (Buffer Write Value is
+Greater than TCDRA), changed
+1119
+24.3.8 Complementary PWM Mode
+(3) Interrupt Skipping Function 1 in Complementary PWM Mode, changed
+1125
+24.3.9 A/D Conversion Start Request Delaying Function, changed
+(1) Example of Procedure for Specifying A/D Conversion Start Request
+Delaying Function, changed
+Figure 24.92 Example of Procedure for Specifying A/D Conversion Start
+Request Delaying Function (MTU3 and MTU4), changed
+1126
+(2) Basic Example of A/D Conversion Start Request Delaying Function
+Operation, changed
+Figure 24.93 Basic Example of A/D Conversion Start Request Signal
+(TRG4AN) Operation, changed
+(3) Period in Which A/D Conversion Start Requests are Enabled, changed
+1127
+(4) Buffer Transfer, changed
+Figure 24.94 Example of A/D Conversion Start Request Signal (TRG4AN)
+and Buffer Transfer Operation, changed
+1128
+(5) A/D Conversion Start Request Delaying Function Linked with Interrupt
+Skipping Function 1, changed
+Figure 24.95 Example of A/D Conversion Start Request Signal (TRG4AN)
+Operation Linked with Interrupt Skipping Function 1 (UT4AE and DT4AE =
+1), changed
+1129
+Figure 24.96 Example of A/D Conversion Start Request Signal (TRG4AN)
+Operation Linked with Interrupt Skipping Function 1 (UT4AE = 1, DT4AE =
+0), changed
+1130
+(6) A/D Conversion Start Request Delaying Function Linked with Interrupt
+Skipping Function 2, changed
+Figure 24.97 Example of Procedure for Setting Interrupt Skipping Function
+2, changed
+Figure 24.98 Example of Interrupt Skipping Function 2 Operation (Skipping
+Count is Set to Four), changed
+1142
+24.4.3 A/D Converter Trigger Sources, changed
+1143
+Table 24.78 Interrupt Sources and A/D Conversion Start Request Signals,
+changed
+1147
+24.5.1 Input/Output Timing
+(4) Timing for Counter Clearing by Compare Match/Input , changed
+1153
+24.6.2 Count Clock Restrictions, changed
+Figure 24.133 Phase Difference, Overlap, and Pulse Width in Phase
+Counting Mode, changed
+1168
+24.6.28 Usage Notes on A/D Conversion Start Request Delaying Function in
+Complementary PWM Mode, changed
+1169
+Figure 24.152 A/D Conversion Start Request When 0 is Written to
+MTU4.TADCOBRA, changed
+Figure 24.153 A/D Conversion Start Request When the Same Value as
+TCDR is Written to MTU4.TADCOBRA, changed
+26. General PWM Timer (GPTW)
+All
+Terms unified:
+periodic count → cycle count
+A/D converter Start → A/D conversion Start
+Page
+1093
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Classification
+
+Page 3235 of 3240
+
+RX72N Group
+
+Rev.
+1.20
+
+REVISION HISTORY
+
+Description
+Page
+Summary
+Nov 15, 2023 27. GPTW Port Output Enable (POEG)
+1433
+Table 27.2 POEG I/O Pins, changed
+30. 8-Bit Timer (TMRb)
+1560
+30.2.4 Timer Control Register (TCR), changed
+33. Realtime Clock (RTCd)
+1617
+Figure 33.1 Block Diagram of RTC (n = 0 to 2), changed
+1638
+33.2.19 RTC Control Register 3 (RCR3), changed
+1643, 1644 33.2.23 Time Capture Control Register n (RTCCRn) (n = 0 to 2), changed
+1649
+33.2.28 Month Capture Register n (RMONCPn) (n = 0 to 2), changed
+1664
+33.6.5 Notes on Writing to and Reading from Registers, changed
+34. Watchdog Timer (WDTA)
+1666
+Table 34.1 WDT Specifications, changed
+35. Independent Watchdog Timer (IWDTa)
+1680
+Table 35.1 IWDT Specifications, changed
+1686
+35.2.3 IWDT Status Register (IWDTSR), changed
+38. DMA Controller for the Ethernet Controller (EDMACa)
+1874
+38.2.1 EDMAC Mode Register (EDMR), changed
+40. USB 2.0 FS Host/Function Module (USBb)
+1992
+40.3.1.4 Example of USB External Connection Circuit, changed
+Figure 40.2 Example of Connection between Self-Powered OTG Device and
+USB Connector, changed
+1993
+Figure 40.3 Example of Connection between Self-Powered Function and
+USB Connector, changed
+1994
+Figure 40.4 Example of Connection between Host and USB Connector,
+changed
+1995
+Figure 40.5 Example of Connection between Bus-Powered Function and
+USB Connector, changed
+1996
+Figure 40.6 Overview of Connection between USB Resume Detecting Unit
+and USB0 I/O Pins, changed
+42. I2C-bus Interface (RIICa)
+2235, 2236 42.2.8 I2C-bus Interrupt Enable Register (ICIER), changed
+2240 to 2242 42.2.10 I2C-bus Status Register 2 (ICSR2), changed
+2248
+42.2.17 I2C-bus Shift Register (ICDRS), changed
+2288
+42.12.1 SMBus Timeout Measurement
+(2) Measuring timeout of master device, changed
+2292
+42.15 Event Link Function (Output), changed
+44. Serial Peripheral Interface (RSPIc)
+2377, 2378 Table 44.6 Relationship between Pin States and Bit Settings, merged into
+Table 44.5 Relationship between RSPI Modes and SPCR Settings and
+Description of Each Mode
+2396
+Figure 44.24 RSPI Transfer Format (CPHA = 0), changed
+2404
+Figure 44.30 Clock Stop Waveform When a Serial Transfer Continues While
+the Receive Buffer is Full in Master Mode (CPHA = 1), changed
+Figure 44.31 Clock Stop Waveform When a Serial Transfer Continues While
+the Receive Buffer is Full in Master Mode (CPHA = 0), changed
+2414
+Figure 44.37 Example of Initialization Flowchart in Master Mode (SPI
+Operation), changed
+2425
+Figure 44.48 Example of Initialization Flowchart in Master Mode (Clock
+Synchronous Operation), changed
+47. Serial Sound Interface (SSIE)
+2488
+47.1 Overview, changed
+54. Arithmetic Unit for Trigonometric Functions (TFUv1)
+2798
+Table 54.1 TFU specifications, changed
+57. 12-Bit D/A Converter (R12DAa)
+2951
+Table 57.2 Pin Configuration of 12-Bit D/A Converter, changed
+58. Temperature Sensor (TEMPS)
+2964
+58.2.2 Temperature Sensor Calibration Data Register (TSCDR), changed
+2965, 2966 58.3.1 Preparation for Using the Temperature Sensor, changed
+62. Flash Memory (FLASH)
+2992, 2993 Table 62.1 Specifications of Flash Memory, changed
+Date
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Classification
+
+Page 3236 of 3240
+
+RX72N Group
+
+Rev.
+
+Date
+
+1.20
+
+Nov 15, 2023
+
+REVISION HISTORY
+
+Page
+3023
+3027
+3028
+3029
+3037
+3054, 3055
+3064
+
+3065
+3067
+3068
+
+3069
+3070
+3072
+3073
+3073, 3074
+3075
+3077
+3078
+3080
+3082, 3083
+3085, 3086
+3087, 3088
+3090
+3091
+3093
+3112
+3113, 3114
+3115
+3116
+3117
+3118
+3119
+
+3120
+3122
+3123
+3124, 3125
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Description
+Classification
+Summary
+Figure 62.6 Mode Transitions Associated with Flash Memory, changed
+Table 62.5 Differences between Modes, changed
+Table 62.7 Methods of Programming, changed
+Table 62.8 List of Basic Functions, changed
+62.7.3 Security Functions, changed
+Table 62.9 Lists of Security Functions, changed
+62.8.3.6 Program Command, changed
+TN-RX*-A0261A/E
+Table 62.16 Error Protection Type, changed
+62.11 Boot Mode, changed
+Table 62.17 I/O Pins Used in Boot Mode, changed
+62.11.1 Boot Mode (SCI Interface), changed
+Figure 62.34 System Configuration for Operations in Boot Mode (SCI
+Interface), changed
+62.11.2 Boot Mode (USB Interface), changed
+Figure 62.35 System Configuration in Boot Mode (USB Interface), changed
+62.12 On-Chip Debugger ID Code Protection, changed
+62.13 Serial Programmer ID Code Protection, changed
+62.15.1 How to Start the Chip Up in Boot Mode
+(1) How to Start the Chip Up in Boot Mode (SCI Interface), changed
+Figure 62.37 States of Pins Up to Communications in Boot Mode (SCI
+Interface) Becoming Possible, changed
+(2) How to Start the Chip Up in Boot Mode (USB Interface), changed
+62.15.2.1 State Transitions in Boot Mode (SCI Interface), changed
+(2) Communications establishment phase, changed
+62.15.2.2 State Transitions in Boot Mode (USB Interface), changed
+Figure 62.39 Flowchart for Transition to Boot Mode (USB Interface)
+(1) Initial Communications, changed
+(2) Communications establishment phase, changed
+62.15.3 Automatic Adjustment of the Bit Rate, changed
+Table 62.22 Commands Available in the Communications Establishment
+Phase, changed
+Table 62.23 Commands Available in the Command Waiting Phase, changed
+Table 62.24 Common Transfer Sequence, changed
+62.15.9 Device Type Acquisition Command, changed
+62.15.11 Frequency Setting Command, changed
+62.15.12 Bit-Rate Setting Command, changed
+62.15.14 ID Authentication Mode Acquisition Command, changed
+62.15.15 Serial Programming ID Code Check Command, changed
+62.15.17 Block Erase Command, changed
+62.15.27 Usage Example, changed
+62.15.28 Rewriting Flash Memory When Using Dual Mode, added
+TN-RX*-A0267A/E
+Figure 62.53 Environments for Rewriting the Flash Memory, changed
+62.17.1 Overview, changed
+Table 62.25 Conditions under which Background Operation is Usable,
+changed
+Table 62.26 TM Specifications, changed
+Table 62.27 Restrictions on Access to the TM Target Area while the TM
+function is Enabled, changed
+Figure 62.55 Cases where CPU is Allowed to Operate in Relation to the TM
+Target Area when the TM Function is Enabled, changed
+62.19.1 Allocating Program Code to the TM Target Area, changed
+Figure 62.56 Flowchart for Enabling the TM Function by Self-Programming,
+changed
+Figure 62.58 Flowchart for Disabling the TM Function in Boot Mode,
+changed
+62.19.4 Notes on Enabling the TM function, changed
+62.20.7 Notes on Program Execution in Boot Mode (USB Interface),
+changed
+
+Page 3237 of 3240
+
+RX72N Group
+
+Rev.
+
+Date
+
+1.20
+
+Nov 15, 2023
+
+REVISION HISTORY
+Description
+Page
+Summary
+63. Electrical Characteristics
+3127
+Table 63.2 Recommended Operating Conditions (1), changed
+Table 63.3 Recommended Operating Conditions (2), changed
+3128
+Table 63.4 DC Characteristics (1), changed
+3130, 3131 Table 63.6 DC Characteristics (3), changed
+3140
+Table 63.20 Sub-Clock Timing, changed
+3141
+Table 63.21 CLKOUT Pin Output Timing, changed
+Table 63.22 CLKOUT25M Pin Output Timing, changed
+3209
+Table 63.60 Battery Backup Function Characteristics, changed
+3210
+Table 63.61 Code Flash Memory Characteristics, changed
+3211
+Table 63.62 Data Flash Memory Characteristics, changed
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Classification
+TN-RX*-A0252A/E
+TN-RX*-A0273A/E
+TN-RX*-A0252A/E
+
+TN-RX*-A0251A/E
+
+Page 3238 of 3240
+
+Colophon
+
+RX72N Group User’s Manual: Hardware
+Publication Date:
+
+Rev.1.00
+Rev.1.20
+
+May 31, 2019
+Nov 15, 2023
+
+Published by:
+
+Renesas Electronics Corporation
+
+Back cover
+
+RX72N Group
+
+R01UH0824EJ0120
+
+

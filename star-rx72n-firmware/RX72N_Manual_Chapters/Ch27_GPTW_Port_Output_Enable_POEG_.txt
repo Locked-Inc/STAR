@@ -1,0 +1,1026 @@
+RX72N Group
+
+27. GPTW Port Output Enable (POEG)
+
+27.
+
+GPTW Port Output Enable (POEG)
+
+27.1
+
+Overview
+
+The POEG issues requests to stop output from output pins of the general PWM timer (GPTW). The combination of
+output pins of the POEG to be stopped can be specified from any channel of the GPTW.
+Select the method of detection for stopping the output from the list below.
+ Input level detection on the GTETRGn pin (n = A to D)
+ Detection from the GPTW to stop output
+ Detection of stopping of oscillation by the oscillation stop detection circuit for the main clock
+ Register setting
+The GTETRGn pin can be used for output to the external trigger input pins of the GPTW.
+Table 27.1 shows specifications, Figure 27.1 shows a schematic view of the system, Figure 27.2 shows a block
+diagram, and Table 27.2 shows input pins.
+Table 27.1
+
+POEG Specifications
+
+Item
+
+Description
+
+Request of output stopping in response to
+input level detection
+
+ The request to stop output is issued to the GPTW when a POEGGn.PIDF flag is set in
+response to the detection of input of the selected level on the corresponding
+GTETRGn pin (n = A to D).
+
+Requests to stop output in the form of an
+output stopping signal from the GPTW
+
+ The request to stop output is issued to the GPTW when the GPTW detects the active
+level (high or low) on the GTIOCA and GTIOCB pins at the same time while the
+corresponding POEGGn.IOCF flag is set.
+ The request to stop output is issued to the GPTW when the GPTW detects a deadtime error while the corresponding POEGGn.IOCF flag is set.
+
+Requests to stop output in response to
+detecting the stopping of oscillation
+
+A request to stop output is issued to the GPTW when the oscillation stop detection
+circuit for the main clock detects the stopping of oscillation while the corresponding
+POEGGn.OSTPF flag is set.
+
+Requests by software to stop output
+
+The request to stop output is issued to the GPTW when the software sets the
+POEGGn.SSF flag.
+
+Interrupt
+
+ An interrupt is generated in response to the request to stop output in the form of the
+POEGGn.PIDF flag.
+ An interrupt is generated in response to the request to stop output in the form of the
+POEGGn.IOCF flag.
+
+External trigger output to the GPTW
+
+The GTETRGn pin is used for output as external triggers.
+
+Noise removal
+
+ Each GTETRGn pin has a digital noise filter.
+ Four types of sampling clock are selectable for the filter.
+
+POEG
+(Group A to D)
+GPTW external trigger
+input pins
+(GTETRGA to GTETRGD)
+
+Main clock oscillator
+(Oscillation stop
+detection)
+
+GPTW (ch0 to 3)
+Output stopping
+control
+(Negate control)
+
+GPTW
+generation
+of
+requests
+to stop
+output
+
+Requests to
+stop output
+from groups A
+to D
+
+PWM output/fixed
+to H/fixed to L/Hi-z
+I/O port
+Port output
+
+Detection of an
+output error
+
+PODR
+
+GPTW output signal (GTIOCx)
+
+GPTW
+output pins
+
+Detection of output from groups A to D
+being stopped
+(due to a dead time error, pins being high at
+the same time, or pins being low at the
+same time)
+
+Figure 27.1
+
+Schematic View of the POEG System
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1432 of 3240
+
+RX72N Group
+
+27. GPTW Port Output Enable (POEG)
+
+GPTW
+Channel 0
+GTINTAD.
+GRPABL
+
+Group A
+
+Channel 0
+
+GTINTAD.
+GRPABH
+
+Group B
+
+Channel 3
+
+GTINTAD.
+GRPDTE
+
+IOCE
+
+Group C
+
+Group D
+Channel 1
+IOCF
+S Q
+R
+
+Channel 3
+
+OSTPE
+
+Detection of
+stopping of
+oscillation
+
+OSTPF
+S Q
+R
+SSF
+
+POEGGAI ICU
+POEGGBI
+POEGGCI
+POEGGDI
+
+GPTW
+Channel 0
+Channel 0
+Channel 3
+Channel 0
+
+GTIOR.
+OADF[1:0]
+
+Channel 3
+
+GTIOR.
+OBDF[1:0]
+
+Channel 0
+
+GTETRGA
+GTETRGB
+GTETRGC
+GTETRGD
+
+Input
+Inverting
+
+PIDE
+
+PIDF
+
+GTINTAD.
+GRP[1:0]
+
+ST
+
+GTIOC1A
+GTIOC1B
+
+GTIOC3A
+GTIOC3B
+
+Channel 0
+
+INV
+NFEN
+NFCS[1:0]
+
+GTIOC0B
+
+Channel 3
+Channel 0
+Channel 3
+
+Noise filter
+
+GTIOC0A
+
+Channel 3
+Channel 0
+Channel 3
+Channel 0
+
+Group B
+
+Channel 3
+Channel 0
+
+Group C
+Group D
+
+Channel 3
+
+Channel 1
+Channel 3
+
+Figure 27.2
+
+POEG Block Diagram
+
+Table 27.2
+
+POEG I/O Pins
+
+Pin Name
+
+I/O
+
+Function
+
+GTETRGA
+
+Input
+
+Output stop request signal for GPTW output pin and GPTW external trigger input pin A
+
+GTETRGB
+
+Input
+
+Output stop request signal for GPTW output pin and GPTW external trigger input pin B
+
+GTETRGC
+
+Input
+
+Output stop request signal for GPTW output pin and GPTW external trigger input pin C
+
+GTETRGD
+
+Input
+
+Output stop request signal for GPTW output pin and GPTW external trigger input pin D
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1433 of 3240
+
+RX72N Group
+
+27.2
+
+27. GPTW Port Output Enable (POEG)
+
+Register Descriptions
+
+27.2.1
+
+POEG Group n Setting Register (POEGGn) (n = A to D)
+
+Address(es): POEG.POEGGA 0009 E000h, POEG.POEGGB 0009 E100h, POEG.POEGGC 0009 E200h,
+POEG.POEGGD 0009 E300h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+NFCS[1:0]
+
+NFEN
+
+INV
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+ST
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+OSTPE IOCE
+
+PIDE
+
+SSF
+
+OSTPF
+
+IOCF
+
+PIDF
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+PIDF
+
+Port Input Detection Flag
+
+0: The selected input level was not detected on the
+GTETRGn pin.
+1: The selected input level was detected on the GTETRGn
+pin.
+
+R/(W)
+*1
+
+b1
+
+IOCF
+
+GPTW Output Stop Request
+Detection Flag
+
+0: Stopping of GPTW output was not detected.
+1: Stopping of GPTW output was detected.
+
+R/(W)
+*1
+
+b2
+
+OSTPF
+
+Oscillation Stop Detection Flag
+
+0: Stopping of oscillation was not detected.
+1: Stopping of oscillation was detected.
+
+R/(W)
+*1
+
+b3
+
+SSF
+
+Software Stop Flag
+
+0: Software has not stopped output.
+1: Software has stopped output.
+
+R/W
+
+b4
+
+PIDE
+
+Port Input Detection Enable
+
+0: Detection of input levels on the corresponding
+GTETRGn pin is disabled.
+1: Detection of input levels on the corresponding
+GTETRGn pin is enabled.
+
+R/W*2
+
+b5
+
+IOCE
+
+GPTW Output Stop Request Enable
+
+0: Detection of stopping of output from the GPTW is
+disabled.
+1: Detection of stopping of output from the GPTW is
+enabled.
+
+R/W*2
+
+b6
+
+OSTPE
+
+Enable Stopping Output on Stopping
+of Oscillation
+
+0: Detection of stopping of oscillation is disabled.
+1: Detection of stopping of oscillation is enabled.
+
+R/W*2
+
+b15 to b7
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b16
+
+ST
+
+GTETRGn Input Status Flag
+
+0: The corresponding external trigger for output to the
+GPTW is 0.
+1: The corresponding external trigger for output to the
+GPTW is 1.
+
+R
+
+b27 to b17 —
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b28
+
+INV
+
+GTETRGn Input Inverting
+
+0: Input on the GTETRGn pin is not inverted.
+1: Input on the GTETRGn pin is inverted.
+
+R/W
+
+b29
+
+NFEN
+
+Noise Filter Enable
+
+0: Digital noise filter on the GTETRGn pin is disabled.
+1: Digital noise filter on the GTETRGn pin is enabled.
+
+R/W
+
+b31, b30
+
+NFCS[1:0]
+
+Noise Filter Clock Select
+
+b31 b30
+
+R/W
+
+0 0: Samples the input level of GTETRGn pin three
+times per PCLKB/1 clock
+0 1: Samples the input level of GTETRGn pin three
+times per PCLKB/8 clock
+1 0: Samples the input level of GTETRGn pin three
+times per PCLKB/32 clock
+1 1: Samples the input level of GTETRGn pin three
+times per PCLKB/128 clock
+
+Note 1. Only 0 to clear the flag can be written.
+Note 2. This bit can be written only once after resetting.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1434 of 3240
+
+RX72N Group
+
+27. GPTW Port Output Enable (POEG)
+
+The POEGGn register (n = A to D) controls requests for stopping output and an external trigger for the GPTW based in
+response to the detection of various signals.
+SSF Flag (Software Stop Flag)
+Writing 1 to the SSF flag leads to a request to stop output being issued to the GPTW, and writing 0 to the flag releases the
+GPTW from the request to stop output. In addition, requests to stop output issued by software can be monitored by
+reading the flag.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1435 of 3240
+
+RX72N Group
+
+27.3
+
+27. GPTW Port Output Enable (POEG)
+
+Operation
+
+27.3.1
+
+Request to Stop Output in Response to Detection of Input Level
+on the Corresponding GTETRGn Pin (n = A to D)
+
+Output stopping request: requests in response to setting of the POEGGn.PIDF flag (n = A to D).
+The input set in the POEGGn register (inversion or non-inversion set in the INV bit, filtering enabled or disabled by the
+NFEN bit, sample clock for filtering set in the NFCS[1:0] bits) is detected while the POEGGn.PIDE bit is 1. After the
+POEGGn.PIDF flag is set to 1 in response to this, the request to stop output is issued per group to each channel of the
+GPTW. To de-assert the request signal for stopping output, clear the POEGGn.PIDF flag. For canceling requests to stop
+output, refer to section 27.3.5, Canceling Requests to Stop Output.
+
+27.3.1.1
+
+Digital Noise Filter
+
+Each GTETRGn pin input has a digital noise filter. Figure 27.3 shows the operation example in detection of the high
+level with the use of the filter. When the digital noise filter is enabled (POEGGn.NFEN bit = 1) and the high level is
+detected 3 consecutive times with the sampling clock cycle selected by the POEGGn.NFCS[1:0] bits while inverted or
+non-inverted according to the setting of the POEGGn.INV bit, this is regarded as detection of the high level, and the
+request to stop output is issued to the GPTW.
+At this time, if the low level is detected even once in the sequence, it is not regarded as detection of the high level. In
+addition, changes in the levels on pins GTETRGA through GTETRGD are ignored while the sampling clock is not being
+output.
+Digital noise filters can be used with requests to stop output in response to setting of the POEGGn.PIDF flags (n = A to
+D) and the output of external triggers to the GPTW.
+1, 8, 32, or 128 clocks
+PCLKB
+
+Sampling clock
+
+GTETRGn pin
+
+Output stopping
+request
+(POEGGn.PIDF)
+hi-z
+GTIOCxA and
+GTIOCxB pins
+(PCLKA)
+[1]
+
+Note:
+Note:
+
+Figure 27.3
+
+[1]
+
+[2]
+
+[1]
+
+[1]
+
+[2]
+
+[3]
+
+[4]
+
+[1]
+
+[2]
+
+[3]
+
+[1]
+
+Each channel output can be set by the GPTWx.
+The polarity can be inverted by setting the POEGGn.INV bit.
+
+Example for Operation of Digital Noise Filter
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1436 of 3240
+
+RX72N Group
+
+27.3.2
+
+27. GPTW Port Output Enable (POEG)
+
+Requests to Stop Output in Response to Detection of Output Stopping form
+GPTW
+
+When any among a dead-time error or simultaneous high- or low-level output from the GPTW is detected, the
+corresponding POEGGn.IOCF flag is set to 1 and the request to stop output per group is issued to each channel in the
+GPTW. To cancel a request to stop output, clear the given POEGGn.IOCF flag. For details, refer to section 27.3.5,
+Canceling Requests to Stop Output.
+To detect any among a dead-time error or simultaneous high- or low-level output from the GPTW, detection of output
+stopping must be permitted in the GRPDTE, GRPABH, and GRPABL bits of the given GPTWn.GTINTAD register.
+Specify the group of the GPTW for which stopping is to be detected in the GPTWn.GTINTAD.GRP[1:0] bits. For
+details, refer to section 26.2.15, General PWM Timer Interrupt Output Setting Register (GTINTAD).
+
+27.3.3
+
+Requests to Stop Output by Oscillation Stop Detection
+
+When the circuit for detecting stopping of oscillation by the main clock oscillator detects the stopping of the oscillation
+while a POEGGn.OSTPE bit is 1, the POEGGn.OSTPF flag is set to 1 and a request to stop output per group is issued to
+each channel of the GPTW. To cancel the request to stop output, clear the POEGGn.OSTPF flag. For details, refer to
+section 27.3.5, Canceling Requests to Stop Output.
+
+27.3.4
+
+Requests to Stop Output by a Register
+
+Writing 1 to the software stop flag (POEGGn.SSF) leads to a request to stop output per group to each channel in the
+GPTW. To release from the request to stop output, clear the POEGGn.SSF flag. For details, refer to section 27.3.5,
+Canceling Requests to Stop Output.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1437 of 3240
+
+RX72N Group
+
+27.3.5
+
+27. GPTW Port Output Enable (POEG)
+
+Canceling Requests to Stop Output
+
+Requests to stop output are canceled in any of the following two ways.
+(1) Cancellation by a reset (return to the initial state)
+(2) Cancellation by clearing all flags in the POEGGn register
+
+(1)
+
+Cancellation by a reset
+
+Any type of reset can cancel a request to stop output. For details, refer to section 6, Resets.
+
+(2)
+
+Cancellation by clearing all flags in the POEGGn register
+
+ POEGGn.PIDF
+ POEGGn.IOCF
+ POEGGn.OSTPF
+ POEGGn.SSF
+Cancellation of the request is taken into the GPTW at the end of the cycle of counting by the GPTW, and the output pins
+are released from being stopped no less than 3 PCLKA cycles from that time. Figure 27.4 shows the timing of release
+from the output-stopped state. To clear each of the flags, read the status flag for each source to check that the source
+condition is not being detected, and then write 0. Sources cannot be cleared even if the flag is cleared in the detected
+state. Status flags for the respective sources are listed below.
+ Detection of input level
+
+POEGGn.ST (GTETRGn input status flag)
+
+ Oscillation stop detection
+
+OSTDSR.OSTDF (oscillation stop detection flag)
+
+ Stopping detection from the GPTW GPTWn.GTST.DTEF (dead time error flag)
+GPTWn.GTST.OABLF (simultaneous low output flag)
+GPTWn.GTST.OABHF (simultaneous high output flag)
+GPTWx.GTCNT counter value
+GPTWx.GTPR register
+GPTWx.GTCCRA register
+
+POEGGn.PIDF,
+IOCF, OSTPF, and
+SSF flags
+
+Flag cleared
+
+GTIOCxA and
+GTIOCxB pins
+Period of stopping output from
+the GPTW output pins
+
+Figure 27.4
+
+Timing of Re-enabling Output from the GPTW Output Pins Following Cancellation of a Request to
+Stop Output
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1438 of 3240
+
+RX72N Group
+
+27.4
+
+27. GPTW Port Output Enable (POEG)
+
+Interrupt Sources
+
+The POEG generates interrupts for the interrupt controller when any of the following is detected.
+ Detection of level of input, indicated by the POEGGn.PIDF flag
+ Detection of stopping of output from the GPTW, indicated by the POEGGn.IOCF flag
+Table 27.3 shows interrupt sources and conditions.
+Table 27.3
+
+Interrupt sources and conditions
+
+Interrupt Source
+
+Symbol
+
+Corresponding Flag
+
+Trigger Condition
+
+POEG Group A Interrupt
+
+POEGGAI
+
+POEGGA.IOCF
+
+Detection of stopping of output from the GPTW
+
+POEGGA.PIDF
+
+Detection of the level input from the GTETRGA pin
+
+POEGGB.IOCF
+
+Detection of stopping of output from the GPTW
+
+POEGGB.PIDF
+
+Detection of the level input from the GTETRGB pin
+Detection of stopping of output from the GPTW
+
+POEG Group B Interrupt
+
+POEGGBI
+
+POEG Group C Interrupt
+
+POEGGCI
+
+POEGGC.IOCF
+POEGGC.PIDF
+
+Detection of the level input from the GTETRGC pin
+
+POEG Group D Interrupt
+
+POEGGDI
+
+POEGGD.IOCF
+
+Detection of stopping of output from the GPTW
+
+POEGGD.PIDF
+
+Detection of the level input from the GTETRGD pin
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1439 of 3240
+
+RX72N Group
+
+27.5
+
+27. GPTW Port Output Enable (POEG)
+
+External Trigger Output to GPTW
+
+The POEG outputs the inputs on the GTETRGn pin (n = A to D) as external trigger signals. The external trigger signals
+can be monitored by the POEGGn.ST flag via active-sense selection and digital noise filtering. The GPTW can function
+as follows in response to external trigger signals.
+ Count start
+ Count stop
+ Counter clearing
+ Up-counting
+ Down-counting
+ Input capture
+For details of the above functions, refer to section 26, General PWM Timer (GPTW).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1440 of 3240
+
+RX72N Group
+
+27.6
+27.6.1
+
+27. GPTW Port Output Enable (POEG)
+
+Usage Notes
+Transitions to Low-Power Consumption Mode
+
+When the POEG is used, it should not be transitioned to software standby or deep software standby modes. In this mode,
+the stopping of output cannot be requested since the POEG is stopped.
+
+27.6.2
+
+Setting the Function for Stopping the Module
+
+The module-stop control register can be set to enable or disable operation of the POEG. The POEG is stopped
+immediately after a reset. Registers of the POEG become accessible following release from the module-stopped state.
+For details, refer to section 11, Low Power Consumption. The module-stop bit for the POEG also stops and starts the
+GPTW.
+
+27.6.3
+
+Duplication of Requests to Stop Output
+
+Note that requests to stop output will not be canceled when a corresponding flag is set stop output in response to
+detection. Request signals to stop output in response to flag setting are obtained as the logical OR of the corresponding
+detection signals for stopping output.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1441 of 3240
+
+

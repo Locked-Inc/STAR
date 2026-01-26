@@ -1,0 +1,10358 @@
+RX72N Group
+
+44.
+
+44. Serial Peripheral Interface (RSPIc)
+
+Serial Peripheral Interface (RSPIc)
+
+In this section, “PCLK” is used to refer to PCLKA.
+
+44.1
+
+Overview
+
+This MCU includes three channels of Serial Peripheral Interface (RSPI).
+The RSPI channels are capable of high-speed, full-duplex or simplex (transmit-only) synchronous serial communications
+with multiple processors and peripheral devices.
+Table 44.1 lists the specifications of the RSPI, and Figure 44.1 shows a block diagram of the RSPI.
+In this section, x indicates A, B or C, and i indicates 0 to 3. Also, m as used with the RSPI command registers
+(SPCMDm) indicates 0 to 7.
+Table 44.1
+
+RSPI Specifications (1/2)
+
+Item
+
+Description
+
+Number of channels
+
+Three channels
+
+RSPI transfer functions
+
+ Use of MOSI (master out/slave in), MISO (master in/slave out), SSL (slave select), and RSPCK (RSPI
+clock) signals allows serial communications through SPI operation (4-wire method) or clock
+synchronous operation (3-wire method).
+ Communication mode: Full-duplex or simplex (transmit-only) can be selected.
+ Switching of the polarity of RSPCK
+ Switching of the phase of RSPCK
+
+Data format
+
+ MSB first/LSB first selectable
+ Transfer bit length is selectable as 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 24, or 32 bits.
+ 128-bit transmit/receive buffers
+ Up to four frames can be transferred in one round of transmission/reception (each frame consisting of
+up to 32 bits).
+ Byte swapping of transmit and receive data is selectable.
+
+Bit rate
+
+ In master mode, the on-chip baud rate generator generates RSPCK by frequency-dividing PCLK (the
+division ratio ranges from divided by 2 to divided by 4096).
+ In slave mode, the minimum PCLK clock divided by 4 can be input as RSPCK (the maximum frequency
+of RSPCK is that of PCLK divided by 4).
+Width at high level: 2 cycles of PCLK; width at low level: 2 cycles of PCLK
+
+Buffer configuration
+
+ Double buffer configuration for the transmit/receive buffers
+ 128 bits for the transmit/receive buffers
+
+Error detection
+
+ Mode fault error detection
+ Overrun error detection*1
+ Parity error detection
+ Underrun error detection
+
+SSL control function
+
+ Four SSL pins (SSLx0 to SSLx3) for each channel
+ In single-master mode, SSLx0 to SSLx3 pins are output.
+ In multi-master mode:
+SSLx0 pin for input, and SSLx1 to SSLx3 pins for either output or unused.
+ In slave mode:
+SSLx0 pin for input, and SSLx1 to SSLx3 pins for unused.
+ Controllable delay from SSL output assertion to RSPCK operation (RSPCK delay)
+Range: 1 to 8 RSPCK cycles (set in RSPCK-cycle units)
+ Controllable delay from RSPCK stop to SSL output negation (SSL negation delay)
+Range: 1 to 8 RSPCK cycles (set in RSPCK-cycle units)
+ Controllable wait for next-access SSL output assertion (next-access delay)
+Range: 1 to 8 RSPCK cycles (set in RSPCK-cycle units)
+ Function for changing SSL polarity
+
+Control in master transfer
+
+ A transfer of up to eight commands can be executed sequentially in looped execution.
+ For each command, the following can be set:
+SSL signal value, bit rate, RSPCK polarity/phase, transfer data length, MSB/LSB first, burst, RSPCK
+delay, SSL negation delay, and next-access delay
+ A transfer can be initiated by writing to the transmit buffer.
+ MOSI signal value specifiable in SSL negation
+ RSPCK auto-stop function
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2349 of 3240
+
+RX72N Group
+Table 44.1
+
+44. Serial Peripheral Interface (RSPIc)
+RSPI Specifications (2/2)
+
+Item
+
+Description
+
+Interrupt sources
+
+ Interrupt sources
+Receive buffer full interrupt
+Transmit buffer empty interrupt
+Error interrupt (mode fault, overrun, underrun, or parity error)
+Idle interrupt
+
+Event link function (output)
+
+ The following events can be output to the event link controller. (RSPI0)
+Receive buffer full event
+Transmit buffer empty event
+Error event (mode fault, overrun, underrun, or parity error)
+Idle event
+Transmit end event
+
+Others
+
+ Function for initializing the RSPI
+ Loopback mode
+
+Low power consumption
+function
+
+Module stop state can be set.
+
+Note 1. In master reception and when the RSPCK auto-stop function is enabled, an overrun error does not occur because the transfer
+clock is stopped at the timing of overrun error detection.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2350 of 3240
+
+44. Serial Peripheral Interface (RSPIc)
+
+Bus interface
+
+RX72N Group
+
+Module data bus
+
+SPRX
+
+SPTX
+
+Parity circuit
+
+Shift register
+
+Selector
+Loopback
+
+SPCR
+SSLP
+SPPCR
+SPSR
+SPDR
+SPSCR
+SPSSR
+SPDCR
+SPCKD
+SSLND
+SPND
+SPCR2
+SPCMD
+SPDCR2
+
+MOSIx
+
+MISOx
+
+Loopback/
+Loopback 2
+Normal
+
+Slave
+
+Loopback/
+Loopback 2
+
+Master
+
+Slave
+
+PCLK
+Baud rate
+generator
+
+Event output *1
+
+Normal
+Master
+
+SPBR
+
+Clock
+
+Loopback 2
+Normal
+
+Internal
+peripheral
+bus
+
+SPTI interrupt
+Transmission/
+reception
+controller
+
+SPRI interrupt
+SPII interrupt
+SPEI interrupt
+
+SSLx0
+SSLx1 to SSLx3
+RSPCKx
+
+SPCR:
+RSPI control register
+SPCR2:
+RSPI control register 2
+SSLP:
+RSPI slave select polarity register
+SPPCR:
+RSPI pin control register
+SPSR:
+RSPI status register
+SPDR:
+RSPI data register
+SPSCR:
+RSPI sequence control register
+SPSSR:
+RSPI sequence status register
+SPDCR:
+RSPI data control register
+Note 1. Event output is supported by RSPI0 only.
+
+Figure 44.1
+
+SPCKD:
+SSLND:
+SPND:
+SPCMD:
+SPDCR2:
+SPBR:
+SPTX:
+SPRX:
+
+RSPI clock delay register
+RSPI slave select negation delay register
+RSPI next-access delay register
+RSPI command registers 0 to 7 (eight registers)
+RSPI data control register 2
+RSPI bit rate register
+RSPI transmit buffer
+RSPI receive buffer
+
+RSPI Block Diagram
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2351 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+Table 44.2 lists the I/O pins used in the RSPI.
+The RSPI automatically switches the I/O direction of the SSLx0 pin. SSLx0 is set as an output when the RSPI is a single
+master and as an input when the RSPI is a multi-master or a slave. Pins RSPCKx, MOSIx, and MISOx are automatically
+set as inputs or outputs according to the setting of master or slave and the level input on the SSLx0 pin.
+Refer to section 44.3.2, Controlling RSPI Pins for details.
+Table 44.2
+
+RSPI Pin Configuration
+
+Channel
+
+Pin Name
+
+I/O
+
+Function
+
+RSPI0
+
+RSPCKA
+
+I/O
+
+Clock I/O
+
+RSPI1
+
+RSPI2
+
+MOSIA
+
+I/O
+
+Master transmit data I/O
+
+MISOA
+
+I/O
+
+Slave transmit data I/O
+
+SSLA0
+
+I/O
+
+Slave selection I/O
+
+SSLA1
+
+Output
+
+Slave selection output
+
+SSLA2
+
+Output
+
+Slave selection output
+
+SSLA3
+
+Output
+
+Slave selection output
+
+RSPCKB
+
+I/O
+
+Clock I/O
+
+MOSIB
+
+I/O
+
+Master transmit data I/O
+
+MISOB
+
+I/O
+
+Slave transmit data I/O
+
+SSLB0
+
+I/O
+
+Slave selection I/O
+
+SSLB1
+
+Output
+
+Slave selection output
+
+SSLB2
+
+Output
+
+Slave selection output
+
+SSLB3
+
+Output
+
+Slave selection output
+
+RSPCKC
+
+I/O
+
+Clock I/O
+
+MOSIC
+
+I/O
+
+Master transmit data I/O
+
+MISOC
+
+I/O
+
+Slave transmit data I/O
+
+SSLC0
+
+I/O
+
+Slave selection I/O
+
+SSLC1
+
+Output
+
+Slave selection output
+
+SSLC2
+
+Output
+
+Slave selection output
+
+SSLC3
+
+Output
+
+Slave selection output
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2352 of 3240
+
+RX72N Group
+
+44.2
+
+44. Serial Peripheral Interface (RSPIc)
+
+Register Descriptions
+
+44.2.1
+
+RSPI Control Register (SPCR)
+
+Address(es): RSPI0.SPCR 000D 0100h, RSPI1.SPCR 000D 0140h, RSPI2.SPCR 000D 0300h
+
+Value after reset:
+
+b7
+
+b6
+
+SPRIE
+
+SPE
+
+0
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+SPTIE SPEIE MSTR MODF TXMD
+EN
+0
+
+0
+
+0
+
+0
+
+b0
+SPMS
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SPMS
+
+RSPI Mode Select*1
+
+0: SPI operation (4-wire method)
+1: Clock synchronous operation (3-wire method)
+
+R/W
+
+b1
+
+TXMD
+
+Communications Operating Mode
+Select*1
+
+0: Full-duplex communications (enables the receiver)
+1: Transmit-only simplex communications (disables the
+receiver)
+
+R/W
+
+b2
+
+MODFEN Mode Fault Error Detection Enable
+*1
+
+0: Disables the detection of mode fault error
+1: Enables the detection of mode fault error
+
+R/W
+
+b3
+
+MSTR
+
+RSPI Master/Slave Mode Select*1
+
+0: Slave mode
+1: Master mode
+
+R/W
+
+b4
+
+SPEIE
+
+Error Interrupt Enable
+
+0: Disables the generation of error interrupt requests
+1: Enables the generation of error interrupt requests
+
+R/W
+
+b5
+
+SPTIE
+
+Transmit Buffer Empty Interrupt
+Enable
+
+0: Disables the generation of transmit buffer empty interrupt
+requests
+1: Enables the generation of transmit buffer empty interrupt
+requests
+
+R/W
+
+b6
+
+SPE
+
+RSPI Function Enable
+
+0: Disables the RSPI function
+1: Enables the RSPI function
+
+R/W
+
+b7
+
+SPRIE
+
+Receive Buffer Full Interrupt
+Enable
+
+0: Disables the generation of receive buffer full interrupt
+requests
+1: Enables the generation of receive buffer full interrupt
+requests
+
+R/W
+
+Note 1. Do not change the values of the MSTR, MODFEN, TXMD, and SPMS bits while the SPE bit is 1.
+
+SPMS Bit (RSPI Mode Select)
+The SPMS bit selects SPI operation (4-wire method) or clock synchronous operation (3-wire method).
+The SSLx0 to SSLx3 pins are not used in clock synchronous operation. The RSPCKx, MOSIx, and MISOx pins handle
+communications. If clock synchronous operation is to proceed in master mode (SPCR.MSTR = 1), the SPCMDm.CPHA
+bit can be set to either 0 or 1. Set the CPHA bit to 1 if clock synchronous operation is to proceed in slave mode
+(SPCR.MSTR = 0). Do not set the CPHA bit to 0 when clock synchronous operation is to proceed in slave mode
+(SPCR.MSTR = 0).
+TXMD Bit (Communications Operating Mode Select)
+The TXMD bit selects full-duplex communications or transmit-only simplex communications.
+When performing communications with the TXMD bit set to 1, the RSPI performs only transmit operations and not
+receive operations (refer to section 44.3.6, Communications Operating Mode).
+When the TXMD bit is set to 1, receive buffer full interrupt requests cannot be used.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2353 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+MODFEN Bit (Mode Fault Error Detection Enable)
+The MODFEN bit enables or disables the detection of mode fault error (refer to section 44.3.9, Error Detection). In
+addition, the RSPI determines the I/O direction of the SSLx0 to SSLx3 pins based on combinations of the MODFEN and
+MSTR bits (refer to section 44.3.2, Controlling RSPI Pins).
+MSTR Bit (RSPI Master/Slave Mode Select)
+The MSTR bit selects master/slave mode of the RSPI. According to MSTR bit settings, the RSPI determines the
+direction of pins RSPCKx, MOSIx, MISOx, and SSLx0 to SSLx3.
+SPEIE Bit (Error Interrupt Enable)
+The SPEIE bit enables or disables the generation of error interrupt requests when the RSPI detects a mode fault error or
+underrun error and sets the SPSR.MODF flag to 1, when the RSPI detects an overrun error and sets the SPSR.OVRF flag
+to 1, or when the RSPI detects a parity error and sets the SPSR.PERF flag to 1 (refer to section 44.3.9, Error
+Detection).
+SPTIE Bit (Transmit Buffer Empty Interrupt Enable)
+The SPTIE bit enables or disables the generation of transmit buffer empty interrupt requests when the RSPI detects when
+the transmit buffer is empty.
+A transmit buffer empty interrupt request when transmission starts is generated by setting the SPE and SPTIE bits to 1 at
+the same time or by setting the SPE bit to 1 after setting the SPTIE bit to 1.
+Note that a transmit buffer interrupt is generated when the SPTIE bit is 1 even if the RSPI function is disabled (the SPTIE
+bit is changed to 0).
+SPE Bit (RSPI Function Enable)
+The SPE bit enables or disables the RSPI function.
+When the SPSR.MODF flag is 1, the SPE bit cannot be set to 1. For details, refer to section 44.3.9, Error Detection.
+Setting the SPE bit to 0 disables the RSPI function, and initializes a part of the module function. For details, refer to
+section 44.3.10, Initializing RSPI. Furthermore, a transmit buffer empty interrupt request is generated by the state of
+the SPE bit changing from 0 to 1 or from 1 to 0.
+SPRIE Bit (Receive Buffer Full Interrupt Enable)
+If the RSPI has detected a receive buffer full write after completion of a serial transfer, the SPRIE bit enables or disables
+the generation of a receive buffer full interrupt request.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2354 of 3240
+
+RX72N Group
+
+44.2.2
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Slave Select Polarity Register (SSLP)
+
+Address(es): RSPI0.SSLP 000D 0101h, RSPI1.SSLP 000D 0141h, RSPI2.SSLP 000D 0301h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+SSL3P SSL2P SSL1P SSL0P
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SSL0P
+
+SSL0 Signal Polarity Setting
+
+0: SSL0 signal is active low
+1: SSL0 signal is active high
+
+R/W
+
+b1
+
+SSL1P
+
+SSL1 Signal Polarity Setting
+
+0: SSL1 signal is active low
+1: SSL1 signal is active high
+
+R/W
+
+b2
+
+SSL2P
+
+SSL2 Signal Polarity Setting
+
+0: SSL2 signal is active low
+1: SSL2 signal is active high
+
+R/W
+
+b3
+
+SSL3P
+
+SSL3 Signal Polarity Setting
+
+0: SSL3 signal is active low
+1: SSL3 signal is active high
+
+R/W
+
+b7 to b4
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note:
+
+Do not change the SSLP register while the SPCR.SPE bit is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2355 of 3240
+
+RX72N Group
+
+44.2.3
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Pin Control Register (SPPCR)
+
+Address(es): RSPI0.SPPCR 000D 0102h, RSPI1.SPPCR 000D 0142h, RSPI2.SPPCR 000D 0302h
+
+Value after reset:
+
+b7
+
+b6
+
+—
+
+—
+
+0
+
+0
+
+b5
+
+b4
+
+MOIFE MOIFV
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+SPLP2
+
+SPLP
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SPLP
+
+RSPI Loopback
+
+0: Normal mode
+1: Loopback mode (data is inverted for transmission)
+
+R/W
+
+b1
+
+SPLP2
+
+RSPI Loopback 2
+
+0: Normal mode
+1: Loopback mode (data is not inverted for transmission)
+
+R/W
+
+b3, b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b4
+
+MOIFV
+
+MOSI Idle Fixed Value
+
+0: The level output on the MOSIx pin during MOSI idling corresponds
+to low
+1: The level output on the MOSIx pin during MOSI idling corresponds
+to high
+
+R/W
+
+b5
+
+MOIFE
+
+MOSI Idle Value Fixing
+Enable
+
+0: MOSI output value equals final data from previous transfer
+1: MOSI output value equals the value set in the MOIFV bit
+
+R/W
+
+b7, b6
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note:
+
+Do not change the SPPCR register while the SPCR.SPE bit is 1.
+
+SPLP Bit (RSPI Loopback)
+The SPLP bit selects the mode of the RSPI pins.
+When the SPLP bit is set to 1, the RSPI shuts off the path between the MISOx pin and the shift register if the
+SPCR.MSTR bit is 1, and between the MOSIx pin and the shift register if the SPCR.MSTR bit is 0, and connects
+(inverts) the input path and output path for the shift register (loopback mode).
+SPLP2 Bit (RSPI Loopback 2)
+The SPLP2 bit selects the mode of the RSPI pins.
+When the SPLP2 bit is set to 1, the RSPI shuts off the path between the MISOx pin and the shift register if the
+SPCR.MSTR bit is 1, and between the MOSIx pin and the shift register if the SPCR.MSTR bit is 0, and connects the
+input path and output path for the shift register (loopback mode).
+MOIFV Bit (MOSI Idle Fixed Value)
+If the MOIFE bit is 1 in master mode, the MOIFV bit determines the MOSIx pin output value during the SSL negation
+period (including the SSL retention period during a burst transfer).
+MOIFE Bit (MOSI Idle Value Fixing Enable)
+The MOIFE bit fixes the MOSIx output value when the RSPI in master mode is in an SSL negation period (including the
+SSL retention period during a burst transfer). When the MOIFE bit is 0, the RSPI outputs the last data from the previous
+serial transfer during the SSL negation period to the MOSIx pin. When the MOIFE bit is 1, the RSPI outputs the fixed
+value set in the MOIFV bit to the MOSIx pin.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2356 of 3240
+
+RX72N Group
+
+44.2.4
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Status Register (SPSR)
+
+Address(es): RSPI0.SPSR 000D 0103h, RSPI1.SPSR 000D 0143h, RSPI2.SPSR 000D 0303h
+b7
+
+b6
+
+SPRF
+
+—
+
+0
+
+0
+
+Value after reset:
+
+b5
+
+b4
+
+SPTEF UDRF
+1
+
+b3
+PERF
+
+0
+
+0
+
+b2
+
+b1
+
+MODF IDLNF
+0
+
+0
+
+b0
+OVRF
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+OVRF
+
+Overrun Error Flag
+
+0: No overrun error occurs
+1: An overrun error occurs
+
+R/(W)
+*1
+
+b1
+
+IDLNF
+
+Idle Flag
+
+0: RSPI is in the idle state
+1: RSPI is in the transfer state
+
+R
+
+b2
+
+MODF
+
+Mode Fault Error Flag
+
+0: Neither a mode fault error nor an underrun error occurs
+1: A mode fault error or an underrun error occurs
+
+R/(W)
+*1
+
+b3
+
+PERF
+
+Parity Error Flag
+
+0: No parity error occurs
+1: A parity error occurs
+
+R/(W)
+*1
+
+b4
+
+UDRF
+
+Underrun Error Flag
+
+This flag is used with the MODF flag to check the state in terms of
+mode fault errors and underrun errors.
+
+R/(W)
+*1, *2
+
+b4 b2
+
+0 0: Neither a mode fault error nor an underrun error occurs
+0 1: A mode fault error occurs
+1 1: An underrun error occurs
+
+b5
+
+SPTEF
+
+Transmit Buffer Empty Flag
+
+0: Transmit buffer has valid data
+1: Transmit buffer has no valid data
+
+R*3
+
+b6
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b7
+
+SPRF
+
+Receive Buffer Full Flag
+
+0: Receive buffer has no valid data
+1: Receive buffer has valid data
+
+R*3
+
+Note 1. Only 0 can be written to clear the flag after reading 1.
+Note 2. Clear the MODF and UDRF flags at the same time.
+Note 3. The write value should be 1.
+
+OVRF Flag (Overrun Error Flag)
+The OVRF flag indicates the occurrence of an overrun error. In master mode (when the SPCR.MSTR bit is 1) and when
+the RSPCK clock auto-stop function is enabled (the SPCR2.SCKASE bit is 1), an overrun error does not occur;
+accordingly this flag does not become 1. For details, refer to section 44.3.9.1, Overrun Error.
+[Setting condition]
+ When the next data reception ends while the SPCR.TXMD bit is 0 and the receive buffer is full.
+[Clearing condition]
+ When the SPSR register is read while the OVRF flag is 1, and then 0 is written to the OVRF flag.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2357 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+IDLNF Flag (Idle Flag)
+The IDLNF flag indicates the transfer status of the RSPI.
+[Setting condition]
+Master mode
+ When both of the conditions in master mode under the [Clearing condition] below are not satisfied.
+Slave mode
+ When the SPCR.SPE bit is set to 1 (enables the RSPI function).
+[Clearing condition]
+Master mode
+ When the SPCR.SPE bit is set to 0 (disables the RSPI function)
+ When all of the following conditions are satisfied.
+1. The transmit buffer is empty (the SPTEF flag is 1)
+2. The SPSSR.SPCP[2:0] bits are 000b
+3. The transmission of the last bit has been completed and the time specified by the SSLND.SLNDL[2:0] and
+SPND.SPNDL[2:0] bits has elapsed
+Slave mode
+ When the SPCR.SPE bit is set to 0 (disables the RSPI function).
+MODF Flag (Mode Fault Error Flag)
+Indicates the occurrence of a mode fault error or an underrun error. The UDRF flag indicates whether the error is a mode
+fault error or an underrun error.
+[Setting condition]
+Multi-master mode
+ When the input level of the SSLxi pin changes to the active level while the SPCR.MSTR bit is 1 (master mode) and
+the SPCR.MODFEN bit is 1 (mode fault error detection is enabled), the RSPI detects a mode fault error.
+Slave mode
+ When the SSLxi pin is negated before the RSPCK cycle necessary for data transfer ends while the SPCR.MSTR bit
+is 0 (slave mode) and the SPCR.MODFEN bit is 1 (mode fault error detection is enabled), the RSPI detects a mode
+fault error.
+ When the serial transfer starts while the SPCR.SPE bit is 1 (enables the RSPI function) and the transmit data are not
+ready for output, the RSPI detects an underrun error.
+The active level of the SSLxi signal is determined by the SSLP.SSLiP bit (SSLi signal polarity setting bit).
+[Clearing condition]
+ When the SPSR register is read while the MODF flag is 1, and then 0 is written to the MODF flag.
+PERF Flag (Parity Error Flag)
+Indicates the occurrence of a parity error.
+[Setting condition]
+ When a data reception ends while the SPCR.TXMD bit is 0 and the SPCR2.SPPE bit is 1, the RSPI detects a parity
+error.
+[Clearing condition]
+ When the SPSR register is read while the PERF flag is 1, and then 0 is written to the PERF flag.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2358 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+UDRF Flag (Underrun Error Flag)
+Indicates the occurrence of an underrun error. When this flag becomes 1, the MODF flag becomes 1 too. When the
+MODF flag is 1 and this flag is 0, the error is a mode fault error.
+[Setting condition]
+ When the serial transfer starts while the SPCR.MSTR bit is 0 (slave mode), the SPCR.SPE bit is 1 (enables the
+RSPI function), and the transmit data are not ready for output, the RSPI detects an underrun error
+[Clearing condition]
+ When 0 is written to the UDRF flag after reading the SPSR register while the UDRF flag is 1
+SPTEF Flag (Transmit Buffer Empty Flag)
+Indicates whether the transmit buffer (SPTX) in the RSPI data register has valid data.
+[Setting condition]
+ When the SPCR.SPE bit is set to 0 (disables the RSPI function).
+ When the number of frames of transmit data specified by the SPDCR.SPFC[1:0] bits have been transferred from the
+transmit buffer to the shift register.
+[Clearing condition]
+ When the number of frames of transmit data specified by the SPDCR.SPFC[1:0] bits is written to the SPDR
+register.
+The SPDR register can be set only when the SPTEF flag is 1. The data in the transmit buffer is not updated when the
+SPDR register is set while the SPTEF flag is 0.
+SPRF Flag (Receive Buffer Full Flag)
+Indicates whether the receive buffer (SPRX) in the RSPI data register has valid data.
+[Setting condition]
+ When the number of frames of receive data specified by the SPDCR.SPFC[1:0] bits is transferred from shift register
+to the receive buffer (SPRX) while the SPCR.TXMD bit is 0 (full duplex) and the SPRF flag is 0.
+Note that the SPRF flag does not become 1 when the OVRF flag is 1.
+[Clearing condition]
+ When all of the received data are read from the SPDR register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2359 of 3240
+
+RX72N Group
+
+44.2.5
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Data Register (SPDR)
+
+ When accessing in longword size
+Address(es): RSPI0.SPDR 000D 0104h, RSPI1.SPDR 000D 0144h, RSPI2.SPDR 000D 0304h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ When accessing in word size
+Address(es): RSPI0.SPDR.H 000D 0104h, RSPI1.SPDR.H 000D 0144h, RSPI2.SPDR.H 000D 0304h
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+H
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ When accessing in byte size
+Address(es): RSPI0.SPDR.HH 000D 0104h, RSPI1.SPDR.HH 000D 0144h, RSPI2.SPDR.HH 000D 0304h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+HH
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+The SPDR register is the interface with the buffers that hold data for transmission and reception by the RSPI.
+When accessing in longwords (the SPLW bit is 1 and the SPBYT bit is 0), access the SPDR register in 32-bit units.
+When accessing in words (the SPLW bit is 0 and the SPBYT bit is 0), access the SPDR.H register in 16-bit units.
+When accessing in bytes (the SPBYT bit is 1), access the SPDR.HH register in 8-bit units.
+The transmit buffer (SPTX) and receive buffer (SPRX) are independent but are both mapped to the SPDR register.
+Figure 44.2 shows the Configuration of the SPDR Register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2360 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI data register
+
+*1
+
+SPDR
+
+Internal peripheral bus
+
+Transmit buffer
+SPTX0
+SPTX1
+SPTX2
+SPTX3
+
+*1
+
+Shift
+register
+
+Transmit data
+
+*1
+
+Shift
+register
+
+Receive data
+
+Receive buffer
+
+*1
+
+SPRX0
+SPRX1
+SPRX2
+SPRX3
+
+Note 1. The destination buffer and stage for access is automatically switched by hardware.
+
+Figure 44.2
+
+Configuration of the SPDR Register
+
+The transmit and receive buffers each have four stages. The number of stages to be used is selectable by the number of
+frames specification bits in the RSPI data control register (SPDCR.SPFC[1:0]). The eight stages of the buffer are all
+mapped to the single address of the SPDR register.
+Data written to the SPDR register are written to a transmit-buffer stage (SPTXn) (n = 0 to 3) and then transmitted from
+the buffer. The receive buffer holds received data on completion of reception. The receive buffer is not updated if an
+overrun is generated.
+Furthermore, if the data length is other than 32 bits, bits not referred to in SPTXn (n = 0 to 3) are stored in the
+corresponding bits in SPRXn. For example, if the data length is 9 bits, received data are stored in the SPRXn[8:0] bits
+and the SPTXn[31:9] bits are stored in the SPRXn[31:9] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2361 of 3240
+
+RX72N Group
+
+(1)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Bus Interface
+
+The SPDR register is the interface with 32-bit wide transmit and receive buffers, each of which has four stages, for a total
+of 32 bytes. In other words, the 32 bytes are mapped to the 4-byte address space for the SPDR register. Furthermore, the
+unit of access for the SPDR register is selected by the SPDCR.SPLW bit and the SPDCR.SPBYT bit.
+Data for transmission should be flush with the LSB end of the register. Received data are stored flush with the LSB end.
+Operations involved in writing to and reading from the SPDR register are described below.
+
+(a)
+
+Writing
+
+Data written to the SPDR register are written to a transmit buffer (SPTXn). This is not influenced by the value of the
+SPDCR.SPRDTD bit unlike when reading from the SPDR register.
+The transmit buffer includes a transmit buffer write pointer which is automatically updated to indicate the next stage each
+time data are written to the SPDR register.
+Figure 44.3 shows the configuration of the bus interface with the transmit buffer in the case of writing to the SPDR
+register.
+
+SPDR
+
+SPTX0
+SPTX1
+SPTX2
+SPTX3
+Write access + Setting of the SPFC[1:0] bits
+
+Figure 44.3
+
+Configuration of the SPDR Register (Writing)
+
+The sequence for switching the transmit buffer write pointer differs with the setting of the number of frames specification
+bits in the RSPI data control register (SPDCR.SPFC[1:0]).
+ Settings of the SPFC[1:0] bits and sequence of switching the pointer among SPTX0 to SPTX3.
+When the SPFC[1:0] bits are 00b: SPTX0 → SPTX0 → SPTX0 → …
+When the SPFC[1:0] bits are 01b: SPTX0 → SPTX1 → SPTX0 → SPTX1 → …
+When the SPFC[1:0] bits are 10b: SPTX0 → SPTX1 → SPTX2 → SPTX0 → SPTX1 → …
+When the SPFC[1:0] bits are 11b: SPTX0 → SPTX1 → SPTX2 → SPTX3 → SPTX0 → SPTX1 → …
+When 1 is written to the RSPI function enable bit in the RSPI control register (SPCR.SPE) while the bit’s current value is
+0, SPTX0 will be the destination the next time writing proceeds.
+When writing to the transmit buffer (SPTXn) after generation of the transmit buffer empty interrupt (after the
+SPSR.SPTEF flag becomes 1), write the number of frames set by the number of frames specification bits (SPFC[1:0]) in
+the RSPI data control register (SPDCR). Even if the number of frames is written to the transmit buffer (SPTXn), the
+value of the buffer is not updated after completion of the writing and before generation of the next transmit buffer empty
+interrupt (while the SPSR.SPTEF flag is 0).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2362 of 3240
+
+RX72N Group
+
+(b)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Reading
+
+The SPDR register can be read to read the value of a receive buffer (SPRXn) or a transmit buffer (SPTXn). The setting of
+the RSPI receive/transmit data select bit in the RSPI data control register (SPDCR.SPRDTD) selects whether reading is
+of the receive or transmit buffer.
+The sequence of reading the SPDR register is controlled by independent pointers, receive buffer read pointer and
+transmit buffer read pointer.
+Figure 44.4 shows the configuration of the bus interface with the receive and transmit buffers in the case of reading
+from the SPDR register.
+
+SPRX0
+SPRX1
+0
+SPRX2
+
+SPDR
+
+SPRX3
+Read access to receive buffer +
+Setting of the SPFC[1:0] bits
+SPTX0
+SPTX1
+1
+SPTX2
+SPTX3
+SPRDTD
+
+Figure 44.4
+
+Read access to transmit buffer +
+Setting of the SPFC[1:0] bits
+
+Configuration of the SPDR Register (Reading)
+
+Reading the receive buffer switches the receive buffer read pointer to the next buffer automatically.
+The sequence of switching the receive buffer read pointer is the same as that for the transmit buffer write pointer.
+However, when 1 is written to the RSPI function enable bit in the RSPI control register (SPCR.SPE) while the bit’s
+current value is 0, SPRX0 will be indicated by the buffer read pointer the next time reading proceeds.
+The transmit buffer read pointer is updated when writing to the SPDR register, and not updated when reading from the
+transmit buffer. When reading from the transmit buffer, the value most recently written to the SPDR register is read.
+However, after generation of the transmit buffer empty interrupt, the values read from the transmit buffer are all 0 in the
+interval after completion of writing the number of frames of data specified in the number of frames specification bits
+(SPDCR.SPFC[1:0]) and before generation of the next buffer empty interrupt (while the SPSR.SPTEF flag is 0).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2363 of 3240
+
+RX72N Group
+
+44.2.6
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Sequence Control Register (SPSCR)
+
+Address(es): RSPI0.SPSCR 000D 0108h, RSPI1.SPSCR 000D 0148h, RSPI2.SPSCR 000D 0308h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b2
+
+b1
+
+b0
+
+SPSLN[2:0]
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+b2 to b0
+
+SPSLN[2:0]
+
+RSPI Sequence Length
+Specification
+
+b2
+
+b7 to b3
+
+—
+
+Reserved
+
+0
+
+b0 Sequence Length
+
+R/W
+Referenced SPCMD0 to SPCMD7 registers (No.)
+
+0 0 0: 1
+0→0→…
+0 0 1: 2
+0→1→0→…
+0 1 0: 3
+0→1→2→0→…
+0 1 1: 4
+0→1→2→3→0→…
+1 0 0: 5
+0→1→2→3→4→0→…
+1 0 1: 6
+0→1→2→3→4→5→0→…
+1 1 0: 7
+0→1→2→3→4→5→6→0→…
+1 1 1: 8
+0→1→2→3→4→5→6→7→0→…
+The order in which the SPCMD0 to SPCMD7 registers are to be
+referenced is changed according to the sequence length that is set in
+these bits. The relationship among the setting of these bits, sequence
+length, and the SPCMD0 to SPCMD7 registers referenced by the
+RSPI is shown above. However, the RSPI in slave mode references
+the SPCMD0 register.
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+R/W
+
+The SPSCR register sets the sequence length when the RSPI operates in master mode. When changing the
+SPSCR.SPSLN[2:0] bits while both the SPCR.MSTR and SPCR.SPE bits are 1, the bits should be changed while the
+SPSR.IDLNF flag is 0.
+SPSLN[2:0] Bits (RSPI Sequence Length Specification)
+The SPSLN[2:0] bits specify a sequence length when the RSPI in master mode performs sequential operations. The RSPI
+in master mode changes the SPCMD0 to SPCMD7 registers to be referenced and the order in which they are referenced
+according to the sequence length that is set in the SPSLN[2:0] bits.
+In slave mode, the SPCMD0 register is referred.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2364 of 3240
+
+RX72N Group
+
+44.2.7
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Sequence Status Register (SPSSR)
+
+Address(es): RSPI0.SPSSR 000D 0109h, RSPI1.SPSSR 000D 0149h, RSPI2.SPSSR 000D 0309h
+b7
+
+b6
+
+—
+Value after reset:
+
+0
+
+b5
+
+b4
+
+SPECM[2:0]
+0
+
+0
+
+b3
+
+b2
+
+—
+0
+
+0
+
+b1
+
+b0
+
+SPCP[2:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+SPCP[2:0]
+
+RSPI Command Pointer
+
+b2
+
+R
+
+b3
+
+—
+
+Reserved
+
+This bit is read as 0.
+
+R
+
+b6 to b4
+
+SPECM[2:0]
+
+RSPI Error Command
+
+b6
+
+R
+
+b7
+
+—
+
+Reserved
+
+This bit is read as 0.
+
+b0
+
+0 0 0: SPCMD0
+0 0 1: SPCMD1
+0 1 0: SPCMD2
+0 1 1: SPCMD3
+1 0 0: SPCMD4
+1 0 1: SPCMD5
+1 1 0: SPCMD6
+1 1 1: SPCMD7
+
+b4
+
+0 0 0: SPCMD0
+0 0 1: SPCMD1
+0 1 0: SPCMD2
+0 1 1: SPCMD3
+1 0 0: SPCMD4
+1 0 1: SPCMD5
+1 1 0: SPCMD6
+1 1 1: SPCMD7
+
+R
+
+The SPSSR register indicates the sequence control status when the RSPI operates in master mode.
+Any writing to the SPSSR register is ignored.
+SPCP[2:0] Bits (RSPI Command Pointer)
+The SPCP[2:0] bits indicate the SPCMDm register that is currently pointed to by the pointer during sequence control by
+the RSPI.
+For the RSPI’s sequence control, refer to section 44.3.11.1, Master Mode Operation.
+SPECM[2:0] Bits (RSPI Error Command)
+The SPECM[2:0] bits indicate the SPCMDm register that is specified by the SPCP[2:0] bits when an error is detected
+during sequence control by the RSPI. The RSPI updates the SPECM[2:0] bits only when an error is detected. If both the
+SPSR.OVRF and SPSR.MODF flags are 0 and there is no error, the values of the SPECM[2:0] bits have no meaning.
+For the RSPI’s error detection function, refer to section 44.3.9, Error Detection. For the RSPI’s sequence control, refer
+to section 44.3.11.1, Master Mode Operation.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2365 of 3240
+
+RX72N Group
+
+44.2.8
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Bit Rate Register (SPBR)
+
+Address(es): RSPI0.SPBR 000D 010Ah, RSPI1.SPBR 000D 014Ah, RSPI2.SPBR 000D 030Ah
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+The SPBR register sets the bit rate in master mode. Do not change the SPBR register while both the SPCR.MSTR and
+SPCR.SPE bits are 1.
+When the RSPI is used in slave mode, the bit rate depends on the bit rate of the input clock (bit rate satisfying the
+electrical characteristics should be used) regardless of the settings of the SPBR register and the SPCMDm.BRDV[1:0]
+bits (bit rate division setting bits).
+The bit rate is determined by combinations of the SPBR register setting and the SPCMDm.BRDV[1:0] bit setting. The
+equation for calculating the bit rate is given below. In the equation, n denotes the SPBR register setting (0, 1, 2, …, 255),
+and N denotes the BRDV[1:0] bit setting (0, 1, 2, 3).
+
+f  PCLK  Bit rate = --------------------------------------N
+2  n + 1  2
+Table 44.3 lists examples of the relationship among the SPBR register settings, the BRDV[1:0] bit settings, and bit
+rates.
+Use the bit rate that meets electrical characteristics based on the AC specifications of the target device.
+Table 44.3
+
+Relationship among SPBR Settings, BRDV[1:0] Settings, and Bit Rates
+Bit Rate
+
+SPBR
+(n)
+
+BRDV[1:0]
+Bits (N)
+
+Division
+Ratio
+
+PCLK =
+32 MHz
+
+PCLK =
+36 MHz
+
+PCLK =
+40 MHz
+
+PCLK =
+50 MHz
+
+PCLK =
+60 MHz
+
+PCLK =
+80 MHz
+
+0
+
+0
+
+2
+
+16.0 Mbps
+
+18.0 Mbps
+
+20.0 Mbps
+
+25.0 Mbps
+
+30.0 Mbps
+
+40.0 Mbps —
+
+1
+
+0
+
+4
+
+8.00 Mbps
+
+9.00 Mbps
+
+10.0 Mbps
+
+12.5 Mbps
+
+15.0 Mbps
+
+20.0 Mbps 25.0 Mbps 30.0 Mbps
+
+2
+
+0
+
+6
+
+5.33 Mbps
+
+6.00 Mbps
+
+6.67 Mbps
+
+8.33 Mbps
+
+10.0 Mbps
+
+13.3 Mbps 16.7 Mbps 20.0 Mbps
+
+3
+
+0
+
+8
+
+4.00 Mbps
+
+4.50 Mbps
+
+5.00 Mbps
+
+6.25 Mbps
+
+7.50 Mbps
+
+10.0 Mbps 12.5 Mbps 15.0 Mbps
+
+4
+
+0
+
+10
+
+3.20 Mbps
+
+3.60 Mbps
+
+4.00 Mbps
+
+5.00 Mbps
+
+6.00 Mbps
+
+8.00 Mbps 10.0 Mbps 12.0 Mbps
+
+5
+
+0
+
+12
+
+2.67 Mbps
+
+3.00 Mbps
+
+3.33 Mbps
+
+4.16 Mbps
+
+5.00 Mbps
+
+6.67 Mbps 8.33 Mbps 10.0 Mbps
+
+5
+
+1
+
+24
+
+1.33 Mbps
+
+1.50 Mbps
+
+1.67 Mbps
+
+2.08 Mbps
+
+2.50 Mbps
+
+3.33 Mbps 4.17 Mbps 5.00 Mbps
+
+5
+
+2
+
+48
+
+667 kbps
+
+750 kbps
+
+833 kbps
+
+1.04 Mbps
+
+1.25 Mbps
+
+1.67 Mbps 2.08 Mbps 2.50 Mbps
+
+5
+
+3
+
+96
+
+333 kbps
+
+375 kbps
+
+417 kbps
+
+521 kbps
+
+625 kbps
+
+833 kbps
+
+1.04 Mbps 1.25 Mbps
+
+255
+
+3
+
+4096
+
+7.81 kbps
+
+8.80 kbps
+
+9.78 kbps
+
+12.2 kbps
+
+14.6 kbps
+
+19.5 kbps
+
+24.4 kbps
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+PCLK =
+100 MHz
+
+PCLK =
+120 MHz
+
+—
+
+29.3 kbps
+
+Page 2366 of 3240
+
+RX72N Group
+
+44.2.9
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Data Control Register (SPDCR)
+
+Address(es): RSPI0.SPDCR 000D 010Bh, RSPI1.SPDCR 000D 014Bh, RSPI2.SPDCR 000D 030Bh
+b7
+—
+Value after reset:
+
+b6
+
+b5
+
+b4
+
+SPBYT SPLW SPRDT
+D
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+SPFC[1:0]
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+SPFC[1:0]
+
+Number of Frames
+Specification
+
+b1 b0
+
+R/W
+
+b3, b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b4
+
+SPRDTD
+
+RSPI Receive/Transmit Data
+Select
+
+0: The SPDR values are read from the receive buffer
+1: The SPDR values are read from the transmit buffer
+(but only if the transmit buffer is empty)
+
+R/W
+
+b5
+
+SPLW
+
+RSPI Longword Access/
+Word Access Specification*1
+
+0: The SPDR register is accessed in words
+1: The SPDR register is accessed in longwords
+
+R/W
+
+b6
+
+SPBYT
+
+RSPI Byte Access
+Specification
+
+0: The SPDR register is accessed in words or longwords (the SPLW
+bit is enabled)
+1: The SPDR register is accessed in bytes (the SPLW bit is
+disabled)
+
+R/W
+
+b7
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+0 0: 1 frame
+0 1: 2 frames
+1 0: 3 frames
+1 1: 4 frames
+
+Note 1. Set the SPBYT bit to 0, when accessing the SPDR register in words or longwords.
+
+Up to four frames can be transmitted or received in one round of transmission or reception activation. The amount of data
+in each transfer is controlled by the combination of the SPCMDm.SPB[3:0] bits, the SPSCR.SPSLN[2:0] bits, and the
+SPDCR.SPFC[1:0] bits.
+When changing the SPDCR.SPFC[1:0] bits while the SPCR.SPE bit is 1, the bits should be changed while the
+SPSR.IDLNF flag is 0.
+SPFC[1:0] Bits (Number of Frames Specification)
+The SPFC[1:0] bits specify the number of frames that can be stored in the SPDR register (per transfer activation). Up to
+four frames can be transmitted or received in one round of transmission or reception, and the amount of data is
+determined by the combination of the SPSCR.SPSLN[2:0] bits, and the SPDCR.SPFC[1:0] bits. Furthermore, the setting
+of the SPFC[1:0] bits adjusts the number of frames for generation of receive buffer full interrupt, and start of
+transmission or generation of transmit buffer empty interrupts.
+When the number of frames of transmit data specified by SPFC[1:0] bits is written to the SPDR register, the
+SPSR.SPTEF flag becomes 0 and transmission starts. Then, when the specified number of frames of transmit data has
+been transferred to the shift register, the SPTEF flag becomes 1 and the RSPI transmit buffer empty interrupt is
+generated.
+When the number of frames specified by the SPFC[1:0] bits are received, the SPSR.SPRF flag becomes 1 and the receive
+buffer full interrupt is generated.
+Table 44.4 lists the frame configurations that can be stored in the SPDR register and examples of combinations of
+settings for transmission and reception. Do not select the combinations of settings other than those shown in the
+examples.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2367 of 3240
+
+RX72N Group
+
+Table 44.4
+
+44. Serial Peripheral Interface (RSPIc)
+
+Settable Combinations of SPSLN[2:0] Bits and SPFC[1:0] Bits
+
+Setting
+
+SPSLN[2:0]
+
+SPFC[1:0]
+
+Number of Frames in
+a Single Sequence
+
+Number of Frames at which Transmit Buffer or Receive
+Buffer Status Becomes “Has Valid Data”
+
+1-1
+
+000b
+
+00b
+
+1
+
+1
+
+1-2
+
+000b
+
+01b
+
+2
+
+2
+
+1-3
+
+000b
+
+10b
+
+3
+
+3
+
+1-4
+
+000b
+
+11b
+
+4
+
+4
+
+2-1
+
+001b
+
+01b
+
+2
+
+2
+
+2-2
+
+001b
+
+11b
+
+4
+
+4
+
+3
+
+010b
+
+10b
+
+3
+
+3
+
+4
+
+011b
+
+11b
+
+4
+
+4
+
+5
+
+100b
+
+00b
+
+5
+
+1
+
+6
+
+101b
+
+00b
+
+6
+
+1
+
+7
+
+110b
+
+00b
+
+7
+
+1
+
+8
+
+111b
+
+00b
+
+8
+
+1
+
+SPRDTD Bit (RSPI Receive/Transmit Data Select)
+The SPRDTD bit selects whether the SPDR register reads values from the receive buffer or from the transmit buffer.
+If reading is from the transmit buffer, the value written to the SPDR register immediately beforehand is read.
+When reading the transmit buffer, do so before writing of the number of frames set in the SPFC[1:0] bits is finished and
+after generation of the transmit buffer empty interrupt (While the SPSR.SPTEF flag is 1).
+For details, refer to section 44.2.5, RSPI Data Register (SPDR).
+SPLW Bit (RSPI Longword Access/Word Access Specification)
+The SPLW bit specifies the access width for the SPDR register. This bit setting is enabled when the SPBYT bit is 0.
+Access to the SPDR register in words when the SPLW bit is 0 and in longwords when the SPLW bit is 1.
+Also, when the SPLW bit is 0, set the SPCMDm.SPB[3:0] bits (RSPI data length setting bits) to 8 to 16 bits. Do not
+select 20, 24, or 32 bits.
+SPBYT Bit (RSPI Byte Access Specification)
+The SPBYT bit specifies the access width for the SPDR register. Access to the SPDR register according to the SPLW bit
+setting when the SPBYT bit is 0. Access to the SPDR register in bytes when the SPBYT bit is 1.
+When the SPBYT bit is 1, set the SPCMDm.SPB[3:0] bits (RSPI data length setting bits) to 8 bits. Do not select 9 to 16,
+20,24, or 32 bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2368 of 3240
+
+RX72N Group
+
+44.2.10
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Clock Delay Register (SPCKD)
+
+Address(es): RSPI0.SPCKD 000D 010Ch, RSPI1.SPCKD 000D 014Ch, RSPI2.SPCKD 000D 030Ch
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b2
+
+b1
+
+b0
+
+SCKDL[2:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+SCKDL[2:0]
+
+RSPCK Delay Setting
+
+b2
+
+R/W
+
+b7 to b3
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+b0
+
+0 0 0: 1 RSPCK
+0 0 1: 2 RSPCK
+0 1 0: 3 RSPCK
+0 1 1: 4 RSPCK
+1 0 0: 5 RSPCK
+1 0 1: 6 RSPCK
+1 1 0: 7 RSPCK
+1 1 1: 8 RSPCK
+
+R/W
+
+The SPCKD register sets a period from the beginning of SSLxi signal assertion to RSPCK oscillation (RSPCK delay)
+when the SPCMDm.SCKDEN bit is 1. Do not change the SPCKD register while both the SPCR.MSTR and SPCR.SPE
+bits are 1.
+SCKDL[2:0] Bits (RSPCK Delay Setting)
+The SCKDL[2:0] bits set an RSPCK delay value when the SPCMDm.SCKDEN bit is 1.
+When using the RSPI in slave mode, set the SCKDL[2:0] bits to 000b.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2369 of 3240
+
+RX72N Group
+
+44.2.11
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Slave Select Negation Delay Register (SSLND)
+
+Address(es): RSPI0.SSLND 000D 010Dh, RSPI1.SSLND 000D 014Dh, RSPI2.SSLND 000D 030Dh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b2
+
+b1
+
+b0
+
+SLNDL[2:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+SLNDL[2:0]
+
+SSL Negation Delay Setting
+
+b2
+
+R/W
+
+b7 to b3
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+b0
+
+0 0 0: 1 RSPCK
+0 0 1: 2 RSPCK
+0 1 0: 3 RSPCK
+0 1 1: 4 RSPCK
+1 0 0: 5 RSPCK
+1 0 1: 6 RSPCK
+1 1 0: 7 RSPCK
+1 1 1: 8 RSPCK
+
+R/W
+
+The SSLND register sets a period (SSL negation delay) from the transmission of a final RSPCK edge to the negation of
+the SSLxi signal during a serial transfer by the RSPI in master mode. Do not change the SSLND register while both the
+SPCR.MSTR and SPCR.SPE bits are 1.
+SLNDL[2:0] Bits (SSL Negation Delay Setting)
+The SLNDL[2:0] bits set an SSL negation delay value when the SPCMDm.SLNDEN bit is 1.
+When using the RSPI in slave mode, set the SLNDL[2:0] bits to 000b.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2370 of 3240
+
+RX72N Group
+
+44.2.12
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Next-Access Delay Register (SPND)
+
+Address(es): RSPI0.SPND 000D 010Eh, RSPI1.SPND 000D 014Eh, RSPI2.SPND 000D 030Eh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b2
+
+b1
+
+b0
+
+SPNDL[2:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+SPNDL[2:0]
+
+RSPI Next-Access Delay Setting
+
+b2
+
+R/W
+
+b7 to b3
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+b0
+
+0 0 0: 1 RSPCK + 2 PCLK
+0 0 1: 2 RSPCK + 2 PCLK
+0 1 0: 3 RSPCK + 2 PCLK
+0 1 1: 4 RSPCK + 2 PCLK
+1 0 0: 5 RSPCK + 2 PCLK
+1 0 1: 6 RSPCK + 2 PCLK
+1 1 0: 7 RSPCK + 2 PCLK
+1 1 1: 8 RSPCK + 2 PCLK
+
+R/W
+
+SPND sets a non-active period (next-access delay) of the SSLxi signal after termination of a serial transfer when the
+SPCMDm.SPNDEN bit is 1. Do not change the SPND register while both the SPCR.MSTR and SPCR.SPE bits are 1.
+SPNDL[2:0] Bits (RSPI Next-Access Delay Setting)
+The SPNDL[2:0] bits set a next-access delay when the SPCMDm.SPNDEN bit is 1.
+When using the RSPI in slave mode, set the SPNDL[2:0] bits to 000b.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2371 of 3240
+
+RX72N Group
+
+44.2.13
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Control Register 2 (SPCR2)
+
+Address(es): RSPI0.SPCR2 000D 010Fh, RSPI1.SPCR2 000D 014Fh, RSPI2.SPCR2 000D 030Fh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+SCKAS
+E
+
+PTE
+
+SPIIE
+
+SPOE
+
+SPPE
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SPPE
+
+Parity Enable*1
+
+0: Does not add the parity bit to transmit data and does not check the
+parity bit of receive data
+1: Adds the parity bit to transmit data and checks the parity bit of
+receive data
+
+R/W
+
+b1
+
+SPOE
+
+Parity Mode*1
+
+0: Selects even parity for use in transmission and reception
+1: Selects odd parity for use in transmission and reception
+
+R/W
+
+b2
+
+SPIIE
+
+Idle Interrupt Enable
+
+0: Disables the generation of idle interrupt requests
+1: Enables the generation of idle interrupt requests
+
+R/W
+
+b3
+
+PTE
+
+Parity Self-Diagnosis
+
+0: Disables the self-diagnosis function of the parity circuit
+1: Enables the self-diagnosis function of the parity circuit
+
+R/W
+
+b4
+
+SCKASE
+
+RSPCK Auto-Stop Function
+Enable*1
+
+0: Disables the RSPCK auto-stop function
+1: Enables the RSPCK auto-stop function
+
+R/W
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note 1. Do not change the SPPE, SPOE, and SCKASE bits while the SPCR.SPE bit is 1.
+
+SPPE Bit (Parity Enable)
+The SPPE bit enables or disables the parity function.
+SPOE Bit (Parity Mode)
+The SPOE bit specifies odd or even parity.
+When even parity is set, parity bit addition is performed so that the total number of 1-bits in the transmit/receive
+character plus the parity bit is even. Similarly, when odd parity is set, parity bit addition is performed so that the total
+number of 1-bits in the transmit/receive character plus the parity bit is odd.
+The SPOE bit is valid only when the SPPE bit is 1.
+SPIIE Bit (Idle Interrupt Enable)
+The SPIIE bit enables or disables the generation of idle interrupt requests when the RSPI being in the idle state is
+detected and the SPSR.IDLNF flag is set to 0.
+PTE Bit (Parity Self-Diagnosis)
+The PTE bit enables the self-diagnosis function of the parity circuit in order to check whether the parity function is
+operating correctly.
+SCKASE Bit (RSPCK Auto-Stop Function Enable)
+The SCKASE bit enables or disables the RSPCK auto-stop function. When this function is enabled, the RSPCK clock is
+stopped before an overrun error occurs when data is received in master mode. For details, refer to section 44.3.9.1,
+Overrun Error.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2372 of 3240
+
+RX72N Group
+
+44.2.14
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Command Register m (SPCMDm) (m = 0 to 7)
+
+Address(es): RSPI0.SPCMD0 000D 0110h, RSPI0.SPCMD1 000D 0112h, RSPI0.SPCMD2 000D 0114h,
+RSPI0.SPCMD3 000D 0116h, RSPI0.SPCMD4 000D 0118h, RSPI0.SPCMD5 000D 011Ah,
+RSPI0.SPCMD6 000D 011Ch, RSPI0.SPCMD7 000D 011Eh,
+RSPI1.SPCMD0 000D 0150h, RSPI1.SPCMD1 000D 0152h, RSPI1.SPCMD2 000D 0154h,
+RSPI1.SPCMD3 000D 0156h, RSPI1.SPCMD4 000D 0158h, RSPI1.SPCMD5 000D 015Ah,
+RSPI1.SPCMD6 000D 015Ch, RSPI1.SPCMD7 000D 015Eh,
+RSPI2.SPCMD0 000D 0310h, RSPI2.SPCMD1 000D 0312h, RSPI2.SPCMD2 000D 0314h,
+RSPI2.SPCMD3 000D 0316h, RSPI2.SPCMD4 000D 0318h, RSPI2.SPCMD5 000D 031Ah,
+RSPI2.SPCMD6 000D 031Ch, RSPI2.SPCMD7 000D 031Eh
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+SCKDE SLNDE SPNDE LSBF
+N
+N
+N
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+b9
+
+b8
+
+SPB[3:0]
+0
+
+1
+
+b7
+
+b6
+
+SSLKP
+
+1
+
+1
+
+0
+
+b5
+
+b4
+
+SSLA[2:0]
+0
+
+0
+
+b3
+
+b2
+
+BRDV[1:0]
+0
+
+1
+
+1
+
+b1
+
+b0
+
+CPOL
+
+CPHA
+
+0
+
+1
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+CPHA
+
+RSPCK Phase Setting
+
+0: Data sampling on odd edge, data variation on even edge
+1: Data variation on odd edge, data sampling on even edge
+
+R/W
+
+b1
+
+CPOL
+
+RSPCK Polarity Setting
+
+0: RSPCK is low when idle
+1: RSPCK is high when idle
+
+R/W
+
+b3, b2
+
+BRDV[1:0]
+
+Bit Rate Division Setting
+
+b3 b2
+
+R/W
+
+b6 to b4
+
+SSLA[2:0]
+
+SSL Signal Assertion Setting
+
+b6
+
+b7
+
+SSLKP
+
+SSL Signal Level Keeping
+
+0: Negates all SSL signals upon completion of transfer
+1: Keeps the SSL signal level from the end of transfer until the
+beginning of the next access (burst transfer)
+
+R/W
+
+b11 to b8
+
+SPB[3:0]
+
+RSPI Data Length Setting
+
+b11
+
+R/W
+
+b12
+
+LSBF
+
+RSPI LSB First
+
+0: MSB first
+1: LSB first
+
+R/W
+
+b13
+
+SPNDEN
+
+RSPI Next-Access Delay
+Enable
+
+0: A next-access delay of 1 RSPCK + 2 PCLK
+1: A next-access delay is equal to the setting of the RSPI nextaccess delay register (SPND)
+
+R/W
+
+b14
+
+SLNDEN
+
+SSL Negation Delay Setting
+Enable
+
+0: An SSL negation delay of 1 RSPCK
+1: An SSL negation delay is equal to the setting of the RSPI slave
+select negation delay register (SSLND)
+
+R/W
+
+b15
+
+SCKDEN
+
+RSPCK Delay Setting Enable
+
+0: An RSPCK delay of 1 RSPCK
+1: An RSPCK delay is equal to the setting of the RSPI clock delay
+register (SPCKD)
+
+R/W
+
+0 0: These bits select the base bit rate
+0 1: These bits select the base bit rate divided by 2
+1 0: These bits select the base bit rate divided by 4
+1 1: These bits select the base bit rate divided by 8
+
+R/W
+
+b4
+
+0 0 0: SSL0
+0 0 1: SSL1
+0 1 0: SSL2
+0 1 1: SSL3
+1 x x: Setting prohibited
+
+b8
+
+0100 to 0111: 8 bits
+1 0 0 0: 9 bits
+1 0 0 1: 10 bits
+1 0 1 0: 11 bits
+1 0 1 1: 12 bits
+1 1 0 0: 13 bits
+1 1 0 1: 14 bits
+1 1 1 0: 15 bits
+1 1 1 1: 16 bits
+0 0 0 0: 20 bits
+0 0 0 1: 24 bits
+0010, 0011: 32 bits
+
+x: Don’t care
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2373 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+The SPCMDm register is used to set a transfer format for the RSPI in master mode. Each channel has eight RSPI
+command registers (SPCMD0 to SPCMD7). Some of the bits in the SPCMD0 register is used to set a transfer mode for
+the RSPI in slave mode. The RSPI in master mode sequentially references the SPCMDm register according to the
+settings in the SPSCR.SPSLN[2:0] bits, and executes the serial transfer that is set in the referenced SPCMDm register.
+SPCMDm register should be set while the transmit buffer is empty (data for the next transfer is not set) and before setting
+of the data that is to be transmitted when that SPCMDm register is referenced.
+An SPCMDm register that is referenced by the RSPI in master mode can be checked by means of the SPSSR.SPCP[2:0]
+bits. Do not change the SPCMDm register while the SPCR.MSTR bit is 0 and the SPCR.SPE bit is 1.
+CPHA Bit (RSPCK Phase Setting)
+The CPHA bit sets an RSPCK phase of the RSPI in master mode or slave mode. Data communications between RSPI
+modules require the same RSPCK phase setting between the modules.
+CPOL Bit (RSPCK Polarity Setting)
+The CPOL bit sets an RSPCK polarity of the RSPI in master mode or slave mode. Data communications between RSPI
+modules require the same RSPCK polarity setting between the modules.
+BRDV[1:0] Bits (Bit Rate Division Setting)
+The BRDV[1:0] bits are used to determine the bit rate. A bit rate is determined by combinations of the settings in the
+BRDV[1:0] bits and the SPBR register (refer to section 44.2.8, RSPI Bit Rate Register (SPBR)). The settings in the
+SPBR register determine the base bit rate. The settings in the BRDV[1:0] bits are used to select a bit rate which is
+obtained by dividing the base bit rate by 1, 2, 4, or 8. In the SPCMDm register, different BRDV[1:0] bit settings can be
+specified. This enables execution of serial transfers at a different bit rate for each command.
+SSLA[2:0] Bits (SSL Signal Assertion Setting)
+The SSLA[2:0] bits control the SSLxi signal assertion when the RSPI performs serial transfers in master mode.
+Setting the SSLA[2:0] bits controls the assertion for the SSLxi signal. When an SSLxi signal is asserted, its polarity is
+determined by the set value in the corresponding SSLP. When the SSLA[2:0] bits are set to 000b in multi-master mode,
+serial transfers are performed with all the SSL signals in the negated state (as the SSLx0 pin acts as input).
+When using the RSPI in slave mode, set the SSLA[2:0] bits to 000b.
+SSLKP Bit (SSL Signal Level Keeping)
+When the RSPI in master mode performs a serial transfer, the SSLKP bit specifies whether the SSLxi signal level for the
+current command is to be kept or negated between the SSL negation timing associated with the current command and the
+SSL assertion timing associated with the next command.
+Setting the SSLKP bit to 1 enables a burst transfer. For details, refer to section 44.3.11.1, Master Mode Operation (4)
+Burst Transfer.
+When using the RSPI in slave mode, the SSLKP bit should be set to 0.
+SPB[3:0] Bits (RSPI Data Length Setting)
+The SPB[3:0] bits set a transfer data length for the RSPI in master mode or slave mode. When the SPDCR.SPBYT is 1,
+set the SPB[3:0] bits to 0100b (8 bits). When the SPBYT bit is 0 and the SPDCR.SPLW bit is 0, set the SPB[3:0] bits to
+0100b (8 bits) to 1111b (16 bits).
+LSBF Bit (RSPI LSB First)
+The LSBF bit sets the data format of the RSPI in master mode or slave mode to MSB first or LSB first.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2374 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+SPNDEN Bit (RSPI Next-Access Delay Enable)
+The SPNDEN bit sets the period from the time the RSPI in master mode terminates a serial transfer and sets the SSLxi
+signal inactive until the RSPI enables the SSLxi signal assertion for the next access (next-access delay). If the SPNDEN
+bit is 0, the RSPI sets the next-access delay to 1 RSPCK + 2 PCLK. If the SPNDEN bit is 1, the RSPI inserts a nextaccess delay in compliance with the SPND setting.
+When using the RSPI in slave mode, the SPNDEN bit should be set to 0.
+SLNDEN Bit (SSL Negation Delay Setting Enable)
+The SLNDEN bit sets the period from the time the RSPI in master mode stops RSPCK oscillation until the RSPI sets the
+SSLxi signal inactive (SSL negation delay). If the SLNDEN bit is 0, the RSPI sets the SSL negation delay to 1 RSPCK.
+If the SLNDEN bit is 1, the RSPI negates the SSL signal at an SSL negation delay in compliance with the SSLND
+setting.
+When using the RSPI in slave mode, the SLNDEN bit should be set to 0.
+SCKDEN Bit (RSPCK Delay Setting Enable)
+The SCKDEN bit sets the period from the point when the RSPI in master mode activates the SSLxi signal until the
+RSPCK starts oscillation (RSPI clock delay). If the SCKDEN bit is 0, the RSPI sets the RSPCK delay to 1 RSPCK. If the
+SCKDEN bit is 1, the RSPI starts the oscillation of RSPCK at an RSPCK delay in compliance with the SPCKD setting.
+When using the RSPI in slave mode, the SCKDEN bit should be set to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2375 of 3240
+
+RX72N Group
+
+44.2.15
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI Data Control Register 2 (SPDCR2)
+
+Address(es): RSPI0.SPDCR2 000D 0120h, RSPI1.SPDCR2 000D 0160h, RSPI2.SPDCR2 000D 0320h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+BYSW
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+BYSW
+
+Byte Swap
+
+0: Byte swapping of SPDR data disabled
+1: Byte swapping of SPDR data enabled
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+This register is used to enable or disable byte swapping of transmit and receive data.
+The SPCR.SPE bit should be 0 when rewriting this register.
+BYSW Bit (Byte Swap)
+On transmit, this bit specifies that data bytes written in the SPDR register will be swapped before being transmitted. On
+receive, this bit specifies that received bytes will be swapped before the data is transferred to the SPDR register. This bit
+setting is enabled when the SPDCR.SPBYT bit is 0.
+When using byte swap, set the SPCMD.SPB[3:0] bits to 1111b (16 bits), 0010b (32 bits), or 0011b (32 bits). Also, set the
+SPCR2.SPPE bit to 0 (parity bit not added). For details, refer to sections 44.3.4.3 Byte Swap Transmission and
+44.3.4.4 Byte Swap Reception.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2376 of 3240
+
+RX72N Group
+
+44.3
+
+44. Serial Peripheral Interface (RSPIc)
+
+Operation
+
+In this section, the serial transfer period means a period from the beginning of driving valid data to the fetching of the
+final valid data.
+
+44.3.1
+
+Overview of RSPI Operations
+
+The RSPI is capable of synchronous serial transfers in slave mode (SPI operation), single-master mode (SPI operation),
+multi-master mode (SPI operation), slave mode (clock synchronous operation), and master mode (clock synchronous
+operation). A particular mode of the RSPI can be selected by using the MSTR, MODFEN, and SPMS bits in SPCR.
+Table 44.5 lists the relationship between RSPI modes and SPCR settings, and a description of each mode.
+Table 44.5
+
+Relationship between RSPI Modes and SPCR Settings and Description of Each Mode
+SPI Operation
+
+Mode
+
+Slave
+
+MSTR bit setting
+MODFEN bit setting
+
+Clock Synchronous Operation
+Single-Master
+
+Multi-Master
+
+Slave
+
+Master
+
+0
+
+1
+
+1
+
+0
+
+1
+
+0 or 1
+
+0
+
+1
+
+0
+
+0
+
+SPMS bit setting
+
+0
+
+0
+
+0
+
+1
+
+1
+
+RSPCKx signal
+
+Input
+
+Output
+
+Output/Hi-Z*1
+
+Input
+
+Output
+
+MOSIx signal
+
+Input
+
+Output
+
+Output/Hi-Z*1
+
+Input
+
+Output
+
+MISOx signal
+
+Output/Hi-Z*2
+
+Input
+
+Input
+
+Output
+
+Input
+
+Output
+
+Input
+
+Hi-Z*3
+
+Hi-Z*3
+
+Output
+
+Output/Hi-Z*1
+
+Hi-Z*3
+
+Hi-Z*3
+
+SSLx0 signal
+
+Input
+
+SSLx1 to SSLx3 signals
+
+Hi-Z*3
+
+SSL polarity change function
+
+Supported
+
+Supported
+
+Supported
+
+—
+
+—
+
+Transfer rate
+
+Up to PCLK/4
+
+Up to PCLK/2
+
+Up to PCLK/2
+
+Up to PCLK/4
+
+Up to PCLK/2
+
+Clock source
+
+RSPCK input
+
+On-chip baud rate
+generator
+
+On-chip baud rate
+generator
+
+RSPCK input
+
+On-chip baud rate
+generator
+
+One (CPHA = 1)
+
+Two
+
+—
+
+—
+
+Clock polarity
+
+Two
+
+Clock phase
+
+Two
+
+Two
+
+First transfer bit
+
+Two
+MSB/LSB
+
+Transfer data length
+
+8 to 16, 20, 24, 32 bits
+
+Burst transfer
+
+Possible
+(CPHA = 1)
+
+Possible
+(CPHA = 0,1)
+
+RSPCK delay control
+
+Not supported
+
+Supported
+
+Supported
+
+Not supported
+
+Supported
+
+SSL negation delay control
+
+Not supported
+
+Supported
+
+Supported
+
+Not supported
+
+Supported
+
+Next-access delay control
+
+Not supported
+
+Supported
+
+Supported
+
+Not supported
+
+Supported
+
+Transfer activation method
+
+SSL input active
+Transmit buffer is
+Transmit buffer is
+or RSPCK
+written to when a
+written to when a
+oscillation
+transmit buffer empty transmit buffer empty
+interrupt request is
+interrupt request is
+generated or the
+generated or the
+SPTEF flag is 1
+SPTEF flag is 1
+
+RSPCK
+oscillation
+
+Transmit buffer is
+written to when a
+transmit buffer empty
+interrupt request is
+generated or the
+SPTEF flag is 1
+
+Sequence control
+
+Not supported
+
+Not supported
+
+Supported
+
+Supported*4, *6
+
+Supported*4
+
+Supported*4, *6
+
+Not supported
+
+Supported
+
+Not supported
+
+Not supported
+
+Not supported
+
+Supported
+
+Transmit buffer empty
+detection
+
+Supported*4
+
+Overrun error detection
+
+Supported*4
+
+Supported*4, *6
+
+Underrun error detection
+
+Supported
+
+Not supported
+
+Supported*4, *5
+
+Parity error detection
+
+Note 1.
+Note 2.
+Note 3.
+Note 4.
+Note 5.
+
+Supported
+Supported
+
+Receive buffer full detection
+
+Mode fault error detection
+
+Possible
+(CPHA = 0,1)
+
+Supported
+(MODFEN = 1)
+
+Not supported
+
+Supported
+
+When SSLx0 is asserted by another master device, the pin becomes Hi-Z.
+When SSLx0 is negated or the SPCR.SPE bit is 0, the pin becomes Hi-Z.
+This function is not supported in this mode.
+When the SPCR.TXMD bit is 1, the detections of receiver buffer full, overrun error, and parity error are not performed.
+When the SPCR2.SPPE bit is 0, the detection of parity error is not performed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2377 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+Note 6. When the SPCR2.SCKASE bit is 1, the detection of overrun error is not performed.
+
+44.3.2
+
+Controlling RSPI Pins
+
+The RSPI in single-master mode (SPI operation) or multi-master mode (SPI operation) determines MOSI signal values
+during the SSL negation period (including the SSL retention period during a burst transfer) according to MOIFE and
+MOIFV bit settings in SPPCR, as listed in Table 44.6.
+Table 44.6
+
+MOSI Signal Value Determination during SSL Negation Period
+
+MOIFE Bit
+
+MOIFV Bit
+
+MOSIx Signal Value during SSL Negation Period
+
+0
+
+0, 1
+
+Final data from previous transfer
+
+1
+
+0
+
+Low
+
+1
+
+1
+
+High
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2378 of 3240
+
+RX72N Group
+
+44.3.3
+44.3.3.1
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPI System Configuration Examples
+Single Master/Single Slave (with This MCU Acting as Master)
+
+Figure 44.5 shows a single-master/single-slave RSPI system configuration example when this MCU is used as a master.
+In the single-master/single-slave configuration, the SSLx0 to SSLx3 output of this MCU (master) are not used. The SSL
+input of the SPI slave is fixed to the low level, and the SPI slave is maintained in a select state.*1
+This MCU (master) drives the RSPCKx and MOSIx. The SPI slave drives the MISO.
+Note 1. In the transfer format corresponding to the case where the SPCMDm.CPHA bit is 0, there are slave devices for
+which the SSL signal cannot be fixed to the active level. In situations where the SSL signal cannot be fixed, the
+SSLxi output of this MCU should be connected to the SSL input of the slave device.
+
+This MCU (master)
+
+SPI slave
+
+RSPCKx
+RSPCK
+
+SPCK
+
+MOSIx
+MOSI
+
+MOSI
+
+MISOx
+MISO
+
+MISO
+
+SSLx0
+SSL0
+
+SSL
+
+SSLx1
+SSL1
+SSLx2
+SSL2
+SSLx3
+SSL3
+
+Figure 44.5
+
+Single-Master/Single-Slave Configuration Example (This MCU = Master)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2379 of 3240
+
+RX72N Group
+
+44.3.3.2
+
+44. Serial Peripheral Interface (RSPIc)
+
+Single Master/Single Slave (with This MCU Acting as Slave)
+
+Figure 44.6 shows a single-master/single-slave RSPI system configuration example when this MCU is used as a slave.
+When this MCU is to operate as a slave, the SSLx0 pin is used as SSL input. The SPI master drives the RSPCK and
+MOSI. This MCU (slave) drives the MISOx.*1
+In the single-slave configuration in which the SPCMDm.CPHA bit is set to 1, the SSLx0 input of this MCU (slave) is
+fixed to the low level, this MCU (slave) is maintained in a select state, and in this manner it is possible to execute serial
+transfer (Figure 44.7).
+Note 1. When SSLx0 is at the non-active level, the pin state is Hi-Z.
+
+This MCU (slave)
+
+SPI master
+SPCK
+
+RSPCKx
+RSPCK
+
+MOSI
+
+MOSIx
+MOSI
+
+MISO
+
+MISO
+MISOx
+
+SSL
+
+SSL0
+SSLx0
+SSL1
+SSLx1
+SSL2
+SSLx2
+SSL3
+SSLx3
+
+Figure 44.6
+
+Single-Master/Single-Slave Configuration Example (This MCU = Slave, CPHA = 0)
+
+SPI master
+
+This MCU (slave, CPHA = 1)
+
+MOSI
+
+RSPCKx
+RSPCK
+MOSIx
+MOSI
+
+MISO
+
+MISOx
+MISO
+
+SSL
+
+SSLx0
+SSL0
+
+SPCK
+
+SSL1
+SSLx1
+SSL2
+SSLx2
+SSL3
+SSLx3
+
+Figure 44.7
+
+Single-Master/Single-Slave Configuration Example (This MCU = Slave, CPHA = 1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2380 of 3240
+
+RX72N Group
+
+44.3.3.3
+
+44. Serial Peripheral Interface (RSPIc)
+
+Single Master/Multi-Slave (with This MCU Acting as Master)
+
+Figure 44.8 shows a single-master/multi-slave RSPI system configuration example when this MCU is used as a master.
+In the example of Figure 44.8, the RSPI system is comprised of this MCU (master) and four slaves (SPI slave 0 to SPI
+slave 3).
+The RSPCKx and MOSIx outputs of this MCU (master) are connected to the RSPCK and MOSI inputs of SPI slave 0 to
+SPI slave 3. The MISO outputs of SPI slave 0 to SPI slave 3 are all connected to the MISOx input of this MCU (master).
+SSLx0 to SSLx3 outputs of this MCU (master) are connected to the SSL inputs of SPI slave 0 to SPI slave 3,
+respectively.
+This MCU (master) drives RSPCKx, MOSIx, and SSLx0 to SSLx3. Of the SPI slave 0 to SPI slave 3, the slave that
+receives low-level input into the SSL input drives MISO.
+
+This MCU (master)
+
+SPI slave 0
+
+RSPCKx
+RSPCK
+
+SPCK
+
+MOSIx
+MOSI
+
+MOSI
+
+MISOx
+MISO
+
+MISO
+
+SSLx0
+SSL0
+
+SSL
+
+SSLx1
+SSL1
+SSLx2
+SSL2
+SSLx3
+SSL3
+
+SPI slave 1
+SPCK
+MOSI
+MISO
+SSL
+
+SPI slave 2
+SPCK
+MOSI
+MISO
+SSL
+
+SPI slave 3
+SPCK
+MOSI
+MISO
+SSL
+
+Figure 44.8
+
+Single-Master/Multi-Slave Configuration Example (This MCU = Master)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2381 of 3240
+
+RX72N Group
+
+44.3.3.4
+
+44. Serial Peripheral Interface (RSPIc)
+
+Single Master/Multi-Slave (with This MCU Acting as Slave)
+
+Figure 44.9 shows a single-master/multi-slave RSPI system configuration example when this MCU is used as a slave. In
+the example of Figure 44.9, the RSPI system is comprised of an SPI master and two MCUs (slave X and slave Y).
+The SPCK and MOSI outputs of the SPI master are connected to the RSPCKx and MOSIx inputs of the MCUs (slave X
+and slave Y). The MISOx outputs of the MCUs (slave X and slave Y) are all connected to the MISO input of the SPI
+master. SSLX and SSLY outputs of the SPI master are connected to the SSLx0 inputs of the MCUs (slave X and slave
+Y), respectively.
+The SPI master drives SPCK, MOSI, SSLX, and SSLY. Of the MCUs (slave X and slave Y), the slave that receives lowlevel input into the SSLx0 input drives MISOx.
+
+SPI master
+
+This MCU (slave X)
+
+SPCK
+
+RSPCKx
+RSPCK
+
+MOSI
+
+MOSIx
+MOSI
+
+MISO
+
+MISOx
+MISO
+
+SSLX
+
+SSL0
+SSLx0
+
+SSLY
+
+SSL1
+SSLx1
+SSL2
+SSLx2
+SSL3
+SSLx3
+
+This MCU (slave Y)
+RSPCKx
+RSPCK
+MOSIx
+MOSI
+MISOx
+MISO
+SSLx0
+SSL0
+SSLx1
+SSL1
+SSL2
+SSLx2
+SSL3
+SSLx3
+
+Figure 44.9
+
+Single-Master/Multi-Slave Configuration Example (This MCU = Slave)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2382 of 3240
+
+RX72N Group
+
+44.3.3.5
+
+44. Serial Peripheral Interface (RSPIc)
+
+Multi-Master/Multi-Slave (with This MCU Acting as Master)
+
+Figure 44.10 shows a multi-master/multi-slave RSPI system configuration example when this MCU is used as a master.
+In the example of Figure 44.10, the RSPI system is comprised of two MCUs (master X and master Y) and two SPI
+slaves (SPI slave 1 and SPI slave 2).
+The RSPCKx and MOSIx outputs of the MCUs (master X and master Y) are connected to the RSPCK and MOSI inputs
+of SPI slaves 1 and 2. The MISO outputs of SPI slaves 1 and 2 are connected to the MISOx inputs of the MCUs (master
+X and master Y). Any generic port Y output from this MCU (master X) is connected to the SSLx0 input of this MCU
+(master Y). Any generic port X output of this MCU (master Y) is connected to the SSLx0 input of this MCU (master X).
+The SSLx1 and SSLx2 outputs of the MCUs (master X and master Y) are connected to the SSL inputs of the SPI slaves
+1 and 2. In this configuration example, since the system can be comprised solely of SSLx0 input, and SSLx1 and SSLx2
+outputs for slave connections, the SSLx3 output of this MCU is not required.
+This MCU drives RSPCKx, MOSIx, SSLx1, and SSLx2 when the SSLx0 input level is high. When the SSLx0 input
+level is low, this MCU detects a mode fault error, sets RSPCKx, MOSIx, SSLx1, and SSLx2 to Hi-Z, and releases the
+RSPI bus right to the other master. Of the SPI slaves 1 and 2, the slave that receives low-level input into the SSL input
+drives MISO.
+
+This MCU (master X)
+
+This MCU (master Y)
+
+RSPCKx
+RSPCK
+
+RSPCK
+RSPCKx
+
+MOSI
+MOSIx
+
+MOSI
+MOSIx
+
+MISO
+MISOx
+
+MISO
+MISOx
+
+SSL0
+SSLx0
+
+SSL0
+SSLx0
+
+SSL1
+SSLx1
+
+SSL1
+SSLx1
+
+SSL2
+SSLx2
+
+SSL2
+SSLx2
+SSL3
+SSLx3
+
+SSL3
+SSLx3
+Port Y
+
+Port X
+
+SPI slave 1
+SPCK
+MOSI
+MISO
+SSL
+
+SPI slave 2
+SPCK
+MOSI
+MISO
+SSL
+
+Figure 44.10
+
+Multi-Master/Multi-Slave Configuration Example (This MCU = Master)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2383 of 3240
+
+RX72N Group
+
+44.3.3.6
+
+44. Serial Peripheral Interface (RSPIc)
+
+Master (Clock Synchronous Operation)/Slave (Clock Synchronous Operation)
+(with This MCU Acting as Master)
+
+Figure 44.11 shows a master (clock synchronous operation)/slave (clock synchronous operation) RSPI system
+configuration example when this MCU is used as a master. In the master (clock synchronous operation)/slave (clock
+synchronous operation) configuration, SSLx0 to SSLx3 of this MCU (master) are not used.
+This MCU (master) drives the RSPCKx and MOSIx. The SPI slave drives the MISO.
+
+This MCU (master)
+
+SPI slave
+
+RSPCKx
+RSPCK
+
+SPCK
+
+MOSIx
+MOSI
+
+MOSI
+
+MISOx
+MISO
+
+MISO
+
+SSLx0
+SSL0
+
+SSL
+
+SSLx1
+SSL1
+SSLx2
+SSL2
+SSLx3
+SSL3
+
+Figure 44.11
+
+Master (Clock Synchronous Operation)/Slave (Clock Synchronous Operation) Configuration
+Example (This MCU = Master)
+
+44.3.3.7
+
+Master (Clock Synchronous Operation)/Slave (Clock Synchronous Operation)
+(with This MCU Acting as Slave)
+
+Figure 44.12 shows a master (clock synchronous operation)/slave (clock synchronous operation) RSPI system
+configuration example when this MCU is used as a slave. When this MCU is to operate as a slave (clock synchronous
+operation), this MCU (slave) drives the MISOx and the SPI master drives the SPCK and MOSI. In addition, SSLx0 to
+SSLx3 of this MCU (slave) are not used.
+Only in the single-slave configuration in which the SPCMDm.CPHA bit is set to 1, this MCU (slave) can execute serial
+transfer.
+
+SPI master
+
+This MCU (slave)
+SPCK
+
+RSPCKx
+RSPCK
+
+MOSI
+
+MOSIx
+MOSI
+
+MISO
+
+MISOx
+MISO
+
+SSL
+
+SSLx0
+SSL0
+SSLx1
+SSL1
+SSLx2
+SSL2
+SSLx3
+SSL3
+
+Figure 44.12
+
+Master (Clock Synchronous Operation)/Slave (Clock Synchronous Operation) Configuration
+Example (This MCU = Slave, CPHA = 1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2384 of 3240
+
+RX72N Group
+
+44.3.4
+
+44. Serial Peripheral Interface (RSPIc)
+
+Data Format
+
+The RSPI’s data format depends on the settings in RSPI command register m (SPCMDm) (m = 0 to 7) and the parity
+enable bit in RSPI control register 2 (SPCR2.SPPE) and RSPI data control register 2 (SPDCR2). Regardless of whether
+the MSB or LSB is first, the RSPI treats the range from the LSB bit in the RSPI data register (SPDR) to the selected data
+length as transfer data.
+The format of one frame of data before or after transfer is shown below.
+
+(a)
+
+With Parity Disabled
+
+When parity is disabled, transmission or reception of data proceeds with the length in bits selected in the RSPI data
+length setting bits in RSPI command register m (SPCMDm.SPB[3:0]).
+
+(b)
+
+With Parity Enabled
+
+When parity is enabled, transmission or reception of data proceeds with the length in bits selected in the RSPI data length
+setting bits in RSPI command register m (SPCMDm.SPB[3:0]). In this case, however, the last bit is a parity bit.
+
+With parity disabled
+
+D0
+
+D1
+
+D2
+
+Dn-2
+
+Dn-1
+
+Dn
+
+Dn-1
+
+P
+
+SPCMDm.SPB[3:0] (m = SPSSR.SPCP[2:0])
+
+With parity enabled
+
+D0
+
+D1
+
+D2
+
+Dn-2
+
+SPCMDm.SPB[3:0] (m = SPSSR.SPCP[2:0])
+
+Figure 44.13
+
+Outline of the Data Format (with Parity Disabled/Enabled)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2385 of 3240
+
+RX72N Group
+
+44.3.4.1
+
+44. Serial Peripheral Interface (RSPIc)
+
+When Parity is Disabled (SPCR2.SPPE = 0)
+
+When parity is disabled, data for transmission are copied to the shift register with no prior processing. A description of
+the connection between the RSPI data register (SPDR) and the shift register in terms of the combination of MSB or LSB
+first and data length is given below.
+
+(1)
+
+MSB First Transfer (32-Bit Data)
+
+Figure 44.14 shows details of operations by the RSPI data register (SPDR) and the shift register in transfer with parity
+disabled, an RSPI data length of 32 bits, and MSB first selected.
+In transmission, bits T31 to T00 from the current stage of the transmit buffer are copied to the shift register. Data for
+transmission are shifted out from the shift register in order from T31, through T30, and so on to T00.
+In reception, received data are shifted in bit by bit through bit 0 of the shift register. When bits R31 to R00 have been
+collected after input of the required number of cycles of RSPCK, the value in the shift register is copied to the receive
+buffer.
+
+Transfer start
+Transmit buffer
+
+Bit 31
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T23
+
+Bit 0
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T00
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T00
+
+Copy
+
+Output
+
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+Bit 31
+
+T23
+
+Bit 0
+
+Shift register
+
+Transfer end
+Shift register
+
+Bit 31
+R31
+
+R30
+
+R29
+
+R28
+
+R27
+
+R26
+
+R25
+
+R24
+
+R23
+
+Bit 0
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+R00
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+R00
+
+Input
+
+Copy
+
+R31
+
+R30
+
+R29
+
+R28
+
+Bit 31
+
+R27
+
+R26
+
+R25
+
+R24
+
+R23
+
+Receive buffer
+
+Bit 0
+
+Note: Output = MOSI (master)/MISO (slave), input = MISO (master)/MOSI (slave)
+
+Figure 44.14
+
+MSB First Transfer (32-Bit Data, Parity Disabled)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2386 of 3240
+
+RX72N Group
+
+(2)
+
+44. Serial Peripheral Interface (RSPIc)
+
+MSB First Transfer (24-Bit Data)
+
+Figure 44.15 shows details of operations by the RSPI data register (SPDR) and the shift register in transfer with parity
+disabled, 24 bits as the RSPI data length for an example that is not 32 bits, and MSB first selected.
+In transmission, the lower 24 bits (T23 to T00) from the current stage of the transmit buffer are copied to the shift
+register. Data for transmission are shifted out from the shift register in order from T23, through T22, and so on to T00.
+In reception, received data are shifted in bit by bit through bit 0 of the shift register. When bits R23 to R00 have been
+collected after input of the required number of cycles of RSPCK, the value in the shift register is copied to the receive
+buffer. At this time, the upper 8 bits of the transmit buffer are stored in the upper 8 bits of the receive buffer. Writing 0 to
+bits T31 to T24 at the time of transmission leads to 0 being set in the upper 8 bits of the receive buffer.
+Transfer start
+Transmit buffer
+Bit 23
+
+Bit 31
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T23
+
+Bit 0
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T00
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T00
+
+Copy
+
+Output
+
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T23
+
+Bit 23
+Shift register
+
+Bit 31
+
+Bit 0
+
+Transfer end
+
+Bit 24
+
+Bit 31
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+Shift register
+Bit 23
+R23
+
+Bit 0
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+R00
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+R00
+
+Input
+
+Copy
+
+T31
+
+T30
+
+T29
+
+T28
+
+Bit 31
+
+T27
+
+T26
+
+T25
+
+T24
+
+Bit 24
+
+R23
+
+Bit 23
+Receive buffer
+
+Bit 0
+
+Note: Output = MOSI (master)/MISO (slave), input = MISO (master)/MOSI (slave)
+
+Figure 44.15
+
+MSB First Transfer (24-Bit Data, Parity Disabled)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2387 of 3240
+
+RX72N Group
+
+(3)
+
+44. Serial Peripheral Interface (RSPIc)
+
+LSB First Transfer (32-Bit Data)
+
+Figure 44.16 shows details of operations by the RSPI data register (SPDR) and the shift register in transfer with parity
+disabled, an RSPI data length of 32 bits, and LSB first selected.
+In transmission, bits T31 to T00 from the current stage of the transmit buffer are reordered bit by bit to obtain the order
+T00 to T31 for copying to the shift register. Data for transmission are shifted out from the shift register in order from
+T00, through T01, and so on to T31.
+In reception, received data are shifted in bit by bit through bit 0 of the shift register. When bits R00 to R31 have been
+collected after input of the required number of cycles of RSPCK, the value in the shift register is copied to the receive
+buffer.
+Transfer start
+Transmit buffer
+
+Bit 31
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T23
+
+Bit 0
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T00
+
+T23
+
+T24
+
+T25
+
+T26
+
+T27
+
+T28
+
+T29
+
+T30
+
+T31
+
+Copy
+
+Output
+
+T00
+
+T01
+
+T02
+
+T03
+
+T04
+
+T05
+
+T06
+
+T07
+
+Bit 31
+
+T08
+
+Bit 0
+
+Shift register
+
+Transfer end
+Shift register
+
+Bit 31
+R00
+
+R01
+
+R02
+
+R03
+
+R04
+
+R05
+
+R06
+
+R07
+
+R08
+
+Bit 0
+
+R23
+
+R24
+
+R25
+
+R26
+
+R27
+
+R28
+
+R29
+
+R30
+
+R31
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+R00
+
+Input
+
+Copy
+
+R31
+
+R30
+
+R29
+
+R28
+
+Bit 31
+
+R27
+
+R26
+
+R25
+
+R24
+
+R23
+
+Receive buffer
+
+Bit 0
+
+Note: Output = MOSI (master)/MISO (slave), input = MISO (master)/MOSI (slave)
+
+Figure 44.16
+
+LSB First Transfer (32-Bit Data, Parity Disabled)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2388 of 3240
+
+RX72N Group
+
+(4)
+
+44. Serial Peripheral Interface (RSPIc)
+
+LSB First Transfer (24-Bit Data)
+
+Figure 44.17 shows details of operations by the RSPI data register (SPDR) and the shift register in transfer with parity
+disabled, 24 bits as the RSPI data length for an example that is not 32 bits, and LSB first selected.
+In transmission, the lower 24 bits (T23 to T00) from the current stage of the transmit buffer are reordered bit by bit to
+obtain the order T00 to T23 for copying to the shift register. Data for transmission are shifted out from the shift register
+in order from T00, through T01, and so on to T23.
+In reception, received data are shifted in bit by bit through bit 8 of the shift register. When bits R00 to R23 have been
+collected after input of the required number of cycles of RSPCK, the value in the shift register is copied to the receive
+buffer. At this time, the upper 8 bits of the transmit buffer are stored in the upper 8 bits of the receive buffer. Writing 0 to
+bits T31 to T24 at the time of transmission leads to 0 being set in the upper 8 bits of the receive buffer.
+
+Transfer start
+Transmit buffer
+
+Bit 31
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T23
+
+Bit 0
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T00
+
+T23
+
+T24
+
+T25
+
+T26
+
+T27
+
+T28
+
+T29
+
+T30
+
+T31
+
+Copy
+
+Output
+
+T00
+
+T01
+
+T02
+
+T03
+
+T04
+
+T05
+
+T06
+
+T07
+
+Bit 31
+
+T08
+
+Bit 0
+
+Shift register
+
+Transfer end
+
+Input
+Shift register
+
+Bit 31
+R00
+
+R01
+
+R02
+
+R03
+
+R04
+
+R05
+
+R06
+
+R07
+
+R08
+
+Bit 0
+
+R23
+
+T24
+
+T25
+
+T26
+
+T27
+
+T28
+
+T29
+
+T30
+
+T31
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+R00
+
+Copy
+
+T31
+
+T30
+
+T29
+
+T28
+
+Bit 31
+
+T27
+
+T26
+
+T25
+
+T24
+
+R23
+
+Receive buffer
+
+Bit 0
+
+Note: Output = MOSI (master)/MISO (slave), input = MISO (master)/MOSI (slave)
+
+Figure 44.17
+
+LSB First Transfer (24-Bit Data, Parity Disabled)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2389 of 3240
+
+RX72N Group
+
+44.3.4.2
+
+44. Serial Peripheral Interface (RSPIc)
+
+When Parity is Enabled (SPCR2.SPPE = 1)
+
+When parity is enabled, the lowest-order bit of the data for transmission becomes a parity bit. Hardware calculates the
+value of the parity bit.
+
+(1)
+
+MSB First Transfer (32-Bit Data)
+
+Figure 44.18 shows details of operations by the RSPI data register (SPDR) and the shift register in transfer with parity
+enabled, an RSPI data length of 32 bits, and MSB first selected.
+In transmission, the value of the parity bit (P) is calculated from bits T31 to T01. This replaces the final bit, T00, and the
+whole is copied to the shift register. Data are transmitted in the order T31, T30, …, T01, and P.
+In reception, received data are shifted in bit by bit through bit 0 of the shift register. When bits R31 to P have been
+collected after input of the required number of cycles of RSPCK, the value in the shift register is copied to the receive
+buffer. On copying of data to the shift register, the data from R31 to P are checked by judging the parity.
+
+Transfer start
+Transmit buffer
+
+Bit 31
+
+Bit 0
+
+Copy
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T08
+
+T23
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T00
+
+Parity calculated
+
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T23
+
+Parity added
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+P
+
+Copy
+
+Output
+
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+Bit 31
+
+T23
+
+P
+Bit 0
+
+Shift register
+
+Transfer end
+Shift register
+
+Bit 31
+R31
+
+R30
+
+R29
+
+R28
+
+R27
+
+R26
+
+R25
+
+R24
+
+R23
+
+Bit 0
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+P
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+P
+
+Input
+
+Copy
+
+R31
+
+R30
+
+R29
+
+R28
+
+R27
+
+Bit 31
+
+R26
+
+R25
+
+R24
+
+R23
+
+Receive buffer
+
+Bit 0
+
+Note: Output = MOSI (master)/MISO (slave), input = MISO (master)/MOSI (slave)
+
+Figure 44.18
+
+MSB First Transfer (32-Bit Data, Parity Enabled)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2390 of 3240
+
+RX72N Group
+
+(2)
+
+44. Serial Peripheral Interface (RSPIc)
+
+MSB First Transfer (24-Bit Data)
+
+Figure 44.19 shows details of operations by the RSPI data register (SPDR) and the shift register in transfer with parity
+enabled, 24 bits as the RSPI data length for an example that is not 32 bits, and MSB first selected.
+In transmission, the value of the parity bit (P) is calculated from bits T23 to T01. This replaces the final bit, T00, and the
+whole is copied to the shift register. Data are transmitted in the order T23, T22, …, T01, and P.
+In reception, received data are shifted in bit by bit through bit 0 of the shift register. When bits R23 to P have been
+collected after input of the required number of cycles of RSPCK, the value in the shift register is copied to the receive
+buffer. On copying of data to the shift register, the data from R23 to P are checked by judging the parity. At this time, the
+upper 8 bits of the transmit buffer are stored in the upper 8 bits of the receive buffer. Writing 0 to bits T31 to T24 at the
+time of transmission leads to 0 being set in the upper 8 bits of the receive buffer.
+
+Transfer start
+Transmit buffer
+Bit 23
+
+Bit 31
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T08
+
+T23
+
+Bit 0
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T00
+
+Parity added
+
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T23
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+P
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+P
+
+Copy
+
+Output
+
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T23
+
+Bit 23
+Shift register
+
+Bit 31
+
+Bit 0
+
+Transfer end
+
+Bit 24
+
+Bit 31
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+Shift register
+Bit 23
+R23
+
+Bit 0
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+P
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+P
+
+Input
+
+Copy
+
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+Bit 24
+
+Bit 31
+
+R23
+
+Bit 23
+Receive buffer
+
+Bit 0
+
+Note: Output = MOSI (master)/MISO (slave), input = MISO (master)/MOSI (slave)
+
+Figure 44.19
+
+MSB First Transfer (24-Bit Data, Parity Enabled)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2391 of 3240
+
+RX72N Group
+
+(3)
+
+44. Serial Peripheral Interface (RSPIc)
+
+LSB First Transfer (32-Bit Data)
+
+Figure 44.20 shows details of operations by the RSPI data register (SPDR) and the shift register in transfer with parity
+enabled, an RSPI data length of 32 bits, and LSB first selected.
+In transmission, the value of the parity bit (P) is calculated from bits T30 to T00. This replaces the final bit, T31, and the
+whole is copied to the shift register. Data are transmitted in the order T00, T01, …, T30, and P.
+In reception, received data are shifted in bit by bit through bit 0 of the shift register. When bits R00 to P have been
+collected after input of the required number of cycles of RSPCK, the value in the shift register is copied to the receive
+buffer. On copying of data to the shift register, the data from R00 to P are checked by judging the parity.
+
+Transfer start
+Transmit buffer
+
+Bit 31
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T23
+
+T08
+
+Bit 0
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T00
+
+Parity calculated
+
+Parity added
+
+Bit 31
+P
+
+Bit 0
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T23
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T23
+
+T24
+
+T25
+
+T26
+
+T27
+
+T28
+
+T29
+
+T30
+
+T00
+
+Copy
+
+Output
+
+T00
+
+T01
+
+T02
+
+T03
+
+T04
+
+T05
+
+T06
+
+T07
+
+Bit 31
+
+T08
+
+P
+Bit 0
+
+Shift register
+
+Transfer end
+Shift register
+
+Bit 31
+R00
+
+R01
+
+R02
+
+R03
+
+R04
+
+R05
+
+R06
+
+R07
+
+R08
+
+Bit 0
+Input
+
+R23
+
+R24
+
+R25
+
+R26
+
+R27
+
+R28
+
+R29
+
+R30
+
+P
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+R00
+
+Copy
+
+P
+
+R30
+
+R29
+
+R28
+
+R27
+
+Bit 31
+
+R26
+
+R25
+
+R24
+
+R23
+
+Receive buffer
+
+Bit 0
+
+Note: Output = MOSI (master)/MISO (slave), input = MISO (master)/MOSI (slave)
+
+Figure 44.20
+
+LSB First Transfer (32-Bit Data, Parity Enabled)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2392 of 3240
+
+RX72N Group
+
+(4)
+
+44. Serial Peripheral Interface (RSPIc)
+
+LSB First Transfer (24-Bit Data)
+
+Figure 44.21 shows details of operations by the RSPI data register (SPDR) and the shift register in transfer with parity
+enabled, 24 bits as the RSPI data length for an example that is not 32 bits, and LSB first selected.
+In transmission, the value of the parity bit (P) is calculated from bits T22 to T00. This replaces the final bit, T23, and the
+whole is copied to the shift register. Data are transmitted in the order T00, T01, …, T22, and P.
+In reception, received data are shifted in bit by bit through bit 8 of the shift register. When bits R00 to P have been
+collected after input of the required number of cycles of RSPCK, the value in the shift register is copied to the receive
+buffer. On copying of data to the shift register, the data from R00 to P are checked by judging the parity. At this time, the
+upper 8 bits of the transmit buffer are stored in the upper 8 bits of the receive buffer. Writing 0 to bits T31 to T24 at the
+time of transmission leads to 0 being set in the upper 8 bits of the receive buffer.
+
+Transfer start
+Transmit buffer
+
+Bit 31
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+T23
+
+T08
+
+Bit 0
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T00
+
+Parity calculated
+
+Parity added
+Bit 0
+
+Bit 31
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+T26
+
+T25
+
+T24
+
+P
+
+T08
+
+T07
+
+T06
+
+T05
+
+T04
+
+T03
+
+T02
+
+T01
+
+T00
+
+P
+
+T24
+
+T25
+
+T26
+
+T27
+
+T28
+
+T29
+
+T30
+
+T31
+
+Copy
+
+Output
+
+T00
+
+T01
+
+T02
+
+T03
+
+T04
+
+T05
+
+T06
+
+T07
+
+Bit 31
+
+T08
+
+Bit 0
+
+Shift register
+
+Transfer end
+
+Input
+Shift register
+
+Bit 31
+R00
+
+R01
+
+R02
+
+R03
+
+R04
+
+R05
+
+R06
+
+R07
+
+R08
+
+Bit 0
+
+P
+
+T24
+
+T25
+
+T26
+
+T27
+
+T28
+
+T29
+
+T30
+
+T31
+
+R08
+
+R07
+
+R06
+
+R05
+
+R04
+
+R03
+
+R02
+
+R01
+
+R00
+
+Copy
+
+T31
+
+T30
+
+T29
+
+T28
+
+T27
+
+Bit 31
+
+T26
+
+T25
+
+T24
+
+P
+
+Receive buffer
+
+Bit 0
+
+Note: Output = MOSI (master)/MISO (slave), input = MISO (master)/MOSI (slave)
+
+Figure 44.21
+
+LSB First Transfer (24-Bit Data, Parity Enabled)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2393 of 3240
+
+RX72N Group
+
+44.3.4.3
+
+44. Serial Peripheral Interface (RSPIc)
+
+Byte Swap Transmission
+
+When the SPDCR2.BYSW bit is 1 (byte swapping of SPDR data enabled), data bytes written in the transmit buffer
+(SPDR) will be swapped (in 8 bit units) when the data is transferred to the shift register. Figure 44.22 shows data
+transfer between the SPDR register and the shift register when data length is 32 bits.
+
+(1) Without byte swap
+Byte 0
+
+Byte 1
+
+Byte 2
+
+Byte 3
+
+b31
+
+SPDR register
+(Transmit buffer)
+
+D31
+
+b0
+···
+
+D24 D23
+
+···
+
+D16 D15
+
+···
+
+D8
+
+D7
+
+···
+
+D0
+
+Transfer as-is
+Shift register
+
+D31
+
+···
+
+D24 D23
+
+···
+
+D16 D15
+
+···
+
+D8
+
+D7
+
+···
+
+b31
+
+D0
+b0
+
+Byte 0
+
+Byte 1
+
+Byte 2
+
+Byte 3
+
+Transmit direction
+MSB first
+
+LSB first
+
+(2) With byte swap
+Byte 0
+
+Byte 1
+
+Byte 2
+
+Byte 3
+
+b31
+
+SPDR register
+(Transmit buffer)
+
+Shift register
+
+D31
+
+b0
+···
+
+D24 D23
+
+···
+
+D16 D15
+
+···
+
+D8
+
+D7
+
+···
+
+D0
+
+Bytes are reordered
+in one-byte units at
+transfer.
+D7
+
+···
+
+D0 D15
+
+···
+
+D8 D23
+
+···
+
+D16 D31
+
+···
+
+b31
+
+D24
+b0
+
+Byte 3
+
+Byte 2
+
+Byte 1
+
+Byte 0
+
+Transmit direction
+MSB first
+
+Figure 44.22
+
+LSB first
+
+Transmit Data Handling in MSB/LSB First with Byte Swapping Enabled/Disabled
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2394 of 3240
+
+RX72N Group
+
+44.3.4.4
+
+44. Serial Peripheral Interface (RSPIc)
+
+Byte Swap Reception
+
+When the SPDCR2.BYSW bit is 1 (byte swapping of SPDR data enabled), data bytes in the shift register will be
+swapped (in 8 bit units) when the data is transferred to the receive buffer (SPDR). Figure 44.23 shows data transfer
+between the shift register and the SPDR register when data length is 32 bits.
+
+(1) Without byte swap
+LSB first
+
+MSB first
+
+Receive direction
+Byte 0
+
+Byte 1
+
+Byte 2
+
+Byte 3
+
+b31
+
+Shift register
+
+D31
+
+b0
+···
+
+D24 D23
+
+···
+
+D16 D15
+
+···
+
+D8
+
+D7
+
+···
+
+D0
+
+Transfer as-is
+SPDR register
+(Receive buffer)
+
+D31
+
+···
+
+D24 D23
+
+···
+
+D16 D15
+
+···
+
+D8
+
+D7
+
+···
+
+b31
+
+D0
+b0
+
+Byte 0
+
+Byte 1
+
+Byte 2
+
+Byte 3
+
+(2) With byte swap
+MSB first
+
+LSB first
+Receive direction
+Byte 3
+
+Byte 2
+
+Byte 1
+
+Byte 0
+
+b31
+
+Shift register
+
+D31
+
+b0
+···
+
+D24 D23
+
+···
+
+D16 D15
+
+···
+
+D8
+
+D7
+
+···
+
+D0
+
+Bytes are reordered
+in one-byte units at
+transfer.
+SPDR register
+(Receive buffer)
+
+D7
+
+···
+
+···
+
+D8 D23
+
+···
+
+D16 D31
+
+···
+
+D24
+b0
+
+Byte 0
+
+Figure 44.23
+
+D0 D15
+
+b31
+
+Byte 1
+
+Byte 2
+
+Byte 3
+
+Receive Data Handling in MSB/LSB First with Byte Swapping Enabled/Disabled
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2395 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+44.3.5
+
+Transfer Format
+
+44.3.5.1
+
+CPHA = 0
+
+Figure 44.24 shows a sample transfer format for the serial transfer of 8-bit data when the SPCMDm.CPHA bit is 0.
+Note that clock synchronous operation (the SPCR.SPMS bit is 1) should not performed when the RSPI operates in slave
+mode (SPCR.MSTR = 0) and the CPHA bit is 0. In Figure 44.24, RSPCKx (CPOL = 0) indicates the RSPCKx signal
+waveform when the SPCMDm.CPOL bit is 0; RSPCKx (CPOL = 1) indicates the RSPCKx signal waveform when the
+CPOL bit is 1. The sampling timing represents the timing at which the RSPI fetches serial transfer data into the shift
+register. The I/O directions of the signals depend on the RSPI settings. For details, refer to section 44.3.2, Controlling
+RSPI Pins.
+When the SPCMDm.CPHA bit is 0, the driving of valid data to the MOSIx and MISOx signals commences at an SSLxi
+signal assertion timing. The first RSPCKx signal change timing that occurs after the SSLxi signal assertion becomes the
+first transfer data fetch timing. After this timing, data is sampled at every 1 RSPCK cycle. The change timing for MOSIx
+and MISOx signals is 1/2 RSPCK cycles after the transfer data fetch timing. The CPOL bit setting does not affect the
+RSPCKx signal operation timing; it only affects the signal polarity.
+t1 denotes a period from an SSLxi signal assertion to RSPCKx oscillation (RSPCK delay). t2 denotes a period from the
+termination of RSPCKx oscillation to an SSLxi signal negation (SSL negation delay). t3 denotes a period in which SSLxi
+signal assertion is suppressed for the next transfer after the end of serial transfer (next-access delay). t1, t2, and t3 are
+controlled by a master device running on the RSPI system. For a description of t1, t2, and t3 when the RSPI of this MCU
+is in master mode, refer to section 44.3.11.1, Master Mode Operation.
+
+Start
+
+End
+
+Serial transfer period
+
+RSPCK
+cycle
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+RSPCK
+RSPCKx
+(CPOL = 0)
+(CPOL = 0)
+RSPCKx
+RSPCK
+(CPOL==1)
+1)
+(CPOL
+Sampling
+timing
+MOSIx
+MOSI
+MISOx
+MISO
+SSLxi
+SSLi
+t1
+
+Figure 44.24
+
+t2
+
+t3
+
+RSPI Transfer Format (CPHA = 0)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2396 of 3240
+
+RX72N Group
+
+44.3.5.2
+
+44. Serial Peripheral Interface (RSPIc)
+
+CPHA = 1
+
+Figure 44.25 shows a sample transfer format for the serial transfer of 8-bit data when the SPCMDm.CPHA bit is 1.
+However, when the SPCR.SPMS bit is 1, the SSLxi signals are not used, and only the three signals RSPCKx, MOSIx,
+and MISOx handle communications. In Figure 44.25, RSPCK (CPOL = 0) indicates the RSPCKx signal waveform
+when the SPCMDm.CPOL bit is 0; RSPCKx (CPOL = 1) indicates the RSPCKx signal waveform when the CPOL bit is
+1. The sampling timing represents the timing at which the RSPI fetches serial transfer data into the shift register. The I/O
+directions of the signals depend on the RSPI mode (master or slave). For details, refer to section 44.3.2, Controlling
+RSPI Pins.
+When the SPCMDm.CPHA bit is 1, the driving of invalid data to the MISOx signal commences at an SSLxi signal
+assertion timing. The output of valid data to the MOSIx and MISOx signals commences at the first RSPCKx signal
+change timing that occurs after the SSLxi signal assertion. After this timing, data is updated at every 1 RSPCK cycle.
+The transfer data fetch timing is 1/2 RSPCK cycles after the data update timing. The SPCMDm.CPOL bit setting does
+not affect the RSPCKx signal operation timing; it only affects the signal polarity.
+t1, t2, and t3 are the same as those in the case of CPHA = 0. For a description of t1, t2, and t3 when the RSPI of this
+MCU is in master mode, refer to section 44.3.11.1, Master Mode Operation.
+
+Start
+RSPCK
+cycle
+
+End
+
+Serial transfer period
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+RSPCK
+RSPCKx
+(CPOL
+(CPOL==0)0)
+RSPCKx
+RSPCK
+(CPOL==1)1)
+(CPOL
+Sampling
+timing
+MOSIx
+MOSI
+MISOx
+MISO
+SSLxi
+SSLi
+t1
+
+Figure 44.25
+
+t2
+
+t3
+
+RSPI Transfer Format (CPHA = 1)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2397 of 3240
+
+RX72N Group
+
+44.3.6
+
+44. Serial Peripheral Interface (RSPIc)
+
+Communications Operating Mode
+
+Full-duplex communications or transmit-only simplex communications can be selected by the SPCR.TXMD bit.
+‘SPDR access’ shown in Figure 44.26 and Figure 44.27 indicate the condition of access to the SPDR register, where
+‘W’ denotes a write cycle.
+
+44.3.6.1
+
+Full-Duplex Communications (SPCR.TXMD = 0)
+
+Figure 44.26 shows an example of operation when the SPCR.TXMD bit is set to 0. In the example in Figure 44.26, the
+RSPI performs an 8-bit serial transfer in which the SPDCR.SPFC[1:0] bits are 00b, the SPCMDm.CPHA bit is 1, and the
+SPCMDm.CPOL bit is 0. The numbers given under the RSPCKx waveform represent the number of RSPCK cycles (i.e.,
+the number of transferred bits).
+
+SPDR access
+
+W
+
+W
+
+RSPCKx
+(CPHA = 1, CPOL = 0)
+1
+
+Receive buffer status
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+Empty
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+Full
+
+SPRI
+(1)
+SPRF
+OVRF
+(2)
+
+Figure 44.26
+
+Operation Example of SPCR.TXMD = 0
+
+The operation of the flags at timings shown in steps (1) and (2) in the figure is described below.
+(1) When a serial transfer ends with the receive buffer of the SPDR register empty, the RSPI generates a receive buffer
+full interrupt request (SPRI) (sets the SPSR.SPRF flag to 1) and copies the received data in the shift register to the
+receive buffer.
+(2) When a serial transfer ends with the receive buffer of the SPDR register holding data that was received in the
+previous serial transfer, the RSPI sets the SPSR.OVRF flag to 1 and discards the received data in the shift register.
+When full-duplex communications (SPCR.TXMD = 0) is selected, reception occurs simultaneously with transmit
+operations. As such, the SPRF and OVRF flags in the SPSR register become 1 at the timing described in (1) and (2),
+respectively, according to the state of the receive buffer.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2398 of 3240
+
+RX72N Group
+
+44.3.6.2
+
+44. Serial Peripheral Interface (RSPIc)
+
+Transmit-only Simplex Communications (SPCR.TXMD = 1)
+
+Figure 44.27 shows an example of operation when the SPCR.TXMD bit is set to 1. In the example in Figure 44.27, the
+RSPI performs an 8-bit serial transfer in which the SPDCR.SPFC[1:0] bits are 00b, the SPCMDm.CPHA bit is 1, and the
+SPCMDm.CPOL bit is 0. The numbers given under the RSPCKx waveform represent the number of RSPCK cycles (i.e.,
+the number of transferred bits).
+
+W
+
+SPDR access
+
+W
+
+RSPCKx
+(CPHA = 1, CPOL = 0)
+1
+TXMD
+(TXMD = 1)
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+(1)
+
+Receive buffer status
+
+Empty
+
+SPRI
+(2)
+SPRF
+OVRF
+(3)
+
+Figure 44.27
+
+Operation Example of SPCR.TXMD = 1
+
+The operation of the flags at timings shown in steps (1) to (3) in the figure is described below.
+(1) Make sure there is no data left in the receive buffer and the SPSR.SPRF, OVRF flags are 0 before entering the mode
+of transmit-only simplex communications (SPCR.TXMD = 1).
+(2) When a serial transfer ends with the receive buffer of the SPDR register empty, if the mode of transmit-only simplex
+communications is selected (SPCR.TXMD = 1), the SPRF flag remains 0 and the RSPI does not copy the data from
+the shift register to the receive buffer.
+(3) Since the receive buffer of the SPDR register does not hold data that was received in the previous serial transfer,
+even when a serial transfer ends, the SPSR.OVRF flag retains the value of 0, and the data in the shift register is not
+copied to the receive buffer.
+When performing transmit-only simplex communications (SPCR.TXMD = 1), the RSPI transmits data but does not
+receive data. Therefore, the SPSR.SPRF, OVRF flags remain 0 at the timings of (1) to (3).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2399 of 3240
+
+RX72N Group
+
+44.3.7
+
+44. Serial Peripheral Interface (RSPIc)
+
+Transmit Buffer Empty/Receive Buffer Full Interrupts
+
+Figure 44.28 shows an example of operation of the transmit buffer empty interrupt (SPTI) and the receive buffer full
+interrupt (SPRI). ‘SPDR access’ shown in Figure 44.28 indicates the condition of access to the SPDR register, where
+‘W’ denotes a write cycle, and ‘R’ a read cycle. In the example in Figure 44.28, the RSPI performs an 8-bit serial
+transfer in which the SPCR.TXMD bit is 0, the SPDCR.SPFC[1:0] bits are 00b, the SPCMDm.CPHA bit is 1, and the
+SPCMDm.CPOL bit is 0. The numbers given under the RSPCKx waveform represent the number of RSPCK cycles (i.e.,
+the number of transferred bits).
+
+W
+
+SPDR access
+
+W
+
+R
+
+RSPCKx
+(CPHA = 1, CPOL = 0)
+1
+
+Transmit buffer status Empty
+
+Full
+
+2
+
+3
+
+4
+
+5
+
+6
+
+Empty
+
+(1)
+
+7
+
+8
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+Empty
+
+Full
+(3)
+
+SPTI
+(2)
+
+(4)
+
+SPTEF
+Receive buffer status
+
+Empty
+
+Full
+
+Empty
+
+Full
+
+(5)
+SPRI
+SPRF
+
+Figure 44.28
+
+Operation Example of SPTI and SPRI Interrupts
+
+The operation of the interrupts at timings shown in steps (1) to (5) in the figure is described below.
+(1) When transmit data is written to the SPDR register when the transmit buffer of the SPDR register is empty (data for
+the next transfer is not set), the RSPI writes data to the transmit buffer and sets the SPSR.SPTEF flag to 0.
+(2) If the shift register is empty, the RSPI copies the data from the transmit buffer to the shift register and generates a
+transmit buffer empty interrupt request (SPTI) and sets the SPSR.SPTEF flag to 1. How a serial transfer is started
+depends on the mode of the RSPI. For details, refer to section 44.3.11, SPI Operation, and section 44.3.12,
+Clock Synchronous Operation.
+(3) When transmit data is written to the SPDR register in the transmit buffer empty interrupt routine or in the transmit
+buffer empty detecting process by polling the SPTEF flag, the data is transferred to the transmit buffer and the
+SPSR.SPTEF flag becomes 0. Because the data being transmitted is stored in the shift register, the RSPI does not
+copy the data from the transmit buffer to the shift register.
+(4) When the serial transfer ends with the receive buffer of the SPDR register being empty, the RSPI copies the receive
+data from the shift register to the receive buffer, generates a receive buffer full interrupt request (SPRI), and sets the
+SPSR.SPRF flag to 1. Since the shift register becomes empty upon completion of serial transfer, when the transmit
+buffer had been full before the serial transfer ended, the RSPI sets the SPSR.SPTEF flag to 1 and copies the data
+from the transmit buffer to the shift register. Even when received data is not copied from the shift register to the
+receive buffer in an overrun error status, upon completion of the serial transfer, the RSPI determines that the shift
+register is empty, thus data transfer from the transmit buffer to the shift register is enabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2400 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+(5) When the SPDR register is read in the receive buffer full interrupt routine or in the receive buffer full detecting
+process by polling the SPRF flag, the receive data can be read. When the receive data is read, the SPRF flag
+becomes 0.
+If transmit data is written to the SPDR register while the transmit buffer holds data that has not yet been transmitted (the
+SPTEF flag is 0), the RSPI does not update the data in the transmit buffer. Transmit data should be written to the SPDR
+register in the transmit buffer empty interrupt request routine or in the transmit buffer empty detecting process by polling
+the SPTEF flag. To use a transmit buffer empty interrupt, set the SPTIE bit in SPCR to 1.
+When setting the SPCR.SPE bit to 0 (RSPI disabled), the SPCR.SPTIE bit should also be set to 0. Otherwise (if the
+SPCR.SPE bit is 0 and the SPCR.SPTIE is 1), a transmit buffer empty interrupt request will occur.
+When serial transfer ends with the receive buffer being full (the SPRF flag is 1), the RSPI does not copy data from the
+shift register to the receive buffer, and detects an overrun error (refer to section 44.3.9, Error Detection). To prevent a
+receive data overrun error, read the received data using a receive buffer full interrupt request before the next serial
+transfer ends. To use an receive buffer full interrupt, set the SPCR.SPRIE bit to 1.
+Transmit and receive interrupts or the corresponding IRn.IR flags (where n is the interrupt vector number) in the ICU can
+be used to confirm the states of the transmit and receive buffers. Refer to section 15, Interrupt Controller (ICUD), for
+the interrupt vector numbers. The status of the transmit and receive buffers can be also confirmed by the SPTEF and
+SPRF flags.
+
+44.3.8
+
+Idle Interrupt
+
+When the SPSR.IDLNF flag becomes 0 while the SPCR2.SPIIE bit is 1, an idle interrupt request (SPII) is generated.
+In master mode, the IDLNF flag is 0 before transmission. Therefore, write data in the transmit buffer and set the SPIIE
+bit to 1 after the IDLNF flag becomes 1 so that an idle interrupt is not generated at this time. When the SSLx0 signal is
+negated after the transmission is completed and the next data is not supplied until next-access delay time (t3) elapses, the
+IDLNF flag becomes 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2401 of 3240
+
+RX72N Group
+
+44.3.9
+
+44. Serial Peripheral Interface (RSPIc)
+
+Error Detection
+
+In the normal RSPI serial transfer, the data written to the transmit buffer of the SPDR register is transmitted, and the
+received data can be read from the receive buffer of the SPDR register. If access is made to the SPDR register, depending
+on the status of the transmit/receive buffer or the status of the RSPI at the beginning or end of serial transfer, in some
+cases non-normal transfers can be executed.
+If a non-normal transfer operation occurs, the RSPI detects the event as an underrun error, overrun error, parity error, or
+mode fault error. Table 44.7 lists the relationship between non-normal transfer operations and the RSPI’s error detection
+function.
+Table 44.7
+
+Relationship between Non-Normal Transfer Operations and RSPI Error Detection Function
+
+Occurrence Condition
+
+RSPI Operation
+
+Error Detection
+
+1
+
+The SPDR register is written when the transmit buffer is
+full.
+
+ The contents of the transmit buffer are kept. None
+ Missing write data.
+
+2
+
+The SPDR register is read when the receive buffer is
+empty.
+
+If reception has completed, then the received
+data is output to the bus. Otherwise, data
+received previously is output instead.
+
+None
+
+3
+
+Serial transfer is started when transmit data is still not
+loaded on the shift register while the RSPI is used in
+slave mode.
+
+ Serial transfer is suspended
+ Transmit/receive data is missing
+ The MISO signal output is disabled
+ RSPI function is disabled
+
+Underrun error
+
+4
+
+Serial transfer terminates when the receive buffer is full.
+
+ The contents of the receive buffer are kept.
+ Missing receive data.
+
+Overrun error
+
+5
+
+An incorrect parity bit is received when performing fullduplex communications with the parity function enabled.
+
+The parity error flag is set.
+
+Parity error
+
+6
+
+The SSLx0 input signal is asserted when the serial
+transfer is idle in multi-master mode.
+
+ Driving of the RSPCKx, MOSIx, SSLx1 to
+SSLx3 output signals is stopped.
+ RSPI function is disabled.
+
+Mode fault error
+
+7
+
+The SSLx0 input signal is asserted during serial transfer
+in multi-master mode.
+
+ Serial transfer is suspended.
+ Missing transmit/receive data.
+ Driving of the RSPCKx, MOSIx, SSLx1 to
+SSLx3 output signals is stopped.
+ RSPI function is disabled.
+
+Mode fault error
+
+8
+
+The SSLx0 input signal is negated during serial transfer
+in slave mode.
+
+ Serial transfer is suspended.
+ Missing transmit/receive data.
+ Driving of the MISOx output signal is
+stopped.
+ RSPI function is disabled.
+
+Mode fault error
+
+On operation 1 described in Table 44.7, the RSPI does not detect an error. To prevent data omission during the writing to
+the SPDR register, the SPDR register should be written when a transmit buffer empty interrupt request occurs or while
+the SPSR.SPTEF flag is 1.
+Likewise, the RSPI does not detect an error on operation 2. To prevent extraneous data from being read, the SPDR
+register should be read when a receive buffer full interrupt request occurs or while the SPSR.SPRF flag is 1.
+An underrun error shown in 3 is described in section 44.3.9.4, Underrun Error. An overrun error shown in 4 is
+described in section 44.3.9.1, Overrun Error. A parity error shown in 5 is described in section 44.3.9.2, Parity Error.
+A mode fault error shown in 6 to 8 is described in section 44.3.9.3, Mode Fault Error.
+For the transmit and receive interrupts, refer to section 44.3.7, Transmit Buffer Empty/Receive Buffer Full
+Interrupts.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2402 of 3240
+
+RX72N Group
+
+44.3.9.1
+
+44. Serial Peripheral Interface (RSPIc)
+
+Overrun Error
+
+If a serial transfer ends when the receive buffer of the SPDR register is full, the RSPI detects an overrun error, and sets
+the SPSR.OVRF flag to 1. When the OVRF flag is 1, the RSPI does not copy data from the shift register to the receive
+buffer so that the data prior to the occurrence of the error is retained in the receive buffer. To set the OVRF flag to 0,
+write 0 to the OVRF flag after the CPU has read the SPSR register with the OVRF flag set to 1.
+Figure 44.29 shows an example of operations of the SPRF and OVRF flags. ‘SPSR access’ and ‘SPDR access’ shown
+in Figure 44.29 indicate the condition of accesses to the SPSR and SPDR registers, respectively, where ‘W’ denotes a
+write cycle, and ‘R’ a read cycle. In the example in Figure 44.29, the RSPI performs an 8-bit serial transfer in which the
+SPCMDm.CPHA bit is 1 and the SPCMDm.CPOL bit is 0. The numbers given under the RSPCKx waveform represent
+the number of RSPCK cycles (i.e., the number of transferred bits).
+
+SPSR access
+
+R
+
+SPDR access
+
+W
+
+R
+
+RSPCKx
+(CPHA = 1, CPOL = 0)
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+1
+
+2
+
+3
+
+4
+
+(2)
+Receive buffer status
+
+Full
+
+5
+
+6
+
+7
+
+8
+
+(3)
+Empty
+
+SPRF
+OVRF
+
+Figure 44.29
+
+(1)
+
+(4)
+
+Operation Example of the SPRF and OVRF Flags
+
+The operation of the flags at the timing shown in steps (1) to (4) in the figure is described below.
+(1) If a serial transfer terminates with the receive buffer full (the SPRF flag is 1), the RSPI detects an overrun error, and
+sets the OVRF flag to 1. The RSPI does not copy the data in the shift register to the receive buffer. Even if the SPPE
+bit is 1, parity errors are not detected. In master mode, the RSPI copies the pointer value to the SPCMDm register to
+the SPSSR.SPECM[2:0] bits.
+(2) When the SPDR register is read, the RSPI outputs the data in the receive buffer. At this time the SPRF flag becomes
+0. Even if the receive buffer becomes empty, the OVRF flag does not become 0.
+(3) If the serial transfer ends with the OVRF flag being 1 (an overrun error occurs), the RSPI does not copy the data in
+the shift register to the receive buffer (the SPRF flag remains 0). A receive buffer full interrupt is not generated.
+Even if the SPPE bit is 1, parity errors are not detected. When in master mode, the RSPI does not update the
+SPSSR.SPECM[2:0] bits. When in an overrun error state and the RSPI does not copy the received data from the
+shift register to the receive buffer, upon termination of the serial transfer, the RSPI determines that the shift register
+is empty; in this manner, data transfer from the transmit buffer to the shift register is enabled.
+(4) If 0 is written to the OVRF flag after the SPSR register is read when the OVRF flag is 1, the OVRF flag is set to 0.
+The occurrence of an overrun can be checked either by reading the SPSR register or by using an error interrupt and
+reading the SPSR register. When executing a serial transfer, measures should be taken to ensure the early detection of
+overrun errors, such as reading the SPSR register immediately after the SPDR register is read. When the RSPI is used in
+master mode, the pointer value to the SPCMDm register at the occurrence of the error can be checked by reading the
+SPSSR.SPECM[2:0] bits.
+If an overrun error occurs and the OVRF flag is set to 1, normal reception operations cannot be performed until the
+OVRF flag is set to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2403 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+When the RSPCK auto-stop function is enabled in master mode, an overrun error does not occur. Figure 44.30 and
+Figure 44.31 show the clock stop waveform when a serial transfer continues while the receive buffer is full in master
+mode.
+
+Start
+
+Start
+
+End
+
+Serial transfer period
+
+End
+
+Serial transfer period
+
+SPDR access
+
+R
+RSPCK
+cycle
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+RSPCK
+cycle
+
+8
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+Clock is stopped
+
+RSPCKx
+(CPOL = 0)
+
+(2)
+
+RSPCKx
+(CPOL = 1)
+Sampling timing
+
+MOSIx
+MISOx
+SSLxi
+t2
+
+t1
+
+Receive buffer status
+
+t3
+
+t2
+
+t1
+
+Empty
+
+Em
+pty
+
+Full
+
+Full
+
+SPRF
+(Receive buffer full flag)
+OVRF
+Low
+(Overrun error flag)
+
+Receive data is read
+
+(1)
+
+RSPI transfer format (CPHA = 1)
+
+output: Undefined (0 or 1)
+Input: Don't care
+
+t1: RSPI clock delay register (SPCKD)
+t2: RSPI slave select delay register (SSLND)
+t3: RSPI next-access delay register (SPND)
+
+Figure 44.30
+
+Clock Stop Waveform When a Serial Transfer Continues While the Receive Buffer is Full in Master
+Mode (CPHA = 1)
+
+Start
+
+Serial transfer period
+
+End
+
+Start
+
+8
+
+RSPCK
+cycle
+
+End
+
+Serial transfer period
+
+SPDR access
+
+R
+RSPCK
+cycle
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+Clock is stopped
+
+RSPCKx
+(CPOL = 0)
+
+(2)
+
+RSPCKx
+(CPOL = 1)
+Sampling timing
+MOSIx
+MISOx
+SSLxi
+t2
+
+t1
+
+Receive buffer
+status
+
+Empty
+
+t3
+
+t2
+
+t1
+Emp
+ty
+
+Full
+
+Full
+
+SPRF
+(Receive buffer full flag)
+OVRF
+(Overrun error flag)
+
+Low
+
+RSPI transfer format (CPHA = 1)
+
+(1)
+
+t1: RSPI clock delay register (SPCKD)
+
+Receive data is read
+
+output: Undefined (0 or 1)
+Input: Don't care
+
+t2: RSPI slave select delay register (SSLND)
+t3: RSPI next-access delay register (SPND)
+
+Figure 44.31
+
+Clock Stop Waveform When a Serial Transfer Continues While the Receive Buffer is Full in Master
+Mode (CPHA = 0)
+
+The operation of the flags at the timings shown in steps (1) and (2) in the figure is described below.
+(1) When the receive buffer is full, an overrun error does not occur because the RSPCK clock is stopped.
+(2) If the SPDR register is read while the clock is stopped, data in the receive buffer can be read. The RSPCK clock
+restarts after reading the receive buffer (after the SPRF flag becomes 0).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2404 of 3240
+
+RX72N Group
+
+44.3.9.2
+
+44. Serial Peripheral Interface (RSPIc)
+
+Parity Error
+
+If full-duplex communication is performed with the SPCR.TXMD bit set to 0 and the SPCR2.SPPE bit set to 1, when
+serial transfer ends, the RSPI checks whether there are parity errors. Upon detecting a parity error in the received data,
+the RSPI sets the SPSR.PERF flag to 1. Since the RSPI does not copy the data in the shift register to the receive buffer
+when the SPSR.OVRF flag is set to 1, parity error detection is not performed for the received data. To set the PERF flag
+to 0, write 0 to the PERF flag after the SPSR register is read with the PERF flag set to 1.
+Figure 44.32 shows an example of operation of the OVRF and PERF flags. ‘SPSR access’ shown in Figure 44.32
+indicates the condition of access to the SPSR register, where ‘W’ denotes a write cycle, and ‘R’ a read cycle. In the
+example of Figure 44.32, full-duplex communication is performed while the SPCR.TXMD bit is 0 and the
+SPCR2.SPPE bit is 1. The RSPI performs an 8-bit serial transfer in which the SPCMDm.CPHA bit is 1 and the
+SPCMDm.CPOL bit is 0. The numbers given under the RSPCKx waveform represent the number of RSPCK cycles (i.e.,
+the number of transferred bits).
+
+SPSR access
+
+R
+
+W
+
+RSPCKx
+(CPHA = 1, CPOL = 0)
+1
+
+2
+
+PERF
+
+OVRF
+
+Figure 44.32
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+1
+
+(1)
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+(2)
+
+(3)
+
+Operation Example of PERF Flag
+
+The operation of the flags at the timing shown in steps (1) to (3) in the figure is described below.
+(1) If a serial transfer terminates with the RSPI not detecting an overrun error, the RSPI copies the data in the shift
+register to the receive buffer. The RSPI judges the received data at this timing, and sets the PERF flag to 1 if a parity
+error is detected. In master mode, the RSPI copies the pointer value to the SPCMDm register to the
+SPSSR.SPECM[2:0] bits.
+(2) If 0 is written to the PERF flag after the SPSR register is read when the PERF flag is 1, the PERF flag is set to 0.
+(3) When the RSPI detects an overrun error and serial transfer is terminated, the data in the shift register is not copied to
+the receive buffer. The RSPI does not perform parity error detection at this timing.
+The occurrence of a parity error can be checked either by reading the SPSR register or by using an error interrupt and
+reading the SPSR register. When executing a serial transfer, measures should be taken to ensure the early detection of
+parity errors, such as reading the SPSR register. When the RSPI is used in master mode, the pointer value to the
+SPCMDm register at the occurrence of the error can be checked by reading the SPSSR.SPECM[2:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2405 of 3240
+
+RX72N Group
+
+44.3.9.3
+
+44. Serial Peripheral Interface (RSPIc)
+
+Mode Fault Error
+
+The RSPI operates in multi-master mode when the SPCR.MSTR bit is 1, the SPCR.SPMS bit is 0, and the
+SPCR.MODFEN bit is 1. If the active level is input with respect to the SSLx0 input signal of the RSPI in multi-master
+mode, the RSPI detects a mode fault error irrespective of the status of the serial transfer, and sets the SPSR.MODF flag to
+1. Upon detecting the mode fault error, the RSPI copies the value of the pointer to the SPCMDm register to the
+SPSSR.SPECM[2:0] bits. The active level of the SSLx0 signal is determined by the SSLP.SSL0P bit.
+When the MSTR bit is 0, the RSPI operates in slave mode. The RSPI detects a mode fault error if the MODFEN bit of
+the RSPI in slave mode is 1, and the SPMS bit is 0, and if the SSLx0 input signal is negated during the serial transfer
+period (from the time the driving of valid data is started to the time the final valid data is fetched).
+Upon detecting a mode fault error, the RSPI stops driving of the output signals and clears the SPCR.SPE bit to 0 (refer to
+section 44.3.10, Initializing RSPI). In the case of multi-master configuration, detection of a mode fault error is used to
+stop driving of the output signals and the RSPI function, which allows the master right to be released.
+The occurrence of a mode fault error can be checked either by reading the SPSR register or by using an error interrupt
+and reading the SPSR register. Detecting mode fault errors without utilizing the error interrupt requires polling of the
+SPSR register. When using the RSPI in master mode, the pointer value to the SPCMDm register at the occurrence of the
+error can be checked by reading the SPSSR.SPECM[2:0] bits.
+When the MODF flag is 1, writing of the value 1 to the SPE bit is ignored by the RSPI. To enable the RSPI function after
+the detection of a mode fault error, set the MODF flag to 0. When setting the MODF flag to 0, the SPE bit becomes 1.
+
+44.3.9.4
+
+Underrun Error
+
+If a serial transfer is started when the SPCR.SPE bit is 1 (RSPI function is enabled) and transmit data is still not loaded
+on the shift register while RSPI operates in slave mode (the SPCR.MSTR bit is 0), the RSPI detects an underrun error,
+and sets the SPSR.MODF and SPSR.UDRF flags to 1. Upon detecting an underrun error, the RSPI stops driving of the
+output signals and clears the SPCR.SPE bit to 0. Clearing of the SPE bit disables the RSPI function. (Refer to section
+44.3.10, Initializing RSPI). The occurrence of an underrun error can be checked either by reading the SPSR register or
+by using an error interrupt and reading the SPSR register. Detecting underrun errors without utilizing the error interrupt
+requires polling of the SPSR register. When the MODF flag is 1, writing of the value 1 to the SPE bit is ignored by the
+RSPI. To enable the RSPI function after the detection of an underrun error, set the MODF flag to 0. When setting the
+MODF flag to 0, the SPE bit becomes 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2406 of 3240
+
+RX72N Group
+
+44.3.10
+
+44. Serial Peripheral Interface (RSPIc)
+
+Initializing RSPI
+
+If 0 is written to the SPCR.SPE bit or the RSPI sets the SPE bit to 0 because of the detection of a mode fault error or an
+underrun error, the RSPI disables the RSPI function, and initializes some of the module functions. When a system reset is
+generated, the RSPI initializes all of the module functions. The following describes initialization by the clearing of the
+SPCR.SPE bit and initialization by a system reset.
+
+44.3.10.1
+
+Initialization by Clearing the SPE Bit
+
+When the SPCR.SPE bit is set to 0, the RSPI performs the following initialization:
+ Aborting the transmission and reception that is being executed
+ Stopping the driving of output signals (Hi-Z) in slave mode
+ Initializing the internal state of the RSPI
+ Initializing the transmit buffer of the RSPI (Set the SPTEF flag to 1)
+Initialization by the clearing of the SPE bit does not initialize the control bits of the RSPI. For this reason, the RSPI can
+be started in the same transfer mode as prior to the initialization if the SPE bit is set to 1 again.
+The SPSR.SPRF, UDRF, PERF, MODF, and OVRF flags are not initialized, nor is the value of the RSPI sequence status
+register (SPSSR) initialized. For this reason, even after the RSPI is initialized, data from the receive buffer can be read
+and the status of error occurrence during the RSPI transfer can be checked.
+The transmit buffer is initialized to an empty state (the SPTEF flag is 1). Therefore, if the SPCR.SPTIE bit is set to 1
+after RSPI initialization, a transmit buffer empty interrupt is generated. When the RSPI is initialized, in order to disable
+any transmit buffer empty interrupt, 0 should be written to the SPTIE bit simultaneously with the writing of 0 to the SPE
+bit.
+
+44.3.10.2
+
+System Reset
+
+The initialization by a system reset completely initializes the RSPI through the initialization of all bits for controlling the
+RSPI, initialization of the status bits, and initialization of data registers, in addition to the requirements described in
+section 44.3.10.1, Initialization by Clearing the SPE Bit.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2407 of 3240
+
+RX72N Group
+
+44.3.11
+44.3.11.1
+
+44. Serial Peripheral Interface (RSPIc)
+
+SPI Operation
+Master Mode Operation
+
+The only difference between single-master mode operation and multi-master mode operation lies in mode fault error
+detection (refer to section 44.3.9, Error Detection). When operating in single-master mode, the RSPI does not detect
+mode fault errors whereas the RSPI running in multi-master mode does detect mode fault errors. This section explains
+operations that are common to single-master mode and multi-master mode.
+
+(1)
+
+Starting a Serial Transfer
+
+The RSPI updates the data in the transmit buffer (SPTX) when data is written to the RSPI data register (SPDR) with the
+RSPI transmit buffer being empty (the SPTEF flag is 1 and data for the next transfer is not set). When the shift register is
+empty after the number of frames set in the SPDCR.SPFC[1:0] bits are written to the SPDR register, the RSPI copies
+data from the transmit buffer to the shift register and starts serial transfer. Upon copying transmit data to the shift register,
+the RSPI changes the status of the shift register to “full”, and upon termination of serial transfer, it changes the status of
+the shift register to “empty”. The status of the shift register cannot be referenced.
+For details on the RSPI transfer format, refer to section 44.3.5, Transfer Format. The polarity of the SSLxi output pins
+depends on the SSLP register settings.
+
+(2)
+
+Terminating a Serial Transfer
+
+Irrespective of the SPCMDm.CPHA bit, the RSPI terminates the serial transfer after transmitting an RSPCKx edge
+corresponding to the final sampling timing. If free space is available in the receive buffer (SPRX) (the SPRF flag is 0),
+upon termination of serial transfer, the RSPI copies data from the shift register to the receive buffer of the SPDR register.
+It should be noted that the final sampling timing varies depending on the bit length of transfer data. In master mode, the
+RSPI data length depends on the SPCMDm.SPB[3:0] bit setting. The polarity of the SSLxi output pin depends on the
+SSLP register settings.
+For details on the RSPI transfer format, refer to section 44.3.5, Transfer Format.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2408 of 3240
+
+RX72N Group
+
+(3)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Sequence Control
+
+The transfer format that is employed in master mode is determined by the SPSCR, SPCMDm, SPBR, SPCKD, SSLND,
+and SPND registers.
+The SPSCR register is a register used to determine the sequence configuration for serial transfers that are executed by the
+RSPI in master mode. The following items are set in the SPCMDm register: SSLxi pin output signal value, MSB/LSB
+first, data length, some of the bit rate settings, RSPCK polarity/phase, whether the SPCKD register is to be referenced,
+whether the SSLND register is to be referenced, and whether the SPND register is to be referenced. The SPBR register
+holds some of the bit rate settings; the SPCKD register, an RSPI clock delay value; the SSLND register, an SSL negation
+delay; and the SPND register, a next-access delay value.
+According to the sequence length that is assigned to the SPSCR register, the RSPI makes up a sequence comprised of a
+part or all of the SPCMDm register. The RSPI contains a pointer to the SPCMDm register that makes up the sequence.
+The value of this pointer can be checked by reading the SPSSR.SPCP[2:0] bits. When the SPCR.SPE bit is set to 1 and
+the RSPI function is enabled, the RSPI loads the pointer to the commands in the SPCMD0 register, and incorporates the
+SPCMD0 settings into the transfer format at the beginning of serial transfer. The RSPI increments the pointer each time
+the next-access delay period for a data transfer ends. Upon completion of the serial transfer that corresponds to the final
+command comprising the sequence, the RSPI sets the pointer in the SPCMD0 register, and in this manner the sequence is
+executed repeatedly.
+
+Sequence length setting
+
+Determining reference command
+
+Loading transfer format settings
+
+SPSCR
+
+Command
+pointer control
+SPCMD0
+SPCMD1
+SPCMD2
+SPCMD3
+SPCMD4
+SPCMD5
+SPCMD6
+SPCMD7
+
+CPHA
+CPOL
+BRDV[1:0]
+SSLA[2:0]
+SSLKP
+SPB[3:0]
+LSBF
+
+SLNDEN
+
+SCKDEN
+SPCKD
+
+SSLND
+
+SPNDEN
+SPND
+
+Transfer format determiner
+
+Figure 44.33
+
+Procedure for Determining the Form of Serial Transfer in Master Mode
+
+In this section, a frame is the combination of the data (SPDR) and the settings (SPCMDm).
+
+Data
+(SPDR)
++
+Settings
+(SPCMD)
+Figure 44.34
+
+Frame
+Data
+Settings
+
+Concept of a Frame
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2409 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+Figure 44.35 shows the relationship between the command and the transmit and receive buffers in the sequence of
+operations specified by the settings in Table 44.4.
+
+Setting 1-1
+
+SPTX0/SPRX0
+SPCMD0
+Only 1 frame
+
+Setting 1-2
+
+Setting 1-3
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPCMD0
+
+SPCMD0
+
+1st frame
+
+2nd frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPTX2/SPRX2
+
+SPCMD0
+
+SPCMD0
+
+SPCMD0
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPTX2/SPRX2
+
+SPTX3/SPRX3
+
+SPCMD0
+
+SPCMD0
+
+SPCMD0
+
+SPCMD0
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPCMD0
+
+SPCMD1
+
+1st frame
+
+2nd frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPTX2/SPRX2
+
+SPTX3/SPRX3
+
+SPCMD0
+
+SPCMD1
+
+SPCMD0
+
+SPCMD1
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPTX2/SPRX2
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPTX2/SPRX2
+
+SPTX3/SPRX3
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+SPCMD3
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+SPCMD3
+
+SPCMD4
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+5th frame
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+SPCMD3
+
+SPCMD4
+
+SPCMD5
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+5th frame
+
+6th frame
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+SPCMD3
+
+SPCMD4
+
+SPCMD5
+
+SPCMD6
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+5th frame
+
+6th frame
+
+7th frame
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+SPCMD3
+
+SPCMD4
+
+SPCMD5
+
+SPCMD6
+
+SPCMD7
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+5th frame
+
+6th frame
+
+7th frame
+
+8th frame
+
+Setting 1-4
+
+Setting 2-1
+
+Setting 2-2
+
+Setting 3
+
+Setting 4
+
+Setting 5
+
+Setting 6
+
+Setting 7
+
+Setting 8
+
+Figure 44.35
+
+Correspondence between the RSPI Command Register and Transmit/Receive Buffers in
+Sequence Operations
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2410 of 3240
+
+RX72N Group
+
+(4)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Burst Transfer
+
+If the SPCMDm.SSLKP bit that the RSPI references during the current serial transfer is 1, the RSPI keeps the SSLxi
+signal level during the serial transfer until the beginning of the SSLxi signal assertion for the next serial transfer. If the
+SSLxi signal level for the next serial transfer is the same as the SSLxi signal level for the current serial transfer, the RSPI
+can execute continuous serial transfers while keeping the SSLxi signal assertion status (burst transfer).
+Figure 44.36 shows an example of an SSLxi signal operation for the case where a burst transfer is implemented using
+SPCMD0 and SPCMD1 register settings. The text below explains the RSPI operations (1) to (7) as shown in Figure
+44.36. It should be noted that the polarity of the SSLxi output signal depends on the SSLP register settings.
+
+RSPCKx
+
+SSLxi
+(1)
+
+Figure 44.36
+
+(1)
+(2)
+(3)
+(4)
+
+(5)
+(6)
+(7)
+(8)
+
+(2)
+
+(3)
+
+(4) (5)
+
+(6)
+
+(7)
+
+(8)
+
+Example of Burst Transfer Operation Using SSLKP Bit (CPHA = 1, CPOL = 0)
+
+Based on the SPCMD0 register, the RSPI asserts the SSLxi signal and inserts RSPCK delays.
+The RSPI executes serial transfers according to the SPCMD0 register.
+The RSPI inserts SSL negation delays.
+Since the SPCMD0.SSLKP bit is 1, the RSPI keeps the SSLxi signal value on the SPCMD0 register. This period is
+sustained, at the shortest, for a period equal to the next-access delay of the SPCMD0 register. If the shift register is
+empty after the passage of a minimum period, this period is sustained until the transmit data is stored in the shift
+register for the next transfer.
+Based on the SPCMD1 register, the RSPI inserts RSPCK delays.
+The RSPI executes serial transfers according to the SPCMD1 register.
+The RSPI inserts SSL negation delays.
+Because the SPCMD1.SSLKP bit is 0, the RSPI negates the SSLxi signal. In addition, a next-access delay is
+inserted according to the SPCMD1 register.
+
+If the SSLxi signal output settings in the SPCMDm register in which 1 is assigned to the SSLKP bit are different from the
+SSLxi signal output settings in the SPCMDm register to be used in the next transfer, the RSPI switches the SSLxi signal
+status to SSLxi signal assertion ((5) in Figure 44.36) corresponding to the command for the next transfer. Note that if
+such an SSLxi signal switching occurs, the slaves that drive the MISOx signal compete, and collision of signal levels
+may occur.
+The RSPI in master mode references the SSLxi signal operation within the module for the case where the SSLKP bit is
+not used. Even when the SPCMDm.CPHA bit is 0, the RSPI can accurately start serial transfers by using the SSLxi
+signal assertion for the next transfer that is detected internally.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2411 of 3240
+
+RX72N Group
+
+(5)
+
+44. Serial Peripheral Interface (RSPIc)
+
+RSPCK Delay (t1)
+
+The RSPCK delay value in master mode depends on the SPCMDm.SCKDEN bit setting and the SPCKD register setting.
+The RSPI determines the SPCMDm register to be referenced during serial transfer by pointer control, and determines an
+RSPCK delay value during serial transfer by using the SPCMDm.SCKDEN bit and the SPCKD register, as listed in
+Table 44.8. For a definition of RSPCK delay, refer to section 44.3.5, Transfer Format.
+Table 44.8
+
+Relationship among SCKDEN Bit, SPCKD, and RSPCK Delay Value
+
+SPCMDm.SCKDEN Bit
+
+SPCKD.SCKDL[2:0] Bits
+
+RSPCK Delay Value
+
+0
+
+000b to 111b
+
+1 RSPCK
+
+1
+
+000b
+
+1 RSPCK
+
+001b
+
+2 RSPCK
+
+010b
+
+3 RSPCK
+
+011b
+
+4 RSPCK
+
+100b
+
+5 RSPCK
+
+101b
+
+6 RSPCK
+
+110b
+
+7 RSPCK
+
+111b
+
+8 RSPCK
+
+(6)
+
+SSL Negation Delay (t2)
+
+The SSL negation delay value in master mode depends on the SPCMDm.SLNDEN bit setting and the SSLND register
+setting. The RSPI determines the SPCMDm register to be referenced during serial transfer by pointer control, and
+determines an SSL negation delay value during serial transfer by using the SPCMDm.SLNDEN bit and the SSLND
+register, as listed in Table 44.9. For a definition of SSL negation delay, refer to section 44.3.5, Transfer Format.
+Table 44.9
+
+Relationship among SLNDEN Bit, SSLND, and SSL Negation Delay Value
+
+SPCMDm.SLNDEN Bit
+
+SSLND.SLNDL[2:0] Bits
+
+SSL Negation Delay Value
+
+0
+
+000b to 111b
+
+1 RSPCK
+
+1
+
+000b
+
+1 RSPCK
+
+001b
+
+2 RSPCK
+
+010b
+
+3 RSPCK
+
+011b
+
+4 RSPCK
+
+100b
+
+5 RSPCK
+
+101b
+
+6 RSPCK
+
+110b
+
+7 RSPCK
+
+111b
+
+8 RSPCK
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2412 of 3240
+
+RX72N Group
+
+(7)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Next-Access Delay (t3)
+
+The next-access delay value in master mode depends on the SPCMDm.SPNDEN bit setting and the SPND setting. The
+RSPI determines the SPCMDm register to be referenced during serial transfer by pointer control, and determines a nextaccess delay value during serial transfer by using the SPCMDm.SPNDEN bit and SPND, as listed in Table 44.10. For a
+definition of next-access delay, refer to section 44.3.5, Transfer Format.
+Table 44.10
+
+Relationship among SPNDEN Bit, SPND, and Next-Access Delay Value
+
+SPCMDm.SPNDEN Bit
+
+SPND.SPNDL[2:0] Bits
+
+Next-Access Delay Value
+
+0
+
+000b to 111b
+
+1 RSPCK + 2 PCLK
+
+1
+
+000b
+
+1 RSPCK + 2 PCLK
+
+001b
+
+2 RSPCK + 2 PCLK
+
+010b
+
+3 RSPCK + 2 PCLK
+
+011b
+
+4 RSPCK + 2 PCLK
+
+100b
+
+5 RSPCK + 2 PCLK
+
+101b
+
+6 RSPCK + 2 PCLK
+
+110b
+
+7 RSPCK + 2 PCLK
+
+111b
+
+8 RSPCK + 2 PCLK
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2413 of 3240
+
+RX72N Group
+
+(8)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Initialization Flowchart
+
+Figure 44.37 is a flowchart illustrating an example of initialization in SPI operation when the RSPI is used in master
+mode. For a description of how to set up the interrupt controller, DMAC, and I/O ports, refer to the descriptions given in
+the individual blocks.
+
+Start of initialization in
+master mode
+Set RSPI slave select polarity
+register (SSLP)
+Set RSPI pin control
+register (SPPCR)
+Set RSPI bit rate
+register (SPBR)
+Set RSPI data control
+register (SPDCR)
+
+• Sets polarity of SSL signal.
+
+• Sets MOSI signal value when transfer is in idle state.
+
+• Sets transfer bit rate.
+
+• Sets number of frames to be used.
+
+Set RSPI clock delay register (SPCKD)
+
+• Sets RSPCK delay value.
+
+Set RSPI slave select negation delay
+register (SSLND)
+
+• Sets SSL negation delay value.
+
+Set RSPI next-access delay
+register (SPND)
+
+• Sets next-access delay value.
+
+Set RSPI control register 2 (SPCR2)
+
+• Sets parity function.
+• Sets interrupt mask.
+
+RSPI sequence control register
+(SPSCR)
+
+• Sets sequence length.
+
+Set RSPI command registers 0 to 7
+(SPCMD0 to SPCMD7)
+
+Set RSPI data control register 2
+(SPDCR2)
+
+Set interrupt controller
+
+Set DMAC
+
+• Sets SSL signal level.
+• Sets RSPCK delay enable.
+• Sets SSL negation delay enable.
+• Sets next-access delay enable.
+• Sets MSB or LSB first.
+• Sets data length.
+• Sets transfer bit rate.
+• Sets clock phase.
+• Sets clock polarity.
+• Sets SSL assertion signal.
+
+• Sets byte swap.
+
+(when using an interrupt)
+
+(when using DMAC)
+
+Set I/O ports
+
+Set RSPI control
+register (SPCR)
+
+• Sets master mode.
+• Sets interrupt mask.
+• Sets mode fault error detection.
+• Sets RSPI mode.
+
+Read RSPI control register (SPCR)
+
+End of initialization in
+master mode
+
+Figure 44.37
+
+Example of Initialization Flowchart in Master Mode (SPI Operation)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2414 of 3240
+
+RX72N Group
+
+(9)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Software Processing Flow
+
+Figure 44.38 to Figure 44.40 show examples of the flow of software processing.
+
+(a)
+
+Transmit Processing Flow
+
+When transmitting data, the CPU will be notified of the completion of data transmission by enabling the SPII interrupt
+after the last writing of data for transmission.
+The completion of data transmission can also be checked by polling to see if the SPSR.IDLNF flag has become 0, instead
+of using the SPII interrupt. However, one cycle of PCLK is required for the time from when data for transmission is
+written in the SPDR register to when the IDLNF flag becomes 1. After the last data is written in the SPDR register,
+discard the value of the SPSR register once not to judge the condition with the IDLNF flag which has not yet become 1,
+and read and use the value of the IDLNF flag to confirm the completion of data transmission.
+
+Pre-transfer processing
+
+Processing for transmission
+Start processing
+for transmission
+
+End of initial settings
+
+Clear the SPSR.MODF, OVRF,
+and PERF flags
+
+[1] Clear error sources.
+
+SPTI interrupt generated
+or SPSR.SPTEF = 1?*1
+
+[2] Disable SPII interrupts.
+
+Write data for transmission to
+SPDR
+
+No
+
+Yes
+Set SPCR2.SPIIE = 0
+
+Set SPCR.SPE = 1 and set bits
+SPTIE, SPRIE, and SPEIE
+
+[3] Set the SPE bit to “enabled”.
+Enable the required interrupts at the
+same time (Disables the related
+interrupt when using a polling).
+
+[4] [4] Each time the handling routine
+runs, access to the number of
+frames set in the
+SPDCR.SPFC[1:0] bits proceeds.
+
+Have the last of the data been No
+written?
+Yes
+
+Proceed to
+processing for
+transmission
+
+Proceed to
+processing for
+reception
+
+Proceed to
+error
+processing
+
+SPCR.SPTIE = 0,
+SPCR2.SPIIE = 1
+
+SPII interrupt?
+
+No
+
+Yes
+SPCR.SPE = 0,
+SPCR2.SPIIE = 0
+
+End of
+processing for
+transmission
+Note 1.
+
+Figure 44.38
+
+When using a polling for the SPTEF flag, proceed to the transmit data writing process after reading the SPTEF flag as 1.
+
+Flowchart in Master Mode (Transmission)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2415 of 3240
+
+RX72N Group
+
+(b)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Receive Processing Flow
+
+The RSPI does not support receive-only simplex communications, so processing for transmission is required.
+
+Pre-transfer processing
+
+Processing for reception
+Start processing
+for reception
+
+End of initial settings
+
+Clear the SPSR.MODF, OVRF,
+and PERF flags
+
+[1] Clear error sources.
+
+No
+
+SPRI interrupt generated
+or SPSR.SPRF = 1?
+Yes
+
+Set SPCR2.SPIIE = 0
+
+Set SPCR.SPE = 1 and set bits
+SPTIE, SPRIE, and SPEIE
+
+[2] Disable SPII interrupts.
+
+Read receive data from SPDR
+
+[4]
+
+[3] Set the SPE bit to “enabled”.
+Enable the required interrupts at
+the same time (Disables the related
+interrupt when using a polling).
+
+Have the last of the data been
+read?
+
+No
+
+[4] Each time the handling routine runs,
+access to the number of frames set
+in the SPDCR.SPFC[1:0] bits
+proceeds.
+
+Yes
+Proceed to
+processing for
+transmission
+
+Proceed to
+processing for
+reception
+
+Proceed to
+error
+processing
+
+SPCR.SPRIE = 0
+
+End of
+processing for
+reception
+
+Figure 44.39
+
+[5] Prohibition of operation is handled by
+processing for transmission.
+
+Flowchart in Master Mode (Reception)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2416 of 3240
+
+RX72N Group
+
+(c)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Flow of Error Processing
+
+When a mode fault error is generated, the SPCR.SPE bit is automatically cleared, stopping operations for transmission
+and reception. For errors from other sources, however, the SPCR.SPE bit is not cleared and operations for transmission
+and reception continue; accordingly, we recommend clearing of the SPCR.SPE bit to stop operations in the case of errors
+other than mode fault errors. Not doing so will lead to updating of the SPSSR.SPECM[2:0] bits.
+When interrupts are used and an error occurs, if the ICU.IRn.IR flag for the SPTI or SPRI interrupt request is set to 1,
+clear the ICU.IRn.IR flag in the error processing routine. If the SPRI interrupt request is indicated, read the receive buffer
+and initialize the sequencer in the RSPI.
+
+Error processing
+
+Pre-transfer processing
+
+Start error
+processing
+
+End of initial settings
+
+Clear the SPSR.MODF, OVRF,
+and PERF flags
+
+[1] Clear error sources.
+
+SPEI interrupt?
+
+No
+
+Yes
+Set SPCR2.SPIIE = 0
+
+[2] Disable SPII interrupts.
+
+Set SPCR.SPE = 1 and set bits
+SPTIE, SPRIE, and SPEIE
+
+Proceed to
+processing for
+transmission
+
+[3] Set the SPE bit to “enabled”.
+Enable the required interrupts at the
+same time (Disables the related
+interrupt when using a polling).
+
+Proceed to
+processing for
+reception
+
+Proceed to
+error
+processing
+
+SPSR.MODF = 0
+
+No
+
+Yes
+SSL0 = inactive?
+SPCR.SPE = 0
+
+[4]
+
+Set SPCR.SPTIE = 0,
+SPRIE = 0, SPEIE = 0,
+and SPCR2.SPIIE = 0
+
+Error processing
+
+No
+
+[4] Read the port register and confirm that
+the SSL0 pin is at the inactive level.
+
+[5]
+
+[5] Clear the ICU.IRn.IR flag
+corresponding to SPTI, SPRI, etc.
+
+Clear the SPSR.MODF, OVRF,
+and PERF flags
+
+Repeat the transfer processing
+
+End of error
+processing
+
+Figure 44.40
+
+[6] Run the initialization processing again, etc.
+
+The order of processing can be changed.
+
+Flowchart for Master Mode (Error Processing)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2417 of 3240
+
+RX72N Group
+
+44.3.11.2
+(1)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Slave Mode Operation
+
+Starting a Serial Transfer
+
+If the SPCMD0.CPHA bit is 0, when detecting an SSLx0 input signal assertion, the RSPI needs to start driving valid data
+to the MISOx output signal. For this reason, when the CPHA bit is 0, the assertion of the SSLx0 input signal triggers the
+start of a serial transfer.
+If the CPHA bit is 1, when detecting the first RSPCKx edge in an SSLx0 signal asserted condition, the RSPI needs to
+start driving valid data to the MISOx output signal. For this reason, when the CPHA bit is 1, the first RSPCKx edge in an
+SSLx0 signal asserted condition triggers the start of a serial transfer.
+Irrespective of the CPHA bit setting, the timing at which the RSPI starts driving of the MISOx output signal is the SSLx0
+signal assertion timing. The data which is output by the RSPI is either valid or invalid, depending on the CPHA bit
+setting.
+For details on the RSPI transfer format, refer to section 44.3.5, Transfer Format. The polarity of the SSLx0 input
+signal depends on the setting of the SSLP.SSL0P bit.
+
+(2)
+
+Terminating a Serial Transfer
+
+Irrespective of the SPCMD0.CPHA bit, the RSPI terminates the serial transfer after detecting an RSPCKx edge
+corresponding to the final sampling timing. When free space is available in the receive buffer (the SPRF flag is 0), upon
+termination of serial transfer the RSPI copies received data from the shift register to the receive buffer of the SPDR
+register. Upon termination of a serial transfer the RSPI changes the status of the shift register to “empty”, regardless of
+the receive buffer state. A mode fault error occurs if the RSPI detects an SSLx0 input signal negation from the beginning
+of serial transfer to the end of serial transfer (refer to section 44.3.9, Error Detection).
+The final sampling timing changes depending on the bit length of transfer data. In slave mode, the RSPI data length
+depends on the SPCMD0.SPB[3:0] bit setting. The polarity of the SSLx0 input signal depends on the SSLP.SSL0P bit
+setting.
+For details on the RSPI transfer format, refer to section 44.3.5, Transfer Format.
+
+(3)
+
+Notes on Single-Slave Operations
+
+If the SPCMD0.CPHA bit is 0, the RSPI starts serial transfers when it detects the assertion edge for an SSLx0 input
+signal. In the type of configuration shown in Figure 44.7 as an example, if the RSPI is used in single-slave mode, the
+SSLx0 signal is fixed at the active state. Therefore, when the CPHA bit is set to 0, the RSPI cannot correctly start a serial
+transfer. To correctly execute transmit/receive operations by the RSPI in slave mode in a configuration in which the
+SSLx0 input signal is fixed at the active state, the CPHA bit should be set to 1. If there is a need for setting the CPHA bit
+to 0, the SSLx0 input signal should not be fixed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2418 of 3240
+
+RX72N Group
+
+(4)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Burst Transfer
+
+If the SPCMD0.CPHA bit is 1, continuous serial transfer (burst transfer) can be executed while retaining the assertion
+state for the SSLx0 input signal. If the CPHA bit is 1, the period from the first RSPCKx edge to the sampling timing for
+the reception of the final bit in an SSLx0 signal active state corresponds to a serial transfer period. Even when the SSLx0
+input signal remains at the active level, the RSPI can accommodate burst transfers because it can detect the start of an
+access.
+If the CPHA bit is 0, the second and subsequent serial transfers during burst transfer cannot be executed correctly.
+
+(5)
+
+Initialization Flowchart
+
+Figure 44.41 is a flowchart illustrating an example of initialization in SPI operation when the RSPI is used in slave
+mode. For a description of how to set up the interrupt controller, DMAC, and I/O ports, refer to the descriptions given in
+the individual blocks.
+
+Start of initialization in
+slave mode
+Set RSPI slave select polarity
+register (SSLP)
+
+• Sets polarity of SSLxi input signal
+
+Set RSPI data control
+register (SPDCR)
+
+• Sets number of frames to be used.
+
+Set RSPI control register 2 (SPCR2)
+
+Set RSPI command register 0
+(SPCMD0)
+
+Set RSPI data control register 2
+(SPDCR2)
+
+• Sets parity function.
+• Sets interrupt mask.
+• Sets MSB or LSB first.
+• Sets data length.
+• Sets clock phase.
+• Sets clock polarity.
+• Sets byte swap.
+
+Set interrupt controller
+
+(when using an interrupt)
+
+Set DMAC
+
+(when using the DMAC)
+
+Set I/O ports
+
+Set RSPI control register
+(SPCR)
+
+• Sets slave mode.
+• Sets mode fault error detection.
+• Sets interrupt mask.
+• Sets RSPI mode.
+
+Read RSPI control register (SPCR)
+
+End of initialization in
+slave mode
+
+Figure 44.41
+
+Example of Initialization Flowchart in Slave Mode (SPI Operation)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2419 of 3240
+
+RX72N Group
+
+(6)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Software Processing Flow
+
+Figure 44.42 to Figure 44.44 show examples of the flow of software processing.
+
+(a)
+
+Transmit Processing Flow
+
+Pre-transfer processing
+
+Processing for transmission
+Start processing
+for transmission
+
+End of initial settings
+
+Clear the SPSR.MODF, UDRF,
+OVRF, and PERF flags
+
+No
+
+SPTI interrupt generated
+or SPSR.SPTEF = 1?*1
+
+[1] Clear error sources.
+
+Yes
+Write data for transmission to
+SPDR
+
+[2] Disable SPII interrupts.
+
+Set SPCR2.SPIIE = 0
+
+Set SPCR.SPE = 1 and set bits
+SPTIE, SPRIE, and SPEIE
+
+[3] Set the SPE bit to “enabled”.
+Enable the required interrupts at the
+same time (Disables the related
+interrupt when using a polling).
+
+Have the last of the data been
+written?
+
+[4] [4] Each time the handling routine
+runs, access to the number of
+frames set in the
+SPDCR.SPFC[1:0] bits proceeds.
+No
+
+Yes
+Proceed to
+processing for
+transmission
+
+Note 1.
+
+Figure 44.42
+
+(b)
+
+Proceed to
+processing for
+reception
+
+Proceed to
+error
+processing
+
+End of
+processing for
+transmission
+
+When using a polling for the SPTEF flag, proceed to the transmit data writing process after reading the SPTEF flag as 1.
+
+Flowchart in Slave Mode (Transmission)
+
+Receive Processing Flow
+
+The RSPI does not support receive-only simplex communications, so processing for transmission is required.
+
+Pre-transfer processing
+
+Processing for reception
+Start processing
+for reception
+
+End of initial settings
+
+Clear the SPSR.MODF, UDRF,
+OVRF, and PERF flags
+
+[1] Clear error sources.
+
+SPRI interrupt generated
+or SPSR.SPRF = 1?
+
+No
+
+Yes
+Set SPCR2.SPIIE = 0
+
+Set SPCR.SPE = 1 and set bits
+SPTIE, SPRIE, and SPEIE
+
+[2] Disable SPII interrupts.
+
+Read receive data from SPDR
+
+[4]
+
+[3] Set the SPE bit to “enabled”.
+Enable the required interrupts at
+the same time (Disables the related
+interrupt when using a polling).
+
+Have the last of the data been
+read?
+
+No
+
+[4] Each time the handling routine runs,
+access to the number of frames set
+in the SPDCR.SPFC[1:0] bits
+proceeds.
+
+Yes
+Proceed to
+processing for
+transmission
+
+Proceed to
+processing for
+reception
+
+Proceed to
+error
+processing
+
+SPCR.SPRIE = 0
+
+End of
+processing for
+reception
+
+Figure 44.43
+
+Flowchart in Slave Mode (Reception)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2420 of 3240
+
+RX72N Group
+
+(c)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Flow of Error Processing
+
+In slave mode, even when a mode fault error is generated, the SPSR.MODF flag can be cleared regardless of the status of
+the SSLx0 pin.
+When interrupts are used and an error occurs, if the ICU.IRn.IR flag for the SPTI or SPRI interrupt request is set to 1,
+clear the ICU.IRn.IR flag in the error processing routine. If the SPRI interrupt request is indicated, read the receive buffer
+and initialize the sequencer in the RSPI.
+
+Error processing
+
+Pre-transfer processing
+
+Start error
+processing
+
+End of initial settings
+
+Clear the SPSR.MODF, UDRF,
+OVRF, and PERF flags
+
+[1] Clear error sources.
+
+SPEI interrupt?
+
+No
+
+Yes
+Set SPCR2.SPIIE = 0
+
+[2] Disable SPII interrupts.
+
+Set SPCR.SPE = 1 and set bits
+SPTIE, SPRIE, and SPEIE
+
+Proceed to
+processing for
+transmission
+
+SPSR.MODF = 0
+
+[3] Set the SPE bit to “enabled”.
+Enable the required interrupts at the
+same time (Disables the related
+interrupt when using a polling).
+
+Proceed to
+processing for
+reception
+
+Proceed to
+error
+processing
+
+No
+
+Yes
+SPCR.SPE = 0
+
+Set SPCR.SPTIE = 0,
+SPRIE = 0, SPEIE = 0,
+and SPCR2.SPIIE = 0
+
+Error processing
+
+[4]
+
+[4] Clear the ICU.IRn.IR flag
+corresponding to SPTI, SPRI, etc.
+
+Clear the SPSR.MODF, UDRF,
+OVRF, and PERF flags
+
+Repeat the transfer processing
+
+End of error
+processing
+
+Figure 44.44
+
+[5] Run the initialization processing again, etc.
+
+The order of processing can be changed.
+
+Flowchart for Slave Mode (Error Processing)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2421 of 3240
+
+RX72N Group
+
+44.3.12
+
+44. Serial Peripheral Interface (RSPIc)
+
+Clock Synchronous Operation
+
+Setting the SPCR.SPMS bit to 1 selects clock synchronous operation of the RSPI. In clock synchronous operation, the
+SSLxi pin is not used, and the three pins of RSPCKx, MOSIx, and MISOx handle communications. The SSLxi pin is
+available as I/O port pins.
+Although clock synchronous operation does not require use of the SSLxi pin, operation of the module is the same as in
+SPI operation. That is, in both master and slave mode operations, communications can be performed with the same flow
+as in SPI operation. However, mode fault errors are not detected because the SSLxi pin is not used.
+Furthermore, do not set the SPCMDm.CPHA bit to 0 if clock synchronous operation is to proceed in slave mode
+(SPCR.MSTR = 0).
+
+44.3.12.1
+(1)
+
+Master Mode Operation
+
+Starting a Serial Transfer
+
+The RSPI updates the data in the transmit buffer (SPTX) of the SPDR register when data is written to the SPDR register
+with the transmit buffer being empty (the SPTEF flag is 1 and data for the next transfer is not set). When the shift register
+is empty after the number of frames set in the SPDCR.SPFC[1:0] bits are written to the SPDR register, the RSPI copies
+data from the transmit buffer to the shift register and starts serial transmission. Upon copying transmit data to the shift
+register, the RSPI changes the status of the shift register to “full”, and upon termination of serial transfer, it changes the
+status of the shift register to “empty”. The status of the shift register cannot be referenced.
+For details on the RSPI transfer format, refer to section 44.3.5, Transfer Format.
+However, transfer in clock synchronous operation is conducted without the SSLx0 output signal.
+
+(2)
+
+Terminating a Serial Transfer
+
+The RSPI terminates the serial transfer after transmitting an RSPCKx edge corresponding to the sampling timing. If free
+space is available in the receive buffer (SPRX) (the SPRF flag is 0), upon termination of serial transfer, the RSPI copies
+data from the shift register to the receive buffer of the RSPI data register (SPDR).
+It should be noted that the final sampling timing varies depending on the bit length of transfer data. In master mode, the
+RSPI data length depends on the SPCMDm.SPB[3:0] bit setting.
+For details on the RSPI transfer format, refer to section 44.3.5, Transfer Format.
+However, transfer in clock synchronous operation is conducted without the SSLx0 output signal.
+
+(3)
+
+Sequence Control
+
+The transfer format employed in master mode is determined by SPSCR, SPCMDm, SPBR, SPCKD, SSLND, and SPND
+registers. Although the SSLxi signals are not output in clock synchronous operation, these settings are valid.
+The SPSCR register is a register used to determine the sequence configuration for serial transfers that are executed by the
+RSPI in master mode. The following items are set in the SPCMDm register: SSLxi output signal value, MSB/LSB first,
+data length, some of the bit rate settings, RSPCKx polarity/phase, whether the SPCKD register is to be referenced,
+whether the SSLND register is to be referenced, and whether the SPND register is to be referenced. The SPBR register
+holds some of the bit rate settings; the SPCKD register, an RSPI clock delay value; the SSLND register, an SSL negation
+delay; and the SPND register, a next-access delay value.
+According to the sequence length that is assigned to the SPSCR register, the RSPI makes up a sequence comprised of a
+part or all of the SPCMDm register. The RSPI contains a pointer to the SPCMDm register that makes up the sequence.
+The value of this pointer can be checked by reading the SPSSR.SPCP[2:0] bits. When the SPCR.SPE bit is set to 1 and
+the RSPI function is enabled, the RSPI loads the pointer to the commands in the SPCMD0 register, and incorporates the
+SPCMD0 register setting into the transfer format at the beginning of serial transfer. The RSPI increments the pointer
+each time the next-access delay period for a data transfer ends. Upon completion of the serial transfer that corresponds to
+the final command comprising the sequence, the RSPI sets the pointer in the SPCMD0 register, and in this manner the
+sequence is executed repeatedly.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2422 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+Sequence length
+setting
+
+Determining
+reference command
+
+Loading transfer format settings
+
+SPSCR
+Command
+pointer control
+
+SPCMD0
+SPCMD1
+SPCMD2
+SPCMD3
+SPCMD4
+SPCMD5
+SPCMD6
+SPCMD7
+
+CPHA
+CPOL
+BRDV[1:0]
+SSLA[2:0]
+SSLKP
+SPB[3:0]
+LSBF
+
+SLNDEN
+
+SCKDEN
+
+SPCKD
+
+SSLND
+
+SPNDEN
+
+SPND
+
+Transfer format determiner
+
+Figure 44.45
+
+Procedure for Determining the Form of Serial Transmission in Master Mode
+
+In this section, a frame is the combination of the data (SPDR) and the settings (SPCMDm).
+
+Data
+(SPDR)
++
+Settings
+(SPCMD)
+Figure 44.46
+
+Frame
+Data
+Settings
+
+Concept of a Frame
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2423 of 3240
+
+RX72N Group
+
+44. Serial Peripheral Interface (RSPIc)
+
+Figure 44.47 shows the relationship between the command and the transmit and receive buffers in the sequence of
+operations specified by the settings in Table 44.4.
+
+Setting 1-1
+
+SPTX0/SPRX0
+SPCMD0
+Only 1 frame
+
+Setting 1-2
+
+Setting 1-3
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPCMD0
+
+SPCMD0
+
+1st frame
+
+2nd frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPTX2/SPRX2
+
+SPCMD0
+
+SPCMD0
+
+SPCMD0
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPTX2/SPRX2
+
+SPTX3/SPRX3
+
+SPCMD0
+
+SPCMD0
+
+SPCMD0
+
+SPCMD0
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPCMD0
+
+SPCMD1
+
+1st frame
+
+2nd frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPTX2/SPRX2
+
+SPTX3/SPRX3
+
+SPCMD0
+
+SPCMD1
+
+SPCMD0
+
+SPCMD1
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPTX2/SPRX2
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+SPTX0/SPRX0
+
+SPTX1/SPRX1
+
+SPTX2/SPRX2
+
+SPTX3/SPRX3
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+SPCMD3
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+SPCMD3
+
+SPCMD4
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+5th frame
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+SPCMD3
+
+SPCMD4
+
+SPCMD5
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+5th frame
+
+6th frame
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+SPCMD3
+
+SPCMD4
+
+SPCMD5
+
+SPCMD6
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+5th frame
+
+6th frame
+
+7th frame
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPTX0/SPRX0
+
+SPCMD0
+
+SPCMD1
+
+SPCMD2
+
+SPCMD3
+
+SPCMD4
+
+SPCMD5
+
+SPCMD6
+
+SPCMD7
+
+1st frame
+
+2nd frame
+
+3rd frame
+
+4th frame
+
+5th frame
+
+6th frame
+
+7th frame
+
+8th frame
+
+Setting 1-4
+
+Setting 2-1
+
+Setting 2-2
+
+Setting 3
+
+Setting 4
+
+Setting 5
+
+Setting 6
+
+Setting 7
+
+Setting 8
+
+Figure 44.47
+
+Correspondence between the RSPI Command Register and Transmit/Receive Buffers in
+Sequence Operations
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2424 of 3240
+
+RX72N Group
+
+(4)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Initialization Flowchart
+
+Figure 44.48 is a flowchart illustrating an example of initialization in clock synchronous operation when the RSPI is
+used in master mode. For a description of how to set up the interrupt controller, DMAC, and I/O ports, refer to the
+descriptions given in the individual blocks.
+
+Start of initialization
+in master mode
+Set RSPI pin control
+register (SPPCR)
+Set RSPI bit rate
+register (SPBR)
+
+• Sets MOSI signal value when transfer is in idle state.
+
+• Sets transfer bit rate.
+
+Set RSPI data control register
+(SPDCR)
+
+• Sets number of frames to be used.
+
+Set RSPI clock delay register
+(SPCKD)
+
+• Sets RSPCK delay value.
+
+Set RSPI slave select negation delay
+register (SSLND)
+
+• Sets SSL negation delay value.
+
+Set RSPI next-access delay register
+(SPND)
+
+• Sets next-access delay value.
+
+Set RSPI control register 2 (SPCR2)
+
+• Sets parity function.
+• Sets interrupt mask.
+
+RSPI sequence control register
+(SPSCR)
+
+• Sets sequence length.
+
+Set RSPI command registers 0 to 7
+(SPCMD0 to SPCMD7)
+
+Set RSPI data control register 2
+(SPDCR2)
+
+• Sets RSPCK delay enable.
+• Sets SSL negation delay enable.
+• Sets next-access delay enable.
+• Sets MSB or LSB first.
+• Sets data length.
+• Sets transfer bit rate.
+• Sets clock polarity.
+• Sets clock phase.
+• Sets byte swap.
+
+Set interrupt controller
+
+(when using an interrupt)
+
+Set DMAC
+
+(when using the DMAC)
+
+Set I/O ports
+
+Set RSPI control
+register (SPCR)
+
+• Sets master mode.
+• Sets interrupt mask.
+• Sets RSPI mode.
+
+Read RSPI control register (SPCR)
+
+End of initialization
+in master mode
+
+Figure 44.48
+
+Example of Initialization Flowchart in Master Mode (Clock Synchronous Operation)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2425 of 3240
+
+RX72N Group
+
+(5)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Flow of Software Processing
+
+Software processing during clock-synchronous operation when the RSPI is used in master mode is the same as that for
+SPI master mode operation. For details, refer to section 44.3.11.1, (9) Software Processing Flow. Note that mode
+fault errors will not occur.
+
+44.3.12.2
+(1)
+
+Slave Mode Operation
+
+Starting a Serial Transfer
+
+When the SPCR.SPMS bit is 1, the first RSPCKx edge triggers the start of a serial transfer in the RSPI.
+When the SPMS bit is 1, the RSPI drives the MISOx output signal.
+For details on the RSPI transfer format, refer to section 44.3.5, Transfer Format.
+It should be noted that the SSLx0 input signal is not used in clock synchronous operation.
+
+(2)
+
+Terminating a Serial Transfer
+
+The RSPI terminates the serial transfer after detecting an RSPCKx edge corresponding to the final sampling timing.
+When free space is available in the receive buffer (the SPRF flag is 0), upon termination of serial transfer the RSPI
+copies received data from the shift register to the receive buffer of the SPDR register. Upon termination of a serial
+transfer the RSPI changes the status of the shift register to “empty” regardless of the receive buffer status. The final
+sampling timing changes depending on the bit length of transfer data. In slave mode, the RSPI data length depends on the
+SPCMD0.SPB[3:0] bit setting.
+For details on the RSPI transfer format, refer to section 44.3.5, Transfer Format.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2426 of 3240
+
+RX72N Group
+
+(3)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Initialization Flowchart
+
+Figure 44.49 is a flowchart illustrating an example of initialization in clock synchronous operation when the RSPI is
+used in slave mode. For a description of how to set up the interrupt controller, DMAC, and I/O ports, refer to the
+descriptions given in the individual blocks.
+
+Start of initialization in
+slave mode
+Set RSPI data control
+register (SPDCR)
+
+Set RSPI control register 2 (SPCR2)
+
+Set RSPI command register 0
+(SPCMD0)
+
+Set RSPI data control register 2
+(SPDCR2)
+
+• Sets number of frames to be used.
+• Sets parity function.
+• Sets interrupt mask.
+• Sets MSB or LSB first.
+• Sets data length.
+• Sets clock phase.
+• Sets clock polarity.
+
+• Sets byte swap.
+
+Set interrupt controller
+
+(when using an interrupt)
+
+Set DMAC
+
+(when using the DMAC)
+
+Set I/O ports
+
+Set RSPI control register
+(SPCR)
+
+• Sets slave mode.
+• Sets interrupt mask.
+• Sets RSPI mode.
+
+Read RSPI control register (SPCR)
+
+End of initialization in
+slave mode
+
+Figure 44.49
+
+(4)
+
+Example of Initialization Flowchart in Slave Mode (Clock Synchronous Operation)
+
+Flow of Software Processing
+
+Software processing during clock-synchronous operation when the RSPI is used in slave mode is the same as that for SPI
+slave mode operation. For details, refer to section 44.3.11.2, (6) Software Processing Flow. Note that mode fault
+errors will not occur.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2427 of 3240
+
+RX72N Group
+
+44.3.13
+
+44. Serial Peripheral Interface (RSPIc)
+
+Loopback Mode
+
+When 1 is written to the SPPCR.SPLP2 bit or SPPCR.SPLP bit, the RSPI shuts off the path between the MISOx pin and
+the shift register if the SPCR.MSTR bit is 1, and between the MOSIx pin and the shift register if the SPCR.MSTR bit is
+0, and connects the input path and output path of the shift register. The RSPI does not shut off the path between the
+MOSIx pin and the shift register if the SPCR.MSTR bit is 1, and between the MISOx pin and the shift register if the
+SPCR.MSTR bit is 0. This is called loopback mode. When a serial transfer is executed in loopback mode, the transmit
+data for the RSPI or the reversed transmit data becomes the received data for the RSPI.
+Table 44.11 lists the relationship among the SPLP2 and SPLP bits and the received data. Figure 44.50 shows the
+configuration of the shift register I/O paths for the case where the RSPI in master mode is set in loopback mode
+(SPPCR.SPLP2 = 0, SPPCR.SPLP = 1).
+Table 44.11
+
+SPLP2 and SPLP Bit Settings and Received Data
+
+SPPCR.SPLP2 Bit
+
+SPPCR.SPLP Bit
+
+Received Data
+
+0
+
+0
+
+Input data from the MOSIx pin or MISOx pin
+
+0
+
+1
+
+Inverted transmit data
+
+1
+
+0
+
+Transmit data
+
+1
+
+1
+
+Transmit data
+
+Transmission
+
+Shift register
+
+(MOSIx/MISOx)
+
+Loopback
+Loopback 2
+Reception
+
+Normal
+
+(MISOx/MOSIx)
+
+Figure 44.50
+
+Configuration of Shift Register I/O Paths in Loopback Mode (Master Mode)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2428 of 3240
+
+RX72N Group
+
+44.3.14
+
+44. Serial Peripheral Interface (RSPIc)
+
+Self-Diagnosis of Parity Bit Function
+
+The parity circuit consists of a parity bit adding unit used for transmit data and an error detecting unit used for received
+data. In order to detect defects in the parity bit adding unit and error detecting unit of the parity circuit, self-diagnosis is
+executed for the parity circuit following the flowchart shown in Figure 44.51.
+
+Start of self-diagnosis of
+parity circuit
+Select full-duplex communications (SPCR.TXMD = 0).
+Enable the parity circuit self-diagnosis function (SPCR2.PTE = 1).
+Enable the parity function (SPCR2.SPPE = 1).
+Select loopback mode (SPPCR.SPLP2 = 1).
+
+Parity error occurred
+
+Add correct parity bit to
+transmit data and transfer it
+
+No parity error
+
+No parity error
+
+Add incorrect parity bit to
+transmit data and transfer it
+
+Parity error occurred
+
+Disable the parity circuit self-diagnosis function (SPCR2.PTE = 0).
+Loopback operation with
+the parity bit added at
+normal operation
+
+Parity error occurred
+
+No parity error
+
+Incorrect parity bit is
+added
+Check the data that is stored in
+the receive data register
+
+Correct parity bit is added
+
+Normal end
+No defect in parity circuit
+
+Figure 44.51
+
+Erroneous end
+
+Erroneous end
+
+Defect found in parity bit adding unit
+No defect in error detecting unit
+
+Defect found in error
+detecting unit
+
+Flowchart for Self-Diagnosis of Parity Circuit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2429 of 3240
+
+RX72N Group
+
+44.3.15
+
+44. Serial Peripheral Interface (RSPIc)
+
+Interrupt Sources
+
+The RSPI has interrupt sources of receive buffer full, transmit buffer empty, error (mode fault, underrun, overrun, and
+parity error), and idle. In addition, the DTC or DMAC can be activated by the receive buffer full or transmit buffer empty
+interrupt to perform data transfer.
+Since the vector address for SPEI is allocated to interrupt requests due to mode fault, underrun, overrun, and parity
+errors, the actual interrupt source must be determined from the flags. Interrupt sources for the RSPI are listed in Table
+44.12. An interrupt is generated on satisfaction of an interrupt condition in Table 44.12. Clear the receive buffer full
+and transmit buffer empty sources through data transfer.
+When using the DTC or DMAC to perform data transmission/reception, the DTC or DMAC must be set up first to be in
+a status in which transfer is enabled before making the RSPI settings. For the method for setting the DTC or DMAC,
+refer to section 18, DMA Controller (DMACAa), or section 20, Data Transfer Controller (DTCb).
+If the conditions for generating a transmit buffer empty or receive buffer full interrupt are generated while the
+ICU.IRn.IR flag is 1, the interrupt is not output as a request for ICU but is retained internally (the capacity for retention
+is one request per source). A retained interrupt request is output when the ICU.IRn.IR flag becomes 0. A retained
+interrupt request is automatically discarded once it is output as an actual interrupt request. The interrupt enable bit (the
+SPCR.SPTIE or SPCR.SPRIE bit) for an internally retained interrupt request can also be cleared to 0.
+Table 44.12
+
+Interrupt Sources of RSPI
+
+Interrupt Source
+
+Symbol
+
+Interrupt Condition
+
+DMAC/DTC Activation
+
+Receive buffer full
+
+SPRI
+
+The receive buffer becomes full (the SPRF flag
+becomes 1) while the SPCR.SPRIE bit is 1.
+
+Possible
+
+Transmit buffer empty
+
+SPTI
+
+The transmit buffer becomes empty (the SPTEF flag
+becomes 1) while the SPCR.SPTIE bit is 1.
+
+Possible
+
+Errors (mode fault, underrun,
+overrun, and parity error)
+
+SPEI
+
+The SPSR.MODF, UDRF, OVRF, or PERF flag is set
+to 1 while the SPCR.SPEIE bit is 1.
+
+Impossible
+
+Idle
+
+SPII
+
+The SPSR.IDLNF flag is set to 0 while the
+SPCR2.SPIIE bit is 1.
+
+Impossible
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2430 of 3240
+
+RX72N Group
+
+44.4
+
+44. Serial Peripheral Interface (RSPIc)
+
+Link Operation by Event Linking
+
+The RSPI0 supports the following event output for the event link controller (ELC). The event link output signal is output
+regardless of the interrupt enable bit setting.
+
+44.4.1
+
+Receive Buffer Full Event Output
+
+This event signal is output when received data have been transferred from the shift register to the SPDR register on
+completion of serial transfer.
+
+44.4.2
+
+Transmit Buffer Empty Event Output
+
+This event signal is output when data for transmission have been transferred from the transmit buffer to the shift register
+and when the value of the SPE bit has changed from 0 to 1.
+
+44.4.3
+(1)
+
+Mode Fault, Underrun, Overrun, or Parity Error Event Output
+
+Mode Fault
+
+Table 44.13 lists the occurrence conditions of a mode fault event.
+Table 44.13
+
+Occurrence Conditions of Mode Fault Event
+SPCR.MODFEN Bit
+
+SSLx0 Pin
+
+Remarks
+
+Master
+(SPCR.MSTR bit = 1)
+
+1
+
+Active
+
+Under the condition (the SPCR.MSTR bit is 1 and the
+MODFEN bit is 1), if the SPCR.SPMS bit is 0, mode fault
+error, overrun error, and parity error event output cannot be
+used.
+Do not set the ELSRn register to 52h.
+
+Slave
+(SPCR.MSTR bit = 0)
+
+1
+
+Not active
+
+Event is output only when the pin is deactivated during
+transmission.
+
+(2)
+
+Underrun
+
+The condition for this event signal being output in response to an underrun is the start of serial transfer with the transmit
+buffer containing no transmit data while the value of the SPCR.MSTR bit is 0 and the value of the SPCR.SPE bit is 1, in
+which case the UDRF and MODF flags are set to 1.
+
+(3)
+
+Overrun
+
+The condition for this event signal being output in response to an overrun is completion of serial transfer while the
+receive buffer contains data that have not been read and the value of the SPCR.TXMD bit is 0, in which case the OVRF
+flag is set to 1.
+
+(4)
+
+Parity Error
+
+The condition for this event signal being output in response to a parity error is detection of a parity error on completion
+of serial transfer while the value of the TXMD bit in SPCR is 0 and the value of the SPPE bit in SPCR2 is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2431 of 3240
+
+RX72N Group
+
+44.4.4
+(1)
+
+44. Serial Peripheral Interface (RSPIc)
+
+Idle Event Output
+
+In Master Mode
+
+In master mode, an event is output when the condition for setting the IDLNF flag (idle flag) to 0 is satisfied.
+
+(2)
+
+In Slave Mode
+
+In slave mode, an event is output when the SPCR.SPE bit is set to 0 (RSPI is initialized).
+
+44.4.5
+
+Transmit End Event Output
+
+During both SPI operation and clock synchronous operation in master mode, an event is output under the condition for
+setting the IDLNF flag (idle flag) from 1 to 0. In slave mode, an event is output under the conditions listed in Table
+44.14.
+Table 44.14
+
+Generating Conditions of Transmit End Event (Slave mode)
+
+RSPI Mode
+
+Transmit Buffer State
+
+Shift Register State
+
+Others
+
+SPI operation (SPMS = 0)
+
+Empty
+
+Empty
+
+Negation of the SSLx0 input
+
+Clock synchronous operation
+(SPMS = 1)
+
+Empty
+
+Empty
+
+Even edge detection of the last RSPCKx
+for the last data
+
+Whether the operation is in master mode or slave mode, an event is not output if 0 is written to the SPCR.SPE bit during
+transmission or the SPCR.SPE bit is cleared by the mode fault error.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2432 of 3240
+
+RX72N Group
+
+44.5
+
+44. Serial Peripheral Interface (RSPIc)
+
+Usage Notes
+
+44.5.1
+
+Setting Module Stop Function
+
+Module stop control register B (MSTPCRB) and module stop control register C (MSTPCRC) can be used to enable or
+disable the RSPI. Immediately after a reset, operation of the RSPI is disabled. Register access is enabled by releasing the
+module stop state. For details, refer to section 11, Low Power Consumption.
+
+44.5.2
+
+Note on Low Power Consumption Functions
+
+When using the module stop function and entering a low power consumption mode other than sleep mode, set the
+SPCR.SPE bit to 0 before completing communication.
+
+44.5.3
+
+Notes on Starting Transfer
+
+If the ICU.IRn.IR flag is 1 at the time transfer is to be started, an interrupt request is internally retained after transfer
+starts, and this can lead to unanticipated behavior of the ICU.IRn.IR flag.
+When the ICU.IRn.IR flag is 1 at the time transfer is to start, follow the procedure below to clear interrupt requests
+before enabling operations (by setting the SPCR.SPE bit to 1).
+1.
+2.
+3.
+4.
+
+Confirm that transfer has stopped (i.e. that the SPCR.SPE bit is 0).
+Set the relevant interrupt enable bit (the SPCR.SPTIE or SPCR.SPRIE bit) to 0.
+Read the relevant interrupt enable bit (the SPCR.SPTIE or SPCR.SPRIE bit) and confirm that its value is 0.
+Set the ICU.IRn.IR flag to 0.
+
+44.5.4
+
+Notes on the SPRF and SPTEF flags
+
+When polling the SPSR.SPRF flag and/or SPSR.SPTEF flag, set the SPCR.SPRIE bit and/or SPCR.SPTIE bit to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2433 of 3240
+
+

@@ -1,0 +1,81 @@
+RX72N Group
+
+61.
+
+61. Standby RAM
+
+Standby RAM
+
+This MCU provides an on-chip static RAM that can retain data in deep software standby (standby RAM).
+
+61.1
+
+Overview
+
+Table 61.1 lists the specifications of the standby RAM.
+Table 61.1
+
+Specifications of Standby RAM
+
+Item
+
+Description
+
+RAM capacity
+
+8 Kbytes
+
+RAM address
+
+000A 4000h to 000A 5FFFh
+
+Access
+
+ Both read and write operations take 3 or 4 cycles of PCLKB when ICLK ≥
+PCLKB; 2 or 3 cycles of ICLK are needed when ICLK < PCLKB.
+ Enabling or disabling of RAM access is selectable.*1
+ Endian conforms to the endian setting of the chip.
+ Non-aligned access is prohibited. If non-aligned access is attempted, correct
+operation is not guaranteed.
+
+Data retention function
+
+Data can be retained in deep software standby mode
+
+Low-power consumption function
+
+The module-stop state is selectable.
+
+Note 1. Selectable by the SYSCR1.SBYRAME bit. For details on SYSCR1, refer to section 3.2.3, System Control Register 1 (SYSCR1).
+
+61.2
+61.2.1
+
+Operation
+Data Retention
+
+Whether or not the supply of internal power to the standby RAM continues in deep software standby mode is selectable
+by the DPSBYCR.DEEPCUT[1:0] bits.
+If continuation of the supply of internal power is selected, data in the standby RAM are retained in deep software standby
+mode.
+For details on the DPSBYCR.DEEPCUT[1:0] bits, refer to section 11, Low Power Consumption.
+
+61.2.2
+
+Low Power Consumption Function
+
+Power consumption can be reduced by setting module stop control register C (MSTPCRC) to stop supply of the clock
+signal to the standby RAM.
+If the MSTPCRC.MSTPC7 bit is set to 1, supply of the clock signal to the standby RAM is stopped.
+The standby RAM is thus placed in the module-stop state by stopping supply of the clock signals. The standby RAM
+operates after a reset.
+The standby RAM is not accessible if it is in the module-stop state. A transition to the module-stop state should not be
+made while access to the standby RAM is in progress.
+For details on the MSTPCRC register, refer to section 11, Low Power Consumption.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2991 of 3240
+
+

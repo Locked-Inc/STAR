@@ -1,0 +1,7329 @@
+RX72N Group
+
+19.
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Controller (EXDMACa)
+
+This MCU incorporates a 2-channel direct memory access controller (EXDMAC) designed exclusively for external bus transfer.
+The EXDMAC is a module to transfer data without the CPU. When a DMA transfer request is generated, the EXDMAC
+transfers data stored at the transfer source address to the transfer destination address.
+
+19.1
+
+Overview
+
+Table 19.1 lists the specifications of the EXDMAC, and Figure 19.1 shows a block diagram of the EXDMAC.
+Table 19.1
+
+Specifications of EXDMAC (1/2)
+
+Item
+
+Description
+
+Number of channels
+
+2 (EXDMAC0 and EXDMAC1)
+
+Transfer space
+
+512 Mbytes
+(External areas at addresses 0000 0000h to 0FFF FFFFh and F000 0000h to FFFF FFFFh
+excluding reserved areas)
+
+Maximum transfer volume
+
+1 M data
+(Maximum number of transfer operations in block transfer mode: 1,024 data × 1,024 blocks)
+
+DMA request source
+
+ Request source selectable from the following three sources for each channel
+Software trigger
+External DMA transfer request input
+DMA transfer request from peripheral modules (TPU1.TRGA or MTU1.TRGA)
+(Channel 0: a software configurable interrupt B request from TPU1.TRGA selected in
+ICU.SLIBR144 or a software configurable interrupt A request from MTU1.TRGA selected
+in ICU.SLIAR208; Channel 1: a software configurable interrupt B request from
+TPU1.TRGA selected in ICU.SLIBR145 or a software configurable interrupt A request from
+MTU1.TRGA selected in ICU.SLIAR209)
+
+Channel priority
+
+Channel 0 > Channel 1 (Channel 0: Highest)
+
+Transfer
+data
+
+Single data
+
+Bit length: 8, 16, 32 bits
+
+Block size
+
+Number of data: 1 to 1,024 data
+
+Cluster size
+
+Number of data: 1 to 8 data
+
+Normal transfer mode
+
+ One data transfer by one DMA transfer request
+ Free running mode (setting in which total number of data transfer operations is not specified)
+settable
+
+Repeat transfer mode
+
+ One data transfer by one DMA transfer request
+ Program returns to the transfer start address on completion of the repeat size of data
+transfer specified for the transfer source or destination.
+ Maximum settable repeat size: 1,024 data
+
+Block transfer mode
+
+ One block data transfer by one DMA transfer request
+ Maximum settable block size: 1,024 data
+
+Cluster transfer mode
+
+ One cluster data transfer by one DMA transfer request
+ Maximum settable cluster size: 8 data (32 bytes)
+
+Single address mode
+
+ Transfers data by accessing the transfer source or destination peripheral device with the
+EDACKn signal (n = 0, 1) and specifying the address of the other peripheral device.
+ Available in normal transfer mode, repeat transfer mode, and block transfer mode.
+
+Dual address mode
+
+ Transfers data by specifying the addresses of transfer source and destination.
+ Available in normal transfer mode, repeat transfer mode, block transfer mode, and cluster
+transfer mode.
+
+Extended repeat area
+function
+
+ Function in which data can be transferred by repeating the address values in the specified
+range with the upper bit values in the transfer address register fixed
+ Area of 2 bytes to 128 Mbytes separately settable as extended repeat area for transfer
+source and destination
+
+Transfer
+mode
+
+Address
+mode
+
+Selective
+functions
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 718 of 3240
+
+RX72N Group
+Table 19.1
+
+19. EXDMA Controller (EXDMACa)
+Specifications of EXDMAC (2/2)
+
+Item
+
+Description
+
+Interrupt
+request
+
+Transfer end interrupt
+
+Generated when the specified number of transfers is completed in normal transfer mode
+Generated when the specified repeat count of transfers is completed in repeat transfer mode
+Generated when the specified block count of transfers is completed in block transfer mode
+Generated when the specified cluster count of transfers is completed in cluster transfer mode
+
+Transfer escape end
+interrupt
+
+Generated when the repeat size of data transfer is completed or the extended repeat area
+overflows.
+
+Low-power consumption function
+
+The module-stop state can be set.
+
+Interrupt controller
+Software configurable
+interrupt B/A selection
+
+EXDMAC
+
+On-chip
+peripheral
+modules
+
+Selector
+
+Select an trigger
+interrupt with
+EXDMAC0*1 or
+EXDMAC1*2
+
+(Channels 0 and 1)
+DMA
+transfer
+request
+
+EDMSAR
+
+Activation control
+
+EXDMAC registers
+
+EDMDAR
+EDMCRA
+
+2
+
+EDMCRB
+
+DMA transfer
+request
+arbitration
+
+EDMOFR
+EDMTMD
+EDMAMD
+EDMSTS
+EDMCNT
+EDMINT
+EDMOMD
+EDMREQ
+EDMRMD
+
+EDMAST
+CLSBR0 to
+CLSBR7
+
+EDMERF
+
+Interrupt
+controller
+
+Interrupt
+request
+
+EDMPRF
+
+2
+
+EXDMAC
+response
+control
+
+Register control
+
+EXDMAC core
+Source address
+Destination address
+Transfer counter/
+Block size counter/
+Cluster size counter
+Repeat-count counter/
+Transfer-block counter/
+Transfer cluster count counter
+Transfer mode
+
+2
+2
+
+EDREQ
+
+EXDMAC
+control
+circuit
+
+Bus interface
+EDACK
+
+Cluster transfer data
+
+External bus controller
+
+Internal peripheral bus 1
+
+External bus
+
+Internal main bus 1
+Internal main bus 2
+
+Note 1. A software configurable interrupt B request from TPU1.TRGA selected in ICU.SLIBR144 or a software configurable
+interrupt A request from MTU1.TRGA selected in ICU.SLIAR208
+Note 2. A software configurable interrupt B request from TPU1.TRGA selected in ICU.SLIBR145 or a software configurable
+interrupt A request from MTU1.TRGA selected in ICU.SLIAR209
+
+Figure 19.1
+
+Block Diagram of EXDMAC
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 719 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+Table 19.2 lists the input/output pins of the EXDMAC.
+Table 19.2
+
+Pin Configuration of EXDMAC
+
+Channel
+
+Pin Name
+
+I/O
+
+Description
+
+EXDMAC0
+
+EDREQ0
+
+Input
+
+EXDMAC0 external DMA transfer request
+
+EDACK0
+
+Output
+
+EXDMAC0 single address transfer acknowledge
+
+EXDMAC1
+
+EDREQ1
+
+Input
+
+EXDMAC1 external DMA transfer request
+
+EDACK1
+
+Output
+
+EXDMAC1 single address transfer acknowledge
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 720 of 3240
+
+RX72N Group
+
+19.2
+
+19. EXDMA Controller (EXDMACa)
+
+Register Descriptions
+
+19.2.1
+
+EXDMA Source Address Register (EDMSAR)
+
+Address(es): EXDMAC0.EDMSAR 0008 2800h, EXDMAC1.EDMSAR 0008 2840h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Description
+
+Setting Range
+
+R/W
+
+b31 to b0
+
+Specifies the transfer source start address.
+
+0000 0000h to 0FFF FFFFh (256 Mbytes)
+F000 0000h to FFFF FFFFh (256 Mbytes)
+
+R/W
+
+This register is used to set the start address of the transfer source.
+Set the EDMSAR register while EXDMAC stops (EDMAST.DMST bit = 0) or DMA transfer is disabled
+(EDMCNT.DTE bit = 0).
+Setting bits 31 to 29 is invalid; a value of bit 28 is extended to bits 31 to 29. Reading the EDMSAR register returns the
+extended value.
+
+19.2.2
+
+EXDMA Destination Address Register (EDMDAR)
+
+Address(es): EXDMAC0.EDMDAR 0008 2804h, EXDMAC1.EDMDAR 0008 2844h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Description
+
+Setting Range
+
+R/W
+
+b31 to b0
+
+Specifies the transfer destination start address.
+
+0000 0000h to 0FFF FFFFh (256 Mbytes)
+F000 0000h to FFFF FFFFh (256 Mbytes)
+
+R/W
+
+This register is used to set the start address of the transfer destination.
+Set the EDMDAR register while EXDMAC stops (EDMAST.DMST bit = 0) or DMA transfer is disabled
+(EDMCNT.DTE bit = 0).
+Setting bits 31 to 29 is invalid; a value of bit 28 is extended to bits 31 to 29. Reading the EDMDAR register returns the
+extended value.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 721 of 3240
+
+RX72N Group
+
+19.2.3
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Transfer Count Register (EDMCRA)
+
+Address(es): EXDMAC0.EDMCRA 0008 2808h, EXDMAC1.EDMCRA 0008 2848h
+· Normal transfer mode
+EDMCRAH
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b25
+
+0
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+EDMCRAL
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+· Repeat transfer mode, block transfer mode
+EDMCRAH
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+EDMCRAL
+
+Value after reset:
+
+Note:
+
+The function differs depending on the transfer mode.
+
+· Cluster transfer mode
+EDMCRAH
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b25
+
+0
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+EDMCRAL
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+EDMCRAL
+
+Lower bits of transfer count
+
+Specifies the number of transfer operations.
+
+R/W
+
+EDMCRAH
+
+Upper bits of transfer count
+
+Note:
+
+R/W
+
+Set the same value for EDMCRAH and EDMCRAL in repeat transfer mode, block transfer mode, and cluster transfer mode.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 722 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+This register is used to specify the transfer count of the DMA. The function of this register depends on transfer mode.
+
+(1)
+
+Normal transfer mode (EXDMACn.EDMTMD.MD[1:0] bits = 00b)
+
+EDMCRAL functions as a 16-bit transfer counter.
+The number of transfer operations is one when the setting is 0001h, and 65535 when it is FFFFh. The value is
+decremented by one each time data is transferred.
+When the setting is 0000h, no specific number of transfer operations is set; data transfer is performed with the transfer
+counter stopped (free running mode).
+EDMCRAH is not used in normal transfer mode. Write 0000h to EDMCRAH.
+
+(2)
+
+Repeat transfer mode (EXDMACn.EDMTMD.MD[1:0] bits = 01b)
+
+EDMCRAH specifies the repeat size and EDMCRAL functions as a 10-bit transfer counter.
+The number of transfer operations is one when the setting is 001h, 1023 when it is 3FFh, and 1024 when it is 000h. In
+repeat transfer mode, a value in the range of 000h to 3FFh (the number of transfer operations: 1 to 1024) can be set for
+EDMCRAH and EDMCRAL.
+Setting bits 15 to 10 in EDMCRAL is invalid. Write 0 to these bits.
+The value in EDMCRAL is decremented by one each time data is transferred until it reaches 000h, at which the value in
+EDMCRAH is loaded into EDMCRAL.
+
+(3)
+
+Block transfer mode (EXDMACn.EDMTMD.MD[1:0] bits = 10b)
+
+EDMCRAH specifies the block size and EDMCRAL functions as a 10-bit block size counter.
+The block size is 1 when the setting is 001h, 1023 when it is 3FFh, and 1024 when it is 000h. In block transfer mode, a
+value in the range of 000h to 3FFh (the number of transfer operations: 1 to 1024) can be set for EDMCRAH and
+EDMCRAL.
+Setting bits 15 to 10 in EDMCRAL is invalid. Write 0 to these bits.
+The value in EDMCRAL is decremented by one each time data is transferred until it reaches 000h, at which the value in
+EDMCRAH is loaded into EDMCRAL.
+
+(4)
+
+Cluster transfer mode (EXDMACn.EDMTMD.MD[1:0] bits = 11b)
+
+EDMCRAH specifies the cluster size and EDMCRAL functions as a 3-bit cluster size counter.
+The cluster size is 1 when the setting is 001h, 7 when it is 007h, and 8 when it is 000h. In cluster transfer mode, a value
+in the range of 000h to 007h (the number of transfer operations: 1 to 8) can be set for EDMCRAH and EDMCRAL.
+Setting bits 15 to 3 in EDMCRAL is invalid. Write 0 to these bits.
+The value in EDMCRAL is decremented by one each time data is transferred until it reaches 000h, at which the value in
+EDMCRAH is loaded into EDMCRAL.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 723 of 3240
+
+RX72N Group
+
+19.2.4
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Block Transfer Count Register (EDMCRB)
+
+Address(es): EXDMAC0.EDMCRB 0008 280Ch, EXDMAC1.EDMCRB 0008 284Ch
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Description
+
+Setting Range
+
+R/W
+
+b9 to b0
+
+Specifies the block count of transfers in block
+transfer mode, the repeat count in repeat
+transfer mode, or the transfer cluster count in
+cluster transfer mode.
+
+001h to 3FFh (1 to 1023)
+000h (1024)
+
+R/W
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b15 to b10 Reserved
+
+This register is used to specify the transfer block count in block transfer mode, the repeat count in repeat transfer mode,
+or the transfer cluster count in cluster transfer mode.
+Decremented (by 1) when the last data of 1 repeat size is transferred in repeat transfer mode.
+Decremented (by 1) when the last data of 1 block size is transferred in block transfer mode.
+Decremented (by 1) when the last data of 1 cluster size is transferred in cluster transfer mode.
+In normal transfer mode, EDMCRB is not used and setting this register is invalid.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 724 of 3240
+
+RX72N Group
+
+19.2.5
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Transfer Mode Register (EDMTMD)
+
+Address(es): EXDMAC0.EDMTMD 0008 2810h, EXDMAC1.EDMTMD 0008 2850h
+b15
+
+Value after reset:
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+MD[1:0]
+
+DTS[1:0]
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b9
+
+b8
+
+SZ[1:0]
+0
+
+0
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DCTG[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+DCTG[1:0]
+
+Transfer Request Source
+Select
+
+b1 b0
+
+R/W
+
+b7 to b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b9, b8
+
+SZ[1:0]
+
+Transfer Data Size Select
+
+b9 b8
+
+R/W
+
+b11, b10
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b13, b12
+
+DTS[1:0]
+
+Repeat Area Select
+
+b13 b12
+
+R/W
+
+b15, b14
+
+MD[1:0]
+
+Transfer Mode Select
+
+b15 b14
+
+R/W
+
+0 0: Software
+0 1: Setting prohibited
+1 0: External DMA transfer request pin (EDREQn)
+1 1: DMA transfer request from peripheral modules (TPU1.TRGA or
+MTU1.TRGA) *1
+
+0 0: 8 bits
+0 1: 16 bits
+1 0: 32 bits
+1 1: Setting prohibited
+
+0 0: The destination is specified as the repeat area or block area.
+0 1: The source is specified as the repeat area or block area.
+1 0: The repeat area or block area is not specified.
+1 1: Setting prohibited
+0 0: Normal transfer
+0 1: Repeat transfer
+1 0: Block transfer
+1 1: Cluster transfer
+
+Note 1. EXDMAC0: A software configurable interrupt B request from TPU1.TRGA selected in ICU.SLIBR144 or a software configurable
+interrupt A request from MTU1.TRGA selected in ICU.SLIAR208
+EXDMAC1: A software configurable interrupt B request from TPU1.TRGA selected in ICU.SLIBR145 or a software configurable
+interrupt A request from MTU1.TRGA selected in ICU.SLIAR209
+For the setting procedure, refer to section 19.5.1, Request Sources, (3).
+
+This register is used to set DMA transfer mode.
+DCTG[1:0] Bits (Transfer Request Source Select)
+These bits select the startup source of the EXDMAC from software, the external DMA transfer request pin, or a DMA
+transfer request generated from a peripheral module.
+SZ[1:0] Bits (Transfer Data Size Select)
+These bits select data size for a single data transfer from 8, 16, and 32 bits.
+DTS[1:0] Bits (Repeat Area Select)
+DTS[1:0] select either the source or destination as the repeat area in repeat, block, or cluster transfer mode. In normal
+transfer mode, setting these bits is invalid.
+MD[1:0] Bits (Transfer Mode Select)
+These bits specify DMA transfer mode from normal, repeat, block, and cluster.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 725 of 3240
+
+RX72N Group
+
+19.2.6
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Output Setting Register (EDMOMD)
+
+Address(es): EXDMAC0.EDMOMD 0008 2812h, EXDMAC1.EDMOMD 0008 2852h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+DACKS DACKE DACK DACKS
+W
+EL
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+DACKSEL
+
+EDACKn Pin Toggling
+Select
+
+0: EDACKn pin toggle is disabled.
+1: EDACKn pin toggle is enabled.
+
+R/W
+
+b1
+
+DACKW
+
+EDACKn Pin Negate
+Wait
+
+0: The EDACKn pin is negated at the same time as the RD# or WRn# pin
+is negated.
+1: The EDACKn is negated one BCLK cycle before the RD# pin is
+negated or one BCLK cycle after the WRn# pin is negated.
+
+R/W
+
+b2
+
+DACKE
+
+EDACKn Pin Output
+Enable
+
+0: EDACKn output is disabled.
+1: EDACKn output is enabled.
+
+R/W
+
+b3
+
+DACKS
+
+EDACKn Pin Output
+Polarity Select
+
+0: EDACKn pin polarity is active low.
+1: EDACKn pin polarity is active high.
+
+R/W
+
+b7 to b4
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+This register is used to set the output signal of the EXDMAC.
+DACKSEL Bit (EDACKn Pin Toggling Select)
+This bit is used to disable or enable toggled outputs on the EDACKn pin during normal, repeated, or block transfer to and
+from the SDRAM area in single-address mode.
+If the DACKSEL bit is 0 during normal, repeated, or block transfer to and from the SDRAM area in single-address mode
+(i.e. while the EDMAMD.AMS bit is 1), the signal on the EDACKn pin is asserted throughout the interval where the
+data is valid (data-valid interval). If the DACKSEL bit is 1, the signal on the EDACKn pin is only asserted for one-half
+of the SDCLK period in the latter half of the data-valid interval.
+The value of the DACKSEL pin has no effect in the case of CS areas.
+The value of the DACKSEL pin also has no effect for transfer in dual-address mode and in cluster mode.
+In these cases, there is no output on the EDACKn pin.
+DACKW Bit (EDACKn Pin Negate Wait)
+DACKW selects the EDACKn pin negation timing in single address mode during normal, repeat, or block transfer to/
+from the CS area.
+During the above transfer in single address mode (EDMAMD.AMS bit = 1), the EDACKn pin is negated at the same
+time as the RD# or WRn# pin is negated if this bit is 0; and the EDACKn pin is negated one BCLK cycle before the RD#
+pin is negated, or one BCLK cycle after the WRn# pin is negated if this bit is 1. In the SDRAM area, setting this bit is
+invalid. EDACKn pin negation timing cannot be changed. Setting this bit is also invalid in dual address mode and during
+cluster transfer. In these cases, the EDACKn pin does not provide output.
+DACKE Bit (EDACKn Pin Output Enable)
+DACKE enables or disables EDACKn pin output. Setting this bit is invalid in dual address mode and during cluster
+transfer (EDACKn pin output not provided).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 726 of 3240
+
+RX72N Group
+
+19.2.7
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Interrupt Setting Register (EDMINT)
+
+Address(es): EXDMAC0.EDMINT 0008 2813h, EXDMAC1.EDMINT 0008 2853h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+—
+
+—
+
+—
+
+DTIE
+
+ESIE
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b2
+
+b1
+
+b0
+
+RPTIE SARIE DARIE
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+DARIE
+
+Destination Address Extended
+Repeat Area Overflow Interrupt
+Enable
+
+0: Disables an interrupt request for an extended repeat area
+overflow on the destination address
+1: Enables an interrupt request for an extended repeat area
+overflow on the destination address
+
+R/W
+
+b1
+
+SARIE
+
+Source Address Extended Repeat
+Area Overflow Interrupt Enable
+
+0: Disables an interrupt request for an extended repeat area
+overflow on the source address
+1: Enables an interrupt request for an extended repeat area
+overflow on the source address
+
+R/W
+
+b2
+
+RPTIE
+
+Repeat Size End Interrupt Enable
+
+0: Disables the repeat size end interrupt request.
+1: Enables the repeat size end interrupt request.
+
+R/W
+
+b3
+
+ESIE
+
+Transfer Escape End Interrupt Enable 0: Disables the transfer escape end interrupt request.
+1: Enables the transfer escape end interrupt request.
+
+R/W
+
+b4
+
+DTIE
+
+Transfer End Interrupt Enable
+
+0: Disables the transfer end interrupt request.
+1: Enables the transfer end interrupt request.
+
+R/W
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+This register is used to set the interrupt request output of the EXDMAC.
+DARIE Bit (Destination Address Extended Repeat Area Overflow Interrupt Enable)
+When an extended repeat area overflow on the destination address occurs while this bit is set to 1, the EDMCNT.DTE bit
+is set to 0 (DMA transfer is disabled). At the same time, the EDMSTS.ESIF flag is set to 1 to indicate that an interrupt by
+an extended repeat area overflow on the destination address is requested.
+When block transfer mode is used with the extended repeat area function, an interrupt is requested after completion of a
+1-block size transfer. When setting 1 (DMA transfer is enabled) in the EDMCNT.DTE bit of the channel for which a
+transfer has been stopped, the transfer is resumed from the state when the transfer is stopped.
+When the extended repeat area is not specified for the destination address, this bit is ignored.
+SARIE Bit (Source Address Extended Repeat Area Overflow Interrupt Enable)
+When an extended repeat area overflow on the source address occurs while this bit is set to 1, the DTE bit in EDMCNT
+is set to 0 (DMA transfer is disabled). At the same time, the EDMSTS.ESIF flag is set to 1 to indicate that an interrupt by
+an extended repeat area overflow on the source address is requested.
+When block transfer mode is used with the extended repeat area function, an interrupt is requested after completion of a
+1-block size transfer. When setting 1 (DMA transfer is enabled) in the EDMCNT.DTE bit of the channel for which a
+transfer has been stopped, the transfer is resumed from the state when the transfer is stopped.
+When the extended repeat area is not specified for the source address, this bit is ignored.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 727 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+RPTIE Bit (Repeat Size End Interrupt Enable)
+When this bit is set to 1 in repeat transfer mode, the EDMCNT.DTE bit is set to 0 (DMA transfer is disabled) after
+completion of a 1-repeat size data transfer. At the same time, the EDMSTS.ESIF flag is set to 1 to indicate that the repeat
+size end interrupt request has been generated. The repeat size end interrupt request can be generated even when the
+EDMTMD.DTS[1:0] bits are 10b (repeat area or block area is not specified).
+When this bit is set to 1 in block transfer mode, the EDMCNT.DTE bit is set to 0 after completion of a 1-block data
+transfer in the same way as repeat transfer mode. At the same time, the EDMSTS.ESIF flag is set to 1 to indicate that the
+repeat size end interrupt request has been generated. The repeat size end interrupt request can be generated even when
+the EDMTMD.DTS[1:0] bits are 10b.
+When this bit is set to 1 in cluster transfer mode, the EDMCNT.DTE bit is set to 0 after completion of a 1-cluster data
+transfer in the same way as repeat transfer mode. At the same time, the EDMSTS.ESIF flag is set to 1 to indicate that the
+repeat size end interrupt request has been generated. The repeat size end interrupt request can be generated even when
+the EDMTMD.DTS[1:0] bits are 10b.
+ESIE Bit (Transfer Escape End Interrupt Enable)
+This bit enables or disables the transfer escape end interrupt requests (repeat size end interrupt request and extended
+repeat area overflow interrupt request) that are generated during DMA transfer.
+The transfer escape end interrupt is generated when the ESIF flag in EXDMACn.EDMSTS is set to 1 with this bit set
+to1. The transfer escape end interrupt is cleared by setting this bit or the EDMSTS.ESIF flag to 0.
+DTIE Bit (Transfer End Interrupt Enable)
+This bit enables or disables the transfer end interrupt request to be generated on completion of a specified number of data
+transfers.
+The transfer end interrupt is generated when the EDMSTS.DTIF flag is set to 1 with this bit set to 1. The transfer end
+interrupt is cleared by setting this bit or the EDMSTS.DTIF flag to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 728 of 3240
+
+RX72N Group
+
+19.2.8
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Address Mode Register (EDMAMD)
+
+Address(es): EXDMAC0.EDMAMD 0008 2814h, EXDMAC1.EDMAMD 0008 2854h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+AMS
+
+DIR
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+SM[1:0]
+
+—
+
+0
+
+0
+
+0
+
+SARA[4:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+DM[1:0]
+
+—
+
+0
+
+0
+
+0
+
+DARA[4:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b4 to b0
+
+DARA[4:0]
+
+Destination Address Extended
+Repeat Area Set
+
+Specifies the extended repeat area on the destination
+address. For details on the settings, refer to Table 19.3.
+
+R/W
+
+b5
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b7, b6
+
+DM[1:0]
+
+Destination Address Update Mode
+Set
+
+b7 b6
+
+R/W
+
+b12 to b8
+
+SARA[4:0]
+
+Source Address Extended Repeat
+Area Set
+
+Specifies the extended repeat area on the source address.
+For details on the settings, refer to Table 19.3.
+
+R/W
+
+b13
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b15, b14
+
+SM[1:0]
+
+Source Address Update Mode Set
+
+b15 b14
+
+R/W
+
+b16
+
+DIR
+
+Single Address Direction Select
+
+0: Data is transferred in single address mode using the
+EDMSAR register value as the transfer source address.
+EDACKn is output to the transfer destination.
+1: Data is transferred in single address mode using the
+EDMDAR register value as the transfer destination
+address.
+EDACKn is output to the transfer destination.
+
+R/W
+
+b17
+
+AMS
+
+Address Mode Select
+
+0: Dual address mode
+1: Single address mode
+
+R/W
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b31 to b18 —
+
+0 0: Destination address is fixed.
+0 1: Offset addition*1
+1 0: Destination address is incremented.
+1 1: Destination address is decremented.
+
+0 0: Destination address is fixed.
+0 1: Offset addition*1
+1 0: Destination address is incremented.
+1 1: Destination address is decremented.
+
+Note 1. Offset addition can be specified only for EXDMAC0.
+
+This register is used to set address mode of the EXDMACn.
+DARA[4:0] Bits (Destination Address Extended Repeat Area Set)
+These bits specify the extended repeat area on the destination address. The extended repeat area function is realized by
+updating the specified lower address bits with the remaining upper address bits fixed. The size of the extended repeat
+area can be any power of two between 21 (2 bytes) and 217 (128 Mbytes).
+When the lower address overflows the extended repeat area by address increment, the top address of the extended repeat
+area is set. Similarly, when the lower address underflows the extended repeat area by address decrement, the bottom
+address of the extended repeat area is set.
+When the repeat area or block area is specified as a transfer destination, do not specify the extended repeat area on the
+destination address. When repeat transfer, block transfer, or cluster transfer is selected, or when
+EXDMACn.EDMTMD.DTS[1:0] = 00b (the transfer destination is specified as the repeat area or block area), write
+00000b in the DARA[4:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 729 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+An interrupt can be requested when an overflow occurs in the extended repeat area with the DARIE bit in EDMINT set
+to 1. Table 19.3 lists the settings and the corresponding extended repeat areas.
+DM[1:0] Bits (Destination Address Update Mode Set)
+These bits select the mode of updating the destination address.
+When increment is selected and the SZ[1:0] bits in EDMTMD are set to 00b, 01b, and 10b, the destination address is
+incremented by 1, 2, and 4, respectively.
+When decrement is selected and the SZ[1:0] bits in EDMTMD are set to 00b, 01b, and 10b, the destination address is
+decremented by 1, 2, and 4, respectively.
+When offset addition is selected, the offset specified by the EXDMAC0.EDMOFR register is added to the address.
+Offset addition can be specified only for EXDMAC0.
+SARA[4:0] Bits (Source Address Extended Repeat Area Set)
+These bits specify the extended repeat area on the source address. The extended repeat area function is realized by
+updating the specified lower address bits with the remaining upper address bits fixed. The size of the extended repeat
+area can be any power of two between 21 (2 bytes) and 217 (128 Mbytes).
+When the lower address overflows the extended repeat area by address increment, the top address of the extended repeat
+area is set. Similarly, when the lower address underflows the extended repeat area by address decrement, the bottom
+address of the extended repeat area is set.
+When the repeat area or block area is specified as a transfer destination, do not specify the extended repeat area on the
+destination address. When repeat transfer, block transfer, or cluster transfer is selected, or when
+EXDMACn.EDMTMD.DTS[1:0] = 01b (the transfer destination is specified as the repeat area or block area), write
+00000b in the SARA[4:0] bits.
+An interrupt can be requested when an overflow occurs in the extended repeat area with the SARIE bit in EDMINT set to
+1. Table 19.3 lists the settings and the corresponding extended repeat areas.
+SM[1:0] Bits (Source Address Update Mode Set)
+These bits select the mode of updating the source address.
+When increment is selected and the SZ[1:0] bits in EDMTMD are set to 00b, 01b, and 10b, the destination address is
+incremented by 1, 2, and 4, respectively.
+When decrement is selected and the SZ[1:0] bits in EDMTMD are set to 00b, 01b, and 10b, the destination address is
+decremented by 1, 2, and 4, respectively.
+When offset addition is selected, the offset specified by the EXDMAC0.EDMOFR register is added to the address.
+Offset addition can be specified only for EXDMAC0.
+DIR Bit (Single Address Direction Select)
+This bit selects the transfer destination or source, to which the addresses should be output in single address mode.
+ Normal/Repeat/Block Transfer
+When this bit is set to 0, data is transferred in single address mode using the EDMSAR register value as the transfer
+source address. Here, EDACKn can be output to the transfer destination device by setting the DACKE bit in EDMOMD
+to 1 (EDACKn output is enabled).
+When this bit is set to 1, data is transferred in single address mode using the EDMDAR register value as the transfer
+destination address. Here, EDACKn can be output to the transfer source device by setting the DACKE bit in EDMOMD
+to 1 (EDACKn output is enabled). Setting the DIR bit is valid when the AMS bit in EDMAMD is 1 (single address
+mode); setting the DIR bit is invalid when the AMS bit is 0 (dual address mode).
+ Cluster Transfer
+When this bit is set to 0, data is transferred in cluster transfer read address mode using the EDMSAR register value as the
+transfer source address. Here, data can be transferred to the cluster buffers from the external device.
+When this bit is set to 1, data is transferred in cluster transfer write address mode using the EDMDAR register value as
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 730 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+the transfer destination address. Here, data can be transferred to the external device from the cluster buffers. Setting the
+DIR bit is valid when the AMS bit in EDMAMD is 1 (single address mode); setting the DIR bit is invalid when the AMS
+bit is 0 (dual address mode).
+AMS Bit (Address Mode Select)
+This bit selects the address mode.
+ Normal/Repeat/Block Transfer
+When this bit is set to 0, dual address mode is selected and when set to 1, single address mode is selected.
+When using single address mode, select the transfer source or destination device to which the addresses should be output
+using the DIR bit in EDMAMD.
+ Cluster Transfer
+When this bit is set to 0, dual address mode is selected and when set to 1, read or write address mode is selected. Select
+read or write address mode using the DIR bit in EDMAMD.
+Table 19.3
+
+Settings and Range of Extended Repeat Areas
+
+SARA[4:0] or DARA[4:0]
+
+Extended Repeat Area
+
+00000b
+
+Not specified
+
+00001b
+
+2 bytes specified as extended repeat area by the lower 1 bit of the address
+
+00010b
+
+4 bytes specified as extended repeat area by the lower 2 bits of the address
+
+00011b
+
+8 bytes specified as extended repeat area by the lower 3 bits of the address
+
+00100b
+
+16 bytes specified as extended repeat area by the lower 4 bits of the address
+
+00101b
+
+32 bytes specified as extended repeat area by the lower 5 bits of the address
+
+00110b
+
+64 bytes specified as extended repeat area by the lower 6 bits of the address
+
+00111b
+
+128 bytes specified as extended repeat area by the lower 7 bits of the address
+
+01000b
+
+256 bytes specified as extended repeat area by the lower 8 bits of the address
+
+01001b
+
+512 bytes specified as extended repeat area by the lower 9 bits of the address
+
+01010b
+
+1 Kbyte specified as extended repeat area by the lower 10 bits of the address
+
+01011b
+
+2 Kbytes specified as extended repeat area by the lower 11 bits of the address
+
+01100b
+
+4 Kbytes specified as extended repeat area by the lower 12 bits of the address
+
+01101b
+
+8 Kbytes specified as extended repeat area by the lower 13 bits of the address
+
+01110b
+
+16 Kbytes specified as extended repeat area by the lower 14 bits of the address
+
+01111b
+
+32 Kbytes specified as extended repeat area by the lower 15 bits of the address
+
+10000b
+
+64 Kbytes specified as extended repeat area by the lower 16 bits of the address
+
+10001b
+
+128 Kbytes specified as extended repeat area by the lower 17 bits of the address
+
+10010b
+
+256 Kbytes specified as extended repeat area by the lower 18 bits of the address
+
+10011b
+
+512 Kbytes specified as extended repeat area by the lower 19 bits of the address
+
+10100b
+
+1 Mbyte specified as extended repeat area by the lower 20 bits of the address
+
+10101b
+
+2 Mbytes specified as extended repeat area by the lower 21 bits of the address
+
+10110b
+
+4 Mbytes specified as extended repeat area by the lower 22 bits of the address
+
+10111b
+
+8 Mbytes specified as extended repeat area by the lower 23 bits of the address
+
+11000b
+
+16 Mbytes specified as extended repeat area by the lower 24 bits of the address
+
+11001b
+
+32 Mbytes specified as extended repeat area by the lower 25 bits of the address
+
+11010b
+
+64 Mbytes specified as extended repeat area by the lower 26 bits of the address
+
+11011b
+
+128 Mbytes specified as extended repeat area by the lower 27 bits of the address
+
+11100b to 11111b
+
+Setting prohibited
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 731 of 3240
+
+RX72N Group
+
+19.2.9
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Offset Register (EDMOFR)
+
+Address(es): EXDMAC0.EDMOFR 0008 2818h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Description
+
+Setting Range
+
+R/W
+
+b31 to b0
+
+Specifies the offset when offset addition is selected as
+the address update mode for transfer source or
+destination.
+
+0000 0000h to 00FF FFFFh (0 bytes to (16M – 1) bytes)
+FF00 0000h to FFFF FFFFh (–16M bytes to –1 byte)
+
+R/W
+
+This register is used to set the address offset value.
+Write to this register while the EXDMAC operation is stopped or DMA transfer is disabled (not during data transfer).
+Setting bits 31 to 25 is invalid; a value of bit 24 is extended to bits 31 to 25. Reading EDMOFR returns the extended
+value.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 732 of 3240
+
+RX72N Group
+
+19.2.10
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Transfer Enable Register (EDMCNT)
+
+Address(es): EXDMAC0.EDMCNT 0008 281Ch, EXDMAC1.EDMCNT 0008 285Ch
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DTE
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+DTE
+
+DMA Transfer Enable
+
+0: Disables DMA transfer.
+1: Enables DMA transfer.
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+This register enables or disables the DMA transfer to the corresponding channel.
+DTE Bit (DMA Transfer Enable)
+When the EDMAST.DMST bit is set to 1 (EXDMAC module start) and this bit is set to 1 (DMA transfer is enabled),
+DMA transfer can be started for the corresponding channel.
+When the DTE bit is set to 0 during DMA transfer, DMA transfer is suspended after completion of the current data
+transfer corresponding to a single transfer request. DMA transfer is resumed by setting the DTE bit to 1 again.
+While the DTE bit is 1, writing to registers other than the DTE bit of the EXDMAC channel is prohibited.
+[Setting condition]
+ When 1 is written to this bit.
+[Clearing conditions]
+ When 0 is written to this bit.
+ When the specified total volume of data transfer is completed.
+ When DMA transfer is stopped by the repeat size end interrupt.
+ When DMA transfer is stopped by the extended repeat area overflow interrupt.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 733 of 3240
+
+RX72N Group
+
+19.2.11
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Software Start Register (EDMREQ)
+
+Address(es): EXDMAC0.EDMREQ 0008 281Dh, EXDMAC1.EDMREQ 0008 285Dh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+CLRS
+
+—
+
+—
+
+—
+
+SWRE
+Q
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SWREQ
+
+DMA Software Start
+
+0: DMA transfer is not requested.
+1: DMA transfer is requested.
+
+R/W
+
+b3 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b4
+
+CLRS
+
+DMA Software Start Bit Auto
+Clear Select
+
+0: SWREQ bit is cleared after DMA transfer is started by software.
+R/W
+1: SWREQ bit is not cleared after DMA transfer is started by software.
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+This register is used to execute the DMA by software.
+SWREQ Bit (DMA Software Start)
+When 1 is written to this bit, a DMA transfer request is generated. After DMA transfer is started in response to the
+request, this bit is set to 0 if the CLRS bit is set to 0. This bit is not set to 0 while the CLRS bit is set to 1. In this case, a
+DMA transfer request can be issued again after completion of a transfer.
+Note that, however, setting this bit is valid and DMA transfer by software is enabled only when the DCTG[1:0] bits in
+EDMTMD are set to 00b (DMA request source is software).
+Setting this bit is invalid when the DCTG[1:0] bits in EDMTMD are set to a value other than 00b.
+To start DMA transfer by software with CLRS set to 0, check that the SWREQ bit is 0 and then write 1 to SWREQ.
+[Setting condition]
+ When 1 is written to this bit.
+[Clearing conditions]
+ When a DMA transfer request by software is accepted and DMA transfer is started while the CLRS bit is set to 0
+(the SWREQ bit is cleared after DMA transfer is started by software).
+ When 0 is written to this bit.
+CLRS Bit (DMA Software Start Bit Auto Clear Select)
+This bit specifies whether to clear the SWREQ bit to 0 after DMA transfer is started in response to the DMA transfer
+request generated by setting the SWREQ bit to 1. With this bit set to 0, the SWREQ bit is set to 0 after DMA transfer is
+started. With this bit set to 1, the SWREQ bit is not set to 0. In this case, a DMA transfer request can be issued again after
+completion of a transfer.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 734 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+19.2.12
+
+EXDMA Status Register (EDMSTS)
+
+Address(es): EXDMAC0.EDMSTS 0008 281Eh, EXDMAC1.EDMSTS 0008 285Eh
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+ACT
+
+—
+
+—
+
+DTIF
+
+—
+
+—
+
+—
+
+ESIF
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+ESIF
+
+Transfer Escape End Interrupt
+Flag
+
+0: A transfer escape end interrupt has not been generated.
+1: A transfer escape end interrupt has been generated.
+
+R/W
+
+b3 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits has no effect.
+
+R
+
+b4
+
+DTIF
+
+Transfer End Interrupt Flag
+
+0: A transfer end interrupt has not been generated.
+1: A transfer end interrupt has been generated.
+
+R/W
+
+b6, b5
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits has no effect.
+
+R
+
+b7
+
+ACT
+
+EXDMA Active Flag
+
+0: EXDMAC operation is suspended.
+1: EXDMAC is operating.
+
+R
+
+This register indicates the state of the DMA.
+ESIF Flag (Transfer Escape End Interrupt Flag)
+This flag indicates that the transfer escape end interrupt has been generated.
+[Setting conditions]
+ When 1-repeat size data transfer is completed in repeat transfer mode with the EDMINT.RPTIE bit set to 1.
+ When 1-block data transfer is completed in block transfer mode with the EDMINT.RPTIE bit set to 1.
+ When 1-cluster data transfer is completed in cluster transfer mode with the EDMINT.RPTIE bit set to 1.
+ When an extended repeat area overflow on the source address occurs while the EDMINT.SARIE bit is set to 1 and
+the EDMAMD.SARA[4:0] bits are set to a value other than 00000b (extended repeat area is specified on the
+transfer source address)
+ When an extended repeat area overflow on the destination address occurs while the EDMINT.DARIE bit is set to 1
+and the EDMAMD.DADR[4:0] bits are set to a value other than 00000b (extended repeat area is specified on the
+transfer destination address)
+[Clearing conditions]
+ When 0 is written to this bit.
+ When 1 is written to the EDMCNT.DTE bit.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 735 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+DTIF Flag (Transfer End Interrupt Flag)
+This flag indicates that the transfer end interrupt has been generated.
+[Setting conditions]
+ When the specified number of unit-transfers are completed in normal transfer mode (the value of EDMCRAL
+becoming 0 on completion of transfer)
+ When the specified number of repeat transfer operations are completed in repeat transfer mode (the value of
+EDMCRB becoming 0 on completion of transfer)
+ When the specified number of blocks have been transferred in block transfer mode (the value of EDMCRB
+becoming 0 on completion of transfer)
+ When the specified number of clusters have been transferred in cluster transfer mode (the value of EDMCRB
+becoming 0 on completion of transfer)
+[Clearing conditions]
+ When 0 is written to this bit
+ When 1 is written to the DTE bit in EDMCNT
+ACT Flag (EXDMA Active Flag)
+ This flag indicates whether the EXDMACn is in the idle or active state.
+[Setting condition]
+ When the EXDMACn starts data transfer operation
+[Clearing condition]
+ When data transfer in response to one transfer request is completed
+
+19.2.13
+
+EXDMA External Request Sense Mode Register (EDMRMD)
+
+Address(es): EXDMAC0.EDMRMD 0008 2820h, EXDMAC1.EDMRMD 0008 2860h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DREQS[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+DREQS[1:0]
+
+Request Input Sense Mode Set
+
+b1 b0
+
+R/W
+
+b7 to b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+0 0: Rising edge
+0 1: Falling edge
+1 0: Low level
+1 1: (Setting prohibited)
+
+This register is used to set sense mode of the EDREQn pin.
+DREQS[1:0] Bits (Request Input Sense Mode Set)
+These bits specify the sense mode for the external DMA transfer request signal (EDREQn pin).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 736 of 3240
+
+RX72N Group
+
+19.2.14
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA External Request Flag Register (EDMERF)
+
+Address(es): EXDMAC0.EDMERF 0008 2821h, EXDMAC1.EDMERF 0008 2861h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+EREQ
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+EREQ
+
+External Request Flag
+
+0: No request
+1: Requested
+
+R/(W)
+*1
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note 1. Writing 0 has no effect.
+
+This register detects a request generated by the EDREQn pin.
+EREQ Flag (External Request Flag)
+This flag indicates the DMA transfer request from the external DMA transfer request signal (the EDREQn pin).
+[Setting conditions]
+ When the level on the EDREQn pin changes from 0 to 1 while EXDMACn.EDMRMD.DREQS[1:0] = 00b
+ When the level on the EDREQn pin changes from 1 to 0 while EXDMACn.EDMRMD.DREQS[1:0] = 01b
+ When the level on the EDREQn pin is 0 while EXDMACn.EDMRMD.DREQS[1:0] = 10b (low level)
+[Clearing conditions]
+ When the DMA transfer is started while EXDMACn.EDMRMD.DREQS[1:0] = 00b
+(rising edge) or 01b (falling edge) and then the DMA transfer is started
+ When 1 is written to this flag while EXDMACn.EDMRMD.DREQS[1:0] = 00b (rising edge) or 01b
+(falling edge)
+ When the EDREQn pin is set to 1 while EXDMACn.EDMRMD.DREQS[1:0] = 10b (low level)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 737 of 3240
+
+RX72N Group
+
+19.2.15
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Peripheral Request Flag Register (EDMPRF)
+
+Address(es): EXDMAC0.EDMPRF 0008 2822h, EXDMAC1.EDMPRF 0008 2862h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+PREQ
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+PREQ
+
+Peripheral Module Request Flag
+
+0: No request
+1: Requested
+
+R/(W)
+*1
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note 1. Writing 0 has no effect.
+
+This register detects a DMA transfer request generated by a peripheral module.
+PREQ Flag (Peripheral Module Request Flag)
+This flag detects the DMA transfer request from the peripheral modules.
+[Setting condition]
+ When the DMA transfer request is generated from the peripheral modules
+[Clearing conditions]
+ When the DMA transfer request is generated from the peripheral modules and the DMA transfer is started
+ When 1 is written to this flag
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 738 of 3240
+
+RX72N Group
+
+19.2.16
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMAC Module Start Register (EDMAST)
+
+Address(es): 0008 2A00h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DMST
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+DMST
+
+EXDMAC Module Start
+
+0: EXDMAC module stop
+1: EXDMAC module start
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+This register enables or disables the startup of all channels of the EXDMAC.
+DMST Bit (EXDMAC Module Start)
+When this bit is set to 1, EXDMAC is ready to accept transfer requests for all the channels.
+When 1 is written to the DTE bit in EDMCNT (DMA transfer is enabled) of all the EXDMACn channels and then this
+bit is set to 1, all the channels can be placed in the transfer request acceptable state at the same time.
+When the DMST bit is set to 0 during DMA transfer, DMA transfer for all channels is suspended after completion of the
+current data transfer corresponding to a single transfer request. DMA transfer is resumed by setting the DMST bit to 1
+again.
+[Setting condition]
+ When 1 is written to this bit
+[Clearing condition]
+ When 0 is written to this bit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 739 of 3240
+
+RX72N Group
+
+19.2.17
+
+19. EXDMA Controller (EXDMACa)
+
+Cluster Buffer Register y (CLSBRy) (y = 0 to 7)
+
+Address(es): CLSBR0 0008 2BE0h, CLSBR1 0008 2BE4h, CLSBR2 0008 2BE8h, CLSBR3 0008 2BECh,
+CLSBR4 0008 2BF0h, CLSBR5 0008 2BF4h, CLSBR6 0008 2BF8h, CLSBR7 0008 2BFCh
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Description
+
+R/W
+
+b31 to b0
+
+Buffer area for cluster transfer.
+
+R/W
+
+CLSBRy are buffer registers for cluster transfer.
+During cluster transfer, transferred data is sequentially stored in CLSBRy starting from CLSBR0. The cluster-transferred
+data or data written by the CPU is retained until another cluster transfer or data write by the CPU. When reading the
+cluster-transferred data with the CPU, confirm that cluster transfer has been completed and only refer to the data of the
+specified size for cluster; the other data is invalid.
+During cluster transfer, the same CLSBRy is used for all the channels. If a conflict occurs between the write to CLSBRy
+by the CPU and cluster transfer, transferred data is not guaranteed. If a channel is set to cluster transfer in read or write
+address mode and another channel is set to cluster transfer, data to be transferred may be erroneously modified.
+Data is stored in cluster buffers in the different manner depending on the transfer size setting (EDMTMD.SZ[1:0] bits).
+
+(1)
+
+Transfer Size is 8 Bits (EXDMACn.EDMTMD.SZ[1:0] = 00b)
+
+Data is stored in the lower 8 bits in the cluster buffers. Here, the upper 24 bits are invalid. When the maximum cluster
+size is set to 8, 8-byte data is one cluster.
+Data is stored in CLSBR in the order of CLSBR0 to CLSBRj (j = cluster size value – 1).
+
+(2)
+
+Transfer Size is 16 Bits (EXDMACn.EDMTMD.SZ[1:0] = 01b)
+
+Data is stored in the lower 16 bits in the cluster buffers. Here, the upper 16 bits are invalid. When the maximum cluster
+size is set to 8, 16-byte data is one cluster.
+Data is stored in CLSBR in the order of CLSBR0 to CLSBRj (j = cluster size value – 1).
+
+(3)
+
+Transfer Size is 32 Bits (EXDMACn.EDMTMD.SZ[1:0] = 10b)
+
+Data is stored in all the 32 bits in the cluster buffers. When the maximum cluster size is set to 8, 32-byte data is one
+cluster.
+Data is stored in CLSBR in the order of CLSBR0 to CLSBRj (j = cluster size value – 1).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 740 of 3240
+
+RX72N Group
+
+19.3
+
+Operation
+
+19.3.1
+(1)
+
+19. EXDMA Controller (EXDMACa)
+
+Transfer Mode
+
+Normal Transfer Mode
+
+In normal transfer mode, one data is transferred by one transfer request. A maximum of 65535 can be set as the number
+of transfer operations using EDMCRA of EXDMACn. When the EXDMACn.EDMCRAL bits are set to 0000h, no
+specific number of transfer operations is set; data transfer is performed with the transfer counter stopped (free running
+mode). Setting EDMCRB of EXDMACn is invalid in normal transfer mode. Except in free running mode, a transfer end
+interrupt request can be generated after completion of the specified number of transfer operations.
+Table 19.4 summarizes the register update operation in normal transfer mode, and Figure 19.2 shows the operation in
+normal transfer mode.
+Table 19.4
+
+Register Update Operation in Normal Transfer Mode
+
+Register
+
+Function
+
+Update Operation after Completion of a Transfer by One Transfer
+Request
+
+EXDMACn.EDMSAR
+
+Transfer source address
+
+Increment/decrement/fixed/offset addition*1
+
+EXDMACn.EDMDAR
+
+Transfer destination address
+
+Increment/decrement/fixed/offset addition*1
+
+EXDMACn.EDMCRAL
+
+Transfer counter
+
+Decremented by one/not updated (in free running mode)
+
+EXDMACn.EDMCRAH
+
+—
+
+Not updated (Not used in normal transfer mode)
+
+EXDMACn.EDMCRB
+
+—
+
+Not updated (Not used in normal transfer mode)
+
+Note 1. Offset addition can be specified only for EXDMAC0.
+
+Transfer source data area
+
+Transfer destination data area
+
+Data 1
+
+Data 1
+
+EDMSAR
+
+Data 2
+
+Figure 19.2
+
+Transfer
+
+EDMDAR
+
+Data 2
+
+Data 3
+
+Data 3
+
+Data 4
+
+Data 4
+
+Data 5
+
+Data 5
+
+Data 6
+
+Data 6
+
+Operation in Normal Transfer Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 741 of 3240
+
+RX72N Group
+
+(2)
+
+19. EXDMA Controller (EXDMACa)
+
+Repeat Transfer Mode
+
+In repeat transfer mode, one data is transferred by one transfer request.
+A maximum of 1K data can be set as a total repeat transfer size using EDMCRA of the EXDMACn.
+A maximum of 1K can be set as the number of repeat transfer operations using EDMCRB of the EXDMACn; therefore,
+a maximum of 1K data × 1K = 1M can be set as a total data transfer size.
+Either the transfer source or transfer destination can be specified as a repeat area. When transfer of the repeat size data is
+completed, the address of the specified repeat area (EDMSAR or EDMDAR of the EXDMACn) returns to the transfer
+start address. When data of the specified repeat size has all been transferred in repeat transfer mode, DMA transfer can be
+stopped and the repeat size end interrupt can be requested. DMA transfer can be resumed by writing 1 to the DTE bit in
+EDMCNT of EXDMACn in the repeat size end interrupt handling.
+A transfer end interrupt request can be generated after completion of the specified number of repeat transfer operations.
+Table 19.5 summarizes the register update operation in repeat transfer mode, and Figure 19.3 shows the operation in
+repeat transfer mode.
+Table 19.5
+
+Register Update Operation in Repeat Transfer Mode
+Update Operation after Completion of a Transfer by One Transfer Request
+
+Register
+
+Function
+
+When EXDMACn.EDMCRAL
+is not 1
+
+When EXDMACn.EDMCRAL is 1
+(Transfer of the Last Data in Repeat Size)
+
+EXDMACn.EDMSAR
+
+Transfer source
+address
+
+Increment/decrement/fixed/
+offset addition*1
+
+ EXDMACn.EDMTMD.DTS[1:0] = 00b
+Increment/decrement/fixed/offset addition*1
+ EXDMACn.EDMTMD.DTS[1:0] = 01b
+Initial value of EXDMACn.EDMSAR
+ EXDMACn.EDMTMD.DTS[1:0] = 10b
+Increment/decrement/fixed/offset addition*1
+
+EXDMACn.EDMDAR
+
+Transfer destination
+address
+
+Increment/decrement/fixed/
+offset addition*1
+
+ EXDMACn.EDMTMD.DTS[1:0] = 00b
+Initial value of EXDMACn.EDMDAR
+ EXDMACn.EDMTMD.DTS[1:0] = 01b
+Increment/decrement/fixed/offset addition*1
+ EXDMACn.EDMTMD.DTS[1:0] = 10b
+Increment/decrement/fixed/offset addition*1
+
+EXDMACn.EDMCRAH
+
+Repeat size
+
+Not updated
+
+Not updated
+
+EXDMACn.EDMCRAL
+
+Transfer counter
+
+Decremented by one
+
+EXDMACn.EDMCRAH
+
+EXDMACn.EDMCRB
+
+Repeat-count counter
+
+Not updated
+
+Decremented by one
+
+Note 1. Offset addition can be specified only for EXDMAC0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 742 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+Transfer source data area
+(Specified as a repeat area)
+
+Transfer destination data area
+
+Data 1
+
+Data 1
+
+EDMSAR
+
+Data 2
+
+Transfer
+
+EDMDAR
+
+Data 2
+
+Data 3
+
+Data 3
+
+Data 4
+
+Data 4
+Data 1
+Data 2
+Data 3
+Data 4
+
+Figure 19.3
+
+(3)
+
+Operation in Repeat Transfer Mode
+
+Block Transfer Mode
+
+In block transfer mode, a single block data is transferred by one transfer request.
+A maximum of 1K data can be set as a total block transfer size using EDMCRA of the EXDMACn.
+A maximum of 1K can be set as the number of block transfer operations using EDMCRB of the EXDMACn; therefore, a
+maximum of 1K data × 1K blocks = 1M can be set as a total data transfer size.
+Either the transfer source or transfer destination can be specified as a block area. When transfer of a single block data is
+completed, the address of the specified block area (EDMSAR or EDMDAR of the EXDMACn) returns to the transfer
+start address. When a single block data has all been transferred in block transfer mode, DMA transfer can be stopped and
+the repeat size end interrupt can be requested. DMA transfer can be resumed by writing 1 to the DTE bit in EDMCNT of
+EXDMACn in the repeat size end interrupt handling.
+Transfer end interrupt request can be generated after completion of the specified number of block transfer operations.
+Table 19.6 summarizes the register update operation in block transfer mode, and Figure 19.4 shows the operation in
+block transfer mode.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 743 of 3240
+
+RX72N Group
+
+Table 19.6
+
+19. EXDMA Controller (EXDMACa)
+
+Register Update Operation in Block Transfer Mode
+Update Operation after Completion of Single-Block Transfer by
+One Transfer Request
+
+Register
+
+Function
+
+EXDMACn.EDMSAR
+
+Transfer source address
+
+ EXDMACn.EDMTMD.DTS[1:0] = 00b
+Increment/decrement/fixed/offset addition*1
+ EXDMACn.EDMTMD.DTS[1:0] = 01b
+Initial value of EXDMACn.EDMSAR
+ EXDMACn.EDMTMD.DTS[1:0] = 10b
+Increment/decrement/fixed/offset addition*1
+
+EXDMACn.EDMDAR
+
+Transfer destination address
+
+ EXDMACn.EDMTMD.DTS[1:0] = 00b
+Initial value of EXDMACn.EDMDAR
+ EXDMACn.EDMTMD.DTS[1:0] = 01b
+Increment/decrement/fixed/offset addition*1
+ EXDMACn.EDMTMD.DTS[1:0] = 10b
+Increment/decrement/fixed/offset addition*1
+
+EXDMACn.EDMCRAH
+
+Block size
+
+Not updated
+
+EXDMACn.EDMCRAL
+
+Block size counter
+
+EXDMACn.EDMCRAH
+
+EXDMACn.EDMCRB
+
+Transfer-block counter
+
+Decremented by one
+
+Note 1. Offset addition can be specified only for EXDMAC0.
+
+Transfer source data area
+
+EDMSAR
+
+First block
+
+Transfer destination data area
+(Specified as a block area)
+
+Transfer
+
+Block area
+
+EDMDAR
+
+N-th block
+
+Figure 19.4
+
+Operation in Block Transfer Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 744 of 3240
+
+RX72N Group
+
+(4)
+
+19. EXDMA Controller (EXDMACa)
+
+Cluster Transfer Mode
+
+In cluster transfer mode, a single cluster data is transferred by one transfer request. A maximum of 8 data can be set as a
+total cluster transfer size using EDMCRA of the EXDMACn.
+A maximum of 1K can be set as the number of cluster transfer operations using EDMCRB of the EXDMACn; therefore,
+a maximum of 8 data × 1K = 8K can be set as a total data transfer size.
+The cluster transfer mode can be selected from among cluster transfer dual address mode, cluster transfer read address
+mode, and cluster transfer write address mode.
+ Cluster transfer dual address mode
+(EXDMACn.EDMTMD.MD[1:0] = 11b, EXDMACn.EDMAMD.AMS = 0)
+A single cluster data is transferred by one transfer request from the transfer source address to the cluster buffers. A
+single cluster data is then transferred from the cluster buffers to the transfer destination address.
+ Cluster transfer read address mode
+(EXDMACn.EDMTMD.MD[1:0] = 11b, EXDMACn.EDMAMD.AMS = 1, EXDMACn.EDMAMD.DIR = 0)
+A single cluster data is transferred by one transfer request from the transfer source address to the cluster buffers.
+ Cluster transfer write address mode
+(EXDMACn.EDMTMD.MD[1:0] = 11b, EXDMACn.EDMAMD.AMS = 1, EXDMACn.EDMAMD.DIR = 1)
+A single cluster data is transferred by one transfer request from the cluster buffers to the transfer destination
+address.
+In cluster-transfer mode, DMA transfer stops on completion of the transfer of each cluster of data, and a repeat-sizecompleted interrupt request can be generated. DMA transfer can be restarted by writing 1 to the
+EXDMACn.EDMCNT.DTE bit during processing of the repeat-size-completed interrupt.
+A repeat-size-completed interrupt request can also be generated on completion of transfer of clusters the specified
+number of times.
+
+Table 19.7 summarizes the register update operation in cluster transfer mode, and Figure 19.5 shows the operation in
+cluster transfer mode.
+Table 19.7
+
+Register Update Operation in Cluster Transfer Mode (Dual Address Mode)
+Update Operation after Completion of Single-Cluster Transfer by
+One Transfer Request
+
+Register
+
+Function
+
+EXDMACn.EDMSAR
+
+Transfer source address
+
+ EXDMACn.EDMTMD.DTS[1:0] = 00b
+Increment/decrement/fixed/offset addition*1
+ EXDMACn.EDMTMD.DTS[1:0] = 01b
+Initial value of EXDMACn.EDMSAR
+ EXDMACn.EDMTMD.DTS[1:0] = 10b
+Increment/decrement/fixed/offset addition*1
+
+EXDMACn.EDMDAR
+
+Transfer destination address
+
+ EXDMACn.EDMTMD.DTS[1:0] = 00b
+Initial value of EXDMACn.EDMDAR
+ EXDMACn.EDMTMD.DTS[1:0] = 01b
+Increment/decrement/fixed/offset addition*1
+ EXDMACn.EDMTMD.DTS[1:0] = 10b
+Increment/decrement/fixed/offset addition*1
+
+EXDMACn.EDMCRAH
+
+Cluster size
+
+Not updated
+
+EXDMACn.EDMCRAL
+
+Cluster size counter
+
+EXDMACn.EDMCRAH
+
+EXDMACn.EDMCRB
+
+Transfer cluster count counter
+
+Decremented by one
+
+Note 1. Offset addition can be specified only for EXDMAC0.
+In read address mode, the transfer destination address EXDMACn.EDMDAR is fixed (invalid).
+In write address mode, the transfer source address EXDMACn.EDMSAR is fixed (invalid).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 745 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+Cluster buffers in the MCU
+
+Transfer source data area
+
+EDMSAR
+
+CLSBR0
+CLSBR1
+CLSBR2
+CLSBR3
+CLSBR4
+CLSBR5
+CLSBR6
+CLSBR7
+
+First cluster
+Transfer
+
+N-th cluster
+
+Transfer destination data area
+
+First cluster
+
+EDMDAR
+
+Transfer
+
+N-th cluster
+
+(1) Cluster transfer dual address mode
+
+Transfer source data area
+
+EDMSAR
+
+First cluster
+
+Cluster buffers in the MCU
+
+Transfer
+
+N-th cluster
+
+CLSBR0
+CLSBR1
+CLSBR2
+CLSBR3
+CLSBR4
+CLSBR5
+CLSBR6
+CLSBR7
+
+(2) Cluster transfer read address mode
+
+Transfer destination data area
+Cluster buffers in the MCU
+
+CLSBR0
+CLSBR1
+CLSBR2
+CLSBR3
+CLSBR4
+CLSBR5
+CLSBR6
+CLSBR7
+
+Transfer
+
+First cluster
+
+EDMDAR
+
+N-th cluster
+
+(3) Cluster transfer write address mode
+
+Figure 19.5
+
+Operation in Cluster Transfer Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 746 of 3240
+
+RX72N Group
+
+19.3.2
+
+19. EXDMA Controller (EXDMACa)
+
+Extended Repeat Area Function
+
+The EXDMAC supports a function to specify the extended repeat areas on the transfer source and destination addresses.
+With the extended repeat areas set, the address registers repeatedly indicate the addresses of the specified extended repeat
+areas.
+The extended repeat areas can be specified separately to the transfer source address register (EDMSAR) and transfer
+destination address register (EDMDAR) of EXDMACn.
+The extended repeat area on the source address is specified by the SARA[4:0] bits in EDMAMD of EXDMACn. The
+extended repeat area on the destination address is specified by the DARA[4:0] bits in EDMAMD of EXDMACn. The
+size can be specified separately for the source and destination sides. However, do not specify a repeat area or block area
+that is also an extended repeat area.
+When the address register value reaches the end address of the extended repeat area and the extended repeat area
+overflows, DMA transfer is stopped and an interrupt by an extended repeat area overflow can be requested. When an
+overflow occurs in the extended repeat area on the transfer source while the SARIE bit in EDMINT of EXDMACn is set
+to 1, the ESIF flag in EDMSTS of EXDMACn is set to 1 and the DTE bit in EDMINT of EXDMACn is set to 0 to stop
+DMA transfer. At this time, if the ESIE bit in EDMINT of EXDMACn is set to 1, an interrupt by an extended repeat area
+overflow is requested.
+When the DARIE bit in EDMINT of EXDMACn is set to 1, an overflow on the extended repeat area set in EDMDAR
+occurs, meaning that the destination side is a target. DMA transfer can be resumed by writing 1 to the DTE bit in
+EDMCNT of EXDMACn in the extended repeat area overflow interrupt handling.
+Figure 19.6 shows an example of the extended repeat area operation.
+
+Example:
+Eight bytes are specified as an extended repeat area by the lower three bits of EXDMACn.EDMSAR (SARA[4:0]
+bits in EXDMACn.EDMAMD = 00011b).
+The data size is eight bits (SZ[1:0] bits in EXDMACn.EDMTMD = 00b).
+Memory area
+
+07013FFEh
+
+EDMSAR value range
+
+07013FFFh
+07014000h
+
+07014000h
+
+07014001h
+
+07014001h
+
+07014002h
+
+07014002h
+
+07014003h
+
+07014003h
+
+07014004h
+
+07014004h
+
+07014005h
+
+07014005h
+
+07014006h
+
+07014006h
+
+07014007h
+
+07014007h
+
+07014008h
+
+Repeat
+
+An extended repeat area overflow interrupt
+request can be generated.
+
+07014009h
+
+Figure 19.6
+
+Example of Extended Repeat Area Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 747 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+When an interrupt by an extended repeat area overflow is used in block transfer mode or cluster transfer mode, the
+following should be taken into consideration.
+When a transfer is stopped by an interrupt by an extended repeat area overflow, the address register must be set so that
+the block size (or cluster size) is a power of 2 or the block size (or cluster size) boundary is aligned with the extended
+repeat area boundary. When an overflow on the extended repeat area occurs during a transfer of one block (or one
+cluster), the interrupt by the overflow is suspended until transfer of the block (or the cluster) is completed, and the
+transfer overruns.
+
+Figure 19.7 shows an example when the extended repeat area function is used in block transfer mode.
+
+Example:
+Eight bytes are specified as an extended repeat area by the lower three bits of EXDMACn.EDMSAR (SARA[4:0] bits in
+EXDMACn.EDMAMD = 00011b),
+block transfer mode with block size 5 is set (EXDMACn.EDMCRA = 00050005h), and
+transfer source address is not specified as a block area.
+Data size is eight bits (SZ[1:0] bits in EXDMACn.EDMTMD = 00b).
+Memory area
+Repeated
+EXDMACn.EDMSAR
+value range
+
+First block transfer
+
+Second block
+transfer
+
+07014000h
+
+07014000h
+
+07014000h
+
+07014000h
+
+07014001h
+
+07014001h
+
+07014001h
+
+07014001h
+
+07014002h
+
+07014002h
+
+07014002h
+
+07014003h
+
+07014003h
+
+07014003h
+
+07014004h
+
+07014004h
+
+07014004h
+
+07014005h
+
+07014005h
+
+07014005h
+
+07014006h
+
+07014006h
+
+07014006h
+
+07014007h
+
+07014007h
+
+07014007h
+
+07013FFEh
+07013FFFh
+
+Interrupt
+request
+generated
+
+07014008h
+
+Block transfer
+continued
+
+07014009h
+
+Figure 19.7
+
+Example of Extended Repeat Area Function in Block Transfer Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 748 of 3240
+
+RX72N Group
+
+19.3.3
+
+19. EXDMA Controller (EXDMACa)
+
+Address Update Function using Offset
+
+The source and destination addresses can be updated by fixing, increment, decrement, or offset addition. When the offset
+addition is selected, the offset specified by the EXDMA offset register (EDMOFR of EXDMAC0) is added to the
+address every time the EXDMAC performs one data transfer. This function realizes a data transfer where addresses are
+allocated to separated areas.
+Offset subtraction can also be realized by setting a negative value in EDMOFR of EXDMAC0. In this case, the negative
+value must be 2's complement.
+Address update function using offset can be specified only for the EXDMAC0 channel.
+Table 19.8 lists the address update method in each address update mode.
+Table 19.8
+
+Address Update Method in Each Address Update Mode
+
+Address Update Mode
+
+Settings of
+EXDMACn.EDMAMD.SM[1:0] and
+EXDMACn.EDMAMD.DM[1:0] for
+Address Update Modes
+
+Address Update Method
+(for Different SZ[1:0] Settings in EDMTMD of EXDMACn)
+SZ[1:0] = 00b
+
+SZ[1:0] = 01b
+
+SZ[1:0] = 10b
+
+Address fixed
+
+00b
+
+Fixed
+
+Offset addition
+
+01b
+
++EXDMAC0.EDMOFR*1
+
+Increment
+
+10b
+
++1
+
++2
+
++4
+
+Decrement
+
+11b
+
+–1
+
+–2
+
+–4
+
+Note 1. When setting a negative value in the EXDMA offset register, the value must be 2’s complement. The 2's complement is obtained
+by the following formula.
+2’s complement of a negative offset value = ~ (offset) + 1 (~: bit inversion)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 749 of 3240
+
+RX72N Group
+
+(1)
+
+19. EXDMA Controller (EXDMACa)
+
+Basic Transfer Using Offset Addition
+
+Figure 19.8 shows an example of address updating using offset addition.
+
+Transfer
+Data 1
+
+Address A1
+
+Data 1
+Data 2
+
+Offset value
+
+Data 2
+
+Address A2
+= address A1 + offset value
+
+Data 3
+
+Address A3
+= address A2 + offset value
+
+Data 4
+
+Address A4
+= address A3 + offset value
+
+Address B1
+Address B2 = address B1 + 4
+
+Data 3
+
+Address B3 = address B2 + 4
+
+Data 4
+
+Address B4 = address B3 + 4
+
+Data 5
+
+Address B5 = address B4 + 4
+
+Offset value
+
+Offset value
+
+Offset value
+
+Transfer source:
+Offset addition
+Transfer destination: Increment
+Data size:
+32 bits
+Data 5
+
+Figure 19.8
+
+Address A5
+= address A4 + offset value
+
+Example of Address Updating by Offset Addition
+
+In Figure 19.8, the transfer data is 32 bits long, and offset addition and increment are set as the transfer source address
+update mode and transfer destination address update mode, respectively. The second and subsequent data is each read
+from the transfer source address obtained by adding the offset value to the previous address. The data read from the
+addresses at the specified intervals is written to the continuous locations on the destination.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 750 of 3240
+
+RX72N Group
+
+(2)
+
+19. EXDMA Controller (EXDMACa)
+
+Example of XY Conversion Using Offset Addition
+
+Figure 19.9 shows the XY conversion using offset addition in repeat transfer mode.
+The settings are as follows.
+ EXDMAC0.EDMAMD register: Source address update mode (offset addition)
+ EXDMAC0.EDMAMD register: Source address update mode (incremented)
+ EXDMAC0.EDMTMD register: Transfer data size select (32-bit transfer)
+ EXDMAC0.EDMTMD register: Transfer mode select (repeat transfer)
+ EXDMAC0.EDMTMD register: Repeat area select (the source is specified as the repeat area)
+ EXDMAC0.EDMOFR register: Address offset setting (10h)
+ EXDMAC0.EDMCRA register: The number of repeat transfer setting (4h)
+ EXDMAC0.EDMINT register: Repeat size end interrupt enable
+
+Data 1
+
+Data 5
+
+Data 9
+
+Data 13
+
+First cycle
+
+Data 1
+
+Data 2
+
+Data 3
+
+Data 2
+
+Data 6
+
+Data 10
+
+Data 14
+
+Second cycle
+
+Data 5
+
+Data 6
+
+Data 7
+
+Data 8
+
+Data 3
+
+Data 7
+
+Data 11
+
+Data 15
+
+Third cycle
+
+Data 9
+
+Data 10
+
+Data 11
+
+Data 12
+
+Data 4
+
+Data 8
+
+Data 12
+
+Data 16
+
+Fourth cycle
+
+Data 13
+
+Data 14
+
+Data 15
+
+Data 16
+
+Offset value
+
+Offset value
+
+Offset value
+
+First cycle
+
+Second cycle
+
+Data 1
+Data 5
+
+Data 1
+Address
+returned
+
+Data 9
+
+Transfer
+source
+address
+written by
+CPU
+
+Data 5
+Data 9
+
+Data 1
+
+Transfer
+
+Data 5
+Address
+returned
+
+Data 1
+Data 2
+
+Data 9
+
+Data 3
+Transfer
+source
+address
+written by
+CPU
+
+Data 13
+
+Data 13
+
+Data 2
+
+Data 2
+
+Data 2
+
+Data 6
+
+Data 6
+
+Data 6
+
+Data 10
+
+Data 10
+
+Data 10
+
+Data 14
+
+Data 14
+
+Data 14
+
+Data 8
+
+Data 3
+
+Data 3
+
+Data 3
+
+Data 9
+
+Data 5
+Data 6
+Data 7
+
+Data 7
+
+Data 7
+
+Data 7
+
+Data 10
+
+Data 11
+
+Data 11
+
+Data 11
+
+Data 15
+
+Data 15
+
+Data 15
+
+Data 12
+
+Data 4
+
+Data 4
+
+Data 4
+
+Data 13
+
+Data 8
+
+Data 8
+
+Data 14
+
+Data 12
+
+Data 15
+
+Data 12
+Data 16
+
+Data 12
+Data 16
+
+Interrupt
+request
+generated
+
+Data 16
+
+Interrupt
+request
+generated
+
+First cycle
+
+Data 4
+
+Data 11
+
+Interrupt
+request
+generated
+
+Data 4
+
+Third cycle
+
+Data 13
+
+Data 8
+
+Figure 19.9
+
+Transfer
+
+Second cycle
+
+Third cycle
+
+Fourth cycle
+
+Data 16
+
+XY Conversion Operation Using Offset Addition in Repeat Transfer Mode
+
+When a transfer starts, the offset value is added to the transfer source address every time data is transferred. The transfer
+data is written to the destination continuous addresses. When data 4 is transferred, which means that the repeat size of
+transfers is completed, EXDMAC returns the transfer source address to the transfer start address (address of data 1 on the
+transfer source) and a repeat size end interrupt is requested. While this interrupt stops the transfer temporarily, perform
+the following.
+- EXDMAC0.EDMSAR: Rewrite the DMA transfer source address to the address of data 5 (with the above example,
+the data 1 address + 4).
+- EXDMAC0. EDMCNT: Set the DTE bit to 1.
+The DMA transfer is resumed from the state when the DMA transfer is stopped. After that, the operations described
+above are repeated until the transfer source data is transposed to the destination area (XY conversion)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 751 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+Figure 19.10 shows a flowchart of the XY conversion.
+
+Start
+
+Set the address, repeat size, number of repeat operations.
+
+Set repeat transfer mode.
+
+Enable repeat size end interrupts.
+
+Write 1 to the DTE bit in EXDMAC0.EDMCNT.
+
+Receive a transfer request.
+
+Data transfer
+
+Repeat size and number of repeat operations
+decremented.
+
+No
+Number of repeat operations = 0
+
+Yes
+Repeat size = 0
+
+No
+
+Yes
+Return to the transfer source address.
+
+Generate a repeat size end interrupt.
+
+Set "transfer source address + 4"
+(When transfer data size = 32 bits)
+
+End
+
+: User side processing
+: EXDMAC side processing
+
+Figure 19.10
+
+XY Conversion Flowchart Using Offset Addition in Repeat Transfer Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 752 of 3240
+
+RX72N Group
+
+19.3.4
+
+19. EXDMA Controller (EXDMACa)
+
+Address Modes
+
+The EXDMAC provides dual and single address modes (dual, read, and write address modes in cluster transfer), either of
+which can be selectable. Table 19.9 lists the relationship between transfer modes and address modes.
+Table 19.9
+
+Relationship between Transfer Modes and Address Modes
+
+Transfer Mode
+
+Address Mode
+
+Single Address Direction
+
+EXDMAC Operation
+
+Normal transfer mode
+(EDMTMD.MD[1:0] = 00b)
+
+Dual address mode
+(EDMAMD.AMS = 0)
+
+—
+
+Reads and then writes data.
+
+Single address mode
+(EDMAMD.AMS = 1)
+
+Transfer source
+(EDMAMD.DIR = 0)
+
+Only reads data; outputs EDACKn to the
+device to be written to.
+This MCU receives no read data.
+
+Transfer destination
+(EDMAMD.DIR = 1)
+
+Only writes data; outputs EDACKn to the
+device to be read from.
+This MCU outputs no write data.
+
+Dual address mode
+(EDMAMD.AMS = 0)
+
+—
+
+Reads and then writes data.
+
+Single address mode
+(EDMAMD.AMS = 1)
+
+Transfer source
+(EDMAMD.DIR = 0)
+
+Only reads data; outputs EDACKn to the
+device to be written to.
+This MCU receives no read data.
+
+Transfer destination
+(EDMAMD.DIR = 1)
+
+Only writes data; outputs EDACKn to the
+device to be read from.
+This MCU outputs no write data.
+
+Dual address mode
+(EDMAMD.AMS = 0)
+
+—
+
+Reads and writes data alternately for every
+data transfer specified by EDMTMD.SZ[1:0]
+(transfer data size)
+
+Single address mode
+(EDMAMD.AMS = 1)
+
+Transfer source
+(EDMAMD.DIR = 0)
+
+Only reads data; outputs EDACKn to the
+device to be written to.
+This MCU receives no read data.
+
+Transfer destination
+(EDMAMD.DIR = 1)
+
+Only writes data; outputs EDACKn to the
+device to be read from.
+This MCU outputs no write data.
+
+Dual address mode
+(EDMAMD.AMS = 0)
+
+—
+
+Reads data of cluster size and then writes data
+of cluster size.
+
+Read address mode
+(EDMAMD.AMS = 1)
+
+Transfer source
+(EDMAMD.DIR = 0)
+
+Only reads data of cluster size.
+Transfers data to the cluster buffers.
+
+Write address mode
+(EDMAMD.AMS = 1)
+
+Transfer destination
+(EDMAMD.DIR = 1)
+
+Only writes data of cluster size.
+Transfers data from the cluster buffers.
+
+Repeat transfer mode
+(EDMTMD.MD[1:0] = 01b)
+
+Block transfer mode
+(EDMTMD.MD[1:0] = 10b)
+
+Cluster transfer mode
+(EDMTMD.MD[1:0] = 11b)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 753 of 3240
+
+RX72N Group
+
+19.4
+
+19. EXDMA Controller (EXDMACa)
+
+Transfer Operation
+
+Descriptions of examples of operations in transfer by the EXDMAC are given in the following passages.
+Operations of the EXDMAC are synchronized by the external bus clock (BCLK). The examples that follow are for cases
+where the external bus clock (BCLK) and the signal output on the BCLK pin are at the same frequency unless there is a
+particular reason for doing otherwise.
+Note:
+
+An idle cycle is inserted between two adjacent accesses depending on the external bus recovery cycle setting.
+One idle cycle, however, is inserted between a read access and a write access even if the recovery cycle is set to
+0. refer to section 16, Buses, for details on the recovery cycle.
+
+19.4.1
+(1)
+
+Normal/Repeat Transfer Operation
+
+Dual Address Mode
+
+Figure 19.11 shows the bus cycle example in normal-transfer dual address mode. In the example, a 16-bit data (SZ[1:0]
+= 01b in EDMTMD of EXDMACn) is transferred from a device with 16-bit 2-cycle access to another device with 16-bit
+2-cycle access, which is started at the falling edge of EDREQn.
+The bus cycles in repeat-transfer dual address mode are the same as those in normal-transfer dual address mode.
+
+EDREQn
+1 clock cycle (minimum)
+External bus clock
+EDREQn
+Address
+
+SA
+
+DA
+
+Chip select 0
+Chip select 1
+
+1 idle cycle inserted
+
+Data read
+Data write
+
+Data bus
+
+Figure 19.11
+
+(2)
+
+4 clock cycles
+(minimum)
+
+2-cycle access
+D1
+
+D1
+
+Bus Cycle Example in Normal-Transfer Dual Address Mode
+
+Single Address Mode
+
+In single address mode, data is read from the transfer source address and directly transferred to the transfer destination
+device without being taken in the MCU. Here, EDACKn is output to one of the external transfer-destination and transfersource devices, and the address is simultaneously output to the other transfer device for access.
+With the DIR bit in EDMAMD of EXDMACn set to 0, the transfer source address is output to the external bus and
+EDACKn is output to the transfer destination. With the DIR bit in EDMAMD of EXDMACn set to 1, the transfer
+destination address is output to the external bus and the EDACKn is output to the transfer source. Figure 19.12 shows
+the data flow in single address mode.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 754 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+Figure 19.13 shows the bus cycle example in normal-transfer single address mode. In the example, one data is
+transferred in 2-cycle access when the DIR bit in EDMAMD of EXDMACn is set to 1 (transfer destination address is
+output) and when set to 0 (transfer source address is output).
+
+External
+address bus
+
+External
+data bus
+
+MCU
+External memory
+
+EXDMAC
+
+External device
+with EDACK
+
+Data flow
+
+EDREQn
+EDACKn
+
+Figure 19.12
+
+Data Flow in Single Address Mode (when EDMAMD.DIR = 1)
+
+EDREQn
+1 clock cycle (minimum)
+
+2-cycle access
+
+2-cycle access
+
+Transfer
+destination A1
+
+Transfer
+destination A2
+
+External bus clock
+EDREQn
+Address
+Chip select 0
+Chip select 1
+
+Data read
+Data write
+EDMAMD.DIR=1
+
+EDMAMD.DIR=0
+
+EDACKn
+
+Data bus
+
+D1
+
+D2
+
+4 clock cycles
+(minimum)
+
+Figure 19.13
+
+Bus Cycle Example in Normal-Transfer Single Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 755 of 3240
+
+RX72N Group
+
+19.4.2
+(1)
+
+19. EXDMA Controller (EXDMACa)
+
+Block Transfer Operation
+
+Dual Address Mode
+
+Figure 19.14 shows the bus cycle example in block-transfer dual address mode. In the example, a 16-bit data (SZ[1:0] =
+01 in EDMTMD of EXDMACn) is transferred from a device with 16-bit 2-cycle access to another device with 16-bit 2cycle access when the block size is 3.
+
+EDREQn
+1 clock cycle (minimum)
+External bus clock
+EDREQn
+SA1
+
+Address
+
+DA1
+
+SA2
+
+DA2
+
+SA3
+
+DA3
+
+D2
+
+D2
+
+D3
+
+D3
+
+Chip select 0
+Chip select 1
+
+1 idle cycle inserted
+
+Data read
+Data write
+
+4 clock cycles
+(minimum)
+
+Data bus
+
+Figure 19.14
+
+2-cycle access
+D1
+
+D1
+
+Bus Cycle Example in Block-Transfer Dual Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 756 of 3240
+
+RX72N Group
+
+(2)
+
+19. EXDMA Controller (EXDMACa)
+
+Single Address Mode
+
+Figure 19.15 shows the bus cycle example in block-transfer single address mode. In the example, a 16-bit data (SZ[1:0]
+= 01 in EDMTMD of EXDMACn) is transferred in three bus clock cycles from a device with EDACKn with 16-bit
+access to another device with 16-bit access when the block size is 3.
+EDREQn
+1 clock cycle (minimum)
+External bus clock
+EDREQn
+DA1
+
+Address
+
+DA2
+
+DA3
+
+Chip select 0
+Chip select 1
+Data read
+Data write
+
+4 clock cycles
+(minimum)
+
+EDACKn
+
+Data bus
+
+Figure 19.15
+
+D1
+
+D2
+
+D3
+
+Data Flow in Block Transfer Single Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 757 of 3240
+
+RX72N Group
+
+19.4.3
+(1)
+
+19. EXDMA Controller (EXDMACa)
+
+Cluster Transfer Operation
+
+Dual Address Mode
+
+In cluster-transfer dual address mode, cluster-size data is transferred from the external transfer source device to the
+external transfer destination device via the cluster buffers. Figure 19.16 shows the data flow in cluster-transfer dual
+address mode and Figure 19.17 shows the bus cycle example, in which one cluster is transferred in two clock cycles
+when the cluster size is three.
+
+External
+address bus
+
+External
+data bus
+
+MCU
+EDMSAR access
+Transfer source
+external memory
+
+EXDMAC
+
+EDMDAR access
+
+Cluster
+buffer
+
+CPU
+
+Transfer destination
+external memory
+
+Cluster read
+Cluster write
+
+Data flow
+
+Figure 19.16
+
+Data Flow in Cluster-Transfer Dual Address Mode
+
+EDREQn
+1 clock cycle (minimum)
+
+Idle
+
+Cluster read
+
+Cluster write
+
+External bus clock
+EDREQn
+
+Address
+
+A1
+
+A2
+
+A3
+
+D1
+
+D2
+
+D3
+
+B1
+
+B2
+
+B3
+
+Chip select 0
+Chip select 1
+Data read
+Data write
+EDACKn
+(not output)
+Data bus
+
+D1
+
+D2
+
+D3
+
+4 clock cycles
+(minimum)
+
+Figure 19.17
+
+Bus Cycle Example in Cluster-Transfer Dual Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 758 of 3240
+
+RX72N Group
+
+(2)
+
+19. EXDMA Controller (EXDMACa)
+
+Read Address Mode
+
+In cluster-transfer read address mode, cluster-size data is transferred from the external transfer source device to the
+cluster buffers. The data transferred in the cluster buffers can be read by the CPU. Figure 19.18 shows the data flow in
+cluster-transfer read address mode and Figure 19.19 shows the bus cycle example, in which one cluster is transferred in
+two clock cycles when the cluster size is six.
+
+External
+address bus
+
+External
+data bus
+
+MCU
+EDMSAR access
+Transfer source
+external memory
+
+EXDMAC
+Cluster
+buffer
+
+CPU
+
+Cluster read
+
+Read
+
+Data flow
+
+Figure 19.18
+
+Data Flow in Cluster-Transfer Read Address Mode
+
+EDREQn
+1 clock cycle (minimum)
+
+Cluster read
+
+External bus clock
+EDREQn
+Address
+
+A1
+
+A2
+
+A3
+
+A4
+
+A5
+
+A6
+
+D1
+
+D2
+
+D3
+
+D4
+
+D5
+
+D6
+
+Chip select 0
+Chip select 1
+Data read
+Data write
+EDACKn
+(not output)
+Data bus
+4 clock cycles
+(minimum)
+
+Figure 19.19
+
+Bus Cycle Example in Cluster-Transfer Read Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 759 of 3240
+
+RX72N Group
+
+(3)
+
+19. EXDMA Controller (EXDMACa)
+
+Write Address Mode
+
+In cluster-transfer write address mode, the data is written to the cluster buffers by the internal bus master such as the
+CPU, DMACA, and DTC and then transferred to the external transfer destination device. Figure 19.20 shows the data
+flow in cluster-transfer write address mode and Figure 19.21 shows the bus cycle example, in which one cluster is
+transferred in two clock cycles when the cluster size is six.
+
+External
+address bus
+
+External
+data bus
+
+MCU
+
+EXDMAC
+
+EDMDAR access
+Transfer destination
+external memory
+
+Cluster
+buffer
+
+CPU
+
+Cluster write
+
+Write
+
+Data flow
+
+Figure 19.20
+
+Data Flow in Cluster-Transfer Write Address Mode
+
+EDREQn
+1 clock cycle (minimum)
+
+Cluster write
+
+External bus clock
+EDREQn
+Address
+
+B1
+
+B2
+
+B3
+
+B4
+
+B5
+
+B6
+
+Chip select 0
+Chip select 1
+Data read
+Data write
+EDACKn
+(not output)
+Data bus
+
+D1
+
+D2
+
+D3
+
+D4
+
+D5
+
+D6
+
+4 clock cycles
+(minimum)
+
+Figure 19.21
+
+Bus Cycle Example in Cluster-Transfer Write Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 760 of 3240
+
+RX72N Group
+
+19.5
+
+19. EXDMA Controller (EXDMACa)
+
+Request Sources and Procedures
+
+19.5.1
+
+Request Sources
+
+The EXDMAC can be triggered by software, by an external DMA transfer request pin (EDREQn pins), or by the DMA
+transfer requests from the peripheral modules (the software configurable interrupt B source select register 144
+(SLIBR144) or the software configurable interrupt A source select register 208 (SLIAR208) should be set for channel 0,
+and the software configurable interrupt B source select register 145 (SLIBR145) or the software configurable interrupt A
+source select register 209 (SLIAR209) should be set for channel 1). Setting the DCTG[1:0] bits in EDMTMD of
+EXDMACn selects the request source.
+
+(1)
+
+Trigger by Software
+
+Setting the EXDMACn.EDMREQ.DCTG[1:0] bits to 00b enables the trigger by software.
+To start DMA transfer by software, follow the procedure below.
+1.
+2.
+3.
+4.
+
+Check that the EXDMACn.EDMREQ.SWREQ bit is 0 (DMA transfer is not requested).
+Set the EXDMACn.EDMTMD.DCTG[1:0] bits to 00b (activation by software).
+Set the EXDMACn.EDMCNT.DTE bit to 1 (enables DMA transfer).
+Set the EXDMACn.EDMREQ.CLRS bit (DMA software start bit auto clear select) and also set the
+EXDMACn.EDMREQ.SWREQ bit to 1 (DMA transfer is requested).
+
+When the EXDMACn.DMREQ.CLRS bit is 0 (SWREQ bit is cleared after DMA transfer is started by software), the
+EXDMACn.EDMREQ.SWREQ bit is set to 0 after data transfer is started in response to a DMA transfer request. When
+the CLRS bit is 1 (SWREQ bit is not cleared after DMA transfer is started by software), the SWREQ bit is not set to 0. In
+this case, a DMA transfer request is issued again after completion of a transfer.
+
+(2)
+
+Trigger by external DMA transfer request Pin (EDREQn)
+
+Setting the EXDMACn.EDMTMD.DCTG[1:0] bits to 10b enables the trigger by the external DMA transfer request pins.
+To set the trigger by the external DMA transfer request pin, follow the procedure below.
+1.
+2.
+3.
+4.
+
+Set the detection mode by the EXDMACn.EDMRMD.DREQS[1:0] bits.
+Set the EXDMACn.EDMTMD.DCTG[1:0] bits to 10b (external DMA transfer request pins).
+Set the EXDMACn.EDMERF.EREQ flag to 1 to clear the EREQ flag.
+Set the EXDMACn.EDMCNT.DTE bit to 1 (enables DMA transfer).
+
+When the falling edge or rising edge is selected by using the EXDMACn.EDMRMD.DREQS[1:0] bits, if the external
+DMA transfer request pin detects an edge, the EXDMACn.EDMERF.EREQ flag is set to 1. The
+EXDMACn.EDMERF.EREQ flag is set to 0 when the DMA transfer is started by the external request. Moreover, this
+flag is set to 0 by writing 1 to it.
+When the low level detection is set by the EXDMACn.EDMRMD.DREQS[1:0] bits, if the external DMA transfer
+request pin is low level, the EXDMACn.EDMERF.EREQ flag is set to 1 (DMA transfer is requested). If the external
+DMA transfer request pin is high level, the EXDMACn.EDMERF.EREQ flag is 0 (DMA transfer is not requested). In
+case of the low level detection, when the DMA transfer is started by the external request or 1 is written to the flag, the
+EXDMACn.EDMERF.EREQ flag is not set to 0.
+When the EDMAST.DMST bit and the EXDMACn.EDMCNT.DTE bit are set to 1 (enables DMA transfer) while the
+EXDMACn.EDMERF.EREQ flag is 1 (DMA transfer is requested), the DMA transfer is started.
+The value of the EXDMACn.EDMERF.EREQ flag is retained regardless of the settings in the EDMAST.DMST and
+EXDMACn.EDMCNT.DTE bits.
+Figure 19.22 and Figure 19.23 show the external DMA transfer request timings in the falling edge detection mode and
+low level detection mode, respectively.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 761 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+External bus clock
+(BCLK)
+EDMAST.DMST
+
+Cleared when
+total transfer has
+ended
+
+EXDMACn.EDMCNT.DTE
+
+EDREQn pin
+Set to 0 by
+writing 1 to it
+
+EXDMACn.EDMERF.EREQ
+
+Request retained
+
+Request
+retained
+
+Transfer
+enabled
+
+DMA transfer
+EXDMACn stopped
+
+Figure 19.22
+
+End of transfer
+DMA transfer
+
+EXDMACn transfer enable time
+
+EXDMACn stopped
+
+External DMA Transfer Request Timing in Falling-Edge Detection Mode
+
+External bus clock
+(BCLK)
+EDMAST.DMST
+
+Cleared when
+total transfer
+has ended
+
+EXDMACn.EDMCNT.DTE
+
+EDREQn pin
+
+Low level
+
+EXDMACn.EDMERF.EREQ
+
+High level
+
+Request retained
+
+Request
+retained
+
+Transfer
+enabled
+
+EXDMACn stopped
+
+Figure 19.23
+
+(3)
+
+End of transfer
+DMA transfer
+
+DMA transfer
+
+EXDMACn transfer enable time
+
+EXDMACn stopped
+
+External DMA Transfer Request Timing in Low-Level Detection Mode
+
+Trigger by DMA Transfer Requests from Peripheral Modules
+
+Setting the DCTG[1:0] bits in EDMTMD of EXDMACn to 11b enables the trigger by DMA transfer requests from the
+peripheral modules (an interrupt specified by the software configurable interrupt B source select register
+(ICU.SLIBR144 or ICU.SLIBR145) or the software configurable interrupt A source select register (ICU.SLIAR208 or
+ICU.SLIAR209)).
+To start DMA transfer by DMA transfer requests from the peripheral modules follow the procedure below.
+1. Set the software configurable interrupt B source select register 144 (SLIBR144) or the software configurable
+interrupt A source select register 208 (SLIAR208) for channel 0, and set the software configurable interrupt B
+source select register 145 (SLIBR145) or the software configurable interrupt A source select register 209
+(SLIAR209) for channel 1 (For the setting procedure, refer to section 15.4.5, Software Configurable Interrupts,
+in section 15, Interrupt Controller (ICUD)).
+2. Set the EXDMACn.EDMTMD.DCTG[1:0] bits to 11b (DMA transfer requests from the peripheral modules).
+3. Set the EXDMACn.EDMPRF.PREQ flag to 1, and then clear it to 0.
+4. Set the EXDMACn.EDMCNT.DTE bit to 1 (DMA transfer is enabled).
+None of the values of the interrupt request enable bits (IERm.IENj) affect EXDMACn requests initiated by peripheral
+modules.
+When a DMA transfer request is input from the peripheral modules, the EXDMACn.EDMPRF.PREQ flag is set to 1
+(DMA transfer is requested). The EXDMACn.EDMPRF.PREQ flag is set to 0 (DMA transfer is not requested) when the
+DMA transfer is started by the peripheral module request.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 762 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+This flag is set to 0 by writing 1 to it.
+When the EDMAST.DMST bit is set to 1 (EXDMAC module start) and the EXDMACn.EDMCNT.DTE bit is set to 1
+(DMA transfer is enabled) while the EXDMACn.EDMPRF.PREQ flag is 1, the DMA transfer is started.
+The value of the EXDMACn.EDMPRF.PREQ flag is retained regardless of the settings of the EDMAST.DMST and
+EXDMACn.EDMCNT.DTE bits.
+The EXDMACn.EDMPRF.PREQ flag is set to 1 regardless of the state of the module stop bit when the corresponding
+EXDMACn is started by an internal peripheral module.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 763 of 3240
+
+RX72N Group
+
+19.5.2
+
+19. EXDMA Controller (EXDMACa)
+
+Activating the EXDMAC
+
+Figure 19.24 shows the register setting procedure.
+
+Start of initial settings
+<To use external DMA transfer
+Set the external device that requests a DMA transfer. Set the external device without starting DMA transfer.
+requests as DMA request
+sources>
+<To use on-chip peripheral DMA
+transfer requests as DMA request
+Set the internal peripheral modules without starting DMA transfer.
+Set the internal peripheral modules.
+sources>
+Clear the DTE bit in EXDMACn.EDMCNT to 0.
+<In single address mode>
+
+<To use external DMA transfer
+requests as DMA request
+sources>
+
+<To use external DMA transfer
+requests as DMA request
+sources>
+<To use DMA transfer requests
+from on-chip peripheral modules
+as DMA request sources>
+
+Disable DMA transfers.
+
+EXDMACn.EDMOMD.DACKS bit
+EXDMACn.EDMOMD.DACKE bit
+EXDMACn.EDMOMD.DACKW bit
+
+EDACKn pin polarity bit
+EDACKn pin output enable bit
+EDACKn pin negate wait bit
+
+EXDMACn.EDMRMD.DREQS[1:0] bits
+
+Request input sense mode bit
+
+EXDMACn.EDMAMD.DM[1:0] bits
+EXDMACn.EDMAMD.SM[1:0] bits
+EXDMACn.EDMAMD.DARA[4:0] bits
+EXDMACn.EDMAMD.SARA[4:0] bits
+
+Destination address update mode bits
+Source address update mode bits
+Destination address extended repeat area bits
+Source address extended repeat area bits
+
+EXDMACn.EDMTMD.DCTG[1:0] bits
+EXDMACn.EDMTMD.SZ[1:0] bits
+EXDMACn.EDMTMD.DTS[1:0] bits
+EXDMACn.EDMTMD.MD[1:0] bits
+
+Transfer request select bits
+Data transfer size bits
+Repeat area select bits
+Transfer mode select bits
+
+Set the EXDMACn.EDMERF.EREQ flag to 1.
+
+The external request flag is cleared.
+
+Set the EXDMACn.EDMPRF.PREQ flag to 1.
+
+The request flag from the peripheral module is cleared.
+
+EXDMACn.EDMSAR register
+
+Set the transfer source start address.
+
+EXDMACn.EDMDAR register
+
+Set the transfer destination start address.
+
+EXDMACn.EDMCRA register
+
+Set the number of transfer operations.
+
+<To use repeat transfer mode, block transfer mode, or cluster transfer mode>
+Set the number of block transfer operations.
+
+EXDMACn.EDMCRB register
+<To use the address update function with offset>
+
+Set the offset value.
+
+EXDMACn.EDMOFR register
+<To use DMA transfer end interrupts>
+
+Enable DMA transfer end interrupts.
+
+Set the EXDMACn.EDMINT.DTIE bit to 1.
+<To use DMA transfer escape interrupts>
+EXDMACn.EDMINT.RPTIE bit
+EXDMACn.EDMINT.SARIE bit
+EXDMACn.EDMINT.DARIE bit
+Set the EXDMACn.EDMINT.ESIE bit to 1.
+
+Set the repeat size end interrupt.
+Set source address extended repeat area overflow interrupts.
+Set destination address extended repeat area overflow
+interrupts.
+Enable DMA transfer escape interrupts.
+
+Set the EDMAST.DMST bit to 1.
+
+EXDMAC operation
+
+Set the EXDMACn.EDMCNT.DTE bit to 1.
+
+Enable DMA transfers.
+
+<To use external DMA transfer
+requests as DMA request
+Start DMA transfer requested from the external device.
+sources>
+<To use DMA transfer
+requests from on-chip
+peripheral modules as DMA
+request sources>
+
+Start DMA transfer requested from the on-chip
+peripheral modules.
+
+n = 0, 1
+
+Figure 19.24
+
+End of initial settings
+
+<To use software trigger>
+When 1 is written to the DMA software start bit
+(EXDMACn.EDMREQ.SWREQ) after the initialization setting ends,
+DMA transfer is started.
+
+Register Setting Procedure
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 764 of 3240
+
+RX72N Group
+
+19.5.3
+
+19. EXDMA Controller (EXDMACa)
+
+Starting DMA Transfer
+
+Setting the DTE bit in EDMCNT of EXDMACn to 1 (DMA transfer enabled) and setting the DMST bit in EDMAST to
+1 (EXDMAC start) enable DMA transfer of channel n (n = 0, 1).
+When DMA transfer requests are generated, channel arbitration is performed where a DMA transfer request of higherpriority channel is accepted and DMA transfer of the channel starts. When a DMA transfer request is accepted and DMA
+transfer starts, the ACT flag in EDMSTS of EXDMACn is set to 1 (DMA transfer is in progress).
+
+19.5.4
+
+Registers during DMA Transfer
+
+The EXDMAC registers are updated by a DMA transfer. The value to be updated differs according to the other settings
+and the transfer state. The registers to be updated are EDMSAR, EDMDAR, EDMCRA, EDMCRB, EDMCNT, and
+EDMSTS of EXDMACn.
+
+(1)
+
+EXDMA Source Address Register (EXDMACn.EDMSAR)
+
+When data has been transferred in response to one transfer request, the contents of EDMSAR are updated to the address
+to be accessed by the next transfer request.
+For details on register update operation in each transfer mode, refer to Table 19.4 to Table 19.7.
+
+(2)
+
+EXDMA Destination Address Register (EXDMACn.EDMDAR)
+
+When data has been transferred in response to one transfer request, the contents of EDMDAR are updated to the address
+to be accessed by the next transfer request.
+For details on register update operation in each transfer mode, refer to Table 19.4 to Table 19.7.
+
+(3)
+
+EXDMA Transfer Count Register (EXDMACn.EDMCRA)
+
+When data has been transferred in response to one transfer request, the count value is updated. The update operation
+depends on the transfer mode selected.
+For details on register update operation in each transfer mode, refer to Table 19.4 to Table 19.7.
+
+(4)
+
+EXDMA Block Transfer Count Register (EXDMACn.EDMCRB)
+
+When data has been transferred in response to one transfer request, the count value is updated. The update operation
+depends on the transfer mode selected.
+For details on register update operation in each transfer mode, refer to Table 19.4 to Table 19.7.
+
+(5)
+
+DMA Transfer Enable Bit (EXDMACn.EDMCNT.DTE)
+
+The EXDMACn.EDMCNT.DTE bit provides a way to control enabling or prohibition of transfer by writing to the
+relevant registers.
+The EXDMACn.EDMCNT.DTE bit is set to 0 when any of the following conditions is generated by the DMA transfer.
+ When the specified total volume of data transfer is completed
+ When DMA transfer is stopped by the repeat size end interrupt
+ When DMA transfer is stopped by the extended repeat area overflow interrupt
+Writing to the registers of an EXDMAC channel is prohibited if the corresponding EXDMACn.EDMCNT.DTE bit is 1
+(except to the EXDMACn.EDMCNT register itself).
+Change the settings of the registers as required after writing 0 to the EXDMACn.EDMCNT.DTE bit.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 765 of 3240
+
+RX72N Group
+
+(6)
+
+19. EXDMA Controller (EXDMACa)
+
+EXDMA Active Flag (EXDMACn.EDMSTS.ACT)
+
+The ACT flag in EDMSTS of EXDMACn indicates whether the EXDMACn is in the idle or active state.
+This flag is set to 1 when the EXDMACn starts data transfer, and is set to 0 when data transfer in response to one transfer
+request is completed.
+Even when DMA transfer is stopped by writing 0 to the DTE bit in EDMCNT of EXDMACn, this flag remains 1 until
+DMA transfer is completed.
+
+(7)
+
+Transfer End Interrupt Flag (EXDMACn.EDMSTS.DTIF)
+
+The DTIF flag in EDMSTS of EXDMACn is set to 1 after transfer of the total transfer size of data is completed.
+When both this flag and the DTIE bit in EDMINT of EXDMACn are set to 1, a transfer end interrupt is requested.
+This flag is set to 1 when the DMA transfer bus cycle is completed and the ACT flag in EDMSTS of EXDMACn is set to
+0 indicating the DMA transfer end.
+This flag is automatically set to 0 when the DTE bit in EDMCNT of EXDMACn is set to 1 during the interrupt handling.
+
+(8)
+
+Transfer Escape End Interrupt Flag (EXDMACn.EDMSTS.ESIF)
+
+The ESIF flag in EDMSTS of EXDMACn is set to 1 when a repeat size end interrupt or extended repeat area overflow
+interrupt is requested. When this flag and the ESIE bit in EDMINT of EXDMACn are set to 1, a transfer escape end
+interrupt is requested.
+This flag is set to 1 when the bus cycle of the DMA transfer having caused the interrupt request is completed and the
+ACT flag in EDMSTS of EXDMACn is set to 0 indicating the DMA transfer end.
+This flag is automatically set to 0 when the DTE bit in EDMCNT of EXDMACn is set to 1 during an interrupt handling.
+Before sending an interrupt request from the EXDMACn to the CPU or the DTC, the interrupt control register must be
+set.
+For details, refer to section 15, Interrupt Controller (ICUD).
+
+19.5.5
+
+Channel Priority
+
+When multiple DMA transfer requests are present, the EXDMAC determines the priority of channels that have DMA
+transfer requests. The channel priority is fixed as channel 0 > channel 1.
+When a DMA transfer request is generated during data transfer, channel arbitration is started after the final data has been
+transferred, and DMA transfer of the higher-priority channel starts.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 766 of 3240
+
+RX72N Group
+
+19.6
+
+19. EXDMA Controller (EXDMACa)
+
+Ending DMA Transfer
+
+The operation for ending DMA transfer depends on the transfer end conditions. When DMA transfer ends, the DTE bit in
+EDMCNT and the ACT flag in EDMSTS of EXDMACn are changed from 1 to 0, indicating that DMA transfer has
+ended.
+
+19.6.1
+(1)
+
+Transfer End by Completion of Specified Total Number of Transfer Operations
+
+In Normal Transfer Mode (EXDMACn.EDMTMD.MD[1:0] = 00b)
+
+When the value of the EXDMACn.EDMCRAL register changes from 1 to 0, DMA transfer ends on the corresponding
+channel, and the DTE bit in EDMCNT of EXDMACn is set to 0 and the DTIF flag in EDMSTS of EXDMACn is set to
+1 at the same time. If the DTIE bit in EDMINT of EXDMACn is 1 at this time, a transfer end interrupt request is issued
+to the CPU or the DTC.
+
+(2)
+
+In Repeat Transfer Mode (EXDMACn.EDMTMD.MD[1:0] = 01b)
+
+When the value of DMCRB of EXDMACn changes from 1 to 0, DMA transfer ends on the corresponding channel, and
+the DTE bit in EDMCNT of EXDMACn is set to 0 and the DTIF flag in EDMSTS of EXDMACn is set to 1 at the same
+time. If the DTIE bit in EDMINT of EXDMACn is 1 at this time, a transfer end interrupt request is issued to the CPU or
+the DTC.
+
+(3)
+
+In Block Transfer Mode (EXDMACn.EDMTMD.MD[1:0] = 10b)
+
+When the value of EDMCRB of EXDMACn changes from 1 to 0, DMA transfer ends on the corresponding channel, and
+the DTE bit in EDMCNT of EXDMACn is set to 0 and the DTIF flag in EDMSTS of EXDMACn is set to 1 at the same
+time. If the DTIE bit in EDMINT of EXDMACn is 1 at this time, a transfer end interrupt request is issued to the CPU or
+the DTC.
+
+(4)
+
+In Cluster Transfer Mode (EXDMACn.EDMTMD.MD[1:0] = 11b)
+
+When the value of EDMCRB of EXDMACn changes from 1 to 0, DMA transfer ends on the corresponding channel, and
+the DTE bit in EDMCNT of EXDMACn is set to 0 and the DTIF flag in EDMSTS of EXDMACn is set to 1 at the same
+time. If the DTIE bit in EDMINT of EXDMACn is 1 at this time, a transfer end interrupt request is issued to the CPU or
+the DTC.
+Before sending an interrupt request from the EXDMACn to the CPU or the DTC, the interrupt control register must be
+set. For details, refer to section 15, Interrupt Controller (ICUD).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 767 of 3240
+
+RX72N Group
+
+19.6.2
+
+19. EXDMA Controller (EXDMACa)
+
+Transfer End by Repeat Size End Interrupt
+
+In repeat transfer mode, a repeat size end interrupt is requested when transfer of a 1-repeat size of data is completed
+while the RPTIE bit in EDMINT of EXDMACn is set to 1. When the interrupt is requested to complete DMA transfer,
+the DTE bit in EDMCNT of EXDMACn is set to 0 and the ESIF flag in EDMSTS of EXDMACn is set to 1. If the ESIE
+bit in EDMINT of EXDMACn is 1 at this time, a transfer end interrupt request is issued to the CPU or the DTC. Here,
+the transfer can be resumed by writing 1 to the DTE bit in EDMCNT of EXDMACn.
+A repeat size end interrupt can be requested also in block transfer mode (or cluster transfer mode). In block transfer mode
+(or cluster transfer mode), the interrupt is requested in the same way as in repeat transfer mode when transfer of a 1-block
+size (or 1-cluster) data is completed.
+Before sending an interrupt request from the EXDMACn to the CPU or the DTC, the interrupt control register must be
+set. For details, refer to section 15, Interrupt Controller (ICUD).
+
+19.6.3
+
+Transfer End by Interrupt on Extended Repeat Area Overflow
+
+When an overflow on the extended repeat area occurs while the extended repeat area is specified and the SARIE or
+DARIE bit in EDMINT of EXDMACn is set to 1, an interrupt by an extended repeat area overflow is requested. When
+the interrupt is requested, the DMA transfer is terminated, the DTE bit in EDMCNT of EXDMACn is set to 0, and the
+ESIF flag in EDMSTS of EXDMACn is set to 1. If the ESIE bit in EDMINT of EXDMACn is 1 at this time, a transfer
+end interrupt request is issued to the CPU or the DTC.
+Even if an interrupt by an extended repeat area overflow is requested during a read cycle, the following write cycle is
+performed.
+In block transfer mode (or cluster transfer mode), even if an interrupt by an extended repeat area overflow is requested
+during a 1-block (or 1-cluster) transfer, the remaining data in the block (or the cluster) is transferred; transfer is
+terminated after a block (or cluster) transfer.
+Before sending an interrupt request from the EXDMACn to the CPU or the DTC, the interrupt control register must be
+set. For details, refer to section 15, Interrupt Controller (ICUD).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 768 of 3240
+
+RX72N Group
+
+19.7
+
+19. EXDMA Controller (EXDMACa)
+
+Interrupts
+
+The EXDMAC can output one interrupt request to the CPU or the DTC for each channel. Table 19.10 lists the relation
+among the interrupt sources, the interrupt status flags, and the interrupt enable bits. Figure 19.25 shows the schematic
+logic diagram of interrupt outputs. The procedures for suspending or resuming DMA transfer by the EXDMAC interrupt
+are shown in Figure 19.26.
+Table 19.10
+
+Relation among Interrupt Sources, Interrupt Status Flags, and Interrupt Enable Bits
+
+Interrupt Sources
+
+Interrupt Enable
+Bits
+
+Interrupt Status Flags
+
+Request Output Enable
+Bits
+
+Transfer end
+
+—
+
+EXDMACn.EDMSTS.DTIF
+
+EXDMACn.EDMINT.DTIE
+
+Repeat size end
+
+EXDMACn.EDMINT.
+RPTIE
+
+EXDMACn.EDMSTS.ESIF
+
+EXDMACn.EDMINT.ESIE
+
+Source address extended repeat
+area overflow
+
+EXDMACn.EDMINT.
+SARIE
+
+Destination address extended
+repeat area overflow
+
+EXDMACn.EDMINT.
+DARIE
+
+Escape
+transfer end
+
+DTIE
+DTIF
+When the specified number of data
+transfer operations are completed
+
+1-setting condition
+
+EXDMAC interrupt request
+RPTIE
+When the specified repeat
+(or block or cluster) size of data
+transfer is completed
+
+ESIE
+ESIF
+
+SARIE
+
+1-setting condition
+
+When a source address extended
+repeat area overflow occurs
+
+DARIE
+When a destination address
+extended repeat area overflow
+occurs
+
+Figure 19.25
+
+Interrupt output logic diagram for EXDMACn
+(n = 0, 1)
+
+Schematic Logic Diagram of Interrupt Outputs
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 769 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+Specifically, the different procedures are used for canceling an interrupt to restart DMA transfer in the following two
+cases: (1) discontinuing or terminating DMA transfer and (2) continuing DMA transfer.
+
+(1)
+
+When Discontinuing or Terminating DMA Transfer
+
+Write 0 to the DTIF flag in EDMSTS of EXDMACn to clear a transfer end interrupt, and to the ESIF flag in EDMSTS of
+EXDMACn to clear a repeat size interrupt and an extended repeat area overflow interrupt. The EXDMACn remains in
+the stop state. When starting another DMA transfer after that, set the appropriate registers, and set the DTE bit in
+EDMCNT of EXDMACn to 1.
+
+(2)
+
+When Continuing DMA Transfer
+
+Write 1 to the DTE bit in EDMCNT of EXDMACn. The ESIF flag in EDMSTS of EXDMACn is automatically set to 0
+(interrupt source cleared), and DMA transfer is resumed.
+
+Interrupt request from EXDMAC
+
+Start of EXDMAC interrupt
+handling
+
+Continue
+
+Is suspended
+transfer continued?
+
+Terminate
+
+Change register settings if necessary.
+
+Write 0 to ESIF or DTIF flag in
+EXDMACn.EDMSTS. (Interrupt source cleared)
+
+Write 1 to DTE bit in EXDMACn.EDMCNT.
+
+Is another data
+transfer performed?
+
+Discontinue
+End
+
+Start another transfer
+ESIF flag in EXDMACn.EDMSTS cleared
+automatically. (Interrupt source cleared)
+
+Change register settings.
+
+Transfer resumed
+
+Write 1 to DTE bit in EXDMACn.EDMCNT.
+
+DMA transfer restarted
+(Start of another DMA transfer)
+
+Figure 19.26
+
+Procedures for Suspending or Resuming DMA Transfer by the EXDMAC Interrupt
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 770 of 3240
+
+RX72N Group
+
+19.8
+
+19. EXDMA Controller (EXDMACa)
+
+Low-Power Consumption Function
+
+To place the EXDMAC in the module-stop state, all-module clock stop mode, software-standby mode, or deep softwarestandby mode, set the EDMAST.DMST bit to 0 (EXDMAC stopped), and then perform the following processing.
+
+(1)
+
+Module-Stop Function
+
+Writing 1 to the MSTPCRA.MSTPA29 bit (transition to the module-stop state) enables the module-stop function of the
+EXDMAC. If DMA transfer is in progress at the time a 1 is written to the MSTPA29 bit, the transition to the module-stop
+state proceeds after DMAC transfer has ended.
+Do not access the EXDMAC registers while the MSTPCRA.MSTPA29 bit is 1.
+Writing 0 to the MSTPA29 bit releases the EXDMAC from the module-stop state.
+
+(2)
+
+All-Module Clock Stop Mode
+
+Follow the procedure in section 11.6.2.1, Transition to All-Module Clock Stop Mode, in section 11, Low Power
+Consumption. If DMA transfer is in progress at the time the WAIT instruction is executed, the EXDMAC can enter allmodule clock stop mode after completion of the current DMA transfer.
+After the EXDMAC returns from all-module clock stop mode, writing 0 to the MSTPA29 bit releases the EXDMAC
+from the module-stop state.
+
+(3)
+
+Software Standby and Deep Software Standby Modes
+
+Follow the procedure in section 11.6.3.1, Transition to Software Standby Mode or section 11.6.4.1, Transition to
+Deep Software Standby Mode, in section 11, Low Power Consumption.
+If DMA transfer is in progress at the time the WAIT instruction is executed, the EXDMAC enters software standby mode
+or deep software stand by mode after completion of the current DMA transfer.
+
+(4)
+
+Notes on Low-Power Consumption Function
+
+For the timing of WAIT instruction execution and register settings, refer to section 11.7.6, Timing of WAIT
+Instructions, in section 11, Low Power Consumption.
+To perform DMA transfer after returning from low-power consumption mode, set the EDMAST.DMST bit to 1 again.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 771 of 3240
+
+RX72N Group
+
+19.9
+
+19. EXDMA Controller (EXDMACa)
+
+EDACKn Operation in Single Address Mode
+
+In single address mode, EDACKn is output to one of the external transfer-source or transfer-destination devices and the
+address is simultaneously output to the other transfer device for access.
+When the external device receiving EDACKn transfers data to/from the CS area, the EDACKn negation timing can be
+adjusted by setting the DACKW bit in EDMOMD of EXDMACn. Specifically, the timing can be advanced by one
+BCLK cycle if the external device is a transfer destination and delayed by one BCLK cycle if the external device is a
+transfer source. When the external device receiving EDACKn transfers data to/from the SDRAM, the EDACKn negation
+timing cannot be adjusted by the DACKW bit EDMOMD of EXDMACn. If one of the parties for transfer by the
+EXDMAC (source or destination) is the SDRAM area, the EXDMACn.EDMOMD.DACKSEL bit can be set to 1 so that
+the EDACKn signal is only asserted for one-half of the SDCLK cycle in the latter half of the data-valid interval. The
+EXDMACn.EDMOMD.DACKSEL cannot be used to adjust the period for assertion of the EDACKn signal when a
+party for transfer is a CS area. For the CS area addresses and SDRAM area addresses, refer to section 4, Address
+Space.
+The following sections show EDACKn operation examples in single address mode, in which data is transferred to/from
+the CS and SDRAM areas in normal and block transfer modes.
+
+19.9.1
+
+EDACKn Operation Example in Normal-Transfer (CS Area) Single Address
+Mode
+
+Figure 19.27 shows the operation example in which data is transferred from the CS area to the device with EDACKn in
+normal transfer mode. Setting the DACKW bit in EDMOMD of EXDMACn to 1 allows EDACKn to be negated one
+BCLK cycle before the data read signal is negated.
+Figure 19.28 shows the operation example in which data is transferred from the device with EDACKn to the CS area in
+normal transfer mode. Setting the DACKW bit to 1 allows EDACKn to be negated one BCLK cycle after the data write
+signal is negated.
+For the data read signal, data write signal, and CS area access timing setting registers, refer to section 16, Buses.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 772 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+BCLK pin output
+External bus clock
+(BCLK)
+Address
+
+Transfer source address
+
+Chip select
+
+Data read
+Data write
+EDACKn(1)
+EDACKn(2)
+EDACKn(3)
+EDACKn(4)
+
+Data bus(5)
+
+CS area access timing
+setting registers
+
+D
+
+CS assert wait (CSnWCR2.CSON[2:0]):
+RD assert wait (CSnWCR2.RDON[2:0]):
+Normal read cycle wait (CSnWCR1.CSRWAIT[4:0]):
+Read CS extend cycle (CSnWCR2.CSROFF[2:0]):
+
+0 cycles
+1 cycle
+3 cycles
+0 cycles
+
+(1) When EDMOMD.DACKW = 0, EDMOMD.DACKS = 0
+(2) When EDMOMD.DACKW = 1, EDMOMD.DACKS = 0
+(3) When EDMOMD.DACKW = 0, EDMOMD.DACKS = 1
+(4) When EDMOMD.DACKW = 1, EDMOMD.DACKS = 1
+(5) Data to be input to the external device with DACK (reference)
+
+Figure 19.27
+
+Operation Example in Normal-Transfer (CS Area Read) Single Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 773 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+BCLK pin output
+External bus clock
+(BCLK)
+Address
+
+Transfer destination address
+
+Chip select
+Data read
+
+Data write
+EDACKn(1)
+EDACKn(2)
+
+EDACKn(3)
+EDACKn(4)
+
+Data bus(5)
+
+CS area access timing
+setting registers
+
+D
+
+CS assert wait (CSnWCR2.CSON[2:0]):
+WR assert wait (CSnWCR2.WRON[2:0]):
+Normal write cycle wait (CSnWCR1.CSWWAIT[4:0]):
+Write CS extend cycle (CSnWCR2.CSWOFF[2:0]):
+
+0 cycles
+1 cycle
+2 cycles
+1 cycle
+
+(1) When EDMOMD.DACKW = 0, EDMOMD.DACKS = 0
+(2) When EDMOMD.DACKW = 1, EDMOMD.DACKS = 0
+(3) When EDMOMD.DACKW = 0, EDMOMD.DACKS = 1
+(4) When EDMOMD.DACKW = 1, EDMOMD.DACKS = 1
+(5) Data to be output from the external device with DACK (reference)
+
+Figure 19.28
+
+19.9.2
+
+Operation Example in Normal-Transfer (CS Area Write) Single Address Mode
+
+EDACKn Operation Example in Normal-Transfer (SDRAM Area) Single Address
+Mode
+
+Figure 19.29 shows the operation example in which data is transferred from SDRAM to the device with EDACKn in
+normal transfer mode.
+EDACKn is asserted while SDRAM is outputting data.
+Figure 19.30 shows the operation example in which data is transferred from the device with EDACKn to SDRAM in
+normal transfer mode.
+EDACKn is asserted while SDRAM is writing data.
+For the SDRAM commands and SDRAM access timing setting registers, refer to section 16, Buses.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 774 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+SDRAM clock
+External bus clock
+
+SDRAM command
+
+ACT
+
+RD
+
+PRA
+
+EDACKn(1)
+
+EDACKn(2)
+
+D
+
+Data bus(3)
+
+SDRAM access timing
+setting register
+
+Column latency (SDTR.CL[2:0]):
+Row active period (SDTR.RAS[2:0]):
+Row precharge period (SDTR.RP[2:0]):
+Write recovery period (SDTR.WR):
+
+2 cycles
+1 cycle
+1 cycle
+1 cycle
+
+(1) When EDMOMD.DACKS = 0
+(2) When EDMOMD.DACKS = 1
+(3) Data to be input to the external device with DACK (reference)
+
+Figure 19.29
+
+Operation Example in Normal-Transfer (SDRAM Area Read) Single Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 775 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+SDRAM clock
+External bus clock
+
+SDRAM command
+
+ACT
+
+WRI PRA
+
+EDACKn(1)
+
+EDACKn(2)
+
+D
+
+Data bus(3)
+
+SDRAM access timing
+setting registers
+
+Column latency (SDTR.CL[2:0]):
+Row active period (SDTR.RAS[2:0]):
+Row precharge period (SDTR.RP[2:0]):
+Write recovery period (SDTR.WR):
+
+2 cycles
+1 cycle
+1 cycle
+1 cycle
+
+(1) When EDMOMD.DACKS = 0
+(2) When EDMOMD.DACKS = 1
+(3) Data to be output from the external device with DACK (reference)
+
+Figure 19.30
+
+Operation Example in Normal-Transfer (SDRAM Area write) Single Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 776 of 3240
+
+RX72N Group
+
+19.9.3
+
+19. EXDMA Controller (EXDMACa)
+
+EDACKn Operation Example in Block-Transfer (CS Area) Single Address Mode
+
+Figure 19.31 shows the operation example in which data is transferred from the CS area to the device with EDACKn in
+block transfer mode (block size = two). Setting the DACKW bit in EDMOMD of EXDMACn to 1 allows EDACKn to be
+negated one BCLK cycle before the data read signal is negated.
+Figure 19.32 shows the operation example in which data is transferred from the device with EDACKn to the CS area in
+block transfer mode (block size = two). Setting the DACKW bit to 1 allows EDACKn to be negated one BCLK cycle
+after the data write signal is negated.
+For the data read signal, data write signal, and CS area access timing setting registers, refer to section 16, Buses.
+
+BCLK pin output
+External bus clock
+(BCLK)
+Address
+
+Transfer source address 1
+
+Transfer source address 2
+
+Chip select
+Data read
+Data write
+
+EDACKn(1)
+
+EDACKn(2)
+
+EDACKn(3)
+
+EDACKn(4)
+
+D1
+
+Data bus(5)
+
+CS area access timing
+setting registers
+
+CS assert wait (CSnWCR2.CSON[2:0]):
+RD assert wait (CSnWCR2.RDON[2:0]):
+Normal read cycle wait (CSnWCR1.CSRWAIT[4:0]):
+Page read cycle wait (CSnWCR1.CSPRWAIT[2:0]):
+Read CS extend cycle (CSnWCR2.CSROFF[2:0]):
+Page read access enable (CSnMOD.PRENB):
+(1)
+(2)
+(3)
+(4)
+(5)
+
+Figure 19.31
+
+D2
+0 cycles
+1 cycle
+3 cycles
+3 cycles
+0 cycles
+Enabled
+
+When EDMOMD.DACKW = 0, EDMOMD.DACKS = 0
+When EDMOMD.DACKW = 1, EDMOMD.DACKS = 0
+When EDMOMD.DACKW = 0, EDMOMD.DACKS = 1
+When EDMOMD.DACKW = 1, EDMOMD.DACKS = 1
+Data to be input to the external device with DACK (reference)
+
+Operation Example in Block-Transfer (CS Area Read) Single Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 777 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+BCLK pin output
+External bus clock
+(BCLK)
+Address
+
+Transfer destination address 1 Transfer destination address 2
+
+Chip select
+Data read
+Data write
+
+EDACKn(1)
+EDACKn(2)
+
+EDACKn(3)
+
+EDACKn(4)
+
+Data bus(5)
+
+D1
+
+CS assert wait (CSnWCR2.CSON[2:0]):
+WR assert wait (CSnWCR2.WRON[2:0]):
+Normal write cycle wait (CSnWCR1.CSWWAIT[4:0]):
+Page write cycle wait (CSnWCR1.CSPWWAIT[2:0]):
+Write CS extend cycle (CSnWCR2.CSWOFF[2:0]):
+Page write access enable (CSnMOD.PWENB):
+
+CS area access timing
+setting registers
+
+(1)
+(2)
+(3)
+(4)
+(5)
+
+Figure 19.32
+
+19.9.4
+
+D2
+0 cycles
+1 cycle
+2 cycles
+2 cycles
+1 cycle
+Enabled
+
+When EDMOMD.DACKW = 0, EDMOMD.DACKS = 0
+When EDMOMD.DACKW = 1, EDMOMD.DACKS = 0
+When EDMOMD.DACKW = 0, EDMOMD.DACKS = 1
+When EDMOMD.DACKW = 1, EDMOMD.DACKS = 1
+Data to be output from the external device with DACK (reference)
+
+Operation Example in Block-Transfer (CS Area Write) Single Address Mode
+
+EDACKn Operation Example in Block-Transfer (SDRAM Area) Single Address
+Mode
+
+Figure 19.33 shows the operation example in which data is transferred from SDRAM to the device with EDACKn in
+block transfer mode (block size = four) when the SDRAM continuous access enable bit is enabled (SDAMOD.BE = 1)
+and EXDMACn.EDMOMD.DACKSEL set to 0.
+EDACKn is asserted while SDRAM is outputting data.
+Figure 19.34 shows the operation example in which data is transferred from the device with EDACKn to SDRAM in
+block transfer mode (block size = four) when the SDRAM continuous access enable bit is enabled (SDAMOD.BE = 1)
+and EXDMACn.EDMOMD.DACKSEL set to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 778 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+EDACKn is asserted while SDRAM is writing data.
+Figure 19.35 shows the operation example in which data is transferred from SDRAM to the device with EDACKn in
+block transfer mode (block size = four) when the SDRAM continuous access enable bit is enabled (SDAMOD.BE = 1)
+and EXDMACn.EDMOMD.DACKSEL set to 1.
+EDACKn is asserted while SDRAM is outputting data.
+Figure 19.36 shows the operation example in which data is transferred from the device with EDACKn to SDRAM in
+block transfer mode (block size = four) when the SDRAM continuous access enable bit is enabled (SDAMOD.BE = 1)
+and EXDMACn.EDMOMD.DACKSEL set to 1.
+EDACKn is asserted during SDRAM is writing data.
+Figure 19.37 shows the operation example in which data is transferred from SDRAM to the device with EDACKn in
+block transfer mode (block size = two) when the SDRAM continuous access enable bit is disabled (SDAMOD.BE = 0)
+and EXDMACn.EDMOMD.DACKSEL set to 0.
+Figure 19.38 shows the operation example in which data is transferred from the device with EDACKn to SDRAM in
+block transfer mode (block size = two) when the SDRAM continuous access enable bit is disabled (SDAMOD.BE = 0)
+and EXDMACn.EDMOMD.DACKSEL set to 0.
+EDACKn is asserted while SDRAM is writing data.
+For the SDRAM commands and SDRAM access timing setting registers, refer to section 16, Buses.
+
+SDRAM clock
+External bus clock
+
+ACT
+
+SDRAM command
+
+RD
+
+RD
+
+RD
+
+RD
+
+PRA
+
+D1
+
+D2
+
+D3
+
+EDACKn(1)
+
+EDACKn(2)
+
+Data bus(3)
+
+SDRAM access timing
+setting registers
+
+D4
+
+Column latency (SDTR.CL[2:0]):
+Row column latency (SDTR.RCD[1:0]):
+Row active period (SDTR.RAS[2:0]):
+Row precharge period (SDTR.RP[2:0]):
+Write recovery period (SDTR.WR):
+Consecutive access enable (SDAMOD.BE):
+
+2 cycles
+1 cycle
+1 cycle
+1 cycle
+1 cycle
+Enabled
+
+(1) When EDMOMD.DACKS = 0
+(2) When EDMOMD.DACKS = 1
+(3) Data to be input to the external device with DACK (reference)
+
+Figure 19.33
+
+Operation Example in Block-Transfer
+(SDRAM Area Read: Consecutive Access Enabled, EXDMACn.EDMOMD.DACKSEL = 0) Single
+Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 779 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+SDRAM clock
+External bus clock
+
+SDRAM command
+
+ACT
+
+WRI
+
+WRI
+
+WRI
+
+WRI
+
+D1
+
+D2
+
+D3
+
+D4
+
+PRA
+
+EDACKn(1)
+
+EDACKn(2)
+
+Data bus(3)
+
+SDRAM access timing
+setting registers
+
+Column latency (SDTR.CL[2:0]):
+Row column latency (SDTR.RCD[1:0]):
+Row active period (SDTR.RAS[2:0]):
+Row precharge period (SDTR.RP[2:0]):
+Write recovery period (SDTR.WR):
+Consecutive access enable (SDAMOD.BE):
+
+2 cycles
+1 cycle
+1 cycle
+1 cycle
+1 cycle
+Enabled
+
+(1) When EDMOMD.DACKS = 0
+(2) When EDMOMD.DACKS = 1
+(3) Data to be output from the external device with DACK (reference)
+
+Figure 19.34
+
+Operation Example in Block-Transfer
+(SDRAM Area Write: Consecutive Access Enabled, EXDMACn.EDMOMD.DACKSEL = 0) Single
+Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 780 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+SDRAM clock
+External bus clock
+
+SDRAM command
+
+ACT
+
+RD
+
+RD
+
+RD
+
+RD
+
+PRA
+
+D1
+
+D2
+
+D3
+
+EDACKn(1)
+EDACKn(2)
+Data bus(3)
+
+SDRAM access timing
+setting registers
+
+D4
+
+Column latency (SDTR.CL[2:0]):
+2 cycles
+Row column latency (SDTR.RCD[1:0]):
+1 cycle
+Row active period (SDTR.RAS[2:0]):
+1 cycle
+Row precharge period (SDTR.RP[2:0]):
+1 cycle
+Write recovery period (SDTR.WR):
+1 cycle
+Continuous access enable (SDAMOD.BE): Enabled
+(1) When EDMOMD.DACKS = 0
+(2) When EDMOMD.DACKS = 1
+(3) Data to be input to the external device with DACK (reference)
+
+Figure 19.35
+
+Operation Example in Block-Transfer
+(SDRAM Area Read: Continuous Access Enabled, EXDMACn.EDMOMD.DACKSEL = 1) Single
+Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 781 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+SDRAM clock
+
+External bus clock
+
+ACT
+
+SDRAM command
+
+WRI
+
+WRI
+
+WRI
+
+WRI
+
+D1
+
+D2
+
+D3
+
+D4
+
+PRA
+
+EDACKn(1)
+EDACKn(2)
+
+Data bus(3)
+
+SDRAM access timing
+setting registers
+
+Column latency (SDTR.CL[2:0]):
+2 cycles
+Row column latency (SDTR.RCD[1:0]):
+1 cycle
+Row active period (SDTR.RAS[2:0]):
+1 cycle
+Row precharge period (SDTR.RP[2:0]):
+1 cycle
+Write recovery period (SDTR.WR):
+1 cycle
+Continuous access enable (SDAMOD.BE): Enabled
+(1) When EDMOMD.DACKS = 0
+(2) When EDMOMD.DACKS = 1
+(3) Data to be output from the external device with DACK (reference)
+
+Figure 19.36
+
+Operation Example in Block-Transfer
+(SDRAM Area Write: Continuous Access Enabled, EXDMACn.EDMOMD.DACKSEL = 1) Single
+Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 782 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+SDRAM clock
+External bus clock
+
+ACT
+
+SDRAM command
+
+RD
+
+PRA
+
+ACT
+
+RD
+
+PRA
+
+EDACKn(1)
+
+EDACKn(2)
+
+D1
+
+Data bus(3)
+
+SDRAM access timing
+setting registers
+
+D2
+
+Column latency (SDTR.CL[2:0]):
+Row column latency (SDTR.RCD[1:0]):
+Row active period (SDTR.RAS[2:0]):
+Row precharge period (SDTR.RP[2:0]):
+Write recovery period (SDTR.WR):
+Continuous access enable (SDAMOD.BE):
+
+2 cycles
+1 cycle
+1 cycle
+1 cycle
+1 cycle
+Disabled
+
+(1) When EDMOMD.DACKS = 0
+(2) When EDMOMD.DACKS = 1
+(3) Data to be input to the external device with DACK (reference)
+
+Figure 19.37
+
+Operation Example in Block-Transfer
+(SDRAM Area Read: Continuous Access Disabled, EXDMACn.EDMOMD.DACKSEL = 0) Single
+Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 783 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+SDRAM clock
+External bus clock
+
+ACT
+
+SDRAM command
+
+WRI
+
+PRA
+
+ACT WRI
+
+PRA
+
+EDACKn(1)
+
+EDACKn(2)
+
+D1
+
+Data bus(3)
+
+SDRAM access timing
+setting registers
+
+D2
+
+Column latency (SDTR.CL[2:0]):
+Row column latency (SDTR.RCD[1:0]):
+Row active period (SDTR.RAS[2:0]):
+Row precharge period (SDTR.RP[2:0]):
+Write recovery period (SDTR.WR):
+Consecutive access enable (SDAMOD.BE):
+
+2 cycles
+1 cycle
+1 cycle
+1 cycle
+1 cycle
+Disabled
+
+(1) When EDMOMD.DACKS = 0
+(2) When EDMOMD.DACKS = 1
+(3) Data to be output from the external device with DACK (reference)
+
+Figure 19.38
+
+Operation Example in Block-Transfer
+(SDRAM Area Write: Consecutive Access Disabled) Single Address Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 784 of 3240
+
+RX72N Group
+
+19. EXDMA Controller (EXDMACa)
+
+19.10 Usage Notes
+19.10.1
+
+Cluster Buffers
+
+The EXDMAC provides eight 32-bit cluster buffers (CLSBR0 to CLSBR7), in which data is stored in the different
+manner depending on the transfer size setting (SZ[1:0] bits in EDMTMD of EXDMACn).
+Figure 19.39 shows how data is stored in cluster buffers.
+
+32 bits
+[31]
+
+32 bits
+
+CLSBR0
+
+[8][7]
+[0]
+Byte 1
+
+CLSBR1
+
+[31]
+
+32 bits
+
+[16][15]
+
+[0] [31]
+
+[0]
+
+Word 1
+
+Longword 1
+
+Byte 2
+
+Word 2
+
+Longword 2
+
+CLSBR2
+
+Byte 3
+
+Word 3
+
+Longword 3
+
+CLSBR3
+
+Byte 4
+
+Word 4
+
+Longword 4
+
+CLSBR4
+
+Byte 5
+
+Word 5
+
+Longword 5
+
+CLSBR5
+
+Byte 6
+
+Word 6
+
+Longword 6
+
+CLSBR6
+
+Byte 7
+
+Word 7
+
+Longword 7
+
+CLSBR7
+
+Byte 8
+
+Word 8
+
+Longword 8
+
+EDMTMD.SZ[1:0] = 00b
+
+8-bit data transferred
+Figure 19.39
+
+19.10.2
+
+EDMTMD.SZ[1:0] = 01b
+
+16-bit data transferred
+
+Transfer
+order
+
+EDMTMD.SZ[1:0] = 10b
+
+32-bit data transferred
+
+Data Storage in Cluster Buffers
+
+Access to the Registers during DMA Transfer
+
+Do not write to the EDMSAR, EDMDAR, EDMCRA, EDMCRB, EDMTMD, EDMOMD, EDMINT, EDMAMD,
+EDMOFR, and EDMRMD registers of EXDMACn while the EDMSTS.ACT flag of the same channel is set to 1 (DMA
+operating state) or the EDMCNT.DTE bit of the same channel is set to 1 (DMA transfer enabled).
+
+19.10.3
+
+DMA Transfer to Reserved Areas
+
+DMA transfer to the reserved areas is prohibited. If such an access is made, transfer results are not guaranteed. For
+details on the reserved areas, refer to section 4, Address Space.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 785 of 3240
+
+

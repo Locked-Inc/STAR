@@ -1,0 +1,2554 @@
+RX72N Group
+
+60.
+
+60. RAM
+
+RAM
+
+This MCU has three types of high-speed static RAM (RAM, expansion RAM, and ECCRAM).
+The RAM and expansion RAM do not have error correction but do have 1-bit parity checking.
+The ECCRAM has 1-bit error correction and 2-bit error detection.
+
+60.1
+
+Overview
+
+Table 60.1 lists the specifications of the RAM, expansion RAM and ECCRAM.
+Table 60.1
+
+Specifications of the RAM, Expansion RAM and ECCRAM
+
+Item
+
+RAM
+
+Expansion RAM
+
+ECCRAM
+
+Capacity
+
+512 Kbytes
+
+512 Kbytes
+
+32 Kbytes
+
+Address Range
+
+0000 0000h to 0007 FFFFh
+
+0080 0000h to 0087 FFFFh
+
+00FF 8000h to 00FF FFFFh
+
+Memory Bus
+
+Memory bus 1
+
+Memory bus 3
+
+Memory bus 3
+
+Access
+
+ Enabling or disabling of the
+RAM is selectable.*1
+ Access takes one cycle
+whether for reading or
+writing.*2
+
+ Enabling or disabling of the
+expansion RAM is selectable.*1
+[When MEMWAIT*3 is 0]
+ Access takes one cycle whether for
+reading or writing.*2
+[When MEMWAIT*3 is 1]
+ Access takes two cycles whether
+for reading or writing.*2
+
+ Enabling or disabling of the ECCRAM is
+selectable.*1
+[When MEMWAIT*3 is 0]
+ With the ECC function disabled:
+Access takes two cycles whether for
+reading or writing.*2
+ With the ECC function enabled (and there
+are no errors):
+Access takes two cycles whether for
+reading or writing.*2
+ With the ECC function enabled (and an
+error is found):
+Access takes three cycles whether for
+reading or writing.*2
+[When MEMWAIT*3 is 1]
+ With the ECC function disabled:
+Access takes three cycles whether for
+reading or writing.*2
+ With the ECC function enabled (and there
+are no errors):
+Reading takes three cycles and writing
+takes four cycles.*2
+ With the ECC function enabled (and an
+error is found):
+Access takes five cycles whether for
+reading or writing.*2
+
+Data Retention
+
+Data retention is not available on deep software standby.
+
+Low Power
+Consumption
+
+The RAM, expansion RAM, and ECCRAM are independently transferrable to the module stop state.
+
+Error Checking
+
+ Parity checking: 1-bit error detection
+ When an error is found, a non-maskable interrupt or an interrupt is
+generated.
+
+ ECC error correction
+1-bit error correction and 2-bit error
+detection
+ When an error is found, a non-maskable
+interrupt or an interrupt is generated.
+
+Note 1. This is selectable for the RAM and expansion RAM by the SYSCR1.RAME bit, and for the ECCRAM by the
+SYSCR1.ECCRAME bit. For details on SYSCR1, refer to section 3.2.3, System Control Register 1 (SYSCR1).
+Note 2. When accessing across the 8-byte boundary, the number of cycles is doubled.
+Note 3. If the frequency of ICLK is above 120 MHz, the setting of the MEMWAIT register must be changed. For details, refer to section
+9.2.2, Memory Wait Cycle Setting Register (MEMWAIT).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2977 of 3240
+
+RX72N Group
+
+60.2
+
+60. RAM
+
+Register Descriptions
+
+60.2.1
+
+RAM Operating Mode Control Register (RAMMODE)
+
+Address(es): 0008 1200h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b1
+
+b0
+
+RAMMODE[1:0]
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+RAMMOD
+E[1:0]
+
+RAM Operating Mode Select
+
+b1 b0
+
+R/W
+
+b7 to b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R
+
+0 0: Parity checking is disabled.
+0 1: Parity checking is enabled.
+Settings other than above are prohibited.
+
+The RAMMODE register is write-protected by the RAM protection register (RAMPRCR). Before writing to the
+RAMMODE register, set the RAMPRCR.RAMPRCR bit to 1 to enable writing to it. Set the RAMMODE register before
+starting access to the RAM. If this register is modified after accessing to the RAM, RAM operation is not guaranteed.
+
+60.2.2
+
+RAM Error Status Register (RAMSTS)
+
+Address(es): 0008 1201h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+RAME
+RR
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+RAMERR
+
+RAM Error Status Flag
+
+0: A parity check error has not occurred.
+1: A parity check error has occurred.
+
+R/(W)*1
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R
+
+Note 1. Only 0 can be written to clear the flag.
+
+When parity checking is enabled, the RAMERR flag is set to 1 if a parity check error is detected. The RAM error
+interrupt request is also generated at this time.
+When parity checking is disabled, the RAMERR flag is not set to 1 because no parity check error is detected.
+Writing 0 to the RAMERR flag clears the RAM error interrupt request corresponding to the parity check error.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2978 of 3240
+
+RX72N Group
+
+60.2.3
+
+60. RAM
+
+RAM Error Address Capture Register (RAMECAD)
+
+Address(es): 0008 1208h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit Name
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b16
+
+READ
+
+READ
+Value after reset:
+
+b17
+
+0
+
+Bit
+
+Symbol
+
+b2 to b0
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b18 to b3
+
+READ
+
+Error Address
+
+The address where an error is found is read.
+
+R
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b31 to b19 —
+
+Description
+
+R/W
+
+When parity checking is enabled, this register will hold the address where a parity check error was found.
+The address of the 8-byte boundary below the location where the error was found is stored in this register at the same
+time the RAMSTS.RAMERR flag is set to 1.
+The error address is not updated when the RAMERR flag is 1 (error has occurred). Its value does not change when parity
+checking is disabled because no parity check error is detected.
+The RAMECAD register is initialized only by a reset.
+
+60.2.4
+
+RAM Protection Register (RAMPRCR)
+
+Address(es): 0008 1204h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+RAMP
+RCR
+
+KW[6:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+RAMPRC
+R
+
+RAMMODE Register Write
+Control
+
+0: Disables writing to the RAMMODE register.
+1: Enables writing to the RAMMODE register.
+
+R/W
+
+b7 to b1
+
+KW[6:0]
+
+Write Key Word
+
+Enables or disables the rewriting of the RAMPRCR register.
+When rewriting the RAMPRCR register, write 1111000b to the
+KW[6:0] bits.
+
+R/W
+
+Writing 1 to the RAMPRCR bit is possible when KW[6:0] = 1111000b. Otherwise writing to RAMPRCR clears the bit to
+0. The value of KW[6:0] is read as 0000000b.
+The targets for write protection by the RAMPRCR register is the RAM operating mode control register (RAMMODE).
+Once the RAMPRCR bit is set to 1, writing to RAMMODE register is enabled until the RAMPRCR bit is cleared to 0.
+Clear the RAMPRCR bit to 0 after writing to RAMMODE register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2979 of 3240
+
+RX72N Group
+
+60.2.5
+
+60. RAM
+
+Expansion RAM Operating Mode Control Register (EXRAMMODE)
+
+Address(es): 0008 1240h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b1
+
+b0
+
+EXRAMMODE[1
+:0]
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+EXRAMM
+ODE[1:0]
+
+Expansion RAM Operating Mode
+Select
+
+b1 b0
+
+R/W
+
+b7 to b2
+
+—
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+0 0: Parity checking is disabled.
+0 1: Parity checking is enabled.
+Settings other than above are prohibited.
+
+The EXRAMMODE register is write-protected by the expansion RAM protection register (EXRAMPRCR). Before
+writing to the EXRAMMODE register, set the EXRAMPRCR.EXRAMPRCR bit to 1 to enable writing to it. Set the
+EXRAMMODE register before starting access to the expansion RAM. If this register is modified after accessing to the
+expansion RAM, correct operation is not guaranteed.
+
+60.2.6
+
+Expansion RAM Error Status Register (EXRAMSTS)
+
+Address(es): 0008 1241h
+b7
+
+Value after reset:
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+EXRAM
+ERR
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+EXRAMER
+R
+
+Expansion RAM Error Status
+Flag
+
+0: A parity check error has not occurred.
+1: A parity check error has occurred.
+
+R/(W)*1
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+Note 1. Only 0 can be written to clear the flag.
+
+When parity checking is enabled, the EXRAMERR flag is set to 1 if a parity check error is detected. The expansion
+RAM error interrupt request is also generated at this time.
+When parity checking is disabled, the EXRAMERR flag is not set to 1 because no parity check error is detected.
+Writing 0 to the EXRAMERR flag clears the expansion RAM error interrupt request corresponding to the parity check
+error.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2980 of 3240
+
+RX72N Group
+
+60.2.7
+
+60. RAM
+
+Expansion RAM Error Address Capture Register (EXRAMECAD)
+
+Address(es): 0008 1248h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit Name
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b16
+
+READ
+
+READ
+Value after reset:
+
+b17
+
+0
+
+Bit
+
+Symbol
+
+Description
+
+R/W
+
+b2 to b0
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b18 to b3
+
+READ
+
+Error Address
+
+The address where an error is found is read.
+
+R
+
+b22 to b19 —
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b23
+
+—
+
+Reserved
+
+This bit is read as 1. The write value should be 1.
+
+R/W
+
+b31 to b24 —
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+When parity checking is enabled, this register will hold the address where a parity check error was found.
+The address of the 8-byte boundary below the location where the error was found is stored in this register at the same
+time the EXRAMSTS.EXRAMERR flag is set to 1.
+The error address is not updated when the EXRAMERR flag is 1 (error has occurred). Its value does not change when
+parity checking is disabled because no parity check error is detected.
+The EXRAMECAD register is initialized only by a reset.
+
+60.2.8
+
+Expansion RAM Protection Register (EXRAMPRCR)
+
+Address(es): 0008 1244h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+EXRAM
+PRCR
+
+KW[6:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+EXRAMPR
+CR
+
+EXRAMMODE Register Write
+Control
+
+0: Disables writing to the EXRAMMODE register.
+1: Enables writing to the EXRAMMODE register.
+
+R/W
+
+b7 to b1
+
+KW[6:0]
+
+Write Key Word
+
+Enables or disables the rewriting of the EXRAMPRCR
+register. When rewriting the EXRAMPRCR register, write
+1111000b to the KW[6:0] bits.
+
+R/W
+
+Writing 1 to the EXRAMPRCR bit is possible when KW[6:0] = 1111000b. Otherwise writing to EXRAMPRCR clears
+the bit to 0. The value of KW[6:0] is read as 0000000b.
+The targets for write protection by the EXRAMPRCR register is the expansion RAM operating mode control register
+(EXRAMMODE). Once the EXRAMPRCR bit is set to 1, writing to EXRAMMODE register is enabled until the
+EXRAMPRCR bit is cleared to 0. Clear the EXRAMPRCR bit to 0 after writing to EXRAMMODE register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2981 of 3240
+
+RX72N Group
+
+60.2.9
+
+60. RAM
+
+ECCRAM Operating Mode Control Register (ECCRAMMODE)
+
+Address(es): 0008 12C0h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b1
+
+b0
+
+RAMMOD[1:0]
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+RAMMOD[1:0]
+
+RAM Operating Mode Select
+
+b1 b0
+
+R/W
+
+b7 to b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+0 0: ECCs are disabled.
+0 1: Setting prohibited.
+1 0: ECCs are enabled without error checking.
+1 1: ECCs are enabled with error checking.
+
+The ECCRAMMODE register is write-protected by the ECCRAM protection register (ECCRAMPRCR). Before writing
+to the ECCRAMMODE register, set the corresponding bit in the ECCRAMPRCR register to 1 to enable writing to it.
+Be sure to read this register immediately after writing to it, and then compare the read and written values. If this
+operation is not performed, access to the ECCRAM is not guaranteed.
+Also, do not write to this register while accessing to the ECCRAM.
+
+60.2.10
+
+ECCRAM 2-Bit Error Status Register (ECCRAM2STS)
+
+Address(es): 0008 12C1h
+b7
+
+Value after reset:
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+ECC2E
+RR
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+ECC2ERR
+
+2-Bit ECC Error Status
+
+0: A 2-bit ECC error has not occurred.
+1: A 2-bit ECC error has occurred.
+
+R/(W)*1
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note 1. Only 0 can be written to clear the bit.
+
+When the ECCRAMMODE.RAMMOD[1:0] bits are set to 11b, the ECC2ERR flag is set to 1 if a 2-bit error is found.
+The RAM error interrupt is also generated at this time. Writing of 0 to the ECC2ERR flag leads to clearing of the RAM
+error interrupt having the 2-bit ECC error as its source.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2982 of 3240
+
+RX72N Group
+
+60.2.11
+
+60. RAM
+
+ECCRAM 1-Bit Error Information Update Enable Register (ECCRAM1STSEN)
+
+Address(es): 0008 12C2h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+ECC1S
+TSEN
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+ECC1STS
+EN
+
+1-Bit ECC Error Information
+Update Enable
+
+0: Disables updating of the 1-bit ECC error information.
+1: Enables updating of the 1-bit ECC error information.
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+The ECCRAM1STSEN register enables or disables updating of the ECCRAM 1-bit error status register
+(ECCRAM1STS) in response to a 1-bit error in the ECCRAM.
+The ECCRAMPRCR register can protect this register against writing. Accordingly, change the effective bit in the
+ECCRAMPRCR register to the enabled setting before attempting to write to the ECCRAM1STSEN register.
+Always be sure to read this register immediately after writing to it, and then compare the read and written values. Do not
+attempt access to the ECCRAM during this process. Also, do not write to this register while accessing to the ECCRAM.
+
+60.2.12
+
+ECCRAM 1-Bit Error Status Register (ECCRAM1STS)
+
+Address(es): 0008 12C3h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+ECC1E
+RR
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+ECC1ERR
+
+1-Bit ECC Error Status
+
+0: A 1-bit ECC error has not occurred.
+1: A 1-bit ECC error has occurred.
+
+R/(W)*1
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note 1. Only 0 can be written to clear the bit.
+
+The ECC1ERR bit becomes 1 when an ECC 1-bit error is detected in response to an ECC 1-bit error being encountered
+while the setting of the ECCRAM1STSEN.ECC1STSEN bit is 1 and the ECCRAMMODE.RAMMOD[1:0] bits are set
+as ECCs are enabled with error checking. The RAM error interrupt is also generated at this time. Writing of 0 to the
+ECC1ERR bit leads to clearing of the RAM error interrupt having the 1-bit ECC error as its source.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2983 of 3240
+
+RX72N Group
+
+60.2.13
+
+60. RAM
+
+ECCRAM Protection Register (ECCRAMPRCR)
+
+Address(es): 0008 12C4h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+KW[6:0]
+0
+
+Value after reset:
+
+0
+
+0
+
+0
+
+PRCR
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+PRCR
+
+ECCRAMMODE and
+ECCRAM1STSEN Registers
+Write Control
+
+0: Disables writing to the ECCRAMMODE and
+ECCRAM1STSEN registers.
+1: Enables writing to the ECCRAMMODE and
+ECCRAM1STSEN registers.
+
+R/W
+
+b7 to b1
+
+KW[6:0]
+
+Write Key Word
+
+Enables or disables the rewriting of the ECCRAMPRCR
+register. When rewriting the ECCRAMPRCR register, write
+1111000b to the KW[6:0] bits.
+
+R/W
+
+Writing 1 to the PRCR bit is possible when KW[6:0] = 1111000b.
+Otherwise writing to PRCR clears the bit to 0. KW[6:0] is read as 0000000b.
+The targets for write protection by the ECCRAMPRCR register are the ECCRAMMODE and ECCRAM1STSEN
+registers. Once the PRCR bit is set to 1, writing to ECCRAMMODE and ECCRAM1STSEN registers is enabled until
+the PRCR bit is cleared to 0. Clear the PRCR bit to 0 after writing to ECCRAMMODE and ECCRAM1STSEN registers.
+
+60.2.14
+
+ECCRAM 2-Bit Error Address Capture Register (ECCRAM2ECAD)
+
+Address(es): 0008 12C8h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+—
+1
+
+Value after reset:
+
+ECC2EAD
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+—
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+b14 to b3
+
+ECC2EAD
+
+2-Bit ECC Error Address
+
+The address where a 2-bit ECC error was found is read.
+
+R
+
+b23 to b15 —
+
+Reserved
+
+These bits are read as 1.
+
+R
+
+b31 to b24 —
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+When the ECCRAMMODE.RAMMOD[1:0] bits are set to 11b, this register will hold the address where a 2-bit ECC
+error was found. Specifically, the address of the 8-byte boundary below the location where the error was found is written
+to the ECC2EAD bits of this register at the same time as the ECCRAM2STS.ECC2ERR flag is set. The address is not
+updated whenever the ECC2ERR flag is set to 1 to indicate an error. Its value does not change if ECCs are disabled.
+The value is initialized by a reset, and this is the only condition that leads to clearing of the register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2984 of 3240
+
+RX72N Group
+
+60.2.15
+
+60. RAM
+
+ECCRAM 1-Bit Error Address Capture Register (ECCRAM1ECAD)
+
+Address(es): 0008 12CCh
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+—
+
+ECC1EAD
+
+1
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+—
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+b14 to b3
+
+ECC1EAD
+
+1-Bit ECC Error Address
+
+The address where a 1-bit ECC error was found is read.
+
+R
+
+b23 to b15 —
+
+Reserved
+
+These bits are read as 1.
+
+R
+
+b31 to b24 —
+
+Reserved
+
+These bits are read as 0.
+
+R
+
+When an ECC 1-bit error is found while the setting of the ECCRAM1STSEN.ECC1STSEN bit is 1 and the setting of the
+ECCRAMMODE.RAMMOD[1:0] bits are “ECCs are enabled with error checking”, the effective bits of this register
+retain the address where the error was found. Specifically, the address of the 8-byte boundary below the location where
+the error was found is written to the effective bits of this register at the same time as the ECCRAM1STS.ECC1ERR bit is
+set.
+The address is not updated whenever the ECC1ERR bit is set to 1 to indicate an error. Its value does not change if ECCs
+are disabled. The value is initialized by a reset, and this is the only condition that leads to clearing of the register.
+
+60.2.16
+
+ECCRAM Protection Register 2 (ECCRAMPRCR2)
+
+Address(es): 0008 12D0h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+KW2[6:0]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+b0
+PRCR2
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+PRCR2
+
+ECCRAMETST Register Write
+Control
+
+0: Writing to ECCRAMETST is disabled.
+1: Writing to ECCRAMETST is enabled.
+
+R/W
+
+b7 to b1
+
+KW2[6:0]
+
+Write Keyword
+
+Enables or disables the rewriting of the ECCRAMPRCR2
+register. When rewriting the ECCRAMPRCR2 register, write
+1111000b to the KW2[6:0] bits.
+
+R/W
+
+When KW2[6:0] = 1111000b, writing 1 to the PRCR2 bit is enabled.
+Otherwise writing to PRCR2 clears the bit to 0. The KW2[6:0] bits are read as 0000000b.
+The target for write protection by the PRCR2 bit is the ECCRAM test control register (ECCRAMETST). Once the
+PRCR2 bit is set to 1, writing to the ECCRAMETST register is enabled until the PRCR2 bit is cleared to 0. After writing
+to the ECCRAMETST register, clear the PRCR2 bit to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2985 of 3240
+
+RX72N Group
+
+60.2.17
+
+60. RAM
+
+ECCRAM Test Control Register (ECCRAMETST)
+
+Address(es): 0008 12D4h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+TSTBY
+P
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+TSTBYP
+
+ECC Bypass Select
+
+0: ECC bypass is disabled.
+1: ECC bypass is enabled.
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+The protection register 2 (ECCRAMPRCR2) protects this register against writing. Accordingly, change the effective bit
+in the ECCRAMPRCR2 register to the enabled setting before attempting to write to the ECCRAMETST register. Do not
+write to ECCRAMETST while access to ECCRAM is in progress.
+Eight of the 72 bits of data in the ECCRAM are used for the ECC. When the TSTBYP bit is set to 1 to select bypassing
+of the ECC circuit, the 8 bits for the ECC become directly accessible. Setting the TSTBYP bit for bypassing of the ECC
+is only possible when the ECC is disabled by setting the ECCRAMMODE.RAMMOD[1:0] bit to 00b.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2986 of 3240
+
+RX72N Group
+
+60.3
+
+60. RAM
+
+Operation
+
+60.3.1
+
+Correction of ECC Errors
+
+Enabling and disabling of ECC error correction can be selected through the ECCRAMMODE register setting. In the
+initial state, ECC error correction is disabled. The ECC used in this device is SEC-DED (Single-Error Correction and
+Double-Error Detection Code).
+When ECCs are enabled, an 8-bit ECC code is appended to 64-bit data for writing. For reading, 72-bit (data: 64 bits,
+ECC code: 8 bits) data is read out from the ECCRAM.
+
+60.3.1.1
+
+ECC Enabled and Error Checking Selected
+
+If a 1-bit error is found, the error is corrected, and if the setting of the ECCRAM1STSEN.ECC1STSEN bit is 1, the
+ECCRAM1STS.ECC1ERR bit is set to 1. When an error is detected, the address of the 8-byte boundary including the
+location where the error was found is set to the ECCRAM1ECAD register. If a 2-bit error occurs, error detection is done
+and the ECCRAM2STS.ECC2ERR flag is set to 1, though error correction is not performed. When an error is detected,
+the address of the 8-byte boundary including the location where the error was found is set to the ECCRAM2ECAD
+register. In addition, there is no way to confirm the location where the error was found within the 8-byte boundary.
+Therefore, when the correct data is written after the occurrence of an error, update all the data in the 8-byte boundary.
+
+60.3.1.2
+
+ECC Enabled and Error Checking not Selected
+
+In reading, the error is corrected if a 1-bit error is found, but the corrected value is not written to the ECCRAM, and the
+ECC code is neither generated nor written back. In writing, the corrected value is written, and the ECC code is generated
+and written back.
+In writing, write data is replaced and ECC codes are generated then written back.
+Since the ECCRAM data is undefined after power on and release from deep software standby mode, accessing the
+ECCRAM when ECCs are enabled and error checking is selected causes an ECC error to occur. Therefore, when using
+ECC error correction, initial writing to the area to be used in the ECCRAM should be done beforehand when ECCs are
+enabled but error checking is not selected. Since the ECC error correction is done in 8-byte units, the initial write must be
+done for the 8 × N byte area including the area to be used.
+
+60.3.2
+
+Parity Checking
+
+Enabling and disabling of parity checking for the RAM or expansion RAM can be selected through the RAMMODE or
+EXRAMMODE register setting. In the initial state, parity checking is disabled. Even parity checking is used in this
+device.
+1-bit parity check code is added to each 1-byte data for writing, and the parity is checked for reading.
+If a 1-bit error is detected in the 1 byte when the parity is checked for reading, a RAM error interrupt can be generated. If
+a 2-bit error or more is detected in the 1 byte, errors cannot be correctly detected.
+After power-on, parity check code is undefined until data is written. To use parity checking, write the initial value to all
+areas while parity checking is enabled before accessing to the RAM immediately after a reset.
+Operation cannot be guaranteed if access is made to an area where the initial value is not written.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2987 of 3240
+
+RX72N Group
+
+60.3.3
+
+60. RAM
+
+RAM Error Interrupt Function
+
+With ECCs enabled and error checking selected, if any of the ECCRAM2STS.ECC2ERR bit that indicates an ECC 2-bit
+error, ECCRAM1STS.ECC1ERR bit that indicates an ECC 1-bit error, EXRAMSTS.EXRAMERR bit that indicates a
+parity error, or RAMSTS.RAMERR bit that indicates a parity error when parity checking is enabled for the normal RAM
+changes to 1, a RAM error interrupt is generated.
+Writing 0 to a bit that has been set clears the RAM error interrupt due to the corresponding source.
+If the error from the other source is still occurring at this time, the RAM error interrupt will remain generated.
+When the ECC 1-bit error interrupt is to be masked, set the ECCRAM1STSEN.ECC1STSEN bit to 0 to disable updating
+of the ECC1ERR bit. A RAM error interrupt will not be generated while ECCs are disabled and when ECCs are enabled
+but error checking is not selected.
+
+60.3.4
+
+Interrupt Source
+
+Interrupt sources from the RAM are the RAM error interrupt generated by the RAM or expansion RAM when a parity
+error is found, and the RAM error interrupt generated by the ECCRAM when an ECC error is found, both of which can
+be set up for use as non-maskable interrupts or normal interrupts. For details, refer to section 15, Interrupt Controller
+
+(ICUD).
+Table 60.2
+
+RAM Interrupt Source
+
+Name
+
+Interrupt Source
+
+DTC Activation
+
+DMAC Activation
+
+RAMERR
+
+Parity check error or ECC error
+
+Not possible
+
+Not possible
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2988 of 3240
+
+RX72N Group
+
+60.3.5
+
+60. RAM
+
+ECC Decoder Testing
+
+In this MCU, the user can test the ECC code control circuit for the ECCRAM.
+Figure 60.1 shows the flow for testing of the ECC code control circuit.
+
+Start
+
+Write F1h to the ECCRAM protection register and
+enable writing to the ECCRAM related registers
+
+Write 00h to the ECCRAM operating mode control register and
+disable ECCs
+
+For 1-bit error testing:
+Write 01h to the ECCRAM 1-bit error information update enable register and
+enable updating of the 1-bit ECC error information
+
+Write 00h to the ECCRAM 1-bit error status register (for 1-bit error testing) or
+the ECCRAM 2-bit error status register (for 2-bit error testing) to clear the error
+status
+
+Write data
+
+Write F1h to the ECCRAM protection register 2 and
+enable writing to the ECCRAM test control register
+
+Write 01h to the ECCRAM test control register and
+enable bypassing of the ECC
+
+Write an ECC error code to the address where data has been written
+(the given address within 8-byte boundaries)
+Ex. When the written data is 0000 0000h;
+the 1-bit ECC error code is 01h, and the 2-bit ECC error code is 03h.
+
+Write 00h to the ECCRAM test control register and
+disable bypassing of the ECC
+
+Write 03h to the ECCRAM operating mode control register and
+enable ECCs with error checking
+
+Write to or read from the address where data has been written
+
+Confirm the generation of the 1-bit ECC error by the ECCRAM 1-bit error status
+register (for 1-bit error testing), or
+confirm the generation of the 2-bit ECC error by the ECCRAM 2-bit error status
+register (for 2-bit error testing)
+Confirm the address where an ECC error was found by
+the ECCRAM 1-bit error address capture register (for 1-bit error testing) or
+the ECCRAM 2-bit error address capture register (for 2-bit error testing)
+
+End
+
+Figure 60.1
+
+Flow for Testing of the ECC Code Control Circuit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2989 of 3240
+
+RX72N Group
+
+60.4
+60.4.1
+
+60. RAM
+
+Usage Notes
+Low Power Consumption Function
+
+Power consumption can be reduced by setting module stop control register C (MSTPCRC) to stop supply of the clock
+signal to the RAM, expansion RAM and ECCRAM.
+Setting the MSTPCRC.MSTPC0 bit to 1 stops supply of the clock signal to the RAM. Setting the MSTPCRC.MSTPC2
+bit to 1, stops supply of the clock signal to the expansion RAM. Setting the MSTPCRC.MSTPC6 bit to 1 stops supply of
+the clock signal to the ECCRAM.
+The RAM, expansion RAM, and ECCRAM can be individually placed in the module stop state, in which the supply of
+the clock signal to the given module is stopped.
+The RAM, expansion RAM, and ECCRAM operate after a reset.
+The RAM, expansion RAM, and ECCRAM are not accessible in the module stop state.
+Do not allow transitions to the module stop state while accessing to the RAM, expansion RAM, or ECCRAM.
+Access to the RAM, expansion RAM, and ECCRAM in the module stop state is prohibited. If access is attempted,
+correct operation is not guaranteed.
+For details on the MSTPCRC register, refer to section 11, Low Power Consumption.
+
+60.4.2
+
+Notes on Using Error Checking of RAM, Expansion RAM and ECCRAM
+
+Data in RAM, ECCRAM, and expansion RAM are undefined when the power is turned on. Therefore, parity check
+errors or ECC errors occur if the data are read before initialization. The RAM, expansion RAM, and ECCRAM are read
+in 8-byte (64-bit) units. Initialize them on 8-byte boundaries.
+When a program is executed in the RAM, expansion RAM, or ECCRAM with the parity check or the ECC function
+enabled, initialize the RAMs in consideration of possible instruction prefetching by the CPU. Instruction prefetching can
+be performed up to 32 bytes. The initialization must thus cover extra 24 to 31 bytes from the last address of the program.
+
+60.4.3
+
+Notes on Self-Diagnosis of the RAM
+
+A write buffer is mounted for the RAM*1. When the same address is read after a write operation, data in the write buffer,
+rather than in the memory cell of the RAM may be read. When the RAM is self-diagnosed, confirm that the data have
+been written by following the procedure below so that data will not be read from the write buffer.
+(1) Write data to the address targeted for diagnosis.
+(2) Write data to an address which is at least 4 addresses away from the that in (1).
+(3) Read the data from the address in (1).
+Note 1. This does not apply to the expansion RAM and ECCRAM.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2990 of 3240
+
+

@@ -1,0 +1,2549 @@
+RX72N Group
+
+7.
+
+Option-Setting Memory (OFSM)
+
+7.1
+
+Overview
+
+7. Option-Setting Memory (OFSM)
+
+The option-setting memory (OFSM) is a collective term for the registers listed below.
+ Serial programmer command control register (SPCC)
+ OCD/serial programmer ID setting register (OSIS)
+ Option function select register 0 (OFS0)
+ Option function select register 1 (OFS1)
+ Endian select register (MDE)
+ TM enable flag register (TMEF)
+ TM identification data register (TMINF)
+ Bank select register (BANKSEL)
+ Flash access window setting register (FAW)
+ ROM Code Protection Register (ROMCODE)
+The option-setting memory (configuration setting area) determines the state of this MCU after a reset.
+The method of setting the option-setting memory is different from that of the I/O registers. For details, refer to section
+7.5, Setting the Option-Setting Memory.
+Figure 7.1 shows the option-setting memory.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 296 of 3240
+
+RX72N Group
+
+7. Option-Setting Memory (OFSM)
+
+Address
+FE7F 5D00h to FE7F 5D03h
+
+Endian select register (MDE)
+
+FE7F 5D04h to FE7F 5D07h
+
+Option function select register 0 (OFS0)
+
+FE7F 5D08h to FE7F 5D0Bh
+
+Option function select register 1 (OFS1)
+
+FE7F 5D0Ch to FE7F 5D0Fh
+
+Reserved area
+
+FE7F 5D10h to FE7F 5D13h
+
+TM identification data register (TMINF)
+
+FE7F 5D14h to FE7F 5D1Fh
+Reserved area
+FE7F 5D20h to FE7F 5D23h
+
+Bank select register (BANKSEL)
+
+FE7F 5D24h to FE7F 5D3Fh
+Reserved area
+
+FE7F 5D40h to FE7F 5D43h
+
+Serial programmer command control register (SPCC)
+
+FE7F 5D44h to FE7F 5D47h
+
+Reserved area
+
+FE7F 5D48h to FE7F 5D4Bh
+
+TM enable flag register (TMEF)
+
+FE7F 5D4Ch to FE7F 5D4Fh
+
+Reserved area
+
+Option-setting memory
+(configuration setting area)
+
+FE7F 5D50h to FE7F 5D5Fh
+OCD/serial programmer ID setting register
+(OSIS)
+
+FE7F 5D60h to FE7F 5D63h
+
+Reserved area
+
+FE7F 5D64h to FE7F 5D67h
+
+Flash access window setting register (FAW)
+
+FE7F 5D68h to FE7F 5D6Fh
+FE7F 5D70h to FE7F 5D73h
+
+Reserved area
+ROM code protection register (ROMCODE)
+
+FE7F 5D74h to FE7F 5D7Fh
+Reserved area
+
+4 bytes
+
+Figure 7.1
+
+Option-Setting Memory
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 297 of 3240
+
+RX72N Group
+
+7.2
+
+7. Option-Setting Memory (OFSM)
+
+Register Descriptions
+
+7.2.1
+
+Serial Programmer Command Control Register (SPCC)
+
+Address(es): OFSM.SPCC FE7F 5D40h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+SPE
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+The value set by the user*1
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+The value set by the user*1
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b26 to b0
+
+—
+
+Reserved
+
+When reading, these bits return the value written by the
+user. The write value should be 1.
+
+R
+
+b27
+
+SPE
+
+Serial Programmer
+Connection Enable
+
+0: Connection of a serial programmer is prohibited after a
+reset.
+1: Connection of a serial programmer is permitted after a
+reset.
+
+R
+
+b31 to b28
+
+—
+
+Reserved
+
+When reading, these bits return to the value written by the
+user. The write value should be 1.
+
+R
+
+Note 1. The value of the blank product is FFFF FFFFh. This register is set to a specified value after setting a value.
+
+This register is used to permit or prohibit the connection of a serial programmer.
+SPE Bit (Serial Programmer Connection Enable)
+This bit enables or disables the connection of a serial programmer.
+Resetting MCU after setting this bit to 0 disables the connection of a serial programmer.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 298 of 3240
+
+RX72N Group
+
+7.2.2
+
+7. Option-Setting Memory (OFSM)
+
+OCD/Serial Programmer ID Setting Register (OSIS)
+
+This register is used to store the control code or ID code for the on-chip debugger ID code protection and serial
+programmer ID code protection.
+After the emulator or serial programmer sends a control code or ID code, it is tested for a match with the value stored in
+this register.
+Connection to the emulator/serial programmer can proceed if the codes match and cannot proceed if they do not.
+For the blank product, the value after a reset for ID code 1/control code to ID code 16 is FFh. These registers are set to
+the specified values after setting a value.
+Address
+
+Bit 31
+
+Bit 0
+
+FE7F 5D50h to FE7F 5D53h
+
+ID Code 4
+
+ID Code 3
+
+ID Code 2
+
+ID Code 1/Control
+Code
+
+FE7F 5D54h to FE7F 5D57h
+
+ID Code 8
+
+ID Code 7
+
+ID Code 6
+
+ID Code 5
+
+FE7F 5D58h to FE7F 5D5Bh
+
+ID Code 12
+
+ID Code 11
+
+ID Code 10
+
+ID Code 9
+
+FE7F 5D5Ch to FE7F 5D5Fh
+
+ID Code 16
+
+ID Code 15
+
+ID Code 14
+
+ID Code 13
+
+ID Code 1/Control Code to ID Code 16
+The control code or ID code for the on-chip debugger ID code protection and serial programmer ID code protection is
+stored in this register.
+ID code 1 is used as a control code for connection to a serial programmer and as an ID code for connection to an
+emulator.
+For details of the control code, refer to section 7.4, Settings of the Option-Setting Memory and Read, Program,
+and Erase Operations.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 299 of 3240
+
+RX72N Group
+
+7.2.3
+
+7. Option-Setting Memory (OFSM)
+
+Option Function Select Register 0 (OFS0)
+
+Address(es): OFSM.OFS0 FE7F 5D04h
+b31
+
+b30
+
+—
+
+—
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+WDTRS WDTRPSS[1:0] WDTRPES[1:0]
+TIRQS
+
+—
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+WDTTOPS[1:0] WDTST
+RT
+
+WDTCKS[3:0]
+
+—
+
+The value set by the user*1
+
+Value after reset:
+
+b15
+
+b14
+
+—
+
+IWDTS
+LCSTP
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+IWDTR IWDTRPSS[1:0] IWDTRPES[1:0]
+STIRQS
+
+—
+
+b6
+
+b5
+
+IWDTCKS[3:0]
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+IWDTTOPS[1:0] IWDTS
+TRT
+
+—
+
+The value set by the user*1
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+—
+
+Reserved
+
+When reading, this bit returns the value written by the user.
+The write value should be 1.
+
+R
+
+b1
+
+IWDTSTRT
+
+IWDT Start Mode Select
+
+0: IWDT is automatically activated in auto-start mode after a
+reset
+1: IWDT is halted after a reset
+
+R
+
+b3, b2
+
+IWDTTOPS[1:0]
+
+IWDT Timeout Period Select
+
+b3 b2
+
+R
+
+b7 to b4
+
+IWDTCKS[3:0]
+
+IWDT-Dedicated Clock
+Frequency Division Ratio
+Select
+
+b7
+
+b9, b8
+
+IWDTRPES[1:0]
+
+IWDT Window End Position
+Select
+
+b9 b8
+
+R
+
+b11, b10
+
+IWDTRPSS[1:0]
+
+IWDT Window Start Position
+Select
+
+b11 b10
+
+R
+
+b12
+
+IWDTRSTIRQS
+
+IWDT Reset Interrupt
+Request Select
+
+0: Non-maskable interrupt request or plain interrupt request
+is enabled
+1: Reset is enabled
+
+R
+
+b13
+
+—
+
+Reserved
+
+When reading, this bit returns the value written by the user.
+The write value should be 1.
+
+R
+
+b14
+
+IWDTSLCSTP
+
+IWDT Sleep Mode Count
+Stop Control
+
+0: Counting stop is disabled
+1: Counting stop is enabled when entering sleep, software
+standby, deep software standby, or all-module clock stop
+mode
+
+R
+
+b16, b15
+
+—
+
+Reserved
+
+When reading, these bits return the value written by the
+user. The write value should be 1.
+
+R
+
+b17
+
+WDTSTRT
+
+WDT Start Mode Select
+
+0: WDT is automatically activated in auto-start mode after a
+reset
+1: WDT is stopped after a reset
+
+R
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+0 0: 1024 cycles (03FFh)
+0 1: 4096 cycles (0FFFh)
+1 0: 8192 cycles (1FFFh)
+1 1: 16384 cycles (3FFFh)
+
+R
+
+b4
+
+0 0 0 0: No division
+0 0 1 0: Divide-by-16
+0 0 1 1: Divide-by-32
+0 1 0 0: Divide-by-64
+1 1 1 1: Divide-by-128
+0 1 0 1: Divide-by-256
+Settings other than above are prohibited.
+0 0: 75%
+0 1: 50%
+1 0: 25%
+1 1: 0% (No window end position setting)
+0 0: 25%
+0 1: 50%
+1 0: 75%
+1 1: 100% (No window start position setting)
+
+Page 300 of 3240
+
+RX72N Group
+
+7. Option-Setting Memory (OFSM)
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b19, b18
+
+WDTTOPS[1:0]
+
+WDT Timeout Period Select
+
+b19 b18
+
+R
+
+b23 to b20
+
+WDTCKS[3:0]
+
+WDT Clock Frequency
+Division Ratio Select
+
+b23
+
+R
+
+b25, b24
+
+WDTRPES[1:0]
+
+WDT Window End Position
+Select
+
+b25 b24
+
+R
+
+b27, b26
+
+WDTRPSS[1:0]
+
+WDT Window Start Position
+Select
+
+b27 b26
+
+R
+
+b28
+
+WDTRSTIRQS
+
+WDT Reset Interrupt Request
+Select
+
+0: Non-maskable interrupt request or plain interrupt request
+is enabled
+1: Reset is enabled
+
+R
+
+b31 to b29
+
+—
+
+Reserved
+
+When reading, these bits return the value written by the
+user. The write value should be 1.
+
+R
+
+0 0: 1024 cycles (03FFh)
+0 1: 4096 cycles (0FFFh)
+1 0: 8192 cycles (1FFFh)
+1 1: 16384 cycles (3FFFh)
+b20
+
+0 0 0 1: Divide-by-4
+0 1 0 0: Divide-by-64
+1 1 1 1: Divide-by-128
+0 1 1 0: Divide-by-512
+0 1 1 1: Divide-by-2048
+1 0 0 0: Divide-by-8192
+Settings other than above are prohibited.
+0 0: 75%
+0 1: 50%
+1 0: 25%
+1 1: 0% (No window end position setting)
+0 0: 25%
+0 1: 50%
+1 0: 75%
+1 1: 100% (No window start position setting)
+
+Note 1. The value of the blank product is FFFF FFFFh. This register is set to a specified value after setting a value.
+
+IWDTSTRT Bit (IWDT Start Mode Select)
+This bit selects the mode in which the IWDT is activated after a reset (stopped state or activated in auto-start mode).
+When activated in auto-start mode, the OFS0 register setting for the IWDT is effective.
+IWDTTOPS[1:0] Bits (IWDT Timeout Period Select)
+These bits select the timeout period, i.e. the time it takes for the down-counter to underflow, as 1024, 4096, 8192, or
+16384 cycles of the frequency-divided clock set by the IWDTCKS[3:0] bits. The time (number of clock cycles for the
+IWDT) it takes to underflow after a refresh operation is determined by the combination of the IWDTCKS[3:0] bits and
+IWDTTOPS[1:0] bits.
+For details, refer to section 35, Independent Watchdog Timer (IWDTa).
+IWDTCKS[3:0] Bits (IWDT-Dedicated Clock Frequency Division Ratio Select)
+These bits select, from 1/1, 1/16, 1/32, 1/64, 1/128, and 1/256, the division ratio of the prescaler to divide the frequency
+of the clock for the IWDT. Using the setting of these bits together with the IWDTTOPS[1:0] bit setting, the IWDT
+counting period can be set from 1024 to 4194304 clock cycles for the IWDT.
+For details, refer to section 35, Independent Watchdog Timer (IWDTa).
+IWDTRPES[1:0] Bits (IWDT Window End Position Select)
+These bits select the position of the end of the window for the down-counter as 0%, 25%, 50%, or 75% of the value being
+counted by the counter. The value of the window end position must be smaller than the value of the window start position
+(window start position > window end position). If the value for the window end position is greater than the value for the
+window start position, only the value for the window start position is effective.
+The counter values corresponding to the settings for the start and end positions of the window in the IWDTRPSS[1:0]
+and IWDTRPES[1:0] bits vary with the setting of the IWDTTOPS[1:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 301 of 3240
+
+RX72N Group
+
+7. Option-Setting Memory (OFSM)
+
+For details, refer to section 35, Independent Watchdog Timer (IWDTa).
+IWDTRPSS[1:0] Bits (IWDT Window Start Position Select)
+These bits select the position where the window for the down-counter starts as 25%, 50%, 75%, or 100% of the value
+being counted (the point at which counting starts is 100% and the point at which an underflow occurs is 0%). The
+interval between the positions where the window starts and ends becomes the period in which refreshing is possible, and
+refreshing is not possible outside this period.
+For details, refer to section 35, Independent Watchdog Timer (IWDTa).
+IWDTRSTIRQS Bit (IWDT Reset Interrupt Request Select)
+The setting of this bit selects the operation on an underflow of the down-counter or generation of a refresh error. An
+independent watchdog timer reset, a non-maskable interrupt request, or an interrupt request is selectable.
+For details, refer to section 35, Independent Watchdog Timer (IWDTa).
+IWDTSLCSTP Bit (IWDT Sleep Mode Count Stop Control)
+This bit selects to stop counting when entering sleep, software standby, deep software standby, or all-module clock stop
+mode.
+For details, refer to section 35, Independent Watchdog Timer (IWDTa).
+WDTSTRT Bit (WDT Start Mode Select)
+This bit selects the mode in which the WDT is activated after a reset (stopped state or activated in auto-start mode).
+When activated in auto-start mode, the OFS0 register setting for the WDT is effective.
+WDTTOPS[1:0] Bits (WDT Timeout Period Select)
+These bits select the timeout period, i.e. the time it takes for the down-counter to underflow, as 1024, 4096, 8192, or
+16384 cycles of the frequency-divided clock set by the WDTCKS[3:0] bits. The time (number of PCLKB cycles) it takes
+to underflow after a refresh operation is determined by a combination of the WDTCKS[3:0] bits and WDTTOPS[1:0]
+bits.
+For details, refer to section 34, Watchdog Timer (WDTA).
+WDTCKS[3:0] Bits (WDT Clock Frequency Division Ratio Select)
+These bits select, from 1/4, 1/64, 1/128, 1/512, 1/2048, and 1/8192, the division ratio of the prescaler to divide the
+frequency of PCLKB. Using the setting of these bits together with the WDTTOPS[1:0] bit setting, the WDT counting
+period can be set from 4096 to 134217728 PCLKB cycles.
+For details, refer to section 34, Watchdog Timer (WDTA).
+WDTRPES[1:0] Bits (WDT Window End Position Select)
+These bits select the position of the end of the window on the down-counter as 0%, 25%, 50%, or 75% of the value being
+counted by the counter. The value of the window end position must be smaller than the value of the window start position
+(window start position > window end position). If the value for the window end position is greater than the value for the
+window start position, only the value for the window start position is effective.
+The counter values corresponding to the settings for the start and end positions of the window in the WDTRPSS[1:0] and
+WDTRPES[1:0] bits vary with the setting of the WDTTOPS[1:0] bits.
+For details, refer to section 34, Watchdog Timer (WDTA).
+WDTRPSS[1:0] Bits (WDT Window Start Position Select)
+These bits select the position where the window for the down-counter starts as 25%, 50%, 75%, or 100% of the value
+being counted (the point at which counting starts is 100% and the point at which an underflow occurs is 0%). The
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 302 of 3240
+
+RX72N Group
+
+7. Option-Setting Memory (OFSM)
+
+interval between the positions where the window starts and ends becomes the period in which refreshing is possible, and
+refreshing is not possible outside this period.
+For details, refer to section 34, Watchdog Timer (WDTA).
+WDTRSTIRQS Bit (WDT Reset Interrupt Request Select)
+The setting of this bit selects the operation on an underflow of the down-counter or generation of a refresh error. A
+watchdog timer reset, a non-maskable interrupt request, or an interrupt request is selectable.
+For details, refer to section 34, Watchdog Timer (WDTA).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 303 of 3240
+
+RX72N Group
+
+7.2.4
+
+7. Option-Setting Memory (OFSM)
+
+Option Function Select Register 1 (OFS1)
+
+Address(es): OFSM.OFS1 FE7F 5D08h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+b1
+
+b0
+
+The value set by the user*1
+
+Value after reset:
+
+b15
+—
+
+b14
+—
+
+b13
+—
+
+b12
+—
+
+b11
+—
+
+b10
+—
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+—
+
+HOCO
+EN
+
+—
+
+—
+
+—
+
+—
+
+—
+
+LVDAS
+
+VDSEL[1:0]
+
+The value set by the user*1
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+VDSEL[1:0]
+
+Voltage Detection 0 Level
+Select
+
+b1 b0
+
+R
+
+b2
+
+LVDAS
+
+Voltage Detection 0 Circuit
+Start
+
+0: Voltage monitor 0 reset is enabled after a reset
+1: Voltage monitor 0 reset is disabled after a reset
+
+R
+
+b7 to b3
+
+—
+
+Reserved
+
+When reading, these bits return the value written by the user.
+The write value should be 1.
+
+R
+
+b8
+
+HOCOEN
+
+HOCO Oscillation Enable
+
+0: HOCO oscillation is enabled after a reset
+1: HOCO oscillation is disabled after a reset
+
+R
+
+b31 to b9
+
+—
+
+Reserved
+
+When reading, these bits return the value written by the user.
+The write value should be 1.
+
+R
+
+0 0: Reserved
+0 1: Selects 2.94 V
+1 0: Selects 2.87 V
+1 1: Selects 2.80 V
+
+Note 1. The value of the blank product is FFFF FFFFh. This register is set to a specified value after setting a value.
+
+VDSEL[1:0] Bits (Voltage Detection 0 Level Select)
+These bits select the voltage detection level of the voltage detection 0 circuit.
+LVDAS Bit (Voltage Detection 0 Circuit Start)
+This bit selects whether the voltage monitor 0 reset is enabled or disabled after a reset.
+HOCOEN Bit (HOCO Oscillation Enable)
+This bit selects whether the HOCO oscillation enable bit is effective or not after a reset.
+Setting the HOCOEN bit to 0 allows the HOCO oscillation to be started before the CPU starts operation, and therefore
+reduces the waiting time for oscillation stabilization.
+Note that even if the HOCOEN bit is set to 0, the system clock source is not switched to HOCO. The system clock source
+is switched to HOCO only by modifying the clock source select bits (SCKCR3.CKSEL[2:0]) from the CPU.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 304 of 3240
+
+RX72N Group
+
+7.2.5
+
+7. Option-Setting Memory (OFSM)
+
+Endian Select Register (MDE)
+
+Address(es): OFSM.MDE FE7F 5D00h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+The value set by the user*1
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+b6
+
+BANKMD[2:0]
+
+—
+
+MDE[2:0]
+
+The value set by the user*1
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+MDE[2:0]
+
+Endian Select
+
+b2
+
+R
+
+b3
+
+—
+
+Reserved
+
+When reading, this bit returns the value written by the user. The
+write value should be 1.
+
+R
+
+b6 to b4
+
+BANKMD[2:0]
+
+Bank Mode Select
+
+b6
+
+R
+
+b31 to b7
+
+—
+
+Reserved
+
+b0
+
+0 0 0: Big endian
+1 1 1: Little endian
+Settings other than above are prohibited.
+
+b4
+
+0 0 0: Dual mode
+1 1 1: Linear mode
+Settings other than above are prohibited.
+When reading, these bits return the value written by the user.
+The write value should be 1.
+
+R
+
+Note 1. The value of the blank product is FFFF FFFFh. This register is set to a specified value after setting a value.
+
+This register selects the endian for the CPU and bank mode of the dual bank function of the code flash memory.
+MDE[2:0] Bits (Endian Select)
+These bits select little endian or big endian for the CPU.
+BANKMD[2:0] Bits (Bank Mode Select)
+These bits select bank mode of the dual bank function of the code flash memory. These bits cannot be rewritten while the
+TM function is enabled. Set the value of these bits while the TM function is disabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 305 of 3240
+
+RX72N Group
+
+7.2.6
+
+7. Option-Setting Memory (OFSM)
+
+TM Enable Flag Register (TMEF)
+
+Address(es): OFSM.TMEF FE7F 5D48h
+b31
+
+b30
+
+—
+
+b29
+
+b28
+
+TMEFDB[2:0]
+
+b27
+
+b26
+
+—
+
+b25
+
+b24
+
+TMEF[2:0]
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+The value set by the user*1
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+The value set by the user*1
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b23 to b0
+
+—
+
+Reserved
+
+When reading, these bits return the value written by the user.
+The write value should be 1.
+
+R
+
+b26 to b24
+
+TMEF[2:0]
+
+TM Enable
+
+b26
+
+R
+
+b27
+
+—
+
+Reserved
+
+When reading, this bit returns the value written by the user. The
+write value should be 1.
+
+R
+
+b30 to b28
+
+TMEFDB[2:0]
+
+Dual-Bank TM Enable
+
+b30
+
+R
+
+b31
+
+—
+
+Reserved
+
+b24
+
+0 0 0: The TM function for blocks 8 and 9 in the code flash
+memory is enabled.
+1 1 1: The TM function for blocks 8 and 9 in the code flash
+memory is disabled.
+Settings other than above are prohibited.
+
+b28
+
+0 0 0: The TM function for blocks 78 and 79 in the code flash
+memory is enabled in dual mode.
+1 1 1: The TM function for blocks 78 and 79 in the code flash
+memory is disabled in dual mode.
+Settings other than above are prohibited.
+When reading, this bit returns the value written by the user. The
+write value should be 1.
+
+R
+
+Note 1. The value of the blank product is FFFF FFFFh. This register is set to a specified value after setting a value.
+
+This register is used to enable the TM function in the code flash memory.
+To enable the TM function, refer to section 62.15.23, Configuration Program Command. When the TMEF[2:0] bits
+or TMEFDB[2:0] bits are rewritten with the TM function enabled, rewriting the bits is ignored.
+To disable the TM function, refer to section 62.15.21, Configuration Clear Command.
+TMEF[2:0] Bits (TM Enable)
+These bits enable or disable the TM function in the code flash memory. When enabling the TMEF[2:0] bits (000b) in
+dual mode, also enable the TMEFDB[2:0] (000b).
+TMEFDB[2:0] Bits (Dual-Bank TM Enable)
+These bits enable or disable the TM function of the code flash memory in dual mode. Set these bits to disable dual mode
+(111b) if linear mode is to be used.
+When enabling the TMEFDB[2:0] bits, also enable the TMEF[2:0] bits.
+When the TMEF[2:0] bits are 111b (with the TM function disabled), this setting is disabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 306 of 3240
+
+RX72N Group
+
+7.2.7
+
+7. Option-Setting Memory (OFSM)
+
+TM Identification Data Register (TMINF)
+
+Address(es): OFSM.TMINF FE7F 5D10h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+The value set by the user*1
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+Value after reset:
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+The value set by the user*1
+
+Note 1. The value of the blank product is FFFF FFFFh. This register is set to a specified value after setting a value.
+
+The user can store any desired 32-bit value in this register.
+This register is used to store codes that identify the program stored in the TM-target area.
+When the TMINF register is rewritten by serial programming while the TM function is enabled, rewriting this register is
+ignored. To erase the contents of the TMINF register, refer to section 62.15.21, Configuration Clear Command.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 307 of 3240
+
+RX72N Group
+
+7.2.8
+
+7. Option-Setting Memory (OFSM)
+
+Bank Select Register (BANKSEL)
+
+Address(es): OFSM.BANKSEL FE7F 5D20h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+b2
+
+b1
+
+b0
+
+The value set by the user*1
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+BANKSWP[2:0]
+
+The value set by the user*1
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+BANKSWP[2:0]
+
+Startup Bank Switch
+
+b2
+
+R
+
+b31 to b3
+
+—
+
+Reserved
+
+b0
+
+0 0 0: These bits specify the address range of bank 1 from
+FFE0 0000h to FFFF FFFFh and bank 0 from
+FFC0 0000h to FFDF FFFFh.
+1 1 1: These bits specify the address range of bank 1 from
+FFC0 0000h to FFDF FFFFh and bank 0 from
+FFE0 0000h to FFFF FFFFh.
+Settings other than above are prohibited.
+When reading, these bits return the value written by the user.
+The write value should be 1.
+
+R
+
+Note 1. The value of the blank product is FFFF FFFFh. This register is set to a specified value after setting a value.
+
+This register selects the startup bank of the program when the code flash memory is in dual mode.
+BANKSWP[2:0] Bits (Startup Bank Switch)
+These bits select the address range of the bank 0 and bank 1 of the code flash memory when the code flash memory is in
+dual mode.
+Selecting the addresses of bank 0 and bank 1 selects the program to be started up.
+The setting of these bits in linear mode is invalid.
+For details of the startup bank selection, refer to section 62.10.5.2, Selecting the Startup Bank.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 308 of 3240
+
+RX72N Group
+
+7.2.9
+
+7. Option-Setting Memory (OFSM)
+
+Flash Access Window Setting Register (FAW)
+
+Address(es): OFSM.FAW FE7F 5D64h
+b31
+
+b30
+
+b29
+
+b28
+
+BTFLG
+
+—
+
+—
+
+—
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+FAWE[11:0]
+The value set by the user*1
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+FSPR
+
+—
+
+—
+
+—
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+FAWS[11:0]
+The value set by the user*1
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b11 to b0
+
+FAWS[11:0]
+
+Flash Access Window Start
+Address*2
+
+Flash access window start address
+
+R
+
+b14 to b12
+
+—
+
+Reserved
+
+When reading, these bits return the value written by the user.
+The write value should be 1.
+
+R
+
+b15
+
+FSPR
+
+Access Window Protection
+
+0: With protection
+1: Without protection
+
+R
+
+b27 to b16
+
+FAWE[11:0]
+
+Flash Access Window End
+Address*2
+
+Flash access window end address
+
+R
+
+b30 to b28
+
+—
+
+Reserved
+
+When reading, these bits return the value written by the user.
+The write value should be 1.
+
+R
+
+b31
+
+BTFLG
+
+Start-up Area Select
+
+0: FFFF C000h to FFFF DFFFh are used as the start-up area
+1: FFFF E000h to FFFF FFFFh are used as the start-up area
+
+R
+
+Note 1. The value of the blank product is FFFF FFFFh. This register is set to a specified value after setting a value.
+Note 2. Set the value of the FAWS[11:0] bits to be no greater than that of the FAWE[11:0] bits.
+If the value of the FAWS[11:0] bits is equal to that of the FAWE[11:0] bits, the entire user area of the code flash memory
+becomes programmable and erasable.
+
+This register is used to set the write protection bit and start-up area select bit for setting the flash access window start
+address, flash access window end address, and access window.
+FAWS[11:0] Bits (Flash Access Window Start Address)
+These bits are used to set the access window start address.
+The access window can be set in block units.
+Set the FAWS[10:0] bits to b23 to b13 of the access window start address. Set the FAWS[11] bit to 0.
+FSPR Bit (Access Window Protection)
+Setting the FSPR bit protects the following operations.
+ Setting the areas including the FAW register by using the configuration setting command of the FACI commands.
+ Setting the areas including the FAW register by using the configuration program command in boot mode
+ Erasing the option-setting memory by using the configuration clearing command in boot mode
+ Changing the setting of the start-up area protection by using the FSUACR register.
+ Erasing the all data in the flash memory when results of judgment did not match 3 times in a row while the control
+code is set to 45h in boot mode.
+Once 0 is written to this bit, the bit can never be restored to 1.
+Therefore, the access window and the start-up area protection never be set again or the TM function never be disabled
+once it has been enabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 309 of 3240
+
+RX72N Group
+
+7. Option-Setting Memory (OFSM)
+
+Exercise extra caution when handling the FSPR bit.
+FAWE[11:0] Bits (Flash Access Window End Address)
+These bits are used to set the access window end address.
+The access window can be set in block units.
+Set the FAWE[10:0] bits to b23 to b13 of the access window end address. Set the FAWE[11] bit to 0. However, if the
+access window end address is 1 0000 0000h (= FFFF FFFFh + 1), set the FAWE[11:0] bits to 800h.
+BTFLG Bit (Start-up Area Select)
+This bit is used to set whether the start-up area is switched by using the start-up program protection. In dual mode (the
+MDE.BANKMD[2:0] bits are 000b), write 1 to this bit.
+For details, refer to section 62.10.3, Start-Up Program Protection.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 310 of 3240
+
+RX72N Group
+
+7.2.10
+
+7. Option-Setting Memory (OFSM)
+
+ROM Code Protection Register (ROMCODE)
+
+Address(es): OFSM.ROMCODE FE7F 5D70h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+CODE[31:16]
+The value set by the user*1
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+CODE[15:0]
+The value set by the user*1
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b31 to b0
+
+CODE[31:0]
+
+ROM Code
+
+0000 0000h: ROM code protection enabled
+(ROM code protection 1)
+0000 0001h: ROM code protection enabled
+(ROM code protection 2)
+Other than above: ROM code protection disabled
+
+R
+
+Note 1. The value of the blank product is FFFF FFFFh. This register is set to a specified value after setting a value.
+
+This register is used to disable read, program, and erase operations of the flash memory by a parallel programmer being
+used for off-board programming.
+The ROM code in flash memory is a 32-bit code.
+Table 7.1 shows the specifications for ROM code protection.
+For release from ROM code protection, write FFFF FFFFh (code protection is disabled) to the ROM code by using the
+configuration setting command of the self-programming, or by using the configuration setting command of the boot
+mode, or erase the ROM code by using the configuration clearing command. The user can store any desired 32-bit value
+in the register.
+Table 7.1
+
+Specifications for ROM Code Protection
+
+ROM Code
+
+State of Protection
+
+Operations at the Time of Connection with the Parallel Programmer
+
+0000 0000h
+
+ROM code protection enabled
+(ROM code protection 1)
+
+Reading, programming, and erasing of the code flash memory is prohibited.
+
+0000 0001h
+
+ROM code protection enabled
+(ROM code protection 2)
+
+Reading from the code flash memory is prohibited.
+
+Other than above
+
+ROM code protection disabled
+
+Reading, programming, and erasing of the code flash memory is permitted.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 311 of 3240
+
+RX72N Group
+
+7.3
+
+7. Option-Setting Memory (OFSM)
+
+Programming and Erasing of the Option-Setting Memory in Individual Operating
+Modes
+
+Table 7.2 shows programming and erasing of the option-setting memory in the individual operating modes.
+Table 7.2
+
+Programming and Erasing of the Option-Setting Memory in Individual Operating Modes
+
+Option-Setting Memory
+
+ROM code protection register
+(ROMCODE)
+
+SPCC register, OSIS register, MDE
+register, OFS0 register, OFS1
+register, TMEF register, TMINF
+register, BANKSEL register, and
+FAW register
+
+Boot Mode
+(SCI Interface,
+USB Interface,
+FINE Interface)
+
+Self-Programming
+
+Parallel Programmer
+
+Program
+
+Erase
+
+Program
+
+Erase
+
+Program
+
+Erase
+
+0000 0000h
+
+ *1
+
+ *1
+
+ *2
+
+×
+
+×
+
+×
+
+0000 0001h
+
+ *1
+
+ *1
+
+ *2
+
+×
+
+×*3
+
+*4, *5
+
+Other than above
+
+ *1
+
+ *1
+
+ *2
+
+×
+
+ *4
+
+ *4
+
+0000 0000h
+
+ *1
+
+ *1
+
+ *2
+
+×
+
+×
+
+×
+
+0000 0001h
+
+ *1
+
+ *1
+
+ *2
+
+×
+
+ *4
+
+*4, *5
+
+Other than above
+
+ *1
+
+ *1
+
+ *2
+
+×
+
+ *4
+
+ *4
+
+ROMCODE
+Setting Value
+
+: Possible
+×: Not possible
+Note 1. The commands for boot mode (SCI, USB, and FINE interfaces) are used for programming or erasing. For details, refer to
+section 62.11, Boot Mode.
+Note 2. The configuration setting command is used for programming. For how to use the configuration setting command, refer to section
+62.8.3.14, Configuration Set Command.
+Note 3. The ROM code cannot be programmed when the ROM code protection is set.
+Note 4. The parallel programmer is used for programming and erasing. For details, refer to the manual of the parallel programmer you
+are using.
+Note 5. It is erasable when the code flash memory is blank.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 312 of 3240
+
+RX72N Group
+
+7.4
+
+7. Option-Setting Memory (OFSM)
+
+Settings of the Option-Setting Memory and Read, Program, and Erase Operations
+
+Table 7.3 shows the settings of the option-setting memory and read, program, and erase operations when the MCU is
+connected to a serial programmer.
+Table 7.4 shows the settings of the option-setting memory and judgment on ID codes when the MCU is connected to an
+OCD.
+Table 7.3
+
+Settings of the Option-Setting Memory and Read, Program, and Erase Operations When the MCU is
+Connected to a Serial Programmer
+
+No.
+
+SPCC.
+SPE
+
+OSIS
+(Control Code)
+
+OSIS
+(ID Code 2 to 16)
+
+Connection to a Serial Programmer
+
+Read, Program and Erase
+Operations after Connecting a
+Serial Programmer
+
+1
+
+0
+
+Any value
+
+Any value
+
+Connection prohibited
+
+—
+
+2
+
+1
+
+45h
+
+Any value
+
+Control codes or ID codes matched:
+Transition to the command waiting phase
+Control codes or ID codes unmatched:
+Transition to the state of waiting for a
+serial programming ID code check
+command again.
+However, when results of judgment do not
+match 3 times in a row, the all data in the
+flash memory will be erased*1
+
+Permitted: read, program, erase
+
+3
+
+1
+
+Other than 45h
+
+Any value
+
+ID codes matched:
+Transition to the command waiting phase
+ID codes unmatched:
+Transition to the state of waiting for a
+serial programming ID code check
+command again.
+
+Permitted: read, program, erase
+
+Note 1. When the FAW.FSPR bit is 0, the blocks in those areas are not erased.
+
+Table 7.4
+
+Settings of the Option-Setting Memory and Judgment on ID Codes When the MCU is Connected to
+an OCD
+
+No.
+
+SPCC.SPE
+
+OSIS (ID Code 1)
+
+OSIS (ID Code 2 to 16)
+
+Connection to an OCD
+
+1
+
+—
+
+Any value
+
+Any value
+
+ID codes matched: Connection to an OCD is permitted
+ID codes unmatched: Waiting for input of ID code
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 313 of 3240
+
+RX72N Group
+
+7.5
+7.5.1
+
+7. Option-Setting Memory (OFSM)
+
+Setting the Option-Setting Memory
+Allocation of Data in the Option-Setting Memory
+
+Data for programming in the option-setting memory should be allocated to the addresses shown in Figure 7.1.
+An example of source code for setting the option-setting memory is shown below.
+Note:
+
+Programming formats vary depending on the compiler. Refer to the compiler manual for details.
+
+Setting F7FFFFFFh in the serial programmer command control register (SPCC)
+.ORG 0FE7F5D40H
+.LWORD 0F7FFFFFFH
+Setting the following ID codes in the OCD/serial programmer ID setting register (OSIS)
+ID code 1/control code = FFh, ID code 2 = 02h, ID code 3 = 03h, ID code 4 = 04h,
+ID code 5 = 05h, ID code 6 = 06h, ID code 7 = 07h, ID code 8 = 08h,
+ID code 9 = 09h, ID code 10 = 0Ah, ID code 11 = 0Bh, ID code 12 = 0Ch,
+ID code 13 = 0Dh, ID code 14 = 0Eh, ID code 15 = 0Fh, ID code 16 = 10h
+.ORG 0FE7F5D50H
+.LWORD 040302FFH, 08070605H, 0C0B0A09H, 100F0E0DH
+Setting EF67BA5Dh in the option function select register 0 (OFS0)
+.ORG 0FE7F5D04H
+.LWORD 0EF67BA5DH
+Setting FFFFFEFAh in the option function select register 1 (OFS1)
+.ORG 0FE7F5D08H
+.LWORD 0FFFFFEFAH
+Setting FFFFFFF8h in the endian select register (MDE)
+.ORG 0FE7F5D00H
+.LWORD 0FFFFFFF8H
+Setting F7FC77F9h in the flash access window setting register (FAW)
+.ORG 0FE7F5D64H
+.LWORD 0F7FC77F9H
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 314 of 3240
+
+RX72N Group
+
+7.6
+7.6.1
+
+7. Option-Setting Memory (OFSM)
+
+Usage Note
+Data for Programming Reserved Areas and Reserved Bits in the Option-Setting
+Memory
+
+When reserved areas and reserved bits in the option-setting memory are within the scope of programming, write 1 as the
+value for all bits of reserved areas and all reserved bits. Normal operation cannot be guaranteed if 0 is written to such
+bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 315 of 3240
+
+

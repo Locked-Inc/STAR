@@ -1,0 +1,5790 @@
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+47.
+
+Serial Sound Interface (SSIE)
+
+47.1
+
+Overview
+
+This MCU has two serial sound interfaces (SSIE0 and SSIE1). Each SSIE supports monaural and time-division
+multiplexed (TDM) formats in addition to standard audio data formats such as I2S, left-justified, and right-justified.
+Table 47.1
+
+Features of SSIE
+
+Item
+
+Description
+
+Number of channels
+
+Two channels, SSIE0 and SSIE1
+
+Transfer mode
+
+ Master/slave
+ Transmission, reception, or transception (transception is only available on SSIE0)
+
+Data format
+
+ I2S format
+ Left-justified format
+ Right-justified format
+ Monaural format
+ TDM format
+
+Serial data
+
+ Fixed to MSB first
+ System word length: Selectable from among 8, 16, 24, 32, 48, 64, 128, or 256 bits
+ Data word length: Selectable from among 8, 16, 18, 20, 22, 24, or 32 bits
+ The level of padding bits is programmable.
+ Mute function
+
+Bit clock (BCK)
+
+In master mode
+
+ Clock source: AUDIO_CLK
+ Frequency: Selectable from among 1/1, 1/2, 1/4, 1/6, 1/8, 1/12, 1/16, 1/24, 1/32,
+1/48, 1/64, 1/96, or 1/128 of the AUDIO_CLK frequency
+ Continued supply or stopping while data transfer is halted is selectable.
+
+In master and slave
+modes
+
+ Polarity is selectable as rising edges or falling edges.
+ Polarity is selectable as low or high.
+ Continued supply or stopping while data transfer is halted is selectable.
+
+LR clock (LRCK)
+FIFO
+
+Capacity
+
+ Transmit FIFO: 4 bytes × 32 stages
+ Receive FIFO: 4 bytes × 32 stages
+
+Data alignment
+
+ Alignment of data (left-justified or right-justified) in the FIFO is selectable.
+
+Interrupts
+
+ Data transfer error/idle state
+ Receive data full
+ Transmit data empty
+
+Low power consumption function
+
+ Module stop function
+ Master clock (MCK) supply stopping function
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2488 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+Table 47.2 lists and Figure 47.1 shows the terms and the definitions used in this chapter.
+Table 47.2
+
+Definitions of Terms
+
+Term
+
+Definition
+
+Start trigger
+
+First edge of the type specified by the SSICR.LRCKP bit of the signal on the SSILRCK pin after the start of
+data transfer
+
+Frame boundary
+
+Point where SSIE starts transferring the first data of a frame or the point where SSIE ends transferring the
+last data of the frame
+
+Frame word length
+
+Number of system words per frame (number of channels)
+
+System word length
+
+Number of transferred bits per channel
+
+Data word length
+
+Number of effective bits per channel
+
+Master clock (MCK)
+
+Clock for master mode input from the AUDIO_CLK pin
+
+Example of I2S format when falling edges of SSILRCK are being used as the start trigger (SSICR.LRCKP bit is 0)
+Frame boundary
+
+Frame boundary
+
+SSIBCK
+SSILRCK
+
+Left-channel
+
+Start trigger
+SSITXD0/
+SSIRXD0/
+SSIDATA1
+
+Right-channel
+
+D19 D18 D17 D16 D3
+
+D2
+
+D1
+
+D0
+
+Padding
+
+D19 D18 D17 D16 D3
+
+Data word length
+
+D2
+
+D1
+
+D0
+
+Padding
+
+D19 D18
+
+Data word length
+
+System word length
+
+System word length
+1 frame
+
+Figure 47.1
+
+Definitions of Terms Related to Data Format
+
+Figure 47.2 and Figure 47.3 show block diagrams of the SSIE0 and SSIE1, respectively.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2489 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+Internal peripheral bus
+Interrupts
+
+Registers:
+SSICR
+SSISR
+SSIFCR
+SSIFSR
+SSIOFR
+SSISCR
+
+SSIFTDR
+(32-stage FIFO)
+
+SSIFRDR
+(32-stageFIFO)
+
+Control
+circuit
+
+SSITXD0
+
+MSB
+
+Shift register
+MSB
+
+LSB
+Shift register
+
+LSB
+
+SSIRXD0
+MST
+Bit counter
+
+SSILRCK0
+
+Polarity
+control
+BCK (master)
+
+SSIBCK0
+
+BCKP
+MST
+
+CKDV[3:0]
+Divider
+
+MCK
+AUCKE
+
+AUDIO_CLK
+
+BCK (slave)
+
+SSICR:
+SSISR:
+SSIFCR:
+SSIFSR:
+SSIOFR:
+SSIFTDR:
+SSIFRDR:
+SSISCR:
+
+Figure 47.2
+
+Control register
+Status register
+FIFO control register
+FIFO status register
+Audio format register
+Transmit FIFO data register
+Receive FIFO data register
+FIFO status control register
+
+CKDV[3:0], BCKP, MST: Bits in the SSICR register
+AUCKE: Bit in the SSIFCR register
+
+SSIE Block Diagram (SSIE0)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2490 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+Internal peripheral bus
+Interrupts
+
+Registers:
+SSICR
+SSISR
+SSIFCR
+SSIFSR
+SSIOFR
+SSISCR
+
+SSIFTDR
+(32-stage FIFO)
+
+SSIFRDR
+(32-stageFIFO)
+
+Control
+circuit
+
+SSIDATA1
+
+MSB
+
+Shift register
+MSB
+
+LSB
+Shift register
+
+LSB
+
+MST
+Bit counter
+
+SSILRCK1
+
+Polarity
+control
+
+BCKP
+MST
+
+CKDV[3:0]
+Divider
+
+BCK (master)
+
+SSIBCK1
+
+MCK
+AUCKE
+
+AUDIO_CLK
+
+BCK (slave)
+
+SSICR:
+SSISR:
+SSIFCR:
+SSIFSR:
+SSIOFR:
+SSIFTDR:
+SSIFRDR:
+SSISCR:
+
+Figure 47.3
+
+Control register
+Status register
+FIFO control register
+FIFO status register
+Audio format register
+Transmit FIFO data register
+Receive FIFO data register
+FIFO status control register
+
+CKDV[3:0], BCKP, MST: Bits in the SSICR register
+AUCKE: Bit in the SSIFCR register
+
+SSIE Block Diagram (SSIE1)
+
+Table 47.3 lists the I/O pins of the SSIEs.
+Table 47.3
+
+I/O pins of SSIE
+
+Pin Name
+
+I/O
+
+Function
+
+AUDIO_CLK
+
+Input
+
+Audio clock input
+
+SSIBCK0
+
+I/O
+
+Channel 0 bit-clock input/output
+
+SSILRCK0
+
+I/O
+
+Channel 0 LR clock input/output
+
+SSITXD0
+
+Output
+
+Channel 0 data output
+
+SSIRXD0
+
+Input
+
+Channel 0 data input
+
+SSIBCK1
+
+I/O
+
+Channel 1 bit-clock input/output
+
+SSILRCK1
+
+I/O
+
+Channel 1 LR clock input/output
+
+SSIDATA1
+
+I/O
+
+Channel 1 data input/output
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2491 of 3240
+
+RX72N Group
+
+47.2
+
+47. Serial Sound Interface (SSIE)
+
+Register Descriptions
+
+47.2.1
+
+Control Register (SSICR)
+
+Address(es): SSIE0.SSICR 0008 A500h, SSIE1.SSICR 0008 A540h
+b31
+
+b30
+
+b29
+
+—
+
+—
+
+TUIEN TOIEN RUIEN ROIEN
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+—
+
+MST
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+Bit
+
+b25
+
+b24
+
+IIEN
+
+—
+
+FRM[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+BCKP LRCKP SPDP
+
+SDTA
+
+PDTA
+
+DEL
+
+MUEN
+
+—
+
+TEN
+
+REN
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b28
+
+0
+
+b27
+
+b26
+
+0
+
+b23
+
+b22
+
+b21
+
+b20
+
+0
+
+b18
+
+DWL[2:0]
+
+CKDV[3:0]
+0
+
+b19
+
+0
+
+0
+
+b17
+
+b16
+
+SWL[2:0]
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+REN
+
+Reception Enable*1
+
+0: Reception disabled
+1: Reception enabled
+
+R/W
+
+b1
+
+TEN
+
+Transmission Enable*1
+
+0: Transmission disabled
+1: Transmission enabled
+
+R/W
+
+b2
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b3
+
+MUEN
+
+Mute
+
+0: Unmute
+1: Mute
+
+R/W
+
+b7 to b4
+
+CKDV[3:0]
+
+Bit Clock Division Ratio Select
+*2
+
+Set the division ratio to generate a bit clock from MCK.
+
+R/W
+
+b7
+
+b4
+
+0 0 0 0: No division
+0 0 0 1: Divided by 2
+0 0 1 0: Divided by 4
+0 0 1 1: Divided by 8
+0 1 0 0: Divided by 16
+0 1 0 1: Divided by 32
+0 1 1 0: Divided by 64
+0 1 1 1: Divided by 128
+1 0 0 0: Divided by 6
+1 0 0 1: Divided by 12
+1 0 1 0: Divided by 24
+1 0 1 1: Divided by 48
+1 1 0 0: Divided by 96
+Settings other than above are prohibited.
+
+b8
+
+DEL
+
+Serial Data Delay Select*2
+
+Set the delay between the edges of SSILRCK and the input and
+output of data.
+0: Delay of 1 cycle of SSIBCK
+1: No delay
+
+R/W
+
+b9
+
+PDTA
+
+Data Alignment Select*2
+
+Set the data alignment of the SSIFTDR and SSIFRDR registers.
+0: Left-justified
+1: Right-justified
+
+R/W
+
+b10
+
+SDTA
+
+Serial Data Alignment Select
+*2
+
+0: I2S and left-justified format (data bits are transmitted and
+received before the padding bits)
+1: Right-justified format (data bits are transmitted and received
+after the padding bits)
+
+R/W
+
+b11
+
+SPDP
+
+Padding Data Select*2
+
+0: Padding bits are at the low level.
+1: Padding bits are at the high level.
+
+R/W
+
+b12
+
+LRCKP
+
+LR Clock Polarity Select*2
+
+0: SSILRCK is low for left channel. The frame boundary is a
+falling edge of SSILRCK.
+1: SSILRCK is high for left channel. The frame boundary is a
+rising edge of SSILRCK.
+
+R/W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2492 of 3240
+
+RX72N Group
+Bit
+
+47. Serial Sound Interface (SSIE)
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b13
+
+BCKP
+
+Bit Clock Polarity Select*2
+
+0: Output signals change at a falling edge of bit clock and input
+signals are sampled at a rising edge of bit clock.
+1: Output signals change at a rising edge of bit clock and input
+signals are sampled at a falling edge of bit clock.
+
+R/W
+
+b14
+
+MST
+
+Master Mode*2
+
+0: Slave mode
+1: Master mode
+
+R/W
+
+b15
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b18 to b16
+
+SWL[2:0]
+
+System Word Length Select*2
+
+b18 b16
+
+R/W
+
+b21 to b19
+
+DWL[2:0]
+
+Data Word Length Select*2
+
+b21 b19
+
+R/W
+
+b23, b22
+
+FRM[1:0]
+
+Frame Word Length Select*2
+
+Set a number of system words per a frame.
+
+R/W
+
+0 0 0: 8 bits
+0 0 1: 16 bits
+0 1 0: 24 bits
+0 1 1: 32 bits
+1 0 0: 48 bits
+1 0 1: 64 bits
+1 1 0: 128 bits
+1 1 1: 256 bits
+0 0 0: 8 bits
+0 0 1: 16 bits
+0 1 0: 18 bits
+0 1 1: 20 bits
+1 0 0: 22 bits
+1 0 1: 24 bits
+1 1 0: 32 bits
+1 1 1: Setting prohibited.
+
+b23 b22
+
+0
+
+0: 2 system words (I2S, left-justified, or right-justified) or 1
+
+system word (monaural)
+0 1: 4 system words (TDM format only)
+1 0: 6 system words (TDM format only)
+1 1: 8 system words (TDM format only)
+b24
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b25
+
+IIEN
+
+Idle State Interrupt Enable
+
+0: Idle state interrupt disabled
+1: Idle state interrupt enabled
+
+R/W
+
+b26
+
+ROIEN
+
+Receive Overflow Interrupt
+Enable
+
+0: Receive overflow interrupt disabled
+1: Receive overflow interrupt enabled
+
+R/W
+
+b27
+
+RUIEN
+
+Receive Underflow Interrupt
+Enable
+
+0: Receive underflow interrupt disabled
+1: Receive underflow interrupt enabled
+
+R/W
+
+b28
+
+TOIEN
+
+Transmit Overflow Interrupt
+Enable
+
+0: Transmit overflow interrupt disabled
+1: Transmit overflow interrupt enabled
+
+R/W
+
+b29
+
+TUIEN
+
+Transmit Underflow Interrupt
+Enable
+
+0: Transmit underflow interrupt disabled
+1: Transmit underflow interrupt enabled
+
+R/W
+
+b31, b30
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note 1. After the TEN or REN bit is rewritten, confirm that the SSISR.IIRQ flag is in the desired status (when transmission or reception is
+enabled, confirm that the IIRQ flag is 0; when transmission and reception are disabled, confirm that the IIRQ flag is 1).
+Note 2. Rewrite these bits while SSIE is in idle state (SSISR.IIRQ flag = 1). If the value of these bits is changed while data transfer is in
+progress, the operation after the change is not guaranteed.
+
+TEN Bit (Transmission Enable) and REN Bit (Reception Enable)
+These bits enable/disable transmission and reception. When one of these bits is set to 1, the given type of data transfer
+starts in synchronization with a start trigger of the SSILRCK signal. When the bit is set to 0, the data transfer stops at the
+next frame boundary. To use an SSIE for both transmission and reception, set both the TEN and REN bits to 1
+simultaneously. To stop the data transfer, set both the TEN and REN bits to 0 simultaneously.
+To switch among transmission, reception, and transception, do so in the idle state.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2493 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+MUEN Bit (Mute)
+This bit is used to mute audio output by driving the SSITXD0/SSIDATA1 pin low. When this bit is changed during a
+frame, the setting takes effect at the next frame boundary.
+The MUEN bit only controls fixing of the SSITXD0/SSIDATA1 pin. Status flags are set and interrupt signals are
+generated regardless of the setting of the MUEN bit.
+Changing the value of this bit must be performed after setting the data format to be used.
+CKDV[3:0] Bits (Bit Clock Division Ratio Select)
+These bits specify the divisor for the generation of a bit clock (BCK) from the master clock (MCK). This bit is disabled
+in slave mode.
+Set these bits while the SSIFCR.AUCKE bit is 0.
+DEL Bit (Serial Data Delay Select)
+When this bit is 0, a delay of one cycle of the bit clock is inserted between edges of SSILRCK0 and SSITXD0 and
+SSIRXD0 or edges of SSILRCK1 and SSIDATA1. When 1, no delay is inserted.
+Set this bit to 0 for the I2S format and to 1 for the left-justified or right-justified format. Set this bit in conformance with
+the other party device for the monaural and TDM formats.When the monaural format is used, setting of this bit changes
+the high width of SSILRCK.
+PDTA Bit (Data Alignment Select)
+This bit specifies the alignment of the effective bits in the SSIFTDR and SSIFRDR registers. This bit is valid when the
+data word length 18 to 24 bits (the DWL[2:0] bits = 010b to 101b). Set this bit to 0, when the other data word length is
+selected.
+Figure 47.4 shows the data alignment of the SSIFTDR and SSIFRDR registers.
+
+DWL[2:0] bits
+000b (8 bits)
+
+001b (16 bits)
+
+010b (18 bits)
+
+011b (20 bits)
+
+100b (22 bits)
+
+101b (24 bits)
+
+110b (32 bits)
+
+Figure 47.4
+
+PDTA bit = 0 (left-justified)
+b31
+
+b24 b23
+
+D7
+
+D0
+
+PDTA bit = 1 (right-jusitified)
+b0
+
+Setting prohibited
+
+Invalid
+
+b31
+
+b16 b15
+
+D15
+
+D0
+
+b0
+
+Setting prohibited
+
+Invalid
+
+b31
+
+b14 b13
+
+D17
+
+D0
+
+b0
+
+b31
+
+Invalid
+
+b31
+
+b12 b11
+
+D19
+
+D0
+
+b0
+
+b31
+
+Invalid
+
+b31
+
+b10 b9
+
+D21
+
+D0
+
+b8
+
+D23
+
+D0
+
+b0
+
+b7
+
+b0
+
+D17
+
+D0
+
+b20 b19
+
+b0
+
+D19
+
+D0
+
+Invalid
+b31
+
+Invalid
+
+b31
+
+b18 b17
+
+Invalid
+
+b22 b21
+
+b0
+
+D21
+
+D0
+
+Invalid
+b0
+
+Invalid
+
+b31
+
+b0
+
+D31
+
+D0
+
+b31
+
+b24 b23
+
+Invalid
+
+D23
+
+b0
+D0
+
+Setting prohibited
+
+Data Alignment in the SSIFTDR and SSIFRDR Registers
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2494 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+SDTA Bit (Serial Data Alignment Select)
+This bit specifies the order of data bits and padding bits for transception in system words. SSIE transmits and receives
+data bits first and then padding bits when this bit is 0 and padding bits first and then data bits when this bit is 1. This bit
+is invalid for data format without padding bits.
+LRCKP Bit (LR Clock Polarity Select)
+This bit specifies the initial status and polarity of the SSILRCK pin. Table 47.4 lists the settings of this bit and the
+corresponding states of the LR clock. SSIE uses the SSILRCK signal as a start trigger in slave mode.
+Set this bit to 0 when the I2S format is selected and 1 when the other data formats are selected.
+Table 47.4
+LRCKP bit
+
+The Value of the LRCKP Bit and Responses to the States of the LR clock
+Initial State
+
+Left Channel
+
+Right Channel
+
+Frame Boundary
+
+0
+
+High
+
+Low
+
+High
+
+Falling edge
+
+1
+
+Low
+
+High
+
+Low
+
+Rising edge
+
+BCKP Bit (Bit Clock Polarity Select)
+This bit specifies the polarity of the bit clock. Table 47.5 lists the settings of this bit and the corresponding timings of
+the respective signals.
+Set this bit while the SSIFCR.AUCKE bit is 0.
+Table 47.5
+
+The Value of the BCKP bit and the Bit Clock Polarity
+
+BCKP bit
+
+Output of SSILRCK, SSITXD0, and SSIDATA1
+
+Input of SSILRCK, SSIRXD0, and SSIDATA1
+
+0
+
+The signals change on falling edges of SSIBCK.
+
+The signals are sampled on rising edges of SSIBCK.
+
+1
+
+The signals change on rising edges of SSIBCK.
+
+The signals are sampled on falling edges of SSIBCK.
+
+SWL[2:0] Bits (System Word Length Select)
+These bits specify the number of bits in a system word. The setting of these bits determines the frequency ratio of the bit
+clock to the LR clock. Then number of the padding bits is obtained from the difference in the SWL[2:0] and DWL[2:0]
+bits. Refer to Table 47.8 for details.
+DWL[2:0] Bits (Data Word Length Select)
+These bits specify the number of bits of valid data in a system word. The data word length must not exceed the system
+word length. For details, refer to Table 47.8.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2495 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+FRM[1:0] Bits (Frame Word Length Select)
+These bits specify the number of system words in a frame.
+Set these bits to 00b when the I2S, left-justified, right-justified, or monaural format is selected. Do not set these bits to
+00b when the TDM format is selected.
+
+SSILRCK
+System word
+
+FRM[1:0] bits = 00b
+
+System word
+
+System word
+
+1 frame
+
+FRM[1:0] bits = 01b
+FRM[1:0] bits = 10b
+
+System word
+
+1 frame
+
+System word
+
+System word
+
+1 frame
+
+1 frame
+
+System word
+
+1 frame
+1 frame
+
+1 frame
+
+FRM[1:0] bits = 11b
+
+Figure 47.5
+
+System word
+
+1 frame
+1 frame
+
+Frame Word Length
+
+IIEN Bit (Idle State Interrupt Enable)
+This bit enables or disables the idle state interrupts.
+While this bit is 1, an interrupt request is output when the SSISR.IIRQ flag becomes 1. An interrupt request is also output
+when this bit is changed from 0 to 1 while the IIRQ flag is 1.
+ROIEN Bit (Receive Overflow Interrupt Enable)
+This bit enables or disables interrupts receive overflow interrupts.
+While this bit is 1, an interrupt request is output when the SSISR.ROIRQ flag becomes 1. An interrupt request is also
+output when this bit is changed from 0 to 1 while the ROIRQ flag is 1.
+RUIEN Bit (Receive Underflow Interrupt Enable)
+This bit enables/disables the receive underflow interrupts.
+While this bit is 1, an interrupt request is output when the SSISR.RUIRQ flag becomes 1. An interrupt request is also
+output when this bit is changed from 0 to 1 while the RUIRQ flag is 1.
+TOIEN Bit (Transmit Overflow Interrupt Enable)
+This bit enables/disables the transmit overflow interrupts.
+While this bit is 1, an interrupt request is output when the SSISR.TOIRQ flag becomes 1. An interrupt request is also
+output when this bit is changed from 0 to 1 while the TOIRQ flag is 1.
+TUIEN Bit (Transmit Underflow Interrupt Enable)
+This bit enables/disables the transmit underflow interrupts.
+While this bit is 1, an interrupt request is output when the SSISR.TUIRQ flag becomes 1. An interrupt request is also
+output when this bit is changed from 0 to 1 while the TUIRQ flag is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2496 of 3240
+
+RX72N Group
+
+47.2.2
+
+47. Serial Sound Interface (SSIE)
+
+Status Register (SSISR)
+
+Address(es): SSIE0.SSISR 0008 A504h, SSIE1.SSISR 0008 A544h
+b31
+
+b30
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+Bit
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+IIRQ
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+TUIRQ TOIRQ RUIRQ ROIRQ
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b24 to b0
+
+—
+
+b25
+
+IIRQ
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Idle State Flag
+
+0: Transfer state
+1: Idle state
+
+R
+
+b26
+
+ROIRQ
+
+Receive Overflow Flag
+
+0: No receive overflows occurred.
+1: A receive overflow has occurred.
+
+R/W
+
+b27
+
+RUIRQ
+
+Receive Underflow Flag
+
+0: No receive underflows occurred.
+1: A receive underflow has occurred.
+
+R/W
+
+b28
+
+TOIRQ
+
+Transmit Overflow Flag
+
+0: No transmit overflows occurred.
+1: A transmit overflow has occurred.
+
+R/W
+
+b29
+
+TUIRQ
+
+Transmit Underflow Flag
+
+0: No transmit underflows occurred.
+1: A transmit underflow has occurred.
+
+R/W
+
+b31, b30
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+This register indicates the SSIE status.
+IIRQ Flag (Idle State Flag)
+This flag indicates whether SSIE is in the idle state or transfer state.
+[Setting condition]
+ When a transmission of a frame is completed after changing the SSICR.TEN bit from 1 to 0.
+ When a reception of a frame is completed after changing the SSICR.REN bit from 1 to 0.
+ When a transmission of a frame is completed after changing the SSICR.TEN and SSICR.REN bits from 1 to 0.
+[Clearing condition]
+ When a start trigger is generated by writing a transmit data in the SSIFTDR register, while the SSICR.TEN bit is 1.
+ When a start trigger is detected while the SSICR.REN bit is 1.
+ When a start trigger is generated by writing a transmit data to the SSIFTDR register, while the SSICR.TEN and
+SSICR.REN bits are 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2497 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+ROIRQ Flag (Receive Overflow Flag)
+This flag indicates a receive overflow. This flag indicates that the data processing of the received data is delayed. The
+received data is not transferred to the receive FIFO if a receive overflow occurs. This flag is not cleared by resetting a
+receive FIFO.
+[Priority order for setting and clearing]
+Setting is prioritized.
+[Setting condition]
+ When a reception of the next data is completed while the receive FIFO is full.
+[Clearing condition]
+ When 0 is written to this flag after confirming this flag is 1.
+ When the SSICR.REN bit is changed from 0 to 1.
+RUIRQ Flag (Receive Underflow Flag)
+This flag indicates a receive underflow. This flag indicates that the SSIFRDR register is read while the receive FIFO is
+empty. Data read from the SSIFRDR register is invalid if a receive underflow occurs. This flag is not cleared by resetting
+a receive FIFO. Reading the SSIFRDR register while resetting the receive FIFO does not lead to setting of this flag.
+[Priority order for setting and clearing]
+Setting is prioritized.
+[Setting condition]
+ When the SSIFRDR register is read while the receive FIFO is empty.
+[Clearing condition]
+ When 0 is written to this flag after confirming this flag is 1.
+ When the SSICR.REN bit is changed from 0 to 1.
+TOIRQ Flag (Transmit Overflow Flag)
+This flag indicates a transmit overflow. This flag indicates that a data is written to the SSIFTDR register while the
+transmit FIFO is full. The written data is discarded. This flag is not cleared by resetting a transmit FIFO.
+[Priority order for setting and clearing]
+Setting is prioritized.
+[Setting condition]
+ When a data is written to the SSIFTDR register while the transmit FIFO is full.
+[Clearing condition]
+ When 0 is written to this flag after confirming this flag is 1.
+ When the SSICR.TEN bit is changed from 0 to 1.
+TUIRQ Flag (Transmit Underflow Flag)
+This flag indicates a transmit underflow. This flag indicates that supply of the transmit data was not enough to the
+transmission of the frame. The SSITXD0 and SSIDATA1 pins become low if a transmit underflow occurs, and remain
+low even if the flag is cleared. This flag is not cleared by resetting a transmit FIFO.
+[Priority order for setting and clearing]
+Setting is prioritized.
+[Setting condition]
+ When a data transfer to the transmit shift register occurs while the transmit FIFO is empty.
+[Clearing condition]
+ When 0 is written to this flag after confirming this flag is 1.
+ When the SSICR.TEN bit is changed from 0 to 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2498 of 3240
+
+RX72N Group
+
+47.2.3
+
+47. Serial Sound Interface (SSIE)
+
+FIFO Control Register (SSIFCR)
+
+Address(es): SSIE0.SSIFCR 0008 A510h, SSIE1.SSIFCR 0008 A550h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+AUCKE
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+SSIRS
+T
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+BSW
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+TIE
+
+RIE
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+Bit
+
+TFRST RFRST
+0
+
+0
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+RFRST
+
+Receive FIFO Reset*1
+
+0: The receive FIFO is released from the reset state.
+1: The receive FIFO is reset.
+
+R/W
+
+b1
+
+TFRST
+
+Transmit FIFO Reset*1
+
+0: The transmit FIFO is released from the reset state.
+1: The transmit FIFO is reset.
+
+R/W
+
+b2
+
+RIE
+
+Receive Data Full Interrupt
+Enable
+
+0: Receive data full interrupt is disabled.
+1: Receive data full interrupt is enabled.
+
+R/W
+
+b3
+
+TIE
+
+Transmit Data Empty Interrupt
+Enable
+
+0: Transmit data empty interrupt is disabled.
+1: Transmit data empty interrupt is enabled.
+
+R/W
+
+b10 to b4
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b11
+
+BSW
+
+Byte Swap*1
+
+0: Byte swapping is disabled
+1: Byte swapping is enabled
+
+R/W
+
+b15 to b12
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b16
+
+SSIRST
+
+Software Reset
+
+0: The software reset is released.
+1: A software reset is applied.
+
+R/W
+
+b30 to b17
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b31
+
+AUCKE
+
+MCK Supply Enable*1
+
+0: MCK is stopped.
+1: MCK is supplied.
+
+R/W
+
+Note 1. Rewrite these bits while SSIE is in idle state (SSISR.IIRQ flag = 1). If the value of these bits is changed while data transfer is in
+progress, the operation after the change is not guaranteed.
+
+RFRST Bit (Receive FIFO Reset)
+This bit is used to reset the receive FIFO. Writing 1 to this bit resets the receive FIFO and initializes the RDC[5:0] bits
+and RDF flag in the SSIFSR register. Since this bit is not automatically cleared, write 0 to this bit to release from the
+reset state. After writing 0 to this bit, be sure to check that this bit is 0 before starting the next procedure.
+This bit is subject to the software reset by the SSIRST bit. Because the software reset by the SSIRST bit has priority over
+the reset by this bit, this bit cannot be set to 1 when the SSIRST bit is 1.
+TFRST Bit (Transmit FIFO Reset)
+This bit is used to reset the transmit FIFO. Writing 1 to this bit resets the transmit FIFO and initializes the TDC[5:0] bits
+and TDE flag in the SSIFSR register. Since this bit is not automatically cleared, write 0 to this bit to release from the
+reset state. After writing 0 to this bit, be sure to check that this bit is 0 before starting the next procedure.
+This bit is subject to the software reset by the SSIRST bit. Because the software reset by the SSIRST bit has priority over
+the reset by this bit, this bit cannot be set to 1 when the SSIRST bit is set.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2499 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+RIE Bit (Receive Data Full Interrupt Enable)
+This bit enables or disables a receive data full interrupt. Set this bit to 1 after specifying the condition for generating a
+receive data full interrupt in the SSISCR.RDFS[4:0] bits.
+TIE Bit (Transmit Data Empty Interrupt Enable)
+This bit enables or disables a transmit data empty interrupt. Set this bit to 1 after specifying the condition for generating
+a transmit data empty interrupt in the SSISCR.TDES[4:0] bits.
+BSW Bit (Byte Swap)
+The BSW bit enables or disables byte swapping when the SSIFTDR is written and the SSIFRDR register is read. This bit
+is valid only when the SSIFTDR and SSIFRDR register are accessed in 16-bit or 32-bit units. For details, refer to Figure
+47.6.
+
+BSW bit = 0
+
+Access size
+
+BSW bit = 1
+
+Written data
+
+HH
+
+HL
+
+LH
+
+LL
+
+Written data
+
+HH
+
+HL
+
+LH
+
+LL
+
+SSIFTDR register
+
+HH
+
+HL
+
+LH
+
+LL
+
+SSIFTDR register
+
+LL
+
+LH
+
+HL
+
+HH
+
+SSIFRDR register
+
+HH
+
+HL
+
+LH
+
+LL
+
+SSIFRDR register
+
+LL
+
+LH
+
+HL
+
+HH
+
+Read data
+
+HH
+
+HL
+
+LH
+
+LL
+
+Read data
+
+HH
+
+HL
+
+LH
+
+LL
+
+Written data
+
+HH
+
+HL
+
+Written data
+
+HH
+
+HL
+
+SSIFTDR register
+
+HH
+
+HL
+
+SSIFTDR register
+
+HL
+
+HH
+
+SSIFRDR register
+
+HH
+
+HL
+
+SSIFRDR register
+
+HL
+
+HH
+
+Read data
+
+HH
+
+HL
+
+Read data
+
+HH
+
+HL
+
+32 bits
+
+16 bits
+
+Figure 47.6
+
+Examples of Byte-Swapping Operations
+
+SSIRST Bit (Software Reset)
+This bit is used to reset SSIE. Writing 1 to this bit initializes the internal state of SSIE. The registers and bits to be reset
+by setting this bit are listed below.
+ SSICR.MUEN, TEN, and REN bits
+ SSISR register
+ SSIFCR.TFRST and RFRST bits
+ SSIFSR register
+ SSIFTDR register
+ SSIFRDR register
+Because this bit is not automatically cleared, write 0 to this bit to release from the reset state. After writing 0 to this bit,
+be sure to check that this bit is 0 before starting the next procedure.
+Because writing 1 to this bit during data transfer leads to initialization by software reset regardless of the bit clock, be
+careful to stop data transfer by using this bit.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2500 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+AUCKE Bit (MCK Supply Enable)
+This bit enables/disables supply of MCK while in master-mode. The setting value of this bit is reflected at the timing
+shown in Figure 47.7.
+Changes to settings related to MCK (the settings of the MST, BCKP, and CKDV[3:0] bits in the SSICR register) should
+only proceed while this bit is 0.
+
+PCLKB
+AUCKE bit
+AUDIO_CLK
+MCK
+
+Figure 47.7
+
+Supplying and Stopping MCK
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2501 of 3240
+
+RX72N Group
+
+47.2.4
+
+47. Serial Sound Interface (SSIE)
+
+FIFO Status Register (SSIFSR)
+
+Address(es): SSIE0.SSIFSR 0008 A514h, SSIE1.SSIFSR 0008 A554h
+b31
+
+b30
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+—
+
+—
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+TDE
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+RDF
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+TDC[5:0]
+
+RDC[5:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+RDF
+
+Receive Data Full Flag
+
+0: The number of received data stored in the receive FIFO does
+not exceed the value of the SSISCR.RDFS[4:0] bits.
+1: The number of received data stored in the receive FIFO
+exceeds the value of the RDFS[4:0] bits.
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b13 to b8
+
+RDC[5:0]
+
+Receive FIFO Data Count
+
+Number of data stored in the receive FIFO
+
+R
+
+b15, b14
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b16
+
+TDE
+
+Transmit Data Empty Flag
+
+0: The number of spaces available in the transmit FIFO does
+not exceed the value of the SSISCR.TDES[4:0] bits
+1: The number of spaces available in the transmit FIFO
+exceeds the value of TDES[4:0] bits.
+
+R/W
+
+b23 to b17
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b29 to b24
+
+TDC[5:0]
+
+Transmit FIFO Data Count
+
+Number of data stored in the transmit FIFO
+
+R
+
+b31, b30
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+This register indicates the status of the transmit FIFO and the receive FIFO.
+RDF Flag (Receive Data Full Flag)
+This flag indicates that the number of unread data in the receive FIFO is more than the value of the SSISCR.RDFS[4:0]
+bits.
+[Priority order for setting and clearing]
+Clearing is prioritized.
+[Setting condition]
+ When the number of data stored in the receive FIFO exceeds the value of the SSISCR.RDFS[4:0] bits.
+[Clearing condition]*1
+ When 0 is written to this flag after confirming this flag is 1.
+ When a received data is read from the SSIFRDR register by DMA/DTC transfer (the last transfer of the block if
+using block transfer).
+Note 1. This flag is cleared by a software reset and receive FIFO reset.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2502 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+RDC[5:0] Bits (Receive FIFO Data Count)
+These bits indicate the number of valid data that are stored in the receive FIFO. When this bit is 00h, there is no received
+data. When 20h, the receive FIFO is full and there is no space available.
+TDE Flag (Transmit Data Empty Flag)
+This flag indicates that the number of spaces available in the transmit FIFO is more than the value of the
+SSISCR.TDES[4:0] bits.
+[Priority order for setting and clearing]
+Clearing is prioritized.
+[Setting condition]
+ When the number of spaces available in the transmit FIFO exceeds the value of the SSISCR.TDES[4:0] bits.
+[Clearing condition]*1
+ When 0 is written to this flag after confirming this flag is 1.
+ When a transmit data is written to the SSIFTDR register by DMA/DTC transfer (the last transfer of the block if
+using block transfer).
+Note 1. This flag is cleared by a software reset and transmit FIFO reset.
+
+TDC[5:0] Bits (Transmit FIFO Data Count)
+These bits indicate the number of valid data that are stored in the transmit FIFO. When this bit is 00h, there is no data to
+be transmitted. When 20h, the transmit FIFO is full and there is no space available.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2503 of 3240
+
+RX72N Group
+
+47.2.5
+
+47. Serial Sound Interface (SSIE)
+
+Transmit FIFO Data Register (SSIFTDR)
+
+ When accessing in longword size
+Address(es): SSIE0.SSIFTDR 0008 A518h, SSIE1.SSIFTDR 0008 A558h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ When accessing in word size
+Address(es): SSIE0.SSIFTDR.H 0008 A518h, SSIE1.SSIFTDR.H 0008 A558h
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+H
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ When accessing in byte size
+Address(es): SSIE0.SSIFTDR.HH 0008 A518h, SSIE1.SSIFTDR.HH 0008 A558h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+HH
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+This register is a write-only register used to write a transmit data to the 32-stage and 4-byte-wide transmit FIFO.
+Access to this register according to the access size listed in Table 47.6.
+Table 47.6
+
+Access Size to the SSIFTDR and SSIFRDR Registers
+Access Size
+
+SSICR.DWL[2:0] Bits
+
+Data Word Length
+
+Byte
+
+Word
+
+Longword
+
+000b
+
+8
+
+Available
+
+Not available
+
+Not available
+
+001b
+
+16
+
+Not available
+
+Available
+
+Not available
+
+010b
+
+18
+
+Not available
+
+Not available
+
+Available
+
+011b
+
+20
+
+Not available
+
+Not available
+
+Available
+
+100b
+
+22
+
+Not available
+
+Not available
+
+Available
+
+101b
+
+24
+
+Not available
+
+Not available
+
+Available
+
+110b
+
+32
+
+Not available
+
+Not available
+
+Available
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2504 of 3240
+
+RX72N Group
+
+47.2.6
+
+47. Serial Sound Interface (SSIE)
+
+Receive FIFO Data Register (SSIFRDR)
+
+ When accessing in longword size
+Address(es): SSIE0.SSIFRDR 0008 A51Ch, SSIE1.SSIFRDR 0008 A55Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ When accessing in word size
+Address(es): SSIE0.SSIFRDR.H 0008 A51Ch, SSIE1.SSIFRDR.H 0008 A55Ch
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+H
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ When accessing in byte size
+Address(es): SSIE0.SSIFRDR.HH 0008 A51Ch, SSIE1.SSIFRDR.HH 0008 A55Ch
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+HH
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+This register is a read-only register used to read a received data from the 32-stage and 4-byte-wide receive FIFO.
+Access to this register according to the access size listed in Table 47.6.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2505 of 3240
+
+RX72N Group
+
+47.2.7
+
+47. Serial Sound Interface (SSIE)
+
+Audio Format Register (SSIOFR)
+
+Address(es): SSIE0.SSIOFR 0008 A520h, SSIE1.SSIOFR 0008 A560h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+OMOD[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+Bit
+b1, b0
+
+BCKAS LRCON
+TP
+T
+0
+
+0
+
+0
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+OMOD[1:0]
+
+Data Format Select*1
+
+b1 b0
+
+R/W
+
+0 0: I2S, left-justified, or right-justified format
+0 1: TDM format
+1 0: Monaural format
+1 1: Setting prohibited
+
+b7 to b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b8
+
+LRCONT
+
+LRCK Continuous Output
+Enable*2, *3
+
+0: LRCK stops in the idle state.
+1: Output of LRCK continues in the idle state.
+
+R/W
+
+b9
+
+BCKASTP
+
+BCK Continuous Output
+Disable*2, *3
+
+0: BCK is always output.
+1: BCK stops in idle state.
+
+R/W
+
+b31 to b10
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note 1. Rewrite these bits while SSIE is in idle state (SSISR.IIRQ flag = 1). If the value of these bits is changed while data transfer is in
+progress, the operation after the change is not guaranteed.
+Note 2. This bit is valid only in master-mode. The setting is invalid in slave-mode.
+Note 3. Do not set both of the BCKASTP and LRCONT bits to 1.
+
+This register is used to set an audio format (which includes the settings of data format, LR clock continuous output mode,
+and BCK continuous output disable).
+LRCONT Bit (LRCK Continuous Output Enable)
+This bit enables or disables the output from SSILRCK pin when SSIE is in the idle state. This bit is effective only in
+master mode.
+BCKASTP Bit (BCK Continuous Output Disable)
+This bit enables or disables the output from SSIBCK pin when SSIE is in the idle state. This bit is effective only in
+master mode.
+Set this bit to 0 to output BCK from the SSIBCK pin before starting data transfer. If this bit is set to 1 during data
+transfer, BCK output from the SSIBCK pin stops when the SSIE enters the idle state.
+Set this bit after the data format to be used is specified. Do not rewrite this bit while the supply of MCK stops.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2506 of 3240
+
+RX72N Group
+
+47.2.8
+
+47. Serial Sound Interface (SSIE)
+
+FIFO Status Control Register (SSISCR)
+
+Address(es): SSIE0.SSISCR 0008 A524h, SSIE1.SSISCR 0008 A564h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+TDES[4:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+RDFS[4:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b4 to b0
+
+RDFS[4:0]
+
+Receive Data Full Condition
+Setting*1
+
+Specifies the condition for setting the RDF flag to 1.
+
+R/W
+
+b4
+
+b0
+
+00000: When receive FIFO has unread received data.
+00001: When receive FIFO has two or more unread received
+data.
+...
+11110: When receive FIFO has 31 or more unread received
+data.
+11111: When receive FIFO is full.
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b12 to b8
+
+TDES[4:0]
+
+Transmit Data Empty
+Condition Setting*1
+
+Specifies the condition for setting the TDE flag to 1.
+
+R/W
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+b31 to b13
+
+—
+
+b12
+
+b8
+
+00000: When transmit FIFO has space available.
+00001: When transmit FIFO has at least two stages available.
+...
+11110: When transmit FIFO has at least 31 stages available.
+11111: When transmit FIFO is empty.
+R/W
+
+Note 1. Rewrite these bits while SSIE is in idle state (SSISR.IIRQ flag = 1). If the value of these bits is changed while data transfer is in
+progress, the operation after the change is not guaranteed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2507 of 3240
+
+RX72N Group
+
+47.3
+
+47. Serial Sound Interface (SSIE)
+
+Operation
+
+47.3.1
+
+Data Formats
+
+SSIE supports five data formats. Table 47.7 lists the supported data formats.
+Table 47.7
+
+Supported Data Formats and Bit Setting
+
+Data Format
+
+SSIOFR.OMOD[1:0] Bits
+
+SSICR.DEL Bit
+
+SSICR.LRCKP Bit
+
+SSICR.SDTA Bit
+
+I2S format
+
+00b
+
+0
+
+0
+
+0
+
+Left-justified format
+
+00b
+
+1
+
+1
+
+0
+
+Right-justified format
+
+00b
+
+1
+
+1
+
+1
+
+TDM format
+
+01b
+
+0 or 1
+
+1
+
+0 or 1
+
+Monaural format
+
+10b
+
+0 or 1
+
+1
+
+0 or 1
+
+The following describes the serial data structure shared by data formats.
+A serial data structure is defined by the system word length (set in the SSICR.SWL[2:0] bits) and the data word length
+(set in the SSICR.DWL[2:0] bits). If the data word length is shorter than the system word length, padding bits are
+inserted (Figure 47.8).
+
+SSIBCK
+SSILRCK
+SSITXD0/
+SSIRXD0/
+SSIDATA1
+
+Left channel
+
+D23 D22 D21 D20 D3
+
+24 bits
+
+Right channel
+
+D2
+
+D1
+
+D0
+
+D23 D22 D21 D20 D3
+
+D2
+
+D1
+
+D0
+
+D23 D22
+
+8 bits
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 0 (with delay), SDTA bit = 0 (I2S), SPDP bit = 0 (padding with low),
+LRCKP bit = 0 (low level for left channel), BCKP bit = 0 (output changes on falling edges),
+SWL[2:0] bits = 011b (32 bits), DWL[2:0] bits = 101b (24 bits), and FRM[1:0] bits = 00b (2 system words)
+
+Figure 47.8
+
+Example of Padding Bit Insertion (I2S Format, System Word Length > Data Word Length)
+
+The number of padding bits is calculated from the system word length minus the data word length.
+Table 47.8 lists the number of padding bits to be inserted with each combination of system word length (SWL[2:0] bits)
+and data word length (DWL[2:0] bits).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2508 of 3240
+
+RX72N Group
+
+Table 47.8
+
+47. Serial Sound Interface (SSIE)
+
+Number of Padding Bits
+
+System Word Length
+(SSICR.SWL[2:0] Bits)
+
+Data Word Length (SSICR.DWL[2:0] Bits)
+8 (000b)
+
+16 (001b)
+
+18 (010b)
+
+20 (011b)
+
+22 (100b)
+
+24 (101b)
+
+32 (110b)
+
+8 (000b)
+
+0
+
+Prohibited
+setting
+
+Prohibited
+setting
+
+Prohibited
+setting
+
+Prohibited
+setting
+
+Prohibited
+setting
+
+Prohibited
+setting
+
+16 (001b)
+
+8
+
+0
+
+Prohibited
+setting
+
+Prohibited
+setting
+
+Prohibited
+setting
+
+Prohibited
+setting
+
+Prohibited
+setting
+
+24 (010b)
+
+16
+
+8
+
+6
+
+4
+
+2
+
+0
+
+Prohibited
+setting
+
+32 (011b)
+
+24
+
+16
+
+14
+
+12
+
+10
+
+8
+
+0
+
+48 (100b)
+
+40
+
+32
+
+30
+
+28
+
+26
+
+24
+
+16
+
+64 (101b)
+
+56
+
+48
+
+46
+
+44
+
+42
+
+40
+
+32
+
+128 (110b)
+
+120
+
+112
+
+110
+
+108
+
+106
+
+104
+
+96
+
+256 (111b)
+
+248
+
+240
+
+238
+
+236
+
+234
+
+232
+
+224
+
+I2S Format
+
+47.3.1.1
+
+The I2S format configures a frame with two system words of left channel and right channel. The SSILRCK signals
+becomes low for left channel and high for right channel. The effective data are output one bit clock period after the
+SSILRCK changes and then the padding bits are output.
+Figure 47.9 shows an example of I2S format.
+
+1 frame
+System word
+
+System word
+
+SSIBCK
+SSILRCK
+SSITXD0/
+SSIRXD0/
+SSIDATA1
+
+Left channel
+
+D2
+
+D1
+
+D0 D15 D14 D13 D12 D11 D10 D5
+
+Right channel
+
+D4
+
+D3
+
+D2
+
+D1
+
+D0 D15 D14 D13 D12 D11 D10 D5
+
+D4
+
+D3
+
+D2
+
+D1
+
+D0 D15 D14
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 0 (with delay), SDTA bit = 0 (I2S), SPDP bit = 0 (padding with low),
+LRCKP bit = 0 (low level for left channel), BCKP bit = 0 (output changes on falling edges),
+SWL[2:0] bits = 001b (16 bits), DWL[2:0] bits = 001b (16 bits), and FRM[1:0] bits = 00b (2 system words)
+
+Figure 47.9
+
+Example of I2S Format
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2509 of 3240
+
+RX72N Group
+
+47.3.1.2
+
+47. Serial Sound Interface (SSIE)
+
+Left-Justified Format
+
+The left-justified format configures a frame with two system words of left channel and right channel. The SSILRCK
+signals becomes high for left channel and low for right channel. The effective data are output at the same time as the
+SSILRCK changes and then the padding bits are output.
+Figure 47.10 shows an example of left-justified format.
+
+1 frame
+System word
+
+System word
+
+SSIBCK
+SSILRCK
+
+Left channel
+
+SSITXD0/
+SSIRXD0/
+SSIDATA1
+
+D19 D18 D17 D16 D3
+
+D2
+
+D1
+
+Right channel
+
+D0
+
+D19 D18 D17 D16 D3
+
+D2
+
+D1
+
+D0
+
+D19 D18
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 1 (without delay), SDTA bit = 0 (left-justified), SPDP bit = 0 (padding with low),
+LRCKP bit = 1 (high level for left channel), BCKP bit = 0 (output changes on falling edges),
+SWL[2:0] bits = 010b (24 bits), DWL[2:0] bits = 011b (20 bits), and FRM[1:0] bits = 00b (2 system words)
+
+Figure 47.10
+
+Example of Left-Justified Format
+
+47.3.1.3
+
+Right-Justified Format
+
+The right-justified format configures a frame with two system words of left channel and right channel. The SSILRCK
+signals becomes high for left channel and low for right channel. The padding bits are output at the same time as the
+SSILRCK changes and then the effective data are output.
+Figure 47.11 shows an example of right-justified format.
+
+1 frame
+System word
+
+System word
+
+SSIBCK
+SSILRCK
+SSITXD0/
+SSIRXD0/
+SSIDATA1
+
+Left channel
+
+D2
+
+D1
+
+D0
+
+D19 D18 D17 D16 D3
+
+Right channel
+
+D2
+
+D1
+
+D0
+
+D19 D18 D17 D16 D3
+
+D2
+
+D1
+
+D0
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 1 (without delay), SDTA bit = 1 (right-justified), SPDP bit = 0 (padding with low),
+LRCKP bit = 1 (high level for left channel), BCKP bit = 0 (output changes on falling edges),
+SWL[2:0] bits = 010b (24 bits), DWL[2:0] bits = 011b (20 bits), and FRM[1:0] bits = 00b (2 system words)
+
+Figure 47.11
+
+Example of Right-Justified Format
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2510 of 3240
+
+RX72N Group
+
+47.3.1.4
+
+47. Serial Sound Interface (SSIE)
+
+Monaural Format
+
+The monaural format configures a frame with one system word. The SSILRCK signal is used as a transfer start trigger.
+Figure 47.12, Figure 47.13, and Figure 47.14 show examples of monaural formats with 0 as the value of the
+SSICR.DEL bit and no padding bits, with 0 as the value of the DEL bit and padding bits, and with 1 as the value of the
+DEL bit and no padding bits, respectively.
+
+1 frame
+
+1 frame
+
+System word
+
+System word
+
+SSIBCK
+SSILRCK
+SSITXD0/
+SSIRXD0/
+SSIDATA1
+
+D2
+
+D1
+
+D0 D15 D14 D13 D12 D11 D10 D5
+
+D4
+
+D3
+
+D2
+
+D1
+
+D0 D15 D14 D13 D12 D11 D10 D5
+
+D4
+
+D3
+
+D2
+
+D1
+
+D0 D15 D14
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 0 (with delay), SDTA bit = 0 (left-justified), SPDP bit = 0 (padding with low),
+LRCKP bit = 1 (high level for left channel), BCKP bit = 1 (output changes on rising edges),
+SWL[2:0] bits = 001b (16 bits), DWL[2:0] bits = 001b (16 bits), and FRM[1:0] bits = 00b (1 system word)
+
+Figure 47.12
+
+Example of Monaural Format (1): SSICR.DEL Bit = 0 and No Padding
+
+1 frame
+
+1 frame
+
+System word
+
+System word
+
+SSIBCK
+SSILRCK
+SSITXD0/
+SSIRXD0/
+SSIDATA1
+
+D19 D18 D17 D16 D3
+
+D2
+
+D1
+
+D0
+
+D19 D18 D17 D16 D3
+
+D2
+
+D1
+
+D0
+
+D19 D18
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 0 (with delay), SDTA bit = 0 (left-justified), SPDP bit = 0 (padding with low),
+LRCKP bit = 1 (high level for left channel), BCKP bit = 1 (output changes on rising edges),
+SWL[2:0] bits = 010b (24 bits), DWL[2:0] bits = 011b (20 bits), and FRM[1:0] bits = 00b (1 system word)
+
+Figure 47.13
+
+Example of Monaural Format (2): SSICR.DEL Bit = 0 and Padding Bits
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2511 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+1 frame
+
+1 frame
+
+System word
+
+System word
+
+SSIBCK
+SSILRCK
+SSITXD0/
+SSIRXD0/
+SSIDATA1
+
+D2
+
+D1
+
+D0 D15 D14 D13 D12 D11 D10 D5
+
+D4
+
+D3
+
+D2
+
+D1
+
+D0 D15 D14 D13 D12 D11 D10 D5
+
+D4
+
+D3
+
+D2
+
+D1
+
+D0 D15 D14
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 1 (without delay), SDTA bit = 0 (left-justified), SPDP bit = 0 (padding with low),
+LRCKP bit = 1 (high level for left channel), BCKP bit = 1 (output changes on rising edges),
+SWL[2:0] bits = 001b (16 bits), DWL[2:0] bits = 001b (16 bits), and FRM[1:0] bits = 00b (1 system word)
+
+Figure 47.14
+
+Example of Monaural Format (3): SSICR.DEL Bit = 1 and No Padding
+
+47.3.1.5
+
+TDM Format
+
+The TDM format configures a frame with four to eight system words. The SSILRCK signals become high for the first
+system word and low for the other system words. The SSILRCK signal is defined as the synchronous pulse and its rising
+edge means a start of a frame.
+Figure 47.15 and Figure 47.16 show examples of the TDM formats with 0 as the value of the SSICR.DEL bit and no
+padding bits, and with 1 as the value of the SSICR.DEL bit and padding bits, respectively.
+
+1 frame
+System word
+
+System word
+
+System word
+
+System word
+
+SSIBCK
+SSILRCK
+SSITXD0/
+SSIRXD0/
+SSIDATA1
+
+D2
+
+D1
+
+D0 D15 D14 D13 D2
+
+D1
+
+D0 D15 D14 D13 D2
+
+D1
+
+D0 D15 D14 D13 D2
+
+D1
+
+D0 D15 D14 D13 D2
+
+D1
+
+D0 D15 D14
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 0 (with delay), SDTA bit = 0 (I2S), SPDP bit = 0 (padding with low),
+LRCKP bit = 1 (high level for left channel), BCKP bit = 0 (output changes on falling edges),
+SWL[2:0] bits = 001b (16 bits), DWL[2:0] bits = 001b (16 bits), and FRM[1:0] bits = 01b (4 system words)
+
+Figure 47.15
+
+Example of TDM Format (1): SSICR.DEL Bit = 0 and No Padding
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2512 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+1 frame
+System word
+
+System word
+
+System word
+
+System word
+
+SSIBCK
+SSILRCK
+SSITXD0/
+SSIRXD0/
+SSIDATA1
+
+D0
+
+D21 D20 D1
+
+D0
+
+D21 D20 D1
+
+D0
+
+D21 D20 D1
+
+D0
+
+D21 D20 D1
+
+D0
+
+D21 D20
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 1 (without delay), SDTA bit = 0 (left-justified), SPDP bit = 0 (padding with low),
+LRCKP bit = 1 (high level for left channel), BCKP bit = 0 (output changes on falling edges),
+SWL[2:0] bits = 010b (24 bits), DWL[2:0] bits = 100b (22 bits), and FRM[1:0] bits = 01b (4 system words)
+
+Figure 47.16
+
+Example of TDM Format (2): SSICR.DEL Bit = 1 and Padding Bits
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2513 of 3240
+
+RX72N Group
+
+47.3.2
+
+47. Serial Sound Interface (SSIE)
+
+Output Control
+
+SSIE has functions to control the outputs of data and clocks such as mute function, LRCK continuous output function,
+and BCK continuous output disable function.
+
+47.3.2.1
+
+Mute Function
+
+The output from the SSITXD0 or SSIDATA1 pin can be fixed to the low level by using the mute function. If the
+SSICR.MUEN bit is changed during a frame, the setting takes effect at the next frame boundary. Even while the MUEN
+bit is set to 1, status flags are updated and interrupt request signals are generated.
+Figure 47.17 shows an example of the mute operation.
+
+1 frame
+System word
+
+1 frame
+System word
+
+System word
+
+System word
+
+SSIBCK
+SSICR.MUEN
+bit
+SSILRCK
+SSITXD0/
+SSIDATA1
+
+D1
+
+D0 D15 D14 D13 D2
+
+D1
+
+D0 D15 D14 D13 D2
+
+D1
+
+D0
+
+D15 D14
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 0 (with delay), SDTA bit = 0 (I2S), SPDP bit = 0 (padding with low),
+LRCKP bit = 0 (low level for left channel), BCKP bit = 0 (output changes on falling edges),
+SWL[2:0] bits = 001b (16 bits), DWL[2:0] bits = 001b (16 bits), and FRM[1:0] bits = 00b (2 system words)
+
+Figure 47.17
+
+Example of Mute Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2514 of 3240
+
+RX72N Group
+
+47.3.2.2
+
+47. Serial Sound Interface (SSIE)
+
+LRCK Continuous Output Function
+
+LRCK can be output from the SSILRCK pin even in the idle state by using the LRCK continuous output function. It is
+controlled by the SSIOFR.LRCONT bit.
+Figure 47.18 shows an example of the operation with LRCK continuous output function.
+
+SSIBCK
+SSICR.TEN/
+REN bit
+SSILRCK
+SSITXD0/
+SSIDATA1
+
+R
+
+L
+
+R
+
+L
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 0 (with delay), SDTA bit = 0 (I2S), SPDP bit = 0 (padding with low),
+LRCKP bit = 0 (low level for left channel), BCKP bit = 0 (output changes on falling edges),
+and FRM[1:0] bits = 00b (2 system words)
+
+Figure 47.18
+
+Example of Operation with LRCK Continuous Output Function
+
+47.3.2.3
+
+BCK Continuous Output Disable Function
+
+BCK output from the SSIBCK pin can be stopped in the idle state by using the BCK continuous output disable function.
+It is controlled by the SSIOFR.BCKASTP bit. When the BCKASTP bit is set to 1, BCK stops in the idle state.
+Set the BCKASTP bit to 0 and then start data transfer. If this bit is set to 1 during data transfer, BCK stops when SSIE
+enters the idle state. To resume the data transfer, set the BCKSTP bit to 0 to output BCK and then set the
+SSICR.TEN/REN bit to 1.
+Figure 47.19 shows an example of the operation with BCK continuous output disable function.
+
+SSIBCK
+SSIOFR.
+BCKASTP bit
+SSICR.TEN/
+REN bit
+SSILRCK
+SSITXD0/
+SSIDATA1
+
+R
+
+L
+
+R
+
+L
+
+R
+
+L
+
+This figure applies when the SSIOFR.LRCONT bit is 0 and the respective bits in the SSICR register are as follows:
+DEL bit = 0 (with delay), SDTA bit = 0 (I2S), SPDP bit = 0 (padding with low),
+LRCKP bit = 0 (low level for left channel), BCKP bit = 0 (output changes on falling edges),
+and FRM[1:0] bits = 00b (2 system words)
+
+Figure 47.19
+
+Example of Operation with BCK Continuous Output Disable Function
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2515 of 3240
+
+RX72N Group
+
+47.3.3
+
+47. Serial Sound Interface (SSIE)
+
+Transfer Modes
+
+SSIE supports the transfer modes listed in Table 47.9. Table 47.10 lists the control bits valid in each transfer mode.
+Table 47.9
+
+Transfer Modes
+
+Transfer Mode
+
+SSICR.MST Bit
+
+SSICR.REN Bit
+
+SSICR.TEN Bit
+
+Slave-mode transmission
+
+0
+
+0
+
+1
+
+Slave-mode reception
+
+0
+
+1
+
+0
+
+Slave-mode transception
+
+0
+
+1
+
+1
+
+Master-mode transmission
+
+1
+
+0
+
+1
+
+Master-mode reception
+
+1
+
+1
+
+0
+
+Master-mode transception
+
+1
+
+1
+
+1
+
+Control Bits Valid in Each Transfer Mode*1
+
+Table 47.10
+Control Bit
+
+Transfer Mode
+
+Register
+
+Bit
+
+Slave-mode
+Reception
+
+Slave-mode
+Transmission
+
+Slave-mode
+Transception
+
+Master-mode
+Reception
+
+Master-mode
+Transmission
+
+Master-mode
+Transception
+
+SSICR
+
+CKDV[3:0]
+
+Ineffective
+
+Ineffective
+
+Ineffective
+
+Effective
+
+Effective
+
+Effective
+
+MUEN
+
+Ineffective
+
+Effective
+
+Effective
+
+Ineffective
+
+Effective
+
+Effective
+
+SSIFCR
+
+AUCKEN
+
+Ineffective
+
+Ineffective
+
+Ineffective
+
+Effective
+
+Effective
+
+Effective
+
+TIE
+
+Ineffective
+
+Effective
+
+Effective
+
+Ineffective
+
+Effective
+
+Effective
+
+RIE
+
+Effective
+
+Ineffective
+
+Effective
+
+Effective
+
+Ineffective
+
+Effective
+
+TFRST
+
+Ineffective
+
+Effective
+
+Effective
+
+Ineffective
+
+Effective
+
+Effective
+
+RFRST
+
+Effective
+
+Ineffective
+
+Effective
+
+Effective
+
+Ineffective
+
+Effective
+
+SSIOFR
+
+SSISCR
+
+BCKASTP
+
+Ineffective
+
+Ineffective
+
+Ineffective
+
+Effective
+
+Effective
+
+Effective
+
+LRCONT
+
+Ineffective
+
+Ineffective
+
+Ineffective
+
+Effective
+
+Effective
+
+Effective
+
+OMOD[1:0]
+
+Effective
+
+Effective
+
+Effective
+
+Effective
+
+Effective
+
+Effective
+
+TDES[4:0]
+
+Ineffective
+
+Effective
+
+Effective
+
+Ineffective
+
+Effective
+
+Effective
+
+RDFS[4:0]
+
+Effective
+
+Ineffective
+
+Effective
+
+Effective
+
+Ineffective
+
+Effective
+
+Note 1. “Ineffective” means that the setting of the bits does not affect operation.
+
+47.3.3.1
+
+Slave Mode
+
+The SSIE operates in slave mode when the SSICR.MST bit is 0. The SSIBCK and SSILRCK signals must be supplied
+from an external device.
+
+47.3.3.2
+
+Master Mode
+
+The SSIE operates in master mode when the SSICR.MST bit is 1. The SSIBCK and SSILRCK signals are internally
+generated from the audio clock (AUDIO_CLK).
+
+47.3.3.3
+
+Transmission
+
+The SSIE operates as a transmitter when the SSICR.TEN bit is 1 and the SSICR.REN bit is 0. Receive circuits do not
+operate.
+
+47.3.3.4
+
+Reception
+
+The SSIE operates as a receiver when the SSICR.TEN bit is 0 and the SSICR.REN bit is 1. Transmit circuits do not
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2516 of 3240
+
+RX72N Group
+
+47. Serial Sound Interface (SSIE)
+
+operate.
+
+47.3.3.5
+
+Transception
+
+The SSIE operates as a transceiver when both of the SSICR.TEN and SSICR.REN bits are 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2517 of 3240
+
+RX72N Group
+
+47.3.4
+
+47. Serial Sound Interface (SSIE)
+
+State Transition
+
+SSIE has the two main operation states: idle state and transfer state. The SSICR.TEN and SSICR.REN bits switch
+between these states. The SSISR.IIRQ flag can be used to confirm in which state SSIE is.
+Figure 47.20 shows the state transition of the SSIE.
+
+Reset
+
+TEN bit = 1 or
+REN bit = 1
+
+Idle state
+(IIRQ flag = 1)
+
+Transfer state
+(IIRQ flag = 0)
+
+TEN bit = 0 and
+REN bit = 0
+
+Figure 47.20
+
+State Transition of the SSIE
+
+47.3.4.1
+
+Idle State
+
+In the idle state, SSIE stops data transfer. When both or either of the SSICR.TEN and SSICR.REN bits are/is set to 1, the
+SSIE enters the transfer state.
+Outputs of the BCK and LRCK in master mode can be controlled by the SSIOFR.BCKASTP and SSIOFR.LRCONT
+bits, respectively. For details, refer to Table 47.11.
+Table 47.11
+
+Output of Clock/Data in the Idle State
+
+SSICR.MST Bit
+
+SSIOFR.BCKASTP
+Bit
+
+SSIOFR.LRCONT
+Bit
+
+SSIBCK
+
+SSILRCK
+
+SSITXD0/SSIDATA1
+
+0
+
+Invalid
+
+Invalid
+
+— (input)
+
+— (input)
+
+Stop
+
+1
+
+0
+
+0
+
+Supply
+
+Stop
+
+Stop
+
+1
+
+0
+
+1
+
+Supply
+
+Supply
+
+Stop
+
+1
+
+1
+
+0
+
+Stop
+
+Stop
+
+Stop
+
+1
+
+1
+
+1
+
+Stop
+
+Supply
+
+Stop
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2518 of 3240
+
+RX72N Group
+
+47.3.4.2
+
+47. Serial Sound Interface (SSIE)
+
+Transfer States
+
+In this state, SSIE continues data transfer. When the SSICR.TEN and SSICR.REN bit is set to 0, SSIE enters the idle
+state.
+For details, refer to Figure 47.21.
+
+SSIBCK
+SSICR.TEN/
+REN bit
+Operating
+State
+
+Transfer state
+
+Idle state
+
+SSILRCK
+SSITXD0/
+SSIRXD0/
+SSIDATA1
+
+R
+
+L
+
+R
+
+L
+
+R
+
+L
+
+R
+
+This figure applies when the respective bits in the SSICR register are as follows:
+DEL bit = 0 (with delay), SDTA bit = 0 (I2S), SPDP bit = 0 (padding with low),
+LRCKP bit = 0 (low level for left channel), BCKP bit = 0 (output changes on falling edges),
+and FRM[1:0] bits = 00b (2 system words)
+
+Figure 47.21
+
+Transfer State and Transition to Idle State
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2519 of 3240
+
+RX72N Group
+
+47.3.5
+
+47. Serial Sound Interface (SSIE)
+
+SSIE Initialization
+
+Figure 47.22 shows an example of the flow to initialize SSIE.
+
+Start
+Release from module stop state
+
+Master mode?
+
+MSTPCRD register
+No
+
+Yes
+SSICR.MST bit = 1
+
+SSICR.MST bit = 0
+
+BCK settings
+Setting of the SSICR.CKDV[3:0] bits
+Setting of the SSICR.BCKP bit
+
+BCK setting
+Setting of the SSICR.BCKP bit
+
+SSIFCR.AUCKE bit = 1
+
+Interrupt-related setting
+Setting of the ICU, DTC, and DMAC
+
+Setting of data format
+
+Setting of output control
+
+SSISCR register:
+
+TDES[4:0], RDFS[4:0] bits
+
+ SSICR register:
+SSIFCR register:
+ SSIOFR register:
+
+FRM[1:0], DWL[2:0], SWL[2:0], LRCKP, SPDP,
+SDTA, PDTA, DEL bits
+BSW bit
+OMOD[1:0] bits
+
+SSICR register:
+ SSIOFR register:
+
+MUEN bit
+BCKASTP, LRCONT bits
+
+End
+
+Figure 47.22
+
+Example Flowchart of SSIE Initialization
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2520 of 3240
+
+RX72N Group
+
+47.3.6
+
+47. Serial Sound Interface (SSIE)
+
+Transmission
+
+Figure 47.23 shows an example of the flow to transmit data.
+When the SSICR.TEN bit is set to 1 after setting the data for one frame in the SSIFTDR register, the SSIE starts
+transmission. When the number of spaces available in the transmit FIFO reaches the value specified by the
+SSISCR.TDES[4:0] bits while the SSIFCR.TIE bit is 1, a transmit data empty interrupt occurs. The number of data to be
+written to the SSIFTDR register should be determined in accordance with the space available in the transmit FIFO
+specified by the TDES[4:0] bits.
+
+Start
+SSIFCR.TFRST bit = 1
+SSIFCR.TFRST bit = 0
+Resetting transmit FIFO
+
+SSIFCR.TFRST bit = 0?
+
+No
+
+Yes
+Write data to the SSIFTDR register
+
+Clear transmit data empty flag
+SSIFSR.TDE flag = 0
+
+Set interrupt enables
+
+SSICR register:
+SSIFCR register:
+
+TUIEN, TOIEN bits
+TIE bit
+
+Enable transmission
+SSICR.TEN bit = 1
+
+Transmission complete?
+
+Yes
+
+No
+Error occurs?
+
+Yes
+
+No
+No
+
+Transmit data empty?
+Yes
+Write data to the SSIFTDR register
+
+Stop data transfer
+
+Clear transmit data empty flag
+SSIFSR.TDE flag = 0*1
+
+Note 1.
+
+Figure 47.23
+
+This flag is automatically cleared if data is written by the DMAC or DTC.
+
+Example Flowchart of Transmission
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2521 of 3240
+
+RX72N Group
+
+47.3.7
+
+47. Serial Sound Interface (SSIE)
+
+Reception
+
+Figure 47.24 shows an example of the flow to receive data.
+When the SSICR.REN bit is set to 1, SSIE starts reception. When the number of data stored in the receive FIFO reaches
+to the value specified by the SSISCR.RDFS[4:0] bits while the SSIFCR.RIE bit is 1, a receive data full interrupt occurs.
+The number of data to be read from the SSIFRDR register should be determined in accordance with the number of data
+stored in the receive FIFO specified by the RDFS[4:0] bits.
+
+Start
+SSIFCR.RFRST bit = 1
+SSIFCR.RFRST bit = 0
+Resetting receive FIFO
+
+SSIFCR.RFRST bit = 0?
+
+No
+
+Yes
+Set interrupt enables
+
+ SSICR register:
+SSIFCR register:
+
+RUIEN, ROIEN bits
+RIE bit
+
+Enable reception
+SSICR.REN bit = 1
+
+Error occurs?
+
+Yes
+
+No
+No
+
+Receive data full?
+Yes
+Read data from the SSIFRDR register
+
+Clear receive data full flag
+SSIFSR.RDF flag = 0*1
+
+Receive complete?
+No
+
+Note 1.
+
+Figure 47.24
+
+Yes
+
+Stop data transfer
+
+This flag is automatically cleared if the data is read by the DMAC or DTC.
+
+Example Flowchart of Reception
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2522 of 3240
+
+RX72N Group
+
+47.3.8
+
+47. Serial Sound Interface (SSIE)
+
+Stop Data Transfer
+
+Figure 47.25 shows an example of the flow to stop data transfer.
+
+Start
+
+Disable transmission and reception
+SSICR.TEN bit = 0
+SSICR.REN bit = 0
+
+Disable interrupts
+SSIFCR.TIE bit = 0
+SSIFCR.RIE bit = 0
+
+SSISR.IIRQ flag = 1?
+
+No
+
+Yes
+End
+
+Figure 47.25
+
+Example Flowchart of Stopping Data Transfer
+
+To resume data transfer, conform with the example flowcharts of transmission and reception in Figure 47.23 and
+Figure 47.24, respectively. When changing the settings of clocks or switching a transfer mode between master and
+slave, start from initialization.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2523 of 3240
+
+RX72N Group
+
+47.3.9
+
+47. Serial Sound Interface (SSIE)
+
+Error Processing
+
+SSIE has the following four errors.
+ Transmit underflow
+ Transmit overflow
+ Receive underflow
+ Receive overflow
+If an error has occurred, follow the procedure to stop data transfer shown in Figure 47.25 and then clear the
+corresponding flag. When an error has occurred while the corresponding interrupt enable bit in the SSICR register is 1,
+an interrupt is generated.
+
+(1)
+
+Transmit Underflow
+
+When a data transfer from the transmit FIFO to transmit shift register has performed while the transmit FIFO is empty, a
+transmit underflow is informed. If a transmit underflow has occurred, the SSITXD0/SSIDATA1 pin is driven low.
+
+(2)
+
+Transmit Overflow
+
+When a data is written to the SSIFTDR register while the transmit FIFO is full, a transmit overflow is informed. The data
+to be written is discarded.
+
+(3)
+
+Receive Underflow
+
+When a data is read from the SSIFRDR register while the receive FIFO is empty, a receive underflow is informed. The
+read data is undefined.
+
+(4)
+
+Receive Overflow
+
+When a data transfer from receive shift register to the receive FIFO has performed while the receive FIFO is full, a
+receive overflow is informed. The data to be transferred is discarded and is not stored in the receive FIFO.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2524 of 3240
+
+RX72N Group
+
+47.4
+
+47. Serial Sound Interface (SSIE)
+
+Interrupts
+
+Table 47.12 lists the interrupt sources. Figure 47.26 shows an block diagram for interrupts.
+Table 47.12
+
+SSIE Interrupt Sources
+
+Channel
+
+Name
+
+Interrupt Source
+
+Interrupt Request
+Flag
+
+Interrupt Enable
+Bit
+
+DMAC/DTC
+Triggerable
+
+SSIE0
+
+SSIF0
+
+Transmit underflow interrupt
+Transmit overflow interrupt
+Receive underflow interrupt
+Receive overflow interrupt
+Idle state interrupt
+
+SSISR.TUIRQ
+SSISR.TOIRQ
+SSISR.RUIRQ
+SSISR.ROIRQ
+SSISR.IIRQ
+
+SSICR.TUIEN
+SSICR.TOIEN
+SSICR.RUIEN
+SSICR.ROIEN
+SSICR.IIEN
+
+No
+
+SSIRXI0
+
+Receive data full interrupt
+
+SSIFSR.RDF
+
+SSIFCR.RIE
+
+Yes
+
+SSIE1
+
+SSITXI0
+
+Transmit data empty interrupt
+
+SSIFSR.TDE
+
+SSIFCR.TIE
+
+Yes
+
+SSIF1
+
+Transmit underflow interrupt
+Transmit overflow interrupt
+Receive underflow interrupt
+Receive overflow interrupt
+Idle state interrupt
+
+SSISR.TUIRQ
+SSISR.TOIRQ
+SSISR.RUIRQ
+SSISR.ROIRQ
+SSISR.IIRQ
+
+SSICR.TUIEN
+SSICR.TOIEN
+SSICR.RUIEN
+SSICR.ROIEN
+SSICR.IIEN
+
+No
+
+SSIRTI1
+
+Receive data full interrupt
+Transmit data empty interrupt
+
+SSIFSR.RDF
+SSIFSR.TDE
+
+SSIFCR.RIE
+SSIFCR.TIE
+
+Yes
+
+SSIE0
+
+SSIE1
+
+SSICR
+SSISR
+TUIRQ
+TOIRQ
+RUIRQ
+ROIRQ
+IIRQ
+
+SSICR
+SSISR
+TUIRQ
+
+TUIEN
+TOIEN
+RUIEN
+
+TOIRQ
+SSIF0
+
+ROIEN
+
+RUIRQ
+ROIRQ
+
+IIEN
+
+IIRQ
+
+SSIFCR
+SSIFSR
+RDF
+
+RIE
+
+TUIEN
+TOIEN
+RUIEN
+
+SSIF1
+
+ROIEN
+IIEN
+
+SSIFCR
+SSIRXI0
+
+SSIFSR
+RDF
+
+RIE
+SSIRTI1
+
+TDE
+
+Figure 47.26
+
+47.4.1
+
+TIE
+
+SSITXI0
+
+TDE
+
+TIE
+
+Interrupt System Block Diagram
+
+SSIFn Interrupt
+
+Each SSIFn interrupt combines five interrupt sources (n = 0, 1). Each interrupt source has a status flag and an interrupt
+enable bit, so the interrupt can be enabled or disabled individually.
+If an SSIFn interrupt occurs, read the SSISR register in the interrupt handling routine to check the source of the interrupt
+request, and then perform proper operation. To clear the interrupt request, set the corresponding interrupt enable bit to 0
+or clear the interrupt request flag.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2525 of 3240
+
+RX72N Group
+
+47.4.2
+
+47. Serial Sound Interface (SSIE)
+
+SSITXI0 Interrupt
+
+The SSITXI0 interrupt (channel 0 transmit data empty interrupt) is an edge detection interrupt. This interrupt request is
+generated when either of the following conditions is satisfied.
+ The SSIFSR.TDE flag has changed from 0 to 1 while the SSIFCR.TIE bit is 1.
+ The SSIFCR.TIE bit has been changed from 0 to 1 while the SSIFSR.TDE flag is 1.
+Figure 47.27 shows a timing chart when an interrupt request is generated when the TDE flag changes.
+
+1 frame
+
+1 frame
+
+System word
+
+System word
+
+System word
+
+System word
+
+D0 D15 D14 D13 D12 D1
+
+D0 D15 D14 D13 D12 D1
+
+D0 D15 D14 D13 D12 D1
+
+D0 D15 D14 D13 D12 D1
+
+SSIBCK
+SSILRCK
+SSITXD0
+
+D1
+
+D0 D15 D14
+
+Transmit data is written
+SSIFSR.
+TDC[5:0] bits
+
+6
+
+5
+
+4
+
+3
+
+4 5 6
+
+7
+
+6
+
+5
+
+Clear flag by DMA/DTC transfer or CPU
+SSIFSR.
+TDE flag
+SSITXI0
+interrupt request
+This figure applies when the SSISCR.TDES[4:0] bits are 11100b (at least 29) and when the respective bits in the
+SSICR register are as follows:
+DEL bit = 0 (with delay), SDTA bit = 0 (I2S), SPDP bit = 0 (padding with low),
+LRCKP bit = 0 (low level for left channel), BCKP bit = 0 (output changes on falling edges),
+SWL[2:0] bits = 001b (16 bits), DWL[2:0] bits = 001b (16 bits), and FRM[1:0] bits = 00b (2 system words)
+
+Figure 47.27
+
+SSITXI0 Interrupt Timing Chart
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2526 of 3240
+
+RX72N Group
+
+47.4.3
+
+47. Serial Sound Interface (SSIE)
+
+SSIRXI0 Interrupt
+
+The SSIRXI0 interrupt (channel 0 receive data full interrupt) is an edge detection interrupt. This interrupt request is
+generated when either of the following conditions is satisfied.
+ The SSIFSR.RDF flag has changed from 0 to 1 while the SSIFCR.RIE bit is 1.
+ The SSIFCR.RIE bit has been changed from 0 to 1 while the SSIFSR.RDF flag is 1.
+Figure 47.28 shows a timing chart when an interrupt request is generated when the RDF flag changes.
+
+1 frame
+
+1 frame
+
+System word
+
+System word
+
+System word
+
+System word
+
+D0 D15 D14 D13 D12 D1
+
+D0 D15 D14 D13 D12 D1
+
+D0 D15 D14 D13 D12 D1
+
+D0 D15 D14 D13 D12 D1
+
+SSIBCK
+SSILRCK
+SSIRXD0
+
+D1
+
+D0 D15 D14
+
+Received data is read
+SSIFSR.
+RDC[5:0] bits
+
+1
+
+2
+
+3
+
+4
+
+3 2 1
+
+0
+
+1
+
+2
+
+Clear flag by DMA/DTC transfer or CPU
+SSIFSR.
+RDF flag
+SSIRXI0
+interrupt request
+This figure applies when the SSISCR.RDFS[4:0] bits are 00011b (at least 4) and when the respective bits in the SSICR
+register are as follows:
+DEL bit = 0 (with delay), SDTA bit = 0 (I2S), SPDP bit = 0 (padding with low),
+LRCKP bit = 0 (low level for left channel), BCKP bit = 0 (output changes on falling edges),
+SWL[2:0] bits = 001b (16 bits), DWL[2:0] bits = 001b (16 bits), and FRM[1:0] bits = 00b (2 system words)
+
+Figure 47.28
+
+47.4.4
+
+SSIRXI0 Interrupt Timing Chart
+
+SSIRTI1 Interrupt
+
+The operation of SSIRTI1 interrupt is the same as that of the SSITXI0 interrupt in transmission, and that of the SSIRXI0
+interrupt in reception.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2527 of 3240
+
+RX72N Group
+
+47.5
+47.5.1
+
+47. Serial Sound Interface (SSIE)
+
+Notes
+Setting the Module Stop Function
+
+Operation of the SSIE can be enabled or disabled by setting a bit in the module stop control register D (MSTPCRD). The
+SSIE is initially disabled after a reset. Registers in the SSIE only become accessible after it has been released from the
+module stop state. For details, refer to section 11, Low Power Consumption.
+
+47.5.2
+
+Note on LRCK in Slave Mode
+
+The SSIE uses the SSILRCK signal as a start trigger in slave mode. Neither valid edges after the start trigger nor signal
+levels are used, so if a bit slippage occurs by a noise, the bit slippage cannot be repaired even at a frame boundary.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2528 of 3240
+
+

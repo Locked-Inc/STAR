@@ -1,0 +1,7012 @@
+RX72N Group
+
+36. Ethernet Controller (ETHERC)
+
+36.
+
+Ethernet Controller (ETHERC)
+
+36.1
+
+Overview
+
+This MCU has a two-channel Ethernet controller (ETHERC) compliant with the Ethernet or IEEE802.3 Media Access
+Control (MAC) layer protocol. Each ETHERC channel has one channel of the MAC layer interface, and connecting the
+MCU to the physical layer LSI (PHY-LSI) allows transmission and reception of frames compliant with the Ethernet/
+IEEE802.3 standard. The ETHERC is connected to the Ethernet controller direct memory access controller (EDMAC),
+so data can be transferred without using the CPU.
+Table 36.1 lists the ETHERC specifications. Figure 36.1 shows the ETHERC configuration. Table 36.2 lists the
+ETHERC I/O pins.
+Figure 36.2 and Figure 36.3 show examples of connecting the MCU to the PHY-LSI.
+Table 36.1
+
+ETHERC Specifications
+
+Item
+
+Description
+
+Number of channels
+
+Two channels
+
+Protocol
+
+Flow control compliant with IEEE802.3x
+
+Data transmission/reception
+
+Frames compliant with the Ethernet/IEEE802.3 standard can be transmitted and received.
+
+Bit rate
+
+Supports 10 Mbps and 100 Mbps
+
+Operation modes
+
+Supports full-duplex and half-duplex modes
+
+Interfaces
+
+Media Independent Interface (MII), Reduced Media Independent Interface (RMII), compliant with
+the IEEE802.3u standard
+
+Functions
+
+Magic PacketTM *1 detection, Wake-On-LAN (WOL) signal output
+
+Note 1. Magic Packet is a trademark of Advanced Micro Devices, Inc.
+
+External bus controller
+
+RAM
+
+Internal main bus 2
+
+EDMAC arbiter
+PCLKA
+EDMAC channel 0
+(EDMAC0)
+
+EDMAC channel 1
+(EDMAC1)
+
+PTPEDMAC
+
+EINT0 (EDMAC0)
+PINT (PTPEDMAC)
+EINT1 (EDMAC1)
+
+EPTPC
+
+MII/RMII
+MII/RMII channel 0
+
+Figure 36.1
+
+Receive
+circuit
+
+Transmit
+circuit
+
+MDIO
+
+Transmit
+circuit
+
+ETHERC
+channel 0
+(ETHERC0)
+
+Receive
+circuit
+
+Internal peripheral bus
+
+ETHERC
+channel 1
+(ETHERC1)
+MDIO
+
+MII/RMII
+MII/RMII channel 1
+
+ETHERC Configuration
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1699 of 3240
+
+RX72N Group
+Table 36.2
+
+36. Ethernet Controller (ETHERC)
+ETHERC I/O Pins (n = 0, 1)
+
+Operating
+Mode
+
+Pin Name
+
+I/O
+
+Description
+
+MII
+
+ETn_TX_CLK *1
+
+Input
+
+Transmit clock
+Timing reference signal for outputting the ETn_TX_EN, ETn_ETXD3 to
+ETn_ETXD0, and ETn_TX_ER signals.
+
+ETn_RX_CLK *1
+
+Input
+
+Receive clock
+Timing reference signal for inputting the ETn_RX_DV, ETn_ERXD3 to
+ETn_ERXD0, and ETn_RX_ER signals.
+
+ETn_TX_EN *1
+
+Output
+
+Transmit data valid
+This signal indicates that valid transmit data has been output on pins
+ETn_ETXD3 to ETn_ETXD0.
+
+ETn_ETXD3 to ETn_ETXD0 *1
+
+Output
+
+4-bit transmit data
+
+ETn_TX_ER *1
+
+Output
+
+Transmit error
+This signal notifies the PHY-LSI that an error occurred during transmission.
+This signal is fixed to low in this MCU.
+
+ETn_RX_DV *1
+
+Input
+
+Receive data valid
+This signal indicates that valid receive data is on pins ETn_ERXD3 to
+ETn_ERXD0.
+
+ETn_ERXD3 to ETn_ERXD0 *1
+
+Input
+
+4-bit receive data
+
+ETn_RX_ER *1
+
+Input
+
+Receive error
+This signal indicates that there is an error in a frame that is being transferred
+from the PHY-LSI to the ETHERC.
+
+ETn_CRS *1
+
+Input
+
+Carrier sense
+
+ETn_COL *1
+
+Input
+
+Collision detection signal
+
+ETn_MDC *1
+
+Output
+
+Management data clock
+Reference clock signal for transfer of information on the ETn_MDIO pin.
+
+ETn_MDIO *1
+
+I/O
+
+Management data I/O
+Bidirectional data signal for exchanging management data with the PHY-LSI.
+
+ETn_LINKSTA
+
+Input
+
+Link status input from the PHY-LSI
+
+ETn_EXOUT
+
+Output
+
+General output pin
+
+ETn_WOL
+
+Output
+
+Wake-On-LAN. This signal indicates that a Magic Packet has been received.
+
+REF50CKn *2
+
+Input
+
+Reference clock
+Timing reference signal for pins RMIIn_TXD_EN, RMIIn_TXD1 to
+RMIIn_TXD0, RMIIn_CRS_DV, RMIIn_RXD1 to RMIIn_RXD0, and
+RMIIn_RX_ER.
+
+RMIIn_TXD_EN *2
+
+Output
+
+Transmit data valid
+This signal indicates that valid transmit data has been output on pins
+RMIIn_TXD1 and RMIIn_TXD0.
+
+RMIIn_TXD1 to RMIIn_TXD0 *2
+
+Output
+
+2-bit transmit data
+
+RMIIn_CRS_DV *2
+
+Input
+
+Carrier sense/receive data valid
+This signal indicates that valid receive data is on pins RMIIn_RXD1 and
+RMIIn_RXD0.
+
+RMII
+
+RMIIn_RXD1 to RMIIn_RXD0 *2 Input
+
+2-bit receive data
+
+RMIIn_RX_ER *2
+
+Input
+
+Receive error
+This signal indicates that there is an error in a frame that is being transferred
+from the PHY-LSI to the ETHERC.
+
+ETn_MDC *2
+
+Output
+
+Management data clock
+Reference clock signal for transfer of information on the ETn_MDIO pin
+
+ETn_MDIO *2
+
+I/O
+
+Management data I/O
+Bidirectional data signal for exchanging management data with the PHY-LSI.
+
+ETn_LINKSTA
+
+Input
+
+Link status input from the PHY-LSI.
+
+ETn_EXOUT
+
+Output
+
+General output pin
+
+ETn_WOL
+
+Output
+
+Wake-On-LAN. This signal indicates that a Magic Packet has been received.
+
+Note 1. MII signal compliant with IEEE802.3u
+Note 2. RMII signal compliant with IEEE802.3u
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1700 of 3240
+
+RX72N Group
+
+36. Ethernet Controller (ETHERC)
+
+MII (Media Independent Interface)
+PHY-LSI
+
+MCU
+ETn_TX_ER
+ETn_ETXD3
+ETn_ETXD2
+ETn_ETXD1
+ETn_ETXD0
+ETn_TX_EN
+ETn_TX_CLK
+ETn_MDC
+ETn_MDIO
+ETn_ERXD3
+ETn_ERXD2
+ETn_ERXD1
+ETn_ERXD0
+ETn_RX_CLK
+ETn_CRS
+ETn_COL
+ETn_RX_DV
+ETn_RX_ER
+
+Figure 36.2
+
+TX_ER
+TXD3
+TXD2
+TXD1
+TXD0
+TX_EN
+TX_CLK
+MDC
+MDIO
+RXD3
+RXD2
+RXD1
+RXD0
+RX_CLK
+CRS
+COL
+RX_DV
+RX_ER
+
+Example of Connection with the PHY-LSI for the MII
+
+RMII (Reduced Media Independent Interface)
+PHY-LSI
+
+MCU
+RMIIn_TXD1
+RMIIn_TXD0
+RMIIn_TXD_EN
+ETn_MDC
+ETn_MDIO
+RMIIn_RXD1
+RMIIn_RXD0
+REF50CKn
+RMIIn_CRS_DV
+RMIIn_RX_ER
+
+Figure 36.3
+
+TXD1
+TXD0
+TXD_EN
+MDC
+MDIO
+RXD1
+RXD0
+RX_CLK
+CRS_DV
+RX_ER
+
+Example of Connection with the PHY-LSI for the RMII
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1701 of 3240
+
+RX72N Group
+
+36.2
+
+36. Ethernet Controller (ETHERC)
+
+Register Descriptions
+
+36.2.1
+
+ETHERC Mode Register (ECMR)
+
+ECMR
+
+Address(es): ETHERC0.ECMR 000C 0100h, ETHERC1.ECMR 000C 0300h
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+TPC
+
+ZPF
+
+PFR
+
+RXF
+
+TXF
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+PRCEF
+
+—
+
+—
+
+MPDE
+
+—
+
+—
+
+RE
+
+TE
+
+—
+
+ILB
+
+RTM
+
+DM
+
+PRM
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+PRM
+
+Promiscuous Mode
+
+0: Promiscuous mode is disabled.
+1: Promiscuous mode is enabled.
+
+R/W
+
+b1
+
+DM
+
+Duplex Mode
+
+0: Half-duplex mode
+1: Full-duplex mode
+
+R/W
+
+b2
+
+RTM
+
+Bit Rate
+
+0: 10 Mbps
+1: 100 Mbps
+
+R/W
+
+b3
+
+ILB
+
+Internal Loopback Mode
+
+0: Normal data transmission or reception is performed.
+1: Data is looped back in the ETHERC when full-duplex mode is
+selected.
+
+R/W
+
+b4
+
+—
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b5
+
+TE
+
+Transmission Enable
+
+0: Transmit function is disabled.
+1: Transmit function is enabled.
+
+R/W
+
+b6
+
+RE
+
+Reception Enable
+
+0: Receive function is disabled.
+1: Receive function is enabled.
+
+R/W
+
+b8, b7
+
+—
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b9
+
+MPDE
+
+Magic Packet Detection
+Enable
+
+0: Magic Packet detection is disabled.
+1: Magic Packet detection is enabled.
+
+R/W
+
+b11, b10
+
+—
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b12
+
+PRCEF
+
+CRC Error Frame Receive
+Mode
+
+0: EDMAC is notified of a CRC error.
+1: EDMAC is not notified of a CRC error.
+
+R/W
+
+b15 to b13 —
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b16
+
+TXF
+
+Transmit Flow Control
+Operating Mode
+
+0: Automatic PAUSE frame transmission is disabled.
+(PAUSE frame is not automatically transmitted.)
+1: Automatic PAUSE frame transmission is enabled.
+(PAUSE frame is automatically transmitted as required.)
+
+R/W
+
+b17
+
+RXF
+
+Receive Flow Control
+Operating Mode
+
+0: PAUSE frame detection is disabled.
+1: PAUSE frame detection is enabled.
+
+R/W
+
+b18
+
+PFR
+
+PAUSE Frame Receive Mode
+
+0: PAUSE frame is not transferred to the EDMAC.
+1: PAUSE frame is transferred to the EDMAC.
+
+R/W
+
+b19
+
+ZPF
+
+0 Time PAUSE Frame Enable
+
+0: PAUSE frame that contains the pause_time parameter of 0 is not
+R/W
+used.
+1: PAUSE frame that contains the pause_time parameter of 0 is used.
+
+b20
+
+TPC
+
+PAUSE Frame Transmit
+
+0: PAUSE frame is transmitted even during a PAUSE period.
+1: PAUSE frame is not transmitted during a PAUSE period.
+
+R/W
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b31 to b21 —
+
+The ECMR register controls the ETHERC operation.
+Set bits in the ECMR register, excluding bits TE and RE, during initialization after a reset. When rewriting this register
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1702 of 3240
+
+RX72N Group
+
+36. Ethernet Controller (ETHERC)
+
+outside the initialization process, set the EDMACn.EDMR.SWR bit to 1 to reset the EDMAC and ETHERC, and then set
+this register again.
+PRM Bit (Promiscuous Mode)
+When the PRM bit is set to 1, the ETHERC operates in promiscuous mode where all Ethernet frames are received. In
+promiscuous mode, the ETHERC receives all valid frames regardless of whether or not the address matches the
+destination address or broadcast address and regardless of the multicast bit setting.
+When the function of the EPTPC is used (receiving PTP messages), set this bit to 1.
+RTM Bit (Bit Rate)
+The RTM bit sets the bit rate when the RMII is selected.
+ILB Bit (Internal Loopback Mode)
+When the ILB bit is set to 1, transmit frames can be looped back in the MCU. Set the DM bit to 1 (full-duplex mode) to
+perform a loopback test.
+TE Bit (Transmission Enable)
+When the TE bit is set to 1, the ETHERC transmit function is enabled.
+When the TE bit is set to 0, the transmit function is disabled after the frame being processed is completely transmitted.
+RE Bit (Reception Enable)
+When the RE bit is set to 1, the ETHERC receive function is enabled.
+When the RE bit is set to 0, the receive function is disabled after the frame being processed is completely received.
+PRCEF Bit (CRC Error Frame Receive Mode)
+When the PRCEF bit is set to 1, the EDMAC is not notified that a CRC error has occurred even when the error is
+detected in a receive frame. Accordingly, the EDMACn.EESR.CERF flag and RFS0 bit in receive descriptor 0 (RD0) do
+not become 1.
+ZPF Bit (0 Time PAUSE Frame Enable)
+When the ZPF bit is 1, a PAUSE frame that contains the pause_time parameter of 0 is transmitted when the PAUSE
+frame transmit request is canceled before the PAUSE time of the previously transmitted PAUSE frame has not elapsed.
+After the PAUSE frame that contains the pause_time parameter of 0 is received, the ETHERC is ready for transmission.
+When the ZPF bit is 0, even if the PAUSE frame transmit request from the receive FIFO is canceled, the next PAUSE
+frame is not transmitted until the PAUSE time of the previously transmitted PAUSE frame has elapsed. When a PAUSE
+frame that contains the pause_time parameter of 0 is received, the PAUSE frame is discarded.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1703 of 3240
+
+RX72N Group
+
+36.2.2
+
+36. Ethernet Controller (ETHERC)
+
+Receive Frame Maximum Length Register (RFLR)
+
+RFLR
+
+Address(es): ETHERC0.RFLR 000C 0108h, ETHERC1.RFLR 000C 0308h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Description
+
+R/W
+
+The set value becomes the maximum frame length. The minimum
+value that can be set is 1,518 bytes, and the maximum value that
+can be set is 2,048 bytes. Values that are less than 1,518 bytes are
+regarded as 1,518 bytes, and values larger than 2,048 bytes are
+regarded as 2,048 bytes.
+
+R/W
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+RFL[11:0]
+
+0
+
+Bit
+
+Symbol
+
+b11 to b0
+
+RFL[11:0] Receive Frame Maximum
+Length
+
+b31 to b12 —
+
+Bit Name
+
+Reserved
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The RFLR register sets the maximum frame length that can be received by the MCU. Set the length in bytes.
+Do not rewrite this register while the ECMR.RE bit is 1 (receive function is enabled).
+RFL[11:0] Bits (Receive Frame Maximum Length)
+The RFL[11:0] bits set a frame length to be checked. When the number of bytes for fields from the destination address to
+the frame check sequence (FCS) of the received frame exceeds the RFL[11:0] bit value, the EDMAC is notified of a
+frame-too-long error.
+When the received frame length exceeds the RFL[11:0] bit value, the excess data is discarded.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1704 of 3240
+
+RX72N Group
+
+36.2.3
+
+36. Ethernet Controller (ETHERC)
+
+ETHERC Status Register (ECSR)
+
+ECSR
+
+Address(es): ETHERC0.ECSR 000C 0110h, ETHERC1.ECSR 000C 0310h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+BFR
+
+PSRTO
+
+—
+
+LCHNG MPD
+
+ICD
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+ICD
+
+False Carrier Detect Flag
+
+0: PHY-LSI has not detected a false carrier on the line.
+1: PHY-LSI has detected a false carrier on the line.
+
+R/W *1
+
+b1
+
+MPD
+
+Magic Packet Detect Flag
+
+0: Magic Packet has not been detected.
+1: Magic Packet has been detected.
+
+R/W *1
+
+b2
+
+LCHNG
+
+Link Signal Change Flag
+
+0: Change in the ETn_LINKSTA signal has not been detected.
+1: Change in the ETn_LINKSTA signal has been detected (high to
+low, or low to high).
+
+R/W *1
+
+b3
+
+—
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b4
+
+PSRTO
+
+PAUSE Frame Retransmit
+Over Flag
+
+0: PAUSE frame retransmit count has not reached the upper limit.
+1: PAUSE frame retransmit count has reached the upper limit.
+
+R/W *1
+
+b5
+
+BFR
+
+Continuous Broadcast Frame
+Reception Flag
+
+0: The number of continuously received broadcast frames has not
+exceeded the value set in the BCFRR register.
+1: The number of continuously received broadcast frames has
+exceeded the value set in the BCFRR register.
+
+R/W *1
+
+b31 to b6
+
+—
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+Note 1. Write 1 to clear the flag.
+
+The ECSR register indicates the status of the ETHERC.
+When any flag in the ECSR register becomes 1 while the corresponding bit in the ECSIPR register is 1 (interrupt is
+notified), the EDMACn.EESR.ECI flag becomes 1.
+ICD Flag (False Carrier Detect Flag)
+The ICD flag indicates that the PHY-LSI has detected a false carrier on the line.
+The ICD flag becomes 1 when a receive error signal shown in Figure 36.10 is received from the PHY-LSI. Note that the
+information may not be correct when signals input from the PHY-LSI change faster than software recognizes the change.
+Check the timing of the PHY-LSI.
+LCHNG Flag (Link Signal Change Flag)
+The LCHNG flag indicates that ETn_LINKSTA signal input from the PHY-LSI has changed from high to low, or from
+low to high.
+Refer to the PSR.LMON flag for the current link status.
+PSRTO Flag (PAUSE Frame Retransmit Over Flag)
+The PSRTO flag indicates that the number of retransmissions reaches the value set in the TPAUSER register when
+retransmitting a PAUSE frame while automatic PAUSE frame transmission is enabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1705 of 3240
+
+RX72N Group
+
+36.2.4
+
+36. Ethernet Controller (ETHERC)
+
+ETHERC Interrupt Enable Register (ECSIPR)
+
+ECSIPR
+
+Address(es): ETHERC0.ECSIPR 000C 0118h, ETHERC1.ECSIPR 000C 0318h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+BFSIP PSRTO
+R
+IP
+
+0
+
+0
+
+—
+
+0
+
+LCHNG MPDIP ICDIP
+IP
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+ICDIP
+
+False Carrier Detect Interrupt Enable
+
+0: Notification of the false carrier detect interrupt is
+disabled.
+1: Notification of the false carrier detect interrupt is
+enabled.
+
+R/W
+
+b1
+
+MPDIP
+
+Magic Packet Detect Interrupt Enable
+
+0: Notification of the Magic Packet detect interrupt is
+disabled.
+1: Notification of the Magic Packet detect interrupt is
+enabled.
+
+R/W
+
+b2
+
+LCHNGIP
+
+LINK Signal Change Interrupt Enable
+
+0: Notification of ETn_LINKSTA signal change interrupt
+is disabled.
+1: Notification of ETn_LINKSTA signal change interrupt
+is enabled.
+
+R/W
+
+b3
+
+—
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b4
+
+PSRTOIP
+
+PAUSE Frame Retransmit Over
+Interrupt Enable
+
+0: Notification of PAUSE frame retransmit over interrupt
+is disabled.
+1: Notification of PAUSE frame retransmit over interrupt
+is enabled.
+
+R/W
+
+b5
+
+BFSIPR
+
+Continuous Broadcast Frame Reception
+Interrupt Enable
+
+0: Notification of continuous broadcast frame reception
+interrupt is disabled.
+1: Notification of continuous broadcast frame reception
+interrupt is enabled.
+
+R/W
+
+b31 to b6
+
+—
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+The ECSIPR register selects whether or not to notify the EDMAC of the status indicated by the ECSR register. Each bit
+corresponds to the flag in the ECSR register that has the same bit number.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1706 of 3240
+
+RX72N Group
+
+36.2.5
+
+36. Ethernet Controller (ETHERC)
+
+PHY Interface Register (PIR)
+PIR
+
+Address(es): ETHERC0.PIR 000C 0120h, ETHERC1.PIR 000C 0320h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+MDI
+
+MDO
+
+MMD
+
+MDC
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+x
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+MDC
+
+MII/RMII Management
+Data Clock
+
+The MDC bit value is output from the ETn_MDC pin to supply the
+management data clock to the MII or RMII.
+
+R/W
+
+b1
+
+MMD
+
+MII/RMII Management
+Mode
+
+0: Read
+1: Write
+
+R/W
+
+b2
+
+MDO
+
+MII/RMII Management
+Data-Out
+
+The MDO bit value is output from the ETn_MDIO pin when the MMD bit is 1
+(write). The value is not output when the MMD bit is 0 (read).
+
+R/W
+
+b3
+
+MDI
+
+MII/RMII Management
+Data-In
+
+This bit indicates the level of the ETn_MDIO pin. The write value should be
+0.
+
+R/W
+
+b31 to b4
+
+—
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+The PIR register is used to access registers in the PHY-LSI via the MII or RMII. The management clock and
+management data are controlled by software.
+Refer to section 36.3.4, Accessing MII/RMII Registers for details on accessing MII and RMII registers.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1707 of 3240
+
+RX72N Group
+
+36.2.6
+
+36. Ethernet Controller (ETHERC)
+
+PHY Status Register (PSR)
+PSR
+
+Address(es): ETHERC0.PSR 000C 0128h, ETHERC1.PSR 000C 0328h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+LMON
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+x
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+LMON
+
+ETn_LINKSTA Pin
+Status Flag
+
+The link status can be read by connecting the link signal output from the
+PHY-LSI to the ETn_LINKSTA pin. For details on the polarity, refer to the
+specifications of the connected PHY-LSI.
+
+R
+
+b31 to b1
+
+—
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R
+
+The PSR register is used to monitor interface signals from the PHY-LSI.
+
+36.2.7
+
+Random Number Generation Counter Limit Setting Register (RDMLR)
+
+RDMLR
+
+Address(es): ETHERC0.RDMLR 000C 0140h, ETHERC1.RDMLR 000C 0340h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+RMD[19:16]
+
+RMD[15:0]
+
+0
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b19 to b0
+
+RMD[19:0]
+
+Random Number
+Generation Counter
+
+00000h: Normal operation
+00001h to FFFFFh: Setting prohibited
+
+R/W
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b31 to b20 —
+
+The RDMLR register sets the maximum value for the counter used in the random number generator.
+Do not rewrite this register while the ECMR.TE bit is 1 (transmit function is enabled) or while the ECMR.RE bit is 1
+(receive function is enabled).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1708 of 3240
+
+RX72N Group
+
+36.2.8
+
+36. Ethernet Controller (ETHERC)
+
+Interpacket Gap Register (IPGR)
+IPGR
+
+Address(es): ETHERC0.IPGR 000C 0150h, ETHERC1.IPGR 000C 0350h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+IPG[4:0]
+
+1
+
+0
+
+1
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b4 to b0
+
+IPG[4:0]
+
+Interpacket Gap
+
+00h: 16 bit time
+01h: 20 bit time
+:
+:
+14h: 96 bit time (initial value)
+:
+:
+1Fh: 140 bit time
+
+R/W
+
+b31 to b5
+
+—
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+The IPGR register sets the interpacket gap (IPG) value.
+Do not rewrite this register while the ECMR.TE bit is 1 (transmit function is enabled) or while the ECMR.RE bit is 1
+(receive function is enabled).
+Refer to section 36.3.6, Adjusting Transmission Efficiency by Changing the IPG for details on the IPG.
+
+36.2.9
+
+Automatic PAUSE Frame Register (APR)
+APR
+
+Address(es): ETHERC0.APR 000C 0154h, ETHERC1.APR 000C 0354h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+AP[15:0]
+
+0
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15 to b0
+
+AP[15:0]
+
+Automatic PAUSE
+Time Setting
+
+These bits set the value of the pause_time parameter for a PAUSE frame that
+is automatically transmitted. Transmission is not performed until the set value
+multiplied by 512 bit time has elapsed.
+
+R/W
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b31 to b16 —
+
+The APR register sets the PAUSE time of the PAUSE frame that is automatically transmitted. The value set in the APR
+register is used for the pause_time parameter of the PAUSE frame.
+Do not rewrite this register while the ECMR.TE bit is 1 (transmit function is enabled) or while the ECMR.RE bit is 1
+(receive function is enabled).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1709 of 3240
+
+RX72N Group
+
+36.2.10
+
+36. Ethernet Controller (ETHERC)
+
+Manual PAUSE Frame Register (MPR)
+
+MPR
+
+Address(es): ETHERC0.MPR 000C 0158h, ETHERC1.MPR 000C 0358h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+MP[15:0]
+
+0
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15 to b0
+
+MP[15:0]
+
+Manual PAUSE Time
+Setting
+
+These bits set the value of the pause_time parameter for a PAUSE frame
+that is manually transmitted. Transmission is not performed until the set
+value multiplied by 512 bit time has elapsed.
+The read value is undefined.
+
+R/W
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b31 to b16 —
+
+The MPR register sets the PAUSE time of the PAUSE frame that is manually transmitted. The value set in the MPR
+register is used for the pause_time parameter of the PAUSE frame.
+When a value is set to this register, a PAUSE frame is transmitted. Rewrite this register while the ECMR.TE bit is 1
+(transmit function is enabled).
+
+36.2.11
+
+Received PAUSE Frame Counter (RFCF)
+
+RFCF
+
+Address(es): ETHERC0.RFCF 000C 0160h, ETHERC1.RFCF 000C 0360h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+RPAUSE[7:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+RPAUSE[7:0]
+
+Received PAUSE Frame
+Count
+
+Number of received PAUSE frames
+
+R
+
+b31 to b8
+
+—
+
+Reserved
+
+The read value is 0.
+
+R
+
+The RFCF register is a counter indicating the number of received PAUSE frames. The counter is reset after this register
+is read.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1710 of 3240
+
+RX72N Group
+
+36.2.12
+
+36. Ethernet Controller (ETHERC)
+
+PAUSE Frame Retransmit Count Setting Register (TPAUSER)
+
+TPAUSER
+
+Address(es): ETHERC0.TPAUSER 000C 0164h, ETHERC1.TPAUSER 000C 0364h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+TPAUSE[15:0]
+
+0
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15 to b0
+
+TPAUSE[15:0]
+
+Automatic PAUSE
+Frame Retransmit
+Setting
+
+0000h: Number of retransmissions is unlimited
+0001h: Maximum number of retransmissions is 1
+:
+:
+FFFFh: Maximum number of retransmissions is 65,535
+
+R/W
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b31 to b16 —
+
+The TPAUSER register selects the maximum number of times a PAUSE frame is automatically transmitted.
+Do not rewrite this register while the ECMR.TE bit is 1 (transmit function is enabled).
+
+36.2.13
+
+PAUSE Frame Retransmit Counter (TPAUSECR)
+
+TPAUSECR
+
+Address(es): ETHERC0.TPAUSECR 000C 0168h, ETHERC1.TPAUSECR 000C 0368h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+TXP[7:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+TXP[7:0]
+
+PAUSE Frame Retransmit
+Count
+
+Number of times a PAUSE frame was retransmitted
+
+R
+
+b31 to b8
+
+—
+
+Reserved
+
+The read value is 0.
+
+R
+
+The TPAUSECR register is a counter indicating the number of times a PAUSE frame was automatically retransmitted.
+The counter is reset after this register is read.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1711 of 3240
+
+RX72N Group
+
+36.2.14
+
+36. Ethernet Controller (ETHERC)
+
+Broadcast Frame Receive Count Setting Register (BCFRR)
+
+BCFRR
+
+Address(es): ETHERC0.BCFRR 000C 016Ch, ETHERC1.BCFRR 000C 036Ch
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+BCF[15:0]
+
+0
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15 to b0
+
+BCF[15:0]
+
+Broadcast Frame
+Continuous Receive
+Count Setting
+
+0000h: Number of receptions is unlimited.
+0001h: Receive 1 frame.
+:
+:
+FFFFh: Receive 65,535 frames.
+
+R/W
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b31 to b16 —
+
+The BCFRR register sets the number of times broadcast frames can be received continuously. When the number of
+received frames exceeds the BCF[15:0] bit value, the ECSR.BFR flag becomes 1 and the excess broadcast frames are
+discarded. The internal counter that counts the number of continuously received broadcast frames is reset when receiving
+any other frame than broadcast frame.
+Do not rewrite this register while the ECMR.RE bit is 1 (receive function is enabled).
+
+36.2.15
+
+MAC Address Upper Bit Register (MAHR)
+
+MAHR
+
+Address(es): ETHERC0.MAHR 000C 01C0h, ETHERC1.MAHR 000C 03C0h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The MAHR register sets the upper 32 bits (b47 to b16) of the 48-bit MAC address. For example, if the MAC address is
+01-23-45-67-89-AB, set the register to 0123 4567h.
+Set the MAHR register during initialization after a reset. Do not rewrite this register while the ECMR.TE bit is 1
+(transmit function is enabled) or while the ECMR.RE bit is 1 (receive function is enabled). When rewriting this register,
+set the EDMACn.EDMR.SWR bit to 1 to reset the EDMAC and ETHERC and then set this register again.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1712 of 3240
+
+RX72N Group
+
+36.2.16
+
+36. Ethernet Controller (ETHERC)
+
+MAC Address Lower Bit Register (MALR)
+
+MALR
+
+Address(es): ETHERC0.MALR 000C 01C8h, ETHERC1.MALR 000C 03C8h
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+MA[15:0]
+
+0
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b15 to b0
+
+MA[15:0]
+
+MAC Address Low
+
+These bits set the lower 16 bits of the MAC address.
+
+R/W
+
+Reserved
+
+The read value is 0. The write value should be 0.
+
+R/W
+
+b31 to b16 —
+
+The MALR register sets the lower 16 bits of the 48-bit MAC address. For example, if the MAC address is 01-23-45-6789-AB, set the register to 0000 89ABh.
+Set the MALR register during initialization after a reset. Do not rewrite this register while the ECMR.TE bit is 1
+(transmit function is enabled) or while the ECMR.RE bit is 1 (receive function is enabled). When rewriting this register,
+set the EDMACn.EDMR.SWR bit to 1 to reset the EDMAC and ETHERC and then set this register again.
+
+36.2.17
+
+Transmit Retry Over Counter Register (TROCR)
+
+TROCR
+
+Address(es): ETHERC0.TROCR 000C 01D0h, ETHERC1.TROCR 000C 03D0h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The TROCR register is a counter indicating the number of frames that fail to be retransmitted.
+The TROCR register is incremented by 1 when a frame fails to be retransmitted 15 times. The counter stops when the
+TROCR register value becomes FFFF FFFFh. The counter value becomes 0 by writing any value to the TROCR register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1713 of 3240
+
+RX72N Group
+
+36.2.18
+
+36. Ethernet Controller (ETHERC)
+
+Late Collision Detect Counter Register (CDCR)
+
+CDCR
+
+Address(es): ETHERC0.CDCR 000C 01D4h, ETHERC1.CDCR 000C 03D4h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The CDCR register is a counter indicating the number of late collisions that have been detected after transmission starts.
+When the CDCR register value becomes FFFF FFFFh, the counter stops. The counter value becomes 0 by writing any
+value to the CDCR register.
+
+36.2.19
+
+Lost Carrier Counter Register (LCCR)
+
+LCCR
+
+Address(es): ETHERC0.LCCR 000C 01D8h, ETHERC1.LCCR 000C 03D8h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The LCCR register is a counter indicating the number of times a loss of carrier is detected during frame transmission.
+When the LCCR register value becomes FFFF FFFFh, the counter stops. The counter value becomes 0 by writing any
+value to the LCCR register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1714 of 3240
+
+RX72N Group
+
+36.2.20
+
+36. Ethernet Controller (ETHERC)
+
+Carrier Not Detect Counter Register (CNDCR)
+
+CNDCR
+
+Address(es): ETHERC0.CNDCR 000C 01DCh, ETHERC1.CNDCR 000C 03DCh
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The CNDCR register is a counter indicating the number of times a carrier is not detected during preamble transmission.
+When the CNDCR register value becomes FFFF FFFFh, the counter stops. The counter value becomes 0 by writing any
+value to the CNDCR register.
+
+36.2.21
+
+CRC Error Frame Receive Counter Register (CEFCR)
+
+CEFCR
+
+Address(es): ETHERC0.CEFCR 000C 01E4h, ETHERC1.CEFCR 000C 03E4h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The CEFCR register is a counter indicating the number of received frames where a CRC error has been detected.
+When the CEFCR register value becomes FFFF FFFFh, the counter stops. The counter value becomes 0 by writing any
+value to the CEFCR register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1715 of 3240
+
+RX72N Group
+
+36.2.22
+
+36. Ethernet Controller (ETHERC)
+
+Frame Receive Error Counter Register (FRECR)
+
+FRECR
+
+Address(es): ETHERC0.FRECR 000C 01E8h, ETHERC1.FRECR 000C 03E8h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The FRECR register is a counter indicating the number of times a frame receive error has occurred. The PHY-LSI
+notifies the ETHERC of the frame receive error using the ETn_RX_ER pin.
+The FRECR register is incremented each time the ETn_RX_ER pin becomes high. When the FRECR register value
+becomes FFFF FFFFh, the counter stops. The counter value becomes 0 by writing any value to the FRECR register.
+When a frame receive error occurs while the EPTPC.SYBYPSR.BYPASSn bit is 0, the EPTPCn.SYSR.INFABT flag
+may become 1. In this case, reset the EPTPC, PTPEDMAC, and the corresponding channels ETHERC and EDMAC.
+Refer to section 36.5.4, Procedure to Reset Ethernet Controller for the procedure to reset these modules.
+
+36.2.23
+
+Too-Short Frame Receive Counter Register (TSFRCR)
+
+TSFRCR
+
+Address(es): ETHERC0.TSFRCR 000C 01ECh, ETHERC1.TSFRCR 000C 03ECh
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The TSFRCR register is a counter indicating the number of times a short frame that is shorter than 64 bytes has been
+received. When the TSFRCR register value becomes FFFF FFFFh, the counter stops. The counter value becomes 0 by
+writing any value to the TSFRCR register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1716 of 3240
+
+RX72N Group
+
+36.2.24
+
+36. Ethernet Controller (ETHERC)
+
+Too-Long Frame Receive Counter Register (TLFRCR)
+
+TLFRCR
+
+Address(es): ETHERC0.TLFRCR 000C 01F0h, ETHERC1.TLFRCR 000C 03F0h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The TLFRCR register is a counter indicating the number of times a long frame that is longer than the RFLR register
+value has been received.
+When the TLFRCR register value becomes FFFF FFFFh, the counter stops. The counter value becomes 0 by writing any
+value to the TLFRCR register.
+Note that the TLFRCR register is not incremented when a frame is received with the alignment error. In this case, the
+RFCR register is incremented.
+
+36.2.25
+
+Received Alignment Error Frame Counter Register (RFCR)
+
+RFCR
+
+Address(es): ETHERC0.RFCR 000C 01F4h, ETHERC1.RFCR 000C 03F4h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The RFCR register is a counter indicating the number of times a frame has been received with the alignment error (frame
+is not an integral number of octets).
+When the RFCR register value becomes FFFF FFFFh, the counter stops. The counter value becomes 0 by writing any
+value to the RFCR register.
+When a frame is received with an alignment error while the EPTPC.SYBYPSR.BYPASSn bit is 0, the
+EPTPCn.SYSR.INFABT flag may become 1. In this case, reset the EPTPC, PTPEDMAC, and the corresponding
+channels ETHERC and EDMAC. Refer to section 36.5.4, Procedure to Reset Ethernet Controller for the procedure
+to reset these modules.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1717 of 3240
+
+RX72N Group
+
+36.2.26
+
+36. Ethernet Controller (ETHERC)
+
+Multicast Address Frame Receive Counter Register (MAFCR)
+
+MAFCR
+
+Address(es): ETHERC0.MAFCR 000C 01F8h, ETHERC1.MAFCR 000C 03F8h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The MAFCR register is a counter indicating the number of times a frame where the multicast address is set has been
+received.
+When the RFCR register value becomes FFFF FFFFh, the counter stops. The counter value becomes 0 by writing any
+value to the RFCR register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1718 of 3240
+
+RX72N Group
+
+36.3
+
+36. Ethernet Controller (ETHERC)
+
+Operation
+
+This section is an overview of the ETHERC operations. The ETHERC supports flow control compliant with
+IEEE802.3x, and can transmit and receive PAUSE frames.
+
+36.3.1
+
+Transmission
+
+The ETHERC transmitter assembles transmit data into a frame and outputs it to the MII/RMII when a transmit request is
+received from the EDMAC. The frame transmitted via the MII/RMII is transmitted on the line by the PHY-LSI. Figure
+36.4 shows the state transitions of the ETHERC transmitter.
+Reset
+ECMR.TE = 1
+Transmission
+stopped
+
+Half-duplex mode
+
+Idle
+
+Carrier not sensed
+
+Carrier sense
+
+Transmission starts
+(preamble transmitted)
+
+Full-duplex mode
+
+ECMR.TE = 0
+
+Half-duplex mode
+
+Half-duplex mode
+
+Full-duplex mode
+Collision
+
+Carrier
+detection
+Preparation for
+retransmission *1
+
+Full-duplex mode
+
+Carrier not detected
+Carrier detected
+Collision
+
+Retransmission
+failed 15 times
+or
+late collision
+
+SFD
+transmission
+
+Error
+Collision *2
+
+Error
+notification
+
+Error
+
+Data
+transmission
+
+Collision *2
+Error
+Normal transmission
+
+CRC
+transmission
+
+Note 1. Preparation for retransmission includes transmitting a jam signal and adjusting transmission time intervals using
+the backoff algorithm after a collision is detected.
+Note 2. Preparation for retransmission is performed only when a collision is detected within 512 bit time after preamble
+transmission starts. When a collision is detected after 512 bit time, only a jam signal is transmitted and
+processing using the backoff algorithm is not performed.
+
+Figure 36.4
+
+ETHERC Transmitter State Transitions
+
+1. When setting the ECMR.TE bit to 1, the ETHERC enters the transmit idle state.
+2. When a transmit request is received from the EDMAC, the ETHERC enters the carrier sense state. The ETHERC
+waits for the interpacket gap and then transmits a preamble to the MII/RMII. When full-duplex mode is selected, it
+is not required to sense a carrier, so the ETHERC transmits a preamble immediately after receiving a transmit
+request from the EDMAC.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1719 of 3240
+
+RX72N Group
+
+36. Ethernet Controller (ETHERC)
+
+3. The ETHERC transmits the Start Frame Delimiter (SFD), transmit data, and CRC sequentially. When the
+transmission is completed successfully, the ETHERC notifies the EDMAC of successful completion, and the
+EDMAC sets the EDMACn.EESR.TC flag to 1. When a late collision or loss of carrier is detected during data
+transmission, the ETHERC stops the transmission and notifies the EDMAC of the error.
+4. After the time for the interpacket gap has elapsed, the ETHERC enters the idle state and continues transmission
+when transmit data remains.
+
+36.3.2
+
+Reception
+
+The ETHERC receiver separates the frame input from the MII/RMII into the preamble, SFD, receive data, and CRC, and
+transmits only receive data (destination address, source address, type/length, data/LLC). Figure 36.5 shows the state
+transitions of the ETHERC receiver.
+Reset
+
+ETn_RX_DV = Low
+ECMR.RE = 1
+Reception
+stopped
+
+ECMR.RE = 0
+
+Idle
+
+Preamble
+detected
+
+Frame reception start
+
+ETn_RX_DV = Low
+False carrier
+detected
+
+Other station address
+in normal mode
+
+Wait for SFD
+reception
+
+SFD received
+
+Destination
+address reception
+Own address, broadcast,
+multicast, or
+promiscuous mode
+
+Error notification *1
+
+Normal reception
+
+Receive error detected
+
+Receive error detected
+
+Data reception
+
+Reception ends
+
+CRC reception
+Note 1. Data of error frames is also transferred to the receive buffer.
+
+Figure 36.5
+
+ETHERC Receiver State Transitions
+
+1. When setting the ECMR.RE bit to 1, the ETHERC enters the receive idle state.
+2. When the SFD following the preamble of the receive packet is detected, the ETHERC starts reception. If the
+received SFD is invalid, the ETHERC discards the frame.
+3. In normal mode, the ETHERC starts data reception when the destination address of the receive frame is the address
+of the MCU or the receive frame is broadcast frame or multicast frame. In promiscuous mode, the ETHERC starts
+data reception regardless of the receive frame type.
+4. After receiving data from the MII/RMII, the ETHERC performs the CRC check. The ETHERC notifies the
+EDMAC of the CRC check result. After the received data is transferred to the receive buffer, the CRC check result
+is written back to the receive descriptor as a status. The result is also reflected in the EDMACn.EESR.CERF flag.
+5. When the ECMR.RE bit is 1 after one frame has been received, the ETHERC prepares to receive the next frame.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1720 of 3240
+
+RX72N Group
+
+36.3.3
+36.3.3.1
+
+36. Ethernet Controller (ETHERC)
+
+Frame Timing
+MII Frame Timing
+
+Figure 36.6 to Figure 36.10 show the MII frame timing.
+
+ETn_TX_CLK
+ETn_TX_EN
+ETn_ETXD3 to
+ETn_ETXD0
+
+Preamble
+
+SFD
+
+Data
+
+CRC
+
+ETn_TX_ER
+ETn_CRS
+ETn_COL
+
+Figure 36.6
+
+MII Frame Transmit Timing During Normal Transmission
+
+ETn_TX_CLK
+ETn_TX_EN
+ETn_ETXD3 to
+ETn_ETXD0
+
+Preamble
+
+JAM
+
+ETn_TX_ER
+ETn_CRS
+ETn_COL
+
+Figure 36.7
+
+MII Frame Transmit Timing When Collision Occurs
+
+ETn_RX_CLK
+ETn_RX_DV
+ETn_ERXD3 to
+ETn_ERXD0
+
+Preamble
+
+SFD
+
+Data
+
+CRC
+
+ETn_RX_ER
+
+Figure 36.8
+
+MII Frame Receive Timing During Normal Reception
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1721 of 3240
+
+RX72N Group
+
+36. Ethernet Controller (ETHERC)
+
+ETn_RX_CLK
+ETn_RX_DV
+ETn_ERXD3 to
+ETn_ERXD0
+
+Preamble
+
+SFD
+
+Data
+
+XXXX
+
+ETn_RX_ER
+
+Figure 36.9
+
+MII Frame Receive Timing for Receive Error Notification
+
+ETn_RX_CLK
+ETn_RX_DV
+ETn_ERXD3 to
+ETn_ERXD0
+
+XXXX
+
+1110
+
+XXXX
+
+ETn_RX_ER
+
+Figure 36.10
+
+MII Fame Receive Timing for False Carrier Notification
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1722 of 3240
+
+RX72N Group
+
+36.3.3.2
+
+36. Ethernet Controller (ETHERC)
+
+RMII Frame Timing
+
+The RMII frame timing is shown in Figure 36.11 to Figure 36.13.
+
+REF50CKn
+RMIIn_TXD_EN
+RMIIn_TXD1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+A
+
+B
+
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+I
+
+J
+
+0
+
+RMIIn_TXD0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+A
+
+B
+
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+I
+
+J
+
+0
+
+Preamble
+
+Figure 36.11
+
+SFD
+
+Data
+
+RMII Frame Transmit Timing During Normal Transmission
+
+REF50CKn
+nibble boundary
+
+RMIIn_CRS_DV
+RMIIn_RXD1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+A
+
+B
+
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+I
+
+J
+
+0
+
+RMIIn_RXD0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+A
+
+B
+
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+I
+
+J
+
+0
+
+|J|
+
+Figure 36.12
+
+|K|
+
+Preamble
+
+SFD
+
+Data
+
+RMII Frame Receive Timing During Normal Reception
+
+REF50CKn
+RMIIn_CRS_DV
+RMIIn_RXD1
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+0
+
+RMIIn_RXD0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+False carrier detected
+
+Figure 36.13
+
+RMII Frame Receive Timing When False Carrier Is Detected
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1723 of 3240
+
+RX72N Group
+
+36.3.4
+
+36. Ethernet Controller (ETHERC)
+
+Accessing MII/RMII Registers
+
+Use the PIR register to access the MII/RMII registers in the PHY-LSI. Serial data in the MII/RMII management frame
+format is transmitted and received via the ETn_MDC and ETn_MDIO pins controlled by software.
+
+36.3.4.1
+
+MII/RMII Management Frame Format
+
+Table 36.3 lists the MII/RMII management frame format.
+Table 36.3
+
+MII/RMII Management Frame Format
+
+Access Type
+
+MII/RMII Management Frame
+
+Item
+
+PRE
+
+ST
+
+OP
+
+PHYAD
+
+REGAD
+
+TA
+
+DATA
+
+IDLE
+
+Number of bits
+
+32
+
+2
+
+2
+
+5
+
+5
+
+2
+
+16
+
+1
+
+Read
+
+1...1
+
+01
+
+10
+
+00001
+
+RRRRR
+
+Z0
+
+DDDDDDDDDDDDDDDD
+
+Z
+
+Write
+
+1...1
+
+01
+
+01
+
+00001
+
+RRRRR
+
+10
+
+DDDDDDDDDDDDDDDD
+
+Z
+
+PRE (preamble):
+ST (start of frame):
+OP (operation code):
+PHYAD (PHY address):
+
+Send 32 consecutive 1’s.
+Send 01b.
+Send 10b for read or 01b for write.
+Up to 32 PHY-LSIs can be connected to one MAC. PHY-LSIs are selected with these 5 bits.
+When the PHY-LSI address is 1, send 00001b.
+REGAD (register address): One register is selected from up to 32 registers in the PHY-LSI.
+When the register address is 1, send 00001b.
+TA (turnaround):
+2-bit turnaround time to avoid contention between the register address and data during a read operation
+(a) Send 10b during a write operation.
+(b) Release the bus for 1 bit during a read operation (Z is output)
+(indicated as Z0 because 0 is output from the PHY-LSI on the next clock cycle).
+DATA (data):
+16-bit data. Sequentially send or receive starting from the MSB.
+IDLE (IDLE condition):
+Wait time to input the next MII/RMII management format
+(a) Release the bus during a write operation (Z is output).
+(b) No control is required since a bus has already been released during a read operation.
+
+36.3.4.2
+
+MII/RMII Register Access Procedure
+
+Access to the MII/RMII registers includes writing data in 1-bit units, reading data in 1-bit units, and releasing the bus.
+Figure 36.14 to Figure 36.17 show examples of the MII/RMII register access timing. The access timing differ with the
+PHY-LSI type.
+
+(1) Write to the PHY interface register
+PIR.MMD bit  1 (write)
+PIR.MDO bit  write data
+PIR.MDC bit  0
+(2) Write to the PHY interface register
+PIR.MMD bit  1 (write)
+PIR.MDO bit  write data
+PIR.MDC bit  1
+
+ETn_MDC
+ETn_MDIO
+(1) (2) (3) (1) (2)
+
+(3) Write to the PHY interface register
+PIR.MMD bit  1 (write)
+PIR.MDO bit  write data
+PIR.MDC bit  0
+
+Figure 36.14
+
+1-Bit Data Write Flow
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1724 of 3240
+
+RX72N Group
+
+36. Ethernet Controller (ETHERC)
+
+(1) Write to the PHY interface register
+PIR.MMD bit  0 (read)
+PIR.MDC bit  0
+(2) Write to the PHY interface register
+PIR.MMD bit  0 (read)
+PIR.MDC bit  1
+(3)Write to the PHY interface register
+PIR.MMD bit  0 (read)
+PIR.MDC bit  0
+
+Figure 36.15
+
+ETn_MDC
+ETn_MDIO
+(1) (2) (3)
+The PHY-LSI drives ETn_MDIO low.
+
+Bus Release Flow (TA in Read Operation in Table 36.3)
+
+(1) Write to the PHY interface register
+PIR.MMD bit  0 (read)
+PIR.MDC bit  1
+(2) Read the PHY interface register
+Receive data  PIR.MDI bit
+
+ETn_MDC
+ETn_MDIO
+(1) (2) (3)
+
+(1)
+
+(3) Write to PHY interface register
+PIR.MMD bit  0 (read)
+PIR.MDC bit  0
+
+Figure 36.16
+
+1-Bit Data Read Flow
+
+(1) Write to the PHY interface register
+PIR.MMD bit  0 (read)
+PIR.MDC bit  0
+
+ETn_MDC
+ETn_MDIO
+(1)
+
+Figure 36.17
+
+Bus Release Flow (IDLE in Write Operation in Table 36.3)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1725 of 3240
+
+RX72N Group
+
+36.3.5
+
+36. Ethernet Controller (ETHERC)
+
+Magic Packet Detection
+
+The ETHERC supports Wake-On-LAN (WOL). WOL is a function to detect a Magic Packet transmitted from a host
+device or other device and exit a low power consumption state such as sleep mode. When the ETHERC detects a Magic
+Packet, high is output from the ETn_WOL pin. Write 1 to the EDMACn.EDMR.SWR bit to set the ETn_WOL pin to
+low.
+Since a Magic Packet is transmitted in broadcast mode, the Magic Packet is received regardless of the destination MAC
+address selected in the format. The ETHERC outputs high from the ETn_WOL pin only when the destination MAC
+address matches its own MAC address. Refer to the technical documentation provided by Advanced Micro Devices, Inc.
+for details on the Magic Packet. The following describes an example of the procedure to use WOL in the MCU.
+1. Set the ICU to disable the EINTn interrupt request.
+2. Set the ECMR.MPDE bit to 1 to enable Magic Packet detection. Set the ECMR.RE bit to 1 to enable reception.
+3. Set the ECSIPR.MPDIP bit to 1 to enable notification of the Magic Packet detect interrupt.
+4. Set the EDMACn.EESIPR.ECIIP bit to 1 to enable the ETHERC status register source interrupt.
+5. Set the ICU to enable the EINTn interrupt request.
+6. Change the CPU operating mode to sleep mode or place unused peripherals in the module stop state as needed.
+7. When a Magic Packet is detected, an interrupt request is sent to the CPU. High is output from the ETn_WOL pin to
+notify peripheral devices that the Magic Packet has been detected.
+
+36.3.5.1
+
+Notes on Magic Packet Detection
+
+The ETHERC receives packets, including broadcast packets, even when waiting to receive a Magic Packet. Therefore,
+receive data may have been stored in the receive FIFO of the EDMAC when a Magic Packet is detected. Also, flags in
+registers ECSR and EDMACn.EESR may have been changed. When returning to normal operation by detecting a Magic
+Packet, set the EDMACn.EDMR.SWR bit to 1 to reset the ETHERC and EDMAC.
+
+36.3.6
+
+Adjusting Transmission Efficiency by Changing the IPG
+
+The IPG is a non-transmit period between transmit frames. The ETHERC can change the value of the IPG. Transmission
+efficiency can be increased or decreased by setting the IPGR register. The typical value of the IPG is specified by the
+IEEE802.3 standard. When changing the setting, confirm that all devices operate normally in the same network.
+
+IPG *1
+Short IPG
+
+Packet
+
+Packet
+
+Packet
+
+Packet
+
+Packet
+
+Packet
+
+IPG *1
+Long IPG
+
+Packet
+
+Packet
+
+Packet
+
+Packet
+
+Packet
+
+Note. The IPG may be longer than the set value depending on the condition of the line or system bus.
+
+Figure 36.18
+
+Differences in Transmission Efficiency Based on Changes in the IPG
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1726 of 3240
+
+RX72N Group
+
+36.3.7
+
+36. Ethernet Controller (ETHERC)
+
+Flow Control
+
+The ETHERC can perform flow control compliant with IEEE802.3x in full-duplex mode, and the receiver and
+transmitter can be set individually. PAUSE frames can be transmitted automatically or manually.
+
+36.3.7.1
+
+Automatic PAUSE Frame Transmission
+
+When the ECMR.TXF bit is set to 1, automatic PAUSE frame transmission is enabled. A PAUSE frame is automatically
+transmitted by a PAUSE frame transmit request from the EDMAC. The APR.AP[15:0] bit value is used for the
+pause_time parameter of the PAUSE frame.
+After a PAUSE frame is transmitted, if the EDMAC is still requesting PAUSE frame transmission when the PAUSE time
+elapses, a PAUSE frame is transmitted again. The maximum number of PAUSE frame retransmissions can be set in the
+TPAUSER.TPAUSE[15:0] bits. If the maximum number of retransmissions is reached, subsequent PAUSE frames are
+not transmitted.
+Figure 36.19 shows the procedure to set automatic PAUSE frame transmission.
+
+Start
+
+Set the threshold value that starts the flow control
+
+Set the maximum number of PAUSE frame
+retransmissions
+
+Set the pause_time parameter
+
+Enable automatic PAUSE frame transmission
+
+Data reception
+
+No
+
+[1] Set the threshold value in the
+EDMACn.FCFTR.RFDO[2:0] bits or
+EDMACn.FCFTR.RFFO[2:0] bits.
+[2] Set the maximum number of automatic
+PAUSE frame retransmissions in the
+TPAUSER.TPAUSE[15:0] bits.
+[3] Set the pause_time parameter of the automatic
+PAUSE frame in the APR.AP[15:0] bits.
+
+[4] Set the ECMR.TXF bit to 1.
+
+[5] Set the ECMR.RE bit to 1.
+
+[6] Check if the amount of receive FIFO data or the
+number of received frames reaches the threshold.
+Threshold  Receive data?
+
+Yes
+Yes
+
+[7] Check if the number of automatic PAUSE
+frame retransmissions reaches the threshold.
+Maximum = Retransmitted PAUSE frames?
+
+No
+PAUSE frame transmission
+
+Figure 36.19
+
+Example of Procedure to Set Automatic PAUSE Frame Transmission
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1727 of 3240
+
+RX72N Group
+
+36.3.7.2
+
+36. Ethernet Controller (ETHERC)
+
+Manual PAUSE Frame Transmission
+
+A PAUSE frame can be manually transmitted at any time. When writing the pause_time parameter of the PAUSE frame
+to the MPR.MP[15:0] bits by software, the ETHERC transmits a PAUSE frame once. When transmitting a PAUSE frame
+more than once, write to the MPR.MP[15:0] bits for each transmission.
+
+36.3.7.3
+
+PAUSE Frame Reception
+
+When setting the ECMR.RXF bit to 1, PAUSE frame detection is enabled. After a PAUSE frame is received, the
+ETHERC completes transmitting the current frame and waits for the PAUSE time of the received PAUSE frame to elapse
+before the next frame can be transmitted. Also, the ETHERC increments the RFCF.RPAUSE[7:0] bit value.
+However, while waiting for the PAUSE time to elapse, if a PAUSE frame that contains a pause_time parameter of 0 is
+received and the ECMR.ZPF bit is 1, the ETHERC becomes ready to transmit.
+
+36.4
+
+Interrupts
+
+When a flag in the ECSR register becomes 1 and the corresponding bit in the ECSIPR register is 1, the ETHERC notifies
+the EDMAC of the status as an interrupt source. After receiving the notification, the EDMAC sets the
+EDMACn.EESR.ECI flag to 1. When the EDMACn.EESIPR.ECIIP bit is 1, the EDMAC sends an EINTn interrupt
+request to the CPU. Refer to section 38, DMA Controller for the Ethernet Controller (EDMACa) for details.
+
+36.5
+36.5.1
+
+Usage Notes
+Conditions for the LCHNG Flag to Become 1
+
+The ECSR.LCHNG flag may become 1 even when the input level of the ETn_LINKSTA pin remains the same. In this
+case, high is input to the ETn_LINKSTA pin when setting the MPC.PmnPFS register to assign the ETn_LINKSTA
+signal to a port or when releasing the ETHERC and EDMAC software reset using the EDMACn.EDMR.SWR bit. The
+ECSR.LCHNG flag becomes 1 because the ETn_LINKSTA signal in the ETHERC is fixed low regardless of the input
+level to the external pin while the MPC does not assign the ETn_LINKSTA signal or during the ETHERC and EDMAC
+software reset.
+To avoid wrongly generating a link signal change interrupt, clear the ECSR.LCHNG flag and then set the
+ECSIPR.LCHNGIP bit to 1.
+
+36.5.2
+
+Input to the RMIIn_RX_ER Pin While the RMII is Selected
+
+When the width of a reception error signal received from the PHY-LSI is only one cycle of the REF50CKn clock (50
+MHz) while the RMII is selected, the signal is not recognized as an error signal.
+
+36.5.3
+
+Handling Errors in Control Information
+
+When a frame with an alignment error is received or a frame receive error occurs while the
+EPTPC.SYBYPSR.BYPASSn bit is 0, the EPTPCn.SYSR.INFABT flag may become 1. In this case, reset the EPTPC,
+PTPEDMAC, and the corresponding channels ETHERC and EDMAC. Refer to section 36.5.4, Procedure to Reset
+Ethernet Controller for the procedure to reset these modules.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1728 of 3240
+
+RX72N Group
+
+36.5.4
+
+36. Ethernet Controller (ETHERC)
+
+Procedure to Reset Ethernet Controller
+
+Follow the procedure below to reset the ETHERC, EPTPC, and EDMAC. In this case, data in the address range from
+0000 0000h to 0000 001Fh may be destroyed.
+
+(a)
+
+When the EPTPC is not in use
+
+(1) Write 0000 0001h (reset ETHERCn and EDMACn) to the EDMACn.EDMR register of the corresponding channels.
+(2) Wait for 64 cycles of the PCLKA until initialization is completed.
+
+(b)
+
+When the EPTPC is in use
+
+(1)
+(2)
+(3)
+(4)
+(5)
+(6)
+
+Write 0000 0001h (reset EPTPC) to the EPTPC.PTRSTR register.
+Write 0000 0001h (reset PTPEDMAC) to the PTPEDMAC.EDMR register.
+Write 0000 0001h (reset ETHERCn and EDMACn) to the EDMACn.EDMR register of the corresponding channels.
+Wait for 64 cycles of the PCLKA until initialization is completed.
+Write 0000 0000h (release reset of EPTPC) to the EPTPC.PTRSTR register.
+Wait for 256 cycles of the PCLKA until the EPTPC is released from the reset.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1729 of 3240
+
+

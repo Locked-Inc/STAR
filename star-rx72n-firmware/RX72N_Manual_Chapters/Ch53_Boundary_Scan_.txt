@@ -1,0 +1,8000 @@
+RX72N Group
+
+53.
+
+53. Boundary Scan
+
+Boundary Scan
+
+This MCU has boundary scan function.
+The boundary scan is a serial I/O interface based on the JTAG (Joint Test Action Group, IEEE Std.1149.1 and IEEE
+Standard Test Access Port and Boundary-Scan Architecture).
+
+53.1
+
+Overview
+
+Table 53.1 lists the specifications of boundary scan.
+Figure 53.1 shows a block diagram of the boundary scan function.
+Table 53.1
+
+Specifications of Boundary Scan
+
+Item
+
+Description
+
+Boundary scan enabled/disabled
+
+Boundary scan is enabled when the RES# pin and the BSCANP pin are driven high and the EMLE
+pin is driven low.
+
+Dedicated boundary scan pins
+
+The following pins are dedicated for the JTAG, when boundary scan function is enabled (TDO/TCK/
+TDI/TMS/TRST#).
+224-pin LFBGA/176-pin LFBGA: PF0/PF1/PF2/PF3/PF4
+145-pin TFLGA: P26/P27/P30/P31/P34
+
+Six test modes
+
+ BYPASS mode
+ EXTEST mode
+ SAMPLE/PRELOAD mode
+ CLAMP mode
+ HIGHZ mode
+ IDCODE mode
+
+JTBSR:
+Boundary Scan Register
+Pxx
+
+Pxx
+JTBSR
+Logic
+
+JTBSR
+
+JTIDR:
+IDCODE Register (32bit)
+TDI
+JTBPR:
+Bypass Register (1bit)
+
+TCK
+TMS
+
+Selector
+
+JTBSR
+
+JTBSR
+
+Selector
+
+JTBSR
+
+JTBSR
+
+TDO
+
+Decorder
+TAP
+Controller
+
+TRST#
+
+JTIR:
+Instruction Register (8bit)
+
+JTBPR: Bypass register
+JTBSR: Boundary scan register
+JTIR:
+Instruction register
+JTIDR: ID code register
+
+Figure 53.1
+
+Block Diagram of JTAG
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2775 of 3240
+
+RX72N Group
+
+53. Boundary Scan
+
+Table 53.2 lists the I/O pins used in the boundary scan function.
+Table 53.2
+
+Pin Configuration
+
+Pin Name
+
+I/O
+
+Description
+
+TCK
+
+Input
+
+Test clock input pin
+Clock signal for boundary scan. Input the clock the duty cycle of which is 50 percent when
+boundary scan function is used.
+
+TMS
+
+Input
+
+Test mode select pin
+
+TDI
+
+Input
+
+Test data input pin
+
+TDO
+
+Output
+
+Test data output pin
+
+TRST#
+
+Input
+
+Test reset input pin
+
+53.2
+
+Register Descriptions
+
+Table 53.3 lists the boundary scan registers.
+Table 53.3
+
+List of Boundary Scan Registers
+
+Register Name
+
+Symbol
+
+Value after Reset
+
+Instruction register
+
+JTIR
+
+55h
+
+ID code register
+
+JTIDR
+
+083F 9447h
+
+Bypass register
+
+JTBPR
+
+Undefined
+
+Boundary scan register
+
+JTBSR
+
+Undefined
+
+Instructions can be input to the JTIR register via the TDI pin by serial transfer.
+The JTBPR register, which is a 1-bit register, is connected between the TDI and TDO pins in BYPASS mode.
+The JTBSR register, which is configured according to Table 53.6 to Table 53.8, is connected between the TDI and
+TDO pins when test data are being shifted in.
+None of the registers is accessible from the CPU.
+Table 53.4 lists the availability of serial transfer for the registers.
+Table 53.4
+
+Serial Transfer for the Registers
+
+Register Name
+
+Serial Input
+
+Serial Output
+
+Instruction register (JTIR)
+
+Available
+
+Available
+
+ID code register (JTIDR)
+
+Available
+
+Available
+
+Bypass register (JTBPR)
+
+Available
+
+Available
+
+Boundary scan register (JTBSR)
+
+Available
+
+Available
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2776 of 3240
+
+RX72N Group
+
+53.2.1
+
+53. Boundary Scan
+
+Instruction Register (JTIR)
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+1
+
+0
+
+1
+
+TS[7:0]
+0
+
+Value after reset:
+
+1
+
+0
+
+1
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+TS[7:0]
+
+Test Bit Set
+
+The command configuration is as listed in Table 53.5.
+
+—
+
+Table 53.5
+
+Command Configuration
+
+TS7
+
+TS6
+
+TS5
+
+TS4
+
+TS3
+
+TS2
+
+TS1
+
+TS0
+
+Instruction
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+EXTEST
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+SAMPLE/PRELOAD
+
+0
+
+1
+
+0
+
+1
+
+0
+
+1
+
+0
+
+1
+
+IDCODE (initial value)
+
+1
+
+1
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+CLAMP
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+HIGHZ
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+BYPASS
+
+Other than above
+
+Reserved
+
+JTAG instructions can be transferred to the JTIR register by serial input from the TDI pin.
+The JTIR register is initialized when the TRST# pin is driven low, or when the TAP controller is in the Test-Logic-Reset
+state.
+
+53.2.2
+
+ID Code Register (JTIDR)
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+DID[31:0]
+Unique value for each product*1
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+DID[31:0]
+Unique value for each product*1
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b31 to b0
+
+DID[31:0]
+
+Reserved
+
+JTIDR is a register with the fixed value that indicates the device
+IDCODE.
+
+—
+
+Note 1. For the ID code for each product, refer to Table 53.3, List of Boundary Scan Registers.
+
+JTIDR data is output from the TDO pin when the IDCODE instruction has been executed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2777 of 3240
+
+RX72N Group
+
+53.2.3
+
+53. Boundary Scan
+
+Bypass Register (JTBPR)
+
+The JTBPR register is a 1-bit register and is connected between the TDI and TDO pins when the JTIR register is set to
+BYPASS mode.
+The JTBPR register cannot be read from or written to by the CPU.
+
+53.2.4
+
+Boundary Scan Register (JTBSR)
+
+The JTBSR register is a shift register to control the external input and output pins of this MCU and is distributed across
+the pads.
+The EXTEST, SAMPLE/PRELOAD, CLAMP, and HIGHZ instructions are issued to apply the JTBSR register in
+boundary-scan testing.
+Table 53.6 to Table 53.8 list the correspondence between the JTBSR bits and the pins of this MCU.
+The value after reset is undefined.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2778 of 3240
+
+RX72N Group
+Table 53.6
+Pin No.
+
+53. Boundary Scan
+Boundary Scan Register
+224-Pin LFBGA (1/12)
+
+Pin Name
+
+Input/Output
+
+Table 53.6
+Bit Name
+
+From TDI
+C3
+
+D3
+
+D6
+
+D5
+
+E3
+
+F7
+
+F5
+
+F4
+
+G6
+
+G5
+
+H7
+
+G4
+
+P05
+
+P03
+
+P02
+
+P01
+
+P00
+
+PK6
+
+PK5
+
+PK4
+
+PF5
+
+PJ5
+
+PJ3
+
+MD
+
+Output
+
+546
+
+Output enable
+
+545
+
+Input
+
+544
+
+Output
+
+543
+
+Output enable
+
+542
+
+Input
+
+541
+
+Boundary Scan Register
+224-Pin LFBGA (2/12)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+H5
+
+P32
+
+Output
+
+497
+
+Output enable
+
+496
+
+J4
+
+J5
+
+P31
+
+P30
+
+Input
+
+495
+
+Output
+
+488
+
+Output enable
+
+487
+
+Input
+
+486
+
+Output
+
+485
+
+Output
+
+540
+
+Output enable
+
+484
+
+Output enable
+
+539
+
+Input
+
+483
+
+Input
+
+538
+
+Output
+
+482
+
+K1
+
+PH7
+
+Output
+
+537
+
+Output enable
+
+481
+
+Output enable
+
+536
+
+Input
+
+480
+
+Input
+
+535
+
+Output
+
+479
+
+K2
+
+PH6
+
+Output
+
+534
+
+Output enable
+
+478
+
+Output enable
+
+533
+
+Input
+
+477
+
+Input
+
+532
+
+Output
+
+476
+
+K4
+
+PH5
+
+Output
+
+531
+
+Output enable
+
+475
+
+Output enable
+
+530
+
+Input
+
+474
+
+Input
+
+529
+
+Output
+
+473
+
+K3
+
+PH4
+
+Output
+
+528
+
+Output enable
+
+472
+
+Output enable
+
+527
+
+Input
+
+471
+
+Input
+
+526
+
+Output
+
+470
+
+L1
+
+PH3
+
+Output
+
+525
+
+Output enable
+
+469
+
+Output enable
+
+524
+
+Input
+
+468
+
+Input
+
+523
+
+Output
+
+467
+
+J6
+
+PH2
+
+Output
+
+522
+
+Output enable
+
+466
+
+Output enable
+
+521
+
+Input
+
+465
+
+Input
+
+520
+
+Output
+
+464
+
+Output
+
+519
+
+K6
+
+Output enable
+
+463
+
+Output enable
+
+518
+
+Input
+
+462
+
+L2
+
+PH1
+
+Input
+
+517
+
+Output
+
+455
+
+Output
+
+516
+
+Output enable
+
+454
+
+Output enable
+
+515
+
+Input
+
+453
+
+M1
+
+P27
+
+Input
+
+514
+
+Output
+
+452
+
+Output
+
+510
+
+Output enable
+
+451
+
+Output enable
+
+509
+
+Input
+
+450
+
+Input
+
+508
+
+Output
+
+449
+
+J1
+
+EXTAL
+
+Input
+
+504
+
+Output enable
+
+448
+
+H2
+
+P34
+
+Output
+
+503
+
+Input
+
+447
+
+Output enable
+
+502
+
+Output
+
+446
+
+Input
+
+501
+
+Output enable
+
+445
+
+Output
+
+500
+
+Input
+
+444
+
+Output enable
+
+499
+
+Output
+
+443
+
+Input
+
+498
+
+Output enable
+
+442
+
+Input
+
+441
+
+H4
+
+P33
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+M3
+
+P26
+
+L4
+
+M2
+
+P25
+
+P24
+
+P23
+
+Page 2779 of 3240
+
+RX72N Group
+Table 53.6
+
+53. Boundary Scan
+Boundary Scan Register
+224-Pin LFBGA (3/12)
+
+Table 53.6
+
+Boundary Scan Register
+224-Pin LFBGA (4/12)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+N1
+
+P22
+
+Output
+
+440
+
+M5
+
+PJ0
+
+Output
+
+395
+
+Output enable
+
+439
+
+Output enable
+
+394
+
+Input
+
+438
+
+Output
+
+437
+
+Output enable
+
+436
+
+N2
+
+P1
+
+R1
+
+P3
+
+P2
+
+R2
+
+R3
+
+N3
+
+J7
+
+P4
+
+N5
+
+R4
+
+L6
+
+N6
+
+PH0
+
+PK7
+
+P21
+
+P20
+
+P17
+
+P87
+
+P16
+
+P86
+
+P15
+
+P14
+
+P13
+
+P12
+
+PJ2
+
+PJ1
+
+N4
+
+P85
+
+Input
+
+393
+
+Output
+
+392
+
+Output enable
+
+391
+
+Input
+
+435
+
+Output
+
+434
+
+Output enable
+
+433
+
+Output enable
+
+388
+
+Input
+
+432
+
+Input
+
+387
+
+Output
+
+431
+
+Output
+
+386
+
+Output enable
+
+430
+
+Output enable
+
+385
+
+Input
+
+429
+
+Input
+
+384
+
+Output
+
+428
+
+Output
+
+383
+
+Output enable
+
+427
+
+Output enable
+
+382
+
+Input
+
+426
+
+Input
+
+381
+
+Output
+
+425
+
+Output
+
+380
+
+Output enable
+
+424
+
+Output enable
+
+379
+
+Input
+
+423
+
+Input
+
+378
+
+Output
+
+422
+
+Output
+
+377
+
+Output enable
+
+421
+
+Output enable
+
+376
+
+Input
+
+420
+
+Input
+
+375
+
+Output
+
+419
+
+Output
+
+374
+
+Output enable
+
+418
+
+Output enable
+
+373
+
+Input
+
+417
+
+Input
+
+372
+
+Output
+
+416
+
+Output
+
+371
+
+Output enable
+
+415
+
+Output enable
+
+370
+
+Input
+
+414
+
+Input
+
+369
+
+M6
+
+P7
+
+N7
+
+R8
+
+R7
+
+P8
+
+K7
+
+J8
+
+P84
+
+P57
+
+P56
+
+P55
+
+P54
+
+P11
+
+P10
+
+390
+389
+
+Output
+
+413
+
+Output
+
+368
+
+Output enable
+
+412
+
+Output enable
+
+367
+
+Input
+
+411
+
+Input
+
+366
+
+L8
+
+P53
+
+Input
+Output
+
+Output
+
+410
+
+Output
+
+365
+
+Output enable
+
+409
+
+Output enable
+
+364
+
+Input
+
+408
+
+Input
+
+363
+
+M8
+
+P52
+
+Output
+
+407
+
+Output
+
+362
+
+Output enable
+
+406
+
+Output enable
+
+361
+
+Input
+
+405
+
+Input
+
+360
+
+K8
+
+P51
+
+Output
+
+404
+
+Output
+
+359
+
+Output enable
+
+403
+
+Output enable
+
+358
+
+Input
+
+402
+
+Input
+
+357
+
+M9
+
+P50
+
+Output
+
+401
+
+Output
+
+356
+
+Output enable
+
+400
+
+Output enable
+
+355
+
+Input
+
+399
+
+Input
+
+354
+
+Output
+
+398
+
+Output
+
+353
+
+Output enable
+
+397
+
+Output enable
+
+352
+
+Input
+
+396
+
+Input
+
+351
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+N9
+
+P83
+
+PC7
+
+Page 2780 of 3240
+
+RX72N Group
+Table 53.6
+
+53. Boundary Scan
+Boundary Scan Register
+224-Pin LFBGA (5/12)
+
+Table 53.6
+
+Boundary Scan Register
+224-Pin LFBGA (6/12)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+R9
+
+PC6
+
+Output
+
+350
+
+K10
+
+PL3
+
+Output
+
+305
+
+Output enable
+
+349
+
+Output enable
+
+304
+
+R10
+
+P10
+
+L9
+
+N10
+
+P11
+
+R11
+
+J9
+
+N11
+
+K9
+
+M10
+
+L10
+
+M12
+
+M11
+
+R12
+
+PC5
+
+P82
+
+P81
+
+P80
+
+PC4
+
+PC3
+
+PK3
+
+PK2
+
+PK1
+
+PK0
+
+PL7
+
+PL6
+
+PL5
+
+PL4
+
+Input
+
+348
+
+Output
+
+347
+
+Output enable
+
+346
+
+P12
+
+PL2
+
+Input
+
+303
+
+Output
+
+302
+
+Output enable
+
+301
+
+Input
+
+345
+
+Output
+
+344
+
+Output enable
+
+343
+
+Output enable
+
+298
+
+Input
+
+342
+
+Input
+
+297
+
+Output
+
+341
+
+Output
+
+296
+
+Output enable
+
+340
+
+Output enable
+
+295
+
+Input
+
+339
+
+Input
+
+294
+
+Output
+
+338
+
+Output
+
+293
+
+Output enable
+
+337
+
+Output enable
+
+292
+
+Input
+
+336
+
+Input
+
+291
+
+Output
+
+335
+
+Output
+
+290
+
+Output enable
+
+334
+
+Output enable
+
+289
+
+Input
+
+333
+
+Input
+
+288
+
+Output
+
+332
+
+Output
+
+287
+
+Output enable
+
+331
+
+Output enable
+
+286
+
+Input
+
+330
+
+Input
+
+285
+
+Output
+
+329
+
+Output
+
+284
+
+Output enable
+
+328
+
+Output enable
+
+283
+
+Input
+
+327
+
+Input
+
+282
+
+Output
+
+326
+
+Output
+
+281
+
+Output enable
+
+325
+
+Output enable
+
+280
+
+Input
+
+324
+
+Input
+
+279
+
+L11
+
+N12
+
+P13
+
+R13
+
+R14
+
+M13
+
+N13
+
+R15
+
+P77
+
+P76
+
+PC2
+
+P75
+
+P74
+
+PM7
+
+PM6
+
+300
+
+Output
+
+299
+
+Output
+
+323
+
+Output
+
+278
+
+Output enable
+
+322
+
+Output enable
+
+277
+
+Input
+
+321
+
+Input
+
+276
+
+P14
+
+PM5
+
+Input
+
+Output
+
+320
+
+Output
+
+275
+
+Output enable
+
+319
+
+Output enable
+
+274
+
+Input
+
+318
+
+Input
+
+273
+
+P15
+
+PM4
+
+Output
+
+317
+
+Output
+
+272
+
+Output enable
+
+316
+
+Output enable
+
+271
+
+Input
+
+315
+
+Input
+
+270
+
+K11
+
+PM3
+
+Output
+
+314
+
+Output
+
+269
+
+Output enable
+
+313
+
+Output enable
+
+268
+
+Input
+
+312
+
+Input
+
+267
+
+J11
+
+PM2
+
+Output
+
+311
+
+Output
+
+266
+
+Output enable
+
+310
+
+Output enable
+
+265
+
+Input
+
+309
+
+Input
+
+264
+
+Output
+
+308
+
+Output
+
+263
+
+Output enable
+
+307
+
+Output enable
+
+262
+
+Input
+
+306
+
+Input
+
+261
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+L12
+
+PN5
+
+PN4
+
+Page 2781 of 3240
+
+RX72N Group
+Table 53.6
+
+53. Boundary Scan
+Boundary Scan Register
+224-Pin LFBGA (7/12)
+
+Table 53.6
+
+Boundary Scan Register
+224-Pin LFBGA (8/12)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+N14
+
+PC1
+
+Output
+
+260
+
+J15
+
+PA7
+
+Output
+
+215
+
+Output enable
+
+259
+
+Output enable
+
+214
+
+M14
+
+H10
+
+N15
+
+J10
+
+H11
+
+M15
+
+K13
+
+L15
+
+K14
+
+L14
+
+J12
+
+K15
+
+J13
+
+J14
+
+PC0
+
+P73
+
+PB7
+
+PL1
+
+PL0
+
+PB6
+
+PB5
+
+PB4
+
+PB3
+
+PB2
+
+PB1
+
+P72
+
+P71
+
+PB0
+
+Input
+
+258
+
+Output
+
+257
+
+Output enable
+
+256
+
+H14
+
+PA6
+
+Input
+
+213
+
+Output
+
+212
+
+Output enable
+
+211
+
+Input
+
+255
+
+Output
+
+254
+
+Output enable
+
+253
+
+Output enable
+
+208
+
+Input
+
+252
+
+Input
+
+207
+
+Output
+
+251
+
+Output
+
+206
+
+Output enable
+
+250
+
+Output enable
+
+205
+
+Input
+
+249
+
+Input
+
+204
+
+Output
+
+248
+
+Output
+
+203
+
+Output enable
+
+247
+
+Output enable
+
+202
+
+Input
+
+246
+
+Input
+
+201
+
+Output
+
+245
+
+Output
+
+200
+
+Output enable
+
+244
+
+Output enable
+
+199
+
+Input
+
+243
+
+Input
+
+198
+
+Output
+
+242
+
+Output
+
+197
+
+Output enable
+
+241
+
+Output enable
+
+196
+
+Input
+
+240
+
+Input
+
+195
+
+Output
+
+239
+
+Output
+
+194
+
+Output enable
+
+238
+
+Output enable
+
+193
+
+Input
+
+237
+
+Input
+
+192
+
+Output
+
+236
+
+Output
+
+191
+
+Output enable
+
+235
+
+Output enable
+
+190
+
+Input
+
+234
+
+Input
+
+189
+
+H15
+
+G15
+
+G14
+
+F15
+
+G13
+
+F14
+
+G12
+
+E14
+
+PA5
+
+PA4
+
+PA3
+
+PG7
+
+PA2
+
+PG6
+
+PA1
+
+210
+
+Output
+
+209
+
+Output
+
+233
+
+Output
+
+188
+
+Output enable
+
+232
+
+Output enable
+
+187
+
+Input
+
+231
+
+Input
+
+186
+
+F12
+
+PG5
+
+Input
+
+Output
+
+230
+
+Output
+
+185
+
+Output enable
+
+229
+
+Output enable
+
+184
+
+Input
+
+228
+
+Input
+
+183
+
+E15
+
+PA0
+
+Output
+
+227
+
+Output
+
+182
+
+Output enable
+
+226
+
+Output enable
+
+181
+
+Input
+
+225
+
+Input
+
+180
+
+D15
+
+PG4
+
+Output
+
+224
+
+Output
+
+179
+
+Output enable
+
+223
+
+Output enable
+
+178
+
+Input
+
+222
+
+Input
+
+177
+
+F13
+
+P67
+
+Output
+
+221
+
+Output
+
+176
+
+Output enable
+
+220
+
+Output enable
+
+175
+
+Input
+
+219
+
+Input
+
+174
+
+Output
+
+218
+
+Output
+
+173
+
+Output enable
+
+217
+
+Output enable
+
+172
+
+Input
+
+216
+
+Input
+
+171
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+C15
+
+PG3
+
+P66
+
+Page 2782 of 3240
+
+RX72N Group
+Table 53.6
+
+53. Boundary Scan
+Boundary Scan Register
+224-Pin LFBGA (9/12)
+
+Table 53.6
+
+Boundary Scan Register
+224-Pin LFBGA (10/12)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+D14
+
+PG2
+
+Output
+
+170
+
+E11
+
+PQ4
+
+Output
+
+125
+
+Output enable
+
+169
+
+Output enable
+
+124
+
+C14
+
+B15
+
+E13
+
+A15
+
+C13
+
+B14
+
+D12
+
+F11
+
+G11
+
+H9
+
+G9
+
+H8
+
+F9
+
+E10
+
+P65
+
+PE7
+
+PE6
+
+P70
+
+PE5
+
+PE4
+
+PE3
+
+PM1
+
+PM0
+
+PN3
+
+PN2
+
+PQ7
+
+PQ6
+
+PQ5
+
+Input
+
+168
+
+Output
+
+167
+
+Output enable
+
+166
+
+B13
+
+PE2
+
+Input
+
+123
+
+Output
+
+122
+
+Output enable
+
+121
+
+Input
+
+165
+
+Output
+
+164
+
+Output enable
+
+163
+
+Output enable
+
+118
+
+Input
+
+162
+
+Input
+
+117
+
+Output
+
+161
+
+Output
+
+116
+
+Output enable
+
+160
+
+Output enable
+
+115
+
+Input
+
+159
+
+Input
+
+114
+
+Output
+
+158
+
+Output
+
+113
+
+Output enable
+
+157
+
+Output enable
+
+112
+
+Input
+
+156
+
+Input
+
+111
+
+Output
+
+155
+
+Output
+
+110
+
+Output enable
+
+154
+
+Output enable
+
+109
+
+Input
+
+153
+
+Input
+
+108
+
+Output
+
+152
+
+Output
+
+107
+
+Output enable
+
+151
+
+Output enable
+
+106
+
+Input
+
+150
+
+Input
+
+105
+
+Output
+
+149
+
+Output
+
+104
+
+Output enable
+
+148
+
+Output enable
+
+103
+
+Input
+
+147
+
+Input
+
+102
+
+Output
+
+146
+
+Output
+
+101
+
+Output enable
+
+145
+
+Output enable
+
+100
+
+Input
+
+144
+
+Input
+
+99
+
+A14
+
+D11
+
+C11
+
+B12
+
+A13
+
+A12
+
+C10
+
+A11
+
+PE1
+
+PE0
+
+P64
+
+P63
+
+P62
+
+P61
+
+P60
+
+120
+119
+
+Output
+
+143
+
+Output
+
+98
+
+Output enable
+
+142
+
+Output enable
+
+97
+
+Input
+
+141
+
+Input
+
+96
+
+D10
+
+PD7
+
+Input
+Output
+
+Output
+
+140
+
+Output
+
+95
+
+Output enable
+
+139
+
+Output enable
+
+94
+
+Input
+
+138
+
+Input
+
+93
+
+B10
+
+PG1
+
+Output
+
+137
+
+Output
+
+92
+
+Output enable
+
+136
+
+Output enable
+
+91
+
+Input
+
+135
+
+Input
+
+90
+
+A10
+
+PD6
+
+Output
+
+134
+
+Output
+
+89
+
+Output enable
+
+133
+
+Output enable
+
+88
+
+Input
+
+132
+
+Input
+
+87
+
+D9
+
+PG0
+
+Output
+
+131
+
+Output
+
+86
+
+Output enable
+
+130
+
+Output enable
+
+85
+
+Input
+
+129
+
+Input
+
+84
+
+Output
+
+128
+
+Output
+
+83
+
+Output enable
+
+127
+
+Output enable
+
+82
+
+Input
+
+126
+
+Input
+
+81
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+B9
+
+PD5
+
+PD4
+
+Page 2783 of 3240
+
+RX72N Group
+Table 53.6
+
+53. Boundary Scan
+Boundary Scan Register
+224-Pin LFBGA (11/12)
+
+Table 53.6
+
+Boundary Scan Register
+224-Pin LFBGA (12/12)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+E9
+
+PQ3
+
+Output
+
+80
+
+E7
+
+PQ0
+
+Output
+
+35
+
+Output enable
+
+79
+
+Output enable
+
+34
+
+G8
+
+C9
+
+A9
+
+A8
+
+A7
+
+B8
+
+C7
+
+B7
+
+A6
+
+D7
+
+A5
+
+B5
+
+C6
+
+E8
+
+PQ2
+
+P97
+
+PD3
+
+P96
+
+PD2
+
+P95
+
+PD1
+
+P94
+
+PD0
+
+P93
+
+P92
+
+P91
+
+P90
+
+PQ1
+
+Input
+
+78
+
+Output
+
+77
+
+Output enable
+
+76
+
+F8
+
+PN1
+
+Input
+
+33
+
+Output
+
+32
+
+Output enable
+
+31
+
+Input
+
+75
+
+Output
+
+74
+
+Output enable
+
+73
+
+Output enable
+
+28
+
+Input
+
+72
+
+Input
+
+27
+
+Output
+
+71
+
+Output
+
+26
+
+Output enable
+
+70
+
+Output enable
+
+25
+
+Input
+
+69
+
+Input
+
+24
+
+Output
+
+68
+
+Output
+
+23
+
+Output enable
+
+67
+
+Output enable
+
+22
+
+Input
+
+66
+
+Input
+
+21
+
+Output
+
+65
+
+Output
+
+20
+
+Output enable
+
+64
+
+Output enable
+
+19
+
+Input
+
+63
+
+Input
+
+18
+
+Output
+
+62
+
+Output
+
+17
+
+Output enable
+
+61
+
+Output enable
+
+16
+
+Input
+
+60
+
+Input
+
+15
+
+Output
+
+59
+
+Output
+
+14
+
+Output enable
+
+58
+
+Output enable
+
+13
+
+Input
+
+57
+
+Input
+
+12
+
+Output
+
+56
+
+Output
+
+11
+
+Output enable
+
+55
+
+Output enable
+
+10
+
+Input
+
+54
+
+Input
+
+9
+
+E6
+
+D2
+
+B4
+
+D1
+
+C4
+
+E4
+
+B3
+
+A4
+
+PN0
+
+P47
+
+P46
+
+P45
+
+P44
+
+P43
+
+P42
+
+30
+29
+
+Output
+
+53
+
+Output
+
+8
+
+Output enable
+
+52
+
+Output enable
+
+7
+
+Input
+
+51
+
+Input
+
+6
+
+D4
+
+P41
+
+Input
+Output
+
+Output
+
+50
+
+Output
+
+5
+
+Output enable
+
+49
+
+Output enable
+
+4
+
+Input
+
+48
+
+Input
+
+3
+
+Output
+
+47
+
+Output
+
+2
+
+Output enable
+
+46
+
+Output enable
+
+1
+
+Input
+
+45
+
+Input
+
+0
+
+Output
+
+44
+
+To TDO
+
+Output enable
+
+43
+
+Input
+
+42
+
+Output
+
+41
+
+Output enable
+
+40
+
+Input
+
+39
+
+Output
+
+38
+
+Output enable
+
+37
+
+Input
+
+36
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+E5
+
+P40
+
+P07
+
+Page 2784 of 3240
+
+RX72N Group
+Table 53.7
+Pin No.
+
+53. Boundary Scan
+Boundary Scan Register
+176-Pin LFBGA (1/9)
+
+Pin Name
+
+Input/Output
+
+Table 53.7
+Bit Name
+
+From TDI
+B1
+
+D3
+
+D2
+
+D1
+
+D4
+
+E3
+
+E1
+
+F3
+
+G3
+
+P05
+
+P03
+
+P02
+
+P01
+
+P00
+
+PF5
+
+PJ5
+
+PJ3
+
+MD
+
+Output
+
+546
+
+Output enable
+
+545
+
+Input
+
+544
+
+Output
+
+543
+
+Output enable
+
+542
+
+Input
+
+541
+
+Boundary Scan Register
+176-Pin LFBGA (2/9)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+M1
+
+P27
+
+Output
+
+455
+
+Output enable
+
+454
+
+M2
+
+L4
+
+P26
+
+P25
+
+Input
+
+453
+
+Output
+
+452
+
+Output enable
+
+451
+
+Input
+
+450
+
+Output
+
+449
+
+Output
+
+540
+
+Output enable
+
+448
+
+Output enable
+
+539
+
+Input
+
+447
+
+Input
+
+538
+
+Output
+
+446
+
+M3
+
+P24
+
+Output
+
+537
+
+Output enable
+
+445
+
+Output enable
+
+536
+
+Input
+
+444
+
+Input
+
+535
+
+Output
+
+443
+
+N2
+
+P23
+
+Output
+
+534
+
+Output enable
+
+442
+
+Output enable
+
+533
+
+Input
+
+441
+
+Input
+
+532
+
+Output
+
+440
+
+N3
+
+P22
+
+Output
+
+522
+
+Output enable
+
+439
+
+Output enable
+
+521
+
+Input
+
+438
+
+Input
+
+520
+
+Output
+
+431
+
+R1
+
+P21
+
+Output
+
+519
+
+Output enable
+
+430
+
+Output enable
+
+518
+
+Input
+
+429
+
+Input
+
+517
+
+Output
+
+428
+
+R2
+
+P20
+
+Output
+
+516
+
+Output enable
+
+427
+
+Output enable
+
+515
+
+Input
+
+426
+
+Input
+
+514
+
+Output
+
+425
+
+P2
+
+P17
+
+Output
+
+510
+
+Output enable
+
+424
+
+Output enable
+
+509
+
+Input
+
+423
+
+Input
+
+508
+
+Output
+
+422
+
+H4
+
+P35
+
+Input
+
+504
+
+Output enable
+
+421
+
+J3
+
+P34
+
+Output
+
+503
+
+Input
+
+420
+
+Output enable
+
+502
+
+Output
+
+419
+
+Input
+
+501
+
+Output enable
+
+418
+
+Output
+
+500
+
+Input
+
+417
+
+Output enable
+
+499
+
+Output
+
+416
+
+Input
+
+498
+
+Output enable
+
+415
+
+Output
+
+497
+
+Input
+
+414
+
+Output enable
+
+496
+
+Output
+
+413
+
+Input
+
+495
+
+Output enable
+
+412
+
+Output
+
+488
+
+Input
+
+411
+
+Output enable
+
+487
+
+Output
+
+410
+
+Input
+
+486
+
+Output enable
+
+409
+
+Output
+
+485
+
+Input
+
+408
+
+Output enable
+
+484
+
+Output
+
+407
+
+Input
+
+483
+
+Output enable
+
+406
+
+Input
+
+405
+
+K1
+
+K2
+
+L1
+
+L2
+
+P33
+
+P32
+
+P31
+
+P30
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+P3
+
+R3
+
+M4
+
+N4
+
+P4
+
+R4
+
+P87
+
+P16
+
+P86
+
+P15
+
+P14
+
+P13
+
+Page 2785 of 3240
+
+RX72N Group
+Table 53.7
+
+53. Boundary Scan
+Boundary Scan Register
+176-Pin LFBGA (3/9)
+
+Table 53.7
+
+Boundary Scan Register
+176-Pin LFBGA (4/9)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+N5
+
+P12
+
+Output
+
+404
+
+M9
+
+P50
+
+Output
+
+359
+
+Output enable
+
+403
+
+Output enable
+
+358
+
+M5
+
+M6
+
+N6
+
+M7
+
+N7
+
+P7
+
+R7
+
+M8
+
+N8
+
+R8
+
+P8
+
+R9
+
+P9
+
+N9
+
+PJ2
+
+PJ1
+
+PJ0
+
+P85
+
+P84
+
+P57
+
+P56
+
+P55
+
+P54
+
+P11
+
+P10
+
+P53
+
+P52
+
+P51
+
+Input
+
+402
+
+Output
+
+401
+
+Output enable
+
+400
+
+P10
+
+P83
+
+Input
+
+357
+
+Output
+
+356
+
+Output enable
+
+355
+
+Input
+
+399
+
+Output
+
+398
+
+Output enable
+
+397
+
+Output enable
+
+352
+
+Input
+
+396
+
+Input
+
+351
+
+Output
+
+395
+
+Output
+
+350
+
+Output enable
+
+394
+
+Output enable
+
+349
+
+Input
+
+393
+
+Input
+
+348
+
+Output
+
+392
+
+Output
+
+347
+
+Output enable
+
+391
+
+Output enable
+
+346
+
+Input
+
+390
+
+Input
+
+345
+
+Output
+
+389
+
+Output
+
+344
+
+Output enable
+
+388
+
+Output enable
+
+343
+
+Input
+
+387
+
+Input
+
+342
+
+Output
+
+386
+
+Output
+
+341
+
+Output enable
+
+385
+
+Output enable
+
+340
+
+Input
+
+384
+
+Input
+
+339
+
+Output
+
+383
+
+Output
+
+338
+
+Output enable
+
+382
+
+Output enable
+
+337
+
+Input
+
+381
+
+Input
+
+336
+
+Output
+
+380
+
+Output
+
+335
+
+Output enable
+
+379
+
+Output enable
+
+334
+
+Input
+
+378
+
+Input
+
+333
+
+N10
+
+P11
+
+M10
+
+N11
+
+M11
+
+R12
+
+P12
+
+N12
+
+PC7
+
+PC6
+
+PC5
+
+P82
+
+P81
+
+P80
+
+PC4
+
+354
+
+Output
+
+353
+
+Output
+
+377
+
+Output
+
+332
+
+Output enable
+
+376
+
+Output enable
+
+331
+
+Input
+
+375
+
+Input
+
+330
+
+M12
+
+PC3
+
+Input
+
+Output
+
+374
+
+Output
+
+299
+
+Output enable
+
+373
+
+Output enable
+
+298
+
+Input
+
+372
+
+Input
+
+297
+
+R13
+
+P77
+
+Output
+
+371
+
+Output
+
+296
+
+Output enable
+
+370
+
+Output enable
+
+295
+
+Input
+
+369
+
+Input
+
+294
+
+P13
+
+P76
+
+Output
+
+368
+
+Output
+
+293
+
+Output enable
+
+367
+
+Output enable
+
+292
+
+Input
+
+366
+
+Input
+
+291
+
+P14
+
+PC2
+
+Output
+
+365
+
+Output
+
+290
+
+Output enable
+
+364
+
+Output enable
+
+289
+
+Input
+
+363
+
+Input
+
+288
+
+Output
+
+362
+
+Output
+
+287
+
+Output enable
+
+361
+
+Output enable
+
+286
+
+Input
+
+360
+
+Input
+
+285
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+R14
+
+P75
+
+P74
+
+Page 2786 of 3240
+
+RX72N Group
+Table 53.7
+
+53. Boundary Scan
+Boundary Scan Register
+176-Pin LFBGA (5/9)
+
+Table 53.7
+
+Boundary Scan Register
+176-Pin LFBGA (6/9)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+R15
+
+PC1
+
+Output
+
+260
+
+J12
+
+PA5
+
+Output
+
+209
+
+Output enable
+
+259
+
+Output enable
+
+208
+
+N13
+
+N14
+
+M13
+
+L12
+
+M14
+
+M15
+
+L13
+
+K12
+
+L14
+
+L15
+
+K13
+
+K15
+
+J14
+
+J15
+
+PC0
+
+P73
+
+PB7
+
+PB6
+
+PB5
+
+PB4
+
+PB3
+
+PB2
+
+PB1
+
+P72
+
+P71
+
+PB0
+
+PA7
+
+PA6
+
+Input
+
+258
+
+Output
+
+257
+
+Output enable
+
+256
+
+H12
+
+PA4
+
+Input
+
+207
+
+Output
+
+206
+
+Output enable
+
+205
+
+Input
+
+255
+
+Output
+
+254
+
+Output enable
+
+253
+
+Output enable
+
+202
+
+Input
+
+252
+
+Input
+
+201
+
+Output
+
+251
+
+Output
+
+200
+
+Output enable
+
+250
+
+Output enable
+
+199
+
+Input
+
+249
+
+Input
+
+198
+
+Output
+
+242
+
+Output
+
+197
+
+Output enable
+
+241
+
+Output enable
+
+196
+
+Input
+
+240
+
+Input
+
+195
+
+Output
+
+239
+
+Output
+
+194
+
+Output enable
+
+238
+
+Output enable
+
+193
+
+Input
+
+237
+
+Input
+
+192
+
+Output
+
+236
+
+Output
+
+191
+
+Output enable
+
+235
+
+Output enable
+
+190
+
+Input
+
+234
+
+Input
+
+189
+
+Output
+
+233
+
+Output
+
+188
+
+Output enable
+
+232
+
+Output enable
+
+187
+
+Input
+
+231
+
+Input
+
+186
+
+Output
+
+230
+
+Output
+
+185
+
+Output enable
+
+229
+
+Output enable
+
+184
+
+Input
+
+228
+
+Input
+
+183
+
+H13
+
+H15
+
+H14
+
+G13
+
+G14
+
+G12
+
+F14
+
+F13
+
+PA3
+
+PG7
+
+PA2
+
+PG6
+
+PA1
+
+PG5
+
+PA0
+
+204
+
+Output
+
+203
+
+Output
+
+227
+
+Output
+
+182
+
+Output enable
+
+226
+
+Output enable
+
+181
+
+Input
+
+225
+
+Input
+
+180
+
+E15
+
+PG4
+
+Input
+
+Output
+
+224
+
+Output
+
+179
+
+Output enable
+
+223
+
+Output enable
+
+178
+
+Input
+
+222
+
+Input
+
+177
+
+E14
+
+P67
+
+Output
+
+221
+
+Output
+
+176
+
+Output enable
+
+220
+
+Output enable
+
+175
+
+Input
+
+219
+
+Input
+
+174
+
+F12
+
+PG3
+
+Output
+
+218
+
+Output
+
+173
+
+Output enable
+
+217
+
+Output enable
+
+172
+
+Input
+
+216
+
+Input
+
+171
+
+E13
+
+P66
+
+Output
+
+215
+
+Output
+
+170
+
+Output enable
+
+214
+
+Output enable
+
+169
+
+Input
+
+213
+
+Input
+
+168
+
+Output
+
+212
+
+Output
+
+167
+
+Output enable
+
+211
+
+Output enable
+
+166
+
+Input
+
+210
+
+Input
+
+165
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+D15
+
+PG2
+
+P65
+
+Page 2787 of 3240
+
+RX72N Group
+Table 53.7
+
+53. Boundary Scan
+Boundary Scan Register
+176-Pin LFBGA (7/9)
+
+Table 53.7
+
+Boundary Scan Register
+176-Pin LFBGA (8/9)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+D14
+
+PE7
+
+Output
+
+164
+
+B11
+
+PG1
+
+Output
+
+95
+
+Output enable
+
+163
+
+Output enable
+
+94
+
+E12
+
+C15
+
+D12
+
+C13
+
+B15
+
+A15
+
+A14
+
+B14
+
+B13
+
+A13
+
+C12
+
+D11
+
+A12
+
+D10
+
+PE6
+
+P70
+
+PE5
+
+PE4
+
+PE3
+
+PE2
+
+PE1
+
+PE0
+
+P64
+
+P63
+
+P62
+
+P61
+
+P60
+
+PD7
+
+Input
+
+162
+
+Output
+
+161
+
+Output enable
+
+160
+
+A11
+
+PD6
+
+Input
+
+93
+
+Output
+
+92
+
+Output enable
+
+91
+
+Input
+
+90
+
+Output
+
+89
+
+Input
+
+159
+
+Output
+
+158
+
+Output enable
+
+157
+
+Output enable
+
+88
+
+Input
+
+156
+
+Input
+
+87
+
+Output
+
+155
+
+Output
+
+86
+
+Output enable
+
+154
+
+Output enable
+
+85
+
+Input
+
+153
+
+Input
+
+84
+
+Output
+
+152
+
+Output
+
+83
+
+Output enable
+
+151
+
+Output enable
+
+82
+
+Input
+
+150
+
+Input
+
+81
+
+Output
+
+149
+
+Output
+
+74
+
+Output enable
+
+148
+
+Output enable
+
+73
+
+Input
+
+147
+
+Input
+
+72
+
+Output
+
+122
+
+Output
+
+71
+
+Output enable
+
+121
+
+Output enable
+
+70
+
+Input
+
+120
+
+Input
+
+69
+
+Output
+
+119
+
+Output
+
+68
+
+Output enable
+
+118
+
+Output enable
+
+67
+
+Input
+
+117
+
+Input
+
+66
+
+Output
+
+116
+
+Output
+
+65
+
+Output enable
+
+115
+
+Output enable
+
+64
+
+Input
+
+114
+
+Input
+
+63
+
+C10
+
+D9
+
+B10
+
+A10
+
+C9
+
+B9
+
+C8
+
+D7
+
+PG0
+
+PD5
+
+PD4
+
+P97
+
+PD3
+
+P96
+
+PD2
+
+Output
+
+113
+
+Output
+
+62
+
+Output enable
+
+112
+
+Output enable
+
+61
+
+Input
+
+111
+
+Input
+
+60
+
+B8
+
+P95
+
+Output
+
+110
+
+Output
+
+59
+
+Output enable
+
+109
+
+Output enable
+
+58
+
+Input
+
+108
+
+Input
+
+57
+
+A8
+
+PD1
+
+Output
+
+107
+
+Output
+
+56
+
+Output enable
+
+106
+
+Output enable
+
+55
+
+Input
+
+105
+
+Input
+
+54
+
+C7
+
+P94
+
+Output
+
+104
+
+Output
+
+53
+
+Output enable
+
+103
+
+Output enable
+
+52
+
+Input
+
+102
+
+Input
+
+51
+
+Output
+
+101
+
+Output
+
+50
+
+Output enable
+
+100
+
+Output enable
+
+49
+
+Input
+
+99
+
+Input
+
+48
+
+Output
+
+98
+
+Output
+
+47
+
+Output enable
+
+97
+
+Output enable
+
+46
+
+Input
+
+96
+
+Input
+
+45
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+D6
+
+PD0
+
+B7
+
+P93
+
+P92
+
+Page 2788 of 3240
+
+RX72N Group
+Table 53.7
+
+53. Boundary Scan
+Boundary Scan Register
+176-Pin LFBGA (9/9)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+B6
+
+P91
+
+Output
+
+44
+
+Output enable
+
+43
+
+C6
+
+B5
+
+A5
+
+C5
+
+D5
+
+C4
+
+A4
+
+B4
+
+B3
+
+B2
+
+P90
+
+P47
+
+P46
+
+P45
+
+P44
+
+P43
+
+P42
+
+P41
+
+P40
+
+P07
+
+Input
+
+42
+
+Output
+
+41
+
+Output enable
+
+40
+
+Input
+
+39
+
+Output
+
+26
+
+Output enable
+
+25
+
+Input
+
+24
+
+Output
+
+23
+
+Output enable
+
+22
+
+Input
+
+21
+
+Output
+
+20
+
+Output enable
+
+19
+
+Input
+
+18
+
+Output
+
+17
+
+Output enable
+
+16
+
+Input
+
+15
+
+Output
+
+14
+
+Output enable
+
+13
+
+Input
+
+12
+
+Output
+
+11
+
+Output enable
+
+10
+
+Input
+
+9
+
+Output
+
+8
+
+Output enable
+
+7
+
+Input
+
+6
+
+Output
+
+5
+
+Output enable
+
+4
+
+Input
+
+3
+
+Output
+
+2
+
+Output enable
+
+1
+
+Input
+
+0
+
+To TDO
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2789 of 3240
+
+RX72N Group
+Table 53.8
+Pin No.
+
+53. Boundary Scan
+Boundary Scan Register
+145-Pin TFLGA (1/8)
+
+Pin Name
+
+Input/Output
+
+Table 53.8
+Bit Name
+
+From TDI
+B3
+
+D3
+
+C2
+
+D4
+
+D1
+
+D2
+
+E3
+
+F3
+
+G3
+
+P05
+
+P03
+
+P02
+
+P01
+
+P00
+
+PF5
+
+PJ5
+
+PJ3
+
+MD
+
+Output
+
+546
+
+Output enable
+
+545
+
+Input
+
+544
+
+Output
+
+543
+
+Output enable
+
+542
+
+Input
+
+541
+
+Boundary Scan Register
+145-Pin TFLGA (2/8)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+M1
+
+P22
+
+Output
+
+440
+
+Output enable
+
+439
+
+N1
+
+N2
+
+P21
+
+P20
+
+Input
+
+438
+
+Output
+
+431
+
+Output enable
+
+430
+
+Input
+
+429
+
+Output
+
+428
+
+Output
+
+540
+
+Output enable
+
+427
+
+Output enable
+
+539
+
+Input
+
+426
+
+Input
+
+538
+
+Output
+
+425
+
+M2
+
+P17
+
+Output
+
+537
+
+Output enable
+
+424
+
+Output enable
+
+536
+
+Input
+
+423
+
+Input
+
+535
+
+Output
+
+422
+
+N3
+
+P87
+
+Output
+
+534
+
+Output enable
+
+421
+
+Output enable
+
+533
+
+Input
+
+420
+
+Input
+
+532
+
+Output
+
+419
+
+L3
+
+P16
+
+Output
+
+522
+
+Output enable
+
+418
+
+Output enable
+
+521
+
+Input
+
+417
+
+Input
+
+520
+
+Output
+
+416
+
+M3
+
+P86
+
+Output
+
+519
+
+Output enable
+
+415
+
+Output enable
+
+518
+
+Input
+
+414
+
+Input
+
+517
+
+Output
+
+413
+
+K4
+
+P15
+
+Output
+
+516
+
+Output enable
+
+412
+
+Output enable
+
+515
+
+Input
+
+411
+
+Input
+
+514
+
+Output
+
+410
+
+N4
+
+P14
+
+Output
+
+510
+
+Output enable
+
+409
+
+Output enable
+
+509
+
+Input
+
+408
+
+Input
+
+508
+
+Output
+
+407
+
+H4
+
+P35
+
+Input
+
+504
+
+Output enable
+
+406
+
+J2
+
+P33
+
+Output
+
+500
+
+Input
+
+405
+
+Output enable
+
+499
+
+Output
+
+404
+
+Input
+
+498
+
+Output enable
+
+403
+
+Output
+
+497
+
+Input
+
+402
+
+Output enable
+
+496
+
+Output
+
+383
+
+Input
+
+495
+
+Output enable
+
+382
+
+Output
+
+449
+
+Input
+
+381
+
+Output enable
+
+448
+
+Output
+
+380
+
+Input
+
+447
+
+Output enable
+
+379
+
+Output
+
+446
+
+Input
+
+378
+
+Output enable
+
+445
+
+Output
+
+377
+
+Input
+
+444
+
+Output enable
+
+376
+
+Output
+
+443
+
+Input
+
+375
+
+Output enable
+
+442
+
+Output
+
+368
+
+Input
+
+441
+
+Output enable
+
+367
+
+Input
+
+366
+
+J3
+
+L1
+
+L4
+
+L2
+
+P32
+
+P25
+
+P24
+
+P23
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+L5
+
+M4
+
+L6
+
+N7
+
+K5
+
+K6
+
+P13
+
+P12
+
+P56
+
+P55
+
+P54
+
+P53
+
+Page 2790 of 3240
+
+RX72N Group
+Table 53.8
+
+53. Boundary Scan
+Boundary Scan Register
+145-Pin TFLGA (3/8)
+
+Table 53.8
+
+Boundary Scan Register
+145-Pin TFLGA (4/8)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+L7
+
+P52
+
+Output
+
+365
+
+N12
+
+P75
+
+Output
+
+290
+
+Output enable
+
+364
+
+Output enable
+
+289
+
+K7
+
+M7
+
+L8
+
+N9
+
+M8
+
+L9
+
+N10
+
+M9
+
+K9
+
+L10
+
+N11
+
+M10
+
+K10
+
+L11
+
+P51
+
+P50
+
+P83
+
+PC7
+
+PC6
+
+PC5
+
+P82
+
+P81
+
+P80
+
+PC4
+
+PC3
+
+P77
+
+P76
+
+PC2
+
+Input
+
+363
+
+Output
+
+362
+
+Output enable
+
+361
+
+N13
+
+P74
+
+Input
+
+288
+
+Output
+
+287
+
+Output enable
+
+286
+
+Input
+
+360
+
+Output
+
+359
+
+Output enable
+
+358
+
+Output enable
+
+259
+
+Input
+
+357
+
+Input
+
+258
+
+Output
+
+356
+
+Output
+
+257
+
+Output enable
+
+355
+
+Output enable
+
+256
+
+Input
+
+354
+
+Input
+
+255
+
+Output
+
+353
+
+Output
+
+254
+
+Output enable
+
+352
+
+Output enable
+
+253
+
+Input
+
+351
+
+Input
+
+252
+
+Output
+
+350
+
+Output
+
+251
+
+Output enable
+
+349
+
+Output enable
+
+250
+
+Input
+
+348
+
+Input
+
+249
+
+Output
+
+347
+
+Output
+
+242
+
+Output enable
+
+346
+
+Output enable
+
+241
+
+Input
+
+345
+
+Input
+
+240
+
+Output
+
+344
+
+Output
+
+239
+
+Output enable
+
+343
+
+Output enable
+
+238
+
+Input
+
+342
+
+Input
+
+237
+
+Output
+
+341
+
+Output
+
+236
+
+Output enable
+
+340
+
+Output enable
+
+235
+
+Input
+
+339
+
+Input
+
+234
+
+M12
+
+M11
+
+L12
+
+K11
+
+K12
+
+K13
+
+J11
+
+J10
+
+PC1
+
+PC0
+
+P73
+
+PB7
+
+PB6
+
+PB5
+
+PB4
+
+285
+
+Output
+
+260
+
+Output
+
+338
+
+Output
+
+233
+
+Output enable
+
+337
+
+Output enable
+
+232
+
+Input
+
+336
+
+Input
+
+231
+
+J12
+
+PB3
+
+Input
+
+Output
+
+335
+
+Output
+
+230
+
+Output enable
+
+334
+
+Output enable
+
+229
+
+Input
+
+333
+
+Input
+
+228
+
+Output
+
+332
+
+Output
+
+227
+
+Output enable
+
+331
+
+Output enable
+
+226
+
+Input
+
+330
+
+Input
+
+225
+
+J13
+
+H10
+
+PB2
+
+PB1
+
+Output
+
+299
+
+Output
+
+224
+
+Output enable
+
+298
+
+Output enable
+
+223
+
+Input
+
+297
+
+Input
+
+222
+
+H11
+
+P72
+
+Output
+
+296
+
+Output
+
+221
+
+Output enable
+
+295
+
+Output enable
+
+220
+
+Input
+
+294
+
+Input
+
+219
+
+Output
+
+293
+
+Output
+
+218
+
+Output enable
+
+292
+
+Output enable
+
+217
+
+Input
+
+291
+
+Input
+
+216
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+H12
+
+P71
+
+PB0
+
+Page 2791 of 3240
+
+RX72N Group
+Table 53.8
+
+53. Boundary Scan
+Boundary Scan Register
+145-Pin TFLGA (5/8)
+
+Table 53.8
+
+Boundary Scan Register
+145-Pin TFLGA (6/8)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+H13
+
+PA7
+
+Output
+
+215
+
+B13
+
+PE4
+
+Output
+
+152
+
+Output enable
+
+214
+
+Output enable
+
+151
+
+G11
+
+G10
+
+G13
+
+F10
+
+F13
+
+F12
+
+E10
+
+E13
+
+E11
+
+E12
+
+D10
+
+D13
+
+C12
+
+D12
+
+PA6
+
+PA5
+
+PA4
+
+PA3
+
+PA2
+
+PA1
+
+PA0
+
+P67
+
+P66
+
+P65
+
+PE7
+
+PE6
+
+P70
+
+PE5
+
+Input
+
+213
+
+Output
+
+212
+
+Output enable
+
+211
+
+Input
+
+210
+
+Output
+
+209
+
+Output enable
+
+208
+
+Output enable
+
+121
+
+Input
+
+207
+
+Input
+
+120
+
+Output
+
+206
+
+Output
+
+119
+
+Output enable
+
+205
+
+Output enable
+
+118
+
+Input
+
+204
+
+Input
+
+117
+
+Output
+
+203
+
+Output
+
+116
+
+Output enable
+
+202
+
+Output enable
+
+115
+
+Input
+
+201
+
+Input
+
+114
+
+Output
+
+197
+
+Output
+
+113
+
+Output enable
+
+196
+
+Output enable
+
+112
+
+Input
+
+195
+
+Input
+
+111
+
+Output
+
+191
+
+Output
+
+110
+
+Output enable
+
+190
+
+Output enable
+
+109
+
+Input
+
+189
+
+Input
+
+108
+
+Output
+
+185
+
+Output
+
+107
+
+Output enable
+
+184
+
+Output enable
+
+106
+
+Input
+
+183
+
+Input
+
+105
+
+Output
+
+179
+
+Output
+
+104
+
+Output enable
+
+178
+
+Output enable
+
+103
+
+Input
+
+177
+
+Input
+
+102
+
+A13
+
+B12
+
+A12
+
+C11
+
+D9
+
+C10
+
+A11
+
+B11
+
+D8
+
+PE3
+
+PE2
+
+PE1
+
+PE0
+
+P64
+
+P63
+
+P62
+
+P61
+
+150
+149
+
+Output enable
+
+148
+
+Input
+
+147
+
+Output
+
+122
+
+Output
+
+173
+
+Output
+
+101
+
+Output enable
+
+172
+
+Output enable
+
+100
+
+Input
+
+171
+
+Input
+
+99
+
+C9
+
+P60
+
+Input
+Output
+
+Output
+
+167
+
+Output
+
+98
+
+Output enable
+
+166
+
+Output enable
+
+97
+
+Input
+
+165
+
+Input
+
+96
+
+A9
+
+PD7
+
+Output
+
+164
+
+Output
+
+92
+
+Output enable
+
+163
+
+Output enable
+
+91
+
+Input
+
+162
+
+Input
+
+90
+
+D7
+
+PD6
+
+Output
+
+161
+
+Output
+
+86
+
+Output enable
+
+160
+
+Output enable
+
+85
+
+Input
+
+159
+
+Input
+
+84
+
+B9
+
+PD5
+
+Output
+
+158
+
+Output
+
+83
+
+Output enable
+
+157
+
+Output enable
+
+82
+
+Input
+
+156
+
+Input
+
+81
+
+Output
+
+155
+
+Output
+
+71
+
+Output enable
+
+154
+
+Output enable
+
+70
+
+Input
+
+153
+
+Input
+
+69
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+C8
+
+PD4
+
+PD3
+
+Page 2792 of 3240
+
+RX72N Group
+Table 53.8
+
+53. Boundary Scan
+Boundary Scan Register
+145-Pin TFLGA (7/8)
+
+Table 53.8
+
+Boundary Scan Register
+145-Pin TFLGA (8/8)
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+Pin No.
+
+Pin Name
+
+Input/Output
+
+Bit Name
+
+A8
+
+PD2
+
+Output
+
+65
+
+A2
+
+P07
+
+Output
+
+2
+
+Output enable
+
+64
+
+Output enable
+
+1
+
+Input
+
+63
+
+Input
+
+0
+
+Output
+
+59
+
+To TDO
+
+Output enable
+
+58
+
+C7
+
+B8
+
+D6
+
+A7
+
+B7
+
+A6
+
+B6
+
+C5
+
+A5
+
+E5
+
+B5
+
+A4
+
+C4
+
+A3
+
+PD1
+
+PD0
+
+P93
+
+P92
+
+P91
+
+P90
+
+P47
+
+P46
+
+P45
+
+P44
+
+P43
+
+P42
+
+P41
+
+P40
+
+Input
+
+57
+
+Output
+
+53
+
+Output enable
+
+52
+
+Input
+
+51
+
+Output
+
+50
+
+Output enable
+
+49
+
+Input
+
+48
+
+Output
+
+47
+
+Output enable
+
+46
+
+Input
+
+45
+
+Output
+
+44
+
+Output enable
+
+43
+
+Input
+
+42
+
+Output
+
+41
+
+Output enable
+
+40
+
+Input
+
+39
+
+Output
+
+26
+
+Output enable
+
+25
+
+Input
+
+24
+
+Output
+
+23
+
+Output enable
+
+22
+
+Input
+
+21
+
+Output
+
+20
+
+Output enable
+
+19
+
+Input
+
+18
+
+Output
+
+17
+
+Output enable
+
+16
+
+Input
+
+15
+
+Output
+
+14
+
+Output enable
+
+13
+
+Input
+
+12
+
+Output
+
+11
+
+Output enable
+
+10
+
+Input
+
+9
+
+Output
+
+8
+
+Output enable
+
+7
+
+Input
+
+6
+
+Output
+
+5
+
+Output enable
+
+4
+
+Input
+
+3
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2793 of 3240
+
+RX72N Group
+
+53.3
+
+53. Boundary Scan
+
+Operations
+
+The boundary scan functionality is valid when the RES# pin is driven high, the EMLE pin is driven low, and the
+BSCANP pin is driven high.
+
+53.3.1
+
+TAP Controller
+
+Figure 53.2 shows the state transition diagram of the TAP controller.
+
+1
+
+Test-logic-reset
+0
+
+0
+
+Run-test/idle
+
+1
+
+1
+
+Select-DR
+0
+
+0
+
+1
+
+1
+Capture-DR
+
+Capture-IR
+
+0
+
+0
+
+Shift-DR
+
+0
+
+Shift-IR
+
+1
+
+0
+
+1
+
+Exit1-DR
+
+1
+
+Exit1-IR
+
+0
+
+1
+
+0
+
+Pause-DR
+
+0
+
+Pause-IR
+
+1
+
+0
+
+1
+
+0
+
+0
+Exit2-DR
+
+Exit2-IR
+
+1
+
+Figure 53.2
+
+1
+
+Select-IR
+
+1
+
+Update-DR
+
+Update-IR
+
+1
+
+1
+
+0
+
+0
+
+State Transition Diagram of TAP Controller
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2794 of 3240
+
+RX72N Group
+
+53.3.2
+(1)
+
+53. Boundary Scan
+
+List of Commands
+
+BYPASS [Instruction Code: 1111 1111b]
+
+The BYPASS instruction is an instruction that drives the bypass register (JTBPR). This instruction shortens the shift
+path, facilitating the transfer of serial data to other LSIs on a printed-circuit board at higher speeds. While this instruction
+is being executed, the test circuit has no effect on the system circuits.
+The bypass register (JTBPR) is connected between the TDI and TDO pins. Bypass operation is initiated from shift-DR
+operation. The TDO is low in the first clock cycle in the shift-DR state; in the subsequent clock cycles, the TDI signal is
+output on the TDO pin.
+
+(2)
+
+EXTEST [Instruction Code: 0000 0000b]
+
+The EXTEST instruction is used to test external circuits when this LSI is installed on the printed circuit board. If this
+instruction is executed, output pins are used to output test data (specified by the SAMPLE/PRELOAD instruction) from
+the boundary scan register to the print circuit board, and input pins are used to input test result.
+
+(3)
+
+SAMPLE/PRELOAD [Instruction Code: 0100 0000b]
+
+The SAMPLE/PRELOAD instruction is used to input data from the LSI internal circuits to the boundary scan register,
+output data from scan path, and reload the data to the scan path. While this instruction is executed, input signals are
+directly input to the LSI and output signals are also directly output to the external circuits. The LSI system circuit is not
+affected by this instruction.
+In SAMPLE operation, the boundary scan register latches the snap shot of data transferred from input pins to internal
+circuit or data transferred from internal circuit to output pins. The latched data is read from the scan path. The scan
+register latches the snap data at the rising edge of the TCK in Capture-DR state. The scan register latches snap shot
+without affecting the LSI normal operation.
+In PRELOAD operation, initial value is written from the scan path to the parallel output latch of the boundary scan
+register prior to the EXTEST instruction execution. If the EXTEST is executed without executing this PRELOAD
+operation, undefined values are output from the beginning to the end (transfer to the output latch) of the EXTEST
+sequence. (In EXTEST instruction, output parallel latches are output to the output pins.)
+
+(4)
+
+IDCODE [Instruction Code: 0101 0101b]
+
+When the IDCODE instruction is selected, IDCODE register value is output to the TDO in Shift-DR state of the TAP
+controller. In this case, IDCODE register value is output from the LSB. During this instruction execution, test circuit
+does not affect the system circuit. JTIR is initialized by the IDCODE instruction in Test-Logic-Reset state of the TAP
+controller.
+
+(5)
+
+CLAMP [Instruction Code: 1101 0000b]
+
+When the CLAMP instruction is selected, output pins output the boundary scan register value which was specified by the
+SAMPLE/PRELOAD instruction in advance. While the CLAMP instruction is selected, the status of boundary scan
+register is maintained regardless of the TAP controller state.
+BYPASS is connected between TDI and TDO, the same operation as BYPASS instruction can be achieved.
+
+(6)
+
+HIGHZ [Instruction Code: 1000 0000b]
+
+When the HIGHZ instruction is selected, all output pins enter high-impedance state. While the HIGHZ instruction is
+selected, the status of boundary scan register is maintained regardless of the state of the TAP controller.
+BYPASS is connected between TDI and TDO pins, leading to the same operation as when the BYPASS instruction has
+been selected.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2795 of 3240
+
+RX72N Group
+
+53.4
+
+53. Boundary Scan
+
+Usage Notes
+
+(1) Pin serial transfer, data are input or output in LSB order (refer to Figure 53.3).
+
+TDI
+JTIR, JTIDR
+Bit 31
+Bit 30
+
+Shift register
+
+Serial data input/output in
+LSB order
+
+Bit 1
+Bit 0
+TDO
+
+Figure 53.3
+
+Serial Data Input/Output
+
+(2) Pins of the boundary scan (TCK, TDI, TMS, and TRST#) have to be pulled up by pull-up resistors.
+However, handle the TRST# pin in the way described in the manual for the given on-chip emulator if an on-chip
+emulator is in use.
+If the TRST# pin is pulled down but a boundary scan is to proceed, ensure that the TRST# pin is also controllable.
+(3) Power supply pins (VCC, VCL, VSS, AVCC0, AVCC1, AVSS0, AVSS1, VCC_USB, VSS_USB) cannot be
+boundary-scanned.
+(4) Analog reference pins (VREFH0, VREFL0, VBATT) cannot be boundary-scanned.
+(5) Clock pins (EXTAL, XTAL, XCIN, and XCOUT) cannot be boundary-scanned.
+(6) Reset signal (RES#) cannot be boundary-scanned.
+(7) USB dedicated pins (USB0_DP, USB0_DM) cannot be boundary-scanned.
+(8) The on-chip emulator enable pin (EMLE) cannot be boundary-scanned.
+(9) The boundary-scan pin (BSCANP) cannot be boundary-scanned.
+(10) The boundary-scan pins (TCK, TMS, TRST#, TDI, and TDO) cannot be boundary-scanned.
+(11) The boundary-scan facility is not available when the chip is in the states below.
+ Reset state
+ Software standby or deep software standby
+(12) For a pin that incorporates open-drain functionality and for which the open-drain function is enabled, if the
+boundary-scan function sets the corresponding bit in the output scan register and output enable register to 1,
+executing an EXTEST, CLAMP, or SAMPLE/PRELOAD instruction makes the pin output the high level rather
+than placing it in the high-impedance state.
+(13) Be sure to satisfy the standards for the boundary scan function when multiplex ports are used. Figure 53.4 (1)
+shows the pin configuration of the multiplex port pins in combination with the RIIC pins (P12, P13, P16, P17, P20,
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2796 of 3240
+
+RX72N Group
+
+53. Boundary Scan
+
+and P21). When the boundary scan function is used with pins P12, P13, P16, P17, P20, and P21 to be used as RIIC
+pins (SCL0[FM+], SCL2, SDA0[FM+], and SDA2), the conflict with open-drain output or sneak current might be
+generated.
+(14) Figure 53.4 (2) shows the pin configuration of the pins P00 to P02, P40 to P47, P90 to P93, PD0 to PD7, and PE0
+to PE7. When the boundary scan function is used with pins P00 to P02, P40 to P47, P90 to P93, PD0 to PD7, and
+PE0 to PE7 to be used as AD input pins (AN000 to AN007, ANEX0, ANEX1, and AN100 to AN120), the conflict
+with the AD input or sneak current might be generated.
+(15) Figure 53.4 (3) shows the pin configuration of pins P03 and P05. When the boundary scan function is used with
+pins P03 and P05 to be used as DA output pins (DA0 and DA1), the conflict with the DA output or sneak current
+might be generated.
+(16) The HIGHZ mode option of the MD pin is not available.
+(2) Configuration of A/D pins (P00 to P02, P40 to P47, P90 to P93, PD0 to PD7, and PE0 to
+PE7)
+
+(1) Configuration of RIIC pins (P12, P13, P16, P17, P20, and P21)
+Open-drain buffer
+for RIIC
+RIIC output
+
+RIIC input
+signal
+
+Output
+enable
+
+Boundary
+scan cell
+
+Output
+signal
+
+Boundary
+scan cell
+
+Input signal
+
+Boundary
+scan cell
+
+Output
+enable
+
+Boundary
+scan cell
+
+Output
+signal
+
+Boundary
+scan cell
+
+Input signal
+
+Boundary
+scan cell
+
+P12 and
+P13
+
+P40 to P47
+Analog
+buffer
+
+AD input
+signal
+
+(3) Configuration of D/A pins (P03 and P05)
+Analog buffer
+
+DA output
+Output
+enable
+
+Boundary
+scan cell
+
+Output
+signal
+
+Boundary
+scan cell
+
+Input signal
+
+Boundary
+scan cell
+
+Figure 53.4
+
+P03 and
+P05
+
+Pin Configuration
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2797 of 3240
+
+

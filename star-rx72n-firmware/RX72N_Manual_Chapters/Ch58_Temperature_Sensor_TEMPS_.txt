@@ -1,0 +1,681 @@
+RX72N Group
+
+58. Temperature Sensor (TEMPS)
+
+58.
+
+Temperature Sensor (TEMPS)
+
+58.1
+
+Overview
+
+This MCU has a built-in temperature sensor. The temperature sensor outputs a voltage proportional to temperature. By
+converting the output voltage of the temperature sensor into a digital value with a 12-bit A/D converter unit 1 and
+converting it into temperature, the internal temperature of the MCU can be obtained.
+Table 58.1 lists the specifications of the temperature sensor, and Figure 58.1 shows a block diagram of the temperature
+sensor.
+Table 58.1
+
+Specifications of Temperature Sensor
+Description
+
+Temperature sensor voltage output
+
+Temperature sensor outputs a voltage to the 12-bit A/D converter unit 1.
+
+Low-power consumption function
+
+Module stop state can be set.
+
+Temperature Sensor Calibration Data
+
+Reference data measured for each chip at factory shipment is stored.
+
+Module data bus
+
+Bus interface
+
+Item
+
+Internal peripheral bus
+
+TSCR
+
+Control circuit
+
+Temperature sensor
+
+Temperature sensor voltage output
+(to the 12-bit A/D converter unit 1)
+
+TSCR: Temperature Sensor Control Register
+
+Figure 58.1
+
+Block Diagram of Temperature Sensor
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2963 of 3240
+
+RX72N Group
+
+58.2
+
+58. Temperature Sensor (TEMPS)
+
+Register Descriptions
+
+58.2.1
+
+Temperature Sensor Control Register (TSCR)
+
+Address(es): TEMPS.TSCR 0008 C500h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+TSEN
+
+—
+
+—
+
+TSOE
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b4
+
+TSOE
+
+Temperature Sensor Output Enable 0: Disables output from the temperature sensor to the 12-bit
+A/D converter unit 1.
+1: Enables output from the temperature sensor to the 12-bit A/D
+converter unit 1.
+
+R/W
+
+b6, b5
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b7
+
+TSEN
+
+Temperature Sensor Enable
+
+0: Stops the temperature sensor.
+1: Starts the temperature sensor.
+
+R/W
+
+The settings of TSCR register have the timing restrictions shown in Figure 58.4.
+
+58.2.2
+
+Temperature Sensor Calibration Data Register (TSCDR)
+
+Address(es): TEMPSCONST.TSCDR FE7F 7D7Ch
+
+Value after reset:
+
+Value after reset:
+
+Note:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+Unique value for each chip
+
+This register is only readable when the SYSCR0.ROME bit is 1 (the on-chip ROM is enabled).
+
+The TSCDR register stores temperature sensor calibration data measured for each chip at factory shipment. The TSCDR
+register is a 32-bit read-only register and should be read in 32-bit units.
+Temperature sensor calibration data is a digital value obtained using the 12-bit A/D converter unit 1 to convert the
+voltage output by the temperature sensor under the condition of Tj = 125°C and AVCC1 = 3.3 V.
+The voltage V1 output by the temperature sensor under the condition of Tj = 125°C can be calculated from the value of
+the TSCDR register according to the formula below.
+V1 = 3.3 × value of the TSCDR register/4096 [V]
+Note that the AVCC1 voltage does not affect voltage V1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2964 of 3240
+
+RX72N Group
+
+58.3
+
+58. Temperature Sensor (TEMPS)
+
+Using the Temperature Sensor
+
+The temperature sensor outputs a voltage proportional to temperature. By converting this voltage into a digital value with
+a 12-bit A/D converter unit 1 and converting it into temperature, the internal temperature of the MCU can be obtained.
+
+58.3.1
+
+Preparation for Using the Temperature Sensor
+
+Perform a calibration of the temperature sensor as shown below. The voltage output by the temperature sensor is
+proportional to temperature, which can be calculated according to the following formula.
+Formula for the temperature characteristic:
+T = (Vs – V1)/Slope + T1
+T: Measured temperature (°C)
+Vs: Voltage output by the temperature sensor when the temperature is measured (V)
+T1: Sample temperature measurement at first point (°C)
+V1: Voltage output by the temperature sensor when T1 is measured (V)
+T2: Sample temperature measurement at second point (°C)
+V2: Voltage output by the temperature sensor when T2 is measured (V)
+Slope: Temperature slope of the temperature sensor (V/°C); Slope = (V2 – V1)/(T2 – T1)
+Since there are individual differences in temperature sensors, it is recommended to prepare a temperature slope by
+performing trial measurements at two different temperatures as shown below.
+Use the 12-bit A/D converter unit 1 to measure the voltage V1 output by the temperature sensor at temperature T1.
+Again, using the 12-bit A/D converter unit 1, measure the voltage V2 output by the temperature sensor at a different
+temperature T2. Obtain the temperature slope (Slope = (V2 – V1)/(T2 – T1)) from these results.
+Subsequently, obtain temperatures by substituting the slope into the formula for the temperature characteristic (T = (Vs –
+V1)/Slope + T1).
+If you are using the temperature slope given in Table 63.57 of section 63, Electrical Characteristics, use the 12-bit A/
+D converter unit 1 to measure the voltage V1 output by the temperature sensor at temperature T1, and then calculate the
+temperature characteristic by using the formula below.
+However, this calibration gives less accurate temperatures than two-point calibration.
+T = (Vs – V1)/Slope + T1
+T: Measured temperature (°C)
+Vs: Voltage output by the temperature sensor when the temperature is measured (V)
+T1: Sample temperature measurement at first point (°C)
+V1: Voltage output by the temperature sensor when T1 is measured (V)
+Slope: Temperature slope given in Table 63.57 ÷ 1000 (V/°C)
+In this MCU, the TSCDR register stores the temperature value (CAL125) of the temperature sensor measured under the
+condition of Tj = 125°C and AVCC1 = 3.3 V. By using this value as the sample measurement result at the first point,
+preparation before using the temperature sensor can be omitted.
+If V1 is calculated from CAL125,
+V1 = 3.3 × CAL125/4096 [V]
+Using this, the measured temperature can be calculated according to the formula below.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2965 of 3240
+
+RX72N Group
+
+58. Temperature Sensor (TEMPS)
+
+T = (Vs – V1)/Slope + 125 [°C]
+T: Measured temperature (internal temperature of the MCU) (°C)
+Vs: Voltage output by the temperature sensor when the temperature is measured (V)
+V1: Voltage output by the temperature sensor when Tj = 125°C and AVCC1 = 3.3 V (V)
+Slope: Temperature slope given in Table 63.57 ÷ 1000 (V/°C)
+Error in the measured temperature (the range of variation is 3σ) is shown in Figure 58.2.
+
+±7.00
+±6.00
+
+Error (3) [°C]
+
+±5.00
+±4.00
+±3.00
+±2.00
+±1.00
+±0.00
+-40
+
+-20
+
+0
+
+20
+
+40
+
+60
+
+80
+
+100
+
+120
+
+Measured temperature [°C]
+Figure 58.2
+
+Error in the Measured Temperature
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2966 of 3240
+
+RX72N Group
+
+58.3.2
+
+58. Temperature Sensor (TEMPS)
+
+Setting of 12-Bit A/D Converter Unit 1
+
+For A/D conversion of temperature sensor output voltages, 12-bit A/D converter unit 1 registers should be set as follows.
+ Selecting the Temperature Sensor Voltage as a Source for A/D Conversion
+Select the temperature sensor voltage as a source for A/D conversion by setting the temperature sensor output A/D
+conversion select bit in the A/D conversion extended input control register (TSSA or TSSB in the ADEXICR
+register) to 1.
+ Setting Scan Mode
+Select scan mode by setting the scan mode select bits in the A/D control register (ADCSR.ADCS[1:0]).
+ Setting Addition/Average Mode
+For A/D conversion of the temperature sensor output, additional or average mode is selectable. To use either
+additional or average mode, set the temperature sensor output A/D converted value addition mode select bit in the
+A/D conversion extended input control register (ADEXICR.TSSAD) to 1, and the addition count select bits in the
+A/D converted value addition count select register (ADADC.ADC[2:0]) to the desired number of addition.
+Furthermore, clear the AVEE bit in ADADC to 0 to select addition mode; set the AVEE bit in ADADC to 1 to
+select average mode. In average mode, however, the ADC[2:0] bits in ADADC should not be set to 010b or 101b.
+ Setting the Sampling Time of the 12-bit A/D converter Unit 1
+The sampling time of the 12-bit A/D converter can be changed at converting the output from the temperature sensor.
+The initial sampling time is 11 cycles of ADCLK. To change the setting of sampling time from 11 cycles of
+ADCLK, set the A/D sampling state register T (ADSSTRT) while the ADCSR.ADST bit is 0.
+Setting the A/D conversion start bit in the A/D control register (ADCSR.ADST) to 1 starts A/D conversion, and the
+result is stored in the A/D temperature sensor data register (ADTSDR). If you will be using A/D conversion of the output
+from the temperature sensor, do so in accord with section 58.3.3, Procedure for Using the Temperature Sensor.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2967 of 3240
+
+RX72N Group
+
+58.3.3
+
+58. Temperature Sensor (TEMPS)
+
+Procedure for Using the Temperature Sensor
+
+Figure 58.3 shows the procedure for using the temperature sensor.
+
+START
+Select the temperature sensor output as a
+source for A/D conversion.
+(ADEXICR.TSSA or TSSB bit = 1)
+
+Set scan mode.
+(ADCSR.ADCS[1:0] bits = scan mode)
+Select the addition count.*1
+(ADEXICR.TSSAD bit = 1)
+(ADADC.ADC[2:0] bits = addition count)
+Select either addition mode or average mode.*2
+(Addition mode: ADADC.AVEE bit = 0)
+(Average mode: ADADC.AVEE bit = 1)
+Set the sampling time.*3
+(ADSSTRT register = sampling time)
+
+Start temperature sensor operation.
+(TSCR.TSEN bit = 1)
+
+Wait for the temperature sensor reference
+voltage stabilization. (tTSTBL = 30 µs)
+
+Enable output from the temperature sensor.
+(TSCR.TSOE bit = 1)
+
+Wait for the temperature sensor output
+stabilization. (tOSTBL = 0 µs)
+
+Start A/D conversion.
+(ADCSR.ADST bit = 1)
+
+A/D conversion is finished.
+
+Disable output from the temperature sensor to the
+12-bit A/D converter unit 1. (TSCR.TSOE bit = 0)
+
+Stop the temperature sensor.
+(TSCR.TSEN bit = 0)
+Note 1. When not using the addition/average mode, this setting is not required. To select average mode, do not set the
+ADADC.ADC[2:0] bits to 010b or 101b.
+Note 2. When not using the addition/average mode, this setting is not required.
+Note 3. The initial sampling time is 11 cycles of ADCLK. If the sampling time is not to be changed, this setting is not required.
+
+Figure 58.3
+
+Procedure for Using the Temperature Sensor
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2968 of 3240
+
+RX72N Group
+
+58.3.4
+
+58. Temperature Sensor (TEMPS)
+
+Timing of A/D Conversion of Temperature Sensor Output
+
+Figure 58.4 shows the timing from the start of temperature-sensor operation until the completion of A/D conversion
+when only the output from the temperature sensor is to be A/D converted and conversion is in single-scan mode. The
+times shown in the figure are described in Table 58.2.
+
+tTSTBL
+Setting
+
+tOSTBL
+
+tSPL
+
+tCONV
+
+*1
+
+TSEN
+
+tED
+Setting*1
+
+TSOE
+
+A/D conversion executed only once
+Start of A/D conversion
+
+Setting
+
+*1
+
+ADST
+
+A/D conversion time
+
+Temperature
+sensor output
+
+Waiting for conversion
+
+Sampling of
+A/D conversion of
+temperature-sensor output temperature-sensor output
+
+Waiting for conversion
+Value stored
+Result of A/D conversion of
+temperature-sensor output
+
+ADTSDR
+S12ADI
+(edge output)
+Note 1.
+
+indicates the time of instruction execution by software.
+
+Figure 58.4
+
+Timing from the Start of Temperature-Sensor Operation until Completion of A/D Conversion
+
+Table 58.2
+
+Time until Completion of A/D Conversion after the Start of Temperature-Sensor Operation
+
+Item
+
+Symbol
+
+Time
+
+Temperature-sensor reference-voltage stabilization wait time tTSTBL
+
+30 µs (min)
+
+Temperature-sensor output stabilization wait time
+
+tOSTBL
+
+0 µs (min)
+
+12-bit A/D converter unit 1 input sampling time
+
+tSPL
+
+ADSSTRT setting × tC(ADCLK)
+
+A/D conversion time
+
+tCONV
+
+Refer to Table 56.18, Times for Conversion during
+Scanning (in Numbers of Cycles of ADCLK and PCLK) in
+section 56.3.7, Analog Input Sampling Time and Scan
+Conversion Time.
+
+Scan conversion end delay time
+
+tED
+
+Refer to Table 56.18, Times for Conversion during
+Scanning (in Numbers of Cycles of ADCLK and PCLK) in
+section 56.3.7, Analog Input Sampling Time and Scan
+Conversion Time.
+
+58.4
+58.4.1
+
+Usage Note
+Module-Stop Function Setting
+
+The corresponding bit in module stop control register B (MSTPCRB) can be used to enable and disable the temperature
+sensor. The initial setting is for the temperature sensor to be stopped. The register becomes accessible by releasing from
+the module-stop state. For details, refer to section 11, Low Power Consumption.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2969 of 3240
+
+
