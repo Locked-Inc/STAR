@@ -1,3 +1,7 @@
+// Package manager provides intelligent transport selection and failover for the STAR Gateway.
+//
+// STAR Project - Texas A&M University
+// January 2026
 package manager
 
 import (
@@ -9,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 )
 
@@ -213,6 +218,7 @@ func (tm *TransportManager) RegisterTransport(name string, transport harq.HARQ, 
 	wrapper := &TransportWrapper{
 		Name:      name,
 		Transport: transport,
+		Decoder:   frame.NewStreamDecoder(NewHARQReader(transport)),
 		Health:    NewHealthMetrics(),
 		Priority:  priority,
 		Available: true,
@@ -304,21 +310,47 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 	}()
 
 	tm.mu.RLock()
-	active := tm.activeTransport
+	// Get wrapper to access Decoder
+	activeWrapper := tm.availableTransports[tm.activeTransportName]
 	activeName := tm.activeTransportName
 	tm.mu.RUnlock()
 
-	if active == nil {
+	if activeWrapper == nil {
 		return nil, errors.New("no active transport available")
+	}
+	
+	// Validate decoder
+	if activeWrapper.Decoder == nil {
+		err := errors.New("transport decoder not initialized")
+		tm.recordOperation(activeName, err, 0, false)
+		return nil, err
 	}
 
 	start := time.Now()
-	result, err := active.Receive(ctx)
+	
+	// Use StreamDecoder instead of direct transport.Receive()
+	decodedFrame, err := activeWrapper.Decoder.Decode()
+	
 	latency := time.Since(start)
-
 	tm.recordOperation(activeName, err, latency, false)
 
-	return result, err
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert Frame to ReceiveResult
+	result := &harq.ReceiveResult{
+		Payload: decodedFrame.Payload,
+		Metadata: harq.FrameMetadata{
+			Sequence:   decodedFrame.Header.Sequence,
+			ReceivedAt: time.Now(),
+			// Propagate metadata from Frame fields
+			Retransmits: decodedFrame.Retransmits,
+			FECDecoded:  decodedFrame.FECDecoded,
+		},
+	}
+
+	return result, nil
 }
 
 // GetState returns the current harq.State mapped from the internal State.

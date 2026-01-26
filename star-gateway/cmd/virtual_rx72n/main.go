@@ -162,7 +162,7 @@ func handleConnection(conn net.Conn) {
 		}
 
 		log.Printf("Received frame: seq=%d, type=%s, flags=%d, payload_len=%d",
-			decodedFrame.Header.Sequence, decodedFrame.Header.Type.String(),
+			decodedFrame.Header.Sequence, decodedFrame.Type.String(),
 			decodedFrame.Header.Flags, len(decodedFrame.Payload))
 
 		// 2. Parse the protobuf payload
@@ -190,9 +190,9 @@ func handleConnection(conn net.Conn) {
 			Header: frame.Header{
 				Sequence: nextSeq,
 				Length:   uint16(len(responsePayload)),
-				Type:     frame.FrameTypeResponse,
 				Flags:    frame.FlagNone,
 			},
+			Type:    frame.FrameTypeResponse,
 			Payload: responsePayload,
 		}
 
@@ -203,7 +203,7 @@ func handleConnection(conn net.Conn) {
 		}
 
 		log.Printf("Sending frame: seq=%d, type=%s, payload_len=%d",
-			responseFrame.Header.Sequence, responseFrame.Header.Type.String(), len(responsePayload))
+			responseFrame.Header.Sequence, responseFrame.Type.String(), len(responsePayload))
 
 		// 6. Send the response
 		if _, err := conn.Write(txData); err != nil {

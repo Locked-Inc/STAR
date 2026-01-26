@@ -472,7 +472,7 @@ func (h *ChaseCombining) waitForAckOrRetry(ctx context.Context) (*frame.Frame, b
 }
 
 func (h *ChaseCombining) processAckFrame(ackFrame *frame.Frame, currentSeq uint16) bool {
-	if ackFrame.Header.Type == frame.FrameTypeAck && ackFrame.Header.Sequence == currentSeq {
+	if ackFrame.Type == frame.FrameTypeAck && ackFrame.Header.Sequence == currentSeq {
 		h.mu.Lock()
 		h.txSequence = incrementSequence(h.txSequence)
 		h.state = StateIdle
@@ -482,7 +482,7 @@ func (h *ChaseCombining) processAckFrame(ackFrame *frame.Frame, currentSeq uint1
 		h.mu.Unlock()
 		return true
 	}
-	if ackFrame.Header.Type == frame.FrameTypeNack {
+	if ackFrame.Type == frame.FrameTypeNack {
 		return false
 	}
 	return false
@@ -531,7 +531,7 @@ func (h *ChaseCombining) receiveFrame(ctx context.Context) (*frame.Frame, error)
 		return nil, err
 	}
 
-	if f.Header.Type != frame.FrameTypeCommand && f.Header.Type != frame.FrameTypeResponse {
+	if f.Type != frame.FrameTypeCommand && f.Type != frame.FrameTypeResponse {
 		return nil, ErrUnexpectedFrameType
 	}
 

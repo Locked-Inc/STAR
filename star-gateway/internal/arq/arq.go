@@ -266,7 +266,7 @@ func (s *StopAndWait) Send(data []byte) error {
 		}
 
 		// Process response
-		if ackFrame.Header.Type == frame.FrameTypeAck {
+		if ackFrame.Type == frame.FrameTypeAck {
 			if ackFrame.Header.Sequence == currentSeq {
 				// Success
 				s.mu.Lock()
@@ -280,7 +280,7 @@ func (s *StopAndWait) Send(data []byte) error {
 			// Wrong sequence - ignore and continue waiting
 		}
 
-		if ackFrame.Header.Type == frame.FrameTypeNack {
+		if ackFrame.Type == frame.FrameTypeNack {
 			// NACK received - will retry
 			continue
 		}
@@ -325,8 +325,8 @@ func (s *StopAndWait) Receive() ([]byte, error) {
 	}
 
 	// Only process command/response frames
-	if f.Header.Type != frame.FrameTypeCommand &&
-		f.Header.Type != frame.FrameTypeResponse {
+	if f.Type != frame.FrameTypeCommand &&
+		f.Type != frame.FrameTypeResponse {
 		return nil, ErrUnexpectedFrameType
 	}
 

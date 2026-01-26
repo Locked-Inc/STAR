@@ -7,6 +7,7 @@ package manager
 import (
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 )
 
@@ -82,6 +83,9 @@ type TransportWrapper struct {
 
 	// Transport is the actual HARQ implementation.
 	Transport harq.HARQ
+
+	// Decoder is the streaming frame decoder.
+	Decoder *frame.StreamDecoder
 
 	// Health tracks operational metrics for this transport.
 	Health *HealthMetrics

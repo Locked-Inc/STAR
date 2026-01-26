@@ -211,7 +211,7 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 		// Successfully decoded a frame
 		var nextFrame *frame.Frame
 
-		switch decodedFrame.Header.Type {
+		switch decodedFrame.Type {
 		case frame.FrameTypeNack:
 			nackedSeq := decodedFrame.Header.Sequence
 			log.Printf("MockRX72N: Received NACK Seq=%d, retransmitting", nackedSeq)
@@ -241,7 +241,7 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			}
 
 		default:
-			log.Printf("MockRX72N: Unexpected frame type %s", decodedFrame.Header.Type)
+			log.Printf("MockRX72N: Unexpected frame type %s", decodedFrame.Type)
 			if lastFrameToRetransmit != nil {
 				nextFrame = lastFrameToRetransmit
 				nextFrame.Header.Flags |= frame.FlagRetransmit
@@ -293,7 +293,7 @@ func (m *MockRX72N) sendFrame(c net.Conn, encoder frame.Encoder, f *frame.Frame)
 	}
 
 	log.Printf("MockRX72N: Sent Seq=%d Type=%s (%d bytes)",
-		f.Header.Sequence, f.Header.Type.String(), len(encoded))
+		f.Header.Sequence, f.Type.String(), len(encoded))
 
 	// Update diagnostics
 	m.lastSeqSent = f.Header.Sequence
