@@ -1,0 +1,4491 @@
+RX72N Group
+
+29.
+
+29. Programmable Pulse Generator (PPG)
+
+Programmable Pulse Generator (PPG)
+
+The programmable pulse generator (PPG) generates pulse outputs by using the 16-bit timer pulse unit (TPU) and the
+multi-function timer pulse unit (MTU) as a time base.
+This MCU has two PPG units, each of which controls up to 16 pulse output pins. The pulse outputs from the PPGs are
+divided into 4-bit groups that can operate all simultaneously and independently.
+
+29.1
+
+Overview
+
+Table 29.1 lists the specifications of the PPG and Table 29.2 lists PPG functions.
+Figure 29.1 and Figure 29.2 show block diagrams of the PPGs.
+Table 29.1
+
+Specifications of PPG
+
+Item
+
+Specifications
+
+Number of output bits
+
+Up to 32 bits*1
+
+Pulse output
+
+ Two units, each capable of output through four pin groups
+ Output trigger signals are selectable.
+ Non-overlapping operation is possible.
+ Inverted output is selectable.
+
+Output data transfer
+
+Can operate together with the DTC and DMAC (when TPU and MTU interrupts are
+in use)
+
+Power consumption reducing function
+
+Module-stop state can be set for each unit.
+
+Note 1. When setting PPG output trigger in MTU, make settings so that PCLKA run at the same frequency as PCLKB.
+
+Table 29.2
+
+List of PPG Functions
+
+Item
+
+PPG0
+
+PPG1
+
+Compare match
+
+
+
+
+
+Input capture
+
+
+
+
+
+Compare match
+
+—
+
+
+
+Input capture
+
+—
+
+
+
+Non-overlapping operation
+
+
+
+
+
+Output data
+transfer
+
+DTC
+
+
+
+
+
+DMAC
+
+
+
+
+
+Selecting inverted output
+
+
+
+
+
+The MSTPA11 bit in MSTPCRA
+
+The MSTPA10 bit in MSTPCRA
+
+PPG output
+trigger
+
+MTU channels 0 to 3
+(MTU0 to MTU3)*1
+TPU (unit 0) channels
+0 to 3
+(TPU0 to TPU3)
+
+Setting the module-stop state*2
+
+: Possible
+—: Not possible
+Note 1. When setting PPG output trigger in MTU, make settings so that PCLKA run at the same frequency as PCLKB.
+Note 2. For details, refer to section 11, Low Power Consumption.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1520 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+Control logic
+
+PO15
+PO14
+PO13
+PO12
+PO11
+PO10
+PO9
+PO8
+PO7
+PO6
+PO5
+PO4
+PO3
+PO2
+PO1
+PO0
+
+NDERL
+
+PMR
+
+PCR
+
+Pulse output pins,
+group 3
+PODRH
+
+NDRH
+NDRH2
+
+PODRL
+
+NDRL
+NDRL2
+
+Pulse output pins,
+group 2
+Pulse output pins,
+group 1
+
+Pulse output pins,
+group 0
+
+PMR:
+PCR:
+NDERH:
+NDERL:
+
+Figure 29.1
+
+NDERH
+
+Internal peripheral bus 2
+
+Compare match signals
+
+PPG output mode register
+PPG output control register
+Next data enable register H
+Next data enable register L
+
+NDRH:
+NDRH2:
+NDRL:
+NDRL2:
+PODRH:
+PODRL:
+
+Next data register H
+Next data register H2
+Next data register L
+Next data register L2
+Output data register H
+Output data register L
+
+Block Diagram of PPG0
+
+Compare match signals
+
+NDERH
+Control logic
+
+PMR
+
+NDERL
+PCR
+
+PO31
+PO30
+PO29
+PO28
+PO27
+PO26
+PO25
+PO24
+PO23
+PO22
+PO21
+PO20
+PO19
+PO18
+PO17
+PO16
+
+Pulse output pins,
+group 7
+NDRH
+NDRH2
+
+PODRL
+
+NDRL
+NDRL2
+
+Pulse output pins,
+group 6
+Pulse output pins,
+group 5
+
+Pulse output pins,
+group 4
+
+PMR:
+PPG output mode register
+PCR:
+PPG output control register
+NDERH: Next data enable register H
+NDERL: Next data enable register L
+PTRSLR: PPG trigger select register
+
+Figure 29.2
+
+PODRH
+
+Internal peripheral bus 2
+
+PTRSLR
+
+NDRH:
+NDRH2:
+NDRL:
+NDRL2:
+PODRH:
+PODRL:
+
+Next data register H
+Next data register H2
+Next data register L
+Next data register L2
+Output data register H
+Output data register L
+
+Block Diagram of PPG1
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1521 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+Table 29.3 lists the pin configuration of the PPG.
+Table 29.3
+
+Pin Configuration of PPG
+
+Unit
+
+Pin Name
+
+I/O
+
+Function
+
+PPG0
+
+PO0
+
+Output
+
+Group 0 pulse output
+
+PO1
+
+Output
+
+PO2
+
+Output
+
+PO3
+
+Output
+
+PO4
+
+Output
+
+PO5
+
+Output
+
+PO6
+
+Output
+
+PO7
+
+Output
+
+PO8
+
+Output
+
+PO9
+
+Output
+
+PO10
+
+Output
+
+PO11
+
+Output
+
+PO12
+
+Output
+
+PO13
+
+Output
+
+PO14
+
+Output
+
+PPG1
+
+PO15
+
+Output
+
+PO16
+
+Output
+
+PO17
+
+Output
+
+PO18
+
+Output
+
+PO19
+
+Output
+
+PO20
+
+Output
+
+PO21
+
+Output
+
+PO22
+
+Output
+
+PO23
+
+Output
+
+PO24
+
+Output
+
+PO25
+
+Output
+
+PO26
+
+Output
+
+PO27
+
+Output
+
+PO28
+
+Output
+
+PO29
+
+Output
+
+PO30
+
+Output
+
+PO31
+
+Output
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Group 1 pulse output
+
+Group 2 pulse output
+
+Group 3 pulse output
+
+Group 4 pulse output
+
+Group 5 pulse output
+
+Group 6 pulse output
+
+Group 7 pulse output
+
+Page 1522 of 3240
+
+RX72N Group
+
+29.2
+
+29. Programmable Pulse Generator (PPG)
+
+Register Descriptions
+
+29.2.1
+
+PPG Trigger Select Register (PTRSLR)
+
+Address(es): 0008 81F0h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+PTRSL
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+ PPG1.PTRSLR
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+PTRSL
+
+PPG Trigger Select
+
+0: Selects the set of MTU0 to MTU3 as the trigger channels for PPG1.
+1: Selects the set of TPU0 to TPU3 as the trigger channels for PPG1.
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+PTRSL Bit (PPG Trigger Select)
+This bit selects either MTU0 to MTU3 or TPU0 to TPU3 as a set of trigger channels for PPG1.
+When this bit is set to 0, MTU0 to MTU3 are selected as a set of trigger channels for PPG1. When it is set to 1, TPU0 to
+TPU3 are selected as a set of trigger channels for PPG1.
+
+MTU
+
+PPG
+
+Compare match/input capture output in MTU0
+Compare match/input capture output in MTU1
+Compare match/input capture output in MTU2
+Compare match/input capture output in MTU3
+
+PPG0 trigger input
+
+TPU
+PPG1 trigger input
+
+Compare match/input capture output in TPU0
+Compare match/input capture output in TPU1
+Compare match/input capture output in TPU2
+Compare match/input capture output in TPU3
+PTRSLR.PTRSL
+
+Figure 29.3
+
+Block Diagram of PPG Trigger Selection
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1523 of 3240
+
+RX72N Group
+
+29.2.2
+
+29. Programmable Pulse Generator (PPG)
+
+Next Data Enable Register H (NDERH),
+Next Data Enable Register L (NDERL)
+
+Address(es): 0008 81E8h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+15
+
+NDER
+14
+
+NDER
+13
+
+NDER
+12
+
+NDER
+11
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+PPG0.NDERH NDER
+Value after reset:
+
+b2
+
+b1
+
+b0
+
+NDER NDER9 NDER8
+10
+
+Address(es): 0008 81E9h
+b7
+
+b6
+
+PPG0.NDERL NDER7 NDER6 NDER5 NDER4 NDER3 NDER2 NDER1 NDER0
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ PPG0.NDERH
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDER8
+
+Next Data Transfer Enable
+
+b1
+
+NDER9
+
+Next Data Transfer Enable
+
+0: Data transfer is disabled.
+1: Data transfer is enabled.
+
+b2
+
+NDER 10
+
+Next Data Transfer Enable
+
+R/W
+
+b3
+
+NDER 11
+
+Next Data Transfer Enable
+
+R/W
+
+b4
+
+NDER 12
+
+Next Data Transfer Enable
+
+R/W
+
+b5
+
+NDER 13
+
+Next Data Transfer Enable
+
+R/W
+
+b6
+
+NDER 14
+
+Next Data Transfer Enable
+
+R/W
+
+b7
+
+NDER 15
+
+Next Data Transfer Enable
+
+R/W
+
+R/W
+R/W
+
+PPG0.NDERH selects the pins (PO15 to PO8) for outputs of pulse from the PPG on a bit-by-bit basis.
+NDERi Bits (Next Data Transfer Enable) (i = 15 to 8)
+For NDERi bits with the setting 1, the trigger specified by PPG0.PCR leads to the transfer of the values from the
+corresponding bits of the PPG0.NDRH or PPG0.NDRH2 register to those of the PPG0.PODRH register. For NDERi bits
+with the setting 0, the values are not transferred from the corresponding bits of the PPG0.NDRH or PPG0.NDRH2
+register to those of the PPG0.PODRH register.
+ PPG0.NDERL
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDER0
+
+Next Data Transfer Enable
+
+R/W
+
+b1
+
+NDER1
+
+Next Data Transfer Enable
+
+0: Data transfer is disabled.
+1: Data transfer is enabled.
+
+b2
+
+NDER2
+
+Next Data Transfer Enable
+
+R/W
+
+b3
+
+NDER3
+
+Next Data Transfer Enable
+
+R/W
+
+b4
+
+NDER4
+
+Next Data Transfer Enable
+
+R/W
+
+b5
+
+NDER5
+
+Next Data Transfer Enable
+
+R/W
+
+b6
+
+NDER6
+
+Next Data Transfer Enable
+
+R/W
+
+b7
+
+NDER7
+
+Next Data Transfer Enable
+
+R/W
+
+R/W
+
+PPG0.NDERL selects the pins (PO7 to PO0) for outputs of pulse from the PPG on a bit-by-bit basis.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1524 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+NDERi Bits (Next Data Transfer Enable) (i = 7 to 0)
+For NDERi bits with the setting 1, the trigger specified by PPG0.PCR leads to the transfer of the values from the
+corresponding bits of the PPG0.NDRL or PPG0.NDRL2 register to those of the PPG0.PODRL register. For NDERi bits
+with the setting 0, the values are not transferred from the corresponding bits of the PPG0.NDRL or PPG0.NDRL2
+register to those of the PPG0.PODRL register.
+
+Address(es): 0008 81F8h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+31
+
+NDER
+30
+
+NDER
+29
+
+NDER
+28
+
+NDER
+27
+
+NDER
+26
+
+NDER
+25
+
+NDER
+24
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+PPG1.NDERH NDER
+Value after reset:
+
+Address(es): 0008 81F9h
+b7
+PPG1.NDERL NDER
+23
+Value after reset:
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+NDER
+22
+
+NDER
+21
+
+NDER
+20
+
+NDER
+19
+
+NDER
+18
+
+NDER
+17
+
+NDER
+16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ PPG1.NDERH
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDER 24
+
+Next Data Transfer Enable
+
+R/W
+
+b1
+
+NDER 25
+
+Next Data Transfer Enable
+
+0: Data transfer is disabled.
+1: Data transfer is enabled.
+
+b2
+
+NDER 26
+
+Next Data Transfer Enable
+
+R/W
+
+b3
+
+NDER 27
+
+Next Data Transfer Enable
+
+R/W
+
+b4
+
+NDER 28
+
+Next Data Transfer Enable
+
+R/W
+
+b5
+
+NDER 29
+
+Next Data Transfer Enable
+
+R/W
+
+b6
+
+NDER 30
+
+Next Data Transfer Enable
+
+R/W
+
+b7
+
+NDER 31
+
+Next Data Transfer Enable
+
+R/W
+
+R/W
+
+PPG1.NDERH selects the pins (PO31 to PO24) for outputs of pulse from the PPG on a bit-by-bit basis.
+NDERi Bits (Next Data Transfer Enable) (i = 31 to 24)
+For NDERi bits with the setting 1, the trigger specified by PPG1.PCR leads to the transfer of the values from the
+corresponding bits of the PPG1.NDRH or PPG1.NDRH2 register to those of the PPG1.PODRH register. For NDERi bits
+with the setting 0, the values are not transferred from the corresponding bits of the PPG1.NDRH or PPG1.NDRH2
+register to those of the PPG1.PODRH register.
+ PPG1.NDERL
+Bit
+b0
+
+Symbol
+NDER 16
+
+Bit Name
+
+Description
+
+R/W
+
+Next Data Transfer Enable
+
+R/W
+
+b1
+
+NDER 17
+
+Next Data Transfer Enable
+
+0: Data transfer is disabled.
+1: Data transfer is enabled.
+
+b2
+
+NDER 18
+
+Next Data Transfer Enable
+
+R/W
+
+b3
+
+NDER 19
+
+Next Data Transfer Enable
+
+R/W
+
+b4
+
+NDER 20
+
+Next Data Transfer Enable
+
+R/W
+
+b5
+
+NDER 21
+
+Next Data Transfer Enable
+
+R/W
+
+b6
+
+NDER 22
+
+Next Data Transfer Enable
+
+R/W
+
+b7
+
+NDER 23
+
+Next Data Transfer Enable
+
+R/W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+R/W
+
+Page 1525 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+PPG1.NDERL selects the pins (PO23 to PO16) for outputs of pulse from the PPG on a bit-by-bit basis.
+NDERi Bits (Next Data Transfer Enable) (i = 23 to 16)
+For NDERi bits with the setting 1, the trigger specified by PPG1.PCR leads to the transfer of the values from the
+corresponding bits of the PPG1.NDRL or PPG1.NDRL2 register to those of the PPG1.PODRL register. For NDERi bits
+with the setting 0, the values are not transferred from the corresponding bits of the PPG1.NDRL or PPG1.NDRL2
+register to those of the PPG1.PODRL register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1526 of 3240
+
+RX72N Group
+
+29.2.3
+
+29. Programmable Pulse Generator (PPG)
+
+Output Data Register H (PODRH),
+Output Data Register L (PODRL)
+
+Address(es): 0008 81EAh
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+PPG0.PODRH POD15 POD14 POD13 POD12 POD11 POD10 POD9
+Value after reset:
+
+0
+
+0
+
+b0
+POD8
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+POD6
+
+POD5
+
+POD4
+
+POD3
+
+POD2
+
+POD1
+
+POD0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Address(es): 0008 81EBh
+b7
+PPG0.PODRL POD7
+Value after reset:
+
+0
+
+ PPG0.PODRH
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+POD8
+
+Output Data Register
+
+R/W
+
+b1
+
+POD9
+
+Output Data Register
+
+0: The low level is output on the POi pin.
+1: The high level is output on the POi pin.
+(i = 15 to 8)
+
+b2
+
+POD10
+
+Output Data Register
+
+R/W
+
+b3
+
+POD11
+
+Output Data Register
+
+R/W
+
+b4
+
+POD12
+
+Output Data Register
+
+R/W
+
+b5
+
+POD13
+
+Output Data Register
+
+R/W
+
+b6
+
+POD14
+
+Output Data Register
+
+R/W
+
+b7
+
+POD15
+
+Output Data Register
+
+R/W
+
+R/W
+
+PPG0.PODRH stores pulse output values. For bits corresponding to pins that have been set for pulse output by
+PPG0.NDERH, the output trigger transfers the values in PPG0.NDRH or PPG0.NDRH2 to this register.
+PODi Bit (Output Data Register) (i = 15 to 8)
+When an output trigger is generated during PPG operation, the values of bits for which data transfer is enabled in the
+PPG0.NDERH register are transferred from the PPG0.NDRH or PPG0.NDRH2 register to this register. Writing from the
+CPU is impossible while any of the NDERi (i = 15 to 8) bits in PPG0.NDERH is 1. The initial output level for the pulse
+signal can be set when the value in the PPG0.NDERH register is 00h.
+ PPG0.PODRL
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+POD0
+
+Output Data Register
+
+R/W
+
+b1
+
+POD1
+
+Output Data Register
+
+0: The low level is output on the POi pin.
+1: The high level is output on the POi pin.
+(i = 7 to 0)
+
+b2
+
+POD2
+
+Output Data Register
+
+R/W
+
+b3
+
+POD3
+
+Output Data Register
+
+R/W
+
+b4
+
+POD4
+
+Output Data Register
+
+R/W
+
+b5
+
+POD5
+
+Output Data Register
+
+R/W
+
+b6
+
+POD6
+
+Output Data Register
+
+R/W
+
+b7
+
+POD7
+
+Output Data Register
+
+R/W
+
+R/W
+
+PPG0.PODRL stores pulse output values. For bits corresponding to pins that have been set for pulse output by
+PPG0.NDERL, the output trigger transfers the values in PPG0.NDRL or PPG0.NDRL2 to this register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1527 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+PODi Bit (Output Data Register) (i = 7 to 0)
+When an output trigger is generated during PPG operation, the values of bits for which data transfer is enabled in the
+PPG0.NDERL register are transferred from the PPG0.NDRL or PPG0.NDRL2 register to this register. Writing from the
+CPU is impossible while any of the NDERi (i = 7 to 0) bits in PPG0.NDERL is 1. The initial output level for the pulse
+signal can be set when the value in the PPG0.NDERL register is 00h.
+
+Address(es): 0008 81FAh
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+PPG1.PODRH POD31 POD30 POD29 POD28 POD27 POD26 POD25 POD24
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+Address(es): 0008 81FBh
+b7
+
+b6
+
+PPG1.PODRL POD23 POD22 POD21 POD20 POD19 POD18 POD17 POD16
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ PPG1.PODRH
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+POD24
+
+Output Data Register
+
+POD25
+
+Output Data Register
+
+0: The low level is output on the POi pin.
+1: The high level is output on the POi pin.
+(i = 31 to 24)
+
+R/W
+
+b1
+b2
+
+POD26
+
+Output Data Register
+
+R/W
+
+b3
+
+POD27
+
+Output Data Register
+
+R/W
+
+b4
+
+POD28
+
+Output Data Register
+
+R/W
+
+b5
+
+POD29
+
+Output Data Register
+
+R/W
+
+b6
+
+POD30
+
+Output Data Register
+
+R/W
+
+b7
+
+POD31
+
+Output Data Register
+
+R/W
+
+R/W
+
+PPG1.PODRH stores pulse output values. For bits corresponding to pins that have been set for pulse output by
+PPG1.NDERH, the output trigger transfers the values in PPG1.NDRH or PPG1.NDRH2 to this register.
+PODi Bit (Output Data Register) (i = 31 to 24)
+When an output trigger is generated during PPG operation, the values of bits for which data transfer is enabled in the
+PPG1.NDERH register are transferred from the PPG1.NDRH or PPG1.NDRH2 register to this register. Writing from the
+CPU is impossible while any of the NDERi (i = 31 to 24) bits in PPG1.NDERH is 1. The initial output level for the pulse
+signal can be set when the value in the PPG1.NDERH register is 00h.
+ PPG1.PODRL
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+POD16
+
+Output Data Register
+
+POD17
+
+Output Data Register
+
+0: The low level is output on the POi pin.
+1: The high level is output on the POi pin.
+(i = 23 to 16)
+
+R/W
+
+b1
+b2
+
+POD18
+
+Output Data Register
+
+R/W
+
+b3
+
+POD19
+
+Output Data Register
+
+R/W
+
+b4
+
+POD20
+
+Output Data Register
+
+R/W
+
+b5
+
+POD21
+
+Output Data Register
+
+R/W
+
+b6
+
+POD22
+
+Output Data Register
+
+R/W
+
+b7
+
+POD23
+
+Output Data Register
+
+R/W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+R/W
+
+Page 1528 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+PPG1.PODRL stores pulse output values. For bits corresponding to pins that have been set for pulse output by
+PPG1.NDERL, the output trigger transfers the values in PPG1.NDRL or PPG1.NDRL2 to this register.
+PODi Bit (Output Data Register) (i = 23 to 16)
+When an output trigger is generated during PPG operation, the values of bits for which data transfer is enabled in the
+PPG1.NDERL register are transferred from the PPG1.NDRL or PPG1.NDRL2 register to this register. Writing from the
+CPU is impossible while any of the NDERi (i = 23 to 16) bits in PPG1.NDERL is 1. The initial output level for the pulse
+signal can be set when the value in the PPG1.NDERL register is 00h.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1529 of 3240
+
+RX72N Group
+
+29.2.4
+
+29. Programmable Pulse Generator (PPG)
+
+Next Data Register H (NDRH), Next Data Register L (NDRL),
+Next Data Register H2 (NDRH2), Next Data Register L2 (NDRL2)
+
+Address(es): 0008 81ECh
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+PPG0.NDRH NDR15 NDR14 NDR13 NDR12 NDR11 NDR10 NDR9
+Value after reset:
+
+0
+
+0
+
+b0
+NDR8
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+NDR6
+
+NDR5
+
+NDR4
+
+NDR3
+
+NDR2
+
+NDR1
+
+NDR0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+Address(es): 0008 81EDh
+b7
+PPG0.NDRL NDR7
+Value after reset:
+
+0
+
+Address(es): 0008 81EEh
+b7
+
+b6
+
+b5
+
+b4
+
+PPG0.NDRH2
+
+—
+
+—
+
+—
+
+—
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+NDR11 NDR10 NDR9
+
+NDR8
+
+Address(es): 0008 81EFh
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+PPG0.NDRL2
+
+—
+
+—
+
+—
+
+—
+
+NDR3
+
+NDR2
+
+NDR1
+
+NDR0
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ PPG0.NDRH
+The PPG0.NDRH register holds the next pulse output value to the one stored in the PODRH register. The assignment of
+bits in the PPG0.NDRH register depends on whether pulse output groups are set as having the same output trigger or
+different output triggers.
+(1) When pulse output groups 2 and 3 have the same output trigger
+If pulse output groups 2 and 3 have the same output trigger, all eight bits are mapped to the NDRH register and can
+be accessed in a single operation.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDR8
+
+Next Data Register
+
+R/W
+
+b1
+
+NDR9
+
+Next Data Register
+
+The output trigger specified by PPG0.PCR transfers the values in this
+register to the corresponding bits in PPG0.PODRH.
+
+b2
+
+NDR10
+
+Next Data Register
+
+R/W
+
+b3
+
+NDR11
+
+Next Data Register
+
+R/W
+
+b4
+
+NDR12
+
+Next Data Register
+
+R/W
+
+b5
+
+NDR13
+
+Next Data Register
+
+R/W
+
+b6
+
+NDR14
+
+Next Data Register
+
+R/W
+
+b7
+
+NDR15
+
+Next Data Register
+
+R/W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+R/W
+
+Page 1530 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+(2) When pulse output groups 2 and 3 have different output triggers
+If different output triggers are selected for pulse output groups 2 and 3, the pulse output group 3 are mapped to the
+upper 4 bits.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+—
+
+b4
+
+NDR12
+
+Reserved
+
+These bits are read as 1. The write value should be 1.
+
+R/W
+
+Next Data Register
+
+The output trigger specified by PPG0.PCR transfers the values in this
+register to the corresponding bits in PPG0.PODRH.
+
+R/W
+
+b5
+
+NDR13
+
+Next Data Register
+
+b6
+
+NDR14
+
+Next Data Register
+
+R/W
+
+b7
+
+NDR15
+
+Next Data Register
+
+R/W
+
+R/W
+
+ PPG0.NDRH2
+If different output triggers are selected for pulse output groups 2 and 3, the pulse output group 2 are mapped to the lower
+4 bits of the PPG0.NDRH2 register.
+If the same output trigger is selected for pulse output groups 2 and 3, the PPG0.NDRH2 register is not used. With such
+settings, the value read is FFh and writing is prohibited.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDR8
+
+Next Data Register
+
+R/W
+
+b1
+
+NDR9
+
+Next Data Register
+
+The output trigger specified by PPG0.PCR transfers the values in this
+register to the corresponding bits in PPG0.PODRH.
+
+b2
+
+NDR10
+
+Next Data Register
+
+R/W
+
+b3
+
+NDR11
+
+Next Data Register
+
+R/W
+
+b7 to b4
+
+—
+
+Reserved
+
+These bits are read as 1. The write value should be 1.
+
+R/W
+
+R/W
+
+ PPG0.NDRL
+The PPG0.NDRL register holds the next pulse output value to the one stored in the PODRL register. The assignment of
+bits in the PPG0.NDRL register depends on whether pulse output groups are set as having the same output trigger or
+different output triggers.
+(1) When pulse output groups 0 and 1 have the same output trigger
+If pulse output groups 0 and 1 have the same output trigger, all eight bits are mapped to the NDRL register and can
+be accessed in a single operation.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDR0
+
+Next Data Register
+
+R/W
+
+b1
+
+NDR1
+
+Next Data Register
+
+The output trigger specified by PPG0.PCR transfers the values in this
+register to the corresponding bits in PPG0.PODRL.
+
+b2
+
+NDR2
+
+Next Data Register
+
+R/W
+
+b3
+
+NDR3
+
+Next Data Register
+
+R/W
+
+b4
+
+NDR4
+
+Next Data Register
+
+R/W
+
+b5
+
+NDR5
+
+Next Data Register
+
+R/W
+
+b6
+
+NDR6
+
+Next Data Register
+
+R/W
+
+b7
+
+NDR7
+
+Next Data Register
+
+R/W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+R/W
+
+Page 1531 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+(2) When pulse output groups 0 and 1 have different output triggers
+If different output triggers are selected for pulse output groups 0 and 1, the pulse output group 1 are mapped to the
+upper 4 bits.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+—
+
+b4
+
+NDR4
+
+Reserved
+
+These bits are read as 1. The write value should be 1.
+
+R/W
+
+Next Data Register
+
+The output trigger specified by PPG0.PCR transfers the values in this
+register to the corresponding bits in PPG0.PODRL.
+
+R/W
+
+b5
+
+NDR5
+
+Next Data Register
+
+b6
+
+NDR6
+
+Next Data Register
+
+R/W
+
+b7
+
+NDR7
+
+Next Data Register
+
+R/W
+
+R/W
+
+ PPG0.NDRL2
+If different output triggers are selected for pulse output groups 0 and 1, the pulse output group 0 are mapped to the lower
+4 bits of the PPG0.NDRL2 register.
+If the same output trigger is selected for pulse output groups 0 and 1, the PPG0.NDRL2 register is not used. With such
+settings, the value read is FFh and writing is prohibited.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDR0
+
+Next Data Register
+
+R/W
+
+b1
+
+NDR1
+
+Next Data Register
+
+The output trigger specified by PPG0.PCR transfers the values in this
+register to the corresponding bits in PPG0.PODRL.
+
+b2
+
+NDR2
+
+Next Data Register
+
+R/W
+
+b3
+
+NDR3
+
+Next Data Register
+
+R/W
+
+b7 to b4
+
+—
+
+Reserved
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+These bits are read as 1. The write value should be 1.
+
+R/W
+
+R/W
+
+Page 1532 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+Address(es): 0008 81FCh
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+PPG1.NDRH NDR31 NDR30 NDR29 NDR28 NDR27 NDR26 NDR25 NDR24
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+Address(es): 0008 81FDh
+b7
+
+b6
+
+PPG1.NDRL NDR23 NDR22 NDR21 NDR20 NDR19 NDR18 NDR17 NDR16
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+Address(es): 0008 81FEh
+b7
+
+b6
+
+b5
+
+b4
+
+PPG1.NDRH2
+
+—
+
+—
+
+—
+
+—
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+NDR27 NDR26 NDR25 NDR24
+
+Address(es): 0008 81FFh
+b7
+
+b6
+
+b5
+
+b4
+
+PPG1.NDRL2
+
+—
+
+—
+
+—
+
+—
+
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+NDR19 NDR18 NDR17 NDR16
+0
+
+0
+
+0
+
+0
+
+ PPG1.NDRH
+The PPG1.NDRH register holds the next pulse output value to the one stored in the PODRH register. The assignment of
+bits in the PPG1.NDRH register depends on whether pulse output groups are set as having the same output trigger or
+different output triggers.
+(1) When pulse output groups 6 and 7 have the same output trigger
+If pulse output groups 6 and 7 have the same output trigger, all eight bits are mapped to the NDRH register and can
+be accessed in a single operation.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDR24
+
+Next Data Register
+
+R/W
+
+b1
+
+NDR25
+
+Next Data Register
+
+The output trigger specified by PPG1.PCR transfers the values in this
+register to the corresponding bits in PPG1.PODRH.
+
+b2
+
+NDR26
+
+Next Data Register
+
+R/W
+
+b3
+
+NDR27
+
+Next Data Register
+
+R/W
+
+b4
+
+NDR28
+
+Next Data Register
+
+R/W
+
+b5
+
+NDR29
+
+Next Data Register
+
+R/W
+
+b6
+
+NDR30
+
+Next Data Register
+
+R/W
+
+b7
+
+NDR31
+
+Next Data Register
+
+R/W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+R/W
+
+Page 1533 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+(2) When pulse output groups 6 and 7 have different output triggers
+If different output triggers are selected for pulse output groups 6 and 7, the pulse output group 7 are mapped to the
+upper 4 bits.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+—
+
+Reserved
+
+These bits are read as 1. The write value should be 1.
+
+R/W
+
+b4
+
+NDR28
+
+Next Data Register
+
+R/W
+
+b5
+
+NDR29
+
+Next Data Register
+
+The output trigger specified by PPG1.PCR transfers the values in this
+register to the corresponding bits in PPG1.PODRH.
+
+b6
+
+NDR30
+
+Next Data Register
+
+R/W
+
+b7
+
+NDR31
+
+Next Data Register
+
+R/W
+
+R/W
+
+ PPG1.NDRH2
+If different output triggers are selected for pulse output groups 6 and 7, the pulse output group 6 are mapped to the lower 4
+bits of the PPG1.NDRH2 register.
+If the same output trigger is selected for pulse output groups 6 and 7, the PPG1.NDRH2 register is not used. With such
+settings, the value read is FFh and writing is prohibited.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDR24
+
+Next Data Register
+
+R/W
+
+b1
+
+NDR25
+
+Next Data Register
+
+The output trigger specified by PPG1.PCR transfers the values in this
+register to the corresponding bits in PPG1.PODRH.
+
+b2
+
+NDR26
+
+Next Data Register
+
+R/W
+
+b3
+
+NDR27
+
+Next Data Register
+
+R/W
+
+b7 to b4
+
+—
+
+Reserved
+
+These bits are read as 1. The write value should be 1.
+
+R/W
+
+R/W
+
+ PPG1.NDRL
+The PPG1.NDRL register holds the next pulse output value to the one stored in the PODRL register. The assignment of
+bits in the PPG1.NDRL register depends on whether pulse output groups are set as having the same output trigger or
+different output triggers.
+(1) When pulse output groups 4 and 5 have the same output trigger
+If pulse output groups 4 and 5 have the same output trigger, all eight bits are mapped to the NDRL register and can
+be accessed in a single operation.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDR16
+
+Next Data Register
+
+R/W
+
+b1
+
+NDR17
+
+Next Data Register
+
+The output trigger specified by PPG1.PCR transfers the values in this
+register to the corresponding bits in PPG1.PODRL.
+
+b2
+
+NDR18
+
+Next Data Register
+
+R/W
+
+b3
+
+NDR19
+
+Next Data Register
+
+R/W
+
+b4
+
+NDR20
+
+Next Data Register
+
+R/W
+
+b5
+
+NDR21
+
+Next Data Register
+
+R/W
+
+b6
+
+NDR22
+
+Next Data Register
+
+R/W
+
+b7
+
+NDR23
+
+Next Data Register
+
+R/W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+R/W
+
+Page 1534 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+(2) When pulse output groups 4 and 5 have different output triggers
+If different output triggers are selected for pulse output groups 4 and 5, the pulse output group 5 are mapped to the
+upper 4 bits.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+—
+
+b4
+
+NDR20
+
+Reserved
+
+These bits are read as 1. The write value should be 1.
+
+R/W
+
+Next Data Register
+
+The output trigger specified by PPG1.PCR transfers the values in this
+register to the corresponding bits in PPG1.PODRL.
+
+R/W
+
+b5
+
+NDR21
+
+Next Data Register
+
+b6
+
+NDR22
+
+Next Data Register
+
+R/W
+
+b7
+
+NDR23
+
+Next Data Register
+
+R/W
+
+R/W
+
+ PPG1.NDRL2
+If different output triggers are selected for pulse output groups 4 and 5, the pulse output group 4 are mapped to the lower
+4 bits of the PPG1.NDRL2 register.
+If the same output trigger is selected for pulse output groups 4 and 5, the PPG1.NDRL2 register is not used. With such
+settings, the value read is FFh and writing is prohibited.
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDR16
+
+Next Data Register
+
+R/W
+
+b1
+
+NDR17
+
+Next Data Register
+
+The output trigger specified by PPG1.PCR transfers the values in this
+register to the corresponding bits in PPG1.PODRL.
+
+b2
+
+NDR18
+
+Next Data Register
+
+R/W
+
+b3
+
+NDR19
+
+Next Data Register
+
+R/W
+
+b7 to b4
+
+—
+
+Reserved
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+These bits are read as 1. The write value should be 1.
+
+R/W
+
+R/W
+
+Page 1535 of 3240
+
+RX72N Group
+
+29.2.5
+
+29. Programmable Pulse Generator (PPG)
+
+PPG Output Control Register (PCR)
+
+Address(es): PPG0.PCR 0008 81E6h, PPG1.PCR 0008 81F6h
+b7
+
+Value after reset:
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+G3CMS[1:0]
+
+G2CMS[1:0]
+
+G1CMS[1:0]
+
+G0CMS[1:0]
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+1
+
+ PPG0.PCR
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+G0CMS[1:0]
+
+Group 0 Compare Match Select
+
+b1 b0
+
+R/W
+
+b3, b2
+
+G1CMS[1:0]
+
+Group 1 Compare Match Select
+
+b3 b2
+
+R/W
+
+b5, b4
+
+G2CMS[1:0]
+
+Group 2 Compare Match Select
+
+b5 b4
+
+R/W
+
+b7, b6
+
+G3CMS[1:0]
+
+Group 3 Compare Match Select
+
+b7 b6
+
+R/W
+
+0 0: Compare match in MTU0
+0 1: Compare match in MTU1
+1 0: Compare match in MTU2
+1 1: Compare match in MTU3
+0 0: Compare match in MTU0
+0 1: Compare match in MTU1
+1 0: Compare match in MTU2
+1 1: Compare match in MTU3
+0 0: Compare match in MTU0
+0 1: Compare match in MTU1
+1 0: Compare match in MTU2
+1 1: Compare match in MTU3
+0 0: Compare match in MTU0
+0 1: Compare match in MTU1
+1 0: Compare match in MTU2
+1 1: Compare match in MTU3
+
+ PPG1.PCR
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+G0CMS[1:0]
+
+Group 4 Compare Match Select
+
+ When the PTRSL bit in PPG1.PTRSLR is set to 0.
+
+R/W
+
+b1 b0
+
+0 0: Compare match in MTU0
+0 1: Compare match in MTU1
+1 0: Compare match in MTU2
+1 1: Compare match in MTU3
+ When the PTRSL bit in PPG1.PTRSLR is set to 1.
+b1 b0
+
+0 0: Compare match in TPU0
+0 1: Compare match in TPU1
+1 0: Compare match in TPU2
+1 1: Compare match in TPU3
+b3, b2
+
+G1CMS[1:0]
+
+Group 5 Compare Match Select
+
+ When the PTRSL bit in PPG1.PTRSLR is set to 0.
+
+R/W
+
+b3 b2
+
+0 0: Compare match in MTU0
+0 1: Compare match in MTU1
+1 0: Compare match in MTU2
+1 1: Compare match in MTU3
+ When the PTRSL bit in PPG1.PTRSLR is set to 1.
+b3 b2
+
+0 0: Compare match in TPU0
+0 1: Compare match in TPU1
+1 0: Compare match in TPU2
+1 1: Compare match in TPU3
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1536 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b5, b4
+
+G2CMS[1:0]
+
+Group 6 Compare Match Select
+
+ When the PTRSL bit in PPG1.PTRSLR is set to 0.
+
+R/W
+
+b5 b4
+
+0 0: Compare match in MTU0
+0 1: Compare match in MTU1
+1 0: Compare match in MTU2
+1 1: Compare match in MTU3
+ When the PTRSL bit in PPG1.PTRSLR is set to 1.
+b5 b4
+
+0 0: Compare match in TPU0
+0 1: Compare match in TPU1
+1 0: Compare match in TPU2
+1 1: Compare match in TPU3
+b7, b6
+
+G3CMS[1:0]
+
+Group 7 Compare Match Select
+
+ When the PTRSL bit in PPG1.PTRSLR is set to 0.
+
+R/W
+
+b7 b6
+
+0 0: Compare match in MTU0
+0 1: Compare match in MTU1
+1 0: Compare match in MTU2
+1 1: Compare match in MTU3
+ When the PTRSL bit in PPG1.PTRSLR is set to 1.
+b7 b6
+
+0 0: Compare match in TPU0
+0 1: Compare match in TPU1
+1 0: Compare match in TPU2
+1 1: Compare match in TPU3
+
+PPGn.PCR (n = 0, 1) selects pulse output trigger signals on a group-by-group basis. For details on output trigger
+selection, refer to section 29.2.6, PPG Output Mode Register (PMR).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1537 of 3240
+
+RX72N Group
+
+29.2.6
+
+29. Programmable Pulse Generator (PPG)
+
+PPG Output Mode Register (PMR)
+
+Address(es): PPG0.PMR 0008 81E7h, PPG1.PMR 0008 81F7h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+G3INV G2INV G1INV G0INV G3NOV G2NOV G1NOV G0NOV
+Value after reset:
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+0
+
+ PPG0.PMR
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+G0NOV
+
+Group 0 Non-Overlap
+
+0: Normal operation
+(Output values updated on compare match A in the selected
+MTUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected MTUn)
+(n = 0 to 3)
+
+R/W
+
+b1
+
+G1NOV
+
+Group 1 Non-Overlap
+
+0: Normal operation
+(Output values updated on compare match A in the selected
+MTUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected MTUn)
+(n = 0 to 3)
+
+R/W
+
+b2
+
+G2NOV
+
+Group 2 Non-Overlap
+
+0: Normal operation
+(Output values updated on compare match A in the selected
+MTUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected MTUn)
+(n = 0 to 3)
+
+R/W
+
+b3
+
+G3NOV
+
+Group 3 Non-Overlap
+
+0: Normal operation
+(Output values updated on compare match A in the selected
+MTUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected MTUn)
+(n = 0 to 3)
+
+R/W
+
+b4
+
+G0INV
+
+Group 0 Output Polarity
+Change
+
+0: Inverted output
+1: Direct output
+
+R/W
+
+b5
+
+G1INV
+
+Group 1 Output Polarity
+Change
+
+0: Inverted output
+1: Direct output
+
+R/W
+
+b6
+
+G2INV
+
+Group 2 Output Polarity
+Change
+
+0: Inverted output
+1: Direct output
+
+R/W
+
+b7
+
+G3INV
+
+Group 3 Output Polarity
+Change
+
+0: Inverted output
+1: Direct output
+
+R/W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1538 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+ PPG1.PMR
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+G0NOV
+
+Group 4 Non-Overlap
+
+ When the PPG1.PTRSLR.PTRSL bit is 0
+0: Normal operation
+(Output values updated on compare match A in the selected
+MTUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected MTUn)
+(n = 0 to 3)
+ When the PPG1.PTRSLR.PTRSL bit is 1
+0: Normal operation
+(Output values updated on compare match A in the selected
+TPUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected TPUn)
+(n = 0 to 3)
+
+R/W
+
+b1
+
+G1NOV
+
+Group 5 Non-Overlap
+
+ When the PPG1.PTRSLR.PTRSL bit is 0
+0: Normal operation
+(Output values updated on compare match A in the selected
+MTUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected MTUn)
+(n = 0 to 3)
+ When the PPG1.PTRSLR.PTRSL bit is 1
+0: Normal operation
+(Output values updated on compare match A in the selected
+TPUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected TPUn)
+(n = 0 to 3)
+
+R/W
+
+b2
+
+G2NOV
+
+Group 6 Non-Overlap
+
+ When the PPG1.PTRSLR.PTRSL bit is 0
+0: Normal operation
+(Output values updated on compare match A in the selected
+MTUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected MTUn)
+(n = 0 to 3)
+ When the PPG1.PTRSLR.PTRSL bit is 1
+0: Normal operation
+(Output values updated on compare match A in the selected
+TPUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected TPUn)
+(n = 0 to 3)
+
+R/W
+
+b3
+
+G3NOV
+
+Group 7 Non-Overlap
+
+ When the PPG1.PTRSLR.PTRSL bit is 0
+0: Normal operation
+(Output values updated on compare match A in the selected
+MTUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected MTUn)
+(n = 0 to 3)
+ When the PPG1.PTRSLR.PTRSL bit is 1
+0: Normal operation
+(Output values updated on compare match A in the selected
+TPUn)
+1: Non-overlapping operation
+(Output values updated on compare match A or B in the
+selected TPUn)
+(n = 0 to 3)
+
+R/W
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1539 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b4
+
+G0INV
+
+Group 4 Output Polarity Change
+
+0: Inverted output
+1: Direct output
+
+R/W
+
+b5
+
+G1INV
+
+Group 5 Output Polarity Change
+
+0: Inverted output
+1: Direct output
+
+R/W
+
+b6
+
+G2INV
+
+Group 6 Output Polarity Change
+
+0: Inverted output
+1: Direct output
+
+R/W
+
+b7
+
+G3INV
+
+Group 7 Output Polarity Change
+
+0: Inverted output
+1: Direct output
+
+R/W
+
+PPGn.PMR (n = 0, 1) selects the pulse output mode of the PPG on a group-by-group basis.
+While inverted output is selected, a low-level pulse is output when the values in PPGn.PODRH and PPGn.PODRL are 1,
+and a high-level pulse is output when the values in PPGn.PODRH and PPGn.PODRL are 0.
+In addition, when non-overlapping operation is selected, the PPG updates its output values on compare match A or B in
+an MTU or TPU channel that functions as an output trigger.
+For details, refer to section 29.3.4, Pulse Output in Non-Overlapping Operation.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1540 of 3240
+
+RX72N Group
+
+29.3
+
+29. Programmable Pulse Generator (PPG)
+
+Operation
+
+Figure 29.4 shows a schematic diagram of the PPG.
+PPG pulse output is enabled when the corresponding bits in PPGn.NDERH and PPGn.NDERL (n = 0, 1) are set to 1
+(data transfer is enabled).
+An initial output value is determined by the initial settings in the corresponding PPGn.PODRH and PPGn.PODRL.
+When the compare match event selected in PPGn.PCR occurs, the output values are updated by transfer of the values in
+the corresponding PPGn.NDRH, PPGn.NDRL, PPGn.NDRH2, and PPGn.NDRL2 to PPGn.PODRH and PPGn.PODRL,
+respectively.
+Consecutive output of up to 16 bits of data is possible by writing new output data to PPGn.NDRH, PPGn.NDRL,
+PPGn.NDRH2, and PPGn.NDRL2 before the next compare match.
+
+NDER
+
+Output trigger signal
+
+PODR
+
+NDR
+
+Internal peripheral bus 2
+
+Pulse output pin
+Normal output/inverted output#
+
+Figure 29.4
+
+Schematic Diagram of PPG
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1541 of 3240
+
+RX72N Group
+
+29.3.1
+
+29. Programmable Pulse Generator (PPG)
+
+Output Timing
+
+When the selected compare match event occurs while pulse output is enabled, the values in PPGn.NDRH, PPGn.NDRL,
+PPGn.NDRH2, and PPGn.NDRL2 (n = 0, 1) are transferred to PPGn.PODRH and PPGn.PODRL, respectively, and then
+output on the corresponding pins.
+Figure 29.5 shows the timing of the above operation. In this case, the timing when compare match A triggers normal
+output from groups 2 and 3 is shown.
+
+PCLKB
+
+N
+
+TCNT
+
+TGRA
+
+N+1
+
+N
+
+Compare match A signal
+
+n
+
+NDRH
+
+Figure 29.5
+
+PODRH
+
+m
+
+n
+
+PO8 to PO15
+
+m
+
+n
+
+Timing of Transfer and Output of the Values in NDR (Example)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1542 of 3240
+
+RX72N Group
+
+29.3.2
+
+29. Programmable Pulse Generator (PPG)
+
+Example of Setup Procedure for Pulse Output in Normal Operation
+
+Figure 29.6 and Figure 29.7 show examples of setup procedures for pulse output in normal operation.
+(1) PPG0 Setting
+
+PPG output in normal operation
+
+[1] Use the TIOR register for MTU to set the TGRA register to
+an output compare register (toggle output).
+
+Select TGR functions
+
+[1]
+
+Set TGRA values
+
+[2]
+
+Set counting operations
+
+[3]
+
+MTU setup
+
+[3] Select the counter clock source with the TCR.TPSC[2:0]
+bits. Select the counter clear source with the
+TCR.CCLR[2:0] bits.
+[4] Enable the TGIA interrupt in the TIER register. The DTC or
+DMAC can also be set up to transfer data to the NDR
+register.
+
+Select interrupt source
+
+[4]
+
+Set initial output values
+
+[5]
+
+Enable pulse output
+
+[6]
+
+[6] Set the bits in the NDER register for the pins to be used for
+pulse output to 1.
+
+Select output triggers
+
+[7]
+
+[7] Select the MTU compare match event to be used as the
+output trigger in the PCR register.
+
+Set next pulse output values
+
+[8]
+
+[8] Set the pulse output values in response to the next trigger in
+the NDR register.
+
+Start counter
+
+[9]
+
+[9] Set the TSTR.CST bit to 1 to start the TCNT counter.
+
+PPG0 setup
+
+MTU setup
+
+[2] Set the PPG output trigger period.
+
+Compare match
+
+No
+
+[5] Set the initial values for pulse output in the PODR register.
+
+[10] At each TGIA interrupt, set the pulse output values in
+response to the next trigger in the NDR register.
+
+Yes
+Set next pulse output values
+
+Figure 29.6
+
+[10]
+
+Example of Setup Procedure for Pulse Output in Normal Operation (PPG0 Setting)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1543 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+(2) PPG1 Setting
+
+PPG output in normal operation
+Select TGR functions
+
+[1]
+
+Set TGRA values
+
+[2]
+
+Set counting operations
+
+[3]
+
+MTU and TPU setup
+
+[2] Set the PPG output trigger period.
+
+Select interrupt source
+
+[4]
+
+Set initial output values
+
+[5]
+
+Enable pulse output
+
+[6]
+
+Select output triggers
+
+[7]
+
+Set next pulse output values
+
+[8]
+
+PPG1 setup
+
+MTU and TPU setup
+
+Start counter
+
+Compare match
+
+Set next pulse output values
+
+[3] Select the counter clock source with the
+TCR.TPSC[2:0] bits. Select the counter clear source
+with the TCR.CCLR[2:0] bits.
+[4] Enable the TGIA interrupt in the TIER register.
+The DTC or DMAC can also be set up to transfer
+data to the NDR register.
+[5] Set the initial values for pulse output in the PODR
+register.
+[6] Set the bits in the NDER register for the pins to be
+used for pulse output to 1.
+
+[9]
+
+[7] Select the MTU/TPU compare match event to be
+used as the output trigger in the PTRSLR and PCR
+registers.
+
+No
+
+[8] Set the pulse output values in response to the next
+trigger in the NDR register.
+[9] Set the TSTR.CST bit to 1 to start the TCNT counter.
+
+Yes
+
+Figure 29.7
+
+[1] In the case of MTU, use the TIOR register to set the
+TGRA register to an output compare register (toggle
+output).
+In the case of TPU, use the TIOR register to set the
+TGRA register an output compare register (toggle
+output).
+
+[10]
+
+[10] At each TGIA interrupt, set the pulse output values
+in response to the next trigger in the NDR register.
+
+Example of Setup Procedure for Pulse Output in Normal Operation (PPG1 Setting)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1544 of 3240
+
+RX72N Group
+
+29.3.3
+
+29. Programmable Pulse Generator (PPG)
+
+Example of Pulse Output in Normal Operation (Example of Five-Phase Pulse
+Output)
+
+Figure 29.8 shows an example in which pulse output from the PPG0 is used for cyclic five-phase pulse output.
+
+TCNT value
+
+Compare match
+
+TCNT
+
+TGRA
+
+0000h
+
+Time
+80
+
+NDRH
+
+PODRH
+
+00
+
+C0
+
+80
+
+40
+
+C0
+
+60
+
+40
+
+20
+
+60
+
+30
+
+20
+
+10
+
+30
+
+18
+
+10
+
+08
+
+18
+
+88
+
+08
+
+80
+
+88
+
+C0
+
+80
+
+40
+
+C0
+
+PO15
+
+PO14
+
+PO13
+
+PO12
+
+PO11
+
+Figure 29.8
+
+Example of Pulse Output in Normal Operation (Example of Five-Phase Pulse Output)
+
+1. Set an output compare register of the MTUn.TGRA (n = 0 to 3) so that the corresponding compare match signal is
+the output trigger. Set a cycle in TGRA so that the counter will be cleared by compare match A. Set the
+MTUn.TIER.TGIEA bit to 1 to enable the compare match/input capture A (TGIAn) interrupt.
+2. Write F8h to PPG0.NDERH, and set the G3CMS[1:0] and G2CMS[1:0] bits in PPG0.PCR to select the respective
+compare matches in the MTUn selected in the previous step to be the output triggers. Write output data 80h to
+PPG0.NDRH.
+3. The timer counter in the MTU starts. When compare match A occurs, the values in PPG0.NDRH are transferred to
+PPG0.PODRH and output. The TGIAn interrupt handling routine writes the next output data C0h to PPG0.NDRH.
+4. Five-phase pulse output (one or two phases active at a time) can be obtained subsequently by writing 40h, 60h, 20h,
+30h, 10h, 18h, 08h, 88h... at successive TGIAn interrupts.
+If the DTC or DMAC is set for activation by the TGIAn interrupt, pulse output can be obtained without imposing a
+load on the CPU.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1545 of 3240
+
+RX72N Group
+
+29.3.4
+
+29. Programmable Pulse Generator (PPG)
+
+Pulse Output in Non-Overlapping Operation
+
+During non-overlapping operation, data transfer from PPGn.NDRH, PPGn.NDRL, PPGn.NDRH2, and PPGn.NDRL2
+(n = 0, 1) to PPGn.PODRH and PPGn.PODRL is performed as follows.
+ On compare match A, the values in PPGn.NDRH, PPGn.NDRL, PPGn.NDRH2, and PPGn.NDRL2 are transferred
+to PPGn.PODRH and PPGn.PODRL.
+ On compare match B, data transfer proceeds for bits in PPGn.NDRH, PPGn.NDRL, PPGn.NDRH2, and
+PPGn.NDRL2 that have the value 0. It does not proceed for bits having the value 1.
+Figure 29.9 shows the pulse output in non-overlapping operation.
+
+NDER
+Compare match A
+Compare match B
+
+PODR
+
+Internal peripheral bus 2
+
+NDR
+
+Pulse output pin
+Normal output /inverted output#
+
+Figure 29.9
+
+Pulse Output in Non-Overlapping Operation
+
+Therefore, compare match B before compare match A allows 0-valued data to be transferred in advance of 1-valued data.
+Do not change the values in PPGn.NDRH, PPGn.NDRL, PPGn.NDRH2, and PPGn.NDRL2 during the interval from
+compare match B to compare match A (the non-overlap margin).
+To transfer 0-valued data in advance of 1-valued data, write the next data to PPGn.NDRH, PPGn.NDRL, PPGn.NDRH2,
+and PPGn.NDRL2 from within the TGIA interrupt handling routine or by using a TGIA interrupt to activate transfer by
+the DTC or DMAC. In any case, the next data must be written before the next compare match B occurs.
+Figure 29.10 shows the timing of the above procedure.
+
+Compare match A
+
+Compare match B
+
+Write to NDR
+
+Write to NDR
+
+NDR
+
+PODR
+Low output
+
+Low/High output
+
+Low output
+
+Low/High output
+Write to NDR here
+
+Write to NDR here
+Do not write to
+NDR here
+
+Figure 29.10
+
+Do not write to
+NDR here
+
+Non-Overlapping Operation and Write Timing to PPGn.NDRH, PPGn.NDRL, PPGn.NDRH2, and
+PPGn.NDRL2
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1546 of 3240
+
+RX72N Group
+
+29.3.5
+
+29. Programmable Pulse Generator (PPG)
+
+Example of Setup Procedure for Pulse Output in Non-Overlapping Operation
+
+Figure 29.11 and Figure 29.12 show examples of setup procedure for pulse output in non-overlapping operation.
+(1) PPG0 Setting
+
+Pulse output in
+non-overlapping operation
+Select TGR functions
+
+[1]
+
+Set TGR values
+
+[2]
+
+Set counting operations
+
+[3]
+
+Select interrupt source
+
+[4]
+
+Set initial output values
+
+[5]
+
+Enable pulse output
+
+[6]
+
+MTU setup
+
+PPG0 setup
+
+MTU setup
+
+[2] Set the pulse output trigger period in the TGRB register
+and the non-overlap period in the TGRA register.
+[3] Select the counter clock source with the TCR.TPSC[2:0]
+bits. Select the counter clear source with the
+TCR.CCLR[2:0] bits.
+[4] Enable the TGIA interrupt in the TIER register. The DTC or
+DMAC can also be set up to transfer data to the NDR
+register.
+[5] Set the initial values for pulse output in the PODR register.
+
+Select output triggers
+
+[7]
+
+[6] Set the bits in the NDER register for the pins to be used for
+pulse output to 1.
+
+Set non-overlapping groups
+
+[8]
+
+[7] Select the MTU compare match event to be used as the
+pulse output trigger in the PCR register.
+
+Set next pulse
+output values
+
+[9]
+
+[8] In the PMR register, select the groups that will operate in
+non-overlap mode.
+
+Start counter
+
+[10]
+
+Compare match A?
+
+No
+
+Set next pulse
+output values
+
+[9] Set the pulse output values in response to the next trigger
+in the NDR register.
+[10] Set the TSTR.CST bit in MTU to 1 to start the TCNT
+counter.
+[11] At each TGIA interrupt, set the pulse output values in
+response to the next trigger in the NDR register.
+
+Yes
+
+Figure 29.11
+
+[1] Use the TIOR register for MTU to set the TGRA and TGRB
+registers to output compare registers (toggle output).
+
+[11]
+
+Example of Setup Procedure for Pulse Output in Non-Overlapping Operation (PPG0 Setting)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1547 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+(2) PPG1 Setting
+
+Pulse output in
+non-overlapping operation
+Select TGR functions
+
+[1]
+
+Set TGR values
+
+[2]
+
+Set counting operations
+
+[3]
+
+Select interrupt source
+
+[4]
+
+Set initial output values
+
+[5]
+
+Enable pulse output
+
+[6]
+
+Select output triggers
+
+[7]
+
+Set non-overlapping groups
+
+[8]
+
+Set next pulse
+output values
+
+[9]
+
+Start counter
+
+[10]
+
+MTU and TPU setup
+
+PPG1 setup
+
+MTU and TPU setup
+
+[1] In the case of MTU, use the TIOR register to set the
+TGRA and TGRB registers to output compare
+registers (toggle output).
+In the case of TPU, use the TIOR register to set the
+TGRA and TGRB registers to output compare
+registers (toggle output).
+[2] Set the pulse output trigger period in the TGRB
+register and the non-overlap period in the TGRA
+register.
+[3] Select the counter clock source with the
+TCR.TPSC[2:0] bits.
+Select the counter clear source with the
+TCR.CCLR[2:0] bits.
+[4] Enable the TGIA interrupt in the TIER register. The
+DTC or DMAC can also be set up to transfer data to
+the NDR register.
+[5] Set the initial values for pulse output in the PODR
+register.
+[6] Set the bits in the NDER register for the pins to be
+used for pulse output to 1.
+[7] Select the MTU/TPU compare match event to be
+used as the pulse output trigger in the PTRSLR and
+PCR registers.
+[8] In the PMR register, select the groups that will
+operate in non-overlap mode.
+
+Compare match A?
+
+No
+
+[9] Set the pulse output values in response to the next
+trigger in the NDR register.
+
+Yes
+Set next pulse
+output values
+
+Figure 29.12
+
+[10] Set the TSTR.CST bit to 1 to start the TCNT counter.
+[11]
+[11] At each TGIA interrupt, set the pulse output values
+in response to the next trigger in the NDR register.
+
+Example of Setup Procedure for Pulse Output in Non-Overlapping Operation (PPG1 Setting)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1548 of 3240
+
+RX72N Group
+
+29.3.6
+
+29. Programmable Pulse Generator (PPG)
+
+Example of Pulse Output in Non-Overlapping Operation (Example of FourPhase Complementary Non-Overlapping Output)
+
+Figure 29.13 shows an example in which pulse output from the PPG0 is used for four-phase complementary nonoverlapping pulse output.
+
+TCNT value
+TGRB
+
+TCNT
+
+TGRA
+0000h
+
+Time
+
+NDRH
+
+95
+
+PODRH
+
+00
+
+65
+
+95
+
+59
+
+05
+
+65
+
+56
+
+41
+
+59
+
+95
+
+50
+
+56
+
+65
+
+14
+
+95
+
+05
+
+65
+
+Non-overlap margin
+
+PO15
+
+PO14
+
+PO13
+
+PO12
+
+PO11
+
+PO10
+
+PO9
+
+PO8
+
+Figure 29.13
+
+Example of Pulse Output in Non-Overlapping Operation (Four-Phase Complementary NonOverlapping Output)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1549 of 3240
+
+RX72N Group
+
+29. Programmable Pulse Generator (PPG)
+
+1. Set output compare registers of the MTUn.TGRA and MTUn.TGRB (n = 0 to 3) so that the corresponding compare
+match signals are the output triggers. Set the trigger period in TGRB and the non-overlap margin in TGRA, and set
+the counter to be cleared by compare match B. Set the MTUn.TIER.TGIEA bit to 1 to enable the compare match/
+input capture A (TGIAn) interrupt.
+2. Write FFh in the PPG0.NDERH register, and set the G3CMS[1:0] and G2CMS[1:0] bits in PPG0.PCR to select the
+respective compare matches in the MTUn selected in the previous step to be the output triggers.
+Set the G3NOV and G2NOV bits in PPG0.PMR to 1 to select non-overlapping outputs. Write output data 95h in the
+PPG0.NDRH register.
+3. The timer counter in the MTU starts. When a compare match with TGRB occurs, outputs change from high to low.
+When a compare match with TGRA occurs, outputs change from low to high (the change from low to high is
+delayed by the value set in TGRA).
+The TGIAn interrupt handling routine writes the next output data 65h in the PPG0.NDRH register.
+4. Four-phase complementary non-overlapping pulse output can be obtained subsequently by writing 59h, 56h, 95h...
+at successive TGIAn interrupts.
+If the DTC or DMAC is set for activation by the TGIAn interrupt, pulse output can be obtained without imposing a
+load on the CPU.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1550 of 3240
+
+RX72N Group
+
+29.3.7
+
+29. Programmable Pulse Generator (PPG)
+
+Inverted Pulse Output
+
+When the G3INV, G2INV, G1INV, and G0INV bits in PPG0.PMR are cleared to 0, the values that are the inverse of the
+respective values in PPG0.PODRH and PPG0.PODRL can be output.
+Figure 29.14 shows the outputs when the G3INV and G2INV bits are cleared to 0 in addition to the settings in Figure
+29.13.
+
+TCNT value
+TGRB
+TCNT
+TGRA
+0000h
+
+Time
+
+NDRH
+
+95
+
+PODRL
+
+00
+
+65
+
+95
+
+59
+
+05
+
+65
+
+56
+
+41
+
+59
+
+95
+
+50
+
+56
+
+65
+
+14
+
+95
+
+05
+
+65
+
+PO15
+
+PO14
+
+PO13
+
+PO12
+
+PO11
+
+PO10
+
+PO9
+
+PO8
+
+Figure 29.14
+
+Inverted Pulse Output (Example)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1551 of 3240
+
+RX72N Group
+
+29.3.8
+
+29. Programmable Pulse Generator (PPG)
+
+Pulse Output Triggered by Input Capture
+
+Pulse output from the PPG0 can be triggered by the MTU input capture as well as by compare match. When
+MTUn.TGRA (n = 0 to 3) functions as an input capture register selected by PPG0.PCR, pulse output is triggered by the
+input capture signal.
+Figure 29.15 shows the timing of pulse output triggered by input capture.
+
+PCLKB
+
+MTIOC pin
+
+Input capture signal
+
+NDR
+
+N
+
+PODR
+
+M
+
+PO
+
+M
+
+Figure 29.15
+
+29.4
+29.4.1
+
+N
+
+N
+
+Timing of Pulse Output Triggered by Input Capture (Example)
+
+Usage Note
+Module-Stop Function Setting
+
+Operation of the PPG can be disabled or enabled by the module stop control register. The initial setting is for operation of
+the PPG to be stopped. Register access is enabled by clearing module-stop state. For details, refer to section 11, Low
+Power Consumption.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 1552 of 3240
+
+

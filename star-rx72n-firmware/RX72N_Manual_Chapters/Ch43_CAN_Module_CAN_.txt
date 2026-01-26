@@ -1,0 +1,7423 @@
+RX72N Group
+
+43. CAN Module (CAN)
+
+43.
+
+CAN Module (CAN)
+
+43.1
+
+Overview
+
+This MCU implements three channels of the CAN (Controller Area Network) module that complies with the ISO 118981 Standards. The CAN module transmits and receives both formats of messages, namely the standard identifier (11 bits)
+(identifier is hereafter referred to as ID) and extended ID (29 bits).
+Table 43.1 lists the specifications of the CAN module, and Figure 43.1 shows a block diagram of the CAN module (i =
+0 to 2).
+Connect the CAN bus transceiver externally.
+Table 43.1
+
+Specifications of CAN Module
+
+Item
+
+Description
+
+Protocol
+
+ ISO 11898-1 compliant (standard and extended frames)
+
+Bit rate
+
+ Programmable bit rate up to 1 Mbps (fCAN ≥ 8 MHz)
+
+Message box
+
+ 32 mailboxes: Two selectable mailbox modes
+Normal mailbox mode: 32 mailboxes can be configured for either transmission or reception.
+FIFO mailbox mode: 24 mailboxes can be configured for either transmission or reception.
+Of the other mailboxes, four FIFO stages can be configured for transmission and four FIFO stages for
+reception.
+
+Reception
+
+ Data frame and remote frame can be received.
+ Selectable receiving ID format (only standard ID, only extended ID, or both IDs)
+ Programmable one-shot reception function
+ Selectable from overwrite mode (message overwritten) and overrun mode (message discarded)
+ The reception complete interrupt can be individually enabled or disabled for each mailbox.
+
+Acceptance filter
+
+ Eight acceptance masks (one mask for every four mailboxes)
+ The mask can be individually enabled or disabled for each mailbox.
+
+Transmission
+
+ Data frame and remote frame can be transmitted.
+ Selectable transmitting ID format (only standard ID, only extended ID, or both IDs)
+ Programmable one-shot transmission function
+ Selectable from ID priority mode and mailbox number priority mode
+ Transmission request can be aborted (the completion of abort can be confirmed with a flag)
+ The transmission complete interrupt can be individually enabled or disabled for each mailbox.
+
+Mode transition for bus-off
+recovery
+
+ Mode transition for the recovery from the bus-off state can be selected:
+ISO 11898-1 Standards compliant
+Automatic entry to CAN halt mode at bus-off entry
+Automatic entry to CAN halt mode at bus-off end
+Entry to CAN halt mode by a program
+Transition into error-active state by a program
+
+Error status monitoring
+
+ CAN bus errors (stuff error, form error, ACK error, CRC error, bit error, and ACK delimiter error) can be
+monitored.
+ Transition to error states can be detected (error-warning, error-passive, bus-off entry, and bus-off recovery).
+ The error counters can be read.
+
+Time stamp function
+
+ Time stamp function using a 16-bit counter
+ The reference clock can be selected from 1-, 2-, 4- and 8-bit time periods.
+
+Interrupt function
+
+ Five types of interrupt sources (reception complete, transmission complete, receive FIFO, transmit FIFO, and
+error interrupts)
+
+CAN sleep mode
+
+ Current consumption can be reduced by stopping the CAN clock.
+
+Software support unit
+
+ Three software support units:
+Acceptance filter support
+Mailbox search support (receive mailbox search, transmit mailbox search, and message lost search)
+Channel search support
+
+CAN clock source
+
+Peripheral module clock (PCLKB) or CANMCLK
+
+Test mode
+
+ Three test modes available for user evaluation
+Listen-only mode
+Self-test mode 0 (external loopback)
+Self-test mode 1 (internal loopback)
+
+Power consumption reducing
+function
+
+Module-stop state can be set.
+
+fCAN: CAN clock source
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2294 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+Internal peripheral bus
+
+CAN-related register
+
+CRXi
+Protocol
+controller
+CTXi
+fCANCLK
+Baud rate
+prescaler
+(BRP)
+
+Acceptance
+filter
+ID priority
+transmission
+controller
+
+Message box
+
+Timer
+
+Peripheral module clock
+(PCLKB)
+CCLKS
+
+EXTAL
+
+fCAN
+
+CANMCLK
+
+BRP:
+Bit in the BCR register
+CCLKS: Bit in the BCR register
+fCANCLK: CAN communication clock
+fCAN:
+CAN system clock
+
+Figure 43.1
+
+CANi reception complete interrupt
+CANi transmission complete interrupt
+Interrupt
+generator
+
+CANi receive FIFO interrupt
+CANi transmit FIFO interrupt
+CANi error interrupt
+
+Block Diagram of CAN Module (i = 0 to 2)
+
+ CRXi and CTXi (i = 0 to 2)
+CAN input and output pins
+ Protocol controller
+Handles CAN protocol processing such as bus arbitration, bit timing at transmission and reception, stuffing, and
+error handling, etc.
+ Message box
+Consists of 32 mailboxes which can be configured as either transmit or receive mailboxes. Each mailbox has an
+individual ID, data length code, a data field (8 bytes), and a time stamp.
+ Acceptance filter
+Performs filtering of received messages. MKR0 to MKR7 are used for the filtering process.
+ Timer
+Used for the time stamp function. The timer value when a message is stored into the mailbox is written as the time
+stamp value.
+ Interrupt generator:
+Generates the following five types of interrupts:
+CANi reception complete interrupt
+CANi transmission complete interrupt
+CANi receive FIFO interrupt
+CANi transmit FIFO interrupt
+CANi error interrupt
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2295 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+Table 43.2 lists the CAN module pins.
+The CAN functions should be selected for the pins multiplexed with other signals. For details, see section 22, I/O
+Ports.
+Table 43.2
+
+Pin Configuration
+
+Pin Name
+
+I/O
+
+Function
+
+CRX0
+
+Input
+
+Pin for receiving data
+
+CTX0
+
+Output
+
+Pin for transmitting data
+
+CRX1
+
+Input
+
+Pin for receiving data
+
+CTX1
+
+Output
+
+Pin for transmitting data
+
+CRX2
+
+Input
+
+Pin for receiving data
+
+CTX2
+
+Output
+
+Pin for transmitting data
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2296 of 3240
+
+RX72N Group
+
+43.2
+
+43. CAN Module (CAN)
+
+Register Descriptions
+
+43.2.1
+
+Control Register (CTLR)
+
+Address(es): CAN0.CTLR 0009 0840h, CAN1.CTLR 0009 1840h, CAN2.CTLR 0009 2840h
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+—
+
+—
+
+RBOC
+
+BOM[1:0]
+
+SLPM
+
+CANM[1:0]
+
+TSPS[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+b8
+
+1
+
+b7
+
+b6
+
+0
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+TSRC
+
+TPM
+
+MLM
+
+IDFM[1:0]
+
+MBM
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+b0
+
+MBM
+
+CAN Mailbox Mode Select 0: Normal mailbox mode
+*1
+1: FIFO mailbox mode
+
+R/W
+
+b2, b1
+
+IDFM[1:0]
+
+ID Format Mode Select*1
+
+b2 b1
+
+R/W
+
+b3
+
+MLM
+
+Message Lost Mode
+Select*2
+
+0: Overwrite mode
+1: Overrun mode
+
+R/W
+
+b4
+
+TPM
+
+Transmission Priority
+Mode Select*2
+
+0: ID priority transmit mode
+1: Mailbox number priority transmit mode
+
+R/W
+
+b5
+
+TSRC
+
+Time Stamp Counter
+Reset Command*4
+
+0: Nothing occurred
+1: Reset*3
+
+R/W
+
+b7, b6
+
+TSPS[1:0]
+
+Time Stamp Prescaler
+Select*1
+
+b7 b6
+
+R/W
+
+b9, b8
+
+CANM[1:0]
+
+CAN Operating Mode
+Select*5
+
+b9 b8
+
+R/W
+
+b10
+
+SLPM
+
+CAN Sleep Mode*5, *6
+
+0: Other than CAN sleep mode
+1: CAN sleep mode
+
+R/W
+
+b12, b11
+
+BOM[1:0]
+
+Bus-Off Recovery Mode
+*1
+
+b12 b11
+
+R/W
+
+b13
+
+RBOC
+
+Forcible Return From
+Bus-Off*2
+
+0: Nothing occurred
+1: Forcible return from bus-off*3
+
+R/W
+
+b15, b14
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note 1.
+Note 2.
+Note 3.
+Note 4.
+Note 5.
+
+Description
+
+0
+
+R/W
+
+0 0: Standard ID mode
+All mailboxes (including FIFO mailboxes) handle only standard
+Ids.
+0 1: Extended ID mode
+All mailboxes (including FIFO mailboxes) handle only extended
+IDs.
+1 0: Mixed ID mode
+All mailboxes (including FIFO mailboxes) handle both standard
+IDs and extended IDs. Standard IDs or extended IDs are
+specified by using the IDE bit in the corresponding mailbox in
+normal mailbox mode. In FIFO mailbox mode, the IDE bit in the
+corresponding mailbox is used for mailboxes [0] to [23], the IDE
+bits in FIDCR0 and FIDCR1 are used for the receive FIFO, and
+the IDE bit in mailbox [24] is used for the transmit FIFO.
+1 1: Do not use this combination
+
+0 0: Every bit time
+0 1: Every 2-bit time
+1 0: Every 4-bit time
+1 1: Every 8-bit time
+0 0: CAN operation mode
+0 1: CAN reset mode
+1 0: CAN halt mode
+1 1: CAN reset mode (forcible transition)
+
+0 0: Normal mode (ISO 11898-1 compliant)
+0 1: Entry to CAN halt mode automatically at bus-off entry
+1 0: Entry to CAN halt mode automatically at bus-off end
+1 1: Entry to CAN halt mode (during bus-off recovery period)
+by a program request
+
+Write to the BOM[1:0], TSPS[1:0], TPM, MLM, IDFM[1:0], and MBM bits in CAN reset mode.
+Set the RBOC bit to 1 in the bus-off state.
+This bit is automatically set back to 0 after being set to 1. It should be read as 0.
+Set the TSRC bit to 1 in CAN operation mode.
+When the CANM[1:0] and SLPM bits are changed, check STR to ensure that the mode has been switched. Do not change the
+CANM[1:0] bits or SLPM bit until the mode has been switched.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2297 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+Note 6. Write to the SLPM bit in CAN reset mode or CAN halt mode. When changing the SLPM bit, write 0 or 1 to only the SLPM bit.
+
+MBM Bit (CAN Mailbox Mode Select)
+When the MBM bit is 0 (normal mailbox mode), mailboxes [0] to [31] are configured as transmit or receive mailboxes.
+When the MBM bit is 1 (FIFO mailbox mode), mailboxes [0] to [23] are configured as transmit or receive mailboxes.
+Mailboxes [24] to [27] are configured as a transmit FIFO and mailboxes [28] to [31] as a receive FIFO.
+Transmit data is written into mailbox [24] (mailbox [24] is a window mailbox for the transmit FIFO). Receive data is
+read from mailbox [28] (mailbox [28] is a window mailbox for the receive FIFO).
+Table 43.3 lists the mailbox configuration.
+IDFM[1:0] Bits (ID Format Mode Select)
+The IDFM[1:0] bits specify the ID format.
+MLM Bit (Message Lost Mode Select)
+The MLM bit specifies the operation when a new message is captured in the unread mailbox. Overwrite mode or overrun
+mode can be selected. All mailboxes (including the receive FIFO) are set to either overwrite mode or overrun mode.
+When the MLM bit is 0, all mailboxes are set to overwrite mode and the new message is overwriting the old message.
+When the MLM bit is 1, all mailboxes are set to overrun mode and the new message is discarded.
+TPM Bit (Transmission Priority Mode Select)
+The TPM bit specifies the priority of modes when transmitting messages.
+ID priority transmit mode or mailbox number transmit mode can be selected. All mailboxes are set for either ID priority
+transmission or mailbox number priority transmission.
+When the TPM bit is 0, ID priority transmit mode is selected and transmission priority complies with the CAN bus
+arbitration rule, as defined in the ISO 11898-1 Standards. In ID priority transmit mode, mailboxes [0] to [31] (in normal
+mailbox mode), and mailboxes [0] to [23] (in FIFO mailbox mode), and the transmit FIFO are compared for the IDs of
+mailboxes configured for transmission. If two or more mailbox IDs are the same, the mailbox with the smaller number
+has higher priority.
+Only the next message to be transmitted from the transmit FIFO is included in the transmission arbitration. If a transmit
+FIFO message is being transmitted, the next pending message within the transmit FIFO is included in the transmission
+arbitration.
+When the TPM bit is 1, mailbox number transmit mode is selected and the transmit mailbox with the smallest mailbox
+number has the highest priority. In FIFO mailbox mode, the transmit FIFO has lower priority than normal mailboxes
+(mailboxes [0] to [23]).
+TSRC Bit (Time Stamp Counter Reset Command)
+The TSRC bit is used to reset the time stamp counter. When the TSRC bit is set to 1, TSR is set to 0000h. This bit is
+automatically set to 0.
+TSPS[1:0] Bits (Time Stamp Prescaler Select)
+The TSPS[1:0] bits select the prescaler for the time stamp. The reference clock for the time stamp can be selected to be
+either 1-, 2-, 4- or 8-bit time periods.
+CANM[1:0] Bits (CAN Operating Mode Select)
+The CANM[1:0] bits select one of the following modes for the CAN module: CAN operation mode, CAN reset mode, or
+CAN halt mode. CAN sleep mode is set by the SLPM bit. For details, refer to section 43.3, Operating Mode.
+When the CAN module enters CAN halt mode according to the setting of the BOM[1:0] bits, the CANM[1:0] bits are
+automatically set to 10b.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2298 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+SLPM Bit (CAN Sleep Mode)
+When the SLPM bit is set to 1, the CAN module enters CAN sleep mode. When the SLPM bit is set to 0, the CAN
+module exits CAN sleep mode. For details, refer to section 43.3, Operating Mode.
+BOM[1:0] Bits (Bus-Off Recovery Mode)
+The BOM[1:0] bits are used to select bus-off recovery mode for the CAN module.
+When the BOM[1:0] bits are 00b, the recovery from bus-off is compliant with the ISO 11898-1 Standards, i.e. the CAN
+module reenters CAN communication (error-active state) after detecting 11 consecutive recessive bits 128 times. A busoff recovery interrupt request is generated when recovering from bus-off.
+When the BOM[1:0] bits are 01b and the CAN module reaches the bus-off state, the CANM[1:0] bits in CTLR are set to
+10b (CAN halt mode) to enter CAN halt mode. No bus-off recovery interrupt request is generated when recovering from
+bus-off, and TECR and RECR are set to 00h.
+When the BOM[1:0] bits are 10b, the CANM[1:0] bits are set to 10b as soon as the CAN module reaches the bus-off
+state. The CAN module enters CAN halt mode after the recovery from the bus-off state, i.e. after detecting 11
+consecutive recessive bits 128 times. A bus-off recovery interrupt request is generated when recovering from bus-off,
+and TECR and RECR are set to 00h.
+When the BOM[1:0] bits are 11b, the CAN module enters CAN halt mode by setting the CANM[1:0] bits to 10b while
+the CAN module is still in the bus-off state. No bus-off recovery interrupt request is generated when recovering from
+bus-off and TECR and RECR are set to 00h. However, if the CAN module recovers from bus-off after detecting 11
+consecutive recessive bits 128 times before the CANM[1:0] bits are set to 10b, a bus-off recovery interrupt request is
+generated.
+If the CPU requests an entry to CAN reset mode at the same time as the CAN module attempts to enter CAN halt mode
+(at bus-off entry when the BOM[1:0] bits are 01b, or at bus-off end when the BOM[1:0] bits are 10b), then the CPU
+request to enter CAN reset mode has higher priority.
+RBOC Bit (Forcible Return From Bus-Off)
+When the RBOC bit is set to 1 (force return from bus-off) in the bus-off state, the CAN module forcibly returns from the
+bus-off state. This bit is automatically set to 0. The error state changes from bus-off to error-active. When the RBOC bit
+is set to 1, RECR and TECR are set to 00h and the BOST bit in STR is set to 0 (the CAN module is not in bus-off state).
+The other registers remain unchanged even when the RBOC bit is set to 1. No bus-off recovery interrupt request is
+generated by this recovery from the bus-off state. Use the RBOC bit only when the BOM[1:0] bits are 00b (normal
+mode).
+Table 43.3
+
+Mailbox Configuration
+
+Mailbox
+
+MBM Bit = 0
+(Normal Mailbox Mode)
+
+MBM Bit = 1
+(FIFO Mailbox Mode)
+
+Mailboxes [0] to [23]
+
+Normal mailbox
+
+Normal mailbox
+
+Mailboxes [24] to [27]
+
+Transmit FIFO
+
+Mailboxes [28] to [31]
+
+Receive FIFO
+
+Points 1 to 5 below should be considered when the CTLR.MBM bit is set to 1.
+Note 1. Transmit FIFO is controlled by TFCR. MCTLj of mailboxes [24] to [27] is disabled.
+MCTL24 to MCTL27 cannot be used by the transmit FIFO.
+Note 2. Receive FIFO is controlled by RFCR. MCTLj of mailboxes [28] to [31] is disabled.
+MCTL28 to MCTL31 cannot be used by the receive FIFO.
+Note 3. Refer to MIER about the FIFO interrupts.
+Note 4. The corresponding bits in MKIVLR for mailboxes [24] to [31] are disabled. Set 0 to these bits.
+Note 5. Transmit/receive FIFOs can be used for both data frames and remote frames.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2299 of 3240
+
+RX72N Group
+
+43.2.2
+
+43. CAN Module (CAN)
+
+Bit Configuration Register (BCR)
+
+Address(es): CAN0.BCR 0009 0844h, CAN1.BCR 0009 1844h, CAN2.BCR 0009 2844h
+b31
+
+b30
+
+b29
+
+b28
+
+TSEG1[3:0]
+
+b27
+
+b26
+
+—
+
+—
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+BRP[9:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+SJW[1:0]
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+CCLKS
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Value after reset:
+
+0
+
+TSEG2[2:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+CCLKS
+
+CAN Clock Source
+Selection
+
+0: PCLKB (generated by the PLL clock)
+1: CANMCLK (generated by the main clock)
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b10 to b8
+
+TSEG2[2:0]
+
+Time Segment 2 Control
+
+b10
+
+R/W
+
+b11
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b13, b12
+
+SJW[1:0]
+
+Resynchronization Jump
+Width Control
+
+b13 b12
+
+R/W
+
+b15, b14
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b25 to b16
+
+BRP[9:0]
+
+Prescaler Division Ratio
+Select*1
+
+These bits set the frequency of the CAN communication clock
+(fCANCLK).
+
+R/W
+
+b26
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b27
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b31 to b28
+
+TSEG1[3:0]
+
+Time Segment 1 Control
+
+b31
+
+R/W
+
+b8
+
+0 0 0: Setting prohibited
+0 0 1: 2 Tq
+0 1 0: 3 Tq
+0 1 1: 4 Tq
+1 0 0: 5 Tq
+1 0 1: 6 Tq
+1 1 0: 7 Tq
+1 1 1: 8 Tq
+
+0 0: 1 Tq
+0 1: 2 Tq
+1 0: 3 Tq
+1 1: 4 Tq
+
+b28
+
+0 0 0 0: Setting prohibited
+0 0 0 1: Setting prohibited
+0 0 1 0: Setting prohibited
+0 0 1 1: 4 Tq
+0 1 0 0: 5 Tq
+0 1 0 1: 6 Tq
+0 1 1 0: 7 Tq
+0 1 1 1: 8 Tq
+1 0 0 0: 9 Tq
+1 0 0 1: 10 Tq
+1 0 1 0: 11 Tq
+1 0 1 1: 12 Tq
+1 1 0 0: 13 Tq
+1 1 0 1: 14 Tq
+1 1 1 0: 15 Tq
+1 1 1 1: 16 Tq
+
+Tq: Time Quantum
+Note 1. Do not select the value less than 1 while the SCKCR3.CKSEL[2:0] bits are 010b (selecting the main clock oscillator).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2300 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+For bit timing setting, refer to section 43.4, CAN Communication Speed Setting.
+Set BCR before entering CAN halt mode or CAN operation mode from CAN reset mode. After the setting is made once,
+this register can be written to in CAN reset mode or CAN halt mode.
+BCR consists of 24 bits. A 32-bit read/write access should be performed carefully not to rewrite bits b0 to b7.
+CCLKS Bit (CAN Clock Source Selection)
+When the CCLKS bit is 0, the peripheral module clock (PCLKB) produced by the PLL frequency synthesizer is used as
+the CAN clock source (fCAN).
+When the CCLKS bit is 1, CANMCLK produced externally by the EXTAL pins is used as the CAN clock source
+(fCAN).
+TSEG2[2:0] Bits (Time Segment 2 Control)
+The TSEG2[2:0] bits are used to specify the length of the phase buffer segment 2 (PHASE_SEG2) with a Tq value. A
+value from 2 to 8 Tq can be set. Set a value smaller than that of the TSEG1[3:0] bits.
+SJW[1:0] Bits (Resynchronization Jump Width Control)
+The SJW[1:0] bits are used to specify the resynchronization jump width with a Tq value. A value from 1 to 4 Tq can be
+set. Set a value smaller than or equal to that of the TSEG2[2:0] bits.
+BRP[9:0] Bits (Prescaler Division Ratio Select)
+The BRP[9:0] bits are used to set the frequency of the CAN communication clock (fCANCLK). The fCANCLK cycle is
+1 Tq. If the setting is P (0 to 1023), the baud rate prescaler divides fCAN by P + 1.
+TSEG1[3:0] Bits (Time Segment 1 Control)
+The TSEG1[3:0] bits are used to specify the total length of the propagation time segment (PROP_SEG) and phase buffer
+segment 1 (PHASE_SEG1) with a time quantum (Tq) value.
+A value from 4 to 16 Tq can be set.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2301 of 3240
+
+RX72N Group
+
+43.2.3
+
+43. CAN Module (CAN)
+
+Mask Register k (MKRk) (k = 0 to 7)
+
+Address(es): CAN0.MKR0 0009 0400h, CAN0.MKR1 0009 0404h, CAN0.MKR2 0009 0408h, CAN0.MKR3 0009 040Ch,
+CAN0.MKR4 0009 0410h, CAN0.MKR5 0009 0414h, CAN0.MKR6 0009 0418h, CAN0.MKR7 0009 041Ch,
+CAN1.MKR0 0009 1400h, CAN1.MKR1 0009 1404h, CAN1.MKR2 0009 1408h, CAN1.MKR3 0009 140Ch,
+CAN1.MKR4 0009 1410h, CAN1.MKR5 0009 1414h, CAN1.MKR6 0009 1418h, CAN1.MKR7 0009 141Ch,
+CAN2.MKR0 0009 2400h, CAN2.MKR1 0009 2404h, CAN2.MKR2 0009 2408h, CAN2.MKR3 0009 240Ch,
+CAN2.MKR4 0009 2410h, CAN2.MKR5 0009 2414h, CAN2.MKR6 0009 2418h, CAN2.MKR7 0009 241Ch
+b31
+
+b30
+
+b29
+
+—
+
+—
+
+—
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+Value after reset:
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+SID[10:0]
+
+b17
+
+b16
+
+EID[17:0]
+
+EID[17:0]
+x
+
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b17 to b0
+
+EID[17:0]
+
+Extended ID
+
+0: Corresponding EID[17:0] bit is not compared
+1: Corresponding EID[17:0] bit is compared
+
+R/W
+
+b28 to b18
+
+SID[10:0]
+
+Standard ID
+
+0: Corresponding SID[10:0] bit is not compared
+1: Corresponding SID[10:0] bit is compared
+
+R/W
+
+b31 to b29
+
+—
+
+Reserved
+
+The read value is undefined. The write value should be 0.
+
+R/W
+
+For the mask function in FIFO mailbox mode, refer to section 43.6, Acceptance Filtering and Masking Functions.
+Write to MKR0 to MKR7 in CAN reset mode or CAN halt mode.
+EID[17:0] Bits (Extended ID)
+The EID[17:0] bits are the filter mask bits for the CAN extended ID bits.
+These bits are used to receive extended ID messages.
+When the EID[17:0] bit is set to 0, the received ID is not compared with the mailbox ID for the corresponding EID[17:0]
+bit.
+When the EID[17:0] bit is set to 1, the received ID is compared with the mailbox ID for the corresponding EID[17:0] bit.
+SID[10:0] Bits (Standard ID)
+The SID[10:0] bits are the filter mask bits corresponding to the CAN standard ID bits.
+These bits are used to receive both standard ID and extended ID messages.
+When the SID[10:0] bit is set to 0, the received ID is not compared with the mailbox ID for the corresponding SID[10:0]
+bit.
+When the SID[10:0] bit is set to 1, the received ID is compared with the mailbox ID for the corresponding SID[10:0] bit.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2302 of 3240
+
+RX72N Group
+
+43.2.4
+
+43. CAN Module (CAN)
+
+FIFO Received ID Compare Registers 0 and 1 (FIDCR0 and FIDCR1)
+
+Address(es): CAN0.FIDCR0 0009 0420h, CAN0.FIDCR1 0009 0424h, CAN1.FIDCR0 0009 1420h, CAN1.FIDCR1 0009 1424h,
+CAN2.FIDCR0 0009 2420h, CAN2.FIDCR1 0009 2424h
+b31
+
+b30
+
+b29
+
+IDE
+
+RTR
+
+—
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+Value after reset:
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+SID[10:0]
+
+b17
+
+b16
+
+EID[17:0]
+
+EID[17:0]
+x
+
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b17 to b0
+
+EID[17:0]
+
+Extended ID
+
+0: Corresponding EID[17:0] bits are 0
+1: Corresponding EID[17:0] bits are 1
+
+R/W
+
+b28 to b18
+
+SID[10:0]
+
+Standard ID
+
+0: Corresponding SID[10:0] bits are 0
+1: Corresponding SID[10:0] bits are 1
+
+R/W
+
+b29
+
+—
+
+Reserved
+
+The read value is undefined. The write value should be 0.
+
+R/W
+
+b30
+
+RTR
+
+Remote Transmission
+Request
+
+0: Data frame
+1: Remote frame
+
+R/W
+
+b31
+
+IDE
+
+ID Extension*1
+
+0: Standard ID
+1: Extended ID
+
+R/W
+
+Note 1. When the IDFM[1:0] bits are not 10b, the IDE bit should be written with 0 and read as 0.
+
+FIDCR0 and FIDCR1 are enabled when the MBM bit in CTLR is set to 1 (FIFO mailbox mode). Bits EID[17:0],
+SID[10:0], RTR, and IDE in MB28 to MB31 are disabled.
+For the usage of FIDCR0 and FIDCR1, refer to section 43.6, Acceptance Filtering and Masking Functions.
+Write to FIDCR0 and FIDCR1 in CAN reset mode or CAN halt mode.
+EID[17:0] Bits (Extended ID)
+The EID[17:0] bits set the extended ID of data frames and remote frames.
+These bits are used to receive extended ID messages.
+SID[10:0] Bits (Standard ID)
+The SID[10:0] bits set the standard ID of data frames and remote frames.
+These bits are used to receive both standard ID and extended ID messages.
+RTR Bit (Remote Transmission Request)
+The RTR bit sets the specified frame format of data frames or remote frames.
+ When both RTR bits in FIDCR0 and FIDCR1 are set to 0, only data frames can be received.
+ When both RTR bits in FIDCR0 and FIDCR1 are set to 1, only remote frames can be received.
+ When the RTR bits in FIDCR0 and FIDCR1 are set to 0 or 1 individually, both data frames and remote frames can
+be received.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2303 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+IDE Bit (ID Extension)
+The IDE bit sets the ID format to standard ID or extended ID. The IDE bit is enabled when the IDFM[1:0] bits in CTLR
+are 10b (mixed ID mode).
+ When both IDE bits in FIDCR0 and FIDCR1 are set to 0, only standard ID frames can be received.
+ When both IDE bits in FIDCR0 and FIDCR1 are set to 1, only extended ID frames can be received.
+ When the IDE bits in FIDCR0 and FIDCR1 are set to 0 or 1 individually, both standard ID and extended ID frames
+can be received.
+
+43.2.5
+
+Mask Invalid Register (MKIVLR)
+
+Address(es): CAN0.MKIVLR 0009 0428h, CAN1.MKIVLR 0009 1428h, CAN2.MKIVLR 0009 2428h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+MB31
+
+MB30
+
+MB29
+
+MB28
+
+MB27
+
+MB26
+
+MB25
+
+MB24
+
+MB23
+
+MB22
+
+MB21
+
+MB20
+
+MB19
+
+MB18
+
+MB17
+
+MB16
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+MB15
+
+MB14
+
+MB13
+
+MB12
+
+MB11
+
+MB10
+
+MB9
+
+MB8
+
+MB7
+
+MB6
+
+MB5
+
+MB4
+
+MB3
+
+MB2
+
+MB1
+
+MB0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b31 to b0
+
+MB31 to MB0
+
+Mask Invalid
+
+0: Mask valid
+1: Mask invalid
+
+R/W
+
+Each bit in MKIVLR corresponds to a mailbox.
+The correspondence between the bits and mailboxes is shown below.
+Bit 0 in MKIVLR corresponds to mailbox 0 (MB0) and bit 31 corresponds to mailbox 31 (MB31).*1
+When a bit is set to 1, the relevant acceptance mask register becomes invalid for the corresponding mailbox. When a
+mask invalid bit is set to 1, a message is received by the corresponding mailbox only if the receive message ID matches
+the mailbox ID exactly.
+Write to MKIVLR in CAN reset mode or CAN halt mode.
+Note 1. Set bits 31 to 24 to 0 in FIFO mailbox mode.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2304 of 3240
+
+RX72N Group
+
+43.2.6
+
+43. CAN Module (CAN)
+
+Mailbox Register j (MBj) (j = 0 to 31)
+
+Table 43.4 lists the CANi mailbox memory mapping, and Table 43.5 lists the CAN data frame configuration.
+The value after reset of the CANi mailbox is undefined.
+Write to MBj only when the related MCTLj (j = 0 to 31) is 00h and the corresponding mailbox is not processing an abort
+request.
+See Table 43.4 for detailed register addresses.
+Table 43.4
+
+CANi Mailbox Memory Mapping
+Address
+
+Message Content
+
+CAN0
+
+CAN1
+
+CAN2
+
+Memory Mapping
+
+0009 0200h + 16 × j + 0
+
+0009 1200h + 16 × j + 0
+
+0009 2200h + 16 × j + 0
+
+IDE, RTR, SID10 to SID6
+
+0009 0200h + 16 × j + 1
+
+0009 1200h + 16 × j + 1
+
+0009 2200h + 16 × j + 1
+
+SID5 to SID0, EID17, EID16
+
+0009 0200h + 16 × j + 2
+
+0009 1200h + 16 × j + 2
+
+0009 2200h + 16 × j + 2
+
+EID15 to EID8
+
+0009 0200h + 16 × j + 3
+
+0009 1200h + 16 × j + 3
+
+0009 2200h + 16 × j + 3
+
+EID7 to EID0
+
+0009 0200h + 16 × j + 4
+
+0009 1200h + 16 × j + 4
+
+0009 2200h + 16 × j + 4
+
+—
+
+0009 0200h + 16 × j + 5
+
+0009 1200h + 16 × j + 5
+
+0009 2200h + 16 × j + 5
+
+Data length code (DLC[3:0])
+
+0009 0200h + 16 × j + 6
+
+0009 1200h + 16 × j + 6
+
+0009 2200h + 16 × j + 6
+
+Data byte 0
+
+0009 0200h + 16 × j + 7
+
+0009 1200h + 16 × j + 7
+
+0009 2200h + 16 × j + 7
+
+Data byte 1
+
+0009 0200h + 16 × j + 8
+
+0009 1200h + 16 × j + 8
+
+0009 2200h + 16 × j + 8
+
+Data byte 2
+
+0009 0200h + 16 × j + 9
+
+0009 1200h + 16 × j + 9
+
+0009 2200h + 16 × j + 9
+
+Data byte 3
+
+0009 0200h + 16 × j + 10
+
+0009 1200h + 16 × j + 10
+
+0009 2200h + 16 × j + 10
+
+Data byte 4
+
+0009 0200h + 16 × j + 11
+
+0009 1200h + 16 × j + 11
+
+0009 2200h + 16 × j + 11
+
+Data byte 5
+
+0009 0200h + 16 × j + 12
+
+0009 1200h + 16 × j + 12
+
+0009 2200h + 16 × j + 12
+
+Data byte 6
+
+0009 0200h + 16 × j + 13
+
+0009 1200h + 16 × j + 13
+
+0009 2200h + 16 × j + 13
+
+Data byte 7
+
+0009 0200h + 16 × j + 14
+
+0009 1200h + 16 × j + 14
+
+0009 2200h + 16 × j + 14
+
+Time stamp upper byte
+
+0009 0200h + 16 × j + 15
+
+0009 1200h + 16 × j + 15
+
+0009 2200h + 16 × j + 15
+
+Time stamp lower byte
+
+Note:
+
+When accessing to the content of the MBj register, access to an address of a multiple of 4 (the suffix of the address is 0h, 4h,
+8h, or Ch) in 32-bit units and to an even address in 16-bit units.
+
+Table 43.5
+
+CAN Data Frame Configuration
+
+SID10 to SID6
+
+SID5 to SID0
+
+EID17 to EID16
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+EID15 to EID8
+
+EID7 to EID0
+
+DLC3 to DLC1
+
+DATA0
+
+DATA1
+
+...
+
+DATA7
+
+Page 2305 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+The previous value of each mailbox is retained unless a new message is received.
+Address(es): CAN0.MB0 to CAN0.MB31 0009 0200h to 0009 03FFh, CAN1.MB0 to CAN1.MB31 0009 1200h to 0009 13FFh,
+CAN2.MB0 to CAN2.MB31 0009 2200h to 0009 23FFh
+b31
+
+b30
+
+b29
+
+IDE
+
+RTR
+
+—
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+Value after reset:
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+SID[10:0]
+
+b17
+
+b16
+
+EID[17:0]
+
+EID[17:0]
+x
+
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b17 to b0
+
+EID[17:0]
+
+Extended ID*1
+
+0: Corresponding EID[17:0] bits are 0
+1: Corresponding EID[17:0] bits are 1
+
+R/W
+
+b28 to b18
+
+SID[10:0]
+
+Standard ID
+
+0: Corresponding SID[10:0] bits are 0
+1: Corresponding SID[10:0] bits are 1
+
+R/W
+
+b29
+
+—
+
+Reserved
+
+The read value is undefined. The write value should be 0.
+
+R/W
+
+b30
+
+RTR
+
+Remote Frame Request
+
+0: Data frame
+1: Remote frame
+
+R/W
+
+b31
+
+IDE
+
+ID Extension*2
+
+0: Standard ID
+1: Extended ID
+
+R/W
+
+Note 1. If the mailbox has received a standard ID message, the EID bits in the mailbox are undefined.
+Note 2. The IDE bit is enabled when the IDFM[1:0] bits in CTLR are 10b (mixed ID mode). When the IDFM[1:0] bits are not 10b, it
+should be written with 0 and read as 0.
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+DLC[3:0]
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+DLC[3:0]
+
+Data Length Code*1
+
+b3
+
+R/W
+
+b15 to b4
+
+—
+
+Reserved
+
+The read value is undefined. The write value should be 0.
+
+b0
+
+0 0 0 0: Data length = 0 byte
+0 0 0 1: Data length = 1 byte
+0 0 1 0: Data length = 2 bytes
+0 0 1 1: Data length = 3 bytes
+0 1 0 0: Data length = 4 bytes
+0 1 0 1: Data length = 5 bytes
+0 1 1 0: Data length = 6 bytes
+0 1 1 1: Data length = 7 bytes
+1 x x x: Data length = 8 bytes
+
+R/W
+
+x: Don’t care
+Note 1. If the mailbox has received a message whose data length set by the DLC[3:0] bits is less than 8 bytes, the values of DATA
+larger than the data length set by the DLC[3:0] bits in the mailbox are undefined.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2306 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+DATA0
+
+DATA1
+
+DATA2
+
+DATA3
+
+:
+DATA7
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+b7 to b0
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+DATA0 to
+DATA7
+
+Data Bytes 0 to 7*1, *2, *3
+
+DATA0 to DATA7 store the transmitted or received CAN message data.
+Transmission or reception starts from DATA0. The bit order on the CAN
+bus is MSB first, and transmission or reception starts from bit 7.
+
+R/W
+
+Note 1. If the mailbox has received a message with n bytes less than 8 bytes, the values of DATAn to DATA7 in the mailbox are
+undefined.
+Note 2. If the mailbox has received a remote frame, the previous values of DATA0 to DATA7 in the mailbox are retained.
+Note 3. DATA0 to DATA3 or DATA4 to DATA7 cannot be accessed in 32-bit units at one time. The access must be divided into 3 times:
+DATA0 to DATA1, DATA2 to DATA5, and DATA6 to DATA7, or 4 times: DATA0 to DATA1, DATA2 to DATA3, DATA4 to
+DATA5, and DATA6 to DATA7.
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+TSH[7:0]
+Value after reset:
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+TSL[7:0]
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+TSL[7:0]
+
+Time Stamp Lower Byte
+
+R/W
+
+b15 to b8
+
+TSH[7:0]
+
+Time Stamp Higher Byte
+
+Bits TSH[7:0] and TSL[7:0] store the counter value of the time
+stamp when received messages are stored in the mailbox.
+
+R/W
+
+EID[17:0] Bits (Extended ID)
+The EID[17:0] bits set the extended ID of data frames and remote frames.
+These bits are used to transmit or receive extended ID messages.
+SID[10:0] Bits (Standard ID)
+The SID[10:0] bits set the standard ID of data frames and remote frames.
+These bits are used to transmit or receive both standard ID and extended ID messages.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2307 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+RTR Bit (Remote Frame Request)
+The RTR bit sets the frame format of data frames or remote frames.
+ Receive mailbox receives only frames with the format specified by the RTR bit.
+ Transmit mailbox transmits according to the frame format specified by the RTR bit.
+ Receive FIFO mailbox receives the data frame, remote frame, or both frames specified by the RTR bit in FIDCR0
+and FIDCR1.
+ Transmit FIFO mailbox transmits the data frame or remote frame specified by the RTR bit in the relevant transmit
+message.
+IDE Bit (ID Extension)
+The IDE bit sets the ID format of standard IDs or extended IDs. The IDE bit is enabled when the IDFM[1:0] bits in
+CTLR is 10b (mixed ID mode).
+ Receive mailbox receives only the ID format specified by the IDE bit.
+ Transmit mailbox transmits with the ID format specified by the IDE bit.
+ Receive FIFO mailbox receives messages with the standard ID and extended ID specified by the IDE bit in FIDCR0
+and FIDCR1.
+ Transmit FIFO mailbox transmits messages with the standard ID or extended ID specified by the IDE bit in the
+relevant transmit message.
+DLC[3:0] Bits (Data Length Code)
+The DLC[3:0] bits specify the number of bytes of data to be transmitted in data frames. When a remote frame is used to
+request data, this field specifies the requested number of bytes of data.
+When a data frame is received, the number of bytes received is stored in this field. When a remote frame is received, this
+field is used to store the number requested by the frame.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2308 of 3240
+
+RX72N Group
+
+43.2.7
+
+43. CAN Module (CAN)
+
+Mailbox Interrupt Enable Register (MIER)
+
+Address(es): CAN0.MIER 0009 042Ch, CAN1.MIER 0009 142Ch, CAN2.MIER 0009 242Ch
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+MB31
+
+MB30
+
+MB29
+
+MB28
+
+MB27
+
+MB26
+
+MB25
+
+MB24
+
+MB23
+
+MB22
+
+MB21
+
+MB20
+
+MB19
+
+MB18
+
+MB17
+
+MB16
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+MB15
+
+MB14
+
+MB13
+
+MB12
+
+MB11
+
+MB10
+
+MB9
+
+MB8
+
+MB7
+
+MB6
+
+MB5
+
+MB4
+
+MB3
+
+MB2
+
+MB1
+
+MB0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+ Normal mailbox mode
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b31 to b0
+
+MB31 to MB0
+
+Interrupt Enable
+
+0: Interrupt disabled
+1: Interrupt enabled
+Bit 31 corresponds to mailbox 31 (MB31), and bit 0 corresponds to
+mailbox 0 (MB0).
+
+R/W
+
+ FIFO mailbox mode
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b23 to b0
+
+MB23 to MB0
+
+Interrupt Enable
+
+0: Interrupt disabled
+1: Interrupt enabled
+Bit 23 corresponds to mailbox 23 (MB23), and bit 0 corresponds to
+mailbox 0 (MB0).
+
+R/W
+
+b24
+
+MB24
+
+Transmit FIFO Interrupt
+Enable
+
+0: Interrupt disabled
+1: Interrupt enabled
+
+R/W
+
+b25
+
+MB25
+
+Transmit FIFO Interrupt
+Generation Timing Control
+
+0: Every time transmission is completed
+1: When the transmit FIFO becomes empty due to completion of
+transmission
+
+R/W
+
+b27, b26
+
+—
+
+Reserved
+
+The read value is undefined. The write value should be 0.
+
+R/W
+
+b28
+
+MB28
+
+Receive FIFO Interrupt
+Enable
+
+0: Interrupt disabled
+1: Interrupt enabled
+
+R/W
+
+b29
+
+MB29
+
+Receive FIFO Interrupt
+Generation Timing Control*1
+
+0: Every time reception is completed
+1: When the receive FIFO becomes buffer warning by completion
+of reception
+
+R/W
+
+b31, b30
+
+—
+
+Reserved
+
+The read value is undefined. The write value should be 0.
+
+R/W
+
+Note 1. No interrupt request is generated when the receive FIFO becomes buffer warning from full. “Buffer warning” indicates a state in
+which the third message is stored in the receive FIFO.
+
+MIER can individually enable interrupts for each mailbox.
+In normal mailbox mode (all bits) and in FIFO mailbox mode (bits 24 to 0 in MIER), each bit corresponds to the mailbox
+with the related number. These bits enable or disable transmission/reception complete interrupts for the corresponding
+mailboxes.
+ Bit 0 in MIER corresponds to mailbox 0 (MB0).
+ Bit 31 in MIER corresponds to mailbox 31 (MB31).
+In FIFO mailbox mode, bits 29, 28, 25, and 24 of MIER specify whether transmit/receive FIFO interrupts are enabled/
+disabled and the timing when interrupt requests are generated.
+Write to MIER only when the related MCTLj (j = 0 to 31) is 00h and the corresponding mailbox is not processing a
+transmission or reception abort request. In FIFO mailbox mode, change the bits in MIER for the related FIFO only when
+the TFE bit in TFCR is 0 and the TFEST flag is 1, and the RFE bit in RFCR is 0 and the RFEST flag in RFCR is 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2309 of 3240
+
+RX72N Group
+
+43.2.8
+
+43. CAN Module (CAN)
+
+Message Control Register j (MCTLj) (j = 0 to 31)
+
+Address(es): CAN0.MCTL0 to CAN0.MCTL31 0009 0820h to 0009 083Fh, CAN1.MCTL0 to CAN1.MCTL31 0009 1820h to 0009 183Fh,
+CAN2.MCTL0 to CAN2.MCTL31 0009 2820h to 0009 283Fh
+
+ Transmit mode (when the TRMREQ bit is 1 and the RECREQ bit is 0)
+b7
+
+b6
+
+TRMRE RECRE
+Q
+Q
+0
+
+Value after reset:
+
+0
+
+b5
+
+b4
+
+b3
+
+—
+
+ONESH
+OT
+
+—
+
+0
+
+0
+
+0
+
+b2
+
+b1
+
+b0
+
+TRMAB TRMAC SENTD
+T
+TIVE
+ATA
+0
+
+0
+
+0
+
+ Receive mode (when the TRMREQ bit is 0 and the RECREQ bit is 1)
+b7
+
+b6
+
+TRMRE RECRE
+Q
+Q
+Value after reset:
+
+0
+
+0
+
+b5
+
+b4
+
+—
+
+ONESH
+OT
+
+b3
+—
+
+0
+
+0
+
+0
+
+b2
+
+b1
+
+b0
+
+MSGL INVALD NEWD
+OST
+ATA
+ATA
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SENTDATA
+
+Transmission Complete Flag
+*1, *2
+
+0: Transmission is not completed
+1: Transmission is completed
+
+R/W
+
+NEWDATA
+
+Reception Complete Flag
+*1, *2
+
+0: No data has been received or 0 is written to the NEWDATA flag R/W
+1: A new message is being stored or has been stored to the
+mailbox
+
+TRMACTIVE
+
+Transmission-in-Progress
+Status Flag
+
+(Transmit mailbox setting enabled)
+0: Transmission is pending or transmission is not requested
+1: From acceptance of transmission request to completion of
+transmission, or error/arbitration-lost
+
+R
+
+INVALDATA
+
+Reception-in-Progress Status
+Flag
+
+(Receive mailbox setting enabled)
+0: Message valid
+1: Message being updated
+
+R
+
+TRMABT
+
+Transmission Abort Complete
+Flag*1, *2
+
+(Transmit mailbox setting enabled)
+0: Transmission has started, transmission abort failed because
+transmission is completed, or transmission abort is not
+requested
+1: Transmission abort is completed
+
+R/W
+
+MSGLOST
+
+Message Lost Flag*1, *2
+
+(Receive mailbox setting enabled)
+0: Message is not overwritten or overrun
+1: Message is overwritten or overrun
+
+R/W
+
+b3
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b4
+
+ONESHOT
+
+One-Shot Enable*3
+
+0: One-shot reception or one-shot transmission disabled
+1: One-shot reception or one-shot transmission enabled
+
+R/W
+
+b5
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b6
+
+RECREQ
+
+Receive Mailbox Request
+*2, *3, *4, *5
+
+0: Not configured for reception
+1: Configured for reception
+
+R/W
+
+b7
+
+TRMREQ
+
+Transmit Mailbox Request
+*2, *4
+
+0: Not configured for transmission
+1: Configured for transmission
+
+R/W
+
+b1
+
+b2
+
+Note 1. Write 0 only. Writing 1 has no effect.
+Note 2. When writing 0 to bits NEWDATA, SENTDATA, MSGLOST, TRMABT, RECREQ, and TRMREQ by a program, do not use the
+logic operation instruction (AND). Write 0 to only the specified bit and write 1 to the other bits before using the transfer (MOV)
+instruction.
+Note 3. To enter one-shot receive mode, write 1 to the ONESHOT bit at the same time as setting the RECREQ bit to 1.
+To exit one-shot receive mode, write 0 to the ONESHOT bit after writing 0 to the RECREQ bit and confirming that it has been set
+to 0.
+To enter one-shot transmit mode, write 1 to the ONESHOT bit at the same time as setting the TRMREQ bit to 1.
+To exit one-shot transmit mode, write 0 to the ONESHOT bit after the message has been transmitted or aborted.
+Note 4. Do not set both the RECREQ and TRMREQ bits to 1.
+Note 5. When setting the RECREQ bit to 0, set bits MSGLOST, NEWDATA, and RECREQ to 0 simultaneously.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2310 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+Write to the MCTLj in CAN operation mode or CAN halt mode.
+Do not use MCTL24 to MCTL31 in FIFO mailbox mode.
+SENTDATA Flag (Transmission Complete Flag)
+The SENTDATA flag is set to 1 when data transmission from the corresponding mailbox is completed. The SENTDATA
+flag is set to 0 by writing 0 by a program.
+To set the SENTDATA flag to 0, first set the TRMREQ bit to 0. Bits SENTDATA and TRMREQ cannot be set to 0
+simultaneously. To transmit a new message from the corresponding mailbox, set the SENTDATA flag to 0.
+NEWDATA Flag (Reception Complete Flag)
+The NEWDATA flag is set to 1 when a new message is being stored or has been stored to the mailbox. The timing for
+setting this bit to 1 is simultaneous with the INVALDATA flag. The NEWDATA flag is set to 0 by writing 0 by a
+program. The NEWDATA flag cannot be set to 0 by writing 0 by a program while the related INVALDATA flag is 1.
+TRMACTIVE Flag (Transmission-in-Progress Status Flag)
+The TRMACTIVE flag is set to 1 when the corresponding mailbox of the CAN module begins transmitting a message.
+The TRMACTIVE flag is set to 0 when the CAN module has lost CAN bus arbitration, a CAN bus error occurs, or data
+transmission is completed.
+INVALDATA Flag (Reception-in-Progress Status Flag)
+After the completion of a message reception, the INVALDATA flag is set to 1 while the received message is being
+updated into the corresponding mailbox. The INVALDATA flag is set to 0 immediately after the message has been
+stored. If the mailbox is read while the INVALDATA flag is 1, the data is undefined.
+TRMABT Flag (Transmission Abort Complete Flag)
+The TRMABT flag is set to 1 in the following cases:
+ Following a transmission abort request, when the transmission abort is completed before starting transmission.
+ Following a transmission abort request, when the CAN module detects CAN bus arbitration-lost or a CAN bus
+error.
+ In one-shot transmission mode (RECREQ bit = 0, TRMREQ bit = 1, and ONESHOT bit = 1), when the CAN
+module detects CAN bus arbitration-lost or a CAN bus error.
+The TRMABT flag is not set to 1 when data transmission is completed. In this case, the SENTDATA flag is set to 1. The
+TRMABT flag is set to 0 by writing 0 by a program.
+MSGLOST Flag (Message Lost Flag)
+The MSGLOST flag is set to 1 when the mailbox is overwritten or overrun by a new received message while the
+NEWDATA flag is 1. The MSGLOST flag is set to 1 at the end of the 6th bit of EOF. The MSGLOST flag is set to 0 by
+writing 0 by a program.
+In both overwrite and overrun modes, the MSGLOST flag cannot be set to 0 by writing 0 by a program during five
+peripheral module clock (PCLKB) cycles following the sixth bit of EOF.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2311 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+ONESHOT Bit (One-Shot Enable)
+The ONESHOT bit can be used in the following two ways, receive mode and transmit mode.
+ One-shot receive mode
+When the ONESHOT bit is set to 1 in receive mode (RECREQ bit = 1 and TRMREQ bit = 0), the mailbox receives
+a message only one time. (The mailbox does not behave as a receive mailbox after having received a message one
+time.) The behavior of flags NEWDATA and INVALDATA is the same as in normal receive mode. In one-shot
+receive mode, the MSGLOST flag is not set to 1. To set the ONESHOT bit to 0, first write 0 to the RECREQ bit and
+ensure that it has been set to 0.
+ One-shot transmit mode
+When the ONESHOT bit is set to 1 in transmit mode (RECREQ bit = 0 and TRMREQ bit = 1), the CAN module
+transmits a message only one time. (The CAN module does not transmit the message again if a CAN bus error or
+CAN bus arbitration-lost occurs.) When transmission is completed, the SENTDATA flag is set to 1. If transmission
+is not completed due to a CAN bus error or CAN bus arbitration-lost, the TRMABT flag is set to 1. Set the
+ONESHOT bit to 0 after the SENTDATA or TRMABT flag is set to 1.
+RECREQ Bit (Receive Mailbox Request)
+The RECREQ bit selects receive modes listed in Table 43.10.
+When the RECREQ bit is set to 1, the corresponding mailbox is configured for reception of a data frame or a remote
+frame.
+When the RECREQ bit is set to 0, the corresponding mailbox is not configured for reception of a data frame or a remote
+frame.
+Due to hardware protection, the RECREQ bit cannot be set to 0 by writing 0 by a program during the following period.
+ Hardware protection is started
+From the acceptance filter processing (the beginning of CRC field)
+ Hardware protection is released
+For the mailbox that is specified to receive the incoming message, after the received data is stored into the mailbox
+
+or a CAN bus error occurs (i.e. maximum period of hardware protection is from the beginning of CRC field to the
+end of the 7th bit of EOF)
+For the other mailboxes, after the acceptance filter processing
+If no mailbox is specified to receive the message, after the acceptance filter processing
+
+When setting the RECREQ bit to 1, do not set the TRMREQ bit to 1. To change the configuration of a mailbox
+from transmission to reception, first abort the transmission and then set flags SENTDATA and TRMABT to 0
+before changing to reception.
+TRMREQ Bit (Transmit Mailbox Request)
+The TRMREQ bit selects transmit modes listed in Table 43.10.
+When the TRMREQ bit is set to 1, the corresponding mailbox is configured for transmission of a data frame or a remote
+frame.
+When the TRMREQ bit is set to 0, the corresponding mailbox is not configured for transmission of a data frame or a
+remote frame.
+If the TRMREQ bit is changed from 1 to 0 to cancel the corresponding transmission request, either the TRMABT or
+SENTDATA flag is set to 1. When setting the TRMREQ bit to 1, do not set the RECREQ bit to 1. To change the
+configuration of a mailbox from reception to transmission, first abort the reception and then set flags NEWDATA and
+MSGLOST to 0 before changing to transmission.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2312 of 3240
+
+RX72N Group
+
+43.2.9
+
+43. CAN Module (CAN)
+
+Receive FIFO Control Register (RFCR)
+
+Address(es): CAN0.RFCR 0009 0848h, CAN1.RFCR 0009 1848h, CAN2.RFCR 0009 2848h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+RFEST RFWST RFFST RFMLF
+Value after reset:
+
+1
+
+0
+
+0
+
+0
+
+b2
+
+b1
+
+b0
+
+RFUST[2:0]
+0
+
+0
+
+RFE
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+RFE
+
+Receive FIFO Enable
+
+0: Receive FIFO disabled
+1: Receive FIFO enabled
+
+R/W
+
+b3 to b1
+
+RFUST[2:0]
+
+Receive FIFO Unread Message
+Number Status Flag
+
+b3
+
+R
+
+b4
+
+RFMLF
+
+Receive FIFO Message Lost Flag
+
+0: No receive FIFO message lost has occurred
+1: Receive FIFO message lost has occurred
+
+R/W
+
+b5
+
+RFFST
+
+Receive FIFO Full Status Flag
+
+0: Receive FIFO is not full
+1: Receive FIFO is full (4 unread messages)
+
+R
+
+b6
+
+RFWST
+
+Receive FIFO Buffer Warning
+Status Flag
+
+0: Receive FIFO is not buffer warning
+1: Receive FIFO is buffer warning (3 unread messages)
+
+R
+
+b7
+
+RFEST
+
+Receive FIFO Empty Status Flag
+
+0: Unread message in receive FIFO
+1: No unread message in receive FIFO
+
+R
+
+b1
+
+0 0 0: No unread message
+0 0 1: 1 unread message
+0 1 0: 2 unread messages
+0 1 1: 3 unread messages
+1 0 0: 4 unread messages
+1 0 1: Reserved
+1 1 0: Reserved
+1 1 1: Reserved
+
+Write to RFCR in CAN operation mode or CAN halt mode.
+RFE Bit (Receive FIFO Enable)
+When the RFE bit is set to 1, the receive FIFO is enabled.
+When the RFE bit is set to 0, the receive FIFO is disabled for reception and becomes empty (RFEST flag = 1). Write 0 to
+the RFE bit simultaneously with setting the RFMLF flag.
+Do not set this bit to 1 in normal mailbox mode (MBM bit in CTLR = 0). Due to hardware protection, the RFE bit is not
+set to 0 by writing 0 by a program during the following period.
+ Hardware protection is started
+From the acceptance filter processing (the beginning of CRC field)
+
+ Hardware protection is released
+If the receive FIFO is specified to receive the incoming message, after the received data is stored into the receive
+
+FIFO or a CAN bus error occurs (i.e. maximum period of hardware protection is from the beginning of CRC field
+to the end of 7th bit of EOF)
+If the receive FIFO is not specified to receive the message, after the acceptance filter processing
+
+RFUST[2:0] Flags (Receive FIFO Unread Message Number Status Flag)
+The RFUST[2:0] flags indicate the number of unread messages in the receive FIFO.
+The value of the RFUST[2:0] flags is initialized to 000b when the RFE bit is set to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2313 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+RFMLF Flag (Receive FIFO Message Lost Flag)
+The RFMLF flag is set to 1 (receive FIFO message lost has occurred) when the receive FIFO receives a new message and
+the receive FIFO is full. The timing for setting this bit to 1 is at the end of the 6th bit of EOF.
+The RFMLF flag is set to 0 by writing 0 by a program (writing 1 has no effect). In both overwrite and overrun modes, the
+RFMLF flag cannot be set to 0 (receive FIFO message lost has not occurred) by writing 0 by a program due to hardware
+protection during five peripheral module clock (PCLKB) cycles following the sixth bit of EOF, if the receive FIFO is full
+and determined to receive a message.
+RFFST Flag (Receive FIFO Full Status Flag)
+The RFFST flag is set to 1 (receive FIFO is full) when the number of unread messages in the receive FIFO is 4. The
+RFFST flag is 0 (receive FIFO is not full) when the number of unread messages in the receive FIFO is less than 4. The
+RFFST flag is set to 0 when the RFE bit is 0.
+RFWST Flag (Receive FIFO Buffer Warning Status Flag)
+The RFWST flag is set to 1 (receive FIFO is buffer warning) when the number of unread messages in the receive FIFO is
+3. The RFWST flag is 0 (receive FIFO is not buffer warning) when the number of unread messages in the receive FIFO
+is less than 3 or equal to 4. The RFWST flag is set to 0 when the RFE bit is 0.
+RFEST Flag (Receive FIFO Empty Status Flag)
+The RFEST flag is set to 1 (no unread message in receive FIFO) when the number of unread messages in the receive
+FIFO is 0. The RFEST flag is set to 1 when the RFE bit is set to 0. The RFEST flag is set to 0 (unread message in receive
+FIFO) when the number of unread messages in the receive FIFO is one or more.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2314 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+Figure 43.2 shows the receive FIFO mailbox operation.
+
+Receive FIFO mailbox
+Frame 1
+Frame 2
+Frame 3
+Frame 4
+
+CAN bus
+
+Frame 1
+
+Frame 2
+
+Frame 3
+
+Frame 4
+
+Frame 1
+
+Internal bus
+
+Frame 2
+
+Frame 3
+
+Frame 4
+
+RFCR.RFEST flag
+
+RFCR.RFWST flag
+RFCR.RFFST flag
+CANi receive FIFO interrupt
+Bits 29 and 28 in MIER = 01b
+
+CANi receive FIFO interrupt
+Bits 29 and 28 in MIER = 11b
+
+RFPCR register
+
+Figure 43.2
+
+Receive FIFO Mailbox Operation (Bits 29 and 28 in MIER = 01b or 11b)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2315 of 3240
+
+RX72N Group
+
+43.2.10
+
+43. CAN Module (CAN)
+
+Receive FIFO Pointer Control Register (RFPCR)
+
+Address(es): CAN0.RFPCR 0009 0849h, CAN1.RFPCR 0009 1849h, CAN2.RFPCR 0009 2849h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+Value after reset:
+
+x: Undefined
+
+Bit
+
+Description
+
+R/W
+
+b7 to b0
+
+The CPU-side pointer for the receive FIFO is incremented by writing FFh to RFPCR.
+
+W
+
+When the receive FIFO is not empty, write FFh to RFPCR by a program to increment the CPU-side pointer for the
+receive FIFO to the next mailbox location.
+Do not write to RFPCR when the RFE bit in RFCR is 0 (receive FIFO disabled).
+Both the CAN-side pointer and the CPU-side pointer are incremented when a new message is received and the RFFST
+flag is 1 (receive FIFO is full) in overwrite mode. When the RFMLF flag is 1 in this condition, the CPU-side pointer
+cannot be incremented by writing to RFPCR by a program.
+
+43.2.11
+
+Transmit FIFO Control Register (TFCR)
+
+Address(es): CAN0.TFCR 0009 084Ah, CAN1.TFCR 0009 184Ah, CAN2.TFCR 0009 284Ah
+b7
+
+b6
+
+TFEST TFFST
+Value after reset:
+
+1
+
+0
+
+b5
+
+b4
+
+—
+
+—
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+TFUST[2:0]
+0
+
+0
+
+TFE
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+TFE
+
+Transmit FIFO Enable
+
+0: Transmit FIFO disabled
+1: Transmit FIFO enabled
+
+R/W
+
+b3 to b1
+
+TFUST[2:0]
+
+Transmit FIFO Unsent Message
+Number Status Flag
+
+b3
+
+R
+
+b5, b4
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b6
+
+TFFST
+
+Transmit FIFO Full Status Flag
+
+0: Transmit FIFO is not full
+1: Transmit FIFO is full (4 unsent messages)
+
+R
+
+b7
+
+TFEST
+
+Transmit FIFO Empty Status Flag
+
+0: Unsent message in transmit FIFO
+1: No unsent message in transmit FIFO
+
+R
+
+b1
+
+0 0 0: No unsent message
+0 0 1: 1 unsent message
+0 1 0: 2 unsent messages
+0 1 1: 3 unsent messages
+1 0 0: 4 unsent messages
+1 0 1: Reserved
+1 1 0: Reserved
+1 1 1: Reserved
+
+Write to TFCR in CAN operation mode or CAN halt mode.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2316 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+TFE Bit (Transmit FIFO Enable)
+When the TFE bit is set to 1, the transmit FIFO is enabled.
+When the TFE bit is set to 0, the transmit FIFO becomes empty (TFEST flag = 1) and then unsent messages from the
+transmit FIFO are lost as described below:
+ Immediately if a message from the transmit FIFO is not scheduled for the next transmission or during transmission
+ Following the completion of transmission, a CAN bus error, CAN bus arbitration-lost, or entry to CAN halt mode if
+a message from the transmit FIFO is scheduled for the next transmission or already during transmission
+Before setting the TFE bit to 1 again, ensure that the TFEST flag has been set to 1. After setting the TFE bit to 1, write
+transmit data into MB24.
+Do not set the TFE bit to 1 in normal mailbox mode (MBM bit in CTLR = 0).
+TFUST[2:0] Flags (Transmit FIFO Unsent Message Number Status Flag)
+The TFUST[2:0] flags indicate the number of unsent messages in the transmit FIFO.
+The TFUST[2:0] flags are set to 000b after TFE bit is cleared to 0 and transmission is aborted or completed.
+TFFST Flag (Transmit FIFO Full Status Flag)
+The TFFST flag is set to 1 (transmit FIFO is full) when the number of unsent messages in the transmit FIFO is 4. The
+TFFST flag is set to 0 (transmit FIFO is not full) when the number of unsent messages in the transmit FIFO is less than 4.
+The TFFST flag is set to 0 when transmission from the transmit FIFO has been aborted.
+TFEST Flag (Transmit FIFO Empty Status Flag)
+The TFEST flag is set to 1 (no message in transmit FIFO) when the number of unsent messages in the transmit FIFO is 0.
+The TFEST flag is set to 1 when transmission from the transmit FIFO has been aborted. The TFEST flag is set to 0
+(message in transmit FIFO) when the number of unsent messages in the transmit FIFO is not 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2317 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+Figure 43.3 shows the transmit FIFO mailbox operation.
+
+Transmit FIFO mailbox
+Frame 1
+Frame 2
+Frame 3
+Frame 4
+
+CAN bus
+
+Frame 1
+
+Frame 1
+
+Internal bus
+
+Frame 2
+
+Frame 3
+
+Frame 2
+
+Frame 3
+
+Frame 4
+
+Frame 4
+
+TFCR.TFEST flag
+TFCR.TFFST flag
+CANi transmit FIFO interrupt
+Bits 25 and 24 in MIER = 01b
+
+CANi transmit FIFO interrupt
+Bits 25 and 24 in MIER = 11b
+
+TFPCR register
+
+Figure 43.3
+
+43.2.12
+
+Transmit FIFO Mailbox Operation (Bits 25 and 24 in MIER = 01b or 11b)
+
+Transmit FIFO Pointer Control Register (TFPCR)
+
+Address(es): CAN0.TFPCR 0009 084Bh, CAN1.TFPCR 0009 184Bh, CAN2.TFPCR 0009 284Bh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Description
+
+R/W
+
+b7 to b0
+
+The CPU-side pointer for the transmit FIFO is incremented by writing FFh to TFPCR.
+
+W
+
+When the transmit FIFO is not full, write FFh to TFPCR by a program to increment the CPU-side pointer for the transmit
+FIFO to the next mailbox location.
+Do not write to TFPCR when the TFE bit in TFCR is 0 (transmit FIFO disabled).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2318 of 3240
+
+RX72N Group
+
+43.2.13
+
+43. CAN Module (CAN)
+
+Status Register (STR)
+
+Address(es): CAN0.STR 0009 0842h, CAN1.STR 0009 1842h, CAN2.STR 0009 2842h
+b15
+—
+0
+
+Value after reset:
+
+b14
+
+b13
+
+b12
+
+RECST TRMST BOST
+0
+
+0
+
+b11
+
+b10
+
+b9
+
+b8
+
+EPST SLPST HLTST RSTST
+
+0
+
+0
+
+1
+
+0
+
+1
+
+b7
+EST
+
+b6
+
+b5
+
+b4
+
+b3
+
+TABST FMLST NMLST TFST
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b2
+
+b1
+
+b0
+
+RFST
+
+SDST
+
+NDST
+
+0
+
+0
+
+0
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+NDST
+
+NEWDATA Status Flag
+
+0: No mailbox with NEWDATA flag = 1
+1: Mailbox(es) with NEWDATA flag = 1
+
+R
+
+b1
+
+SDST
+
+SENTDATA Status Flag
+
+0: No mailbox with SENTDATA flag = 1
+1: Mailbox(es) with SENTDATA flag = 1
+
+R
+
+b2
+
+RFST
+
+Receive FIFO Status Flag
+
+0: No message in receive FIFO (empty)
+1: Message in receive FIFO
+
+R
+
+b3
+
+TFST
+
+Transmit FIFO Status Flag
+
+0: Transmit FIFO is full
+1: Transmit FIFO is not full
+
+R
+
+b4
+
+NMLST
+
+Normal Mailbox Message Lost
+Status Flag
+
+0: No mailbox with MSGLOST flag = 1
+1: Mailbox(es) with MSGLOST flag = 1
+
+R
+
+b5
+
+FMLST
+
+FIFO Mailbox Message Lost Status
+Flag
+
+0: RFMLF flag = 0
+1: RFMLF flag = 1
+
+R
+
+b6
+
+TABST
+
+Transmission Abort Status Flag
+
+0: No mailbox with TRMABT flag = 1
+1: Mailbox(es) with TRMABT flag = 1
+
+R
+
+b7
+
+EST
+
+Error Status Flag
+
+0: No error occurred
+1: Error occurred
+
+R
+
+b8
+
+RSTST
+
+CAN Reset Status Flag
+
+0: Not in CAN reset mode
+1: In CAN reset mode
+
+R
+
+b9
+
+HLTST
+
+CAN Halt Status Flag
+
+0: Not in CAN halt mode
+1: In CAN halt mode
+
+R
+
+b10
+
+SLPST
+
+CAN Sleep Status Flag
+
+0: Not in CAN sleep mode
+1: In CAN sleep mode
+
+R
+
+b11
+
+EPST
+
+Error-Passive Status Flag
+
+0: Not in error-passive state
+1: In error-passive state
+
+R
+
+b12
+
+BOST
+
+Bus-Off Status Flag
+
+0: Not in bus-off state
+1: In bus-off state
+
+R
+
+b13
+
+TRMST
+
+Transmit Status Flag (transmitter)
+
+0: Bus idle or reception in progress
+1: Transmission in progress or in bus-off state
+
+R
+
+b14
+
+RECST
+
+Receive Status Flag (receiver)
+
+0: Bus idle or transmission in progress
+1: Reception in progress
+
+R
+
+b15
+
+—
+
+Reserved
+
+The read value is 0.
+
+R
+
+NDST Flag (NEWDATA Status Flag)
+The NDST flag is set to 1 when at least one NEWDATA flag in MCTLj (j = 0 to 31) is 1 regardless of the value of MIER.
+The NDST flag is set to 0 when all NEWDATA flags are 0.
+SDST Flag (SENTDATA Status Flag)
+The SDST flag is set to 1 when at least one SENTDATA flag in MCTLj (j = 0 to 31) is 1 regardless of the value of MIER.
+The SDST flag is set to 0 when all SENTDATA flags are 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2319 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+RFST Flag (Receive FIFO Status Flag)
+The RFST flag is set to 1 when the receive FIFO is not empty. The RFST flag is set to 0 when the receive FIFO is empty
+or normal mailbox mode is selected.
+TFST Flag (Transmit FIFO Status Flag)
+The TFST flag is set to 1 when the transmit FIFO is not full. The TFST flag is set to 0 when the transmit FIFO is full or
+normal mailbox mode is selected.
+NMLST Flag (Normal Mailbox Message Lost Status Flag)
+The NMLST flag is set to 1 when at least one MSGLOST flag in MCTLj (j = 0 to 31) is 1 regardless of the value of
+MIER. The NMLST flag is set to 0 when all MSGLOST flags are 0.
+FMLST Flag (FIFO Mailbox Message Lost Status Flag)
+The FMLST flag is set to 1 when the RFMLF flag in RFCR is 1 regardless of the value of MIER. The FMLST flag is set
+to 0 when the RFMLF flag is 0.
+TABST Flag (Transmission Abort Status Flag)
+The TABST flag is set to 1 when at least one TRMABT flag in MCTLj (j = 0 to 31) is 1 regardless of the value of MIER.
+The TABST flag is set to 0 when all TRMABT flags are 0.
+EST Flag (Error Status Flag)
+The EST flag is set to 1 when at least one error is detected by EIFR regardless of the value of EIER. The EST flag is set
+to 0 when no error is detected by EIFR.
+RSTST Flag (CAN Reset Status Flag)
+The RSTST flag is set to 1 when the CAN module is in CAN reset mode. The RSTST flag is 0 when the CAN module is
+not in CAN reset mode. Even when the state is changed from CAN reset mode to CAN sleep mode, the RSTST flag
+remains 1.
+HLTST Flag (CAN Halt Status Flag)
+The HLTST flag is set to 1 when the CAN module is in CAN halt mode. The HLTST flag is set to 0 when the CAN
+module is not in CAN halt mode. Even when the state is changed from CAN halt mode to CAN sleep mode, the HLTST
+flag remains 1.
+SLPST Flag (CAN Sleep Status Flag)
+The SLPST flag is set to 1 when the CAN module is in CAN sleep mode. The SLPST flag is set to 0 when the CAN
+module is not in CAN sleep mode.
+EPST Flag (Error-Passive Status Flag)
+The EPST flag is set to 1 when the value of TECR or RECR exceeds 127 and the CAN module is in the error-passive
+state (128 ≤ TEC < 256 or 128 ≤ REC < 256). The EPST flag is set to 0 when the CAN module is not in the error-passive
+state.
+BOST Flag (Bus-Off Status Flag)
+The BOST flag is set to 1 when the value of TECR exceeds 255 and the CAN module is in the bus-off state (TEC ≥ 256).
+The BOST flag is set to 0 when the CAN module is not in the bus-off state.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2320 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+TRMST Flag (Transmit Status Flag (transmitter))
+The TRMST flag is set to 1 when the CAN module performs as a transmitter node or is in the bus-off state. The TRMST
+flag is set to 0 when the CAN module performs as a receiver node or is in the bus-idle state.
+RECST Flag (Receive Status Flag (receiver))
+The RECST flag is set to 1 when the CAN module performs as a receiver node. The RECST flag is set to 0 when the
+CAN module performs as a transmitter node or is in the bus-idle state.
+
+43.2.14
+
+Mailbox Search Mode Register (MSMR)
+
+Address(es): CAN0.MSMR 0009 0853h, CAN1.MSMR 0009 1853h, CAN2.MSMR 0009 2853h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+MBSM[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+MBSM[1:0]
+
+Mailbox Search Mode Select
+
+b1 b0
+
+R/W
+
+b7 to b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+0 0: Receive mailbox search mode
+0 1: Transmit mailbox search mode
+1 0: Message lost search mode
+1 1: Channel search mode
+
+Write to MSMR in CAN operation mode or CAN halt mode.
+MBSM[1:0] Bits (Mailbox Search Mode Select)
+The MBSM[1:0] bits select the search mode for the mailbox search function.
+When the MBSM[1:0] bits are 00b, receive mailbox search mode is selected. In this mode, the search targets are the
+NEWDATA flag in MCTLj (j = 0 to 31) for the normal mailbox and the RFEST flag in RFCR.
+When the MBSM[1:0] bits are 01b, transmit mailbox search mode is selected. In this mode, the search target is the
+SENTDATA flag in MCTLj.
+When the MBSM[1:0] bits are 10b, message lost search mode is selected. In this mode, the search targets are the
+MSGLOST flag in MCTLj for the normal mailbox and the RFMLF flag in RFCR.
+When the MBSM[1:0] bits are 11b, channel search mode is selected. In this mode, the search target is CSSR. Refer to
+section 43.2.16, Channel Search Support Register (CSSR).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2321 of 3240
+
+RX72N Group
+
+43.2.15
+
+43. CAN Module (CAN)
+
+Mailbox Search Status Register (MSSR)
+
+Address(es): CAN0.MSSR 0009 0852h, CAN1.MSSR 0009 1852h, CAN2.MSSR 0009 2852h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+SEST
+
+—
+
+—
+
+1
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+MBNST[4:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b4 to b0
+
+MBNST[4:0]
+
+Search Result Mailbox
+Number Status Flag
+
+These bits output the smallest mailbox number that is searched in
+each mode of MSMR.
+
+R
+
+b6, b5
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b7
+
+SEST
+
+Search Result Status Flag
+
+0: Search result found
+1: No search result
+
+R
+
+MBNST[4:0] Flags (Search Result Mailbox Number Status Flag)
+The MBNST[4:0] flags output the smallest mailbox number that is searched in each mode of MSMR. In receive mailbox
+search mode, transmit mailbox search mode, and message lost search mode, the value of the mailbox i.e., the search
+result to be output, is updated as described below:
+ When the NEWDATA, SENTDATA or MSGLOST flag for the output mailbox is set to 0
+ When the NEWDATA, SENTDATA or MSGLOST flag for a higher-priority mailbox is set to 1
+If the MBSM[1:0] bits are set to 00b (receive mailbox search mode) or 10b (message lost search mode), the receive FIFO
+(mailbox [28]) is output when the receive FIFO is not empty and there are no unread received messages or no lost
+messages in any of the normal mailboxes (mailboxes [0] to [23]). If the MBSM[1:0] bits are set to 01b (transmit mailbox
+search mode), the transmit FIFO (mailbox [24]) is not output. Table 43.6 lists the behavior of the MBNST[4:0] flags in
+FIFO mailbox mode.
+In channel search mode, the MBNST[4:0] flags output the corresponding channel number. After MSSR is read by a
+program, the next target channel number is output.
+SEST Flag (Search Result Status Flag)
+The SEST flag is set to 1 (no search result) when no corresponding mailbox is found after searching all mailboxes. For
+example, in transmit mailbox search mode, the SEST flag is set to 1 when no SENTDATA flag for mailboxes is 1. The
+SEST flag is set to 0 when at least one SENTDATA flag is 1. When the SEST flag is 1, the value of the MBNST[4:0]
+flags is undefined.
+Table 43.6
+
+Behavior of MBNST[4:0] Flags in FIFO Mailbox Mode
+
+MBSM[1:0] Bits
+00b
+
+Mailbox [24]
+(Transmit FIFO)
+
+Mailbox [28]
+(Receive FIFO)
+
+Mailbox [24] is not
+output.
+
+Mailbox [28] is output when no MCTLj.NEWDATA flag for the normal mailboxes is set to
+1 (new message is being stored or has been stored to the mailbox) and the receive FIFO
+is not empty.
+
+01b
+
+Mailbox [28] is not output.
+
+10b
+
+Mailbox [28] is output when no MCTLj.MSGLOST flag for the normal mailboxes is set to
+1 (message is overwritten or overrun) and the RFCR.RFMLF bit is set to 1 (receive FIFO
+message lost has occurred) in the receive FIFO.
+
+11b
+
+Mailbox [28] is not output.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2322 of 3240
+
+RX72N Group
+
+43.2.16
+
+43. CAN Module (CAN)
+
+Channel Search Support Register (CSSR)
+
+Address(es): CAN0.CSSR 0009 0851h, CAN1.CSSR 0009 1851h, CAN2.CSSR 0009 2851h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Description
+
+R/W
+
+b7 to b0
+
+When the value for the channel search is input, the channel number is output to MSSR.
+
+R/W
+
+The bits in CSSR, which are set to 1, are encoded by an 8/3 encoder (the LSB position has the higher priority) and output
+to the MBNST[4:0] flags in MSSR.
+MSSR outputs the updated value whenever MSSR is read by a program.
+Write to CSSR only when the MSMR.MBSM[1:0] bits are 11b (channel search mode). Write to CSSR in CAN operation
+mode or CAN halt mode.
+
+Figure 43.4 shows the write and read of CSSR and MSSR.
+
+Address
+
+CSSR
+
+b7
+
+b6
+
+0
+
+1
+
+b3
+0
+
+0
+
+1
+
+0
+
+0
+
+b0
+
+CAN0
+
+1
+
+0009 0851h
+
+8/3 encoder
+CAN0
+MSSR
+
+Figure 43.4
+
+b7
+
+b2
+
+b0
+
+0009 0852h
+
+(1st read)
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+(Search result: Channel no. 0 read)
+
+(2nd read)
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+(Search result: Channel no. 3 read)
+
+(3rd read)
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+0
+
+(Search result: Channel no. 6 read)
+
+(4th read)
+
+1
+
+0
+
+0
+
+(Search result: No corresponding
+channel no.)
+
+Write and Read of CSSR and MSSR
+
+The value of CSSR is also updated whenever MSSR is read. When read, the value prior to conversion by the 8/3 encoder
+can be read.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2323 of 3240
+
+RX72N Group
+
+43.2.17
+
+43. CAN Module (CAN)
+
+Acceptance Filter Support Register (AFSR)
+
+Address(es): CAN0.AFSR 0009 0856h, CAN1.AFSR 0009 1856h, CAN2.AFSR 0009 2856h
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Description
+
+R/W
+
+b15 to b0
+
+After the standard ID of a received message is written, the value converted for data table search can be read.
+
+R/W
+
+Note:
+
+Write to AFSR in CAN operation mode or CAN halt mode.
+
+The acceptance filter support unit (ASU) can be used for data table (8 bits × 256) search. In the data table, all standard
+IDs created by the user are set to be valid/invalid in bit units. When AFSR is written with data in 16-bit units including
+the SID[10:0] bit in MBj (j = 0 to 31), in which a received standard ID is stored, a decoded row (byte offset) position and
+column (bit) position for data table search can be read. The ASU can be used for standard (11-bit) IDs only.
+The ASU is enabled in the following cases:
+ When the ID to receive cannot be masked by the acceptance filter
+(Example) IDs to receive: 078h, 087h, and 111h
+ When there are too many IDs to receive and software filtering time is expected to be shortened
+It should be noted that AFSR cannot be set in CAN reset mode.
+
+Figure 43.5 shows the write and read of AFSR.
+
+Address
+b15
+
+b8
+
+b7
+
+b0
+
+SID SID SID SID SID SID SID SID SID SID SID
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0
+
+When writing*1
+
+CAN0
+0009 0856h
+
+3/8 decoder
+
+b15
+
+b8
+
+b7
+
+b0
+
+SID SID SID SID SID SID SID SID
+10
+9
+8
+7
+6
+5
+4
+3
+
+When reading
+Column (bit) position in data table
+
+CAN0
+0009 0856h
+
+Row (byte offset) position in data table
+
+Note 1. Write the same value as the 16-bit unit data including the SID[10:0] bit in MBj (j = 0 to 31).
+
+Figure 43.5
+
+Write and Read of AFSR
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2324 of 3240
+
+RX72N Group
+
+43.2.18
+
+43. CAN Module (CAN)
+
+Error Interrupt Enable Register (EIER)
+
+Address(es): CAN0.EIER 0009 084Ch, CAN1.EIER 0009 184Ch, CAN2.EIER 0009 284Ch
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+BLIE
+
+OLIE
+
+ORIE
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+BORIE BOEIE
+0
+
+b2
+
+b1
+
+b0
+
+EPIE
+
+EWIE
+
+BEIE
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+BEIE
+
+Bus Error Interrupt Enable
+
+0: Bus error interrupt disabled
+1: Bus error interrupt enabled
+
+R/W
+
+b1
+
+EWIE
+
+Error-Warning Interrupt Enable
+
+0: Error-warning interrupt disabled
+1: Error-warning interrupt enabled
+
+R/W
+
+b2
+
+EPIE
+
+Error-Passive Interrupt Enable
+
+0: Error-passive interrupt disabled
+1: Error-passive interrupt enabled
+
+R/W
+
+b3
+
+BOEIE
+
+Bus-Off Entry Interrupt Enable
+
+0: Bus-off entry interrupt disabled
+1: Bus-off entry interrupt enabled
+
+R/W
+
+b4
+
+BORIE
+
+Bus-Off Recovery Interrupt Enable
+
+0: Bus-off recovery interrupt disabled
+1: Bus-off recovery interrupt enabled
+
+R/W
+
+b5
+
+ORIE
+
+Overrun Interrupt Enable
+
+0: Receive overrun interrupt disabled
+1: Receive overrun interrupt enabled
+
+R/W
+
+b6
+
+OLIE
+
+Overload Frame Transmit Interrupt
+Enable
+
+0: Overload frame transmit interrupt disabled
+1: Overload frame transmit interrupt enabled
+
+R/W
+
+b7
+
+BLIE
+
+Bus Lock Interrupt Enable
+
+0: Bus lock interrupt disabled
+1: Bus lock interrupt enabled
+
+R/W
+
+EIER is used to enable or disable the error interrupt individually for each error interrupt source in EIFR.
+Write to EIER in CAN reset mode.
+BEIE Bit (Bus Error Interrupt Enable)
+When the BEIE bit is 0, no error interrupt request is generated even if the BEIF flag in EIFR is set to 1. When the BEIE
+bit is 1, an error interrupt request is generated if the BEIF flag is set to 1.
+EWIE Bit (Error-Warning Interrupt Enable)
+When the EWIE bit is 0, no error interrupt request is generated even if the EWIF flag in EIFR is set to 1. When the EWIE
+bit is 1, an error interrupt request is generated if the EWIF flag is set to 1.
+EPIE Bit (Error-Passive Interrupt Enable)
+When the EPIE bit is 0, no error interrupt request is generated even if the EPIF flag in EIFR is set to 1. When the EPIE
+bit is 1, an error interrupt request is generated if the EPIF flag is set to 1.
+BOEIE Bit (Bus-Off Entry Interrupt Enable)
+When the BOEIE bit is 0, no error interrupt request is generated even if the BOEIF flag in EIFR is set to 1. When the
+BOEIE bit is 1, an error interrupt request is generated if the BOEIF flag is set to 1.
+BORIE Bit (Bus-Off Recovery Interrupt Enable)
+When the BORIE bit is 0, an error interrupt request is not generated even if the BORIF flag in EIFR is set to 1. When the
+BORIE bit is set to 1, an error interrupt request is generated if the BORIF flag is set to 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2325 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+ORIE Bit (Overrun Interrupt Enable)
+When the ORIE bit is 0, an error interrupt request is not generated even if the ORIF flag in EIFR is set to 1. When the
+ORIE bit is 1, an error interrupt request is generated if the ORIF flag is set to 1.
+OLIE Bit (Overload Frame Transmit Interrupt Enable)
+When the OLIE bit is 0, no error interrupt request is generated even if the OLIF flag in EIFR is set to 1. When the OLIE
+bit is 1, an error interrupt request is generated if the OLIF flag is set to 1.
+BLIE Bit (Bus Lock Interrupt Enable)
+When the BLIE bit is 0, no error interrupt request is generated even if the BLIF flag in EIFR is set to 1. When the BLIE
+bit is 1, an error interrupt request is generated if the BLIF flag is set to 1.
+
+43.2.19
+
+Error Interrupt Factor Judge Register (EIFR)
+
+Address(es): CAN0.EIFR 0009 084Dh, CAN1.EIFR 0009 184Dh, CAN2.EIFR 0009 284Dh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+BLIF
+
+OLIF
+
+ORIF
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+BORIF BOEIF
+0
+
+b2
+
+b1
+
+b0
+
+EPIF
+
+EWIF
+
+BEIF
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+BEIF
+
+Bus Error Detect Flag
+
+0: No bus error detected
+1: Bus error detected
+
+R/W
+
+b1
+
+EWIF
+
+Error-Warning Detect Flag
+
+0: No error-warning detected
+1: Error-warning detected
+
+R/W
+
+b2
+
+EPIF
+
+Error-Passive Detect Flag
+
+0: No error-passive detected
+1: Error-passive detected
+
+R/W
+
+b3
+
+BOEIF
+
+Bus-Off Entry Detect Flag
+
+0: No bus-off entry detected
+1: Bus-off entry detected
+
+R/W
+
+b4
+
+BORIF
+
+Bus-Off Recovery Detect Flag
+
+0: No bus-off recovery detected
+1: Bus-off recovery detected
+
+R/W
+
+b5
+
+ORIF
+
+Receive Overrun Detect Flag
+
+0: No receive overrun detected
+1: Receive overrun detected
+
+R/W
+
+b6
+
+OLIF
+
+Overload Frame Transmission
+Detect Flag
+
+0: No overload frame transmission detected
+1: Overload frame transmission detected
+
+R/W
+
+b7
+
+BLIF
+
+Bus Lock Detect Flag
+
+0: No bus lock detected
+1: Bus lock detected
+
+R/W
+
+If an event corresponding to each bit occurs, the corresponding bit in EIFR is set to 1 regardless of the setting of EIER.
+To set each bit to 0, write 0 by a program. If the set timing occurs simultaneously with the clear timing by the program,
+the bit becomes 1.
+When a single bit is set to 0 by a program, do not use the logic operation instruction (AND) – use the transfer instruction
+(MOV) to ensure that only the specified bit is set to 0 and the other bits are set to 1. Writing 1 has no effect to these bit
+values.
+BEIF Flag (Bus Error Detect Flag)
+The BEIF flag is set to 1 when a bus error is detected.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2326 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+EWIF Flag (Error-Warning Detect Flag)
+The EWIF flag is set to 1 when the value of the receive error counter (REC) or transmit error counter (TEC) exceeds 95.
+The EWIF flag is set to 1 only when the REC or TEC initially exceeds 95. Thus, if 0 is written to the EWIF flag by a
+program while the REC or TEC remains greater than 95, the EWIF flag is not set to 1 until the REC and TEC go below
+95 and then REC or TEC exceeds 95 again.
+EPIF Flag (Error-Passive Detect Flag)
+The EPIF flag is set to 1 when the CAN error state becomes error-passive (the REC (receive error counter) or TEC
+(transmit error counter) value exceeds 127).
+The EPIF flag is set to 1 only when the REC or TEC initially exceeds 127. Thus, if 0 is written by a program while the
+REC or TEC remains greater than 127, the EPIF flag is not set to 1 until the REC and TEC go below 127 and then REC
+or TEC exceeds 127 again.
+BOEIF Flag (Bus-Off Entry Detect Flag)
+The BOEIF flag is set to 1 when the CAN error state becomes bus-off (the TEC (transmit error counter) value exceeds
+255). The BOEIF flag is also set to 1 when the BOM[1:0] bits in CTLR are 01b (entry to CAN halt mode automatically
+at bus-off entry) and the CAN module becomes the bus-off state.
+BORIF Flag (Bus-Off Recovery Detect Flag)
+The BORIF flag is set to 1 when the CAN module recovers from the bus-off state normally by detecting 11 consecutive
+bits 128 times in the following conditions:
+ When the BOM[1:0] bits in CTLR are 00b
+ When the BOM[1:0] bits in CTLR are 10b
+ When the BOM[1:0] bits in CTLR are 11b
+However, the BORIF flag is not set to 1 if the CAN module recovers from the bus-off state in the following conditions:
+ When the CANM[1:0] bits in CTLR are set to 01b or 11b (CAN reset mode)
+ When the RBOC bit in CTLR is set to 1 (forcible return from bus-off)
+ When the BOM[1:0] bits in CTLR are set to 01b
+ When the BOM[1:0] bits in CTLR are set to 11b and the CANM[1:0] bits in CTLR are set to 10b (CAN halt mode)
+before normal recovery occurs
+
+Table 43.7 lists the behavior of BOEIF and BORIF flags according to the CTLR.BOM[1:0] bit setting.
+Table 43.7
+
+Behavior of BOEIF and BORIF Flags according to CTLR.BOM[1:0] Bit Setting
+
+BOM[1:0] Bits
+
+BOEIF Flag
+
+BORIF Flag
+
+00b
+
+Set to 1 on entry to the bus-off state.
+
+Set to 1 on exit from the bus-off state.
+
+01b
+
+Do not set to 1.
+
+10b
+
+Set to 1 on exit from the bus-off state.
+
+11b
+
+Set to 1 if normal bus-off recovery occurs before the CANM[1:0] bits are
+set to 10b (CAN halt mode).
+
+ORIF Flag (Receive Overrun Detect Flag)
+The ORIF flag is set to 1 when a receive overrun occurs. This flag is not to set to 1 in overwrite mode.
+In overwrite mode, a reception complete interrupt request is generated if an overwrite condition occurs and the ORIF flag
+is not set to 1.
+In normal mailbox mode, if an overrun occurs in any of mailboxes [0] to [31] in overrun mode, this flag is set to 1. In
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2327 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+FIFO mailbox mode, if an overrun occurs in any of mailboxes [0] to [23] or the receive FIFO in overrun mode, this flag
+is set to 1.
+OLIF Flag (Overload Frame Transmission Detect Flag)
+The OLIF flag is set to 1 if the transmitting condition of an overload frame is detected when the CAN module performs
+transmission or reception.
+BLIF Flag (Bus Lock Detect Flag)
+The BLIF flag is set to 1 if 32 consecutive dominant bits are detected on the CAN bus while the CAN module is in CAN
+operation mode.
+After the BLIF flag is set to 1, a bus lock is detected again under either of the following conditions:
+ After this flag is set to 0 from 1, recessive bits are detected
+ After this flag is set to 0 from 1, the CAN module enters CAN reset mode or CAN halt mode and then enters CAN
+operation mode again (internal reset).
+
+43.2.20
+
+Receive Error Count Register (RECR)
+
+Address(es): CAN0.RECR 0009 084Eh, CAN1.RECR 0009 184Eh, CAN2.RECR 0009 284Eh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Description
+
+R/W
+
+b7 to b0
+
+Receive error count function
+RECR increments or decrements the counter value according to the error status of the CAN module during
+reception.
+
+R
+
+RECR indicates the value of the receive error counter.
+Refer to the ISO 11898-1 Standards about the increment/decrement conditions of the receive error counter.
+The value of RECR in the bus-off state is undefined.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2328 of 3240
+
+RX72N Group
+
+43.2.21
+
+43. CAN Module (CAN)
+
+Transmit Error Count Register (TECR)
+
+Address(es): CAN0.TECR 0009 084Fh, CAN1.TECR 0009 184Fh, CAN2.TECR 0009 284Fh
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Bit
+
+Description
+
+R/W
+
+b7 to b0
+
+Transmit error count function
+TECR increments or decrements the counter value according to the error status of the CAN module during
+transmission.
+
+R
+
+TECR indicates the value of the transmit error counter.
+Refer to the ISO 11898-1 Standards about the increment/decrement conditions of the transmit error counter.
+The value of TECR in the bus-off state is undefined.
+
+43.2.22
+
+Error Code Store Register (ECSR)
+
+Address(es): CAN0.ECSR 0009 0850h, CAN1.ECSR 0009 1850h, CAN2.ECSR 0009 2850h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+EDPM
+
+ADEF
+
+BE0F
+
+BE1F
+
+CEF
+
+AEF
+
+FEF
+
+SEF
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SEF
+
+Stuff Error Flag*1, *2
+
+0: No stuff error detected
+1: Stuff error detected
+
+R/W
+
+b1
+
+FEF
+
+Form Error Flag*1, *2
+
+0: No form error detected
+1: Form error detected
+
+R/W
+
+b2
+
+AEF
+
+ACK Error Flag*1, *2
+
+0: No ACK error detected
+1: ACK error detected
+
+R/W
+
+b3
+
+CEF
+
+CRC Error Flag*1, *2
+
+0: No CRC error detected
+1: CRC error detected
+
+R/W
+
+b4
+
+BE1F
+
+Bit Error (recessive) Flag*1, *2
+
+0: No bit error (recessive) detected
+1: Bit error (recessive) detected
+
+R/W
+
+b5
+
+BE0F
+
+Bit Error (dominant) Flag*1, *2
+
+0: No bit error (dominant) detected
+1: Bit error (dominant) detected
+
+R/W
+
+b6
+
+ADEF
+
+ACK Delimiter Error Flag*1, *2
+
+0: No ACK delimiter error detected
+1: ACK delimiter error detected
+
+R/W
+
+b7
+
+EDPM
+
+Error Display Mode Select*3, *4
+
+0: Output of first detected error code
+1: Output of accumulated error code
+
+R/W
+
+Note 1. Writing 1 has no effect to these flag values.
+Note 2. To write 0 to SEF, FEF, AEF, CEF, BE1F, BE0F, and ADEF flags, do not use the logic operation instruction (AND). Use the
+transfer (MOV) instruction to ensure that only the specified flag is set to 0 and the other flags are set to 1.
+Note 3. Write to the EDPM bit in CAN reset mode or CAN halt mode.
+Note 4. If more than one error condition is detected simultaneously, all related flags are set to 1.
+
+ECSR can be used to monitor whether an error has occurred on the CAN bus.
+Refer to the ISO 11898-1 Standards to check the generation conditions of each error.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2329 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+To set each flag except for the EDPM bit to 0, write 0 by a program. If the timing at which each flag is set to 1 and the
+timing at which 0 is written by a program are the same, the relevant flag is set to 1.
+SEF Flag (Stuff Error Flag)
+The SEF flag is set to 1 when a stuff error is detected.
+FEF Flag (Form Error Flag)
+The FEF flag is set to 1 when a form error is detected.
+AEF Flag (ACK Error Flag)
+The AEF flag is set to 1 when an ACK error is detected.
+CEF Flag (CRC Error Flag)
+The CEF flag is set to 1 when a CRC error is detected.
+BE1F Flag (Bit Error (recessive) Flag)
+The BE1F flag is set to 1 when a recessive bit error is detected.
+BE0F Flag (Bit Error (dominant) Flag)
+The BE0F flag is set to 1 when a dominant bit error is detected.
+ADEF Flag (ACK Delimiter Error Flag)
+The ADEF flag is set to 1 when a form error is detected with the ACK delimiter during transmission.
+EDPM Bit (Error Display Mode Select)
+The EDPM bit selects the output mode of ECSR. When the EDPM bit is set to 0, ECSR outputs the first error code.
+When the EDPM bit is set to 1, ECSR outputs the accumulated error code.
+
+43.2.23
+
+Time Stamp Register (TSR)
+
+Address(es): CAN0.TSR 0009 0854h, CAN1.TSR 0009 1854h, CAN2.TSR 0009 2854h
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Description
+
+R/W
+
+b15 to b0
+
+Free-running counter value for the time stamp function
+
+R
+
+Note:
+
+Read TSR in 16-bit units.
+
+When TSR is read, the value of the time stamp counter (16-bit free-running counter) at that moment is read.
+The value of the time stamp counter reference clock is a multiple of 1 bit time, as configured by the TSPS[1:0] bits in
+CTLR.
+The time stamp counter stops in CAN sleep mode and CAN halt mode, and is initialized in CAN reset mode.
+The time stamp counter value is stored to bits TSL[7:0] and TSH[7:0] in MBj when a received message is stored in a
+receive mailbox.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2330 of 3240
+
+RX72N Group
+
+43.2.24
+
+43. CAN Module (CAN)
+
+Test Control Register (TCR)
+
+Address(es): CAN0.TCR 0009 0858h, CAN1.TCR 0009 1858h, CAN2.TCR 0009 2858h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+—
+
+—
+
+—
+
+—
+
+—
+
+TSTM[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b0
+TSTE
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+TSTE
+
+CAN Test Mode Enable
+
+0: CAN test mode disabled
+1: CAN test mode enabled
+
+R/W
+
+b2, b1
+
+TSTM[1:0]
+
+CAN Test Mode Select
+
+b2 b1
+
+R/W
+
+b7 to b3
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+0 0: Other than CAN test mode
+0 1: Listen-only mode
+1 0: Self-test mode 0 (external loopback)
+1 1: Self-test mode 1 (internal loopback)
+
+TCR controls the CAN test mode. Write to TCR in CAN halt mode only.
+
+(1)
+
+Listen-Only Mode
+
+The ISO 11898-1 Standards recommend an optional bus monitoring mode. In listen-only mode, valid data frames and
+valid remote frames can be received. However, only recessive bits can be sent on the CAN bus, and the ACK bit,
+overload flag, and active error flag cannot be sent.
+Listen-only mode can be used for baud rate detection.
+Do not request transmission from any mailboxes in listen-only mode.
+Figure 43.6 shows the connection when listen-only mode is selected (i = 0 to 2).
+
+CTXi
+
+CRXi
+
+Recessive level
+
+CTXi
+(internal)
+
+Figure 43.6
+
+CRXi
+(internal)
+
+Connection when Listen-Only Mode is Selected (i = 0 to 2)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2331 of 3240
+
+RX72N Group
+
+(2)
+
+43. CAN Module (CAN)
+
+Self-Test Mode 0 (External Loopback))
+
+Self-test mode 0 is provided for CAN transceiver tests.
+In self-test mode 0, the protocol controller treats its own transmitted messages as messages received via the CAN
+transceiver and stores them into the receive mailbox. To be independent from external stimulation, the protocol controller
+generates the ACK bit.
+Connect the CTXi and CRXi pins to the transceiver.
+Figure 43.7 shows the connection when self-test mode 0 is selected (i = 0 to 2).
+
+CAN transceiver
+CTXi
+
+CRXi
+
+ACK
+CTXi
+(internal)
+
+Figure 43.7
+
+(3)
+
+CRXi
+(internal)
+
+Connection when Self-Test Mode 0 is Selected (i = 0 to 2)
+
+Self-Test Mode 1 (Internal Loopback)
+
+Self-test mode 1 is provided for self-test functions.
+In self-test mode 1, the protocol controller treats its transmitted messages as received messages and stores them into the
+receive mailbox. To be independent from external stimulation, the protocol controller generates the ACK bit.
+In self-test mode 1, the protocol controller performs an internal feedback from the internal CTXi pin to the internal CRXi
+pin. The input value of the external CRXi pin is ignored. The external CTXi pin outputs only recessive bits. The CTXi
+and CRXi pins do not need to be connected to the CAN bus or any external device.
+Figure 43.8 shows the connection when self-test mode 1 is selected (i = 0 to 2).
+
+CTXi
+
+CRXi
+
+Recessive level
+
+ACK
+CTXi
+(internal)
+
+Figure 43.8
+
+CRXi
+(internal)
+
+Connection when Self-Test Mode 1 is Selected (i = 0 to 2)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2332 of 3240
+
+RX72N Group
+
+43.3
+
+43. CAN Module (CAN)
+
+Operating Mode
+
+The CAN module has the following four operating modes.
+ CAN reset mode
+ CAN halt mode
+ CAN operation mode
+ CAN sleep mode
+
+Figure 43.9 shows the transition between CAN operating modes.
+
+CPU reset
+CANM[1:0] = 01b or 11b
+when SLPM = 0
+CAN sleep mode*2
+
+CANM[1:0] = 00b
+CAN reset mode
+
+CAN operation mode
+CANM[1:0]
+= 01b, 11b
+
+SLPM = 1
+
+CANM[1:0]
+= 00b
+
+When
+CANM[1:0] = 10b,
+SLPM = 0
+SLPM = 1
+
+CANM[1:0]
+= 10b
+
+CANM[1:0]
+= 01b, 11b
+
+TEC > 255
+CANM[1:0] =
+10b*3
+
+CANM[1:0]
+= 01b, 11b
+
+CAN halt mode
+
+When BOM[1:0] = 00b or 11b
+(no halt request) and 11
+consecutive recessive bits are
+detected 128 times or RBOC = 1
+
+CAN operation mode
+(bus-off state)
+
+CANM[1:0] = 10b*1
+CANM, SLPM, BOM, RBOC: Bits in CTLR
+Note 1. The transition timing from the bus-off state to CAN halt mode depends on the setting of the CTLR.BOM[1:0] bits.
+When the CTLR.BOM[1:0] bits are 01b, the state transition timing is immediately after entering the bus-off state.
+When the CTLR.BOM[1:0] bits are 10b, the state transition timing is at the end of the bus-off state.
+When the CTLR.BOM[1:0] bits are 11b, the state transition timing is at the setting of the CTLR.CANM[1:0] bits to 10b
+(CAN halt mode).
+Note 2. Change the CTLR.SLPM bit to set or cancel CAN sleep mode.
+Note 3. While the CAN bus is locked at the dominant level, the CAN module does not enter CAN halt mode. In that case, enter
+CAN reset mode.
+
+Figure 43.9
+
+Transition between CAN Operating Modes
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2333 of 3240
+
+RX72N Group
+
+43.3.1
+
+43. CAN Module (CAN)
+
+CAN Reset Mode
+
+CAN reset mode is provided for CAN communication configuration.
+When the CTLR.CANM[1:0] bits are set to 01b or 11b, the CAN module enters CAN reset mode. Then, the STR.RSTST
+flag is set to 1. Do not change the CTLR.CANM[1:0] bits until the RSTST flag is set to 1. Set BCR before exiting CAN
+reset mode to any other modes.
+The following registers are initialized to their reset values after entering CAN reset mode, and their initial values are
+retained during CAN reset mode:
+ MCTLj
+ STR (except for the SLPST and TFST flags)
+ EIFR
+ RECR
+ TECR
+ TSR
+ MSSR
+ MSMR
+ RFCR
+ TFCR
+ TCR
+ ECSR (except for the EDPM bit)
+The following registers retain their previous values even after entering CAN reset mode.
+ CTLR
+ STR (only the SLPST and TFST flags)
+ MIER
+ EIER
+ BCR
+ CSSR
+ ECSR (only the EDPM bit)
+ MBj
+ MKR0 to MKR7
+ FIDCR0 and FIDCR1
+ MKIVLR
+ AFSR
+ RFPCR
+ TFPCR
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2334 of 3240
+
+RX72N Group
+
+43.3.2
+
+43. CAN Module (CAN)
+
+CAN Halt Mode
+
+CAN halt mode is used for mailbox configuration and test mode setting.
+When the CTLR.CANM[1:0] bits are set to 10b, CAN halt mode is selected. Then the STR.HLTST flag is set to 1. Do
+not change the CTLR.CANM[1:0] bits until the HLTST flag is set to 1.
+See Table 43.8 for the state transition conditions when transmitting or receiving.
+All registers except for RSTST, HLTST, and SLPST flags in STR remain unchanged when the CAN enters CAN halt
+mode.
+Do not change CTLR (except for bits CANM[1:0] and SLPM) and EIER in CAN halt mode. BCR can be changed in
+CAN halt mode only when listen-only mode is selected for automatic baud rate detection.
+Table 43.8
+
+Operation in CAN Reset Mode and CAN Halt Mode
+
+Mode
+
+Receiver
+
+Transmitter
+
+Bus-Off
+
+CAN reset mode
+(forcible transition)
+CANM[1:0] = 11b
+
+CAN module enters CAN reset
+mode without waiting for the end
+of message reception.
+
+CAN module enters CAN reset
+mode without waiting for the end
+of message transmission.
+
+CAN module enters CAN reset mode
+without waiting for the end of bus-off
+recovery.
+
+CAN reset mode
+CANM[1:0] = 01b
+
+CAN module enters CAN reset
+mode without waiting for the end
+of message reception.
+
+CAN module enters CAN reset
+mode after waiting for the end of
+message transmission.*1, *4
+
+CAN module enters CAN reset mode
+without waiting for the end of bus-off
+recovery.
+
+CAN halt mode
+
+CAN module enters CAN halt
+mode after waiting for the end of
+message reception.*2, *3
+
+CAN module enters CAN halt
+mode after waiting for the end of
+message transmission.*1, *2, *4
+
+[When the BOM[1:0] bits are 00b]
+A halt request from a program will be
+accepted only after bus-off recovery.
+[When the BOM[1:0] bits are 01b]
+CAN module automatically enters CAN
+halt mode without waiting for the end of
+bus-off recovery (regardless of a halt
+request from a program).
+[When the BOM[1:0] bits are 10b]
+CAN module automatically enters CAN
+halt mode after waiting for the end of
+bus-off recovery (regardless of a halt
+request from a program).
+[When the BOM[1:0] bits are 11b]
+CAN module enters CAN halt mode
+(without waiting for the end of bus-off
+recovery) if a halt is requested by a
+program during bus-off.
+
+CANM[1:0], BOM[1:0]: Bits in CTLR
+Note 1. If several messages are requested to be transmitted, mode transition occurs after the completion of the first message
+transmission. In a case that the CAN reset mode is being requested during suspend transmission, mode transition occurs when
+the bus is idle, the next transmission ends, or the CAN module becomes a receiver.
+Note 2. If the CAN bus is locked at the dominant level, the program can detect this state by monitoring the EIFR.BLIF flag.
+While the CAN bus is locked at the dominant level, the CAN module does not enter CAN halt mode. In that case, enter CAN
+reset mode.
+Note 3. If a CAN bus error occurs during reception after CAN halt mode is requested, the CAN module transits to CAN halt mode.
+However, while the CAN bus is locked at the dominant level, the CAN module does not enter CAN halt mode.
+Note 4. If a CAN bus error or arbitration-lost occurs during transmission after CAN reset mode or CAN halt mode is requested, the CAN
+module transits to the requested operating mode. However, while the CAN bus is locked at the dominant level, the CAN module
+does not enter CAN halt mode.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2335 of 3240
+
+RX72N Group
+
+43.3.3
+
+43. CAN Module (CAN)
+
+CAN Sleep Mode
+
+CAN sleep mode is used for reducing current consumption by stopping the clock supply to the CAN module. After a
+reset from an MCU pin or software reset, the CAN module starts from CAN sleep mode.
+When the SLPM bit in CTLR is set to 1, the CAN module enters CAN sleep mode. Then, the SLPST flag in STR is set to
+1. Do not change the value of the SLPM bit until the SLPST flag is set to 1. The other registers remain unchanged when
+the CAN module enters CAN sleep mode.
+Write to the SLPM bit in CAN reset mode and CAN halt mode. Do not change any registers (except for the SLPM bit)
+during CAN sleep mode. Read operation is still allowed.
+When the SLPM bit is set to 0, the CAN module is released from CAN sleep mode. When the CAN module exits CAN
+sleep mode, the other registers remain unchanged.
+
+43.3.4
+
+CAN Operation Mode (Excluding Bus-Off State)
+
+CAN operation mode is used for CAN communication.
+When the CANM[1:0] bits in CTLR are set to 00b, the CAN module enters CAN operation mode.
+Then RSTST and HLTST flags in STR are set to 0. Do not change the value of the CANM[1:0] until bits RSTST and
+HLTST flags are set to 0.
+If 11 consecutive recessive bits are detected after entering CAN operation mode, the CAN module is in the following
+states:
+ The CAN module becomes an active node on the network, thus enabling transmission and reception of CAN
+messages.
+ Error monitoring of the CAN bus, such as receive and transmit error counters, is performed.
+During CAN operation mode, the CAN module may be in one of the following three sub-modes, depending on the status
+of the CAN bus.
+ Idle mode: Transmission or reception is not being performed.
+ Receive mode: A CAN message sent by another node is being received.
+ Transmit mode:A CAN message is being transmitted. The CAN module receives a message transmitted by the local
+node simultaneously when self-test mode 0 (TSTM[1:0] bits in TCR = 10b) or self-test mode 1 (TSTM[1:0] bits =
+11b) is selected.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2336 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+Figure 43.10 shows the sub-modes of CAN operation mode.
+
+Idle mode
+STR.TRMST = 0
+STR.RECST = 0
+SOF
+detected
+
+Transmission
+starts
+Transmission
+completed
+Transmit mode
+STR.TRMST = 1
+STR.RECST = 0
+
+Figure 43.10
+
+43.3.5
+
+Reception
+completed
+
+Lost in arbitration
+
+Receive mode
+STR.TRMST = 0
+STR.RECST = 1
+
+Sub-Modes of CAN Operation Mode
+
+CAN Operation Mode (Bus-Off State)
+
+The CAN module enters the bus-off state according to the increment/decrement rules for the transmit/error counters in
+the CAN Specifications.
+The following cases apply when the CAN module is recovering from the bus-off state. When the CAN module is in the
+bus-off state, the values of the CAN-related registers, except for STR, EIFR, RECR, TECR and TSR, remain unchanged.
+
+(1)
+
+When bits BOM[1:0] in CTLR are 00b (normal mode)
+
+The CAN module enters the error-active state after it has completed the recovery from the bus-off state and CAN
+communication is enabled. The BORIF flag in EIFR is set to 1 (bus-off recovery detected) at this time.
+
+(2)
+
+When bit RBOC in CTLR is set to 1 (forcible return from bus-off)
+
+The CAN module enters the error-active state when it is in the bus-off state and the RBOC bit is set to 1. CAN
+communication is enabled again after 11b consecutive recessive bits are detected. The BORIF flag is not set to 1 at this
+time.
+
+(3)
+
+When bits BOM[1:0] are 01b (automatic transition to CAN halt mode at bus-off entry)
+
+The CAN module enters CAN halt mode when it reaches the bus-off state. The BORIF flag is not set to 1 at this time.
+
+(4)
+
+When bits BOM[1:0] are 10b (automatic transition to CAN halt mode at bus-off end)
+
+The CAN module enters CAN halt mode when it has completed the recovery from bus-off. The BORIF flag is set to 1 at
+this time.
+
+(5)
+
+When bits BOM[1:0] are 11b (automatic transition to CAN halt mode by a program) and bits
+CANM[1:0] in CTLR are set to 10b (CAN halt mode) during bus-off state
+
+The CAN module enters CAN halt mode when it is in the bus-off state and the CANM[1:0] bits are set to 10b (CAN halt
+mode). The BORIF flag is not set to 1 at this time.
+If the CANM[1:0] bits are not set to 10b during bus-off, the same behavior as (1) applies.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2337 of 3240
+
+RX72N Group
+
+43.4
+
+43. CAN Module (CAN)
+
+CAN Communication Speed Setting
+
+The following description explains about CAN communication speed setting.
+
+43.4.1
+
+CAN Clock Setting
+
+The CAN module has a CAN clock selector.
+The CAN clock can be set by the CCLKS bit and the BRP[9:0] bits in BCR.
+Figure 43.11 shows a block diagram of the CAN clock generator.
+
+Peripheral module clock
+(PCLKB)
+EXTAL
+
+PLL
+frequency
+synthesizer
+
+CCLKS
+
+Frequency
+divider
+
+0
+1
+
+Baud rate
+prescaler
+1/(P + 1)
+
+fCAN
+
+fCANCLK
+
+P = 0 to 1023
+
+CCLKS: Bit in the BCR register
+fCAN:
+CAN system clock
+P:
+Value selected by BRP[9:0] bits in BCR (P = 0 to 1023)
+fCANCLK: CAN communication clock (fCANCLK = fCAN/(P + 1))
+
+Figure 43.11
+
+43.4.2
+
+Block Diagram of CAN Clock Generator
+
+Bit Timing Setting
+
+The bit time consists of the following three segments.
+Figure 43.12 shows the bit timing.
+
+Bit time
+
+SS
+
+TSEG1
+
+TSEG2
+
+Sample point
+The range of each segment:
+
+Bit time = 8 Tq to 25 Tq
+SS = 1 Tq
+TSEG1 = 4 Tq to 16 Tq
+TSEG2 = 2 Tq to 8 Tq
+SJW = 1 Tq to 4 Tq
+Setting of TSEG1 and TSEG2: TSEG1 > TSEG2  SJW
+
+Figure 43.12
+
+Bit Timing
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2338 of 3240
+
+RX72N Group
+
+43.4.3
+
+43. CAN Module (CAN)
+
+Bit Rate
+
+The bit rate depends on the division value of fCAN (CAN clock), the division value of the baud rate prescaler, and the
+number of Tq of 1 bit time.
+Bit rate [bps]
+
+=
+
+fCAN
+Baud rate prescaler division value*1 x number of Tq of 1 bit time
+
+fCANCLK
+
+=
+
+Number of Tq of 1 bit time
+
+Note 1. Division value of baud rate prescaler = P + 1 (P: 0 to 1023)
+P: Setting of the BRP[9:0] bits in BCR
+
+Table 43.9 lists bit rate examples.
+Table 43.9
+
+Bit Rate Examples
+
+fCAN
+
+50 MHz
+
+48 MHz
+
+Number of
+Tq
+
+P+1
+
+1 Mbps
+
+10Tq
+25Tq
+
+500 kbps
+
+40 MHz
+
+Number of
+Tq
+
+Number of
+Tq
+
+P+1
+
+5
+2
+
+8Tq
+12Tq
+16Tq
+
+6
+4
+3
+
+10Tq
+20Tq
+
+10Tq
+25Tq
+
+10
+4
+
+8Tq
+12Tq
+16Tq
+
+12
+8
+6
+
+250 kbps
+
+10Tq
+25Tq
+
+20
+8
+
+8Tq
+12Tq
+16Tq
+
+125 kbps
+
+10Tq
+25Tq
+
+40
+16
+
+83.3 kbps
+
+10Tq
+25Tq
+
+33.3 kbps
+
+10Tq
+25Tq
+
+Bit Rate
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+32 MHz
+P+1
+
+Number of
+Tq
+
+P+1
+
+4
+2
+
+8Tq
+16Tq
+
+4
+2
+
+10Tq
+20Tq
+
+8
+4
+
+8Tq
+16Tq
+
+8
+4
+
+24
+16
+12
+
+10Tq
+20Tq
+
+16
+8
+
+8Tq
+16Tq
+
+16
+8
+
+8Tq
+12Tq
+16Tq
+
+48
+32
+24
+
+10Tq
+20Tq
+
+32
+16
+
+8Tq
+16Tq
+
+32
+16
+
+60
+24
+
+8Tq
+12Tq
+16Tq
+
+72
+48
+36
+
+8Tq
+10Tq
+16Tq
+20Tq
+
+60
+48
+30
+24
+
+8Tq
+16Tq
+
+48
+24
+
+150
+60
+
+8Tq
+12Tq
+16Tq
+
+180
+120
+90
+
+8Tq
+10Tq
+20Tq
+
+150
+120
+60
+
+8Tq
+10Tq
+16Tq
+20Tq
+
+120
+96
+60
+48
+
+Page 2339 of 3240
+
+RX72N Group
+
+43.5
+
+43. CAN Module (CAN)
+
+Mailbox and Mask Register Structure
+
+Figure 43.13 shows the structure of MBj.
+There are 32 mailboxes with the same structure.
+
+Address
+b7
+IDE
+
+RTR
+
+SID5
+
+SID4
+
+SID3
+
+b0
+
+CAN0
+
+SID10 SID9
+
+SID8
+
+SID6
+
+0009 0200h + 16  j + 0
+
+SID2
+
+SID0 EID17 EID16
+
+0009 0200h + 16 j + 1
+
+SID1
+
+SID7
+
+EID15 EID14 EID13 EID12 EID11 EID10 EID9
+
+EID8
+
+0009 0200h + 16 j + 2
+
+EID7
+
+EID0
+
+0009 0200h + 16 j + 3
+
+EID6
+
+EID5
+
+EID4
+
+EID3
+
+EID2
+
+EID1
+
+0009 0200h + 16  j + 4
+
+DLC3 DLC2 DLC1 DLC0
+
+0009 0200h + 16  j + 5
+
+DATA0
+
+0009 0200h + 16 j + 6
+
+DATA1
+
+0009 0200h + 16 j + 7
+
+DATA7
+
+0009 0200h + 16  j + 13
+
+TSH
+
+0009 0200h + 16  j + 14
+
+TSL
+
+0009 0200h + 16  j + 15
+
+MBj register
+
+Figure 43.13
+
+Structure of MBj (j = 0 to 31)
+
+Figure 43.14 shows the structure of MKRk.
+There are eight mask registers with the same structure.
+
+Address
+b0
+
+CAN0
+
+SID10 SID9
+
+SID8
+
+SID6
+
+0009 0400h + 4  k + 0
+
+SID2
+
+SID0 EID17 EID16
+
+0009 0400h + 4  k + 1
+
+b7
+
+SID5
+
+SID4
+
+SID3
+
+SID1
+
+SID7
+
+EID15 EID14 EID13 EID12 EID11 EID10 EID9
+
+EID8
+
+0009 0400h + 4  k + 2
+
+EID7
+
+EID0
+
+0009 0400h + 4  k + 3
+
+EID6
+
+EID5
+
+EID4
+
+EID3
+
+EID2
+
+EID1
+
+MKRk register
+
+Figure 43.14
+
+Structure of MKRk (k = 0 to 7)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2340 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+Figure 43.15 shows the structure of FIDCR0 and FIDCR1.
+There are two FIFO received ID compare registers with the same structure.
+
+Address
+b7
+IDE
+
+RTR
+
+SID5
+
+SID4
+
+SID3
+
+b0
+
+CAN0
+
+SID10 SID9
+
+SID8
+
+SID6
+
+0009 0420h + 4 n + 0
+
+SID2
+
+SID0 EID17 EID16
+
+0009 0420h + 4 n + 1
+
+SID1
+
+SID7
+
+EID15 EID14 EID13 EID12 EID11 EID10 EID9
+
+EID8
+
+0009 0420h + 4 n + 2
+
+EID7
+
+EID0
+
+0009 0420h + 4 n + 3
+
+EID6
+
+EID5
+
+EID4
+
+EID3
+
+EID2
+
+EID1
+
+FIDCRn register
+
+Figure 43.15
+
+43.6
+
+Structure of FIDCRn (n = 0, 1)
+
+Acceptance Filtering and Masking Functions
+
+The acceptance filtering function and masking function allows the user to select and receive messages with a specified
+range of multiple IDs for mailboxes.
+Registers MKR0 to MKR7 can perform masking of the standard ID and the extended ID of 29 bits.
+ MKR0 corresponds to mailboxes [0] to [3]
+ MKR1 corresponds to mailboxes [4] to [7]
+ MKR2 corresponds to mailboxes [8] to [11]
+ MKR3 corresponds to mailboxes [12] to [15]
+ MKR4 corresponds to mailboxes [16] to [19]
+ MKR5 corresponds to mailboxes [20] to [23]
+ MKR6 corresponds to mailboxes [24] to [27] in normal mailbox mode and the receive FIFO mailboxes [28] to [31]
+in FIFO mailbox mode.
+ MKR7 corresponds to mailboxes [28] to [31] in normal mailbox mode and the receive FIFO mailboxes [28] to [31]
+in FIFO mailbox mode.
+MKIVLR disables acceptance filtering individually for each mailbox.
+The IDE bit in MBj is valid when the IDFM[1:0] bits in CTLR are 10b (mixed ID mode).
+The RTR bit in MBj selects a data frame or a remote frame.
+In FIFO mailbox mode, normal mailboxes (mailboxes [0] to [23]) use the single corresponding register among MKR0 to
+MKR5 for acceptance filtering. Receive FIFO mailboxes (mailboxes [28] to [31]) use two registers MKR6 and MKR7
+for acceptance filtering.
+Also, the receive FIFO uses two registers FIDCR0 and FIDCR1 for ID comparison. Bits EID[17:0], SID[10:0], RTR, and
+IDE in MB28 to MB31 for the receive FIFO are disabled. As acceptance filtering depends on the result of two logic
+AND operations, two ranges of IDs can be received into the receive FIFO.
+MKIVLR is disabled for the receive FIFO.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2341 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+If both the standard ID and extended ID are set in the IDE bits in FIDCR0 and FIDCR1 individually, both ID formats are
+received.
+If both the data frame and remote frame are set in the RTR bits in FIDCR0 and FIDCR1 individually, both data and
+remote frames are received.
+When combination with two ranges of IDs is not necessary, set the same mask value and the same ID into both the FIFO
+ID and mask register.
+Figure 43.16 shows the correspondence between mask registers and mailboxes. Figure 43.17 shows acceptance
+filtering.
+
+FIFO mailbox mode
+
+Normal mailbox mode
+
+Mailbox [0]
+
+Mailbox [0]
+
+MKR0 register
+
+MKR0 register
+Mailbox [3]
+
+Mailbox [3]
+
+Mailbox [4]
+
+Mailbox [4]
+
+MKR1 register
+
+MKR1 register
+Mailbox [7]
+
+Mailbox [7]
+
+Mailbox [8]
+
+Mailbox [8]
+
+MKR2 register
+
+MKR2 register
+Mailbox [11]
+
+Mailbox [11]
+
+Mailbox [12]
+
+Mailbox [12]
+
+MKR3 register
+
+MKR3 register
+Mailbox [15]
+
+Mailbox [15]
+
+Mailbox [16]
+
+Mailbox [16]
+
+MKR4 register
+
+MKR4 register
+Mailbox [19]
+
+Mailbox [19]
+
+Mailbox [20]
+
+Mailbox [20]
+
+MKR5 register
+
+MKR5 register
+Mailbox [23]
+Mailbox [24]
+
+MKR6 register
+Mailbox [27]
+Mailbox [28]
+MKR7 register
+Mailbox [31]
+
+Figure 43.16
+
+Mailbox [23]
+MKR6 register
+FIDCR0 register
+
+MKR7 register
+FIDCR1 register
+
+Mailbox [24]
+Transmit FIFO
+Mailbox [27]
+Mailbox [28]
+Receive FIFO
+Mailbox [31]
+
+Correspondence between Mask Registers and Mailboxes
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2342 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+ID setting of MBj
+(j = 0 to 31)*1
+ID value of received
+message
+
+Setting of MKIVLR*2
+Setting of MKRk
+(k = 0 to 7)
+
+Mask bit values
+0: IDs not compared
+1: IDs compared
+
+Acceptance judge signal
+Acceptance judge signal
+0: Receiving message is ignored
+(not stored in any mailbox)
+1: Receiving message is stored in a mailbox
+which matches the ID
+
+Note 1. The settings of FIDCR0 and FIDCR1 are used in FIFO mailbox mode.
+Note 2. Invalid in FIFO mailboxes.
+
+Figure 43.17
+
+Acceptance Filtering
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2343 of 3240
+
+RX72N Group
+
+43.7
+
+43. CAN Module (CAN)
+
+Reception and Transmission
+
+Table 43.10 lists how to make the CAN communication mode settings.
+Table 43.10
+
+Setting of CAN Receive Mode and CAN Transmit Mode
+
+MCTLj.
+TRMREQ
+
+MCTLj.
+RECREQ
+
+MCTLj.
+ONESHOT
+
+Communication Mode of Mailbox
+
+0
+
+0
+
+0
+
+Mailbox disabled or transmission being aborted.
+
+0
+
+0
+
+1
+
+Can be configured only when transmission or reception from a mailbox programmed in
+one-shot mode is aborted.
+
+0
+
+1
+
+0
+
+Configured as a receive mailbox for a data frame or a remote frame.
+
+0
+
+1
+
+1
+
+Configured as a one-shot receive mailbox for a data frame or a remote frame.
+
+1
+
+0
+
+0
+
+Configured as a transmit mailbox for a data frame or a remote frame.
+
+1
+
+0
+
+1
+
+Configured as a one-shot transmit mailbox for a data frame or a remote frame.
+
+1
+
+1
+
+0
+
+Do not set.
+
+1
+
+1
+
+1
+
+Do not set.
+
+j = 0 to 31
+
+When a mailbox is configured as a receive mailbox or a one-shot receive mailbox, note the following:
+1. Before a mailbox is configured as a receive mailbox or a one-shot receive mailbox, set MCTLj to 00h.
+2. A received message is stored into the first mailbox that matches the condition according to the result of receive
+mode setting and acceptance filtering. Upon deciding the mailbox to store the received message, the mailbox with
+the smaller number has higher priority.
+3. In CAN operation mode, when the CAN module transmits a message whose ID matches with the ID/mask set of a
+mailbox configured to receive messages, the CAN module never receives the transmitted data. In self-test mode,
+however, the CAN module will receive its transmitted data. In this case, the CAN module returns ACK.
+When configuring a mailbox as a transmit mailbox or a one-shot transmit mailbox, note the following:
+4. Before a mailbox is configured as a transmit mailbox or a one-shot transmit mailbox, ensure that MCTLj is 00h and
+that there is no pending abort process.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2344 of 3240
+
+RX72N Group
+
+43.7.1
+
+43. CAN Module (CAN)
+
+Reception
+
+Figure 43.18 shows an operation example of data frame reception in overwrite mode.
+This example shows the operation of overwriting the first message when the CAN module receives two consecutive
+CAN messages which match the receiving conditions of MCTLj (j = 0 to 31).
+
+Receive message in mailbox j
+SOF
+
+CRC
+
+ACK
+
+Receive message in mailbox j
+EOF
+
+IFS SOF
+
+CRC
+
+ACK
+
+EOF
+
+IFS
+
+CAN bus
+Acceptance filtering
+
+MCTLj.
+RECREQ
+
+Acceptance filtering
+
+MCTLj.
+INVALDATA
+MCTLj.
+NEWDATA
+MCTLj.
+MSGLOST
+CANi reception
+complete interrupt
+STR.
+RECST
+CANi error
+interrupt
+j = 0 to 31
+
+Figure 43.18
+
+Operation Example of Data Frame Reception in Overwrite Mode
+
+1. When an SOF is detected on the CAN bus, the RECST flag in STR is set to 1 (reception in progress) if the CAN
+module has no message ready to start transmission.
+2. The acceptance filter processing starts at the beginning of the CRC field to select the receive mailbox.
+3. After a message has been received, the NEWDATA flag in MCTLj for the receive mailbox is set to 1 (new message
+is being stored or has been stored to the mailbox). The INVALDATA flag in MCTLj is set to 1 (message is being
+updated) at the same time, and then the INVALDATA flag is set to 0 (message valid) again after the complete
+message is transferred to the mailbox.
+4. When the interrupt enable bit in MIER for the receive mailbox is 1 (interrupt enabled), the CANi reception
+complete interrupt request is generated. This interrupt (CANi reception complete interrupt) is generated when the
+INVALDATA flag is set to 0.
+5. After reading the message from the mailbox, the NEWDATA flag needs to be set to 0 by a program.
+6. In overwrite mode, if the next CAN message has been received into a mailbox whose NEWDATA flag is still set to
+1, the MSGLOST flag in MCTLj is set to 1 (message has been overwritten). The new received message is
+transferred to the mailbox. The CANi reception complete interrupt request is generated the same as in 4.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2345 of 3240
+
+RX72N Group
+
+43. CAN Module (CAN)
+
+Figure 43.19 shows the operation example of data frame reception in overrun mode.
+This example shows the operation of overrunning the second message when the CAN module receives two consecutive
+CAN messages which match the receiving conditions of MCTLj (j = 0 to 31).
+
+Receive message in mailbox j
+SOF
+
+CRC
+
+ACK
+
+Receive message in mailbox j
+EOF
+
+IFS SOF
+
+CRC
+
+ACK
+
+EOF
+
+IFS
+
+CAN bus
+Acceptance filtering
+
+MCTLj.
+RECREQ
+
+Acceptance filtering
+
+MCTLj.
+INVALDATA
+MCTLj.
+NEWDATA
+MCTLj.
+MSGLOST
+CANi reception
+complete interrupt
+STR.
+RECST
+CANi error
+interrupt
+
+j = 0 to 31
+Figure 43.19
+
+Operation Example of Data Frame Reception in Overrun Mode
+
+1. to 5. are the same as in overwrite mode.
+6. In overrun mode, if the next CAN message has been received before the NEWDATA flag in MCTLj is set to 0, the
+MSGLOST flag in MCTLj is set to 1 (message has been overrun). The new received message is discarded and a
+CANi error interrupt request is generated if the corresponding interrupt enable bit in EIER is set to 1 (interrupt
+enabled).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2346 of 3240
+
+RX72N Group
+
+43.7.2
+
+43. CAN Module (CAN)
+
+Transmission
+
+Figure 43.20 shows an operation example of data frame transmission.
+
+Transmission message in mailbox j
+SOF
+
+CRC
+
+CRC
+delimiter
+
+Transmission message in mailbox k
+EOF
+
+IFS SOF
+
+CRC
+
+CRC
+delimiter
+
+EOF
+
+IFS
+
+CAN bus
+
+Mailbox j
+
+MCTLj.
+TRMREQ
+
+Next transmission scan
+
+Next transmission scan
+
+Next transmission scan
+
+MCTLj.
+TRMACTIVE
+MCTLj.
+SENTDATA
+
+Mailbox k
+
+MCTLk.
+TRMREQ
+MCTLk.
+TRMACTIVE
+MCTLk.
+SENTDATA
+CANi
+transmission
+complete
+interrupt
+STR.
+TRMST
+
+j, k = 0 to 31, j  k
+
+Figure 43.20
+
+Operation Example of Data Frame Transmission
+
+1. When a TRMREQ bit in MCTLj (j = 0 to 31) is set to 1 (transmit mailbox) in the bus-idle state, the mailbox scan
+processing starts to decide the highest-priority mailbox for transmission. Once the transmit mailbox is decided, the
+TRMACTIVE flag in MCTLj is set to 1 (from acceptance of transmission request to completion of transmission, or
+error/arbitration-lost), the TRMST flag in STR is set to 1 (transmission in progress), and the CAN module starts
+transmission.*1
+2. If other TRMREQ bits are set, the transmission scan processing starts with the CRC delimiter for the next
+transmission.
+3. If transmission is completed without losing arbitration, the SENTDATA flag in MCTLj is set to 1 (transmission
+completed) and the TRMACTIVE flag is set to 0 (transmission is pending or transmission is not requested). If the
+interrupt enable bit in MIER is 1 (interrupt enabled), the CANi transmission complete interrupt request is generated.
+4. When requesting the next transmission from the same mailbox, set SENTDATA flag and TRMREQ bit to 0, then
+set the TRMREQ bit to 1 after checking that SENTDATA flag and TRMREQ bit have been set to 0.
+Note 1. If arbitration is lost after the CAN module starts transmission, the TRMACTIVE flag is set to 0. The transmission
+scan processing is performed again to search for the highest-priority transmit mailbox from the beginning of the
+CRC delimiter. If an error occurs either during transmission or following the arbitration-lost, the transmission
+scan processing is performed again to search for the highest-priority transmit mailbox from the start of the error
+delimiter.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2347 of 3240
+
+RX72N Group
+
+43.8
+
+43. CAN Module (CAN)
+
+CAN Interrupt
+
+The CAN module provides the following CAN interrupts for each channel. Table 43.11 lists CAN interrupts.
+ CANi reception complete interrupt (mailboxes 0 to 31) [RXMi]
+ CANi transmission complete interrupt (mailboxes 0 to 31) [TXMi]
+ CANi receive FIFO interrupt [RXFi]
+ CANi transmit FIFO interrupt [TXFi]
+ CANi error interrupt [ERSi]
+There are eight types of interrupt sources for the CANi error interrupts. These sources can be determined by checking
+EIFR.
+- Bus error
+- Error-warning
+- Error-passive
+- Bus-off entry
+- Bus-off recovery
+- Receive overrun
+- Overload frame transmission
+- Bus lock
+Table 43.11
+
+CAN Interrupts
+
+Module
+
+Interrupt
+Symbol
+
+Interrupt Source
+
+Source Flag
+
+CANi
+
+ERSi
+
+Bus lock detected
+
+EIFR.BLIF
+
+Overload frame transmission detected
+
+EIFR.OLIF
+
+RXFi
+
+Overrun detected
+
+EIFR.ORIF
+
+Bus-off recovery detected
+
+EIFR.BORIF
+
+Bus-off entry detected
+
+EIFR.BOEIF
+
+Error-passive detected
+
+EIFR.EPIF
+
+Error-warning detected
+
+EIFR.EWIF
+
+Bus error detected
+
+EIFR.BEIF
+
+Receive FIFO message received (MIER[29] = 0)
+
+RFCR.RFUST[2:0]
+
+Receive FIFO warning (MIER[29] = 1)
+TXFi
+
+Transmit FIFO message transmission completed (MIER[25] = 0)
+
+TFCR.TFUST[2:0]
+
+FIFO last message transmission completed (MIER[25] = 1)
+RXMi
+
+Mailbox 0 to 31 message received
+
+MCTL0.NEWDATA to
+MCTL31.NEWDATA
+
+TXMi
+
+Mailbox 0 to 31 message transmission completed
+
+MCTL0.SENTDATA to
+MCTL31.SENTDATA
+
+i = 0 to 2
+
+43.9
+43.9.1
+
+Usage Notes
+Setting for the Module-Stop State
+
+Module stop control register B (MSTPCRB) can be used to enable or disable operation of the CAN module. The CAN
+module is stopped after a reset. The registers become accessible on release from the module-stop state. For details, refer
+to section 11, Low Power Consumption.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 2348 of 3240
+
+

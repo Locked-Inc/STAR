@@ -1,0 +1,5838 @@
+RX72N Group
+
+20.
+
+20. Data Transfer Controller (DTCb)
+
+Data Transfer Controller (DTCb)
+
+This MCU incorporates a data transfer controller (DTC).
+The DTC is triggered by an interrupt request to perform data transfers.
+In addition to the conventional methods of DTC transfer (normal, repeat, block, and chain), DTCb supports sequential
+transfer, in which it handles a series of transfers made up of a combination of the other methods. In sequential transfer,
+the data that is initially transferred selects one from possible 256 sequences for execution. The DTCb can divide one
+sequence into several transfers depending on how the parts of the sequence are combined.
+
+20.1
+
+Overview
+
+Table 20.1 lists the specifications of the DTC, and Figure 20.1 shows a block diagram of the DTC.
+Table 20.1
+
+DTC Specifications
+
+Item
+
+Description
+
+Number of transfer channels
+
+ The same number as all interrupt sources that can start the DTC transfer.
+
+Transfer modes
+
+ Normal transfer mode
+A single transfer request leads to a single data transfer.
+ Repeat transfer mode
+A single transfer request leads to a single data transfer.
+The transfer address is returned to the transfer start address after the number of data
+transfers corresponding to “repeat size”.
+The maximum number of repeat transfers is 256, and the maximum data transfer size is 256 ×
+32 bits, 1024 bytes.
+ Block transfer mode
+A single transfer request leads to the transfer of a single block.
+The maximum block size is 256 × 32 bits = 1024 bytes.
+
+Chain transfer
+
+ Multiple types of data transfers can sequentially be executed in response to a single request.
+ Either “performed only when the transfer counter becomes 0” or “every time” can be selected.
+
+Sequence transfer
+
+A series of complicated transfers can be registered as a sequence. Any sequence can be
+selected by the transfer data and executed.
+ Only one trigger source can be set at a time.
+ Up to 256 sequences for a single trigger source
+ The data that is initially transferred in response to a transfer request determines a sequence
+ The whole sequence can be executed on a single request, or be suspended in the middle of
+the sequence and resumed on the next transfer request (division of sequence).
+
+Transfer space
+
+ In short-address mode: 16 Mbytes
+(Areas from 0000 0000h to 007F FFFFh and FF80 0000h to FFFF FFFFh except reserved
+areas)
+ In full-address mode: 4 Gbytes
+(Area from 0000 0000h to FFFF FFFFh except reserved areas)
+
+Data transfer units
+
+ Single data: 1 byte (8 bits), 1 word (16 bits), 1 longword (32 bits)
+ Single block size: 1 to 256 data
+
+CPU interrupt source
+
+ An interrupt request can be generated to the CPU on a request source for a data transfer.
+ An interrupt request can be generated to the CPU after a single data transfer.
+ An interrupt request can be generated to the CPU after data transfer of specified volume.
+
+Event link function
+
+An event link request is generated after one data transfer (for block, after one block transfer).
+
+Read skip
+
+Reading of the transfer information can be skipped when the same transfer is repeated.
+
+Write-back skip
+
+Write-back of the transferred data that is not updated can be skipped when the address of the
+transfer source or destination is fixed.
+
+Write-back disable
+
+Allows disabling the write-back of transfer information.
+
+Displacement addition
+
+The displacement value can be added to the transfer source address (for each transfer
+information)
+
+Low power consumption function
+
+Module stop state can be set.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 786 of 3240
+
+RX72N Group
+
+20. Data Transfer Controller (DTCb)
+
+DTC
+MRA
+MRB
+
+DTC internal bus
+
+MRC
+
+Register
+control
+
+Vector number
+
+CRA
+CRB
+SAR
+
+Interrupt
+controller
+
+DAR
+Transfer request
+
+Activation
+control
+
+DTC response
+DTCCR
+DTCVBR
+DTCADMOD
+
+Bus interface
+DTC
+response
+control
+
+DTCST
+DTCSTS
+DTCIBR
+DTCOR
+DTCSQE
+DTCDISP
+
+Internal peripheral bus 1
+Internal main bus 1
+Internal main bus 2
+
+MRA:
+MRB:
+MRC:
+CRA:
+CRB:
+SAR:
+DAR:
+
+Figure 20.1
+
+Internal main bus 2
+
+External bus
+controller
+
+DTC mode register A
+DTC mode register B
+DTC mode register C
+DTC transfer count register A
+DTC transfer count register B
+DTC transfer source register
+DTC transfer destination register
+
+Internal peripheral bus
+Memory bus 3
+
+DTCCR:
+DTCVBR:
+DTCADMOD:
+DTCST:
+DTCSTS:
+DTCIBR:
+DTCOR:
+DTCSQE:
+DTCDISP:
+
+Memory bus 2
+
+Memory bus 1
+
+Code flash
+memory
+
+RAM
+Transfer
+information
+
+DTC control register
+DTC vector base register
+DTC address mode register
+DTC module start register
+DTC status register
+DTC index table base register
+DTC operation register
+DTC sequence transfer enable register
+DTC address displacement register
+
+DTC Block Diagram
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 787 of 3240
+
+RX72N Group
+
+20.2
+
+20. Data Transfer Controller (DTCb)
+
+Register Descriptions
+
+Registers MRA, MRB, MRC, SAR, DAR, CRA, and CRB are DTC internal registers, which cannot be directly accessed
+from the CPU. Values to be set in these DTC internal registers are placed in the RAM area as transfer information. When
+accepting a transfer request, the DTC reads the transfer information from the RAM area and sets it in the internal
+registers. After the data transfer ends, the values of the updated internal register are written back to the RAM area as
+transfer information.
+
+20.2.1
+
+DTC Mode Register A (MRA)
+
+Address(es): (inaccessible directly from the CPU)
+b7
+
+b6
+
+b5
+
+MD[1:0]
+x
+
+Value after reset:
+
+x
+
+b4
+
+SZ[1:0]
+x
+
+x
+
+b3
+
+b2
+
+b1
+
+b0
+
+SM[1:0]
+
+—
+
+WBDIS
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+WBDIS
+
+Write-back Disable
+
+0: Writes back the transfer information on completion of the
+data transfer
+1: Does not write back the transfer information on completion
+of the data transfer
+
+—
+
+b1
+
+—
+
+Reserved
+
+Set this bit to 0.
+
+—
+
+b3, b2
+
+SM[1:0]
+
+Transfer Source Address Addressing
+Mode
+
+b3 b2
+
+—
+
+b5, b4
+
+SZ[1:0]
+
+DTC Data Transfer Size
+
+b5 b4
+
+—
+
+b7, b6
+
+MD[1:0]
+
+DTC Transfer Mode Select
+
+b7 b6
+
+—
+
+0 0: The address in the SAR register is fixed.
+(write-back to SAR is skipped.)
+0 1: The address in the SAR register is fixed.
+(write-back to SAR is skipped.)
+1 0: The SAR value is incremented after a data transfer.
+(+1 when the SZ[1:0] bits are 00b, +2 when 01b, +4
+when 10b)
+1 1: The SAR value is decremented after a data transfer.
+(–1 when the SZ[1:0] bits are 00b, –2 when 01b, –4
+when 10b)
+0 0: Byte (8-bit) transfer
+0 1: Word (16-bit) transfer
+1 0: Longword (32-bit) transfer
+1 1: Setting prohibited
+0 0: Normal transfer mode
+0 1: Repeat transfer mode
+1 0: Block transfer mode
+1 1: Setting prohibited
+
+MRA register is used to select the DTC operating mode and cannot be accessed directly from the CPU.
+WBDIS Bit (Write-back Disable)
+The WBDIS bit selects whether to write back the transfer information.
+When the bit is 0, updated transfer information is written back.
+When the bit is 1, updated transfer information is not written back even with the setting of that address is incremented
+after a transfer, and the same data transfer is executed every time for each transfer request. The transfer information can
+be stored in ROM because the transfer information is not written back.
+While the WBDIS bit is 1, operation for each transfer mode is as follows:
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 788 of 3240
+
+RX72N Group
+
+20. Data Transfer Controller (DTCb)
+
+(1) Normal transfer and repeat transfer modes
+1-byte, 1-word, or 1-longword of data is transferred on a single transfer request. The transfer address and transfer
+count are not updated so that the same transfer is repeated on each transfer request. When the transfer count is 1, the
+ICU.DTCERn.DTCE bit is not set to 0, and data transfer continues in response to the next transfer request.
+(2) Block transfer mode
+1-block of data is transferred on a single transfer request. The transfer address and transfer count are not updated so
+that the same block transfer is repeated on each transfer request. When the block transfer count is 1, the
+ICU.DTCERn.DTCE bit is not set to 0, and data transfer continues in response to the next transfer request.
+When setting the DISPE bit to 1, set the MRA.WBDIS bit to 1 (does not write back the transfer information). If the value
+of the WBDIS bit in any transfer information is 1, set the DTCCR.RRS bit to 0 (so that reading of the transfer
+information is not skipped).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 789 of 3240
+
+RX72N Group
+
+20.2.2
+
+20. Data Transfer Controller (DTCb)
+
+DTC Mode Register B (MRB)
+
+Address(es): (inaccessible directly from the CPU)
+b7
+CHNE
+Value after reset:
+
+x
+
+b6
+
+b5
+
+CHNS DISEL
+x
+
+x
+
+b4
+
+b3
+
+DTS
+x
+
+b2
+
+DM[1:0]
+x
+
+b1
+
+b0
+
+INDX SQEND
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SQEND
+
+Sequence Transfer End
+
+0: Continue the sequence transfer
+1: End the sequence transfer
+
+—
+
+b1
+
+INDX
+
+Index Table Reference
+
+0: Does not refer to the index table
+1: Refers the index table based on the transferred data*1
+
+—
+
+b3, b2
+
+DM[1:0]
+
+Transfer Destination Address
+Addressing Mode
+
+b3 b2
+
+—
+
+b4
+
+DTS
+
+DTC Transfer Mode Select
+
+0: Transfer destination side is repeat area or block area.
+1: Transfer source side is repeat area or block area.
+
+—
+
+b5
+
+DISEL
+
+DTC Interrupt Select
+
+0: An interrupt request to the CPU is generated on completion of the —
+specified number of data transfers.
+1: An interrupt request to the CPU is generated for each data transfer.
+
+b6
+
+CHNS
+
+DTC Chain Transfer Select
+
+0: Chain transfer is performed on completion of each transfer.
+1: Chain transfer is performed only when the transfer counter is
+changed from 1 to 0 or 1 to CRAH.
+
+—
+
+b7
+
+CHNE
+
+DTC Chain Transfer Enable
+
+0: Chain transfer is disabled.
+1: Chain transfer is enabled.
+
+—
+
+0 0: The address in the DAR register is fixed.
+(Write-back to DAR is skipped.)
+0 1: The address in the DAR register is fixed.
+(Write-back to DAR is skipped.)
+1 0: The DAR value is incremented after data transfer.
+(+1 when the MRA.SZ[1:0] bits are 00b, +2 when 01b, +4 when
+10b)
+1 1: The DAR value is decremented after data transfer.
+(–1 when the MRA.SZ[1:0] bits are 00b, –2 when 01b, –4 when
+10b)
+
+Note 1. Set the MRA.MD[1:0] bits to 00b (normal transfer mode) when setting the INDX bit to 1.
+
+MRB register is used to select the DTC operating mode and cannot be accessed directly from the CPU.
+SQEND Bit (Sequence Transfer End)
+The SQEND bit selects whether to continue or end sequence transfer. Refer to Table 20.2 for details.
+This bit can only be set to 1 for transfer information referred to by the DTC index table. Set this bit to 0 for transfer
+information referred to by the DTC vector table.
+INDX Bit (Index Table Reference)
+When the value of the INDX bit in transfer information that is read is 1, a sequence transfer proceeds. Refer to Table
+20.2 for details.
+Set this bit to 0 for transfer information which is not associated with sequence transfer or is not intended to start sequence
+transfer. Do not allow transfer requests to be generated by the sources different from that specified in the DTCSQE
+register but having the INDX bit set to 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 790 of 3240
+
+RX72N Group
+
+Table 20.2
+
+20. Data Transfer Controller (DTCb)
+
+Values of Bits CHNE, SQEND, and INDX in the Sequence Transfer and DTC Operation
+
+CHNE Bit
+
+SQEND Bit
+
+INDX Bit
+
+Operation
+
+Usage
+
+0
+
+0
+
+1
+
+Start sequence transfer
+
+Use this setting for the transfer information that is first
+read in response to a transfer request from the source
+specified in the DTCSQE register.
+
+1
+
+0
+
+0
+
+Continue sequence transfer
+
+Use this setting for the first or intermediate transfer
+information in a sequence.
+
+0
+
+0
+
+0
+
+Suspend sequence transfer
+
+Use this setting for the first or intermediate transfer
+information in a sequence.
+
+0
+
+1
+
+0
+
+End sequence transfer
+
+Use this setting with the last transfer information in a
+sequence.
+
+0
+
+1
+
+1
+
+End current sequence transfer
+and start new sequence transfer
+
+Use this setting with the last transfer information in a
+sequence.
+
+Note:
+
+Do not set the values other than listed above.
+
+DTS Bit (DTC Transfer Mode Select)
+The DTS bit specifies the side (transfer source or destination) to be a repeat area or block area in repeat transfer mode or
+block transfer mode.
+CHNS Bit (DTC Chain Transfer Select)
+The CHNS bit selects the chain transfer condition.
+When the CHNE bit is 0, setting of the CHNS bit is ignored. For details on the conditions to select the chain transfer,
+refer to Table 20.4, Chain Transfer Conditions.
+When the next transfer is chain transfer, completion of the specified number of transfers is not determined, the interrupt
+status flag for the request source is not cleared, and an interrupt request to the CPU is not generated.
+CHNE Bit (DTC Chain Transfer Enable)
+The CHNE bit enables or disables chain transfer.
+The chain transfer condition is selected by the CHNS bit.
+For details of chain transfer, refer to section 20.4.6, Chain Transfer.
+Refer to Table 20.2 for the setting value to be used in the sequence transfer.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 791 of 3240
+
+RX72N Group
+
+20.2.3
+
+20. Data Transfer Controller (DTCb)
+
+DTC Mode Register C (MRC)
+
+Address(es): (inaccessible directly from the CPU)
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DISPE
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+DISPE
+
+Displacement Addition
+
+0: The displacement value is not added to the transfer source
+address.
+1: The displacement value is added to the transfer source address.
+
+—
+
+b7 to b1
+
+—
+
+Reserved
+
+Set these bits to 0.
+
+—
+
+The MRC register is used to select DTC operating mode and cannot be accessed directly from the CPU.
+This register can only be used in full-address mode, but not in short-address mode. Therefore, set the
+DTCADMOD.SHORT bit to 0 (full-address mode) when using the displacement addition function.
+DISPE Bit (Displacement Addition)
+This bit specifies whether to use the SAR + DTCDISP value as the transfer source address.
+When setting the DISPE bit to 1, set the MRA.WBDIS bit to 1 (does not write back the transfer information) and set the
+DTCCR.RRS bit to 0 (transfer information read is not skipped).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 792 of 3240
+
+RX72N Group
+
+20.2.4
+
+20. Data Transfer Controller (DTCb)
+
+DTC Transfer Source Register (SAR)
+
+Address(es): (inaccessible directly from the CPU)
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+SAR register is used to set the transfer source start address.
+In full-address mode, 32 bits are valid.
+In short-address mode, lower 24 bits are valid and upper 8 bits (b31 to b24) are ignored. The address of this register is
+extended by the value specified by b23.
+SAR register cannot be accessed directly from the CPU.
+
+20.2.5
+
+DTC Transfer Destination Register (DAR)
+
+Address(es): (inaccessible directly from the CPU)
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+DAR register is used to set the transfer destination start address.
+In full-address mode, 32 bits are valid.
+In short-address mode, lower 24 bits are valid and upper 8 bits (b31 to b24) are ignored. The address of this register is
+extended by the value specified by b23.
+DAR register cannot be accessed directly from the CPU.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 793 of 3240
+
+RX72N Group
+
+20.2.6
+
+20. Data Transfer Controller (DTCb)
+
+DTC Transfer Count Register A (CRA)
+
+ Normal transfer mode
+Address(es): (inaccessible directly from the CPU)
+CRA
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+ Repeat transfer mode/block transfer mode
+Address(es): (inaccessible directly from the CPU)
+CRAH
+
+Value after reset:
+
+CRAL
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+Symbol
+
+Register Name
+
+Description
+
+R/W
+
+CRAL
+
+Transfer Counter A Lower Register
+
+Set transfer count. This register functions as a transfer counter
+during data transfer.
+
+—
+
+CRAH
+
+Transfer Counter A Upper Register
+
+Set transfer count. This register functions as a reload register
+during data transfer.
+
+—
+
+Note:
+Note:
+
+The function depends on transfer mode.
+Set CRAH and CRAL to the same value in repeat transfer mode and block transfer mode.
+
+This register is for counting the number of transfers and cannot be accessed directly from the CPU.
+
+(1)
+
+Normal transfer mode (MRA.MD[1:0] bits = 00b)
+
+CRA register functions as a 16-bit transfer counter in normal transfer mode.
+The transfer count is 1, 65535, and 65536 when the set value is 0001h, FFFFh, and 0000h, respectively.
+The CRA value is decremented (–1) at each data transfer.
+
+(2)
+
+Repeat transfer mode (MRA.MD[1:0] bits = 01b)
+
+The CRAH register retains the transfer count and the CRAL register functions as an 8-bit transfer counter.
+The transfer count is 1, 255, and 256 when the set value is 01h, FFh, and 00h, respectively.
+The CRAL value is decremented (–1) at each data transfer. When it reaches 00h, the CRAH value is reloaded to the
+CRAL register.
+
+(3)
+
+Block transfer mode (MRA.MD[1:0] bits = 10b)
+
+The CRAH register retains the block size and the CRAL register functions as an 8-bit block size counter.
+The transfer count is 1, 255, and 256 when the set value is 01h, FFh, and 00h, respectively.
+The CRAL value is decremented (–1) at each data transfer. When it reaches 00h, the CRAH value is reloaded to the
+CRAL register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 794 of 3240
+
+RX72N Group
+
+20.2.7
+
+20. Data Transfer Controller (DTCb)
+
+DTC Transfer Count Register B (CRB)
+
+Address(es): (inaccessible directly from the CPU)
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x
+
+x: Undefined
+
+CRB register is used to set the block transfer count for block transfer mode and cannot be accessed directly from the
+CPU.
+The transfer count is 1, 65535, and 65536 when the set value is 0001h, FFFFh, and 0000h, respectively.
+The CRB value is decremented (–1) when the final data of a single block size is transferred.
+When normal transfer mode or repeat transfer mode is selected, this register is not used and the set value is ignored.
+
+20.2.8
+
+DTC Control Register (DTCCR)
+
+Address(es): DTC.DTCCR 0008 2400h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+RRS
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b2 to b0
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b3
+
+—
+
+Reserved
+
+This bit is read as 1. The write value should be 1.
+
+R/W
+
+b4
+
+RRS
+
+DTC Transfer Information
+Read Skip Enable*1
+
+0: Transfer information read is not skipped.
+1: Transfer information read is skipped when vector numbers match.
+
+R/W
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note 1. Set this bit to 0 when using the sequence transfer.
+
+DTCCR register is used to control the DTC operation.
+RRS Bit (DTC Transfer Information Read Skip Enable)
+The DTC vector number is compared with the vector number in the previous data transfer.
+When these vector numbers match and the RRS bit is set to 1, DTC data transfer is performed without reading the
+transferred information. However, when the previous transfer was chain transfer, the transferred information is read
+regardless of the value of the RRS bit.
+Furthermore, when the transfer counter (CRA register) became 0 during the previous normal transfer and when the
+transfer counter (CRB register) became 0 during the previous block transfer, the transferred information is read
+regardless of the RRS bit value.
+If the value of the MRA.WBDIS bit in any transfer information is 1, set the RRS bit to 0. Note that the MRA.WBDIS bit
+should be set to 1 when the MRC.DISPE bit is set to 1.
+Like chain transfer, sequence transfer handles sequences of multiple types of data transfer. When sequence transfer is to
+be used, set the RRS bit to 0 so that the previous data transfer will not be repeated.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 795 of 3240
+
+RX72N Group
+
+20.2.9
+
+20. Data Transfer Controller (DTCb)
+
+DTC Vector Base Register (DTCVBR)
+
+Address(es): DTC.DTCVBR 0008 2404h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The DTCVBR register is used to set the base address for calculating the address to which the DTC vector is allocated.
+Values for the upper 4 bits (b31 to b28) cannot be written but reflect the value written to b27. The lower 10 bits are
+reserved and the values are fixed to 0. Write 0 to the lower 10 bits if necessary.
+It can be set in the range of 0000 0000h to 07FF FC00h and F800 0000h to FFFF FC00h in 1-Kbyte units.
+
+20.2.10
+
+DTC Address Mode Register (DTCADMOD)
+
+Address(es): DTC.DTCADMOD 0008 2408h
+
+Value after reset:
+
+Bit
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+SHORT
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SHORT
+
+Short-Address Mode Set*1
+
+0: Full-address mode
+1: Short-address mode
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note 1. Set this bit to 0 (full-address mode) when using the sequence transfer.
+
+DTCADMOD register is used to specify the area accessible by the DTC.
+SHORT Bit (Short-Address Mode Set)
+This bit is used to select address mode of registers SAR and DAR.
+Full-address mode allows the DTC to access to a 4-Gbyte space (0000 0000h to FFFF FFFFh).
+Short-address mode allows the DTC to access to a 16-Mbyte space (0000 0000h to 007F FFFFh and FF80 0000h to
+FFFF FFFFh).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 796 of 3240
+
+RX72N Group
+
+20.2.11
+
+20. Data Transfer Controller (DTCb)
+
+DTC Module Start Register (DTCST)
+
+Address(es): DTC.DTCST 0008 240Ch
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DTCST
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+DTCST
+
+DTC Module Start
+
+0: DTC module stop
+1: DTC module start
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+DTCST Bit (DTC Module Start)
+Set the DTCST bit to 1 to enable the DTC to accept transfer requests. When this bit is set to 0, transfer requests are no
+longer accepted.
+If this bit is set to 0 during data transfer, the accepted transfer request is active until the processing is completed.
+Set the DTCST bit to 0 before making a transition to the module stop state, all-module clock stop mode, software
+standby mode, or deep software standby mode.
+Set the DTCST bit to 1 to resume the data transfer after returning from the module stop state, all-module clock stop
+mode, or software standby mode.
+For details on transitions to the module stop state, all-module clock stop mode, software standby mode, and deep
+software standby mode, refer to section 20.9, Low Power Consumption Function, and section 11, Low Power
+Consumption.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 797 of 3240
+
+RX72N Group
+
+20.2.12
+
+20. Data Transfer Controller (DTCb)
+
+DTC Status Register (DTCSTS)
+
+Address(es): DTC.DTCSTS 0008 240Eh
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+ACT
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+VECN[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+VECN[7:0]
+
+DTC Active Vector Number
+Monitoring Flag
+
+These bits indicate the vector number for the request source when
+data transfer is in progress.
+The value is only valid if data transfer is in progress (the value of
+the ACT flag is 1).
+
+R
+
+b14 to b8
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits has no effect.
+
+R
+
+b15
+
+ACT
+
+DTC Active Flag
+
+0: Data transfer is not in progress.
+1: Data transfer is in progress.
+
+R
+
+VECN[7:0] Flags (DTC Active Vector Number Monitoring Flag)
+While data transfer is in progress, these bits indicate the vector number corresponding to the request source for the
+transfer.
+When the DTCSTS register is read, the value of the VECN[7:0] flags is valid if the value of the ACT flag was 1 (data
+transfer is in progress) and invalid if the value of the ACT flag was 0 (data transfer is not in progress).
+For the correspondence between the DTC request sources and the vector addresses, refer to Table 15.5, Interrupt
+Vector Table in section 15, Interrupt Controller (ICUD).
+ACT Flag (DTC Active Flag)
+This flag indicates the state of data transfer operation.
+[Setting condition]
+ When the data transfer is started by a transfer request.
+ When the sequence transfer is resumed.
+[Clearing condition]
+ When the data transfer is completed in response to a transfer request.
+ When the sequence transfer is suspended.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 798 of 3240
+
+RX72N Group
+
+20.2.13
+
+20. Data Transfer Controller (DTCb)
+
+DTC Index Table Base Register (DTCIBR)
+
+Address(es): DTC.DTCIBR 0008 2410h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The DTCIBR register is used to set the base address for calculating the address to which the DTC index is allocated.
+Values for the upper 4 bits (b31 to b28) cannot be written but reflect the value written to b27.
+The lower 10 bits (b9 to b0) are reserved bits and fixed to 0. When writing this register, set these bits to 0.
+It can be set in the range of 0000 0000h to 07FF FC00h and F800 0000h to FFFF FC00h in 1-Kbyte units.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 799 of 3240
+
+RX72N Group
+
+20.2.14
+
+20. Data Transfer Controller (DTCb)
+
+DTC Operation Register (DTCOR)
+
+Address(es): DTC.DTCOR 0008 2414h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+SQTFR
+L
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SQTFRL
+
+Sequence Transfer Terminate
+
+Writing 1 to this bit terminates the sequence transfer in
+progress. This bit is read as 0.
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R
+
+The DTCOR register sets the operation of the DTC module.
+SQTFRL Bit (Sequence Transfer Terminate)
+Setting the SQTFRL bit to 1 terminates the sequence transfer in progress.
+When the DTCSQE.ESPSEL bit is 1 (Sequence transfer is enabled), follow the procedure shown in Figure 20.2 to
+terminate the sequence transfer.
+Writing 1 to the bit, while no sequence transfer is performed, have no effect.
+
+Start
+
+Disable the DTC transfer request
+by the corresponding interrupt
+
+IERm.IENj (interrupt request enable bit) = 0
+
+No
+
+DTCSTS.ACT = 1?
+
+Wait for completion of the
+corresponding data transfer
+which is in progress
+
+Yes
+
+DTCSTS.VECN[7:0] = DTCSQE.VECN[7:0]?
+
+Yes
+
+No
+Terminate the DTC sequence
+transfer
+
+DTCOR.SQTFRL = 1
+
+End
+
+Figure 20.2
+
+Procedure to Terminate Sequence Transfer
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 800 of 3240
+
+RX72N Group
+
+20.2.15
+
+20. Data Transfer Controller (DTCb)
+
+DTC Sequence Transfer Enable Register (DTCSQE)
+
+Address(es): DTC.DTCSQE 0008 2416h
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+ESPSE
+L
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+VECN[7:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b7 to b0
+
+VECN[7:0]
+
+Sequence Transfer Vector
+Number Setting
+
+Specify the vector number by which a sequence transfer is
+enabled.
+The value is only valid when the ESPSEL bit is 1.
+
+R/W
+
+b14 to b8
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R
+
+b15
+
+ESPSEL
+
+Sequence Transfer Enable
+
+0: Sequence transfer is disabled.
+1: Sequence transfer is enabled.
+
+R/W
+
+The DTCSQE register is used to specify sequence transfer. Follow Figure 20.24 for details on the setting procedure.
+VECN[7:0] Bit (Sequence Transfer Vector Number Setting)
+This bit is used to specify for which vector number to perform sequence transfer. Sequence transfer can occur only for
+this trigger source.
+Table 15.5, Interrupt Vector Table in section 15, Interrupt Controller (ICUD) shows the relationship between the
+trigger source and the vector number.
+ESPSEL Bit (Sequence Transfer Enable)
+The ESPSEL bit specifies whether sequence transfer is used.
+Set the DTCADMOD.SHORT bit to 0 (full address mode), when setting the ESPSEL bit to 1.
+
+20.2.16
+
+DTC Address Displacement Register (DTCDISP)
+
+Address(es): DTC.DTCDISP 0008 2418h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+The DTCDISP register is used to specify the displacement value to add to the DTC transfer source address.
+If MRC.DISPE bit is 1, the value SAR + DTCDISP is used as the transfer source address.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 801 of 3240
+
+RX72N Group
+
+20.3
+
+20. Data Transfer Controller (DTCb)
+
+Request Sources
+
+The DTC data transfer is triggered by an interrupt request. Setting the ICU.DTCERn.DTCE bit (n = interrupt vector
+number) to 1 selects the corresponding interrupt request as a request source for the DTC.
+For the correspondence between the DTC request sources and the vector addresses, refer to Table 15.5, Interrupt
+Vector Table in section 15, Interrupt Controller (ICUD). For request by software, refer to section 15.2.5, Software
+Interrupt Generation Register (SWINTR) and section 15.2.6, Software Interrupt 2 Generation Register
+(SWINT2R) in section 15, Interrupt Controller (ICUD).
+Once the DTC has accepted a transfer request, it does not accept another transfer request until transfer for that single
+request is completed, regardless of the priority of the requests.
+When multiple transfer requests are generated during data transfer by the DMAC/DTC, the request with the highest
+priority on completion of the current transfer is accepted. When multiple transfer requests are generated while the
+DTCST.DTCST bit is 0 (DTC module stop), the request with the highest priority at the moment when the bit is
+subsequently set to 1 (DTC module start) is accepted.
+The DTC performs the following operations at the start of a single data transfer (or the last of the consecutive transfers in
+the case of a chain transfer).
+ On completion of a specified number of data transfer, the ICU.DTCERn.DTCE bit is set to 0 and an interrupt is
+requested to the CPU.
+ If the MRB.DISEL bit is 1, an interrupt is requested to the CPU on completion of data transfer.
+ For the other transfers, the interrupt status flag of the request source is set to 0 at the start of data transfer.
+
+20.3.1
+
+Allocating Transfer Information and DTC Vector Table
+
+The DTC reads the start address of the transfer information corresponding to each request source from the vector table
+and reads the transfer information starting at that address.
+The vector table should be located so that the lower 10 bits of the base address (start address) are 0. Use the DTC vector
+base register (DTCVBR) to set the base address of the DTC vector table.
+Transfer information is allocated in the RAM area. Transfer information can be allocated in the ROM area when the
+MRA.WBDIS bit is set to 1. The start address of the transfer information n with vector number n should be allocated at
+DTCVBR + 4n.
+Transfer information should be aligned on a 4-byte boundary. The size of a transfer information is 12 bytes in shortaddress mode or 16 bytes in full-address mode. Use the DTCADMOD.SHORT bit to select short-address mode (SHORT
+bit = 1) or full-address mode (SHORT bit = 0).
+Figure 20.3 shows the relationship between the DTC vector table and transfer information.
+Figure 20.4 shows the allocation of transfer information in the RAM area. The lower addresses vary according to the
+endian of the corresponding allocation area. For details, refer to section 20.10.2, Allocating Transfer Information.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 802 of 3240
+
+RX72N Group
+
+20. Data Transfer Controller (DTCb)
+
+DTC vector table
+Transfer information 0
+DTC vector base address
+
+Start address of
+transfer information 0
+Start address of
+transfer information 1
+Start address of
+transfer information 2
+
++4
++8
+
++4n
+
+Transfer information 1
+
+Start address of
+transfer information n
+4 bytes
+Transfer information n
+
+Vector address = DTCVBR + vector number × 4
+
+Figure 20.3
+
+Start address
+
+Chain
+transfer
+
+4 bytes
+
+DTC Vector Table and Transfer Information
+
+Allocation of transfer information in
+short-address mode
+
+Allocation of transfer information in
+full-address mode
+
+Lower address
+( ): Lower address to be allocated
+in the big-endian area
+
+Lower address
+( ): Lower address to be allocated
+in the big-endian area
+
+3 (0)
+
+2 (1)
+
+1 (2)
+
+MRA
+
+SAR
+
+MRB
+
+DAR
+
+CRA
+
+SAR
+
+MRB
+
+DAR
+
+CRA
+
+Start address
+
+3 (0)
+
+2 (1)
+
+MRA
+
+CRB
+
+MRA
+
+0 (3)
+
+CRB
+
+MRB
+
+Transfer information
+per transfer
+(12 bytes)
+
+Transfer information
+for the second
+transfer in chain
+transfer mode
+(12 bytes)
+
+1 (2)
+
+0 (3)
+
+MRC
+
+Reserved
+(00h)
+
+Transfer information
+per transfer
+(16 bytes)
+
+SAR
+DAR
+Chain
+transfer
+
+CRA
+MRA
+
+CRB
+
+MRB
+
+MRC
+
+Reserved
+(00h)
+
+Transfer information
+for the second
+transfer in chain
+transfer mode
+(16 bytes)
+
+SAR
+DAR
+
+4 bytes
+CRA
+
+CRB
+
+4 bytes
+
+Figure 20.4
+
+Allocation of Transfer Information in the RAM Area
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 803 of 3240
+
+RX72N Group
+
+20.4
+
+20. Data Transfer Controller (DTCb)
+
+Operation
+
+The DTC transfers data in accordance with the transfer information. Storage of the transfer information in the RAM area
+is required before DTC operation.
+When the DTC accepts a transfer request, it reads the DTC vector corresponding to the vector number. Next, the DTC
+reads transfer information from the address pointed by the DTC vector, transfers data, and then writes back the transfer
+information after the data transfer. Allocating transfer information in the RAM area allows data transfer of arbitrary
+number of channels.
+There are three transfer modes: normal transfer mode, repeat transfer mode, and block transfer mode.
+Set a transfer source address in the SAR register and a transfer destination address in the DAR register. The SAR and
+DAR registers are updated after the transfer according to the respective settings (increment, decrement, or fixed).
+Table 20.3 lists transfer modes of the DTC.
+Table 20.3
+
+Transfer Modes of the DTC
+
+Transfer Mode
+
+Data Size Transferred on Single Transfer
+Request
+
+Increment/Decrement of
+Memory Address
+
+Settable Transfer
+Count
+
+Normal transfer mode
+
+1 byte/1 word/1 longword
+
+Incremented/decremented by
+1, 2, or 4 or address fixed
+
+1 to 65536
+
+Repeat transfer mode*1
+
+1 byte/1 word/1 longword
+
+Incremented/decremented by
+1, 2, or 4 or address fixed
+
+1 to 256*3
+
+Block transfer mode*2
+
+Block size specified in CRAH
+(1 to 256 bytes/1 to 256 words/1 to 256
+longwords)
+
+Incremented/decremented by
+1, 2, or 4 or address fixed
+
+1 to 65536
+
+Note 1. Set transfer source or transfer destination in the repeat area.
+Note 2. Set transfer source or transfer destination in the block area.
+Note 3. After data transfer of the specified count, the initial state is restored and the operation is continued (repeated).
+
+Setting the MRB.CHNE bit to 1 allows multiple transfers (chain transfer) on a single transfer request. The setting in
+combination with the MRB.CHNS bit enables a chain transfer when the specified number of data transfers is completed.
+Figure 20.5 shows the operation flowchart of the DTC. Table 20.4 lists chain transfer conditions.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 804 of 3240
+
+RX72N Group
+
+20. Data Transfer Controller (DTCb)
+
+Start
+Match and
+RRS bit = 1
+
+Compare vector
+numbers. Match?
+Unmatch or RRS bit = 0
+Read DTC vector
+
+Next transfer
+
+Read transfer information
+
+Yes
+
+CHNE bit = 1?
+No
+Yes
+
+MD[1:0] bits = 01b?
+
+Yes
+
+CHNS bit = 0?
+
+(Repeat transfer mode?)
+
+No
+
+No
+
+WBDIS = 0 and
+Last data transfer?
+(Transfer counter = 1?)
+
+WBDIS = 0 and
+Last data transfer?
+
+Yes
+*1
+
+(Transfer counter = 1?)
+
+No
+
+No
+
+DISEL bit = 1?
+
+Yes
+*1
+
+Yes
+
+No
+Clear interrupt status flag
+Transfer data
+
+Transfer data
+
+Transfer data
+
+Transfer data
+
+Write back
+transfer information*2
+
+Write back
+transfer information*2
+
+Write back
+transfer information*2
+
+Write back
+transfer information*2
+
+ICU.DTCERn.DTCE
+bit is cleared*3
+An interrupt to the
+CPU is generated
+
+End
+
+Figure 20.5
+
+Note 1.
+Note 2.
+Note 3.
+
+An interrupt to the
+CPU is generated
+
+Update start address
+of transfer information
+
+Counter value before starting data transfer
+Write-back is skipped when the WBDIS bit is 1.
+The DTCE bit is not cleared when the WBDIS bit is 1.
+
+Operation Flowchart of the DTC
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 805 of 3240
+
+RX72N Group
+
+Table 20.4
+
+20. Data Transfer Controller (DTCb)
+
+Chain Transfer Conditions
+Second Transfer*3
+
+First Transfer
+CHNE
+Bit
+
+CHNS
+Bit
+
+DISEL
+Bit
+
+0
+
+—
+
+0
+
+0
+
+—
+
+0
+
+—
+
+1
+
+0
+
+Transfer
+Counter*1,*2
+
+CHNE
+Bit
+
+CHNS
+Bit
+
+DISEL
+Bit
+
+Transfer
+Counter*1,*2
+
+Other than (1 → 0)
+
+—
+
+—
+
+—
+
+—
+
+Ends after the first
+transfer
+
+0
+
+(1 → 0)
+
+—
+
+—
+
+—
+
+—
+
+1
+
+—
+
+—
+
+—
+
+—
+
+—
+
+Ends after the first
+transfer with an interrupt
+request to the CPU
+
+—
+
+—
+
+0
+
+—
+
+0
+
+Other than (1 → 0)
+
+Ends after the second
+transfer
+
+0
+
+—
+
+0
+
+(1 → 0)
+
+0
+
+—
+
+1
+
+—
+
+Ends after the second
+transfer with an interrupt
+request to the CPU
+
+Data Transfer
+
+1
+
+1
+
+0
+
+Other than (1 → )
+
+—
+
+—
+
+—
+
+—
+
+Ends after the first
+transfer
+
+1
+
+1
+
+—
+
+(1 → )
+
+0
+
+—
+
+0
+
+Other than (1 → 0)
+
+Ends after the second
+transfer
+
+0
+
+—
+
+0
+
+(1 → 0)
+
+0
+
+—
+
+1
+
+—
+
+Ends after the second
+transfer with an interrupt
+request to the CPU
+
+—
+
+—
+
+—
+
+—
+
+1
+
+1
+
+1
+
+Other than (1 → )
+
+Ends after the first
+transfer with an interrupt
+request to the CPU
+
+Note 1. The transfer counters used depend on transfer modes as follows:
+Normal transfer mode: CRA register
+Repeat transfer mode: CRAL register
+Block transfer mode: CRB register
+Note 2. On completion of data transfer, the counters operate as follows:
+1 → 0 in normal and block transfer modes
+1 → CRAH in repeat transfer mode
+(1 → ) in the table indicates both of the two operations above.
+Note 3. Chain transfer can be selected for the second or subsequent transfers. The condition combination of “second transfer and the
+CHNE bit is 1” is omitted.
+
+20.4.1
+
+Transfer Information Read Skip Function
+
+Reading of DTC vector and transfer information can be skipped by the setting of the DTCCR.RRS bit.
+When a DTC transfer request is accepted, the current DTC vector number is compared with the DTC vector number in
+the previous data transfer. When these vector numbers match and the RRS bit is 1, the DTC does not read the DTC vector
+and transfer information, and transfers data according to the transfer information remained in the DTC.
+However, when the previous transfer was chain transfer, the DTC vector and transfer information are read. Furthermore,
+when the transfer counter (CRA register) became 0 during the previous normal transfer and when the transfer counter
+(CRB register) became 0 during the previous block transfer, transfer information is read regardless of the value of the
+RRS bit. Figure 20.14 shows an example of transfer information read skip.
+When updating the vector table and transfer information, set the RRS bit to 0, update the vector table and transfer
+information, and then set the RRS bit to 1. Setting the RRS bit to 0 discards the vector numbers retained in the DTC. The
+updated DTC vector table and transfer information are read in the next data transfer.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 806 of 3240
+
+RX72N Group
+
+20.4.2
+20.4.2.1
+
+20. Data Transfer Controller (DTCb)
+
+Transfer Information Write-Back Skip Function
+Write-Back Skip by Fixing Addresses
+
+When the MRA.SM[1:0] bits or the MRB.DM[1:0] bits are set to “address is fixed” (00b or 01b), a part of transfer
+information is not written back. This function is performed independently of the setting of short-address mode or fulladdress mode.
+Table 20.5 lists transfer information write-back skip conditions and applicable registers. The CRA and CRB registers
+are written back independently of the setting of short-address mode or full-address mode.
+Furthermore, in full-address mode, write-back of registers MRA, MRB, and MRC is skipped.
+Table 20.5
+
+Transfer Information Write-Back Skip Conditions and Applicable Registers
+
+MRA.SM[1:0] Bits
+
+MRB.DM[1:0] Bits
+
+b3
+
+b2
+
+b3
+
+b2
+
+SAR Register
+
+DAR Register
+
+0
+
+0
+
+0
+
+0
+
+Skip
+
+Skip
+
+0
+
+0
+
+0
+
+1
+
+0
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+1
+
+0
+
+0
+
+1
+
+0
+
+Skip
+
+Write-back
+
+0
+
+0
+
+1
+
+1
+
+0
+
+1
+
+1
+
+0
+
+0
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+Write-back
+
+Skip
+
+1
+
+0
+
+0
+
+1
+
+1
+
+1
+
+0
+
+0
+
+1
+
+1
+
+0
+
+1
+
+1
+
+0
+
+1
+
+0
+
+Write-back
+
+Write-back
+
+1
+
+0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+0
+
+1
+
+1
+
+1
+
+1
+
+20.4.2.2
+
+Write-Back Skip by the MRA.WBDIS Bit
+
+When the MRA.WBDIS bit is 1, the transfer information (SAR, DAR, CRA, and CRB) is not written back regardless of
+the settings of the transfer information.
+The transfer information on the memory is not updated, data can be transferred by the DTC without copying the transfer
+information from ROM to RAM. Skipping a write-back reduces time for post-processing of the data transfer.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 807 of 3240
+
+RX72N Group
+
+20.4.3
+
+20. Data Transfer Controller (DTCb)
+
+Normal Transfer Mode
+
+This mode allows 1-byte, 1-word, or 1-longword data transfer on a single transfer request. The transfer count can be set
+to 1 to 65536.
+Transfer source addresses and transfer destination addresses can be set to increment, decrement, or fixed independently.
+This mode enables an interrupt request to the CPU to be generated at the end of specified-count transfer.
+Table 20.6 lists register functions in normal transfer mode, and Figure 20.6 shows the memory map of normal transfer
+mode.
+Table 20.6
+
+Register Functions in Normal Transfer Mode
+
+Register
+
+Description
+
+Value Written Back by Writing Transfer Information*1
+
+SAR
+
+Transfer source address
+
+Increment/decrement/fixed*2
+
+DAR
+
+Transfer destination address
+
+Increment/decrement/fixed*2
+
+CRA
+
+Transfer counter A
+
+CRA – 1
+
+CRB
+
+Transfer counter B
+
+Not updated
+
+Note 1. Write-back operation is skipped when the MRA.WBDIS bit is 1.
+Note 2. Write-back operation is skipped when address is fixed.
+
+Transfer source data area
+
+Transfer destination data area
+
+Data 1
+
+Data 1
+
+SAR
+
+Data 2
+
+Figure 20.6
+
+Transfer
+
+DAR
+
+Data 2
+
+Data 3
+
+Data 3
+
+Data 4
+
+Data 4
+
+Data 5
+
+Data 5
+
+Data 6
+
+Data 6
+
+Memory Map of Normal Transfer Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 808 of 3240
+
+RX72N Group
+
+20.4.4
+
+20. Data Transfer Controller (DTCb)
+
+Repeat Transfer Mode
+
+This mode allows 1-byte, 1-word, or 1-longword data transfer on a single transfer request.
+Specify either transfer source or transfer destination for the repeat area by the MRB.DTS bit. The transfer count can be
+set to 1 to 256. When the specified-count transfer is completed, the initial value of the address register specified in the
+transfer counter and the repeat area is restored and transfer is repeated. The other address register is incremented or
+decremented continuously or remains unchanged.
+When the transfer counter CRAL is decreased to 00h in repeat transfer mode, the CRAL value is updated to the value set
+in the CRAH register. Thus the transfer counter does not become 00h, which disables an interrupt request to be generated
+to the CPU when the MRB.DISEL bit is set to 0 (an interrupt request to the CPU is generated on completion of the
+specified number of data transfers).
+Table 20.7 lists the register functions in repeat transfer mode, and Figure 20.7 shows the memory map of repeat
+transfer mode.
+Table 20.7
+
+Register Functions in Repeat Transfer Mode
+Value Written Back by Writing Transfer Information*1
+When CRAL = 1
+
+Register
+
+Description
+
+When CRAL ≠ 1
+
+When the MRB.DTS Bit is 0
+
+When the MRB.DTS Bit is 1
+
+SAR
+
+Transfer source address
+
+Increment/decrement/fixed*2
+
+Increment/decrement/fixed*2
+
+SAR register initial value
+
+DAR
+
+Transfer destination
+address
+
+Increment/decrement/fixed*2
+
+DAR register initial value
+
+Increment/decrement/fixed*2
+
+CRAH
+
+Retains initial value of
+transfer counter
+
+CRAH
+
+CRAH
+
+CRAL
+
+Transfer counter A
+
+CRAL – 1
+
+CRAH
+
+CRB
+
+Transfer counter B
+
+Not updated
+
+Not updated
+
+Note 1. Write-back operation is skipped when the MRA.WBDIS bit is 1.
+Note 2. Write-back operation is skipped when address is fixed.
+
+Transfer source data area
+(set to repeat area)
+
+Transfer destination data area
+
+Data 1
+
+Data 1
+
+SAR
+
+Data 2
+
+Transfer
+
+DAR
+
+Data 2
+
+Data 3
+
+Data 3
+
+Data 4
+
+Data 4
+Data 1
+Data 2
+Data 3
+Data 4
+
+Figure 20.7
+
+Memory Map of Repeat Transfer Mode (Transfer Source: Repeat Area)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 809 of 3240
+
+RX72N Group
+
+20.4.5
+
+20. Data Transfer Controller (DTCb)
+
+Block Transfer Mode
+
+This mode allows single-block data transfer on a single transfer request.
+Specify either transfer source or transfer destination for the block area by the MRB.DTS bit. The block size can be set to
+1 to 256 bytes, 1 to 256 words, or 1 to 256 longwords.
+When transfer of the specified one block is completed, the initial values of the block size counter CRAL and the address
+register (the SAR register when the MRB.DTS bit is 1 or the DAR register when the DTS bit is 0) specified in the block
+area are restored. The other address register is incremented or decremented continuously or remains unchanged.
+The transfer count (block count) can be set to 1 to 65536. This mode enables an interrupt request to the CPU to be
+generated at the end of specified-count block transfer.
+Table 20.8 lists register functions in block transfer mode, and Figure 20.8 shows the memory map of block transfer
+mode.
+Table 20.8
+
+Register Functions in Block Transfer Mode
+Value Written Back by Writing Transfer Information*1
+
+Register
+
+Description
+
+When MRB.DTS Bit is 0
+
+When MRB.DTS Bit is 1
+
+SAR
+
+Transfer source address
+
+Increment/decrement/fixed*2
+
+SAR register initial value
+
+DAR
+
+Transfer destination address
+
+DAR register initial value
+
+Increment/decrement/fixed*2
+
+CRAH
+
+Retains initial value of block size
+
+CRAH
+
+CRAL
+
+Block size counter
+
+CRAH
+
+CRB
+
+Block transfer counter
+
+CRB – 1
+
+Note 1. Write-back operation is skipped when the MRA.WBDIS bit is 1.
+Note 2. Write-back operation is skipped when address is fixed.
+
+Transfer source data area
+
+SAR
+
+First block
+
+Transfer destination data area
+(set to block area)
+
+Transfer
+
+Block area
+
+DAR
+
+nth block
+
+Figure 20.8
+
+Memory Map of Block Transfer Mode (Transfer Destination: Block Area)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 810 of 3240
+
+RX72N Group
+
+20.4.6
+
+20. Data Transfer Controller (DTCb)
+
+Chain Transfer
+
+Setting the MRB.CHNE bit to 1 allows chain transfer to be performed continuously on a single transfer request.
+If the MRB.CHNE bit is 1 and the MRB.CHNS bit is 0, an interrupt request to the CPU is not generated when the
+specified number of data transfers is completed, or while the MRB.DISEL bit is 1 (an interrupt request to the CPU is
+generated for every data transfer). Data transfer has no effect on the interrupt status flag, which is the request source.
+The transfer information (SAR, DAR, CRA, CRB, MRA, MRB, and MRC) that define a data transfer can be specified
+independently of each other. Figure 20.9 shows chain transfer operation.
+
+Data area
+
+Transfer source data (1)
+
+DTC vector table
+
+Transfer information
+allocated in the RAM
+
+Transfer destination data (1)
+DTC vector
+address
+
+Start address of transfer
+information
+
+Transfer information
+CHNE bit = 1
+Transfer information
+CHNE bit = 0
+Transfer source data (2)
+
+Transfer destination data (2)
+
+Figure 20.9
+
+Chain Transfer Operation
+
+If the MRB.CHNE bit is 1 and the CHNS bit is 1, chain transfer is performed only after completion of specified number
+of data transfers. In repeat transfer mode, chain transfer is performed after completion of specified number of data
+transfers.
+For details on chain transfer conditions, refer to Table 20.4, Chain Transfer Conditions.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 811 of 3240
+
+RX72N Group
+
+20.4.7
+
+20. Data Transfer Controller (DTCb)
+
+Operation Timing
+
+Figure 20.10 to Figure 20.14 show examples of DTC operation timing.
+
+System clock
+
+ICU.IRn
+
+DTC transfer request
+
+DTC access
+
+R
+
+Vector read
+
+Transfer
+information read
+
+W
+
+Data
+transfer
+
+Transfer
+information write
+
+n = Vector number
+
+Figure 20.10
+
+Example (1) of DTC Operation Timing
+(Short-Address Mode, Normal Transfer Mode, Repeat Transfer Mode)
+
+System clock
+
+ICU.IRn
+
+DTC transfer request
+
+DTC access
+
+Vector read
+
+Transfer
+information read
+
+Data transfer
+
+Transfer
+information write
+
+n = Vector number
+
+Figure 20.11
+
+Example (2) of DTC Operation Timing
+(Short-Address Mode, Block Transfer Mode, Block Size = 4)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 812 of 3240
+
+RX72N Group
+
+20. Data Transfer Controller (DTCb)
+
+System clock
+
+ICU.IRn
+
+DTC transfer request
+
+DTC access
+
+R
+
+Vector read
+
+Transfer
+information read
+
+W
+
+Data
+transfer
+
+n = Vector number
+
+Figure 20.12
+
+R
+
+Transfer
+information
+read
+
+Transfer
+information
+write
+
+W
+
+Data
+transfer
+
+Transfer
+information
+write
+
+Example (3) of DTC Operation Timing (Short-Address Mode, Chain Transfer)
+
+System clock
+
+ICU.IRn
+
+DTC transfer request
+
+DTC access
+
+R
+
+Vector read
+
+Transfer
+information read
+
+W
+
+Data
+transfer
+
+Transfer
+information write
+
+n = Vector number
+
+Figure 20.13
+
+Example (4) of DTC Operation Timing
+(Full-Address Mode, Normal Transfer Mode, Repeat Transfer Mode)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 813 of 3240
+
+RX72N Group
+
+20. Data Transfer Controller (DTCb)
+
+System clock
+
+ICU.IRn
+
+(2)
+
+(1)
+
+DTC transfer request
+
+Read skip enable
+
+R
+
+DTC access
+
+Vector read
+
+Transfer
+information read
+
+W
+
+Data
+transfer
+
+RR W
+
+Transfer
+information write
+
+Data
+transfer
+
+Transfer
+information write
+
+n = Vector number
+Note: When request sources (vector numbers) of (1) and (2) are the same and the DTCCR.RRS bit is 1, the transfer information read for
+request (2) is skipped.
+
+Figure 20.14
+
+Example of Operation When Transfer Information Read Skip is Executed
+(Vector, Transfer Information, and Transfer Destination Data on the RAM, and Transfer Source
+Data on the Peripheral Module)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 814 of 3240
+
+RX72N Group
+
+20.4.8
+
+20. Data Transfer Controller (DTCb)
+
+Execution Cycles of the DTC
+
+Table 20.9 lists the execution cycles of single data transfer of the DTC.
+For the order of the execution states, refer to section 20.4.7, Operation Timing.
+Table 20.9
+
+Execution Cycles of the DTC
+
+Transfer
+Mode
+
+Vector Read
+
+Normal
+
+Cv + 1
+
+0*1
+
+Transfer Information Read
+
+4 × Ci + 1*2
+
+3 × Ci + 1*3
+
+0*1
+
+Data Transfer
+
+Transfer Information
+Write
+
+Read
+
+Write
+
+Internal
+Operation
+
+3 × Ci*4
+
+Cr + 1
+
+Cw
+
+2
+
+2 × Ci*5
+
+Ci*6
+
+Repeat
+
+Cr + 1
+
+Cw
+
+Block*7
+
+P × Cr
+
+P × Cw
+
+Note 1.
+Note 2.
+Note 3.
+Note 4.
+Note 5.
+Note 6.
+Note 7.
+
+0*1
+
+When transfer information read is skipped
+In full-address mode
+In short-address mode
+When neither SAR nor DAR is set to address-fixed
+When SAR or DAR is set to address-fixed
+When SAR and DAR are set to address-fixed
+When the block size is 2 or more. If the block size is 1, the cycle number for normal transfer is applied.
+
+P: Block size (initial settings of CRAH and CRAL)
+Cv: Cycles for access to vector transfer information storage destination
+Ci: Cycles for access to transfer information storage destination address
+Cr: Cycles for access to data read destination
+Cw: Cycles for access to data write destination
+(The unit is system clocks (ICLK) for “+ 1” in the Vector Read, Transfer Information Read, and Data Transfer Read columns and
+“2” in the Internal Operation column.)
+(Cv, Ci, Cr, and Cw vary depending on the corresponding access destination. For the number of cycles for respective access
+destinations, refer to section 60, RAM, section 62, Flash Memory (FLASH), section 5, I/O Registers, and section 16.2.6, External
+Bus.)
+
+20.4.9
+
+DTC Bus Mastership Release Timing
+
+The DTC does not release the bus mastership during transfer information read and transfer information write. While
+transfer information is not read or written, bus arbitration is made according to the priority determined by the bus master
+arbitrator.
+For bus arbitration, refer to section 16, Buses.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 815 of 3240
+
+RX72N Group
+
+20.4.10
+
+20. Data Transfer Controller (DTCb)
+
+Sequence Transfer
+
+A sequence transfer can be executed on the request source that is specified in the DTCSQE register. A sequence transfer
+is started by setting the MRB.INDX bit to 1 and ended by setting the MRB.SQEND bit to 1. Setting the
+DTCOR.SQTFRL bit to 1, even during a sequence transfer, forcibly ends the transfer and the next DTC transfer request
+starts new sequence transfer with reference to the index table.
+A sequence transfer includes the following processing.
+(1) The first data transfer is executed by referring to the DTC vector table in response to a DTC transfer request from
+the source specified in the DTCSQE register.
+(2) The DTC index table is referred based on the value of the lower 8 bits of the first data transferred data in (1)
+(sequence number).
+(3) The transfer information is read from the address obtained from the DTC index table.
+(4) A data transfer is executed in accordance with the transfer information. On completion of the data transfer, either
+one of the following operations is performed by using the values of bits MRB.CHNE and MRB.SQEND.
+• A chain transfer is executed when the CHNE bit is 1. The next transfer information is read. Go to (4).
+• The sequence transfer is suspended when the CHNE bit is 0 and the SQEND bit is 0. Go to (5).
+• The sequence transfer ends when the CHNE bit is 0 and the SQEND bit is 1.
+(5) When a DTC transfer request from the source specified in the DTCSQE register is accepted, the suspended
+sequence transfer is resumed and the next transfer information is read. Go to (4).
+Note 1. When the ICU.DTCERn.DTCE bit becomes 0 based on the result of the data transfer, a DTC transfer request is
+not generated. Set the DTCE bit to 1 to resume sequence transfer. Refer to Figure 20.5 or section 15, Interrupt
+Controller (ICUD) for the conditions where the DTCE bit becomes 1.
+
+Figure 20.15 and Figure 20.16 shows a basic sequence transfer operation.
+
+DTC vector table
+
+DTC vector address
+
+Start address of
+transfer information
+
+DTCVBR + n × 4
+
+DTC index address
+
+Transfer information
+
+Transfer information
+INDX = 1
+(Start sequence transfer)
+
+DTC index table
+
+Transfer information
+
+Start address of sequence
+
+Transfer information
+CHNE = 1
+SQEND = 0
+
+DTCIBR + p × 4
+
+Transfer information
+CHNE = 0
+SQEND = 0
+
+Figure 20.15
+
+Data
+Sequence number = p
+
+(Suspend sequence transfer)
+
+Start and Suspension of Sequence Transfer
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 816 of 3240
+
+RX72N Group
+
+20. Data Transfer Controller (DTCb)
+
+DTC vector table
+
+Start address of
+transfer information
+
+DTC vector address
+DTCVBR + n × 4
+
+DTC index address
+
+Transfer information
+
+Transfer information
+INDX = 1
+
+DTC index table
+
+Transfer information
+
+Start address of sequence
+
+Transfer information
+CHNE = 1
+SQEND = 0
+
+DTCIBR + p × 4
+
+Sequence transfer
+request
+
+Transfer information
+CHNE = 0
+SQEND = 0
+(Resume sequence transfer)
+
+Sequence number = p
+
+(Suspend sequence transfer)
+
+Transfer information
+CHNE = 1
+SQEND = 0
+Transfer information
+CHNE = 0
+SQEND = 1
+
+Figure 20.16
+
+Data
+
+(Start sequence transfer)
+
+(End sequence transfer)
+
+Resumption and End of Sequence Transfer
+
+Table 20.10 lists the settings of bits CHNE, SQEND, and INDX during the sequence transfer.
+Table 20.10
+
+Sequence Transfer Process and Values of Bits CHNE, SQEND, and INDX
+
+DTC Operations
+
+CHNE Bit
+
+SQEND Bit
+
+INDX Bit
+
+Start sequence transfer
+
+0
+
+0
+
+1*1
+
+Continue sequence transfer
+
+1
+
+0
+
+0
+
+Suspend sequence transfer*2
+
+0
+
+0
+
+0
+
+End sequence transfer
+
+0
+
+1
+
+0
+
+End current sequence transfer and Obtain new sequence number
+
+0
+
+1
+
+1*1
+
+Some other transfer (not sequence transfer)
+
+—
+
+0
+
+0
+
+Note:
+Do not set the values other than listed above.
+Note 1. Set MRA.MD[1:0] bits to 00b (normal transfer mode) when setting the INDX bit to 1.
+Note 2. When a sequence transfer is suspended, the ICU.DTCERn.DTCE bit may become 0. Set the DTCE bit to 1 to resume sequence
+transfer.
+
+Even when a sequence transfer is suspended, a new sequence transfer cannot start until the suspended sequence transfer
+is eventually completed. When a sequence transfer request is received during suspension of the sequence transfer, the
+suspended sequence transfer is resumed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 817 of 3240
+
+RX72N Group
+
+20.4.11
+
+20. Data Transfer Controller (DTCb)
+
+DTC Index Table
+
+The DTC index table is allocated to the area where its start address is configured in the DTCIBR register.
+Store the start address of transfer information table p for sequence number p in the address of DTCIBR + p × 4.
+The upper 30 bits of the start address is set to the upper 30 bits of the DTC index. Set the CPUSEL bit to select either of
+reading the transfer information and starting the sequence, or output an interrupt request to the CPU without starting the
+sequence. For a complicated sequence that the DTC cannot handle, set the CPUSEL bit to 1 to allow the CPU to handle
+such a sequence.
+
+DTC index table
+
+Transfer information table 0
+
+Transfer information
+DTC index table base address
++4
++8
+
+Start address of transfer
+00
+information table 0 (upper 30 bits)
+Start address of transfer
+00
+information table 1 (upper 30 bits)
+0000 0000 0······0 0000 00
+
++p×4
+
+01
+
+Start address of transfer
+00
+information table p (upper 30 bits)
+4 bytes
+
+Transfer information
+
+Transfer information table p
+
+Transfer information
+Transfer information
+
+DTC index address = DTCIBR + sequence number × 4
+
+Figure 20.17
+
+DTC Index Table
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 818 of 3240
+
+RX72N Group
+
+20. Data Transfer Controller (DTCb)
+
+ DTC Index
+Address(es): DTCIBR + p × 4
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+DTCIADDR[31:16]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+CPUSE
+L
+
+0
+
+0
+
+DTCIADDR[15:2]
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+CPUSEL
+
+Sequence Transfer/CPU Interrupt
+Select
+
+0: Continues the sequence transfer (starts the
+sequence)
+1: Ends the sequence transfer and outputs an interrupt
+request to the CPU
+
+—
+
+b1
+
+—
+
+Reserved
+
+Set this bit to 0.
+
+—
+
+b31 to b2
+
+DTCIADDR[31:2]
+
+Transfer Information Table Address
+
+Set the upper 30 bits of the start address of the transfer
+information table to these bits. Writing to the upper 4
+bits (b31 to b28) is ignored and the values in b31 to b28
+become the same value as b27.
+
+—
+
+When the CPUSEL bit in the DTC index that the obtained sequence number indicates is 1, an interrupt request to the
+CPU is generated. At this time, the ICU.DTCERn.DTCE bit becomes 0. From this point, the interrupt request signal from
+the request source that is specified in the DTCSQE register is sent to the CPU, but not DTC. After completion of CPU
+interrupt processing, set the ICU.DTCERn.DTCE bit to 1 to enable DTC transfer request for starting the next sequence
+transfer.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 819 of 3240
+
+RX72N Group
+
+20.4.12
+
+20. Data Transfer Controller (DTCb)
+
+Example of Sequence Transfer
+
+Figure 20.18 shows a typical examples of a sequence transfer and Figure 20.19 to Figure 20.23 show configurations
+of the transfer information for the examples of the transfers in the figure.
+In these examples, the interrupt source of vector number n is set as the source of the sequence transfer
+(DTCSQE.VECN[7:0] = n).
+Once the DTC transfer request due to the interrupt source of vector number n (hereinafter referred to as “transfer request
+n”) is input, the DTC refers to the DTC vector table and reads the corresponding transfer information. The lower 8 bits
+that have been transferred based on the transfer information become a sequence number, selecting one sequence among
+possible 256 sequences.
+
+(1) Execution of a Single Transfer
+Transfer request n
+
+Select sequence
+
+INDX=1
+
+Defined sequence
+
+SQEND=1
+
+Data transfer
+
+(2) Execution of a Single Transfer (Chain Transfer)
+Transfer request n
+
+Select sequence
+
+INDX=1
+
+CHNE=1
+
+CHNE=1
+
+CHNE=1
+
+SQEND=1
+
+(3) Division of a Sequence
+Transfer request n
+
+Select sequence
+
+INDX=1
+
+Transfer request n
+
+CHNE=0
+
+Transfer request n
+
+CHNE=1
+
+CHNE=0
+
+Suspend
+
+CHNE=1
+
+SQEND=1
+
+Suspend
+
+(4) Start of a New Sequence on Completion of a Sequence
+Transfer request n
+
+Select sequence
+
+INDX=1
+
+CHNE=1
+
+Select sequence
+CHNE=1
+
+SQEND=1
+INDX=1
+
+CHNE=1
+
+CHNE=1
+
+SQEND=1
+
+(5) Generation of an Interrupt Request to the CPU
+Transfer request n
+
+Select sequence
+
+INDX=1
+
+Figure 20.18
+
+Interrupt requent
+
+Examples of Sequence Transfers
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 820 of 3240
+
+RX72N Group
+
+(1)
+
+20. Data Transfer Controller (DTCb)
+
+When Executing a Single Transfer
+
+Figure 20.19 shows an example of a single transfer (normal, repeat, or block).
+The DTC refers to the DTC index table, and reads the transfer information corresponding to the obtained sequence
+number p.
+Since the values of the CHNE, INDX, and SQEND bits are 0, 0, and 1 respectively, the sequence ends after the specified
+transfer is executed.
+
+Transfer request n
+
+Select sequence
+
+INDX=1
+
+SQEND=1
+
+DTC vector table
+
+Transfer information
+
+DTCVBR + 0 × 4
+
+INDX = 1
+
+DTCVBR + 1 × 4
+
+Data transfer
+Data
+Sequence number = p
+
+DTCVBR + 2 × 4
+DTCVBR + n × 4
+DTCVBR + 255 × 4
+
+DTC index table
+
+Transfer information
+
+DTCIBR + 0 × 4
+DTCIBR + 1 × 4
+
+Data transfer
+
+CHNE = 0
+INDX = 0
+SQEND = 1
+
+DTCIBR + 2 × 4
+DTCIBR + p × 4
+DTCIBR + 255 × 4
+
+Figure 20.19
+
+Example of a Sequence of Single Transfer
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 821 of 3240
+
+RX72N Group
+
+(2)
+
+20. Data Transfer Controller (DTCb)
+
+When Executing a Single Chain Transfer
+
+Figure 20.20 is an example of a sequence for a single chain transfer.
+The DTC refers to the DTC index table, and reads the transfer information corresponding to the obtained sequence
+number q.
+While the values of the CHNE, INDX, and SQEND bits are 1, 0, and 0 respectively, the specified chain transfer is
+executed. When the transfer information in which the CHNE, INDX, and SQEND bits are 0, 0, and 1 respectively is read,
+the sequence ends after the specified transfer is executed.
+
+Transfer request n
+
+Select sequence
+
+INDX=1
+
+CHNE=1
+
+DTC vector table
+DTCVBR + 0 × 4
+
+CHNE=1
+
+CHNE=1
+
+SQEND=1
+
+Transfer information
+INDX = 1
+
+DTCVBR + 1 × 4
+
+Data transfer
+Data
+Sequence number = q
+
+DTCVBR + 2 × 4
+DTCVBR + n × 4
+DTCVBR + 255 × 4
+
+DTC index table
+DTCIBR + 0 × 4
+DTCIBR + 1 × 4
+
+Transfer information
+
+DTCIBR + 2 × 4
+
+CHNE = 1
+INDX = 0
+SQEND = 0
+
+DTCIBR + q × 4
+
+CHNE = 1
+INDX = 0
+SQEND = 0
+
+DTCIBR + 255 × 4
+
+CHNE = 0
+INDX = 0
+SQEND = 1
+
+Figure 20.20
+
+Data transfer
+
+CHNE = 1
+INDX = 0
+SQEND = 0
+
+Example of Sequence of a Single Chain Transfer
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 822 of 3240
+
+RX72N Group
+
+(3)
+
+20. Data Transfer Controller (DTCb)
+
+When Dividing a Sequence
+
+Figure 20.21 is an example of the sequence that is divided into 3 parts.
+The DTC refers to the DTC index table, and reads the transfer information corresponding to the obtained sequence
+number r.
+Since the values of the CHNE, INDX, and SQEND bits in the transfer information are 0, 0, and 0 respectively, the
+sequence is suspended after the specified transfer is executed and the DTC waits for the next transfer request n.
+When the transfer request n is input during a sequence transfer, the DTC vector table is not referred and the suspended
+sequence is resumed.
+When the transfer information in which the CHNE, INDX, and SQEND bits are 0, 0, and 1 respectively is read, the
+sequence ends after the specified transfer is executed.
+
+Transfer request n
+
+Select sequence
+
+INDX=1
+
+Transfer request n
+
+CHNE=0
+
+CHNE=1
+Suspend
+
+DTC vector table
+
+Transfer request n
+CHNE=0
+
+CHNE=1
+Suspend
+
+Transfer information
+
+DTCVBR + 0 × 4
+
+INDX = 1
+
+DTCVBR + 1 × 4
+
+SQEND=1
+
+Data transfer
+Data
+Sequence number = r
+
+DTCVBR + 2 × 4
+DTCVBR + n × 4
+DTCVBR + 255 × 4
+
+DTC index table
+
+Transfer information
+
+DTCIBR + 0 × 4
+DTCIBR + 1 × 4
+DTCIBR + 2 × 4
+
+Transfer
+request n
+
+CHNE = 1
+INDX = 0
+SQEND = 0
+CHNE = 0
+INDX = 0
+SQEND = 0
+
+DTCIBR + r × 4
+DTCIBR + 255 × 4
+
+Data transfer
+
+CHNE = 0
+INDX = 0
+SQEND = 0
+
+Transfer
+request n
+
+CHNE = 1
+INDX = 0
+SQEND = 0
+CHNE = 0
+INDX = 0
+SQEND = 1
+
+Figure 20.21
+
+Example of Divided Sequence
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 823 of 3240
+
+RX72N Group
+
+(4)
+
+20. Data Transfer Controller (DTCb)
+
+When Starting a New Sequence on completion of a Sequence
+
+Figure 20.22 is an example for starting the next and new sequence on completion of the first sequence.
+The DTC refers to the DTC index table, and reads the transfer information corresponding to the obtained sequence
+number s.
+When the transfer information in which the CHNE, INDX, and SQEND bits are 0, 1, and 1 respectively is read, the
+specified transfer is executed, then a new sequence number is obtained from the lower 8 bits of the transferred data.
+The DTC again refers to the DTC index table, and reads the transfer information corresponding to the obtained sequence
+number k and then starts a new sequence.
+When the transfer information in which the CHNE, INDX, and SQEND bits are 0, 0, and 1 respectively is read, the
+sequence ends after the specified transfer is executed.
+
+Transfer request n
+
+Select sequence
+
+INDX=1
+
+CHNE=1
+
+DTC vector table
+DTCVBR + 0 × 4
+
+Select sequence
+CHNE=1
+
+SQEND=1
+INDX=1
+
+CHNE=1
+
+CHNE=1
+
+Transfer information
+INDX = 1
+
+DTCVBR + 1 × 4
+
+SQEND=1
+
+Data transfer
+Data
+Sequence number = s
+
+DTCVBR + 2 × 4
+DTCVBR + n × 4
+DTCVBR + 255 × 4
+
+DTC index table
+DTCIBR + 0 × 4
+DTCIBR + 1 × 4
+
+Transfer information
+
+Data transfer
+
+CHNE = 1
+INDX = 0
+SQEND = 0
+
+DTCIBR + 2 × 4
+
+CHNE = 1
+INDX = 0
+SQEND = 0
+
+DTCIBR + k × 4
+
+CHNE = 0
+INDX = 1
+SQEND = 1
+
+DTCIBR + s × 4
+
+Data
+Sequence number = k
+
+DTCIBR + 255 × 4
+CHNE = 1
+INDX = 0
+SQEND = 0
+CHNE = 1
+INDX = 0
+SQEND = 0
+CHNE = 0
+INDX = 1
+SQEND = 1
+
+Figure 20.22
+
+Example When Starting a New Sequence on Completion of a Sequence
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 824 of 3240
+
+RX72N Group
+
+(5)
+
+20. Data Transfer Controller (DTCb)
+
+When Generating an Interrupt Request to the CPU
+
+Figure 20.23 is an example of that an interrupt request is output to the CPU without starting of sequence.
+The DTC obtains a DTC index that corresponds to the obtained sequence number t.
+When the CPUSEL bit of the obtained DTC index is 1, the DTC ends the sequence transfer without starting the
+sequence, and then outputs an interrupt request to the CPU.
+
+Transfer request n
+
+Select sequence
+
+INDX=1
+
+Interrupt request
+
+DTC vector table
+DTCVBR + 0 × 4
+
+Transfer information
+INDX = 1
+
+DTCVBR + 1 × 4
+
+Data transfer
+Data
+Sequence number = t
+
+DTCVBR + 2 × 4
+DTCVBR + n × 4
+DTCVBR + 255 × 4
+
+DTC index table
+DTCIBR + 0 × 4
+DTCIBR + 1 × 4
+DTCIBR + 2 × 4
+DTCIBR + t × 4
+
+CPUSEL = 1
+
+Interrupt request
+
+DTCIBR + 255 × 4
+
+Figure 20.23
+
+Example of Output of an Interrupt Request to the CPU
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 825 of 3240
+
+RX72N Group
+
+20.5
+
+20. Data Transfer Controller (DTCb)
+
+DTC Setting Procedure
+
+Before using the DTC, set the DTC vector base register (DTCVBR). When using sequence transfer, also set the DTC
+index table base register (DTCIBR).
+Figure 20.24 shows the procedure to set the DTC.
+Set the ICU.IERm.IENj bit corresponding to the request source
+interrupt to 0 and provide the following settings.
+
+Start
+
+Set the DTCCR.RRS bit to 0
+
+[1]
+
+Set transfer information
+(MRA, MRB, MRC, SAR, DAR, CRA, and
+CRB)
+
+[2]
+
+Set the start address of the transfer
+information in the DTC vector table.
+Set the start address of the transfer
+information for the sequence transfer in the
+DTC index table
+
+[3]
+
+Set the DTCCR.RRS bit to 1
+
+[4]
+
+Set the ICU.DTCERn.DTCE bit to 1.
+Set the ICU.IERm.IENj bit to 1.
+
+Set the interrupt enable bit for
+a request source
+
+[5]
+
+[6]
+
+[1] Setting the DTCCR.RRS bit to 0 resets the transfer information
+read skip flag. After that, transfer information read is not skipped
+during the data transfer. When transfer information is updated,
+be sure to make this setting.
+[2] Allocate transfer information (MRA, MRB, MRC, SAR, DAR,
+CRA, and CRB) in the data area. For setting transfer
+information, refer to section 20.2, Register Descriptions. For
+how to allocate transfer information, refer to section 20.3.1,
+Allocating Transfer Information and DTC Vector Table.
+[3] Set the start address of the transfer information in the DTC
+vector table. For how to set the DTC vector table, refer to
+section 20.3.1, Allocating Transfer Information and DTC Vector
+Table. When using sequence transfer, set the
+DTCADMOD.SHORT bit to 0, set registers DTCIBR, DTCSQE,
+and DTCDISP, and allocate the DTC index table.
+[4] Setting the DTCCR.RRS bit to 1 enables skipping of the second
+and the subsequent transfer information read cycles for
+continuous data transfer due to the same interrupt source. The
+RRS bit can be set to 1 at any time, but this setting during data
+transfer becomes valid from the next transfer. Leave the value
+of the RRS bit as 0 if the value of the MRA.WBDIS bit or the
+MRC.DISPE bit in any transfer information is 1 or when
+sequence transfer is to be used.
+[5] Set the ICU.DTCERn.DTCE bit (n = interrupt vector number)
+that corresponds to the DTC request source to 1. Set the
+ICU.IERm.IENj bit to 1. For the correspondence between
+interrupt sources and DTCERn register, refer to Table 15.5,
+Interrupt Vector Table in section 15, Interrupt Controller (ICUD).
+[6] Set the interrupt enable bit of the peripheral module, which is
+request source, to 1. When a source interrupt is generated, the
+DTC starts operation. For the setting of the interrupt enable bit,
+refer to the setting of the peripheral module that is to be an
+request source.
+
+Setting for each request
+source
+Common setting for DTC
+
+Set the DTCST.DTCST bit to 1
+
+[7]
+
+[7] Set the DTCST.DTCST bit to 1 (DTC module start)*1.
+Note 1. The DTCST.DTCST bit can be set even if the setting for
+each request source is not completed.
+
+End
+
+Figure 20.24
+
+Procedure to Set the DTC
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 826 of 3240
+
+RX72N Group
+
+20. Data Transfer Controller (DTCb)
+
+20.6
+
+Examples of DTC Usage
+
+20.6.1
+
+Normal Transfer
+
+As an example of DTC usage, its employment in the reception of 128 bytes of data by an SCI is described below.
+
+(1)
+
+Transfer Information Setting
+
+Set the MRA.MD[1:0] bits to 00b (normal transfer mode), the MRA.SZ[1:0] bits to 00b (byte transfer), and the
+MRA.SM[1:0] bits to 00b (source address is fixed). Set the MRB.CHNE bit to 0 (chain transfer is disabled), the
+MRB.DISEL bit to 0 (an interrupt request to the CPU is generated on completion of the specified number of data
+transfers), and the MRB.DM[1:0] bits to 10b (DAR is incremented after data transfer). The MRB.DTS bit can be set to
+any value. Set the RDR register address of the SCI in the SAR register, the start address of the RAM area for data storage
+in the DAR register, and 128 (0080h) in the CRA register. The CRB register can be set to any value.
+
+(2)
+
+DTC Vector Table Setting
+
+The start address of the transfer information for the RXI interrupt is set in the vector table for the DTC.
+
+(3)
+
+ICU Setting and DTC Module Activation
+
+Set the corresponding ICU.DTCERn.DTCE bit to 1 and the ICU.IERm.IENj bit to 1.
+Set the DTCST.DTCST bit to 1.
+
+(4)
+
+SCI Setting
+
+Enable the RXI interrupt by setting the SCR.RIE bit in the SCI to 1. If a reception error occurs during the SCI receive
+operation, further reception is not performed. Accordingly, make settings so that the CPU can accept receive error
+interrupts.
+
+(5)
+
+DTC Transfer
+
+Every time the reception of 1 byte by the SCI is completed, an RXI interrupt is generated to start the data transfer. The
+DTC transfers the received byte from the RDR of the SCI to RAM, after which the DAR register is incremented and the
+CRA register is decremented.
+
+(6)
+
+Interrupt Handling
+
+After 128 times of data transfers have been completed and the value in the CRA register becomes 0, an RXI interrupt
+request is output to the CPU. Complete the process in the handling routine for this interrupt.
+
+20.6.2
+
+Chain Transfer
+
+As an example of chain transfer by the DTC, its employment in the output of pulses by a PPG is described below.
+Lower-case letters x, y, and k in this text indicate a unit, channel, and bit number, respectively.
+Chain transfer is used to transfer pulse output data and change the period of the output trigger for the PPG. For the first
+half of the chain transfer, repeat transfer mode for transfer to the PPGx.NDRH and PPGx.NDRL registers is specified.
+For the second half, normal transfer mode for transfer to the MTUy.TGR registers is specified. This is because clearing
+of the request source and generation of an interrupt on completion of the specified number of data transfer are restricted
+to the second half of the chain transfer (transfer while the MRB.CHNE bit is 0).
+An example of using the compare match interrupt for an MTUy.TGRA register as a request source for the DTC is
+provided below.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 827 of 3240
+
+RX72N Group
+
+(1)
+
+20. Data Transfer Controller (DTCb)
+
+First Transfer Information Setting
+
+Settings should be made for transfer to the PPGx.NDRH and PPGx.NDRL registers. Set the MRA.MD[1:0] bits to 01b
+(repeat transfer mode), the MRA.SZ[1:0] bits to 01b (word transfer), and the MRA.SM[1:0] bits to 10b (SAR is
+incremented after data transfer). Set the MRB.CHNE bit to 1 (chain transfer is enabled), the MRB.CHNS bit to 0 (chain
+transfer is performed after each transfer), the MRB.DTS bit to 1 (source is repeat area), and the MRB.DM[1:0] bits to
+00b (destination address is fixed). Set the SAR to the start address of the data table, the DAR register to the address of the
+PPGx.NDRH register, and the CRAH and CRAL registers to the size of the data table. The CRB register can be set to any
+value.
+
+(2)
+
+Second Transfer Information Setting
+
+Settings should be made for transfer to the MTUy.TGRA register. Set the MRA.MD[1:0] bits to 00b (normal transfer
+mode), the MRA.SZ[1:0] bits to 01b (word transfer), and the MRA.SM[1:0] bits to 10b (SAR is incremented after data
+transfer). Set the MRB.CHNE bit to 0 (chain transfer is disabled), the MRB.DISEL bit to 0 (an interrupt request to the
+CPU is generated on completion of the specified number of data transfers), and the MRB.DM[1:0] bits to 00b
+(destination address is fixed). The MRB.DTS bit can be set to any value. Set the SAR register to the start address of the
+data table, the DAR register to the address of the MTUy.TGRA register, and the CRA register to the size of the data
+table. The CRB register can be set to any value.
+
+(3)
+
+Transfer Information Assignment
+
+Place the second transfer information immediately after the first transfer information.
+
+(4)
+
+DTC Vector Table
+
+In the DTC vector table, set the address where the first transfer information starts.
+
+(5)
+
+ICU Setting and DTC Module Activation
+
+Set the ICU.DTCERn.DTCE bit corresponding to the TGIA interrupt and the ICU.IERm.IENj bit to 1.
+Set the DTCST.DTCST bit to 1.
+
+(6)
+
+MTU Setting
+
+In the given MTUy, set the TIOR register so that the TGRA register operates as an output compare register (with output
+disabled) and make the TIER setting to enable TGIAn interrupt requests.
+
+(7)
+
+PPG Setting
+
+Set the default output values in the PPGx.PODRH and PPGx.PODRL registers and the next output values in the
+PPGx.NDRH and PPGx.NDRL registers. Set 1 to the output bits in PORTm.PDR and PPGx.NDRH, and PPGx.NDRL.
+Also, select a compare match signal of the MTU as the output trigger in the PPGx.PCR register.
+
+(8)
+
+MTU Activation
+
+Set the MTU.TSTR.CSTk bits to 1 to start counting operation of the MTUy.TCNT counter.
+
+(9)
+
+DTC Transfer
+
+Every time a compare-match with the MTUy.TGRA register is generated, next output values are transferred to the
+PPGx.NDRH and PPGx.NDRL registers and the setting for the next output trigger period is transferred to the
+MTUy.TGRA register.
+
+(10) Interrupt Handling
+When the specified number of data transfers is completed (i.e. when the value of the CRA register for second transfer
+becomes 0), a TGIAn interrupt request is issued for the CPU. Complete the process in the handling routine for this
+interrupt.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 828 of 3240
+
+RX72N Group
+
+20.6.3
+
+20. Data Transfer Controller (DTCb)
+
+Chain Transfer When the Counter is 0
+
+The second data transfer is performed only when the transfer counter is set to 0 in the first data transfer, and the first data
+transfer information is repeatedly changed in the second data transfer. Repeating this chain transfer enables transfers to
+be repeated more than 256 times.
+The following shows an example of configuring a 128-Kbyte input buffer to addresses 20 0000h to 21 FFFFh (where the
+input buffer is set so that its lower address starts with 0000h). Figure 20.25 shows a chain transfer when the counter is 0.
+(1) Set normal transfer mode for input data for the first data transfer. Set the following:
+Transfer source address: Fixed, the CRA register is 0000h (65,536 times), the MRB.CHNE bit is 1 (chain transfer is
+enabled), the MRB.CHNS bit is 1 (chain transfer is performed only when the transfer counter becomes 0), and the
+MRB.DISEL bit is 0 (an interrupt request to the CPU is generated on completion of the specified number of data
+transfers).
+(2) Prepare the upper 8 bits (in this case, 21h and 20h) of the start address at every 65,536 times of the transfer
+destination address for the first data transfer in another area (such as ROM).
+(3) For the second data transfer, set repeat transfer mode (source is repeat area) for rewriting the transfer destination
+address of the first data transfer. The transfer destination is the address where the upper 8 bits of the DAR register in
+the first transfer information is allocated. In this case, set the MRB.CHNE bit to 0 (chain transfer is disabled) and
+the MRB.DISEL bit to 0 (an interrupt request to the CPU is generated on completion of the specified number of data
+transfers). In this case, set the transfer counter to 2.
+(4) When a transfer request is accepted, the first data transfer is executed. When transfer is executed 65,536 times and
+the transfer counter of the first data transfer becomes 0, the second data transfer is started and the upper 8 bits of the
+transfer destination address of the first data transfer is set to 21h. At this time, the lower 16 bits of the transfer
+destination address and the transfer counter of the first data transfer have become 0000h.
+(5) In succession, when another transfer request is accepted, the first data transfer is executed. When transfer is
+executed 65,536 times and the transfer counter of the first data transfer becomes 0, the second data transfer is started
+and the upper 8 bits of the transfer destination address of the first data transfer is set to 20h. At this time, the lower
+16 bits of the transfer destination address and the transfer counter of the first data transfer have become 0000h.
+(6) Steps (4) and (5) above are repeated infinitely. Because the second data transfer is in repeat transfer mode, no
+interrupt request to the CPU is generated.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 829 of 3240
+
+RX72N Group
+
+20. Data Transfer Controller (DTCb)
+
+Input circuit
+
+Transfer information allocated in
+the on-chip memory space
+Input buffer
+
+First data transfer
+Transfer information
+
+Chain transfer
+(counter = 0)
+
+Second data transfer
+Transfer information
+
+Upper 8 bits of DAR
+
+Figure 20.25
+
+20.6.4
+
+Chain Transfer When the Counter is 0
+
+Sequence Transfer
+
+The following is an example of using the SCI receive interrupt as a request source of sequence transfer.
+
+(1)
+
+Transfer Information Settings
+
+Set the MRA.MD[1:0] bits to 00b (normal transfer mode), the MRA.SZ[1:0] bits to 00b (byte transfer), and the
+MRA.SM[1:0] bits to 00b (source address is fixed). Set the MRB.CHNE bit to 0 (chain transfer is disabled), the
+MRB.DISEL bit to 0 (an interrupt request to the CPU is generated on completion of the specified number of data
+transfers), the MRB.DM[1:0] bits to 10b (DAR is incremented after data transfer), the MRB.INDX bit to 1 (start
+sequence transfer), and the MRB.SQEND bit to 0 (continue the sequence transfer). The MRB.DTS bit can be set to any
+value. Set the address of the SCIk.RDR register in the SAR register and set the start address of the RAM area which
+stores the data in the DAR register.
+When the MRA.WBDIS bit is set to 1 (Does not write back the transfer information), the values of registers CRA and
+CRB are ignored.
+
+(2)
+
+DTC Vector Table Setting
+
+Set the start address of the transfer information for the corresponding receive data full interrupt (RXI) in the DTC vector
+table.
+
+(3)
+
+DTC Index Table Setting
+
+Set the start address of the transfer information for each sequence in the DTC index table.
+
+(4)
+
+ICU Setting and DTC Module Activation
+
+Set the corresponding ICU.DTCERn.DTCE bit to 1 and the ICU.IERm.IENj bit to 1. Set the DTCST.DTCST bit to 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 830 of 3240
+
+RX72N Group
+
+(5)
+
+20. Data Transfer Controller (DTCb)
+
+SCI Setting
+
+Set the SCIk.SCR.RIE bit to 1 to enable the RXI interrupt. If a reception error occurs during the SCI receive operation,
+subsequent receptions are not performed. Accordingly, make settings so that the CPU can accept receive error interrupts.
+
+(6)
+
+Start of the Sequence Transfer
+
+On completion of reception of 1-byte data by the SCI, an RXI interrupt is generated to start the DTC. The DTC transfers
+the received data from the SCIk.RDR register to the RAM. The DTC looks up the DTC index table by using the value
+from the received data (sequence number) and continues to transfer data corresponding to the that number.
+When the CPUSEL bit in the DTC index is 1, the DTC does not read the transfer information and sets the
+ICU.DTCERn.DTCE bit to 0. Then the DTC outputs an interrupt request to the CPU and ends the sequence transfer.
+
+(7)
+
+During Suspension of the Sequence Transfer
+
+Set the ICU.DTCERn.DTCE bit to 1 if the bit is 0. The DTC continues to transfer the data for every generation of the
+DTC transfer request in response to the corresponding RXI interrupt.
+
+(8)
+
+End of the Sequence Transfer
+
+Set the MRB.SQEND bit in the last transfer information of the sequence transfer to 1. After execution of this data
+transfer, the DTC ends the sequence transfer. The DTC starts to refer to the DTC vector table when a DTC transfer
+request is generated due to the next corresponding RXI interrupt.
+
+20.7
+
+Interrupt Source
+
+When the DTC has finished data transfer of specified count or when data transfer with the MRB.DISEL bit set to 1 (an
+interrupt request to the CPU is generated each time the data transfer is performed) has been completed, an interrupt to the
+CPU is generated by the DTC trigger source. Such interrupts to the CPU are controlled according to the PSW.I bit
+(interrupt enable) of the CPU, the PSW.IPL[3:0] bits (processor interrupt priority level), and the priority level of the
+interrupt controller.
+
+20.8
+
+Event Link
+
+The DTC outputs an event signal on completing data transfer in response to one request. When the destination for
+transfer is an external bus or an internal peripheral bus, however, the event signal will be output after completion of
+writing to the write buffer rather than after completion of writing to the actual destination for transfer.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 831 of 3240
+
+RX72N Group
+
+20.9
+
+20. Data Transfer Controller (DTCb)
+
+Low Power Consumption Function
+
+Before making a transition to the module stop state, all-module clock stop mode, software standby mode, or deep
+software standby mode, set the DTCST.DTCST bit to 0 (DTC module stop), and then perform the following.
+
+(1)
+
+Module Stop Function
+
+Writing 1 (transition to the module-stop state is made) to the MSTPCRA.MSTPA28 bit enables the module stop function
+of the DTC. If data transfer is in progress at the time 1 is written to the MSTPCRA.MSTPA28 bit, the transition to the
+module stop state proceeds after data transfer has ended. While the MSTPCRA.MSTPA28 bit is 1, accessing the DTC
+registers is prohibited.
+Writing 0 (release from the module-stop state) to the MSTPCRA.MSTPA28 bit releases the DTC from the module stop
+state.
+
+(2)
+
+All-Module Clock Stop Mode
+
+Make settings according to the procedure under section 11.6.2.1, Transition to All-Module Clock Stop Mode, in
+section 11, Low Power Consumption.
+If any data transfer is in progress at the time the WAIT instruction is executed, the transition to all-module clock stop
+mode follows the completion of the data transfer.
+The DTC is released from the module stop state by writing 0 to the MSTPCRA.MSTPA28 bit following recovery from
+all-module clock stop mode.
+
+(3)
+
+Software Standby and Deep Software Standby Modes
+
+Make settings according to the procedure under section 11.6.3.1, Transition to Software Standby Mode, or section
+11.6.4.1, Transition to Deep Software Standby Mode, in section 11, Low Power Consumption.
+If any data transfer is in progress at the time the WAIT instruction is executed, the transition to software standby mode or
+deep software standby mode follows the completion of the data transfer.
+
+(4)
+
+Notes on Low Power Consumption Function
+
+For the WAIT instruction and the register setting procedure, refer to section 11.7.6, Timing of WAIT Instructions in
+section 11, Low Power Consumption.
+To perform data transfer after returning from a low power consumption mode, set the DTCST.DTCST bit to 1 again.
+To use a request that is generated in all-module clock stop mode or software standby mode as an interrupt request to the
+CPU but not as a DTC transfer request, specify the CPU as the interrupt request destination according to the description
+in section 15.7.3.1, Interrupt Request Destination Setting Procedure in section 15, Interrupt Controller (ICUD),
+and then execute the WAIT instruction.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 832 of 3240
+
+RX72N Group
+
+20. Data Transfer Controller (DTCb)
+
+20.10 Usage Notes
+20.10.1
+
+Start Address of Transfer Information
+
+Set multiples of 4 for the start addresses of the transfer information to be specified in the DTC vector table. If any value
+other than a multiple of 4 is specified, access still proceeds with the lower 2 bits of the address regarded as 00b.
+
+20.10.2
+
+Allocating Transfer Information
+
+Allocate transfer information in the memory area according to the endian of the area as shown in Figure 20.26.
+For example, when writing CRA and CRB settings in 16-bit units in big endian, write the CRA setting to the address plus
+8h (Ch) and the CRB setting to the address plus Ah (Eh). In little endian, write the CRB setting to the address plus 8h
+(Ch) and the CRA setting to the address plus Ah (Eh). When writing CRA and CRB settings in 32-bit units, allocate the
+CRA setting at the MSB side of the 32 bits and the CRB setting at the LSB side, and write the settings to the address plus
+8h (Ch), regardless of endian.
+
+Allocation of transfer information to
+little-endian area
+(Short-address mode)
+
+Allocation of transfer information to
+big-endian area
+(Short-address mode)
+
+Lower address
+
+Lower address
+
+Address
+
+3
+
+4n
+
+MRA
+
+4(n+1)
+
+MRB
+
+4(n+2)
+
+Address
+4n
+
+1
+
+0
+
+SAR
+
+4n
+
+MRA
+
+SAR
+
+DAR
+
+4(n+1)
+
+MRB
+
+DAR
+
+CRA
+
+4(n+2)
+
+CRB
+
+1
+
+3
+
+0
+
+CRA
+
+CRB
+
+4 bytes
+
+4 bytes
+
+Allocation of transfer information to
+little-endian area
+(Full-address mode)
+
+Allocation of transfer information to
+big-endian area
+(Full-address mode)
+
+Lower address
+
+Lower address
+
+3
+
+2
+
+MRA
+
+MRB
+
+1
+
+0
+
+MRC
+
+Rsvd.
+(00h)
+
+Address
+4n
+
+0
+
+1
+
+MRA
+
+MRB
+
+2
+
+3
+
+MRC
+
+Rsvd.
+(00h)
+
+4(n+1)
+
+SAR
+
+4(n+1)
+
+SAR
+
+4(n+2)
+
+DAR
+
+4(n+2)
+
+DAR
+
+4(n+3)
+
+CRA
+
+CRB
+4 bytes
+
+Figure 20.26
+
+2
+
+Address
+
+2
+
+4(n+3)
+
+CRA
+
+CRB
+4 bytes
+
+Allocation of Transfer Information
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 833 of 3240
+
+RX72N Group
+
+20.10.3
+
+20. Data Transfer Controller (DTCb)
+
+Setting the DTC Transfer Request Enable Register in the Interrupt Controller
+(ICU.DTCERn)
+
+The DMA request should not be issued by setting the DMAC trigger select register (ICU.DMRSRm (m = DMAC
+channel number)) to the same vector number that has been specified by setting the ICU.DTCERn.DTCE bit to 1 (the
+corresponding interrupt source is selected as the DTC trigger). For details on the ICU.DTCERn and ICU.DMRSRm
+registers (m = DMAC channel number), refer to section 15, Interrupt Controller (ICUD).
+
+20.10.4
+
+Notes on Using the Sequence Transfer
+
+When sequence transfer is to be used, make sure that the DTCADMOD.SHORT bit is 0 (full-address mode) and the
+DTCCR.RRS bit is also 0 (transfer information read is not skipped).
+In addition, set the MRB.CHNE bit to 0 (chain transfer is disabled) when setting the MRB.INDX bit to 1 (start sequence
+transfer and refer the index table) or the MRB.SQEND bit to 1 (end the sequence transfer).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 834 of 3240
+
+

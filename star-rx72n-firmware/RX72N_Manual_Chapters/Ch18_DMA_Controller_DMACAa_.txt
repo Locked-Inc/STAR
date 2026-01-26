@@ -1,0 +1,4626 @@
+RX72N Group
+
+18.
+
+18. DMA Controller (DMACAa)
+
+DMA Controller (DMACAa)
+
+This MCU incorporates an 8-channel direct memory access controller (DMAC).
+The DMAC is a module to transfer data without the CPU. When a DMA transfer request is generated, the DMAC
+transfers data stored at the transfer source address to the transfer destination address.
+
+18.1
+
+Overview
+
+Table 18.1 lists the specifications of the DMAC, and Figure 18.1 shows a block diagram of the DMAC.
+Table 18.1
+
+Specifications of DMAC
+
+Item
+
+Description
+
+Number of channels
+
+8 (DMACm (m = 0 to 7))
+
+Transfer space
+
+512 Mbytes
+(0000 0000h to 0FFF FFFFh and F000 0000h to FFFF FFFFh excluding reserved areas)
+
+Maximum transfer volume
+
+64M data
+(Maximum number of transfers in block transfer mode: 1024 data × 65536 blocks)
+
+DMA request source
+
+ Request source selectable for each channel
+Software trigger
+Interrupt requests from peripheral modules or trigger input to external interrupt input pins*1
+
+Channel priority
+
+Channel 0 > Channel 1 > Channel 2 > Channel 3... > Channel 7 (Channel 0: Highest)
+
+Transfer
+data
+
+Single data
+
+Bit length: 8, 16, 32 bits
+
+Block size
+
+Number of data: 1 to 1024
+
+Transfer
+mode
+
+Normal transfer mode
+
+ One data transfer by one DMA transfer request
+ Free running mode (setting in which total number of data transfers is not specified) settable
+
+Repeat transfer mode
+
+ One data transfer by one DMA transfer request
+ Program returns to the transfer start address on completion of the repeat size of data
+transfer specified for the transfer source or destination.
+ Maximum settable repeat size: 1024
+
+Block transfer mode
+
+ One block data transfer by one DMA transfer request
+ Maximum settable block size: 1024 data
+
+Selective
+functions
+
+Extended repeat area
+function
+
+ Function in which data can be transferred by repeating the address values in the specified
+range with the upper bit values in the transfer address register fixed
+ Area of 2 bytes to 128 Mbytes separately settable as extended repeat area for transfer
+source and destination
+
+Interrupt
+request
+
+Transfer end interrupt
+
+Generated when the specified number of transfers is completed in normal transfer mode
+Generated when the specified repeat count of transfers is completed in repeat transfer mode
+Generated when the specified block count of transfers is completed in block transfer mode
+
+Transfer escape end
+interrupt
+
+Generated when the repeat size of data transfer is completed or the extended repeat area
+overflows.
+
+Event link function
+
+An event link request is generated after each data transfer (for block transfer, after each block
+is transferred).
+
+Power consumption reduction function Module-stop state can be set.
+Note 1. For details on DMA request sources, refer to Table 15.5, Interrupt Vector Table in section 15, Interrupt Controller (ICUD).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 677 of 3240
+
+RX72N Group
+
+18. DMA Controller (DMACAa)
+
+DMAC
+
+DMAC registers
+DMAC channels
+(CH0 to CH7)
+DMSAR
+DMDAR
+DMCRA
+DMCRB
+DMOFR
+DMTMD
+DMAMD
+DMSTS
+DMCNT
+DMCSL
+
+Activation control
+
+8
+
+DMA
+transfer
+request
+
+DMA
+transfer
+request
+arbitration
+
+Interrupt
+controller
+DMAC
+8
+response
+Interrupt
+4
+request
+ch0 to 3
+Interrupt
+1
+request
+ch4 to 7
+
+DMAST
+DMIST
+
+Register control
+
+DMAC response
+control
+
+DMAC core
+Source address
+Destination address
+Transfer counter/
+Block size counter
+Repeat-count counter/
+Transfer-block counter
+Transfer mode
+
+DMAC
+control
+circuit
+
+Bus interface
+
+Internal peripheral bus 1
+
+Internal main bus 2
+External bus
+Internal
+Memory bus 2
+controller peripheral buses
+1 to 6
+
+Figure 18.1
+
+Code flash
+memory
+
+Memory bus 1
+
+Memory bus 3
+
+RAM
+
+Expansion
+RAM
+
+Internal main bus 1
+Internal main bus 2
+
+Block Diagram of DMAC
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 678 of 3240
+
+RX72N Group
+
+18.2
+
+18. DMA Controller (DMACAa)
+
+Register Descriptions
+
+18.2.1
+
+DMA Source Address Register (DMSAR)
+
+Address(es): DMAC0.DMSAR 0008 2000h, DMAC1.DMSAR 0008 2040h, DMAC2.DMSAR 0008 2080h, DMAC3.DMSAR 0008 20C0h,
+DMAC4.DMSAR 0008 2100h, DMAC5.DMSAR 0008 2140h, DMAC6.DMSAR 0008 2180h, DMAC7.DMSAR 0008 21C0h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Description
+
+Setting Range
+
+R/W
+
+b31 to b0
+
+Specifies the transfer source start address.
+
+0000 0000h to 0FFF FFFFh (256 Mbytes)
+F000 0000h to FFFF FFFFh (256 Mbytes)
+
+R/W
+
+Set the DMSAR register while DMAC stops (DMAST.DMST bit = 0) or DMA transfer is disabled (DMCNT.DTE bit =
+0).
+Setting bits 31 to 29 is invalid; a value of bit 28 is extended to bits 31 to 29. Reading the DMSAR register returns the
+extended value.
+
+18.2.2
+
+DMA Destination Address Register (DMDAR)
+
+Address(es): DMAC0.DMDAR 0008 2004h, DMAC1.DMDAR 0008 2044h, DMAC2.DMDAR 0008 2084h, DMAC3.DMDAR 0008 20C4h,
+DMAC4.DMDAR 0008 2104h, DMAC5.DMDAR 0008 2144h, DMAC6.DMDAR 0008 2184h, DMAC7.DMDAR 0008 21C4h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Description
+
+Setting Range
+
+R/W
+
+b31 to b0
+
+Specifies the transfer destination start address.
+
+0000 0000h to 0FFF FFFFh (256 Mbytes)
+F000 0000h to FFFF FFFFh (256 Mbytes)
+
+R/W
+
+Set the DMDAR register while DMAC stops (DMAST.DMST bit = 0) or DMA transfer is disabled (DMCNT.DTE bit =
+0).
+Setting bits 31 to 29 is invalid; a value of bit 28 is extended to bits 31 to 29. Reading the DMDAR register returns the
+extended value.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 679 of 3240
+
+RX72N Group
+
+18.2.3
+
+18. DMA Controller (DMACAa)
+
+DMA Transfer Count Register (DMCRA)
+
+Address(es): DMAC0.DMCRA 0008 2008h, DMAC1.DMCRA 0008 2048h, DMAC2.DMCRA 0008 2088h, DMAC3.DMCRA 0008 20C8h,
+DMAC4.DMCRA 0008 2108h, DMAC5.DMCRA 0008 2148h, DMAC6.DMCRA 0008 2188h, DMAC7.DMCRA 0008 21C8h
+
+ Normal transfer mode
+DMCRAH
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+DMCRAL
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+ Repeat transfer mode, block transfer mode
+DMCRAH
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+DMCRAL
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+DMCRAL
+
+Lower bits of transfer count
+
+Specifies the number of transfer operations
+
+R/W
+
+DMCRAH
+
+Upper bits of transfer count
+
+Note:
+
+(1)
+
+R/W
+
+Set the same value for the DMCRAH and DMCRAL registers in repeat transfer mode and block transfer mode.
+
+Normal Transfer Mode (DMACm.DMTMD.MD[1:0] Bits = 00b)
+
+The DMCRAL register functions as a 16-bit transfer counter.
+The number of transfer operations is one when the setting is 0001h, and 65535 when it is FFFFh. The value is
+decremented by one each time data is transferred.
+When the setting is 0000h, no specific number of transfer operations is set; data transfer is performed with the transfer
+counter stopped (free running mode).
+The DMCRAH register is not used in normal transfer mode. Write 0000h to the DMCRAH register.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 680 of 3240
+
+RX72N Group
+
+(2)
+
+18. DMA Controller (DMACAa)
+
+Repeat Transfer Mode (DMACm.DMTMD.MD[1:0] Bits = 01b)
+
+The DMCRAH register specifies the repeat size and the DMCRAL register functions as a 10-bit transfer counter.
+The number of transfer operations is one when the setting is 001h, 1023 when it is 3FFh, and 1024 when it is 000h. In
+repeat transfer mode, a value in the range of 000h to 3FFh (1 to 1024) can be set for the DMCRAH and DMCRAL
+registers.
+Setting bits 15 to 10 in the DMCRAL register is invalid. Write 0 to these bits.
+The value in the DMCRAL register is decremented by one each time data is transferred until it reaches 000h, at which
+the value in the DMCRAH register is loaded into the DMCRAL register.
+
+(3)
+
+Block Transfer Mode (DMACm.DMTMD.MD[1:0] Bits = 10b)
+
+The DMCRAH register specifies the block size and the DMCRAL register functions as a 10-bit block size counter.
+The block size is one when the setting is 001h, 1023 when it is 3FFh, and 1024 when it is 000h. In block transfer mode, a
+value in the range of 000h to 3FFh can be set for the DMCRAH and DMCRAL registers.
+Setting bits 15 to 10 in the DMCRAL register is invalid. Write 0 to these bits.
+The value in the DMCRAL register is decremented by one each time data is transferred until it reaches 000h, at which
+the value in the DMCRAH register is loaded into the DMCRAL register.
+
+18.2.4
+
+DMA Block Transfer Count Register (DMCRB)
+
+Address(es): DMAC0.DMCRB 0008 200Ch, DMAC1.DMCRB 0008 204Ch, DMAC2.DMCRB 0008 208Ch, DMAC3.DMCRB 0008 20CCh,
+DMAC4.DMCRB 0008 210Ch, DMAC5.DMCRB 0008 214Ch, DMAC6.DMCRB 0008 218Ch, DMAC7.DMCRB 0008 21CCh
+
+Value after reset:
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Description
+
+Setting Range
+
+R/W
+
+b15 to b0
+
+Specifies the block count or repeat count of
+transfers.
+
+0001h to FFFFh (1 to 65535)
+0000h (65536)
+
+R/W
+
+This register specifies the transfer block count in block transfer mode and the repeat count in repeat transfer mode.
+In repeat transfer mode, the value is decremented by one when the final data of one repeat size is transferred.
+In block transfer mode, the value is decremented by one when the final data of one block size is transferred.
+In normal transfer mode, the DMCRB register is not used. The setting is invalid.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 681 of 3240
+
+RX72N Group
+
+18.2.5
+
+18. DMA Controller (DMACAa)
+
+DMA Transfer Mode Register (DMTMD)
+
+Address(es): DMAC0.DMTMD 0008 2010h, DMAC1.DMTMD 0008 2050h, DMAC2.DMTMD 0008 2090h, DMAC3.DMTMD 0008 20D0h,
+DMAC4.DMTMD 0008 2110h, DMAC5.DMTMD 0008 2150h, DMAC6.DMTMD 0008 2190h, DMAC7.DMTMD 0008 21D0h
+b15
+
+Value after reset:
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+MD[1:0]
+
+DTS[1:0]
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b9
+
+b8
+
+SZ[1:0]
+0
+
+0
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DCTG[1:0]
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+DCTG[1:0]
+
+Transfer Request
+Source Select
+
+b1 b0
+
+R/W
+
+0 0: Software
+0 1: Interrupts*1 from peripheral modules or external interrupt input pins
+1 0: Setting prohibited
+1 1: Setting prohibited
+
+b7 to b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b9, b8
+
+SZ[1:0]
+
+Transfer Data Size
+Select
+
+b9 b8
+
+R/W
+
+b11, b10
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b13, b12
+
+DTS[1:0]
+
+Repeat Area Select
+
+b13b12
+
+R/W
+
+b15, b14
+
+MD[1:0]
+
+Transfer Mode Select
+
+b15b14
+
+R/W
+
+0 0: 8 bits
+0 1: 16 bits
+1 0: 32 bits
+1 1: Setting prohibited
+
+0 0: The destination is specified as the repeat area or block area.
+0 1: The source is specified as the repeat area or block area.
+1 0: The repeat area or block area is not specified.
+1 1: Setting prohibited
+0 0: Normal transfer
+0 1: Repeat transfer
+1 0: Block transfer
+1 1: Setting prohibited
+
+Note 1. DMA request source is selected using the ICU.DMRSRm registers. For details on DMA request sources, refer to Table 15.5,
+Interrupt Vector Table in section 15, Interrupt Controller (ICUD).
+
+DTS[1:0] Bits (Repeat Area Select)
+These bits select either the source or destination as the repeat area in repeat or block transfer mode. In normal transfer
+mode, setting these bits is invalid.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 682 of 3240
+
+RX72N Group
+
+18.2.6
+
+18. DMA Controller (DMACAa)
+
+DMA Interrupt Setting Register (DMINT)
+
+Address(es): DMAC0.DMINT 0008 2013h, DMAC1.DMINT 0008 2053h, DMAC2.DMINT 0008 2093h, DMAC3.DMINT 0008 20D3h,
+DMAC4.DMINT 0008 2113h, DMAC5.DMINT 0008 2153h, DMAC6.DMINT 0008 2193h, DMAC7.DMINT 0008 21D3h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+—
+
+—
+
+—
+
+DTIE
+
+ESIE
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b2
+
+b1
+
+b0
+
+RPTIE SARIE DARIE
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+DARIE
+
+Destination Address
+Extended Repeat Area
+Overflow Interrupt Enable
+
+0: Disables an interrupt request for an extended repeat area overflow on
+the destination address
+1: Enables an interrupt request for an extended repeat area overflow on
+the destination address
+
+R/W
+
+b1
+
+SARIE
+
+Source Address Extended
+Repeat Area Overflow
+Interrupt Enable
+
+0: Disables an interrupt request for an extended repeat area overflow on
+the source address
+1: Enables an interrupt request for an extended repeat area overflow on
+the source address
+
+R/W
+
+b2
+
+RPTIE
+
+Repeat Size End Interrupt
+Enable
+
+0: Disables the repeat size end interrupt request.
+1: Enables the repeat size end interrupt request.
+
+R/W
+
+b3
+
+ESIE
+
+Transfer Escape End
+Interrupt Enable
+
+0: Disables the transfer escape end interrupt request.
+1: Enables the transfer escape end interrupt request.
+
+R/W
+
+b4
+
+DTIE
+
+Transfer End Interrupt
+Enable
+
+0: Disables the transfer end interrupt request.
+1: Enables the transfer end interrupt request.
+
+R/W
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+DARIE Bit (Destination Address Extended Repeat Area Overflow Interrupt Enable)
+When an extended repeat area overflow on the destination address occurs while this bit is set to 1, the DMCNT.DTE bit
+is set to 0. At the same time, the DMSTS.ESIF flag is set to 1 to indicate that an interrupt by an extended repeat area
+overflow on the destination address is requested.
+When block transfer mode is used with the extended repeat area function, an interrupt is requested after completion of a
+1-block size transfer. When setting 1 in the DMACm.DMCNT.DTE bit of the channel for which a transfer has been
+stopped, the transfer is resumed from the state when the transfer is stopped.
+When the extended repeat area is not specified for the destination address, this bit is ignored.
+SARIE Bit (Source Address Extended Repeat Area Overflow Interrupt Enable)
+When an extended repeat area overflow on the source address occurs while this bit is set to 1, the DMCNT.DTE bit is set
+to 0. At the same time, the DMSTS.ESIF flag is set to 1 to indicate that an interrupt by an extended repeat area overflow
+on the source address is requested.
+When block transfer mode is used with the extended repeat area function, an interrupt is requested after completion of a
+1-block size transfer. When setting 1 in the DMACm.DMCNT.DTE bit of the channel for which a transfer has been
+stopped, the transfer is resumed from the state when the transfer is stopped.
+When the extended repeat area is not specified for the source address, this bit is ignored.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 683 of 3240
+
+RX72N Group
+
+18. DMA Controller (DMACAa)
+
+RPTIE Bit (Repeat Size End Interrupt Enable)
+When this bit is set to 1 in repeat transfer mode, the DMCNT.DTE bit is set to 0 after completion of a 1-repeat size data
+transfer. At the same time, the DMSTS.ESIF flag is set to 1 to indicate that the repeat size end interrupt request has been
+generated. The repeat size end interrupt request can be generated even when the DMTMD.DTS[1:0] bits are 10b (=
+repeat area or block area is not specified).
+When this bit is set to 1 in block transfer mode, the DMCNT.DTE bit is set to 0 after completion of a 1-block data
+transfer in the same way as repeat transfer mode. At the same time, the DMSTS.ESIF flag is set to 1 to indicate that the
+repeat size end interrupt request has been generated. The repeat size end interrupt request can be generated even when
+the DMTMD.DTS[1:0] bits are 10b (= repeat area or block area is not specified).
+ESIE Bit (Transfer Escape End Interrupt Enable)
+This bit enables or disables the transfer escape end interrupt requests (repeat size end interrupt request and extended
+repeat area overflow interrupt request) that are generated during DMA transfer.
+The transfer escape end interrupt is generated when the DMSTS.ESIF flag is set to 1 with this bit set to 1. The transfer
+escape end interrupt is cleared by setting this bit or the DMSTS.ESIF flag to 0.
+DTIE Bit (Transfer End Interrupt Enable)
+This bit enables or disables the transfer end interrupt request to be generated on completion of a specified number of data
+transfers.
+The transfer end interrupt is generated when the DMSTS.DTIF bit is set to 1 with this bit set to 1. The transfer end
+interrupt is cleared by setting this bit or the DMSTS.DTIF bit to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 684 of 3240
+
+RX72N Group
+
+18.2.7
+
+18. DMA Controller (DMACAa)
+
+DMA Address Mode Register (DMAMD)
+
+Address(es): DMAC0.DMAMD 0008 2014h, DMAC1.DMAMD 0008 2054h, DMAC2.DMAMD 0008 2094h, DMAC3.DMAMD 0008 20D4h,
+DMAC4.DMAMD 0008 2114h, DMAC5.DMAMD 0008 2154h, DMAC6.DMAMD 0008 2194h, DMAC7.DMAMD 0008 21D4h
+b15
+
+Value after reset:
+
+b14
+
+b13
+
+SM[1:0]
+
+—
+
+0
+
+0
+
+0
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+SARA[4:0]
+0
+
+0
+
+0
+
+0
+
+0
+
+b7
+
+b6
+
+b5
+
+DM[1:0]
+
+—
+
+0
+
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+DARA[4:0]
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b4 to b0
+
+DARA[4:0]
+
+Destination Address Extended
+Repeat Area
+
+Specifies the extended repeat area on the destination address.
+For details on the settings, refer to Table 18.2.
+
+R/W
+
+b5
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b7, b6
+
+DM[1:0]
+
+Destination Address Update
+Mode
+
+b7 b6
+
+R/W
+
+b12 to b8
+
+SARA[4:0]
+
+Source Address Extended
+Repeat Area
+
+Specifies the extended repeat area on the source address. For
+details on the settings, refer to Table 18.2.
+
+R/W
+
+b13
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+b15, b14
+
+SM[1:0]
+
+Source Address Update Mode
+
+b15b14
+
+R/W
+
+0 0: Destination address is fixed.
+0 1: Offset addition*1
+1 0: Destination address is incremented.
+1 1: Destination address is decremented.
+
+0 0: Source address is fixed.
+0 1: Offset addition*1
+1 0: Source address is incremented.
+1 1: Source address is decremented.
+
+Note 1. Offset addition can be specified only for DMAC0.
+
+DARA[4:0] Bits (Destination Address Extended Repeat Area)
+These bits specify the extended repeat area on the destination address. The extended repeat area function is realized by
+updating the specified lower address bits with the remaining upper address bits fixed. The size of the extended repeat
+area can be any power of two between 2 bytes and 128 Mbytes. That is, the interval between settings is any power of two.
+When the lower address overflows the extended repeat area by address increment, the start address of the extended repeat
+area is set. Similarly, when the lower address underflows the extended repeat area by address decrement, the end address
+of the extended repeat area is set.
+When the repeat area or block area is specified as a transfer destination, do not specify the extended repeat area on the
+destination address. When repeat transfer or block transfer is selected, and when DMACm.DMTMD.DTS[1:0] = 00b
+(the transfer destination is specified as the repeat area or block area), write 00000b in the DARA[4:0] bits.
+An interrupt can be requested when an overflow or underflow occurs in the extended repeat area with the
+DMINT.DARIE bit set to 1. Table 18.2 lists the settings and the corresponding extended repeat areas.
+DM[1:0] Bits (Destination Address Update Mode)
+These bits select the mode of updating the destination address.
+When increment is selected and the DMTMD.SZ[1:0] bits are set to 00b, 01b, and 10b, the destination address is
+incremented by 1, 2, and 4, respectively.
+When decrement is selected and the DMTMD.SZ[1:0] bits are set to 00b, 01b, and 10b, the destination address is
+decremented by 1, 2, and 4, respectively.
+When offset addition is selected, the offset specified by the DMAC0.DMOFR register is added to the address.
+Offset addition can be specified only for DMAC0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 685 of 3240
+
+RX72N Group
+
+18. DMA Controller (DMACAa)
+
+SARA[4:0] Bits (Source Address Extended Repeat Area)
+These bits specify the extended repeat area on the source address. The extended repeat area function is realized by
+updating the specified lower address bits with the remaining upper address bits fixed. The size of the extended repeat
+area can be any power of two between 2 bytes and 128 Mbytes.
+When the lower address overflows the extended repeat area by address increment, the start address of the extended repeat
+area is set. Similarly, when the lower address underflows the extended repeat area by address decrement, the end address
+of the extended repeat area is set.
+When the repeat area or block area is specified as a transfer source, do not specify the extended repeat area on the source
+address. When repeat transfer or block transfer is selected, and when DMACm.DMTMD.DTS[1:0] = 01b (the transfer
+source is specified as the repeat area or block area), write 00000b in the SARA[4:0] bits.
+An interrupt can be requested when an overflow or underflow occurs in the extended repeat area with the DMINT.SARIE
+bit set to 1. Table 18.2 lists the settings and the corresponding extended repeat areas.
+SM[1:0] Bits (Source Address Update Mode)
+These bits select the mode of updating the source address.
+When increment is selected and the DMTMD.SZ[1:0] bits are set to 00b, 01b, and 10b, the source address is incremented
+by 1, 2, and 4, respectively.
+When decrement is selected and the DMTMD.SZ[1:0] bits are set to 00b, 01b, and 10b, the source address is
+decremented by 1, 2, and 4, respectively.
+When offset addition is selected, the offset specified by the DMAC0.DMOFR register is added to the address.
+Offset addition can be specified only for DMAC0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 686 of 3240
+
+RX72N Group
+
+Table 18.2
+
+18. DMA Controller (DMACAa)
+
+SARA[4:0] or DARA[4:0] Settings and Corresponding Repeat Areas
+
+SARA[4:0] or DARA[4:0]
+
+Extended Repeat Area
+
+00000b
+
+Not specified
+
+00001b
+
+2 bytes specified as extended repeat area by the lower 1 bit of the address
+
+00010b
+
+4 bytes specified as extended repeat area by the lower 2 bits of the address
+
+00011b
+
+8 bytes specified as extended repeat area by the lower 3 bits of the address
+
+00100b
+
+16 bytes specified as extended repeat area by the lower 4 bits of the address
+
+00101b
+
+32 bytes specified as extended repeat area by the lower 5 bits of the address
+
+00110b
+
+64 bytes specified as extended repeat area by the lower 6 bits of the address
+
+00111b
+
+128 bytes specified as extended repeat area by the lower 7 bits of the address
+
+01000b
+
+256 bytes specified as extended repeat area by the lower 8 bits of the address
+
+01001b
+
+512 bytes specified as extended repeat area by the lower 9 bits of the address
+
+01010b
+
+1 Kbyte specified as extended repeat area by the lower 10 bits of the address
+
+01011b
+
+2 Kbytes specified as extended repeat area by the lower 11 bits of the address
+
+01100b
+
+4 Kbytes specified as extended repeat area by the lower 12 bits of the address
+
+01101b
+
+8 Kbytes specified as extended repeat area by the lower 13 bits of the address
+
+01110b
+
+16 Kbytes specified as extended repeat area by the lower 14 bits of the address
+
+01111b
+
+32 Kbytes specified as extended repeat area by the lower 15 bits of the address
+
+10000b
+
+64 Kbytes specified as extended repeat area by the lower 16 bits of the address
+
+10001b
+
+128 Kbytes specified as extended repeat area by the lower 17 bits of the address
+
+10010b
+
+256 Kbytes specified as extended repeat area by the lower 18 bits of the address
+
+10011b
+
+512 Kbytes specified as extended repeat area by the lower 19 bits of the address
+
+10100b
+
+1 Mbyte specified as extended repeat area by the lower 20 bits of the address
+
+10101b
+
+2 Mbytes specified as extended repeat area by the lower 21 bits of the address
+
+10110b
+
+4 Mbytes specified as extended repeat area by the lower 22 bits of the address
+
+10111b
+
+8 Mbytes specified as extended repeat area by the lower 23 bits of the address
+
+11000b
+
+16 Mbytes specified as extended repeat area by the lower 24 bits of the address
+
+11001b
+
+32 Mbytes specified as extended repeat area by the lower 25 bits of the address
+
+11010b
+
+64 Mbytes specified as extended repeat area by the lower 26 bits of the address
+
+11011b
+
+128 Mbytes specified as extended repeat area by the lower 27 bits of the address
+
+11100b to 11111b
+
+Setting prohibited.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 687 of 3240
+
+RX72N Group
+
+18.2.8
+
+18. DMA Controller (DMACAa)
+
+DMA Offset Register (DMOFR)
+
+Address(es): DMAC0.DMOFR 0008 2018h
+
+Value after reset:
+
+Value after reset:
+
+b31
+
+b30
+
+b29
+
+b28
+
+b27
+
+b26
+
+b25
+
+b24
+
+b23
+
+b22
+
+b21
+
+b20
+
+b19
+
+b18
+
+b17
+
+b16
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b15
+
+b14
+
+b13
+
+b12
+
+b11
+
+b10
+
+b9
+
+b8
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Description
+
+Setting Range
+
+R/W
+
+b31 to b0
+
+Specifies the offset when offset addition is selected
+as the address update mode for transfer source or
+destination.
+
+0000 0000h to 00FF FFFFh (0 bytes to (16 M – 1) bytes)
+FF00 0000h to FFFF FFFFh (–16 Mbytes to –1 byte)
+
+R/W
+
+Write to this register while the DMAC operation is stopped or DMA transfer is disabled (not during data transfer).
+Setting bits 31 to 25 is invalid; a value of bit 24 is extended to bits 31 to 25. Reading DMOFR returns the extended value.
+
+18.2.9
+
+DMA Transfer Enable Register (DMCNT)
+
+Address(es): DMAC0.DMCNT 0008 201Ch, DMAC1.DMCNT 0008 205Ch, DMAC2.DMCNT 0008 209Ch, DMAC3.DMCNT 0008 20DCh,
+DMAC4.DMCNT 0008 211Ch, DMAC5.DMCNT 0008 215Ch, DMAC6.DMCNT 0008 219Ch, DMAC7.DMCNT 0008 21DCh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DTE
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+DTE
+
+DMA Transfer Enable
+
+0: Disables DMA transfer.
+1: Enables DMA transfer.
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+DTE Bit (DMA Transfer Enable)
+When the DMAST.DMST bit is set to 1 (DMAC module start) and this bit is set to 1 (DMA transfer is enabled), DMA
+transfer can be started for the corresponding channel.
+[Setting condition]
+ When 1 is written to this bit.
+[Clearing conditions]
+ When 0 is written to this bit.
+ When the specified total volume of data transfer is completed.
+ When DMA transfer is stopped by the repeat size end interrupt.
+ When DMA transfer is stopped by the extended repeat area overflow interrupt.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 688 of 3240
+
+RX72N Group
+
+18.2.10
+
+18. DMA Controller (DMACAa)
+
+DMA Software Start Register (DMREQ)
+
+Address(es): DMAC0.DMREQ 0008 201Dh, DMAC1.DMREQ 0008 205Dh, DMAC2.DMREQ 0008 209Dh, DMAC3.DMREQ 0008 20DDh,
+DMAC4.DMREQ 0008 211Dh, DMAC5.DMREQ 0008 215Dh, DMAC6.DMREQ 0008 219Dh, DMAC7.DMREQ 0008 21DDh
+b7
+
+Value after reset:
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+CLRS
+
+—
+
+—
+
+—
+
+SWRE
+Q
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+SWREQ
+
+DMA Software Start
+
+0: DMA transfer is not requested.
+1: DMA transfer is requested.
+
+R/W
+
+b3 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b4
+
+CLRS
+
+DMA Software Start Bit Auto
+Clear Select
+
+0: SWREQ bit is cleared after DMA transfer is started by software.
+1: SWREQ bit is not cleared after DMA transfer is started by software.
+
+R/W
+
+b7 to b5
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+SWREQ Bit (DMA Software Start)
+When 1 is written to this bit, a DMA transfer request is generated. After DMA transfer is started in response to the
+request, this bit is set to 0 if the CLRS bit is set to 0. This bit is not set to 0 while the CLRS bit is set to 1. In this case, a
+DMA transfer request can be issued again after completion of a transfer.
+Note that, however, setting this bit is valid and DMA transfer by software is enabled only when the DMTMD.DCTG[1:0]
+bits are set to 00b (DMA request source is software).
+Setting this bit is invalid when the DMTMD.DCTG[1:0] bits are set to a value other than 00b.
+To start DMA transfer by software with the CLRS bit being 0, ensure that the SWREQ bit is 0, and then write 1 to the
+SWREQ bit.
+[Setting condition]
+ When 1 is written to this bit.
+[Clearing conditions]
+ When a DMA transfer request by software is accepted and DMA transfer is started while the CLRS bit is set to 0
+(the SWREQ bit is cleared after DMA transfer is started by software).
+ When 0 is written to this bit.
+CLRS Bit (DMA Software Start Bit Auto Clear Select)
+This bit specifies whether to clear the SWREQ bit to 0 after DMA transfer is started in response to the DMA transfer
+request generated by setting the SWREQ bit to 1. With this bit set to 0, the SWREQ bit is set to 0 after DMA transfer is
+started. With this bit set to 1, the SWREQ bit is not set to 0. In this case, a DMA transfer request can be issued again after
+completion of a transfer.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 689 of 3240
+
+RX72N Group
+
+18.2.11
+
+18. DMA Controller (DMACAa)
+
+DMA Status Register (DMSTS)
+
+Address(es): DMAC0.DMSTS 0008 201Eh, DMAC1.DMSTS 0008 205Eh, DMAC2.DMSTS 0008 209Eh, DMAC3.DMSTS 0008 20DEh,
+DMAC4.DMSTS 0008 211Eh, DMAC5.DMSTS 0008 215Eh, DMAC6.DMSTS 0008 219Eh, DMAC7.DMSTS 0008 21DEh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+ACT
+
+—
+
+—
+
+DTIF
+
+—
+
+—
+
+—
+
+ESIF
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+ESIF
+
+Transfer Escape End Interrupt
+Flag
+
+0: A transfer escape end interrupt has not been generated.
+1: A transfer escape end interrupt has been generated.
+
+R/W*1
+
+b3 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits has no effect.
+
+R
+
+b4
+
+DTIF
+
+Transfer End Interrupt Flag
+
+0: A transfer end interrupt has not been generated.
+1: A transfer end interrupt has been generated.
+
+R/W*1
+
+b6, b5
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits has no effect.
+
+R
+
+b7
+
+ACT
+
+DMA Active Flag
+
+0: DMAC operation is suspended.
+1: DMAC is operating.
+
+R
+
+Note 1. Only 0 can be written to clear the flag.
+
+ESIF Flag (Transfer Escape End Interrupt Flag)
+This flag indicates that the transfer escape end interrupt has been generated.
+[Setting conditions]
+ When 1-repeat size data transfer is completed in repeat transfer mode with the DMINT.RPTIE bit set to 1.
+ When 1-block data transfer is completed in block transfer mode with the DMINT.RPTIE bit set to 1.
+ When an extended repeat area overflow on the source address occurs while the DMINT.SARIE bit is set to 1 and
+the DMAMD.SARA[4:0] bits are set to a value other than 00000b (extended repeat area is specified on the transfer
+source address)
+ When an extended repeat area overflow on the destination address occurs while the DMINT.DARIE bit is set to 1
+and the DMAMD.DARA[4:0] bits are set to a value other than 00000b (extended repeat area is specified on the
+transfer destination address)
+[Clearing conditions]
+ When 0 is written to this bit.
+ When 1 is written to the DMCNT.DTE bit.
+DTIF Flag (Transfer End Interrupt Flag)
+This flag indicates that the transfer end interrupt has been generated.
+[Setting conditions]
+ When the specified number of unit-transfers are completed in normal transfer mode (the value of the DMCRAL
+register becoming 0 on completion of transfer)
+ When the specified number of repeat transfer operations are completed in repeat transfer mode (the value of the
+DMCRB register becoming 0 on completion of transfer)
+ When the specified number of blocks have been transferred in block transfer mode (the value of the DMCRB
+register becoming 0 on completion of transfer)
+[Clearing conditions]
+ When 0 is written to this bit
+ When 1 is written to the DMCNT.DTE bit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 690 of 3240
+
+RX72N Group
+
+18. DMA Controller (DMACAa)
+
+ACT Flag (DMA Active Flag)
+This flag indicates whether the DMAC is in the idle or active state.
+[Setting condition]
+ When the DMAC starts data transfer operation
+[Clearing condition]
+ When data transfer in response to one transfer request is completed
+
+18.2.12
+
+DMA Request Source Flag Control Register (DMCSL)
+
+Address(es): DMAC0.DMCSL 0008 201Fh, DMAC1.DMCSL 0008 205Fh, DMAC2.DMCSL 0008 209Fh, DMAC3.DMCSL 0008 20DFh,
+DMAC4.DMCSL 0008 211Fh, DMAC5.DMCSL 0008 215Fh, DMAC6.DMCSL 0008 219Fh, DMAC7.DMCSL 0008 21DFh
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DISEL
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+DISEL
+
+Interrupt Select
+
+0: At the beginning of transfer, clear the interrupt status flag of the
+request source to 0.
+1: At the end of transfer, the interrupt status flag of the request
+source issues an interrupt to the CPU.
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+DISEL Bit (Interrupt Select)
+This bit selects whether the interrupt status flag of the request source is set to 0 or issues an interrupt request to the CPU,
+at the beginning of DMA transfer.
+When DMTMD.DCTG[1:0] = 00b (trigger by software), the setting of the DISEL bit does not affect the operation.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 691 of 3240
+
+RX72N Group
+
+18.2.13
+
+18. DMA Controller (DMACAa)
+
+DMAC Module Start Register (DMAST)
+
+Address(es): 0008 2200h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+DMST
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+DMST
+
+DMAC Module Start
+
+0: DMAC module stop
+1: DMAC module start
+
+R/W
+
+b7 to b1
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+DMST Bit (DMAC Module Start)
+When this bit is set to 1, DMAC is ready to accept transfer requests for all channels.
+When 1 is written to the DMACm.DMCNT.DTE bit (DMA transfer is enabled) of multiple channels and then this bit is
+set to 1 (DMAC module start), the corresponding multiple channels can be placed in the transfer request acceptable state
+at the same time.
+When the DMST bit is set to 0 during DMA transfer, DMA transfer is suspended after completion of the current data
+transfer corresponding to a single transfer request. DMA transfer can be resumed by setting the DMST bit to 1 again.
+[Setting condition]
+ When 1 is written to this bit
+[Clearing condition]
+ When 0 is written to this bit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 692 of 3240
+
+RX72N Group
+
+18.2.14
+
+18. DMA Controller (DMACAa)
+
+DMAC74 Interrupt Status Monitor Register (DMIST)
+
+Address(es): 0008 2204h
+b7
+
+b6
+
+b5
+
+b4
+
+DMIS7 DMIS6 DMIS5 DMIS4
+Value after reset:
+
+0
+
+0
+
+0
+
+0
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+—
+
+Reserved
+
+These bits are read as 0. Writing to these bits has no effect.
+
+R
+
+b4
+
+DMIS4
+
+DMAC4 Interrupt Status Flag 0: DMAC4 interrupt is not requested.
+1: DMAC4 interrupt is requested.
+
+R
+
+b5
+
+DMIS5
+
+DMAC5 Interrupt Status Flag 0: DMAC5 interrupt is not requested.
+1: DMAC5 interrupt is requested.
+
+R
+
+b6
+
+DMIS6
+
+DMAC6 Interrupt Status Flag 0: DMAC6 interrupt is not requested.
+1: DMAC6 interrupt is requested.
+
+R
+
+b7
+
+DMIS7
+
+DMAC7 Interrupt Status Flag 0: DMAC7 interrupt is not requested.
+1: DMAC7 interrupt is requested.
+
+R
+
+DMISm Flag (DMACm Interrupt Status Flag) (m = 4 to 7)
+This flag monitors the DMACm interrupt request. Writing to this flag will be ignored.
+While the DMACm.DMINT.DTIE bit is 1 and the DMACm.DMSTS.DTIF flag is 1, or the DMACm.DMINT.ESIE bit is
+1 and the DMACm.DMSTS.ESIF flag is 1, the DMIST.DMISm flag is set to 1.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 693 of 3240
+
+RX72N Group
+
+18.3
+
+Operation
+
+18.3.1
+(1)
+
+18. DMA Controller (DMACAa)
+
+Transfer Mode
+
+Normal Transfer Mode
+
+In normal transfer mode, one data is transferred by one transfer request. A maximum of 65535 can be set as the number
+of transfer operations using the DMACm.DMCRAL register. When these bits are set to 0000h, no specific number of
+transfer operations is set; data transfer is performed with the transfer counter stopped (free running mode). Setting the
+DMACm.DMCRB register is invalid in normal transfer mode. Except in free running mode, a transfer end interrupt
+request can be generated after completion of the specified number of transfer operations.
+Table 18.3 summarizes the register update operation in normal transfer mode, and Figure 18.2 shows the operation in
+normal transfer mode.
+Table 18.3
+
+Register Update Operation in Normal Transfer Mode
+
+Register
+
+Function
+
+Update Operation after Completion of a Transfer by One Transfer Request
+
+DMACm.DMSAR
+
+Transfer source address
+
+Increment/decrement/fixed/offset addition*1
+
+DMACm.DMDAR
+
+Transfer destination address
+
+Increment/decrement/fixed/offset addition*1
+
+DMACm.DMCRAL
+
+Transfer counter
+
+Decremented by one/not updated (in free running mode)
+
+DMACm.DMCRAH
+
+—
+
+Not updated (Not used in normal transfer mode)
+
+DMACm.DMCRB
+
+—
+
+Not updated (Not used in normal transfer mode)
+
+Note 1. Offset addition can be specified only for DMAC0.
+
+Transfer source data area
+
+Transfer destination data area
+
+Data 1
+
+Data 1
+
+DMSAR
+
+Data 2
+
+Figure 18.2
+
+Transfer
+
+DMDAR
+
+Data 2
+
+Data 3
+
+Data 3
+
+Data 4
+
+Data 4
+
+Data 5
+
+Data 5
+
+Data 6
+
+Data 6
+
+Operation in Normal Transfer Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 694 of 3240
+
+RX72N Group
+
+(2)
+
+18. DMA Controller (DMACAa)
+
+Repeat Transfer Mode
+
+In repeat transfer mode, one data is transferred by one transfer request.
+A maximum of 1K data can be set as a total repeat transfer size using the DMACm.DMCRA register.
+A maximum of 64K can be set as the number of repeat transfer operations using the DMACm.DMCRB register;
+therefore, a maximum of 64M data (1K data × 64K counts of repeat transfer operations) can be set as a total data transfer
+size.
+Either the transfer source or transfer destination can be specified as a repeat area. When transfer of the repeat size data is
+completed, the address of the specified repeat area (DMSAR or DMDAR of the DMACm) returns to the transfer start
+address. When data of the specified repeat size has all been transferred in repeat transfer mode, DMA transfer can be
+stopped and the repeat size end interrupt can be requested. DMA transfer can be resumed by writing 1 to the
+DMACm.DMCNT.DTE bit in the repeat size end interrupt handling.
+A transfer end interrupt request can be generated after completion of the specified number of repeat transfer operations.
+Table 18.4 summarizes the register update operation in repeat transfer mode, and Figure 18.3 shows the operation in
+repeat transfer mode.
+Table 18.4
+
+Register Update Operation in Repeat Transfer Mode
+Update Operation after Completion of a Transfer by One Transfer Request
+
+Register
+
+Function
+
+When the DMACm.DMCRAL
+register is not 1
+
+When the DMACm.DMCRAL register is 1
+(Transfer of the Last Data in Repeat Size)
+
+DMACm.DMSAR
+
+Transfer source
+address
+
+Increment/decrement/fixed/offset
+addition*1
+
+ DMACm.DMTMD.DTS[1:0] = 00b
+Increment/decrement/fixed/offset addition*1
+ DMACm.DMTMD.DTS[1:0] = 01b
+Initial value of DMACm.DMSAR
+ DMACm.DMTMD.DTS[1:0] = 10b
+Increment/decrement/fixed/offset addition*1
+
+DMACm.DMDAR
+
+Transfer
+destination
+address
+
+Increment/decrement/fixed/offset
+addition*1
+
+ DMACm.DMTMD.DTS[1:0] = 00b
+Initial value of DMACm.DMDAR
+ DMACm.DMTMD.DTS[1:0] = 01b
+Increment/decrement/fixed/offset addition*1
+ DMACm.DMTMD.DTS[1:0] = 10b
+Increment/decrement/fixed/offset addition*1
+
+DMACm.DMCRAH
+
+Repeat size
+
+Not updated
+
+Not updated
+
+DMACm.DMCRAL
+
+Transfer counter
+
+Decremented by one
+
+DMACm.DMCRAH
+
+DMACm.DMCRB
+
+Repeat-count
+counter
+
+Not updated
+
+Decremented by one
+
+Note 1. Offset addition can be specified only for DMAC0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 695 of 3240
+
+RX72N Group
+
+18. DMA Controller (DMACAa)
+
+Transfer source data area
+(Specified as a repeat area)
+
+Transfer destination data area
+
+Data 1
+
+Data 1
+
+DMSAR
+
+Data 2
+
+Transfer
+
+DMDAR
+
+Data 2
+
+Data 3
+
+Data 3
+
+Data 4
+
+Data 4
+Data 1
+Data 2
+Data 3
+Data 4
+
+Figure 18.3
+
+Operation in Repeat Transfer Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 696 of 3240
+
+RX72N Group
+
+(3)
+
+18. DMA Controller (DMACAa)
+
+Block Transfer Mode
+
+In block transfer mode, a single block data is transferred by one transfer request.
+A maximum of 1K data can be set as a total block transfer size using the DMACm.DMCRA register.
+A maximum of 64K can be set as the number of block transfer operations using the DMACm.DMCRB register;
+therefore, a maximum of 64M data (1K data × 64K counts of block transfer operations) can be set as a total data transfer
+size.
+Either the transfer source or transfer destination can be specified as a block area. When transfer of a single block data is
+completed, the address of the specified block area (DMSAR or DMDAR of the DMACm) returns to the transfer start
+address. When a single block data has all been transferred in block transfer mode, DMA transfer can be stopped and the
+repeat size end interrupt can be requested. DMA transfer can be resumed by writing 1 to the DMACm.DMCNT.DTE bit
+in the repeat size end interrupt handling.
+Transfer end interrupt request can be generated after completion of the specified number of block transfer operations.
+Table 18.5 summarizes the register update operation in block transfer mode, and Figure 18.4 shows the operation in
+block transfer mode.
+Table 18.5
+
+Register Update Operation in Block Transfer Mode
+Update Operation after Completion of Single-Block Transfer by
+One Transfer Request
+
+Register
+
+Function
+
+DMACm.DMSAR
+
+Transfer source address
+
+ DMACm.DMTMD.DTS[1:0] = 00b
+Increment/decrement/fixed/offset addition*1
+ DMACm.DMTMD.DTS[1:0] = 01b
+Initial value of DMACm.DMSAR
+ DMACm.DMTMD.DTS[1:0] = 10b
+Increment/decrement/fixed/offset addition*1
+
+DMACm.DMDAR
+
+Transfer destination
+address
+
+ DMACm.DMTMD.DTS[1:0] = 00 b
+Initial value of DMACm.DMDAR
+ DMACm.DMTMD.DTS[1:0] = 01 b
+Increment/decrement/fixed/offset addition*1
+ DMACm.DMTMD.DTS[1:0] = 10 b
+Increment/decrement/fixed/offset addition*1
+
+DMACm.DMCRAH
+
+Block size
+
+Not updated
+
+DMACm.DMCRAL
+
+Block size counter
+
+DMACm.DMCRAH
+
+DMACm.DMCRB
+
+Transfer-block counter
+
+Decremented by one
+
+Note 1. Offset addition can be specified only for DMAC0.
+
+Transfer source data area
+
+DMSAR
+
+First block
+
+Transfer destination data area
+(Specified as a block area)
+
+Transfer
+
+Block area
+
+DMDAR
+
+N-th block
+
+Figure 18.4
+
+Operation in Block Transfer Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 697 of 3240
+
+RX72N Group
+
+18.3.2
+
+18. DMA Controller (DMACAa)
+
+Extended Repeat Area Function
+
+The DMAC supports a function to specify the extended repeat areas on the transfer source and destination addresses.
+With the extended repeat areas set, the address registers repeatedly indicate the addresses of the specified extended repeat
+areas.
+The extended repeat areas can be specified separately to the transfer source address register (DMSAR) and transfer
+destination address register (DMDAR) of DMACm.
+The extended repeat area on the source address is specified by the DMACmDMAMD.SARA[4:0] bits. The extended
+repeat area on the destination address is specified by the DMACmDMAMD.DARA[4:0] bits. The size can be specified
+separately for the source and destination sides.
+However, the area (of transfer source or transfer destination) which is specified as the repeat area or block area should
+not be specified as the extended repeat area.
+When the address register value reaches the end address of the extended repeat area and the extended repeat area
+overflows, DMA transfer is stopped and an interrupt by an extended repeat area overflow can be requested. When an
+overflow occurs in the extended repeat area on the transfer source while the DMACm.DMINT.SARIE bit is set to 1, the
+DMACm.DMSTS.ESIF flag is set to 1 and the DMACm.DMCNT.DTE bit is set to 0 to stop DMA transfer. At this time,
+if the DMACm.DMINT.ESIE bit is set to 1, an interrupt by an extended repeat area overflow is requested. When the
+DMACm.DMINT.DARIE bit is set to 1, the destination address register becomes a target to apply the function. DMA
+transfer can be resumed by writing 1 to the DMACm.DMCNT.DTE bit in the interrupt handling.
+Figure 18.5 shows an example of the extended repeat area operation.
+
+Example:
+Eight bytes are specified as an extended repeat area by the lower three bits of DMACm.DMSAR
+(DMACm.DMAMD.SARA[4:0] = 00011b).
+The data size is eight bits (DMACm.DMTMD.SZ[1:0] = 00b).
+Memory area
+
+0001 3FFEh
+
+DMSAR value
+range
+
+0001 3FFFh
+0001 4000h
+
+0001 4000h
+
+0001 4001h
+
+0001 4001h
+
+0001 4002h
+
+0001 4002h
+
+0001 4003h
+
+0001 4003h
+
+0001 4004h
+
+0001 4004h
+
+0001 4005h
+
+0001 4005h
+
+0001 4006h
+
+0001 4006h
+
+0001 4007h
+
+0001 4007h
+
+0001 4008h
+
+Repeat
+
+An extended repeat area overflow interrupt
+request can be generated.
+
+0001 4009h
+
+Figure 18.5
+
+Example of Extended Repeat Area Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 698 of 3240
+
+RX72N Group
+
+18. DMA Controller (DMACAa)
+
+When an interrupt by an extended repeat area overflow is used in block transfer mode, the following should be taken into
+consideration.
+When a transfer is stopped by an interrupt by an extended repeat area overflow, the address register must be set so that
+the block size is a power of 2 or the block size boundary is aligned with the extended repeat area boundary. When an
+overflow on the extended repeat area occurs during a transfer of one block, the interrupt by the overflow is suspended
+until transfer of the block is completed, and the transfer overruns.
+
+Figure 18.6 shows an example when the extended repeat area function is used in block transfer mode.
+
+Example:
+Eight bytes are specified as an extended repeat area by the lower three bits of DMACm.DMSAR
+(DMACm.DMAMD.SARA[4:0] = 00011b),
+block transfer mode with block size 5 is set (DMACm.DMCRA = 00050005h), and
+transfer source address is not specified as a block area.
+Data size is eight bits (DMACm.DMTMD.SZ[1:0] = 00b).
+Memory area
+Repeated
+DMSAR value
+range
+
+First block transfer
+
+Second block
+transfer
+
+0001 4000h
+
+0001 4000h
+
+0001 4000h
+
+0001 4000h
+
+0001 4001h
+
+0001 4001h
+
+0001 4001h
+
+0001 4001h
+
+0001 4002h
+
+0001 4002h
+
+0001 4002h
+
+0001 4003h
+
+0001 4003h
+
+0001 4003h
+
+0001 4004h
+
+0001 4004h
+
+0001 4004h
+
+0001 4005h
+
+0001 4005h
+
+0001 4005h
+
+0001 4006h
+
+0001 4006h
+
+0001 4006h
+
+0001 4007h
+
+0001 4007h
+
+0001 4007h
+
+0001 3FFEh
+0001 3FFFh
+
+Interrupt request
+generated
+
+0001 4008h
+
+Block transfer
+continued
+
+0001 4009h
+
+Figure 18.6
+
+Example of Extended Repeat Area Function in Block Transfer Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 699 of 3240
+
+RX72N Group
+
+18.3.3
+
+18. DMA Controller (DMACAa)
+
+Address Update Function using Offset
+
+The source and destination addresses can be updated by fixing, increment, decrement, or offset addition. When the offset
+addition is selected, the offset specified by the DMA offset register (DMAC0.DMOFR) is added to the address every
+time the DMAC performs one data transfer. This function realizes a data transfer where addresses are allocated to
+separated areas.
+Offset subtraction can also be realized by setting a negative value in the DMAC0.DMOFR register. In this case, the
+negative value must be 2’s complement.
+Address update function using offset can be specified only for the DMAC0 channel.
+Table 18.6 lists the address update method in each address update mode.
+Table 18.6
+
+Address Update Method in Each Address Update Mode
+
+Address Update
+Mode
+
+Settings of
+DMACm.DMAMD.SM[1:0] and
+DMACm.DMAMD.DM[1:0] for
+Address Update Modes
+
+Address Update Method
+(for Different DMACm.DMTMDSZ[1:0] Settings)
+
+Address fixed
+
+00b
+
+Fixed
+
+Offset addition
+
+01b
+
++DMACm.DMOFR*1
+
+Increment
+
+10b
+
++1
+
++2
+
++4
+
+Decrement
+
+11b
+
+–1
+
+–2
+
+–4
+
+SZ[1:0] = 00b
+
+SZ[1:0] = 01b
+
+SZ[1:0] = 10b
+
+Note 1. When setting a negative value in the DMA offset register, the value must be 2’s complement. The 2's complement is obtained by
+the following formula.
+2’s complement of a negative offset value = ~ (offset) + 1 (~: bit inversion)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 700 of 3240
+
+RX72N Group
+
+(1)
+
+18. DMA Controller (DMACAa)
+
+Basic Transfer Using Offset Addition
+
+Figure 18.7 shows an example of address updating using offset addition.
+
+Transfer
+Data 1
+
+Address A1
+
+Offset value
+
+Data 2
+
+Address A2
+= address A1 + offset value
+
+Data 3
+
+Address A3
+= address A2 + offset value
+
+Data 4
+
+Address A4
+= address A3 + offset value
+
+Data 1
+
+Address B1
+
+Data 2
+
+Address B2 = address B1 + 4
+
+Data 3
+
+Address B3 = address B2 + 4
+
+Data 4
+
+Address B4 = address B3 + 4
+
+Data 5
+
+Address B5 = address B4 + 4
+
+Offset value
+
+Offset value
+
+Offset value
+
+Data 5
+
+Figure 18.7
+
+Address A5
+= address A4 + offset value
+
+Transfer source: Offset addition
+Transfer destination: Increment
+Data size: 32 bits
+
+Example of Address Updating by Offset Addition
+
+In Figure 18.7, the transfer data is 32 bits long, and offset addition and increment are set as the transfer source address
+update mode and transfer destination address update mode, respectively. The second and subsequent data is each read
+from the transfer source address obtained by adding the offset value to the previous address. The data read from the
+addresses at the specified intervals is written to the continuous locations on the destination.
+
+(2)
+
+Example of XY Conversion Using Offset Addition
+
+Figure 18.8 shows the XY conversion using offset addition in repeat transfer mode.
+Settings are as follows:
+ DMAC0.DMAMD register: Transfer source address update mode: Offset addition
+ DMAC0.DMAMD register: Transfer destination address update mode: Destination address is incremented.
+ DMAC0.DMTMD register: Transfer data size select: 32 bits
+ DMAC0.DMTMD register: Transfer mode select: Repeat transfer
+ DMAC0.DMTMD register: Repeat area select: The source is specified as the repeat area.
+ DMAC0.DMOFR register: Offset address: 10h
+ DMAC0.DMCRA register: Repeat size: 4h
+ DMAC0.DMINT register: The repeat size end interrupt is enabled.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 701 of 3240
+
+RX72N Group
+
+18. DMA Controller (DMACAa)
+
+Offset value
+Offset value
+Offset value
+
+Data 1
+
+Data 2
+
+Data 3
+
+Second cycle
+
+Data 5
+
+Data 6
+
+Data 7
+
+Data 8
+
+Data 15
+
+Third cycle
+
+Data 9
+
+Data 10
+
+Data 11
+
+Data 12
+
+Data 16
+
+Fourth cycle
+
+Data 13
+
+Data 14
+
+Data 15
+
+Data 16
+
+Data 5
+
+Data 9
+
+Data 13
+
+Data 2
+
+Data 6
+
+Data 10
+
+Data 14
+
+Data 3
+
+Data 7
+
+Data 11
+
+Data 4
+
+Data 8
+
+Data 12
+
+First cycle
+
+Second cycle
+
+Data 1
+Data 5
+
+Address
+returned
+
+Transfer
+
+Transfer source
+address written by
+CPU
+
+Data 4
+
+Third cycle
+
+Transfer
+
+Data 1
+
+Data 1
+
+Data 5
+
+Data 5
+
+Data 2
+
+Data 9
+
+Data 3
+
+Address
+returned
+
+Data 1
+
+Data 9
+
+Data 9
+
+Data 13
+
+Data 13
+
+Data 13
+
+Data 2
+
+Data 2
+
+Data 2
+
+Data 6
+
+Data 6
+
+Data 6
+
+Data 6
+
+Data 10
+
+Data 10
+
+Data 10
+
+Data 7
+
+Data 14
+
+Data 14
+
+Data 14
+
+Data 8
+
+Data 3
+
+Data 3
+
+Data 3
+
+Data 9
+
+Transfer source
+address written by
+CPU
+
+Data 5
+
+Data 7
+
+Data 7
+
+Data 7
+
+Data 10
+
+Data 11
+
+Data 11
+
+Data 11
+
+Data 15
+
+Data 15
+
+Data 15
+
+Data 12
+
+Data 4
+
+Data 4
+
+Data 4
+
+Data 13
+
+Data 8
+
+Data 8
+
+Data 14
+
+Data 12
+
+Data 15
+
+Data 12
+
+Interrupt
+request
+generated
+
+Data 16
+
+Data 12
+Data 16
+
+Interrupt
+request
+generated
+
+Data 16
+
+Interrupt
+request
+generated
+
+First
+cycle
+
+Data 4
+
+Data 11
+
+Data 8
+
+Figure 18.8
+
+First cycle
+
+Data 1
+
+Second
+cycle
+
+Third
+cycle
+
+Fourth
+cycle
+
+Data 16
+
+XY Conversion Operation Using Offset Addition in Repeat Transfer Mode
+
+When a transfer starts, the offset value is added to the transfer source address every time data is transferred. The transfer data
+is written to the destination continuous addresses. When data 4 is transferred, which means that the repeat size of transfers is
+completed, the transfer source address returns to the transfer start address (address of data 1 on the transfer source) and a
+repeat size end interrupt is requested. While this interrupt stops the transfer temporarily, perform the following.
+ DMAC0.DMSAR register: Rewrite the DMA transfer source address to the address of data 5
+(with the above example, the data 1 address + 4).
+ DMAC0.DMCNT register: Set the DTE bit to 1.
+The DMA transfer is resumed from the state when the DMA transfer is stopped. After that, the operations described
+above are repeated until the transfer source data is transposed to the destination area (XY conversion).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 702 of 3240
+
+RX72N Group
+
+18. DMA Controller (DMACAa)
+
+Figure 18.9 shows a flowchart of the XY conversion.
+
+Start
+
+Set the address, repeat size, and number of repeat
+operations.
+
+Set repeat transfer mode.
+
+Enable repeat size end interrupts.
+
+Write 1 to the DMAC0.DMCNT.DTE bit.
+
+Receive a transfer request.
+
+Data transfer
+
+Repeat size and number of repeat operations decremented.
+
+No
+Number of repeat operations = 0
+
+Yes
+Repeat size = 0
+
+No
+
+Yes
+Return to the transfer source address.
+
+Generate a repeat size end interrupt.
+
+Set “transfer source address + 4”
+(When transfer data size = 32 bits)
+
+End
+
+: User side processing
+: DMAC side processing
+
+Figure 18.9
+
+XY Conversion Flowchart Using Offset Addition in Repeat Transfer Mode
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 703 of 3240
+
+RX72N Group
+
+18.3.4
+
+18. DMA Controller (DMACAa)
+
+Request Sources
+
+Software, the interrupt requests from the peripheral modules, and the external interrupt requests can be specified as the
+DMA request sources. Setting the DMACm.DMTMD.DCTG[1:0] bits selects the request source.
+
+(1)
+
+Trigger by Software
+
+Setting the DMACm.DMTMDDCTG[1:0] bits to 00b enables the trigger by software.
+To start DMA transfer by software, set the DMACm.DMTMD.DCTG[1:0] bits to 00b, and then set the
+DMACm.DMCNT.DTE bit to 1 (DMA transfer is enabled) and the DMACm.DMREQ.SWREQ bit to 1 (DMA transfer
+is requested) with the DMAST.DMST bit set to 1 (DMAC module start).
+When the DMAC is triggered by software while the DMACm.DMREQ.CLRS bit is 0, the DMACm.DMREQ.SWREQ
+bit is set to 0 after data transfer is started in response to a DMA transfer request.
+When the DMAC is triggered by software while the CLRS bit is 1, the SWREQ bit is not set to 0 after data transfer is
+started. In this case, a DMA transfer request is issued again after completion of a transfer.
+
+(2)
+
+Trigger by Interrupt Requests from On-Chip Peripheral Modules or External Interrupt Requests
+
+Interrupt requests from the on-chip peripheral modules and external interrupt requests can be specified as the DMA
+request sources. The request source can be selected separately for each channel using the ICU.DMRSRm registers (m =
+0 to 7).
+The DMA transfer is triggered when an interrupt request from the on-chip peripheral module or an external interrupt
+request is generated while the DMACm.DMTMD.DCTG[1:0] bits are set to 01b (interrupts from the peripheral modules
+and the external interrupt pins are selected), the DMACm.DMCNT.DTE bit is set to 1 (DMA transfer is enabled), and the
+DMAST.DMST bit is set to 1 (DMAC module start).
+For interrupt requests specified as DMA request sources, refer to Table 15.5, Interrupt Vector Table, in section 15,
+Interrupt Controller (ICUD).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 704 of 3240
+
+RX72N Group
+
+18.3.5
+
+18. DMA Controller (DMACAa)
+
+Operation Timing
+
+Figure 18.10 and Figure 18.11 show DMAC operation timing examples.
+
+System clock
+
+IRn in the ICU
+
+DMA transfer request
+
+DMAC access
+
+R
+
+W
+
+Data transfer
+
+Figure 18.10
+
+DMAC Operation Timing Example (1) (Trigger by Interrupt from Peripheral Module/External
+Interrupt Input Pin, Normal Transfer Mode, Repeat Transfer Mode)
+
+System clock
+
+IRn in the ICU
+
+DMA transfer request
+
+DMAC access
+
+Data transfer
+
+Figure 18.11
+
+DMAC Operation Timing Example (2) (Trigger by Interrupt from Peripheral Module/External
+Interrupt Input Pin, Block Transfer Mode, Block Size = 4)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 705 of 3240
+
+RX72N Group
+
+18.3.6
+
+18. DMA Controller (DMACAa)
+
+DMAC Execution Cycles
+
+Table 18.7 lists execution cycles in one DMAC data transfer operation.
+Table 18.7
+
+DMAC Execution Cycles
+
+Transfer Mode
+
+Data Transfer (Read)
+
+Data Transfer (Write)
+
+Normal
+
+Cr+1
+
+Cw
+
+Repeat
+
+Cr+1
+
+Cw
+
+Block*1
+
+P × Cr
+
+P × Cw
+
+Note 1. This is the case when the block size is 2 or more. When the block size is 1, normal transfer cycle is applied.
+
+P: Block size (DMCRAH register setting)
+Cr: Data read destination access cycle
+Cw: Data write destination access cycle
+
+Cr and Cw depend on the access destination. For the number of cycles for each access destination, refer to section 60,
+RAM, section 62, Flash Memory (FLASH), section 5, I/O Registers, and section 16.2.6, External Bus.
+The unit for +1 in “Data Transfer (Read)” column is one system clock cycle (ICLK).
+For the operation example, refer to section 18.3.5, Operation Timing.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 706 of 3240
+
+RX72N Group
+
+18.3.7
+
+18. DMA Controller (DMACAa)
+
+Activating the DMAC
+
+Figure 18.12 shows the register setting procedure.
+
+Start of initial settings
+
+<To use peripheral function
+interrupts as DMA request
+sources>
+
+<For trigger other than by software>
+Clear the interrupt enable bit (ICU.IERn.IENj bit) as a request
+source to 0, then perform the settings below.
+
+Clear the DMACm.DMCNT.DTE bit to 0.
+
+Disable DMA transfers.
+
+Set the peripheral module used as a DMA request
+source for DMACm.
+
+Set the control register for the peripheral function without
+starting it.
+
+<To use external pin interrupts as
+DMA request sources>
+
+Set the IRQ pin function using the interrupt
+controller unit ICU.
+
+<To use on-chip peripheral
+interrupts or external pin interrupts
+as DMA request sources>
+
+Set the interrupt request as a DMA request source
+in the DMAC trigger select register
+(ICU.DMRSRm) using the ICU.
+
+Set the DMA request source.
+
+DMACm.DMAMD.DM[1:0] bits
+DMACm.DMAMD.SM[1:0] bits
+DMACm.DMAMD.DARA[4:0] bits
+DMACm.DMAMD.SARA[4:0] bits
+
+Transfer destination address update mode bits
+Transfer source address update mode bits
+Destination address extended repeat area bits
+Source address extended repeat area bits
+
+DMACm.DMTMD.DCTG[1:0] bits
+DMACm.DMTMD.SZ[1:0] bits
+DMACm.DMTMD.DTS[1:0] bits
+DMACm.DMTMD.MD[1:0] bits
+
+Transfer request select bits
+Data transfer size bits
+Repeat area select bits
+Transfer mode select bits
+
+DMACm.DMSAR register
+
+Set the transfer source start address.
+
+DMACm.DMDAR register
+
+Set the transfer destination start address.
+
+DMACm.DMCRA register
+
+Set the number of transfer operations.
+
+Set the IRQ pin function without enabling it.
+
+<To use block transfer mode or repeat transfer mode>
+DMACm.DMCRB register
+
+Set the number of block transfer operations.
+
+<To use the address update function with offset>
+DMACm.DMOFR register
+
+Set the offset value.
+
+<To use DMA transfer end interrupts>
+Set 1 to the DMACm.DMINT.DTIE bit.
+
+Enable DMA transfer end interrupts.
+
+<To use DMA transfer escape interrupts>
+DMACm.DMINT.RPTIE bit
+DMACm.DMINT.SARIE bit
+DMACm.DMINT.DARIE bit
+Set the DMACm.DMINT.ESIE bit to 1.
+
+Set the repeat size end interrupt
+
+Set the DMACm.DMCNT.DTE bit to 1.
+
+Enable DMA transfer.
+
+<To use peripheral function
+interrupts as DMA request
+sources>
+
+Start the peripheral function used as a DMA request
+source for DMACm.
+
+<To use external pin interrupts as
+DMA request sources>
+
+Enable the IRQ pin used as a DMA request source
+for DMACm.
+
+<To use on-chip peripheral
+interrupts or external pin
+interrupts as DMA request
+sources>
+
+Set the transfer source address extended repeat area overflow interrupt
+Set the transfer destination address extended repeat area overflow interrupt
+Enable the DMA transfer escape end interrupt
+
+Set the ICU.IERn.IENj bit to 1.
+
+Enable the interrupt bit for
+the request source.
+
+Settings required for
+each request source
+
+Set the DMAST.DMST bit to 1.
+
+Enable DMAC operation.*1
+
+Common settings
+for DMAC
+
+End of initial settings
+
+<For trigger by software>
+On completion of the initial settings, writing 1 to the DMA software
+start bit (DMACm.DMREQ.SWREQ) starts DMA transfer.
+
+m: DMAC channel (m = 0 to 7)
+Note 1. Setting of the DMAST.DMST bit doesn't necessarily have to follow the settings for the individual request sources.
+
+Figure 18.12
+
+Register Setting Procedure
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 707 of 3240
+
+RX72N Group
+
+18.3.8
+
+18. DMA Controller (DMACAa)
+
+Starting DMA Transfer
+
+Setting the DMACm.DMCNT.DTE bit to 1 (DMA transfer enabled) and setting the DMAST.DMST bit to 1 (DMAC
+module start) enable DMA transfer of channel m (m = 0 to 7).
+Another transfer request cannot be accepted during the transfer of other DMAC channel or DTC. When the proceeding
+transfer is completed, channel arbitration is performed where a DMA transfer request of the highest priority channel is
+accepted and DMA transfer of the channel starts. When DMA transfer starts, the DMACm.DMSTS.ACT flag is set to 1
+(the DMAC is in the active state).
+
+18.3.9
+
+Registers during DMA Transfer
+
+The DMAC registers are updated by a DMA transfer. The value to be updated differs according to the other settings and
+the transfer state. The registers to be updated are DMSAR, DMDAR, DMCRA, DMCRB, DMCNT, and DMSTS of
+DMACm.
+
+(1)
+
+DMA Source Address Register (DMACm.DMSAR)
+
+When data has been transferred in response to one transfer request, the contents of this register are updated to the address
+to be accessed by the next transfer request.
+For details on register update operation in each transfer mode, refer to Table 18.3 to Table 18.5.
+
+(2)
+
+DMA Destination Address Register (DMACm.DMDAR)
+
+When data has been transferred in response to one transfer request, the contents of this register are updated to the address
+to be accessed by the next transfer request.
+For details on register update operation in each transfer mode, refer to Table 18.3 to Table 18.5.
+
+(3)
+
+DMA Transfer Count Register (DMACm.DMCRA)
+
+When data has been transferred in response to one transfer request, the count value is updated. The update operation
+depends on the transfer mode selected.
+For details on register update operation in each transfer mode, refer to Table 18.3 to Table 18.5.
+
+(4)
+
+DMA Block Transfer Count Register (DMACm.DMCRB)
+
+When data has been transferred in response to one transfer request, the count value is updated. The update operation
+depends on the transfer mode selected.
+For details on register update operation in each transfer mode, refer to Table 18.3 to Table 18.5.
+
+(5)
+
+DMA Transfer Enable Bit (DMACm.DMCNT.DTE)
+
+Although the DMACm.DMCNT.DTE bit enables or disables data transfer by the register write access, it is automatically
+set to 0 by the DMAC according to the DMA transfer state.
+The conditions for clearing this bit by the DMAC are as follows:
+ When the specified total volume of data transfer is completed
+ When DMA transfer is stopped by the repeat size end interrupt
+ When DMA transfer is stopped by the extended repeat area overflow interrupt
+Writing to the registers for the channels when the corresponding DMACm.DMCNT.DTE bit is set to 1 is prohibited
+(except for the DMACm.DMCNT register). In this case, writing must be performed after the bit is set to 0.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 708 of 3240
+
+RX72N Group
+
+(6)
+
+18. DMA Controller (DMACAa)
+
+DMA Active Flag (DMACm.DMSTS.ACT)
+
+The DMACm.DMSTS.ACT flag indicates whether the DMACm is in the idle or active state.
+This flag is set to 1 when the DMAC starts data transfer, and is set to 0 when data transfer in response to one transfer
+request is completed.
+Even when DMA transfer is stopped by writing 0 to the DMACm.DMCNT.DTE bit during DMA transfer, this flag
+remains 1 until DMA transfer is completed.
+
+(7)
+
+Transfer End Interrupt Flag (DMACm.DMSTS.DTIF)
+
+The DMACm.DMSTS.DTIF flag is set to 1 after DMA transfer of the total transfer size of data is completed.
+When both this flag and the DMACm.DMINT.DTIE bit are set to 1, a transfer end interrupt is requested.
+This flag is set to 1 when the DMA transfer bus cycle is completed and the DMACm.DMSTS.ACT flag is set to 0
+indicating the DMA transfer end.
+This flag is automatically set to 0 when the DMACm.DMCNT.DTE bit is set to 1 during the interrupt handling.
+
+(8)
+
+Transfer Escape End Interrupt Flag (DMACm.DMSTS.ESIF)
+
+The DMACm.DMSTS.ESIF flag is set to 1 when a repeat size end interrupt or extended repeat area overflow interrupt is
+requested. When this bit and the DMACm.DMINT.ESIE bit are set to 1, a transfer escape end interrupt is requested.
+This flag is set to 1 when the bus cycle of the DMA transfer having caused the interrupt request is completed and the
+DMACm.DMSTS.ACT flag is set to 0 indicating the DMA transfer end.
+This flag is automatically set to 0 when the DMACm.DMCNT.DTE bit is set to 1 during an interrupt handling.
+Before sending an interrupt request from the DMAC to the CPU or the DTC, the interrupt control register must be set.
+For details, refer to section 15, Interrupt Controller (ICUD).
+
+18.3.10
+
+Channel Priority
+
+When multiple DMA transfer requests are present, the DMAC determines the priority of channels that have DMA
+transfer requests.
+The channel priority is fixed as channel 0 > channel 1 > channel 2 > channel 3 > channel 4 > channel 5 > channel 6 >
+channel 7 (channel 0: highest).
+When a DMA transfer request is generated during data transfer, channel arbitration is started after the final data has been
+transferred, and DMA transfer of the higher-priority channel starts.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 709 of 3240
+
+RX72N Group
+
+18.4
+
+18. DMA Controller (DMACAa)
+
+Ending DMA Transfer
+
+The operation for ending DMA transfer depends on the transfer end conditions. When DMA transfer ends, the
+DMCNT.DTE bit and the DMSTS.ACT flag of DMACm are changed from 1 to 0, indicating that DMA transfer has
+ended.
+
+18.4.1
+(1)
+
+Transfer End by Completion of Specified Total Number of Transfer Operations
+
+In Normal Transfer Mode (DMACm.DMTMD.MD[1:0] = 00b)
+
+When the value of the DMACm.DMCRAL register changes from 1 to 0, DMA transfer ends on the corresponding
+channel, and the DMACm.DMCNT.DTE bit is set to 0 and the DMACm.DMSTS.DTIF flag is set to 1 at the same time.
+If the DMACm.DMINT.DTIE bit is 1 at this time, a transfer end interrupt request is issued to the CPU or the DTC.
+
+(2)
+
+In Repeat Transfer Mode (DMACm.DMTMD.MD[1:0] = 01b)
+
+When the value of the DMACm.DMCRB register changes from 1 to 0, DMA transfer ends on the corresponding
+channel, and the DMACm.DMCNT.DTE bit is set to 0 and the DMACm.DMSTS.DTIF flag is set to 1 at the same time.
+If the DMACm.DMINT.DTIE bit is 1 at this time, an interrupt request is issued to the CPU or the DTC.
+
+(3)
+
+In Block Transfer Mode (DMACm.DMTMD.MD[1:0] = 10b)
+
+When the value of the DMACm.DMCRB register changes from 1 to 0, DMA transfer ends on the corresponding
+channel, and the DMACm.DMCNT.DTE bit is set to 0 and the DMACm.DMSTS.DTIF bit is set to 1 at the same time. If
+the DMACm.DMINT.DTIE bit is 1 at this time, an interrupt request is issued to the CPU or the DTC.
+Before sending an interrupt request from the DMAC to the CPU or the DTC, the interrupt control register must be set.
+For details, refer to section 15, Interrupt Controller (ICUD).
+
+18.4.2
+
+Transfer End by Repeat Size End Interrupt
+
+In repeat transfer mode, a repeat size end interrupt is requested when transfer of a 1-repeat size of data is completed
+while the DMACm.DMINT.RPTIE bit is set to 1. When the interrupt is requested to complete DMA transfer, the
+DMACm.DMCNT.DTE bit is set to 0 and the DMACm.DMSTS.ESIF flag is set to 1. If the DMACm.DMINT.ESIE bit
+is 1 at this time, an interrupt request is issued to the CPU or the DTC. Here, the transfer can be resumed by writing 1 to
+the DMACm.DMCNT.DTE bit.
+A repeat size end interrupt can be requested also in block transfer mode. In block transfer mode, the interrupt is requested
+in the same way as in repeat transfer mode when transfer of a 1-block size data is completed.
+Before sending an interrupt request from the DMAC to the CPU or the DTC, the interrupt control register must be set.
+For details, refer to section 15, Interrupt Controller (ICUD).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 710 of 3240
+
+RX72N Group
+
+18.4.3
+
+18. DMA Controller (DMACAa)
+
+Transfer End by Interrupt on Extended Repeat Area Overflow
+
+When an overflow on the extended repeat area occurs while the extended repeat area is specified and the DMINT.SARIE
+or DMINT.DARIE bit of DMACm is set to 1, an interrupt by an extended repeat area overflow is requested. When the
+interrupt is requested, the DMA transfer is terminated, the DMACm.DMCNT.DTE bit is set to 0, and the
+DMACm.DMSTS.ESIF flag is set to 1. If the DMACm.DMINT.ESIE bit is 1 at this time, an interrupt request is issued to
+the CPU or the DTC.
+Even if an interrupt by an extended repeat area overflow is requested during a read cycle, the following write cycle is
+performed.
+In block transfer mode, even if an interrupt by an extended repeat area overflow is requested during a 1-block transfer,
+the remaining data in the block is transferred; transfer is terminated after a block transfer.
+Before sending an interrupt request from the DMAC to the CPU or the DTC, the interrupt control register must be set.
+For details, refer to section 15, Interrupt Controller (ICUD).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 711 of 3240
+
+RX72N Group
+
+18.5
+
+18. DMA Controller (DMACAa)
+
+Interrupts
+
+Each DMAC channel can output an interrupt request to the CPU or the DTC after transfer in response to one request is
+completed. When the transfer destination is the external bus or the on-chip peripheral bus, an interrupt request is
+generated upon completion of data write to the write buffer not to the actual transfer destination.
+
+Table 18.8 lists the relation among the interrupt sources, the interrupt status flags, and the interrupt enable bits. Figure
+18.13 shows the schematic logic diagram of interrupt outputs (DMAC0 to DMAC3). Figure 18.14 shows the schematic
+logic diagram of interrupt outputs (DMAC4 to DMAC7). Figure 18.15 shows the DMAC interrupt handling routine to
+resume/terminate DMA transfer.
+Table 18.8
+
+Relation among Interrupt Sources, Interrupt Status Flags, and Interrupt Enable Bits
+
+Interrupt Sources
+
+Interrupt Enable Bits
+
+Interrupt Status Flags
+
+Request Output Enable Bits
+
+Transfer end
+
+—
+
+DMACm.DMSTS.DTIF
+
+DMACm.DMINT.DTIE
+
+Repeat size end
+
+DMACm.DMINT.RPTIE
+
+DMACm.DMSTS.ESIF
+
+DMACm.DMINT.ESIE
+
+Source address extended repeat
+area overflow
+
+DMACm.DMINT.SARIE
+
+Destination address extended
+repeat area overflow
+
+DMACm.DMINT.DARIE
+
+Escape
+transfer end
+
+DTIE
+DTIF
+When the specified number of data
+transfer operations are completed
+
+1-setting condition
+
+DMACm interrupt request
+
+RPTIE
+ESIE
+When the specified repeat (or block)
+size of data transfer is completed
+ESIF
+SARIE
+
+1-setting condition
+
+When a source address extended
+repeat area overflow occurs
+
+DARIE
+
+When a destination address extended
+repeat area overflow occurs
+
+Figure 18.13
+
+Interrupt output logic diagram for DMAC channel m (DMACm)
+m = 0 to 3
+
+Schematic Logic Diagram of Interrupt Outputs (DMAC0 to DMAC3)
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 712 of 3240
+
+RX72N Group
+
+18. DMA Controller (DMACAa)
+
+DMAC channel m (m = 4 to 7)
+DTIE
+DTIF
+1-setting condition
+
+When the specified number of data
+transfer operations is completed
+
+DMISm
+m = 4 to 7
+
+RPTIE
+When the specified repeat (or block)
+size of data transfer is completed
+
+ESIE
+ESIF
+
+SARIE
+
+1-setting condition
+
+When a source address extended
+repeat area overflow occurs
+
+DMAC74
+interrupt request
+
+DARIE
+When a destination address extended
+repeat area overflow occurs
+
+Figure 18.14
+
+Schematic Logic Diagram of Interrupt Outputs (DMAC4 to DMAC7)
+
+Specifically, the different procedures are used for canceling an interrupt to restart DMA transfer in the following two
+cases: (1) discontinuing or terminating DMA transfer and (2) continuing DMA transfer.
+
+(1)
+
+When Discontinuing or Terminating DMA Transfer
+
+Write 0 to the DMACm.DMSTS.DTIF flag to clear a transfer end interrupt, and to the DMACm.DMSTS.ESIF flag to
+clear a repeat size interrupt and an extended repeat area overflow interrupt. The DMACm remains in the stop state. When
+starting another DMA transfer after that, set the appropriate registers, and set the DMACm.DMCNT.DTE bit to 1 (DMA
+transfer enabled).
+
+(2)
+
+When Continuing DMA Transfer
+
+Write 1 to the DMACm.DMCNT.DTE bit. The DMACm.DMSTS.ESIF flag is automatically set to 0 (interrupt source
+cleared), and DMA transfer is resumed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 713 of 3240
+
+RX72N Group
+
+18. DMA Controller (DMACAa)
+
+Interrupt request from DMAC
+*1
+Continue
+
+Is suspended transfer
+continued?
+
+Terminate
+
+Change register settings if necessary.
+
+Write 0 to ESIF or DTIF flag in DMACm.DMSTS.
+(Interrupt source cleared)
+
+Write 1 to DMACm.DMCNT.DTE bit.
+
+Is another data transfer
+performed?
+
+Discontinue
+End
+
+Start another transfer
+DMACm.DMSTS.ESIF flag is automatically
+set to 0 (interrupt source is cleared).
+
+Change register settings.
+
+Transfer resumed
+
+Write 1 to DMACm.DMCNT.DTE bit.
+
+DMA transfer restarted
+(Start of another DMA transfer)
+
+Note 1. In the case of a DMAC74 interrupt, use the DMIST register to determine interrupt request source DMAC channel m
+(m = 4 to 7) and perform above processing on the target DMAC channel m.
+
+Figure 18.15
+
+18.6
+
+DMAC Interrupt Handling Routine to Resume/Terminate DMA Transfer
+
+Event Link
+
+Each DMAC channel outputs an event link request signal each time the channel completes data transfer (or block transfer
+in block transfer mode). However, when the transfer destination is the external bus or internal peripheral bus, an event
+link request signal is generated when the writing to the write buffer is accepted.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 714 of 3240
+
+RX72N Group
+
+18.7
+
+18. DMA Controller (DMACAa)
+
+Low-Power Consumption Function
+
+Before transition to the module-stop state, all-module clock stop mode, software standby mode, or deep software standby
+mode, set the DMAST.DMST bit to 0 (the DMAC suspended), and then perform the following.
+
+(1)
+
+Module-Stop Function
+
+Writing 1 to the MSTPCRA.MSTPA28 bit (transition to the module-stop state) enables the module-stop function of the
+DMAC. If DMA transfer is in progress at the time a 1 is written to the MSTPA28 bit, the transition to the module-stop
+state proceeds after DMA transfer has ended. While the MSTPA28 bit is 1, accessing the DMAC registers are prohibited.
+Writing 0 to the MSTPA28 bit releases the DMAC from the module-stop state.
+
+(2)
+
+All-Module Clock Stop Mode
+
+Make settings in accord with the procedure under section 11.6.2.1, Transition to All-Module Clock Stop Mode, in
+section 11, Low Power Consumption.
+If DMA transfer operations are in progress at the time the WAIT instruction is executed, the transition to all-module
+clock stop mode follows the completion of DMA transfer.
+The DMAC is released from the module-stop state by writing 0 to the MSTPCRA.MSTPA28 bit following recovery
+from all-module clock stop mode.
+
+(3)
+
+Software Standby and Deep Software Standby Modes
+
+Make settings in accord with the procedure under section 11.6.3.1, Transition to Software Standby Mode or section
+11.6.4.1, Transition to Deep Software Standby Mode, in section 11, Low Power Consumption.
+If DMA transfer operations are in progress at the time the WAIT instruction is executed, the transition to software
+standby or deep software standby follows the completion of DMA transfer.
+
+(4)
+
+Note on Low-Power Consumption Function
+
+For the WAIT instruction and the register setting procedure, refer to section 11.7.6, Timing of WAIT Instructions in
+section 11, Low Power Consumption.
+To perform DMA transfer after returning from low-power consumption mode, set the DMAST.DMST bit to 1 again.
+To use a request that is generated in all-module clock-stop mode and software standby mode as an interrupt request to the
+CPU but not as a DMAC startup request, specify the CPU as the interrupt request destination in accordance with the
+description in section 15, Interrupt Controller (ICUD), and then execute the WAIT instruction.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 715 of 3240
+
+RX72N Group
+
+18.8
+18.8.1
+
+18. DMA Controller (DMACAa)
+
+Usage Notes
+DMA Transfer to External Devices
+
+In DMA transfer to an external device, the DMACm.DMSTS.ACT flag may be set to 0 (DMAC transfer suspended)
+during the period from the beginning of the final data write to the end of the external bus access.
+
+18.8.2
+
+DMA Transfer to Peripheral Modules
+
+In DMA transfer to a peripheral module, the DMACm.DMSTS.ACT flag may be set to 0 (DMAC transfer suspended)
+during the period from the beginning of the final data write to the end of the peripheral bus access.
+
+18.8.3
+
+Access to the Registers during DMA Transfer
+
+Do not write to the DMSAR, DMDAR, DMCRA, DMCRB, DMTMD, DMINT, DMAMD, DMOFR, and DMCSL
+registers of DMACm while the DMSTS.ACT flag of the same channel is set to 1 (DMAC active state) or the
+DMCNT.DTE bit of the same channel is set to 1 (DMA transfer enabled).
+
+18.8.4
+
+DMA Transfer to Reserved Areas
+
+DMA transfer to the reserved areas is prohibited. If such an access is made, transfer results are not guaranteed. For
+details on the reserved areas, refer to section 4, Address Space.
+
+18.8.5
+
+Interrupt Request by the DMA Request Source Flag Control Register (DMCSL)
+at the End of Each Transfer
+
+While the DMACm.DMCSL.DISEL bit is 1, an interrupt request is issued to the CPU at the end of each transfer that has
+been triggered by one DMA request. Unlike the transfer end interrupt that the DMAC outputs or the escape end interrupt,
+the interrupt of this type is issued to the CPU at the end of DMA transfer without clearing the interrupt status flag of the
+DMA request source to 0 by changing the interrupt request destination to the CPU. In this case, since the interrupt status
+flag is not set to 0 at the end of DMAC transfer, it should be set to 0 by the CPU interrupt routine.
+The interrupt flag is cleared when the CPU interrupt is accepted.
+For the change of the settings on the interrupt flag or the interrupt request destination, refer to section 15, Interrupt
+Controller (ICUD). For the DMACm.DMCSL.DISEL bit setting, refer to section 18.2.12, DMA Request Source
+Flag Control Register (DMCSL).
+
+18.8.6
+
+Setting of DMAC Trigger Select Register of the Interrupt Controller
+(ICU.DMRSRm)
+
+The DMAC trigger select register (ICU.DMRSRm) should be set while the DMA transfer enable bit
+(DMACm.DMCNT.DTE) is 0 (DMA transfer is disabled). Moreover, the DTC transfer request enable register
+(ICU.DTCERn) that corresponds to the same vector number that has been set by the ICU.DMRSRm register should not
+be set to 1. For details on the ICU.DTCERn and ICU.DMRSRm registers, refer to section 15, Interrupt Controller
+(ICUD).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 716 of 3240
+
+RX72N Group
+
+18.8.7
+
+18. DMA Controller (DMACAa)
+
+Suspending or Restarting DMA Transfer
+
+To suspend a DMA transfer request, write 0 to the interrupt enable bit for the request source (ICU.IERn.IENj bit). To
+restart the DMA transfer, write 1 to the ICU.IERn.IENj bit with the setting shown in section 18.3.7, Activating the
+DMAC.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 717 of 3240
+
+

@@ -1,0 +1,2304 @@
+RX72N Group
+
+8.
+
+8. Voltage Detection Circuit (LVDA)
+
+Voltage Detection Circuit (LVDA)
+
+The voltage detection circuit (LVDA) monitors the voltage level input to the VCC pin using a program.
+
+8.1
+
+Overview
+
+For voltage detection 0, the detection voltage is selectable from among three different levels and the reset from voltage
+monitoring 0 can be enabled or disabled after a reset by using the option function select register 1 (OFS1).
+For voltage detection 1 and voltage detection 2, the detection voltage is selectable from among three different levels by
+using the voltage detection level select register (LVDLVLR).
+The reset from voltage monitoring 0, reset/interrupt from voltage monitoring 1, and reset/interrupt from voltage
+monitoring 2 can be used.
+
+Table 8.1 lists the specifications of the voltage detection circuit. Figure 8.1 is a block diagram of the voltage detection
+circuit. Figure 8.2 is a block diagram of the voltage monitoring 1 interrupt/reset circuit. Figure 8.3 is a block diagram of
+the voltage monitoring 2 interrupt/reset circuit.
+Table 8.1
+
+Voltage Detection Circuit Specifications
+
+Item
+
+VCC
+monitoring
+
+Process upon
+voltage
+detection
+
+Voltage Monitoring 0
+
+Voltage Monitoring 1
+
+Voltage Monitoring 2
+
+Monitored
+voltage
+
+Vdet0
+
+Vdet1
+
+Vdet2
+
+Detection
+voltage
+
+Selectable from among three
+different levels by using
+OFS1.VDSEL[1:0] bits
+
+Selectable from among three
+different levels by using
+LVDLVLR.LVD1LVL[3:0] bits
+
+Selectable from among three
+different levels by using
+LVDLVLR.LVD2LVL[3:0] bits
+
+Monitoring
+flag
+
+None
+
+LVD1SR.LVD1MON flag: Monitors
+whether voltage is higher or lower
+than Vdet1
+
+LVD2SR.LVD2MON flag: Monitors
+whether voltage is higher or lower
+than Vdet2
+
+LVD1SR.LVD1DET flag: Vdet1
+passage detection
+
+LVD2SR.LVD2DET flag: Vdet2
+passage detection
+
+Voltage monitoring 0 reset
+
+Voltage monitoring 1 reset
+
+Voltage monitoring 2 reset
+
+Reset when Vdet0 > VCC
+CPU restart after specified
+time with VCC > Vdet0
+
+Reset when Vdet1 > VCC
+CPU restart timing selectable:
+after specified time with VCC >
+Vdet1 or Vdet1 > VCC
+
+Reset when Vdet2 > VCC
+CPU restart timing selectable:
+after specified time with VCC >
+Vdet2 or Vdet2 > VCC
+
+No interrupt
+
+Voltage monitoring 1 interrupt
+
+Voltage monitoring 2 interrupt
+
+Non-maskable interrupt or
+maskable interrupt selectable
+
+Non-maskable interrupt or
+maskable interrupt selectable
+
+Interrupt request issued when
+Vdet1 > VCC and VCC > Vdet1 or
+either
+
+Interrupt request issued when
+Vdet2 > VCC and VCC > Vdet2 or
+either
+
+Reset
+
+Interrupt
+
+Digital filter
+
+Event linking
+
+Enable/
+Disable
+switching
+
+Digital filter function not
+available
+
+Available
+
+Available
+
+Sampling
+time
+
+—
+
+1/n LOCO frequency × 2
+(n: 2, 4, 8, 16)
+
+1/n LOCO frequency × 2
+(n: 2, 4, 8, 16)
+
+None
+
+Available
+Output of event signals on
+detection of Vdet crossings
+
+Available
+Output of event signals on
+detection of Vdet crossings
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 316 of 3240
+
+RX72N Group
+
+8. Voltage Detection Circuit (LVDA)
+
+LVDAS
+
+VCC
+
+Voltage detection 0 reset signal
+
++
+Internal reference voltage
+(for detecting Vdet0)
+
+-
+
+Level selection
+circuit
+(3 levels)
+VDSEL[1:0]
+
+Vdet0
+
+LVD1E
+LVD1CMPE
+Voltage detection 1 signal
+
++
+Internal reference voltage
+(for detecting Vdet1)
+
+-  Vdet1
+
+Level selection
+circuit
+(3 levels)
+LVD1LVL[3:0]
+
+LVD2E
+LVD2CMPE
++
+Internal reference voltage
+(for detecting Vdet2)
+
+Level selection
+circuit
+(3 levels)
+
+Voltage detection 2 signal
+
+-  Vdet2
+
+LVD2LVL[3:0]
+
+LVD1LVL[3:0], LVD2LVL[3:0]: Bits in LVDLVLR
+LVDAS, VDSEL[1:0]: Bits in OFS1
+LVD1E, LVD2E: Bits in LVCMPCR
+LVD1CMPE: Bit in LVD1CR0
+LVD2CMPE: Bit in LVD2CR0
+
+Figure 8.1
+
+Block Diagram of Voltage Detection Circuit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 317 of 3240
+
+RX72N Group
+
+8. Voltage Detection Circuit (LVDA)
+
+Voltage monitoring 1 interrupt/reset circuit
+LVD1FSAMP[1:0]
+= 00b
+= 01b
+
+Voltage detection 1 circuit
+
+LOCO
+
+1/2
+
+1/2
+
+1/2
+
+1/2
+
+The setting of the LVD1DET bit will be 0
+if 0 (undetected) is written in the program.
+
+= 10b
+= 11b
+LVD1SR
+
+VCC
+LVD1E
+
+b1
+
+LVD1CMPE
++
+
+Digital filter
+Voltage detection 1
+signal
+
+-
+
+Internal reference
+voltage
+(for detection of
+Vdet1)
+
+LVD1DFDIS = 0
+
+LVD1MON
+
+LVD1DFDIS = 1
+
+Fixed
+period
+negation
+
+Level
+selection
+
+Edge
+selection
+circuit
+
+LVD1LVL[3:0]
+
+Voltage detection 1 signal will be high
+when the LVD1E bit is 0 (disabled)
+
+LVD1RIE
+LVD1RI
+LVD1RN = 0
+
+LVD1RN = 1
+
+Voltage monitoring 1
+reset signal
+(Low is valid)
+
+LVD1DET
+Voltage monitoring 1
+non-maskable interrupt
+signal
+
+LVD1IDTSEL[1:0]
+
+LVD1IRQSEL
+
+LVD1E: Bit in LVCMPCR
+LVD1LVL[3:0]: Bits in LVDLVLR
+
+Voltage monitoring 1
+maskable interrupt
+signal
+Event
+
+LVD1DFDIS, LVD1FSAMP[1:0], LVD1CMPE, LVD1RIE, LVD1RI, LVD1RN: Bits in LVD1CR0
+LVD1IDTSEL[1:0], LVD1IRQSEL: Bits in LVD1CR1
+LVD1DET, LVD1MON: Bits in LVD1SR
+
+Figure 8.2
+
+Block Diagram of Voltage Monitoring 1 Interrupt/Reset Circuit
+
+Voltage monitoring 2 interrupt/reset circuit
+LVD2FSAMP[1:0]
+= 00b
+= 01b
+
+Voltage detection 2 circuit
+
+LOCO
+
+1/2
+
+1/2
+
+1/2
+
+1/2
+
+The setting of the LVD2DET bit will be 0
+if 0 (undetected) is written by the program.
+
+= 10b
+= 11b
+LVD2SR
+
+VCC
+LVD2E
+LVD2CMPE
+
+b1
+
++
+Internal reference
+voltage
+(for detection of
+Vdet2)
+
+-
+
+Digital filter
+Voltage detection 2
+signal
+
+LVD2DFDIS = 0
+
+LVD2MON
+
+LVD2DFDIS = 1
+
+Fixed
+period
+negation
+
+Level
+selection
+
+Edge
+selection
+circuit
+
+LVD2LVL[3:0]
+
+Voltage detection 2 signal will be high when
+the setting of the LVD2E bit is 0 (disabled)
+
+LVD2RIE
+LVD2RI
+LVD2RN = 0
+
+LVD2RN = 1
+
+Voltage monitoring 2
+reset signal
+(Low is valid)
+
+LVD2DET
+
+LVD2IDTSEL[1:0]
+
+LVD2E: Bit in LVCMPCR
+LVD2LVL[3:0]: Bits in LVDLVLR
+
+Voltage monitoring 2
+non-maskable
+interrupt signal
+LVD2IRQSEL
+
+Voltage monitoring 2
+maskable interrupt
+signal
+Event
+
+LVD2DFDIS, LVD2FSAMP[1:0], LVD2CMPE, LVD2RIE, LVD2RI, LVD2RN: Bits in LVD2CR0
+LVD2IDTSEL[1:0], LVD2IRQSEL: Bits in LVD2CR1
+LVD2DET, LVD2MON: Bits in LVD2SR
+
+Figure 8.3
+
+Block Diagram of Voltage Monitoring 2 Interrupt/Reset Circuit
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 318 of 3240
+
+RX72N Group
+
+8.2
+
+8. Voltage Detection Circuit (LVDA)
+
+Register Descriptions
+
+8.2.1
+
+Voltage Monitoring 1 Circuit Control Register 1 (LVD1CR1)
+
+Address(es): 0008 00E0h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+—
+
+—
+
+—
+
+—
+
+—
+
+LVD1IR
+QSEL
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b1
+
+b0
+
+LVD1IDTSEL
+[1:0]
+0
+
+1
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+LVD1IDTSEL
+[1:0]
+
+Voltage Monitoring 1 Interrupt
+Generation Condition Select
+
+b1 b0
+
+R/W
+
+b2
+
+LVD1IRQSEL Voltage Monitoring 1 Interrupt
+Type Select
+
+0: Non-maskable interrupt
+1: Maskable interrupt*1
+
+R/W
+
+b7 to b3
+
+—
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+0 0: When VCC ≥ Vdet1 (rise) is detected
+0 1: When VCC < Vdet1 (drop) is detected
+1 0: When drop and rise are detected
+1 1: Settings prohibited
+
+Reserved
+
+Note 1. When enabling maskable interrupts, do not change the value of the NMIER.LVD1EN bit on the ICU side from the reset state.
+
+8.2.2
+
+Voltage Monitoring 1 Circuit Status Register (LVD1SR)
+
+Address(es): 0008 00E1h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b1
+
+b0
+
+LVD1M LVD1D
+ON
+ET
+1
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+LVD1DET
+
+Voltage Monitoring 1 Voltage Change
+Detection Flag
+
+0: Not detected
+1: Vdet1 passage detection
+
+*1
+
+R(/W)
+
+b1
+
+LVD1MON
+
+Voltage Monitoring 1 Signal Monitor Flag
+
+0: VCC < Vdet1
+1: VCC ≥ Vdet1 or LVD1MON is disabled
+
+R
+
+b7 to b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be
+0.
+
+R/W
+
+Note 1. Only 0 can be written to this bit. After writing 0 to this bit, it takes 2 system clock cycles for the bit to be read as 0.
+
+LVD1DET Flag (Voltage Monitoring 1 Voltage Change Detection Flag)
+The LVD1DET flag is enabled when the LVCMPCR.LVD1E bit is 1 (voltage detection 1 circuit enabled) and the
+LVD1CR0.LVD1CMPE bit is 1 (voltage monitoring 1 circuit comparison result output enabled).
+The LVD1DET flag should be set to 0 after LVD1CR0.LVD1RIE is set to 0 (disabled). LVD1CR0.LVD1RIE can be set
+to 1 (enabled) after a period of two or more cycles of PCLKB has elapsed.
+Depending on the number of cycles of PCLKB defined for access to read an I/O register, two or more cycles than
+PCLKB may have to be secured as waiting time.
+LVD1MON Flag (Voltage Monitoring 1 Signal Monitor Flag)
+The LVD1MON flag is enabled when the LVCMPCR.LVD1E bit is 1 (voltage detection 1 circuit enabled) and the
+LVD1CR0.LVD1CMPE bit is 1 (voltage monitoring 1 circuit comparison result output enabled).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 319 of 3240
+
+RX72N Group
+
+8.2.3
+
+8. Voltage Detection Circuit (LVDA)
+
+Voltage Monitoring 2 Circuit Control Register 1 (LVD2CR1)
+
+Address(es): 0008 00E2h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+—
+
+—
+
+—
+
+—
+
+—
+
+LVD2IR
+QSEL
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b1
+
+b0
+
+LVD2IDTSEL
+[1:0]
+0
+
+1
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b1, b0
+
+LVD2IDTSEL
+[1:0]
+
+Voltage Monitoring 2 Interrupt
+Generation Condition Select
+
+b1 b0
+
+R/W
+
+b2
+
+LVD2IRQSEL Voltage Monitoring 2 Interrupt Type
+Select
+
+0: Non-maskable interrupt
+1: Maskable interrupt*1
+
+R/W
+
+b7 to b3
+
+—
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+0 0: When VCC ≥ Vdet2 (rise) is detected
+0 1: When VCC < Vdet2 (drop) is detected
+1 0: When drop and rise are detected
+1 1: Settings prohibited
+
+Reserved
+
+Note 1. When enabling maskable interrupts, do not change the value of the NMIER.LVD2EN bit on the ICU side from the reset state.
+
+8.2.4
+
+Voltage Monitoring 2 Circuit Status Register (LVD2SR)
+
+Address(es): 0008 00E3h
+
+Value after reset:
+
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+b2
+
+—
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+b1
+
+b0
+
+LVD2M LVD2D
+ON
+ET
+1
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+LVD2DET
+
+Voltage Monitoring 2 Voltage
+Change Detection Flag
+
+0: Not detected
+1: Vdet2 passage detection
+
+*1
+
+R(/W)
+
+b1
+
+LVD2MON
+
+Voltage Monitoring 2 Signal
+Monitor Flag
+
+0: VCC < Vdet2
+1: VCC ≥ Vdet2 or LVD2MON is disabled
+
+R
+
+b7 to b2
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+Note 1. Only 0 can be written to this bit. After writing 0 to this bit, it takes 2 system clock cycles for the bit to be read as 0.
+
+LVD2DET Flag (Voltage Monitoring 2 Voltage Change Detection Flag)
+The LVD2DET flag is enabled when the LVCMPCR.LVD2E bit is 1 (voltage detection 2 circuit enabled) and the
+LVD2CR0.LVD2CMPE bit is 1 (voltage monitoring 2 circuit comparison result output enabled).
+The LVD2DET flag should be set to 0 after LVD2CR0.LVD2RIE bit is set to 0 (disabled). LVD2CR0.LVD2RIE bit can
+be set to 1 (enabled) after a period of two or more cycles of PCLKB has elapsed.
+Depending on the number of cycles of PCLKB defined for access to read an I/O register, two or more cycles of PCLKB
+may have to be secured as waiting time.
+LVD2MON Flag (Voltage Monitoring 2 Signal Monitor Flag)
+The LVD2MON flag is enabled when the LVCMPCR.LVD2E bit is 1 (voltage detection 2 circuit enabled) and the
+LVD2CR0.LVD2CMPE bit is 1 (voltage monitoring 2 circuit comparison result output enabled).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 320 of 3240
+
+RX72N Group
+
+8.2.5
+
+8. Voltage Detection Circuit (LVDA)
+
+Voltage Monitoring Circuit Control Register (LVCMPCR)
+
+Address(es): 0008 C297h
+b7
+—
+Value after reset:
+
+0
+
+b6
+
+b5
+
+LVD2E LVD1E
+0
+
+0
+
+b4
+
+b3
+
+b2
+
+b1
+
+b0
+
+—
+
+—
+
+—
+
+—
+
+—
+
+0
+
+0
+
+0
+
+0
+
+0
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b4 to b0
+
+—
+
+Reserved
+
+These bits are read as 0. The write value should be 0.
+
+R/W
+
+b5
+
+LVD1E
+
+Voltage Detection 1 Enable*1
+
+0: Voltage detection 1 circuit disabled
+1: Voltage detection 1 circuit enabled
+
+R/W
+
+b6
+
+LVD2E
+
+Voltage Detection 2 Enable*2
+
+0: Voltage detection 2 circuit disabled
+1: Voltage detection 2 circuit enabled
+
+R/W
+
+b7
+
+—
+
+Reserved
+
+This bit is read as 0. The write value should be 0.
+
+R/W
+
+Note 1. The voltage of VCC = AVCC0 = AVCC1 when LVD1 is enabled must be set to at least 80 mV above the maximum value of the
+voltage detection 1 level selected by the LVDLVLR.LVD1LVL[3:0] bits.
+Note 2. The voltage of VCC = AVCC0 = AVCC1 when LVD2 is enabled must be set to at least 80 mV above the maximum value of the
+voltage detection 2 level selected by the LVDLVLR.LVD2LVL[3:0] bits.
+
+LVD1E Bit (Voltage Detection 1 Enable)
+When using voltage detection 1 interrupt/reset or the LVD1SR.LVD1MON bit, set the LVD1E bit to 1. The voltage
+detection 1 circuit starts once td(E-A) passes after the LVD1E bit value is changed from 0 to 1. When using the voltage
+detection 1 circuit in deep software standby mode, do not set the DPSBYCR.DEEPCUT[1:0] bits to 11b.
+LVD2E Bit (Voltage Detection 2 Enable)
+When using voltage detection 2 interrupt/reset or the LVD2SR.LVD2MON bit, set the LVD2E bit to 1. The voltage
+detection 2 circuit starts once td(E-A) passes after the LVD2E bit value is changed from 0 to 1. When using the voltage
+detection 2 circuit in deep software standby mode, do not set the DPSBYCR.DEEPCUT[1:0] bits to 11b.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 321 of 3240
+
+RX72N Group
+
+8.2.6
+
+8. Voltage Detection Circuit (LVDA)
+
+Voltage Detection Level Select Register (LVDLVLR)
+
+Address(es): 0008 C298h
+b7
+
+b6
+
+b5
+
+b4
+
+b3
+
+LVD2LVL[3:0]
+Value after reset:
+
+1
+
+0
+
+1
+
+b2
+
+b1
+
+b0
+
+LVD1LVL[3:0]
+1
+
+1
+
+0
+
+1
+
+1
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b3 to b0
+
+LVD1LVL[3:0]
+
+Voltage Detection 1 Level Select
+(Standard voltage during drop in voltage)
+
+b3
+
+b0
+
+R/W
+
+b7 to b4
+
+LVD2LVL[3:0]
+
+Voltage Detection 2 Level Select
+(Standard voltage during drop in voltage)
+
+b7
+
+b4
+
+R/W
+
+1 0 0 1: 2.99 V (Vdet1_1)
+1 0 1 0: 2.92 V (Vdet1_2)
+1 0 1 1: 2.85 V (Vdet1_3)
+Settings other than above are prohibited.
+1 0 0 1: 2.99 V (Vdet2_1)
+1 0 1 0: 2.92 V (Vdet2_2)
+1 0 1 1: 2.85 V (Vdet2_3)
+Settings other than above are prohibited.
+
+The contents of the LVDLVLR register can only be changed if the LVCMPCR.LVD1E and LVCMPCR.LVD2E bits
+(voltage detection n circuit disable; n = 1, 2) are both 0. The voltage detection circuits 1 and 2 should not be set at the
+same voltage detection level.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 322 of 3240
+
+RX72N Group
+
+8.2.7
+
+8. Voltage Detection Circuit (LVDA)
+
+Voltage Monitoring 1 Circuit Control Register 0 (LVD1CR0)
+
+Address(es): 0008 C29Ah
+b7
+
+b6
+
+LVD1R LVD1RI
+N
+1
+
+Value after reset:
+
+0
+
+b5
+
+b4
+
+b3
+
+LVD1FSAMP
+[1:0]
+
+—
+
+0
+
+0
+
+x
+
+b2
+
+b1
+
+b0
+
+LVD1C LVD1D LVD1RI
+MPE
+FDIS
+E
+0
+
+1
+
+0
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+LVD1RIE
+
+Voltage Monitoring 1
+Interrupt/Reset Enable
+
+0: Disabled
+1: Enabled
+
+R/W
+
+b1
+
+LVD1DFDIS
+
+Voltage Monitoring 1 Digital
+Filter Disable Mode Select
+
+0: Digital filter enabled
+1: Digital filter disabled
+
+R/W
+
+b2
+
+LVD1CMPE
+
+Voltage Monitoring 1 Circuit
+Comparison Result Output
+Enable
+
+0: Voltage monitoring 1 circuit comparison result output disabled.
+1: Voltage monitoring 1 circuit comparison result output enabled.
+
+R/W
+
+b3
+
+—
+
+Reserved
+
+The read value is undefined. The write value should be 0.
+
+R/W
+
+b5, b4
+
+LVD1FSAMP
+[1:0]
+
+Sampling Clock Select
+
+b5 b4
+
+R/W
+
+b6
+
+LVD1RI
+
+Voltage Monitoring 1 Circuit
+Mode Select
+
+0: Voltage monitoring 1 interrupt during Vdet1 passage
+1: Voltage monitoring 1 reset enabled when the voltage falls to
+and below Vdet1
+
+R/W
+
+b7
+
+LVD1RN
+
+Voltage Monitoring 1 Reset
+Negate Select
+
+0: Negation follows a stabilization time (tLVD1) after VCC > Vdet1
+is detected.
+1: Negation follows a stabilization time (tLVD1) after assertion of
+the LVD1 reset.
+
+R/W
+
+0 0: 1/2 LOCO frequency
+0 1: 1/4 LOCO frequency
+1 0: 1/8 LOCO frequency
+1 1: 1/16 LOCO frequency
+
+LVD1RIE Bit (Voltage Monitoring 1 Interrupt/Reset Enable)
+Ensure that neither a voltage monitoring 1 reset nor a voltage monitoring 1 interrupt is generated during programming or
+erasure of the flash memory.
+LVD1DFDIS Bit (Voltage Monitoring 1 Digital Filter Disable Mode Select)
+Set the LOCOCR.LCSTP bit to 0 (the LOCO operates) if the LVD1DFDIS bit is 0 (enabling the digital filter circuit).
+Set the LVD1DFDIS bit to 1 (digital filter circuit disabled) when using voltage monitoring 1 circuit in software standby
+mode or deep software standby mode.
+LVD1FSAMP [1:0] Bits (Sampling Clock Select)
+The LVD1FSAMP[1:0] bits can be modified only when the LVD1DFDIS bit is 1 (digital filter circuit disabled). The
+LVD1FSAMP[1:0] bits should not be modified when the LVD1DFDIS bit is 0 (digital filter circuit enabled).
+LVD1RI Bit (Voltage Monitoring 1 Circuit Mode Select)
+When the LVD1RI bit is 1 (voltage monitoring 1 reset selected) or when the LVD2CR0.LVD2RI bit is 1 (voltage
+monitoring 2 reset selected), a transition to deep software standby mode cannot be made, instead a transition to software
+standby mode is made. To enter deep software standby mode, set the LVD1RI bit to 0 (voltage monitoring 1 interrupt
+selected) and the LVD2CR0.LVD2RI bit to 0 (voltage monitoring 2 interrupt selected).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 323 of 3240
+
+RX72N Group
+
+8. Voltage Detection Circuit (LVDA)
+
+LVD1RN Bit (Voltage Monitoring 1 Reset Negate Select)
+If the LVD1RN bit is to be set to 1 (negation follows a stabilization time after assertion of the LVD1 reset signal), set the
+LOCOCR.LCSTP bit to 0 (the LOCO operates). Furthermore, if a transition to software standby or deep software
+standby is to be made, the only possible value for the LVD1RN bit is 0 (negation follows a stabilization time after VCC
+> Vdet1 is detected). Do not set the LVD1RN bit to 1 (negation follows a stabilization time after assertion of the LVD1
+reset signal) when this is the case.
+
+8.2.8
+
+Voltage Monitoring 2 Circuit Control Register 0 (LVD2CR0)
+
+Address(es): 0008 C29Bh
+b7
+
+b6
+
+b5
+
+b4
+
+LVD2R LVD2RI LVD2FSAMP[1:
+N
+0]
+1
+
+Value after reset:
+
+0
+
+0
+
+0
+
+b3
+—
+x
+
+b2
+
+b1
+
+b0
+
+LVD2C LVD2D LVD2RI
+MPE
+FDIS
+E
+0
+
+1
+
+0
+
+x: Undefined
+
+Bit
+
+Symbol
+
+Bit Name
+
+Description
+
+R/W
+
+b0
+
+LVD2RIE
+
+Voltage Monitoring 2 Interrupt/Reset
+Enable
+
+0: Disabled
+1: Enabled
+
+R/W
+
+b1
+
+LVD2DFDIS
+
+Voltage Monitoring 2 Digital Filter
+Disable Mode Select
+
+0: Digital filter enabled
+1: Digital filter disabled
+
+R/W
+
+b2
+
+LVD2CMPE
+
+Voltage Monitoring 2 Circuit
+Comparison Result Output Enable
+
+0: Voltage monitoring 2 circuit comparison result output
+disabled.
+1: Voltage monitoring 2 circuit comparison result output
+enabled.
+
+R/W
+
+b3
+
+—
+
+Reserved
+
+The read value is undefined. The write value should be 0.
+
+R/W
+
+b5, b4
+
+LVD2FSAM
+P[1:0]
+
+Sampling Clock Select
+
+b5 b4
+
+R/W
+
+b6
+
+LVD2RI
+
+Voltage Monitoring 2 Circuit Mode
+Select
+
+0: Voltage monitoring 2 interrupt during Vdet2 passage
+1: Voltage monitoring 2 reset enabled when the voltage
+falls to and below Vdet2
+
+R/W
+
+b7
+
+LVD2RN
+
+Voltage Monitoring 2 Reset Negate
+Select
+
+0: Negation follows a stabilization time (tLVD2) after VCC >
+Vdet2 is detected.
+1: Negation follows a stabilization time (tLVD2) after
+assertion of the LVD2 reset.
+
+R/W
+
+0 0: 1/2 LOCO frequency
+0 1: 1/4 LOCO frequency
+1 0: 1/8 LOCO frequency
+1 1: 1/16 LOCO frequency
+
+LVD2RIE Bit (Voltage Monitoring 2 Interrupt/Reset Enable)
+Ensure that neither a voltage monitoring 2 reset nor a voltage monitoring 2 interrupt is generated during programming or
+erasure of the flash memory.
+LVD2DFDIS Bit (Voltage Monitoring 2 Digital Filter Disable Mode Select)
+Set the LOCOCR.LCSTP bit to 0 (the LOCO operates) if the LVD1DFDIS bit is 0 (enabling the digital filter circuit).
+Set the LVD2DFDIS bit to 1 (digital filter circuit disabled) when using voltage monitoring 2 circuit in software standby
+mode or deep software standby mode.
+LVD2FSAMP[1:0] Bits (Sampling Clock Select)
+The LVD2FSAMP[1:0] bits can be modified only when the LVD2DFDIS bit is 1 (digital filter circuit disabled). The
+LVD2FSAMP[1:0] bits should not be modified when the LVD2DFDIS bit is 0 (digital filter circuit enabled).
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 324 of 3240
+
+RX72N Group
+
+8. Voltage Detection Circuit (LVDA)
+
+LVD2RI Bit (Voltage Monitoring 2 Circuit Mode Select)
+When the LVD2RI it is 1 (voltage monitoring 2 reset selected) or when the LVD1CR0.LVD1RI bit is 1 (voltage
+monitoring 1 reset selected), a transition to deep software standby mode cannot be made, instead a transition to software
+standby mode is made. To enter to deep software standby mode, set the LVD2RI bit to 0 (voltage monitoring 2 interrupt
+selected) and the LVD1CR0.LVD1RI bit to 0 (voltage monitoring 1 interrupt selected).
+LVD2RN Bit (Voltage Monitoring 2 Reset Negate Select)
+If the LVD2RN bit is to be set to 1 (negation follows a stabilization time after assertion of the LVD2 reset signal), set the
+LOCOCR.LCSTP bit to 0 (the LOCO operates). Furthermore, if a transition to software standby or deep software
+standby is to be made, the only possible value for the LVD2RN bit is 0 (negation follows a stabilization time after VCC
+> Vdet2 is detected). Do not set the LVD2RN bit to 1 (negation follows a stabilization time after assertion of the LVD2
+reset signal) when this is the case.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 325 of 3240
+
+RX72N Group
+
+8. Voltage Detection Circuit (LVDA)
+
+8.3
+
+VCC Input Voltage Monitor
+
+8.3.1
+
+Monitoring Vdet0
+
+Monitoring Vdet0 is not possible.
+
+8.3.2
+
+Monitoring Vdet1
+
+Table 8.2 lists the procedures for setting up monitoring against Vdet1. After the settings are completed, results of
+comparison by voltage monitoring 1 can be monitored by using the LVD1SR.LVD1MON flag.
+Table 8.2
+
+Procedures for Setting up Monitoring against Vdet1
+
+Step
+
+Monitoring the Results of Comparison by Voltage Monitoring 1
+
+Setting the voltage
+detection 1 circuit
+
+Setting the digital filter
+*2
+
+Enabling output
+
+1
+
+Select the detection voltage by setting the LVDLVLR.LVD1LVL[3:0] bits.
+
+2
+
+Set LVCMPCR.LVD1E = 1 (enabling the voltage detection 1 circuit).
+
+3
+
+Wait for at least td(E-A) (LVD operation stabilization time after LVD is enabled).*1
+
+4
+
+Select the sampling clock for the digital filter by setting the LVD1CR0.LVD1FSAMP[1:0] bits.
+
+5
+
+Set LVD1CR0.LVD1DFDIS = 0 (enabling the digital filter).
+
+6
+
+Wait for at least 2n + 3 cycles of the LOCO
+(where n = 2, 4, 8, 16, and the sampling clock for the digital filter is the LOCO frequency-divided by n).
+
+7
+
+Set LVD1CR0.LVD1CMPE = 1 (enabling output of the results of comparison by voltage monitoring 1).
+
+Note 1. Steps 4 to 6 can be performed during the waiting time of step 3. For details of td(E-A), refer to section 63, Electrical
+Characteristics.
+Note 2. Steps 4 to 6 are not required if the digital filter is not in use.
+
+8.3.3
+
+Monitoring Vdet2
+
+Table 8.3 lists the procedures for setting up monitoring against Vdet2. After the settings are completed, results of
+comparison by voltage monitoring 2 can be monitored by using the LVD2SR.LVD2MON flag.
+Table 8.3
+
+Procedures for Setting up Monitoring against Vdet2
+
+Step
+
+Setting the voltage
+detection 2 circuit
+
+Setting the digital filter
+*2
+
+Enabling output
+
+Monitoring the Results of Comparison by Voltage Monitoring 2
+
+1
+
+Select the detection voltage by setting the LVDLVLR.LVD2LVL[3:0] bits.
+
+2
+
+Set LVCMPCR.LVD2E = 1 (enabling the voltage detection 2 circuit).
+
+3
+
+Wait for at least td(E-A) (LVD operation stabilization time after LVD is enabled).*1
+
+4
+
+Select the sampling clock for the digital filter by setting the LVD2CR0.LVD2FSAMP[1:0] bits.
+
+5
+
+Set LVD2CR0.LVD2DFDIS = 0 (enabling the digital filter).
+
+6
+
+Wait for at least 2n + 3 cycles of the LOCO
+(where n = 2, 4, 8, 16, and the sampling clock for the digital filter is the LOCO frequency-divided by n).
+
+7
+
+Set LVD2CR0.LVD2CMPE = 1 (enabling output of the results of comparison by voltage monitoring 2).
+
+Note 1. Steps 4 to 6 can be performed during the waiting time of step 3. For details of td(E-A), refer to section 63, Electrical
+Characteristics.
+Note 2. Steps 4 to 6 are not required if the digital filter is not in use.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 326 of 3240
+
+RX72N Group
+
+8.4
+
+8. Voltage Detection Circuit (LVDA)
+
+Reset from Voltage Monitor 0
+
+When using the reset from voltage monitor 0, clear the OFS1.LVDAS bit to 0 (enabling the voltage monitor 0 reset after
+a reset).
+Figure 8.4 shows an example of operations for a voltage monitoring 0 reset.
+
+Vdet0*1
+
+*3
+
+VPOR*1
+
+External voltage VCC
+
+Power-on reset state
+
+Voltage-monitoring 0 reset state
+
+RES# pin
+POR detection signal
+(Low is valid)
+
+Set by
+OFS1.LVDAS
+
+Set by OFS1.LVDAS
+
+LVD0 enable/disable
+signal (Low is valid)
+Voltage detection 0
+signal (Low is valid)
+Internal reset signal
+(Low is valid)
+
+tPOR*2
+
+RSTSR0.PORF
+
+tLVD0*2
+
+RES# pin reset
+
+RSTSR0.LVD0RF
+
+Note:
+For details of the electrical characteristics, refer to section 63, Electrical Characteristics.
+Note 1. VPOR indicates the detection level for a power-on reset and Vdet0 indicates the detection level for a voltage monitor 0
+reset.
+Note 2. tPOR indicates the period of a power-on reset and tLVD0 indicates the period of a voltage monitor 0 reset.
+Note 3. At the time the power-supply voltage rises, VCC must rise to at least the minimum guaranteed voltage before release
+from the POR reset state.
+
+Figure 8.4
+
+Example of Voltage Monitoring 0 Reset Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 327 of 3240
+
+RX72N Group
+
+8.5
+
+8. Voltage Detection Circuit (LVDA)
+
+Interrupt and Reset from Voltage Monitor 1
+
+An interrupt or reset can be generated in response to the results of comparison by the voltage detection 1 circuit.
+Table 8.4 lists the procedures for setting bits related to the voltage monitor 1 interrupt and voltage monitor 1 reset so that
+voltage monitoring operates. Table 8.5 lists the procedure for setting bits related to the voltage monitor 1 interrupt and
+voltage monitor 1 reset so that voltage monitoring stops. Figure 8.5 shows an example of operations for a voltage
+monitor 1 interrupt. For the operation of the voltage monitor 1 reset, refer to Figure 6.2 in section 6, Resets.
+Furthermore, if you intend to use the voltage monitoring 1 circuit in software standby or deep software standby mode,
+make settings for the voltage monitoring 1 circuit according to the following procedures.
+(1) Setting in software standby mode
+ Disable the digital filter (LVD1DFDIS = 1).
+ After VCC > Vdet1 is detected, negate the voltage monitoring 1 reset signal (LVD1RN = 0) following a
+stabilization time.
+(2) Settings in deep software standby mode
+ Disable the digital filter (LVD1DFDIS = 1).
+ Enable voltage monitoring 1 interrupts (LVD1RI = 0). If the voltage monitoring 1 reset is enabled (LVD1RI = 1), a
+transition to deep software standby mode will not be possible, and the transition will be to software standby mode
+instead.
+ When the DPSBYCR.DEEPCUT[1:0] bits are 11b, the voltage monitoring 1 circuit is stopped. If you intend to use
+the voltage monitoring 1 circuit in deep software standby mode, set the DPSBYCR.DEEPCUT[1:0] bits to a value
+other than 11b.
+Table 8.4
+
+Procedures for Setting Bits Related to the Voltage Monitoring 1 Interrupt and Voltage Monitoring 1
+Reset so that Voltage Monitoring Operates
+Voltage Monitoring 1 Interrupt
+(Voltage Monitoring 1 ELC Event Output)
+
+Step
+
+Setting the voltage
+detection 1 circuit
+
+Setting the digital filter
+*2
+
+Setting the voltage
+monitoring 1 interrupt
+or reset
+
+Enabling output
+
+Voltage Monitoring 1 Reset
+
+1
+
+Select the detection voltage by setting the LVDLVLR.LVD1LVL[3:0] bits.
+
+2
+
+Set LVCMPCR.LVD1E = 1 (enabling the voltage detection 1 circuit).*4
+
+3
+
+Wait for at least td(E-A) (LVD operation stabilization time after LVD is enabled).*1
+
+4
+
+Select the sampling clock for the digital filter by setting the LVD1CR0.LVD1FSAMP[1:0] bits.
+
+5
+
+Set LVD1CR0.LVD1DFDIS = 0 (enabling the digital filter).
+
+6
+
+Wait for at least 2n + 3 cycles of the LOCO
+(where n = 2, 4, 8, 16, and the sampling clock for the digital filter is the LOCO frequency-divided by n).
+
+7
+
+Set LVD1CR0.LVD1RI = 0 (selecting the voltage
+monitoring 1 interrupt).
+
+ Set LVD1CR0.LVD1RI = 1 (selecting the voltage
+monitoring 1 reset).
+ Select the type of the reset negation by setting
+the LVD1CR0.LVD1RN bit.
+
+8
+
+ Select the timing of interrupt requests by setting
+the LVD1CR1.LVD1IDTSEL[1:0] bits.
+ Select the type of interrupt by setting the
+LVD1CR1.LVD1IRQSEL bit.
+
+—
+
+9
+
+Set LVD1SR.LVD1DET = 0.
+
+10
+
+Set LVD1CR0.LVD1RIE = 1 (enabling the voltage monitoring 1 interrupt or reset).*3
+
+11
+
+Set LVD1CR0.LVD1CMPE = 1 (enabling output of the results of comparison by voltage monitoring 1).
+
+Note 1. Steps 4 to 10 can be performed during the waiting time of step 3. For details of td(E-A), refer to section 63, Electrical
+Characteristics.
+Note 2. Steps 4 to 6 are not required if the digital filter is not in use.
+Note 3. Step 10 is not required if only the ELC event signal is to be output.
+Note 4. The voltage of VCC = AVCC0 = AVCC1 when LVD1 is enabled must be set to at least 80 mV above the maximum value of the
+voltage detection 1 level selected by the LVDLVLR.LVD1LVL[3:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 328 of 3240
+
+RX72N Group
+
+Table 8.5
+
+8. Voltage Detection Circuit (LVDA)
+
+Procedures for Setting Bits Related to the Voltage Monitoring 1 Interrupt and Voltage Monitoring 1
+Reset so that Voltage Monitoring Stops
+Voltage Monitoring 1 Interrupt (Voltage Monitoring 1 ELC Event Output), Voltage Monitoring 1
+Reset
+
+Step
+
+Settings to stop
+enabling of output
+
+1
+
+Set LVD1CR0.LVD1CMPE = 0 (disabling output of the results of comparison by voltage monitoring 1).
+
+2
+
+Wait for at least 2n + 3 cycles of the LOCO
+(where n = 2, 4, 8, 16, and the sampling clock for the digital filter is the LOCO frequency-divided by n).*1
+
+3
+
+Set LVD1CR0.LVD1RIE = 0 (disabling the voltage monitoring 1 interrupt or reset).* 2
+
+Stopping the digital
+filter
+
+4
+
+Set LVD1CR0.LVD1DFDIS = 1 (disabling the digital filter).*1, *3
+
+Stopping the voltage
+detection 1 circuit
+
+5
+
+Set LVCMPCR.LVD1E = 0 (disabling the voltage detection 1 circuit).
+
+Note 1. Steps 2 and 4 are not required if the digital filter is not in use.
+Note 2. Step 3 is not required if only the ELC event signal is to be output.
+Note 3. To disable the digital filter from its enabled state and then re-enable it, disable it and wait for at least two cycles of the LOCO
+before re-enabling it.
+
+If the voltage monitoring 1 interrupt or voltage monitoring 1 reset setting is to be made again after it has been used and
+stopped once, the following steps in the procedures for stopping and making the setting can be omitted according to the
+condition.
+ Setting or stopping the voltage detection 1 circuit is not required if the setting for the voltage detection 1 circuit is
+not to be changed.
+ Setting or stopping the digital filter is not required if the setting for the digital filter is not to be changed.
+ Setting the voltage monitoring 1 interrupt or reset is not required if the setting for the voltage monitoring 1 interrupt
+or voltage monitoring 1 reset is not to be changed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 329 of 3240
+
+RX72N Group
+
+8. Voltage Detection Circuit (LVDA)
+
+VCC
+Vdet1
+
+Lower limit on VCC voltage (VCCmin)*1
+
+LVD1MON bit when LVD1DFDIS bit is set to 0
+(digital filter enabled)
+
+1n+2 to 2n+3 cycles of
+the LOCO
+LVD1DFDIS bit is set to 0 (digital filter
+enabled) and LVD1IDTSEL[1:0] bits
+are set to 10b (when drop and rise are
+detected)
+
+1n+2 to 2n+3 cycles of
+the LOCO
+
+LVD1DET bit
+Set to 0 by a program
+
+Voltage monitoring 1
+interrupt request
+Set to 0 by a program
+LVD1DFDIS bit is set to 0 (digital filter
+enabled), LVD1IDTSEL[1:0] bits are
+set to 00b (when rise is detected).
+
+LVD1DET bit
+
+Voltage monitoring 1
+interrupt request
+
+Set to 0 by a program
+LVD1DFDIS bit is set to 0 (digital
+filter enabled), LVD1IDTSEL[1:0]
+bits are set to 01b (when drop is
+detected).
+
+LVD1DET bit
+
+Voltage monitoring 1
+interrupt request
+
+LVD1MON bit when LVD1DFDIS bit is set to 1
+(digital filter disabled)
+Set to 0 by a program
+
+LVD1DFDIS bit is set to 1 (digital
+filter disabled) and
+LVD1IDTSEL[1:0] bits are set to 10b
+(when drop and rise are detected)
+
+LVD1DET bit
+
+Voltage monitoring 1
+interrupt request
+Set to 0 by a program
+
+LVD1DFDIS bit is set to 1 (digital
+filter disabled), LVD1IDTSEL[1:0]
+bits are set to 00b (when rise is
+detected).
+
+LVD1DET bit
+
+LVD1DFDIS bit is set to 1 (digital
+filter disabled), LVD1IDTSEL[1:0]
+bits are set to 01b (when drop is
+detected).
+
+LVD1DET bit
+
+Voltage monitoring 1
+interrupt request
+Set to 0 by a program
+
+Voltage monitoring 1
+interrupt request
+
+n: the frequency of the sampling clock for the digital filter is the LOCO frequency divided by n
+Note 1. When the voltage monitoring 0 reset is not in use, VCC  VCCmin.
+
+Figure 8.5
+
+Example of Voltage Monitoring 1 Interrupt Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 330 of 3240
+
+RX72N Group
+
+8.6
+
+8. Voltage Detection Circuit (LVDA)
+
+Interrupt and Reset from Voltage Monitor 2
+
+An interrupt or reset can be generated in response to the results of comparison by the voltage detection 2 circuit.
+Table 8.6 lists the procedures for setting bits related to the voltage monitor 2 interrupt and voltage monitor 2 reset so that
+voltage monitoring operates.Table 8.7 lists the procedure for setting bits related to the voltage monitor 2 interrupt and
+voltage monitor 2 reset so that voltage monitoring stops. Figure 8.6 shows an example of operations for a voltage
+monitor 2 interrupt. For the operation of the voltage monitor 2 reset, refer to Figure 6.2 in section 6, Resets.
+Furthermore, if you intend to use the voltage monitoring 2 circuit in software standby or deep software standby mode,
+make settings for the voltage monitoring 2 circuit according to the following procedures.
+(1) Setting in software standby mode
+ Disable the digital filter (LVD2DFDIS = 1).
+ After VCC > Vdet2 is detected, negate the voltage monitoring 2 reset signal (LVD2RN = 0) following a
+stabilization time.
+(2) Settings in deep software standby mode
+ Disable the digital filter (LVD2DFDIS = 1).
+ Enable voltage monitoring 2 interrupts (LVD2RI = 0). If the voltage monitoring 2 reset is enabled (LVD2RI = 1), a
+transition to deep software standby mode will not be possible, and the transition will be to software standby mode
+instead.
+ When the DPSBYCR.DEEPCUT[1:0] bits are 11b, the voltage monitoring 2 circuit is stopped. If you intend to use
+the voltage monitoring 2 circuit in deep software standby mode, set the DPSBYCR.DEEPCUT[1:0] bits to a value
+other than 11b.
+Table 8.6
+
+Procedures for Setting Bits Related to the Voltage Monitoring 2 Interrupt and Voltage Monitoring 2
+Reset so that Voltage Monitoring Operates
+Voltage Monitoring 2 Interrupt
+(Voltage Monitoring 2 ELC Event Output)
+
+Step
+
+Setting the voltage
+detection 2 circuit
+
+Setting the digital filter
+*2
+
+Setting the voltage
+monitoring 2 interrupt
+or reset
+
+Enabling output
+
+Voltage Monitoring 2 Reset
+
+1
+
+Select the detection voltage by setting the LVDLVLR.LVD2LVL[3:0] bits.
+
+2
+
+Set LVCMPCR.LVD2E = 1 (enabling the voltage detection 2 circuit).*4
+
+3
+
+Wait for at least td(E-A) (LVD operation stabilization time after LVD is enabled).*1
+
+4
+
+Select the sampling clock for the digital filter by setting the LVD2CR0.LVD2FSAMP[1:0] bits.
+
+5
+
+Set LVD2CR0.LVD2DFDIS = 0 (enabling the digital filter).
+
+6
+
+Wait for at least 2n + 3 cycles of the LOCO
+(where n = 2, 4, 8, 16, and the sampling clock for the digital filter is the LOCO frequency-divided by n).
+
+7
+
+Set LVD2CR0.LVD2RI = 0 (selecting the voltage
+monitoring 2 interrupt).
+
+ Set LVD2CR0.LVD2RI = 1 (selecting the voltage
+monitoring 2 reset).
+ Select the type of the reset negation by setting
+the LVD2CR0.LVD2RN bit.
+
+8
+
+ Select the timing of interrupt requests by setting
+the LVD2CR1.LVD2IDTSEL[1:0] bits.
+ Select the type of interrupt by setting the
+LVD2CR1.LVD2IRQSEL bit.
+
+—
+
+9
+
+Set LVD2SR.LVD2DET = 0.
+
+10
+
+Set LVD2CR0.LVD2RIE = 1 (enabling the voltage monitoring 2 interrupt or reset).*3
+
+11
+
+Set LVD2CR0.LVD2CMPE = 1 (enabling output of the results of comparison by voltage monitoring 2).
+
+Note 1. Steps 4 to 10 can be performed during the waiting time of step 3. For details of td(E-A), refer to section 63, Electrical
+Characteristics.
+Note 2. Steps 4 to 6 are not required if the digital filter is not in use.
+Note 3. Step 10 is not required if only the ELC event signal is to be output.
+Note 4. The voltage of VCC = AVCC0 = AVCC1 when LVD2 is enabled must be set to at least 80 mV above the maximum value of the
+voltage detection 2 level selected by the LVDLVLR.LVD2LVL[3:0] bits.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 331 of 3240
+
+RX72N Group
+
+Table 8.7
+
+8. Voltage Detection Circuit (LVDA)
+
+Procedures for Setting Bits Related to the Voltage Monitoring 2 Interrupt and Voltage Monitoring 2
+Reset so that Voltage Monitoring Stops
+Voltage Monitoring 2 Interrupt (Voltage Monitoring 2 ELC Event Output), Voltage Monitoring 2
+Reset
+
+Step
+
+Settings to stop
+enabling of output
+
+1
+
+Set LVD2CR0.LVD2CMPE = 0 (disabling output of the results of comparison by voltage monitoring 2).
+
+2
+
+Wait for at least 2n + 3 cycles of the LOCO
+(where n = 2, 4, 8, 16, and the sampling clock for the digital filter is the LOCO frequency-divided by n).*1
+
+3
+
+Set LVD2CR0.LVD2RIE = 0 (disabling the voltage monitoring 2 interrupt or reset).* 2
+
+Stopping the digital
+filter
+
+4
+
+Set LVD2CR0.LVD2DFDIS = 1 (disabling the digital filter).*1, *3
+
+Stopping the voltage
+detection 2 circuit
+
+5
+
+Set LVCMPCR.LVD2E = 0 (disabling the voltage detection 2 circuit).
+
+Note 1. Steps 2 and 4 are not required if the digital filter is not in use.
+Note 2. Step 3 is not required if only the ELC event signal is to be output.
+Note 3. To disable the digital filter from its enabled state and then re-enable it, disable it and wait for at least two cycles of the LOCO
+before re-enabling it.
+
+If the voltage monitoring 2 interrupt or voltage monitoring 2 reset setting is to be made again after it has been used and
+stopped once, the following steps in the procedures for stopping and making the setting can be omitted according to the
+condition.
+ Setting or stopping the voltage detection 2 circuit is not required if the setting for the voltage detection 2 circuit is
+not to be changed.
+ Setting or stopping the digital filter is not required if the setting for the digital filter is not to be changed.
+ Setting the voltage monitoring 2 interrupt or reset is not required if the setting for the voltage monitoring 2 interrupt
+or voltage monitoring 2 reset is not to be changed.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 332 of 3240
+
+RX72N Group
+
+8. Voltage Detection Circuit (LVDA)
+
+VCC
+Vdet2
+
+Lower limit on VCC voltage
+(VCCmin)*1
+LVD2MON bit when LVD2DFDIS bit is set to 0
+(digital filter enabled)
+
+1n+2 to 2n+3 cycles of
+the LOCO
+LVD2DFDIS bit is set to 0 (digital
+filter enabled) and LVD2IDTSEL[1:0]
+bits are set to 10b (when drop and
+rise are detected)
+
+1n+2 to 2n+3 cycles of
+the LOCO
+
+LVD2DET bit
+Set to 0 by a program
+
+Voltage monitoring 2
+interrupt request
+Set to 0 by a program
+LVD2DFDIS bit is set to 0 (digital
+filter enabled), LVD2IDTSEL[1:0]
+bits are set to 00b (when rise is
+detected).
+
+LVD2DET bit
+
+Voltage monitoring 2
+interrupt request
+
+Set to 0 by a program
+LVD2DFDIS bit is set to 0 (digital
+filter enabled), LVD2IDTSEL[1:0]
+bits are set to 01b (when drop is
+detected).
+
+LVD2DET bit
+
+Voltage monitoring 2
+interrupt request
+
+LVD2MON bit when LVD2DFDIS bit is set to 1
+(digital filter disabled)
+Set to 0 by a program
+
+LVD2DFDIS bit is set to 1 (digital
+filter disabled) and
+LVD2IDTSEL[1:0] bits are set to 10b
+(when drop and rise are detected)
+
+LVD2DET bit
+
+Voltage monitoring 2
+interrupt request
+Set to 0 by a program
+
+LVD2DFDIS bit is set to 1 (digital
+filter disabled), LVD2IDTSEL[1:0]
+bits are set to 00b (when rise is
+detected).
+
+LVD2DET bit
+
+LVD2DFDIS bit is set to 1 (digital
+filter disabled), LVD2IDTSEL[1:0]
+bits are set to 01b (when drop is
+detected).
+
+LVD2DET bit
+
+Voltage monitoring 2
+interrupt request
+Set to 0 by a program
+
+Voltage monitoring 2
+interrupt request
+
+n: the frequency of the sampling clock for the digital filter is the LOCO frequency divided by n
+Note 1. When the voltage monitoring 0 reset is not in use, VCC  VCCmin.
+
+Figure 8.6
+
+Example of Voltage Monitoring 2 Interrupt Operation
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 333 of 3240
+
+RX72N Group
+
+8.7
+
+8. Voltage Detection Circuit (LVDA)
+
+Event Link Output
+
+The LVD can output the event signals to the event link controller (ELC).
+
+(1)
+
+Vdet1 passage detection event
+
+The LVD outputs the event signal when it is detected that the voltage has passed the Vdet1 voltage while both the voltage
+detection 1 circuit and the voltage monitoring l circuit comparison result output are enabled.
+
+(2)
+
+Vdet2 passage detection event
+
+The LVD outputs the event signal when it is detected that the voltage has passed the Vdet2 voltage while both the voltage
+detection 2 circuit and the voltage monitoring 2 circuit comparison result output are enabled.
+When enabling the LVD’s event link output function, be sure to make settings for enabling the LVD before enabling the
+LVD event link function of the ELC. To stop the LVD’s event link output function, be sure to make settings for stopping
+the LVD after disabling the LVD event link function of the ELC.
+
+8.7.1
+
+Interrupt Handling and Event Linking
+
+The LVD has the bits to separately enable or disable the voltage monitoring l and 2 interrupts. When an interrupt source
+is generated and the interrupt is enabled by the interrupt enable bit, the interrupt signal (LVD1RIE and LVD2RIE) is
+output to the CPU.
+On the contrary, as soon as an interrupt source is generated, the event link signal is output as the event signal to the other
+module via the ELC regardless of the state of the interrupt enable bit.
+It is possible to output voltage monitoring l and 2 interrupts in software standby and deep software standby modes. The
+event signals for the ELC in software standby and deep software standby modes, are output as follows:
+ When the event Vdet1/Vdet2 are detected in software standby mode, no event signals are generated for the ELC
+because no clock is presented in software standby mode. Since Vdet1/Vdet2 passage detection flags are preserved,
+however, when the supply of the clock is resumed after restoring from software standby mode, the event signals for
+the ELC are output according to the state of the Vdet1/Vdet2 passage detection flags.
+ If events of passing Vdet1/Vdet2 are detected in deep software standby mode, no event signals are generated for the
+ELC.
+
+R01UH0824EJ0120 Rev.1.20
+Nov 15, 2023
+
+Page 334 of 3240
+
+
