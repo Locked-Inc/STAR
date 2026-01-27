@@ -372,16 +372,22 @@ func TestCDCTransportConcurrentMixedOperations(t *testing.T) {
 			_ = cdc.Config()
 		}()
 
-		// Write operations (Send)
+		// Write operations (Send) - should return ErrDeviceNotOpen
 		go func() {
 			defer wg.Done()
-			_, _ = cdc.Send([]byte{0x01, 0x02})
+			_, err := cdc.Send([]byte{0x01, 0x02})
+			if err != ErrDeviceNotOpen {
+				t.Errorf("Send: expected ErrDeviceNotOpen, got %v", err)
+			}
 		}()
 
-		// Transfer operation (mutates timeout state when open)
+		// Transfer operation - should return ErrDeviceNotOpen
 		go func() {
 			defer wg.Done()
-			_, _ = cdc.Transfer(ctx, []byte{0x03, 0x04})
+			_, err := cdc.Transfer(ctx, []byte{0x03, 0x04})
+			if err != ErrDeviceNotOpen {
+				t.Errorf("Transfer: expected ErrDeviceNotOpen, got %v", err)
+			}
 		}()
 	}
 
