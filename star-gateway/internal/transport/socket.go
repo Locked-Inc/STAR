@@ -86,10 +86,34 @@ func (s *SocketTransport) Transfer(ctx context.Context, txData []byte) ([]byte, 
 		if err := s.conn.SetDeadline(deadline); err != nil {
 			return nil, fmt.Errorf("failed to set socket deadline: %w", err)
 		}
-		defer func() {
-			_ = s.conn.SetDeadline(time.Time{})
-		}()
+	} else {
+		// Ensure previous deadline is cleared
+		_ = s.conn.SetDeadline(time.Time{})
 	}
+
+	// Monitor context cancellation to interrupt blocking I/O.
+	// Use a monitorDone channel to ensure the monitoring goroutine has exited
+	// before clearing the socket deadline to avoid races.
+	done := make(chan struct{})
+	monitorDone := make(chan struct{})
+	go func() {
+		defer close(monitorDone)
+		select {
+		case <-ctx.Done():
+			// Force blocking I/O to return by setting a past deadline
+			_ = s.conn.SetDeadline(time.Now())
+		case <-done:
+			// Operation completed normally
+		}
+	}()
+
+	// Ensure the monitor goroutine is signaled to exit and has returned
+	defer func() {
+		close(done)
+		// Wait for monitor goroutine to exit to avoid races when clearing deadlines
+		<-monitorDone
+		_ = s.conn.SetDeadline(time.Time{})
+	}()
 
 	// Pad txData to TransferSize (simulate SPI COPI line)
 	txBuffer := make([]byte, TransferSize)
@@ -98,6 +122,10 @@ func (s *SocketTransport) Transfer(ctx context.Context, txData []byte) ([]byte, 
 	// Write exactly TransferSize bytes
 	n, err := s.conn.Write(txBuffer)
 	if err != nil {
+		// Check if error is due to context cancellation
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 		return nil, fmt.Errorf("socket write failed: %w", err)
 	}
 	if n != TransferSize {
@@ -108,6 +136,10 @@ func (s *SocketTransport) Transfer(ctx context.Context, txData []byte) ([]byte, 
 	rxBuffer := make([]byte, TransferSize)
 	n, err = io.ReadFull(s.conn, rxBuffer)
 	if err != nil {
+		// Check if error is due to context cancellation
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 		return nil, fmt.Errorf("socket read failed: %w", err)
 	}
 	if n != TransferSize {

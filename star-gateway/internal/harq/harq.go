@@ -496,10 +496,15 @@ func (h *ChaseCombining) receiveContext(ctx context.Context) (context.Context, c
 }
 
 func (h *ChaseCombining) receiveFrame(ctx context.Context) (*frame.Frame, error) {
+	// Check context BEFORE attempting any I/O
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	// Full-duplex SPI: Check if we have a stored response from previous Transfer()
 	h.mu.Lock()
 	data := h.lastRxData
-	h.lastRxData = nil // Clear after consuming
+	h.lastRxData = nil
 	h.mu.Unlock()
 
 	// If no stored data, perform a new receive
@@ -507,10 +512,21 @@ func (h *ChaseCombining) receiveFrame(ctx context.Context) (*frame.Frame, error)
 		if h.transport == nil {
 			return nil, ErrTransportNil
 		}
-		applyReadDeadline(ctx, h.transport)
+
+		// Check context again RIGHT before blocking call
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+
+		// Use Transfer with zero payload (equivalent to Receive) to pass context
+		zeros := make([]byte, frame.MaxFrameSize)
 		var err error
-		data, err = h.transport.Receive(frame.MaxFrameSize)
+		data, err = h.transport.Transfer(ctx, zeros)
 		if err != nil {
+			// Check context FIRST before interpreting error
+			if ctxErr := ctx.Err(); ctxErr != nil {
+				return nil, ctxErr
+			}
 			if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 				return nil, ErrTimeout
 			}
@@ -699,9 +715,9 @@ func (h *ChaseCombining) waitForAck(ctx context.Context) (*frame.Frame, error) {
 
 	if data == nil {
 		// Fallback to legacy behavior if no stored data
-		applyReadDeadline(ctx, h.transport)
+		zeros := make([]byte, frame.MaxFrameSize)
 		var err error
-		data, err = h.transport.Receive(frame.MaxFrameSize)
+		data, err = h.transport.Transfer(ctx, zeros)
 		if err != nil {
 			errCtx := ctx.Err()
 			switch {

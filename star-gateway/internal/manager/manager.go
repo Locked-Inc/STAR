@@ -328,26 +328,14 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 
 	start := time.Now()
 
-	// Use StreamDecoder instead of direct transport.Receive()
-	decodedFrame, err := activeWrapper.Decoder.Decode()
+	// Use direct transport receive instead of StreamDecoder (double framing issue)
+	result, err := activeWrapper.Transport.Receive(ctx)
 
 	latency := time.Since(start)
 	tm.recordOperation(activeName, err, latency, false)
 
 	if err != nil {
 		return nil, err
-	}
-
-	// Convert Frame to ReceiveResult
-	result := &harq.ReceiveResult{
-		Payload: decodedFrame.Payload,
-		Metadata: harq.FrameMetadata{
-			Sequence:   decodedFrame.Header.Sequence,
-			ReceivedAt: time.Now(),
-			// Propagate metadata from Frame fields
-			Retransmits: decodedFrame.Retransmits,
-			FECDecoded:  decodedFrame.FECDecoded,
-		},
 	}
 
 	return result, nil

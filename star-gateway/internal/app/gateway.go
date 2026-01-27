@@ -48,6 +48,9 @@ const (
 
 	// grpcMaxMsgSize is the maximum message size for gRPC (10 MB).
 	grpcMaxMsgSize = 10 * 1024 * 1024
+
+	// simulationHARQTimeout is the timeout used for HARQ operations in simulation mode.
+	simulationHARQTimeout time.Duration = 500 * time.Millisecond
 )
 
 // Shutdownable defines the interface for services that require graceful shutdown.
@@ -82,12 +85,15 @@ func Run(ctx context.Context, cfg Config) error {
 	if cfg.TransportMode == manager.ModeForceSPI {
 		// Existing code path (no changes)
 		harqHandler, err = initHARQ(deviceTransport)
+		if err != nil {
+			return fmt.Errorf("failed to initialize HARQ: %w", err)
+		}
 	} else {
 		// New code path with TransportManager
-		harqHandler, err = initTransportManager(ctx, cfg)
-	}
-	if err != nil {
-		return err
+		harqHandler, err = initTransportManager(ctx, cfg, deviceTransport)
+		if err != nil {
+			return fmt.Errorf("failed to initialize HARQ: %w", err)
+		}
 	}
 
 	// ========================================
@@ -186,17 +192,28 @@ func initTransport(cfg Config) (transport.Device, func(), error) {
 	return deviceTransport, cleanup, nil
 }
 
-func initTransportManager(ctx context.Context, cfg Config) (harq.HARQ, error) {
+func initTransportManager(ctx context.Context, cfg Config, deviceTransport transport.Device) (harq.HARQ, error) {
 	tmConfig := manager.DefaultConfig()
-	tmConfig.Mode = manager.TransportMode(cfg.TransportMode)
+	if cfg.TransportMode != "" {
+		tmConfig.Mode = manager.TransportMode(cfg.TransportMode)
+	}
 
 	tm := manager.NewTransportManager(tmConfig)
 
-	// Register SPI
-	if spiTransport, err := createSPITransport(); err == nil {
-		spiLink := createSPILink(spiTransport)
-		tm.RegisterTransport("spi", spiLink, 5)
+	// Identify the transport type and register it
+	var legacyTransport transport.Transport
+	switch t := deviceTransport.(type) {
+	case *transport.SPITransport:
+		legacyTransport = t
+	case *transport.SocketTransport:
+		legacyTransport = t
+	default:
+		return nil, fmt.Errorf("unknown transport type for TransportManager")
 	}
+
+	// Wrap the transport in a HARQ/Link layer
+	spiLink := createSPILink(legacyTransport, cfg)
+	tm.RegisterTransport("spi", spiLink, manager.PrioritySPI)
 
 	// Register USB (if available)
 	// This will be added in Phase 2-3
@@ -208,26 +225,23 @@ func initTransportManager(ctx context.Context, cfg Config) (harq.HARQ, error) {
 	return tm, nil
 }
 
-// createSPITransport creates and opens an SPI transport for use with TransportManager.
-// Returns the transport and any error during initialization.
-func createSPITransport() (*transport.SPITransport, error) {
-	spiTransport := transport.NewSPITransport(transport.DefaultConfig())
-	if err := spiTransport.Open(); err != nil {
-		return nil, fmt.Errorf("failed to open SPI transport: %w", err)
-	}
-	return spiTransport, nil
-}
-
-// createSPILink wraps an SPI transport in a full HARQ stack for TransportManager.
+// createSPILink wraps a transport in a full HARQ stack for TransportManager.
 // This includes frame encoding/decoding and FEC, matching the pattern in initHARQ.
-func createSPILink(spiTransport *transport.SPITransport) harq.HARQ {
+func createSPILink(t transport.Transport, cfg Config) harq.HARQ {
 	frameEncoder := frame.NewEncoder()
 	frameDecoder := frame.NewDecoder()
 	fecEncoder := fec.NewConvolutionalEncoder()
 	fecDecoder := fec.NewViterbiDecoder()
+
+	harqConfig := harq.DefaultConfig()
+	if cfg.SimulationMode {
+		// Relax timeout for simulation environment
+		harqConfig.Timeout = simulationHARQTimeout
+	}
+
 	return harq.NewChaseCombining(
-		harq.DefaultConfig(),
-		spiTransport, // SPITransport implements transport.Transport
+		harqConfig,
+		t,
 		frameEncoder,
 		frameDecoder,
 		fecEncoder,
@@ -365,17 +379,23 @@ func startHTTPServer(gatewaySvc *service.GatewayService, errChan chan<- error) *
 }
 
 func shutdownServers(httpServer *http.Server, grpcServer *grpc.Server, shutdownRegistry []Shutdownable) {
-	// Shutdown HTTP server
+	// 1. Shutdown services FIRST (stops new HARQ operations)
+	log.Println("Shutting down services...")
+	for i := len(shutdownRegistry) - 1; i >= 0; i-- {
+		shutdownRegistry[i].Shutdown()
+	}
+	log.Println("Services stopped")
+
+	// 2. Then shutdown HTTP server (stops accepting requests)
 	ctx, cancel := context.WithTimeout(context.Background(), httpShutdownTimeout)
 	defer cancel()
-
 	if err := httpServer.Shutdown(ctx); err != nil {
 		log.Printf("HTTP server shutdown error: %v", err)
 	} else {
 		log.Println("HTTP server stopped")
 	}
 
-	// Shutdown gRPC server
+	// 3. Finally shutdown gRPC server
 	log.Printf("Shutting down gRPC server...")
 	stopped := make(chan struct{})
 	go func() {
@@ -390,11 +410,4 @@ func shutdownServers(httpServer *http.Server, grpcServer *grpc.Server, shutdownR
 		log.Println("gRPC server graceful shutdown timed out, forcing stop")
 		grpcServer.Stop()
 	}
-
-	// Shutdown services in reverse order (LIFO)
-	log.Println("Shutting down services...")
-	for i := len(shutdownRegistry) - 1; i >= 0; i-- {
-		shutdownRegistry[i].Shutdown()
-	}
-	log.Println("Services stopped")
 }
