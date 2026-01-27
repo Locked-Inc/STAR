@@ -267,7 +267,9 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 		if timeout < 0 {
 			return nil, context.DeadlineExceeded
 		}
-		c.port.SetReadTimeout(timeout)
+		if err := c.port.SetReadTimeout(timeout); err != nil {
+			return nil, fmt.Errorf("failed to set read timeout: %w", err)
+		}
 	}
 
 	for totalRead < len(rxBuf) {
@@ -297,7 +299,9 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 
 	// Restore original timeout
 	if hasDeadline {
-		c.port.SetReadTimeout(c.config.Timeout)
+		if err := c.port.SetReadTimeout(c.config.Timeout); err != nil {
+			return nil, fmt.Errorf("failed to restore read timeout: %w", err)
+		}
 	}
 
 	return rxBuf, nil
