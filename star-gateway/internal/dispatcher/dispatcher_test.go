@@ -20,6 +20,8 @@ const (
 	testMediumTimeout    = 150 * time.Millisecond
 	testLongTimeout      = 200 * time.Millisecond
 	testDrainTimeout     = 10 * time.Millisecond
+	testMockReceivePoll  = 10 * time.Millisecond
+	testCancelWait       = 20 * time.Millisecond
 	testBackpressureMsgs = 20
 )
 
@@ -50,7 +52,7 @@ func (m *MockHARQ) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	}
 	if m.receiveChan != nil {
 		// Use a very short timeout to prevent blocking during shutdown
-		ticker := time.NewTimer(10 * time.Millisecond)
+		ticker := time.NewTimer(testMockReceivePoll)
 		defer ticker.Stop()
 
 		select {
@@ -353,8 +355,8 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 				t.Fatalf("Failed to start dispatcher: %v", err)
 			}
 			defer func() {
-				cancel()                          // Cancel FIRST
-				time.Sleep(20 * time.Millisecond) // Give dispatcher time to see cancellation
+				cancel()                   // Cancel FIRST
+				time.Sleep(testCancelWait) // Give dispatcher time to see cancellation
 				if err := d.Stop(); err != nil {
 					t.Errorf("Failed to stop dispatcher: %v", err)
 				}
@@ -486,8 +488,8 @@ func TestDispatcherChannelBackpressure(t *testing.T) {
 		t.Fatalf("Failed to start dispatcher: %v", err)
 	}
 	defer func() {
-		cancel()                          // Cancel FIRST
-		time.Sleep(20 * time.Millisecond) // Give dispatcher time to see cancellation
+		cancel()                   // Cancel FIRST
+		time.Sleep(testCancelWait) // Give dispatcher time to see cancellation
 		if err := d.Stop(); err != nil {
 			t.Errorf("Failed to stop dispatcher: %v", err)
 		}
