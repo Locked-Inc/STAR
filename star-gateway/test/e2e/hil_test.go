@@ -206,15 +206,15 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			ackedSeq := decodedFrame.Header.Sequence
 			m.debugLog("Received ACK Seq=%d", ackedSeq)
 
+			// ✅ FIXED: After ACK, clear the frame and WAIT for next request
+			// Don't spontaneously send the next frame - this implements proper
+			// Stop-and-Wait HARQ where Gateway (Controller) initiates requests
+			// and MockRX72N (Peripheral) only responds when asked.
 			if lastFrameToRetransmit != nil && ackedSeq == lastFrameToRetransmit.Header.Sequence {
-				nextFrame = m.generateTelemetryFrame(sequenceNum, &timestamp)
-				lastFrameToRetransmit = nextFrame
-				sequenceNum++
-			} else {
-				nextFrame = m.generateTelemetryFrame(sequenceNum, &timestamp)
-				lastFrameToRetransmit = nextFrame
-				sequenceNum++
+				lastFrameToRetransmit = nil // Clear frame, wait for next dummy read
 			}
+			// Don't set nextFrame - let the next dummy read trigger new telemetry
+			continue
 
 		default:
 			m.debugLog("Unexpected frame type %s", decodedFrame.Type)
