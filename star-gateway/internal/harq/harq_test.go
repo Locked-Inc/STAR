@@ -1115,7 +1115,7 @@ func TestChaseCombining_FEC_FailureAfterMaxRetries(t *testing.T) {
 	harq, mock := createTestChaseCombining(config, fecEncoder, fecDecoder)
 
 	fecEncodedPayload := []byte{0x01, 0x02, 0x03, 0x04}
-	
+
 	// Create an empty frame to serve as the response to NACK (peripheral sending nothing)
 	emptyFrame := make([]byte, frame.MaxFrameSize)
 
@@ -1125,7 +1125,7 @@ func TestChaseCombining_FEC_FailureAfterMaxRetries(t *testing.T) {
 	// 2. The NACK response (sendNack -> Transfer) - usually empty/zeros
 	for i := 0; i < 3; i++ {
 		mock.QueueResponse(createFECCommandFrame(0, fecEncodedPayload))
-		mock.QueueResponse(emptyFrame) 
+		mock.QueueResponse(emptyFrame)
 	}
 
 	// All receive attempts should fail

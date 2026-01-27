@@ -15,15 +15,15 @@ import (
 
 // MockTransport implements transport.Transport for testing.
 type MockTransport struct {
-	mu             sync.Mutex
-	sendData       [][]byte      // Data sent via Send()
-	receiveQueue   [][]byte      // Data to return from Receive()
-	sendErr        error         // Error to return from Send()
-	sendErrAfter   int           // Fail on this call count (1-based)
-	receiveErr     error         // Error to return from Receive()
-	receiveDelay   time.Duration // Delay before Receive returns
-	isOpen         bool
-	readDeadline   time.Time
+	mu           sync.Mutex
+	sendData     [][]byte      // Data sent via Send()
+	receiveQueue [][]byte      // Data to return from Receive()
+	sendErr      error         // Error to return from Send()
+	sendErrAfter int           // Fail on this call count (1-based)
+	receiveErr   error         // Error to return from Receive()
+	receiveDelay time.Duration // Delay before Receive returns
+	isOpen       bool
+	readDeadline time.Time
 }
 
 // Verify MockTransport implements transport.Transport.

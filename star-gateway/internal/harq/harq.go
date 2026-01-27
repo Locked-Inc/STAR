@@ -21,7 +21,6 @@ package harq
 
 import (
 	"context"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"sync"
@@ -794,23 +793,6 @@ func (h *ChaseCombining) sendControlFrame(ctx context.Context, frameType frame.T
 	// Control frames are fire-and-forget in HARQ protocol - we don't store the response
 	_, err = h.transport.Transfer(ctx, encoded)
 	return err // Best-effort: caller ignores errors with `_`
-}
-
-// Local constants for quick frame heuristics.
-// minFrameHeaderLen is Sync + Header (seq, len, type, flags) = 8 bytes.
-const minFrameHeaderLen = frame.SyncSize + frame.HeaderSize
-
-// isValidFrameData performs a quick check if data might be a valid frame.
-// Returns false for short/all-zero SPI responses or data without valid sync word.
-func isValidFrameData(data []byte) bool {
-	// Check minimum length for frame header (Sync + Header)
-	if len(data) < minFrameHeaderLen {
-		return false
-	}
-
-	// Read sync word using frame.SyncSize and compare against frame.SyncWord
-	sync := binary.BigEndian.Uint16(data[0:frame.SyncSize])
-	return sync == frame.SyncWord
 }
 
 // setErrorState transitions to error state (thread-safe).
