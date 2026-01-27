@@ -297,11 +297,19 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 		d.logger.Debug("dispatcher receive loop exited")
 	}()
 
+	// Ticker for rate-limiting telemetry requests (SPI: 100Hz = 10ms interval)
+	// This prevents continuous polling and implements proper request/response pattern
+	// TODO: For USB transport, consider removing ticker or using faster rate
+	// since USB has built-in reliability and can handle async receives
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return // Just return, do not return ctx.Err()
-		default:
+		case <-ticker.C:
+			// Ticker fired - proceed with receive attempt
 		}
 
 		result, err := d.harq.Receive(ctx)
