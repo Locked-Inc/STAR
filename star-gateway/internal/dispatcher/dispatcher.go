@@ -42,6 +42,11 @@ const (
 	// DefaultSubscriberBufferSize is the default capacity for subscriber channels.
 	DefaultSubscriberBufferSize = 100
 
+	// DefaultReceiveInterval is the default interval between receive attempts (100Hz for SPI).
+	// SPI communication spec requires 100Hz telemetry rate (10ms period).
+	// USB transports can use faster intervals (e.g., 1ms) since they have built-in reliability.
+	DefaultReceiveInterval = 10 * time.Millisecond
+
 	// dispatchBackoff is the backoff duration used in the dispatcher loop to prevent busy-looping.
 	dispatchBackoff time.Duration = 10 * time.Millisecond
 )
@@ -144,6 +149,7 @@ type dispatcher struct {
 	stopCh          chan struct{}
 	stoppedCh       chan struct{}
 	shutdownTimeout time.Duration
+	receiveInterval time.Duration
 }
 
 // Config holds dispatcher configuration parameters.
@@ -151,6 +157,11 @@ type Config struct {
 	// ShutdownTimeout is the maximum time to wait for graceful shutdown.
 	// If zero, defaults to DefaultShutdownTimeout.
 	ShutdownTimeout time.Duration
+
+	// ReceiveInterval is the interval between HARQ receive attempts.
+	// If zero or negative, defaults to DefaultReceiveInterval (10ms for 100Hz SPI rate).
+	// For USB transports, consider using 1ms for faster response.
+	ReceiveInterval time.Duration
 }
 
 // NewDispatcher creates a new message dispatcher.
@@ -172,6 +183,11 @@ func NewDispatcher(h harq.HARQ, logger *slog.Logger, cfg *Config) (Dispatcher, e
 		shutdownTimeout = DefaultShutdownTimeout
 	}
 
+	receiveInterval := cfg.ReceiveInterval
+	if receiveInterval <= 0 {
+		receiveInterval = DefaultReceiveInterval
+	}
+
 	return &dispatcher{
 		harq:            h,
 		logger:          logger,
@@ -180,6 +196,7 @@ func NewDispatcher(h harq.HARQ, logger *slog.Logger, cfg *Config) (Dispatcher, e
 		stopCh:          make(chan struct{}),
 		stoppedCh:       make(chan struct{}),
 		shutdownTimeout: shutdownTimeout,
+		receiveInterval: receiveInterval,
 	}, nil
 }
 
@@ -297,11 +314,10 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 		d.logger.Debug("dispatcher receive loop exited")
 	}()
 
-	// Ticker for rate-limiting telemetry requests (SPI: 100Hz = 10ms interval)
-	// This prevents continuous polling and implements proper request/response pattern
-	// TODO: For USB transport, consider removing ticker or using faster rate
-	// since USB has built-in reliability and can handle async receives
-	ticker := time.NewTicker(10 * time.Millisecond)
+	// Ticker for rate-limiting telemetry requests.
+	// This prevents continuous polling and implements proper request/response pattern.
+	// Default is 10ms (100Hz) for SPI. USB transports can configure faster intervals.
+	ticker := time.NewTicker(d.receiveInterval)
 	defer ticker.Stop()
 
 	for {
