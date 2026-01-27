@@ -14,6 +14,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -181,10 +182,10 @@ func (c *CDCTransport) autoDetect() (string, error) {
 
 	// Log available ports for debugging
 	if len(ports) > 1 {
-		fmt.Printf("CDC: Multiple serial ports detected: %v\n", ports)
-		fmt.Printf("CDC: Auto-selecting first port: %s\n", ports[0])
+		log.Printf("CDC: Multiple serial ports detected: %v", ports)
+		log.Printf("CDC: Auto-selecting first port: %s", ports[0])
 	} else {
-		fmt.Printf("CDC: Auto-detected device: %s\n", ports[0])
+		log.Printf("CDC: Auto-detected device: %s", ports[0])
 	}
 
 	// Return first port (typically /dev/ttyACM0 on Linux)

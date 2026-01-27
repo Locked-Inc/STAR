@@ -15,6 +15,7 @@ import (
 const (
 	testBaudRate              = 9600
 	testTimeout               = 50 * time.Millisecond
+	testTransferTimeout       = 1 * time.Second
 	testVID                   = 0x1234
 	testPID                   = 0x5678
 	concurrencyTestGoroutines = 10
@@ -310,7 +311,7 @@ func TestCDCTransportTransfer(t *testing.T) {
 	}
 	defer cdc.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), testTransferTimeout)
 	defer cancel()
 
 	testData := []byte{0x55, 0xAA, 0x01, 0x02, 0x03, 0x04}
