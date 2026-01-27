@@ -345,11 +345,12 @@ func TestSend_TimeoutThenSuccess(t *testing.T) {
 		Timeout:    5 * time.Millisecond, // Short timeout for test
 	}
 	harq, mock := createTestHARQ(config)
+	mock.SetReceiveDelay(5 * time.Millisecond) // Ensure attempts take time
 
 	// First attempt times out (no response queued), then ACK
 	// We need to queue the ACK after a delay so first attempt times out
 	go func() {
-		time.Sleep(10 * time.Millisecond) // After first timeout
+		time.Sleep(15 * time.Millisecond) // After first timeout (5ms) + delay (5ms)
 		mock.QueueResponse(createAckFrame(0))
 	}()
 
@@ -443,10 +444,11 @@ func TestSend_RetransmitFlag(t *testing.T) {
 		Timeout:    5 * time.Millisecond,
 	}
 	harq, mock := createTestHARQ(config)
+	mock.SetReceiveDelay(5 * time.Millisecond)
 
 	// Queue ACK after delay to force retry
 	go func() {
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(15 * time.Millisecond)
 		mock.QueueResponse(createAckFrame(0))
 	}()
 
@@ -634,8 +636,8 @@ func TestReceive_Success(t *testing.T) {
 		t.Errorf("GetRxSequence() = %d, want 1", harq.GetRxSequence())
 	}
 	// Verify ACK was sent
-	if mock.GetSentCount() != 1 {
-		t.Errorf("sent count = %d, want 1 (ACK)", mock.GetSentCount())
+	if mock.GetSentCount() != 2 {
+		t.Errorf("sent count = %d, want 2 (Receive dummy + ACK)", mock.GetSentCount())
 	}
 }
 
@@ -652,8 +654,8 @@ func TestReceive_DuplicateFrame(t *testing.T) {
 		t.Errorf("Receive() error = %v, want ErrDuplicateFrame", err)
 	}
 	// ACK should still be sent for duplicate
-	if mock.GetSentCount() != 1 {
-		t.Errorf("sent count = %d, want 1 (ACK for duplicate)", mock.GetSentCount())
+	if mock.GetSentCount() != 2 {
+		t.Errorf("sent count = %d, want 2 (Receive dummy + ACK for duplicate)", mock.GetSentCount())
 	}
 }
 
@@ -668,8 +670,8 @@ func TestReceive_OutOfSequence(t *testing.T) {
 		t.Errorf("Receive() error = %v, want ErrInvalidSequence", err)
 	}
 	// NACK should be sent
-	if mock.GetSentCount() != 1 {
-		t.Errorf("sent count = %d, want 1 (NACK)", mock.GetSentCount())
+	if mock.GetSentCount() != 2 {
+		t.Errorf("sent count = %d, want 2 (Receive dummy + NACK)", mock.GetSentCount())
 	}
 }
 
@@ -687,9 +689,9 @@ func TestReceive_CRCError(t *testing.T) {
 	if !errors.Is(err, frame.ErrInvalidCRC) {
 		t.Errorf("Receive() error = %v, want ErrInvalidCRC", err)
 	}
-	// NACK should be sent
+	// NACK cannot be sent for CRC error (sequence unknown)
 	if mock.GetSentCount() != 1 {
-		t.Errorf("sent count = %d, want 1 (NACK)", mock.GetSentCount())
+		t.Errorf("sent count = %d, want 1 (Receive dummy only)", mock.GetSentCount())
 	}
 }
 
@@ -774,7 +776,8 @@ func TestReceive_TransportError(t *testing.T) {
 func TestReceive_AckError(t *testing.T) {
 	harq, mock := createTestHARQ(nil)
 	mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
-	mock.SetSendError(errors.New("ack failed"))
+	// Fail the 2nd transfer (ACK send), allow 1st (dummy receive)
+	mock.SetSendErrorAfter(2, errors.New("ack failed"))
 
 	payload, err := harq.Receive(context.Background())
 
@@ -792,7 +795,8 @@ func TestReceive_NackError(t *testing.T) {
 	harq, mock := createTestHARQ(nil)
 	// Out of sequence to trigger NACK
 	mock.QueueResponse(createCommandFrame(5, []byte{0x01}))
-	mock.SetSendError(errors.New("nack failed"))
+	// Fail the 2nd transfer (NACK send)
+	mock.SetSendErrorAfter(2, errors.New("nack failed"))
 
 	_, err := harq.Receive(context.Background())
 
@@ -807,7 +811,8 @@ func TestReceive_DuplicateAckError(t *testing.T) {
 	harq, mock := createTestHARQ(nil)
 	harq.SetStateForTesting(StateIdle, 0, 1, 0) // Expecting 1, seq 0 is duplicate
 	mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
-	mock.SetSendError(errors.New("ack failed"))
+	// Fail the 2nd transfer (ACK send)
+	mock.SetSendErrorAfter(2, errors.New("ack failed"))
 
 	_, err := harq.Receive(context.Background())
 
@@ -1110,10 +1115,17 @@ func TestChaseCombining_FEC_FailureAfterMaxRetries(t *testing.T) {
 	harq, mock := createTestChaseCombining(config, fecEncoder, fecDecoder)
 
 	fecEncodedPayload := []byte{0x01, 0x02, 0x03, 0x04}
+	
+	// Create an empty frame to serve as the response to NACK (peripheral sending nothing)
+	emptyFrame := make([]byte, frame.MaxFrameSize)
 
 	// Queue multiple frames (all will fail to decode)
+	// For each Receive call, we need:
+	// 1. The data frame (Receive -> Transfer)
+	// 2. The NACK response (sendNack -> Transfer) - usually empty/zeros
 	for i := 0; i < 3; i++ {
 		mock.QueueResponse(createFECCommandFrame(0, fecEncodedPayload))
+		mock.QueueResponse(emptyFrame) 
 	}
 
 	// All receive attempts should fail
@@ -1221,6 +1233,7 @@ func TestSend_PriorityEmergencyPreservedOnRetransmit(t *testing.T) {
 		Timeout:    testTimeout,
 	}
 	harq, mock := createTestHARQ(config)
+	mock.SetReceiveDelay(2 * time.Millisecond) // Ensure loops take time
 	payload := []byte{0x01, 0x02, 0x03}
 
 	// Use channel-based synchronization to deterministically trigger ACK after retransmit

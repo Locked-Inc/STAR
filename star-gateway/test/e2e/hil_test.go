@@ -14,6 +14,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -73,7 +74,7 @@ type MockRX72N struct {
 	listener    net.Listener
 	conns       []net.Conn
 	done        chan struct{}
-	lastSeqSent uint16 // Track last sent sequence for diagnostics
+	lastSeqSent atomic.Uint32 // Track last sent sequence for diagnostics
 	verbose     bool
 }
 
@@ -89,7 +90,7 @@ func NewMockRX72N(socketPath string) (*MockRX72N, error) {
 	return &MockRX72N{
 		listener:    l,
 		done:        make(chan struct{}),
-		lastSeqSent: 0,
+		lastSeqSent: atomic.Uint32{},
 		verbose:     testing.Verbose(),
 	}, nil
 }
@@ -102,7 +103,7 @@ func (m *MockRX72N) debugLog(format string, args ...interface{}) {
 
 // GetLastSequence returns the last sent sequence number for diagnostics.
 func (m *MockRX72N) GetLastSequence() uint16 {
-	return m.lastSeqSent
+	return uint16(m.lastSeqSent.Load())
 }
 
 func (m *MockRX72N) Start() {
@@ -268,7 +269,7 @@ func (m *MockRX72N) sendFrame(c net.Conn, encoder frame.Encoder, f *frame.Frame)
 	m.debugLog("Sent Seq=%d Type=%s (%d bytes)", f.Header.Sequence, f.Type.String(), len(encoded))
 
 	// Update diagnostics
-	m.lastSeqSent = f.Header.Sequence
+	m.lastSeqSent.Store(uint32(f.Header.Sequence))
 
 	return nil
 }

@@ -21,6 +21,7 @@ package harq
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"sync"
@@ -444,9 +445,12 @@ func (h *ChaseCombining) transmitFrame(ctx context.Context, frameToSend *frame.F
 	}
 
 	// Store the received data for waitForAck to process
-	h.mu.Lock()
-	h.lastRxData = rxData
-	h.mu.Unlock()
+	// Only store non-empty responses for data transactions
+	if len(rxData) > 0 {
+		h.mu.Lock()
+		h.lastRxData = rxData
+		h.mu.Unlock()
+	}
 
 	return nil
 }
@@ -537,13 +541,12 @@ func (h *ChaseCombining) receiveFrame(ctx context.Context) (*frame.Frame, error)
 		}
 	}
 
+	// ✅ Trust the decoder to validate - it already checks sync word and CRC
+	// Decode the frame
 	f, err := h.decoder.Decode(data)
-
 	if err != nil {
-		h.mu.Lock()
-		seq := h.rxSequence
-		h.mu.Unlock()
-		_ = h.sendNack(seq)
+		// Decode errors include invalid sync word, CRC failures, etc.
+		// Return error and let caller (handleReceivedFrame) decide whether to NACK
 		return nil, err
 	}
 
@@ -559,18 +562,20 @@ func (h *ChaseCombining) handleReceivedFrame(f *frame.Frame) (*ReceiveResult, er
 	receivedSeq := f.Header.Sequence
 	expectedSeq := h.rxSequence
 	previousSeq := decrementSequence(h.rxSequence)
-
 	h.mu.Unlock()
 
 	if receivedSeq == expectedSeq {
 		return h.handleExpectedFrame(f)
 	}
+
 	if receivedSeq == previousSeq {
-		_ = h.sendAck(receivedSeq)
+		// Duplicate frame - send ACK but return error
+		_ = h.sendAck(receivedSeq) // Best-effort
 		return nil, ErrDuplicateFrame
 	}
 
-	_ = h.sendNack(receivedSeq)
+	// Out of sequence - send NACK and return error
+	_ = h.sendNack(receivedSeq) // Best-effort
 	return nil, ErrInvalidSequence
 }
 
@@ -583,7 +588,7 @@ func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) (*ReceiveResult, er
 			h.mu.Lock()
 			h.state = StateError
 			h.mu.Unlock()
-			_ = h.sendNack(f.Header.Sequence)
+			_ = h.sendNack(f.Header.Sequence) // Best-effort - ignore error
 			return nil, ErrFECDecoderNil
 		}
 		softBits := bytesToSoftBits(f.Payload)
@@ -591,7 +596,7 @@ func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) (*ReceiveResult, er
 			h.mu.Lock()
 			h.state = StateError
 			h.mu.Unlock()
-			_ = h.sendNack(f.Header.Sequence)
+			_ = h.sendNack(f.Header.Sequence) // Best-effort - ignore error
 			return nil, err
 		}
 
@@ -601,7 +606,7 @@ func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) (*ReceiveResult, er
 			h.mu.Lock()
 			h.state = StateCombining
 			h.mu.Unlock()
-			_ = h.sendNack(f.Header.Sequence)
+			_ = h.sendNack(f.Header.Sequence) // Best-effort - ignore error
 			return nil, ErrDecodeFailed
 		}
 
@@ -611,25 +616,30 @@ func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) (*ReceiveResult, er
 		decoded = f.Payload
 	}
 
+	// Update state BEFORE sending ACK (ensures we return success even if ACK fails)
 	h.mu.Lock()
 	h.rxSequence = incrementSequence(h.rxSequence)
 	h.state = StateIdle
 	h.mu.Unlock()
 
-	_ = h.sendAck(f.Header.Sequence)
-
 	// Build metadata for diagnostics
 	metadata := FrameMetadata{
 		Sequence:    f.Header.Sequence,
 		ReceivedAt:  time.Now(),
-		Retransmits: 0, // Track this during ACK/NACK loops if needed
+		Retransmits: 0,
 		FECDecoded:  fecDecoded,
 	}
 
-	return &ReceiveResult{
+	result := &ReceiveResult{
 		Payload:  decoded,
 		Metadata: metadata,
-	}, nil
+	}
+
+	// Send ACK as best-effort AFTER building result
+	// This ensures we return success even if ACK send fails
+	_ = h.sendAck(f.Header.Sequence)
+
+	return result, nil
 }
 
 // GetState returns the current HARQ state.
@@ -746,22 +756,6 @@ func (h *ChaseCombining) waitForAck(ctx context.Context) (*frame.Frame, error) {
 	return f, err
 }
 
-// TODO: Verify if we need this, if not remove in final phase of USB implementation.
-// type readDeadlineSetter interface {
-// 	SetReadDeadline(time.Time) error
-// }
-
-// func applyReadDeadline(ctx context.Context, t transport.Transport) {
-// 	if ctx == nil || t == nil {
-// 		return
-// 	}
-// 	if deadline, ok := ctx.Deadline(); ok {
-// 		if setter, ok := t.(readDeadlineSetter); ok {
-// 			_ = setter.SetReadDeadline(deadline) // Best-effort: readDeadlineSetter.SetReadDeadline may be unsupported or fail; non-fatal.
-// 		}
-// 	}
-// }
-
 // sendNack sends a NACK frame.
 func (h *ChaseCombining) sendNack(seq uint16) error {
 	// Use a short timeout for control frames to avoid blocking
@@ -796,18 +790,27 @@ func (h *ChaseCombining) sendControlFrame(ctx context.Context, frameType frame.T
 		return err
 	}
 
-	// Full-duplex SPI: Send ACK/NACK and receive next frame atomically
-	rxData, err := h.transport.Transfer(ctx, encoded)
-	if err != nil {
-		return err
+	// Full-duplex SPI: Send ACK/NACK
+	// Control frames are fire-and-forget in HARQ protocol - we don't store the response
+	_, err = h.transport.Transfer(ctx, encoded)
+	return err // Best-effort: caller ignores errors with `_`
+}
+
+// Local constants for quick frame heuristics.
+// minFrameHeaderLen is Sync + Header (seq, len, type, flags) = 8 bytes.
+const minFrameHeaderLen = frame.SyncSize + frame.HeaderSize
+
+// isValidFrameData performs a quick check if data might be a valid frame.
+// Returns false for short/all-zero SPI responses or data without valid sync word.
+func isValidFrameData(data []byte) bool {
+	// Check minimum length for frame header (Sync + Header)
+	if len(data) < minFrameHeaderLen {
+		return false
 	}
 
-	// Store the received data for the next Receive() call to process
-	h.mu.Lock()
-	h.lastRxData = rxData
-	h.mu.Unlock()
-
-	return nil
+	// Read sync word using frame.SyncSize and compare against frame.SyncWord
+	sync := binary.BigEndian.Uint16(data[0:frame.SyncSize])
+	return sync == frame.SyncWord
 }
 
 // setErrorState transitions to error state (thread-safe).
