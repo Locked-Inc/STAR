@@ -203,10 +203,10 @@ func TestCDCTransportContextCancellation(t *testing.T) {
 func TestCDCTransportConfig(t *testing.T) {
 	cfg := &CDCConfig{
 		Device:   "/dev/ttyUSB0",
-		BaudRate: 9600,
-		Timeout:  200 * time.Millisecond,
-		VID:      0xABCD,
-		PID:      0x1234,
+		BaudRate: testBaudRate,
+		Timeout:  testTimeout,
+		VID:      testVID,
+		PID:      testPID,
 	}
 
 	cdc := NewCDCTransport(cfg)
