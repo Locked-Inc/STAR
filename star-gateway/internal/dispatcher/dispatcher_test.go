@@ -20,6 +20,8 @@ const (
 	testMediumTimeout    = 150 * time.Millisecond
 	testLongTimeout      = 200 * time.Millisecond
 	testDrainTimeout     = 10 * time.Millisecond
+	testMockReceivePoll  = 10 * time.Millisecond
+	testCancelWait       = 20 * time.Millisecond
 	testBackpressureMsgs = 20
 )
 
@@ -49,12 +51,21 @@ func (m *MockHARQ) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		return m.ReceiveFunc(ctx)
 	}
 	if m.receiveChan != nil {
+		// Use a very short timeout to prevent blocking during shutdown
+		ticker := time.NewTimer(testMockReceivePoll)
+		defer ticker.Stop()
+
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
-		case result := <-m.receiveChan:
+		case result, ok := <-m.receiveChan:
+			if !ok {
+				// Channel closed - return timeout
+				return nil, harq.ErrTimeout
+			}
 			return result, nil
-		case <-time.After(testHARQTimeout):
+		case <-ticker.C:
+			// Quick timeout allows dispatcher to check context
 			return nil, harq.ErrTimeout
 		}
 	}
@@ -338,12 +349,14 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 			defer d.Unsubscribe(tc.msgType, ch)
 
 			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			// Don't defer cancel here, handle in cleanup
 
 			if err := d.Start(ctx); err != nil {
 				t.Fatalf("Failed to start dispatcher: %v", err)
 			}
 			defer func() {
+				cancel()                   // Cancel FIRST
+				time.Sleep(testCancelWait) // Give dispatcher time to see cancellation
 				if err := d.Stop(); err != nil {
 					t.Errorf("Failed to stop dispatcher: %v", err)
 				}
@@ -469,12 +482,14 @@ func TestDispatcherChannelBackpressure(t *testing.T) {
 
 	d, _ := NewDispatcher(mockHARQ, logger, nil)
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	// Don't defer cancel here, handle in cleanup
 
 	if err := d.Start(ctx); err != nil {
 		t.Fatalf("Failed to start dispatcher: %v", err)
 	}
 	defer func() {
+		cancel()                   // Cancel FIRST
+		time.Sleep(testCancelWait) // Give dispatcher time to see cancellation
 		if err := d.Stop(); err != nil {
 			t.Errorf("Failed to stop dispatcher: %v", err)
 		}
