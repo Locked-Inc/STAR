@@ -85,14 +85,8 @@ var (
 	// ErrDeviceNotFound is returned when no matching CDC device is found.
 	ErrDeviceNotFound = errors.New("cdc: device not found")
 
-	// ErrMultipleDevices is returned when multiple matching devices are found.
-	ErrMultipleDevices = errors.New("cdc: multiple matching devices found")
-
 	// ErrReadTimeout is returned when a read operation times out.
 	ErrReadTimeout = errors.New("cdc: read timeout")
-
-	// ErrWriteTimeout is returned when a write operation times out.
-	ErrWriteTimeout = errors.New("cdc: write timeout")
 )
 
 // CDCTransport implements the Device interface for USB CDC communication.
@@ -199,6 +193,7 @@ func (c *CDCTransport) autoDetect() (string, error) {
 }
 
 // Send transmits data over CDC.
+// Ensures the full buffer is sent by looping until all bytes are written.
 // Returns the number of bytes sent and any error.
 func (c *CDCTransport) Send(data []byte) (int, error) {
 	c.mu.RLock()
@@ -208,16 +203,21 @@ func (c *CDCTransport) Send(data []byte) (int, error) {
 		return 0, ErrDeviceNotOpen
 	}
 
-	n, err := c.port.Write(data)
-	if err != nil {
-		return n, fmt.Errorf("CDC send failed: %w", err)
+	totalWritten := 0
+	for totalWritten < len(data) {
+		n, err := c.port.Write(data[totalWritten:])
+		if err != nil {
+			return totalWritten, fmt.Errorf("CDC send failed after %d bytes: %w", totalWritten, err)
+		}
+		totalWritten += n
 	}
 
-	return n, nil
+	return totalWritten, nil
 }
 
 // Receive reads data from CDC.
 // Reads up to maxLen bytes from the serial port.
+// Returns ErrReadTimeout if no data is available.
 func (c *CDCTransport) Receive(maxLen int) ([]byte, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -230,6 +230,11 @@ func (c *CDCTransport) Receive(maxLen int) ([]byte, error) {
 	n, err := c.port.Read(buf)
 	if err != nil {
 		return nil, fmt.Errorf("CDC receive failed: %w", err)
+	}
+
+	// Detect timeout when no data is available
+	if n == 0 {
+		return nil, ErrReadTimeout
 	}
 
 	return buf[:n], nil
@@ -299,11 +304,6 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 			return nil, fmt.Errorf("CDC transfer read failed: %w", err)
 		}
 		totalRead += n
-
-		// If we got some data but not all, continue reading
-		if totalRead < len(rxBuf) && n > 0 {
-			continue
-		}
 
 		// If we got no data, timeout
 		if n == 0 {
