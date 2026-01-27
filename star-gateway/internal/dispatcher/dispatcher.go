@@ -321,11 +321,13 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 	defer ticker.Stop()
 
 	for {
+		// Check for cancellation before receive
 		select {
 		case <-ctx.Done():
-			return // Just return, do not return ctx.Err()
-		case <-ticker.C:
-			// Ticker fired - proceed with receive attempt
+			return
+		case <-d.stopCh:
+			return
+		default:
 		}
 
 		result, err := d.harq.Receive(ctx)
@@ -336,48 +338,53 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 			}
 			// Log other errors and continue or break based on severity
 			if errors.Is(err, harq.ErrTimeout) || errors.Is(err, harq.ErrDuplicateFrame) {
-				// Transient errors - continue
-				continue
-			}
-			if errors.Is(err, harq.ErrInErrorState) {
+				// Transient errors - continue to ticker wait
+			} else if errors.Is(err, harq.ErrInErrorState) {
 				d.logger.Warn("HARQ in error state, resetting", slog.String("error", err.Error()))
 				d.harq.Reset()
-				continue
-			}
-			// Other errors (connection lost, max retries exceeded)
-			d.logger.Error("HARQ receive error", slog.String("error", err.Error()))
+			} else {
+				// Other errors (connection lost, max retries exceeded)
+				d.logger.Error("HARQ receive error", slog.String("error", err.Error()))
 
-			// Add a small backoff here to prevent busy-looping on hard failures
-			time.Sleep(dispatchBackoff)
-			continue
+				// Add a small backoff here to prevent busy-looping on hard failures
+				time.Sleep(dispatchBackoff)
+			}
+		} else {
+			// Check for cancellation before processing data
+			select {
+			case <-ctx.Done():
+				d.logger.Debug("dispatcher context cancelled", slog.String("error", ctx.Err().Error()))
+				return
+			case <-d.stopCh:
+				d.logger.Debug("dispatcher stop requested")
+				return
+			default:
+			}
+
+			// Unmarshal WireMessage
+			var wrapper starv1.WireMessage
+			if err := proto.Unmarshal(result.Payload, &wrapper); err != nil {
+				d.logger.Warn("failed to unmarshal wire message", slog.String("error", err.Error()))
+			} else {
+				// Determine message type and dispatch
+				msgType, _ := d.extractPayload(&wrapper)
+				if msgType == MessageTypeUnknown {
+					d.logger.Debug("received message with no payload set")
+				} else {
+					d.dispatchMessage(msgType, &wrapper, &result.Metadata)
+				}
+			}
 		}
 
-		// Check for cancellation before processing data
+		// Wait for next interval (rate limiting) before next receive attempt
 		select {
 		case <-ctx.Done():
-			d.logger.Debug("dispatcher context cancelled", slog.String("error", ctx.Err().Error()))
 			return
 		case <-d.stopCh:
-			d.logger.Debug("dispatcher stop requested")
 			return
-		default:
+		case <-ticker.C:
+			// Ticker fired - proceed to next iteration
 		}
-
-		// Unmarshal WireMessage
-		var wrapper starv1.WireMessage
-		if err := proto.Unmarshal(result.Payload, &wrapper); err != nil {
-			d.logger.Warn("failed to unmarshal wire message", slog.String("error", err.Error()))
-			continue
-		}
-
-		// Determine message type and dispatch
-		msgType, _ := d.extractPayload(&wrapper)
-		if msgType == MessageTypeUnknown {
-			d.logger.Debug("received message with no payload set")
-			continue
-		}
-
-		d.dispatchMessage(msgType, &wrapper, &result.Metadata)
 	}
 }
 
