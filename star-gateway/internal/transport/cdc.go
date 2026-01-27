@@ -262,13 +262,14 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 		return nil, ErrDeviceNotOpen
 	}
 
-	// Send data
-	n, err := c.port.Write(txData)
-	if err != nil {
-		return nil, fmt.Errorf("CDC transfer write failed: %w", err)
-	}
-	if n != len(txData) {
-		return nil, fmt.Errorf("CDC transfer incomplete write: wrote %d of %d bytes", n, len(txData))
+	// Send data - ensure full buffer is written (consistent with Send())
+	totalWritten := 0
+	for totalWritten < len(txData) {
+		n, err := c.port.Write(txData[totalWritten:])
+		if err != nil {
+			return nil, fmt.Errorf("CDC transfer write failed after %d bytes: %w", totalWritten, err)
+		}
+		totalWritten += n
 	}
 
 	// Check context after write
@@ -290,6 +291,8 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 		if err := c.port.SetReadTimeout(timeout); err != nil {
 			return nil, fmt.Errorf("failed to set read timeout: %w", err)
 		}
+		// Restore original timeout on all return paths
+		defer c.port.SetReadTimeout(c.config.Timeout)
 	}
 
 	for totalRead < len(rxBuf) {
@@ -309,13 +312,6 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 		// If we got no data, timeout
 		if n == 0 {
 			return nil, ErrReadTimeout
-		}
-	}
-
-	// Restore original timeout
-	if hasDeadline {
-		if err := c.port.SetReadTimeout(c.config.Timeout); err != nil {
-			return nil, fmt.Errorf("failed to restore read timeout: %w", err)
 		}
 	}
 
