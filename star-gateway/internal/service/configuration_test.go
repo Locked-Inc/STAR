@@ -1275,3 +1275,74 @@ func TestGetMotorPidConfig_UnmarshalError(t *testing.T) {
 		t.Errorf("Expected Unavailable error for unmarshal failure, got %v", status.Code(err))
 	}
 }
+
+func TestSetMotorPidConfig_PersistFailure(t *testing.T) {
+	mockHARQ := &testutil.MockHARQ{
+		SendFunc: func(_ context.Context, _ []byte, _ ...harq.Priority) error {
+			// First send (PID config) succeeds
+			return nil
+		},
+	}
+	// Override SendFunc for the second call (Persist) to fail
+	callCount := 0
+	mockHARQ.SendFunc = func(_ context.Context, _ []byte, _ ...harq.Priority) error {
+		callCount++
+		if callCount == 2 {
+			return errors.New("persist send failed")
+		}
+		return nil
+	}
+
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
+
+	svc := NewConfigurationService(mockHARQ, mockDispatcher, logger)
+
+	req := &starv1.SetMotorPidConfigRequest{
+		Header:       &starv1.RequestHeader{},
+		MotorId:      0,
+		PidConfig:    createDefaultPidConfig(),
+		PersistToNvs: true,
+	}
+
+	_, err := svc.SetMotorPidConfig(context.Background(), req)
+	if status.Code(err) != codes.Unavailable {
+		t.Errorf("Expected Unavailable error for persist failure, got %v", status.Code(err))
+	}
+}
+
+func TestSetMotorPidConfig_PersistResponseFailure(t *testing.T) {
+	saveResponse := &starv1.SaveConfigurationResponse{
+		Header: &starv1.ResponseHeader{Status: starv1.Status_STATUS_INVALID_REQUEST},
+		Saved:  false,
+	}
+	savePayload, err := proto.Marshal(saveResponse)
+	if err != nil {
+		t.Fatalf("Failed to marshal save response: %v", err)
+	}
+
+	mockHARQ := &testutil.MockHARQ{
+		SendFunc: func(_ context.Context, _ []byte, _ ...harq.Priority) error {
+			return nil
+		},
+		ReceiveFunc: func(_ context.Context) (*harq.ReceiveResult, error) {
+			return &harq.ReceiveResult{Payload: savePayload, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
+		},
+	}
+	mockDispatcher := &testutil.MockDispatcher{}
+	logger := testutil.NewDiscardLogger()
+
+	svc := NewConfigurationService(mockHARQ, mockDispatcher, logger)
+
+	req := &starv1.SetMotorPidConfigRequest{
+		Header:       &starv1.RequestHeader{},
+		MotorId:      0,
+		PidConfig:    createDefaultPidConfig(),
+		PersistToNvs: true,
+	}
+
+	_, err = svc.SetMotorPidConfig(context.Background(), req)
+	if status.Code(err) != codes.Internal {
+		t.Errorf("Expected Internal error for failed save response, got %v", status.Code(err))
+	}
+}

@@ -14,6 +14,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -73,7 +74,8 @@ type MockRX72N struct {
 	listener    net.Listener
 	conns       []net.Conn
 	done        chan struct{}
-	lastSeqSent uint16 // Track last sent sequence for diagnostics
+	lastSeqSent atomic.Uint32 // Track last sent sequence for diagnostics
+	verbose     bool
 }
 
 func NewMockRX72N(socketPath string) (*MockRX72N, error) {
@@ -88,13 +90,20 @@ func NewMockRX72N(socketPath string) (*MockRX72N, error) {
 	return &MockRX72N{
 		listener:    l,
 		done:        make(chan struct{}),
-		lastSeqSent: 0,
+		lastSeqSent: atomic.Uint32{},
+		verbose:     testing.Verbose(),
 	}, nil
+}
+
+func (m *MockRX72N) debugLog(format string, args ...interface{}) {
+	if m.verbose {
+		log.Printf("MockRX72N: "+format, args...)
+	}
 }
 
 // GetLastSequence returns the last sent sequence number for diagnostics.
 func (m *MockRX72N) GetLastSequence() uint16 {
-	return m.lastSeqSent
+	return uint16(m.lastSeqSent.Load())
 }
 
 func (m *MockRX72N) Start() {
@@ -134,13 +143,12 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 	var sequenceNum uint16 = 0
 	var timestamp int64
 	var lastFrameToRetransmit *frame.Frame
-	var frameSentSinceLastAck bool = false
 
 	// Don't send initial frame proactively - wait for Gateway to poll first
 	// This matches real SPI behavior where peripheral only responds to controller
 
 	for {
-		n, err := c.Read(buf)
+		n, err := io.ReadFull(c, buf)
 		if err != nil {
 			if err != io.EOF {
 				log.Printf("MockRX72N: Connection error: %v", err)
@@ -148,45 +156,17 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			return
 		}
 
-		// DEBUG: Log what we received
-		if n > 0 {
-			// Check sync word to identify frame type
-			const (
-				syncByteOffset = 0
-				syncWordByte1  = 0x55
-				syncWordByte2  = 0xAA
-				syncWordSize   = 2
-				typeByteOffset = 2
-				debugPrintSize = 20
-			)
-
-			if n >= syncWordSize && buf[syncByteOffset] == syncWordByte1 && buf[syncByteOffset+1] == syncWordByte2 {
-				log.Printf("MockRX72N: Received frame with sync word (type byte: 0x%02x)", buf[typeByteOffset])
-			} else if isDummyRead(buf[:n]) {
-				log.Printf("MockRX72N: Received dummy read (all zeros)")
-			} else {
-				printLen := debugPrintSize
-				if n < debugPrintSize {
-					printLen = n
-				}
-				log.Printf("MockRX72N: Received %d bytes (first %d: %x)", n, printLen, buf[:printLen])
-			}
-		}
-
 		// Check if this is a dummy read (Gateway polling for data)
 		if isDummyRead(buf[:n]) {
 			// Send frame if we haven't sent one since last ACK
-			if !frameSentSinceLastAck {
-				// Generate frame if this is the first interaction
-				if lastFrameToRetransmit == nil {
-					lastFrameToRetransmit = m.generateTelemetryFrame(sequenceNum, &timestamp)
-					sequenceNum++
-				}
-				if err := m.sendFrame(c, encoder, lastFrameToRetransmit); err != nil {
-					log.Printf("MockRX72N: Failed to send frame: %v", err)
-					return
-				}
-				frameSentSinceLastAck = true
+			// Generate frame if this is the first interaction
+			if lastFrameToRetransmit == nil {
+				lastFrameToRetransmit = m.generateTelemetryFrame(sequenceNum, &timestamp)
+				sequenceNum++
+			}
+			if err := m.sendFrame(c, encoder, lastFrameToRetransmit); err != nil {
+				log.Printf("MockRX72N: Failed to send frame: %v", err)
+				return
 			}
 			continue
 		}
@@ -195,7 +175,7 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 		decodedFrame, decodeErr := decoder.Decode(buf[:n])
 
 		if decodeErr != nil {
-			log.Printf("MockRX72N: Decode error or unexpected frame, retransmitting")
+			m.debugLog("Decode error or unexpected frame, retransmitting")
 			if lastFrameToRetransmit != nil {
 				nextFrame := lastFrameToRetransmit
 				nextFrame.Header.Flags |= frame.FlagRetransmit
@@ -203,7 +183,6 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 					log.Printf("MockRX72N: Failed to send frame: %v", err)
 					return
 				}
-				frameSentSinceLastAck = true
 			}
 			continue
 		}
@@ -211,10 +190,10 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 		// Successfully decoded a frame
 		var nextFrame *frame.Frame
 
-		switch decodedFrame.Header.Type {
+		switch decodedFrame.Type {
 		case frame.FrameTypeNack:
 			nackedSeq := decodedFrame.Header.Sequence
-			log.Printf("MockRX72N: Received NACK Seq=%d, retransmitting", nackedSeq)
+			m.debugLog("Received NACK Seq=%d, retransmitting", nackedSeq)
 
 			if lastFrameToRetransmit != nil && lastFrameToRetransmit.Header.Sequence == nackedSeq {
 				nextFrame = lastFrameToRetransmit
@@ -222,26 +201,23 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			} else {
 				nextFrame = m.generateTelemetryFrame(nackedSeq, &timestamp)
 			}
-			frameSentSinceLastAck = false
 
 		case frame.FrameTypeAck:
 			ackedSeq := decodedFrame.Header.Sequence
-			log.Printf("MockRX72N: Received ACK Seq=%d", ackedSeq)
+			m.debugLog("Received ACK Seq=%d", ackedSeq)
 
 			if lastFrameToRetransmit != nil && ackedSeq == lastFrameToRetransmit.Header.Sequence {
 				nextFrame = m.generateTelemetryFrame(sequenceNum, &timestamp)
 				lastFrameToRetransmit = nextFrame
 				sequenceNum++
-				frameSentSinceLastAck = false
 			} else {
 				nextFrame = m.generateTelemetryFrame(sequenceNum, &timestamp)
 				lastFrameToRetransmit = nextFrame
 				sequenceNum++
-				frameSentSinceLastAck = false
 			}
 
 		default:
-			log.Printf("MockRX72N: Unexpected frame type %s", decodedFrame.Header.Type)
+			m.debugLog("Unexpected frame type %s", decodedFrame.Type)
 			if lastFrameToRetransmit != nil {
 				nextFrame = lastFrameToRetransmit
 				nextFrame.Header.Flags |= frame.FlagRetransmit
@@ -250,7 +226,6 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 				lastFrameToRetransmit = nextFrame
 				sequenceNum++
 			}
-			frameSentSinceLastAck = false
 		}
 
 		if nextFrame != nil {
@@ -258,7 +233,6 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 				log.Printf("MockRX72N: Failed to send frame: %v", err)
 				return
 			}
-			frameSentSinceLastAck = true
 		}
 	}
 }
@@ -292,11 +266,10 @@ func (m *MockRX72N) sendFrame(c net.Conn, encoder frame.Encoder, f *frame.Frame)
 		return err
 	}
 
-	log.Printf("MockRX72N: Sent Seq=%d Type=%s (%d bytes)",
-		f.Header.Sequence, f.Header.Type.String(), len(encoded))
+	m.debugLog("Sent Seq=%d Type=%s (%d bytes)", f.Header.Sequence, f.Type.String(), len(encoded))
 
 	// Update diagnostics
-	m.lastSeqSent = f.Header.Sequence
+	m.lastSeqSent.Store(uint32(f.Header.Sequence))
 
 	return nil
 }

@@ -40,7 +40,10 @@ const (
 	DefaultShutdownTimeout = 5 * time.Second
 
 	// DefaultSubscriberBufferSize is the default capacity for subscriber channels.
-	DefaultSubscriberBufferSize = 10
+	DefaultSubscriberBufferSize = 100
+
+	// dispatchBackoff is the backoff duration used in the dispatcher loop to prevent busy-looping.
+	dispatchBackoff time.Duration = 10 * time.Millisecond
 )
 
 // MessageType identifies a message type in the WireMessage union.
@@ -297,28 +300,17 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			d.logger.Debug("dispatcher context cancelled", slog.String("error", ctx.Err().Error()))
-			return
-		case <-d.stopCh:
-			d.logger.Debug("dispatcher stop requested")
-			return
+			return // Just return, do not return ctx.Err()
 		default:
 		}
 
-		// Receive from HARQ (blocking call with internal timeout)
 		result, err := d.harq.Receive(ctx)
 		if err != nil {
-			// Check for cancellation before handling error
-			select {
-			case <-ctx.Done():
-				d.logger.Debug("dispatcher context cancelled", slog.String("error", ctx.Err().Error()))
-				return
-			case <-d.stopCh:
-				d.logger.Debug("dispatcher stop requested")
-				return
-			default:
+			// Exit on context cancellation
+			if errors.Is(err, context.Canceled) {
+				return // Just return, do not return ctx.Err()
 			}
-
+			// Log other errors and continue or break based on severity
 			if errors.Is(err, harq.ErrTimeout) || errors.Is(err, harq.ErrDuplicateFrame) {
 				// Transient errors - continue
 				continue
@@ -330,6 +322,9 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 			}
 			// Other errors (connection lost, max retries exceeded)
 			d.logger.Error("HARQ receive error", slog.String("error", err.Error()))
+
+			// Add a small backoff here to prevent busy-looping on hard failures
+			time.Sleep(dispatchBackoff)
 			continue
 		}
 

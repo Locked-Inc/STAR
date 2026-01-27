@@ -19,6 +19,7 @@ type MockTransport struct {
 	sendData     [][]byte      // Data sent via Send()
 	receiveQueue [][]byte      // Data to return from Receive()
 	sendErr      error         // Error to return from Send()
+	sendErrAfter int           // Fail on this call count (1-based)
 	receiveErr   error         // Error to return from Receive()
 	receiveDelay time.Duration // Delay before Receive returns
 	isOpen       bool
@@ -152,11 +153,27 @@ func (m *MockTransport) Receive(maxLen int) ([]byte, error) {
 func (m *MockTransport) Transfer(ctx context.Context, data []byte) ([]byte, error) {
 	m.mu.Lock()
 
-	// Check for send error first (simulates SPI hardware failure)
+	// Check for send error (simulates SPI hardware failure)
+	// Respect sendErrAfter if set
 	if m.sendErr != nil {
-		err := m.sendErr
+		shouldFail := true
+		if m.sendErrAfter > 0 {
+			if len(m.sendData)+1 != m.sendErrAfter {
+				shouldFail = false
+			}
+		}
+		if shouldFail {
+			err := m.sendErr
+			m.mu.Unlock()
+			return nil, err
+		}
+	}
+
+	// Simulate transmission delay
+	if m.receiveDelay > 0 {
 		m.mu.Unlock()
-		return nil, err
+		time.Sleep(m.receiveDelay)
+		m.mu.Lock()
 	}
 
 	// Record the sent data (TX always succeeds in SPI)
@@ -165,27 +182,19 @@ func (m *MockTransport) Transfer(ctx context.Context, data []byte) ([]byte, erro
 	m.sendData = append(m.sendData, dataCopy)
 
 	// Get the next queued response (simulates simultaneous RX)
-	var rxData []byte
 	if len(m.receiveQueue) > 0 {
-		rxData = m.receiveQueue[0]
+		rxData := m.receiveQueue[0]
 		m.receiveQueue = m.receiveQueue[1:]
 		m.mu.Unlock()
 		return rxData, nil
 	}
 
-	// If receiveErr is set, it means RX failed but TX succeeded
-	// Return nil data (no ACK received) rather than failing the whole Transfer
-	// This allows HARQ retry logic to handle it
-	if m.receiveErr != nil {
-		m.mu.Unlock()
-		return nil, nil
-	}
-
 	m.mu.Unlock()
 
-	// No response available yet - return nil to trigger fallback to Receive()
-	// This simulates peripheral not having data ready during the Transfer
-	return nil, nil
+	// Return empty buffer (simulates SPI MISO line with no data)
+	// Real SPI always returns something - zeros if peripheral isn't ready
+	emptyBuffer := make([]byte, len(data))
+	return emptyBuffer, nil
 }
 
 // Close marks the transport as closed.
@@ -247,6 +256,15 @@ func (m *MockTransport) SetSendError(err error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.sendErr = err
+	m.sendErrAfter = 0
+}
+
+// SetSendErrorAfter sets the error to return from Send() on the Nth call (1-based).
+func (m *MockTransport) SetSendErrorAfter(n int, err error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.sendErr = err
+	m.sendErrAfter = n
 }
 
 // SetReceiveError sets the error to return from Receive().
@@ -270,6 +288,7 @@ func (m *MockTransport) Reset() {
 	m.sendData = make([][]byte, 0)
 	m.receiveQueue = make([][]byte, 0)
 	m.sendErr = nil
+	m.sendErrAfter = 0
 	m.receiveErr = nil
 	m.receiveDelay = 0
 	m.isOpen = true

@@ -6,7 +6,6 @@ package frame
 
 import (
 	"encoding/binary"
-	"hash/crc32"
 )
 
 // Encoder defines the interface for frame encoding.
@@ -26,12 +25,11 @@ func NewEncoder() *DefaultEncoder {
 
 // Encode serializes a Frame into wire format bytes.
 //
-// Wire format (all multi-byte fields in network byte order / big-endian):
+// Wire format (all multi-byte fields in big-endian):
 //
-//	[SYNC (2B, BE)][SEQ (2B, BE)][LEN (2B, BE)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B, LE)]
+//	[SYNC (2B)][SEQ (2B)][LEN (2B)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B)]
 //
-// CRC-32 is calculated over SYNC + Header + Payload (IEEE 802.3 polynomial).
-// CRC-32 is written in little-endian format to match IEEE 802.3 LSB-first transmission order.
+// CRC-32 is calculated over SYNC + Header + Payload.
 func (e *DefaultEncoder) Encode(frame *Frame) ([]byte, error) {
 	// Validate payload size
 	if len(frame.Payload) > MaxPayloadSize {
@@ -47,16 +45,16 @@ func (e *DefaultEncoder) Encode(frame *Frame) ([]byte, error) {
 	binary.BigEndian.PutUint16(buf[offset:], SyncWord)
 	offset += SyncSize
 
-	// Write SEQ (big-endian, network byte order per RFC 1700)
+	// Write SEQ (big-endian)
 	binary.BigEndian.PutUint16(buf[offset:], frame.Header.Sequence)
 	offset += SeqSize
 
-	// Write LEN (big-endian, network byte order per RFC 1700)
+	// Write LEN (big-endian)
 	binary.BigEndian.PutUint16(buf[offset:], frame.Header.Length)
 	offset += LenSize
 
-	// Write TYPE (1 byte)
-	buf[offset] = byte(frame.Header.Type)
+	// Write TYPE (1 byte) - Explicit field
+	buf[offset] = byte(frame.Type)
 	offset += TypeSize
 
 	// Write FLAGS (1 byte)
@@ -69,12 +67,12 @@ func (e *DefaultEncoder) Encode(frame *Frame) ([]byte, error) {
 		offset += len(frame.Payload)
 	}
 
-	// Calculate CRC-32 over SYNC + Header + Payload (IEEE 802.3 polynomial)
+	// Calculate CRC-32 over SYNC + Header + Payload
 	crcData := buf[:offset]
-	crc := crc32.ChecksumIEEE(crcData)
+	crc := computeCRC32(crcData)
 
-	// Write CRC-32 (little-endian to match IEEE 802.3 LSB-first transmission order)
-	binary.LittleEndian.PutUint32(buf[offset:], crc)
+	// Write CRC-32 (big-endian)
+	binary.BigEndian.PutUint32(buf[offset:], crc)
 
 	// Store CRC in frame for reference
 	frame.CRC = crc
