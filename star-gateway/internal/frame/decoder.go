@@ -6,7 +6,6 @@ package frame
 
 import (
 	"encoding/binary"
-	"hash/crc32"
 )
 
 // Decoder defines the interface for frame decoding.
@@ -26,12 +25,11 @@ func NewDecoder() *DefaultDecoder {
 
 // Decode parses wire format bytes into a Frame.
 //
-// Wire format (all multi-byte fields in network byte order / big-endian):
+// Wire format (all multi-byte fields in big-endian):
 //
-//	[SYNC (2B, BE)][SEQ (2B, BE)][LEN (2B, BE)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B, LE)]
+//	[SYNC (2B)][SEQ (2B)][LEN (2B)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B)]
 //
-// CRC-32 is validated over SYNC + Header + Payload (IEEE 802.3 polynomial).
-// CRC-32 is read in little-endian format to match IEEE 802.3 LSB-first transmission order.
+// CRC-32 is validated over SYNC + Header + Payload.
 func (d *DefaultDecoder) Decode(data []byte) (*Frame, error) {
 	// Verify minimum frame length
 	if len(data) < MinFrameSize {
@@ -47,11 +45,11 @@ func (d *DefaultDecoder) Decode(data []byte) (*Frame, error) {
 	}
 	offset += SyncSize
 
-	// Parse SEQ (big-endian, network byte order per RFC 1700)
+	// Parse SEQ (big-endian)
 	seq := binary.BigEndian.Uint16(data[offset:])
 	offset += SeqSize
 
-	// Parse LEN (big-endian, network byte order per RFC 1700)
+	// Parse LEN (big-endian)
 	payloadLen := binary.BigEndian.Uint16(data[offset:])
 	offset += LenSize
 
@@ -81,15 +79,12 @@ func (d *DefaultDecoder) Decode(data []byte) (*Frame, error) {
 	}
 	offset += int(payloadLen)
 
-	// Parse CRC-32 (little-endian to match IEEE 802.3 LSB-first transmission order)
-	receivedCRC := binary.LittleEndian.Uint32(data[offset:])
+	// Parse CRC-32 (big-endian)
+	receivedCRC := binary.BigEndian.Uint32(data[offset:])
 
 	// Calculate expected CRC-32 over SYNC + Header + Payload
 	crcData := data[:offset]
-	calculatedCRC := crc32.ChecksumIEEE(crcData)
-
-	// Validate CRC
-	if receivedCRC != calculatedCRC {
+	if !verifyCRC32(crcData, receivedCRC) {
 		return nil, ErrInvalidCRC
 	}
 
@@ -98,9 +93,9 @@ func (d *DefaultDecoder) Decode(data []byte) (*Frame, error) {
 		Header: Header{
 			Sequence: seq,
 			Length:   payloadLen,
-			Type:     frameType,
 			Flags:    flags,
 		},
+		Type:    frameType,
 		Payload: payload,
 		CRC:     receivedCRC,
 	}, nil
