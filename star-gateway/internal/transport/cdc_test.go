@@ -6,8 +6,18 @@ package transport
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
+)
+
+// Test constants to avoid magic numbers
+const (
+	testBaudRate              = 9600
+	testTimeout               = 50 * time.Millisecond
+	testVID                   = 0x1234
+	testPID                   = 0x5678
+	concurrencyTestGoroutines = 10
 )
 
 // TestDefaultCDCConfig verifies the default CDC configuration.
@@ -40,10 +50,10 @@ func TestNewCDCTransport(t *testing.T) {
 	t.Run("WithConfig", func(t *testing.T) {
 		cfg := &CDCConfig{
 			Device:   "/dev/ttyACM1",
-			BaudRate: 9600,
-			Timeout:  50 * time.Millisecond,
-			VID:      0x1234,
-			PID:      0x5678,
+			BaudRate: testBaudRate,
+			Timeout:  testTimeout,
+			VID:      testVID,
+			PID:      testPID,
 		}
 
 		cdc := NewCDCTransport(cfg)
@@ -93,7 +103,6 @@ func TestCDCTransportOpenClose(t *testing.T) {
 	err := cdc.Open()
 	if err != nil {
 		t.Skipf("Skipping test: CDC device not available: %v", err)
-		return
 	}
 
 	// Verify open state
@@ -125,24 +134,41 @@ func TestCDCTransportOpenClose(t *testing.T) {
 // TestCDCTransportOperationsWhenClosed verifies operations fail when device is closed.
 func TestCDCTransportOperationsWhenClosed(t *testing.T) {
 	cdc := NewCDCTransport(nil)
-
-	// Send should fail
-	_, err := cdc.Send([]byte{0x01, 0x02, 0x03})
-	if err != ErrDeviceNotOpen {
-		t.Errorf("expected ErrDeviceNotOpen, got %v", err)
-	}
-
-	// Receive should fail
-	_, err = cdc.Receive(10)
-	if err != ErrDeviceNotOpen {
-		t.Errorf("expected ErrDeviceNotOpen, got %v", err)
-	}
-
-	// Transfer should fail
 	ctx := context.Background()
-	_, err = cdc.Transfer(ctx, []byte{0x01, 0x02, 0x03})
-	if err != ErrDeviceNotOpen {
-		t.Errorf("expected ErrDeviceNotOpen, got %v", err)
+
+	tests := []struct {
+		name string
+		op   func() error
+	}{
+		{
+			name: "Send",
+			op: func() error {
+				_, err := cdc.Send([]byte{0x01, 0x02, 0x03})
+				return err
+			},
+		},
+		{
+			name: "Receive",
+			op: func() error {
+				_, err := cdc.Receive(10)
+				return err
+			},
+		},
+		{
+			name: "Transfer",
+			op: func() error {
+				_, err := cdc.Transfer(ctx, []byte{0x01, 0x02, 0x03})
+				return err
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.op(); err != ErrDeviceNotOpen {
+				t.Errorf("expected ErrDeviceNotOpen, got %v", err)
+			}
+		})
 	}
 }
 
@@ -220,10 +246,8 @@ func TestCDCTransportAutoDetect(t *testing.T) {
 		// Auto-detection may fail if no matching device is found
 		if err == ErrDeviceNotFound {
 			t.Skipf("Skipping test: No CDC device found with VID=%04X PID=%04X", cfg.VID, cfg.PID)
-			return
 		}
 		t.Skipf("Skipping test: Auto-detection failed: %v", err)
-		return
 	}
 
 	defer cdc.Close()
@@ -237,14 +261,11 @@ func TestCDCTransportAutoDetect(t *testing.T) {
 // Note: This test requires a loopback device or real hardware.
 // It will skip if the device is not available.
 func TestCDCTransportSendReceive(t *testing.T) {
-	t.Skip("Skipping hardware-dependent test - requires loopback device or real RX72N")
-
 	cfg := DefaultCDCConfig()
 	cdc := NewCDCTransport(cfg)
 
 	if err := cdc.Open(); err != nil {
 		t.Skipf("Skipping test: CDC device not available: %v", err)
-		return
 	}
 	defer cdc.Close()
 
@@ -281,14 +302,11 @@ func TestCDCTransportSendReceive(t *testing.T) {
 // TestCDCTransportTransfer tests full transfer operation.
 // Note: This test requires a loopback device or real hardware.
 func TestCDCTransportTransfer(t *testing.T) {
-	t.Skip("Skipping hardware-dependent test - requires loopback device or real RX72N")
-
 	cfg := DefaultCDCConfig()
 	cdc := NewCDCTransport(cfg)
 
 	if err := cdc.Open(); err != nil {
 		t.Skipf("Skipping test: CDC device not available: %v", err)
-		return
 	}
 	defer cdc.Close()
 
@@ -307,32 +325,63 @@ func TestCDCTransportTransfer(t *testing.T) {
 	}
 }
 
-// TestCDCTransportConcurrentAccess verifies thread safety.
+// TestCDCTransportConcurrentAccess verifies thread safety for read operations.
 func TestCDCTransportConcurrentAccess(t *testing.T) {
 	cdc := NewCDCTransport(nil)
+	var wg sync.WaitGroup
 
 	// Concurrent IsOpen() calls should be safe
-	done := make(chan bool, 10)
-	for i := 0; i < 10; i++ {
+	for i := 0; i < concurrencyTestGoroutines; i++ {
+		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			_ = cdc.IsOpen()
-			done <- true
 		}()
 	}
-
-	for i := 0; i < 10; i++ {
-		<-done
-	}
+	wg.Wait()
 
 	// Concurrent Config() calls should be safe
-	for i := 0; i < 10; i++ {
+	for i := 0; i < concurrencyTestGoroutines; i++ {
+		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			_ = cdc.Config()
-			done <- true
+		}()
+	}
+	wg.Wait()
+}
+
+// TestCDCTransportConcurrentMixedOperations verifies thread safety for mixed read/write operations.
+// Note: This test uses a closed device to avoid hardware dependencies.
+func TestCDCTransportConcurrentMixedOperations(t *testing.T) {
+	cdc := NewCDCTransport(nil)
+	ctx := context.Background()
+	var wg sync.WaitGroup
+
+	// Mix of read and write operations on closed device
+	// This should be safe and return ErrDeviceNotOpen
+	for i := 0; i < concurrencyTestGoroutines; i++ {
+		wg.Add(3)
+
+		// Read operation
+		go func() {
+			defer wg.Done()
+			_ = cdc.IsOpen()
+			_ = cdc.Config()
+		}()
+
+		// Write operations (Send)
+		go func() {
+			defer wg.Done()
+			_, _ = cdc.Send([]byte{0x01, 0x02})
+		}()
+
+		// Transfer operation (mutates timeout state when open)
+		go func() {
+			defer wg.Done()
+			_, _ = cdc.Transfer(ctx, []byte{0x03, 0x04})
 		}()
 	}
 
-	for i := 0; i < 10; i++ {
-		<-done
-	}
+	wg.Wait()
 }

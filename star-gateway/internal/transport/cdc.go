@@ -34,6 +34,9 @@ const (
 	// DefaultCDCTimeout is the default read/write timeout for CDC operations.
 	DefaultCDCTimeout = 100 * time.Millisecond
 
+	// CDCDataBits is the number of data bits for CDC serial communication.
+	CDCDataBits = 8
+
 	// RenesasVID is the Renesas USB Vendor ID.
 	RenesasVID = 0x045B
 
@@ -56,11 +59,13 @@ type CDCConfig struct {
 	Timeout time.Duration
 
 	// VID is the USB Vendor ID for auto-detection.
-	// Set to 0 to disable VID filtering.
+	// Reserved for future use - currently unused by autoDetect().
+	// The go.bug.st/serial library does not provide VID/PID filtering.
 	VID uint16
 
 	// PID is the USB Product ID for auto-detection.
-	// Set to 0 to disable PID filtering.
+	// Reserved for future use - currently unused by autoDetect().
+	// The go.bug.st/serial library does not provide VID/PID filtering.
 	PID uint16
 }
 
@@ -140,7 +145,7 @@ func (c *CDCTransport) Open() error {
 	// Open serial port
 	mode := &serial.Mode{
 		BaudRate: c.config.BaudRate,
-		DataBits: 8,
+		DataBits: CDCDataBits,
 		Parity:   serial.NoParity,
 		StopBits: serial.OneStopBit,
 	}
@@ -178,6 +183,14 @@ func (c *CDCTransport) autoDetect() (string, error) {
 
 	if len(ports) == 0 {
 		return "", ErrDeviceNotFound
+	}
+
+	// Log available ports for debugging
+	if len(ports) > 1 {
+		fmt.Printf("CDC: Multiple serial ports detected: %v\n", ports)
+		fmt.Printf("CDC: Auto-selecting first port: %s\n", ports[0])
+	} else {
+		fmt.Printf("CDC: Auto-detected device: %s\n", ports[0])
 	}
 
 	// Return first port (typically /dev/ttyACM0 on Linux)
@@ -229,14 +242,15 @@ func (c *CDCTransport) Receive(maxLen int) ([]byte, error) {
 //  3. Reads response (same length as txData)
 //
 // The context deadline is checked before and during the transfer.
+// Uses a write lock because SetReadTimeout mutates port state.
 func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, error) {
 	// Check context before transfer
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	if !c.isOpen {
 		return nil, ErrDeviceNotOpen
@@ -327,9 +341,15 @@ func (c *CDCTransport) Close() error {
 	return nil
 }
 
-// Config returns the current CDC configuration.
+// Config returns a copy of the current CDC configuration.
+// Returns a copy to prevent external mutation of transport settings.
 func (c *CDCTransport) Config() *CDCConfig {
-	return c.config
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	// Return a deep copy
+	configCopy := *c.config
+	return &configCopy
 }
 
 // IsOpen returns whether the device is currently open.
