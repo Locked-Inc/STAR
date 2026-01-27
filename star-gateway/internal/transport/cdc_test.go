@@ -20,6 +20,15 @@ const (
 	testVID                   = 0x1234
 	testPID                   = 0x5678
 	concurrencyTestGoroutines = 10
+	testReceiveBufferSize     = 10
+	testUSBDevicePath         = "/dev/ttyUSB0"
+)
+
+// Test data payloads to avoid magic numbers
+var (
+	testOperationPayload          = []byte{0x01, 0x02, 0x03}
+	testConcurrencySendPayload    = []byte{0x01, 0x02}
+	testConcurrencyTransferPayload = []byte{0x03, 0x04}
 )
 
 // TestDefaultCDCConfig verifies the default CDC configuration.
@@ -145,21 +154,21 @@ func TestCDCTransportOperationsWhenClosed(t *testing.T) {
 		{
 			name: "Send",
 			op: func() error {
-				_, err := cdc.Send([]byte{0x01, 0x02, 0x03})
+				_, err := cdc.Send(testOperationPayload)
 				return err
 			},
 		},
 		{
 			name: "Receive",
 			op: func() error {
-				_, err := cdc.Receive(10)
+				_, err := cdc.Receive(testReceiveBufferSize)
 				return err
 			},
 		},
 		{
 			name: "Transfer",
 			op: func() error {
-				_, err := cdc.Transfer(ctx, []byte{0x01, 0x02, 0x03})
+				_, err := cdc.Transfer(ctx, testOperationPayload)
 				return err
 			},
 		},
@@ -203,7 +212,7 @@ func TestCDCTransportContextCancellation(t *testing.T) {
 // TestCDCTransportConfig verifies Config() accessor.
 func TestCDCTransportConfig(t *testing.T) {
 	cfg := &CDCConfig{
-		Device:   "/dev/ttyUSB0",
+		Device:   testUSBDevicePath,
 		BaudRate: testBaudRate,
 		Timeout:  testTimeout,
 		VID:      testVID,
@@ -360,6 +369,9 @@ func TestCDCTransportConcurrentMixedOperations(t *testing.T) {
 	ctx := context.Background()
 	var wg sync.WaitGroup
 
+	// Buffered error channel to collect errors from goroutines
+	errCh := make(chan error, concurrencyTestGoroutines*2)
+
 	// Mix of read and write operations on closed device
 	// This should be safe and return ErrDeviceNotOpen
 	for i := 0; i < concurrencyTestGoroutines; i++ {
@@ -375,21 +387,25 @@ func TestCDCTransportConcurrentMixedOperations(t *testing.T) {
 		// Write operations (Send) - should return ErrDeviceNotOpen
 		go func() {
 			defer wg.Done()
-			_, err := cdc.Send([]byte{0x01, 0x02})
-			if err != ErrDeviceNotOpen {
-				t.Errorf("Send: expected ErrDeviceNotOpen, got %v", err)
-			}
+			_, err := cdc.Send(testConcurrencySendPayload)
+			errCh <- err
 		}()
 
 		// Transfer operation - should return ErrDeviceNotOpen
 		go func() {
 			defer wg.Done()
-			_, err := cdc.Transfer(ctx, []byte{0x03, 0x04})
-			if err != ErrDeviceNotOpen {
-				t.Errorf("Transfer: expected ErrDeviceNotOpen, got %v", err)
-			}
+			_, err := cdc.Transfer(ctx, testConcurrencyTransferPayload)
+			errCh <- err
 		}()
 	}
 
 	wg.Wait()
+	close(errCh)
+
+	// Assert all errors after goroutines complete
+	for err := range errCh {
+		if err != ErrDeviceNotOpen {
+			t.Errorf("expected ErrDeviceNotOpen, got %v", err)
+		}
+	}
 }
