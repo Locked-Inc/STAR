@@ -155,33 +155,6 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			return
 		}
 
-		// DEBUG: Log what we received
-		/*
-			if n > 0 {
-				// Check sync word to identify frame type
-				const (
-					syncByteOffset = 0
-					syncWordByte1  = 0x55
-					syncWordByte2  = 0xAA
-					syncWordSize   = 2
-					typeByteOffset = 2
-					debugPrintSize = 20
-				)
-
-				if n >= syncWordSize && buf[syncByteOffset] == syncWordByte1 && buf[syncByteOffset+1] == syncWordByte2 {
-					log.Printf("MockRX72N: Received frame with sync word (type byte: 0x%02x)", buf[typeByteOffset])
-				} else if isDummyRead(buf[:n]) {
-					log.Printf("MockRX72N: Received dummy read (all zeros)")
-				} else {
-					printLen := debugPrintSize
-					if n < debugPrintSize {
-						printLen = n
-					}
-					log.Printf("MockRX72N: Received %d bytes (first %d: %x)", n, printLen, buf[:printLen])
-				}
-			}
-		*/
-
 		// Check if this is a dummy read (Gateway polling for data)
 		if isDummyRead(buf[:n]) {
 			// Send frame if we haven't sent one since last ACK

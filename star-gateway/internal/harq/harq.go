@@ -746,20 +746,21 @@ func (h *ChaseCombining) waitForAck(ctx context.Context) (*frame.Frame, error) {
 	return f, err
 }
 
-type readDeadlineSetter interface {
-	SetReadDeadline(time.Time) error
-}
+// TODO: Verify if we need this, if not remove in final phase of USB implementation.
+// type readDeadlineSetter interface {
+// 	SetReadDeadline(time.Time) error
+// }
 
-func applyReadDeadline(ctx context.Context, t transport.Transport) {
-	if ctx == nil || t == nil {
-		return
-	}
-	if deadline, ok := ctx.Deadline(); ok {
-		if setter, ok := t.(readDeadlineSetter); ok {
-			_ = setter.SetReadDeadline(deadline) // Best-effort: readDeadlineSetter.SetReadDeadline may be unsupported or fail; non-fatal.
-		}
-	}
-}
+// func applyReadDeadline(ctx context.Context, t transport.Transport) {
+// 	if ctx == nil || t == nil {
+// 		return
+// 	}
+// 	if deadline, ok := ctx.Deadline(); ok {
+// 		if setter, ok := t.(readDeadlineSetter); ok {
+// 			_ = setter.SetReadDeadline(deadline) // Best-effort: readDeadlineSetter.SetReadDeadline may be unsupported or fail; non-fatal.
+// 		}
+// 	}
+// }
 
 // sendNack sends a NACK frame.
 func (h *ChaseCombining) sendNack(seq uint16) error {
