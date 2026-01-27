@@ -127,14 +127,16 @@ func (c *CDCTransport) Open() error {
 	}
 
 	device := c.config.Device
+	var allPorts []string
 
 	// Auto-detect device if not specified
 	if device == "" {
-		detected, err := c.autoDetect()
+		detected, ports, err := c.autoDetect()
 		if err != nil {
 			return fmt.Errorf("failed to auto-detect CDC device: %w", err)
 		}
 		device = detected
+		allPorts = ports
 	}
 
 	// Open serial port
@@ -158,6 +160,17 @@ func (c *CDCTransport) Open() error {
 
 	c.port = port
 	c.isOpen = true
+
+	// Log successful auto-detection (after critical section completes)
+	if len(allPorts) > 0 {
+		if len(allPorts) > 1 {
+			log.Printf("CDC: Multiple serial ports detected: %v", allPorts)
+			log.Printf("CDC: Auto-selected first port: %s", device)
+		} else {
+			log.Printf("CDC: Auto-detected device: %s", device)
+		}
+	}
+
 	return nil
 }
 
@@ -168,37 +181,30 @@ func (c *CDCTransport) Open() error {
 // either specify the device path explicitly in config, or implement platform-specific
 // VID/PID filtering using sysfs on Linux (/sys/class/tty/*/device/../../idVendor).
 //
-// This function returns the first available serial port, which is typically
-// sufficient when only one RX72N is connected.
-func (c *CDCTransport) autoDetect() (string, error) {
+// This function returns the first available serial port and the full ports list
+// for logging purposes. Returns typically /dev/ttyACM0 on Linux when only one
+// RX72N is connected.
+func (c *CDCTransport) autoDetect() (string, []string, error) {
 	ports, err := serial.GetPortsList()
 	if err != nil {
-		return "", fmt.Errorf("failed to enumerate ports: %w", err)
+		return "", nil, fmt.Errorf("failed to enumerate ports: %w", err)
 	}
 
 	if len(ports) == 0 {
-		return "", ErrDeviceNotFound
-	}
-
-	// Log available ports for debugging
-	if len(ports) > 1 {
-		log.Printf("CDC: Multiple serial ports detected: %v", ports)
-		log.Printf("CDC: Auto-selecting first port: %s", ports[0])
-	} else {
-		log.Printf("CDC: Auto-detected device: %s", ports[0])
+		return "", nil, ErrDeviceNotFound
 	}
 
 	// Return first port (typically /dev/ttyACM0 on Linux)
 	// TODO: Implement VID/PID filtering using platform-specific APIs if needed
-	return ports[0], nil
+	return ports[0], ports, nil
 }
 
 // Send transmits data over CDC.
 // Ensures the full buffer is sent by looping until all bytes are written.
 // Returns the number of bytes sent and any error.
 func (c *CDCTransport) Send(data []byte) (int, error) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	if !c.isOpen {
 		return 0, ErrDeviceNotOpen
@@ -220,8 +226,8 @@ func (c *CDCTransport) Send(data []byte) (int, error) {
 // Reads up to maxLen bytes from the serial port.
 // Returns ErrReadTimeout if no data is available.
 func (c *CDCTransport) Receive(maxLen int) ([]byte, error) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	if !c.isOpen {
 		return nil, ErrDeviceNotOpen

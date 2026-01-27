@@ -6,6 +6,7 @@ package transport
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"testing"
 	"time"
@@ -245,7 +246,7 @@ func TestCDCTransportAutoDetect(t *testing.T) {
 
 	if err != nil {
 		// Auto-detection may fail if no matching device is found
-		if err == ErrDeviceNotFound {
+		if errors.Is(err, ErrDeviceNotFound) {
 			t.Skipf("Skipping test: No CDC device found with VID=%04X PID=%04X", cfg.VID, cfg.PID)
 		}
 		t.Skipf("Skipping test: Auto-detection failed: %v", err)
