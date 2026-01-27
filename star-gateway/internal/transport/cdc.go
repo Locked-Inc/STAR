@@ -298,7 +298,11 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 			return nil, fmt.Errorf("failed to set read timeout: %w", err)
 		}
 		// Restore original timeout on all return paths
-		defer c.port.SetReadTimeout(c.config.Timeout)
+		defer func() {
+			if err := c.port.SetReadTimeout(c.config.Timeout); err != nil {
+				log.Printf("CDC: failed to restore read timeout: %v", err)
+			}
+		}()
 	}
 
 	for totalRead < len(rxBuf) {
