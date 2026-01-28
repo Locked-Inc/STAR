@@ -546,39 +546,61 @@ func TestCDCTransportMockWriteStall(t *testing.T) {
 
 	testData := []byte{0x01, 0x02, 0x03, 0x04}
 
-	t.Run("Send", func(t *testing.T) {
-		n, err := cdc.Send(testData)
-		if err == nil {
-			t.Fatal("expected error for write stall, got nil")
-		}
+	tests := []struct {
+		name           string
+		operation      func() (interface{}, error)
+		expectedN      int
+		expectedRxData interface{}
+		expectedError  string
+	}{
+		{
+			name: "Send",
+			operation: func() (interface{}, error) {
+				n, err := cdc.Send(testData)
+				return n, err
+			},
+			expectedN:     0,
+			expectedError: "CDC send stalled after 0/4 bytes (no progress)",
+		},
+		{
+			name: "Transfer",
+			operation: func() (interface{}, error) {
+				ctx := context.Background()
+				rxData, err := cdc.Transfer(ctx, testData)
+				return rxData, err
+			},
+			expectedRxData: nil,
+			expectedError:  "CDC transfer write stalled after 0/4 bytes (no progress)",
+		},
+	}
 
-		if n != 0 {
-			t.Errorf("expected 0 bytes sent, got %d", n)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := tt.operation()
 
-		expectedMsg := "CDC send stalled after 0/4 bytes (no progress)"
-		if err.Error() != expectedMsg {
-			t.Errorf("expected error %q, got %q", expectedMsg, err.Error())
-		}
-	})
+			if err == nil {
+				t.Fatal("expected error for write stall, got nil")
+			}
 
-	t.Run("Transfer", func(t *testing.T) {
-		ctx := context.Background()
+			if err.Error() != tt.expectedError {
+				t.Errorf("expected error %q, got %q", tt.expectedError, err.Error())
+			}
 
-		rxData, err := cdc.Transfer(ctx, testData)
-		if err == nil {
-			t.Fatal("expected error for write stall, got nil")
-		}
+			// Check bytes sent for Send operation
+			if tt.name == "Send" {
+				if n, ok := result.(int); ok && n != tt.expectedN {
+					t.Errorf("expected %d bytes sent, got %d", tt.expectedN, n)
+				}
+			}
 
-		if rxData != nil {
-			t.Errorf("expected nil rxData, got %v", rxData)
-		}
-
-		expectedMsg := "CDC transfer write stalled after 0/4 bytes (no progress)"
-		if err.Error() != expectedMsg {
-			t.Errorf("expected error %q, got %q", expectedMsg, err.Error())
-		}
-	})
+			// Check rxData for Transfer operation
+			if tt.name == "Transfer" {
+				if result != tt.expectedRxData {
+					t.Errorf("expected nil rxData, got %v", result)
+				}
+			}
+		})
+	}
 }
 
 // TestCDCTransportMockReadTimeout verifies read timeout detection.

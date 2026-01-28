@@ -191,7 +191,6 @@ func (m *mockSerialPort) SetReadTimeout(timeout time.Duration) error {
 }
 
 // Stub methods to satisfy serial.Port interface
-
 func (m *mockSerialPort) GetModemStatusBits() (*serial.ModemStatusBits, error) {
 	return &serial.ModemStatusBits{}, nil
 }
@@ -361,6 +360,12 @@ func newCDCTransportWithMock(config *CDCConfig, mock *mockSerialPort) *CDCTransp
 		port:   mock,
 		isOpen: true, // Already "opened" with mock
 	}
+
+	// Mirror Open - aligning mock timeout with config
+	mock.mu.Lock()
+	mock.readTimeout = config.Timeout
+	mock.timeoutCalls = append(mock.timeoutCalls, config.Timeout)
+	mock.mu.Unlock()
 
 	return cdc
 }
