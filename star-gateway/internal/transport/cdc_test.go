@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"sync"
 	"testing"
 	"time"
@@ -569,7 +570,7 @@ func TestCDCTransportMockWriteStall(t *testing.T) {
 				rxData, err := cdc.Transfer(ctx, testData)
 				return rxData, err
 			},
-			expectedRxData: nil,
+			expectedRxData: []byte(nil),
 			expectedError:  "CDC transfer write stalled after 0/4 bytes (no progress)",
 		},
 	}
@@ -595,8 +596,8 @@ func TestCDCTransportMockWriteStall(t *testing.T) {
 
 			// Check rxData for Transfer operation
 			if tt.name == "Transfer" {
-				if result != tt.expectedRxData {
-					t.Errorf("expected nil rxData, got %v", result)
+				if !reflect.DeepEqual(result, tt.expectedRxData) {
+					t.Errorf("expected %v rxData, got %v", tt.expectedRxData, result)
 				}
 			}
 		})

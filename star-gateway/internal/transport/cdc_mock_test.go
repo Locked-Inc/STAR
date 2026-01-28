@@ -97,6 +97,11 @@ func (m *mockSerialPort) Read(b []byte) (int, error) {
 		m.mu.Unlock()
 		time.Sleep(m.readBehavior.latency)
 		m.mu.Lock()
+
+		// Re-check state after re-acquiring lock
+		if m.closed {
+			return 0, errors.New("mock serial: port closed during read")
+		}
 	}
 
 	// Simulate timeout (return n=0)
@@ -285,7 +290,7 @@ func (m *mockSerialPort) SetWriteLatency(latency time.Duration) {
 	m.writeBehavior.latency = latency
 }
 
-// SetReadTimeout configures Read() to always return n=0 (timeout).
+// SetReadTimeoutBehavior configures Read() to always return n=0 (timeout simulation).
 func (m *mockSerialPort) SetReadTimeoutBehavior(returnZero bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
