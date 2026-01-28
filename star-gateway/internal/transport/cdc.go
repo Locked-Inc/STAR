@@ -322,6 +322,8 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 		}
 
 		n, err := c.port.Read(rxBuf[totalRead:])
+		totalRead += n
+
 		if err != nil {
 			return nil, fmt.Errorf("CDC transfer read failed after %d/%d bytes: %w", totalRead, len(rxBuf), err)
 		}
@@ -330,8 +332,6 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 		if n == 0 {
 			return nil, fmt.Errorf("CDC transfer read timeout after %d/%d bytes: %w", totalRead, len(rxBuf), ErrReadTimeout)
 		}
-
-		totalRead += n
 	}
 
 	return rxBuf, nil
