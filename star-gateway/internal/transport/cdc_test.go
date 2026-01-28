@@ -26,8 +26,8 @@ const (
 
 // Test data payloads to avoid magic numbers
 var (
-	testOperationPayload          = []byte{0x01, 0x02, 0x03}
-	testConcurrencySendPayload    = []byte{0x01, 0x02}
+	testOperationPayload           = []byte{0x01, 0x02, 0x03}
+	testConcurrencySendPayload     = []byte{0x01, 0x02}
 	testConcurrencyTransferPayload = []byte{0x03, 0x04}
 )
 
