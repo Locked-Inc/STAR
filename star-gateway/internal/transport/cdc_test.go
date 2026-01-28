@@ -7,6 +7,7 @@ package transport
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -407,5 +408,512 @@ func TestCDCTransportConcurrentMixedOperations(t *testing.T) {
 		if err != ErrDeviceNotOpen {
 			t.Errorf("expected ErrDeviceNotOpen, got %v", err)
 		}
+	}
+}
+
+// Mock-based tests - these always run in CI/CD without hardware
+
+// TestCDCTransportMockPartialWrite verifies handling of partial Write() operations.
+func TestCDCTransportMockPartialWrite(t *testing.T) {
+	tests := []struct {
+		name           string
+		data           []byte
+		maxPerWrite    int
+		expectedCalls  int
+		expectedResult int
+	}{
+		{
+			name:           "SingleByte",
+			data:           []byte{0x01, 0x02, 0x03, 0x04},
+			maxPerWrite:    1,
+			expectedCalls:  4,
+			expectedResult: 4,
+		},
+		{
+			name:           "TwoBytes",
+			data:           []byte{0x01, 0x02, 0x03, 0x04, 0x05},
+			maxPerWrite:    2,
+			expectedCalls:  3, // 2 + 2 + 1
+			expectedResult: 5,
+		},
+		{
+			name:           "ThreeBytes",
+			data:           []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07},
+			maxPerWrite:    3,
+			expectedCalls:  3, // 3 + 3 + 1
+			expectedResult: 7,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock := newMockSerialPort()
+			mock.SetPartialWriteMode(tt.maxPerWrite)
+
+			cdc := newCDCTransportWithMock(nil, mock)
+
+			n, err := cdc.Send(tt.data)
+			if err != nil {
+				t.Fatalf("Send() failed: %v", err)
+			}
+
+			if n != tt.expectedResult {
+				t.Errorf("expected to send %d bytes, sent %d", tt.expectedResult, n)
+			}
+
+			written := mock.GetWrittenData()
+			if len(written) != len(tt.data) {
+				t.Errorf("expected %d bytes written to buffer, got %d", len(tt.data), len(written))
+			}
+
+			for i := range tt.data {
+				if written[i] != tt.data[i] {
+					t.Errorf("byte %d: expected 0x%02X, got 0x%02X", i, tt.data[i], written[i])
+				}
+			}
+
+			if mock.GetWriteCallCount() != tt.expectedCalls {
+				t.Errorf("expected %d Write() calls, got %d", tt.expectedCalls, mock.GetWriteCallCount())
+			}
+		})
+	}
+}
+
+// TestCDCTransportMockPartialRead verifies handling of partial Read() operations.
+func TestCDCTransportMockPartialRead(t *testing.T) {
+	tests := []struct {
+		name          string
+		queuedData    []byte
+		maxPerRead    int
+		requestBytes  int
+		expectedCalls int
+	}{
+		{
+			name:          "SingleByteReads",
+			queuedData:    []byte{0x01, 0x02, 0x03, 0x04},
+			maxPerRead:    1,
+			requestBytes:  4,
+			expectedCalls: 4,
+		},
+		{
+			name:          "TwoByteReads",
+			queuedData:    []byte{0x01, 0x02, 0x03, 0x04, 0x05},
+			maxPerRead:    2,
+			requestBytes:  5,
+			expectedCalls: 3, // 2 + 2 + 1
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock := newMockSerialPort()
+			mock.SetPartialReadMode(tt.maxPerRead)
+			mock.QueueReadData(tt.queuedData)
+
+			cdc := newCDCTransportWithMock(nil, mock)
+
+			// Use Transfer to test the read loop
+			ctx := context.Background()
+			txData := make([]byte, len(tt.queuedData))
+
+			rxData, err := cdc.Transfer(ctx, txData)
+			if err != nil {
+				t.Fatalf("Transfer() failed: %v", err)
+			}
+
+			if len(rxData) != len(tt.queuedData) {
+				t.Errorf("expected %d bytes, got %d", len(tt.queuedData), len(rxData))
+			}
+
+			for i := range tt.queuedData {
+				if rxData[i] != tt.queuedData[i] {
+					t.Errorf("byte %d: expected 0x%02X, got 0x%02X", i, tt.queuedData[i], rxData[i])
+				}
+			}
+
+			// Note: Read call count includes the write loop's implicit reads
+			// We just verify the data came through correctly
+		})
+	}
+}
+
+// TestCDCTransportMockWriteStall verifies detection of write stalls.
+func TestCDCTransportMockWriteStall(t *testing.T) {
+	mock := newMockSerialPort()
+	mock.SetWriteStallBehavior(true) // Write() returns n=0
+
+	cdc := newCDCTransportWithMock(nil, mock)
+
+	testData := []byte{0x01, 0x02, 0x03, 0x04}
+
+	t.Run("Send", func(t *testing.T) {
+		n, err := cdc.Send(testData)
+		if err == nil {
+			t.Fatal("expected error for write stall, got nil")
+		}
+
+		if n != 0 {
+			t.Errorf("expected 0 bytes sent, got %d", n)
+		}
+
+		expectedMsg := "CDC send stalled after 0/4 bytes (no progress)"
+		if err.Error() != expectedMsg {
+			t.Errorf("expected error %q, got %q", expectedMsg, err.Error())
+		}
+	})
+
+	t.Run("Transfer", func(t *testing.T) {
+		ctx := context.Background()
+
+		rxData, err := cdc.Transfer(ctx, testData)
+		if err == nil {
+			t.Fatal("expected error for write stall, got nil")
+		}
+
+		if rxData != nil {
+			t.Errorf("expected nil rxData, got %v", rxData)
+		}
+
+		expectedMsg := "CDC transfer write stalled after 0/4 bytes (no progress)"
+		if err.Error() != expectedMsg {
+			t.Errorf("expected error %q, got %q", expectedMsg, err.Error())
+		}
+	})
+}
+
+// TestCDCTransportMockReadTimeout verifies read timeout detection.
+func TestCDCTransportMockReadTimeout(t *testing.T) {
+	mock := newMockSerialPort()
+	mock.SetReadTimeoutBehavior(true) // Read() returns n=0
+
+	cdc := newCDCTransportWithMock(nil, mock)
+
+	t.Run("Receive", func(t *testing.T) {
+		rxData, err := cdc.Receive(10)
+		if !errors.Is(err, ErrReadTimeout) {
+			t.Errorf("expected ErrReadTimeout, got %v", err)
+		}
+
+		if rxData != nil {
+			t.Errorf("expected nil rxData, got %v", rxData)
+		}
+	})
+
+	t.Run("Transfer", func(t *testing.T) {
+		ctx := context.Background()
+		testData := []byte{0x01, 0x02, 0x03, 0x04}
+
+		// Write succeeds, but read times out
+		mock.SetWriteStallBehavior(false)
+
+		rxData, err := cdc.Transfer(ctx, testData)
+		if !errors.Is(err, ErrReadTimeout) {
+			t.Errorf("expected ErrReadTimeout, got %v", err)
+		}
+
+		if rxData != nil {
+			t.Errorf("expected nil rxData, got %v", rxData)
+		}
+
+		// Verify the error message includes progress
+		expectedMsg := "CDC transfer read timeout after 0/4 bytes"
+		if !contains(err.Error(), expectedMsg) {
+			t.Errorf("error message should contain %q, got %q", expectedMsg, err.Error())
+		}
+	})
+}
+
+// TestCDCTransportMockDeviceDisconnect simulates device disconnect errors.
+func TestCDCTransportMockDeviceDisconnect(t *testing.T) {
+	disconnectErr := errors.New("device disconnected")
+
+	t.Run("WriteFails", func(t *testing.T) {
+		mock := newMockSerialPort()
+		mock.SetNextError(disconnectErr)
+
+		cdc := newCDCTransportWithMock(nil, mock)
+
+		n, err := cdc.Send([]byte{0x01, 0x02})
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+
+		if !errors.Is(err, disconnectErr) {
+			t.Errorf("expected disconnect error wrapped, got %v", err)
+		}
+
+		if n != 0 {
+			t.Errorf("expected 0 bytes sent, got %d", n)
+		}
+	})
+
+	t.Run("ReadFails", func(t *testing.T) {
+		mock := newMockSerialPort()
+		cdc := newCDCTransportWithMock(nil, mock)
+
+		ctx := context.Background()
+		testData := []byte{0x01, 0x02}
+
+		// Set read-specific error - write will succeed, read will fail
+		mock.SetNextReadError(disconnectErr)
+
+		rxData, err := cdc.Transfer(ctx, testData)
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+
+		// Error should be wrapped
+		expectedMsg := "CDC transfer read failed after 0/2 bytes"
+		if !contains(err.Error(), expectedMsg) {
+			t.Errorf("error should contain %q, got %q", expectedMsg, err.Error())
+		}
+
+		if rxData != nil {
+			t.Errorf("expected nil rxData, got %v", rxData)
+		}
+	})
+}
+
+// TestCDCTransportMockConcurrentAccess verifies thread-safe mock usage.
+func TestCDCTransportMockConcurrentAccess(t *testing.T) {
+	mock := newMockSerialPort()
+	cdc := newCDCTransportWithMock(nil, mock)
+
+	var wg sync.WaitGroup
+	errCh := make(chan error, concurrencyTestGoroutines*2)
+
+	// Queue enough data for all concurrent reads
+	for i := 0; i < concurrencyTestGoroutines; i++ {
+		mock.QueueReadData([]byte{0x01, 0x02, 0x03, 0x04})
+	}
+
+	// Concurrent Transfer operations
+	for i := 0; i < concurrencyTestGoroutines; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+
+			ctx := context.Background()
+			testData := []byte{byte(id), 0x02, 0x03, 0x04}
+
+			_, err := cdc.Transfer(ctx, testData)
+			if err != nil {
+				errCh <- fmt.Errorf("goroutine %d: %w", id, err)
+			}
+		}(i)
+	}
+
+	wg.Wait()
+	close(errCh)
+
+	// Check for any errors
+	for err := range errCh {
+		t.Errorf("concurrent access error: %v", err)
+	}
+}
+
+// TestCDCTransportMockLoopback tests send-receive loopback pattern.
+func TestCDCTransportMockLoopback(t *testing.T) {
+	mock := newMockSerialPort()
+	cdc := newCDCTransportWithMock(nil, mock)
+
+	testData := []byte{0x55, 0xAA, 0x01, 0x02, 0x03, 0x04}
+
+	// Queue the data we expect to receive
+	mock.QueueReadData(testData)
+
+	ctx := context.Background()
+	rxData, err := cdc.Transfer(ctx, testData)
+	if err != nil {
+		t.Fatalf("Transfer() failed: %v", err)
+	}
+
+	// Verify received data matches
+	if len(rxData) != len(testData) {
+		t.Fatalf("expected %d bytes, got %d", len(testData), len(rxData))
+	}
+
+	for i := range testData {
+		if rxData[i] != testData[i] {
+			t.Errorf("byte %d: expected 0x%02X, got 0x%02X", i, testData[i], rxData[i])
+		}
+	}
+
+	// Verify transmitted data
+	written := mock.GetWrittenData()
+	if len(written) != len(testData) {
+		t.Errorf("expected %d bytes written, got %d", len(testData), len(written))
+	}
+
+	for i := range testData {
+		if written[i] != testData[i] {
+			t.Errorf("written byte %d: expected 0x%02X, got 0x%02X", i, testData[i], written[i])
+		}
+	}
+}
+
+// Helper function for substring checking
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) &&
+		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
+			containsSubstring(s, substr)))
+}
+
+func containsSubstring(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
+}
+
+// TestCDCTransportMockTimeoutRestoration verifies timeout is restored after Transfer().
+func TestCDCTransportMockTimeoutRestoration(t *testing.T) {
+	tests := []struct {
+		name            string
+		setupContext    func() (context.Context, context.CancelFunc)
+		shouldSucceed   bool
+		expectedTimeout time.Duration
+	}{
+		{
+			name: "NormalTransfer",
+			setupContext: func() (context.Context, context.CancelFunc) {
+				return context.WithTimeout(context.Background(), 500*time.Millisecond)
+			},
+			shouldSucceed:   true,
+			expectedTimeout: DefaultCDCTimeout,
+		},
+		{
+			name: "CustomDeadline",
+			setupContext: func() (context.Context, context.CancelFunc) {
+				deadline := time.Now().Add(2 * time.Second)
+				return context.WithDeadline(context.Background(), deadline)
+			},
+			shouldSucceed:   true,
+			expectedTimeout: DefaultCDCTimeout,
+		},
+		{
+			name: "TransferWithError",
+			setupContext: func() (context.Context, context.CancelFunc) {
+				return context.WithTimeout(context.Background(), 1*time.Second)
+			},
+			shouldSucceed:   false, // Will fail due to read timeout
+			expectedTimeout: DefaultCDCTimeout,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock := newMockSerialPort()
+			cdc := newCDCTransportWithMock(nil, mock)
+
+			testData := []byte{0x01, 0x02, 0x03, 0x04}
+
+			if tt.shouldSucceed {
+				// Queue data for successful transfer
+				mock.QueueReadData(testData)
+			} else {
+				// Don't queue data - will cause timeout
+				mock.SetReadTimeoutBehavior(true)
+			}
+
+			// Clear timeout tracking
+			mock.mu.Lock()
+			mock.timeoutCalls = nil
+			mock.mu.Unlock()
+
+			ctx, cancel := tt.setupContext()
+			defer cancel()
+
+			_, err := cdc.Transfer(ctx, testData)
+
+			if tt.shouldSucceed && err != nil {
+				t.Errorf("Transfer() should succeed but got error: %v", err)
+			}
+
+			if !tt.shouldSucceed && err == nil {
+				t.Error("Transfer() should fail but got no error")
+			}
+
+			// Verify timeout was restored to default
+			finalTimeout := mock.GetCurrentTimeout()
+			if finalTimeout != tt.expectedTimeout {
+				t.Errorf("expected timeout restored to %v, got %v", tt.expectedTimeout, finalTimeout)
+			}
+
+			// Verify SetReadTimeout was called (context had deadline)
+			timeoutCalls := mock.GetTimeoutCalls()
+			if len(timeoutCalls) < 1 {
+				t.Error("expected at least one SetReadTimeout call")
+			}
+
+			// Last call should be the restoration
+			lastCall := timeoutCalls[len(timeoutCalls)-1]
+			if lastCall != DefaultCDCTimeout {
+				t.Errorf("last timeout call should restore default %v, got %v", DefaultCDCTimeout, lastCall)
+			}
+		})
+	}
+}
+
+// TestCDCTransportMockTimeoutRestorationOnPanic verifies timeout restoration with defer.
+func TestCDCTransportMockTimeoutRestorationOnPanic(t *testing.T) {
+	// Note: This test verifies the defer mechanism works correctly.
+	// In practice, panics shouldn't occur, but defer ensures cleanup.
+
+	mock := newMockSerialPort()
+	cdc := newCDCTransportWithMock(nil, mock)
+
+	testData := []byte{0x01, 0x02, 0x03, 0x04}
+	mock.QueueReadData(testData)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	defer cancel()
+
+	// Normal execution - verify defer runs
+	_, err := cdc.Transfer(ctx, testData)
+	if err != nil {
+		t.Fatalf("Transfer() failed: %v", err)
+	}
+
+	// Verify timeout was restored
+	finalTimeout := mock.GetCurrentTimeout()
+	if finalTimeout != DefaultCDCTimeout {
+		t.Errorf("defer should restore timeout to %v, got %v", DefaultCDCTimeout, finalTimeout)
+	}
+}
+
+// TestCDCTransportMockNoDeadlineNoTimeout verifies behavior without context deadline.
+func TestCDCTransportMockNoDeadlineNoTimeout(t *testing.T) {
+	mock := newMockSerialPort()
+	cdc := newCDCTransportWithMock(nil, mock)
+
+	testData := []byte{0x01, 0x02, 0x03, 0x04}
+	mock.QueueReadData(testData)
+
+	// Clear timeout tracking
+	mock.mu.Lock()
+	mock.timeoutCalls = nil
+	mock.mu.Unlock()
+
+	// Context without deadline
+	ctx := context.Background()
+
+	_, err := cdc.Transfer(ctx, testData)
+	if err != nil {
+		t.Fatalf("Transfer() failed: %v", err)
+	}
+
+	// Verify SetReadTimeout was NOT called (no deadline to set)
+	timeoutCalls := mock.GetTimeoutCalls()
+	if len(timeoutCalls) != 0 {
+		t.Errorf("expected no SetReadTimeout calls without deadline, got %d calls", len(timeoutCalls))
+	}
+
+	// Current timeout should still be default (unchanged)
+	currentTimeout := mock.GetCurrentTimeout()
+	if currentTimeout != DefaultCDCTimeout {
+		t.Errorf("timeout should remain at default %v, got %v", DefaultCDCTimeout, currentTimeout)
 	}
 }

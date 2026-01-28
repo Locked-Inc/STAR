@@ -214,7 +214,11 @@ func (c *CDCTransport) Send(data []byte) (int, error) {
 	for totalWritten < len(data) {
 		n, err := c.port.Write(data[totalWritten:])
 		if err != nil {
-			return totalWritten, fmt.Errorf("CDC send failed after %d bytes: %w", totalWritten, err)
+			return totalWritten, fmt.Errorf("CDC send failed after %d/%d bytes: %w", totalWritten, len(data), err)
+		}
+		// Detect write stall to prevent infinite loop
+		if n == 0 {
+			return totalWritten, fmt.Errorf("CDC send stalled after %d/%d bytes (no progress)", totalWritten, len(data))
 		}
 		totalWritten += n
 	}
@@ -273,7 +277,11 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 	for totalWritten < len(txData) {
 		n, err := c.port.Write(txData[totalWritten:])
 		if err != nil {
-			return nil, fmt.Errorf("CDC transfer write failed after %d bytes: %w", totalWritten, err)
+			return nil, fmt.Errorf("CDC transfer write failed after %d/%d bytes: %w", totalWritten, len(txData), err)
+		}
+		// CRITICAL: Detect write stall to prevent infinite loop
+		if n == 0 {
+			return nil, fmt.Errorf("CDC transfer write stalled after %d/%d bytes (no progress)", totalWritten, len(txData))
 		}
 		totalWritten += n
 	}
@@ -315,14 +323,15 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 
 		n, err := c.port.Read(rxBuf[totalRead:])
 		if err != nil {
-			return nil, fmt.Errorf("CDC transfer read failed: %w", err)
+			return nil, fmt.Errorf("CDC transfer read failed after %d/%d bytes: %w", totalRead, len(rxBuf), err)
 		}
-		totalRead += n
 
 		// If we got no data, timeout
 		if n == 0 {
-			return nil, ErrReadTimeout
+			return nil, fmt.Errorf("CDC transfer read timeout after %d/%d bytes: %w", totalRead, len(rxBuf), ErrReadTimeout)
 		}
+
+		totalRead += n
 	}
 
 	return rxBuf, nil

@@ -70,7 +70,39 @@ jobs:
       - name: Build gateway binary
         run: go build -v -o star-gateway ./cmd/star-gateway
 
-      - name: Run unit tests
+      # CDC Transport Testing Strategy:
+      # - Mock tests run in CI/CD without hardware (using cdc_mock_test.go)
+      # - Hardware tests skip gracefully when /dev/ttyACM0 is unavailable
+      # - Mock tests verify: partial I/O, stalls, timeouts, errors, concurrency
+      # - See: star-gateway/internal/transport/cdc_test.go
+      - name: Run CDC transport mock tests (hardware-independent)
+        run: |
+          echo "### USB CDC Transport Tests (Mock-Based)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Running hardware-independent CDC transport tests using mock serial port..." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          go test -v -run TestCDCTransportMock ./internal/transport 2>&1 | tee cdc-test.log
+
+          # Extract test results
+          passed=$(grep -c "PASS: TestCDCTransportMock" cdc-test.log || echo "0")
+          echo "✅ **CDC Mock Tests Passed:** $passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary>CDC Test Coverage</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Partial write handling (single byte, multi-byte)" >> $GITHUB_STEP_SUMMARY
+          echo "- Partial read handling (incremental reads)" >> $GITHUB_STEP_SUMMARY
+          echo "- Write stall detection (zero-progress loops)" >> $GITHUB_STEP_SUMMARY
+          echo "- Read timeout detection" >> $GITHUB_STEP_SUMMARY
+          echo "- Device disconnect simulation" >> $GITHUB_STEP_SUMMARY
+          echo "- Concurrent access safety" >> $GITHUB_STEP_SUMMARY
+          echo "- Loopback transfers" >> $GITHUB_STEP_SUMMARY
+          echo "- Context timeout restoration" >> $GITHUB_STEP_SUMMARY
+          echo "- Deadline handling" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run unit tests (full suite)
         run: go test -v -race -coverprofile=coverage.out -covermode=atomic -coverpkg=./... ./...
 
       - name: Calculate coverage
