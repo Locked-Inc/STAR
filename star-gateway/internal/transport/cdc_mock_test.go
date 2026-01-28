@@ -18,20 +18,18 @@ type mockSerialPort struct {
 	mu sync.Mutex
 
 	// State
-	closed        bool
-	readTimeout   time.Duration
-	readDeadline  time.Time
-	writeDeadline time.Time
+	closed      bool
+	readTimeout time.Duration
 
 	// Data buffers
 	rxBuffer []byte // Data to return on Read() calls
 	txBuffer []byte // Data received via Write() calls (for verification)
 
 	// Behavior configuration
-	readBehavior  *mockReadBehavior
-	writeBehavior *mockWriteBehavior
-	nextError     error // Error to return on next operation (deprecated)
-	nextReadError error // Error to return on next Read() call
+	readBehavior   *mockReadBehavior
+	writeBehavior  *mockWriteBehavior
+	nextError      error // Error to return on next operation (deprecated)
+	nextReadError  error // Error to return on next Read() call
 	nextWriteError error // Error to return on next Write() call
 
 	// Call tracking
