@@ -1,16 +1,23 @@
 {
   "name": "Existing Dockerfile",
-  "initializeCommand": "powershell -Command \"New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.ssh', '${localEnv:HOME}${localEnv:USERPROFILE}/.gemini', '${localEnv:HOME}${localEnv:USERPROFILE}/.claude', '${localEnv:HOME}${localEnv:USERPROFILE}/.config/gh' -ItemType Directory -Force; if (-not (Test-Path '${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig')) { New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig' -ItemType File }; if (-not (Test-Path '${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json')) { New-Item -Path '${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json' -ItemType File }\" || (mkdir -p \"${localEnv:HOME}${localEnv:USERPROFILE}/.ssh\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.gemini\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.claude\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.config/gh\" && touch \"${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig\" \"${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json\")",
+  "initializeCommand": "mkdir -p \"${localEnv:HOME}/.ssh\" \"${localEnv:HOME}/.gemini\" \"${localEnv:HOME}/.claude\" \"${localEnv:HOME}/.config/gh\" \"${localEnv:HOME}/.config/opencode\" \"${localEnv:HOME}/.config/openai\" && touch \"${localEnv:HOME}/.gitconfig\" \"${localEnv:HOME}/.claude.json\"",
   "build": {
     "context": "..",
-    "dockerfile": "../Dockerfile"
+    "dockerfile": "../Dockerfile",
+    "args": {
+      "BUILDPLATFORM": "linux/amd64"
+    }
   },
+  "runArgs": [
+    "--platform=linux/amd64"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/git-lfs:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/go:1": {},
-    "ghcr.io/devcontainers/features/node:1": {},
-    "ghcr.io/devcontainers/features/python:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "installYarnUsingApt": false
+    },
     "ghcr.io/devcontainers-extra/features/act:1": {},
     "ghcr.io/devcontainers-extra/features/actionlint:1": {},
     "ghcr.io/devcontainers-extra/features/claude-code:1": {},
@@ -26,11 +33,13 @@
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/star/.gitconfig,type=bind,consistency=cached",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/star/.ssh,type=bind,consistency=cached",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/gh,target=/home/star/.config/gh,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/opencode,target=/home/star/.config/opencode,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/openai,target=/home/star/.config/openai,type=bind,consistency=cached",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gemini,target=/home/star/.gemini,type=bind",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/star/.claude,type=bind",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude.json,target=/home/star/.claude.json,type=bind"
   ],
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y clang-format clang clangd vim && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && cd star-proto/proto && buf mod update && cd ../..",
+  "postCreateCommand": "sudo rm -f /etc/apt/sources.list.d/yarn.list && sudo apt-get update && sudo apt-get install -y clang-format clang clangd vim && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex && cd star-proto/proto && buf mod update && cd ../..",
   "customizations": {
     "vscode": {
       "extensions": [
