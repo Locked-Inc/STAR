@@ -791,6 +791,15 @@ func containsSubstring(s, substr string) bool {
 	return false
 }
 
+// Test constants for timeout restoration
+const (
+	testTimeoutShort   = 500 * time.Millisecond
+	testTimeoutLong    = 1 * time.Second
+	testDeadlineOffset = 2 * time.Second
+)
+
+var testPayload = []byte{0x01, 0x02, 0x03, 0x04}
+
 // TestCDCTransportMockTimeoutRestoration verifies timeout is restored after Transfer().
 func TestCDCTransportMockTimeoutRestoration(t *testing.T) {
 	tests := []struct {
@@ -802,7 +811,7 @@ func TestCDCTransportMockTimeoutRestoration(t *testing.T) {
 		{
 			name: "NormalTransfer",
 			setupContext: func() (context.Context, context.CancelFunc) {
-				return context.WithTimeout(context.Background(), 500*time.Millisecond)
+				return context.WithTimeout(context.Background(), testTimeoutShort)
 			},
 			shouldSucceed:   true,
 			expectedTimeout: DefaultCDCTimeout,
@@ -810,7 +819,7 @@ func TestCDCTransportMockTimeoutRestoration(t *testing.T) {
 		{
 			name: "CustomDeadline",
 			setupContext: func() (context.Context, context.CancelFunc) {
-				deadline := time.Now().Add(2 * time.Second)
+				deadline := time.Now().Add(testDeadlineOffset)
 				return context.WithDeadline(context.Background(), deadline)
 			},
 			shouldSucceed:   true,
@@ -819,7 +828,7 @@ func TestCDCTransportMockTimeoutRestoration(t *testing.T) {
 		{
 			name: "TransferWithError",
 			setupContext: func() (context.Context, context.CancelFunc) {
-				return context.WithTimeout(context.Background(), 1*time.Second)
+				return context.WithTimeout(context.Background(), testTimeoutLong)
 			},
 			shouldSucceed:   false, // Will fail due to read timeout
 			expectedTimeout: DefaultCDCTimeout,
@@ -831,7 +840,7 @@ func TestCDCTransportMockTimeoutRestoration(t *testing.T) {
 			mock := newMockSerialPort()
 			cdc := newCDCTransportWithMock(nil, mock)
 
-			testData := []byte{0x01, 0x02, 0x03, 0x04}
+			testData := testPayload
 
 			if tt.shouldSucceed {
 				// Queue data for successful transfer
