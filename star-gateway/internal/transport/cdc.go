@@ -375,3 +375,4 @@ func (c *CDCTransport) IsOpen() bool {
 	defer c.mu.RUnlock()
 	return c.isOpen
 }
+
