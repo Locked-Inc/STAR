@@ -111,8 +111,8 @@ func (hm *HealthMonitor) probeTransport(wrapper *TransportWrapper) bool {
 // probeUSB checks if USB CDC device exists and is accessible.
 //
 // This is a non-intrusive check that:
-//   1. Attempts to open the USB CDC device (/dev/ttyACM0)
-//   2. Immediately closes it if successful
+//  1. Attempts to open the USB CDC device (/dev/ttyACM0)
+//  2. Immediately closes it if successful
 //
 // Returns true if device is accessible, false otherwise.
 // Does NOT interfere with active connections (only probes inactive transports).
@@ -140,9 +140,9 @@ func (hm *HealthMonitor) probeUSB() bool {
 // probeSPI performs a quick connectivity test on SPI transport.
 //
 // This method:
-//   1. Sends a PING frame with a test payload (SPIProbeTestMarker)
-//   2. Waits for PONG response (SPIProbeTimeout)
-//   3. Validates that PONG echoes the same payload
+//  1. Sends a PING frame with a test payload (SPIProbeTestMarker)
+//  2. Waits for PONG response (SPIProbeTimeout)
+//  3. Validates that PONG echoes the same payload
 //
 // Returns true if PING/PONG exchange succeeds, false otherwise.
 // Uses short timeout to avoid blocking health monitor for too long.

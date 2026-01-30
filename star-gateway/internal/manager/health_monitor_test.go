@@ -40,10 +40,10 @@ func (m *MockTransportProbe) Receive(ctx context.Context) (*harq.ReceiveResult, 
 	}, nil
 }
 
-func (m *MockTransportProbe) GetState() harq.State { return harq.StateIdle }
+func (m *MockTransportProbe) GetState() harq.State  { return harq.StateIdle }
 func (m *MockTransportProbe) GetTxSequence() uint16 { return 0 }
 func (m *MockTransportProbe) GetRxSequence() uint16 { return 0 }
-func (m *MockTransportProbe) Reset()                 {}
+func (m *MockTransportProbe) Reset()                {}
 
 func TestHealthMonitor_Recovery(t *testing.T) {
 	// Setup TransportManager

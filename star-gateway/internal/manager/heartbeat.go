@@ -41,13 +41,13 @@ const (
 //
 // Thread Safety: All methods use mutex protection for concurrent access.
 type HeartbeatManager struct {
-	mu              sync.Mutex
-	lastSeen        time.Time
-	pingCounter     uint32
+	mu               sync.Mutex
+	lastSeen         time.Time
+	pingCounter      uint32
 	failureTriggered bool          // Prevents repeated failover triggers
-	pingInterval    time.Duration // 50ms - send PING if idle
-	failureTimeout  time.Duration // 200ms - declare link dead
-	onLinkFailed    func()        // Callback to trigger failover
+	pingInterval     time.Duration // 50ms - send PING if idle
+	failureTimeout   time.Duration // 200ms - declare link dead
+	onLinkFailed     func()        // Callback to trigger failover
 }
 
 // NewHeartbeatManager creates a new heartbeat manager with the specified timeouts.
@@ -105,9 +105,9 @@ func (hm *HeartbeatManager) OnFrameReceived() {
 // Run starts the heartbeat monitoring loop as a background goroutine.
 //
 // This method:
-//   1. Periodically checks elapsed time since lastSeen
-//   2. Sends PING if idle > pingInterval (50ms)
-//   3. Triggers failover if idle > failureTimeout (200ms)
+//  1. Periodically checks elapsed time since lastSeen
+//  2. Sends PING if idle > pingInterval (50ms)
+//  3. Triggers failover if idle > failureTimeout (200ms)
 //
 // The loop runs until ctx is cancelled. It should be started as a goroutine:
 //
@@ -138,9 +138,9 @@ func (hm *HeartbeatManager) Run(ctx context.Context, tm *TransportManager) {
 // check performs the heartbeat check logic.
 //
 // This is called periodically by Run() to:
-//   1. Calculate elapsed time since lastSeen
-//   2. Trigger failover if elapsed > failureTimeout (200ms) - ONCE per failure
-//   3. Send PING if elapsed > pingInterval (50ms) and not yet failed
+//  1. Calculate elapsed time since lastSeen
+//  2. Trigger failover if elapsed > failureTimeout (200ms) - ONCE per failure
+//  3. Send PING if elapsed > pingInterval (50ms) and not yet failed
 //
 // The failureTriggered flag prevents repeated failover attempts for the same failure.
 // It's cleared when OnFrameReceived() is called (link recovered).
