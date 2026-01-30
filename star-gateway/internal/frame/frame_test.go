@@ -122,7 +122,7 @@ func TestEncoderByteOrder(t *testing.T) {
 				{offset: 3, expected: 0x34, desc: "SEQ low"},
 				{offset: 4, expected: 0x00, desc: "LEN high"},
 				{offset: 5, expected: 0x01, desc: "LEN low"},
-				{offset: 6, expected: 0x01, desc: "TYPE (Command)"},
+				{offset: 6, expected: 0x10, desc: "TYPE (Command)"},
 				{offset: 7, expected: 0x00, desc: "FLAGS"},
 			},
 		},

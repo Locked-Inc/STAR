@@ -71,6 +71,10 @@ type TransportManager struct {
 	// Components (initialized on demand)
 	healthMonitor   *HealthMonitor
 	hotPlugDetector *HotPlugDetector
+	heartbeat       *HeartbeatManager
+
+	// Session state (shared across all transports - CRITICAL FIX #1)
+	sessionState *SessionState
 }
 
 // NewTransportManager creates a new TransportManager with the given configuration.
@@ -93,6 +97,7 @@ func NewTransportManager(config *Config) *TransportManager {
 		config:              config,
 		state:               StateInitializing,
 		availableTransports: make(map[string]*TransportWrapper),
+		sessionState:        NewSessionState(), // CRITICAL FIX #1: Shared across all transports
 	}
 
 	tm.operationsCond = sync.NewCond(&tm.operationsMu)
@@ -104,6 +109,25 @@ func NewTransportManager(config *Config) *TransportManager {
 	if config.EnableHotPlug && config.Mode != ModeForceSPI {
 		tm.hotPlugDetector = NewHotPlugDetector(config.HotPlugPollInterval, config.USBVID, config.USBPID)
 	}
+
+	// Heartbeat manager for hybrid implicit/explicit connectivity detection
+	// Uses default intervals: DefaultPingInterval (50ms), DefaultFailureTimeout (200ms)
+	// onFailure callback triggers automatic failover
+	heartbeat, err := NewHeartbeatManager(
+		DefaultPingInterval,  // 50ms - send PING if idle
+		DefaultFailureTimeout, // 200ms - declare link dead if no frames
+		func() {
+			// Callback to trigger failover on heartbeat timeout
+			log.Printf("Heartbeat failure detected, triggering failover")
+			go tm.attemptFailover()
+		},
+	)
+	if err != nil {
+		// This should never happen with valid constants, but handle gracefully
+		log.Printf("FATAL: Failed to create HeartbeatManager: %v", err)
+		panic(fmt.Sprintf("HeartbeatManager creation failed: %v", err))
+	}
+	tm.heartbeat = heartbeat
 
 	return tm
 }
@@ -147,6 +171,13 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 			tm.hotPlugDetector.Run(tm.ctx, tm.handleHotPlugEvent)
 		}()
 	}
+
+	// Start heartbeat manager (hybrid implicit/explicit detection)
+	tm.wg.Add(1)
+	go func() {
+		defer tm.wg.Done()
+		tm.heartbeat.Run(tm.ctx, tm)
+	}()
 
 	// Select initial transport
 	best := tm.selectBestTransportLocked()
@@ -416,6 +447,11 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 		return nil, err
 	}
 
+	// CRITICAL: Update heartbeat on ANY valid frame (implicit detection)
+	// This includes telemetry, commands, ACKs, PONG frames
+	// HeartbeatManager only needs to know a frame arrived (updates lastSeen)
+	tm.heartbeat.OnFrameReceived()
+
 	return result, nil
 }
 
@@ -546,6 +582,22 @@ func (tm *TransportManager) GetInternalState() State {
 	tm.mu.RLock()
 	defer tm.mu.RUnlock()
 	return tm.state
+}
+
+// GetSessionState returns the shared SessionState instance.
+// CRITICAL FIX #1: All transports (USB CDC and SPI) MUST use the same SessionState
+// to prevent sequence desynchronization during transport switching (Handoff Problem).
+//
+// Usage in gateway.go:
+//
+//	tm := manager.NewTransportManager(config)
+//	session := tm.GetSessionState()
+//	cdcLink, _ := link.NewCDCLink(cdcTransport, session)
+//	spiLink, _ := link.NewSPILink(spiTransport, session)
+//	tm.RegisterTransport("usb", cdcLink, manager.PriorityUSB)
+//	tm.RegisterTransport("spi", spiLink, manager.PrioritySPI)
+func (tm *TransportManager) GetSessionState() *SessionState {
+	return tm.sessionState
 }
 
 // =============================================================================
