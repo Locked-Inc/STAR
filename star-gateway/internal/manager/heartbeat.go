@@ -41,12 +41,13 @@ const (
 //
 // Thread Safety: All methods use mutex protection for concurrent access.
 type HeartbeatManager struct {
-	mu             sync.Mutex
-	lastSeen       time.Time
-	pingCounter    uint32
-	pingInterval   time.Duration // 50ms - send PING if idle
-	failureTimeout time.Duration // 200ms - declare link dead
-	onLinkFailed   func()        // Callback to trigger failover
+	mu              sync.Mutex
+	lastSeen        time.Time
+	pingCounter     uint32
+	failureTriggered bool          // Prevents repeated failover triggers
+	pingInterval    time.Duration // 50ms - send PING if idle
+	failureTimeout  time.Duration // 200ms - declare link dead
+	onLinkFailed    func()        // Callback to trigger failover
 }
 
 // NewHeartbeatManager creates a new heartbeat manager with the specified timeouts.
@@ -90,12 +91,14 @@ func NewHeartbeatManager(pingInterval, failureTimeout time.Duration, onFailure f
 //   - PONG frames (explicit heartbeat responses)
 //
 // By updating on any frame, we avoid sending unnecessary PINGs when the link is
-// actively transferring data.
+// actively transferring data. Also clears the failureTriggered flag to allow
+// future failover if the link fails again.
 //
-// Thread Safety: Uses mutex to protect lastSeen timestamp.
+// Thread Safety: Uses mutex to protect lastSeen timestamp and failureTriggered flag.
 func (hm *HeartbeatManager) OnFrameReceived() {
 	hm.mu.Lock()
 	hm.lastSeen = time.Now()
+	hm.failureTriggered = false // Clear failure flag (link recovered)
 	hm.mu.Unlock()
 }
 
@@ -136,18 +139,29 @@ func (hm *HeartbeatManager) Run(ctx context.Context, tm *TransportManager) {
 //
 // This is called periodically by Run() to:
 //   1. Calculate elapsed time since lastSeen
-//   2. Trigger failover if elapsed > failureTimeout (200ms)
+//   2. Trigger failover if elapsed > failureTimeout (200ms) - ONCE per failure
 //   3. Send PING if elapsed > pingInterval (50ms) and not yet failed
+//
+// The failureTriggered flag prevents repeated failover attempts for the same failure.
+// It's cleared when OnFrameReceived() is called (link recovered).
 //
 // The order matters: we check failure first to avoid sending PING on a dead link.
 func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 	hm.mu.Lock()
 	elapsed := time.Since(hm.lastSeen)
+	alreadyTriggered := hm.failureTriggered
 	hm.mu.Unlock()
 
 	// Failure detection (highest priority)
-	if elapsed > hm.failureTimeout {
+	// Only trigger once per failure to prevent spamming attemptFailover()
+	if elapsed > hm.failureTimeout && !alreadyTriggered {
 		log.Printf("Heartbeat timeout (%v), triggering failover", elapsed)
+
+		// Set flag BEFORE calling onLinkFailed to prevent race
+		hm.mu.Lock()
+		hm.failureTriggered = true
+		hm.mu.Unlock()
+
 		if hm.onLinkFailed != nil {
 			hm.onLinkFailed()
 		}
@@ -155,7 +169,7 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 	}
 
 	// Explicit PING (only if idle but not yet failed)
-	if elapsed > hm.pingInterval {
+	if elapsed > hm.pingInterval && !alreadyTriggered {
 		hm.sendPing(ctx, tm)
 	}
 }

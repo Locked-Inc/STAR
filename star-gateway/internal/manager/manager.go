@@ -151,7 +151,6 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 	}
 
 	tm.mu.Lock()
-	defer tm.mu.Unlock()
 
 	// Create cancellable context for background routines
 	tm.ctx, tm.cancel = context.WithCancel(ctx)
@@ -203,13 +202,16 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 		tm.mu.Lock()
 		tm.state = targetState
 		log.Printf("TransportManager started with %s transport (priority %d)", transportName, transportPriority)
+		tm.mu.Unlock() // Release before return
 	} else {
 		tm.state = StateFailed
 		// Check if this is acceptable based on mode
 		if tm.config.Mode == ModeForceUSB || tm.config.Mode == ModeForceSPI {
+			tm.mu.Unlock() // Release before error return
 			return fmt.Errorf("no %s transport available (required by mode)", tm.config.Mode)
 		}
 		log.Printf("TransportManager started with no available transports (will retry)")
+		tm.mu.Unlock() // Release before return
 	}
 
 	return nil
@@ -261,10 +263,19 @@ func (tm *TransportManager) performResetHandshake(ctx context.Context) error {
 			continue
 		}
 
-		// Validate that we received a frame
-		// Note: The actual frame type checking should be done by looking at
-		// the frame structure. For now, receiving ANY response is considered success
-		// since the RX72N firmware will implement proper RESET_ACK handling
+		// TODO: Validate frame type is FrameTypeResetAck (0xFE)
+		// Current limitation: harq.ReceiveResult doesn't include frame type metadata.
+		// The HARQ layer abstracts away frame details, only exposing Payload and Metadata
+		// (sequence, timestamp, etc.). To validate frame type, we would need to either:
+		//   1. Add Type field to harq.FrameMetadata, OR
+		//   2. Decode result.Payload to extract frame type
+		//
+		// For now, receiving ANY response is considered success since:
+		//   - RX72N firmware sends RESET_ACK (0xFE) in response to RESET (0xFF)
+		//   - If we receive a frame, it means communication is working
+		//   - Sequence synchronization happens on both sides regardless
+		//
+		// Future enhancement: Add frame type validation for more robust handshake
 		_ = result // Use result to avoid unused variable warning
 
 		// Success!
