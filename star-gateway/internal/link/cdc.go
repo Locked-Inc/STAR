@@ -147,15 +147,10 @@ func (c *CDCLink) sendWithTimeout(ctx context.Context, encodedFrame []byte) erro
 	}
 }
 
-// SendWithSeq sends data with the specified sequence number and flags.
-// CRITICAL FIX #5: sendMutex ensures atomic sequence+write (no out-of-order frames).
-// CRITICAL FIX #7: Context timeout prevents blocked writes on USB disconnect.
-func (c *CDCLink) SendWithSeq(ctx context.Context, data []byte, seq uint16, flags frame.Flags) error {
-	// CRITICAL FIX #5: Serialize Send to prevent out-of-order transmission
-	// Lock MUST cover both sequence assignment AND transport.Send()
-	c.sendMutex.Lock()
-	defer c.sendMutex.Unlock()
-
+// buildAndSend is a private helper that encapsulates the common send logic.
+// It performs context/transport checks, creates a frame, encodes it, and sends with timeout.
+// Caller must hold c.sendMutex lock.
+func (c *CDCLink) buildAndSend(ctx context.Context, data []byte, seq uint16, flags frame.Flags) error {
 	// Check context
 	if ctx.Err() != nil {
 		return ctx.Err()
@@ -165,7 +160,7 @@ func (c *CDCLink) SendWithSeq(ctx context.Context, data []byte, seq uint16, flag
 		return ErrCDCTransportNotInitialized
 	}
 
-	// Create frame with provided sequence
+	// Create frame with provided sequence and flags
 	f := &frame.Frame{
 		Header: frame.Header{
 			Sequence: seq,
@@ -186,6 +181,18 @@ func (c *CDCLink) SendWithSeq(ctx context.Context, data []byte, seq uint16, flag
 	return c.sendWithTimeout(ctx, encodedFrame)
 }
 
+// SendWithSeq sends data with the specified sequence number and flags.
+// CRITICAL FIX #5: sendMutex ensures atomic sequence+write (no out-of-order frames).
+// CRITICAL FIX #7: Context timeout prevents blocked writes on USB disconnect.
+func (c *CDCLink) SendWithSeq(ctx context.Context, data []byte, seq uint16, flags frame.Flags) error {
+	// CRITICAL FIX #5: Serialize Send to prevent out-of-order transmission
+	// Lock MUST cover both sequence assignment AND transport.Send()
+	c.sendMutex.Lock()
+	defer c.sendMutex.Unlock()
+
+	return c.buildAndSend(ctx, data, seq, flags)
+}
+
 // ============================================================================
 // HARQ Interface Implementation (Lightweight Protocol)
 // ============================================================================
@@ -199,37 +206,13 @@ func (c *CDCLink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 	c.sendMutex.Lock()
 	defer c.sendMutex.Unlock()
 
-	// Check context
-	if ctx.Err() != nil {
-		return ctx.Err()
-	}
-
-	if c.transport == nil {
-		return ErrCDCTransportNotInitialized
-	}
-
 	// Get next sequence from SHARED state (critical for transport switching)
 	seq := c.sessionState.NextTxSequence()
 
-	// Create frame
-	f := &frame.Frame{
-		Header: frame.Header{
-			Sequence: seq,
-			Length:   uint16(len(data)),
-			Flags:    0, // No RequiresAck, No FEC
-		},
-		Type:    frame.FrameTypeCommand,
-		Payload: data,
-	}
+	// No RequiresAck, No FEC for lightweight CDC protocol
+	const flags = 0
 
-	// Encode (adds SYNC, CRC32)
-	encodedFrame, err := c.encoder.Encode(f)
-	if err != nil {
-		return fmt.Errorf("failed to encode frame: %w", err)
-	}
-
-	// CRITICAL FIX #7: Use timeout protection to prevent blocking on USB disconnect
-	return c.sendWithTimeout(ctx, encodedFrame)
+	return c.buildAndSend(ctx, data, seq, flags)
 }
 
 // Receive implements harq.HARQ interface.
