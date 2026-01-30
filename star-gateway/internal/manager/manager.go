@@ -153,6 +153,13 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 	if best != nil {
 		tm.activeTransport = best.Transport
 		tm.activeTransportName = best.Name
+		targetState := tm.getActiveStateLocked(best.Name)
+		transportName := best.Name
+		transportPriority := best.Priority
+
+		// CRITICAL: Release mutex before performResetHandshake to prevent deadlock
+		// performResetHandshake calls Send/Receive which may acquire locks
+		tm.mu.Unlock()
 
 		// CRITICAL FIX #4: Send Reset handshake before entering Active state
 		// This synchronizes sequence numbers with RX72N after Gateway restart
@@ -161,8 +168,10 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 			// Don't fail startup - RX72N might be rebooting
 		}
 
-		tm.state = tm.getActiveStateLocked(best.Name)
-		log.Printf("TransportManager started with %s transport (priority %d)", best.Name, best.Priority)
+		// Reacquire mutex to update state
+		tm.mu.Lock()
+		tm.state = targetState
+		log.Printf("TransportManager started with %s transport (priority %d)", transportName, transportPriority)
 	} else {
 		tm.state = StateFailed
 		// Check if this is acceptable based on mode

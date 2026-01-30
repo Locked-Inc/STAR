@@ -106,6 +106,47 @@ var (
 	ErrCDCTransportNotInitialized = errors.New("CDC transport not initialized")
 )
 
+// sendWithTimeout sends an encoded frame with timeout protection.
+// CRITICAL FIX #7: Prevents blocked writes on USB disconnect.
+//
+// This helper spawns a goroutine to call transport.Send() and waits on a buffered
+// result channel. It selects between:
+//   - Successful send completion
+//   - Timeout (50ms) - returns error
+//   - Context cancellation - returns ctx.Err()
+//
+// Note: If timeout or context cancellation occurs, the background goroutine may
+// still be blocked in transport.Send(). For USB CDC, this is typically brief as
+// the OS buffers the write, but in pathological cases (device stuck) the goroutine
+// may leak. This is acceptable as USB disconnect will eventually unblock the syscall
+// and the goroutine will complete.
+func (c *CDCLink) sendWithTimeout(ctx context.Context, encodedFrame []byte) error {
+	type sendResult struct {
+		n   int
+		err error
+	}
+	sendCh := make(chan sendResult, 1)
+
+	go func() {
+		n, err := c.transport.Send(encodedFrame)
+		sendCh <- sendResult{n: n, err: err}
+	}()
+
+	// Wait for send completion or timeout
+	const sendTimeout = 50 * time.Millisecond
+	select {
+	case result := <-sendCh:
+		if result.err != nil {
+			return fmt.Errorf("transport send failed: %w", result.err)
+		}
+		return nil
+	case <-time.After(sendTimeout):
+		return fmt.Errorf("transport send timeout after %v", sendTimeout)
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
 // SendWithSeq sends data with the specified sequence number and flags.
 // CRITICAL FIX #5: sendMutex ensures atomic sequence+write (no out-of-order frames).
 // CRITICAL FIX #7: Context timeout prevents blocked writes on USB disconnect.
@@ -141,32 +182,8 @@ func (c *CDCLink) SendWithSeq(ctx context.Context, data []byte, seq uint16, flag
 		return fmt.Errorf("failed to encode frame: %w", err)
 	}
 
-	// CRITICAL FIX #7: Use goroutine with timeout to prevent blocking on USB disconnect
-	// This ensures failover isn't delayed by blocked syscall
-	type sendResult struct {
-		n   int
-		err error
-	}
-	sendCh := make(chan sendResult, 1)
-
-	go func() {
-		n, err := c.transport.Send(encodedFrame)
-		sendCh <- sendResult{n: n, err: err}
-	}()
-
-	// Wait for send completion or timeout
-	sendTimeout := 50 * time.Millisecond
-	select {
-	case result := <-sendCh:
-		if result.err != nil {
-			return fmt.Errorf("transport send failed: %w", result.err)
-		}
-		return nil
-	case <-time.After(sendTimeout):
-		return fmt.Errorf("transport send timeout after %v", sendTimeout)
-	case <-ctx.Done():
-		return ctx.Err()
-	}
+	// CRITICAL FIX #7: Use timeout protection to prevent blocking on USB disconnect
+	return c.sendWithTimeout(ctx, encodedFrame)
 }
 
 // ============================================================================
@@ -211,32 +228,8 @@ func (c *CDCLink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 		return fmt.Errorf("failed to encode frame: %w", err)
 	}
 
-	// CRITICAL FIX #7: Use goroutine with timeout to prevent blocking on USB disconnect
-	// This ensures failover isn't delayed by blocked syscall
-	type sendResult struct {
-		n   int
-		err error
-	}
-	sendCh := make(chan sendResult, 1)
-
-	go func() {
-		n, err := c.transport.Send(encodedFrame)
-		sendCh <- sendResult{n: n, err: err}
-	}()
-
-	// Wait for send completion or timeout
-	sendTimeout := 50 * time.Millisecond
-	select {
-	case result := <-sendCh:
-		if result.err != nil {
-			return fmt.Errorf("transport send failed: %w", result.err)
-		}
-		return nil
-	case <-time.After(sendTimeout):
-		return fmt.Errorf("transport send timeout after %v", sendTimeout)
-	case <-ctx.Done():
-		return ctx.Err()
-	}
+	// CRITICAL FIX #7: Use timeout protection to prevent blocking on USB disconnect
+	return c.sendWithTimeout(ctx, encodedFrame)
 }
 
 // Receive implements harq.HARQ interface.
@@ -274,8 +267,8 @@ func (c *CDCLink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		Metadata: harq.FrameMetadata{
 			Sequence:    f.Header.Sequence,
 			ReceivedAt:  time.Now(),
-			Retransmits: 0,       // No retransmissions in lightweight CDC protocol
-			FECDecoded:  false,   // No FEC in lightweight CDC protocol
+			Retransmits: 0,     // No retransmissions in lightweight CDC protocol
+			FECDecoded:  false, // No FEC in lightweight CDC protocol
 		},
 	}, nil
 }
