@@ -9,6 +9,12 @@ import (
 	"sync"
 )
 
+// MaxGapTolerance is the maximum number of skipped frames allowed before
+// rejecting a received sequence as a large gap (transport failure).
+// It controls how many frames may be lost (for example on lightweight USB)
+// while still accepting and catching up the RX sequence.
+const MaxGapTolerance uint16 = 10
+
 // SessionState holds sequence numbers shared across all transports.
 //
 // CRITICAL FIX #1: This prevents the "Handoff Problem" where switching transports causes
@@ -76,9 +82,7 @@ func (s *SessionState) ValidateRxSequence(seq uint16) bool {
 	}
 
 	// Small gap (packet loss on USB) - Accept and catch up
-	// Allow gaps up to 10 frames (configurable)
-	const maxGapTolerance = 10
-	if diff > 0 && diff < maxGapTolerance {
+	if diff > 0 && diff < MaxGapTolerance {
 		log.Printf("WARN: Skipped %d frames (packet loss), expected %d, got %d",
 			diff, s.rxSequence, seq)
 		s.rxSequence = (seq + 1) & 0xFFFF
