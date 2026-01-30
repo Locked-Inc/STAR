@@ -10,6 +10,17 @@ import (
 	"go.bug.st/serial"
 )
 
+const (
+	// SPIProbeTimeout is the timeout for SPI PING/PONG health probe.
+	SPIProbeTimeout = 50 * time.Millisecond
+
+	// SPIProbePayloadSize is the size of SPI probe payload (4-byte counter).
+	SPIProbePayloadSize = 4
+
+	// SPIProbeTestMarker is the test value sent in PING and expected in PONG.
+	SPIProbeTestMarker = 0xDEADBEEF
+)
+
 // HealthMonitor periodically checks the health of inactive transports.
 //
 // It runs in a background goroutine and probes transports that are not currently active.
@@ -119,27 +130,30 @@ func (hm *HealthMonitor) probeUSB() bool {
 	}
 
 	// Close immediately (we just wanted to check accessibility)
-	port.Close()
+	if err := port.Close(); err != nil {
+		log.Printf("WARNING: Failed to close USB probe port: %v", err)
+		return false
+	}
 	return true
 }
 
 // probeSPI performs a quick connectivity test on SPI transport.
 //
 // This method:
-//   1. Sends a PING frame with a test payload (0xDEADBEEF)
-//   2. Waits for PONG response (50ms timeout)
+//   1. Sends a PING frame with a test payload (SPIProbeTestMarker)
+//   2. Waits for PONG response (SPIProbeTimeout)
 //   3. Validates that PONG echoes the same payload
 //
 // Returns true if PING/PONG exchange succeeds, false otherwise.
 // Uses short timeout to avoid blocking health monitor for too long.
 func (hm *HealthMonitor) probeSPI(wrapper *TransportWrapper) bool {
 	// Use short timeout for probe (don't block health monitor)
-	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), SPIProbeTimeout)
 	defer cancel()
 
 	// Create PING payload with test marker
-	payload := make([]byte, 4)
-	binary.BigEndian.PutUint32(payload, 0xDEADBEEF)
+	payload := make([]byte, SPIProbePayloadSize)
+	binary.BigEndian.PutUint32(payload, SPIProbeTestMarker)
 
 	// Send PING
 	if err := wrapper.Transport.Send(ctx, payload); err != nil {
@@ -155,11 +169,11 @@ func (hm *HealthMonitor) probeSPI(wrapper *TransportWrapper) bool {
 	}
 
 	// Validate PONG payload
-	if len(result.Payload) != 4 {
+	if len(result.Payload) != SPIProbePayloadSize {
 		// Invalid response length
 		return false
 	}
 
 	receivedCounter := binary.BigEndian.Uint32(result.Payload)
-	return receivedCounter == 0xDEADBEEF
+	return receivedCounter == SPIProbeTestMarker
 }
