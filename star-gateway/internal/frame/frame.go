@@ -1,4 +1,4 @@
-// Package frame defines the wire protocol frame structure for RPi5 <-> ESP32 communication.
+// Package frame defines the wire protocol frame structure for RPi5 <-> RX72N communication.
 //
 // Frame format:
 //
@@ -45,15 +45,32 @@ const (
 type Type uint8
 
 const (
-	FrameTypeUnknown  Type = 0
-	FrameTypeCommand  Type = 1
-	FrameTypeResponse Type = 2
-	FrameTypeAck      Type = 3
-	FrameTypeNack     Type = 4
+	// Heartbeat and session reset frame types (Critical Fixes #4)
+	FrameTypePing     Type = 0x00 // Heartbeat request
+	FrameTypePong     Type = 0x01 // Heartbeat response
+	FrameTypeResetAck Type = 0xFE // Session reset acknowledgment
+	FrameTypeReset    Type = 0xFF // Session reset (synchronize sequences)
+
+	// Standard frame types
+	FrameTypeCommand  Type = 0x10 // Command frame
+	FrameTypeResponse Type = 0x11 // Response frame
+	FrameTypeAck      Type = 0x12 // Acknowledgment
+	FrameTypeNack     Type = 0x13 // Negative acknowledgment
+
+	// Legacy/Unknown
+	FrameTypeUnknown Type = 0x14 // Unknown frame type
 )
 
 func (ft Type) String() string {
 	switch ft {
+	case FrameTypePing:
+		return "PING"
+	case FrameTypePong:
+		return "PONG"
+	case FrameTypeReset:
+		return "RESET"
+	case FrameTypeResetAck:
+		return "RESET_ACK"
 	case FrameTypeCommand:
 		return "COMMAND"
 	case FrameTypeResponse:
