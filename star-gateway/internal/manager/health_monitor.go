@@ -2,8 +2,23 @@ package manager
 
 import (
 	"context"
+	"encoding/binary"
 	"log"
 	"time"
+
+	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
+	"go.bug.st/serial"
+)
+
+const (
+	// SPIProbeTimeout is the timeout for SPI PING/PONG health probe.
+	SPIProbeTimeout = 50 * time.Millisecond
+
+	// SPIProbePayloadSize is the size of SPI probe payload (4-byte counter).
+	SPIProbePayloadSize = 4
+
+	// SPIProbeTestMarker is the test value sent in PING and expected in PONG.
+	SPIProbeTestMarker = 0xDEADBEEF
 )
 
 // HealthMonitor periodically checks the health of inactive transports.
@@ -74,15 +89,91 @@ func (hm *HealthMonitor) checkTransports(tm *TransportManager) {
 
 // probeTransport performs a lightweight health check on a transport.
 //
-// For now, this is a stub that returns true (assumes transport is healthy).
-// In Phase 2, this will be enhanced to:
-//   - Check if USB device exists and can be opened
-//   - Perform quick SPI connectivity test
+// This method dispatches to transport-specific probe implementations:
+//   - USB: Checks if device exists and can be opened
+//   - SPI: Sends PING and validates PONG response
+//   - Other: Assumes healthy (for testing/mock transports)
+//
+// Returns true if the transport is healthy and available, false otherwise.
 func (hm *HealthMonitor) probeTransport(wrapper *TransportWrapper) bool {
-	// TODO: Implement actual probing logic in Phase 2
-	// For USB: Check if /dev/ttyACM* exists and is accessible
-	// For SPI: Quick ping/connectivity test
+	switch wrapper.Name {
+	case TransportNameUSB:
+		return hm.probeUSB()
+	case TransportNameSPI:
+		return hm.probeSPI(wrapper)
+	default:
+		// For unknown/test transports, assume healthy
+		// This allows tests to use mock transports without implementing probes
+		return true
+	}
+}
 
-	// For now, assume all transports are potentially healthy
+// probeUSB checks if USB CDC device exists and is accessible.
+//
+// This is a non-intrusive check that:
+//  1. Attempts to open the USB CDC device (/dev/ttyACM0)
+//  2. Immediately closes it if successful
+//
+// Returns true if device is accessible, false otherwise.
+// Does NOT interfere with active connections (only probes inactive transports).
+func (hm *HealthMonitor) probeUSB() bool {
+	// Use default USB CDC device path
+	devicePath := transport.DefaultCDCDevice
+
+	// Try to open the device (non-blocking)
+	port, err := serial.Open(devicePath, &serial.Mode{
+		BaudRate: transport.DefaultBaudRate,
+	})
+	if err != nil {
+		// Device not available (unplugged, in use, permissions issue)
+		return false
+	}
+
+	// Close immediately (we just wanted to check accessibility)
+	if err := port.Close(); err != nil {
+		log.Printf("WARNING: Failed to close USB probe port: %v", err)
+		return false
+	}
 	return true
+}
+
+// probeSPI performs a quick connectivity test on SPI transport.
+//
+// This method:
+//  1. Sends a PING frame with a test payload (SPIProbeTestMarker)
+//  2. Waits for PONG response (SPIProbeTimeout)
+//  3. Validates that PONG echoes the same payload
+//
+// Returns true if PING/PONG exchange succeeds, false otherwise.
+// Uses short timeout to avoid blocking health monitor for too long.
+func (hm *HealthMonitor) probeSPI(wrapper *TransportWrapper) bool {
+	// Use short timeout for probe (don't block health monitor)
+	ctx, cancel := context.WithTimeout(context.Background(), SPIProbeTimeout)
+	defer cancel()
+
+	// Create PING payload with test marker
+	payload := make([]byte, SPIProbePayloadSize)
+	binary.BigEndian.PutUint32(payload, SPIProbeTestMarker)
+
+	// Send PING
+	if err := wrapper.Transport.Send(ctx, payload); err != nil {
+		// Send failed (transport not available)
+		return false
+	}
+
+	// Wait for PONG
+	result, err := wrapper.Transport.Receive(ctx)
+	if err != nil {
+		// Receive failed (no response or timeout)
+		return false
+	}
+
+	// Validate PONG payload
+	if len(result.Payload) != SPIProbePayloadSize {
+		// Invalid response length
+		return false
+	}
+
+	receivedCounter := binary.BigEndian.Uint32(result.Payload)
+	return receivedCounter == SPIProbeTestMarker
 }
