@@ -31,6 +31,12 @@ type Device interface {
 	// Should be called when done with the device.
 	Close() error
 
+	// Receive reads up to len bytes from the device.
+	Receive(len int) ([]byte, error)
+
+	// Send writes data to the device.
+	Send(data []byte) (int, error)
+
 	// IsOpen returns whether the device is currently connected.
 	IsOpen() bool
 }
