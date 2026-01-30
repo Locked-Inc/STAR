@@ -114,7 +114,7 @@ func NewTransportManager(config *Config) *TransportManager {
 	// Uses default intervals: DefaultPingInterval (50ms), DefaultFailureTimeout (200ms)
 	// onFailure callback triggers automatic failover
 	heartbeat, err := NewHeartbeatManager(
-		DefaultPingInterval,  // 50ms - send PING if idle
+		DefaultPingInterval,   // 50ms - send PING if idle
 		DefaultFailureTimeout, // 200ms - declare link dead if no frames
 		func() {
 			// Callback to trigger failover on heartbeat timeout
