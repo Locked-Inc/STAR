@@ -119,7 +119,7 @@ func NewTransportManager(config *Config) *TransportManager {
 		func() {
 			// Callback to trigger failover on heartbeat timeout
 			log.Printf("Heartbeat failure detected, triggering failover")
-			go tm.attemptFailover()
+			go tm.attemptFailover(FailureTypeTimeout)
 		},
 	)
 	if err != nil {
@@ -571,7 +571,7 @@ func (tm *TransportManager) ForceSwitch(transportName string) error {
 	tm.mu.Unlock()
 
 	log.Printf("Force switching to transport: %s", transportName)
-	return tm.executeSwitch(wrapper)
+	return tm.executeSwitch(wrapper, FailureTypeGraceful)
 }
 
 // GetHealthMetrics returns a copy of health metrics for all registered transports.
@@ -659,7 +659,9 @@ func (tm *TransportManager) selectBestTransportLocked() *TransportWrapper {
 }
 
 // executeSwitch performs a transport switch with pause-drain-resume.
-func (tm *TransportManager) executeSwitch(target *TransportWrapper) error {
+// executeSwitch performs the actual transport switch with smart drain logic.
+// CRITICAL FIX #2: Skips drain for hard failures (USB disconnect, IO errors) to enable fast failover (<300ms).
+func (tm *TransportManager) executeSwitch(target *TransportWrapper, failureType FailureType) error {
 	if target == nil {
 		return errors.New("target transport is nil")
 	}
@@ -672,16 +674,24 @@ func (tm *TransportManager) executeSwitch(target *TransportWrapper) error {
 	tm.state = tm.getSwitchingStateLocked(target.Name)
 	tm.mu.Unlock()
 
-	log.Printf("Starting transport switch: %s → %s", oldName, target.Name)
+	log.Printf("Starting transport switch: %s → %s (failure type: %v)", oldName, target.Name, failureType)
 
 	// Step 1: Pause new operations
 	tm.pauseOperations()
 	defer tm.resumeOperations() // Ensure resume even on error
 
-	// Step 2: Drain in-flight operations
-	if err := tm.drainInflight(tm.config.SwitchTimeout); err != nil {
-		log.Printf("WARNING: Drain timeout during switch, continuing anyway: %v", err)
-		// Continue with switch despite timeout (better than staying on failed transport)
+	// Step 2: SMART DRAIN - skip if hard failure
+	// CRITICAL FIX #2: Only drain for graceful switches and heartbeat timeouts.
+	// Hard failures (USB disconnect, IO errors) skip drain for fast failover (<300ms).
+	shouldDrain := (failureType == FailureTypeGraceful || failureType == FailureTypeTimeout)
+
+	if shouldDrain {
+		if err := tm.drainInflight(tm.config.SwitchTimeout); err != nil {
+			log.Printf("WARNING: Drain timeout during switch, continuing anyway: %v", err)
+			// Continue with switch despite timeout (better than staying on failed transport)
+		}
+	} else {
+		log.Printf("Skipping drain for failure type: %v (hard failure, fast failover)", failureType)
 	}
 
 	// Step 3: Reset old transport
@@ -758,8 +768,8 @@ func (tm *TransportManager) recordOperation(name string, err error, latency time
 			wrapper.Available = false
 			log.Printf("Transport %s marked unhealthy after %d failures", name, wrapper.Health.ConsecutiveFailures)
 
-			// Trigger failover in background
-			go tm.attemptFailover()
+			// Trigger failover in background (consecutive IO errors)
+			go tm.attemptFailover(FailureTypeIOError)
 		}
 	} else {
 		// Record success
@@ -783,7 +793,8 @@ func (tm *TransportManager) recordOperation(name string, err error, latency time
 }
 
 // attemptFailover tries to switch to the next best transport.
-func (tm *TransportManager) attemptFailover() {
+// The failureType determines whether to drain in-flight operations before switching.
+func (tm *TransportManager) attemptFailover(failureType FailureType) {
 	tm.mu.Lock()
 	currentName := tm.activeTransportName
 	nextBest := tm.selectBestTransportLocked()
@@ -805,8 +816,8 @@ func (tm *TransportManager) attemptFailover() {
 		return
 	}
 
-	log.Printf("Failover triggered: %s → %s", currentName, nextBest.Name)
-	if err := tm.executeSwitch(nextBest); err != nil {
+	log.Printf("Failover triggered: %s → %s (failure type: %v)", currentName, nextBest.Name, failureType)
+	if err := tm.executeSwitch(nextBest, failureType); err != nil {
 		log.Printf("Failover switch failed: %v", err)
 		tm.mu.Lock()
 		tm.state = StateDegraded
@@ -815,8 +826,9 @@ func (tm *TransportManager) attemptFailover() {
 }
 
 // attemptSwitch tries to switch to a specific transport (used for priority upgrades).
+// Priority upgrades are graceful switches (drain in-flight operations).
 func (tm *TransportManager) attemptSwitch(target *TransportWrapper) {
-	if err := tm.executeSwitch(target); err != nil {
+	if err := tm.executeSwitch(target, FailureTypeGraceful); err != nil {
 		log.Printf("Priority-based switch failed: %v", err)
 	}
 }
@@ -837,7 +849,7 @@ func (tm *TransportManager) handleHotPlugEvent(event HotPlugEvent) {
 		if tm.activeTransportName == TransportNameUSB {
 			log.Printf("Active USB transport disconnected, triggering failover")
 			tm.mu.Unlock()
-			go tm.attemptFailover()
+			go tm.attemptFailover(FailureTypeHotPlugRemove)
 		} else {
 			// Mark USB as unavailable
 			if wrapper, exists := tm.availableTransports[TransportNameUSB]; exists {

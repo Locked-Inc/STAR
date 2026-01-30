@@ -20,6 +20,7 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/fec"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/link"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/manager"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/service"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
@@ -211,12 +212,28 @@ func initTransportManager(ctx context.Context, cfg Config, deviceTransport trans
 		return nil, fmt.Errorf("unknown transport type for TransportManager")
 	}
 
-	// Wrap the transport in a HARQ/Link layer
-	spiLink := createSPILink(legacyTransport, cfg)
+	// Get shared session state from TransportManager (CRITICAL FIX #1)
+	session := tm.GetSessionState()
+
+	// Wrap SPI transport in a full HARQ/Link layer
+	spiLink := createSPILink(legacyTransport, cfg, session)
 	tm.RegisterTransport("spi", spiLink, manager.PrioritySPI)
 
-	// Register USB (if available)
-	// This will be added in Phase 2-3
+	// Register USB CDC (if mode allows and device is available)
+	// CRITICAL FIX #2: Smart drain logic enables fast failover on USB disconnect
+	if tmConfig.Mode != manager.ModeForceSPI {
+		if usbLink, err := createUSBLink(session); err == nil {
+			tm.RegisterTransport("usb", usbLink, manager.PriorityUSB)
+			log.Printf("USB CDC registered successfully")
+		} else {
+			log.Printf("USB CDC not available: %v (will use SPI only)", err)
+
+			// In force-usb mode, return error if USB unavailable
+			if tmConfig.Mode == manager.ModeForceUSB {
+				return nil, fmt.Errorf("USB CDC required by mode %s but unavailable: %w", tmConfig.Mode, err)
+			}
+		}
+	}
 
 	if err := tm.Start(ctx); err != nil {
 		return nil, err
@@ -227,7 +244,8 @@ func initTransportManager(ctx context.Context, cfg Config, deviceTransport trans
 
 // createSPILink wraps a transport in a full HARQ stack for TransportManager.
 // This includes frame encoding/decoding and FEC, matching the pattern in initHARQ.
-func createSPILink(t transport.Transport, cfg Config) harq.HARQ {
+// Uses shared SessionState to prevent sequence desynchronization during transport switching.
+func createSPILink(t transport.Transport, cfg Config, session *manager.SessionState) harq.HARQ {
 	frameEncoder := frame.NewEncoder()
 	frameDecoder := frame.NewDecoder()
 	fecEncoder := fec.NewConvolutionalEncoder()
@@ -239,6 +257,8 @@ func createSPILink(t transport.Transport, cfg Config) harq.HARQ {
 		harqConfig.Timeout = simulationHARQTimeout
 	}
 
+	// Note: Chase Combining HARQ also needs to be updated to use shared SessionState
+	// For now, it maintains its own sequence state (will be addressed in future enhancement)
 	return harq.NewChaseCombining(
 		harqConfig,
 		t,
@@ -247,6 +267,31 @@ func createSPILink(t transport.Transport, cfg Config) harq.HARQ {
 		fecEncoder,
 		fecDecoder,
 	)
+}
+
+// createUSBLink creates a lightweight CDC link with shared session state.
+// CRITICAL FIX #1: Uses shared SessionState to prevent sequence desynchronization.
+// CRITICAL FIX #7: sendWithTimeout prevents blocked writes on USB disconnect.
+func createUSBLink(session *manager.SessionState) (harq.HARQ, error) {
+	// Create USB CDC transport with default configuration
+	cdcConfig := transport.DefaultCDCConfig()
+	cdcTransport := transport.NewCDCTransport(cdcConfig)
+
+	// Open the USB CDC device (/dev/ttyACM0)
+	if err := cdcTransport.Open(); err != nil {
+		return nil, fmt.Errorf("failed to open USB CDC: %w", err)
+	}
+
+	// Wrap in lightweight CDCLink with SHARED session state (critical!)
+	// Both USB and SPI MUST share the same SessionState to prevent
+	// sequence resets during transport switching (Handoff Problem).
+	cdcLink, err := link.NewCDCLink(cdcTransport, session)
+	if err != nil {
+		cdcTransport.Close()
+		return nil, fmt.Errorf("failed to create CDC link: %w", err)
+	}
+
+	return cdcLink, nil
 }
 
 func initHARQ(deviceTransport transport.Device) (harq.HARQ, error) {
