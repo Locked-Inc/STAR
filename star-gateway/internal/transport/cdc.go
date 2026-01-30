@@ -3,6 +3,7 @@
 // The Raspberry Pi 5 communicates with the RX72N over USB CDC (Communications Device Class),
 // which appears as a virtual serial port (e.g., /dev/ttyACM0). This provides a simpler
 // interface than SPI and includes built-in flow control and reliability.
+// This file helps us manage the raw serial communication over CDC. Doesnt check for any errors.
 //
 // Reference: docs/sections/01_nanopb_protocol.tex
 //
