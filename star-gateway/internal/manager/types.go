@@ -76,6 +76,51 @@ func (s State) String() string {
 	}
 }
 
+// FailureType indicates why a transport switch was triggered.
+// This determines whether the TransportManager should drain in-flight operations
+// before switching (CRITICAL FIX #2: Smart Drain Logic).
+type FailureType int
+
+const (
+	// FailureTypeGraceful indicates a graceful switch (config change, priority upgrade).
+	// Drain in-flight operations before switching.
+	FailureTypeGraceful FailureType = iota
+
+	// FailureTypeTimeout indicates a heartbeat timeout (200ms without frames).
+	// Drain in-flight operations before switching (safe to wait).
+	FailureTypeTimeout
+
+	// FailureTypeIOError indicates a hard IO error (write failed, device error).
+	// Skip drain - device is non-responsive, don't waste time waiting.
+	FailureTypeIOError
+
+	// FailureTypeHealthCheck indicates a failed health probe.
+	// Skip drain - transport already known to be unhealthy.
+	FailureTypeHealthCheck
+
+	// FailureTypeHotPlugRemove indicates USB device was physically unplugged.
+	// Skip drain - device is gone, no point waiting for in-flight operations.
+	FailureTypeHotPlugRemove
+)
+
+// String returns a human-readable failure type name.
+func (ft FailureType) String() string {
+	switch ft {
+	case FailureTypeGraceful:
+		return "Graceful"
+	case FailureTypeTimeout:
+		return "Timeout"
+	case FailureTypeIOError:
+		return "IOError"
+	case FailureTypeHealthCheck:
+		return "HealthCheck"
+	case FailureTypeHotPlugRemove:
+		return "HotPlugRemove"
+	default:
+		return "Unknown"
+	}
+}
+
 // TransportWrapper wraps a transport with health metrics and metadata.
 type TransportWrapper struct {
 	// Name is the transport identifier ("spi" or "usb").
