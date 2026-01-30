@@ -71,6 +71,10 @@ type TransportManager struct {
 	// Components (initialized on demand)
 	healthMonitor   *HealthMonitor
 	hotPlugDetector *HotPlugDetector
+	heartbeat       *HeartbeatManager
+
+	// Session state (shared across all transports - CRITICAL FIX #1)
+	sessionState *SessionState
 }
 
 // NewTransportManager creates a new TransportManager with the given configuration.
@@ -93,6 +97,7 @@ func NewTransportManager(config *Config) *TransportManager {
 		config:              config,
 		state:               StateInitializing,
 		availableTransports: make(map[string]*TransportWrapper),
+		sessionState:        NewSessionState(), // CRITICAL FIX #1: Shared across all transports
 	}
 
 	tm.operationsCond = sync.NewCond(&tm.operationsMu)
@@ -104,6 +109,25 @@ func NewTransportManager(config *Config) *TransportManager {
 	if config.EnableHotPlug && config.Mode != ModeForceSPI {
 		tm.hotPlugDetector = NewHotPlugDetector(config.HotPlugPollInterval, config.USBVID, config.USBPID)
 	}
+
+	// Heartbeat manager for hybrid implicit/explicit connectivity detection
+	// Uses default intervals: DefaultPingInterval (50ms), DefaultFailureTimeout (200ms)
+	// onFailure callback triggers automatic failover
+	heartbeat, err := NewHeartbeatManager(
+		DefaultPingInterval,  // 50ms - send PING if idle
+		DefaultFailureTimeout, // 200ms - declare link dead if no frames
+		func() {
+			// Callback to trigger failover on heartbeat timeout
+			log.Printf("Heartbeat failure detected, triggering failover")
+			go tm.attemptFailover()
+		},
+	)
+	if err != nil {
+		// This should never happen with valid constants, but handle gracefully
+		log.Printf("FATAL: Failed to create HeartbeatManager: %v", err)
+		panic(fmt.Sprintf("HeartbeatManager creation failed: %v", err))
+	}
+	tm.heartbeat = heartbeat
 
 	return tm
 }
@@ -127,7 +151,6 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 	}
 
 	tm.mu.Lock()
-	defer tm.mu.Unlock()
 
 	// Create cancellable context for background routines
 	tm.ctx, tm.cancel = context.WithCancel(ctx)
@@ -147,6 +170,13 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 			tm.hotPlugDetector.Run(tm.ctx, tm.handleHotPlugEvent)
 		}()
 	}
+
+	// Start heartbeat manager (hybrid implicit/explicit detection)
+	tm.wg.Add(1)
+	go func() {
+		defer tm.wg.Done()
+		tm.heartbeat.Run(tm.ctx, tm)
+	}()
 
 	// Select initial transport
 	best := tm.selectBestTransportLocked()
@@ -172,13 +202,16 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 		tm.mu.Lock()
 		tm.state = targetState
 		log.Printf("TransportManager started with %s transport (priority %d)", transportName, transportPriority)
+		tm.mu.Unlock() // Release before return
 	} else {
 		tm.state = StateFailed
 		// Check if this is acceptable based on mode
 		if tm.config.Mode == ModeForceUSB || tm.config.Mode == ModeForceSPI {
+			tm.mu.Unlock() // Release before error return
 			return fmt.Errorf("no %s transport available (required by mode)", tm.config.Mode)
 		}
 		log.Printf("TransportManager started with no available transports (will retry)")
+		tm.mu.Unlock() // Release before return
 	}
 
 	return nil
@@ -230,10 +263,19 @@ func (tm *TransportManager) performResetHandshake(ctx context.Context) error {
 			continue
 		}
 
-		// Validate that we received a frame
-		// Note: The actual frame type checking should be done by looking at
-		// the frame structure. For now, receiving ANY response is considered success
-		// since the RX72N firmware will implement proper RESET_ACK handling
+		// TODO: Validate frame type is FrameTypeResetAck (0xFE)
+		// Current limitation: harq.ReceiveResult doesn't include frame type metadata.
+		// The HARQ layer abstracts away frame details, only exposing Payload and Metadata
+		// (sequence, timestamp, etc.). To validate frame type, we would need to either:
+		//   1. Add Type field to harq.FrameMetadata, OR
+		//   2. Decode result.Payload to extract frame type
+		//
+		// For now, receiving ANY response is considered success since:
+		//   - RX72N firmware sends RESET_ACK (0xFE) in response to RESET (0xFF)
+		//   - If we receive a frame, it means communication is working
+		//   - Sequence synchronization happens on both sides regardless
+		//
+		// Future enhancement: Add frame type validation for more robust handshake
 		_ = result // Use result to avoid unused variable warning
 
 		// Success!
@@ -416,6 +458,11 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 		return nil, err
 	}
 
+	// CRITICAL: Update heartbeat on ANY valid frame (implicit detection)
+	// This includes telemetry, commands, ACKs, PONG frames
+	// HeartbeatManager only needs to know a frame arrived (updates lastSeen)
+	tm.heartbeat.OnFrameReceived()
+
 	return result, nil
 }
 
@@ -546,6 +593,22 @@ func (tm *TransportManager) GetInternalState() State {
 	tm.mu.RLock()
 	defer tm.mu.RUnlock()
 	return tm.state
+}
+
+// GetSessionState returns the shared SessionState instance.
+// CRITICAL FIX #1: All transports (USB CDC and SPI) MUST use the same SessionState
+// to prevent sequence desynchronization during transport switching (Handoff Problem).
+//
+// Usage in gateway.go:
+//
+//	tm := manager.NewTransportManager(config)
+//	session := tm.GetSessionState()
+//	cdcLink, _ := link.NewCDCLink(cdcTransport, session)
+//	spiLink, _ := link.NewSPILink(spiTransport, session)
+//	tm.RegisterTransport("usb", cdcLink, manager.PriorityUSB)
+//	tm.RegisterTransport("spi", spiLink, manager.PrioritySPI)
+func (tm *TransportManager) GetSessionState() *SessionState {
+	return tm.sessionState
 }
 
 // =============================================================================
