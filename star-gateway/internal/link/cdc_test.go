@@ -16,6 +16,33 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/manager"
 )
 
+// Test constants to avoid magic numbers
+const (
+	// Sequence number expectations
+	initialSequence     = 0
+	firstSequence       = 0
+	secondSequence      = 1
+	thirdSequence       = 2
+	expectedAfterReset  = 0
+	sequenceAfterOneSend = 1
+	sequenceAfterThreeSends = 3
+
+	// Frame count expectations
+	expectedFirstFrames  = 1
+	expectedSecondFrames = 2
+
+	// Frame metadata
+	testSequenceZero = 0
+	testSequenceOne  = 1
+	testSequenceTwo  = 2
+	testPayloadLen   = 4
+	testPayloadLen1  = 1
+	testFlagsNone    = 0
+
+	// Timeouts
+	sendTimeout = 1 * time.Millisecond
+)
+
 // MockTransport simulates a USB CDC transport for testing.
 type MockTransport struct {
 	mu          sync.Mutex
@@ -158,8 +185,8 @@ func TestCDCLink_Send(t *testing.T) {
 
 	// Verify frame was sent
 	frames := transport.GetSentFrames()
-	if len(frames) != 1 {
-		t.Fatalf("Expected 1 frame sent, got %d", len(frames))
+	if len(frames) != expectedFirstFrames {
+		t.Fatalf("Expected %d frame sent, got %d", expectedFirstFrames, len(frames))
 	}
 
 	// Decode and verify frame
@@ -174,8 +201,8 @@ func TestCDCLink_Send(t *testing.T) {
 	}
 
 	// Verify sequence number incremented
-	if f.Header.Sequence != 0 {
-		t.Errorf("First sequence should be 0, got %d", f.Header.Sequence)
+	if f.Header.Sequence != firstSequence {
+		t.Errorf("First sequence should be %d, got %d", firstSequence, f.Header.Sequence)
 	}
 
 	// Send another frame, verify sequence increments
@@ -185,8 +212,8 @@ func TestCDCLink_Send(t *testing.T) {
 	}
 
 	frames = transport.GetSentFrames()
-	if len(frames) != 2 {
-		t.Fatalf("Expected 2 frames sent, got %d", len(frames))
+	if len(frames) != expectedSecondFrames {
+		t.Fatalf("Expected %d frames sent, got %d", expectedSecondFrames, len(frames))
 	}
 
 	f2, err := decoder.Decode(frames[1])
@@ -194,8 +221,8 @@ func TestCDCLink_Send(t *testing.T) {
 		t.Fatalf("Failed to decode second frame: %v", err)
 	}
 
-	if f2.Header.Sequence != 1 {
-		t.Errorf("Second sequence should be 1, got %d", f2.Header.Sequence)
+	if f2.Header.Sequence != secondSequence {
+		t.Errorf("Second sequence should be %d, got %d", secondSequence, f2.Header.Sequence)
 	}
 }
 
@@ -263,31 +290,64 @@ func TestCDCLink_SendWithTimeout(t *testing.T) {
 		t.Fatalf("NewCDCLink failed: %v", err)
 	}
 
-	t.Run("ContextCanceled", func(t *testing.T) {
-		ctx, cancel := context.WithCancel(context.Background())
-		cancel() // Cancel immediately
+	tests := []struct {
+		name      string
+		setupCtx  func() (context.Context, context.CancelFunc)
+		setupErr  error
+		wantErr   bool
+		checkErr  func(error) bool
+	}{
+		{
+			name: "ContextCanceled",
+			setupCtx: func() (context.Context, context.CancelFunc) {
+				ctx, cancel := context.WithCancel(context.Background())
+				cancel() // Cancel immediately
+				return ctx, cancel
+			},
+			setupErr: nil,
+			wantErr:  true,
+			checkErr: func(err error) bool {
+				return errors.Is(err, context.Canceled)
+			},
+		},
+		{
+			name: "ContextTimeout",
+			setupCtx: func() (context.Context, context.CancelFunc) {
+				return context.WithTimeout(context.Background(), sendTimeout)
+			},
+			setupErr: errors.New("simulated block"),
+			wantErr:  true,
+			checkErr: func(err error) bool {
+				return err != nil
+			},
+		},
+	}
 
-		err := link.Send(ctx, []byte("test"))
-		if !errors.Is(err, context.Canceled) {
-			t.Errorf("Expected context.Canceled, got %v", err)
-		}
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := tt.setupCtx()
+			defer cancel()
 
-	t.Run("ContextTimeout", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
-		defer cancel()
+			transport.sendErr = tt.setupErr
 
-		// Block transport to trigger timeout
-		transport.sendErr = errors.New("simulated block")
+			err := link.Send(ctx, []byte("test"))
 
-		err := link.Send(ctx, []byte("test"))
-		if err == nil {
-			t.Error("Expected error due to context timeout or send error")
-		}
+			if tt.wantErr {
+				if err == nil {
+					t.Error("Expected error, got nil")
+				} else if tt.checkErr != nil && !tt.checkErr(err) {
+					t.Errorf("Error check failed for %v", err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+			}
 
-		// Reset transport
-		transport.sendErr = nil
-	})
+			// Reset transport for next test
+			transport.sendErr = nil
+		})
+	}
 }
 
 // TestCDCLink_Receive tests frame reception and sequence validation.
@@ -303,9 +363,9 @@ func TestCDCLink_Receive(t *testing.T) {
 	encoder := frame.NewEncoder()
 	f := &frame.Frame{
 		Header: frame.Header{
-			Sequence: 0,
-			Length:   4,
-			Flags:    0,
+			Sequence: testSequenceZero,
+			Length:   testPayloadLen,
+			Flags:    testFlagsNone,
 		},
 		Type:    frame.FrameTypeCommand,
 		Payload: []byte("test"),
@@ -344,11 +404,14 @@ func TestCDCLink_ReceiveGapTolerance(t *testing.T) {
 
 	// Send sequence 0
 	f0 := &frame.Frame{
-		Header:  frame.Header{Sequence: 0, Length: 1, Flags: 0},
+		Header:  frame.Header{Sequence: testSequenceZero, Length: testPayloadLen1, Flags: testFlagsNone},
 		Type:    frame.FrameTypeCommand,
 		Payload: []byte("0"),
 	}
-	enc0, _ := encoder.Encode(f0)
+	enc0, err := encoder.Encode(f0)
+	if err != nil {
+		t.Fatalf("Failed to encode frame 0: %v", err)
+	}
 	transport.QueueReceive(enc0)
 
 	_, err = link.Receive(ctx)
@@ -358,11 +421,14 @@ func TestCDCLink_ReceiveGapTolerance(t *testing.T) {
 
 	// Skip sequence 1, send sequence 2 (gap = 1, should be accepted)
 	f2 := &frame.Frame{
-		Header:  frame.Header{Sequence: 2, Length: 1, Flags: 0},
+		Header:  frame.Header{Sequence: testSequenceTwo, Length: testPayloadLen1, Flags: testFlagsNone},
 		Type:    frame.FrameTypeCommand,
 		Payload: []byte("2"),
 	}
-	enc2, _ := encoder.Encode(f2)
+	enc2, err := encoder.Encode(f2)
+	if err != nil {
+		t.Fatalf("Failed to encode frame 2: %v", err)
+	}
 	transport.QueueReceive(enc2)
 
 	result, err := link.Receive(ctx)
@@ -385,19 +451,21 @@ func TestCDCLink_GetSequences(t *testing.T) {
 	}
 
 	// Initial sequences should be 0
-	if seq := link.GetTxSequence(); seq != 0 {
-		t.Errorf("Initial TX sequence = %d, want 0", seq)
+	if seq := link.GetTxSequence(); seq != initialSequence {
+		t.Errorf("Initial TX sequence = %d, want %d", seq, initialSequence)
 	}
-	if seq := link.GetRxSequence(); seq != 0 {
-		t.Errorf("Initial RX sequence = %d, want 0", seq)
+	if seq := link.GetRxSequence(); seq != initialSequence {
+		t.Errorf("Initial RX sequence = %d, want %d", seq, initialSequence)
 	}
 
 	// Send a frame, TX sequence should increment
 	ctx := context.Background()
-	link.Send(ctx, []byte("test"))
+	if err := link.Send(ctx, []byte("test")); err != nil {
+		t.Fatalf("Send failed: %v", err)
+	}
 
-	if seq := link.GetTxSequence(); seq != 1 {
-		t.Errorf("TX sequence after Send = %d, want 1", seq)
+	if seq := link.GetTxSequence(); seq != sequenceAfterOneSend {
+		t.Errorf("TX sequence after Send = %d, want %d", seq, sequenceAfterOneSend)
 	}
 }
 
@@ -413,21 +481,27 @@ func TestCDCLink_Reset(t *testing.T) {
 	ctx := context.Background()
 
 	// Send some frames to increment sequence
-	link.Send(ctx, []byte("1"))
-	link.Send(ctx, []byte("2"))
-	link.Send(ctx, []byte("3"))
+	if err := link.Send(ctx, []byte("1")); err != nil {
+		t.Fatalf("Send 1 failed: %v", err)
+	}
+	if err := link.Send(ctx, []byte("2")); err != nil {
+		t.Fatalf("Send 2 failed: %v", err)
+	}
+	if err := link.Send(ctx, []byte("3")); err != nil {
+		t.Fatalf("Send 3 failed: %v", err)
+	}
 
 	// Verify sequence is non-zero
-	if seq := link.GetTxSequence(); seq != 3 {
-		t.Fatalf("TX sequence = %d, want 3", seq)
+	if seq := link.GetTxSequence(); seq != sequenceAfterThreeSends {
+		t.Fatalf("TX sequence = %d, want %d", seq, sequenceAfterThreeSends)
 	}
 
 	// Reset
 	link.Reset()
 
 	// Verify sequence is back to 0
-	if seq := link.GetTxSequence(); seq != 0 {
-		t.Errorf("TX sequence after Reset = %d, want 0", seq)
+	if seq := link.GetTxSequence(); seq != expectedAfterReset {
+		t.Errorf("TX sequence after Reset = %d, want %d", seq, expectedAfterReset)
 	}
 }
 

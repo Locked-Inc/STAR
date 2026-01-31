@@ -21,6 +21,23 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 )
 
+// Test timing constants to avoid magic numbers
+const (
+	// Transport switch polling (reusing transportPollInterval from manager_test.go)
+	transportSwitchDeadline = 200 * time.Millisecond
+	scenarioPollInterval    = 10 * time.Millisecond
+
+	// Failover detection
+	failoverDeadline = 500 * time.Millisecond
+
+	// Metrics collection wait
+	metricsWait = 100 * time.Millisecond
+
+	// Failure thresholds
+	immediateFailover = 1
+	failAfterTwo      = 2
+)
+
 // TestScenario1_NormalOperationUSB simulates normal operation with USB as primary transport.
 func TestScenario1_NormalOperationUSB(t *testing.T) {
 	config := DefaultConfig()
@@ -44,12 +61,12 @@ func TestScenario1_NormalOperationUSB(t *testing.T) {
 	tm.RegisterTransport(TransportNameUSB, mockUSB, PriorityUSB)
 
 	// Wait for switch to USB (higher priority)
-	deadline := time.Now().Add(200 * time.Millisecond)
+	deadline := time.Now().Add(transportSwitchDeadline)
 	for time.Now().Before(deadline) {
 		if tm.GetActiveTransport() == TransportNameUSB {
 			break
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(scenarioPollInterval)
 	}
 
 	// Verify USB is selected as primary
@@ -90,7 +107,7 @@ func TestScenario1_NormalOperationUSB(t *testing.T) {
 func TestScenario2_USBFailureDetection(t *testing.T) {
 	config := DefaultConfig()
 	config.Mode = ModeAuto
-	config.FailureThreshold = 2 // Fail after 2 consecutive errors
+	config.FailureThreshold = failAfterTwo
 	tm := NewTransportManager(config)
 
 	// USB transport that fails after 2 sends
@@ -116,12 +133,12 @@ func TestScenario2_USBFailureDetection(t *testing.T) {
 	tm.RegisterTransport(TransportNameUSB, mockUSB, PriorityUSB)
 
 	// Wait for switch to USB (higher priority)
-	deadline := time.Now().Add(200 * time.Millisecond)
+	deadline := time.Now().Add(transportSwitchDeadline)
 	for time.Now().Before(deadline) {
 		if tm.GetActiveTransport() == TransportNameUSB {
 			break
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(scenarioPollInterval)
 	}
 
 	if tm.GetActiveTransport() != TransportNameUSB {
@@ -130,19 +147,19 @@ func TestScenario2_USBFailureDetection(t *testing.T) {
 
 	ctx := context.Background()
 
-	// Trigger failures
-	tm.Send(ctx, []byte("cmd1")) // OK
-	tm.Send(ctx, []byte("cmd2")) // OK
-	tm.Send(ctx, []byte("cmd3")) // Fail
-	tm.Send(ctx, []byte("cmd4")) // Fail
+	// Trigger failures (ignore errors, testing failover behavior)
+	_ = tm.Send(ctx, []byte("cmd1")) // OK
+	_ = tm.Send(ctx, []byte("cmd2")) // OK
+	_ = tm.Send(ctx, []byte("cmd3")) // Fail
+	_ = tm.Send(ctx, []byte("cmd4")) // Fail
 
 	// Poll for failover to SPI
-	deadline = time.Now().Add(500 * time.Millisecond)
+	deadline = time.Now().Add(failoverDeadline)
 	for time.Now().Before(deadline) {
 		if tm.GetActiveTransport() == TransportNameSPI {
 			break
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(scenarioPollInterval)
 	}
 
 	if tm.GetActiveTransport() != TransportNameSPI {
@@ -163,7 +180,7 @@ func TestScenario2_USBFailureDetection(t *testing.T) {
 func TestScenario3_USBRecovery(t *testing.T) {
 	config := DefaultConfig()
 	config.Mode = ModeAuto
-	config.FailureThreshold = 1 // Failover immediately on first error
+	config.FailureThreshold = immediateFailover
 	tm := NewTransportManager(config)
 
 	// USB starts unhealthy
@@ -197,15 +214,15 @@ func TestScenario3_USBRecovery(t *testing.T) {
 	}
 
 	// USB will fail, triggering failover to SPI
-	tm.Send(ctx, []byte("trigger_fail"))
+	_ = tm.Send(ctx, []byte("trigger_fail"))
 
 	// Wait for failover to SPI
-	deadline = time.Now().Add(200 * time.Millisecond)
+	deadline = time.Now().Add(transportSwitchDeadline)
 	for time.Now().Before(deadline) {
 		if tm.GetActiveTransport() == TransportNameSPI {
 			break
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(scenarioPollInterval)
 	}
 
 	if tm.GetActiveTransport() != TransportNameSPI {
@@ -299,7 +316,7 @@ func TestScenario5_ForceUSBMode(t *testing.T) {
 
 		// Even if USB fails, should NOT switch to SPI
 		ctx := context.Background()
-		tm.Send(ctx, []byte("test"))
+		_ = tm.Send(ctx, []byte("test"))
 
 		// Verify still on USB (no failover in force mode)
 		if tm.GetActiveTransport() != TransportNameUSB {
@@ -350,7 +367,7 @@ func TestScenario5_ForceSPIMode(t *testing.T) {
 
 	// Even if SPI fails, should NOT switch to USB (force mode prevents failover)
 	ctx := context.Background()
-	tm.Send(ctx, []byte("test"))
+	_ = tm.Send(ctx, []byte("test"))
 
 	// Verify still on SPI (no failover in force mode)
 	if tm.GetActiveTransport() != TransportNameSPI {
@@ -379,8 +396,8 @@ func TestMetrics_HealthTracking(t *testing.T) {
 	ctx := context.Background()
 
 	// Send successful operations
-	tm.Send(ctx, []byte("1"))
-	tm.Send(ctx, []byte("2"))
+	_ = tm.Send(ctx, []byte("1"))
+	_ = tm.Send(ctx, []byte("2"))
 
 	// Check metrics
 	metrics := tm.GetHealthMetrics()
@@ -398,8 +415,8 @@ func TestMetrics_HealthTracking(t *testing.T) {
 	}
 
 	// Trigger failures
-	tm.Send(ctx, []byte("3"))
-	tm.Send(ctx, []byte("4"))
+	_ = tm.Send(ctx, []byte("3"))
+	_ = tm.Send(ctx, []byte("4"))
 
 	metrics = tm.GetHealthMetrics()
 	testMetrics = metrics["test"]
@@ -445,11 +462,11 @@ func TestMetrics_TransportSwitchCount(t *testing.T) {
 	initialTransport := tm.GetActiveTransport()
 
 	// Trigger switch
-	tm.Send(ctx, []byte("1")) // OK
-	tm.Send(ctx, []byte("2")) // Fail
+	_ = tm.Send(ctx, []byte("1")) // OK
+	_ = tm.Send(ctx, []byte("2")) // Fail
 
 	// Wait for switch
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(metricsWait)
 
 	newTransport := tm.GetActiveTransport()
 
@@ -492,12 +509,12 @@ func TestMetrics_SequenceNumberContinuity(t *testing.T) {
 	ctx := context.Background()
 
 	// Wait for initial switch to USB
-	deadline := time.Now().Add(200 * time.Millisecond)
+	deadline := time.Now().Add(transportSwitchDeadline)
 	for time.Now().Before(deadline) {
 		if tm.GetActiveTransport() == TransportNameUSB {
 			break
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(scenarioPollInterval)
 	}
 
 	initialTransport := tm.GetActiveTransport()
@@ -506,15 +523,15 @@ func TestMetrics_SequenceNumberContinuity(t *testing.T) {
 	}
 
 	// Send on USB (will fail and switch to SPI)
-	tm.Send(ctx, []byte("trigger_switch"))
+	_ = tm.Send(ctx, []byte("trigger_switch"))
 
 	// Wait for switch to SPI
-	deadline = time.Now().Add(200 * time.Millisecond)
+	deadline = time.Now().Add(transportSwitchDeadline)
 	for time.Now().Before(deadline) {
 		if tm.GetActiveTransport() == TransportNameSPI {
 			break
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(scenarioPollInterval)
 	}
 
 	newTransport := tm.GetActiveTransport()

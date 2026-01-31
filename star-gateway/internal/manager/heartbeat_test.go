@@ -11,40 +11,92 @@ import (
 	"time"
 )
 
+// Test timing constants to avoid magic numbers
+const (
+	// Heartbeat intervals
+	validPingInterval      = 50 * time.Millisecond
+	validFailureTimeout    = 200 * time.Millisecond
+	invalidPingInterval    = 300 * time.Millisecond
+	invalidFailureTimeout  = 200 * time.Millisecond
+	equalInterval          = 100 * time.Millisecond
+
+	// Test timeouts and waits
+	shortPingInterval      = 10 * time.Millisecond
+	shortFailureTimeout    = 50 * time.Millisecond
+	veryShortFailureTimeout = 30 * time.Millisecond
+
+	// Wait durations for test assertions
+	waitBeforeTimeout      = 30 * time.Millisecond
+	waitForMultipleCycles  = 100 * time.Millisecond
+	waitForFirstFailure    = 50 * time.Millisecond
+	waitForSecondTimeout   = 50 * time.Millisecond
+	maxWaitForCallback     = 200 * time.Millisecond
+	maxWaitForExit         = 100 * time.Millisecond
+)
+
 // TestNewHeartbeatManager_Validation tests parameter validation.
 func TestNewHeartbeatManager_Validation(t *testing.T) {
 	callback := func() {}
 
-	t.Run("ValidParameters", func(t *testing.T) {
-		hm, err := NewHeartbeatManager(50*time.Millisecond, 200*time.Millisecond, callback)
-		if err != nil {
-			t.Fatalf("NewHeartbeatManager failed: %v", err)
-		}
-		if hm == nil {
-			t.Fatal("NewHeartbeatManager returned nil")
-		}
-	})
+	tests := []struct {
+		name            string
+		pingInterval    time.Duration
+		failureTimeout  time.Duration
+		callback        func()
+		wantErr         bool
+		errDescription  string
+	}{
+		{
+			name:           "ValidParameters",
+			pingInterval:   validPingInterval,
+			failureTimeout: validFailureTimeout,
+			callback:       callback,
+			wantErr:        false,
+		},
+		{
+			name:           "PingIntervalTooLarge",
+			pingInterval:   invalidPingInterval,
+			failureTimeout: invalidFailureTimeout,
+			callback:       callback,
+			wantErr:        true,
+			errDescription: "pingInterval >= failureTimeout",
+		},
+		{
+			name:           "EqualIntervals",
+			pingInterval:   equalInterval,
+			failureTimeout: equalInterval,
+			callback:       callback,
+			wantErr:        true,
+			errDescription: "pingInterval == failureTimeout",
+		},
+		{
+			name:           "NilCallback",
+			pingInterval:   validPingInterval,
+			failureTimeout: validFailureTimeout,
+			callback:       nil,
+			wantErr:        true,
+			errDescription: "nil callback",
+		},
+	}
 
-	t.Run("PingIntervalTooLarge", func(t *testing.T) {
-		_, err := NewHeartbeatManager(300*time.Millisecond, 200*time.Millisecond, callback)
-		if err == nil {
-			t.Error("NewHeartbeatManager should fail when pingInterval >= failureTimeout")
-		}
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hm, err := NewHeartbeatManager(tt.pingInterval, tt.failureTimeout, tt.callback)
 
-	t.Run("EqualIntervals", func(t *testing.T) {
-		_, err := NewHeartbeatManager(100*time.Millisecond, 100*time.Millisecond, callback)
-		if err == nil {
-			t.Error("NewHeartbeatManager should fail when pingInterval == failureTimeout")
-		}
-	})
-
-	t.Run("NilCallback", func(t *testing.T) {
-		_, err := NewHeartbeatManager(50*time.Millisecond, 200*time.Millisecond, nil)
-		if err == nil {
-			t.Error("NewHeartbeatManager should fail with nil callback")
-		}
-	})
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("NewHeartbeatManager should fail with %s", tt.errDescription)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("NewHeartbeatManager failed: %v", err)
+				}
+				if hm == nil {
+					t.Fatal("NewHeartbeatManager returned nil")
+				}
+			}
+		})
+	}
 }
 
 // TestHeartbeatManager_OnFrameReceived tests implicit heartbeat updates.
@@ -58,7 +110,7 @@ func TestHeartbeatManager_OnFrameReceived(t *testing.T) {
 		mu.Unlock()
 	}
 
-	hm, err := NewHeartbeatManager(10*time.Millisecond, 50*time.Millisecond, callback)
+	hm, err := NewHeartbeatManager(shortPingInterval, shortFailureTimeout, callback)
 	if err != nil {
 		t.Fatalf("NewHeartbeatManager failed: %v", err)
 	}
@@ -67,7 +119,7 @@ func TestHeartbeatManager_OnFrameReceived(t *testing.T) {
 	hm.OnFrameReceived()
 
 	// Wait less than failure timeout
-	time.Sleep(30 * time.Millisecond)
+	time.Sleep(waitBeforeTimeout)
 
 	// Failure should NOT be called
 	mu.Lock()
@@ -93,7 +145,7 @@ func TestHeartbeatManager_TimeoutDetection(t *testing.T) {
 		}
 	}
 
-	hm, err := NewHeartbeatManager(10*time.Millisecond, 50*time.Millisecond, callback)
+	hm, err := NewHeartbeatManager(shortPingInterval, shortFailureTimeout, callback)
 	if err != nil {
 		t.Fatalf("NewHeartbeatManager failed: %v", err)
 	}
@@ -117,7 +169,7 @@ func TestHeartbeatManager_TimeoutDetection(t *testing.T) {
 	select {
 	case <-done:
 		// Success: callback was called
-	case <-time.After(200 * time.Millisecond):
+	case <-time.After(maxWaitForCallback):
 		t.Error("Failure callback not called within expected time")
 	}
 
@@ -139,7 +191,7 @@ func TestHeartbeatManager_FailureTriggeredOnce(t *testing.T) {
 		mu.Unlock()
 	}
 
-	hm, err := NewHeartbeatManager(10*time.Millisecond, 30*time.Millisecond, callback)
+	hm, err := NewHeartbeatManager(shortPingInterval, veryShortFailureTimeout, callback)
 	if err != nil {
 		t.Fatalf("NewHeartbeatManager failed: %v", err)
 	}
@@ -154,7 +206,7 @@ func TestHeartbeatManager_FailureTriggeredOnce(t *testing.T) {
 	go hm.Run(ctx, tm)
 
 	// Wait for multiple check cycles (should trigger only once)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(waitForMultipleCycles)
 
 	mu.Lock()
 	if callCount != 1 {
@@ -174,7 +226,7 @@ func TestHeartbeatManager_RecoveryAfterFailure(t *testing.T) {
 		mu.Unlock()
 	}
 
-	hm, err := NewHeartbeatManager(10*time.Millisecond, 30*time.Millisecond, callback)
+	hm, err := NewHeartbeatManager(shortPingInterval, veryShortFailureTimeout, callback)
 	if err != nil {
 		t.Fatalf("NewHeartbeatManager failed: %v", err)
 	}
@@ -189,7 +241,7 @@ func TestHeartbeatManager_RecoveryAfterFailure(t *testing.T) {
 	go hm.Run(ctx, tm)
 
 	// Wait for first failure
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(waitForFirstFailure)
 
 	mu.Lock()
 	firstCount := callCount
@@ -203,7 +255,7 @@ func TestHeartbeatManager_RecoveryAfterFailure(t *testing.T) {
 	hm.OnFrameReceived()
 
 	// Wait for another timeout
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(waitForSecondTimeout)
 
 	mu.Lock()
 	secondCount := callCount
@@ -220,7 +272,7 @@ func TestHeartbeatManager_NilTransportManager(t *testing.T) {
 		t.Error("Callback should not be called with nil TransportManager")
 	}
 
-	hm, err := NewHeartbeatManager(10*time.Millisecond, 50*time.Millisecond, callback)
+	hm, err := NewHeartbeatManager(shortPingInterval, shortFailureTimeout, callback)
 	if err != nil {
 		t.Fatalf("NewHeartbeatManager failed: %v", err)
 	}
@@ -238,7 +290,7 @@ func TestHeartbeatManager_NilTransportManager(t *testing.T) {
 	select {
 	case <-done:
 		// Success: Run returned without panic
-	case <-time.After(100 * time.Millisecond):
+	case <-time.After(maxWaitForExit):
 		t.Error("Run did not return with nil TransportManager")
 	}
 }
@@ -247,7 +299,7 @@ func TestHeartbeatManager_NilTransportManager(t *testing.T) {
 func TestHeartbeatManager_ContextCancellation(t *testing.T) {
 	callback := func() {}
 
-	hm, err := NewHeartbeatManager(10*time.Millisecond, 50*time.Millisecond, callback)
+	hm, err := NewHeartbeatManager(shortPingInterval, shortFailureTimeout, callback)
 	if err != nil {
 		t.Fatalf("NewHeartbeatManager failed: %v", err)
 	}
@@ -269,7 +321,7 @@ func TestHeartbeatManager_ContextCancellation(t *testing.T) {
 	select {
 	case <-done:
 		// Success: Run exited
-	case <-time.After(100 * time.Millisecond):
+	case <-time.After(maxWaitForExit):
 		t.Error("Run did not exit after context cancellation")
 	}
 }
