@@ -164,6 +164,7 @@ The gateway exposes 5 gRPC services:
 
 ## Related Documentation
 
+- `TRANSPORT_ARCHITECTURE.md` - Transport layer architecture and smart switching
 - `docs/sections/01_nanopb_protocol.tex` - Protocol specification
 - `docs/sections/02_protobuf_schemas.tex` - Protobuf service definitions
 - `docs/sections/07_gateway_architecture.tex` - Gateway architecture
