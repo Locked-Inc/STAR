@@ -80,7 +80,7 @@ The STAR Gateway implements intelligent transport switching between USB CDC (pri
 | **Retransmission** | Application-level (HARQ) | Hardware-level only | USB bulk transfer handles retries |
 | **FEC** | Viterbi + Chase Combining | Disabled | Redundant with USB reliability |
 | **ACK/NACK** | Required | Not sent | USB provides implicit ACK |
-| **Sequence Tracking** | 16-bit counter | Same counter (shared) | Deduplication across transports |
+| **Sequence Tracking** | 16-bit counter (independent) | 16-bit counter (shared SessionState) | USB CDC uses shared state; SPI HARQ maintains independent sequences |
 | **Priority** | Priority 5 | Priority 10 | Prefer simpler USB |
 | **Typical Latency** | 1-2ms | <1ms | USB has lower overhead |
 | **Reliability** | 99.99% (with retries) | 99.999% (hardware CRC) | USB more reliable |
@@ -100,7 +100,7 @@ All frames use the same wire format regardless of transport:
 ```
 
 **Header Fields:**
-- **SYNC**: Magic number `0xAA55` for frame synchronization
+- **SYNC**: Magic number `0x55AA` for frame synchronization
 - **SEQ**: Sequence number (0-65535, wraps around)
 - **LEN**: Payload length in bytes
 - **TYPE**: Frame type (see below)
@@ -112,7 +112,7 @@ All frames use the same wire format regardless of transport:
 
 ```go
 const (
-    // Heartbeat frames (Phase 1)
+    // Heartbeat frames
     FrameTypePing     = 0x00  // Heartbeat request
     FrameTypePong     = 0x01  // Heartbeat response
 
@@ -123,6 +123,10 @@ const (
     // HARQ frames (SPI only)
     FrameTypeAck      = 0x12  // Acknowledgment
     FrameTypeNack     = 0x13  // Negative acknowledgment
+
+    // Reset frames
+    FrameTypeResetAck = 0xFE  // Reset acknowledgment
+    FrameTypeReset    = 0xFF  // Reset request
 )
 ```
 
@@ -158,7 +162,7 @@ The CDC protocol is designed for minimal overhead, relying on USB hardware for r
 4. Return payload to caller
 
 **Key Features:**
-- ✅ Sequence tracking (shared with SPI)
+- ✅ Sequence tracking via shared SessionState
 - ✅ CRC32 validation
 - ❌ No application-level retries
 - ❌ No FEC encoding
@@ -173,7 +177,7 @@ The SPI protocol uses Chase Combining (Type I HARQ) for robustness:
 2. Encode with Viterbi FEC (rate 1/2, K=7)
 3. Calculate CRC32
 4. Transfer via full-duplex SPI (10MHz)
-5. Wait for ACK/NACK (timeout: 100ms)
+5. Wait for ACK/NACK (timeout: 10ms)
 6. On NACK: retransmit (up to 3 attempts)
 
 **Receive Path:**
@@ -188,7 +192,7 @@ The SPI protocol uses Chase Combining (Type I HARQ) for robustness:
 - ✅ Application-level retries (up to 3x)
 - ✅ Viterbi FEC with soft combining
 - ✅ ACK/NACK handshake
-- ✅ Sequence tracking (shared with USB)
+- ✅ Sequence tracking (independent, future: will be unified with USB)
 
 ## Heartbeat Mechanism
 
@@ -290,12 +294,12 @@ stateDiagram-v2
 | **Initializing** | Manager starting, detecting transports | Register transports, select best |
 | **ActiveUSB** | USB CDC active, heartbeat monitoring | Send/Receive via USB, monitor health |
 | **ActiveSPI** | SPI active, heartbeat monitoring | Send/Receive via SPI, monitor health |
-| **SwitchingToSPI** | Transitioning USB → SPI | Pause operations, drain or skip |
-| **SwitchingToUSB** | Transitioning SPI → USB | Pause operations, drain |
-| **PausedUSB/PausedSPI** | New operations blocked, draining in-flight | Wait for in-flight operations |
-| **DrainUSB/DrainSPI** | Waiting for in-flight operations (500ms timeout) | Flush pending sends/receives |
-| **SkipDrain** | Fast path for hard failures (no drain) | Immediate switch |
+| **SwitchingToSPI** | Transitioning USB → SPI | Pause operations, smart drain (conditional) |
+| **SwitchingToUSB** | Transitioning SPI → USB | Pause operations, smart drain (conditional) |
+| **Degraded** | Active transport unhealthy, no alternatives | Continue with degraded transport, log warnings |
 | **Failed** | No healthy transports available | Log error, retry probing |
+
+**Note:** Operations are paused during switching states, and smart drain logic conditionally drains in-flight operations based on failure type (graceful/timeout drain, hard failures skip).
 
 ## Failover Logic
 
@@ -479,26 +483,6 @@ func (hm *HealthMonitor) probeSPI(wrapper *TransportWrapper) bool {
 - Only probes **inactive** transports (won't interfere with active link)
 
 ## Configuration
-
-### Environment Variables
-
-```bash
-# Transport mode (auto, prefer-usb, force-usb, force-spi)
-TRANSPORT_MODE=auto
-
-# Failure threshold (consecutive errors before failover)
-TRANSPORT_FAILURE_THRESHOLD=3
-
-# Switch timeout (max time to drain before forcing switch)
-TRANSPORT_SWITCH_TIMEOUT=500ms
-
-# Health check interval
-TRANSPORT_HEALTH_INTERVAL=5s
-
-# Heartbeat settings
-HEARTBEAT_PING_INTERVAL=50ms
-HEARTBEAT_FAILURE_TIMEOUT=200ms
-```
 
 ### Transport Modes
 
