@@ -19,12 +19,12 @@ import (
 // Test constants to avoid magic numbers
 const (
 	// Sequence number expectations
-	initialSequence     = 0
-	firstSequence       = 0
-	secondSequence      = 1
-	thirdSequence       = 2
-	expectedAfterReset  = 0
-	sequenceAfterOneSend = 1
+	initialSequence         = 0
+	firstSequence           = 0
+	secondSequence          = 1
+	thirdSequence           = 2
+	expectedAfterReset      = 0
+	sequenceAfterOneSend    = 1
 	sequenceAfterThreeSends = 3
 
 	// Frame count expectations
@@ -291,11 +291,11 @@ func TestCDCLink_SendWithTimeout(t *testing.T) {
 	}
 
 	tests := []struct {
-		name      string
-		setupCtx  func() (context.Context, context.CancelFunc)
-		setupErr  error
-		wantErr   bool
-		checkErr  func(error) bool
+		name     string
+		setupCtx func() (context.Context, context.CancelFunc)
+		setupErr error
+		wantErr  bool
+		checkErr func(error) bool
 	}{
 		{
 			name: "ContextCanceled",

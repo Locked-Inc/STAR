@@ -14,24 +14,24 @@ import (
 // Test timing constants to avoid magic numbers
 const (
 	// Heartbeat intervals
-	validPingInterval      = 50 * time.Millisecond
-	validFailureTimeout    = 200 * time.Millisecond
-	invalidPingInterval    = 300 * time.Millisecond
-	invalidFailureTimeout  = 200 * time.Millisecond
-	equalInterval          = 100 * time.Millisecond
+	validPingInterval     = 50 * time.Millisecond
+	validFailureTimeout   = 200 * time.Millisecond
+	invalidPingInterval   = 300 * time.Millisecond
+	invalidFailureTimeout = 200 * time.Millisecond
+	equalInterval         = 100 * time.Millisecond
 
 	// Test timeouts and waits
-	shortPingInterval      = 10 * time.Millisecond
-	shortFailureTimeout    = 50 * time.Millisecond
+	shortPingInterval       = 10 * time.Millisecond
+	shortFailureTimeout     = 50 * time.Millisecond
 	veryShortFailureTimeout = 30 * time.Millisecond
 
 	// Wait durations for test assertions
-	waitBeforeTimeout      = 30 * time.Millisecond
-	waitForMultipleCycles  = 100 * time.Millisecond
-	waitForFirstFailure    = 50 * time.Millisecond
-	waitForSecondTimeout   = 50 * time.Millisecond
-	maxWaitForCallback     = 200 * time.Millisecond
-	maxWaitForExit         = 100 * time.Millisecond
+	waitBeforeTimeout     = 30 * time.Millisecond
+	waitForMultipleCycles = 100 * time.Millisecond
+	waitForFirstFailure   = 50 * time.Millisecond
+	waitForSecondTimeout  = 50 * time.Millisecond
+	maxWaitForCallback    = 200 * time.Millisecond
+	maxWaitForExit        = 100 * time.Millisecond
 )
 
 // TestNewHeartbeatManager_Validation tests parameter validation.
@@ -39,12 +39,12 @@ func TestNewHeartbeatManager_Validation(t *testing.T) {
 	callback := func() {}
 
 	tests := []struct {
-		name            string
-		pingInterval    time.Duration
-		failureTimeout  time.Duration
-		callback        func()
-		wantErr         bool
-		errDescription  string
+		name           string
+		pingInterval   time.Duration
+		failureTimeout time.Duration
+		callback       func()
+		wantErr        bool
+		errDescription string
 	}{
 		{
 			name:           "ValidParameters",
