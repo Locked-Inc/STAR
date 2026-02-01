@@ -10279,562 +10279,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "SSW-106-02-G-D-RA:SSW-106-02-G-D-RA"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "J"
-				(at 19.05 7.62 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-			)
-			(property "Value" "SSW-106-02-G-D-RA"
-				(at 19.05 5.08 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-			)
-			(property "Footprint" "SSW10602GDRA"
-				(at 19.05 -94.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "http://suddendocs.samtec.com/prints/ssw-1xx-xx-xxx-x-xx-xxx-xx-mkt.pdf"
-				(at 19.05 -194.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "12 Position Receptacle Connector 0.100\" (2.54mm) Through Hole, Right Angle Gold"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Height" "5.25"
-				(at 19.05 -394.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Mouser Part Number" "200-SSW10602GDRA"
-				(at 19.05 -494.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Samtec/SSW-106-02-G-D-RA?qs=rU5fayqh%252BE3y2WIzbQXf2g%3D%3D"
-				(at 19.05 -594.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Manufacturer Name" "SAMTEC"
-				(at 19.05 -694.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Manufacturer Part Number" "SSW-106-02-G-D-RA"
-				(at 19.05 -794.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(symbol "SSW-106-02-G-D-RA_1_1"
-				(rectangle
-					(start 5.08 2.54)
-					(end 17.78 -15.24)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin passive line
-					(at 0 0 0)
-					(length 5.08)
-					(name "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -2.54 0)
-					(length 5.08)
-					(name "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -5.08 0)
-					(length 5.08)
-					(name "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -7.62 0)
-					(length 5.08)
-					(name "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -10.16 0)
-					(length 5.08)
-					(name "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -12.7 0)
-					(length 5.08)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 22.86 0 180)
-					(length 5.08)
-					(name "12"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "12"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 22.86 -2.54 180)
-					(length 5.08)
-					(name "11"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "11"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 22.86 -5.08 180)
-					(length 5.08)
-					(name "10"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "10"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 22.86 -7.62 180)
-					(length 5.08)
-					(name "9"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "9"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 22.86 -10.16 180)
-					(length 5.08)
-					(name "8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 22.86 -12.7 180)
-					(length 5.08)
-					(name "7"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "7"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "SSW-106-02-G-S-RA:SSW-106-02-G-S-RA"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "J"
-				(at 16.51 7.62 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-			)
-			(property "Value" "SSW-106-02-G-S-RA"
-				(at 16.51 5.08 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-			)
-			(property "Footprint" "SSW-106-XX-YYY-S-RA"
-				(at 16.51 -94.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "http://suddendocs.samtec.com/prints/ssw-1xx-xx-xxx-x-xx-xxx-xx-mkt.pdf"
-				(at 16.51 -194.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" ".100\" Tiger Buy Socket Strip,  positions per row,  row"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Height" ""
-				(at 16.51 -394.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Mouser Part Number" "200-SSW10602GSRA"
-				(at 16.51 -494.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Samtec/SSW-106-02-G-S-RA?qs=92ilVni64gxK1gPeghtn8A%3D%3D"
-				(at 16.51 -594.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Manufacturer Name" "SAMTEC"
-				(at 16.51 -694.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Manufacturer Part Number" "SSW-106-02-G-S-RA"
-				(at 16.51 -794.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(symbol "SSW-106-02-G-S-RA_1_1"
-				(rectangle
-					(start 5.08 2.54)
-					(end 15.24 -15.24)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin passive line
-					(at 0 0 0)
-					(length 5.08)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -2.54 0)
-					(length 5.08)
-					(name "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -5.08 0)
-					(length 5.08)
-					(name "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -7.62 0)
-					(length 5.08)
-					(name "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -10.16 0)
-					(length 5.08)
-					(name "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -12.7 0)
-					(length 5.08)
-					(name "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Switch:SW_DIP_x02"
 			(pin_names
 				(offset 0)
@@ -11854,18 +11298,6 @@
 		(uuid 0ed928bd-9fda-47b6-bd0e-34771b7a3a51)
 	)
 	(rectangle
-		(start 403.86 270.51)
-		(end 567.69 342.9)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid 1f6bc34e-c496-408d-89eb-b99007b6acaa)
-	)
-	(rectangle
 		(start 510.54 464.82)
 		(end 567.69 497.84)
 		(stroke
@@ -12538,17 +11970,6 @@
 			)
 		)
 		(uuid "f320f2d2-d37d-4eac-9b36-ca6460c96094")
-	)
-	(text "PMOD"
-		(exclude_from_sim no)
-		(at 501.396 336.804 0)
-		(effects
-			(font
-				(size 7.62 7.62)
-				(thickness 0.9525)
-			)
-		)
-		(uuid "fcfee3ce-e0ef-4168-a040-4f9077be1f96")
 	)
 	(junction
 		(at 665.48 444.5)
@@ -15110,16 +14531,6 @@
 	)
 	(wire
 		(pts
-			(xy 502.92 318.77) (xy 519.43 318.77)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0d29e90b-0560-46b7-91f1-81c9a0f2da0f")
-	)
-	(wire
-		(pts
 			(xy 638.81 172.72) (xy 640.08 172.72)
 		)
 		(stroke
@@ -15920,16 +15331,6 @@
 	)
 	(wire
 		(pts
-			(xy 458.47 279.4) (xy 474.98 279.4)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1d78342f-67f7-4670-a4e3-86614f994ba5")
-	)
-	(wire
-		(pts
 			(xy 598.17 274.32) (xy 575.31 274.32)
 		)
 		(stroke
@@ -16047,16 +15448,6 @@
 			(type default)
 		)
 		(uuid "205fb1d2-4bbb-4d59-a710-db78364eb006")
-	)
-	(wire
-		(pts
-			(xy 415.29 289.56) (xy 431.8 289.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2096de63-ebec-474c-a4eb-2c3c04a32bcb")
 	)
 	(wire
 		(pts
@@ -17000,16 +16391,6 @@
 	)
 	(wire
 		(pts
-			(xy 415.29 279.4) (xy 431.8 279.4)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "30280757-c5a9-4caf-a096-bbf9df4b6902")
-	)
-	(wire
-		(pts
 			(xy 646.43 218.44) (xy 685.8 218.44)
 		)
 		(stroke
@@ -17187,16 +16568,6 @@
 			(type default)
 		)
 		(uuid "340f9506-aee9-4d3a-9fe8-feceedcdab1f")
-	)
-	(wire
-		(pts
-			(xy 415.29 281.94) (xy 431.8 281.94)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "342197f4-d6b8-4f46-80ca-27e8ff36f93c")
 	)
 	(wire
 		(pts
@@ -17870,16 +17241,6 @@
 	)
 	(wire
 		(pts
-			(xy 415.29 292.1) (xy 431.8 292.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "434472db-a0b2-46fa-a1fd-28fc0f772d91")
-	)
-	(wire
-		(pts
 			(xy 417.83 196.85) (xy 435.61 196.85)
 		)
 		(stroke
@@ -17927,16 +17288,6 @@
 			(type default)
 		)
 		(uuid "43aa2243-43f2-4f00-9a2d-8cc93d3e09f9")
-	)
-	(wire
-		(pts
-			(xy 560.07 318.77) (xy 542.29 318.77)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "44288461-28bc-4336-9826-8eaf34fa439e")
 	)
 	(wire
 		(pts
@@ -18207,16 +17558,6 @@
 			(type default)
 		)
 		(uuid "4807d5da-9f36-4c0c-9656-d2d6e5204a0e")
-	)
-	(wire
-		(pts
-			(xy 415.29 287.02) (xy 431.8 287.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "484d7bed-a5fa-4a37-a561-21c372fe0ce4")
 	)
 	(wire
 		(pts
@@ -18560,16 +17901,6 @@
 	)
 	(wire
 		(pts
-			(xy 461.01 336.55) (xy 477.52 336.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4dd30b0b-4cfc-4f97-865c-4dda956e242b")
-	)
-	(wire
-		(pts
 			(xy 762 166.37) (xy 814.07 166.37)
 		)
 		(stroke
@@ -18627,26 +17958,6 @@
 			(type default)
 		)
 		(uuid "4efcc91c-0ff3-4b85-9244-bdea15db2068")
-	)
-	(wire
-		(pts
-			(xy 458.47 318.77) (xy 474.98 318.77)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4efcd171-4a77-4187-9cb6-a9317ceeb94b")
-	)
-	(wire
-		(pts
-			(xy 560.07 313.69) (xy 542.29 313.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4f468d60-5055-4a69-ae46-dab06120b305")
 	)
 	(wire
 		(pts
@@ -19110,16 +18421,6 @@
 	)
 	(wire
 		(pts
-			(xy 415.29 284.48) (xy 431.8 284.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5694eb06-d073-4325-a153-876a35eba9d7")
-	)
-	(wire
-		(pts
 			(xy 368.3 101.6) (xy 368.3 106.68)
 		)
 		(stroke
@@ -19237,16 +18538,6 @@
 			(type default)
 		)
 		(uuid "58b5a93d-c651-4d5d-9e91-405518b1be58")
-	)
-	(wire
-		(pts
-			(xy 458.47 316.23) (xy 474.98 316.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "590dc0c4-6759-4329-8bbf-677f5c1e1b53")
 	)
 	(wire
 		(pts
@@ -19860,16 +19151,6 @@
 	)
 	(wire
 		(pts
-			(xy 560.07 308.61) (xy 542.29 308.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "64431cae-bd88-4074-800d-61ee96618a9e")
-	)
-	(wire
-		(pts
 			(xy 383.54 123.19) (xy 393.7 123.19)
 		)
 		(stroke
@@ -20017,16 +19298,6 @@
 			(type default)
 		)
 		(uuid "674ddf8f-8cfe-47e2-922a-3c500806d1b6")
-	)
-	(wire
-		(pts
-			(xy 506.73 292.1) (xy 523.24 292.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "676a31f2-19c7-46b2-b439-0017243e8039")
 	)
 	(wire
 		(pts
@@ -20410,16 +19681,6 @@
 	)
 	(wire
 		(pts
-			(xy 458.47 289.56) (xy 474.98 289.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6e75859b-edcd-4922-8236-ce1776a93c66")
-	)
-	(wire
-		(pts
 			(xy 665.48 441.96) (xy 665.48 444.5)
 		)
 		(stroke
@@ -20477,16 +19738,6 @@
 			(type default)
 		)
 		(uuid "6ed7aae9-9338-440e-9c4a-f68637a5d348")
-	)
-	(wire
-		(pts
-			(xy 502.92 313.69) (xy 519.43 313.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6ed9f5e9-8e49-494b-84d8-a0060242eef6")
 	)
 	(wire
 		(pts
@@ -21130,26 +20381,6 @@
 	)
 	(wire
 		(pts
-			(xy 458.47 313.69) (xy 474.98 313.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7c8be060-993f-46b3-ba3a-a8cdaad7997d")
-	)
-	(wire
-		(pts
-			(xy 477.52 334.01) (xy 461.01 334.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7c8c8be6-5185-4b31-8aab-54be2503f00d")
-	)
-	(wire
-		(pts
 			(xy 662.94 416.56) (xy 685.8 416.56)
 		)
 		(stroke
@@ -21337,16 +20568,6 @@
 			(type default)
 		)
 		(uuid "7f550da0-2fe3-433a-993c-0bc1efe045f4")
-	)
-	(wire
-		(pts
-			(xy 415.29 308.61) (xy 431.8 308.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7fc8f37e-e18a-4c9b-aa44-da942492bda6")
 	)
 	(wire
 		(pts
@@ -21567,16 +20788,6 @@
 			(type default)
 		)
 		(uuid "84274ee1-9971-4f24-8d1f-4c25b0804053")
-	)
-	(wire
-		(pts
-			(xy 458.47 308.61) (xy 474.98 308.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "84297930-3eea-4f14-9ded-fed394309a30")
 	)
 	(wire
 		(pts
@@ -21920,16 +21131,6 @@
 	)
 	(wire
 		(pts
-			(xy 523.24 279.4) (xy 506.73 279.4)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "89288947-f4ae-482b-8454-bace6cffcb7a")
-	)
-	(wire
-		(pts
 			(xy 666.75 491.49) (xy 692.15 491.49)
 		)
 		(stroke
@@ -22090,16 +21291,6 @@
 	)
 	(wire
 		(pts
-			(xy 502.92 311.15) (xy 519.43 311.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8bd6f0cd-da95-483b-9497-0f052b0c4cd8")
-	)
-	(wire
-		(pts
 			(xy 623.57 370.84) (xy 626.11 370.84)
 		)
 		(stroke
@@ -22187,16 +21378,6 @@
 			(type default)
 		)
 		(uuid "8d023145-b3c8-41e0-b90d-14b57f34522a")
-	)
-	(wire
-		(pts
-			(xy 415.29 318.77) (xy 431.8 318.77)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8d0df007-5281-474e-bc2f-e3411b01e2a6")
 	)
 	(wire
 		(pts
@@ -22410,16 +21591,6 @@
 	)
 	(wire
 		(pts
-			(xy 506.73 289.56) (xy 523.24 289.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "901b402b-0744-4f16-a720-f07ceab23077")
-	)
-	(wire
-		(pts
 			(xy 638.81 240.03) (xy 638.81 241.3)
 		)
 		(stroke
@@ -22557,16 +21728,6 @@
 			(type default)
 		)
 		(uuid "92f50272-a7ca-4394-9d0f-5cf2a3eaefff")
-	)
-	(wire
-		(pts
-			(xy 415.29 313.69) (xy 431.8 313.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9347970f-ea33-4728-8a8a-ba832fe565d8")
 	)
 	(wire
 		(pts
@@ -23427,16 +22588,6 @@
 			(type default)
 		)
 		(uuid "a2100378-a44b-4bdb-bf51-ae83b297b1e5")
-	)
-	(wire
-		(pts
-			(xy 415.29 306.07) (xy 431.8 306.07)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a247d932-5144-47ea-88b2-a84afe302da4")
 	)
 	(wire
 		(pts
@@ -24540,16 +23691,6 @@
 	)
 	(wire
 		(pts
-			(xy 560.07 316.23) (xy 542.29 316.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b62fd877-0b67-4189-b455-447b4c169407")
-	)
-	(wire
-		(pts
 			(xy 168.91 449.58) (xy 185.42 449.58)
 		)
 		(stroke
@@ -24647,16 +23788,6 @@
 			(type default)
 		)
 		(uuid "b845b067-ae62-4881-9225-b0944dd509ef")
-	)
-	(wire
-		(pts
-			(xy 415.29 316.23) (xy 431.8 316.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b8cb8d9d-7fb8-4f46-93c0-da532d0cc819")
 	)
 	(wire
 		(pts
@@ -24877,16 +24008,6 @@
 			(type default)
 		)
 		(uuid "bd81e053-cb40-4c5e-8c23-9d0194227681")
-	)
-	(wire
-		(pts
-			(xy 415.29 311.15) (xy 431.8 311.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bde8a411-e7cf-48ae-bec8-cddb52d49ad5")
 	)
 	(wire
 		(pts
@@ -25170,16 +24291,6 @@
 	)
 	(wire
 		(pts
-			(xy 458.47 292.1) (xy 474.98 292.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c4b744f4-e9f5-4a58-9699-9fa1f2a23b42")
-	)
-	(wire
-		(pts
 			(xy 401.32 158.75) (xy 421.64 158.75)
 		)
 		(stroke
@@ -25230,16 +24341,6 @@
 	)
 	(wire
 		(pts
-			(xy 542.29 311.15) (xy 560.07 311.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c5c50df0-e369-4de6-b61f-40ae7408db1a")
-	)
-	(wire
-		(pts
 			(xy 594.36 308.61) (xy 594.36 327.66)
 		)
 		(stroke
@@ -25267,16 +24368,6 @@
 			(type default)
 		)
 		(uuid "c60f7150-c118-49e9-8691-83306feb7a97")
-	)
-	(wire
-		(pts
-			(xy 458.47 284.48) (xy 474.98 284.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c652edd5-8cc6-4551-badb-e8e6fb358eea")
 	)
 	(wire
 		(pts
@@ -25850,16 +24941,6 @@
 	)
 	(wire
 		(pts
-			(xy 502.92 316.23) (xy 519.43 316.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d1924abc-08f3-47d3-a081-7954fc44ee03")
-	)
-	(wire
-		(pts
 			(xy 472.44 74.93) (xy 472.44 81.28)
 		)
 		(stroke
@@ -25877,16 +24958,6 @@
 			(type default)
 		)
 		(uuid "d2ee7f45-7235-48c8-b145-71e9060d9599")
-	)
-	(wire
-		(pts
-			(xy 523.24 281.94) (xy 506.73 281.94)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d328a5d9-f4b1-449c-9689-223518119599")
 	)
 	(wire
 		(pts
@@ -26370,16 +25441,6 @@
 	)
 	(wire
 		(pts
-			(xy 458.47 306.07) (xy 474.98 306.07)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "daf41f3c-0cee-4e57-a8d6-e50331c4cf12")
-	)
-	(wire
-		(pts
 			(xy 401.32 149.86) (xy 401.32 158.75)
 		)
 		(stroke
@@ -26630,16 +25691,6 @@
 	)
 	(wire
 		(pts
-			(xy 458.47 287.02) (xy 474.98 287.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dfaaa5f4-492e-491d-922f-113846c18d92")
-	)
-	(wire
-		(pts
 			(xy 568.96 44.45) (xy 568.96 52.07)
 		)
 		(stroke
@@ -26780,16 +25831,6 @@
 	)
 	(wire
 		(pts
-			(xy 523.24 284.48) (xy 506.73 284.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e255cfa4-22fc-4457-815a-b9e94332c0b4")
-	)
-	(wire
-		(pts
 			(xy 129.54 417.83) (xy 146.05 417.83)
 		)
 		(stroke
@@ -26827,16 +25868,6 @@
 			(type default)
 		)
 		(uuid "e369d26d-6fa6-4c51-adb6-9a2b001fbf56")
-	)
-	(wire
-		(pts
-			(xy 523.24 287.02) (xy 506.73 287.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e37de34f-235f-4317-8cb4-cd8f51e32ef1")
 	)
 	(wire
 		(pts
@@ -26897,16 +25928,6 @@
 			(type default)
 		)
 		(uuid "e4882917-275b-4133-82e9-58187b5fa3d4")
-	)
-	(wire
-		(pts
-			(xy 502.92 308.61) (xy 519.43 308.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e4ca699f-f90c-498d-abff-06520c66b640")
 	)
 	(wire
 		(pts
@@ -26987,16 +26008,6 @@
 			(type default)
 		)
 		(uuid "e608e645-d499-4c4f-96e8-b38c9a05f686")
-	)
-	(wire
-		(pts
-			(xy 458.47 281.94) (xy 474.98 281.94)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e61bd7fc-d7f4-4ba5-9aba-6e0d54500bf5")
 	)
 	(wire
 		(pts
@@ -27250,16 +26261,6 @@
 	)
 	(wire
 		(pts
-			(xy 502.92 321.31) (xy 519.43 321.31)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "eaa6a66a-a1b1-423c-be9d-6744a0a8b313")
-	)
-	(wire
-		(pts
 			(xy 599.44 298.45) (xy 599.44 300.99)
 		)
 		(stroke
@@ -27457,16 +26458,6 @@
 			(type default)
 		)
 		(uuid "ee2868f4-4b03-4174-8585-eaa8d875aab8")
-	)
-	(wire
-		(pts
-			(xy 560.07 321.31) (xy 542.29 321.31)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ee2f656a-38e9-4505-ac64-34afb10115ed")
 	)
 	(wire
 		(pts
@@ -28287,16 +27278,6 @@
 			(type default)
 		)
 		(uuid "fdf55b1c-dc3f-4f55-affb-9eefd302069b")
-	)
-	(wire
-		(pts
-			(xy 458.47 311.15) (xy 474.98 311.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fe072a9a-1bc4-471d-9aed-c6415df88ac9")
 	)
 	(wire
 		(pts
@@ -29430,16 +28411,6 @@
 		)
 		(uuid "04283768-90a2-4275-a040-7789dd9382d4")
 	)
-	(label "PMOD_JD_GPIO1"
-		(at 506.73 281.94 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "0498af11-39ce-4526-bae4-7fdbe3cf86f8")
-	)
 	(label "PI_PIN_24"
 		(at 106.68 170.18 180)
 		(effects
@@ -29571,16 +28542,6 @@
 		)
 		(uuid "0aed7f95-64e2-434a-bb54-874d9fdde46b")
 	)
-	(label "PMOD_JA_CIPO"
-		(at 502.92 316.23 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "0b48cd4d-920e-4cfd-9c3d-77d5eb73269d")
-	)
 	(label "PI_PIN_38"
 		(at 106.68 100.33 180)
 		(effects
@@ -29630,16 +28591,6 @@
 			(justify left bottom)
 		)
 		(uuid "0dd702f1-33b0-4100-9819-de0c77b4b8ea")
-	)
-	(label "PMOD_JC_INT2"
-		(at 458.47 281.94 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "0e10d27f-43d6-45d2-adc3-095670008697")
 	)
 	(label "RX72N_PIN_86"
 		(at 168.91 455.93 0)
@@ -29791,16 +28742,6 @@
 		)
 		(uuid "14c1460e-7706-40b9-8d21-406835c3515e")
 	)
-	(label "PMOD_JA_CS1"
-		(at 560.07 313.69 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "15bdc2a7-1201-480b-976c-7d328858b147")
-	)
 	(label "PI_PIN_3"
 		(at 60.96 57.15 0)
 		(effects
@@ -29922,16 +28863,6 @@
 		)
 		(uuid "1eb0e00e-5df0-44ad-b036-412b745d363e")
 	)
-	(label "PMOD_JE_GPIO0"
-		(at 415.29 306.07 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "1ef6adce-3509-498d-9223-29612dcd7a6c")
-	)
 	(label "RX72N_PIN_89"
 		(at 168.91 474.98 0)
 		(effects
@@ -29941,26 +28872,6 @@
 			(justify left bottom)
 		)
 		(uuid "1f135c55-d2a8-434b-895a-63764a5d2b6c")
-	)
-	(label "PMOD_JD_GPIO0"
-		(at 506.73 279.4 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "1f468812-ebcb-448a-b5c3-9733dcadec3a")
-	)
-	(label "BOARD_3V3"
-		(at 502.92 308.61 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "20d54ba8-c1ff-49ae-a65a-747b2cf35383")
 	)
 	(label "RX72N_PIN_67"
 		(at 814.07 166.37 180)
@@ -30232,16 +29143,6 @@
 		)
 		(uuid "2cac9d77-f9d5-4f20-b341-7abf6390a5aa")
 	)
-	(label "PMOD_JE_GPIO2"
-		(at 415.29 311.15 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "2cfafe6a-dad7-4e74-b5ea-71bb1277d91f")
-	)
 	(label "RX72N_PIN_25"
 		(at 129.54 335.28 0)
 		(effects
@@ -30261,16 +29162,6 @@
 			(justify right bottom)
 		)
 		(uuid "2f0f3595-7854-4128-b345-0f6c6a03d3ec")
-	)
-	(label "PMOD_JC_INT1"
-		(at 458.47 279.4 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "301afddf-996d-44fd-94ad-994b0d14a5a5")
 	)
 	(label "RSPIC_MOTOR3_nCS"
 		(at 793.75 158.75 180)
@@ -30432,16 +29323,6 @@
 		)
 		(uuid "3a16147b-4b6b-46f5-a1ef-26d4ee225cc7")
 	)
-	(label "PMOD_JB_GPIO2"
-		(at 415.29 284.48 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "3a320e15-5635-4f9c-9bd9-c6589cf39fa2")
-	)
 	(label "RX72N_PIN_75"
 		(at 168.91 386.08 0)
 		(effects
@@ -30452,16 +29333,6 @@
 		)
 		(uuid "3a5786b6-8941-4e07-84c2-67c73f5f564a")
 	)
-	(label "PMOD_JC_INT1"
-		(at 477.52 334.01 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "3b9d3c09-73d7-482a-b9e9-4707b06b2fce")
-	)
 	(label "RSPIC_SCLK"
 		(at 601.98 283.21 0)
 		(effects
@@ -30471,16 +29342,6 @@
 			(justify left bottom)
 		)
 		(uuid "3bfeb4ee-c9d3-4ef7-ac59-1caca10b943a")
-	)
-	(label "PMOD_JC_SDA"
-		(at 458.47 287.02 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "3c0014e1-fb14-4216-ba5f-668e080051f8")
 	)
 	(label "JP_UPSEL"
 		(at 664.21 175.26 0)
@@ -30582,36 +29443,6 @@
 		)
 		(uuid "41075f14-4c48-4634-b160-c5e07992cb54")
 	)
-	(label "BOARD_3V3"
-		(at 458.47 318.77 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "410ff9ce-52e0-42bc-aa0f-cc1f1e42c460")
-	)
-	(label "PMOD_JB_GPIO1"
-		(at 415.29 281.94 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "41d46002-aead-4054-b20e-2007ddb5e746")
-	)
-	(label "PMOD_JA_DC"
-		(at 560.07 321.31 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "4218c72f-c531-47b7-afb4-c1db8e22dc8a")
-	)
 	(label "MOTOR3_EN"
 		(at 604.52 483.87 0)
 		(effects
@@ -30691,16 +29522,6 @@
 			(justify left bottom)
 		)
 		(uuid "4660435d-1998-4182-bf4b-06d5352b822e")
-	)
-	(label "PMOD_JB_GPIO3"
-		(at 415.29 287.02 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "476f4e0f-a8d5-4d0d-bf33-a185dd0b567a")
 	)
 	(label "PMOD_JE_GPIO3"
 		(at 416.56 396.24 0)
@@ -30812,16 +29633,6 @@
 		)
 		(uuid "4c96855c-d270-40d8-acd9-b0660aaf86f5")
 	)
-	(label "PMOD_JC_SCL"
-		(at 458.47 284.48 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "4ccb79f8-0081-46fe-8ac0-f183cfab1424")
-	)
 	(label "RX72N_PIN_66"
 		(at 168.91 328.93 0)
 		(effects
@@ -30912,16 +29723,6 @@
 		)
 		(uuid "52311ff1-52e2-4c11-8482-9e8323fa0f9c")
 	)
-	(label "PMOD_JA_RST"
-		(at 560.07 318.77 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "527f0a3c-fa3d-4a93-855c-36ed322de0f9")
-	)
 	(label "PMOD_JC_SDA"
 		(at 793.75 209.55 180)
 		(effects
@@ -31001,16 +29802,6 @@
 			(justify left bottom)
 		)
 		(uuid "5750dcbe-03aa-4b6d-b6af-181a6658dfcc")
-	)
-	(label "BOARD_3V3"
-		(at 415.29 318.77 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "57fe45cc-f122-4f3f-a68c-611c13a375a5")
 	)
 	(label "MOTOR2_VCC"
 		(at 604.52 436.88 0)
@@ -31205,16 +29996,6 @@
 		)
 		(uuid "6244fb60-e660-4ae2-9702-9650698374cc")
 	)
-	(label "PMOD_JF_SDA"
-		(at 458.47 313.69 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "62604f89-c4d1-485f-aaeb-2cf16be73fb5")
-	)
 	(label "PI_PIN_15"
 		(at 60.96 72.39 0)
 		(effects
@@ -31284,16 +30065,6 @@
 			(justify left bottom)
 		)
 		(uuid "65c62285-1c75-4442-8032-c51ce9402966")
-	)
-	(label "PMOD_JD_GPIO2"
-		(at 506.73 284.48 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "66783ac0-6914-41ce-8002-38a9cea0d22d")
 	)
 	(label "P3V3_BUCK"
 		(at 519.43 439.42 0)
@@ -31635,16 +30406,6 @@
 		)
 		(uuid "75cfade6-e89e-4902-b218-4bc99540d3f3")
 	)
-	(label "PMOD_JF_SCL"
-		(at 458.47 311.15 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "772b6fd1-5467-4230-b9ec-762f46302dc5")
-	)
 	(label "PI_PIN_23"
 		(at 60.96 82.55 0)
 		(effects
@@ -31674,16 +30435,6 @@
 			(justify left bottom)
 		)
 		(uuid "7a2d6bab-0b67-410a-af04-ae6c751e9c49")
-	)
-	(label "PMOD_JA_COPI"
-		(at 502.92 318.77 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "7a66469b-345e-49cd-b195-38ce3d716913")
 	)
 	(label "RX72N_PIN_40"
 		(at 129.54 398.78 0)
@@ -32016,16 +30767,6 @@
 		)
 		(uuid "92ef5d11-0de7-4161-8acb-ab954368d16d")
 	)
-	(label "BOARD_3V3"
-		(at 458.47 292.1 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "9366a177-2370-4cba-840a-e2c17c9265f6")
-	)
 	(label "RX72N_PIN_71"
 		(at 168.91 360.68 0)
 		(effects
@@ -32055,16 +30796,6 @@
 			(justify right bottom)
 		)
 		(uuid "972cb6d5-9adc-4ad7-9bd0-8c36ec5028ee")
-	)
-	(label "PMOD_JA_GPIO"
-		(at 560.07 316.23 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "97a16d61-3074-4aa1-8a88-a180e1914afb")
 	)
 	(label "PI_PIN_36"
 		(at 106.68 185.42 180)
@@ -32145,16 +30876,6 @@
 			(justify right bottom)
 		)
 		(uuid "9ab288f5-0629-4565-8915-549e4499e957")
-	)
-	(label "BOARD_3V3"
-		(at 560.07 308.61 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "9ae04c1c-348a-40e3-9d77-69b4b2476777")
 	)
 	(label "MOTOR2_IPROPI"
 		(at 793.75 99.06 180)
@@ -32396,16 +31117,6 @@
 		)
 		(uuid "a42dc4ca-5d2c-4e50-b518-5bfe8cf9a286")
 	)
-	(label "PMOD_JB_GPIO0"
-		(at 415.29 279.4 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a4affd05-12f4-4636-8205-2666dccf6933")
-	)
 	(label "PI_PIN_23"
 		(at 59.69 170.18 0)
 		(effects
@@ -32455,16 +31166,6 @@
 			(justify right bottom)
 		)
 		(uuid "a69e4812-bbfb-409d-ba41-3bb63d0738ea")
-	)
-	(label "PMOD_JF_GPIO0"
-		(at 458.47 306.07 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a728cde0-3d6e-4ec2-81a4-7a82021ffd2e")
 	)
 	(label "RX72N_PIN_90"
 		(at 168.91 481.33 0)
@@ -32639,16 +31340,6 @@
 			(justify right bottom)
 		)
 		(uuid "ad54d379-fe62-46f1-a732-b820f13e9757")
-	)
-	(label "BOARD_3V3"
-		(at 415.29 292.1 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "ad71fa61-bf88-42a6-a0af-6133955da8fe")
 	)
 	(label "ENCODER1_PHASE_A"
 		(at 664.21 220.98 0)
@@ -32859,16 +31550,6 @@
 			(justify left bottom)
 		)
 		(uuid "b9ba6960-ca37-42f1-b4fe-a7987b74302a")
-	)
-	(label "PMOD_JE_GPIO3"
-		(at 415.29 313.69 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "ba0d8caa-8c77-4550-9b0f-6774aa86ada7")
 	)
 	(label "PI_PIN_7"
 		(at 59.69 149.86 0)
@@ -33230,16 +31911,6 @@
 		)
 		(uuid "c88461bf-ecc7-4599-8e67-e02ff6fd401f")
 	)
-	(label "BTP_INT"
-		(at 477.52 336.55 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "c88ff143-6a00-4152-b473-bf1abd980a6c")
-	)
 	(label "MOTOR3_nFAULT"
 		(at 668.02 481.33 0)
 		(effects
@@ -33530,16 +32201,6 @@
 		)
 		(uuid "d61e22fc-b8cb-4fe7-a3bd-7e9f0223ab8b")
 	)
-	(label "PMOD_JE_GPIO1"
-		(at 415.29 308.61 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "d649d12a-c57f-4fb6-a66c-641ebf0ecd71")
-	)
 	(label "RX72N_PIN_32"
 		(at 646.43 220.98 0)
 		(effects
@@ -33670,16 +32331,6 @@
 		)
 		(uuid "dd507169-2ebd-4757-966d-de2f885e3b20")
 	)
-	(label "PMOD_JF_GPIO1"
-		(at 458.47 308.61 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "dd70a047-f81b-4c5a-b2c7-37c937891cd3")
-	)
 	(label "RX72N_PIN_18"
 		(at 646.43 182.88 0)
 		(effects
@@ -33761,16 +32412,6 @@
 			(justify left bottom)
 		)
 		(uuid "df5bd638-5dcb-4623-9d77-402f61ed0bae")
-	)
-	(label "PMOD_JD_GPIO3"
-		(at 506.73 287.02 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e015e822-2c70-4874-b929-5caaaa7c6ff6")
 	)
 	(label "RX72N_PIN_50"
 		(at 129.54 455.93 0)
@@ -34155,16 +32796,6 @@
 		(uuid "f728f495-333f-45ef-89d2-de60a128087f")
 	)
 	(label "BOARD_3V3"
-		(at 506.73 292.1 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "f82c193b-4bea-41d7-9e6e-2cce1992b5fe")
-	)
-	(label "BOARD_3V3"
 		(at 657.86 140.97 0)
 		(effects
 			(font
@@ -34173,16 +32804,6 @@
 			(justify left bottom)
 		)
 		(uuid "f83da6ec-a2d8-4d3a-8160-09910136cdcd")
-	)
-	(label "PMOD_JA_CS0"
-		(at 502.92 321.31 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "f86bef9a-64b7-443c-a999-2da2059c0b7b")
 	)
 	(label "RX72N_PIN_95"
 		(at 814.07 93.98 180)
@@ -34293,16 +32914,6 @@
 			(justify left bottom)
 		)
 		(uuid "fda56461-addc-4b38-8f35-6eee1bb14f5a")
-	)
-	(label "PMOD_JA_SCK"
-		(at 502.92 313.69 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "feadcc5f-0049-4688-a799-eae98a43cfed")
 	)
 	(label "MOTOR3_IPROPI"
 		(at 668.02 483.87 0)
@@ -47939,72 +46550,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 458.47 316.23 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "1cfcdd73-5362-4cff-9e3e-3064be0450e0")
-		(property "Reference" "#PWR025"
-			(at 452.12 316.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 455.676 316.23 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 458.47 316.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 458.47 316.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 458.47 316.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "02e6451f-74a1-4f83-a03f-d7367e686035")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "#PWR025")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "PCM_4ms_Connector:Conn_01x09")
 		(at 168.91 115.57 0)
 		(unit 1)
@@ -48528,148 +47073,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "R74")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "SSW-106-02-G-S-RA:SSW-106-02-G-S-RA")
-		(at 523.24 279.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "20077e50-31c5-41b0-8439-10ee72aaa089")
-		(property "Reference" "J35"
-			(at 536.448 275.844 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "SSW-106-02-G-S-RA"
-			(at 522.986 296.164 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "SSW-106-XX-YYY-S-RA"
-			(at 539.75 374.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://suddendocs.samtec.com/prints/ssw-1xx-xx-xxx-x-xx-xxx-xx-mkt.pdf"
-			(at 539.75 474.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Description" ".100\" Tiger Buy Socket Strip,  positions per row,  row"
-			(at 523.24 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Height" ""
-			(at 539.75 674.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "200-SSW10602GSRA"
-			(at 539.75 774.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Samtec/SSW-106-02-G-S-RA?qs=92ilVni64gxK1gPeghtn8A%3D%3D"
-			(at 539.75 874.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Name" "SAMTEC"
-			(at 539.75 974.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "SSW-106-02-G-S-RA"
-			(at 539.75 1074.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 523.24 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "4"
-			(uuid "fd17226a-b733-44fa-b94c-cccd30f870e3")
-		)
-		(pin "3"
-			(uuid "59aee765-48e0-4c49-8fec-e1afef37ee34")
-		)
-		(pin "2"
-			(uuid "dadf9e5a-7c06-48a5-b844-3adb7171bbda")
-		)
-		(pin "1"
-			(uuid "fd29ee63-3092-4912-89de-c9c3009b0512")
-		)
-		(pin "5"
-			(uuid "8d015ebe-ac26-4bad-ac1e-e42758a93991")
-		)
-		(pin "6"
-			(uuid "55c0da1e-43cd-4be3-8662-400ed91029f1")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J35")
 					(unit 1)
 				)
 			)
@@ -49913,72 +48316,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "R78")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 415.29 316.23 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "21f03e67-c473-4ebb-a831-479e2410b5bc")
-		(property "Reference" "#PWR017"
-			(at 408.94 316.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 412.496 316.23 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 415.29 316.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 415.29 316.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 415.29 316.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "2ef727c2-9331-4410-b6d3-fabf691393cc")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "#PWR017")
 					(unit 1)
 				)
 			)
@@ -59052,72 +57389,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 415.29 289.56 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "35dd84d4-f31c-4d18-845c-3341b4b046ff")
-		(property "Reference" "#PWR016"
-			(at 408.94 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 412.496 289.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 415.29 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 415.29 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 415.29 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "69150a44-2f81-421d-ad04-03fca2945627")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "#PWR016")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
 		(at 581.66 471.17 180)
 		(unit 1)
@@ -62557,164 +60828,6 @@
 		)
 	)
 	(symbol
-		(lib_id "SSW-106-02-G-D-RA:SSW-106-02-G-D-RA")
-		(at 519.43 308.61 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "3cf38094-db77-4762-b682-53fd815a5324")
-		(property "Reference" "J34"
-			(at 536.194 304.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "SSW-106-02-G-D-RA"
-			(at 530.606 325.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "SSW10602GDRA"
-			(at 538.48 403.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://suddendocs.samtec.com/prints/ssw-1xx-xx-xxx-x-xx-xxx-xx-mkt.pdf"
-			(at 538.48 503.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Description" "12 Position Receptacle Connector 0.100\" (2.54mm) Through Hole, Right Angle Gold"
-			(at 519.43 308.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Height" "5.25"
-			(at 538.48 703.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "200-SSW10602GDRA"
-			(at 538.48 803.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Samtec/SSW-106-02-G-D-RA?qs=rU5fayqh%252BE3y2WIzbQXf2g%3D%3D"
-			(at 538.48 903.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Name" "SAMTEC"
-			(at 538.48 1003.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "SSW-106-02-G-D-RA"
-			(at 538.48 1103.53 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 519.43 308.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "7"
-			(uuid "c76fb699-4613-405f-addd-4b8682e7173e")
-		)
-		(pin "6"
-			(uuid "27ee56ac-ef84-4d6a-884a-df275aef3451")
-		)
-		(pin "4"
-			(uuid "6d31ae06-fa43-4094-a934-95f6504c64f8")
-		)
-		(pin "1"
-			(uuid "e8b767fd-dba9-44fe-ac19-a46025b191e8")
-		)
-		(pin "2"
-			(uuid "8b2ceec0-63a5-41d9-9374-5d7619341e24")
-		)
-		(pin "3"
-			(uuid "1ab89bf5-17a6-4670-b283-eea8ada67b8d")
-		)
-		(pin "5"
-			(uuid "4e00eb80-ed41-48ea-8018-029d0a5400b6")
-		)
-		(pin "12"
-			(uuid "53fd7aa5-4305-48a6-8ab3-ff1a91a25402")
-		)
-		(pin "10"
-			(uuid "e604b505-c9df-4dcc-bcfe-c3626e63328c")
-		)
-		(pin "11"
-			(uuid "3832bef0-4358-471e-8468-b94a9685f8af")
-		)
-		(pin "9"
-			(uuid "9b02b578-cb4d-4351-9fea-446950409e20")
-		)
-		(pin "8"
-			(uuid "fa4829a2-b991-4ab0-9134-85e519cc627e")
-		)
-		(instances
-			(project ""
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J34")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "1N4007W-T:1N4007W-T")
 		(at 411.48 71.12 270)
 		(unit 1)
@@ -64693,72 +62806,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "C25")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 458.47 289.56 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "40d8f686-ac54-480b-8eb6-950b9f1cad35")
-		(property "Reference" "#PWR024"
-			(at 452.12 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 455.676 289.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 458.47 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 458.47 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 458.47 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "b51b36d8-ff38-4ea3-9ced-4d34d12cb68f")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "#PWR024")
 					(unit 1)
 				)
 			)
@@ -74113,148 +72160,6 @@
 		)
 	)
 	(symbol
-		(lib_id "SSW-106-02-G-S-RA:SSW-106-02-G-S-RA")
-		(at 431.8 279.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "568ba751-e775-4a17-992a-35897449d726")
-		(property "Reference" "J10"
-			(at 445.008 275.844 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "SSW-106-02-G-S-RA"
-			(at 431.546 296.164 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "SSW-106-XX-YYY-S-RA"
-			(at 448.31 374.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://suddendocs.samtec.com/prints/ssw-1xx-xx-xxx-x-xx-xxx-xx-mkt.pdf"
-			(at 448.31 474.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Description" ".100\" Tiger Buy Socket Strip,  positions per row,  row"
-			(at 431.8 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Height" ""
-			(at 448.31 674.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "200-SSW10602GSRA"
-			(at 448.31 774.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Samtec/SSW-106-02-G-S-RA?qs=92ilVni64gxK1gPeghtn8A%3D%3D"
-			(at 448.31 874.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Name" "SAMTEC"
-			(at 448.31 974.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "SSW-106-02-G-S-RA"
-			(at 448.31 1074.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 431.8 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "4"
-			(uuid "986ce747-0014-463d-a4e6-b9d1182d64c7")
-		)
-		(pin "3"
-			(uuid "c0a6aa6d-0b6e-4311-a146-a4740430ed78")
-		)
-		(pin "2"
-			(uuid "c865992f-f1b2-4661-b485-e0550c3b3526")
-		)
-		(pin "1"
-			(uuid "9814b644-fd36-4c25-a0ce-514554c7b009")
-		)
-		(pin "5"
-			(uuid "9e507e85-d546-46a5-8f6f-0432644de397")
-		)
-		(pin "6"
-			(uuid "196a9e00-87e4-495e-9d43-4d83e0ef471c")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J10")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "3825:3825")
 		(at 146.05 303.53 0)
 		(unit 1)
@@ -81920,148 +79825,6 @@
 		)
 	)
 	(symbol
-		(lib_id "SSW-106-02-G-S-RA:SSW-106-02-G-S-RA")
-		(at 474.98 279.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "632a3214-19a3-413f-8586-51b95467e839")
-		(property "Reference" "J31"
-			(at 488.188 275.844 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "SSW-106-02-G-S-RA"
-			(at 474.726 296.164 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "SSW-106-XX-YYY-S-RA"
-			(at 491.49 374.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://suddendocs.samtec.com/prints/ssw-1xx-xx-xxx-x-xx-xxx-xx-mkt.pdf"
-			(at 491.49 474.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Description" ".100\" Tiger Buy Socket Strip,  positions per row,  row"
-			(at 474.98 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Height" ""
-			(at 491.49 674.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "200-SSW10602GSRA"
-			(at 491.49 774.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Samtec/SSW-106-02-G-S-RA?qs=92ilVni64gxK1gPeghtn8A%3D%3D"
-			(at 491.49 874.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Name" "SAMTEC"
-			(at 491.49 974.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "SSW-106-02-G-S-RA"
-			(at 491.49 1074.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 474.98 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "4"
-			(uuid "3f3ce853-f1f2-450a-88eb-edeed24bc5a5")
-		)
-		(pin "3"
-			(uuid "93ef6740-8235-4a46-960d-259bf256e47b")
-		)
-		(pin "2"
-			(uuid "73c70d52-99a9-4035-b96e-766af9be2987")
-		)
-		(pin "1"
-			(uuid "f2879423-8717-45b3-9b99-e5118757017a")
-		)
-		(pin "5"
-			(uuid "1a8c82b4-fa61-4e93-8274-0cd84259a172")
-		)
-		(pin "6"
-			(uuid "372cb283-ed1b-4326-9d76-e3c33ea67588")
-		)
-		(instances
-			(project ""
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J31")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C")
 		(at 694.69 367.03 0)
 		(unit 1)
@@ -87647,148 +85410,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "TP74")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "SSW-106-02-G-S-RA:SSW-106-02-G-S-RA")
-		(at 431.8 306.07 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "708a1e13-b8f6-4e3b-914f-80377679c644")
-		(property "Reference" "J11"
-			(at 445.008 302.514 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "SSW-106-02-G-S-RA"
-			(at 431.546 322.834 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "SSW-106-XX-YYY-S-RA"
-			(at 448.31 400.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://suddendocs.samtec.com/prints/ssw-1xx-xx-xxx-x-xx-xxx-xx-mkt.pdf"
-			(at 448.31 500.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Description" ".100\" Tiger Buy Socket Strip,  positions per row,  row"
-			(at 431.8 306.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Height" ""
-			(at 448.31 700.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "200-SSW10602GSRA"
-			(at 448.31 800.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Samtec/SSW-106-02-G-S-RA?qs=92ilVni64gxK1gPeghtn8A%3D%3D"
-			(at 448.31 900.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Name" "SAMTEC"
-			(at 448.31 1000.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "SSW-106-02-G-S-RA"
-			(at 448.31 1100.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 431.8 306.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "4"
-			(uuid "9d0c4636-d97f-486b-95d7-df08849e65f2")
-		)
-		(pin "3"
-			(uuid "8de7d760-c205-400d-bccb-839b6d207438")
-		)
-		(pin "2"
-			(uuid "59b02200-3992-467f-aa2d-ba30c3b9893d")
-		)
-		(pin "1"
-			(uuid "682c155a-bc08-4523-8527-fc4ff44b9931")
-		)
-		(pin "5"
-			(uuid "bb69d0bf-0e10-4e79-b856-10d10df07be0")
-		)
-		(pin "6"
-			(uuid "0f0a80e7-b05b-4aa0-8f68-b3da6c8c3075")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J11")
 					(unit 1)
 				)
 			)
@@ -99983,72 +97604,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "TP55")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 502.92 311.15 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "852ba103-2ad2-4f7b-9691-a67b54fe5009")
-		(property "Reference" "#PWR045"
-			(at 496.57 311.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 500.126 311.15 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 502.92 311.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 502.92 311.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 502.92 311.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "d95083b1-9e06-424e-9046-4e7fa3308284")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "#PWR045")
 					(unit 1)
 				)
 			)
@@ -130093,73 +127648,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 560.07 311.15 90)
-		(mirror x)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "bfa1ad97-f597-41e0-a042-cd33e7bbb00e")
-		(property "Reference" "#PWR064"
-			(at 566.42 311.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 562.864 311.15 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 560.07 311.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 560.07 311.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 560.07 311.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "dfb5ffac-bbf1-4423-825c-38cca9b9ec35")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "#PWR064")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
 		(at 505.46 365.76 90)
 		(unit 1)
@@ -148102,83 +145590,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 455.93 334.01 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "e9ef21ed-3128-4fb9-a53a-1e5eb9323a57")
-		(property "Reference" "J18"
-			(at 452.12 333.248 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_01x02"
-			(at 448.31 337.312 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
-			(at 455.93 334.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 455.93 334.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 455.93 334.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 455.93 334.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "cdbe6b08-4a91-42f7-b8c6-eb5746e29df5")
-		)
-		(pin "1"
-			(uuid "f0a602bb-917e-447b-894a-8b9f2e103692")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J18")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
 		(at 417.83 219.71 0)
 		(unit 1)
@@ -151846,148 +149257,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "C23")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "SSW-106-02-G-S-RA:SSW-106-02-G-S-RA")
-		(at 474.98 306.07 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "f322c8a9-1076-407e-af55-7e862b647fd2")
-		(property "Reference" "J32"
-			(at 488.188 302.514 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "SSW-106-02-G-S-RA"
-			(at 474.726 322.834 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "SSW-106-XX-YYY-S-RA"
-			(at 491.49 400.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://suddendocs.samtec.com/prints/ssw-1xx-xx-xxx-x-xx-xxx-xx-mkt.pdf"
-			(at 491.49 500.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Description" ".100\" Tiger Buy Socket Strip,  positions per row,  row"
-			(at 474.98 306.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Height" ""
-			(at 491.49 700.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "200-SSW10602GSRA"
-			(at 491.49 800.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Samtec/SSW-106-02-G-S-RA?qs=92ilVni64gxK1gPeghtn8A%3D%3D"
-			(at 491.49 900.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Name" "SAMTEC"
-			(at 491.49 1000.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "SSW-106-02-G-S-RA"
-			(at 491.49 1100.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 474.98 306.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "4"
-			(uuid "40d76ffb-a8ac-4e69-ae50-21d7593c6c3d")
-		)
-		(pin "3"
-			(uuid "3ee908d0-9a0e-4907-83c2-dbfc6481b556")
-		)
-		(pin "2"
-			(uuid "084c8fa6-9b89-46a1-ae3e-bace95e9a3cc")
-		)
-		(pin "1"
-			(uuid "a800e0ea-0607-461a-8123-f9314435f8cc")
-		)
-		(pin "5"
-			(uuid "e254ab55-033c-40a0-9c03-9af2b2643263")
-		)
-		(pin "6"
-			(uuid "feaf3a9d-3bfd-4891-9f05-966b324ad817")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J32")
 					(unit 1)
 				)
 			)
@@ -157307,72 +154576,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "#PWR069")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 506.73 289.56 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "fbe01dbc-9401-4a05-9973-6aa5dfe89463")
-		(property "Reference" "#PWR046"
-			(at 500.38 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 503.936 289.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 506.73 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 506.73 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 506.73 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "3b81a9b1-41a7-4dae-83fc-5807c58ec1e4")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "#PWR046")
 					(unit 1)
 				)
 			)
