@@ -40,6 +40,15 @@ const (
 
 	// spiSendTimeout is the timeout for sending a frame over SPI.
 	spiSendTimeout = 50 * time.Millisecond
+
+	// firstAttempt is the attempt number for the first transmission.
+	firstAttempt = 1
+
+	// emptyPayloadLength indicates an empty payload (used for ACK/NACK frames).
+	emptyPayloadLength = 0
+
+	// decodeSoftModeDefault is the default mode for FEC soft decoding.
+	decodeSoftModeDefault = 0
 )
 
 // Predefined errors for SPI link operations.
@@ -218,9 +227,9 @@ func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 		maxAttempts = maxRetries
 	}
 
-	for attempt := 1; attempt <= maxAttempts; attempt++ {
+	for attempt := firstAttempt; attempt <= maxAttempts; attempt++ {
 		// Update state based on attempt
-		if attempt == 1 {
+		if attempt == firstAttempt {
 			s.updateState(harq.StateWaitingAck)
 		} else {
 			s.updateState(harq.StateRetransmitting)
@@ -301,6 +310,10 @@ func (s *SPILink) sendFrameWithTimeout(ctx context.Context, encodedFrame []byte)
 	case result := <-sendCh:
 		if result.err != nil {
 			return fmt.Errorf("transport send failed: %w", result.err)
+		}
+		// Check for short write (partial transmission)
+		if result.n < len(encodedFrame) {
+			return fmt.Errorf("short write: sent %d bytes, expected %d", result.n, len(encodedFrame))
 		}
 		return nil
 	case <-time.After(spiSendTimeout):
@@ -469,10 +482,10 @@ func (s *SPILink) decodeFEC(f *frame.Frame) ([]byte, error) {
 
 		// Decode combined soft bits
 		combined := s.combiner.Combined()
-		decoded, _, err = s.fecDecoder.DecodeSoft(combined, 0)
+		decoded, _, err = s.fecDecoder.DecodeSoft(combined, decodeSoftModeDefault)
 	} else {
 		// First attempt - direct decode
-		decoded, _, err = s.fecDecoder.DecodeSoft(softBits, 0)
+		decoded, _, err = s.fecDecoder.DecodeSoft(softBits, decodeSoftModeDefault)
 
 		if err != nil && s.combiner != nil {
 			// Decode failed - store for combining
@@ -497,7 +510,7 @@ func (s *SPILink) sendAck(ctx context.Context, seq uint16) error {
 	ackFrame := &frame.Frame{
 		Header: frame.Header{
 			Sequence: seq,
-			Length:   0, // Empty payload
+			Length:   emptyPayloadLength,
 			Flags:    frame.FlagNone,
 		},
 		Type:    frame.FrameTypeAck,
@@ -517,7 +530,7 @@ func (s *SPILink) sendNack(ctx context.Context, seq uint16) error {
 	nackFrame := &frame.Frame{
 		Header: frame.Header{
 			Sequence: seq,
-			Length:   0, // Empty payload
+			Length:   emptyPayloadLength,
 			Flags:    frame.FlagNone,
 		},
 		Type:    frame.FrameTypeNack,
