@@ -242,10 +242,37 @@ func initTransportManager(ctx context.Context, cfg Config, deviceTransport trans
 	return tm, nil
 }
 
-// createSPILink wraps a transport in a full HARQ stack for TransportManager.
-// This includes frame encoding/decoding and FEC, matching the pattern in initHARQ.
+// createSPILink wraps a transport in SPILink with full HARQ protocol.
+// Phase 1: Basic ACK/NACK handshake and retransmission (FEC disabled).
 // Uses shared SessionState to prevent sequence desynchronization during transport switching.
 func createSPILink(t transport.Transport, cfg Config, session *manager.SessionState) harq.HARQ {
+	// Type assert to Device interface (SPITransport implements both Transport and Device)
+	deviceTransport, ok := t.(transport.Device)
+	if !ok {
+		// Fallback to legacy ChaseCombining for non-Device transports
+		log.Printf("WARN: Transport doesn't implement Device interface, using legacy ChaseCombining")
+		return createLegacySPILink(t, cfg)
+	}
+
+	// Create SPILink with shared SessionState (CRITICAL for transport switching)
+	// Phase 1: FEC disabled for simplicity
+	spiLink, err := link.NewSPILink(deviceTransport, session, &link.SPILinkConfig{
+		EnableFEC:  false, // Phase 1: Disable FEC
+		MaxRetries: 3,
+		ACKTimeout: 10 * time.Millisecond,
+	})
+	if err != nil {
+		log.Printf("ERROR: Failed to create SPILink: %v, falling back to legacy", err)
+		return createLegacySPILink(t, cfg)
+	}
+
+	log.Printf("SPILink created successfully (Phase 1: ACK/NACK, FEC disabled)")
+	return spiLink
+}
+
+// createLegacySPILink creates the legacy ChaseCombining HARQ for fallback.
+// This is kept for compatibility during migration.
+func createLegacySPILink(t transport.Transport, cfg Config) harq.HARQ {
 	frameEncoder := frame.NewEncoder()
 	frameDecoder := frame.NewDecoder()
 	fecEncoder := fec.NewConvolutionalEncoder()
@@ -257,8 +284,7 @@ func createSPILink(t transport.Transport, cfg Config, session *manager.SessionSt
 		harqConfig.Timeout = simulationHARQTimeout
 	}
 
-	// Note: Chase Combining HARQ also needs to be updated to use shared SessionState
-	// For now, it maintains its own sequence state (will be addressed in future enhancement)
+	log.Printf("WARN: Using legacy ChaseCombining HARQ for SPI")
 	return harq.NewChaseCombining(
 		harqConfig,
 		t,
