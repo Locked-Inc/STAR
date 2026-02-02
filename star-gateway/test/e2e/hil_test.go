@@ -216,6 +216,32 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			// Don't set nextFrame - let the next dummy read trigger new telemetry
 			continue
 
+		case frame.FrameTypeCommand, frame.FrameTypeReset, frame.FrameTypePing:
+			// Phase 1: ACK/NACK Protocol Support
+			// If the frame requires an ACK, send it first
+			if (decodedFrame.Header.Flags & frame.FlagRequiresAck) != 0 {
+				ackFrame := &frame.Frame{
+					Header: frame.Header{
+						Sequence: decodedFrame.Header.Sequence, // Echo sequence
+						Length:   0,
+						Flags:    frame.FlagNone,
+					},
+					Type:    frame.FrameTypeAck,
+					Payload: []byte{},
+				}
+
+				if err := m.sendFrame(c, encoder, ackFrame); err != nil {
+					log.Printf("MockRX72N: Failed to send ACK: %v", err)
+					return
+				}
+				m.debugLog("Sent ACK for Seq=%d Type=%s", decodedFrame.Header.Sequence, decodedFrame.Type)
+			}
+
+			// Generate telemetry response
+			nextFrame = m.generateTelemetryFrame(sequenceNum, &timestamp)
+			lastFrameToRetransmit = nextFrame
+			sequenceNum++
+
 		default:
 			m.debugLog("Unexpected frame type %s", decodedFrame.Type)
 			if lastFrameToRetransmit != nil {
