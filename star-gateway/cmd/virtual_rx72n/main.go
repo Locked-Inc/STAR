@@ -165,6 +165,36 @@ func handleConnection(conn net.Conn) {
 			decodedFrame.Header.Sequence, decodedFrame.Type.String(),
 			decodedFrame.Header.Flags, len(decodedFrame.Payload))
 
+		encoder := frame.NewEncoder()
+
+		// PHASE 1: ACK/NACK Protocol Support
+		// If the frame requires an ACK, send it immediately before processing
+		if (decodedFrame.Header.Flags & frame.FlagRequiresAck) != 0 {
+			ackFrame := &frame.Frame{
+				Header: frame.Header{
+					Sequence: decodedFrame.Header.Sequence, // Echo the received sequence
+					Length:   0,
+					Flags:    frame.FlagNone,
+				},
+				Type:    frame.FrameTypeAck,
+				Payload: []byte{},
+			}
+
+			ackData, err := encoder.Encode(ackFrame)
+			if err != nil {
+				log.Printf("ACK encode error: %v", err)
+				continue
+			}
+
+			// Send ACK
+			if _, err := conn.Write(ackData); err != nil {
+				log.Printf("ACK send error: %v", err)
+				return
+			}
+
+			log.Printf("Sent ACK for seq=%d", decodedFrame.Header.Sequence)
+		}
+
 		// 2. Parse the protobuf payload
 		var wireMsg starv1.WireMessage
 		if err := proto.Unmarshal(decodedFrame.Payload, &wireMsg); err != nil {
@@ -183,7 +213,6 @@ func handleConnection(conn net.Conn) {
 		}
 
 		// 5. Encode the response frame (increment sequence)
-		encoder := frame.NewEncoder()
 		// Calculate next sequence number with explicit wraparound handling (uint16)
 		nextSeq := uint16((uint32(decodedFrame.Header.Sequence) + 1) & 0xFFFF)
 		responseFrame := &frame.Frame{
