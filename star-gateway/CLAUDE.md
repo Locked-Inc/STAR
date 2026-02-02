@@ -162,9 +162,158 @@ The gateway exposes 5 gRPC services:
 | SPI implementation | Not started |
 | Integration tests | Not started |
 
+## Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+go test ./...
+
+# Run tests with verbose output
+go test -v ./...
+
+# Run tests with coverage
+go test -cover ./...
+
+# Run full CI test suite (with race detector and detailed coverage)
+go test -v -race -coverprofile=coverage.out -covermode=atomic -coverpkg=./... ./...
+
+# Generate coverage report
+go tool cover -func=coverage.out
+
+# Generate HTML coverage report
+go tool cover -html=coverage.out -o coverage.html
+
+# Run specific package tests
+go test -v ./internal/transport/
+go test -v ./internal/frame/
+go test -v ./internal/harq/
+
+# Run specific test by name
+go test -v -run TestSPITransport ./internal/transport/
+
+# Run CDC mock tests (hardware-independent)
+go test -v -run TestCDCTransportMock ./internal/transport
+```
+
+### Linting
+
+```bash
+# Run golangci-lint (requires golangci-lint installed)
+golangci-lint run ./...
+
+# With timeout for large projects
+golangci-lint run --timeout=5m ./...
+
+# Check go.mod/go.sum tidy
+go mod tidy
+git diff --exit-code go.mod go.sum
+
+# Run go vet
+go vet ./...
+
+# Check formatting
+gofmt -l .
+
+# Fix formatting
+gofmt -w .
+```
+
+### Security
+
+```bash
+# Install govulncheck
+go install golang.org/x/vuln/cmd/govulncheck@latest
+
+# Run security vulnerability scan
+$(go env GOPATH)/bin/govulncheck ./...
+
+# List all dependencies
+go list -m all
+```
+
+### Benchmarks
+
+```bash
+# Run all benchmarks
+go test -bench=. -benchmem ./...
+
+# Run benchmarks without running tests
+go test -bench=. -benchmem -run=^$ ./...
+
+# Run specific benchmark
+go test -bench=BenchmarkSPITransfer ./internal/transport/
+```
+
+### Test Coverage Requirements
+
+- **Minimum coverage:** 75%
+- **Current coverage:** 80.8% (as of 2026-01-31)
+- **Coverage by package:**
+  - `internal/arq`: 100%
+  - `internal/controller`: 100%
+  - `internal/fec`: 100%
+  - `internal/frame`: 100%
+  - `internal/harq`: 87.0%
+  - `internal/link`: 83.3%
+  - `internal/manager`: 97.4%
+  - `internal/service`: 94.4%
+  - `internal/transport`: 92.1%
+
+### CI/CD
+
+The GitHub Actions workflow `.github/workflows/gateway.yml` runs:
+
+1. **Build and Test** - Full test suite with race detector
+2. **Lint** - golangci-lint, go vet, gofmt
+3. **Security Scan** - govulncheck
+4. **Cross-Compile** - linux/amd64, linux/arm64
+5. **Integration Tests** - E2E tests (requires hardware)
+6. **Benchmarks** - Performance regression testing
+7. **Summary** - Aggregate results
+
+### Test Artifacts
+
+After running tests, the following artifacts are generated:
+
+- `test-output.log` - Full test output
+- `coverage.out` - Raw coverage data
+- `coverage-summary.txt` - Function-level coverage
+- `coverage.html` - Interactive HTML coverage report
+- `vet-output.log` - Go vet results
+- `golangci-lint.log` - Linting results
+- `govulncheck.log` - Security scan results
+- `dependencies.txt` - Full dependency list
+- `benchmark.txt` - Benchmark results
+
+### Hardware Testing
+
+Hardware-dependent tests (USB CDC, SPI) skip gracefully when hardware is not available:
+
+```bash
+# Test with mock transports (no hardware required)
+go test -v ./internal/transport/
+
+# Test with real hardware (requires RPi5 + RX72N)
+# - USB CDC device at /dev/ttyACM0
+# - SPI device at /dev/spidev0.0
+go test -v -tags=hardware ./internal/transport/
+```
+
+**Hardware validation checklist:**
+- [ ] USB CDC device accessible
+- [ ] SPI device accessible
+- [ ] RX72N firmware running
+- [ ] Transport failover working
+- [ ] Hot-plug detection working
+
+See [TRANSPORT_TEST_RESULTS.md](TRANSPORT_TEST_RESULTS.md) for detailed test results.
+
 ## Related Documentation
 
 - `TRANSPORT_ARCHITECTURE.md` - Transport layer architecture and smart switching
+- `TRANSPORT_TEST_RESULTS.md` - Comprehensive test execution results
 - `docs/sections/01_nanopb_protocol.tex` - Protocol specification
 - `docs/sections/02_protobuf_schemas.tex` - Protobuf service definitions
 - `docs/sections/07_gateway_architecture.tex` - Gateway architecture
