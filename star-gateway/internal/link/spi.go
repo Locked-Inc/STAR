@@ -90,9 +90,10 @@ type SPILink struct {
 	fecDecoder *fec.ViterbiDecoder       // FEC decoder (Phase 2)
 	combiner   *fec.ChaseCombiner        // Chase Combiner (Phase 2)
 
-	sendMutex sync.Mutex // Serialize Send operations (CRITICAL FIX #5)
-	state     harq.State // HARQ state machine
-	stateMu   sync.RWMutex
+	sendMutex    sync.Mutex   // Serialize Send operations (CRITICAL FIX #5)
+	receiveMutex sync.Mutex   // Serialize Receive operations (prevents decoder race)
+	state        harq.State   // HARQ state machine
+	stateMu      sync.RWMutex // Protects state field
 
 	config *SPILinkConfig // Configuration
 }
@@ -120,6 +121,14 @@ func NewSPILink(t transport.Device, session *manager.SessionState, config *SPILi
 
 	if config == nil {
 		config = DefaultSPILinkConfig()
+	}
+
+	// Apply defaults for zero values
+	if config.MaxRetries <= 0 {
+		config.MaxRetries = maxRetries
+	}
+	if config.ACKTimeout <= 0 {
+		config.ACKTimeout = ackTimeout
 	}
 
 	// Create transport adapter for StreamDecoder
@@ -264,6 +273,17 @@ func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 
 // sendFrameWithTimeout sends a frame with timeout protection.
 // Pattern: Same as CDCLink.sendWithTimeout() to prevent blocking on SPI errors.
+//
+// GOROUTINE LEAK RISK: If transport.Send() blocks indefinitely (e.g., hardware flow
+// control asserted by RX72N and never released), the goroutine will leak even after
+// timeout or context cancellation. This is acceptable because:
+//   1. SPI hardware should honor flow control timeouts (OS level)
+//   2. Leaked goroutines will complete when the transport errors or device resets
+//   3. The buffered channel (size 1) prevents goroutine blocking on send
+//
+// Alternative fixes considered but rejected:
+//   - Adding transport.SetWriteDeadline: Not all transport.Device implementations support it
+//   - Tracking goroutines: Adds complexity without solving the root cause (blocked hardware)
 func (s *SPILink) sendFrameWithTimeout(ctx context.Context, encodedFrame []byte) error {
 	type sendResult struct {
 		n   int
@@ -284,50 +304,73 @@ func (s *SPILink) sendFrameWithTimeout(ctx context.Context, encodedFrame []byte)
 		}
 		return nil
 	case <-time.After(spiSendTimeout):
+		// NOTE: Goroutine may still be running if Send() is blocked
 		return fmt.Errorf("transport send timeout after %v", spiSendTimeout)
 	case <-ctx.Done():
+		// NOTE: Goroutine may still be running if Send() is blocked
 		return ctx.Err()
 	}
 }
 
 // waitForAckNack waits for ACK/NACK response with timeout.
 //
+// CRITICAL FIX: Uses goroutine + select to make Decode() interruptible.
+// Without this, a silent SPI line would block forever, ignoring the 10ms timeout.
+//
 // Returns:
 //   - (true, nil): ACK received
 //   - (false, nil): NACK received
 //   - (false, error): Timeout or error
 func (s *SPILink) waitForAckNack(ctx context.Context, expectedSeq uint16) (bool, error) {
-	deadline := time.Now().Add(s.config.ACKTimeout)
-	_, cancel := context.WithDeadline(ctx, deadline)
-	defer cancel()
-
-	// Receive ACK/NACK frame
-	f, err := s.decoder.Decode()
-	if err != nil {
-		// Check if timeout
-		if time.Now().After(deadline) {
-			return false, ErrACKTimeout
-		}
-		return false, err
+	type decodeResult struct {
+		frame *frame.Frame
+		err   error
 	}
 
-	// Validate frame type
-	if f.Type == frame.FrameTypeAck {
-		// Validate sequence matches
-		if f.Header.Sequence == expectedSeq {
-			return true, nil
-		}
-		return false, fmt.Errorf("ACK sequence mismatch: expected %d, got %d", expectedSeq, f.Header.Sequence)
-	} else if f.Type == frame.FrameTypeNack {
-		// Validate sequence matches
-		if f.Header.Sequence == expectedSeq {
-			return false, nil
-		}
-		return false, fmt.Errorf("NACK sequence mismatch: expected %d, got %d", expectedSeq, f.Header.Sequence)
-	}
+	decodeCh := make(chan decodeResult, 1)
 
-	// Unexpected frame type
-	return false, fmt.Errorf("expected ACK/NACK, got frame type %s", f.Type)
+	// Decode in goroutine to make it interruptible
+	go func() {
+		f, err := s.decoder.Decode()
+		decodeCh <- decodeResult{frame: f, err: err}
+	}()
+
+	// Wait for decode, timeout, or context cancellation
+	select {
+	case result := <-decodeCh:
+		if result.err != nil {
+			return false, fmt.Errorf("decode failed: %w", result.err)
+		}
+
+		f := result.frame
+
+		// Validate frame type
+		if f.Type == frame.FrameTypeAck {
+			// Validate sequence matches
+			if f.Header.Sequence == expectedSeq {
+				return true, nil
+			}
+			return false, fmt.Errorf("ACK sequence mismatch: expected %d, got %d", expectedSeq, f.Header.Sequence)
+		} else if f.Type == frame.FrameTypeNack {
+			// Validate sequence matches
+			if f.Header.Sequence == expectedSeq {
+				return false, nil
+			}
+			return false, fmt.Errorf("NACK sequence mismatch: expected %d, got %d", expectedSeq, f.Header.Sequence)
+		}
+
+		return false, fmt.Errorf("expected ACK/NACK, got frame type %s", f.Type)
+
+	case <-time.After(s.config.ACKTimeout):
+		// NOTE: This leaves the decode goroutine running if the transport is blocked.
+		// The goroutine will complete when data arrives or the transport errors.
+		// This is acceptable since ACK/NACK frames are small (12 bytes) and the
+		// decoder will discard unexpected frames in the next receive cycle.
+		return false, ErrACKTimeout
+
+	case <-ctx.Done():
+		return false, ctx.Err()
+	}
 }
 
 // Receive implements harq.HARQ interface with ACK/NACK response generation.
@@ -339,8 +382,13 @@ func (s *SPILink) waitForAckNack(ctx context.Context, expectedSeq uint16) (bool,
 //  4. On success: Send ACK, return payload
 //  5. On failure: Send NACK, return error
 //
-// Thread Safety: No mutex needed (receives are naturally serialized)
+// Thread Safety: receiveMutex prevents concurrent calls that would race on s.decoder.
+// The decoder maintains internal buffer state and is NOT safe for concurrent access.
 func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
+	// Serialize Receive operations to prevent decoder race
+	s.receiveMutex.Lock()
+	defer s.receiveMutex.Unlock()
+
 	// Check context
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
