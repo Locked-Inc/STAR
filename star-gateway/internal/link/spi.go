@@ -80,10 +80,10 @@ func DefaultSPILinkConfig() *SPILinkConfig {
 //   - FEC encoding/decoding (optional)
 //   - Chase Combining for soft-bit accumulation (optional)
 type SPILink struct {
-	transport    transport.Device       // SPI transport wrapper
-	encoder      frame.Encoder          // Frame encoding (SYNC + CRC32)
-	decoder      *frame.StreamDecoder   // Frame decoding with validation
-	sessionState *manager.SessionState  // SHARED across all transports (CRITICAL FIX #1)
+	transport    transport.Device      // SPI transport wrapper
+	encoder      frame.Encoder         // Frame encoding (SYNC + CRC32)
+	decoder      *frame.StreamDecoder  // Frame decoding with validation
+	sessionState *manager.SessionState // SHARED across all transports (CRITICAL FIX #1)
 
 	// HARQ-specific components (differences from CDCLink)
 	fecEncoder *fec.ConvolutionalEncoder // FEC encoder (Phase 2)
@@ -277,9 +277,9 @@ func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 // GOROUTINE LEAK RISK: If transport.Send() blocks indefinitely (e.g., hardware flow
 // control asserted by RX72N and never released), the goroutine will leak even after
 // timeout or context cancellation. This is acceptable because:
-//   1. SPI hardware should honor flow control timeouts (OS level)
-//   2. Leaked goroutines will complete when the transport errors or device resets
-//   3. The buffered channel (size 1) prevents goroutine blocking on send
+//  1. SPI hardware should honor flow control timeouts (OS level)
+//  2. Leaked goroutines will complete when the transport errors or device resets
+//  3. The buffered channel (size 1) prevents goroutine blocking on send
 //
 // Alternative fixes considered but rejected:
 //   - Adding transport.SetWriteDeadline: Not all transport.Device implementations support it
@@ -407,7 +407,9 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	// Validate sequence using SHARED state (detects duplicates across transports)
 	if !s.sessionState.ValidateRxSequence(f.Header.Sequence) {
 		// Out of sequence - send NACK
-		s.sendNack(ctx, f.Header.Sequence)
+		if err := s.sendNack(ctx, f.Header.Sequence); err != nil {
+			return nil, fmt.Errorf("failed to send NACK for duplicate frame: %w", err)
+		}
 		return nil, harq.ErrDuplicateFrame
 	}
 
@@ -420,7 +422,9 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		decoded, err := s.decodeFEC(f)
 		if err != nil {
 			// FEC decode failed - send NACK
-			s.sendNack(ctx, f.Header.Sequence)
+			if nackErr := s.sendNack(ctx, f.Header.Sequence); nackErr != nil {
+				return nil, fmt.Errorf("failed to send NACK for FEC decode failure: %w", nackErr)
+			}
 			return nil, fmt.Errorf("FEC decode failed: %w", err)
 		}
 		payload = decoded
@@ -439,7 +443,7 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		Metadata: harq.FrameMetadata{
 			Sequence:    f.Header.Sequence,
 			ReceivedAt:  time.Now(),
-			Retransmits: 0,          // TODO: Track retransmit count
+			Retransmits: 0, // TODO: Track retransmit count
 			FECDecoded:  fecDecoded,
 		},
 	}, nil
