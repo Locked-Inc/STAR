@@ -832,3 +832,332 @@ func TestSPILink_CustomConfig(t *testing.T) {
 		t.Errorf("Expected ACKTimeout 20ms, got %v", link.config.ACKTimeout)
 	}
 }
+
+
+// ============================================================================
+// PHASE 3: SendWithType() Tests
+// ============================================================================
+
+// TestSPILink_SendWithType_Ping tests sending PING frames with correct type.
+func TestSPILink_SendWithType_Ping(t *testing.T) {
+	mockTransport := &mockSPITransport{}
+	session := manager.NewSessionState()
+	link, err := NewSPILink(mockTransport, session, &SPILinkConfig{
+		EnableFEC:  false,
+		MaxRetries: 3,
+		ACKTimeout: 10 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("NewSPILink failed: %v", err)
+	}
+
+	ctx := context.Background()
+	payload := []byte{0x00, 0x00, 0x00, 0x01} // PING counter
+
+	// Capture sent frame
+	var sentFrame []byte
+	mockTransport.SendFunc = func(data []byte) (int, error) {
+		sentFrame = make([]byte, len(data))
+		copy(sentFrame, data)
+		return len(data), nil
+	}
+
+	// Mock transport to return ACK
+	ackReceived := false
+	mockTransport.ReceiveFunc = func(maxLen int) ([]byte, error) {
+		if ackReceived {
+			return nil, errors.New("no more data")
+		}
+		ackReceived = true
+
+		// Create ACK frame for sequence 0
+		ackFrame := &frame.Frame{
+			Header: frame.Header{
+				Sequence: 0,
+				Length:   emptyPayloadLength,
+				Flags:    frame.FlagNone,
+			},
+			Type:    frame.FrameTypeAck,
+			Payload: []byte{},
+		}
+		encoder := frame.NewEncoder()
+		ackData, _ := encoder.Encode(ackFrame)
+		return ackData, nil
+	}
+
+	// Send PING frame
+	err = link.SendWithType(ctx, payload, frame.FrameTypePing)
+	if err != nil {
+		t.Fatalf("SendWithType(PING) failed: %v", err)
+	}
+
+	// Verify frame was sent
+	if sentFrame == nil {
+		t.Fatal("No frame was sent")
+	}
+
+	// Decode and verify frame type
+	decoder := frame.NewDecoder()
+	f, err := decoder.Decode(sentFrame)
+	if err != nil {
+		t.Fatalf("Failed to decode frame: %v", err)
+	}
+
+	if f.Type != frame.FrameTypePing {
+		t.Errorf("Frame type = %v, want FrameTypePing", f.Type)
+	}
+
+	// Verify FlagRequiresAck is set (SPILink always sets it)
+	if (f.Header.Flags & frame.FlagRequiresAck) == 0 {
+		t.Error("Expected FlagRequiresAck to be set")
+	}
+}
+
+// TestSPILink_SendWithType_Reset tests sending RESET frames with correct type.
+func TestSPILink_SendWithType_Reset(t *testing.T) {
+	mockTransport := &mockSPITransport{}
+	session := manager.NewSessionState()
+	link, err := NewSPILink(mockTransport, session, &SPILinkConfig{
+		EnableFEC:  false,
+		MaxRetries: 3,
+		ACKTimeout: 10 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("NewSPILink failed: %v", err)
+	}
+
+	ctx := context.Background()
+
+	// Capture sent frame
+	var sentFrame []byte
+	mockTransport.SendFunc = func(data []byte) (int, error) {
+		sentFrame = make([]byte, len(data))
+		copy(sentFrame, data)
+		return len(data), nil
+	}
+
+	// Mock transport to return ACK
+	ackReceived := false
+	mockTransport.ReceiveFunc = func(maxLen int) ([]byte, error) {
+		if ackReceived {
+			return nil, errors.New("no more data")
+		}
+		ackReceived = true
+
+		ackFrame := &frame.Frame{
+			Header: frame.Header{
+				Sequence: 0,
+				Length:   emptyPayloadLength,
+				Flags:    frame.FlagNone,
+			},
+			Type:    frame.FrameTypeAck,
+			Payload: []byte{},
+		}
+		encoder := frame.NewEncoder()
+		ackData, _ := encoder.Encode(ackFrame)
+		return ackData, nil
+	}
+
+	// Send RESET frame (empty payload)
+	err = link.SendWithType(ctx, []byte{}, frame.FrameTypeReset)
+	if err != nil {
+		t.Fatalf("SendWithType(RESET) failed: %v", err)
+	}
+
+	// Verify frame was sent
+	if sentFrame == nil {
+		t.Fatal("No frame was sent")
+	}
+
+	// Decode and verify frame type
+	decoder := frame.NewDecoder()
+	f, err := decoder.Decode(sentFrame)
+	if err != nil {
+		t.Fatalf("Failed to decode frame: %v", err)
+	}
+
+	if f.Type != frame.FrameTypeReset {
+		t.Errorf("Frame type = %v, want FrameTypeReset", f.Type)
+	}
+
+	if len(f.Payload) != 0 {
+		t.Errorf("RESET frame should have empty payload, got %d bytes", len(f.Payload))
+	}
+}
+
+// TestSPILink_SendWithType_SequenceIncrement tests that sequence numbers increment
+// correctly when using SendWithType() mixed with regular Send().
+func TestSPILink_SendWithType_SequenceIncrement(t *testing.T) {
+	mockTransport := &mockSPITransport{}
+	session := manager.NewSessionState()
+	link, err := NewSPILink(mockTransport, session, &SPILinkConfig{
+		EnableFEC:  false,
+		MaxRetries: 3,
+		ACKTimeout: 10 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("NewSPILink failed: %v", err)
+	}
+
+	ctx := context.Background()
+	decoder := frame.NewDecoder()
+
+	// Capture all sent frames
+	var sentFrames [][]byte
+	mockTransport.SendFunc = func(data []byte) (int, error) {
+		frameCopy := make([]byte, len(data))
+		copy(frameCopy, data)
+		sentFrames = append(sentFrames, frameCopy)
+		return len(data), nil
+	}
+
+	// Mock transport to return ACKs for all frames
+	ackCount := 0
+	mockTransport.ReceiveFunc = func(maxLen int) ([]byte, error) {
+		if ackCount >= 3 {
+			return nil, errors.New("no more data")
+		}
+
+		// Create ACK for the current sequence
+		ackFrame := &frame.Frame{
+			Header: frame.Header{
+				Sequence: uint16(ackCount),
+				Length:   emptyPayloadLength,
+				Flags:    frame.FlagNone,
+			},
+			Type:    frame.FrameTypeAck,
+			Payload: []byte{},
+		}
+		ackCount++
+
+		encoder := frame.NewEncoder()
+		ackData, _ := encoder.Encode(ackFrame)
+		return ackData, nil
+	}
+
+	// Send regular COMMAND frame (seq=0)
+	err = link.Send(ctx, []byte("command"))
+	if err != nil {
+		t.Fatalf("Send failed: %v", err)
+	}
+
+	// Send PING frame (seq=1)
+	err = link.SendWithType(ctx, []byte{0x01}, frame.FrameTypePing)
+	if err != nil {
+		t.Fatalf("SendWithType(PING) failed: %v", err)
+	}
+
+	// Send another COMMAND frame (seq=2)
+	err = link.Send(ctx, []byte("command2"))
+	if err != nil {
+		t.Fatalf("Second Send failed: %v", err)
+	}
+
+	// Verify 3 frames sent
+	if len(sentFrames) != 3 {
+		t.Fatalf("Expected 3 frames sent, got %d", len(sentFrames))
+	}
+
+	// Decode all frames and verify sequences
+	for i, expectedSeq := range []uint16{0, 1, 2} {
+		f, err := decoder.Decode(sentFrames[i])
+		if err != nil {
+			t.Fatalf("Failed to decode frame %d: %v", i, err)
+		}
+
+		if f.Header.Sequence != expectedSeq {
+			t.Errorf("Frame %d: sequence = %d, want %d", i, f.Header.Sequence, expectedSeq)
+		}
+	}
+
+	// Verify types
+	f0, _ := decoder.Decode(sentFrames[0])
+	if f0.Type != frame.FrameTypeCommand {
+		t.Errorf("Frame 0: type = %v, want FrameTypeCommand", f0.Type)
+	}
+
+	f1, _ := decoder.Decode(sentFrames[1])
+	if f1.Type != frame.FrameTypePing {
+		t.Errorf("Frame 1: type = %v, want FrameTypePing", f1.Type)
+	}
+
+	f2, _ := decoder.Decode(sentFrames[2])
+	if f2.Type != frame.FrameTypeCommand {
+		t.Errorf("Frame 2: type = %v, want FrameTypeCommand", f2.Type)
+	}
+}
+
+// TestSPILink_SendWithType_WithFEC tests SendWithType with FEC enabled.
+func TestSPILink_SendWithType_WithFEC(t *testing.T) {
+	mockTransport := &mockSPITransport{}
+	session := manager.NewSessionState()
+	link, err := NewSPILink(mockTransport, session, &SPILinkConfig{
+		EnableFEC:  true, // Enable FEC
+		MaxRetries: 3,
+		ACKTimeout: 10 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("NewSPILink failed: %v", err)
+	}
+
+	ctx := context.Background()
+	payload := []byte{0xAA, 0xBB, 0xCC, 0xDD}
+
+	// Capture sent frame
+	var sentFrame []byte
+	mockTransport.SendFunc = func(data []byte) (int, error) {
+		sentFrame = make([]byte, len(data))
+		copy(sentFrame, data)
+		return len(data), nil
+	}
+
+	// Mock transport to return ACK
+	ackReceived := false
+	mockTransport.ReceiveFunc = func(maxLen int) ([]byte, error) {
+		if ackReceived {
+			return nil, errors.New("no more data")
+		}
+		ackReceived = true
+
+		ackFrame := &frame.Frame{
+			Header: frame.Header{
+				Sequence: 0,
+				Length:   emptyPayloadLength,
+				Flags:    frame.FlagNone,
+			},
+			Type:    frame.FrameTypeAck,
+			Payload: []byte{},
+		}
+		encoder := frame.NewEncoder()
+		ackData, _ := encoder.Encode(ackFrame)
+		return ackData, nil
+	}
+
+	// Send PING frame with FEC enabled
+	err = link.SendWithType(ctx, payload, frame.FrameTypePing)
+	if err != nil {
+		t.Fatalf("SendWithType(PING) with FEC failed: %v", err)
+	}
+
+	// Verify frame was sent
+	if sentFrame == nil {
+		t.Fatal("No frame was sent")
+	}
+
+	// Decode and verify FEC flag is set
+	decoder := frame.NewDecoder()
+	f, err := decoder.Decode(sentFrame)
+	if err != nil {
+		t.Fatalf("Failed to decode frame: %v", err)
+	}
+
+	if (f.Header.Flags & frame.FlagFECEnabled) == 0 {
+		t.Error("Expected FlagFECEnabled to be set")
+	}
+
+	// Payload should be FEC-encoded (longer than original due to rate 1/2)
+	if len(f.Payload) <= len(payload) {
+		t.Errorf("FEC-encoded payload should be longer than original: got %d, original %d",
+			len(f.Payload), len(payload))
+	}
+}

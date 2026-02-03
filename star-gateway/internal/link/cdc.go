@@ -150,7 +150,7 @@ func (c *CDCLink) sendWithTimeout(ctx context.Context, encodedFrame []byte) erro
 // buildAndSend is a private helper that encapsulates the common send logic.
 // It performs context/transport checks, creates a frame, encodes it, and sends with timeout.
 // Caller must hold c.sendMutex lock.
-func (c *CDCLink) buildAndSend(ctx context.Context, data []byte, seq uint16, flags frame.Flags) error {
+func (c *CDCLink) buildAndSend(ctx context.Context, data []byte, seq uint16, flags frame.Flags, frameType frame.Type) error {
 	// Check context
 	if ctx.Err() != nil {
 		return ctx.Err()
@@ -160,14 +160,14 @@ func (c *CDCLink) buildAndSend(ctx context.Context, data []byte, seq uint16, fla
 		return ErrCDCTransportNotInitialized
 	}
 
-	// Create frame with provided sequence and flags
+	// Create frame with provided sequence, flags, and type
 	f := &frame.Frame{
 		Header: frame.Header{
 			Sequence: seq,
 			Length:   uint16(len(data)),
 			Flags:    flags,
 		},
-		Type:    frame.FrameTypeCommand,
+		Type:    frameType,
 		Payload: data,
 	}
 
@@ -190,7 +190,7 @@ func (c *CDCLink) SendWithSeq(ctx context.Context, data []byte, seq uint16, flag
 	c.sendMutex.Lock()
 	defer c.sendMutex.Unlock()
 
-	return c.buildAndSend(ctx, data, seq, flags)
+	return c.buildAndSend(ctx, data, seq, flags, frame.FrameTypeCommand)
 }
 
 // ============================================================================
@@ -212,7 +212,31 @@ func (c *CDCLink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 	// No RequiresAck, No FEC for lightweight CDC protocol
 	const flags = 0
 
-	return c.buildAndSend(ctx, data, seq, flags)
+	return c.buildAndSend(ctx, data, seq, flags, frame.FrameTypeCommand)
+}
+
+// SendWithType sends data with a specific frame type (PING, PONG, RESET, etc.).
+// This enables sending control frames with appropriate types instead of always using COMMAND.
+// Uses shared SessionState for sequence management and sendMutex for serialization.
+//
+// Example usage:
+//   err := link.SendWithType(ctx, []byte{}, frame.FrameTypePing)  // Send PING
+//   err := link.SendWithType(ctx, payload, frame.FrameTypeReset) // Send RESET
+//
+// PHASE 3: Frame Type API - allows HeartbeatManager to send PING frames.
+func (c *CDCLink) SendWithType(ctx context.Context, data []byte, frameType frame.Type) error {
+	// CRITICAL FIX #5: Serialize Send to prevent out-of-order transmission
+	// Lock MUST cover both NextTxSequence() AND transport.Send()
+	c.sendMutex.Lock()
+	defer c.sendMutex.Unlock()
+
+	// Get next sequence from SHARED state (critical for transport switching)
+	seq := c.sessionState.NextTxSequence()
+
+	// No RequiresAck, No FEC for lightweight CDC protocol
+	const flags = 0
+
+	return c.buildAndSend(ctx, data, seq, flags, frameType)
 }
 
 // Receive implements harq.HARQ interface.

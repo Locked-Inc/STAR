@@ -180,34 +180,10 @@ func (s *SPILink) getState() harq.State {
 // HARQ Interface Implementation (Send/Receive with ACK/NACK handshake)
 // ============================================================================
 
-// Send implements harq.HARQ interface with ACK/NACK handshake and retransmission.
-//
-// Protocol Flow:
-//  1. Lock sendMutex (serialize sends, prevent out-of-order)
-//  2. Get next sequence from shared SessionState
-//  3. Encode frame with FlagRequiresAck
-//  4. Optional: FEC encode payload (if EnableFEC)
-//  5. Send frame via transport
-//  6. Wait for ACK/NACK (timeout: 10ms)
-//  7. On NACK or timeout: Set FlagRetransmit, retry (max 3 total attempts)
-//  8. On ACK: Return success
-//  9. After 3 failures: Return ErrMaxRetriesExceeded
-//
-// Thread Safety: sendMutex ensures atomicity (sequence assignment + Send)
-func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
-	// Check context before starting
-	if ctx.Err() != nil {
-		return ctx.Err()
-	}
-
-	// CRITICAL FIX #5: Serialize Send to prevent out-of-order transmission
-	// Lock MUST cover both NextTxSequence() AND transport.Send()
-	s.sendMutex.Lock()
-	defer s.sendMutex.Unlock()
-
-	// Get next sequence from SHARED state (critical for transport switching)
-	seq := s.sessionState.NextTxSequence()
-
+// sendWithRetry is a private helper that implements the HARQ send logic with retransmission.
+// This helper allows both Send() and SendWithType() to share the retry logic.
+// Caller must hold s.sendMutex lock.
+func (s *SPILink) sendWithRetry(ctx context.Context, data []byte, seq uint16, frameType frame.Type) error {
 	// Prepare payload (with optional FEC encoding)
 	payload := data
 	flags := frame.FlagRequiresAck
@@ -243,7 +219,7 @@ func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 				Length:   uint16(len(payload)),
 				Flags:    flags,
 			},
-			Type:    frame.FrameTypeCommand,
+			Type:    frameType,
 			Payload: payload,
 		}
 
@@ -278,6 +254,63 @@ func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 	// All retries exhausted
 	s.updateState(harq.StateError)
 	return ErrMaxRetriesExceeded
+}
+
+// Send implements harq.HARQ interface with ACK/NACK handshake and retransmission.
+//
+// Protocol Flow:
+//  1. Lock sendMutex (serialize sends, prevent out-of-order)
+//  2. Get next sequence from shared SessionState
+//  3. Encode frame with FlagRequiresAck
+//  4. Optional: FEC encode payload (if EnableFEC)
+//  5. Send frame via transport
+//  6. Wait for ACK/NACK (timeout: 10ms)
+//  7. On NACK or timeout: Set FlagRetransmit, retry (max 3 total attempts)
+//  8. On ACK: Return success
+//  9. After 3 failures: Return ErrMaxRetriesExceeded
+//
+// Thread Safety: sendMutex ensures atomicity (sequence assignment + Send)
+func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
+	// Check context before starting
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
+	// CRITICAL FIX #5: Serialize Send to prevent out-of-order transmission
+	// Lock MUST cover both NextTxSequence() AND transport.Send()
+	s.sendMutex.Lock()
+	defer s.sendMutex.Unlock()
+
+	// Get next sequence from SHARED state (critical for transport switching)
+	seq := s.sessionState.NextTxSequence()
+
+	return s.sendWithRetry(ctx, data, seq, frame.FrameTypeCommand)
+}
+
+// SendWithType sends data with a specific frame type (PING, PONG, RESET, etc.).
+// This enables sending control frames with appropriate types instead of always using COMMAND.
+// Uses the full HARQ protocol (ACK/NACK, retransmission, optional FEC).
+//
+// Example usage:
+//   err := link.SendWithType(ctx, []byte{}, frame.FrameTypePing)  // Send PING
+//   err := link.SendWithType(ctx, payload, frame.FrameTypeReset) // Send RESET
+//
+// PHASE 3: Frame Type API - allows HeartbeatManager to send PING frames.
+func (s *SPILink) SendWithType(ctx context.Context, data []byte, frameType frame.Type) error {
+	// Check context before starting
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
+	// CRITICAL FIX #5: Serialize Send to prevent out-of-order transmission
+	// Lock MUST cover both NextTxSequence() AND transport.Send()
+	s.sendMutex.Lock()
+	defer s.sendMutex.Unlock()
+
+	// Get next sequence from SHARED state (critical for transport switching)
+	seq := s.sessionState.NextTxSequence()
+
+	return s.sendWithRetry(ctx, data, seq, frameType)
 }
 
 // sendFrameWithTimeout sends a frame with timeout protection.

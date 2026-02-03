@@ -408,6 +408,65 @@ func (tm *TransportManager) Send(ctx context.Context, data []byte, p ...harq.Pri
 	return err
 }
 
+// SendWithType sends data with a specific frame type (PING, PONG, RESET, etc.).
+// This method is similar to Send() but allows specifying the frame type.
+//
+// PHASE 3: Frame Type API - allows HeartbeatManager to send PING frames.
+//
+// The active transport must implement SendWithType() method. Both CDCLink and SPILink
+// implement this interface. If the transport doesn't support it, this returns an error.
+//
+// Returns an error if:
+//   - No active transport is available (StateFailed)
+//   - The active transport doesn't support SendWithType (type assertion fails)
+//   - The active transport's SendWithType operation fails
+func (tm *TransportManager) SendWithType(ctx context.Context, data []byte, frameType frame.Type) error {
+	// Wait if switching is in progress
+	tm.operationsMu.Lock()
+	for tm.paused {
+		tm.operationsCond.Wait()
+	}
+	tm.inflightCounter++
+	tm.operationsMu.Unlock()
+
+	// Decrement in-flight counter on exit
+	defer func() {
+		tm.operationsMu.Lock()
+		tm.inflightCounter--
+		tm.operationsMu.Unlock()
+	}()
+
+	// Get active transport (read lock only)
+	tm.mu.RLock()
+	active := tm.activeTransport
+	activeName := tm.activeTransportName
+	tm.mu.RUnlock()
+
+	if active == nil {
+		return errors.New("no active transport available")
+	}
+
+	// Type assert to check if transport supports SendWithType
+	type withTypeSupport interface {
+		SendWithType(ctx context.Context, data []byte, frameType frame.Type) error
+	}
+
+	sender, ok := active.(withTypeSupport)
+	if !ok {
+		return fmt.Errorf("transport %s does not support SendWithType", activeName)
+	}
+
+	// Execute send with latency tracking
+	start := time.Now()
+	err := sender.SendWithType(ctx, data, frameType)
+	latency := time.Since(start)
+
+	// Record operation result
+	tm.recordOperation(activeName, err, latency, true)
+
+	return err
+}
+
 // Receive proxies the Receive operation to the active transport with health tracking.
 //
 // This method implements the harq.HARQ interface.

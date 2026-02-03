@@ -520,3 +520,183 @@ func TestCDCLink_GetState(t *testing.T) {
 		t.Errorf("GetState = %v, want StateIdle", state)
 	}
 }
+
+// ============================================================================
+// PHASE 3: SendWithType() Tests
+// ============================================================================
+
+// TestCDCLink_SendWithType_Ping tests sending PING frames with correct type.
+func TestCDCLink_SendWithType_Ping(t *testing.T) {
+	session := manager.NewSessionState()
+	transport := &MockTransport{}
+	link, err := NewCDCLink(transport, session)
+	if err != nil {
+		t.Fatalf("NewCDCLink failed: %v", err)
+	}
+
+	ctx := context.Background()
+	payload := []byte{0x00, 0x00, 0x00, 0x01} // PING counter
+
+	// Send PING frame
+	err = link.SendWithType(ctx, payload, frame.FrameTypePing)
+	if err != nil {
+		t.Fatalf("SendWithType(PING) failed: %v", err)
+	}
+
+	// Verify frame was sent
+	frames := transport.GetSentFrames()
+	if len(frames) != expectedFirstFrames {
+		t.Fatalf("Expected %d frame sent, got %d", expectedFirstFrames, len(frames))
+	}
+
+	// Decode and verify frame type
+	decoder := frame.NewDecoder()
+	f, err := decoder.Decode(frames[0])
+	if err != nil {
+		t.Fatalf("Failed to decode frame: %v", err)
+	}
+
+	if f.Type != frame.FrameTypePing {
+		t.Errorf("Frame type = %v, want FrameTypePing", f.Type)
+	}
+
+	if string(f.Payload) != string(payload) {
+		t.Errorf("Payload mismatch: got %v, want %v", f.Payload, payload)
+	}
+
+	// Verify sequence number
+	if f.Header.Sequence != firstSequence {
+		t.Errorf("Sequence = %d, want %d", f.Header.Sequence, firstSequence)
+	}
+}
+
+// TestCDCLink_SendWithType_Reset tests sending RESET frames with correct type.
+func TestCDCLink_SendWithType_Reset(t *testing.T) {
+	session := manager.NewSessionState()
+	transport := &MockTransport{}
+	link, err := NewCDCLink(transport, session)
+	if err != nil {
+		t.Fatalf("NewCDCLink failed: %v", err)
+	}
+
+	ctx := context.Background()
+
+	// Send RESET frame (empty payload)
+	err = link.SendWithType(ctx, []byte{}, frame.FrameTypeReset)
+	if err != nil {
+		t.Fatalf("SendWithType(RESET) failed: %v", err)
+	}
+
+	// Verify frame was sent
+	frames := transport.GetSentFrames()
+	if len(frames) != expectedFirstFrames {
+		t.Fatalf("Expected %d frame sent, got %d", expectedFirstFrames, len(frames))
+	}
+
+	// Decode and verify frame type
+	decoder := frame.NewDecoder()
+	f, err := decoder.Decode(frames[0])
+	if err != nil {
+		t.Fatalf("Failed to decode frame: %v", err)
+	}
+
+	if f.Type != frame.FrameTypeReset {
+		t.Errorf("Frame type = %v, want FrameTypeReset", f.Type)
+	}
+
+	if len(f.Payload) != 0 {
+		t.Errorf("RESET frame should have empty payload, got %d bytes", len(f.Payload))
+	}
+}
+
+// TestCDCLink_SendWithType_SequenceIncrement tests that sequence numbers increment
+// correctly when using SendWithType() mixed with regular Send().
+func TestCDCLink_SendWithType_SequenceIncrement(t *testing.T) {
+	session := manager.NewSessionState()
+	transport := &MockTransport{}
+	link, err := NewCDCLink(transport, session)
+	if err != nil {
+		t.Fatalf("NewCDCLink failed: %v", err)
+	}
+
+	ctx := context.Background()
+	decoder := frame.NewDecoder()
+
+	// Send regular COMMAND frame (seq=0)
+	err = link.Send(ctx, []byte("command"))
+	if err != nil {
+		t.Fatalf("Send failed: %v", err)
+	}
+
+	// Send PING frame (seq=1)
+	err = link.SendWithType(ctx, []byte{0x01}, frame.FrameTypePing)
+	if err != nil {
+		t.Fatalf("SendWithType(PING) failed: %v", err)
+	}
+
+	// Send another COMMAND frame (seq=2)
+	err = link.Send(ctx, []byte("command2"))
+	if err != nil {
+		t.Fatalf("Second Send failed: %v", err)
+	}
+
+	// Verify 3 frames sent
+	frames := transport.GetSentFrames()
+	if len(frames) != sequenceAfterThreeSends {
+		t.Fatalf("Expected %d frames sent, got %d", sequenceAfterThreeSends, len(frames))
+	}
+
+	// Decode all frames and verify sequences
+	for i, expectedSeq := range []uint16{firstSequence, secondSequence, thirdSequence} {
+		f, err := decoder.Decode(frames[i])
+		if err != nil {
+			t.Fatalf("Failed to decode frame %d: %v", i, err)
+		}
+
+		if f.Header.Sequence != expectedSeq {
+			t.Errorf("Frame %d: sequence = %d, want %d", i, f.Header.Sequence, expectedSeq)
+		}
+	}
+
+	// Verify types
+	f0, _ := decoder.Decode(frames[0])
+	if f0.Type != frame.FrameTypeCommand {
+		t.Errorf("Frame 0: type = %v, want FrameTypeCommand", f0.Type)
+	}
+
+	f1, _ := decoder.Decode(frames[1])
+	if f1.Type != frame.FrameTypePing {
+		t.Errorf("Frame 1: type = %v, want FrameTypePing", f1.Type)
+	}
+
+	f2, _ := decoder.Decode(frames[2])
+	if f2.Type != frame.FrameTypeCommand {
+		t.Errorf("Frame 2: type = %v, want FrameTypeCommand", f2.Type)
+	}
+}
+
+// TestCDCLink_SendWithType_ContextCancellation tests that SendWithType respects context cancellation.
+func TestCDCLink_SendWithType_ContextCancellation(t *testing.T) {
+	session := manager.NewSessionState()
+	transport := &MockTransport{}
+	link, err := NewCDCLink(transport, session)
+	if err != nil {
+		t.Fatalf("NewCDCLink failed: %v", err)
+	}
+
+	// Create cancelled context
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	// SendWithType should fail with context.Canceled
+	err = link.SendWithType(ctx, []byte{}, frame.FrameTypePing)
+	if err != context.Canceled {
+		t.Errorf("SendWithType with cancelled context: got error %v, want context.Canceled", err)
+	}
+
+	// No frames should be sent
+	frames := transport.GetSentFrames()
+	if len(frames) != 0 {
+		t.Errorf("Expected 0 frames sent with cancelled context, got %d", len(frames))
+	}
+}

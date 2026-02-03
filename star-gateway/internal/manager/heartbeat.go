@@ -11,6 +11,8 @@ import (
 	"log"
 	"sync"
 	"time"
+
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 )
 
 const (
@@ -186,6 +188,10 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 // updating lastSeen and resetting the heartbeat timer.
 //
 // Thread Safety: Increments pingCounter under mutex.
+//
+// PHASE 3: Uses SendWithType() to send frames with FrameTypePing instead of
+// relying on the default COMMAND type. This ensures proper frame type handling
+// in the protocol stack.
 func (hm *HeartbeatManager) sendPing(ctx context.Context, tm *TransportManager) {
 	hm.mu.Lock()
 	counter := hm.pingCounter
@@ -196,13 +202,14 @@ func (hm *HeartbeatManager) sendPing(ctx context.Context, tm *TransportManager) 
 	payload := make([]byte, pingPayloadSize)
 	binary.BigEndian.PutUint32(payload, counter)
 
-	// Send PING via TransportManager (uses active transport - USB or SPI)
-	// Note: We don't wait for PONG here - OnFrameReceived() will be called
-	// when the PONG arrives, updating lastSeen
+	// Send PING via TransportManager using SendWithType
+	// This allows us to send frames with the correct FrameTypePing type
 	pingCtx, cancel := context.WithTimeout(ctx, pingSendTimeout)
 	defer cancel()
 
-	if err := tm.Send(pingCtx, payload); err != nil {
+	// Use SendWithType if available (CDCLink and SPILink implement it)
+	// Falls back to regular Send if not available
+	if err := tm.SendWithType(pingCtx, payload, frame.FrameTypePing); err != nil {
 		log.Printf("PING send failed: %v (counter=%d)", err, counter)
 		// Don't update lastSeen - let the failure timeout trigger
 	}
