@@ -243,7 +243,7 @@ func initTransportManager(ctx context.Context, cfg Config, deviceTransport trans
 }
 
 // createSPILink wraps a transport in SPILink with full HARQ protocol.
-// Phase 1: Basic ACK/NACK handshake and retransmission (FEC disabled).
+// Phase 2: ACK/NACK handshake, retransmission, and FEC with Chase Combining.
 // Uses shared SessionState to prevent sequence desynchronization during transport switching.
 func createSPILink(t transport.Transport, cfg Config, session *manager.SessionState) harq.HARQ {
 	// Type assert to Device interface (SPITransport implements both Transport and Device)
@@ -255,9 +255,9 @@ func createSPILink(t transport.Transport, cfg Config, session *manager.SessionSt
 	}
 
 	// Create SPILink with shared SessionState (CRITICAL for transport switching)
-	// Phase 1: FEC disabled for simplicity
+	// Phase 2: Enable FEC + Chase Combining for ~10x BER improvement
 	spiLink, err := link.NewSPILink(deviceTransport, session, &link.SPILinkConfig{
-		EnableFEC:  false, // Phase 1: Disable FEC
+		EnableFEC:  true, // Phase 2: Enable FEC + Chase Combining
 		MaxRetries: 3,
 		ACKTimeout: 10 * time.Millisecond,
 	})
@@ -266,7 +266,7 @@ func createSPILink(t transport.Transport, cfg Config, session *manager.SessionSt
 		return createLegacySPILink(t, cfg)
 	}
 
-	log.Printf("SPILink created successfully (Phase 1: ACK/NACK, FEC disabled)")
+	log.Printf("SPILink created successfully (Phase 2: ACK/NACK + FEC + Chase Combining)")
 	return spiLink
 }
 
