@@ -184,8 +184,15 @@ func TestSPILink_SendWithAck_Success(t *testing.T) {
 	// Test data
 	testData := []byte("test payload")
 
-	// Send should succeed with ACK
 	ctx := context.Background()
+
+	// CRITICAL FIX #1: Run Receive() in background to dispatch ACK to Send()
+	// (only Receive() reads from decoder now)
+	go func() {
+		link.Receive(ctx)
+	}()
+
+	// Send should succeed with ACK
 	err := link.Send(ctx, testData)
 	if err != nil {
 		t.Fatalf("Send failed: %v", err)
@@ -243,6 +250,14 @@ func TestSPILink_SendWithNack_Retry_Success(t *testing.T) {
 	link, _ := NewSPILink(mockTransport, session, nil)
 
 	ctx := context.Background()
+
+	// CRITICAL FIX #1: Run Receive() in background to dispatch NACK/ACK to Send()
+	go func() {
+		for i := 0; i < 2; i++ { // Process NACK, then ACK
+			link.Receive(ctx)
+		}
+	}()
+
 	err := link.Send(ctx, []byte("test"))
 	if err != nil {
 		t.Fatalf("Send failed after NACK retry: %v", err)
@@ -285,6 +300,14 @@ func TestSPILink_SendMaxRetries_Failure(t *testing.T) {
 	link, _ := NewSPILink(mockTransport, session, nil)
 
 	ctx := context.Background()
+
+	// CRITICAL FIX #1: Run Receive() in background to dispatch NACKs to Send()
+	go func() {
+		for i := 0; i < maxRetries; i++ { // Process all NACK attempts
+			link.Receive(ctx)
+		}
+	}()
+
 	err := link.Send(ctx, []byte("test"))
 	if err == nil {
 		t.Fatal("Expected Send to fail after max retries")
@@ -337,6 +360,14 @@ func TestSPILink_SendACKTimeout_Retry(t *testing.T) {
 	link, _ := NewSPILink(mockTransport, session, nil)
 
 	ctx := context.Background()
+
+	// CRITICAL FIX #1: Run Receive() in background to process timeout then ACK
+	go func() {
+		for i := 0; i < 2; i++ { // Process timeout error, then ACK
+			link.Receive(ctx)
+		}
+	}()
+
 	err := link.Send(ctx, []byte("test"))
 	if err != nil {
 		t.Fatalf("Send failed after timeout retry: %v", err)
@@ -375,14 +406,14 @@ func TestSPILink_ReceiveValid_SendsACK(t *testing.T) {
 		return len(data), nil
 	}
 
-	// Mock Receive: Return valid data frame
+	// Mock Receive: Return valid data frame with FlagRequiresAck
 	mockTransport.ReceiveFunc = func(maxLen int) ([]byte, error) {
 		dataFrame := &frame.Frame{
 			Type: frame.FrameTypeCommand,
 			Header: frame.Header{
 				Sequence: testSequenceZero,
 				Length:   uint16(len("test")),
-				Flags:    testFlagsNone,
+				Flags:    frame.FlagRequiresAck, // Set flag to trigger ACK
 			},
 			Payload: []byte("test"),
 		}
@@ -423,18 +454,18 @@ func TestSPILink_ReceiveInvalidSequence_SendsNACK(t *testing.T) {
 		session.ValidateRxSequence(i)
 	}
 
-	nackSent := false
+	ackSent := false
 
-	// Mock Send: Capture NACK
+	// Mock Send: Capture ACK (CRITICAL FIX #2: duplicates get ACK, not NACK)
 	mockTransport.SendFunc = func(data []byte) (int, error) {
 		decoder := frame.NewDecoder()
-		nackFrame, err := decoder.Decode(data)
+		responseFrame, err := decoder.Decode(data)
 		if err != nil {
 			return 0, err
 		}
 
-		if nackFrame.Type == frame.FrameTypeNack {
-			nackSent = true
+		if responseFrame.Type == frame.FrameTypeAck {
+			ackSent = true
 		}
 
 		return len(data), nil
@@ -445,7 +476,7 @@ func TestSPILink_ReceiveInvalidSequence_SendsNACK(t *testing.T) {
 		dataFrame := &frame.Frame{
 			Type: frame.FrameTypeCommand,
 			Header: frame.Header{
-				Sequence: testSequenceZero, // Wrong sequence
+				Sequence: testSequenceZero, // Wrong sequence (duplicate)
 				Length:   uint16(len("test")),
 			},
 			Payload: []byte("test"),
@@ -460,15 +491,16 @@ func TestSPILink_ReceiveInvalidSequence_SendsNACK(t *testing.T) {
 	ctx := context.Background()
 	_, err := link.Receive(ctx)
 	if err == nil {
-		t.Fatal("Expected Receive to fail for invalid sequence")
+		t.Fatal("Expected Receive to fail for duplicate sequence")
 	}
 
 	if !errors.Is(err, harq.ErrDuplicateFrame) {
 		t.Errorf("Expected ErrDuplicateFrame, got: %v", err)
 	}
 
-	if !nackSent {
-		t.Error("Expected NACK to be sent")
+	// CRITICAL FIX #2: Duplicates should get ACK (sender missed previous ACK)
+	if !ackSent {
+		t.Error("Expected ACK to be sent for duplicate frame")
 	}
 }
 
@@ -485,13 +517,14 @@ func TestSPILink_ReceiveACKSendFailed(t *testing.T) {
 		return 0, errors.New("transport send failed")
 	}
 
-	// Mock Receive: Return valid frame
+	// Mock Receive: Return valid frame with FlagRequiresAck
 	mockTransport.ReceiveFunc = func(maxLen int) ([]byte, error) {
 		dataFrame := &frame.Frame{
 			Type: frame.FrameTypeCommand,
 			Header: frame.Header{
 				Sequence: testSequenceZero,
 				Length:   uint16(len("test")),
+				Flags:    frame.FlagRequiresAck, // Set flag to trigger ACK attempt
 			},
 			Payload: []byte("test"),
 		}
@@ -503,15 +536,20 @@ func TestSPILink_ReceiveACKSendFailed(t *testing.T) {
 	link, _ := NewSPILink(mockTransport, session, nil)
 
 	ctx := context.Background()
-	_, err := link.Receive(ctx)
+	result, err := link.Receive(ctx)
 
-	// Should fail because ACK send failed
-	if err == nil {
-		t.Fatal("Expected Receive to fail when ACK send fails")
+	// CRITICAL FIX #4: Should succeed even if ACK send fails
+	// (payload was decoded successfully, ACK failure is logged but not fatal)
+	if err != nil {
+		t.Fatalf("Expected Receive to succeed despite ACK send failure, got error: %v", err)
+	}
+
+	if result == nil || string(result.Payload) != "test" {
+		t.Fatal("Expected valid payload despite ACK send failure")
 	}
 
 	if sendCallCount != 1 {
-		t.Errorf("Expected 1 send call (ACK), got %d", sendCallCount)
+		t.Errorf("Expected 1 send call (ACK attempt), got %d", sendCallCount)
 	}
 }
 
@@ -695,6 +733,12 @@ func TestSPILink_FECRoundTrip(t *testing.T) {
 	testData := []byte{0xAB, 0xCD}
 
 	ctx := context.Background()
+
+	// CRITICAL FIX #1: Run Receive() in background to dispatch ACK to Send()
+	go func() {
+		link.Receive(ctx)
+	}()
+
 	err := link.Send(ctx, testData)
 	if err != nil {
 		t.Fatalf("FEC send failed: %v", err)
@@ -760,7 +804,7 @@ func TestSPILink_ChaseCombining_FirstAttemptSuccess(t *testing.T) {
 	mockTransport.ReceiveFunc = func(maxLen int) ([]byte, error) {
 		ackFrame := &frame.Frame{
 			Type:   frame.FrameTypeAck,
-			Header: frame.Header{Sequence: testSequenceZero, Length: emptyPayloadLength},
+			Header: frame.Header{Sequence: testSequenceZero, Length: frame.EmptyPayloadLength},
 		}
 		encoded, _ := encoder.Encode(ackFrame)
 		return encoded, nil
@@ -775,6 +819,11 @@ func TestSPILink_ChaseCombining_FirstAttemptSuccess(t *testing.T) {
 	// Send data with FEC enabled
 	testData := []byte{0xAB, 0xCD, 0xEF}
 	ctx := context.Background()
+
+	// CRITICAL FIX #1: Run Receive() in background to dispatch ACK to Send()
+	go func() {
+		link.Receive(ctx)
+	}()
 
 	err := link.Send(ctx, testData)
 	if err != nil {
@@ -831,11 +880,11 @@ func TestSPILink_ChaseCombining_RetransmissionCombines(t *testing.T) {
 
 	// For this test, we'll manually call decodeFEC to test the combining logic
 	// First attempt - will fail and store in combiner
-	_, err = link.decodeFEC(firstAttemptFrame)
+	_, _ = link.decodeFEC(firstAttemptFrame)
 	// We expect this might fail on corrupted data, but combiner should store it
 
 	// Retransmission - should add to combiner and attempt combined decode
-	_, err = link.decodeFEC(retransmitFrame)
+	_, _ = link.decodeFEC(retransmitFrame)
 	// Result depends on whether combined bits improve decode
 	// The important thing is that combiner.Add was called
 
@@ -863,13 +912,13 @@ func TestSPILink_ChaseCombining_ResetAfterSuccess(t *testing.T) {
 		t.Fatalf("FEC encode failed: %v", err)
 	}
 
-	// Create valid FEC frame
+	// Create valid FEC frame with FlagRequiresAck to trigger ACK response
 	validFrame := &frame.Frame{
 		Type: frame.FrameTypeCommand,
 		Header: frame.Header{
 			Sequence: testSequenceZero,
 			Length:   uint16(len(fecEncoded)),
-			Flags:    frame.FlagFECEnabled,
+			Flags:    frame.FlagFECEnabled | frame.FlagRequiresAck,
 		},
 		Payload: fecEncoded,
 	}

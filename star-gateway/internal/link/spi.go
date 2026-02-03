@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -44,11 +45,16 @@ const (
 	// firstAttempt is the attempt number for the first transmission.
 	firstAttempt = 1
 
-	// emptyPayloadLength indicates an empty payload (used for ACK/NACK frames).
-	emptyPayloadLength = 0
-
 	// decodeSoftModeDefault is the default mode for FEC soft decoding.
 	decodeSoftModeDefault = 0
+
+	// spiSendChanBuffer is the buffer size for send result channel (prevents blocking).
+	spiSendChanBuffer = 1
+
+	// Soft-bit conversion constants
+	bitWidth = 8    // Bits per byte
+	msbShift = 7    // Shift amount to extract MSB
+	bitMask  = 0x01 // Mask to extract single bit
 )
 
 // Predefined errors for SPI link operations.
@@ -98,6 +104,14 @@ type SPILink struct {
 	fecEncoder *fec.ConvolutionalEncoder // FEC encoder (Phase 2)
 	fecDecoder *fec.ViterbiDecoder       // FEC decoder (Phase 2)
 	combiner   *fec.ChaseCombiner        // Chase Combiner (Phase 2)
+
+	// ACK dispatch system (CRITICAL FIX: Split Reader)
+	// Maps sequence number to ACK result channel
+	// When Send() waits for ACK, it registers a channel here
+	// When Receive() gets ACK/NACK, it dispatches to registered channel
+	// This ensures ONLY Receive() reads from decoder (prevents race)
+	ackChannels map[uint16]chan bool // true=ACK, false=NACK
+	ackMu       sync.Mutex           // Protects ackChannels map
 
 	sendMutex    sync.Mutex   // Serialize Send operations (CRITICAL FIX #5)
 	receiveMutex sync.Mutex   // Serialize Receive operations (prevents decoder race)
@@ -150,6 +164,7 @@ func NewSPILink(t transport.Device, session *manager.SessionState, config *SPILi
 		sessionState: session, // Shared state prevents Handoff Problem
 		state:        harq.StateIdle,
 		config:       config,
+		ackChannels:  make(map[uint16]chan bool), // Initialize ACK dispatch map
 	}
 
 	// Initialize FEC components if enabled
@@ -177,6 +192,51 @@ func (s *SPILink) getState() harq.State {
 }
 
 // ============================================================================
+// ACK Dispatch System (CRITICAL FIX: Split Reader)
+// ============================================================================
+
+// registerAckChannel registers a channel to receive ACK/NACK for the given sequence.
+// Returns the channel that will receive true (ACK) or false (NACK).
+func (s *SPILink) registerAckChannel(seq uint16) chan bool {
+	s.ackMu.Lock()
+	defer s.ackMu.Unlock()
+
+	ch := make(chan bool, 1) // Buffered to prevent blocking
+	s.ackChannels[seq] = ch
+	return ch
+}
+
+// unregisterAckChannel removes the ACK channel for the given sequence.
+func (s *SPILink) unregisterAckChannel(seq uint16) {
+	s.ackMu.Lock()
+	defer s.ackMu.Unlock()
+
+	delete(s.ackChannels, seq)
+}
+
+// dispatchAck dispatches an ACK/NACK result to the waiting Send() goroutine.
+// Returns true if a channel was registered for this sequence (dispatched),
+// false if no one was waiting (unexpected ACK/NACK).
+func (s *SPILink) dispatchAck(seq uint16, isAck bool) bool {
+	s.ackMu.Lock()
+	ch, exists := s.ackChannels[seq]
+	s.ackMu.Unlock()
+
+	if !exists {
+		return false // No one waiting for this sequence
+	}
+
+	// Send result to channel (non-blocking due to buffer)
+	select {
+	case ch <- isAck:
+		return true
+	default:
+		// Channel full or closed, shouldn't happen
+		return false
+	}
+}
+
+// ============================================================================
 // HARQ Interface Implementation (Send/Receive with ACK/NACK handshake)
 // ============================================================================
 
@@ -185,13 +245,15 @@ func (s *SPILink) getState() harq.State {
 // Protocol Flow:
 //  1. Lock sendMutex (serialize sends, prevent out-of-order)
 //  2. Get next sequence from shared SessionState
-//  3. Encode frame with FlagRequiresAck
-//  4. Optional: FEC encode payload (if EnableFEC)
-//  5. Send frame via transport
-//  6. Wait for ACK/NACK (timeout: 10ms)
-//  7. On NACK or timeout: Set FlagRetransmit, retry (max 3 total attempts)
-//  8. On ACK: Return success
-//  9. After 3 failures: Return ErrMaxRetriesExceeded
+//  3. Register ACK channel (CRITICAL FIX: Split Reader)
+//  4. Encode frame with FlagRequiresAck
+//  5. Optional: FEC encode payload (if EnableFEC)
+//  6. Send frame via transport
+//  7. Wait for ACK/NACK on registered channel (timeout: 10ms)
+//  8. On NACK or timeout: Set FlagRetransmit, retry (max 3 total attempts)
+//  9. On ACK: Return success
+//
+// 10. After 3 failures or context cancel: Return error
 //
 // Thread Safety: sendMutex ensures atomicity (sequence assignment + Send)
 func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
@@ -207,6 +269,11 @@ func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 
 	// Get next sequence from SHARED state (critical for transport switching)
 	seq := s.sessionState.NextTxSequence()
+
+	// CRITICAL FIX: Register ACK channel (Split Reader fix)
+	// Only Receive() will read from decoder and dispatch to this channel
+	ackCh := s.registerAckChannel(seq)
+	defer s.unregisterAckChannel(seq)
 
 	// Prepare payload (with optional FEC encoding)
 	payload := data
@@ -228,6 +295,12 @@ func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 	}
 
 	for attempt := firstAttempt; attempt <= maxAttempts; attempt++ {
+		// CRITICAL FIX: Check context cancellation in retry loop
+		if ctx.Err() != nil {
+			s.updateState(harq.StateIdle)
+			return ctx.Err()
+		}
+
 		// Update state based on attempt
 		if attempt == firstAttempt {
 			s.updateState(harq.StateWaitingAck)
@@ -255,24 +328,32 @@ func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 
 		// Send frame with timeout protection
 		if err := s.sendFrameWithTimeout(ctx, encodedFrame); err != nil {
-			// Send failed - retry
+			// Send failed - check context before retry
+			if ctx.Err() != nil {
+				s.updateState(harq.StateIdle)
+				return ctx.Err()
+			}
 			continue
 		}
 
-		// Wait for ACK/NACK
-		ack, err := s.waitForAckNack(ctx, seq)
-		if err != nil {
-			// Timeout or error - retry
-			continue
-		}
+		// Wait for ACK/NACK on registered channel (Receive() will dispatch)
+		select {
+		case isAck := <-ackCh:
+			if isAck {
+				// ACK received - success
+				s.updateState(harq.StateIdle)
+				return nil
+			}
+			// NACK received - retry (loop continues)
 
-		if ack {
-			// ACK received - success
+		case <-time.After(s.config.ACKTimeout):
+			// Timeout - retry (loop continues)
+
+		case <-ctx.Done():
+			// Context cancelled
 			s.updateState(harq.StateIdle)
-			return nil
+			return ctx.Err()
 		}
-
-		// NACK received - retry (loop continues)
 	}
 
 	// All retries exhausted
@@ -298,7 +379,7 @@ func (s *SPILink) sendFrameWithTimeout(ctx context.Context, encodedFrame []byte)
 		n   int
 		err error
 	}
-	sendCh := make(chan sendResult, 1)
+	sendCh := make(chan sendResult, spiSendChanBuffer)
 
 	go func() {
 		n, err := s.transport.Send(encodedFrame)
@@ -334,66 +415,69 @@ func (s *SPILink) sendFrameWithTimeout(ctx context.Context, encodedFrame []byte)
 //   - (true, nil): ACK received
 //   - (false, nil): NACK received
 //   - (false, error): Timeout or error
-func (s *SPILink) waitForAckNack(ctx context.Context, expectedSeq uint16) (bool, error) {
-	type decodeResult struct {
-		frame *frame.Frame
-		err   error
-	}
+// func (s *SPILink) waitForAckNack(ctx context.Context, expectedSeq uint16) (bool, error) {
+// 	type decodeResult struct {
+// 		frame *frame.Frame
+// 		err   error
+// 	}
 
-	decodeCh := make(chan decodeResult, 1)
+// 	decodeCh := make(chan decodeResult, 1)
 
-	// Decode in goroutine to make it interruptible
-	go func() {
-		f, err := s.decoder.Decode()
-		decodeCh <- decodeResult{frame: f, err: err}
-	}()
+// 	// Decode in goroutine to make it interruptible
+// 	go func() {
+// 		f, err := s.decoder.Decode()
+// 		decodeCh <- decodeResult{frame: f, err: err}
+// 	}()
 
-	// Wait for decode, timeout, or context cancellation
-	select {
-	case result := <-decodeCh:
-		if result.err != nil {
-			return false, fmt.Errorf("decode failed: %w", result.err)
-		}
+// 	// Wait for decode, timeout, or context cancellation
+// 	select {
+// 	case result := <-decodeCh:
+// 		if result.err != nil {
+// 			return false, fmt.Errorf("decode failed: %w", result.err)
+// 		}
 
-		f := result.frame
+// 		f := result.frame
 
-		// Validate frame type
-		if f.Type == frame.FrameTypeAck {
-			// Validate sequence matches
-			if f.Header.Sequence == expectedSeq {
-				return true, nil
-			}
-			return false, fmt.Errorf("ACK sequence mismatch: expected %d, got %d", expectedSeq, f.Header.Sequence)
-		} else if f.Type == frame.FrameTypeNack {
-			// Validate sequence matches
-			if f.Header.Sequence == expectedSeq {
-				return false, nil
-			}
-			return false, fmt.Errorf("NACK sequence mismatch: expected %d, got %d", expectedSeq, f.Header.Sequence)
-		}
+// 		// Validate frame type
+// 		if f.Type == frame.FrameTypeAck {
+// 			// Validate sequence matches
+// 			if f.Header.Sequence == expectedSeq {
+// 				return true, nil
+// 			}
+// 			return false, fmt.Errorf("ACK sequence mismatch: expected %d, got %d", expectedSeq, f.Header.Sequence)
+// 		} else if f.Type == frame.FrameTypeNack {
+// 			// Validate sequence matches
+// 			if f.Header.Sequence == expectedSeq {
+// 				return false, nil
+// 			}
+// 			return false, fmt.Errorf("NACK sequence mismatch: expected %d, got %d", expectedSeq, f.Header.Sequence)
+// 		}
 
-		return false, fmt.Errorf("expected ACK/NACK, got frame type %s", f.Type)
+// 		return false, fmt.Errorf("expected ACK/NACK, got frame type %s", f.Type)
 
-	case <-time.After(s.config.ACKTimeout):
-		// NOTE: This leaves the decode goroutine running if the transport is blocked.
-		// The goroutine will complete when data arrives or the transport errors.
-		// This is acceptable since ACK/NACK frames are small (12 bytes) and the
-		// decoder will discard unexpected frames in the next receive cycle.
-		return false, ErrACKTimeout
+// 	case <-time.After(s.config.ACKTimeout):
+// 		// NOTE: This leaves the decode goroutine running if the transport is blocked.
+// 		// The goroutine will complete when data arrives or the transport errors.
+// 		// This is acceptable since ACK/NACK frames are small (12 bytes) and the
+// 		// decoder will discard unexpected frames in the next receive cycle.
+// 		return false, ErrACKTimeout
 
-	case <-ctx.Done():
-		return false, ctx.Err()
-	}
-}
+// 	case <-ctx.Done():
+// 		return false, ctx.Err()
+// 	}
+// }
 
 // Receive implements harq.HARQ interface with ACK/NACK response generation.
 //
 // Protocol Flow:
 //  1. Decode frame via StreamDecoder (validates CRC32 automatically)
-//  2. Validate sequence using shared SessionState
-//  3. Optional: FEC decode payload (if FlagFECEnabled)
-//  4. On success: Send ACK, return payload
-//  5. On failure: Send NACK, return error
+//  2. CRITICAL FIX: Check if ACK/NACK frame - dispatch to Send() if so
+//  3. Validate sequence using shared SessionState
+//  4. CRITICAL FIX: On duplicate - send ACK (not NACK) to stop retransmit loop
+//  5. Optional: FEC decode payload (if FlagFECEnabled)
+//  6. On success: Send ACK if required, return payload
+//  7. CRITICAL FIX: Don't fail if ACK send fails (just log)
+//  8. On failure: Send NACK, return error
 //
 // Thread Safety: receiveMutex prevents concurrent calls that would race on s.decoder.
 // The decoder maintains internal buffer state and is NOT safe for concurrent access.
@@ -412,16 +496,27 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	}
 
 	// Decode next frame from stream
+	// CRITICAL: Only Receive() reads from decoder (Split Reader fix)
 	f, err := s.decoder.Decode()
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode frame: %w", err)
 	}
 
+	// CRITICAL FIX: Check if this is an ACK/NACK control frame
+	// If so, dispatch to waiting Send() goroutine and return
+	if f.Type == frame.FrameTypeAck || f.Type == frame.FrameTypeNack {
+		isAck := (f.Type == frame.FrameTypeAck)
+		s.dispatchAck(f.Header.Sequence, isAck)
+		// Return nil to indicate control frame handled (not data)
+		return nil, nil
+	}
+
 	// Validate sequence using SHARED state (detects duplicates across transports)
 	if !s.sessionState.ValidateRxSequence(f.Header.Sequence) {
-		// Out of sequence - send NACK
-		if err := s.sendNack(ctx, f.Header.Sequence); err != nil {
-			return nil, fmt.Errorf("failed to send NACK for duplicate frame: %w", err)
+		// CRITICAL FIX: Duplicate detected - sender likely missed our previous ACK
+		// Send ACK (not NACK) to stop retransmission loop
+		if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
+			log.Printf("WARN: Failed to resend ACK for duplicate seq=%d: %v", f.Header.Sequence, err)
 		}
 		return nil, harq.ErrDuplicateFrame
 	}
@@ -436,7 +531,7 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		if err != nil {
 			// FEC decode failed - send NACK
 			if nackErr := s.sendNack(ctx, f.Header.Sequence); nackErr != nil {
-				return nil, fmt.Errorf("failed to send NACK for FEC decode failure: %w", nackErr)
+				log.Printf("WARN: Failed to send NACK for FEC decode failure seq=%d: %v", f.Header.Sequence, nackErr)
 			}
 			return nil, fmt.Errorf("FEC decode failed: %w", err)
 		}
@@ -444,11 +539,14 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		fecDecoded = true
 	}
 
-	// Success - send ACK
-	if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
-		// ACK send failed - log but don't fail receive
-		// (RX72N will timeout and retransmit)
-		return nil, fmt.Errorf("ACK send failed: %w", err)
+	// Success - send ACK if frame requires it
+	if (f.Header.Flags & frame.FlagRequiresAck) != 0 {
+		if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
+			// CRITICAL FIX: Don't fail receive if ACK send fails
+			// We successfully decoded the payload, just log the error
+			// Sender will timeout and retransmit, we'll send ACK again
+			log.Printf("WARN: ACK send failed for seq=%d: %v (payload decoded successfully)", f.Header.Sequence, err)
+		}
 	}
 
 	return &harq.ReceiveResult{
@@ -510,11 +608,11 @@ func (s *SPILink) sendAck(ctx context.Context, seq uint16) error {
 	ackFrame := &frame.Frame{
 		Header: frame.Header{
 			Sequence: seq,
-			Length:   emptyPayloadLength,
+			Length:   frame.EmptyPayloadLength,
 			Flags:    frame.FlagNone,
 		},
 		Type:    frame.FrameTypeAck,
-		Payload: []byte{},
+		Payload: frame.EmptyPayload,
 	}
 
 	encodedFrame, err := s.encoder.Encode(ackFrame)
@@ -530,11 +628,11 @@ func (s *SPILink) sendNack(ctx context.Context, seq uint16) error {
 	nackFrame := &frame.Frame{
 		Header: frame.Header{
 			Sequence: seq,
-			Length:   emptyPayloadLength,
+			Length:   frame.EmptyPayloadLength,
 			Flags:    frame.FlagNone,
 		},
 		Type:    frame.FrameTypeNack,
-		Payload: []byte{},
+		Payload: frame.EmptyPayload,
 	}
 
 	encodedFrame, err := s.encoder.Encode(nackFrame)
@@ -601,16 +699,16 @@ func (s *SPILink) Reset() {
 // bytesToSoftBits converts bytes to soft bits for Viterbi decoder.
 // Each bit is converted to confidence level: 1 → +127, 0 → -127.
 func bytesToSoftBits(data []byte) []fec.SoftBit {
-	softBits := make([]fec.SoftBit, len(data)*8)
+	softBits := make([]fec.SoftBit, len(data)*bitWidth)
 
 	for byteIdx := 0; byteIdx < len(data); byteIdx++ {
 		b := data[byteIdx]
-		for bitIdx := 0; bitIdx < 8; bitIdx++ {
-			bit := (b >> (7 - bitIdx)) & 0x01
-			if bit == 1 {
-				softBits[byteIdx*8+bitIdx] = fec.SoftBitMax // +127
+		for bitIdx := 0; bitIdx < bitWidth; bitIdx++ {
+			bit := (b >> (msbShift - bitIdx)) & bitMask
+			if bit == bitMask {
+				softBits[byteIdx*bitWidth+bitIdx] = fec.SoftBitMax // +127
 			} else {
-				softBits[byteIdx*8+bitIdx] = fec.SoftBitMin // -127
+				softBits[byteIdx*bitWidth+bitIdx] = fec.SoftBitMin // -127
 			}
 		}
 	}
