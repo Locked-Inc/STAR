@@ -38,6 +38,9 @@ const (
 
 	// MinFrameSize is the minimum frame size (empty payload).
 	MinFrameSize = SyncSize + HeaderSize + CRCSize
+
+	// EmptyPayloadLength is the length value for frames with no payload (ACK/NACK/PING).
+	EmptyPayloadLength = 0
 )
 
 // Type indicates the type of frame being transmitted.
@@ -153,3 +156,7 @@ func NewFrame(frameType Type, payload []byte) (*Frame, error) {
 		Payload: payload,
 	}, nil
 }
+
+// EmptyPayload is a pre-allocated empty byte slice for frames with no payload (ACK/NACK/PING).
+// Using this constant avoids repeated allocations of empty slices.
+var EmptyPayload = []byte{}
