@@ -145,6 +145,9 @@ func TestHotPlugDetectorRunInotify(t *testing.T) {
 		})
 	}()
 
+	// Give the inotify watcher time to initialize before creating the device
+	time.Sleep(100 * time.Millisecond)
+
 	stagingDir, err := os.MkdirTemp("", "hpd-device-")
 	if err != nil {
 		t.Fatalf("failed to create staging dir: %v", err)
