@@ -150,6 +150,7 @@ type dispatcher struct {
 	stoppedCh       chan struct{}
 	shutdownTimeout time.Duration
 	receiveInterval time.Duration
+	cancel          context.CancelFunc
 }
 
 // Config holds dispatcher configuration parameters.
@@ -252,6 +253,8 @@ func (d *dispatcher) Start(ctx context.Context) error {
 		return fmt.Errorf("dispatcher: cannot start from state %v", d.state)
 	}
 	d.state = StateRunning
+	ctx, cancel := context.WithCancel(ctx)
+	d.cancel = cancel
 	d.mu.Unlock()
 
 	d.logger.Info("dispatcher starting")
@@ -268,6 +271,9 @@ func (d *dispatcher) Stop() error {
 	if d.state == StateRunning {
 		d.state = StateStopping
 		close(d.stopCh)
+		if d.cancel != nil {
+			d.cancel()
+		}
 	}
 	d.mu.Unlock()
 
@@ -331,6 +337,9 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 		}
 
 		result, err := d.harq.Receive(ctx)
+		if err == nil && result == nil {
+			err = harq.ErrTimeout
+		}
 		if err != nil {
 			// Exit on context cancellation
 			if errors.Is(err, context.Canceled) {
