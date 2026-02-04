@@ -76,13 +76,15 @@ func Run(ctx context.Context, cfg Config) error {
 	if err != nil {
 		return err
 	}
-	defer transportCleanup()
+	// NOTE: transportCleanup is deferred later, after dispatcher init, to ensure
+	// transport closes BEFORE dispatcher cleanup (to interrupt pending I/O)
 
 	// ========================================
 	// Layer 2-4: Protocol Stack (HARQ)
 	// ========================================
 	var harqHandler harq.HARQ
 
+	var tmCleanup func()
 	if cfg.TransportMode == manager.ModeForceSPI {
 		// Existing code path (no changes)
 		harqHandler, err = initHARQ(deviceTransport)
@@ -91,10 +93,11 @@ func Run(ctx context.Context, cfg Config) error {
 		}
 	} else {
 		// New code path with TransportManager
-		harqHandler, err = initTransportManager(ctx, cfg, deviceTransport)
+		harqHandler, tmCleanup, err = initTransportManager(ctx, cfg, deviceTransport)
 		if err != nil {
 			return fmt.Errorf("failed to initialize HARQ: %w", err)
 		}
+		// NOTE: tmCleanup is deferred later, after dispatcher init
 	}
 
 	// ========================================
@@ -108,17 +111,28 @@ func Run(ctx context.Context, cfg Config) error {
 	// Layer 4.5: Message Dispatcher
 	// ========================================
 	log.Printf("Initializing message dispatcher...")
-	msgDispatcher, dispatcherCleanup, err := initDispatcher(harqHandler, logger)
+	msgDispatcher, dispatcherCleanup, err := initDispatcher(ctx, harqHandler, logger)
 	if err != nil {
 		return err
 	}
 	defer dispatcherCleanup()
 
+	// Defer TransportManager and Transport cleanup AFTER dispatcher cleanup to ensure correct shutdown order:
+	// LIFO execution order:
+	// 1. Dispatcher stops (deferred last, executes first) - may timeout waiting for receive loop
+	// 2. TransportManager stops (deferred now, executes second) - background goroutines exit
+	// 3. Transport closes (deferred now, executes third) - socket closes, interrupts any pending I/O
+	if tmCleanup != nil {
+		defer tmCleanup()
+	}
+	defer transportCleanup()
+
 	// ========================================
 	// Layer 5: gRPC Services
 	// ========================================
 	log.Printf("Initializing gRPC services...")
-	grpcServer, gatewaySvc, shutdownRegistry, err := initServices(context.Background(), harqHandler, msgDispatcher, logger)
+	// Use main context so services are automatically cancelled when main context is cancelled
+	grpcServer, gatewaySvc, shutdownRegistry, err := initServices(ctx, harqHandler, msgDispatcher, logger)
 	if err != nil {
 		return err
 	}
@@ -151,7 +165,10 @@ func Run(ctx context.Context, cfg Config) error {
 	// Shutdown servers and services
 	shutdownServers(httpServer, grpcServer, shutdownRegistry)
 
-	// Transport cleanup is handled by deferred close functions above
+	// Deferred cleanups will execute in reverse order (LIFO):
+	// 1. Transport closes (interrupts any pending I/O in dispatcher receive loop)
+	// 2. TransportManager stops (background goroutines exit)
+	// 3. Dispatcher stops (receive loop exits due to context cancel + closed transport)
 	log.Println("All servers exited gracefully")
 	return nil
 }
@@ -160,12 +177,16 @@ func initTransport(cfg Config) (transport.Device, func(), error) {
 	var deviceTransport transport.Device
 
 	cleanup := func() {
+		log.Println("Transport cleanup starting...")
 		if deviceTransport != nil {
+			log.Printf("Closing transport (isOpen=%v)...", deviceTransport.IsOpen())
 			if err := deviceTransport.Close(); err != nil {
 				log.Printf("Transport close error: %v", err)
 			} else {
-				log.Println("Transport closed")
+				log.Println("Transport closed successfully")
 			}
+		} else {
+			log.Println("Transport is nil, skipping close")
 		}
 	}
 
@@ -193,7 +214,7 @@ func initTransport(cfg Config) (transport.Device, func(), error) {
 	return deviceTransport, cleanup, nil
 }
 
-func initTransportManager(ctx context.Context, cfg Config, deviceTransport transport.Device) (harq.HARQ, error) {
+func initTransportManager(ctx context.Context, cfg Config, deviceTransport transport.Device) (harq.HARQ, func(), error) {
 	tmConfig := manager.DefaultConfig()
 	if cfg.TransportMode != "" {
 		tmConfig.Mode = manager.TransportMode(cfg.TransportMode)
@@ -209,7 +230,7 @@ func initTransportManager(ctx context.Context, cfg Config, deviceTransport trans
 	case *transport.SocketTransport:
 		legacyTransport = t
 	default:
-		return nil, fmt.Errorf("unknown transport type for TransportManager")
+		return nil, nil, fmt.Errorf("unknown transport type for TransportManager")
 	}
 
 	// Get shared session state from TransportManager (CRITICAL FIX #1)
@@ -230,16 +251,22 @@ func initTransportManager(ctx context.Context, cfg Config, deviceTransport trans
 
 			// In force-usb mode, return error if USB unavailable
 			if tmConfig.Mode == manager.ModeForceUSB {
-				return nil, fmt.Errorf("USB CDC required by mode %s but unavailable: %w", tmConfig.Mode, err)
+				return nil, nil, fmt.Errorf("USB CDC required by mode %s but unavailable: %w", tmConfig.Mode, err)
 			}
 		}
 	}
 
 	if err := tm.Start(ctx); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return tm, nil
+	cleanup := func() {
+		if err := tm.Stop(); err != nil {
+			log.Printf("TransportManager shutdown error: %v", err)
+		}
+	}
+
+	return tm, cleanup, nil
 }
 
 // createSPILink wraps a transport in SPILink with full HARQ protocol.
@@ -351,13 +378,13 @@ func initHARQ(deviceTransport transport.Device) (harq.HARQ, error) {
 	), nil
 }
 
-func initDispatcher(harqHandler harq.HARQ, logger *slog.Logger) (dispatcher.Dispatcher, func(), error) {
+func initDispatcher(ctx context.Context, harqHandler harq.HARQ, logger *slog.Logger) (dispatcher.Dispatcher, func(), error) {
 	msgDispatcher, err := dispatcher.NewDispatcher(harqHandler, logger, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	dispatcherCtx, dispatcherCancel := context.WithCancel(context.Background())
+	dispatcherCtx, dispatcherCancel := context.WithCancel(ctx)
 	if err := msgDispatcher.Start(dispatcherCtx); err != nil {
 		dispatcherCancel()
 		return nil, nil, err

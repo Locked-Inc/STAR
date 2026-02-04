@@ -150,6 +150,7 @@ type dispatcher struct {
 	stoppedCh       chan struct{}
 	shutdownTimeout time.Duration
 	receiveInterval time.Duration
+	cancel          context.CancelFunc
 }
 
 // Config holds dispatcher configuration parameters.
@@ -252,6 +253,8 @@ func (d *dispatcher) Start(ctx context.Context) error {
 		return fmt.Errorf("dispatcher: cannot start from state %v", d.state)
 	}
 	d.state = StateRunning
+	ctx, cancel := context.WithCancel(ctx)
+	d.cancel = cancel
 	d.mu.Unlock()
 
 	d.logger.Info("dispatcher starting")
@@ -268,6 +271,9 @@ func (d *dispatcher) Stop() error {
 	if d.state == StateRunning {
 		d.state = StateStopping
 		close(d.stopCh)
+		if d.cancel != nil {
+			d.cancel()
+		}
 	}
 	d.mu.Unlock()
 
@@ -321,7 +327,16 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 	defer ticker.Stop()
 
 	for {
-		// Check for cancellation before receive
+		// Prioritize context cancellation by checking it first (non-blocking)
+		select {
+		case <-ctx.Done():
+			return
+		case <-d.stopCh:
+			return
+		default:
+		}
+
+		// Double-check cancellation before potentially blocking receive call
 		select {
 		case <-ctx.Done():
 			return
@@ -331,6 +346,9 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 		}
 
 		result, err := d.harq.Receive(ctx)
+		if err == nil && result == nil {
+			err = harq.ErrTimeout
+		}
 		if err != nil {
 			// Exit on context cancellation
 			if errors.Is(err, context.Canceled) {
@@ -347,7 +365,15 @@ func (d *dispatcher) receiveLoop(ctx context.Context) {
 				d.logger.Error("HARQ receive error", slog.String("error", err.Error()))
 
 				// Add a small backoff here to prevent busy-looping on hard failures
-				time.Sleep(dispatchBackoff)
+				// Use context-aware sleep to enable immediate shutdown on cancellation
+				select {
+				case <-ctx.Done():
+					return
+				case <-d.stopCh:
+					return
+				case <-time.After(dispatchBackoff):
+					// Continue to ticker wait
+				}
 			}
 		} else {
 			// Check for cancellation before processing data
