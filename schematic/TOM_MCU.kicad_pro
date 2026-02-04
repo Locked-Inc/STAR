@@ -58,16 +58,7 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [
-        [
-          "clearance|310730000|189715000|aef3b18f-8ce3-4ea6-8a4b-119cb0d72818|f67b6c77-83da-4268-891c-5afe5b1b4c82",
-          "Temp Sensor Pin Placement"
-        ],
-        [
-          "clearance|310730000|190985000|f67b6c77-83da-4268-891c-5afe5b1b4c82|bac1f886-9927-4450-85cc-ee0a96ed07fb",
-          "Temp Sensor Pin Placement"
-        ]
-      ],
+      "drc_exclusions": [],
       "meta": {
         "version": 2
       },
