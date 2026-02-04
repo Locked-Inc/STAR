@@ -210,9 +210,7 @@ func (c *CDCLink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 	seq := c.sessionState.NextTxSequence()
 
 	// No RequiresAck, No FEC for lightweight CDC protocol
-	const flags = 0
-
-	return c.buildAndSend(ctx, data, seq, flags, frame.FrameTypeCommand)
+	return c.buildAndSend(ctx, data, seq, frame.FlagNone, frame.FrameTypeCommand)
 }
 
 // SendWithType sends data with a specific frame type (PING, PONG, RESET, etc.).
@@ -228,9 +226,7 @@ func (c *CDCLink) SendWithType(ctx context.Context, data []byte, frameType frame
 	seq := c.sessionState.NextTxSequence()
 
 	// No RequiresAck, No FEC for lightweight CDC protocol
-	const flags = 0
-
-	return c.buildAndSend(ctx, data, seq, flags, frameType)
+	return c.buildAndSend(ctx, data, seq, frame.FlagNone, frameType)
 }
 
 // Receive implements harq.HARQ interface.
