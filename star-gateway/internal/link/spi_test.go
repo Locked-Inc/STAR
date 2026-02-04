@@ -1239,7 +1239,7 @@ func TestSPILink_SendWithType_MaxRetries(t *testing.T) {
 
 	// Run Receive() in background
 	go func() {
-		for i := 0; i < 10; i++ {
+		for i := 0; i < maxRetries; i++ {
 			link.Receive(ctx)
 		}
 	}()

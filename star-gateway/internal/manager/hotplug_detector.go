@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -20,19 +22,32 @@ import (
 //
 // Phase 3: Full inotify implementation for instant hot-plug failover.
 type HotPlugDetector struct {
-	targetDevice string // Target device name pattern (e.g., "ttyACM0")
-	vendorID     uint16
-	productID    uint16
+	targetDevice      string // Target device name pattern (e.g., "ttyACM0")
+	vendorID          uint16
+	productID         uint16
+	usbDevicesPath    string
+	sysfsClassTTYPath string
+	devRoot           string
 }
+
+const (
+	DefaultTargetDevice   = "ttyACM0"
+	defaultUSBDevicesPath = "/sys/bus/usb/devices"
+	defaultSysfsClassTTY  = "/sys/class/tty"
+	defaultDevRoot        = "/dev"
+)
 
 // NewHotPlugDetector creates a new HotPlugDetector.
 // The pollInterval parameter is ignored in the inotify implementation but kept
 // for API compatibility.
 func NewHotPlugDetector(pollInterval time.Duration, vid, pid uint16) *HotPlugDetector {
 	return &HotPlugDetector{
-		targetDevice: "ttyACM0", // Default USB CDC device
-		vendorID:     vid,
-		productID:    pid,
+		targetDevice:      DefaultTargetDevice, // Default USB CDC device
+		vendorID:          vid,
+		productID:         pid,
+		usbDevicesPath:    defaultUSBDevicesPath,
+		sysfsClassTTYPath: defaultSysfsClassTTY,
+		devRoot:           defaultDevRoot,
 	}
 }
 
@@ -58,7 +73,7 @@ func (hpd *HotPlugDetector) Run(ctx context.Context, eventHandler func(HotPlugEv
 // runInotify implements the core inotify-based detection logic.
 // Watches /sys/bus/usb/devices for USB device add/remove events.
 func (hpd *HotPlugDetector) runInotify(ctx context.Context, eventHandler func(HotPlugEvent)) error {
-	const usbDevicesPath = "/sys/bus/usb/devices"
+	usbDevicesPath := hpd.usbDevicesDir()
 
 	// Verify path exists (Linux-only)
 	if _, err := os.Stat(usbDevicesPath); os.IsNotExist(err) {
@@ -89,8 +104,8 @@ func (hpd *HotPlugDetector) runInotify(ctx context.Context, eventHandler func(Ho
 				return fmt.Errorf("fsnotify watcher closed unexpectedly")
 			}
 
-			// Handle Create (device added) and Remove (device removed) events
-			if event.Op&fsnotify.Create != 0 {
+			// Handle Create/Rename (device added) and Remove (device removed) events
+			if event.Op&(fsnotify.Create|fsnotify.Rename) != 0 {
 				if hpd.matchesTargetDevice(event.Name) {
 					devicePath := hpd.getDevicePath(event.Name)
 					log.Printf("HotPlugDetector: USB device added: %s", devicePath)
@@ -123,28 +138,174 @@ func (hpd *HotPlugDetector) runInotify(ctx context.Context, eventHandler func(Ho
 }
 
 // matchesTargetDevice checks if the sysfs path corresponds to the target USB device.
-// This is a simple implementation that matches based on directory name.
-// A more robust implementation would read idVendor/idProduct from sysfs.
 func (hpd *HotPlugDetector) matchesTargetDevice(sysfsPath string) bool {
-	// Extract the device name from the sysfs path
-	// Example: /sys/bus/usb/devices/1-1.4 -> check if it has ttyACM0
-	basename := filepath.Base(sysfsPath)
-
-	// Match USB device paths (e.g., "1-1.4", "2-3")
-	// Skip root hub and other non-device paths
-	if strings.Contains(basename, ":") || basename == "usb" {
+	if sysfsPath == "" || hpd.targetDevice == "" {
 		return false
 	}
 
-	// For simplicity, match any USB device path that looks like a device
-	// A production implementation would read VID/PID from sysfs
-	return strings.Contains(basename, "-")
+	ttyNames := hpd.findTTYNames(sysfsPath)
+	if !containsName(ttyNames, hpd.targetDevice) {
+		return false
+	}
+
+	if hpd.vendorID == 0 && hpd.productID == 0 {
+		return true
+	}
+
+	vid, pid, err := hpd.readDeviceVIDPID(sysfsPath, ttyNames)
+	if err != nil {
+		return false
+	}
+
+	return vid == hpd.vendorID && pid == hpd.productID
 }
 
 // getDevicePath converts a sysfs path to a /dev device path.
 // For USB CDC devices, this is typically /dev/ttyACM0.
 func (hpd *HotPlugDetector) getDevicePath(sysfsPath string) string {
-	// Simplified mapping: always return the target device path
-	// A production implementation would scan /dev for the actual device node
-	return fmt.Sprintf("/dev/%s", hpd.targetDevice)
+	devRoot := hpd.devRootDir()
+	ttyNames := hpd.findTTYNames(sysfsPath)
+	if len(ttyNames) == 0 {
+		return filepath.Join(devRoot, hpd.targetDevice)
+	}
+
+	if containsName(ttyNames, hpd.targetDevice) {
+		return filepath.Join(devRoot, hpd.targetDevice)
+	}
+
+	return filepath.Join(devRoot, ttyNames[0])
+}
+
+func (hpd *HotPlugDetector) usbDevicesDir() string {
+	if hpd.usbDevicesPath != "" {
+		return hpd.usbDevicesPath
+	}
+	return defaultUSBDevicesPath
+}
+
+func (hpd *HotPlugDetector) sysfsClassTTYDir() string {
+	if hpd.sysfsClassTTYPath != "" {
+		return hpd.sysfsClassTTYPath
+	}
+	return defaultSysfsClassTTY
+}
+
+func (hpd *HotPlugDetector) devRootDir() string {
+	if hpd.devRoot != "" {
+		return hpd.devRoot
+	}
+	return defaultDevRoot
+}
+
+func (hpd *HotPlugDetector) findTTYNames(sysfsPath string) []string {
+	if sysfsPath == "" {
+		return nil
+	}
+
+	ttyDirs := []string{filepath.Join(sysfsPath, "tty")}
+	if matches, err := filepath.Glob(filepath.Join(sysfsPath, "*", "tty")); err == nil {
+		ttyDirs = append(ttyDirs, matches...)
+	}
+
+	names := make(map[string]struct{})
+	for _, ttyDir := range ttyDirs {
+		entries, err := os.ReadDir(ttyDir)
+		if err != nil {
+			continue
+		}
+		for _, entry := range entries {
+			name := entry.Name()
+			if name == "" {
+				continue
+			}
+			names[name] = struct{}{}
+		}
+	}
+
+	if len(names) == 0 {
+		return nil
+	}
+
+	result := make([]string, 0, len(names))
+	for name := range names {
+		result = append(result, name)
+	}
+	sort.Strings(result)
+	return result
+}
+
+func (hpd *HotPlugDetector) readDeviceVIDPID(sysfsPath string, ttyNames []string) (uint16, uint16, error) {
+	if vid, pid, err := readVIDPIDFromPath(sysfsPath); err == nil {
+		return vid, pid, nil
+	}
+
+	parent := filepath.Dir(sysfsPath)
+	if parent != sysfsPath {
+		if vid, pid, err := readVIDPIDFromPath(parent); err == nil {
+			return vid, pid, nil
+		}
+	}
+
+	if resolved, err := filepath.EvalSymlinks(filepath.Join(sysfsPath, "device")); err == nil {
+		if vid, pid, err := readVIDPIDFromPath(resolved); err == nil {
+			return vid, pid, nil
+		}
+	}
+
+	for _, ttyName := range ttyNames {
+		devicePath := filepath.Join(hpd.sysfsClassTTYDir(), ttyName, "device")
+		resolved, err := filepath.EvalSymlinks(devicePath)
+		if err != nil {
+			continue
+		}
+		if vid, pid, err := readVIDPIDFromPath(resolved); err == nil {
+			return vid, pid, nil
+		}
+		parent := filepath.Dir(resolved)
+		if parent != resolved {
+			if vid, pid, err := readVIDPIDFromPath(parent); err == nil {
+				return vid, pid, nil
+			}
+		}
+	}
+
+	return 0, 0, fmt.Errorf("idVendor/idProduct not found for %s", sysfsPath)
+}
+
+func readVIDPIDFromPath(path string) (uint16, uint16, error) {
+	vid, err := readHexFile(filepath.Join(path, "idVendor"))
+	if err != nil {
+		return 0, 0, err
+	}
+
+	pid, err := readHexFile(filepath.Join(path, "idProduct"))
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return vid, pid, nil
+}
+
+func readHexFile(path string) (uint16, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return 0, err
+	}
+
+	value := strings.TrimSpace(string(data))
+	parsed, err := strconv.ParseUint(value, 16, 16)
+	if err != nil {
+		return 0, err
+	}
+
+	return uint16(parsed), nil
+}
+
+func containsName(names []string, target string) bool {
+	for _, name := range names {
+		if name == target {
+			return true
+		}
+	}
+	return false
 }

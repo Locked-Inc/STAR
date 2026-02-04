@@ -372,6 +372,10 @@ func (tm *TransportManager) RegisterTransport(name string, transport harq.HARQ, 
 // Failed operations increment the failure counter. When the failure threshold is reached,
 // an automatic failover is triggered in the background.
 func (tm *TransportManager) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
+	if err := tm.validateFramePayload(frame.FrameTypeCommand, data); err != nil {
+		return err
+	}
+
 	// Wait if switching is in progress
 	tm.operationsMu.Lock()
 	for tm.paused {
@@ -416,6 +420,10 @@ func (tm *TransportManager) Send(ctx context.Context, data []byte, p ...harq.Pri
 //
 // This method blocks if a transport switch is in progress, then resumes once switching completes.
 func (tm *TransportManager) SendWithType(ctx context.Context, data []byte, frameType frame.Type) error {
+	if err := tm.validateFramePayload(frameType, data); err != nil {
+		return err
+	}
+
 	// Wait if switching is in progress
 	tm.operationsMu.Lock()
 	for tm.paused {
@@ -462,6 +470,40 @@ func (tm *TransportManager) SendWithType(ctx context.Context, data []byte, frame
 	tm.recordOperation(activeName, err, latency, true)
 
 	return err
+}
+
+func (tm *TransportManager) validateFramePayload(frameType frame.Type, payload []byte) error {
+	if !isAllowedFrameType(frameType) {
+		return fmt.Errorf("invalid frame type: %v", frameType)
+	}
+
+	const minFramePayloadSize = 0
+	const maxFramePayloadSize = frame.MaxPayloadSize
+
+	if len(payload) < minFramePayloadSize {
+		return fmt.Errorf("payload size %d is below minimum %d", len(payload), minFramePayloadSize)
+	}
+	if len(payload) > maxFramePayloadSize {
+		return fmt.Errorf("payload size %d exceeds maximum %d", len(payload), maxFramePayloadSize)
+	}
+
+	return nil
+}
+
+func isAllowedFrameType(frameType frame.Type) bool {
+	switch frameType {
+	case frame.FrameTypePing,
+		frame.FrameTypePong,
+		frame.FrameTypeReset,
+		frame.FrameTypeResetAck,
+		frame.FrameTypeCommand,
+		frame.FrameTypeResponse,
+		frame.FrameTypeAck,
+		frame.FrameTypeNack:
+		return true
+	default:
+		return false
+	}
 }
 
 // Receive proxies the Receive operation to the active transport with health tracking.
