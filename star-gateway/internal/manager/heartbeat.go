@@ -11,6 +11,8 @@ import (
 	"log"
 	"sync"
 	"time"
+
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 )
 
 const (
@@ -196,13 +198,13 @@ func (hm *HeartbeatManager) sendPing(ctx context.Context, tm *TransportManager) 
 	payload := make([]byte, pingPayloadSize)
 	binary.BigEndian.PutUint32(payload, counter)
 
-	// Send PING via TransportManager (uses active transport - USB or SPI)
+	// Send PING via TransportManager with explicit frame type (Phase 3)
 	// Note: We don't wait for PONG here - OnFrameReceived() will be called
 	// when the PONG arrives, updating lastSeen
 	pingCtx, cancel := context.WithTimeout(ctx, pingSendTimeout)
 	defer cancel()
 
-	if err := tm.Send(pingCtx, payload); err != nil {
+	if err := tm.SendWithType(pingCtx, payload, frame.FrameTypePing); err != nil {
 		log.Printf("PING send failed: %v (counter=%d)", err, counter)
 		// Don't update lastSeen - let the failure timeout trigger
 	}

@@ -5,34 +5,29 @@ import (
 	"time"
 )
 
-func TestNewHotPlugDetector_PanicOnInvalidInterval(t *testing.T) {
-	tests := []struct {
-		name     string
-		interval time.Duration
-	}{
-		{"ZeroInterval", 0},
-		{"NegativeInterval", -1 * time.Second},
-	}
+// TestNewHotPlugDetector_Valid tests creating a valid HotPlugDetector.
+// Phase 3: inotify-based implementation ignores pollInterval (kept for API compatibility).
+func TestNewHotPlugDetector_Valid(t *testing.T) {
+	const (
+		testVID = 0x045B
+		testPID = 0x0235
+	)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if r := recover(); r == nil {
-					t.Errorf("NewHotPlugDetector() did not panic for interval %v", tt.interval)
-				}
-			}()
-			NewHotPlugDetector(tt.interval, 0x1234, 0x5678)
-		})
-	}
-}
-
-func TestNewHotPlugDetector_ValidInterval(t *testing.T) {
-	interval := 1 * time.Second
-	hpd := NewHotPlugDetector(interval, 0x1234, 0x5678)
+	// pollInterval is ignored in inotify implementation but kept for API compatibility
+	hpd := NewHotPlugDetector(1*time.Second, testVID, testPID)
 	if hpd == nil {
-		t.Fatalf("NewHotPlugDetector() returned nil for valid interval")
+		t.Fatal("NewHotPlugDetector() returned nil")
 	}
-	if hpd.pollInterval != interval {
-		t.Errorf("expected pollInterval %v, got %v", interval, hpd.pollInterval)
+
+	if hpd.vendorID != testVID {
+		t.Errorf("vendorID = 0x%04X, want 0x%04X", hpd.vendorID, testVID)
+	}
+
+	if hpd.productID != testPID {
+		t.Errorf("productID = 0x%04X, want 0x%04X", hpd.productID, testPID)
+	}
+
+	if hpd.targetDevice != "ttyACM0" {
+		t.Errorf("targetDevice = %q, want \"ttyACM0\"", hpd.targetDevice)
 	}
 }

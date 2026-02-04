@@ -408,6 +408,62 @@ func (tm *TransportManager) Send(ctx context.Context, data []byte, p ...harq.Pri
 	return err
 }
 
+// SendWithType sends data with an explicit frame type (PING, PONG, RESET, etc.).
+// This is a Phase 3 API for protocol messages that require specific frame types.
+//
+// If the active transport supports SendWithType(), it uses that method.
+// Otherwise, it falls back to Send() (CDCLink and SPILink both support SendWithType).
+//
+// This method blocks if a transport switch is in progress, then resumes once switching completes.
+func (tm *TransportManager) SendWithType(ctx context.Context, data []byte, frameType frame.Type) error {
+	// Wait if switching is in progress
+	tm.operationsMu.Lock()
+	for tm.paused {
+		tm.operationsCond.Wait()
+	}
+	tm.inflightCounter++
+	tm.operationsMu.Unlock()
+
+	// Decrement in-flight counter on exit
+	defer func() {
+		tm.operationsMu.Lock()
+		tm.inflightCounter--
+		tm.operationsMu.Unlock()
+	}()
+
+	// Get active transport (read lock only)
+	tm.mu.RLock()
+	active := tm.activeTransport
+	activeName := tm.activeTransportName
+	tm.mu.RUnlock()
+
+	if active == nil {
+		return errors.New("no active transport available")
+	}
+
+	// Type-assert to check if transport supports SendWithType
+	type frameTypeSender interface {
+		SendWithType(ctx context.Context, data []byte, frameType frame.Type) error
+	}
+
+	sender, ok := active.(frameTypeSender)
+	if !ok {
+		// Fallback: use Send() (shouldn't happen with CDCLink/SPILink)
+		log.Printf("WARNING: Active transport %s does not support SendWithType, falling back to Send()", activeName)
+		return tm.Send(ctx, data)
+	}
+
+	// Execute send with latency tracking
+	start := time.Now()
+	err := sender.SendWithType(ctx, data, frameType)
+	latency := time.Since(start)
+
+	// Record operation result
+	tm.recordOperation(activeName, err, latency, true)
+
+	return err
+}
+
 // Receive proxies the Receive operation to the active transport with health tracking.
 //
 // This method implements the harq.HARQ interface.
