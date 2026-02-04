@@ -40,9 +40,11 @@ const (
 	grpcRequestTimeout = 5 * time.Second
 
 	// Timeout for graceful gateway shutdown
-	// Set to 25s to accommodate socket transport Close() blocking on mutex
-	// TODO: Fix socket transport mutex contention in Transfer/Close
-	gatewayShutdownTimeout = 25 * time.Second
+	// Set to 35s to accommodate:
+	// - Socket transport Close() blocking on mutex
+	// - Duplicate ACK cleanup during context cancellation
+	// - Sequence mismatch handling during shutdown
+	gatewayShutdownTimeout = 35 * time.Second
 
 	// Telemetry retry interval
 	telemetryRetryInterval = 100 * time.Millisecond
@@ -439,10 +441,12 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 		select {
 		case err := <-errChan:
 			if err != nil && err != context.Canceled {
-				t.Logf("Gateway shutdown error: %v", err)
+				t.Logf("Gateway shutdown with error: %v", err)
+			} else {
+				t.Logf("Gateway shutdown completed")
 			}
 		case <-time.After(gatewayShutdownTimeout):
-			t.Log("Gateway did not shut down in time")
+			t.Errorf("Gateway did not shut down in time (timeout: %v)", gatewayShutdownTimeout)
 		}
 	})
 

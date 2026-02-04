@@ -603,8 +603,11 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	if !s.sessionState.ValidateRxSequence(f.Header.Sequence) {
 		// CRITICAL FIX: Duplicate detected - sender likely missed our previous ACK
 		// Send ACK (not NACK) to stop retransmission loop
-		if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
-			log.Printf("WARN: Failed to resend ACK for duplicate seq=%d: %v", f.Header.Sequence, err)
+		// SHUTDOWN FIX: Skip ACK resend if context is cancelled (graceful shutdown in progress)
+		if ctx.Err() == nil {
+			if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
+				log.Printf("WARN: Failed to resend ACK for duplicate seq=%d: %v", f.Header.Sequence, err)
+			}
 		}
 		return nil, harq.ErrDuplicateFrame
 	}
@@ -618,8 +621,11 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		decoded, err := s.decodeFEC(f)
 		if err != nil {
 			// FEC decode failed - send NACK
-			if nackErr := s.sendNack(ctx, f.Header.Sequence); nackErr != nil {
-				log.Printf("WARN: Failed to send NACK for FEC decode failure seq=%d: %v", f.Header.Sequence, nackErr)
+			// SHUTDOWN FIX: Skip NACK send if context is cancelled
+			if ctx.Err() == nil {
+				if nackErr := s.sendNack(ctx, f.Header.Sequence); nackErr != nil {
+					log.Printf("WARN: Failed to send NACK for FEC decode failure seq=%d: %v", f.Header.Sequence, nackErr)
+				}
 			}
 			return nil, fmt.Errorf("FEC decode failed: %w", err)
 		}
@@ -629,11 +635,14 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 
 	// Success - send ACK if frame requires it
 	if (f.Header.Flags & frame.FlagRequiresAck) != 0 {
-		if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
-			// CRITICAL FIX: Don't fail receive if ACK send fails
-			// We successfully decoded the payload, just log the error
-			// Sender will timeout and retransmit, we'll send ACK again
-			log.Printf("WARN: ACK send failed for seq=%d: %v (payload decoded successfully)", f.Header.Sequence, err)
+		// SHUTDOWN FIX: Skip ACK send if context is cancelled (graceful shutdown in progress)
+		if ctx.Err() == nil {
+			if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
+				// CRITICAL FIX: Don't fail receive if ACK send fails
+				// We successfully decoded the payload, just log the error
+				// Sender will timeout and retransmit, we'll send ACK again
+				log.Printf("WARN: ACK send failed for seq=%d: %v (payload decoded successfully)", f.Header.Sequence, err)
+			}
 		}
 	}
 
