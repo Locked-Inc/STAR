@@ -262,10 +262,13 @@ func (c *CDCLink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	return &harq.ReceiveResult{
 		Payload: f.Payload,
 		Metadata: harq.FrameMetadata{
-			Sequence:    f.Header.Sequence,
-			ReceivedAt:  time.Now(),
-			Retransmits: 0,     // No retransmissions in lightweight CDC protocol
-			FECDecoded:  false, // No FEC in lightweight CDC protocol
+			Sequence:       f.Header.Sequence,
+			Type:           f.Type,
+			ReceivedAt:     time.Now(),
+			Retransmits:    extractRetransmitCount(f.Header.Flags),
+			FECDecoded:     false, // No FEC in lightweight CDC protocol
+			PathMetric:     0,     // No FEC = perfect metric
+			CombiningCount: 1,     // No combining in CDC protocol
 		},
 	}, nil
 }

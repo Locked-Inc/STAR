@@ -915,11 +915,11 @@ func TestSPILink_ChaseCombining_RetransmissionCombines(t *testing.T) {
 
 	// For this test, we'll manually call decodeFEC to test the combining logic
 	// First attempt - will fail and store in combiner
-	_, _ = link.decodeFEC(firstAttemptFrame)
+	_, _, _ = link.decodeFEC(firstAttemptFrame)
 	// We expect this might fail on corrupted data, but combiner should store it
 
 	// Retransmission - should add to combiner and attempt combined decode
-	_, _ = link.decodeFEC(retransmitFrame)
+	_, _, _ = link.decodeFEC(retransmitFrame)
 	// Result depends on whether combined bits improve decode
 	// The important thing is that combiner.Add was called
 

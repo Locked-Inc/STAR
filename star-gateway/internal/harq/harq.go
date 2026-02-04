@@ -99,10 +99,18 @@ const (
 
 // FrameMetadata contains frame-level information for diagnostics.
 type FrameMetadata struct {
-	Sequence    uint16    // Frame sequence number
-	ReceivedAt  time.Time // When frame was received
-	Retransmits int       // Number of retransmission attempts
-	FECDecoded  bool      // Whether FEC decoding was used
+	// Frame identification
+	Sequence   uint16     // Frame sequence number
+	Type       frame.Type // Frame type (PING, PONG, COMMAND, etc.)
+	ReceivedAt time.Time  // When frame was received
+
+	// Transmission reliability
+	Retransmits int  // Actual retransmit count from FlagRetransmit
+	FECDecoded  bool // Whether FEC decoding was used
+
+	// Quality metrics
+	PathMetric     int // Viterbi decoder path metric (lower = better SNR)
+	CombiningCount int // Chase combining attempts (1-3)
 }
 
 // ReceiveResult bundles payload with frame metadata.
@@ -581,6 +589,8 @@ func (h *ChaseCombining) handleReceivedFrame(f *frame.Frame) (*ReceiveResult, er
 func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) (*ReceiveResult, error) {
 	var decoded []byte
 	fecDecoded := false
+	pathMetric := 0      // Path metric for FEC decoder confidence
+	combiningCount := 1  // Number of combining attempts (default 1)
 
 	if h.config.FECEnabled && (f.Header.Flags&frame.FlagFECEnabled) != 0 {
 		if h.fecDecoder == nil {
@@ -600,7 +610,7 @@ func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) (*ReceiveResult, er
 		}
 
 		var err error
-		decoded, _, err = h.fecDecoder.DecodeSoft(h.softCombiner.Combined(), h.expectedLen)
+		decoded, pathMetric, err = h.fecDecoder.DecodeSoft(h.softCombiner.Combined(), h.expectedLen)
 		if err != nil {
 			h.mu.Lock()
 			h.state = StateCombining
@@ -610,6 +620,8 @@ func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) (*ReceiveResult, er
 		}
 
 		fecDecoded = true
+		// Capture combining count BEFORE Reset()
+		combiningCount = h.softCombiner.Count()
 		h.softCombiner.Reset()
 	} else {
 		decoded = f.Payload
@@ -623,10 +635,13 @@ func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) (*ReceiveResult, er
 
 	// Build metadata for diagnostics
 	metadata := FrameMetadata{
-		Sequence:    f.Header.Sequence,
-		ReceivedAt:  time.Now(),
-		Retransmits: 0,
-		FECDecoded:  fecDecoded,
+		Sequence:       f.Header.Sequence,
+		Type:           f.Type,
+		ReceivedAt:     time.Now(),
+		Retransmits:    extractRetransmitCount(f),
+		FECDecoded:     fecDecoded,
+		PathMetric:     pathMetric,
+		CombiningCount: combiningCount,
 	}
 
 	result := &ReceiveResult{
@@ -816,6 +831,15 @@ func decrementSequence(seq uint16) uint16 {
 		return DefaultSequenceMax
 	}
 	return seq - 1
+}
+
+// extractRetransmitCount extracts the retransmit flag from frame header.
+// Returns 1 if FlagRetransmit is set, 0 otherwise.
+func extractRetransmitCount(f *frame.Frame) int {
+	if (f.Header.Flags & frame.FlagRetransmit) != 0 {
+		return 1
+	}
+	return 0
 }
 
 // bytesToSoftBits converts bytes to maximum confidence soft bits.

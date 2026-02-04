@@ -184,8 +184,12 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 //   - Expected Response: PONG frame with same counter
 //
 // The counter prevents replay attacks (RX72N echoes the counter in PONG).
-// If the PONG is received, OnFrameReceived() will be called automatically,
-// updating lastSeen and resetting the heartbeat timer.
+// If the PONG is received, OnFrameReceived() will be called automatically
+// by TransportManager.Receive() when it sees FrameTypePong, updating lastSeen
+// and resetting the heartbeat timer.
+//
+// Note: ACK/NACK frames do NOT update heartbeat (filtered in manager.go).
+// Only meaningful frames (PONG, PING, COMMAND, RESPONSE) reset the timer.
 //
 // Thread Safety: Increments pingCounter under mutex.
 func (hm *HeartbeatManager) sendPing(ctx context.Context, tm *TransportManager) {

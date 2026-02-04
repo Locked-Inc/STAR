@@ -263,23 +263,19 @@ func (tm *TransportManager) performResetHandshake(ctx context.Context) error {
 			continue
 		}
 
-		// TODO: Validate frame type is FrameTypeResetAck (0xFE)
-		// Current limitation: harq.ReceiveResult doesn't include frame type metadata.
-		// The HARQ layer abstracts away frame details, only exposing Payload and Metadata
-		// (sequence, timestamp, etc.). To validate frame type, we would need to either:
-		//   1. Add Type field to harq.FrameMetadata, OR
-		//   2. Decode result.Payload to extract frame type
-		//
-		// For now, receiving ANY response is considered success since:
-		//   - RX72N firmware sends RESET_ACK (0xFE) in response to RESET (0xFF)
-		//   - If we receive a frame, it means communication is working
-		//   - Sequence synchronization happens on both sides regardless
-		//
-		// Future enhancement: Add frame type validation for more robust handshake
-		_ = result // Use result to avoid unused variable warning
+		// Validate frame type is FrameTypeResetAck
+		if result.Metadata.Type != frame.FrameTypeResetAck {
+			lastErr = fmt.Errorf("unexpected frame type: got %s, expected RESET_ACK",
+				result.Metadata.Type.String())
+			log.Printf("Reset handshake received wrong frame type (attempt %d): %v",
+				attempt, lastErr)
+			time.Sleep(retryDelay)
+			continue
+		}
 
 		// Success!
-		log.Printf("Reset handshake successful (attempt %d), sequences synchronized", attempt)
+		log.Printf("Reset handshake successful: received RESET_ACK (seq=%d, attempt=%d)",
+			result.Metadata.Sequence, attempt)
 		return nil
 	}
 
@@ -556,10 +552,19 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 		return nil, err
 	}
 
-	// CRITICAL: Update heartbeat on ANY valid frame (implicit detection)
-	// This includes telemetry, commands, ACKs, PONG frames
-	// HeartbeatManager only needs to know a frame arrived (updates lastSeen)
-	tm.heartbeat.OnFrameReceived()
+	// Update heartbeat based on frame type
+	// - PONG/PING: Explicit heartbeat frames (always update)
+	// - COMMAND/RESPONSE: Application data (update to prevent unnecessary PINGs)
+	// - ACK/NACK: Control frames (ignore - not meaningful for heartbeat)
+	switch result.Metadata.Type {
+	case frame.FrameTypePong, frame.FrameTypePing,
+		frame.FrameTypeCommand, frame.FrameTypeResponse:
+		tm.heartbeat.OnFrameReceived()
+	case frame.FrameTypeAck, frame.FrameTypeNack:
+		// Internal control frames - don't reset heartbeat timer
+		log.Printf("Received control frame %s (seq=%d) - ignored for heartbeat",
+			result.Metadata.Type.String(), result.Metadata.Sequence)
+	}
 
 	return result, nil
 }

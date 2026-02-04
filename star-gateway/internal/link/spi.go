@@ -615,10 +615,12 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	// Decode payload (with optional FEC decoding)
 	payload := f.Payload
 	fecDecoded := false
+	pathMetric := 0      // Path metric for FEC decoder confidence
+	combiningCount := 1  // Number of combining attempts (SPILink doesn't use HARQ combining)
 
 	if s.config.EnableFEC && (f.Header.Flags&frame.FlagFECEnabled) != 0 {
 		// FEC decoding path (Phase 2)
-		decoded, err := s.decodeFEC(f)
+		decoded, metric, err := s.decodeFEC(f)
 		if err != nil {
 			// FEC decode failed - send NACK
 			// SHUTDOWN FIX: Skip NACK send if context is cancelled
@@ -630,6 +632,7 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 			return nil, fmt.Errorf("FEC decode failed: %w", err)
 		}
 		payload = decoded
+		pathMetric = metric
 		fecDecoded = true
 	}
 
@@ -649,17 +652,21 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	return &harq.ReceiveResult{
 		Payload: payload,
 		Metadata: harq.FrameMetadata{
-			Sequence:    f.Header.Sequence,
-			ReceivedAt:  time.Now(),
-			Retransmits: 0, // TODO: Track retransmit count
-			FECDecoded:  fecDecoded,
+			Sequence:       f.Header.Sequence,
+			Type:           f.Type,
+			ReceivedAt:     time.Now(),
+			Retransmits:    extractRetransmitCount(f.Header.Flags),
+			FECDecoded:     fecDecoded,
+			PathMetric:     pathMetric,
+			CombiningCount: combiningCount,
 		},
 	}, nil
 }
 
 // decodeFEC decodes FEC-encoded payload.
 // Phase 2 implementation: Chase Combining for retransmissions.
-func (s *SPILink) decodeFEC(f *frame.Frame) ([]byte, error) {
+// Returns decoded data, path metric (lower is better), and error.
+func (s *SPILink) decodeFEC(f *frame.Frame) ([]byte, int, error) {
 	// Convert bytes to soft bits
 	softBits := bytesToSoftBits(f.Payload)
 
@@ -667,28 +674,29 @@ func (s *SPILink) decodeFEC(f *frame.Frame) ([]byte, error) {
 	isRetransmit := (f.Header.Flags & frame.FlagRetransmit) != 0
 
 	var decoded []byte
+	var pathMetric int
 	var err error
 
 	if isRetransmit && s.combiner != nil {
 		// Retransmission - add to combiner
 		if err := s.combiner.Add(softBits); err != nil {
-			return nil, fmt.Errorf("combiner add failed: %w", err)
+			return nil, 0, fmt.Errorf("combiner add failed: %w", err)
 		}
 
 		// Decode combined soft bits
 		combined := s.combiner.Combined()
-		decoded, _, err = s.fecDecoder.DecodeSoft(combined, decodeSoftModeDefault)
+		decoded, pathMetric, err = s.fecDecoder.DecodeSoft(combined, decodeSoftModeDefault)
 	} else {
 		// First attempt - direct decode
-		decoded, _, err = s.fecDecoder.DecodeSoft(softBits, decodeSoftModeDefault)
+		decoded, pathMetric, err = s.fecDecoder.DecodeSoft(softBits, decodeSoftModeDefault)
 
 		if err != nil && s.combiner != nil {
 			// Decode failed - store for combining
 			s.combiner.Reset()
 			if addErr := s.combiner.Add(softBits); addErr != nil {
-				return nil, fmt.Errorf("combiner add failed: %w", addErr)
+				return nil, 0, fmt.Errorf("combiner add failed: %w", addErr)
 			}
-			return nil, err
+			return nil, pathMetric, err
 		}
 	}
 
@@ -697,7 +705,7 @@ func (s *SPILink) decodeFEC(f *frame.Frame) ([]byte, error) {
 		s.combiner.Reset()
 	}
 
-	return decoded, err
+	return decoded, pathMetric, err
 }
 
 // sendAck sends an ACK frame for the specified sequence number.
@@ -811,4 +819,13 @@ func bytesToSoftBits(data []byte) []fec.SoftBit {
 	}
 
 	return softBits
+}
+
+// extractRetransmitCount extracts the retransmit flag from frame header.
+// Returns 1 if FlagRetransmit is set, 0 otherwise.
+func extractRetransmitCount(flags frame.Flags) int {
+	if (flags & frame.FlagRetransmit) != 0 {
+		return 1
+	}
+	return 0
 }
