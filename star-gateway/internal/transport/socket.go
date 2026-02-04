@@ -26,11 +26,11 @@ const (
 )
 
 // SocketTransport implements the Device interface using Unix Domain Sockets.
+// It uses the "Unlocking" pattern to ensure thread-safe, non-blocking shutdowns.
 type SocketTransport struct {
-	mu     sync.RWMutex
-	conn   net.Conn
-	path   string
-	isOpen bool
+	mu   sync.RWMutex
+	conn net.Conn
+	path string
 }
 
 // NewSocketTransport creates a new SocketTransport with the given socket path.
@@ -39,8 +39,7 @@ func NewSocketTransport(socketPath string) *SocketTransport {
 		socketPath = DefaultSocketPath
 	}
 	return &SocketTransport{
-		path:   socketPath,
-		isOpen: false,
+		path: socketPath,
 	}
 }
 
@@ -49,7 +48,8 @@ func (s *SocketTransport) Open() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.isOpen {
+	// Reuse existing connection if open
+	if s.conn != nil {
 		return nil
 	}
 
@@ -59,73 +59,58 @@ func (s *SocketTransport) Open() error {
 	}
 
 	s.conn = conn
-	s.isOpen = true
 	return nil
 }
 
 // Transfer sends txData and receives the response.
 //
-// IMPORTANT: This simulates SPI full-duplex behavior where EXACTLY TransferSize
-// bytes are exchanged in both directions, regardless of payload size.
-// txData is padded to TransferSize if needed, and exactly TransferSize bytes
-// are read back.
+// Uses the "Unlocking" pattern: the mutex is held ONLY to retrieve the connection
+// reference. The actual I/O is performed without the lock, allowing Close()
+// to interrupt this operation immediately.
 func (s *SocketTransport) Transfer(ctx context.Context, txData []byte) ([]byte, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	// 1. Critical Section: Retrieve connection snapshot
+	s.mu.RLock()
+	conn := s.conn
+	s.mu.RUnlock()
 
-	if !s.isOpen {
+	// 2. State Check
+	if conn == nil {
 		return nil, ErrDeviceNotOpen
 	}
 
-	// Set deadline based on context
-	if deadline, ok := ctx.Deadline(); ok {
-		if err := s.conn.SetDeadline(deadline); err != nil {
-			return nil, fmt.Errorf("failed to set socket deadline: %w", err)
-		}
-	} else {
-		// Ensure previous deadline is cleared
-		_ = s.conn.SetDeadline(time.Time{})
-	}
-
-	// Monitor context cancellation to interrupt blocking I/O.
-	// Use a monitorDone channel to ensure the monitoring goroutine has exited
-	// before clearing the socket deadline to avoid races.
-	done := make(chan struct{})
+	// 3. Context Deadline Management
+	// Monitor context cancellation to interrupt blocking I/O by forcing a deadline.
 	monitorDone := make(chan struct{})
+	defer close(monitorDone)
+
 	go func() {
-		defer close(monitorDone)
 		select {
 		case <-ctx.Done():
-			// Force blocking I/O to return by setting a past deadline
-			_ = s.conn.SetDeadline(time.Now())
-		case <-done:
-			// Operation completed normally
+			// Force blocking I/O to return immediately
+			_ = conn.SetDeadline(time.Now())
+		case <-monitorDone:
+			// Operation completed normally; clear deadline for future reuse
+			_ = conn.SetDeadline(time.Time{})
 		}
 	}()
 
-	// Ensure the monitor goroutine is signaled to exit and has returned
-	defer func() {
-		close(done)
-		// Wait for monitor goroutine to exit to avoid races when clearing deadlines
-		<-monitorDone
-		_ = s.conn.SetDeadline(time.Time{})
-	}()
+	// 4. Perform I/O (Unlocked)
 
 	// Pad txData to TransferSize (simulate SPI COPI line)
 	txBuffer := make([]byte, TransferSize)
 	copy(txBuffer, txData)
 
 	// Write exactly TransferSize bytes
-	n, err := s.conn.Write(txBuffer)
+	n, err := conn.Write(txBuffer)
 	if err != nil {
-		// Check if error is due to context cancellation
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}
+		// If write failed because Close() was called, s.conn will be nil
 		return nil, fmt.Errorf("socket write failed: %w", err)
 	}
 	if n != TransferSize {
@@ -134,9 +119,8 @@ func (s *SocketTransport) Transfer(ctx context.Context, txData []byte) ([]byte, 
 
 	// Read exactly TransferSize bytes (simulate SPI CIPO line)
 	rxBuffer := make([]byte, TransferSize)
-	n, err = io.ReadFull(s.conn, rxBuffer)
+	n, err = io.ReadFull(conn, rxBuffer)
 	if err != nil {
-		// Check if error is due to context cancellation
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}
@@ -150,22 +134,23 @@ func (s *SocketTransport) Transfer(ctx context.Context, txData []byte) ([]byte, 
 }
 
 // Close closes the socket connection.
+//
+// Uses the "Unlocking" pattern: sets s.conn to nil under lock, then calls
+// conn.Close() outside the lock. This ensures pending Transfer() calls are
+// interrupted immediately (returning net.ErrClosed) without waiting for a mutex.
 func (s *SocketTransport) Close() error {
 	s.mu.Lock()
-	defer s.mu.Unlock()
+	conn := s.conn
+	s.conn = nil // "Lock out" new transfers immediately
+	s.mu.Unlock()
 
-	if !s.isOpen {
-		return nil
-	}
-
-	if s.conn != nil {
-		if err := s.conn.Close(); err != nil {
+	// Close connection outside mutex - this interrupts any pending I/O
+	if conn != nil {
+		if err := conn.Close(); err != nil {
 			return fmt.Errorf("failed to close socket: %w", err)
 		}
 	}
 
-	s.isOpen = false
-	s.conn = nil
 	return nil
 }
 
@@ -173,7 +158,7 @@ func (s *SocketTransport) Close() error {
 func (s *SocketTransport) IsOpen() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return s.isOpen
+	return s.conn != nil
 }
 
 // Path returns the Unix socket path.
@@ -182,23 +167,18 @@ func (s *SocketTransport) Path() string {
 }
 
 // Send implements the legacy Transport interface.
-// Pads data to TransferSize and sends, discarding the response.
 func (s *SocketTransport) Send(data []byte) (int, error) {
 	_, err := s.Transfer(context.Background(), data)
 	if err != nil {
 		return 0, err
 	}
-	return len(data), nil // Return original data length, not padded
+	return len(data), nil
 }
 
 // Receive implements the legacy Transport interface.
-// Sends zeros and receives TransferSize bytes response.
-// Returns up to maxLen bytes from the response.
 func (s *SocketTransport) Receive(maxLen int) ([]byte, error) {
-
 	txBuf := make([]byte, TransferSize)
 	rxBuf, err := s.Transfer(context.Background(), txBuf)
-
 	if err != nil {
 		return nil, err
 	}

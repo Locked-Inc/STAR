@@ -40,7 +40,9 @@ const (
 	grpcRequestTimeout = 5 * time.Second
 
 	// Timeout for graceful gateway shutdown
-	gatewayShutdownTimeout = 20 * time.Second
+	// Set to 25s to accommodate socket transport Close() blocking on mutex
+	// TODO: Fix socket transport mutex contention in Transfer/Close
+	gatewayShutdownTimeout = 25 * time.Second
 
 	// Telemetry retry interval
 	telemetryRetryInterval = 100 * time.Millisecond

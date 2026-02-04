@@ -151,6 +151,13 @@ func (s *BatteryService) updateBatteryCache() {
 	close(s.started)
 
 	for {
+		// Prioritize context cancellation by checking it first (non-blocking)
+		select {
+		case <-s.ctx.Done():
+			return
+		default:
+		}
+
 		select {
 		case <-s.ctx.Done():
 			return
