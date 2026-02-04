@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/fec"
@@ -56,6 +57,36 @@ const (
 	msbShift = 7    // Shift amount to extract MSB
 	bitMask  = 0x01 // Mask to extract single bit
 )
+
+type contextTransportAdapter struct {
+	transport transport.Device
+	ctx       atomic.Value
+}
+
+func newContextTransportAdapter(t transport.Device) *contextTransportAdapter {
+	return &contextTransportAdapter{transport: t}
+}
+
+func (a *contextTransportAdapter) SetContext(ctx context.Context) {
+	a.ctx.Store(ctx)
+}
+
+func (a *contextTransportAdapter) Read(p []byte) (int, error) {
+	ctx := context.Background()
+	if stored := a.ctx.Load(); stored != nil {
+		if storedCtx, ok := stored.(context.Context); ok && storedCtx != nil {
+			ctx = storedCtx
+		}
+	}
+
+	txBuf := make([]byte, len(p))
+	rxBuf, err := a.transport.Transfer(ctx, txBuf)
+	n := copy(p, rxBuf)
+	if err != nil {
+		return n, err
+	}
+	return n, nil
+}
 
 // Predefined errors for SPI link operations.
 var (
@@ -99,6 +130,7 @@ type SPILink struct {
 	encoder      frame.Encoder         // Frame encoding (SYNC + CRC32)
 	decoder      *frame.StreamDecoder  // Frame decoding with validation
 	sessionState *manager.SessionState // SHARED across all transports (CRITICAL FIX #1)
+	adapter      *contextTransportAdapter
 
 	// HARQ-specific components (differences from CDCLink)
 	fecEncoder *fec.ConvolutionalEncoder // FEC encoder (Phase 2)
@@ -155,13 +187,14 @@ func NewSPILink(t transport.Device, session *manager.SessionState, config *SPILi
 	}
 
 	// Create transport adapter for StreamDecoder
-	adapter := newTransportAdapter(t)
+	adapter := newContextTransportAdapter(t)
 
 	spiLink := &SPILink{
 		transport:    t,
 		encoder:      frame.NewEncoder(),
 		decoder:      frame.NewStreamDecoder(adapter),
 		sessionState: session, // Shared state prevents Handoff Problem
+		adapter:      adapter,
 		state:        harq.StateIdle,
 		config:       config,
 		ackChannels:  make(map[uint16]chan bool), // Initialize ACK dispatch map
@@ -521,6 +554,10 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 
 	if s.transport == nil {
 		return nil, ErrSPITransportNotInitialized
+	}
+
+	if s.adapter != nil {
+		s.adapter.SetContext(ctx)
 	}
 
 	// Decode next frame from stream
