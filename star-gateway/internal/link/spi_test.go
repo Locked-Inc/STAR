@@ -35,6 +35,9 @@ func (m *mockSPITransport) Transfer(ctx context.Context, txData []byte) ([]byte,
 	if m.TransferFunc != nil {
 		return m.TransferFunc(ctx, txData)
 	}
+	if m.ReceiveFunc != nil {
+		return m.ReceiveFunc(len(txData))
+	}
 	return make([]byte, len(txData)), nil
 }
 
