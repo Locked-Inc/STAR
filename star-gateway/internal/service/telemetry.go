@@ -108,6 +108,13 @@ func (s *TelemetryService) updateTelemetryCache() {
 	close(s.started)
 
 	for {
+		// Prioritize context cancellation by checking it first (non-blocking)
+		select {
+		case <-s.ctx.Done():
+			return
+		default:
+		}
+
 		select {
 		case <-s.ctx.Done():
 			return
@@ -199,6 +206,13 @@ func (s *TelemetryService) validateRateHz(rateHz int32) int32 {
 // receiveStreamTelemetryLoop continuously receives telemetry from Dispatcher and updates latest value.
 func (s *TelemetryService) receiveStreamTelemetryLoop(ctx context.Context, telemetryCh <-chan *dispatcher.DispatchedMessage, holder *telemetryHolder) {
 	for {
+		// Prioritize context cancellation by checking it first (non-blocking)
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 		select {
 		case <-ctx.Done():
 			return

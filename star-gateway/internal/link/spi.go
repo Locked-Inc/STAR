@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/fec"
@@ -56,6 +57,59 @@ const (
 	msbShift = 7    // Shift amount to extract MSB
 	bitMask  = 0x01 // Mask to extract single bit
 )
+
+type contextTransportAdapter struct {
+	transport transport.Device
+	ctx       atomic.Value
+	mu        sync.Mutex
+	pending   []byte
+}
+
+func newContextTransportAdapter(t transport.Device) *contextTransportAdapter {
+	return &contextTransportAdapter{transport: t}
+}
+
+func (a *contextTransportAdapter) SetContext(ctx context.Context) {
+	a.ctx.Store(ctx)
+}
+
+func (a *contextTransportAdapter) Read(p []byte) (int, error) {
+	if len(p) == 0 {
+		return 0, nil
+	}
+
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	if len(a.pending) > 0 {
+		n := copy(p, a.pending)
+		a.pending = a.pending[n:]
+		return n, nil
+	}
+
+	ctx := context.Background()
+	if stored := a.ctx.Load(); stored != nil {
+		if storedCtx, ok := stored.(context.Context); ok && storedCtx != nil {
+			ctx = storedCtx
+		}
+	}
+
+	txBuf := make([]byte, len(p))
+	rxBuf, err := a.transport.Transfer(ctx, txBuf)
+	n := copy(p, rxBuf)
+	if len(rxBuf) > n {
+		if cap(a.pending) < len(rxBuf)-n {
+			a.pending = make([]byte, 0, len(rxBuf)-n)
+		} else {
+			a.pending = a.pending[:0]
+		}
+		a.pending = append(a.pending, rxBuf[n:]...)
+	}
+	if err != nil {
+		return n, err
+	}
+	return n, nil
+}
 
 // Predefined errors for SPI link operations.
 var (
@@ -99,6 +153,7 @@ type SPILink struct {
 	encoder      frame.Encoder         // Frame encoding (SYNC + CRC32)
 	decoder      *frame.StreamDecoder  // Frame decoding with validation
 	sessionState *manager.SessionState // SHARED across all transports (CRITICAL FIX #1)
+	adapter      *contextTransportAdapter
 
 	// HARQ-specific components (differences from CDCLink)
 	fecEncoder *fec.ConvolutionalEncoder // FEC encoder (Phase 2)
@@ -155,13 +210,14 @@ func NewSPILink(t transport.Device, session *manager.SessionState, config *SPILi
 	}
 
 	// Create transport adapter for StreamDecoder
-	adapter := newTransportAdapter(t)
+	adapter := newContextTransportAdapter(t)
 
 	spiLink := &SPILink{
 		transport:    t,
 		encoder:      frame.NewEncoder(),
 		decoder:      frame.NewStreamDecoder(adapter),
 		sessionState: session, // Shared state prevents Handoff Problem
+		adapter:      adapter,
 		state:        harq.StateIdle,
 		config:       config,
 		ackChannels:  make(map[uint16]chan bool), // Initialize ACK dispatch map
@@ -240,35 +296,28 @@ func (s *SPILink) dispatchAck(seq uint16, isAck bool) bool {
 // HARQ Interface Implementation (Send/Receive with ACK/NACK handshake)
 // ============================================================================
 
-// Send implements harq.HARQ interface with ACK/NACK handshake and retransmission.
+// sendWithRetry is a private helper that implements the core retry logic with ACK/NACK handshake.
+// Used by both Send() and SendWithType() to avoid code duplication.
+//
+// Caller must hold s.sendMutex lock.
 //
 // Protocol Flow:
-//  1. Lock sendMutex (serialize sends, prevent out-of-order)
-//  2. Get next sequence from shared SessionState
-//  3. Register ACK channel (CRITICAL FIX: Split Reader)
-//  4. Encode frame with FlagRequiresAck
-//  5. Optional: FEC encode payload (if EnableFEC)
-//  6. Send frame via transport
-//  7. Wait for ACK/NACK on registered channel (timeout: 10ms)
-//  8. On NACK or timeout: Set FlagRetransmit, retry (max 3 total attempts)
-//  9. On ACK: Return success
-//
-// 10. After 3 failures or context cancel: Return error
-//
-// Thread Safety: sendMutex ensures atomicity (sequence assignment + Send)
-func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
+//  1. Register ACK channel (CRITICAL FIX: Split Reader)
+//  2. Optional: FEC encode payload (if EnableFEC)
+//  3. Retry loop (max 3 attempts):
+//     a. Check context cancellation
+//     b. Create frame with provided frameType
+//     c. Encode frame (adds SYNC, CRC32)
+//     d. Send via transport
+//     e. Wait for ACK/NACK on registered channel (timeout: 10ms)
+//     f. On NACK or timeout: Set FlagRetransmit, retry
+//     g. On ACK: Return success
+//  4. After 3 failures: Return ErrMaxRetriesExceeded
+func (s *SPILink) sendWithRetry(ctx context.Context, data []byte, seq uint16, frameType frame.Type) error {
 	// Check context before starting
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-
-	// CRITICAL FIX #5: Serialize Send to prevent out-of-order transmission
-	// Lock MUST cover both NextTxSequence() AND transport.Send()
-	s.sendMutex.Lock()
-	defer s.sendMutex.Unlock()
-
-	// Get next sequence from SHARED state (critical for transport switching)
-	seq := s.sessionState.NextTxSequence()
 
 	// CRITICAL FIX: Register ACK channel (Split Reader fix)
 	// Only Receive() will read from decoder and dispatch to this channel
@@ -309,14 +358,14 @@ func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 			flags |= frame.FlagRetransmit
 		}
 
-		// Create frame
+		// Create frame with provided frameType
 		f := &frame.Frame{
 			Header: frame.Header{
 				Sequence: seq,
 				Length:   uint16(len(payload)),
 				Flags:    flags,
 			},
-			Type:    frame.FrameTypeCommand,
+			Type:    frameType,
 			Payload: payload,
 		}
 
@@ -359,6 +408,41 @@ func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) err
 	// All retries exhausted
 	s.updateState(harq.StateError)
 	return ErrMaxRetriesExceeded
+}
+
+// Send implements harq.HARQ interface with ACK/NACK handshake and retransmission.
+// Uses frame.FrameTypeCommand for all data frames.
+//
+// Thread Safety: sendMutex ensures atomicity (sequence assignment + Send)
+func (s *SPILink) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
+	// CRITICAL FIX #5: Serialize Send to prevent out-of-order transmission
+	// Lock MUST cover both NextTxSequence() AND transport.Send()
+	s.sendMutex.Lock()
+	defer s.sendMutex.Unlock()
+
+	// Get next sequence from SHARED state (critical for transport switching)
+	seq := s.sessionState.NextTxSequence()
+
+	// Delegate to sendWithRetry helper
+	return s.sendWithRetry(ctx, data, seq, frame.FrameTypeCommand)
+}
+
+// SendWithType sends data with explicit frame type (PING, PONG, RESET, etc.).
+// This allows explicit control over the frame type for protocol messages.
+// Phase 3: Frame Type API implementation.
+//
+// Thread Safety: sendMutex ensures atomicity (sequence assignment + Send)
+func (s *SPILink) SendWithType(ctx context.Context, data []byte, frameType frame.Type) error {
+	// CRITICAL FIX #5: Serialize Send to prevent out-of-order transmission
+	// Lock MUST cover both NextTxSequence() AND transport.Send()
+	s.sendMutex.Lock()
+	defer s.sendMutex.Unlock()
+
+	// Get next sequence from SHARED state (critical for transport switching)
+	seq := s.sessionState.NextTxSequence()
+
+	// Delegate to sendWithRetry helper
+	return s.sendWithRetry(ctx, data, seq, frameType)
 }
 
 // sendFrameWithTimeout sends a frame with timeout protection.
@@ -495,6 +579,10 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		return nil, ErrSPITransportNotInitialized
 	}
 
+	if s.adapter != nil {
+		s.adapter.SetContext(ctx)
+	}
+
 	// Decode next frame from stream
 	// CRITICAL: Only Receive() reads from decoder (Split Reader fix)
 	f, err := s.decoder.Decode()
@@ -515,8 +603,11 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	if !s.sessionState.ValidateRxSequence(f.Header.Sequence) {
 		// CRITICAL FIX: Duplicate detected - sender likely missed our previous ACK
 		// Send ACK (not NACK) to stop retransmission loop
-		if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
-			log.Printf("WARN: Failed to resend ACK for duplicate seq=%d: %v", f.Header.Sequence, err)
+		// SHUTDOWN FIX: Skip ACK resend if context is cancelled (graceful shutdown in progress)
+		if ctx.Err() == nil {
+			if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
+				log.Printf("WARN: Failed to resend ACK for duplicate seq=%d: %v", f.Header.Sequence, err)
+			}
 		}
 		return nil, harq.ErrDuplicateFrame
 	}
@@ -530,8 +621,11 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		decoded, err := s.decodeFEC(f)
 		if err != nil {
 			// FEC decode failed - send NACK
-			if nackErr := s.sendNack(ctx, f.Header.Sequence); nackErr != nil {
-				log.Printf("WARN: Failed to send NACK for FEC decode failure seq=%d: %v", f.Header.Sequence, nackErr)
+			// SHUTDOWN FIX: Skip NACK send if context is cancelled
+			if ctx.Err() == nil {
+				if nackErr := s.sendNack(ctx, f.Header.Sequence); nackErr != nil {
+					log.Printf("WARN: Failed to send NACK for FEC decode failure seq=%d: %v", f.Header.Sequence, nackErr)
+				}
 			}
 			return nil, fmt.Errorf("FEC decode failed: %w", err)
 		}
@@ -541,11 +635,14 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 
 	// Success - send ACK if frame requires it
 	if (f.Header.Flags & frame.FlagRequiresAck) != 0 {
-		if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
-			// CRITICAL FIX: Don't fail receive if ACK send fails
-			// We successfully decoded the payload, just log the error
-			// Sender will timeout and retransmit, we'll send ACK again
-			log.Printf("WARN: ACK send failed for seq=%d: %v (payload decoded successfully)", f.Header.Sequence, err)
+		// SHUTDOWN FIX: Skip ACK send if context is cancelled (graceful shutdown in progress)
+		if ctx.Err() == nil {
+			if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
+				// CRITICAL FIX: Don't fail receive if ACK send fails
+				// We successfully decoded the payload, just log the error
+				// Sender will timeout and retransmit, we'll send ACK again
+				log.Printf("WARN: ACK send failed for seq=%d: %v (payload decoded successfully)", f.Header.Sequence, err)
+			}
 		}
 	}
 

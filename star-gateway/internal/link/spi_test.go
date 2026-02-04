@@ -3,6 +3,7 @@ package link
 import (
 	"context"
 	"errors"
+	"sync"
 	"testing"
 	"time"
 
@@ -24,20 +25,39 @@ type mockSPITransport struct {
 	IsOpenFunc   func() bool
 	OpenFunc     func() error
 	CloseFunc    func() error
+
+	// Frame tracking (Phase 3: for SendWithType tests)
+	mu         sync.Mutex
+	sentFrames [][]byte
 }
 
 func (m *mockSPITransport) Transfer(ctx context.Context, txData []byte) ([]byte, error) {
 	if m.TransferFunc != nil {
 		return m.TransferFunc(ctx, txData)
 	}
+	if m.ReceiveFunc != nil {
+		return m.ReceiveFunc(len(txData))
+	}
 	return make([]byte, len(txData)), nil
 }
 
 func (m *mockSPITransport) Send(data []byte) (int, error) {
+	// Track sent frames
+	m.mu.Lock()
+	m.sentFrames = append(m.sentFrames, append([]byte(nil), data...))
+	m.mu.Unlock()
+
 	if m.SendFunc != nil {
 		return m.SendFunc(data)
 	}
 	return len(data), nil
+}
+
+// GetSentFrames returns all frames sent via Send().
+func (m *mockSPITransport) GetSentFrames() [][]byte {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return append([][]byte(nil), m.sentFrames...)
 }
 
 func (m *mockSPITransport) Receive(maxLen int) ([]byte, error) {
@@ -188,7 +208,9 @@ func TestSPILink_SendWithAck_Success(t *testing.T) {
 
 	// CRITICAL FIX #1: Run Receive() in background to dispatch ACK to Send()
 	// (only Receive() reads from decoder now)
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes response
 	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
 		link.Receive(ctx)
 	}()
 
@@ -252,9 +274,12 @@ func TestSPILink_SendWithNack_Retry_Success(t *testing.T) {
 	ctx := context.Background()
 
 	// CRITICAL FIX #1: Run Receive() in background to dispatch NACK/ACK to Send()
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes responses
 	go func() {
-		for i := 0; i < 2; i++ { // Process NACK, then ACK
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
+		for i := 0; i < 2; i++ {         // Process NACK, then ACK
 			link.Receive(ctx)
+			time.Sleep(2 * time.Millisecond) // Small delay between retries
 		}
 	}()
 
@@ -302,9 +327,12 @@ func TestSPILink_SendMaxRetries_Failure(t *testing.T) {
 	ctx := context.Background()
 
 	// CRITICAL FIX #1: Run Receive() in background to dispatch NACKs to Send()
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes responses
 	go func() {
+		time.Sleep(5 * time.Millisecond)  // Give Send() time to register its channel
 		for i := 0; i < maxRetries; i++ { // Process all NACK attempts
 			link.Receive(ctx)
+			time.Sleep(2 * time.Millisecond) // Small delay between retries
 		}
 	}()
 
@@ -362,9 +390,12 @@ func TestSPILink_SendACKTimeout_Retry(t *testing.T) {
 	ctx := context.Background()
 
 	// CRITICAL FIX #1: Run Receive() in background to process timeout then ACK
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes responses
 	go func() {
-		for i := 0; i < 2; i++ { // Process timeout error, then ACK
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
+		for i := 0; i < 2; i++ {         // Process timeout error, then ACK
 			link.Receive(ctx)
+			time.Sleep(2 * time.Millisecond) // Small delay between retries
 		}
 	}()
 
@@ -735,7 +766,9 @@ func TestSPILink_FECRoundTrip(t *testing.T) {
 	ctx := context.Background()
 
 	// CRITICAL FIX #1: Run Receive() in background to dispatch ACK to Send()
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes response
 	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
 		link.Receive(ctx)
 	}()
 
@@ -821,7 +854,9 @@ func TestSPILink_ChaseCombining_FirstAttemptSuccess(t *testing.T) {
 	ctx := context.Background()
 
 	// CRITICAL FIX #1: Run Receive() in background to dispatch ACK to Send()
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes response
 	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
 		link.Receive(ctx)
 	}()
 
@@ -1049,5 +1084,275 @@ func TestSPILink_CustomConfig(t *testing.T) {
 
 	if link.config.ACKTimeout != 20*time.Millisecond {
 		t.Errorf("Expected ACKTimeout 20ms, got %v", link.config.ACKTimeout)
+	}
+}
+
+// ============================================================================
+// SendWithType Tests (Phase 3: Frame Type API)
+// ============================================================================
+
+// TestSPILink_SendWithType_WithAck_Success tests sending with explicit frame type and ACK.
+func TestSPILink_SendWithType_WithAck_Success(t *testing.T) {
+	mockTransport := &mockSPITransport{}
+	session := manager.NewSessionState()
+	encoder := frame.NewEncoder()
+
+	// Mock: Return ACK frame on receive
+	mockTransport.ReceiveFunc = func(maxLen int) ([]byte, error) {
+		ackFrame := &frame.Frame{
+			Type: frame.FrameTypeAck,
+			Header: frame.Header{
+				Sequence: testSequenceZero,
+				Length:   0,
+				Flags:    testFlagsNone,
+			},
+			Payload: []byte{},
+		}
+		encoded, _ := encoder.Encode(ackFrame)
+		return encoded, nil
+	}
+
+	link, _ := NewSPILink(mockTransport, session, nil)
+
+	ctx := context.Background()
+
+	// Run Receive() in background to dispatch ACK
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes response
+	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
+		link.Receive(ctx)
+	}()
+
+	// Send PING frame with explicit type
+	testPayload := []byte{0x01, 0x02, 0x03, 0x04}
+	err := link.SendWithType(ctx, testPayload, frame.FrameTypePing)
+	if err != nil {
+		t.Fatalf("SendWithType failed: %v", err)
+	}
+
+	// Verify state returned to Idle
+	if link.GetState() != harq.StateIdle {
+		t.Errorf("Expected state Idle, got %v", link.GetState())
+	}
+
+	// Verify sequence incremented
+	if session.GetTxSequence() != 1 {
+		t.Errorf("Expected TX sequence 1, got %d", session.GetTxSequence())
+	}
+
+	// Verify frame type in sent data
+	decoder := frame.NewDecoder()
+	sentFrames := mockTransport.GetSentFrames()
+	if len(sentFrames) == 0 {
+		t.Fatal("No frames sent")
+	}
+	f, err := decoder.Decode(sentFrames[0])
+	if err != nil {
+		t.Fatalf("Failed to decode sent frame: %v", err)
+	}
+	if f.Type != frame.FrameTypePing {
+		t.Errorf("Frame type = %v, want FrameTypePing", f.Type)
+	}
+}
+
+// TestSPILink_SendWithType_WithNack_Retry tests NACK retry with explicit frame type.
+func TestSPILink_SendWithType_WithNack_Retry(t *testing.T) {
+	mockTransport := &mockSPITransport{}
+	session := manager.NewSessionState()
+	encoder := frame.NewEncoder()
+
+	attemptCount := 0
+
+	// Mock: First receive returns NACK, second returns ACK
+	mockTransport.ReceiveFunc = func(maxLen int) ([]byte, error) {
+		attemptCount++
+
+		if attemptCount == 1 {
+			// First attempt: NACK
+			nackFrame := &frame.Frame{
+				Type: frame.FrameTypeNack,
+				Header: frame.Header{
+					Sequence: testSequenceZero,
+					Length:   0,
+					Flags:    testFlagsNone,
+				},
+				Payload: []byte{},
+			}
+			encoded, _ := encoder.Encode(nackFrame)
+			return encoded, nil
+		}
+
+		// Second attempt: ACK
+		ackFrame := &frame.Frame{
+			Type: frame.FrameTypeAck,
+			Header: frame.Header{
+				Sequence: testSequenceZero,
+				Length:   0,
+				Flags:    testFlagsNone,
+			},
+			Payload: []byte{},
+		}
+		encoded, _ := encoder.Encode(ackFrame)
+		return encoded, nil
+	}
+
+	link, _ := NewSPILink(mockTransport, session, nil)
+
+	ctx := context.Background()
+
+	// Run Receive() in background
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes responses
+	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
+		for i := 0; i < 2; i++ {
+			link.Receive(ctx)
+			time.Sleep(2 * time.Millisecond) // Small delay between retries
+		}
+	}()
+
+	// Send PONG frame
+	err := link.SendWithType(ctx, []byte{0xDE, 0xAD, 0xBE, 0xEF}, frame.FrameTypePong)
+	if err != nil {
+		t.Fatalf("SendWithType failed: %v", err)
+	}
+
+	// Verify 2 attempts were made
+	sentFrames := mockTransport.GetSentFrames()
+	if len(sentFrames) != 2 {
+		t.Errorf("Expected 2 send attempts, got %d", len(sentFrames))
+	}
+
+	// Verify both frames are PONG type
+	decoder := frame.NewDecoder()
+	for i, encodedFrame := range sentFrames {
+		f, err := decoder.Decode(encodedFrame)
+		if err != nil {
+			t.Fatalf("Failed to decode frame %d: %v", i, err)
+		}
+		if f.Type != frame.FrameTypePong {
+			t.Errorf("Frame[%d] type = %v, want FrameTypePong", i, f.Type)
+		}
+	}
+}
+
+// TestSPILink_SendWithType_MaxRetries tests max retries with explicit frame type.
+func TestSPILink_SendWithType_MaxRetries(t *testing.T) {
+	mockTransport := &mockSPITransport{}
+	session := manager.NewSessionState()
+	encoder := frame.NewEncoder()
+
+	// Mock: Always return NACK
+	mockTransport.ReceiveFunc = func(maxLen int) ([]byte, error) {
+		nackFrame := &frame.Frame{
+			Type: frame.FrameTypeNack,
+			Header: frame.Header{
+				Sequence: testSequenceZero,
+				Length:   0,
+				Flags:    testFlagsNone,
+			},
+			Payload: []byte{},
+		}
+		encoded, _ := encoder.Encode(nackFrame)
+		return encoded, nil
+	}
+
+	link, _ := NewSPILink(mockTransport, session, nil)
+
+	ctx := context.Background()
+
+	// Run Receive() in background
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes responses
+	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
+		for i := 0; i < maxRetries; i++ {
+			link.Receive(ctx)
+			time.Sleep(2 * time.Millisecond) // Small delay between retries
+		}
+	}()
+
+	// Send RESET frame should fail after max retries
+	err := link.SendWithType(ctx, []byte{}, frame.FrameTypeReset)
+	if err == nil {
+		t.Fatal("SendWithType should fail after max retries")
+	}
+
+	if err != ErrMaxRetriesExceeded {
+		t.Errorf("Error = %v, want ErrMaxRetriesExceeded", err)
+	}
+
+	// Verify state is Error
+	if link.GetState() != harq.StateError {
+		t.Errorf("Expected state Error, got %v", link.GetState())
+	}
+}
+
+// TestSPILink_SendWithType_FrameTypes tests sending different frame types.
+func TestSPILink_SendWithType_FrameTypes(t *testing.T) {
+	encoder := frame.NewEncoder()
+
+	testCases := []struct {
+		name      string
+		frameType frame.Type
+		payload   []byte
+	}{
+		{"PING", frame.FrameTypePing, []byte{0x01, 0x02, 0x03, 0x04}},
+		{"PONG", frame.FrameTypePong, []byte{0xDE, 0xAD, 0xBE, 0xEF}},
+		{"RESET", frame.FrameTypeReset, []byte{}},
+		{"RESET_ACK", frame.FrameTypeResetAck, []byte{}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockTransport := &mockSPITransport{}
+			session := manager.NewSessionState()
+
+			// Mock: Return ACK
+			mockTransport.ReceiveFunc = func(maxLen int) ([]byte, error) {
+				ackFrame := &frame.Frame{
+					Type: frame.FrameTypeAck,
+					Header: frame.Header{
+						Sequence: testSequenceZero,
+						Length:   0,
+						Flags:    testFlagsNone,
+					},
+					Payload: []byte{},
+				}
+				encoded, _ := encoder.Encode(ackFrame)
+				return encoded, nil
+			}
+
+			link, _ := NewSPILink(mockTransport, session, nil)
+			ctx := context.Background()
+
+			// Run Receive() in background
+			// Add small delay to ensure Send() registers ACK channel before Receive() processes response
+			go func() {
+				time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
+				link.Receive(ctx)
+			}()
+
+			// Send frame with explicit type
+			err := link.SendWithType(ctx, tc.payload, tc.frameType)
+			if err != nil {
+				t.Fatalf("SendWithType(%s) failed: %v", tc.name, err)
+			}
+
+			// Verify frame type
+			decoder := frame.NewDecoder()
+			sentFrames := mockTransport.GetSentFrames()
+			if len(sentFrames) == 0 {
+				t.Fatal("No frames sent")
+			}
+			f, err := decoder.Decode(sentFrames[0])
+			if err != nil {
+				t.Fatalf("Failed to decode frame: %v", err)
+			}
+			if f.Type != tc.frameType {
+				t.Errorf("Frame type = %v, want %v", f.Type, tc.frameType)
+			}
+			if string(f.Payload) != string(tc.payload) {
+				t.Errorf("Payload = %q, want %q", f.Payload, tc.payload)
+			}
+		})
 	}
 }
