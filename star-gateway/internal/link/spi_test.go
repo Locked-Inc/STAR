@@ -208,7 +208,9 @@ func TestSPILink_SendWithAck_Success(t *testing.T) {
 
 	// CRITICAL FIX #1: Run Receive() in background to dispatch ACK to Send()
 	// (only Receive() reads from decoder now)
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes response
 	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
 		link.Receive(ctx)
 	}()
 
@@ -272,9 +274,12 @@ func TestSPILink_SendWithNack_Retry_Success(t *testing.T) {
 	ctx := context.Background()
 
 	// CRITICAL FIX #1: Run Receive() in background to dispatch NACK/ACK to Send()
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes responses
 	go func() {
-		for i := 0; i < 2; i++ { // Process NACK, then ACK
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
+		for i := 0; i < 2; i++ {         // Process NACK, then ACK
 			link.Receive(ctx)
+			time.Sleep(2 * time.Millisecond) // Small delay between retries
 		}
 	}()
 
@@ -322,9 +327,12 @@ func TestSPILink_SendMaxRetries_Failure(t *testing.T) {
 	ctx := context.Background()
 
 	// CRITICAL FIX #1: Run Receive() in background to dispatch NACKs to Send()
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes responses
 	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
 		for i := 0; i < maxRetries; i++ { // Process all NACK attempts
 			link.Receive(ctx)
+			time.Sleep(2 * time.Millisecond) // Small delay between retries
 		}
 	}()
 
@@ -382,9 +390,12 @@ func TestSPILink_SendACKTimeout_Retry(t *testing.T) {
 	ctx := context.Background()
 
 	// CRITICAL FIX #1: Run Receive() in background to process timeout then ACK
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes responses
 	go func() {
-		for i := 0; i < 2; i++ { // Process timeout error, then ACK
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
+		for i := 0; i < 2; i++ {         // Process timeout error, then ACK
 			link.Receive(ctx)
+			time.Sleep(2 * time.Millisecond) // Small delay between retries
 		}
 	}()
 
@@ -755,7 +766,9 @@ func TestSPILink_FECRoundTrip(t *testing.T) {
 	ctx := context.Background()
 
 	// CRITICAL FIX #1: Run Receive() in background to dispatch ACK to Send()
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes response
 	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
 		link.Receive(ctx)
 	}()
 
@@ -841,7 +854,9 @@ func TestSPILink_ChaseCombining_FirstAttemptSuccess(t *testing.T) {
 	ctx := context.Background()
 
 	// CRITICAL FIX #1: Run Receive() in background to dispatch ACK to Send()
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes response
 	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
 		link.Receive(ctx)
 	}()
 
@@ -1102,7 +1117,9 @@ func TestSPILink_SendWithType_WithAck_Success(t *testing.T) {
 	ctx := context.Background()
 
 	// Run Receive() in background to dispatch ACK
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes response
 	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
 		link.Receive(ctx)
 	}()
 
@@ -1184,9 +1201,12 @@ func TestSPILink_SendWithType_WithNack_Retry(t *testing.T) {
 	ctx := context.Background()
 
 	// Run Receive() in background
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes responses
 	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
 		for i := 0; i < 2; i++ {
 			link.Receive(ctx)
+			time.Sleep(2 * time.Millisecond) // Small delay between retries
 		}
 	}()
 
@@ -1241,9 +1261,12 @@ func TestSPILink_SendWithType_MaxRetries(t *testing.T) {
 	ctx := context.Background()
 
 	// Run Receive() in background
+	// Add small delay to ensure Send() registers ACK channel before Receive() processes responses
 	go func() {
+		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
 		for i := 0; i < maxRetries; i++ {
 			link.Receive(ctx)
+			time.Sleep(2 * time.Millisecond) // Small delay between retries
 		}
 	}()
 
@@ -1302,7 +1325,9 @@ func TestSPILink_SendWithType_FrameTypes(t *testing.T) {
 			ctx := context.Background()
 
 			// Run Receive() in background
+			// Add small delay to ensure Send() registers ACK channel before Receive() processes response
 			go func() {
+				time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
 				link.Receive(ctx)
 			}()
 
