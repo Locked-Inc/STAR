@@ -61,6 +61,8 @@ const (
 type contextTransportAdapter struct {
 	transport transport.Device
 	ctx       atomic.Value
+	mu        sync.Mutex
+	pending   []byte
 }
 
 func newContextTransportAdapter(t transport.Device) *contextTransportAdapter {
@@ -72,6 +74,19 @@ func (a *contextTransportAdapter) SetContext(ctx context.Context) {
 }
 
 func (a *contextTransportAdapter) Read(p []byte) (int, error) {
+	if len(p) == 0 {
+		return 0, nil
+	}
+
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	if len(a.pending) > 0 {
+		n := copy(p, a.pending)
+		a.pending = a.pending[n:]
+		return n, nil
+	}
+
 	ctx := context.Background()
 	if stored := a.ctx.Load(); stored != nil {
 		if storedCtx, ok := stored.(context.Context); ok && storedCtx != nil {
@@ -82,6 +97,14 @@ func (a *contextTransportAdapter) Read(p []byte) (int, error) {
 	txBuf := make([]byte, len(p))
 	rxBuf, err := a.transport.Transfer(ctx, txBuf)
 	n := copy(p, rxBuf)
+	if len(rxBuf) > n {
+		if cap(a.pending) < len(rxBuf)-n {
+			a.pending = make([]byte, 0, len(rxBuf)-n)
+		} else {
+			a.pending = a.pending[:0]
+		}
+		a.pending = append(a.pending, rxBuf[n:]...)
+	}
 	if err != nil {
 		return n, err
 	}
