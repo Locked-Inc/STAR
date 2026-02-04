@@ -40,11 +40,9 @@ const (
 	grpcRequestTimeout = 5 * time.Second
 
 	// Timeout for graceful gateway shutdown
-	// Set to 35s to accommodate:
-	// - Socket transport Close() blocking on mutex
-	// - Duplicate ACK cleanup during context cancellation
-	// - Sequence mismatch handling during shutdown
-	gatewayShutdownTimeout = 35 * time.Second
+	// Set to 10s - adequate for clean shutdown now that duplicate wait logic is removed
+	// If this timeout fires, it indicates a stuck resource (transport, dispatcher, etc.)
+	gatewayShutdownTimeout = 10 * time.Second
 
 	// Telemetry retry interval
 	telemetryRetryInterval = 100 * time.Millisecond
@@ -393,10 +391,6 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 
 	// 2. Start Gateway (in background)
 	ctx, cancel := context.WithCancel(context.Background())
-	// Register cleanup for Gateway shutdown
-	t.Cleanup(func() {
-		cancel()
-	})
 
 	cfg := app.Config{
 		SimulationMode: true,
@@ -436,17 +430,23 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	}
 	t.Cleanup(func() { conn.Close() })
 
-	// Ensure we wait for gateway shutdown at end of test
+	// Ensure graceful shutdown with timeout
+	// This cleanup runs AFTER the test completes (LIFO order)
+	// Do NOT add duplicate shutdown logic in step 6 - rely solely on cleanup
 	t.Cleanup(func() {
+		t.Log("Cleanup: Triggering gateway shutdown...")
+		cancel() // Signal shutdown to app.Run
+
+		// Wait for app.Run to complete with timeout
 		select {
 		case err := <-errChan:
 			if err != nil && err != context.Canceled {
-				t.Logf("Gateway shutdown with error: %v", err)
+				t.Errorf("Gateway shutdown error: %v", err)
 			} else {
-				t.Logf("Gateway shutdown completed")
+				t.Logf("Gateway shutdown completed gracefully")
 			}
 		case <-time.After(gatewayShutdownTimeout):
-			t.Errorf("Gateway did not shut down in time (timeout: %v)", gatewayShutdownTimeout)
+			t.Errorf("Gateway did not shut down in time (timeout: %v) - this indicates a stuck resource", gatewayShutdownTimeout)
 		}
 	})
 
@@ -556,15 +556,4 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	}
 
 	t.Logf("GetTeleopCommand success: available=%v", resp.CommandAvailable)
-
-	// 6. Test Shutdown
-	cancel()
-	select {
-	case err := <-errChan:
-		if err != nil {
-			t.Errorf("Gateway shutdown error: %v", err)
-		}
-	case <-time.After(gatewayShutdownTimeout):
-		t.Fatal("Gateway did not shut down in time")
-	}
 }
