@@ -329,7 +329,7 @@ func TestSPILink_SendMaxRetries_Failure(t *testing.T) {
 	// CRITICAL FIX #1: Run Receive() in background to dispatch NACKs to Send()
 	// Add small delay to ensure Send() registers ACK channel before Receive() processes responses
 	go func() {
-		time.Sleep(5 * time.Millisecond) // Give Send() time to register its channel
+		time.Sleep(5 * time.Millisecond)  // Give Send() time to register its channel
 		for i := 0; i < maxRetries; i++ { // Process all NACK attempts
 			link.Receive(ctx)
 			time.Sleep(2 * time.Millisecond) // Small delay between retries
