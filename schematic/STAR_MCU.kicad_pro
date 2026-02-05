@@ -493,7 +493,7 @@
         "line_style": 0,
         "name": "3V3 Buck Converter",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 37,
+        "priority": 34,
         "schematic_color": "rgb(148, 0, 211)",
         "wire_width": 6
       },
@@ -502,7 +502,7 @@
         "line_style": 0,
         "name": "3V3 Main Rail",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 32,
+        "priority": 30,
         "schematic_color": "rgb(255, 106, 137)",
         "wire_width": 6
       },
@@ -511,7 +511,7 @@
         "line_style": 0,
         "name": "3V3 Motor Driver",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 40,
+        "priority": 37,
         "schematic_color": "rgb(255, 69, 0)",
         "wire_width": 6
       },
@@ -520,7 +520,7 @@
         "line_style": 0,
         "name": "5V Buck Converter",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 45,
+        "priority": 42,
         "schematic_color": "rgb(0, 128, 128)",
         "wire_width": 6
       },
@@ -529,7 +529,7 @@
         "line_style": 0,
         "name": "5V0 Buck",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 49,
+        "priority": 46,
         "schematic_color": "rgb(255, 117, 130)",
         "wire_width": 6
       },
@@ -538,7 +538,7 @@
         "line_style": 0,
         "name": "6V0 Buck",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 46,
+        "priority": 43,
         "schematic_color": "rgb(255, 83, 64)",
         "wire_width": 6
       },
@@ -547,7 +547,7 @@
         "line_style": 0,
         "name": "6V0 HDRV",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 44,
+        "priority": 41,
         "schematic_color": "rgb(41, 205, 255)",
         "wire_width": 6
       },
@@ -556,7 +556,7 @@
         "line_style": 0,
         "name": "6V0 LDRV",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 43,
+        "priority": 40,
         "schematic_color": "rgb(39, 165, 187)",
         "wire_width": 6
       },
@@ -574,7 +574,7 @@
         "line_style": 0,
         "name": "BB_BTST1",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 30,
+        "priority": 28,
         "schematic_color": "rgb(127, 216, 143)",
         "wire_width": 6
       },
@@ -583,7 +583,7 @@
         "line_style": 0,
         "name": "BB_BTST2",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 28,
+        "priority": 27,
         "schematic_color": "rgb(59, 142, 175)",
         "wire_width": 6
       },
@@ -592,7 +592,7 @@
         "line_style": 0,
         "name": "BB_SDRV",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 33,
+        "priority": 31,
         "schematic_color": "rgb(177, 91, 183)",
         "wire_width": 6
       },
@@ -601,7 +601,7 @@
         "line_style": 0,
         "name": "BB_STAT",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 34,
+        "priority": 32,
         "schematic_color": "rgb(55, 140, 183)",
         "wire_width": 6
       },
@@ -610,7 +610,7 @@
         "line_style": 0,
         "name": "BB_SW1",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 24,
+        "priority": 23,
         "schematic_color": "rgb(154, 131, 206)",
         "wire_width": 6
       },
@@ -637,7 +637,7 @@
         "line_style": 0,
         "name": "BST",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 55,
+        "priority": 52,
         "schematic_color": "rgb(58, 197, 255)",
         "wire_width": 6
       },
@@ -691,7 +691,7 @@
         "line_style": 0,
         "name": "FB",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 50,
+        "priority": 47,
         "schematic_color": "rgb(176, 168, 59)",
         "wire_width": 6
       },
@@ -700,7 +700,7 @@
         "line_style": 0,
         "name": "Fuel Gauge SMBus",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 53,
+        "priority": 50,
         "schematic_color": "rgb(0, 221, 110)",
         "wire_width": 6
       },
@@ -709,7 +709,7 @@
         "line_style": 0,
         "name": "Ground",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 58,
+        "priority": 55,
         "schematic_color": "rgb(61, 4, 86)",
         "wire_width": 6
       },
@@ -727,8 +727,17 @@
         "line_style": 0,
         "name": "IMU Control",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 54,
+        "priority": 51,
         "schematic_color": "rgb(255, 99, 71)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "LED",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 36,
+        "schematic_color": "rgb(0, 128, 128)",
         "wire_width": 6
       },
       {
@@ -736,7 +745,7 @@
         "line_style": 0,
         "name": "LiDAR UART",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 51,
+        "priority": 48,
         "schematic_color": "rgb(255, 105, 180)",
         "wire_width": 6
       },
@@ -799,7 +808,7 @@
         "line_style": 0,
         "name": "P3V3 Buck",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 57,
+        "priority": 54,
         "schematic_color": "rgb(255, 124, 37)",
         "wire_width": 6
       },
@@ -810,60 +819,6 @@
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 7,
         "schematic_color": "rgb(255, 91, 166)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "PMOD JA",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 25,
-        "schematic_color": "rgb(107, 142, 35)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "PMOD JB",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 23,
-        "schematic_color": "rgb(139, 69, 19)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "PMOD JC",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 27,
-        "schematic_color": "rgb(0, 191, 255)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "PMOD JD",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 29,
-        "schematic_color": "rgb(223, 168, 178)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "PMOD JE",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 35,
-        "schematic_color": "rgb(255, 165, 0)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "PMOD JF",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 39,
-        "schematic_color": "rgb(0, 128, 128)",
         "wire_width": 6
       },
       {
@@ -880,7 +835,7 @@
         "line_style": 0,
         "name": "RPi5 I2C",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 48,
+        "priority": 45,
         "schematic_color": "rgb(50, 205, 50)",
         "wire_width": 6
       },
@@ -905,9 +860,27 @@
       {
         "bus_width": 12,
         "line_style": 0,
+        "name": "SONAR ECHO",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 25,
+        "schematic_color": "rgb(107, 142, 35)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "SONAR TRIG",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 24,
+        "schematic_color": "rgb(255, 165, 0)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
         "name": "SW",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 52,
+        "priority": 49,
         "schematic_color": "rgb(73, 128, 255)",
         "wire_width": 6
       },
@@ -916,7 +889,7 @@
         "line_style": 0,
         "name": "Status LEDs",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 31,
+        "priority": 29,
         "schematic_color": "rgb(255, 20, 147)",
         "wire_width": 6
       },
@@ -925,7 +898,7 @@
         "line_style": 0,
         "name": "System Config",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 56,
+        "priority": 53,
         "schematic_color": "rgb(135, 206, 250)",
         "wire_width": 6
       },
@@ -934,7 +907,7 @@
         "line_style": 0,
         "name": "System Voltage",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 59,
+        "priority": 56,
         "schematic_color": "rgb(255, 32, 80)",
         "wire_width": 6
       },
@@ -943,7 +916,7 @@
         "line_style": 0,
         "name": "Temperature Sensor",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 42,
+        "priority": 39,
         "schematic_color": "rgb(202, 128, 142)",
         "wire_width": 6
       },
@@ -952,7 +925,7 @@
         "line_style": 0,
         "name": "USB SCI Data",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 47,
+        "priority": 44,
         "schematic_color": "rgb(255, 215, 0)",
         "wire_width": 6
       },
@@ -961,7 +934,7 @@
         "line_style": 0,
         "name": "USBC Drain",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 41,
+        "priority": 38,
         "schematic_color": "rgb(115, 84, 255)",
         "wire_width": 6
       },
@@ -970,7 +943,7 @@
         "line_style": 0,
         "name": "USBC LDO",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 38,
+        "priority": 35,
         "schematic_color": "rgb(255, 63, 144)",
         "wire_width": 6
       },
@@ -979,7 +952,7 @@
         "line_style": 0,
         "name": "USBC PPHV",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 36,
+        "priority": 33,
         "schematic_color": "rgb(255, 0, 90)",
         "wire_width": 6
       },
@@ -1312,28 +1285,16 @@
         "pattern": "/PACK+"
       },
       {
-        "netclass": "PMOD JA",
-        "pattern": "/PMOD_JA_*"
+        "netclass": "SONAR TRIG",
+        "pattern": "/SONAR_TRIG_*"
       },
       {
-        "netclass": "PMOD JB",
-        "pattern": "/PMOD_JB_*"
+        "netclass": "SONAR ECHO",
+        "pattern": "/SONAR_ECHO_*"
       },
       {
-        "netclass": "PMOD JC",
-        "pattern": "/PMOD_JC_*"
-      },
-      {
-        "netclass": "PMOD JD",
-        "pattern": "/PMOD_JD_*"
-      },
-      {
-        "netclass": "PMOD JE",
-        "pattern": "/PMOD_JE_*"
-      },
-      {
-        "netclass": "PMOD JF",
-        "pattern": "/PMOD_JF_*"
+        "netclass": "LED",
+        "pattern": "/LED_*"
       },
       {
         "netclass": "Power/Ground",

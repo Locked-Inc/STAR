@@ -2596,148 +2596,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector_Generic:Conn_01x02"
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "J"
-				(at 0 2.54 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "Conn_01x02"
-				(at 0 -5.08 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "~"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "connector"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "Connector*:*_1x??_*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "Conn_01x02_1_1"
-				(rectangle
-					(start -1.27 1.27)
-					(end 1.27 -3.81)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(rectangle
-					(start -1.27 0.127)
-					(end 0 -0.127)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 -2.413)
-					(end 0 -2.667)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -5.08 0 0)
-					(length 3.81)
-					(name "Pin_1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -2.54 0)
-					(length 3.81)
-					(name "Pin_2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Connector_Generic:Conn_01x03"
 			(pin_names
 				(offset 1.016)
@@ -11415,18 +11273,6 @@
 		(uuid 904c8686-0b2c-4599-b687-a39574d18f2f)
 	)
 	(rectangle
-		(start 227.33 15.24)
-		(end 821.69 266.7)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid b35ba8ce-2d56-46f3-8942-33b54e50ad73)
-	)
-	(rectangle
 		(start 754.38 396.24)
 		(end 816.61 429.26)
 		(stroke
@@ -11648,16 +11494,6 @@
 			)
 		)
 		(uuid "43c2a12a-b7ea-4184-96a6-f7cdd6176b40")
-	)
-	(text "PINS 47-50 \nAlso Go Nowhere"
-		(exclude_from_sim no)
-		(at 822.706 209.296 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "4b58fff1-afcd-413a-bc4d-88aaee583344")
 	)
 	(text "input line is 20A, 4 motots, 3A eash, ADC overhead, 3.2A\n\nI_MCU_MOTOR = I_IPROPI x A_IPROPI\n3.2A = I_IPROPI x 3075. I_PROPI=0.00104065\n3.3V = 0.001041A x R, R = 3171.1 -> 3k16"
 		(exclude_from_sim no)
@@ -11947,16 +11783,6 @@
 		)
 		(uuid "981d9851-5848-47cc-96ab-d0f9eee4c018")
 	)
-	(text "PINS 55-58 \nAlso Go Nowhere"
-		(exclude_from_sim no)
-		(at 822.706 187.96 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "9837344b-6a26-419c-a8cf-2cb9d6592d3b")
-	)
 	(text "MTU1, E0 PB"
 		(exclude_from_sim no)
 		(at 755.904 375.158 0)
@@ -11977,16 +11803,6 @@
 			(justify right)
 		)
 		(uuid "9c9a9f51-d01d-4d72-ae7a-6a535d244b92")
-	)
-	(text "PIN 41-44 \nGo nowhere?"
-		(exclude_from_sim no)
-		(at 820.674 226.822 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "a1ec1351-51e5-48bf-913a-bb6c79d741d1")
 	)
 	(text "VCC\nTRIG\nECHO\nGND"
 		(exclude_from_sim no)
@@ -13962,16 +13778,36 @@
 		(uuid "ff218f4b-de12-451a-ad13-19441ee7f724")
 	)
 	(no_connect
+		(at 762 207.01)
+		(uuid "09391ea2-75a0-431c-8418-069c03ebc181")
+	)
+	(no_connect
 		(at 163.83 118.11)
 		(uuid "107599c4-bf78-4b22-ae8e-647e69f53e05")
+	)
+	(no_connect
+		(at 762 223.52)
+		(uuid "12970bb3-cfd8-4117-8a33-e536ebc0edb3")
 	)
 	(no_connect
 		(at 685.8 134.62)
 		(uuid "15c4703f-413b-4b32-9fff-8671c5789788")
 	)
 	(no_connect
+		(at 762 209.55)
+		(uuid "2f7b8473-eed6-4792-b537-40fa275ca80b")
+	)
+	(no_connect
+		(at 762 228.6)
+		(uuid "355a5014-bc0a-437d-a9d8-6126737534f8")
+	)
+	(no_connect
 		(at 436.88 142.24)
 		(uuid "35765600-6588-42d4-8aed-05e9d63e8c6a")
+	)
+	(no_connect
+		(at 762 231.14)
+		(uuid "3ab6fd37-06ff-4d53-a961-0380f1b2ecda")
 	)
 	(no_connect
 		(at 163.83 120.65)
@@ -13982,8 +13818,16 @@
 		(uuid "46e2c661-7959-4015-8009-f5b4d2736396")
 	)
 	(no_connect
+		(at 762 187.96)
+		(uuid "487f7e6e-ffcc-43e9-895f-a31947203a27")
+	)
+	(no_connect
 		(at 403.86 147.32)
 		(uuid "495866f3-7df9-4ba6-806a-f3fd88b152f4")
+	)
+	(no_connect
+		(at 762 193.04)
+		(uuid "4b7215c5-637d-408f-acf9-d03b49f3fb8e")
 	)
 	(no_connect
 		(at 438.15 119.38)
@@ -13998,12 +13842,32 @@
 		(uuid "640ec69c-5234-42e3-a076-8e09b136f714")
 	)
 	(no_connect
+		(at 762 212.09)
+		(uuid "64270892-8188-4ade-b817-2596fc015655")
+	)
+	(no_connect
 		(at 163.83 125.73)
 		(uuid "67ded7c2-5dac-4c6a-bf7c-18eb686d35a9")
 	)
 	(no_connect
+		(at 685.8 207.01)
+		(uuid "706afa5e-22b3-4ca9-b5e5-31ab850fa4e8")
+	)
+	(no_connect
 		(at 438.15 91.44)
 		(uuid "7084a034-d5e8-4637-b7c1-2168d4a96d46")
+	)
+	(no_connect
+		(at 762 226.06)
+		(uuid "8f294663-9942-46c2-8d48-68f60832b4b5")
+	)
+	(no_connect
+		(at 762 190.5)
+		(uuid "9369ed06-ab12-4718-83b1-4b1e5c9caf42")
+	)
+	(no_connect
+		(at 685.8 209.55)
+		(uuid "a1306b8c-dc84-4d54-92b8-58c531a74951")
 	)
 	(no_connect
 		(at 471.17 91.44)
@@ -14012,6 +13876,10 @@
 	(no_connect
 		(at 438.15 88.9)
 		(uuid "bdd8328e-aadd-43b4-9eec-9cedd4bca2aa")
+	)
+	(no_connect
+		(at 762 185.42)
+		(uuid "c8720fe3-9c97-4765-be91-de8c28a9c241")
 	)
 	(no_connect
 		(at 165.1 184.15)
@@ -14124,16 +13992,6 @@
 			(type default)
 		)
 		(uuid "01eb3263-acbc-4c36-8096-3b5c0aebdc0d")
-	)
-	(wire
-		(pts
-			(xy 646.43 207.01) (xy 685.8 207.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "023c8c1f-ab33-4683-9a3a-142b37886d3b")
 	)
 	(wire
 		(pts
@@ -14254,16 +14112,6 @@
 			(type default)
 		)
 		(uuid "05bc7a0c-95d3-48cd-9c77-57655140ea75")
-	)
-	(wire
-		(pts
-			(xy 762 231.14) (xy 814.07 231.14)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "062a503e-cc6b-477b-a1f8-76a253c8c3f9")
 	)
 	(wire
 		(pts
@@ -14517,16 +14365,6 @@
 	)
 	(wire
 		(pts
-			(xy 762 228.6) (xy 814.07 228.6)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0c98cd00-5e96-4bd1-a984-66946bda61e0")
-	)
-	(wire
-		(pts
 			(xy 662.94 429.26) (xy 665.48 429.26)
 		)
 		(stroke
@@ -14564,16 +14402,6 @@
 			(type default)
 		)
 		(uuid "0d767215-b817-4fb7-b441-f89a06fb5890")
-	)
-	(wire
-		(pts
-			(xy 762 209.55) (xy 814.07 209.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0dbe3df0-d8b3-44f0-af2e-8b207abc2e9f")
 	)
 	(wire
 		(pts
@@ -15227,16 +15055,6 @@
 	)
 	(wire
 		(pts
-			(xy 501.65 359.41) (xy 497.84 359.41)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1c82e21a-01dd-4e22-8a31-6f73c7b24c41")
-	)
-	(wire
-		(pts
 			(xy 411.48 104.14) (xy 411.48 105.41)
 		)
 		(stroke
@@ -15637,7 +15455,7 @@
 	)
 	(wire
 		(pts
-			(xy 497.84 375.92) (xy 514.35 375.92)
+			(xy 481.33 378.46) (xy 501.65 378.46)
 		)
 		(stroke
 			(width 0)
@@ -15794,16 +15612,6 @@
 			(type default)
 		)
 		(uuid "2745f50d-5932-4dbb-a439-2da721c79ff4")
-	)
-	(wire
-		(pts
-			(xy 501.65 384.81) (xy 497.84 384.81)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "274e739d-f2d9-41f7-ad90-c059e5ce8dff")
 	)
 	(wire
 		(pts
@@ -17167,7 +16975,7 @@
 	)
 	(wire
 		(pts
-			(xy 514.35 388.62) (xy 497.84 388.62)
+			(xy 481.33 391.16) (xy 501.65 391.16)
 		)
 		(stroke
 			(width 0)
@@ -17547,16 +17355,6 @@
 	)
 	(wire
 		(pts
-			(xy 762 193.04) (xy 814.07 193.04)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4c5f448e-b78b-46a2-a536-3fea58d4b82d")
-	)
-	(wire
-		(pts
 			(xy 585.47 336.55) (xy 593.09 336.55)
 		)
 		(stroke
@@ -17664,16 +17462,6 @@
 			(type default)
 		)
 		(uuid "4e964fb8-9a20-42e3-a170-e38b704b2953")
-	)
-	(wire
-		(pts
-			(xy 762 187.96) (xy 814.07 187.96)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4eaaa6ed-6418-42a0-a70a-3ccb17ce491e")
 	)
 	(wire
 		(pts
@@ -19977,16 +19765,6 @@
 	)
 	(wire
 		(pts
-			(xy 762 185.42) (xy 814.07 185.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7d4fa004-cdfd-47dc-9e86-d6e13659bce8")
-	)
-	(wire
-		(pts
 			(xy 279.4 34.29) (xy 279.4 39.37)
 		)
 		(stroke
@@ -21107,16 +20885,6 @@
 	)
 	(wire
 		(pts
-			(xy 762 212.09) (xy 814.07 212.09)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9233b37e-e97c-4275-9f30-3af4f468dd84")
-	)
-	(wire
-		(pts
 			(xy 335.28 77.47) (xy 335.28 80.01)
 		)
 		(stroke
@@ -21174,16 +20942,6 @@
 			(type default)
 		)
 		(uuid "934dd2fb-07f4-4296-a973-ffad954aa2f7")
-	)
-	(wire
-		(pts
-			(xy 501.65 365.76) (xy 497.84 365.76)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "93896998-ed86-4a4b-ac4c-bca7d4f54174")
 	)
 	(wire
 		(pts
@@ -21407,7 +21165,7 @@
 	)
 	(wire
 		(pts
-			(xy 514.35 382.27) (xy 497.84 382.27)
+			(xy 481.33 384.81) (xy 501.65 384.81)
 		)
 		(stroke
 			(width 0)
@@ -21797,16 +21555,6 @@
 	)
 	(wire
 		(pts
-			(xy 762 226.06) (xy 814.07 226.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9f0d2034-702d-4331-a7d3-7e9583311646")
-	)
-	(wire
-		(pts
 			(xy 416.56 393.7) (xy 433.07 393.7)
 		)
 		(stroke
@@ -21847,7 +21595,7 @@
 	)
 	(wire
 		(pts
-			(xy 497.84 369.57) (xy 514.35 369.57)
+			(xy 481.33 372.11) (xy 501.65 372.11)
 		)
 		(stroke
 			(width 0)
@@ -21907,16 +21655,6 @@
 	)
 	(wire
 		(pts
-			(xy 762 190.5) (xy 814.07 190.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a1e8008c-5b3c-44d2-8553-6ef848a17c54")
-	)
-	(wire
-		(pts
 			(xy 144.78 130.81) (xy 163.83 130.81)
 		)
 		(stroke
@@ -21954,16 +21692,6 @@
 			(type default)
 		)
 		(uuid "a38a48f5-e0e8-47cd-adcf-727bc140621c")
-	)
-	(wire
-		(pts
-			(xy 501.65 391.16) (xy 497.84 391.16)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a3ecc319-0281-43e9-b4e5-086c524f7263")
 	)
 	(wire
 		(pts
@@ -22917,16 +22645,6 @@
 	)
 	(wire
 		(pts
-			(xy 762 207.01) (xy 814.07 207.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b6085c13-04e5-4d5a-873c-ac8d7c55e020")
-	)
-	(wire
-		(pts
 			(xy 626.11 494.03) (xy 628.65 494.03)
 		)
 		(stroke
@@ -23157,16 +22875,6 @@
 	)
 	(wire
 		(pts
-			(xy 501.65 378.46) (xy 497.84 378.46)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bc42cc78-0b2d-4699-825d-eb5c520ed446")
-	)
-	(wire
-		(pts
 			(xy 411.48 360.68) (xy 411.48 373.38)
 		)
 		(stroke
@@ -23307,7 +23015,7 @@
 	)
 	(wire
 		(pts
-			(xy 497.84 356.87) (xy 514.35 356.87)
+			(xy 481.33 359.41) (xy 501.65 359.41)
 		)
 		(stroke
 			(width 0)
@@ -23417,7 +23125,7 @@
 	)
 	(wire
 		(pts
-			(xy 497.84 363.22) (xy 514.35 363.22)
+			(xy 481.33 365.76) (xy 501.65 365.76)
 		)
 		(stroke
 			(width 0)
@@ -23817,16 +23525,6 @@
 	)
 	(wire
 		(pts
-			(xy 646.43 209.55) (xy 685.8 209.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ccca40fa-fc8d-4439-b3ee-1f89fa448565")
-	)
-	(wire
-		(pts
 			(xy 523.24 372.11) (xy 524.51 372.11)
 		)
 		(stroke
@@ -24084,16 +23782,6 @@
 			(type default)
 		)
 		(uuid "d3d830bc-9ea8-47fc-afd9-d154e180799f")
-	)
-	(wire
-		(pts
-			(xy 501.65 372.11) (xy 497.84 372.11)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d410a336-5a02-47e6-8f80-7a89435c053d")
 	)
 	(wire
 		(pts
@@ -25897,16 +25585,6 @@
 	)
 	(wire
 		(pts
-			(xy 762 223.52) (xy 814.07 223.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f8c40476-9510-4226-93ea-bb56f4b0678a")
-	)
-	(wire
-		(pts
 			(xy 411.48 71.12) (xy 411.48 74.93)
 		)
 		(stroke
@@ -27227,26 +26905,6 @@
 			)
 		)
 	)
-	(label "RX72N_PIN_50"
-		(at 814.07 207.01 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "00725fc6-eb3c-4e4d-b2c7-18cd29c6562c")
-	)
-	(label "RX72N_PIN_27"
-		(at 646.43 207.01 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "0223d4d9-4db2-4f15-93e0-edc537917b66")
-	)
 	(label "PI_PIN_16"
 		(at 106.68 72.39 180)
 		(effects
@@ -27287,16 +26945,6 @@
 		)
 		(uuid "0551cd33-19e1-4edb-b16f-82f4bdd992b3")
 	)
-	(label "PMOD_JA_GPIO"
-		(at 793.75 185.42 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "06f38c60-895b-4dbd-9428-a53f437996ea")
-	)
 	(label "RX72N_PIN_68"
 		(at 814.07 163.83 180)
 		(effects
@@ -27327,16 +26975,6 @@
 			(justify left bottom)
 		)
 		(uuid "09ee6fe1-1264-4044-944a-54e22b8f0835")
-	)
-	(label "RX72N_PIN_49"
-		(at 814.07 209.55 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "09f83b03-ef2c-49b2-8e24-0b203cf8bdde")
 	)
 	(label "PI_PIN_24"
 		(at 106.68 82.55 180)
@@ -27378,7 +27016,7 @@
 		)
 		(uuid "0d7cf757-90ac-4428-ae16-8a49fe03a279")
 	)
-	(label "PMOD_JB_GPIO3"
+	(label "SONAR_ECHO_1"
 		(at 793.75 163.83 180)
 		(effects
 			(font
@@ -27549,7 +27187,7 @@
 		)
 		(uuid "19b0a34a-553e-4fe8-8029-a24f3de9ba6c")
 	)
-	(label "PMOD_JF_GPIO1"
+	(label "LED_5"
 		(at 793.75 91.44 180)
 		(effects
 			(font
@@ -27578,16 +27216,6 @@
 			(justify left bottom)
 		)
 		(uuid "1b130bc9-ee08-4cff-b163-8818b9e9523e")
-	)
-	(label "PMOD_JC_SCL"
-		(at 793.75 207.01 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "1b40003b-035a-4a07-a269-e36679747be3")
 	)
 	(label "P5V0_BUCK"
 		(at 468.63 439.42 0)
@@ -27669,7 +27297,7 @@
 		)
 		(uuid "2343595e-d2a1-44d0-ba2a-97194f530dc4")
 	)
-	(label "PMOD_JB_GPIO2"
+	(label "SONAR_TRIG_1"
 		(at 793.75 233.68 180)
 		(effects
 			(font
@@ -27709,7 +27337,7 @@
 		)
 		(uuid "27c15490-6428-40be-98e2-c60b4d4ae89a")
 	)
-	(label "PMOD_JE_GPIO1"
+	(label "SONAR_ECHO_2"
 		(at 416.56 383.54 0)
 		(effects
 			(font
@@ -27839,16 +27467,6 @@
 		)
 		(uuid "32160877-c41f-46f6-a534-c192a95ebd2d")
 	)
-	(label "PMOD_JC_INT1"
-		(at 793.75 212.09 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "3277c5f8-9f28-489f-94d7-905def03722b")
-	)
 	(label "BOARD_3V3"
 		(at 552.45 212.09 180)
 		(effects
@@ -27858,16 +27476,6 @@
 			(justify right bottom)
 		)
 		(uuid "32da3a3e-c406-434d-a74c-ca614a9524be")
-	)
-	(label "PMOD_JA_CS0"
-		(at 793.75 228.6 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "335d08b5-9742-44f3-94bc-93d6e5e67eb8")
 	)
 	(label "RSPIC_CIPO"
 		(at 684.53 347.98 180)
@@ -28109,7 +27717,7 @@
 		)
 		(uuid "44a0d043-2a2e-433a-b98a-bf09754c5b82")
 	)
-	(label "PMOD_JE_GPIO3"
+	(label "SONAR_ECHO_3"
 		(at 416.56 396.24 0)
 		(effects
 			(font
@@ -28118,16 +27726,6 @@
 			(justify left bottom)
 		)
 		(uuid "490f7d6e-0ffc-4387-ac48-5b68edcd00ea")
-	)
-	(label "PMOD_JC_INT2"
-		(at 793.75 214.63 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "49d8a049-8143-40a6-ab86-2c30f17641e7")
 	)
 	(label "P3V3_BUCK"
 		(at 565.15 60.96 180)
@@ -28138,16 +27736,6 @@
 			(justify right bottom)
 		)
 		(uuid "4a29b3e1-c436-4cca-b9b3-4d75679c7cc0")
-	)
-	(label "RX72N_PIN_28"
-		(at 646.43 209.55 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "4a2b1494-68f3-4d81-8473-327df1bb79ac")
 	)
 	(label "ENCODER3_PHASE_B"
 		(at 763.27 478.79 0)
@@ -28199,16 +27787,6 @@
 		)
 		(uuid "4b84f39d-3b70-433b-b404-4536abe601b2")
 	)
-	(label "RX72N_PIN_43"
-		(at 814.07 226.06 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "4bae1d7b-16fd-4cb5-8bee-40225baf1dfc")
-	)
 	(label "RPI5_RSPIA_CIPO"
 		(at 793.75 176.53 180)
 		(effects
@@ -28219,13 +27797,13 @@
 		)
 		(uuid "4c96855c-d270-40d8-acd9-b0660aaf86f5")
 	)
-	(label "PMOD_JF_GPIO0"
-		(at 514.35 382.27 180)
+	(label "LED_4"
+		(at 481.33 384.81 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "4e8c4bf3-6181-4744-a134-f9585942ec6c")
 	)
@@ -28249,7 +27827,7 @@
 		)
 		(uuid "4f6d991f-4971-42d7-9762-4637da7b4c37")
 	)
-	(label "PMOD_JD_GPIO3"
+	(label "LED_3"
 		(at 793.75 125.73 180)
 		(effects
 			(font
@@ -28278,16 +27856,6 @@
 			(justify left bottom)
 		)
 		(uuid "51cea5f2-1e85-4c1f-9666-080b5b50e1d4")
-	)
-	(label "PMOD_JC_SDA"
-		(at 793.75 209.55 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "54a03c0c-ee6d-4af6-8b6e-94957dc74302")
 	)
 	(label "PI_SCL"
 		(at 31.75 59.69 0)
@@ -28390,7 +27958,7 @@
 		)
 		(uuid "5b0fe941-3608-461f-9f91-71dc922a0ccc")
 	)
-	(label "PMOD_JF_GPIO0"
+	(label "LED_4"
 		(at 793.75 115.57 180)
 		(effects
 			(font
@@ -28491,7 +28059,7 @@
 		)
 		(uuid "5f93c293-2046-4098-b51f-d39a7709be26")
 	)
-	(label "PMOD_JB_GPIO1"
+	(label "SONAR_ECHO_0"
 		(at 416.56 358.14 0)
 		(effects
 			(font
@@ -28632,16 +28200,6 @@
 		)
 		(uuid "6a0b2a9e-d163-47b6-a306-03112f414d9e")
 	)
-	(label "RX72N_PIN_48"
-		(at 814.07 212.09 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "6bdd3a87-77ec-49fb-93de-a07dc50c6035")
-	)
 	(label "RSPIC_SCLK"
 		(at 603.25 414.02 0)
 		(effects
@@ -28671,16 +28229,6 @@
 			(justify left bottom)
 		)
 		(uuid "6d75c944-03fd-40f1-a1bc-a37a6f78621d")
-	)
-	(label "PMOD_JA_RST"
-		(at 793.75 187.96 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "6d8e2205-aa6e-4564-b6de-db74c537cdf6")
 	)
 	(label "EMU_TMS"
 		(at 422.91 204.47 0)
@@ -28752,7 +28300,7 @@
 		)
 		(uuid "7294e5ad-a662-4057-93b1-daaed4d49673")
 	)
-	(label "PMOD_JE_GPIO1"
+	(label "SONAR_ECHO_2"
 		(at 793.75 182.88 180)
 		(effects
 			(font
@@ -28943,7 +28491,7 @@
 		)
 		(uuid "86e7efa6-842d-4fbb-8ab4-febd45342659")
 	)
-	(label "PMOD_JB_GPIO2"
+	(label "SONAR_TRIG_1"
 		(at 416.56 368.3 0)
 		(effects
 			(font
@@ -28973,26 +28521,6 @@
 		)
 		(uuid "8b47ef6b-495e-435e-9779-7f3a92904424")
 	)
-	(label "RX72N_PIN_55"
-		(at 814.07 193.04 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "8b9a52be-f45f-499b-a474-b5022fcd4dbe")
-	)
-	(label "RX72N_PIN_57"
-		(at 814.07 187.96 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "8c123c97-d1d1-4303-be23-69a33d6f35f6")
-	)
 	(label "BOARD_3V3"
 		(at 52.07 43.18 180)
 		(effects
@@ -29003,27 +28531,7 @@
 		)
 		(uuid "8da59534-b568-4f21-81ef-cc744f994786")
 	)
-	(label "PMOD_JA_CS1"
-		(at 793.75 193.04 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "8fbe3353-3e9f-4029-81f9-2354c11d8835")
-	)
-	(label "RX72N_PIN_41"
-		(at 814.07 231.14 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "90004489-da0c-4b7d-a640-7550a22cc6e7")
-	)
-	(label "PMOD_JE_GPIO0"
+	(label "SONAR_TRIG_2"
 		(at 660.4 121.92 0)
 		(effects
 			(font
@@ -29132,26 +28640,6 @@
 			(justify right bottom)
 		)
 		(uuid "97e1e834-da2a-4186-be7f-5ff25b319e1d")
-	)
-	(label "PMOD_JF_SDA"
-		(at 664.21 209.55 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "996886df-073d-41bb-b42d-b25cc4741c01")
-	)
-	(label "PMOD_JA_CIPO"
-		(at 793.75 226.06 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "9980d946-d853-4674-a727-d0c0c37bdaa7")
 	)
 	(label "MOTOR3_EN"
 		(at 793.75 152.4 180)
@@ -29273,27 +28761,17 @@
 		)
 		(uuid "9ea89612-d532-4c0b-ac70-48dd09b7348f")
 	)
-	(label "PMOD_JF_GPIO1"
-		(at 514.35 388.62 180)
+	(label "LED_5"
+		(at 481.33 391.16 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "9fb31142-642b-489d-bf19-000a3bdbfa00")
 	)
-	(label "RX72N_PIN_56"
-		(at 814.07 190.5 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "a00b512f-4b66-4b5b-af0c-f17ddc921576")
-	)
-	(label "PMOD_JB_GPIO0"
+	(label "SONAR_TRIG_0"
 		(at 416.56 355.6 0)
 		(effects
 			(font
@@ -29402,16 +28880,6 @@
 			(justify right bottom)
 		)
 		(uuid "a5eacd76-0aa3-4514-a8fd-2ea608c37378")
-	)
-	(label "RX72N_PIN_42"
-		(at 814.07 228.6 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "a64ccc7c-3cc9-493a-80c5-5990f01309cb")
 	)
 	(label "P6V0_BUCK"
 		(at 685.8 429.26 180)
@@ -29597,7 +29065,7 @@
 		)
 		(uuid "af39143d-fe9f-41d0-9e66-60bbd136b2ee")
 	)
-	(label "PMOD_JB_GPIO0"
+	(label "SONAR_TRIG_0"
 		(at 793.75 217.17 180)
 		(effects
 			(font
@@ -29727,7 +29195,7 @@
 		)
 		(uuid "b97c1bf4-c062-472e-b247-b991e8325286")
 	)
-	(label "PMOD_JE_GPIO3"
+	(label "SONAR_ECHO_3"
 		(at 793.75 161.29 180)
 		(effects
 			(font
@@ -29797,13 +29265,13 @@
 		)
 		(uuid "bf00b628-05c8-4358-8d99-cf1216fd691b")
 	)
-	(label "PMOD_JD_GPIO1"
-		(at 514.35 363.22 180)
+	(label "LED_1"
+		(at 481.33 365.76 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "bf21138c-7794-4b07-9dda-866c325bea21")
 	)
@@ -29937,16 +29405,6 @@
 		)
 		(uuid "c67c053d-490a-4995-b5b9-82caabaf03be")
 	)
-	(label "PMOD_JA_COPI"
-		(at 793.75 223.52 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "c7432b51-f126-45f5-a320-cbb508b3bd8f")
-	)
 	(label "PI_PIN_22"
 		(at 106.68 80.01 180)
 		(effects
@@ -30037,13 +29495,13 @@
 		)
 		(uuid "cde688e0-0bc2-4d55-bd7d-61aa090742ec")
 	)
-	(label "PMOD_JD_GPIO3"
-		(at 514.35 375.92 180)
+	(label "LED_3"
+		(at 481.33 378.46 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "ceaaf799-c00e-4c48-a55e-7636d85b3a63")
 	)
@@ -30096,16 +29554,6 @@
 			(justify left bottom)
 		)
 		(uuid "d05cff4f-bfe2-4723-9792-43de022b87a7")
-	)
-	(label "RX72N_PIN_47"
-		(at 814.07 214.63 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "d0a37068-5407-4900-98ff-0ba52807df15")
 	)
 	(label "RPI5_RSPIA_CIPO"
 		(at 31.75 80.01 0)
@@ -30267,7 +29715,7 @@
 		)
 		(uuid "da6aba3c-bd7f-4875-8c55-bcf955218b2b")
 	)
-	(label "PMOD_JE_GPIO0"
+	(label "SONAR_TRIG_2"
 		(at 416.56 381 0)
 		(effects
 			(font
@@ -30359,7 +29807,7 @@
 		)
 		(uuid "df5bd638-5dcb-4623-9d77-402f61ed0bae")
 	)
-	(label "PMOD_JD_GPIO0"
+	(label "LED_0"
 		(at 793.75 133.35 180)
 		(effects
 			(font
@@ -30399,13 +29847,13 @@
 		)
 		(uuid "e3d189dd-0836-4393-8881-4e7ef6dac5c9")
 	)
-	(label "PMOD_JD_GPIO0"
-		(at 514.35 356.87 180)
+	(label "LED_0"
+		(at 481.33 359.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "e3ff13e4-acc0-42b0-9fcb-a72fff15c584")
 	)
@@ -30420,16 +29868,6 @@
 		)
 		(uuid "e4f9aa9e-f962-4abc-9913-4d13c4ad1c73")
 	)
-	(label "RX72N_PIN_58"
-		(at 814.07 185.42 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "e5f7d26a-9afb-4cba-ae46-d6cda66e7fff")
-	)
 	(label "EMU_RESn"
 		(at 422.91 209.55 0)
 		(effects
@@ -30439,26 +29877,6 @@
 			(justify left bottom)
 		)
 		(uuid "e6143c31-ed72-4456-83a5-ee9d7c512909")
-	)
-	(label "PMOD_JA_SCK"
-		(at 793.75 231.14 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "e74f4c71-9d11-401e-93e3-4de786532512")
-	)
-	(label "PMOD_JA_DC"
-		(at 793.75 190.5 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "e7c38674-0572-460d-8688-3492e91aeafc")
 	)
 	(label "RSPIC_CIPO"
 		(at 793.75 120.65 180)
@@ -30491,7 +29909,7 @@
 		)
 		(uuid "ea752017-734e-4a60-b789-7d7fbb821b5b")
 	)
-	(label "PMOD_JB_GPIO1"
+	(label "SONAR_ECHO_0"
 		(at 793.75 236.22 180)
 		(effects
 			(font
@@ -30521,13 +29939,13 @@
 		)
 		(uuid "eb9a4105-40ea-4dbb-b533-f034be4edc47")
 	)
-	(label "PMOD_JD_GPIO2"
-		(at 514.35 369.57 180)
+	(label "LED_2"
+		(at 481.33 372.11 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "ecce002e-edb4-477c-8e1d-e956cf13c456")
 	)
@@ -30541,7 +29959,7 @@
 		)
 		(uuid "ed176cbc-98c6-450f-a7da-15d9c3ec06e6")
 	)
-	(label "PMOD_JD_GPIO1"
+	(label "LED_1"
 		(at 793.75 130.81 180)
 		(effects
 			(font
@@ -30551,7 +29969,7 @@
 		)
 		(uuid "ee85f6ed-f6fe-4ba9-9bb8-1d050da50755")
 	)
-	(label "PMOD_JE_GPIO2"
+	(label "SONAR_TRIG_3"
 		(at 416.56 393.7 0)
 		(effects
 			(font
@@ -30591,7 +30009,7 @@
 		)
 		(uuid "f0943677-0450-4d85-9a3c-e32983615c23")
 	)
-	(label "PMOD_JB_GPIO3"
+	(label "SONAR_ECHO_1"
 		(at 416.56 370.84 0)
 		(effects
 			(font
@@ -30651,16 +30069,6 @@
 		)
 		(uuid "f56d944e-3df3-4651-8ccc-96f7f2ad4540")
 	)
-	(label "RX72N_PIN_44"
-		(at 814.07 223.52 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "f58f7ca7-d819-4999-b3fb-c0c10d0d21ee")
-	)
 	(label "IMU_RST"
 		(at 144.78 113.03 0)
 		(effects
@@ -30671,7 +30079,7 @@
 		)
 		(uuid "f6096663-2eda-47df-8ae4-ef59790486bb")
 	)
-	(label "PMOD_JE_GPIO2"
+	(label "SONAR_TRIG_3"
 		(at 793.75 180.34 180)
 		(effects
 			(font
@@ -30731,16 +30139,6 @@
 		)
 		(uuid "f9871e85-d35f-44c0-9e98-f222a2dadfc3")
 	)
-	(label "PMOD_JF_SCL"
-		(at 664.21 207.01 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "fa4e429d-c539-475e-8695-89a86fc0aa89")
-	)
 	(label "RX72N_PIN_80"
 		(at 814.07 130.81 180)
 		(effects
@@ -30781,7 +30179,7 @@
 		)
 		(uuid "ff7630a2-793b-49bb-905b-773af4b85976")
 	)
-	(label "PMOD_JD_GPIO2"
+	(label "LED_2"
 		(at 793.75 128.27 180)
 		(effects
 			(font
@@ -30931,83 +30329,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "R68")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 492.76 369.57 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "03e3e371-d373-498c-8c68-f0715cf77497")
-		(property "Reference" "J25"
-			(at 488.95 368.808 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_01x02"
-			(at 485.14 372.872 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
-			(at 492.76 369.57 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 492.76 369.57 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 492.76 369.57 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 492.76 369.57 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "9f67b50d-2020-4292-a5e6-c73aa164ab40")
-		)
-		(pin "1"
-			(uuid "9583261d-d311-453d-92fc-49c438eb1ca1")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J25")
 					(unit 1)
 				)
 			)
@@ -62040,83 +61361,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 492.76 375.92 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "46a8567b-d3f9-4b7e-954d-3e30b4c11f4d")
-		(property "Reference" "J26"
-			(at 488.95 375.158 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_01x02"
-			(at 485.14 379.222 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
-			(at 492.76 375.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 492.76 375.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 492.76 375.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 492.76 375.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "d704701f-0b8d-4418-875a-3555a7917ca0")
-		)
-		(pin "1"
-			(uuid "913728c3-e4ce-4380-bcf5-83c2c8786707")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J26")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 529.59 477.52 270)
 		(mirror x)
@@ -90804,83 +90048,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 492.76 382.27 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "84e28b79-63ff-48af-b24e-1d316bce6ac3")
-		(property "Reference" "J27"
-			(at 488.95 381.508 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_01x02"
-			(at 485.14 385.572 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
-			(at 492.76 382.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 492.76 382.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 492.76 382.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 492.76 382.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "8c4751b0-511c-47dc-bc01-b8205ac394c9")
-		)
-		(pin "1"
-			(uuid "108d88e4-b3b3-4e57-8b80-d1768e60113b")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J27")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
 		(at 586.74 410.21 180)
 		(unit 1)
@@ -108729,83 +107896,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 492.76 388.62 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "a8fba67a-24fb-4917-823d-589127ec41e4")
-		(property "Reference" "J28"
-			(at 488.95 387.858 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_01x02"
-			(at 485.14 391.922 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
-			(at 492.76 388.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 492.76 388.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 492.76 388.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 492.76 388.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "26295f29-720e-4e13-bcc8-87dfa44d25f7")
-		)
-		(pin "1"
-			(uuid "b9ec8ccb-e012-4351-a632-e605d0b6052b")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J28")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C_Polarized")
 		(at 579.12 497.84 0)
 		(unit 1)
@@ -118744,83 +117834,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 492.76 356.87 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "c09fcc4f-ee75-4ac0-99be-a1d8a3c271a3")
-		(property "Reference" "J23"
-			(at 488.95 356.108 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_01x02"
-			(at 485.14 360.172 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
-			(at 492.76 356.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 492.76 356.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 492.76 356.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 492.76 356.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "c5e811a5-83c4-4093-906d-f7dc86cc957f")
-		)
-		(pin "1"
-			(uuid "77531f9f-84ef-4312-b9dd-ec115e25947e")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J23")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C")
 		(at 601.98 99.06 0)
 		(unit 1)
@@ -121441,83 +120454,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "#PWR029")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 492.76 363.22 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "c86b2ed9-e07a-4a3e-b66a-007cf343de0f")
-		(property "Reference" "J24"
-			(at 488.95 362.458 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_01x02"
-			(at 485.14 366.522 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
-			(at 492.76 363.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 492.76 363.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 492.76 363.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 492.76 363.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "8012cc6b-d2d7-42cc-b38b-15ab7d28ee5d")
-		)
-		(pin "1"
-			(uuid "1441d5e8-ea1d-4b67-aac6-9aee88b3aac1")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "J24")
 					(unit 1)
 				)
 			)
