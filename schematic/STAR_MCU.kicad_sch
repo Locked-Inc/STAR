@@ -11516,6 +11516,16 @@
 		)
 		(uuid "153e8660-4130-4f25-afaf-a5d27c9990f4")
 	)
+	(text "MTU2, E1 PB(C?)"
+		(exclude_from_sim no)
+		(at 638.048 203.962 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "1ddf9f87-1298-4064-a01a-edd59e6a3920")
+	)
 	(text "MOTOR3"
 		(exclude_from_sim no)
 		(at 779.78 493.776 0)
@@ -11557,6 +11567,26 @@
 		)
 		(uuid "2ee44504-ed96-4932-956b-16c14d9e26ab")
 	)
+	(text "MTU4, E3 PA"
+		(exclude_from_sim no)
+		(at 755.904 475.742 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "2fe55f03-9db6-4d0f-aec8-151ec6b31e84")
+	)
+	(text "MTU1, E0 PB"
+		(exclude_from_sim no)
+		(at 638.81 217.678 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "317b708f-c21b-4334-8c77-b594a863fd89")
+	)
 	(text "MOTOR2"
 		(exclude_from_sim no)
 		(at 779.78 459.486 0)
@@ -11578,6 +11608,16 @@
 		)
 		(uuid "3e23d5d0-fd2e-4ca6-b6a5-043d4ffc73a5")
 	)
+	(text "MTU2, E1 PA"
+		(exclude_from_sim no)
+		(at 756.412 407.162 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "3e2ea0cb-6771-4d3d-b3d3-e09097afb0aa")
+	)
 	(text "Temperature Sensor"
 		(exclude_from_sim no)
 		(at 745.998 69.596 0)
@@ -11589,6 +11629,16 @@
 		)
 		(uuid "3ea5fbcd-ceda-43e1-afb3-f4e71da93354")
 	)
+	(text "MTU1, E0 PA"
+		(exclude_from_sim no)
+		(at 755.904 372.872 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "413e75c4-f011-4e12-a7bb-a098ed3ded69")
+	)
 	(text "need a pullup on this line"
 		(exclude_from_sim no)
 		(at 740.918 286.258 0)
@@ -11598,6 +11648,16 @@
 			)
 		)
 		(uuid "43c2a12a-b7ea-4184-96a6-f7cdd6176b40")
+	)
+	(text "PINS 47-50 \nAlso Go Nowhere"
+		(exclude_from_sim no)
+		(at 822.706 209.296 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "4b58fff1-afcd-413a-bc4d-88aaee583344")
 	)
 	(text "input line is 20A, 4 motots, 3A eash, ADC overhead, 3.2A\n\nI_MCU_MOTOR = I_IPROPI x A_IPROPI\n3.2A = I_IPROPI x 3075. I_PROPI=0.00104065\n3.3V = 0.001041A x R, R = 3171.1 -> 3k16"
 		(exclude_from_sim no)
@@ -11642,6 +11702,16 @@
 		)
 		(uuid "5741b754-9fe3-440c-b315-627bb779ed8f")
 	)
+	(text "MTU2, E1 PB(C)"
+		(exclude_from_sim no)
+		(at 754.38 409.194 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "57f6b896-789f-4c77-ac53-99b07d82f2fc")
+	)
 	(text "5V0 Buck"
 		(exclude_from_sim no)
 		(at 492.506 455.422 0)
@@ -11676,6 +11746,26 @@
 			)
 		)
 		(uuid "6ee94701-bf3b-4047-b66f-ea904880be74")
+	)
+	(text "53 & 54 are crossed \nCORRECTLY"
+		(exclude_from_sim no)
+		(at 825.754 195.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "6f28a59c-bf9a-40e2-95d5-cbe6d43aa989")
+	)
+	(text "MTU2, E1 PA"
+		(exclude_from_sim no)
+		(at 638.81 220.218 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "70a1efec-59c5-43de-b028-fdc6ab6587b7")
 	)
 	(text "USB0 USB-C"
 		(exclude_from_sim no)
@@ -11721,6 +11811,26 @@
 			)
 		)
 		(uuid "76fcd73d-7ccd-4e6f-8887-c7e679c4b0c1")
+	)
+	(text "MTU4, E3 PA"
+		(exclude_from_sim no)
+		(at 639.318 196.088 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "77921efe-3e98-48e4-a218-9aa4c8065a5a")
+	)
+	(text "MTU1, E0 PA"
+		(exclude_from_sim no)
+		(at 639.318 198.628 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "7c19ad1b-b73b-43f7-8b7f-84d184e33227")
 	)
 	(text "LiDAR"
 		(exclude_from_sim no)
@@ -11807,6 +11917,16 @@
 		)
 		(uuid "90c484b8-ae4b-4ae5-9b6e-be273effea13")
 	)
+	(text "Where are these 2 going?"
+		(exclude_from_sim no)
+		(at 633.222 207.518 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "91e41dec-6859-47d3-96bc-9fe58664b3c4")
+	)
 	(text "R = (3.3-2)/20ma = 65 Ohms"
 		(exclude_from_sim no)
 		(at 711.454 466.852 0)
@@ -11827,6 +11947,26 @@
 		)
 		(uuid "981d9851-5848-47cc-96ab-d0f9eee4c018")
 	)
+	(text "PINS 55-58 \nAlso Go Nowhere"
+		(exclude_from_sim no)
+		(at 822.706 187.96 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "9837344b-6a26-419c-a8cf-2cb9d6592d3b")
+	)
+	(text "MTU1, E0 PB"
+		(exclude_from_sim no)
+		(at 755.904 375.158 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "9bb1ff04-d10b-436a-a685-76d9e8b5abc8")
+	)
 	(text "Stereo Cameras"
 		(exclude_from_sim no)
 		(at 172.212 154.178 0)
@@ -11837,6 +11977,16 @@
 			(justify right)
 		)
 		(uuid "9c9a9f51-d01d-4d72-ae7a-6a535d244b92")
+	)
+	(text "PIN 41-44 \nGo nowhere?"
+		(exclude_from_sim no)
+		(at 820.674 226.822 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "a1ec1351-51e5-48bf-913a-bb6c79d741d1")
 	)
 	(text "VCC\nTRIG\nECHO\nGND"
 		(exclude_from_sim no)
@@ -11891,6 +12041,26 @@
 		)
 		(uuid "bda8740f-46ff-4acf-9c69-563a2641953f")
 	)
+	(text "Maybe? PMOD JF SDA (P28)"
+		(exclude_from_sim no)
+		(at 124.714 86.868 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "c24bb344-b672-4777-b8bf-0e9558ecc495")
+	)
+	(text "Maybe? PMOD JF SCL (P27)"
+		(exclude_from_sim no)
+		(at 43.18 86.868 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "c708f915-c6d0-4adc-9ade-4a5d2a4eedfc")
+	)
 	(text "LEDs"
 		(exclude_from_sim no)
 		(at 536.702 415.798 0)
@@ -11932,6 +12102,16 @@
 			)
 		)
 		(uuid "f320f2d2-d37d-4eac-9b36-ca6460c96094")
+	)
+	(text "Im guessing this is right"
+		(exclude_from_sim no)
+		(at 302.768 216.408 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "fa146430-608a-44c7-bff0-9110ca19da39")
 	)
 	(junction
 		(at 665.48 444.5)
