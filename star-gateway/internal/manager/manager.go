@@ -533,6 +533,13 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 		return nil, errors.New("no active transport available")
 	}
 
+	// FIX: Check if Transport interface is nil to prevent panic
+	if activeWrapper.Transport == nil {
+		err := errors.New("active transport interface is nil")
+		tm.recordOperation(activeName, err, 0, false)
+		return nil, err
+	}
+
 	// Validate decoder
 	if activeWrapper.Decoder == nil {
 		err := errors.New("transport decoder not initialized")
@@ -550,6 +557,11 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 
 	if err != nil {
 		return nil, err
+	}
+
+	// FIX: Handle nil result (e.g. control frames handled internally by transport)
+	if result == nil {
+		return nil, nil
 	}
 
 	// Update heartbeat based on frame type

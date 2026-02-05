@@ -615,8 +615,8 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	// Decode payload (with optional FEC decoding)
 	payload := f.Payload
 	fecDecoded := false
-	pathMetric := 0      // Path metric for FEC decoder confidence
-	combiningCount := 1  // Number of combining attempts (SPILink doesn't use HARQ combining)
+	pathMetric := 0     // Path metric for FEC decoder confidence
+	combiningCount := 1 // Number of combining attempts (SPILink doesn't use HARQ combining)
 
 	if s.config.EnableFEC && (f.Header.Flags&frame.FlagFECEnabled) != 0 {
 		// FEC decoding path (Phase 2)

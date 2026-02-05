@@ -589,8 +589,8 @@ func (h *ChaseCombining) handleReceivedFrame(f *frame.Frame) (*ReceiveResult, er
 func (h *ChaseCombining) handleExpectedFrame(f *frame.Frame) (*ReceiveResult, error) {
 	var decoded []byte
 	fecDecoded := false
-	pathMetric := 0      // Path metric for FEC decoder confidence
-	combiningCount := 1  // Number of combining attempts (default 1)
+	pathMetric := 0     // Path metric for FEC decoder confidence
+	combiningCount := 1 // Number of combining attempts (default 1)
 
 	if h.config.FECEnabled && (f.Header.Flags&frame.FlagFECEnabled) != 0 {
 		if h.fecDecoder == nil {
