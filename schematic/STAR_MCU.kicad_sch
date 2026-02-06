@@ -11141,6 +11141,18 @@
 		(uuid 23fd22c2-ca7c-41ee-af2c-c7dd527578b0)
 	)
 	(rectangle
+		(start 234.95 16.51)
+		(end 819.15 262.89)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 27b1b8b9-9741-48cc-bffb-6d25ab590c9d)
+	)
+	(rectangle
 		(start 510.54 464.82)
 		(end 567.69 497.84)
 		(stroke
@@ -11362,16 +11374,6 @@
 		)
 		(uuid "153e8660-4130-4f25-afaf-a5d27c9990f4")
 	)
-	(text "MTU2, E1 PB(C?)"
-		(exclude_from_sim no)
-		(at 638.048 203.962 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "1ddf9f87-1298-4064-a01a-edd59e6a3920")
-	)
 	(text "MOTOR3"
 		(exclude_from_sim no)
 		(at 779.78 493.776 0)
@@ -11413,26 +11415,6 @@
 		)
 		(uuid "2ee44504-ed96-4932-956b-16c14d9e26ab")
 	)
-	(text "MTU4, E3 PA"
-		(exclude_from_sim no)
-		(at 755.904 475.742 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "2fe55f03-9db6-4d0f-aec8-151ec6b31e84")
-	)
-	(text "MTU1, E0 PB"
-		(exclude_from_sim no)
-		(at 638.81 217.678 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "317b708f-c21b-4334-8c77-b594a863fd89")
-	)
 	(text "MOTOR2"
 		(exclude_from_sim no)
 		(at 779.78 459.486 0)
@@ -11454,16 +11436,6 @@
 		)
 		(uuid "3e23d5d0-fd2e-4ca6-b6a5-043d4ffc73a5")
 	)
-	(text "MTU2, E1 PA"
-		(exclude_from_sim no)
-		(at 756.412 407.162 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "3e2ea0cb-6771-4d3d-b3d3-e09097afb0aa")
-	)
 	(text "Temperature Sensor"
 		(exclude_from_sim no)
 		(at 745.998 69.596 0)
@@ -11474,16 +11446,6 @@
 			(justify right)
 		)
 		(uuid "3ea5fbcd-ceda-43e1-afb3-f4e71da93354")
-	)
-	(text "MTU1, E0 PA"
-		(exclude_from_sim no)
-		(at 755.904 372.872 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "413e75c4-f011-4e12-a7bb-a098ed3ded69")
 	)
 	(text "need a pullup on this line"
 		(exclude_from_sim no)
@@ -11538,16 +11500,6 @@
 		)
 		(uuid "5741b754-9fe3-440c-b315-627bb779ed8f")
 	)
-	(text "MTU2, E1 PB(C)"
-		(exclude_from_sim no)
-		(at 754.38 409.194 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "57f6b896-789f-4c77-ac53-99b07d82f2fc")
-	)
 	(text "5V0 Buck"
 		(exclude_from_sim no)
 		(at 492.506 455.422 0)
@@ -11582,26 +11534,6 @@
 			)
 		)
 		(uuid "6ee94701-bf3b-4047-b66f-ea904880be74")
-	)
-	(text "53 & 54 are crossed \nCORRECTLY"
-		(exclude_from_sim no)
-		(at 825.754 195.58 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "6f28a59c-bf9a-40e2-95d5-cbe6d43aa989")
-	)
-	(text "MTU2, E1 PA"
-		(exclude_from_sim no)
-		(at 638.81 220.218 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "70a1efec-59c5-43de-b028-fdc6ab6587b7")
 	)
 	(text "USB0 USB-C"
 		(exclude_from_sim no)
@@ -11647,26 +11579,6 @@
 			)
 		)
 		(uuid "76fcd73d-7ccd-4e6f-8887-c7e679c4b0c1")
-	)
-	(text "MTU4, E3 PA"
-		(exclude_from_sim no)
-		(at 639.318 196.088 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "77921efe-3e98-48e4-a218-9aa4c8065a5a")
-	)
-	(text "MTU1, E0 PA"
-		(exclude_from_sim no)
-		(at 639.318 198.628 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "7c19ad1b-b73b-43f7-8b7f-84d184e33227")
 	)
 	(text "LiDAR"
 		(exclude_from_sim no)
@@ -11753,16 +11665,6 @@
 		)
 		(uuid "90c484b8-ae4b-4ae5-9b6e-be273effea13")
 	)
-	(text "Where are these 2 going?"
-		(exclude_from_sim no)
-		(at 633.222 207.518 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "91e41dec-6859-47d3-96bc-9fe58664b3c4")
-	)
 	(text "R = (3.3-2)/20ma = 65 Ohms"
 		(exclude_from_sim no)
 		(at 711.454 466.852 0)
@@ -11782,16 +11684,6 @@
 			)
 		)
 		(uuid "981d9851-5848-47cc-96ab-d0f9eee4c018")
-	)
-	(text "MTU1, E0 PB"
-		(exclude_from_sim no)
-		(at 755.904 375.158 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "9bb1ff04-d10b-436a-a685-76d9e8b5abc8")
 	)
 	(text "Stereo Cameras"
 		(exclude_from_sim no)
@@ -11857,26 +11749,6 @@
 		)
 		(uuid "bda8740f-46ff-4acf-9c69-563a2641953f")
 	)
-	(text "Maybe? PMOD JF SDA (P28)"
-		(exclude_from_sim no)
-		(at 124.714 86.868 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "c24bb344-b672-4777-b8bf-0e9558ecc495")
-	)
-	(text "Maybe? PMOD JF SCL (P27)"
-		(exclude_from_sim no)
-		(at 43.18 86.868 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "c708f915-c6d0-4adc-9ade-4a5d2a4eedfc")
-	)
 	(text "LEDs"
 		(exclude_from_sim no)
 		(at 536.702 415.798 0)
@@ -11918,16 +11790,6 @@
 			)
 		)
 		(uuid "f320f2d2-d37d-4eac-9b36-ca6460c96094")
-	)
-	(text "Im guessing this is right"
-		(exclude_from_sim no)
-		(at 302.768 216.408 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "fa146430-608a-44c7-bff0-9110ca19da39")
 	)
 	(junction
 		(at 665.48 444.5)
@@ -13880,6 +13742,10 @@
 	(no_connect
 		(at 762 185.42)
 		(uuid "c8720fe3-9c97-4765-be91-de8c28a9c241")
+	)
+	(no_connect
+		(at 762 214.63)
+		(uuid "ccd3fe76-cec6-4c21-b448-664994143e89")
 	)
 	(no_connect
 		(at 165.1 184.15)
@@ -16125,16 +15991,6 @@
 	)
 	(wire
 		(pts
-			(xy 646.43 218.44) (xy 685.8 218.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "304c0df9-0b31-4538-b329-644d3120826f")
-	)
-	(wire
-		(pts
 			(xy 436.88 152.4) (xy 439.42 152.4)
 		)
 		(stroke
@@ -16725,16 +16581,6 @@
 	)
 	(wire
 		(pts
-			(xy 646.43 199.39) (xy 685.8 199.39)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3ec771c6-b8cf-4811-adb8-9a54ffb35451")
-	)
-	(wire
-		(pts
 			(xy 652.78 86.36) (xy 685.8 86.36)
 		)
 		(stroke
@@ -17032,16 +16878,6 @@
 			(type default)
 		)
 		(uuid "46022a51-e18b-45e4-8225-54ab43b3f552")
-	)
-	(wire
-		(pts
-			(xy 643.89 121.92) (xy 685.8 121.92)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4643a83c-5919-4a08-b925-3b32001f2a7d")
 	)
 	(wire
 		(pts
@@ -18145,6 +17981,16 @@
 	)
 	(wire
 		(pts
+			(xy 646.43 213.36) (xy 685.8 213.36)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5b391ac9-f656-4de3-ab44-d5ac5056c1a1")
+	)
+	(wire
+		(pts
 			(xy 631.19 102.87) (xy 631.19 107.95)
 		)
 		(stroke
@@ -18582,16 +18428,6 @@
 			(type default)
 		)
 		(uuid "63c544e9-db7a-4b75-b61e-63b6335193c6")
-	)
-	(wire
-		(pts
-			(xy 646.43 204.47) (xy 685.8 204.47)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "63f75c46-2076-44b1-a261-db3033e24f39")
 	)
 	(wire
 		(pts
@@ -19062,16 +18898,6 @@
 			(type default)
 		)
 		(uuid "6e7ff117-cacf-4050-b683-627baff23735")
-	)
-	(wire
-		(pts
-			(xy 646.43 194.31) (xy 685.8 194.31)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6e81a23e-b43e-4828-b984-fb9fbd34b7c6")
 	)
 	(wire
 		(pts
@@ -20205,16 +20031,6 @@
 	)
 	(wire
 		(pts
-			(xy 646.43 196.85) (xy 685.8 196.85)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8626817a-8274-4a32-ad90-569c68e5aa3f")
-	)
-	(wire
-		(pts
 			(xy 623.57 327.66) (xy 650.24 327.66)
 		)
 		(stroke
@@ -21242,6 +21058,16 @@
 			(type default)
 		)
 		(uuid "998d2da3-7e35-41e5-96d7-980a4d14b8fc")
+	)
+	(wire
+		(pts
+			(xy 646.43 218.44) (xy 685.8 218.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "99e2f501-4173-4182-9d80-1542bcf8ba0a")
 	)
 	(wire
 		(pts
@@ -22845,6 +22671,16 @@
 	)
 	(wire
 		(pts
+			(xy 646.43 194.31) (xy 685.8 194.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bb999060-039e-44fa-9f6a-c7f55892e77f")
+	)
+	(wire
+		(pts
 			(xy 106.68 85.09) (xy 93.98 85.09)
 		)
 		(stroke
@@ -22915,16 +22751,6 @@
 	)
 	(wire
 		(pts
-			(xy 646.43 213.36) (xy 685.8 213.36)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bd81e053-cb40-4c5e-8c23-9d0194227681")
-	)
-	(wire
-		(pts
 			(xy 383.54 118.11) (xy 383.54 123.19)
 		)
 		(stroke
@@ -22942,6 +22768,16 @@
 			(type default)
 		)
 		(uuid "be70fbc2-0245-477a-8c0a-6c3f2b6579a2")
+	)
+	(wire
+		(pts
+			(xy 646.43 199.39) (xy 685.8 199.39)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "be82f45e-72bf-427e-b5a4-cb415b1597be")
 	)
 	(wire
 		(pts
@@ -24475,6 +24311,16 @@
 	)
 	(wire
 		(pts
+			(xy 646.43 196.85) (xy 685.8 196.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e036b1fc-b07a-4d7e-840f-c685f493d03d")
+	)
+	(wire
+		(pts
 			(xy 628.65 67.31) (xy 628.65 68.58)
 		)
 		(stroke
@@ -25225,13 +25071,13 @@
 	)
 	(wire
 		(pts
-			(xy 762 214.63) (xy 814.07 214.63)
+			(xy 646.43 204.47) (xy 685.8 204.47)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "f1654a1b-9d29-47f5-beac-2cc2b3b8ca9b")
+		(uuid "f10a4976-cc9c-4003-9b59-02f7b1f6392e")
 	)
 	(wire
 		(pts
@@ -25902,6 +25748,16 @@
 			(type default)
 		)
 		(uuid "fe90cf0b-e023-4b90-b3a6-bf01edf99eea")
+	)
+	(wire
+		(pts
+			(xy 643.89 121.92) (xy 685.8 121.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "feb75edf-799a-4984-b29f-914289245b85")
 	)
 	(wire
 		(pts
@@ -26915,16 +26771,6 @@
 		)
 		(uuid "02fa74a9-7daa-454b-9717-d8e612cc7dd0")
 	)
-	(label "RX72N_PIN_20"
-		(at 646.43 187.96 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "050fb4fb-d858-4650-aa91-13f5109d7ada")
-	)
 	(label "SCI9_TXD9"
 		(at 425.45 96.52 0)
 		(effects
@@ -26936,7 +26782,7 @@
 		(uuid "05364334-384a-4a42-b76b-ba7d833eac01")
 	)
 	(label "ENCODER3_PHASE_A"
-		(at 664.21 196.85 0)
+		(at 646.43 196.85 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -26944,16 +26790,6 @@
 			(justify left bottom)
 		)
 		(uuid "0551cd33-19e1-4edb-b16f-82f4bdd992b3")
-	)
-	(label "RX72N_PIN_68"
-		(at 814.07 163.83 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "077c4b87-a28a-413e-b10b-afeecaf8845b")
 	)
 	(label "SCI_USBC_USBDN"
 		(at 464.82 139.7 180)
@@ -26997,7 +26833,7 @@
 		(uuid "0cebcf8d-3131-40df-a4f1-3fbbfda4b522")
 	)
 	(label "RSPIC_MOTOR0_nCS"
-		(at 664.21 213.36 0)
+		(at 646.43 213.36 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27017,7 +26853,7 @@
 		(uuid "0d7cf757-90ac-4428-ae16-8a49fe03a279")
 	)
 	(label "SONAR_ECHO_1"
-		(at 793.75 163.83 180)
+		(at 814.07 163.83 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27056,16 +26892,6 @@
 		)
 		(uuid "0f42b85e-35a0-4600-adde-0040c10dddbe")
 	)
-	(label "RX72N_PIN_92"
-		(at 814.07 99.06 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "0f7a114b-5c60-43b1-a690-6c2a20e13266")
-	)
 	(label "BTP_INT"
 		(at 519.43 472.44 0)
 		(effects
@@ -27085,16 +26911,6 @@
 			(justify left bottom)
 		)
 		(uuid "10727f05-be85-4273-9495-db56663412b5")
-	)
-	(label "RX72N_PIN_89"
-		(at 814.07 106.68 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "1175c141-f7a1-470d-b161-60dd8c8626f4")
 	)
 	(label "RSPIC_CIPO"
 		(at 684.53 285.75 180)
@@ -27178,7 +26994,7 @@
 		(uuid "1812e0d8-182e-4566-9c2c-6223ce9aeca1")
 	)
 	(label "RSPIC_MOTOR1_nCS"
-		(at 664.21 201.93 0)
+		(at 646.43 201.93 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27188,7 +27004,7 @@
 		(uuid "19b0a34a-553e-4fe8-8029-a24f3de9ba6c")
 	)
 	(label "LED_5"
-		(at 793.75 91.44 180)
+		(at 814.07 91.44 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27196,16 +27012,6 @@
 			(justify right bottom)
 		)
 		(uuid "19f47633-0e4e-42da-9c30-1e60a31dadc0")
-	)
-	(label "RX72N_PIN_93"
-		(at 814.07 96.52 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "1a959fae-c077-40fd-a54c-9eca6b198b8f")
 	)
 	(label "EMU_TDI_RXD"
 		(at 422.91 207.01 0)
@@ -27237,16 +27043,6 @@
 		)
 		(uuid "1eb0e00e-5df0-44ad-b036-412b745d363e")
 	)
-	(label "RX72N_PIN_67"
-		(at 814.07 166.37 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "215a55eb-1cb5-497b-a65d-62a7d7c8bf46")
-	)
 	(label "DSW_MD_FINED"
 		(at 495.3 209.55 0)
 		(effects
@@ -27256,26 +27052,6 @@
 			(justify left bottom)
 		)
 		(uuid "21b7d8d4-4177-455f-b046-2499a6bd4d31")
-	)
-	(label "RX72N_PIN_88"
-		(at 814.07 109.22 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "21c12ed4-0e0b-4e32-b54f-2c4a2d636003")
-	)
-	(label "RX72N_PIN_76"
-		(at 814.07 142.24 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "21c26fb7-1db4-4aeb-806f-5284315c7e8a")
 	)
 	(label "BOARD_3V3"
 		(at 684.53 293.37 180)
@@ -27298,7 +27074,7 @@
 		(uuid "2343595e-d2a1-44d0-ba2a-97194f530dc4")
 	)
 	(label "SONAR_TRIG_1"
-		(at 793.75 233.68 180)
+		(at 814.07 233.68 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27306,16 +27082,6 @@
 			(justify right bottom)
 		)
 		(uuid "24f87ecb-f587-4902-a2e0-b97541a097c4")
-	)
-	(label "RX72N_PIN_24"
-		(at 646.43 199.39 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "2526d027-e21b-467d-8b40-8264572f7ea3")
 	)
 	(label "BOARD_3V3"
 		(at 603.25 67.31 0)
@@ -27368,7 +27134,7 @@
 		(uuid "28e4ac53-7182-40ff-b095-642b36c05c91")
 	)
 	(label "EMU_TDI_RXD"
-		(at 664.21 187.96 0)
+		(at 646.43 187.96 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27398,7 +27164,7 @@
 		(uuid "2a6e5a92-4804-4bdc-887f-85bccda3b896")
 	)
 	(label "ENCODER3_PHASE_B"
-		(at 793.75 166.37 180)
+		(at 814.07 166.37 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27438,7 +27204,7 @@
 		(uuid "2cac9d77-f9d5-4f20-b341-7abf6390a5aa")
 	)
 	(label "MOTOR0_EN"
-		(at 793.75 142.24 180)
+		(at 814.07 142.24 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27448,7 +27214,7 @@
 		(uuid "2f0f3595-7854-4128-b345-0f6c6a03d3ec")
 	)
 	(label "RSPIC_MOTOR3_nCS"
-		(at 793.75 158.75 180)
+		(at 814.07 158.75 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27507,18 +27273,8 @@
 		)
 		(uuid "36374b6a-edab-4a83-80e1-0a9a101f3291")
 	)
-	(label "RX72N_PIN_26"
-		(at 646.43 204.47 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "36d336a0-9e8b-4afa-94a3-eef0db39807d")
-	)
 	(label "MOTOR1_PH"
-		(at 793.75 147.32 180)
+		(at 814.07 147.32 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27526,16 +27282,6 @@
 			(justify right bottom)
 		)
 		(uuid "37243e91-bd4e-4de0-8648-0be1b29e680e")
-	)
-	(label "RX72N_PIN_59"
-		(at 814.07 182.88 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "372ee809-e711-488a-8fa9-d1867dd3565a")
 	)
 	(label "BOARD_3V3"
 		(at 723.9 62.23 0)
@@ -27546,26 +27292,6 @@
 			(justify left bottom)
 		)
 		(uuid "3775429b-4610-4943-aa22-fe0dd15f52bc")
-	)
-	(label "RX72N_PIN_79"
-		(at 814.07 133.35 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "39f8c0f4-7760-4ea1-b6c5-c59cbc008980")
-	)
-	(label "RX72N_PIN_84"
-		(at 814.07 120.65 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "3a16147b-4b6b-46f5-a1ef-26d4ee225cc7")
 	)
 	(label "RSPIC_SCLK"
 		(at 601.98 283.21 0)
@@ -27608,7 +27334,7 @@
 		(uuid "3d8b9555-799b-408e-905a-f48349cf1f5d")
 	)
 	(label "RPI5_RSPIA_SCLK"
-		(at 793.75 171.45 180)
+		(at 814.07 171.45 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27676,26 +27402,6 @@
 			(justify left bottom)
 		)
 		(uuid "4368c134-269b-474d-9025-b24b9bd737bf")
-	)
-	(label "RX72N_PIN_83"
-		(at 814.07 123.19 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "439bcea4-a10a-4a7b-88dc-7d67eedb430b")
-	)
-	(label "RX72N_PIN_22"
-		(at 646.43 194.31 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "43fd867b-4559-4b7b-b103-ba62357813e6")
 	)
 	(label "BMS_SMBUS_DATA"
 		(at 316.23 218.44 0)
@@ -27788,7 +27494,7 @@
 		(uuid "4b84f39d-3b70-433b-b404-4536abe601b2")
 	)
 	(label "RPI5_RSPIA_CIPO"
-		(at 793.75 176.53 180)
+		(at 814.07 176.53 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27818,7 +27524,7 @@
 		(uuid "4f355b6e-bbda-4f90-ad67-a67cc2b3eb64")
 	)
 	(label "MOTOR0_IPROPI"
-		(at 793.75 93.98 180)
+		(at 814.07 93.98 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27828,7 +27534,7 @@
 		(uuid "4f6d991f-4971-42d7-9762-4637da7b4c37")
 	)
 	(label "LED_3"
-		(at 793.75 125.73 180)
+		(at 814.07 125.73 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27876,16 +27582,6 @@
 			(justify right bottom)
 		)
 		(uuid "5539e431-d868-4116-ab82-4d926679c2f1")
-	)
-	(label "RX72N_PIN_71"
-		(at 814.07 154.94 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "55ebb68a-5e4f-4622-b4b4-29bb8be4694c")
 	)
 	(label "MOTOR3_VEE"
 		(at 763.27 471.17 0)
@@ -27959,7 +27655,7 @@
 		(uuid "5b0fe941-3608-461f-9f91-71dc922a0ccc")
 	)
 	(label "LED_4"
-		(at 793.75 115.57 180)
+		(at 814.07 115.57 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -27977,26 +27673,6 @@
 			(justify left bottom)
 		)
 		(uuid "5ccd1dda-ce22-4f25-b8d8-a9b28b2ebb19")
-	)
-	(label "RX72N_PIN_29"
-		(at 646.43 213.36 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "5cdd7b15-5b14-4204-8848-b4f0d502cf8d")
-	)
-	(label "RX72N_PIN_39"
-		(at 814.07 236.22 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "5d4c107c-4efd-495b-b924-1f7315c90f2b")
 	)
 	(label "LiDAR_TX_PI5_RX"
 		(at 142.24 64.77 180)
@@ -28048,16 +27724,6 @@
 			(justify left bottom)
 		)
 		(uuid "5f46e1fc-6116-4dc1-9d03-d2b72108a392")
-	)
-	(label "RX72N_PIN_65"
-		(at 814.07 171.45 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "5f93c293-2046-4098-b51f-d39a7709be26")
 	)
 	(label "SONAR_ECHO_0"
 		(at 416.56 358.14 0)
@@ -28111,7 +27777,7 @@
 		(uuid "62f25cd6-0ae8-472d-ba13-821e9939897e")
 	)
 	(label "MOTOR2_EN"
-		(at 793.75 137.16 180)
+		(at 814.07 137.16 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28121,7 +27787,7 @@
 		(uuid "6445a5fe-9714-4d76-a564-9168fd5ffd97")
 	)
 	(label "ENCODER2_PHASE_A"
-		(at 793.75 204.47 180)
+		(at 814.07 204.47 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28141,7 +27807,7 @@
 		(uuid "6766b551-8cf6-4ef2-8476-cf71d7b6066a")
 	)
 	(label "MOTOR1_EN"
-		(at 793.75 139.7 180)
+		(at 814.07 139.7 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28151,7 +27817,7 @@
 		(uuid "677789f7-e0ce-41a2-b348-f49b9e83afab")
 	)
 	(label "SCI9_RXD9"
-		(at 793.75 195.58 180)
+		(at 814.07 195.58 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28220,16 +27886,6 @@
 		)
 		(uuid "6d0b050f-ca31-41d1-b5da-953c9ae0242b")
 	)
-	(label "RX72N_PIN_23"
-		(at 646.43 196.85 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "6d75c944-03fd-40f1-a1bc-a37a6f78621d")
-	)
 	(label "EMU_TMS"
 		(at 422.91 204.47 0)
 		(effects
@@ -28241,7 +27897,7 @@
 		(uuid "6da51c5c-da8e-4c78-8180-cf705b0b789d")
 	)
 	(label "MOTOR3_nFAULT"
-		(at 793.75 111.76 180)
+		(at 814.07 111.76 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28259,16 +27915,6 @@
 			(justify right bottom)
 		)
 		(uuid "6f10f648-9b29-409c-9bb2-8443e977ff03")
-	)
-	(label "RX72N_PIN_81"
-		(at 814.07 128.27 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "6fa2567c-2a18-465e-8cbb-bed03f875a8a")
 	)
 	(label "DSW_UB"
 		(at 495.3 212.09 0)
@@ -28301,7 +27947,7 @@
 		(uuid "7294e5ad-a662-4057-93b1-daaed4d49673")
 	)
 	(label "SONAR_ECHO_2"
-		(at 793.75 182.88 180)
+		(at 814.07 182.88 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28451,26 +28097,6 @@
 		)
 		(uuid "82df3d70-e901-443d-a342-af4a662f289f")
 	)
-	(label "RX72N_PIN_82"
-		(at 814.07 125.73 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "8412e3ef-35fd-4878-8abf-52e45f731f36")
-	)
-	(label "RX72N_PIN_87"
-		(at 814.07 111.76 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "86033b71-9c71-4534-829c-4fcb4eb0165a")
-	)
 	(label "PI_PIN_19"
 		(at 60.96 77.47 0)
 		(effects
@@ -28502,7 +28128,7 @@
 		(uuid "884c0aab-b3f4-477b-9f39-90d2b5d5a900")
 	)
 	(label "MOTOR3_PH"
-		(at 793.75 154.94 180)
+		(at 814.07 154.94 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28512,7 +28138,7 @@
 		(uuid "889db3f1-7725-4d6f-9db6-62795620cd63")
 	)
 	(label "ENCODER2_PHASE_B"
-		(at 793.75 201.93 180)
+		(at 814.07 201.93 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28532,7 +28158,7 @@
 		(uuid "8da59534-b568-4f21-81ef-cc744f994786")
 	)
 	(label "SONAR_TRIG_2"
-		(at 660.4 121.92 0)
+		(at 643.89 121.92 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28571,16 +28197,6 @@
 		)
 		(uuid "91138525-5875-4d0b-9286-d278271e72d0")
 	)
-	(label "RX72N_PIN_4"
-		(at 643.89 121.92 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "9224e5b1-b705-4077-82a5-84242f1e38ce")
-	)
 	(label "PI_PIN_28"
 		(at 106.68 87.63 180)
 		(effects
@@ -28590,26 +28206,6 @@
 			(justify right bottom)
 		)
 		(uuid "92332a04-3fd8-4dc5-a522-2f1e82b7c525")
-	)
-	(label "RX72N_PIN_46"
-		(at 814.07 217.17 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "92448c44-7927-4ad3-a9e5-5e3aa28f6a4e")
-	)
-	(label "RX72N_PIN_53"
-		(at 814.07 198.12 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "927433c8-e987-4e2d-b79a-5d5e3d9b70c1")
 	)
 	(label "BOARD_3V3"
 		(at 685.8 424.18 180)
@@ -28642,7 +28238,7 @@
 		(uuid "97e1e834-da2a-4186-be7f-5ff25b319e1d")
 	)
 	(label "MOTOR3_EN"
-		(at 793.75 152.4 180)
+		(at 814.07 152.4 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28662,7 +28258,7 @@
 		(uuid "99ae1ef2-97c8-4bf7-be01-3c0e5a2f8c01")
 	)
 	(label "RSPIC_COPI"
-		(at 793.75 118.11 180)
+		(at 814.07 118.11 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28682,7 +28278,7 @@
 		(uuid "9ab288f5-0629-4565-8915-549e4499e957")
 	)
 	(label "MOTOR2_IPROPI"
-		(at 793.75 99.06 180)
+		(at 814.07 99.06 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28702,7 +28298,7 @@
 		(uuid "9b69f13e-1ede-4bda-a2f6-9a80df9bc4a4")
 	)
 	(label "SCI9_TXD9"
-		(at 793.75 198.12 180)
+		(at 814.07 198.12 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28721,16 +28317,6 @@
 		)
 		(uuid "9d445a7e-e96f-406d-be5d-1840e65cf544")
 	)
-	(label "RX72N_PIN_91"
-		(at 814.07 101.6 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "9e2fec88-0fbf-4ce4-a28a-86c122d46074")
-	)
 	(label "BOARD_3V3"
 		(at 609.6 86.36 0)
 		(effects
@@ -28742,7 +28328,7 @@
 		(uuid "9e770f3f-ce5c-4ce6-a9c3-05cf10421a58")
 	)
 	(label "MOTOR0_PH"
-		(at 793.75 149.86 180)
+		(at 814.07 149.86 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28781,16 +28367,6 @@
 		)
 		(uuid "a03cf22e-ca4e-4666-80da-b7e688d67359")
 	)
-	(label "RX72N_PIN_63"
-		(at 814.07 176.53 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "a07266f4-ed6e-4dc6-8639-84968767e28c")
-	)
 	(label "BOARD_3V3"
 		(at 417.83 180.34 180)
 		(effects
@@ -28822,7 +28398,7 @@
 		(uuid "a2033e30-eb05-473a-8b0d-645f10b181d6")
 	)
 	(label "MOTOR1_IPROPI"
-		(at 793.75 96.52 180)
+		(at 814.07 96.52 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28840,16 +28416,6 @@
 			(justify left bottom)
 		)
 		(uuid "a38f26ae-9ab5-45ff-a284-4ec1dc46aa7d")
-	)
-	(label "RX72N_PIN_90"
-		(at 814.07 104.14 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "a391ef57-243c-41b3-a8d0-acdf37032769")
 	)
 	(label "EMU_TCK"
 		(at 664.21 191.77 0)
@@ -28903,7 +28469,7 @@
 		(uuid "a7533382-5510-4c76-8031-9c36a7754253")
 	)
 	(label "EMU_TDO_TXD"
-		(at 664.21 194.31 0)
+		(at 646.43 194.31 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28913,7 +28479,7 @@
 		(uuid "a7aab426-741f-4adb-8dc8-61b6efdab9d4")
 	)
 	(label "RPI5_RSPIA_CS"
-		(at 793.75 168.91 180)
+		(at 814.07 168.91 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28944,7 +28510,7 @@
 		(uuid "a8c6279b-6bbe-413e-8249-0e3c8c231f50")
 	)
 	(label "ENCODER0_PHASE_B"
-		(at 664.21 218.44 0)
+		(at 646.43 218.44 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -28954,7 +28520,7 @@
 		(uuid "a98a5a7e-73a3-40c9-b6ec-fd517f7a46d2")
 	)
 	(label "DS18B20_DQ"
-		(at 793.75 88.9 180)
+		(at 814.07 88.9 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29016,7 +28582,7 @@
 		(uuid "ad54d379-fe62-46f1-a732-b820f13e9757")
 	)
 	(label "ENCODER1_PHASE_A"
-		(at 664.21 220.98 0)
+		(at 646.43 220.98 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29024,16 +28590,6 @@
 			(justify left bottom)
 		)
 		(uuid "ad999eed-477f-49e5-a98c-c02cfc97c727")
-	)
-	(label "RX72N_PIN_75"
-		(at 814.07 144.78 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "add9d16d-6e51-47d9-85c2-a4a8d6ad824e")
 	)
 	(label "BOARD_3V3"
 		(at 688.34 471.17 0)
@@ -29056,7 +28612,7 @@
 		(uuid "aef241b3-d6a9-4259-a44f-c5997f6a3fff")
 	)
 	(label "MOTOR2_nFAULT"
-		(at 793.75 109.22 180)
+		(at 814.07 109.22 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29084,16 +28640,6 @@
 			(justify right bottom)
 		)
 		(uuid "b07352a3-88e2-47e6-ac6a-8eba6e60150c")
-	)
-	(label "RX72N_PIN_25"
-		(at 646.43 201.93 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "b0b0b848-7249-4724-8dd1-1627997f64ae")
 	)
 	(label "PI_INTERNAL_5V0"
 		(at 114.3 54.61 180)
@@ -29124,16 +28670,6 @@
 			(justify left bottom)
 		)
 		(uuid "b2cd705c-d6f9-4939-a508-11d3a6fe7b5f")
-	)
-	(label "RX72N_PIN_72"
-		(at 814.07 152.4 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "b419f07b-d137-46ef-a611-a75833b23f6b")
 	)
 	(label "EMU_TRSTn"
 		(at 664.21 177.8 0)
@@ -29176,7 +28712,7 @@
 		(uuid "b889952e-b69e-4842-b79b-d8263bd3f5e3")
 	)
 	(label "MOTOR3_IPROPI"
-		(at 793.75 101.6 180)
+		(at 814.07 101.6 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29196,7 +28732,7 @@
 		(uuid "b97c1bf4-c062-472e-b247-b991e8325286")
 	)
 	(label "SONAR_ECHO_3"
-		(at 793.75 161.29 180)
+		(at 814.07 161.29 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29204,16 +28740,6 @@
 			(justify right bottom)
 		)
 		(uuid "bcc10ab2-64cd-479f-889d-79780527ff49")
-	)
-	(label "RX72N_PIN_86"
-		(at 814.07 115.57 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "bd582e82-8a85-47c3-91be-578e5d151f3e")
 	)
 	(label "MOTOR2_PH"
 		(at 603.25 419.1 0)
@@ -29224,16 +28750,6 @@
 			(justify left bottom)
 		)
 		(uuid "be742b97-4701-45a8-9aa2-4755cee17faf")
-	)
-	(label "RX72N_PIN_69"
-		(at 814.07 161.29 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "bed60256-c58c-4134-9320-6d9f0e59dceb")
 	)
 	(label "PI_PIN_21"
 		(at 60.96 80.01 0)
@@ -29255,16 +28771,6 @@
 		)
 		(uuid "bef92cce-bd97-4d43-8543-b5ead74b688d")
 	)
-	(label "RX72N_PIN_98"
-		(at 814.07 91.44 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "bf00b628-05c8-4358-8d99-cf1216fd691b")
-	)
 	(label "LED_1"
 		(at 481.33 365.76 0)
 		(effects
@@ -29284,26 +28790,6 @@
 			(justify right bottom)
 		)
 		(uuid "bf36d449-404c-4036-8b82-aae2072d2482")
-	)
-	(label "RX72N_PIN_34"
-		(at 627.38 226.06 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "c0507e53-5d6c-4fb5-8ed2-b0f8715514a4")
-	)
-	(label "RX72N_PIN_100"
-		(at 814.07 88.9 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "c091e0b3-8a20-4c6d-aa8b-a725d60fb725")
 	)
 	(label "RSPIC_COPI"
 		(at 685.8 414.02 180)
@@ -29335,16 +28821,6 @@
 		)
 		(uuid "c17aa436-c8fe-4488-a272-d8225b826840")
 	)
-	(label "RX72N_PIN_31"
-		(at 646.43 218.44 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "c3270481-e574-45cb-951b-2be6b6585182")
-	)
 	(label "PI_PIN_33"
 		(at 60.96 95.25 0)
 		(effects
@@ -29354,16 +28830,6 @@
 			(justify left bottom)
 		)
 		(uuid "c394316e-6b76-431b-b0d1-e2b462fa32dd")
-	)
-	(label "RX72N_PIN_40"
-		(at 814.07 233.68 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "c58627ab-d9ee-4757-936d-0ab7d2bd6e3e")
 	)
 	(label "BOARD_3V3"
 		(at 763.27 378.46 0)
@@ -29386,7 +28852,7 @@
 		(uuid "c5ba6a6b-875b-4d7c-993c-fa70373a0f58")
 	)
 	(label "MOTOR1_nFAULT"
-		(at 793.75 106.68 180)
+		(at 814.07 106.68 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29394,16 +28860,6 @@
 			(justify right bottom)
 		)
 		(uuid "c5dc24ef-3eaa-46db-8d40-8c39d5a99987")
-	)
-	(label "RX72N_PIN_66"
-		(at 814.07 168.91 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "c67c053d-490a-4995-b5b9-82caabaf03be")
 	)
 	(label "PI_PIN_22"
 		(at 106.68 80.01 180)
@@ -29436,7 +28892,7 @@
 		(uuid "c8ff3061-ed4b-47dd-9626-2dccb376f3f2")
 	)
 	(label "MOTOR0_nFAULT"
-		(at 793.75 104.14 180)
+		(at 814.07 104.14 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29475,16 +28931,6 @@
 		)
 		(uuid "cd6a33a5-cda0-4fa8-a2fa-058b497b67a7")
 	)
-	(label "RX72N_PIN_85"
-		(at 814.07 118.11 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "cd757f9c-3f2f-4788-a15d-ae2b0109cf98")
-	)
 	(label "PI_PIN_13"
 		(at 60.96 69.85 0)
 		(effects
@@ -29506,7 +28952,7 @@
 		(uuid "ceaaf799-c00e-4c48-a55e-7636d85b3a63")
 	)
 	(label "RPI5_RSPIA_COPI"
-		(at 793.75 173.99 180)
+		(at 814.07 173.99 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29575,18 +29021,8 @@
 		)
 		(uuid "d0ce9911-5899-4d6d-8ff6-84bf38e900c3")
 	)
-	(label "RX72N_PIN_77"
-		(at 814.07 139.7 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "d1193cf2-727b-470d-baf8-4c41ea522650")
-	)
 	(label "ENCODER0_PHASE_A"
-		(at 664.21 199.39 0)
+		(at 646.43 199.39 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29616,7 +29052,7 @@
 		(uuid "d412b822-e0ff-4090-85f4-010a1aa0d467")
 	)
 	(label "MOTOR2_PH"
-		(at 793.75 144.78 180)
+		(at 814.07 144.78 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29634,36 +29070,6 @@
 			(justify right bottom)
 		)
 		(uuid "d57bb601-74f1-4a02-8423-a8a5ef2c902a")
-	)
-	(label "RX72N_PIN_64"
-		(at 814.07 173.99 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "d61e22fc-b8cb-4fe7-a3bd-7e9f0223ab8b")
-	)
-	(label "RX72N_PIN_32"
-		(at 646.43 220.98 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "d69162dc-3ab9-4137-9a66-6ab257ca0842")
-	)
-	(label "RX72N_PIN_54"
-		(at 814.07 195.58 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "d6e21802-2c65-46d9-b116-ee13b379e975")
 	)
 	(label "PI_PIN_10"
 		(at 106.68 64.77 180)
@@ -29684,16 +29090,6 @@
 			(justify left bottom)
 		)
 		(uuid "d8f7a1e5-7f87-4799-bdf0-8a4196b9308f")
-	)
-	(label "RX72N_PIN_70"
-		(at 814.07 158.75 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "d9b70ae3-4654-447e-b25a-ab80e98efdd5")
 	)
 	(label "ENCODER2_PHASE_A"
 		(at 763.27 441.96 0)
@@ -29726,7 +29122,7 @@
 		(uuid "dabe80df-2646-4c98-9006-52f7da59c8b0")
 	)
 	(label "RSPIC_SCLK"
-		(at 793.75 123.19 180)
+		(at 814.07 123.19 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29735,18 +29131,8 @@
 		)
 		(uuid "dc96f9ac-0b58-4f37-a79f-caab25891ab1")
 	)
-	(label "RX72N_PIN_18"
-		(at 646.43 182.88 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "ddac65a0-82f9-4a06-b369-2430e63cedd8")
-	)
 	(label "RSPIC_MOTOR2_nCS"
-		(at 664.21 182.88 0)
+		(at 646.43 182.88 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29808,7 +29194,7 @@
 		(uuid "df5bd638-5dcb-4623-9d77-402f61ed0bae")
 	)
 	(label "LED_0"
-		(at 793.75 133.35 180)
+		(at 814.07 133.35 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29826,16 +29212,6 @@
 			(justify left bottom)
 		)
 		(uuid "e2f31739-10d1-4e98-97bc-58b9e87e2e3a")
-	)
-	(label "RX72N_PIN_74"
-		(at 814.07 147.32 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "e3be1578-2d3e-43bb-b073-f1b6bfa4511d")
 	)
 	(label "BOARD_3V3"
 		(at 687.07 486.41 180)
@@ -29879,7 +29255,7 @@
 		(uuid "e6143c31-ed72-4456-83a5-ee9d7c512909")
 	)
 	(label "RSPIC_CIPO"
-		(at 793.75 120.65 180)
+		(at 814.07 120.65 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29887,16 +29263,6 @@
 			(justify right bottom)
 		)
 		(uuid "e8b5e415-0f4d-47d6-b2f1-8004681eeb9e")
-	)
-	(label "RX72N_PIN_51"
-		(at 814.07 204.47 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "ea01d2ac-a61f-4f8a-a524-5f42efd7dd74")
 	)
 	(label "SCI_USBC_USBDP"
 		(at 492.76 119.38 180)
@@ -29910,7 +29276,7 @@
 		(uuid "ea752017-734e-4a60-b789-7d7fbb821b5b")
 	)
 	(label "SONAR_ECHO_0"
-		(at 793.75 236.22 180)
+		(at 814.07 236.22 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29928,16 +29294,6 @@
 			(justify right bottom)
 		)
 		(uuid "eb2acba2-8a03-4081-a2c3-94ef27dee998")
-	)
-	(label "RX72N_PIN_61"
-		(at 814.07 180.34 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "eb9a4105-40ea-4dbb-b533-f034be4edc47")
 	)
 	(label "LED_2"
 		(at 481.33 372.11 0)
@@ -29960,7 +29316,7 @@
 		(uuid "ed176cbc-98c6-450f-a7da-15d9c3ec06e6")
 	)
 	(label "LED_1"
-		(at 793.75 130.81 180)
+		(at 814.07 130.81 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -29978,16 +29334,6 @@
 			(justify left bottom)
 		)
 		(uuid "ef130d00-43c2-4254-9018-52c1c12ae636")
-	)
-	(label "RX72N_PIN_78"
-		(at 814.07 137.16 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "ef7d2d87-70c2-4bd8-b8af-928a556d09d9")
 	)
 	(label "PI_PIN_32"
 		(at 106.68 92.71 180)
@@ -30018,16 +29364,6 @@
 			(justify left bottom)
 		)
 		(uuid "f10a111e-8d3d-43f9-8064-58d071891fdb")
-	)
-	(label "RX72N_PIN_73"
-		(at 814.07 149.86 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "f13c3694-9935-4dab-934b-2f1cd710c1a8")
 	)
 	(label "BOARD_3V3"
 		(at 763.27 481.33 0)
@@ -30080,7 +29416,7 @@
 		(uuid "f6096663-2eda-47df-8ae4-ef59790486bb")
 	)
 	(label "SONAR_TRIG_3"
-		(at 793.75 180.34 180)
+		(at 814.07 180.34 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -30099,36 +29435,6 @@
 		)
 		(uuid "f83da6ec-a2d8-4d3a-8160-09910136cdcd")
 	)
-	(label "RX72N_PIN_95"
-		(at 814.07 93.98 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "f89b3736-2e87-4e58-bcd4-80e3b4368fe4")
-	)
-	(label "RX72N_PIN_33"
-		(at 627.38 223.52 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "f91418b5-c1f6-4982-9b88-c31f1d84065d")
-	)
-	(label "RX72N_PIN_52"
-		(at 814.07 201.93 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "f95227cd-0090-4986-b4c4-6a377127ca8f")
-	)
 	(label "BOARD_3V3"
 		(at 135.89 158.75 0)
 		(effects
@@ -30139,18 +29445,8 @@
 		)
 		(uuid "f9871e85-d35f-44c0-9e98-f222a2dadfc3")
 	)
-	(label "RX72N_PIN_80"
-		(at 814.07 130.81 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "fb29f832-6abe-4655-8f1d-9d58e698e087")
-	)
 	(label "ENCODER1_PHASE_B"
-		(at 664.21 204.47 0)
+		(at 646.43 204.47 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -30180,7 +29476,7 @@
 		(uuid "ff7630a2-793b-49bb-905b-773af4b85976")
 	)
 	(label "LED_2"
-		(at 793.75 128.27 180)
+		(at 814.07 128.27 180)
 		(effects
 			(font
 				(size 1.27 1.27)
