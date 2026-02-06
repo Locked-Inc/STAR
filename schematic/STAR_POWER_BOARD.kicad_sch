@@ -3607,13 +3607,19 @@
 		(uuid "46d3e1c0-07ef-48ee-8ce1-d396c03e287f")
 	)
 	(junction
+		(at 342.9 133.35)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4976b21b-4884-4c67-921a-5be7b456b8b2")
+	)
+	(junction
 		(at 64.77 201.93)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "4982fcec-855f-49ab-af66-2525edf14d37")
 	)
 	(junction
-		(at 313.69 129.54)
+		(at 311.15 135.89)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "4b1c6bda-2c80-479b-a1e7-ff6c23421a27")
@@ -3931,12 +3937,6 @@
 		(uuid "c876ef6e-3961-4883-b291-ad6d4299dbfe")
 	)
 	(junction
-		(at 281.94 129.54)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "c92f386c-c569-4c36-b78a-04590c1bb5da")
-	)
-	(junction
 		(at 173.99 77.47)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3959,6 +3959,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d8df2bd0-3280-4246-9c17-277ead47d211")
+	)
+	(junction
+		(at 254 132.08)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "db600a1d-6df9-46e6-808b-32cd06219102")
 	)
 	(junction
 		(at 162.56 77.47)
@@ -3989,12 +3995,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "e5af82d7-00c9-436f-b675-10e4d93092b3")
-	)
-	(junction
-		(at 254 130.81)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "f2f24675-1631-4f9a-b609-ea15e9fe412b")
 	)
 	(junction
 		(at 273.05 25.4)
@@ -4472,7 +4472,7 @@
 	)
 	(wire
 		(pts
-			(xy 312.42 129.54) (xy 313.69 129.54)
+			(xy 312.42 135.89) (xy 311.15 135.89)
 		)
 		(stroke
 			(width 0)
@@ -4582,7 +4582,7 @@
 	)
 	(wire
 		(pts
-			(xy 313.69 129.54) (xy 328.93 129.54)
+			(xy 311.15 135.89) (xy 295.91 135.89)
 		)
 		(stroke
 			(width 0)
@@ -4792,7 +4792,7 @@
 	)
 	(wire
 		(pts
-			(xy 321.31 135.89) (xy 328.93 135.89)
+			(xy 303.53 129.54) (xy 295.91 129.54)
 		)
 		(stroke
 			(width 0)
@@ -4802,7 +4802,7 @@
 	)
 	(wire
 		(pts
-			(xy 281.94 132.08) (xy 287.02 132.08)
+			(xy 342.9 133.35) (xy 337.82 133.35)
 		)
 		(stroke
 			(width 0)
@@ -5372,7 +5372,7 @@
 	)
 	(wire
 		(pts
-			(xy 313.69 132.08) (xy 312.42 132.08)
+			(xy 311.15 133.35) (xy 312.42 133.35)
 		)
 		(stroke
 			(width 0)
@@ -5502,7 +5502,7 @@
 	)
 	(wire
 		(pts
-			(xy 281.94 129.54) (xy 281.94 132.08)
+			(xy 342.9 135.89) (xy 342.9 133.35)
 		)
 		(stroke
 			(width 0)
@@ -6282,7 +6282,7 @@
 	)
 	(wire
 		(pts
-			(xy 255.27 130.81) (xy 254 130.81)
+			(xy 255.27 132.08) (xy 254 132.08)
 		)
 		(stroke
 			(width 0)
@@ -6502,7 +6502,7 @@
 	)
 	(wire
 		(pts
-			(xy 313.69 129.54) (xy 313.69 132.08)
+			(xy 311.15 135.89) (xy 311.15 133.35)
 		)
 		(stroke
 			(width 0)
@@ -6529,6 +6529,16 @@
 			(type default)
 		)
 		(uuid "c6222a1b-0ae9-46fc-92ab-cde31513bc64")
+	)
+	(wire
+		(pts
+			(xy 254 129.54) (xy 254 132.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c6c28c88-6605-40ea-bec2-a6dbbce6e496")
 	)
 	(wire
 		(pts
@@ -6652,16 +6662,6 @@
 	)
 	(wire
 		(pts
-			(xy 254 129.54) (xy 254 130.81)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cf0cb716-28a3-416e-b8b7-ee7c203dccc2")
-	)
-	(wire
-		(pts
 			(xy 57.15 44.45) (xy 57.15 71.12)
 		)
 		(stroke
@@ -6772,23 +6772,13 @@
 	)
 	(wire
 		(pts
-			(xy 281.94 129.54) (xy 287.02 129.54)
+			(xy 342.9 135.89) (xy 337.82 135.89)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "dd9dbe2e-bbe3-431d-b9b6-602e704459f6")
-	)
-	(wire
-		(pts
-			(xy 254 130.81) (xy 254 132.08)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "df1bdca8-0876-4d7f-b0a7-e9b7e8c97225")
 	)
 	(wire
 		(pts
@@ -7102,7 +7092,7 @@
 	)
 	(wire
 		(pts
-			(xy 274.32 129.54) (xy 281.94 129.54)
+			(xy 350.52 133.35) (xy 342.9 133.35)
 		)
 		(stroke
 			(width 0)
@@ -7211,12 +7201,12 @@
 		(uuid "1c966501-4226-412d-84e8-657ac6170f7d")
 	)
 	(label "SWITCH_OUT"
-		(at 314.96 129.54 0)
+		(at 309.88 135.89 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "32953be4-ced1-4222-93a9-fdbb1baf767b")
 	)
@@ -7231,12 +7221,12 @@
 		(uuid "33b6f804-e95d-4e20-bea7-c6d574de8378")
 	)
 	(label "FUSE+"
-		(at 321.31 135.89 0)
+		(at 303.53 129.54 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "40128f74-b923-4531-ad0b-0fc50981d042")
 	)
@@ -7331,12 +7321,12 @@
 		(uuid "6fdcdf2f-6a35-404d-ae3c-e89a8b3ccbf6")
 	)
 	(label "PACK+"
-		(at 274.32 129.54 0)
+		(at 350.52 133.35 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "8aa6ce99-0b6d-47bb-9ddb-b3598c5abb9a")
 	)
@@ -8793,7 +8783,7 @@
 				)
 			)
 		)
-		(property "Footprint" "1017491"
+		(property "Footprint" ""
 			(at 330.2 119.05 0)
 			(effects
 				(font
@@ -17323,7 +17313,7 @@
 				)
 			)
 		)
-		(property "Footprint" "1017491"
+		(property "Footprint" ""
 			(at 279.4 119.05 0)
 			(effects
 				(font
@@ -17770,7 +17760,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 255.27 130.81 90)
+		(at 255.27 132.08 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -17779,7 +17769,7 @@
 		(dnp no)
 		(uuid "56f76b49-b333-4d05-8a44-4d5d44dc244b")
 		(property "Reference" "#PWR011"
-			(at 261.62 130.81 0)
+			(at 261.62 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17788,7 +17778,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 260.096 130.81 90)
+			(at 260.096 132.08 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17796,7 +17786,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 255.27 130.81 0)
+			(at 255.27 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17805,7 +17795,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 255.27 130.81 0)
+			(at 255.27 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17814,7 +17804,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 255.27 130.81 0)
+			(at 255.27 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17859,7 +17849,7 @@
 				)
 			)
 		)
-		(property "Footprint" "USB421603A"
+		(property "Footprint" ""
 			(at 287.02 171.12 0)
 			(effects
 				(font
@@ -26544,7 +26534,7 @@
 				)
 			)
 		)
-		(property "Footprint" "1017491"
+		(property "Footprint" ""
 			(at 228.6 119.05 0)
 			(effects
 				(font
@@ -26958,7 +26948,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "SSM6J507NULF"
+		(property "Footprint" ""
 			(at 251.46 174.93 0)
 			(effects
 				(font
@@ -28016,7 +28006,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "CAPC7866X950N"
+		(property "Footprint" ""
 			(at 199.0852 229.87 0)
 			(effects
 				(font
@@ -29516,7 +29506,7 @@
 				)
 			)
 		)
-		(property "Footprint" "1017491"
+		(property "Footprint" ""
 			(at 231.14 224.46 0)
 			(effects
 				(font
@@ -34201,7 +34191,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x01")
-		(at 334.01 129.54 0)
+		(at 290.83 135.89 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -34210,7 +34200,7 @@
 		(fields_autoplaced yes)
 		(uuid "bbb9f5ba-1f29-481b-8572-545d0f6905a0")
 		(property "Reference" "J7"
-			(at 336.55 128.2699 0)
+			(at 288.29 137.1601 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -34219,7 +34209,7 @@
 			)
 		)
 		(property "Value" "Conn_01x01"
-			(at 336.55 130.8099 0)
+			(at 288.29 134.6201 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -34227,8 +34217,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
-			(at 334.01 129.54 0)
+		(property "Footprint" "861400011YO2LF:AMPHENOL_861400011YO2LF"
+			(at 290.83 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -34237,7 +34227,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 334.01 129.54 0)
+			(at 290.83 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -34246,7 +34236,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x01, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 334.01 129.54 0)
+			(at 290.83 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35625,7 +35615,7 @@
 	)
 	(symbol
 		(lib_id "1017491:1017491")
-		(at 312.42 129.54 0)
+		(at 337.82 133.35 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -35634,7 +35624,7 @@
 		(dnp no)
 		(uuid "c9a7847c-5ef9-43ee-859d-39ede55f8714")
 		(property "Reference" "J6"
-			(at 306.324 125.73 0)
+			(at 331.724 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35642,7 +35632,7 @@
 			)
 		)
 		(property "Value" "1017491"
-			(at 299.212 135.89 0)
+			(at 324.612 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35650,7 +35640,7 @@
 			)
 		)
 		(property "Footprint" "1017491:1017491"
-			(at 290.83 224.46 0)
+			(at 316.23 228.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35660,7 +35650,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.phoenixcontact.com/de/produkte/1017491/pdf"
-			(at 290.83 324.46 0)
+			(at 316.23 328.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35670,7 +35660,7 @@
 			)
 		)
 		(property "Description" "PCB terminal block, nominal current: 24 A, rated voltage (III/2): 400 V, nominal cross section: 2.5 mm?, Number of potentials: 2, Number of rows: 1, Number of positions per row: 2, product range: TDPT 2,5/..-SC, pitch: 5.08 mm, connection method: Screw connection with tension sleeve, mounting: Wave soldering, conductor/PCB connection direction: 0 ?, color: green, Pin layout: Linear double pinning, Solder pin [P]: 3.5 mm, type of packaging: packed in cardboard"
-			(at 312.42 129.54 0)
+			(at 337.82 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35679,7 +35669,7 @@
 			)
 		)
 		(property "Height" "19.2"
-			(at 290.83 524.46 0)
+			(at 316.23 528.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35689,7 +35679,7 @@
 			)
 		)
 		(property "Mouser Part Number" "651-1017491"
-			(at 290.83 624.46 0)
+			(at 316.23 628.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35699,7 +35689,7 @@
 			)
 		)
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Phoenix-Contact/1017491?qs=F5EMLAvA7IAChddKvolITg%3D%3D"
-			(at 290.83 724.46 0)
+			(at 316.23 728.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35709,7 +35699,7 @@
 			)
 		)
 		(property "Manufacturer Name" "Phoenix Contact"
-			(at 290.83 824.46 0)
+			(at 316.23 828.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35719,7 +35709,7 @@
 			)
 		)
 		(property "Manufacturer Part Number" "1017491"
-			(at 290.83 924.46 0)
+			(at 316.23 928.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35729,7 +35719,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/short/59db1d2h"
-			(at 312.42 129.54 0)
+			(at 337.82 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35738,7 +35728,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "277-17493-ND "
-			(at 312.42 129.54 0)
+			(at 337.82 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35747,7 +35737,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "1.06"
-			(at 312.42 129.54 0)
+			(at 337.82 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35756,7 +35746,7 @@
 			)
 		)
 		(property "Manufacturer Part Number" "1017491"
-			(at 312.42 129.54 0)
+			(at 337.82 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35765,7 +35755,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/4rK6010"
-			(at 312.42 129.54 0)
+			(at 337.82 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35774,7 +35764,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.72 "
-			(at 312.42 129.54 0)
+			(at 337.82 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35783,7 +35773,7 @@
 			)
 		)
 		(property "Manufacturer Part Number" "1017491"
-			(at 312.42 129.54 0)
+			(at 337.82 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -36459,7 +36449,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x01")
-		(at 334.01 135.89 0)
+		(at 290.83 129.54 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -36468,7 +36458,7 @@
 		(fields_autoplaced yes)
 		(uuid "ce341284-5ff8-46dd-a000-bb0daade015f")
 		(property "Reference" "J8"
-			(at 336.55 134.6199 0)
+			(at 288.29 130.8101 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -36477,7 +36467,7 @@
 			)
 		)
 		(property "Value" "Conn_01x01"
-			(at 336.55 137.1599 0)
+			(at 288.29 128.2701 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -36485,8 +36475,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
-			(at 334.01 135.89 0)
+		(property "Footprint" "861400011YO2LF:AMPHENOL_861400011YO2LF"
+			(at 290.83 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -36495,7 +36485,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 334.01 135.89 0)
+			(at 290.83 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -36504,7 +36494,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x01, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 334.01 135.89 0)
+			(at 290.83 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
