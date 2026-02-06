@@ -5,6 +5,7 @@
 package manager
 
 import (
+	"encoding/binary"
 	"log"
 	"sync"
 )
@@ -14,6 +15,10 @@ import (
 // It controls how many frames may be lost (for example on lightweight USB)
 // while still accepting and catching up the RX sequence.
 const MaxGapTolerance uint16 = 10
+
+// SessionIDPayloadSize is the byte size of the session ID in RESET/RESET_ACK payloads.
+// The session ID is encoded as a 4-byte big-endian uint32.
+const SessionIDPayloadSize = 4
 
 // SessionState holds sequence numbers shared across all transports.
 //
@@ -28,6 +33,12 @@ type SessionState struct {
 	mu         sync.Mutex
 	txSequence uint16 // Shared TX sequence (incremented on every Send)
 	rxSequence uint16 // Shared RX sequence (validated on every Receive)
+
+	// Reset barrier fields: protect against stale USB FIFO frames during reset handshake.
+	// When the barrier is active, all non-RESET_ACK frames are discarded.
+	sessionID             uint32 // Monotonically increasing, incremented on each reset
+	resetBarrierActive    bool   // True when waiting for RESET_ACK
+	resetBarrierSessionID uint32 // The session ID this barrier expects in RESET_ACK
 }
 
 // NewSessionState creates a new SessionState with initial sequence 0.
@@ -71,6 +82,14 @@ func (s *SessionState) NextTxSequence() uint16 {
 func (s *SessionState) ValidateRxSequence(seq uint16) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	// Reset barrier: reject ALL data frames while barrier is active.
+	// Stale frames from USB FIFO buffers must be discarded during reset handshake.
+	if s.resetBarrierActive {
+		log.Printf("DEBUG: Reset barrier active (session=%d), rejecting frame seq=%d",
+			s.resetBarrierSessionID, seq)
+		return false
+	}
 
 	// Calculate difference (handles wraparound correctly for uint16)
 	diff := seq - s.rxSequence
@@ -127,4 +146,94 @@ func (s *SessionState) Reset() {
 	s.txSequence = 0
 	s.rxSequence = 0
 	log.Printf("SessionState reset: sequences synchronized to 0")
+}
+
+// IncrementSessionID atomically increments and returns the new session ID.
+// Called at the start of each reset handshake to generate a unique identifier
+// for matching RESET frames with their corresponding RESET_ACK responses.
+//
+// Thread Safety: Uses mutex to ensure atomicity.
+func (s *SessionState) IncrementSessionID() uint32 {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.sessionID++
+	return s.sessionID
+}
+
+// GetSessionID returns the current session ID (for diagnostics).
+//
+// Thread Safety: Uses mutex for consistent reads.
+func (s *SessionState) GetSessionID() uint32 {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.sessionID
+}
+
+// ActivateBarrier enables the reset barrier for the given session ID.
+// While the barrier is active, ValidateRxSequence rejects all frames (they are stale),
+// and only a RESET_ACK with a matching session ID should be accepted.
+//
+// Must be called BEFORE sending the RESET frame to ensure no stale frames
+// from the USB FIFO buffer are processed during the handshake.
+//
+// Thread Safety: Uses mutex to ensure atomicity.
+func (s *SessionState) ActivateBarrier(sessionID uint32) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.resetBarrierActive = true
+	s.resetBarrierSessionID = sessionID
+	log.Printf("Reset barrier activated (session=%d)", sessionID)
+}
+
+// DeactivateBarrier disables the reset barrier.
+// Called after the reset handshake completes (success or failure) to resume
+// normal frame processing. Should be called in a defer to guarantee cleanup.
+//
+// Thread Safety: Uses mutex to ensure atomicity.
+func (s *SessionState) DeactivateBarrier() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.resetBarrierActive = false
+	log.Printf("Reset barrier deactivated (session=%d)", s.resetBarrierSessionID)
+}
+
+// IsBarrierActive returns whether the reset barrier is currently active.
+//
+// Thread Safety: Uses mutex for consistent reads.
+func (s *SessionState) IsBarrierActive() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.resetBarrierActive
+}
+
+// ValidateResetAck checks if a RESET_ACK payload matches the active barrier's session ID.
+// Returns true only if:
+//   - The barrier is currently active
+//   - The payload is exactly SessionIDPayloadSize (4) bytes
+//   - The big-endian decoded session ID matches the barrier's expected session ID
+//
+// Thread Safety: Uses mutex to ensure atomicity.
+func (s *SessionState) ValidateResetAck(payload []byte) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if !s.resetBarrierActive {
+		log.Printf("WARN: ValidateResetAck called with barrier inactive")
+		return false
+	}
+
+	if len(payload) < SessionIDPayloadSize {
+		log.Printf("WARN: RESET_ACK payload too short (%d bytes, need %d)",
+			len(payload), SessionIDPayloadSize)
+		return false
+	}
+
+	receivedID := binary.BigEndian.Uint32(payload[:SessionIDPayloadSize])
+	if receivedID != s.resetBarrierSessionID {
+		log.Printf("WARN: RESET_ACK session ID mismatch (got=%d, expected=%d)",
+			receivedID, s.resetBarrierSessionID)
+		return false
+	}
+
+	return true
 }
