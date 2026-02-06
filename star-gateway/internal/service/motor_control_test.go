@@ -94,7 +94,7 @@ func TestSetVelocity(t *testing.T) {
 			if tc.verifyPayload {
 				// Now we need to unwrap WireMessage to get VelocityCommand
 				var wrapper starv1.WireMessage
-				if err := proto.Unmarshal(mockHARQ.LastSentPayload, &wrapper); err != nil {
+				if err := proto.Unmarshal(mockHARQ.GetLastSentPayload(), &wrapper); err != nil {
 					t.Fatalf("Failed to unmarshal wire message: %v", err)
 				}
 				sentCmd := wrapper.GetVelocityCommand()
@@ -131,7 +131,7 @@ func TestEmergencyStop(t *testing.T) {
 
 	// Verify that EmergencyStopCommand was sent (wrapped in WireMessage)
 	var wrapper starv1.WireMessage
-	if err := proto.Unmarshal(mockHARQ.LastSentPayload, &wrapper); err != nil {
+	if err := proto.Unmarshal(mockHARQ.GetLastSentPayload(), &wrapper); err != nil {
 		t.Fatalf("Failed to unmarshal wire message: %v", err)
 	}
 
