@@ -1,6 +1,6 @@
 {
   "name": "Existing Dockerfile",
-  "initializeCommand": "mkdir -p \"${localEnv:HOME}/.ssh\" \"${localEnv:HOME}/.gemini\" \"${localEnv:HOME}/.claude\" \"${localEnv:HOME}/.config/gh\" \"${localEnv:HOME}/.config/opencode\" \"${localEnv:HOME}/.config/openai\" && touch \"${localEnv:HOME}/.gitconfig\" \"${localEnv:HOME}/.claude.json\"",
+  "initializeCommand": "cd .devcontainer && (init.cmd 2>nul || sh ./init.sh)",
   "build": {
     "context": "..",
     "dockerfile": "../Dockerfile",
