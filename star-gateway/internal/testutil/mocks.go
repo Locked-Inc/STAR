@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 )
 
@@ -22,15 +23,17 @@ const (
 )
 
 // MockHARQ is a mock implementation of the harq.HARQ interface.
+// Also implements the frameTypeSender interface (SendWithType) used by performResetHandshake.
 type MockHARQ struct {
-	mu              sync.Mutex
-	SendFunc        func(ctx context.Context, data []byte, p ...harq.Priority) error
-	ReceiveFunc     func(ctx context.Context) (*harq.ReceiveResult, error)
-	GetStateFunc    func() harq.State
-	GetTxSeqFunc    func() uint16
-	GetRxSeqFunc    func() uint16
-	ResetFunc       func()
-	LastSentPayload []byte
+	mu               sync.Mutex
+	SendFunc         func(ctx context.Context, data []byte, p ...harq.Priority) error
+	SendWithTypeFunc func(ctx context.Context, data []byte, frameType frame.Type) error
+	ReceiveFunc      func(ctx context.Context) (*harq.ReceiveResult, error)
+	GetStateFunc     func() harq.State
+	GetTxSeqFunc     func() uint16
+	GetRxSeqFunc     func() uint16
+	ResetFunc        func()
+	LastSentPayload  []byte
 
 	// ReceiveChan is an optional channel for simulating HARQ receive operations.
 	// If set, Receive will pull from this channel instead of calling ReceiveFunc.
@@ -48,6 +51,21 @@ func (m *MockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) er
 		return sendFunc(ctx, data, p...)
 	}
 	return nil
+}
+
+// SendWithType sends data with an explicit frame type.
+// Used by performResetHandshake to send FrameTypeReset frames.
+func (m *MockHARQ) SendWithType(ctx context.Context, data []byte, frameType frame.Type) error {
+	m.mu.Lock()
+	m.LastSentPayload = append([]byte(nil), data...)
+	sendWithTypeFunc := m.SendWithTypeFunc
+	m.mu.Unlock()
+
+	if sendWithTypeFunc != nil {
+		return sendWithTypeFunc(ctx, data, frameType)
+	}
+	// Default: delegate to Send
+	return m.Send(ctx, data)
 }
 
 func (m *MockHARQ) Receive(ctx context.Context) (*harq.ReceiveResult, error) {

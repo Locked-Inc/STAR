@@ -324,7 +324,7 @@ func handleFrame(decoded *frame.Frame, session *simulatorSession, latency time.D
 		return handlePing(decoded, session, latency, responses)
 
 	case frame.FrameTypeReset:
-		return handleReset(session, latency, responses)
+		return handleReset(decoded, session, latency, responses)
 
 	case frame.FrameTypeCommand:
 		return handleCommand(decoded, session, responses)
@@ -368,26 +368,47 @@ func handlePing(decoded *frame.Frame, session *simulatorSession, latency time.Du
 	return frameResponse{frames: append(existing, pongFrame)}
 }
 
+// sessionIDPayloadSize is the expected payload size for session ID in RESET/RESET_ACK frames.
+// Must match manager.SessionIDPayloadSize.
+const sessionIDPayloadSize = 4
+
 // handleReset responds to a RESET frame with RESET_ACK and resets session state.
+// If the RESET frame carries a session ID (4-byte big-endian payload), it is echoed
+// back in the RESET_ACK payload for the gateway to match the handshake.
 // RESET_ACK is built with the current sequence, then session state is reset.
 // Applies simulated latency before generating the response.
-func handleReset(session *simulatorSession, latency time.Duration, existing []*frame.Frame) frameResponse {
+func handleReset(decoded *frame.Frame, session *simulatorSession, latency time.Duration, existing []*frame.Frame) frameResponse {
 	// Simulate processing latency (USB buffer delay)
 	if latency > 0 {
 		time.Sleep(latency)
 	}
 
-	log.Printf("RESET received, sending RESET_ACK and resetting session")
+	// Extract and echo session ID from RESET payload.
+	// Only accept either an empty payload (no session ID) or exactly one session ID
+	// of size `sessionIDPayloadSize`. Any other length is a protocol error.
+	var resetAckPayload []byte
+	if len(decoded.Payload) == 0 {
+		log.Printf("RESET received (no session ID), sending RESET_ACK")
+		resetAckPayload = []byte{}
+	} else if len(decoded.Payload) == sessionIDPayloadSize {
+		sessionID := binary.BigEndian.Uint32(decoded.Payload[:sessionIDPayloadSize])
+		log.Printf("RESET received (session=%d), sending RESET_ACK", sessionID)
+		resetAckPayload = make([]byte, sessionIDPayloadSize)
+		binary.BigEndian.PutUint32(resetAckPayload, sessionID)
+	} else {
+		log.Printf("RESET payload length protocol error: got %d, expected 0 or %d; dropping frame", len(decoded.Payload), sessionIDPayloadSize)
+		return frameResponse{frames: existing}
+	}
 
 	// Build RESET_ACK with current sequence BEFORE resetting
 	resetAckFrame := &frame.Frame{
 		Header: frame.Header{
 			Sequence: session.nextSeq(),
-			Length:   0,
+			Length:   uint16(len(resetAckPayload)),
 			Flags:    frame.FlagNone,
 		},
 		Type:    frame.FrameTypeResetAck,
-		Payload: []byte{},
+		Payload: resetAckPayload,
 	}
 
 	// Reset session state AFTER building RESET_ACK
