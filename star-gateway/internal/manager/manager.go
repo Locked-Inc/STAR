@@ -6,6 +6,7 @@ package manager
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"log"
@@ -220,10 +221,17 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 // performResetHandshake sends a RESET frame to RX72N and waits for RESET_ACK.
 // CRITICAL FIX #4: Prevents restart deadlock when Gateway restarts but RX72N stays running.
 //
-// This synchronizes sequence numbers after Gateway restart:
-//   - Gateway restarts (seq=0), RX72N still running (seq=5000) → deadlock
-//   - Reset handshake: RX72N resets sequences to 0, replies with RESET_ACK
-//   - Both sides synchronized, communication resumes
+// This implements a three-way handshake with a "reset barrier" to handle stale
+// frames buffered in USB FIFOs:
+//  1. Activate barrier (reject all non-RESET_ACK frames)
+//  2. Send RESET with session ID payload
+//  3. Drain stale frames until RESET_ACK with matching session ID arrives
+//  4. Reset sequence counters only after valid RESET_ACK
+//  5. Deactivate barrier
+//
+// The session ID (4-byte big-endian uint32) in the RESET payload is echoed back
+// in the RESET_ACK, allowing the gateway to match ACKs to the correct reset request
+// and reject stale RESET_ACKs from previous resets.
 //
 // Retries up to 3 times with backoff. Returns error if all retries fail.
 // Non-fatal - caller should log warning and continue (RX72N might be rebooting).
@@ -234,61 +242,104 @@ func (tm *TransportManager) performResetHandshake(ctx context.Context) error {
 		ackTimeout = 500 * time.Millisecond
 	)
 
-	// Create RESET frame (empty payload)
-	resetPayload := []byte{} // Empty payload for RESET frame
+	// Idempotency: if barrier is already active, another reset is in progress
+	if tm.sessionState.IsBarrierActive() {
+		return fmt.Errorf("reset already in progress (barrier active)")
+	}
+
+	// Type-assert to get SendWithType (fixes bug: was using Send which sends as FrameTypeCommand)
+	type frameTypeSender interface {
+		SendWithType(ctx context.Context, data []byte, frameType frame.Type) error
+	}
+	sender, ok := tm.activeTransport.(frameTypeSender)
+	if !ok {
+		return fmt.Errorf("active transport does not support SendWithType")
+	}
+
+	// Increment session ID and encode as 4-byte big-endian payload
+	newSessionID := tm.sessionState.IncrementSessionID()
+	resetPayload := make([]byte, SessionIDPayloadSize)
+	binary.BigEndian.PutUint32(resetPayload, newSessionID)
+
+	// Activate barrier BEFORE sending RESET to ensure stale frames are rejected
+	tm.sessionState.ActivateBarrier(newSessionID)
+	defer tm.sessionState.DeactivateBarrier()
 
 	var lastErr error
 	for attempt := 1; attempt <= maxRetries; attempt++ {
-		log.Printf("Reset handshake attempt %d/%d...", attempt, maxRetries)
+		log.Printf("Reset handshake attempt %d/%d (session=%d)...",
+			attempt, maxRetries, newSessionID)
 
-		// Send RESET
-		// Note: We use the active transport directly (tm.activeTransport)
-		// which already has the shared SessionState
-		if err := tm.activeTransport.Send(ctx, resetPayload); err != nil {
-			lastErr = fmt.Errorf("send failed: %w", err)
+		// Send RESET with FrameTypeReset
+		if err := sender.SendWithType(ctx, resetPayload, frame.FrameTypeReset); err != nil {
+			lastErr = fmt.Errorf("send RESET failed: %w", err)
 			log.Printf("Reset send failed (attempt %d): %v", attempt, err)
 			time.Sleep(retryDelay)
 			continue
 		}
 
-		// Wait for RESET_ACK (with timeout)
+		// Drain stale frames until RESET_ACK with matching session ID
 		ctxTimeout, cancel := context.WithTimeout(ctx, ackTimeout)
-		result, err := tm.activeTransport.Receive(ctxTimeout)
+		err := tm.drainUntilResetAck(ctxTimeout, newSessionID)
 		cancel()
 
-		if err != nil {
-			lastErr = fmt.Errorf("receive failed: %w", err)
-			log.Printf("ResetAck receive failed (attempt %d): %v", attempt, err)
-			time.Sleep(retryDelay)
-			continue
+		if err == nil {
+			// Reset sequences AFTER valid RESET_ACK (not before)
+			tm.sessionState.Reset()
+			log.Printf("Reset handshake successful (session=%d, attempt=%d)",
+				newSessionID, attempt)
+			return nil
 		}
 
-		// Check for nil result (control frame handled internally)
-		if result == nil {
-			lastErr = fmt.Errorf("nil receive result during reset handshake")
-			log.Printf("Reset handshake received nil result (attempt %d)", attempt)
-			time.Sleep(retryDelay)
-			continue
-		}
-
-		// Validate frame type is FrameTypeResetAck
-		if result.Metadata.Type != frame.FrameTypeResetAck {
-			lastErr = fmt.Errorf("unexpected frame type: got %s, expected RESET_ACK",
-				result.Metadata.Type.String())
-			log.Printf("Reset handshake received wrong frame type (attempt %d): %v",
-				attempt, lastErr)
-			time.Sleep(retryDelay)
-			continue
-		}
-
-		// Success!
-		log.Printf("Reset handshake successful: received RESET_ACK (seq=%d, attempt=%d)",
-			result.Metadata.Sequence, attempt)
-		return nil
+		lastErr = err
+		log.Printf("Reset handshake attempt %d failed: %v", attempt, err)
+		time.Sleep(retryDelay)
 	}
 
-	// All retries exhausted
 	return fmt.Errorf("reset handshake failed after %d attempts: %w", maxRetries, lastErr)
+}
+
+// drainUntilResetAck receives frames in a loop, discarding non-RESET_ACK frames
+// (stale frames from USB FIFO buffers) until a RESET_ACK with a matching session ID
+// arrives or the context times out.
+func (tm *TransportManager) drainUntilResetAck(ctx context.Context, expectedSessionID uint32) error {
+	for {
+		if ctx.Err() != nil {
+			return fmt.Errorf("timeout waiting for RESET_ACK: %w", ctx.Err())
+		}
+
+		result, err := tm.activeTransport.Receive(ctx)
+		if err != nil {
+			if ctx.Err() != nil {
+				return fmt.Errorf("timeout waiting for RESET_ACK: %w", ctx.Err())
+			}
+			// Transient receive error, keep trying within timeout
+			log.Printf("DEBUG: Reset handshake receive error (continuing): %v", err)
+			continue
+		}
+
+		if result == nil {
+			continue
+		}
+
+		// Non-RESET_ACK frames are stale -- discard and continue draining
+		if result.Metadata.Type != frame.FrameTypeResetAck {
+			log.Printf("DEBUG: Discarding stale frame during reset (type=%s, seq=%d)",
+				result.Metadata.Type.String(), result.Metadata.Sequence)
+			continue
+		}
+
+		// Got RESET_ACK -- validate session ID
+		if !tm.sessionState.ValidateResetAck(result.Payload) {
+			log.Printf("WARN: RESET_ACK with invalid/mismatched session ID, discarding")
+			continue
+		}
+
+		// Valid RESET_ACK with matching session ID
+		log.Printf("Received valid RESET_ACK (session=%d, seq=%d)",
+			expectedSessionID, result.Metadata.Sequence)
+		return nil
+	}
 }
 
 // Stop gracefully shuts down the TransportManager.
@@ -569,6 +620,15 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 
 	// FIX: Handle nil result (e.g. control frames handled internally by transport)
 	if result == nil {
+		return nil, nil
+	}
+
+	// Reset barrier check: reject stale frames during active reset handshake.
+	// This prevents stale USB FIFO frames from reaching the dispatcher.
+	// Returns (nil, nil) which the dispatcher treats as a transient timeout.
+	if tm.sessionState.IsBarrierActive() {
+		log.Printf("DEBUG: Barrier active, discarding frame (type=%s, seq=%d)",
+			result.Metadata.Type.String(), result.Metadata.Sequence)
 		return nil, nil
 	}
 

@@ -32,10 +32,19 @@ func newTestPingFrame(t *testing.T, counter uint32, seq uint16) *frame.Frame {
 	return f
 }
 
-// newTestResetFrame creates a RESET frame with empty payload for testing.
-func newTestResetFrame(t *testing.T, seq uint16) *frame.Frame {
+// newTestResetFrame creates a RESET frame for testing.
+// If sessionID > 0, the payload carries the session ID as 4-byte big-endian.
+// If sessionID == 0, the payload is empty (backward compatibility).
+func newTestResetFrame(t *testing.T, seq uint16, sessionID ...uint32) *frame.Frame {
 	t.Helper()
-	f, err := frame.NewFrame(frame.FrameTypeReset, []byte{})
+	var payload []byte
+	if len(sessionID) > 0 {
+		payload = make([]byte, sessionIDPayloadSize)
+		binary.BigEndian.PutUint32(payload, sessionID[0])
+	} else {
+		payload = []byte{}
+	}
+	f, err := frame.NewFrame(frame.FrameTypeReset, payload)
 	if err != nil {
 		t.Fatalf("failed to create RESET frame: %v", err)
 	}
@@ -123,8 +132,10 @@ func TestHandleFrame_ResetResetAck(t *testing.T) {
 		t.Fatalf("pre-condition: txSeq = %d, want %d", session.txSeq, advanceCount)
 	}
 
-	// Send RESET
-	resetFrame := newTestResetFrame(t, testSeqNumber)
+	const testSessionID uint32 = 7
+
+	// Send RESET with session ID
+	resetFrame := newTestResetFrame(t, testSeqNumber, testSessionID)
 	resp := handleFrame(resetFrame, session, testZeroLatency)
 
 	if len(resp.frames) != 1 {
@@ -136,9 +147,13 @@ func TestHandleFrame_ResetResetAck(t *testing.T) {
 		t.Errorf("response type = %s, want RESET_ACK", resetAck.Type.String())
 	}
 
-	// RESET_ACK should have empty payload
-	if len(resetAck.Payload) != 0 {
-		t.Errorf("RESET_ACK payload len = %d, want 0", len(resetAck.Payload))
+	// RESET_ACK should echo the session ID (4-byte payload)
+	if len(resetAck.Payload) != sessionIDPayloadSize {
+		t.Fatalf("RESET_ACK payload len = %d, want %d", len(resetAck.Payload), sessionIDPayloadSize)
+	}
+	gotSessionID := binary.BigEndian.Uint32(resetAck.Payload)
+	if gotSessionID != testSessionID {
+		t.Errorf("RESET_ACK session ID = %d, want %d", gotSessionID, testSessionID)
 	}
 
 	// RESET_ACK uses sequence from before reset (advanceCount)
@@ -149,6 +164,66 @@ func TestHandleFrame_ResetResetAck(t *testing.T) {
 	// After RESET, session should be at 0
 	if session.txSeq != 0 {
 		t.Errorf("post-reset txSeq = %d, want 0", session.txSeq)
+	}
+}
+
+func TestHandleFrame_ResetEmptyPayload(t *testing.T) {
+	session := &simulatorSession{}
+
+	// Send RESET with empty payload (backward compatibility)
+	resetFrame := newTestResetFrame(t, 0)
+	resp := handleFrame(resetFrame, session, testZeroLatency)
+
+	if len(resp.frames) != 1 {
+		t.Fatalf("expected 1 response frame, got %d", len(resp.frames))
+	}
+
+	resetAck := resp.frames[0]
+	if resetAck.Type != frame.FrameTypeResetAck {
+		t.Errorf("response type = %s, want RESET_ACK", resetAck.Type.String())
+	}
+
+	// Empty payload RESET should produce empty payload RESET_ACK
+	if len(resetAck.Payload) != 0 {
+		t.Errorf("RESET_ACK payload len = %d, want 0", len(resetAck.Payload))
+	}
+
+	// After RESET, session should be at 0
+	if session.txSeq != 0 {
+		t.Errorf("post-reset txSeq = %d, want 0", session.txSeq)
+	}
+}
+
+func TestHandleFrame_ResetSessionIDEcho(t *testing.T) {
+	tests := []struct {
+		name      string
+		sessionID uint32
+	}{
+		{"session_1", 1},
+		{"session_42", 42},
+		{"session_max", 0xFFFFFFFF},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			session := &simulatorSession{}
+			resetFrame := newTestResetFrame(t, 0, tc.sessionID)
+			resp := handleFrame(resetFrame, session, testZeroLatency)
+
+			if len(resp.frames) != 1 {
+				t.Fatalf("expected 1 response frame, got %d", len(resp.frames))
+			}
+
+			resetAck := resp.frames[0]
+			if len(resetAck.Payload) != sessionIDPayloadSize {
+				t.Fatalf("RESET_ACK payload len = %d, want %d", len(resetAck.Payload), sessionIDPayloadSize)
+			}
+
+			gotID := binary.BigEndian.Uint32(resetAck.Payload)
+			if gotID != tc.sessionID {
+				t.Errorf("RESET_ACK session ID = %d, want %d", gotID, tc.sessionID)
+			}
+		})
 	}
 }
 
