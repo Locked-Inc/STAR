@@ -263,6 +263,14 @@ func (tm *TransportManager) performResetHandshake(ctx context.Context) error {
 			continue
 		}
 
+		// Check for nil result (control frame handled internally)
+		if result == nil {
+			lastErr = fmt.Errorf("nil receive result during reset handshake")
+			log.Printf("Reset handshake received nil result (attempt %d)", attempt)
+			time.Sleep(retryDelay)
+			continue
+		}
+
 		// Validate frame type is FrameTypeResetAck
 		if result.Metadata.Type != frame.FrameTypeResetAck {
 			lastErr = fmt.Errorf("unexpected frame type: got %s, expected RESET_ACK",

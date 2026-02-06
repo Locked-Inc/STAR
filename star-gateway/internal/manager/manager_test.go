@@ -7,9 +7,11 @@ package manager
 import (
 	"context"
 	"errors"
+	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 )
@@ -79,12 +81,33 @@ func TestTransportManager_SendReceive(t *testing.T) {
 	config := DefaultConfig()
 	tm := NewTransportManager(config)
 
+	// Track call count to distinguish reset handshake from normal receive
+	var receiveCount atomic.Int32
+
 	mockTransport := &testutil.MockHARQ{
 		SendFunc: func(ctx context.Context, data []byte, p ...harq.Priority) error {
 			return nil
 		},
 		ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
-			return &harq.ReceiveResult{Payload: []byte("response")}, nil
+			count := receiveCount.Add(1)
+			// First call is reset handshake, return RESET_ACK
+			if count == 1 {
+				return &harq.ReceiveResult{
+					Payload: []byte{}, // Empty payload for RESET_ACK
+					Metadata: harq.FrameMetadata{
+						Type:     frame.FrameTypeResetAck,
+						Sequence: 0,
+					},
+				}, nil
+			}
+			// Subsequent calls are normal receives
+			return &harq.ReceiveResult{
+				Payload: []byte("response"),
+				Metadata: harq.FrameMetadata{
+					Type:     frame.FrameTypeResponse,
+					Sequence: uint16(count - 1),
+				},
+			}, nil
 		},
 	}
 

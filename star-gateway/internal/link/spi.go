@@ -56,6 +56,14 @@ const (
 	bitWidth = 8    // Bits per byte
 	msbShift = 7    // Shift amount to extract MSB
 	bitMask  = 0x01 // Mask to extract single bit
+
+	// Frame metadata defaults
+	defaultPathMetric     = 0 // Default path metric when FEC is not used
+	defaultCombiningCount = 1 // Default combining count (single decode attempt)
+
+	// Retransmit count extraction constants
+	retransmitCountSet   = 1 // Frame is a retransmission
+	retransmitCountUnset = 0 // Frame is first transmission
 )
 
 type contextTransportAdapter struct {
@@ -615,12 +623,12 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	// Decode payload (with optional FEC decoding)
 	payload := f.Payload
 	fecDecoded := false
-	pathMetric := 0     // Path metric for FEC decoder confidence
-	combiningCount := 1 // Number of combining attempts (SPILink doesn't use HARQ combining)
+	pathMetric := defaultPathMetric         // Path metric for FEC decoder confidence
+	combiningCount := defaultCombiningCount // Number of combining attempts
 
 	if s.config.EnableFEC && (f.Header.Flags&frame.FlagFECEnabled) != 0 {
 		// FEC decoding path (Phase 2)
-		decoded, metric, err := s.decodeFEC(f)
+		decoded, metric, count, err := s.decodeFEC(f)
 		if err != nil {
 			// FEC decode failed - send NACK
 			// SHUTDOWN FIX: Skip NACK send if context is cancelled
@@ -633,6 +641,7 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		}
 		payload = decoded
 		pathMetric = metric
+		combiningCount = count
 		fecDecoded = true
 	}
 
@@ -665,8 +674,8 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 
 // decodeFEC decodes FEC-encoded payload.
 // Phase 2 implementation: Chase Combining for retransmissions.
-// Returns decoded data, path metric (lower is better), and error.
-func (s *SPILink) decodeFEC(f *frame.Frame) ([]byte, int, error) {
+// Returns decoded data, path metric (lower is better), combining count, and error.
+func (s *SPILink) decodeFEC(f *frame.Frame) ([]byte, int, int, error) {
 	// Convert bytes to soft bits
 	softBits := bytesToSoftBits(f.Payload)
 
@@ -676,16 +685,25 @@ func (s *SPILink) decodeFEC(f *frame.Frame) ([]byte, int, error) {
 	var decoded []byte
 	var pathMetric int
 	var err error
+	combiningCount := defaultCombiningCount
 
 	if isRetransmit && s.combiner != nil {
 		// Retransmission - add to combiner
-		if err := s.combiner.Add(softBits); err != nil {
-			return nil, 0, fmt.Errorf("combiner add failed: %w", err)
+		err = s.combiner.Add(softBits)
+		if err != nil {
+			combiningCount = s.combiner.Count() // Capture actual count before returning
+			return nil, defaultPathMetric, combiningCount, fmt.Errorf("combiner add failed: %w", err)
 		}
 
 		// Decode combined soft bits
 		combined := s.combiner.Combined()
 		decoded, pathMetric, err = s.fecDecoder.DecodeSoft(combined, decodeSoftModeDefault)
+		combiningCount = s.combiner.Count()
+
+		// Reset combiner on success
+		if err == nil {
+			s.combiner.Reset()
+		}
 	} else {
 		// First attempt - direct decode
 		decoded, pathMetric, err = s.fecDecoder.DecodeSoft(softBits, decodeSoftModeDefault)
@@ -694,18 +712,15 @@ func (s *SPILink) decodeFEC(f *frame.Frame) ([]byte, int, error) {
 			// Decode failed - store for combining
 			s.combiner.Reset()
 			if addErr := s.combiner.Add(softBits); addErr != nil {
-				return nil, 0, fmt.Errorf("combiner add failed: %w", addErr)
+				return nil, defaultPathMetric, combiningCount, fmt.Errorf("combiner add failed: %w", addErr)
 			}
-			return nil, pathMetric, err
+			combiningCount = s.combiner.Count()
+			return nil, pathMetric, combiningCount, err
 		}
+		// First attempt success: combiningCount remains at defaultCombiningCount (1)
 	}
 
-	if err == nil && s.combiner != nil {
-		// Success - reset combiner for next frame
-		s.combiner.Reset()
-	}
-
-	return decoded, pathMetric, err
+	return decoded, pathMetric, combiningCount, err
 }
 
 // sendAck sends an ACK frame for the specified sequence number.
@@ -822,10 +837,10 @@ func bytesToSoftBits(data []byte) []fec.SoftBit {
 }
 
 // extractRetransmitCount extracts the retransmit flag from frame header.
-// Returns 1 if FlagRetransmit is set, 0 otherwise.
+// Returns retransmitCountSet if FlagRetransmit is set, retransmitCountUnset otherwise.
 func extractRetransmitCount(flags frame.Flags) int {
 	if (flags & frame.FlagRetransmit) != 0 {
-		return 1
+		return retransmitCountSet
 	}
-	return 0
+	return retransmitCountUnset
 }
