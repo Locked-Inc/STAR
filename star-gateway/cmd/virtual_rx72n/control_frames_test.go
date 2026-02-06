@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/binary"
+	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -219,6 +221,11 @@ func TestHandleFrame_PingWithAckFlag(t *testing.T) {
 		t.Errorf("second frame type = %s, want PONG", resp.frames[1].Type.String())
 	}
 
+	// PONG should use the initial session sequence (0)
+	if resp.frames[1].Header.Sequence != 0 {
+		t.Errorf("PONG sequence = %d, want 0", resp.frames[1].Header.Sequence)
+	}
+
 	gotCounter := binary.BigEndian.Uint32(resp.frames[1].Payload)
 	if gotCounter != testPingCounter {
 		t.Errorf("PONG counter = %d, want %d", gotCounter, testPingCounter)
@@ -288,7 +295,9 @@ func TestParseSimLatency(t *testing.T) {
 		{"default_unset", "", false, time.Duration(DefaultSimLatencyMs) * time.Millisecond},
 		{"zero", "0", true, 0},
 		{"custom_50", "50", true, 50 * time.Millisecond},
+		{"max_valid", strconv.Itoa(MaxSimLatencyMs), true, time.Duration(MaxSimLatencyMs) * time.Millisecond},
 		{"invalid_negative", "-1", true, time.Duration(DefaultSimLatencyMs) * time.Millisecond},
+		{"invalid_over_max", strconv.Itoa(MaxSimLatencyMs + 1), true, time.Duration(DefaultSimLatencyMs) * time.Millisecond},
 		{"invalid_string", "abc", true, time.Duration(DefaultSimLatencyMs) * time.Millisecond},
 	}
 
@@ -296,6 +305,12 @@ func TestParseSimLatency(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.setEnv {
 				t.Setenv(EnvSimLatencyMs, tc.envValue)
+			} else {
+				// Explicitly unset environment variable to ensure deterministic test
+				os.Unsetenv(EnvSimLatencyMs)
+				t.Cleanup(func() {
+					// Cleanup will restore original env after test
+				})
 			}
 
 			got := parseSimLatency()

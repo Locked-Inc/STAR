@@ -60,6 +60,9 @@ const (
 	// MinSimLatencyMs is the minimum allowed simulated latency (0 disables latency).
 	MinSimLatencyMs = 0
 
+	// MaxSimLatencyMs is the maximum allowed simulated latency in milliseconds.
+	MaxSimLatencyMs = 1000
+
 	// SeqMask is the bitmask for 16-bit sequence number wraparound.
 	SeqMask = 0xFFFF
 
@@ -92,6 +95,7 @@ type frameResponse struct {
 
 // parseSimLatency reads the SIM_LATENCY_MS environment variable and returns
 // the configured latency duration. Returns DefaultSimLatencyMs if unset or invalid.
+// Valid range: MinSimLatencyMs (0) to MaxSimLatencyMs (1000).
 func parseSimLatency() time.Duration {
 	envVal := os.Getenv(EnvSimLatencyMs)
 	if envVal == "" {
@@ -99,8 +103,9 @@ func parseSimLatency() time.Duration {
 	}
 
 	ms, err := strconv.Atoi(envVal)
-	if err != nil || ms < MinSimLatencyMs {
-		log.Printf("Invalid %s value %q, using default %dms", EnvSimLatencyMs, envVal, DefaultSimLatencyMs)
+	if err != nil || ms < MinSimLatencyMs || ms > MaxSimLatencyMs {
+		log.Printf("Invalid %s value %q (must be %d-%d), using default %dms",
+			EnvSimLatencyMs, envVal, MinSimLatencyMs, MaxSimLatencyMs, DefaultSimLatencyMs)
 		return time.Duration(DefaultSimLatencyMs) * time.Millisecond
 	}
 
@@ -187,6 +192,7 @@ func handleConnection(conn net.Conn, latency time.Duration) {
 	buffer := make([]byte, MaxFrameSize)
 	session := &simulatorSession{}
 	encoder := frame.NewEncoder()
+	decoder := frame.NewDecoder()
 
 	for {
 		// Read data from Gateway
@@ -212,7 +218,6 @@ func handleConnection(conn net.Conn, latency time.Duration) {
 		rxData := buffer[:n]
 
 		// Decode the frame
-		decoder := frame.NewDecoder()
 		decodedFrame, err := decoder.Decode(rxData)
 		if err != nil {
 			log.Printf("Frame decode error: %v", err)
@@ -407,15 +412,15 @@ func handleCommand(decoded *frame.Frame, session *simulatorSession, existing []*
 		return frameResponse{frames: existing}
 	}
 
-	responseFrame := &frame.Frame{
-		Header: frame.Header{
-			Sequence: session.nextSeq(),
-			Length:   uint16(len(responsePayload)),
-			Flags:    frame.FlagNone,
-		},
-		Type:    frame.FrameTypeResponse,
-		Payload: responsePayload,
+	// Use frame.NewFrame to ensure payload size validation
+	responseFrame, err := frame.NewFrame(frame.FrameTypeResponse, responsePayload)
+	if err != nil {
+		log.Printf("Failed to create response frame: %v", err)
+		return frameResponse{frames: existing}
 	}
+
+	responseFrame.Header.Sequence = session.nextSeq()
+	responseFrame.Header.Flags = frame.FlagNone
 
 	return frameResponse{frames: append(existing, responseFrame)}
 }
