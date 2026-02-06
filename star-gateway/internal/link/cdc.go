@@ -34,6 +34,13 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
 )
 
+const (
+	// Frame metadata defaults for CDC protocol (lightweight, no FEC/combining)
+	cdcDefaultPathMetric     = 0     // Perfect metric (no FEC, hardware reliability)
+	cdcDefaultCombiningCount = 1     // Single attempt (no Chase combining)
+	cdcDefaultFECDecoded     = false // No FEC in CDC protocol
+)
+
 // transportAdapter bridges transport.Device to io.Reader for StreamDecoder.
 type transportAdapter struct {
 	transport transport.Device
@@ -262,10 +269,13 @@ func (c *CDCLink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	return &harq.ReceiveResult{
 		Payload: f.Payload,
 		Metadata: harq.FrameMetadata{
-			Sequence:    f.Header.Sequence,
-			ReceivedAt:  time.Now(),
-			Retransmits: 0,     // No retransmissions in lightweight CDC protocol
-			FECDecoded:  false, // No FEC in lightweight CDC protocol
+			Sequence:       f.Header.Sequence,
+			Type:           f.Type,
+			ReceivedAt:     time.Now(),
+			Retransmits:    extractRetransmitCount(f.Header.Flags),
+			FECDecoded:     cdcDefaultFECDecoded,     // No FEC in lightweight CDC protocol
+			PathMetric:     cdcDefaultPathMetric,     // No FEC = perfect metric
+			CombiningCount: cdcDefaultCombiningCount, // No combining in CDC protocol
 		},
 	}, nil
 }

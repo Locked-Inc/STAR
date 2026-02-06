@@ -910,18 +910,48 @@ func TestSPILink_ChaseCombining_RetransmissionCombines(t *testing.T) {
 		Payload: fecEncoded,
 	}
 
-	// Simulate: First attempt receives corrupted data (decode will fail),
-	// then retransmission combines and succeeds.
+	// For this test, we'll manually call decodeFEC to test the combining logic.
+	// Since the test data is valid FEC-encoded data (not corrupted), both
+	// decodes will succeed immediately.
 
-	// For this test, we'll manually call decodeFEC to test the combining logic
-	// First attempt - will fail and store in combiner
-	_, _ = link.decodeFEC(firstAttemptFrame)
-	// We expect this might fail on corrupted data, but combiner should store it
+	// First attempt - succeeds immediately (no combining needed)
+	decoded1, _, combiningCount1, err1 := link.decodeFEC(firstAttemptFrame)
+	if err1 != nil {
+		t.Errorf("First attempt decode failed: %v", err1)
+	}
+	if combiningCount1 != 1 {
+		t.Errorf("First attempt combining count = %d, want 1", combiningCount1)
+	}
 
-	// Retransmission - should add to combiner and attempt combined decode
-	_, _ = link.decodeFEC(retransmitFrame)
-	// Result depends on whether combined bits improve decode
-	// The important thing is that combiner.Add was called
+	// Retransmission - with empty combiner (first succeeded), adds this frame only
+	decoded2, _, combiningCount2, err2 := link.decodeFEC(retransmitFrame)
+	if err2 != nil {
+		t.Errorf("Retransmit decode failed: %v", err2)
+	}
+	if combiningCount2 != 1 {
+		t.Errorf("Retransmit combining count = %d, want 1 (empty combiner)", combiningCount2)
+	}
+
+	// Verify both decodes produced the same original data (ignoring FEC padding)
+	dataLen := len(testData)
+	var safe1, safe2 []byte
+	if len(decoded1) >= dataLen {
+		safe1 = decoded1[:dataLen]
+	} else {
+		safe1 = decoded1
+	}
+	if len(decoded2) >= dataLen {
+		safe2 = decoded2[:dataLen]
+	} else {
+		safe2 = decoded2
+	}
+
+	if len(decoded1) < dataLen || string(safe1) != string(testData) {
+		t.Errorf("First decode = %v, want %v (ignoring padding)", safe1, testData)
+	}
+	if len(decoded2) < dataLen || string(safe2) != string(testData) {
+		t.Errorf("Retransmit decode = %v, want %v (ignoring padding)", safe2, testData)
+	}
 
 	// Verify combiner was used (it should have been reset or have data)
 	if link.combiner == nil {

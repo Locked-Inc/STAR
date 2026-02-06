@@ -1,0 +1,47 @@
+run:
+  timeout: 5m
+  tests: true
+  build-tags:
+    - integration
+
+linters:
+  enable:
+    - errcheck
+    - gosimple      # Added - basic checks
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck     # Added - type checking
+    - unused
+    - gofmt         # Added - formatting check
+    - goimports     # Added - import formatting
+    - revive
+
+linters-settings:
+  revive:
+    rules:
+      - name: package-comments
+        disabled: true
+      - name: exported
+        disabled: false
+      - name: var-naming
+        disabled: false
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-dirs:
+    - vendor
+    - third_party
+    - testdata
+    - gen
+  exclude-files:
+    - ".*\\.pb\\.go"
+    - ".*\\.gen\\.go"
+  exclude-rules:
+    - path: ".*\\.pb\\.go"
+      linters:
+        - all
+    - path: _test\.go
+      linters:
+        - errcheck
