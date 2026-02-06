@@ -573,12 +573,14 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 	}
 
 	// Update heartbeat based on frame type
-	// - PONG/PING: Explicit heartbeat frames (always update)
-	// - COMMAND/RESPONSE: Application data (update to prevent unnecessary PINGs)
+	// - PONG: Explicit heartbeat validation (counter check via OnPongReceived)
+	// - PING/COMMAND/RESPONSE: Implicit heartbeat (any activity resets timer)
 	// - ACK/NACK: Control frames (ignore - not meaningful for heartbeat)
 	switch result.Metadata.Type {
-	case frame.FrameTypePong, frame.FrameTypePing,
-		frame.FrameTypeCommand, frame.FrameTypeResponse:
+	case frame.FrameTypePong:
+		// Explicit PONG validation: check counter matches last PING
+		tm.heartbeat.OnPongReceived(result.Payload)
+	case frame.FrameTypePing, frame.FrameTypeCommand, frame.FrameTypeResponse:
 		tm.heartbeat.OnFrameReceived()
 	case frame.FrameTypeAck, frame.FrameTypeNack:
 		// Internal control frames - don't reset heartbeat timer

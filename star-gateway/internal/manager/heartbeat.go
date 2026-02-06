@@ -29,6 +29,50 @@ const (
 	pingSendTimeout = 100 * time.Millisecond
 )
 
+// WDT Timing Coordination
+//
+// The RX72N hardware Watchdog Timer (WDT) has an approximate timeout of 1 second.
+// Our software heartbeat MUST detect failure significantly faster to prevent
+// unintended hardware reboots.
+//
+// Timing budget:
+//
+//	WDT timeout:       ~1000ms (hardware, configured in RX72N firmware)
+//	PING interval:        50ms (20 Hz, sends PING when link is idle)
+//	Miss threshold:     4 PINGs (consecutive unanswered PINGs before failover)
+//	Detection time:      200ms (4 * 50ms, worst-case failover latency)
+//	Safety margin:         5x  (200ms << 1000ms)
+//
+// Timeline (idle link, no PONG responses):
+//
+//	  0ms  PING#0 sent
+//	 50ms  PING#1 sent, miss #1 counted (PING#0 unanswered)
+//	100ms  PING#2 sent, miss #2 counted
+//	150ms  PING#3 sent, miss #3 counted
+//	200ms  PING#4 would send, miss #4 counted -> failover triggered
+//	1000ms RX72N WDT would fire (Gateway already failed over 800ms ago)
+//
+// WARNING: Do NOT increase DefaultPingInterval or DefaultFailureTimeout without
+// first verifying the RX72N WDT timeout. Increasing these values risks WDT reboot
+// if the RX72N firmware depends on heartbeat-driven communication.
+//
+// To verify RX72N WDT timeout:
+//  1. Check star-rx72n-firmware WDT configuration registers (WDTCR)
+//  2. WDT clock source and divider determine actual timeout
+//  3. Typical: PCLKB/8192 with 16-bit counter ~ 1.09s at 60MHz PCLKB
+const (
+	// DefaultConsecutiveMissThreshold is the number of consecutive unanswered PINGs
+	// before triggering failover. With 50ms PING interval, 4 misses = 200ms detection.
+	DefaultConsecutiveMissThreshold = 4
+
+	// wdtTimeoutApproxMs documents the approximate RX72N WDT timeout in milliseconds.
+	wdtTimeoutApproxMs = 1000
+
+	// wdtSafetyFactor is the minimum ratio of WDT timeout to Gateway failure detection.
+	// With DefaultPingInterval=50ms and threshold=4: 1000ms / 200ms = 5.
+	wdtSafetyFactor = 5
+)
+
 // HeartbeatManager implements hybrid implicit/explicit connectivity detection.
 //
 // Hybrid Detection Strategy:
@@ -50,6 +94,14 @@ type HeartbeatManager struct {
 	pingInterval     time.Duration // 50ms - send PING if idle
 	failureTimeout   time.Duration // 200ms - declare link dead
 	onLinkFailed     func()        // Callback to trigger failover
+
+	// Explicit PONG validation state.
+	// These fields separate "any frame arrived" (implicit) from
+	// "correct PONG arrived" (explicit heartbeat success).
+	lastValidPong     time.Time // Timestamp of last PONG with matching counter
+	lastPingSent      uint32    // Counter value of most recently sent PING
+	pendingPing       bool      // True after PING sent, false after valid PONG
+	consecutiveMisses uint32    // Unanswered PINGs; reset on valid PONG match
 }
 
 // NewHeartbeatManager creates a new heartbeat manager with the specified timeouts.
@@ -74,8 +126,10 @@ func NewHeartbeatManager(pingInterval, failureTimeout time.Duration, onFailure f
 		return nil, fmt.Errorf("onFailure callback cannot be nil")
 	}
 
+	now := time.Now()
 	return &HeartbeatManager{
-		lastSeen:       time.Now(),
+		lastSeen:       now,
+		lastValidPong:  now,
 		pingCounter:    0,
 		pingInterval:   pingInterval,
 		failureTimeout: failureTimeout,
@@ -85,12 +139,13 @@ func NewHeartbeatManager(pingInterval, failureTimeout time.Duration, onFailure f
 
 // OnFrameReceived updates the LastSeen timestamp for implicit heartbeat detection.
 //
-// This method should be called by TransportManager.Receive() for EVERY valid frame,
+// This method should be called by TransportManager.Receive() for valid non-PONG frames,
 // including:
-//   - Telemetry frames
-//   - Command responses
-//   - ACK/NACK frames
-//   - PONG frames (explicit heartbeat responses)
+//   - PING frames (from remote side)
+//   - Command frames
+//   - Response frames
+//
+// PONG frames should use [OnPongReceived] for explicit counter validation.
 //
 // By updating on any frame, we avoid sending unnecessary PINGs when the link is
 // actively transferring data. Also clears the failureTriggered flag to allow
@@ -102,6 +157,58 @@ func (hm *HeartbeatManager) OnFrameReceived() {
 	hm.lastSeen = time.Now()
 	hm.failureTriggered = false // Clear failure flag (link recovered)
 	hm.mu.Unlock()
+}
+
+// OnPongReceived validates a PONG payload against the last sent PING counter.
+//
+// This performs both implicit and explicit heartbeat detection:
+//   - Implicit: Always updates lastSeen and clears failureTriggered (link is alive)
+//   - Explicit: Validates the 4-byte counter matches lastPingSent
+//
+// On counter match:
+//   - Resets consecutiveMisses to 0
+//   - Updates lastValidPong timestamp
+//   - Clears pendingPing flag
+//
+// On counter mismatch (stale/replayed PONG):
+//   - Logs a warning with both counters
+//   - Does NOT reset consecutiveMisses (link may be degraded)
+//   - lastSeen is still updated (link is physically alive)
+//
+// Returns true if the counter matched, false otherwise.
+//
+// Thread Safety: Uses mutex to protect all state fields.
+func (hm *HeartbeatManager) OnPongReceived(payload []byte) bool {
+	hm.mu.Lock()
+	defer hm.mu.Unlock()
+
+	// Always update lastSeen for implicit activity detection
+	hm.lastSeen = time.Now()
+	hm.failureTriggered = false
+
+	// Validate payload length
+	if len(payload) != pingPayloadSize {
+		log.Printf("WARN: PONG payload length %d, expected %d",
+			len(payload), pingPayloadSize)
+		return false
+	}
+
+	// Extract counter from PONG payload
+	receivedCounter := binary.BigEndian.Uint32(payload)
+
+	// Validate counter matches last sent PING
+	if receivedCounter != hm.lastPingSent {
+		log.Printf("WARN: PONG counter mismatch: received %d, expected %d (stale or replayed)",
+			receivedCounter, hm.lastPingSent)
+		return false
+	}
+
+	// Valid PONG: reset consecutive misses and update explicit heartbeat state
+	hm.consecutiveMisses = 0
+	hm.lastValidPong = time.Now()
+	hm.pendingPing = false
+
+	return true
 }
 
 // Run starts the heartbeat monitoring loop as a background goroutine.
@@ -142,19 +249,25 @@ func (hm *HeartbeatManager) Run(ctx context.Context, tm *TransportManager) {
 // This is called periodically by Run() to:
 //  1. Calculate elapsed time since lastSeen
 //  2. Trigger failover if elapsed > failureTimeout (200ms) - ONCE per failure
-//  3. Send PING if elapsed > pingInterval (50ms) and not yet failed
+//  3. Track consecutive PONG misses and trigger failover at threshold
+//  4. Send PING if elapsed > pingInterval (50ms) and not yet failed
+//
+// Two independent failover triggers exist (defense-in-depth):
+//   - Time-based: No frames at all for failureTimeout (200ms)
+//   - Counter-based: DefaultConsecutiveMissThreshold (4) unanswered PINGs
 //
 // The failureTriggered flag prevents repeated failover attempts for the same failure.
-// It's cleared when OnFrameReceived() is called (link recovered).
+// It's cleared when OnFrameReceived() or OnPongReceived() is called (link recovered).
 //
 // The order matters: we check failure first to avoid sending PING on a dead link.
 func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 	hm.mu.Lock()
 	elapsed := time.Since(hm.lastSeen)
 	alreadyTriggered := hm.failureTriggered
+	pending := hm.pendingPing
 	hm.mu.Unlock()
 
-	// Failure detection (highest priority)
+	// Time-based failure detection (highest priority)
 	// Only trigger once per failure to prevent spamming attemptFailover()
 	if elapsed > hm.failureTimeout && !alreadyTriggered {
 		log.Printf("Heartbeat timeout (%v), triggering failover", elapsed)
@@ -172,6 +285,32 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 
 	// Explicit PING (only if idle but not yet failed)
 	if elapsed > hm.pingInterval && !alreadyTriggered {
+		// Before sending new PING, check if previous PING was answered
+		if pending {
+			hm.mu.Lock()
+			hm.consecutiveMisses++
+			currentMisses := hm.consecutiveMisses
+			hm.mu.Unlock()
+
+			log.Printf("PONG miss: counter=%d unanswered, consecutive_misses=%d/%d",
+				hm.lastPingSent, currentMisses, DefaultConsecutiveMissThreshold)
+
+			// Counter-based failure detection
+			if currentMisses >= DefaultConsecutiveMissThreshold {
+				log.Printf("Consecutive PONG misses (%d >= %d), triggering failover",
+					currentMisses, DefaultConsecutiveMissThreshold)
+
+				hm.mu.Lock()
+				hm.failureTriggered = true
+				hm.mu.Unlock()
+
+				if hm.onLinkFailed != nil {
+					hm.onLinkFailed()
+				}
+				return
+			}
+		}
+
 		hm.sendPing(ctx, tm)
 	}
 }
@@ -181,30 +320,31 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 // PING Frame Format:
 //   - Type: FrameTypePing (0x00)
 //   - Payload: 4-byte counter (big-endian uint32)
-//   - Expected Response: PONG frame with same counter
+//   - Expected Response: PONG frame with same counter (validated by OnPongReceived)
 //
-// The counter prevents replay attacks (RX72N echoes the counter in PONG).
-// If the PONG is received, OnFrameReceived() will be called automatically
-// by TransportManager.Receive() when it sees FrameTypePong, updating lastSeen
-// and resetting the heartbeat timer.
+// The counter enables replay detection: the RX72N echoes the counter in PONG,
+// and OnPongReceived validates that it matches lastPingSent.
 //
-// Note: ACK/NACK frames do NOT update heartbeat (filtered in manager.go).
-// Only meaningful frames (PONG, PING, COMMAND, RESPONSE) reset the timer.
+// After sending, pendingPing is set to true and lastPingSent records the counter.
+// If OnPongReceived is not called before the next check(), the pending PING
+// counts as a consecutive miss.
 //
-// Thread Safety: Increments pingCounter under mutex.
+// Thread Safety: Increments pingCounter and sets pendingPing under mutex.
 func (hm *HeartbeatManager) sendPing(ctx context.Context, tm *TransportManager) {
 	hm.mu.Lock()
 	counter := hm.pingCounter
 	hm.pingCounter++
+	hm.lastPingSent = counter
+	hm.pendingPing = true
 	hm.mu.Unlock()
 
 	// Create PING payload (pingPayloadSize bytes, big-endian counter)
 	payload := make([]byte, pingPayloadSize)
 	binary.BigEndian.PutUint32(payload, counter)
 
-	// Send PING via TransportManager with explicit frame type (Phase 3)
-	// Note: We don't wait for PONG here - OnFrameReceived() will be called
-	// when the PONG arrives, updating lastSeen
+	// Send PING via TransportManager with explicit frame type
+	// Note: We don't wait for PONG here - OnPongReceived() will be called
+	// when the PONG arrives via TransportManager.Receive()
 	pingCtx, cancel := context.WithTimeout(ctx, pingSendTimeout)
 	defer cancel()
 
