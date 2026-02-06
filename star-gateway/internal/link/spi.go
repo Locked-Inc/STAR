@@ -160,7 +160,7 @@ type SPILink struct {
 	transport    transport.Device      // SPI transport wrapper
 	encoder      frame.Encoder         // Frame encoding (SYNC + CRC32)
 	decoder      *frame.StreamDecoder  // Frame decoding with validation
-	sessionState *manager.SessionState // SHARED across all transports (CRITICAL FIX #1)
+	sessionState *manager.SessionState // SHARED across all transports
 	adapter      *contextTransportAdapter
 
 	// HARQ-specific components (differences from CDCLink)
@@ -168,7 +168,7 @@ type SPILink struct {
 	fecDecoder *fec.ViterbiDecoder       // FEC decoder (Phase 2)
 	combiner   *fec.ChaseCombiner        // Chase Combiner (Phase 2)
 
-	// ACK dispatch system (CRITICAL FIX: Split Reader)
+	// ACK dispatch system
 	// Maps sequence number to ACK result channel
 	// When Send() waits for ACK, it registers a channel here
 	// When Receive() gets ACK/NACK, it dispatches to registered channel
@@ -176,7 +176,7 @@ type SPILink struct {
 	ackChannels map[uint16]chan bool // true=ACK, false=NACK
 	ackMu       sync.Mutex           // Protects ackChannels map
 
-	sendMutex    sync.Mutex   // Serialize Send operations (CRITICAL FIX #5)
+	sendMutex    sync.Mutex   // Serialize Send operations
 	receiveMutex sync.Mutex   // Serialize Receive operations (prevents decoder race)
 	state        harq.State   // HARQ state machine
 	stateMu      sync.RWMutex // Protects state field
@@ -256,7 +256,7 @@ func (s *SPILink) getState() harq.State {
 }
 
 // ============================================================================
-// ACK Dispatch System (CRITICAL FIX: Split Reader)
+// ACK Dispatch System
 // ============================================================================
 
 // registerAckChannel registers a channel to receive ACK/NACK for the given sequence.
@@ -310,7 +310,7 @@ func (s *SPILink) dispatchAck(seq uint16, isAck bool) bool {
 // Caller must hold s.sendMutex lock.
 //
 // Protocol Flow:
-//  1. Register ACK channel (CRITICAL FIX: Split Reader)
+//  1. Register ACK channel
 //  2. Optional: FEC encode payload (if EnableFEC)
 //  3. Retry loop (max 3 attempts):
 //     a. Check context cancellation
@@ -327,7 +327,7 @@ func (s *SPILink) sendWithRetry(ctx context.Context, data []byte, seq uint16, fr
 		return ctx.Err()
 	}
 
-	// CRITICAL FIX: Register ACK channel (Split Reader fix)
+	// Register ACK channel
 	// Only Receive() will read from decoder and dispatch to this channel
 	ackCh := s.registerAckChannel(seq)
 	defer s.unregisterAckChannel(seq)

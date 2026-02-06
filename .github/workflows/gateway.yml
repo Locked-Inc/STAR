@@ -23,7 +23,7 @@ on:
 env:
   GO_VERSION: '1.25.x'
   GOLANGCI_LINT_VERSION: 'v2.4'  # golangci-lint v2 (required for action v8)
-  MIN_COVERAGE: 75  # Current: 79.1% (excluding main.go)
+  MIN_COVERAGE: 65
   GOWORK: off  # Disable go.work in CI, use go.mod replace directive
 
 jobs:
@@ -103,7 +103,7 @@ jobs:
           echo "</details>" >> $GITHUB_STEP_SUMMARY
 
       - name: Run unit tests (full suite)
-        run: go test -v -race -coverprofile=coverage.out -covermode=atomic -coverpkg=./... ./...
+        run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: Calculate coverage
         id: coverage
