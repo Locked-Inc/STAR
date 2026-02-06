@@ -9,6 +9,7 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
@@ -22,6 +23,7 @@ const (
 
 // MockHARQ is a mock implementation of the harq.HARQ interface.
 type MockHARQ struct {
+	mu              sync.Mutex
 	SendFunc        func(ctx context.Context, data []byte, p ...harq.Priority) error
 	ReceiveFunc     func(ctx context.Context) (*harq.ReceiveResult, error)
 	GetStateFunc    func() harq.State
@@ -36,9 +38,14 @@ type MockHARQ struct {
 }
 
 func (m *MockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
-	m.LastSentPayload = data
-	if m.SendFunc != nil {
-		return m.SendFunc(ctx, data, p...)
+	m.mu.Lock()
+	// Defensive copy to prevent slice aliasing
+	m.LastSentPayload = append([]byte(nil), data...)
+	sendFunc := m.SendFunc
+	m.mu.Unlock()
+
+	if sendFunc != nil {
+		return sendFunc(ctx, data, p...)
 	}
 	return nil
 }
@@ -82,9 +89,26 @@ func (m *MockHARQ) GetRxSequence() uint16 {
 }
 
 func (m *MockHARQ) Reset() {
-	if m.ResetFunc != nil {
-		m.ResetFunc()
+	m.mu.Lock()
+	resetFunc := m.ResetFunc
+	m.LastSentPayload = nil
+	m.mu.Unlock()
+
+	if resetFunc != nil {
+		resetFunc()
 	}
+}
+
+// GetLastSentPayload returns a copy of the last sent payload in a thread-safe manner.
+func (m *MockHARQ) GetLastSentPayload() []byte {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.LastSentPayload == nil {
+		return nil
+	}
+	result := make([]byte, len(m.LastSentPayload))
+	copy(result, m.LastSentPayload)
+	return result
 }
 
 // MockDispatcher is a mock implementation of the dispatcher.Dispatcher interface.
