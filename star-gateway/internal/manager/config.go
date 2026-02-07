@@ -74,12 +74,12 @@ type Config struct {
 // Note: USBPID should be updated with the actual RX72N Product ID once known.
 func DefaultConfig() *Config {
 	return &Config{
-		Mode:                ModeAuto,
-		HealthCheckInterval: 5 * time.Second,
-		FailureThreshold:    3,
-		SwitchTimeout:       500 * time.Millisecond,
-		EnableHotPlug:       true,
-		HotPlugPollInterval: 500 * time.Millisecond,
+		Mode:                   ModeAuto,
+		HealthCheckInterval:    5 * time.Second,
+		FailureThreshold:       3,
+		SwitchTimeout:          500 * time.Millisecond,
+		EnableHotPlug:          true,
+		HotPlugPollInterval:    500 * time.Millisecond,
 		USBVID:                 0x045B, // Renesas vendor ID
 		USBPID:                 0x0235, // TODO: Verify if we need to obtain actual RX72N PID, once we acquire it.
 		FailbackDamping:        30 * time.Second,

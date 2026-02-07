@@ -196,8 +196,8 @@ func crossCompatibilityVectors() []crossVector {
 				0x55, 0xAA, // SYNC
 				0x00, 0x00, // SEQ=0
 				0x00, 0x00, // LEN=0
-				0x00,       // TYPE=PING
-				0x00,       // FLAGS=none
+				0x00,                   // TYPE=PING
+				0x00,                   // FLAGS=none
 				0xEB, 0xAE, 0x3F, 0x9B, // CRC-32 LE = 0x9B3FAEEB
 			},
 		},
@@ -211,8 +211,8 @@ func crossCompatibilityVectors() []crossVector {
 				0x55, 0xAA, // SYNC
 				0x00, 0x00, // SEQ=0
 				0x00, 0x04, // LEN=4
-				0x01,       // TYPE=PONG
-				0x00,       // FLAGS=none
+				0x01,                   // TYPE=PONG
+				0x00,                   // FLAGS=none
 				0x00, 0x00, 0x00, 0x2A, // PAYLOAD
 				0xDF, 0x37, 0x77, 0x28, // CRC-32 LE = 0x287737DF
 			},
@@ -227,8 +227,8 @@ func crossCompatibilityVectors() []crossVector {
 				0x55, 0xAA, // SYNC
 				0x00, 0x01, // SEQ=1
 				0x00, 0x04, // LEN=4
-				0x10,       // TYPE=COMMAND
-				0x01,       // FLAGS=REQUIRES_ACK
+				0x10,                   // TYPE=COMMAND
+				0x01,                   // FLAGS=REQUIRES_ACK
 				0x54, 0x45, 0x53, 0x54, // PAYLOAD="TEST"
 				0x60, 0x5E, 0xF3, 0xDE, // CRC-32 LE = 0xDEF35E60
 			},
@@ -259,8 +259,8 @@ func crossCompatibilityVectors() []crossVector {
 				0x55, 0xAA, // SYNC
 				0x00, 0x01, // SEQ=1
 				0x00, 0x00, // LEN=0
-				0x12,       // TYPE=ACK
-				0x00,       // FLAGS=none
+				0x12,                   // TYPE=ACK
+				0x00,                   // FLAGS=none
 				0x88, 0xF7, 0xAB, 0xDE, // CRC-32 LE = 0xDEABF788
 			},
 		},
@@ -274,8 +274,8 @@ func crossCompatibilityVectors() []crossVector {
 				0x55, 0xAA, // SYNC
 				0x00, 0x01, // SEQ=1
 				0x00, 0x00, // LEN=0
-				0x13,       // TYPE=NACK
-				0x00,       // FLAGS=none
+				0x13,                   // TYPE=NACK
+				0x00,                   // FLAGS=none
 				0xC9, 0xC6, 0xB0, 0xC7, // CRC-32 LE = 0xC7B0C6C9
 			},
 		},
@@ -289,8 +289,8 @@ func crossCompatibilityVectors() []crossVector {
 				0x55, 0xAA, // SYNC
 				0x00, 0x00, // SEQ=0
 				0x00, 0x00, // LEN=0
-				0xFF,       // TYPE=RESET
-				0x00,       // FLAGS=none
+				0xFF,                   // TYPE=RESET
+				0x00,                   // FLAGS=none
 				0x99, 0x53, 0x1B, 0x08, // CRC-32 LE = 0x081B5399
 			},
 		},
@@ -304,8 +304,8 @@ func crossCompatibilityVectors() []crossVector {
 				0x55, 0xAA, // SYNC
 				0x00, 0x00, // SEQ=0
 				0x00, 0x00, // LEN=0
-				0xFE,       // TYPE=RESET_ACK
-				0x00,       // FLAGS=none
+				0xFE,                   // TYPE=RESET_ACK
+				0x00,                   // FLAGS=none
 				0xD8, 0x62, 0x00, 0x11, // CRC-32 LE = 0x110062D8
 			},
 		},

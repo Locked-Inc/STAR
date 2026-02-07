@@ -17,10 +17,10 @@ import (
 // Test timing constants to avoid magic numbers
 const (
 	// Heartbeat intervals (dual-detection model: pingInterval may be > failureTimeout)
-	validPingInterval     = 50 * time.Millisecond
-	validFailureTimeout   = 200 * time.Millisecond
-	largePingInterval     = 1 * time.Second // Production-like: PING > failure timeout
-	largeFailureTimeout   = 200 * time.Millisecond
+	validPingInterval   = 50 * time.Millisecond
+	validFailureTimeout = 200 * time.Millisecond
+	largePingInterval   = 1 * time.Second // Production-like: PING > failure timeout
+	largeFailureTimeout = 200 * time.Millisecond
 
 	// Test timeouts and waits
 	shortPingInterval       = 10 * time.Millisecond
