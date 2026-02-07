@@ -125,4 +125,5 @@
   (lib (name "MIC5205-2.5YM5-TR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/MIC5205-2.5YM5-TR")(options "")(descr ""))
   (lib (name "TXS0102DCUT")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TXS0102DCUT")(options "")(descr ""))
   (lib (name "861400011YO2LF")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/861400011YO2LF")(options "")(descr ""))
+  (lib (name "282837_2")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/282837_2")(options "")(descr ""))
 )
