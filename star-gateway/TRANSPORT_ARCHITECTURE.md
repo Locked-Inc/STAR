@@ -103,7 +103,7 @@ The STAR Gateway implements intelligent transport switching between USB CDC (pri
 
 All frames use the same wire format regardless of transport:
 
-```
+```text
 ┌──────┬──────┬──────┬──────┬───────┬─────────┬─────────┐
 │ SYNC │ SEQ  │ LEN  │ TYPE │ FLAGS │ PAYLOAD │ CRC-32  │
 │ (BE) │ (BE) │ (BE) │      │       │         │  (LE)   │
@@ -238,11 +238,13 @@ The heartbeat system uses two complementary detection mechanisms:
 - Rarely fires under normal traffic; only needed when link is genuinely idle
 
 **Timing Budget:**
-```
+
+```text
 Implicit timeout:    200ms  (primary detection, any frame resets)
+Check interval:       50ms  (failureTimeout / 4, worst-case detection ~250ms)
 PING interval:      1000ms  (secondary, idle-link probe)
 WDT timeout:        1000ms  (RX72N hardware watchdog)
-Safety margin:         5x   (200ms gateway << 1000ms WDT)
+Safety margin:         4x   (250ms worst-case << 1000ms WDT)
 ```
 
 **Control Frame Dispatching:**
@@ -269,9 +271,10 @@ type HeartbeatManager struct {
 
 **Benefits:**
 - Minimal bandwidth overhead (PING only when idle)
-- Fast failure detection (200ms implicit timeout)
-- 5x safety margin below WDT timeout
+- Fast failure detection (~250ms worst-case with 50ms check interval)
+- 4x safety margin below WDT timeout
 - PONG validation prevents stale/replayed responses
+- PONG auto-reply bypasses operations gate (no deadlock during transport switch)
 
 ## State Machine
 

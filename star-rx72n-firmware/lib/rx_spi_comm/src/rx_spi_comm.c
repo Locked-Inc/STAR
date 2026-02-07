@@ -163,6 +163,11 @@ typedef enum : uint16_t {
   k_ack_wait_timeout_ms = 50, /**< Abort if host doesn't ACK within 50 ms */
 } ack_wait_t;
 
+/** @brief Sequence number constants */
+typedef enum : uint16_t {
+  k_control_frame_sequence = 0, /**< Sequence number for control frames (PONG, RESET_ACK) */
+} spi_comm_sequence_constants_t;
+
 /** @brief Polling loop iteration limits */
 typedef enum : uint16_t {
   k_max_poll_iterations = 1000, /**< Maximum polling iterations (safety bound) */
@@ -546,9 +551,9 @@ rx_err_t rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_state;
   }
 
-  /* Create PONG frame echoing PING payload (sequence 0 for control frames) */
+  /* Create PONG frame echoing PING payload */
   rx_frame_t pong_frame;
-  rx_err_t   err = rx_frame_create_pong(&pong_frame, 0, payload, payload_len);
+  rx_err_t   err = rx_frame_create_pong(&pong_frame, k_control_frame_sequence, payload, payload_len);
   if (err != k_rx_ok) {
     return err;
   }
@@ -575,9 +580,9 @@ rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle)
     return k_rx_err_invalid_state;
   }
 
-  /* Create RESET_ACK frame (sequence 0 after reset) */
+  /* Create RESET_ACK frame (sequence reset to initial after reset) */
   rx_frame_t reset_ack_frame;
-  rx_err_t   err = rx_frame_create_reset_ack(&reset_ack_frame, 0);
+  rx_err_t   err = rx_frame_create_reset_ack(&reset_ack_frame, k_control_frame_sequence);
   if (err != k_rx_ok) {
     return err;
   }
@@ -779,6 +784,22 @@ static dispatch_result_t internal_dispatch_control(rx_spi_comm_handle_t* handle,
                                                     const rx_frame_t*     frame,
                                                     rx_err_t*             err)
 {
+  /* Pre-condition 1: Handle must be valid (NASA Rule 5) */
+  if (handle == NULL) {
+    if (err != NULL) {
+      *err = k_rx_err_invalid_arg;
+    }
+    return k_dispatch_error;
+  }
+
+  /* Pre-condition 2: Frame must be valid (NASA Rule 5) */
+  if (frame == NULL || err == NULL) {
+    if (err != NULL) {
+      *err = k_rx_err_invalid_arg;
+    }
+    return k_dispatch_error;
+  }
+
   const rx_frame_type_t type = (rx_frame_type_t)frame->header.type;
 
   if (type == k_frame_type_ping) {
@@ -798,8 +819,8 @@ static dispatch_result_t internal_dispatch_control(rx_spi_comm_handle_t* handle,
 
   if (type == k_frame_type_reset) {
     /* Reset sequence counters */
-    handle->tx_sequence = 0;
-    handle->rx_sequence = 0;
+    handle->tx_sequence = k_control_frame_sequence;
+    handle->rx_sequence = k_control_frame_sequence;
 
     /* Auto-respond with RESET_ACK */
     *err = rx_spi_comm_send_reset_ack(handle);
@@ -862,13 +883,18 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
     const uint32_t total_size =
       k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
 
-    /* Read remaining data (payload + CRC) */
+    /* Read remaining data (payload + CRC) into a staging buffer to avoid
+     * overlapping memcpy UB. internal_spi_transfer writes into handle->rx_buffer
+     * internally, so passing handle->rx_buffer + offset as rx_data would overlap. */
     const uint32_t remaining = payload_len + k_frame_crc_size;
     if (remaining > 0) {
-      err = internal_spi_transfer(handle, NULL, 0, handle->rx_buffer + header_len, remaining);
+      uint8_t staging[k_frame_max_payload + k_frame_crc_size];
+
+      err = internal_spi_transfer(handle, NULL, 0, staging, remaining);
       if (err != k_rx_ok) {
         return err;
       }
+      memcpy(handle->rx_buffer + header_len, staging, remaining);
     }
 
     /* Copy header to buffer for decoding */

@@ -81,7 +81,7 @@ func DefaultConfig() *Config {
 		EnableHotPlug:       true,
 		HotPlugPollInterval: 500 * time.Millisecond,
 		USBVID:                 0x045B, // Renesas vendor ID
-		USBPID:                 0x0235, // TODO: Verify if we need to obtain actual RX72N PID, once we aquire it.
+		USBPID:                 0x0235, // TODO: Verify if we need to obtain actual RX72N PID, once we acquire it.
 		FailbackDamping:        30 * time.Second,
 		HealthLatencyThreshold: 200 * time.Millisecond,
 		HealthLossThreshold:    0.1, // 10%
@@ -108,6 +108,16 @@ func (c *Config) Validate() error {
 		// Valid modes
 	default:
 		return &ConfigError{Field: "Mode", Reason: "invalid mode: " + string(c.Mode)}
+	}
+
+	if c.FailbackDamping < 0 {
+		return &ConfigError{Field: "FailbackDamping", Reason: "must be >= 0"}
+	}
+	if c.HealthLatencyThreshold < 0 {
+		return &ConfigError{Field: "HealthLatencyThreshold", Reason: "must be >= 0"}
+	}
+	if c.HealthLossThreshold < 0 || c.HealthLossThreshold > 1.0 {
+		return &ConfigError{Field: "HealthLossThreshold", Reason: "must be in [0.0, 1.0]"}
 	}
 
 	return nil

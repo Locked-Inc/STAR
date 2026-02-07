@@ -770,9 +770,9 @@ rx_err_t rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle,
     return k_rx_err_invalid_state;
   }
 
-  /* Create PONG frame echoing PING payload (sequence 0 for control frames) */
+  /* Create PONG frame echoing PING payload */
   rx_frame_t pong_frame;
-  rx_err_t   err = rx_frame_create_pong(&pong_frame, 0, payload, payload_len);
+  rx_err_t   err = rx_frame_create_pong(&pong_frame, k_initial_sequence, payload, payload_len);
   if (err != k_rx_ok) {
     return err;
   }
@@ -802,9 +802,9 @@ rx_err_t rx_usb_comm_send_reset_ack(rx_usb_comm_handle_t* handle)
     return k_rx_err_invalid_state;
   }
 
-  /* Create RESET_ACK frame (sequence 0 after reset) */
+  /* Create RESET_ACK frame (sequence reset to initial after reset) */
   rx_frame_t reset_ack_frame;
-  rx_err_t   err = rx_frame_create_reset_ack(&reset_ack_frame, 0);
+  rx_err_t   err = rx_frame_create_reset_ack(&reset_ack_frame, k_initial_sequence);
   if (err != k_rx_ok) {
     return err;
   }
@@ -859,6 +859,22 @@ static usb_dispatch_result_t internal_dispatch_control_usb(rx_usb_comm_handle_t*
                                                             const rx_frame_t*     frame,
                                                             rx_err_t*             err)
 {
+  /* Pre-condition 1: Handle must be valid (NASA Rule 5) */
+  if (handle == NULL) {
+    if (err != NULL) {
+      *err = k_rx_err_invalid_arg;
+    }
+    return k_dispatch_error;
+  }
+
+  /* Pre-condition 2: Frame and error output must be valid (NASA Rule 5) */
+  if (frame == NULL || err == NULL) {
+    if (err != NULL) {
+      *err = k_rx_err_invalid_arg;
+    }
+    return k_dispatch_error;
+  }
+
   const rx_frame_type_t type = (rx_frame_type_t)frame->header.type;
 
   if (type == k_frame_type_ping) {

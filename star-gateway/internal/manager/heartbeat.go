@@ -30,6 +30,14 @@ const (
 
 	// pingSendTimeout is the timeout for sending a PING frame.
 	pingSendTimeout = 100 * time.Millisecond
+
+	// checkIntervalDivisor determines how often the heartbeat loop checks for timeouts.
+	// With failureTimeout/4, worst-case detection latency is failureTimeout + one check interval.
+	// For 200ms timeout: check every 50ms, worst-case detection ~250ms (well within 1000ms WDT).
+	checkIntervalDivisor = 4
+
+	// minCheckInterval prevents excessively fast polling for very small failureTimeout values.
+	minCheckInterval = 10 * time.Millisecond
 )
 
 // WDT Timing Coordination
@@ -42,10 +50,11 @@ const (
 //
 //	WDT timeout:       ~1000ms (hardware, configured in RX72N firmware)
 //	Implicit timeout:    200ms (any frame resets timer via OnFrameReceived)
+//	Check interval:       50ms (failureTimeout / 4, for timely detection)
 //	PING interval:      1000ms (1 Hz, idle-link probe — rare when data is flowing)
 //	Miss threshold:    1 PING  (single unanswered PING triggers failover)
-//	Detection time:      200ms (implicit timeout fires first)
-//	Safety margin:         5x  (200ms << 1000ms WDT)
+//	Worst-case detect:  ~250ms (implicit timeout + one check interval)
+//	Safety margin:        ~4x  (250ms << 1000ms WDT)
 //
 // How it works:
 //
@@ -71,7 +80,10 @@ const (
 	wdtTimeoutApproxMs = 1000
 
 	// wdtSafetyFactor is the minimum ratio of WDT timeout to Gateway failure detection.
-	// With DefaultFailureTimeout=200ms: 1000ms / 200ms = 5.
+	// With DefaultFailureTimeout=200ms and checkInterval=50ms: worst-case ~250ms.
+	// 1000ms / 200ms = 5 (best case), 1000ms / 250ms = 4 (worst case).
+	// We use the best-case ratio (failureTimeout-based) since the check interval
+	// only adds one extra period of delay.
 	wdtSafetyFactor = 5
 )
 
@@ -93,7 +105,7 @@ type HeartbeatManager struct {
 	lastSeen         time.Time
 	pingCounter      uint32
 	failureTriggered bool          // Prevents repeated failover triggers
-	pingInterval     time.Duration // 50ms - send PING if idle
+	pingInterval     time.Duration // 1s - send PING if idle
 	failureTimeout   time.Duration // 200ms - declare link dead
 	onLinkFailed     func()        // Callback to trigger failover
 
@@ -221,9 +233,12 @@ func (hm *HeartbeatManager) OnPongReceived(payload []byte) bool {
 // Run starts the heartbeat monitoring loop as a background goroutine.
 //
 // This method:
-//  1. Periodically checks elapsed time since lastSeen
-//  2. Sends PING if idle > pingInterval (50ms)
-//  3. Triggers failover if idle > failureTimeout (200ms)
+//  1. Periodically checks elapsed time since lastSeen (every failureTimeout/4)
+//  2. Triggers failover if idle > failureTimeout (200ms)
+//  3. Sends PING if idle > pingInterval (1s) and link not yet failed
+//
+// The check interval is derived from failureTimeout to ensure timely detection.
+// With 200ms timeout and check every 50ms, worst-case detection is ~250ms.
 //
 // The loop runs until ctx is cancelled. It should be started as a goroutine:
 //
@@ -237,8 +252,14 @@ func (hm *HeartbeatManager) Run(ctx context.Context, tm *TransportManager) {
 		return
 	}
 
-	// Check every pingInterval to minimize latency
-	ticker := time.NewTicker(hm.pingInterval)
+	// Check at a fraction of failureTimeout for timely detection.
+	// With failureTimeout=200ms and checkInterval=50ms, worst-case detection
+	// is ~250ms, well within the ~1000ms WDT budget.
+	checkInterval := hm.failureTimeout / checkIntervalDivisor
+	if checkInterval < minCheckInterval {
+		checkInterval = minCheckInterval
+	}
+	ticker := time.NewTicker(checkInterval)
 	defer ticker.Stop()
 
 	for {
@@ -253,15 +274,15 @@ func (hm *HeartbeatManager) Run(ctx context.Context, tm *TransportManager) {
 
 // check performs the heartbeat check logic.
 //
-// This is called periodically by Run() to:
+// This is called periodically by Run() (every failureTimeout/4) to:
 //  1. Calculate elapsed time since lastSeen
 //  2. Trigger failover if elapsed > failureTimeout (200ms) - ONCE per failure
 //  3. Track consecutive PONG misses and trigger failover at threshold
-//  4. Send PING if elapsed > pingInterval (50ms) and not yet failed
+//  4. Send PING if elapsed > pingInterval (1s) and not yet failed
 //
 // Two independent failover triggers exist (defense-in-depth):
 //   - Time-based: No frames at all for failureTimeout (200ms)
-//   - Counter-based: DefaultConsecutiveMissThreshold (4) unanswered PINGs
+//   - Counter-based: DefaultConsecutiveMissThreshold unanswered PINGs
 //
 // The failureTriggered flag prevents repeated failover attempts for the same failure.
 // It's cleared when OnFrameReceived() or OnPongReceived() is called (link recovered).
@@ -297,10 +318,11 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 			hm.mu.Lock()
 			hm.consecutiveMisses++
 			currentMisses := hm.consecutiveMisses
+			lastSent := hm.lastPingSent // capture under lock to avoid race
 			hm.mu.Unlock()
 
 			log.Printf("PONG miss: counter=%d unanswered, consecutive_misses=%d/%d",
-				hm.lastPingSent, currentMisses, DefaultConsecutiveMissThreshold)
+				lastSent, currentMisses, DefaultConsecutiveMissThreshold)
 
 			// Counter-based failure detection
 			if currentMisses >= DefaultConsecutiveMissThreshold {
@@ -309,6 +331,8 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 
 				hm.mu.Lock()
 				hm.failureTriggered = true
+				hm.consecutiveMisses = 0 // reset to prevent re-trigger storm on recovery
+				hm.pendingPing = false
 				hm.mu.Unlock()
 
 				if hm.onLinkFailed != nil {
@@ -341,8 +365,6 @@ func (hm *HeartbeatManager) sendPing(ctx context.Context, tm *TransportManager) 
 	hm.mu.Lock()
 	counter := hm.pingCounter
 	hm.pingCounter++
-	hm.lastPingSent = counter
-	hm.pendingPing = true
 	hm.mu.Unlock()
 
 	// Create PING payload (pingPayloadSize bytes, big-endian counter)
@@ -357,6 +379,13 @@ func (hm *HeartbeatManager) sendPing(ctx context.Context, tm *TransportManager) 
 
 	if err := tm.SendWithType(pingCtx, payload, frame.FrameTypePing); err != nil {
 		log.Printf("PING send failed: %v (counter=%d)", err, counter)
-		// Don't update lastSeen - let the failure timeout trigger
+		// Don't set pendingPing - failed sends should not count as misses
+		return
 	}
+
+	// Only mark as pending after successful send
+	hm.mu.Lock()
+	hm.lastPingSent = counter
+	hm.pendingPing = true
+	hm.mu.Unlock()
 }

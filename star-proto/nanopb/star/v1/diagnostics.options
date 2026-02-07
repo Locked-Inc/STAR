@@ -1,0 +1,11 @@
+# diagnostics.options - nanopb field size constraints for diagnostics.proto
+# These settings optimize for RX72N embedded use with static allocation.
+#
+# STAR Project - Texas A&M University
+
+# TransportHealthReport: transport name (e.g., "usb", "spi")
+star.v1.TransportHealthReport.transport_name   max_size:16
+
+# TransportDiagnostics: bounded transport list and active transport name
+star.v1.TransportDiagnostics.transports        max_count:8
+star.v1.TransportDiagnostics.active_transport  max_size:16

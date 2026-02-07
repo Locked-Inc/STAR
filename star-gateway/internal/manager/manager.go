@@ -21,6 +21,10 @@ const (
 	// inflightPollInterval is the interval for polling in-flight operations during drain.
 	inflightPollInterval = 10 * time.Millisecond
 
+	// emaSmoothingDivisor is the divisor for the exponential moving average latency
+	// calculation. With divisor=2, this gives α=0.5: new_avg = (old_avg + sample) / 2.
+	emaSmoothingDivisor = 2
+
 	// TransportNameUSB is the identifier for USB CDC transport.
 	TransportNameUSB = "usb"
 
@@ -631,11 +635,39 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 }
 
 // sendPong sends a PONG frame echoing the given payload (typically from a received PING).
+//
+// This method bypasses the operations gate (SendWithType) to avoid deadlock.
+// sendPong is called from within the Receive loop, which already holds an inflight slot.
+// If we called SendWithType, it would wait on tm.paused and increment inflightCounter,
+// but drainInflight is waiting for the Receive inflight slot to be released — deadlock.
+//
+// Instead, we send directly on the active transport, which is safe because:
+//   - We're already inside a Receive call, so we know the transport is active
+//   - PONG is fire-and-forget; failure is non-fatal
 func (tm *TransportManager) sendPong(ctx context.Context, payload []byte) {
+	tm.mu.RLock()
+	active := tm.activeTransport
+	tm.mu.RUnlock()
+
+	if active == nil {
+		return
+	}
+
+	// Type-assert to check if transport supports SendWithType
+	type frameTypeSender interface {
+		SendWithType(ctx context.Context, data []byte, frameType frame.Type) error
+	}
+
 	pongCtx, cancel := context.WithTimeout(ctx, pingSendTimeout)
 	defer cancel()
 
-	if err := tm.SendWithType(pongCtx, payload, frame.FrameTypePong); err != nil {
+	sender, ok := active.(frameTypeSender)
+	if !ok {
+		log.Printf("PONG send skipped: transport does not support SendWithType")
+		return
+	}
+
+	if err := sender.SendWithType(pongCtx, payload, frame.FrameTypePong); err != nil {
 		log.Printf("PONG send failed: %v", err)
 	}
 }
@@ -977,35 +1009,31 @@ func (tm *TransportManager) recordOperation(name string, err error, latency time
 		if h.AvgLatency == 0 {
 			h.AvgLatency = latency
 		} else {
-			h.AvgLatency = (h.AvgLatency + latency) / 2
+			h.AvgLatency = (h.AvgLatency + latency) / emaSmoothingDivisor
 		}
 	}
 
 	// Multi-threshold health evaluation
 	prevHealthy := h.IsHealthy
-	unhealthy := false
-	var reason string
+	var reasons []string
 
 	if h.ConsecutiveFailures >= tm.config.FailureThreshold {
-		unhealthy = true
-		reason = fmt.Sprintf("%d consecutive failures", h.ConsecutiveFailures)
+		reasons = append(reasons, fmt.Sprintf("%d consecutive failures", h.ConsecutiveFailures))
 	}
 	if tm.config.HealthLatencyThreshold > 0 && h.AvgLatency > tm.config.HealthLatencyThreshold {
-		unhealthy = true
-		reason = fmt.Sprintf("avg latency %v > %v", h.AvgLatency, tm.config.HealthLatencyThreshold)
+		reasons = append(reasons, fmt.Sprintf("avg latency %v > %v", h.AvgLatency, tm.config.HealthLatencyThreshold))
 	}
 	if tm.config.HealthLossThreshold > 0 && h.PacketLossRate > tm.config.HealthLossThreshold {
-		unhealthy = true
-		reason = fmt.Sprintf("packet loss %.1f%% > %.1f%%",
-			h.PacketLossRate*100, tm.config.HealthLossThreshold*100)
+		reasons = append(reasons, fmt.Sprintf("packet loss %.1f%% > %.1f%%",
+			h.PacketLossRate*100, tm.config.HealthLossThreshold*100))
 	}
 
-	if unhealthy && prevHealthy {
+	if len(reasons) > 0 && prevHealthy {
 		h.IsHealthy = false
 		wrapper.Available = false
-		log.Printf("Transport %s marked unhealthy: %s", name, reason)
+		log.Printf("Transport %s marked unhealthy: %s", name, fmt.Sprintf("%v", reasons))
 		go tm.attemptFailover(FailureTypeIOError)
-	} else if !unhealthy && err == nil {
+	} else if len(reasons) == 0 && err == nil {
 		h.IsHealthy = true
 	}
 }

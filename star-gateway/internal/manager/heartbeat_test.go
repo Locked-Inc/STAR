@@ -10,6 +10,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 )
 
 // Test timing constants to avoid magic numbers
@@ -481,7 +483,7 @@ func TestHeartbeatManager_ImplicitActivityPreventTimeout(t *testing.T) {
 }
 
 // TestHeartbeatManager_ConsecutiveMissCounter tests that unanswered PINGs accumulate
-// consecutive misses and eventually trigger failover.
+// consecutive misses and eventually trigger failover via the counter-based path.
 func TestHeartbeatManager_ConsecutiveMissCounter(t *testing.T) {
 	failureCalled := false
 	var mu sync.Mutex
@@ -500,7 +502,13 @@ func TestHeartbeatManager_ConsecutiveMissCounter(t *testing.T) {
 		t.Fatalf("NewHeartbeatManager failed: %v", err)
 	}
 
+	// Register a mock transport so PING sends succeed (pendingPing gets set).
+	// Without a transport, SendWithType returns "no active transport" and
+	// pendingPing is never set (failed sends don't count as misses).
 	tm := NewTransportManager(DefaultConfig())
+	mockTransport := &testutil.MockHARQ{}
+	tm.RegisterTransport("mock", mockTransport, 10)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -520,10 +528,11 @@ func TestHeartbeatManager_ConsecutiveMissCounter(t *testing.T) {
 		t.Error("Failover not triggered within expected time from consecutive misses")
 	}
 
-	// Verify consecutive misses accumulated
+	// After counter-based failover, consecutiveMisses is reset to 0 to prevent
+	// re-trigger storms when OnFrameReceived clears failureTriggered on recovery.
 	hm.mu.Lock()
-	if hm.consecutiveMisses < 1 {
-		t.Errorf("consecutiveMisses = %d, expected >= 1", hm.consecutiveMisses)
+	if hm.consecutiveMisses != 0 {
+		t.Errorf("consecutiveMisses = %d, expected 0 (reset after failover)", hm.consecutiveMisses)
 	}
 	hm.mu.Unlock()
 }
@@ -559,25 +568,29 @@ func TestHeartbeatManager_ConsecutiveMissReset(t *testing.T) {
 	hm.mu.Unlock()
 }
 
+// minWDTSafetyFactor is the minimum acceptable ratio of WDT timeout to detection time.
+const minWDTSafetyFactor = 3
+
 // TestHeartbeatManager_WDTTimingVerification verifies the mathematical relationship
-// between the implicit failure timeout and the RX72N WDT timeout.
+// between the implicit failure timeout, check interval, and the RX72N WDT timeout.
 //
 // Dual-detection model:
 //
 //	Primary: Implicit timeout (DefaultFailureTimeout = 200ms) — any frame resets timer
+//	Check interval: failureTimeout / checkIntervalDivisor = 50ms
+//	Worst-case detection: failureTimeout + checkInterval = 250ms
 //	Secondary: Explicit PING (DefaultPingInterval = 1s) — rare idle-link probe
-//	Detection time = DefaultFailureTimeout (implicit fires first)
-//	Safety margin = WDT timeout / detection time = 1000ms / 200ms = 5x
+//	Safety margin = WDT timeout / detection time = 1000ms / 200ms = 5x (best case)
 func TestHeartbeatManager_WDTTimingVerification(t *testing.T) {
 	// Primary detection time is the implicit failure timeout
 	gatewayDetectionMs := DefaultFailureTimeout.Milliseconds()
 	actualSafetyFactor := int64(wdtTimeoutApproxMs) / gatewayDetectionMs
 
-	// Safety factor must be >= 3 to avoid false WDT triggers
-	if actualSafetyFactor < 3 {
-		t.Errorf("WDT safety factor too low: %d (need >= 3). "+
+	// Safety factor must be >= minWDTSafetyFactor to avoid false WDT triggers
+	if actualSafetyFactor < minWDTSafetyFactor {
+		t.Errorf("WDT safety factor too low: %d (need >= %d). "+
 			"Gateway detects in %dms, WDT fires at %dms",
-			actualSafetyFactor, gatewayDetectionMs, wdtTimeoutApproxMs)
+			actualSafetyFactor, minWDTSafetyFactor, gatewayDetectionMs, wdtTimeoutApproxMs)
 	}
 
 	// Verify documented safety factor matches calculated value
@@ -590,6 +603,14 @@ func TestHeartbeatManager_WDTTimingVerification(t *testing.T) {
 	if DefaultFailureTimeout.Milliseconds() > int64(wdtTimeoutApproxMs)/2 {
 		t.Errorf("DefaultFailureTimeout (%v) must be < WDT/2 (%dms)",
 			DefaultFailureTimeout, wdtTimeoutApproxMs/2)
+	}
+
+	// Verify check interval is small enough for timely detection
+	checkInterval := DefaultFailureTimeout / checkIntervalDivisor
+	worstCaseDetection := DefaultFailureTimeout + checkInterval
+	if worstCaseDetection.Milliseconds() >= int64(wdtTimeoutApproxMs) {
+		t.Errorf("Worst-case detection (%v) must be < WDT timeout (%dms)",
+			worstCaseDetection, wdtTimeoutApproxMs)
 	}
 
 	// Verify both durations are positive
