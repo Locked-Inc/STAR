@@ -48,7 +48,7 @@ jobs:
         working-directory: star-proto
 
       - name: Buf breaking against main
-        run: buf breaking proto --against '.git#branch=main'
+        run: buf breaking proto --against '../.git#branch=main'
         working-directory: star-proto
 
       - name: Check for uncommitted changes
