@@ -116,6 +116,7 @@ ros2 run star_gateway_bridge star_gateway_bridge_node
 | Variable | Values | Default | Description |
 |----------|--------|---------|-------------|
 | `STAR_SIMULATION_MODE` | `true` / `false` | `false` | Enables HIL simulation mode |
+| `SIM_LATENCY_MS` | `0` - `1000` | `10` | Simulated processing latency (ms) for control frames |
 
 When `STAR_SIMULATION_MODE=true`:
 - Gateway uses **SocketTransport** (Unix socket)
@@ -183,10 +184,11 @@ The Virtual RX72N simulator:
 
 1. **Listens** on `/tmp/star_rx72n.sock`
 2. **Accepts** connections from the Gateway
-3. **Reads** incoming frames
-4. **Modifies** first byte to `0xFF` (simulator marker)
-5. **Echoes** the modified frame back
-6. **Logs** all activity to stdout
+3. **Decodes** incoming frames (SYNC, header, CRC validation)
+4. **Dispatches** control frames (PING/PONG, RESET/RESET_ACK) before protobuf processing
+5. **Processes** command frames (protobuf unmarshal, response generation)
+6. **Tracks** session state (TX sequence counter with reset support)
+7. **Logs** all activity to stdout
 
 ### Example Log Output
 
@@ -194,12 +196,51 @@ The Virtual RX72N simulator:
 Virtual RX72N Started. Waiting for Gateway...
    Socket: /tmp/star_rx72n.sock
    Max Frame Size: 2048 bytes
+   Simulated Latency: 10ms
 Gateway connected from @
-Received 4 bytes: 55aa0102
-Sending 4 bytes: ffaa0102
-Received 128 bytes: 55aa10...
-Sending 128 bytes: ffaa10...
+Received frame: seq=0, type=PING, flags=0, payload_len=4
+PING received (counter=0), sending PONG
+Sending frame: seq=0, type=PONG, payload_len=4
+Received frame: seq=1, type=COMMAND, flags=1, payload_len=42
+Sending frame: seq=1, type=ACK, payload_len=0
+VelocityCommand: FL=1.00, FR=2.00, BL=3.00, BR=4.00 m/s
+Sending frame: seq=1, type=RESPONSE, payload_len=128
 Gateway disconnected
+```
+
+## Control Frame Support
+
+The Virtual RX72N handles control frames at the transport layer, before any protobuf processing:
+
+### PING/PONG Heartbeat
+
+- **Receives:** `FrameTypePing` (0x00) with 4-byte big-endian counter payload
+- **Responds:** `FrameTypePong` (0x01) echoing the same 4-byte counter
+- Simulated latency (`SIM_LATENCY_MS`) is applied before responding
+
+### RESET/RESET_ACK Session Reset
+
+- **Receives:** `FrameTypeReset` (0xFF) with empty payload
+- **Responds:** `FrameTypeResetAck` (0xFE) with empty payload
+- Resets internal sequence counter to 0 after sending RESET_ACK
+- Simulated latency (`SIM_LATENCY_MS`) is applied before responding
+
+### Configurable Latency
+
+Set `SIM_LATENCY_MS` to control response timing:
+
+| Value | Use Case |
+|-------|----------|
+| `0` | Fast unit tests (no delay) |
+| `10` | Default (simulates USB buffer processing) |
+| `50+` | Stress testing timeout handling |
+
+```bash
+# Fast tests
+SIM_LATENCY_MS=0 go run ./cmd/virtual_rx72n/
+
+# Stress test heartbeat timeouts
+SIM_LATENCY_MS=100 go run ./cmd/virtual_rx72n/
 ```
 
 ## Constants Reference
@@ -212,6 +253,8 @@ Gateway disconnected
 | `DefaultSocketTimeout` | 100 ms | `transport/socket.go` | I/O timeout |
 | `SimulatorMarker` | `0xFF` | `cmd/virtual_rx72n/main.go` | First byte marker |
 | `MaxFrameSize` | 2048 | `cmd/virtual_rx72n/main.go` | Max frame size |
+| `PingPayloadSize` | 4 | `cmd/virtual_rx72n/main.go` | PING counter size (bytes) |
+| `DefaultSimLatencyMs` | 10 | `cmd/virtual_rx72n/main.go` | Default processing latency |
 
 ### Gateway Main
 
@@ -291,11 +334,10 @@ ls -l /tmp/star_rx72n.sock
 
 Planned improvements for the Virtual RX72N:
 
-1. **Frame Decoding**: Parse HARQ/Protobuf layers
-2. **Motor Simulation**: Generate realistic encoder counts
-3. **Battery Simulation**: Return voltage/current telemetry
-4. **Fault Injection**: Simulate CRC errors, timeouts, NACK responses
-5. **Recording/Playback**: Record sessions for regression testing
+1. **Motor Simulation**: Generate realistic encoder counts
+2. **Battery Simulation**: Return voltage/current telemetry
+3. **Fault Injection**: Simulate CRC errors, timeouts, NACK responses
+4. **Recording/Playback**: Record sessions for regression testing
 
 ## References
 
