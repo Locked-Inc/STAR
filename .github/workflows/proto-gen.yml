@@ -20,6 +20,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install nanopb
+        run: |
+          pip install nanopb protobuf grpcio-tools
+
       - name: Setup Buf
         uses: bufbuild/buf-setup-action@v1
 

@@ -1,5 +1,5 @@
 {
   "enabledPlugins": {
-    "local-review@agent37-skills": true
+    "local-review@agent37-skills": false
   }
 }
