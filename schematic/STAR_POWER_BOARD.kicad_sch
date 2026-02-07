@@ -12364,7 +12364,7 @@
 			)
 		)
 		(property "Value" "CSD17577Q3A"
-			(at 152.146 224.79 0)
+			(at 144.272 225.044 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -26933,7 +26933,7 @@
 			)
 		)
 		(property "Value" "SSM6J507NU-LF"
-			(at 221.996 85.598 0)
+			(at 214.63 74.676 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -28635,7 +28635,7 @@
 			)
 		)
 		(property "Value" "CSD18540Q5B"
-			(at 172.466 194.31 0)
+			(at 179.07 193.802 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -29680,7 +29680,7 @@
 			)
 		)
 		(property "Value" "CSD18540Q5B"
-			(at 152.146 194.31 0)
+			(at 140.208 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -33288,7 +33288,7 @@
 			)
 		)
 		(property "Value" "CSD17577Q3A"
-			(at 167.386 215.9 0)
+			(at 159.512 216.154 0)
 			(effects
 				(font
 					(size 1.27 1.27)
