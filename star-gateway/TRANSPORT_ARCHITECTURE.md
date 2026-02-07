@@ -85,6 +85,18 @@ The STAR Gateway implements intelligent transport switching between USB CDC (pri
 | **Typical Latency** | 1-2ms | <1ms | USB has lower overhead |
 | **Reliability** | 99.99% (with retries) | 99.999% (hardware CRC) | USB more reliable |
 
+## Decision Record
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| SYNC word | `0x55AA` | Both sides agree; standard framing marker |
+| Header byte order | Big-endian (network byte order) | RFC 1700 convention; both sides agree |
+| CRC-32 byte order | **Little-endian** (IEEE 802.3 LSB-first) | Industry standard; firmware was correct, Go fixed in Phase 1 |
+| Canonical TYPE values | `0x00/0x01/0x10-0x13/0xFE/0xFF` | Designed for full protocol; firmware aligned in Phase 2 |
+| HARQ type | Chase Combining (Type I) | Implemented end-to-end; Type II is aspirational |
+| DTC/DMA for SPI | Deferred | Polling works at 10MHz/1024B; needs real hardware to test |
+| PING interval | 1s (was 50ms) | Dual-detection model: implicit timeout is primary; PING is idle probe |
+
 ## Protocol Specification
 
 ### Frame Format
@@ -92,21 +104,24 @@ The STAR Gateway implements intelligent transport switching between USB CDC (pri
 All frames use the same wire format regardless of transport:
 
 ```
-┌──────┬──────┬──────┬──────┬───────┬─────────┬───────┐
-│ SYNC │ SEQ  │ LEN  │ TYPE │ FLAGS │ PAYLOAD │ CRC32 │
-├──────┼──────┼──────┼──────┼───────┼─────────┼───────┤
-│ 2B   │ 2B   │ 2B   │ 1B   │ 1B    │ 0-1024B │ 4B    │
-└──────┴──────┴──────┴──────┴───────┴─────────┴───────┘
+┌──────┬──────┬──────┬──────┬───────┬─────────┬─────────┐
+│ SYNC │ SEQ  │ LEN  │ TYPE │ FLAGS │ PAYLOAD │ CRC-32  │
+│ (BE) │ (BE) │ (BE) │      │       │         │  (LE)   │
+├──────┼──────┼──────┼──────┼───────┼─────────┼─────────┤
+│ 2B   │ 2B   │ 2B   │ 1B   │ 1B    │ 0-1024B │ 4B      │
+└──────┴──────┴──────┴──────┴───────┴─────────┴─────────┘
 ```
 
-**Header Fields:**
+**Header Fields (big-endian):**
 - **SYNC**: Magic number `0x55AA` for frame synchronization
 - **SEQ**: Sequence number (0-65535, wraps around)
 - **LEN**: Payload length in bytes
 - **TYPE**: Frame type (see below)
 - **FLAGS**: Control flags (RequiresAck, HasFEC, etc.)
 - **PAYLOAD**: Variable-length data (Protocol Buffer message)
-- **CRC32**: IEEE 802.3 CRC-32 checksum
+
+**Checksum (little-endian, IEEE 802.3 LSB-first):**
+- **CRC-32**: Computed over SYNC + header + payload, stored in little-endian byte order
 
 ### Frame Types
 
@@ -133,12 +148,23 @@ const (
 **PING Frame:**
 - **TYPE**: `0x00`
 - **PAYLOAD**: 4-byte counter (big-endian uint32)
-- **Purpose**: Explicit heartbeat when idle >50ms
+- **Purpose**: Explicit idle-link probe when no frames for >1s
 
 **PONG Frame:**
 - **TYPE**: `0x01`
 - **PAYLOAD**: Echo of PING counter
 - **Purpose**: Confirm link health, validate round-trip
+- **Auto-response**: Both firmware and gateway auto-send PONG on PING receipt
+
+**RESET Frame:**
+- **TYPE**: `0xFF`
+- **PAYLOAD**: None
+- **Purpose**: Request session reset (synchronize sequences)
+
+**RESET_ACK Frame:**
+- **TYPE**: `0xFE`
+- **PAYLOAD**: None
+- **Purpose**: Acknowledge session reset, confirm synchronization
 
 ### USB CDC Protocol (Lightweight)
 
@@ -196,70 +222,56 @@ The SPI protocol uses Chase Combining (Type I HARQ) for robustness:
 
 ## Heartbeat Mechanism
 
-### Hybrid Implicit/Explicit Detection
+### Dual-Detection Model
 
-The heartbeat system uses two complementary approaches:
+The heartbeat system uses two complementary detection mechanisms:
 
-**1. Implicit Detection (Primary)**
-- Update `LastSeen` timestamp when ANY valid frame arrives
-- Frames include: telemetry, command ACK, PONG, data responses
-- Zero overhead when link is active
+**1. Implicit Timeout (Primary) — 200ms**
+- Update `LastSeen` timestamp when ANY valid frame arrives (COMMAND, RESPONSE, PING, etc.)
+- If no frames for 200ms → declare link dead, trigger failover
+- Zero overhead when link is active — data frames implicitly serve as heartbeats
 
-**2. Explicit Detection (Fallback)**
-- Send PING frame if idle for >50ms
-- Wait for PONG response
-- Prevents false timeouts during idle periods
+**2. Explicit PING (Secondary) — 1s idle-link probe**
+- Send PING with 4-byte counter if link idle for >1s
+- Wait for PONG echo; validate counter matches
+- 1 consecutive miss → trigger failover
+- Rarely fires under normal traffic; only needed when link is genuinely idle
 
-**3. Failure Detection**
-- Declare link dead if no frames for >200ms
-- Trigger failover to backup transport
-- Reset `LastSeen` on successful switch
+**Timing Budget:**
+```
+Implicit timeout:    200ms  (primary detection, any frame resets)
+PING interval:      1000ms  (secondary, idle-link probe)
+WDT timeout:        1000ms  (RX72N hardware watchdog)
+Safety margin:         5x   (200ms gateway << 1000ms WDT)
+```
+
+**Control Frame Dispatching:**
+- Both firmware (C) and gateway (Go) auto-respond PONG to PING
+- Both auto-respond RESET_ACK to RESET
+- Control frames (PING, PONG, ACK, NACK, RESET_ACK) are consumed internally
+- Only data frames (COMMAND, RESPONSE) are returned to callers
 
 ### Heartbeat Manager
 
 ```go
 type HeartbeatManager struct {
     lastSeen       time.Time
+    lastValidPong  time.Time
     pingCounter    uint32
-    pingInterval   time.Duration  // 50ms
-    failureTimeout time.Duration  // 200ms
+    lastPingSent   uint32
+    pendingPing    bool
+    consecutiveMisses int
+    pingInterval   time.Duration  // 1s (idle probe)
+    failureTimeout time.Duration  // 200ms (implicit detection)
     onLinkFailed   func()         // Callback to TransportManager
 }
 ```
 
-**Run Loop:**
-```go
-func (hm *HeartbeatManager) Run(ctx context.Context, tm *TransportManager) {
-    ticker := time.NewTicker(hm.pingInterval)
-    defer ticker.Stop()
-
-    for {
-        select {
-        case <-ctx.Done():
-            return
-        case <-ticker.C:
-            elapsed := time.Since(hm.lastSeen)
-
-            // Check for timeout (failure detection)
-            if elapsed > hm.failureTimeout {
-                log.Printf("Heartbeat timeout (%v), triggering failover", elapsed)
-                hm.onLinkFailed()
-                return
-            }
-
-            // Send explicit PING if idle
-            if elapsed > hm.pingInterval {
-                hm.sendPing(tm)
-            }
-        }
-    }
-}
-```
-
 **Benefits:**
-- Minimal bandwidth overhead (<0.5% when idle)
-- Fast failure detection (200ms vs 5s polling)
-- No false positives from buffered OS data
+- Minimal bandwidth overhead (PING only when idle)
+- Fast failure detection (200ms implicit timeout)
+- 5x safety margin below WDT timeout
+- PONG validation prevents stale/replayed responses
 
 ## State Machine
 
@@ -419,11 +431,25 @@ type HealthMetrics struct {
     TotalReceived      int            // Total frames received
     TotalErrors        int            // Total errors encountered
     AvgLatency         time.Duration  // Moving average latency
+    PacketLossRate     float64        // Sliding window loss rate (0.0-1.0)
     LastSuccess        time.Time      // Last successful operation
     LastFailure        time.Time      // Last error
+    LastRecovery       time.Time      // When transport recovered (for failback damping)
     IsHealthy          bool           // Current health status
 }
 ```
+
+**Multi-Threshold Health Evaluation:**
+A transport is marked unhealthy when ANY of these thresholds are exceeded:
+
+| Threshold | Default | Rationale |
+|-----------|---------|-----------|
+| ConsecutiveFailures >= N | 3 | Detect hard failures quickly |
+| AvgLatency > limit | 200ms | Detect degraded performance |
+| PacketLossRate > limit | 10% | Detect unreliable links |
+
+**Failback Damping (30s):**
+When a transport recovers (unhealthy → healthy), it enters a 30-second damping period. During this period, the transport manager will not proactively switch back to it — this prevents oscillation ("flapping") between transports when a link is intermittently recovering.
 
 ### Health Probing
 
@@ -649,6 +675,27 @@ grpcurl -plaintext localhost:50051 star.v1.Gateway/GetHealth
 | HealthMonitor | <1 KB | <1% | <1% |
 | **Total** | **~15 KB** | **<2%** | **5-15%** |
 
+## Cross-Compatibility Verification
+
+Both Go (gateway) and C (firmware) encode/decode frames identically. This is verified by 8 byte-exact test vectors covering all frame types, with hardcoded expected wire bytes including CRC-32.
+
+**Test vectors (all verified in both languages):**
+
+| Vector | Type | Seq | Payload | CRC-32 |
+|--------|------|-----|---------|--------|
+| PING | 0x00 | 0 | (empty) | 0x9B3FAEEB |
+| PONG | 0x01 | 0 | counter=42 | 0x287737DF |
+| COMMAND | 0x10 | 1 | "TEST" + ACK flag | 0xDEF35E60 |
+| RESPONSE | 0x11 | 1 | "OK" | 0x6FC08EF4 |
+| ACK | 0x12 | 1 | (empty) | 0xDEABF788 |
+| NACK | 0x13 | 1 | (empty) | 0xC7B0C6C9 |
+| RESET | 0xFF | 0 | (empty) | 0x081B5399 |
+| RESET_ACK | 0xFE | 0 | (empty) | 0x110062D8 |
+
+**Test locations:**
+- Go: `star-gateway/internal/frame/frame_test.go` — `TestCrossCompatibility_Encode/Decode/RoundTrip`
+- C: `star-rx72n-firmware/tests/test_rx_frame.c` — `test_cross_compat_*`
+
 ## References
 
 - **USB CDC Specification**: USB Class Definitions for Communications Devices 1.2
@@ -662,4 +709,5 @@ grpcurl -plaintext localhost:50051 star.v1.Gateway/GetHealth
 
 | Date | Version | Changes |
 |------|---------|---------|
-| 2026-01-30 | 1.0.0 | Initial architecture documentation (Phase 7) |
+| 2026-02-07 | 1.1.0 | Architecture alignment: CRC-32 LE fix, TYPE value alignment, dual-detection heartbeat (1s PING), control frame dispatching (auto PONG/RESET_ACK), multi-threshold health evaluation with failback damping, 8 byte-exact cross-compatibility test vectors |
+| 2026-01-30 | 1.0.0 | Initial architecture documentation |

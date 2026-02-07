@@ -52,6 +52,22 @@ typedef enum : uint16_t {
 } rx_spi_comm_constants_t;
 
 /* =============================================================================
+ * Control Frame Callbacks
+ * =============================================================================
+ */
+
+/**
+ * @brief Callback for control frame events (PING received, RESET received)
+ *
+ * Called after the comm layer has already auto-responded (PONG/RESET_ACK).
+ * Application code can use this for logging, metrics, or custom behavior.
+ *
+ * @param[in] frame The received control frame
+ * @param[in] ctx   User-provided context pointer
+ */
+typedef void (*rx_spi_comm_control_cb_t)(const rx_frame_t* frame, void* ctx);
+
+/* =============================================================================
  * Handle and Configuration
  * =============================================================================
  */
@@ -72,6 +88,11 @@ typedef struct {
   uint8_t            channel;                              /**< RSPI channel */
   bool               fec_enabled;                          /**< FEC enabled flag */
   bool               initialized;                          /**< Init flag */
+
+  /* Control frame callbacks (optional, set via rx_spi_comm_set_control_callbacks) */
+  rx_spi_comm_control_cb_t on_ping_cb;  /**< Called after auto-PONG sent */
+  rx_spi_comm_control_cb_t on_reset_cb; /**< Called after auto-RESET_ACK sent */
+  void*                    cb_ctx;      /**< User context for callbacks */
 } rx_spi_comm_handle_t;
 
 /**
@@ -159,6 +180,48 @@ rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence);
  */
 rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, uint8_t flags);
 
+/**
+ * @brief Send PONG response echoing the PING payload
+ *
+ * @param[in,out] handle Initialized handle
+ * @param[in]     payload PING payload to echo back
+ * @param[in]     payload_len Payload length (typically 4 bytes for counter)
+ *
+ * @return k_rx_ok on success
+ */
+rx_err_t rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle,
+                                const uint8_t*        payload,
+                                uint32_t              payload_len);
+
+/**
+ * @brief Send RESET_ACK in response to a RESET frame
+ *
+ * @param[in,out] handle Initialized handle
+ *
+ * @return k_rx_ok on success
+ */
+rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle);
+
+/**
+ * @brief Set control frame callbacks for PING and RESET handling
+ *
+ * When set, the receive path will auto-respond to PING (with PONG) and
+ * RESET (with RESET_ACK + sequence reset), then invoke the callback.
+ * Control frames are consumed internally and not returned to the caller.
+ *
+ * @param[in,out] handle   Initialized handle
+ * @param[in]     on_ping  Callback for PING events (NULL to disable)
+ * @param[in]     on_reset Callback for RESET events (NULL to disable)
+ * @param[in]     ctx      User context passed to callbacks
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if handle is NULL
+ */
+rx_err_t rx_spi_comm_set_control_callbacks(rx_spi_comm_handle_t*    handle,
+                                            rx_spi_comm_control_cb_t on_ping,
+                                            rx_spi_comm_control_cb_t on_reset,
+                                            void*                    ctx);
+
 /* =============================================================================
  * Receive API
  * =============================================================================
@@ -169,6 +232,12 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, 
  *
  * Reads from SPI, validates CRC, and decodes frame.
  * Optionally applies FEC decoding with HARQ combining.
+ *
+ * Control frame handling (when callbacks are set):
+ * - PING: Auto-sends PONG (echoes payload), invokes on_ping_cb, retries receive
+ * - RESET: Resets sequences, auto-sends RESET_ACK, invokes on_reset_cb, retries
+ * - PONG/ACK/NACK: Returned to caller (not consumed)
+ * - COMMAND/RESPONSE: Returned to caller
  *
  * @param[in,out] handle Initialized handle
  * @param[out]    frame Decoded frame output

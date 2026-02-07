@@ -111,10 +111,10 @@ func NewTransportManager(config *Config) *TransportManager {
 	}
 
 	// Heartbeat manager for hybrid implicit/explicit connectivity detection
-	// Uses default intervals: DefaultPingInterval (50ms), DefaultFailureTimeout (200ms)
+	// Uses default intervals: DefaultPingInterval (1s), DefaultFailureTimeout (200ms)
 	// onFailure callback triggers automatic failover
 	heartbeat, err := NewHeartbeatManager(
-		DefaultPingInterval,   // 50ms - send PING if idle
+		DefaultPingInterval,   // 1s - rare idle-link probe (implicit timeout fires first)
 		DefaultFailureTimeout, // 200ms - declare link dead if no frames
 		func() {
 			// Callback to trigger failover on heartbeat timeout
@@ -515,7 +515,12 @@ func isAllowedFrameType(frameType frame.Type) bool {
 // This method implements the harq.HARQ interface.
 // It blocks if a transport switch is in progress, then resumes once switching completes.
 //
-// Returns (*harq.ReceiveResult, error) from the active transport.
+// Control frames (PING, PONG, ACK, NACK, RESET_ACK) are consumed internally:
+//   - PING: auto-replies with PONG (echoing payload), updates implicit heartbeat
+//   - PONG: validates counter against last PING (explicit heartbeat)
+//   - ACK/NACK/RESET_ACK: logged and consumed
+//
+// Only data frames (COMMAND, RESPONSE) are returned to the caller.
 func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	// Wait if switching is in progress
 	tm.operationsMu.Lock()
@@ -532,7 +537,6 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 	}()
 
 	tm.mu.RLock()
-	// Get wrapper to access Decoder
 	activeWrapper := tm.availableTransports[tm.activeTransportName]
 	activeName := tm.activeTransportName
 	tm.mu.RUnlock()
@@ -541,54 +545,99 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 		return nil, errors.New("no active transport available")
 	}
 
-	// FIX: Check if Transport interface is nil to prevent panic
 	if activeWrapper.Transport == nil {
 		err := errors.New("active transport interface is nil")
 		tm.recordOperation(activeName, err, 0, false)
 		return nil, err
 	}
 
-	// Validate decoder
 	if activeWrapper.Decoder == nil {
 		err := errors.New("transport decoder not initialized")
 		tm.recordOperation(activeName, err, 0, false)
 		return nil, err
 	}
 
-	start := time.Now()
+	// Loop until we get a data frame or an error.
+	// Control frames are dispatched internally and don't surface to the caller.
+	for {
+		start := time.Now()
+		result, err := activeWrapper.Transport.Receive(ctx)
+		latency := time.Since(start)
+		tm.recordOperation(activeName, err, latency, false)
 
-	// Use direct transport receive instead of StreamDecoder (double framing issue)
-	result, err := activeWrapper.Transport.Receive(ctx)
+		if err != nil {
+			return nil, err
+		}
 
-	latency := time.Since(start)
-	tm.recordOperation(activeName, err, latency, false)
+		// Handle nil result (e.g. transport consumed a control frame internally)
+		if result == nil {
+			continue
+		}
 
-	if err != nil {
-		return nil, err
+		// Dispatch control frames; returns non-nil only for data frames.
+		dispatched := tm.dispatchControlFrame(ctx, result)
+		if dispatched != nil {
+			return dispatched, nil
+		}
+		// Control frame consumed, loop to receive next frame.
 	}
+}
 
-	// FIX: Handle nil result (e.g. control frames handled internally by transport)
-	if result == nil {
-		return nil, nil
-	}
-
-	// Update heartbeat based on frame type
-	// - PONG: Explicit heartbeat validation (counter check via OnPongReceived)
-	// - PING/COMMAND/RESPONSE: Implicit heartbeat (any activity resets timer)
-	// - ACK/NACK: Control frames (ignore - not meaningful for heartbeat)
+// dispatchControlFrame routes a received frame by type.
+//
+// Control frames are consumed internally:
+//   - PING: echoes payload back as PONG, updates implicit heartbeat, returns nil
+//   - PONG: validates counter via OnPongReceived (explicit heartbeat), returns nil
+//   - ACK/NACK: logged for diagnostics, returns nil
+//   - RESET_ACK: logged for session tracking, returns nil
+//
+// Data frames are passed through with implicit heartbeat update:
+//   - COMMAND/RESPONSE: updates lastSeen, returns result for caller
+//
+// Returns nil if the frame was consumed (caller should receive again).
+func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *harq.ReceiveResult) *harq.ReceiveResult {
 	switch result.Metadata.Type {
-	case frame.FrameTypePong:
-		// Explicit PONG validation: check counter matches last PING
-		tm.heartbeat.OnPongReceived(result.Payload)
-	case frame.FrameTypePing, frame.FrameTypeCommand, frame.FrameTypeResponse:
+	case frame.FrameTypePing:
+		// Auto-reply with PONG echoing the PING payload
 		tm.heartbeat.OnFrameReceived()
-	case frame.FrameTypeAck, frame.FrameTypeNack:
-		// Internal control frames - don't reset heartbeat timer
-		log.Printf("Received control frame %s (seq=%d) - ignored for heartbeat",
-			result.Metadata.Type.String(), result.Metadata.Sequence)
-	}
+		tm.sendPong(ctx, result.Payload)
+		return nil
 
-	return result, nil
+	case frame.FrameTypePong:
+		// Explicit heartbeat validation (counter match)
+		tm.heartbeat.OnPongReceived(result.Payload)
+		return nil
+
+	case frame.FrameTypeAck, frame.FrameTypeNack:
+		log.Printf("Received %s (seq=%d) - consumed by dispatcher",
+			result.Metadata.Type.String(), result.Metadata.Sequence)
+		return nil
+
+	case frame.FrameTypeResetAck:
+		log.Printf("Received RESET_ACK (seq=%d) - session synchronized",
+			result.Metadata.Sequence)
+		return nil
+
+	case frame.FrameTypeCommand, frame.FrameTypeResponse:
+		// Data frames: update implicit heartbeat and return to caller
+		tm.heartbeat.OnFrameReceived()
+		return result
+
+	default:
+		log.Printf("Received unknown frame type 0x%02X (seq=%d) - consumed",
+			uint8(result.Metadata.Type), result.Metadata.Sequence)
+		return nil
+	}
+}
+
+// sendPong sends a PONG frame echoing the given payload (typically from a received PING).
+func (tm *TransportManager) sendPong(ctx context.Context, payload []byte) {
+	pongCtx, cancel := context.WithTimeout(ctx, pingSendTimeout)
+	defer cancel()
+
+	if err := tm.SendWithType(pongCtx, payload, frame.FrameTypePong); err != nil {
+		log.Printf("PONG send failed: %v", err)
+	}
 }
 
 // GetState returns the current harq.State mapped from the internal State.
@@ -742,13 +791,27 @@ func (tm *TransportManager) GetSessionState() *SessionState {
 
 // selectBestTransportLocked selects the best available transport based on priority.
 // Caller must hold tm.mu lock.
+//
+// Failback damping: recently-recovered transports (within FailbackDamping window)
+// are deprioritized to prevent rapid oscillation between transports.
 func (tm *TransportManager) selectBestTransportLocked() *TransportWrapper {
 	// Filter for available and healthy transports
 	candidates := make([]*TransportWrapper, 0, len(tm.availableTransports))
+	damping := tm.config.FailbackDamping
 	for _, wrapper := range tm.availableTransports {
-		if wrapper.Available && wrapper.Health.IsHealthy {
-			candidates = append(candidates, wrapper)
+		if !wrapper.Available || !wrapper.Health.IsHealthy {
+			continue
 		}
+		// Skip recently-recovered transports (failback damping)
+		// unless it's the only candidate or already active
+		if damping > 0 && !wrapper.Health.LastRecovery.IsZero() &&
+			time.Since(wrapper.Health.LastRecovery) < damping &&
+			wrapper.Name != tm.activeTransportName {
+			log.Printf("Transport %s skipped (failback damping: %v remaining)",
+				wrapper.Name, damping-time.Since(wrapper.Health.LastRecovery))
+			continue
+		}
+		candidates = append(candidates, wrapper)
 	}
 
 	if len(candidates) == 0 {
@@ -872,6 +935,11 @@ func (tm *TransportManager) drainInflight(timeout time.Duration) error {
 }
 
 // recordOperation updates health metrics based on operation result.
+//
+// Health is evaluated against three independent thresholds (any triggers unhealthy):
+//   - ConsecutiveFailures >= FailureThreshold (default: 3)
+//   - AvgLatency > HealthLatencyThreshold (default: 200ms)
+//   - PacketLossRate > HealthLossThreshold (default: 10%)
 func (tm *TransportManager) recordOperation(name string, err error, latency time.Duration, isSend bool) {
 	tm.mu.Lock()
 	defer tm.mu.Unlock()
@@ -881,40 +949,79 @@ func (tm *TransportManager) recordOperation(name string, err error, latency time
 		return
 	}
 
+	h := wrapper.Health
+
+	// Update sliding window for packet loss rate
+	h.lossWindow[h.lossWindowIdx] = (err == nil)
+	h.lossWindowIdx = (h.lossWindowIdx + 1) % packetLossWindowSize
+	if h.lossWindowCount < packetLossWindowSize {
+		h.lossWindowCount++
+	}
+	h.PacketLossRate = calcLossRate(h)
+
 	if err != nil {
-		// Record failure
-		wrapper.Health.LastFailure = time.Now()
-		wrapper.Health.ConsecutiveFailures++
-		wrapper.Health.TotalErrors++
-
-		// Check threshold
-		if wrapper.Health.ConsecutiveFailures >= tm.config.FailureThreshold {
-			wrapper.Health.IsHealthy = false
-			wrapper.Available = false
-			log.Printf("Transport %s marked unhealthy after %d failures", name, wrapper.Health.ConsecutiveFailures)
-
-			// Trigger failover in background (consecutive IO errors)
-			go tm.attemptFailover(FailureTypeIOError)
-		}
+		h.LastFailure = time.Now()
+		h.ConsecutiveFailures++
+		h.TotalErrors++
 	} else {
-		// Record success
-		wrapper.Health.LastSuccess = time.Now()
-		wrapper.Health.ConsecutiveFailures = 0
-		wrapper.Health.IsHealthy = true
+		h.LastSuccess = time.Now()
+		h.ConsecutiveFailures = 0
 
 		if isSend {
-			wrapper.Health.TotalSent++
+			h.TotalSent++
 		} else {
-			wrapper.Health.TotalReceived++
+			h.TotalReceived++
 		}
 
-		// Update moving average latency
-		if wrapper.Health.AvgLatency == 0 {
-			wrapper.Health.AvgLatency = latency
+		// Exponential moving average latency (α = 0.5)
+		if h.AvgLatency == 0 {
+			h.AvgLatency = latency
 		} else {
-			wrapper.Health.AvgLatency = (wrapper.Health.AvgLatency + latency) / 2
+			h.AvgLatency = (h.AvgLatency + latency) / 2
 		}
 	}
+
+	// Multi-threshold health evaluation
+	prevHealthy := h.IsHealthy
+	unhealthy := false
+	var reason string
+
+	if h.ConsecutiveFailures >= tm.config.FailureThreshold {
+		unhealthy = true
+		reason = fmt.Sprintf("%d consecutive failures", h.ConsecutiveFailures)
+	}
+	if tm.config.HealthLatencyThreshold > 0 && h.AvgLatency > tm.config.HealthLatencyThreshold {
+		unhealthy = true
+		reason = fmt.Sprintf("avg latency %v > %v", h.AvgLatency, tm.config.HealthLatencyThreshold)
+	}
+	if tm.config.HealthLossThreshold > 0 && h.PacketLossRate > tm.config.HealthLossThreshold {
+		unhealthy = true
+		reason = fmt.Sprintf("packet loss %.1f%% > %.1f%%",
+			h.PacketLossRate*100, tm.config.HealthLossThreshold*100)
+	}
+
+	if unhealthy && prevHealthy {
+		h.IsHealthy = false
+		wrapper.Available = false
+		log.Printf("Transport %s marked unhealthy: %s", name, reason)
+		go tm.attemptFailover(FailureTypeIOError)
+	} else if !unhealthy && err == nil {
+		h.IsHealthy = true
+	}
+}
+
+// calcLossRate computes the packet loss rate from the sliding window.
+func calcLossRate(h *HealthMetrics) float64 {
+	if h.lossWindowCount == 0 {
+		return 0
+	}
+	failures := 0
+	for i := 0; i < h.lossWindowCount; i++ {
+		if !h.lossWindow[i] {
+			failures++
+		}
+	}
+	return float64(failures) / float64(h.lossWindowCount)
 }
 
 // attemptFailover tries to switch to the next best transport.

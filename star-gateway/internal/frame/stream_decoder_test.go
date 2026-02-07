@@ -38,9 +38,9 @@ func buildTestFrame(seq uint16, flags Flags, payload []byte) []byte {
 	copy(buf[offset:], payload)
 	offset += len(payload)
 
-	// CRC
+	// CRC (little-endian, IEEE 802.3)
 	crc := computeCRC32(buf[:offset])
-	binary.BigEndian.PutUint32(buf[offset:], crc)
+	binary.LittleEndian.PutUint32(buf[offset:], crc)
 
 	return buf
 }

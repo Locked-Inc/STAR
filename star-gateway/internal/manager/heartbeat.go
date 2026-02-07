@@ -16,10 +16,13 @@ import (
 )
 
 const (
-	// DefaultPingInterval is the interval for sending PING when idle.
-	DefaultPingInterval = 50 * time.Millisecond
+	// DefaultPingInterval is the interval for sending explicit PING when the link is idle.
+	// This is a rare idle-link probe; the implicit timeout (DefaultFailureTimeout)
+	// is the primary detection mechanism — any valid frame resets that timer.
+	DefaultPingInterval = 1 * time.Second
 
 	// DefaultFailureTimeout is the timeout for declaring link dead.
+	// Any valid frame (data or control) resets this timer via OnFrameReceived().
 	DefaultFailureTimeout = 200 * time.Millisecond
 
 	// pingPayloadSize is the size of PING frame payload (4-byte counter).
@@ -35,26 +38,24 @@ const (
 // Our software heartbeat MUST detect failure significantly faster to prevent
 // unintended hardware reboots.
 //
-// Timing budget:
+// Timing budget (dual detection strategy):
 //
 //	WDT timeout:       ~1000ms (hardware, configured in RX72N firmware)
-//	PING interval:        50ms (20 Hz, sends PING when link is idle)
-//	Miss threshold:     4 PINGs (consecutive unanswered PINGs before failover)
-//	Detection time:      200ms (4 * 50ms, worst-case failover latency)
-//	Safety margin:         5x  (200ms << 1000ms)
+//	Implicit timeout:    200ms (any frame resets timer via OnFrameReceived)
+//	PING interval:      1000ms (1 Hz, idle-link probe — rare when data is flowing)
+//	Miss threshold:    1 PING  (single unanswered PING triggers failover)
+//	Detection time:      200ms (implicit timeout fires first)
+//	Safety margin:         5x  (200ms << 1000ms WDT)
 //
-// Timeline (idle link, no PONG responses):
+// How it works:
 //
-//	  0ms  PING#0 sent
-//	 50ms  PING#1 sent, miss #1 counted (PING#0 unanswered)
-//	100ms  PING#2 sent, miss #2 counted
-//	150ms  PING#3 sent, miss #3 counted
-//	200ms  PING#4 would send, miss #4 counted -> failover triggered
-//	1000ms RX72N WDT would fire (Gateway already failed over 800ms ago)
+//	Active link: Data frames flow constantly, resetting the implicit timer.
+//	             PING never fires because the link is never idle for 1s.
+//	Idle link:   After 200ms of silence, implicit timeout triggers failover.
+//	             PING at 1s is a secondary probe for very-slow-data links.
 //
-// WARNING: Do NOT increase DefaultPingInterval or DefaultFailureTimeout without
-// first verifying the RX72N WDT timeout. Increasing these values risks WDT reboot
-// if the RX72N firmware depends on heartbeat-driven communication.
+// WARNING: Do NOT increase DefaultFailureTimeout above 500ms without first
+// verifying the RX72N WDT timeout. The implicit timeout is the critical path.
 //
 // To verify RX72N WDT timeout:
 //  1. Check star-rx72n-firmware WDT configuration registers (WDTCR)
@@ -62,14 +63,15 @@ const (
 //  3. Typical: PCLKB/8192 with 16-bit counter ~ 1.09s at 60MHz PCLKB
 const (
 	// DefaultConsecutiveMissThreshold is the number of consecutive unanswered PINGs
-	// before triggering failover. With 50ms PING interval, 4 misses = 200ms detection.
-	DefaultConsecutiveMissThreshold = 4
+	// before triggering failover via the explicit (counter-based) path.
+	// With 1s PING interval, the implicit timeout (200ms) fires first in practice.
+	DefaultConsecutiveMissThreshold = 1
 
 	// wdtTimeoutApproxMs documents the approximate RX72N WDT timeout in milliseconds.
 	wdtTimeoutApproxMs = 1000
 
 	// wdtSafetyFactor is the minimum ratio of WDT timeout to Gateway failure detection.
-	// With DefaultPingInterval=50ms and threshold=4: 1000ms / 200ms = 5.
+	// With DefaultFailureTimeout=200ms: 1000ms / 200ms = 5.
 	wdtSafetyFactor = 5
 )
 
@@ -77,8 +79,8 @@ const (
 //
 // Hybrid Detection Strategy:
 //   - Implicit: Updates LastSeen on ANY valid frame (telemetry, commands, ACKs)
-//   - Explicit: Sends PING when idle >50ms
-//   - Failure: Declares link dead if no frames >200ms
+//   - Explicit: Sends PING when idle >1s (rare idle-link probe)
+//   - Failure: Declares link dead if no frames >200ms (implicit timeout fires first)
 //
 // Benefits:
 //   - Minimal bandwidth overhead (only PING when idle)
@@ -107,20 +109,25 @@ type HeartbeatManager struct {
 // NewHeartbeatManager creates a new heartbeat manager with the specified timeouts.
 //
 // Parameters:
-//   - pingInterval: How long to wait before sending explicit PING (recommended 50ms)
-//   - failureTimeout: How long without frames before declaring failure (recommended 200ms)
+//   - pingInterval: How long the link must be idle before sending explicit PING (recommended 1s)
+//   - failureTimeout: How long without any frames before declaring failure (recommended 200ms)
 //   - onFailure: Callback function to invoke when link is declared dead
 //
 // Returns an error if:
-//   - pingInterval >= failureTimeout (no time for PING before failure)
+//   - pingInterval or failureTimeout is <= 0
 //   - onFailure is nil (required for triggering failover)
 //
-// The pingInterval should be shorter than failureTimeout to allow for at least one
-// PING attempt before failure. Recommended: pingInterval = failureTimeout / 4.
+// Note: pingInterval may be greater than failureTimeout. In the dual-detection model,
+// the implicit timeout (failureTimeout) is the primary detection mechanism — any valid
+// frame resets the timer. PING is a rare idle-link probe that fires only when the link
+// has been silent for pingInterval.
 func NewHeartbeatManager(pingInterval, failureTimeout time.Duration, onFailure func()) (*HeartbeatManager, error) {
 	// Validate inputs
-	if pingInterval >= failureTimeout {
-		return nil, fmt.Errorf("pingInterval (%v) must be less than failureTimeout (%v)", pingInterval, failureTimeout)
+	if pingInterval <= 0 {
+		return nil, fmt.Errorf("pingInterval must be > 0, got %v", pingInterval)
+	}
+	if failureTimeout <= 0 {
+		return nil, fmt.Errorf("failureTimeout must be > 0, got %v", failureTimeout)
 	}
 	if onFailure == nil {
 		return nil, fmt.Errorf("onFailure callback cannot be nil")

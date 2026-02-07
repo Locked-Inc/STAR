@@ -534,6 +534,82 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, const uint16_t sequ
   return internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
 }
 
+rx_err_t rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle,
+                                const uint8_t*        payload,
+                                const uint32_t        payload_len)
+{
+  if (handle == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Create PONG frame echoing PING payload (sequence 0 for control frames) */
+  rx_frame_t pong_frame;
+  rx_err_t   err = rx_frame_create_pong(&pong_frame, 0, payload, payload_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send */
+  uint8_t  wire_buffer[k_frame_max_size];
+  uint32_t wire_len = 0;
+
+  err = rx_frame_encode(&handle->encoder, &pong_frame, wire_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
+}
+
+rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle)
+{
+  if (handle == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Create RESET_ACK frame (sequence 0 after reset) */
+  rx_frame_t reset_ack_frame;
+  rx_err_t   err = rx_frame_create_reset_ack(&reset_ack_frame, 0);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send */
+  uint8_t  wire_buffer[k_frame_min_size];
+  uint32_t wire_len = 0;
+
+  err = rx_frame_encode(&handle->encoder, &reset_ack_frame, wire_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
+}
+
+rx_err_t rx_spi_comm_set_control_callbacks(rx_spi_comm_handle_t*    handle,
+                                            rx_spi_comm_control_cb_t on_ping,
+                                            rx_spi_comm_control_cb_t on_reset,
+                                            void*                    ctx)
+{
+  if (handle == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  handle->on_ping_cb  = on_ping;
+  handle->on_reset_cb = on_reset;
+  handle->cb_ctx      = ctx;
+
+  return k_rx_ok;
+}
+
 /* =============================================================================
  * Receive API - Internal Helpers
  * =============================================================================
@@ -673,9 +749,84 @@ static rx_err_t internal_decode_frame(const rx_spi_comm_handle_t* handle,
 }
 
 /* =============================================================================
+ * Receive API - Control Frame Dispatch
+ * =============================================================================
+ */
+
+/** @brief Control frame dispatch result */
+typedef enum : uint8_t {
+  k_dispatch_pass_through = 0, /**< Frame should be returned to caller */
+  k_dispatch_consumed     = 1, /**< Frame was handled internally */
+  k_dispatch_error        = 2, /**< Error during control frame handling */
+} dispatch_result_t;
+
+/**
+ * @brief Handle control frames (PING, RESET) internally
+ *
+ * PING: Auto-sends PONG echoing the payload, invokes on_ping_cb.
+ * RESET: Resets sequence counters, auto-sends RESET_ACK, invokes on_reset_cb.
+ * All other frame types pass through to the caller.
+ *
+ * @param[in,out] handle SPI communication handle
+ * @param[in]     frame  Decoded frame to inspect
+ * @param[out]    err    Error code if dispatch_error returned
+ *
+ * @return k_dispatch_consumed if frame was handled internally
+ * @return k_dispatch_pass_through if frame should be returned to caller
+ * @return k_dispatch_error if an error occurred during handling
+ */
+static dispatch_result_t internal_dispatch_control(rx_spi_comm_handle_t* handle,
+                                                    const rx_frame_t*     frame,
+                                                    rx_err_t*             err)
+{
+  const rx_frame_type_t type = (rx_frame_type_t)frame->header.type;
+
+  if (type == k_frame_type_ping) {
+    /* Auto-respond with PONG echoing the PING payload */
+    *err = rx_spi_comm_send_pong(handle, frame->payload, frame->header.length);
+    if (*err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to send PONG response");
+      return k_dispatch_error;
+    }
+
+    if (handle->on_ping_cb != NULL) {
+      handle->on_ping_cb(frame, handle->cb_ctx);
+    }
+
+    return k_dispatch_consumed;
+  }
+
+  if (type == k_frame_type_reset) {
+    /* Reset sequence counters */
+    handle->tx_sequence = 0;
+    handle->rx_sequence = 0;
+
+    /* Auto-respond with RESET_ACK */
+    *err = rx_spi_comm_send_reset_ack(handle);
+    if (*err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to send RESET_ACK response");
+      return k_dispatch_error;
+    }
+
+    if (handle->on_reset_cb != NULL) {
+      handle->on_reset_cb(frame, handle->cb_ctx);
+    }
+
+    return k_dispatch_consumed;
+  }
+
+  return k_dispatch_pass_through;
+}
+
+/* =============================================================================
  * Receive API - Public Functions
  * =============================================================================
  */
+
+/** @brief Maximum control frames to handle before returning timeout */
+typedef enum : uint8_t {
+  k_max_control_retries = 10, /**< Prevent infinite loop from control frame flood */
+} receive_limits_t;
 
 rx_err_t
 rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint32_t timeout_ms)
@@ -688,49 +839,65 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
     return k_rx_err_invalid_state;
   }
 
-  /* Wait for data to be available */
-  rx_err_t err = internal_wait_for_data(handle, timeout_ms);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  uint8_t retries = 0;
 
-  /* Read and validate frame header */
-  uint8_t  header_buf[k_frame_sync_size + k_frame_header_size];
-  uint16_t payload_len = 0;
-
-  err = internal_read_frame_header(handle, header_buf, &payload_len);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  /* Calculate frame size */
-  const uint32_t header_len = sizeof(header_buf);
-  const uint32_t total_size =
-    k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
-
-  /* Read remaining data (payload + CRC) */
-  const uint32_t remaining = payload_len + k_frame_crc_size;
-  if (remaining > 0) {
-    err = internal_spi_transfer(handle, NULL, 0, handle->rx_buffer + header_len, remaining);
+  while (retries < k_max_control_retries) {
+    /* Wait for data to be available */
+    rx_err_t err = internal_wait_for_data(handle, timeout_ms);
     if (err != k_rx_ok) {
       return err;
     }
+
+    /* Read and validate frame header */
+    uint8_t  header_buf[k_frame_sync_size + k_frame_header_size];
+    uint16_t payload_len = 0;
+
+    err = internal_read_frame_header(handle, header_buf, &payload_len);
+    if (err != k_rx_ok) {
+      return err;
+    }
+
+    /* Calculate frame size */
+    const uint32_t header_len = sizeof(header_buf);
+    const uint32_t total_size =
+      k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
+
+    /* Read remaining data (payload + CRC) */
+    const uint32_t remaining = payload_len + k_frame_crc_size;
+    if (remaining > 0) {
+      err = internal_spi_transfer(handle, NULL, 0, handle->rx_buffer + header_len, remaining);
+      if (err != k_rx_ok) {
+        return err;
+      }
+    }
+
+    /* Copy header to buffer for decoding */
+    memcpy(handle->rx_buffer, header_buf, header_len);
+
+    /* Decode frame */
+    err = internal_decode_frame(handle, frame, total_size);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Frame decode failed");
+      return err;
+    }
+
+    /* Update expected RX sequence */
+    handle->rx_sequence = frame->header.sequence + 1;
+
+    /* Dispatch control frames (PING, RESET) - consumed internally */
+    const dispatch_result_t result = internal_dispatch_control(handle, frame, &err);
+    if (result == k_dispatch_error) {
+      return err;
+    }
+    if (result == k_dispatch_pass_through) {
+      return k_rx_ok;
+    }
+
+    /* Control frame was consumed, retry to get a data frame */
+    retries++;
   }
 
-  /* Copy header to buffer for decoding */
-  memcpy(handle->rx_buffer, header_buf, header_len);
-
-  /* Decode frame */
-  err = internal_decode_frame(handle, frame, total_size);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Frame decode failed");
-    return err;
-  }
-
-  /* Update expected RX sequence */
-  handle->rx_sequence = frame->header.sequence + 1;
-
-  return k_rx_ok;
+  return k_rx_err_timeout;
 }
 
 rx_err_t rx_spi_comm_data_available(const rx_spi_comm_handle_t* handle, bool* available)

@@ -14,12 +14,11 @@ import (
 
 // Test timing constants to avoid magic numbers
 const (
-	// Heartbeat intervals
+	// Heartbeat intervals (dual-detection model: pingInterval may be > failureTimeout)
 	validPingInterval     = 50 * time.Millisecond
 	validFailureTimeout   = 200 * time.Millisecond
-	invalidPingInterval   = 300 * time.Millisecond
-	invalidFailureTimeout = 200 * time.Millisecond
-	equalInterval         = 100 * time.Millisecond
+	largePingInterval     = 1 * time.Second // Production-like: PING > failure timeout
+	largeFailureTimeout   = 200 * time.Millisecond
 
 	// Test timeouts and waits
 	shortPingInterval       = 10 * time.Millisecond
@@ -60,20 +59,28 @@ func TestNewHeartbeatManager_Validation(t *testing.T) {
 			wantErr:        false,
 		},
 		{
-			name:           "PingIntervalTooLarge",
-			pingInterval:   invalidPingInterval,
-			failureTimeout: invalidFailureTimeout,
+			name:           "PingIntervalLargerThanFailure",
+			pingInterval:   largePingInterval,
+			failureTimeout: largeFailureTimeout,
 			callback:       callback,
-			wantErr:        true,
-			errDescription: "pingInterval >= failureTimeout",
+			wantErr:        false,
+			errDescription: "dual-detection: pingInterval > failureTimeout is valid",
 		},
 		{
-			name:           "EqualIntervals",
-			pingInterval:   equalInterval,
-			failureTimeout: equalInterval,
+			name:           "ZeroPingInterval",
+			pingInterval:   0,
+			failureTimeout: validFailureTimeout,
 			callback:       callback,
 			wantErr:        true,
-			errDescription: "pingInterval == failureTimeout",
+			errDescription: "zero pingInterval",
+		},
+		{
+			name:           "ZeroFailureTimeout",
+			pingInterval:   validPingInterval,
+			failureTimeout: 0,
+			callback:       callback,
+			wantErr:        true,
+			errDescription: "zero failureTimeout",
 		},
 		{
 			name:           "NilCallback",
@@ -553,11 +560,17 @@ func TestHeartbeatManager_ConsecutiveMissReset(t *testing.T) {
 }
 
 // TestHeartbeatManager_WDTTimingVerification verifies the mathematical relationship
-// between PING interval, consecutive miss threshold, and the RX72N WDT timeout.
-// This test ensures the timing constants provide adequate safety margin.
+// between the implicit failure timeout and the RX72N WDT timeout.
+//
+// Dual-detection model:
+//
+//	Primary: Implicit timeout (DefaultFailureTimeout = 200ms) — any frame resets timer
+//	Secondary: Explicit PING (DefaultPingInterval = 1s) — rare idle-link probe
+//	Detection time = DefaultFailureTimeout (implicit fires first)
+//	Safety margin = WDT timeout / detection time = 1000ms / 200ms = 5x
 func TestHeartbeatManager_WDTTimingVerification(t *testing.T) {
-	// Gateway detection time = PING interval * consecutive miss threshold
-	gatewayDetectionMs := DefaultPingInterval.Milliseconds() * int64(DefaultConsecutiveMissThreshold)
+	// Primary detection time is the implicit failure timeout
+	gatewayDetectionMs := DefaultFailureTimeout.Milliseconds()
 	actualSafetyFactor := int64(wdtTimeoutApproxMs) / gatewayDetectionMs
 
 	// Safety factor must be >= 3 to avoid false WDT triggers
@@ -573,17 +586,23 @@ func TestHeartbeatManager_WDTTimingVerification(t *testing.T) {
 			wdtSafetyFactor, actualSafetyFactor)
 	}
 
-	// Verify PING interval < failure timeout (existing invariant)
-	if DefaultPingInterval >= DefaultFailureTimeout {
-		t.Errorf("DefaultPingInterval (%v) must be < DefaultFailureTimeout (%v)",
-			DefaultPingInterval, DefaultFailureTimeout)
+	// Verify failure timeout is well below WDT timeout (at least 2x margin)
+	if DefaultFailureTimeout.Milliseconds() > int64(wdtTimeoutApproxMs)/2 {
+		t.Errorf("DefaultFailureTimeout (%v) must be < WDT/2 (%dms)",
+			DefaultFailureTimeout, wdtTimeoutApproxMs/2)
 	}
 
-	// Verify consecutive miss detection aligns with failure timeout
-	// (4 misses * 50ms = 200ms == DefaultFailureTimeout)
-	expectedDetectionTime := DefaultPingInterval * time.Duration(DefaultConsecutiveMissThreshold)
-	if expectedDetectionTime != DefaultFailureTimeout {
-		t.Logf("NOTE: Consecutive miss detection time (%v) differs from failure timeout (%v). "+
-			"Both paths exist for defense-in-depth.", expectedDetectionTime, DefaultFailureTimeout)
+	// Verify both durations are positive
+	if DefaultPingInterval <= 0 {
+		t.Error("DefaultPingInterval must be > 0")
+	}
+	if DefaultFailureTimeout <= 0 {
+		t.Error("DefaultFailureTimeout must be > 0")
+	}
+
+	// Verify consecutive miss threshold is at least 1
+	if DefaultConsecutiveMissThreshold < 1 {
+		t.Errorf("DefaultConsecutiveMissThreshold must be >= 1, got %d",
+			DefaultConsecutiveMissThreshold)
 	}
 }
