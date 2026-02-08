@@ -33,5 +33,7 @@ breaking:
   use:
     - FILE
     - PACKAGE
-  except:
-    - FIELD_SAME_DEFAULT
+  # FIELD_SAME_DEFAULT was removed in buf v1.0.0 (it was from beta). 
+  # We should use modern v1 rules.
+  # except:
+  #   - FIELD_SAME_DEFAULT

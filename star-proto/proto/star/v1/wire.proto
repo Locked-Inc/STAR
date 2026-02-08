@@ -21,6 +21,7 @@ syntax = "proto3";
 package star.v1;
 
 import "star/v1/battery_management.proto";
+import "star/v1/diagnostics.proto";
 import "star/v1/motor_control.proto";
 import "star/v1/telemetry.proto";
 
@@ -72,9 +73,12 @@ message WireMessage {
     // Configuration (RPi5 -> RX72N)
     PidConfig pid_config = 30;
 
+    // Transport diagnostics (RPi5 -> UI or bidirectional)
+    TransportDiagnostics transport_diagnostics = 50;
+
     // Future message types can be added here with reserved field numbers:
     // - Firmware update chunks (40-49)
-    // - Diagnostics (50-59)
+    // - Diagnostics (51-59, 50 used above)
     // - Calibration (60-69)
   }
 }

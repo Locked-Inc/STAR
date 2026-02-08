@@ -38,6 +38,13 @@
 
 static rx_usb_comm_handle_t s_handle;
 
+/* Control frame callback tracking */
+static uint32_t   s_ping_cb_count;
+static rx_frame_t s_last_ping_frame;
+static uint32_t   s_reset_cb_count;
+static rx_frame_t s_last_reset_frame;
+static void*      s_last_cb_ctx;
+
 /* Helper to initialize USB and set configured state */
 static void helper_usb_init_and_configure(void)
 {
@@ -58,6 +65,13 @@ void setUp(void)
 
   /* Clear handle */
   memset(&s_handle, 0, sizeof(s_handle));
+
+  /* Reset callback tracking */
+  s_ping_cb_count  = 0;
+  s_reset_cb_count = 0;
+  memset(&s_last_ping_frame, 0, sizeof(s_last_ping_frame));
+  memset(&s_last_reset_frame, 0, sizeof(s_last_reset_frame));
+  s_last_cb_ctx = NULL;
 }
 
 void tearDown(void)
@@ -1497,6 +1511,422 @@ void test_usb_comm_receive_with_fec_enabled(void)
 }
 
 /* =============================================================================
+ * Control Frame Callback Helpers
+ * =============================================================================
+ */
+
+static void test_ping_callback(const rx_frame_t* frame, void* ctx)
+{
+  s_ping_cb_count++;
+  if (frame != NULL) {
+    memcpy(&s_last_ping_frame, frame, sizeof(rx_frame_t));
+  }
+  s_last_cb_ctx = ctx;
+}
+
+static void test_reset_callback(const rx_frame_t* frame, void* ctx)
+{
+  s_reset_cb_count++;
+  if (frame != NULL) {
+    memcpy(&s_last_reset_frame, frame, sizeof(rx_frame_t));
+  }
+  s_last_cb_ctx = ctx;
+}
+
+/* =============================================================================
+ * Set Control Callbacks Tests
+ * =============================================================================
+ */
+
+void test_usb_comm_set_callbacks_null_handle_fails(void)
+{
+  rx_err_t err = rx_usb_comm_set_control_callbacks(NULL, test_ping_callback, test_reset_callback, NULL);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_usb_comm_set_callbacks_success(void)
+{
+  rx_usb_comm_init(&s_handle, NULL);
+  uint32_t ctx_val = 42;
+
+  rx_err_t err =
+    rx_usb_comm_set_control_callbacks(&s_handle, test_ping_callback, test_reset_callback, &ctx_val);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_PTR(test_ping_callback, s_handle.on_ping_cb);
+  TEST_ASSERT_EQUAL_PTR(test_reset_callback, s_handle.on_reset_cb);
+  TEST_ASSERT_EQUAL_PTR(&ctx_val, s_handle.cb_ctx);
+}
+
+/* =============================================================================
+ * Send PONG Tests
+ * =============================================================================
+ */
+
+void test_usb_comm_send_pong_null_handle_fails(void)
+{
+  uint8_t payload[] = {0x01};
+
+  rx_err_t err = rx_usb_comm_send_pong(NULL, payload, 1);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_usb_comm_send_pong_not_initialized_fails(void)
+{
+  uint8_t payload[] = {0x01};
+
+  rx_err_t err = rx_usb_comm_send_pong(&s_handle, payload, 1);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_usb_comm_send_pong_echoes_payload(void)
+{
+  rx_usb_comm_init(&s_handle, NULL);
+  helper_usb_init_and_configure();
+
+  uint8_t  payload[] = {0xDE, 0xAD, 0xBE, 0xEF};
+  rx_err_t err       = rx_usb_comm_send_pong(&s_handle, payload, 4);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Read transmitted PONG from USB TX buffer */
+  uint8_t  tx_data[64];
+  uint32_t tx_len = rx_usb_tx_pop(tx_data, sizeof(tx_data));
+
+  /* PONG frame: 8 header + 4 payload + 4 CRC = 16 bytes */
+  TEST_ASSERT_EQUAL_UINT32(16, tx_len);
+  TEST_ASSERT_EQUAL_HEX8(k_frame_type_pong, tx_data[6]);
+
+  /* PONG should echo the payload (starts at offset 8) */
+  TEST_ASSERT_EQUAL_MEMORY(payload, &tx_data[8], 4);
+}
+
+/* =============================================================================
+ * Send RESET_ACK Tests
+ * =============================================================================
+ */
+
+void test_usb_comm_send_reset_ack_null_handle_fails(void)
+{
+  rx_err_t err = rx_usb_comm_send_reset_ack(NULL);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_usb_comm_send_reset_ack_not_initialized_fails(void)
+{
+  rx_err_t err = rx_usb_comm_send_reset_ack(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_usb_comm_send_reset_ack_success(void)
+{
+  rx_usb_comm_init(&s_handle, NULL);
+  helper_usb_init_and_configure();
+
+  rx_err_t err = rx_usb_comm_send_reset_ack(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Read transmitted RESET_ACK from USB TX buffer */
+  uint8_t  tx_data[32];
+  uint32_t tx_len = rx_usb_tx_pop(tx_data, sizeof(tx_data));
+
+  /* RESET_ACK frame: 8 header + 0 payload + 4 CRC = 12 bytes */
+  TEST_ASSERT_EQUAL_UINT32(k_frame_min_size, tx_len);
+  TEST_ASSERT_EQUAL_HEX8(k_frame_type_reset_ack, tx_data[6]);
+}
+
+/* =============================================================================
+ * Receive PING Auto-PONG Tests
+ * =============================================================================
+ */
+
+void test_usb_comm_receive_ping_auto_pong(void)
+{
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+
+  helper_usb_init_and_configure();
+  rx_usb_comm_init(&s_handle, &config);
+
+  /* Create PING frame with 4-byte counter payload */
+  rx_frame_t tx_frame;
+  uint8_t    encoded[k_frame_max_size];
+  uint32_t   encoded_len    = 0;
+  uint8_t    ping_payload[] = {0x00, 0x00, 0x00, 0x01};
+
+  rx_err_t err = helper_create_encoded_frame(&tx_frame,
+                                              0,
+                                              k_frame_type_ping,
+                                              k_frame_flag_none,
+                                              ping_payload,
+                                              4,
+                                              encoded,
+                                              &encoded_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_usb_rx_push(encoded, encoded_len);
+
+  rx_frame_t frame;
+  err = rx_usb_comm_receive(&s_handle, &frame, 50);
+
+  /* PING consumed, no more data → timeout */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  /* Verify PONG was sent via USB TX */
+  uint8_t  tx_data[64];
+  uint32_t tx_len = rx_usb_tx_pop(tx_data, sizeof(tx_data));
+
+  TEST_ASSERT_GREATER_THAN(0, tx_len);
+  TEST_ASSERT_EQUAL_HEX8(k_frame_type_pong, tx_data[6]);
+  TEST_ASSERT_EQUAL_MEMORY(ping_payload, &tx_data[8], 4);
+
+  mock_time_deinit(&mock);
+}
+
+void test_usb_comm_receive_ping_then_command(void)
+{
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+
+  helper_usb_init_and_configure();
+  rx_usb_comm_init(&s_handle, &config);
+
+  /* Create and inject PING */
+  rx_frame_t tx_frame;
+  uint8_t    ping_encoded[k_frame_max_size];
+  uint32_t   ping_len       = 0;
+  uint8_t    ping_payload[] = {0x00, 0x00, 0x00, 0x02};
+
+  rx_err_t err = helper_create_encoded_frame(&tx_frame,
+                                              0,
+                                              k_frame_type_ping,
+                                              k_frame_flag_none,
+                                              ping_payload,
+                                              4,
+                                              ping_encoded,
+                                              &ping_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  rx_usb_rx_push(ping_encoded, ping_len);
+
+  /* Create and inject COMMAND */
+  uint8_t  cmd_encoded[k_frame_max_size];
+  uint32_t cmd_len     = 0;
+  uint8_t  cmd_payload[] = "DATA";
+
+  err = helper_create_encoded_frame(&tx_frame,
+                                     1,
+                                     k_frame_type_command,
+                                     k_frame_flag_none,
+                                     cmd_payload,
+                                     4,
+                                     cmd_encoded,
+                                     &cmd_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  rx_usb_rx_push(cmd_encoded, cmd_len);
+
+  /* Receive - PING consumed, COMMAND returned */
+  rx_frame_t frame;
+  err = rx_usb_comm_receive(&s_handle, &frame, 1000);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT8(k_frame_type_command, frame.header.type);
+  TEST_ASSERT_EQUAL_UINT16(4, frame.header.length);
+  TEST_ASSERT_EQUAL_MEMORY("DATA", frame.payload, 4);
+
+  mock_time_deinit(&mock);
+}
+
+/* =============================================================================
+ * Receive RESET Auto-ACK Tests
+ * =============================================================================
+ */
+
+void test_usb_comm_receive_reset_auto_ack(void)
+{
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+
+  helper_usb_init_and_configure();
+  rx_usb_comm_init(&s_handle, &config);
+
+  /* Set non-zero sequences to verify reset */
+  s_handle.tx_sequence = 50;
+  s_handle.rx_sequence = 100;
+
+  /* Create RESET frame */
+  rx_frame_t tx_frame;
+  uint8_t    encoded[k_frame_max_size];
+  uint32_t   encoded_len = 0;
+
+  rx_err_t err = helper_create_encoded_frame(&tx_frame,
+                                              0,
+                                              k_frame_type_reset,
+                                              k_frame_flag_none,
+                                              NULL,
+                                              0,
+                                              encoded,
+                                              &encoded_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_usb_rx_push(encoded, encoded_len);
+
+  rx_frame_t frame;
+  err = rx_usb_comm_receive(&s_handle, &frame, 50);
+
+  /* RESET consumed → timeout */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  /* Verify RESET_ACK was sent */
+  uint8_t  tx_data[32];
+  uint32_t tx_len = rx_usb_tx_pop(tx_data, sizeof(tx_data));
+
+  TEST_ASSERT_GREATER_THAN(0, tx_len);
+  TEST_ASSERT_EQUAL_HEX8(k_frame_type_reset_ack, tx_data[6]);
+
+  /* Verify sequences were reset */
+  TEST_ASSERT_EQUAL_UINT16(0, rx_usb_comm_get_tx_sequence(&s_handle));
+  TEST_ASSERT_EQUAL_UINT16(0, rx_usb_comm_get_rx_sequence(&s_handle));
+
+  mock_time_deinit(&mock);
+}
+
+/* =============================================================================
+ * Control Frame Callback Tests
+ * =============================================================================
+ */
+
+void test_usb_comm_receive_ping_callback_invoked(void)
+{
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+
+  helper_usb_init_and_configure();
+  rx_usb_comm_init(&s_handle, &config);
+
+  uint32_t ctx_value = 42;
+  rx_usb_comm_set_control_callbacks(&s_handle,
+                                     test_ping_callback,
+                                     test_reset_callback,
+                                     &ctx_value);
+
+  /* Create and inject PING */
+  rx_frame_t tx_frame;
+  uint8_t    encoded[k_frame_max_size];
+  uint32_t   encoded_len    = 0;
+  uint8_t    ping_payload[] = {0x00, 0x00, 0x00, 0x03};
+
+  rx_err_t err = helper_create_encoded_frame(&tx_frame,
+                                              0,
+                                              k_frame_type_ping,
+                                              k_frame_flag_none,
+                                              ping_payload,
+                                              4,
+                                              encoded,
+                                              &encoded_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_usb_rx_push(encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_usb_comm_receive(&s_handle, &frame, 50);
+
+  /* Verify ping callback was invoked exactly once */
+  TEST_ASSERT_EQUAL_UINT32(1, s_ping_cb_count);
+  TEST_ASSERT_EQUAL_UINT32(0, s_reset_cb_count);
+  TEST_ASSERT_EQUAL_UINT8(k_frame_type_ping, s_last_ping_frame.header.type);
+  TEST_ASSERT_EQUAL_MEMORY(ping_payload, s_last_ping_frame.payload, 4);
+  TEST_ASSERT_EQUAL_PTR(&ctx_value, s_last_cb_ctx);
+
+  mock_time_deinit(&mock);
+}
+
+void test_usb_comm_receive_reset_callback_invoked(void)
+{
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = {.fec_enabled = 0, .time_iface = &time_iface};
+
+  helper_usb_init_and_configure();
+  rx_usb_comm_init(&s_handle, &config);
+
+  s_handle.tx_sequence = 50;
+  s_handle.rx_sequence = 100;
+
+  uint32_t ctx_value = 99;
+  rx_usb_comm_set_control_callbacks(&s_handle,
+                                     test_ping_callback,
+                                     test_reset_callback,
+                                     &ctx_value);
+
+  /* Create and inject RESET */
+  rx_frame_t tx_frame;
+  uint8_t    encoded[k_frame_max_size];
+  uint32_t   encoded_len = 0;
+
+  rx_err_t err = helper_create_encoded_frame(&tx_frame,
+                                              0,
+                                              k_frame_type_reset,
+                                              k_frame_flag_none,
+                                              NULL,
+                                              0,
+                                              encoded,
+                                              &encoded_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_usb_rx_push(encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_usb_comm_receive(&s_handle, &frame, 50);
+
+  /* Verify reset callback was invoked exactly once */
+  TEST_ASSERT_EQUAL_UINT32(0, s_ping_cb_count);
+  TEST_ASSERT_EQUAL_UINT32(1, s_reset_cb_count);
+  TEST_ASSERT_EQUAL_UINT8(k_frame_type_reset, s_last_reset_frame.header.type);
+  TEST_ASSERT_EQUAL_PTR(&ctx_value, s_last_cb_ctx);
+
+  /* Verify sequences were reset */
+  TEST_ASSERT_EQUAL_UINT16(0, rx_usb_comm_get_tx_sequence(&s_handle));
+  TEST_ASSERT_EQUAL_UINT16(0, rx_usb_comm_get_rx_sequence(&s_handle));
+
+  mock_time_deinit(&mock);
+}
+
+/* =============================================================================
  * Mock Time Timeout Tests
  * =============================================================================
  */
@@ -1686,6 +2116,31 @@ int main(void)
   RUN_TEST(test_usb_comm_get_rx_sequence_null_handle);
   RUN_TEST(test_usb_comm_flush_rx);
   RUN_TEST(test_usb_comm_flush_rx_null_handle);
+
+  /* Set control callbacks tests */
+  RUN_TEST(test_usb_comm_set_callbacks_null_handle_fails);
+  RUN_TEST(test_usb_comm_set_callbacks_success);
+
+  /* Send PONG tests */
+  RUN_TEST(test_usb_comm_send_pong_null_handle_fails);
+  RUN_TEST(test_usb_comm_send_pong_not_initialized_fails);
+  RUN_TEST(test_usb_comm_send_pong_echoes_payload);
+
+  /* Send RESET_ACK tests */
+  RUN_TEST(test_usb_comm_send_reset_ack_null_handle_fails);
+  RUN_TEST(test_usb_comm_send_reset_ack_not_initialized_fails);
+  RUN_TEST(test_usb_comm_send_reset_ack_success);
+
+  /* Receive PING auto-PONG tests */
+  RUN_TEST(test_usb_comm_receive_ping_auto_pong);
+  RUN_TEST(test_usb_comm_receive_ping_then_command);
+
+  /* Receive RESET auto-ACK tests */
+  RUN_TEST(test_usb_comm_receive_reset_auto_ack);
+
+  /* Control frame callback tests */
+  RUN_TEST(test_usb_comm_receive_ping_callback_invoked);
+  RUN_TEST(test_usb_comm_receive_reset_callback_invoked);
 
   return UNITY_END();
 }

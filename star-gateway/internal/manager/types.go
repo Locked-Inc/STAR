@@ -151,6 +151,9 @@ const (
 	PrioritySPI = 5
 )
 
+// packetLossWindowSize is the number of recent operations tracked for loss rate calculation.
+const packetLossWindowSize = 100
+
 // HealthMetrics tracks the operational health of a transport.
 type HealthMetrics struct {
 	// LastSuccess is the timestamp of the last successful operation.
@@ -158,6 +161,11 @@ type HealthMetrics struct {
 
 	// LastFailure is the timestamp of the last failed operation.
 	LastFailure time.Time
+
+	// LastRecovery is the timestamp of the most recent unhealthy→healthy transition.
+	// Used for failback hysteresis: transports must stay healthy for FailbackDamping
+	// before being eligible for priority-based selection again.
+	LastRecovery time.Time
 
 	// ConsecutiveFailures counts failures since last success.
 	// Resets to 0 on any successful operation.
@@ -175,9 +183,25 @@ type HealthMetrics struct {
 	// AvgLatency is the moving average of operation latency.
 	AvgLatency time.Duration
 
+	// PacketLossRate is the fraction of failed operations in the sliding window [0.0, 1.0].
+	PacketLossRate float64
+
 	// IsHealthy indicates if this transport is considered healthy.
-	// Set to false when ConsecutiveFailures >= FailureThreshold.
+	// Set to false when ANY threshold is exceeded:
+	//   - ConsecutiveFailures >= FailureThreshold
+	//   - AvgLatency > HealthLatencyThreshold
+	//   - PacketLossRate > HealthLossThreshold
 	IsHealthy bool
+
+	// lossWindow is a circular buffer tracking success (true) / failure (false)
+	// for the most recent packetLossWindowSize operations.
+	lossWindow [packetLossWindowSize]bool
+
+	// lossWindowIdx is the next write position in lossWindow.
+	lossWindowIdx int
+
+	// lossWindowCount is the number of entries written (capped at packetLossWindowSize).
+	lossWindowCount int
 }
 
 // NewHealthMetrics creates a new HealthMetrics instance with default values.

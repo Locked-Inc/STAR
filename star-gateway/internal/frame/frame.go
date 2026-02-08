@@ -1,8 +1,8 @@
 // Package frame defines the wire protocol frame structure for RPi5 <-> RX72N communication.
 //
-// Frame format:
+// Frame format (header fields big-endian, CRC-32 little-endian per IEEE 802.3):
 //
-//	[SYNC (2B)][SEQ (2B)][LEN (2B)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B)]
+//	[SYNC (2B, BE)][SEQ (2B, BE)][LEN (2B, BE)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B, LE)]
 //
 // STAR Project - Texas A&M University
 // January 2026

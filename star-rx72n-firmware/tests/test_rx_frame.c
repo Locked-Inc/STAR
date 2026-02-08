@@ -528,14 +528,23 @@ void test_encoded_size_calculation(void)
 
 void test_frame_type_valid(void)
 {
-  enum : uint8_t { k_invalid_type_low = 0, k_invalid_type_high = 5, k_invalid_type_max = 255 };
-  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_low));
+  enum : uint8_t { k_invalid_type_gap = 0x02, k_invalid_type_mid = 0x15, k_invalid_type_high = 0x80 };
+  /* Control/heartbeat types (0x00-0x01) */
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_ping));
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_pong));
+  /* Gap between control and data types */
+  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_gap));
+  /* Data/command types (0x10-0x13) */
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_command));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_response));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_ack));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_nack));
+  /* Invalid types */
+  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_mid));
   TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_high));
-  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_max));
+  /* Session management types (0xFE-0xFF) */
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_reset_ack));
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_reset));
 }
 
 /* =============================================================================
@@ -885,7 +894,7 @@ void test_go_compatibility_empty_ack(void)
    *   55 AA          - SYNC (0x55AA big-endian)
    *   00 01          - SEQ (1 big-endian)
    *   00 00          - LEN (0 big-endian)
-   *   03             - TYPE (ACK = 3)
+   *   12             - TYPE (ACK = 0x12)
    *   00             - FLAGS (none = 0)
    *   <CRC-32 LE>    - CRC-32 of above 8 bytes
    */
@@ -938,7 +947,7 @@ void test_go_compatibility_command_with_payload(void)
    *   55 AA          - SYNC
    *   00 2A          - SEQ (42 big-endian)
    *   00 04          - LEN (4 big-endian)
-   *   01             - TYPE (COMMAND = 1)
+   *   10             - TYPE (COMMAND = 0x10)
    *   01             - FLAGS (REQUIRES_ACK = 0x01)
    *   54 45 53 54    - PAYLOAD "TEST"
    *   <CRC-32 LE>    - CRC-32
@@ -987,6 +996,345 @@ void test_go_compatibility_command_with_payload(void)
   TEST_ASSERT_EQUAL(k_frame_type_command, decoded.header.type);
   TEST_ASSERT_EQUAL(k_frame_flag_requires_ack, decoded.header.flags);
   TEST_ASSERT_EQUAL_MEMORY(s_test_payload_string, decoded.payload, k_go_payload_len);
+}
+
+/* =============================================================================
+ * Byte-Exact Cross-Compatibility Vectors (C ↔ Go)
+ *
+ * These test vectors define the canonical wire encoding for every frame type.
+ * The Go tests (frame_test.go TestCrossCompatibility_*) verify against the
+ * same hardcoded byte sequences. If either encoder changes, these tests fail.
+ * =============================================================================
+ */
+
+/** @brief Cross-compatibility vector sizes */
+typedef enum : uint8_t {
+  k_xc_ping_wire_len      = 12, /**< PING: 8 header + 0 payload + 4 CRC */
+  k_xc_pong_wire_len      = 16, /**< PONG: 8 header + 4 payload + 4 CRC */
+  k_xc_command_wire_len   = 16, /**< COMMAND: 8 header + 4 payload + 4 CRC */
+  k_xc_response_wire_len  = 14, /**< RESPONSE: 8 header + 2 payload + 4 CRC */
+  k_xc_ack_wire_len       = 12, /**< ACK: 8 header + 0 payload + 4 CRC */
+  k_xc_nack_wire_len      = 12, /**< NACK: 8 header + 0 payload + 4 CRC */
+  k_xc_reset_wire_len     = 12, /**< RESET: 8 header + 0 payload + 4 CRC */
+  k_xc_reset_ack_wire_len = 12, /**< RESET_ACK: 8 header + 0 payload + 4 CRC */
+  k_xc_pong_payload_len   = 4,  /**< PONG counter payload */
+  k_xc_cmd_payload_len    = 4,  /**< "TEST" payload */
+  k_xc_rsp_payload_len    = 2,  /**< "OK" payload */
+  k_xc_counter_42         = 42, /**< PONG counter value */
+} xc_vector_constants_t;
+
+/**
+ * Vector 1: PING (seq=0, empty payload)
+ * Go CRC-32 = 0x9B3FAEEB
+ */
+void test_cross_compat_ping_seq0_empty(void)
+{
+  static const uint8_t expected_wire[k_xc_ping_wire_len] = {
+    0x55, 0xAA,                   /* SYNC */
+    0x00, 0x00,                   /* SEQ=0 */
+    0x00, 0x00,                   /* LEN=0 */
+    0x00,                         /* TYPE=PING */
+    0x00,                         /* FLAGS=none */
+    0xEB, 0xAE, 0x3F, 0x9B       /* CRC-32 LE = 0x9B3FAEEB */
+  };
+  rx_frame_t frame;
+  uint8_t    buffer[k_test_small_buffer];
+  uint32_t   len;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ping(&frame, 0, NULL, 0));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_xc_ping_wire_len, len);
+  TEST_ASSERT_EQUAL_MEMORY(expected_wire, buffer, k_xc_ping_wire_len);
+
+  /* Decode and verify round-trip */
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(0, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_ping, decoded.header.type);
+  TEST_ASSERT_EQUAL(0, decoded.header.length);
+}
+
+/**
+ * Vector 2: PONG (seq=0, 4-byte counter=42 big-endian)
+ * Go CRC-32 = 0x287737DF
+ */
+void test_cross_compat_pong_seq0_counter42(void)
+{
+  static const uint8_t expected_wire[k_xc_pong_wire_len] = {
+    0x55, 0xAA,                   /* SYNC */
+    0x00, 0x00,                   /* SEQ=0 */
+    0x00, 0x04,                   /* LEN=4 */
+    0x01,                         /* TYPE=PONG */
+    0x00,                         /* FLAGS=none */
+    0x00, 0x00, 0x00, 0x2A,      /* PAYLOAD: counter=42 BE */
+    0xDF, 0x37, 0x77, 0x28        /* CRC-32 LE = 0x287737DF */
+  };
+  uint8_t    pong_payload[k_xc_pong_payload_len] = {0x00, 0x00, 0x00, 0x2A};
+  rx_frame_t frame;
+  uint8_t    buffer[k_test_small_buffer];
+  uint32_t   len;
+
+  /* Create PONG with counter=42 payload (echoes PING payload) */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_pong(&frame, 0, pong_payload,
+                                                   k_xc_pong_payload_len));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_xc_pong_wire_len, len);
+  TEST_ASSERT_EQUAL_MEMORY(expected_wire, buffer, k_xc_pong_wire_len);
+
+  /* Decode and verify */
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(0, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_pong, decoded.header.type);
+  TEST_ASSERT_EQUAL(k_xc_pong_payload_len, decoded.header.length);
+  TEST_ASSERT_EQUAL_MEMORY(pong_payload, decoded.payload, k_xc_pong_payload_len);
+}
+
+/**
+ * Vector 3: COMMAND (seq=1, payload="TEST", FLAGS=REQUIRES_ACK)
+ * Go CRC-32 = 0xDEF35E60
+ */
+void test_cross_compat_command_seq1_test(void)
+{
+  static const uint8_t expected_wire[k_xc_command_wire_len] = {
+    0x55, 0xAA,                   /* SYNC */
+    0x00, 0x01,                   /* SEQ=1 */
+    0x00, 0x04,                   /* LEN=4 */
+    0x10,                         /* TYPE=COMMAND */
+    0x01,                         /* FLAGS=REQUIRES_ACK */
+    0x54, 0x45, 0x53, 0x54,      /* PAYLOAD="TEST" */
+    0x60, 0x5E, 0xF3, 0xDE       /* CRC-32 LE = 0xDEF35E60 */
+  };
+  rx_frame_t frame  = {0};
+  uint8_t    buffer[k_test_small_buffer];
+  uint32_t   len;
+
+  frame.header.sequence = k_test_seq_one;
+  frame.header.length   = k_xc_cmd_payload_len;
+  frame.header.type     = k_frame_type_command;
+  frame.header.flags    = k_frame_flag_requires_ack;
+  memcpy(frame.payload, "TEST", k_xc_cmd_payload_len);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_xc_command_wire_len, len);
+  TEST_ASSERT_EQUAL_MEMORY(expected_wire, buffer, k_xc_command_wire_len);
+
+  /* Decode and verify */
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_test_seq_one, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_command, decoded.header.type);
+  TEST_ASSERT_EQUAL(k_frame_flag_requires_ack, decoded.header.flags);
+  TEST_ASSERT_EQUAL_MEMORY("TEST", decoded.payload, k_xc_cmd_payload_len);
+}
+
+/**
+ * Vector 4: RESPONSE (seq=1, payload="OK")
+ * Go CRC-32 = 0x6FC08EF4
+ */
+void test_cross_compat_response_seq1_ok(void)
+{
+  static const uint8_t expected_wire[k_xc_response_wire_len] = {
+    0x55, 0xAA,                   /* SYNC */
+    0x00, 0x01,                   /* SEQ=1 */
+    0x00, 0x02,                   /* LEN=2 */
+    0x11,                         /* TYPE=RESPONSE */
+    0x00,                         /* FLAGS=none */
+    0x4F, 0x4B,                   /* PAYLOAD="OK" */
+    0xF4, 0x8E, 0xC0, 0x6F       /* CRC-32 LE = 0x6FC08EF4 */
+  };
+  rx_frame_t frame  = {0};
+  uint8_t    buffer[k_test_small_buffer];
+  uint32_t   len;
+
+  frame.header.sequence = k_test_seq_one;
+  frame.header.length   = k_xc_rsp_payload_len;
+  frame.header.type     = k_frame_type_response;
+  frame.header.flags    = k_frame_flag_none;
+  memcpy(frame.payload, "OK", k_xc_rsp_payload_len);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_xc_response_wire_len, len);
+  TEST_ASSERT_EQUAL_MEMORY(expected_wire, buffer, k_xc_response_wire_len);
+
+  /* Decode and verify */
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_test_seq_one, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_response, decoded.header.type);
+  TEST_ASSERT_EQUAL_MEMORY("OK", decoded.payload, k_xc_rsp_payload_len);
+}
+
+/**
+ * Vector 5: ACK (seq=1, empty payload)
+ * Go CRC-32 = 0xDEABF788
+ */
+void test_cross_compat_ack_seq1_empty(void)
+{
+  static const uint8_t expected_wire[k_xc_ack_wire_len] = {
+    0x55, 0xAA,                   /* SYNC */
+    0x00, 0x01,                   /* SEQ=1 */
+    0x00, 0x00,                   /* LEN=0 */
+    0x12,                         /* TYPE=ACK */
+    0x00,                         /* FLAGS=none */
+    0x88, 0xF7, 0xAB, 0xDE       /* CRC-32 LE = 0xDEABF788 */
+  };
+  rx_frame_t frame;
+  uint8_t    buffer[k_test_small_buffer];
+  uint32_t   len;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ack(&frame, k_test_seq_one));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_xc_ack_wire_len, len);
+  TEST_ASSERT_EQUAL_MEMORY(expected_wire, buffer, k_xc_ack_wire_len);
+
+  /* Decode and verify */
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_test_seq_one, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_ack, decoded.header.type);
+  TEST_ASSERT_EQUAL(0, decoded.header.length);
+}
+
+/**
+ * Vector 6: NACK (seq=1, empty payload)
+ * Go CRC-32 = 0xC7B0C6C9
+ */
+void test_cross_compat_nack_seq1_empty(void)
+{
+  static const uint8_t expected_wire[k_xc_nack_wire_len] = {
+    0x55, 0xAA,                   /* SYNC */
+    0x00, 0x01,                   /* SEQ=1 */
+    0x00, 0x00,                   /* LEN=0 */
+    0x13,                         /* TYPE=NACK */
+    0x00,                         /* FLAGS=none */
+    0xC9, 0xC6, 0xB0, 0xC7       /* CRC-32 LE = 0xC7B0C6C9 */
+  };
+  rx_frame_t frame;
+  uint8_t    buffer[k_test_small_buffer];
+  uint32_t   len;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_nack(&frame, k_test_seq_one, k_frame_flag_none));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_xc_nack_wire_len, len);
+  TEST_ASSERT_EQUAL_MEMORY(expected_wire, buffer, k_xc_nack_wire_len);
+
+  /* Decode and verify */
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_test_seq_one, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_nack, decoded.header.type);
+  TEST_ASSERT_EQUAL(0, decoded.header.length);
+}
+
+/**
+ * Vector 7: RESET (seq=0, empty payload)
+ * Go CRC-32 = 0x081B5399
+ */
+void test_cross_compat_reset_seq0_empty(void)
+{
+  static const uint8_t expected_wire[k_xc_reset_wire_len] = {
+    0x55, 0xAA,                   /* SYNC */
+    0x00, 0x00,                   /* SEQ=0 */
+    0x00, 0x00,                   /* LEN=0 */
+    0xFF,                         /* TYPE=RESET */
+    0x00,                         /* FLAGS=none */
+    0x99, 0x53, 0x1B, 0x08       /* CRC-32 LE = 0x081B5399 */
+  };
+  rx_frame_t frame;
+  uint8_t    buffer[k_test_small_buffer];
+  uint32_t   len;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_reset(&frame, 0));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_xc_reset_wire_len, len);
+  TEST_ASSERT_EQUAL_MEMORY(expected_wire, buffer, k_xc_reset_wire_len);
+
+  /* Decode and verify */
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(0, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_reset, decoded.header.type);
+  TEST_ASSERT_EQUAL(0, decoded.header.length);
+}
+
+/**
+ * Vector 8: RESET_ACK (seq=0, empty payload)
+ * Go CRC-32 = 0x110062D8
+ */
+void test_cross_compat_reset_ack_seq0_empty(void)
+{
+  static const uint8_t expected_wire[k_xc_reset_ack_wire_len] = {
+    0x55, 0xAA,                   /* SYNC */
+    0x00, 0x00,                   /* SEQ=0 */
+    0x00, 0x00,                   /* LEN=0 */
+    0xFE,                         /* TYPE=RESET_ACK */
+    0x00,                         /* FLAGS=none */
+    0xD8, 0x62, 0x00, 0x11       /* CRC-32 LE = 0x110062D8 */
+  };
+  rx_frame_t frame;
+  uint8_t    buffer[k_test_small_buffer];
+  uint32_t   len;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_reset_ack(&frame, 0));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_xc_reset_ack_wire_len, len);
+  TEST_ASSERT_EQUAL_MEMORY(expected_wire, buffer, k_xc_reset_ack_wire_len);
+
+  /* Decode and verify */
+  rx_frame_t decoded;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(0, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_reset_ack, decoded.header.type);
+  TEST_ASSERT_EQUAL(0, decoded.header.length);
+}
+
+/**
+ * Decode-only: verify C decoder accepts Go-encoded wire bytes directly.
+ * Feeds the hardcoded wire vectors into rx_frame_decode without any C encoding.
+ */
+void test_cross_compat_decode_go_wire_bytes(void)
+{
+  /* PING wire bytes from Go */
+  static const uint8_t ping_wire[k_xc_ping_wire_len] = {
+    0x55, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0xEB, 0xAE, 0x3F, 0x9B
+  };
+  /* COMMAND wire bytes from Go */
+  static const uint8_t cmd_wire[k_xc_command_wire_len] = {
+    0x55, 0xAA, 0x00, 0x01, 0x00, 0x04, 0x10, 0x01,
+    0x54, 0x45, 0x53, 0x54, 0x60, 0x5E, 0xF3, 0xDE
+  };
+  /* RESET wire bytes from Go */
+  static const uint8_t reset_wire[k_xc_reset_wire_len] = {
+    0x55, 0xAA, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00,
+    0x99, 0x53, 0x1B, 0x08
+  };
+
+  rx_frame_t decoded;
+
+  /* Decode PING */
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_frame_decode(&s_decoder, ping_wire, k_xc_ping_wire_len, &decoded));
+  TEST_ASSERT_EQUAL(0, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_ping, decoded.header.type);
+  TEST_ASSERT_EQUAL(0, decoded.header.length);
+
+  /* Decode COMMAND */
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_frame_decode(&s_decoder, cmd_wire, k_xc_command_wire_len, &decoded));
+  TEST_ASSERT_EQUAL(k_test_seq_one, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_command, decoded.header.type);
+  TEST_ASSERT_EQUAL(k_xc_cmd_payload_len, decoded.header.length);
+  TEST_ASSERT_EQUAL(k_frame_flag_requires_ack, decoded.header.flags);
+  TEST_ASSERT_EQUAL_MEMORY("TEST", decoded.payload, k_xc_cmd_payload_len);
+
+  /* Decode RESET */
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_frame_decode(&s_decoder, reset_wire, k_xc_reset_wire_len, &decoded));
+  TEST_ASSERT_EQUAL(0, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_frame_type_reset, decoded.header.type);
+  TEST_ASSERT_EQUAL(0, decoded.header.length);
 }
 
 /* =============================================================================
@@ -1061,6 +1409,137 @@ void test_encode_sequence_rollover(void)
 }
 
 /* =============================================================================
+ * PING/PONG/RESET/RESET_ACK Creation Tests
+ * =============================================================================
+ */
+
+void test_create_ping_null(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_frame_create_ping(NULL, k_test_seq_zero, NULL, 0));
+}
+
+void test_create_ping_empty(void)
+{
+  rx_frame_t frame;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ping(&frame, k_test_seq_one, NULL, 0));
+  TEST_ASSERT_EQUAL(k_test_seq_one, frame.header.sequence);
+  TEST_ASSERT_EQUAL(0, frame.header.length);
+  TEST_ASSERT_EQUAL(k_frame_type_ping, frame.header.type);
+  TEST_ASSERT_EQUAL(k_frame_flag_none, frame.header.flags);
+}
+
+void test_create_ping_with_counter(void)
+{
+  enum : uint8_t { k_ping_counter_len = 4 };
+  rx_frame_t    frame;
+  const uint8_t counter[k_ping_counter_len] = {0x00, 0x00, 0x00, 0x01};
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ping(&frame, k_test_seq_zero, counter, k_ping_counter_len));
+  TEST_ASSERT_EQUAL(k_ping_counter_len, frame.header.length);
+  TEST_ASSERT_EQUAL(k_frame_type_ping, frame.header.type);
+  TEST_ASSERT_EQUAL_MEMORY(counter, frame.payload, k_ping_counter_len);
+}
+
+void test_create_ping_null_payload_with_len(void)
+{
+  rx_frame_t frame;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_frame_create_ping(&frame, k_test_seq_zero, NULL, 1));
+}
+
+void test_create_pong_null(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_frame_create_pong(NULL, k_test_seq_zero, NULL, 0));
+}
+
+void test_create_pong_echoes_payload(void)
+{
+  enum : uint8_t { k_pong_counter_len = 4 };
+  rx_frame_t    frame;
+  const uint8_t counter[k_pong_counter_len] = {0x00, 0x00, 0x00, 0x05};
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_pong(&frame, k_test_seq_42, counter, k_pong_counter_len));
+  TEST_ASSERT_EQUAL(k_test_seq_42, frame.header.sequence);
+  TEST_ASSERT_EQUAL(k_pong_counter_len, frame.header.length);
+  TEST_ASSERT_EQUAL(k_frame_type_pong, frame.header.type);
+  TEST_ASSERT_EQUAL_MEMORY(counter, frame.payload, k_pong_counter_len);
+}
+
+void test_create_reset_null(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_frame_create_reset(NULL, k_test_seq_zero));
+}
+
+void test_create_reset_success(void)
+{
+  rx_frame_t frame;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_reset(&frame, k_test_seq_one));
+  TEST_ASSERT_EQUAL(k_test_seq_one, frame.header.sequence);
+  TEST_ASSERT_EQUAL(0, frame.header.length);
+  TEST_ASSERT_EQUAL(k_frame_type_reset, frame.header.type);
+  TEST_ASSERT_EQUAL(k_frame_flag_none, frame.header.flags);
+}
+
+void test_create_reset_ack_null(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_frame_create_reset_ack(NULL, k_test_seq_zero));
+}
+
+void test_create_reset_ack_success(void)
+{
+  rx_frame_t frame;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_reset_ack(&frame, k_test_seq_one));
+  TEST_ASSERT_EQUAL(k_test_seq_one, frame.header.sequence);
+  TEST_ASSERT_EQUAL(0, frame.header.length);
+  TEST_ASSERT_EQUAL(k_frame_type_reset_ack, frame.header.type);
+  TEST_ASSERT_EQUAL(k_frame_flag_none, frame.header.flags);
+}
+
+void test_roundtrip_ping_pong(void)
+{
+  enum : uint8_t { k_counter_len = 4 };
+  rx_frame_t    ping_frame;
+  rx_frame_t    pong_frame;
+  rx_frame_t    decoded;
+  uint8_t       buffer[k_test_small_buffer];
+  uint32_t      len;
+  const uint8_t counter[k_counter_len] = {0x00, 0x00, 0x00, 0x0A};
+
+  /* Encode PING */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ping(&ping_frame, k_test_seq_one, counter, k_counter_len));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &ping_frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_type_ping, decoded.header.type);
+  TEST_ASSERT_EQUAL_MEMORY(counter, decoded.payload, k_counter_len);
+
+  /* Encode PONG echoing same counter */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_pong(&pong_frame, k_test_seq_one, counter, k_counter_len));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &pong_frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_type_pong, decoded.header.type);
+  TEST_ASSERT_EQUAL_MEMORY(counter, decoded.payload, k_counter_len);
+}
+
+void test_roundtrip_reset(void)
+{
+  rx_frame_t frame;
+  rx_frame_t decoded;
+  uint8_t    buffer[k_test_small_buffer];
+  uint32_t   len;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_reset(&frame, k_test_seq_zero));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_type_reset, decoded.header.type);
+  TEST_ASSERT_EQUAL(k_test_seq_zero, decoded.header.sequence);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_reset_ack(&frame, k_test_seq_zero));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_decode(&s_decoder, buffer, len, &decoded));
+  TEST_ASSERT_EQUAL(k_frame_type_reset_ack, decoded.header.type);
+  TEST_ASSERT_EQUAL(k_test_seq_zero, decoded.header.sequence);
+}
+
+/* =============================================================================
  * Main
  * =============================================================================
  */
@@ -1129,9 +1608,34 @@ int main(void)
   RUN_TEST(test_length_big_endian);
   RUN_TEST(test_crc_little_endian);
 
-  /* Go compatibility tests */
+  /* Go compatibility tests (header byte order) */
   RUN_TEST(test_go_compatibility_empty_ack);
   RUN_TEST(test_go_compatibility_command_with_payload);
+
+  /* Cross-compatibility vectors (byte-exact with Go, includes CRC) */
+  RUN_TEST(test_cross_compat_ping_seq0_empty);
+  RUN_TEST(test_cross_compat_pong_seq0_counter42);
+  RUN_TEST(test_cross_compat_command_seq1_test);
+  RUN_TEST(test_cross_compat_response_seq1_ok);
+  RUN_TEST(test_cross_compat_ack_seq1_empty);
+  RUN_TEST(test_cross_compat_nack_seq1_empty);
+  RUN_TEST(test_cross_compat_reset_seq0_empty);
+  RUN_TEST(test_cross_compat_reset_ack_seq0_empty);
+  RUN_TEST(test_cross_compat_decode_go_wire_bytes);
+
+  /* PING/PONG/RESET/RESET_ACK tests */
+  RUN_TEST(test_create_ping_null);
+  RUN_TEST(test_create_ping_empty);
+  RUN_TEST(test_create_ping_with_counter);
+  RUN_TEST(test_create_ping_null_payload_with_len);
+  RUN_TEST(test_create_pong_null);
+  RUN_TEST(test_create_pong_echoes_payload);
+  RUN_TEST(test_create_reset_null);
+  RUN_TEST(test_create_reset_success);
+  RUN_TEST(test_create_reset_ack_null);
+  RUN_TEST(test_create_reset_ack_success);
+  RUN_TEST(test_roundtrip_ping_pong);
+  RUN_TEST(test_roundtrip_reset);
 
   /* Edge case tests */
   RUN_TEST(test_decode_payload_length_mismatch);
