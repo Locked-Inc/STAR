@@ -57,14 +57,23 @@ typedef enum : uint16_t {
 } rx_frame_constants_t;
 
 /**
- * @brief Frame types (matches Go FrameType)
+ * @brief Frame types (matches Go FrameType in star-gateway/internal/frame/)
+ *
+ * Ranges:
+ *   0x00-0x0F: Control/heartbeat frames
+ *   0x10-0x1F: Data/command frames
+ *   0xFx:      Session management frames
  */
 typedef enum : uint8_t {
-  k_frame_type_unknown  = (0), /**< Invalid frame type */
-  k_frame_type_command  = (1), /**< Command from controller */
-  k_frame_type_response = (2), /**< Response from peripheral */
-  k_frame_type_ack      = (3), /**< Acknowledgment */
-  k_frame_type_nack     = (4), /**< Negative acknowledgment */
+  k_frame_type_ping      = (0x00), /**< Heartbeat request */
+  k_frame_type_pong      = (0x01), /**< Heartbeat response */
+  k_frame_type_command   = (0x10), /**< Command from controller */
+  k_frame_type_response  = (0x11), /**< Response from peripheral */
+  k_frame_type_ack       = (0x12), /**< Acknowledgment */
+  k_frame_type_nack      = (0x13), /**< Negative acknowledgment */
+  k_frame_type_unknown   = (0x14), /**< Unknown/invalid frame type */
+  k_frame_type_reset_ack = (0xFE), /**< Session reset acknowledgment */
+  k_frame_type_reset     = (0xFF), /**< Session reset */
 } rx_frame_type_t;
 
 /**
@@ -359,6 +368,52 @@ rx_err_t rx_frame_create_ack(rx_frame_t* frame, uint16_t sequence);
 rx_err_t rx_frame_create_nack(rx_frame_t* frame, uint16_t sequence, uint8_t flags);
 
 /**
+ * @brief Create PING frame with optional payload
+ *
+ * @param[out] frame       Frame to initialize
+ * @param[in]  sequence    Sequence number
+ * @param[in]  payload     Payload data (e.g., 4-byte counter), may be NULL if payload_len is 0
+ * @param[in]  payload_len Payload length in bytes
+ * @return k_rx_ok on success
+ */
+rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
+                               uint16_t       sequence,
+                               const uint8_t* payload,
+                               uint32_t       payload_len);
+
+/**
+ * @brief Create PONG frame echoing payload
+ *
+ * @param[out] frame       Frame to initialize
+ * @param[in]  sequence    Sequence number
+ * @param[in]  payload     Payload to echo back, may be NULL if payload_len is 0
+ * @param[in]  payload_len Payload length in bytes
+ * @return k_rx_ok on success
+ */
+rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
+                               uint16_t       sequence,
+                               const uint8_t* payload,
+                               uint32_t       payload_len);
+
+/**
+ * @brief Create session RESET frame
+ *
+ * @param[out] frame    Frame to initialize
+ * @param[in]  sequence Sequence number
+ * @return k_rx_ok on success
+ */
+rx_err_t rx_frame_create_reset(rx_frame_t* frame, uint16_t sequence);
+
+/**
+ * @brief Create session RESET_ACK frame
+ *
+ * @param[out] frame    Frame to initialize
+ * @param[in]  sequence Sequence number
+ * @return k_rx_ok on success
+ */
+rx_err_t rx_frame_create_reset_ack(rx_frame_t* frame, uint16_t sequence);
+
+/**
  * @brief Check if frame type is valid
  *
  * Static inline for same reasons as rx_frame_encoded_size() above.
@@ -368,7 +423,9 @@ rx_err_t rx_frame_create_nack(rx_frame_t* frame, uint16_t sequence, uint8_t flag
  */
 static inline bool rx_frame_type_valid(uint8_t type)
 {
-  return (type >= k_frame_type_command && type <= k_frame_type_nack);
+  return (type == k_frame_type_ping) || (type == k_frame_type_pong) ||
+         (type >= k_frame_type_command && type <= k_frame_type_nack) ||
+         (type == k_frame_type_reset_ack) || (type == k_frame_type_reset);
 }
 
 #ifdef __cplusplus

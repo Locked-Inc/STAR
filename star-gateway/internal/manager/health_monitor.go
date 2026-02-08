@@ -81,7 +81,9 @@ func (hm *HealthMonitor) checkTransports(tm *TransportManager) {
 		wrapper.Available = healthy
 
 		if healthy && !prevHealthy {
-			log.Printf("Transport %s recovered (now healthy)", name)
+			wrapper.Health.LastRecovery = time.Now()
+			log.Printf("Transport %s recovered (now healthy, failback damping %v)",
+				name, tm.config.FailbackDamping)
 		}
 		tm.mu.Unlock()
 	}

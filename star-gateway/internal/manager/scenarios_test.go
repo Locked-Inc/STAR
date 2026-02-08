@@ -17,6 +17,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 )
@@ -50,7 +51,12 @@ func TestScenario1_NormalOperationUSB(t *testing.T) {
 			return nil
 		},
 		ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
-			return &harq.ReceiveResult{Payload: []byte("telemetry")}, nil
+			return &harq.ReceiveResult{
+				Payload: []byte("telemetry"),
+				Metadata: harq.FrameMetadata{
+					Type: frame.FrameTypeResponse,
+				},
+			}, nil
 		},
 	}
 
@@ -268,7 +274,12 @@ func TestScenario4_SPIFallback(t *testing.T) {
 			return nil
 		},
 		ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
-			return &harq.ReceiveResult{Payload: []byte("spi_telemetry")}, nil
+			return &harq.ReceiveResult{
+				Payload: []byte("spi_telemetry"),
+				Metadata: harq.FrameMetadata{
+					Type: frame.FrameTypeResponse,
+				},
+			}, nil
 		},
 	}
 

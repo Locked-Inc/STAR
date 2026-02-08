@@ -549,43 +549,71 @@ func TestPerformResetHandshake_TimeoutRetry(t *testing.T) {
 }
 
 func TestReceive_BarrierActive_DiscardsFrames(t *testing.T) {
+	// Track receive calls to verify frames are being discarded
+	callCount := atomic.Int32{}
+
+	// Mock transport returns stale frames indefinitely (simulating FIFO backlog)
 	mock := &testutil.MockHARQ{
 		ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
-			return &harq.ReceiveResult{
-				Payload: []byte("data"),
-				Metadata: harq.FrameMetadata{
-					Type:     frame.FrameTypeCommand,
-					Sequence: 5,
-				},
-			}, nil
+			callCount.Add(1)
+			// Block briefly to simulate I/O, then return stale frame
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(10 * time.Millisecond):
+				return &harq.ReceiveResult{
+					Payload: []byte("stale data"),
+					Metadata: harq.FrameMetadata{
+						Type:     frame.FrameTypeCommand,
+						Sequence: 5,
+					},
+				}, nil
+			}
 		},
 	}
 
+	// Create manager with default config
 	config := DefaultConfig()
 	tm := NewTransportManager(config)
 	tm.RegisterTransport("mock", mock, 10)
 
-	// Initialize heartbeat (required by Receive path)
+	// Initialize heartbeat manager (required by Receive code path)
 	tm.heartbeat, _ = NewHeartbeatManager(
 		50*time.Millisecond,
 		200*time.Millisecond,
 		func() {},
 	)
 
-	// Start the manager machinery needed for Receive
+	// Start manager context and machinery needed for Receive
 	tm.ctx, tm.cancel = context.WithCancel(context.Background())
 	defer tm.cancel()
 
-	// Activate barrier
+	// Activate session barrier to simulate reset-in-progress state
 	tm.sessionState.ActivateBarrier(1)
 	defer tm.sessionState.DeactivateBarrier()
 
-	// Receive should return nil,nil (frame discarded by barrier)
-	result, err := tm.Receive(context.Background())
-	if err != nil {
-		t.Fatalf("Receive() returned error: %v", err)
+	// Receive should block and discard frames while barrier is active.
+	// Use timeout context to verify it's discarding (not returning them).
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	result, err := tm.Receive(ctx)
+
+	// Should timeout because barrier discards all frames
+	if err != context.DeadlineExceeded {
+		t.Errorf("Receive() error = %v, want context.DeadlineExceeded", err)
 	}
 	if result != nil {
-		t.Errorf("Receive() returned non-nil result, want nil (frame should be discarded)")
+		t.Errorf("Receive() returned non-nil result, want nil")
+	}
+
+	// Verify frames were actually received and discarded (not just no frames)
+	if got := callCount.Load(); got < 2 {
+		t.Errorf("mock Receive called %d times, want >= 2 (proves frames discarded)", got)
+	}
+
+	// Verify the transport was polled (call count > 0)
+	if callCount.Load() == 0 {
+		t.Error("expected at least one receive call, got none")
 	}
 }

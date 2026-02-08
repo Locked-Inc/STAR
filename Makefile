@@ -85,10 +85,10 @@ stop:
 # Aggregate target: generate for all consumers
 proto-gen: proto-gen-go proto-gen-ros2 proto-gen-firmware
 
-# Generate code using buf for all configured plugins (runs in star-proto)
+# Generate code using buf for all configured plugins (runs from workspace root)
 proto-gen-go:
 	@echo "Generating protocol buffers (Go, TS, C, C++)..."
-	@cd star-proto && buf generate proto
+	@buf generate star-proto/proto
 	@echo "✓ Code generated under star-proto/gen/"
 
 # Placeholder for ROS2-specific generation (if distinct tooling is added)
