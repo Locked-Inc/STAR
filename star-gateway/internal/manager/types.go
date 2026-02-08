@@ -28,6 +28,16 @@ const (
 	ModeForceSPI TransportMode = "force-spi"
 )
 
+// IsValid checks if the TransportMode is one of the defined constants.
+func (tm TransportMode) IsValid() bool {
+	switch tm {
+	case ModeAuto, ModePreferUSB, ModeForceUSB, ModeForceSPI:
+		return true
+	default:
+		return false
+	}
+}
+
 // State represents the internal state of the TransportManager.
 type State uint8
 

@@ -15,10 +15,11 @@ func main() {
 
 	config := app.Config{}
 	config.TransportMode = manager.TransportMode(os.Getenv("TRANSPORT_MODE"))
-	if config.TransportMode == "" {
-		// Note: We are keeping SPI-only mode as default, add --transport-mode flag for opt-in USB support:
-		// TODO: Change default to "auto" or "force-usb" once USB support is stable. And before testing on actual hardware.
-		config.TransportMode = manager.ModeForceSPI // Default: no changes
+
+	// Check if the provided transport mode is valid otherwise set to default (ModeAuto)
+	if !config.TransportMode.IsValid() {
+		log.Printf("Invalid TRANSPORT_MODE %q, defaulting to %q", config.TransportMode, manager.ModeAuto)
+		config.TransportMode = manager.ModeAuto
 	}
 
 	if val, ok := os.LookupEnv("STAR_SIMULATION_MODE"); ok {
