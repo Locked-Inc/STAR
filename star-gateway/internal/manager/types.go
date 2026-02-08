@@ -5,6 +5,8 @@
 package manager
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
@@ -27,6 +29,9 @@ const (
 	// ModeForceSPI only uses SPI transport. USB hot-plug is disabled in this mode.
 	ModeForceSPI TransportMode = "force-spi"
 )
+const (
+	InvalidTransportModeError = "invalid transport mode: %q"
+)
 
 // IsValid checks if the TransportMode is one of the defined constants.
 func (tm TransportMode) IsValid() bool {
@@ -36,6 +41,16 @@ func (tm TransportMode) IsValid() bool {
 	default:
 		return false
 	}
+}
+
+// ParseTransportMode converts a string to a TransportMode. Returns ModeAuto and an error if the input is invalid.
+func ParseTransportMode(s string) (TransportMode, error) {
+	// Normalize input to lowercase for case-insensitive matching
+	mode := TransportMode(strings.ToLower(s))
+	if !mode.IsValid() {
+		return ModeAuto, fmt.Errorf(InvalidTransportModeError, s)
+	}
+	return mode, nil
 }
 
 // State represents the internal state of the TransportManager.

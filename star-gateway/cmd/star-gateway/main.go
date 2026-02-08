@@ -14,13 +14,12 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
 	config := app.Config{}
-	config.TransportMode = manager.TransportMode(os.Getenv("TRANSPORT_MODE"))
-
-	// Check if the provided transport mode is valid otherwise set to default (ModeAuto)
-	if !config.TransportMode.IsValid() {
-		log.Printf("Invalid TRANSPORT_MODE %q, defaulting to %q", config.TransportMode, manager.ModeAuto)
-		config.TransportMode = manager.ModeAuto
+	// Get transport mode from environment variable, default to auto if not set or invalid
+	mode, err := manager.ParseTransportMode(os.Getenv("TRANSPORT_MODE"))
+	if err != nil {
+		log.Printf("Warning: %v. Defaulting to auto mode.", err)
 	}
+	config.TransportMode = mode
 
 	if val, ok := os.LookupEnv("STAR_SIMULATION_MODE"); ok {
 		var err error

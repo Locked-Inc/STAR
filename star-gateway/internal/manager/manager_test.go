@@ -45,6 +45,119 @@ func TestTransportManager_Lifecycle(t *testing.T) {
 	}
 }
 
+func TestTransportManager_CheckValidTransportMode(t *testing.T) {
+	tests := []struct {
+		name          string
+		transportmode TransportMode
+		wantValid     bool
+	}{
+		{
+			name:          "ModeAuto is valid",
+			transportmode: ModeAuto,
+			wantValid:     true,
+		},
+		{
+			name:          "ModePreferUSB is valid",
+			transportmode: ModePreferUSB,
+			wantValid:     true,
+		},
+		{
+			name:          "ModeForceUSB is valid",
+			transportmode: ModeForceUSB,
+			wantValid:     true,
+		},
+		{
+			name:          "ModeForceSPI is valid",
+			transportmode: ModeForceSPI,
+			wantValid:     true,
+		},
+		{
+			name:          "empty string defaults to auto",
+			transportmode: "",
+			wantValid:     false, // empty string is not valid, but should be handled by ParseTransportMode
+		},
+		{
+			name:          "invalid mode is not valid",
+			transportmode: "invalid",
+			wantValid:     false,
+		},
+		{
+
+			name:          "invalid numeral string",
+			transportmode: "123",
+			wantValid:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := DefaultConfig()
+			config.Mode = tt.transportmode
+			if got := config.Mode.IsValid(); got != tt.wantValid {
+				t.Errorf("IsValid() = %v, want %v", got, tt.wantValid)
+			}
+		})
+	}
+}
+
+func TestTransportManager_ParseTransportMode(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		wantMode TransportMode
+	}{
+		{
+			name:     "valid mode auto",
+			input:    "auto",
+			wantMode: ModeAuto,
+		},
+		{
+			name:     "valid mode prefer-usb",
+			input:    "prefer-usb",
+			wantMode: ModePreferUSB,
+		},
+		{
+			name:     "valid mode force-usb",
+			input:    "force-usb",
+			wantMode: ModeForceUSB,
+		},
+		{
+			name:     "valid mode force-spi",
+			input:    "force-spi",
+			wantMode: ModeForceSPI,
+		},
+		{
+			name:     "invalid mode defaults to auto",
+			input:    "invalid",
+			wantMode: ModeAuto,
+		},
+		{
+			name:     "empty string defaults to auto",
+			input:    "",
+			wantMode: ModeAuto,
+		},
+		{
+			name:     "case-insensitive mode",
+			input:    "PrEfEr-UsB",
+			wantMode: ModePreferUSB,
+		},
+		{
+			name:     "numerical string defaults to auto",
+			input:    "123",
+			wantMode: ModeAuto,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _ := ParseTransportMode(tt.input)
+			if got != tt.wantMode {
+				t.Errorf("ParseTransportMode(%q) = %v, want %v", tt.input, got, tt.wantMode)
+			}
+		})
+	}
+}
+
 func TestTransportManager_RegisterAndSelect(t *testing.T) {
 	config := DefaultConfig()
 	tm := NewTransportManager(config)
