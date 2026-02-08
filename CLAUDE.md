@@ -79,15 +79,19 @@ User → UI (TypeScript)
 ### Protocol Buffers (`star-proto/`)
 
 ```bash
-# Lint and format
+# Lint and format (run from star-proto/)
+cd star-proto
 buf lint proto/
 buf format --diff proto/
 
-# Generate code for all targets
-buf generate proto/ --template buf.gen.yaml --include-imports
+# Generate code for all targets (run from workspace root)
+buf generate star-proto/proto
+
+# Alternative: Use Makefile
+make proto-gen
 
 # Run Go tests
-cd tests/go && go test ./...
+cd star-proto/tests/go && go test ./...
 ```
 
 ### Gateway Service (`star-gateway/`)

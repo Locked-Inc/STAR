@@ -528,3 +528,109 @@ rx_err_t rx_frame_create_nack(rx_frame_t* frame, const uint16_t sequence, uint8_
 
   return k_rx_ok;
 }
+
+rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
+                               const uint16_t sequence,
+                               const uint8_t* payload,
+                               const uint32_t payload_len)
+{
+  if (frame == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (payload_len > 0 && payload == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (payload_len > k_frame_max_payload) {
+    return k_rx_err_invalid_size;
+  }
+
+  memset(frame, 0, sizeof(rx_frame_t));
+  frame->header.sequence = sequence;
+  frame->header.length   = (uint16_t)payload_len;
+  frame->header.type     = k_frame_type_ping;
+  frame->header.flags    = k_frame_flag_none;
+
+  if (payload_len > 0) {
+    memcpy(frame->payload, payload, payload_len);
+  }
+
+  if (frame->header.type != k_frame_type_ping) {
+    return k_rx_err_validation_failed;
+  }
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
+                               const uint16_t sequence,
+                               const uint8_t* payload,
+                               const uint32_t payload_len)
+{
+  if (frame == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (payload_len > 0 && payload == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (payload_len > k_frame_max_payload) {
+    return k_rx_err_invalid_size;
+  }
+
+  memset(frame, 0, sizeof(rx_frame_t));
+  frame->header.sequence = sequence;
+  frame->header.length   = (uint16_t)payload_len;
+  frame->header.type     = k_frame_type_pong;
+  frame->header.flags    = k_frame_flag_none;
+
+  if (payload_len > 0) {
+    memcpy(frame->payload, payload, payload_len);
+  }
+
+  if (frame->header.type != k_frame_type_pong) {
+    return k_rx_err_validation_failed;
+  }
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence)
+{
+  if (frame == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  memset(frame, 0, sizeof(rx_frame_t));
+  frame->header.sequence = sequence;
+  frame->header.length   = 0;
+  frame->header.type     = k_frame_type_reset;
+  frame->header.flags    = k_frame_flag_none;
+
+  if (frame->header.type != k_frame_type_reset) {
+    return k_rx_err_validation_failed;
+  }
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_frame_create_reset_ack(rx_frame_t* frame, const uint16_t sequence)
+{
+  if (frame == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  memset(frame, 0, sizeof(rx_frame_t));
+  frame->header.sequence = sequence;
+  frame->header.length   = 0;
+  frame->header.type     = k_frame_type_reset_ack;
+  frame->header.flags    = k_frame_flag_none;
+
+  if (frame->header.type != k_frame_type_reset_ack) {
+    return k_rx_err_validation_failed;
+  }
+
+  return k_rx_ok;
+}

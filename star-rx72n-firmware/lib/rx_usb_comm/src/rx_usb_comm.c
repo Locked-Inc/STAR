@@ -754,6 +754,163 @@ rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, const uint16_t sequence, con
   return rx_usb_write(handle->tx_buffer, wire_len);
 }
 
+rx_err_t rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle,
+                                const uint8_t*        payload,
+                                const uint32_t        payload_len)
+{
+  if (handle == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (!rx_usb_is_configured()) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Create PONG frame echoing PING payload */
+  rx_frame_t pong_frame;
+  rx_err_t   err = rx_frame_create_pong(&pong_frame, k_initial_sequence, payload, payload_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send */
+  uint32_t wire_len = 0;
+
+  err = rx_frame_encode(&handle->encoder, &pong_frame, handle->tx_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return rx_usb_write(handle->tx_buffer, wire_len);
+}
+
+rx_err_t rx_usb_comm_send_reset_ack(rx_usb_comm_handle_t* handle)
+{
+  if (handle == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (!rx_usb_is_configured()) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Create RESET_ACK frame (sequence reset to initial after reset) */
+  rx_frame_t reset_ack_frame;
+  rx_err_t   err = rx_frame_create_reset_ack(&reset_ack_frame, k_initial_sequence);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send */
+  uint32_t wire_len = 0;
+
+  err = rx_frame_encode(&handle->encoder, &reset_ack_frame, handle->tx_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return rx_usb_write(handle->tx_buffer, wire_len);
+}
+
+rx_err_t rx_usb_comm_set_control_callbacks(rx_usb_comm_handle_t*    handle,
+                                            rx_usb_comm_control_cb_t on_ping,
+                                            rx_usb_comm_control_cb_t on_reset,
+                                            void*                    ctx)
+{
+  if (handle == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  handle->on_ping_cb  = on_ping;
+  handle->on_reset_cb = on_reset;
+  handle->cb_ctx      = ctx;
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * Receive API - Control Frame Dispatch
+ * =============================================================================
+ */
+
+/** @brief Control frame dispatch result */
+typedef enum : uint8_t {
+  k_dispatch_pass_through = 0, /**< Frame should be returned to caller */
+  k_dispatch_consumed     = 1, /**< Frame was handled internally */
+  k_dispatch_error        = 2, /**< Error during control frame handling */
+} usb_dispatch_result_t;
+
+/**
+ * @brief Handle control frames (PING, RESET) internally
+ *
+ * PING: Auto-sends PONG echoing the payload, invokes on_ping_cb.
+ * RESET: Resets sequence counters, auto-sends RESET_ACK, invokes on_reset_cb.
+ * All other frame types pass through to the caller.
+ */
+static usb_dispatch_result_t internal_dispatch_control_usb(rx_usb_comm_handle_t* handle,
+                                                            const rx_frame_t*     frame,
+                                                            rx_err_t*             err)
+{
+  /* Pre-condition 1: Handle must be valid (NASA Rule 5) */
+  if (handle == NULL) {
+    if (err != NULL) {
+      *err = k_rx_err_invalid_arg;
+    }
+    return k_dispatch_error;
+  }
+
+  /* Pre-condition 2: Frame and error output must be valid (NASA Rule 5) */
+  if (frame == NULL || err == NULL) {
+    if (err != NULL) {
+      *err = k_rx_err_invalid_arg;
+    }
+    return k_dispatch_error;
+  }
+
+  const rx_frame_type_t type = (rx_frame_type_t)frame->header.type;
+
+  if (type == k_frame_type_ping) {
+    *err = rx_usb_comm_send_pong(handle, frame->payload, frame->header.length);
+    if (*err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to send PONG response");
+      return k_dispatch_error;
+    }
+
+    if (handle->on_ping_cb != NULL) {
+      handle->on_ping_cb(frame, handle->cb_ctx);
+    }
+
+    return k_dispatch_consumed;
+  }
+
+  if (type == k_frame_type_reset) {
+    handle->tx_sequence = k_initial_sequence;
+    handle->rx_sequence = k_initial_sequence;
+
+    *err = rx_usb_comm_send_reset_ack(handle);
+    if (*err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to send RESET_ACK response");
+      return k_dispatch_error;
+    }
+
+    if (handle->on_reset_cb != NULL) {
+      handle->on_reset_cb(frame, handle->cb_ctx);
+    }
+
+    return k_dispatch_consumed;
+  }
+
+  return k_dispatch_pass_through;
+}
+
 /* =============================================================================
  * Receive API
  * =============================================================================
@@ -793,7 +950,17 @@ rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint3
 
     result = internal_receive_iteration(handle, frame, timeout_ms, &elapsed_ms, &err);
     if (result == k_receive_done) {
-      return k_rx_ok;
+      /* Dispatch control frames (PING, RESET) - consumed internally */
+      const usb_dispatch_result_t dispatch =
+        internal_dispatch_control_usb(handle, frame, &err);
+      if (dispatch == k_dispatch_error) {
+        return err;
+      }
+      if (dispatch == k_dispatch_pass_through) {
+        return k_rx_ok;
+      }
+      /* Control frame consumed, continue loop to get next frame */
+      continue;
     }
     if (result == k_receive_error) {
       return err;

@@ -25,7 +25,7 @@ func NewDecoder() *DefaultDecoder {
 
 // Decode parses wire format bytes into a Frame.
 //
-// Wire format (all multi-byte fields in big-endian):
+// Wire format (header fields in big-endian, CRC-32 in little-endian per IEEE 802.3):
 //
 //	[SYNC (2B)][SEQ (2B)][LEN (2B)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B)]
 //
@@ -79,8 +79,8 @@ func (d *DefaultDecoder) Decode(data []byte) (*Frame, error) {
 	}
 	offset += int(payloadLen)
 
-	// Parse CRC-32 (big-endian)
-	receivedCRC := binary.BigEndian.Uint32(data[offset:])
+	// Parse CRC-32 (little-endian, IEEE 802.3 LSB-first order)
+	receivedCRC := binary.LittleEndian.Uint32(data[offset:])
 
 	// Calculate expected CRC-32 over SYNC + Header + Payload
 	crcData := data[:offset]

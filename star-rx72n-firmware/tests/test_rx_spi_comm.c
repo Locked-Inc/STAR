@@ -46,6 +46,13 @@ typedef enum : uint16_t {
 
 static rx_spi_comm_handle_t s_handle;
 
+/* Control frame callback tracking */
+static uint32_t   s_ping_cb_count;
+static rx_frame_t s_last_ping_frame;
+static uint32_t   s_reset_cb_count;
+static rx_frame_t s_last_reset_frame;
+static void*      s_last_cb_ctx;
+
 /**
  * @brief Initialize RSPI channel via mock so channel is ready
  */
@@ -100,6 +107,13 @@ void setUp(void)
 
   /* Clear handle */
   memset(&s_handle, 0, sizeof(s_handle));
+
+  /* Reset callback tracking */
+  s_ping_cb_count  = 0;
+  s_reset_cb_count = 0;
+  memset(&s_last_ping_frame, 0, sizeof(s_last_ping_frame));
+  memset(&s_last_reset_frame, 0, sizeof(s_last_reset_frame));
+  s_last_cb_ctx = NULL;
 }
 
 void tearDown(void)
@@ -875,6 +889,351 @@ void test_spi_comm_transfer_count(void)
 }
 
 /* =============================================================================
+ * Control Frame Callback Helpers
+ * =============================================================================
+ */
+
+static void test_ping_callback(const rx_frame_t* frame, void* ctx)
+{
+  s_ping_cb_count++;
+  if (frame != NULL) {
+    memcpy(&s_last_ping_frame, frame, sizeof(rx_frame_t));
+  }
+  s_last_cb_ctx = ctx;
+}
+
+static void test_reset_callback(const rx_frame_t* frame, void* ctx)
+{
+  s_reset_cb_count++;
+  if (frame != NULL) {
+    memcpy(&s_last_reset_frame, frame, sizeof(rx_frame_t));
+  }
+  s_last_cb_ctx = ctx;
+}
+
+/* =============================================================================
+ * Set Control Callbacks Tests
+ * =============================================================================
+ */
+
+void test_spi_comm_set_callbacks_null_handle_fails(void)
+{
+  rx_err_t err = rx_spi_comm_set_control_callbacks(NULL, test_ping_callback, test_reset_callback, NULL);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_spi_comm_set_callbacks_success(void)
+{
+  rx_spi_comm_init(&s_handle, NULL);
+  uint32_t ctx_val = 42;
+
+  rx_err_t err =
+    rx_spi_comm_set_control_callbacks(&s_handle, test_ping_callback, test_reset_callback, &ctx_val);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_PTR(test_ping_callback, s_handle.on_ping_cb);
+  TEST_ASSERT_EQUAL_PTR(test_reset_callback, s_handle.on_reset_cb);
+  TEST_ASSERT_EQUAL_PTR(&ctx_val, s_handle.cb_ctx);
+}
+
+/* =============================================================================
+ * Send PONG Tests
+ * =============================================================================
+ */
+
+void test_spi_comm_send_pong_null_handle_fails(void)
+{
+  uint8_t payload[] = {0x01};
+
+  rx_err_t err = rx_spi_comm_send_pong(NULL, payload, 1);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_spi_comm_send_pong_not_initialized_fails(void)
+{
+  uint8_t payload[] = {0x01};
+
+  rx_err_t err = rx_spi_comm_send_pong(&s_handle, payload, 1);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_spi_comm_send_pong_echoes_payload(void)
+{
+  rx_spi_comm_init(&s_handle, NULL);
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t  payload[] = {0xDE, 0xAD, 0xBE, 0xEF};
+  rx_err_t err       = rx_spi_comm_send_pong(&s_handle, payload, k_test_payload_small);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Verify PONG frame was transmitted */
+  uint8_t  tx_data[64];
+  uint32_t tx_len = 0;
+  mock_rspi_get_tx_data(NULL, k_test_channel_default, tx_data, sizeof(tx_data), &tx_len);
+
+  /* PONG frame: 8 header + 4 payload + 4 CRC = 16 bytes */
+  TEST_ASSERT_EQUAL_UINT32(16, tx_len);
+  TEST_ASSERT_EQUAL_HEX8(k_frame_type_pong, tx_data[6]);
+
+  /* PONG should echo the payload (starts at offset 8) */
+  TEST_ASSERT_EQUAL_MEMORY(payload, &tx_data[8], k_test_payload_small);
+}
+
+/* =============================================================================
+ * Send RESET_ACK Tests
+ * =============================================================================
+ */
+
+void test_spi_comm_send_reset_ack_null_handle_fails(void)
+{
+  rx_err_t err = rx_spi_comm_send_reset_ack(NULL);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_spi_comm_send_reset_ack_not_initialized_fails(void)
+{
+  rx_err_t err = rx_spi_comm_send_reset_ack(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_spi_comm_send_reset_ack_success(void)
+{
+  rx_spi_comm_init(&s_handle, NULL);
+  helper_init_rspi_channel(k_test_channel_default);
+
+  rx_err_t err = rx_spi_comm_send_reset_ack(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Verify RESET_ACK frame was transmitted */
+  uint8_t  tx_data[32];
+  uint32_t tx_len = 0;
+  mock_rspi_get_tx_data(NULL, k_test_channel_default, tx_data, sizeof(tx_data), &tx_len);
+
+  /* RESET_ACK frame: 8 header + 0 payload + 4 CRC = 12 bytes */
+  TEST_ASSERT_EQUAL_UINT32(k_frame_min_size, tx_len);
+  TEST_ASSERT_EQUAL_HEX8(k_frame_type_reset_ack, tx_data[6]);
+}
+
+/* =============================================================================
+ * Receive PING Auto-PONG Tests
+ * =============================================================================
+ */
+
+void test_spi_comm_receive_ping_auto_pong(void)
+{
+  rx_spi_comm_init(&s_handle, NULL);
+  helper_init_rspi_channel(k_test_channel_default);
+
+  /* Create PING frame with 4-byte counter payload */
+  uint8_t  ping_payload[] = {0x00, 0x00, 0x00, 0x01};
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_ping,
+                              0,
+                              ping_payload,
+                              k_test_payload_small,
+                              encoded,
+                              &encoded_len);
+
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* PING consumed, no more data available → timeout */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  /* Verify PONG was transmitted (last SPI transfer was the PONG send) */
+  uint8_t  tx_data[64];
+  uint32_t tx_len = 0;
+  mock_rspi_get_tx_data(NULL, k_test_channel_default, tx_data, sizeof(tx_data), &tx_len);
+
+  /* PONG frame: 8 header + 4 payload + 4 CRC = 16 bytes */
+  TEST_ASSERT_EQUAL_UINT32(16, tx_len);
+  TEST_ASSERT_EQUAL_HEX8(k_frame_type_pong, tx_data[6]);
+
+  /* PONG should echo the PING payload (offset 8) */
+  TEST_ASSERT_EQUAL_MEMORY(ping_payload, &tx_data[8], k_test_payload_small);
+}
+
+void test_spi_comm_receive_ping_then_command(void)
+{
+  rx_spi_comm_init(&s_handle, NULL);
+  helper_init_rspi_channel(k_test_channel_default);
+
+  /* Create PING frame */
+  uint8_t  ping_payload[] = {0x00, 0x00, 0x00, 0x02};
+  uint8_t  ping_encoded[64];
+  uint32_t ping_len = 0;
+  helper_create_encoded_frame(k_frame_type_ping,
+                              0,
+                              ping_payload,
+                              k_test_payload_small,
+                              ping_encoded,
+                              &ping_len);
+
+  /* Create COMMAND frame */
+  uint8_t  cmd_payload[] = "DATA";
+  uint8_t  cmd_encoded[64];
+  uint32_t cmd_len = 0;
+  helper_create_encoded_frame(k_frame_type_command,
+                              1,
+                              cmd_payload,
+                              k_test_payload_small,
+                              cmd_encoded,
+                              &cmd_len);
+
+  /*
+   * Concatenate PING + padding + COMMAND into injection buffer.
+   *
+   * SPI is full-duplex: the PONG send transfer also reads from the RX
+   * buffer.  The PONG wire frame is the same size as the PING (both carry
+   * a 4-byte payload), so insert that many padding bytes between the two
+   * frames so the PONG send consumes the padding instead of the COMMAND.
+   */
+  const uint32_t pong_wire_len = ping_len; /* PONG echoes same payload size */
+  uint8_t        combined[192];
+  uint32_t       offset = 0;
+
+  memcpy(combined + offset, ping_encoded, ping_len);
+  offset += ping_len;
+  memset(combined + offset, 0, pong_wire_len); /* padding consumed by PONG TX */
+  offset += pong_wire_len;
+  memcpy(combined + offset, cmd_encoded, cmd_len);
+  offset += cmd_len;
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, combined, offset);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* PING consumed internally, COMMAND returned to caller */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT8(k_frame_type_command, frame.header.type);
+  TEST_ASSERT_EQUAL_UINT16(k_test_payload_small, frame.header.length);
+  TEST_ASSERT_EQUAL_MEMORY("DATA", frame.payload, k_test_payload_small);
+}
+
+/* =============================================================================
+ * Receive RESET Auto-ACK Tests
+ * =============================================================================
+ */
+
+void test_spi_comm_receive_reset_auto_ack(void)
+{
+  rx_spi_comm_init(&s_handle, NULL);
+  helper_init_rspi_channel(k_test_channel_default);
+
+  /* Set non-zero sequences to verify reset */
+  s_handle.tx_sequence = 50;
+  s_handle.rx_sequence = 100;
+
+  /* Create RESET frame (no payload) */
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_reset, 0, NULL, 0, encoded, &encoded_len);
+
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* RESET consumed, no more data → timeout */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  /* Verify RESET_ACK was transmitted */
+  uint8_t  tx_data[32];
+  uint32_t tx_len = 0;
+  mock_rspi_get_tx_data(NULL, k_test_channel_default, tx_data, sizeof(tx_data), &tx_len);
+
+  TEST_ASSERT_EQUAL_UINT32(k_frame_min_size, tx_len);
+  TEST_ASSERT_EQUAL_HEX8(k_frame_type_reset_ack, tx_data[6]);
+
+  /* Verify sequences were reset to 0 */
+  TEST_ASSERT_EQUAL_UINT16(0, s_handle.tx_sequence);
+  TEST_ASSERT_EQUAL_UINT16(0, s_handle.rx_sequence);
+}
+
+/* =============================================================================
+ * Control Frame Callback Tests
+ * =============================================================================
+ */
+
+void test_spi_comm_receive_ping_callback_invoked(void)
+{
+  rx_spi_comm_init(&s_handle, NULL);
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint32_t ctx_value = 42;
+  rx_spi_comm_set_control_callbacks(&s_handle,
+                                     test_ping_callback,
+                                     test_reset_callback,
+                                     &ctx_value);
+
+  /* Create and inject PING */
+  uint8_t  ping_payload[] = {0x00, 0x00, 0x00, 0x03};
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_ping,
+                              0,
+                              ping_payload,
+                              k_test_payload_small,
+                              encoded,
+                              &encoded_len);
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* Verify ping callback was invoked exactly once */
+  TEST_ASSERT_EQUAL_UINT32(1, s_ping_cb_count);
+  TEST_ASSERT_EQUAL_UINT32(0, s_reset_cb_count);
+  TEST_ASSERT_EQUAL_UINT8(k_frame_type_ping, s_last_ping_frame.header.type);
+  TEST_ASSERT_EQUAL_MEMORY(ping_payload, s_last_ping_frame.payload, k_test_payload_small);
+  TEST_ASSERT_EQUAL_PTR(&ctx_value, s_last_cb_ctx);
+}
+
+void test_spi_comm_receive_reset_callback_invoked(void)
+{
+  rx_spi_comm_init(&s_handle, NULL);
+  helper_init_rspi_channel(k_test_channel_default);
+
+  s_handle.tx_sequence = 50;
+  s_handle.rx_sequence = 100;
+
+  uint32_t ctx_value = 99;
+  rx_spi_comm_set_control_callbacks(&s_handle,
+                                     test_ping_callback,
+                                     test_reset_callback,
+                                     &ctx_value);
+
+  /* Create and inject RESET */
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_reset, 0, NULL, 0, encoded, &encoded_len);
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* Verify reset callback was invoked exactly once */
+  TEST_ASSERT_EQUAL_UINT32(0, s_ping_cb_count);
+  TEST_ASSERT_EQUAL_UINT32(1, s_reset_cb_count);
+  TEST_ASSERT_EQUAL_UINT8(k_frame_type_reset, s_last_reset_frame.header.type);
+  TEST_ASSERT_EQUAL_PTR(&ctx_value, s_last_cb_ctx);
+
+  /* Verify sequences were reset */
+  TEST_ASSERT_EQUAL_UINT16(0, s_handle.tx_sequence);
+  TEST_ASSERT_EQUAL_UINT16(0, s_handle.rx_sequence);
+}
+
+/* =============================================================================
  * Main
  * =============================================================================
  */
@@ -959,6 +1318,31 @@ int main(void)
   RUN_TEST(test_spi_comm_transfer_is_called_on_send);
   RUN_TEST(test_spi_comm_available_is_called_on_receive);
   RUN_TEST(test_spi_comm_transfer_count);
+
+  /* Set control callbacks tests */
+  RUN_TEST(test_spi_comm_set_callbacks_null_handle_fails);
+  RUN_TEST(test_spi_comm_set_callbacks_success);
+
+  /* Send PONG tests */
+  RUN_TEST(test_spi_comm_send_pong_null_handle_fails);
+  RUN_TEST(test_spi_comm_send_pong_not_initialized_fails);
+  RUN_TEST(test_spi_comm_send_pong_echoes_payload);
+
+  /* Send RESET_ACK tests */
+  RUN_TEST(test_spi_comm_send_reset_ack_null_handle_fails);
+  RUN_TEST(test_spi_comm_send_reset_ack_not_initialized_fails);
+  RUN_TEST(test_spi_comm_send_reset_ack_success);
+
+  /* Receive PING auto-PONG tests */
+  RUN_TEST(test_spi_comm_receive_ping_auto_pong);
+  RUN_TEST(test_spi_comm_receive_ping_then_command);
+
+  /* Receive RESET auto-ACK tests */
+  RUN_TEST(test_spi_comm_receive_reset_auto_ack);
+
+  /* Control frame callback tests */
+  RUN_TEST(test_spi_comm_receive_ping_callback_invoked);
+  RUN_TEST(test_spi_comm_receive_reset_callback_invoked);
 
   return UNITY_END();
 }

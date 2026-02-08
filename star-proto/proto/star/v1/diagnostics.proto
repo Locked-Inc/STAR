@@ -1,0 +1,95 @@
+// diagnostics.proto - STAR Transport Diagnostics
+// Health reporting for transport layer monitoring.
+//
+// Provides structured health metrics for each transport (USB CDC, SPI)
+// enabling the gateway to report link quality and the UI to display
+// transport status.
+//
+// Following Boston Dynamics style guide:
+// - Proto3 only, 100 char line limit, 4 space indent
+// - Enum zero value ends with _UNKNOWN
+// - All fields documented with units
+//
+// STAR Project - Texas A&M University
+// February 2026
+
+syntax = "proto3";
+
+package star.v1;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
+option java_multiple_files = true;
+option java_outer_classname = "DiagnosticsProto";
+option java_package = "com.star.proto.v1";
+
+// TransportType identifies the physical transport.
+enum TransportType {
+  // Unknown or unspecified transport.
+  TRANSPORT_TYPE_UNKNOWN = 0;
+  // USB CDC (ACM) serial transport.
+  TRANSPORT_TYPE_USB_CDC = 1;
+  // SPI full-duplex transport.
+  TRANSPORT_TYPE_SPI = 2;
+}
+
+// TransportHealthReport contains health metrics for a single transport.
+// Sent periodically by the gateway or on-demand for diagnostics.
+message TransportHealthReport {
+  // Transport identifier (e.g., "usb", "spi").
+  string transport_name = 1;
+
+  // Physical transport type.
+  TransportType transport_type = 2;
+
+  // Whether this transport is currently the active (selected) transport.
+  bool is_active = 3;
+
+  // Whether this transport is considered healthy.
+  bool is_healthy = 4;
+
+  // Total frames sent since last reset.
+  uint64 total_sent = 10;
+
+  // Total frames received since last reset.
+  uint64 total_received = 11;
+
+  // Total errors encountered since last reset.
+  uint64 total_errors = 12;
+
+  // Current consecutive failure count (resets on success).
+  uint32 consecutive_failures = 13;
+
+  // Average round-trip latency.
+  google.protobuf.Duration avg_latency = 14;
+
+  // Packet loss rate (0.0 to 1.0) over sliding window.
+  float packet_loss_rate = 15;
+
+  // Timestamp of last successful operation.
+  google.protobuf.Timestamp last_success = 20;
+
+  // Timestamp of last failure.
+  google.protobuf.Timestamp last_failure = 21;
+
+  // Timestamp of last recovery (unhealthy -> healthy transition).
+  google.protobuf.Timestamp last_recovery = 22;
+}
+
+// TransportDiagnostics contains health reports for all transports.
+// This is the top-level diagnostics message sent over the wire.
+message TransportDiagnostics {
+  // Health reports for each registered transport.
+  repeated TransportHealthReport transports = 1;
+
+  // Name of the currently active transport.
+  string active_transport = 2;
+
+  // Total number of transport switches since startup.
+  uint32 switch_count = 3;
+
+  // Timestamp when diagnostics were collected.
+  google.protobuf.Timestamp collected_at = 4;
+}

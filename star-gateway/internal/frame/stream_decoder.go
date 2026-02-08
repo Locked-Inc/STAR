@@ -129,7 +129,7 @@ func (d *StreamDecoder) Decode() (*Frame, error) {
 		// 5. Validate CRC
 		// CRC covers SYNC + Header + Payload
 		crcData := frameBuf[:len(frameBuf)-CRCSize]
-		receivedCRC := binary.BigEndian.Uint32(frameBuf[len(frameBuf)-CRCSize:])
+		receivedCRC := binary.LittleEndian.Uint32(frameBuf[len(frameBuf)-CRCSize:])
 
 		if !verifyCRC32(crcData, receivedCRC) {
 			d.metrics.CRCErrors++
