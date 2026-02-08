@@ -47,9 +47,12 @@ jobs:
         run: buf lint proto
         working-directory: star-proto
 
-      - name: Buf breaking against main
-        run: buf breaking proto --against '../.git#branch=main'
-        working-directory: star-proto
+      - name: Buf breaking against base branch
+        if: github.event_name == 'pull_request'
+        uses: bufbuild/buf-breaking-action@v1
+        with:
+          input: 'star-proto/proto'
+          against: 'https://github.com/Locked-Inc/STAR.git#branch=${{ github.base_ref }},subdir=star-proto/proto'
 
       - name: Check for uncommitted changes
         run: |
