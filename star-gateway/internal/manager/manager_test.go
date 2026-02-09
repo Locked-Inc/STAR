@@ -105,53 +105,65 @@ func TestTransportManager_ParseTransportMode(t *testing.T) {
 		name     string
 		input    string
 		wantMode TransportMode
+		wantErr  bool
 	}{
 		{
 			name:     "valid mode auto",
 			input:    "auto",
 			wantMode: ModeAuto,
+			wantErr:  false,
 		},
 		{
 			name:     "valid mode prefer-usb",
 			input:    "prefer-usb",
 			wantMode: ModePreferUSB,
+			wantErr:  false,
 		},
 		{
 			name:     "valid mode force-usb",
 			input:    "force-usb",
 			wantMode: ModeForceUSB,
+			wantErr:  false,
 		},
 		{
 			name:     "valid mode force-spi",
 			input:    "force-spi",
 			wantMode: ModeForceSPI,
+			wantErr:  false,
 		},
 		{
-			name:     "invalid mode defaults to auto",
+			name:     "invalid mode returns error",
 			input:    "invalid",
 			wantMode: ModeAuto,
+			wantErr:  true,
 		},
 		{
-			name:     "empty string defaults to auto",
+			name:     "empty string returns error",
 			input:    "",
 			wantMode: ModeAuto,
+			wantErr:  true,
 		},
 		{
 			name:     "case-insensitive mode",
 			input:    "PrEfEr-UsB",
 			wantMode: ModePreferUSB,
+			wantErr:  false,
 		},
 		{
-			name:     "numerical string defaults to auto",
+			name:     "numerical string returns error",
 			input:    "123",
 			wantMode: ModeAuto,
+			wantErr:  true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := ParseTransportMode(tt.input)
-			if got != tt.wantMode {
+			got, err := ParseTransportMode(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("ParseTransportMode(%q) error = %v, wantErr %v", tt.input, err, tt.wantErr)
+			}
+			if !tt.wantErr && got != tt.wantMode {
 				t.Errorf("ParseTransportMode(%q) = %v, want %v", tt.input, got, tt.wantMode)
 			}
 		})
