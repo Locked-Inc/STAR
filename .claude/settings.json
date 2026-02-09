@@ -1,5 +1,10 @@
 {
   "enabledPlugins": {
-    "local-review@agent37-skills": false
+    "local-review@agent37-skills": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(sudo rm:*)"
+    ]
   }
 }
