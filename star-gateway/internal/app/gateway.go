@@ -63,8 +63,8 @@ type Shutdownable interface {
 type Config struct {
 	SimulationMode bool
 	SocketPath     string
-	TransportMode  manager.TransportMode
 	// "auto", "prefer-usb", "force-usb", "force-spi"
+	TransportMode manager.TransportMode
 }
 
 // Run starts the gateway application.
