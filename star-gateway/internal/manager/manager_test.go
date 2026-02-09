@@ -72,7 +72,7 @@ func TestTransportManager_CheckValidTransportMode(t *testing.T) {
 			wantValid:     true,
 		},
 		{
-			name:          "empty string defaults to auto",
+			name:          "empty string is invalid for IsValid",
 			transportmode: "",
 			wantValid:     false, // empty string is not valid, but should be handled by ParseTransportMode
 		},
@@ -82,7 +82,6 @@ func TestTransportManager_CheckValidTransportMode(t *testing.T) {
 			wantValid:     false,
 		},
 		{
-
 			name:          "invalid numeral string",
 			transportmode: "123",
 			wantValid:     false,
@@ -91,9 +90,7 @@ func TestTransportManager_CheckValidTransportMode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			config := DefaultConfig()
-			config.Mode = tt.transportmode
-			if got := config.Mode.IsValid(); got != tt.wantValid {
+			if got := tt.transportmode.IsValid(); got != tt.wantValid {
 				t.Errorf("IsValid() = %v, want %v", got, tt.wantValid)
 			}
 		})
@@ -163,7 +160,7 @@ func TestTransportManager_ParseTransportMode(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("ParseTransportMode(%q) error = %v, wantErr %v", tt.input, err, tt.wantErr)
 			}
-			if !tt.wantErr && got != tt.wantMode {
+			if got != tt.wantMode {
 				t.Errorf("ParseTransportMode(%q) = %v, want %v", tt.input, got, tt.wantMode)
 			}
 		})
