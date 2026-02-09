@@ -19,8 +19,13 @@ import (
 
 // Test timing constants to avoid magic numbers and flakiness
 const (
-	transportSwitchTimeout = 200 * time.Millisecond
-	transportPollInterval  = 10 * time.Millisecond
+	transportSwitchTimeout        = 200 * time.Millisecond
+	transportPollInterval         = 10 * time.Millisecond
+	testFailureThresholdImmediate = 1
+	testHealthCheckIntervalFast   = 50 * time.Millisecond
+	testFailbackDampingShort      = 150 * time.Millisecond
+	testFailbackGoroutineWait     = 50 * time.Millisecond
+	testDampingMargin             = 50 * time.Millisecond
 )
 
 func TestTransportManager_Lifecycle(t *testing.T) {
@@ -738,4 +743,265 @@ func TestReceive_BarrierActive_DiscardsFrames(t *testing.T) {
 	if callCount.Load() == 0 {
 		t.Error("expected at least one receive call, got none")
 	}
+}
+
+// TestTransportManager_FailbackAfterRecovery verifies the complete failover → failback cycle.
+//
+// Scenario:
+//  1. Primary transport active (high priority)
+//  2. Primary fails → system switches to backup (low priority)
+//  3. Primary recovers (health monitor detects)
+//  4. System switches back to primary (failback)
+//
+// This test verifies that recovery detection triggers failback to the higher priority transport.
+// Uses generic transport names (not "usb"/"spi") so probeTransport() returns true (healthy).
+func TestTransportManager_FailbackAfterRecovery(t *testing.T) {
+	config := DefaultConfig()
+	config.FailureThreshold = testFailureThresholdImmediate
+	config.HealthCheckInterval = testHealthCheckIntervalFast
+	config.FailbackDamping = 0 // Disable damping for this test
+	tm := NewTransportManager(config)
+
+	// Track which transport is being used
+	var primarySendCount, backupSendCount atomic.Int32
+
+	// Primary transport (high priority) - initially works, then fails, then recovers
+	primaryHealthy := atomic.Bool{}
+	primaryHealthy.Store(true)
+
+	mockPrimary := &testutil.MockHARQ{
+		SendFunc: func(ctx context.Context, data []byte, p ...harq.Priority) error {
+			if !primaryHealthy.Load() {
+				return errors.New("primary transport failed")
+			}
+			primarySendCount.Add(1)
+			return nil
+		},
+	}
+
+	// Backup transport (low priority) - always works
+	mockBackup := &testutil.MockHARQ{
+		SendFunc: func(ctx context.Context, data []byte, p ...harq.Priority) error {
+			backupSendCount.Add(1)
+			return nil
+		},
+	}
+
+	// Use generic names (not "usb"/"spi") so probeTransport() returns true
+	tm.RegisterTransport("primary", mockPrimary, PriorityUSB) // Priority 10
+	tm.RegisterTransport("backup", mockBackup, PrioritySPI)   // Priority 5
+
+	// Step 1: Verify primary is initially active (higher priority)
+	if tm.GetActiveTransport() != "primary" {
+		t.Fatalf("Expected primary active initially, got %s", tm.GetActiveTransport())
+	}
+
+	// Step 2: Trigger primary failure
+	t.Logf("Step 2: Triggering primary failure")
+	primaryHealthy.Store(false)
+
+	if err := tm.Send(context.Background(), []byte("trigger-failover")); err == nil {
+		t.Error("Expected Send to fail when primary is unhealthy")
+	}
+
+	// Poll for failover to backup
+	deadline := time.Now().Add(transportSwitchTimeout)
+	for time.Now().Before(deadline) {
+		if tm.GetActiveTransport() == "backup" {
+			break
+		}
+		time.Sleep(transportPollInterval)
+	}
+
+	if tm.GetActiveTransport() != "backup" {
+		t.Fatalf("Expected failover to backup, got %s", tm.GetActiveTransport())
+	}
+	t.Logf("✓ Failover to backup successful")
+
+	// Step 3: Recover primary and wait for health monitor to detect it
+	t.Logf("Step 3: Recovering primary")
+	primaryHealthy.Store(true)
+
+	// Manually mark primary as unhealthy so health monitor can detect recovery
+	tm.SetTransportHealthForTest("primary", false, false)
+
+	// Step 4: Manually trigger health check (simulates health monitor probe)
+	hm := NewHealthMonitor(testHealthCheckIntervalFast)
+	hm.checkTransports(tm)
+
+	// Give failback goroutine time to execute
+	time.Sleep(testFailbackGoroutineWait)
+
+	// Poll for failback to primary
+	deadline = time.Now().Add(transportSwitchTimeout)
+	for time.Now().Before(deadline) {
+		if tm.GetActiveTransport() == "primary" {
+			break
+		}
+		time.Sleep(transportPollInterval)
+	}
+
+	if tm.GetActiveTransport() != "primary" {
+		t.Errorf("Expected failback to primary after recovery, got %s", tm.GetActiveTransport())
+	}
+	t.Logf("✓ Failback to primary successful")
+
+	// Verify that primary is now being used for traffic
+	primaryBefore := primarySendCount.Load()
+	if err := tm.Send(context.Background(), []byte("test")); err != nil {
+		t.Errorf("Send failed after failback: %v", err)
+	}
+	if primarySendCount.Load() <= primaryBefore {
+		t.Error("Primary transport should be receiving traffic after failback")
+	}
+}
+
+// TestTransportManager_FailbackRespectsDamping verifies that failback damping prevents
+// rapid oscillation when a transport recovers.
+//
+// Scenario:
+//  1. Primary fails → switch to backup
+//  2. Primary recovers immediately
+//  3. System should NOT switch back immediately (damping window active)
+//  4. After damping expires, primary becomes eligible again
+//
+// This prevents rapid switching when a transport is flapping.
+// Uses generic transport names so probeTransport() returns true (healthy).
+func TestTransportManager_FailbackRespectsDamping(t *testing.T) {
+	config := DefaultConfig()
+	config.FailureThreshold = testFailureThresholdImmediate
+	config.HealthCheckInterval = testHealthCheckIntervalFast
+	config.FailbackDamping = testFailbackDampingShort
+	tm := NewTransportManager(config)
+
+	primaryHealthy := atomic.Bool{}
+	primaryHealthy.Store(true)
+
+	mockPrimary := &testutil.MockHARQ{
+		SendFunc: func(ctx context.Context, data []byte, p ...harq.Priority) error {
+			if !primaryHealthy.Load() {
+				return errors.New("primary failed")
+			}
+			return nil
+		},
+	}
+
+	mockBackup := &testutil.MockHARQ{
+		SendFunc: func(ctx context.Context, data []byte, p ...harq.Priority) error {
+			return nil
+		},
+	}
+
+	tm.RegisterTransport("primary", mockPrimary, PriorityUSB)
+	tm.RegisterTransport("backup", mockBackup, PrioritySPI)
+
+	// Verify primary is initially active
+	if tm.GetActiveTransport() != "primary" {
+		t.Fatalf("Expected primary active initially, got %s", tm.GetActiveTransport())
+	}
+
+	// Trigger primary failure
+	t.Logf("Triggering primary failure")
+	primaryHealthy.Store(false)
+
+	if err := tm.Send(context.Background(), []byte("fail")); err == nil {
+		t.Error("Expected Send to fail")
+	}
+
+	// Wait for failover to backup
+	deadline := time.Now().Add(transportSwitchTimeout)
+	for time.Now().Before(deadline) {
+		if tm.GetActiveTransport() == "backup" {
+			break
+		}
+		time.Sleep(transportPollInterval)
+	}
+
+	if tm.GetActiveTransport() != "backup" {
+		t.Fatalf("Expected failover to backup, got %s", tm.GetActiveTransport())
+	}
+	t.Logf("✓ Failed over to backup")
+
+	// Recover primary immediately
+	t.Logf("Recovering primary (damping should prevent immediate failback)")
+	primaryHealthy.Store(true)
+
+	// Mark primary as unhealthy so health monitor detects recovery
+	tm.SetTransportHealthForTest("primary", false, false)
+
+	// Trigger health check (simulates health monitor probe)
+	hm := NewHealthMonitor(testHealthCheckIntervalFast)
+	hm.checkTransports(tm)
+
+	// Give failback goroutine time to evaluate (should skip due to damping)
+	time.Sleep(testFailbackGoroutineWait)
+
+	// Verify we're STILL on backup (damping prevents immediate failback)
+	if tm.GetActiveTransport() != "backup" {
+		t.Errorf("Expected to stay on backup during damping window, got %s", tm.GetActiveTransport())
+	}
+	t.Logf("✓ Stayed on backup during damping window")
+
+	// Verify LastRecovery timestamp was set and transport is healthy
+	tm.mu.RLock()
+	if wrapper, exists := tm.availableTransports["primary"]; exists {
+		if wrapper.Health.LastRecovery.IsZero() {
+			t.Error("Expected LastRecovery to be set after recovery detection")
+		}
+		if !wrapper.Health.IsHealthy {
+			t.Error("Expected primary to be marked healthy after recovery")
+		}
+		// Verify damping is still active
+		if time.Since(wrapper.Health.LastRecovery) >= config.FailbackDamping {
+			t.Error("Damping window should still be active")
+		}
+	}
+	tm.mu.RUnlock()
+
+	// Wait for damping to expire
+	waitDuration := testFailbackDampingShort + testDampingMargin
+	t.Logf("Waiting for damping window to expire (%v)", waitDuration)
+	time.Sleep(waitDuration)
+
+	// Verify damping has expired
+	tm.mu.RLock()
+	dampingExpired := false
+	if wrapper, exists := tm.availableTransports["primary"]; exists {
+		if time.Since(wrapper.Health.LastRecovery) >= config.FailbackDamping {
+			dampingExpired = true
+		}
+	}
+	tm.mu.RUnlock()
+
+	if !dampingExpired {
+		t.Error("Damping window should have expired")
+	}
+	t.Logf("✓ Damping window has expired")
+
+	// NOTE: With the current implementation, automatic failback after damping expires
+	// requires another trigger (e.g., failover attempt). The health monitor only triggers
+	// attemptFailover() once when recovery is detected, not continuously.
+	//
+	// To demonstrate that the transport IS now eligible for failback (damping expired),
+	// we manually trigger selectBestTransportLocked to show primary would be selected.
+	// WHITE-BOX TESTING: This directly calls the internal selectBestTransportLocked method
+	// to verify damping logic. Update this test if the internal implementation changes.
+	tm.mu.Lock()
+	bestTransport := tm.selectBestTransportLocked()
+	tm.mu.Unlock()
+
+	if bestTransport == nil {
+		t.Error("Expected a best transport to be selected")
+	} else if bestTransport.Name != "primary" {
+		t.Errorf("After damping expires, primary should be the best transport, got %s", bestTransport.Name)
+	} else {
+		t.Logf("✓ Primary is now eligible for selection (damping expired)")
+	}
+
+	// In a real scenario, failback would occur when:
+	// 1. Backup transport fails (triggering failover evaluation), OR
+	// 2. An explicit switch is requested, OR
+	// 3. Future enhancement: periodic re-evaluation of transport priority
+	//
+	// For this test, we verify that damping successfully prevented immediate failback.
 }

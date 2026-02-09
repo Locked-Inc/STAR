@@ -886,6 +886,22 @@ func (tm *TransportManager) GetSessionState() *SessionState {
 	return tm.sessionState
 }
 
+// SetTransportHealthForTest is a test-only API that allows tests to manipulate
+// transport health state without directly accessing internal fields.
+// This should only be used in test code.
+// Returns false if the transport name is not registered.
+func (tm *TransportManager) SetTransportHealthForTest(name string, healthy, available bool) bool {
+	tm.mu.Lock()
+	defer tm.mu.Unlock()
+
+	if wrapper, exists := tm.availableTransports[name]; exists {
+		wrapper.Health.IsHealthy = healthy
+		wrapper.Available = available
+		return true
+	}
+	return false
+}
+
 // =============================================================================
 // Private Methods
 // =============================================================================
@@ -949,7 +965,6 @@ func (tm *TransportManager) selectBestTransportLocked() *TransportWrapper {
 
 // executeSwitch performs a transport switch with pause-drain-resume.
 // executeSwitch performs the actual transport switch with smart drain logic.
-// CRITICAL FIX #2: Skips drain for hard failures (USB disconnect, IO errors) to enable fast failover (<300ms).
 func (tm *TransportManager) executeSwitch(target *TransportWrapper, failureType FailureType) error {
 	if target == nil {
 		return errors.New("target transport is nil")
@@ -1171,6 +1186,21 @@ func (tm *TransportManager) handleHotPlugEvent(event HotPlugEvent) {
 		// USB device added - will be registered by the main initialization code
 		// This event is primarily informational; actual registration happens via RegisterTransport
 		log.Printf("USB device connected: %s", event.Device)
+		tm.mu.Lock()
+		usbExists := false
+		if wrapper, exists := tm.availableTransports[TransportNameUSB]; exists {
+			wrapper.Available = true
+			wrapper.Health.IsHealthy = true
+			wrapper.Health.LastRecovery = time.Now()
+			usbExists = true
+			log.Printf("Marked USB transport as available and healthy due to hot-plug add")
+		}
+		tm.mu.Unlock()
+
+		// Only trigger failback if USB transport is registered
+		if usbExists {
+			go tm.attemptFailover(FailureTypeGraceful)
+		}
 
 	case "remove":
 		tm.mu.Lock()
