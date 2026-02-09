@@ -113,10 +113,10 @@ func Run(ctx context.Context, cfg Config) error {
 	defer dispatcherCleanup()
 
 	// Defer TransportManager and Transport cleanup AFTER dispatcher cleanup to ensure correct shutdown order:
-	// LIFO execution order:
-	// 1. Dispatcher stops (deferred last, executes first) - may timeout waiting for receive loop
-	// 2. TransportManager stops (deferred now, executes second) - background goroutines exit
-	// 3. Transport closes (deferred now, executes third) - socket closes, interrupts any pending I/O
+	// LIFO execution order (deferred first = executes last):
+	// 1. Transport closes (deferred last, executes first) - socket closes, interrupts any pending I/O
+	// 2. TransportManager stops (deferred second, executes second) - background goroutines exit
+	// 3. Dispatcher stops (deferred first, executes last) - receive loop exits due to context cancel + closed transport
 	if tmCleanup != nil {
 		defer tmCleanup()
 	}
@@ -212,7 +212,11 @@ func initTransport(cfg Config) (transport.Device, func(), error) {
 func initTransportManager(ctx context.Context, cfg Config, deviceTransport transport.Device) (harq.HARQ, func(), error) {
 	tmConfig := manager.DefaultConfig()
 	if cfg.TransportMode != "" {
-		tmConfig.Mode = manager.TransportMode(cfg.TransportMode)
+		// Validate transport mode before using it
+		if !cfg.TransportMode.IsValid() {
+			return nil, nil, fmt.Errorf("invalid transport mode: %q (valid: auto, prefer-usb, force-usb, force-spi)", cfg.TransportMode)
+		}
+		tmConfig.Mode = cfg.TransportMode
 	}
 
 	tm := manager.NewTransportManager(tmConfig)
@@ -280,8 +284,8 @@ func createSPILink(t transport.Transport, cfg Config, session *manager.SessionSt
 	// Phase 2: Enable FEC + Chase Combining for ~10x BER improvement
 	spiLink, err := link.NewSPILink(deviceTransport, session, &link.SPILinkConfig{
 		EnableFEC:  true, // Phase 2: Enable FEC + Chase Combining
-		MaxRetries: 3,
-		ACKTimeout: 10 * time.Millisecond,
+		MaxRetries: harq.DefaultMaxRetries,
+		ACKTimeout: harq.DefaultTimeout,
 	})
 	if err != nil {
 		log.Printf("ERROR: Failed to create SPILink: %v, falling back to legacy", err)
