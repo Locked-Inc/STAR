@@ -173,3 +173,7 @@ log/
 .DS_Store
 Thumbs.db
 .metadata
+
+# Claude
+.claude/
+.claude.json
