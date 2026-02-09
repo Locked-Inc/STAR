@@ -249,8 +249,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_BUS_I2C_H
-#define STAR_RX72N_BUS_I2C_H
+#pragma once
 
 #include <stdint.h>
 
@@ -640,5 +639,3 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_BUS_I2C_H */

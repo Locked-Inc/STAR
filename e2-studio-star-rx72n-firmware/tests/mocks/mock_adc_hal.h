@@ -55,8 +55,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_ADC_HAL_H
-#define MOCK_ADC_HAL_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -250,5 +249,3 @@ rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_ADC_HAL_H */

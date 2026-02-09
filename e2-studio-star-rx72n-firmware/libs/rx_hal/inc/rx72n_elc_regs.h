@@ -57,8 +57,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_ELC_REGS_H
-#define STAR_RX72N_ELC_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -779,5 +778,3 @@ static_assert(k_elc_mstpcrb_bit == (1U << 9U),
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_ELC_REGS_H */

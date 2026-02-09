@@ -298,8 +298,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_PIN_INTERFACE_H
-#define STAR_RX72N_PIN_INTERFACE_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -1238,5 +1237,3 @@ static inline rx_err_t rx_pin_interface_validate(const rx_pin_interface_t* iface
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_PIN_INTERFACE_H */

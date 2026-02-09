@@ -111,8 +111,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_POEG_REGS_H
-#define STAR_RX72N_POEG_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -496,5 +495,3 @@ static_assert(k_poeg_nfcs_pclkb_div128 == 0xC0000000, "NFCS div128 value incorre
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_POEG_REGS_H */

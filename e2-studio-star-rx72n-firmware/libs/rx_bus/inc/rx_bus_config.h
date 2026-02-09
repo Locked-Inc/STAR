@@ -157,8 +157,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX72N_BUS_CONFIG_H
-#define STAR_RX72N_BUS_CONFIG_H
+#pragma once
 
 #include "rx_bus_types.h"
 #include "rx_err.h"
@@ -940,5 +939,3 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_BUS_CONFIG_H */

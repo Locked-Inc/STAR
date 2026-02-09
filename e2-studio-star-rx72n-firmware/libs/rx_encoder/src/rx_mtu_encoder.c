@@ -1156,11 +1156,12 @@ rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channe
   RX_VALIDATE_INIT(s_encoder_initialized[channel], s_tag, "Encoder not initialized");
 
   /* Set hardware counter (limited to 16-bit) */
-  mtu->tcnt = (uint16_t)(count & k_encoder_16bit_mask);
+  const uint16_t raw_count = (uint16_t)((uint32_t)count & k_encoder_16bit_mask);
+  mtu->tcnt = raw_count;
 
   /* Set software state */
   s_encoder_state[channel].total_count    = count;
-  s_encoder_state[channel].last_raw_count = (uint16_t)(count & k_encoder_16bit_mask);
+  s_encoder_state[channel].last_raw_count = raw_count;
   s_last_count[channel]                   = count;
 
   /* Recalculate position - upper bound check omitted (uint16_t can't exceed 65535) */
@@ -1319,9 +1320,9 @@ static rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t channel)
   *prcr_reg() = k_rx_prcr_unlock_all; /* Enable writes to MSTPCR (0xA50F) */
 
   if (channel <= k_mtu_channel_4) {
-    system_regs()->mstpcra &= ~(1 << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
+    system_regs()->mstpcra &= (uint32_t)~(1UL << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
   } else {
-    system_regs()->mstpcra &= ~(1 << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
+    system_regs()->mstpcra &= (uint32_t)~(1UL << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
   }
 
   *prcr_reg() = k_rx_prcr_lock; /* Lock MSTPCR (0xA500) */
@@ -1465,7 +1466,7 @@ static rx_err_t internal_update_state_from_count(rx_encoder_state_t*    state,
     delta = current_count - last_count;
   } else {
     /* Wraparound occurred */
-    delta = (k_encoder_counter_max - last_count) + current_count;
+    delta = (int32_t)k_encoder_counter_max - (int32_t)last_count + (int32_t)current_count;
   }
 
   /* Check for reverse wraparound */

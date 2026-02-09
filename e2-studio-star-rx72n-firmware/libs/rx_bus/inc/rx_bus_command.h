@@ -238,8 +238,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX72N_BUS_COMMAND_H
-#define STAR_RX72N_BUS_COMMAND_H
+#pragma once
 
 #include "rx_err.h"
 
@@ -828,5 +827,3 @@ rx_bus_command_init(rx_bus_command_t* cmd, rx_bus_command_execute_fn execute, vo
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_BUS_COMMAND_H */

@@ -50,8 +50,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_RX_MTU_ENCODER_H
-#define MOCK_RX_MTU_ENCODER_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -237,5 +236,3 @@ void mock_encoder_set_init_error(bool inject_error);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_RX_MTU_ENCODER_H */

@@ -171,8 +171,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_RIIC_REGS_H
-#define STAR_RX72N_RIIC_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -644,5 +643,3 @@ static_assert((k_riic2_base_addr - k_riic1_base_addr) == 0x20, "RIIC1 to RIIC2 s
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_RIIC_REGS_H */

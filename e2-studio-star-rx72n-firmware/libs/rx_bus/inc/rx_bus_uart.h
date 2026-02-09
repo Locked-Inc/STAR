@@ -295,8 +295,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_BUS_UART_H
-#define STAR_RX72N_BUS_UART_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -984,5 +983,3 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_BUS_UART_H */

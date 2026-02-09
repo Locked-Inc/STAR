@@ -65,8 +65,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_DMAC_REGS_H
-#define STAR_RX72N_DMAC_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -864,5 +863,3 @@ static_assert(offsetof(rx_dmac_channel_regs_t, dmcsl) == k_dmac_offset_dmcsl,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_DMAC_REGS_H */

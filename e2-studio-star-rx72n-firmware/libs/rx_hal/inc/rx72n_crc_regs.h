@@ -114,8 +114,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_CRC_REGS_H
-#define STAR_RX72N_CRC_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -426,5 +425,3 @@ static_assert(offsetof(rx_crc_regs_t, crcdor) == 0x08, "CRCDOR offset incorrect"
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_CRC_REGS_H */

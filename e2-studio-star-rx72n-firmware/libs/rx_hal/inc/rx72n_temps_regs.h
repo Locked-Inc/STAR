@@ -63,8 +63,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_TEMPS_REGS_H
-#define STAR_RX72N_TEMPS_REGS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -399,5 +398,3 @@ static_assert(k_temps_adc_full_scale == 4096U,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_TEMPS_REGS_H */

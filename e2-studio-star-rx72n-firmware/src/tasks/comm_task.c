@@ -307,7 +307,7 @@
  *   // Indirect dependencies
  *   rx_crc [label="rx_crc.h\n(CRC-32)", fillcolor=lightgrey, style=filled];
  *   nanopb [label="pb.h, pb_decode.h\n(nanopb library)", fillcolor=lightgrey, style=filled];
- *   star_proto [label="star/v1/*.pb.h\n(Generated protobuf)", fillcolor=lightgrey, style=filled];
+ *   star_proto [label="star/v1/ .pb.h\n(Generated protobuf)", fillcolor=lightgrey, style=filled];
  *
  *   comm_task -> comm_task_h [label="Public API"];
  *   comm_task -> rx_comm_mgr [label="Frame polling"];
@@ -1754,6 +1754,8 @@ static void internal_frame_callback(rx_comm_channel_t  channel,
  * @callgraph
  * @callergraph
  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstack-usage="
 static void internal_handle_command_frame(rx_comm_channel_t channel,
                                            const rx_frame_t* frame)
 {
@@ -1806,3 +1808,4 @@ static void internal_handle_command_frame(rx_comm_channel_t channel,
   /* Unknown message type */
   rx_log_warn(s_tag, "Could not decode command payload");
 }
+#pragma GCC diagnostic pop

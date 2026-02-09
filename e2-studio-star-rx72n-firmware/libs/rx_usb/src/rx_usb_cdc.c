@@ -1435,29 +1435,7 @@ static uint16_t s_control_line_state[k_usb_port_count] = {
   k_usb_control_line_cleared
 };
 
-/* =============================================================================
- * Forward Declarations
- * =============================================================================
- */
-
-/* From rx_usb_hw.c */
-extern uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len);
-extern uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len);
-extern void     rx_usb_hw_set_address(uint8_t address);
-extern rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
-                                         uint8_t  endpoint,
-                                         bool     is_in,
-                                         uint16_t type,
-                                         uint16_t max_packet);
-
-/* From rx_usb.c - multi-port API */
-extern void              rx_usb_set_state(rx_usb_state_t state);
-extern void              rx_usb_set_line_coding(rx_usb_port_id_t             port,
-                                                const rx_usb_line_coding_t* coding);
-extern uint32_t          rx_usb_rx_push(rx_usb_port_id_t port, const uint8_t* data, uint32_t len);
-extern uint32_t          rx_usb_tx_pop(rx_usb_port_id_t port, uint8_t* data, uint32_t max_len);
-extern rx_usb_port_id_t  rx_usb_find_port_by_interface(uint8_t interface);
-extern void              rx_usb_invoke_callback(rx_usb_port_id_t port, rx_usb_event_t event);
+/* Redundant extern declarations removed - now provided by rx_usb_internal.h */
 
 /* =============================================================================
  * Private Functions
@@ -1482,8 +1460,9 @@ static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uin
  */
 static void internal_handle_get_descriptor(const uint16_t usb_value, const uint16_t usb_length)
 {
-  const uint8_t desc_type  = (usb_value >> k_bit_shift_byte_1) & k_byte_mask;
-  const uint8_t desc_index = usb_value & k_byte_mask;
+  const uint8_t desc_type =
+    (uint8_t)((usb_value >> k_bit_shift_byte_1) & k_byte_mask);
+  const uint8_t desc_index = (uint8_t)(usb_value & k_byte_mask);
 
   switch (desc_type) {
     case k_usb_desc_type_device:
@@ -1576,7 +1555,7 @@ static void internal_disable_pipe(uint8_t pipe)
   };
 
   volatile uint16_t* pipe_ctr = pipe_regs[pipe - k_usb_port0_pipe_bulk_in];
-  *pipe_ctr = (*pipe_ctr & ~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_nak;
+  *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_nak);
 }
 
 /**
@@ -1608,7 +1587,7 @@ static void internal_handle_set_configuration(const uint16_t usb_value)
 {
   RX_ASSERT((usb_value & ~k_byte_mask) == 0U, "USB configuration uses upper byte");
 
-  const uint8_t config = usb_value & k_byte_mask;
+  const uint8_t config = (uint8_t)(usb_value & k_byte_mask);
 
   RX_ASSERT((config == k_usb_config_unconfigured) || (config == k_usb_config_value_1),
             "USB configuration out of range");
@@ -1830,7 +1809,7 @@ static void internal_handle_get_line_coding(const rx_usb_port_id_t port)
   data[k_line_coding_baud_rate_byte_2] =
     (s_line_coding[port].baud_rate >> k_bit_shift_byte_2) & k_byte_mask;
   data[k_line_coding_baud_rate_byte_3] =
-    (s_line_coding[port].baud_rate >> k_bit_shift_byte_3) & k_byte_mask;
+    (uint8_t)((s_line_coding[port].baud_rate >> k_bit_shift_byte_3) & k_byte_mask);
   data[k_line_coding_stop_bits_index] = s_line_coding[port].stop_bits;
   data[k_line_coding_parity_index]    = s_line_coding[port].parity;
   data[k_line_coding_data_bits_index] = s_line_coding[port].data_bits;
@@ -2034,7 +2013,7 @@ static void internal_handle_class_request(const uint8_t  usb_request,
                                           const uint16_t usb_index)
 {
   /* Determine which port this request is for based on interface number */
-  const uint8_t          interface = usb_index & k_byte_mask;
+  const uint8_t          interface = (uint8_t)(usb_index & k_byte_mask);
   const rx_usb_port_id_t port      = rx_usb_find_port_by_interface(interface);
 
   switch (usb_request) {
@@ -2243,8 +2222,10 @@ void rx_usb_cdc_handle_setup(void)
   const uint16_t usb_index                    = usb0()->usbindx;
   const uint16_t usb_length                   = usb0()->usbleng;
 
-  const uint8_t usb_request_type = usb_request_type_and_request & k_byte_mask;
-  const uint8_t usb_request = (usb_request_type_and_request >> k_bit_shift_byte_1) & k_byte_mask;
+  const uint8_t usb_request_type =
+    (uint8_t)(usb_request_type_and_request & k_byte_mask);
+  const uint8_t usb_request =
+    (uint8_t)((usb_request_type_and_request >> k_bit_shift_byte_1) & k_byte_mask);
 
   /* Determine request type */
   const uint8_t type = usb_request_type & k_usb_req_type_mask;

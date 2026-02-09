@@ -156,8 +156,7 @@
  * @endinternal
  */
 
-#ifndef STAR_RX_USB_ENDPOINTS_H
-#define STAR_RX_USB_ENDPOINTS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -475,5 +474,3 @@ typedef enum : uint8_t {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_USB_ENDPOINTS_H */

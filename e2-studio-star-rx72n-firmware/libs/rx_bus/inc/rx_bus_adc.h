@@ -328,8 +328,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_BUS_ADC_H
-#define STAR_RX72N_BUS_ADC_H
+#pragma once
 
 #include <stdint.h>
 
@@ -703,5 +702,3 @@ rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager, const char* bus_name, uint
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_BUS_ADC_H */

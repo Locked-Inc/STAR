@@ -159,8 +159,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_CMT_H
-#define STAR_RX72N_CMT_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -585,5 +584,3 @@ typedef struct {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_CMT_H */

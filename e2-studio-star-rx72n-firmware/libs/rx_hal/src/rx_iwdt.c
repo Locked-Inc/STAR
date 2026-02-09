@@ -674,7 +674,7 @@ static rx_err_t internal_configure_iwdt_registers(void)
  * rx_err_t err = rx_hal_iwdt_init(2000);
  * if (err != k_rx_ok) {
  *     // Handle error - system cannot start safely
- *     while (1) { /* halt * / }
+ *     while (1) { // halt }
  * }
  *
  * // Now must feed periodically
@@ -1054,7 +1054,7 @@ void rx_hal_iwdt_clear_status(void)
    *
    * Bits 14-15 are write-0-to-clear
    */
-  iwdt()->iwdtsr &= ~(k_iwdt_sr_undff | k_iwdt_sr_refef);
+  iwdt()->iwdtsr &= (uint16_t)~(uint16_t)(k_iwdt_sr_undff | k_iwdt_sr_refef);
 
 #else
   /* Host-side stub - no operation */

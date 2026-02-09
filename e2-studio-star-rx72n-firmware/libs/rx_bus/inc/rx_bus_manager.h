@@ -185,8 +185,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_BUS_MANAGER_H
-#define STAR_RX72N_BUS_MANAGER_H
+#pragma once
 
 #include "rx_bus_command.h"
 #include "rx_bus_types.h"
@@ -855,5 +854,3 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_BUS_MANAGER_H */

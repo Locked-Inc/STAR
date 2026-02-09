@@ -105,8 +105,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_LVDA_REGS_H
-#define STAR_RX72N_LVDA_REGS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -534,5 +533,3 @@ static_assert(k_lvd2lvl_2v85 == 0xB0, "LVD2LVL 2.85V value incorrect");
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_LVDA_REGS_H */

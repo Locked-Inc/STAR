@@ -83,8 +83,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_MOCK_PIN_VALIDATOR_H
-#define STAR_RX72N_MOCK_PIN_VALIDATOR_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -278,5 +277,3 @@ rx_err_t mock_pin_validator_deinit(mock_pin_validator_t* validator);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_MOCK_PIN_VALIDATOR_H */

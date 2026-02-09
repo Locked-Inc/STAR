@@ -47,8 +47,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_RX_DRV8243_HW_H
-#define MOCK_RX_DRV8243_HW_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -147,5 +146,3 @@ bool mock_drv8243_pullup_enabled(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_RX_DRV8243_HW_H */

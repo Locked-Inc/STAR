@@ -880,7 +880,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      *
      * Post-condition: Result is valid IEEE 802.3 CRC-32 (NASA Rule 5)
      */
-  return crc_regs()->crcdor ^ k_crc_ieee_final_xor;
+  return crc_regs()->crcdor ^ (uint32_t)k_crc_ieee_final_xor;
 }
 
 /**

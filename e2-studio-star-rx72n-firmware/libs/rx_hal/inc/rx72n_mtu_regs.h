@@ -139,8 +139,7 @@
  * @{
  */
 
-#ifndef STAR_RX72N_MTU_REGS_H
-#define STAR_RX72N_MTU_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -1363,5 +1362,3 @@ static_assert(k_mtu6_base_addr == k_mtu7_base_addr,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_MTU_REGS_H */

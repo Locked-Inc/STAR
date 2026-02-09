@@ -51,8 +51,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_RX_MTU_REGS_H
-#define MOCK_RX_MTU_REGS_H
+#pragma once
 
 #ifdef UNIT_TEST
 
@@ -213,5 +212,3 @@ static inline volatile uint16_t* prcr_reg(void)
 #endif
 
 #endif /* UNIT_TEST */
-
-#endif /* MOCK_RX_MTU_REGS_H */

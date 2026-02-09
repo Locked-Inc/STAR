@@ -112,8 +112,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_SYSTEM_REGS_H
-#define STAR_RX72N_SYSTEM_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -1240,5 +1239,3 @@ static_assert((k_ckocr_ckodiv_4 & k_ckocr_ckodiv_mask) == k_ckocr_ckodiv_4,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_SYSTEM_REGS_H */

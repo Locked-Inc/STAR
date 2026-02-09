@@ -149,8 +149,7 @@
  * @{
  */
 
-#ifndef STAR_RX72N_SCI_REGS_H
-#define STAR_RX72N_SCI_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -652,5 +651,3 @@ static_assert((k_sci1_base_addr - k_sci0_base_addr) == 0x20,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_SCI_REGS_H */

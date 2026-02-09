@@ -102,14 +102,14 @@ Configuration Options
    LK           = 0x4             = TFLGA/145/0.50
    FP           = 0x5             = LFQFP/100/0.50
 */
-#define BSP_CFG_MCU_PART_PACKAGE        (0x5) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MCU_PART_PACKAGE        (0x3) /* Generated value. Do not edit this manually */
 
 /* Whether Encryption is included or not.
    Character(s) = Value for macro = Description
    D            = 0xD             = Encryption module not included
    H            = 0x11            = Encryption module included
 */
-#define BSP_CFG_MCU_PART_FUNCTION       (0xD) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MCU_PART_FUNCTION       (0x11) /* Generated value. Do not edit this manually */
 
 /* ROM, RAM, and Data Flash Capacity.
    Character(s) = Value for macro = ROM Size/Ram Size/Data Flash Size
@@ -117,7 +117,7 @@ Configuration Options
    N            = 0x17            = 4MB/1MB/32KB
 NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
 */
-#define BSP_CFG_MCU_PART_MEMORY_SIZE    (0xD) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MCU_PART_MEMORY_SIZE    (0x17) /* Generated value. Do not edit this manually */
 
 /* Group name.
    Character(s) = Description
@@ -425,7 +425,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
 /* Configure SDCLK output pin (only effective when external bus enabled)
    Values 0=no output, 1 = BCK frequency
 */
-#define BSP_CFG_SDCLK_OUTPUT            (0)
+#define BSP_CFG_SDCLK_OUTPUT            (0) /* Generated value. Do not edit this manually */
 
 /* CLKOUT Output Frequency Division Ratio Select. (CKODIV)
    Values
@@ -657,7 +657,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
          Default setting of the bank mode is linear mode.
          If the dual bank function has not been incorporated in a device, this macro should be 1.
 */
-#define BSP_CFG_CODE_FLASH_BANK_MODE    (1)
+#define BSP_CFG_CODE_FLASH_BANK_MODE    (0)
 
 /* Select the startup bank of the program when dual bank function is in dual mode.
    0 = The address range of bank 1 from FFC00000h to FFDFFFFFh and bank 0 from FFE00000h to FFFFFFFFh. (default)

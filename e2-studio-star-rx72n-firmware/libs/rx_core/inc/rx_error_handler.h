@@ -233,8 +233,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_ERROR_HANDLER_H
-#define STAR_RX72N_ERROR_HANDLER_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -1088,5 +1087,3 @@ typedef struct {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_ERROR_HANDLER_H */

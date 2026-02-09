@@ -253,8 +253,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_INFRASTRUCTURE_H
-#define STAR_RX72N_INFRASTRUCTURE_H
+#pragma once
 
 #include "rx_err.h"
 #include "rx_error_interface.h"
@@ -1979,5 +1978,3 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_INFRASTRUCTURE_H */

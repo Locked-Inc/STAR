@@ -306,6 +306,7 @@
 #include "rx72n_regs.h"
 #include "rx_log.h"
 #include "rx_usb.h"
+#include "rx_usb_internal.h"
 
 /* =============================================================================
  * Private Definitions
@@ -333,25 +334,17 @@ typedef enum : uint8_t {
   k_port2_pipe_int_in   = 9, /**< Port 2: Interrupt IN pipe */
 } usb_pipe_assignment_t;
 
+/* Redundant extern declarations removed - now provided by rx_usb_internal.h */
+
 /* =============================================================================
- * Forward Declarations (internal functions from other modules)
+ * ISR Forward Declarations (required by -Wmissing-declarations)
  * =============================================================================
  */
 
-/* From rx_usb.c */
-extern void             rx_usb_set_state(rx_usb_state_t state);
-extern void             rx_usb_count_bus_reset(void);
-extern void             rx_usb_count_suspend(void);
-extern rx_usb_port_id_t rx_usb_find_port_by_pipe(uint8_t pipe);
-extern void             rx_usb_invoke_callback(rx_usb_port_id_t port, rx_usb_event_t event);
-
-/* From rx_usb_cdc.c */
-extern void rx_usb_cdc_handle_setup(void);
-extern void rx_usb_cdc_handle_bulk_in(rx_usb_port_id_t port);
-extern void rx_usb_cdc_handle_bulk_out(rx_usb_port_id_t port);
-
-/* From rx_usb_hw.c */
-extern rx_usb_state_t rx_usb_hw_get_bus_state(void);
+void __attribute__((interrupt)) usb0_usbi_isr(void);
+void __attribute__((interrupt)) usb0_d0fifo_isr(void);
+void __attribute__((interrupt)) usb0_d1fifo_isr(void);
+void __attribute__((interrupt)) usb0_usbr_isr(void);
 
 /* =============================================================================
  * Private Functions
@@ -490,7 +483,7 @@ static void internal_handle_ctrt_interrupt(void)
     case k_usb_intsts0_ctsq_seq_err:
       /* Sequence error - stall the pipe */
       rx_log_warn(s_tag, "CTRT: Sequence error");
-      usb0()->dcpctr = (usb0()->dcpctr & ~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall;
+      usb0()->dcpctr = (uint16_t)((usb0()->dcpctr & (uint16_t)~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall);
       break;
 
     default:

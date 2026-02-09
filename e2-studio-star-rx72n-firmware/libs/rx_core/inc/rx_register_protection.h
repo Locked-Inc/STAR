@@ -218,8 +218,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX_REGISTER_PROTECTION_H
-#define STAR_RX_REGISTER_PROTECTION_H
+#pragma once
 
 #include <stdint.h>
 
@@ -609,5 +608,3 @@ typedef enum : uint16_t {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_REGISTER_PROTECTION_H */

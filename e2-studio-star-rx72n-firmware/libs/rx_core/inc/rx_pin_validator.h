@@ -250,8 +250,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_PIN_VALIDATOR_H
-#define STAR_RX72N_PIN_VALIDATOR_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -863,5 +862,3 @@ typedef struct {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_PIN_VALIDATOR_H */

@@ -108,8 +108,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX72N_ICU_REGS_H
-#define STAR_RX72N_ICU_REGS_H
+#pragma once
 
 #include <stdint.h>
 #include <stddef.h>
@@ -563,5 +562,3 @@ static_assert(offsetof(rx_icu_regs_t, dmrsr[7]) == 0x41C, "DMRSR7 must be at 0x4
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_ICU_REGS_H */

@@ -213,7 +213,8 @@ static void internal_delay_timer_init(void)
   *prcr_reg() = k_rx_prcr_lock;
 
   /* Stop CMT3 before reconfiguration */
-  cmt_ctrl()->cmstr1 &= ~((uint16_t)k_onewire_bit_set << k_onewire_cmt3_start_bit);
+  cmt_ctrl()->cmstr1 &=
+    (uint16_t)~((uint16_t)k_onewire_bit_set << k_onewire_cmt3_start_bit);
 
   /* Configure free-running counter (no interrupts) */
   cmt3()->cmcr  = (uint16_t)(k_onewire_cmt_divider_setting << k_onewire_cmt_clk_shift);

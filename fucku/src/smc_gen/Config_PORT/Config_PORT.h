@@ -5,44 +5,37 @@
 */
 
 /***********************************************************************************************************************
-* File Name        : r_smc_cgc.c
-* Version          : 2.1.0
+* File Name        : Config_PORT.h
+* Component Version: 2.4.1
 * Device(s)        : R5F572NNHxFB
-* Description      : This file implements CGC setting.
+* Description      : This file implements device driver for Config_PORT.
 ***********************************************************************************************************************/
 
-/***********************************************************************************************************************
-Pragma directive
-***********************************************************************************************************************/
-/* Start user code for pragma. Do not edit comment generated here */
-/* End user code. Do not edit comment generated here */
+#ifndef CFG_Config_PORT_H
+#define CFG_Config_PORT_H
 
 /***********************************************************************************************************************
 Includes
 ***********************************************************************************************************************/
-#include "r_cg_macrodriver.h"
-#include "r_smc_cgc.h"
-/* Start user code for include. Do not edit comment generated here */
-/* End user code. Do not edit comment generated here */
-#include "r_cg_userdefine.h"
+#include "r_cg_port.h"
 
 /***********************************************************************************************************************
-Global variables and functions
+Macro definitions (Register bit)
 ***********************************************************************************************************************/
-/* Start user code for global. Do not edit comment generated here */
-/* End user code. Do not edit comment generated here */
 
 /***********************************************************************************************************************
-* Function Name: R_CGC_Create
-* Description  : This function generates CGC pin settings
-* Arguments    : None
-* Return Value : None
+Macro definitions
 ***********************************************************************************************************************/
 
-void R_CGC_Create(void)
-{
-    R_CGC_Create_UserInit();
-}
+/***********************************************************************************************************************
+Typedef definitions
+***********************************************************************************************************************/
 
-/* Start user code for adding. Do not edit comment generated here */
+/***********************************************************************************************************************
+Global functions
+***********************************************************************************************************************/
+void R_Config_PORT_Create(void);
+void R_Config_PORT_Create_UserInit(void);
+/* Start user code for function. Do not edit comment generated here */
 /* End user code. Do not edit comment generated here */
+#endif

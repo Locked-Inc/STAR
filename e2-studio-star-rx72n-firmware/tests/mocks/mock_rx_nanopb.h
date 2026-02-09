@@ -28,8 +28,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef STAR_MOCK_RX_NANOPB_H
-#define STAR_MOCK_RX_NANOPB_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -304,5 +303,3 @@ void rx_nanopb_test_reset_state(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_MOCK_RX_NANOPB_H */

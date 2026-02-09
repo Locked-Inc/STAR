@@ -5,10 +5,10 @@
 */
 
 /***********************************************************************************************************************
-* File Name        : r_smc_cgc.c
-* Version          : 2.1.0
+* File Name        : Config_PORT.c
+* Component Version: 2.4.1
 * Device(s)        : R5F572NNHxFB
-* Description      : This file implements CGC setting.
+* Description      : This file implements device driver for Config_PORT.
 ***********************************************************************************************************************/
 
 /***********************************************************************************************************************
@@ -21,7 +21,7 @@ Pragma directive
 Includes
 ***********************************************************************************************************************/
 #include "r_cg_macrodriver.h"
-#include "r_smc_cgc.h"
+#include "Config_PORT.h"
 /* Start user code for include. Do not edit comment generated here */
 /* End user code. Do not edit comment generated here */
 #include "r_cg_userdefine.h"
@@ -33,15 +33,15 @@ Global variables and functions
 /* End user code. Do not edit comment generated here */
 
 /***********************************************************************************************************************
-* Function Name: R_CGC_Create
-* Description  : This function generates CGC pin settings
+* Function Name: R_Config_PORT_Create
+* Description  : This function initializes the PORT
 * Arguments    : None
 * Return Value : None
 ***********************************************************************************************************************/
 
-void R_CGC_Create(void)
+void R_Config_PORT_Create(void)
 {
-    R_CGC_Create_UserInit();
+    R_Config_PORT_Create_UserInit();
 }
 
 /* Start user code for adding. Do not edit comment generated here */

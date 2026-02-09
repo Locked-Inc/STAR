@@ -27,8 +27,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef STAR_MOCK_RX_PID_H
-#define STAR_MOCK_RX_PID_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -329,5 +328,3 @@ rx_err_t rx_pid_set_integral_limits(rx_pid_handle_t* handle,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_MOCK_RX_PID_H */

@@ -378,8 +378,7 @@
  * - 1.1.0 (2026-01-27): Added comprehensive Doxygen documentation, state machine diagrams, performance data
  */
 
-#ifndef STAR_RX_COMM_MANAGER_H
-#define STAR_RX_COMM_MANAGER_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -987,5 +986,3 @@ const char* rx_comm_manager_channel_name(rx_comm_channel_t channel);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_COMM_MANAGER_H */

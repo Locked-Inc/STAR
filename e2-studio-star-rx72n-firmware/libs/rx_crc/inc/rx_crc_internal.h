@@ -160,8 +160,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX_CRC_INTERNAL_H
-#define STAR_RX_CRC_INTERNAL_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -669,5 +668,3 @@ uint32_t rx_crc32_update_sw(uint32_t crc, const uint8_t* data, uint32_t len);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_CRC_INTERNAL_H */

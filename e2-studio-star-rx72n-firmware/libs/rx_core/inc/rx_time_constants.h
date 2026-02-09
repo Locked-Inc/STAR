@@ -109,8 +109,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX_TIME_CONSTANTS_H
-#define STAR_RX_TIME_CONSTANTS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -425,5 +424,3 @@ typedef enum : uint32_t {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_TIME_CONSTANTS_H */

@@ -159,8 +159,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX_IRQ_FILTER_H
-#define STAR_RX_IRQ_FILTER_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -491,5 +490,3 @@ static const uint8_t s_irq_max = 15U;
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_IRQ_FILTER_H */

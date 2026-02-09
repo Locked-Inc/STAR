@@ -54,8 +54,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_LPC_REGS_H
-#define STAR_RX72N_LPC_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -735,5 +734,3 @@ static_assert((k_dpsbkr_base_addr - k_dpsbycr_addr) == 0x20,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_LPC_REGS_H */

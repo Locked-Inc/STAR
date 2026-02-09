@@ -71,8 +71,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_POE3_REGS_H
-#define STAR_RX72N_POE3_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -838,5 +837,3 @@ static_assert(k_poe3_alr1_addr - k_poe3_base_addr == k_poe3_offset_alr1,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_POE3_REGS_H */

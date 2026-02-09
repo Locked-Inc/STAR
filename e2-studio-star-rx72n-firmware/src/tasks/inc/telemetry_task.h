@@ -26,8 +26,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_TELEMETRY_TASK_H
-#define STAR_TELEMETRY_TASK_H
+#pragma once
 
 #include "rx_err.h"
 
@@ -65,5 +64,3 @@
  * @since STAR v1.0.0
  */
 rx_err_t telemetry_task_create(void);
-
-#endif /* STAR_TELEMETRY_TASK_H */

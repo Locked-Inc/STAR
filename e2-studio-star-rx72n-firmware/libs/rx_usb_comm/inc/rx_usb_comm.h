@@ -133,8 +133,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX_USB_COMM_H
-#define STAR_RX_USB_COMM_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -996,5 +995,3 @@ rx_usb_comm_mode_t rx_usb_comm_get_mode(const rx_usb_comm_handle_t* handle);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_USB_COMM_H */

@@ -25,8 +25,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef STAR_MOCK_RX_COMM_MANAGER_H
-#define STAR_MOCK_RX_COMM_MANAGER_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -374,5 +373,3 @@ const char* rx_comm_manager_channel_name(rx_comm_channel_t channel);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_MOCK_RX_COMM_MANAGER_H */

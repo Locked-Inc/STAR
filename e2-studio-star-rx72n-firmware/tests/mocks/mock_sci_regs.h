@@ -55,8 +55,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_SCI_REGS_H
-#define MOCK_SCI_REGS_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -231,5 +230,3 @@ uint8_t mock_sci_get_brr(uint8_t channel);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_SCI_REGS_H */

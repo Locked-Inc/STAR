@@ -466,12 +466,15 @@ static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_por
   }
 
   /* Configure TX pin: output direction, peripheral mode */
-  tx_port_base->pdr |= (k_uart_gpio_bit_set << tx_pin); /* Output */
-  tx_port_base->pmr |= (k_uart_gpio_bit_set << tx_pin); /* Peripheral mode */
+  const uint8_t tx_pin_mask = (uint8_t)(k_uart_gpio_bit_set << tx_pin);
+  const uint8_t rx_pin_mask = (uint8_t)(k_uart_gpio_bit_set << rx_pin);
+
+  tx_port_base->pdr |= tx_pin_mask; /* Output */
+  tx_port_base->pmr |= tx_pin_mask; /* Peripheral mode */
 
   /* Configure RX pin: input direction, peripheral mode */
-  rx_port_base->pdr &= ~(k_uart_gpio_bit_set << rx_pin); /* Input */
-  rx_port_base->pmr |= (k_uart_gpio_bit_set << rx_pin);  /* Peripheral mode */
+  rx_port_base->pdr &= (uint8_t)~rx_pin_mask; /* Input */
+  rx_port_base->pmr |= rx_pin_mask;           /* Peripheral mode */
 
   return k_rx_ok;
 }

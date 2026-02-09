@@ -70,8 +70,7 @@
  * @see rx_log.h Logging infrastructure with simulator output
  */
 
-#ifndef STAR_RX72N_SIMULATOR_CONFIG_H
-#define STAR_RX72N_SIMULATOR_CONFIG_H
+#pragma once
 
 #include <stdint.h>
 
@@ -146,5 +145,3 @@
 typedef enum : uint32_t {
   k_sim_clock_instant = 1,  /**< Skip delay entirely (assume immediate ready) */
 } simulator_clock_timing_t;
-
-#endif /* STAR_RX72N_SIMULATOR_CONFIG_H */

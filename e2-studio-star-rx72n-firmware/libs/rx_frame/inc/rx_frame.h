@@ -223,8 +223,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX_FRAME_H
-#define STAR_RX_FRAME_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -472,6 +471,42 @@ typedef enum : uint8_t {
      * @par Flags: May include k_frame_flag_soft_nack
      */
     k_frame_type_nack = 4,
+
+    /**
+     * @brief Ping request (5)
+     * @details
+     * Keepalive/heartbeat message sent to check connection status.
+     * Empty payload; receiver responds with PONG.
+     * @par Payload: None (length = 0)
+     */
+    k_frame_type_ping = 5,
+
+    /**
+     * @brief Pong response (6)
+     * @details
+     * Response to PING request, confirms connection is alive.
+     * Empty payload; sequence number matches the ping.
+     * @par Payload: None (length = 0)
+     */
+    k_frame_type_pong = 6,
+
+    /**
+     * @brief Reset request (7)
+     * @details
+     * Request to reset communication state (sequence numbers, buffers, etc.).
+     * Empty payload; receiver responds with RESET_ACK.
+     * @par Payload: None (length = 0)
+     */
+    k_frame_type_reset = 7,
+
+    /**
+     * @brief Reset acknowledgment (8)
+     * @details
+     * Confirms reset operation completed successfully.
+     * Empty payload; sequence number matches the reset request.
+     * @par Payload: None (length = 0)
+     */
+    k_frame_type_reset_ack = 8,
 } rx_frame_type_t;
 
 /**
@@ -1088,6 +1123,52 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
 [[nodiscard]] rx_err_t rx_frame_create_nack(rx_frame_t* frame, uint16_t sequence, uint8_t flags);
 
 /**
+ * @brief Create PING frame for keepalive/heartbeat
+ *
+ * @param[out] frame Frame to initialize
+ * @param[in]  sequence Sequence number
+ * @param[in]  payload Optional payload to include (may be NULL if payload_len is 0)
+ * @param[in]  payload_len Payload length in bytes
+ * @return k_rx_ok on success
+ */
+[[nodiscard]] rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
+                                             const uint16_t sequence,
+                                             const uint8_t* payload,
+                                             const uint32_t payload_len);
+
+/**
+ * @brief Create PONG frame (response to PING)
+ *
+ * @param[out] frame Frame to initialize
+ * @param[in]  sequence Sequence number (matches ping)
+ * @param[in]  payload Optional payload to include (may be NULL if payload_len is 0)
+ * @param[in]  payload_len Payload length in bytes
+ * @return k_rx_ok on success
+ */
+[[nodiscard]] rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
+                                             const uint16_t sequence,
+                                             const uint8_t* payload,
+                                             const uint32_t payload_len);
+
+/**
+ * @brief Create RESET frame to reset communication state
+ *
+ * @param[out] frame Frame to initialize
+ * @param[in]  sequence Sequence number
+ * @return k_rx_ok on success
+ */
+[[nodiscard]] rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence);
+
+/**
+ * @brief Create RESET_ACK frame (response to RESET)
+ *
+ * @param[out] frame Frame to initialize
+ * @param[in]  sequence Sequence number (matches reset)
+ * @return k_rx_ok on success
+ */
+[[nodiscard]] rx_err_t rx_frame_create_reset_ack(rx_frame_t* frame, const uint16_t sequence);
+
+/**
  * @brief Check if frame type is valid
  *
  * Static inline for same reasons as rx_frame_encoded_size() above.
@@ -1097,11 +1178,9 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  */
 static inline bool rx_frame_type_valid(uint8_t type)
 {
-  return (type >= k_frame_type_command && type <= k_frame_type_nack);
+  return (type >= k_frame_type_command && type <= k_frame_type_reset_ack);
 }
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_FRAME_H */

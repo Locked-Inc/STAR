@@ -479,6 +479,7 @@
 #include "rx_threadx_config.h"
 #include "rx_time_constants.h"
 #include "rx_usb.h"
+#include "rx_usb_internal.h"
 #include "tx_api.h"
 
 /* =============================================================================
@@ -639,8 +640,10 @@ rx_err_t rx_usb_hw_deinit(void)
   usb0()->syscfg = k_usb_syscfg_disabled;
 
   /* Disable interrupt in ICU */
-  icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register] &=
-    ~(1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
+  const uint8_t ier_bit =
+    (uint8_t)(k_vect_usb0_usbi % k_icu_bits_per_ier_register);
+  const uint8_t ier_mask = (uint8_t)(1U << ier_bit);
+  icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register] &= (uint8_t)~ier_mask;
   icu()->ir[k_vect_usb0_usbi] = 0;
 
   /* Disable USB0 module clock */
@@ -684,7 +687,7 @@ rx_err_t rx_usb_hw_detach(void)
   rx_log_debug(s_tag, "Detaching from USB bus");
 
   /* Disable D+ pull-up resistor */
-  usb0()->syscfg &= ~k_usb_syscfg_dprpu;
+  usb0()->syscfg &= (uint16_t)~k_usb_syscfg_dprpu;
 
   return k_rx_ok;
 }
@@ -903,10 +906,10 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
   /* Clear pipe (pipe numbers start at 1, so index is pipe - 1) */
   volatile uint16_t* pipe_ctr = pipe_ctr_map[pipe - 1];
   *pipe_ctr |= k_usb_pipectr_aclrm;
-  *pipe_ctr &= ~k_usb_pipectr_aclrm;
+  *pipe_ctr &= (uint16_t)~k_usb_pipectr_aclrm;
 
   /* Enable pipe */
-  *pipe_ctr = (*pipe_ctr & ~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_buf;
+  *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_buf);
 
   return k_rx_ok;
 }

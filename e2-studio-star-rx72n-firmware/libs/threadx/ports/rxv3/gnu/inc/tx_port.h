@@ -242,7 +242,7 @@ VOID                                            _tx_thread_interrupt_restore(UIN
 
 #define _tx_thread_system_return                _tx_thread_system_return_inline
 
-static void _tx_thread_system_return_inline(void)
+static void __attribute__((unused)) _tx_thread_system_return_inline(void)
 {
     TX_INTERRUPT_SAVE_AREA
 

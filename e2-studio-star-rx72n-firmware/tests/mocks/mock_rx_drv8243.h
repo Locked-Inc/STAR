@@ -24,8 +24,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef STAR_MOCK_RX_DRV8243_H
-#define STAR_MOCK_RX_DRV8243_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -328,5 +327,3 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limi
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_MOCK_RX_DRV8243_H */

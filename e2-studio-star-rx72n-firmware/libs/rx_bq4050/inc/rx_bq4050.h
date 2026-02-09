@@ -116,8 +116,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_BQ4050_H
-#define STAR_RX72N_BQ4050_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -1635,5 +1634,3 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_BQ4050_H */

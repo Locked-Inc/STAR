@@ -94,7 +94,7 @@ __tx_thread_context_save:
 ;                           SP+12->     Interrupted PC
 ;                           SP+16->     Interrupted PSW
 ;
-;    /* Check for a nested interrupt condition.  */
+;    Check for a nested interrupt condition.
 ;    if (_tx_thread_system_state++)
 ;    {
 ;
@@ -104,13 +104,13 @@ __tx_thread_context_save:
     CMP     #0, R2                              ; 0 -> no nesting
     BEQ     __tx_thread_not_nested_save
 ;
-;    /* Nested interrupt condition.  */
+;    Nested interrupt condition.
 ;
     ADD   #1, r2                                ; _tx_thread_system_state++
     MOV.L   r2, [r1]
 
 ;
-;   /* Save the rest of the scratch registers on the interrupt stack and return to the
+;   Save the rest of the scratch registers on the interrupt stack and return to the
 ;       calling ISR.  */
     POP R1                                      ; recuperate return address from stack
     PUSHM   R3-R5
@@ -174,6 +174,4 @@ __tx_thread_idle_system_save:
 ;    }
 ;}
     .end
-
-
 

@@ -33,8 +33,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_MOTOR_CONTROL_TASK_H
-#define STAR_MOTOR_CONTROL_TASK_H
+#pragma once
 
 #include "rx_err.h"
 
@@ -74,5 +73,3 @@
  * @since STAR v1.0.0
  */
 rx_err_t motor_control_task_create(void);
-
-#endif /* STAR_MOTOR_CONTROL_TASK_H */

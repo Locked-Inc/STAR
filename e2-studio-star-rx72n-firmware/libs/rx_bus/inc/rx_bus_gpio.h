@@ -290,8 +290,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_BUS_GPIO_H
-#define STAR_RX72N_BUS_GPIO_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -748,5 +747,3 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_BUS_GPIO_H */
