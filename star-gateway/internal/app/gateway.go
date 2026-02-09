@@ -80,25 +80,20 @@ func Run(ctx context.Context, cfg Config) error {
 	// transport closes BEFORE dispatcher cleanup (to interrupt pending I/O)
 
 	// ========================================
-	// Layer 2-4: Protocol Stack (HARQ)
+	// Layer 2-4: Protocol Stack (HARQ with TransportManager)
 	// ========================================
-	var harqHandler harq.HARQ
-
-	var tmCleanup func()
-	if cfg.TransportMode == manager.ModeForceSPI {
-		// Existing code path (no changes)
-		harqHandler, err = initHARQ(deviceTransport)
-		if err != nil {
-			return fmt.Errorf("failed to initialize HARQ: %w", err)
-		}
-	} else {
-		// New code path with TransportManager
-		harqHandler, tmCleanup, err = initTransportManager(ctx, cfg, deviceTransport)
-		if err != nil {
-			return fmt.Errorf("failed to initialize HARQ: %w", err)
-		}
-		// NOTE: tmCleanup is deferred later, after dispatcher init
+	// All transport modes now use TransportManager for reliability features:
+	// - Shared SessionState (prevents sequence resets during transport switching)
+	// - Health monitoring (latency, failures, packet loss tracking)
+	// - Heartbeat detection (PING/PONG for connectivity monitoring)
+	// - Hot-plug support (automatic USB device detection)
+	// - Reset handshake (three-way handshake with barrier for startup sync)
+	// - Automatic failover (switches transports on failure)
+	harqHandler, tmCleanup, err := initTransportManager(ctx, cfg, deviceTransport)
+	if err != nil {
+		return fmt.Errorf("failed to initialize HARQ: %w", err)
 	}
+	// NOTE: tmCleanup is deferred later, after dispatcher init
 
 	// ========================================
 	// Structured Logger
@@ -118,10 +113,10 @@ func Run(ctx context.Context, cfg Config) error {
 	defer dispatcherCleanup()
 
 	// Defer TransportManager and Transport cleanup AFTER dispatcher cleanup to ensure correct shutdown order:
-	// LIFO execution order:
-	// 1. Dispatcher stops (deferred last, executes first) - may timeout waiting for receive loop
-	// 2. TransportManager stops (deferred now, executes second) - background goroutines exit
-	// 3. Transport closes (deferred now, executes third) - socket closes, interrupts any pending I/O
+	// LIFO execution order (deferred first = executes last):
+	// 1. Transport closes (deferred last, executes first) - socket closes, interrupts any pending I/O
+	// 2. TransportManager stops (deferred second, executes second) - background goroutines exit
+	// 3. Dispatcher stops (deferred first, executes last) - receive loop exits due to context cancel + closed transport
 	if tmCleanup != nil {
 		defer tmCleanup()
 	}
@@ -217,7 +212,12 @@ func initTransport(cfg Config) (transport.Device, func(), error) {
 func initTransportManager(ctx context.Context, cfg Config, deviceTransport transport.Device) (harq.HARQ, func(), error) {
 	tmConfig := manager.DefaultConfig()
 	if cfg.TransportMode != "" {
-		tmConfig.Mode = manager.TransportMode(cfg.TransportMode)
+		// Validate transport mode before using it
+		if !cfg.TransportMode.IsValid() {
+			return nil, nil, fmt.Errorf("invalid transport mode %q (valid: %s, %s, %s, %s)",
+				cfg.TransportMode, manager.ModeAuto, manager.ModePreferUSB, manager.ModeForceUSB, manager.ModeForceSPI)
+		}
+		tmConfig.Mode = cfg.TransportMode
 	}
 
 	tm := manager.NewTransportManager(tmConfig)
@@ -285,8 +285,8 @@ func createSPILink(t transport.Transport, cfg Config, session *manager.SessionSt
 	// Phase 2: Enable FEC + Chase Combining for ~10x BER improvement
 	spiLink, err := link.NewSPILink(deviceTransport, session, &link.SPILinkConfig{
 		EnableFEC:  true, // Phase 2: Enable FEC + Chase Combining
-		MaxRetries: 3,
-		ACKTimeout: 10 * time.Millisecond,
+		MaxRetries: harq.DefaultMaxRetries,
+		ACKTimeout: harq.DefaultTimeout,
 	})
 	if err != nil {
 		log.Printf("ERROR: Failed to create SPILink: %v, falling back to legacy", err)
@@ -345,37 +345,6 @@ func createUSBLink(session *manager.SessionState) (harq.HARQ, error) {
 	}
 
 	return cdcLink, nil
-}
-
-func initHARQ(deviceTransport transport.Device) (harq.HARQ, error) {
-	// Create a legacy transport adapter for HARQ
-	var legacyTransport transport.Transport
-	switch t := deviceTransport.(type) {
-	case *transport.SPITransport:
-		legacyTransport = t
-	case *transport.SocketTransport:
-		legacyTransport = t
-	default:
-		return nil, fmt.Errorf("unknown transport type")
-	}
-
-	log.Printf("Initializing frame encoder/decoder...")
-	frameEncoder := frame.NewEncoder()
-	frameDecoder := frame.NewDecoder()
-
-	log.Printf("Initializing FEC encoder/decoder...")
-	fecEncoder := fec.NewConvolutionalEncoder()
-	fecDecoder := fec.NewViterbiDecoder()
-
-	log.Printf("Initializing HARQ handler...")
-	return harq.NewChaseCombining(
-		harq.DefaultConfig(),
-		legacyTransport,
-		frameEncoder,
-		frameDecoder,
-		fecEncoder,
-		fecDecoder,
-	), nil
 }
 
 func initDispatcher(ctx context.Context, harqHandler harq.HARQ, logger *slog.Logger) (dispatcher.Dispatcher, func(), error) {
