@@ -214,7 +214,8 @@ func initTransportManager(ctx context.Context, cfg Config, deviceTransport trans
 	if cfg.TransportMode != "" {
 		// Validate transport mode before using it
 		if !cfg.TransportMode.IsValid() {
-			return nil, nil, fmt.Errorf("invalid transport mode: %q (valid: auto, prefer-usb, force-usb, force-spi)", cfg.TransportMode)
+			return nil, nil, fmt.Errorf("invalid transport mode %q (valid: %s, %s, %s, %s)",
+				cfg.TransportMode, manager.ModeAuto, manager.ModePreferUSB, manager.ModeForceUSB, manager.ModeForceSPI)
 		}
 		tmConfig.Mode = cfg.TransportMode
 	}
