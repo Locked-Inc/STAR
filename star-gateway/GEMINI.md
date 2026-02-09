@@ -47,9 +47,6 @@ star-gateway/
 │   │   ├── viterbi.go       # Soft Viterbi decoder
 │   │   ├── combiner.go      # Chase Combiner for soft bit combining
 │   │   └── fec_test.go
-│   ├── arq/                 # Legacy ARQ (deprecated, use harq/)
-│   │   ├── arq.go
-│   │   └── arq_test.go
 │   └── service/             # Layer 5: gRPC services
 │       ├── motor_control.go
 │       ├── telemetry.go
@@ -157,7 +154,6 @@ The gateway exposes 5 gRPC services:
 | Frame encoder/decoder | Done |
 | FEC encoder/decoder | Done |
 | HARQ protocol | Done (Chase Combining) |
-| Legacy ARQ | Done (deprecated) |
 | gRPC services | Placeholder |
 | SPI implementation | Not started |
 | Integration tests | Not started |
