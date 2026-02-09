@@ -7,7 +7,7 @@
 /***********************************************************************************************************************
 * File Name        : r_cg_hardware_setup.c
 * Version          : 1.0.200
-* Device(s)        : R5F572NDDxFP
+* Device(s)        : R5F572NNHxFB
 * Description      : Initialization file for code generation configurations.
 ***********************************************************************************************************************/
 
@@ -21,6 +21,7 @@ Pragma directive
 Includes
 ***********************************************************************************************************************/
 #include "r_cg_macrodriver.h"
+#include "Config_PORT.h"
 #include "r_smc_cgc.h"
 #include "r_smc_interrupt.h"
 /* Start user code for include. Do not edit comment generated here */
@@ -73,6 +74,9 @@ void R_Systeminit(void)
 
     /* Initialize clocks settings */
     R_CGC_Create();
+
+    /* Set peripheral settings */
+    R_Config_PORT_Create();
 
 #if BSP_CFG_BOOTLOADER_PROJECT == 0
     /* Disable the following codes in the bootloader project. */

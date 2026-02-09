@@ -424,7 +424,7 @@ uint32_t rx_crc32_update_sw(uint32_t crc, const uint8_t* data, uint32_t len)
   }
 
   /* Continue from previous CRC state (invert to get internal state) */
-  crc = crc ^ k_crc_ieee_final_xor;
+  crc = crc ^ (uint32_t)k_crc_ieee_final_xor;
 
   /*
    * NASA Rule 2: Loop bounded by k_crc_len_max (compile-time constant)
@@ -439,7 +439,7 @@ uint32_t rx_crc32_update_sw(uint32_t crc, const uint8_t* data, uint32_t len)
   }
 
   /* Finalize */
-  return crc ^ k_crc_ieee_final_xor;
+  return crc ^ (uint32_t)k_crc_ieee_final_xor;
 }
 
 /* =============================================================================

@@ -106,8 +106,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX72N_ADC_REGS_H
-#define STAR_RX72N_ADC_REGS_H
+#pragma once
 
 #include <stdint.h>
 #include <stddef.h>
@@ -705,5 +704,3 @@ static_assert(offsetof(rx_s12ad_regs_t, addr7) == 0x2E, "ADDR7 offset incorrect 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_ADC_REGS_H */

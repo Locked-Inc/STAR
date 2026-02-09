@@ -25,8 +25,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef MOCK_HARDWARE_INIT_H
-#define MOCK_HARDWARE_INIT_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -75,5 +74,3 @@ bool mock_hardware_init_was_called(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_HARDWARE_INIT_H */

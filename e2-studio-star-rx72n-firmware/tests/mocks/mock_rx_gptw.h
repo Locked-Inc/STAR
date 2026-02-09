@@ -49,8 +49,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_RX_GPTW_H
-#define MOCK_RX_GPTW_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -149,5 +148,3 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_RX_GPTW_H */

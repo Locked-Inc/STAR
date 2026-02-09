@@ -567,8 +567,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX_DRV8243_H
-#define STAR_RX_DRV8243_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -1458,5 +1457,3 @@ typedef struct {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_DRV8243_H */

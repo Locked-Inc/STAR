@@ -373,8 +373,7 @@
  * @see docs/sections/01_nanopb_protocol.tex Protocol specification
  */
 
-#ifndef STAR_RX_SPI_COMM_H
-#define STAR_RX_SPI_COMM_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -1445,5 +1444,3 @@ void rx_spi_comm_reset_sequence(rx_spi_comm_handle_t* handle);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_SPI_COMM_H */

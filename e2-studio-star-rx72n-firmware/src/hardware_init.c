@@ -200,16 +200,16 @@
 #include "rx_mpc.h"
 #include "rx_simulator_config.h" /* For RX_IS_SIMULATOR conditional compilation */
 
-/** @brief Port pin identifiers for MPC configuration (temporary until added to rx_mpc.h) */
-typedef enum : uint8_t {
-  k_port_1_pin_2 = 0x12, /**< P1.2 - SCL0 (I2C clock) */
-  k_port_1_pin_3 = 0x13, /**< P1.3 - SDA0 (I2C data) */
-  k_port_1_pin_5 = 0x15, /**< P1.5 - MTIOC0B (Motor 0 PWM) */
-  k_port_1_pin_6 = 0x16, /**< P1.6 - USB0_VBUS (USB VBUS detect) */
-  k_port_2_pin_2 = 0x22, /**< P2.2 - MTIOC3B (Motor 3 PWM B) */
-  k_port_2_pin_4 = 0x24, /**< P2.4 - MTIOC4A (Motor 4 PWM A) */
-  k_port_2_pin_5 = 0x25, /**< P2.5 - MTIOC4C (Motor 4 PWM C) */
-  k_port_c_pin_1 = 0xC1, /**< PC.1 - MTIOC3A (Motor 3 PWM A) */
+/** @brief Port pin identifiers for MPC configuration (rx_port_pin_t values) */
+typedef enum : uint16_t {
+  k_port_1_pin_2 = k_rx_p1_2, /**< P1.2 - SCL0 (I2C clock) */
+  k_port_1_pin_3 = k_rx_p1_3, /**< P1.3 - SDA0 (I2C data) */
+  k_port_1_pin_5 = k_rx_p1_5, /**< P1.5 - MTIOC0B (Motor 0 PWM) */
+  k_port_1_pin_6 = k_rx_p1_6, /**< P1.6 - USB0_VBUS (USB VBUS detect) */
+  k_port_2_pin_2 = k_rx_p2_2, /**< P2.2 - MTIOC3B (Motor 3 PWM B) */
+  k_port_2_pin_4 = k_rx_p2_4, /**< P2.4 - MTIOC4A (Motor 4 PWM A) */
+  k_port_2_pin_5 = k_rx_p2_5, /**< P2.5 - MTIOC4C (Motor 4 PWM C) */
+  k_port_c_pin_1 = k_rx_pc_1, /**< PC.1 - MTIOC3A (Motor 3 PWM A) */
 } rx_mpc_temp_pin_t;
 
 /** @brief SCKCR3 reset/unconfigured state value (before clock initialization) */
@@ -334,31 +334,31 @@ static rx_err_t gpio_init(void)
   static const char* s_tag = "GPIO";
 
   /* Configure MTU PWM pins for motor control (PSEL = 0x01) */
-  err = rx_mpc_set_mtu_pwm(k_port_1_pin_5); /* P1.5 = MTIOC0B (Motor 0) */
+  err = rx_mpc_set_mtu_pwm((rx_port_pin_t)k_port_1_pin_5); /* P1.5 = MTIOC0B (Motor 0) */
   RX_RETURN_ON_ERROR(err, s_tag, "Failed to configure MTIOC0B pin");
 
-  err = rx_mpc_set_mtu_pwm(k_port_c_pin_1); /* PC.1 = MTIOC3A (Motor 3 PWM A) */
+  err = rx_mpc_set_mtu_pwm((rx_port_pin_t)k_port_c_pin_1); /* PC.1 = MTIOC3A (Motor 3 PWM A) */
   RX_RETURN_ON_ERROR(err, s_tag, "Failed to configure MTIOC3A pin");
 
-  err = rx_mpc_set_mtu_pwm(k_port_2_pin_2); /* P2.2 = MTIOC3B (Motor 3 PWM B) */
+  err = rx_mpc_set_mtu_pwm((rx_port_pin_t)k_port_2_pin_2); /* P2.2 = MTIOC3B (Motor 3 PWM B) */
   RX_RETURN_ON_ERROR(err, s_tag, "Failed to configure MTIOC3B pin");
 
-  err = rx_mpc_set_mtu_pwm(k_port_2_pin_4); /* P2.4 = MTIOC4A (Motor 4 PWM A) */
+  err = rx_mpc_set_mtu_pwm((rx_port_pin_t)k_port_2_pin_4); /* P2.4 = MTIOC4A (Motor 4 PWM A) */
   RX_RETURN_ON_ERROR(err, s_tag, "Failed to configure MTIOC4A pin");
 
-  err = rx_mpc_set_mtu_pwm(k_port_2_pin_5); /* P2.5 = MTIOC4C (Motor 4 PWM C) */
+  err = rx_mpc_set_mtu_pwm((rx_port_pin_t)k_port_2_pin_5); /* P2.5 = MTIOC4C (Motor 4 PWM C) */
   RX_RETURN_ON_ERROR(err, s_tag, "Failed to configure MTIOC4C pin");
 
   /* Configure I2C pins for sensor communication (PSEL = 0x0F) */
-  err = rx_mpc_set_riic(k_port_1_pin_2); /* P1.2 = SCL0 (I2C clock) */
+  err = rx_mpc_set_riic((rx_port_pin_t)k_port_1_pin_2); /* P1.2 = SCL0 (I2C clock) */
   RX_RETURN_ON_ERROR(err, s_tag, "Failed to configure SCL0 pin");
 
-  err = rx_mpc_set_riic(k_port_1_pin_3); /* P1.3 = SDA0 (I2C data) */
+  err = rx_mpc_set_riic((rx_port_pin_t)k_port_1_pin_3); /* P1.3 = SDA0 (I2C data) */
   RX_RETURN_ON_ERROR(err, s_tag, "Failed to configure SDA0 pin");
 
   /* Configure USB pin for VBUS detection (PSEL = 0x11) */
   rx_mpc_peripheral_config_t usb_config = {
-    .pin  = k_port_1_pin_6, /* P1.6 = USB0_VBUS */
+    .pin  = (rx_port_pin_t)k_port_1_pin_6, /* P1.6 = USB0_VBUS */
     .psel = 0x11            /* USB function select */
   };
   err = rx_mpc_set_peripheral(&usb_config);

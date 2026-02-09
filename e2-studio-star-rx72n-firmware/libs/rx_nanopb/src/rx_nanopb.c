@@ -163,6 +163,11 @@
 #include <pb_encode.h>
 #include <string.h>
 
+/* nanopb's pb_ostream_from_buffer() and pb_istream_from_buffer() return structs
+ * by value, which triggers -Waggregate-return. This is the standard nanopb API
+ * and cannot be changed, so suppress the warning for this file. */
+#pragma GCC diagnostic ignored "-Waggregate-return"
+
 /* =============================================================================
  * Module State
  * =============================================================================

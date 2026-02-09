@@ -1,33 +1,39 @@
 MEMORY
 {
-	RAM : ORIGIN = 0x0, LENGTH = 524288
+	RAM : ORIGIN = 0x4, LENGTH = 0x7fffc
 	RAM2 : ORIGIN = 0x00800000, LENGTH = 524288
 	ROM : ORIGIN = 0xFFE00000, LENGTH = 2097152
 	OFS : ORIGIN = 0xFE7F5D00, LENGTH = 128
 }
 SECTIONS
 {
-	.exvectors 0xFFFFFF80: AT(0xFFFFFF80)
+	.exvectors 0xFFFFFF80 : AT(0xFFFFFF80)
 	{
+		"_exvectors_start" = .;
 		KEEP(*(.exvectors))
-	} > ROM
-	.fvectors 0xFFFFFFFC: AT(0xFFFFFFFC)
+		"_exvectors_end" = .;
+	} >ROM
+	.fvectors 0xFFFFFFFC : AT(0xFFFFFFFC)
 	{
 		KEEP(*(.fvectors))
-	} > ROM
-	.text 0xFFE00000: AT(0xFFE00000)
+	} >ROM
+	.text 0xFFE00000 : AT(0xFFE00000)
 	{
 		*(.text)
 		*(.text.*)
 		*(P)
+		KEEP(*(.text.*isr))
+		KEEP(*(.text.Excep_*))
+		KEEP(*(.text.*ISR))
+		KEEP(*(.text.*interrupt))
 		etext = .;
-	} > ROM
-	.rvectors ALIGN(4):
+	} >ROM
+	.rvectors ALIGN(4) :
 	{
 		_rvectors_start = .;
-		KEEP(*(.rvectors))
+		INCLUDE ../src/smc_gen/r_bsp/mcu/all/linker_script_rvectors.inc
 		_rvectors_end = .;
-	} > ROM
+	} >ROM
 	.init :
 	{
 		KEEP(*(.init))
@@ -42,16 +48,16 @@ SECTIONS
 		KEEP(*(.fini_array))
 		KEEP(*(SORT(.fini_array.*)))
 		__fini_array_end = .;
-	} > ROM
+	} >ROM
 	.fini :
 	{
 		KEEP(*(.fini))
-	} > ROM
+	} >ROM
 	.got :
 	{
 		*(.got)
 		*(.got.plt)
-	} > ROM
+	} >ROM
 	.rodata :
 	{
 		*(.rodata)
@@ -60,24 +66,24 @@ SECTIONS
 		*(C_2)
 		*(C)
 		_erodata = .;
-	} > ROM
+	} >ROM
 	gcc_exceptions_table :
 	{
-	    KEEP (*(.gcc_except_table))
-	    *(.gcc_except_table.*)
-	} > ROM
+		KEEP(*(.gcc_except_table))
+		*(.gcc_except_table.*)
+	} >ROM
 	.eh_frame_hdr :
 	{
 		*(.eh_frame_hdr)
-	} > ROM
+	} >ROM
 	.eh_frame :
 	{
 		*(.eh_frame)
-	} > ROM
+	} >ROM
 	.jcr :
 	{
 		*(.jcr)
-	} > ROM
+	} >ROM
 	.tors :
 	{
 		__CTOR_LIST__ = .;
@@ -93,16 +99,8 @@ SECTIONS
 		__DTOR_END__ = .;
 		. = ALIGN(2);
 		_mdata = .;
-	} > ROM
-	.ustack 0x200: AT(0x200)
-	{
-		_ustack = .;
-	} > RAM
-	.istack 0x100: AT(0x100)
-	{
-		_istack = .;
-	} > RAM
-	.data 0x204: AT(_mdata)
+	} >ROM
+	.data : AT(_mdata)
 	{
 		_data = .;
 		*(.data)
@@ -112,7 +110,7 @@ SECTIONS
 		*(D_2)
 		*(.sdata.*)
 		_edata = .;
-	} > RAM
+	} >RAM
 	.bss :
 	{
 		_bss = .;
@@ -125,37 +123,58 @@ SECTIONS
 		_ebss = .;
 		. = ALIGN(128);
 		_end = .;
-	} > RAM AT>RAM
-	.ofs1 0xFE7F5D00: AT(0xFE7F5D00)
+	} >RAM AT>RAM
+	.ofs1 0xFE7F5D00 : AT(0xFE7F5D00)
 	{
 		KEEP(*(.ofs1))
-	} > OFS
-	.ofs2 0xFE7F5D10: AT(0xFE7F5D10)
+	} >OFS
+	.ofs2 0xFE7F5D10 : AT(0xFE7F5D10)
 	{
 		KEEP(*(.ofs2))
-	} > OFS
-	.ofs3 0xFE7F5D20: AT(0xFE7F5D20)
+	} >OFS
+	.ofs3 0xFE7F5D20 : AT(0xFE7F5D20)
 	{
 		KEEP(*(.ofs3))
-	} > OFS
-	.ofs4 0xFE7F5D40: AT(0xFE7F5D40)
+	} >OFS
+	.ofs4 0xFE7F5D40 : AT(0xFE7F5D40)
 	{
 		KEEP(*(.ofs4))
-	} > OFS
-	.ofs5 0xFE7F5D48: AT(0xFE7F5D48)
+	} >OFS
+	.ofs5 0xFE7F5D48 : AT(0xFE7F5D48)
 	{
 		KEEP(*(.ofs5))
-	} > OFS
-	.ofs6 0xFE7F5D50: AT(0xFE7F5D50)
+	} >OFS
+	.ofs6 0xFE7F5D50 : AT(0xFE7F5D50)
 	{
 		KEEP(*(.ofs6))
-	} > OFS
-	.ofs7 0xFE7F5D64: AT(0xFE7F5D64)
+	} >OFS
+	.ofs7 0xFE7F5D64 : AT(0xFE7F5D64)
 	{
 		KEEP(*(.ofs7))
-	} > OFS
-	.ofs8 0xFE7F5D70: AT(0xFE7F5D70)
+	} >OFS
+	.ofs8 0xFE7F5D70 : AT(0xFE7F5D70)
 	{
 		KEEP(*(.ofs8))
-	} > OFS
+	} >OFS
+	.r_bsp_NULL :
+	{
+		. += 0x100;
+		"_r_bsp_NULL_end" = .;
+	} >RAM AT>RAM
+	.r_bsp_istack ALIGN(0x4) (NOLOAD) :
+	{
+		KEEP(*(.r_bsp_istack))
+	} >RAM AT>RAM
+	.istack :
+	{
+		"_istack" = .;
+	} >RAM
+	.r_bsp_ustack ALIGN(0x4) (NOLOAD) :
+	{
+		KEEP(*(.r_bsp_ustack))
+	} >RAM AT>RAM
+	.ustack :
+	{
+		"_ustack" = .;
+	} >RAM
 }

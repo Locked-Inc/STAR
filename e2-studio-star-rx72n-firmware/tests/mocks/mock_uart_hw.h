@@ -35,8 +35,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef MOCK_UART_HW_H
-#define MOCK_UART_HW_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -291,5 +290,3 @@ void     uart_debug_puthex(uint32_t value, uint8_t digits);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_UART_HW_H */

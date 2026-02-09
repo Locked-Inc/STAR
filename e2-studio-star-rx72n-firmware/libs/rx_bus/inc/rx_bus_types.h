@@ -192,8 +192,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_BUS_TYPES_H
-#define STAR_RX72N_BUS_TYPES_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -1012,5 +1011,3 @@ typedef enum : uint16_t {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_BUS_TYPES_H */

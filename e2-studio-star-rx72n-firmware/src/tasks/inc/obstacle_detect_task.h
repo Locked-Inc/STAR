@@ -27,8 +27,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_OBSTACLE_DETECT_TASK_H
-#define STAR_OBSTACLE_DETECT_TASK_H
+#pragma once
 
 #include "rx_err.h"
 
@@ -67,5 +66,3 @@
  * @since STAR v1.0.0
  */
 rx_err_t obstacle_detect_task_create(void);
-
-#endif /* STAR_OBSTACLE_DETECT_TASK_H */

@@ -193,6 +193,9 @@
 #include "rx_check.h"
 #include "tx_api.h"
 
+/* Interrupt handler forward declaration (required for -Wmissing-declarations) */
+void __attribute__((interrupt)) cmt0_isr(void);
+
 /* =============================================================================
  * CMT0 Configuration Constants
  * =============================================================================
@@ -693,7 +696,7 @@ rx_err_t timer_init(void)
   rx_log_info("TIMER", "Initializing CMT0 for ThreadX tick");
 
   /* Stop CMT0 if running */
-  cmt_ctrl()->cmstr0 &= ~k_cmt0_cmstr_start_bit;
+  cmt_ctrl()->cmstr0 &= (uint16_t)~(uint16_t)k_cmt0_cmstr_start_bit;
 
   /* Configure CMT0 */
   /* CMCR: Clock = PCLK/128, interrupt enabled */
@@ -714,13 +717,15 @@ rx_err_t timer_init(void)
   icu()->ipr[k_vect_cmt0_cmi0] = k_cmt0_irq_priority;
 
   /* Enable CMT0 interrupt in ICU */
-  icu()->ier[k_vect_cmt0_cmi0 / k_icu_ier_bits_per_reg] |=
-    (k_ier_bit_enable_base << (k_vect_cmt0_cmi0 % k_icu_ier_bits_per_reg));
+  const uint8_t ier_bit =
+    (uint8_t)(k_vect_cmt0_cmi0 % k_icu_ier_bits_per_reg);
+  const uint8_t ier_mask = (uint8_t)(k_ier_bit_enable_base << ier_bit);
+  icu()->ier[k_vect_cmt0_cmi0 / k_icu_ier_bits_per_reg] |= ier_mask;
 
   /* Start CMT0 */
-  cmt_ctrl()->cmstr0 |= k_cmt0_cmstr_start_bit;
+  cmt_ctrl()->cmstr0 |= (uint16_t)k_cmt0_cmstr_start_bit;
 
-  if ((cmt_ctrl()->cmstr0 & k_cmt0_cmstr_start_bit) == 0) {
+  if ((cmt_ctrl()->cmstr0 & (uint16_t)k_cmt0_cmstr_start_bit) == 0) {
     return k_rx_err_hw_error;
   }
 
@@ -803,16 +808,16 @@ rx_err_t timer_stop(void)
     return k_rx_err_hw_unmapped;
   }
 
-  if ((cmt_ctrl()->cmstr0 & k_cmt0_cmstr_start_bit) == 0) {
+  if ((cmt_ctrl()->cmstr0 & (uint16_t)k_cmt0_cmstr_start_bit) == 0) {
     return k_rx_err_invalid_state;
   }
 
   rx_log_info("TIMER", "Stopping CMT0");
 
   /* Stop CMT0 */
-  cmt_ctrl()->cmstr0 &= ~k_cmt0_cmstr_start_bit;
+  cmt_ctrl()->cmstr0 &= (uint16_t)~(uint16_t)k_cmt0_cmstr_start_bit;
 
-  if ((cmt_ctrl()->cmstr0 & k_cmt0_cmstr_start_bit) != 0) {
+  if ((cmt_ctrl()->cmstr0 & (uint16_t)k_cmt0_cmstr_start_bit) != 0) {
     return k_rx_err_hw_error;
   }
 

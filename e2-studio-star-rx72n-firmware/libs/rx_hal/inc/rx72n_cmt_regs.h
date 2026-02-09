@@ -139,8 +139,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_CMT_REGS_H
-#define STAR_RX72N_CMT_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -525,5 +524,3 @@ static_assert((k_cmt3_base_addr - k_cmt2_base_addr) == 6, "CMT2 to CMT3 spacing 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_CMT_REGS_H */

@@ -100,8 +100,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX72N_ERR_H
-#define STAR_RX72N_ERR_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -1373,5 +1372,3 @@ static inline bool rx_err_is_error(rx_err_t err)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_ERR_H */

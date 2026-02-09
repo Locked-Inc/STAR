@@ -114,8 +114,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX72N_GPIO_CONSTANTS_H
-#define STAR_RX72N_GPIO_CONSTANTS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -683,5 +682,3 @@ typedef enum : uint16_t {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_GPIO_CONSTANTS_H */

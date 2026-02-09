@@ -170,8 +170,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX_PORT_CONSTANTS_H
-#define STAR_RX_PORT_CONSTANTS_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -1278,5 +1277,3 @@ static inline uint8_t rx_pin_from_pin(rx_port_pin_t pin)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_PORT_CONSTANTS_H */

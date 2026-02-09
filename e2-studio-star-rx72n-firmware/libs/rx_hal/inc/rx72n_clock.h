@@ -217,8 +217,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_CLOCK_H
-#define STAR_RX72N_CLOCK_H
+#pragma once
 
 #include <stdint.h>
 
@@ -568,5 +567,3 @@ typedef enum : uint32_t {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_CLOCK_H */

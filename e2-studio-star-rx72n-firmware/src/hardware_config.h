@@ -34,8 +34,7 @@
  * @date 2026-02-06
  */
 
-#ifndef HARDWARE_CONFIG_H
-#define HARDWARE_CONFIG_H
+#pragma once
 
 #include <stdint.h>
 
@@ -260,5 +259,3 @@ typedef enum : uint8_t {
 } encoder_3_pins_t;
 
 /** @} */ // end of encoder_pins
-
-#endif /* HARDWARE_CONFIG_H */

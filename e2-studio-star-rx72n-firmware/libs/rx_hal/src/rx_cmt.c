@@ -149,6 +149,11 @@
 #include "rx_log.h"
 #include "rx_register_protection.h"
 
+/* Interrupt handler forward declarations (required for -Wmissing-declarations) */
+void cmt1_isr(void);
+void cmt2_isr(void);
+void cmt3_isr(void);
+
 static const char* s_tag = "CMT";
 
 /* =============================================================================
@@ -427,7 +432,8 @@ static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t
   ier_bit   = vector % k_icu_ier_bits_per_reg;
 
   icu()->ipr[vector] = config.priority;
-  icu()->ier[ier_index] |= (k_cmt_bit_mask_lsb << ier_bit);
+  const uint8_t ier_mask = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
+  icu()->ier[ier_index] |= ier_mask;
   icu()->ir[vector] = k_cmt_value_zero;
 
   return k_rx_ok;
@@ -596,7 +602,7 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
  */
 rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
 {
-  uint8_t cmstr_value;
+  uint16_t cmstr_value;
 
   if ((int32_t)channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
@@ -608,34 +614,42 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
 
   /* Set corresponding bit in CMSTR register */
   switch (channel) {
-    case k_cmt_channel_0:
-      cmt_ctrl()->cmstr0 |= (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+    case k_cmt_channel_0: {
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      cmt_ctrl()->cmstr0 |= bit_mask;
       cmstr_value = cmt_ctrl()->cmstr0;
-      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0)) == k_cmt_value_zero) {
+      if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
-    case k_cmt_channel_1:
-      cmt_ctrl()->cmstr0 |= (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+    }
+    case k_cmt_channel_1: {
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      cmt_ctrl()->cmstr0 |= bit_mask;
       cmstr_value = cmt_ctrl()->cmstr0;
-      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1)) == k_cmt_value_zero) {
+      if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
-    case k_cmt_channel_2:
-      cmt_ctrl()->cmstr1 |= (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+    }
+    case k_cmt_channel_2: {
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      cmt_ctrl()->cmstr1 |= bit_mask;
       cmstr_value = cmt_ctrl()->cmstr1;
-      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0)) == k_cmt_value_zero) {
+      if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
-    case k_cmt_channel_3:
-      cmt_ctrl()->cmstr1 |= (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+    }
+    case k_cmt_channel_3: {
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      cmt_ctrl()->cmstr1 |= bit_mask;
       cmstr_value = cmt_ctrl()->cmstr1;
-      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1)) == k_cmt_value_zero) {
+      if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
+    }
     default:
       return k_rx_err_invalid_arg;
   }
@@ -650,7 +664,7 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
  */
 rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
 {
-  uint8_t cmstr_value;
+  uint16_t cmstr_value;
 
   if ((int32_t)channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
@@ -658,34 +672,42 @@ rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
 
   /* Clear corresponding bit in CMSTR register */
   switch (channel) {
-    case k_cmt_channel_0:
-      cmt_ctrl()->cmstr0 &= ~(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+    case k_cmt_channel_0: {
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      cmt_ctrl()->cmstr0 &= (uint16_t)~bit_mask;
       cmstr_value = cmt_ctrl()->cmstr0;
-      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0)) != k_cmt_value_zero) {
+      if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
-    case k_cmt_channel_1:
-      cmt_ctrl()->cmstr0 &= ~(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+    }
+    case k_cmt_channel_1: {
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      cmt_ctrl()->cmstr0 &= (uint16_t)~bit_mask;
       cmstr_value = cmt_ctrl()->cmstr0;
-      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1)) != k_cmt_value_zero) {
+      if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
-    case k_cmt_channel_2:
-      cmt_ctrl()->cmstr1 &= ~(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+    }
+    case k_cmt_channel_2: {
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      cmt_ctrl()->cmstr1 &= (uint16_t)~bit_mask;
       cmstr_value = cmt_ctrl()->cmstr1;
-      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str0)) != k_cmt_value_zero) {
+      if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
-    case k_cmt_channel_3:
-      cmt_ctrl()->cmstr1 &= ~(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+    }
+    case k_cmt_channel_3: {
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      cmt_ctrl()->cmstr1 &= (uint16_t)~bit_mask;
       cmstr_value = cmt_ctrl()->cmstr1;
-      if ((cmstr_value & (k_cmt_bit_mask_lsb << k_cmt_cmstr_str1)) != k_cmt_value_zero) {
+      if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
+    }
     default:
       return k_rx_err_invalid_arg;
   }
@@ -744,7 +766,8 @@ rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
   vector    = k_vect_cmt0_cmi0 + channel;
   ier_index = vector / k_icu_ier_bits_per_reg;
   ier_bit   = vector % k_icu_ier_bits_per_reg;
-  icu()->ier[ier_index] &= ~(k_cmt_bit_mask_lsb << ier_bit);
+  const uint8_t ier_mask = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
+  icu()->ier[ier_index] &= (uint8_t)~ier_mask;
 
   /* Clear callback */
   s_cmt_callback[channel]    = nullptr;

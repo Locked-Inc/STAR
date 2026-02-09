@@ -50,8 +50,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_RX_BUS_SMBUS_H
-#define MOCK_RX_BUS_SMBUS_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -156,5 +155,3 @@ bool mock_smbus_was_init_called(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_RX_BUS_SMBUS_H */

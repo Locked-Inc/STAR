@@ -119,8 +119,7 @@
  * @endinternal
  */
 
-#ifndef STAR_RX72N_USB_PRIVATE_H
-#define STAR_RX72N_USB_PRIVATE_H
+#pragma once
 
 #include <stdint.h>
 
@@ -793,5 +792,3 @@ extern uint32_t rx_usb_rx_push(rx_usb_port_id_t port, const uint8_t* data, uint3
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_USB_PRIVATE_H */

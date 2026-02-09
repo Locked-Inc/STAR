@@ -154,8 +154,7 @@
  * @{
  */
 
-#ifndef STAR_RX72N_PORT_REGS_H
-#define STAR_RX72N_PORT_REGS_H
+#pragma once
 
 #include <assert.h>
 #include <stddef.h>
@@ -854,5 +853,3 @@ static inline volatile uint16_t* portj_odr(void)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_PORT_REGS_H */

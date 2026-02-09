@@ -228,8 +228,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX72N_BUS_SMBUS_H
-#define STAR_RX72N_BUS_SMBUS_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -981,5 +980,3 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_BUS_SMBUS_H */

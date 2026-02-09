@@ -23,8 +23,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef MOCK_RX_CLOCK_POWER_INIT_H
-#define MOCK_RX_CLOCK_POWER_INIT_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -73,5 +72,3 @@ bool mock_clock_power_init_was_called(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_RX_CLOCK_POWER_INIT_H */

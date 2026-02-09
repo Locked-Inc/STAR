@@ -27,8 +27,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef STAR_MOCK_RX_BQ4050_H
-#define STAR_MOCK_RX_BQ4050_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -139,5 +138,3 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_MOCK_RX_BQ4050_H */

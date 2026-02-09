@@ -184,8 +184,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX_REGISTER_GUARD_H
-#define STAR_RX_REGISTER_GUARD_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -960,5 +959,3 @@ void rx_register_guard_reset_count(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_REGISTER_GUARD_H */

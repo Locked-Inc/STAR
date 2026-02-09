@@ -135,8 +135,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX_FRAME_ASCII_H
-#define STAR_RX_FRAME_ASCII_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -512,5 +511,3 @@ const char* rx_frame_ascii_flags_str(uint8_t flags, char* buffer, uint32_t buffe
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_FRAME_ASCII_H */

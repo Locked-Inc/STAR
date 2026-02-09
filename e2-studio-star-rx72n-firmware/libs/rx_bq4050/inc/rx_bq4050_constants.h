@@ -64,8 +64,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_BQ4050_CONSTANTS_H
-#define STAR_RX72N_BQ4050_CONSTANTS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -799,5 +798,3 @@ static const uint16_t s_bq4050_time_to_full_invalid = 0xFFFF;
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_BQ4050_CONSTANTS_H */

@@ -253,8 +253,7 @@
  * @see docs/sections/03_hardware_pinout.tex for hardware pinout documentation
  */
 
-#ifndef STAR_RX72N_HARDWARE_H
-#define STAR_RX72N_HARDWARE_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -1470,5 +1469,3 @@ void uart_debug_puthex(uint32_t value, uint8_t digits);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_HARDWARE_H */

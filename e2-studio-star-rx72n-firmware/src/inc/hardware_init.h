@@ -9,8 +9,7 @@
  * @see hardware_init.c Implementation
  */
 
-#ifndef STAR_HARDWARE_INIT_H
-#define STAR_HARDWARE_INIT_H
+#pragma once
 
 #include "rx_err.h"
 
@@ -32,5 +31,3 @@
  * @see main() Calls this function during boot
  */
 rx_err_t hardware_init(void);
-
-#endif /* STAR_HARDWARE_INIT_H */

@@ -262,8 +262,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_HCSR04_H
-#define STAR_RX72N_HCSR04_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -816,5 +815,3 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_HCSR04_H */

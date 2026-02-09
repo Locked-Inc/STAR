@@ -28,8 +28,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef STAR_MOCK_RX_DS18B20_H
-#define STAR_MOCK_RX_DS18B20_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -116,5 +115,3 @@ rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle, float* temp_ce
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_MOCK_RX_DS18B20_H */

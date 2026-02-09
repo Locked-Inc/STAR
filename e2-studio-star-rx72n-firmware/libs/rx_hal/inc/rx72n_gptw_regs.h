@@ -122,8 +122,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX72N_GPTW_REGS_H
-#define STAR_RX72N_GPTW_REGS_H
+#pragma once
 
 
 #include <stdint.h>
@@ -792,5 +791,3 @@ static_assert(k_gptw3_base_addr - k_gptw2_base_addr == k_gptw_channel_offset,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_GPTW_REGS_H */

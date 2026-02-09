@@ -237,8 +237,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_IWDT_H
-#define STAR_RX72N_IWDT_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -774,5 +773,3 @@ void rx_iwdt_test_reset(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_IWDT_H */

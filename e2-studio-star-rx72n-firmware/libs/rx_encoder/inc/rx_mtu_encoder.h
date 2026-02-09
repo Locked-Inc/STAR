@@ -204,8 +204,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX72N_MTU_ENCODER_H
-#define STAR_RX72N_MTU_ENCODER_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -1099,5 +1098,3 @@ rx_encoder_read_velocity(float* velocity_rps, float delta_time_s, rx_mtu_channel
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_MTU_ENCODER_H */

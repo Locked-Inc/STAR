@@ -145,8 +145,7 @@
  * @test test_rx_harq.c Unit tests for HARQ protocol
  */
 
-#ifndef STAR_RX_HARQ_H
-#define STAR_RX_HARQ_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -435,5 +434,3 @@ uint8_t rx_harq_get_retry_count(const rx_harq_handle_t* harq);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_HARQ_H */

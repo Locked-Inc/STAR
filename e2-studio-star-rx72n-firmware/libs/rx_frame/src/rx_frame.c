@@ -691,11 +691,11 @@ rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
                                const uint8_t* payload,
                                const uint32_t payload_len)
 {
-  if (frame == NULL) {
+  if (frame == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
-  if (payload_len > 0 && payload == NULL) {
+  if (payload_len > 0 && payload == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
@@ -725,11 +725,11 @@ rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
                                const uint8_t* payload,
                                const uint32_t payload_len)
 {
-  if (frame == NULL) {
+  if (frame == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
-  if (payload_len > 0 && payload == NULL) {
+  if (payload_len > 0 && payload == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
@@ -756,7 +756,7 @@ rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
 
 rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence)
 {
-  if (frame == NULL) {
+  if (frame == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
@@ -775,7 +775,7 @@ rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence)
 
 rx_err_t rx_frame_create_reset_ack(rx_frame_t* frame, const uint16_t sequence)
 {
-  if (frame == NULL) {
+  if (frame == nullptr) {
     return k_rx_err_invalid_arg;
   }
 

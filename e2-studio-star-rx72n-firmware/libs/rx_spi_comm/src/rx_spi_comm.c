@@ -1439,6 +1439,8 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  *
  * @since Version 1.0.0
  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstack-usage="
 rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
                           const rx_frame_type_t type,
                           const uint8_t         flags,
@@ -1590,6 +1592,7 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, const uint16_t sequ
   /* Transfer via SPI (waits for host ACK internally) */
   return internal_spi_transfer(handle, wire_buffer, wire_len, nullptr, 0);
 }
+#pragma GCC diagnostic pop
 
 /* =============================================================================
  * Receive API - Internal Helpers

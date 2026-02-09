@@ -66,8 +66,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_MPU_REGS_H
-#define STAR_RX72N_MPU_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -968,5 +967,3 @@ static_assert(k_mpests_drw == 0x04U,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_MPU_REGS_H */

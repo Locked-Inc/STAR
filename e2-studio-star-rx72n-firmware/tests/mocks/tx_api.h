@@ -23,8 +23,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef TX_API_H
-#define TX_API_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -709,5 +708,3 @@ uint32_t mock_tx_get_thread_create_count(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* TX_API_H */

@@ -150,8 +150,7 @@
  * @since 1.0.0
  */
 
-#ifndef STAR_RX72N_CMT_REGS_H
-#define STAR_RX72N_CMT_REGS_H
+#pragma once
 
 #include "mock_rx_onewire_hw.h"
 
@@ -310,5 +309,3 @@ typedef mock_cmt_ctrl_t    rx_cmt_control_regs_t;
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_CMT_REGS_H */

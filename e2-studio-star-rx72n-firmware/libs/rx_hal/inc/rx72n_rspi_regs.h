@@ -131,8 +131,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_RSPI_REGS_H
-#define STAR_RX72N_RSPI_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -935,5 +934,3 @@ static_assert((k_rspi2_base_addr - k_rspi1_base_addr) == 0x1C0,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_RSPI_REGS_H */

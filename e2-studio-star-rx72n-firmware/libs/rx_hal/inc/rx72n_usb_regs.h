@@ -23,8 +23,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_USB_REGS_H
-#define STAR_RX72N_USB_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -461,5 +460,3 @@ static_assert(offsetof(rx_usb_regs_t, physlew) == 0xF0, "PHYSLEW");
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_USB_REGS_H */

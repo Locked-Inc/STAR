@@ -349,8 +349,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX_DRV8243_SPI_REGS_H
-#define STAR_RX_DRV8243_SPI_REGS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -2669,5 +2668,3 @@ typedef enum : uint8_t {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_DRV8243_SPI_REGS_H */

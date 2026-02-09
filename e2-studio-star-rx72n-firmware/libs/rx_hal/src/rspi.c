@@ -606,7 +606,7 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
     rx_data[i] = (uint8_t)rspi->spdr;
 
     /* Clear status flags */
-    rspi->spsr &= ~(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
+    rspi->spsr &= (uint8_t)~(uint8_t)(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
   }
 
   return k_rx_ok;
@@ -1121,10 +1121,12 @@ rx_err_t rspi_controller_set_cs(const uint8_t channel, const bool active)
 
   if (active) {
     /* CS active (low) */
-    port_regs->podr &= ~((uint32_t)s_rspi_bit_set << pin);
+    const uint8_t pin_mask = (uint8_t)((uint32_t)s_rspi_bit_set << pin);
+    port_regs->podr &= (uint8_t)~pin_mask;
   } else {
     /* CS inactive (high) */
-    port_regs->podr |= ((uint32_t)s_rspi_bit_set << pin);
+    const uint8_t pin_mask = (uint8_t)((uint32_t)s_rspi_bit_set << pin);
+    port_regs->podr |= pin_mask;
   }
 
   return k_rx_ok;
@@ -1243,7 +1245,7 @@ static rx_err_t rspi_controller_do_16bit_transfer(volatile rx_rspi_regs_t* rspi,
   *rx_data = (uint16_t)rspi->spdr;
 
   /* Clear status flags */
-  rspi->spsr &= ~(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
+  rspi->spsr &= (uint8_t)~(uint8_t)(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
 
   return k_rx_ok;
 }

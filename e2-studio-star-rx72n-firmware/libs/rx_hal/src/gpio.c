@@ -376,11 +376,13 @@ rx_err_t gpio_set_output(const rx_port_pin_t pin)
   /* Get port base address */
   volatile rx_port_regs_t* port_base = rx_port_get_base(port);
 
+  const uint8_t pin_mask = (uint8_t)(k_gpio_bit_set << pin_num);
+
   /* Set as GPIO mode (not peripheral) */
-  port_base->pmr &= ~(k_gpio_bit_set << pin_num);
+  port_base->pmr &= (uint8_t)~pin_mask;
 
   /* Set as output */
-  port_base->pdr |= (k_gpio_bit_set << pin_num);
+  port_base->pdr |= pin_mask;
 
   rx_log_debug("GPIO", "Pin configured as output");
 
@@ -490,10 +492,11 @@ rx_err_t gpio_set_input(const rx_port_pin_t pin)
   volatile rx_port_regs_t* port_base = rx_port_get_base(port);
 
   /* Set as GPIO mode */
-  port_base->pmr &= ~(k_gpio_bit_set << pin_num);
+  const uint8_t pin_mask = (uint8_t)(k_gpio_bit_set << pin_num);
+  port_base->pmr &= (uint8_t)~pin_mask;
 
   /* Set as input */
-  port_base->pdr &= ~(k_gpio_bit_set << pin_num);
+  port_base->pdr &= (uint8_t)~pin_mask;
 
   rx_log_debug("GPIO", "Pin configured as input");
 
@@ -568,7 +571,8 @@ rx_err_t gpio_write_high(const rx_port_pin_t pin)
   /* Get port base address */
   volatile rx_port_regs_t* port_base = rx_port_get_base(port);
 
-  port_base->podr |= (k_gpio_bit_set << pin_num);
+  const uint8_t pin_mask = (uint8_t)(k_gpio_bit_set << pin_num);
+  port_base->podr |= pin_mask;
 
   return k_rx_ok;
 }
@@ -642,7 +646,8 @@ rx_err_t gpio_write_low(const rx_port_pin_t pin)
   /* Get port base address */
   volatile rx_port_regs_t* port_base = rx_port_get_base(port);
 
-  port_base->podr &= ~(k_gpio_bit_set << pin_num);
+  const uint8_t pin_mask = (uint8_t)(k_gpio_bit_set << pin_num);
+  port_base->podr &= (uint8_t)~pin_mask;
 
   return k_rx_ok;
 }
@@ -719,7 +724,8 @@ rx_err_t gpio_toggle(const rx_port_pin_t pin)
   /* Get port base address */
   volatile rx_port_regs_t* port_base = rx_port_get_base(port);
 
-  port_base->podr ^= (k_gpio_bit_set << pin_num);
+  const uint8_t pin_mask = (uint8_t)(k_gpio_bit_set << pin_num);
+  port_base->podr ^= pin_mask;
 
   return k_rx_ok;
 }
@@ -827,7 +833,8 @@ rx_err_t gpio_read(const rx_port_pin_t pin, bool* value)
   /* Get port base address */
   const volatile rx_port_regs_t* port_base = rx_port_get_base(port);
 
-  *value = (port_base->pidr & (k_gpio_bit_set << pin_num)) != k_gpio_bit_clear;
+  const uint8_t pin_mask = (uint8_t)(k_gpio_bit_set << pin_num);
+  *value = (port_base->pidr & pin_mask) != k_gpio_bit_clear;
 
   return k_rx_ok;
 }

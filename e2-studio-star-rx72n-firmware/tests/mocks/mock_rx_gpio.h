@@ -34,8 +34,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_RX_GPIO_H
-#define MOCK_RX_GPIO_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -211,5 +210,3 @@ rx_err_t gpio_read(rx_port_pin_t pin, bool* high);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_RX_GPIO_H */

@@ -1723,6 +1723,8 @@ static void internal_telem_task_entry(ULONG input)
  * - Collect raw sensor data (motor/BMS/temp tasks' job)
  * - Parse received commands (comm_task's job)
  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstack-usage="
 static rx_err_t internal_build_and_send_telemetry(void)
 {
   rx_err_t              err;
@@ -1818,3 +1820,4 @@ static rx_err_t internal_build_and_send_telemetry(void)
 
   return k_rx_ok;
 }
+#pragma GCC diagnostic pop

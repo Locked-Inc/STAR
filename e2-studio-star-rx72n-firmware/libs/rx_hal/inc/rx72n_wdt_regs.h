@@ -138,8 +138,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_WDT_REGS_H
-#define STAR_RX72N_WDT_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -741,5 +740,3 @@ static_assert(offsetof(rx_wdt_regs_t, wdtrcr) == 0x06, "WDTRCR offset incorrect"
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_WDT_REGS_H */

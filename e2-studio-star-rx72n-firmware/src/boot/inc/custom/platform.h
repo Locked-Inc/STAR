@@ -17,10 +17,7 @@
  * This approach maintains boot code without Smart Configurator while avoiding deleted files.
  ***********************************************************************************************************************/
 
-#ifndef PLATFORM_H
-#define PLATFORM_H
+#pragma once
 
 /* Include our boot-compatible r_bsp.h (NOT the SMC version which tries to include deleted files) */
 #include "r_bsp.h"
-
-#endif /* PLATFORM_H */

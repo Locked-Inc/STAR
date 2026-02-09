@@ -241,8 +241,7 @@
  * @since 2026-01-04
  */
 
-#ifndef STAR_RX_MOTOR_H
-#define STAR_RX_MOTOR_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -594,5 +593,3 @@ typedef struct {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_MOTOR_H */

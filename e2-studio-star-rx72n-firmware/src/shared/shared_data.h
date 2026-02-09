@@ -9,8 +9,7 @@
  * @see shared_data.c Implementation
  */
 
-#ifndef STAR_SHARED_DATA_H
-#define STAR_SHARED_DATA_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -59,7 +58,7 @@ typedef struct {
 typedef struct {
     float current_velocity_mps[4];  /**< Current velocity for each motor (m/s) */
     float current_ma[4];             /**< Current for each motor (mA) */
-    uint32_t encoder_counts[4];     /**< Encoder counts for each motor */
+    int32_t encoder_counts[4];      /**< Encoder counts for each motor (signed) */
     uint8_t fault_flags[4];          /**< Fault flags for each motor */
     float duty_cycle_percent[4];    /**< PWM duty cycle for each motor (%) */
     bool estop_active;               /**< Emergency stop active flag */
@@ -327,4 +326,15 @@ void shared_data_update_last_comm_tick(void);
  */
 rx_err_t shared_data_set_event(shared_event_flags_t flags);
 
-#endif /* STAR_SHARED_DATA_H */
+/**
+ * @brief Wait for event flags with optional timeout
+ * @param[in]  flags            Event flags to wait for (OR combination)
+ * @param[in]  wait_option      ThreadX wait option (TX_WAIT_FOREVER, tick count, TX_NO_WAIT)
+ * @param[out] out_actual_flags Actual flags that were set (may be NULL)
+ * @return rx_err_t Error code
+ * @retval k_rx_ok             Flags received
+ * @retval k_rx_err_timeout    Wait timed out (TX_NO_EVENTS)
+ * @retval k_rx_err_not_initialized Shared data not initialized
+ * @retval k_rx_err_rtos_error ThreadX error
+ */
+rx_err_t shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_t* out_actual_flags);

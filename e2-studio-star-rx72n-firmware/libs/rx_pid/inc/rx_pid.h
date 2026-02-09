@@ -272,8 +272,7 @@
  * @see matlab/pid_discretize.m for discrete implementation
  */
 
-#ifndef STAR_RX_PID_H
-#define STAR_RX_PID_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -656,5 +655,3 @@ rx_pid_set_integral_limits(rx_pid_handle_t* handle, float integral_min, float in
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_PID_H */
