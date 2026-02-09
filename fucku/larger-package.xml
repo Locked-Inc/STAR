@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Board>
+    <Device Family="RX72N" PartNumber="R5F572NNHxFB" Package="QFP" PinCount="144"/>
+    <Pin>
+        <Function Id="EMLE" Pin="10" Port="EMLE" Group=""/>
+        <Function Id="XTAL" Pin="20" Port="P37" Group=""/>
+        <Function Id="TMS" Pin="28" Port="P31" Group=""/>
+        <Function Id="EXTAL" Pin="22" Port="P36" Group=""/>
+        <Function Id="TRST#" Pin="25" Port="P34" Group=""/>
+        <Function Id="TCK" Pin="30" Port="P27" Group=""/>
+        <Function Id="TDI" Pin="29" Port="P30" Group=""/>
+        <Function Id="TDO" Pin="31" Port="P26" Group=""/>
+    </Pin>
+</Board>

@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 build-rx72n test-rx72n clean-rx72n
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n
 
 help:
 	@echo "STAR Project Development Helper"
@@ -18,8 +18,9 @@ help:
 	@echo "  make shell        - Start an interactive shell in a new ephemeral container"
 	@echo ""
 	@echo "RX72N Firmware:"
-	@echo "  make build-rx72n  - Build RX72N firmware (regenerates protos first)"
-	@echo "  make test-rx72n   - Run RX72N unit tests (regenerates protos first)"
+	@echo "  make proto-gen-firmware - Generate nanopb protos for RX72N firmware"
+	@echo "  make test-rx72n         - Run RX72N unit tests (regenerates protos first)"
+	@echo "  Note: RX72N firmware is built in e2 studio, not via Makefile"
 	@echo ""
 	@echo "Protocol Buffers:"
 	@echo "  make proto-gen    - Generate all proto code (Go, TypeScript, C/nanopb)"
@@ -98,22 +99,11 @@ proto-gen-ros2:
 # Copy nanopb outputs to firmware include directory
 proto-gen-firmware: proto-gen-go
 	@echo "Preparing firmware nanopb headers/sources..."
-	@mkdir -p star-rx72n-firmware/lib/rx_nanopb/inc/gen
-	@cp -v star-proto/gen/nanopb/star/v1/*.pb.h star-proto/gen/nanopb/star/v1/*.pb.c star-rx72n-firmware/lib/rx_nanopb/inc/gen/
-	@echo "✓ Firmware protos updated: star-rx72n-firmware/lib/rx_nanopb/inc/gen"
-
-# Build RX72N firmware (regenerates protos first)
-build-rx72n: proto-gen
-	@echo "Building RX72N firmware..."
-	@cd star-rx72n-firmware && bash build.sh
+	@mkdir -p e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1
+	@cp -v star-proto/gen/nanopb/star/v1/*.pb.h star-proto/gen/nanopb/star/v1/*.pb.c e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1/
+	@echo "✓ Firmware protos updated: e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1"
 
 # Test RX72N firmware (regenerates protos first)
-test-rx72n: proto-gen
+test-rx72n: proto-gen-firmware
 	@echo "Running RX72N unit tests..."
-	@cd star-rx72n-firmware/tests && bash run_tests.sh
-
-# Clean RX72N build artifacts
-clean-rx72n:
-	@echo "Cleaning RX72N build directory..."
-	@cd star-rx72n-firmware && bash clean.sh
-	@echo "✓ RX72N build cleaned"
+	@cd e2-studio-star-rx72n-firmware/tests && bash run_tests.sh

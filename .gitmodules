@@ -1,6 +1,3 @@
-[submodule "star-rx72n-firmware/lib/threadx"]
-	path = star-rx72n-firmware/lib/threadx
-	url = https://github.com/eclipse-threadx/threadx.git
-[submodule "star-rx72n-firmware/lib/rx_nanopb/nanopb"]
-	path = star-rx72n-firmware/lib/rx_nanopb/nanopb
+[submodule "e2-studio-star-rx72n-firmware/libs/rx_nanopb/nanopb"]
+	path = e2-studio-star-rx72n-firmware/libs/rx_nanopb/nanopb
 	url = https://github.com/nanopb/nanopb.git

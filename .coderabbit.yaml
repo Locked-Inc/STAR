@@ -4,19 +4,26 @@
 #
 # This configuration enforces:
 # - NASA Power of 10 rules for safety-critical firmware
+# - Comprehensive Doxygen documentation (ALL applicable tags, state diagrams, examples)
 # - Inclusive terminology (Controller/Peripheral, COPI/CIPO)
 # - Zero tolerance for magic numbers in C/C++
 # - SOLID design principles
-# - No backward compatibility (project has no releases)
+# - ZERO backward compatibility requirements (in-house only, no releases)
 # - No AI attribution in commits/PRs
+#
+# BACKWARD COMPATIBILITY POLICY:
+# This is an in-house project with NO public releases. Breaking changes are ENCOURAGED
+# as long as main branch remains in a working state. REJECT any backward compatibility
+# shims, deprecation warnings, function aliases, or compatibility layers.
 #
 # For more details, see:
 # - CLAUDE.md (root) - Overall project guidelines
+# - DOXYGEN_ROADMAP.md - Complete Doxygen documentation reference (25 sections, 100+ tags)
 # - star-gateway/CLAUDE.md - Gateway architecture
 # - star-rx72n-firmware/CLAUDE.md - Firmware development guide
 
 # Tone instructions (general guidance, max 250 chars)
-tone_instructions: "Assertive code reviews enforcing NASA Power of 10 rules, inclusive terminology (Controller/Peripheral not master/slave), zero tolerance for magic numbers in C/C++, and SOLID principles."
+tone_instructions: "Assertive reviews enforcing: NASA Power of 10, C23 typed enums, comprehensive Doxygen (ALL tags, diagrams), inclusive terminology (Controller/Peripheral), zero magic numbers, SOLID principles, zero backward compatibility."
 
 reviews:
   profile: assertive
@@ -45,6 +52,13 @@ reviews:
         - Test coverage required for all new functions
         - Benchmark performance-critical paths (SPI, FEC, HARQ)
 
+        Backward Compatibility (CRITICAL - REJECT violations):
+        - ZERO backward compatibility requirements (in-house only, no releases)
+        - Breaking changes are ENCOURAGED if they improve code quality
+        - FORBIDDEN: Function aliases, deprecation warnings, compatibility shims
+        - REQUIRED: Update all call sites directly when refactoring
+        - REQUIRED: Ensure main branch remains in working state after changes
+
     - path: "star-rx72n-firmware/**/*.{c,h}"
       instructions: |
         Review C firmware code with STRICT compliance checking:
@@ -52,7 +66,74 @@ reviews:
         - Enum underlying type syntax like `typedef enum : uint8_t` is valid and REQUIRED
         - C99-style for-loop declarations are allowed; do not require C89 loop style
         - ALL enums must specify a C23 underlying type (e.g., `typedef enum : uint8_t { ... } name_t;`)
-        - ALL functions/methods must include Doxygen comments
+
+        Doxygen Documentation (CRITICAL - MAXIMUM COVERAGE REQUIRED):
+        - ZERO TOLERANCE for undocumented code - ALL elements must have comprehensive Doxygen comments
+        - See DOXYGEN_ROADMAP.md for complete reference (25 subsections, 100+ tags, exhaustive templates)
+        - REJECT any PR with missing or incomplete documentation
+
+        Documentation Requirements by Element Type:
+
+        Functions (MANDATORY tags):
+        - @brief (one-line summary)
+        - @details (multi-paragraph with algorithm explanation)
+        - @param[in/out/in,out] for ALL parameters (with direction, valid range, units, constraints)
+        - @return (return value description)
+        - @retval for EVERY possible return value (k_rx_ok, all error codes)
+        - @pre (preconditions, minimum 2 per NASA Rule 5)
+        - @post (postconditions, minimum 2 per NASA Rule 5)
+        - @note (thread safety statement REQUIRED)
+        - @code (usage example if non-trivial)
+        - @see (cross-references to related functions)
+        - @since (version introduced)
+        Additional when applicable: @par (Thread Safety/Performance/Re-entrancy/State Machine), @warning, @attention, @invariant, @todo (with issue tracker), @bug (with issue tracker), @deprecated, @test, @startuml/@dot/@msc (diagrams), @callgraph/@callergraph
+
+        Structs/Enums (MANDATORY tags):
+        - @struct/@enum (structure/enumeration tag)
+        - @brief (one-line summary)
+        - @details (detailed explanation)
+        - /**< inline comment for EVERY member/value with full explanation
+        - @invariant (constraints on fields)
+        - @code (usage example)
+        - @see (related types)
+        - @since (version introduced)
+        - State machines MUST include @startuml diagram showing all transitions
+
+        Variables (MANDATORY tags):
+        - @var/@def (variable/macro tag)
+        - @brief (one-line summary)
+        - @details (purpose and usage)
+        - @note (access restrictions)
+        - @warning (direct modification warnings for static variables)
+        - @since (version introduced)
+
+        State Machines (MANDATORY):
+        - @startuml state diagram showing all state transitions
+        - Each state documented with entry/exit actions
+        - Transition conditions and guards documented
+        - State transition table in @par section
+
+        File Headers (MANDATORY):
+        - @file (filename)
+        - @brief (one-line summary)
+        - @details (multi-paragraph explanation)
+        - Hardware requirements (if applicable)
+        - NASA Power of 10 compliance section (@par)
+        - SOLID principles adherence (@par)
+        - Links to related .tex documentation (@see)
+        - @author, @date, @version, @copyright
+
+        Enforcement Rules:
+        - If a tag is applicable, it MUST be used (do not omit tags)
+        - All struct members must have inline /**< comments
+        - All enum values must have inline /**< comments with full explanation
+        - State machines require PlantUML diagrams (@startuml/@enduml)
+        - Complex flows require Graphviz diagrams (@dot/@enddot)
+        - Protocol sequences require MSC diagrams (@msc/@endmsc)
+        - Every @todo and @bug must reference issue tracker ticket
+        - All function examples must use @code/@endcode
+        - All cross-references must use @see/@sa/@ref
+        - Pre/post conditions minimum 2 each (NASA Rule 5)
 
         NASA Power of 10 Rules (CRITICAL - REJECT violations):
         - Rule 1: No goto, setjmp/longjmp, or recursion
@@ -74,10 +155,18 @@ reviews:
         - const float ONLY for floating-point (enum cannot represent floats)
         - Macros ONLY for: reducing code duplication, conditional compilation, build configuration flags
         - Hardware register access: Use inline accessor functions with enum addresses (NEVER macros)
-        - No backward compatibility shims (project has no releases yet)
         - Include guards: STAR_RX72N_FILENAME_H format
         - Doxygen: /** for multi-line blocks, /**< for inline comments
         - Line limit: 100 characters maximum
+
+        Backward Compatibility (CRITICAL - REJECT violations):
+        - ZERO backward compatibility requirements (in-house only, no releases)
+        - Breaking changes are ENCOURAGED if they improve code quality
+        - FORBIDDEN: Function aliases (e.g., #define old_name new_name)
+        - FORBIDDEN: Deprecation macros, compatibility shims, wrapper functions
+        - REQUIRED: Update all call sites directly when refactoring APIs
+        - REQUIRED: Delete old code immediately - no gradual transitions
+        - REQUIRED: Ensure main branch remains in working state after changes
 
         Magic Numbers (ZERO TOLERANCE):
         - ALL numeric literals must be named enums or const
@@ -104,7 +193,74 @@ reviews:
         - Enum underlying type syntax like `typedef enum : uint8_t` is valid and REQUIRED
         - C99-style for-loop declarations are allowed; do not require C89 loop style
         - ALL enums must specify a C23 underlying type (e.g., `typedef enum : uint8_t { ... } name_t;`)
-        - ALL functions/methods must include Doxygen comments
+
+        Doxygen Documentation (CRITICAL - MAXIMUM COVERAGE REQUIRED):
+        - ZERO TOLERANCE for undocumented code - ALL elements must have comprehensive Doxygen comments
+        - See DOXYGEN_ROADMAP.md for complete reference (25 subsections, 100+ tags, exhaustive templates)
+        - REJECT any PR with missing or incomplete documentation
+
+        Documentation Requirements by Element Type:
+
+        Functions (MANDATORY tags):
+        - @brief (one-line summary)
+        - @details (multi-paragraph with algorithm explanation)
+        - @param[in/out/in,out] for ALL parameters (with direction, valid range, units, constraints)
+        - @return (return value description)
+        - @retval for EVERY possible return value (k_rx_ok, all error codes)
+        - @pre (preconditions, minimum 2 per NASA Rule 5)
+        - @post (postconditions, minimum 2 per NASA Rule 5)
+        - @note (thread safety statement REQUIRED)
+        - @code (usage example if non-trivial)
+        - @see (cross-references to related functions)
+        - @since (version introduced)
+        Additional when applicable: @par (Thread Safety/Performance/Re-entrancy/State Machine), @warning, @attention, @invariant, @todo (with issue tracker), @bug (with issue tracker), @deprecated, @test, @startuml/@dot/@msc (diagrams), @callgraph/@callergraph
+
+        Structs/Enums (MANDATORY tags):
+        - @struct/@enum (structure/enumeration tag)
+        - @brief (one-line summary)
+        - @details (detailed explanation)
+        - /**< inline comment for EVERY member/value with full explanation
+        - @invariant (constraints on fields)
+        - @code (usage example)
+        - @see (related types)
+        - @since (version introduced)
+        - State machines MUST include @startuml diagram showing all transitions
+
+        Variables (MANDATORY tags):
+        - @var/@def (variable/macro tag)
+        - @brief (one-line summary)
+        - @details (purpose and usage)
+        - @note (access restrictions)
+        - @warning (direct modification warnings for static variables)
+        - @since (version introduced)
+
+        State Machines (MANDATORY):
+        - @startuml state diagram showing all state transitions
+        - Each state documented with entry/exit actions
+        - Transition conditions and guards documented
+        - State transition table in @par section
+
+        File Headers (MANDATORY):
+        - @file (filename)
+        - @brief (one-line summary)
+        - @details (multi-paragraph explanation)
+        - Hardware requirements (if applicable)
+        - NASA Power of 10 compliance section (@par)
+        - SOLID principles adherence (@par)
+        - Links to related .tex documentation (@see)
+        - @author, @date, @version, @copyright
+
+        Enforcement Rules:
+        - If a tag is applicable, it MUST be used (do not omit tags)
+        - All struct members must have inline /**< comments
+        - All enum values must have inline /**< comments with full explanation
+        - State machines require PlantUML diagrams (@startuml/@enduml)
+        - Complex flows require Graphviz diagrams (@dot/@enddot)
+        - Protocol sequences require MSC diagrams (@msc/@endmsc)
+        - Every @todo and @bug must reference issue tracker ticket
+        - All function examples must use @code/@endcode
+        - All cross-references must use @see/@sa/@ref
+        - Pre/post conditions minimum 2 each (NASA Rule 5)
 
         NASA Power of 10 Rules (CRITICAL - REJECT violations):
         - Rule 1: No goto, setjmp/longjmp, or recursion
@@ -126,10 +282,18 @@ reviews:
         - const float ONLY for floating-point (enum cannot represent floats)
         - Macros ONLY for: reducing code duplication, conditional compilation, build configuration flags
         - Hardware register access: Use inline accessor functions with enum addresses (NEVER macros)
-        - No backward compatibility shims (project has no releases yet)
         - Include guards: STAR_RX72N_FILENAME_H format
         - Doxygen: /** for multi-line blocks, /**< for inline comments
         - Line limit: 100 characters maximum
+
+        Backward Compatibility (CRITICAL - REJECT violations):
+        - ZERO backward compatibility requirements (in-house only, no releases)
+        - Breaking changes are ENCOURAGED if they improve code quality
+        - FORBIDDEN: Function aliases (e.g., #define old_name new_name)
+        - FORBIDDEN: Deprecation macros, compatibility shims, wrapper functions
+        - REQUIRED: Update all call sites directly when refactoring APIs
+        - REQUIRED: Delete old code immediately - no gradual transitions
+        - REQUIRED: Ensure main branch remains in working state after changes
 
         Magic Numbers (ZERO TOLERANCE):
         - ALL numeric literals must be named enums or const
@@ -182,10 +346,52 @@ reviews:
         - Catch std::exception in all callbacks
         - Log errors with RCLCPP_ERROR including context
 
-        Documentation:
-        - Doxygen comments: /** and /**< (same as C firmware)
-        - Document all public methods, classes, and non-obvious logic
-        - Include @brief, @param, @return tags
+        Doxygen Documentation (CRITICAL - MAXIMUM COVERAGE REQUIRED):
+        - ZERO TOLERANCE for undocumented code - ALL elements must have comprehensive Doxygen comments
+        - See DOXYGEN_ROADMAP.md for complete reference and C++ specific examples
+        - REJECT any PR with missing or incomplete documentation
+
+        Documentation Requirements for C++:
+
+        Classes/Nodes (MANDATORY tags):
+        - @class/@brief/@details
+        - Inheritance information (@extends, @implements)
+        - Collaboration diagrams when applicable
+        - Usage examples (@code)
+        - @see references to related classes
+        - @since version information
+
+        Methods (MANDATORY tags):
+        - @brief (one-line summary)
+        - @details (implementation explanation)
+        - @param[in/out/in,out] for ALL parameters
+        - @return/@retval (all possible return values)
+        - @throw/@exception (all exceptions that can be thrown)
+        - @note (thread safety for ROS2 callbacks)
+        - @code usage examples
+        - @see cross-references
+
+        Member Variables (MANDATORY):
+        - /**< inline documentation for ALL members
+        - Purpose, units, valid ranges
+        - Thread safety notes for shared state
+
+        State Machines (MANDATORY):
+        - Lifecycle nodes MUST include @startuml state diagram
+        - Document all lifecycle transitions (configure, activate, deactivate, cleanup)
+        - Entry/exit actions documented
+
+        ROS2 Specific Documentation:
+        - Document QoS settings and rationale
+        - Document callback execution context (thread, interrupt)
+        - Document timer frequencies and justification
+        - Document topic/service names and message types
+
+        Enforcement:
+        - All public methods must be documented
+        - All lifecycle callbacks must include state transition info
+        - All callbacks must document thread safety
+        - Complex interactions must have sequence diagrams (@msc)
 
         Formatting:
         - Must pass clang-format check (star-ros2/.clang-format)
@@ -195,6 +401,13 @@ reviews:
         Inclusive Terminology (CRITICAL - REJECT violations):
         - FORBIDDEN: master/slave, MOSI/MISO, blacklist/whitelist
         - REQUIRED: Controller/Peripheral, COPI/CIPO, denylist/allowlist
+
+        Backward Compatibility (CRITICAL - REJECT violations):
+        - ZERO backward compatibility requirements (in-house only, no releases)
+        - Breaking changes are ENCOURAGED if they improve code quality
+        - FORBIDDEN: Compatibility layers, deprecated fields marked with comments
+        - REQUIRED: Delete unused message types and fields immediately
+        - REQUIRED: Ensure all consumers updated when changing ROS2 message APIs
 
     - path: "star-proto/**/*.proto"
       instructions: |
@@ -221,13 +434,14 @@ reviews:
         - No dynamic allocation - all strings/arrays must have fixed max sizes
         - Document size constraints in comments
 
-        Breaking Changes:
-        - NEVER change field numbers
-        - NEVER change field types
-        - NEVER remove required fields
-        - OK to add optional fields
-        - OK to add new enum values (not zero)
-        - OK to add new messages/services
+        Breaking Changes (Relaxed for in-house project):
+        - Field numbers CAN change if all consumers are updated in same PR
+        - Field types CAN change if all consumers are updated
+        - Fields CAN be removed if no longer used
+        - Backward compatibility is NOT required (no public releases)
+        - REQUIRED: Verify all code generation targets rebuild successfully
+        - REQUIRED: Update all firmware, gateway, and ROS2 code in same PR for breaking changes
+        - REQUIRED: Ensure main branch remains working after protobuf changes
 
         Validation:
         - Must pass: buf lint
@@ -467,6 +681,12 @@ reviews:
       instructions: "Apply when changes demonstrate or improve SOLID design principles"
     - label: "standard:inclusive-terminology"
       instructions: "Apply when changes update terminology (Controller/Peripheral, COPI/CIPO) or fix violations"
+    - label: "standard:doxygen"
+      instructions: "Apply when changes add or improve Doxygen documentation (comprehensive tagging, state diagrams, examples)"
+    - label: "review:missing-docs"
+      instructions: "Apply when code is missing required Doxygen documentation or documentation is incomplete"
+    - label: "review:incomplete-diagrams"
+      instructions: "Apply when state machines or complex flows lack required PlantUML/Graphviz/MSC diagrams"
 
   auto_apply_labels: true
 

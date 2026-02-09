@@ -13,6 +13,15 @@ Thumbs.db
 *.ipr
 *.iws
 
+# Eclipse e2 studio
+.metadata/
+.settings/
+e2-studio-*/docs/
+**/HardwareDebug/
+**/Debug/
+**/Release/
+!e2-studio-*/TestDebug/
+
 # Gradle
 .gradle/
 */build/
@@ -151,10 +160,16 @@ log/
 
 # Build artifacts
 **/build/
+**/build*test*/
 **/dist/
 **/coverage.out
 **/.cache/
+**/*Build*/
+**/*Debug*/
+!TestDebug/
+**/*Release*/
 
 # OS files
 .DS_Store
 Thumbs.db
+.metadata
