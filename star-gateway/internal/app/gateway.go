@@ -80,25 +80,20 @@ func Run(ctx context.Context, cfg Config) error {
 	// transport closes BEFORE dispatcher cleanup (to interrupt pending I/O)
 
 	// ========================================
-	// Layer 2-4: Protocol Stack (HARQ)
+	// Layer 2-4: Protocol Stack (HARQ with TransportManager)
 	// ========================================
-	var harqHandler harq.HARQ
-
-	var tmCleanup func()
-	if cfg.TransportMode == manager.ModeForceSPI {
-		// Existing code path (no changes)
-		harqHandler, err = initHARQ(deviceTransport)
-		if err != nil {
-			return fmt.Errorf("failed to initialize HARQ: %w", err)
-		}
-	} else {
-		// New code path with TransportManager
-		harqHandler, tmCleanup, err = initTransportManager(ctx, cfg, deviceTransport)
-		if err != nil {
-			return fmt.Errorf("failed to initialize HARQ: %w", err)
-		}
-		// NOTE: tmCleanup is deferred later, after dispatcher init
+	// All transport modes now use TransportManager for reliability features:
+	// - Shared SessionState (prevents sequence resets during transport switching)
+	// - Health monitoring (latency, failures, packet loss tracking)
+	// - Heartbeat detection (PING/PONG for connectivity monitoring)
+	// - Hot-plug support (automatic USB device detection)
+	// - Reset handshake (three-way handshake with barrier for startup sync)
+	// - Automatic failover (switches transports on failure)
+	harqHandler, tmCleanup, err := initTransportManager(ctx, cfg, deviceTransport)
+	if err != nil {
+		return fmt.Errorf("failed to initialize HARQ: %w", err)
 	}
+	// NOTE: tmCleanup is deferred later, after dispatcher init
 
 	// ========================================
 	// Structured Logger
@@ -345,37 +340,6 @@ func createUSBLink(session *manager.SessionState) (harq.HARQ, error) {
 	}
 
 	return cdcLink, nil
-}
-
-func initHARQ(deviceTransport transport.Device) (harq.HARQ, error) {
-	// Create a legacy transport adapter for HARQ
-	var legacyTransport transport.Transport
-	switch t := deviceTransport.(type) {
-	case *transport.SPITransport:
-		legacyTransport = t
-	case *transport.SocketTransport:
-		legacyTransport = t
-	default:
-		return nil, fmt.Errorf("unknown transport type")
-	}
-
-	log.Printf("Initializing frame encoder/decoder...")
-	frameEncoder := frame.NewEncoder()
-	frameDecoder := frame.NewDecoder()
-
-	log.Printf("Initializing FEC encoder/decoder...")
-	fecEncoder := fec.NewConvolutionalEncoder()
-	fecDecoder := fec.NewViterbiDecoder()
-
-	log.Printf("Initializing HARQ handler...")
-	return harq.NewChaseCombining(
-		harq.DefaultConfig(),
-		legacyTransport,
-		frameEncoder,
-		frameDecoder,
-		fecEncoder,
-		fecDecoder,
-	), nil
 }
 
 func initDispatcher(ctx context.Context, harqHandler harq.HARQ, logger *slog.Logger) (dispatcher.Dispatcher, func(), error) {
