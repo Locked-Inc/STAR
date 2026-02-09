@@ -5380,7 +5380,7 @@ uint8_t battery_soc = 85;    /* Percentage? Raw ADC value? */
 
 The unit suffix convention matches the naming used in Protocol Buffer messages:
 
-\begin{lstlisting}[language=proto]
+\begin{lstlisting}[language=Protobuf]
 // From star-proto/proto/robot_command.proto
 message VelocityCommand {
   float velocity_mps = 1;          // Meters per second
@@ -6439,7 +6439,7 @@ Bytes (firmware) & \texttt{max\_size:1024} & \texttt{chunk\_data} \\
 
 \subsubsection{String Fields}
 
-\begin{lstlisting}[language=proto]
+\begin{lstlisting}[language=Protobuf]
 // File: robot_command.proto
 message RequestHeader {
   string request_id = 1;  // UUID (36 chars + null terminator)
@@ -6459,7 +6459,7 @@ typedef struct _RequestHeader {
 \end{lstlisting}
 \subsubsection{Repeated Fields}
 
-\begin{lstlisting}[language=proto]
+\begin{lstlisting}[language=Protobuf]
 // File: battery_state.proto
 message BatteryState {
   repeated uint32 cell_mv = 1;  // Cell voltages in millivolts
@@ -6480,7 +6480,7 @@ typedef struct _BatteryState {
 \end{lstlisting}
 \subsubsection{Bytes Fields}
 
-\begin{lstlisting}[language=proto]
+\begin{lstlisting}[language=Protobuf]
 // File: firmware_update.proto
 message FirmwareChunk {
   bytes data = 1;  // Binary firmware data
@@ -6612,7 +6612,7 @@ static FirmwareChunk s_firmware_chunk;   /* 1024 bytes */
 
 \subsubsection{Use Fixed-Size Types}
 
-\begin{lstlisting}[language=proto]
+\begin{lstlisting}[language=Protobuf]
 /* CORRECT - Fixed-size integer types */
 message MotorCommand {
   int32 speed_percent = 1;     // Always 4 bytes

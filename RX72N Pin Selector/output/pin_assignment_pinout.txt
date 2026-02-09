@@ -1,0 +1,426 @@
+RX72N Pin Assignment Pinout
+Chip: R5F572NNHxFB (144-pin LFQFP)
+Generated: 2026-02-09
+Motor SPI: SCI12
+Host SPI:  RSPI2_A
+Total Pins Used: 57 / 144
+  Assigned: 57  |  Unassigned I/O: 46  |  CORE (power/clk/fixed): 41
+==========================================================================================
+
+ASSIGNED PINS
+------------------------------------------------------------------------------------------
+ Pin  Port    Signal            Group               MPC/Function  Details
+------------------------------------------------------------------------------------------
+   2  P05     BMS_ALERT         bms_interrupt                     
+        -> P05/SSILRCK1/IRQ13/DA1
+   4  P03     SONAR0_ECHO       sonar                             
+        -> P03/SSIDATA1/IRQ11/DA0
+   6  P02     SONAR1_ECHO       sonar                             
+        -> P02/TMCI1/SCK6/SSIBCK1/IRQ10/AN120
+   7  P01     SONAR2_ECHO       sonar                             
+        -> P01/TMCI0/RXD6/SMISO6/SSCL6/SSIBCK0/IRQ9/AN119
+   8  P00     SONAR3_ECHO       sonar                             
+        -> P00/TMRI0/TXD6/SMOSI6/SSDA6/AUDIO_CLK/IRQ8/AN118
+   9  PF5     SONAR0_TRIG       sonar                             
+        -> PF5/WAIT#/SSILRCK0/IRQ4
+  11  PJ5     SONAR1_TRIG       sonar                             
+        -> PJ5/POE8#/CTS2#/RTS2#/SS2#/SSIRXD0/EPLSOUT0
+  13  PJ3     SONAR2_TRIG       sonar                             
+        -> PJ3/EDACK1/MTIOC3C/CTS6#/RTS6#/SS6#/CTS0#/RTS0#/SS0#/SSITXD0/ET0_EXOUT
+  26  P33     SONAR3_TRIG       sonar                             
+        -> P33/EDREQ1/MTIOC0D/TIOCD0/TMRI3/PO11/POE4#/POE11#/RXD6/SMISO6/SSCL6/RXD0/SMISO0/SSCL0/CRX0/IRQ3
+  27  P32     LED0              leds                              
+        -> P32/MTIOC0C/TIOCC0/TMO3/PO10/RTCIC2/RTCOUT/POE0#/POE10#/TXD6/SMOSI6/SSDA6/TXD0/SMOSI0/SSDA0/CTX0/USB0_VBUSEN/IRQ2
+  32  P25     ENC0_MTCLKB       encoders            MTCLKB        MTU1 MTCLKB
+        -> P25/CLKOUT/CS5#/EDACK1/MTIOC4C/MTCLKB/TIOCA4/PO5/RXD3/SMISO3/SSCL3/SSIDATA1/ADTRG0#
+  33  P24     ENC0_MTCLKA       encoders            MTCLKA        MTU1 MTCLKA
+        -> P24/CS4#/EDREQ1/MTIOC4A/MTCLKA/TIOCB4/TMRI1/PO4/SCK3/USB0_VBUSEN/SSIBCK1
+  34  P23     MOTOR0_PH         motor_pwm           GTIOC0A       GPTIOC0 subchannel A
+        -> P23/EDACK0/MTIOC3D/MTCLKD/TIOCD3/PO3/GTIOC0A/TXD3/SMOSI3/SSDA3/CTS0#/RTS0#/SS0#/CTX1/SSIBCK0
+  35  P22     MOTOR1_PH         motor_pwm           GTIOC1A       GPTIOC1 subchannel A
+        -> P22/EDREQ0/MTIOC3B/MTCLKC/TIOCC3/TMO0/PO2/GTIOC1A/SCK0/USB0_OVRCURB/AUDIO_CLK
+  36  P21     BMS_SCL1          bms_i2c             SCL1          
+        -> P21/MTIOC1B/MTIOC4A/TIOCA3/TMCI0/PO1/GTIOC2A/RXD0/SMISO0/SSCL0/USB0_EXICEN/SSILRCK0/SCL1/IRQ9
+  37  P20     BMS_SDA1          bms_i2c             SDA1          
+        -> P20/MTIOC1A/TIOCB3/TMRI0/PO0/TXD0/SMOSI0/SSDA0/USB0_ID/SSIRXD0/SDA1/IRQ8
+  38  P17     MOTOR0_EN         motor_pwm           GTIOC0B       GPTIOC0 subchannel B
+        -> P17/MTIOC3A/MTIOC3B/MTIOC4B/TIOCB0/TCLKD/TMO1/PO15/POE8#/GTIOC0B/SCK1/TXD3/SMOSI3/SSDA3/SDA2/SSITXD0/EPLSOUT0/IRQ7/ADTRG1#
+  39  P87     LED1              leds                              
+        -> P87/MTIOC4C/TIOCA2/GTIOC1B/SMOSI10/SSDA10/TXD10/EPLSOUT1/SDHI_D2-C/PIXD2
+  40  P16     ENC3_TCLKC        tpu_encoders                      TPU2 TCLKC
+        -> P16/MTIOC3C/MTIOC3D/TIOCB1/TCLKC/TMO2/PO14/RTCOUT/TXD1/SMOSI1/SSDA1/RXD3/SMISO3/SSCL3/SCL2/USB0_VBUSEN/USB0_VBUS/USB0_OVRCURB/IRQ6/ADTRG0#
+  41  P86     MOTOR2_EN         motor_pwm           GTIOC2B       GPTIOC2 subchannel B
+        -> P86/MTIOC4D/TIOCA0/GTIOC2B/SMISO10/SSCL10/RXD10/PIXD1
+  42  P15     GTETRGA           gtetrg              GTETRGA       GPTW_EXT_TRIG
+        -> P15/MTIOC0B/MTCLKB/TIOCB2/TCLKB/TMCI2/PO13/GTETRGA/RXD1/SMISO1/SSCL1/SCK3/CRX1/SSILRCK1/IRQ5
+  43  P14     GTETRGD           gtetrg              GTETRGD       GPTW_EXT_TRIG
+        -> P14/MTIOC3A/MTCLKA/TIOCB5/TCLKA/TMRI2/PO15/GTETRGD/CTS1#/RTS1#/SS1#/CTX1/USB0_OVRCURA/IRQ4
+  44  P13     HOST_SDA0         host_i2c            SDA0          
+        -> P13/MTIOC0B/TIOCA5/TMO3/PO13/GTADSM1/TXD2/SMOSI2/SSDA2/SDA0/IRQ3/ADTRG1#
+  45  P12     HOST_SCL0         host_i2c            SCL0          
+        -> P12/TMCI1/GTADSM0/RXD2/SMISO2/SSCL2/SCL0/IRQ2
+  50  P56     LED2              leds                              
+        -> P56/CLKOUT25M/EDACK1/MTIOC3C/TIOCA1/SCK7
+  51  P55     LED3              leds                              
+        -> P55/D0/WAIT#/EDREQ0/MTIOC4D/TMO3/CRX1/ET0_EXOUT/IRQ10
+  52  P54     LED4              leds                              
+        -> P54/ALE/D1/EDACK0/MTIOC4B/TMCI1/CTS2#/RTS2#/SS2#/CTX1/ET0_LINKSTA
+  54  P52     LED5              leds                              
+        -> P52/RD#/RXD2/SMISO2/SSCL2/SSLB3-A
+  55  P51     TEMP_1WIRE        onewire                           
+        -> P51/WR1#/BC1#/WAIT#/SCK2/SSLB2-A
+  60  PC7     MOTOR3_PH         motor_pwm           GTIOC3A       GPTIOC3 subchannel A
+        -> PC7/UB/A23/CS0#/MTIOC3A/MTCLKB/TMO2/PO31/TOC0/CACREF/GTIOC3A/TXD8/SMOSI8/SSDA8/SMOSI10/SSDA10/TXD10/MISOA-A/ET0_COL/IRQ14
+  61  PC6     MOTOR3_EN         motor_pwm           GTIOC3B       GPTIOC3 subchannel B
+        -> PC6/D2/A22/CS1#/MTIOC3C/MTCLKA/TMCI2/PO30/TIC0/GTIOC3B/RXD8/SMISO8/SSCL8/SMISO10/SSCL10/RXD10/MOSIA-A/ET0_ETXD3/IRQ13
+  62  PC5     ENC1_MTCLKD       encoders            MTCLKD        MTU2 MTCLKD
+        -> PC5/D3/A21/CS2#/WAIT#/MTIOC3B/MTCLKD/TMRI2/PO29/GTIOC1A/SCK8/RTS8#/SCK10/RSPCKA-A/ET0_ETXD2
+  66  PC4     GTETRGC           gtetrg              GTETRGC       GPTW_EXT_TRIG
+        -> PC4/A20/CS3#/MTIOC3D/MTCLKC/TMCI1/PO25/POE0#/GTETRGC/SCK5/CTS8#/SS8#/SS10#/CTS10#/RTS10#/SSLA0-A/ET0_TX_CLK
+  67  PC3     MOTOR1_EN         motor_pwm           GTIOC1B       GPTIOC1 subchannel B
+        -> PC3/A19/MTIOC4D/TCLKB/PO24/GTIOC1B/TXD5/SMOSI5/SSDA5/ET0_TX_ER
+  70  PC2     ENC2_TCLKA        tpu_encoders        TCLKA         TPU1 TCLKA
+        -> PC2/A18/MTIOC4B/TCLKA/PO21/GTIOC2B/RXD5/SMISO5/SSCL5/SSLA3-A/ET0_RX_DV
+  72  P74     DRV_CS0           motor_driver_spi                  SCI12
+        -> P74/TRDATA5/A20/CS4#/PO19
+  73  PC1     DRV_CS1           motor_driver_spi                  SCI12
+        -> PC1/A17/MTIOC3A/TCLKD/PO18/SCK5/SSLA2-A/ET0_ERXD2/IRQ12
+  78  PB7     DEBUG_TXD9        debug_uart          TXD9          
+        -> PB7/A15/MTIOC3B/TIOCB5/PO31/TXD9/SMOSI9/SSDA9/SMOSI11/SSDA11/TXD11/ET0_CRS/RMII0_CRS_DV
+  79  PB6     DEBUG_RXD9        debug_uart          RXD9          
+        -> PB6/A14/MTIOC3D/TIOCA5/PO30/RXD9/SMISO9/SSCL9/SMISO11/SSCL11/RXD11/ET0_ETXD1/RMII0_TXD1
+  80  PB5     DRV_CS2           motor_driver_spi                  SCI12
+        -> PB5/A13/MTIOC2A/MTIOC1B/TIOCB4/TMRI1/PO29/POE4#/SCK9/RTS9#/SCK11/ET0_ETXD0/RMII0_TXD0/LCD_CLK-B
+  81  PB4     DRV_CS3           motor_driver_spi                  SCI12
+        -> PB4/A12/TIOCA4/PO28/CTS9#/SS9#/SS11#/CTS11#/RTS11#/ET0_TX_EN/RMII0_TXD_EN/LCD_TCON0-B
+  82  PB3     ENC3_TCLKD        tpu_encoders        TCLKD         TPU2 TCLKD
+        -> PB3/A11/MTIOC0A/MTIOC4A/TIOCD3/TCLKD/TMO0/PO27/POE11#/SCK6/ET0_RX_ER/RMII0_RX_ER/LCD_TCON1-B
+  89  PA6     GTETRGB           gtetrg              GTETRGB       GPTW_EXT_TRIG
+        -> PA6/A6/MTIC5V/MTCLKB/TIOCA2/TMCI3/PO22/POE10#/GTETRGB/CTS5#/RTS5#/SS5#/MOSIA-B/ET0_EXOUT/LCD_DATA2-B
+  94  PA3     ENC2_TCLKB        tpu_encoders        TCLKB         TPU1 TCLKB
+        -> PA3/A3/MTIOC0D/MTCLKD/TIOCD0/TCLKB/PO19/RXD5/SMISO5/SSCL5/ET0_MDIO/PMGI0_MDIO/LCD_DATA5-B/IRQ6
+  96  PA1     ENC1_MTCLKC       encoders            MTCLKC        MTU2 MTCLKC
+        -> PA1/A1/MTIOC0B/MTCLKC/MTIOC7B/TIOCB0/PO17/GTIOC2A/SCK5/SSLA2-B/ET0_WOL/LCD_DATA7-B/IRQ11
+ 108  PE3     MOTOR2_PH         motor_pwm           GTIOC2A       GPTIOC2 subchannel A
+        -> PE3/D11/D3/MTIOC4B/PO26/TOC3/POE8#/GTIOC2A/CTS12#/RTS12#/SS12#/ET0_ERXD3/MMC_D7-B/LCD_DATA13-B/AN101
+ 109  PE2     DRV_CIPO          motor_driver_spi    SMISO12       SCI12
+        -> PE2/D10/D2/MTIOC4A/PO23/TIC3/GTIOC0B/RXD12/SMISO12/SSCL12/RXDX12/SSLB3-B/MMC_D6-B/LCD_DATA14-B/IRQ7/AN100
+ 110  PE1     DRV_COPI          motor_driver_spi    SMOSI12       SCI12
+        -> PE1/D9/D1/MTIOC4C/MTIOC3B/PO18/GTIOC1B/TXD12/SMOSI12/SSDA12/TXDX12/SIOX12/SSLB2-B/MMC_D5-B/LCD_DATA15-B/ANEX1
+ 111  PE0     DRV_SCK           motor_driver_spi    SCK12         SCI12
+        -> PE0/D8/D0/MTIOC3D/GTIOC2B/SCK12/SSLB1-B/MMC_D4-B/LCD_DATA16-B/ANEX0
+ 122  PD4     HOST_CS0          host_spi            SSLC0         RSPI2_A
+        -> PD4/D4/MTIOC8B/POE11#/SSLC0-A/QSSL-B/SDHI_CMD-B/MMC_CMD-B/LCD_DATA20-B/IRQ4/AN112
+ 123  PD3     HOST_SCLK         host_spi            RSPCKC        RSPI2_A
+        -> PD3/D3/MTIOC8D/TOC2/POE8#/GTIOC0A/RSPCKC-A/QIO3-B/SDHI_D3-B/MMC_D3-B/LCD_DATA21-B/IRQ3/AN111
+ 124  PD2     HOST_CIPO         host_spi            MISOC         RSPI2_A
+        -> PD2/D2/MTIOC4D/TIC2/GTIOC0B/MISOC-A/CRX0/QIO2-B/SDHI_D2-B/MMC_D2-B/LCD_DATA22-B/IRQ2/AN110
+ 125  PD1     HOST_COPI         host_spi            MOSIC         RSPI2_A
+        -> PD1/D1/MTIOC4B/POE0#/GTIOC1A/MOSIC-A/CTX0/LCD_DATA23-B/IRQ1/AN109
+ 133  P47     MOTOR0_ISENSE     motor_adc           AN007         AN007
+        -> P47/IRQ15/AN007
+ 134  P46     MOTOR1_ISENSE     motor_adc           AN006         AN006
+        -> P46/IRQ14/AN006
+ 135  P45     MOTOR2_ISENSE     motor_adc           AN005         AN005
+        -> P45/IRQ13/AN005
+ 136  P44     MOTOR3_ISENSE     motor_adc           AN004         AN004
+        -> P44/IRQ12/AN004
+
+GTETRG ASSIGNMENTS (DRV8243S nFAULT -> GPTW emergency stop)
+------------------------------------------------------------------------------------------
+  GTETRGA     Pin 42 / P15   -> GTETRGA       (GPTW_EXT_TRIG)
+              -> P15/MTIOC0B/MTCLKB/TIOCB2/TCLKB/TMCI2/PO13/GTETRGA/RXD1/SMISO1/SSCL1/SCK3/CRX1/SSILRCK1/IRQ5
+  GTETRGB     Pin 89 / PA6   -> GTETRGB       (GPTW_EXT_TRIG)
+              -> PA6/A6/MTIC5V/MTCLKB/TIOCA2/TMCI3/PO22/POE10#/GTETRGB/CTS5#/RTS5#/SS5#/MOSIA-B/ET0_EXOUT/LCD_DATA2-B
+  GTETRGC     Pin 66 / PC4   -> GTETRGC       (GPTW_EXT_TRIG)
+              -> PC4/A20/CS3#/MTIOC3D/MTCLKC/TMCI1/PO25/POE0#/GTETRGC/SCK5/CTS8#/SS8#/SS10#/CTS10#/RTS10#/SSLA0-A/ET0_TX_CLK
+  GTETRGD     Pin 43 / P14   -> GTETRGD       (GPTW_EXT_TRIG)
+              -> P14/MTIOC3A/MTCLKA/TIOCB5/TCLKA/TMRI2/PO15/GTETRGD/CTS1#/RTS1#/SS1#/CTX1/USB0_OVRCURA/IRQ4
+
+DEBUG UART (SCI9)
+------------------------------------------------------------------------------------------
+  DEBUG_TXD9    Pin 78 / PB7   -> TXD9
+                -> PB7/A15/MTIOC3B/TIOCB5/PO31/TXD9/SMOSI9/SSDA9/SMOSI11/SSDA11/TXD11/ET0_CRS/RMII0_CRS_DV
+  DEBUG_RXD9    Pin 79 / PB6   -> RXD9
+                -> PB6/A14/MTIOC3D/TIOCA5/PO30/RXD9/SMISO9/SSCL9/SMISO11/SSCL11/RXD11/ET0_ETXD1/RMII0_TXD1
+
+HOST I2C (RIIC0 FM+ 1MHz)
+------------------------------------------------------------------------------------------
+  HOST_SCL0     Pin 45 / P12   -> SCL0
+                -> P12/TMCI1/GTADSM0/RXD2/SMISO2/SSCL2/SCL0/IRQ2
+  HOST_SDA0     Pin 44 / P13   -> SDA0
+                -> P13/MTIOC0B/TIOCA5/TMO3/PO13/GTADSM1/TXD2/SMOSI2/SSDA2/SDA0/IRQ3/ADTRG1#
+
+BMS I2C (RIIC1)
+------------------------------------------------------------------------------------------
+  BMS_SCL1      Pin 36 / P21   -> SCL1
+                -> P21/MTIOC1B/MTIOC4A/TIOCA3/TMCI0/PO1/GTIOC2A/RXD0/SMISO0/SSCL0/USB0_EXICEN/SSILRCK0/SCL1/IRQ9
+  BMS_SDA1      Pin 37 / P20   -> SDA1
+                -> P20/MTIOC1A/TIOCB3/TMRI0/PO0/TXD0/SMOSI0/SSDA0/USB0_ID/SSIRXD0/SDA1/IRQ8
+
+MOTOR DRIVER SPI (DRV8243S — SCI12 Simple SPI)
+------------------------------------------------------------------------------------------
+  DRV_SCK       Pin 111 / PE0   -> SCK12       (SCI12)
+                -> PE0/D8/D0/MTIOC3D/GTIOC2B/SCK12/SSLB1-B/MMC_D4-B/LCD_DATA16-B/ANEX0
+  DRV_COPI      Pin 110 / PE1   -> SMOSI12     (SCI12)
+                -> PE1/D9/D1/MTIOC4C/MTIOC3B/PO18/GTIOC1B/TXD12/SMOSI12/SSDA12/TXDX12/SIOX12/SSLB2-B/MMC_D5-B/LCD_DATA15-B/ANEX1
+  DRV_CIPO      Pin 109 / PE2   -> SMISO12     (SCI12)
+                -> PE2/D10/D2/MTIOC4A/PO23/TIC3/GTIOC0B/RXD12/SMISO12/SSCL12/RXDX12/SSLB3-B/MMC_D6-B/LCD_DATA14-B/IRQ7/AN100
+  DRV_CS0       Pin 72 / P74   -> GPIO        (SCI12)
+                -> P74/TRDATA5/A20/CS4#/PO19
+  DRV_CS1       Pin 73 / PC1   -> GPIO        (SCI12)
+                -> PC1/A17/MTIOC3A/TCLKD/PO18/SCK5/SSLA2-A/ET0_ERXD2/IRQ12
+  DRV_CS2       Pin 80 / PB5   -> GPIO        (SCI12)
+                -> PB5/A13/MTIOC2A/MTIOC1B/TIOCB4/TMRI1/PO29/POE4#/SCK9/RTS9#/SCK11/ET0_ETXD0/RMII0_TXD0/LCD_CLK-B
+  DRV_CS3       Pin 81 / PB4   -> GPIO        (SCI12)
+                -> PB4/A12/TIOCA4/PO28/CTS9#/SS9#/SS11#/CTS11#/RTS11#/ET0_TX_EN/RMII0_TXD_EN/LCD_TCON0-B
+
+MOTOR PWM ASSIGNMENTS
+------------------------------------------------------------------------------------------
+  Motor 0 (GPTIOC0):
+    Phase (A):  Pin 34 / P23   -> GTIOC0A
+                -> P23/EDACK0/MTIOC3D/MTCLKD/TIOCD3/PO3/GTIOC0A/TXD3/SMOSI3/SSDA3/CTS0#/RTS0#/SS0#/CTX1/SSIBCK0
+    Enable (B): Pin 38 / P17   -> GTIOC0B
+                -> P17/MTIOC3A/MTIOC3B/MTIOC4B/TIOCB0/TCLKD/TMO1/PO15/POE8#/GTIOC0B/SCK1/TXD3/SMOSI3/SSDA3/SDA2/SSITXD0/EPLSOUT0/IRQ7/ADTRG1#
+  Motor 1 (GPTIOC1):
+    Phase (A):  Pin 35 / P22   -> GTIOC1A
+                -> P22/EDREQ0/MTIOC3B/MTCLKC/TIOCC3/TMO0/PO2/GTIOC1A/SCK0/USB0_OVRCURB/AUDIO_CLK
+    Enable (B): Pin 67 / PC3   -> GTIOC1B
+                -> PC3/A19/MTIOC4D/TCLKB/PO24/GTIOC1B/TXD5/SMOSI5/SSDA5/ET0_TX_ER
+  Motor 2 (GPTIOC2):
+    Phase (A):  Pin 108 / PE3   -> GTIOC2A
+                -> PE3/D11/D3/MTIOC4B/PO26/TOC3/POE8#/GTIOC2A/CTS12#/RTS12#/SS12#/ET0_ERXD3/MMC_D7-B/LCD_DATA13-B/AN101
+    Enable (B): Pin 41 / P86   -> GTIOC2B
+                -> P86/MTIOC4D/TIOCA0/GTIOC2B/SMISO10/SSCL10/RXD10/PIXD1
+  Motor 3 (GPTIOC3):
+    Phase (A):  Pin 60 / PC7   -> GTIOC3A
+                -> PC7/UB/A23/CS0#/MTIOC3A/MTCLKB/TMO2/PO31/TOC0/CACREF/GTIOC3A/TXD8/SMOSI8/SSDA8/SMOSI10/SSDA10/TXD10/MISOA-A/ET0_COL/IRQ14
+    Enable (B): Pin 61 / PC6   -> GTIOC3B
+                -> PC6/D2/A22/CS1#/MTIOC3C/MTCLKA/TMCI2/PO30/TIC0/GTIOC3B/RXD8/SMISO8/SSCL8/SMISO10/SSCL10/RXD10/MOSIA-A/ET0_ETXD3/IRQ13
+
+HOST SPI (RSPI2_A — RSPI, 60 Mbps)
+------------------------------------------------------------------------------------------
+  HOST_SCLK     Pin 123 / PD3   -> RSPCKC      (RSPI2_A)
+                -> PD3/D3/MTIOC8D/TOC2/POE8#/GTIOC0A/RSPCKC-A/QIO3-B/SDHI_D3-B/MMC_D3-B/LCD_DATA21-B/IRQ3/AN111
+  HOST_COPI     Pin 125 / PD1   -> MOSIC       (RSPI2_A)
+                -> PD1/D1/MTIOC4B/POE0#/GTIOC1A/MOSIC-A/CTX0/LCD_DATA23-B/IRQ1/AN109
+  HOST_CIPO     Pin 124 / PD2   -> MISOC       (RSPI2_A)
+                -> PD2/D2/MTIOC4D/TIC2/GTIOC0B/MISOC-A/CRX0/QIO2-B/SDHI_D2-B/MMC_D2-B/LCD_DATA22-B/IRQ2/AN110
+  HOST_CS0      Pin 122 / PD4   -> SSLC0       (RSPI2_A)
+                -> PD4/D4/MTIOC8B/POE11#/SSLC0-A/QSSL-B/SDHI_CMD-B/MMC_CMD-B/LCD_DATA20-B/IRQ4/AN112
+
+MTU ENCODER ASSIGNMENTS (MTU phase counting — good quadrature)
+------------------------------------------------------------------------------------------
+  ENC0_MTCLKA       Pin 33 / P24   -> MTCLKA      (MTU1)
+                    -> P24/CS4#/EDREQ1/MTIOC4A/MTCLKA/TIOCB4/TMRI1/PO4/SCK3/USB0_VBUSEN/SSIBCK1
+  ENC0_MTCLKB       Pin 32 / P25   -> MTCLKB      (MTU1)
+                    -> P25/CLKOUT/CS5#/EDACK1/MTIOC4C/MTCLKB/TIOCA4/PO5/RXD3/SMISO3/SSCL3/SSIDATA1/ADTRG0#
+  ENC1_MTCLKC       Pin 96 / PA1   -> MTCLKC      (MTU2)
+                    -> PA1/A1/MTIOC0B/MTCLKC/MTIOC7B/TIOCB0/PO17/GTIOC2A/SCK5/SSLA2-B/ET0_WOL/LCD_DATA7-B/IRQ11
+  ENC1_MTCLKD       Pin 62 / PC5   -> MTCLKD      (MTU2)
+                    -> PC5/D3/A21/CS2#/WAIT#/MTIOC3B/MTCLKD/TMRI2/PO29/GTIOC1A/SCK8/RTS8#/SCK10/RSPCKA-A/ET0_ETXD2
+
+TPU ENCODER ASSIGNMENTS (TPU phase counting — shitty quadrature)
+------------------------------------------------------------------------------------------
+  ENC2_TCLKA        Pin 70 / PC2   -> TCLKA       (TPU1)
+                    -> PC2/A18/MTIOC4B/TCLKA/PO21/GTIOC2B/RXD5/SMISO5/SSCL5/SSLA3-A/ET0_RX_DV
+  ENC2_TCLKB        Pin 94 / PA3   -> TCLKB       (TPU1)
+                    -> PA3/A3/MTIOC0D/MTCLKD/TIOCD0/TCLKB/PO19/RXD5/SMISO5/SSCL5/ET0_MDIO/PMGI0_MDIO/LCD_DATA5-B/IRQ6
+  ENC3_TCLKC        Pin 40 / P16   ->             (TPU2)
+                    -> P16/MTIOC3C/MTIOC3D/TIOCB1/TCLKC/TMO2/PO14/RTCOUT/TXD1/SMOSI1/SSDA1/RXD3/SMISO3/SSCL3/SCL2/USB0_VBUSEN/USB0_VBUS/USB0_OVRCURB/IRQ6/ADTRG0#
+  ENC3_TCLKD        Pin 82 / PB3   -> TCLKD       (TPU2)
+                    -> PB3/A11/MTIOC0A/MTIOC4A/TIOCD3/TCLKD/TMO0/PO27/POE11#/SCK6/ET0_RX_ER/RMII0_RX_ER/LCD_TCON1-B
+
+MOTOR ADC (current sensing)
+------------------------------------------------------------------------------------------
+  MOTOR0_ISENSE     Pin 133 / P47   -> AN007
+                    -> P47/IRQ15/AN007
+  MOTOR1_ISENSE     Pin 134 / P46   -> AN006
+                    -> P46/IRQ14/AN006
+  MOTOR2_ISENSE     Pin 135 / P45   -> AN005
+                    -> P45/IRQ13/AN005
+  MOTOR3_ISENSE     Pin 136 / P44   -> AN004
+                    -> P44/IRQ12/AN004
+
+BMS INTERRUPT
+------------------------------------------------------------------------------------------
+  BMS_ALERT         Pin  2 / P05  
+                    -> P05/SSILRCK1/IRQ13/DA1
+
+SONAR (HC-SR04)
+------------------------------------------------------------------------------------------
+  SONAR0_ECHO       Pin  4 / P03    (IRQ)
+                    -> P03/SSIDATA1/IRQ11/DA0
+  SONAR1_ECHO       Pin  6 / P02    (IRQ)
+                    -> P02/TMCI1/SCK6/SSIBCK1/IRQ10/AN120
+  SONAR2_ECHO       Pin  7 / P01    (IRQ)
+                    -> P01/TMCI0/RXD6/SMISO6/SSCL6/SSIBCK0/IRQ9/AN119
+  SONAR3_ECHO       Pin  8 / P00    (IRQ)
+                    -> P00/TMRI0/TXD6/SMOSI6/SSDA6/AUDIO_CLK/IRQ8/AN118
+  SONAR0_TRIG       Pin  9 / PF5    (GPIO)
+                    -> PF5/WAIT#/SSILRCK0/IRQ4
+  SONAR1_TRIG       Pin 11 / PJ5    (GPIO)
+                    -> PJ5/POE8#/CTS2#/RTS2#/SS2#/SSIRXD0/EPLSOUT0
+  SONAR2_TRIG       Pin 13 / PJ3    (GPIO)
+                    -> PJ3/EDACK1/MTIOC3C/CTS6#/RTS6#/SS6#/CTS0#/RTS0#/SS0#/SSITXD0/ET0_EXOUT
+  SONAR3_TRIG       Pin 26 / P33    (GPIO)
+                    -> P33/EDREQ1/MTIOC0D/TIOCD0/TMRI3/PO11/POE4#/POE11#/RXD6/SMISO6/SSCL6/RXD0/SMISO0/SSCL0/CRX0/IRQ3
+
+LED GPIO
+------------------------------------------------------------------------------------------
+  LED0              Pin 27 / P32  
+                    -> P32/MTIOC0C/TIOCC0/TMO3/PO10/RTCIC2/RTCOUT/POE0#/POE10#/TXD6/SMOSI6/SSDA6/TXD0/SMOSI0/SSDA0/CTX0/USB0_VBUSEN/IRQ2
+  LED1              Pin 39 / P87  
+                    -> P87/MTIOC4C/TIOCA2/GTIOC1B/SMOSI10/SSDA10/TXD10/EPLSOUT1/SDHI_D2-C/PIXD2
+  LED2              Pin 50 / P56  
+                    -> P56/CLKOUT25M/EDACK1/MTIOC3C/TIOCA1/SCK7
+  LED3              Pin 51 / P55  
+                    -> P55/D0/WAIT#/EDREQ0/MTIOC4D/TMO3/CRX1/ET0_EXOUT/IRQ10
+  LED4              Pin 52 / P54  
+                    -> P54/ALE/D1/EDACK0/MTIOC4B/TMCI1/CTS2#/RTS2#/SS2#/CTX1/ET0_LINKSTA
+  LED5              Pin 54 / P52  
+                    -> P52/RD#/RXD2/SMISO2/SSCL2/SSLB3-A
+
+1-WIRE TEMPERATURE SENSOR
+------------------------------------------------------------------------------------------
+  TEMP_1WIRE        Pin 55 / P51  
+                    -> P51/WR1#/BC1#/WAIT#/SCK2/SSLB2-A
+
+UNASSIGNED I/O PINS (available for other use)
+------------------------------------------------------------------------------------------
+  Pin 56 / P50    Capabilities: SPI_CS, UART_TXD
+          -> P50/WR0#/WR#/TXD2/SMOSI2/SSDA2/SSLB1-A
+  Pin 58 / P83    Capabilities: GPTW_PWM, TIMER
+          -> P83/TRCLK/EDACK1/MTIOC4C/GTIOC0A/SCK10/SS10#/CTS10#/ET0_CRS/RMII0_CRS_DV
+  Pin 63 / P82    Capabilities: GPTW_PWM, TIMER
+          -> P82/TRSYNC/EDREQ1/MTIOC4A/PO28/GTIOC2A/SMOSI10/SSDA10/TXD10/ET0_ETXD1/RMII0_TXD1
+  Pin 64 / P81    Capabilities: GPTW_PWM, TIMER
+          -> P81/TRDATA1/EDACK0/MTIOC3D/PO27/GTIOC0B/SMISO10/SSCL10/RXD10/ET0_ETXD0/RMII0_TXD0
+  Pin 65 / P80    Capabilities: TIMER
+          -> P80/TRDATA0/EDREQ0/MTIOC3B/PO26/SCK10/RTS10#/ET0_TX_EN/RMII0_TXD_EN
+  Pin 68 / P77    Capabilities: 
+          -> P77/TRDATA7/CS7#/PO23/SMOSI11/SSDA11/TXD11
+  Pin 69 / P76    Capabilities: 
+          -> P76/TRDATA6/CS6#/PO22/SMISO11/SSCL11/RXD11
+  Pin 71 / P75    Capabilities: 
+          -> P75/TRSYNC1/CS5#/PO20/SCK11/RTS11#
+  Pin 75 / PC0    Capabilities: INTERRUPT, SHITTY_QUADRATURE_TIMER, SPI_CS, TIMER
+          -> PC0/A16/MTIOC3C/TCLKC/PO17/CTS5#/RTS5#/SS5#/SSLA1-A/ET0_ERXD3/IRQ14
+  Pin 77 / P73    Capabilities: 
+          -> P73/TRDATA4/CS3#/PO16
+  Pin 83 / PB2    Capabilities: SHITTY_QUADRATURE_TIMER, TIMER
+          -> PB2/A10/TIOCC3/TCLKC/PO26/CTS6#/RTS6#/SS6#/ET0_RX_CLK/REF50CK0/LCD_TCON2-B
+  Pin 84 / PB1    Capabilities: INTERRUPT, TIMER, UART_TXD
+          -> PB1/A9/MTIOC0C/MTIOC4C/TIOCB3/TMCI0/PO25/TXD6/SMOSI6/SSDA6/ET0_ERXD0/RMII0_RXD0/LCD_TCON3-B/IRQ4
+  Pin 85 / P72    Capabilities: 
+          -> P72/A19/CS2#
+  Pin 86 / P71    Capabilities: 
+          -> P71/A18/CS1#
+  Pin 87 / PB0    Capabilities: INTERRUPT, TIMER, UART_RXD
+          -> PB0/A8/MTIC5W/TIOCA3/PO24/RXD6/SMISO6/SSCL6/ET0_ERXD1/RMII0_RXD1/LCD_DATA0-B/IRQ12
+  Pin 88 / PA7    Capabilities: SPI_CIPO, TIMER
+          -> PA7/A7/TIOCB2/PO23/MISOA-B/ET0_WOL/LCD_DATA1-B
+  Pin 90 / PA5    Capabilities: GPTW_PWM, SPI_RSPCK, TIMER
+          -> PA5/A5/MTIOC6B/TIOCB1/PO21/GTIOC0A/RSPCKA-B/ET0_LINKSTA/LCD_DATA3-B
+  Pin 92 / PA4    Capabilities: INTERRUPT, SPI_CS, TIMER, UART_TXD
+          -> PA4/A4/MTIC5U/MTCLKA/TIOCA1/TMRI0/PO20/TXD5/SMOSI5/SSDA5/SSLA0-B/ET0_MDC/PMGI0_MDC/LCD_DATA4-B/IRQ5
+  Pin 95 / PA2    Capabilities: GPTW_PWM, SPI_CS, TIMER, UART_RXD
+          -> PA2/A2/MTIOC7A/PO18/GTIOC1A/RXD5/SMISO5/SSCL5/SSLA3-B/LCD_DATA6-B
+  Pin 97 / PA0    Capabilities: GPTW_PWM, SPI_CS, TIMER
+          -> PA0/BC0#/A0/MTIOC4A/MTIOC6D/TIOCA0/PO16/CACREF/GTIOC0B/SSLA1-B/ET0_TX_EN/RMII0_TXD_EN/LCD_DATA8-B
+  Pin 98 / P67    Capabilities: GPTW_PWM, INTERRUPT, TIMER
+          -> P67/DQM1/CS7#/MTIOC7C/GTIOC1B/CRX2/EPLSOUT1/IRQ15
+  Pin 99 / P66    Capabilities: GPTW_PWM, TIMER
+          -> P66/DQM0/CS6#/MTIOC7D/GTIOC2B/CTX2
+  Pin 100 / P65    Capabilities: 
+          -> P65/CKE/CS5#
+  Pin 101 / PE7    Capabilities: ADC, GPTW_PWM, INTERRUPT, SPI_CIPO, TIMER
+          -> PE7/D15/D7/MTIOC6A/TOC1/GTIOC3A/MISOB-B/SDHI_WP/MMC_RES#-B/LCD_DATA9-B/IRQ7/AN105
+  Pin 102 / PE6    Capabilities: ADC, GPTW_PWM, INTERRUPT, SPI_COPI, TIMER
+          -> PE6/D14/D6/MTIOC6C/TIC1/GTIOC3B/MOSIB-B/SDHI_CD/MMC_CD-B/LCD_DATA10-B/IRQ6/AN104
+  Pin 104 / P70    Capabilities: 
+          -> P70/SDCLK
+  Pin 106 / PE5    Capabilities: ADC, GPTW_PWM, INTERRUPT, SPI_RSPCK, TIMER
+          -> PE5/D13/D5/MTIOC4C/MTIOC2B/GTIOC0A/RSPCKB-B/ET0_RX_CLK/REF50CK0/LCD_DATA11-B/IRQ5/AN103
+  Pin 107 / PE4    Capabilities: ADC, GPTW_PWM, SPI_CS, TIMER
+          -> PE4/D12/D4/MTIOC4D/MTIOC1A/PO28/GTIOC1A/SSLB0-B/ET0_ERXD2/LCD_DATA12-B/AN102
+  Pin 112 / P64    Capabilities: 
+          -> P64/WE#/D3/CS4#
+  Pin 113 / P63    Capabilities: 
+          -> P63/CAS#/D2/CS3#
+  Pin 114 / P62    Capabilities: 
+          -> P62/RAS#/D1/CS2#
+  Pin 115 / P61    Capabilities: 
+          -> P61/SDCS#/D0/CS1#
+  Pin 117 / P60    Capabilities: 
+          -> P60/CS0#
+  Pin 119 / PD7    Capabilities: ADC, INTERRUPT, SPI_CS, TIMER
+          -> PD7/D7/MTIC5U/POE0#/SSLC3-A/QMI-B/QIO1-B/SDHI_D1-B/MMC_D1-B/LCD_DATA17-B/IRQ7/AN107
+  Pin 120 / PD6    Capabilities: ADC, INTERRUPT, SPI_CS, TIMER
+          -> PD6/D6/MTIC5V/MTIOC8A/POE4#/SSLC2-A/QMO-B/QIO0-B/SDHI_D0-B/MMC_D0-B/LCD_DATA18-B/IRQ6/AN106
+  Pin 121 / PD5    Capabilities: ADC, GOOD_QUADRATURE_TIMER, INTERRUPT, SPI_CS, TIMER
+          -> PD5/D5/MTIC5W/MTIOC8C/MTCLKA/POE10#/SSLC1-A/QSPCLK-B/SDHI_CLK-B/MMC_CLK-B/LCD_DATA19-B/IRQ5/AN113
+  Pin 126 / PD0    Capabilities: ADC, GPTW_PWM, INTERRUPT
+          -> PD0/D0/POE4#/GTIOC1B/LCD_EXTCLK-B/IRQ0/AN108
+  Pin 127 / P93    Capabilities: ADC
+          -> P93/A19/POE0#/CTS7#/RTS7#/SS7#/AN117
+  Pin 128 / P92    Capabilities: ADC
+          -> P92/A18/POE4#/RXD7/SMISO7/SSCL7/AN116
+  Pin 129 / P91    Capabilities: ADC
+          -> P91/A17/SCK7/AN115
+  Pin 131 / P90    Capabilities: ADC
+          -> P90/A16/TXD7/SMOSI7/SSDA7/AN114
+  Pin 137 / P43    Capabilities: ADC, INTERRUPT
+          -> P43/IRQ11/AN003
+  Pin 138 / P42    Capabilities: ADC, INTERRUPT
+          -> P42/IRQ10/AN002
+  Pin 139 / P41    Capabilities: ADC, INTERRUPT
+          -> P41/IRQ9/AN001
+  Pin 141 / P40    Capabilities: ADC, INTERRUPT
+          -> P40/IRQ8/AN000
+  Pin 144 / P07    Capabilities: INTERRUPT
+          -> P07/IRQ15/ADTRG0#
+
+CORE PINS (power, ground, clock, fixed-function — not assignable) [41 pins]
+------------------------------------------------------------------------------------------
+  Pin  1 / AVSS0
+  Pin  3 / AVCC1
+  Pin  5 / AVSS1
+  Pin 10 / EMLE
+  Pin 12 / VSS
+  Pin 14 / VCL
+  Pin 15 / VBATT
+  Pin 16 / MD/FINED
+  Pin 17 / XCIN
+  Pin 18 / XCOUT
+  Pin 19 / RES#
+  Pin 20 / P37/XTAL
+  Pin 21 / VSS
+  Pin 22 / P36/EXTAL
+  Pin 23 / VCC
+  Pin 24 / P35/UPSEL/NMI
+  Pin 25 / P34/TRST#/MTIOC0A/TMCI3/PO12/POE10#/SCK6/SCK0/ET0_LINKSTA/IRQ4
+  Pin 28 / P31/TMS/MTIOC4D/TMCI2/PO9/RTCIC1/CTS1#/RTS1#/SS1#/SSLB0-A/IRQ1
+  Pin 29 / P30/TDI/MTIOC4B/TMRI3/PO8/RTCIC0/POE8#/RXD1/SMISO1/SSCL1/MISOB-A/IRQ0
+  Pin 30 / P27/TCK/CS7#/MTIOC2B/TMCI3/PO7/SCK1/RSPCKB-A
+  Pin 31 / P26/TDO/CS6#/MTIOC2A/TMO1/PO6/TXD1/SMOSI1/SSDA1/CTS3#/RTS3#/SS3#/MOSIB-A
+  Pin 46 / VCC_USB
+  Pin 47 / USB0_DM
+  Pin 48 / USB0_DP
+  Pin 49 / VSS_USB
+  Pin 53 / P53/BCLK
+  Pin 57 / VSS
+  Pin 59 / VCC
+  Pin 74 / VCC
+  Pin 76 / VSS
+  Pin 91 / VCC
+  Pin 93 / VSS
+  Pin 103 / VCC
+  Pin 105 / VSS
+  Pin 116 / VSS
+  Pin 118 / VCC
+  Pin 130 / VSS
+  Pin 132 / VCC
+  Pin 140 / VREFL0
+  Pin 142 / VREFH0
+  Pin 143 / AVCC0
