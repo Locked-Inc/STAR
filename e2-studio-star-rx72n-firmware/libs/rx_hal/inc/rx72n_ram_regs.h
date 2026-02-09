@@ -40,8 +40,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef RX72N_RAM_REGS_H
-#define RX72N_RAM_REGS_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -621,5 +620,3 @@ static_assert(k_rx_eccramprcr_unlock == 0x79,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* RX72N_RAM_REGS_H */

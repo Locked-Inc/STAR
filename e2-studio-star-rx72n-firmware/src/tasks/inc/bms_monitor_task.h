@@ -25,8 +25,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_BMS_MONITOR_TASK_H
-#define STAR_BMS_MONITOR_TASK_H
+#pragma once
 
 #include "rx_err.h"
 
@@ -63,5 +62,3 @@
  * @since STAR v1.0.0
  */
 rx_err_t bms_monitor_task_create(void);
-
-#endif /* STAR_BMS_MONITOR_TASK_H */

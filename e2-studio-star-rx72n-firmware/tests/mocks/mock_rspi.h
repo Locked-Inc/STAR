@@ -66,8 +66,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_RSPI_H
-#define MOCK_RSPI_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -452,5 +451,3 @@ void mock_rspi_record_call(mock_rspi_t* mock,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_RSPI_H */

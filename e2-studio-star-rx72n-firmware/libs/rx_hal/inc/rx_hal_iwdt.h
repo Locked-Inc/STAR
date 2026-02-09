@@ -148,8 +148,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX_HAL_IWDT_H
-#define STAR_RX_HAL_IWDT_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -480,6 +479,5 @@ const char* rx_hal_iwdt_get_failed_task(void);
 
 #ifdef __cplusplus
 }
-#endif
 
 #endif /* STAR_RX_IWDT_H */

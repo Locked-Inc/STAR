@@ -15,8 +15,7 @@
  * @copyright Copyright (c) 2025 STAR Project
  */
 
-#ifndef MOCK_USB0_REGS_H
-#define MOCK_USB0_REGS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -247,5 +246,3 @@ void mock_usb0_set_pipe_busy(uint8_t pipe, uint8_t busy);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_USB0_REGS_H */

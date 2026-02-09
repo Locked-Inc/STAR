@@ -434,8 +434,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX_DS18B20_H
-#define STAR_RX_DS18B20_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -896,5 +895,3 @@ uint32_t rx_ds18b20_get_conversion_time_ms(const rx_ds18b20_handle_t* handle);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_DS18B20_H */

@@ -346,8 +346,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX_CRC_H
-#define STAR_RX_CRC_H
+#pragma once
 
 #include <stdint.h>
 
@@ -1119,5 +1118,3 @@ uint8_t rx_crc8_maxim(const uint8_t* data, uint32_t len);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_CRC_H */

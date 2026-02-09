@@ -69,8 +69,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_RTC_REGS_H
-#define STAR_RX72N_RTC_REGS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -365,5 +364,3 @@ static_assert(k_rtc_rcr4_addr - k_rtc_rcr3_addr == 2U,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_RTC_REGS_H */

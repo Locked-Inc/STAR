@@ -167,8 +167,7 @@
  * @test test_rx_fec.c contains unit tests for encoder and decoder
  */
 
-#ifndef STAR_RX_FEC_H
-#define STAR_RX_FEC_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -1140,5 +1139,3 @@ static inline uint8_t rx_fec_soft_to_hard(rx_soft_bit_t soft)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_FEC_H */

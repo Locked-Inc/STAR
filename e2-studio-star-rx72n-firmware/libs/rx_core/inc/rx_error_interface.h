@@ -268,8 +268,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_ERROR_INTERFACE_H
-#define STAR_RX72N_ERROR_INTERFACE_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -914,5 +913,3 @@ static inline rx_err_t rx_error_interface_validate(const rx_error_interface_t* i
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_ERROR_INTERFACE_H */

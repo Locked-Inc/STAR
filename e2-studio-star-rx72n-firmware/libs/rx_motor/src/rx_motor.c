@@ -944,7 +944,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   /* Initialize GPTW PWM */
   gptw_config = (rx_gptw_config_t){
     .frequency_hz         = config->pwm_freq_hz,
-    .deadtime_ns          = config->dead_time_ns,
+    .deadtime_ns          = (uint16_t)config->dead_time_ns,
     .enable_complementary = false, /* We control direction manually */
     .invert_polarity      = config->invert_pwm,
   };

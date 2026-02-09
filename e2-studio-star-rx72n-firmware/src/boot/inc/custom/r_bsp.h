@@ -201,6 +201,4 @@ static inline bool R_BSP_InterruptControl(bsp_int_src_t src, bsp_int_cmd_t cmd, 
 }
 #endif
 
-#ifndef BSP_BOARD_GENERIC_RX72N
-#define BSP_BOARD_GENERIC_RX72N
-#endif /* BSP_BOARD_GENERIC_RX72N */
+#pragma once

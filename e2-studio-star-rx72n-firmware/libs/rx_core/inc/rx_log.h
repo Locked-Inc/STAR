@@ -241,8 +241,7 @@
  * @see rx_usb.h for USB CDC output
  */
 
-#ifndef STAR_RX72N_LOG_H
-#define STAR_RX72N_LOG_H
+#pragma once
 
 #include <stdint.h>
 #include <string.h>
@@ -2149,5 +2148,3 @@ static inline void internal_rx_log_verbose_str(const char* tag,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_LOG_H */

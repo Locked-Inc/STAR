@@ -133,8 +133,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_MPC_REGS_H
-#define STAR_RX72N_MPC_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -591,5 +590,3 @@ static_assert(sizeof(rx_mpc_regs_t) == 0x40 + 152,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_MPC_REGS_H */

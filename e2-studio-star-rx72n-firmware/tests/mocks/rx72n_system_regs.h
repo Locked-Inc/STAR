@@ -295,8 +295,7 @@
  * @since 1.0.0
  */
 
-#ifndef STAR_RX72N_SYSTEM_REGS_H
-#define STAR_RX72N_SYSTEM_REGS_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -1172,5 +1171,3 @@ static inline volatile uint16_t* prcr_reg(void)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_SYSTEM_REGS_H */

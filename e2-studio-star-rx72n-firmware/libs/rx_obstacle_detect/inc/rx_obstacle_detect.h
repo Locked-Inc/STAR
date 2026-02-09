@@ -188,8 +188,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX_OBSTACLE_DETECT_H
-#define STAR_RX_OBSTACLE_DETECT_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -1138,5 +1137,3 @@ typedef struct {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_OBSTACLE_DETECT_H */

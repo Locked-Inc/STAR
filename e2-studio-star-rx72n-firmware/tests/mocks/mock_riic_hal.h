@@ -160,8 +160,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_RIIC_HAL_H
-#define MOCK_RIIC_HAL_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -395,5 +394,3 @@ rx_err_t riic_write_read(riic_channel_t    channel,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_RIIC_HAL_H */

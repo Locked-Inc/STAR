@@ -85,8 +85,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX72N_MOCK_ERROR_HANDLER_H
-#define STAR_RX72N_MOCK_ERROR_HANDLER_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -269,5 +268,3 @@ rx_err_t mock_error_handler_deinit(mock_error_handler_t* handler);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_MOCK_ERROR_HANDLER_H */

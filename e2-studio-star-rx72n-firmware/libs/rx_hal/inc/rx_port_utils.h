@@ -124,8 +124,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX_PORT_UTILS_H
-#define STAR_RX_PORT_UTILS_H
+#pragma once
 
 #include "rx72n_port_regs.h"
 #include "rx_port_constants.h"
@@ -362,5 +361,3 @@ static inline volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_PORT_UTILS_H */

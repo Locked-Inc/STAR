@@ -210,8 +210,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX_THREADX_CONFIG_H
-#define STAR_RX_THREADX_CONFIG_H
+#pragma once
 
 #include <stdint.h>
 
@@ -470,5 +469,3 @@ static const uint16_t s_rx_threadx_tick_rate_hz = 100U;
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_THREADX_CONFIG_H */

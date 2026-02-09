@@ -656,6 +656,8 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
  *
  * @since Version 1.0.0
  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstack-usage="
 static rx_err_t internal_poll_usb(rx_comm_manager_t* mgr)
 {
   /* Rule 5: Pre-condition validation - prevent NULL dereference */
@@ -749,6 +751,7 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
 
   return err;
 }
+#pragma GCC diagnostic pop
 
 /* =============================================================================
  * Public Functions
@@ -1226,6 +1229,8 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
  *
  * @since Version 1.0.0
  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstack-usage="
 rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_t* params)
 {
   /* Rule 5: Pre-condition validation */
@@ -1291,6 +1296,7 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
 
   return err;
 }
+#pragma GCC diagnostic pop
 
 /**
  * @brief Send response frame on specified channel (convenience wrapper)

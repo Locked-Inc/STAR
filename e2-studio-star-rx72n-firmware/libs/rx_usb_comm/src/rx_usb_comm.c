@@ -1068,6 +1068,8 @@ static rx_err_t internal_build_frame(rx_frame_t*           frame,
   return k_rx_ok;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstack-usage="
 rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
                           const rx_frame_type_t type,
                           const uint8_t         flags,
@@ -1218,6 +1220,7 @@ rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, const uint16_t sequence, con
 
   return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
 }
+#pragma GCC diagnostic pop
 
 /* =============================================================================
  * Receive API

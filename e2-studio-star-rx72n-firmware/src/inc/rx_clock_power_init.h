@@ -9,8 +9,7 @@
  * @see rx_clock_power_init.c Implementation
  */
 
-#ifndef STAR_RX_CLOCK_POWER_INIT_H
-#define STAR_RX_CLOCK_POWER_INIT_H
+#pragma once
 
 #include "rx_err.h"
 
@@ -39,5 +38,3 @@
  * @see hardware_init() Called after this function
  */
 rx_err_t rx_clock_power_init(void);
-
-#endif /* STAR_RX_CLOCK_POWER_INIT_H */

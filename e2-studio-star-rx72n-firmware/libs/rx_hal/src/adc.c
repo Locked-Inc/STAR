@@ -512,7 +512,7 @@ internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, c
   *prcr_reg() = k_rx_prcr_lock;
 
   adcer = adc->adcer;
-  adcer &= ~(k_adc_adcer_adprc_mask << k_adc_adcer_adprc_shift);
+  adcer &= (uint16_t)~(uint16_t)(k_adc_adcer_adprc_mask << k_adc_adcer_adprc_shift);
   if (bits == k_adc_resolution_8bit) {
     adcer |= k_adc_adcer_adprc_8bit;
   } else if (bits == k_adc_resolution_10bit) {

@@ -123,8 +123,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_IWDT_REGS_H
-#define STAR_RX72N_IWDT_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -747,5 +746,3 @@ static_assert(offsetof(rx_iwdt_regs_t, iwdtcstpr) == 0x08, "IWDTCSTPR offset inc
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_IWDT_REGS_H */

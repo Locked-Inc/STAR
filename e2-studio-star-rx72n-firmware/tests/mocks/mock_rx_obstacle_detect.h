@@ -28,8 +28,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef STAR_MOCK_RX_OBSTACLE_DETECT_H
-#define STAR_MOCK_RX_OBSTACLE_DETECT_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -166,5 +165,3 @@ rx_err_t rx_obstacle_detect_get_stats(rx_obstacle_detect_t* handle,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_MOCK_RX_OBSTACLE_DETECT_H */

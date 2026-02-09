@@ -369,8 +369,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX_USB_H
-#define STAR_RX_USB_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -1227,5 +1226,3 @@ void rx_usb_isr_handler(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_USB_H */

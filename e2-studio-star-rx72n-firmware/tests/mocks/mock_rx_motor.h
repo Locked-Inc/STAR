@@ -48,8 +48,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_MOCK_RX_MOTOR_H
-#define STAR_MOCK_RX_MOTOR_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -104,5 +103,3 @@ void mock_rx_motor_reset(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_MOCK_RX_MOTOR_H */

@@ -265,8 +265,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef RX_HCSR04_HAL_H
-#define RX_HCSR04_HAL_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -770,5 +769,3 @@ uint32_t hcsr04_hal_get_time_us(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* RX_HCSR04_HAL_H */

@@ -41,8 +41,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef STAR_RX72N_MOCK_TIME_H
-#define STAR_RX72N_MOCK_TIME_H
+#pragma once
 
 #include "rx_time_interface.h"
 
@@ -170,5 +169,3 @@ void mock_time_reset_counters(mock_time_t* mock);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_MOCK_TIME_H */

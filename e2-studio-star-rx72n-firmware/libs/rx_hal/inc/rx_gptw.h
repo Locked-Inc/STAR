@@ -192,8 +192,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_GPTW_H
-#define STAR_RX72N_GPTW_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -1092,5 +1091,3 @@ rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_GPTW_H */

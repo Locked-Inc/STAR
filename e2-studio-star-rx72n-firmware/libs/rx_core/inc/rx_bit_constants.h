@@ -131,8 +131,7 @@
  * @since 2026-01-07
  */
 
-#ifndef STAR_RX_BIT_CONSTANTS_H
-#define STAR_RX_BIT_CONSTANTS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -355,5 +354,3 @@ typedef enum : uint8_t {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_BIT_CONSTANTS_H */

@@ -1385,7 +1385,8 @@ static rx_err_t internal_drv8243_configure_fault_pin(const rx_drv8243_handle_t* 
   }
 
   /* Configure as input */
-  port->pdr &= ~((uint32_t)k_bit_mask_single << handle->pin_nfault);
+  const uint8_t pin_mask = (uint8_t)((uint32_t)k_bit_mask_single << handle->pin_nfault);
+  port->pdr &= (uint8_t)~pin_mask;
 
   /* Enable pull-up (active low fault signal) */
   port->pcr |= ((uint32_t)k_bit_mask_single << handle->pin_nfault);
@@ -1694,7 +1695,7 @@ rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle, const drv8243
   }
 
   /* Clear and set slew rate bits */
-  config3 &= ~k_drv8243_cfg3_s_sr_mask;
+  config3 &= (uint8_t)~(uint8_t)k_drv8243_cfg3_s_sr_mask;
   config3 |= ((uint8_t)rate << k_drv8243_cfg3_s_sr_pos) & k_drv8243_cfg3_s_sr_mask;
 
   /* Write back */
@@ -1751,7 +1752,7 @@ rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*        handle,
   }
 
   /* Clear and set TOFF bits */
-  config3 &= ~k_drv8243_cfg3_toff_mask;
+  config3 &= (uint8_t)~(uint8_t)k_drv8243_cfg3_toff_mask;
   config3 |= ((uint8_t)toff << k_drv8243_cfg3_toff_pos) & k_drv8243_cfg3_toff_mask;
 
   /* Write back */
@@ -1799,7 +1800,7 @@ rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, const drv8243_cont
   }
 
   /* Clear and set mode bits */
-  config3 &= ~k_drv8243_cfg3_s_mode_mask;
+  config3 &= (uint8_t)~(uint8_t)k_drv8243_cfg3_s_mode_mask;
   config3 |= ((uint8_t)mode << k_drv8243_cfg3_s_mode_pos) & k_drv8243_cfg3_s_mode_mask;
 
   /* Write back */
@@ -1849,7 +1850,8 @@ rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t*       handle,
   }
 
   /* Clear and set OCP threshold and filter bits */
-  config4 &= ~(k_drv8243_cfg4_ocp_sel_mask | k_drv8243_cfg4_tocp_sel_mask);
+  config4 &=
+    (uint8_t)~(uint8_t)(k_drv8243_cfg4_ocp_sel_mask | k_drv8243_cfg4_tocp_sel_mask);
   config4 |= ((uint8_t)thresh << k_drv8243_cfg4_ocp_sel_pos) & k_drv8243_cfg4_ocp_sel_mask;
   config4 |= ((uint8_t)filter << k_drv8243_cfg4_tocp_sel_pos) & k_drv8243_cfg4_tocp_sel_mask;
 
@@ -1887,7 +1889,7 @@ rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, const bool enabl
 
   /* SSC_DIS bit: 0 = enabled, 1 = disabled */
   if (enable) {
-    config1 &= ~k_drv8243_cfg1_ssc_dis_mask;
+    config1 &= (uint8_t)~(uint8_t)k_drv8243_cfg1_ssc_dis_mask;
   } else {
     config1 |= k_drv8243_cfg1_ssc_dis_mask;
   }
@@ -1920,7 +1922,7 @@ rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
   }
 
   /* Set REG_LOCK to 01b (locked) */
-  cmd_reg &= ~k_drv8243_cmd_reg_lock_mask;
+  cmd_reg &= (uint8_t)~(uint8_t)k_drv8243_cmd_reg_lock_mask;
   cmd_reg |= k_drv8243_cmd_reg_lock_locked;
 
   /* Write back */
@@ -1953,7 +1955,7 @@ rx_err_t rx_drv8243_spi_unlock_config(rx_drv8243_handle_t* handle)
   }
 
   /* Set REG_LOCK to 10b (unlocked) */
-  cmd_reg &= ~k_drv8243_cmd_reg_lock_mask;
+  cmd_reg &= (uint8_t)~(uint8_t)k_drv8243_cmd_reg_lock_mask;
   cmd_reg |= k_drv8243_cmd_reg_lock_unlock;
 
   /* Write back */

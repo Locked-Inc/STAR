@@ -495,7 +495,7 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Post-condition: Verify read value is within valid range for ADC resolution */
-  const uint16_t max_value = (1U << bus_config->proto.adc.bits) - 1; /* 2^bits - 1 */
+  const uint32_t max_value = (1UL << bus_config->proto.adc.bits) - 1U; /* 2^bits - 1 */
   if (*ctx->value > max_value) {
     rx_log_warn(s_tag, "ADC value exceeds maximum for configured resolution");
     /* Continue anyway - HAL should prevent this, but flag if it happens */

@@ -25,6 +25,14 @@
 
 #include <stddef.h>
 
+/* Exception handler forward declarations (required for -Wmissing-declarations) */
+void rx_exc_undefined_instruction_c_handler(uint32_t pc, uint32_t psw);
+void rx_exc_privileged_instruction_c_handler(uint32_t pc, uint32_t psw);
+void rx_exc_access_c_handler(uint32_t pc, uint32_t psw);
+void rx_exc_address_c_handler(uint32_t pc, uint32_t psw);
+void rx_exc_floating_point_c_handler(uint32_t pc, uint32_t psw);
+void rx_exc_nmi_c_handler(uint32_t pc, uint32_t psw);
+
 /* ============================================================================
  * Module Constants
  * ============================================================================ */

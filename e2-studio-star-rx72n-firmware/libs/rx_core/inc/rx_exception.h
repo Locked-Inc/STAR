@@ -29,8 +29,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef RX_EXCEPTION_H
-#define RX_EXCEPTION_H
+#pragma once
 
 #include <stdint.h>
 
@@ -429,5 +428,3 @@ void rx_exc_nmi_handler(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* RX_EXCEPTION_H */

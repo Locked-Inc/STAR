@@ -2200,6 +2200,8 @@ static void internal_check_comm_timeout(void)
  * @callgraph
  * @callergraph
  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstack-usage="
 static void internal_update_motor_state(void)
 {
   rx_err_t      err;
@@ -2249,6 +2251,7 @@ static void internal_update_motor_state(void)
   /* Store in shared data */
   (void)shared_data_update_motor_state(&state);
 }
+#pragma GCC diagnostic pop
 
 /**
  * @brief Get target velocity for a specific motor from command structure

@@ -175,8 +175,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_HAL_REGS_H
-#define MOCK_HAL_REGS_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -1035,5 +1034,3 @@ void mock_hal_set_pin_validator_active(bool active);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_HAL_REGS_H */

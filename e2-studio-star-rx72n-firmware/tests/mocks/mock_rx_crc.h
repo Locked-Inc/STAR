@@ -32,8 +32,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_RX_CRC_H
-#define MOCK_RX_CRC_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -72,5 +71,3 @@ void mock_crc8_set_override(bool enable);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_RX_CRC_H */

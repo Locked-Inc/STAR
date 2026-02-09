@@ -127,7 +127,7 @@
  *
  * ### When Direct Register Access is Acceptable
  * Only use direct register access when:
- * 1. Implementing new HAL drivers (inside `lib/rx_hal/src/*.c`)
+ * 1. Implementing new HAL drivers (inside lib/rx_hal/src/)
  * 2. Low-level initialization code (clock setup, early boot)
  * 3. Interrupt handlers requiring minimal latency
  * 4. Performance-critical code after profiling shows HAL overhead is significant
@@ -248,8 +248,7 @@
  * @see Renesas RX72N Group User's Manual: Hardware (Rev.1.00)
  */
 
-#ifndef STAR_RX72N_REGS_H
-#define STAR_RX72N_REGS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -435,5 +434,3 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_REGS_H */

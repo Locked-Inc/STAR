@@ -25,8 +25,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef MOCK_USB_HW_H
-#define MOCK_USB_HW_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -312,5 +311,3 @@ void mock_usb_hw_record_call(mock_usb_hw_t* mock,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_USB_HW_H */

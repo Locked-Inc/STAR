@@ -645,20 +645,7 @@ static uint8_t s_port2_tx_buf[k_usb_port_log_tx_size];
 
 static usb_driver_t s_usb = {0};
 
-/* =============================================================================
- * Forward Declarations (internal functions from other modules)
- * =============================================================================
- */
-
-/* From rx_usb_hw.c */
-extern rx_err_t rx_usb_hw_init(void);
-extern rx_err_t rx_usb_hw_deinit(void);
-extern rx_err_t rx_usb_hw_attach(void);
-extern rx_err_t rx_usb_hw_detach(void);
-
-/* From rx_usb_cdc.c */
-extern rx_err_t rx_usb_cdc_init(void);
-extern void     rx_usb_cdc_handle_bulk_in(rx_usb_port_id_t port);
+/* Redundant extern declarations removed - now provided by rx_usb_internal.h */
 
 /* =============================================================================
  * Private Functions - Port Validation
@@ -692,8 +679,15 @@ static inline bool internal_state_is_valid(const rx_usb_state_t state)
  * Private Functions - Ring Buffer Operations
  *
  * Internal implementation functions exposed for unit testing via rx_usb_private.h.
+ * Forward declarations required by -Wmissing-declarations.
  * =============================================================================
  */
+
+void     priv_ring_buffer_init(ring_buffer_t* buf, uint8_t* data, uint32_t size);
+uint32_t priv_ring_buffer_available(const ring_buffer_t* buf);
+uint32_t priv_ring_buffer_free(const ring_buffer_t* buf);
+uint32_t priv_ring_buffer_write(ring_buffer_t* buf, const uint8_t* data, uint32_t len);
+uint32_t priv_ring_buffer_read(ring_buffer_t* buf, uint8_t* data, uint32_t max_len);
 
 /**
  * @brief Initialize a ring buffer with backing storage

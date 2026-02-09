@@ -32,8 +32,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef MOCK_RX_SYSTEM_REGS_H
-#define MOCK_RX_SYSTEM_REGS_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -221,5 +220,3 @@ uint32_t mock_system_regs_get_rstsr2_read_count(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_RX_SYSTEM_REGS_H */

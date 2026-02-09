@@ -162,8 +162,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef STAR_RX_NANOPB_H
-#define STAR_RX_NANOPB_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -799,5 +798,3 @@ void rx_nanopb_test_reset_state(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX_NANOPB_H */

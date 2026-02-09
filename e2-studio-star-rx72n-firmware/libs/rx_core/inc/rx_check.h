@@ -201,8 +201,7 @@
  * @copyright MIT License
  */
 
-#ifndef STAR_RX72N_CHECK_H
-#define STAR_RX72N_CHECK_H
+#pragma once
 
 #include "rx_err.h"
 #include "rx_log.h"
@@ -930,5 +929,3 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_CHECK_H */

@@ -59,8 +59,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_DTC_REGS_H
-#define STAR_RX72N_DTC_REGS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -731,5 +730,3 @@ static_assert(sizeof(dtc_transfer_info_full_t) == 20,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_DTC_REGS_H */

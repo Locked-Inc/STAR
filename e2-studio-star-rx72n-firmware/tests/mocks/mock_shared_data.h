@@ -24,8 +24,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#ifndef STAR_MOCK_SHARED_DATA_H
-#define STAR_MOCK_SHARED_DATA_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -282,5 +281,3 @@ void shared_data_update_last_comm_tick(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_MOCK_SHARED_DATA_H */

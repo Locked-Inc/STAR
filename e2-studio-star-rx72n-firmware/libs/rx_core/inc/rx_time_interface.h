@@ -236,8 +236,7 @@
  * @since Version 1.0.0
  */
 
-#ifndef STAR_RX72N_TIME_INTERFACE_H
-#define STAR_RX72N_TIME_INTERFACE_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -1026,6 +1025,8 @@ struct rx_time_interface {
  * @callgraph
  * @callergraph
  */
+[[nodiscard]] rx_err_t rx_time_threadx_get_interface(rx_time_interface_t* iface);
+
 static inline rx_err_t rx_time_interface_validate(const rx_time_interface_t* iface)
 {
   if (iface == nullptr) {
@@ -1043,5 +1044,3 @@ static inline rx_err_t rx_time_interface_validate(const rx_time_interface_t* ifa
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_TIME_INTERFACE_H */

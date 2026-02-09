@@ -221,8 +221,7 @@
  * @since 1.0.0
  */
 
-#ifndef STAR_RX72N_REGS_H
-#define STAR_RX72N_REGS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -347,5 +346,3 @@ typedef mock_system_regs_t rx_system_regs_t;
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* STAR_RX72N_REGS_H */

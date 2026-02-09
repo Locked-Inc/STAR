@@ -50,8 +50,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_RX_ONEWIRE_HW_H
-#define MOCK_RX_ONEWIRE_HW_H
+#pragma once
 
 #include <stdint.h>
 
@@ -173,5 +172,3 @@ void mock_onewire_hw_advance_timer(uint16_t ticks);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_RX_ONEWIRE_HW_H */

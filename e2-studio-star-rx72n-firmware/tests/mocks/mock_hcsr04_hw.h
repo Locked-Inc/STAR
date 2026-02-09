@@ -52,8 +52,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#ifndef MOCK_HCSR04_HW_H
-#define MOCK_HCSR04_HW_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -388,5 +387,3 @@ uint32_t mock_get_time_us(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MOCK_HCSR04_HW_H */
