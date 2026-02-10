@@ -10842,6 +10842,16 @@
 	)
 	(wire
 		(pts
+			(xy 787.4 128.27) (xy 762 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4df121bc-93d3-4eb3-ac18-6ec2480f28ea")
+	)
+	(wire
+		(pts
 			(xy 332.74 77.47) (xy 335.28 77.47)
 		)
 		(stroke
@@ -13582,6 +13592,16 @@
 	)
 	(wire
 		(pts
+			(xy 787.4 88.9) (xy 762 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b3da4356-5b10-4bcd-90a5-9ab1b542c870")
+	)
+	(wire
+		(pts
 			(xy 265.43 77.47) (xy 299.72 77.47)
 		)
 		(stroke
@@ -13759,6 +13779,16 @@
 			(type default)
 		)
 		(uuid "be36acf9-7630-449c-90ba-4c7043d4c8ac")
+	)
+	(wire
+		(pts
+			(xy 787.4 130.81) (xy 762 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "be65cfaf-3185-4a19-841d-d41fddfef326")
 	)
 	(wire
 		(pts
@@ -14429,6 +14459,16 @@
 			(type default)
 		)
 		(uuid "d7aa41b9-c614-453f-9a8d-d1e2f1a383cc")
+	)
+	(wire
+		(pts
+			(xy 787.4 125.73) (xy 762 125.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d8340771-3f8f-4115-822f-7f3437d3d3c3")
 	)
 	(wire
 		(pts
@@ -15299,6 +15339,16 @@
 			(type default)
 		)
 		(uuid "f713e762-53e5-442e-9096-60e0414ba1ab")
+	)
+	(wire
+		(pts
+			(xy 787.4 133.35) (xy 762 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f74137eb-28f9-4769-ad8f-11e30e6b99f1")
 	)
 	(wire
 		(pts
@@ -16298,6 +16348,16 @@
 		)
 		(uuid "08cd6457-8498-4322-8a87-26ebaa86b4c0")
 	)
+	(label "PMOD_JD_GPIO2"
+		(at 787.4 128.27 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "09883d15-fb8d-45a5-8228-5fa2cb66883b")
+	)
 	(label "BMS_I2C_DATA"
 		(at 54.61 119.38 0)
 		(effects
@@ -16388,6 +16448,16 @@
 			(justify right bottom)
 		)
 		(uuid "1c3da5a6-12c3-456d-8faf-743ce0ae14c5")
+	)
+	(label "PMOD_JD_GPIO0"
+		(at 787.4 133.35 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "1d4db0fd-8259-43d8-a438-917ab7abd62f")
 	)
 	(label "DS18B20_DQ"
 		(at 723.9 59.69 180)
@@ -16639,6 +16709,16 @@
 			(justify left bottom)
 		)
 		(uuid "5a1396c5-ac8e-4acb-977f-a3604b0bc244")
+	)
+	(label "PMOD_JD_GPIO1"
+		(at 787.4 130.81 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "5a707576-3d08-4fb6-ab33-3af4be61e449")
 	)
 	(label "DBG_RESETn"
 		(at 664.21 180.34 0)
@@ -16913,6 +16993,16 @@
 		)
 		(uuid "996886df-073d-41bb-b42d-b25cc4741c01")
 	)
+	(label "PMOD_JD_GPIO3"
+		(at 787.4 125.73 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "998273a9-e27e-4da3-ba0b-dc83415b98f1")
+	)
 	(label "SCI9_TXD9"
 		(at 793.75 198.12 180)
 		(effects
@@ -17076,6 +17166,16 @@
 			(justify right bottom)
 		)
 		(uuid "aef025f4-7df2-4df4-94e2-e005d3ad93f3")
+	)
+	(label "DS18B20_DQ"
+		(at 787.4 88.9 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "aef1cade-360b-4258-8c09-5cd337b60adb")
 	)
 	(label "SCI_USBC_5V0"
 		(at 490.22 106.68 180)
