@@ -80,12 +80,25 @@ func (hm *HealthMonitor) checkTransports(tm *TransportManager) {
 		wrapper.Health.IsHealthy = healthy
 		wrapper.Available = healthy
 
+		// If transport just recovered, update LastRecovery timestamp for failback damping
+		// Detect Recovery: previously unhealthy and now healthy
+		needFailover := false
+		var recoveredName string
+		var dampingDuration time.Duration
 		if healthy && !prevHealthy {
 			wrapper.Health.LastRecovery = time.Now()
-			log.Printf("Transport %s recovered (now healthy, failback damping %v)",
-				name, tm.config.FailbackDamping)
+			needFailover = true
+			recoveredName = name
+			dampingDuration = tm.config.FailbackDamping
 		}
 		tm.mu.Unlock()
+
+		// Trigger failback asynchronously outside of lock to avoid blocking the monitor loop
+		// while attemptFailover/executeSwitch pauseOperations and drainInflight
+		if needFailover {
+			log.Printf("Transport %s recovered (now healthy), triggering failover evaluation (damping: %v)", recoveredName, dampingDuration)
+			go tm.attemptFailover(FailureTypeGraceful)
+		}
 	}
 }
 

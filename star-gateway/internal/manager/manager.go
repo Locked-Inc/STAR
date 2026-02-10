@@ -949,7 +949,6 @@ func (tm *TransportManager) selectBestTransportLocked() *TransportWrapper {
 
 // executeSwitch performs a transport switch with pause-drain-resume.
 // executeSwitch performs the actual transport switch with smart drain logic.
-// CRITICAL FIX #2: Skips drain for hard failures (USB disconnect, IO errors) to enable fast failover (<300ms).
 func (tm *TransportManager) executeSwitch(target *TransportWrapper, failureType FailureType) error {
 	if target == nil {
 		return errors.New("target transport is nil")
@@ -1171,6 +1170,24 @@ func (tm *TransportManager) handleHotPlugEvent(event HotPlugEvent) {
 		// USB device added - will be registered by the main initialization code
 		// This event is primarily informational; actual registration happens via RegisterTransport
 		log.Printf("USB device connected: %s", event.Device)
+		tm.mu.Lock()
+		usbExists := false
+		if wrapper, exists := tm.availableTransports[TransportNameUSB]; exists {
+			// Device re-insert = fresh state - safe to overwrite health metrics
+			// since the physical device is new and past failures are irrelevant
+			wrapper.Available = true
+			wrapper.Health.IsHealthy = true
+			wrapper.Health.ConsecutiveFailures = 0 // Reset stale failure count
+			wrapper.Health.LastRecovery = time.Now()
+			usbExists = true
+			log.Printf("Marked USB transport as available and healthy due to hot-plug add")
+		}
+		tm.mu.Unlock()
+
+		// Only trigger failback if USB transport is registered
+		if usbExists {
+			go tm.attemptFailover(FailureTypeGraceful)
+		}
 
 	case "remove":
 		tm.mu.Lock()
