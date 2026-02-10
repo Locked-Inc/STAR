@@ -1097,6 +1097,12 @@ static const char* const s_tag = "TELEM";
  */
 static uint32_t s_sequence = 0;
 
+/** @brief Conversion factor: millivolts per volt */
+static const float s_mv_per_volt = 1000.0F;
+
+/** @brief Conversion factor: centi-degrees Celsius per degree Celsius */
+static const float s_cdegc_per_degree = 100.0F;
+
 /* =============================================================================
  * Forward Declarations
  * =============================================================================
@@ -1723,8 +1729,6 @@ static void internal_telem_task_entry(ULONG input)
  * - Collect raw sensor data (motor/BMS/temp tasks' job)
  * - Parse received commands (comm_task's job)
  */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstack-usage="
 static rx_err_t internal_build_and_send_telemetry(void)
 {
   rx_err_t              err;
@@ -1782,7 +1786,7 @@ static rx_err_t internal_build_and_send_telemetry(void)
   err = shared_data_get_bms(&bms_state);
   if (err == k_rx_ok && bms_state.valid) {
     /* Convert millivolts to volts */
-    telemetry.battery_voltage_v   = (float)bms_state.voltage_mv / 1000.0f;
+    telemetry.battery_voltage_v   = (float)bms_state.voltage_mv / s_mv_per_volt;
     telemetry.battery_soc_percent = bms_state.soc_percent;
     telemetry.battery_percent     = (float)bms_state.soc_percent;
   }
@@ -1791,7 +1795,7 @@ static rx_err_t internal_build_and_send_telemetry(void)
   err = shared_data_get_temp(&temp_state);
   if (err == k_rx_ok && temp_state.sensor_valid[0]) {
     /* Convert from centi-degrees to degrees */
-    telemetry.temperature_celsius = (float)temp_state.temperature_cdegc[0] / 100.0f;
+    telemetry.temperature_celsius = (float)temp_state.temperature_cdegc[0] / s_cdegc_per_degree;
   }
 
   /* Encode to protobuf */
@@ -1820,4 +1824,3 @@ static rx_err_t internal_build_and_send_telemetry(void)
 
   return k_rx_ok;
 }
-#pragma GCC diagnostic pop

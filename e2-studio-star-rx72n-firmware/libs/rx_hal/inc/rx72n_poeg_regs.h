@@ -103,7 +103,7 @@
  * - Chapter 27: GPTW Port Output Enable (POEG), pages 1432-1441
  *
  * @see rx72n_gptw_regs.h General PWM Timer registers
- * @see rx72n_regs.h Master register include file
+ * @see rx72n_regs.h Main register include file
  *
  * @author STAR Team
  * @date 2026-01-29

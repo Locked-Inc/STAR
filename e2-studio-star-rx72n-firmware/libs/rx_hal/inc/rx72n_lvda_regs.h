@@ -97,7 +97,7 @@
  * RX72N Group User's Manual: Hardware (R01UH0824EJ0120 Rev.1.20)
  * - Chapter 8: Voltage Detection Circuit (LVDA), pages 316-334
  *
- * @see rx72n_regs.h Master register include file
+ * @see rx72n_regs.h Main register include file
  *
  * @author STAR Team
  * @date 2026-01-29

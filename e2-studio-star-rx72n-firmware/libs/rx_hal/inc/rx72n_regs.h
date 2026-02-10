@@ -2,7 +2,7 @@
 
 /**
  * @file rx72n_regs.h
- * @brief RX72N Hardware Register Definitions - Master Aggregator Header
+ * @brief RX72N Hardware Register Definitions - Main Aggregator Header
  *
  * @details
  * ## Overview
@@ -12,7 +12,7 @@
  *
  * **Purpose**: Simplifies HAL implementation by consolidating all register headers.
  * **Based On**: Renesas RX72N Group User's Manual: Hardware (Rev.1.00, Feb 2019)
- * **Target MCU**: R5F572NNHGFP#30 (100-pin LFQFP, 4MB Flash, 512KB SRAM)
+ * **Target MCU**: R5F572NNHxFB (144-pin LFQFP, 4MB Flash, 512KB SRAM)
  *
  * ## Architecture
  *
@@ -360,6 +360,13 @@ extern "C" {
  */
 
 #include "rx72n_poeg_regs.h"
+
+/* =============================================================================
+ * 16-Bit Timer Pulse Unit (TPU) - Quadrature Encoder Phase Counting
+ * =============================================================================
+ */
+
+#include "rx72n_tpu_regs.h"
 
 /* =============================================================================
  * Voltage Detection Circuit (LVDA) - Brownout Protection

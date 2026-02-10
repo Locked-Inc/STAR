@@ -27,7 +27,7 @@
 #include <string.h>
 
 /* Include the task header for the public API */
-#include "tasks/temp_sensor_task.h"
+#include "temp_sensor_task.h"
 
 /* =============================================================================
  * Test Constants

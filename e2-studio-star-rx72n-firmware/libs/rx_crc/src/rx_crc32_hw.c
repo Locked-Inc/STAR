@@ -830,7 +830,6 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 {
   rx_err_t          init_err;
   volatile uint8_t* crcdir_byte;
-  uint32_t          i;
 
   /* Pre-condition: Validate input parameters (NASA Rule 5) */
   RX_CHECK_NULL_PTR(data, "CRC", "CRC data pointer is nullptr");
@@ -865,7 +864,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * NASA Rule 2: Loop bounded by k_crc_len_max (compile-time constant)
      */
   crcdir_byte = (volatile uint8_t*)&crc_regs()->crcdir;
-  for (i = k_crc_idx_start; i < k_crc_len_max; i++) {
+  for (uint32_t i = k_crc_idx_start; i < k_crc_len_max; i++) {
     if (i >= len) {
       break;
     }

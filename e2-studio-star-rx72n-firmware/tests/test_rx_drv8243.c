@@ -307,7 +307,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle);
 rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed);
 rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake);
 rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_current);
-rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* out_fault);
+rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_fault);
 rx_err_t rx_drv8243_get_speed(const rx_drv8243_handle_t* handle, float* out_speed);
 rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limit_ma);
 
@@ -408,16 +408,6 @@ static void mock_set_adc_error(rx_err_t err)
 static void mock_set_motor_init_error(rx_err_t err)
 {
   s_motor_init_error = err;
-}
-
-static void mock_set_motor_duty_error(rx_err_t err)
-{
-  s_motor_duty_error = err;
-}
-
-static void mock_set_motor_stop_error(rx_err_t err)
-{
-  s_motor_stop_error = err;
 }
 
 /* =============================================================================
@@ -796,7 +786,7 @@ rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_c
   return k_rx_ok;
 }
 
-rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* out_fault)
+rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_fault)
 {
   if (handle == nullptr) {
     return k_rx_err_null_ptr;
@@ -1605,6 +1595,20 @@ static void test_get_speed_not_initialized(void)
 
   rx_err_t err = rx_drv8243_get_speed(&handle, &speed);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/* =============================================================================
+ * Unity Required Callbacks
+ * =============================================================================
+ */
+
+void setUp(void)
+{
+  mock_reset_all();
+}
+
+void tearDown(void)
+{
 }
 
 /* =============================================================================

@@ -28,7 +28,7 @@
  * @par System Architecture - STAR Robot GPIO Usage
  * @verbatim
  *   ┌─────────────────────────────────────────────────────────────────────────┐
- *   │                    RX72N GPIO Architecture (100-pin LFQFP)              │
+ *   │                    RX72N GPIO Architecture (144-pin LFQFP)              │
  *   │                                                                         │
  *   │  ┌─────────────────────────────────────────────────────────────────────┐│
  *   │  │                        PORT Module                                  ││
@@ -46,8 +46,8 @@
  *   │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘  ││
  *   │  │                                                                     ││
  *   │  │  ┌──────────┐ ┌──────────┐                                          ││
- *   │  │  │ Port E   │ │ Port J   │  Unavailable on 100-pin:                 ││
- *   │  │  │ PE0-PE7  │ │ PJ3,PJ5  │  Ports 6-9, F, G, H, K, L, M, N, Q       ││
+ *   │  │  │ Port E   │ │ Port J   │  Unavailable on 144-pin:                 ││
+ *   │  │  │ PE0-PE7  │ │ PJ3,PJ5  │  Ports G, H, K, L, M, N, Q               ││
  *   │  │  │ Full     │ │ Limited  │                                          ││
  *   │  │  └──────────┘ └──────────┘                                          ││
  *   │  └─────────────────────────────────────────────────────────────────────┘│
@@ -63,7 +63,7 @@
  *   │  │   - MTCLKA/B: Quadrature encoder A/B signals                       │ │
  *   │  │                                                                     │ │
  *   │  │ Communication:                                                     │ │
- *   │  │   - SPI (RSPI0): MOSI, MISO, SCK, SS                               │ │
+ *   │  │   - SPI (RSPI0): COPI, CIPO, SCK, CS                               │ │
  *   │  │   - UART (SCI): TXD, RXD                                           │ │
  *   │  │   - I2C (RIIC): SDA, SCL                                           │ │
  *   │  │   - USB: USB_DP, USB_DM                                            │ │
@@ -103,7 +103,7 @@
  * @endcode
  *
  * @par Package Support
- * This file supports the 100-pin LFQFP package (R5F572NNHGFP#30) only.
+ * This file supports the 144-pin LFQFP package (R5F572NNHxFB).
  * Available ports and pins:
  * - Port 0: P05, P07 only (limited)
  * - Port 1: P12-P17 only (limited)
@@ -111,12 +111,17 @@
  * - Port 3: P30-P37 (full, P35 input-only)
  * - Port 4: P40-P47 (full)
  * - Port 5: P50-P55 only (limited)
+ * - Port 6: P60-P67 (partial, P67 available on 144-pin)
+ * - Port 7: P71-P77 (partial)
+ * - Port 8: P80-P87 (partial, P86/P87 available on 144-pin)
+ * - Port 9: P90-P97 (partial)
  * - Port A: PA0-PA7 (full)
  * - Port B: PB0-PB7 (full)
  * - Port C: PC0-PC7 (full)
  * - Port D: PD0-PD7 (full)
  * - Port E: PE0-PE7 (full)
- * - Port J: PJ3, PJ5 only (limited)
+ * - Port F: PF0-PF2, PF5 (partial, PF5 available on 144-pin)
+ * - Port J: PJ3, PJ5 (limited, PJ3/PJ5 available on 144-pin)
  *
  * @par Hardware Reference
  * - RX72N Group User's Manual: Hardware, Chapter 21 (I/O Ports)
@@ -264,14 +269,14 @@ typedef enum : uint32_t {
 
 /**
  * @enum rx_port_offsets_t
- * @brief Port number offsets for register access (100-pin LFQFP only)
+ * @brief Port number offsets for register access (144-pin LFQFP)
  *
  * @details
  * Offset values to add to register base addresses for accessing specific ports.
- * The 100-pin LFQFP package has limited port availability compared to larger
- * packages - many ports (6-9, F, G, H, K, L, M, N, Q) are not bonded out.
+ * The 144-pin LFQFP package has broader port availability compared to the
+ * 144-pin package. Ports G, H, K, L, M, N, Q are not bonded out.
  *
- * @par Available Pins by Port (100-pin LFQFP)
+ * @par Available Pins by Port (144-pin LFQFP)
  * | Port | Offset | Available Pins | Notes |
  * |------|--------|----------------|-------|
  * | 0    | 0x00   | P05, P07       | Limited - only 2 pins |
@@ -280,12 +285,17 @@ typedef enum : uint32_t {
  * | 3    | 0x03   | P30-P37        | Full, P35 input-only |
  * | 4    | 0x04   | P40-P47        | Full 8 pins |
  * | 5    | 0x05   | P50-P55        | Limited - no P56, P57 |
+ * | 6    | 0x06   | P60-P67        | Partial (P67 on 144-pin) |
+ * | 7    | 0x07   | P71-P77        | Partial (P70 N/A) |
+ * | 8    | 0x08   | P80-P87        | Partial (P86/P87 on 144-pin) |
+ * | 9    | 0x09   | P90-P97        | Partial |
  * | A    | 0x0A   | PA0-PA7        | Full 8 pins |
  * | B    | 0x0B   | PB0-PB7        | Full 8 pins |
  * | C    | 0x0C   | PC0-PC7        | Full 8 pins |
  * | D    | 0x0D   | PD0-PD7        | Full 8 pins |
  * | E    | 0x0E   | PE0-PE7        | Full 8 pins |
- * | J    | 0x12   | PJ3, PJ5       | Limited - only 2 pins |
+ * | F    | 0x0F   | PF0-PF2, PF5   | Partial (PF5 on 144-pin) |
+ * | J    | 0x12   | PJ3, PJ5       | Limited (PJ3/PJ5 on 144-pin) |
  *
  * @par Usage Example
  * @code
@@ -317,6 +327,9 @@ typedef enum : uint8_t {
 
   /** @brief Port 5 offset - Limited: P50-P55 only (6 pins) */
   k_port_offset_5 = 0x05,
+
+  /** @brief Port 6 offset - Partial: P67 only on 144-pin */
+  k_port_offset_6 = 0x06,
 
   /** @brief Port A offset - Full: PA0-PA7 (8 pins) */
   k_port_offset_a = 0x0A,
@@ -570,7 +583,7 @@ static_assert((uint32_t)k_port_dscr2_base == 0x0008C128,
  *
  * @details
  * Returns a volatile pointer to PORT0's register structure. PORT0 is limited
- * on the 100-pin LFQFP package - only P05 and P07 are available.
+ * on the 144-pin LFQFP package - only P05 and P07 are available.
  *
  * @return Volatile pointer to PORT0 register structure
  *
@@ -580,7 +593,7 @@ static_assert((uint32_t)k_port_dscr2_base == 0x0008C128,
  * - PIDR: 0x0008C040
  * - PMR:  0x0008C060
  *
- * @par Available Pins (100-pin)
+ * @par Available Pins (144-pin)
  * P05, P07 only (2 pins total)
  *
  * @note Thread-safe: returns constant hardware address
@@ -595,7 +608,7 @@ static inline volatile rx_port_regs_t* port0(void)
  * @brief Get pointer to PORT1 registers
  * @return Volatile pointer to PORT1 register structure
  * @note PORT1 PDR = 0x0008C001, PODR = 0x0008C021, PIDR = 0x0008C041
- * @note 100-pin: Only P12-P17 available
+ * @note 144-pin: Only P12-P17 available
  */
 static inline volatile rx_port_regs_t* port1(void)
 {
@@ -606,7 +619,7 @@ static inline volatile rx_port_regs_t* port1(void)
  * @brief Get pointer to PORT2 registers
  * @return Volatile pointer to PORT2 register structure
  * @note PORT2 PDR = 0x0008C002, PODR = 0x0008C022, PIDR = 0x0008C042
- * @note 100-pin: P20-P27 available
+ * @note 144-pin: P20-P27 available
  */
 static inline volatile rx_port_regs_t* port2(void)
 {
@@ -617,7 +630,7 @@ static inline volatile rx_port_regs_t* port2(void)
  * @brief Get pointer to PORT3 registers
  * @return Volatile pointer to PORT3 register structure
  * @note PORT3 PDR = 0x0008C003, PODR = 0x0008C023, PIDR = 0x0008C043
- * @note 100-pin: P30-P37 available (P35 is input-only)
+ * @note 144-pin: P30-P37 available (P35 is input-only)
  */
 static inline volatile rx_port_regs_t* port3(void)
 {
@@ -628,7 +641,7 @@ static inline volatile rx_port_regs_t* port3(void)
  * @brief Get pointer to PORT4 registers
  * @return Volatile pointer to PORT4 register structure
  * @note PORT4 PDR = 0x0008C004, PODR = 0x0008C024, PIDR = 0x0008C044
- * @note 100-pin: P40-P47 available
+ * @note 144-pin: P40-P47 available
  */
 static inline volatile rx_port_regs_t* port4(void)
 {
@@ -639,7 +652,7 @@ static inline volatile rx_port_regs_t* port4(void)
  * @brief Get pointer to PORT5 registers
  * @return Volatile pointer to PORT5 register structure
  * @note PORT5 PDR = 0x0008C005, PODR = 0x0008C025, PIDR = 0x0008C045
- * @note 100-pin: Only P50-P55 available
+ * @note 144-pin: Only P50-P55 available
  */
 static inline volatile rx_port_regs_t* port5(void)
 {
@@ -647,10 +660,21 @@ static inline volatile rx_port_regs_t* port5(void)
 }
 
 /**
+ * @brief Get pointer to PORT6 registers
+ * @return Volatile pointer to PORT6 register structure
+ * @note PORT6 PDR = 0x0008C006, PODR = 0x0008C026, PIDR = 0x0008C046
+ * @note 144-pin: Only P67 available (HOST_IRQ)
+ */
+static inline volatile rx_port_regs_t* port6(void)
+{
+  return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_6);
+}
+
+/**
  * @brief Get pointer to PORTA registers
  * @return Volatile pointer to PORTA register structure
  * @note PORTA PDR = 0x0008C00A, PODR = 0x0008C02A, PIDR = 0x0008C04A
- * @note 100-pin: PA0-PA7 available
+ * @note 144-pin: PA0-PA7 available
  */
 static inline volatile rx_port_regs_t* porta(void)
 {
@@ -661,7 +685,7 @@ static inline volatile rx_port_regs_t* porta(void)
  * @brief Get pointer to PORTB registers
  * @return Volatile pointer to PORTB register structure
  * @note PORTB PDR = 0x0008C00B, PODR = 0x0008C02B, PIDR = 0x0008C04B
- * @note 100-pin: PB0-PB7 available
+ * @note 144-pin: PB0-PB7 available
  */
 static inline volatile rx_port_regs_t* portb(void)
 {
@@ -672,7 +696,7 @@ static inline volatile rx_port_regs_t* portb(void)
  * @brief Get pointer to PORTC registers
  * @return Volatile pointer to PORTC register structure
  * @note PORTC PDR = 0x0008C00C, PODR = 0x0008C02C, PIDR = 0x0008C04C
- * @note 100-pin: PC0-PC7 available
+ * @note 144-pin: PC0-PC7 available
  */
 static inline volatile rx_port_regs_t* portc(void)
 {
@@ -683,7 +707,7 @@ static inline volatile rx_port_regs_t* portc(void)
  * @brief Get pointer to PORTD registers
  * @return Volatile pointer to PORTD register structure
  * @note PORTD PDR = 0x0008C00D, PODR = 0x0008C02D, PIDR = 0x0008C04D
- * @note 100-pin: PD0-PD7 available
+ * @note 144-pin: PD0-PD7 available
  */
 static inline volatile rx_port_regs_t* portd(void)
 {
@@ -694,7 +718,7 @@ static inline volatile rx_port_regs_t* portd(void)
  * @brief Get pointer to PORTE registers
  * @return Volatile pointer to PORTE register structure
  * @note PORTE PDR = 0x0008C00E, PODR = 0x0008C02E, PIDR = 0x0008C04E
- * @note 100-pin: PE0-PE7 available
+ * @note 144-pin: PE0-PE7 available
  */
 static inline volatile rx_port_regs_t* porte(void)
 {
@@ -705,7 +729,7 @@ static inline volatile rx_port_regs_t* porte(void)
  * @brief Get pointer to PORTJ registers
  * @return Volatile pointer to PORTJ register structure
  * @note PORTJ PDR = 0x0008C012, PODR = 0x0008C032, PIDR = 0x0008C052
- * @note 100-pin: Only PJ3, PJ5 available
+ * @note 144-pin: Only PJ3, PJ5 available
  */
 static inline volatile rx_port_regs_t* portj(void)
 {

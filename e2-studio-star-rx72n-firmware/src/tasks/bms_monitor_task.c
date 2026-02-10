@@ -305,6 +305,7 @@
 #include "bms_monitor_task.h"
 
 #include "rx_bq4050.h"
+#include "rx_bq4050_constants.h"
 #include "rx_check.h"
 #include "rx_log.h"
 #include "shared_data.h"
@@ -367,6 +368,114 @@ static const char* const s_i2c_bus_name = "i2c0";
  */
 
 static void internal_bms_task_entry(ULONG input);
+static bool internal_check_critical_faults(uint16_t status_flags);
+
+/* =============================================================================
+ * Private Functions
+ * =============================================================================
+ */
+
+/**
+ * @brief Check for critical battery faults and trigger emergency stop
+ *
+ * @details
+ * Decodes BatteryStatus register (0x16) and checks ALL 10 battery status flags.
+ * Triggers emergency stop for OTA, OCA, or TDA (life-safety critical).
+ * Logs warnings/info for all other flags.
+ *
+ * **Status Flags Checked (10 total):**
+ * - **CRITICAL** (trigger e-stop): OTA, OCA, TDA
+ * - **HIGH** (log warning): TCA, RCA, RTA
+ * - **INFO** (log info): INIT, DSG, FC, FD
+ *
+ * @param[in] status_flags Raw BatteryStatus register value (0x16)
+ * @return true if critical fault detected, false otherwise
+ *
+ * @pre status_flags read from valid BQ4050 register 0x16
+ * @post Emergency stop triggered if OTA, OCA, or TDA set
+ *
+ * @note Not thread-safe, should only be called from BMS task
+ * @note All 10 SBS status flags are checked and logged appropriately
+ */
+static bool internal_check_critical_faults(uint16_t status_flags)
+{
+  bool critical = false;
+
+  /* ========================================================================
+   * CRITICAL Alarms (trigger emergency stop)
+   * ========================================================================
+   */
+
+  /* CRITICAL: Over-temperature alarm (>60°C, thermal runaway risk) */
+  if ((status_flags & k_bq4050_status_over_temp_alarm) != k_bq4050_status_flag_clear) {
+    rx_log_error(s_tag, "CRITICAL: Over-temperature alarm - battery >60C");
+    (void)shared_data_trigger_estop(k_estop_reason_battery_fault);
+    critical = true;
+  }
+
+  /* CRITICAL: Over-charged alarm (>4.3V/cell, lithium plating risk) */
+  if ((status_flags & k_bq4050_status_over_charged_alarm) != k_bq4050_status_flag_clear) {
+    rx_log_error(s_tag, "CRITICAL: Over-charged alarm - voltage >4.3V/cell");
+    (void)shared_data_trigger_estop(k_estop_reason_battery_fault);
+    critical = true;
+  }
+
+  /* CRITICAL: Terminate discharge alarm (<3.0V/cell, copper dissolution) */
+  if ((status_flags & k_bq4050_status_terminate_discharge_alarm) != k_bq4050_status_flag_clear) {
+    rx_log_error(s_tag, "CRITICAL: Terminate discharge alarm - undervoltage");
+    (void)shared_data_trigger_estop(k_estop_reason_battery_fault);
+    critical = true;
+  }
+
+  /* ========================================================================
+   * HIGH Priority Warnings (log warning, no e-stop)
+   * ========================================================================
+   */
+
+  /* HIGH: Terminate charge alarm (normal end-of-charge) */
+  if ((status_flags & k_bq4050_status_terminate_charge_alarm) != k_bq4050_status_flag_clear) {
+    rx_log_info(s_tag, "Charge complete - terminate charge alarm");
+  }
+
+  /* MEDIUM: Remaining capacity alarm (low battery, <15-20% SOC) */
+  if ((status_flags & k_bq4050_status_remaining_capacity_alarm) != k_bq4050_status_flag_clear) {
+    rx_log_warn(s_tag, "Low capacity warning - remaining capacity alarm");
+  }
+
+  /* MEDIUM: Remaining time alarm (<10 minutes runtime) */
+  if ((status_flags & k_bq4050_status_remaining_time_alarm) != k_bq4050_status_flag_clear) {
+    rx_log_warn(s_tag, "Low runtime warning - <10 minutes remaining");
+  }
+
+  /* ========================================================================
+   * INFO Status Flags (log info, non-critical)
+   * ========================================================================
+   */
+
+  /* INFO: Initialized flag (battery gauging calibrated) */
+  if ((status_flags & k_bq4050_status_initialized) != k_bq4050_status_flag_clear) {
+    /* Normally set after initial capacity learning - log once or debug only */
+    /* rx_log_info(s_tag, "Battery initialized - gauging active"); */
+  }
+
+  /* INFO: Discharging flag (battery discharging, negative current) */
+  if ((status_flags & k_bq4050_status_discharging) != k_bq4050_status_flag_clear) {
+    /* Common state, log only for debug if needed */
+    /* rx_log_info(s_tag, "Battery discharging"); */
+  }
+
+  /* INFO: Fully charged flag (charge complete) */
+  if ((status_flags & k_bq4050_status_fully_charged) != k_bq4050_status_flag_clear) {
+    rx_log_info(s_tag, "Battery fully charged");
+  }
+
+  /* INFO: Fully discharged flag (battery empty) */
+  if ((status_flags & k_bq4050_status_fully_discharged) != k_bq4050_status_flag_clear) {
+    rx_log_warn(s_tag, "Battery fully discharged - charge immediately");
+  }
+
+  return critical;
+}
 
 /* =============================================================================
  * Public Functions
@@ -692,7 +801,7 @@ rx_err_t bms_monitor_task_create(void)
  *    - capacity_mah ← status.remaining_capacity_mah
  *    - full_capacity_mah ← status.full_capacity_mah
  *    - cycle_count ← status.cycle_count
- *    - fault_flags ← 0 (TODO: Extract from BatteryStatus register 0x16)
+ *    - fault_flags ← status.battery_status (BatteryStatus register 0x16, 10 flag bits)
  *    - timestamp_ms ← tx_time_get() (ThreadX tick count in ms)
  *    - valid ← true
  *
@@ -1064,9 +1173,12 @@ static void internal_bms_task_entry(ULONG input)
       bms.capacity_mah        = status.remaining_capacity_mah;
       bms.full_capacity_mah   = status.full_capacity_mah;
       bms.cycle_count         = status.cycle_count;
-      bms.fault_flags         = 0; /* TODO: Extract from status */
+      bms.fault_flags         = status.battery_status; /* Extract all 10 status flags from BatteryStatus register */
       bms.timestamp_ms        = tx_time_get();
       bms.valid               = true;
+
+      /* Check for critical battery faults (OTA, OCA, TDA) */
+      (void)internal_check_critical_faults(status.battery_status);
 
       /* Check for low battery */
       if (status.relative_soc < k_bms_low_soc_percent) {

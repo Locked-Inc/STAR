@@ -340,11 +340,14 @@ volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
   return &s_mock_port_regs[port];
 }
 
-/* Logging stubs */
+/* Logging stubs: only needed for non-simulator builds.
+ * Under RX_SIMULATOR_MODE, rx_log.h provides static inline versions. */
+#ifndef RX_SIMULATOR_MODE
 void uart_debug_putc(char c) { (void)c; }
 void uart_debug_puts(const char* str) { (void)str; }
 void uart_debug_putint(int32_t value) { (void)value; }
 void uart_debug_puthex(uint32_t value, uint8_t digits) { (void)value; (void)digits; }
+#endif /* !RX_SIMULATOR_MODE */
 
 /* =============================================================================
  * Inline SPI Functions Under Test

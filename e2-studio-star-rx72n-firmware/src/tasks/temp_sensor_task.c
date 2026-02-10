@@ -57,7 +57,7 @@
  *
  * **Key Features:**
  * - **Single wire** - Data + power (parasitic mode) on one line
- * - **Master-driven** - RX72N acts as 1-Wire controller
+ * - **Controller-driven** - RX72N acts as 1-Wire controller
  * - **Time-based** - No clock signal, timing-critical bit slots
  * - **Multi-drop** - Multiple devices share bus (ROM matching)
  * - **CRC-8** - Built-in data integrity checks
@@ -416,6 +416,9 @@ extern rx_bus_manager_t g_bus_manager;
 
 /** @brief 1-Wire bus name for DS18B20 */
 static const char* const s_onewire_bus_name = "onewire0";
+
+/** @brief Conversion factor: centi-degrees Celsius per degree Celsius */
+static const float s_cdegc_per_degree = 100.0F;
 
 /* =============================================================================
  * Forward Declarations
@@ -1191,7 +1194,7 @@ static void internal_temp_task_entry(ULONG input)
 
     if (err == k_rx_ok) {
       /* Convert to centi-degrees for integer storage */
-      state.temperature_cdegc[k_temp_sensor_idx] = (int16_t)(temp_celsius * 100.0f);
+      state.temperature_cdegc[k_temp_sensor_idx] = (int16_t)(temp_celsius * s_cdegc_per_degree);
       state.sensor_valid[k_temp_sensor_idx]      = true;
       state.sensor_count                         = k_temp_sensor_count;
       state.timestamp_ms                         = tx_time_get();

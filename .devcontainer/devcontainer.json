@@ -1,7 +1,7 @@
 {
   "name": "Existing Dockerfile",
   "remoteUser": "star",
-  "initializeCommand": "cd .devcontainer && sh ./init.sh",
+  "initializeCommand": "cd .devcontainer && bash ./init.sh",
   "build": {
     "context": "..",
     "dockerfile": "../Dockerfile",
@@ -9,9 +9,7 @@
       "BUILDPLATFORM": "linux/amd64"
     }
   },
-  "runArgs": [
-    "--platform=linux/amd64"
-  ],
+  "runArgs": ["--platform=linux/amd64"],
   "features": {
     "ghcr.io/devcontainers/features/git-lfs:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
@@ -73,9 +71,7 @@
         "openai.chatgpt"
       ],
       "settings": {
-        "cmake.configureArgs": [
-          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
-        ],
+        "cmake.configureArgs": ["-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"],
         "clangd.arguments": [
           "--compile-commands-dir=${workspaceFolder}/star-ros2/build",
           "--background-index",

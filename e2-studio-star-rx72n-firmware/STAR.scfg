@@ -12,7 +12,7 @@
                 <option id="com.renesas.smc.toolchain.option.dual" key="com.renesas.smc.toolchain.option.dual.true"/>
             </toolchain>
         </configuration>
-        <platform id="R5F572NNHxFP"/>
+        <platform id="R5F572NNHxFB"/>
         <option id="board" value="user_board"/>
     </general>
     <tool id="Clock">
@@ -582,41 +582,80 @@
         <Item currentVect="255" id="PERIA_INTA255" priority="15" usedState="Not Use"/>
     </tool>
     <tool id="Pins" version="1.0.1.0">
-        <pinItem allocation="2" comments="" direction="None" id="EMLE" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
-        <pinItem allocation="11" comments="" direction="None" id="XTAL" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
-        <pinItem allocation="30" comments="" direction="None" id="USB0_VBUS" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="19" comments="" direction="None" id="TMS" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
-        <pinItem allocation="51" comments="" direction="None" id="MTIOC3A" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="26" comments="" direction="None" id="MTIOC3B" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="24" comments="" direction="None" id="MTIOC4A" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="23" comments="" direction="None" id="MTIOC4C" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="31" comments="" direction="None" id="MTIOC0B" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="33" comments="" direction="None" id="SDA0" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="13" comments="" direction="None" id="EXTAL" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
-        <pinItem allocation="7" comments="" direction="None" id="FINED" isUsedBySoftware="false" locked="false" operationMode="" status="0"/>
-        <pinItem allocation="16" comments="" direction="None" id="TRST#" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
-        <pinItem allocation="29" comments="" direction="None" id="P17" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="25" comments="" direction="None" id="P23" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="18" comments="" direction="None" id="P32" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="15" comments="" direction="None" id="UPSEL" isUsedBySoftware="false" locked="false" operationMode="" status="0"/>
-        <pinItem allocation="10" comments="" direction="None" id="RES#" isUsedBySoftware="false" locked="false" operationMode="" status="0"/>
-        <pinItem allocation="36" comments="" direction="None" id="USB0_DM" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="34" comments="" direction="None" id="SCL0" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="37" comments="" direction="None" id="USB0_DP" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="21" comments="" direction="None" id="TCK" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
-        <pinItem allocation="20" comments="" direction="None" id="TDI" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
-        <pinItem allocation="22" comments="" direction="None" id="TDO" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
-        <pinnumItem comment="Motor 2's nCS" id="18" symbolicname="RSPIC_MOTOR2_nCS"/>
-        <pinnumItem comment="Encoder 3's Phase A" id="23" symbolicname="ENCODER3_PHASE_A"/>
-        <pinnumItem comment="Encoder 0's Phase A" id="24" symbolicname="ENCODER0_PHASE_A"/>
-        <pinnumItem comment="Motor 1's nCS" id="25" symbolicname="RSPIC_MOTOR1_nCS"/>
-        <pinnumItem comment="Encoder 1's Phase B" id="26" symbolicname="ENCODER1_PHASE_B"/>
-        <pinnumItem comment="Motor 0's nCS" id="29" symbolicname="RSPIC_MOTOR0_nCS"/>
-        <pinnumItem comment="USB0 USBC VBUS" id="30" symbolicname="USB0_USBC_VBUS"/>
-        <pinnumItem comment="Encoder 0's Phase B" id="31" symbolicname="ENCODER0_PHASE_B"/>
-        <pinnumItem comment="Encoder 1's Phase A" id="32" symbolicname="ENCODER1_PHASE_A"/>
-        <pinnumItem comment="SMBus Data" id="33" symbolicname="BMS_SMBUS_DATA"/>
-        <pinnumItem comment="SMBus Clock" id="34" symbolicname="BMS_SMBUS_CLK"/>
+        <pinItem allocation="10" comments="" direction="None" id="EMLE" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="20" comments="" direction="None" id="XTAL" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="40" comments="" direction="None" id="USB0_VBUS" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="2" comments="BMS_ALERT" direction="None" id="IRQ13" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="4" comments="SONAR0_ECHO" direction="None" id="IRQ11" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="98" comments="HOST_IRQ" direction="None" id="IRQ15" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="6" comments="SONAR1_ECHO" direction="None" id="IRQ10" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="80" comments="DRV_CS2" direction="None" id="PB5" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="81" comments="DRV_CS3" direction="None" id="PB4" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="73" comments="DRV_CS1" direction="None" id="PC1" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="8" comments="SONAR3_ECHO" direction="None" id="IRQ8" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="7" comments="SONAR2_ECHO" direction="None" id="IRQ9" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="123$A" comments="HOST_SCLK" direction="None" id="RSPCKC" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="28" comments="" direction="None" id="TMS" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="9" comments="SONAR0_TRIG" direction="None" id="PF5" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="109" comments="DRV_CIPO" direction="None" id="SMISO12" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="79" comments="DEBUG_RXD9" direction="None" id="RXD9" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="108" comments="MOTOR2_PH" direction="None" id="GTIOC2A" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="135" comments="MOTOR2_ISENSE" direction="None" id="AN005" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="134" comments="MOTOR1_ISENSE" direction="None" id="AN006" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="133" comments="MOTOR0_ISENSE" direction="None" id="AN007" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="67" comments="MOTOR1_EN" direction="None" id="GTIOC1B" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="35" comments="MOTOR1_PH" direction="None" id="GTIOC1A" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="136" comments="MOTOR3_ISENSE" direction="None" id="AN004" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="61" comments="MOTOR3_EN" direction="None" id="GTIOC3B" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="101" comments="MOTOR3_PH" direction="None" id="GTIOC3A" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="82" comments="ENC3_TCLKD" direction="None" id="TCLKD" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="75" comments="ENC3_TCLKC" direction="None" id="TCLKC" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="94" comments="ENC2_TCLKB" direction="None" id="TCLKB" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="70" comments="ENC2_TCLKA" direction="None" id="TCLKA" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="13" comments="SONAR2_TRIG" direction="None" id="PJ3" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="11" comments="SONAR1_TRIG" direction="None" id="PJ5" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="41" comments="MOTOR2_EN" direction="None" id="GTIOC2B" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="33" comments="ENC0_MTCLKA" direction="None" id="MTCLKA" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="32" comments="ENC0_MTCLKB" direction="None" id="MTCLKB" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="96" comments="ENC1_MTCLKC" direction="None" id="MTCLKC" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="62" comments="ENC1_MTCLKD" direction="None" id="MTCLKD" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="78" comments="DEBUG_TXD9" direction="None" id="TXD9" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="44" comments="HOST_SDA0" direction="None" id="SDA0" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="37" comments="BMS_SDA1" direction="None" id="SDA1" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="124$A" comments="HOST_CIPO" direction="None" id="MISOC" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="22" comments="" direction="None" id="EXTAL" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="16" comments="" direction="None" id="FINED" isUsedBySoftware="false" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="144" comments="DBG_RESETn" direction="None" id="P07" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="25" comments="" direction="None" id="TRST#" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="60" comments="" direction="None" id="UB" isUsedBySoftware="false" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="27" comments="LED0" direction="None" id="P32" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="26" comments="SONAR3_TRIG" direction="None" id="P33" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="38" comments="MOTOR0_EN" direction="None" id="GTIOC0B" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="34" comments="MOTOR0_PH" direction="None" id="GTIOC0A" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="72" comments="DRV_CS0" direction="None" id="CS4#" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="54" comments="LED5" direction="None" id="P52" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="55" comments="TEMP_1WIRE" direction="None" id="P51" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="52" comments="LED4" direction="None" id="P54" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="50" comments="LED2" direction="None" id="P56" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="51" comments="LED3" direction="None" id="P55" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="110" comments="DRV_COPI" direction="None" id="SMOSI12" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="39" comments="LED1" direction="None" id="P87" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="24" comments="" direction="None" id="UPSEL" isUsedBySoftware="false" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="122$A" comments="HOST_CS0" direction="None" id="SSLC0" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="19" comments="" direction="None" id="RES#" isUsedBySoftware="false" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="47" comments="HOST_USB0_DM" direction="None" id="USB0_DM" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="45" comments="HOST_SCL0" direction="None" id="SCL0" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="48" comments="HOST_USB0_DP" direction="None" id="USB0_DP" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="36" comments="BMS_SCL1" direction="None" id="SCL1" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="125$A" comments="HOST_COPI" direction="None" id="MOSIC" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="30" comments="" direction="None" id="TCK" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="29" comments="" direction="None" id="TDI" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="31" comments="" direction="None" id="TDO" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
+        <pinItem allocation="111" comments="DRV_SCLK" direction="None" id="SCK12" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="89" comments="GPTW_EXT_TRIG1" direction="None" id="GTETRGB" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="42" comments="GPTW_EXT_TRIG0" direction="None" id="GTETRGA" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="43" comments="GPTW_EXT_TRIG3" direction="None" id="GTETRGD" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="66" comments="GPTW_EXT_TRIG2" direction="None" id="GTETRGC" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
     </tool>
     <tool id="Summary" version="1.0.0.0">
         <option id="com.renesas.smc.code.path" value="src\smc_gen"/>

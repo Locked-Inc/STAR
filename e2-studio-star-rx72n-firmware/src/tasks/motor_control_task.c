@@ -31,7 +31,7 @@
  *             fillcolor=lightyellow, style=filled];
  *     drivers [label="4x DRV8243S H-Bridge Drivers\nCurrent Sensing, Fault Detection\nPWM @ 20 kHz",
  *              fillcolor=lightcoral, style=filled];
- *     encoders [label="4x Hall Effect Encoders\n341 PPR × 4 (quadrature) = 1364 counts/rev\nMTU Channels 0-3",
+ *     encoders [label="4x Hall Effect Encoders\n341 PPR × 4 (quadrature) = 1364 counts/rev\nMTU1-2 (front) + TPU1-2 (rear)",
  *               fillcolor=lightgreen, style=filled];
  *   }
  *
@@ -46,7 +46,7 @@
  *          fillcolor=lightyellow, style=filled];
  *     rx_motor [label="rx_motor Driver\nPWM Generation (MTU)",
  *               fillcolor=lightcoral, style=filled];
- *     rx_encoder [label="rx_mtu_encoder Driver\nQuadrature Decoding",
+ *     rx_encoder [label="Encoder Drivers\nMTU (front) + TPU (rear)\nQuadrature Decoding",
  *                 fillcolor=lightcoral, style=filled];
  *     rx_drv8243 [label="rx_drv8243 Driver\nCurrent Sensing, Fault Check",
  *                 fillcolor=lightcoral, style=filled];
@@ -310,7 +310,7 @@
  *   // Direct dependencies
  *   motor_task_h [label="motor_control_task.h"];
  *   rx_motor [label="rx_motor.h\n(PWM Motor Driver)", fillcolor=lightyellow, style=filled];
- *   rx_encoder [label="rx_mtu_encoder.h\n(Quadrature Encoder)", fillcolor=lightyellow, style=filled];
+ *   rx_encoder [label="rx_mtu_encoder.h + rx_encoder_tpu.h\n(Quadrature Encoders)", fillcolor=lightyellow, style=filled];
  *   rx_pid [label="rx_pid.h\n(PID Controller)", fillcolor=lightyellow, style=filled];
  *   rx_drv8243 [label="rx_drv8243.h\n(H-Bridge Driver)", fillcolor=lightyellow, style=filled];
  *   shared_data [label="shared_data.h\n(Thread-Safe Storage)", fillcolor=lightcoral, style=filled];
@@ -369,7 +369,8 @@
  *
  * @see shared_data.h Shared data structures for motor commands and state
  * @see rx_motor.h Motor PWM driver (MTU peripheral)
- * @see rx_mtu_encoder.h Quadrature encoder driver (MTU peripheral)
+ * @see rx_mtu_encoder.h Quadrature encoder driver - front wheels (MTU peripheral)
+ * @see rx_encoder_tpu.h Quadrature encoder driver - rear wheels (TPU peripheral)
  * @see rx_pid.h PID controller algorithm (discrete-time with anti-windup)
  * @see rx_drv8243.h DRV8243S H-bridge driver (current sensing, fault detection)
  * @see telemetry_task.h Consumer of motor state (forwards to RPI5 via SPI)
@@ -387,16 +388,22 @@
 
 #include "motor_control_task.h"
 
+#include "hardware_config.h"
+#include "rx_bus_manager.h"
 #include "rx_check.h"
 #include "rx_drv8243.h"
 #include "rx_log.h"
 #include "rx_motor.h"
+#include "rx_encoder_tpu.h"
 #include "rx_mtu_encoder.h"
 #include "rx_pid.h"
 #include "shared_data.h"
 #include "tx_api.h"
 
 #include <string.h>
+
+/** @brief Global bus manager instance (defined in shared_data.c) */
+extern rx_bus_manager_t g_bus_manager;
 
 /* =============================================================================
  * Constants
@@ -437,6 +444,48 @@ typedef enum : uint8_t {
   k_motor_back_left   = 2, /**< Back-left motor */
   k_motor_back_right  = 3, /**< Back-right motor */
 } motor_index_t;
+
+/** @brief Encoder initialization limits */
+typedef enum : uint8_t {
+  k_front_encoder_count = 2, /**< Front wheels use MTU encoder */
+  k_rear_encoder_count  = 2, /**< Rear wheels use TPU encoder */
+} encoder_limits_t;
+
+/**
+ * @enum motor_hw_constants_t
+ * @brief Motor hardware configuration constants
+ */
+typedef enum : uint32_t {
+  k_motor_pwm_freq_hz      = 20000, /**< PWM frequency (20 kHz) */
+  k_motor_dead_time_ns     = 1000,  /**< Dead-time between H-bridge switches (1 us) */
+  k_motor_current_limit_ma = 2000,  /**< Software current limit (2A) */
+  k_motor_ki_propi         = 525,   /**< Default IPROPI current-sense ratio (525 A/V) */
+  k_threadx_tick_interval_ms = 10,  /**< ThreadX tick period (10ms at 100 Hz tick) */
+} motor_hw_constants_t;
+
+/** @brief Default PID proportional gain (MATLAB-tuned) */
+static const float s_pid_kp_default = 0.286F;
+
+/** @brief Default PID integral gain (MATLAB-tuned) */
+static const float s_pid_ki_default = 8.01F;
+
+/** @brief Default PID derivative gain */
+static const float s_pid_kd_default = 0.0F;
+
+/** @brief PID output minimum (percent duty) */
+static const float s_pid_output_min_percent = -100.0F;
+
+/** @brief PID output maximum (percent duty) */
+static const float s_pid_output_max_percent = 100.0F;
+
+/** @brief PID integral minimum (percent, anti-windup clamp) */
+static const float s_pid_integral_min_percent = -50.0F;
+
+/** @brief PID integral maximum (percent, anti-windup clamp) */
+static const float s_pid_integral_max_percent = 50.0F;
+
+/** @brief Velocity threshold below which motor is considered stopped (m/s) */
+static const float s_velocity_near_stopped_mps = 0.1F;
 
 /* =============================================================================
  * Static Variables
@@ -483,10 +532,17 @@ static const char* const s_tag = "MOTOR";
 
 static void     internal_motor_task_entry(ULONG input);
 static rx_err_t internal_init_motor_stack(void);
+static rx_err_t internal_init_pid_controllers(void);
+static rx_err_t internal_init_encoders(void);
+static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channels);
 static void     internal_control_loop_iteration(void);
 static void     internal_active_brake_sequence(void);
 static void     internal_apply_pid_updates(void);
 static void     internal_check_comm_timeout(void);
+static rx_err_t internal_read_encoder_velocity(float* velocity_rps, float dt_sec,
+                                               uint8_t motor_idx);
+static rx_err_t internal_read_encoder_count(uint8_t motor_idx,
+                                            rx_encoder_state_t* state);
 static void     internal_update_motor_state(void);
 static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t motor_idx);
 
@@ -1202,8 +1258,8 @@ static void internal_motor_task_entry(ULONG input)
  *
  * 5. **Return Success:** Return k_rx_ok
  *
- * **Note:** This function currently only initializes PIDs. Motor, encoder, and driver
- * initialization is TODO and should be added here.
+ * **Note:** Front encoders (motors 0-1) use MTU1/MTU2, rear encoders
+ * (motors 2-3) use TPU1/TPU2. All 4 encoders are initialized.
  *
  * ## PID Configuration Details
  *
@@ -1321,13 +1377,9 @@ static void internal_motor_task_entry(ULONG input)
  * err = shared_data_get_pid_gains(&gains);
  * if (err != k_rx_ok) {
  *   rx_log_warn("MOTOR", "Using default PID gains");
- *   gains.kp = 0.286f;
- *   gains.ki = 8.01f;
- *   gains.kd = 0.0f;
- *   gains.output_min = -100.0f;
- *   gains.output_max = 100.0f;
- *   gains.integral_min = -50.0f;
- *   gains.integral_max = 50.0f;
+ *   gains.kp = s_pid_kp_default;
+ *   gains.ki = s_pid_ki_default;
+ *   // ... remaining defaults applied
  * }
  * // Continue with default gains
  * @endcode
@@ -1357,25 +1409,98 @@ static void internal_motor_task_entry(ULONG input)
  */
 static rx_err_t internal_init_motor_stack(void)
 {
-  rx_err_t          err;
-  pid_gains_t       gains;
-  rx_pid_config_t   pid_config;
-  uint8_t           i;
+  rx_err_t err;
 
-  /* Get default PID gains from shared data */
+  /* Step 1: Initialize PID controllers */
+  err = internal_init_pid_controllers();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Step 2: Initialize GPTW motor PWM outputs and front encoders */
+  const rx_gptw_channel_t gptw_channels[k_motor_count] = {
+    k_gptw_channel_0,  /* Motor 0: Front-left */
+    k_gptw_channel_1,  /* Motor 1: Front-right */
+    k_gptw_channel_2,  /* Motor 2: Rear-left */
+    k_gptw_channel_3   /* Motor 3: Rear-right */
+  };
+
+  for (uint8_t i = 0; i < k_motor_count; i++) {
+    rx_motor_config_t motor_config = {
+      .channel       = gptw_channels[i],
+      .output_a      = k_gptw_output_a,  /* PH (Phase/Direction) */
+      .output_b      = k_gptw_output_b,  /* EN (Enable/Speed) */
+      .pwm_freq_hz   = k_motor_pwm_freq_hz,  /* 20 kHz PWM */
+      .dead_time_ns  = k_motor_dead_time_ns,  /* 1 us dead-time */
+      .invert_pwm    = false             /* Active-high logic */
+    };
+
+    err = rx_motor_init(&s_motors[i], &motor_config);
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "Motor init failed for motor", (uint8_t)i);
+      return err;
+    }
+  }
+
+  /* Step 3: Initialize front encoders (rear need TPU - not yet implemented) */
+  err = internal_init_encoders();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Step 4: Initialize DRV8243 motor drivers */
+  err = internal_init_motor_drivers(gptw_channels);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  rx_log_info(s_tag, "Motor stack initialized (4 motors, encoders, drivers)");
+  rx_log_debug(s_tag, "PID gains loaded (defaults or shared_data)");
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Initialize PID controllers for all 4 motors
+ *
+ * @details
+ * Loads PID gains from shared_data (set by comm task) or falls back to
+ * MATLAB-tuned default gains. Initializes all 4 PID controller handles.
+ *
+ * @return rx_err_t Initialization status
+ * @retval k_rx_ok All 4 PID controllers initialized
+ * @retval k_rx_err_null_ptr NULL pointer in rx_pid_init (internal error)
+ * @retval k_rx_err_invalid_arg Invalid PID configuration
+ *
+ * @pre s_pids array allocated (static memory)
+ * @pre shared_data_init() called
+ *
+ * @post s_pids[0-3] initialized with gains
+ *
+ * @note Not thread-safe. Called once during task startup.
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_init_pid_controllers(void)
+{
+  rx_err_t        err;
+  pid_gains_t     gains;
+  rx_pid_config_t pid_config;
+
+  /* Get PID gains from shared data, fall back to MATLAB-tuned defaults */
   err = shared_data_get_pid_gains(&gains);
   if (err != k_rx_ok) {
     rx_log_warn(s_tag, "Using default PID gains");
-    gains.kp           = 0.286f;
-    gains.ki           = 8.01f;
-    gains.kd           = 0.0f;
-    gains.output_min   = -100.0f;
-    gains.output_max   = 100.0f;
-    gains.integral_min = -50.0f;
-    gains.integral_max = 50.0f;
+    gains.kp           = s_pid_kp_default;
+    gains.ki           = s_pid_ki_default;
+    gains.kd           = s_pid_kd_default;
+    gains.output_min   = s_pid_output_min_percent;
+    gains.output_max   = s_pid_output_max_percent;
+    gains.integral_min = s_pid_integral_min_percent;
+    gains.integral_max = s_pid_integral_max_percent;
   }
 
-  /* Configure PID */
+  /* Build PID config from gains */
   pid_config.kp           = gains.kp;
   pid_config.ki           = gains.ki;
   pid_config.kd           = gains.kd;
@@ -1385,7 +1510,7 @@ static rx_err_t internal_init_motor_stack(void)
   pid_config.integral_max = gains.integral_max;
 
   /* Initialize PID controllers for each motor */
-  for (i = 0; i < k_motor_count; i++) {
+  for (uint8_t i = 0; i < k_motor_count; i++) {
     err = rx_pid_init(&s_pids[i], &pid_config);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "PID init failed for motor", (uint8_t)i);
@@ -1393,8 +1518,226 @@ static rx_err_t internal_init_motor_stack(void)
     }
   }
 
-  rx_log_info(s_tag, "Motor stack initialized");
-  rx_log_debug(s_tag, "PID gains: Kp=0.286, Ki=8.01, Kd=0.0");
+  return k_rx_ok;
+}
+
+/**
+ * @brief Initialize all 4 quadrature encoders (MTU front + TPU rear)
+ *
+ * @details
+ * Initializes front-left (MTU1) and front-right (MTU2) encoders via the
+ * MTU encoder driver, and rear-left (TPU1) and rear-right (TPU2) encoders
+ * via the TPU encoder driver. All four encoders use 4x quadrature decoding
+ * with 1364 counts per revolution (341 PPR * 4).
+ *
+ * @return rx_err_t Initialization status
+ * @retval k_rx_ok All 4 encoders initialized
+ * @retval k_rx_err_* Error from rx_encoder_init() or rx_tpu_encoder_init()
+ *
+ * @pre MTU and TPU peripheral clocks enabled
+ * @pre Encoder pins configured via MPC
+ *
+ * @post All 4 encoder channels ready for velocity measurement
+ *
+ * @note Not thread-safe. Called once during task startup.
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_init_encoders(void)
+{
+  rx_err_t err;
+
+  /* Front encoders: MTU1 (motor 0) and MTU2 (motor 1) */
+  const rx_mtu_channel_t front_mtu_channels[k_front_encoder_count] = {
+    k_mtu_channel_1,  /* Motor 0: Front-left */
+    k_mtu_channel_2   /* Motor 1: Front-right */
+  };
+
+  for (uint8_t i = 0; i < k_front_encoder_count; i++) {
+    rx_encoder_config_t encoder_config = {
+      .channel          = front_mtu_channels[i],
+      .counts_per_rev   = k_encoder_counts_per_rev,
+      .invert_direction = false
+    };
+
+    err = rx_encoder_init(&encoder_config);
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "MTU encoder init failed for motor", (uint8_t)i);
+      return err;
+    }
+  }
+
+  /* Rear encoders: TPU1 (motor 2) and TPU2 (motor 3) */
+  const rx_tpu_channel_t rear_tpu_channels[k_rear_encoder_count] = {
+    k_tpu_channel_1,  /* Motor 2: Rear-left */
+    k_tpu_channel_2   /* Motor 3: Rear-right */
+  };
+
+  const bool rear_invert[k_rear_encoder_count] = {
+    false,  /* Motor 2 (RL): normal direction */
+    true    /* Motor 3 (RR): inverted (mirrored mounting) */
+  };
+
+  for (uint8_t i = 0; i < k_rear_encoder_count; i++) {
+    rx_tpu_encoder_config_t tpu_config = {
+      .channel          = rear_tpu_channels[i],
+      .counts_per_rev   = k_encoder_counts_per_rev,
+      .invert_direction = rear_invert[i]
+    };
+
+    err = rx_tpu_encoder_init(&tpu_config);
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "TPU encoder init failed for motor",
+                       (uint8_t)(i + k_front_encoder_count));
+      return err;
+    }
+  }
+
+  rx_log_info(s_tag, "All 4 encoders initialized (2 MTU + 2 TPU)");
+  return k_rx_ok;
+}
+
+/**
+ * @brief Read encoder velocity for any motor (dispatches MTU or TPU)
+ *
+ * @details
+ * Motors 0-1 (front) use MTU encoder, motors 2-3 (rear) use TPU encoder.
+ * This function dispatches to the correct encoder API based on motor index.
+ *
+ * @param[out] velocity_rps Pointer to store velocity (rev/sec)
+ * @param[in] dt_sec Time interval in seconds
+ * @param[in] motor_idx Motor index (0-3)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success
+ * @retval k_rx_err_invalid_arg Invalid motor index
+ *
+ * @pre Encoders initialized via internal_init_encoders()
+ * @post velocity_rps updated with current velocity
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_read_encoder_velocity(float*        velocity_rps,
+                                               const float   dt_sec,
+                                               const uint8_t motor_idx)
+{
+  if (motor_idx < k_front_encoder_count) {
+    return rx_encoder_read_velocity(velocity_rps, dt_sec,
+                                    (rx_mtu_channel_t)motor_idx);
+  }
+
+  /* Map motor 2 → TPU1, motor 3 → TPU2 */
+  const rx_tpu_channel_t tpu_ch = (motor_idx == k_motor_back_left)
+                                      ? k_tpu_channel_1
+                                      : k_tpu_channel_2;
+  return rx_tpu_encoder_read_velocity(velocity_rps, dt_sec, tpu_ch);
+}
+
+/**
+ * @brief Read encoder count for any motor (dispatches MTU or TPU)
+ *
+ * @details
+ * Motors 0-1 (front) use MTU encoder, motors 2-3 (rear) use TPU encoder.
+ * This function dispatches to the correct encoder API based on motor index.
+ *
+ * @param[in] motor_idx Motor index (0-3)
+ * @param[out] state Pointer to encoder state structure
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success
+ * @retval k_rx_err_invalid_arg Invalid motor index
+ *
+ * @pre Encoders initialized via internal_init_encoders()
+ * @post state updated with current encoder count and position
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_read_encoder_count(const uint8_t  motor_idx,
+                                            rx_encoder_state_t* state)
+{
+  if (motor_idx < k_front_encoder_count) {
+    return rx_encoder_read_count((rx_mtu_channel_t)motor_idx, state);
+  }
+
+  /* Map motor 2 → TPU1, motor 3 → TPU2 */
+  const rx_tpu_channel_t tpu_ch = (motor_idx == k_motor_back_left)
+                                      ? k_tpu_channel_1
+                                      : k_tpu_channel_2;
+  return rx_tpu_encoder_read_count(tpu_ch, state);
+}
+
+/**
+ * @brief Initialize DRV8243 H-bridge motor drivers for all 4 motors
+ *
+ * @details
+ * Configures each DRV8243S driver with ADC current-sensing channel,
+ * nFAULT GPIO pin, PWM frequency, and current limits. Drivers use the
+ * global bus manager for GPIO and ADC access.
+ *
+ * @param[in] gptw_channels Array of GPTW channels (one per motor, k_motor_count elements)
+ *
+ * @return rx_err_t Initialization status
+ * @retval k_rx_ok All 4 drivers initialized
+ * @retval k_rx_err_* Error from rx_drv8243_init()
+ *
+ * @pre g_bus_manager initialized with "gpio" and "adc0" buses
+ * @pre GPTW channels initialized (motors already set up)
+ *
+ * @post s_drivers[0-3] ready for current sensing and fault detection
+ *
+ * @note Not thread-safe. Called once during task startup.
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channels)
+{
+  rx_err_t err;
+
+  const uint8_t adc_channels[k_motor_count] = {
+    k_motor_0_current_adc_ch, /* Motor 0: AN007 */
+    k_motor_1_current_adc_ch, /* Motor 1: AN006 */
+    k_motor_2_current_adc_ch, /* Motor 2: AN005 */
+    k_motor_3_current_adc_ch  /* Motor 3: AN004 */
+  };
+
+  const uint8_t nfault_ports[k_motor_count] = {
+    k_motor_0_nfault_port,  /* Motor 0: PORT1 */
+    k_motor_1_nfault_port,  /* Motor 1: PORTA */
+    k_motor_2_nfault_port,  /* Motor 2: PORTC */
+    k_motor_3_nfault_port   /* Motor 3: PORT1 */
+  };
+
+  const uint8_t nfault_pins[k_motor_count] = {
+    k_motor_0_nfault_pin,   /* Motor 0: P15 */
+    k_motor_1_nfault_pin,   /* Motor 1: PA6 */
+    k_motor_2_nfault_pin,   /* Motor 2: PC4 */
+    k_motor_3_nfault_pin    /* Motor 3: P14 */
+  };
+
+  for (uint8_t i = 0; i < k_motor_count; i++) {
+    rx_drv8243_config_t driver_config = {
+      .bus_manager      = &g_bus_manager,
+      .gpio_bus_name    = "gpio",
+      .adc_bus_name     = "adc0",
+      .gptw_channel     = gptw_channels[i],
+      .output_ph        = k_gptw_output_a,
+      .output_en        = k_gptw_output_b,
+      .pin_ipropi       = adc_channels[i],
+      .port_nfault      = nfault_ports[i],
+      .pin_nfault       = nfault_pins[i],
+      .pwm_freq_hz      = k_motor_pwm_freq_hz,
+      .dead_time_ns     = k_motor_dead_time_ns,
+      .current_limit_ma = k_motor_current_limit_ma, /* 2A software limit */
+      .ki_propi         = k_motor_ki_propi,          /* IPROPI ratio (525 A/V) */
+      .use_spi_variant  = false                      /* Standard mode */
+    };
+
+    err = rx_drv8243_init(&s_drivers[i], &driver_config);
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "Driver init failed for motor", (uint8_t)i);
+      return err;
+    }
+  }
 
   return k_rx_ok;
 }
@@ -1638,7 +1981,6 @@ static void internal_control_loop_iteration(void)
 {
   rx_err_t        err;
   motor_command_t cmd;
-  uint8_t         i;
   float           current_velocity_mps;
   float           target_velocity_mps;
   float           pwm_duty;
@@ -1648,16 +1990,16 @@ static void internal_control_loop_iteration(void)
   err = shared_data_get_motor_command(&cmd);
   if (err != k_rx_ok || !cmd.valid) {
     /* No valid command - hold at zero */
-    for (i = 0; i < k_motor_count; i++) {
+    for (uint8_t i = 0; i < k_motor_count; i++) {
       (void)rx_motor_set_duty(&s_motors[i], 0.0f);
     }
     return;
   }
 
   /* Process each motor */
-  for (i = 0; i < k_motor_count; i++) {
+  for (uint8_t i = 0; i < k_motor_count; i++) {
     /* 1. Read encoder velocity */
-    err = rx_encoder_read_velocity(&current_velocity_mps, s_dt_sec, (rx_mtu_channel_t)i);
+    err = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
     if (err != k_rx_ok) {
       current_velocity_mps = 0.0f;
     }
@@ -1910,7 +2252,6 @@ static void internal_control_loop_iteration(void)
 static void internal_active_brake_sequence(void)
 {
   rx_err_t err;
-  uint8_t  i;
   float    current_velocity_mps;
   float    brake_duty;
   uint32_t brake_start_tick;
@@ -1923,24 +2264,24 @@ static void internal_active_brake_sequence(void)
   rx_log_info(s_tag, "Active brake sequence starting");
 
   /* Calculate brake duration in ticks (1 tick = 10ms at 100 Hz) */
-  brake_ticks = k_active_brake_ms / 10;
+  brake_ticks = k_active_brake_ms / k_threadx_tick_interval_ms;
   if (brake_ticks == 0) {
     brake_ticks = 1;
   }
 
   /* Step 1: Read current velocities and apply reverse PWM */
-  for (i = 0; i < k_motor_count; i++) {
+  for (uint8_t i = 0; i < k_motor_count; i++) {
     /* Read current velocity to determine direction */
-    err = rx_encoder_read_velocity(&current_velocity_mps, s_dt_sec, (rx_mtu_channel_t)i);
+    err = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
     if (err != k_rx_ok) {
       current_velocity_mps = 0.0f;
     }
 
     /* Calculate reverse duty (opposite sign of velocity) */
-    if (current_velocity_mps > 0.1f) {
+    if (current_velocity_mps > s_velocity_near_stopped_mps) {
       /* Motor moving forward - brake with negative duty */
       brake_duty = -((float)k_active_brake_duty);
-    } else if (current_velocity_mps < -0.1f) {
+    } else if (current_velocity_mps < -s_velocity_near_stopped_mps) {
       /* Motor moving backward - brake with positive duty */
       brake_duty = (float)k_active_brake_duty;
     } else {
@@ -1967,7 +2308,7 @@ static void internal_active_brake_sequence(void)
   }
 
   /* Step 3: Apply passive brake (both H-bridge sides high) */
-  for (i = 0; i < k_motor_count; i++) {
+  for (uint8_t i = 0; i < k_motor_count; i++) {
     (void)rx_motor_stop(&s_motors[i], true); /* brake = true */
   }
 
@@ -2037,7 +2378,6 @@ static void internal_apply_pid_updates(void)
 {
   rx_err_t    err;
   pid_gains_t gains;
-  uint8_t     i;
 
   if (!shared_data_pid_update_pending()) {
     return;
@@ -2049,7 +2389,7 @@ static void internal_apply_pid_updates(void)
   }
 
   /* Apply to all motor PID controllers */
-  for (i = 0; i < k_motor_count; i++) {
+  for (uint8_t i = 0; i < k_motor_count; i++) {
     (void)rx_pid_set_gains(&s_pids[i], gains.kp, gains.ki, gains.kd);
     (void)rx_pid_set_output_limits(&s_pids[i], gains.output_min, gains.output_max);
     (void)rx_pid_set_integral_limits(&s_pids[i], gains.integral_min, gains.integral_max);
@@ -2200,13 +2540,10 @@ static void internal_check_comm_timeout(void)
  * @callgraph
  * @callergraph
  */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstack-usage="
 static void internal_update_motor_state(void)
 {
   rx_err_t      err;
   motor_state_t state;
-  uint8_t       i;
   float         velocity_mps;
   float         current_ma;
   bool          fault;
@@ -2214,9 +2551,9 @@ static void internal_update_motor_state(void)
   (void)memset(&state, 0, sizeof(state));
 
   /* Collect state for each motor */
-  for (i = 0; i < k_motor_count; i++) {
+  for (uint8_t i = 0; i < k_motor_count; i++) {
     /* Velocity */
-    err = rx_encoder_read_velocity(&velocity_mps, s_dt_sec, (rx_mtu_channel_t)i);
+    err = internal_read_encoder_velocity(&velocity_mps, s_dt_sec, i);
     if (err == k_rx_ok) {
       state.current_velocity_mps[i] = velocity_mps;
     }
@@ -2231,7 +2568,7 @@ static void internal_update_motor_state(void)
     }
 
     /* Encoder counts */
-    err = rx_encoder_read_count((rx_mtu_channel_t)i, &s_encoder_state[i]);
+    err = internal_read_encoder_count(i, &s_encoder_state[i]);
     if (err == k_rx_ok) {
       state.encoder_counts[i] = s_encoder_state[i].total_count;
     }
@@ -2251,7 +2588,6 @@ static void internal_update_motor_state(void)
   /* Store in shared data */
   (void)shared_data_update_motor_state(&state);
 }
-#pragma GCC diagnostic pop
 
 /**
  * @brief Get target velocity for a specific motor from command structure

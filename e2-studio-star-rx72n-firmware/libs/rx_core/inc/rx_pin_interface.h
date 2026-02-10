@@ -151,12 +151,12 @@
  *   drv->pin_iface = pin_iface;
  *
  *   // Reserve SPI pins using interface
- *   rx_err_t err = pin_iface->reserve_pin(pin_iface->ctx, 0xA, 0, "SPI_MISO");
+ *   rx_err_t err = pin_iface->reserve_pin(pin_iface->ctx, 0xA, 0, "SPI_CIPO");
  *   if (err != k_rx_ok) {
  *     return err;
  *   }
  *
- *   err = pin_iface->reserve_pin(pin_iface->ctx, 0xA, 1, "SPI_MOSI");
+ *   err = pin_iface->reserve_pin(pin_iface->ctx, 0xA, 1, "SPI_COPI");
  *   if (err != k_rx_ok) {
  *     pin_iface->release_pin(pin_iface->ctx, 0xA, 0); // Cleanup
  *     return err;
@@ -338,7 +338,7 @@ typedef struct rx_pin_interface rx_pin_interface_t;
  *
  * | Function Name | Length | Usage |
  * |---------------|--------|-------|
- * | `"SPI_MISO"` | 8 | SPI peripheral |
+ * | `"SPI_CIPO"` | 8 | SPI peripheral |
  * | `"UART_TX"` | 7 | UART transmit |
  * | `"I2C_SDA"` | 7 | I2C data line |
  * | `"MOTOR_PWM_CH1"` | 14 | Motor PWM output |
@@ -372,7 +372,7 @@ typedef enum : uint8_t {
    *
    * @par Example: Valid Names
    * @code
-   * "SPI_MISO"              // 9 bytes (OK)
+   * "SPI_CIPO"              // 9 bytes (OK)
    * "MOTOR_ENCODER_A"       // 16 bytes (OK)
    * "I2C_CONTROLLER_SDA"    // 19 bytes (OK)
    * "SPI_CONTROLLER_OUT"    // 20 bytes (OK)
@@ -469,7 +469,7 @@ typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, const uint8_t port, const uint
  * ## Conflict Detection Strategy
  * @code
  * // Module A tries to reserve PA5 for SPI:
- * err = iface->reserve_pin(iface->ctx, 0xA, 5, "SPI_MOSI");  // Success → k_rx_ok
+ * err = iface->reserve_pin(iface->ctx, 0xA, 5, "SPI_COPI");  // Success → k_rx_ok
  *
  * // Module B tries to reserve same pin for I2C:
  * err = iface->reserve_pin(iface->ctx, 0xA, 5, "I2C_SDA");   // Fail → k_rx_err_gpio_conflict
@@ -558,8 +558,8 @@ typedef rx_err_t (*rx_pin_reserve_fn)(void*         ctx,
  * @code
  * // Pattern 1: Normal deinitialization
  * void spi_deinit(void) {
- *   iface->release_pin(iface->ctx, 0xA, 0);  // MISO
- *   iface->release_pin(iface->ctx, 0xA, 1);  // MOSI
+ *   iface->release_pin(iface->ctx, 0xA, 0);  // CIPO
+ *   iface->release_pin(iface->ctx, 0xA, 1);  // COPI
  *   iface->release_pin(iface->ctx, 0xA, 2);  // CLK
  * }
  *
@@ -886,7 +886,7 @@ typedef rx_err_t (*rx_pin_clear_all_fn)(void* ctx);
  *   rx_err_t err = cfg->pin_iface->reserve_pin(
  *     cfg->pin_iface->ctx,  // Pass context (like "this")
  *     0xA, 5,               // Port A, Pin 5
- *     "SPI_MOSI"            // Function name
+ *     "SPI_COPI"            // Function name
  *   );
  *   return err;
  * }
@@ -1076,7 +1076,7 @@ struct rx_pin_interface {
  *   }
  *
  *   // Safe to use interface now
- *   cfg->pin_iface->reserve_pin(cfg->pin_iface->ctx, 0xA, 5, "SPI_MOSI");
+ *   cfg->pin_iface->reserve_pin(cfg->pin_iface->ctx, 0xA, 5, "SPI_COPI");
  *   return k_rx_ok;
  * }
  * @endcode
@@ -1090,7 +1090,7 @@ struct rx_pin_interface {
  * #endif
  *
  * // Use interface (validation skipped in release builds)
- * pin_iface->reserve_pin(pin_iface->ctx, 0xA, 5, "SPI_MOSI");
+ * pin_iface->reserve_pin(pin_iface->ctx, 0xA, 5, "SPI_COPI");
  * @endcode
  *
  * ### Pattern 3: Trust Global Infrastructure
@@ -1103,7 +1103,7 @@ struct rx_pin_interface {
  *
  * // Skip validation - global infrastructure guarantees valid interfaces
  * // (validation was already done during rx_infrastructure_init())
- * iface->reserve_pin(iface->ctx, 0xA, 5, "SPI_MOSI");
+ * iface->reserve_pin(iface->ctx, 0xA, 5, "SPI_COPI");
  * @endcode
  *
  * ### Pattern 4: Validate Before Caching

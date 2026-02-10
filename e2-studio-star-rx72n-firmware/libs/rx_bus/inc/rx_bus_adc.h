@@ -167,17 +167,13 @@
  * | Bypass cap | 0.1 µF ceramic on VREFH |
  * | Input cap | 10 nF on each analog input |
  *
- * @par Channel Assignments (STAR Project)
+ * @par Channel Assignments (STAR Project - 144-pin LFQFP)
  * | Unit | Channel | Pin | Signal | Range | Notes |
  * |------|---------|-----|--------|-------|-------|
- * | S12AD0 | AN000 | P40 | Motor 0 Current | 0-3.3V | DRV8243 IPROPI |
- * | S12AD0 | AN001 | P41 | Motor 1 Current | 0-3.3V | DRV8243 IPROPI |
- * | S12AD0 | AN002 | P42 | Motor 2 Current | 0-3.3V | DRV8243 IPROPI |
- * | S12AD0 | AN003 | P43 | Motor 3 Current | 0-3.3V | DRV8243 IPROPI |
- * | S12AD0 | AN004 | P44 | Battery Voltage | 0-3.3V | 1/11 divider (0-36.3V) |
- * | S12AD1 | AN100 | P45 | Temperature | 0-3.3V | Internal sensor |
- * | S12AD1 | AN101 | P46 | Expansion 0 | 0-3.3V | User analog input |
- * | S12AD1 | AN102 | P47 | Expansion 1 | 0-3.3V | User analog input |
+ * | S12AD0 | AN007 | P47 | Motor 0 Current | 0-3.3V | DRV8243 IPROPI |
+ * | S12AD0 | AN006 | P46 | Motor 1 Current | 0-3.3V | DRV8243 IPROPI |
+ * | S12AD0 | AN005 | P45 | Motor 2 Current | 0-3.3V | DRV8243 IPROPI |
+ * | S12AD0 | AN004 | P44 | Motor 3 Current | 0-3.3V | DRV8243 IPROPI |
  *
  * @par Current Sensing (DRV8243 IPROPI)
  * The DRV8243 motor driver outputs a current proportional voltage on IPROPI:

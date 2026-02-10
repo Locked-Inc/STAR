@@ -13,11 +13,11 @@ endif()
 
 # Helper function to apply strict warnings/defines to our test targets only
 function(apply_strict_warnings target)
-    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic)
+    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic -Wno-error=cpp -Wno-error=format-truncation=)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${target} PRIVATE -fshort-enums)
     endif()
-    target_compile_definitions(${target} PRIVATE USE_MOCK_SCI_REGS UNIT_TEST RX_SIMULATOR_MODE)
+    target_compile_definitions(${target} PRIVATE USE_MOCK_SCI_REGS UNIT_TEST RX_SIMULATOR_MODE USB_LOG_MIRROR=0)
 endfunction()
 
 # Helper function to apply common include paths per target
@@ -367,6 +367,10 @@ add_executable(test_uart_hal
     ${MOCK_UART_SRC}
 )
 apply_strict_warnings(test_uart_hal)
+# Undefine RX_SIMULATOR_MODE for uart_hal test: test needs real uart_debug_*
+# functions that route through mock UART hardware, not the simulator stubs
+# that write directly to stdout.
+target_compile_options(test_uart_hal PRIVATE -URX_SIMULATOR_MODE)
 apply_test_includes(test_uart_hal)
 target_link_libraries(test_uart_hal unity)
 
@@ -615,6 +619,29 @@ target_include_directories(test_rx_comm_manager PRIVATE
 )
 target_link_libraries(test_rx_comm_manager unity)
 
+# Test: DRV8243 H-Bridge Motor Driver
+add_executable(test_rx_drv8243
+    test_rx_drv8243.c
+)
+apply_strict_warnings(test_rx_drv8243)
+apply_test_includes(test_rx_drv8243)
+target_include_directories(test_rx_drv8243 PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_drv8243/inc
+)
+target_link_libraries(test_rx_drv8243 unity m)
+
+# Test: Independent Watchdog Timer (IWDT) Driver
+add_executable(test_rx_iwdt
+    test_rx_iwdt.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_iwdt.c
+    ${MOCK_TIME_SRC}
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_system_regs.c
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_iwdt)
+apply_test_includes(test_rx_iwdt)
+target_link_libraries(test_rx_iwdt unity)
+
 # Test: GPIO (PORT) Register Definitions
 add_executable(test_rx_gpio
     test_rx_gpio.c
@@ -630,6 +657,47 @@ add_executable(test_rx_mpc
 apply_strict_warnings(test_rx_mpc)
 apply_test_includes(test_rx_mpc)
 target_link_libraries(test_rx_mpc unity)
+
+# Test: POEG Motor Fault Protection Driver
+add_executable(test_rx_poeg
+    test_rx_poeg.c
+)
+apply_strict_warnings(test_rx_poeg)
+apply_test_includes(test_rx_poeg)
+target_link_libraries(test_rx_poeg unity)
+
+# Test: LED Status Task
+add_executable(test_rx_led_status
+    test_rx_led_status.c
+)
+apply_strict_warnings(test_rx_led_status)
+apply_test_includes(test_rx_led_status)
+target_link_libraries(test_rx_led_status unity)
+
+# Test: TPU HAL Driver (Phase Counting Mode)
+add_executable(test_rx_tpu
+    test_rx_tpu.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_hal/src/rx_tpu.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_onewire_hw.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_system_regs.c
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_tpu)
+apply_test_includes(test_rx_tpu)
+target_link_libraries(test_rx_tpu unity)
+
+# Test: TPU Encoder Backend (Overflow Detection + Velocity)
+add_executable(test_rx_encoder_tpu
+    test_rx_encoder_tpu.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_encoder/src/rx_encoder_tpu.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_hal/src/rx_tpu.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_onewire_hw.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_system_regs.c
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_encoder_tpu)
+apply_test_includes(test_rx_encoder_tpu)
+target_link_libraries(test_rx_encoder_tpu unity m)
 
 # =============================================================================
 # Multi-Task Firmware Test Sources
@@ -717,8 +785,8 @@ apply_strict_warnings(test_motor_control_task)
 apply_test_includes(test_motor_control_task)
 target_compile_definitions(test_motor_control_task PRIVATE MOCK_TX_THREAD_CREATE)
 target_include_directories(test_motor_control_task PRIVATE
-    ${CMAKE_SOURCE_DIR}/../include/shared
-    ${CMAKE_SOURCE_DIR}/../include/tasks
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
     ${CMAKE_SOURCE_DIR}/../libs/rx_drv8243/inc
 )
 target_link_libraries(test_motor_control_task unity m)
@@ -737,8 +805,8 @@ apply_strict_warnings(test_communication_task)
 apply_test_includes(test_communication_task)
 target_compile_definitions(test_communication_task PRIVATE MOCK_TX_THREAD_CREATE)
 target_include_directories(test_communication_task PRIVATE
-    ${CMAKE_SOURCE_DIR}/../include/shared
-    ${CMAKE_SOURCE_DIR}/../include/tasks
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
 )
 target_link_libraries(test_communication_task unity)
 
@@ -755,8 +823,8 @@ apply_strict_warnings(test_obstacle_detection_task)
 apply_test_includes(test_obstacle_detection_task)
 target_compile_definitions(test_obstacle_detection_task PRIVATE MOCK_TX_THREAD_CREATE)
 target_include_directories(test_obstacle_detection_task PRIVATE
-    ${CMAKE_SOURCE_DIR}/../include/shared
-    ${CMAKE_SOURCE_DIR}/../include/tasks
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
 )
 target_link_libraries(test_obstacle_detection_task unity)
 
@@ -773,8 +841,8 @@ apply_strict_warnings(test_bms_monitoring_task)
 apply_test_includes(test_bms_monitoring_task)
 target_compile_definitions(test_bms_monitoring_task PRIVATE MOCK_TX_THREAD_CREATE)
 target_include_directories(test_bms_monitoring_task PRIVATE
-    ${CMAKE_SOURCE_DIR}/../include/shared
-    ${CMAKE_SOURCE_DIR}/../include/tasks
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
 )
 target_link_libraries(test_bms_monitoring_task unity)
 
@@ -791,8 +859,8 @@ apply_strict_warnings(test_temperature_sensing_task)
 apply_test_includes(test_temperature_sensing_task)
 target_compile_definitions(test_temperature_sensing_task PRIVATE MOCK_TX_THREAD_CREATE)
 target_include_directories(test_temperature_sensing_task PRIVATE
-    ${CMAKE_SOURCE_DIR}/../include/shared
-    ${CMAKE_SOURCE_DIR}/../include/tasks
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
     ${CMAKE_SOURCE_DIR}/../libs/rx_ds18b20/inc
 )
 target_link_libraries(test_temperature_sensing_task unity)
@@ -811,10 +879,26 @@ apply_strict_warnings(test_telemetry_aggregation_task)
 apply_test_includes(test_telemetry_aggregation_task)
 target_compile_definitions(test_telemetry_aggregation_task PRIVATE MOCK_TX_THREAD_CREATE)
 target_include_directories(test_telemetry_aggregation_task PRIVATE
-    ${CMAKE_SOURCE_DIR}/../include/shared
-    ${CMAKE_SOURCE_DIR}/../include/tasks
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
 )
 target_link_libraries(test_telemetry_aggregation_task unity)
+
+# Test: BMS Alert ISR (self-contained, includes source directly)
+add_executable(test_rx_bms_alert
+    test_rx_bms_alert.c
+)
+apply_strict_warnings(test_rx_bms_alert)
+apply_test_includes(test_rx_bms_alert)
+target_link_libraries(test_rx_bms_alert unity)
+
+# Test: HOST_IRQ GPIO Output Driver (self-contained)
+add_executable(test_rx_host_irq
+    test_rx_host_irq.c
+)
+apply_strict_warnings(test_rx_host_irq)
+apply_test_includes(test_rx_host_irq)
+target_link_libraries(test_rx_host_irq unity)
 
 # =============================================================================
 # CTest Integration
@@ -854,8 +938,16 @@ set(ALL_TEST_TARGETS
     test_rx_drv8243_spi
     test_rx_frame_ascii
     test_rx_comm_manager
+    test_rx_drv8243
+    test_rx_iwdt
     test_rx_gpio
     test_rx_mpc
+    test_rx_poeg
+    test_rx_led_status
+    test_rx_tpu
+    test_rx_encoder_tpu
+    test_rx_bms_alert
+    test_rx_host_irq
     # Multi-task firmware tests
     test_motor_control_task
     test_communication_task
@@ -895,8 +987,16 @@ add_test(NAME test_rx_gptw_staggered COMMAND test_rx_gptw_staggered)
 add_test(NAME test_rx_drv8243_spi COMMAND test_rx_drv8243_spi)
 add_test(NAME test_rx_frame_ascii COMMAND test_rx_frame_ascii)
 add_test(NAME test_rx_comm_manager COMMAND test_rx_comm_manager)
+add_test(NAME test_rx_drv8243 COMMAND test_rx_drv8243)
+add_test(NAME test_rx_iwdt COMMAND test_rx_iwdt)
 add_test(NAME test_rx_gpio COMMAND test_rx_gpio)
 add_test(NAME test_rx_mpc COMMAND test_rx_mpc)
+add_test(NAME test_rx_poeg COMMAND test_rx_poeg)
+add_test(NAME test_rx_led_status COMMAND test_rx_led_status)
+add_test(NAME test_rx_tpu COMMAND test_rx_tpu)
+add_test(NAME test_rx_encoder_tpu COMMAND test_rx_encoder_tpu)
+add_test(NAME test_rx_bms_alert COMMAND test_rx_bms_alert)
+add_test(NAME test_rx_host_irq COMMAND test_rx_host_irq)
 
 # Multi-task firmware tests
 add_test(NAME test_motor_control_task COMMAND test_motor_control_task)

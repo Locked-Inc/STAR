@@ -11,7 +11,26 @@
 
 #include "mock_time.h"
 
+#include "tx_api.h"
+
 #include <string.h>
+
+/* =============================================================================
+ * ThreadX tx_time_get() Mock Implementation
+ * =============================================================================
+ */
+
+static ULONG s_mock_tx_ticks = 0;
+
+ULONG tx_time_get(void)
+{
+  return s_mock_tx_ticks;
+}
+
+void mock_tx_set_time(ULONG ticks)
+{
+  s_mock_tx_ticks = ticks;
+}
 
 /* =============================================================================
  * Global Mock Instance

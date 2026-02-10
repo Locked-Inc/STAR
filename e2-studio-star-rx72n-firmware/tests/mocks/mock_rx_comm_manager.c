@@ -124,8 +124,6 @@ static rx_comm_manager_t* s_current_manager = nullptr;
 
 void mock_comm_manager_reset(void)
 {
-  uint32_t i;
-
   /* Reset return values to defaults */
   s_init_return    = k_rx_ok;
   s_deinit_return  = k_rx_ok;
@@ -141,7 +139,7 @@ void mock_comm_manager_reset(void)
   s_respond_count = 0;
 
   /* Reset frame queue */
-  for (i = 0; i < k_mock_comm_frame_queue_size; i++) {
+  for (uint32_t i = 0; i < k_mock_comm_frame_queue_size; i++) {
     s_frame_queue[i].valid = false;
   }
   s_queue_read_idx  = 0;
@@ -155,7 +153,7 @@ void mock_comm_manager_reset(void)
   (void)memset(s_last_send_payload, 0, sizeof(s_last_send_payload));
 
   /* Reset channel ready status */
-  for (i = 0; i < k_comm_channel_count; i++) {
+  for (uint32_t i = 0; i < k_comm_channel_count; i++) {
     s_channel_ready[i] = true;
   }
 

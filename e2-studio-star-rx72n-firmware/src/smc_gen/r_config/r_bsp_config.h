@@ -96,7 +96,7 @@ Configuration Options
    LK           = 0x4             = TFLGA/145/0.50
    FP           = 0x5             = LFQFP/100/0.50
 */
-#define BSP_CFG_MCU_PART_PACKAGE        (0x5) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MCU_PART_PACKAGE        (0x3) /* Generated value. Do not edit this manually */
 
 /* Whether Encryption is included or not.
    Character(s) = Value for macro = Description

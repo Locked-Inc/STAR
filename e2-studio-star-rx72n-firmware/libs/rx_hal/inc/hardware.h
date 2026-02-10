@@ -172,8 +172,8 @@
  *   };
  *   rspi_init_peripheral(0, &rpi_cfg);
  *
- *   // 6. ADC (for battery voltage monitoring)
- *   adc_init(k_adc_unit_0, k_adc_channel_0, k_adc_resolution_12bit);
+ *   // 6. ADC (for motor current sensing on AN007/P47)
+ *   adc_init(k_adc_unit_0, k_adc_channel_7, k_adc_resolution_12bit);
  *
  *   // 7. I2C (for IMU sensor)
  *   riic_init((riic_channel_t){.value = 0}, 400000);
@@ -189,12 +189,12 @@
  * **Critical Signals**:
  * | Signal | Pin | Peripheral | Purpose |
  * |--------|-----|------------|---------|
- * | SPI0_MISO | P30 | RSPI0 | RPi5 ← RX72N (peripheral mode) |
- * | SPI0_MOSI | P31 | RSPI0 | RPi5 → RX72N |
+ * | SPI0_CIPO | P30 | RSPI0 | RPi5 ← RX72N (peripheral mode) |
+ * | SPI0_COPI | P31 | RSPI0 | RPi5 → RX72N |
  * | SPI0_CLK | P32 | RSPI0 | RPi5 clock |
  * | SPI0_CS | P33 | GPIO | RPi5 chip select |
- * | SPI1_MISO | PC5 | RSPI1 | DRV8243 → RX72N (controller mode) |
- * | SPI1_MOSI | PC6 | RSPI1 | DRV8243 ← RX72N |
+ * | SPI1_CIPO | PC5 | RSPI1 | DRV8243 → RX72N (controller mode) |
+ * | SPI1_COPI | PC6 | RSPI1 | DRV8243 ← RX72N |
  * | SPI1_CLK | PC7 | RSPI1 | DRV8243 clock |
  * | DRV_CS* | PC4,PC3,PC2,PC1 | GPIO | Motor driver chip selects |
  * | UART_TX | PB7 | SCI9 | Debug output (CY7C65213) |
@@ -590,16 +590,15 @@ extern "C" {
  * | Unit | Base Address | Channels Available | Max Sample Rate |
  * |------|--------------|-------------------|-----------------|
  * | S12AD0 | 0x00089000 | 8 (AN000-AN007) | 1 Msps |
- * | S12AD1 | 0x0008B000 | 8 (AN100-AN107) | 1 Msps |
+ * | S12AD1 | 0x00089100 | 21 (AN100-AN120) | 1 Msps |
  *
- * ## STAR Project Usage
- * | Unit | Channel | Signal | Purpose |
- * |------|---------|--------|---------|
- * | k_adc_unit_0 | k_adc_channel_0 | VBAT_SENSE | Battery voltage (0-16.8V via divider) |
- * | k_adc_unit_0 | k_adc_channel_1 | MOTOR_I1 | Motor 1 current sense (DRV8243 IPROPI) |
- * | k_adc_unit_0 | k_adc_channel_2 | MOTOR_I2 | Motor 2 current sense |
- * | k_adc_unit_0 | k_adc_channel_3 | MOTOR_I3 | Motor 3 current sense |
- * | k_adc_unit_0 | k_adc_channel_4 | MOTOR_I4 | Motor 4 current sense |
+ * ## STAR Project Usage (144-pin LFQFP)
+ * | Unit | Channel | Pin | Signal | Purpose |
+ * |------|---------|-----|--------|---------|
+ * | k_adc_unit_0 | k_adc_channel_7 | P47 | MOTOR_I0 | Motor 0 current sense (DRV8243 IPROPI) |
+ * | k_adc_unit_0 | k_adc_channel_6 | P46 | MOTOR_I1 | Motor 1 current sense (DRV8243 IPROPI) |
+ * | k_adc_unit_0 | k_adc_channel_5 | P45 | MOTOR_I2 | Motor 2 current sense |
+ * | k_adc_unit_0 | k_adc_channel_4 | P44 | MOTOR_I3 | Motor 3 current sense |
  *
  * ## Type Safety Benefit
  * @code{.c}
@@ -621,7 +620,7 @@ extern "C" {
  */
 typedef enum : uint8_t {
   k_adc_unit_0 = 0, /**< S12AD0 - ADC unit 0 (channels AN000-AN007). Used for battery/current sensing. */
-  k_adc_unit_1 = 1  /**< S12AD1 - ADC unit 1 (channels AN100-AN107). Reserved for expansion sensors. */
+  k_adc_unit_1 = 1  /**< S12AD1 - ADC unit 1 (channels AN100-AN120). Reserved for expansion sensors. */
 } adc_unit_t;
 
 /**
@@ -633,24 +632,18 @@ typedef enum : uint8_t {
  * (S12AD0, S12AD1) has 8 independent channels with dedicated analog input pins.
  * Using a typed enum prevents accidental parameter swaps with unit or resolution.
  *
- * ## Pin Mapping (RX72N-100 pin package)
+ * ## Pin Mapping (RX72N 144-pin LFQFP, R5F572NNHxFB)
  * ### S12AD0 Channels (use with k_adc_unit_0)
  * | Channel | Pin | Signal Name | STAR Usage |
  * |---------|-----|-------------|------------|
- * | k_adc_channel_0 | P40 | AN000 | Battery voltage sense |
- * | k_adc_channel_1 | P41 | AN001 | Motor 1 current sense |
- * | k_adc_channel_2 | P42 | AN002 | Motor 2 current sense |
- * | k_adc_channel_3 | P43 | AN003 | Motor 3 current sense |
- * | k_adc_channel_4 | P44 | AN004 | Motor 4 current sense |
- * | k_adc_channel_5 | P45 | AN005 | Unused (expansion) |
- * | k_adc_channel_6 | P46 | AN006 | Unused (expansion) |
- * | k_adc_channel_7 | P47 | AN007 | Unused (expansion) |
- *
- * ### S12AD1 Channels (use with k_adc_unit_1)
- * | Channel | Pin | Signal Name | STAR Usage |
- * |---------|-----|-------------|------------|
- * | k_adc_channel_0 | P00 | AN100 | Reserved for future sensors |
- * | ... | ... | ... | (All channels reserved) |
+ * | k_adc_channel_0 | P40 | AN000 | Available (expansion) |
+ * | k_adc_channel_1 | P41 | AN001 | Available (expansion) |
+ * | k_adc_channel_2 | P42 | AN002 | Available (expansion) |
+ * | k_adc_channel_3 | P43 | AN003 | Available (expansion) |
+ * | k_adc_channel_4 | P44 | AN004 | Motor 3 current sense |
+ * | k_adc_channel_5 | P45 | AN005 | Motor 2 current sense |
+ * | k_adc_channel_6 | P46 | AN006 | Motor 1 current sense |
+ * | k_adc_channel_7 | P47 | AN007 | Motor 0 current sense |
  *
  * ## Input Specifications
  * - **Voltage Range**: 0V to AVCC (3.3V)
@@ -679,14 +672,14 @@ typedef enum : uint8_t {
  * @see adc_read_voltage_mv() Read voltage in millivolts
  */
 typedef enum : uint8_t {
-  k_adc_channel_0 = 0, /**< Channel 0 - AN000 (unit 0) or AN100 (unit 1) */
-  k_adc_channel_1 = 1, /**< Channel 1 - AN001 (unit 0) or AN101 (unit 1) */
-  k_adc_channel_2 = 2, /**< Channel 2 - AN002 (unit 0) or AN102 (unit 1) */
-  k_adc_channel_3 = 3, /**< Channel 3 - AN003 (unit 0) or AN103 (unit 1) */
-  k_adc_channel_4 = 4, /**< Channel 4 - AN004 (unit 0) or AN104 (unit 1) */
-  k_adc_channel_5 = 5, /**< Channel 5 - AN005 (unit 0) or AN105 (unit 1) */
-  k_adc_channel_6 = 6, /**< Channel 6 - AN006 (unit 0) or AN106 (unit 1) */
-  k_adc_channel_7 = 7  /**< Channel 7 - AN007 (unit 0) or AN107 (unit 1) */
+  k_adc_channel_0 = 0, /**< Channel 0 - AN000 (unit 0) or AN100 (unit 1). Available. */
+  k_adc_channel_1 = 1, /**< Channel 1 - AN001 (unit 0) or AN101 (unit 1). Available. */
+  k_adc_channel_2 = 2, /**< Channel 2 - AN002 (unit 0) or AN102 (unit 1). Available. */
+  k_adc_channel_3 = 3, /**< Channel 3 - AN003 (unit 0) or AN103 (unit 1). Available. */
+  k_adc_channel_4 = 4, /**< Channel 4 - AN004/P44 (unit 0, Motor 3 current) or AN104 (unit 1) */
+  k_adc_channel_5 = 5, /**< Channel 5 - AN005/P45 (unit 0, Motor 2 current) or AN105 (unit 1) */
+  k_adc_channel_6 = 6, /**< Channel 6 - AN006/P46 (unit 0, Motor 1 current) or AN106 (unit 1) */
+  k_adc_channel_7 = 7  /**< Channel 7 - AN007/P47 (unit 0, Motor 0 current) or AN107 (unit 1) */
 } adc_channel_t;
 
 /* ADC resolution type alias (enum defined in rx_bus_types.h) */
@@ -1058,16 +1051,16 @@ typedef struct {
  * ### Mode 0 (CPOL=0, CPHA=0) - Most Common
  * ```
  * CLK:  ___/‾‾‾\___/‾‾‾\___
- * MOSI: ===[D0]===[D1]===
- * MISO: ===[D0]===[D1]===
+ * COPI: ===[D0]===[D1]===
+ * CIPO: ===[D0]===[D1]===
  *        ↑ Sample  ↑ Sample
  * ```
  *
  * ### Mode 3 (CPOL=1, CPHA=1)
  * ```
  * CLK:  ‾‾‾\___/‾‾‾\___/‾‾‾
- * MOSI: ===[D0]===[D1]===
- * MISO: ===[D0]===[D1]===
+ * COPI: ===[D0]===[D1]===
+ * CIPO: ===[D0]===[D1]===
  *        ↑ Sample  ↑ Sample
  * ```
  *
@@ -1205,7 +1198,7 @@ typedef struct {
 /**
  * @brief Initialize SPI controller for external device communication
  *
- * Configures the specified RSPI channel as SPI controller (formerly master mode)
+ * Configures the specified RSPI channel as SPI controller
  * for communicating with external SPI devices like motor drivers.
  *
  * @param[in] channel RSPI channel (0-2)

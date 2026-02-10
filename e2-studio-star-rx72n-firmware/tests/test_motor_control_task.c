@@ -31,7 +31,7 @@
 #include <string.h>
 
 /* Include the task header for the public API */
-#include "tasks/motor_control_task.h"
+#include "motor_control_task.h"
 
 /* =============================================================================
  * Test Constants
@@ -164,7 +164,6 @@ void test_motor_task_initializes_4_pids(void)
   rx_pid_handle_t  pid    = {0};
   rx_pid_config_t  config = {0};
   rx_err_t         err;
-  uint8_t          i;
 
   config.kp           = 0.286f;
   config.ki           = 8.01f;
@@ -175,7 +174,7 @@ void test_motor_task_initializes_4_pids(void)
   config.integral_max = 50.0f;
 
   /* Call init for 4 motors */
-  for (i = 0; i < k_test_motor_count; i++) {
+  for (uint8_t i = 0; i < k_test_motor_count; i++) {
     err = rx_pid_init(&pid, &config);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
   }

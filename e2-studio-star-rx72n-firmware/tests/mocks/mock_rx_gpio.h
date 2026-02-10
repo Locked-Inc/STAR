@@ -64,6 +64,7 @@ typedef enum : uint32_t {
   k_mock_gpio_max_pins =
     (1u << (k_port_shift +
             k_pin_bits)), /**< Full index space for (port<<k_port_shift)|pin encoding */
+  k_mock_gpio_max_read_sequence = 512, /**< Maximum programmable read sequence length */
 } mock_gpio_constants_t;
 
 /* =============================================================================
@@ -155,6 +156,26 @@ uint32_t mock_gpio_get_read_count(void);
  * @brief Reset all call counters
  */
 void mock_gpio_reset_counters(void);
+
+/**
+ * @brief Program a sequence of read values for successive gpio_read() calls
+ *
+ * When a sequence is active, each gpio_read() on the specified pin returns
+ * the next value from the sequence. After the sequence is exhausted, reads
+ * fall back to the static value set by mock_gpio_set_read_value().
+ *
+ * @param[in] pin GPIO pin enum
+ * @param[in] values Array of boolean values (true=high, false=low)
+ * @param[in] count Number of values in the sequence
+ */
+void mock_gpio_set_read_sequence(rx_port_pin_t pin, const bool* values, uint32_t count);
+
+/**
+ * @brief Clear any active read sequence for a pin
+ *
+ * @param[in] pin GPIO pin enum
+ */
+void mock_gpio_clear_read_sequence(rx_port_pin_t pin);
 
 /* =============================================================================
  * GPIO Functions (Mock Implementations)

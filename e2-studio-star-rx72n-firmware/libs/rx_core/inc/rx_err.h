@@ -852,10 +852,10 @@ typedef enum : uint16_t {
   /**
    * @brief SPI communication error
    * @details
-   * SPI transfer failed. Examples: MISO timeout, bus error, chip select conflict.
+   * SPI transfer failed. Examples: CIPO timeout, bus error, chip select conflict.
    *
    * @par Value: 0x402
-   * @par Cause: No response on MISO, mode mismatch, clock issue
+   * @par Cause: No response on CIPO, mode mismatch, clock issue
    * @par Recovery: Check SPI mode, verify clock frequency, check CS timing
    * @par Prevention: Validate SPI configuration before transfer
    */
@@ -927,7 +927,7 @@ typedef enum : uint16_t {
   /**
    * @brief Resource conflict in communication
    * @details
-   * Multiple masters attempting bus access, or conflicting operation in progress.
+   * Multiple controllers attempting bus access, or conflicting operation in progress.
    *
    * @par Value: 0x408
    * @par Cause: Bus arbitration lost, conflicting DMA channels

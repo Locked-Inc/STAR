@@ -671,6 +671,34 @@ static inline tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
 }
 
 /* =============================================================================
+ * ThreadX Timer Tick Constants and Functions
+ * =============================================================================
+ */
+
+/** @brief Timer ticks per second (matches real ThreadX default) */
+#ifndef TX_TIMER_TICKS_PER_SECOND
+#define TX_TIMER_TICKS_PER_SECOND (100UL)
+#endif
+
+/**
+ * @brief Get current timer tick count (mock implementation)
+ *
+ * @details
+ * Returns mock time value controlled by mock_tx_set_time().
+ * In real ThreadX, returns OS tick count since boot.
+ *
+ * @return Current mock tick count
+ */
+ULONG tx_time_get(void);
+
+/**
+ * @brief Set mock timer tick count (for testing)
+ *
+ * @param[in] ticks Tick value to return from tx_time_get()
+ */
+void mock_tx_set_time(ULONG ticks);
+
+/* =============================================================================
  * Mock Control Functions (for unit testing)
  * =============================================================================
  */

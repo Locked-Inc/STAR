@@ -151,7 +151,7 @@
  *   }
  *
  *   // Step 3: Use interface to reserve pins
- *   err = pin_iface.reserve_pin(pin_iface.ctx, 0xA, 5, "SPI_MOSI");
+ *   err = pin_iface.reserve_pin(pin_iface.ctx, 0xA, 5, "SPI_COPI");
  *   if (err == k_rx_err_gpio_conflict) {
  *     debug_printf("Pin PA5 already reserved\n");
  *   }
@@ -220,7 +220,7 @@
  * - Mutex overhead acceptable for non-ISR operations
  *
  * **Why store function names vs. module IDs?**
- * - Human-readable debugging ("SPI_MOSI" vs. ID 42)
+ * - Human-readable debugging ("SPI_COPI" vs. ID 42)
  * - No need for global module registry
  * - String literals in .rodata (no RAM cost)
  * - Easy to print in debug reports
@@ -367,7 +367,7 @@ typedef enum : uint8_t {
  * | reserved | function | Meaning |
  * |----------|----------|---------|
  * | false | (any) | Pin is available (function value ignored) |
- * | true | "SPI_MOSI" | Pin reserved for SPI MOSI |
+ * | true | "SPI_COPI" | Pin reserved for SPI COPI |
  * | true | "GPIO_OUT" | Pin reserved for GPIO output |
  * | true | "" | Pin reserved but function unknown (edge case) |
  *
@@ -382,7 +382,7 @@ typedef enum : uint8_t {
  *
  * // Reserve pin
  * slot->reserved = true;
- * strncpy(slot->function, "SPI_MOSI", sizeof(slot->function) - 1);
+ * strncpy(slot->function, "SPI_COPI", sizeof(slot->function) - 1);
  * slot->function[sizeof(slot->function) - 1] = '\0';
  *
  * // Release pin
@@ -399,7 +399,7 @@ typedef enum : uint8_t {
  * @var pin_reservation_t::function
  * @brief Function name identifying the pin's owner
  * @details
- * Null-terminated string (max 31 chars + null). Examples: "SPI_MOSI", "UART_TX",
+ * Null-terminated string (max 31 chars + null). Examples: "SPI_COPI", "UART_TX",
  * "MOTOR_PWM". Only valid when `reserved == true`. String is typically a literal
  * from .rodata (not copied, just pointer stored).
  *
@@ -530,7 +530,7 @@ typedef struct {
  * //      iface function pointers point to validator's implementations
  *
  * // Step 4: Use through interface (in-use state)
- * err = iface.reserve_pin(iface.ctx, 0xA, 5, "SPI_MOSI");
+ * err = iface.reserve_pin(iface.ctx, 0xA, 5, "SPI_COPI");
  * // Internally: Acquires mutex, checks reservations[10][5], updates if free
  *
  * // Step 5: Deinitialize (transition back to uninitialized)
@@ -733,8 +733,8 @@ typedef struct {
  * spi_init(&spi_cfg);
  *
  * // Step 4: Use through interface (polymorphism in C)
- * iface.reserve_pin(iface.ctx, 0xA, 5, "SPI_MOSI");
- * // Internally calls: pin_validator_reserve(&s_validator, 0xA, 5, "SPI_MOSI")
+ * iface.reserve_pin(iface.ctx, 0xA, 5, "SPI_COPI");
+ * // Internally calls: pin_validator_reserve(&s_validator, 0xA, 5, "SPI_COPI")
  * @endcode
  *
  * @param[out] iface Interface structure to populate (must be non-NULL)
