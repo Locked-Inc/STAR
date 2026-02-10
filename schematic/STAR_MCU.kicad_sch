@@ -28622,7 +28622,7 @@
 		(uuid "af39143d-fe9f-41d0-9e66-60bbd136b2ee")
 	)
 	(label "SONAR_TRIG_0"
-		(at 793.75 217.17 180)
+		(at 814.07 217.17 180)
 		(effects
 			(font
 				(size 1.27 1.27)
