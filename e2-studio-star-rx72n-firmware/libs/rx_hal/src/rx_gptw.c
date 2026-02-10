@@ -1840,3 +1840,51 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
 
   return k_rx_ok;
 }
+
+/**
+ * @brief Deinitialize a GPTW channel
+ *
+ * @details
+ * Stops the timer, disables both PWM outputs (A and B), and resets
+ * the counter to zero. Call only when motor control is no longer active.
+ *
+ * @param[in] channel GPTW channel (0-3)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success
+ * @retval k_rx_err_invalid_arg Invalid channel number
+ *
+ * @pre Motor using this channel must be stopped
+ * @post Timer stopped, outputs disabled, counter zeroed
+ *
+ * @see rx_gptw_init_all() Re-initialize after deinit
+ * @see rx_gptw_stop() Stop without full teardown
+ */
+rx_err_t rx_gptw_deinit(const rx_gptw_channel_t channel)
+{
+  if ((int32_t)channel >= (int32_t)k_gptw_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
+  if (gptw == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Unlock write protection */
+  gptw->gtwp = k_gptw_gtwp_unlock;
+
+  /* Stop counter */
+  gptw->gtcr &= ~k_gptw_gtcr_cst;
+
+  /* Disable both outputs (OAE and OBE) */
+  gptw->gtior &= ~(k_gptw_gtior_oae | k_gptw_gtior_obe);
+
+  /* Reset counter to zero */
+  gptw->gtcnt = 0;
+
+  /* Re-lock write protection */
+  gptw->gtwp = k_gptw_gtwp_lock;
+
+  return k_rx_ok;
+}

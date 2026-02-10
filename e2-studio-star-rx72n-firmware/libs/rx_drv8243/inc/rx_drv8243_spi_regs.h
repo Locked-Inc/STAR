@@ -2219,10 +2219,10 @@ typedef enum : uint32_t {
  * | Symptom | Likely Cause | Fix |
  * |---------|--------------|-----|
  * | device_id = 0x00 | Insufficient t_POR delay | Wait longer after power-on |
- * | device_id = 0xFF | No pull-up on MISO, device not responding | Check power, wiring |
+ * | device_id = 0xFF | No pull-up on CIPO, device not responding | Check power, wiring |
  * | device_id != 0x01 | Wrong device on bus | Verify PCB schematic |
  * | status_byte MSB = 0 | SPI clock polarity wrong | Set CPOL=0, CPHA=0 |
- * | Random values | SPI wiring issue, clock mismatch | Check SCLK, MOSI, MISO, CS |
+ * | Random values | SPI wiring issue, clock mismatch | Check SCLK, COPI, CIPO, CS |
  *
  * @see k_drv8243_reg_device_id DEVICE_ID register address (0x00)
  * @see DRV8243_SPI_READ_FRAME() Construct read frame for DEVICE_ID

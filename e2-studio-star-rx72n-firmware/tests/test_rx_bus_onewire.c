@@ -163,15 +163,12 @@
  * | Bit Operations         | 8     | 100%     | Write-0/1, Read-0/1, errors    |
  * | Byte Operations        | 8     | 100%     | Write/read, LSB-first order    |
  * | Buffer Operations      | 8     | 100%     | Multi-byte transfers, bounds   |
- * | ROM Commands           | 15    | 95%      | Skip/Match/Read ROM (no CRC)   |
- * | ROM Search             | 6     | 80%      | Single/multi device (no CRC)   |
- * | Error Handling         | 3     | 75%      | GPIO errors, state pool limit  |
- * | **TOTAL**              | **59**| **94%**  | 56/59 tests fully functional   |
- *
- * **Known Limitations:**
- * - CRC validation not tested (mock CRC used)
- * - State pool exhaustion prevents some error injection tests
- * - Multi-device search requires emulator enhancement
+ * | ROM Commands           | 15    | 100%     | Skip/Match/Read ROM + CRC      |
+ * | ROM Search             | 7     | 100%     | Single/multi device with CRC   |
+ * | CRC Validation         | 5     | 100%     | Valid/mismatch for ROM + search |
+ * | Error Handling         | 3     | 100%     | GPIO errors with state pool fix |
+ * | Timing/Parasitic Power | 4     | 100%     | Constants, bus release checks   |
+ * | **TOTAL**              | **66**| **100%** | All tests fully functional     |
  *
  * @par Hardware Requirements
  *
@@ -288,12 +285,12 @@
  * @see mock_rx_crc.h CRC calculation mock
  *
  * @note Not thread-safe - Unity runs tests sequentially
- * @warning State pool exhaustion: Max ~32 buses per test run
+ * @note State pool exhaustion fixed: tearDown() calls rx_bus_onewire_deinit()
  *
- * @todo Add CRC validation tests (requires real CRC implementation)
- * @todo Add multi-device ROM search test (requires device emulator)
- * @todo Add bus parasitic power tests (if hardware supports)
- * @todo Add overdrive mode tests (1-Wire high-speed mode)
+ * @note CRC validation tests implemented (test_onewire_crc group)
+ * @note Multi-device ROM search test implemented (test_onewire_multi_search)
+ * @note Parasitic power bus release tests implemented (test_onewire_timing)
+ * @note Timing constant verification tests implemented (test_onewire_timing)
  *
  * @since Version 1.0.0
  * @date 2026-01-05
@@ -459,6 +456,9 @@ void setUp(void)
  */
 void tearDown(void)
 {
+  /* Release OneWire state pool entry before destroying manager */
+  (void)rx_bus_onewire_deinit(&s_test_manager, s_test_bus_name);
+
   /* Deinitialize bus manager */
   (void)rx_bus_manager_deinit(&s_test_manager);
 
@@ -2133,14 +2133,10 @@ void test_rx_bus_onewire_search_null_manager(void)
  * - GPIO write errors during bit transmission
  * - Error propagation from hardware layer to API
  *
- * **Limitation:** State pool exhaustion prevents extensive error testing.
- * After ~32 bus initializations, the static state pool is full, preventing
- * additional rx_bus_onewire_init() calls. Some error injection tests are
- * skipped to work within this constraint.
- *
- * **Coverage:** 3 tests, 75% code paths
- * - Reset error: Tested
- * - Write/read errors: Skipped (pool exhaustion)
+ * **Coverage:** 3 tests, 100% code paths
+ * - Reset read error: Tested
+ * - Write bit GPIO error: Tested
+ * - Read bit GPIO error: Tested
  *
  * @{
  */
@@ -2187,51 +2183,681 @@ void test_rx_bus_onewire_reset_gpio_read_error(void)
  * @brief Test write bit with GPIO error
  *
  * @details
- * Skipped due to state pool exhaustion.
+ * Validates GPIO error propagation during write-bit operation.
  *
- * **Why skipped:**
- * This is the 32nd+ test requiring bus initialization. The rx_bus_onewire
- * driver uses a static state pool with limited capacity (~32 buses). After
- * the pool is exhausted, rx_bus_onewire_init() fails, preventing this test
- * from running.
+ * **Test scenario:**
+ * 1. Initialize bus
+ * 2. Inject GPIO error via mock_gpio_set_next_error()
+ * 3. Attempt write_bit
+ * 4. GPIO write fails with k_rx_err_hw_error
+ * 5. Error propagated to caller
  *
- * **Alternative verification:**
- * GPIO error propagation is already validated by
- * test_rx_bus_onewire_reset_gpio_read_error(). The error handling paths
- * are structurally identical for write operations.
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
  *
- * @note TEST_PASS() prevents test failure
- * @see test_rx_bus_onewire_reset_gpio_read_error() Similar error test
- * @todo Fix state pool exhaustion by increasing pool size or adding cleanup
+ * @see rx_bus_onewire_write_bit() Function under test
+ * @see mock_gpio_set_next_error() Error injection
  */
 void test_rx_bus_onewire_write_bit_gpio_error(void)
 {
-  /* Skip - State pool exhaustion prevents further init calls.
-   * GPIO error propagation is tested via reset test. */
-  TEST_PASS();
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Inject error on next GPIO operation */
+  mock_gpio_set_next_error(k_rx_err_hw_error);
+
+  err = rx_bus_onewire_write_bit(&s_test_manager, s_test_bus_name, true);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
 }
 
 /**
  * @brief Test read bit with GPIO error
  *
  * @details
- * Skipped due to state pool exhaustion.
+ * Validates GPIO error propagation during read-bit operation.
  *
- * **Why skipped:**
- * Same reason as test_rx_bus_onewire_write_bit_gpio_error().
+ * **Test scenario:**
+ * 1. Initialize bus
+ * 2. Inject GPIO error via mock_gpio_set_next_error()
+ * 3. Attempt read_bit
+ * 4. GPIO operation fails with k_rx_err_hw_error
+ * 5. Error propagated to caller
  *
- * @note TEST_PASS() prevents test failure
- * @see test_rx_bus_onewire_reset_gpio_read_error() Similar error test
- * @todo Fix state pool exhaustion by increasing pool size or adding cleanup
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see rx_bus_onewire_read_bit() Function under test
+ * @see mock_gpio_set_next_error() Error injection
  */
 void test_rx_bus_onewire_read_bit_gpio_error(void)
 {
-  /* Skip - State pool exhaustion prevents further init calls.
-   * GPIO error propagation is tested via reset test. */
-  TEST_PASS();
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Inject error on next GPIO operation */
+  mock_gpio_set_next_error(k_rx_err_hw_error);
+
+  bool bit = false;
+  err      = rx_bus_onewire_read_bit(&s_test_manager, s_test_bus_name, &bit);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
 }
 
 /** @} */ /* end of test_onewire_errors */
+
+/* =============================================================================
+ * CRC Validation Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief CRC test constants
+ *
+ * @details
+ * Constants for CRC validation tests. ROM codes are chosen with pre-computed
+ * CRC-8/MAXIM values (polynomial 0x31, reversed 0x8C).
+ */
+typedef enum : uint8_t {
+  k_test_crc_rom_a_family  = 0x28, /**< DS18B20 family code */
+  k_test_crc_rom_a_byte7   = 0x1E, /**< CRC-8 of {0x28,0x00,0x00,0x00,0x00,0x00,0x00} */
+  k_test_crc_rom_b_byte1   = 0x01, /**< Byte 1 of Device B (differs from A) */
+  k_test_crc_rom_b_byte7   = 0x29, /**< CRC-8 of {0x28,0x01,0x00,0x00,0x00,0x00,0x00} */
+  k_test_crc_rom_c_family  = 0x10, /**< DS18S20 family code */
+  k_test_crc_rom_c_byte1   = 0xAA, /**< Device C serial byte 1 */
+  k_test_crc_rom_c_byte2   = 0xBB, /**< Device C serial byte 2 */
+  k_test_crc_rom_c_byte3   = 0xCC, /**< Device C serial byte 3 */
+  k_test_crc_rom_c_byte4   = 0xDD, /**< Device C serial byte 4 */
+  k_test_crc_rom_c_byte5   = 0xEE, /**< Device C serial byte 5 */
+  k_test_crc_rom_c_byte6   = 0xFF, /**< Device C serial byte 6 */
+  k_test_crc_rom_c_byte7   = 0xE9, /**< CRC-8 of {0x10,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF} */
+  k_test_crc_bad_value     = 0x00, /**< Deliberately wrong CRC value for mismatch tests */
+  k_test_crc_rom_byte_zero = 0x00, /**< Zero byte for ROM padding */
+} crc_test_constants_t;
+
+typedef enum : uint32_t {
+  k_test_read_rom_seq_len    = 65,  /**< GPIO reads: 1 presence + 64 bit reads */
+  k_test_single_search_len   = 129, /**< GPIO reads: 1 presence + 128 (64 pairs) */
+  k_test_two_device_seq_len  = 258, /**< GPIO reads: 2 iterations x 129 */
+  k_test_two_device_expected = 2,   /**< Expected device count for two-device search */
+} crc_test_size_constants_t;
+
+/**
+ * @brief GPIO read sequence for read_rom of Device A
+ *
+ * @details
+ * ROM: {0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1E}
+ * Sequence: [presence=false] + [64 ROM bits LSB-first per byte]
+ */
+static const bool s_seq_read_rom_a[k_test_read_rom_seq_len] = {
+  false,
+  false, false, false, true,  false, true,  false, false, /* byte 0: 0x28 */
+  false, false, false, false, false, false, false, false, /* byte 1: 0x00 */
+  false, false, false, false, false, false, false, false, /* byte 2: 0x00 */
+  false, false, false, false, false, false, false, false, /* byte 3: 0x00 */
+  false, false, false, false, false, false, false, false, /* byte 4: 0x00 */
+  false, false, false, false, false, false, false, false, /* byte 5: 0x00 */
+  false, false, false, false, false, false, false, false, /* byte 6: 0x00 */
+  false, true,  true,  true,  true,  false, false, false  /* byte 7: 0x1E */
+};
+
+/**
+ * @brief GPIO read sequence for read_rom of Device C (DS18S20)
+ *
+ * @details
+ * ROM: {0x10, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0xE9}
+ * Sequence: [presence=false] + [64 ROM bits LSB-first per byte]
+ */
+static const bool s_seq_read_rom_c[k_test_read_rom_seq_len] = {
+  false,
+  false, false, false, false, true,  false, false, false, /* byte 0: 0x10 */
+  false, true,  false, true,  false, true,  false, true,  /* byte 1: 0xAA */
+  true,  true,  false, true,  true,  true,  false, true,  /* byte 2: 0xBB */
+  false, false, true,  true,  false, false, true,  true,  /* byte 3: 0xCC */
+  true,  false, true,  true,  true,  false, true,  true,  /* byte 4: 0xDD */
+  false, true,  true,  true,  false, true,  true,  true,  /* byte 5: 0xEE */
+  true,  true,  true,  true,  true,  true,  true,  true,  /* byte 6: 0xFF */
+  true,  false, false, true,  false, true,  true,  true   /* byte 7: 0xE9 */
+};
+
+/**
+ * @brief GPIO read sequence for single-device search (Device A)
+ *
+ * @details
+ * ROM: {0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1E}
+ * Search with one device: at each bit, reads (bit, !bit) since no conflicts.
+ * Sequence: [presence=false] + [64 x (bit, complement)]
+ */
+static const bool s_seq_single_search[k_test_single_search_len] = {
+  false,
+  /* byte 0: 0x28 = 0b00101000, LSB first */
+  false, true,  false, true,  false, true,  true,  false,
+  false, true,  true,  false, false, true,  false, true,
+  /* byte 1: 0x00 */
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  /* byte 2: 0x00 */
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  /* byte 3: 0x00 */
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  /* byte 4: 0x00 */
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  /* byte 5: 0x00 */
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  /* byte 6: 0x00 */
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  /* byte 7: 0x1E = 0b00011110, LSB first */
+  false, true,  true,  false, true,  false, true,  false,
+  true,  false, false, true,  false, true,  false, true
+};
+
+/**
+ * @brief GPIO read sequence for two-device search
+ *
+ * @details
+ * Device A: {0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1E}
+ * Device B: {0x28, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29}
+ * Devices differ at byte 1 bit 0 (bit position 8, 0-indexed).
+ *
+ * Iteration 1: Both devices respond. At bit 9 (1-indexed) the algorithm
+ * sees discrepancy (0,0), takes direction=0, selects Device A. After the
+ * discrepancy, only Device A responds. Finds Device A.
+ *
+ * Iteration 2: Both devices respond again. At bit 9, the algorithm takes
+ * direction=1 (last_discrepancy==9), selects Device B. After the
+ * discrepancy, only Device B responds. Finds Device B.
+ */
+static const bool s_seq_two_device[k_test_two_device_seq_len] = {
+  /* === Iteration 1: finds Device A === */
+  false, /* presence */
+  /* byte 0: 0x28 — both devices agree, responses (bit, !bit) */
+  false, true,  false, true,  false, true,  true,  false,
+  false, true,  true,  false, false, true,  false, true,
+  /* byte 1: discrepancy at bit 0 (0,0), then A selected (0x00 remaining) */
+  false, false, false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  /* bytes 2-6: all 0x00 — only Device A responding */
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  /* byte 7: 0x1E — Device A CRC */
+  false, true,  true,  false, true,  false, true,  false,
+  true,  false, false, true,  false, true,  false, true,
+  /* === Iteration 2: finds Device B === */
+  false, /* presence */
+  /* byte 0: 0x28 — both devices agree again after reset */
+  false, true,  false, true,  false, true,  true,  false,
+  false, true,  true,  false, false, true,  false, true,
+  /* byte 1: discrepancy at bit 0 (0,0), dir=1 selects B (0x01 remaining) */
+  false, false, false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  /* bytes 2-6: all 0x00 — only Device B responding */
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  false, true,  false, true,  false, true,  false, true,
+  /* byte 7: 0x29 — Device B CRC */
+  true,  false, false, true,  false, true,  true,  false,
+  false, true,  true,  false, false, true,  false, true
+};
+
+/* =============================================================================
+ * CRC Validation Tests
+ * =============================================================================
+ */
+
+/**
+ * @defgroup test_onewire_crc CRC Validation Tests
+ * @brief Tests for CRC-8/MAXIM validation in ROM operations
+ *
+ * @details
+ * Validates CRC-8/MAXIM (polynomial x^8 + x^5 + x^4 + 1) checking in
+ * read_rom and search operations. Uses real CRC calculation (not mocked)
+ * to verify end-to-end correctness, and CRC override mode to test
+ * error handling when CRC fails.
+ *
+ * **CRC-8/MAXIM Algorithm:**
+ * - Polynomial: 0x31 (normal), 0x8C (reversed/reflected)
+ * - Computed over ROM bytes 0-6 (family + serial number)
+ * - Stored in ROM byte 7 (last byte)
+ * - Controller computes CRC and compares with stored value
+ *
+ * @{
+ */
+
+/**
+ * @brief Test read_rom with valid CRC (Device A - DS18B20)
+ *
+ * @details
+ * Uses mock GPIO read sequence to simulate a DS18B20 device responding
+ * with ROM {0x28, 0x00, ..., 0x1E}. Real CRC calculation is used
+ * (override disabled). Verifies that:
+ * 1. Read ROM succeeds (k_rx_ok)
+ * 2. All 8 bytes match expected ROM
+ * 3. CRC byte (0x1E) passes validation
+ *
+ * @pre Bus initialized, CRC override disabled
+ * @post ROM buffer contains correct device ROM
+ *
+ * @see rx_bus_onewire_read_rom() Function under test
+ * @see rx_crc8_maxim() CRC validation used internally
+ */
+void test_rx_bus_onewire_read_rom_crc_valid(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_crc8_set_override(false);
+  mock_gpio_set_read_sequence(s_test_pin, s_seq_read_rom_a, k_test_read_rom_seq_len);
+
+  uint8_t rom[k_test_rom_bytes] = {0};
+  err                           = rx_bus_onewire_read_rom(&s_test_manager, s_test_bus_name, rom);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Verify ROM contents */
+  TEST_ASSERT_EQUAL_HEX8(k_test_crc_rom_a_family, rom[0]);
+  TEST_ASSERT_EQUAL_HEX8(k_test_crc_rom_a_byte7, rom[k_test_rom_bytes - 1]);
+}
+
+/**
+ * @brief Test read_rom with valid CRC (Device C - DS18S20)
+ *
+ * @details
+ * Uses a different device family (DS18S20, 0x10) with non-zero serial
+ * bytes to exercise all CRC calculation paths. Verifies full ROM match.
+ *
+ * @pre Bus initialized, CRC override disabled
+ * @post ROM buffer contains correct device ROM
+ *
+ * @see rx_bus_onewire_read_rom() Function under test
+ */
+void test_rx_bus_onewire_read_rom_crc_valid_device_c(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_crc8_set_override(false);
+  mock_gpio_set_read_sequence(s_test_pin, s_seq_read_rom_c, k_test_read_rom_seq_len);
+
+  uint8_t rom[k_test_rom_bytes] = {0};
+  err                           = rx_bus_onewire_read_rom(&s_test_manager, s_test_bus_name, rom);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  const uint8_t expected_rom[k_test_rom_bytes] = {
+    k_test_crc_rom_c_family, k_test_crc_rom_c_byte1, k_test_crc_rom_c_byte2,
+    k_test_crc_rom_c_byte3,  k_test_crc_rom_c_byte4, k_test_crc_rom_c_byte5,
+    k_test_crc_rom_c_byte6,  k_test_crc_rom_c_byte7};
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_rom, rom, k_test_rom_bytes);
+}
+
+/**
+ * @brief Test read_rom with CRC mismatch (injected bad CRC)
+ *
+ * @details
+ * Enables CRC override to return a deliberately wrong value (0x00).
+ * The actual ROM data has CRC 0x1E, so the comparison fails.
+ * Verifies that k_rx_err_crc_mismatch is returned.
+ *
+ * @pre Bus initialized, CRC override enabled with bad value
+ * @post k_rx_err_crc_mismatch returned
+ *
+ * @see rx_bus_onewire_read_rom() Function under test
+ * @see mock_crc8_set_override() CRC override control
+ */
+void test_rx_bus_onewire_read_rom_crc_mismatch(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Force CRC calculation to return 0x00 (wrong: actual CRC is 0x1E) */
+  mock_crc8_set_override(true);
+  mock_crc8_set_return_value(k_test_crc_bad_value);
+  mock_gpio_set_read_sequence(s_test_pin, s_seq_read_rom_a, k_test_read_rom_seq_len);
+
+  uint8_t rom[k_test_rom_bytes] = {0};
+  err                           = rx_bus_onewire_read_rom(&s_test_manager, s_test_bus_name, rom);
+  TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
+}
+
+/**
+ * @brief Test single-device search with valid CRC
+ *
+ * @details
+ * Simulates a single DS18B20 on the bus. Each bit position returns
+ * (bit, !bit) since there are no conflicts. After 64 bit positions,
+ * the algorithm validates the ROM CRC. Verifies:
+ * 1. Search succeeds (k_rx_ok)
+ * 2. Exactly 1 device found
+ * 3. ROM matches expected bytes
+ *
+ * @pre Bus initialized, CRC override disabled
+ * @post 1 device found with correct ROM
+ *
+ * @see rx_bus_onewire_search() Function under test
+ */
+void test_rx_bus_onewire_search_single_device_crc_valid(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_crc8_set_override(false);
+  mock_gpio_set_read_sequence(s_test_pin, s_seq_single_search, k_test_single_search_len);
+
+  uint8_t  roms[k_test_max_search_devices * k_test_rom_bytes];
+  uint32_t num_devices = 0;
+
+  err = rx_bus_onewire_search(&s_test_manager,
+                              s_test_bus_name,
+                              roms,
+                              k_test_max_search_devices,
+                              &num_devices);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(1, num_devices);
+
+  /* Verify discovered ROM */
+  TEST_ASSERT_EQUAL_HEX8(k_test_crc_rom_a_family, roms[0]);
+  TEST_ASSERT_EQUAL_HEX8(k_test_crc_rom_a_byte7, roms[k_test_rom_bytes - 1]);
+}
+
+/**
+ * @brief Test search with CRC mismatch on discovered ROM
+ *
+ * @details
+ * Enables CRC override to force a bad CRC result during search.
+ * The search algorithm calls rx_crc8_maxim() on the discovered ROM,
+ * and when the result doesn't match ROM byte 7, it returns
+ * k_rx_err_crc_mismatch.
+ *
+ * @pre Bus initialized, CRC override enabled
+ * @post k_rx_err_crc_mismatch returned
+ * @post num_devices = 0 (search failed before completing)
+ *
+ * @see rx_bus_onewire_search() Function under test
+ */
+void test_rx_bus_onewire_search_crc_mismatch(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_crc8_set_override(true);
+  mock_crc8_set_return_value(k_test_crc_bad_value);
+  mock_gpio_set_read_sequence(s_test_pin, s_seq_single_search, k_test_single_search_len);
+
+  uint8_t  roms[k_test_max_search_devices * k_test_rom_bytes];
+  uint32_t num_devices = 0;
+
+  err = rx_bus_onewire_search(&s_test_manager,
+                              s_test_bus_name,
+                              roms,
+                              k_test_max_search_devices,
+                              &num_devices);
+  TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
+  TEST_ASSERT_EQUAL(0, num_devices);
+}
+
+/** @} */ /* end of test_onewire_crc */
+
+/* =============================================================================
+ * Multi-Device ROM Search Test
+ * =============================================================================
+ */
+
+/**
+ * @defgroup test_onewire_multi_search Multi-Device ROM Search Tests
+ * @brief Tests for ROM search with multiple devices on the bus
+ *
+ * @details
+ * Validates the binary tree search algorithm with multiple simulated devices.
+ * Uses pre-computed GPIO read sequences that model the wired-AND bus behavior:
+ * - When devices agree on a bit: (bit, !bit)
+ * - When devices disagree: (0, 0) — discrepancy
+ * - After direction is written, non-matching devices go idle
+ *
+ * The search algorithm navigates the binary tree by:
+ * 1. Taking direction=0 at new discrepancy points
+ * 2. Tracking last_discrepancy for backtracking
+ * 3. On subsequent iterations, taking direction=1 at last_discrepancy
+ *
+ * @{
+ */
+
+/**
+ * @brief Test search discovers two devices with different ROMs
+ *
+ * @details
+ * Simulates two DS18B20 devices that differ at byte 1 bit 0:
+ * - Device A: {0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1E}
+ * - Device B: {0x28, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29}
+ *
+ * The GPIO read sequence models the wired-AND bus behavior across two
+ * search iterations. Iteration 1 discovers Device A (takes 0 at the
+ * discrepancy), iteration 2 discovers Device B (takes 1 at the
+ * discrepancy, since last_discrepancy points there).
+ *
+ * @pre Bus initialized, CRC override disabled
+ * @post 2 devices found
+ * @post First ROM matches Device A
+ * @post Second ROM matches Device B
+ *
+ * @see rx_bus_onewire_search() Function under test
+ */
+void test_rx_bus_onewire_search_two_devices(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_crc8_set_override(false);
+  mock_gpio_set_read_sequence(s_test_pin, s_seq_two_device, k_test_two_device_seq_len);
+
+  uint8_t  roms[k_test_max_search_devices * k_test_rom_bytes];
+  uint32_t num_devices = 0;
+
+  err = rx_bus_onewire_search(&s_test_manager,
+                              s_test_bus_name,
+                              roms,
+                              k_test_max_search_devices,
+                              &num_devices);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_test_two_device_expected, num_devices);
+
+  /* Verify Device A (first found: direction=0 at discrepancy) */
+  const uint8_t expected_rom_a[k_test_rom_bytes] = {
+    k_test_crc_rom_a_family, k_test_crc_rom_byte_zero, k_test_crc_rom_byte_zero,
+    k_test_crc_rom_byte_zero, k_test_crc_rom_byte_zero, k_test_crc_rom_byte_zero,
+    k_test_crc_rom_byte_zero, k_test_crc_rom_a_byte7};
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_rom_a, &roms[0], k_test_rom_bytes);
+
+  /* Verify Device B (second found: direction=1 at discrepancy) */
+  const uint8_t expected_rom_b[k_test_rom_bytes] = {
+    k_test_crc_rom_a_family, k_test_crc_rom_b_byte1, k_test_crc_rom_byte_zero,
+    k_test_crc_rom_byte_zero, k_test_crc_rom_byte_zero, k_test_crc_rom_byte_zero,
+    k_test_crc_rom_byte_zero, k_test_crc_rom_b_byte7};
+  TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_rom_b, &roms[k_test_rom_bytes], k_test_rom_bytes);
+}
+
+/** @} */ /* end of test_onewire_multi_search */
+
+/* =============================================================================
+ * Timing Constants and Bus State Tests
+ * =============================================================================
+ */
+
+/**
+ * @defgroup test_onewire_timing Timing Constants and Parasitic Power Tests
+ * @brief Tests for protocol timing and bus state verification
+ *
+ * @details
+ * Validates:
+ * 1. OneWire timing constants match Dallas/Maxim specification
+ * 2. Bus is released (input/high-Z) after operations (required for
+ *    parasitic power devices that charge from the bus line)
+ * 3. Overdrive mode constants are defined (standard speed only in v1)
+ *
+ * **Parasitic Power:**
+ * Devices like DS18B20 can operate without a dedicated VDD pin by
+ * drawing power from the data line (DQ). This requires the bus to be
+ * released HIGH between transactions so the external pull-up drives
+ * the line to VDD, charging the device's internal capacitor.
+ *
+ * @{
+ */
+
+/**
+ * @brief Verify OneWire timing constants match specification
+ *
+ * @details
+ * Validates all timing parameters against Dallas/Maxim 1-Wire
+ * specification (Application Note AN126):
+ * - Reset pulse: 480 µs minimum
+ * - Presence wait: 60-75 µs (we use 70)
+ * - Write-1 LOW: 6-15 µs (we use 10)
+ * - Write-0 LOW: 60 µs minimum
+ * - Read init LOW: 1-15 µs (we use 6)
+ * - Read sample: within 15 µs (we use 9)
+ *
+ * @pre None (tests compile-time constants)
+ * @post All timing values verified within specification
+ *
+ * @see onewire_timing_us_t Timing constants under test
+ */
+void test_rx_bus_onewire_timing_constants(void)
+{
+  /* Reset timing */
+  TEST_ASSERT_GREATER_OR_EQUAL(480, k_onewire_reset_pulse_us);
+  TEST_ASSERT_TRUE(k_onewire_presence_wait_us >= 60 && k_onewire_presence_wait_us <= 75);
+  TEST_ASSERT_GREATER_OR_EQUAL(60, k_onewire_presence_timeout_us);
+
+  /* Write-1 timing: LOW pulse 6-15µs */
+  TEST_ASSERT_TRUE(k_onewire_write_1_low_us >= 6 && k_onewire_write_1_low_us <= 15);
+
+  /* Write-0 timing: LOW pulse >= 60µs */
+  TEST_ASSERT_GREATER_OR_EQUAL(60, k_onewire_write_0_low_us);
+
+  /* Read timing: init LOW 1-15µs, sample within 15µs of slot start */
+  TEST_ASSERT_TRUE(k_onewire_read_init_us >= 1 && k_onewire_read_init_us <= 15);
+  TEST_ASSERT_TRUE(k_onewire_read_sample_us <= 15);
+
+  /* Total slot: init + recovery should be >= 60µs */
+  TEST_ASSERT_GREATER_OR_EQUAL(60, k_onewire_slot_duration_us);
+
+  /* Recovery time: >= 1µs per spec */
+  TEST_ASSERT_GREATER_OR_EQUAL(1, k_onewire_recovery_us);
+}
+
+/**
+ * @brief Verify bus is released (input) after write operations
+ *
+ * @details
+ * After a write-bit or write-byte, the bus should be in input mode
+ * (released high via external pullup). This is critical for parasitic
+ * power devices that need the bus HIGH to charge their internal capacitor.
+ *
+ * @pre Bus initialized
+ * @post GPIO pin is configured as input (not driving)
+ *
+ * @see rx_bus_onewire_write_bit() Function under test
+ * @see rx_bus_onewire_write_byte() Function under test
+ */
+void test_rx_bus_onewire_bus_released_after_write(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Write a bit: bus should be released after */
+  err = rx_bus_onewire_write_bit(&s_test_manager, s_test_bus_name, true);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(mock_gpio_is_output(s_test_pin));
+
+  /* Write another bit (0): bus should still be released */
+  err = rx_bus_onewire_write_bit(&s_test_manager, s_test_bus_name, false);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(mock_gpio_is_output(s_test_pin));
+
+  /* Write a byte: bus should be released after */
+  err = rx_bus_onewire_write_byte(&s_test_manager, s_test_bus_name, 0xAA);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(mock_gpio_is_output(s_test_pin));
+}
+
+/**
+ * @brief Verify bus is released (input) after read operations
+ *
+ * @details
+ * After a read-bit or read-byte, the bus should be in input mode.
+ * The read slot ends with the controller releasing the bus, and the
+ * recovery period ensures the bus returns to idle (high via pullup).
+ *
+ * @pre Bus initialized
+ * @post GPIO pin is configured as input (not driving)
+ *
+ * @see rx_bus_onewire_read_bit() Function under test
+ * @see rx_bus_onewire_read_byte() Function under test
+ */
+void test_rx_bus_onewire_bus_released_after_read(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Read a bit: bus should be released after */
+  bool bit = false;
+  err      = rx_bus_onewire_read_bit(&s_test_manager, s_test_bus_name, &bit);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(mock_gpio_is_output(s_test_pin));
+
+  /* Read a byte: bus should be released after */
+  uint8_t byte = 0;
+  err          = rx_bus_onewire_read_byte(&s_test_manager, s_test_bus_name, &byte);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(mock_gpio_is_output(s_test_pin));
+}
+
+/**
+ * @brief Verify bus is released after reset/presence detection
+ *
+ * @details
+ * After a reset pulse and presence detection, the bus should return
+ * to input mode. The reset sequence ends with a recovery period where
+ * the bus must be HIGH for parasitic power charging.
+ *
+ * @pre Bus initialized
+ * @post GPIO pin is configured as input (not driving)
+ *
+ * @see rx_bus_onewire_reset() Function under test
+ */
+void test_rx_bus_onewire_bus_released_after_reset(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Simulate device present (line goes low during presence) */
+  mock_gpio_set_read_value(s_test_pin, false);
+
+  bool presence = false;
+  err           = rx_bus_onewire_reset(&s_test_manager, s_test_bus_name, &presence);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(presence);
+
+  /* After reset, bus should be in input mode (released for pullup) */
+  TEST_ASSERT_FALSE(mock_gpio_is_output(s_test_pin));
+}
+
+/** @} */ /* end of test_onewire_timing */
 
 /* =============================================================================
  * Test Runner
@@ -2255,8 +2881,11 @@ void test_rx_bus_onewire_read_bit_gpio_error(void)
  * 8. Read ROM tests (4 tests)
  * 9. ROM Search tests (6 tests)
  * 10. Error injection tests (3 tests)
+ * 11. CRC validation tests (5 tests)
+ * 12. Multi-device search tests (1 test)
+ * 13. Timing and parasitic power tests (4 tests)
  *
- * **Total:** 56 tests
+ * **Total:** 66 tests
  *
  * **Test isolation:**
  * - setUp() called before each test
@@ -2353,6 +2982,22 @@ int main(void)
   RUN_TEST(test_rx_bus_onewire_reset_gpio_read_error);
   RUN_TEST(test_rx_bus_onewire_write_bit_gpio_error);
   RUN_TEST(test_rx_bus_onewire_read_bit_gpio_error);
+
+  /* CRC Validation Tests */
+  RUN_TEST(test_rx_bus_onewire_read_rom_crc_valid);
+  RUN_TEST(test_rx_bus_onewire_read_rom_crc_valid_device_c);
+  RUN_TEST(test_rx_bus_onewire_read_rom_crc_mismatch);
+  RUN_TEST(test_rx_bus_onewire_search_single_device_crc_valid);
+  RUN_TEST(test_rx_bus_onewire_search_crc_mismatch);
+
+  /* Multi-Device Search Tests */
+  RUN_TEST(test_rx_bus_onewire_search_two_devices);
+
+  /* Timing and Parasitic Power Tests */
+  RUN_TEST(test_rx_bus_onewire_timing_constants);
+  RUN_TEST(test_rx_bus_onewire_bus_released_after_write);
+  RUN_TEST(test_rx_bus_onewire_bus_released_after_read);
+  RUN_TEST(test_rx_bus_onewire_bus_released_after_reset);
 
   return UNITY_END();
 }

@@ -1167,23 +1167,20 @@ void test_encoded_size_calculation(void)
 
 void test_frame_type_valid(void)
 {
-  enum : uint8_t { k_invalid_type_gap = 0x02, k_invalid_type_mid = 0x15, k_invalid_type_high = 0x80 };
-  /* Control/heartbeat types (0x00-0x01) */
-  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_ping));
-  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_pong));
-  /* Gap between control and data types */
-  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_gap));
-  /* Data/command types (0x10-0x13) */
+  enum : uint8_t { k_invalid_type_zero = 0, k_invalid_type_above = 9, k_invalid_type_high = 0x80 };
+  /* All valid frame types (1-8, contiguous range) */
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_command));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_response));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_ack));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_nack));
-  /* Invalid types */
-  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_mid));
-  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_high));
-  /* Session management types (0xFE-0xFF) */
-  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_reset_ack));
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_ping));
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_pong));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_reset));
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_reset_ack));
+  /* Invalid types: below range, above range, far above range */
+  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_zero));
+  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_above));
+  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_high));
 }
 
 /* =============================================================================
@@ -1664,7 +1661,7 @@ typedef enum : uint8_t {
 
 /**
  * Vector 1: PING (seq=0, empty payload)
- * Go CRC-32 = 0x9B3FAEEB
+ * CRC-32 = 0xE6485AAE
  */
 void test_cross_compat_ping_seq0_empty(void)
 {
@@ -1672,9 +1669,9 @@ void test_cross_compat_ping_seq0_empty(void)
     0x55, 0xAA,                   /* SYNC */
     0x00, 0x00,                   /* SEQ=0 */
     0x00, 0x00,                   /* LEN=0 */
-    0x00,                         /* TYPE=PING */
+    0x05,                         /* TYPE=PING (5) */
     0x00,                         /* FLAGS=none */
-    0xEB, 0xAE, 0x3F, 0x9B       /* CRC-32 LE = 0x9B3FAEEB */
+    0xAE, 0x5A, 0x48, 0xE6       /* CRC-32 LE = 0xE6485AAE */
   };
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
@@ -1695,7 +1692,7 @@ void test_cross_compat_ping_seq0_empty(void)
 
 /**
  * Vector 2: PONG (seq=0, 4-byte counter=42 big-endian)
- * Go CRC-32 = 0x287737DF
+ * CRC-32 = 0x35720767
  */
 void test_cross_compat_pong_seq0_counter42(void)
 {
@@ -1703,10 +1700,10 @@ void test_cross_compat_pong_seq0_counter42(void)
     0x55, 0xAA,                   /* SYNC */
     0x00, 0x00,                   /* SEQ=0 */
     0x00, 0x04,                   /* LEN=4 */
-    0x01,                         /* TYPE=PONG */
+    0x06,                         /* TYPE=PONG (6) */
     0x00,                         /* FLAGS=none */
     0x00, 0x00, 0x00, 0x2A,      /* PAYLOAD: counter=42 BE */
-    0xDF, 0x37, 0x77, 0x28        /* CRC-32 LE = 0x287737DF */
+    0x67, 0x07, 0x72, 0x35        /* CRC-32 LE = 0x35720767 */
   };
   uint8_t    pong_payload[k_xc_pong_payload_len] = {0x00, 0x00, 0x00, 0x2A};
   rx_frame_t frame;
@@ -1731,7 +1728,7 @@ void test_cross_compat_pong_seq0_counter42(void)
 
 /**
  * Vector 3: COMMAND (seq=1, payload="TEST", FLAGS=REQUIRES_ACK)
- * Go CRC-32 = 0xDEF35E60
+ * CRC-32 = 0x16798F5E
  */
 void test_cross_compat_command_seq1_test(void)
 {
@@ -1739,10 +1736,10 @@ void test_cross_compat_command_seq1_test(void)
     0x55, 0xAA,                   /* SYNC */
     0x00, 0x01,                   /* SEQ=1 */
     0x00, 0x04,                   /* LEN=4 */
-    0x10,                         /* TYPE=COMMAND */
+    0x01,                         /* TYPE=COMMAND (1) */
     0x01,                         /* FLAGS=REQUIRES_ACK */
     0x54, 0x45, 0x53, 0x54,      /* PAYLOAD="TEST" */
-    0x60, 0x5E, 0xF3, 0xDE       /* CRC-32 LE = 0xDEF35E60 */
+    0x5E, 0x8F, 0x79, 0x16       /* CRC-32 LE = 0x16798F5E */
   };
   rx_frame_t frame  = {0};
   uint8_t    buffer[k_test_small_buffer];
@@ -1769,7 +1766,7 @@ void test_cross_compat_command_seq1_test(void)
 
 /**
  * Vector 4: RESPONSE (seq=1, payload="OK")
- * Go CRC-32 = 0x6FC08EF4
+ * CRC-32 = 0x2D6C7685
  */
 void test_cross_compat_response_seq1_ok(void)
 {
@@ -1777,10 +1774,10 @@ void test_cross_compat_response_seq1_ok(void)
     0x55, 0xAA,                   /* SYNC */
     0x00, 0x01,                   /* SEQ=1 */
     0x00, 0x02,                   /* LEN=2 */
-    0x11,                         /* TYPE=RESPONSE */
+    0x02,                         /* TYPE=RESPONSE (2) */
     0x00,                         /* FLAGS=none */
     0x4F, 0x4B,                   /* PAYLOAD="OK" */
-    0xF4, 0x8E, 0xC0, 0x6F       /* CRC-32 LE = 0x6FC08EF4 */
+    0x85, 0x76, 0x6C, 0x2D       /* CRC-32 LE = 0x2D6C7685 */
   };
   rx_frame_t frame  = {0};
   uint8_t    buffer[k_test_small_buffer];
@@ -1806,7 +1803,7 @@ void test_cross_compat_response_seq1_ok(void)
 
 /**
  * Vector 5: ACK (seq=1, empty payload)
- * Go CRC-32 = 0xDEABF788
+ * CRC-32 = 0x8D72D498
  */
 void test_cross_compat_ack_seq1_empty(void)
 {
@@ -1814,9 +1811,9 @@ void test_cross_compat_ack_seq1_empty(void)
     0x55, 0xAA,                   /* SYNC */
     0x00, 0x01,                   /* SEQ=1 */
     0x00, 0x00,                   /* LEN=0 */
-    0x12,                         /* TYPE=ACK */
+    0x03,                         /* TYPE=ACK (3) */
     0x00,                         /* FLAGS=none */
-    0x88, 0xF7, 0xAB, 0xDE       /* CRC-32 LE = 0xDEABF788 */
+    0x98, 0xD4, 0x72, 0x8D       /* CRC-32 LE = 0x8D72D498 */
   };
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
@@ -1837,7 +1834,7 @@ void test_cross_compat_ack_seq1_empty(void)
 
 /**
  * Vector 6: NACK (seq=1, empty payload)
- * Go CRC-32 = 0xC7B0C6C9
+ * CRC-32 = 0xC233425F
  */
 void test_cross_compat_nack_seq1_empty(void)
 {
@@ -1845,9 +1842,9 @@ void test_cross_compat_nack_seq1_empty(void)
     0x55, 0xAA,                   /* SYNC */
     0x00, 0x01,                   /* SEQ=1 */
     0x00, 0x00,                   /* LEN=0 */
-    0x13,                         /* TYPE=NACK */
+    0x04,                         /* TYPE=NACK (4) */
     0x00,                         /* FLAGS=none */
-    0xC9, 0xC6, 0xB0, 0xC7       /* CRC-32 LE = 0xC7B0C6C9 */
+    0x5F, 0x42, 0x33, 0xC2       /* CRC-32 LE = 0xC233425F */
   };
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
@@ -1868,7 +1865,7 @@ void test_cross_compat_nack_seq1_empty(void)
 
 /**
  * Vector 7: RESET (seq=0, empty payload)
- * Go CRC-32 = 0x081B5399
+ * CRC-32 = 0xD47E382C
  */
 void test_cross_compat_reset_seq0_empty(void)
 {
@@ -1876,9 +1873,9 @@ void test_cross_compat_reset_seq0_empty(void)
     0x55, 0xAA,                   /* SYNC */
     0x00, 0x00,                   /* SEQ=0 */
     0x00, 0x00,                   /* LEN=0 */
-    0xFF,                         /* TYPE=RESET */
+    0x07,                         /* TYPE=RESET (7) */
     0x00,                         /* FLAGS=none */
-    0x99, 0x53, 0x1B, 0x08       /* CRC-32 LE = 0x081B5399 */
+    0x2C, 0x38, 0x7E, 0xD4       /* CRC-32 LE = 0xD47E382C */
   };
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
@@ -1899,7 +1896,7 @@ void test_cross_compat_reset_seq0_empty(void)
 
 /**
  * Vector 8: RESET_ACK (seq=0, empty payload)
- * Go CRC-32 = 0x110062D8
+ * CRC-32 = 0x53E624E3
  */
 void test_cross_compat_reset_ack_seq0_empty(void)
 {
@@ -1907,9 +1904,9 @@ void test_cross_compat_reset_ack_seq0_empty(void)
     0x55, 0xAA,                   /* SYNC */
     0x00, 0x00,                   /* SEQ=0 */
     0x00, 0x00,                   /* LEN=0 */
-    0xFE,                         /* TYPE=RESET_ACK */
+    0x08,                         /* TYPE=RESET_ACK (8) */
     0x00,                         /* FLAGS=none */
-    0xD8, 0x62, 0x00, 0x11       /* CRC-32 LE = 0x110062D8 */
+    0xE3, 0x24, 0xE6, 0x53       /* CRC-32 LE = 0x53E624E3 */
   };
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
@@ -1929,25 +1926,25 @@ void test_cross_compat_reset_ack_seq0_empty(void)
 }
 
 /**
- * Decode-only: verify C decoder accepts Go-encoded wire bytes directly.
+ * Decode-only: verify C decoder accepts pre-computed wire bytes directly.
  * Feeds the hardcoded wire vectors into rx_frame_decode without any C encoding.
  */
 void test_cross_compat_decode_go_wire_bytes(void)
 {
-  /* PING wire bytes from Go */
+  /* PING wire bytes (type=5) */
   static const uint8_t ping_wire[k_xc_ping_wire_len] = {
-    0x55, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0xEB, 0xAE, 0x3F, 0x9B
+    0x55, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00,
+    0xAE, 0x5A, 0x48, 0xE6
   };
-  /* COMMAND wire bytes from Go */
+  /* COMMAND wire bytes (type=1, flags=REQUIRES_ACK) */
   static const uint8_t cmd_wire[k_xc_command_wire_len] = {
-    0x55, 0xAA, 0x00, 0x01, 0x00, 0x04, 0x10, 0x01,
-    0x54, 0x45, 0x53, 0x54, 0x60, 0x5E, 0xF3, 0xDE
+    0x55, 0xAA, 0x00, 0x01, 0x00, 0x04, 0x01, 0x01,
+    0x54, 0x45, 0x53, 0x54, 0x5E, 0x8F, 0x79, 0x16
   };
-  /* RESET wire bytes from Go */
+  /* RESET wire bytes (type=7) */
   static const uint8_t reset_wire[k_xc_reset_wire_len] = {
-    0x55, 0xAA, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00,
-    0x99, 0x53, 0x1B, 0x08
+    0x55, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00,
+    0x2C, 0x38, 0x7E, 0xD4
   };
 
   rx_frame_t decoded;

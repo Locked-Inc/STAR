@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Controller/Peripheral** - NOT master/slave (I2C, SPI, 1-Wire)
 - **COPI/CIPO** - NOT MOSI/MISO (Controller Out Peripheral In / Controller In Peripheral Out)
+- **CS (Chip Select)** - NOT SS (Slave Select). Use "CS" for SPI chip select signals and "Chip Select" in documentation.
 - **Primary/Main** - NOT master (for configuration structures)
 
 Note: External APIs may still use legacy terminology internally. Map these to our terminology in comments and documentation.
@@ -377,15 +378,6 @@ This project enforces **MAXIMUM documentation coverage** with zero tolerance for
 
 **Rule:** If a Doxygen tag is applicable to a code element, it MUST be used. Do not omit tags.
 
-### Complete Documentation Reference
-
-See **[DOXYGEN_ROADMAP.md](DOXYGEN_ROADMAP.md)** for:
-- Complete Doxygen tag reference (25 subsections, 100+ tags)
-- Exhaustive templates for every code element type
-- State machine documentation with PlantUML/Graphviz/MSC
-- Documentation enforcement checklist (28 items)
-- File-by-file documentation tracking (238 files)
-
 ### Required Tags by Code Element
 
 **Functions - Minimum Required Tags:**
@@ -565,7 +557,7 @@ typedef enum : uint8_t {
 
 Before marking any file as documented:
 
-1. **Verify ALL tags present** - Use checklist in DOXYGEN_ROADMAP.md
+1. **Verify ALL tags present** - Use the tag lists above
 2. **Run Doxygen** - Check for warnings: `doxygen Doxyfile 2>&1 | grep warning`
 3. **Review generated docs** - Ensure diagrams render, cross-references work
 4. **CodeRabbit review** - Run `coderabbit review --plain` to check documentation quality
@@ -591,13 +583,8 @@ grep -i "warning" doxygen_warnings.log
 
 ### Documentation Templates
 
-See [DOXYGEN_ROADMAP.md](DOXYGEN_ROADMAP.md) for complete templates:
-- Template 1: Functions (~40+ tags)
-- Template 2: Structs (exhaustive member docs)
-- Template 3: Enums (with state diagrams)
-- Template 4: Variables (global, static, #defines)
-- Template 5: Typedefs (especially callbacks)
-- Template 6: Macros (with expansion details)
+See the documentation examples above for complete templates covering functions, structs,
+enums, variables, typedefs, and macros.
 
 ## Code Style
 
@@ -1300,85 +1287,12 @@ The `proto.yml` workflow runs on pushes to `star-proto/`:
 
 **Do not create summary documents, integration summaries, or completion reports unless explicitly requested by the user.** This includes files like `INTEGRATION_SUMMARY.md`, `COMPLETION_REPORT.md`, test scripts, or similar documentation. Only create these if the user specifically asks for them.
 
-## RX72N Peripheral Implementation Tracking
-
-**CRITICAL:** The STAR project tracks complete and correct implementation of all RX72N peripherals against the official Renesas User's Manual. These documents ensure zero mistakes in register addresses, initialization sequences, and peripheral configuration.
-
-### 📚 START HERE: [RX72N_VERIFICATION_SUMMARY.md](RX72N_VERIFICATION_SUMMARY.md)
-
-**Quick reference guide** for the entire RX72N verification system. Read this first to understand how all the documents work together.
-
-### Implementation Documentation
-
-| Document | Purpose | When to Use |
-|----------|---------|-------------|
-| **[RX72N_VERIFICATION_SUMMARY.md](RX72N_VERIFICATION_SUMMARY.md)** | **Quick reference** - Overview, workflows, automation | **START HERE** - explains entire system |
-| **[RX72N_ROADMAP.md](RX72N_ROADMAP.md)** | Status tracking for all 63 manual chapters | Check implementation status, priorities |
-| **[RX72N_FEATURE_CHECKLIST.md](star-rx72n-firmware/RX72N_FEATURE_CHECKLIST.md)** | Detailed feature verification per chapter | **Verify every feature** the manual says MCU can do |
-| **[RX72N_IMPLEMENTATION_PLAN.md](RX72N_IMPLEMENTATION_PLAN.md)** | Implementation guide with templates | Step-by-step instructions for peripherals |
-| **[RX72N_IMPLEMENTATION_PROMPT.md](RX72N_IMPLEMENTATION_PROMPT.md)** | Ready-to-use prompts for Claude | Copy-paste prompts to guide Claude |
-| **`star-rx72n-firmware/RX72N_Manual_Chapters/`** | Official Renesas Manual (63 chapters, 3240 pages) | **AUTHORITATIVE SOURCE** for all specs |
-
-### Peripheral Implementation Workflow
-
-When working on RX72N peripherals:
-
-1. **Check Status**: Look up peripheral in [RX72N_ROADMAP.md](RX72N_ROADMAP.md)
-2. **Read Manual**: Review corresponding chapter in `RX72N_Manual_Chapters/ChXX_*.txt`
-3. **Review Features**: Check [RX72N_FEATURE_CHECKLIST.md](star-rx72n-firmware/RX72N_FEATURE_CHECKLIST.md) for detailed feature list
-4. **Follow Plan**: Use implementation steps from [RX72N_IMPLEMENTATION_PLAN.md](RX72N_IMPLEMENTATION_PLAN.md)
-5. **Use Prompts**: Reference [RX72N_IMPLEMENTATION_PROMPT.md](RX72N_IMPLEMENTATION_PROMPT.md) for specific tasks
-6. **Verify**: Complete all verification checklist items from FEATURE_CHECKLIST.md
-7. **Update Status**: Mark complete in [RX72N_ROADMAP.md](RX72N_ROADMAP.md)
-
-### Status Legend
-
-| Status | Symbol | Meaning |
-|--------|--------|---------|
-| VERIFIED | ✅ | Fully implemented, tested, verified correct against manual |
-| COMPLETE | 🟢 | Implemented but needs verification |
-| PARTIAL | 🟡 | Some functionality done, needs completion |
-| IN PROGRESS | 🔵 | Currently being worked on |
-| NOT STARTED | ⚪ | Not yet implemented |
-| NOT NEEDED | ⚫ | Not required for STAR project |
-
-### Critical Priority Items
-
-Before working on new features, fix these critical peripheral issues:
-
-1. **USB CDC (Ch40)** - Fix bulk transfer reliability (blocks debugging)
-2. **Clock Generation (Ch09)** - Verify all register addresses and frequencies
-3. **Hardware CRC (Ch46)** - Implement hardware CRC (performance critical)
-
-See [RX72N_ROADMAP.md](RX72N_ROADMAP.md) "Next Steps" section for full priority list.
-
-### Verification Requirements
-
-Before marking any peripheral as ✅ VERIFIED:
-
-- [ ] All register addresses match Ch04 memory map **EXACTLY**
-- [ ] All register offsets verified against manual tables
-- [ ] All bit field definitions correct
-- [ ] Module initialization tested on hardware
-- [ ] Unit tests pass (error cases + success cases)
-- [ ] Complete Doxygen documentation (see [DOXYGEN_ROADMAP.md](DOXYGEN_ROADMAP.md))
-- [ ] NASA Power of 10 compliance verified
-- [ ] No magic numbers (all constants in typed enums)
-- [ ] Code review passed (`coderabbit review --plain`)
-
-**NEVER mark a peripheral as VERIFIED unless ALL checklist items pass.**
-
----
-
 ## Key Documentation
 
 **IMPORTANT:** Always reference the LaTeX source files (`.tex`) in `docs/sections/` for accurate technical information, NOT the compiled PDF.
 
 - `star-rx72n-firmware/CLAUDE.md` - Detailed RX72N firmware guide
 - `star-gateway/CLAUDE.md` - Gateway service architecture and build guide
-- **[RX72N_ROADMAP.md](RX72N_ROADMAP.md)** - RX72N peripheral implementation status (63 chapters tracked)
-- **[RX72N_IMPLEMENTATION_PLAN.md](RX72N_IMPLEMENTATION_PLAN.md)** - Peripheral implementation guide with templates
-- **[RX72N_IMPLEMENTATION_PROMPT.md](RX72N_IMPLEMENTATION_PROMPT.md)** - Main prompt for peripheral work
 - `docs/sections/*.tex` - System documentation source files (hardware pinout, protocols, style guides)
   - `03_hardware_pinout.tex` - Complete GPIO pin assignments and peripheral connections
   - `01_nanopb_protocol.tex` - SPI communication protocol specification

@@ -53,7 +53,7 @@
  *   │ 0x0008C140 │  P00PFS - PJ5PFS (Pin Function Select)       │
  *   └────────────┴──────────────────────────────────────────────┘
  *
- *   STAR Project Pin Assignments (100-pin LFQFP):
+ *   STAR Project Pin Assignments (144-pin LFQFP):
  *   ┌──────────┬─────────┬──────┬────────────────────────────────┐
  *   │  Pin     │  Port   │ PSEL │  Function                      │
  *   ├──────────┼─────────┼──────┼────────────────────────────────┤
@@ -87,7 +87,7 @@
  * | 0x02 | MTU3a clock inputs (MTCLKA-D) |
  * | 0x07 | GPTW outputs (GTIOCnA/B) |
  * | 0x0A | SCI (TXD, RXD, SCK, CTS) |
- * | 0x0D | RSPI (MOSI, MISO, RSPCK, SSL) |
+ * | 0x0D | RSPI (COPI, CIPO, RSPCK, SSL) |
  * | 0x0F | RIIC (SDA, SCL) |
  *
  * @par Example: Configure PB7 as SCI9 TXD
@@ -228,9 +228,9 @@ typedef struct {
  * - 0x0008C11F: PWPR (Write Protect Register)
  * - 0x0008C140: PFS registers start (P00PFS)
  *
- * Package Support (100-pin LFQFP R5F572NNHGFP#30):
- * - Available ports: 0-5 (partial), A-E (full), J (partial: PJ3, PJ5)
- * - Not available on 100-pin: 6-9, F, G, H
+ * Package Support (144-pin LFQFP R5F572NNHxFB):
+ * - Available ports: 0-9 (partial), A-E (full), F (partial), J (partial: PJ3, PJ5)
+ * - Not available on 144-pin: G, H
  * - Note: All ports are defined for compatibility with larger packages
  *
  * Complete Memory Layout:

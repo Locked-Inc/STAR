@@ -81,7 +81,7 @@
  * - Suitable for command/response and moderate-bandwidth telemetry
  *
  * **SPI Channel (k_comm_channel_spi):**
- * - Dedicated hardware connection (4-6 wires: MOSI, MISO, SCK, CS, optional handshake)
+ * - Dedicated hardware connection (4-6 wires: COPI, CIPO, SCK, CS, optional handshake)
  * - Configurable speed (typically 10-20 Mbps)
  * - Lower latency than USB (no protocol overhead)
  * - Suitable for high-frequency control loops and real-time data
@@ -146,7 +146,7 @@
  * |----------|-------------|-------|
  * | **USB Peripheral** | 1 instance (full-speed) | CDC class with 2 ports (protocol + debug) |
  * | **RSPI Peripheral** | 1 channel (optional) | SPI controller mode, 10-20 Mbps |
- * | **GPIO** | 4-6 pins (if SPI) | MOSI, MISO, SCK, CS, optional handshake/interrupt |
+ * | **GPIO** | 4-6 pins (if SPI) | COPI, CIPO, SCK, CS, optional handshake/interrupt |
  * | **RAM** | ~2.5 KB per instance | Handle + ASCII buffer (2048 bytes) |
  * | **Flash** | ~4 KB | Code + string constants |
  * | **RTOS Resources** | None | Stateless, no threads/mutexes/semaphores |
@@ -502,8 +502,8 @@ typedef enum : uint8_t {
    * - Reliability: Good (frame protocol includes CRC-32)
    *
    * **Pin Connections:**
-   * - MOSI: RX72N → RPi5 (data out from RX72N)
-   * - MISO: RPi5 → RX72N (data in to RX72N)
+   * - COPI: RX72N → RPi5 (data out from RX72N)
+   * - CIPO: RPi5 → RX72N (data in to RX72N)
    * - SCK: Clock (either device can be controller)
    * - CS: Chip select (active low)
    * - Optional: Handshake/IRQ pins for flow control

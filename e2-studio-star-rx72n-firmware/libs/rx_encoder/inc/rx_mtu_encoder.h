@@ -115,8 +115,8 @@
  * | Requirement | Value |
  * |-------------|-------|
  * | CPU | Renesas RX72N |
- * | Peripheral | MTU (Multi-Function Timer) channels 1-4 |
- * | Input Pins | MTCLKA, MTCLKB per channel (8 pins total) |
+ * | Peripheral | MTU (Multi-Function Timer) channels 1-2 |
+ * | Input Pins | MTCLKA/MTCLKB (MTU1), MTCLKC/MTCLKD (MTU2) (4 pins total) |
  * | Input Voltage | 3.3V logic (Hall encoder output) |
  * | Counter Width | 16-bit (0-65535) |
  * | Max Edge Rate | 30 MHz (theoretical), 227 kHz (encoder limit) |
@@ -124,12 +124,10 @@
  *
  * @par MTU Channel Allocation:
  *
- * | Motor | MTU Channel | MTCLKA Pin | MTCLKB Pin | Notes |
- * |-------|-------------|------------|------------|-------|
- * | Motor 0 | MTU1 | P20/MTCLKA | P21/MTCLKB | Front-left |
- * | Motor 1 | MTU2 | P17/MTCLKA | P16/MTCLKB | Front-right |
- * | Motor 2 | MTU3 | PA0/MTCLKA | PA1/MTCLKB | Rear-left |
- * | Motor 3 | MTU4 | PA3/MTCLKA | PA4/MTCLKB | Rear-right |
+ * | Motor | MTU Channel | Phase A Pin | Phase B Pin | Notes |
+ * |-------|-------------|-------------|-------------|-------|
+ * | Motor 0 | MTU1 | P24/MTCLKA (pin 33) | P25/MTCLKB (pin 32) | Front-left |
+ * | Motor 1 | MTU2 | PA1/MTCLKC (pin 96) | PC5/MTCLKD (pin 62) | Front-right |
  *
  * @par Encoder Specifications (341 PPR Hall Effect):
  *
@@ -233,8 +231,8 @@ extern "C" {
  * ## Configuration Guidelines
  *
  * **MTU Channel Selection:**
- * - Use MTU1-MTU4 for encoder inputs (4 motors)
- * - Each MTU channel has dedicated MTCLKA/MTCLKB pins
+ * - Use MTU1-MTU2 for encoder inputs (2 front motors)
+ * - MTU1 uses MTCLKA/MTCLKB, MTU2 uses MTCLKC/MTCLKD
  * - Cannot share MTU channels between encoders
  *
  * **Counts Per Revolution:**
@@ -260,7 +258,7 @@ extern "C" {
  *
  * @invariant counts_per_rev > 0 (zero counts invalid)
  * @invariant counts_per_rev <= 65536 (must fit in 16-bit counter)
- * @invariant channel must be valid MTU channel (MTU1-MTU4)
+ * @invariant channel must be valid MTU channel (MTU1-MTU2)
  *
  * @par Basic Configuration Example:
  * @code{.c}
@@ -326,12 +324,10 @@ typedef struct {
    * phase counting mode. Each channel has dedicated MTCLKA and MTCLKB input
    * pins that must be connected to the encoder's Phase A and Phase B outputs.
    *
-   * Valid values: k_rx_mtu_channel_1 through k_rx_mtu_channel_4
-   * @par Hardware Mapping:
-   * - MTU1: P20(MTCLKA), P21(MTCLKB)
-   * - MTU2: P17(MTCLKA), P16(MTCLKB)
-   * - MTU3: PA0(MTCLKA), PA1(MTCLKB)
-   * - MTU4: PA3(MTCLKA), PA4(MTCLKB)
+   * Valid values: k_rx_mtu_channel_1 or k_rx_mtu_channel_2
+   * @par Hardware Mapping (144-pin LFQFP):
+   * - MTU1: P24(MTCLKA, pin 33), P25(MTCLKB, pin 32)
+   * - MTU2: PA1(MTCLKC, pin 96), PC5(MTCLKD, pin 62)
    * @note Validated by rx_encoder_init(), invalid channel returns k_rx_err_invalid_arg
    */
   rx_mtu_channel_t channel;
@@ -603,7 +599,7 @@ typedef struct {
  *
  * 1. **Validate Parameters:**
  *    - Check config pointer is not nullptr
- *    - Verify MTU channel is valid (MTU1-MTU4)
+ *    - Verify MTU channel is valid (MTU1-MTU2)
  *    - Ensure counts_per_rev > 0 and <= 65536
  *
  * 2. **Configure MTU Pins:**
@@ -646,7 +642,7 @@ typedef struct {
  * @return rx_err_t Error code indicating success or failure
  * @retval k_rx_ok Success, encoder initialized and counting
  * @retval k_rx_err_null_ptr config pointer is nullptr
- * @retval k_rx_err_invalid_arg Invalid MTU channel (not MTU1-MTU4)
+ * @retval k_rx_err_invalid_arg Invalid MTU channel (not MTU1-MTU2)
  * @retval k_rx_err_invalid_arg counts_per_rev is 0 (division by zero)
  * @retval k_rx_err_invalid_arg counts_per_rev > 65536 (counter overflow)
  * @retval k_rx_err_invalid_state MTU peripheral not clocked (MSTPCR disabled)
@@ -886,7 +882,7 @@ typedef struct {
  * - Stack: ~32 bytes (local variables)
  * - No heap allocation
  *
- * @param[in] channel MTU channel to read (MTU1-MTU4)
+ * @param[in] channel MTU channel to read (MTU1-MTU2)
  * - Must be previously initialized via rx_encoder_init()
  * - Invalid channel returns k_rx_err_invalid_arg
  *
@@ -898,7 +894,7 @@ typedef struct {
  * @return rx_err_t Error code indicating success or failure
  * @retval k_rx_ok Success, state updated with current encoder position
  * @retval k_rx_err_null_ptr state pointer is nullptr
- * @retval k_rx_err_invalid_arg Invalid MTU channel (not MTU1-MTU4)
+ * @retval k_rx_err_invalid_arg Invalid MTU channel (not MTU1-MTU2)
  * @retval k_rx_err_invalid_state Encoder not initialized (call rx_encoder_init first)
  * @retval k_rx_err_hardware Hardware read failed (MTU peripheral fault)
  *

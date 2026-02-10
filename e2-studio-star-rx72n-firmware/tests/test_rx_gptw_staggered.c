@@ -606,7 +606,6 @@ void test_staggered_init_success(void)
 {
   rx_gptw_config_t  config;
   rx_err_t          err;
-  uint8_t           i;
   rx_gptw_channel_t ch;
 
   /* Initialize config structure */
@@ -623,7 +622,7 @@ void test_staggered_init_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify all 4 channels are initialized and running */
-  for (i = k_staggered_start_channel; i < k_staggered_channel_count; i++) {
+  for (uint8_t i = k_staggered_start_channel; i < k_staggered_channel_count; i++) {
     ch = (rx_gptw_channel_t)i;
     TEST_ASSERT_TRUE_MESSAGE(mock_gptw_is_initialized(ch), "Channel not initialized");
     TEST_ASSERT_TRUE_MESSAGE(mock_gptw_is_running(ch), "Channel not running");

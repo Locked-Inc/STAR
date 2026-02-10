@@ -99,8 +99,6 @@ static uint8_t s_motor_index = 0;
 
 void mock_drv8243_reset(void)
 {
-  uint8_t i;
-
   /* Reset return values to defaults */
   s_init_return              = k_rx_ok;
   s_deinit_return            = k_rx_ok;
@@ -122,7 +120,7 @@ void mock_drv8243_reset(void)
   s_set_current_limit_count = 0;
 
   /* Reset per-motor state */
-  for (i = 0; i < k_mock_drv8243_max_motors; i++) {
+  for (uint8_t i = 0; i < k_mock_drv8243_max_motors; i++) {
     s_fault_active[i] = false;
     s_current_ma[i]   = 0.0f;
     s_last_speed[i]   = 0.0f;

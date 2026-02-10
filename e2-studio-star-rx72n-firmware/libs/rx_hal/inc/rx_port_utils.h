@@ -20,7 +20,7 @@
  * - **Single source of truth**: Port-to-address mapping centralized here
  * - **Inline functions**: Zero runtime overhead, optimized to direct register access
  * - **Type safety**: Uses C23 typed enums from rx_port_constants.h
- * - **Package-specific**: Only supports ports available on 100-pin LFQFP package
+ * - **Package-specific**: Only supports ports available on 144-pin LFQFP package
  *
  * ## System Architecture Context
  *
@@ -43,8 +43,8 @@
  * | Requirement        | Specification           |
  * |--------------------|-------------------------|
  * | **MCU**            | Renesas RX72N           |
- * | **Package**        | 100-pin LFQFP           |
- * | **Available Ports**| 0-5 (limited), A-E, J  |
+ * | **Package**        | 144-pin LFQFP           |
+ * | **Available Ports**| 0-9 (partial), A-F (partial), J |
  * | **CPU Frequency**  | 240 MHz                 |
  * | **Memory Access**  | Direct register I/O     |
  *
@@ -156,11 +156,13 @@ extern "C" {
  * - Invalid port numbers safely return NULL instead of accessing garbage memory
  *
  * **Package-specific behavior**:
- * Only supports ports physically available on 100-pin LFQFP package:
+ * Only supports ports physically available on 144-pin LFQFP package:
  * - PORT0-5: Limited pins available (not all 8 bits)
+ * - PORT6-9: Partially available on 144-pin (P67, P86/P87, etc.)
  * - PORTA-E: Full 8-bit ports
- * - PORTJ: Limited pins available
- * - Ports 6-9, F-I, K-Q: Not available on 100-pin, will return NULL
+ * - PORTF: Partially available (PF5 on 144-pin)
+ * - PORTJ: Limited pins available (PJ3, PJ5)
+ * - Ports G-I, K-Q: Not available on 144-pin, will return NULL
  *
  * **Control flow**:
  * @dot
@@ -195,7 +197,7 @@ extern "C" {
  * @return Pointer to PORT register base structure, or nullptr if port invalid
  * @retval Non-NULL Valid port - pointer to volatile rx_port_regs_t structure
  *                  with PDR, PODR, PIDR, PMR, etc. registers
- * @retval NULL     Invalid port number - port not available on 100-pin LFQFP
+ * @retval NULL     Invalid port number - port not available on 144-pin LFQFP
  *                  package, or invalid parameter value
  *
  * @par Return Value Details:
@@ -214,7 +216,7 @@ extern "C" {
  * | k_rx_port_d     | &PORTD registers    | Port D available (PD0-PD7)   |
  * | k_rx_port_e     | &PORTE registers    | Port E available (PE0-PE7)   |
  * | k_rx_port_j     | &PORTJ registers    | Port J available (PJ3, PJ5)  |
- * | Any other value | NULL                | Port not on 100-pin package  |
+ * | Any other value | NULL                | Port not on 144-pin package  |
  *
  * @pre None - function is always safe to call
  * @pre Parameter should use k_rx_port_* constants (not validated at runtime)
@@ -243,9 +245,9 @@ extern "C" {
  *          dereferencing. Failing to validate will cause NULL pointer fault if
  *          invalid port number is passed.
  *
- * @attention **Package-specific**: Only supports 100-pin LFQFP. Porting to
- *            144-pin or 176-pin packages requires adding additional case
- *            statements for ports 6-9, F-I, K-Q.
+ * @attention **Package-specific**: Only supports 144-pin LFQFP. Porting to
+ *            176-pin packages requires adding additional case statements
+ *            for ports G-I, K-Q.
  *
  * @par Example - Basic Usage:
  * @code
@@ -263,10 +265,10 @@ extern "C" {
  * @par Example - Error Handling:
  * @code
  * // Attempt to access unavailable port (returns NULL)
- * volatile rx_port_regs_t* port_f = rx_port_get_base(0x0F);  // Port F
- * if (port_f == nullptr) {
- *     // Handle error - port not available on 100-pin package
- *     rx_log_error("GPIO", "Port F not available on this package");
+ * volatile rx_port_regs_t* port_g = rx_port_get_base(0x10);  // Port G
+ * if (port_g == nullptr) {
+ *     // Handle error - port not available on 144-pin package
+ *     rx_log_error("GPIO", "Port G not available on this package");
  *     return k_rx_err_invalid_arg;
  * }
  * @endcode
@@ -333,6 +335,9 @@ static inline volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
     }
     case k_rx_port_5: {
       return port5();
+    }
+    case k_rx_port_6: {
+      return port6();
     }
     case k_rx_port_a: {
       return porta();

@@ -1163,10 +1163,12 @@ extern volatile uint16_t g_mock_prcr;
  *
  * @since 1.0.0
  */
+#ifndef MOCK_RX_MTU_REGS_H
 static inline volatile uint16_t* prcr_reg(void)
 {
   return &g_mock_prcr;
 }
+#endif /* !MOCK_RX_MTU_REGS_H */
 
 #ifdef __cplusplus
 }

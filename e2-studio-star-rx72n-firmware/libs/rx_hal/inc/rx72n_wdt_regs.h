@@ -130,7 +130,7 @@
  *
  * @see rx72n_iwdt_regs.h Independent Watchdog Timer (production use)
  * @see rx_wdt.h Higher-level WDT API
- * @see rx72n_regs.h Master register include file
+ * @see rx72n_regs.h Main register include file
  *
  * @author STAR Team
  * @date 2026-01-28

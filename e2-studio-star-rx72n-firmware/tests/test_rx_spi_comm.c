@@ -1134,7 +1134,7 @@ void test_spi_comm_set_callbacks_null_handle_fails(void)
 
 void test_spi_comm_set_callbacks_success(void)
 {
-  rx_spi_comm_init(&s_handle, NULL);
+  (void)rx_spi_comm_init(&s_handle, NULL);
   uint32_t ctx_val = 42;
 
   rx_err_t err =
@@ -1171,7 +1171,7 @@ void test_spi_comm_send_pong_not_initialized_fails(void)
 
 void test_spi_comm_send_pong_echoes_payload(void)
 {
-  rx_spi_comm_init(&s_handle, NULL);
+  (void)rx_spi_comm_init(&s_handle, NULL);
   helper_init_rspi_channel(k_test_channel_default);
 
   uint8_t  payload[] = {0xDE, 0xAD, 0xBE, 0xEF};
@@ -1213,7 +1213,7 @@ void test_spi_comm_send_reset_ack_not_initialized_fails(void)
 
 void test_spi_comm_send_reset_ack_success(void)
 {
-  rx_spi_comm_init(&s_handle, NULL);
+  (void)rx_spi_comm_init(&s_handle, NULL);
   helper_init_rspi_channel(k_test_channel_default);
 
   rx_err_t err = rx_spi_comm_send_reset_ack(&s_handle);
@@ -1237,7 +1237,7 @@ void test_spi_comm_send_reset_ack_success(void)
 
 void test_spi_comm_receive_ping_auto_pong(void)
 {
-  rx_spi_comm_init(&s_handle, NULL);
+  (void)rx_spi_comm_init(&s_handle, NULL);
   helper_init_rspi_channel(k_test_channel_default);
 
   /* Create PING frame with 4-byte counter payload */
@@ -1274,7 +1274,7 @@ void test_spi_comm_receive_ping_auto_pong(void)
 
 void test_spi_comm_receive_ping_then_command(void)
 {
-  rx_spi_comm_init(&s_handle, NULL);
+  (void)rx_spi_comm_init(&s_handle, NULL);
   helper_init_rspi_channel(k_test_channel_default);
 
   /* Create PING frame */
@@ -1336,7 +1336,7 @@ void test_spi_comm_receive_ping_then_command(void)
 
 void test_spi_comm_receive_reset_auto_ack(void)
 {
-  rx_spi_comm_init(&s_handle, NULL);
+  (void)rx_spi_comm_init(&s_handle, NULL);
   helper_init_rspi_channel(k_test_channel_default);
 
   /* Set non-zero sequences to verify reset */
@@ -1376,11 +1376,11 @@ void test_spi_comm_receive_reset_auto_ack(void)
 
 void test_spi_comm_receive_ping_callback_invoked(void)
 {
-  rx_spi_comm_init(&s_handle, NULL);
+  (void)rx_spi_comm_init(&s_handle, NULL);
   helper_init_rspi_channel(k_test_channel_default);
 
   uint32_t ctx_value = 42;
-  rx_spi_comm_set_control_callbacks(&s_handle,
+  (void)rx_spi_comm_set_control_callbacks(&s_handle,
                                      test_ping_callback,
                                      test_reset_callback,
                                      &ctx_value);
@@ -1398,7 +1398,7 @@ void test_spi_comm_receive_ping_callback_invoked(void)
   mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
 
   rx_frame_t frame;
-  rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+  (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* Verify ping callback was invoked exactly once */
   TEST_ASSERT_EQUAL_UINT32(1, s_ping_cb_count);
@@ -1410,14 +1410,14 @@ void test_spi_comm_receive_ping_callback_invoked(void)
 
 void test_spi_comm_receive_reset_callback_invoked(void)
 {
-  rx_spi_comm_init(&s_handle, NULL);
+  (void)rx_spi_comm_init(&s_handle, NULL);
   helper_init_rspi_channel(k_test_channel_default);
 
   s_handle.tx_sequence = 50;
   s_handle.rx_sequence = 100;
 
   uint32_t ctx_value = 99;
-  rx_spi_comm_set_control_callbacks(&s_handle,
+  (void)rx_spi_comm_set_control_callbacks(&s_handle,
                                      test_ping_callback,
                                      test_reset_callback,
                                      &ctx_value);
@@ -1429,7 +1429,7 @@ void test_spi_comm_receive_reset_callback_invoked(void)
   mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
 
   rx_frame_t frame;
-  rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+  (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* Verify reset callback was invoked exactly once */
   TEST_ASSERT_EQUAL_UINT32(0, s_ping_cb_count);

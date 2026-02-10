@@ -538,6 +538,17 @@ typedef struct {
    * **Action:** Warn user, reduce power consumption, initiate shutdown
    */
   bool is_low_capacity;
+
+  /**
+   * @brief Raw BatteryStatus register value (0x16)
+   * @details
+   * 16-bit status flags from SBS BatteryStatus register.
+   * Use bq4050_status_flags_t masks to decode individual flags.
+   * **Source:** SBS register 0x16
+   * **Format:** 16-bit flags (see bq4050_status_flags_t)
+   * **Update Rate:** ~1 second
+   */
+  uint16_t battery_status;
 } rx_bq4050_status_t;
 
 /**

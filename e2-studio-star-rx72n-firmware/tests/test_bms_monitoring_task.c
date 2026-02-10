@@ -28,7 +28,7 @@
 #include <string.h>
 
 /* Include the task header for the public API */
-#include "tasks/bms_monitor_task.h"
+#include "bms_monitor_task.h"
 
 /* =============================================================================
  * Test Constants

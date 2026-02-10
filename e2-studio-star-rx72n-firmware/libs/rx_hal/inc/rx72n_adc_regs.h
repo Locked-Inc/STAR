@@ -41,14 +41,14 @@
  * | Group scan     | ~0.9 µs/ch      | ~1.1 MSPS       |
  * | Continuous     | ~0.85 µs/ch     | ~1.2 MSPS       |
  *
- * @par Motor Current Sensing Pin Mapping:
+ * @par Motor Current Sensing Pin Mapping (144-pin LFQFP):
  *
  * | Motor | DRV8243 Pin | ADC Channel | RX72N Pin |
  * |-------|-------------|-------------|-----------|
- * | M0    | IPROPI      | AN000       | P40       |
- * | M1    | IPROPI      | AN001       | P41       |
- * | M2    | IPROPI      | AN002       | P42       |
- * | M3    | IPROPI      | AN003       | P43       |
+ * | M0    | IPROPI      | AN007       | P47       |
+ * | M1    | IPROPI      | AN006       | P46       |
+ * | M2    | IPROPI      | AN005       | P45       |
+ * | M3    | IPROPI      | AN004       | P44       |
  *
  * @par Hardware Requirements:
  * - CPU: Renesas RX72N @ 240 MHz (ICLK)
@@ -127,11 +127,11 @@ extern "C" {
  *
  * @par Quick Start Example:
  * @code{.c}
- * // Read motor 0 current from AN000
+ * // Read motor 0 current from AN007 (P47)
  * volatile rx_s12ad_regs_t* adc = s12ad0();
  *
- * // Enable channel 0 for single scan
- * adc->adansa0 = (1U << 0);  // AN000 only
+ * // Enable channel 7 for single scan
+ * adc->adansa0 = (1U << 7);  // AN007 only
  *
  * // Configure: single scan, software trigger
  * adc->adcsr = 0x0000;
@@ -143,7 +143,7 @@ extern "C" {
  * while (adc->adcsr & 0x8000) {}
  *
  * // Read 12-bit result (right-aligned)
- * uint16_t raw_value = adc->addr0;
+ * uint16_t raw_value = adc->addr7;
  *
  * // Convert to voltage (3.3V reference)
  * float voltage = (float)raw_value * 3.3f / 4096.0f;
@@ -317,11 +317,11 @@ typedef enum : uint8_t {
  *
  * @par Usage Example - Single Channel Conversion:
  * @code{.c}
- * // Initialize ADC for motor 0 current sensing (AN000)
+ * // Initialize ADC for motor 0 current sensing (AN007, P47)
  * volatile rx_s12ad_regs_t* adc = s12ad0();
  *
- * // 1. Select channel AN000 for group A scan
- * adc->adansa0 = (1U << 0);  // Bit 0 = AN000
+ * // 1. Select channel AN007 for group A scan
+ * adc->adansa0 = (1U << 7);  // Bit 7 = AN007
  *
  * // 2. Configure single scan mode, software trigger
  * adc->adcsr = 0x0000;  // ADCS[1:0]=00 (single), TRGE=0 (software)
@@ -338,7 +338,7 @@ typedef enum : uint8_t {
  * }
  *
  * // 6. Read 12-bit result
- * uint16_t raw_count = adc->addr0 & 0x0FFF;
+ * uint16_t raw_count = adc->addr7 & 0x0FFF;
  *
  * // 7. Convert to current (using DRV8243 current sensing formula)
  * // I = (V / 3.3) * 4096 * (1 / 20µA/A) = ADC_count * 3.3 / 4096 / 0.00002
@@ -349,8 +349,8 @@ typedef enum : uint8_t {
  * @code{.c}
  * volatile rx_s12ad_regs_t* adc = s12ad0();
  *
- * // Enable channels AN000-AN003 (all 4 motor currents)
- * adc->adansa0 = 0x000F;  // Bits [3:0] = channels 0-3
+ * // Enable channels AN004-AN007 (all 4 motor currents)
+ * adc->adansa0 = 0x00F0;  // Bits [7:4] = channels 4-7
  *
  * // Configure continuous scan mode
  * adc->adcsr = 0x4000;  // ADCS[1:0]=01 (continuous scan)
@@ -359,10 +359,10 @@ typedef enum : uint8_t {
  * adc->adcsr |= 0x8000;
  *
  * // Read results any time (updated continuously)
- * uint16_t motor0_current = adc->addr0;
- * uint16_t motor1_current = adc->addr1;
- * uint16_t motor2_current = adc->addr2;
- * uint16_t motor3_current = adc->addr3;
+ * uint16_t motor0_current = adc->addr7;  // AN007 = M0
+ * uint16_t motor1_current = adc->addr6;  // AN006 = M1
+ * uint16_t motor2_current = adc->addr5;  // AN005 = M2
+ * uint16_t motor3_current = adc->addr4;  // AN004 = M3
  *
  * // Stop conversion when done
  * adc->adcsr &= ~0x8000;
@@ -417,18 +417,18 @@ typedef struct {
    * Selects channels 0-15 for Group A scan. Each bit enables the
    * corresponding analog input channel.
    *
-   * @par Channel Mapping (S12AD0):
-   * | Bit | Channel | Pin  | Motor |
+   * @par Channel Mapping (S12AD0, 144-pin LFQFP):
+   * | Bit | Channel | Pin  | Usage |
    * |-----|---------|------|-------|
-   * | 0   | AN000   | P40  | M0    |
-   * | 1   | AN001   | P41  | M1    |
-   * | 2   | AN002   | P42  | M2    |
-   * | 3   | AN003   | P43  | M3    |
-   * | 4-7 | AN004-7 | P44-47 | N/A |
+   * | 0-3 | AN000-3 | P40-43 | Available |
+   * | 4   | AN004   | P44  | M3 current |
+   * | 5   | AN005   | P45  | M2 current |
+   * | 6   | AN006   | P46  | M1 current |
+   * | 7   | AN007   | P47  | M0 current |
    *
    * @par Example: Select motor 0 and 1 current channels
    * @code
-   * adc->adansa0 = 0x0003;  // Enable AN000, AN001
+   * adc->adansa0 = 0x00C0;  // Enable AN007 (M0), AN006 (M1)
    * @endcode
    */
   volatile uint16_t adansa0;
@@ -555,7 +555,6 @@ typedef struct {
    *
    * @details
    * 12-bit conversion result for channel AN000 (Unit 0) or AN100 (Unit 1).
-   * For STAR motor control, this is Motor 0 current sense.
    *
    * @par Data Format (ADCER.ADRFMT=0, right-aligned):
    * - Bits [11:0]: 12-bit result (0-4095)
@@ -568,13 +567,13 @@ typedef struct {
    */
   volatile uint16_t addr0;
 
-  volatile uint16_t addr1; /**< A/D Data Register 1 @ 0x22: AN001/AN101 (Motor 1 current) */
-  volatile uint16_t addr2; /**< A/D Data Register 2 @ 0x24: AN002/AN102 (Motor 2 current) */
-  volatile uint16_t addr3; /**< A/D Data Register 3 @ 0x26: AN003/AN103 (Motor 3 current) */
-  volatile uint16_t addr4; /**< A/D Data Register 4 @ 0x28: AN004/AN104 */
-  volatile uint16_t addr5; /**< A/D Data Register 5 @ 0x2A: AN005/AN105 */
-  volatile uint16_t addr6; /**< A/D Data Register 6 @ 0x2C: AN006/AN106 */
-  volatile uint16_t addr7; /**< A/D Data Register 7 @ 0x2E: AN007/AN107 */
+  volatile uint16_t addr1; /**< A/D Data Register 1 @ 0x22: AN001/AN101 */
+  volatile uint16_t addr2; /**< A/D Data Register 2 @ 0x24: AN002/AN102 */
+  volatile uint16_t addr3; /**< A/D Data Register 3 @ 0x26: AN003/AN103 */
+  volatile uint16_t addr4; /**< A/D Data Register 4 @ 0x28: AN004/AN104 (Motor 3 current) */
+  volatile uint16_t addr5; /**< A/D Data Register 5 @ 0x2A: AN005/AN105 (Motor 2 current) */
+  volatile uint16_t addr6; /**< A/D Data Register 6 @ 0x2C: AN006/AN106 (Motor 1 current) */
+  volatile uint16_t addr7; /**< A/D Data Register 7 @ 0x2E: AN007/AN107 (Motor 0 current) */
 } rx_s12ad_regs_t;
 
 /**
@@ -596,13 +595,13 @@ typedef struct {
  * @note Thread Safety: Function is reentrant and thread-safe (returns constant address)
  * @note Performance: Zero overhead - compiles to single load instruction
  *
- * @par Example - Motor Current Sensing:
+ * @par Example - Motor Current Sensing (144-pin LFQFP):
  * @code{.c}
- * // Read all 4 motor currents
+ * // Read all 4 motor currents (AN004-AN007 on P44-P47)
  * volatile rx_s12ad_regs_t* adc = s12ad0();
  *
  * // Configure for 4-channel scan
- * adc->adansa0 = 0x000F;   // AN000-AN003
+ * adc->adansa0 = 0x00F0;   // AN004-AN007
  * adc->adcsr = 0x0000;     // Single scan, software trigger
  * adc->adcer = 0x0000;     // Right-aligned data
  *
@@ -610,9 +609,9 @@ typedef struct {
  * adc->adcsr |= 0x8000;    // Start
  * while (adc->adcsr & 0x8000) {}  // Wait (~4 µs for 4 channels)
  *
- * // Read currents
+ * // Read currents (M0=AN007, M1=AN006, M2=AN005, M3=AN004)
  * uint16_t motor_currents[4] = {
- *     adc->addr0, adc->addr1, adc->addr2, adc->addr3
+ *     adc->addr7, adc->addr6, adc->addr5, adc->addr4
  * };
  * @endcode
  *

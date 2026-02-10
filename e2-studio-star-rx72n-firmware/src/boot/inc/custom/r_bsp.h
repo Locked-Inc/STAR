@@ -1,16 +1,15 @@
 /***********************************************************************************************************************
  * STAR Project - Boot-Compatible r_bsp.h
  *
- * Modified version of SMC r_bsp.h that works with boot files after Phase 3 deletions.
- * This file includes only the headers needed for boot sequence, skipping deleted BSP infrastructure.
+ * Minimal replacement for the full Renesas SMC r_bsp.h. Provides only the headers
+ * and macros required by boot sequence files (resetprg.c, vecttbl.c, lowsrc.c, etc.).
  *
- * Original: src/smc_gen/r_bsp/board/generic_rx72n/r_bsp.h
- * Changes:
- * - Replaced r_bsp_common.h with boot_common.h (provides INTERNAL_NOT_USED)
- * - Added stdint.h/stdbool.h directly (needed for basic types)
- * - Removed r_bsp_cpu.h (function prototypes not needed by boot)
- * - Removed r_bsp_locking.h (locking not needed by boot)
- * - Kept only headers that boot files actually use
+ * Includes:
+ * - Standard C types (stdint.h, stdbool.h)
+ * - R_BSP_* compiler macros (r_rx_compiler.h)
+ * - BSP configuration (r_bsp_config.h)
+ * - INTERNAL_NOT_USED macro (boot_common.h)
+ * - Function prototypes for lowlvl/lowsrc
  ***********************************************************************************************************************/
 
 /* Make sure that no other platforms have already been defined. Do not touch this! */
@@ -25,7 +24,7 @@ extern "C" {
 #endif
 
 /***********************************************************************************************************************
- * Standard C Headers (replaces r_bsp_common.h which was deleted in Phase 3)
+ * Standard C Headers
  ***********************************************************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
@@ -141,61 +140,7 @@ void non_maskable_isr(void) __attribute__((weak));
  */
 void undefined_interrupt_source_isr(void) __attribute__((weak));
 
-/***********************************************************************************************************************
- * Stub Definitions for Deleted BSP Functions
- ***********************************************************************************************************************/
-/* Interrupt control types (from deleted mcu_interrupts.h) */
-typedef enum {
-    BSP_INT_SRC_BUS_ERROR = 0
-} bsp_int_src_t;
-
-typedef enum {
-    BSP_INT_CMD_INTERRUPT_ENABLE = 0
-} bsp_int_cmd_t;
-
-/* FIT_NO_PTR is defined in mcu_info.h - don't redefine it */
-
-/**
- * @brief Stub for deleted BSP interrupt control function
- * @details Does nothing - interrupt management was deleted in Phase 3
- * @return true Always succeeds
- */
-static inline bool R_BSP_InterruptControl(bsp_int_src_t src, bsp_int_cmd_t cmd, void* ptr)
-{
-    (void)src;
-    (void)cmd;
-    (void)ptr;
-    return true;  /* Stub - no actual interrupt management */
-}
-
-/***********************************************************************************************************************
- * REMOVED: Phase 3 deleted files (not needed for boot sequence)
- *
- * The following files were removed and are NOT included:
- * - mcu/all/r_bsp_common.h          - Replaced with boot_common.h + stdint.h
- * - mcu/rx72n/r_bsp_cpu.h           - Function prototypes (not needed)
- * - mcu/rx72n/r_bsp_locking.h       - Locking functions (not needed)
- * - mcu/all/r_bsp_mcu_startup.h     - Startup functions (not needed)
- * - mcu/rx72n/register_access/(compiler)/iodefine.h - Register definitions (not needed for boot)
- * - mcu/rx72n/mcu_clocks.h          - Clock functions (not needed)
- * - mcu/rx72n/mcu_init.h            - MCU init functions (not needed)
- * - mcu/rx72n/mcu_interrupts.h      - Interrupt functions (not needed)
- * - mcu/rx72n/mcu_locks.h           - Lock definitions (not needed)
- * - mcu/rx72n/mcu_mapped_interrupts*.h - Interrupt mapping (not needed)
- * - mcu/rx72n/vecttbl.h             - Vector table header (not needed)
- * - board/generic_rx72n/hwsetup.h   - Hardware setup (not needed)
- * - mcu/all/r_bsp_interrupts.h      - Interrupt management (not needed)
- * - mcu/all/r_bsp_software_interrupt.h - Software interrupts (not needed)
- * - mcu/all/fsp_common_api.h        - FSP API (not needed)
- * - mcu/all/r_fsp_error.h           - FSP errors (not needed)
- *
- * Boot files ONLY need:
- * 1. Standard C types (stdint.h, stdbool.h)
- * 2. R_BSP_* macros (r_rx_compiler.h)
- * 3. BSP configuration (r_bsp_config.h)
- * 4. INTERNAL_NOT_USED macro (boot_common.h)
- * 5. Function prototypes for lowlvl/lowsrc (lowlvl.h, lowsrc.h)
- ***********************************************************************************************************************/
+/* End of boot-compatible r_bsp.h */
 
 #ifdef __cplusplus
 }

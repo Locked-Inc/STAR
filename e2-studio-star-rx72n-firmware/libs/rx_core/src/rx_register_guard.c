@@ -79,7 +79,7 @@
  * }
  * @enddot
  *
- * ## Protected Registers (100-pin package)
+ * ## Protected Registers (144-pin package)
  *
  * | Register | Address | Purpose | Corruption Consequence |
  * |----------|---------|---------|------------------------|
@@ -214,12 +214,12 @@
  *
  * @details
  * Stores the known-good configuration of GPIO direction registers for all
- * ports available on the 100-pin RX72N package. These values are captured
+ * ports available on the 144-pin RX72N package. These values are captured
  * during initialization and used as the reference for corruption detection.
  *
- * **100-pin package port availability:**
- * - Available: PORT0-PORT5, PORTA-PORTE, PORTJ (12 ports)
- * - Not available: PORT6-PORT9, PORTF-PORTH (excluded from 100-pin package)
+ * **144-pin package port availability:**
+ * - Available: PORT0-PORT9, PORTA-PORTF, PORTJ (17 ports, some partial)
+ * - Not available: PORTG, PORTH (excluded from 144-pin package)
  *
  * @par Memory Layout:
  * | Offset | Size | Field | Description |
@@ -412,23 +412,26 @@ static register_guard_state_t s_state = {0};
  *
  * @details
  * Reads all PORT Direction Registers (PDR) for ports available on the
- * 100-pin RX72N package and stores them in the golden reference structure.
+ * 144-pin RX72N package and stores them in the golden reference structure.
  * This function is called during initialization to establish the baseline
  * configuration that will be maintained by subsequent refresh operations.
  *
  * **Algorithm:**
  * 1. Read PORT0.PDR through memory-mapped accessor port0()->pdr
  * 2. Store value in s_state.pdr.port0_pdr
- * 3. Repeat for all 12 ports available on 100-pin package
+ * 3. Repeat for all 12 ports currently monitored on 144-pin package
  *
- * **Ports captured (100-pin package):**
+ * **Ports captured (144-pin package):**
  * - PORT0-PORT5 (6 ports, contiguous)
  * - PORTA-PORTE (5 ports, contiguous)
  * - PORTJ (1 port, separate)
  *
- * **Ports NOT available on 100-pin package:**
- * - PORT6-PORT9 (176/144-pin only)
- * - PORTF-PORTH (176/144-pin only)
+ * **Ports available on 144-pin but NOT yet captured:**
+ * - PORT6-PORT9 (available on 144-pin, partial pin availability)
+ * - PORTF (available on 144-pin, partial pin availability)
+ *
+ * **Ports NOT available on 144-pin package:**
+ * - PORTG, PORTH (176-pin only)
  *
  * @par Execution Timing:
  * - 12 register reads × ~15 cycles = ~180 cycles
@@ -439,7 +442,7 @@ static register_guard_state_t s_state = {0};
  * @post No hardware state modified (read-only)
  *
  * @note Not thread-safe - call from main thread only
- * @note 100-pin package: Accessing non-existent ports would fault
+ * @note 144-pin package: Accessing non-existent ports (PORTG, PORTH) would fault
  *
  * @see port0() through portj() Register accessor functions
  * @see pdr_golden_t Structure storing captured values
@@ -559,7 +562,7 @@ static void internal_capture_mstpcr(void)
  * @post All PORT PDR registers match golden values
  * @post s_state.corrections incremented for each mismatch found
  *
- * @note 100-pin package: Only ports 0-5, A-E, J are checked
+ * @note 144-pin package: Currently ports 0-5, A-E, J are checked
  * @note PORT PDR does NOT require write protection unlock
  * @note Not thread-safe - call from main thread only
  *

@@ -544,6 +544,12 @@ rx_err_t uart_debug_init(void)
   return uart_init_channel(&config);
 }
 
+/*
+ * uart_debug_* functions: only needed for hardware (non-simulator) builds.
+ * Under RX_SIMULATOR_MODE, rx_log.h provides static inline versions that
+ * output to stdout via putchar().
+ */
+#ifndef RX_SIMULATOR_MODE
 void uart_debug_putc(char data)
 {
   (void)uart_putc_channel((uart_channel_t)k_debug_uart_channel, data);
@@ -605,3 +611,4 @@ void uart_debug_puthex(uint32_t value, uint8_t digits)
     uart_debug_putc(hex[nibble]);
   }
 }
+#endif /* !RX_SIMULATOR_MODE */

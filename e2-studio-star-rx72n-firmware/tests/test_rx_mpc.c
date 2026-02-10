@@ -471,7 +471,7 @@ void test_reserved_field_sizes(void)
   TEST_ASSERT_EQUAL_UINT8(8, k_mpc_reserved4_bytes);   /* After PWPR */
   TEST_ASSERT_EQUAL_UINT8(24, k_mpc_dscr2_count);      /* DSCR2 registers */
 
-  /* Port-specific reserved regions (100-pin LFQFP) */
+  /* Port-specific reserved regions (144-pin LFQFP) */
   TEST_ASSERT_EQUAL_UINT8(3, k_port3_reserved_bytes);   /* Port 3: P35-P37 */
   TEST_ASSERT_EQUAL_UINT8(1, k_port5_reserved_bytes);   /* Port 5: P53 */
   TEST_ASSERT_EQUAL_UINT8(1, k_port6_reserved_bytes);   /* Port 6: P65 */

@@ -165,16 +165,16 @@ void test_port_base_addresses(void)
 }
 
 /* =============================================================================
- * Port Offset Tests (100-pin LFQFP)
+ * Port Offset Tests (144-pin LFQFP)
  * =============================================================================
  */
 
 /**
- * @brief Verify port offset values for 100-pin LFQFP package
+ * @brief Verify port offset values for 144-pin LFQFP package
  *
  * @details
  * Each port has a fixed offset from the register base address. The RX72N
- * 100-pin LFQFP package supports ports 0-5, A-E, and J. Port offsets are
+ * 144-pin LFQFP package supports ports 0-9, A-E, and J. Port offsets are
  * added to register base addresses to get the specific port's register.
  *
  * @par Port Offset Calculation Example
@@ -183,7 +183,7 @@ void test_port_base_addresses(void)
  * PORTB.PODR = PODR_base + PORTB_offset = 0x0008C020 + 0x0B = 0x0008C02B
  * @endcode
  *
- * @par Available Ports (100-pin LFQFP)
+ * @par Available Ports (144-pin LFQFP)
  * | Port  | Offset | Pins Available              |
  * |-------|--------|------------------------------|
  * | 0     | 0x00   | P00-P07 (8 pins)            |
@@ -192,12 +192,17 @@ void test_port_base_addresses(void)
  * | 3     | 0x03   | P30-P37 (8 pins)            |
  * | 4     | 0x04   | P40-P47 (8 pins)            |
  * | 5     | 0x05   | P50-P57 (8 pins)            |
+ * | 6     | 0x06   | P60-P67 (partial)           |
+ * | 7     | 0x07   | P70-P77 (8 pins)            |
+ * | 8     | 0x08   | P80-P87 (partial)           |
+ * | 9     | 0x09   | P90-P97 (8 pins)            |
  * | A     | 0x0A   | PA0-PA7 (8 pins)            |
  * | B     | 0x0B   | PB0-PB7 (8 pins)            |
  * | C     | 0x0C   | PC0-PC7 (8 pins)            |
  * | D     | 0x0D   | PD0-PD7 (8 pins)            |
  * | E     | 0x0E   | PE0-PE7 (8 pins)            |
- * | J     | 0x12   | PJ3 only (debug)            |
+ * | F     | 0x0F   | PF0-PF5 (partial)           |
+ * | J     | 0x12   | PJ3, PJ5 (partial)          |
  *
  * @pre None
  * @post No state changes
@@ -315,7 +320,7 @@ void test_port_struct_size(void)
  * to PORT0 registers. Verifies both the base pointer address and derived
  * register addresses through struct member access.
  *
- * @par PORT0 Register Addresses (100-pin LFQFP)
+ * @par PORT0 Register Addresses (144-pin LFQFP)
  * | Register    | Address    | Description              |
  * |-------------|------------|--------------------------|
  * | PORT0.PDR   | 0x0008C000 | Direction (0=in, 1=out)  |
@@ -557,7 +562,7 @@ void test_porte_accessor(void)
  *
  * @details
  * Tests portj() accessor. PORTJ (offset 0x12) is a special-purpose port
- * with limited pins (only PJ3 available on 100-pin LFQFP). PJ3 is the
+ * with limited pins (PJ3 and PJ5 available on 144-pin LFQFP). PJ3 is the
  * E2 emulator debug pin (MD/FINED function).
  *
  * @par PORTJ Register Addresses
@@ -571,7 +576,7 @@ void test_porte_accessor(void)
  * | PORTJ.PCR   | 0x0008C0D2 | Pull-up control          |
  * | PORTJ.DSCR  | 0x0008C0F2 | Drive strength           |
  *
- * @warning Only PJ3 is available on 100-pin package - other bits reserved
+ * @warning Only PJ3 and PJ5 are available on 144-pin package - other bits reserved
  *
  * @pre None
  * @post No state changes

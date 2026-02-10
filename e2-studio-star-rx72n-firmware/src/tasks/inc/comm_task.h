@@ -14,7 +14,7 @@
  * - Handle communication errors and timeouts
  *
  * **Communication Protocol:**
- * - Physical: SPI slave (RX72N) ← SPI controller (RPi5)
+ * - Physical: SPI peripheral (RX72N) ← SPI controller (RPi5)
  * - Data link: Custom frame protocol with CRC-32
  * - Application: Protocol Buffers (nanopb) messages
  * - Commands: MotorCommand, EmergencyStop, TelemetryRequest
@@ -50,7 +50,7 @@
  * @retval k_rx_err_* ThreadX task creation failed
  *
  * @pre ThreadX kernel running
- * @pre SPI slave initialized
+ * @pre SPI peripheral initialized
  * @pre Protocol Buffers decoder initialized
  * @pre Shared data initialized
  *

@@ -85,7 +85,7 @@
  *
  * | Requirement | Specification |
  * |-------------|---------------|
- * | CPU | Renesas RX72N (R5F572NNxxxx) |
+ * | CPU | Renesas RX72N (R5F572NNHxFB, 144-pin LFQFP) |
  * | Peripherals | S12AD0 and/or S12AD1 (28 total channels) |
  * | VREFH | 3.3V or 5.0V (reference voltage, ±2%) |
  * | VREFL | 0V (ground) |
@@ -94,16 +94,14 @@
  * | Bypass capacitor | 0.1 µF ceramic on VREFH pin |
  * | Input capacitor | 10 nF on each analog input |
  *
- * ## ADC Channel Usage (STAR Project)
+ * ## ADC Channel Usage (STAR Project - 144-pin LFQFP)
  *
  * | Unit | Channel | Pin | Signal | Range | Conversion |
  * |------|---------|-----|--------|-------|------------|
- * | S12AD0 | AN000 | P40 | Motor 0 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
- * | S12AD0 | AN001 | P41 | Motor 1 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
- * | S12AD0 | AN002 | P42 | Motor 2 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
- * | S12AD0 | AN003 | P43 | Motor 3 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
- * | S12AD0 | AN004 | P44 | Battery Voltage | 0-3.3V | V_batt = V_ADC × 11 |
- * | S12AD1 | AN100 | P45 | Temperature | 0-3.3V | Internal sensor |
+ * | S12AD0 | AN007 | P47 | Motor 0 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
+ * | S12AD0 | AN006 | P46 | Motor 1 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
+ * | S12AD0 | AN005 | P45 | Motor 2 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
+ * | S12AD0 | AN004 | P44 | Motor 3 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
  *
  * ## Analog Signal Conditioning
  *

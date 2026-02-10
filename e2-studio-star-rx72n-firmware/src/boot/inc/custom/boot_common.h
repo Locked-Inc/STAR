@@ -2,7 +2,7 @@
 * STAR Project - Boot Support Header
 *
 * This file provides minimal definitions needed by boot files moved from smc_gen/.
-* Replaces r_bsp_common.h which was part of the deleted SMC BSP infrastructure.
+* Provides INTERNAL_NOT_USED macro needed by SMC-generated boot files.
 ***********************************************************************************************************************/
 
 #pragma once

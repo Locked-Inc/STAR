@@ -67,7 +67,7 @@
  *   Physical_Pin box Physical_Pin [label="Connected to peripheral"];
  * @endmsc
  *
- * @par STAR Project Pin Assignments (100-pin LFQFP)
+ * @par STAR Project Pin Assignments (144-pin LFQFP)
  * | Package Pin | Port.Pin | Function | PSEL | Driver Call |
  * |-------------|----------|----------|------|-------------|
  * | 97 | PE5 | GPTW0A (Motor0 PWM+) | 0x07 | rx_mpc_set_peripheral() |
@@ -322,7 +322,7 @@ typedef struct {
    * - k_port_b_pin_0 through k_port_b_pin_7
    * - k_port_e_pin_0 through k_port_e_pin_7
    * - etc.
-   * @note On 100-pin package, ports F, G, H are not available
+   * @note On 144-pin package, ports G, H are not available
    * @warning Using invalid pin values returns k_rx_err_invalid_arg
    */
   rx_port_pin_t pin;
@@ -598,7 +598,7 @@ typedef enum : uint8_t {
  * @retval k_rx_ok Pin successfully configured for GPIO mode
  * @retval k_rx_err_invalid_arg Port number exceeds valid range (> Port J)
  * @retval k_rx_err_invalid_arg Pin number exceeds 7
- * @retval k_rx_err_invalid_arg Port not available on package (F/G/H on 100-pin)
+ * @retval k_rx_err_invalid_arg Port not available on package (G/H on 144-pin)
  *
  * @pre PCLKB clock must be running (MPC register access requires it)
  * @pre MPC module stop bit must be cleared (MSTPCRA.MSTPA9 = 0)
@@ -643,7 +643,7 @@ typedef enum : uint8_t {
  * @par Example - Error Handling
  * @code{.c}
  * // Attempt to configure invalid pin
- * rx_err_t err = rx_mpc_set_gpio(k_port_f_pin_0);  // Port F not on 100-pin
+ * rx_err_t err = rx_mpc_set_gpio(k_port_g_pin_0);  // Port G not on 144-pin
  * if (err == k_rx_err_invalid_arg) {
  *     rx_log_warn("MPC", "Pin not available on this package");
  * }
@@ -1099,8 +1099,8 @@ typedef enum : uint8_t {
  *
  * @details
  * Configures a pin for RSPI (Renesas SPI) operation by setting PSEL = 0x0D.
- * Works for all SPI signals: RSPCK (clock), MOSI/COPI (data out),
- * MISO/CIPO (data in), and SSLn (chip select).
+ * Works for all SPI signals: RSPCK (clock), COPI (data out),
+ * CIPO (data in), and SSLn (chip select).
  *
  * @par STAR Project SPI Configuration (RPi5 Communication)
  * | Pin | RSPI0 Signal | Function | Description |

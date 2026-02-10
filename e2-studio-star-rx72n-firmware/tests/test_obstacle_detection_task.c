@@ -28,7 +28,7 @@
 #include <string.h>
 
 /* Include the task header for the public API */
-#include "tasks/obstacle_detect_task.h"
+#include "obstacle_detect_task.h"
 
 /* =============================================================================
  * Test Constants

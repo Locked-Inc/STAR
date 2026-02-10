@@ -255,7 +255,11 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void)
  * =============================================================================
  */
 
-/* These are weak symbols - if mock_rx_log.c is linked, its versions win */
+/*
+ * uart_debug_* stubs: only needed for hardware (non-simulator) builds.
+ * Under RX_SIMULATOR_MODE, rx_log.h provides static inline versions.
+ */
+#ifndef RX_SIMULATOR_MODE
 __attribute__((weak)) void uart_debug_putc(char data)
 {
   (void)data;
@@ -276,3 +280,4 @@ __attribute__((weak)) void uart_debug_puthex(uint32_t value, uint8_t digits)
   (void)value;
   (void)digits;
 }
+#endif /* !RX_SIMULATOR_MODE */

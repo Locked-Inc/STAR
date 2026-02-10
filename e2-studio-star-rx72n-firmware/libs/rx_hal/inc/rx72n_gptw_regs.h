@@ -467,6 +467,54 @@ typedef enum : uint32_t {
 } gptw_gtior_bits_t;
 
 /* =============================================================================
+ * Interrupt Output Setting Register (GTINTAD) Bits
+ * =============================================================================
+ */
+
+/**
+ * @enum gptw_gtintad_bits_t
+ * @brief GTINTAD register bit definitions for POEG group linkage
+ *
+ * @details
+ * The GTINTAD register (offset 0x38) configures the link between a GPTW
+ * channel and a POEG group for emergency output stop. When a fault is
+ * detected (dead-time error, simultaneous high/low output), the GPTW
+ * signals the selected POEG group to disable PWM outputs.
+ *
+ * @par STAR Project Usage:
+ * | GPTW Channel | POEG Group | GRP[1:0] | Motor |
+ * |--------------|------------|----------|-------|
+ * | GPTW0        | A          | 00       | 0     |
+ * | GPTW1        | B          | 01       | 1     |
+ * | GPTW2        | C          | 10       | 2     |
+ * | GPTW3        | D          | 11       | 3     |
+ *
+ * @warning GRP[1:0] must be set while OAE and OBE in GTIOR are 0
+ *
+ * @see rx72n_poeg_regs.h POEG register definitions
+ * @see RX72N Manual Section 26.2.15 - GTINTAD register
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  /* GRP[1:0] - Output Stop Group Select (bits 25:24) */
+  k_gptw_gtintad_grp_shift  = 24,                              /**< GRP field shift */
+  k_gptw_gtintad_grp_mask   = (0x03U << 24),                   /**< GRP field mask */
+  k_gptw_gtintad_grp_a      = (0x00U << 24),                   /**< Select POEG Group A */
+  k_gptw_gtintad_grp_b      = (0x01U << 24),                   /**< Select POEG Group B */
+  k_gptw_gtintad_grp_c      = (0x02U << 24),                   /**< Select POEG Group C */
+  k_gptw_gtintad_grp_d      = (0x03U << 24),                   /**< Select POEG Group D */
+
+  /* GRPDTE - Dead Time Error Output Stop Detection Enable (bit 28) */
+  k_gptw_gtintad_grpdte     = (1U << 28),                      /**< Enable dead-time error detection */
+
+  /* GRPABH - Simultaneous High Output Stop Detection Enable (bit 29) */
+  k_gptw_gtintad_grpabh     = (1U << 29),                      /**< Enable simultaneous high detection */
+
+  /* GRPABL - Simultaneous Low Output Stop Detection Enable (bit 30) */
+  k_gptw_gtintad_grpabl     = (1U << 30),                      /**< Enable simultaneous low detection */
+} gptw_gtintad_bits_t;
+
+/* =============================================================================
  * Buffer Enable Register (GTBER) Bits
  * =============================================================================
  */
