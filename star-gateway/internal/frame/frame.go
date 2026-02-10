@@ -1,8 +1,12 @@
 // Package frame defines the wire protocol frame structure for RPi5 <-> RX72N communication.
 //
-// Frame format (all fields little-endian per IEEE 802.3):
+// Frame format:
 //
-//	[SYNC (2B, LE)][SEQ (2B, LE)][LEN (2B, LE)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B, LE)]
+//	[SYNC (2B, LE)][SEQ (2B, LE)][LEN (2B, LE)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B)]
+//
+// All multi-byte header fields (SYNC, SEQ, LEN) are little-endian by project convention.
+// The CRC-32 uses the IEEE 802.3 polynomial and bit-ordering (CRC byte serialization
+// is independent of the project's multi-byte field endianness).
 //
 // STAR Project - Texas A&M University
 // January 2026
