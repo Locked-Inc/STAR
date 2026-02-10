@@ -25,7 +25,7 @@ func NewDecoder() *DefaultDecoder {
 
 // Decode parses wire format bytes into a Frame.
 //
-// Wire format (header fields in big-endian, CRC-32 in little-endian per IEEE 802.3):
+// Wire format (all fields in little-endian per IEEE 802.3):
 //
 //	[SYNC (2B)][SEQ (2B)][LEN (2B)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B)]
 //
@@ -38,19 +38,19 @@ func (d *DefaultDecoder) Decode(data []byte) (*Frame, error) {
 
 	offset := 0
 
-	// Parse and verify SYNC word (big-endian)
-	sync := binary.BigEndian.Uint16(data[offset:])
+	// Parse and verify SYNC word (little-endian)
+	sync := binary.LittleEndian.Uint16(data[offset:])
 	if sync != SyncWord {
 		return nil, ErrInvalidSync
 	}
 	offset += SyncSize
 
-	// Parse SEQ (big-endian)
-	seq := binary.BigEndian.Uint16(data[offset:])
+	// Parse SEQ (little-endian)
+	seq := binary.LittleEndian.Uint16(data[offset:])
 	offset += SeqSize
 
-	// Parse LEN (big-endian)
-	payloadLen := binary.BigEndian.Uint16(data[offset:])
+	// Parse LEN (little-endian)
+	payloadLen := binary.LittleEndian.Uint16(data[offset:])
 	offset += LenSize
 
 	// Validate payload length

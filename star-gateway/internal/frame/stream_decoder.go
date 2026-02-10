@@ -70,7 +70,7 @@ func (d *StreamDecoder) Decode() (*Frame, error) {
 			return nil, err
 		}
 
-		syncCandidate := binary.BigEndian.Uint16(peekBuf)
+		syncCandidate := binary.LittleEndian.Uint16(peekBuf)
 		if syncCandidate != SyncWord {
 			// Discard 1 byte and retry
 			if _, err := d.r.Discard(1); err != nil {
@@ -95,8 +95,8 @@ func (d *StreamDecoder) Decode() (*Frame, error) {
 		}
 
 		// Parse Header
-		seq := binary.BigEndian.Uint16(headerBuf[seqOffset : seqOffset+2])
-		payloadLen := binary.BigEndian.Uint16(headerBuf[lenOffset : lenOffset+2])
+		seq := binary.LittleEndian.Uint16(headerBuf[seqOffset : seqOffset+2])
+		payloadLen := binary.LittleEndian.Uint16(headerBuf[lenOffset : lenOffset+2])
 		frameType := Type(headerBuf[typeOffset])
 		flags := Flags(headerBuf[flagsOffset])
 
@@ -118,7 +118,7 @@ func (d *StreamDecoder) Decode() (*Frame, error) {
 		totalRemaining := HeaderSize + int(payloadLen) + CRCSize
 
 		frameBuf := make([]byte, SyncSize+totalRemaining)
-		binary.BigEndian.PutUint16(frameBuf[0:], SyncWord) // Reconstruct SYNC
+		binary.LittleEndian.PutUint16(frameBuf[0:], SyncWord) // Reconstruct SYNC
 
 		// Read the rest
 		_, err = io.ReadFull(d.r, frameBuf[SyncSize:])

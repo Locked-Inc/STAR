@@ -12,7 +12,8 @@ import (
 
 // Test timing constants to avoid magic numbers
 const (
-	testProbeCheckInterval = 100 * time.Millisecond
+	testProbeCheckInterval        = 100 * time.Millisecond
+	testWrongProbeMarker   uint32 = 0x12345678
 )
 
 // MockHARQ for testing
@@ -102,7 +103,7 @@ func TestProbeTransport_SPI_Success(t *testing.T) {
 
 	// Create mock transport that returns valid PONG
 	pongPayload := make([]byte, SPIProbePayloadSize)
-	binary.BigEndian.PutUint32(pongPayload, SPIProbeTestMarker)
+	binary.LittleEndian.PutUint32(pongPayload, SPIProbeTestMarker)
 
 	mockTransport := &MockTransportProbe{
 		receiveData: pongPayload,
@@ -187,7 +188,7 @@ func TestProbeTransport_SPI_WrongPayloadValue(t *testing.T) {
 
 	// Return payload with wrong value (not SPIProbeTestMarker)
 	wrongPayload := make([]byte, SPIProbePayloadSize)
-	binary.BigEndian.PutUint32(wrongPayload, 0x12345678) // Wrong marker
+	binary.LittleEndian.PutUint32(wrongPayload, testWrongProbeMarker) // Wrong marker
 
 	mockTransport := &MockTransportProbe{
 		receiveData: wrongPayload,

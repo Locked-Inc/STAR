@@ -360,7 +360,7 @@ func TestHeartbeatManager_PongValidation_MatchingCounter(t *testing.T) {
 
 	// Create matching PONG payload
 	payload := make([]byte, testPongPayloadLen)
-	binary.BigEndian.PutUint32(payload, testPongCounter)
+	binary.LittleEndian.PutUint32(payload, testPongCounter)
 
 	// Validate PONG
 	matched := hm.OnPongReceived(payload)
@@ -400,7 +400,7 @@ func TestHeartbeatManager_PongValidation_MismatchedCounter(t *testing.T) {
 
 	// Create PONG with wrong counter
 	payload := make([]byte, testPongPayloadLen)
-	binary.BigEndian.PutUint32(payload, testWrongCounter)
+	binary.LittleEndian.PutUint32(payload, testWrongCounter)
 
 	matched := hm.OnPongReceived(payload)
 	if matched {
@@ -554,7 +554,7 @@ func TestHeartbeatManager_ConsecutiveMissReset(t *testing.T) {
 
 	// Send valid PONG that matches
 	payload := make([]byte, testPongPayloadLen)
-	binary.BigEndian.PutUint32(payload, testPongCounter)
+	binary.LittleEndian.PutUint32(payload, testPongCounter)
 
 	matched := hm.OnPongReceived(payload)
 	if !matched {

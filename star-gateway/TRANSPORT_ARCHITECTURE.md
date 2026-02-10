@@ -90,7 +90,7 @@ The STAR Gateway implements intelligent transport switching between USB CDC (pri
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | SYNC word | `0x55AA` | Both sides agree; standard framing marker |
-| Header byte order | Big-endian (network byte order) | RFC 1700 convention; both sides agree |
+| Header byte order | Little-endian | Consistent with CRC-32; both sides agree |
 | CRC-32 byte order | **Little-endian** (IEEE 802.3 LSB-first) | Industry standard; firmware was correct, Go fixed in Phase 1 |
 | Canonical TYPE values | `0x00/0x01/0x10-0x13/0xFE/0xFF` | Designed for full protocol; firmware aligned in Phase 2 |
 | HARQ type | Chase Combining (Type I) | Implemented end-to-end; Type II is aspirational |
@@ -106,13 +106,13 @@ All frames use the same wire format regardless of transport:
 ```text
 ┌──────┬──────┬──────┬──────┬───────┬─────────┬─────────┐
 │ SYNC │ SEQ  │ LEN  │ TYPE │ FLAGS │ PAYLOAD │ CRC-32  │
-│ (BE) │ (BE) │ (BE) │      │       │         │  (LE)   │
+│ (LE) │ (LE) │ (LE) │      │       │         │  (LE)   │
 ├──────┼──────┼──────┼──────┼───────┼─────────┼─────────┤
 │ 2B   │ 2B   │ 2B   │ 1B   │ 1B    │ 0-1024B │ 4B      │
 └──────┴──────┴──────┴──────┴───────┴─────────┴─────────┘
 ```
 
-**Header Fields (big-endian):**
+**Header Fields (little-endian):**
 - **SYNC**: Magic number `0x55AA` for frame synchronization
 - **SEQ**: Sequence number (0-65535, wraps around)
 - **LEN**: Payload length in bytes
@@ -147,7 +147,7 @@ const (
 
 **PING Frame:**
 - **TYPE**: `0x00`
-- **PAYLOAD**: 4-byte counter (big-endian uint32)
+- **PAYLOAD**: 4-byte counter (little-endian uint32)
 - **Purpose**: Explicit idle-link probe when no frames for >1s
 
 **PONG Frame:**

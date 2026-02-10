@@ -168,7 +168,7 @@ func (hm *HealthMonitor) probeSPI(wrapper *TransportWrapper) bool {
 
 	// Create PING payload with test marker
 	payload := make([]byte, SPIProbePayloadSize)
-	binary.BigEndian.PutUint32(payload, SPIProbeTestMarker)
+	binary.LittleEndian.PutUint32(payload, SPIProbeTestMarker)
 
 	// Send PING
 	if err := wrapper.Transport.Send(ctx, payload); err != nil {
@@ -189,6 +189,6 @@ func (hm *HealthMonitor) probeSPI(wrapper *TransportWrapper) bool {
 		return false
 	}
 
-	receivedCounter := binary.BigEndian.Uint32(result.Payload)
+	receivedCounter := binary.LittleEndian.Uint32(result.Payload)
 	return receivedCounter == SPIProbeTestMarker
 }

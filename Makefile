@@ -23,7 +23,7 @@ help:
 	@echo "  Note: RX72N firmware is built in e2 studio, not via Makefile"
 	@echo ""
 	@echo "Protocol Buffers:"
-	@echo "  make proto-gen    - Generate all proto code (Go, TypeScript, C/nanopb)"
+	@echo "  make proto-gen    - Generate all proto code and setup Go modules (Go, TS, C/nanopb)"
 	@echo ""
 	@echo "Persistent Container (optional):"
 	@echo "  make up           - Start a persistent background container named '$(CONTAINER_NAME)'"
@@ -91,6 +91,13 @@ proto-gen-go:
 	@echo "Generating protocol buffers (Go, TS, C, C++)..."
 	@buf generate star-proto/proto
 	@echo "✓ Code generated under star-proto/gen/"
+	@echo "Setting up Go module for generated code..."
+	@if [ ! -f star-proto/gen/go/go.mod ]; then \
+		cd star-proto/gen/go && go mod init github.com/Locked-Inc/star-proto/gen/go; \
+	fi
+	@cd star-proto/gen/go && go mod tidy
+	@go work sync
+	@echo "✓ Go workspace synchronized"
 
 # Placeholder for ROS2-specific generation (if distinct tooling is added)
 proto-gen-ros2:
