@@ -8,6 +8,35 @@ This file provides guidance to Claude Code when working with the star-gateway mo
 - **gRPC clients** (Nav2/ROS2, UI) on the high-level side
 - **RX72N motor controller** via SPI on the low-level side
 
+## Backward Compatibility Policy
+
+**IMPORTANT:** This gateway service is in-house only with **ZERO backward compatibility requirements**. There will never be public releases.
+
+- **Breaking changes are ENCOURAGED** - Refactor APIs freely to improve code quality
+- **No compatibility layers** - Delete old code immediately and update all clients
+- **Main branch must work** - The only requirement is that main builds and passes tests
+- **Update everything together** - When changing gRPC APIs, update ROS2/UI clients in the same PR
+
+**FORBIDDEN (will be rejected):**
+```go
+// WRONG - No compatibility aliases
+var OldFunctionName = NewFunctionName  // ❌ Just update call sites
+
+// WRONG - No deprecated exports
+// Deprecated: Use NewType instead
+type OldType = NewType  // ❌ Delete it
+```
+
+**CORRECT:**
+```go
+// ✓ Rename types and update all references immediately
+type MotorControlRequest struct {
+    VelocityMPS float32  // Renamed from 'Speed'
+}
+```
+
+See the main project CLAUDE.md for complete backward compatibility policy.
+
 ## Architecture
 
 ### Protocol Stack

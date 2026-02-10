@@ -1,0 +1,817 @@
+/* lib/rx_hcsr04/inc/rx_hcsr04.h */
+
+/**
+ * @file rx_hcsr04.h
+ * @brief HC-SR04 Ultrasonic Distance Sensor Driver for RX72N
+ *
+ * @details
+ * Production-ready driver for HC-SR04 ultrasonic distance sensors with blocking
+ * and asynchronous measurement modes, temperature compensation, and comprehensive
+ * error handling. Designed for obstacle detection and collision avoidance in
+ * autonomous robotics applications.
+ *
+ * ## Sensor Specifications
+ *
+ * | Parameter | Value | Notes |
+ * |-----------|-------|-------|
+ * | **Measurement Range** | 2cm - 400cm | Effective operating range |
+ * | **Accuracy** | ±3mm | Under ideal conditions |
+ * | **Resolution** | ~3mm | Based on timing resolution |
+ * | **Beam Angle** | 15° | Effective detection cone |
+ * | **Frequency** | 40 kHz | Ultrasonic carrier |
+ * | **Supply Voltage** | 5V ±10% | Requires level shifter for 3.3V MCU |
+ * | **Current Draw** | 15mA typical | 30mA peak during burst |
+ * | **Trigger Input** | 10µs HIGH pulse | Initiates measurement |
+ * | **Echo Output** | Pulse width = distance | 58µs per cm (roundtrip) |
+ * | **Max Measurement Rate** | ~16 Hz | 60ms minimum gap between readings |
+ *
+ * ## Hardware Setup
+ *
+ * **Pin Connections:**
+ * ```
+ * HC-SR04          RX72N (via level shifter)
+ * ┌──────────┐     ┌────────────┐
+ * │   VCC    │─────│ 5V supply  │
+ * │   TRIG   │◄────│ GPIO output│ (10µs pulse)
+ * │   ECHO   │────►│ GPIO input │ (pulse width)
+ * │   GND    │─────│ GND        │
+ * └──────────┘     └────────────┘
+ * ```
+ *
+ * **Level Shifting:**
+ * - RX72N GPIO: 3.3V logic
+ * - HC-SR04: 5V logic
+ * - Use bidirectional level shifter (e.g., TXS0108E)
+ *
+ * **Mounting:**
+ * - Keep sensor level and stable
+ * - Avoid soft/angled surfaces (sound absorption)
+ * - Clear 15° cone in front of sensor
+ *
+ * ## Operating Principle
+ *
+ * **Measurement Sequence:**
+ * ```
+ * @startuml
+ * participant MCU
+ * participant HCSR04
+ * participant Object
+ *
+ * MCU -> HCSR04: TRIG pulse (10µs HIGH)
+ * activate HCSR04
+ * HCSR04 -> Object: Ultrasonic burst (8 pulses @ 40kHz)
+ * Object --> HCSR04: Echo reflection
+ * HCSR04 -> MCU: ECHO pulse (width = time-of-flight)
+ * deactivate HCSR04
+ * MCU -> MCU: Calculate distance = (pulse_width * speed_of_sound) / 2
+ * @enduml
+ * ```
+ *
+ * **Distance Calculation:**
+ * ```
+ * Speed of sound at 20°C: 343 m/s = 0.0343 cm/µs
+ * Roundtrip distance: echo_time_µs * 0.0343 cm/µs
+ * One-way distance: (echo_time_µs * 0.0343) / 2
+ * Simplified: distance_cm = echo_time_µs / 58
+ * ```
+ *
+ * ## Features
+ *
+ * **Measurement Modes:**
+ * - **Blocking** - Simple synchronous API, blocks until complete
+ * - **Asynchronous** - Non-blocking with callback, requires worker thread
+ *
+ * **Temperature Compensation:**
+ * - Adjusts speed of sound based on ambient temperature
+ * - Improves accuracy by ~0.17% per °C
+ * - Integrates with DS18B20 temperature sensor
+ *
+ * **Error Detection:**
+ * - Timeout detection (no echo = object >400cm or absent)
+ * - Range validation (rejects measurements <2cm or >400cm)
+ * - Cancellation support for async measurements
+ *
+ * **Statistics Tracking:**
+ * - Total measurement count
+ * - Timeout occurrences
+ * - Out-of-range errors
+ *
+ * ## NASA Power of 10 Compliance
+ *
+ * | Rule | Status | Implementation |
+ * |------|--------|----------------|
+ * | 1. Simple control flow | ✓ | No goto, no recursion, clear state machine |
+ * | 2. Fixed loop bounds | ✓ | All loops bounded by typed enum constants |
+ * | 3. No dynamic allocation | ✓ | Zero malloc/free, static thread stacks |
+ * | 4. Short functions | ✓ | Max 60 lines per function |
+ * | 5. Assertions | ✓ | Min 2 checks per function (nullptr, state) |
+ * | 6. Data scope | ✓ | Variables declared at smallest scope |
+ * | 7. Check returns | ✓ | All function returns validated |
+ * | 8. Limit preprocessor | ✓ | Typed enums only, no magic numbers |
+ * | 9. Pointer restrictions | ✓ | Function pointers for callbacks only |
+ * | 10. Compile warnings | ✓ | -Wall -Wextra -Werror |
+ *
+ * ## SOLID Principles
+ *
+ * **Single Responsibility:**
+ * - One purpose: HC-SR04 distance measurement
+ * - GPIO operations delegated to HAL
+ * - Timing delegated to platform-specific implementation
+ *
+ * **Open/Closed:**
+ * - Extensible via HAL interface (rx_hcsr04_hal.h)
+ * - New platforms supported without modifying driver
+ *
+ * **Liskov Substitution:**
+ * - HAL implementations interchangeable (hardware/mock)
+ * - Mock HAL enables host-side unit testing
+ *
+ * **Interface Segregation:**
+ * - Clean separation: init, measure, temp compensation, utilities
+ * - Optional features (async, temp) can be omitted
+ *
+ * **Dependency Inversion:**
+ * - Depends on HAL abstraction (rx_hcsr04_hal.h)
+ * - Hardware implementation injected at link time
+ *
+ * ## Performance
+ *
+ * **Typical Operation Times:**
+ * - Initialization: <1ms (GPIO configuration)
+ * - Trigger pulse: 10µs
+ * - Echo wait: 116µs (2cm) to 23.2ms (400cm)
+ * - Total measurement: 1-30ms depending on distance
+ * - Timeout (no object): 30ms
+ *
+ * **Measurement Rate:**
+ * - Minimum gap: 60ms (per HC-SR04 datasheet)
+ * - Maximum rate: ~16 Hz
+ * - Faster polling causes echo interference
+ *
+ * ## Thread Safety
+ *
+ * **Driver State:**
+ * - NOT thread-safe - no internal locking
+ * - Concurrent access to same handle causes race conditions
+ * - Multiple handles (different sensors) safe if no shared resources
+ *
+ * **Async Worker Thread:**
+ * - Thread-safe async operations via mutex-protected queue
+ * - Single worker services all sensor instances
+ * - FIFO processing order
+ *
+ * @par Example: Blocking Measurement
+ * @code
+ * // 1. Initialize sensor
+ * rx_hcsr04_t sensor;
+ * rx_hcsr04_config_t config = {
+ *     .trigger_pin = k_gpio_pb2,  // Type-safe GPIO
+ *     .echo_pin = k_gpio_pb3,
+ *     .timeout_us = k_hcsr04_echo_timeout_us  // 30ms default
+ * };
+ *
+ * rx_err_t err = rx_hcsr04_init(&sensor, &config);
+ * if (err != k_rx_ok) handle_error(err);
+ *
+ * // 2. Perform measurement
+ * float distance_cm = 0.0f;
+ * err = rx_hcsr04_measure_blocking(&sensor, &distance_cm);
+ *
+ * if (err == k_rx_ok) {
+ *     printf("Object at %.1f cm\n", distance_cm);
+ * } else if (err == k_rx_err_timeout) {
+ *     printf("No object detected (>400cm)\n");
+ * } else if (err == k_rx_err_out_of_range) {
+ *     printf("Object too close (<2cm)\n");
+ * }
+ *
+ * // 3. Cleanup
+ * rx_hcsr04_deinit(&sensor);
+ * @endcode
+ *
+ * @par Example: Asynchronous Measurement with Callback
+ * @code
+ * // Callback invoked from worker thread
+ * void measurement_callback(rx_hcsr04_t* sensor,
+ *                          const rx_hcsr04_result_t* result,
+ *                          void* user_data)
+ * {
+ *     if (result->status == k_rx_ok) {
+ *         printf("Async: %.1f cm (%.2f in)\n",
+ *                result->distance_cm, result->distance_in);
+ *     } else {
+ *         printf("Async error: %d\n", result->status);
+ *     }
+ * }
+ *
+ * // Initialize worker thread ONCE at startup
+ * rx_hcsr04_worker_init();
+ *
+ * // Start async measurement
+ * rx_err_t err = rx_hcsr04_measure_async(&sensor, measurement_callback, nullptr);
+ * if (err == k_rx_ok) {
+ *     // Returns immediately, callback invoked when complete
+ *     // Do other work while measurement in progress...
+ * }
+ *
+ * // Cancel if needed
+ * if (rx_hcsr04_is_busy(&sensor)) {
+ *     rx_hcsr04_cancel(&sensor);
+ * }
+ * @endcode
+ *
+ * @par Example: Temperature Compensation
+ * @code
+ * // Read temperature from DS18B20
+ * float temp_c = 0.0f;
+ * rx_ds18b20_read_temperature(&temp_sensor, &temp_c);
+ *
+ * // Enable compensation (applies to all subsequent measurements)
+ * rx_hcsr04_set_temperature(&distance_sensor, temp_c);
+ *
+ * // Measurements now use temperature-adjusted speed of sound
+ * float distance_cm = 0.0f;
+ * rx_hcsr04_measure_blocking(&distance_sensor, &distance_cm);
+ *
+ * // Accuracy improvement at 10°C vs 20°C: ~1.75%
+ * // For 100cm reading: ±1.75cm error correction
+ * @endcode
+ *
+ * @par Example: Statistics Monitoring
+ * @code
+ * uint32_t total = 0, timeouts = 0, range_errors = 0;
+ *
+ * rx_hcsr04_get_stats(&sensor, &total, &timeouts, &range_errors);
+ *
+ * float timeout_rate = (float)timeouts / total * 100.0f;
+ * float error_rate = (float)range_errors / total * 100.0f;
+ *
+ * printf("Measurements: %lu\n", total);
+ * printf("Timeout rate: %.1f%%\n", timeout_rate);
+ * printf("Error rate: %.1f%%\n", error_rate);
+ *
+ * // Reset counters
+ * rx_hcsr04_reset_stats(&sensor);
+ * @endcode
+ *
+ * @see rx_hcsr04_hal.h Hardware abstraction layer
+ * @see rx_port_constants.h GPIO pin definitions
+ * @see rx_ds18b20.h Temperature sensor integration
+ *
+ * @date 2026-01-05
+ * @copyright Copyright (c) 2026 STAR Project
+ */
+
+#pragma once
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "rx_err.h"
+#include "rx_port_constants.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* =============================================================================
+ * Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum rx_hcsr04_timing_t
+ * @brief HC-SR04 timing constants based on ultrasonic physics
+ *
+ * @details
+ * Timing parameters derived from HC-SR04 datasheet and ultrasonic propagation.
+ * All values calibrated for speed of sound at 20°C (343 m/s).
+ *
+ * **Physics Background:**
+ * - Speed of sound at 20°C: 343 m/s = 34,300 cm/s = 0.0343 cm/µs
+ * - Roundtrip distance: sound travels to object and back
+ * - Time per cm (roundtrip): 1 / 0.0343 = 29.15 µs/cm (one-way)
+ * - Time per cm (total): 29.15 * 2 = 58.3 µs/cm ≈ 58 µs/cm
+ *
+ * **Distance Calculation:**
+ * ```
+ * distance_cm = echo_time_µs / k_hcsr04_us_per_cm_roundtrip
+ * distance_cm = echo_time_µs / 58
+ * ```
+ *
+ * **Trigger Pulse Timing:**
+ * ```
+ * Time (µs)  Signal
+ * 0          TRIG ─┐
+ * 2          TRIG  │ (settle time)
+ * 2          TRIG  │
+ * 12         TRIG ─┘ (10µs pulse)
+ * 12+        Wait for echo...
+ * ```
+ *
+ * **Echo Pulse Timing:**
+ * - Minimum (2cm): 116 µs = 2 cm * 58 µs/cm
+ * - Maximum (400cm): 23,200 µs = 400 cm * 58 µs/cm
+ * - Timeout: 30,000 µs (400cm + 30% margin)
+ *
+ * **Measurement Rate Limit:**
+ * - HC-SR04 needs 60ms recovery time between measurements
+ * - Faster polling causes echo interference/false readings
+ * - Maximum rate: 1000ms / 60ms ≈ 16 Hz
+ *
+ * @note Temperature affects speed of sound (~0.17%/°C) - use temp compensation
+ * @see rx_hcsr04_set_temperature() For temperature compensation
+ * @see rx_hcsr04_get_speed_of_sound() Speed of sound calculation
+ */
+typedef enum : uint16_t {
+  k_hcsr04_trigger_settle_us   = 2,     /**< Pre-trigger settle time (ensure clean LOW) */
+  k_hcsr04_trigger_pulse_us    = 10,    /**< Trigger pulse width (10µs min per datasheet) */
+  k_hcsr04_echo_timeout_us     = 30000, /**< Echo timeout (30ms = 400cm + margin) */
+  k_hcsr04_min_echo_us         = 116,   /**< Minimum valid echo (2cm * 58 µs/cm) */
+  k_hcsr04_max_echo_us         = 23200, /**< Maximum valid echo (400cm * 58 µs/cm) */
+  k_hcsr04_us_per_cm_roundtrip = 58,    /**< Microseconds per cm roundtrip at 20°C */
+  k_hcsr04_measurement_gap_ms  = 60,    /**< Minimum gap between measurements (per datasheet) */
+} rx_hcsr04_timing_t;
+
+/**
+ * @enum rx_hcsr04_range_t
+ * @brief HC-SR04 measurement range limits
+ *
+ * @details
+ * Valid distance range for HC-SR04 sensor per datasheet specifications.
+ * Measurements outside this range are rejected as k_rx_err_out_of_range.
+ *
+ * **Range Characteristics:**
+ * - **Minimum (2cm):** Blind zone - echo overlaps trigger pulse
+ * - **Maximum (400cm):** Signal too weak for reliable detection
+ * - **Optimal:** 10cm - 200cm (best accuracy and reliability)
+ *
+ * **Factors Affecting Maximum Range:**
+ * - Object size: Larger objects detectable at greater distance
+ * - Object material: Hard surfaces reflect better than soft
+ * - Surface angle: Perpendicular surfaces give strongest echo
+ * - Ambient noise: Ultrasonic interference reduces range
+ *
+ * **Dead Zone (<2cm):**
+ * - Sensor cannot distinguish echo from trigger pulse
+ * - Use IR sensor for closer range
+ *
+ * @note Practical max range often 300cm due to real-world conditions
+ * @see rx_hcsr04_measure() Returns k_rx_err_out_of_range if outside limits
+ */
+typedef enum : uint16_t {
+  k_hcsr04_min_distance_cm = 2,   /**< Minimum measurable distance (blind zone limit) */
+  k_hcsr04_max_distance_cm = 400, /**< Maximum measurable distance (detection limit) */
+} rx_hcsr04_range_t;
+
+/* =============================================================================
+ * Type Definitions
+ * =============================================================================
+ */
+
+/**
+ * @struct rx_hcsr04_config_t
+ * @brief HC-SR04 sensor initialization configuration
+ *
+ * @details
+ * Configuration structure for initializing HC-SR04 sensor handle.
+ * Specifies GPIO pin assignments and measurement timeout.
+ *
+ * **Memory Layout (12 bytes on RX72N):**
+ * ```
+ * Offset | Field       | Type          | Size | Alignment
+ * -------|-------------|---------------|------|----------
+ * 0      | trigger_pin | rx_port_pin_t | 2    | 2
+ * 2      | echo_pin    | rx_port_pin_t | 2    | 2
+ * 4      | timeout_us  | uint32_t      | 4    | 4
+ * Total: 8 bytes (with padding)
+ * ```
+ *
+ * **Field Descriptions:**
+ * - `trigger_pin`: GPIO output pin for 10µs trigger pulse
+ * - `echo_pin`: GPIO input pin for measuring echo pulse width
+ * - `timeout_us`: Maximum wait time for echo (default: 30000µs = 30ms)
+ *
+ * **GPIO Pin Selection:**
+ * - Use type-safe `rx_port_pin_t` enum from rx_port_constants.h
+ * - Trigger and echo must be different pins
+ * - Both pins must support digital I/O
+ * - No PWM or special function required
+ *
+ * **Timeout Recommendations:**
+ * - Default (30ms): Covers full 400cm range + margin
+ * - Short range (10ms): Objects < 170cm only, faster response
+ * - Long range (50ms): Extra margin for difficult environments
+ *
+ * @par Example: Configuration for STAR Robot
+ * @code
+ * rx_hcsr04_config_t config = {
+ *     .trigger_pin = k_gpio_pb2,  // Port B, Pin 2
+ *     .echo_pin = k_gpio_pb3,     // Port B, Pin 3
+ *     .timeout_us = k_hcsr04_echo_timeout_us  // 30ms default
+ * };
+ *
+ * rx_hcsr04_t sensor;
+ * rx_err_t err = rx_hcsr04_init(&sensor, &config);
+ * @endcode
+ *
+ * @par Example: Short-Range Configuration (Fast Response)
+ * @code
+ * rx_hcsr04_config_t config = {
+ *     .trigger_pin = k_gpio_pe5,
+ *     .echo_pin = k_gpio_pe6,
+ *     .timeout_us = 10000  // 10ms timeout (covers 0-170cm)
+ * };
+ * // Faster response, but cannot detect objects > 170cm
+ * @endcode
+ *
+ * @note This structure is passed by pointer to rx_hcsr04_init()
+ * @warning Do not modify fields after initialization - call deinit/init instead
+ *
+ * @see rx_hcsr04_init()
+ * @see rx_port_constants.h Type-safe GPIO pin definitions
+ * @see rx_hcsr04_timing_t Timeout constants
+ */
+typedef struct {
+  rx_port_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO, output) */
+  rx_port_pin_t echo_pin;    /**< Echo pin (type-safe GPIO, input) */
+  uint32_t      timeout_us;  /**< Echo timeout in microseconds (default: 30000) */
+} rx_hcsr04_config_t;
+
+/**
+ * @brief HC-SR04 sensor handle
+ *
+ * Caller allocates this structure and passes to init. Driver manages
+ * internal state. Do not modify fields directly after initialization.
+ */
+typedef struct {
+  /* Configuration (set during init) */
+  rx_port_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
+  rx_port_pin_t echo_pin;    /**< Echo pin (type-safe GPIO enum) */
+  uint32_t      timeout_us;  /**< Measurement timeout in microseconds */
+
+  /* State */
+  bool  initialized;               /**< True if handle is initialized */
+  bool  measurement_active;        /**< True if async measurement in progress */
+  bool  cancel_requested;          /**< True if async measurement cancellation requested */
+  float temperature_celsius;       /**< Ambient temperature for compensation (20.0 if not set) */
+  bool  temp_compensation_enabled; /**< True if temperature compensation is enabled */
+
+  /* Statistics */
+  uint32_t measurement_count; /**< Total measurements attempted */
+  uint32_t timeout_count;     /**< Measurements that timed out */
+  uint32_t range_error_count; /**< Out-of-range readings (too close/far) */
+} rx_hcsr04_t;
+
+/**
+ * @brief Measurement result structure
+ *
+ * Contains distance in multiple units and raw timing data.
+ */
+typedef struct {
+  float    distance_cm;  /**< Distance in centimeters */
+  float    distance_in;  /**< Distance in inches */
+  uint32_t echo_time_us; /**< Raw echo pulse duration in microseconds */
+  rx_err_t status;       /**< Measurement status (k_rx_ok or error code) */
+} rx_hcsr04_result_t;
+
+/**
+ * @brief Async measurement callback function type
+ *
+ * Called when async measurement completes or times out.
+ *
+ * @param[in] handle    Sensor handle
+ * @param[in] result    Measurement result
+ * @param[in] user_data User context passed to rx_hcsr04_measure_async()
+ */
+typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
+                                     const rx_hcsr04_result_t* result,
+                                     void*                     user_data);
+
+/* =============================================================================
+ * Public API - Initialization
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize HC-SR04 sensor
+ *
+ * Configures GPIO pins for trigger (output) and echo (input).
+ * Reserves pins via pin validator to prevent conflicts.
+ *
+ * @param[out] handle Handle to initialize (caller-allocated)
+ * @param[in]  config Configuration with pin assignments
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if handle or config is nullptr
+ * @return k_rx_err_invalid_arg if port/pin values are invalid
+ * @return k_rx_err_gpio_conflict if pins already reserved
+ * @return k_rx_err_invalid_state if handle already initialized
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config);
+
+/**
+ * @brief Deinitialize HC-SR04 sensor
+ *
+ * Releases GPIO pin reservations and resets handle state.
+ *
+ * @param[in,out] handle Sensor handle
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if handle is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle);
+
+/**
+ * @brief Initialize HC-SR04 async worker thread
+ *
+ * Creates a ThreadX worker thread for non-blocking async measurements.
+ * Must be called before using rx_hcsr04_measure_async() for true async operation.
+ *
+ * The worker thread:
+ * - Runs at priority 10
+ * - Uses 1KB stack
+ * - Processes measurement requests from event flags
+ * - Invokes callbacks in worker thread context
+ *
+ * @note This is optional. If not called, rx_hcsr04_measure_async() will
+ *       fall back to synchronous operation (callback invoked before return).
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_rtos_error if thread creation fails
+ * @return k_rx_err_invalid_state if worker already initialized
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_worker_init(void);
+
+/**
+ * @brief Deinitialize HC-SR04 async worker thread
+ *
+ * Terminates the worker thread and releases resources.
+ * Any pending async measurements will be cancelled.
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_state if worker not initialized
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_worker_deinit(void);
+
+/* =============================================================================
+ * Public API - Measurement
+ * =============================================================================
+ */
+
+/**
+ * @brief Measure distance (blocking)
+ *
+ * Performs a complete measurement cycle:
+ * 1. Send 10us trigger pulse
+ * 2. Wait for echo pulse start
+ * 3. Measure echo pulse duration
+ * 4. Convert to distance
+ *
+ * Blocks for up to timeout_us (default 30ms).
+ *
+ * @param[in]  handle      Sensor handle
+ * @param[out] distance_cm Measured distance in centimeters
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if handle or distance_cm is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ * @return k_rx_err_timeout if no echo received (object >400cm or absent)
+ * @return k_rx_err_out_of_range if distance <2cm (too close)
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm);
+
+/**
+ * @brief Measure distance with full result (blocking)
+ *
+ * Same as rx_hcsr04_measure_blocking() but returns complete result
+ * including both distance units and raw timing.
+ *
+ * @param[in]  handle Sensor handle
+ * @param[out] result Complete measurement result
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if handle or result is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ * @return k_rx_err_timeout if no echo received
+ * @return k_rx_err_out_of_range if distance out of bounds
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result);
+
+/**
+ * @brief Start asynchronous measurement
+ *
+ * Initiates measurement and invokes callback with result.
+ *
+ * **Operating Modes:**
+ * - **Worker initialized** (rx_hcsr04_worker_init() called):
+ *   Returns immediately, callback invoked from worker thread when complete.
+ *   True non-blocking operation.
+ *
+ * - **Worker not initialized**:
+ *   Performs synchronous measurement, callback invoked before return.
+ *   Caller blocks for up to timeout_us (default 30ms).
+ *
+ * @note Use rx_hcsr04_cancel() to abort in-progress async measurements.
+ *       Cancellation only works when worker thread is active.
+ *
+ * @param[in] handle    Sensor handle
+ * @param[in] callback  Completion callback (required)
+ * @param[in] user_data User context passed to callback (can be NULL)
+ *
+ * @return k_rx_ok if measurement queued (async) or completed (sync)
+ * @return k_rx_err_null_ptr if handle or callback is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ * @return k_rx_err_busy if measurement already in progress
+ */
+rx_err_t
+rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void* user_data);
+
+/**
+ * @brief Check if async measurement is in progress
+ *
+ * @param[in] handle Sensor handle
+ *
+ * @return true if measurement in progress
+ * @return false if idle or handle is nullptr
+ */
+[[nodiscard]] bool rx_hcsr04_is_busy(const rx_hcsr04_t* handle);
+
+/**
+ * @brief Cancel async measurement
+ *
+ * Cancels in-progress async measurement. Callback will NOT be invoked.
+ *
+ * @param[in] handle Sensor handle
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if handle is nullptr
+ * @return k_rx_err_invalid_state if no measurement in progress
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle);
+
+/* =============================================================================
+ * Public API - Temperature Compensation
+ * =============================================================================
+ */
+
+/**
+ * @brief Set ambient temperature for automatic distance compensation
+ *
+ * Enables temperature compensation and updates the temperature used for
+ * all subsequent distance measurements. The speed of sound varies with
+ * temperature (~0.17% per °C), affecting measurement accuracy.
+ *
+ * When enabled, all measurement functions (rx_hcsr04_measure_blocking,
+ * rx_hcsr04_measure, rx_hcsr04_measure_async) will automatically use
+ * temperature-compensated distance calculations.
+ *
+ * Temperature can be updated at any time, including between measurements.
+ * Typical usage: read from DS18B20 sensor periodically and update.
+ *
+ * @param[in,out] handle         Sensor handle
+ * @param[in]     temp_celsius   Ambient temperature in degrees Celsius
+ *                                Valid range: -40°C to +85°C
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if handle is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ * @return k_rx_err_invalid_arg if temperature out of valid range
+ *
+ * @note To disable temperature compensation, call rx_hcsr04_disable_temp_compensation()
+ *
+ * @see rx_hcsr04_disable_temp_compensation()
+ * @see rx_hcsr04_echo_to_cm_with_temp()
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, float temp_celsius);
+
+/**
+ * @brief Disable automatic temperature compensation
+ *
+ * Disables temperature compensation and reverts to assuming 20°C for all
+ * distance calculations. This is the default behavior after initialization.
+ *
+ * @param[in,out] handle Sensor handle
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if handle is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_disable_temp_compensation(rx_hcsr04_t* handle);
+
+/**
+ * @brief Check if temperature compensation is enabled
+ *
+ * @param[in] handle Sensor handle
+ *
+ * @return true if temperature compensation is enabled
+ * @return false if disabled or handle is nullptr
+ */
+[[nodiscard]] bool rx_hcsr04_is_temp_compensation_enabled(const rx_hcsr04_t* handle);
+
+/**
+ * @brief Get current temperature setting
+ *
+ * Returns the currently configured temperature value used for compensation.
+ * If compensation is disabled, still returns the last set value (or 20.0°C default).
+ *
+ * @param[in]  handle       Sensor handle
+ * @param[out] temp_celsius Current temperature setting
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if handle or temp_celsius is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsius);
+
+/* =============================================================================
+ * Public API - Utilities
+ * =============================================================================
+ */
+
+/**
+ * @brief Convert distance from centimeters to inches
+ *
+ * @param[in] distance_cm Distance in centimeters
+ *
+ * @return Distance in inches
+ */
+float rx_hcsr04_cm_to_inches(float distance_cm);
+
+/**
+ * @brief Convert echo time to distance in centimeters
+ *
+ * Uses formula: distance = (echo_us * speed_of_sound) / 2
+ * Speed of sound at 20C = 343 m/s = 0.0343 cm/us
+ *
+ * @note This function assumes 20°C. For temperature compensation, use
+ *       rx_hcsr04_echo_to_cm_with_temp() instead.
+ *
+ * @param[in] echo_time_us Echo pulse duration in microseconds
+ *
+ * @return Distance in centimeters
+ */
+float rx_hcsr04_echo_to_cm(uint32_t echo_time_us);
+
+/**
+ * @brief Convert echo time to distance with temperature compensation
+ *
+ * Calculates distance using temperature-compensated speed of sound.
+ * Speed of sound varies with temperature: v = 331.3 + (0.606 * temp_c) m/s
+ *
+ * Temperature compensation improves accuracy by ~0.17% per °C deviation from 20°C.
+ *
+ * Example: At 10°C, speed is ~337 m/s vs 343 m/s at 20°C (~1.75% difference)
+ *
+ * @param[in] echo_time_us  Echo pulse duration in microseconds
+ * @param[in] temp_celsius  Ambient temperature in degrees Celsius
+ *
+ * @return Distance in centimeters (temperature-compensated)
+ */
+float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius);
+
+/**
+ * @brief Calculate speed of sound at given temperature
+ *
+ * Uses formula: v = 331.3 + (0.606 * temp_c) m/s
+ *
+ * Valid temperature range: -40°C to +85°C (DS18B20 operating range)
+ *
+ * @param[in] temp_celsius Ambient temperature in degrees Celsius
+ *
+ * @return Speed of sound in m/s
+ */
+float rx_hcsr04_get_speed_of_sound(float temp_celsius);
+
+/**
+ * @brief Get sensor statistics
+ *
+ * @param[in]  handle           Sensor handle
+ * @param[out] measurement_count Total measurements (can be NULL)
+ * @param[out] timeout_count     Timeout count (can be NULL)
+ * @param[out] range_error_count Range error count (can be NULL)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if handle is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_get_stats(const rx_hcsr04_t* handle,
+                             uint32_t*          measurement_count,
+                             uint32_t*          timeout_count,
+                             uint32_t*          range_error_count);
+
+/**
+ * @brief Reset sensor statistics
+ *
+ * @param[in,out] handle Sensor handle
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if handle is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_reset_stats(rx_hcsr04_t* handle);
+
+#ifdef __cplusplus
+}
+#endif

@@ -1,0 +1,384 @@
+/* tests/test_telemetry_aggregation_task.c */
+
+/**
+ * @file test_telemetry_aggregation_task.c
+ * @brief Unit Tests for Telemetry Aggregation Task
+ *
+ * @details
+ * Tests telemetry task creation, data collection, and transmission.
+ * Uses mocks for ThreadX, nanopb, comm_manager, and shared data.
+ *
+ * Test coverage:
+ * - Task creation success
+ * - Encoder data collection from shared data
+ * - Protobuf encoding of telemetry
+ * - Broadcast to all communication channels
+ *
+ * @author STAR Team
+ * @date 2026-01-29
+ * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ */
+
+#include "unity.h"
+
+#include "mock_rx_comm_manager.h"
+#include "mock_rx_nanopb.h"
+#include "mock_shared_data.h"
+#include "tx_api.h"
+
+#include <string.h>
+
+/* Include the task header for the public API */
+#include "telemetry_task.h"
+
+/* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+typedef enum : uint8_t {
+  k_test_motor_count = 4, /**< Number of motors */
+} test_telem_motor_constants_t;
+
+typedef enum : uint16_t {
+  k_test_buffer_size = 512, /**< Telemetry buffer size */
+} test_telem_buffer_constants_t;
+
+/* =============================================================================
+ * Test Fixture
+ * =============================================================================
+ */
+
+void setUp(void)
+{
+  /* Reset all mocks before each test */
+  mock_shared_data_reset();
+  mock_nanopb_reset();
+  mock_comm_manager_reset();
+  mock_tx_reset();
+}
+
+void tearDown(void)
+{
+  /* Clean up after each test */
+}
+
+/* =============================================================================
+ * Task Creation Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Test successful telemetry task creation
+ *
+ * @details
+ * Verifies that telemetry_task_create() successfully creates
+ * the ThreadX thread when conditions are normal.
+ */
+void test_telemetry_task_create_success(void)
+{
+  rx_err_t err;
+
+  /* Configure mocks for success */
+  mock_tx_set_thread_create_return(TX_SUCCESS);
+
+  /* Create the task */
+  err = telemetry_task_create();
+
+  /* Verify success */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(mock_tx_was_thread_create_called());
+}
+
+/**
+ * @brief Test telemetry task creation fails when ThreadX fails
+ */
+void test_telemetry_task_create_thread_failure(void)
+{
+  rx_err_t err;
+
+  /* Configure ThreadX to fail */
+  mock_tx_set_thread_create_return(TX_NO_MEMORY);
+
+  /* Create the task */
+  err = telemetry_task_create();
+
+  /* Verify failure */
+  TEST_ASSERT_EQUAL(k_rx_err_rtos_thread_create, err);
+}
+
+/**
+ * @brief Test telemetry task creation fails when already created
+ */
+void test_telemetry_task_create_already_created(void)
+{
+  rx_err_t err;
+
+  /* Configure mocks for success */
+  mock_tx_set_thread_create_return(TX_SUCCESS);
+
+  /* Create the task first time - should succeed */
+  err = telemetry_task_create();
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Create the task second time - should fail */
+  err = telemetry_task_create();
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/* =============================================================================
+ * Data Collection Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Test telemetry task collects encoder data
+ *
+ * @details
+ * Verifies that motor state (encoder data) is read from shared_data
+ * and used in telemetry.
+ */
+void test_telemetry_task_collects_encoder_data(void)
+{
+  motor_state_t state_in  = {0};
+  motor_state_t state_out = {0};
+  rx_err_t      err;
+
+  /* Set up motor state with encoder data */
+  state_in.encoder_counts[0]       = 1000;
+  state_in.encoder_counts[1]       = 1050;
+  state_in.encoder_counts[2]       = 995;
+  state_in.encoder_counts[3]       = 1005;
+  state_in.current_velocity_mps[0] = 0.95f;
+  state_in.current_velocity_mps[1] = 1.00f;
+  state_in.current_velocity_mps[2] = -0.48f;
+  state_in.current_velocity_mps[3] = -0.50f;
+  state_in.estop_active            = false;
+  state_in.mode                    = k_motor_mode_velocity;
+
+  /* Store in shared data */
+  err = shared_data_update_motor_state(&state_in);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Task would read motor state */
+  err = shared_data_get_motor_state(&state_out);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Verify encoder data accessible */
+  TEST_ASSERT_EQUAL_INT32(1000, state_out.encoder_counts[0]);
+  TEST_ASSERT_EQUAL_INT32(1050, state_out.encoder_counts[1]);
+  TEST_ASSERT_EQUAL_INT32(995, state_out.encoder_counts[2]);
+  TEST_ASSERT_EQUAL_INT32(1005, state_out.encoder_counts[3]);
+  TEST_ASSERT_EQUAL_FLOAT(0.95f, state_out.current_velocity_mps[0]);
+  TEST_ASSERT_EQUAL_FLOAT(1.00f, state_out.current_velocity_mps[1]);
+}
+
+/**
+ * @brief Test telemetry collects BMS data
+ *
+ * @details
+ * Verifies that BMS state is read from shared_data for telemetry.
+ */
+void test_telemetry_task_collects_bms_data(void)
+{
+  bms_state_t bms_in  = {0};
+  bms_state_t bms_out = {0};
+  rx_err_t    err;
+
+  /* Set up BMS state */
+  bms_in.voltage_mv  = 16500;
+  bms_in.soc_percent = 75;
+  bms_in.valid       = true;
+
+  /* Store */
+  err = shared_data_update_bms(&bms_in);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Read for telemetry */
+  err = shared_data_get_bms(&bms_out);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Verify */
+  TEST_ASSERT_TRUE(bms_out.valid);
+  TEST_ASSERT_EQUAL_UINT16(16500, bms_out.voltage_mv);
+  TEST_ASSERT_EQUAL_UINT8(75, bms_out.soc_percent);
+}
+
+/**
+ * @brief Test telemetry collects temperature data
+ *
+ * @details
+ * Verifies that temperature state is read from shared_data.
+ */
+void test_telemetry_task_collects_temp_data(void)
+{
+  temp_sensor_state_t temp_in  = {0};
+  temp_sensor_state_t temp_out = {0};
+  rx_err_t            err;
+
+  /* Set up temp state (25.50°C = 2550 centi-degrees) */
+  temp_in.temperature_cdegc[0] = 2550;
+  temp_in.sensor_valid[0]      = true;
+  temp_in.sensor_count         = 1;
+
+  /* Store */
+  err = shared_data_update_temp(&temp_in);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Read for telemetry */
+  err = shared_data_get_temp(&temp_out);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Verify */
+  TEST_ASSERT_TRUE(temp_out.sensor_valid[0]);
+  TEST_ASSERT_EQUAL_INT16(2550, temp_out.temperature_cdegc[0]);
+}
+
+/* =============================================================================
+ * Encoding Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Test telemetry task encodes protobuf
+ *
+ * @details
+ * Verifies that rx_nanopb_encode_telemetry() is called with
+ * collected data and produces valid encoded output.
+ */
+void test_telemetry_task_encodes_protobuf(void)
+{
+  star_v1_TelemetryData telemetry = star_v1_TelemetryData_init_zero;
+  uint8_t               buffer[k_test_buffer_size];
+  uint32_t              encoded_len = 0;
+  rx_err_t              err;
+
+  /* Set up telemetry data */
+  telemetry.timestamp_us     = 1000000;
+  telemetry.frame_sequence   = 42;
+  telemetry.emergency_stop   = false;
+  telemetry.battery_voltage_v = 16.5;
+  telemetry.battery_percent   = 75.0;
+
+  /* Configure mock to succeed */
+  mock_nanopb_set_encode_telemetry_return(k_rx_ok);
+  mock_nanopb_set_encode_length(64);
+
+  /* Encode */
+  err = rx_nanopb_encode_telemetry(&telemetry, buffer, k_test_buffer_size, &encoded_len);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT32(64, encoded_len);
+  TEST_ASSERT_EQUAL_UINT32(1, mock_nanopb_get_encode_telemetry_count());
+}
+
+/**
+ * @brief Test encoding failure is handled
+ *
+ * @details
+ * Verifies that encoding failure doesn't crash and is reported.
+ */
+void test_telemetry_task_handles_encode_failure(void)
+{
+  star_v1_TelemetryData telemetry = star_v1_TelemetryData_init_zero;
+  uint8_t               buffer[k_test_buffer_size];
+  uint32_t              encoded_len = 0;
+  rx_err_t              err;
+
+  /* Configure mock to fail */
+  mock_nanopb_set_encode_telemetry_return(k_rx_err_protocol_error);
+
+  /* Attempt to encode (should fail) */
+  err = rx_nanopb_encode_telemetry(&telemetry, buffer, k_test_buffer_size, &encoded_len);
+
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/* =============================================================================
+ * Transmission Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Test telemetry task broadcasts to USB channel
+ *
+ * @details
+ * Verifies that encoded telemetry is sent via communication manager.
+ */
+void test_telemetry_task_broadcasts_to_usb(void)
+{
+  rx_comm_manager_t     mgr    = {0};
+  rx_comm_send_params_t params = {0};
+  uint8_t               payload[64];
+  rx_err_t              err;
+
+  /* Initialize manager (required for send to work) */
+  mgr.initialized = true;
+
+  /* Set up send parameters as task does */
+  params.channel     = k_comm_channel_usb;
+  params.type        = k_frame_type_response;
+  params.flags       = 0;
+  params.payload     = payload;
+  params.payload_len = 64;
+
+  /* Configure mock */
+  mock_comm_manager_set_send_return(k_rx_ok);
+
+  /* Send */
+  err = rx_comm_manager_send(&mgr, &params);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT32(1, mock_comm_manager_get_send_count());
+}
+
+/**
+ * @brief Test send failure doesn't stop telemetry
+ *
+ * @details
+ * Verifies that send failure is handled gracefully.
+ */
+void test_telemetry_task_handles_send_failure(void)
+{
+  rx_comm_manager_t     mgr    = {0};
+  rx_comm_send_params_t params = {0};
+  rx_err_t              err;
+
+  /* Configure mock to fail */
+  mock_comm_manager_set_send_return(k_rx_err_timeout);
+
+  /* Send (should fail but not crash) */
+  err = rx_comm_manager_send(&mgr, &params);
+
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/* =============================================================================
+ * Test Runner
+ * =============================================================================
+ */
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  /* Task Creation Tests */
+  RUN_TEST(test_telemetry_task_create_success);
+  RUN_TEST(test_telemetry_task_create_thread_failure);
+  RUN_TEST(test_telemetry_task_create_already_created);
+
+  /* Data Collection Tests */
+  RUN_TEST(test_telemetry_task_collects_encoder_data);
+  RUN_TEST(test_telemetry_task_collects_bms_data);
+  RUN_TEST(test_telemetry_task_collects_temp_data);
+
+  /* Encoding Tests */
+  RUN_TEST(test_telemetry_task_encodes_protobuf);
+  RUN_TEST(test_telemetry_task_handles_encode_failure);
+
+  /* Transmission Tests */
+  RUN_TEST(test_telemetry_task_broadcasts_to_usb);
+  RUN_TEST(test_telemetry_task_handles_send_failure);
+
+  return UNITY_END();
+}

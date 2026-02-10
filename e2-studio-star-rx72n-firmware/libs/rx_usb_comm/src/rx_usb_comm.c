@@ -1,0 +1,1436 @@
+/* lib/rx_usb_comm/src/rx_usb_comm.c */
+
+/**
+ * @file rx_usb_comm.c
+ * @brief High-Level USB CDC Communication Layer Implementation
+ *
+ * @details
+ * Implements reliable USB communication by integrating the frame protocol layer
+ * (rx_frame) with the USB CDC driver (rx_usb). Handles frame encoding/decoding,
+ * CRC-32 validation, sequence number management, and receive buffer handling.
+ *
+ * @par Implementation Architecture:
+ * @msc
+ * App, USB_Comm, Frame, USB_CDC;
+ * --- [label="TX Path"];
+ * App => USB_Comm [label="send(type, payload)"];
+ * USB_Comm => Frame [label="encode()"];
+ * USB_Comm => USB_CDC [label="write()"];
+ * --- [label="RX Path"];
+ * USB_CDC => USB_Comm [label="read()"];
+ * USB_Comm box USB_Comm [label="Find sync, decode"];
+ * USB_Comm => App [label="frame"];
+ * @endmsc
+ *
+ * @par Port Assignment:
+ * | Port | Constant         | Host Device  | Purpose              |
+ * |------|------------------|--------------|----------------------|
+ * | 0    | k_usb_port_proto | /dev/ttyACM0 | Binary protocol      |
+ * | 1    | k_usb_port_debug | /dev/ttyACM1 | Debug text output    |
+ *
+ * @par Performance:
+ * | Operation      | Typical   | Worst Case  |
+ * |----------------|-----------|-------------|
+ * | Send (64B)     | 80 µs     | 200 µs      |
+ * | Receive        | 500 µs    | timeout_ms  |
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 1: ✓ No goto, setjmp, recursion
+ * - Rule 2: ✓ Loops bounded by k_max_receive_iterations
+ * - Rule 3: ✓ No dynamic allocation
+ * - Rule 5: ✓ Pre/post conditions on all functions
+ * - Rule 7: ✓ All return values checked
+ * - Rule 8: ✓ Typed enums for constants
+ *
+ * @par SOLID Principles:
+ * - SRP: Handles USB framing only, delegates I/O to rx_usb
+ * - DIP: Uses rx_time_interface abstraction for delays
+ *
+ * @see rx_usb_comm.h Public API header
+ * @see rx_frame.h Frame encoding layer
+ * @see rx_usb.h USB CDC driver
+ *
+ * @author STAR Team
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ */
+
+#include "rx_usb_comm.h"
+
+#include <string.h>
+
+#include "rx_check.h"
+#include "rx_crc.h"
+#include "rx_log.h"
+#include "rx_usb.h"
+
+/* =============================================================================
+ * Module State
+ * =============================================================================
+ */
+
+static const char* s_tag = "USB_COMM";
+
+/* =============================================================================
+ * Frame Header Constants
+ *
+ * Frame format: [SYNC(2B)][SEQ(2B)][LEN(2B)][TYPE(1B)][FLAGS(1B)]
+ * =============================================================================
+ */
+
+/** @brief Total header size including sync word: SYNC(2) + SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) */
+typedef enum : uint8_t {
+  k_frame_header_total =
+    k_frame_sync_size + k_frame_seq_size + k_frame_len_size + k_frame_type_size + k_frame_flags_size,
+} rx_usb_comm_header_size_t;
+
+/**
+ * @brief Decode frame header from raw wire data
+ *
+ * @details
+ * Parses the frame header fields from a raw byte buffer. Validates sync word,
+ * extracts sequence number, payload length, type, and flags.
+ *
+ * @par Algorithm:
+ * 1. Validate input pointers (RX_ASSERT + runtime check)
+ * 2. Verify minimum data length for header
+ * 3. Read and validate sync word (0x55AA big-endian)
+ * 4. Extract sequence number (BE16)
+ * 5. Extract and validate payload length (BE16)
+ * 6. Extract frame type and flags
+ * 7. Return offset past header for payload access
+ *
+ * @param[in] data Raw frame data buffer (must not be nullptr)
+ * @param[in] data_len Length of data buffer in bytes
+ * @param[out] frame Frame structure to populate (must not be nullptr)
+ * @param[out] offset_out Offset past header (optional, can be nullptr)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, frame header decoded
+ * @retval k_rx_err_invalid_arg nullptr pointer in data or frame
+ * @retval k_rx_err_invalid_size Data too short for header
+ * @retval k_rx_err_protocol_error Invalid sync word
+ *
+ * @pre data != nullptr
+ * @pre frame != nullptr
+ * @pre data_len >= k_frame_min_size for valid frame
+ * @post frame->header fields populated on success
+ * @post offset_out contains byte offset past header (if not nullptr)
+ *
+ * @note Not thread-safe, but stateless (safe for concurrent calls with different data)
+ *
+ * @see internal_verify_crc() Called after this to verify frame CRC
+ */
+static rx_err_t internal_decode_header(const uint8_t* data,
+                                       const uint32_t data_len,
+                                       rx_frame_t*    frame,
+                                       uint32_t*      offset_out)
+{
+  uint32_t offset;
+  uint16_t sync_word;
+  uint32_t expected_size;
+
+  RX_ASSERT(data != nullptr, "Data pointer is nullptr");
+  RX_ASSERT(frame != nullptr, "Frame pointer is nullptr");
+  if (data == nullptr || frame == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (data_len < k_frame_min_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  offset = 0;
+
+  sync_word = rx_frame_read_be16(&data[offset]);
+  if (sync_word != k_frame_sync_word) {
+    return k_rx_err_protocol_error;
+  }
+  offset += k_frame_sync_size;
+
+  frame->header.sequence = rx_frame_read_be16(&data[offset]);
+  offset += k_frame_seq_size;
+
+  frame->header.length = rx_frame_read_be16(&data[offset]);
+  offset += k_frame_len_size;
+
+  if (frame->header.length > k_frame_max_payload) {
+    return k_rx_err_invalid_size;
+  }
+
+  expected_size = rx_frame_encoded_size(frame->header.length);
+  if (data_len < expected_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  frame->header.type = data[offset];
+  offset += k_frame_type_size;
+
+  frame->header.flags = data[offset];
+  offset += k_frame_flags_size;
+
+  if (offset_out != nullptr) {
+    *offset_out = offset;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Verify CRC-32 IEEE checksum for received frame
+ *
+ * @details
+ * Computes CRC-32 IEEE 802.3 checksum over the frame data (excluding CRC field)
+ * and compares against the CRC stored in the frame. Uses little-endian CRC
+ * storage as per protocol specification.
+ *
+ * @par Algorithm:
+ * 1. Validate data pointer (RX_ASSERT + runtime check)
+ * 2. Validate offset is valid for CRC position
+ * 3. Read stored CRC from data[offset] (LE32)
+ * 4. Calculate CRC-32 over data[0..offset-1]
+ * 5. Compare and return result
+ *
+ * @param[in] data Raw frame data buffer containing header + payload + CRC
+ * @param[in] offset Byte offset to CRC field (= header_size + payload_len)
+ * @param[out] crc_out Optional pointer to receive verified CRC value (can be nullptr)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok CRC valid, frame integrity confirmed
+ * @retval k_rx_err_invalid_arg nullptr data or offset too small
+ * @retval k_rx_err_crc_mismatch Calculated CRC doesn't match stored CRC
+ *
+ * @pre data != nullptr
+ * @pre offset >= (k_frame_min_size - k_frame_crc_size)
+ * @post crc_out contains verified CRC value on success (if not nullptr)
+ * @post Frame integrity validated on k_rx_ok return
+ *
+ * @note Uses rx_crc32_ieee() - CRC-32 IEEE 802.3 polynomial
+ * @note CRC stored in little-endian format in frame
+ *
+ * @par Performance:
+ * CRC calculation: ~10 µs for 64-byte payload @ 240 MHz
+ *
+ * @see rx_crc32_ieee() CRC calculation function
+ * @see internal_decode_header() Called before this to parse header
+ */
+static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32_t* crc_out)
+{
+  /* Pre-condition 1: Validate data pointer */
+  RX_ASSERT(data != nullptr, "Data pointer is nullptr");
+  if (data == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Offset must be at least header size for valid CRC position */
+  RX_ASSERT(offset >= (k_frame_min_size - k_frame_crc_size),
+            "CRC offset too small for valid frame");
+  if (offset < (k_frame_min_size - k_frame_crc_size)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  const uint32_t received_crc   = rx_frame_read_le32(&data[offset]);
+  const uint32_t calculated_crc = rx_crc32_ieee(data, offset);
+
+  if (received_crc != calculated_crc) {
+    return k_rx_err_crc_mismatch;
+  }
+
+  if (crc_out != nullptr) {
+    *crc_out = received_crc;
+  }
+
+  return k_rx_ok;
+}
+
+/** @brief Sleep interval for receive polling (ms) */
+typedef enum : uint8_t {
+  k_sleep_interval_ms = 10,
+} rx_usb_comm_sleep_t;
+
+/**
+ * @brief Sequence number constants
+ */
+typedef enum : uint16_t {
+  k_initial_sequence = 0, /**< Initial TX/RX sequence number */
+} rx_usb_comm_sequence_constants_t;
+
+/**
+ * @brief Receive loop bounds for NASA Power of 10 Rule 2 compliance
+ */
+typedef enum : uint8_t {
+  k_max_receive_iterations = 100, /**< Max receive loop attempts */
+} rx_usb_comm_loop_limits_t;
+
+/** @brief Byte offsets within frame header buffer */
+typedef enum : uint8_t {
+  k_hdr_len_offset = 4, /**< Payload length field offset */
+} frame_header_offset_t;
+
+/* =============================================================================
+ * Internal Helpers
+ * =============================================================================
+ */
+
+/**
+ * @brief Sync word not found sentinel value
+ */
+typedef enum : int32_t {
+  k_sync_not_found = -1, /**< Sync word not found in buffer */
+} rx_usb_comm_sync_result_t;
+
+/**
+ * @brief Read available data from USB CDC into staging buffer
+ *
+ * @details
+ * Reads any available data from USB Port 0 (protocol port) into the handle's
+ * rx_buffer. Appends to existing data without overwriting. Returns immediately
+ * if buffer is full or no data available.
+ *
+ * @par Algorithm:
+ * 1. Validate handle pointer
+ * 2. Validate buffer length within bounds
+ * 3. Calculate available space in buffer
+ * 4. Return early if buffer full
+ * 5. Call rx_usb_read() to get available data
+ * 6. Update buffer length
+ * 7. Validate post-condition
+ *
+ * @param[in,out] handle USB communication handle with rx_buffer
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success (0 or more bytes read)
+ * @retval k_rx_err_invalid_arg nullptr handle
+ * @retval k_rx_err_invalid_state Buffer length exceeds maximum
+ * @retval Other errors from rx_usb_read()
+ *
+ * @pre handle != nullptr
+ * @pre handle->rx_buffer_len <= k_usb_comm_rx_buffer_size
+ * @post handle->rx_buffer_len <= k_usb_comm_rx_buffer_size
+ * @post Data appended to handle->rx_buffer[old_len..new_len]
+ *
+ * @note Non-blocking: returns immediately with available data
+ * @note Uses Port 0 (k_usb_port_proto) exclusively
+ *
+ * @see internal_compact_rx_buffer() Call after consuming data
+ */
+static rx_err_t internal_read_usb_data(rx_usb_comm_handle_t* handle)
+{
+  /* Pre-condition 1: Handle must be valid */
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Buffer length must be within bounds */
+  if (handle->rx_buffer_len > k_usb_comm_rx_buffer_size) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Calculate available space in buffer */
+  const uint32_t space = k_usb_comm_rx_buffer_size - handle->rx_buffer_len;
+  if (space == 0) {
+    return k_rx_ok; /* Buffer full */
+  }
+
+  /* Read from USB (Port 0 = protocol) */
+  uint32_t       bytes_read = 0;
+  const rx_err_t err =
+    rx_usb_read(k_usb_port_proto, handle->rx_buffer + handle->rx_buffer_len, space, &bytes_read);
+
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  handle->rx_buffer_len += bytes_read;
+
+  /* Post-condition: Buffer length must not exceed maximum */
+  if (handle->rx_buffer_len > k_usb_comm_rx_buffer_size) {
+    return k_rx_err_invalid_state;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Compact receive buffer by removing consumed data
+ *
+ * @details
+ * Removes data from the beginning of rx_buffer that has already been processed
+ * (bytes 0 to rx_buffer_pos-1). Remaining data is moved to the start of the
+ * buffer using memmove() to handle overlapping regions safely.
+ *
+ * @par Algorithm:
+ * 1. Validate handle pointer
+ * 2. Validate position <= length invariant
+ * 3. Return early if position is 0 (nothing to compact)
+ * 4. If all data consumed, reset both counters to 0
+ * 5. Otherwise, memmove remaining data to start
+ * 6. Update length and reset position to 0
+ * 7. Validate post-condition
+ *
+ * @param[in,out] handle USB communication handle with rx_buffer
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, buffer compacted
+ * @retval k_rx_err_invalid_arg nullptr handle
+ * @retval k_rx_err_invalid_state Position exceeds length
+ *
+ * @pre handle != nullptr
+ * @pre handle->rx_buffer_pos <= handle->rx_buffer_len
+ * @post handle->rx_buffer_pos == 0
+ * @post Remaining data preserved at buffer start
+ *
+ * @note Uses memmove() for safe overlapping copy
+ * @note O(n) where n = remaining bytes
+ *
+ * @see internal_read_usb_data() Fills buffer before compaction
+ */
+static rx_err_t internal_compact_rx_buffer(rx_usb_comm_handle_t* handle)
+{
+  /* Pre-condition 1: Handle must be valid */
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Position must not exceed length */
+  if (handle->rx_buffer_pos > handle->rx_buffer_len) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (handle->rx_buffer_pos == 0) {
+    return k_rx_ok; /* Nothing to compact */
+  }
+
+  if (handle->rx_buffer_pos >= handle->rx_buffer_len) {
+    /* All data consumed, reset buffer */
+    handle->rx_buffer_len = 0;
+    handle->rx_buffer_pos = 0;
+  } else {
+    /* Move remaining data to beginning */
+    const uint32_t remaining = handle->rx_buffer_len - handle->rx_buffer_pos;
+    memmove(handle->rx_buffer, handle->rx_buffer + handle->rx_buffer_pos, remaining);
+    handle->rx_buffer_len = remaining;
+    handle->rx_buffer_pos = 0;
+  }
+
+  /* Post-condition: Position should be reset to 0 */
+  if (handle->rx_buffer_pos != 0) {
+    return k_rx_err_invalid_state;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Search for frame sync word in receive buffer
+ *
+ * @details
+ * Scans the receive buffer starting from rx_buffer_pos for the frame sync
+ * word (0x55AA) stored in big-endian format. Returns the position of the
+ * first occurrence found.
+ *
+ * @par Algorithm:
+ * 1. Validate handle and output pointers
+ * 2. Validate buffer position <= length
+ * 3. Extract sync word bytes (0x55, 0xAA)
+ * 4. Linear scan from rx_buffer_pos to end-1
+ * 5. Return position if found, k_sync_not_found otherwise
+ *
+ * @par Sync Word Format:
+ * The sync word 0x55AA is stored big-endian in the frame:
+ * - Byte 0: 0x55 (high byte)
+ * - Byte 1: 0xAA (low byte)
+ *
+ * @param[in] handle USB communication handle with rx_buffer
+ * @param[out] sync_pos Output position of sync word (k_sync_not_found if not found)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Sync word found, position in sync_pos
+ * @retval k_rx_err_invalid_arg nullptr handle or sync_pos
+ * @retval k_rx_err_invalid_state Buffer position exceeds length
+ * @retval k_rx_err_not_found Sync word not in buffer
+ *
+ * @pre handle != nullptr
+ * @pre sync_pos != nullptr
+ * @pre handle->rx_buffer_pos <= handle->rx_buffer_len
+ * @post sync_pos contains position or k_sync_not_found
+ * @post Buffer state unchanged
+ *
+ * @note O(n) linear scan where n = buffer length
+ * @note Read-only operation, does not modify buffer
+ *
+ * @see k_frame_sync_word Sync word constant (0x55AA)
+ */
+static rx_err_t internal_find_sync(const rx_usb_comm_handle_t* handle, int32_t* sync_pos)
+{
+  /* Pre-condition 1: Handle must be valid */
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Output pointer must be valid */
+  if (sync_pos == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 3: Buffer position must be within length */
+  if (handle->rx_buffer_pos > handle->rx_buffer_len) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Extract sync word bytes using shared constants from rx_frame.h */
+  const uint8_t sync_high = (uint8_t)(k_frame_sync_word >> k_rx_be16_high_shift);
+  const uint8_t sync_low  = (uint8_t)(k_frame_sync_word & k_rx_byte_mask);
+
+  for (uint32_t i = handle->rx_buffer_pos; i + 1 < handle->rx_buffer_len; i++) {
+    if (handle->rx_buffer[i] == sync_high && handle->rx_buffer[i + 1] == sync_low) {
+      *sync_pos = (int32_t)i;
+      return k_rx_ok;
+    }
+  }
+
+  /* Post-condition: Set output to not-found sentinel */
+  *sync_pos = k_sync_not_found;
+  return k_rx_err_not_found;
+}
+
+/**
+ * @brief Sleep and advance elapsed time if time interface available
+ *
+ * @param[in] handle USB communication handle
+ * @param[in,out] elapsed_ms Pointer to elapsed time counter
+ * @return true if sleep was performed, false if no time interface
+ */
+static bool internal_sleep_and_advance(const rx_usb_comm_handle_t* handle, uint32_t* elapsed_ms)
+{
+  if (elapsed_ms == nullptr) {
+    return false;
+  }
+  if (handle->time_iface != nullptr && handle->time_iface->sleep_ms != nullptr) {
+    handle->time_iface->sleep_ms(handle->time_iface->ctx, k_sleep_interval_ms);
+    *elapsed_ms += k_sleep_interval_ms;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Check if timeout has been reached
+ *
+ * @param[in] timeout_ms Timeout value in milliseconds (0 = immediate)
+ * @param[in] elapsed_ms Elapsed time in milliseconds
+ * @return true if timed out, false otherwise
+ */
+static bool internal_is_timed_out(const uint32_t timeout_ms, uint32_t elapsed_ms)
+{
+  return (timeout_ms == 0) || (elapsed_ms >= timeout_ms);
+}
+
+/**
+ * @brief Handle case when no sync word is found in buffer
+ *
+ * Advances buffer position if full, compacts buffer, and handles timeout/sleep.
+ *
+ * @param[in,out] handle USB communication handle
+ * @param[in] timeout_ms Timeout value in milliseconds
+ * @param[in,out] elapsed_ms Pointer to elapsed time counter
+ * @return k_rx_ok to continue searching
+ * @return k_rx_err_timeout if timed out or no time interface
+ */
+static rx_err_t internal_handle_no_sync(rx_usb_comm_handle_t* handle,
+                                        const uint32_t        timeout_ms,
+                                        uint32_t*             elapsed_ms)
+{
+  /* Buffer full and no sync - discard one byte to advance sliding window */
+  if (handle->rx_buffer_len >= k_usb_comm_rx_buffer_size) {
+    handle->rx_buffer_pos++;
+  }
+
+  /* Compact buffer (discard consumed/skipped data) */
+  const rx_err_t compact_err = internal_compact_rx_buffer(handle);
+  if (compact_err != k_rx_ok) {
+    return compact_err;
+  }
+
+  if (internal_is_timed_out(timeout_ms, *elapsed_ms)) {
+    return k_rx_err_timeout;
+  }
+
+  /* Sleep and retry if time interface available */
+  if (!internal_sleep_and_advance(handle, elapsed_ms)) {
+    return k_rx_err_timeout;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Wait for more data with timeout handling
+ *
+ * @param[in,out] handle USB communication handle
+ * @param[in] timeout_ms Timeout value in milliseconds
+ * @param[in,out] elapsed_ms Pointer to elapsed time counter
+ * @return k_rx_ok to continue waiting
+ * @return k_rx_err_timeout if timed out or no time interface
+ */
+static rx_err_t internal_wait_for_data(const rx_usb_comm_handle_t* handle,
+                                       const uint32_t              timeout_ms,
+                                       uint32_t*                   elapsed_ms)
+{
+  if (internal_is_timed_out(timeout_ms, *elapsed_ms)) {
+    return k_rx_err_timeout;
+  }
+
+  /* Sleep and retry if time interface available */
+  if (!internal_sleep_and_advance(handle, elapsed_ms)) {
+    return k_rx_err_timeout;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Decode a complete frame from buffer
+ *
+ * @param[in,out] handle USB communication handle
+ * @param[out] frame Decoded frame output
+ * @param[in] total_size Total frame size in bytes
+ * @return k_rx_ok on success
+ * @return Error code from rx_frame_decode on failure
+ */
+static rx_err_t
+internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint32_t total_size)
+{
+  const uint8_t* hdr    = handle->rx_buffer + handle->rx_buffer_pos;
+  uint32_t       offset = 0;
+
+  /* Decode header */
+  rx_err_t err = internal_decode_header(hdr, total_size, frame, &offset);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Frame header decode failed");
+  } else {
+    /* Read payload */
+    if (frame->header.length > 0) {
+      memcpy(frame->payload, &hdr[offset], frame->header.length);
+      offset += frame->header.length;
+    }
+
+    /* Verify CRC */
+    err = internal_verify_crc(hdr, offset, &frame->crc);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Frame CRC check failed");
+    }
+  }
+
+  /* Consume the frame data */
+  handle->rx_buffer_pos += total_size;
+  const rx_err_t compact_err = internal_compact_rx_buffer(handle);
+  if (compact_err != k_rx_ok && err == k_rx_ok) {
+    return compact_err;
+  }
+
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Frame decode failed");
+    return err;
+  }
+
+  /* Update expected RX sequence */
+  handle->rx_sequence = frame->header.sequence + 1;
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Receive iteration result codes
+ */
+typedef enum : uint8_t {
+  k_receive_continue = 0, /**< Continue to next iteration */
+  k_receive_done     = 1, /**< Frame received successfully */
+  k_receive_error    = 2, /**< Error occurred, check err output */
+} rx_receive_result_t;
+
+/**
+ * @brief Align buffer position to sync word if found
+ *
+ * @param[in,out] handle USB communication handle
+ * @param[in] sync_pos Position of sync word in buffer
+ */
+static void internal_align_to_sync(rx_usb_comm_handle_t* handle, const int32_t sync_pos)
+{
+  if ((uint32_t)sync_pos > handle->rx_buffer_pos) {
+    handle->rx_buffer_pos = (uint32_t)sync_pos;
+  }
+}
+
+/**
+ * @brief Parse frame header and validate payload length
+ *
+ * @param[in] handle USB communication handle
+ * @param[out] payload_len Output payload length
+ * @param[out] total_size Output total frame size
+ * @return true if header is valid, false if invalid payload length
+ */
+static bool
+internal_parse_header(rx_usb_comm_handle_t* handle, uint16_t* payload_len, uint32_t* total_size)
+{
+  const uint8_t* hdr = handle->rx_buffer + handle->rx_buffer_pos;
+  *payload_len       = rx_frame_read_be16(&hdr[k_hdr_len_offset]);
+
+  if (*payload_len > k_frame_max_payload) {
+    rx_log_warn(s_tag, "Invalid payload length, skipping");
+    handle->rx_buffer_pos += k_frame_sync_size;
+    return false;
+  }
+
+  *total_size = k_frame_header_total + *payload_len + k_frame_crc_size;
+  return true;
+}
+
+/**
+ * @brief Process one iteration of the frame receive loop
+ *
+ * @details
+ * Performs a single pass of the receive state machine. Attempts to read USB
+ * data, find sync word, parse header, and decode complete frame. Returns
+ * result code indicating whether to continue, success, or error.
+ *
+ * @par State Machine:
+ * @dot
+ * digraph receive_iteration {
+ *   rankdir=TB;
+ *   read [label="Read USB Data"];
+ *   find_sync [label="Find Sync"];
+ *   check_header [label="Header Complete?"];
+ *   parse_header [label="Parse Header"];
+ *   check_frame [label="Frame Complete?"];
+ *   decode [label="Decode Frame"];
+ *   done [label="DONE"];
+ *   continue_state [label="CONTINUE"];
+ *   error [label="ERROR"];
+ *
+ *   read -> find_sync [label="ok"];
+ *   read -> error [label="fail"];
+ *   find_sync -> check_header [label="found"];
+ *   find_sync -> continue_state [label="not found"];
+ *   check_header -> parse_header [label="yes"];
+ *   check_header -> continue_state [label="no"];
+ *   parse_header -> check_frame [label="ok"];
+ *   parse_header -> continue_state [label="invalid"];
+ *   check_frame -> decode [label="yes"];
+ *   check_frame -> continue_state [label="no"];
+ *   decode -> done [label="ok"];
+ *   decode -> error [label="fail"];
+ * }
+ * @enddot
+ *
+ * @param[in,out] handle USB communication handle
+ * @param[out] frame Decoded frame output (valid only if k_receive_done)
+ * @param[in] timeout_ms Timeout value in milliseconds
+ * @param[in,out] elapsed_ms Elapsed time counter (updated on sleep)
+ * @param[out] err Error code (valid only if k_receive_error)
+ *
+ * @return rx_receive_result_t Result code
+ * @retval k_receive_continue Continue to next iteration
+ * @retval k_receive_done Frame successfully received
+ * @retval k_receive_error Error occurred, check err parameter
+ *
+ * @pre handle != nullptr and initialized
+ * @pre frame != nullptr
+ * @pre elapsed_ms != nullptr
+ * @pre err != nullptr
+ * @post On k_receive_done: frame contains valid decoded frame
+ * @post On k_receive_error: err contains error code
+ *
+ * @note Called in loop by rx_usb_comm_receive()
+ *
+ * @see rx_usb_comm_receive() Main receive API that calls this
+ */
+static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* handle,
+                                                      rx_frame_t*           frame,
+                                                      const uint32_t        timeout_ms,
+                                                      uint32_t*             elapsed_ms,
+                                                      rx_err_t*             err)
+{
+  int32_t  sync_pos    = k_sync_not_found;
+  uint32_t available   = 0;
+  uint32_t total_size  = 0;
+  uint16_t payload_len = 0;
+
+  /* Read any available USB data */
+  *err = internal_read_usb_data(handle);
+  if (*err != k_rx_ok && *err != k_rx_err_timeout) {
+    return k_receive_error;
+  }
+
+  /* Search for sync word */
+  *err = internal_find_sync(handle, &sync_pos);
+  if (*err == k_rx_err_not_found) {
+    *err = internal_handle_no_sync(handle, timeout_ms, elapsed_ms);
+    return (*err != k_rx_ok) ? k_receive_error : k_receive_continue;
+  }
+  if (*err != k_rx_ok) {
+    return k_receive_error;
+  }
+
+  /* Found sync - align to it */
+  internal_align_to_sync(handle, sync_pos);
+
+  /* Check if we have enough data for header */
+  available = handle->rx_buffer_len - handle->rx_buffer_pos;
+  if (available < k_frame_header_total) {
+    *err = internal_wait_for_data(handle, timeout_ms, elapsed_ms);
+    return (*err != k_rx_ok) ? k_receive_error : k_receive_continue;
+  }
+
+  /* Parse and validate header */
+  if (!internal_parse_header(handle, &payload_len, &total_size)) {
+    return k_receive_continue;
+  }
+
+  /* Check if we have complete frame */
+  if (available < total_size) {
+    *err = internal_wait_for_data(handle, timeout_ms, elapsed_ms);
+    return (*err != k_rx_ok) ? k_receive_error : k_receive_continue;
+  }
+
+  /* Decode the complete frame */
+  *err = internal_decode_frame(handle, frame, total_size);
+  return (*err != k_rx_ok) ? k_receive_error : k_receive_done;
+}
+
+/* =============================================================================
+ * Initialization
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize USB communication layer
+ *
+ * @details
+ * Initializes the USB communication handle for framed communication. Sets up
+ * the frame encoder/decoder, configures FEC and time interface, and prepares
+ * buffer state. Must be called before any other rx_usb_comm functions.
+ *
+ * @par Algorithm:
+ * 1. Validate handle pointer
+ * 2. Clear handle to zero state
+ * 3. Apply configuration (or defaults if nullptr)
+ * 4. Initialize frame encoder
+ * 5. Initialize frame decoder (cleanup encoder on failure)
+ * 6. Initialize sequence counters to 0
+ * 7. Initialize buffer state
+ * 8. Set mode to binary (default)
+ * 9. Mark handle as initialized
+ * 10. Validate post-conditions
+ *
+ * @param[out] handle USB communication handle to initialize
+ * @param[in] config Configuration parameters (nullptr for defaults)
+ *   - fec_enabled: Enable forward error correction flag
+ *   - time_iface: Time interface for sleep operations (nullptr = no sleep)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, handle ready for use
+ * @retval k_rx_err_invalid_arg nullptr handle pointer
+ * @retval k_rx_err_invalid_state Post-condition validation failed
+ * @retval Other errors from rx_frame_encoder_init() or rx_frame_decoder_init()
+ *
+ * @pre handle != nullptr
+ * @pre handle memory writable (sizeof(rx_usb_comm_handle_t) bytes)
+ * @post handle->initialized == true on success
+ * @post handle->mode == k_usb_comm_mode_binary on success
+ * @post handle->tx_sequence == 0
+ * @post handle->rx_sequence == 0
+ *
+ * @note Not thread-safe during initialization
+ * @note USB hardware must be initialized separately via rx_usb_init()
+ *
+ * @par Example:
+ * @code
+ * rx_usb_comm_handle_t handle;
+ * rx_usb_comm_config_t config = {
+ *     .fec_enabled = false,
+ *     .time_iface = &time_interface
+ * };
+ * rx_err_t err = rx_usb_comm_init(&handle, &config);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("USB", "Init failed");
+ * }
+ * @endcode
+ *
+ * @see rx_usb_comm_deinit() Cleanup function
+ * @see rx_usb_init() USB hardware initialization
+ */
+rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config_t* config)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Clear handle */
+  memset(handle, 0, sizeof(rx_usb_comm_handle_t));
+
+  /* Apply configuration */
+  if (config != nullptr) {
+    handle->fec_enabled = config->fec_enabled;
+    handle->time_iface  = config->time_iface;
+  } else {
+    handle->fec_enabled = 0;
+    handle->time_iface  = nullptr;
+  }
+
+  /* Initialize frame encoder */
+  rx_err_t err = rx_frame_encoder_init(&handle->encoder);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to init frame encoder");
+    return err;
+  }
+
+  /* Initialize frame decoder */
+  err = rx_frame_decoder_init(&handle->decoder);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to init frame decoder");
+
+    /* Attempt cleanup, but propagate decoder init error */
+    const rx_err_t cleanup_err = rx_frame_encoder_deinit(&handle->encoder);
+    if (cleanup_err != k_rx_ok) {
+      rx_log_warn(s_tag, "Failed to cleanup encoder during decoder init failure");
+    }
+
+    return err;
+  }
+
+  /* Initialize sequence counters */
+  handle->tx_sequence = k_initial_sequence;
+  handle->rx_sequence = k_initial_sequence;
+
+  /* Initialize buffer state */
+  handle->rx_buffer_len = 0;
+  handle->rx_buffer_pos = 0;
+
+  /* Initialize mode to binary (default) */
+  handle->mode = k_usb_comm_mode_binary;
+
+  handle->initialized = true;
+
+  /* Post-condition: Verify handle is in valid initialized state */
+  RX_ASSERT(handle->initialized, "Handle initialization failed");
+  if (!handle->initialized || handle->mode == k_usb_comm_mode_invalid) {
+    return k_rx_err_invalid_state;
+  }
+
+  rx_log_debug(s_tag, "USB comm initialized");
+  return k_rx_ok;
+}
+
+/**
+ * @brief Deinitialize USB communication layer
+ *
+ * @details
+ * Releases resources associated with the USB communication handle. Deinitializes
+ * both frame encoder and decoder. Safe to call on uninitialized handle (logs
+ * assertion but doesn't crash).
+ *
+ * @par Algorithm:
+ * 1. Validate handle pointer
+ * 2. Assert handle was initialized (catches programming errors)
+ * 3. If initialized, deinit encoder (log warning on failure)
+ * 4. Deinit decoder (log warning on failure)
+ * 5. Mark handle as not initialized
+ * 6. Return first error encountered (or k_rx_ok)
+ *
+ * @param[in,out] handle USB communication handle to deinitialize
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success (or handle was not initialized)
+ * @retval k_rx_err_invalid_arg nullptr handle pointer
+ * @retval Other errors from encoder/decoder deinit (first error returned)
+ *
+ * @pre handle != nullptr
+ * @pre handle->initialized == true (asserted, not enforced)
+ * @post handle->initialized == false
+ * @post Frame encoder/decoder resources released
+ *
+ * @note Safe to call multiple times (idempotent after first call)
+ * @note Logs warning but continues if sub-deinit fails
+ *
+ * @see rx_usb_comm_init() Initialize before use
+ */
+rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
+{
+  rx_err_t result = k_rx_ok;
+
+  /* Rule 5: Pre-condition 1 - validate pointer */
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Rule 5: Pre-condition 2 - catch programming error (deinit without init) */
+  RX_ASSERT(handle->initialized, "Attempt to deinitialize uninitialized USB comm handle");
+
+  if (handle->initialized) {
+    /* Rule 7: Check all return values */
+    const rx_err_t enc_err = rx_frame_encoder_deinit(&handle->encoder);
+    if (enc_err != k_rx_ok) {
+      rx_log_warn(s_tag, "Encoder deinit failed");
+      result = enc_err;
+    }
+
+    const rx_err_t dec_err = rx_frame_decoder_deinit(&handle->decoder);
+    if (dec_err != k_rx_ok) {
+      rx_log_warn(s_tag, "Decoder deinit failed");
+      if (result == k_rx_ok) {
+        result = dec_err;
+      }
+    }
+
+    handle->initialized = false;
+  }
+
+  rx_log_debug(s_tag, "USB comm deinitialized");
+  return result;
+}
+
+/* =============================================================================
+ * Send API
+ * =============================================================================
+ */
+
+/**
+ * @brief Build frame structure from individual parameters
+ *
+ * @details
+ * Constructs an rx_frame_t structure by populating header fields and copying
+ * payload data. Optionally sets FEC flag if enabled. Does not compute CRC -
+ * that is done during encoding.
+ *
+ * @par Algorithm:
+ * 1. Validate frame pointer (RX_ASSERT + runtime check)
+ * 2. Validate payload pointer if length > 0
+ * 3. Populate header fields (sequence, length, type, flags)
+ * 4. Copy payload data if present
+ * 5. Set FEC flag if enabled
+ *
+ * @param[out] frame Output frame structure to populate
+ * @param[in] sequence Sequence number for frame (0-65535)
+ * @param[in] type Frame type (command, response, ack, etc.)
+ * @param[in] flags Frame flags bitmap
+ * @param[in] payload Payload data (can be nullptr if payload_len is 0)
+ * @param[in] payload_len Payload length in bytes (0 to k_frame_max_payload)
+ * @param[in] fec_enabled Whether to set FEC enabled flag
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, frame populated
+ * @retval k_rx_err_invalid_arg nullptr frame or (nullptr payload with len > 0)
+ *
+ * @pre frame != nullptr
+ * @pre payload != nullptr || payload_len == 0
+ * @post frame->header fields populated
+ * @post frame->payload contains copy of input payload
+ *
+ * @note Does not compute CRC - use rx_frame_encode() for that
+ * @note Payload is copied, caller can free original after call
+ *
+ * @see rx_usb_comm_send() Uses this to build frames for transmission
+ */
+static rx_err_t internal_build_frame(rx_frame_t*           frame,
+                                      const uint16_t        sequence,
+                                      const rx_frame_type_t type,
+                                      const uint8_t         flags,
+                                      const uint8_t*        payload,
+                                      const uint32_t        payload_len,
+                                      const bool            fec_enabled)
+{
+  /* Pre-condition 1: Frame pointer must be valid */
+  RX_ASSERT(frame != nullptr, "Frame pointer is nullptr");
+  if (frame == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Payload pointer must be valid if length > 0 */
+  RX_ASSERT(payload != nullptr || payload_len == 0, "Payload nullptr but payload_len > 0");
+  if (payload == nullptr && payload_len > 0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  frame->header.sequence = sequence;
+  frame->header.length   = (uint16_t)payload_len;
+  frame->header.type     = (uint8_t)type;
+  frame->header.flags    = flags;
+
+  if (payload != nullptr && payload_len > 0) {
+    memcpy(frame->payload, payload, payload_len);
+  }
+
+  if (fec_enabled) {
+    frame->header.flags |= k_frame_flag_fec_enabled;
+  }
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
+                          const rx_frame_type_t type,
+                          const uint8_t         flags,
+                          const uint8_t*        payload,
+                          const uint32_t        payload_len)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    rx_log_error(s_tag, "Handle not initialized");
+    return k_rx_err_invalid_state;
+  }
+
+  /* Check USB is ready (Port 0 = protocol) */
+  if (!rx_usb_is_configured(k_usb_port_proto)) {
+    rx_log_error(s_tag, "USB not configured");
+    return k_rx_err_invalid_state;
+  }
+
+  /* Check mode - binary send not allowed in debug mode */
+  if (handle->mode == k_usb_comm_mode_debug) {
+    rx_log_warn(s_tag, "Binary send blocked in debug mode");
+    return k_rx_err_invalid_state;
+  }
+
+  if (payload == nullptr && payload_len > 0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (payload_len > k_frame_max_payload) {
+    rx_log_error(s_tag, "Payload too large");
+    return k_rx_err_invalid_size;
+  }
+
+  /* Build frame */
+  rx_frame_t frame = {0};
+  rx_err_t   err   = internal_build_frame(&frame, handle->tx_sequence, type, flags, payload,
+                                          payload_len, handle->fec_enabled);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Frame build failed");
+    return err;
+  }
+
+  /* Encode frame to wire format */
+  uint32_t wire_len = 0;
+
+  err = rx_frame_encode(&handle->encoder, &frame, handle->tx_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Frame encode failed");
+    return err;
+  }
+
+  /* Send via USB (Port 0 = protocol) */
+  err = rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "USB write failed");
+    return err;
+  }
+
+  /* Increment TX sequence */
+  handle->tx_sequence++;
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Send ACK frame for specified sequence number
+ * @param[in,out] handle USB communication handle
+ * @param[in] sequence Sequence number to acknowledge
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if handle is nullptr
+ * @return k_rx_err_invalid_state if not initialized or USB not configured or in debug mode
+ * @return Error code from frame encoding or USB write on failure
+ */
+rx_err_t rx_usb_comm_send_ack(rx_usb_comm_handle_t* handle, const uint16_t sequence)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (!rx_usb_is_configured(k_usb_port_proto)) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (handle->mode == k_usb_comm_mode_debug) {
+    rx_log_warn(s_tag, "ACK send blocked in debug mode");
+    return k_rx_err_invalid_state;
+  }
+
+  /* Create ACK frame */
+  rx_frame_t ack_frame;
+  rx_err_t   err = rx_frame_create_ack(&ack_frame, sequence);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send (Port 0 = protocol) */
+  uint32_t wire_len = 0;
+
+  err = rx_frame_encode(&handle->encoder, &ack_frame, handle->tx_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
+}
+
+rx_err_t
+rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, const uint16_t sequence, const uint8_t flags)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (!rx_usb_is_configured(k_usb_port_proto)) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (handle->mode == k_usb_comm_mode_debug) {
+    rx_log_warn(s_tag, "NACK send blocked in debug mode");
+    return k_rx_err_invalid_state;
+  }
+
+  /* Create NACK frame */
+  rx_frame_t nack_frame;
+  rx_err_t   err = rx_frame_create_nack(&nack_frame, sequence, flags);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send (Port 0 = protocol) */
+  uint32_t wire_len = 0;
+
+  err = rx_frame_encode(&handle->encoder, &nack_frame, handle->tx_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
+}
+
+/* =============================================================================
+ * Receive API
+ * =============================================================================
+ */
+
+rx_err_t
+rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint32_t timeout_ms)
+{
+  /* Pre-condition 1: Handle must be valid */
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Frame output must be valid */
+  if (frame == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 3: Handle must be initialized */
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Pre-condition 4: USB must be configured (Port 0 = protocol) */
+  if (!rx_usb_is_configured(k_usb_port_proto)) {
+    return k_rx_err_invalid_state;
+  }
+
+  uint32_t            elapsed_ms = 0;
+  uint32_t            iterations = 0;
+  rx_err_t            err        = k_rx_ok;
+  rx_receive_result_t result     = k_receive_continue;
+
+  /* Try to receive a complete frame with bounded iterations */
+  while (iterations < k_max_receive_iterations) {
+    iterations++;
+
+    result = internal_receive_iteration(handle, frame, timeout_ms, &elapsed_ms, &err);
+    if (result == k_receive_done) {
+      return k_rx_ok;
+    }
+    if (result == k_receive_error) {
+      return err;
+    }
+    /* k_receive_continue: loop continues */
+  }
+
+  /* Exceeded maximum iterations */
+  return k_rx_err_timeout;
+}
+
+/**
+ * @brief Check if data is available to receive
+ * @param[in] handle USB communication handle
+ * @param[out] available Set to true if data available, false otherwise
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if handle or available is nullptr
+ * @return k_rx_err_invalid_state if handle not initialized
+ * @return Error code from USB RX availability check on failure
+ */
+rx_err_t rx_usb_comm_data_available(const rx_usb_comm_handle_t* handle, bool* available)
+{
+  if (handle == nullptr || available == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Check USB CDC buffer (Port 0 = protocol) */
+  uint32_t       usb_available = 0;
+  const rx_err_t err           = rx_usb_rx_available(k_usb_port_proto, &usb_available);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Also check our staging buffer */
+  const uint32_t buffered = handle->rx_buffer_len - handle->rx_buffer_pos;
+
+  *available = (usb_available > 0) || (buffered > 0);
+  return k_rx_ok;
+}
+
+/**
+ * @brief Check if USB communication is ready to send/receive
+ * @param[in] handle USB communication handle
+ * @param[out] ready Set to true if ready, false otherwise
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if handle or ready is nullptr
+ * @return k_rx_err_invalid_state if handle not initialized
+ */
+rx_err_t rx_usb_comm_is_ready(const rx_usb_comm_handle_t* handle, bool* ready)
+{
+  if (handle == nullptr || ready == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    *ready = false;
+    return k_rx_err_invalid_state;
+  }
+
+  *ready = rx_usb_is_configured(k_usb_port_proto);
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * Utility Functions
+ * =============================================================================
+ */
+
+/**
+ * @brief Reset TX and RX sequence numbers to initial values
+ * @param[in,out] handle USB communication handle (nullptr-safe)
+ */
+void rx_usb_comm_reset_sequence(rx_usb_comm_handle_t* handle)
+{
+  if (handle != nullptr) {
+    handle->tx_sequence = k_initial_sequence;
+    handle->rx_sequence = k_initial_sequence;
+  }
+}
+
+/**
+ * @brief Get current TX sequence number
+ * @param[in] handle USB communication handle
+ * @return Current TX sequence number (0 if handle is nullptr)
+ */
+uint16_t rx_usb_comm_get_tx_sequence(const rx_usb_comm_handle_t* handle)
+{
+  if (handle == nullptr) {
+    return 0;
+  }
+  return handle->tx_sequence;
+}
+
+/**
+ * @brief Get current RX sequence number
+ * @param[in] handle USB communication handle
+ * @return Current RX sequence number (0 if handle is nullptr)
+ */
+uint16_t rx_usb_comm_get_rx_sequence(const rx_usb_comm_handle_t* handle)
+{
+  if (handle == nullptr) {
+    return 0;
+  }
+  return handle->rx_sequence;
+}
+
+/**
+ * @brief Flush receive buffer (discard all pending data)
+ * @param[in,out] handle USB communication handle (nullptr-safe)
+ */
+void rx_usb_comm_flush_rx(rx_usb_comm_handle_t* handle)
+{
+  if (handle != nullptr) {
+    handle->rx_buffer_len = 0;
+    handle->rx_buffer_pos = 0;
+  }
+}
+
+/* =============================================================================
+ * Mode Switching API
+ * =============================================================================
+ */
+
+/**
+ * @brief Set USB communication mode (binary protocol or debug text)
+ * @param[in,out] handle USB communication handle
+ * @param[in] mode Mode to set (k_usb_comm_mode_binary or k_usb_comm_mode_debug)
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if handle is nullptr or mode is invalid
+ * @return k_rx_err_invalid_state if handle not initialized
+ */
+rx_err_t rx_usb_comm_set_mode(rx_usb_comm_handle_t* handle, const rx_usb_comm_mode_t mode)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Validate mode is a valid enum value (NASA Rule 5) */
+  if (mode != k_usb_comm_mode_binary && mode != k_usb_comm_mode_debug) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Log mode change */
+  if (handle->mode != mode) {
+    if (mode == k_usb_comm_mode_debug) {
+      rx_log_info(s_tag, "Switching to debug text mode");
+    } else {
+      rx_log_info(s_tag, "Switching to binary protocol mode");
+    }
+  }
+
+  handle->mode = mode;
+  return k_rx_ok;
+}
+
+/**
+ * @brief Get current USB communication mode
+ * @param[in] handle USB communication handle
+ * @return Current mode (k_usb_comm_mode_invalid if handle is nullptr or not initialized)
+ */
+rx_usb_comm_mode_t rx_usb_comm_get_mode(const rx_usb_comm_handle_t* handle)
+{
+  if (handle == nullptr || !handle->initialized) {
+    return k_usb_comm_mode_invalid;
+  }
+  return handle->mode;
+}

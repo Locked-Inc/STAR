@@ -1,0 +1,980 @@
+/* lib/rx_frame_ascii/src/rx_frame_ascii.c */
+
+/**
+ * @file rx_frame_ascii.c
+ * @brief Frame ASCII Formatter Implementation
+ *
+ * @details
+ * Implements the ASCII frame formatting functions declared in rx_frame_ascii.h.
+ * This module converts binary protocol frames into human-readable text for
+ * debugging and diagnostic output.
+ *
+ * @par Implementation Overview
+ * The implementation uses a functional decomposition approach with small,
+ * focused helper functions for each formatting task:
+ *
+ * @dot
+ * digraph impl_structure {
+ *   rankdir=TB;
+ *   node [shape=box, style=rounded];
+ *
+ *   subgraph cluster_public {
+ *     label="Public API";
+ *     style=filled;
+ *     color=lightgreen;
+ *     format [label="rx_frame_ascii_format()"];
+ *     type_name [label="rx_frame_ascii_type_name()"];
+ *     flags_str [label="rx_frame_ascii_flags_str()"];
+ *   }
+ *
+ *   subgraph cluster_helpers {
+ *     label="Internal Helpers";
+ *     style=filled;
+ *     color=lightyellow;
+ *     append_str [label="internal_append_str()"];
+ *     append_char [label="internal_append_char()"];
+ *     append_hex [label="internal_append_hex_byte/u16/u32()"];
+ *     append_dec [label="internal_append_decimal_u16()"];
+ *     format_header [label="internal_format_header()"];
+ *     format_payload [label="internal_format_payload()"];
+ *   }
+ *
+ *   format -> format_header;
+ *   format -> format_payload;
+ *   format -> type_name [style=dashed];
+ *   format -> flags_str [style=dashed];
+ *   format_header -> append_str;
+ *   format_header -> append_dec;
+ *   format_payload -> append_hex;
+ *   format_payload -> append_char;
+ *   flags_str -> append_str;
+ *   flags_str -> append_char;
+ * }
+ * @enddot
+ *
+ * @par Design Decisions
+ * - **No snprintf/printf**: Avoids libc dependencies, non-reentrant functions,
+ *   and format string vulnerabilities. Custom formatters are safer and smaller.
+ * - **Position-based appending**: All append helpers track position and bounds,
+ *   preventing buffer overflows automatically.
+ * - **Static lookup table**: Hex digits use compile-time lookup for speed.
+ * - **Consistent signature**: All append helpers follow (buf, pos, max, value)
+ *   convention for predictable composition.
+ *
+ * @par Memory Safety
+ * Every function validates bounds before writing. Output buffer overflow is
+ * impossible if functions are used correctly. Truncation is detected and
+ * reported via return value.
+ *
+ * @par Performance Optimizations
+ * - Hex digit lookup table (s_hex_chars) avoids arithmetic
+ * - Direct character output avoids format string parsing
+ * - Single-pass formatting (no temporary buffers except small decimal conversion)
+ * - All loops have static upper bounds (NASA Rule 2)
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 1: ✓ No goto, setjmp, or recursion
+ * - Rule 2: ✓ All loops bounded (payload length, constant limits)
+ * - Rule 3: ✓ No dynamic memory allocation
+ * - Rule 4: ✓ Functions under 60 lines
+ * - Rule 5: ✓ Input validation on all functions
+ * - Rule 6: ✓ Variables at smallest scope
+ * - Rule 7: ✓ Return values checked
+ * - Rule 8: ✓ C23 typed enums for constants
+ * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ *
+ * @see rx_frame_ascii.h Public API documentation
+ *
+ * @author STAR Team
+ * @date 2026-01-26
+ * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @since Version 1.0.0
+ */
+
+#include "rx_frame_ascii.h"
+
+#include <string.h>
+
+/* =============================================================================
+ * Private Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum format_constants_t
+ * @brief String formatting constants for hex and decimal conversion
+ *
+ * @details
+ * Internal constants used by the formatting helper functions. These define
+ * bit manipulation parameters, ASCII character ranges, and output formatting
+ * dimensions.
+ *
+ * @par Hex Digit Extraction
+ * To convert a byte to two hex characters:
+ * - Upper nibble: `(byte >> k_hex_digit_shift) & k_hex_digit_mask`
+ * - Lower nibble: `byte & k_hex_digit_mask`
+ *
+ * @par Printable ASCII Range
+ * Characters 0x20 (space) through 0x7E (~) are printable. Outside this range,
+ * the hex dump ASCII sidebar displays '.' as a placeholder.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_hex_digit_shift = 4, /**< Bits to shift for upper hex nibble extraction.
+                              @par Value: 4 (half a byte = 4 bits) */
+
+  k_hex_digit_mask = 0xF, /**< Mask for extracting single hex digit (4 bits).
+                               @par Value: 0x0F (binary: 00001111) */
+
+  k_printable_min = 0x20, /**< Minimum printable ASCII character (space).
+                               @par Value: 0x20 (32 decimal)
+                               @see internal_is_printable() */
+
+  k_printable_max = 0x7E, /**< Maximum printable ASCII character (tilde).
+                               @par Value: 0x7E (126 decimal)
+                               @see internal_is_printable() */
+
+  k_bytes_per_line = 16, /**< Bytes per line in hex dump output.
+                              Matches standard xxd/hexdump format.
+                              @par Value: 16 bytes */
+
+  k_min_output_size = 64, /**< Minimum output buffer size accepted.
+                               Fits header + CRC with empty payload.
+                               @par Value: 64 bytes */
+
+  k_hex_space_gap = 2, /**< Spaces between hex and ASCII sections.
+                            @par Value: 2 spaces */
+
+  k_mask_u8 = 0xFF, /**< Mask for uint8_t extraction from larger type.
+                         @par Value: 0xFF (8 bits) */
+
+  k_mask_u16 = 0xFFFF, /**< Mask for uint16_t extraction from uint32_t.
+                            @par Value: 0xFFFF (16 bits) */
+
+  k_decimal_base = 10, /**< Decimal number base for digit extraction.
+                            @par Value: 10 */
+
+  k_u16_decimal_max_digits = 5, /**< Maximum decimal digits for uint16_t (65535).
+                                     @par Value: 5 */
+
+  k_flags_buf_size = 32, /**< Buffer size for flags string formatting.
+                              Fits "ACK|RETX|PRI|FEC|SOFT" + null.
+                              @par Value: 32 bytes */
+} format_constants_t;
+
+/**
+ * @enum buffer_size_constants_t
+ * @brief Buffer size and offset constants for string building
+ *
+ * @details
+ * Constants for buffer boundary calculations and hex character sizing.
+ * All values fit in uint8_t for efficient comparison operations.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_empty_buffer = 0, /**< Sentinel for empty/invalid buffer size.
+                           @par Value: 0 */
+
+  k_null_terminator = 1, /**< Space required for null terminator byte.
+                              @par Value: 1 byte */
+
+  k_hex_chars_per_byte = 2, /**< Hex characters per byte (e.g., "FF").
+                                 @par Value: 2 */
+
+  k_hex_chars_per_u16 = 4, /**< Hex characters for uint16_t (e.g., "FFFF").
+                                @par Value: 4 */
+
+  k_hex_chars_per_u32 = 8, /**< Hex characters for uint32_t (e.g., "FFFFFFFF").
+                                @par Value: 8 */
+
+  k_u32_high_u16_shift = 16, /**< Bit shift to extract high uint16 from uint32.
+                                  @par Value: 16 bits */
+} buffer_size_constants_t;
+
+/**
+ * @enum decimal_buf_constants_t
+ * @brief Decimal conversion buffer size constants
+ *
+ * @details
+ * Defines buffer sizes for temporary decimal string conversion.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_u16_decimal_buf_size = k_u16_decimal_max_digits + 1, /**< Buffer size for uint16_t decimal
+                                                              with null terminator (6 bytes).
+                                                              @par Calculation: 5 digits + 1 null */
+} decimal_buf_constants_t;
+
+/**
+ * @var s_hex_chars
+ * @brief Lookup table for hexadecimal digit characters
+ *
+ * @details
+ * Static constant lookup table mapping nibble values (0-15) to their ASCII
+ * hexadecimal character representation ('0'-'9', 'A'-'F'). Uses uppercase
+ * hex letters for consistency with standard debugger output.
+ *
+ * @par Usage
+ * @code
+ * uint8_t nibble = (byte >> 4) & 0x0F;  // Extract upper nibble
+ * char hex_char = s_hex_chars[nibble];   // Convert to hex character
+ * @endcode
+ *
+ * @par Memory
+ * 17 bytes (16 characters + null terminator) in .rodata section
+ *
+ * @note Thread-safe: read-only constant data
+ *
+ * @since Version 1.0.0
+ */
+static const char s_hex_chars[] = "0123456789ABCDEF";
+
+/* =============================================================================
+ * Private Helper Functions
+ * =============================================================================
+ */
+
+/**
+ * @defgroup frame_ascii_helpers Internal Helper Functions
+ * @{
+ *
+ * @brief String building helper functions with bounds checking
+ *
+ * @details
+ * All append helpers follow a consistent signature pattern for composability:
+ * ```c
+ * uint32_t internal_append_xxx(char* buf, uint32_t pos, uint32_t max, <value>);
+ * ```
+ *
+ * @par Parameters
+ * - **buf**: Output buffer pointer (may be NULL for safety)
+ * - **pos**: Current write position in buffer
+ * - **max**: Maximum buffer size (total capacity)
+ * - **value**: Data to append (varies by function)
+ *
+ * @par Return Value
+ * All helpers return the updated position after appending. If the append
+ * would overflow, the original position is returned unchanged.
+ *
+ * @par Bounds Safety
+ * - All functions check `pos < max - k_null_terminator` before writing
+ * - NULL buffer pointer causes immediate return with unchanged position
+ * - Zero-size buffer causes immediate return with unchanged position
+ * - No writes beyond `max - 1` to preserve space for null terminator
+ *
+ * @par Usage Pattern
+ * ```c
+ * uint32_t pos = 0;
+ * pos = internal_append_str(buf, pos, max, "Hello ");
+ * pos = internal_append_decimal_u16(buf, pos, max, 42);
+ * pos = internal_append_char(buf, pos, max, '!');
+ * buf[pos] = '\0';  // Null terminate
+ * // Result: "Hello 42!"
+ * ```
+ * @}
+ */
+
+/**
+ * @brief Append string to buffer with bounds checking
+ *
+ * @details
+ * Copies characters from source string to output buffer until null terminator
+ * is reached or buffer is full (leaving room for final null terminator).
+ *
+ * @param[in,out] buf Output buffer (may be NULL)
+ * @param[in] pos Current write position
+ * @param[in] max Maximum buffer size
+ * @param[in] str Source string to append (may be NULL)
+ *
+ * @return Updated position after appending
+ * @retval pos (unchanged) If buf, str is nullptr, or buffer full
+ *
+ * @pre pos < max (for any writing to occur)
+ *
+ * @post Characters written in range [pos, return_value)
+ * @post Buffer NOT null-terminated (caller responsibility)
+ *
+ * @note Does not write null terminator
+ * @note Returns original pos if nothing can be written
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static uint32_t internal_append_str(char* buf, uint32_t pos, uint32_t max, const char* str)
+{
+  /* Rule 5: Pre-condition validation */
+  if (buf == nullptr || str == nullptr || max == k_empty_buffer || pos >= max) {
+    return pos;
+  }
+
+  while (*str != '\0' && pos < max - k_null_terminator) {
+    buf[pos++] = *str++;
+  }
+  return pos;
+}
+
+/**
+ * @brief Append single character to buffer with bounds checking
+ *
+ * @details
+ * Writes a single character to the buffer at the current position if space
+ * is available (accounting for null terminator).
+ *
+ * @param[in,out] buf Output buffer (may be NULL)
+ * @param[in] pos Current write position
+ * @param[in] max Maximum buffer size
+ * @param[in] c Character to append
+ *
+ * @return Updated position after appending
+ * @retval pos (unchanged) If buf is nullptr or buffer full
+ * @retval pos + 1 If character was written
+ *
+ * @pre pos < max - 1 (for writing to occur)
+ *
+ * @post buf[pos] contains c (if written)
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static uint32_t internal_append_char(char* buf, uint32_t pos, uint32_t max, char c)
+{
+  /* Rule 5: Pre-condition validation */
+  if (buf == nullptr || max == k_empty_buffer || pos >= max) {
+    return pos;
+  }
+
+  if (pos < max - k_null_terminator) {
+    buf[pos++] = c;
+  }
+  return pos;
+}
+
+/**
+ * @brief Append byte as two hex characters to buffer
+ *
+ * @details
+ * Converts a single byte to its two-character hexadecimal representation
+ * (e.g., 0xFF → "FF") and appends it to the buffer. Uses uppercase hex
+ * letters via s_hex_chars lookup table.
+ *
+ * @param[in,out] buf Output buffer (may be NULL)
+ * @param[in] pos Current write position
+ * @param[in] max Maximum buffer size
+ * @param[in] byte Byte value to convert (0x00-0xFF)
+ *
+ * @return Updated position after appending (pos + 2 on success)
+ * @retval pos (unchanged) If buf is nullptr or insufficient space
+ *
+ * @pre pos + 2 <= max - 1 (for writing to occur)
+ *
+ * @post buf[pos] contains upper nibble hex char
+ * @post buf[pos+1] contains lower nibble hex char
+ *
+ * @par Example Output
+ * - byte=0x00 → "00"
+ * - byte=0xFF → "FF"
+ * - byte=0x5A → "5A"
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static uint32_t internal_append_hex_byte(char* buf, uint32_t pos, uint32_t max, uint8_t byte)
+{
+  /* Rule 5: Pre-condition validation */
+  if (buf == nullptr || max < k_hex_chars_per_byte || pos >= max) {
+    return pos;
+  }
+
+  if (pos < max - k_hex_chars_per_byte) {
+    buf[pos++] = s_hex_chars[(byte >> k_hex_digit_shift) & k_hex_digit_mask];
+    buf[pos++] = s_hex_chars[byte & k_hex_digit_mask];
+  }
+  return pos;
+}
+
+/**
+ * @brief Append uint16_t as four hex characters to buffer
+ *
+ * @details
+ * Converts a 16-bit value to its four-character hexadecimal representation
+ * (e.g., 0xABCD → "ABCD") in big-endian order (most significant byte first).
+ *
+ * @param[in,out] buf Output buffer (may be NULL)
+ * @param[in] pos Current write position
+ * @param[in] max Maximum buffer size
+ * @param[in] value 16-bit value to convert
+ *
+ * @return Updated position after appending (pos + 4 on success)
+ * @retval pos (unchanged) If buf is nullptr or insufficient space
+ *
+ * @pre pos + 4 <= max - 1 (for writing to occur)
+ *
+ * @post Four hex characters written at buf[pos..pos+3]
+ *
+ * @par Example Output
+ * - value=0x0000 → "0000"
+ * - value=0xFFFF → "FFFF"
+ * - value=0x1234 → "1234"
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static uint32_t internal_append_hex_u16(char* buf, uint32_t pos, uint32_t max, uint16_t value)
+{
+  /* Rule 5: Pre-condition validation */
+  if (buf == nullptr || max < k_hex_chars_per_u16 || pos >= max) {
+    return pos;
+  }
+
+  pos = internal_append_hex_byte(buf, pos, max, (uint8_t)(value >> 8));
+  pos = internal_append_hex_byte(buf, pos, max, (uint8_t)(value & k_mask_u8));
+  return pos;
+}
+
+/**
+ * @brief Append uint32_t as eight hex characters to buffer
+ *
+ * @details
+ * Converts a 32-bit value to its eight-character hexadecimal representation
+ * (e.g., 0xDEADBEEF → "DEADBEEF") in big-endian order. Commonly used for
+ * CRC-32 values in frame output.
+ *
+ * @param[in,out] buf Output buffer (may be NULL)
+ * @param[in] pos Current write position
+ * @param[in] max Maximum buffer size
+ * @param[in] value 32-bit value to convert
+ *
+ * @return Updated position after appending (pos + 8 on success)
+ * @retval pos (unchanged) If buf is nullptr or insufficient space
+ *
+ * @pre pos + 8 <= max - 1 (for writing to occur)
+ *
+ * @post Eight hex characters written at buf[pos..pos+7]
+ *
+ * @par Example Output
+ * - value=0x00000000 → "00000000"
+ * - value=0xFFFFFFFF → "FFFFFFFF"
+ * - value=0xDEADBEEF → "DEADBEEF"
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static uint32_t internal_append_hex_u32(char* buf, uint32_t pos, uint32_t max, uint32_t value)
+{
+  /* Rule 5: Pre-condition validation */
+  if (buf == nullptr || max < k_hex_chars_per_u32 || pos >= max) {
+    return pos;
+  }
+
+  pos = internal_append_hex_u16(buf, pos, max, (uint16_t)(value >> k_u32_high_u16_shift));
+  pos = internal_append_hex_u16(buf, pos, max, (uint16_t)(value & k_mask_u16));
+  return pos;
+}
+
+/**
+ * @brief Append uint16_t as decimal digits to buffer
+ *
+ * @details
+ * Converts a 16-bit value to its decimal string representation (1-5 digits).
+ * Uses a small stack buffer for digit reversal, avoiding heap allocation.
+ * Zero value outputs single '0' character.
+ *
+ * @par Algorithm
+ * 1. Extract digits via repeated modulo/division (reverse order)
+ * 2. Store in temporary stack buffer
+ * 3. Reverse and append to output buffer
+ *
+ * @param[in,out] buf Output buffer (may be NULL)
+ * @param[in] pos Current write position
+ * @param[in] max Maximum buffer size
+ * @param[in] value 16-bit value to convert (0-65535)
+ *
+ * @return Updated position after appending
+ * @retval pos (unchanged) If buf is nullptr or insufficient space
+ *
+ * @pre Sufficient space for up to 5 digits
+ *
+ * @post Decimal digits written without leading zeros (except for value=0)
+ *
+ * @par Example Output
+ * - value=0 → "0"
+ * - value=1 → "1"
+ * - value=12345 → "12345"
+ * - value=65535 → "65535"
+ *
+ * @par Stack Usage
+ * ~6 bytes (temp buffer for digit reversal)
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static uint32_t internal_append_decimal_u16(char* buf, uint32_t pos, uint32_t max, uint16_t value)
+{
+  /* Rule 5: Pre-condition validation */
+  if (buf == nullptr || max == k_empty_buffer || pos >= max) {
+    return pos;
+  }
+
+  char    temp[k_u16_decimal_buf_size]; /* Max 5 digits + null for uint16_t */
+  uint8_t len = 0;
+
+  if (value == 0) {
+    return internal_append_char(buf, pos, max, '0');
+  }
+
+  while (value > 0 && len < k_u16_decimal_max_digits) {
+    const uint8_t digit = (uint8_t)(value % k_decimal_base);
+    temp[len++] = (char)('0' + digit);
+    value /= k_decimal_base;
+  }
+
+  /* Reverse digits into output */
+  while (len > 0) {
+    pos = internal_append_char(buf, pos, max, temp[--len]);
+  }
+
+  return pos;
+}
+
+/**
+ * @brief Check if byte value is printable ASCII character
+ *
+ * @details
+ * Tests whether a byte value falls within the printable ASCII range
+ * (0x20-0x7E inclusive). Used to decide whether to display the actual
+ * character or a '.' placeholder in hex dump ASCII sidebars.
+ *
+ * @par Printable Range
+ * - 0x20 (space) through 0x7E (~) are printable
+ * - 0x00-0x1F are control characters (not printable)
+ * - 0x7F (DEL) is not printable
+ * - 0x80-0xFF are extended ASCII (not printable in this implementation)
+ *
+ * @param[in] c Byte value to test
+ *
+ * @return true if printable, false otherwise
+ * @retval true If c in range [0x20, 0x7E]
+ * @retval false Otherwise
+ *
+ * @note Pure function with no side effects
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static bool internal_is_printable(uint8_t c)
+{
+  return (c >= k_printable_min && c <= k_printable_max);
+}
+
+/**
+ * @brief Format payload as hex dump with ASCII sidebar
+ *
+ * @details
+ * Formats binary payload data as a traditional hex dump with 16 bytes per line,
+ * offset prefix, and ASCII sidebar showing printable characters (or '.' for
+ * non-printable bytes).
+ *
+ * @par Output Format
+ * Each line follows this structure:
+ * ```
+ * [NNNN] XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX  ................
+ * ```
+ * Where:
+ * - `[NNNN]` is the 4-digit hex offset from payload start
+ * - `XX XX ...` is the hex representation of up to 16 bytes
+ * - ASCII sidebar shows printable chars or '.' for non-printable
+ *
+ * @par Empty Payload Handling
+ * If length is 0, outputs: `[PAYLOAD] (empty)\r\n`
+ *
+ * @param[in,out] buf Output buffer
+ * @param[in] pos Current position in buffer
+ * @param[in] max Maximum buffer size
+ * @param[in] payload Payload data to format (may be NULL if length is 0)
+ * @param[in] length Payload length in bytes
+ *
+ * @return Updated position in buffer
+ * @retval pos (unchanged) If buf is nullptr or max is 0
+ *
+ * @pre buf != nullptr (for any output)
+ * @pre payload != nullptr if length > 0
+ *
+ * @post Hex dump lines written with CRLF line endings
+ *
+ * @par Loop Bounds (NASA Rule 2)
+ * - Outer loop: bounded by `length / k_bytes_per_line + 1` iterations
+ * - Inner loops: bounded by `k_bytes_per_line` (16) iterations
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static uint32_t internal_format_payload(char*          buf,
+                                        uint32_t       pos,
+                                        uint32_t       max,
+                                        const uint8_t* payload,
+                                        uint16_t       length)
+{
+  uint16_t offset = 0;
+  uint16_t line_bytes;
+  uint8_t  c;
+
+  /* Rule 5: Pre-condition validation */
+  if (buf == nullptr || max == k_empty_buffer || pos >= max) {
+    return pos;
+  }
+
+  if (length == 0) {
+    pos = internal_append_str(buf, pos, max, "[PAYLOAD] (empty)\r\n");
+    return pos;
+  }
+
+  /* Validate payload is non-NULL if length > 0 */
+  if (payload == nullptr) {
+    return pos;
+  }
+
+  while (offset < length) {
+    /* Start new line with offset */
+    pos = internal_append_str(buf, pos, max, "[");
+    pos = internal_append_hex_u16(buf, pos, max, offset);
+    pos = internal_append_str(buf, pos, max, "] ");
+
+    /* Calculate bytes on this line */
+    line_bytes = length - offset;
+    if (line_bytes > k_bytes_per_line) {
+      line_bytes = k_bytes_per_line;
+    }
+
+    /* Hex dump */
+    for (uint16_t i = 0; i < k_bytes_per_line; i++) {
+      if (i < line_bytes) {
+        pos = internal_append_hex_byte(buf, pos, max, payload[offset + i]);
+        pos = internal_append_char(buf, pos, max, ' ');
+      } else {
+        pos = internal_append_str(buf, pos, max, "   "); /* Pad short lines */
+      }
+    }
+
+    /* ASCII sidebar */
+    pos = internal_append_char(buf, pos, max, ' ');
+    for (uint16_t i = 0; i < line_bytes; i++) {
+      c   = payload[offset + i];
+      pos = internal_append_char(buf, pos, max, internal_is_printable(c) ? (char)c : '.');
+    }
+
+    pos = internal_append_str(buf, pos, max, "\r\n");
+    offset += line_bytes;
+  }
+
+  return pos;
+}
+
+/**
+ * @brief Format frame header metadata as single text line
+ *
+ * @details
+ * Formats the frame header fields into a human-readable summary line
+ * including direction indicator, sequence number, payload length, frame
+ * type, and flags.
+ *
+ * @par Output Format
+ * ```
+ * [TX] seq=12345 len=64 type=COMMAND flags=ACK|PRI
+ * [RX] seq=12346 len=128 type=RESPONSE flags=NONE
+ * ```
+ *
+ * @par Field Details
+ * | Field | Format | Example |
+ * |-------|--------|---------|
+ * | Direction | [TX] or [RX] | [TX] |
+ * | Sequence | seq=N (decimal) | seq=12345 |
+ * | Length | len=N (decimal) | len=64 |
+ * | Type | type=NAME | type=COMMAND |
+ * | Flags | flags=F1\|F2 | flags=ACK\|PRI |
+ *
+ * @param[in,out] buf Output buffer
+ * @param[in] pos Current position in buffer
+ * @param[in] max Maximum buffer size
+ * @param[in] header Frame header to format
+ * @param[in] is_tx Direction indicator (true=TX, false=RX)
+ *
+ * @return Updated position in buffer
+ * @retval pos (unchanged) If buf or header is nullptr, or max is 0
+ *
+ * @pre buf != nullptr
+ * @pre header != nullptr
+ *
+ * @post Header line written with CRLF line ending
+ * @post pos <= max (invariant maintained)
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static uint32_t internal_format_header(char*                    buf,
+                                       uint32_t                 pos,
+                                       uint32_t                 max,
+                                       const rx_frame_header_t* header,
+                                       bool                     is_tx)
+{
+  /* Rule 5: Pre-condition validation */
+  if (buf == nullptr || header == nullptr || max == k_empty_buffer || pos >= max) {
+    return pos;
+  }
+
+  char flags_buf[k_flags_buf_size];
+
+  /* Direction */
+  pos = internal_append_str(buf, pos, max, is_tx ? "[TX] " : "[RX] ");
+
+  /* Sequence number */
+  pos = internal_append_str(buf, pos, max, "seq=");
+  pos = internal_append_decimal_u16(buf, pos, max, header->sequence);
+
+  /* Length */
+  pos = internal_append_str(buf, pos, max, " len=");
+  pos = internal_append_decimal_u16(buf, pos, max, header->length);
+
+  /* Type */
+  pos = internal_append_str(buf, pos, max, " type=");
+  pos = internal_append_str(buf, pos, max, rx_frame_ascii_type_name((rx_frame_type_t)header->type));
+
+  /* Flags */
+  pos = internal_append_str(buf, pos, max, " flags=");
+  (void)rx_frame_ascii_flags_str(header->flags, flags_buf, sizeof(flags_buf));
+  pos = internal_append_str(buf, pos, max, flags_buf);
+  pos = internal_append_str(buf, pos, max, "\r\n");
+
+  /* Rule 5: Post-condition validation - ensure pos never exceeds max.
+   * Defensive invariant: internal_append_* currently enforce pos <= max, but this
+   * guard protects against buffer overflows if future refactors change their behavior. */
+  if (pos > max) {
+    pos = max;
+  }
+
+  return pos;
+}
+
+/* =============================================================================
+ * Public Functions
+ * =============================================================================
+ */
+
+/**
+ * @brief Convert frame type enum to human-readable string
+ *
+ * @details
+ * Implementation of rx_frame_ascii_type_name(). Uses switch statement
+ * for O(1) lookup with compile-time string literals.
+ *
+ * @param[in] type Frame type enum value
+ *
+ * @return String representation ("COMMAND", "RESPONSE", "ACK", "NACK", or "UNKNOWN")
+ *
+ * @see rx_frame_ascii.h for full documentation
+ */
+const char* rx_frame_ascii_type_name(rx_frame_type_t type)
+{
+  switch (type) {
+    case k_frame_type_command:
+      return "COMMAND";
+    case k_frame_type_response:
+      return "RESPONSE";
+    case k_frame_type_ack:
+      return "ACK";
+    case k_frame_type_nack:
+      return "NACK";
+    case k_frame_type_unknown:
+    default:
+      return "UNKNOWN";
+  }
+}
+
+/**
+ * @brief Append a single flag name with pipe separator if needed
+ *
+ * @details
+ * Conditionally appends a flag name to the output buffer if the corresponding
+ * flag bit is set. Manages separator insertion: no separator before first flag,
+ * pipe separator before subsequent flags.
+ *
+ * @par Example Sequence
+ * 1. flags=ACK|PRI, first call (first=true): appends "ACK", sets first=false
+ * 2. Same flags, second call: appends "|PRI"
+ *
+ * @param[in,out] buffer Output buffer
+ * @param[in] pos Current position in buffer
+ * @param[in] max Maximum buffer size
+ * @param[in,out] first Pointer to first-flag indicator
+ *   - true: No separator needed (this is first flag)
+ *   - false: Prepend '|' separator
+ *   - Set to false after appending a flag
+ * @param[in] flags Complete flag bitmask to test
+ * @param[in] flag_bit Specific flag bit to check (e.g., 0x01 for ACK)
+ * @param[in] flag_name String name of the flag (e.g., "ACK")
+ *
+ * @return Updated position in buffer
+ * @retval pos (unchanged) If flag_bit not set or first is nullptr
+ *
+ * @pre first != nullptr
+ *
+ * @post *first set to false if flag was appended
+ * @post Separator '|' prepended if not first flag
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static uint32_t internal_append_flag(char*       buffer,
+                                     uint32_t    pos,
+                                     uint32_t    max,
+                                     bool*       first,
+                                     uint8_t     flags,
+                                     uint8_t     flag_bit,
+                                     const char* flag_name)
+{
+  /* Rule 5: Pre-condition validation */
+  if (first == nullptr) {
+    return pos;
+  }
+
+  if (flags & flag_bit) {
+    if (!*first) {
+      pos = internal_append_char(buffer, pos, max, '|');
+    }
+    pos    = internal_append_str(buffer, pos, max, flag_name);
+    *first = false;
+  }
+  return pos;
+}
+
+/**
+ * @brief Convert frame flags bitmask to human-readable string
+ *
+ * @details
+ * Implementation of rx_frame_ascii_flags_str(). Iterates through known
+ * flag bits, appending names with pipe separators.
+ *
+ * @param[in] flags Frame flags bitmask
+ * @param[out] buffer Output buffer for formatted string
+ * @param[in] buffer_len Size of output buffer in bytes
+ *
+ * @return Pointer to buffer (or "" if buffer is nullptr)
+ *
+ * @note Flags formatted as pipe-separated: "ACK|RETX|PRI"
+ *
+ * @see rx_frame_ascii.h for full documentation
+ */
+const char* rx_frame_ascii_flags_str(uint8_t flags, char* buffer, uint32_t buffer_len)
+{
+  if (buffer == nullptr || buffer_len == k_empty_buffer) {
+    return "";
+  }
+
+  uint32_t pos = 0;
+
+  if (flags == k_frame_flag_none) {
+    pos         = internal_append_str(buffer, pos, buffer_len, "NONE");
+    buffer[pos] = '\0';
+    return buffer;
+  }
+
+  bool first = true;
+
+  /* Use helper to append each flag */
+  pos =
+    internal_append_flag(buffer, pos, buffer_len, &first, flags, k_frame_flag_requires_ack, "ACK");
+  pos =
+    internal_append_flag(buffer, pos, buffer_len, &first, flags, k_frame_flag_retransmit, "RETX");
+  pos = internal_append_flag(buffer, pos, buffer_len, &first, flags, k_frame_flag_priority, "PRI");
+  pos =
+    internal_append_flag(buffer, pos, buffer_len, &first, flags, k_frame_flag_fec_enabled, "FEC");
+  pos =
+    internal_append_flag(buffer, pos, buffer_len, &first, flags, k_frame_flag_soft_nack, "SOFT");
+
+  buffer[pos] = '\0';
+  return buffer;
+}
+
+/**
+ * @brief Format frame as human-readable ASCII string
+ *
+ * @details
+ * Implementation of rx_frame_ascii_format(). Orchestrates header, payload,
+ * and CRC formatting using internal helper functions.
+ *
+ * @par Implementation Notes
+ * - Validates all inputs before any output
+ * - Calls internal_format_header() for metadata line
+ * - Calls internal_format_payload() for hex dump
+ * - Appends CRC footer directly
+ * - Detects truncation and returns k_rx_err_no_mem
+ *
+ * @param[in] frame Frame to format (must not be NULL)
+ * @param[in] is_tx Direction (true=TX, false=RX)
+ * @param[out] output Output buffer for formatted string
+ * @param[in] output_max_len Maximum output buffer size
+ * @param[out] output_len Pointer to receive actual output length
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if frame/output/output_len is nullptr
+ * @return k_rx_err_no_mem if output buffer is too small
+ *
+ * @see rx_frame_ascii.h for full documentation
+ */
+rx_err_t rx_frame_ascii_format(const rx_frame_t* frame,
+                               bool              is_tx,
+                               char*             output,
+                               uint32_t          output_max_len,
+                               uint32_t*         output_len)
+{
+  /* Rule 5: Pre-condition validation */
+  if (frame == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+  if (output == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+  if (output_len == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+  if (output_max_len < k_min_output_size) {
+    return k_rx_err_no_mem;
+  }
+
+  /* Validate payload length does not exceed frame capacity */
+  if (frame->header.length > k_frame_max_payload) {
+    return k_rx_err_invalid_arg;
+  }
+
+  uint32_t pos = 0;
+
+  /* Format header metadata */
+  pos = internal_format_header(output, pos, output_max_len, &frame->header, is_tx);
+
+  /* Payload hex dump - use validated length to prevent out-of-bounds reads */
+  pos = internal_format_payload(output, pos, output_max_len, frame->payload, frame->header.length);
+
+  /* CRC */
+  pos = internal_append_str(output, pos, output_max_len, "[CRC] ");
+  pos = internal_append_hex_u32(output, pos, output_max_len, frame->crc);
+  pos = internal_append_str(output, pos, output_max_len, "\r\n");
+
+  /* Rule 5: Post-condition validation - check for truncation */
+  /* If pos >= output_max_len, we don't have room for null terminator */
+  if (pos >= output_max_len) {
+    /* Buffer was too small - data was truncated */
+    if (output_max_len > 0) {
+      output[output_max_len - 1] = '\0'; /* Null terminate at buffer end */
+    }
+    return k_rx_err_no_mem;
+  }
+
+  /* Null terminate */
+  output[pos] = '\0';
+
+  *output_len = pos;
+
+  return k_rx_ok;
+}
