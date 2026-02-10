@@ -24,6 +24,22 @@ RUN apt-get update && apt-get install -y \
     clangd \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Doxygen documentation toolchain
+# - doxygen: Core documentation generator
+# - graphviz: For @dot, @callgraph, @callergraph diagrams
+# - plantuml: For @startuml state machine diagrams
+# - default-jre-headless: Java runtime for PlantUML (headless = no GUI)
+# - texlive-full: Complete LaTeX distribution for PDF generation
+# - latexmk: Build automation for LaTeX (handles multiple passes)
+RUN apt-get update && apt-get install -y \
+    doxygen \
+    graphviz \
+    plantuml \
+    default-jre-headless \
+    texlive-full \
+    latexmk \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install nanopb for Protocol Buffer C code generation
 # Required for star-rx72n-firmware embedded target
 RUN rm -f /usr/lib/python*/EXTERNALLY-MANAGED && \

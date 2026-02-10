@@ -1,0 +1,14 @@
+# Test build artifacts
+tests/build/
+tests/Unity/
+
+# e2-studio build artifacts
+HardwareDebug/
+output/
+.metadata/
+.settings/
+
+# Temporary files
+*.tmp
+*.bak
+*~
