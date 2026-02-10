@@ -25,11 +25,15 @@ func NewEncoder() *DefaultEncoder {
 
 // Encode serializes a Frame into wire format bytes.
 //
-// Wire format (all fields in little-endian per IEEE 802.3):
+// Wire format:
 //
 //	[SYNC (2B)][SEQ (2B)][LEN (2B)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B)]
 //
-// CRC-32 is calculated over SYNC + Header + Payload.
+// Header fields (SYNC, SEQ, LEN, TYPE, FLAGS) are encoded in little-endian
+// by project choice for consistency across platforms.
+//
+// CRC-32 uses the IEEE 802.3 polynomial (0xEDB88320) with bit/byte ordering
+// as defined by the standard. The CRC is calculated over SYNC + Header + Payload.
 func (e *DefaultEncoder) Encode(frame *Frame) ([]byte, error) {
 	// Validate payload size
 	if len(frame.Payload) > MaxPayloadSize {

@@ -207,15 +207,15 @@ func crossCompatibilityVectors() []crossVector {
 			frameType: FrameTypePong,
 			seq:       0,
 			flags:     FlagNone,
-			payload:   []byte{0x00, 0x00, 0x00, 0x2A}, // counter=42 (payload bytes unchanged)
+			payload:   []byte{0x2A, 0x00, 0x00, 0x00}, // counter=42 (little-endian)
 			wire: []byte{
 				0xAA, 0x55, // SYNC (little-endian)
 				0x00, 0x00, // SEQ=0
 				0x04, 0x00, // LEN=4 (little-endian)
 				0x01,                   // TYPE=PONG
 				0x00,                   // FLAGS=none
-				0x00, 0x00, 0x00, 0x2A, // PAYLOAD
-				0xF9, 0xFF, 0x50, 0x74, // CRC-32 LE = 0x7450FFF9
+				0x2A, 0x00, 0x00, 0x00, // PAYLOAD (little-endian)
+				0x75, 0x79, 0x64, 0x60, // CRC-32 LE = 0x60647975
 			},
 		},
 		{
