@@ -210,7 +210,7 @@ func TestTransportManager_SendReceive(t *testing.T) {
 		SendWithTypeFunc: func(ctx context.Context, data []byte, frameType frame.Type) error {
 			// Capture session ID from RESET payload
 			if frameType == frame.FrameTypeReset && len(data) >= SessionIDPayloadSize {
-				capturedSessionID.Store(binary.BigEndian.Uint32(data[:SessionIDPayloadSize]))
+				capturedSessionID.Store(binary.LittleEndian.Uint32(data[:SessionIDPayloadSize]))
 			}
 			return nil
 		},
@@ -220,7 +220,7 @@ func TestTransportManager_SendReceive(t *testing.T) {
 			if count == 1 {
 				sid := capturedSessionID.Load()
 				payload := make([]byte, SessionIDPayloadSize)
-				binary.BigEndian.PutUint32(payload, sid)
+				binary.LittleEndian.PutUint32(payload, sid)
 				return &harq.ReceiveResult{
 					Payload: payload,
 					Metadata: harq.FrameMetadata{
@@ -368,7 +368,7 @@ func newTestManagerWithMock(mock *testutil.MockHARQ) *TransportManager {
 // Helper to build a RESET_ACK payload with a given session ID.
 func makeResetAckPayload(sessionID uint32) []byte {
 	payload := make([]byte, SessionIDPayloadSize)
-	binary.BigEndian.PutUint32(payload, sessionID)
+	binary.LittleEndian.PutUint32(payload, sessionID)
 	return payload
 }
 
@@ -379,7 +379,7 @@ func TestPerformResetHandshake_StaleFramesDrained(t *testing.T) {
 	mock := &testutil.MockHARQ{
 		SendWithTypeFunc: func(ctx context.Context, data []byte, frameType frame.Type) error {
 			if frameType == frame.FrameTypeReset && len(data) >= SessionIDPayloadSize {
-				capturedSessionID.Store(binary.BigEndian.Uint32(data[:SessionIDPayloadSize]))
+				capturedSessionID.Store(binary.LittleEndian.Uint32(data[:SessionIDPayloadSize]))
 			}
 			return nil
 		},
@@ -445,7 +445,7 @@ func TestPerformResetHandshake_SessionIDMismatch(t *testing.T) {
 	mock := &testutil.MockHARQ{
 		SendWithTypeFunc: func(ctx context.Context, data []byte, frameType frame.Type) error {
 			if frameType == frame.FrameTypeReset && len(data) >= SessionIDPayloadSize {
-				capturedSessionID.Store(binary.BigEndian.Uint32(data[:SessionIDPayloadSize]))
+				capturedSessionID.Store(binary.LittleEndian.Uint32(data[:SessionIDPayloadSize]))
 			}
 			return nil
 		},
@@ -616,7 +616,7 @@ func TestPerformResetHandshake_TimeoutRetry(t *testing.T) {
 		SendWithTypeFunc: func(ctx context.Context, data []byte, frameType frame.Type) error {
 			sendCount.Add(1)
 			if frameType == frame.FrameTypeReset && len(data) >= SessionIDPayloadSize {
-				capturedSessionID.Store(binary.BigEndian.Uint32(data[:SessionIDPayloadSize]))
+				capturedSessionID.Store(binary.LittleEndian.Uint32(data[:SessionIDPayloadSize]))
 			}
 			return nil
 		},
