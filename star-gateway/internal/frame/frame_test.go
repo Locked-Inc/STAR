@@ -80,8 +80,8 @@ func TestEncoderEncode(t *testing.T) {
 				t.Errorf("encoded size = %d, want %d", len(encoded), expectedSize)
 			}
 
-			// Verify SYNC word (big-endian)
-			sync := binary.BigEndian.Uint16(encoded[0:2])
+			// Verify SYNC word (little-endian)
+			sync := binary.LittleEndian.Uint16(encoded[0:2])
 			if sync != SyncWord {
 				t.Errorf("SYNC = 0x%04X, want 0x%04X", sync, SyncWord)
 			}
@@ -116,12 +116,12 @@ func TestEncoderByteOrder(t *testing.T) {
 			seq:     0x1234,
 			payload: []byte{0x01},
 			checks: []byteCheck{
-				{offset: 0, expected: 0x55, desc: "SYNC high"},
-				{offset: 1, expected: 0xAA, desc: "SYNC low"},
-				{offset: 2, expected: 0x12, desc: "SEQ high"},
-				{offset: 3, expected: 0x34, desc: "SEQ low"},
-				{offset: 4, expected: 0x00, desc: "LEN high"},
-				{offset: 5, expected: 0x01, desc: "LEN low"},
+				{offset: 0, expected: 0xAA, desc: "SYNC low"}, // Little-endian: low byte first
+				{offset: 1, expected: 0x55, desc: "SYNC high"},
+				{offset: 2, expected: 0x34, desc: "SEQ low"}, // Little-endian: 0x1234 = [0x34, 0x12]
+				{offset: 3, expected: 0x12, desc: "SEQ high"},
+				{offset: 4, expected: 0x01, desc: "LEN low"}, // Little-endian: 0x0001 = [0x01, 0x00]
+				{offset: 5, expected: 0x00, desc: "LEN high"},
 				{offset: 6, expected: 0x10, desc: "TYPE (Command)"},
 				{offset: 7, expected: 0x00, desc: "FLAGS"},
 			},
@@ -184,6 +184,7 @@ type crossVector struct {
 
 // crossCompatibilityVectors returns the canonical test vectors shared with C firmware.
 // Any change to these vectors MUST be mirrored in test_rx_frame.c.
+// All multi-byte fields (SYNC, SEQ, LEN) use little-endian byte order.
 func crossCompatibilityVectors() []crossVector {
 	return []crossVector{
 		{
@@ -193,12 +194,12 @@ func crossCompatibilityVectors() []crossVector {
 			flags:     FlagNone,
 			payload:   nil,
 			wire: []byte{
-				0x55, 0xAA, // SYNC
+				0xAA, 0x55, // SYNC (little-endian)
 				0x00, 0x00, // SEQ=0
 				0x00, 0x00, // LEN=0
 				0x00,                   // TYPE=PING
 				0x00,                   // FLAGS=none
-				0xEB, 0xAE, 0x3F, 0x9B, // CRC-32 LE = 0x9B3FAEEB
+				0x3D, 0xE2, 0x42, 0x2F, // CRC-32 LE = 0x2F42E23D
 			},
 		},
 		{
@@ -206,15 +207,15 @@ func crossCompatibilityVectors() []crossVector {
 			frameType: FrameTypePong,
 			seq:       0,
 			flags:     FlagNone,
-			payload:   []byte{0x00, 0x00, 0x00, 0x2A}, // counter=42 big-endian
+			payload:   []byte{0x00, 0x00, 0x00, 0x2A}, // counter=42 (payload bytes unchanged)
 			wire: []byte{
-				0x55, 0xAA, // SYNC
+				0xAA, 0x55, // SYNC (little-endian)
 				0x00, 0x00, // SEQ=0
-				0x00, 0x04, // LEN=4
+				0x04, 0x00, // LEN=4 (little-endian)
 				0x01,                   // TYPE=PONG
 				0x00,                   // FLAGS=none
 				0x00, 0x00, 0x00, 0x2A, // PAYLOAD
-				0xDF, 0x37, 0x77, 0x28, // CRC-32 LE = 0x287737DF
+				0xF9, 0xFF, 0x50, 0x74, // CRC-32 LE = 0x7450FFF9
 			},
 		},
 		{
@@ -224,13 +225,13 @@ func crossCompatibilityVectors() []crossVector {
 			flags:     FlagRequiresAck,
 			payload:   []byte{0x54, 0x45, 0x53, 0x54}, // "TEST"
 			wire: []byte{
-				0x55, 0xAA, // SYNC
-				0x00, 0x01, // SEQ=1
-				0x00, 0x04, // LEN=4
+				0xAA, 0x55, // SYNC (little-endian)
+				0x01, 0x00, // SEQ=1 (little-endian)
+				0x04, 0x00, // LEN=4 (little-endian)
 				0x10,                   // TYPE=COMMAND
 				0x01,                   // FLAGS=REQUIRES_ACK
 				0x54, 0x45, 0x53, 0x54, // PAYLOAD="TEST"
-				0x60, 0x5E, 0xF3, 0xDE, // CRC-32 LE = 0xDEF35E60
+				0x3B, 0xE9, 0x6D, 0x7A, // CRC-32 LE = 0x7A6DE93B
 			},
 		},
 		{
@@ -240,13 +241,13 @@ func crossCompatibilityVectors() []crossVector {
 			flags:     FlagNone,
 			payload:   []byte{0x4F, 0x4B}, // "OK"
 			wire: []byte{
-				0x55, 0xAA, // SYNC
-				0x00, 0x01, // SEQ=1
-				0x00, 0x02, // LEN=2
+				0xAA, 0x55, // SYNC (little-endian)
+				0x01, 0x00, // SEQ=1 (little-endian)
+				0x02, 0x00, // LEN=2 (little-endian)
 				0x11,       // TYPE=RESPONSE
 				0x00,       // FLAGS=none
 				0x4F, 0x4B, // PAYLOAD="OK"
-				0xF4, 0x8E, 0xC0, 0x6F, // CRC-32 LE = 0x6FC08EF4
+				0xEA, 0xAC, 0x1D, 0x9A, // CRC-32 LE = 0x9A1DACEA
 			},
 		},
 		{
@@ -256,12 +257,12 @@ func crossCompatibilityVectors() []crossVector {
 			flags:     FlagNone,
 			payload:   nil,
 			wire: []byte{
-				0x55, 0xAA, // SYNC
-				0x00, 0x01, // SEQ=1
+				0xAA, 0x55, // SYNC (little-endian)
+				0x01, 0x00, // SEQ=1 (little-endian)
 				0x00, 0x00, // LEN=0
 				0x12,                   // TYPE=ACK
 				0x00,                   // FLAGS=none
-				0x88, 0xF7, 0xAB, 0xDE, // CRC-32 LE = 0xDEABF788
+				0x4B, 0x41, 0xEA, 0x9C, // CRC-32 LE = 0x9CEA414B
 			},
 		},
 		{
@@ -271,12 +272,12 @@ func crossCompatibilityVectors() []crossVector {
 			flags:     FlagNone,
 			payload:   nil,
 			wire: []byte{
-				0x55, 0xAA, // SYNC
-				0x00, 0x01, // SEQ=1
+				0xAA, 0x55, // SYNC (little-endian)
+				0x01, 0x00, // SEQ=1 (little-endian)
 				0x00, 0x00, // LEN=0
 				0x13,                   // TYPE=NACK
 				0x00,                   // FLAGS=none
-				0xC9, 0xC6, 0xB0, 0xC7, // CRC-32 LE = 0xC7B0C6C9
+				0x0A, 0x70, 0xF1, 0x85, // CRC-32 LE = 0x85F1700A
 			},
 		},
 		{
@@ -286,12 +287,12 @@ func crossCompatibilityVectors() []crossVector {
 			flags:     FlagNone,
 			payload:   nil,
 			wire: []byte{
-				0x55, 0xAA, // SYNC
+				0xAA, 0x55, // SYNC (little-endian)
 				0x00, 0x00, // SEQ=0
 				0x00, 0x00, // LEN=0
 				0xFF,                   // TYPE=RESET
 				0x00,                   // FLAGS=none
-				0x99, 0x53, 0x1B, 0x08, // CRC-32 LE = 0x081B5399
+				0x4F, 0x1F, 0x66, 0xBC, // CRC-32 LE = 0xBC661F4F
 			},
 		},
 		{
@@ -301,12 +302,12 @@ func crossCompatibilityVectors() []crossVector {
 			flags:     FlagNone,
 			payload:   nil,
 			wire: []byte{
-				0x55, 0xAA, // SYNC
+				0xAA, 0x55, // SYNC (little-endian)
 				0x00, 0x00, // SEQ=0
 				0x00, 0x00, // LEN=0
 				0xFE,                   // TYPE=RESET_ACK
 				0x00,                   // FLAGS=none
-				0xD8, 0x62, 0x00, 0x11, // CRC-32 LE = 0x110062D8
+				0x0E, 0x2E, 0x7D, 0xA5, // CRC-32 LE = 0xA57D2E0E
 			},
 		},
 	}

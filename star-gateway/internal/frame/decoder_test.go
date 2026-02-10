@@ -93,7 +93,7 @@ func TestDecoder_Decode(t *testing.T) {
 			input: func() []byte {
 				data := createEncodedFrame(t, FrameTypeCommand, 1, FlagNone, []byte{})
 				// Set length field to MaxPayloadSize + 1
-				binary.BigEndian.PutUint16(data[4:6], uint16(MaxPayloadSize+1))
+				binary.LittleEndian.PutUint16(data[4:6], uint16(MaxPayloadSize+1))
 				return data
 			}(),
 			expectError: ErrPayloadTooLarge,

@@ -88,7 +88,7 @@ func TestSessionState_ValidateResetAck_MatchingID(t *testing.T) {
 	ss.ActivateBarrier(sessionID)
 
 	payload := make([]byte, SessionIDPayloadSize)
-	binary.BigEndian.PutUint32(payload, sessionID)
+	binary.LittleEndian.PutUint32(payload, sessionID)
 
 	if !ss.ValidateResetAck(payload) {
 		t.Error("ValidateResetAck should accept matching session ID")
@@ -101,7 +101,7 @@ func TestSessionState_ValidateResetAck_MismatchID(t *testing.T) {
 	ss.ActivateBarrier(42)
 
 	payload := make([]byte, SessionIDPayloadSize)
-	binary.BigEndian.PutUint32(payload, 99) // Wrong session ID
+	binary.LittleEndian.PutUint32(payload, 99) // Wrong session ID
 
 	if ss.ValidateResetAck(payload) {
 		t.Error("ValidateResetAck should reject mismatched session ID")
@@ -129,7 +129,7 @@ func TestSessionState_ValidateResetAck_BarrierInactive(t *testing.T) {
 
 	// Barrier not active
 	payload := make([]byte, SessionIDPayloadSize)
-	binary.BigEndian.PutUint32(payload, 1)
+	binary.LittleEndian.PutUint32(payload, 1)
 
 	if ss.ValidateResetAck(payload) {
 		t.Error("ValidateResetAck should reject when barrier is inactive")
@@ -144,7 +144,7 @@ func TestSessionState_ValidateResetAck_LongerPayload(t *testing.T) {
 
 	// Payload longer than 4 bytes should still work (reads first 4)
 	payload := make([]byte, 8)
-	binary.BigEndian.PutUint32(payload, sessionID)
+	binary.LittleEndian.PutUint32(payload, sessionID)
 	payload[4] = 0xFF // Extra bytes
 
 	if !ss.ValidateResetAck(payload) {

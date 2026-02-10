@@ -15,15 +15,15 @@ func buildTestFrame(seq uint16, flags Flags, payload []byte) []byte {
 	offset := 0
 
 	// SYNC
-	binary.BigEndian.PutUint16(buf[offset:], SyncWord)
+	binary.LittleEndian.PutUint16(buf[offset:], SyncWord)
 	offset += 2
 
 	// SEQ
-	binary.BigEndian.PutUint16(buf[offset:], seq)
+	binary.LittleEndian.PutUint16(buf[offset:], seq)
 	offset += 2
 
 	// LEN
-	binary.BigEndian.PutUint16(buf[offset:], uint16(len(payload)))
+	binary.LittleEndian.PutUint16(buf[offset:], uint16(len(payload)))
 	offset += 2
 
 	// TYPE (Default to Command for testing)
@@ -183,7 +183,7 @@ func TestStreamDecoder_InvalidLength(t *testing.T) {
 	// Mutate LEN field: SYNC(2) + SEQ(2) = offset 4
 	const lenOffset = SyncSize + SeqSize
 	const invalidLength = MaxPayloadSize + 1
-	binary.BigEndian.PutUint16(frame1[lenOffset:], invalidLength)
+	binary.LittleEndian.PutUint16(frame1[lenOffset:], invalidLength)
 	// Note: CRC is now invalid, but decoder will reject on length check first
 
 	// Build a valid frame to follow

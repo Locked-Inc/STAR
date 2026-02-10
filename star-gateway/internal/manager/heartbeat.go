@@ -213,7 +213,7 @@ func (hm *HeartbeatManager) OnPongReceived(payload []byte) bool {
 	}
 
 	// Extract counter from PONG payload
-	receivedCounter := binary.BigEndian.Uint32(payload)
+	receivedCounter := binary.LittleEndian.Uint32(payload)
 
 	// Validate counter matches last sent PING
 	if receivedCounter != hm.lastPingSent {
@@ -350,7 +350,7 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 //
 // PING Frame Format:
 //   - Type: FrameTypePing (0x00)
-//   - Payload: 4-byte counter (big-endian uint32)
+//   - Payload: 4-byte counter (little-endian uint32)
 //   - Expected Response: PONG frame with same counter (validated by OnPongReceived)
 //
 // The counter enables replay detection: the RX72N echoes the counter in PONG,
@@ -367,9 +367,9 @@ func (hm *HeartbeatManager) sendPing(ctx context.Context, tm *TransportManager) 
 	hm.pingCounter++
 	hm.mu.Unlock()
 
-	// Create PING payload (pingPayloadSize bytes, big-endian counter)
+	// Create PING payload (pingPayloadSize bytes, little-endian counter)
 	payload := make([]byte, pingPayloadSize)
-	binary.BigEndian.PutUint32(payload, counter)
+	binary.LittleEndian.PutUint32(payload, counter)
 
 	// Send PING via TransportManager with explicit frame type
 	// Note: We don't wait for PONG here - OnPongReceived() will be called

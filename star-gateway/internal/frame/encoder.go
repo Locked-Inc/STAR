@@ -25,7 +25,7 @@ func NewEncoder() *DefaultEncoder {
 
 // Encode serializes a Frame into wire format bytes.
 //
-// Wire format (header fields in big-endian, CRC-32 in little-endian per IEEE 802.3):
+// Wire format (all fields in little-endian per IEEE 802.3):
 //
 //	[SYNC (2B)][SEQ (2B)][LEN (2B)][TYPE (1B)][FLAGS (1B)][PAYLOAD (0-1KB)][CRC-32 (4B)]
 //
@@ -41,16 +41,16 @@ func (e *DefaultEncoder) Encode(frame *Frame) ([]byte, error) {
 	buf := make([]byte, frameSize)
 	offset := 0
 
-	// Write SYNC word (big-endian)
-	binary.BigEndian.PutUint16(buf[offset:], SyncWord)
+	// Write SYNC word (little-endian)
+	binary.LittleEndian.PutUint16(buf[offset:], SyncWord)
 	offset += SyncSize
 
-	// Write SEQ (big-endian)
-	binary.BigEndian.PutUint16(buf[offset:], frame.Header.Sequence)
+	// Write SEQ (little-endian)
+	binary.LittleEndian.PutUint16(buf[offset:], frame.Header.Sequence)
 	offset += SeqSize
 
-	// Write LEN (big-endian)
-	binary.BigEndian.PutUint16(buf[offset:], frame.Header.Length)
+	// Write LEN (little-endian)
+	binary.LittleEndian.PutUint16(buf[offset:], frame.Header.Length)
 	offset += LenSize
 
 	// Write TYPE (1 byte) - Explicit field

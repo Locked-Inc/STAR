@@ -186,6 +186,23 @@ jobs:
       - name: Run go vet
         run: go vet ./...
 
+      - name: Check for BigEndian usage (regression guard)
+        run: |
+          cd star-gateway
+          # Search production code (exclude tests and vendor)
+          if grep -r "binary\.BigEndian" \
+             --include="*.go" \
+             --exclude="*_test.go" \
+             --exclude-dir="vendor" \
+             .; then
+            echo "❌ ERROR: Found binary.BigEndian in production code!"
+            echo "All multi-byte fields must use binary.LittleEndian after endianness migration."
+            echo "See /workspaces/STAR/CLAUDE.md for protocol specification."
+            exit 1
+          fi
+          echo "✅ No BigEndian usage detected (expected after migration)"
+        working-directory: .
+
       - name: Check gofmt
         run: |
           unformatted=$(gofmt -l .)
