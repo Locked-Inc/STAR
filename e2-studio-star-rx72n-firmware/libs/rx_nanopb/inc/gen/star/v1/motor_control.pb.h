@@ -196,6 +196,23 @@ typedef struct _star_v1_PidConfig {
     double integral_max;
 } star_v1_PidConfig;
 
+/* Request for current motor state. */
+typedef struct _star_v1_GetMotorStateRequest {
+    /* Standard request header. */
+    bool has_header;
+    star_v1_RequestHeader header;
+} star_v1_GetMotorStateRequest;
+
+/* Response with current motor state for all motors. */
+typedef struct _star_v1_GetMotorStateResponse {
+    /* Standard response header with status. */
+    bool has_header;
+    star_v1_ResponseHeader header;
+    /* Status for each motor (up to 4 for mecanum drive). */
+    pb_size_t motor_status_count;
+    star_v1_MotorStatus motor_status[4];
+} star_v1_GetMotorStateResponse;
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -220,6 +237,8 @@ extern "C" {
 
 
 
+
+
 /* Initializer values for message structs */
 #define star_v1_SetVelocityRequest_init_default  {false, star_v1_RequestHeader_init_default, false, star_v1_VelocityCommand_init_default}
 #define star_v1_SetVelocityResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, {star_v1_MotorStatus_init_default, star_v1_MotorStatus_init_default}}
@@ -233,6 +252,8 @@ extern "C" {
 #define star_v1_EncoderData_init_default         {0, 0, 0, 0}
 #define star_v1_MotorStatus_init_default         {0, 0, 0, 0, 0, 0, 0, _star_v1_MotorState_MIN}
 #define star_v1_PidConfig_init_default           {0, 0, 0, 0, 0, 0, 0}
+#define star_v1_GetMotorStateRequest_init_default {false, star_v1_RequestHeader_init_default}
+#define star_v1_GetMotorStateResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, {star_v1_MotorStatus_init_default, star_v1_MotorStatus_init_default, star_v1_MotorStatus_init_default, star_v1_MotorStatus_init_default}}
 #define star_v1_SetVelocityRequest_init_zero     {false, star_v1_RequestHeader_init_zero, false, star_v1_VelocityCommand_init_zero}
 #define star_v1_SetVelocityResponse_init_zero    {false, star_v1_ResponseHeader_init_zero, 0, {star_v1_MotorStatus_init_zero, star_v1_MotorStatus_init_zero}}
 #define star_v1_VelocityCommand_init_zero        {0, 0, 0, 0, 0, 0}
@@ -245,6 +266,8 @@ extern "C" {
 #define star_v1_EncoderData_init_zero            {0, 0, 0, 0}
 #define star_v1_MotorStatus_init_zero            {0, 0, 0, 0, 0, 0, 0, _star_v1_MotorState_MIN}
 #define star_v1_PidConfig_init_zero              {0, 0, 0, 0, 0, 0, 0}
+#define star_v1_GetMotorStateRequest_init_zero   {false, star_v1_RequestHeader_init_zero}
+#define star_v1_GetMotorStateResponse_init_zero  {false, star_v1_ResponseHeader_init_zero, 0, {star_v1_MotorStatus_init_zero, star_v1_MotorStatus_init_zero, star_v1_MotorStatus_init_zero, star_v1_MotorStatus_init_zero}}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_VelocityCommand_front_left_velocity_mps_tag 1
@@ -287,6 +310,9 @@ extern "C" {
 #define star_v1_PidConfig_output_max_percent_tag 5
 #define star_v1_PidConfig_integral_min_tag       6
 #define star_v1_PidConfig_integral_max_tag       7
+#define star_v1_GetMotorStateRequest_header_tag  1
+#define star_v1_GetMotorStateResponse_header_tag 1
+#define star_v1_GetMotorStateResponse_motor_status_tag 2
 
 /* Struct field encoding specification for nanopb */
 #define star_v1_SetVelocityRequest_FIELDLIST(X, a) \
@@ -387,6 +413,20 @@ X(a, STATIC,   SINGULAR, DOUBLE,   integral_max,      7)
 #define star_v1_PidConfig_CALLBACK NULL
 #define star_v1_PidConfig_DEFAULT NULL
 
+#define star_v1_GetMotorStateRequest_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1)
+#define star_v1_GetMotorStateRequest_CALLBACK NULL
+#define star_v1_GetMotorStateRequest_DEFAULT NULL
+#define star_v1_GetMotorStateRequest_header_MSGTYPE star_v1_RequestHeader
+
+#define star_v1_GetMotorStateResponse_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
+X(a, STATIC,   REPEATED, MESSAGE,  motor_status,      2)
+#define star_v1_GetMotorStateResponse_CALLBACK NULL
+#define star_v1_GetMotorStateResponse_DEFAULT NULL
+#define star_v1_GetMotorStateResponse_header_MSGTYPE star_v1_ResponseHeader
+#define star_v1_GetMotorStateResponse_motor_status_MSGTYPE star_v1_MotorStatus
+
 extern const pb_msgdesc_t star_v1_SetVelocityRequest_msg;
 extern const pb_msgdesc_t star_v1_SetVelocityResponse_msg;
 extern const pb_msgdesc_t star_v1_VelocityCommand_msg;
@@ -399,6 +439,8 @@ extern const pb_msgdesc_t star_v1_StreamEncodersRequest_msg;
 extern const pb_msgdesc_t star_v1_EncoderData_msg;
 extern const pb_msgdesc_t star_v1_MotorStatus_msg;
 extern const pb_msgdesc_t star_v1_PidConfig_msg;
+extern const pb_msgdesc_t star_v1_GetMotorStateRequest_msg;
+extern const pb_msgdesc_t star_v1_GetMotorStateResponse_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define star_v1_SetVelocityRequest_fields &star_v1_SetVelocityRequest_msg
@@ -413,12 +455,16 @@ extern const pb_msgdesc_t star_v1_PidConfig_msg;
 #define star_v1_EncoderData_fields &star_v1_EncoderData_msg
 #define star_v1_MotorStatus_fields &star_v1_MotorStatus_msg
 #define star_v1_PidConfig_fields &star_v1_PidConfig_msg
+#define star_v1_GetMotorStateRequest_fields &star_v1_GetMotorStateRequest_msg
+#define star_v1_GetMotorStateResponse_fields &star_v1_GetMotorStateResponse_msg
 
 /* Maximum encoded size of messages (where known) */
-#define STAR_V1_STAR_V1_MOTOR_CONTROL_PB_H_MAX_SIZE star_v1_SetVelocityResponse_size
+#define STAR_V1_STAR_V1_MOTOR_CONTROL_PB_H_MAX_SIZE star_v1_GetMotorStateResponse_size
 #define star_v1_EmergencyStopRequest_size        279
 #define star_v1_EmergencyStopResponse_size       365
 #define star_v1_EncoderData_size                 42
+#define star_v1_GetMotorStateRequest_size        149
+#define star_v1_GetMotorStateResponse_size       627
 #define star_v1_MotorPowerCommand_size           20
 #define star_v1_MotorStatus_size                 64
 #define star_v1_PidConfig_size                   63

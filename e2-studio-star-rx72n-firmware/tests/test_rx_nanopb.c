@@ -2253,6 +2253,411 @@ void test_telemetry_fits_in_buffer(void)
 /** @} */ /* End of nanopb_test_buffer_size */
 
 /* =============================================================================
+ * GetTelemetryResponse Encode Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Verify encode rejects nullptr msg
+ */
+void test_encode_telemetry_response_null_msg(void)
+{
+  uint32_t len = 0;
+  rx_err_t err = rx_nanopb_encode_telemetry_response(nullptr, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify encode rejects nullptr buffer
+ */
+void test_encode_telemetry_response_null_buffer(void)
+{
+  star_v1_GetTelemetryResponse msg = star_v1_GetTelemetryResponse_init_zero;
+  uint32_t                     len = 0;
+  rx_err_t err = rx_nanopb_encode_telemetry_response(&msg, nullptr, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify encode rejects nullptr len
+ */
+void test_encode_telemetry_response_null_len(void)
+{
+  star_v1_GetTelemetryResponse msg = star_v1_GetTelemetryResponse_init_zero;
+  rx_err_t err = rx_nanopb_encode_telemetry_response(&msg, s_buffer, sizeof(s_buffer), nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify encode rejects undersized buffer
+ */
+void test_encode_telemetry_response_small_buffer(void)
+{
+  star_v1_GetTelemetryResponse msg = star_v1_GetTelemetryResponse_init_zero;
+  uint32_t                     len = 0;
+  rx_err_t err = rx_nanopb_encode_telemetry_response(&msg, s_buffer, k_test_small_buffer_size, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Verify empty GetTelemetryResponse encodes successfully
+ */
+void test_encode_telemetry_response_empty(void)
+{
+  star_v1_GetTelemetryResponse msg = star_v1_GetTelemetryResponse_init_zero;
+  uint32_t                     len = 0;
+  rx_err_t err = rx_nanopb_encode_telemetry_response(&msg, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Verify encode fails when module not initialized
+ */
+void test_encode_telemetry_response_not_initialized(void)
+{
+  rx_nanopb_test_reset_state();
+  star_v1_GetTelemetryResponse msg = star_v1_GetTelemetryResponse_init_zero;
+  uint32_t                     len = 0;
+  rx_err_t err = rx_nanopb_encode_telemetry_response(&msg, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+}
+
+/* =============================================================================
+ * GetMotorStateResponse Encode Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Verify encode rejects nullptr msg
+ */
+void test_encode_motor_state_response_null_msg(void)
+{
+  uint32_t len = 0;
+  rx_err_t err = rx_nanopb_encode_motor_state_response(nullptr, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify encode rejects nullptr buffer
+ */
+void test_encode_motor_state_response_null_buffer(void)
+{
+  star_v1_GetMotorStateResponse msg = star_v1_GetMotorStateResponse_init_zero;
+  uint32_t                      len = 0;
+  rx_err_t err = rx_nanopb_encode_motor_state_response(&msg, nullptr, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify encode rejects nullptr len
+ */
+void test_encode_motor_state_response_null_len(void)
+{
+  star_v1_GetMotorStateResponse msg = star_v1_GetMotorStateResponse_init_zero;
+  rx_err_t err = rx_nanopb_encode_motor_state_response(&msg, s_buffer, sizeof(s_buffer), nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify encode rejects undersized buffer
+ */
+void test_encode_motor_state_response_small_buffer(void)
+{
+  star_v1_GetMotorStateResponse msg = star_v1_GetMotorStateResponse_init_zero;
+  uint32_t                      len = 0;
+  rx_err_t err = rx_nanopb_encode_motor_state_response(&msg, s_buffer, k_test_small_buffer_size, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Verify empty GetMotorStateResponse encodes successfully
+ */
+void test_encode_motor_state_response_empty(void)
+{
+  star_v1_GetMotorStateResponse msg = star_v1_GetMotorStateResponse_init_zero;
+  uint32_t                      len = 0;
+  rx_err_t err = rx_nanopb_encode_motor_state_response(&msg, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Verify encode fails when module not initialized
+ */
+void test_encode_motor_state_response_not_initialized(void)
+{
+  rx_nanopb_test_reset_state();
+  star_v1_GetMotorStateResponse msg = star_v1_GetMotorStateResponse_init_zero;
+  uint32_t                      len = 0;
+  rx_err_t err = rx_nanopb_encode_motor_state_response(&msg, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+}
+
+/* =============================================================================
+ * Telemetry Response Roundtrip Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Full GetTelemetryResponse encode/decode roundtrip with all fields
+ */
+void test_telemetry_response_roundtrip_all_fields(void)
+{
+  star_v1_GetTelemetryResponse original = star_v1_GetTelemetryResponse_init_zero;
+
+  /* Populate response header */
+  original.has_header = true;
+  rx_nanopb_create_response_header(&original.header,
+                                    star_v1_Status_STATUS_OK, nullptr);
+
+  /* Populate telemetry data */
+  original.has_telemetry                       = true;
+  original.telemetry.timestamp_us              = k_test_timestamp_us;
+  original.telemetry.frame_sequence            = k_test_sequence_number;
+  original.telemetry.emergency_stop            = false;
+  original.telemetry.fault_flags               = 0;
+  original.telemetry.battery_voltage_v         = s_test_battery_percent;
+  original.telemetry.battery_soc_percent       = 87;
+  original.telemetry.battery_percent           = s_test_battery_percent;
+  original.telemetry.temperature_celsius       = s_test_temperature_c;
+
+  /* Encoder data */
+  original.telemetry.has_encoder_front_left           = true;
+  original.telemetry.encoder_front_left.motor_id      = 0;
+  original.telemetry.encoder_front_left.ticks         = 1000;
+  original.telemetry.encoder_front_left.velocity_mps  = s_test_front_left_velocity_mps;
+  original.telemetry.encoder_front_left.timestamp_us  = k_test_timestamp_us;
+
+  original.telemetry.has_encoder_front_right          = true;
+  original.telemetry.encoder_front_right.motor_id     = 1;
+  original.telemetry.encoder_front_right.ticks        = 2000;
+  original.telemetry.encoder_front_right.velocity_mps = s_test_front_right_velocity_mps;
+  original.telemetry.encoder_front_right.timestamp_us = k_test_timestamp_us;
+
+  original.telemetry.has_encoder_back_left            = true;
+  original.telemetry.encoder_back_left.motor_id       = 2;
+  original.telemetry.encoder_back_left.ticks          = 1500;
+  original.telemetry.encoder_back_left.velocity_mps   = s_test_back_left_velocity_mps;
+  original.telemetry.encoder_back_left.timestamp_us   = k_test_timestamp_us;
+
+  original.telemetry.has_encoder_back_right           = true;
+  original.telemetry.encoder_back_right.motor_id      = 3;
+  original.telemetry.encoder_back_right.ticks         = 1800;
+  original.telemetry.encoder_back_right.velocity_mps  = s_test_back_right_velocity_mps;
+  original.telemetry.encoder_back_right.timestamp_us  = k_test_timestamp_us;
+
+  /* Encode */
+  uint32_t len = 0;
+  rx_err_t err = rx_nanopb_encode_telemetry_response(&original, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_GREATER_THAN(0, len);
+
+  /* Decode */
+  star_v1_GetTelemetryResponse decoded = star_v1_GetTelemetryResponse_init_zero;
+  err = rx_nanopb_decode_telemetry_response(s_buffer, len, &decoded);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Verify header */
+  TEST_ASSERT_TRUE(decoded.has_header);
+  TEST_ASSERT_EQUAL(star_v1_Status_STATUS_OK, decoded.header.status);
+
+  /* Verify telemetry fields */
+  TEST_ASSERT_TRUE(decoded.has_telemetry);
+  TEST_ASSERT_EQUAL(k_test_timestamp_us, decoded.telemetry.timestamp_us);
+  TEST_ASSERT_EQUAL(k_test_sequence_number, decoded.telemetry.frame_sequence);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
+                           (float)s_test_temperature_c,
+                           (float)decoded.telemetry.temperature_celsius);
+
+  /* Verify encoder roundtrip */
+  TEST_ASSERT_TRUE(decoded.telemetry.has_encoder_front_left);
+  TEST_ASSERT_EQUAL(0, decoded.telemetry.encoder_front_left.motor_id);
+  TEST_ASSERT_EQUAL(1000, decoded.telemetry.encoder_front_left.ticks);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
+                           (float)s_test_front_left_velocity_mps,
+                           (float)decoded.telemetry.encoder_front_left.velocity_mps);
+}
+
+/**
+ * @brief Partial telemetry roundtrip - motor data only (no BMS/temp)
+ */
+void test_telemetry_response_roundtrip_partial(void)
+{
+  star_v1_GetTelemetryResponse original = star_v1_GetTelemetryResponse_init_zero;
+
+  original.has_header = true;
+  rx_nanopb_create_response_header(&original.header,
+                                    star_v1_Status_STATUS_OK, nullptr);
+
+  original.has_telemetry                              = true;
+  original.telemetry.timestamp_us                     = k_test_timestamp_us;
+  original.telemetry.has_encoder_front_left           = true;
+  original.telemetry.encoder_front_left.motor_id      = 0;
+  original.telemetry.encoder_front_left.ticks         = 500;
+  original.telemetry.encoder_front_left.velocity_mps  = s_test_front_left_velocity_mps;
+
+  /* Encode */
+  uint32_t len = 0;
+  rx_err_t err = rx_nanopb_encode_telemetry_response(&original, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Decode */
+  star_v1_GetTelemetryResponse decoded = star_v1_GetTelemetryResponse_init_zero;
+  err = rx_nanopb_decode_telemetry_response(s_buffer, len, &decoded);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Motor data present */
+  TEST_ASSERT_TRUE(decoded.has_telemetry);
+  TEST_ASSERT_TRUE(decoded.telemetry.has_encoder_front_left);
+  TEST_ASSERT_EQUAL(500, decoded.telemetry.encoder_front_left.ticks);
+
+  /* BMS/temp fields should be zero (not populated) */
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 0.0F,
+                           (float)decoded.telemetry.battery_voltage_v);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 0.0F,
+                           (float)decoded.telemetry.temperature_celsius);
+}
+
+/* =============================================================================
+ * Motor State Response Roundtrip Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Full GetMotorStateResponse roundtrip with 4 motors
+ */
+void test_motor_state_response_roundtrip_4_motors(void)
+{
+  star_v1_GetMotorStateResponse original = star_v1_GetMotorStateResponse_init_zero;
+
+  /* Populate response header */
+  original.has_header = true;
+  rx_nanopb_create_response_header(&original.header,
+                                    star_v1_Status_STATUS_OK, nullptr);
+
+  /* Populate 4 motor status entries */
+  original.motor_status_count = 4;
+
+  original.motor_status[0].motor_id           = 0;
+  original.motor_status[0].duty_cycle_percent = 50.0;
+  original.motor_status[0].velocity_mps       = s_test_front_left_velocity_mps;
+  original.motor_status[0].target_velocity_mps = s_test_front_left_velocity_mps;
+  original.motor_status[0].current_ma         = 2500.0;
+  original.motor_status[0].fault_flags        = 0;
+  original.motor_status[0].state              = star_v1_MotorState_MOTOR_STATE_RUNNING;
+
+  original.motor_status[1].motor_id           = 1;
+  original.motor_status[1].duty_cycle_percent = 45.0;
+  original.motor_status[1].velocity_mps       = s_test_front_right_velocity_mps;
+  original.motor_status[1].target_velocity_mps = s_test_front_right_velocity_mps;
+  original.motor_status[1].current_ma         = 2400.0;
+  original.motor_status[1].fault_flags        = 0;
+  original.motor_status[1].state              = star_v1_MotorState_MOTOR_STATE_RUNNING;
+
+  original.motor_status[2].motor_id           = 2;
+  original.motor_status[2].duty_cycle_percent = 40.0;
+  original.motor_status[2].velocity_mps       = s_test_back_left_velocity_mps;
+  original.motor_status[2].target_velocity_mps = s_test_back_left_velocity_mps;
+  original.motor_status[2].current_ma         = 2300.0;
+  original.motor_status[2].fault_flags        = 0;
+  original.motor_status[2].state              = star_v1_MotorState_MOTOR_STATE_IDLE;
+
+  original.motor_status[3].motor_id           = 3;
+  original.motor_status[3].duty_cycle_percent = 35.0;
+  original.motor_status[3].velocity_mps       = s_test_back_right_velocity_mps;
+  original.motor_status[3].target_velocity_mps = s_test_back_right_velocity_mps;
+  original.motor_status[3].current_ma         = 2200.0;
+  original.motor_status[3].fault_flags        = 0;
+  original.motor_status[3].state              = star_v1_MotorState_MOTOR_STATE_IDLE;
+
+  /* Encode */
+  uint32_t len = 0;
+  rx_err_t err = rx_nanopb_encode_motor_state_response(&original, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_GREATER_THAN(0, len);
+
+  /* Decode */
+  star_v1_GetMotorStateResponse decoded = star_v1_GetMotorStateResponse_init_zero;
+  err = rx_nanopb_decode_motor_state_response(s_buffer, len, &decoded);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Verify header */
+  TEST_ASSERT_TRUE(decoded.has_header);
+  TEST_ASSERT_EQUAL(star_v1_Status_STATUS_OK, decoded.header.status);
+
+  /* Verify motor count */
+  TEST_ASSERT_EQUAL(4, decoded.motor_status_count);
+
+  /* Verify motor 0 */
+  TEST_ASSERT_EQUAL(0, decoded.motor_status[0].motor_id);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 50.0F,
+                           (float)decoded.motor_status[0].duty_cycle_percent);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
+                           (float)s_test_front_left_velocity_mps,
+                           (float)decoded.motor_status[0].velocity_mps);
+  TEST_ASSERT_EQUAL(star_v1_MotorState_MOTOR_STATE_RUNNING, decoded.motor_status[0].state);
+
+  /* Verify motor 3 */
+  TEST_ASSERT_EQUAL(3, decoded.motor_status[3].motor_id);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 35.0F,
+                           (float)decoded.motor_status[3].duty_cycle_percent);
+  TEST_ASSERT_EQUAL(star_v1_MotorState_MOTOR_STATE_IDLE, decoded.motor_status[3].state);
+}
+
+/**
+ * @brief Motor state response roundtrip with fault flags and ESTOP state
+ */
+void test_motor_state_response_roundtrip_with_faults(void)
+{
+  star_v1_GetMotorStateResponse original = star_v1_GetMotorStateResponse_init_zero;
+
+  original.has_header = true;
+  rx_nanopb_create_response_header(&original.header,
+                                    star_v1_Status_STATUS_ESTOP_ACTIVE, nullptr);
+
+  original.motor_status_count = 4;
+
+  /* Motor 0: overcurrent fault */
+  original.motor_status[0].motor_id    = 0;
+  original.motor_status[0].fault_flags = 0x01; /* Bit 0: overcurrent */
+  original.motor_status[0].state       = star_v1_MotorState_MOTOR_STATE_FAULT;
+
+  /* Motor 1: overtemperature fault */
+  original.motor_status[1].motor_id    = 1;
+  original.motor_status[1].fault_flags = 0x02; /* Bit 1: overtemperature */
+  original.motor_status[1].state       = star_v1_MotorState_MOTOR_STATE_FAULT;
+
+  /* Motor 2: encoder fault */
+  original.motor_status[2].motor_id    = 2;
+  original.motor_status[2].fault_flags = 0x04; /* Bit 2: encoder fault */
+  original.motor_status[2].state       = star_v1_MotorState_MOTOR_STATE_FAULT;
+
+  /* Motor 3: ESTOP state (no fault flag) */
+  original.motor_status[3].motor_id    = 3;
+  original.motor_status[3].fault_flags = 0;
+  original.motor_status[3].state       = star_v1_MotorState_MOTOR_STATE_ESTOP;
+
+  /* Encode */
+  uint32_t len = 0;
+  rx_err_t err = rx_nanopb_encode_motor_state_response(&original, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Decode */
+  star_v1_GetMotorStateResponse decoded = star_v1_GetMotorStateResponse_init_zero;
+  err = rx_nanopb_decode_motor_state_response(s_buffer, len, &decoded);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Verify ESTOP status in header */
+  TEST_ASSERT_EQUAL(star_v1_Status_STATUS_ESTOP_ACTIVE, decoded.header.status);
+
+  /* Verify fault flags */
+  TEST_ASSERT_EQUAL(0x01, decoded.motor_status[0].fault_flags);
+  TEST_ASSERT_EQUAL(star_v1_MotorState_MOTOR_STATE_FAULT, decoded.motor_status[0].state);
+  TEST_ASSERT_EQUAL(0x02, decoded.motor_status[1].fault_flags);
+  TEST_ASSERT_EQUAL(0x04, decoded.motor_status[2].fault_flags);
+  TEST_ASSERT_EQUAL(star_v1_MotorState_MOTOR_STATE_ESTOP, decoded.motor_status[3].state);
+}
+
+/* =============================================================================
  * Main
  * =============================================================================
  */
@@ -2385,6 +2790,30 @@ int main(void)
   /* Buffer size tests */
   RUN_TEST(test_velocity_request_fits_in_buffer);
   RUN_TEST(test_telemetry_fits_in_buffer);
+
+  /* GetTelemetryResponse encode tests */
+  RUN_TEST(test_encode_telemetry_response_null_msg);
+  RUN_TEST(test_encode_telemetry_response_null_buffer);
+  RUN_TEST(test_encode_telemetry_response_null_len);
+  RUN_TEST(test_encode_telemetry_response_small_buffer);
+  RUN_TEST(test_encode_telemetry_response_empty);
+  RUN_TEST(test_encode_telemetry_response_not_initialized);
+
+  /* GetMotorStateResponse encode tests */
+  RUN_TEST(test_encode_motor_state_response_null_msg);
+  RUN_TEST(test_encode_motor_state_response_null_buffer);
+  RUN_TEST(test_encode_motor_state_response_null_len);
+  RUN_TEST(test_encode_motor_state_response_small_buffer);
+  RUN_TEST(test_encode_motor_state_response_empty);
+  RUN_TEST(test_encode_motor_state_response_not_initialized);
+
+  /* Telemetry response roundtrip tests */
+  RUN_TEST(test_telemetry_response_roundtrip_all_fields);
+  RUN_TEST(test_telemetry_response_roundtrip_partial);
+
+  /* Motor state response roundtrip tests */
+  RUN_TEST(test_motor_state_response_roundtrip_4_motors);
+  RUN_TEST(test_motor_state_response_roundtrip_with_faults);
 
   return UNITY_END();
 }

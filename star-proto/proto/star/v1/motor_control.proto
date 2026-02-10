@@ -42,6 +42,10 @@ service MotorControlService {
   // Bidirectional control stream for continuous control.
   // Client streams velocity commands, server streams encoder feedback.
   rpc ControlStream(stream VelocityCommand) returns (stream EncoderData);
+
+  // Get current motor state for all motors.
+  // Returns motor status, fault flags, and operating state.
+  rpc GetMotorState(GetMotorStateRequest) returns (GetMotorStateResponse);
 }
 
 // Request to set wheel velocities.
@@ -248,4 +252,19 @@ message PidConfig {
 
   // Anti-windup integral maximum.
   double integral_max = 7;
+}
+
+// Request for current motor state.
+message GetMotorStateRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+}
+
+// Response with current motor state for all motors.
+message GetMotorStateResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // Status for each motor (up to 4 for mecanum drive).
+  repeated MotorStatus motor_status = 2;
 }

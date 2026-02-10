@@ -560,6 +560,153 @@ static const uint16_t s_nanopb_buffer_size = 512U;
                                     uint32_t*                    len);
 
 /* =============================================================================
+ * GetTelemetryResponse Encode/Decode
+ * =============================================================================
+ */
+
+/**
+ * @brief Encode GetTelemetryResponse message to Protocol Buffer bytes
+ *
+ * @details
+ * Serializes a GetTelemetryResponse wrapper containing a ResponseHeader
+ * and TelemetryData payload. This is the proper response message for
+ * GetTelemetry RPC calls, enabling the host to correlate request/response
+ * pairs and check status codes.
+ *
+ * @param[in] msg Message to encode (header + telemetry data)
+ * @param[out] buffer Output buffer for encoded bytes
+ * @param[in] buffer_size Size of output buffer (>= s_nanopb_buffer_size)
+ * @param[out] len Actual encoded message length (typically 200-400 bytes)
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, buffer contains encoded message
+ * @retval k_rx_err_invalid_arg NULL pointer in parameters
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_invalid_size Buffer too small or encoding failed
+ *
+ * @pre rx_nanopb_init() must be called first
+ * @pre buffer_size >= s_nanopb_buffer_size
+ *
+ * @post buffer contains wire-format response
+ * @post *len <= s_nanopb_buffer_size
+ *
+ * @par Performance: ~35 µs @ 240 MHz
+ *
+ * @see rx_nanopb_decode_telemetry_response() Decode counterpart
+ * @see rx_nanopb_encode_telemetry() Encode raw TelemetryData (no header)
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_nanopb_encode_telemetry_response(
+    const star_v1_GetTelemetryResponse* msg,
+    uint8_t*                            buffer,
+    uint32_t                            buffer_size,
+    uint32_t*                           len);
+
+/**
+ * @brief Decode GetTelemetryResponse message from Protocol Buffer bytes
+ *
+ * @details
+ * Deserializes a GetTelemetryResponse message for roundtrip verification
+ * and host-side decoding. Extracts ResponseHeader and TelemetryData.
+ *
+ * @param[in] buffer Input buffer containing encoded message
+ * @param[in] len Buffer length in bytes
+ * @param[out] msg Decoded message structure
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, msg contains decoded values
+ * @retval k_rx_err_invalid_arg NULL pointer or len == 0
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_protocol_error Malformed message
+ *
+ * @pre rx_nanopb_init() must be called first
+ * @pre buffer contains valid wire-format data
+ *
+ * @post msg fully populated with decoded values
+ *
+ * @par Performance: ~25 µs @ 240 MHz
+ *
+ * @see rx_nanopb_encode_telemetry_response() Encode counterpart
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_nanopb_decode_telemetry_response(
+    const uint8_t*               buffer,
+    uint32_t                     len,
+    star_v1_GetTelemetryResponse* msg);
+
+/* =============================================================================
+ * GetMotorStateResponse Encode/Decode
+ * =============================================================================
+ */
+
+/**
+ * @brief Encode GetMotorStateResponse message to Protocol Buffer bytes
+ *
+ * @details
+ * Serializes a GetMotorStateResponse containing a ResponseHeader and
+ * up to 4 MotorStatus entries. Used for motor-specific queries.
+ *
+ * @param[in] msg Message to encode (header + motor_status[4])
+ * @param[out] buffer Output buffer for encoded bytes
+ * @param[in] buffer_size Size of output buffer (>= s_nanopb_buffer_size)
+ * @param[out] len Actual encoded message length
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, buffer contains encoded message
+ * @retval k_rx_err_invalid_arg NULL pointer in parameters
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_invalid_size Buffer too small or encoding failed
+ *
+ * @pre rx_nanopb_init() must be called first
+ * @pre buffer_size >= s_nanopb_buffer_size
+ *
+ * @post buffer contains wire-format response
+ * @post *len <= s_nanopb_buffer_size
+ *
+ * @par Performance: ~20 µs @ 240 MHz
+ *
+ * @see rx_nanopb_decode_motor_state_response() Decode counterpart
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_nanopb_encode_motor_state_response(
+    const star_v1_GetMotorStateResponse* msg,
+    uint8_t*                             buffer,
+    uint32_t                             buffer_size,
+    uint32_t*                            len);
+
+/**
+ * @brief Decode GetMotorStateResponse message from Protocol Buffer bytes
+ *
+ * @details
+ * Deserializes a GetMotorStateResponse for roundtrip verification and
+ * host-side decoding. Extracts ResponseHeader and MotorStatus array.
+ *
+ * @param[in] buffer Input buffer containing encoded message
+ * @param[in] len Buffer length in bytes
+ * @param[out] msg Decoded message structure
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, msg contains decoded values
+ * @retval k_rx_err_invalid_arg NULL pointer or len == 0
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_protocol_error Malformed message
+ *
+ * @pre rx_nanopb_init() must be called first
+ * @pre buffer contains valid wire-format data
+ *
+ * @post msg fully populated with decoded values
+ *
+ * @par Performance: ~15 µs @ 240 MHz
+ *
+ * @see rx_nanopb_encode_motor_state_response() Encode counterpart
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_nanopb_decode_motor_state_response(
+    const uint8_t*                buffer,
+    uint32_t                      len,
+    star_v1_GetMotorStateResponse* msg);
+
+/* =============================================================================
  * Helper Functions
  * =============================================================================
  */

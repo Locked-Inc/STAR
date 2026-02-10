@@ -15,3 +15,6 @@ star.v1.EmergencyStopRequest.reason     max_size:128
 
 # Motor status array (2 motors for differential drive)
 star.v1.SetVelocityResponse.motor_status    max_count:2
+
+# Motor status array for GetMotorStateResponse (4 motors for mecanum drive)
+star.v1.GetMotorStateResponse.motor_status    max_count:4

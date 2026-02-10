@@ -42,6 +42,12 @@ PB_BIND(star_v1_MotorStatus, star_v1_MotorStatus, AUTO)
 PB_BIND(star_v1_PidConfig, star_v1_PidConfig, AUTO)
 
 
+PB_BIND(star_v1_GetMotorStateRequest, star_v1_GetMotorStateRequest, AUTO)
+
+
+PB_BIND(star_v1_GetMotorStateResponse, star_v1_GetMotorStateResponse, 2)
+
+
 
 
 

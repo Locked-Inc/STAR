@@ -1153,6 +1153,260 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
 }
 
 /* =============================================================================
+ * GetTelemetryResponse Encode/Decode
+ * =============================================================================
+ */
+
+/**
+ * @brief Encode GetTelemetryResponse message to Protocol Buffer wire format
+ *
+ * @details
+ * Serializes a GetTelemetryResponse wrapper containing a ResponseHeader and
+ * TelemetryData payload for transmission to RPi5.
+ *
+ * @param[in] msg GetTelemetryResponse message to encode
+ * @param[out] buffer Output buffer for encoded bytes
+ * @param[in] buffer_size Size of output buffer (>= s_nanopb_buffer_size)
+ * @param[out] len Pointer to receive actual encoded length
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success
+ * @retval k_rx_err_invalid_arg nullptr pointer in parameters
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_invalid_size Buffer too small or encoding failed
+ *
+ * @pre rx_nanopb_init() must have been called
+ * @pre buffer_size >= s_nanopb_buffer_size
+ *
+ * @post buffer contains valid Protocol Buffer wire-format data
+ * @post *len <= s_nanopb_buffer_size
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 5: 3 pre-conditions, 1 post-condition
+ *
+ * @since Version 1.1.0
+ */
+rx_err_t rx_nanopb_encode_telemetry_response(const star_v1_GetTelemetryResponse* msg,
+                                              uint8_t*                            buffer,
+                                              const uint32_t                      buffer_size,
+                                              uint32_t*                           len)
+{
+  /* Pre-condition 1: nullptr pointer checks */
+  if (msg == nullptr || buffer == nullptr || len == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Module initialized */
+  if (!s_initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  /* Pre-condition 3: Buffer size validation (NASA Rule 5 - buffer overflow prevention) */
+  if (buffer_size < s_nanopb_buffer_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
+
+  if (!pb_encode(&stream, star_v1_GetTelemetryResponse_fields, msg)) {
+    return k_rx_err_invalid_size;
+  }
+
+  *len = stream.bytes_written;
+
+  /* Post-condition: Encoded length within bounds */
+  if (*len > s_nanopb_buffer_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Decode GetTelemetryResponse message from Protocol Buffer wire format
+ *
+ * @details
+ * Deserializes a GetTelemetryResponse message for roundtrip verification.
+ *
+ * @param[in] buffer Input buffer containing encoded message
+ * @param[in] len Length of encoded message in bytes
+ * @param[out] msg Decoded message structure
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success
+ * @retval k_rx_err_invalid_arg nullptr pointer or invalid len
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_protocol_error Malformed message
+ *
+ * @pre rx_nanopb_init() must have been called
+ * @pre buffer contains valid Protocol Buffer data
+ *
+ * @post msg fully populated with decoded values
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 5: 3 pre-conditions
+ *
+ * @since Version 1.1.0
+ */
+rx_err_t rx_nanopb_decode_telemetry_response(const uint8_t*                buffer,
+                                              const uint32_t                len,
+                                              star_v1_GetTelemetryResponse* msg)
+{
+  /* Pre-condition 1: nullptr pointer checks */
+  if (buffer == nullptr || msg == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Length validation */
+  if (len == 0 || len > s_nanopb_buffer_size) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 3: Module initialized */
+  if (!s_initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  /* Initialize message to default values */
+  *msg = (star_v1_GetTelemetryResponse)star_v1_GetTelemetryResponse_init_zero;
+
+  pb_istream_t stream = pb_istream_from_buffer(buffer, len);
+
+  if (!pb_decode(&stream, star_v1_GetTelemetryResponse_fields, msg)) {
+    return k_rx_err_protocol_error;
+  }
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * GetMotorStateResponse Encode/Decode
+ * =============================================================================
+ */
+
+/**
+ * @brief Encode GetMotorStateResponse message to Protocol Buffer wire format
+ *
+ * @details
+ * Serializes a GetMotorStateResponse containing a ResponseHeader and
+ * up to 4 MotorStatus entries for transmission to RPi5.
+ *
+ * @param[in] msg GetMotorStateResponse message to encode
+ * @param[out] buffer Output buffer for encoded bytes
+ * @param[in] buffer_size Size of output buffer (>= s_nanopb_buffer_size)
+ * @param[out] len Pointer to receive actual encoded length
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success
+ * @retval k_rx_err_invalid_arg nullptr pointer in parameters
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_invalid_size Buffer too small or encoding failed
+ *
+ * @pre rx_nanopb_init() must have been called
+ * @pre buffer_size >= s_nanopb_buffer_size
+ *
+ * @post buffer contains valid Protocol Buffer wire-format data
+ * @post *len <= s_nanopb_buffer_size
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 5: 3 pre-conditions, 1 post-condition
+ *
+ * @since Version 1.1.0
+ */
+rx_err_t rx_nanopb_encode_motor_state_response(const star_v1_GetMotorStateResponse* msg,
+                                                uint8_t*                             buffer,
+                                                const uint32_t                       buffer_size,
+                                                uint32_t*                            len)
+{
+  /* Pre-condition 1: nullptr pointer checks */
+  if (msg == nullptr || buffer == nullptr || len == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Module initialized */
+  if (!s_initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  /* Pre-condition 3: Buffer size validation (NASA Rule 5 - buffer overflow prevention) */
+  if (buffer_size < s_nanopb_buffer_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
+
+  if (!pb_encode(&stream, star_v1_GetMotorStateResponse_fields, msg)) {
+    return k_rx_err_invalid_size;
+  }
+
+  *len = stream.bytes_written;
+
+  /* Post-condition: Encoded length within bounds */
+  if (*len > s_nanopb_buffer_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Decode GetMotorStateResponse message from Protocol Buffer wire format
+ *
+ * @details
+ * Deserializes a GetMotorStateResponse message for roundtrip verification.
+ *
+ * @param[in] buffer Input buffer containing encoded message
+ * @param[in] len Length of encoded message in bytes
+ * @param[out] msg Decoded message structure
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success
+ * @retval k_rx_err_invalid_arg nullptr pointer or invalid len
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_protocol_error Malformed message
+ *
+ * @pre rx_nanopb_init() must have been called
+ * @pre buffer contains valid Protocol Buffer data
+ *
+ * @post msg fully populated with decoded values
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 5: 3 pre-conditions
+ *
+ * @since Version 1.1.0
+ */
+rx_err_t rx_nanopb_decode_motor_state_response(const uint8_t*                 buffer,
+                                                const uint32_t                 len,
+                                                star_v1_GetMotorStateResponse* msg)
+{
+  /* Pre-condition 1: nullptr pointer checks */
+  if (buffer == nullptr || msg == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Length validation */
+  if (len == 0 || len > s_nanopb_buffer_size) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 3: Module initialized */
+  if (!s_initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  /* Initialize message to default values */
+  *msg = (star_v1_GetMotorStateResponse)star_v1_GetMotorStateResponse_init_zero;
+
+  pb_istream_t stream = pb_istream_from_buffer(buffer, len);
+
+  if (!pb_decode(&stream, star_v1_GetMotorStateResponse_fields, msg)) {
+    return k_rx_err_protocol_error;
+  }
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
  * Helper Functions
  * =============================================================================
  */

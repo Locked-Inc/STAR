@@ -285,6 +285,147 @@ func TestSetVelocityRequest_Roundtrip(t *testing.T) {
 	}
 }
 
+// TestGetMotorStateResponse_Roundtrip tests complete GetMotorStateResponse encode/decode with 4 motors
+func TestGetMotorStateResponse_Roundtrip(t *testing.T) {
+	resp := &starv1.GetMotorStateResponse{
+		Header: &starv1.ResponseHeader{
+			RequestId: "motor-state-req-1",
+			Status:    starv1.Status_STATUS_OK,
+		},
+		MotorStatus: []*starv1.MotorStatus{
+			{
+				MotorId:            0,
+				DutyCyclePercent:   50.0,
+				VelocityMps:        1.5,
+				TargetVelocityMps:  1.5,
+				TemperatureCelsius: 42.0,
+				CurrentMa:          2500.0,
+				FaultFlags:         0,
+				State:              starv1.MotorState_MOTOR_STATE_RUNNING,
+			},
+			{
+				MotorId:            1,
+				DutyCyclePercent:   45.0,
+				VelocityMps:        1.0,
+				TargetVelocityMps:  1.0,
+				TemperatureCelsius: 41.0,
+				CurrentMa:          2400.0,
+				FaultFlags:         0,
+				State:              starv1.MotorState_MOTOR_STATE_RUNNING,
+			},
+			{
+				MotorId:            2,
+				DutyCyclePercent:   40.0,
+				VelocityMps:        1.5,
+				TargetVelocityMps:  1.5,
+				TemperatureCelsius: 43.0,
+				CurrentMa:          2300.0,
+				FaultFlags:         0,
+				State:              starv1.MotorState_MOTOR_STATE_IDLE,
+			},
+			{
+				MotorId:            3,
+				DutyCyclePercent:   35.0,
+				VelocityMps:        1.0,
+				TargetVelocityMps:  1.0,
+				TemperatureCelsius: 40.0,
+				CurrentMa:          2200.0,
+				FaultFlags:         0,
+				State:              starv1.MotorState_MOTOR_STATE_IDLE,
+			},
+		},
+	}
+
+	data, err := proto.Marshal(resp)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	decoded := &starv1.GetMotorStateResponse{}
+	if err := proto.Unmarshal(data, decoded); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	// Verify header
+	if decoded.Header.RequestId != "motor-state-req-1" {
+		t.Errorf("RequestId = %s, want motor-state-req-1", decoded.Header.RequestId)
+	}
+	if decoded.Header.Status != starv1.Status_STATUS_OK {
+		t.Errorf("Status = %v, want STATUS_OK", decoded.Header.Status)
+	}
+
+	// Verify 4 motors
+	if len(decoded.MotorStatus) != 4 {
+		t.Fatalf("MotorStatus count = %d, want 4", len(decoded.MotorStatus))
+	}
+
+	// Verify motor 0
+	if decoded.MotorStatus[0].MotorId != 0 {
+		t.Errorf("Motor 0 ID = %d, want 0", decoded.MotorStatus[0].MotorId)
+	}
+	if decoded.MotorStatus[0].VelocityMps != 1.5 {
+		t.Errorf("Motor 0 velocity = %f, want 1.5", decoded.MotorStatus[0].VelocityMps)
+	}
+	if decoded.MotorStatus[0].State != starv1.MotorState_MOTOR_STATE_RUNNING {
+		t.Errorf("Motor 0 state = %v, want RUNNING", decoded.MotorStatus[0].State)
+	}
+
+	// Verify motor 3
+	if decoded.MotorStatus[3].MotorId != 3 {
+		t.Errorf("Motor 3 ID = %d, want 3", decoded.MotorStatus[3].MotorId)
+	}
+	if decoded.MotorStatus[3].State != starv1.MotorState_MOTOR_STATE_IDLE {
+		t.Errorf("Motor 3 state = %v, want IDLE", decoded.MotorStatus[3].State)
+	}
+}
+
+// TestGetMotorStateResponse_AllStates verifies all MotorState enum values serialize correctly
+func TestGetMotorStateResponse_AllStates(t *testing.T) {
+	states := []struct {
+		name  string
+		state starv1.MotorState
+	}{
+		{"Unknown", starv1.MotorState_MOTOR_STATE_UNKNOWN},
+		{"Idle", starv1.MotorState_MOTOR_STATE_IDLE},
+		{"Running", starv1.MotorState_MOTOR_STATE_RUNNING},
+		{"Fault", starv1.MotorState_MOTOR_STATE_FAULT},
+		{"EStop", starv1.MotorState_MOTOR_STATE_ESTOP},
+	}
+
+	for _, tc := range states {
+		t.Run(tc.name, func(t *testing.T) {
+			resp := &starv1.GetMotorStateResponse{
+				Header: &starv1.ResponseHeader{
+					Status: starv1.Status_STATUS_OK,
+				},
+				MotorStatus: []*starv1.MotorStatus{
+					{
+						MotorId: 0,
+						State:   tc.state,
+					},
+				},
+			}
+
+			data, err := proto.Marshal(resp)
+			if err != nil {
+				t.Fatalf("Marshal failed: %v", err)
+			}
+
+			decoded := &starv1.GetMotorStateResponse{}
+			if err := proto.Unmarshal(data, decoded); err != nil {
+				t.Fatalf("Unmarshal failed: %v", err)
+			}
+
+			if len(decoded.MotorStatus) != 1 {
+				t.Fatalf("MotorStatus count = %d, want 1", len(decoded.MotorStatus))
+			}
+			if decoded.MotorStatus[0].State != tc.state {
+				t.Errorf("State = %v, want %v", decoded.MotorStatus[0].State, tc.state)
+			}
+		})
+	}
+}
+
 // TestEmergencyStopRequest verifies E-STOP request encoding
 func TestEmergencyStopRequest(t *testing.T) {
 	req := &starv1.EmergencyStopRequest{

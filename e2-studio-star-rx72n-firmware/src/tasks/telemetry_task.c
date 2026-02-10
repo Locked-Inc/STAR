@@ -1731,78 +1731,89 @@ static void internal_telem_task_entry(ULONG input)
  */
 static rx_err_t internal_build_and_send_telemetry(void)
 {
-  rx_err_t              err;
-  motor_state_t         motor_state;
-  bms_state_t           bms_state;
-  temp_sensor_state_t   temp_state;
-  star_v1_TelemetryData telemetry = star_v1_TelemetryData_init_zero;
-  uint32_t              encoded_len;
+  rx_err_t                       err;
+  motor_state_t                  motor_state;
+  bms_state_t                    bms_state;
+  temp_sensor_state_t            temp_state;
+  star_v1_GetTelemetryResponse   response = star_v1_GetTelemetryResponse_init_zero;
+  uint32_t                       encoded_len;
+
+  /* Populate response header */
+  response.has_header = true;
+  rx_nanopb_create_response_header(&response.header,
+                                    star_v1_Status_STATUS_OK, nullptr);
+
+  /* Populate telemetry data via embedded struct pointer */
+  response.has_telemetry = true;
+  star_v1_TelemetryData* telemetry = &response.telemetry;
 
   /* Set timestamp */
-  telemetry.timestamp_us = (int64_t)tx_time_get() * (int64_t)k_telem_us_per_tick;
-  telemetry.frame_sequence = s_sequence++;
+  telemetry->timestamp_us = (int64_t)tx_time_get() * (int64_t)k_telem_us_per_tick;
+  telemetry->frame_sequence = s_sequence++;
 
   /* Collect motor state */
   err = shared_data_get_motor_state(&motor_state);
   if (err == k_rx_ok) {
     /* Emergency stop status */
-    telemetry.emergency_stop = motor_state.estop_active;
+    telemetry->emergency_stop = motor_state.estop_active;
     /* Pack 4 motor fault bytes into single uint32_t bitfield */
-    telemetry.fault_flags = ((uint32_t)motor_state.fault_flags[0]) |
-                            ((uint32_t)motor_state.fault_flags[1] << 8) |
-                            ((uint32_t)motor_state.fault_flags[2] << 16) |
-                            ((uint32_t)motor_state.fault_flags[3] << 24);
+    telemetry->fault_flags = ((uint32_t)motor_state.fault_flags[0]) |
+                             ((uint32_t)motor_state.fault_flags[1] << 8) |
+                             ((uint32_t)motor_state.fault_flags[2] << 16) |
+                             ((uint32_t)motor_state.fault_flags[3] << 24);
 
     /* Front left encoder */
-    telemetry.has_encoder_front_left                = true;
-    telemetry.encoder_front_left.motor_id           = 0;
-    telemetry.encoder_front_left.ticks              = motor_state.encoder_counts[0];
-    telemetry.encoder_front_left.velocity_mps       = (float)motor_state.current_velocity_mps[0];
-    telemetry.encoder_front_left.timestamp_us       = telemetry.timestamp_us;
+    telemetry->has_encoder_front_left                = true;
+    telemetry->encoder_front_left.motor_id           = 0;
+    telemetry->encoder_front_left.ticks              = motor_state.encoder_counts[0];
+    telemetry->encoder_front_left.velocity_mps       = (float)motor_state.current_velocity_mps[0];
+    telemetry->encoder_front_left.timestamp_us       = telemetry->timestamp_us;
 
     /* Front right encoder */
-    telemetry.has_encoder_front_right               = true;
-    telemetry.encoder_front_right.motor_id          = 1;
-    telemetry.encoder_front_right.ticks             = motor_state.encoder_counts[1];
-    telemetry.encoder_front_right.velocity_mps      = (float)motor_state.current_velocity_mps[1];
-    telemetry.encoder_front_right.timestamp_us      = telemetry.timestamp_us;
+    telemetry->has_encoder_front_right               = true;
+    telemetry->encoder_front_right.motor_id          = 1;
+    telemetry->encoder_front_right.ticks             = motor_state.encoder_counts[1];
+    telemetry->encoder_front_right.velocity_mps      = (float)motor_state.current_velocity_mps[1];
+    telemetry->encoder_front_right.timestamp_us      = telemetry->timestamp_us;
 
     /* Back left encoder */
-    telemetry.has_encoder_back_left                 = true;
-    telemetry.encoder_back_left.motor_id            = 2;
-    telemetry.encoder_back_left.ticks               = motor_state.encoder_counts[2];
-    telemetry.encoder_back_left.velocity_mps        = (float)motor_state.current_velocity_mps[2];
-    telemetry.encoder_back_left.timestamp_us        = telemetry.timestamp_us;
+    telemetry->has_encoder_back_left                 = true;
+    telemetry->encoder_back_left.motor_id            = 2;
+    telemetry->encoder_back_left.ticks               = motor_state.encoder_counts[2];
+    telemetry->encoder_back_left.velocity_mps        = (float)motor_state.current_velocity_mps[2];
+    telemetry->encoder_back_left.timestamp_us        = telemetry->timestamp_us;
 
     /* Back right encoder */
-    telemetry.has_encoder_back_right                = true;
-    telemetry.encoder_back_right.motor_id           = 3;
-    telemetry.encoder_back_right.ticks              = motor_state.encoder_counts[3];
-    telemetry.encoder_back_right.velocity_mps       = (float)motor_state.current_velocity_mps[3];
-    telemetry.encoder_back_right.timestamp_us       = telemetry.timestamp_us;
+    telemetry->has_encoder_back_right                = true;
+    telemetry->encoder_back_right.motor_id           = 3;
+    telemetry->encoder_back_right.ticks              = motor_state.encoder_counts[3];
+    telemetry->encoder_back_right.velocity_mps       = (float)motor_state.current_velocity_mps[3];
+    telemetry->encoder_back_right.timestamp_us       = telemetry->timestamp_us;
   }
 
   /* Collect BMS state */
   err = shared_data_get_bms(&bms_state);
   if (err == k_rx_ok && bms_state.valid) {
     /* Convert millivolts to volts */
-    telemetry.battery_voltage_v   = (float)bms_state.voltage_mv / s_mv_per_volt;
-    telemetry.battery_soc_percent = bms_state.soc_percent;
-    telemetry.battery_percent     = (float)bms_state.soc_percent;
+    telemetry->battery_voltage_v   = (float)bms_state.voltage_mv / s_mv_per_volt;
+    telemetry->battery_soc_percent = bms_state.soc_percent;
+    telemetry->battery_percent     = (float)bms_state.soc_percent;
   }
 
   /* Collect temperature state */
   err = shared_data_get_temp(&temp_state);
   if (err == k_rx_ok && temp_state.sensor_valid[0]) {
     /* Convert from centi-degrees to degrees */
-    telemetry.temperature_celsius = (float)temp_state.temperature_cdegc[0] / s_cdegc_per_degree;
+    telemetry->temperature_celsius = (float)temp_state.temperature_cdegc[0] / s_cdegc_per_degree;
   }
 
-  /* Encode to protobuf */
-  err = rx_nanopb_encode_telemetry(&telemetry,
-                                   s_telem_buffer,
-                                   k_telem_buffer_size,
-                                   &encoded_len);
+  /* Encode GetTelemetryResponse wrapper (includes ResponseHeader + TelemetryData).
+   * Stack impact: GetTelemetryResponse is ~791 bytes vs ~425 for raw TelemetryData.
+   * With 2048-byte stack, peak usage is ~900 bytes (2.3x safety margin). */
+  err = rx_nanopb_encode_telemetry_response(&response,
+                                             s_telem_buffer,
+                                             k_telem_buffer_size,
+                                             &encoded_len);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Telemetry encode failed", (uint32_t)err);
     return err;
