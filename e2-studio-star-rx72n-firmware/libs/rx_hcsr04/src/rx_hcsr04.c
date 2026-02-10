@@ -1640,7 +1640,7 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
  */
 
 /**
- * @brief Perform a blocking distance measurement (deprecated, use rx_hcsr04_measure)
+ * @brief Perform a blocking distance measurement
  *
  * Triggers the sensor, waits for echo pulse, and converts to distance in
  * centimeters. Blocks until measurement completes or times out.

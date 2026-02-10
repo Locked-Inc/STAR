@@ -105,7 +105,7 @@
  * - Linux: `cksum -o 3`
  *
  * @see rx_crc.h Higher-level CRC API
- * @see rx72n_regs.h Master register include file
+ * @see rx72n_regs.h Main register include file
  * @see docs/sections/01_nanopb_protocol.tex Protocol specification
  *
  * @author STAR Team

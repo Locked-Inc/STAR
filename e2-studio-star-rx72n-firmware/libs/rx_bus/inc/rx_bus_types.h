@@ -406,8 +406,8 @@ typedef struct {
  */
 typedef struct {
   uint8_t       channel;      /**< RSPI channel (0-2) */
-  rx_port_pin_t copi_pin;     /**< COPI (MOSI) pin (type-safe enum) */
-  rx_port_pin_t cipo_pin;     /**< CIPO (MISO) pin (type-safe enum) */
+  rx_port_pin_t copi_pin;     /**< COPI pin (type-safe enum) */
+  rx_port_pin_t cipo_pin;     /**< CIPO pin (type-safe enum) */
   rx_port_pin_t sck_pin;      /**< SCK pin (type-safe enum) */
   rx_port_pin_t cs_pin;       /**< CS pin (type-safe enum) */
   uint32_t      frequency_hz; /**< SPI clock frequency */

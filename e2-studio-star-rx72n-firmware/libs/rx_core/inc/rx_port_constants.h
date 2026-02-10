@@ -57,7 +57,7 @@
  * - **Port J**: 0x13 (note gap—no ports H or I)
  *
  * Total: 18 ports × 8 pins = 144 theoretical GPIO combinations
- * (Not all combinations physically available on 100-pin LFQFP package)
+ * (Not all combinations physically available on 144-pin LFQFP package)
  *
  * ## Performance Characteristics
  *
@@ -98,7 +98,7 @@
  * | Component      | Requirement                     | Notes                          |
  * |----------------|---------------------------------|--------------------------------|
  * | MCU            | Renesas RX72N                   | Any package (100/144/176-pin)  |
- * | Package        | 100-pin LFQFP (primary target)  | Not all ports available        |
+ * | Package        | 144-pin LFQFP (primary target)  | Not all ports available        |
  * | Ports          | 18 ports (0-9, A-G, J)          | Non-contiguous numbering       |
  * | Pins per port  | 8 pins (0-7)                    | All ports have 8-bit width     |
  *
@@ -218,31 +218,34 @@ extern "C" {
  * ## Package Availability
  *
  * Not all ports are physically available on all RX72N packages:
- * - **100-pin LFQFP** (STAR hardware): Ports 0-5, A-E, J (partial availability)
- * - **144-pin LFQFP**: Additional ports available
+ * - **144-pin LFQFP** (STAR hardware): Ports 0-9, A-F, J (partial availability)
  * - **176-pin LFBGA**: Maximum port availability
  *
  * Constants are defined for ALL theoretical ports for code compatibility across
- * packages, even if not physically present on 100-pin LFQFP.
+ * packages, even if not physically present on 144-pin LFQFP.
  *
- * @par Port Availability Table (100-pin LFQFP):
+ * @par Port Availability Table (144-pin LFQFP):
  *
- * | Port | Value | Pins Available | Package Pin Numbers | Notes |
- * |------|-------|----------------|---------------------|-------|
- * | 0    | 0x00  | P05, P07       | 100, 98             | Partial port |
- * | 1    | 0x01  | P12-P17        | 34-29               | 6 pins |
- * | 2    | 0x02  | P20-P27        | 28-21               | Full port |
- * | 3    | 0x03  | P30-P37        | 20, 19, 18, 17, 16, 15, 13, 11 | Full port |
- * | 4    | 0x04  | P40-P47        | 95, 93, 92, 91, 90, 89, 88, 87 | Full port |
- * | 5    | 0x05  | P50-P55        | 44-39               | 6 pins |
- * | 6-9  | 0x06-0x09 | None       | -                   | Not available |
- * | A    | 0x0A  | PA0-PA7        | 70-63               | Full port |
- * | B    | 0x0B  | PB0-PB7        | 61, 59-53           | Full port |
- * | C    | 0x0C  | PC0-PC7        | 52-45               | Full port |
- * | D    | 0x0D  | PD0-PD7        | 86-79               | Full port |
- * | E    | 0x0E  | PE0-PE7        | 78-71               | Full port |
- * | F-G  | 0x0F-0x10 | None       | -                   | Not available |
- * | J    | 0x13  | PJ3, PJ5       | 4, 2                | Partial port |
+ * | Port | Value | Pins Available | Notes |
+ * |------|-------|----------------|-------|
+ * | 0    | 0x00  | P05, P07       | Partial port |
+ * | 1    | 0x01  | P12-P17        | 6 pins |
+ * | 2    | 0x02  | P20-P27        | Full port |
+ * | 3    | 0x03  | P30-P37        | Full port |
+ * | 4    | 0x04  | P40-P47        | Full port |
+ * | 5    | 0x05  | P50-P55        | 6 pins |
+ * | 6    | 0x06  | P60-P67        | Partial (P67 on 144-pin) |
+ * | 7    | 0x07  | P71-P77        | Partial (P70 N/A) |
+ * | 8    | 0x08  | P80-P87        | Partial (P86/P87 on 144-pin) |
+ * | 9    | 0x09  | P90-P97        | Partial |
+ * | A    | 0x0A  | PA0-PA7        | Full port |
+ * | B    | 0x0B  | PB0-PB7        | Full port |
+ * | C    | 0x0C  | PC0-PC7        | Full port |
+ * | D    | 0x0D  | PD0-PD7        | Full port |
+ * | E    | 0x0E  | PE0-PE7        | Full port |
+ * | F    | 0x0F  | PF0-PF2, PF5   | Partial (PF5 on 144-pin) |
+ * | G    | 0x10  | None           | Not available |
+ * | J    | 0x13  | PJ3, PJ5       | Partial (PJ3/PJ5 on 144-pin) |
  *
  * @par Usage Example (HAL Layer):
  * @code{.c}
@@ -285,7 +288,7 @@ extern "C" {
  * @note Port J (0x13) breaks contiguity—ports H (0x11) and I (0x12) do not exist
  *
  * @warning Do not assume contiguous port numbering when iterating ports
- * @warning Not all ports available on 100-pin package—check datasheet
+ * @warning Not all ports available on 144-pin package—check datasheet
  *
  * @see rx_pin_number_t Pin number constants (0-7)
  * @see rx_port_pin_t Pre-computed port/pin combinations
@@ -297,26 +300,26 @@ extern "C" {
  */
 typedef enum : uint8_t {
   /* Decimal Ports (0-9) */
-  k_rx_port_0 = 0x00, /**< Port 0 - Partial availability on 100-pin (P05, P07) */
-  k_rx_port_1 = 0x01, /**< Port 1 - 6 pins available on 100-pin (P12-P17) */
-  k_rx_port_2 = 0x02, /**< Port 2 - Full 8-pin port available on 100-pin */
-  k_rx_port_3 = 0x03, /**< Port 3 - Full 8-pin port available on 100-pin */
-  k_rx_port_4 = 0x04, /**< Port 4 - Full 8-pin port available on 100-pin */
-  k_rx_port_5 = 0x05, /**< Port 5 - 6 pins available on 100-pin (P50-P55) */
-  k_rx_port_6 = 0x06, /**< Port 6 - Not available on 100-pin package */
-  k_rx_port_7 = 0x07, /**< Port 7 - Not available on 100-pin package */
-  k_rx_port_8 = 0x08, /**< Port 8 - Not available on 100-pin package */
-  k_rx_port_9 = 0x09, /**< Port 9 - Not available on 100-pin package */
+  k_rx_port_0 = 0x00, /**< Port 0 - Partial availability on 144-pin (P05, P07) */
+  k_rx_port_1 = 0x01, /**< Port 1 - 6 pins available on 144-pin (P12-P17) */
+  k_rx_port_2 = 0x02, /**< Port 2 - Full 8-pin port available on 144-pin */
+  k_rx_port_3 = 0x03, /**< Port 3 - Full 8-pin port available on 144-pin */
+  k_rx_port_4 = 0x04, /**< Port 4 - Full 8-pin port available on 144-pin */
+  k_rx_port_5 = 0x05, /**< Port 5 - 6 pins available on 144-pin (P50-P55) */
+  k_rx_port_6 = 0x06, /**< Port 6 - Partially available on 144-pin (P67) */
+  k_rx_port_7 = 0x07, /**< Port 7 - Partially available on 144-pin (P71-P77) */
+  k_rx_port_8 = 0x08, /**< Port 8 - Partially available on 144-pin (P86/P87) */
+  k_rx_port_9 = 0x09, /**< Port 9 - Partially available on 144-pin */
 
   /* Hexadecimal Ports (A-G, J) */
-  k_rx_port_a = 0x0A, /**< Port A - Full 8-pin port available on 100-pin */
-  k_rx_port_b = 0x0B, /**< Port B - Full 8-pin port available on 100-pin */
-  k_rx_port_c = 0x0C, /**< Port C - Full 8-pin port available on 100-pin */
-  k_rx_port_d = 0x0D, /**< Port D - Full 8-pin port available on 100-pin */
-  k_rx_port_e = 0x0E, /**< Port E - Full 8-pin port available on 100-pin */
-  k_rx_port_f = 0x0F, /**< Port F - Not available on 100-pin package */
-  k_rx_port_g = 0x10, /**< Port G - Not available on 100-pin package */
-  k_rx_port_j = 0x13, /**< Port J - Partial availability on 100-pin (PJ3, PJ5) - **NON-CONTIGUOUS** (0x11, 0x12 unused) */
+  k_rx_port_a = 0x0A, /**< Port A - Full 8-pin port available on 144-pin */
+  k_rx_port_b = 0x0B, /**< Port B - Full 8-pin port available on 144-pin */
+  k_rx_port_c = 0x0C, /**< Port C - Full 8-pin port available on 144-pin */
+  k_rx_port_d = 0x0D, /**< Port D - Full 8-pin port available on 144-pin */
+  k_rx_port_e = 0x0E, /**< Port E - Full 8-pin port available on 144-pin */
+  k_rx_port_f = 0x0F, /**< Port F - Partially available on 144-pin (PF5) */
+  k_rx_port_g = 0x10, /**< Port G - Not available on 144-pin package */
+  k_rx_port_j = 0x13, /**< Port J - Partial availability on 144-pin (PJ3, PJ5) - **NON-CONTIGUOUS** (0x11, 0x12 unused) */
 } rx_port_number_t;
 
 /* =============================================================================
@@ -592,7 +595,7 @@ typedef enum : uint8_t {
  * ## Physical Availability
  *
  * **Important**: Not all 144 combinations are physically bonded on smaller packages:
- * - **100-pin LFQFP** (STAR hardware): ~60 pins available
+ * - **144-pin LFQFP** (STAR hardware): ~90 pins available
  * - **144-pin LFQFP**: More pins available
  * - **176-pin LFBGA**: Maximum pins available
  *
@@ -601,7 +604,7 @@ typedef enum : uint8_t {
  * - Compile-time validation (invalid pins detected at compile time)
  * - No gaps in the constant namespace
  *
- * Pins marked "N/A on 100-pin" are not physically available on the STAR hardware
+ * Pins marked "N/A on 144-pin" are not physically available on the STAR hardware
  * but may be available on larger packages.
  *
  * ## Benefits Over Manual Encoding
@@ -690,7 +693,7 @@ typedef enum : uint8_t {
  * static_assert(k_rx_pe_5 == 0x0E05, "PE5 must be 0x0E05");
  * @endcode
  *
- * @par Pin Availability on 100-pin LFQFP Package:
+ * @par Pin Availability on 144-pin LFQFP Package:
  *
  * | Port | Available Pins | Package Pins | Example Constants |
  * |------|----------------|--------------|-------------------|
@@ -716,7 +719,7 @@ typedef enum : uint8_t {
  *       ensuring 2-byte size and consistent ABI across compiler versions
  * @note Constants are evaluated at compile time (zero runtime overhead)
  * @note Naming follows Renesas conventions: P<port><pin> (e.g., PB2, PE5)
- * @note Package availability is documented in inline comments (search "N/A on 100-pin")
+ * @note Package availability is documented in inline comments (search "N/A on 144-pin")
  *
  * @warning Using undefined pins (N/A on your package) may cause undefined behavior
  * @warning Always verify pin availability in RX72N datasheet for your package
@@ -734,18 +737,18 @@ typedef enum : uint8_t {
  */
 typedef enum : uint16_t {
   /* Port 0 (0x00) - Pins 0-7 */
-  k_rx_p0_0 = (k_rx_port_0 << k_port_shift) | k_rx_pin_0, /**< P00 - N/A on 100-pin */
-  k_rx_p0_1 = (k_rx_port_0 << k_port_shift) | k_rx_pin_1, /**< P01 - N/A on 100-pin */
-  k_rx_p0_2 = (k_rx_port_0 << k_port_shift) | k_rx_pin_2, /**< P02 - N/A on 100-pin */
-  k_rx_p0_3 = (k_rx_port_0 << k_port_shift) | k_rx_pin_3, /**< P03 - N/A on 100-pin */
-  k_rx_p0_4 = (k_rx_port_0 << k_port_shift) | k_rx_pin_4, /**< P04 - N/A on 100-pin */
+  k_rx_p0_0 = (k_rx_port_0 << k_port_shift) | k_rx_pin_0, /**< P00 - N/A on 144-pin */
+  k_rx_p0_1 = (k_rx_port_0 << k_port_shift) | k_rx_pin_1, /**< P01 - N/A on 144-pin */
+  k_rx_p0_2 = (k_rx_port_0 << k_port_shift) | k_rx_pin_2, /**< P02 - N/A on 144-pin */
+  k_rx_p0_3 = (k_rx_port_0 << k_port_shift) | k_rx_pin_3, /**< P03 - N/A on 144-pin */
+  k_rx_p0_4 = (k_rx_port_0 << k_port_shift) | k_rx_pin_4, /**< P04 - N/A on 144-pin */
   k_rx_p0_5 = (k_rx_port_0 << k_port_shift) | k_rx_pin_5, /**< P05 (pin 100) */
-  k_rx_p0_6 = (k_rx_port_0 << k_port_shift) | k_rx_pin_6, /**< P06 - N/A on 100-pin */
+  k_rx_p0_6 = (k_rx_port_0 << k_port_shift) | k_rx_pin_6, /**< P06 - N/A on 144-pin */
   k_rx_p0_7 = (k_rx_port_0 << k_port_shift) | k_rx_pin_7, /**< P07 (pin 98) */
 
   /* Port 1 (0x01) - Pins 0-7 */
-  k_rx_p1_0 = (k_rx_port_1 << k_port_shift) | k_rx_pin_0, /**< P10 - N/A on 100-pin */
-  k_rx_p1_1 = (k_rx_port_1 << k_port_shift) | k_rx_pin_1, /**< P11 - N/A on 100-pin */
+  k_rx_p1_0 = (k_rx_port_1 << k_port_shift) | k_rx_pin_0, /**< P10 - N/A on 144-pin */
+  k_rx_p1_1 = (k_rx_port_1 << k_port_shift) | k_rx_pin_1, /**< P11 - N/A on 144-pin */
   k_rx_p1_2 = (k_rx_port_1 << k_port_shift) | k_rx_pin_2, /**< P12 (pin 34) */
   k_rx_p1_3 = (k_rx_port_1 << k_port_shift) | k_rx_pin_3, /**< P13 (pin 33) */
   k_rx_p1_4 = (k_rx_port_1 << k_port_shift) | k_rx_pin_4, /**< P14 (pin 32) */
@@ -790,48 +793,48 @@ typedef enum : uint16_t {
   k_rx_p5_3 = (k_rx_port_5 << k_port_shift) | k_rx_pin_3, /**< P53 (pin 41) */
   k_rx_p5_4 = (k_rx_port_5 << k_port_shift) | k_rx_pin_4, /**< P54 (pin 40) */
   k_rx_p5_5 = (k_rx_port_5 << k_port_shift) | k_rx_pin_5, /**< P55 (pin 39) */
-  k_rx_p5_6 = (k_rx_port_5 << k_port_shift) | k_rx_pin_6, /**< P56 - N/A on 100-pin */
-  k_rx_p5_7 = (k_rx_port_5 << k_port_shift) | k_rx_pin_7, /**< P57 - N/A on 100-pin */
+  k_rx_p5_6 = (k_rx_port_5 << k_port_shift) | k_rx_pin_6, /**< P56 - N/A on 144-pin */
+  k_rx_p5_7 = (k_rx_port_5 << k_port_shift) | k_rx_pin_7, /**< P57 - N/A on 144-pin */
 
-  /* Port 6 (0x06) - Pins 0-7 - N/A on 100-pin */
-  k_rx_p6_0 = (k_rx_port_6 << k_port_shift) | k_rx_pin_0, /**< P60 - N/A on 100-pin */
-  k_rx_p6_1 = (k_rx_port_6 << k_port_shift) | k_rx_pin_1, /**< P61 - N/A on 100-pin */
-  k_rx_p6_2 = (k_rx_port_6 << k_port_shift) | k_rx_pin_2, /**< P62 - N/A on 100-pin */
-  k_rx_p6_3 = (k_rx_port_6 << k_port_shift) | k_rx_pin_3, /**< P63 - N/A on 100-pin */
-  k_rx_p6_4 = (k_rx_port_6 << k_port_shift) | k_rx_pin_4, /**< P64 - N/A on 100-pin */
-  k_rx_p6_5 = (k_rx_port_6 << k_port_shift) | k_rx_pin_5, /**< P65 - N/A on 100-pin */
-  k_rx_p6_6 = (k_rx_port_6 << k_port_shift) | k_rx_pin_6, /**< P66 - N/A on 100-pin */
-  k_rx_p6_7 = (k_rx_port_6 << k_port_shift) | k_rx_pin_7, /**< P67 - N/A on 100-pin */
+  /* Port 6 (0x06) - Pins 0-7 - N/A on 144-pin */
+  k_rx_p6_0 = (k_rx_port_6 << k_port_shift) | k_rx_pin_0, /**< P60 - N/A on 144-pin */
+  k_rx_p6_1 = (k_rx_port_6 << k_port_shift) | k_rx_pin_1, /**< P61 - N/A on 144-pin */
+  k_rx_p6_2 = (k_rx_port_6 << k_port_shift) | k_rx_pin_2, /**< P62 - N/A on 144-pin */
+  k_rx_p6_3 = (k_rx_port_6 << k_port_shift) | k_rx_pin_3, /**< P63 - N/A on 144-pin */
+  k_rx_p6_4 = (k_rx_port_6 << k_port_shift) | k_rx_pin_4, /**< P64 - N/A on 144-pin */
+  k_rx_p6_5 = (k_rx_port_6 << k_port_shift) | k_rx_pin_5, /**< P65 - N/A on 144-pin */
+  k_rx_p6_6 = (k_rx_port_6 << k_port_shift) | k_rx_pin_6, /**< P66 - N/A on 144-pin */
+  k_rx_p6_7 = (k_rx_port_6 << k_port_shift) | k_rx_pin_7, /**< P67 (available on 144-pin) */
 
-  /* Port 7 (0x07) - Pins 0-7 - N/A on 100-pin */
-  k_rx_p7_0 = (k_rx_port_7 << k_port_shift) | k_rx_pin_0, /**< P70 - N/A on 100-pin */
-  k_rx_p7_1 = (k_rx_port_7 << k_port_shift) | k_rx_pin_1, /**< P71 - N/A on 100-pin */
-  k_rx_p7_2 = (k_rx_port_7 << k_port_shift) | k_rx_pin_2, /**< P72 - N/A on 100-pin */
-  k_rx_p7_3 = (k_rx_port_7 << k_port_shift) | k_rx_pin_3, /**< P73 - N/A on 100-pin */
-  k_rx_p7_4 = (k_rx_port_7 << k_port_shift) | k_rx_pin_4, /**< P74 - N/A on 100-pin */
-  k_rx_p7_5 = (k_rx_port_7 << k_port_shift) | k_rx_pin_5, /**< P75 - N/A on 100-pin */
-  k_rx_p7_6 = (k_rx_port_7 << k_port_shift) | k_rx_pin_6, /**< P76 - N/A on 100-pin */
-  k_rx_p7_7 = (k_rx_port_7 << k_port_shift) | k_rx_pin_7, /**< P77 - N/A on 100-pin */
+  /* Port 7 (0x07) - Pins 0-7 - N/A on 144-pin */
+  k_rx_p7_0 = (k_rx_port_7 << k_port_shift) | k_rx_pin_0, /**< P70 - N/A on 144-pin */
+  k_rx_p7_1 = (k_rx_port_7 << k_port_shift) | k_rx_pin_1, /**< P71 - N/A on 144-pin */
+  k_rx_p7_2 = (k_rx_port_7 << k_port_shift) | k_rx_pin_2, /**< P72 - N/A on 144-pin */
+  k_rx_p7_3 = (k_rx_port_7 << k_port_shift) | k_rx_pin_3, /**< P73 - N/A on 144-pin */
+  k_rx_p7_4 = (k_rx_port_7 << k_port_shift) | k_rx_pin_4, /**< P74 - N/A on 144-pin */
+  k_rx_p7_5 = (k_rx_port_7 << k_port_shift) | k_rx_pin_5, /**< P75 - N/A on 144-pin */
+  k_rx_p7_6 = (k_rx_port_7 << k_port_shift) | k_rx_pin_6, /**< P76 - N/A on 144-pin */
+  k_rx_p7_7 = (k_rx_port_7 << k_port_shift) | k_rx_pin_7, /**< P77 - N/A on 144-pin */
 
-  /* Port 8 (0x08) - Pins 0-7 - N/A on 100-pin */
-  k_rx_p8_0 = (k_rx_port_8 << k_port_shift) | k_rx_pin_0, /**< P80 - N/A on 100-pin */
-  k_rx_p8_1 = (k_rx_port_8 << k_port_shift) | k_rx_pin_1, /**< P81 - N/A on 100-pin */
-  k_rx_p8_2 = (k_rx_port_8 << k_port_shift) | k_rx_pin_2, /**< P82 - N/A on 100-pin */
-  k_rx_p8_3 = (k_rx_port_8 << k_port_shift) | k_rx_pin_3, /**< P83 - N/A on 100-pin */
-  k_rx_p8_4 = (k_rx_port_8 << k_port_shift) | k_rx_pin_4, /**< P84 - N/A on 100-pin */
-  k_rx_p8_5 = (k_rx_port_8 << k_port_shift) | k_rx_pin_5, /**< P85 - N/A on 100-pin */
-  k_rx_p8_6 = (k_rx_port_8 << k_port_shift) | k_rx_pin_6, /**< P86 - N/A on 100-pin */
-  k_rx_p8_7 = (k_rx_port_8 << k_port_shift) | k_rx_pin_7, /**< P87 - N/A on 100-pin */
+  /* Port 8 (0x08) - Pins 0-7 - N/A on 144-pin */
+  k_rx_p8_0 = (k_rx_port_8 << k_port_shift) | k_rx_pin_0, /**< P80 - N/A on 144-pin */
+  k_rx_p8_1 = (k_rx_port_8 << k_port_shift) | k_rx_pin_1, /**< P81 - N/A on 144-pin */
+  k_rx_p8_2 = (k_rx_port_8 << k_port_shift) | k_rx_pin_2, /**< P82 - N/A on 144-pin */
+  k_rx_p8_3 = (k_rx_port_8 << k_port_shift) | k_rx_pin_3, /**< P83 - N/A on 144-pin */
+  k_rx_p8_4 = (k_rx_port_8 << k_port_shift) | k_rx_pin_4, /**< P84 - N/A on 144-pin */
+  k_rx_p8_5 = (k_rx_port_8 << k_port_shift) | k_rx_pin_5, /**< P85 - N/A on 144-pin */
+  k_rx_p8_6 = (k_rx_port_8 << k_port_shift) | k_rx_pin_6, /**< P86 (available on 144-pin) */
+  k_rx_p8_7 = (k_rx_port_8 << k_port_shift) | k_rx_pin_7, /**< P87 (available on 144-pin) */
 
-  /* Port 9 (0x09) - Pins 0-7 - N/A on 100-pin */
-  k_rx_p9_0 = (k_rx_port_9 << k_port_shift) | k_rx_pin_0, /**< P90 - N/A on 100-pin */
-  k_rx_p9_1 = (k_rx_port_9 << k_port_shift) | k_rx_pin_1, /**< P91 - N/A on 100-pin */
-  k_rx_p9_2 = (k_rx_port_9 << k_port_shift) | k_rx_pin_2, /**< P92 - N/A on 100-pin */
-  k_rx_p9_3 = (k_rx_port_9 << k_port_shift) | k_rx_pin_3, /**< P93 - N/A on 100-pin */
-  k_rx_p9_4 = (k_rx_port_9 << k_port_shift) | k_rx_pin_4, /**< P94 - N/A on 100-pin */
-  k_rx_p9_5 = (k_rx_port_9 << k_port_shift) | k_rx_pin_5, /**< P95 - N/A on 100-pin */
-  k_rx_p9_6 = (k_rx_port_9 << k_port_shift) | k_rx_pin_6, /**< P96 - N/A on 100-pin */
-  k_rx_p9_7 = (k_rx_port_9 << k_port_shift) | k_rx_pin_7, /**< P97 - N/A on 100-pin */
+  /* Port 9 (0x09) - Pins 0-7 - N/A on 144-pin */
+  k_rx_p9_0 = (k_rx_port_9 << k_port_shift) | k_rx_pin_0, /**< P90 - N/A on 144-pin */
+  k_rx_p9_1 = (k_rx_port_9 << k_port_shift) | k_rx_pin_1, /**< P91 - N/A on 144-pin */
+  k_rx_p9_2 = (k_rx_port_9 << k_port_shift) | k_rx_pin_2, /**< P92 - N/A on 144-pin */
+  k_rx_p9_3 = (k_rx_port_9 << k_port_shift) | k_rx_pin_3, /**< P93 - N/A on 144-pin */
+  k_rx_p9_4 = (k_rx_port_9 << k_port_shift) | k_rx_pin_4, /**< P94 - N/A on 144-pin */
+  k_rx_p9_5 = (k_rx_port_9 << k_port_shift) | k_rx_pin_5, /**< P95 - N/A on 144-pin */
+  k_rx_p9_6 = (k_rx_port_9 << k_port_shift) | k_rx_pin_6, /**< P96 - N/A on 144-pin */
+  k_rx_p9_7 = (k_rx_port_9 << k_port_shift) | k_rx_pin_7, /**< P97 - N/A on 144-pin */
 
   /* Port A (0x0A) - Pins 0-7 */
   k_rx_pa_0 = (k_rx_port_a << k_port_shift) | k_rx_pin_0, /**< PA0 (pin 70) */
@@ -883,35 +886,35 @@ typedef enum : uint16_t {
   k_rx_pe_6 = (k_rx_port_e << k_port_shift) | k_rx_pin_6, /**< PE6 (pin 72) */
   k_rx_pe_7 = (k_rx_port_e << k_port_shift) | k_rx_pin_7, /**< PE7 (pin 71) */
 
-  /* Port F (0x0F) - Pins 0-7 - N/A on 100-pin */
-  k_rx_pf_0 = (k_rx_port_f << k_port_shift) | k_rx_pin_0, /**< PF0 - N/A on 100-pin */
-  k_rx_pf_1 = (k_rx_port_f << k_port_shift) | k_rx_pin_1, /**< PF1 - N/A on 100-pin */
-  k_rx_pf_2 = (k_rx_port_f << k_port_shift) | k_rx_pin_2, /**< PF2 - N/A on 100-pin */
-  k_rx_pf_3 = (k_rx_port_f << k_port_shift) | k_rx_pin_3, /**< PF3 - N/A on 100-pin */
-  k_rx_pf_4 = (k_rx_port_f << k_port_shift) | k_rx_pin_4, /**< PF4 - N/A on 100-pin */
-  k_rx_pf_5 = (k_rx_port_f << k_port_shift) | k_rx_pin_5, /**< PF5 - N/A on 100-pin */
-  k_rx_pf_6 = (k_rx_port_f << k_port_shift) | k_rx_pin_6, /**< PF6 - N/A on 100-pin */
-  k_rx_pf_7 = (k_rx_port_f << k_port_shift) | k_rx_pin_7, /**< PF7 - N/A on 100-pin */
+  /* Port F (0x0F) - Pins 0-7 - N/A on 144-pin */
+  k_rx_pf_0 = (k_rx_port_f << k_port_shift) | k_rx_pin_0, /**< PF0 - N/A on 144-pin */
+  k_rx_pf_1 = (k_rx_port_f << k_port_shift) | k_rx_pin_1, /**< PF1 - N/A on 144-pin */
+  k_rx_pf_2 = (k_rx_port_f << k_port_shift) | k_rx_pin_2, /**< PF2 - N/A on 144-pin */
+  k_rx_pf_3 = (k_rx_port_f << k_port_shift) | k_rx_pin_3, /**< PF3 - N/A on 144-pin */
+  k_rx_pf_4 = (k_rx_port_f << k_port_shift) | k_rx_pin_4, /**< PF4 - N/A on 144-pin */
+  k_rx_pf_5 = (k_rx_port_f << k_port_shift) | k_rx_pin_5, /**< PF5 (available on 144-pin) */
+  k_rx_pf_6 = (k_rx_port_f << k_port_shift) | k_rx_pin_6, /**< PF6 - N/A on 144-pin */
+  k_rx_pf_7 = (k_rx_port_f << k_port_shift) | k_rx_pin_7, /**< PF7 - N/A on 144-pin */
 
-  /* Port G (0x10) - Pins 0-7 - N/A on 100-pin */
-  k_rx_pg_0 = (k_rx_port_g << k_port_shift) | k_rx_pin_0, /**< PG0 - N/A on 100-pin */
-  k_rx_pg_1 = (k_rx_port_g << k_port_shift) | k_rx_pin_1, /**< PG1 - N/A on 100-pin */
-  k_rx_pg_2 = (k_rx_port_g << k_port_shift) | k_rx_pin_2, /**< PG2 - N/A on 100-pin */
-  k_rx_pg_3 = (k_rx_port_g << k_port_shift) | k_rx_pin_3, /**< PG3 - N/A on 100-pin */
-  k_rx_pg_4 = (k_rx_port_g << k_port_shift) | k_rx_pin_4, /**< PG4 - N/A on 100-pin */
-  k_rx_pg_5 = (k_rx_port_g << k_port_shift) | k_rx_pin_5, /**< PG5 - N/A on 100-pin */
-  k_rx_pg_6 = (k_rx_port_g << k_port_shift) | k_rx_pin_6, /**< PG6 - N/A on 100-pin */
-  k_rx_pg_7 = (k_rx_port_g << k_port_shift) | k_rx_pin_7, /**< PG7 - N/A on 100-pin */
+  /* Port G (0x10) - Pins 0-7 - N/A on 144-pin */
+  k_rx_pg_0 = (k_rx_port_g << k_port_shift) | k_rx_pin_0, /**< PG0 - N/A on 144-pin */
+  k_rx_pg_1 = (k_rx_port_g << k_port_shift) | k_rx_pin_1, /**< PG1 - N/A on 144-pin */
+  k_rx_pg_2 = (k_rx_port_g << k_port_shift) | k_rx_pin_2, /**< PG2 - N/A on 144-pin */
+  k_rx_pg_3 = (k_rx_port_g << k_port_shift) | k_rx_pin_3, /**< PG3 - N/A on 144-pin */
+  k_rx_pg_4 = (k_rx_port_g << k_port_shift) | k_rx_pin_4, /**< PG4 - N/A on 144-pin */
+  k_rx_pg_5 = (k_rx_port_g << k_port_shift) | k_rx_pin_5, /**< PG5 - N/A on 144-pin */
+  k_rx_pg_6 = (k_rx_port_g << k_port_shift) | k_rx_pin_6, /**< PG6 - N/A on 144-pin */
+  k_rx_pg_7 = (k_rx_port_g << k_port_shift) | k_rx_pin_7, /**< PG7 - N/A on 144-pin */
 
   /* Port J (0x13) - Pins 0-7 */
-  k_rx_pj_0 = (k_rx_port_j << k_port_shift) | k_rx_pin_0, /**< PJ0 - N/A on 100-pin */
-  k_rx_pj_1 = (k_rx_port_j << k_port_shift) | k_rx_pin_1, /**< PJ1 - N/A on 100-pin */
-  k_rx_pj_2 = (k_rx_port_j << k_port_shift) | k_rx_pin_2, /**< PJ2 - N/A on 100-pin */
+  k_rx_pj_0 = (k_rx_port_j << k_port_shift) | k_rx_pin_0, /**< PJ0 - N/A on 144-pin */
+  k_rx_pj_1 = (k_rx_port_j << k_port_shift) | k_rx_pin_1, /**< PJ1 - N/A on 144-pin */
+  k_rx_pj_2 = (k_rx_port_j << k_port_shift) | k_rx_pin_2, /**< PJ2 - N/A on 144-pin */
   k_rx_pj_3 = (k_rx_port_j << k_port_shift) | k_rx_pin_3, /**< PJ3 (pin 4) */
-  k_rx_pj_4 = (k_rx_port_j << k_port_shift) | k_rx_pin_4, /**< PJ4 - N/A on 100-pin */
+  k_rx_pj_4 = (k_rx_port_j << k_port_shift) | k_rx_pin_4, /**< PJ4 - N/A on 144-pin */
   k_rx_pj_5 = (k_rx_port_j << k_port_shift) | k_rx_pin_5, /**< PJ5 (pin 2) */
-  k_rx_pj_6 = (k_rx_port_j << k_port_shift) | k_rx_pin_6, /**< PJ6 - N/A on 100-pin */
-  k_rx_pj_7 = (k_rx_port_j << k_port_shift) | k_rx_pin_7, /**< PJ7 - N/A on 100-pin */
+  k_rx_pj_6 = (k_rx_port_j << k_port_shift) | k_rx_pin_6, /**< PJ6 - N/A on 144-pin */
+  k_rx_pj_7 = (k_rx_port_j << k_port_shift) | k_rx_pin_7, /**< PJ7 - N/A on 144-pin */
 } rx_port_pin_t;
 
 /* =============================================================================

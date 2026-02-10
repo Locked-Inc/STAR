@@ -402,6 +402,32 @@ typedef enum : uint8_t {
 [[nodiscard]] rx_err_t rx_bus_onewire_init(rx_bus_manager_t* manager, const char* bus_name);
 
 /**
+ * @brief Deinitialize OneWire bus and release state pool entry
+ *
+ * Releases the runtime state allocated by rx_bus_onewire_init() back to the
+ * static pool. Must be called before destroying the bus manager to prevent
+ * state pool exhaustion.
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] bus_name OneWire bus name
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_ptr if manager or bus_name is nullptr
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_arg if bus is not OneWire type
+ * @return k_rx_err_timeout if mutex timeout
+ *
+ * @pre Bus was initialized via rx_bus_onewire_init()
+ * @post State pool entry released for reuse
+ * @post bus_config->initialized set to false
+ *
+ * @see rx_bus_onewire_init() Initialization counterpart
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name);
+
+/**
  * @brief Perform OneWire reset and check for presence pulse
  *
  * Sends reset pulse (480us low) and samples for presence pulse from device.

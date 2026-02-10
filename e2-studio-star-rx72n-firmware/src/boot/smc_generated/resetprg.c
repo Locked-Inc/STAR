@@ -424,10 +424,6 @@ R_BSP_POR_FUNCTION(R_BSP_STARTUP_FUNCTION)
   _CALL_INIT();
 #endif
 
-  /* Initialize RAM - COMMENTED OUT: BSP function deleted in Phase 3 */
-  /* bsp_ram_initialize(); */
-  /* Note: RX72N has no ECC RAM, so this was likely a no-op in SMC BSP */
-
   /* If the warm start Post C runtime callback is enabled, then call it. */
 #if BSP_CFG_USER_WARM_START_CALLBACK_POST_INITC_ENABLED == 1
   BSP_CFG_USER_WARM_START_POST_C_FUNCTION();
@@ -439,14 +435,6 @@ R_BSP_POR_FUNCTION(R_BSP_STARTUP_FUNCTION)
   init_iolib();
 #endif /* defined(__CCRX__) */
 #endif
-
-  /* Initialize MCU interrupt callbacks - COMMENTED OUT: BSP function deleted in Phase 3 */
-  /* bsp_interrupt_open(); */
-  /* Note: Interrupt registration now handled by custom rx_interrupt API */
-
-  /* Initialize register protection - COMMENTED OUT: BSP function deleted in Phase 3 */
-  /* bsp_register_protect_open(); */
-  /* Note: Register protection (PRCR) handled in rx_clock_power_init() */
 
   /* Enable interrupt and select the I stack or the U stack */
   R_BSP_SET_PSW(k_psw_init);
@@ -464,9 +452,6 @@ R_BSP_POR_FUNCTION(R_BSP_STARTUP_FUNCTION)
 #endif
 #endif /* BSP_CFG_RUN_IN_USER_MODE */
 #endif /* BSP_CFG_RTOS_USED */
-
-  /* Enable the bus error interrupt to catch accesses to illegal/reserved areas of memory */
-  R_BSP_InterruptControl(BSP_INT_SRC_BUS_ERROR, BSP_INT_CMD_INTERRUPT_ENABLE, FIT_NO_PTR);
 
 #if (BSP_CFG_RTOS_USED == 0) || (BSP_CFG_RTOS_USED == 5) /* Non-OS or Azure RTOS */
   /* Call the main program function (should not return) */

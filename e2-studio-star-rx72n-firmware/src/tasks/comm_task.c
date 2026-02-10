@@ -1754,8 +1754,6 @@ static void internal_frame_callback(rx_comm_channel_t  channel,
  * @callgraph
  * @callergraph
  */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstack-usage="
 static void internal_handle_command_frame(rx_comm_channel_t channel,
                                            const rx_frame_t* frame)
 {
@@ -1808,4 +1806,3 @@ static void internal_handle_command_frame(rx_comm_channel_t channel,
   /* Unknown message type */
   rx_log_warn(s_tag, "Could not decode command payload");
 }
-#pragma GCC diagnostic pop

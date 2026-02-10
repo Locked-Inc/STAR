@@ -100,7 +100,7 @@
  *     GPTW -> EN_Pin [label="GTIOCB"];
  *     ADC -> IPROPI [label="Analog voltage", dir=back];
  *     GPIO -> nFAULT [label="Digital fault", dir=back];
- *     RSPI_HW -> SPI_Regs [style=dashed, label="MOSI/MISO/CLK"];
+ *     RSPI_HW -> SPI_Regs [style=dashed, label="COPI/CIPO/CLK"];
  *
  *     PH_Pin -> HBridge;
  *     EN_Pin -> HBridge;
@@ -142,14 +142,16 @@
  *
  * | RX72N Pin | Signal | DRV8243 Pin | Function | Notes |
  * |-----------|--------|-------------|----------|-------|
- * | GTIOC3A (P34) | PWM_PH | IN1/IN2 (PH mode) | Phase/Direction | 0% = reverse, 100% = forward |
- * | GTIOC3B (P33) | PWM_EN | EN pin | Enable/Speed PWM | 0% = brake, 100% = full speed |
- * | AN000 (P40) | ADC | IPROPI | Current sense analog | 0-3.3V proportional to motor current |
- * | P32 (GPIO) | FAULT_N | nFAULT | Fault detect input | Active-low, internal pull-up |
- * | RSPCK0 (P27) | SPI_CLK | SCLK | SPI clock (variant) | Optional, SPI variant only |
- * | MOSI0 (P26) | SPI_MOSI | SDI | SPI data in (variant) | Optional, SPI variant only |
- * | MISO0 (P30) | SPI_MISO | SDO | SPI data out (variant) | Optional, SPI variant only |
- * | P25 (GPIO) | SPI_CS | nSCS | SPI chip select (variant) | Optional, active-low |
+ * | GTIOC0A (P23) | PWM_PH | IN1/IN2 (PH mode) | Phase/Direction (Motor 0) | 0% = reverse, 100% = forward |
+ * | GTIOC0B (P17) | PWM_EN | EN pin | Enable/Speed PWM (Motor 0) | 0% = brake, 100% = full speed |
+ * | AN007 (P47) | ADC | IPROPI | Current sense analog (Motor 0) | 0-3.3V proportional to motor current |
+ * | AN006 (P46) | ADC | IPROPI | Current sense analog (Motor 1) | 0-3.3V proportional to motor current |
+ * | AN005 (P45) | ADC | IPROPI | Current sense analog (Motor 2) | 0-3.3V proportional to motor current |
+ * | AN004 (P44) | ADC | IPROPI | Current sense analog (Motor 3) | 0-3.3V proportional to motor current |
+ * | SCK12 (PE0) | SPI_CLK | SCLK | SPI clock (all DRV8243) | Shared SCI12 SPI bus |
+ * | SMOSI12 (PE1) | SPI_COPI | SDI | SPI data in (all DRV8243) | Shared SCI12 SPI bus |
+ * | SMISO12 (PE2) | SPI_CIPO | SDO | SPI data out (all DRV8243) | Shared SCI12 SPI bus |
+ * | CS4# (P74) | SPI_CS0 | nSCS | SPI chip select (Motor 0) | Active-low, per-motor |
  *
  * ### PH/EN Control Mode
  *
@@ -386,7 +388,7 @@
  *         .gptw_channel = k_gptw_channel_0,
  *         .output_ph = k_gptw_output_a,        // GTIOC0A → PH pin
  *         .output_en = k_gptw_output_b,        // GTIOC0B → EN pin
- *         .pin_ipropi = 0,                     // AN000 for current sense
+ *         .pin_ipropi = 7,                     // AN007 (P47) for Motor 0 current sense
  *         .port_nfault = 3, .pin_nfault = 2,   // PORT3.2 for fault detect
  *         .pwm_freq_hz = 20000,                // 20 kHz PWM
  *         .current_limit_ma = 2000,            // 2A software limit

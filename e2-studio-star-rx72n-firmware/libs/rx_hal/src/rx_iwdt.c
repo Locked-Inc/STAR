@@ -330,12 +330,12 @@ typedef struct {
 static const iwdt_timeout_entry_t s_timeout_table[] = {
   /* timeout_ms, TOPS (cycles),        CKS (divisor)            */
   /* Actual timeout = (cycles * divisor) / 120kHz */
-  {128, k_iwdt_tops_16384, k_iwdt_cks_div_1},     /* ~136ms actual  */
-  {512, k_iwdt_tops_4096, k_iwdt_cks_div_16},     /* ~546ms actual  */
-  {1000, k_iwdt_tops_8192, k_iwdt_cks_div_16},    /* ~1.09s actual  */
-  {2048, k_iwdt_tops_16384, k_iwdt_cks_div_16},   /* ~2.18s actual  */
-  {8192, k_iwdt_tops_16384, k_iwdt_cks_div_64},   /* ~8.74s actual  */
-  {16384, k_iwdt_tops_16384, k_iwdt_cks_div_128}, /* ~17.48s actual */
+  {.timeout_ms = 128,   .tops = k_iwdt_tops_16384, .cks = k_iwdt_cks_div_1},   /* ~136ms actual  */
+  {.timeout_ms = 512,   .tops = k_iwdt_tops_4096,  .cks = k_iwdt_cks_div_16},  /* ~546ms actual  */
+  {.timeout_ms = 1000,  .tops = k_iwdt_tops_8192,  .cks = k_iwdt_cks_div_16},  /* ~1.09s actual  */
+  {.timeout_ms = 2048,  .tops = k_iwdt_tops_16384, .cks = k_iwdt_cks_div_16},  /* ~2.18s actual  */
+  {.timeout_ms = 8192,  .tops = k_iwdt_tops_16384, .cks = k_iwdt_cks_div_64},  /* ~8.74s actual  */
+  {.timeout_ms = 16384, .tops = k_iwdt_tops_16384, .cks = k_iwdt_cks_div_128}, /* ~17.48s actual */
 };
 
 /**

@@ -115,7 +115,7 @@
  *
  * @see rx72n_wdt_regs.h Software-controllable Watchdog Timer
  * @see rx_iwdt.h Higher-level IWDT API
- * @see rx72n_regs.h Master register include file
+ * @see rx72n_regs.h Main register include file
  *
  * @author STAR Team
  * @date 2026-01-28

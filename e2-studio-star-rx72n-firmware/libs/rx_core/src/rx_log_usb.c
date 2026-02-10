@@ -107,19 +107,7 @@ typedef struct {
     bool     overflow;                   /**< True if buffer overflowed */
 } usb_log_boot_buffer_t;
 
-/**
- * @struct usb_log_stats_t
- * @brief USB CDC logging statistics
- *
- * @details
- * Tracks logging activity for diagnostics and performance monitoring.
- */
-typedef struct {
-    uint32_t total_bytes;       /**< Total bytes sent (or buffered) */
-    uint32_t dropped_bytes;     /**< Bytes dropped (TX full or buffer overflow) */
-    uint32_t boot_buffered;     /**< Bytes buffered during boot */
-    uint32_t usb_errors;        /**< USB error count (excluding k_rx_err_busy) */
-} usb_log_stats_t;
+/* usb_log_stats_t is defined in rx_log.h */
 
 /* =============================================================================
  * Static Variables
@@ -140,9 +128,6 @@ static TX_MUTEX s_log_mutex;
 
 /** @brief Mutex initialization flag (lazy init on first use) */
 static bool s_mutex_initialized = false;
-
-/** @brief Logging tag for this module */
-static const char* const s_tag = "usb_log";
 
 /* =============================================================================
  * Internal Functions
@@ -207,7 +192,7 @@ static rx_err_t internal_buffer_boot_log(const char* data, uint16_t len)
     if ((s_boot_buffer.count + len) > k_boot_buffer_size) {
         s_boot_buffer.overflow = true;
         s_stats.dropped_bytes += len;
-        return k_rx_err_overflow;
+        return k_rx_err_no_mem;
     }
 
     /* Append to ring buffer (simple linear write, wrap at end) */

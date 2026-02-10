@@ -175,14 +175,17 @@
 #include "app_main_task.h"
 #include "hardware_init.h"
 #include "rx72n_system_regs.h"
+#include "rx_bus_manager.h"
 #include "rx_check.h"
 #include "rx_clock_power_init.h"
 #include "rx_err.h"
+#include "rx_infrastructure.h"
 #include "tx_api.h"
 
 /* Multi-task architecture includes */
 #include "bms_monitor_task.h"
 #include "comm_task.h"
+#include "led_status_task.h"
 #include "motor_control_task.h"
 #include "obstacle_detect_task.h"
 #include "shared_data.h"
@@ -1213,11 +1216,21 @@ void tx_application_define(void* first_unused_memory)
    *   12 = Obstacle Detection (safety-critical)
    *   15 = BMS Monitoring (1 Hz)
    *   15 = Temperature Sensing (1 Hz)
+   *   17 = LED Status (20 Hz, visual feedback)
    *   18 = Telemetry Aggregation (20 Hz, lowest)
    * =========================================================================
    */
 
-  /* Step 1: Initialize shared data module (mutexes, event flags) */
+  /* Step 1a: Initialize bus manager (requires ThreadX mutex, so must be here) */
+  {
+    extern rx_bus_manager_t g_bus_manager;
+    rx_error_interface_t*   error_iface = rx_infrastructure_get_error_interface();
+    rx_pin_interface_t*     pin_iface   = rx_infrastructure_get_pin_interface();
+    err = rx_bus_manager_init(&g_bus_manager, "BUS_MGR", error_iface, pin_iface);
+    RX_ASSERT(err == k_rx_ok, "rx_bus_manager_init must succeed");
+  }
+
+  /* Step 1b: Initialize shared data module (mutexes, event flags) */
   err = shared_data_init();
   RX_ASSERT(err == k_rx_ok, "shared_data_init must succeed");
 
@@ -1226,6 +1239,10 @@ void tx_application_define(void* first_unused_memory)
   /* Telemetry Task - Priority 18 (lowest) */
   err = telemetry_task_create();
   RX_ASSERT(err == k_rx_ok, "telemetry_task_create must succeed");
+
+  /* LED Status Task - Priority 17 (visual feedback) */
+  err = led_status_task_create();
+  RX_ASSERT(err == k_rx_ok, "led_status_task_create must succeed");
 
   /* BMS Monitor Task - Priority 15 */
   err = bms_monitor_task_create();
@@ -1423,7 +1440,12 @@ int main(void)
   ret = rx_clock_power_init();
   RX_ERROR_CHECK(ret);
 
-  /* Initialize application-specific hardware (motors, sensors, etc.) */
+  /* Initialize infrastructure (error handler + pin validator) before peripherals.
+   * Must run in single-threaded context before ThreadX starts. */
+  ret = rx_infrastructure_init();
+  RX_ERROR_CHECK(ret);
+
+  /* Initialize application-specific hardware (GPIO, GPTW, timers, UART, SPI, I2C, ADC) */
   ret = hardware_init();
   RX_ERROR_CHECK(ret);
 

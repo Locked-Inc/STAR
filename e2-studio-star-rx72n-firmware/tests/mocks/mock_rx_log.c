@@ -44,3 +44,15 @@ void uart_debug_puthex(uint32_t value, uint8_t digits)
   (void)digits;
   /* No-op for testing */
 }
+
+void rx_log_usb_putc(char c)
+{
+  (void)c;
+  /* No-op for testing */
+}
+
+void rx_log_usb_puts(const char* str)
+{
+  (void)str;
+  /* No-op for testing */
+}

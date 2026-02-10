@@ -78,8 +78,6 @@ static bool s_initialized = false;
 
 void mock_nanopb_reset(void)
 {
-  uint8_t i;
-
   /* Reset return values to defaults */
   s_init_return             = k_rx_ok;
   s_decode_velocity_return  = k_rx_ok;
@@ -93,7 +91,7 @@ void mock_nanopb_reset(void)
   s_encode_telemetry_count = 0;
 
   /* Reset configured outputs */
-  for (i = 0; i < k_mock_nanopb_max_motors; i++) {
+  for (uint8_t i = 0; i < k_mock_nanopb_max_motors; i++) {
     s_decoded_velocity[i] = 0.0f;
   }
   s_encode_length = 64;

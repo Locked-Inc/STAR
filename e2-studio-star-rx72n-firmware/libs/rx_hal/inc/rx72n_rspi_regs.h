@@ -71,7 +71,7 @@
  * | Offset | Size | Register | Description                       |
  * |--------|------|----------|-----------------------------------|
  * | 0x00   | 1    | SPCR     | Control Register                  |
- * | 0x01   | 1    | SSLP     | Slave Select Polarity Register    |
+ * | 0x01   | 1    | SSLP     | Chip Select Polarity Register     |
  * | 0x02   | 1    | SPPCR    | Pin Control Register              |
  * | 0x03   | 1    | SPSR     | Status Register                   |
  * | 0x04   | 4    | SPDR     | Data Register (32-bit)            |
@@ -122,7 +122,7 @@
  * - Section 44.2: Register Descriptions, pages 2353-2373
  *
  * @see rx_spi_comm.h Higher-level SPI communication API
- * @see rx72n_regs.h Master register include file
+ * @see rx72n_regs.h Main register include file
  * @see docs/sections/03_hardware_pinout.tex STAR pin assignments
  *
  * @author STAR Team
@@ -221,7 +221,7 @@ typedef enum : uint32_t {
  * | Offset | Size | Field   | Type     | Description                              |
  * |--------|------|---------|----------|------------------------------------------|
  * | 0x00   | 1    | spcr    | uint8_t  | Control Register (enable, mode)          |
- * | 0x01   | 1    | sslp    | uint8_t  | Slave Select Polarity Register           |
+ * | 0x01   | 1    | sslp    | uint8_t  | Chip Select Polarity Register            |
  * | 0x02   | 1    | sppcr   | uint8_t  | Pin Control Register (loopback)          |
  * | 0x03   | 1    | spsr    | uint8_t  | Status Register (flags)                  |
  * | 0x04   | 4    | spdr    | uint32_t | Data Register (TX/RX)                    |
@@ -347,7 +347,7 @@ typedef struct __attribute__((packed)) {
   volatile uint8_t spcr;
 
   /**
-   * @brief SPI Slave Select Polarity Register (SSLP) @ offset 0x01
+   * @brief SPI Chip Select Polarity Register (SSLP) @ offset 0x01
    * @details Sets polarity of SSL0-SSL3 signals (0=active low, 1=active high).
    * @note Most SPI peripherals expect active-low chip select (default 0x00)
    */
@@ -431,7 +431,7 @@ typedef struct __attribute__((packed)) {
   volatile uint8_t spckd;
 
   /**
-   * @brief SPI Slave Select Negation Delay Register (SSLND) @ offset 0x0D
+   * @brief SPI Chip Select Negation Delay Register (SSLND) @ offset 0x0D
    * @details Sets delay from last SPCK edge to SSL negation.
    * @par Delay: 1 to 8 SPCK cycles (value + 1)
    */
@@ -486,7 +486,7 @@ typedef struct __attribute__((packed)) {
  *
  * @details
  * Returns a volatile pointer to the RSPI0 register structure at address
- * 0x000D0100. RSPI0 is configured as a peripheral (slave) for communication
+ * 0x000D0100. RSPI0 is configured as a peripheral for communication
  * with the Raspberry Pi 5 controller at 10 Mbps.
  *
  * @return Volatile pointer to RSPI0 register structure
@@ -518,7 +518,7 @@ static inline volatile rx_rspi_regs_t* rspi0(void)
  *
  * @details
  * Returns a volatile pointer to the RSPI1 register structure at address
- * 0x000D0140. RSPI1 is configured as a controller (master) for communication
+ * 0x000D0140. RSPI1 is configured as a controller for communication
  * with four DRV8243 motor drivers at 5 Mbps.
  *
  * @return Volatile pointer to RSPI1 register structure

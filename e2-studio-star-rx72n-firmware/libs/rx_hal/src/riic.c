@@ -47,7 +47,7 @@
  *
  * ## I2C Protocol Implementation
  *
- * This driver implements the I2C protocol in controller (master) mode:
+ * This driver implements the I2C protocol in controller mode:
  *
  * ### Write Transaction
  * ```
@@ -603,7 +603,7 @@ internal_calculate_bit_rate(const uint32_t frequency_hz, uint8_t* icbrl, uint8_t
  * @details
  * Polls the BBSY (Bus Busy) bit in ICCR2 until the bus is free or timeout
  * occurs. This function must be called before starting a new I2C transaction
- * to ensure no other controller is using the bus (multi-master arbitration).
+ * to ensure no other controller is using the bus (multi-controller arbitration).
  *
  * ## Bus Busy Detection
  *
@@ -638,7 +638,7 @@ internal_calculate_bit_rate(const uint32_t frequency_hz, uint8_t* icbrl, uint8_t
  * @note This is a blocking function - polls in tight loop.
  * @note Timeout is ~10ms at k_riic_timeout_us iterations.
  *
- * @warning In multi-master systems, bus may become busy again immediately
+ * @warning In multi-controller systems, bus may become busy again immediately
  *          after this function returns - caller should proceed quickly.
  *
  * @par NASA Power of 10 Compliance

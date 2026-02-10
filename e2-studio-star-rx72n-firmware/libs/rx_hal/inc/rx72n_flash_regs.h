@@ -76,7 +76,7 @@
  * - Rule 10: Compiles with -Wall -Wextra -Werror
  *
  * @see rx_flash.h Higher-level flash API (when implemented)
- * @see rx72n_regs.h Master register include file
+ * @see rx72n_regs.h Main register include file
  *
  * @author STAR Team
  * @date 2026-01-28

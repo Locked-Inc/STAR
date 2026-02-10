@@ -29,7 +29,7 @@
 #include <string.h>
 
 /* Include the task header for the public API */
-#include "tasks/comm_task.h"
+#include "comm_task.h"
 
 /* =============================================================================
  * Test Constants

@@ -18,6 +18,16 @@
  */
 
 /**
+ * @brief Mock GPIO read sequence state
+ */
+typedef struct {
+  bool     values[k_mock_gpio_max_read_sequence]; /**< Programmed read values */
+  uint32_t count;                                 /**< Total values in sequence */
+  uint32_t index;                                 /**< Next value to return */
+  bool     active;                                /**< True if sequence is active */
+} mock_read_sequence_t;
+
+/**
  * @brief Mock GPIO pin state
  */
 typedef struct {
@@ -30,14 +40,16 @@ typedef struct {
  * @brief Mock GPIO global state
  */
 typedef struct {
-  mock_pin_state_t pins[k_mock_gpio_max_pins];
-  rx_err_t         next_error;
-  uint32_t         write_low_count;
-  uint32_t         write_high_count;
-  uint32_t         set_output_count;
-  uint32_t         set_input_count;
-  uint32_t         read_count;
-  bool             initialized;
+  mock_pin_state_t     pins[k_mock_gpio_max_pins];
+  mock_read_sequence_t read_seq; /**< Single read sequence (one pin at a time) */
+  rx_port_pin_t        read_seq_pin; /**< Pin the read sequence is assigned to */
+  rx_err_t             next_error;
+  uint32_t             write_low_count;
+  uint32_t             write_high_count;
+  uint32_t             set_output_count;
+  uint32_t             set_input_count;
+  uint32_t             read_count;
+  bool                 initialized;
 } mock_gpio_state_t;
 
 static mock_gpio_state_t s_mock_gpio;
@@ -142,6 +154,32 @@ void mock_gpio_reset_counters(void)
   s_mock_gpio.set_output_count = 0;
   s_mock_gpio.set_input_count  = 0;
   s_mock_gpio.read_count       = 0;
+}
+
+void mock_gpio_set_read_sequence(rx_port_pin_t pin, const bool* values, uint32_t count)
+{
+  if (values == nullptr || count == 0) {
+    s_mock_gpio.read_seq.active = false;
+    return;
+  }
+
+  uint32_t copy_count = (count < k_mock_gpio_max_read_sequence) ? count : k_mock_gpio_max_read_sequence;
+  for (uint32_t i = 0; i < copy_count; ++i) {
+    s_mock_gpio.read_seq.values[i] = values[i];
+  }
+
+  s_mock_gpio.read_seq.count  = copy_count;
+  s_mock_gpio.read_seq.index  = 0;
+  s_mock_gpio.read_seq.active = true;
+  s_mock_gpio.read_seq_pin    = pin;
+}
+
+void mock_gpio_clear_read_sequence(rx_port_pin_t pin)
+{
+  (void)pin;
+  s_mock_gpio.read_seq.active = false;
+  s_mock_gpio.read_seq.index  = 0;
+  s_mock_gpio.read_seq.count  = 0;
 }
 
 /* =============================================================================
@@ -249,6 +287,14 @@ rx_err_t gpio_read(rx_port_pin_t pin, bool* high)
   uint32_t idx = internal_pin_to_index(pin);
   if (idx >= k_mock_gpio_max_pins) {
     return k_rx_err_out_of_range;
+  }
+
+  /* Check for active read sequence on this pin */
+  if (s_mock_gpio.read_seq.active && pin == s_mock_gpio.read_seq_pin &&
+      s_mock_gpio.read_seq.index < s_mock_gpio.read_seq.count) {
+    *high = s_mock_gpio.read_seq.values[s_mock_gpio.read_seq.index];
+    s_mock_gpio.read_seq.index++;
+    return k_rx_ok;
   }
 
   *high = s_mock_gpio.pins[idx].read_value;

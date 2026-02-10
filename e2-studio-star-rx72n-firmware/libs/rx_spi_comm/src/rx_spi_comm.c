@@ -174,7 +174,7 @@
  * ## Hardware Requirements
  *
  * **RX72N RSPI Configuration** (handled by rspi HAL):
- * - **Mode**: Peripheral (slave)
+ * - **Mode**: Peripheral
  * - **Clock**: External (provided by RPi5 controller)
  * - **Data bits**: 8
  * - **Bit order**: MSB-first
@@ -1439,8 +1439,6 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  *
  * @since Version 1.0.0
  */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstack-usage="
 rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
                           const rx_frame_type_t type,
                           const uint8_t         flags,
@@ -1592,7 +1590,6 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, const uint16_t sequ
   /* Transfer via SPI (waits for host ACK internally) */
   return internal_spi_transfer(handle, wire_buffer, wire_len, nullptr, 0);
 }
-#pragma GCC diagnostic pop
 
 /* =============================================================================
  * Receive API - Internal Helpers
@@ -1898,49 +1895,78 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
     return k_rx_err_invalid_state;
   }
 
-  /* Wait for data to be available */
-  rx_err_t err = internal_wait_for_data(handle, timeout_ms);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  /* Read and validate frame header */
-  uint8_t  header_buf[k_frame_sync_size + k_frame_header_size];
-  uint16_t payload_len = 0;
-
-  err = internal_read_frame_header(handle, header_buf, &payload_len);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  /* Calculate frame size */
-  const uint32_t header_len = sizeof(header_buf);
-  const uint32_t total_size =
-    k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
-
-  /* Read remaining data (payload + CRC) */
-  const uint32_t remaining = payload_len + k_frame_crc_size;
-  if (remaining > 0) {
-    err = internal_spi_transfer(handle, nullptr, 0, handle->rx_buffer + header_len, remaining);
+  /* Loop to handle control frames internally before returning data frames */
+  for (;;) {
+    /* Wait for data to be available */
+    rx_err_t err = internal_wait_for_data(handle, timeout_ms);
     if (err != k_rx_ok) {
       return err;
     }
+
+    /* Read and validate frame header */
+    uint8_t  header_buf[k_frame_sync_size + k_frame_header_size];
+    uint16_t payload_len = 0;
+
+    err = internal_read_frame_header(handle, header_buf, &payload_len);
+    if (err != k_rx_ok) {
+      return err;
+    }
+
+    /* Calculate frame size */
+    const uint32_t header_len = sizeof(header_buf);
+    const uint32_t total_size =
+      k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
+
+    /* Read remaining data (payload + CRC) */
+    const uint32_t remaining = payload_len + k_frame_crc_size;
+    if (remaining > 0) {
+      err = internal_spi_transfer(handle, nullptr, 0, handle->rx_buffer + header_len, remaining);
+      if (err != k_rx_ok) {
+        return err;
+      }
+    }
+
+    /* Copy header to buffer for decoding */
+    memcpy(handle->rx_buffer, header_buf, header_len);
+
+    /* Decode frame */
+    err = internal_decode_frame(handle, frame, total_size);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Frame decode failed");
+      return err;
+    }
+
+    /* Update expected RX sequence */
+    handle->rx_sequence = frame->header.sequence + 1;
+
+    /* Handle PING control frame: auto-send PONG, invoke callback, loop */
+    if (frame->header.type == k_frame_type_ping) {
+      (void)rx_spi_comm_send_pong(handle, frame->payload, frame->header.length);
+
+      if (handle->on_ping_cb != nullptr) {
+        handle->on_ping_cb(frame, handle->cb_ctx);
+      }
+
+      continue; /* Loop to receive next frame */
+    }
+
+    /* Handle RESET control frame: reset sequences, auto-send RESET_ACK, invoke callback, loop */
+    if (frame->header.type == k_frame_type_reset) {
+      handle->tx_sequence = 0;
+      handle->rx_sequence = 0;
+
+      (void)rx_spi_comm_send_reset_ack(handle);
+
+      if (handle->on_reset_cb != nullptr) {
+        handle->on_reset_cb(frame, handle->cb_ctx);
+      }
+
+      continue; /* Loop to receive next frame */
+    }
+
+    /* Non-control frame: return to caller */
+    return k_rx_ok;
   }
-
-  /* Copy header to buffer for decoding */
-  memcpy(handle->rx_buffer, header_buf, header_len);
-
-  /* Decode frame */
-  err = internal_decode_frame(handle, frame, total_size);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Frame decode failed");
-    return err;
-  }
-
-  /* Update expected RX sequence */
-  handle->rx_sequence = frame->header.sequence + 1;
-
-  return k_rx_ok;
 }
 
 /**
@@ -2024,4 +2050,121 @@ rx_err_t rx_spi_comm_get_rx_sequence(const rx_spi_comm_handle_t* handle, uint16_
 
   *sequence = handle->rx_sequence;
   return k_rx_ok;
+}
+
+/* =============================================================================
+ * Control Frame API
+ * =============================================================================
+ */
+
+/**
+ * @brief Register callbacks for PING and RESET control frames
+ * @param[in,out] handle SPI communication handle
+ * @param[in] on_ping_cb Callback for PING frames (NULL to disable)
+ * @param[in] on_reset_cb Callback for RESET frames (NULL to disable)
+ * @param[in] cb_ctx User context pointer passed to callbacks
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if handle is nullptr
+ */
+rx_err_t rx_spi_comm_set_control_callbacks(
+  rx_spi_comm_handle_t* handle,
+  void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
+  void (*on_reset_cb)(const rx_frame_t* frame, void* ctx),
+  void*                 cb_ctx)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  handle->on_ping_cb  = on_ping_cb;
+  handle->on_reset_cb = on_reset_cb;
+  handle->cb_ctx      = cb_ctx;
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Send PONG frame with echoed payload
+ * @param[in,out] handle SPI communication handle
+ * @param[in] payload Payload data to echo (may be NULL if payload_len is 0)
+ * @param[in] payload_len Length of payload in bytes
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if handle is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ * @return Error code from frame creation or SPI transfer on failure
+ */
+rx_err_t rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle,
+                                const uint8_t*        payload,
+                                uint32_t              payload_len)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Create PONG frame */
+  rx_frame_t pong_frame;
+  rx_err_t   err = rx_frame_create_pong(&pong_frame, handle->tx_sequence, payload, payload_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send */
+  uint8_t  wire_buffer[k_frame_max_size];
+  uint32_t wire_len = 0;
+
+  err = rx_frame_encode(&handle->encoder, &pong_frame, wire_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Transfer via SPI */
+  return internal_spi_transfer(handle, wire_buffer, wire_len, nullptr, 0);
+}
+
+/**
+ * @brief Send RESET_ACK frame
+ * @param[in,out] handle SPI communication handle
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if handle is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ * @return Error code from frame creation or SPI transfer on failure
+ */
+rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Create RESET_ACK frame */
+  rx_frame_t reset_ack_frame;
+  rx_err_t   err = rx_frame_create_reset_ack(&reset_ack_frame, handle->tx_sequence);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send */
+  uint8_t  wire_buffer[k_frame_min_size];
+  uint32_t wire_len = 0;
+
+  err = rx_frame_encode(&handle->encoder, &reset_ack_frame, wire_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Post-condition: RESET_ACK frame encoded to minimum size */
+  if (wire_len != k_frame_min_size) {
+    rx_log_error(s_tag, "Invalid RESET_ACK frame length");
+    return k_rx_err_invalid_size;
+  }
+
+  /* Transfer via SPI */
+  return internal_spi_transfer(handle, wire_buffer, wire_len, nullptr, 0);
 }

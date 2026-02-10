@@ -157,13 +157,13 @@
  *   // Reserve SPI pins (prevents conflicts)
  *   rx_err_t err;
  *
- *   err = RX_RESERVE_PIN(0xA, 0, "SPI_MISO");
+ *   err = RX_RESERVE_PIN(0xA, 0, "SPI_CIPO");
  *   if (err != k_rx_ok) {
  *     RX_REPORT_ERROR(err, "SPI", "Pin PA0 already in use");
  *     return err;
  *   }
  *
- *   err = RX_RESERVE_PIN(0xA, 1, "SPI_MOSI");
+ *   err = RX_RESERVE_PIN(0xA, 1, "SPI_COPI");
  *   if (err != k_rx_ok) {
  *     RX_RELEASE_PIN(0xA, 0); // Cleanup previous reservation
  *     RX_REPORT_ERROR(err, "SPI", "Pin PA1 already in use");
@@ -1000,12 +1000,12 @@ rx_error_interface_t* rx_infrastructure_get_error_interface(void);
  * Module Init Sequence:
  *     │
  *     ├─ SPI Driver Init
- *     │      ├─ Reserve PA0 ("SPI_MISO") → Success
- *     │      ├─ Reserve PA1 ("SPI_MOSI") → Success
+ *     │      ├─ Reserve PA0 ("SPI_CIPO") → Success
+ *     │      ├─ Reserve PA1 ("SPI_COPI") → Success
  *     │      └─ Reserve PA2 ("SPI_CLK")  → Success
  *     │
  *     ├─ I2C Driver Init
- *     │      ├─ Reserve PA0 ("I2C_SDA")  → FAIL (already SPI_MISO)
+ *     │      ├─ Reserve PA0 ("I2C_SDA")  → FAIL (already SPI_CIPO)
  *     │      └─ Init fails, prevents pin conflict
  *     │
  *     └─ USB Driver Init
@@ -1022,13 +1022,13 @@ rx_error_interface_t* rx_infrastructure_get_error_interface(void);
  *   // Reserve all SPI pins before configuring hardware
  *   rx_err_t err;
  *
- *   err = RX_RESERVE_PIN(0xA, 0, "SPI_MISO"); // Port A, Pin 0
+ *   err = RX_RESERVE_PIN(0xA, 0, "SPI_CIPO"); // Port A, Pin 0
  *   if (err != k_rx_ok) {
  *     RX_REPORT_ERROR(err, "SPI", "Pin PA0 already in use");
  *     return err;
  *   }
  *
- *   err = RX_RESERVE_PIN(0xA, 1, "SPI_MOSI"); // Port A, Pin 1
+ *   err = RX_RESERVE_PIN(0xA, 1, "SPI_COPI"); // Port A, Pin 1
  *   if (err != k_rx_ok) {
  *     RX_RELEASE_PIN(0xA, 0); // Clean up previous reservation
  *     RX_REPORT_ERROR(err, "SPI", "Pin PA1 already in use");
@@ -1467,13 +1467,13 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  *
  * **Expanded code**:
  * @code
- * // rx_err_t err = RX_RESERVE_PIN(0xA, 5, "SPI_MOSI");
+ * // rx_err_t err = RX_RESERVE_PIN(0xA, 5, "SPI_COPI");
  * // Expands to:
  * rx_err_t err = ({
  *   rx_err_t err_ = k_rx_err_invalid_state;
  *   rx_pin_interface_t* iface_ = rx_infrastructure_get_pin_interface();
  *   if (iface_ != nullptr) {
- *     err_ = iface_->reserve_pin(iface_->ctx, 0xA, 5, "SPI_MOSI");
+ *     err_ = iface_->reserve_pin(iface_->ctx, 0xA, 5, "SPI_COPI");
  *   }
  *   err_; // This becomes the "return value" of the expression
  * });
@@ -1488,7 +1488,7 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  * - **Atomic operations**: Reservation is thread-safe (mutex protected)
  *
  * ```
- * Module A:  RX_RESERVE_PIN(0xA, 5, "SPI_MOSI")  → k_rx_ok
+ * Module A:  RX_RESERVE_PIN(0xA, 5, "SPI_COPI")  → k_rx_ok
  * Module B:  RX_RESERVE_PIN(0xA, 5, "I2C_SDA")   → k_rx_err_resource_busy (conflict!)
  * ```
  *
@@ -1498,18 +1498,18 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  * @code
  * rx_err_t spi_driver_init(void)
  * {
- *   // Reserve MISO (first pin)
- *   rx_err_t err = RX_RESERVE_PIN(0xA, 0, "SPI_MISO");
+ *   // Reserve CIPO (first pin)
+ *   rx_err_t err = RX_RESERVE_PIN(0xA, 0, "SPI_CIPO");
  *   if (err != k_rx_ok) {
- *     RX_REPORT_ERROR(err, "SPI", "Pin PA0 (MISO) conflict");
+ *     RX_REPORT_ERROR(err, "SPI", "Pin PA0 (CIPO) conflict");
  *     return err;
  *   }
  *
- *   // Reserve MOSI (second pin)
- *   err = RX_RESERVE_PIN(0xA, 1, "SPI_MOSI");
+ *   // Reserve COPI (second pin)
+ *   err = RX_RESERVE_PIN(0xA, 1, "SPI_COPI");
  *   if (err != k_rx_ok) {
  *     RX_RELEASE_PIN(0xA, 0); // Clean up first pin
- *     RX_REPORT_ERROR(err, "SPI", "Pin PA1 (MOSI) conflict");
+ *     RX_REPORT_ERROR(err, "SPI", "Pin PA1 (COPI) conflict");
  *     return err;
  *   }
  *
@@ -1538,8 +1538,8 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  *
  * // Define all SPI pins
  * static const pin_def_t k_spi_pins[] = {
- *   {0xA, 0, "SPI_MISO"},
- *   {0xA, 1, "SPI_MOSI"},
+ *   {0xA, 0, "SPI_CIPO"},
+ *   {0xA, 1, "SPI_COPI"},
  *   {0xA, 2, "SPI_CLK"},
  *   {0xA, 3, "SPI_CS"},
  * };
@@ -1711,8 +1711,8 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  * @code
  * rx_err_t spi_driver_init(void)
  * {
- *   RX_RESERVE_PIN(0xA, 0, "SPI_MISO");
- *   RX_RESERVE_PIN(0xA, 1, "SPI_MOSI");
+ *   RX_RESERVE_PIN(0xA, 0, "SPI_CIPO");
+ *   RX_RESERVE_PIN(0xA, 1, "SPI_COPI");
  *   RX_RESERVE_PIN(0xA, 2, "SPI_CLK");
  *   // ... init logic
  *   return k_rx_ok;
@@ -1721,8 +1721,8 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  * void spi_driver_deinit(void)
  * {
  *   // Release all SPI pins (in any order)
- *   RX_RELEASE_PIN(0xA, 0); // MISO
- *   RX_RELEASE_PIN(0xA, 1); // MOSI
+ *   RX_RELEASE_PIN(0xA, 0); // CIPO
+ *   RX_RELEASE_PIN(0xA, 1); // COPI
  *   RX_RELEASE_PIN(0xA, 2); // CLK
  *   // ... cleanup logic
  * }

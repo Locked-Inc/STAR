@@ -124,12 +124,12 @@
  * # Set log level (default: k_log_info in release, k_log_debug in DEBUG)
  * -DLOG_LEVEL=k_log_error
  *
- * # Enable USB mirroring (default: 0)
- * -DUSB_LOG_MIRROR=1
+ * # Disable USB mirroring (default: 1, enabled by default)
+ * -DUSB_LOG_MIRROR=0
  * ```
  *
- * @note The firmware CMake build enables `USB_LOG_MIRROR=1` by default to mirror
- *       logs to the USB CDC log port. Override with `-DUSB_LOG_MIRROR=0` to disable.
+ * @note USB_LOG_MIRROR=1 is **enabled by default** (Issue #161: USB CDC debug output).
+ *       All logs appear on BOTH UART and USB CDC Port 2. Override with `-DUSB_LOG_MIRROR=0` to disable.
  *
  * ## Usage Examples
  *
@@ -272,7 +272,8 @@ extern "C" {
  * =============================================================================
  */
 
-#include <stdio.h>  /* For putchar() */
+#include <inttypes.h> /* For PRId32, PRIx32 format macros */
+#include <stdio.h>    /* For putchar(), snprintf() */
 
 /**
  * @brief Output character to simulator console
@@ -340,7 +341,7 @@ static inline void uart_debug_puts(const char* str)
 static inline void uart_debug_putint(int32_t value)
 {
   char buf[12];  /* -2147483648 = 11 chars + null */
-  (void)snprintf(buf, sizeof(buf), "%ld", (long)value);
+  (void)snprintf(buf, sizeof(buf), "%" PRId32, value);
   uart_debug_puts(buf);
 }
 
@@ -360,9 +361,24 @@ static inline void uart_debug_putint(int32_t value)
  */
 static inline void uart_debug_puthex(uint32_t value, uint8_t digits)
 {
-  char buf[11];  /* "0x" + 8 hex digits + null */
-  const char* format = (digits <= 4) ? "0x%0*lx" : "0x%0*lx";
-  (void)snprintf(buf, sizeof(buf), format, (int)digits, (unsigned long)value);
+  enum : uint8_t { k_max_hex_digits = 8 };
+  enum : uint8_t { k_min_hex_digits = 1 };
+
+  /* Pre-computed format strings keyed by digit count (1-8), avoids runtime
+   * format building and all implicit-width casts (int, unsigned long). */
+  static const char* const s_hex_fmts[k_max_hex_digits] = {
+    "0x%01" PRIx32, "0x%02" PRIx32, "0x%03" PRIx32, "0x%04" PRIx32,
+    "0x%05" PRIx32, "0x%06" PRIx32, "0x%07" PRIx32, "0x%08" PRIx32,
+  };
+
+  char buf[11]; /* "0x" + 8 hex digits + null */
+  if (digits < k_min_hex_digits) {
+    digits = k_min_hex_digits;
+  }
+  if (digits > k_max_hex_digits) {
+    digits = k_max_hex_digits;
+  }
+  (void)snprintf(buf, sizeof(buf), s_hex_fmts[digits - k_min_hex_digits], value);
   uart_debug_puts(buf);
 }
 
@@ -395,14 +411,14 @@ void uart_debug_puthex(uint32_t value, uint8_t digits);
  * - Port 1 (k_usb_port_decoded): Decoded ASCII frame dumps
  * - Port 2 (k_usb_port_log): Log output (mirrored here)
  *
- * Enable with: -DUSB_LOG_MIRROR=1
- * Disable with: -DUSB_LOG_MIRROR=0 (or omit the flag - defaults to 0)
+ * Enabled by default: USB_LOG_MIRROR=1
+ * Disable with: -DUSB_LOG_MIRROR=0 (logs will only appear on UART)
  * =============================================================================
  */
 
-/* Default: USB log mirroring disabled unless explicitly enabled */
+/* Default: USB log mirroring enabled (Issue #161: USB CDC debug output mode) */
 #ifndef USB_LOG_MIRROR
-#define USB_LOG_MIRROR 0
+#define USB_LOG_MIRROR 1
 #endif
 
 #if USB_LOG_MIRROR

@@ -99,8 +99,8 @@
  * ## SPI Communication Protocol
  *
  * **Hardware Configuration:**
- * - **RX72N Role**: SPI Peripheral (slave)
- * - **RPi5 Role**: SPI Controller (master)
+ * - **RX72N Role**: SPI Peripheral
+ * - **RPi5 Role**: SPI Controller
  * - **RSPI Channel**: RSPI0 (configurable)
  * - **SPI Mode**: Mode 0 (CPOL=0, CPHA=0) default
  * - **Clock Speed**: Up to 10 MHz (limited by RPi5 spidev)
@@ -600,6 +600,23 @@ typedef struct {
    * **Validation**: Checked by all public functions.
    */
   bool               initialized;
+
+  /**
+   * @brief Callback invoked when PING control frame received
+   * @details Called with decoded frame and user context during rx_spi_comm_receive.
+   */
+  void               (*on_ping_cb)(const rx_frame_t* frame, void* ctx);
+
+  /**
+   * @brief Callback invoked when RESET control frame received
+   * @details Called with decoded frame and user context during rx_spi_comm_receive.
+   */
+  void               (*on_reset_cb)(const rx_frame_t* frame, void* ctx);
+
+  /**
+   * @brief User context pointer passed to control frame callbacks
+   */
+  void*              cb_ctx;
 } rx_spi_comm_handle_t;
 
 /**
@@ -1440,6 +1457,105 @@ void rx_spi_comm_reset_sequence(rx_spi_comm_handle_t* handle);
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_spi_comm_get_rx_sequence(const rx_spi_comm_handle_t* handle, uint16_t* sequence);
+
+/* =============================================================================
+ * Control Frame API
+ * =============================================================================
+ */
+
+/**
+ * @brief Register callbacks for PING and RESET control frames
+ *
+ * @details
+ * Sets callback functions that are invoked when rx_spi_comm_receive()
+ * encounters PING or RESET control frames. Control frames are handled
+ * internally (auto PONG / auto RESET_ACK) and callbacks provide
+ * notification to the application layer.
+ *
+ * @param[in,out] handle Initialized SPI communication handle
+ * @param[in] on_ping_cb Callback for PING frames (may be NULL to disable)
+ * @param[in] on_reset_cb Callback for RESET frames (may be NULL to disable)
+ * @param[in] cb_ctx User context pointer passed to callbacks
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Callbacks registered successfully
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ *
+ * @pre handle must be non-NULL
+ * @post on_ping_cb, on_reset_cb, cb_ctx stored in handle
+ *
+ * @note Callbacks are invoked from within rx_spi_comm_receive() context
+ * @note Not thread-safe, set callbacks before starting receive loop
+ *
+ * @see rx_spi_comm_receive() Invokes callbacks on control frames
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t rx_spi_comm_set_control_callbacks(
+  rx_spi_comm_handle_t* handle,
+  void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
+  void (*on_reset_cb)(const rx_frame_t* frame, void* ctx),
+  void*                 cb_ctx);
+
+/**
+ * @brief Send PONG frame with payload (response to PING)
+ *
+ * @details
+ * Constructs and transmits a PONG frame echoing the provided payload.
+ * Used internally by rx_spi_comm_receive() for auto-PONG, but also
+ * available for manual PONG sending.
+ *
+ * @param[in,out] handle Initialized SPI communication handle
+ * @param[in] payload Payload data to echo (may be NULL if payload_len is 0)
+ * @param[in] payload_len Length of payload in bytes
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok PONG frame sent successfully
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ * @retval (other) Errors propagated from frame creation or SPI transfer
+ *
+ * @pre handle must be non-NULL and initialized
+ * @post PONG frame transmitted with echoed payload
+ *
+ * @note Uses current tx_sequence for the PONG frame
+ *
+ * @see rx_frame_create_pong() Frame creation for PONG
+ * @see rx_spi_comm_receive() Auto-sends PONG on PING reception
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle,
+                                              const uint8_t*        payload,
+                                              uint32_t              payload_len);
+
+/**
+ * @brief Send RESET_ACK frame (response to RESET)
+ *
+ * @details
+ * Constructs and transmits a RESET_ACK frame. Used internally by
+ * rx_spi_comm_receive() for auto-RESET_ACK, but also available
+ * for manual sending.
+ *
+ * @param[in,out] handle Initialized SPI communication handle
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok RESET_ACK frame sent successfully
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ * @retval (other) Errors propagated from frame creation or SPI transfer
+ *
+ * @pre handle must be non-NULL and initialized
+ * @post RESET_ACK frame transmitted
+ *
+ * @note Does NOT reset sequence numbers (caller must do that if desired)
+ *
+ * @see rx_frame_create_reset_ack() Frame creation for RESET_ACK
+ * @see rx_spi_comm_receive() Auto-sends RESET_ACK on RESET reception
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle);
 
 #ifdef __cplusplus
 }

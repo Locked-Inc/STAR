@@ -32,10 +32,10 @@
  *     style=filled;
  *     color=lightblue;
  *
- *     sensor_fl [label="Front-Left\nGPIO P43 (Trigger)\nGPIO P40 (Echo)", fillcolor=lightyellow, style=filled];
- *     sensor_fr [label="Front-Right\nGPIO P44 (Trigger)\nGPIO P41 (Echo)", fillcolor=lightyellow, style=filled];
- *     sensor_bl [label="Back-Left\nGPIO P45 (Trigger)\nGPIO P42 (Echo)", fillcolor=lightyellow, style=filled];
- *     sensor_br [label="Back-Right\nGPIO P46 (Trigger)\nGPIO P43 (Echo)", fillcolor=lightyellow, style=filled];
+ *     sensor_fl [label="Front-Left\nGPIO PF5 (Trigger)\nGPIO P03/IRQ11 (Echo)", fillcolor=lightyellow, style=filled];
+ *     sensor_fr [label="Front-Right\nGPIO PJ5 (Trigger)\nGPIO P02/IRQ10 (Echo)", fillcolor=lightyellow, style=filled];
+ *     sensor_bl [label="Back-Left\nGPIO PJ3 (Trigger)\nGPIO P01/IRQ9 (Echo)", fillcolor=lightyellow, style=filled];
+ *     sensor_br [label="Back-Right\nGPIO P33 (Trigger)\nGPIO P00/IRQ8 (Echo)", fillcolor=lightyellow, style=filled];
  *   }
  *
  *   subgraph cluster_firmware {
@@ -156,10 +156,10 @@
  *
  *   Robot [label="Robot Top View\n(30cm × 30cm)", shape=box, width=3, height=3];
  *
- *   FL [label="Front-Left\n(Sensor 0)\nP43/P40\n30cm zone", fillcolor=yellow, style=filled, pos="0,2!"];
- *   FR [label="Front-Right\n(Sensor 1)\nP44/P41\n30cm zone", fillcolor=yellow, style=filled, pos="3,2!"];
- *   BL [label="Back-Left\n(Sensor 2)\nP45/P42\n30cm zone", fillcolor=lightblue, style=filled, pos="0,-1!"];
- *   BR [label="Back-Right\n(Sensor 3)\nP46/P43\n30cm zone", fillcolor=lightblue, style=filled, pos="3,-1!"];
+ *   FL [label="Front-Left\n(Sensor 0)\nPF5/P03\n30cm zone", fillcolor=yellow, style=filled, pos="0,2!"];
+ *   FR [label="Front-Right\n(Sensor 1)\nPJ5/P02\n30cm zone", fillcolor=yellow, style=filled, pos="3,2!"];
+ *   BL [label="Back-Left\n(Sensor 2)\nPJ3/P01\n30cm zone", fillcolor=lightblue, style=filled, pos="0,-1!"];
+ *   BR [label="Back-Right\n(Sensor 3)\nP33/P00\n30cm zone", fillcolor=lightblue, style=filled, pos="3,-1!"];
  *
  *   FL -> Robot [label="15° cone", style=dashed];
  *   FR -> Robot [label="15° cone", style=dashed];
@@ -1129,7 +1129,7 @@ static void internal_obstacle_callback(bool    obstacle_detected,
  * @pre tx_application_define() callback is executing (boot phase)
  * @pre shared_data_init() called successfully (required for e-stop trigger)
  * @pre HC-SR04 sensors powered (5V supply stable, >100 mA available)
- * @pre GPIO pins configured (P43-P46 outputs for trigger, P40-P43 inputs for echo)
+ * @pre GPIO pins configured (PF5/PJ5/PJ3/P33 outputs for trigger, P03/P02/P01/P00 inputs for echo)
  * @pre GPT and TMR peripherals initialized (for trigger pulse and echo capture)
  * @pre Stack memory available for s_obstacle_stack (1024 bytes in .bss)
  * @pre No other thread named "ObstacleTask" exists
@@ -1742,10 +1742,10 @@ static void internal_obstacle_task_entry(ULONG input)
  *
  * @param[in] obstacle_detected True if obstacle detected, false if cleared
  * @param[in] sensor_idx Sensor index (0-3) that triggered callback
- *                       - 0: Front-Left (GPIO P43/P40)
- *                       - 1: Front-Right (GPIO P44/P41)
- *                       - 2: Back-Left (GPIO P45/P42)
- *                       - 3: Back-Right (GPIO P46/P43)
+ *                       - 0: Front-Left (TRIG PF5, ECHO P03/IRQ11)
+ *                       - 1: Front-Right (TRIG PJ5, ECHO P02/IRQ10)
+ *                       - 2: Back-Left (TRIG PJ3, ECHO P01/IRQ9)
+ *                       - 3: Back-Right (TRIG P33, ECHO P00/IRQ8)
  * @param[in] distance_cm Measured distance in centimeters (0.0 - 400.0)
  *                        Temperature-compensated using DS18B20 data
  * @param[in] user_data User context pointer (unused, set to NULL in config)

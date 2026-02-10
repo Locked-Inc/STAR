@@ -242,14 +242,15 @@ typedef enum : uint8_t {
  * the switch statement in internal_get_pfs_register(). This provides
  * compile-time verification that all ports are handled.
  *
- * @par 100-pin LFQFP Package Availability
+ * @par 144-pin LFQFP Package Availability
  * | Port | Available | Notes |
  * |------|-----------|-------|
  * | 0-5 | Partial | Some pins available |
- * | 6-9 | Partial | Some pins available |
+ * | 6-9 | Partial | Some pins available (P67, P86/P87 on 144-pin) |
  * | A-E | Full | All 8 pins per port |
- * | F-H | None | Not on 100-pin package |
- * | J | Partial | Only PJ3, PJ5 available |
+ * | F | Partial | PF0-PF2, PF5 available on 144-pin |
+ * | G-H | None | Not on 144-pin package |
+ * | J | Partial | PJ3, PJ5 available on 144-pin |
  *
  * @see rx_port_constants.h Source definitions
  * @since Version 1.0.0
@@ -271,9 +272,9 @@ typedef enum : uint8_t {
   k_mpc_port_c     = k_rx_port_c, /**< Port C (GPIO PC0-PC7, encoder inputs) */
   k_mpc_port_d     = k_rx_port_d, /**< Port D (GPIO PD0-PD7) */
   k_mpc_port_e     = k_rx_port_e, /**< Port E (GPIO PE0-PE7, PWM outputs) */
-  k_mpc_port_f     = k_rx_port_f, /**< Port F (not on 100-pin package) */
-  k_mpc_port_g     = k_rx_port_g, /**< Port G (not on 100-pin package) */
-  k_mpc_port_j     = k_rx_port_j, /**< Port J (partial: PJ3, PJ5 only on 100-pin) */
+  k_mpc_port_f     = k_rx_port_f, /**< Port F (partial on 144-pin: PF0-PF2, PF5) */
+  k_mpc_port_g     = k_rx_port_g, /**< Port G (not on 144-pin package) */
+  k_mpc_port_j     = k_rx_port_j, /**< Port J (partial: PJ3, PJ5 on 144-pin) */
 } mpc_port_number_t;
 
 /**
@@ -319,10 +320,10 @@ typedef enum : uint16_t {
   k_mpc_portc_offset = 96,  /**< Port C offset: 0x60 (PC0-PC7, MTU) */
   k_mpc_portd_offset = 104, /**< Port D offset: 0x68 (PD0-PD7) */
   k_mpc_porte_offset = 112, /**< Port E offset: 0x70 (PE0-PE7, PWM) */
-  k_mpc_portf_offset = 120, /**< Port F offset: 0x78 (not on 100-pin) */
-  k_mpc_portg_offset = 128, /**< Port G offset: 0x80 (not on 100-pin) */
-  k_mpc_porth_offset = 136, /**< Port H offset: 0x88 (not on 100-pin) */
-  k_mpc_portj_offset = 144, /**< Port J offset: 0x90 (PJ3, PJ5 only) */
+  k_mpc_portf_offset = 120, /**< Port F offset: 0x78 (partial on 144-pin) */
+  k_mpc_portg_offset = 128, /**< Port G offset: 0x80 (not on 144-pin) */
+  k_mpc_porth_offset = 136, /**< Port H offset: 0x88 (not on 144-pin) */
+  k_mpc_portj_offset = 144, /**< Port J offset: 0x90 (PJ3, PJ5 on 144-pin) */
 } mpc_port_offset_t;
 
 /**
@@ -408,7 +409,7 @@ typedef enum : uint8_t {
  *
  * @param[in] port Port number (0-9, A-G, J encoded as uint8_t)
  *                 - Valid range: [k_mpc_port_0, k_mpc_port_j]
- *                 - Ports F, G, H return NULL on 100-pin package
+ *                 - Ports G, H return NULL on 144-pin package
  * @param[in] pin Pin number within the port
  *                - Valid range: [0, 7]
  *                - Some ports have fewer than 8 pins; caller must verify
@@ -423,7 +424,7 @@ typedef enum : uint8_t {
  * @post No registers modified (read-only address calculation)
  *
  * @note Internal function - not exported in header
- * @note Port F, G availability depends on package (not on 100-pin LFQFP)
+ * @note Port G, H availability depends on package (not on 144-pin LFQFP)
  *
  * @warning Returned pointer is volatile - must dereference with care
  * @warning Caller must still unlock PWPR before writing to the register
@@ -501,7 +502,7 @@ static volatile uint8_t* internal_get_pfs_register(const uint8_t port, uint8_t p
       break;
     case k_mpc_port_f:
     case k_mpc_port_g:
-      /* Ports F, G, H not available on 100-pin LFQFP package */
+      /* Ports G, H not available on 144-pin LFQFP package */
       rx_log_error(s_tag, "Port not available on this package");
       return nullptr;
     case k_mpc_port_j:

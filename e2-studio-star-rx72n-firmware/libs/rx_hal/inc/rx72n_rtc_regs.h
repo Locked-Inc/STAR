@@ -298,24 +298,6 @@ static inline volatile uint8_t* rtc_rcr4_reg(void)
   return (volatile uint8_t*)k_rtc_rcr4_addr;
 }
 
-/**
- * @brief Legacy accessor for RTC registers (DEPRECATED)
- *
- * @details
- * This function is kept for backward compatibility but should NOT be used.
- * The struct-based access has incorrect offsets.
- *
- * @deprecated Use rtc_rcr3_reg() instead for RCR3 access
- * @warning The rx_rtc_regs_t struct has WRONG offsets - do not use!
- *
- * @return Volatile pointer to RTC base address
- * @since Version 1.0.0
- */
-static inline volatile uint8_t* rtc_base_reg(void)
-{
-  return (volatile uint8_t*)k_rtc_base_addr;
-}
-
 /* =============================================================================
  * Static Assertions - Address Verification
  * =============================================================================

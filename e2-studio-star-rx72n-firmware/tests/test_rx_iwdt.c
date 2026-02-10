@@ -591,7 +591,7 @@ static void test_feed_after_init(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_err_t err = rx_iwdt_feed();
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
@@ -654,7 +654,7 @@ static void test_register_task_null_name(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_err_t err = rx_iwdt_register_task(nullptr, 1000);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
@@ -700,7 +700,7 @@ static void test_register_task_success(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_err_t err = rx_iwdt_register_task("TestTask", 1000);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
@@ -739,7 +739,7 @@ static void test_register_task_invalid_timeout(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_err_t err = rx_iwdt_register_task("TestTask", 50); /* Too low */
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -779,8 +779,8 @@ static void test_register_duplicate_task(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
-  rx_iwdt_register_task("TestTask", 1000);
+  (void)rx_iwdt_init(nullptr);
+  (void)rx_iwdt_register_task("TestTask", 1000);
 
   /* Try to register same task again */
   rx_err_t err = rx_iwdt_register_task("TestTask", 1000);
@@ -843,7 +843,7 @@ static void test_heartbeat_null_name(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_err_t err = rx_iwdt_task_heartbeat(nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
@@ -881,7 +881,7 @@ static void test_heartbeat_unregistered_task(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_err_t err = rx_iwdt_task_heartbeat("NonExistent");
   TEST_ASSERT_EQUAL(k_rx_err_not_found, err);
 }
@@ -935,8 +935,8 @@ static void test_heartbeat_registered_task(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
-  rx_iwdt_register_task("TestTask", 1000);
+  (void)rx_iwdt_init(nullptr);
+  (void)rx_iwdt_register_task("TestTask", 1000);
 
   rx_err_t err = rx_iwdt_task_heartbeat("TestTask");
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1007,7 +1007,7 @@ static void test_set_state_invalid(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_err_t err = rx_iwdt_set_state((system_state_t)999);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1064,7 +1064,7 @@ static void test_set_state_valid(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_err_t err = rx_iwdt_set_state(k_system_state_running);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
@@ -1112,7 +1112,7 @@ static void test_set_timeout_for_state(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_err_t err = rx_iwdt_set_timeout_for_state(k_system_state_motor_active, 500);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
@@ -1176,7 +1176,7 @@ static void test_get_status_null_pointer(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_err_t err = rx_iwdt_get_status(nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
@@ -1229,7 +1229,7 @@ static void test_get_status_success(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_iwdt_status_t status;
   rx_err_t         err = rx_iwdt_get_status(&status);
 
@@ -1351,7 +1351,7 @@ static void test_check_tasks_no_registered(void)
 {
   test_setup();
 
-  rx_iwdt_init(nullptr);
+  (void)rx_iwdt_init(nullptr);
   rx_err_t err = rx_iwdt_check_tasks();
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
@@ -1411,6 +1411,16 @@ static void test_check_tasks_no_registered(void)
  *
  * @since Version 1.0.0
  */
+
+void setUp(void)
+{
+  test_setup();
+}
+
+void tearDown(void)
+{
+}
+
 int main(void)
 {
   UNITY_BEGIN();

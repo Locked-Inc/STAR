@@ -1054,6 +1054,59 @@ static rx_err_t internal_onewire_init_callback(rx_bus_config_t* bus_config, void
 }
 
 /**
+ * @brief Release a state pool entry for a given bus config handle.
+ *
+ * @details
+ * Scans the static state pool for the entry matching the bus config's handle
+ * pointer. Clears the in_use flag and nulls the handle so the slot can be
+ * reused by a future rx_bus_onewire_init() call.
+ *
+ * @param[in,out] bus_config Bus configuration whose state to release
+ *
+ * @pre bus_config != nullptr
+ * @post Matching pool entry marked !in_use
+ * @post bus_config->handle == nullptr
+ */
+static void internal_release_state(rx_bus_config_t* bus_config)
+{
+  if (bus_config->handle == nullptr) {
+    return;
+  }
+
+  for (uint32_t i = 0; i < k_onewire_max_instances; ++i) {
+    if (s_state_pool[i].in_use &&
+        &s_state_pool[i].state == (onewire_runtime_state_t*)bus_config->handle) {
+      s_state_pool[i].in_use = false;
+      memset(&s_state_pool[i].state, 0, sizeof(onewire_runtime_state_t));
+      break;
+    }
+  }
+
+  bus_config->handle = nullptr;
+}
+
+/**
+ * @brief Callback for OneWire bus deinitialization.
+ *
+ * @param[in] bus_config Bus configuration node
+ * @param[in,out] user_ctx Simple context with result field
+ *
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t internal_onewire_deinit_callback(rx_bus_config_t* bus_config, void* user_ctx)
+{
+  onewire_simple_ctx_t* ctx = (onewire_simple_ctx_t*)user_ctx;
+
+  CHECK_ONEWIRE_BUS(bus_config, ctx, false);
+
+  internal_release_state(bus_config);
+  bus_config->initialized = false;
+
+  ctx->result = k_rx_ok;
+  return k_rx_ok;
+}
+
+/**
  * @brief Callback to perform OneWire reset pulse and detect presence
  *
  * @param[in] bus_config Bus configuration node
@@ -1728,6 +1781,46 @@ rx_err_t rx_bus_onewire_init(rx_bus_manager_t* manager, const char* bus_name)
   onewire_simple_ctx_t ctx = {.result = k_rx_err_hw_error};
   const rx_err_t       err =
     rx_bus_manager_with_bus(manager, bus_name, internal_onewire_init_callback, &ctx);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  return ctx.result;
+}
+
+/**
+ * @brief Deinitialize OneWire bus and release state pool entry
+ *
+ * @details
+ * Releases the runtime state allocated by rx_bus_onewire_init() back to the
+ * static pool. Prevents state pool exhaustion in long-running test suites.
+ *
+ * @param[in] manager Bus manager handle
+ * @param[in] bus_name Bus configuration name
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success
+ * @retval k_rx_err_null_ptr manager or bus_name is nullptr
+ * @retval k_rx_err_not_found Bus not registered
+ * @retval k_rx_err_invalid_arg Bus is not OneWire type
+ *
+ * @pre Bus was initialized via rx_bus_onewire_init()
+ * @post State pool entry released for reuse
+ * @post bus_config->initialized == false
+ *
+ * @see rx_bus_onewire_init() Initialization counterpart
+ */
+rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name)
+{
+  if (manager == nullptr) {
+    return k_rx_err_null_ptr;
+  }
+  if (bus_name == nullptr) {
+    return k_rx_err_null_ptr;
+  }
+
+  onewire_simple_ctx_t ctx = {.result = k_rx_err_hw_error};
+  const rx_err_t       err =
+    rx_bus_manager_with_bus(manager, bus_name, internal_onewire_deinit_callback, &ctx);
   if (err != k_rx_ok) {
     return err;
   }

@@ -29,7 +29,7 @@
 #include <string.h>
 
 /* Include the task header for the public API */
-#include "tasks/telemetry_task.h"
+#include "telemetry_task.h"
 
 /* =============================================================================
  * Test Constants

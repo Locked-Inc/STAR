@@ -596,7 +596,6 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
                                       uint16_t*         cell_voltages,
                                       const uint8_t     num_cells)
 {
-  uint8_t  i   = k_bq4050_loop_init;
   rx_err_t err = k_rx_ok;
 
   /**
@@ -640,7 +639,7 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
   }
 
   /* Read cell voltages sequentially (NASA Rule 2: Bounded loop 0 to max_cells-1) */
-  for (i = k_cell_idx_1; i < k_bq4050_max_cells; i++) {
+  for (uint8_t i = k_cell_idx_1; i < k_bq4050_max_cells; i++) {
     /* Stop at configured cell count */
     if (i >= num_cells) {
       break;
@@ -1198,6 +1197,9 @@ static rx_err_t internal_read_status_flags(rx_bus_manager_t*   manager,
     rx_log_error(s_tag, "Failed to read battery status");
     return err;
   }
+
+  /* Store raw register value for fault analysis */
+  status->battery_status = status_flags;
 
   /* Decode status flags into boolean fields (using explicit comparisons per policy) */
   status->is_charging         = !(status_flags & k_bq4050_status_discharging);

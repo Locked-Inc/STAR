@@ -52,6 +52,7 @@
  */
 
 #pragma once
+#define MOCK_RX_MTU_REGS_H
 
 #ifdef UNIT_TEST
 
