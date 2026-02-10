@@ -886,22 +886,6 @@ func (tm *TransportManager) GetSessionState() *SessionState {
 	return tm.sessionState
 }
 
-// SetTransportHealthForTest is a test-only API that allows tests to manipulate
-// transport health state without directly accessing internal fields.
-// This should only be used in test code.
-// Returns false if the transport name is not registered.
-func (tm *TransportManager) SetTransportHealthForTest(name string, healthy, available bool) bool {
-	tm.mu.Lock()
-	defer tm.mu.Unlock()
-
-	if wrapper, exists := tm.availableTransports[name]; exists {
-		wrapper.Health.IsHealthy = healthy
-		wrapper.Available = available
-		return true
-	}
-	return false
-}
-
 // =============================================================================
 // Private Methods
 // =============================================================================
@@ -1189,8 +1173,11 @@ func (tm *TransportManager) handleHotPlugEvent(event HotPlugEvent) {
 		tm.mu.Lock()
 		usbExists := false
 		if wrapper, exists := tm.availableTransports[TransportNameUSB]; exists {
+			// Device re-insert = fresh state - safe to overwrite health metrics
+			// since the physical device is new and past failures are irrelevant
 			wrapper.Available = true
 			wrapper.Health.IsHealthy = true
+			wrapper.Health.ConsecutiveFailures = 0 // Reset stale failure count
 			wrapper.Health.LastRecovery = time.Now()
 			usbExists = true
 			log.Printf("Marked USB transport as available and healthy due to hot-plug add")

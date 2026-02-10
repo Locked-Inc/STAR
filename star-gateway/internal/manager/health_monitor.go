@@ -93,11 +93,11 @@ func (hm *HealthMonitor) checkTransports(tm *TransportManager) {
 		}
 		tm.mu.Unlock()
 
-		// Trigger failback outside of lock to avoid race conditions
+		// Trigger failback asynchronously outside of lock to avoid blocking the monitor loop
+		// while attemptFailover/executeSwitch pauseOperations and drainInflight
 		if needFailover {
-			log.Printf("Transport %s recovered (now healthy, failback damping %v)", recoveredName, dampingDuration)
-			log.Printf("Triggering failover evaluation due to %s recovery", recoveredName)
-			tm.attemptFailover(FailureTypeGraceful)
+			log.Printf("Transport %s recovered (now healthy), triggering failover evaluation (damping: %v)", recoveredName, dampingDuration)
+			go tm.attemptFailover(FailureTypeGraceful)
 		}
 	}
 }

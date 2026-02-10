@@ -12,8 +12,7 @@ import (
 
 // Test timing constants to avoid magic numbers
 const (
-	testHealthCheckInterval = 50 * time.Millisecond
-	testProbeCheckInterval  = 100 * time.Millisecond
+	testProbeCheckInterval = 100 * time.Millisecond
 )
 
 // MockHARQ for testing
@@ -250,61 +249,75 @@ func TestProbeTransport_UnknownTransport(t *testing.T) {
 // This test specifically validates that:
 //  1. Recovery is detected (healthy && !prevHealthy)
 //  2. LastRecovery timestamp is set
-//  3. attemptFailover() is called to trigger failback
+//  3. attemptFailover() is called and performs the expected failover behavior
 func TestHealthMonitor_RecoveryTriggersFailback(t *testing.T) {
 	config := DefaultConfig()
 	config.HealthCheckInterval = testProbeCheckInterval
 	config.FailbackDamping = 0 // Disable damping for this test
 	tm := NewTransportManager(config)
 
-	// Primary transport (active)
+	// Primary transport (high priority, will be recovered)
 	mockPrimary := &MockHARQ{}
 	tm.RegisterTransport("primary", mockPrimary, PriorityUSB)
 
-	// Secondary transport (will be marked unhealthy, then recover)
+	// Secondary transport (low priority, will become active when primary fails)
 	mockSecondary := &MockHARQ{}
 	tm.RegisterTransport("secondary", mockSecondary, PrioritySPI)
 
-	// Ensure primary is active
+	// Ensure primary is active initially
 	if tm.GetActiveTransport() != "primary" {
 		t.Fatalf("Expected primary to be active, got %s", tm.GetActiveTransport())
 	}
 
-	// Mark secondary as unhealthy (simulating previous failure)
+	// Mark primary as unhealthy (simulating previous failure) and make secondary active
 	tm.mu.Lock()
-	if wrapper, exists := tm.availableTransports["secondary"]; exists {
+	if wrapper, exists := tm.availableTransports["primary"]; exists {
 		wrapper.Health.IsHealthy = false
 		wrapper.Available = false
 		wrapper.Health.LastRecovery = time.Time{} // Zero timestamp
 	}
+	if wrapper, exists := tm.availableTransports["secondary"]; exists {
+		tm.activeTransportName = "secondary"
+		tm.activeTransport = wrapper.Transport
+	}
 	tm.mu.Unlock()
 
+	// Capture active transport before checkTransports
+	activeBefore := tm.GetActiveTransport()
+
 	// Create health monitor
-	hm := NewHealthMonitor(testHealthCheckInterval)
+	hm := NewHealthMonitor(TestHealthCheckInterval)
 
 	// Run checkTransports which should detect recovery
 	// Since probeTransport returns true for unknown transports,
-	// secondary will be detected as recovered
+	// primary will be detected as recovered
 	hm.checkTransports(tm)
 
 	// Verify recovery was detected
 	tm.mu.RLock()
-	wrapper := tm.availableTransports["secondary"]
+	wrapper := tm.availableTransports["primary"]
 	if !wrapper.Health.IsHealthy {
-		t.Error("Expected secondary to be marked healthy after recovery")
+		t.Error("Expected primary to be marked healthy after recovery")
 	}
 	if !wrapper.Available {
-		t.Error("Expected secondary to be available after recovery")
+		t.Error("Expected primary to be available after recovery")
 	}
 	if wrapper.Health.LastRecovery.IsZero() {
 		t.Error("Expected LastRecovery timestamp to be set")
 	}
 	tm.mu.RUnlock()
 
-	// Note: We can't easily verify attemptFailover() was called without more
-	// complex mocking, but we've verified that:
-	// 1. Recovery detection works (healthy && !prevHealthy)
-	// 2. LastRecovery is set correctly
-	// 3. The code path that calls attemptFailover() is executed
-	// The actual failover behavior is tested in manager_test.go
+	// Verify the behavioral effect: attemptFailover was invoked
+	// Since FailbackDamping = 0 and primary has higher priority, the active
+	// transport should switch from secondary back to primary
+	pollForActiveTransport(t, tm, "primary", transportSwitchTimeout)
+
+	// Additional verification: confirm observable state change occurred
+	activeAfter := tm.GetActiveTransport()
+	if activeBefore == activeAfter {
+		t.Errorf("Expected active transport to change after recovery (was %s, still %s), indicating attemptFailover did not execute", activeBefore, activeAfter)
+	}
+	if activeAfter != "primary" {
+		t.Errorf("Expected failback to primary after recovery, got %s", activeAfter)
+	}
 }

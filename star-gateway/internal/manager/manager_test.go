@@ -22,7 +22,6 @@ const (
 	transportSwitchTimeout        = 200 * time.Millisecond
 	transportPollInterval         = 10 * time.Millisecond
 	testFailureThresholdImmediate = 1
-	testHealthCheckIntervalFast   = 50 * time.Millisecond
 	testFailbackDampingShort      = 150 * time.Millisecond
 	testFailbackGoroutineWait     = 50 * time.Millisecond
 	testDampingMargin             = 50 * time.Millisecond
@@ -191,18 +190,7 @@ func TestTransportManager_RegisterAndSelect(t *testing.T) {
 	tm.RegisterTransport(TransportNameUSB, mockUSB, PriorityUSB)
 
 	// Should switch to USB (higher priority)
-	// Poll until USB becomes active or timeout to avoid flakiness
-	deadline := time.Now().Add(transportSwitchTimeout)
-	for time.Now().Before(deadline) {
-		if tm.GetActiveTransport() == TransportNameUSB {
-			break
-		}
-		time.Sleep(transportPollInterval)
-	}
-
-	if tm.GetActiveTransport() != TransportNameUSB {
-		t.Errorf("Expected USB active after registration, got %s", tm.GetActiveTransport())
-	}
+	pollForActiveTransport(t, tm, TransportNameUSB, transportSwitchTimeout)
 }
 
 func TestTransportManager_SendReceive(t *testing.T) {
@@ -333,18 +321,8 @@ func TestTransportManager_Failover(t *testing.T) {
 		t.Fatalf("Send returned unexpected error: %v", err)
 	}
 
-	// Poll for failover to backup with a short timeout to avoid flakiness
-	deadline := time.Now().Add(200 * time.Millisecond)
-	for time.Now().Before(deadline) {
-		if tm.GetActiveTransport() == "backup" {
-			break
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
-
-	if tm.GetActiveTransport() != "backup" {
-		t.Errorf("Expected failover to backup, got %s", tm.GetActiveTransport())
-	}
+	// Poll for failover to backup
+	pollForActiveTransport(t, tm, "backup", transportSwitchTimeout)
 }
 
 func TestTransportManager_Getters(t *testing.T) {
@@ -758,7 +736,7 @@ func TestReceive_BarrierActive_DiscardsFrames(t *testing.T) {
 func TestTransportManager_FailbackAfterRecovery(t *testing.T) {
 	config := DefaultConfig()
 	config.FailureThreshold = testFailureThresholdImmediate
-	config.HealthCheckInterval = testHealthCheckIntervalFast
+	config.HealthCheckInterval = TestHealthCheckInterval
 	config.FailbackDamping = 0 // Disable damping for this test
 	tm := NewTransportManager(config)
 
@@ -805,17 +783,7 @@ func TestTransportManager_FailbackAfterRecovery(t *testing.T) {
 	}
 
 	// Poll for failover to backup
-	deadline := time.Now().Add(transportSwitchTimeout)
-	for time.Now().Before(deadline) {
-		if tm.GetActiveTransport() == "backup" {
-			break
-		}
-		time.Sleep(transportPollInterval)
-	}
-
-	if tm.GetActiveTransport() != "backup" {
-		t.Fatalf("Expected failover to backup, got %s", tm.GetActiveTransport())
-	}
+	pollForActiveTransport(t, tm, "backup", transportSwitchTimeout)
 	t.Logf("✓ Failover to backup successful")
 
 	// Step 3: Recover primary and wait for health monitor to detect it
@@ -826,24 +794,11 @@ func TestTransportManager_FailbackAfterRecovery(t *testing.T) {
 	tm.SetTransportHealthForTest("primary", false, false)
 
 	// Step 4: Manually trigger health check (simulates health monitor probe)
-	hm := NewHealthMonitor(testHealthCheckIntervalFast)
+	hm := NewHealthMonitor(TestHealthCheckInterval)
 	hm.checkTransports(tm)
 
-	// Give failback goroutine time to execute
-	time.Sleep(testFailbackGoroutineWait)
-
-	// Poll for failback to primary
-	deadline = time.Now().Add(transportSwitchTimeout)
-	for time.Now().Before(deadline) {
-		if tm.GetActiveTransport() == "primary" {
-			break
-		}
-		time.Sleep(transportPollInterval)
-	}
-
-	if tm.GetActiveTransport() != "primary" {
-		t.Errorf("Expected failback to primary after recovery, got %s", tm.GetActiveTransport())
-	}
+	// Poll for failback to primary (failover is now async, no need for extra sleep)
+	pollForActiveTransport(t, tm, "primary", transportSwitchTimeout)
 	t.Logf("✓ Failback to primary successful")
 
 	// Verify that primary is now being used for traffic
@@ -867,10 +822,14 @@ func TestTransportManager_FailbackAfterRecovery(t *testing.T) {
 //
 // This prevents rapid switching when a transport is flapping.
 // Uses generic transport names so probeTransport() returns true (healthy).
+//
+// NOTE: This test uses a longer sleep duration (>100ms) after damping expires
+// to verify damping window expiration. This is an accepted timing exception
+// required to demonstrate the damping logic.
 func TestTransportManager_FailbackRespectsDamping(t *testing.T) {
 	config := DefaultConfig()
 	config.FailureThreshold = testFailureThresholdImmediate
-	config.HealthCheckInterval = testHealthCheckIntervalFast
+	config.HealthCheckInterval = TestHealthCheckInterval
 	config.FailbackDamping = testFailbackDampingShort
 	tm := NewTransportManager(config)
 
@@ -909,17 +868,7 @@ func TestTransportManager_FailbackRespectsDamping(t *testing.T) {
 	}
 
 	// Wait for failover to backup
-	deadline := time.Now().Add(transportSwitchTimeout)
-	for time.Now().Before(deadline) {
-		if tm.GetActiveTransport() == "backup" {
-			break
-		}
-		time.Sleep(transportPollInterval)
-	}
-
-	if tm.GetActiveTransport() != "backup" {
-		t.Fatalf("Expected failover to backup, got %s", tm.GetActiveTransport())
-	}
+	pollForActiveTransport(t, tm, "backup", transportSwitchTimeout)
 	t.Logf("✓ Failed over to backup")
 
 	// Recover primary immediately
@@ -930,7 +879,7 @@ func TestTransportManager_FailbackRespectsDamping(t *testing.T) {
 	tm.SetTransportHealthForTest("primary", false, false)
 
 	// Trigger health check (simulates health monitor probe)
-	hm := NewHealthMonitor(testHealthCheckIntervalFast)
+	hm := NewHealthMonitor(TestHealthCheckInterval)
 	hm.checkTransports(tm)
 
 	// Give failback goroutine time to evaluate (should skip due to damping)
