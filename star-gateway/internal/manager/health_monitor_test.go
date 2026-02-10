@@ -10,6 +10,11 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 )
 
+// Test timing constants to avoid magic numbers
+const (
+	testProbeCheckInterval = 100 * time.Millisecond
+)
+
 // MockHARQ for testing
 type MockHARQ struct{}
 
@@ -72,7 +77,7 @@ func TestHealthMonitor_Recovery(t *testing.T) {
 	tm.mu.Unlock()
 
 	// Create HealthMonitor
-	hm := NewHealthMonitor(100 * time.Millisecond)
+	hm := NewHealthMonitor(testProbeCheckInterval)
 
 	// Run checkTransports directly (no need to wait for ticker in Run)
 	// This function probes inactive transports. Since probeTransport returns true (stub),
@@ -93,7 +98,7 @@ func TestHealthMonitor_Recovery(t *testing.T) {
 
 // TestProbeTransport_SPI_Success tests successful SPI PING/PONG exchange
 func TestProbeTransport_SPI_Success(t *testing.T) {
-	hm := NewHealthMonitor(100 * time.Millisecond)
+	hm := NewHealthMonitor(testProbeCheckInterval)
 
 	// Create mock transport that returns valid PONG
 	pongPayload := make([]byte, SPIProbePayloadSize)
@@ -117,7 +122,7 @@ func TestProbeTransport_SPI_Success(t *testing.T) {
 
 // TestProbeTransport_SPI_SendFails tests SPI probe when Send fails
 func TestProbeTransport_SPI_SendFails(t *testing.T) {
-	hm := NewHealthMonitor(100 * time.Millisecond)
+	hm := NewHealthMonitor(testProbeCheckInterval)
 
 	mockTransport := &MockTransportProbe{
 		sendErr: errors.New("send failed"),
@@ -137,7 +142,7 @@ func TestProbeTransport_SPI_SendFails(t *testing.T) {
 
 // TestProbeTransport_SPI_ReceiveTimeout tests SPI probe when Receive times out
 func TestProbeTransport_SPI_ReceiveTimeout(t *testing.T) {
-	hm := NewHealthMonitor(100 * time.Millisecond)
+	hm := NewHealthMonitor(testProbeCheckInterval)
 
 	mockTransport := &MockTransportProbe{
 		receiveErr: context.DeadlineExceeded,
@@ -157,7 +162,7 @@ func TestProbeTransport_SPI_ReceiveTimeout(t *testing.T) {
 
 // TestProbeTransport_SPI_InvalidPayloadLength tests SPI probe with wrong payload size
 func TestProbeTransport_SPI_InvalidPayloadLength(t *testing.T) {
-	hm := NewHealthMonitor(100 * time.Millisecond)
+	hm := NewHealthMonitor(testProbeCheckInterval)
 
 	// Return payload with wrong length (not SPIProbePayloadSize)
 	mockTransport := &MockTransportProbe{
@@ -178,7 +183,7 @@ func TestProbeTransport_SPI_InvalidPayloadLength(t *testing.T) {
 
 // TestProbeTransport_SPI_WrongPayloadValue tests SPI probe with incorrect counter
 func TestProbeTransport_SPI_WrongPayloadValue(t *testing.T) {
-	hm := NewHealthMonitor(100 * time.Millisecond)
+	hm := NewHealthMonitor(testProbeCheckInterval)
 
 	// Return payload with wrong value (not SPIProbeTestMarker)
 	wrongPayload := make([]byte, SPIProbePayloadSize)
@@ -208,7 +213,7 @@ func TestProbeTransport_SPI_WrongPayloadValue(t *testing.T) {
 //
 // Current test verifies that probeTransport correctly dispatches to probeUSB.
 func TestProbeTransport_USB(t *testing.T) {
-	hm := NewHealthMonitor(100 * time.Millisecond)
+	hm := NewHealthMonitor(testProbeCheckInterval)
 
 	wrapper := &TransportWrapper{
 		Name:      TransportNameUSB,
@@ -224,7 +229,7 @@ func TestProbeTransport_USB(t *testing.T) {
 
 // TestProbeTransport_UnknownTransport tests default case for unknown transport types
 func TestProbeTransport_UnknownTransport(t *testing.T) {
-	hm := NewHealthMonitor(100 * time.Millisecond)
+	hm := NewHealthMonitor(testProbeCheckInterval)
 
 	wrapper := &TransportWrapper{
 		Name:      "unknown-transport",
@@ -235,5 +240,84 @@ func TestProbeTransport_UnknownTransport(t *testing.T) {
 	// Should return true (lenient for test/mock transports)
 	if !hm.probeTransport(wrapper) {
 		t.Error("probeTransport should return true for unknown transport types (test/mock support)")
+	}
+}
+
+// TestHealthMonitor_RecoveryTriggersFailback verifies that when a transport recovers,
+// the health monitor triggers a failback attempt.
+//
+// This test specifically validates that:
+//  1. Recovery is detected (healthy && !prevHealthy)
+//  2. LastRecovery timestamp is set
+//  3. attemptFailover() is called and performs the expected failover behavior
+func TestHealthMonitor_RecoveryTriggersFailback(t *testing.T) {
+	config := DefaultConfig()
+	config.HealthCheckInterval = testProbeCheckInterval
+	config.FailbackDamping = 0 // Disable damping for this test
+	tm := NewTransportManager(config)
+
+	// Primary transport (high priority, will be recovered)
+	mockPrimary := &MockHARQ{}
+	tm.RegisterTransport("primary", mockPrimary, PriorityUSB)
+
+	// Secondary transport (low priority, will become active when primary fails)
+	mockSecondary := &MockHARQ{}
+	tm.RegisterTransport("secondary", mockSecondary, PrioritySPI)
+
+	// Ensure primary is active initially
+	if tm.GetActiveTransport() != "primary" {
+		t.Fatalf("Expected primary to be active, got %s", tm.GetActiveTransport())
+	}
+
+	// Mark primary as unhealthy (simulating previous failure) and make secondary active
+	tm.mu.Lock()
+	if wrapper, exists := tm.availableTransports["primary"]; exists {
+		wrapper.Health.IsHealthy = false
+		wrapper.Available = false
+		wrapper.Health.LastRecovery = time.Time{} // Zero timestamp
+	}
+	if wrapper, exists := tm.availableTransports["secondary"]; exists {
+		tm.activeTransportName = "secondary"
+		tm.activeTransport = wrapper.Transport
+	}
+	tm.mu.Unlock()
+
+	// Capture active transport before checkTransports
+	activeBefore := tm.GetActiveTransport()
+
+	// Create health monitor
+	hm := NewHealthMonitor(TestHealthCheckInterval)
+
+	// Run checkTransports which should detect recovery
+	// Since probeTransport returns true for unknown transports,
+	// primary will be detected as recovered
+	hm.checkTransports(tm)
+
+	// Verify recovery was detected
+	tm.mu.RLock()
+	wrapper := tm.availableTransports["primary"]
+	if !wrapper.Health.IsHealthy {
+		t.Error("Expected primary to be marked healthy after recovery")
+	}
+	if !wrapper.Available {
+		t.Error("Expected primary to be available after recovery")
+	}
+	if wrapper.Health.LastRecovery.IsZero() {
+		t.Error("Expected LastRecovery timestamp to be set")
+	}
+	tm.mu.RUnlock()
+
+	// Verify the behavioral effect: attemptFailover was invoked
+	// Since FailbackDamping = 0 and primary has higher priority, the active
+	// transport should switch from secondary back to primary
+	pollForActiveTransport(t, tm, "primary", transportSwitchTimeout)
+
+	// Additional verification: confirm observable state change occurred
+	activeAfter := tm.GetActiveTransport()
+	if activeBefore == activeAfter {
+		t.Errorf("Expected active transport to change after recovery (was %s, still %s), indicating attemptFailover did not execute", activeBefore, activeAfter)
+	}
+	if activeAfter != "primary" {
+		t.Errorf("Expected failback to primary after recovery, got %s", activeAfter)
 	}
 }
