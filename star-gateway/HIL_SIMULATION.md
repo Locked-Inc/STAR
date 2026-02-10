@@ -214,7 +214,7 @@ The Virtual RX72N handles control frames at the transport layer, before any prot
 
 ### PING/PONG Heartbeat
 
-- **Receives:** `FrameTypePing` (0x00) with 4-byte big-endian counter payload
+- **Receives:** `FrameTypePing` (0x00) with 4-byte little-endian counter payload
 - **Responds:** `FrameTypePong` (0x01) echoing the same 4-byte counter
 - Simulated latency (`SIM_LATENCY_MS`) is applied before responding
 

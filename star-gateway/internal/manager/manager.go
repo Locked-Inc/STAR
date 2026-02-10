@@ -260,10 +260,10 @@ func (tm *TransportManager) performResetHandshake(ctx context.Context) error {
 		return fmt.Errorf("active transport does not support SendWithType")
 	}
 
-	// Increment session ID and encode as 4-byte big-endian payload
+	// Increment session ID and encode as 4-byte little-endian payload
 	newSessionID := tm.sessionState.IncrementSessionID()
 	resetPayload := make([]byte, SessionIDPayloadSize)
-	binary.BigEndian.PutUint32(resetPayload, newSessionID)
+	binary.LittleEndian.PutUint32(resetPayload, newSessionID)
 
 	// Activate barrier BEFORE sending RESET to ensure stale frames are rejected
 	tm.sessionState.ActivateBarrier(newSessionID)

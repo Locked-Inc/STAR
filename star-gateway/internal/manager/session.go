@@ -210,7 +210,7 @@ func (s *SessionState) IsBarrierActive() bool {
 // Returns true only if:
 //   - The barrier is currently active
 //   - The payload is exactly SessionIDPayloadSize (4) bytes
-//   - The big-endian decoded session ID matches the barrier's expected session ID
+//   - The little-endian decoded session ID matches the barrier's expected session ID
 //
 // Thread Safety: Uses mutex to ensure atomicity.
 func (s *SessionState) ValidateResetAck(payload []byte) bool {
@@ -228,7 +228,7 @@ func (s *SessionState) ValidateResetAck(payload []byte) bool {
 		return false
 	}
 
-	receivedID := binary.BigEndian.Uint32(payload[:SessionIDPayloadSize])
+	receivedID := binary.LittleEndian.Uint32(payload[:SessionIDPayloadSize])
 	if receivedID != s.resetBarrierSessionID {
 		log.Printf("WARN: RESET_ACK session ID mismatch (got=%d, expected=%d)",
 			receivedID, s.resetBarrierSessionID)

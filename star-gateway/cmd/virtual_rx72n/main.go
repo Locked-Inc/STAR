@@ -51,7 +51,7 @@ const (
 	// readDeadlineTimeout is the timeout for socket read operations.
 	readDeadlineTimeout = 1 * time.Second
 
-	// PingPayloadSize is the expected payload size for PING frames (4-byte big-endian counter).
+	// PingPayloadSize is the expected payload size for PING frames (4-byte little-endian counter).
 	PingPayloadSize = 4
 
 	// DefaultSimLatencyMs is the default simulated processing latency in milliseconds.
@@ -348,12 +348,12 @@ func handlePing(decoded *frame.Frame, session *simulatorSession, latency time.Du
 		time.Sleep(latency)
 	}
 
-	counter := binary.BigEndian.Uint32(decoded.Payload)
+	counter := binary.LittleEndian.Uint32(decoded.Payload)
 	log.Printf("PING received (counter=%d), sending PONG", counter)
 
 	// Echo the same 4-byte counter in PONG
 	pongPayload := make([]byte, PingPayloadSize)
-	binary.BigEndian.PutUint32(pongPayload, counter)
+	binary.LittleEndian.PutUint32(pongPayload, counter)
 
 	pongFrame := &frame.Frame{
 		Header: frame.Header{
@@ -373,7 +373,7 @@ func handlePing(decoded *frame.Frame, session *simulatorSession, latency time.Du
 const sessionIDPayloadSize = 4
 
 // handleReset responds to a RESET frame with RESET_ACK and resets session state.
-// If the RESET frame carries a session ID (4-byte big-endian payload), it is echoed
+// If the RESET frame carries a session ID (4-byte little-endian payload), it is echoed
 // back in the RESET_ACK payload for the gateway to match the handshake.
 // RESET_ACK is built with the current sequence, then session state is reset.
 // Applies simulated latency before generating the response.
@@ -391,10 +391,10 @@ func handleReset(decoded *frame.Frame, session *simulatorSession, latency time.D
 		log.Printf("RESET received (no session ID), sending RESET_ACK")
 		resetAckPayload = []byte{}
 	} else if len(decoded.Payload) == sessionIDPayloadSize {
-		sessionID := binary.BigEndian.Uint32(decoded.Payload[:sessionIDPayloadSize])
+		sessionID := binary.LittleEndian.Uint32(decoded.Payload[:sessionIDPayloadSize])
 		log.Printf("RESET received (session=%d), sending RESET_ACK", sessionID)
 		resetAckPayload = make([]byte, sessionIDPayloadSize)
-		binary.BigEndian.PutUint32(resetAckPayload, sessionID)
+		binary.LittleEndian.PutUint32(resetAckPayload, sessionID)
 	} else {
 		log.Printf("RESET payload length protocol error: got %d, expected 0 or %d; dropping frame", len(decoded.Payload), sessionIDPayloadSize)
 		return frameResponse{frames: existing}

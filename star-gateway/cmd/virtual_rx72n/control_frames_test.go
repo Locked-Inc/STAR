@@ -23,7 +23,7 @@ const (
 func newTestPingFrame(t *testing.T, counter uint32, seq uint16) *frame.Frame {
 	t.Helper()
 	payload := make([]byte, PingPayloadSize)
-	binary.BigEndian.PutUint32(payload, counter)
+	binary.LittleEndian.PutUint32(payload, counter)
 	f, err := frame.NewFrame(frame.FrameTypePing, payload)
 	if err != nil {
 		t.Fatalf("failed to create PING frame: %v", err)
@@ -40,7 +40,7 @@ func newTestResetFrame(t *testing.T, seq uint16, sessionID ...uint32) *frame.Fra
 	var payload []byte
 	if len(sessionID) > 0 {
 		payload = make([]byte, sessionIDPayloadSize)
-		binary.BigEndian.PutUint32(payload, sessionID[0])
+		binary.LittleEndian.PutUint32(payload, sessionID[0])
 	} else {
 		payload = []byte{}
 	}
@@ -85,7 +85,7 @@ func TestHandleFrame_PingPong(t *testing.T) {
 				t.Fatalf("PONG payload size = %d, want %d", len(pong.Payload), PingPayloadSize)
 			}
 
-			gotCounter := binary.BigEndian.Uint32(pong.Payload)
+			gotCounter := binary.LittleEndian.Uint32(pong.Payload)
 			if gotCounter != tc.wantPongCounter {
 				t.Errorf("PONG counter = %d, want %d", gotCounter, tc.wantPongCounter)
 			}
@@ -151,7 +151,7 @@ func TestHandleFrame_ResetResetAck(t *testing.T) {
 	if len(resetAck.Payload) != sessionIDPayloadSize {
 		t.Fatalf("RESET_ACK payload len = %d, want %d", len(resetAck.Payload), sessionIDPayloadSize)
 	}
-	gotSessionID := binary.BigEndian.Uint32(resetAck.Payload)
+	gotSessionID := binary.LittleEndian.Uint32(resetAck.Payload)
 	if gotSessionID != testSessionID {
 		t.Errorf("RESET_ACK session ID = %d, want %d", gotSessionID, testSessionID)
 	}
@@ -219,7 +219,7 @@ func TestHandleFrame_ResetSessionIDEcho(t *testing.T) {
 				t.Fatalf("RESET_ACK payload len = %d, want %d", len(resetAck.Payload), sessionIDPayloadSize)
 			}
 
-			gotID := binary.BigEndian.Uint32(resetAck.Payload)
+			gotID := binary.LittleEndian.Uint32(resetAck.Payload)
 			if gotID != tc.sessionID {
 				t.Errorf("RESET_ACK session ID = %d, want %d", gotID, tc.sessionID)
 			}
@@ -301,7 +301,7 @@ func TestHandleFrame_PingWithAckFlag(t *testing.T) {
 		t.Errorf("PONG sequence = %d, want 0", resp.frames[1].Header.Sequence)
 	}
 
-	gotCounter := binary.BigEndian.Uint32(resp.frames[1].Payload)
+	gotCounter := binary.LittleEndian.Uint32(resp.frames[1].Payload)
 	if gotCounter != testPingCounter {
 		t.Errorf("PONG counter = %d, want %d", gotCounter, testPingCounter)
 	}
