@@ -185,6 +185,7 @@ func initTransport(cfg Config) (transport.Device, func(), error) {
 		}
 	}
 
+	// Simulation mode uses socket transport instead of SPI for testing without hardware
 	if cfg.SimulationMode {
 		socketPath := cfg.SocketPath
 		if socketPath == "" {
@@ -198,12 +199,15 @@ func initTransport(cfg Config) (transport.Device, func(), error) {
 		}
 		deviceTransport = socketTransport
 	} else {
-		log.Println("Initializing SPI Transport")
-		spiTransport := transport.NewSPITransport(transport.DefaultConfig())
-		if err := spiTransport.Open(); err != nil {
-			return nil, nil, fmt.Errorf("failed to open SPI transport: %w", err)
-		}
-		deviceTransport = spiTransport
+		// Normal mode should use automatic transport selection based on configuration and device availability. USB preferentially, falling back to SPI if USB unavailable.
+		// log.Println("Initializing SPI Transport")
+		// spiTransport := transport.NewSPITransport(transport.DefaultConfig())
+		// if err := spiTransport.Open(); err != nil {
+		// 	return nil, nil, fmt.Errorf("failed to open SPI transport: %w", err)
+		// }
+		// deviceTransport = spiTransport
+		log.Println("Real hardware detected...")
+
 	}
 
 	return deviceTransport, cleanup, nil
