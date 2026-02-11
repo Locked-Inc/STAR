@@ -10,7 +10,6 @@ import (
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
-	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 )
 
 // mockTelemetryStreamServer implements TelemetryService_StreamTelemetryServer for testing.
