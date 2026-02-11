@@ -7934,12 +7934,6 @@
 		(uuid "04625b6f-96e1-4a83-bdf1-fcb74e813dff")
 	)
 	(junction
-		(at 405.13 563.88)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "059c7c4f-0ac5-4891-ab2a-9abdb382a3c7")
-	)
-	(junction
 		(at 656.59 463.55)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -9853,7 +9847,7 @@
 	)
 	(wire
 		(pts
-			(xy 405.13 563.88) (xy 405.13 572.77)
+			(xy 405.13 552.45) (xy 405.13 572.77)
 		)
 		(stroke
 			(width 0)
@@ -14553,16 +14547,6 @@
 	)
 	(wire
 		(pts
-			(xy 407.67 563.88) (xy 405.13 563.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a5720668-6196-4afa-8514-b85d09fa290c")
-	)
-	(wire
-		(pts
 			(xy 514.35 502.92) (xy 520.7 502.92)
 		)
 		(stroke
@@ -15060,16 +15044,6 @@
 			(type default)
 		)
 		(uuid "b521ac5d-8812-4b7c-acce-e360074534c9")
-	)
-	(wire
-		(pts
-			(xy 405.13 552.45) (xy 405.13 563.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b54377c6-e556-4797-8873-d2262dd73405")
 	)
 	(wire
 		(pts
@@ -18448,7 +18422,7 @@
 		)
 		(uuid "10d75b0a-bc7e-49aa-b839-af8e71373842")
 	)
-	(label "VSS"
+	(label "VCC"
 		(at 817.88 251.46 0)
 		(effects
 			(font
@@ -20244,7 +20218,7 @@
 		)
 		(uuid "f593c3db-e0ea-4dbe-ac7c-2afcb2de1359")
 	)
-	(label "VCC"
+	(label "VSS"
 		(at 817.88 256.54 0)
 		(effects
 			(font
@@ -29995,7 +29969,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_3mm_Pad_TopBottom"
+		(property "Footprint" "MountingHole:MountingHole_3mm_Pad"
 			(at 407.67 579.12 0)
 			(effects
 				(font
@@ -63992,7 +63966,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_3mm_Pad_TopBottom"
+		(property "Footprint" "MountingHole:MountingHole_3mm_Pad"
 			(at 407.67 549.91 0)
 			(effects
 				(font
@@ -71446,7 +71420,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_3mm_Pad_TopBottom"
+		(property "Footprint" "MountingHole:MountingHole_3mm_Pad"
 			(at 407.67 570.23 0)
 			(effects
 				(font
@@ -85281,73 +85255,6 @@
 			(project "TOM_MCU_144Pin"
 				(path "/e73b93e2-91c9-458a-bac9-c14a03b1bd7f"
 					(reference "R29")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Mechanical:MountingHole_Pad_MP")
-		(at 407.67 561.34 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "f79ee068-7de6-4f65-a5f1-a790efde2155")
-		(property "Reference" "H2"
-			(at 410.21 558.7999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "MountingHole_Pad_MP"
-			(at 410.21 561.3399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "MountingHole:MountingHole_3mm_Pad_TopBottom"
-			(at 407.67 561.34 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 407.67 561.34 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Mounting Hole with connection as pad named MP"
-			(at 407.67 561.34 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "MP"
-			(uuid "fe668a9e-0e85-4ac5-887f-57c7e41bbf12")
-		)
-		(instances
-			(project "TOM_MCU_144Pin"
-				(path "/e73b93e2-91c9-458a-bac9-c14a03b1bd7f"
-					(reference "H2")
 					(unit 1)
 				)
 			)
