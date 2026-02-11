@@ -30,7 +30,4 @@ lint:
   rpc_allow_google_protobuf_empty_responses: false
 
 breaking:
-  # Breaking change detection DISABLED for in-house project.
-  # Per CLAUDE.md: "Breaking changes are ENCOURAGED - If it improves code quality, refactor immediately"
-  # This project has ZERO backward compatibility requirements.
   use: []
