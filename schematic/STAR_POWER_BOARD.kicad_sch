@@ -200,6 +200,140 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "3825:3825"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "TP"
+				(at 16.51 7.62 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+			)
+			(property "Value" "3825"
+				(at 16.51 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+			)
+			(property "Footprint" "3825"
+				(at 16.51 -94.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://cdn-shop.adafruit.com/product-files/3825/3825_diagram.PDF"
+				(at 16.51 -194.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Description" "Test Plugs & Test Jacks Small PCB Test Points (100 pack) - Red"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Height" "4.72"
+				(at 16.51 -394.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Mouser Part Number" "485-3825"
+				(at 16.51 -494.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Adafruit/3825?qs=%252BEew9%252B0nqrAn6n76%252BB5vZg%3D%3D"
+				(at 16.51 -594.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer Name" "Adafruit"
+				(at 16.51 -694.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer Part Number" "3825"
+				(at 16.51 -794.92 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(symbol "3825_1_1"
+				(rectangle
+					(start 5.08 2.54)
+					(end 15.24 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin passive line
+					(at 0 0 0)
+					(length 5.08)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Connector:Screw_Terminal_01x02"
 			(pin_names
 				(offset 1.016)
@@ -2350,6 +2484,18 @@
 		(uuid bb2c5216-0d48-47be-be6c-5b1723a0ea22)
 	)
 	(rectangle
+		(start 13.97 176.53)
+		(end 111.76 246.38)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid bfe88b59-00f5-4741-b713-7c6b3cac4e49)
+	)
+	(rectangle
 		(start 213.36 48.26)
 		(end 311.15 118.11)
 		(stroke
@@ -2419,7 +2565,7 @@
 		)
 		(uuid "30bf941d-e4a6-42bd-8c26-6e9a4d238193")
 	)
-	(text "(6V0 Buck)"
+	(text "(To 6V0 Buck)"
 		(exclude_from_sim no)
 		(at 300.736 186.182 0)
 		(effects
@@ -2476,6 +2622,18 @@
 			)
 		)
 		(uuid "abb4ef49-7346-41fe-bd76-4515af2795fa")
+	)
+	(text "Test Points"
+		(exclude_from_sim no)
+		(at 60.96 240.538 0)
+		(effects
+			(font
+				(size 6.35 6.35)
+				(thickness 1.27)
+				(bold yes)
+			)
+		)
+		(uuid "caf16d85-2591-4666-9734-c2135c37bf87")
 	)
 	(text "5V0 Buck"
 		(exclude_from_sim no)
@@ -2872,6 +3030,10 @@
 		(uuid "18c0a8cf-fa14-4996-a103-86158b6047fd")
 	)
 	(no_connect
+		(at 331.47 58.42)
+		(uuid "4b349332-1a78-4c24-a3c9-84e274eddc0e")
+	)
+	(no_connect
 		(at 257.81 88.9)
 		(uuid "4cae573e-25db-4248-aac5-0a232c3260e0")
 	)
@@ -2890,6 +3052,18 @@
 	(no_connect
 		(at 66.04 120.65)
 		(uuid "9faf127a-c422-488a-af0b-875ce139112a")
+	)
+	(no_connect
+		(at 344.17 58.42)
+		(uuid "a070b1e0-cb90-4b00-aa72-4a2db8280ea4")
+	)
+	(no_connect
+		(at 356.87 58.42)
+		(uuid "d14f023b-a315-4fe8-9a7f-0dd0388ceacf")
+	)
+	(no_connect
+		(at 318.77 58.42)
+		(uuid "d67cac56-6550-4e7a-ace9-85591c38815f")
 	)
 	(no_connect
 		(at 290.83 78.74)
@@ -3128,6 +3302,16 @@
 			(type default)
 		)
 		(uuid "1c52f213-0cef-4474-beb0-5bb8cb35a9f7")
+	)
+	(wire
+		(pts
+			(xy 66.04 208.28) (xy 82.55 208.28)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1ec4b647-9412-4fb9-a999-b2b69fb1f132")
 	)
 	(wire
 		(pts
@@ -3541,6 +3725,16 @@
 	)
 	(wire
 		(pts
+			(xy 20.32 208.28) (xy 36.83 208.28)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5f441201-a884-47b7-9ddb-e7ea6591a9a0")
+	)
+	(wire
+		(pts
 			(xy 300.99 67.31) (xy 300.99 58.42)
 		)
 		(stroke
@@ -3811,6 +4005,16 @@
 	)
 	(wire
 		(pts
+			(xy 66.04 201.93) (xy 82.55 201.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "860d95fa-2ea3-43d7-bd16-94239a74f3af")
+	)
+	(wire
+		(pts
 			(xy 124.46 46.99) (xy 100.33 46.99)
 		)
 		(stroke
@@ -3828,6 +4032,16 @@
 			(type default)
 		)
 		(uuid "88c473cb-9896-4a02-9ca1-d572ed71f9ef")
+	)
+	(wire
+		(pts
+			(xy 66.04 195.58) (xy 82.55 195.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "892298d3-153b-4154-a49c-e1623f7819c7")
 	)
 	(wire
 		(pts
@@ -4138,6 +4352,16 @@
 			(type default)
 		)
 		(uuid "aa136f15-7989-4722-bef9-02415a6c1c81")
+	)
+	(wire
+		(pts
+			(xy 20.32 195.58) (xy 36.83 195.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ab01334a-4b5e-414b-8ef8-d105ecf5026b")
 	)
 	(wire
 		(pts
@@ -4531,6 +4755,16 @@
 	)
 	(wire
 		(pts
+			(xy 20.32 201.93) (xy 36.83 201.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e564e963-8854-4b24-8a56-e3539df93fff")
+	)
+	(wire
+		(pts
 			(xy 163.83 129.54) (xy 163.83 132.08)
 		)
 		(stroke
@@ -4618,6 +4852,16 @@
 			(type default)
 		)
 		(uuid "f297197e-ae61-418d-aa88-a3135cefee76")
+	)
+	(wire
+		(pts
+			(xy 20.32 214.63) (xy 36.83 214.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f2f4cf19-5167-45f2-b18c-9fbc57dd963a")
 	)
 	(wire
 		(pts
@@ -4769,6 +5013,26 @@
 		)
 		(uuid "071c0523-b243-4c01-8f94-112793f4f168")
 	)
+	(label "GND"
+		(at 20.32 214.63 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "08bfd454-0d9c-45cf-8f48-37cc28ba4547")
+	)
+	(label "FUSE+"
+		(at 20.32 195.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "13765635-92be-4cbd-8a63-c1c70f0d76f0")
+	)
 	(label "USBC_VBUS"
 		(at 232.41 88.9 0)
 		(effects
@@ -4808,6 +5072,16 @@
 			(justify left bottom)
 		)
 		(uuid "418a8628-439d-4290-9a09-b47bdf21b0ae")
+	)
+	(label "3V3_SW"
+		(at 66.04 208.28 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "49c83660-436a-4c38-9e6a-ce0ec45697ec")
 	)
 	(label "5V0_FB"
 		(at 63.5 144.78 0)
@@ -4879,6 +5153,16 @@
 		)
 		(uuid "6fdcdf2f-6a35-404d-ae3c-e89a8b3ccbf6")
 	)
+	(label "FUSE+"
+		(at 20.32 201.93 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "7389f323-0507-4467-9790-b0efad6558c3")
+	)
 	(label "PACK+"
 		(at 339.09 133.35 180)
 		(effects
@@ -4899,6 +5183,16 @@
 		)
 		(uuid "97a7a385-d853-4ec4-9c76-a6154b49e351")
 	)
+	(label "5V0_SW"
+		(at 66.04 201.93 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a652fb70-922b-475e-b8fa-b2f0c3d4c638")
+	)
 	(label "P3V3_BUCK"
 		(at 327.66 21.59 180)
 		(effects
@@ -4908,6 +5202,16 @@
 			(justify right bottom)
 		)
 		(uuid "ac30f85d-ae47-4bd3-8fce-a2358368d138")
+	)
+	(label "GND"
+		(at 66.04 195.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b17ab78f-1575-4d27-b3e5-dacb2c4a5319")
 	)
 	(label "5V0_SW"
 		(at 119.38 119.38 0)
@@ -4928,6 +5232,16 @@
 			(justify left bottom)
 		)
 		(uuid "c3b80d93-7dd8-48e8-8530-f0e5c31994a5")
+	)
+	(label "GND"
+		(at 20.32 208.28 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c7c46b00-bb3e-4127-9edb-60fb1f9512b3")
 	)
 	(label "3V3_BST"
 		(at 101.6 44.45 0)
@@ -6429,6 +6743,125 @@
 			(project "POWER"
 				(path "/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b"
 					(reference "#PWR04")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "3825:3825")
+		(at 82.55 195.58 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "16a030e6-0e6a-46bc-9c33-141a402f631c")
+		(property "Reference" "TP5"
+			(at 99.06 194.3099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "3825"
+			(at 99.06 196.8499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "3825"
+			(at 99.06 290.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://cdn-shop.adafruit.com/product-files/3825/3825_diagram.PDF"
+			(at 99.06 390.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Test Plugs & Test Jacks Small PCB Test Points (100 pack) - Red"
+			(at 82.55 195.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "4.72"
+			(at 99.06 590.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 99.06 690.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Adafruit/3825?qs=%252BEew9%252B0nqrAn6n76%252BB5vZg%3D%3D"
+			(at 99.06 790.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Name" "Adafruit"
+			(at 99.06 890.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "3825"
+			(at 99.06 990.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "10ed5e5c-e12d-4ba5-a05f-7e1eacfbf516")
+		)
+		(instances
+			(project "STAR_POWER_BOARD"
+				(path "/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b"
+					(reference "TP5")
 					(unit 1)
 				)
 			)
@@ -10342,6 +10775,125 @@
 		)
 	)
 	(symbol
+		(lib_id "3825:3825")
+		(at 82.55 201.93 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "42782990-24f2-4a29-a4b6-2ba95027d2f7")
+		(property "Reference" "TP6"
+			(at 99.06 200.6599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "3825"
+			(at 99.06 203.1999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "3825"
+			(at 99.06 296.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://cdn-shop.adafruit.com/product-files/3825/3825_diagram.PDF"
+			(at 99.06 396.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Test Plugs & Test Jacks Small PCB Test Points (100 pack) - Red"
+			(at 82.55 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "4.72"
+			(at 99.06 596.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 99.06 696.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Adafruit/3825?qs=%252BEew9%252B0nqrAn6n76%252BB5vZg%3D%3D"
+			(at 99.06 796.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Name" "Adafruit"
+			(at 99.06 896.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "3825"
+			(at 99.06 996.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "feb8309a-d394-47d1-a252-815bc4f0d911")
+		)
+		(instances
+			(project "STAR_POWER_BOARD"
+				(path "/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b"
+					(reference "TP6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 30.48 44.45 0)
 		(unit 1)
@@ -13794,6 +14346,125 @@
 		)
 	)
 	(symbol
+		(lib_id "3825:3825")
+		(at 82.55 208.28 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "691b8c43-8297-4766-8bd3-8f57597d5695")
+		(property "Reference" "TP7"
+			(at 99.06 207.0099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "3825"
+			(at 99.06 209.5499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "3825"
+			(at 99.06 303.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://cdn-shop.adafruit.com/product-files/3825/3825_diagram.PDF"
+			(at 99.06 403.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Test Plugs & Test Jacks Small PCB Test Points (100 pack) - Red"
+			(at 82.55 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "4.72"
+			(at 99.06 603.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 99.06 703.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Adafruit/3825?qs=%252BEew9%252B0nqrAn6n76%252BB5vZg%3D%3D"
+			(at 99.06 803.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Name" "Adafruit"
+			(at 99.06 903.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "3825"
+			(at 99.06 1003.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2b159d14-5293-4fe3-88af-69fc5e37a2b3")
+		)
+		(instances
+			(project "STAR_POWER_BOARD"
+				(path "/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b"
+					(reference "TP7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:PWR_FLAG")
 		(at 55.88 77.47 0)
 		(unit 1)
@@ -14566,6 +15237,125 @@
 			(project "POWER"
 				(path "/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b"
 					(reference "C27")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "3825:3825")
+		(at 36.83 195.58 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "701963eb-4821-4317-bd9f-186483679b66")
+		(property "Reference" "TP1"
+			(at 53.34 194.3099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "3825"
+			(at 53.34 196.8499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "3825"
+			(at 53.34 290.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://cdn-shop.adafruit.com/product-files/3825/3825_diagram.PDF"
+			(at 53.34 390.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Test Plugs & Test Jacks Small PCB Test Points (100 pack) - Red"
+			(at 36.83 195.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "4.72"
+			(at 53.34 590.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 53.34 690.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Adafruit/3825?qs=%252BEew9%252B0nqrAn6n76%252BB5vZg%3D%3D"
+			(at 53.34 790.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Name" "Adafruit"
+			(at 53.34 890.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "3825"
+			(at 53.34 990.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "11b4be91-b4ec-4268-9c39-6c66a88a40be")
+		)
+		(instances
+			(project "STAR_POWER_BOARD"
+				(path "/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b"
+					(reference "TP1")
 					(unit 1)
 				)
 			)
@@ -17152,6 +17942,125 @@
 		)
 	)
 	(symbol
+		(lib_id "3825:3825")
+		(at 36.83 208.28 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8ac0a17c-7bdd-4919-b19b-145571eb61b3")
+		(property "Reference" "TP3"
+			(at 53.34 207.0099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "3825"
+			(at 53.34 209.5499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "3825"
+			(at 53.34 303.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://cdn-shop.adafruit.com/product-files/3825/3825_diagram.PDF"
+			(at 53.34 403.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Test Plugs & Test Jacks Small PCB Test Points (100 pack) - Red"
+			(at 36.83 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "4.72"
+			(at 53.34 603.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 53.34 703.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Adafruit/3825?qs=%252BEew9%252B0nqrAn6n76%252BB5vZg%3D%3D"
+			(at 53.34 803.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Name" "Adafruit"
+			(at 53.34 903.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "3825"
+			(at 53.34 1003.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "33c78492-52c3-4c22-bcb3-a1853937f1e6")
+		)
+		(instances
+			(project "STAR_POWER_BOARD"
+				(path "/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b"
+					(reference "TP3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 163.83 138.43 0)
 		(mirror y)
@@ -19312,6 +20221,125 @@
 			(project "POWER"
 				(path "/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b"
 					(reference "C30")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "3825:3825")
+		(at 36.83 201.93 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "9c0e40f7-4112-4980-a09a-11133df653a5")
+		(property "Reference" "TP2"
+			(at 53.34 200.6599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "3825"
+			(at 53.34 203.1999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "3825"
+			(at 53.34 296.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://cdn-shop.adafruit.com/product-files/3825/3825_diagram.PDF"
+			(at 53.34 396.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Test Plugs & Test Jacks Small PCB Test Points (100 pack) - Red"
+			(at 36.83 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "4.72"
+			(at 53.34 596.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 53.34 696.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Adafruit/3825?qs=%252BEew9%252B0nqrAn6n76%252BB5vZg%3D%3D"
+			(at 53.34 796.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Name" "Adafruit"
+			(at 53.34 896.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "3825"
+			(at 53.34 996.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "b0e03a5f-5800-4c5a-867d-42be8ce48d97")
+		)
+		(instances
+			(project "STAR_POWER_BOARD"
+				(path "/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b"
+					(reference "TP2")
 					(unit 1)
 				)
 			)
@@ -25566,6 +26594,125 @@
 			(project "STAR_POWER_BOARD"
 				(path "/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b"
 					(reference "#PWR012")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "3825:3825")
+		(at 36.83 214.63 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ec20e384-b6fc-4f9f-8eb8-87cef0defa04")
+		(property "Reference" "TP4"
+			(at 53.34 213.3599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "3825"
+			(at 53.34 215.8999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "3825"
+			(at 53.34 309.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://cdn-shop.adafruit.com/product-files/3825/3825_diagram.PDF"
+			(at 53.34 409.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Test Plugs & Test Jacks Small PCB Test Points (100 pack) - Red"
+			(at 36.83 214.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "4.72"
+			(at 53.34 609.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 53.34 709.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Adafruit/3825?qs=%252BEew9%252B0nqrAn6n76%252BB5vZg%3D%3D"
+			(at 53.34 809.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Name" "Adafruit"
+			(at 53.34 909.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "3825"
+			(at 53.34 1009.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2b278086-116f-49e4-a61d-a762be638311")
+		)
+		(instances
+			(project "STAR_POWER_BOARD"
+				(path "/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b"
+					(reference "TP4")
 					(unit 1)
 				)
 			)
