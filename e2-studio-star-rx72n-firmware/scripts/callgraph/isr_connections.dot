@@ -1,0 +1,22 @@
+/* ISR Vector Table Connections
+ *
+ * These edges represent interrupt service routine dispatch via the
+ * RX72N vector table (vecttbl.c). ISR handlers are connected via
+ * hardware vector entries, not direct function calls, so static
+ * analysis cannot see these connections.
+ *
+ * Source: src/boot/smc_generated/vecttbl.c
+ *         src/boot/default_interrupt_handlers.c
+ *
+ * All default handlers use __attribute__((weak)) and halt in while(1).
+ * Application code can override with strong definitions.
+ */
+
+  /* CPU Exception Vectors (RX72N fixed vector table) */
+  "vector_table" -> "excep_supervisor_inst_isr" [style=dotted, color="#C0392B", label="0x50 SupervisorInst"];
+  "vector_table" -> "excep_access_isr" [style=dotted, color="#C0392B", label="0x54 AccessExcep"];
+  "vector_table" -> "excep_undefined_inst_isr" [style=dotted, color="#C0392B", label="0x5C UndefInst"];
+  "vector_table" -> "excep_address_isr" [style=dotted, color="#C0392B", label="0x60 AddrExcep"];
+  "vector_table" -> "excep_floating_point_isr" [style=dotted, color="#C0392B", label="0x64 FPU"];
+  "vector_table" -> "non_maskable_isr" [style=dotted, color="#C0392B", label="0x78 NMI"];
+  "vector_table" -> "undefined_interrupt_source_isr" [style=dotted, color="#C0392B", label="reserved"];
