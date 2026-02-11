@@ -204,7 +204,7 @@ func (s *MotorControlService) sendTelemetryLoop(ctx context.Context, stream star
 				return nil
 			}
 
-				telemetry := dispMsg.WireMsg.GetTelemetryData()
+			telemetry := dispMsg.WireMsg.GetTelemetryData()
 			if telemetry == nil {
 				s.logger.Warn("received wire message with nil telemetry data in control stream")
 				continue

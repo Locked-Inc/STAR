@@ -283,9 +283,9 @@ func generateTelemetryResponse() *starv1.WireMessage {
 				FrameSequence:      1,
 				EmergencyStop:      false,
 				FaultFlags:         0,
-				BatteryVoltageV:    12.6,             // 3S LiPo nominal voltage
-				BatterySocPercent:  85,               // 85% state of charge
-				TemperatureCelsius: 28.5,             // Room temperature
+				BatteryVoltageV:    12.6, // 3S LiPo nominal voltage
+				BatterySocPercent:  85,   // 85% state of charge
+				TemperatureCelsius: 28.5, // Room temperature
 			},
 		},
 	}

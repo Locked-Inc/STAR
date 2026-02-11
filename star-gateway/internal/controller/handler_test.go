@@ -39,7 +39,7 @@ func TestWebSocketHandler_ProcessMessage(t *testing.T) {
 	msg := &starv1.ControllerState{
 		LinearVelNormalized:  1.0,
 		AngularVelNormalized: 0.5,
-		TimestampMs:  time.Now().UnixMilli(),
+		TimestampMs:          time.Now().UnixMilli(),
 	}
 	bytes, err := proto.Marshal(msg)
 	if err != nil {
@@ -95,8 +95,8 @@ func TestWebSocketHandler_DebugFlag(t *testing.T) {
 	msg := &starv1.ControllerState{
 		LinearVelNormalized:  0.5,
 		AngularVelNormalized: -0.5,
-		TimestampMs:  time.Now().UnixMilli(),
-		Debug:      true,
+		TimestampMs:          time.Now().UnixMilli(),
+		Debug:                true,
 	}
 	bytes, err := proto.Marshal(msg)
 	if err != nil {
@@ -174,7 +174,7 @@ func TestHandlerWithGateway(t *testing.T) {
 	msg := &starv1.ControllerState{
 		LinearVelNormalized:  1.0,
 		AngularVelNormalized: 0.0,
-		TimestampMs:  time.Now().UnixMilli(),
+		TimestampMs:          time.Now().UnixMilli(),
 	}
 	bytes, _ := proto.Marshal(msg)
 	//nolint:staticcheck

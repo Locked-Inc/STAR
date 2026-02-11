@@ -173,7 +173,7 @@ func TestDispatcherBasicRouting(t *testing.T) {
 	// Create telemetry message
 	telemetry := &starv1.TelemetryData{
 		BatterySocPercent: 85.0,
-		TimestampUs:    time.Now().UnixMicro(),
+		TimestampUs:       time.Now().UnixMicro(),
 	}
 
 	wrapper := &starv1.WireMessage{
