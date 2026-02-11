@@ -7,47 +7,13 @@ package service
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
-	"google.golang.org/grpc"
 )
 
 // mockTelemetryStreamServer implements TelemetryService_StreamTelemetryServer for testing.
-type mockTelemetryStreamServer struct {
-	grpc.ServerStream
-	ctx      context.Context
-	sentData []*starv1.TelemetryData
-	sendErr  error
-}
-
-func (m *mockTelemetryStreamServer) Send(data *starv1.TelemetryData) error {
-	if m.sendErr != nil {
-		return m.sendErr
-	}
-	m.sentData = append(m.sentData, data)
-	return nil
-}
-
-func (m *mockTelemetryStreamServer) Context() context.Context {
-	return m.ctx
-}
-
-// Helper function to create test telemetry data
-func createTestTelemetryData() *starv1.TelemetryData {
-	return &starv1.TelemetryData{
-		TimestampUs:        time.Now().UnixMicro(),
-		FrameSequence:      1,
-		BatterySocPercent:  85,
-		BatteryVoltageV:    12.6,
-		TemperatureCelsius: 28.5,
-		EmergencyStop:      false,
-		FaultFlags:         0,
-	}
-}
-
 func TestNewTelemetryService(t *testing.T) {
 	mockHARQ := &testutil.MockHARQ{}
 	mockDispatcher := &testutil.MockDispatcher{

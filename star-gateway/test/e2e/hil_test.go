@@ -36,19 +36,10 @@ const (
 	// Time to allow telemetry to settle before assertions
 	telemetrySettleTime = 500 * time.Millisecond
 
-	// Timeout for individual gRPC requests
-	grpcRequestTimeout = 5 * time.Second
-
 	// Timeout for graceful gateway shutdown
 	// Set to 10s - adequate for clean shutdown now that duplicate wait logic is removed
 	// If this timeout fires, it indicates a stuck resource (transport, dispatcher, etc.)
 	gatewayShutdownTimeout = 10 * time.Second
-
-	// Telemetry retry interval
-	telemetryRetryInterval = 100 * time.Millisecond
-
-	// Mock telemetry IMU gravity constant
-	standardGravityMps2 = 9.81
 
 	// Mock telemetry motor IDs
 	motorIDFrontLeft  = 0
