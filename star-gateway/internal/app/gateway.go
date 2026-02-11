@@ -6,6 +6,7 @@ package app
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/manager"
@@ -60,13 +61,21 @@ func Run(ctx context.Context, config Config) error {
 }
 
 // initTransportManager initializes the TransportManager based on the provided configuration.
-func initTransportManager(ctx context.Context, config manager.Config) (*manager.TransportManager, error) {
-	// Create transportmanager config
-	tm := manager.NewTransportManager()
+func initTransportManager(ctx context.Context, config *manager.Config) (*manager.TransportManager, error) {
+	// Validate config if invalide use default config
+	if err := config.Validate(); err != nil {
+		// If validation fails, log the error and use default configuration
+		log.Printf("Config validation failed: %v. Using default configuration.", err)
+		config = manager.DefaultConfig()
+	}
+
 	// Create transportmanager
+	tm := manager.NewTransportManager(config)
 	// Get shared session state
+	session := manager.NewSessionState()
 
 	// SPI/Socket Initialization (non fatal)
+
 	// If Simulation mode...
 	// else (production)
 	// Create SPITransposrt
@@ -98,9 +107,15 @@ func initTransportManager(ctx context.Context, config manager.Config) (*manager.
 // createSocketTransport creates a SocketTransport for simulation mode.
 func createSocketTransport(ctx context.Context, socketPath string) (transport.Device, error) {
 	// Create SocketTransport with the provided socket path
+	transport := transport.NewSocketTransport(socketPath)
+
 	// Open the transport connection
+	if err := transport.Open(); err != nil {
+		return nil, err
+	}
+
 	// Return the transport and a cleanup function to close it
-	return nil, nil
+	return transport, nil
 }
 
 // createSPITransport creates an SPITransport for production mode.
