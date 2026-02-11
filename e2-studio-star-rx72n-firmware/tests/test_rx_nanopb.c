@@ -27,7 +27,7 @@
  * +---------------------------+
  * @endcode
  *
- * **Test Categories (89 total tests):**
+ * **Test Categories (97 total tests):**
  * | Category | Test Count | Description |
  * |----------|------------|-------------|
  * | Initialization | 2 | Module init, duplicate init detection |
@@ -37,6 +37,7 @@
  * | Velocity Response Encode | 6 | Header population, status codes, error handling |
  * | Emergency Stop Request Decode | 6 | E-stop message parsing, error injection |
  * | Emergency Stop Response Encode | 8 | E-stop engaged/disengaged states, status codes |
+ * | SetPIDGainsRequest Decode | 8 | PID controller gains update command validation |
  * | Telemetry Encode | 14 | Battery, GPS, IMU, temperature, WiFi, CPU, motor load |
  * | Helper Functions (Velocity Cmd) | 5 | Message factory validation, zero initialization |
  * | Helper Functions (Response Hdr) | 6 | Status code mapping, request ID handling |
@@ -263,6 +264,9 @@
 
 #include "rx_nanopb.h"
 #include "unity.h"
+#include "pb.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
 
 /* =============================================================================
  * Test Constants
@@ -1443,6 +1447,205 @@ void test_decode_estop_request_oversized_buffer(void)
 /** @} */ /* End of nanopb_test_estop_req_decode */
 
 /* =============================================================================
+ * SetPIDGainsRequest Decode Tests
+ * =============================================================================
+ */
+
+/**
+ * @defgroup nanopb_test_pid_gains_req_decode SetPIDGainsRequest Decoding Tests
+ * @brief Tests for decoding PID controller gains update commands (RPi5 → RX72N)
+ * @details
+ * Validates rx_nanopb_decode_pid_gains_request() with various error conditions
+ * and valid PID configuration data.
+ *
+ * **Message Structure:**
+ * @code
+ * message SetPIDGainsRequest {
+ *   optional RequestHeader header = 1;
+ *   optional PidConfig pid_config = 2;  // PID controller configuration
+ *   int32 motor_id = 3;                 // 0-3 for specific motor, -1 for all
+ * }
+ *
+ * message PidConfig {
+ *   double kp = 1;                      // Proportional gain
+ *   double ki = 2;                      // Integral gain
+ *   double kd = 3;                      // Derivative gain
+ *   double output_min_percent = 4;      // Minimum PWM duty %
+ *   double output_max_percent = 5;      // Maximum PWM duty %
+ *   double integral_min = 6;            // Anti-windup min
+ *   double integral_max = 7;            // Anti-windup max
+ * }
+ * @endcode
+ *
+ * **Test Coverage (8 tests):** nullptr checks, empty buffer, invalid data,
+ * not initialized, oversized buffer, valid decode, round-trip
+ * @{
+ */
+
+/**
+ * @brief Test decode PID gains request with nullptr buffer pointer
+ * @details Verifies input validation for critical PID configuration command.
+ */
+void test_decode_pid_gains_request_null_buffer(void)
+{
+  star_v1_SetPIDGainsRequest msg;
+  rx_err_t                   err = rx_nanopb_decode_pid_gains_request(nullptr, 10, &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test decode PID gains request with nullptr message pointer
+ */
+void test_decode_pid_gains_request_null_msg(void)
+{
+  uint8_t  buffer[64] = {0};
+  rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test decode PID gains request with empty buffer (len=0)
+ */
+void test_decode_pid_gains_request_empty_buffer(void)
+{
+  uint8_t                    buffer[64] = {0};
+  star_v1_SetPIDGainsRequest msg;
+  rx_err_t                   err = rx_nanopb_decode_pid_gains_request(buffer, 0, &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test decode PID gains request with invalid protobuf data
+ * @details Malformed protobuf wire format should return protocol error
+ */
+void test_decode_pid_gains_request_invalid_data(void)
+{
+  uint8_t                    buffer[64];
+  star_v1_SetPIDGainsRequest msg;
+
+  /* Fill buffer with invalid protobuf data */
+  (void)memset(buffer, 0xFF, sizeof(buffer));
+
+  rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+}
+
+/**
+ * @brief Test decode PID gains request when module not initialized
+ */
+void test_decode_pid_gains_request_not_initialized(void)
+{
+  uint8_t                    buffer[64] = {0};
+  star_v1_SetPIDGainsRequest msg;
+
+  /* Reset state to uninitialized */
+  rx_nanopb_test_reset_state();
+
+  rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+
+  /* Re-initialize for subsequent tests */
+  (void)rx_nanopb_init();
+}
+
+/**
+ * @brief Test decode PID gains request with oversized buffer
+ */
+void test_decode_pid_gains_request_oversized_buffer(void)
+{
+  uint8_t                    buffer[600] = {0}; /* Larger than s_nanopb_buffer_size (512) */
+  star_v1_SetPIDGainsRequest msg;
+
+  rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test successful decode of valid PID gains request
+ * @details Verifies proper decode of all PID configuration fields
+ */
+void test_decode_pid_gains_request_valid(void)
+{
+  uint8_t                    encode_buffer[256];
+  uint32_t                   encode_len;
+  star_v1_SetPIDGainsRequest encode_msg = star_v1_SetPIDGainsRequest_init_zero;
+
+  /* Build valid PID gains request */
+  encode_msg.has_pid_config          = true;
+  encode_msg.pid_config.kp           = 0.5;
+  encode_msg.pid_config.ki           = 10.0;
+  encode_msg.pid_config.kd           = 0.1;
+  encode_msg.pid_config.output_min_percent = -100.0;
+  encode_msg.pid_config.output_max_percent = 100.0;
+  encode_msg.pid_config.integral_min = -50.0;
+  encode_msg.pid_config.integral_max = 50.0;
+  encode_msg.motor_id                = -1; /* Apply to all motors */
+
+  /* Encode using nanopb directly (since we don't have encode function yet) */
+  pb_ostream_t ostream = pb_ostream_from_buffer(encode_buffer, sizeof(encode_buffer));
+  bool encode_ok = pb_encode(&ostream, star_v1_SetPIDGainsRequest_fields, &encode_msg);
+  TEST_ASSERT_TRUE(encode_ok);
+  encode_len = ostream.bytes_written;
+
+  /* Now decode and verify */
+  star_v1_SetPIDGainsRequest decode_msg;
+  rx_err_t err = rx_nanopb_decode_pid_gains_request(encode_buffer, encode_len, &decode_msg);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(decode_msg.has_pid_config);
+  TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.5, decode_msg.pid_config.kp);
+  TEST_ASSERT_FLOAT_WITHIN(0.0001, 10.0, decode_msg.pid_config.ki);
+  TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.1, decode_msg.pid_config.kd);
+  TEST_ASSERT_FLOAT_WITHIN(0.0001, -100.0, decode_msg.pid_config.output_min_percent);
+  TEST_ASSERT_FLOAT_WITHIN(0.0001, 100.0, decode_msg.pid_config.output_max_percent);
+  TEST_ASSERT_FLOAT_WITHIN(0.0001, -50.0, decode_msg.pid_config.integral_min);
+  TEST_ASSERT_FLOAT_WITHIN(0.0001, 50.0, decode_msg.pid_config.integral_max);
+  TEST_ASSERT_EQUAL(-1, decode_msg.motor_id);
+}
+
+/**
+ * @brief Test round-trip encode/decode preserves PID gains
+ * @details Ensures lossless encoding for MATLAB-tuned PID values
+ */
+void test_pid_gains_request_round_trip(void)
+{
+  uint8_t                    buffer[256];
+  uint32_t                   encode_len;
+  star_v1_SetPIDGainsRequest original = star_v1_SetPIDGainsRequest_init_zero;
+
+  /* MATLAB-tuned gains for motor system (τ=75ms) */
+  original.has_pid_config          = true;
+  original.pid_config.kp           = 0.286;
+  original.pid_config.ki           = 8.01;
+  original.pid_config.kd           = 0.0;
+  original.pid_config.output_min_percent = -100.0;
+  original.pid_config.output_max_percent = 100.0;
+  original.pid_config.integral_min = -50.0;
+  original.pid_config.integral_max = 50.0;
+  original.motor_id                = 0; /* Front-left motor */
+
+  /* Encode */
+  pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+  bool encode_ok = pb_encode(&ostream, star_v1_SetPIDGainsRequest_fields, &original);
+  TEST_ASSERT_TRUE(encode_ok);
+  encode_len = ostream.bytes_written;
+
+  /* Decode */
+  star_v1_SetPIDGainsRequest decoded;
+  rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, encode_len, &decoded);
+
+  /* Verify lossless round-trip */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(decoded.has_pid_config);
+  TEST_ASSERT_FLOAT_WITHIN(0.00001, original.pid_config.kp, decoded.pid_config.kp);
+  TEST_ASSERT_FLOAT_WITHIN(0.00001, original.pid_config.ki, decoded.pid_config.ki);
+  TEST_ASSERT_FLOAT_WITHIN(0.00001, original.pid_config.kd, decoded.pid_config.kd);
+  TEST_ASSERT_EQUAL(original.motor_id, decoded.motor_id);
+}
+
+/** @} */ /* End of nanopb_test_pid_gains_req_decode */
+
+/* =============================================================================
  * Emergency Stop Response Encode Tests
  * =============================================================================
  */
@@ -2336,6 +2539,16 @@ int main(void)
   RUN_TEST(test_decode_estop_request_invalid_data);
   RUN_TEST(test_decode_estop_request_not_initialized);
   RUN_TEST(test_decode_estop_request_oversized_buffer);
+
+  /* SetPIDGainsRequest decode tests */
+  RUN_TEST(test_decode_pid_gains_request_null_buffer);
+  RUN_TEST(test_decode_pid_gains_request_null_msg);
+  RUN_TEST(test_decode_pid_gains_request_empty_buffer);
+  RUN_TEST(test_decode_pid_gains_request_invalid_data);
+  RUN_TEST(test_decode_pid_gains_request_not_initialized);
+  RUN_TEST(test_decode_pid_gains_request_oversized_buffer);
+  RUN_TEST(test_decode_pid_gains_request_valid);
+  RUN_TEST(test_pid_gains_request_round_trip);
 
   /* Emergency stop response encode tests */
   RUN_TEST(test_encode_estop_response_null_msg);
