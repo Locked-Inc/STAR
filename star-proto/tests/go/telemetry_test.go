@@ -210,10 +210,6 @@ func TestTelemetryData_Complete(t *testing.T) {
 			VelocityMps: 1.0,
 			TimestampUs: 1000000,
 		},
-		EmergencyStop:     false,
-		FaultFlags:        0,
-		BatteryVoltageV:   12.6,
-		BatterySocPercent: 85,
 	}
 
 	// Serialize
@@ -315,71 +311,10 @@ func TestTelemetryData_Streaming(t *testing.T) {
 
 // TestGetTelemetryResponse verifies telemetry service response
 func TestGetTelemetryResponse(t *testing.T) {
-	resp := &starv1.GetTelemetryResponse{
-		Header: &starv1.ResponseHeader{
-			RequestId: "telem-request-1",
-			Status:    starv1.Status_STATUS_OK,
-		},
-		Telemetry: &starv1.TelemetryData{
-			TimestampUs: 1000000,
-			EncoderFrontLeft: &starv1.EncoderData{
-				MotorId:     0,
-				Ticks:       1000,
-				VelocityMps: 1.5,
-				TimestampUs: 1000000,
-			},
-			EmergencyStop:     false,
-			FaultFlags:        0,
-			BatteryVoltageV:   12.6,
-			BatterySocPercent: 85,
-		},
-	}
-
-	data, err := proto.Marshal(resp)
-	if err != nil {
-		t.Fatalf("Marshal failed: %v", err)
-	}
-
-	decoded := &starv1.GetTelemetryResponse{}
-	if err := proto.Unmarshal(data, decoded); err != nil {
-		t.Fatalf("Unmarshal failed: %v", err)
-	}
-
-	if decoded.Header.RequestId != "telem-request-1" {
-		t.Errorf("RequestId = %s, want telem-request-1", decoded.Header.RequestId)
-	}
-	if decoded.Telemetry == nil {
-		t.Fatal("Telemetry should not be nil")
-	}
-	if decoded.Telemetry.BatteryVoltageV != 12.6 {
-		t.Errorf("BatteryVoltageV = %f, want 12.6", decoded.Telemetry.BatteryVoltageV)
-	}
+	t.Skip("GetTelemetryResponse message removed - TelemetryService deleted")
 }
 
 // TestStreamTelemetryRequest verifies streaming request configuration
 func TestStreamTelemetryRequest(t *testing.T) {
-	req := &starv1.StreamTelemetryRequest{
-		Header: &starv1.RequestHeader{
-			RequestId: "stream-request-1",
-		},
-		RateHz: 100, // 100 Hz streaming
-		Fields: []string{"encoders", "battery", "emergency_stop"},
-	}
-
-	data, err := proto.Marshal(req)
-	if err != nil {
-		t.Fatalf("Marshal failed: %v", err)
-	}
-
-	decoded := &starv1.StreamTelemetryRequest{}
-	if err := proto.Unmarshal(data, decoded); err != nil {
-		t.Fatalf("Unmarshal failed: %v", err)
-	}
-
-	if decoded.RateHz != 100 {
-		t.Errorf("RateHz = %d, want 100", decoded.RateHz)
-	}
-	if len(decoded.Fields) != 3 {
-		t.Errorf("Fields count = %d, want 3", len(decoded.Fields))
-	}
+	t.Skip("StreamTelemetryRequest message removed - firmware operates in push mode only")
 }
