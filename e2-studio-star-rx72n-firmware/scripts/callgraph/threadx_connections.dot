@@ -1,0 +1,33 @@
+/* ThreadX Task Dispatch Edges
+ *
+ * These edges are invisible to static analysis because ThreadX uses
+ * function pointers (tx_thread_create) to dispatch task entry functions.
+ * This file provides the missing connections for complete call graphs.
+ *
+ * Source: main.c tx_application_define() -> *_task_create() -> internal_*_task_entry()
+ */
+
+  /* tx_application_define dispatches to task creation functions */
+  "tx_application_define" -> "shared_data_init" [style=dashed, color="#2980B9", label="init"];
+  "tx_application_define" -> "rx_bus_manager_init" [style=dashed, color="#2980B9", label="init"];
+
+  /* Task creation functions (called from tx_application_define) */
+  "tx_application_define" -> "comm_task_create" [style=dashed, color="#8E44AD", label="ThreadX P5"];
+  "tx_application_define" -> "motor_control_task_create" [style=dashed, color="#8E44AD", label="ThreadX P8"];
+  "tx_application_define" -> "obstacle_detect_task_create" [style=dashed, color="#8E44AD", label="ThreadX P12"];
+  "tx_application_define" -> "bms_monitor_task_create" [style=dashed, color="#8E44AD", label="ThreadX P15"];
+  "tx_application_define" -> "temp_sensor_task_create" [style=dashed, color="#8E44AD", label="ThreadX P15"];
+  "tx_application_define" -> "led_status_task_create" [style=dashed, color="#8E44AD", label="ThreadX P17"];
+  "tx_application_define" -> "telemetry_task_create" [style=dashed, color="#8E44AD", label="ThreadX P18"];
+
+  /* Task creation -> ThreadX thread entry (function pointer dispatch) */
+  "comm_task_create" -> "internal_comm_task_entry" [style=dashed, color="#E74C3C", label="fn ptr"];
+  "motor_control_task_create" -> "internal_motor_task_entry" [style=dashed, color="#E74C3C", label="fn ptr"];
+  "obstacle_detect_task_create" -> "internal_obstacle_task_entry" [style=dashed, color="#E74C3C", label="fn ptr"];
+  "bms_monitor_task_create" -> "internal_bms_task_entry" [style=dashed, color="#E74C3C", label="fn ptr"];
+  "temp_sensor_task_create" -> "internal_temp_task_entry" [style=dashed, color="#E74C3C", label="fn ptr"];
+  "led_status_task_create" -> "internal_led_task_entry" [style=dashed, color="#E74C3C", label="fn ptr"];
+  "telemetry_task_create" -> "internal_telem_task_entry" [style=dashed, color="#E74C3C", label="fn ptr"];
+
+  /* main -> tx_kernel_enter -> tx_application_define (ThreadX bootstrap) */
+  "main" -> "tx_application_define" [style=dashed, color="#2C3E50", label="ThreadX bootstrap"];
