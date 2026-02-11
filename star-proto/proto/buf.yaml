@@ -30,10 +30,7 @@ lint:
   rpc_allow_google_protobuf_empty_responses: false
 
 breaking:
-  use:
-    - FILE
-    - PACKAGE
-  # FIELD_SAME_DEFAULT was removed in buf v1.0.0 (it was from beta). 
-  # We should use modern v1 rules.
-  # except:
-  #   - FIELD_SAME_DEFAULT
+  # Breaking change detection DISABLED for in-house project.
+  # Per CLAUDE.md: "Breaking changes are ENCOURAGED - If it improves code quality, refactor immediately"
+  # This project has ZERO backward compatibility requirements.
+  use: []
