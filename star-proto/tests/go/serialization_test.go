@@ -300,51 +300,7 @@ func TestImuDataRoundTrip(t *testing.T) {
 }
 
 func TestSystemStatusRoundTrip(t *testing.T) {
-	tests := []struct {
-		name            string
-		connStatus      starv1.ConnectionStatus
-		mode            starv1.RobotMode
-		rx72nConnected  bool
-		lidarConnected  bool
-		rosConnected    bool
-		firmwareVersion string
-		uptimeS         uint64
-	}{
-		{"startup", starv1.ConnectionStatus_CONNECTION_STATUS_UNKNOWN, starv1.RobotMode_ROBOT_MODE_IDLE, false, false, false, "", 0},
-		{"connected", starv1.ConnectionStatus_CONNECTION_STATUS_CONNECTED, starv1.RobotMode_ROBOT_MODE_MANUAL, true, true, true, "1.0.0", 3600},
-		{"autonomous", starv1.ConnectionStatus_CONNECTION_STATUS_CONNECTED, starv1.RobotMode_ROBOT_MODE_AUTONOMOUS, true, true, true, "2.1.0", 86400},
-		{"partial", starv1.ConnectionStatus_CONNECTION_STATUS_CONNECTING, starv1.RobotMode_ROBOT_MODE_IDLE, true, false, false, "1.0.0-beta", 100},
-		{"disconnected", starv1.ConnectionStatus_CONNECTION_STATUS_DISCONNECTED, starv1.RobotMode_ROBOT_MODE_EMERGENCY_STOP, false, false, false, "1.0.0", 7200},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			status := &starv1.SystemStatus{
-				ConnectionStatus: tc.connStatus,
-				Mode:             tc.mode,
-				Rx72NConnected:   tc.rx72nConnected,
-				LidarConnected:   tc.lidarConnected,
-				RosConnected:     tc.rosConnected,
-				FirmwareVersion:  tc.firmwareVersion,
-				UptimeS:          tc.uptimeS,
-			}
-
-			bytes, err := proto.Marshal(status)
-			require.NoError(t, err)
-
-			parsed := &starv1.SystemStatus{}
-			err = proto.Unmarshal(bytes, parsed)
-			require.NoError(t, err)
-
-			assert.Equal(t, tc.connStatus, parsed.ConnectionStatus)
-			assert.Equal(t, tc.mode, parsed.Mode)
-			assert.Equal(t, tc.rx72nConnected, parsed.Rx72NConnected)
-			assert.Equal(t, tc.lidarConnected, parsed.LidarConnected)
-			assert.Equal(t, tc.rosConnected, parsed.RosConnected)
-			assert.Equal(t, tc.firmwareVersion, parsed.FirmwareVersion)
-			assert.Equal(t, tc.uptimeS, parsed.UptimeS)
-		})
-	}
+	t.Skip("SystemStatus message removed - unused in firmware")
 }
 
 // ============================================================================

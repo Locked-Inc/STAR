@@ -7,7 +7,6 @@ import (
 
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // TestTelemetryData_RX72N_EncoderFields verifies individual encoder fields with semantic naming
@@ -87,7 +86,6 @@ func TestTelemetryData_RX72N_BatteryFields(t *testing.T) {
 	telem := &starv1.TelemetryData{
 		BatteryVoltageV:   12.6,
 		BatterySocPercent: 85,
-		BatteryPercent:    85.0, // Legacy field
 		TimestampUs:       1000000,
 	}
 
@@ -180,16 +178,14 @@ func TestTelemetryData_RX72N_TemperatureField(t *testing.T) {
 // TestTelemetryData_Complete verifies full telemetry message with all RX72N fields
 func TestTelemetryData_Complete(t *testing.T) {
 	telem := &starv1.TelemetryData{
-		// Standard fields
-		Timestamp:          timestamppb.Now(),
-		BatteryPercent:     85.0,
-		WifiSignalDbm:      -45,
-		CpuUsagePercent:    25.5,
+		// RX72N fields
+		TimestampUs:        1000000,
+		FrameSequence:      1,
+		EmergencyStop:      false,
+		FaultFlags:         0,
+		BatteryVoltageV:    12.6,
+		BatterySocPercent:  85,
 		TemperatureCelsius: 45.0,
-		MotorLoadPercent:   60.0,
-
-		// RX72N-specific fields
-		TimestampUs: 1000000,
 		EncoderFrontLeft: &starv1.EncoderData{
 			MotorId:     0,
 			Ticks:       1000,

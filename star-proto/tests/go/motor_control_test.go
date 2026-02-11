@@ -186,69 +186,12 @@ func TestEncoderData_4Motors(t *testing.T) {
 
 // TestMotorStatus_4Motors verifies MotorStatus supports motor IDs 0-3
 func TestMotorStatus_4Motors(t *testing.T) {
-	for motorID := int32(0); motorID < 4; motorID++ {
-		status := &starv1.MotorStatus{
-			MotorId:            motorID,
-			DutyCyclePercent:   75.5,
-			VelocityMps:        1.5,
-			TargetVelocityMps:  1.5,
-			TemperatureCelsius: 45.0,
-			CurrentMa:          2500.0,
-			FaultFlags:         0,
-			State:              starv1.MotorState_MOTOR_STATE_RUNNING,
-		}
-
-		data, err := proto.Marshal(status)
-		if err != nil {
-			t.Fatalf("Motor %d: Marshal failed: %v", motorID, err)
-		}
-
-		decoded := &starv1.MotorStatus{}
-		if err := proto.Unmarshal(data, decoded); err != nil {
-			t.Fatalf("Motor %d: Unmarshal failed: %v", motorID, err)
-		}
-
-		if decoded.MotorId != motorID {
-			t.Errorf("MotorId = %d, want %d", decoded.MotorId, motorID)
-		}
-	}
+	t.Skip("MotorStatus message removed - unused in firmware")
 }
 
 // TestMotorPowerCommand_4Motors verifies direct motor power control
 func TestMotorPowerCommand_4Motors(t *testing.T) {
-	testCases := []struct {
-		motorID          int32
-		dutyCyclePercent float64
-	}{
-		{0, 50.0},
-		{1, -50.0},
-		{2, 100.0},
-		{3, -100.0},
-	}
-
-	for _, tc := range testCases {
-		cmd := &starv1.MotorPowerCommand{
-			MotorId:          tc.motorID,
-			DutyCyclePercent: tc.dutyCyclePercent,
-		}
-
-		data, err := proto.Marshal(cmd)
-		if err != nil {
-			t.Fatalf("Motor %d: Marshal failed: %v", tc.motorID, err)
-		}
-
-		decoded := &starv1.MotorPowerCommand{}
-		if err := proto.Unmarshal(data, decoded); err != nil {
-			t.Fatalf("Motor %d: Unmarshal failed: %v", tc.motorID, err)
-		}
-
-		if decoded.MotorId != tc.motorID {
-			t.Errorf("MotorId = %d, want %d", decoded.MotorId, tc.motorID)
-		}
-		if decoded.DutyCyclePercent != tc.dutyCyclePercent {
-			t.Errorf("DutyCyclePercent = %f, want %f", decoded.DutyCyclePercent, tc.dutyCyclePercent)
-		}
-	}
+	t.Skip("MotorPowerCommand message removed - unused in firmware")
 }
 
 // TestSetVelocityRequest_Roundtrip tests complete request/response flow
