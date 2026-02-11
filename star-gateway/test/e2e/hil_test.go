@@ -14,6 +14,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -382,27 +383,42 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	// Wait for Gateway to initialize with polling health check
 	deadline := time.Now().Add(gatewayStartupTimeout)
 	var conn *grpc.ClientConn
+	var gatewayReady bool
+
 	for time.Now().Before(deadline) {
-		// Check if Gateway crashed early
+		// Check if Gateway crashed early (non-blocking check)
 		select {
 		case crashErr := <-errChan:
-			t.Fatalf("Gateway crashed: %v", crashErr)
+			t.Fatalf("Gateway exited unexpectedly during startup: %v", crashErr)
 		default:
 		}
 
-		// Attempt to connect to gRPC endpoint
+		// Attempt to create client and verify server is listening
 		conn, err = grpc.NewClient("[::1]:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			time.Sleep(50 * time.Millisecond)
+			continue
+		}
 
-		if err == nil {
-			// Connection successful, gateway is ready
+		// Try to actually connect by making a test call
+		gatewayClient := starv1.NewGatewayServiceClient(conn)
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+		_, err = gatewayClient.GetTeleopCommand(ctx, &starv1.GetTeleopCommandRequest{
+			Header: &starv1.RequestHeader{RequestId: "health-check"},
+		})
+		cancel()
+
+		// If call succeeded (or failed with a non-connection error), server is ready
+		if err == nil || (err != nil && !strings.Contains(err.Error(), "connection refused") && !strings.Contains(err.Error(), "Unavailable")) {
+			gatewayReady = true
 			break
 		}
 
-		// Retry after a short delay
-		time.Sleep(telemetrySettleTime)
+		conn.Close()
+		time.Sleep(50 * time.Millisecond)
 	}
 
-	if conn == nil {
+	if !gatewayReady {
 		t.Fatalf("Failed to connect to Gateway within timeout: %v", err)
 	}
 	t.Cleanup(func() { conn.Close() })
