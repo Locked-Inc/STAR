@@ -4,8 +4,6 @@
 #ifndef PB_STAR_V1_STAR_V1_TELEMETRY_PB_H_INCLUDED
 #define PB_STAR_V1_STAR_V1_TELEMETRY_PB_H_INCLUDED
 #include <pb.h>
-#include "google/protobuf/timestamp.pb.h"
-#include "star/v1/common.pb.h"
 #include "star/v1/motor_control.pb.h"
 
 #if PB_PROTO_HEADER_VERSION != 40
@@ -62,32 +60,41 @@ typedef enum _star_v1_RobotMode {
 } star_v1_RobotMode;
 
 /* Struct definitions */
-/* Request for telemetry snapshot. */
-typedef struct _star_v1_GetTelemetryRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-} star_v1_GetTelemetryRequest;
-
-/* Request to stream telemetry. */
-typedef struct _star_v1_StreamTelemetryRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-    /* Desired update rate in Hz.
- Valid range: 1 to 100 Hz. */
-    int32_t rate_hz;
-    /* Fields to include (empty = all fields). */
-    pb_size_t fields_count;
-    char fields[16][32];
-} star_v1_StreamTelemetryRequest;
-
-/* Request for system status. */
-typedef struct _star_v1_GetSystemStatusRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-} star_v1_GetSystemStatusRequest;
+/* Complete telemetry snapshot from RX72N motor controller.
+ Transmitted unsolicited at 20 Hz via RESPONSE frames. */
+typedef struct _star_v1_TelemetryData {
+    /* Timestamp in microseconds since ThreadX boot.
+ Used for latency tracking and synchronization. */
+    int64_t timestamp_us;
+    /* Frame sequence number for drop detection.
+ Increments with each transmitted frame. */
+    uint32_t frame_sequence;
+    /* Emergency stop state.
+ True if emergency stop is engaged. */
+    bool emergency_stop;
+    /* Motor fault flags bitfield.
+ Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc. */
+    uint32_t fault_flags;
+    /* Front left motor encoder data. */
+    bool has_encoder_front_left;
+    star_v1_EncoderData encoder_front_left;
+    /* Front right motor encoder data. */
+    bool has_encoder_front_right;
+    star_v1_EncoderData encoder_front_right;
+    /* Back left motor encoder data. */
+    bool has_encoder_back_left;
+    star_v1_EncoderData encoder_back_left;
+    /* Back right motor encoder data. */
+    bool has_encoder_back_right;
+    star_v1_EncoderData encoder_back_right;
+    /* Battery voltage in volts (from BQ4050 fuel gauge). */
+    double battery_voltage_v;
+    /* Battery state of charge percentage (from BQ4050 fuel gauge).
+ Range: 0 to 100 percent. */
+    uint32_t battery_soc_percent;
+    /* Temperature in Celsius (from DS18B20 sensor). */
+    double temperature_celsius;
+} star_v1_TelemetryData;
 
 /* IMU sensor data (orientation, velocity, acceleration).
  Uses MKS units: radians for angles, m/s^2 for acceleration. */
@@ -134,102 +141,6 @@ typedef struct _star_v1_GpsData {
     star_v1_GpsFix fix_type;
 } star_v1_GpsData;
 
-/* Complete telemetry snapshot from all sensors. */
-typedef struct _star_v1_TelemetryData {
-    /* IMU sensor data. */
-    bool has_imu;
-    star_v1_ImuData imu;
-    /* GPS data (if available). */
-    bool has_gps;
-    star_v1_GpsData gps;
-    /* Battery state of charge.
- Range: 0 to 100 percent. */
-    double battery_percent;
-    /* WiFi signal strength in dBm.
- Typical range: -100 to -30 dBm. */
-    int32_t wifi_signal_dbm;
-    /* CPU usage percentage.
- Range: 0 to 100 percent. */
-    double cpu_usage_percent;
-    /* Temperature in Celsius (from DS18B20 sensor). */
-    double temperature_celsius;
-    /* Motor load percentage (average across motors).
- Range: 0 to 100 percent. */
-    double motor_load_percent;
-    /* Telemetry timestamp. */
-    bool has_timestamp;
-    google_protobuf_Timestamp timestamp;
-    /* Emergency stop state (RX72N specific). */
-    bool emergency_stop;
-    /* Motor fault flags bitfield (RX72N specific).
- Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc. */
-    uint32_t fault_flags;
-    /* Battery voltage in volts (RX72N specific - BQ4050). */
-    double battery_voltage_v;
-    /* Battery state of charge percentage (RX72N specific - BQ4050).
- Range: 0 to 100 percent. */
-    uint32_t battery_soc_percent;
-    /* Timestamp in microseconds since boot (RX72N specific). */
-    int64_t timestamp_us;
-    /* Encoder data from motors (RX72N specific - fixed size for embedded).
- Front left motor encoder data. */
-    bool has_encoder_front_left;
-    star_v1_EncoderData encoder_front_left;
-    /* Front right motor encoder data. */
-    bool has_encoder_front_right;
-    star_v1_EncoderData encoder_front_right;
-    /* Back left motor encoder data (reserved for future 4-motor support). */
-    bool has_encoder_back_left;
-    star_v1_EncoderData encoder_back_left;
-    /* Back right motor encoder data (reserved for future 4-motor support). */
-    bool has_encoder_back_right;
-    star_v1_EncoderData encoder_back_right;
-    /* Frame sequence number from transport layer for drop detection.
- Increments with each transmitted frame. Used by diagnostics to detect
- missing frames in the telemetry stream. */
-    uint32_t frame_sequence;
-} star_v1_TelemetryData;
-
-/* Response with telemetry snapshot. */
-typedef struct _star_v1_GetTelemetryResponse {
-    /* Standard response header. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* Current telemetry data. */
-    bool has_telemetry;
-    star_v1_TelemetryData telemetry;
-} star_v1_GetTelemetryResponse;
-
-/* Complete system status information. */
-typedef struct _star_v1_SystemStatus {
-    /* Overall connection state. */
-    star_v1_ConnectionStatus connection_status;
-    /* Current operating mode. */
-    star_v1_RobotMode mode;
-    /* RX72N motor controller connected. */
-    bool rx72n_connected;
-    /* LiDAR sensor connected. */
-    bool lidar_connected;
-    /* ROS2 bridge connected. */
-    bool ros_connected;
-    /* RX72N firmware version string. */
-    char firmware_version[32];
-    /* System uptime in seconds. */
-    uint64_t uptime_s;
-    /* Free heap memory in bytes. */
-    uint32_t free_heap_bytes;
-} star_v1_SystemStatus;
-
-/* Response with system status. */
-typedef struct _star_v1_GetSystemStatusResponse {
-    /* Standard response header. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* System status information. */
-    bool has_status;
-    star_v1_SystemStatus status;
-} star_v1_GetSystemStatusResponse;
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -250,43 +161,29 @@ extern "C" {
 
 
 
-
-
-
-
-
 #define star_v1_GpsData_fix_type_ENUMTYPE star_v1_GpsFix
-
-#define star_v1_SystemStatus_connection_status_ENUMTYPE star_v1_ConnectionStatus
-#define star_v1_SystemStatus_mode_ENUMTYPE star_v1_RobotMode
 
 
 /* Initializer values for message structs */
-#define star_v1_GetTelemetryRequest_init_default {false, star_v1_RequestHeader_init_default}
-#define star_v1_GetTelemetryResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_TelemetryData_init_default}
-#define star_v1_StreamTelemetryRequest_init_default {false, star_v1_RequestHeader_init_default, 0, 0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}}
-#define star_v1_GetSystemStatusRequest_init_default {false, star_v1_RequestHeader_init_default}
-#define star_v1_GetSystemStatusResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_SystemStatus_init_default}
-#define star_v1_TelemetryData_init_default       {false, star_v1_ImuData_init_default, false, star_v1_GpsData_init_default, 0, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_default, 0, 0, 0, 0, 0, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, 0}
+#define star_v1_TelemetryData_init_default       {0, 0, 0, 0, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, 0, 0, 0}
 #define star_v1_ImuData_init_default             {0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define star_v1_GpsData_init_default             {0, 0, 0, 0, 0, _star_v1_GpsFix_MIN}
-#define star_v1_SystemStatus_init_default        {_star_v1_ConnectionStatus_MIN, _star_v1_RobotMode_MIN, 0, 0, 0, "", 0, 0}
-#define star_v1_GetTelemetryRequest_init_zero    {false, star_v1_RequestHeader_init_zero}
-#define star_v1_GetTelemetryResponse_init_zero   {false, star_v1_ResponseHeader_init_zero, false, star_v1_TelemetryData_init_zero}
-#define star_v1_StreamTelemetryRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0, 0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}}
-#define star_v1_GetSystemStatusRequest_init_zero {false, star_v1_RequestHeader_init_zero}
-#define star_v1_GetSystemStatusResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemStatus_init_zero}
-#define star_v1_TelemetryData_init_zero          {false, star_v1_ImuData_init_zero, false, star_v1_GpsData_init_zero, 0, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_zero, 0, 0, 0, 0, 0, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, 0}
+#define star_v1_TelemetryData_init_zero          {0, 0, 0, 0, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, 0, 0, 0}
 #define star_v1_ImuData_init_zero                {0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define star_v1_GpsData_init_zero                {0, 0, 0, 0, 0, _star_v1_GpsFix_MIN}
-#define star_v1_SystemStatus_init_zero           {_star_v1_ConnectionStatus_MIN, _star_v1_RobotMode_MIN, 0, 0, 0, "", 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define star_v1_GetTelemetryRequest_header_tag   1
-#define star_v1_StreamTelemetryRequest_header_tag 1
-#define star_v1_StreamTelemetryRequest_rate_hz_tag 2
-#define star_v1_StreamTelemetryRequest_fields_tag 3
-#define star_v1_GetSystemStatusRequest_header_tag 1
+#define star_v1_TelemetryData_timestamp_us_tag   1
+#define star_v1_TelemetryData_frame_sequence_tag 2
+#define star_v1_TelemetryData_emergency_stop_tag 3
+#define star_v1_TelemetryData_fault_flags_tag    4
+#define star_v1_TelemetryData_encoder_front_left_tag 5
+#define star_v1_TelemetryData_encoder_front_right_tag 6
+#define star_v1_TelemetryData_encoder_back_left_tag 7
+#define star_v1_TelemetryData_encoder_back_right_tag 8
+#define star_v1_TelemetryData_battery_voltage_v_tag 9
+#define star_v1_TelemetryData_battery_soc_percent_tag 10
+#define star_v1_TelemetryData_temperature_celsius_tag 11
 #define star_v1_ImuData_pitch_rad_tag            1
 #define star_v1_ImuData_roll_rad_tag             2
 #define star_v1_ImuData_yaw_rad_tag              3
@@ -302,98 +199,22 @@ extern "C" {
 #define star_v1_GpsData_accuracy_m_tag           4
 #define star_v1_GpsData_satellites_tag           5
 #define star_v1_GpsData_fix_type_tag             6
-#define star_v1_TelemetryData_imu_tag            1
-#define star_v1_TelemetryData_gps_tag            2
-#define star_v1_TelemetryData_battery_percent_tag 3
-#define star_v1_TelemetryData_wifi_signal_dbm_tag 4
-#define star_v1_TelemetryData_cpu_usage_percent_tag 5
-#define star_v1_TelemetryData_temperature_celsius_tag 6
-#define star_v1_TelemetryData_motor_load_percent_tag 7
-#define star_v1_TelemetryData_timestamp_tag      8
-#define star_v1_TelemetryData_emergency_stop_tag 10
-#define star_v1_TelemetryData_fault_flags_tag    11
-#define star_v1_TelemetryData_battery_voltage_v_tag 12
-#define star_v1_TelemetryData_battery_soc_percent_tag 13
-#define star_v1_TelemetryData_timestamp_us_tag   14
-#define star_v1_TelemetryData_encoder_front_left_tag 15
-#define star_v1_TelemetryData_encoder_front_right_tag 16
-#define star_v1_TelemetryData_encoder_back_left_tag 17
-#define star_v1_TelemetryData_encoder_back_right_tag 18
-#define star_v1_TelemetryData_frame_sequence_tag 19
-#define star_v1_GetTelemetryResponse_header_tag  1
-#define star_v1_GetTelemetryResponse_telemetry_tag 2
-#define star_v1_SystemStatus_connection_status_tag 1
-#define star_v1_SystemStatus_mode_tag            2
-#define star_v1_SystemStatus_rx72n_connected_tag 3
-#define star_v1_SystemStatus_lidar_connected_tag 4
-#define star_v1_SystemStatus_ros_connected_tag   5
-#define star_v1_SystemStatus_firmware_version_tag 6
-#define star_v1_SystemStatus_uptime_s_tag        7
-#define star_v1_SystemStatus_free_heap_bytes_tag 8
-#define star_v1_GetSystemStatusResponse_header_tag 1
-#define star_v1_GetSystemStatusResponse_status_tag 2
 
 /* Struct field encoding specification for nanopb */
-#define star_v1_GetTelemetryRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1)
-#define star_v1_GetTelemetryRequest_CALLBACK NULL
-#define star_v1_GetTelemetryRequest_DEFAULT NULL
-#define star_v1_GetTelemetryRequest_header_MSGTYPE star_v1_RequestHeader
-
-#define star_v1_GetTelemetryResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  telemetry,         2)
-#define star_v1_GetTelemetryResponse_CALLBACK NULL
-#define star_v1_GetTelemetryResponse_DEFAULT NULL
-#define star_v1_GetTelemetryResponse_header_MSGTYPE star_v1_ResponseHeader
-#define star_v1_GetTelemetryResponse_telemetry_MSGTYPE star_v1_TelemetryData
-
-#define star_v1_StreamTelemetryRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   SINGULAR, INT32,    rate_hz,           2) \
-X(a, STATIC,   REPEATED, STRING,   fields,            3)
-#define star_v1_StreamTelemetryRequest_CALLBACK NULL
-#define star_v1_StreamTelemetryRequest_DEFAULT NULL
-#define star_v1_StreamTelemetryRequest_header_MSGTYPE star_v1_RequestHeader
-
-#define star_v1_GetSystemStatusRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1)
-#define star_v1_GetSystemStatusRequest_CALLBACK NULL
-#define star_v1_GetSystemStatusRequest_DEFAULT NULL
-#define star_v1_GetSystemStatusRequest_header_MSGTYPE star_v1_RequestHeader
-
-#define star_v1_GetSystemStatusResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  status,            2)
-#define star_v1_GetSystemStatusResponse_CALLBACK NULL
-#define star_v1_GetSystemStatusResponse_DEFAULT NULL
-#define star_v1_GetSystemStatusResponse_header_MSGTYPE star_v1_ResponseHeader
-#define star_v1_GetSystemStatusResponse_status_MSGTYPE star_v1_SystemStatus
-
 #define star_v1_TelemetryData_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  imu,               1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  gps,               2) \
-X(a, STATIC,   SINGULAR, DOUBLE,   battery_percent,   3) \
-X(a, STATIC,   SINGULAR, INT32,    wifi_signal_dbm,   4) \
-X(a, STATIC,   SINGULAR, DOUBLE,   cpu_usage_percent,   5) \
-X(a, STATIC,   SINGULAR, DOUBLE,   temperature_celsius,   6) \
-X(a, STATIC,   SINGULAR, DOUBLE,   motor_load_percent,   7) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  timestamp,         8) \
-X(a, STATIC,   SINGULAR, BOOL,     emergency_stop,   10) \
-X(a, STATIC,   SINGULAR, UINT32,   fault_flags,      11) \
-X(a, STATIC,   SINGULAR, DOUBLE,   battery_voltage_v,  12) \
-X(a, STATIC,   SINGULAR, UINT32,   battery_soc_percent,  13) \
-X(a, STATIC,   SINGULAR, INT64,    timestamp_us,     14) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_front_left,  15) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_front_right,  16) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_back_left,  17) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_back_right,  18) \
-X(a, STATIC,   SINGULAR, UINT32,   frame_sequence,   19)
+X(a, STATIC,   SINGULAR, INT64,    timestamp_us,      1) \
+X(a, STATIC,   SINGULAR, UINT32,   frame_sequence,    2) \
+X(a, STATIC,   SINGULAR, BOOL,     emergency_stop,    3) \
+X(a, STATIC,   SINGULAR, UINT32,   fault_flags,       4) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_front_left,   5) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_front_right,   6) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_back_left,   7) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_back_right,   8) \
+X(a, STATIC,   SINGULAR, DOUBLE,   battery_voltage_v,   9) \
+X(a, STATIC,   SINGULAR, UINT32,   battery_soc_percent,  10) \
+X(a, STATIC,   SINGULAR, DOUBLE,   temperature_celsius,  11)
 #define star_v1_TelemetryData_CALLBACK NULL
 #define star_v1_TelemetryData_DEFAULT NULL
-#define star_v1_TelemetryData_imu_MSGTYPE star_v1_ImuData
-#define star_v1_TelemetryData_gps_MSGTYPE star_v1_GpsData
-#define star_v1_TelemetryData_timestamp_MSGTYPE google_protobuf_Timestamp
 #define star_v1_TelemetryData_encoder_front_left_MSGTYPE star_v1_EncoderData
 #define star_v1_TelemetryData_encoder_front_right_MSGTYPE star_v1_EncoderData
 #define star_v1_TelemetryData_encoder_back_left_MSGTYPE star_v1_EncoderData
@@ -422,50 +243,20 @@ X(a, STATIC,   SINGULAR, UENUM,    fix_type,          6)
 #define star_v1_GpsData_CALLBACK NULL
 #define star_v1_GpsData_DEFAULT NULL
 
-#define star_v1_SystemStatus_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UENUM,    connection_status,   1) \
-X(a, STATIC,   SINGULAR, UENUM,    mode,              2) \
-X(a, STATIC,   SINGULAR, BOOL,     rx72n_connected,   3) \
-X(a, STATIC,   SINGULAR, BOOL,     lidar_connected,   4) \
-X(a, STATIC,   SINGULAR, BOOL,     ros_connected,     5) \
-X(a, STATIC,   SINGULAR, STRING,   firmware_version,   6) \
-X(a, STATIC,   SINGULAR, UINT64,   uptime_s,          7) \
-X(a, STATIC,   SINGULAR, UINT32,   free_heap_bytes,   8)
-#define star_v1_SystemStatus_CALLBACK NULL
-#define star_v1_SystemStatus_DEFAULT NULL
-
-extern const pb_msgdesc_t star_v1_GetTelemetryRequest_msg;
-extern const pb_msgdesc_t star_v1_GetTelemetryResponse_msg;
-extern const pb_msgdesc_t star_v1_StreamTelemetryRequest_msg;
-extern const pb_msgdesc_t star_v1_GetSystemStatusRequest_msg;
-extern const pb_msgdesc_t star_v1_GetSystemStatusResponse_msg;
 extern const pb_msgdesc_t star_v1_TelemetryData_msg;
 extern const pb_msgdesc_t star_v1_ImuData_msg;
 extern const pb_msgdesc_t star_v1_GpsData_msg;
-extern const pb_msgdesc_t star_v1_SystemStatus_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
-#define star_v1_GetTelemetryRequest_fields &star_v1_GetTelemetryRequest_msg
-#define star_v1_GetTelemetryResponse_fields &star_v1_GetTelemetryResponse_msg
-#define star_v1_StreamTelemetryRequest_fields &star_v1_StreamTelemetryRequest_msg
-#define star_v1_GetSystemStatusRequest_fields &star_v1_GetSystemStatusRequest_msg
-#define star_v1_GetSystemStatusResponse_fields &star_v1_GetSystemStatusResponse_msg
 #define star_v1_TelemetryData_fields &star_v1_TelemetryData_msg
 #define star_v1_ImuData_fields &star_v1_ImuData_msg
 #define star_v1_GpsData_fields &star_v1_GpsData_msg
-#define star_v1_SystemStatus_fields &star_v1_SystemStatus_msg
 
 /* Maximum encoded size of messages (where known) */
-#define STAR_V1_STAR_V1_TELEMETRY_PB_H_MAX_SIZE  star_v1_GetTelemetryResponse_size
-#define star_v1_GetSystemStatusRequest_size      149
-#define star_v1_GetSystemStatusResponse_size     425
-#define star_v1_GetTelemetryRequest_size         149
-#define star_v1_GetTelemetryResponse_size        791
+#define STAR_V1_STAR_V1_TELEMETRY_PB_H_MAX_SIZE  star_v1_TelemetryData_size
 #define star_v1_GpsData_size                     49
 #define star_v1_ImuData_size                     81
-#define star_v1_StreamTelemetryRequest_size      688
-#define star_v1_SystemStatus_size                60
-#define star_v1_TelemetryData_size               425
+#define star_v1_TelemetryData_size               225
 
 #ifdef __cplusplus
 } /* extern "C" */

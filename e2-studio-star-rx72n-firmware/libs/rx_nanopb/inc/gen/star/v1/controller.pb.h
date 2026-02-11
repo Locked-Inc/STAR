@@ -10,16 +10,24 @@
 #endif
 
 /* Struct definitions */
-/* ControllerState represents the state of a gamepad controller for direct robot control. */
+/* ControllerState represents gamepad controller state for direct robot control.
+ Velocity values are normalized joystick inputs (-1.0 to 1.0).
+ Gateway/ROS2 scales to actual robot velocities. */
 typedef struct _star_v1_ControllerState {
-    /* Linear velocity (v) from Left Stick Y-axis. Range: [-1.0, 1.0] */
-    float linear_vel;
-    /* Angular velocity (ω) from Left Stick X-axis. Range: [-1.0, 1.0] */
-    float angular_vel;
-    /* Timestamp in milliseconds (e.g., since epoch or monotonic boot time)
+    /* Linear velocity command from Left Stick Y-axis (normalized).
+ Range: -1.0 to 1.0 (unitless).
+ Positive = forward, negative = backward.
+ Scaled to robot velocity by gateway/ROS2. */
+    float linear_vel_normalized;
+    /* Angular velocity command from Left Stick X-axis (normalized).
+ Range: -1.0 to 1.0 (unitless).
+ Positive = counter-clockwise, negative = clockwise.
+ Scaled to robot angular velocity by gateway/ROS2. */
+    float angular_vel_normalized;
+    /* Timestamp in milliseconds since epoch or monotonic boot time.
  Used for jitter buffer and out-of-order packet handling. */
-    int64_t timestamp;
-    /* Enable verbose debug logging on the gateway */
+    int64_t timestamp_ms;
+    /* Enable verbose debug logging on the gateway. */
     bool debug;
 } star_v1_ControllerState;
 
@@ -33,16 +41,16 @@ extern "C" {
 #define star_v1_ControllerState_init_zero        {0, 0, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define star_v1_ControllerState_linear_vel_tag   1
-#define star_v1_ControllerState_angular_vel_tag  2
-#define star_v1_ControllerState_timestamp_tag    3
+#define star_v1_ControllerState_linear_vel_normalized_tag 1
+#define star_v1_ControllerState_angular_vel_normalized_tag 2
+#define star_v1_ControllerState_timestamp_ms_tag 3
 #define star_v1_ControllerState_debug_tag        4
 
 /* Struct field encoding specification for nanopb */
 #define star_v1_ControllerState_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, FLOAT,    linear_vel,        1) \
-X(a, STATIC,   SINGULAR, FLOAT,    angular_vel,       2) \
-X(a, STATIC,   SINGULAR, INT64,    timestamp,         3) \
+X(a, STATIC,   SINGULAR, FLOAT,    linear_vel_normalized,   1) \
+X(a, STATIC,   SINGULAR, FLOAT,    angular_vel_normalized,   2) \
+X(a, STATIC,   SINGULAR, INT64,    timestamp_ms,      3) \
 X(a, STATIC,   SINGULAR, BOOL,     debug,             4)
 #define star_v1_ControllerState_CALLBACK NULL
 #define star_v1_ControllerState_DEFAULT NULL

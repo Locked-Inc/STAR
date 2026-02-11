@@ -15,7 +15,7 @@ PB_BIND(star_v1_GetConfigurationResponse, star_v1_GetConfigurationResponse, 2)
 PB_BIND(star_v1_SetConfigurationRequest, star_v1_SetConfigurationRequest, 2)
 
 
-PB_BIND(star_v1_SetConfigurationResponse, star_v1_SetConfigurationResponse, 2)
+PB_BIND(star_v1_SetConfigurationResponse, star_v1_SetConfigurationResponse, 4)
 
 
 PB_BIND(star_v1_ResetToDefaultsRequest, star_v1_ResetToDefaultsRequest, AUTO)
@@ -27,7 +27,7 @@ PB_BIND(star_v1_ResetToDefaultsResponse, star_v1_ResetToDefaultsResponse, 2)
 PB_BIND(star_v1_ValidateConfigurationRequest, star_v1_ValidateConfigurationRequest, 2)
 
 
-PB_BIND(star_v1_ValidateConfigurationResponse, star_v1_ValidateConfigurationResponse, 2)
+PB_BIND(star_v1_ValidateConfigurationResponse, star_v1_ValidateConfigurationResponse, 4)
 
 
 PB_BIND(star_v1_SaveConfigurationRequest, star_v1_SaveConfigurationRequest, AUTO)
@@ -45,10 +45,10 @@ PB_BIND(star_v1_GetMotorPidConfigResponse, star_v1_GetMotorPidConfigResponse, 2)
 PB_BIND(star_v1_SetMotorPidConfigRequest, star_v1_SetMotorPidConfigRequest, AUTO)
 
 
-PB_BIND(star_v1_SetMotorPidConfigResponse, star_v1_SetMotorPidConfigResponse, 2)
+PB_BIND(star_v1_SetMotorPidConfigResponse, star_v1_SetMotorPidConfigResponse, 4)
 
 
-PB_BIND(star_v1_SystemConfiguration, star_v1_SystemConfiguration, AUTO)
+PB_BIND(star_v1_SystemConfiguration, star_v1_SystemConfiguration, 2)
 
 
 PB_BIND(star_v1_MotorPidConfiguration, star_v1_MotorPidConfiguration, AUTO)
@@ -69,10 +69,10 @@ PB_BIND(star_v1_EncoderConfiguration, star_v1_EncoderConfiguration, AUTO)
 PB_BIND(star_v1_TimingConfiguration, star_v1_TimingConfiguration, AUTO)
 
 
-PB_BIND(star_v1_ConfigValidationResult, star_v1_ConfigValidationResult, AUTO)
+PB_BIND(star_v1_ConfigValidationResult, star_v1_ConfigValidationResult, 4)
 
 
-PB_BIND(star_v1_ConfigValidationError, star_v1_ConfigValidationError, AUTO)
+PB_BIND(star_v1_ConfigValidationError, star_v1_ConfigValidationError, 2)
 
 
 

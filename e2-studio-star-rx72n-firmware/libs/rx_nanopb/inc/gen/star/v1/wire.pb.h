@@ -5,6 +5,7 @@
 #define PB_STAR_V1_STAR_V1_WIRE_PB_H_INCLUDED
 #include <pb.h>
 #include "star/v1/battery_management.pb.h"
+#include "star/v1/diagnostics.pb.h"
 #include "star/v1/motor_control.pb.h"
 #include "star/v1/telemetry.pb.h"
 
@@ -57,8 +58,6 @@ typedef struct _star_v1_WireMessage {
         star_v1_VelocityCommand velocity_command;
         /* Emergency stop command triggers immediate motor halt with hardware safety engagement. */
         star_v1_EmergencyStopCommand emergency_stop_command;
-        /* Motor power command sets raw PWM duty cycle (bypasses PID control). */
-        star_v1_MotorPowerCommand motor_power_command;
         /* Telemetry data (RX72N -> RPi5) */
         star_v1_TelemetryData telemetry_data;
         /* Encoder data contains quadrature encoder readings and velocity estimates. */
@@ -69,6 +68,8 @@ typedef struct _star_v1_WireMessage {
         star_v1_BatteryState battery_state;
         /* Configuration (RPi5 -> RX72N) */
         star_v1_PidConfig pid_config;
+        /* Transport diagnostics (RPi5 -> UI or bidirectional) */
+        star_v1_TransportDiagnostics transport_diagnostics;
     } payload;
 } star_v1_WireMessage;
 
@@ -89,33 +90,33 @@ extern "C" {
 #define star_v1_EmergencyStopCommand_timestamp_us_tag 3
 #define star_v1_WireMessage_velocity_command_tag 1
 #define star_v1_WireMessage_emergency_stop_command_tag 2
-#define star_v1_WireMessage_motor_power_command_tag 3
 #define star_v1_WireMessage_telemetry_data_tag   10
 #define star_v1_WireMessage_encoder_data_tag     11
 #define star_v1_WireMessage_battery_status_tag   20
 #define star_v1_WireMessage_battery_state_tag    21
 #define star_v1_WireMessage_pid_config_tag       30
+#define star_v1_WireMessage_transport_diagnostics_tag 50
 
 /* Struct field encoding specification for nanopb */
 #define star_v1_WireMessage_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,velocity_command,payload.velocity_command),   1) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,emergency_stop_command,payload.emergency_stop_command),   2) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,motor_power_command,payload.motor_power_command),   3) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,telemetry_data,payload.telemetry_data),  10) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,encoder_data,payload.encoder_data),  11) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,battery_status,payload.battery_status),  20) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,battery_state,payload.battery_state),  21) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pid_config,payload.pid_config),  30)
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pid_config,payload.pid_config),  30) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,transport_diagnostics,payload.transport_diagnostics),  50)
 #define star_v1_WireMessage_CALLBACK NULL
 #define star_v1_WireMessage_DEFAULT NULL
 #define star_v1_WireMessage_payload_velocity_command_MSGTYPE star_v1_VelocityCommand
 #define star_v1_WireMessage_payload_emergency_stop_command_MSGTYPE star_v1_EmergencyStopCommand
-#define star_v1_WireMessage_payload_motor_power_command_MSGTYPE star_v1_MotorPowerCommand
 #define star_v1_WireMessage_payload_telemetry_data_MSGTYPE star_v1_TelemetryData
 #define star_v1_WireMessage_payload_encoder_data_MSGTYPE star_v1_EncoderData
 #define star_v1_WireMessage_payload_battery_status_MSGTYPE star_v1_BatteryStatus
 #define star_v1_WireMessage_payload_battery_state_MSGTYPE star_v1_BatteryState
 #define star_v1_WireMessage_payload_pid_config_MSGTYPE star_v1_PidConfig
+#define star_v1_WireMessage_payload_transport_diagnostics_MSGTYPE star_v1_TransportDiagnostics
 
 #define star_v1_EmergencyStopCommand_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   reason,            1) \
@@ -132,14 +133,9 @@ extern const pb_msgdesc_t star_v1_EmergencyStopCommand_msg;
 #define star_v1_EmergencyStopCommand_fields &star_v1_EmergencyStopCommand_msg
 
 /* Maximum encoded size of messages (where known) */
-#if defined(star_v1_BatteryState_size)
-union star_v1_WireMessage_payload_size_union {char f21[(7 + star_v1_BatteryState_size)]; char f0[428];};
-#endif
-#if defined(star_v1_BatteryState_size)
-#define star_v1_WireMessage_size                 (0 + sizeof(union star_v1_WireMessage_payload_size_union))
-#endif
-#define STAR_V1_STAR_V1_WIRE_PB_H_MAX_SIZE       star_v1_EmergencyStopCommand_size
+#define STAR_V1_STAR_V1_WIRE_PB_H_MAX_SIZE       star_v1_WireMessage_size
 #define star_v1_EmergencyStopCommand_size        143
+#define star_v1_WireMessage_size                 1403
 
 #ifdef __cplusplus
 } /* extern "C" */

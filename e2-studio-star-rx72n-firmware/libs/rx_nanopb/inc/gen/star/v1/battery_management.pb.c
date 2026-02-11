@@ -15,7 +15,7 @@ PB_BIND(star_v1_GetBatteryStateResponse, star_v1_GetBatteryStateResponse, 2)
 PB_BIND(star_v1_StreamBatteryStateRequest, star_v1_StreamBatteryStateRequest, AUTO)
 
 
-PB_BIND(star_v1_BatteryState, star_v1_BatteryState, AUTO)
+PB_BIND(star_v1_BatteryState, star_v1_BatteryState, 2)
 
 
 PB_BIND(star_v1_CellData, star_v1_CellData, AUTO)

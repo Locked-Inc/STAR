@@ -26,6 +26,13 @@ typedef enum _star_v1_MotorState {
 } star_v1_MotorState;
 
 /* Struct definitions */
+/* Response to velocity command. */
+typedef struct _star_v1_SetVelocityResponse {
+    /* Standard response header with status. */
+    bool has_header;
+    star_v1_ResponseHeader header;
+} star_v1_SetVelocityResponse;
+
 /* Velocity command for 4-motor independent control.
  Uses MKS units: meters per second.
 
@@ -93,44 +100,6 @@ typedef struct _star_v1_EmergencyStopResponse {
     bool estop_engaged;
 } star_v1_EmergencyStopResponse;
 
-/* Response to motor power command. */
-typedef struct _star_v1_SetMotorPowerResponse {
-    /* Standard response header with status. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-} star_v1_SetMotorPowerResponse;
-
-/* Direct motor power control for individual motors.
- Bypasses PID controller - use for testing only. */
-typedef struct _star_v1_MotorPowerCommand {
-    /* Motor index: 0-3 for 4 independent motors. */
-    int32_t motor_id;
-    /* Power level as duty cycle percentage.
- Valid range: -100.0 to 100.0 percent.
- Positive = forward, negative = reverse. */
-    double duty_cycle_percent;
-} star_v1_MotorPowerCommand;
-
-/* Request to set individual motor power. */
-typedef struct _star_v1_SetMotorPowerRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-    /* Motor power command. */
-    bool has_command;
-    star_v1_MotorPowerCommand command;
-} star_v1_SetMotorPowerRequest;
-
-/* Request to stream encoder data. */
-typedef struct _star_v1_StreamEncodersRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-    /* Desired update rate in Hz.
- Valid range: 1 to 100 Hz. */
-    int32_t rate_hz;
-} star_v1_StreamEncodersRequest;
-
 /* Real-time encoder feedback from motor controller.
  Streamed at configured rate. */
 typedef struct _star_v1_EncoderData {
@@ -145,54 +114,35 @@ typedef struct _star_v1_EncoderData {
     int64_t timestamp_us;
 } star_v1_EncoderData;
 
-/* Motor status information. */
-typedef struct _star_v1_MotorStatus {
-    /* Motor index: 0-3 for 4 independent motors. */
-    int32_t motor_id;
-    /* Current duty cycle percentage.
- Range: -100.0 to 100.0 percent. */
-    double duty_cycle_percent;
-    /* Current velocity in meters per second. */
-    double velocity_mps;
-    /* Target velocity in meters per second. */
-    double target_velocity_mps;
-    /* Motor temperature in Celsius (if available). */
-    double temperature_celsius;
-    /* Current draw in milliamps (if current sensing available). */
-    double current_ma;
-    /* Fault flags (bitfield).
- Bit 0: overcurrent, Bit 1: overtemperature, Bit 2: encoder fault. */
-    uint32_t fault_flags;
-    /* Current motor state. */
-    star_v1_MotorState state;
-} star_v1_MotorStatus;
-
-/* Response to velocity command. */
-typedef struct _star_v1_SetVelocityResponse {
-    /* Standard response header with status. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* Current motor status after command. */
-    pb_size_t motor_status_count;
-    star_v1_MotorStatus motor_status[2];
-} star_v1_SetVelocityResponse;
-
 /* PID gains for motor velocity control.
- Matches ESP32 star_pid_config_t structure. */
+ Matches discrete-time PID implementation in rx_pid library. */
 typedef struct _star_v1_PidConfig {
-    /* Proportional gain. */
+    /* Proportional gain (dimensionless).
+ Higher values increase responsiveness but may cause oscillation.
+ Typical range: 0.1 to 10.0 for velocity control.
+ Units: (duty_cycle_percent) / (velocity_error_mps) */
     double kp;
-    /* Integral gain. */
+    /* Integral gain in 1/seconds.
+ Eliminates steady-state error but increases overshoot.
+ Typical range: 0.1 to 20.0 for velocity control.
+ Units: (duty_cycle_percent) / (velocity_error_mps * seconds) */
     double ki;
-    /* Derivative gain. */
+    /* Derivative gain in seconds.
+ Reduces overshoot but amplifies noise.
+ Typical range: 0.001 to 0.1 for velocity control.
+ Units: (duty_cycle_percent * seconds) / (velocity_error_mps) */
     double kd;
-    /* Output saturation minimum (duty cycle percent). */
+    /* Output saturation minimum (duty cycle percent).
+ Range: -100.0 to 0.0 percent. */
     double output_min_percent;
-    /* Output saturation maximum (duty cycle percent). */
+    /* Output saturation maximum (duty cycle percent).
+ Range: 0.0 to 100.0 percent. */
     double output_max_percent;
-    /* Anti-windup integral minimum. */
+    /* Anti-windup integral minimum (dimensionless).
+ Prevents integral windup during saturation. */
     double integral_min;
-    /* Anti-windup integral maximum. */
+    /* Anti-windup integral maximum (dimensionless).
+ Prevents integral windup during saturation. */
     double integral_max;
 } star_v1_PidConfig;
 
@@ -214,39 +164,24 @@ extern "C" {
 
 
 
-
-
-#define star_v1_MotorStatus_state_ENUMTYPE star_v1_MotorState
-
-
-
 /* Initializer values for message structs */
 #define star_v1_SetVelocityRequest_init_default  {false, star_v1_RequestHeader_init_default, false, star_v1_VelocityCommand_init_default}
-#define star_v1_SetVelocityResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, {star_v1_MotorStatus_init_default, star_v1_MotorStatus_init_default}}
+#define star_v1_SetVelocityResponse_init_default {false, star_v1_ResponseHeader_init_default}
 #define star_v1_VelocityCommand_init_default     {0, 0, 0, 0, 0, 0}
 #define star_v1_EmergencyStopRequest_init_default {false, star_v1_RequestHeader_init_default, ""}
 #define star_v1_EmergencyStopResponse_init_default {false, star_v1_ResponseHeader_init_default, 0}
-#define star_v1_SetMotorPowerRequest_init_default {false, star_v1_RequestHeader_init_default, false, star_v1_MotorPowerCommand_init_default}
-#define star_v1_SetMotorPowerResponse_init_default {false, star_v1_ResponseHeader_init_default}
-#define star_v1_MotorPowerCommand_init_default   {0, 0}
-#define star_v1_StreamEncodersRequest_init_default {false, star_v1_RequestHeader_init_default, 0}
 #define star_v1_EncoderData_init_default         {0, 0, 0, 0}
-#define star_v1_MotorStatus_init_default         {0, 0, 0, 0, 0, 0, 0, _star_v1_MotorState_MIN}
 #define star_v1_PidConfig_init_default           {0, 0, 0, 0, 0, 0, 0}
 #define star_v1_SetVelocityRequest_init_zero     {false, star_v1_RequestHeader_init_zero, false, star_v1_VelocityCommand_init_zero}
-#define star_v1_SetVelocityResponse_init_zero    {false, star_v1_ResponseHeader_init_zero, 0, {star_v1_MotorStatus_init_zero, star_v1_MotorStatus_init_zero}}
+#define star_v1_SetVelocityResponse_init_zero    {false, star_v1_ResponseHeader_init_zero}
 #define star_v1_VelocityCommand_init_zero        {0, 0, 0, 0, 0, 0}
 #define star_v1_EmergencyStopRequest_init_zero   {false, star_v1_RequestHeader_init_zero, ""}
 #define star_v1_EmergencyStopResponse_init_zero  {false, star_v1_ResponseHeader_init_zero, 0}
-#define star_v1_SetMotorPowerRequest_init_zero   {false, star_v1_RequestHeader_init_zero, false, star_v1_MotorPowerCommand_init_zero}
-#define star_v1_SetMotorPowerResponse_init_zero  {false, star_v1_ResponseHeader_init_zero}
-#define star_v1_MotorPowerCommand_init_zero      {0, 0}
-#define star_v1_StreamEncodersRequest_init_zero  {false, star_v1_RequestHeader_init_zero, 0}
 #define star_v1_EncoderData_init_zero            {0, 0, 0, 0}
-#define star_v1_MotorStatus_init_zero            {0, 0, 0, 0, 0, 0, 0, _star_v1_MotorState_MIN}
 #define star_v1_PidConfig_init_zero              {0, 0, 0, 0, 0, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
+#define star_v1_SetVelocityResponse_header_tag   1
 #define star_v1_VelocityCommand_front_left_velocity_mps_tag 1
 #define star_v1_VelocityCommand_front_right_velocity_mps_tag 2
 #define star_v1_VelocityCommand_sequence_tag     3
@@ -259,27 +194,10 @@ extern "C" {
 #define star_v1_EmergencyStopRequest_reason_tag  2
 #define star_v1_EmergencyStopResponse_header_tag 1
 #define star_v1_EmergencyStopResponse_estop_engaged_tag 2
-#define star_v1_SetMotorPowerResponse_header_tag 1
-#define star_v1_MotorPowerCommand_motor_id_tag   1
-#define star_v1_MotorPowerCommand_duty_cycle_percent_tag 2
-#define star_v1_SetMotorPowerRequest_header_tag  1
-#define star_v1_SetMotorPowerRequest_command_tag 2
-#define star_v1_StreamEncodersRequest_header_tag 1
-#define star_v1_StreamEncodersRequest_rate_hz_tag 2
 #define star_v1_EncoderData_motor_id_tag         1
 #define star_v1_EncoderData_ticks_tag            2
 #define star_v1_EncoderData_velocity_mps_tag     3
 #define star_v1_EncoderData_timestamp_us_tag     4
-#define star_v1_MotorStatus_motor_id_tag         1
-#define star_v1_MotorStatus_duty_cycle_percent_tag 2
-#define star_v1_MotorStatus_velocity_mps_tag     3
-#define star_v1_MotorStatus_target_velocity_mps_tag 4
-#define star_v1_MotorStatus_temperature_celsius_tag 5
-#define star_v1_MotorStatus_current_ma_tag       6
-#define star_v1_MotorStatus_fault_flags_tag      7
-#define star_v1_MotorStatus_state_tag            8
-#define star_v1_SetVelocityResponse_header_tag   1
-#define star_v1_SetVelocityResponse_motor_status_tag 2
 #define star_v1_PidConfig_kp_tag                 1
 #define star_v1_PidConfig_ki_tag                 2
 #define star_v1_PidConfig_kd_tag                 3
@@ -298,12 +216,10 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  command,           2)
 #define star_v1_SetVelocityRequest_command_MSGTYPE star_v1_VelocityCommand
 
 #define star_v1_SetVelocityResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   REPEATED, MESSAGE,  motor_status,      2)
+X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1)
 #define star_v1_SetVelocityResponse_CALLBACK NULL
 #define star_v1_SetVelocityResponse_DEFAULT NULL
 #define star_v1_SetVelocityResponse_header_MSGTYPE star_v1_ResponseHeader
-#define star_v1_SetVelocityResponse_motor_status_MSGTYPE star_v1_MotorStatus
 
 #define star_v1_VelocityCommand_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, DOUBLE,   front_left_velocity_mps,   1) \
@@ -329,33 +245,6 @@ X(a, STATIC,   SINGULAR, BOOL,     estop_engaged,     2)
 #define star_v1_EmergencyStopResponse_DEFAULT NULL
 #define star_v1_EmergencyStopResponse_header_MSGTYPE star_v1_ResponseHeader
 
-#define star_v1_SetMotorPowerRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  command,           2)
-#define star_v1_SetMotorPowerRequest_CALLBACK NULL
-#define star_v1_SetMotorPowerRequest_DEFAULT NULL
-#define star_v1_SetMotorPowerRequest_header_MSGTYPE star_v1_RequestHeader
-#define star_v1_SetMotorPowerRequest_command_MSGTYPE star_v1_MotorPowerCommand
-
-#define star_v1_SetMotorPowerResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1)
-#define star_v1_SetMotorPowerResponse_CALLBACK NULL
-#define star_v1_SetMotorPowerResponse_DEFAULT NULL
-#define star_v1_SetMotorPowerResponse_header_MSGTYPE star_v1_ResponseHeader
-
-#define star_v1_MotorPowerCommand_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, INT32,    motor_id,          1) \
-X(a, STATIC,   SINGULAR, DOUBLE,   duty_cycle_percent,   2)
-#define star_v1_MotorPowerCommand_CALLBACK NULL
-#define star_v1_MotorPowerCommand_DEFAULT NULL
-
-#define star_v1_StreamEncodersRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   SINGULAR, INT32,    rate_hz,           2)
-#define star_v1_StreamEncodersRequest_CALLBACK NULL
-#define star_v1_StreamEncodersRequest_DEFAULT NULL
-#define star_v1_StreamEncodersRequest_header_MSGTYPE star_v1_RequestHeader
-
 #define star_v1_EncoderData_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, INT32,    motor_id,          1) \
 X(a, STATIC,   SINGULAR, INT64,    ticks,             2) \
@@ -363,18 +252,6 @@ X(a, STATIC,   SINGULAR, DOUBLE,   velocity_mps,      3) \
 X(a, STATIC,   SINGULAR, INT64,    timestamp_us,      4)
 #define star_v1_EncoderData_CALLBACK NULL
 #define star_v1_EncoderData_DEFAULT NULL
-
-#define star_v1_MotorStatus_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, INT32,    motor_id,          1) \
-X(a, STATIC,   SINGULAR, DOUBLE,   duty_cycle_percent,   2) \
-X(a, STATIC,   SINGULAR, DOUBLE,   velocity_mps,      3) \
-X(a, STATIC,   SINGULAR, DOUBLE,   target_velocity_mps,   4) \
-X(a, STATIC,   SINGULAR, DOUBLE,   temperature_celsius,   5) \
-X(a, STATIC,   SINGULAR, DOUBLE,   current_ma,        6) \
-X(a, STATIC,   SINGULAR, UINT32,   fault_flags,       7) \
-X(a, STATIC,   SINGULAR, UENUM,    state,             8)
-#define star_v1_MotorStatus_CALLBACK NULL
-#define star_v1_MotorStatus_DEFAULT NULL
 
 #define star_v1_PidConfig_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, DOUBLE,   kp,                1) \
@@ -392,12 +269,7 @@ extern const pb_msgdesc_t star_v1_SetVelocityResponse_msg;
 extern const pb_msgdesc_t star_v1_VelocityCommand_msg;
 extern const pb_msgdesc_t star_v1_EmergencyStopRequest_msg;
 extern const pb_msgdesc_t star_v1_EmergencyStopResponse_msg;
-extern const pb_msgdesc_t star_v1_SetMotorPowerRequest_msg;
-extern const pb_msgdesc_t star_v1_SetMotorPowerResponse_msg;
-extern const pb_msgdesc_t star_v1_MotorPowerCommand_msg;
-extern const pb_msgdesc_t star_v1_StreamEncodersRequest_msg;
 extern const pb_msgdesc_t star_v1_EncoderData_msg;
-extern const pb_msgdesc_t star_v1_MotorStatus_msg;
 extern const pb_msgdesc_t star_v1_PidConfig_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
@@ -406,27 +278,17 @@ extern const pb_msgdesc_t star_v1_PidConfig_msg;
 #define star_v1_VelocityCommand_fields &star_v1_VelocityCommand_msg
 #define star_v1_EmergencyStopRequest_fields &star_v1_EmergencyStopRequest_msg
 #define star_v1_EmergencyStopResponse_fields &star_v1_EmergencyStopResponse_msg
-#define star_v1_SetMotorPowerRequest_fields &star_v1_SetMotorPowerRequest_msg
-#define star_v1_SetMotorPowerResponse_fields &star_v1_SetMotorPowerResponse_msg
-#define star_v1_MotorPowerCommand_fields &star_v1_MotorPowerCommand_msg
-#define star_v1_StreamEncodersRequest_fields &star_v1_StreamEncodersRequest_msg
 #define star_v1_EncoderData_fields &star_v1_EncoderData_msg
-#define star_v1_MotorStatus_fields &star_v1_MotorStatus_msg
 #define star_v1_PidConfig_fields &star_v1_PidConfig_msg
 
 /* Maximum encoded size of messages (where known) */
-#define STAR_V1_STAR_V1_MOTOR_CONTROL_PB_H_MAX_SIZE star_v1_SetVelocityResponse_size
+#define STAR_V1_STAR_V1_MOTOR_CONTROL_PB_H_MAX_SIZE star_v1_EmergencyStopResponse_size
 #define star_v1_EmergencyStopRequest_size        279
 #define star_v1_EmergencyStopResponse_size       365
 #define star_v1_EncoderData_size                 42
-#define star_v1_MotorPowerCommand_size           20
-#define star_v1_MotorStatus_size                 64
 #define star_v1_PidConfig_size                   63
-#define star_v1_SetMotorPowerRequest_size        171
-#define star_v1_SetMotorPowerResponse_size       363
 #define star_v1_SetVelocityRequest_size          204
-#define star_v1_SetVelocityResponse_size         495
-#define star_v1_StreamEncodersRequest_size       160
+#define star_v1_SetVelocityResponse_size         363
 #define star_v1_VelocityCommand_size             53
 
 #ifdef __cplusplus

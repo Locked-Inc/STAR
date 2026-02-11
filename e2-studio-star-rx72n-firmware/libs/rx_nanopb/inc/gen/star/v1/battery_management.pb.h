@@ -54,7 +54,8 @@ typedef struct _star_v1_CellData {
  Array index 0 = cell 1, index 1 = cell 2, etc.
  Valid range per cell: 2500-4500 mV typical.
  Maximum 16 cells supported by BQ7850. */
-    pb_callback_t cell_mv;
+    pb_size_t cell_mv_count;
+    uint32_t cell_mv[16];
     /* Number of valid cell readings.
  Range: 1 to 16. */
     int32_t valid_cells;
@@ -76,7 +77,8 @@ typedef struct _star_v1_TemperatureData {
     /* Temperature readings in deci-celsius (0.1C units).
  Example: 253 = 25.3C.
  Maximum 3 sensors supported by BQ7850. */
-    pb_callback_t temp_deci_celsius;
+    pb_size_t temp_deci_celsius_count;
+    int32_t temp_deci_celsius[3];
     /* Number of valid temperature sensors.
  Range: 0 to 3. */
     int32_t valid_sensors;
@@ -350,11 +352,11 @@ typedef struct _star_v1_BmsDeviceInfo {
  BQ7850 stores this as a 32-bit integer in data flash. */
     uint32_t serial_number;
     /* Manufacturer name (max 32 chars). */
-    pb_callback_t manufacturer;
+    char manufacturer[32];
     /* Device name (max 32 chars). */
-    pb_callback_t device_name;
+    char device_name[32];
     /* Battery chemistry type (e.g., "LION", "LIFEPO4"). */
-    pb_callback_t chemistry;
+    char chemistry[16];
 } star_v1_BmsDeviceInfo;
 
 /* Response with device information. */
@@ -429,8 +431,8 @@ extern "C" {
 #define star_v1_GetBatteryStateResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_BatteryState_init_default}
 #define star_v1_StreamBatteryStateRequest_init_default {false, star_v1_RequestHeader_init_default, 0}
 #define star_v1_BatteryState_init_default        {false, star_v1_CellData_init_default, false, star_v1_TemperatureData_init_default, false, star_v1_CurrentData_init_default, false, star_v1_StateOfChargeData_init_default, false, star_v1_BatteryStatus_init_default, 0}
-#define star_v1_CellData_init_default            {{{NULL}, NULL}, 0, 0, 0, 0, 0}
-#define star_v1_TemperatureData_init_default     {{{NULL}, NULL}, 0, 0, 0, 0}
+#define star_v1_CellData_init_default            {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0, 0}
+#define star_v1_TemperatureData_init_default     {0, {0, 0, 0}, 0, 0, 0, 0}
 #define star_v1_CurrentData_init_default         {0, 0, 0, 0}
 #define star_v1_StateOfChargeData_init_default   {0, 0, 0, 0, 0, 0}
 #define star_v1_BatteryStatus_init_default       {0, 0, 0, 0, 0, 0, 0, 0, 0, false, star_v1_SafetyFaults_init_default, _star_v1_BatteryStateEnum_MIN}
@@ -450,15 +452,15 @@ extern "C" {
 #define star_v1_ControlFetsResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, 0}
 #define star_v1_GetDeviceInfoRequest_init_default {false, star_v1_RequestHeader_init_default}
 #define star_v1_GetDeviceInfoResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_BmsDeviceInfo_init_default}
-#define star_v1_BmsDeviceInfo_init_default       {0, 0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}}
+#define star_v1_BmsDeviceInfo_init_default       {0, 0, 0, 0, "", "", ""}
 #define star_v1_ResetDeviceRequest_init_default  {false, star_v1_RequestHeader_init_default}
 #define star_v1_ResetDeviceResponse_init_default {false, star_v1_ResponseHeader_init_default, 0}
 #define star_v1_GetBatteryStateRequest_init_zero {false, star_v1_RequestHeader_init_zero}
 #define star_v1_GetBatteryStateResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_BatteryState_init_zero}
 #define star_v1_StreamBatteryStateRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0}
 #define star_v1_BatteryState_init_zero           {false, star_v1_CellData_init_zero, false, star_v1_TemperatureData_init_zero, false, star_v1_CurrentData_init_zero, false, star_v1_StateOfChargeData_init_zero, false, star_v1_BatteryStatus_init_zero, 0}
-#define star_v1_CellData_init_zero               {{{NULL}, NULL}, 0, 0, 0, 0, 0}
-#define star_v1_TemperatureData_init_zero        {{{NULL}, NULL}, 0, 0, 0, 0}
+#define star_v1_CellData_init_zero               {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0, 0}
+#define star_v1_TemperatureData_init_zero        {0, {0, 0, 0}, 0, 0, 0, 0}
 #define star_v1_CurrentData_init_zero            {0, 0, 0, 0}
 #define star_v1_StateOfChargeData_init_zero      {0, 0, 0, 0, 0, 0}
 #define star_v1_BatteryStatus_init_zero          {0, 0, 0, 0, 0, 0, 0, 0, 0, false, star_v1_SafetyFaults_init_zero, _star_v1_BatteryStateEnum_MIN}
@@ -478,7 +480,7 @@ extern "C" {
 #define star_v1_ControlFetsResponse_init_zero    {false, star_v1_ResponseHeader_init_zero, 0, 0}
 #define star_v1_GetDeviceInfoRequest_init_zero   {false, star_v1_RequestHeader_init_zero}
 #define star_v1_GetDeviceInfoResponse_init_zero  {false, star_v1_ResponseHeader_init_zero, false, star_v1_BmsDeviceInfo_init_zero}
-#define star_v1_BmsDeviceInfo_init_zero          {0, 0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}}
+#define star_v1_BmsDeviceInfo_init_zero          {0, 0, 0, 0, "", "", ""}
 #define star_v1_ResetDeviceRequest_init_zero     {false, star_v1_RequestHeader_init_zero}
 #define star_v1_ResetDeviceResponse_init_zero    {false, star_v1_ResponseHeader_init_zero, 0}
 
@@ -612,22 +614,22 @@ X(a, STATIC,   SINGULAR, INT64,    timestamp_us,      6)
 #define star_v1_BatteryState_status_MSGTYPE star_v1_BatteryStatus
 
 #define star_v1_CellData_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, UINT32,   cell_mv,           1) \
+X(a, STATIC,   REPEATED, UINT32,   cell_mv,           1) \
 X(a, STATIC,   SINGULAR, INT32,    valid_cells,       2) \
 X(a, STATIC,   SINGULAR, UINT32,   pack_mv,           3) \
 X(a, STATIC,   SINGULAR, UINT32,   min_cell_mv,       4) \
 X(a, STATIC,   SINGULAR, UINT32,   max_cell_mv,       5) \
 X(a, STATIC,   SINGULAR, UINT32,   delta_mv,          6)
-#define star_v1_CellData_CALLBACK pb_default_field_callback
+#define star_v1_CellData_CALLBACK NULL
 #define star_v1_CellData_DEFAULT NULL
 
 #define star_v1_TemperatureData_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, INT32,    temp_deci_celsius,   1) \
+X(a, STATIC,   REPEATED, INT32,    temp_deci_celsius,   1) \
 X(a, STATIC,   SINGULAR, INT32,    valid_sensors,     2) \
 X(a, STATIC,   SINGULAR, INT32,    avg_temp_deci_celsius,   3) \
 X(a, STATIC,   SINGULAR, INT32,    min_temp_deci_celsius,   4) \
 X(a, STATIC,   SINGULAR, INT32,    max_temp_deci_celsius,   5)
-#define star_v1_TemperatureData_CALLBACK pb_default_field_callback
+#define star_v1_TemperatureData_CALLBACK NULL
 #define star_v1_TemperatureData_DEFAULT NULL
 
 #define star_v1_CurrentData_FIELDLIST(X, a) \
@@ -787,10 +789,10 @@ X(a, STATIC,   SINGULAR, UINT32,   device_type,       1) \
 X(a, STATIC,   SINGULAR, UINT32,   firmware_version,   2) \
 X(a, STATIC,   SINGULAR, UINT32,   hardware_version,   3) \
 X(a, STATIC,   SINGULAR, UINT32,   serial_number,     4) \
-X(a, CALLBACK, SINGULAR, STRING,   manufacturer,      5) \
-X(a, CALLBACK, SINGULAR, STRING,   device_name,       6) \
-X(a, CALLBACK, SINGULAR, STRING,   chemistry,         7)
-#define star_v1_BmsDeviceInfo_CALLBACK pb_default_field_callback
+X(a, STATIC,   SINGULAR, STRING,   manufacturer,      5) \
+X(a, STATIC,   SINGULAR, STRING,   device_name,       6) \
+X(a, STATIC,   SINGULAR, STRING,   chemistry,         7)
+#define star_v1_BmsDeviceInfo_CALLBACK NULL
 #define star_v1_BmsDeviceInfo_DEFAULT NULL
 
 #define star_v1_ResetDeviceRequest_FIELDLIST(X, a) \
@@ -866,14 +868,11 @@ extern const pb_msgdesc_t star_v1_ResetDeviceResponse_msg;
 #define star_v1_ResetDeviceResponse_fields &star_v1_ResetDeviceResponse_msg
 
 /* Maximum encoded size of messages (where known) */
-/* star_v1_GetBatteryStateResponse_size depends on runtime parameters */
-/* star_v1_BatteryState_size depends on runtime parameters */
-/* star_v1_CellData_size depends on runtime parameters */
-/* star_v1_TemperatureData_size depends on runtime parameters */
-/* star_v1_GetDeviceInfoResponse_size depends on runtime parameters */
-/* star_v1_BmsDeviceInfo_size depends on runtime parameters */
-#define STAR_V1_STAR_V1_BATTERY_MANAGEMENT_PB_H_MAX_SIZE star_v1_GetProtectionThresholdsResponse_size
+#define STAR_V1_STAR_V1_BATTERY_MANAGEMENT_PB_H_MAX_SIZE star_v1_GetBatteryStateResponse_size
+#define star_v1_BatteryState_size                369
 #define star_v1_BatteryStatus_size               54
+#define star_v1_BmsDeviceInfo_size               107
+#define star_v1_CellData_size                    131
 #define star_v1_ControlFetsRequest_size          153
 #define star_v1_ControlFetsResponse_size         367
 #define star_v1_CurrentData_size                 39
@@ -884,7 +883,9 @@ extern const pb_msgdesc_t star_v1_ResetDeviceResponse_msg;
 #define star_v1_GetBalancingStatusRequest_size   149
 #define star_v1_GetBalancingStatusResponse_size  369
 #define star_v1_GetBatteryStateRequest_size      149
+#define star_v1_GetBatteryStateResponse_size     735
 #define star_v1_GetDeviceInfoRequest_size        149
+#define star_v1_GetDeviceInfoResponse_size       472
 #define star_v1_GetProtectionThresholdsRequest_size 149
 #define star_v1_GetProtectionThresholdsResponse_size 411
 #define star_v1_ProtectionThresholds_size        46
@@ -895,6 +896,7 @@ extern const pb_msgdesc_t star_v1_ResetDeviceResponse_msg;
 #define star_v1_SetProtectionThresholdsResponse_size 363
 #define star_v1_StateOfChargeData_size           46
 #define star_v1_StreamBatteryStateRequest_size   160
+#define star_v1_TemperatureData_size             77
 
 #ifdef __cplusplus
 } /* extern "C" */

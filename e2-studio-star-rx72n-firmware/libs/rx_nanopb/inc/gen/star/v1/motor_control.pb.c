@@ -21,22 +21,7 @@ PB_BIND(star_v1_EmergencyStopRequest, star_v1_EmergencyStopRequest, 2)
 PB_BIND(star_v1_EmergencyStopResponse, star_v1_EmergencyStopResponse, 2)
 
 
-PB_BIND(star_v1_SetMotorPowerRequest, star_v1_SetMotorPowerRequest, AUTO)
-
-
-PB_BIND(star_v1_SetMotorPowerResponse, star_v1_SetMotorPowerResponse, 2)
-
-
-PB_BIND(star_v1_MotorPowerCommand, star_v1_MotorPowerCommand, AUTO)
-
-
-PB_BIND(star_v1_StreamEncodersRequest, star_v1_StreamEncodersRequest, AUTO)
-
-
 PB_BIND(star_v1_EncoderData, star_v1_EncoderData, AUTO)
-
-
-PB_BIND(star_v1_MotorStatus, star_v1_MotorStatus, AUTO)
 
 
 PB_BIND(star_v1_PidConfig, star_v1_PidConfig, AUTO)

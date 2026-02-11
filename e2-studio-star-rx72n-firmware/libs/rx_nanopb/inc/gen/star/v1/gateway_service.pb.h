@@ -19,16 +19,12 @@ typedef struct _star_v1_ForwardTelemetryRequest {
     /* Standard request header. */
     bool has_header;
     star_v1_RequestHeader header;
-    /* Robot system status (mode, connections, uptime).
- Forwarded from /robot_status ROS2 topic. */
-    bool has_system_status;
-    star_v1_SystemStatus system_status;
     /* Battery state (voltage, current, SOC, temperature).
  Forwarded from /battery_state ROS2 topic. */
     bool has_battery_state;
     star_v1_BatteryState battery_state;
-    /* Optional: Additional telemetry data (IMU, GPS, etc.).
- Can be added in future without breaking changes. */
+    /* Telemetry data from RX72N motor controller.
+ Forwarded from /telemetry ROS2 topic. */
     bool has_telemetry;
     star_v1_TelemetryData telemetry;
 } star_v1_ForwardTelemetryRequest;
@@ -96,13 +92,13 @@ extern "C" {
 #endif
 
 /* Initializer values for message structs */
-#define star_v1_ForwardTelemetryRequest_init_default {false, star_v1_RequestHeader_init_default, false, star_v1_SystemStatus_init_default, false, star_v1_BatteryState_init_default, false, star_v1_TelemetryData_init_default}
+#define star_v1_ForwardTelemetryRequest_init_default {false, star_v1_RequestHeader_init_default, false, star_v1_BatteryState_init_default, false, star_v1_TelemetryData_init_default}
 #define star_v1_ForwardTelemetryResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, 0}
 #define star_v1_GetTeleopCommandRequest_init_default {false, star_v1_RequestHeader_init_default}
 #define star_v1_GetTeleopCommandResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_VelocityCommand_init_default, 0, 0}
 #define star_v1_SetPIDGainsRequest_init_default  {false, star_v1_RequestHeader_init_default, false, star_v1_PidConfig_init_default, 0}
 #define star_v1_SetPIDGainsResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, {{NULL}, NULL}}
-#define star_v1_ForwardTelemetryRequest_init_zero {false, star_v1_RequestHeader_init_zero, false, star_v1_SystemStatus_init_zero, false, star_v1_BatteryState_init_zero, false, star_v1_TelemetryData_init_zero}
+#define star_v1_ForwardTelemetryRequest_init_zero {false, star_v1_RequestHeader_init_zero, false, star_v1_BatteryState_init_zero, false, star_v1_TelemetryData_init_zero}
 #define star_v1_ForwardTelemetryResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0, 0}
 #define star_v1_GetTeleopCommandRequest_init_zero {false, star_v1_RequestHeader_init_zero}
 #define star_v1_GetTeleopCommandResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_VelocityCommand_init_zero, 0, 0}
@@ -111,9 +107,8 @@ extern "C" {
 
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_ForwardTelemetryRequest_header_tag 1
-#define star_v1_ForwardTelemetryRequest_system_status_tag 2
-#define star_v1_ForwardTelemetryRequest_battery_state_tag 3
-#define star_v1_ForwardTelemetryRequest_telemetry_tag 4
+#define star_v1_ForwardTelemetryRequest_battery_state_tag 2
+#define star_v1_ForwardTelemetryRequest_telemetry_tag 3
 #define star_v1_ForwardTelemetryResponse_header_tag 1
 #define star_v1_ForwardTelemetryResponse_cached_tag 2
 #define star_v1_ForwardTelemetryResponse_active_clients_tag 3
@@ -132,13 +127,11 @@ extern "C" {
 /* Struct field encoding specification for nanopb */
 #define star_v1_ForwardTelemetryRequest_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  system_status,     2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  battery_state,     3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  telemetry,         4)
+X(a, STATIC,   OPTIONAL, MESSAGE,  battery_state,     2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  telemetry,         3)
 #define star_v1_ForwardTelemetryRequest_CALLBACK NULL
 #define star_v1_ForwardTelemetryRequest_DEFAULT NULL
 #define star_v1_ForwardTelemetryRequest_header_MSGTYPE star_v1_RequestHeader
-#define star_v1_ForwardTelemetryRequest_system_status_MSGTYPE star_v1_SystemStatus
 #define star_v1_ForwardTelemetryRequest_battery_state_MSGTYPE star_v1_BatteryState
 #define star_v1_ForwardTelemetryRequest_telemetry_MSGTYPE star_v1_TelemetryData
 
@@ -200,10 +193,8 @@ extern const pb_msgdesc_t star_v1_SetPIDGainsResponse_msg;
 
 /* Maximum encoded size of messages (where known) */
 /* star_v1_SetPIDGainsResponse_size depends on runtime parameters */
-#if defined(star_v1_BatteryState_size)
 #define STAR_V1_STAR_V1_GATEWAY_SERVICE_PB_H_MAX_SIZE star_v1_ForwardTelemetryRequest_size
-#define star_v1_ForwardTelemetryRequest_size     (645 + star_v1_BatteryState_size)
-#endif
+#define star_v1_ForwardTelemetryRequest_size     749
 #define star_v1_ForwardTelemetryResponse_size    376
 #define star_v1_GetTeleopCommandRequest_size     149
 #define star_v1_GetTeleopCommandResponse_size    431

@@ -140,11 +140,15 @@ typedef struct _star_v1_MotorPidConfiguration {
 typedef struct _star_v1_CurrentSensorCalibration {
     /* ADC offset when motor stopped, in milliamps.
  One per motor (max 4). */
-    pb_callback_t offset_ma;
-    /* Scaling factor adjustment for each motor.
- Multiplied with raw ADC reading.
+    pb_size_t offset_ma_count;
+    double offset_ma[4];
+    /* Scaling factor adjustment for each motor (dimensionless).
+ Multiplied with raw ADC reading after offset correction.
+ Typical range: 0.8 to 1.2 (calibration adjustment ±20%).
+ Formula: current_ma = (adc_raw - offset_ma) * scale_factor
  One per motor (max 4). */
-    pb_callback_t scale_factor;
+    pb_size_t scale_factor_count;
+    double scale_factor[4];
 } star_v1_CurrentSensorCalibration;
 
 /* Temperature sensor calibration. */
@@ -178,7 +182,9 @@ typedef struct _star_v1_EncoderConfiguration {
     uint32_t edges_per_revolution;
     /* Wheel diameter in meters (for linear velocity). */
     double wheel_diameter_m;
-    /* Gear ratio (motor revolutions per wheel revolution). */
+    /* Gear ratio: motor revolutions per wheel revolution (dimensionless).
+ Example: 34.02:1 gearbox → gear_ratio = 34.02
+ Formula: wheel_rpm = motor_rpm / gear_ratio */
     double gear_ratio;
 } star_v1_EncoderConfiguration;
 
@@ -205,7 +211,8 @@ typedef struct _star_v1_TimingConfiguration {
 typedef struct _star_v1_SystemConfiguration {
     /* Motor PID configuration for all motors (max 4 motors).
  Array index corresponds to motor ID (0-3). */
-    pb_callback_t motor_configs;
+    pb_size_t motor_configs_count;
+    star_v1_MotorPidConfiguration motor_configs[4];
     /* Current sensor calibration for all motors. */
     bool has_current_calibration;
     star_v1_CurrentSensorCalibration current_calibration;
@@ -272,12 +279,27 @@ typedef struct _star_v1_ValidateConfigurationRequest {
     star_v1_SystemConfiguration configuration;
 } star_v1_ValidateConfigurationRequest;
 
+/* Individual configuration validation error. */
+typedef struct _star_v1_ConfigValidationError {
+    /* Field that failed validation (dot notation, e.g., "motor_configs[0].pid_config.kp"). */
+    char field_path[64];
+    /* Error code for programmatic handling. */
+    star_v1_ConfigErrorCode error_code;
+    /* Human-readable error message. */
+    char message[256];
+    /* Actual value that failed validation. */
+    char actual_value[32];
+    /* Expected range or constraint description. */
+    char expected_constraint[128];
+} star_v1_ConfigValidationError;
+
 /* Configuration validation result. */
 typedef struct _star_v1_ConfigValidationResult {
     /* Overall validation status. */
     star_v1_ConfigValidationStatus status;
     /* List of validation errors (empty if valid). */
-    pb_callback_t errors;
+    pb_size_t errors_count;
+    star_v1_ConfigValidationError errors[16];
 } star_v1_ConfigValidationResult;
 
 /* Response to set configuration. */
@@ -309,20 +331,6 @@ typedef struct _star_v1_SetMotorPidConfigResponse {
     bool has_validation_result;
     star_v1_ConfigValidationResult validation_result;
 } star_v1_SetMotorPidConfigResponse;
-
-/* Individual configuration validation error. */
-typedef struct _star_v1_ConfigValidationError {
-    /* Field that failed validation (dot notation, e.g., "motor_configs[0].pid_config.kp"). */
-    pb_callback_t field_path;
-    /* Error code for programmatic handling. */
-    star_v1_ConfigErrorCode error_code;
-    /* Human-readable error message. */
-    pb_callback_t message;
-    /* Actual value that failed validation. */
-    pb_callback_t actual_value;
-    /* Expected range or constraint description. */
-    pb_callback_t expected_constraint;
-} star_v1_ConfigValidationError;
 
 
 #ifdef __cplusplus
@@ -379,15 +387,15 @@ extern "C" {
 #define star_v1_GetMotorPidConfigResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, false, star_v1_PidConfig_init_default}
 #define star_v1_SetMotorPidConfigRequest_init_default {false, star_v1_RequestHeader_init_default, 0, false, star_v1_PidConfig_init_default, 0}
 #define star_v1_SetMotorPidConfigResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default}
-#define star_v1_SystemConfiguration_init_default {{{NULL}, NULL}, false, star_v1_CurrentSensorCalibration_init_default, false, star_v1_TemperatureCalibration_init_default, false, star_v1_SafetyThresholds_init_default, false, star_v1_EncoderConfiguration_init_default, false, star_v1_TimingConfiguration_init_default, 0, 0}
+#define star_v1_SystemConfiguration_init_default {0, {star_v1_MotorPidConfiguration_init_default, star_v1_MotorPidConfiguration_init_default, star_v1_MotorPidConfiguration_init_default, star_v1_MotorPidConfiguration_init_default}, false, star_v1_CurrentSensorCalibration_init_default, false, star_v1_TemperatureCalibration_init_default, false, star_v1_SafetyThresholds_init_default, false, star_v1_EncoderConfiguration_init_default, false, star_v1_TimingConfiguration_init_default, 0, 0}
 #define star_v1_MotorPidConfiguration_init_default {0, false, star_v1_PidConfig_init_default}
-#define star_v1_CurrentSensorCalibration_init_default {{{NULL}, NULL}, {{NULL}, NULL}}
+#define star_v1_CurrentSensorCalibration_init_default {0, {0, 0, 0, 0}, 0, {0, 0, 0, 0}}
 #define star_v1_TemperatureCalibration_init_default {0}
 #define star_v1_SafetyThresholds_init_default    {0, 0, 0}
 #define star_v1_EncoderConfiguration_init_default {0, 0, 0}
 #define star_v1_TimingConfiguration_init_default {0, 0, 0, 0}
-#define star_v1_ConfigValidationResult_init_default {_star_v1_ConfigValidationStatus_MIN, {{NULL}, NULL}}
-#define star_v1_ConfigValidationError_init_default {{{NULL}, NULL}, _star_v1_ConfigErrorCode_MIN, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}}
+#define star_v1_ConfigValidationResult_init_default {_star_v1_ConfigValidationStatus_MIN, 0, {star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default}}
+#define star_v1_ConfigValidationError_init_default {"", _star_v1_ConfigErrorCode_MIN, "", "", ""}
 #define star_v1_GetConfigurationRequest_init_zero {false, star_v1_RequestHeader_init_zero}
 #define star_v1_GetConfigurationResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemConfiguration_init_zero}
 #define star_v1_SetConfigurationRequest_init_zero {false, star_v1_RequestHeader_init_zero, false, star_v1_SystemConfiguration_init_zero, 0}
@@ -402,15 +410,15 @@ extern "C" {
 #define star_v1_GetMotorPidConfigResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0, false, star_v1_PidConfig_init_zero}
 #define star_v1_SetMotorPidConfigRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0, false, star_v1_PidConfig_init_zero, 0}
 #define star_v1_SetMotorPidConfigResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero}
-#define star_v1_SystemConfiguration_init_zero    {{{NULL}, NULL}, false, star_v1_CurrentSensorCalibration_init_zero, false, star_v1_TemperatureCalibration_init_zero, false, star_v1_SafetyThresholds_init_zero, false, star_v1_EncoderConfiguration_init_zero, false, star_v1_TimingConfiguration_init_zero, 0, 0}
+#define star_v1_SystemConfiguration_init_zero    {0, {star_v1_MotorPidConfiguration_init_zero, star_v1_MotorPidConfiguration_init_zero, star_v1_MotorPidConfiguration_init_zero, star_v1_MotorPidConfiguration_init_zero}, false, star_v1_CurrentSensorCalibration_init_zero, false, star_v1_TemperatureCalibration_init_zero, false, star_v1_SafetyThresholds_init_zero, false, star_v1_EncoderConfiguration_init_zero, false, star_v1_TimingConfiguration_init_zero, 0, 0}
 #define star_v1_MotorPidConfiguration_init_zero  {0, false, star_v1_PidConfig_init_zero}
-#define star_v1_CurrentSensorCalibration_init_zero {{{NULL}, NULL}, {{NULL}, NULL}}
+#define star_v1_CurrentSensorCalibration_init_zero {0, {0, 0, 0, 0}, 0, {0, 0, 0, 0}}
 #define star_v1_TemperatureCalibration_init_zero {0}
 #define star_v1_SafetyThresholds_init_zero       {0, 0, 0}
 #define star_v1_EncoderConfiguration_init_zero   {0, 0, 0}
 #define star_v1_TimingConfiguration_init_zero    {0, 0, 0, 0}
-#define star_v1_ConfigValidationResult_init_zero {_star_v1_ConfigValidationStatus_MIN, {{NULL}, NULL}}
-#define star_v1_ConfigValidationError_init_zero  {{{NULL}, NULL}, _star_v1_ConfigErrorCode_MIN, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}}
+#define star_v1_ConfigValidationResult_init_zero {_star_v1_ConfigValidationStatus_MIN, 0, {star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero}}
+#define star_v1_ConfigValidationError_init_zero  {"", _star_v1_ConfigErrorCode_MIN, "", "", ""}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_GetConfigurationRequest_header_tag 1
@@ -461,6 +469,11 @@ extern "C" {
 #define star_v1_ResetToDefaultsResponse_configuration_tag 2
 #define star_v1_ValidateConfigurationRequest_header_tag 1
 #define star_v1_ValidateConfigurationRequest_configuration_tag 2
+#define star_v1_ConfigValidationError_field_path_tag 1
+#define star_v1_ConfigValidationError_error_code_tag 2
+#define star_v1_ConfigValidationError_message_tag 3
+#define star_v1_ConfigValidationError_actual_value_tag 4
+#define star_v1_ConfigValidationError_expected_constraint_tag 5
 #define star_v1_ConfigValidationResult_status_tag 1
 #define star_v1_ConfigValidationResult_errors_tag 2
 #define star_v1_SetConfigurationResponse_header_tag 1
@@ -469,11 +482,6 @@ extern "C" {
 #define star_v1_ValidateConfigurationResponse_validation_result_tag 2
 #define star_v1_SetMotorPidConfigResponse_header_tag 1
 #define star_v1_SetMotorPidConfigResponse_validation_result_tag 2
-#define star_v1_ConfigValidationError_field_path_tag 1
-#define star_v1_ConfigValidationError_error_code_tag 2
-#define star_v1_ConfigValidationError_message_tag 3
-#define star_v1_ConfigValidationError_actual_value_tag 4
-#define star_v1_ConfigValidationError_expected_constraint_tag 5
 
 /* Struct field encoding specification for nanopb */
 #define star_v1_GetConfigurationRequest_FIELDLIST(X, a) \
@@ -587,7 +595,7 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  validation_result,   2)
 #define star_v1_SetMotorPidConfigResponse_validation_result_MSGTYPE star_v1_ConfigValidationResult
 
 #define star_v1_SystemConfiguration_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, MESSAGE,  motor_configs,     1) \
+X(a, STATIC,   REPEATED, MESSAGE,  motor_configs,     1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  current_calibration,   2) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  temperature_calibration,   3) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  safety_thresholds,   4) \
@@ -595,7 +603,7 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_config,    5) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  timing_config,     6) \
 X(a, STATIC,   SINGULAR, UINT32,   config_version,    7) \
 X(a, STATIC,   SINGULAR, UINT32,   config_crc,        8)
-#define star_v1_SystemConfiguration_CALLBACK pb_default_field_callback
+#define star_v1_SystemConfiguration_CALLBACK NULL
 #define star_v1_SystemConfiguration_DEFAULT NULL
 #define star_v1_SystemConfiguration_motor_configs_MSGTYPE star_v1_MotorPidConfiguration
 #define star_v1_SystemConfiguration_current_calibration_MSGTYPE star_v1_CurrentSensorCalibration
@@ -612,9 +620,9 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  pid_config,        2)
 #define star_v1_MotorPidConfiguration_pid_config_MSGTYPE star_v1_PidConfig
 
 #define star_v1_CurrentSensorCalibration_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, DOUBLE,   offset_ma,         1) \
-X(a, CALLBACK, REPEATED, DOUBLE,   scale_factor,      2)
-#define star_v1_CurrentSensorCalibration_CALLBACK pb_default_field_callback
+X(a, STATIC,   REPEATED, DOUBLE,   offset_ma,         1) \
+X(a, STATIC,   REPEATED, DOUBLE,   scale_factor,      2)
+#define star_v1_CurrentSensorCalibration_CALLBACK NULL
 #define star_v1_CurrentSensorCalibration_DEFAULT NULL
 
 #define star_v1_TemperatureCalibration_FIELDLIST(X, a) \
@@ -646,18 +654,18 @@ X(a, STATIC,   SINGULAR, UINT32,   bms_poll_period_ms,   4)
 
 #define star_v1_ConfigValidationResult_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    status,            1) \
-X(a, CALLBACK, REPEATED, MESSAGE,  errors,            2)
-#define star_v1_ConfigValidationResult_CALLBACK pb_default_field_callback
+X(a, STATIC,   REPEATED, MESSAGE,  errors,            2)
+#define star_v1_ConfigValidationResult_CALLBACK NULL
 #define star_v1_ConfigValidationResult_DEFAULT NULL
 #define star_v1_ConfigValidationResult_errors_MSGTYPE star_v1_ConfigValidationError
 
 #define star_v1_ConfigValidationError_FIELDLIST(X, a) \
-X(a, CALLBACK, SINGULAR, STRING,   field_path,        1) \
+X(a, STATIC,   SINGULAR, STRING,   field_path,        1) \
 X(a, STATIC,   SINGULAR, UENUM,    error_code,        2) \
-X(a, CALLBACK, SINGULAR, STRING,   message,           3) \
-X(a, CALLBACK, SINGULAR, STRING,   actual_value,      4) \
-X(a, CALLBACK, SINGULAR, STRING,   expected_constraint,   5)
-#define star_v1_ConfigValidationError_CALLBACK pb_default_field_callback
+X(a, STATIC,   SINGULAR, STRING,   message,           3) \
+X(a, STATIC,   SINGULAR, STRING,   actual_value,      4) \
+X(a, STATIC,   SINGULAR, STRING,   expected_constraint,   5)
+#define star_v1_ConfigValidationError_CALLBACK NULL
 #define star_v1_ConfigValidationError_DEFAULT NULL
 
 extern const pb_msgdesc_t star_v1_GetConfigurationRequest_msg;
@@ -710,30 +718,30 @@ extern const pb_msgdesc_t star_v1_ConfigValidationError_msg;
 #define star_v1_ConfigValidationError_fields &star_v1_ConfigValidationError_msg
 
 /* Maximum encoded size of messages (where known) */
-/* star_v1_GetConfigurationResponse_size depends on runtime parameters */
-/* star_v1_SetConfigurationRequest_size depends on runtime parameters */
-/* star_v1_SetConfigurationResponse_size depends on runtime parameters */
-/* star_v1_ResetToDefaultsResponse_size depends on runtime parameters */
-/* star_v1_ValidateConfigurationRequest_size depends on runtime parameters */
-/* star_v1_ValidateConfigurationResponse_size depends on runtime parameters */
-/* star_v1_SetMotorPidConfigResponse_size depends on runtime parameters */
-/* star_v1_SystemConfiguration_size depends on runtime parameters */
-/* star_v1_CurrentSensorCalibration_size depends on runtime parameters */
-/* star_v1_ConfigValidationResult_size depends on runtime parameters */
-/* star_v1_ConfigValidationError_size depends on runtime parameters */
-#define STAR_V1_STAR_V1_CONFIGURATION_PB_H_MAX_SIZE star_v1_GetMotorPidConfigResponse_size
+#define STAR_V1_STAR_V1_CONFIGURATION_PB_H_MAX_SIZE star_v1_SetConfigurationResponse_size
+#define star_v1_ConfigValidationError_size       488
+#define star_v1_ConfigValidationResult_size      7858
+#define star_v1_CurrentSensorCalibration_size    72
 #define star_v1_EncoderConfiguration_size        24
 #define star_v1_GetConfigurationRequest_size     149
+#define star_v1_GetConfigurationResponse_size    852
 #define star_v1_GetMotorPidConfigRequest_size    160
 #define star_v1_GetMotorPidConfigResponse_size   439
 #define star_v1_MotorPidConfiguration_size       76
 #define star_v1_ResetToDefaultsRequest_size      151
+#define star_v1_ResetToDefaultsResponse_size     852
 #define star_v1_SafetyThresholds_size            23
 #define star_v1_SaveConfigurationRequest_size    149
 #define star_v1_SaveConfigurationResponse_size   371
+#define star_v1_SetConfigurationRequest_size     640
+#define star_v1_SetConfigurationResponse_size    8224
 #define star_v1_SetMotorPidConfigRequest_size    227
+#define star_v1_SetMotorPidConfigResponse_size   8224
+#define star_v1_SystemConfiguration_size         486
 #define star_v1_TemperatureCalibration_size      9
 #define star_v1_TimingConfiguration_size         24
+#define star_v1_ValidateConfigurationRequest_size 638
+#define star_v1_ValidateConfigurationResponse_size 8224
 
 #ifdef __cplusplus
 } /* extern "C" */
