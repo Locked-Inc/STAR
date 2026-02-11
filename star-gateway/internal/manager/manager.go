@@ -942,7 +942,7 @@ func (tm *TransportManager) selectBestTransportLocked() *TransportWrapper {
 		}
 		return nil // SPI not available
 
-	default: // ModeAuto, ModePreferUSB
+	default: // ModeAuto
 		return candidates[0] // Highest priority
 	}
 }

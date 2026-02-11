@@ -60,8 +60,9 @@ func Run(ctx context.Context, config Config) error {
 }
 
 // initTransportManager initializes the TransportManager based on the provided configuration.
-func initTransportManager(ctx context.Context, config Config) (*manager.TransportManager, error) {
+func initTransportManager(ctx context.Context, config manager.Config) (*manager.TransportManager, error) {
 	// Create transportmanager config
+	tm := manager.NewTransportManager()
 	// Create transportmanager
 	// Get shared session state
 
