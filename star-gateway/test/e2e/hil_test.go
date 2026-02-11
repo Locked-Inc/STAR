@@ -34,9 +34,6 @@ const (
 	// Gateway initialization timeout
 	gatewayStartupTimeout = 2 * time.Second
 
-	// Time to allow telemetry to settle before assertions
-	telemetrySettleTime = 500 * time.Millisecond
-
 	// Timeout for graceful gateway shutdown
 	// Set to 10s - adequate for clean shutdown now that duplicate wait logic is removed
 	// If this timeout fires, it indicates a stuck resource (transport, dispatcher, etc.)
