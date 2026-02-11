@@ -37,7 +37,7 @@
  * | Velocity Response Encode | 6 | Header population, status codes, error handling |
  * | Emergency Stop Request Decode | 6 | E-stop message parsing, error injection |
  * | Emergency Stop Response Encode | 8 | E-stop engaged/disengaged states, status codes |
- * | Telemetry Encode | 14 | Battery, GPS, IMU, temperature, WiFi, CPU, motor load |
+ * | Telemetry Encode | 9 | Timestamp, sequence, emergency stop, fault flags, encoders, battery, temperature |
  * | Helper Functions (Velocity Cmd) | 5 | Message factory validation, zero initialization |
  * | Helper Functions (Response Hdr) | 6 | Status code mapping, request ID handling |
  * | Encoded Length Tracking | 2 | Message size validation, empty message edge case |
@@ -50,7 +50,7 @@
  * | star.v1.SetVelocityResponse | RX72N → RPi5 | ResponseHeader (optional) | Command acknowledgment with status/latency |
  * | star.v1.EmergencyStopRequest | RPi5 → RX72N | engage (bool) | Emergency stop command |
  * | star.v1.EmergencyStopResponse | RX72N → RPi5 | ResponseHeader + estop_engaged (bool) | E-stop state confirmation |
- * | star.v1.TelemetryData | RX72N → RPi5 | 15+ fields (battery, GPS, IMU, etc.) | Sensor/motor status telemetry |
+ * | star.v1.TelemetryData | RX72N → RPi5 | 11 fields (timestamp, sequence, e-stop, faults, encoders, battery, temp) | Sensor/motor status telemetry |
  *
  * **Test Methodology:**
  * @par 1. Initialization Tests:
@@ -99,14 +99,15 @@
  * - sequence: 0 to UINT32_MAX (wraps to 0)
  * - timestamp_us: microsecond timestamp (optional)
  *
- * Telemetry Data (15+ fields):
- * - battery_percent: 0-100 (double)
- * - temperature_celsius: -40 to +85°C (double)
- * - cpu_usage_percent: 0-100 (double)
- * - motor_load_percent: 0-100 (double)
- * - wifi_signal_dbm: -100 to 0 dBm (int32)
- * - GPS (nested): latitude_deg, longitude_deg, altitude_m, accuracy_m, satellites (uint32), fix_type (enum)
- * - IMU (nested): pitch_rad, roll_rad, yaw_rad, accel_{x,y,z}_mps2, gyro_{x,y,z}_rad_per_s
+ * Telemetry Data (11 fields):
+ * - timestamp_us: microsecond timestamp (int64)
+ * - frame_sequence: frame counter (uint32)
+ * - emergency_stop: e-stop state (bool)
+ * - fault_flags: motor fault bitfield (uint32)
+ * - encoder_front_left/right/back_left/right: EncoderData (nested, 4 motors)
+ * - battery_voltage_v: battery voltage in volts (double)
+ * - battery_soc_percent: state of charge 0-100% (uint32)
+ * - temperature_celsius: ambient temperature (double)
  *
  * Response Header:
  * - status: enum (STATUS_OK, STATUS_INVALID_REQUEST, STATUS_INTERNAL_ERROR, etc.)
@@ -122,20 +123,20 @@
  * | SetVelocityResponse | 6 | - | - | 6 (create_response_header) |
  * | EmergencyStopRequest | - | 6 | - | - |
  * | EmergencyStopResponse | 8 | - | - | - |
- * | TelemetryData | 14 | - | - | - |
+ * | TelemetryData | 9 | - | - | - |
  * | **TOTAL** | **36** | **12** | **3** | **11** |
  *
  * @par Field Type Coverage:
  * | Field Type | Tests | Examples |
  * |------------|-------|----------|
- * | double | 20 | velocity_mps, battery_percent, temperature_celsius, GPS coords |
- * | uint32 | 8 | sequence, timestamp_us, satellites, latency_us |
- * | int32 | 3 | wifi_signal_dbm |
- * | bool | 6 | has_command, has_gps, has_imu, estop_engaged |
- * | enum | 8 | Status codes (OK, INVALID_REQUEST, etc.), GpsFix types |
+ * | double | 15 | velocity_mps, battery_voltage_v, temperature_celsius, encoder velocity_mps |
+ * | uint32 | 10 | sequence, frame_sequence, fault_flags, battery_soc_percent, motor_id |
+ * | int64 | 6 | timestamp_us, encoder ticks, encoder timestamp_us |
+ * | bool | 4 | has_command, emergency_stop, estop_engaged |
+ * | enum | 8 | Status codes (OK, INVALID_REQUEST, etc.) |
  * | string | 2 | request_id (with nullptr and valid string) |
- * | nested message | 6 | GPS, IMU submessages |
- * | optional fields | 12 | has_command, has_header, has_gps, has_imu |
+ * | nested message | 4 | EncoderData submessages (4 motors) |
+ * | optional fields | 4 | has_command, has_header |
  *
  * @par Error Code Coverage:
  * | Error Code | Tests | Scenarios |
@@ -182,7 +183,7 @@
  *
  * @par Test Vector Generation:
  * - **internal_make_velocity_params():** Factory function for VelocityCommand parameter struct
- * - **Static constants:** s_test_front_left_velocity_mps, s_test_battery_percent, etc.
+ * - **Static constants:** s_test_front_left_velocity_mps, s_test_battery_voltage_v, s_test_battery_soc_percent, etc.
  * - **Edge cases:** Zero velocity, max velocity (2.0 m/s), negative velocity (-2.0 m/s)
  * - **Sequence numbers:** 0, 42 (arbitrary), UINT32_MAX (wrap test)
  *
@@ -302,10 +303,11 @@ static const uint32_t s_test_sequence_max = UINT32_MAX;
  * - k_test_latency_us: 500 µs response latency
  *
  * @par Telemetry Field Constants:
- * - k_test_wifi_signal_dbm: -65 dBm (typical WiFi signal strength)
- * - k_test_satellites: 8 GPS satellites (good fix)
+ * - k_test_frame_sequence: 42 (arbitrary frame sequence number)
+ * - k_test_fault_flags: 0 (no faults)
  * - k_test_motor_id_left: Motor 0 (front-left in 4-motor config)
  * - k_test_motor_id_right: Motor 1 (front-right in 4-motor config)
+ * - k_test_battery_soc_percent: 85% state of charge
  *
  * @par Encoded Size Lower Bounds:
  * - k_min_encoded_velocity_req: Minimum bytes for VelocityCommand (10 bytes)
@@ -322,10 +324,12 @@ typedef enum : int32_t {
   k_test_sequence_zero        = 0,      /**< Initial sequence number */
   k_test_sequence_number      = 42,     /**< Arbitrary test sequence number */
   k_test_timestamp_us         = 1000000,/**< 1 second timestamp in microseconds */
-  k_test_wifi_signal_dbm      = -65,    /**< WiFi signal strength in dBm */
+  k_test_frame_sequence       = 42,     /**< Telemetry frame sequence number */
+  k_test_fault_flags          = 0,      /**< No faults (0 = all motors OK) */
+  k_test_battery_soc_percent  = 85,     /**< Battery state of charge (85%) */
   k_test_motor_id_left        = 0,      /**< Front-left motor index */
   k_test_motor_id_right       = 1,      /**< Front-right motor index */
-  k_test_satellites           = 8,      /**< GPS satellite count (good fix) */
+  k_test_encoder_ticks        = 1000,   /**< Encoder tick count */
   k_test_latency_us           = 500,    /**< Response latency in microseconds */
   k_test_free_heap_bytes      = 262144, /**< 256 KB free heap (telemetry) */
   k_test_uptime_seconds       = 3600,   /**< 1 hour uptime in seconds */
@@ -362,18 +366,9 @@ static const double s_test_zero_velocity_mps        = 0.0;  /**< Zero velocity (
  * Values chosen to be non-zero and distinguishable from defaults.
  * @{
  */
-static const double s_test_battery_percent       = 85.5;      /**< Battery level (0-100%) */
-static const double s_test_cpu_usage_percent     = 45.0;      /**< CPU utilization (0-100%) */
+static const double s_test_battery_voltage_v     = 16.8;      /**< Battery voltage (V) */
 static const double s_test_temperature_c         = 25.5;      /**< Temperature (°C) */
-static const double s_test_motor_load_percent    = 30.0;      /**< Motor load (0-100%) */
-static const double s_test_latitude_deg          = 37.7749;   /**< GPS latitude (San Francisco) */
-static const double s_test_longitude_deg         = -122.4194; /**< GPS longitude (San Francisco) */
-static const double s_test_altitude_m            = 10.0;      /**< GPS altitude (meters) */
-static const double s_test_accuracy_m            = 2.5;       /**< GPS accuracy (meters) */
-static const double s_test_pitch_rad             = 0.1;       /**< IMU pitch angle (radians) */
-static const double s_test_roll_rad              = 0.05;      /**< IMU roll angle (radians) */
-static const double s_test_yaw_rad               = 1.57;      /**< IMU yaw angle (~90°) */
-static const double s_test_accel_z_mps2          = 9.81;      /**< IMU Z-axis acceleration (gravity) */
+static const double s_test_encoder_velocity_mps  = 1.5;       /**< Encoder velocity (m/s) */
 /** @} */
 
 /**
@@ -1674,7 +1669,8 @@ void test_encode_telemetry_empty(void)
 void test_encode_telemetry_battery(void)
 {
   star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
-  msg.battery_percent       = s_test_battery_percent;
+  msg.battery_voltage_v     = s_test_battery_voltage_v;
+  msg.battery_soc_percent   = k_test_battery_soc_percent;
 
   uint32_t len = 0;
   rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
@@ -1697,80 +1693,49 @@ void test_encode_telemetry_temperature(void)
 }
 
 /**
- * @brief Test encode telemetry with CPU usage data
+ * @brief Test encode telemetry with encoder data
  */
-void test_encode_telemetry_cpu_usage(void)
+void test_encode_telemetry_encoder(void)
 {
   star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
-  msg.cpu_usage_percent     = s_test_cpu_usage_percent;
+  msg.has_encoder_front_left          = true; /* Mark as present for nanopb */
+  msg.encoder_front_left.motor_id     = 1;
+  msg.encoder_front_left.ticks        = k_test_encoder_ticks;
+  msg.encoder_front_left.velocity_mps = s_test_encoder_velocity_mps;
+  msg.encoder_front_left.timestamp_us = k_test_timestamp_us;
 
   uint32_t len = 0;
   rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_GREATER_THAN(k_min_encoded_telemetry, len);
 }
 
 /**
- * @brief Test encode telemetry with motor load data
+ * @brief Test encode telemetry with emergency stop flag
  */
-void test_encode_telemetry_motor_load(void)
+void test_encode_telemetry_emergency_stop(void)
 {
   star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
-  msg.motor_load_percent    = s_test_motor_load_percent;
+  msg.emergency_stop        = true;
 
   uint32_t len = 0;
   rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_GREATER_THAN(k_min_encoded_telemetry, len);
 }
 
 /**
- * @brief Test encode telemetry with WiFi signal data
+ * @brief Test encode telemetry with fault flags
  */
-void test_encode_telemetry_wifi_signal(void)
+void test_encode_telemetry_fault_flags(void)
 {
   star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
-  msg.wifi_signal_dbm       = k_test_wifi_signal_dbm;
+  msg.fault_flags           = 0x0F; /* All 4 motors faulted */
 
   uint32_t len = 0;
   rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-}
-
-/**
- * @brief Test encode telemetry with GPS data
- */
-void test_encode_telemetry_gps(void)
-{
-  star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
-  msg.has_gps               = true;
-  msg.gps.latitude_deg      = s_test_latitude_deg;
-  msg.gps.longitude_deg     = s_test_longitude_deg;
-  msg.gps.altitude_m        = s_test_altitude_m;
-  msg.gps.accuracy_m        = s_test_accuracy_m;
-  msg.gps.satellites        = k_test_satellites;
-  msg.gps.fix_type          = star_v1_GpsFix_GPS_FIX_3D;
-
-  uint32_t len = 0;
-  rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
-  TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_GREATER_THAN(0, len);
-}
-
-/**
- * @brief Test encode telemetry with IMU data
- */
-void test_encode_telemetry_imu(void)
-{
-  star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
-  msg.has_imu               = true;
-  msg.imu.pitch_rad         = s_test_pitch_rad;
-  msg.imu.roll_rad          = s_test_roll_rad;
-  msg.imu.yaw_rad           = s_test_yaw_rad;
-  msg.imu.accel_z_mps2      = s_test_accel_z_mps2;
-
-  uint32_t len = 0;
-  rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
-  TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_GREATER_THAN(0, len);
+  TEST_ASSERT_GREATER_THAN(k_min_encoded_telemetry, len);
 }
 
 /**
@@ -1780,28 +1745,45 @@ void test_encode_telemetry_all_fields(void)
 {
   star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
 
-  /* Basic sensor data */
-  msg.battery_percent     = s_test_battery_percent;
+  /* Timestamp and sequence */
+  msg.timestamp_us    = k_test_timestamp_us;
+  msg.frame_sequence  = k_test_frame_sequence;
+
+  /* Emergency stop and fault flags */
+  msg.emergency_stop = false;
+  msg.fault_flags    = k_test_fault_flags;
+
+  /* Encoder data for all 4 motors */
+  msg.has_encoder_front_left = true;
+  msg.encoder_front_left.motor_id     = k_test_motor_id_left;
+  msg.encoder_front_left.ticks        = k_test_encoder_ticks;
+  msg.encoder_front_left.velocity_mps = s_test_encoder_velocity_mps;
+  msg.encoder_front_left.timestamp_us = k_test_timestamp_us;
+
+  msg.has_encoder_front_right = true;
+  msg.encoder_front_right.motor_id     = k_test_motor_id_right;
+  msg.encoder_front_right.ticks        = k_test_encoder_ticks;
+  msg.encoder_front_right.velocity_mps = s_test_encoder_velocity_mps;
+  msg.encoder_front_right.timestamp_us = k_test_timestamp_us;
+
+  msg.has_encoder_back_left = true;
+  msg.encoder_back_left.motor_id     = 2;
+  msg.encoder_back_left.ticks        = k_test_encoder_ticks;
+  msg.encoder_back_left.velocity_mps = s_test_encoder_velocity_mps;
+  msg.encoder_back_left.timestamp_us = k_test_timestamp_us;
+
+  msg.has_encoder_back_right = true;
+  msg.encoder_back_right.motor_id     = 3;
+  msg.encoder_back_right.ticks        = k_test_encoder_ticks;
+  msg.encoder_back_right.velocity_mps = s_test_encoder_velocity_mps;
+  msg.encoder_back_right.timestamp_us = k_test_timestamp_us;
+
+  /* Battery data */
+  msg.battery_voltage_v   = s_test_battery_voltage_v;
+  msg.battery_soc_percent = k_test_battery_soc_percent;
+
+  /* Temperature */
   msg.temperature_celsius = s_test_temperature_c;
-  msg.cpu_usage_percent   = s_test_cpu_usage_percent;
-  msg.motor_load_percent  = s_test_motor_load_percent;
-  msg.wifi_signal_dbm     = k_test_wifi_signal_dbm;
-
-  /* GPS data */
-  msg.has_gps           = true;
-  msg.gps.latitude_deg  = s_test_latitude_deg;
-  msg.gps.longitude_deg = s_test_longitude_deg;
-  msg.gps.altitude_m    = s_test_altitude_m;
-  msg.gps.accuracy_m    = s_test_accuracy_m;
-  msg.gps.satellites    = k_test_satellites;
-  msg.gps.fix_type      = star_v1_GpsFix_GPS_FIX_RTK_FIXED;
-
-  /* IMU data */
-  msg.has_imu          = true;
-  msg.imu.pitch_rad    = s_test_pitch_rad;
-  msg.imu.roll_rad     = s_test_roll_rad;
-  msg.imu.yaw_rad      = s_test_yaw_rad;
-  msg.imu.accel_z_mps2 = s_test_accel_z_mps2;
 
   uint32_t len = 0;
   rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
@@ -2113,23 +2095,30 @@ void test_create_response_header_all_status_codes(void)
  * @brief Test that encoded length increases with more data
  * @details
  * Verifies protobuf size optimization - more fields = larger message.
- * Compares small message (battery only) vs large message (battery + GPS + IMU).
+ * Compares small message (battery only) vs large message (battery + encoders + temperature).
  */
 void test_encoded_length_increases_with_data(void)
 {
   star_v1_TelemetryData msg_small = star_v1_TelemetryData_init_zero;
   star_v1_TelemetryData msg_large = star_v1_TelemetryData_init_zero;
 
-  /* Small message: just battery */
-  msg_small.battery_percent = s_test_battery_percent;
+  /* Small message: just battery voltage */
+  msg_small.battery_voltage_v = s_test_battery_voltage_v;
 
-  /* Large message: battery + GPS + IMU */
-  msg_large.battery_percent   = s_test_battery_percent;
-  msg_large.has_gps           = true;
-  msg_large.gps.latitude_deg  = s_test_latitude_deg;
-  msg_large.gps.longitude_deg = s_test_longitude_deg;
-  msg_large.has_imu           = true;
-  msg_large.imu.pitch_rad     = s_test_pitch_rad;
+  /* Large message: battery + 2 encoders + temperature */
+  msg_large.battery_voltage_v   = s_test_battery_voltage_v;
+  msg_large.battery_soc_percent = k_test_battery_soc_percent;
+  msg_large.temperature_celsius = s_test_temperature_c;
+
+  msg_large.has_encoder_front_left = true;
+  msg_large.encoder_front_left.motor_id     = 0;
+  msg_large.encoder_front_left.ticks        = k_test_encoder_ticks;
+  msg_large.encoder_front_left.velocity_mps = s_test_encoder_velocity_mps;
+
+  msg_large.has_encoder_front_right = true;
+  msg_large.encoder_front_right.motor_id     = 1;
+  msg_large.encoder_front_right.ticks        = k_test_encoder_ticks;
+  msg_large.encoder_front_right.velocity_mps = s_test_encoder_velocity_mps;
 
   uint32_t len_small = 0;
   uint32_t len_large = 0;
@@ -2218,30 +2207,40 @@ void test_telemetry_fits_in_buffer(void)
   star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
 
   /* Fill all fields */
-  msg.battery_percent     = s_test_battery_percent;
+  msg.timestamp_us    = k_test_timestamp_us;
+  msg.frame_sequence  = k_test_frame_sequence;
+  msg.emergency_stop  = true;
+  msg.fault_flags     = 0xFFFFFFFF; /* All faults */
+
+  /* All 4 encoders */
+  msg.has_encoder_front_left = true;
+  msg.encoder_front_left.motor_id     = 0;
+  msg.encoder_front_left.ticks        = k_test_encoder_ticks;
+  msg.encoder_front_left.velocity_mps = s_test_encoder_velocity_mps;
+  msg.encoder_front_left.timestamp_us = k_test_timestamp_us;
+
+  msg.has_encoder_front_right = true;
+  msg.encoder_front_right.motor_id     = 1;
+  msg.encoder_front_right.ticks        = k_test_encoder_ticks;
+  msg.encoder_front_right.velocity_mps = s_test_encoder_velocity_mps;
+  msg.encoder_front_right.timestamp_us = k_test_timestamp_us;
+
+  msg.has_encoder_back_left = true;
+  msg.encoder_back_left.motor_id     = 2;
+  msg.encoder_back_left.ticks        = k_test_encoder_ticks;
+  msg.encoder_back_left.velocity_mps = s_test_encoder_velocity_mps;
+  msg.encoder_back_left.timestamp_us = k_test_timestamp_us;
+
+  msg.has_encoder_back_right = true;
+  msg.encoder_back_right.motor_id     = 3;
+  msg.encoder_back_right.ticks        = k_test_encoder_ticks;
+  msg.encoder_back_right.velocity_mps = s_test_encoder_velocity_mps;
+  msg.encoder_back_right.timestamp_us = k_test_timestamp_us;
+
+  /* Battery and temperature */
+  msg.battery_voltage_v   = s_test_battery_voltage_v;
+  msg.battery_soc_percent = k_test_battery_soc_percent;
   msg.temperature_celsius = s_test_temperature_c;
-  msg.cpu_usage_percent   = s_test_cpu_usage_percent;
-  msg.motor_load_percent  = s_test_motor_load_percent;
-  msg.wifi_signal_dbm     = k_test_wifi_signal_dbm;
-
-  msg.has_gps           = true;
-  msg.gps.latitude_deg  = s_test_latitude_deg;
-  msg.gps.longitude_deg = s_test_longitude_deg;
-  msg.gps.altitude_m    = s_test_altitude_m;
-  msg.gps.accuracy_m    = s_test_accuracy_m;
-  msg.gps.satellites    = k_test_satellites;
-  msg.gps.fix_type      = star_v1_GpsFix_GPS_FIX_RTK_FIXED;
-
-  msg.has_imu              = true;
-  msg.imu.pitch_rad        = s_test_pitch_rad;
-  msg.imu.roll_rad         = s_test_roll_rad;
-  msg.imu.yaw_rad          = s_test_yaw_rad;
-  msg.imu.accel_x_mps2     = s_test_accel_z_mps2;
-  msg.imu.accel_y_mps2     = s_test_accel_z_mps2;
-  msg.imu.accel_z_mps2     = s_test_accel_z_mps2;
-  msg.imu.gyro_x_rad_per_s = s_test_pitch_rad;
-  msg.imu.gyro_y_rad_per_s = s_test_roll_rad;
-  msg.imu.gyro_z_rad_per_s = s_test_yaw_rad;
 
   uint32_t len = 0;
   rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
@@ -2355,11 +2354,9 @@ int main(void)
   RUN_TEST(test_encode_telemetry_empty);
   RUN_TEST(test_encode_telemetry_battery);
   RUN_TEST(test_encode_telemetry_temperature);
-  RUN_TEST(test_encode_telemetry_cpu_usage);
-  RUN_TEST(test_encode_telemetry_motor_load);
-  RUN_TEST(test_encode_telemetry_wifi_signal);
-  RUN_TEST(test_encode_telemetry_gps);
-  RUN_TEST(test_encode_telemetry_imu);
+  RUN_TEST(test_encode_telemetry_encoder);
+  RUN_TEST(test_encode_telemetry_emergency_stop);
+  RUN_TEST(test_encode_telemetry_fault_flags);
   RUN_TEST(test_encode_telemetry_all_fields);
   RUN_TEST(test_encode_telemetry_not_initialized);
 

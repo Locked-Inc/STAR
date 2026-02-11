@@ -254,11 +254,11 @@ void test_telemetry_task_encodes_protobuf(void)
   rx_err_t              err;
 
   /* Set up telemetry data */
-  telemetry.timestamp_us     = 1000000;
-  telemetry.frame_sequence   = 42;
-  telemetry.emergency_stop   = false;
+  telemetry.timestamp_us      = 1000000;
+  telemetry.frame_sequence    = 42;
+  telemetry.emergency_stop    = false;
   telemetry.battery_voltage_v = 16.5;
-  telemetry.battery_percent   = 75.0;
+  telemetry.battery_soc_percent = 75;
 
   /* Configure mock to succeed */
   mock_nanopb_set_encode_telemetry_return(k_rx_ok);
