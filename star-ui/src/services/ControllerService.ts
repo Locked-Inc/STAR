@@ -43,9 +43,9 @@ export class ControllerService {
     if (!this.socket || this.socket.readyState !== WebSocket.OPEN) return;
 
     const state: ControllerState = {
-      linearVel,
-      angularVel,
-      timestamp: Date.now().toString(), // long_type_string option was used
+      linearVelNormalized: linearVel,
+      angularVelNormalized: angularVel,
+      timestampMs: Date.now().toString(), // long_type_string option was used
       debug,
     };
 

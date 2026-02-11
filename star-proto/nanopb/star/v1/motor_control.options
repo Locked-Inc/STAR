@@ -12,6 +12,3 @@
 # If comprehensive stack traces or detailed diagnostics are needed, consider
 # increasing to 256 bytes or using a repeated string field.
 star.v1.EmergencyStopRequest.reason     max_size:128
-
-# Motor status array (2 motors for differential drive)
-star.v1.SetVelocityResponse.motor_status    max_count:2

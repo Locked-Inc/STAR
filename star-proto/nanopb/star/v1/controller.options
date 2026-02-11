@@ -1,0 +1,6 @@
+# controller.options - nanopb field size constraints
+# Gamepad controller state for direct robot control
+
+# No repeated fields or strings in ControllerState message
+# All fields are fixed-size primitives (float, int64, bool)
+# This file exists for completeness but has no constraints

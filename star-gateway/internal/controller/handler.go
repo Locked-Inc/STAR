@@ -84,7 +84,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// Debug log to verify data reception
 		if msg.Debug {
-			log.Printf("Received: Linear=%.2f, Angular=%.2f", msg.LinearVel, msg.AngularVel)
+			log.Printf("Received: Linear=%.2f, Angular=%.2f", msg.LinearVelNormalized, msg.AngularVelNormalized)
 		}
 
 		// Convert ControllerState to VelocityCommand and forward to Gateway
@@ -145,8 +145,8 @@ func convertToVelocityCommand(state *starv1.ControllerState) *starv1.VelocityCom
 	const wheelBase float32 = 0.150 // meters (150mm track width)
 
 	halfBase := wheelBase / 2.0
-	vLeft := state.LinearVel - (state.AngularVel * halfBase)
-	vRight := state.LinearVel + (state.AngularVel * halfBase)
+	vLeft := state.LinearVelNormalized - (state.AngularVelNormalized * halfBase)
+	vRight := state.LinearVelNormalized + (state.AngularVelNormalized * halfBase)
 
 	// For differential drive: left side motors get same velocity, right side motors get same velocity
 	return &starv1.VelocityCommand{

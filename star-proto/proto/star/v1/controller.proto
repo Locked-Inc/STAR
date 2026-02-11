@@ -16,18 +16,26 @@ option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
 option java_multiple_files = true;
 option java_package = "com.star.proto.v1";
 
-// ControllerState represents the state of a gamepad controller for direct robot control.
+// ControllerState represents gamepad controller state for direct robot control.
+// Velocity values are normalized joystick inputs (-1.0 to 1.0).
+// Gateway/ROS2 scales to actual robot velocities.
 message ControllerState {
-  // Linear velocity (v) from Left Stick Y-axis. Range: [-1.0, 1.0]
-  float linear_vel = 1;
+  // Linear velocity command from Left Stick Y-axis (normalized).
+  // Range: -1.0 to 1.0 (unitless).
+  // Positive = forward, negative = backward.
+  // Scaled to robot velocity by gateway/ROS2.
+  float linear_vel_normalized = 1;
 
-  // Angular velocity (ω) from Left Stick X-axis. Range: [-1.0, 1.0]
-  float angular_vel = 2;
+  // Angular velocity command from Left Stick X-axis (normalized).
+  // Range: -1.0 to 1.0 (unitless).
+  // Positive = counter-clockwise, negative = clockwise.
+  // Scaled to robot angular velocity by gateway/ROS2.
+  float angular_vel_normalized = 2;
 
-  // Timestamp in milliseconds (e.g., since epoch or monotonic boot time)
+  // Timestamp in milliseconds since epoch or monotonic boot time.
   // Used for jitter buffer and out-of-order packet handling.
-  int64 timestamp = 3;
+  int64 timestamp_ms = 3;
 
-  // Enable verbose debug logging on the gateway
+  // Enable verbose debug logging on the gateway.
   bool debug = 4;
 }

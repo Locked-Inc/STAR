@@ -37,9 +37,9 @@ func TestWebSocketHandler_ProcessMessage(t *testing.T) {
 
 	// 3. Send ControllerState Message
 	msg := &starv1.ControllerState{
-		LinearVel:  1.0,
-		AngularVel: 0.5,
-		Timestamp:  time.Now().UnixMilli(),
+		LinearVelNormalized:  1.0,
+		AngularVelNormalized: 0.5,
+		TimestampMs:  time.Now().UnixMilli(),
 	}
 	bytes, err := proto.Marshal(msg)
 	if err != nil {
@@ -62,11 +62,11 @@ func TestWebSocketHandler_ProcessMessage(t *testing.T) {
 		return
 	}
 
-	if lastState.LinearVel != 1.0 {
-		t.Errorf("got LinearVel %v, want 1.0", lastState.LinearVel)
+	if lastState.LinearVelNormalized != 1.0 {
+		t.Errorf("got LinearVel %v, want 1.0", lastState.LinearVelNormalized)
 	}
-	if lastState.AngularVel != 0.5 {
-		t.Errorf("got AngularVel %v, want 0.5", lastState.AngularVel)
+	if lastState.AngularVelNormalized != 0.5 {
+		t.Errorf("got AngularVel %v, want 0.5", lastState.AngularVelNormalized)
 	}
 }
 
@@ -93,9 +93,9 @@ func TestWebSocketHandler_DebugFlag(t *testing.T) {
 
 	// 3. Send Message with Debug = true
 	msg := &starv1.ControllerState{
-		LinearVel:  0.5,
-		AngularVel: -0.5,
-		Timestamp:  time.Now().UnixMilli(),
+		LinearVelNormalized:  0.5,
+		AngularVelNormalized: -0.5,
+		TimestampMs:  time.Now().UnixMilli(),
 		Debug:      true,
 	}
 	bytes, err := proto.Marshal(msg)
@@ -128,14 +128,14 @@ func TestWebSocketHandler_Watchdog(t *testing.T) {
 
 	// Inject state directly to test watchdog logic without full WS overhead
 	handler.mu.Lock()
-	handler.lastState = &starv1.ControllerState{LinearVel: 1.0}
+	handler.lastState = &starv1.ControllerState{LinearVelNormalized: 1.0}
 	handler.lastReceived = time.Now()
 	handler.mu.Unlock()
 
 	// 1. Check immediate access
 	state := handler.GetSafeState() // Method we will implement
-	if state.LinearVel != 1.0 {
-		t.Errorf("Immediate: got %v, want 1.0", state.LinearVel)
+	if state.LinearVelNormalized != 1.0 {
+		t.Errorf("Immediate: got %v, want 1.0", state.LinearVelNormalized)
 	}
 
 	// 2. Wait for timeout > 200ms
@@ -143,8 +143,8 @@ func TestWebSocketHandler_Watchdog(t *testing.T) {
 
 	// 3. Check watchdog trigger
 	state = handler.GetSafeState()
-	if state.LinearVel != 0.0 {
-		t.Errorf("After timeout: got %v, want 0.0", state.LinearVel)
+	if state.LinearVelNormalized != 0.0 {
+		t.Errorf("After timeout: got %v, want 0.0", state.LinearVelNormalized)
 	}
 }
 
@@ -172,9 +172,9 @@ func TestHandlerWithGateway(t *testing.T) {
 
 	// 3. Send Message
 	msg := &starv1.ControllerState{
-		LinearVel:  1.0,
-		AngularVel: 0.0,
-		Timestamp:  time.Now().UnixMilli(),
+		LinearVelNormalized:  1.0,
+		AngularVelNormalized: 0.0,
+		TimestampMs:  time.Now().UnixMilli(),
 	}
 	bytes, _ := proto.Marshal(msg)
 	//nolint:staticcheck

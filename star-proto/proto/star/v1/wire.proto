@@ -57,8 +57,6 @@ message WireMessage {
     VelocityCommand velocity_command = 1;
     // Emergency stop command triggers immediate motor halt with hardware safety engagement.
     EmergencyStopCommand emergency_stop_command = 2;
-    // Motor power command sets raw PWM duty cycle (bypasses PID control).
-    MotorPowerCommand motor_power_command = 3;
 
     // Telemetry data (RX72N -> RPi5)
     TelemetryData telemetry_data = 10;

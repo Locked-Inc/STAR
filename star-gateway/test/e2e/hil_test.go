@@ -322,23 +322,13 @@ func (m *MockRX72N) generateTelemetryFrame(seq uint16, timestamp *int64) *frame.
 // generateMockTelemetryData creates dummy telemetry data for testing.
 func generateMockTelemetryData(timestampUs int64) *starv1.TelemetryData {
 	return &starv1.TelemetryData{
-		Imu: &starv1.ImuData{
-			PitchRad:     0.01,
-			RollRad:      -0.02,
-			YawRad:       1.57,
-			AccelXMps2:   0.1,
-			AccelYMps2:   0.0,
-			AccelZMps2:   standardGravityMps2,
-			GyroXRadPerS: 0.0,
-			GyroYRadPerS: 0.0,
-			GyroZRadPerS: 0.0,
-		},
-		BatteryPercent:     85.0,
-		WifiSignalDbm:      -45,
-		CpuUsagePercent:    25.5,
-		TemperatureCelsius: 35.2,
-		MotorLoadPercent:   15.0,
 		TimestampUs:        timestampUs,
+		FrameSequence:      1,
+		EmergencyStop:      false,
+		FaultFlags:         0,
+		BatteryVoltageV:    12.6,
+		BatterySocPercent:  85,
+		TemperatureCelsius: 35.2,
 		EncoderFrontLeft: &starv1.EncoderData{
 			MotorId:     motorIDFrontLeft,
 			Ticks:       1000,
@@ -363,10 +353,6 @@ func generateMockTelemetryData(timestampUs int64) *starv1.TelemetryData {
 			VelocityMps: 0.50,
 			TimestampUs: timestampUs,
 		},
-		EmergencyStop:     false,
-		FaultFlags:        0,
-		BatteryVoltageV:   24.5,
-		BatterySocPercent: 85,
 	}
 }
 
@@ -451,7 +437,8 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	})
 
 	gatewayClient := starv1.NewGatewayServiceClient(conn)
-	telemetryClient := starv1.NewTelemetryServiceClient(conn)
+	// TelemetryService removed - firmware operates in push mode only
+	// telemetryClient := starv1.NewTelemetryServiceClient(conn)
 
 	// 3. Start sequence monitoring goroutine to detect ARQ desynchronization
 	monitorDone := make(chan struct{})
@@ -488,56 +475,9 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	}()
 	t.Cleanup(func() { close(monitorDone) })
 
-	// 4. Test GetTelemetry (verify we receive valid telemetry data)
-	// Retry loop to allow time for first telemetry frame to arrive
-	var telemetryResp *starv1.GetTelemetryResponse
-	telemetryReq := &starv1.GetTelemetryRequest{
-		Header: &starv1.RequestHeader{RequestId: "e2e-telemetry-test"},
-	}
-
-	deadline = time.Now().Add(grpcRequestTimeout)
-	for {
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-		telemetryResp, err = telemetryClient.GetTelemetry(ctx, telemetryReq)
-		cancel()
-
-		if err == nil && telemetryResp != nil && telemetryResp.Telemetry != nil {
-			break
-		}
-
-		if time.Now().After(deadline) {
-			if err != nil {
-				t.Fatalf("GetTelemetry failed after timeout: %v", err)
-			} else {
-				t.Fatal("GetTelemetry returned empty response after timeout")
-			}
-		}
-		time.Sleep(telemetryRetryInterval)
-	}
-
-	if telemetryResp.Telemetry == nil {
-		t.Fatal("Expected non-nil telemetry data")
-	}
-
-	// Verify telemetry contains expected simulator data
-	telemetry := telemetryResp.Telemetry
-	if telemetry.BatteryVoltageV == 0 {
-		t.Error("Expected non-zero battery voltage")
-	}
-	if telemetry.BatteryPercent == 0 {
-		t.Error("Expected non-zero battery percentage")
-	}
-	if telemetry.Imu == nil {
-		t.Error("Expected non-nil IMU data")
-	}
-	if telemetry.EncoderFrontLeft == nil {
-		t.Error("Expected non-nil front left encoder data")
-	}
-
-	t.Logf("GetTelemetry success: battery=%.1fV (%.0f%%), IMU pitch=%.3f rad",
-		telemetry.BatteryVoltageV,
-		telemetry.BatteryPercent,
-		telemetry.Imu.PitchRad)
+	// 4. Test GetTelemetry - SKIPPED (TelemetryService RPC removed)
+	// Firmware operates in push mode only - telemetry transmitted unsolicited at 20Hz
+	t.Log("Skipping GetTelemetry test - service removed (firmware push mode only)")
 
 	// 5. Test GetTeleopCommand (verify connection)
 	req := &starv1.GetTeleopCommandRequest{

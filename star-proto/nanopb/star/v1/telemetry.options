@@ -1,10 +1,8 @@
 # telemetry.options - nanopb field size constraints for telemetry.proto
-# These settings optimize for ESP32 embedded use with static allocation.
+# These settings optimize for RX72N embedded use with static allocation.
 #
 # STAR Project - Texas A&M University
 
-# StreamTelemetryRequest field list
-star.v1.StreamTelemetryRequest.fields   max_count:16 max_size:32
-
-# SystemStatus firmware version
-star.v1.SystemStatus.firmware_version   max_size:32
+# No repeated fields or strings in TelemetryData message
+# All fields are fixed-size primitives or embedded messages
+# This file exists for completeness but currently has no constraints

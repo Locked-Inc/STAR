@@ -1,0 +1,13 @@
+# battery_management.options - nanopb field size constraints
+# BQ7850 BMS supports maximum 16 cells and 3 temperature sensors
+
+# CellData: Maximum 16 cells per BQ7850 spec
+star.v1.CellData.cell_mv                                max_count:16
+
+# TemperatureData: Maximum 3 temperature sensors per BQ7850 spec
+star.v1.TemperatureData.temp_deci_celsius               max_count:3
+
+# String fields
+star.v1.BmsDeviceInfo.manufacturer                      max_size:32
+star.v1.BmsDeviceInfo.device_name                       max_size:32
+star.v1.BmsDeviceInfo.chemistry                         max_size:16

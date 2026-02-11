@@ -1788,7 +1788,6 @@ static rx_err_t internal_build_and_send_telemetry(void)
     /* Convert millivolts to volts */
     telemetry.battery_voltage_v   = (float)bms_state.voltage_mv / s_mv_per_volt;
     telemetry.battery_soc_percent = bms_state.soc_percent;
-    telemetry.battery_percent     = (float)bms_state.soc_percent;
   }
 
   /* Collect temperature state */

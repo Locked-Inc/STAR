@@ -7,7 +7,6 @@ package service
 import (
 	"context"
 	"log/slog"
-	"sync"
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
@@ -73,14 +72,12 @@ func (s *MotorControlService) SetVelocity(ctx context.Context, req *starv1.SetVe
 	}
 
 	// 4. Construct response
-	// Note: Motor status is streamed back via StreamEncoders/telemetry.
 	return &starv1.SetVelocityResponse{
 		Header: &starv1.ResponseHeader{
 			RequestId:       req.Header.GetRequestId(),
 			ServerTimestamp: timestamppb.Now(),
 			Status:          starv1.Status_STATUS_OK,
 		},
-		MotorStatus: []*starv1.MotorStatus{}, // Populated by telemetry stream
 	}, nil
 }
 
@@ -132,106 +129,6 @@ func (s *MotorControlService) EmergencyStop(ctx context.Context, req *starv1.Eme
 		},
 		EstopEngaged: true,
 	}, nil
-}
-
-// SetMotorPower sets raw motor power (bypass PID).
-func (s *MotorControlService) SetMotorPower(ctx context.Context, req *starv1.SetMotorPowerRequest) (*starv1.SetMotorPowerResponse, error) {
-	// TODO: Implement specific message for MotorPower if defined in proto/firmware.
-	return nil, status.Error(codes.Unimplemented, "SetMotorPower not implemented")
-}
-
-// StreamEncoders streams encoder readings from the motor controller.
-// Uses Dispatcher to receive TelemetryData messages without contention.
-func (s *MotorControlService) StreamEncoders(req *starv1.StreamEncodersRequest, stream starv1.MotorControlService_StreamEncodersServer) error {
-	rateHz := s.validateRateHz(req.RateHz)
-	ticker := time.NewTicker(time.Second / time.Duration(rateHz))
-	defer ticker.Stop()
-
-	ctx := stream.Context()
-	telemetryCh := s.dispatcher.Subscribe(dispatcher.MessageTypeTelemetryData)
-	defer s.dispatcher.Unsubscribe(dispatcher.MessageTypeTelemetryData, telemetryCh)
-
-	var latestTelemetry *starv1.TelemetryData
-	var telemetryMutex sync.RWMutex
-
-	// Start goroutine to receive telemetry updates
-	go s.receiveTelemetryLoop(ctx, telemetryCh, &latestTelemetry, &telemetryMutex)
-
-	// Main loop sends encoder data at requested rate
-	return s.streamEncoderLoop(ctx, ticker, stream, &latestTelemetry, &telemetryMutex)
-}
-
-// validateRateHz validates and normalizes the requested streaming rate.
-func (s *MotorControlService) validateRateHz(rateHz int32) int32 {
-	if rateHz <= 0 || rateHz > 100 {
-		return 10 // Default 10 Hz
-	}
-	return rateHz
-}
-
-// receiveTelemetryLoop continuously receives telemetry from Dispatcher and updates latest value.
-func (s *MotorControlService) receiveTelemetryLoop(ctx context.Context, telemetryCh <-chan *dispatcher.DispatchedMessage, latestTelemetry **starv1.TelemetryData, mu *sync.RWMutex) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case dispMsg, ok := <-telemetryCh:
-			if !ok {
-				s.logger.Debug("telemetry subscription channel closed")
-				return
-			}
-
-			telemetry := dispMsg.WireMsg.GetTelemetryData()
-			if telemetry == nil {
-				s.logger.Warn("received wire message with nil telemetry data")
-				continue
-			}
-
-			mu.Lock()
-			*latestTelemetry = telemetry
-			mu.Unlock()
-		}
-	}
-}
-
-// streamEncoderLoop sends encoder data at the requested rate.
-func (s *MotorControlService) streamEncoderLoop(ctx context.Context, ticker *time.Ticker, stream starv1.MotorControlService_StreamEncodersServer, latestTelemetry **starv1.TelemetryData, mu *sync.RWMutex) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-ticker.C:
-			mu.RLock()
-			currentTelemetry := *latestTelemetry
-			mu.RUnlock()
-
-			if currentTelemetry != nil {
-				if err := s.sendEncoderData(stream, currentTelemetry); err != nil {
-					return err
-				}
-			}
-		}
-	}
-}
-
-// sendEncoderData sends encoder data from all four motors to the stream.
-func (s *MotorControlService) sendEncoderData(stream starv1.MotorControlService_StreamEncodersServer, telemetry *starv1.TelemetryData) error {
-	encoders := []*starv1.EncoderData{
-		telemetry.EncoderFrontLeft,
-		telemetry.EncoderFrontRight,
-		telemetry.EncoderBackLeft,
-		telemetry.EncoderBackRight,
-	}
-
-	for _, encData := range encoders {
-		if encData != nil && encData.TimestampUs > 0 {
-			if err := stream.Send(encData); err != nil {
-				s.logger.Error("failed to send encoder data", slog.String("error", err.Error()))
-				return err
-			}
-		}
-	}
-	return nil
 }
 
 // ControlStream handles bidirectional streaming.
@@ -307,14 +204,27 @@ func (s *MotorControlService) sendTelemetryLoop(ctx context.Context, stream star
 				return nil
 			}
 
-			telemetry := dispMsg.WireMsg.GetTelemetryData()
+				telemetry := dispMsg.WireMsg.GetTelemetryData()
 			if telemetry == nil {
 				s.logger.Warn("received wire message with nil telemetry data in control stream")
 				continue
 			}
 
-			if err := s.sendEncoderData(stream, telemetry); err != nil {
-				return err
+			// Send encoder data from all four motors
+			encoders := []*starv1.EncoderData{
+				telemetry.EncoderFrontLeft,
+				telemetry.EncoderFrontRight,
+				telemetry.EncoderBackLeft,
+				telemetry.EncoderBackRight,
+			}
+
+			for _, encData := range encoders {
+				if encData != nil && encData.TimestampUs > 0 {
+					if err := stream.Send(encData); err != nil {
+						s.logger.Error("failed to send encoder data", slog.String("error", err.Error()))
+						return err
+					}
+				}
 			}
 		}
 	}

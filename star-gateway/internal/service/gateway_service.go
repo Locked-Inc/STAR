@@ -30,7 +30,6 @@ type GatewayService struct {
 
 	// Telemetry cache (ROS2 → UI)
 	telemetryMu          sync.RWMutex
-	cachedSystemStatus   *starv1.SystemStatus
 	cachedBatteryState   *starv1.BatteryState
 	cachedTelemetry      *starv1.TelemetryData
 	telemetryLastUpdated time.Time
@@ -75,7 +74,6 @@ func (s *GatewayService) ForwardTelemetry(
 
 	// Cache telemetry data with write lock
 	s.telemetryMu.Lock()
-	s.cachedSystemStatus = req.SystemStatus
 	s.cachedBatteryState = req.BatteryState
 	s.cachedTelemetry = req.Telemetry
 	s.telemetryLastUpdated = time.Now()
@@ -86,19 +84,13 @@ func (s *GatewayService) ForwardTelemetry(
 	activeClients := s.activeClients
 	s.clientsMu.RUnlock()
 
-	// Log telemetry with nil-safe accessors
-	mode := "unknown"
-	if req.SystemStatus != nil {
-		mode = req.SystemStatus.GetMode().String()
-	}
-
 	batteryPercent := 0.0
 	if req.BatteryState != nil && req.BatteryState.GetSoc() != nil {
 		batteryPercent = float64(req.BatteryState.GetSoc().GetRelativeSocPercent())
 	}
 
-	log.Printf("Telemetry forwarded: mode=%s, battery=%.1f%%, clients=%d",
-		mode, batteryPercent, activeClients)
+	log.Printf("Telemetry forwarded: battery=%.1f%%, clients=%d",
+		batteryPercent, activeClients)
 
 	// Build response header
 	respHeader := &starv1.ResponseHeader{
@@ -261,14 +253,13 @@ func (s *GatewayService) UpdateTeleopCommand(cmd *starv1.VelocityCommand) {
 // Called by WebSocket handler to stream telemetry to UI clients.
 // Returns nil if no telemetry has been received yet.
 func (s *GatewayService) GetLatestTelemetry() (
-	*starv1.SystemStatus,
 	*starv1.BatteryState,
 	*starv1.TelemetryData,
 ) {
 	s.telemetryMu.RLock()
 	defer s.telemetryMu.RUnlock()
 
-	return s.cachedSystemStatus, s.cachedBatteryState, s.cachedTelemetry
+	return s.cachedBatteryState, s.cachedTelemetry
 }
 
 // GetTelemetryAge returns how old the cached telemetry is.

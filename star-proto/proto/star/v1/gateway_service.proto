@@ -76,17 +76,13 @@ message ForwardTelemetryRequest {
   // Standard request header.
   RequestHeader header = 1;
 
-  // Robot system status (mode, connections, uptime).
-  // Forwarded from /robot_status ROS2 topic.
-  SystemStatus system_status = 2;
-
   // Battery state (voltage, current, SOC, temperature).
   // Forwarded from /battery_state ROS2 topic.
-  BatteryState battery_state = 3;
+  BatteryState battery_state = 2;
 
-  // Optional: Additional telemetry data (IMU, GPS, etc.).
-  // Can be added in future without breaking changes.
-  TelemetryData telemetry = 4;
+  // Telemetry data from RX72N motor controller.
+  // Forwarded from /telemetry ROS2 topic.
+  TelemetryData telemetry = 3;
 }
 
 // Response to telemetry forwarding.

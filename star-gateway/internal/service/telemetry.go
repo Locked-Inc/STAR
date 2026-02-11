@@ -13,9 +13,6 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -47,17 +44,19 @@ func (h *telemetryHolder) Store(data *starv1.TelemetryData) {
 	h.data = data
 }
 
-// TelemetryService implements the TelemetryServiceServer interface.
-// This service handles real-time sensor data aggregation and system health monitoring.
+// TelemetryService handles real-time sensor data aggregation and caching.
+// This service caches telemetry data from the RX72N firmware (transmitted at 20Hz unsolicited).
 //
 // Architecture:
-// - Uses WireMessage wrapper for protocol multiplexing
 // - Uses Dispatcher for centralized message routing
 // - Uses telemetryHolder for thread-safe caching of latest telemetry
 // - Background goroutine updates cached telemetry from dispatcher
+//
+// Note: gRPC TelemetryService was removed - firmware operates in push mode only.
+// Telemetry data is transmitted unsolicited at 20Hz via RESPONSE frames.
 type TelemetryService struct {
-	starv1.UnimplementedTelemetryServiceServer
-	harqHandler     harq.HARQ // Reserved for future firmware/HARQ integration (GetSystemStatus, etc.)
+	// Removed: starv1.UnimplementedTelemetryServiceServer (service deleted from proto)
+	harqHandler     harq.HARQ // Reserved for future use
 	dispatcher      dispatcher.Dispatcher
 	logger          *slog.Logger
 	latestTelemetry *telemetryHolder
@@ -142,158 +141,4 @@ func (s *TelemetryService) updateTelemetryCache() {
 func (s *TelemetryService) Shutdown() {
 	s.cancel()
 	s.wg.Wait()
-}
-
-// GetTelemetry returns a snapshot of the latest telemetry data.
-// Uses cached telemetry updated by background goroutine for low latency.
-func (s *TelemetryService) GetTelemetry(_ context.Context, req *starv1.GetTelemetryRequest) (*starv1.GetTelemetryResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
-	}
-
-	telemetry := s.latestTelemetry.Load()
-
-	if telemetry == nil {
-		return nil, status.Error(codes.Unavailable, "no telemetry data available")
-	}
-
-	// Safely extract request ID, handling nil Header
-	requestID := ""
-	if req.Header != nil {
-		requestID = req.Header.GetRequestId()
-	}
-
-	return &starv1.GetTelemetryResponse{
-		Header: &starv1.ResponseHeader{
-			RequestId:       requestID,
-			ServerTimestamp: timestamppb.Now(),
-			Status:          starv1.Status_STATUS_OK,
-		},
-		Telemetry: telemetry,
-	}, nil
-}
-
-// StreamTelemetry streams telemetry data at the requested rate (1-100 Hz).
-// Uses Dispatcher to receive telemetry and sends at controlled intervals.
-func (s *TelemetryService) StreamTelemetry(req *starv1.StreamTelemetryRequest, stream starv1.TelemetryService_StreamTelemetryServer) error {
-	// Validate rate
-	rateHz := s.validateRateHz(req.RateHz)
-	ticker := time.NewTicker(time.Second / time.Duration(rateHz))
-	defer ticker.Stop()
-
-	ctx := stream.Context()
-	telemetryCh := s.dispatcher.Subscribe(dispatcher.MessageTypeTelemetryData)
-	defer s.dispatcher.Unsubscribe(dispatcher.MessageTypeTelemetryData, telemetryCh)
-
-	holder := &telemetryHolder{}
-
-	// Start goroutine to receive telemetry updates
-	go s.receiveStreamTelemetryLoop(ctx, telemetryCh, holder)
-
-	// Main loop sends telemetry at requested rate
-	return s.streamTelemetryLoop(ctx, ticker, stream, holder)
-}
-
-// validateRateHz validates and normalizes the requested streaming rate.
-// Valid range: MinRateHz-MaxRateHz, default DefaultRateHz.
-func (s *TelemetryService) validateRateHz(rateHz int32) int32 {
-	if rateHz < MinRateHz || rateHz > MaxRateHz {
-		return DefaultRateHz
-	}
-	return rateHz
-}
-
-// receiveStreamTelemetryLoop continuously receives telemetry from Dispatcher and updates latest value.
-func (s *TelemetryService) receiveStreamTelemetryLoop(ctx context.Context, telemetryCh <-chan *dispatcher.DispatchedMessage, holder *telemetryHolder) {
-	for {
-		// Prioritize context cancellation by checking it first (non-blocking)
-		select {
-		case <-ctx.Done():
-			return
-		default:
-		}
-
-		select {
-		case <-ctx.Done():
-			return
-		case dispMsg, ok := <-telemetryCh:
-			if !ok {
-				s.logger.Debug("telemetry subscription channel closed in stream")
-				return
-			}
-
-			telemetry := dispMsg.WireMsg.GetTelemetryData()
-			if telemetry == nil {
-				s.logger.Warn("received wire message with nil telemetry data in stream")
-				continue
-			}
-
-			// Populate frame sequence from metadata
-			if dispMsg.Metadata != nil {
-				telemetry.FrameSequence = uint32(dispMsg.Metadata.Sequence)
-			}
-
-			holder.Store(telemetry)
-		}
-	}
-}
-
-// streamTelemetryLoop sends telemetry data at the requested rate.
-func (s *TelemetryService) streamTelemetryLoop(ctx context.Context, ticker *time.Ticker, stream starv1.TelemetryService_StreamTelemetryServer, holder *telemetryHolder) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-ticker.C:
-			currentTelemetry := holder.Load()
-
-			if currentTelemetry != nil {
-				if err := stream.Send(currentTelemetry); err != nil {
-					s.logger.Error("failed to send telemetry data", slog.String("error", err.Error()))
-					return err
-				}
-			}
-		}
-	}
-}
-
-// GetSystemStatus requests system status from the RX72N firmware.
-// TODO: Implement proper SystemStatusRequest message in wire.proto and send via HARQ.
-// For now, returns mock status until firmware integration is complete.
-func (s *TelemetryService) GetSystemStatus(_ context.Context, req *starv1.GetSystemStatusRequest) (*starv1.GetSystemStatusResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
-	}
-
-	// TODO: When SystemStatusRequest is added to wire.proto:
-	// 1. Wrap SystemStatusRequest in WireMessage
-	// 2. Marshal and send via HARQ
-	// 3. Subscribe to dispatcher for SystemStatus response
-	// 4. Parse and return actual status
-
-	// For now, return mock system status
-	systemStatus := &starv1.SystemStatus{
-		ConnectionStatus: starv1.ConnectionStatus_CONNECTION_STATUS_CONNECTED,
-		Mode:             starv1.RobotMode_ROBOT_MODE_IDLE,
-		Rx72NConnected:   true,
-		LidarConnected:   false,
-		RosConnected:     true,
-		FirmwareVersion:  "v0.1.0-dev",
-		UptimeS:          0,
-	}
-
-	// Safely extract request ID, handling nil Header
-	requestID := ""
-	if req.Header != nil {
-		requestID = req.Header.GetRequestId()
-	}
-
-	return &starv1.GetSystemStatusResponse{
-		Header: &starv1.ResponseHeader{
-			RequestId:       requestID,
-			ServerTimestamp: timestamppb.Now(),
-			Status:          starv1.Status_STATUS_OK,
-		},
-		Status: systemStatus,
-	}, nil
 }

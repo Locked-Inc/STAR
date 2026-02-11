@@ -19,8 +19,8 @@ func TestGenerateTelemetryResponse(t *testing.T) {
 		t.Fatal("Payload is not TelemetryData")
 	}
 
-	if telemetry.BatteryPercent != 85.0 {
-		t.Errorf("BatteryPercent = %f, want 85.0", telemetry.BatteryPercent)
+	if telemetry.BatterySocPercent != 85 {
+		t.Errorf("BatterySocPercent = %d, want 85", telemetry.BatterySocPercent)
 	}
 }
 

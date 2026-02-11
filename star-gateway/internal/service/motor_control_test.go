@@ -150,112 +150,8 @@ func TestEmergencyStop(t *testing.T) {
 }
 
 // Mock stream for StreamEncoders
-type mockStreamEncodersServer struct {
-	grpc.ServerStream
-	ctx       context.Context
-	sentData  []*starv1.EncoderData
-	sendError error
-}
-
-func (m *mockStreamEncodersServer) Context() context.Context {
-	return m.ctx
-}
-
-func (m *mockStreamEncodersServer) Send(data *starv1.EncoderData) error {
-	if m.sendError != nil {
-		return m.sendError
-	}
-	m.sentData = append(m.sentData, data)
-	return nil
-}
-
 func TestStreamEncoders(t *testing.T) {
-	// Create a context that we can cancel to stop the stream loop
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// Prepare sample encoder data
-	expectedData := &starv1.EncoderData{
-		MotorId:     0,
-		Ticks:       100,
-		VelocityMps: 0.5,
-		TimestampUs: 123456,
-	}
-
-	// Create TelemetryData containing the encoder data
-	// (The updated implementation expects TelemetryData messages from RX72N)
-	telemetry := &starv1.TelemetryData{
-		EncoderFrontLeft: expectedData,
-	}
-
-	// Wrap in WireMessage (as Dispatcher would do)
-	wireMsg := &starv1.WireMessage{
-		Payload: &starv1.WireMessage_TelemetryData{
-			TelemetryData: telemetry,
-		},
-	}
-
-	// Create channel to send telemetry messages
-	// telemetryChan := make(chan *dispatcher.DispatchedMessage, 10)
-
-	mockHARQ := &testutil.MockHARQ{}
-	mockDispatcher := &testutil.MockDispatcher{
-		SubscribeFunc: func(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
-			ch := make(chan *dispatcher.DispatchedMessage, 10)
-			go func() {
-				for i := 0; i < 5; i++ {
-					select {
-					case ch <- &dispatcher.DispatchedMessage{WireMsg: wireMsg}:
-					case <-ctx.Done():
-						return
-					}
-					time.Sleep(5 * time.Millisecond)
-				}
-				close(ch)
-			}()
-			return ch
-		},
-	}
-	logger := testutil.NewDiscardLogger()
-
-	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
-	stream := &mockStreamEncodersServer{
-		ctx: ctx,
-	}
-
-	// Start StreamEncoders in a goroutine (it's a blocking call)
-	errChan := make(chan error, 1)
-	go func() {
-		errChan <- svc.StreamEncoders(&starv1.StreamEncodersRequest{RateHz: 100}, stream) // Use high rate for fast test
-	}()
-
-	// Wait for data to be sent (ticker fires every 10ms at 100 Hz)
-	time.Sleep(50 * time.Millisecond)
-
-	// Cancel context to stop streaming
-	cancel()
-
-	// Wait for goroutine to exit
-	select {
-	case err := <-errChan:
-		// Verify we exited with context canceled error
-		if !errors.Is(err, context.Canceled) {
-			t.Errorf("Expected context canceled error, got %v", err)
-		}
-	case <-time.After(100 * time.Millisecond):
-		t.Fatal("StreamEncoders goroutine did not exit")
-	}
-
-	// Verify we received the data
-	// With rate limiting, we should get at least 1 data item
-	if len(stream.sentData) < 1 {
-		t.Fatalf("Expected at least 1 sent data item, got %d", len(stream.sentData))
-	}
-
-	received := stream.sentData[0]
-	if received.Ticks != expectedData.Ticks {
-		t.Errorf("Expected ticks %d, got %d", expectedData.Ticks, received.Ticks)
-	}
+	t.Skip("StreamEncoders RPC removed - firmware operates in push mode only")
 }
 
 // Mock server stream for ControlStream
@@ -597,87 +493,13 @@ func TestControlStream_ClientSendError(t *testing.T) {
 }
 
 func TestStreamEncoders_Concurrent(t *testing.T) {
-	// Test multiple concurrent StreamEncoders clients
-	telemetry := &starv1.TelemetryData{
-		EncoderFrontLeft: &starv1.EncoderData{
-			MotorId:     0,
-			Ticks:       100,
-			VelocityMps: 0.5,
-			TimestampUs: 123456,
-		},
-	}
-	marshaledData, _ := proto.Marshal(telemetry)
-
-	mockHARQ := &testutil.MockHARQ{
-		ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
-			return &harq.ReceiveResult{Payload: marshaledData, Metadata: harq.FrameMetadata{Sequence: 0}}, nil
-		},
-	}
-	mockDispatcher := &testutil.MockDispatcher{}
-	logger := testutil.NewDiscardLogger()
-
-	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
-
-	// Launch 5 concurrent clients
-	var wg sync.WaitGroup
-	for i := 0; i < 5; i++ {
-		wg.Add(1)
-		go func(clientID int) {
-			defer wg.Done()
-
-			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-			defer cancel()
-
-			stream := &mockStreamEncodersServer{ctx: ctx}
-			err := svc.StreamEncoders(&starv1.StreamEncodersRequest{RateHz: 10}, stream)
-
-			if err != nil && !errors.Is(err, context.DeadlineExceeded) {
-				t.Errorf("Client %d: unexpected error: %v", clientID, err)
-			}
-		}(i)
-	}
-
-	wg.Wait()
+	t.Skip("StreamEncoders RPC removed - firmware operates in push mode only")
 }
 
 func TestSetMotorPower(t *testing.T) {
-	mockHARQ := &testutil.MockHARQ{}
-	mockDispatcher := &testutil.MockDispatcher{}
-	logger := testutil.NewDiscardLogger()
-	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
-
-	req := &starv1.SetMotorPowerRequest{}
-	resp, err := svc.SetMotorPower(context.Background(), req)
-
-	if status.Code(err) != codes.Unimplemented {
-		t.Errorf("Expected Unimplemented, got %v", status.Code(err))
-	}
-	if resp != nil {
-		t.Error("Expected nil response")
-	}
+	t.Skip("SetMotorPower RPC removed")
 }
 
 func TestMotorControl_ValidateRateHz(t *testing.T) {
-	mockHARQ := &testutil.MockHARQ{}
-	mockDispatcher := &testutil.MockDispatcher{}
-	logger := testutil.NewDiscardLogger()
-	svc := NewMotorControlService(mockHARQ, mockDispatcher, logger)
-
-	// Valid rate
-	rate := svc.validateRateHz(50)
-	if rate != 50 {
-		t.Errorf("Expected 50, got %v", rate)
-	}
-
-	// Rate too low (should return default 10)
-	rate = svc.validateRateHz(0)
-	if rate != 10 {
-		t.Errorf("Expected 10, got %v", rate)
-	}
-
-	// Rate too high (should return default 10)
-	rate = svc.validateRateHz(500)
-	if rate != 10 {
-		t.Errorf("Expected 10, got %v", rate)
-	}
+	t.Skip("validateRateHz removed along with StreamEncoders")
 }

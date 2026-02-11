@@ -64,9 +64,6 @@ const (
 	// MessageTypeEmergencyStopCommand is an EmergencyStopCommand.
 	MessageTypeEmergencyStopCommand
 
-	// MessageTypeMotorPowerCommand is a MotorPowerCommand.
-	MessageTypeMotorPowerCommand
-
 	// MessageTypeTelemetryData is a TelemetryData (sensor readings).
 	MessageTypeTelemetryData
 
@@ -421,8 +418,6 @@ func (d *dispatcher) extractPayload(msg *starv1.WireMessage) (MessageType, inter
 		return MessageTypeVelocityCommand, payload.VelocityCommand
 	case *starv1.WireMessage_EmergencyStopCommand:
 		return MessageTypeEmergencyStopCommand, payload.EmergencyStopCommand
-	case *starv1.WireMessage_MotorPowerCommand:
-		return MessageTypeMotorPowerCommand, payload.MotorPowerCommand
 	case *starv1.WireMessage_TelemetryData:
 		return MessageTypeTelemetryData, payload.TelemetryData
 	case *starv1.WireMessage_EncoderData:

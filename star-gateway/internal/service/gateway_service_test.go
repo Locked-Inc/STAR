@@ -35,7 +35,6 @@ func TestForwardTelemetry(t *testing.T) {
 			Header: &starv1.RequestHeader{
 				RequestId: "test-123",
 			},
-			SystemStatus: &starv1.SystemStatus{},
 			BatteryState: &starv1.BatteryState{},
 			Telemetry:    &starv1.TelemetryData{},
 		}
@@ -315,21 +314,20 @@ func TestGetLatestTelemetry(t *testing.T) {
 	svc := NewGatewayService()
 
 	// Initially should return nil
-	status, battery, telemetry := svc.GetLatestTelemetry()
-	if status != nil || battery != nil || telemetry != nil {
+	battery, telemetry := svc.GetLatestTelemetry()
+	if battery != nil || telemetry != nil {
 		t.Error("Expected all nil telemetry initially")
 	}
 
 	// Set telemetry
 	svc.telemetryMu.Lock()
-	svc.cachedSystemStatus = &starv1.SystemStatus{}
 	svc.cachedBatteryState = &starv1.BatteryState{}
 	svc.cachedTelemetry = &starv1.TelemetryData{}
 	svc.telemetryMu.Unlock()
 
 	// Verify retrieval
-	status, battery, telemetry = svc.GetLatestTelemetry()
-	if status == nil || battery == nil || telemetry == nil {
+	battery, telemetry = svc.GetLatestTelemetry()
+	if battery == nil || telemetry == nil {
 		t.Error("Expected non-nil telemetry after caching")
 	}
 }

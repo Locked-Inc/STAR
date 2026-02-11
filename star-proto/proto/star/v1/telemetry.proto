@@ -13,8 +13,6 @@ syntax = "proto3";
 
 package star.v1;
 
-import "google/protobuf/timestamp.proto";
-import "star/v1/common.proto";
 import "star/v1/motor_control.proto";
 
 option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
@@ -22,126 +20,46 @@ option java_multiple_files = true;
 option java_outer_classname = "TelemetryProto";
 option java_package = "com.star.proto.v1";
 
-// Telemetry streaming service for real-time sensor data.
-// Provides system status, IMU data, and configurable streaming.
-service TelemetryService {
-  // Get current telemetry snapshot.
-  // Returns all available sensor data.
-  rpc GetTelemetry(GetTelemetryRequest) returns (GetTelemetryResponse);
-
-  // Stream telemetry at specified rate.
-  // Server streams sensor data at configured frequency.
-  rpc StreamTelemetry(StreamTelemetryRequest) returns (stream TelemetryData);
-
-  // Get system status information.
-  // Returns connection states, firmware version, uptime.
-  rpc GetSystemStatus(GetSystemStatusRequest) returns (GetSystemStatusResponse);
-}
-
-// Request for telemetry snapshot.
-message GetTelemetryRequest {
-  // Standard request header.
-  RequestHeader header = 1;
-}
-
-// Response with telemetry snapshot.
-message GetTelemetryResponse {
-  // Standard response header.
-  ResponseHeader header = 1;
-
-  // Current telemetry data.
-  TelemetryData telemetry = 2;
-}
-
-// Request to stream telemetry.
-message StreamTelemetryRequest {
-  // Standard request header.
-  RequestHeader header = 1;
-
-  // Desired update rate in Hz.
-  // Valid range: 1 to 100 Hz.
-  int32 rate_hz = 2;
-
-  // Fields to include (empty = all fields).
-  repeated string fields = 3;
-}
-
-// Request for system status.
-message GetSystemStatusRequest {
-  // Standard request header.
-  RequestHeader header = 1;
-}
-
-// Response with system status.
-message GetSystemStatusResponse {
-  // Standard response header.
-  ResponseHeader header = 1;
-
-  // System status information.
-  SystemStatus status = 2;
-}
-
-// Complete telemetry snapshot from all sensors.
+// Complete telemetry snapshot from RX72N motor controller.
+// Transmitted unsolicited at 20 Hz via RESPONSE frames.
 message TelemetryData {
-  // IMU sensor data.
-  ImuData imu = 1;
+  // Timestamp in microseconds since ThreadX boot.
+  // Used for latency tracking and synchronization.
+  int64 timestamp_us = 1;
 
-  // GPS data (if available).
-  GpsData gps = 2;
+  // Frame sequence number for drop detection.
+  // Increments with each transmitted frame.
+  uint32 frame_sequence = 2;
 
-  // Battery state of charge.
+  // Emergency stop state.
+  // True if emergency stop is engaged.
+  bool emergency_stop = 3;
+
+  // Motor fault flags bitfield.
+  // Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc.
+  uint32 fault_flags = 4;
+
+  // Front left motor encoder data.
+  star.v1.EncoderData encoder_front_left = 5;
+
+  // Front right motor encoder data.
+  star.v1.EncoderData encoder_front_right = 6;
+
+  // Back left motor encoder data.
+  star.v1.EncoderData encoder_back_left = 7;
+
+  // Back right motor encoder data.
+  star.v1.EncoderData encoder_back_right = 8;
+
+  // Battery voltage in volts (from BQ4050 fuel gauge).
+  double battery_voltage_v = 9;
+
+  // Battery state of charge percentage (from BQ4050 fuel gauge).
   // Range: 0 to 100 percent.
-  double battery_percent = 3;
-
-  // WiFi signal strength in dBm.
-  // Typical range: -100 to -30 dBm.
-  int32 wifi_signal_dbm = 4;
-
-  // CPU usage percentage.
-  // Range: 0 to 100 percent.
-  double cpu_usage_percent = 5;
+  uint32 battery_soc_percent = 10;
 
   // Temperature in Celsius (from DS18B20 sensor).
-  double temperature_celsius = 6;
-
-  // Motor load percentage (average across motors).
-  // Range: 0 to 100 percent.
-  double motor_load_percent = 7;
-
-  // Telemetry timestamp.
-  google.protobuf.Timestamp timestamp = 8;
-
-  // Timestamp in microseconds since boot (RX72N specific).
-  int64 timestamp_us = 14;
-
-  // Encoder data from motors (RX72N specific - fixed size for embedded).
-  // Front left motor encoder data.
-  star.v1.EncoderData encoder_front_left = 15;
-  // Front right motor encoder data.
-  star.v1.EncoderData encoder_front_right = 16;
-  // Back left motor encoder data (reserved for future 4-motor support).
-  star.v1.EncoderData encoder_back_left = 17;
-  // Back right motor encoder data (reserved for future 4-motor support).
-  star.v1.EncoderData encoder_back_right = 18;
-
-  // Emergency stop state (RX72N specific).
-  bool emergency_stop = 10;
-
-  // Motor fault flags bitfield (RX72N specific).
-  // Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc.
-  uint32 fault_flags = 11;
-
-  // Battery voltage in volts (RX72N specific - BQ4050).
-  double battery_voltage_v = 12;
-
-  // Battery state of charge percentage (RX72N specific - BQ4050).
-  // Range: 0 to 100 percent.
-  uint32 battery_soc_percent = 13;
-
-  // Frame sequence number from transport layer for drop detection.
-  // Increments with each transmitted frame. Used by diagnostics to detect
-  // missing frames in the telemetry stream.
-  uint32 frame_sequence = 19;
+  double temperature_celsius = 11;
 }
 
 // IMU sensor data (orientation, velocity, acceleration).
@@ -224,33 +142,6 @@ enum GpsFix {
 
   // RTK fixed solution.
   GPS_FIX_RTK_FIXED = 6;
-}
-
-// Complete system status information.
-message SystemStatus {
-  // Overall connection state.
-  ConnectionStatus connection_status = 1;
-
-  // Current operating mode.
-  RobotMode mode = 2;
-
-  // RX72N motor controller connected.
-  bool rx72n_connected = 3;
-
-  // LiDAR sensor connected.
-  bool lidar_connected = 4;
-
-  // ROS2 bridge connected.
-  bool ros_connected = 5;
-
-  // RX72N firmware version string.
-  string firmware_version = 6;
-
-  // System uptime in seconds.
-  uint64 uptime_s = 7;
-
-  // Free heap memory in bytes.
-  uint32 free_heap_bytes = 8;
 }
 
 // Connection state enumeration.

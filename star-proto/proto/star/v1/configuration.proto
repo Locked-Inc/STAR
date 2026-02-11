@@ -240,8 +240,10 @@ message CurrentSensorCalibration {
   // One per motor (max 4).
   repeated double offset_ma = 1;
 
-  // Scaling factor adjustment for each motor.
-  // Multiplied with raw ADC reading.
+  // Scaling factor adjustment for each motor (dimensionless).
+  // Multiplied with raw ADC reading after offset correction.
+  // Typical range: 0.8 to 1.2 (calibration adjustment ±20%).
+  // Formula: current_ma = (adc_raw - offset_ma) * scale_factor
   // One per motor (max 4).
   repeated double scale_factor = 2;
 }
@@ -281,7 +283,9 @@ message EncoderConfiguration {
   // Wheel diameter in meters (for linear velocity).
   double wheel_diameter_m = 2;
 
-  // Gear ratio (motor revolutions per wheel revolution).
+  // Gear ratio: motor revolutions per wheel revolution (dimensionless).
+  // Example: 34.02:1 gearbox → gear_ratio = 34.02
+  // Formula: wheel_rpm = motor_rpm / gear_ratio
   double gear_ratio = 3;
 }
 

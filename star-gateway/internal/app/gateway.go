@@ -392,7 +392,7 @@ func initServices(ctx context.Context, harqHandler harq.HARQ, msgDispatcher disp
 
 	starv1.RegisterGatewayServiceServer(grpcServer, gatewaySvc)
 	starv1.RegisterMotorControlServiceServer(grpcServer, motorSvc)
-	starv1.RegisterTelemetryServiceServer(grpcServer, telemetrySvc)
+	// TelemetryService gRPC removed - firmware operates in push mode only (20Hz unsolicited)
 	starv1.RegisterConfigurationServiceServer(grpcServer, configSvc)
 	starv1.RegisterBatteryManagementServiceServer(grpcServer, batterySvc)
 	starv1.RegisterFirmwareUpdateServiceServer(grpcServer, firmwareSvc)

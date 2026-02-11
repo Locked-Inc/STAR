@@ -280,19 +280,12 @@ func generateTelemetryResponse() *starv1.WireMessage {
 		Payload: &starv1.WireMessage_TelemetryData{
 			TelemetryData: &starv1.TelemetryData{
 				TimestampUs:        time.Now().UnixMicro(),
-				BatteryPercent:     85.0, // 85% state of charge
-				CpuUsagePercent:    32.1, // Light CPU load
-				TemperatureCelsius: 28.5, // Room temperature
-				MotorLoadPercent:   50.0, // Medium motor load
-				WifiSignalDbm:      -45,  // Strong WiFi signal
-				Imu: &starv1.ImuData{
-					PitchRad:   0.01,  // Nearly level
-					RollRad:    -0.02, // Slight roll
-					YawRad:     0.0,
-					AccelXMps2: 0.05,
-					AccelYMps2: -0.02,
-					AccelZMps2: 9.81, // Gravity
-				},
+				FrameSequence:      1,
+				EmergencyStop:      false,
+				FaultFlags:         0,
+				BatteryVoltageV:    12.6,             // 3S LiPo nominal voltage
+				BatterySocPercent:  85,               // 85% state of charge
+				TemperatureCelsius: 28.5,             // Room temperature
 			},
 		},
 	}
@@ -452,19 +445,12 @@ func generateEmergencyStopResponse() *starv1.WireMessage {
 		Payload: &starv1.WireMessage_TelemetryData{
 			TelemetryData: &starv1.TelemetryData{
 				TimestampUs:        time.Now().UnixMicro(),
-				BatteryPercent:     85.0,
-				CpuUsagePercent:    15.0, // CPU drops after motors stop
+				FrameSequence:      2,
+				EmergencyStop:      true, // E-stop engaged
+				FaultFlags:         0,
+				BatteryVoltageV:    12.6,
+				BatterySocPercent:  85,
 				TemperatureCelsius: 28.5,
-				MotorLoadPercent:   0.0, // Motors stopped
-				WifiSignalDbm:      -45,
-				Imu: &starv1.ImuData{
-					PitchRad:   0.0,
-					RollRad:    0.0,
-					YawRad:     0.0,
-					AccelXMps2: 0.0,
-					AccelYMps2: 0.0,
-					AccelZMps2: 9.81, // Gravity
-				},
 			},
 		},
 	}

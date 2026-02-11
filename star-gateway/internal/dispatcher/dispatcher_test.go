@@ -172,7 +172,7 @@ func TestDispatcherBasicRouting(t *testing.T) {
 
 	// Create telemetry message
 	telemetry := &starv1.TelemetryData{
-		BatteryPercent: 85.0,
+		BatterySocPercent: 85.0,
 		TimestampUs:    time.Now().UnixMicro(),
 	}
 
@@ -225,8 +225,8 @@ func TestDispatcherBasicRouting(t *testing.T) {
 		if receivedTelem == nil {
 			t.Fatal("Expected TelemetryData, got nil")
 		}
-		if receivedTelem.BatteryPercent != 85.0 {
-			t.Errorf("Expected battery 85%%, got %.1f%%", receivedTelem.BatteryPercent)
+		if receivedTelem.BatterySocPercent != 85 {
+			t.Errorf("Expected battery 85%%, got %d%%", receivedTelem.BatterySocPercent)
 		}
 	case <-time.After(testMediumTimeout):
 		t.Fatal("Timeout waiting for message")
@@ -245,7 +245,7 @@ func TestDispatcherBasicRouting(t *testing.T) {
 func TestDispatcherMultipleSubscribers(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError}))
 
-	telemetry := &starv1.TelemetryData{BatteryPercent: 75.0}
+	telemetry := &starv1.TelemetryData{BatterySocPercent: 75.0}
 	wrapper := &starv1.WireMessage{
 		Payload: &starv1.WireMessage_TelemetryData{TelemetryData: telemetry},
 	}

@@ -1,0 +1,18 @@
+# configuration.options - nanopb field size constraints
+# Runtime NVS configuration for RX72N motor controller
+
+# SystemConfiguration: 4-motor system
+star.v1.SystemConfiguration.motor_configs               max_count:4
+
+# CurrentSensorCalibration: 4 motors
+star.v1.CurrentSensorCalibration.offset_ma              max_count:4
+star.v1.CurrentSensorCalibration.scale_factor           max_count:4
+
+# ConfigValidationResult: Maximum 16 validation errors
+star.v1.ConfigValidationResult.errors                   max_count:16
+
+# ConfigValidationError: String fields
+star.v1.ConfigValidationError.field_path                max_size:64
+star.v1.ConfigValidationError.message                   max_size:256
+star.v1.ConfigValidationError.actual_value              max_size:32
+star.v1.ConfigValidationError.expected_constraint       max_size:128
