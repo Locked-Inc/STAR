@@ -1,13 +1,7 @@
 // bounds_test.go - nanopb .options Field Size Constraint Tests
-// Verifies that nanopb field size constraints are enforced for embedded targets.
 //
-// These tests verify that the .options files define correct bounds for:
-// - Array max_count limits (cell_mv, temp_deci_celsius, motor_configs, errors)
-// - String max_size limits (manufacturer, device_name, chemistry, field_path, message)
-//
-// IMPORTANT: These tests verify Go protobuf behavior. The actual enforcement
-// happens in nanopb (C) code generation for RX72N firmware. These tests ensure
-// the constraints are correctly specified and that Go can handle the limits.
+// Verifies that .options files define correct bounds for arrays and strings.
+// Tests verify Go protobuf behavior; enforcement happens in nanopb (C) on RX72N.
 //
 // STAR Project - Texas A&M University
 // February 2026
@@ -62,9 +56,6 @@ func TestCellData_MaxCells(t *testing.T) {
 }
 
 // TestCellData_ExceedsMax verifies that Go protobuf allows >16 cells.
-// NOTE: This test verifies Go behavior. The actual constraint is enforced
-// by nanopb in the RX72N firmware, which will truncate or reject messages
-// with >16 cells during encoding/decoding.
 func TestCellData_ExceedsMax(t *testing.T) {
 	// Create CellData with 17 cells (exceeds max_count:16)
 	cellVoltages := make([]uint32, 17)
@@ -88,10 +79,6 @@ func TestCellData_ExceedsMax(t *testing.T) {
 
 	// Go protobuf keeps all 17 cells
 	assert.Equal(t, 17, len(parsed.CellMv), "Go protobuf preserves all cells")
-
-	// IMPORTANT: nanopb on RX72N would only decode first 16 cells due to max_count:16
-	// This test documents the behavior difference between Go and nanopb
-	t.Log("WARNING: nanopb (RX72N) would truncate to 16 cells, Go keeps all 17")
 }
 
 // TestCellData_BelowMax verifies smaller arrays work correctly.
@@ -164,7 +151,6 @@ func TestTemperatureData_MaxSensors(t *testing.T) {
 }
 
 // TestTemperatureData_ExceedsMax verifies that Go protobuf allows >3 sensors.
-// NOTE: nanopb on RX72N would truncate to 3 sensors due to max_count:3.
 func TestTemperatureData_ExceedsMax(t *testing.T) {
 	// Create TemperatureData with 4 sensors (exceeds max_count:3)
 	temps := []int32{250, 255, 260, 265}
@@ -185,9 +171,6 @@ func TestTemperatureData_ExceedsMax(t *testing.T) {
 
 	// Go protobuf keeps all 4 sensors
 	assert.Equal(t, 4, len(parsed.TempDeciCelsius), "Go protobuf preserves all sensors")
-
-	// IMPORTANT: nanopb on RX72N would only decode first 3 sensors due to max_count:3
-	t.Log("WARNING: nanopb (RX72N) would truncate to 3 sensors, Go keeps all 4")
 }
 
 // TestTemperatureData_BelowMax verifies smaller arrays work correctly.
@@ -290,7 +273,6 @@ func TestBmsDeviceInfo_StringLimits(t *testing.T) {
 }
 
 // TestBmsDeviceInfo_ExceedsMaxSize verifies Go protobuf allows strings exceeding max_size.
-// NOTE: nanopb would truncate these strings on RX72N firmware.
 func TestBmsDeviceInfo_ExceedsMaxSize(t *testing.T) {
 	// Create strings exceeding max_size limits
 	info := &starv1.BmsDeviceInfo{
@@ -311,11 +293,6 @@ func TestBmsDeviceInfo_ExceedsMaxSize(t *testing.T) {
 	assert.Equal(t, 64, len(parsed.Manufacturer), "Go keeps 64-char manufacturer")
 	assert.Equal(t, 64, len(parsed.DeviceName), "Go keeps 64-char device_name")
 	assert.Equal(t, 32, len(parsed.Chemistry), "Go keeps 32-char chemistry")
-
-	// IMPORTANT: nanopb on RX72N would truncate to max_size limits
-	t.Log("WARNING: nanopb would truncate manufacturer to 32 chars")
-	t.Log("WARNING: nanopb would truncate device_name to 32 chars")
-	t.Log("WARNING: nanopb would truncate chemistry to 16 chars")
 }
 
 // ============================================================================
@@ -355,7 +332,6 @@ func TestSystemConfiguration_MaxMotors(t *testing.T) {
 }
 
 // TestSystemConfiguration_ExceedsMax verifies that Go protobuf allows >4 motors.
-// NOTE: nanopb on RX72N would truncate to 4 motors due to max_count:4.
 func TestSystemConfiguration_ExceedsMax(t *testing.T) {
 	// Create SystemConfiguration with 5 motors (exceeds max_count:4)
 	motorConfigs := make([]*starv1.MotorPidConfiguration, 5)
@@ -381,9 +357,6 @@ func TestSystemConfiguration_ExceedsMax(t *testing.T) {
 
 	// Go protobuf keeps all 5 motors
 	assert.Equal(t, 5, len(parsed.MotorConfigs), "Go protobuf preserves all motors")
-
-	// IMPORTANT: nanopb on RX72N would only decode first 4 motors due to max_count:4
-	t.Log("WARNING: nanopb (RX72N) would truncate to 4 motors, Go keeps all 5")
 }
 
 // TestSystemConfiguration_BelowMax verifies smaller arrays work correctly.
@@ -461,7 +434,6 @@ func TestConfigValidationResult_MaxErrors(t *testing.T) {
 }
 
 // TestConfigValidationResult_ExceedsMax verifies that Go protobuf allows >16 errors.
-// NOTE: nanopb on RX72N would truncate to 16 errors due to max_count:16.
 func TestConfigValidationResult_ExceedsMax(t *testing.T) {
 	// Create ConfigValidationResult with 17 errors (exceeds max_count:16)
 	errors := make([]*starv1.ConfigValidationError, 17)
@@ -488,9 +460,6 @@ func TestConfigValidationResult_ExceedsMax(t *testing.T) {
 
 	// Go protobuf keeps all 17 errors
 	assert.Equal(t, 17, len(parsed.Errors), "Go protobuf preserves all errors")
-
-	// IMPORTANT: nanopb on RX72N would only decode first 16 errors due to max_count:16
-	t.Log("WARNING: nanopb (RX72N) would truncate to 16 errors, Go keeps all 17")
 }
 
 // TestConfigValidationResult_BelowMax verifies smaller arrays work correctly.
@@ -603,7 +572,6 @@ func TestConfigValidationError_StringLimits(t *testing.T) {
 }
 
 // TestConfigValidationError_ExceedsMaxSize verifies Go protobuf allows strings exceeding max_size.
-// NOTE: nanopb would truncate these strings on RX72N firmware.
 func TestConfigValidationError_ExceedsMaxSize(t *testing.T) {
 	// Create strings exceeding max_size limits
 	errInfo := &starv1.ConfigValidationError{
@@ -626,12 +594,6 @@ func TestConfigValidationError_ExceedsMaxSize(t *testing.T) {
 	assert.Equal(t, 512, len(parsed.Message), "Go keeps 512-char message")
 	assert.Equal(t, 64, len(parsed.ActualValue), "Go keeps 64-char actual_value")
 	assert.Equal(t, 256, len(parsed.ExpectedConstraint), "Go keeps 256-char expected_constraint")
-
-	// IMPORTANT: nanopb on RX72N would truncate to max_size limits
-	t.Log("WARNING: nanopb would truncate field_path to 64 chars")
-	t.Log("WARNING: nanopb would truncate message to 256 chars")
-	t.Log("WARNING: nanopb would truncate actual_value to 32 chars")
-	t.Log("WARNING: nanopb would truncate expected_constraint to 128 chars")
 }
 
 // ============================================================================
@@ -689,7 +651,6 @@ func TestEmergencyStopRequest_ReasonLimit(t *testing.T) {
 }
 
 // TestEmergencyStopRequest_ExceedsMaxSize verifies Go protobuf allows reason exceeding max_size:128.
-// NOTE: nanopb would truncate to 128 chars on RX72N firmware.
 func TestEmergencyStopRequest_ExceedsMaxSize(t *testing.T) {
 	// Create reason string exceeding max_size:128
 	longReason := strings.Repeat("A", 256) // 256 chars (exceeds max_size:128)
@@ -711,7 +672,4 @@ func TestEmergencyStopRequest_ExceedsMaxSize(t *testing.T) {
 
 	// Go protobuf keeps full string
 	assert.Equal(t, 256, len(parsed.Reason), "Go keeps 256-char reason")
-
-	// IMPORTANT: nanopb on RX72N would truncate to max_size:128
-	t.Log("WARNING: nanopb (RX72N) would truncate reason to 128 chars")
 }
