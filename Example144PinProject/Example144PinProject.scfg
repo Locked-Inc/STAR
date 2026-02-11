@@ -598,10 +598,11 @@
         <pinItem allocation="6" comments="SONAR1_ECHO" direction="None" id="IRQ10" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="80" comments="DRV_CS2" direction="None" id="PB5" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="81" comments="DRV_CS3" direction="None" id="PB4" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="18" comments="" direction="None" id="XCOUT" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="73" comments="DRV_CS1" direction="None" id="PC1" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="8" comments="SONAR3_ECHO" direction="None" id="IRQ8" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="7" comments="SONAR2_ECHO" direction="None" id="IRQ9" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
-        <pinItem allocation="123$A" comments="HOST_SCLK" direction="None" id="RSPCKC" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="123$A" comments="HOST_CLK" direction="None" id="RSPCKC" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="28" comments="" direction="None" id="TMS" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
         <pinItem allocation="9" comments="SONAR0_TRIG" direction="None" id="PF5" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="109" comments="DRV_CIPO" direction="None" id="SMISO12" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
@@ -620,6 +621,7 @@
         <pinItem allocation="94" comments="ENC2_TCLKB" direction="None" id="TCLKB" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="70" comments="ENC2_TCLKA" direction="None" id="TCLKA" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="13" comments="SONAR2_TRIG" direction="None" id="PJ3" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="17" comments="" direction="None" id="XCIN" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="11" comments="SONAR1_TRIG" direction="None" id="PJ5" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="41" comments="MOTOR2_EN" direction="None" id="GTIOC2B" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="33" comments="ENC0_MTCLKA" direction="None" id="MTCLKA" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
@@ -658,7 +660,7 @@
         <pinItem allocation="30" comments="" direction="None" id="TCK" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
         <pinItem allocation="29" comments="" direction="None" id="TDI" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
         <pinItem allocation="31" comments="" direction="None" id="TDO" isUsedBySoftware="true" locked="false" operationMode="" status="0"/>
-        <pinItem allocation="111" comments="DRV_SCLK" direction="None" id="SCK12" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
+        <pinItem allocation="111" comments="DRV_CLK" direction="None" id="SCK12" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="89" comments="GPTW_EXT_TRIG1" direction="None" id="GTETRGB" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="42" comments="GPTW_EXT_TRIG0" direction="None" id="GTETRGA" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
         <pinItem allocation="43" comments="GPTW_EXT_TRIG3" direction="None" id="GTETRGD" isUsedBySoftware="false" locked="false" operationMode="" status="4"/>
@@ -743,7 +745,7 @@
             <source description="Components supporting Firmware Integration Technology" display="Firmware Integration Technology" id="com.renesas.smc.tools.swcomponent.fit.source"/>
             <source description="Components supporting Firmware Integration Technology" display="Firmware Integration Technology" id="com.renesas.smc.tools.swcomponent.fit.source"/>
         </configuration>
-        <configuration enable="true" exclude="false" id="bb9a467e-215f-4401-a06c-63563939ea7d" inuse="true" name="threadx">
+        <configuration enable="true" exclude="false" id="dc67f80f-2fa8-4d34-8012-5d930c9df48f" inuse="true" name="threadx">
             <component description="Dependency: None&#10;Azure RTOS ThreadX is an advanced real-time operating system (RTOS) designed specifically for deeply embedded applications" detailDescription="Azure RTOS ThreadX is an advanced real-time operating system (RTOS) designed specifically for deeply embedded applications" display="Azure RTOS ThreadX" id="threadx6.4.0_rel-rx-1.0.1" version="6.4.0_rel-rx-1.0.1">
                 <gridItem id="USE_TX_MAX_PRIORITIES" selectedIndex="0"/>
                 <gridItem id="TX_MAX_PRIORITIES" selectedIndex="32"/>
@@ -792,7 +794,7 @@
             </component>
             <source description="Code generator for Real-time OS" display="RTOS Configurator" id="com.renesas.smc.tools.swcomponent.rtosconfigurator.source"/>
         </configuration>
-        <configuration enable="true" exclude="false" id="3573abc4-00aa-4b50-be67-f9b2170f7e6e" inuse="true" name="azurertos_object">
+        <configuration enable="true" exclude="false" id="21a8487b-303f-4574-811b-a4a190978cc8" inuse="true" name="azurertos_object">
             <allocatable id="" name="" type="">
                 <allocatable id="THREAD" name="THREAD" type="TABALLOCATABLE"/>
                 <allocatable id="QUEUE" name="QUEUE" type="TABALLOCATABLE"/>
