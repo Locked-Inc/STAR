@@ -1,0 +1,115 @@
+
+(rules PCB TOM_MCU_144Pin.dsn
+  (snap_angle 
+    fortyfive_degree
+  )
+  (autoroute_settings
+    (fanout off)
+    (autoroute on)
+    (postroute on)
+    (vias on)
+    (via_costs 50)
+    (plane_via_costs 5)
+    (start_ripup_costs 100)
+    (start_pass_no 1)
+    (layer_rule F.Cu
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.8)
+      (against_preferred_direction_trace_costs 4.5)
+    )
+    (layer_rule In1.Cu
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 3.3)
+    )
+    (layer_rule In2.Cu
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 3.7)
+    )
+    (layer_rule B.Cu
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.8)
+      (against_preferred_direction_trace_costs 4.1)
+    )
+  )
+  (rule
+    (width 200.0)
+    (clearance 200.0)
+    (clearance 100.0 (type smd_to_turn_gap))
+    (clearance 50.0 (type smd))
+    (clearance 200.0 (type "kicad_default"))
+  )
+  (padstack "Via[0-3]_600:300_um"
+    (shape
+      (circle F.Cu 600.0 0.0 0.0)
+    )
+    (shape
+      (circle In1.Cu 600.0 0.0 0.0)
+    )
+    (shape
+      (circle In2.Cu 600.0 0.0 0.0)
+    )
+    (shape
+      (circle B.Cu 600.0 0.0 0.0)
+    )
+    (attach off)
+  )
+  (via 
+    "Via[0-3]_600:300_um" "Via[0-3]_600:300_um" default
+  )
+  (via 
+    "Via[0-3]_600:300_um-kicad_default" "Via[0-3]_600:300_um" "kicad_default"
+  )
+  (via_rule
+    default "Via[0-3]_600:300_um"
+  )
+  (via_rule
+    "kicad_default" "Via[0-3]_600:300_um-kicad_default"
+  )
+  (class default
+    (clearance_class default)
+    (via_rule default)
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "kicad_default"
+    GND "Net-(J2-Pin_29)" "Net-(J2-Pin_22)" "Net-(J2-Pin_28)" "Net-(J2-Pin_20)" "Net-(J2-Pin_32)" "Net-(J2-Pin_35)" "Net-(J2-Pin_33)"
+    "Net-(J2-Pin_17)" "Net-(J2-Pin_27)" /AVCC0 "AVSS0-1" VREFL0 /VCL /XTAL /EXTAL
+    "/USB0_VBUS" "/SCI_USBC_VBUS" "/SCI_USBC_5V0" "Net-(D8-K)" "Net-(U6-VCCD)" "Net-(D1-Pad2)" "Net-(D2-Pad2)" "Net-(D3-Pad2)"
+    "/USB0_DP_TO_CON" "/SCI_USBC_USBDP" "/SCI_USBC_USBDN" "Net-(D10-Pad1)" "Net-(D11-Pad1)" /TRST# /RES# "/STAR_MCU_BMS_SCL1"
+    /FINED "/STAR_MCU_ENC0_MTCLKB" /UPSEL "/STAR_MCU_MOTOR1_PH" /EMLE /TDI "/STAR_MCU_MOTOR0_PH" "/STAR_MCU_SONAR0_TRIG"
+    "/STAR_MCU_SONAR3_ECHO" "/STAR_MCU_SONAR1_ECHO" "/STAR_MCU_SONAR3_TRIG" /TMS "/STAR_MCU_LED0" "/STAR_MCU_SONAR0_ECHO" "/STAR_MCU_SONAR2_ECHO" /TCK
+    /XCOUT "/STAR_MCU_ENC0_MTCLKA" "/STAR_MCU_SONAR1_TRIG" "/STAR_MCU_BMS_ALERT" "/STAR_MCU_SONAR2_TRIG" /XCIN /TDO "/STAR_MCU_DRV_CS0"
+    "/STAR_MCU_MOTOR1_EN" "/STAR_MCU_GPTW_EXT_TRIG0" /UB "/STAR_MCU_GPTW_EXT_TRIG2" "/STAR_MCU_LED2" "/STAR_MCU_TEMP_1WIRE" "/STAR_MCU_LED1" "/STAR_MCU_HOST_SDA0"
+    "/STAR_MCU_ENC1_MTCLKD" "/STAR_MCU_HOST_SCL0" "/USB0_DP" "/STAR_MCU_LED4" "/STAR_MCU_ENC2_TCLKA" "/STAR_MCU_LED5" "/STAR_MCU_BMS_SDA1" "/STAR_MCU_GPTW_EXT_TRIG3"
+    "/STAR_MCU_MOTOR3_EN" "/STAR_MCU_MOTOR0_EN" "/STAR_MCU_LED3" "/STAR_MCU_MOTOR2_EN" "Net-(J3-CC1)" "unconnected-(J3-SBU2-PadB8)" "unconnected-(J3-SBU1-PadA8)" "Net-(J3-CC2)"
+    "unconnected-(J4-SBU2-PadB8)" "unconnected-(J4-SBU1-PadA8)" "Net-(J4-CC2)" "Net-(J4-CC1)" "unconnected-(J5-NC-Pad6)" "/STAR_MCU_DRV_CLK" "Net-(J6-Pin_32)" "Net-(J6-Pin_16)"
+    "/STAR_MCU_HOST_COPI" "/STAR_MCU_HOST_CLK" "Net-(J6-Pin_18)" "Net-(J6-Pin_7)" "/STAR_MCU_HOST_CIPO" "Net-(J6-Pin_28)" "/STAR_MCU_DRV_CIPO" "Net-(J6-Pin_25)"
+    "/STAR_MCU_MOTOR1_ISENSE" "Net-(J6-Pin_26)" "Net-(J6-Pin_14)" "Net-(J6-Pin_17)" "Net-(J6-Pin_19)" "/STAR_MCU_HOST_CS0" "Net-(J6-Pin_8)" "Net-(J6-Pin_31)"
+    "/STAR_MCU_MOTOR0_ISENSE" "/STAR_MCU_MOTOR2_ISENSE" "Net-(J6-Pin_30)" "Net-(J6-Pin_4)" "/STAR_MCU_MOTOR3_ISENSE" "Net-(J6-Pin_24)" "Net-(J6-Pin_33)" "Net-(J6-Pin_6)"
+    /RESET# "/STAR_MCU_DRV_COPI" "/DEBUG_UART_TXD" "Net-(J7-Pin_19)" "Net-(J7-Pin_2)" "/STAR_MCU_ENC1_MTCLKC" "Net-(J7-Pin_26)" "/STAR_MCU_MOTOR3_PH"
+    "/STAR_MCU_GPTW_EXT_TRIG1" "Net-(J7-Pin_23)" "Net-(J7-Pin_5)" "/STAR_MCU_DRV_CS2" "/STAR_MCU_ENC3_TCLKC" "/DEBUG_UART_RXD" "Net-(J7-Pin_7)" "Net-(J7-Pin_12)"
+    "/STAR_MCU_HOST_IRQ" "/STAR_MCU_DRV_CS3" "Net-(J7-Pin_3)" "Net-(J7-Pin_9)" "Net-(J7-Pin_24)" "Net-(J7-Pin_22)" "/STAR_MCU_DRV_CS1" "Net-(J7-Pin_21)"
+    "Net-(J7-Pin_25)" "Net-(J7-Pin_10)" "Net-(J7-Pin_17)" "/STAR_MCU_ENC3_TCLKD" "Net-(J7-Pin_32)" "/STAR_MCU_MOTOR2_PH" "/STAR_MCU_ENC2_TCLKB" "Net-(J7-Pin_14)"
+    "Net-(J9-Pin_1)" "Net-(U6-GPIO5)" "Net-(U6-RI#)" "Net-(U6-DSR#)" "Net-(U6-DCD#)" "Net-(U6-CTS#)" "Net-(U6-GPIO2)" "Net-(U6-GPIO7)"
+    "Net-(U6-GPIO6)" "Net-(U6-GPIO0)" "Net-(U6-GPIO1)" "unconnected-(U6-GPIO4-Pad12)" "unconnected-(U6-DNU-Pad26)" "unconnected-(U6-RTS#-Pad3)" "unconnected-(U6-NC_1-Pad24)" "unconnected-(U6-DTR#-Pad2)"
+    "unconnected-(U6-GPIO3-Pad14)" "unconnected-(U6-NC_2-Pad25)" "/USB0_DN_TO_CON" "/USB0_DN" "/USB0_VBUS_3V3" "/USB0_VBUS_5V0"
+    (clearance_class "kicad_default")
+    (via_rule "kicad_default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+)
