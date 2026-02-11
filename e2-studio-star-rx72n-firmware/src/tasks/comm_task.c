@@ -1424,9 +1424,10 @@ static void internal_frame_callback(rx_comm_channel_t  channel,
  * **Decode Priority (most frequent first):**
  * 1. **SetVelocityRequest** (~100 Hz) - Motor velocity commands for 4-wheel differential drive
  * 2. **EmergencyStopRequest** (rare) - Manual emergency stop trigger
- * 3. **Unknown** (log warning) - Unsupported message type or corrupted protobuf
+ * 3. **SetPIDGainsRequest** (very rare) - Runtime PID tuning for motor controllers
+ * 4. **Unknown** (log warning) - Unsupported message type or corrupted protobuf
  *
- * ## Algorithm Steps (12 Steps)
+ * ## Algorithm Steps (18 Steps)
  *
  * ### SetVelocityRequest Processing (Steps 1-7)
  *
@@ -1461,17 +1462,41 @@ static void internal_frame_callback(rx_comm_channel_t  channel,
  *    - Output: star_v1_EmergencyStopRequest structure
  * 9. **Check Decode Result:**
  *    - If k_rx_ok: Proceed to step 10
- *    - If decode failed: Jump to step 12 (unknown message)
+ *    - If decode failed: Jump to step 12 (try SetPIDGainsRequest)
  * 10. **Trigger Emergency Stop:** Call shared_data_trigger_estop(k_estop_reason_manual)
  *     - Sets estop_active = true (disables all motors)
  *     - Sets k_event_estop_triggered flag
  *     - Motor task enters emergency braking state
  * 11. **Return:** Exit function (e-stop triggered successfully)
  *
- * ### Unknown Message Handling (Step 12)
+ * ### SetPIDGainsRequest Processing (Steps 12-17)
  *
- * 12. **Log Warning:** "Could not decode command payload"
- *     - Neither SetVelocityRequest nor EmergencyStopRequest decode succeeded
+ * 12. **Try SetPIDGainsRequest Decode:** Call rx_nanopb_decode_pid_gains_request()
+ *    - Payload: frame->payload (nanopb-encoded bytes)
+ *    - Length: frame->header.length (~30-50 bytes)
+ *    - Output: star_v1_SetPIDGainsRequest structure
+ * 13. **Check Decode Result:**
+ *    - If k_rx_ok AND pid_req.has_pid_config == true: Proceed to step 14
+ *    - If decode failed: Jump to step 18 (unknown message)
+ * 14. **Convert PID Gains:** Build pid_gains_t from protobuf
+ *    - Zero structure (memset) to clear any garbage
+ *    - Convert doubles to floats for all gains (kp, ki, kd)
+ *    - Convert output limits (output_min_percent, output_max_percent)
+ *    - Convert integral limits (integral_min, integral_max)
+ *    - Set update_pending = true (motor task will apply gains)
+ * 15. **Update Shared Data:** Call shared_data_set_pid_gains(&gains)
+ *    - Thread-safe mutex-protected write
+ *    - Motor task reads this via shared_data_get_pid_gains()
+ *    - Sets k_event_pid_gains_updated flag
+ * 16. **Check Update Result:**
+ *    - If k_rx_ok: Log info "PID gains updated successfully"
+ *    - If error: Log error with error code
+ * 17. **Return:** Exit function (PID gains applied successfully)
+ *
+ * ### Unknown Message Handling (Step 18)
+ *
+ * 18. **Log Warning:** "Could not decode command payload"
+ *     - None of the known message types decoded successfully
  *     - Possible causes: Unsupported message type, corrupted protobuf, version mismatch
  *     - Return (ignore frame, continue normal operation)
  *
@@ -1799,6 +1824,36 @@ static void internal_handle_command_frame(rx_comm_channel_t channel,
     err = shared_data_trigger_estop(k_estop_reason_manual);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "Failed to trigger e-stop", (uint32_t)err);
+    }
+    return;
+  }
+
+  /* Try to decode as SetPIDGainsRequest */
+  star_v1_SetPIDGainsRequest pid_req;
+  err = rx_nanopb_decode_pid_gains_request(frame->payload,
+                                           frame->header.length,
+                                           &pid_req);
+  if (err == k_rx_ok && pid_req.has_pid_config) {
+    rx_log_info(s_tag, "PID gains request received");
+
+    /* Convert protobuf PID config to firmware structure */
+    pid_gains_t gains;
+    (void)memset(&gains, 0, sizeof(gains));
+    gains.kp            = (float)pid_req.pid_config.kp;
+    gains.ki            = (float)pid_req.pid_config.ki;
+    gains.kd            = (float)pid_req.pid_config.kd;
+    gains.output_min    = (float)pid_req.pid_config.output_min_percent;
+    gains.output_max    = (float)pid_req.pid_config.output_max_percent;
+    gains.integral_min  = (float)pid_req.pid_config.integral_min;
+    gains.integral_max  = (float)pid_req.pid_config.integral_max;
+    gains.update_pending = true;
+
+    /* Update shared PID gains (applies to all motors) */
+    err = shared_data_set_pid_gains(&gains);
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "Failed to set PID gains", (uint32_t)err);
+    } else {
+      rx_log_info(s_tag, "PID gains updated successfully");
     }
     return;
   }
