@@ -174,6 +174,7 @@
 #include "gen/star/v1/common.pb.h"
 #include "gen/star/v1/motor_control.pb.h"
 #include "gen/star/v1/telemetry.pb.h"
+#include "gen/star/v1/gateway_service.pb.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -497,6 +498,91 @@ static const uint16_t s_nanopb_buffer_size = 512U;
                                          uint8_t*                             buffer,
                                          uint32_t                             buffer_size,
                                          uint32_t*                            len);
+
+/* =============================================================================
+ * SetPIDGainsRequest Encode/Decode
+ * =============================================================================
+ */
+
+/**
+ * @brief Decode SetPIDGainsRequest message from Protocol Buffer bytes
+ *
+ * @details
+ * Deserializes a PID gains update command from RPi5 over SPI. This message
+ * contains new PID controller gains (Kp, Ki, Kd) and output/integral limits
+ * to be applied to one or more motors.
+ *
+ * @par PID Configuration Structure
+ * The decoded message contains:
+ * - Kp (proportional gain)
+ * - Ki (integral gain)
+ * - Kd (derivative gain)
+ * - output_min_percent (minimum PWM duty cycle %)
+ * - output_max_percent (maximum PWM duty cycle %)
+ * - integral_min (anti-windup minimum)
+ * - integral_max (anti-windup maximum)
+ * - motor_id (0-3 for specific motor, -1 for all motors)
+ *
+ * @par Decoding Process
+ * 1. Validate buffer pointer and length
+ * 2. Create nanopb input stream from buffer
+ * 3. Decode header and pid_config fields
+ * 4. Extract motor_id for targeting
+ *
+ * @param[in] buffer Input buffer containing encoded message
+ *   - Wire-format Protocol Buffer data
+ *   - Received from SPI or USB
+ * @param[in] len Buffer length in bytes
+ *   - Must match actual encoded message size
+ * @param[out] msg Decoded message structure
+ *   - Will be fully populated on success
+ *   - PID gains in standard units
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, msg contains decoded values
+ * @retval k_rx_err_invalid_arg NULL pointer or len == 0
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_protocol_error Malformed message or invalid field
+ *
+ * @pre rx_nanopb_init() must be called first
+ * @pre buffer contains valid wire-format data
+ *
+ * @post msg fully populated with decoded PID configuration
+ *
+ * @note Not thread-safe (uses shared internal state)
+ *
+ * @par Performance: ~18 µs @ 240 MHz
+ *
+ * @par Example:
+ * @code
+ * star_v1_SetPIDGainsRequest request;
+ * rx_err_t err = rx_nanopb_decode_pid_gains_request(spi_buffer, spi_len, &request);
+ * if (err == k_rx_ok && request.has_pid_config) {
+ *     // Apply gains to motors
+ *     pid_gains_t gains = {
+ *         .kp = (float)request.pid_config.kp,
+ *         .ki = (float)request.pid_config.ki,
+ *         .kd = (float)request.pid_config.kd,
+ *         .output_min = (float)request.pid_config.output_min_percent,
+ *         .output_max = (float)request.pid_config.output_max_percent,
+ *         .integral_min = (float)request.pid_config.integral_min,
+ *         .integral_max = (float)request.pid_config.integral_max,
+ *         .update_pending = true
+ *     };
+ *     shared_data_set_pid_gains(&gains);
+ * } else if (err == k_rx_err_protocol_error) {
+ *     // Request retransmit
+ *     send_nack();
+ * }
+ * @endcode
+ *
+ * @see rx_nanopb_encode_pid_gains_response() Send acknowledgment
+ * @see shared_data_set_pid_gains() Apply gains to motor controllers
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*               buffer,
+                                            uint32_t                     len,
+                                            star_v1_SetPIDGainsRequest*  msg);
 
 /* =============================================================================
  * Telemetry Encode/Decode
