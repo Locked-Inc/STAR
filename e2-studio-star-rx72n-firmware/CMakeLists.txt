@@ -1,0 +1,260 @@
+cmake_minimum_required(VERSION 3.20)
+
+# Project configuration
+project(star-rx72n-firmware
+    LANGUAGES C ASM
+    VERSION 1.0.0
+    DESCRIPTION "STAR RX72N Motor Controller Firmware"
+)
+
+# Build type
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+endif()
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Compiler: ${CMAKE_C_COMPILER}")
+
+# C Standard - C23 (GNU2x)
+set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS ON)  # Enable GNU extensions
+
+#############################################################################
+# Compiler Flags
+#############################################################################
+
+# Debug flags
+set(CMAKE_C_FLAGS_DEBUG "-O0 -g2")
+set(CMAKE_ASM_FLAGS_DEBUG "-g2")
+
+# Release flags
+set(CMAKE_C_FLAGS_RELEASE "-O2 -g0")
+set(CMAKE_ASM_FLAGS_RELEASE "-g0")
+
+# Warning flags (matching CLAUDE.md requirements)
+add_compile_options(
+    -Wall
+    -Wextra
+    -Werror
+    $<$<COMPILE_LANGUAGE:C>:-Wstack-usage=2200>
+)
+
+# Common defines (C files)
+add_compile_definitions(
+    TX_INCLUDE_USER_DEFINE_FILE
+    CPPAPP  # Enables C++ support in reset_program.S
+)
+
+# Assembly defines (needed for reset_program.S)
+add_compile_options($<$<COMPILE_LANGUAGE:ASM>:-DCPPAPP>)
+
+#############################################################################
+# Include Directories
+#############################################################################
+
+include_directories(
+    # Project headers
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/inc
+    ${CMAKE_SOURCE_DIR}/src/boot
+    ${CMAKE_SOURCE_DIR}/src/boot/inc
+    ${CMAKE_SOURCE_DIR}/src/boot/inc/custom
+    ${CMAKE_SOURCE_DIR}/src/boot/inc/smc_generated
+    ${CMAKE_SOURCE_DIR}/src/tasks
+    ${CMAKE_SOURCE_DIR}/src/tasks/inc
+    ${CMAKE_SOURCE_DIR}/src/shared
+    ${CMAKE_SOURCE_DIR}/src/shared/inc
+    ${CMAKE_SOURCE_DIR}/src/rtos_config
+
+    # ThreadX RTOS
+    ${CMAKE_SOURCE_DIR}/libs/threadx
+    ${CMAKE_SOURCE_DIR}/libs/threadx/common/inc
+    ${CMAKE_SOURCE_DIR}/libs/threadx/ports/rxv3/gnu/inc
+    ${CMAKE_SOURCE_DIR}/libs/threadx/utility/low_power
+
+    # smc_gen headers (not building sources, just headers for reference)
+    ${CMAKE_SOURCE_DIR}/src/smc_gen/r_bsp
+
+    # Custom libraries
+    ${CMAKE_SOURCE_DIR}/libs/rx_core/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_hal/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_bus/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_pid/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_motor/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_encoder/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_drv8243/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_crc/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_frame/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_frame_ascii/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_fec/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_harq/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/nanopb
+    ${CMAKE_SOURCE_DIR}/libs/rx_bq4050/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_ds18b20/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_hcsr04/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_obstacle_detect/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_spi_comm/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_usb/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_usb_comm/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_comm_manager/inc
+)
+
+#############################################################################
+# Source Files
+#############################################################################
+
+# Main application sources (exclude smc_gen - user ported to boot/)
+file(GLOB APP_SOURCES_ROOT
+    ${CMAKE_SOURCE_DIR}/src/*.c
+)
+file(GLOB_RECURSE APP_BOOT_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/boot/*.c
+    ${CMAKE_SOURCE_DIR}/src/boot/*.S
+)
+file(GLOB_RECURSE APP_TASKS_SOURCES ${CMAKE_SOURCE_DIR}/src/tasks/*.c)
+file(GLOB_RECURSE APP_SHARED_SOURCES ${CMAKE_SOURCE_DIR}/src/shared/*.c)
+file(GLOB_RECURSE APP_RTOS_SOURCES ${CMAKE_SOURCE_DIR}/src/rtos_config/*.c)
+
+# BSP intrinsic functions (needed for GNUC compiler support)
+set(BSP_INTRINSIC_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/smc_gen/r_bsp/mcu/all/r_rx_intrinsic_functions.c
+)
+
+# Suppress warnings in BSP intrinsic functions (Renesas-provided code)
+set_source_files_properties(${BSP_INTRINSIC_SOURCES} PROPERTIES
+    COMPILE_FLAGS "-Wno-unused-parameter -Wno-error"
+)
+
+# Combine app sources (minimal smc_gen - just intrinsic functions)
+set(APP_SOURCES
+    ${APP_SOURCES_ROOT}
+    ${APP_BOOT_SOURCES}
+    ${APP_TASKS_SOURCES}
+    ${APP_SHARED_SOURCES}
+    ${APP_RTOS_SOURCES}
+    ${BSP_INTRINSIC_SOURCES}
+)
+
+# ThreadX RTOS
+file(GLOB THREADX_COMMON_SOURCES ${CMAKE_SOURCE_DIR}/libs/threadx/common/src/*.c)
+file(GLOB THREADX_PORT_SOURCES ${CMAKE_SOURCE_DIR}/libs/threadx/ports/rxv3/gnu/src/*.c)
+file(GLOB THREADX_PORT_ASM ${CMAKE_SOURCE_DIR}/libs/threadx/ports/rxv3/gnu/src/*.S)
+file(GLOB THREADX_LOWPOWER_SOURCES ${CMAKE_SOURCE_DIR}/libs/threadx/utility/low_power/*.c)
+
+# Custom libraries (using GLOB_RECURSE for src subdirectories)
+file(GLOB_RECURSE LIB_RX_CORE_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_core/src/*.c)
+file(GLOB_RECURSE LIB_RX_HAL_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_hal/src/*.c)
+file(GLOB_RECURSE LIB_RX_BUS_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_bus/src/*.c)
+file(GLOB_RECURSE LIB_RX_PID_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_pid/src/*.c)
+file(GLOB_RECURSE LIB_RX_MOTOR_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_motor/src/*.c)
+file(GLOB_RECURSE LIB_RX_ENCODER_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_encoder/src/*.c)
+file(GLOB_RECURSE LIB_RX_DRV8243_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_drv8243/src/*.c)
+file(GLOB_RECURSE LIB_RX_CRC_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_crc/src/*.c)
+file(GLOB_RECURSE LIB_RX_FRAME_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_frame/src/*.c)
+file(GLOB_RECURSE LIB_RX_FRAME_ASCII_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_frame_ascii/src/*.c)
+file(GLOB_RECURSE LIB_RX_FEC_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_fec/src/*.c)
+file(GLOB_RECURSE LIB_RX_HARQ_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_harq/src/*.c)
+file(GLOB_RECURSE LIB_RX_BQ4050_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_bq4050/src/*.c)
+file(GLOB_RECURSE LIB_RX_DS18B20_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_ds18b20/src/*.c)
+file(GLOB_RECURSE LIB_RX_HCSR04_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_hcsr04/src/*.c)
+file(GLOB_RECURSE LIB_RX_OBSTACLE_DETECT_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_obstacle_detect/src/*.c)
+file(GLOB_RECURSE LIB_RX_SPI_COMM_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_spi_comm/src/*.c)
+file(GLOB_RECURSE LIB_RX_USB_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_usb/src/*.c)
+file(GLOB_RECURSE LIB_RX_USB_COMM_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_usb_comm/src/*.c)
+file(GLOB_RECURSE LIB_RX_COMM_MANAGER_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_comm_manager/src/*.c)
+
+# nanopb (only core files, not tests/examples)
+set(NANOPB_SOURCES
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/nanopb/pb_common.c
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/nanopb/pb_encode.c
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/nanopb/pb_decode.c
+)
+
+# nanopb wrapper
+file(GLOB_RECURSE LIB_RX_NANOPB_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/src/*.c)
+
+# Generated protobuf files
+file(GLOB PROTOBUF_SOURCES
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen/star/v1/*.c
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen/google/protobuf/*.c
+)
+
+# Combine all sources
+set(ALL_SOURCES
+    ${APP_SOURCES}
+    ${THREADX_COMMON_SOURCES}
+    ${THREADX_PORT_SOURCES}
+    ${THREADX_PORT_ASM}
+    ${THREADX_LOWPOWER_SOURCES}
+    ${LIB_RX_CORE_SOURCES}
+    ${LIB_RX_HAL_SOURCES}
+    ${LIB_RX_BUS_SOURCES}
+    ${LIB_RX_PID_SOURCES}
+    ${LIB_RX_MOTOR_SOURCES}
+    ${LIB_RX_ENCODER_SOURCES}
+    ${LIB_RX_DRV8243_SOURCES}
+    ${LIB_RX_CRC_SOURCES}
+    ${LIB_RX_FRAME_SOURCES}
+    ${LIB_RX_FRAME_ASCII_SOURCES}
+    ${LIB_RX_FEC_SOURCES}
+    ${LIB_RX_HARQ_SOURCES}
+    ${LIB_RX_BQ4050_SOURCES}
+    ${LIB_RX_DS18B20_SOURCES}
+    ${LIB_RX_HCSR04_SOURCES}
+    ${LIB_RX_OBSTACLE_DETECT_SOURCES}
+    ${LIB_RX_SPI_COMM_SOURCES}
+    ${LIB_RX_USB_SOURCES}
+    ${LIB_RX_USB_COMM_SOURCES}
+    ${LIB_RX_COMM_MANAGER_SOURCES}
+    ${NANOPB_SOURCES}
+    ${LIB_RX_NANOPB_SOURCES}
+    ${PROTOBUF_SOURCES}
+)
+
+#############################################################################
+# Executable Target
+#############################################################################
+
+# Find linker script
+set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/src/linker_script.ld)
+if(NOT EXISTS ${LINKER_SCRIPT})
+    message(FATAL_ERROR "Linker script not found: ${LINKER_SCRIPT}")
+endif()
+
+add_executable(${PROJECT_NAME}.elf ${ALL_SOURCES})
+
+# Set linker script
+target_link_options(${PROJECT_NAME}.elf PRIVATE
+    -T${LINKER_SCRIPT}
+    -Wl,--Map=${PROJECT_NAME}.map
+)
+
+# Generate compile_commands.json for IDE support
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+#############################################################################
+# Post-build: Generate Motorola S-Record (.mot) file
+#############################################################################
+
+add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} -O srec -I elf32-rx-be-ns $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.mot
+    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${PROJECT_NAME}.elf>
+    COMMENT "Generating ${PROJECT_NAME}.mot and showing size"
+)
+
+#############################################################################
+# Print Summary
+#############################################################################
+
+message(STATUS "====================================")
+message(STATUS "STAR RX72N Firmware Build Configuration")
+message(STATUS "====================================")
+message(STATUS "Compiler: ${CMAKE_C_COMPILER}")
+message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "C Standard: C${CMAKE_C_STANDARD} (GNU extensions enabled)")
+message(STATUS "Linker Script: ${LINKER_SCRIPT}")
+message(STATUS "Source Files: ${CMAKE_CURRENT_LIST_DIR}")
+message(STATUS "====================================")

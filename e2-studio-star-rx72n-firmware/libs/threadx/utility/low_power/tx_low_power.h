@@ -45,6 +45,8 @@
 #ifndef TX_LOW_POWER_H
 #define TX_LOW_POWER_H
 
+#include "tx_api.h"
+
 /* Declare low-power function prototypes.  */
 
 VOID  tx_low_power_enter(VOID);
