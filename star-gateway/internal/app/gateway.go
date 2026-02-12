@@ -28,12 +28,6 @@ import (
 )
 
 const (
-	// httpShutdownTimeout is the maximum time allowed for HTTP server graceful shutdown.
-	httpShutdownTimeout = 5 * time.Second
-
-	// grpcShutdownTimeout is the maximum time allowed for gRPC server graceful shutdown.
-	grpcShutdownTimeout = 5 * time.Second
-
 	// grpcListenPort is the TCP port for gRPC services.
 	grpcListenPort = ":50051"
 
@@ -71,6 +65,7 @@ type serviceSet struct {
 	battery       *service.BatteryService
 	configuration *service.ConfigurationService
 	firmware      *service.FirmwareService
+	gateway       *service.GatewayService
 }
 
 // Run starts the STAR Gateway application with the given configuration.
@@ -130,7 +125,7 @@ func Run(ctx context.Context, config Config) error {
 	}
 
 	// Start HTTP server (non-blocking)
-	if err := startHTTPServer(ctx, servers, logger); err != nil {
+	if err := startHTTPServer(ctx, servers, services, logger); err != nil {
 		return fmt.Errorf("HTTP server startup failed: %w", err)
 	}
 
@@ -400,6 +395,7 @@ func initServices(ctx context.Context, tm harq.HARQ, disp dispatcher.Dispatcher,
 		battery:       service.NewBatteryService(ctx, tm, disp, logger),
 		configuration: service.NewConfigurationService(tm, disp, logger),
 		firmware:      service.NewFirmwareService(),
+		gateway:       service.NewGatewayService(),
 	}, nil
 }
 
@@ -408,19 +404,56 @@ func initServices(ctx context.Context, tm harq.HARQ, disp dispatcher.Dispatcher,
 // registerGRPCServices registers all gRPC service implementations with the server.
 // This function must be updated whenever new services are added to the protobuf definitions.
 func registerGRPCServices(srv *grpc.Server, services *serviceSet) error {
+	if srv == nil {
+		return fmt.Errorf("gRPC server is nil")
+	}
+	if services == nil {
+		return fmt.Errorf("service set is nil")
+	}
+	if services.motorControl == nil ||
+		services.telemetry == nil ||
+		services.battery == nil ||
+		services.configuration == nil ||
+		services.firmware == nil ||
+		services.gateway == nil {
+		return fmt.Errorf("service set contains nil service")
+	}
+
 	starv1.RegisterMotorControlServiceServer(srv, services.motorControl)
 	starv1.RegisterTelemetryServiceServer(srv, services.telemetry)
 	starv1.RegisterBatteryManagementServiceServer(srv, services.battery)
 	starv1.RegisterConfigurationServiceServer(srv, services.configuration)
 	starv1.RegisterFirmwareUpdateServiceServer(srv, services.firmware)
+	starv1.RegisterGatewayServiceServer(srv, services.gateway)
 	return nil
 }
 
 // startGRPCServer starts the gRPC server on the configured port with registered services.
 func startGRPCServer(ctx context.Context, servers *Servers, services *serviceSet, logger *slog.Logger) error {
+	return startGRPCServerWithAddr(ctx, servers, services, grpcListenPort, logger)
+}
+
+// startGRPCServerWithAddr starts the gRPC server using the provided listen address.
+//
+// This helper allows deterministic tests by using random ports (":0") while keeping
+// production startup logic in one place.
+func startGRPCServerWithAddr(
+	ctx context.Context,
+	servers *Servers,
+	services *serviceSet,
+	listenAddr string,
+	logger *slog.Logger,
+) error {
+	if servers == nil {
+		return fmt.Errorf("servers container is nil")
+	}
+	if logger == nil {
+		logger = slog.Default()
+	}
+
 	// Configure gRPC server with service registration callback
 	config := &server.GRPCConfig{
-		ListenAddr:     grpcListenPort,
+		ListenAddr:     listenAddr,
 		MaxMessageSize: grpcMaxMsgSize,
 		ServiceRegistrar: func(srv *grpc.Server) error {
 			return registerGRPCServices(srv, services)
@@ -435,7 +468,7 @@ func startGRPCServer(ctx context.Context, servers *Servers, services *serviceSet
 	servers.GRPCServer = grpcSrv
 
 	// Start server (non-blocking)
-	errChan, err := server.RunGRPCServer(ctx, grpcSrv, grpcListenPort, logger)
+	errChan, err := server.RunGRPCServer(ctx, grpcSrv, config.ListenAddr, logger)
 	if err != nil {
 		return fmt.Errorf("failed to start gRPC server: %w", err)
 	}
@@ -452,23 +485,54 @@ func startGRPCServer(ctx context.Context, servers *Servers, services *serviceSet
 
 // startHTTPServer starts the HTTP/WebSocket server on the configured port.
 // The server handles HTTP requests and WebSocket connections for the UI.
-func startHTTPServer(ctx context.Context, servers *Servers, logger *slog.Logger) error {
+func startHTTPServer(ctx context.Context, servers *Servers, services *serviceSet, logger *slog.Logger) error {
+	return startHTTPServerWithAddr(ctx, servers, services, httpListenPort, logger)
+}
+
+// startHTTPServerWithAddr starts the HTTP server using the provided listen address.
+//
+// The HTTP layer only exposes transport-architecture aligned endpoints:
+//   - /ws/controller for UI teleop command ingestion
+//   - /healthz for liveness checks
+//
+// UI static files are served by the dedicated UI service, not by the gateway.
+func startHTTPServerWithAddr(
+	ctx context.Context,
+	servers *Servers,
+	services *serviceSet,
+	listenAddr string,
+	logger *slog.Logger,
+) error {
+	if servers == nil {
+		return fmt.Errorf("servers container is nil")
+	}
+	if services == nil {
+		return fmt.Errorf("service set is nil")
+	}
+	if services.gateway == nil {
+		return fmt.Errorf("gateway service is nil")
+	}
+	if logger == nil {
+		logger = slog.Default()
+	}
+
 	// Create HTTP router
 	mux := http.NewServeMux()
 
-	// TODO: Create Gateway Service instance for controller handler
-	gatewayService := service.NewGatewayService()
-	controllerHandler := controller.NewHandlerWithGateway(gatewayService)
+	// Wire controller WebSocket handler to shared GatewayService.
+	// This keeps UI -> WebSocket and ROS2 -> gRPC paths synchronized via one command cache.
+	controllerHandler := controller.NewHandlerWithGateway(services.gateway)
 	mux.Handle("/ws/controller", controllerHandler)
 
-	// TODO: Register static file handler
-	// gatewayService.RegisterClient("client-1")
-
-	// TODO: Register API endpoints
+	// Lightweight liveness endpoint for orchestration and local debugging.
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	})
 
 	// Configure HTTP server
 	config := &server.HTTPConfig{
-		ListenAddr:   httpListenPort,
+		ListenAddr:   listenAddr,
 		ReadTimeout:  httpReadTimeout,
 		WriteTimeout: httpWriteTimeout,
 		Handler:      mux,
