@@ -418,7 +418,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
 /* Configure SDCLK output pin (only effective when external bus enabled)
    Values 0=no output, 1 = BCK frequency
 */
-#define BSP_CFG_SDCLK_OUTPUT (0)
+#define BSP_CFG_SDCLK_OUTPUT (0) /* Generated value. Do not edit this manually */
 
 /* CLKOUT Output Frequency Division Ratio Select. (CKODIV)
    Values

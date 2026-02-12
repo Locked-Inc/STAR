@@ -38,12 +38,14 @@
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/opencode,target=/home/star/.config/opencode,type=bind,consistency=cached",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/openai,target=/home/star/.config/openai,type=bind,consistency=cached",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gemini,target=/home/star/.gemini,type=bind,consistency=cached",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/star/.claude,type=bind,consistency=cached"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/star/.claude,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/gnurx,target=/home/star/gnurx,type=bind,consistency=cached"
   ],
   "containerEnv": {
-    "CLAUDE_CONFIG_DIR": "/home/star/.claude"
+    "CLAUDE_CONFIG_DIR": "/home/star/.claude",
+    "PATH": "/home/star/gnurx/bin:${containerEnv:PATH}"
   },
-  "postCreateCommand": "sudo chown -R star:star /home/star/.claude && sudo rm -f /etc/apt/sources.list.d/yarn.list && sudo apt-get update && sudo apt-get install -y clang-format clang clangd vim && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex && cd star-proto/proto && buf mod update && cd ../..",
+  "postCreateCommand": "sudo chown -R star:star /home/star/.claude && sudo rm -f /etc/apt/sources.list.d/yarn.list && sudo apt-get update && sudo apt-get install -y clang-format clang clangd vim cmake && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex && cd star-proto/proto && buf mod update && cd ../..",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -77,9 +79,11 @@
         "cmake.configureArgs": ["-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"],
         "clangd.arguments": [
           "--compile-commands-dir=${workspaceFolder}/star-ros2/build",
+          "--compile-commands-dir=${workspaceFolder}/e2-studio-star-rx72n-firmware/build",
           "--background-index",
           "--clang-tidy"
-        ]
+        ],
+        "C_Cpp.default.compileCommands": "${workspaceFolder}/e2-studio-star-rx72n-firmware/build/compile_commands.json"
       }
     }
   }
