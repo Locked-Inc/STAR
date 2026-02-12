@@ -17,6 +17,7 @@ import (
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/link"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/manager"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/server"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/service"
@@ -65,6 +66,7 @@ type Servers struct {
 }
 
 // serviceSet holds initialized service instances for use in gRPC server registration.
+// IMPORTANT: Make sure this struct is updated whenever new proto services are added or modified to ensure proper initialization and registration.
 type serviceSet struct {
 	motorControl  *service.MotorControlService
 	telemetry     *service.TelemetryService
@@ -148,8 +150,11 @@ func Run(ctx context.Context, config Config) error {
 // initTransportManager initializes the TransportManager based on the provided configuration.
 // This function orchestrates the initialization process by validating configuration,
 // creating the transport manager, initializing available transports, and starting the manager.
+//
+// CRITICAL: TransportManager owns the single SessionState instance. All transports must use
+// tm.GetSessionState() to ensure sequence continuity during failover (prevents Handoff Problem).
 func initTransportManager(ctx context.Context, appConfig Config) (*manager.TransportManager, error) {
-	// TODO: Create manager config from app config
+	// Create manager config from app config
 	mgrConfig := &manager.Config{
 		Mode: appConfig.TransportMode,
 	}
@@ -157,22 +162,20 @@ func initTransportManager(ctx context.Context, appConfig Config) (*manager.Trans
 	// Validate config or fallback to default
 	mgrConfig = validateOrUseDefault(mgrConfig)
 
-	// TODO: Create transport manager and shared session state
+	// Create transport manager (internally creates SessionState)
 	tm := manager.NewTransportManager(mgrConfig)
-	session := manager.NewSessionState()
 
-	// TODO: Initialize all available transports (SPI/Socket and USB)
-	transports, err := initializeTransports(ctx, appConfig, session)
-	if err != nil {
+	// Initialize transports using manager's SessionState (passed via tm)
+	if err := initializeTransports(ctx, appConfig, tm); err != nil {
 		return nil, err
 	}
 
-	// Validate that we have required transports based on mode
-	if err := validateTransports(transports, appConfig.TransportMode); err != nil {
+	// Validate required transports based on mode
+	if err := validateTransportsRegistered(tm, appConfig.TransportMode); err != nil {
 		return nil, err
 	}
 
-	// TODO: Start the transport manager
+	// Start manager (selects initial transport, performs reset handshake)
 	if err := tm.Start(ctx); err != nil {
 		return nil, fmt.Errorf("failed to start transport manager: %w", err)
 	}
@@ -192,28 +195,32 @@ func validateOrUseDefault(config *manager.Config) *manager.Config {
 	return config
 }
 
-// transportSet holds the initialized transports for validation.
-type transportSet struct {
-	spiLink transport.Device
-	usbLink transport.Device
-}
-
 // initializeTransports initializes all available transports based on configuration.
 // This function attempts to initialize SPI/Socket (for simulation) and USB transports.
 // Transport initialization is non-fatal unless explicitly required by TransportMode.
-// IMPORTANT: session parameter MUST be shared across all transports (USB and SPI) to ensure sequence continuity and proper failover handling.
-func initializeTransports(ctx context.Context, appConfig Config, session *manager.SessionState) (*transportSet, error) {
-	transports := &transportSet{}
+//
+// CRITICAL: All transports MUST use the shared SessionState from TransportManager
+// (via tm.GetSessionState()) to ensure sequence continuity during failover.
+func initializeTransports(ctx context.Context, appConfig Config, tm *manager.TransportManager) error {
+	// Get shared session state from manager (single source of truth)
+	session := tm.GetSessionState()
 
-	// SPI/Socket initialization (non-fatal)
+	// SPI/Socket initialization (non-fatal unless force-spi mode)
 	if appConfig.SimulationMode {
 		// Simulation mode: use socket transport
 		socketTransport, err := createSocketTransport(ctx, appConfig.SocketPath)
 		if err != nil {
 			log.Printf("Socket transport initialization failed: %v", err)
 		} else {
-			transports.spiLink = socketTransport
-			// TODO: Register with transport manager
+			// Wrap socket in CDC link (socket protocol matches CDC)
+			socketLink, err := link.NewCDCLink(socketTransport, session)
+			if err != nil {
+				log.Printf("Socket link creation failed: %v", err)
+			} else {
+				// Register as SPI transport (simulation mode uses socket instead of SPI)
+				tm.RegisterTransport(manager.TransportNameSPI, socketLink, manager.PrioritySPI)
+				log.Printf("Registered socket transport (simulation mode)")
+			}
 		}
 	} else {
 		// Production mode: use SPI transport
@@ -221,62 +228,69 @@ func initializeTransports(ctx context.Context, appConfig Config, session *manage
 		if err != nil {
 			log.Printf("SPI transport initialization failed: %v", err)
 		} else {
-			// TODO: Create SPI link with session state
-			if err := createSPILink(ctx, spiTransport, appConfig); err != nil {
-				log.Printf("SPI link creation failed, trying legacy: %v", err)
-				// Fallback to legacy ChaseCombining HARQ
-				if spiTrans, ok := spiTransport.(transport.Transport); ok {
-					if err := createLegacySPILink(ctx, spiTrans, appConfig); err != nil {
-						log.Printf("Legacy SPI link creation failed: %v", err)
-					} else {
-						transports.spiLink = spiTransport
-					}
-				}
+			// Wrap in SPI link layer with shared session state
+			spiLink, err := createSPILink(ctx, spiTransport, session)
+			if err != nil {
+				log.Printf("SPI link creation failed: %v", err)
 			} else {
-				transports.spiLink = spiTransport
+				tm.RegisterTransport(manager.TransportNameSPI, spiLink, manager.PrioritySPI)
+				log.Printf("Registered SPI transport")
 			}
 		}
 	}
 
-	// USB CDC initialization (non-fatal unless forced)
-	usbLink, err := createUSBLink(ctx)
+	// USB CDC initialization (non-fatal unless force-usb mode)
+	usbLink, err := createUSBLink(ctx, session)
 	if err != nil {
 		log.Printf("USB CDC initialization failed: %v", err)
 		// If force-usb mode, this is fatal
 		if appConfig.TransportMode == manager.ModeForceUSB {
-			return nil, fmt.Errorf("force-USB mode requires USB transport: %w", err)
+			return fmt.Errorf("force-USB mode requires USB transport: %w", err)
 		}
 	} else {
-		transports.usbLink = usbLink
-		// TODO: Register with transport manager
+		tm.RegisterTransport(manager.TransportNameUSB, usbLink, manager.PriorityUSB)
+		log.Printf("Registered USB transport")
 	}
 
-	return transports, nil
+	return nil
 }
 
-// validateTransports ensures that we have at least one valid transport
-// and that force-mode requirements are satisfied.
-func validateTransports(transports *transportSet, mode manager.TransportMode) error {
-	// Count registered transports
-	count := 0
-	if transports.spiLink != nil {
-		count++
-	}
-	if transports.usbLink != nil {
-		count++
-	}
+// validateTransportsRegistered ensures that we have at least one valid transport
+// registered with the TransportManager and that force-mode requirements are satisfied.
+func validateTransportsRegistered(tm *manager.TransportManager, mode manager.TransportMode) error {
+	// Get list of registered transports from manager
+	available := tm.GetAvailableTransports()
 
 	// Ensure at least one transport is available
-	if count == 0 {
+	if len(available) == 0 {
 		return fmt.Errorf("no transports available")
 	}
 
 	// Validate force-mode requirements
-	if mode == manager.ModeForceUSB && transports.usbLink == nil {
-		return fmt.Errorf("force-USB mode enabled but USB transport unavailable")
+	if mode == manager.ModeForceUSB {
+		hasUSB := false
+		for _, name := range available {
+			if name == manager.TransportNameUSB {
+				hasUSB = true
+				break
+			}
+		}
+		if !hasUSB {
+			return fmt.Errorf("force-USB mode enabled but USB transport unavailable")
+		}
 	}
-	if mode == manager.ModeForceSPI && transports.spiLink == nil {
-		return fmt.Errorf("force-SPI mode enabled but SPI transport unavailable")
+
+	if mode == manager.ModeForceSPI {
+		hasSPI := false
+		for _, name := range available {
+			if name == manager.TransportNameSPI {
+				hasSPI = true
+				break
+			}
+		}
+		if !hasSPI {
+			return fmt.Errorf("force-SPI mode enabled but SPI transport unavailable")
+		}
 	}
 
 	return nil
@@ -309,39 +323,48 @@ func createSPITransport(ctx context.Context) (transport.Device, error) {
 
 // createSPILink creates an SPILink using the provided SPI transport and shared session state.
 // This function wraps the SPI transport with HARQ protocol support.
-func createSPILink(ctx context.Context, deviceTransport transport.Device, appConfig Config) error {
-	// TODO: Type assert to transport.Transport interface
+//
+// Returns the SPI link (harq.HARQ) or an error if link creation fails.
+func createSPILink(ctx context.Context, spiTransport transport.Device, session *manager.SessionState) (harq.HARQ, error) {
+	// Create SPI link with default config (nil = use defaults)
+	spiLink, err := link.NewSPILink(spiTransport, session, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create SPI link: %w", err)
+	}
 
-	// TODO: Create SPILink with session state for HARQ support
-
-	// TODO: Configure link parameters (timeouts, retries, etc.)
-
-	// TODO: Return success or error
-	return nil
+	return spiLink, nil
 }
 
 // createLegacySPILink creates a legacy ChaseCombining HARQ link.
 // This is used as a fallback when the standard SPI link creation fails.
+//
+// NOTE: Legacy HARQ implementation is deprecated and not currently supported.
 func createLegacySPILink(ctx context.Context, transport transport.Transport, appConfig Config) error {
-	// TODO: Create legacy ChaseCombining HARQ link
-
-	// TODO: Configure with appropriate timeout (use simulationHARQTimeout if simulation mode)
-
-	// TODO: Return success or error
-	return nil
+	return fmt.Errorf("legacy SPI link not implemented")
 }
 
 // createUSBLink creates a USB CDC link using the provided session state.
-// Returns the USB transport device or an error if initialization fails.
-func createUSBLink(ctx context.Context) (transport.Device, error) {
-	// TODO: Create CDCTransport
+// Returns the USB link (harq.HARQ) or an error if initialization fails.
+//
+// The CDC transport is opened and wrapped in a CDCLink with the shared session state.
+// This ensures sequence continuity during transport switching (prevents Handoff Problem).
+func createUSBLink(ctx context.Context, session *manager.SessionState) (harq.HARQ, error) {
+	// Create CDC transport with default config
+	cdcTransport := transport.NewCDCTransport(transport.DefaultCDCConfig())
 
-	// TODO: Open the CDC transport connection
+	// Open the CDC device
+	if err := cdcTransport.Open(); err != nil {
+		return nil, fmt.Errorf("failed to open CDC transport: %w", err)
+	}
 
-	// TODO: Create CDCLink with session state for protocol support
+	// Wrap in link layer with shared session state
+	cdcLink, err := link.NewCDCLink(cdcTransport, session)
+	if err != nil {
+		cdcTransport.Close() // Cleanup on error
+		return nil, fmt.Errorf("failed to create CDC link: %w", err)
+	}
 
-	// TODO: Return the USB link device
-	return nil, nil
+	return cdcLink, nil
 }
 
 // initDispatcher initializes the message dispatcher for routing protocol messages.
@@ -372,6 +395,17 @@ func initServices(ctx context.Context, harqHandler harq.HARQ, disp dispatcher.Di
 
 // startGRPCServer starts the gRPC server on the configured port.
 // The server listens for incoming gRPC connections and serves registered services.
+// registerGRPCServices registers all gRPC service implementations with the server.
+// This function must be updated whenever new services are added to the protobuf definitions.
+func registerGRPCServices(srv *grpc.Server, services *serviceSet) error {
+	starv1.RegisterMotorControlServiceServer(srv, services.motorControl)
+	starv1.RegisterTelemetryServiceServer(srv, services.telemetry)
+	starv1.RegisterBatteryManagementServiceServer(srv, services.battery)
+	starv1.RegisterConfigurationServiceServer(srv, services.configuration)
+	starv1.RegisterFirmwareUpdateServiceServer(srv, services.firmware)
+	return nil
+}
+
 // startGRPCServer starts the gRPC server on the configured port with registered services.
 func startGRPCServer(ctx context.Context, servers *Servers, services *serviceSet, logger *slog.Logger) error {
 	// Configure gRPC server with service registration callback
@@ -379,13 +413,7 @@ func startGRPCServer(ctx context.Context, servers *Servers, services *serviceSet
 		ListenAddr:     grpcListenPort,
 		MaxMessageSize: grpcMaxMsgSize,
 		ServiceRegistrar: func(srv *grpc.Server) error {
-			// Register all services (uses generated protobuf functions)
-			starv1.RegisterMotorControlServiceServer(srv, services.motorControl)
-			starv1.RegisterTelemetryServiceServer(srv, services.telemetry)
-			starv1.RegisterBatteryManagementServiceServer(srv, services.battery)
-			starv1.RegisterConfigurationServiceServer(srv, services.configuration)
-			starv1.RegisterFirmwareUpdateServiceServer(srv, services.firmware)
-			return nil
+			return registerGRPCServices(srv, services)
 		},
 	}
 

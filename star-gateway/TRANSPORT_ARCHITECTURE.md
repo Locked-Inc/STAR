@@ -125,25 +125,16 @@ All frames use the same wire format regardless of transport:
 
 ### Frame Types
 
-```go
-const (
-    // Heartbeat frames
-    FrameTypePing     = 0x00  // Heartbeat request
-    FrameTypePong     = 0x01  // Heartbeat response
+The protocol defines the following frame types:
 
-    // Data frames
-    FrameTypeCommand  = 0x10  // Command frame
-    FrameTypeResponse = 0x11  // Response frame
-
-    // HARQ frames (SPI only)
-    FrameTypeAck      = 0x12  // Acknowledgment
-    FrameTypeNack     = 0x13  // Negative acknowledgment
-
-    // Reset frames
-    FrameTypeResetAck = 0xFE  // Reset acknowledgment
-    FrameTypeReset    = 0xFF  // Reset request
-)
-```
+- **0x00 (PING)**: Heartbeat request - sent when link is idle for >1s
+- **0x01 (PONG)**: Heartbeat response - echoes PING counter
+- **0x10 (COMMAND)**: Command frame carrying protobuf messages
+- **0x11 (RESPONSE)**: Response frame carrying protobuf messages
+- **0x12 (ACK)**: Acknowledgment (SPI only, HARQ protocol)
+- **0x13 (NACK)**: Negative acknowledgment (SPI only, HARQ protocol)
+- **0xFE (RESET_ACK)**: Acknowledgment of session reset
+- **0xFF (RESET)**: Request to reset session (synchronize sequences)
 
 **PING Frame:**
 - **TYPE**: `0x00`
@@ -255,19 +246,17 @@ Safety margin:         4x   (250ms worst-case << 1000ms WDT)
 
 ### Heartbeat Manager
 
-```go
-type HeartbeatManager struct {
-    lastSeen       time.Time
-    lastValidPong  time.Time
-    pingCounter    uint32
-    lastPingSent   uint32
-    pendingPing    bool
-    consecutiveMisses int
-    pingInterval   time.Duration  // 1s (idle probe)
-    failureTimeout time.Duration  // 200ms (implicit detection)
-    onLinkFailed   func()         // Callback to TransportManager
-}
-```
+The Heartbeat Manager tracks link health using the following state:
+
+- **lastSeen**: Timestamp of last valid frame received (any type)
+- **lastValidPong**: Timestamp of last valid PONG response
+- **pingCounter**: Counter incremented with each PING sent
+- **lastPingSent**: Counter value of most recent PING
+- **pendingPing**: Flag indicating PING awaiting PONG response
+- **consecutiveMisses**: Count of consecutive missed heartbeats
+- **pingInterval**: Interval for explicit PING probes (1 second)
+- **failureTimeout**: Timeout for implicit detection (200ms)
+- **onLinkFailed**: Callback to TransportManager on link failure
 
 **Benefits:**
 - Minimal bandwidth overhead (PING only when idle)
@@ -330,48 +319,23 @@ stateDiagram-v2
 
 ### Smart Drain Logic
 
-The transport manager uses **smart drain logic** to minimize failover time:
+The transport manager uses **smart drain logic** to minimize failover time by conditionally draining based on failure type:
 
-```go
-type FailureType int
+**Failure Types:**
+- **Graceful**: Config change, priority upgrade - drain is safe
+- **Timeout**: Heartbeat timeout - drain is safe
+- **IOError**: Hard IO error - skip drain for fast failover
+- **HealthCheck**: Failed health check - skip drain
+- **HotPlugRemove**: USB unplugged - skip drain
 
-const (
-    FailureTypeGraceful      FailureType = iota  // Config change, priority upgrade - drain OK
-    FailureTypeTimeout                           // Heartbeat timeout - drain OK
-    FailureTypeIOError                           // Hard IO error - skip drain
-    FailureTypeHealthCheck                       // Failed health check - skip drain
-    FailureTypeHotPlugRemove                     // USB unplugged - skip drain
-)
-
-func (tm *TransportManager) executeSwitch(target *TransportWrapper, failureType FailureType) error {
-    // Step 1: Pause operations (block new Send/Receive)
-    tm.pauseOperations()
-    defer tm.resumeOperations()
-
-    // Step 2: Smart drain - skip if hard failure
-    shouldDrain := (failureType == FailureTypeGraceful || failureType == FailureTypeTimeout)
-
-    if shouldDrain {
-        if err := tm.drainInflight(tm.config.SwitchTimeout); err != nil {
-            log.Printf("WARNING: Drain timeout, continuing: %v", err)
-        }
-    } else {
-        log.Printf("Skipping drain for failure type: %v (hard failure)", failureType)
-    }
-
-    // Step 3: Reset old transport (if accessible)
-    if tm.activeTransport != nil {
-        tm.activeTransport.Reset()
-    }
-
-    // Step 4: Activate new transport
-    tm.activeTransport = target.Transport
-    tm.activeTransportName = target.Name
-
-    // Step 5: Resume operations (unblock Send/Receive)
-    return nil
-}
-```
+**Switch Execution Steps:**
+1. Pause operations (block new Send/Receive calls)
+2. Smart drain decision:
+   - Graceful/Timeout failures: Wait up to 500ms for in-flight operations to complete
+   - Hard failures (IOError, HotPlugRemove, HealthCheck): Skip drain, failover immediately
+3. Reset old transport (if accessible)
+4. Activate new transport
+5. Resume operations (unblock Send/Receive)
 
 **Rationale:**
 - **Graceful switches** (timeout, config change): Safe to wait 500ms for drain
@@ -379,47 +343,33 @@ func (tm *TransportManager) executeSwitch(target *TransportWrapper, failureType 
 
 ### Sequence Continuity
 
-**Critical Design Decision**: Sequence numbers are **shared across all transports** via `SessionState`:
+**Critical Design Decision**: Sequence numbers are **shared across all transports** via SessionState.
 
-```go
-type SessionState struct {
-    mu         sync.Mutex
-    txSequence uint16  // Shared TX sequence (incremented on every Send)
-    rxSequence uint16  // Shared RX sequence (validated on every Receive)
-}
-```
+**SessionState Fields:**
+- **txSequence**: 16-bit transmit sequence counter (incremented on every Send)
+- **rxSequence**: 16-bit receive sequence counter (validated on every Receive)
+- **Mutex**: Protects concurrent access to sequence counters
 
 **Why This Matters:**
 - If USB fails at TX Sequence 105 and switches to SPI, SPI must start at 106
 - If SPI reset to 0, RX72N would reject packets as duplicates
 - Shared state ensures **zero duplicate execution** during transport switches
 
-**Sequence Validation:**
-```go
-func (s *SessionState) ValidateRxSequence(seq uint16) bool {
-    diff := seq - s.rxSequence
+**Sequence Validation Logic:**
 
-    // Exact match - most common case
-    if diff == 0 {
-        s.rxSequence = (s.rxSequence + 1) & 0xFFFF
-        return true
-    }
+The receive sequence validation accepts frames in three cases:
 
-    // Small gap (packet loss on USB) - Accept and catch up
-    const maxGapTolerance = 10
-    if diff > 0 && diff < maxGapTolerance {
-        log.Printf("WARN: Skipped %d frames (packet loss), expected %d, got %d",
-            diff, s.rxSequence, seq)
-        s.rxSequence = (seq + 1) & 0xFFFF
-        return true
-    }
+1. **Exact match**: Received sequence equals expected sequence (most common case)
+   - Increment expected sequence and accept
 
-    // Large gap or duplicate - reject
-    log.Printf("ERROR: Sequence mismatch, expected %d, got %d (diff=%d)",
-        s.rxSequence, seq, diff)
-    return false
-}
-```
+2. **Small gap**: Received sequence is ahead by 1-10 frames
+   - Log warning about potential packet loss
+   - Update expected sequence to received + 1
+   - Accept frame (allows recovery from minor packet loss)
+
+3. **Large gap or duplicate**: Difference > 10 or sequence behind expected
+   - Log error with sequence mismatch details
+   - Reject frame
 
 ## Health Monitoring
 
@@ -427,20 +377,16 @@ func (s *SessionState) ValidateRxSequence(seq uint16) bool {
 
 Each transport tracks the following metrics:
 
-```go
-type HealthMetrics struct {
-    ConsecutiveFailures int           // Consecutive errors (reset on success)
-    TotalSent          int            // Total frames sent
-    TotalReceived      int            // Total frames received
-    TotalErrors        int            // Total errors encountered
-    AvgLatency         time.Duration  // Moving average latency
-    PacketLossRate     float64        // Sliding window loss rate (0.0-1.0)
-    LastSuccess        time.Time      // Last successful operation
-    LastFailure        time.Time      // Last error
-    LastRecovery       time.Time      // When transport recovered (for failback damping)
-    IsHealthy          bool           // Current health status
-}
-```
+- **ConsecutiveFailures**: Count of consecutive errors (reset on success)
+- **TotalSent**: Total frames sent since start
+- **TotalReceived**: Total frames received since start
+- **TotalErrors**: Total errors encountered
+- **AvgLatency**: Moving average of operation latency
+- **PacketLossRate**: Sliding window loss rate (0.0-1.0)
+- **LastSuccess**: Timestamp of last successful operation
+- **LastFailure**: Timestamp of last error
+- **LastRecovery**: When transport recovered (for failback damping)
+- **IsHealthy**: Current health status boolean
 
 **Multi-Threshold Health Evaluation:**
 A transport is marked unhealthy when ANY of these thresholds are exceeded:
@@ -459,52 +405,17 @@ When a transport recovers (unhealthy → healthy), it enters a 30-second damping
 The Health Monitor periodically probes **inactive** transports to detect recovery:
 
 **USB Probe (Non-Intrusive):**
-```go
-func (hm *HealthMonitor) probeUSB() bool {
-    // Try to open /dev/ttyACM0
-    port, err := serial.Open(transport.DefaultCDCDevice, &serial.Mode{
-        BaudRate: transport.DefaultBaudRate,
-    })
-    if err != nil {
-        return false  // Device not available
-    }
 
-    // Close immediately (just checking accessibility)
-    port.Close()
-    return true
-}
-```
+The USB probe simply attempts to open the CDC device (`/dev/ttyACM0`) with the configured baud rate. If successful, it immediately closes the port without sending any data. This minimal check verifies device accessibility without interfering with the active transport.
 
 **SPI Probe (PING/PONG):**
-```go
-func (hm *HealthMonitor) probeSPI(wrapper *TransportWrapper) bool {
-    ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
-    defer cancel()
 
-    // Create PING payload with test marker
-    payload := make([]byte, 4)
-    binary.BigEndian.PutUint32(payload, 0xDEADBEEF)
-
-    // Send PING
-    if err := wrapper.Transport.Send(ctx, payload); err != nil {
-        return false
-    }
-
-    // Wait for PONG
-    result, err := wrapper.Transport.Receive(ctx)
-    if err != nil {
-        return false
-    }
-
-    // Validate PONG payload
-    if len(result.Payload) != 4 {
-        return false
-    }
-
-    receivedCounter := binary.BigEndian.Uint32(result.Payload)
-    return receivedCounter == 0xDEADBEEF
-}
-```
+The SPI probe performs an active health check by:
+1. Creating a PING payload with a test marker (0xDEADBEEF)
+2. Sending the PING frame with a 50ms timeout
+3. Waiting for a PONG response
+4. Validating that the PONG payload matches the sent marker
+5. Returning success only if all steps complete and the marker is echoed correctly
 
 **Probing Schedule:**
 - Interval: 5 seconds (configurable)
@@ -522,17 +433,14 @@ func (hm *HealthMonitor) probeSPI(wrapper *TransportWrapper) bool {
 | `force-usb` | Only register USB, fail if unavailable | USB-only testing |
 | `force-spi` | Only register SPI, skip USB registration | SPI-only testing |
 
-### Configuration Example
+### Configuration Parameters
 
-```go
-config := manager.DefaultConfig()
-config.Mode = manager.ModeAuto
-config.FailureThreshold = 3
-config.SwitchTimeout = 500 * time.Millisecond
-config.HealthCheckInterval = 5 * time.Second
+The TransportManager is configured with the following parameters:
 
-tm := manager.NewTransportManager(config)
-```
+- **Mode**: Transport selection mode (auto, prefer-usb, force-usb, force-spi)
+- **FailureThreshold**: Number of consecutive failures before failover (default: 3)
+- **SwitchTimeout**: Maximum time to wait for drain during graceful switches (default: 500ms)
+- **HealthCheckInterval**: Interval for probing inactive transports (default: 5 seconds)
 
 ## Development Guide
 
@@ -540,45 +448,41 @@ tm := manager.NewTransportManager(config)
 
 To add a new transport (e.g., Ethernet, CAN):
 
-1. **Implement `transport.Device` interface:**
-   ```go
-   type Device interface {
-       Transfer(ctx context.Context, txData []byte) ([]byte, error)
-       Open() error
-       Close() error
-       Receive(len int) ([]byte, error)
-       Send(data []byte) (int, error)
-       IsOpen() bool
-   }
-   ```
+1. **Implement Device Interface:**
 
-2. **Create Link Layer (implement `harq.HARQ`):**
-   ```go
-   type MyLink struct {
-       transport    transport.Device
-       encoder      frame.Encoder
-       decoder      *frame.StreamDecoder
-       sessionState *manager.SessionState  // Shared with other transports
-   }
+   Create a device implementation that provides low-level transport operations:
+   - **Transfer**: Perform full-duplex transfer with context and timeout
+   - **Open**: Initialize and open the device
+   - **Close**: Clean shutdown of the device
+   - **Receive**: Read data from the device (specify expected length)
+   - **Send**: Write data to the device
+   - **IsOpen**: Query device state
 
-   func (m *MyLink) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
-       // Implement send logic
-   }
-   ```
+2. **Create Link Layer:**
+
+   Implement the HARQ interface to provide reliable data transfer:
+   - **Components needed**:
+     - Reference to underlying transport device
+     - Frame encoder for serialization
+     - Stream decoder for deserialization
+     - Shared SessionState reference (critical for sequence continuity)
+   - **Send method**: Encode frames, manage sequences, handle retransmission if needed
+   - **Receive method**: Decode frames, validate sequences, process control frames
 
 3. **Register with TransportManager:**
-   ```go
-   myTransport := NewMyTransport(config)
-   myLink := NewMyLink(myTransport, sessionState)
-   tm.RegisterTransport("my-transport", myLink, priority)
-   ```
+
+   - Create instance of your transport device with configuration
+   - Create link layer instance, passing the device and shared SessionState
+   - Register with TransportManager, providing a name and priority
+   - Higher priority transports are preferred when multiple are healthy
 
 4. **Add Health Probe:**
-   ```go
-   func (hm *HealthMonitor) probeMyTransport(wrapper *TransportWrapper) bool {
-       // Implement health check
-   }
-   ```
+
+   Implement a health check function for the HealthMonitor:
+   - Should be non-intrusive (don't interfere with active transport)
+   - Should complete quickly (timeout around 50ms)
+   - Return true if transport is accessible and responsive
+   - Use device-specific checks (e.g., device file existence, PING/PONG exchange)
 
 ### Testing
 
