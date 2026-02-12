@@ -23,7 +23,7 @@ Macro definitions
 ***********************************************************************************************************************/
 
 /* User's guide for symbolic name.
- * The generated symbolic names can be used in the user application as follows:
+ * The generated symbolic names can be used in the user application as follows: 
  *
  * Example: Toggle LED1 at Pin P54.
  *  There are 2 ways to toggle LED1
@@ -40,21 +40,21 @@ Macro definitions
  */
 
 /* Pin write helper */
-#define PIN_WRITE_HELPER(x, y) ((PORT##x.PODR.BIT.B##y))
+#define PIN_WRITE_HELPER(x,y)                    ((PORT##x.PODR.BIT.B##y))
 /* Pin read helper */
-#define PIN_READ_HELPER(x, y) ((PORT##x.PIDR.BIT.B##y))
+#define PIN_READ_HELPER(x,y)                     ((PORT##x.PIDR.BIT.B##y))
 
 #if !(defined(__CCRX__) && defined(__cplusplus))
 /* Pin write API */
-#define PIN_WRITE(...) (PIN_WRITE_HELPER(__VA_ARGS__))
+#define PIN_WRITE(...)                           (PIN_WRITE_HELPER(__VA_ARGS__))
 /* Pin read API */
-#define PIN_READ(...) (PIN_READ_HELPER(__VA_ARGS__))
+#define PIN_READ(...)                            (PIN_READ_HELPER(__VA_ARGS__))
 #else
 /* CC-RX' C++ mode does not support variadic macros */
 /* Pin write API */
-#define PIN_WRITE(args) (PIN_WRITE_HELPER(args))
+#define PIN_WRITE(args)                           (PIN_WRITE_HELPER(args))
 /* Pin read API */
-#define PIN_READ(args)  (PIN_READ_HELPER(args))
+#define PIN_READ(args)                            (PIN_READ_HELPER(args))
 #endif
 
 /***********************************************************************************************************************

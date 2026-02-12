@@ -851,7 +851,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    0 = This project is a C project.(Not a C++ project).
    1 = This project is a C++ project.
 */
-#define BSP_CFG_CPLUSPLUS (1) /* Generated value. Do not edit this manually */
+#define BSP_CFG_CPLUSPLUS (0) /* Changed to 0 - this is a C project, not C++ */
 
 /* Select whether to enable sections of the expansion RAM area.
    0 = Sections of the expansion RAM area is disabled. (default)
