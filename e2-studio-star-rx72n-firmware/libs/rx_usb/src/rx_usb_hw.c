@@ -640,8 +640,7 @@ rx_err_t rx_usb_hw_deinit(void)
   usb0()->syscfg = k_usb_syscfg_disabled;
 
   /* Disable interrupt in ICU */
-  const uint8_t ier_bit =
-    (uint8_t)(k_vect_usb0_usbi % k_icu_bits_per_ier_register);
+  const uint8_t ier_bit  = (uint8_t)(k_vect_usb0_usbi % k_icu_bits_per_ier_register);
   const uint8_t ier_mask = (uint8_t)(1U << ier_bit);
   icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register] &= (uint8_t)~ier_mask;
   icu()->ir[k_vect_usb0_usbi] = 0;
@@ -738,10 +737,10 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
   /* Read data from FIFO (16-bit access required by RX72N Manual Ch40 40.3.9) */
   /* CRITICAL FIX: CFIFO is 16-bit register, must read 16 bits at a time */
   for (uint32_t i = 0; i < len; i += 2) {
-    const uint16_t word = usb0()->cfifo;  /* Read 16-bit word */
-    data[i] = (uint8_t)(word & 0xFF);     /* Low byte */
+    const uint16_t word = usb0()->cfifo;          /* Read 16-bit word */
+    data[i]             = (uint8_t)(word & 0xFF); /* Low byte */
     if ((i + 1) < len) {
-      data[i + 1] = (uint8_t)((word >> 8) & 0xFF);  /* High byte */
+      data[i + 1] = (uint8_t)((word >> 8) & 0xFF); /* High byte */
     }
   }
 
@@ -811,11 +810,11 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   /* Write data to FIFO (16-bit access required by RX72N Manual Ch40 40.3.9) */
   /* CRITICAL FIX: CFIFO is 16-bit register, must write 16 bits at a time */
   for (uint32_t i = 0; i < len; i += 2) {
-    uint16_t word = data[i];  /* Low byte */
+    uint16_t word = data[i]; /* Low byte */
     if ((i + 1) < len) {
-      word |= ((uint16_t)data[i + 1] << 8);  /* High byte */
+      word |= ((uint16_t)data[i + 1] << 8); /* High byte */
     }
-    usb0()->cfifo = word;  /* Write 16-bit word */
+    usb0()->cfifo = word; /* Write 16-bit word */
   }
 
   /* Set buffer valid to signal data ready for transmission */
@@ -899,8 +898,15 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
   /* Map pipe control registers to avoid undefined pointer arithmetic on struct members.
    * Array contains pointers to contiguous pipe control registers (pipe1ctr through pipe9ctr). */
   volatile uint16_t* pipe_ctr_map[] = {
-    &usb0()->pipe1ctr, &usb0()->pipe2ctr, &usb0()->pipe3ctr, &usb0()->pipe4ctr, &usb0()->pipe5ctr,
-    &usb0()->pipe6ctr, &usb0()->pipe7ctr, &usb0()->pipe8ctr, &usb0()->pipe9ctr,
+    &usb0()->pipe1ctr,
+    &usb0()->pipe2ctr,
+    &usb0()->pipe3ctr,
+    &usb0()->pipe4ctr,
+    &usb0()->pipe5ctr,
+    &usb0()->pipe6ctr,
+    &usb0()->pipe7ctr,
+    &usb0()->pipe8ctr,
+    &usb0()->pipe9ctr,
   };
 
   /* Clear pipe (pipe numbers start at 1, so index is pipe - 1) */

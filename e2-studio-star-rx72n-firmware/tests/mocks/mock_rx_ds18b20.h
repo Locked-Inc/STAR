@@ -75,8 +75,8 @@ typedef struct {
  * @brief DS18B20 driver handle
  */
 typedef struct {
-  ds18b20_resolution_t resolution;   /**< Configured resolution */
-  bool                 initialized;  /**< Init flag */
+  ds18b20_resolution_t resolution;  /**< Configured resolution */
+  bool                 initialized; /**< Init flag */
 } rx_ds18b20_handle_t;
 
 /* =============================================================================

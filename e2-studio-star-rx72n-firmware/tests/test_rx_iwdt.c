@@ -1417,9 +1417,7 @@ void setUp(void)
   test_setup();
 }
 
-void tearDown(void)
-{
-}
+void tearDown(void) {}
 
 int main(void)
 {

@@ -197,7 +197,7 @@ format_files() {
         # Check if file was changed
         if ! cmp -s "$file" "$temp_file" 2>/dev/null; then
             cp "$temp_file" "$file"
-            ((formatted_count++))
+            ((formatted_count++)) || true
             if [ "$VERBOSE" = true ]; then
                 echo "    ✓ Formatted" >&2
             fi

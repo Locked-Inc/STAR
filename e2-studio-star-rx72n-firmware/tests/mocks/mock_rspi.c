@@ -651,7 +651,12 @@ rx_err_t rspi_init_controller(uint8_t channel, const rspi_controller_config_t* c
     ctrl->cs_active              = false;
   }
 
-  mock_rspi_record_call(mock, "rspi_init_controller", channel, config->freq_hz, config->spi_mode, ret);
+  mock_rspi_record_call(mock,
+                        "rspi_init_controller",
+                        channel,
+                        config->freq_hz,
+                        config->spi_mode,
+                        ret);
 
   /* Reset to default for next call */
   mock->next_controller_init_return = k_rx_ok;
@@ -731,7 +736,12 @@ rx_err_t rspi_controller_transfer_16bit(uint8_t channel, uint16_t tx_data, uint1
     }
   }
 
-  mock_rspi_record_call(mock, "rspi_controller_transfer_16bit", channel, tx_data, ctrl->next_rx_data, ret);
+  mock_rspi_record_call(mock,
+                        "rspi_controller_transfer_16bit",
+                        channel,
+                        tx_data,
+                        ctrl->next_rx_data,
+                        ret);
 
   /* Reset to default for next call */
   mock->next_controller_transfer_return = k_rx_ok;

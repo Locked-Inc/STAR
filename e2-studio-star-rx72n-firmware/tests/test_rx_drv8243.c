@@ -1607,9 +1607,7 @@ void setUp(void)
   mock_reset_all();
 }
 
-void tearDown(void)
-{
-}
+void tearDown(void) {}
 
 /* =============================================================================
  * Test Runner

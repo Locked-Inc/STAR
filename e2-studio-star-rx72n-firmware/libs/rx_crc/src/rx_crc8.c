@@ -200,25 +200,25 @@
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    /**
+  /**
      * @brief CRC-8/Maxim initial value (0x00)
      * @details
      * The CRC accumulator starts at zero. Unlike CRC-32/IEEE which uses
      * 0xFFFFFFFF, CRC-8/Maxim has no pre-conditioning.
      * @par Value: 0x00
      */
-    k_crc8_initial_value = 0x00,
+  k_crc8_initial_value = 0x00,
 
-    /**
+  /**
      * @brief LSB mask for bit extraction (0x01)
      * @details
      * Used to test the least significant bit in the bitwise algorithm.
      * If LSB is 1, XOR with polynomial; if 0, just shift.
      * @par Value: 0x01
      */
-    k_crc8_bit_mask = 0x01,
+  k_crc8_bit_mask = 0x01,
 
-    /**
+  /**
      * @brief Reflected polynomial (0x8C)
      * @details
      * LSB-first (reflected) form of @f$ x^8 + x^5 + x^4 + 1 @f$.
@@ -231,9 +231,9 @@ typedef enum : uint8_t {
      *
      * @par Value: 0x8C (decimal 140)
      */
-    k_crc8_polynomial = 0x8C,
+  k_crc8_polynomial = 0x8C,
 
-    /**
+  /**
      * @brief Bits per byte for inner loop bound (8)
      * @details
      * The bitwise algorithm processes each bit individually.
@@ -241,7 +241,7 @@ typedef enum : uint8_t {
      * NASA Power of 10 Rule 2 compliance.
      * @par Value: 8
      */
-    k_crc8_bits_per_byte = 8,
+  k_crc8_bits_per_byte = 8,
 } rx_crc8_constants_t;
 
 /**

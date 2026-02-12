@@ -41,7 +41,7 @@ typedef struct {
  */
 typedef struct {
   mock_pin_state_t     pins[k_mock_gpio_max_pins];
-  mock_read_sequence_t read_seq; /**< Single read sequence (one pin at a time) */
+  mock_read_sequence_t read_seq;     /**< Single read sequence (one pin at a time) */
   rx_port_pin_t        read_seq_pin; /**< Pin the read sequence is assigned to */
   rx_err_t             next_error;
   uint32_t             write_low_count;
@@ -163,7 +163,8 @@ void mock_gpio_set_read_sequence(rx_port_pin_t pin, const bool* values, uint32_t
     return;
   }
 
-  uint32_t copy_count = (count < k_mock_gpio_max_read_sequence) ? count : k_mock_gpio_max_read_sequence;
+  uint32_t copy_count =
+    (count < k_mock_gpio_max_read_sequence) ? count : k_mock_gpio_max_read_sequence;
   for (uint32_t i = 0; i < copy_count; ++i) {
     s_mock_gpio.read_seq.values[i] = values[i];
   }

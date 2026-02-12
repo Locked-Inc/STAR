@@ -30,8 +30,8 @@
 #define BSP_BOARD_USER
 
 /* Make sure that no other platforms have already been defined. Do not touch this! */
-#ifdef  PLATFORM_DEFINED
-#error  "Error - Multiple platforms defined in platform.h!"
+#ifdef PLATFORM_DEFINED
+#error "Error - Multiple platforms defined in platform.h!"
 #else
 #define PLATFORM_DEFINED
 #endif
@@ -46,9 +46,7 @@ INCLUDE APPROPRIATE MCU AND BOARD FILES
    4)Configure the BSP for your board by modifying the r_bsp_config_reference.h.
    5)Copy r_bsp_config_reference.h to your project directory and rename it r_bsp_config.h.
    You can also add your own include files here as well. */
-#include    "r_bsp_config.h"
-#include    "mcu/*MCU Group*/mcu_info.h"           
+#include "mcu/*MCU Group*/mcu_info.h"
+#include "r_bsp_config.h"
 
 #endif /* BSP_BOARD_USER */
-
-

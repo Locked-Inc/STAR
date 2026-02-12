@@ -340,7 +340,8 @@ extern "C" {
 typedef enum : uint8_t {
   k_error_handler_max_components =
     16, /**< Maximum number of components that can be tracked simultaneously. Limits component array size to ~700 bytes. Sized for typical STAR system (motors + sensors + comm). Increase if more components needed (recompile required) */
-  k_error_handler_component_name_max = 32, /**< Maximum component name length in characters including null terminator. Allows 31-character names like "UltrasonicSensor_Channel3". Longer names will be truncated */
+  k_error_handler_component_name_max =
+    32, /**< Maximum component name length in characters including null terminator. Allows 31-character names like "UltrasonicSensor_Channel3". Longer names will be truncated */
 } error_handler_limits_t;
 
 /* =============================================================================
@@ -463,11 +464,14 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  char
-    name[k_error_handler_component_name_max]; /**< Component identifier string (null-terminated). Examples: "SPI", "MOTOR_FL", "UltrasonicSensor_Ch1". Maximum 31 characters plus null terminator. Used for component lookup and diagnostics */
-  uint32_t error_count;                       /**< Total number of errors reported for this component. Incremented on each report_error() call. Used for diagnostics and logging. Range: 0 to 2^32-1 (wraps on overflow) */
-  uint32_t retry_count;                       /**< Current retry attempt number for this component. Starts at 0, increments on each retry. Compared against handler->max_retries to determine if retry limit reached. Reset to 0 on success or explicit reset */
-  bool     in_use;                            /**< Slot allocation flag. true = This slot is tracking a component (name is valid, counters are active). false = Slot is free (available for new component registration). Must check before accessing other fields */
+  char name
+    [k_error_handler_component_name_max]; /**< Component identifier string (null-terminated). Examples: "SPI", "MOTOR_FL", "UltrasonicSensor_Ch1". Maximum 31 characters plus null terminator. Used for component lookup and diagnostics */
+  uint32_t
+    error_count; /**< Total number of errors reported for this component. Incremented on each report_error() call. Used for diagnostics and logging. Range: 0 to 2^32-1 (wraps on overflow) */
+  uint32_t
+    retry_count; /**< Current retry attempt number for this component. Starts at 0, increments on each retry. Compared against handler->max_retries to determine if retry limit reached. Reset to 0 on success or explicit reset */
+  bool
+    in_use; /**< Slot allocation flag. true = This slot is tracking a component (name is valid, counters are active). false = Slot is free (available for new component registration). Must check before accessing other fields */
 } error_component_state_t;
 
 /* =============================================================================
@@ -615,14 +619,20 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  TX_MUTEX mutex;             /**< ThreadX mutex for thread-safe access to all fields. Created by error_handler_init(), deleted by error_handler_deinit(). Protects concurrent report_error() and retry check calls from multiple tasks */
-  uint32_t total_error_count; /**< Aggregate error count across ALL components. Incremented on each report_error() call regardless of component. Used for system-wide health monitoring and diagnostics. Range: 0 to 2^32-1 (wraps on overflow) */
-  error_component_state_t
-           components[k_error_handler_max_components]; /**< Per-component error tracking array. Maximum 16 components (k_error_handler_max_components). Each slot tracks one component's errors and retry state. Linear search for component name on each access */
-  uint32_t max_retries;        /**< Maximum retry attempts before giving up. 0 = unlimited retries (use with caution). Copied from error_handler_config_t during init. Compared against components[].retry_count to determine failure */
-  uint32_t initial_backoff_ms; /**< Initial backoff delay in milliseconds for first retry. Base value for exponential backoff calculation: delay = initial × 2^retry_count. Typical values: 10ms to 100ms. Must be > 0 for meaningful backoff */
-  uint32_t max_backoff_ms;     /**< Maximum backoff delay cap in milliseconds. Prevents exponential backoff from growing unbounded. Typical values: 5000ms to 60000ms. Must be ≥ initial_backoff_ms. Limits delay = min(initial × 2^retry, max) */
-  bool     initialized;        /**< Initialization flag. true = error_handler_init() succeeded, structure is ready for use. false = Not initialized or deinitialized (error_handler_deinit() called). Check before all operations */
+  TX_MUTEX
+    mutex; /**< ThreadX mutex for thread-safe access to all fields. Created by error_handler_init(), deleted by error_handler_deinit(). Protects concurrent report_error() and retry check calls from multiple tasks */
+  uint32_t
+    total_error_count; /**< Aggregate error count across ALL components. Incremented on each report_error() call regardless of component. Used for system-wide health monitoring and diagnostics. Range: 0 to 2^32-1 (wraps on overflow) */
+  error_component_state_t components
+    [k_error_handler_max_components]; /**< Per-component error tracking array. Maximum 16 components (k_error_handler_max_components). Each slot tracks one component's errors and retry state. Linear search for component name on each access */
+  uint32_t
+    max_retries; /**< Maximum retry attempts before giving up. 0 = unlimited retries (use with caution). Copied from error_handler_config_t during init. Compared against components[].retry_count to determine failure */
+  uint32_t
+    initial_backoff_ms; /**< Initial backoff delay in milliseconds for first retry. Base value for exponential backoff calculation: delay = initial × 2^retry_count. Typical values: 10ms to 100ms. Must be > 0 for meaningful backoff */
+  uint32_t
+    max_backoff_ms; /**< Maximum backoff delay cap in milliseconds. Prevents exponential backoff from growing unbounded. Typical values: 5000ms to 60000ms. Must be ≥ initial_backoff_ms. Limits delay = min(initial × 2^retry, max) */
+  bool
+    initialized; /**< Initialization flag. true = error_handler_init() succeeded, structure is ready for use. false = Not initialized or deinitialized (error_handler_deinit() called). Check before all operations */
 } error_handler_t;
 
 /**
@@ -728,9 +738,12 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  uint32_t max_retries;        /**< Maximum number of retry attempts before giving up. 0 = unlimited retries (infinite loop risk). Typical values: 3 to 10. After this many retries, is_retry_limit_reached() returns true. Per-component limit */
-  uint32_t initial_backoff_ms; /**< Initial backoff delay in milliseconds for first retry. Base value for exponential calculation: delay = initial × 2^retry_count. Typical values: 10ms to 100ms. Must be > 0. Smaller = faster retries, larger = less aggressive */
-  uint32_t max_backoff_ms;     /**< Maximum backoff delay cap in milliseconds. Limits exponential growth: delay = min(initial × 2^retry, max). Typical values: 1000ms to 60000ms. Must be >= initial_backoff_ms. Prevents unbounded delays */
+  uint32_t
+    max_retries; /**< Maximum number of retry attempts before giving up. 0 = unlimited retries (infinite loop risk). Typical values: 3 to 10. After this many retries, is_retry_limit_reached() returns true. Per-component limit */
+  uint32_t
+    initial_backoff_ms; /**< Initial backoff delay in milliseconds for first retry. Base value for exponential calculation: delay = initial × 2^retry_count. Typical values: 10ms to 100ms. Must be > 0. Smaller = faster retries, larger = less aggressive */
+  uint32_t
+    max_backoff_ms; /**< Maximum backoff delay cap in milliseconds. Limits exponential growth: delay = min(initial × 2^retry, max). Typical values: 1000ms to 60000ms. Must be >= initial_backoff_ms. Prevents unbounded delays */
 } error_handler_config_t;
 
 /* =============================================================================
@@ -862,7 +875,8 @@ typedef struct {
  * - Rule 5: [OK] 4 preconditions, 4 postconditions
  * - Rule 7: [OK] Returns rx_err_t, caller must check
  */
-[[nodiscard]] rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config_t* config);
+[[nodiscard]] rx_err_t error_handler_init(error_handler_t*              handler,
+                                          const error_handler_config_t* config);
 
 /**
  * @brief Get abstract interface from concrete error handler (Dependency Inversion)
@@ -988,7 +1002,8 @@ typedef struct {
  * - Low-level error_handler_t implements the abstraction
  * - This function bridges concrete to abstract
  */
-[[nodiscard]] rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_t* handler);
+[[nodiscard]] rx_err_t error_handler_get_interface(rx_error_interface_t* iface,
+                                                   error_handler_t*      handler);
 
 /**
  * @brief Deinitialize error handler and cleanup resources

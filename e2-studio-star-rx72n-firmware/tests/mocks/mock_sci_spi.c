@@ -27,8 +27,8 @@
 
 /** @brief Constants for 16-bit to byte conversion */
 typedef enum : uint8_t {
-  k_byte_shift_high   = 8,   /**< Bit shift to extract high byte */
-  k_byte_mask_low     = 0xFF /**< Mask to extract low byte */
+  k_byte_shift_high = 8,   /**< Bit shift to extract high byte */
+  k_byte_mask_low   = 0xFF /**< Mask to extract low byte */
 } byte_extraction_t;
 
 /** @brief SCI12 channel mapping constant */
@@ -123,8 +123,7 @@ void mock_sci_spi_clear_channel(uint8_t channel)
  * =============================================================================
  */
 
-rx_err_t sci_spi_init_controller(uint8_t                            channel,
-                                 const sci_spi_controller_config_t* config)
+rx_err_t sci_spi_init_controller(uint8_t channel, const sci_spi_controller_config_t* config)
 {
   uint8_t idx;
 
@@ -155,9 +154,7 @@ rx_err_t sci_spi_init_controller(uint8_t                            channel,
   return ret;
 }
 
-rx_err_t sci_spi_controller_transfer_16bit(uint8_t   channel,
-                                           uint16_t  tx_data,
-                                           uint16_t* rx_data)
+rx_err_t sci_spi_controller_transfer_16bit(uint8_t channel, uint16_t tx_data, uint16_t* rx_data)
 {
   uint8_t idx;
 

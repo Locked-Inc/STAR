@@ -464,9 +464,8 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_bus_smbus_write_byte(rx_bus_manager_t* manager,
-                                 const char*       bus_name,
-                                 uint8_t           command);
+[[nodiscard]] rx_err_t
+rx_bus_smbus_write_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t command);
 
 /**
  * @brief Read single byte from SMBus device (Receive Byte protocol)
@@ -535,9 +534,8 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_bus_smbus_read_byte(rx_bus_manager_t* manager,
-                                const char*       bus_name,
-                                uint8_t*          data);
+[[nodiscard]] rx_err_t
+rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data);
 
 /**
  * @brief Write byte to SMBus register (Write Byte Data protocol)
@@ -594,9 +592,9 @@ extern "C" {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
-                                      const char*       bus_name,
-                                      uint8_t           command,
-                                      uint8_t           data);
+                                                    const char*       bus_name,
+                                                    uint8_t           command,
+                                                    uint8_t           data);
 
 /**
  * @brief Read byte from SMBus register (Read Byte Data protocol)
@@ -653,9 +651,9 @@ extern "C" {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
-                                     const char*       bus_name,
-                                     uint8_t           command,
-                                     uint8_t*          data);
+                                                   const char*       bus_name,
+                                                   uint8_t           command,
+                                                   uint8_t*          data);
 
 /**
  * @brief Write 16-bit word to SMBus register (Write Word Data protocol)
@@ -726,9 +724,9 @@ extern "C" {
  * - Rule 5: [OK] 4 assertions (NULL×2, bus found, initialized)
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
-                                      const char*       bus_name,
-                                      uint8_t           command,
-                                      uint16_t          data);
+                                                    const char*       bus_name,
+                                                    uint8_t           command,
+                                                    uint16_t          data);
 
 /**
  * @brief Read 16-bit word from SMBus register (Read Word Data protocol)
@@ -872,9 +870,9 @@ extern "C" {
  * - Rule 7: [OK] Returns rx_err_t for caller validation
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
-                                     const char*       bus_name,
-                                     uint8_t           command,
-                                     uint16_t*         data);
+                                                   const char*       bus_name,
+                                                   uint8_t           command,
+                                                   uint16_t*         data);
 
 /**
  * @brief Read block data from SMBus device (Block Read protocol)
@@ -971,11 +969,11 @@ extern "C" {
  * - Rule 5: [OK] 6 assertions (NULL×4, bus found, max_length valid)
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
-                                      const char*       bus_name,
-                                      uint8_t           command,
-                                      uint8_t*          data,
-                                      uint8_t*          length,
-                                      uint8_t           max_length);
+                                                    const char*       bus_name,
+                                                    uint8_t           command,
+                                                    uint8_t*          data,
+                                                    uint8_t*          length,
+                                                    uint8_t           max_length);
 
 #ifdef __cplusplus
 }

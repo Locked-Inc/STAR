@@ -116,42 +116,42 @@ typedef enum : uint8_t {
  */
 typedef struct {
   volatile uint16_t syscfg;
-  uint8_t reserved0[k_usb_reserved_02_04_bytes];
+  uint8_t           reserved0[k_usb_reserved_02_04_bytes];
   volatile uint16_t syssts0;
-  uint8_t reserved1[k_usb_reserved_06_08_bytes];
+  uint8_t           reserved1[k_usb_reserved_06_08_bytes];
   volatile uint16_t dvstctr0;
-  uint8_t reserved2[k_usb_reserved_0a_14_bytes];
-  volatile uint16_t cfifo;   /**< Common FIFO port @ 0x14 (16-bit WORD per manual Ch40:1155) */
-  uint16_t reserved_cfifo;   /**< Reserved @ 0x16 (padding to maintain offset) */
-  volatile uint16_t d0fifo;  /**< D0 FIFO port @ 0x18 (16-bit WORD per manual Ch40:1155) */
-  uint16_t reserved_d0fifo;  /**< Reserved @ 0x1A (padding to maintain offset) */
-  volatile uint16_t d1fifo;  /**< D1 FIFO port @ 0x1C (16-bit WORD per manual Ch40:1155) */
-  uint16_t reserved_d1fifo;  /**< Reserved @ 0x1E (padding to maintain offset) */
+  uint8_t           reserved2[k_usb_reserved_0a_14_bytes];
+  volatile uint16_t cfifo; /**< Common FIFO port @ 0x14 (16-bit WORD per manual Ch40:1155) */
+  uint16_t          reserved_cfifo;  /**< Reserved @ 0x16 (padding to maintain offset) */
+  volatile uint16_t d0fifo;          /**< D0 FIFO port @ 0x18 (16-bit WORD per manual Ch40:1155) */
+  uint16_t          reserved_d0fifo; /**< Reserved @ 0x1A (padding to maintain offset) */
+  volatile uint16_t d1fifo;          /**< D1 FIFO port @ 0x1C (16-bit WORD per manual Ch40:1155) */
+  uint16_t          reserved_d1fifo; /**< Reserved @ 0x1E (padding to maintain offset) */
   volatile uint16_t cfifosel;
   volatile uint16_t cfifoctr;
-  uint8_t reserved3[k_usb_reserved_24_28_bytes];
+  uint8_t           reserved3[k_usb_reserved_24_28_bytes];
   volatile uint16_t d0fifosel;
   volatile uint16_t d0fifoctr;
   volatile uint16_t d1fifosel;
   volatile uint16_t d1fifoctr;
   volatile uint16_t intenb0;
   volatile uint16_t intenb1;
-  uint8_t reserved4[k_usb_reserved_34_36_bytes];
+  uint8_t           reserved4[k_usb_reserved_34_36_bytes];
   volatile uint16_t brdyenb;
   volatile uint16_t nrdyenb;
   volatile uint16_t bempenb;
   volatile uint16_t sofcfg;
-  uint8_t reserved5[k_usb_reserved_3e_40_bytes];
+  uint8_t           reserved5[k_usb_reserved_3e_40_bytes];
   volatile uint16_t intsts0;
   volatile uint16_t intsts1;
-  uint8_t reserved6[k_usb_reserved_44_46_bytes];
+  uint8_t           reserved6[k_usb_reserved_44_46_bytes];
   volatile uint16_t brdysts;
   volatile uint16_t nrdysts;
   volatile uint16_t bempsts;
   volatile uint16_t frmnum;
-  volatile uint16_t dvchgr;  /**< Device State Change (NOT ufrmnum!) */
+  volatile uint16_t dvchgr; /**< Device State Change (NOT ufrmnum!) */
   volatile uint16_t usbaddr;
-  uint8_t reserved7[k_usb_reserved_52_54_bytes];
+  uint8_t           reserved7[k_usb_reserved_52_54_bytes];
   volatile uint16_t usbreq;
   volatile uint16_t usbval;
   volatile uint16_t usbindx;
@@ -159,11 +159,11 @@ typedef struct {
   volatile uint16_t dcpcfg;
   volatile uint16_t dcpmaxp;
   volatile uint16_t dcpctr;
-  uint8_t reserved8[k_usb_reserved_62_64_bytes];
+  uint8_t           reserved8[k_usb_reserved_62_64_bytes];
   volatile uint16_t pipesel;
-  uint8_t reserved9[k_usb_reserved_66_68_bytes];
+  uint8_t           reserved9[k_usb_reserved_66_68_bytes];
   volatile uint16_t pipecfg;
-  uint8_t reserved10[k_usb_reserved_6a_6c_bytes];
+  uint8_t           reserved10[k_usb_reserved_6a_6c_bytes];
   volatile uint16_t pipemaxp;
   volatile uint16_t pipeperi;
   volatile uint16_t pipe1ctr;
@@ -175,7 +175,7 @@ typedef struct {
   volatile uint16_t pipe7ctr;
   volatile uint16_t pipe8ctr;
   volatile uint16_t pipe9ctr;
-  uint8_t reserved11[k_usb_reserved_82_90_bytes];
+  uint8_t           reserved11[k_usb_reserved_82_90_bytes];
   volatile uint16_t pipe1tre;
   volatile uint16_t pipe1trn;
   volatile uint16_t pipe2tre;
@@ -186,14 +186,14 @@ typedef struct {
   volatile uint16_t pipe4trn;
   volatile uint16_t pipe5tre;
   volatile uint16_t pipe5trn;
-  uint8_t reserved12[k_usb_reserved_a4_d0_bytes];
+  uint8_t           reserved12[k_usb_reserved_a4_d0_bytes];
   volatile uint16_t devadd0;
   volatile uint16_t devadd1;
   volatile uint16_t devadd2;
   volatile uint16_t devadd3;
   volatile uint16_t devadd4;
   volatile uint16_t devadd5;
-  uint8_t reserved13[k_usb_reserved_dc_f0_bytes];
+  uint8_t           reserved13[k_usb_reserved_dc_f0_bytes];
   volatile uint16_t physlew;
 } rx_usb_regs_t;
 
@@ -217,29 +217,29 @@ typedef enum : uint16_t {
 
 /* SYSSTS0 bits */
 typedef enum : uint16_t {
-  k_usb_syssts0_lnst_mask = 0x0003,
-  k_usb_syssts0_lnst_se0  = 0x0000,
-  k_usb_syssts0_lnst_fs_j = 0x0001,
-  k_usb_syssts0_lnst_fs_k = 0x0002,
-  k_usb_syssts0_lnst_se1  = 0x0003,
-  k_usb_syssts0_idmon     = (1U << 2),
-  k_usb_syssts0_sofea     = (1U << 5),
-  k_usb_syssts0_htact     = (1U << 6),
+  k_usb_syssts0_lnst_mask   = 0x0003,
+  k_usb_syssts0_lnst_se0    = 0x0000,
+  k_usb_syssts0_lnst_fs_j   = 0x0001,
+  k_usb_syssts0_lnst_fs_k   = 0x0002,
+  k_usb_syssts0_lnst_se1    = 0x0003,
+  k_usb_syssts0_idmon       = (1U << 2),
+  k_usb_syssts0_sofea       = (1U << 5),
+  k_usb_syssts0_htact       = (1U << 6),
   k_usb_syssts0_ovcmon_mask = (3U << 14),
 } usb_syssts0_bits_t;
 
 /* DVSTCTR0 bits */
 typedef enum : uint16_t {
-  k_usb_dvstctr0_rhst_mask = 0x0007,
+  k_usb_dvstctr0_rhst_mask      = 0x0007,
   k_usb_dvstctr0_rhst_undecided = 0x0000,
-  k_usb_dvstctr0_rhst_ls = 0x0001,
-  k_usb_dvstctr0_rhst_fs = 0x0002,
-  k_usb_dvstctr0_rhst_reset = 0x0004,
-  k_usb_dvstctr0_uact = (1U << 4),
-  k_usb_dvstctr0_resume = (1U << 5),
-  k_usb_dvstctr0_usbrst = (1U << 6),
-  k_usb_dvstctr0_rwupe = (1U << 7),
-  k_usb_dvstctr0_wkup = (1U << 8),
+  k_usb_dvstctr0_rhst_ls        = 0x0001,
+  k_usb_dvstctr0_rhst_fs        = 0x0002,
+  k_usb_dvstctr0_rhst_reset     = 0x0004,
+  k_usb_dvstctr0_uact           = (1U << 4),
+  k_usb_dvstctr0_resume         = (1U << 5),
+  k_usb_dvstctr0_usbrst         = (1U << 6),
+  k_usb_dvstctr0_rwupe          = (1U << 7),
+  k_usb_dvstctr0_wkup           = (1U << 8),
 } usb_dvstctr0_bits_t;
 
 /* INTENB0 bits */
@@ -256,51 +256,51 @@ typedef enum : uint16_t {
 
 /* INTSTS0 bits */
 typedef enum : uint16_t {
-  k_usb_intsts0_ctsq_mask = 0x0007,
-  k_usb_intsts0_ctsq_idle = 0x0000,
-  k_usb_intsts0_ctsq_rd_data = 0x0001,
-  k_usb_intsts0_ctsq_rd_status = 0x0002,
-  k_usb_intsts0_ctsq_wr_data = 0x0003,
-  k_usb_intsts0_ctsq_wr_status = 0x0004,
-  k_usb_intsts0_ctsq_wr_nd = 0x0005,
-  k_usb_intsts0_ctsq_seq_err = 0x0006,
-  k_usb_intsts0_valid = (1U << 3),
-  k_usb_intsts0_dvsq_mask = (7U << 4),
-  k_usb_intsts0_dvsq_powered = (0U << 4),
-  k_usb_intsts0_dvsq_default = (1U << 4),
-  k_usb_intsts0_dvsq_address = (2U << 4),
+  k_usb_intsts0_ctsq_mask       = 0x0007,
+  k_usb_intsts0_ctsq_idle       = 0x0000,
+  k_usb_intsts0_ctsq_rd_data    = 0x0001,
+  k_usb_intsts0_ctsq_rd_status  = 0x0002,
+  k_usb_intsts0_ctsq_wr_data    = 0x0003,
+  k_usb_intsts0_ctsq_wr_status  = 0x0004,
+  k_usb_intsts0_ctsq_wr_nd      = 0x0005,
+  k_usb_intsts0_ctsq_seq_err    = 0x0006,
+  k_usb_intsts0_valid           = (1U << 3),
+  k_usb_intsts0_dvsq_mask       = (7U << 4),
+  k_usb_intsts0_dvsq_powered    = (0U << 4),
+  k_usb_intsts0_dvsq_default    = (1U << 4),
+  k_usb_intsts0_dvsq_address    = (2U << 4),
   k_usb_intsts0_dvsq_configured = (3U << 4),
-  k_usb_intsts0_dvsq_suspend = (4U << 4),
-  k_usb_intsts0_brdy = (1U << 8),
-  k_usb_intsts0_nrdy = (1U << 9),
-  k_usb_intsts0_bemp = (1U << 10),
-  k_usb_intsts0_ctrt = (1U << 11),
-  k_usb_intsts0_dvst = (1U << 12),
-  k_usb_intsts0_sofr = (1U << 13),
-  k_usb_intsts0_resm = (1U << 14),
-  k_usb_intsts0_vbint = (1U << 15),
+  k_usb_intsts0_dvsq_suspend    = (4U << 4),
+  k_usb_intsts0_brdy            = (1U << 8),
+  k_usb_intsts0_nrdy            = (1U << 9),
+  k_usb_intsts0_bemp            = (1U << 10),
+  k_usb_intsts0_ctrt            = (1U << 11),
+  k_usb_intsts0_dvst            = (1U << 12),
+  k_usb_intsts0_sofr            = (1U << 13),
+  k_usb_intsts0_resm            = (1U << 14),
+  k_usb_intsts0_vbint           = (1U << 15),
 } usb_intsts0_bits_t;
 
 /* DCPCFG bits */
 typedef enum : uint16_t {
-  k_usb_dcpcfg_dir = (1U << 4),
+  k_usb_dcpcfg_dir    = (1U << 4),
   k_usb_dcpcfg_shtnak = (1U << 7),
 } usb_dcpcfg_bits_t;
 
 /* DCPCTR bits */
 typedef enum : uint16_t {
-  k_usb_dcpctr_pid_mask = 0x0003,
-  k_usb_dcpctr_pid_nak = 0x0000,
-  k_usb_dcpctr_pid_buf = 0x0001,
+  k_usb_dcpctr_pid_mask  = 0x0003,
+  k_usb_dcpctr_pid_nak   = 0x0000,
+  k_usb_dcpctr_pid_buf   = 0x0001,
   k_usb_dcpctr_pid_stall = 0x0002,
-  k_usb_dcpctr_ccpl = (1U << 2),
-  k_usb_dcpctr_pbusy = (1U << 5),
-  k_usb_dcpctr_sqmon = (1U << 6),
-  k_usb_dcpctr_sqset = (1U << 7),
-  k_usb_dcpctr_sqclr = (1U << 8),
-  k_usb_dcpctr_sureqclr = (1U << 11),
-  k_usb_dcpctr_sureq = (1U << 14),
-  k_usb_dcpctr_bsts = (1U << 15),
+  k_usb_dcpctr_ccpl      = (1U << 2),
+  k_usb_dcpctr_pbusy     = (1U << 5),
+  k_usb_dcpctr_sqmon     = (1U << 6),
+  k_usb_dcpctr_sqset     = (1U << 7),
+  k_usb_dcpctr_sqclr     = (1U << 8),
+  k_usb_dcpctr_sureqclr  = (1U << 11),
+  k_usb_dcpctr_sureq     = (1U << 14),
+  k_usb_dcpctr_bsts      = (1U << 15),
 } usb_dcpctr_bits_t;
 
 /**
@@ -343,71 +343,71 @@ typedef enum : uint16_t {
 /* PIPECFG bits */
 typedef enum : uint16_t {
   k_usb_pipecfg_epnum_mask = 0x000F,
-  k_usb_pipecfg_dir = (1U << 4),
-  k_usb_pipecfg_shtnak = (1U << 7),
-  k_usb_pipecfg_dblb = (1U << 9),
-  k_usb_pipecfg_bfre = (1U << 10),
-  k_usb_pipecfg_type_mask = (3U << 14),
-  k_usb_pipecfg_type_bulk = (1U << 14),
-  k_usb_pipecfg_type_int = (2U << 14),
-  k_usb_pipecfg_type_iso = (3U << 14),
+  k_usb_pipecfg_dir        = (1U << 4),
+  k_usb_pipecfg_shtnak     = (1U << 7),
+  k_usb_pipecfg_dblb       = (1U << 9),
+  k_usb_pipecfg_bfre       = (1U << 10),
+  k_usb_pipecfg_type_mask  = (3U << 14),
+  k_usb_pipecfg_type_bulk  = (1U << 14),
+  k_usb_pipecfg_type_int   = (2U << 14),
+  k_usb_pipecfg_type_iso   = (3U << 14),
 } usb_pipecfg_bits_t;
 
 /* PIPEnCTR bits */
 typedef enum : uint16_t {
-  k_usb_pipectr_pid_mask = 0x0003,
-  k_usb_pipectr_pid_nak = 0x0000,
-  k_usb_pipectr_pid_buf = 0x0001,
+  k_usb_pipectr_pid_mask  = 0x0003,
+  k_usb_pipectr_pid_nak   = 0x0000,
+  k_usb_pipectr_pid_buf   = 0x0001,
   k_usb_pipectr_pid_stall = 0x0002,
-  k_usb_pipectr_pbusy = (1U << 5),
-  k_usb_pipectr_sqmon = (1U << 6),
-  k_usb_pipectr_sqset = (1U << 7),
-  k_usb_pipectr_sqclr = (1U << 8),
-  k_usb_pipectr_aclrm = (1U << 9),
-  k_usb_pipectr_atrepm = (1U << 10),
-  k_usb_pipectr_inbufm = (1U << 14),
-  k_usb_pipectr_bsts = (1U << 15),
+  k_usb_pipectr_pbusy     = (1U << 5),
+  k_usb_pipectr_sqmon     = (1U << 6),
+  k_usb_pipectr_sqset     = (1U << 7),
+  k_usb_pipectr_sqclr     = (1U << 8),
+  k_usb_pipectr_aclrm     = (1U << 9),
+  k_usb_pipectr_atrepm    = (1U << 10),
+  k_usb_pipectr_inbufm    = (1U << 14),
+  k_usb_pipectr_bsts      = (1U << 15),
 } usb_pipectr_bits_t;
 
 /* FIFOSEL bits */
 typedef enum : uint16_t {
   k_usb_fifosel_curpipe_mask = 0x000F,
-  k_usb_fifosel_curpipe_dcp = 0x0000,
-  k_usb_fifosel_isel = (1U << 5),
-  k_usb_fifosel_bigend = (1U << 8),
-  k_usb_fifosel_mbw_mask = (3U << 10),
-  k_usb_fifosel_mbw_8 = (0U << 10),
-  k_usb_fifosel_mbw_16 = (1U << 10),
-  k_usb_fifosel_mbw_32 = (2U << 10),
-  k_usb_fifosel_dreqe = (1U << 12),
-  k_usb_fifosel_dclrm = (1U << 13),
-  k_usb_fifosel_rcl = (1U << 14),
-  k_usb_fifosel_frdy = (1U << 15),
+  k_usb_fifosel_curpipe_dcp  = 0x0000,
+  k_usb_fifosel_isel         = (1U << 5),
+  k_usb_fifosel_bigend       = (1U << 8),
+  k_usb_fifosel_mbw_mask     = (3U << 10),
+  k_usb_fifosel_mbw_8        = (0U << 10),
+  k_usb_fifosel_mbw_16       = (1U << 10),
+  k_usb_fifosel_mbw_32       = (2U << 10),
+  k_usb_fifosel_dreqe        = (1U << 12),
+  k_usb_fifosel_dclrm        = (1U << 13),
+  k_usb_fifosel_rcl          = (1U << 14),
+  k_usb_fifosel_frdy         = (1U << 15),
 } usb_fifosel_bits_t;
 
 /* FIFOCTR bits */
 typedef enum : uint16_t {
   k_usb_fifoctr_dtln_mask = 0x0FFF,
-  k_usb_fifoctr_frdy = (1U << 13),
-  k_usb_fifoctr_bclr = (1U << 14),
-  k_usb_fifoctr_bval = (1U << 15),
+  k_usb_fifoctr_frdy      = (1U << 13),
+  k_usb_fifoctr_bclr      = (1U << 14),
+  k_usb_fifoctr_bval      = (1U << 15),
 } usb_fifoctr_bits_t;
 
 /* Interrupt vectors */
 typedef enum : uint8_t {
   k_vect_usb0_d0fifo = 34,
   k_vect_usb0_d1fifo = 35,
-  k_vect_usb0_usbi = 36,
-  k_vect_usb0_usbr = 90,
+  k_vect_usb0_usbi   = 36,
+  k_vect_usb0_usbr   = 90,
 } rx_usb_interrupt_vector_t;
 
 /* CDC endpoints */
 typedef enum : uint8_t {
-  k_usb_cdc_ep_ctrl = 0,
-  k_usb_cdc_ep_bulk_in = 1,
-  k_usb_cdc_ep_bulk_out = 2,
+  k_usb_cdc_ep_ctrl         = 0,
+  k_usb_cdc_ep_bulk_in      = 1,
+  k_usb_cdc_ep_bulk_out     = 2,
   k_usb_cdc_ep_interrupt_in = 3,
-  k_usb_cdc_max_packet_fs = 64,
+  k_usb_cdc_max_packet_fs   = 64,
 } usb_cdc_endpoints_t;
 
 /* Static assertions */

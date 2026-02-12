@@ -476,10 +476,11 @@
  * @see internal_create_valid_scratchpad() Helper to generate valid scratchpad
  */
 typedef struct {
-  bool    presence_response; /**< True if device responds to reset pulse (simulates presence detect) */
-  uint8_t scratchpad[k_ds18b20_scratchpad_bytes]; /**< Mock 9-byte scratchpad memory (temp + config + CRC) */
-  uint8_t power_mode;        /**< Power supply mode: 1=external VDD, 0=parasitic (powered from DQ) */
-  bool    initialized;       /**< Bus initialization state: true after rx_bus_onewire_init() called */
+  bool presence_response; /**< True if device responds to reset pulse (simulates presence detect) */
+  uint8_t scratchpad
+    [k_ds18b20_scratchpad_bytes]; /**< Mock 9-byte scratchpad memory (temp + config + CRC) */
+  uint8_t power_mode;  /**< Power supply mode: 1=external VDD, 0=parasitic (powered from DQ) */
+  bool    initialized; /**< Bus initialization state: true after rx_bus_onewire_init() called */
   uint8_t rom[k_onewire_rom_bytes]; /**< 64-bit ROM code: [family(0x28), serial(48-bit), CRC-8] */
 } mock_onewire_state_t;
 
@@ -511,7 +512,7 @@ static mock_onewire_state_t s_mock_state;
  * @endcode
  */
 typedef enum : uint8_t {
-  k_onewire_rom_length    = k_onewire_rom_bytes, /**< Total ROM size (8 bytes) */
+  k_onewire_rom_length    = k_onewire_rom_bytes,      /**< Total ROM size (8 bytes) */
   k_onewire_rom_crc_index = k_onewire_rom_length - 1, /**< CRC byte position (index 7) */
 } onewire_rom_constants_t;
 

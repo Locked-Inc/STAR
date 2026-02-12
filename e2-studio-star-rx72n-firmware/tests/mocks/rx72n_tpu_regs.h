@@ -48,7 +48,7 @@ typedef struct {
   volatile uint8_t tstr;        /**< Timer Start Register @ +0x00 */
   volatile uint8_t tsyr;        /**< Timer Synchronous Register @ +0x01 */
   volatile uint8_t reserved[6]; /**< Reserved @ +0x02-0x07 */
-  volatile uint8_t nfcr[6];    /**< Noise Filter Control Registers @ +0x08-0x0D */
+  volatile uint8_t nfcr[6];     /**< Noise Filter Control Registers @ +0x08-0x0D */
 } rx_tpu_control_regs_t;
 
 /**

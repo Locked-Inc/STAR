@@ -358,17 +358,17 @@ static inline volatile rx_poegg_regs_t* poeggd(void)
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_poeg_pidf_shift  = 0,   /**< PIDF - Port Input Detection Flag (bit 0) */
-  k_poeg_iocf_shift  = 1,   /**< IOCF - GPTW Output Stop Flag (bit 1) */
-  k_poeg_ostpf_shift = 2,   /**< OSTPF - Oscillation Stop Flag (bit 2) */
-  k_poeg_ssf_shift   = 3,   /**< SSF - Software Stop Flag (bit 3) */
-  k_poeg_pide_shift  = 4,   /**< PIDE - Port Input Detection Enable (bit 4) */
-  k_poeg_ioce_shift  = 5,   /**< IOCE - GPTW Output Stop Enable (bit 5) */
-  k_poeg_ostpe_shift = 6,   /**< OSTPE - Oscillation Stop Enable (bit 6) */
-  k_poeg_st_shift    = 16,  /**< ST - GTETRGn Input Status (bit 16) */
-  k_poeg_inv_shift   = 28,  /**< INV - Input Inverting (bit 28) */
-  k_poeg_nfen_shift  = 29,  /**< NFEN - Noise Filter Enable (bit 29) */
-  k_poeg_nfcs_shift  = 30,  /**< NFCS[1:0] - Noise Filter Clock Select (bits 31:30) */
+  k_poeg_pidf_shift  = 0,  /**< PIDF - Port Input Detection Flag (bit 0) */
+  k_poeg_iocf_shift  = 1,  /**< IOCF - GPTW Output Stop Flag (bit 1) */
+  k_poeg_ostpf_shift = 2,  /**< OSTPF - Oscillation Stop Flag (bit 2) */
+  k_poeg_ssf_shift   = 3,  /**< SSF - Software Stop Flag (bit 3) */
+  k_poeg_pide_shift  = 4,  /**< PIDE - Port Input Detection Enable (bit 4) */
+  k_poeg_ioce_shift  = 5,  /**< IOCE - GPTW Output Stop Enable (bit 5) */
+  k_poeg_ostpe_shift = 6,  /**< OSTPE - Oscillation Stop Enable (bit 6) */
+  k_poeg_st_shift    = 16, /**< ST - GTETRGn Input Status (bit 16) */
+  k_poeg_inv_shift   = 28, /**< INV - Input Inverting (bit 28) */
+  k_poeg_nfen_shift  = 29, /**< NFEN - Noise Filter Enable (bit 29) */
+  k_poeg_nfcs_shift  = 30, /**< NFCS[1:0] - Noise Filter Clock Select (bits 31:30) */
 } rx_poegg_bit_shifts_t;
 
 /**
@@ -420,7 +420,7 @@ typedef enum : uint32_t {
   k_poeg_st_high = (1U << k_poeg_st_shift), /**< GTETRGn input is high */
 
   /* Input configuration */
-  k_poeg_inv_invert = (1U << k_poeg_inv_shift),   /**< Invert external trigger input */
+  k_poeg_inv_invert  = (1U << k_poeg_inv_shift),  /**< Invert external trigger input */
   k_poeg_nfen_enable = (1U << k_poeg_nfen_shift), /**< Enable digital noise filter */
 
   /* Noise filter clock select (NFCS[1:0]) */
@@ -430,11 +430,11 @@ typedef enum : uint32_t {
   k_poeg_nfcs_pclkb_div128 = (3U << k_poeg_nfcs_shift), /**< Sample @ PCLKB/128 (~6.4µs) */
 
   /* Combined masks for convenience */
-  k_poeg_all_flags_mask = (k_poeg_pidf_detected | k_poeg_iocf_detected |
-                           k_poeg_ostpf_detected | k_poeg_ssf_stop), /**< All flag bits */
-  k_poeg_all_enable_mask = (k_poeg_pide_enable | k_poeg_ioce_enable |
-                            k_poeg_ostpe_enable), /**< All enable bits */
-  k_poeg_nfcs_mask = (3U << k_poeg_nfcs_shift), /**< NFCS field mask */
+  k_poeg_all_flags_mask = (k_poeg_pidf_detected | k_poeg_iocf_detected | k_poeg_ostpf_detected |
+                           k_poeg_ssf_stop), /**< All flag bits */
+  k_poeg_all_enable_mask =
+    (k_poeg_pide_enable | k_poeg_ioce_enable | k_poeg_ostpe_enable), /**< All enable bits */
+  k_poeg_nfcs_mask = (3U << k_poeg_nfcs_shift),                      /**< NFCS field mask */
 } rx_poegg_bits_t;
 
 /**
@@ -468,11 +468,11 @@ static_assert(k_poeggd_base_addr == 0x0009E300, "POEGGD base address incorrect")
 
 /* Verify group spacing */
 static_assert((k_poeggb_base_addr - k_poegga_base_addr) == k_poeg_group_spacing,
-               "POEG group A-B spacing incorrect");
+              "POEG group A-B spacing incorrect");
 static_assert((k_poeggc_base_addr - k_poeggb_base_addr) == k_poeg_group_spacing,
-               "POEG group B-C spacing incorrect");
+              "POEG group B-C spacing incorrect");
 static_assert((k_poeggd_base_addr - k_poeggc_base_addr) == k_poeg_group_spacing,
-               "POEG group C-D spacing incorrect");
+              "POEG group C-D spacing incorrect");
 
 /* Verify register structure layout */
 static_assert(sizeof(rx_poegg_regs_t) == 4, "POEG register structure size incorrect");

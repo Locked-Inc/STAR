@@ -780,16 +780,22 @@ typedef uint32_t (*rx_error_get_backoff_delay_fn)(void* ctx, const char* compone
  * @since Version 1.0.0
  */
 struct rx_error_interface {
-  void*                 ctx; /**< Implementation context (opaque pointer to concrete handler). Cast to concrete type within implementation functions. Passed as first parameter to all function pointers. Can be NULL if implementation is stateless (rare). Clients must NEVER access or cast this pointer */
-  rx_error_report_fn    report_error;    /**< Report an error (REQUIRED - MUST be non-NULL). Increments error counters, updates component statistics, logs error. Primary interface function. Validated by rx_error_interface_validate() */
-  rx_error_get_count_fn get_error_count; /**< Get total error count across all components (REQUIRED - MUST be non-NULL). Returns aggregate error count since initialization or last clear. Used for health monitoring. Validated by rx_error_interface_validate() */
+  void*
+    ctx; /**< Implementation context (opaque pointer to concrete handler). Cast to concrete type within implementation functions. Passed as first parameter to all function pointers. Can be NULL if implementation is stateless (rare). Clients must NEVER access or cast this pointer */
+  rx_error_report_fn
+    report_error; /**< Report an error (REQUIRED - MUST be non-NULL). Increments error counters, updates component statistics, logs error. Primary interface function. Validated by rx_error_interface_validate() */
+  rx_error_get_count_fn
+    get_error_count; /**< Get total error count across all components (REQUIRED - MUST be non-NULL). Returns aggregate error count since initialization or last clear. Used for health monitoring. Validated by rx_error_interface_validate() */
   rx_error_get_component_count_fn
-                    get_component_error_count; /**< Get error count for specific component (OPTIONAL - may be NULL). Returns per-component statistics for diagnostics. Check for nullptr before calling. Returns 0 if nullptr or component not found */
-  rx_error_clear_fn clear_errors;              /**< Clear all error counters and retry state (REQUIRED - MUST be non-NULL). Resets system to fresh state. Use after diagnostics or recovery. Validated by rx_error_interface_validate() */
+    get_component_error_count; /**< Get error count for specific component (OPTIONAL - may be NULL). Returns per-component statistics for diagnostics. Check for nullptr before calling. Returns 0 if nullptr or component not found */
+  rx_error_clear_fn
+    clear_errors; /**< Clear all error counters and retry state (REQUIRED - MUST be non-NULL). Resets system to fresh state. Use after diagnostics or recovery. Validated by rx_error_interface_validate() */
   rx_error_is_retry_limit_reached_fn
-                          is_retry_limit_reached;  /**< Check if component exceeded retry limit (OPTIONAL - may be NULL). Returns true if should give up, false if can retry. Check for nullptr before calling. Used in retry logic decision-making */
-  rx_error_reset_retry_fn reset_retry_counter;     /**< Reset retry counter for component (OPTIONAL - may be NULL). Clears retry state without clearing error count. Call after successful operation. Check for nullptr before calling */
-  rx_error_get_backoff_delay_fn get_backoff_delay; /**< Calculate exponential backoff delay for retry (OPTIONAL - may be NULL). Returns milliseconds to wait before next retry. Returns 0 if nullptr or no backoff needed. Check for nullptr before calling */
+    is_retry_limit_reached; /**< Check if component exceeded retry limit (OPTIONAL - may be NULL). Returns true if should give up, false if can retry. Check for nullptr before calling. Used in retry logic decision-making */
+  rx_error_reset_retry_fn
+    reset_retry_counter; /**< Reset retry counter for component (OPTIONAL - may be NULL). Clears retry state without clearing error count. Call after successful operation. Check for nullptr before calling */
+  rx_error_get_backoff_delay_fn
+    get_backoff_delay; /**< Calculate exponential backoff delay for retry (OPTIONAL - may be NULL). Returns milliseconds to wait before next retry. Returns 0 if nullptr or no backoff needed. Check for nullptr before calling */
 };
 
 /* =============================================================================

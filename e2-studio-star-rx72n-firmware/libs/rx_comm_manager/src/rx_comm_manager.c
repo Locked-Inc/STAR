@@ -424,7 +424,7 @@ typedef enum : uint32_t {
    * Transport layers (USB/SPI) return k_rx_err_timeout immediately if no data.
    * @par Value: 0 milliseconds
    */
-  k_receive_timeout_ms     = 0,
+  k_receive_timeout_ms = 0,
 
   /**
    * @brief Placeholder for frame sequence number (filled by transport layer)
@@ -433,7 +433,7 @@ typedef enum : uint32_t {
    * to detect dropped frames. Manager does not manipulate sequence numbers.
    * @par Value: 0
    */
-  k_frame_seq_placeholder  = 0,
+  k_frame_seq_placeholder = 0,
 
   /**
    * @brief Placeholder for frame CRC-32 (filled by transport layer)
@@ -442,7 +442,7 @@ typedef enum : uint32_t {
    * frame with placeholder CRC for ASCII formatting only.
    * @par Value: 0
    */
-  k_frame_crc_placeholder  = 0,
+  k_frame_crc_placeholder = 0,
 
   /**
    * @brief First index of ascii_buffer for post-condition validation
@@ -1597,4 +1597,45 @@ const char* rx_comm_manager_channel_name(rx_comm_channel_t channel)
     default:
       return "UNKNOWN";
   }
+}
+
+/* =============================================================================
+ * Retransmission Pass-Through
+ * =============================================================================
+ */
+
+rx_err_t rx_comm_manager_process_retransmits(rx_comm_manager_t* mgr, const uint32_t current_time_ms)
+{
+  if (mgr == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!mgr->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (mgr->spi_handle == nullptr) {
+    return k_rx_ok; /* No SPI channel configured */
+  }
+
+  return rx_spi_comm_process_retransmits(mgr->spi_handle, current_time_ms);
+}
+
+rx_err_t rx_comm_manager_set_auto_retransmit(rx_comm_manager_t*                     mgr,
+                                             const bool                             enabled,
+                                             const rx_spi_comm_retransmit_config_t* config)
+{
+  if (mgr == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!mgr->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (mgr->spi_handle == nullptr) {
+    return k_rx_err_not_supported;
+  }
+
+  return rx_spi_comm_set_auto_retransmit(mgr->spi_handle, enabled, config);
 }

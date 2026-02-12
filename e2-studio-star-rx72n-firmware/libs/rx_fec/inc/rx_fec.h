@@ -836,10 +836,10 @@ typedef struct {
  * - **Rule 5**: [OK] 7 precondition checks, 3 postconditions
  */
 [[nodiscard]] rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
-                       const uint8_t*          input,
-                       uint32_t                input_len,
-                       uint8_t*                output,
-                       uint32_t*               output_len);
+                                     const uint8_t*          input,
+                                     uint32_t                input_len,
+                                     uint8_t*                output,
+                                     uint32_t*               output_len);
 
 /**
  * @brief Calculate FEC encoded output length
@@ -992,8 +992,8 @@ typedef enum : uint16_t {
 } rx_fec_buffer_limits_t;
 
 static_assert(k_fec_max_input_bytes ==
-                 (uint16_t)((k_fec_max_symbols - k_fec_tail_bits) / k_rx_bits_per_byte),
-               "k_fec_max_input_bytes mismatch with k_fec_max_symbols");
+                (uint16_t)((k_fec_max_symbols - k_fec_tail_bits) / k_rx_bits_per_byte),
+              "k_fec_max_input_bytes mismatch with k_fec_max_symbols");
 
 /**
  * @brief FEC decoder state
@@ -1062,7 +1062,8 @@ typedef struct {
  * @return k_rx_err_invalid_state if decoder not initialized
  * @return k_rx_err_invalid_size if output buffer too small
  */
-[[nodiscard]] rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_params_t* params);
+[[nodiscard]] rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*                  dec,
+                                          const rx_fec_decode_soft_params_t* params);
 
 /**
  * @brief Hard-decision decode parameters
@@ -1096,7 +1097,8 @@ typedef struct {
  * @return k_rx_err_invalid_state if decoder not initialized
  * @return k_rx_err_invalid_size if soft_bits_buffer is too small
  */
-[[nodiscard]] rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_params_t* params);
+[[nodiscard]] rx_err_t rx_fec_decode_hard(rx_fec_decoder_t*                  dec,
+                                          const rx_fec_decode_hard_params_t* params);
 
 /* =============================================================================
  * Utility Functions

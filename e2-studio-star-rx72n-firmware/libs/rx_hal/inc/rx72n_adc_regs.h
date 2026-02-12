@@ -108,8 +108,8 @@
 
 #pragma once
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -270,11 +270,11 @@ typedef enum : uint8_t {
  * @note Reserved bytes must be declared as uint8_t arrays, not accessed
  */
 typedef enum : uint8_t {
-  k_s12ad_reserved_02_03    = 2, /**< Padding after ADCSR (16-bit) to ADANSA0 (32-bit aligned) */
-  k_s12ad_reserved_0d       = 1, /**< Padding after ADADC (8-bit) to ADCER (16-bit aligned) */
-  k_s12ad_reserved_12_13    = 2, /**< Padding after ADSTRGR to ADANSB0 */
-  k_s12ad_reserved_16_17    = 2, /**< Padding after ADANSB0 to ADDBLDR */
-  k_s12ad_reserved_1a_1d    = 4, /**< Padding after ADDBLDR to ADRD */
+  k_s12ad_reserved_02_03 = 2, /**< Padding after ADCSR (16-bit) to ADANSA0 (32-bit aligned) */
+  k_s12ad_reserved_0d    = 1, /**< Padding after ADADC (8-bit) to ADCER (16-bit aligned) */
+  k_s12ad_reserved_12_13 = 2, /**< Padding after ADSTRGR to ADANSB0 */
+  k_s12ad_reserved_16_17 = 2, /**< Padding after ADANSB0 to ADDBLDR */
+  k_s12ad_reserved_1a_1d = 4, /**< Padding after ADDBLDR to ADRD */
 } s12ad_reserved_sizes_t;
 
 /**
@@ -674,20 +674,26 @@ static_assert(k_s12ad1_base_addr == 0x00089100, "S12AD1 base address incorrect")
 
 /* Verify channel spacing (0x100 bytes between units) */
 static_assert((k_s12ad1_base_addr - k_s12ad0_base_addr) == 0x100,
-               "S12AD0 to S12AD1 spacing incorrect");
+              "S12AD0 to S12AD1 spacing incorrect");
 
 /* Verify register structure layout - offsets per RX72N Manual Ch56 */
-static_assert(sizeof(rx_s12ad_regs_t) == 0x30, "S12AD register structure size incorrect (expected 0x30)");
+static_assert(sizeof(rx_s12ad_regs_t) == 0x30,
+              "S12AD register structure size incorrect (expected 0x30)");
 static_assert(offsetof(rx_s12ad_regs_t, adcsr) == 0x00, "ADCSR offset incorrect (expected 0x00)");
-static_assert(offsetof(rx_s12ad_regs_t, adansa0) == 0x04, "ADANSA0 offset incorrect (expected 0x04)");
-static_assert(offsetof(rx_s12ad_regs_t, adansa1) == 0x06, "ADANSA1 offset incorrect (expected 0x06)");
+static_assert(offsetof(rx_s12ad_regs_t, adansa0) == 0x04,
+              "ADANSA0 offset incorrect (expected 0x04)");
+static_assert(offsetof(rx_s12ad_regs_t, adansa1) == 0x06,
+              "ADANSA1 offset incorrect (expected 0x06)");
 static_assert(offsetof(rx_s12ad_regs_t, adads0) == 0x08, "ADADS0 offset incorrect (expected 0x08)");
 static_assert(offsetof(rx_s12ad_regs_t, adads1) == 0x0A, "ADADS1 offset incorrect (expected 0x0A)");
 static_assert(offsetof(rx_s12ad_regs_t, adadc) == 0x0C, "ADADC offset incorrect (expected 0x0C)");
 static_assert(offsetof(rx_s12ad_regs_t, adcer) == 0x0E, "ADCER offset incorrect (expected 0x0E)");
-static_assert(offsetof(rx_s12ad_regs_t, adstrgr) == 0x10, "ADSTRGR offset incorrect (expected 0x10)");
-static_assert(offsetof(rx_s12ad_regs_t, adansb0) == 0x14, "ADANSB0 offset incorrect (expected 0x14)");
-static_assert(offsetof(rx_s12ad_regs_t, addbldr) == 0x18, "ADDBLDR offset incorrect (expected 0x18)");
+static_assert(offsetof(rx_s12ad_regs_t, adstrgr) == 0x10,
+              "ADSTRGR offset incorrect (expected 0x10)");
+static_assert(offsetof(rx_s12ad_regs_t, adansb0) == 0x14,
+              "ADANSB0 offset incorrect (expected 0x14)");
+static_assert(offsetof(rx_s12ad_regs_t, addbldr) == 0x18,
+              "ADDBLDR offset incorrect (expected 0x18)");
 static_assert(offsetof(rx_s12ad_regs_t, adrd) == 0x1E, "ADRD offset incorrect (expected 0x1E)");
 static_assert(offsetof(rx_s12ad_regs_t, addr0) == 0x20, "ADDR0 offset incorrect (expected 0x20)");
 static_assert(offsetof(rx_s12ad_regs_t, addr1) == 0x22, "ADDR1 offset incorrect (expected 0x22)");

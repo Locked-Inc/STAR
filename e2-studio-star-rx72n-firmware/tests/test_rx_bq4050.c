@@ -261,49 +261,49 @@ typedef enum : uint8_t {
  */
 typedef enum : int16_t {
   /* Pack voltage values (mV) */
-  k_test_typical_voltage_mv     = 14800, /**< Typical 4S pack voltage (3.7V/cell × 4) */
+  k_test_typical_voltage_mv = 14800, /**< Typical 4S pack voltage (3.7V/cell × 4) */
 
   /* Cell voltage values (mV) */
-  k_test_cell_voltage_mv        = 3700,  /**< Typical single cell voltage (nominal) */
-  k_test_cell_voltage_high_mv   = 4200,  /**< High cell voltage (fully charged Li-Ion) */
-  k_test_cell_voltage_mid_hi_mv = 4150,  /**< Mid-high cell voltage (cell imbalance test) */
-  k_test_cell_voltage_mid_lo_mv = 4100,  /**< Mid-low cell voltage (cell imbalance test) */
-  k_test_cell_voltage_low_mv    = 4050,  /**< Low cell voltage (cell imbalance test) */
+  k_test_cell_voltage_mv        = 3700, /**< Typical single cell voltage (nominal) */
+  k_test_cell_voltage_high_mv   = 4200, /**< High cell voltage (fully charged Li-Ion) */
+  k_test_cell_voltage_mid_hi_mv = 4150, /**< Mid-high cell voltage (cell imbalance test) */
+  k_test_cell_voltage_mid_lo_mv = 4100, /**< Mid-low cell voltage (cell imbalance test) */
+  k_test_cell_voltage_low_mv    = 4050, /**< Low cell voltage (cell imbalance test) */
 
   /* Current values (mA, signed: + = charging, - = discharging) */
-  k_test_charging_ma            = 2000,  /**< Typical charging current +2000mA (2A) */
-  k_test_discharging_ma         = -1500, /**< Typical discharging current -1500mA (1.5A) */
-  k_test_avg_current            = 1800,  /**< Average current for rolling average tests */
-  k_test_current_idle_ma        = 0,     /**< Idle/zero current (no charge/discharge) */
+  k_test_charging_ma     = 2000,  /**< Typical charging current +2000mA (2A) */
+  k_test_discharging_ma  = -1500, /**< Typical discharging current -1500mA (1.5A) */
+  k_test_avg_current     = 1800,  /**< Average current for rolling average tests */
+  k_test_current_idle_ma = 0,     /**< Idle/zero current (no charge/discharge) */
 
   /* Temperature values (0.1 Kelvin units, SBS format) */
-  k_test_temp_25c_0_1k          = 2981,  /**< 25.0°C in 0.1K units (298.1K × 10) */
-  k_test_temp_0c_0_1k           = 2731,  /**< 0.0°C in 0.1K units (273.1K × 10) */
-  k_test_temp_neg10c_0_1k       = 2631,  /**< -10.0°C in 0.1K units (263.1K × 10) */
+  k_test_temp_25c_0_1k    = 2981, /**< 25.0°C in 0.1K units (298.1K × 10) */
+  k_test_temp_0c_0_1k     = 2731, /**< 0.0°C in 0.1K units (273.1K × 10) */
+  k_test_temp_neg10c_0_1k = 2631, /**< -10.0°C in 0.1K units (263.1K × 10) */
 
   /* State of charge values (percent) */
-  k_test_soc_full               = 100,   /**< Full state of charge 100% */
-  k_test_soc_half               = 50,    /**< Half state of charge 50% */
-  k_test_soc_empty              = 0,     /**< Empty state of charge 0% */
-  k_test_soc_over_range         = 105,   /**< Over-range SOC (SBS allows >100%, test clamping) */
-  k_test_soc_way_over           = 200,   /**< Way over-range SOC (extreme clamping test) */
-  k_test_soc_abs                = 85,    /**< Absolute SOC for health comparison */
+  k_test_soc_full       = 100, /**< Full state of charge 100% */
+  k_test_soc_half       = 50,  /**< Half state of charge 50% */
+  k_test_soc_empty      = 0,   /**< Empty state of charge 0% */
+  k_test_soc_over_range = 105, /**< Over-range SOC (SBS allows >100%, test clamping) */
+  k_test_soc_way_over   = 200, /**< Way over-range SOC (extreme clamping test) */
+  k_test_soc_abs        = 85,  /**< Absolute SOC for health comparison */
 
   /* Capacity values (mAh) */
-  k_test_capacity_full_mah      = 5000,  /**< Full charge capacity 5000mAh (5Ah) */
-  k_test_capacity_half_mah      = 2500,  /**< Half capacity 2500mAh (50% SOC) */
+  k_test_capacity_full_mah = 5000, /**< Full charge capacity 5000mAh (5Ah) */
+  k_test_capacity_half_mah = 2500, /**< Half capacity 2500mAh (50% SOC) */
 
   /* Time estimate values (minutes) */
-  k_test_time_to_empty_min      = 120,   /**< Time to empty 120 minutes (2 hours) */
+  k_test_time_to_empty_min = 120, /**< Time to empty 120 minutes (2 hours) */
 
   /* Cycle count and status values */
-  k_test_cycle_count            = 150,   /**< Charge/discharge cycle count */
-  k_test_status_no_flags        = 0,     /**< Battery status with no flags set (all clear) */
+  k_test_cycle_count     = 150, /**< Charge/discharge cycle count */
+  k_test_status_no_flags = 0,   /**< Battery status with no flags set (all clear) */
 
   /* Expected converted temperature values (degrees Celsius) */
-  k_test_temp_25c_expected      = 25,    /**< Expected 25°C after 0.1K->°C conversion */
-  k_test_temp_0c_expected       = 0,     /**< Expected 0°C after conversion */
-  k_test_temp_neg10c_expected   = -10,   /**< Expected -10°C after conversion */
+  k_test_temp_25c_expected    = 25,  /**< Expected 25°C after 0.1K->°C conversion */
+  k_test_temp_0c_expected     = 0,   /**< Expected 0°C after conversion */
+  k_test_temp_neg10c_expected = -10, /**< Expected -10°C after conversion */
 } test_values_t;
 
 /* =============================================================================

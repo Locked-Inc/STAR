@@ -625,24 +625,24 @@ typedef enum : uint8_t {
 
 /** @brief USB Descriptor Types */
 typedef enum : uint8_t {
-  k_usb_desc_type_device                  = 0x01, /**< Device descriptor */
-  k_usb_desc_type_configuration           = 0x02, /**< Configuration descriptor */
-  k_usb_desc_type_string                  = 0x03, /**< String descriptor */
-  k_usb_desc_type_interface               = 0x04, /**< Interface descriptor */
-  k_usb_desc_type_endpoint                = 0x05, /**< Endpoint descriptor */
-  k_usb_desc_type_interface_association   = 0x0B, /**< Interface Association Descriptor */
-  k_usb_desc_type_cs_interface            = 0x24, /**< Class-specific interface descriptor */
+  k_usb_desc_type_device                = 0x01, /**< Device descriptor */
+  k_usb_desc_type_configuration         = 0x02, /**< Configuration descriptor */
+  k_usb_desc_type_string                = 0x03, /**< String descriptor */
+  k_usb_desc_type_interface             = 0x04, /**< Interface descriptor */
+  k_usb_desc_type_endpoint              = 0x05, /**< Endpoint descriptor */
+  k_usb_desc_type_interface_association = 0x0B, /**< Interface Association Descriptor */
+  k_usb_desc_type_cs_interface          = 0x24, /**< Class-specific interface descriptor */
 } usb_descriptor_type_t;
 
 /** @brief USB Class Codes */
 typedef enum : uint8_t {
-  k_usb_class_misc           = 0xEF, /**< Miscellaneous Device Class (for IAD) */
-  k_usb_class_cdc            = 0x02, /**< Communications Device Class */
-  k_usb_class_cdc_data       = 0x0A, /**< CDC Data Class */
-  k_usb_subclass_common      = 0x02, /**< Common Class subclass (for IAD) */
-  k_usb_subclass_acm         = 0x02, /**< Abstract Control Model subclass */
-  k_usb_protocol_iad         = 0x01, /**< Interface Association Descriptor protocol */
-  k_usb_protocol_at          = 0x01, /**< AT command protocol */
+  k_usb_class_misc      = 0xEF, /**< Miscellaneous Device Class (for IAD) */
+  k_usb_class_cdc       = 0x02, /**< Communications Device Class */
+  k_usb_class_cdc_data  = 0x0A, /**< CDC Data Class */
+  k_usb_subclass_common = 0x02, /**< Common Class subclass (for IAD) */
+  k_usb_subclass_acm    = 0x02, /**< Abstract Control Model subclass */
+  k_usb_protocol_iad    = 0x01, /**< Interface Association Descriptor protocol */
+  k_usb_protocol_at     = 0x01, /**< AT command protocol */
 } usb_class_code_t;
 
 /** @brief CDC Class Request Codes */
@@ -816,10 +816,10 @@ typedef enum : uint8_t {
 
 /** @brief IAD descriptor constants */
 typedef enum : uint8_t {
-  k_iad_interface_count = 2, /**< Each CDC function has 2 interfaces */
-  k_iad_function_class  = k_usb_class_cdc, /**< CDC class */
+  k_iad_interface_count   = 2,                  /**< Each CDC function has 2 interfaces */
+  k_iad_function_class    = k_usb_class_cdc,    /**< CDC class */
   k_iad_function_subclass = k_usb_subclass_acm, /**< ACM subclass */
-  k_iad_function_protocol = k_usb_protocol_at, /**< AT command protocol */
+  k_iad_function_protocol = k_usb_protocol_at,  /**< AT command protocol */
 } iad_constants_t;
 
 /* =============================================================================
@@ -961,13 +961,13 @@ typedef struct __attribute__((packed)) {
 /* Compile-time size verification */
 static_assert(sizeof(usb_device_descriptor_t) == 18, "Device descriptor must be 18 bytes");
 static_assert(sizeof(usb_configuration_descriptor_t) == 9,
-               "Configuration descriptor must be 9 bytes");
+              "Configuration descriptor must be 9 bytes");
 static_assert(sizeof(usb_iad_descriptor_t) == 8, "IAD descriptor must be 8 bytes");
 static_assert(sizeof(usb_interface_descriptor_t) == 9, "Interface descriptor must be 9 bytes");
 static_assert(sizeof(usb_endpoint_descriptor_t) == 7, "Endpoint descriptor must be 7 bytes");
 static_assert(sizeof(cdc_header_descriptor_t) == 5, "CDC Header descriptor must be 5 bytes");
 static_assert(sizeof(cdc_call_management_descriptor_t) == 5,
-               "CDC Call Management descriptor must be 5 bytes");
+              "CDC Call Management descriptor must be 5 bytes");
 static_assert(sizeof(cdc_acm_descriptor_t) == 4, "CDC ACM descriptor must be 4 bytes");
 static_assert(sizeof(cdc_union_descriptor_t) == 5, "CDC Union descriptor must be 5 bytes");
 
@@ -987,9 +987,9 @@ static const usb_device_descriptor_t s_device_desc = {
   .length              = sizeof(usb_device_descriptor_t),
   .descriptor_type     = k_usb_desc_type_device,
   .usb_version         = k_usb_version_2_0,
-  .device_class        = k_usb_class_misc, /* Miscellaneous for IAD */
+  .device_class        = k_usb_class_misc,      /* Miscellaneous for IAD */
   .device_sub_class    = k_usb_subclass_common, /* Common class for IAD */
-  .device_protocol     = k_usb_protocol_iad, /* IAD protocol */
+  .device_protocol     = k_usb_protocol_iad,    /* IAD protocol */
   .max_packet_size_ep0 = k_usb_ep0_packet_size,
   .vendor_id           = k_usb_vid,
   .product_id          = k_usb_pid,
@@ -1087,278 +1087,309 @@ typedef enum : uint16_t {
 } composite_config_size_t;
 
 static_assert(sizeof(usb_composite_config_descriptor_t) == k_composite_config_size,
-               "Composite config descriptor must be 207 bytes");
+              "Composite config descriptor must be 207 bytes");
 
 /** @brief Configuration Descriptor Instance */
 static const usb_composite_config_descriptor_t s_config_desc = {
-  .config = {
-    .length              = sizeof(usb_configuration_descriptor_t),
-    .descriptor_type     = k_usb_desc_type_configuration,
-    .total_length        = sizeof(usb_composite_config_descriptor_t),
-    .num_interfaces      = k_usb_num_interfaces_composite,
-    .configuration_value = k_usb_config_value_default,
-    .configuration_index = k_usb_string_index_none,
-    .attributes          = k_usb_cfg_attr_bus_powered,
-    .max_power           = k_usb_max_power_100ma,
-  },
+  .config =
+    {
+      .length              = sizeof(usb_configuration_descriptor_t),
+      .descriptor_type     = k_usb_desc_type_configuration,
+      .total_length        = sizeof(usb_composite_config_descriptor_t),
+      .num_interfaces      = k_usb_num_interfaces_composite,
+      .configuration_value = k_usb_config_value_default,
+      .configuration_index = k_usb_string_index_none,
+      .attributes          = k_usb_cfg_attr_bus_powered,
+      .max_power           = k_usb_max_power_100ma,
+    },
 
   /* ==========================================================================
    * Port 0 CDC Function (Protocol - /dev/ttyACM0)
    * ========================================================================== */
-  .port0_iad = {
-    .length             = sizeof(usb_iad_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_interface_association,
-    .first_interface    = k_intf_port0_control,
-    .interface_count    = k_iad_interface_count,
-    .function_class     = k_iad_function_class,
-    .function_sub_class = k_iad_function_subclass,
-    .function_protocol  = k_iad_function_protocol,
-    .function_index     = k_usb_string_index_none,
-  },
-  .port0_cdc_interface = {
-    .length             = sizeof(usb_interface_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_interface,
-    .interface_number   = k_intf_port0_control,
-    .alternate_setting  = k_usb_alternate_setting_default,
-    .num_endpoints      = k_usb_num_endpoints_control,
-    .interface_class    = k_usb_class_cdc,
-    .interface_subclass = k_usb_subclass_acm,
-    .interface_protocol = k_usb_protocol_at,
-    .interface_index    = k_usb_string_index_none,
-  },
-  .port0_cdc_header = {
-    .length             = sizeof(cdc_header_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_cs_interface,
-    .descriptor_subtype = k_cdc_subtype_header,
-    .cdc_version        = k_usb_version_1_1,
-  },
-  .port0_cdc_call_mgmt = {
-    .length             = sizeof(cdc_call_management_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_cs_interface,
-    .descriptor_subtype = k_cdc_subtype_call_management,
-    .capabilities       = k_cdc_call_mgmt_cap_none,
-    .data_interface     = k_intf_port0_data,
-  },
-  .port0_cdc_acm = {
-    .length             = sizeof(cdc_acm_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_cs_interface,
-    .descriptor_subtype = k_cdc_subtype_acm,
-    .capabilities       = k_cdc_acm_cap_line_coding,
-  },
-  .port0_cdc_union = {
-    .length                = sizeof(cdc_union_descriptor_t),
-    .descriptor_type       = k_usb_desc_type_cs_interface,
-    .descriptor_subtype    = k_cdc_subtype_union,
-    .control_interface     = k_intf_port0_control,
-    .subordinate_interface = k_intf_port0_data,
-  },
-  .port0_ep_int_in = {
-    .length           = sizeof(usb_endpoint_descriptor_t),
-    .descriptor_type  = k_usb_desc_type_endpoint,
-    .endpoint_address = k_port0_ep_int_in,
-    .attributes       = k_usb_ep_type_interrupt,
-    .max_packet_size  = k_usb_interrupt_packet_size,
-    .interval         = k_usb_interrupt_interval,
-  },
-  .port0_data_interface = {
-    .length             = sizeof(usb_interface_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_interface,
-    .interface_number   = k_intf_port0_data,
-    .alternate_setting  = k_usb_alternate_setting_default,
-    .num_endpoints      = k_usb_num_endpoints_data,
-    .interface_class    = k_usb_class_cdc_data,
-    .interface_subclass = k_usb_subclass_none,
-    .interface_protocol = k_usb_protocol_none,
-    .interface_index    = k_usb_string_index_none,
-  },
-  .port0_ep_bulk_in = {
-    .length           = sizeof(usb_endpoint_descriptor_t),
-    .descriptor_type  = k_usb_desc_type_endpoint,
-    .endpoint_address = k_port0_ep_bulk_in,
-    .attributes       = k_usb_ep_type_bulk,
-    .max_packet_size  = k_usb_bulk_packet_size,
-    .interval         = k_usb_bulk_interval,
-  },
-  .port0_ep_bulk_out = {
-    .length           = sizeof(usb_endpoint_descriptor_t),
-    .descriptor_type  = k_usb_desc_type_endpoint,
-    .endpoint_address = k_port0_ep_bulk_out,
-    .attributes       = k_usb_ep_type_bulk,
-    .max_packet_size  = k_usb_bulk_packet_size,
-    .interval         = k_usb_bulk_interval,
-  },
+  .port0_iad =
+    {
+      .length             = sizeof(usb_iad_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_interface_association,
+      .first_interface    = k_intf_port0_control,
+      .interface_count    = k_iad_interface_count,
+      .function_class     = k_iad_function_class,
+      .function_sub_class = k_iad_function_subclass,
+      .function_protocol  = k_iad_function_protocol,
+      .function_index     = k_usb_string_index_none,
+    },
+  .port0_cdc_interface =
+    {
+      .length             = sizeof(usb_interface_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_interface,
+      .interface_number   = k_intf_port0_control,
+      .alternate_setting  = k_usb_alternate_setting_default,
+      .num_endpoints      = k_usb_num_endpoints_control,
+      .interface_class    = k_usb_class_cdc,
+      .interface_subclass = k_usb_subclass_acm,
+      .interface_protocol = k_usb_protocol_at,
+      .interface_index    = k_usb_string_index_none,
+    },
+  .port0_cdc_header =
+    {
+      .length             = sizeof(cdc_header_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_header,
+      .cdc_version        = k_usb_version_1_1,
+    },
+  .port0_cdc_call_mgmt =
+    {
+      .length             = sizeof(cdc_call_management_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_call_management,
+      .capabilities       = k_cdc_call_mgmt_cap_none,
+      .data_interface     = k_intf_port0_data,
+    },
+  .port0_cdc_acm =
+    {
+      .length             = sizeof(cdc_acm_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_acm,
+      .capabilities       = k_cdc_acm_cap_line_coding,
+    },
+  .port0_cdc_union =
+    {
+      .length                = sizeof(cdc_union_descriptor_t),
+      .descriptor_type       = k_usb_desc_type_cs_interface,
+      .descriptor_subtype    = k_cdc_subtype_union,
+      .control_interface     = k_intf_port0_control,
+      .subordinate_interface = k_intf_port0_data,
+    },
+  .port0_ep_int_in =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_port0_ep_int_in,
+      .attributes       = k_usb_ep_type_interrupt,
+      .max_packet_size  = k_usb_interrupt_packet_size,
+      .interval         = k_usb_interrupt_interval,
+    },
+  .port0_data_interface =
+    {
+      .length             = sizeof(usb_interface_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_interface,
+      .interface_number   = k_intf_port0_data,
+      .alternate_setting  = k_usb_alternate_setting_default,
+      .num_endpoints      = k_usb_num_endpoints_data,
+      .interface_class    = k_usb_class_cdc_data,
+      .interface_subclass = k_usb_subclass_none,
+      .interface_protocol = k_usb_protocol_none,
+      .interface_index    = k_usb_string_index_none,
+    },
+  .port0_ep_bulk_in =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_port0_ep_bulk_in,
+      .attributes       = k_usb_ep_type_bulk,
+      .max_packet_size  = k_usb_bulk_packet_size,
+      .interval         = k_usb_bulk_interval,
+    },
+  .port0_ep_bulk_out =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_port0_ep_bulk_out,
+      .attributes       = k_usb_ep_type_bulk,
+      .max_packet_size  = k_usb_bulk_packet_size,
+      .interval         = k_usb_bulk_interval,
+    },
 
   /* ==========================================================================
    * Port 1 CDC Function (Decoded - /dev/ttyACM1)
    * ========================================================================== */
-  .port1_iad = {
-    .length             = sizeof(usb_iad_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_interface_association,
-    .first_interface    = k_intf_port1_control,
-    .interface_count    = k_iad_interface_count,
-    .function_class     = k_iad_function_class,
-    .function_sub_class = k_iad_function_subclass,
-    .function_protocol  = k_iad_function_protocol,
-    .function_index     = k_usb_string_index_none,
-  },
-  .port1_cdc_interface = {
-    .length             = sizeof(usb_interface_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_interface,
-    .interface_number   = k_intf_port1_control,
-    .alternate_setting  = k_usb_alternate_setting_default,
-    .num_endpoints      = k_usb_num_endpoints_control,
-    .interface_class    = k_usb_class_cdc,
-    .interface_subclass = k_usb_subclass_acm,
-    .interface_protocol = k_usb_protocol_at,
-    .interface_index    = k_usb_string_index_none,
-  },
-  .port1_cdc_header = {
-    .length             = sizeof(cdc_header_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_cs_interface,
-    .descriptor_subtype = k_cdc_subtype_header,
-    .cdc_version        = k_usb_version_1_1,
-  },
-  .port1_cdc_call_mgmt = {
-    .length             = sizeof(cdc_call_management_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_cs_interface,
-    .descriptor_subtype = k_cdc_subtype_call_management,
-    .capabilities       = k_cdc_call_mgmt_cap_none,
-    .data_interface     = k_intf_port1_data,
-  },
-  .port1_cdc_acm = {
-    .length             = sizeof(cdc_acm_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_cs_interface,
-    .descriptor_subtype = k_cdc_subtype_acm,
-    .capabilities       = k_cdc_acm_cap_line_coding,
-  },
-  .port1_cdc_union = {
-    .length                = sizeof(cdc_union_descriptor_t),
-    .descriptor_type       = k_usb_desc_type_cs_interface,
-    .descriptor_subtype    = k_cdc_subtype_union,
-    .control_interface     = k_intf_port1_control,
-    .subordinate_interface = k_intf_port1_data,
-  },
-  .port1_ep_int_in = {
-    .length           = sizeof(usb_endpoint_descriptor_t),
-    .descriptor_type  = k_usb_desc_type_endpoint,
-    .endpoint_address = k_port1_ep_int_in,
-    .attributes       = k_usb_ep_type_interrupt,
-    .max_packet_size  = k_usb_interrupt_packet_size,
-    .interval         = k_usb_interrupt_interval,
-  },
-  .port1_data_interface = {
-    .length             = sizeof(usb_interface_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_interface,
-    .interface_number   = k_intf_port1_data,
-    .alternate_setting  = k_usb_alternate_setting_default,
-    .num_endpoints      = k_usb_num_endpoints_data,
-    .interface_class    = k_usb_class_cdc_data,
-    .interface_subclass = k_usb_subclass_none,
-    .interface_protocol = k_usb_protocol_none,
-    .interface_index    = k_usb_string_index_none,
-  },
-  .port1_ep_bulk_in = {
-    .length           = sizeof(usb_endpoint_descriptor_t),
-    .descriptor_type  = k_usb_desc_type_endpoint,
-    .endpoint_address = k_port1_ep_bulk_in,
-    .attributes       = k_usb_ep_type_bulk,
-    .max_packet_size  = k_usb_bulk_packet_size,
-    .interval         = k_usb_bulk_interval,
-  },
-  .port1_ep_bulk_out = {
-    .length           = sizeof(usb_endpoint_descriptor_t),
-    .descriptor_type  = k_usb_desc_type_endpoint,
-    .endpoint_address = k_port1_ep_bulk_out,
-    .attributes       = k_usb_ep_type_bulk,
-    .max_packet_size  = k_usb_bulk_packet_size,
-    .interval         = k_usb_bulk_interval,
-  },
+  .port1_iad =
+    {
+      .length             = sizeof(usb_iad_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_interface_association,
+      .first_interface    = k_intf_port1_control,
+      .interface_count    = k_iad_interface_count,
+      .function_class     = k_iad_function_class,
+      .function_sub_class = k_iad_function_subclass,
+      .function_protocol  = k_iad_function_protocol,
+      .function_index     = k_usb_string_index_none,
+    },
+  .port1_cdc_interface =
+    {
+      .length             = sizeof(usb_interface_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_interface,
+      .interface_number   = k_intf_port1_control,
+      .alternate_setting  = k_usb_alternate_setting_default,
+      .num_endpoints      = k_usb_num_endpoints_control,
+      .interface_class    = k_usb_class_cdc,
+      .interface_subclass = k_usb_subclass_acm,
+      .interface_protocol = k_usb_protocol_at,
+      .interface_index    = k_usb_string_index_none,
+    },
+  .port1_cdc_header =
+    {
+      .length             = sizeof(cdc_header_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_header,
+      .cdc_version        = k_usb_version_1_1,
+    },
+  .port1_cdc_call_mgmt =
+    {
+      .length             = sizeof(cdc_call_management_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_call_management,
+      .capabilities       = k_cdc_call_mgmt_cap_none,
+      .data_interface     = k_intf_port1_data,
+    },
+  .port1_cdc_acm =
+    {
+      .length             = sizeof(cdc_acm_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_acm,
+      .capabilities       = k_cdc_acm_cap_line_coding,
+    },
+  .port1_cdc_union =
+    {
+      .length                = sizeof(cdc_union_descriptor_t),
+      .descriptor_type       = k_usb_desc_type_cs_interface,
+      .descriptor_subtype    = k_cdc_subtype_union,
+      .control_interface     = k_intf_port1_control,
+      .subordinate_interface = k_intf_port1_data,
+    },
+  .port1_ep_int_in =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_port1_ep_int_in,
+      .attributes       = k_usb_ep_type_interrupt,
+      .max_packet_size  = k_usb_interrupt_packet_size,
+      .interval         = k_usb_interrupt_interval,
+    },
+  .port1_data_interface =
+    {
+      .length             = sizeof(usb_interface_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_interface,
+      .interface_number   = k_intf_port1_data,
+      .alternate_setting  = k_usb_alternate_setting_default,
+      .num_endpoints      = k_usb_num_endpoints_data,
+      .interface_class    = k_usb_class_cdc_data,
+      .interface_subclass = k_usb_subclass_none,
+      .interface_protocol = k_usb_protocol_none,
+      .interface_index    = k_usb_string_index_none,
+    },
+  .port1_ep_bulk_in =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_port1_ep_bulk_in,
+      .attributes       = k_usb_ep_type_bulk,
+      .max_packet_size  = k_usb_bulk_packet_size,
+      .interval         = k_usb_bulk_interval,
+    },
+  .port1_ep_bulk_out =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_port1_ep_bulk_out,
+      .attributes       = k_usb_ep_type_bulk,
+      .max_packet_size  = k_usb_bulk_packet_size,
+      .interval         = k_usb_bulk_interval,
+    },
 
   /* ==========================================================================
    * Port 2 CDC Function (Log - /dev/ttyACM2)
    * ========================================================================== */
-  .port2_iad = {
-    .length             = sizeof(usb_iad_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_interface_association,
-    .first_interface    = k_intf_port2_control,
-    .interface_count    = k_iad_interface_count,
-    .function_class     = k_iad_function_class,
-    .function_sub_class = k_iad_function_subclass,
-    .function_protocol  = k_iad_function_protocol,
-    .function_index     = k_usb_string_index_none,
-  },
-  .port2_cdc_interface = {
-    .length             = sizeof(usb_interface_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_interface,
-    .interface_number   = k_intf_port2_control,
-    .alternate_setting  = k_usb_alternate_setting_default,
-    .num_endpoints      = k_usb_num_endpoints_control,
-    .interface_class    = k_usb_class_cdc,
-    .interface_subclass = k_usb_subclass_acm,
-    .interface_protocol = k_usb_protocol_at,
-    .interface_index    = k_usb_string_index_none,
-  },
-  .port2_cdc_header = {
-    .length             = sizeof(cdc_header_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_cs_interface,
-    .descriptor_subtype = k_cdc_subtype_header,
-    .cdc_version        = k_usb_version_1_1,
-  },
-  .port2_cdc_call_mgmt = {
-    .length             = sizeof(cdc_call_management_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_cs_interface,
-    .descriptor_subtype = k_cdc_subtype_call_management,
-    .capabilities       = k_cdc_call_mgmt_cap_none,
-    .data_interface     = k_intf_port2_data,
-  },
-  .port2_cdc_acm = {
-    .length             = sizeof(cdc_acm_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_cs_interface,
-    .descriptor_subtype = k_cdc_subtype_acm,
-    .capabilities       = k_cdc_acm_cap_line_coding,
-  },
-  .port2_cdc_union = {
-    .length                = sizeof(cdc_union_descriptor_t),
-    .descriptor_type       = k_usb_desc_type_cs_interface,
-    .descriptor_subtype    = k_cdc_subtype_union,
-    .control_interface     = k_intf_port2_control,
-    .subordinate_interface = k_intf_port2_data,
-  },
-  .port2_ep_int_in = {
-    .length           = sizeof(usb_endpoint_descriptor_t),
-    .descriptor_type  = k_usb_desc_type_endpoint,
-    .endpoint_address = k_port2_ep_int_in,
-    .attributes       = k_usb_ep_type_interrupt,
-    .max_packet_size  = k_usb_interrupt_packet_size,
-    .interval         = k_usb_interrupt_interval,
-  },
-  .port2_data_interface = {
-    .length             = sizeof(usb_interface_descriptor_t),
-    .descriptor_type    = k_usb_desc_type_interface,
-    .interface_number   = k_intf_port2_data,
-    .alternate_setting  = k_usb_alternate_setting_default,
-    .num_endpoints      = k_usb_num_endpoints_data,
-    .interface_class    = k_usb_class_cdc_data,
-    .interface_subclass = k_usb_subclass_none,
-    .interface_protocol = k_usb_protocol_none,
-    .interface_index    = k_usb_string_index_none,
-  },
-  .port2_ep_bulk_in = {
-    .length           = sizeof(usb_endpoint_descriptor_t),
-    .descriptor_type  = k_usb_desc_type_endpoint,
-    .endpoint_address = k_port2_ep_bulk_in,
-    .attributes       = k_usb_ep_type_bulk,
-    .max_packet_size  = k_usb_bulk_packet_size,
-    .interval         = k_usb_bulk_interval,
-  },
-  .port2_ep_bulk_out = {
-    .length           = sizeof(usb_endpoint_descriptor_t),
-    .descriptor_type  = k_usb_desc_type_endpoint,
-    .endpoint_address = k_port2_ep_bulk_out,
-    .attributes       = k_usb_ep_type_bulk,
-    .max_packet_size  = k_usb_bulk_packet_size,
-    .interval         = k_usb_bulk_interval,
-  },
+  .port2_iad =
+    {
+      .length             = sizeof(usb_iad_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_interface_association,
+      .first_interface    = k_intf_port2_control,
+      .interface_count    = k_iad_interface_count,
+      .function_class     = k_iad_function_class,
+      .function_sub_class = k_iad_function_subclass,
+      .function_protocol  = k_iad_function_protocol,
+      .function_index     = k_usb_string_index_none,
+    },
+  .port2_cdc_interface =
+    {
+      .length             = sizeof(usb_interface_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_interface,
+      .interface_number   = k_intf_port2_control,
+      .alternate_setting  = k_usb_alternate_setting_default,
+      .num_endpoints      = k_usb_num_endpoints_control,
+      .interface_class    = k_usb_class_cdc,
+      .interface_subclass = k_usb_subclass_acm,
+      .interface_protocol = k_usb_protocol_at,
+      .interface_index    = k_usb_string_index_none,
+    },
+  .port2_cdc_header =
+    {
+      .length             = sizeof(cdc_header_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_header,
+      .cdc_version        = k_usb_version_1_1,
+    },
+  .port2_cdc_call_mgmt =
+    {
+      .length             = sizeof(cdc_call_management_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_call_management,
+      .capabilities       = k_cdc_call_mgmt_cap_none,
+      .data_interface     = k_intf_port2_data,
+    },
+  .port2_cdc_acm =
+    {
+      .length             = sizeof(cdc_acm_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_acm,
+      .capabilities       = k_cdc_acm_cap_line_coding,
+    },
+  .port2_cdc_union =
+    {
+      .length                = sizeof(cdc_union_descriptor_t),
+      .descriptor_type       = k_usb_desc_type_cs_interface,
+      .descriptor_subtype    = k_cdc_subtype_union,
+      .control_interface     = k_intf_port2_control,
+      .subordinate_interface = k_intf_port2_data,
+    },
+  .port2_ep_int_in =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_port2_ep_int_in,
+      .attributes       = k_usb_ep_type_interrupt,
+      .max_packet_size  = k_usb_interrupt_packet_size,
+      .interval         = k_usb_interrupt_interval,
+    },
+  .port2_data_interface =
+    {
+      .length             = sizeof(usb_interface_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_interface,
+      .interface_number   = k_intf_port2_data,
+      .alternate_setting  = k_usb_alternate_setting_default,
+      .num_endpoints      = k_usb_num_endpoints_data,
+      .interface_class    = k_usb_class_cdc_data,
+      .interface_subclass = k_usb_subclass_none,
+      .interface_protocol = k_usb_protocol_none,
+      .interface_index    = k_usb_string_index_none,
+    },
+  .port2_ep_bulk_in =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_port2_ep_bulk_in,
+      .attributes       = k_usb_ep_type_bulk,
+      .max_packet_size  = k_usb_bulk_packet_size,
+      .interval         = k_usb_bulk_interval,
+    },
+  .port2_ep_bulk_out =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_port2_ep_bulk_out,
+      .attributes       = k_usb_ep_type_bulk,
+      .max_packet_size  = k_usb_bulk_packet_size,
+      .interval         = k_usb_bulk_interval,
+    },
 };
 
 /** @brief String Descriptor 0: Language ID (English US) */
@@ -1429,11 +1460,9 @@ static rx_usb_line_coding_t s_line_coding[k_usb_port_count] = {
 };
 
 /* Per-port control line state from host */
-static uint16_t s_control_line_state[k_usb_port_count] = {
-  k_usb_control_line_cleared,
-  k_usb_control_line_cleared,
-  k_usb_control_line_cleared
-};
+static uint16_t s_control_line_state[k_usb_port_count] = {k_usb_control_line_cleared,
+                                                          k_usb_control_line_cleared,
+                                                          k_usb_control_line_cleared};
 
 /* Redundant extern declarations removed - now provided by rx_usb_internal.h */
 
@@ -1460,8 +1489,7 @@ static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uin
  */
 static void internal_handle_get_descriptor(const uint16_t usb_value, const uint16_t usb_length)
 {
-  const uint8_t desc_type =
-    (uint8_t)((usb_value >> k_bit_shift_byte_1) & k_byte_mask);
+  const uint8_t desc_type  = (uint8_t)((usb_value >> k_bit_shift_byte_1) & k_byte_mask);
   const uint8_t desc_index = (uint8_t)(usb_value & k_byte_mask);
 
   switch (desc_type) {
@@ -1542,17 +1570,15 @@ static void internal_disable_pipe(uint8_t pipe)
   }
 
   /* Safe explicit mapping from pipe number to register pointer */
-  volatile uint16_t* pipe_regs[] = {
-    &usb0()->pipe1ctr,
-    &usb0()->pipe2ctr,
-    &usb0()->pipe3ctr,
-    &usb0()->pipe4ctr,
-    &usb0()->pipe5ctr,
-    &usb0()->pipe6ctr,
-    &usb0()->pipe7ctr,
-    &usb0()->pipe8ctr,
-    &usb0()->pipe9ctr
-  };
+  volatile uint16_t* pipe_regs[] = {&usb0()->pipe1ctr,
+                                    &usb0()->pipe2ctr,
+                                    &usb0()->pipe3ctr,
+                                    &usb0()->pipe4ctr,
+                                    &usb0()->pipe5ctr,
+                                    &usb0()->pipe6ctr,
+                                    &usb0()->pipe7ctr,
+                                    &usb0()->pipe8ctr,
+                                    &usb0()->pipe9ctr};
 
   volatile uint16_t* pipe_ctr = pipe_regs[pipe - k_usb_port0_pipe_bulk_in];
   *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_nak);
@@ -1729,15 +1755,15 @@ static void internal_handle_set_configuration(const uint16_t usb_value)
 
     /* Enable BRDY interrupt for Bulk OUT pipes (receive from host) */
     /* Use named constants instead of bit shifts for clarity */
-    usb0()->brdyenb |= k_usb_pipe_bit_2 |  /* Port 0: Bulk OUT pipe 2 */
-                       k_usb_pipe_bit_5 |  /* Port 1: Bulk OUT pipe 5 */
-                       k_usb_pipe_bit_8;   /* Port 2: Bulk OUT pipe 8 */
+    usb0()->brdyenb |= k_usb_pipe_bit_2 | /* Port 0: Bulk OUT pipe 2 */
+                       k_usb_pipe_bit_5 | /* Port 1: Bulk OUT pipe 5 */
+                       k_usb_pipe_bit_8;  /* Port 2: Bulk OUT pipe 8 */
 
     /* Enable BEMP interrupt for Bulk IN pipes (transmit complete) */
     /* CRITICAL FIX: Use named constants instead of bit shifts for clarity */
-    usb0()->bempenb |= k_usb_pipe_bit_1 |  /* Port 0: Bulk IN pipe 1 */
-                       k_usb_pipe_bit_4 |  /* Port 1: Bulk IN pipe 4 */
-                       k_usb_pipe_bit_7;   /* Port 2: Bulk IN pipe 7 */
+    usb0()->bempenb |= k_usb_pipe_bit_1 | /* Port 0: Bulk IN pipe 1 */
+                       k_usb_pipe_bit_4 | /* Port 1: Bulk IN pipe 4 */
+                       k_usb_pipe_bit_7;  /* Port 2: Bulk IN pipe 7 */
 
     rx_usb_set_state(k_usb_state_configured);
 
@@ -2222,8 +2248,7 @@ void rx_usb_cdc_handle_setup(void)
   const uint16_t usb_index                    = usb0()->usbindx;
   const uint16_t usb_length                   = usb0()->usbleng;
 
-  const uint8_t usb_request_type =
-    (uint8_t)(usb_request_type_and_request & k_byte_mask);
+  const uint8_t usb_request_type = (uint8_t)(usb_request_type_and_request & k_byte_mask);
   const uint8_t usb_request =
     (uint8_t)((usb_request_type_and_request >> k_bit_shift_byte_1) & k_byte_mask);
 

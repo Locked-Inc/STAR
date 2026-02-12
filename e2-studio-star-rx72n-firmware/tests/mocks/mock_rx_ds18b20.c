@@ -39,16 +39,43 @@ void mock_ds18b20_reset(void)
   s_temperature       = 25.0f;
 }
 
-void mock_ds18b20_set_init_return(rx_err_t err)       { s_init_return = err; }
-void mock_ds18b20_set_resolution_return(rx_err_t err) { s_resolution_return = err; }
-void mock_ds18b20_set_trigger_return(rx_err_t err)    { s_trigger_return = err; }
-void mock_ds18b20_set_read_return(rx_err_t err)       { s_read_return = err; }
-void mock_ds18b20_set_temperature(float temp_celsius) { s_temperature = temp_celsius; }
+void mock_ds18b20_set_init_return(rx_err_t err)
+{
+  s_init_return = err;
+}
+void mock_ds18b20_set_resolution_return(rx_err_t err)
+{
+  s_resolution_return = err;
+}
+void mock_ds18b20_set_trigger_return(rx_err_t err)
+{
+  s_trigger_return = err;
+}
+void mock_ds18b20_set_read_return(rx_err_t err)
+{
+  s_read_return = err;
+}
+void mock_ds18b20_set_temperature(float temp_celsius)
+{
+  s_temperature = temp_celsius;
+}
 
-uint32_t mock_ds18b20_get_init_count(void)    { return s_init_count; }
-uint32_t mock_ds18b20_get_trigger_count(void) { return s_trigger_count; }
-uint32_t mock_ds18b20_get_read_count(void)    { return s_read_count; }
-bool     mock_ds18b20_was_initialized(void)   { return s_init_count > 0; }
+uint32_t mock_ds18b20_get_init_count(void)
+{
+  return s_init_count;
+}
+uint32_t mock_ds18b20_get_trigger_count(void)
+{
+  return s_trigger_count;
+}
+uint32_t mock_ds18b20_get_read_count(void)
+{
+  return s_read_count;
+}
+bool mock_ds18b20_was_initialized(void)
+{
+  return s_init_count > 0;
+}
 
 rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t* config)
 {

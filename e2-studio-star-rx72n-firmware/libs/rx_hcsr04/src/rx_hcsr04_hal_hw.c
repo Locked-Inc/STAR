@@ -764,10 +764,10 @@ typedef enum : uint32_t {
   k_timer_rounding         = 500000,  /**< Add 0.5 for round-to-nearest */
   k_max_delay_iterations   = 100,     /**< NASA Rule 2: Loop bound (max 873 ms) */
   k_max_delay_ticks        = k_timer_counter_max * k_max_delay_iterations, /**< 6.55M ticks */
-  k_no_delay               = 0,       /**< Delay sentinel (no-op) */
-  k_min_ticks              = 1,       /**< Minimum delay to prevent zero-wait */
+  k_no_delay               = 0,                          /**< Delay sentinel (no-op) */
+  k_min_ticks              = 1,                          /**< Minimum delay to prevent zero-wait */
   k_cmstr1_cmt2_enable_bit = k_rx72n_cmstr1_cmt2_enable, /**< CMSTR1.STR2 bit (bit 0) */
-  k_counter_reset          = 0,       /**< Counter initial value */
+  k_counter_reset          = 0,                          /**< Counter initial value */
 } cmt2_timing_constants_t;
 
 /**
@@ -794,7 +794,7 @@ typedef enum : uint32_t {
  * @warning NOT thread-safe - caller must ensure single initialization
  * @note Once true, never cleared (CMT2 runs for entire program lifetime)
  */
-static bool     s_cmt2_initialized = false;
+static bool s_cmt2_initialized = false;
 
 /**
  * @var s_time_mutex
@@ -851,7 +851,7 @@ static TX_MUTEX s_time_mutex;
  * @warning NOT thread-safe - caller must ensure single initialization
  * @note Once true, never cleared (mutex exists for entire program lifetime)
  */
-static bool     s_time_mutex_initialized = false;
+static bool s_time_mutex_initialized = false;
 
 /**
  * @brief Initialize ThreadX mutex for overflow counter protection (idempotent)
@@ -1048,7 +1048,7 @@ static void internal_cmt2_init(void)
   cmstr1 = &(cmt_ctrl()->cmstr1);
 
   /* Stop CMT2 (bit 0 of CMSTR1) */
-  *cmstr1 &= (uint16_t)~(uint16_t)k_cmstr1_cmt2_enable_bit;
+  *cmstr1 &= (uint16_t) ~(uint16_t)k_cmstr1_cmt2_enable_bit;
 
   /* Configure CMT2: PCLK/8, no interrupt */
   cmt2()->cmcr = k_cmt2_divider_bits;

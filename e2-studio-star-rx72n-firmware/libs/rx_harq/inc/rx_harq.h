@@ -257,8 +257,8 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
  * @return k_rx_err_invalid_state if no soft bits have been added
  */
 [[nodiscard]] rx_err_t rx_chase_combiner_combined(const rx_chase_combiner_t* combiner,
-                                    rx_soft_bit_t*             output,
-                                    uint32_t*                  len);
+                                                  rx_soft_bit_t*             output,
+                                                  uint32_t*                  len);
 
 /**
  * @brief Reset combiner for new frame
@@ -389,11 +389,11 @@ rx_harq_state_t rx_harq_get_state(const rx_harq_handle_t* harq);
  * @return k_rx_err_invalid_state if not initialized
  */
 [[nodiscard]] rx_err_t rx_harq_encode(const rx_harq_handle_t* harq,
-                        const uint8_t*          payload,
-                        uint32_t                payload_len,
-                        uint8_t*                output,
-                        uint32_t                output_size,
-                        uint32_t*               output_len);
+                                      const uint8_t*          payload,
+                                      uint32_t                payload_len,
+                                      uint8_t*                output,
+                                      uint32_t                output_size,
+                                      uint32_t*               output_len);
 
 /**
  * @brief Decode soft bits with combining and FEC
@@ -411,9 +411,9 @@ rx_harq_state_t rx_harq_get_state(const rx_harq_handle_t* harq);
  * @return k_rx_err_invalid_state if not initialized
  */
 [[nodiscard]] rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
-                        const rx_harq_decode_params_t* params,
-                        uint8_t*                       output,
-                        uint32_t*                      output_len);
+                                      const rx_harq_decode_params_t* params,
+                                      uint8_t*                       output,
+                                      uint32_t*                      output_len);
 
 /**
  * @brief Get current retry count

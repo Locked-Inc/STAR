@@ -795,7 +795,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   err = internal_drv8243_configure_fault_pin(handle);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to configure fault pin");
-    (void)rx_motor_deinit(&handle->motor);  /* Cleanup, ignore errors */
+    (void)rx_motor_deinit(&handle->motor); /* Cleanup, ignore errors */
     return err;
   }
 
@@ -804,7 +804,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
     err = internal_drv8243_spi_init(handle, config);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to initialize SPI interface");
-      (void)rx_motor_deinit(&handle->motor);  /* Cleanup, ignore errors */
+      (void)rx_motor_deinit(&handle->motor); /* Cleanup, ignore errors */
       return err;
     }
 
@@ -812,8 +812,8 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
     err = internal_drv8243_spi_apply_config(handle, config);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to apply initial SPI configuration");
-      (void)sci_spi_controller_deinit(handle->sci_channel);  /* Cleanup, ignore errors */
-      (void)rx_motor_deinit(&handle->motor);  /* Cleanup, ignore errors */
+      (void)sci_spi_controller_deinit(handle->sci_channel); /* Cleanup, ignore errors */
+      (void)rx_motor_deinit(&handle->motor);                /* Cleanup, ignore errors */
       return err;
     }
 
@@ -1511,7 +1511,7 @@ static rx_err_t internal_drv8243_spi_init(rx_drv8243_handle_t*       handle,
   }
 
   handle->sci_channel = config->sci_channel;
-  handle->spi_enabled  = true;
+  handle->spi_enabled = true;
 
   return k_rx_ok;
 }
@@ -1696,7 +1696,7 @@ rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle, const drv8243
   }
 
   /* Clear and set slew rate bits */
-  config3 &= (uint8_t)~(uint8_t)k_drv8243_cfg3_s_sr_mask;
+  config3 &= (uint8_t) ~(uint8_t)k_drv8243_cfg3_s_sr_mask;
   config3 |= ((uint8_t)rate << k_drv8243_cfg3_s_sr_pos) & k_drv8243_cfg3_s_sr_mask;
 
   /* Write back */
@@ -1753,7 +1753,7 @@ rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*        handle,
   }
 
   /* Clear and set TOFF bits */
-  config3 &= (uint8_t)~(uint8_t)k_drv8243_cfg3_toff_mask;
+  config3 &= (uint8_t) ~(uint8_t)k_drv8243_cfg3_toff_mask;
   config3 |= ((uint8_t)toff << k_drv8243_cfg3_toff_pos) & k_drv8243_cfg3_toff_mask;
 
   /* Write back */
@@ -1801,7 +1801,7 @@ rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, const drv8243_cont
   }
 
   /* Clear and set mode bits */
-  config3 &= (uint8_t)~(uint8_t)k_drv8243_cfg3_s_mode_mask;
+  config3 &= (uint8_t) ~(uint8_t)k_drv8243_cfg3_s_mode_mask;
   config3 |= ((uint8_t)mode << k_drv8243_cfg3_s_mode_pos) & k_drv8243_cfg3_s_mode_mask;
 
   /* Write back */
@@ -1851,8 +1851,7 @@ rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t*       handle,
   }
 
   /* Clear and set OCP threshold and filter bits */
-  config4 &=
-    (uint8_t)~(uint8_t)(k_drv8243_cfg4_ocp_sel_mask | k_drv8243_cfg4_tocp_sel_mask);
+  config4 &= (uint8_t) ~(uint8_t)(k_drv8243_cfg4_ocp_sel_mask | k_drv8243_cfg4_tocp_sel_mask);
   config4 |= ((uint8_t)thresh << k_drv8243_cfg4_ocp_sel_pos) & k_drv8243_cfg4_ocp_sel_mask;
   config4 |= ((uint8_t)filter << k_drv8243_cfg4_tocp_sel_pos) & k_drv8243_cfg4_tocp_sel_mask;
 
@@ -1890,7 +1889,7 @@ rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, const bool enabl
 
   /* SSC_DIS bit: 0 = enabled, 1 = disabled */
   if (enable) {
-    config1 &= (uint8_t)~(uint8_t)k_drv8243_cfg1_ssc_dis_mask;
+    config1 &= (uint8_t) ~(uint8_t)k_drv8243_cfg1_ssc_dis_mask;
   } else {
     config1 |= k_drv8243_cfg1_ssc_dis_mask;
   }
@@ -1923,7 +1922,7 @@ rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
   }
 
   /* Set REG_LOCK to 01b (locked) */
-  cmd_reg &= (uint8_t)~(uint8_t)k_drv8243_cmd_reg_lock_mask;
+  cmd_reg &= (uint8_t) ~(uint8_t)k_drv8243_cmd_reg_lock_mask;
   cmd_reg |= k_drv8243_cmd_reg_lock_locked;
 
   /* Write back */
@@ -1956,7 +1955,7 @@ rx_err_t rx_drv8243_spi_unlock_config(rx_drv8243_handle_t* handle)
   }
 
   /* Set REG_LOCK to 10b (unlocked) */
-  cmd_reg &= (uint8_t)~(uint8_t)k_drv8243_cmd_reg_lock_mask;
+  cmd_reg &= (uint8_t) ~(uint8_t)k_drv8243_cmd_reg_lock_mask;
   cmd_reg |= k_drv8243_cmd_reg_lock_unlock;
 
   /* Write back */

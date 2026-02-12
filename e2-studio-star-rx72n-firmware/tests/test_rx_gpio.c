@@ -344,13 +344,13 @@ void test_port0_accessor(void)
   TEST_ASSERT_EQUAL_PTR((void*)0x0008C000, (void*)p);
 
   /* Verify individual register addresses */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C000, (void*)&p->pdr);   /* PDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C020, (void*)&p->podr);  /* PODR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C040, (void*)&p->pidr);  /* PIDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C060, (void*)&p->pmr);   /* PMR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C080, (void*)port0_odr());  /* ODR (word-addressed) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0C0, (void*)&p->pcr);   /* PCR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0E0, (void*)&p->dscr);  /* DSCR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C000, (void*)&p->pdr);     /* PDR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C020, (void*)&p->podr);    /* PODR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C040, (void*)&p->pidr);    /* PIDR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C060, (void*)&p->pmr);     /* PMR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C080, (void*)port0_odr()); /* ODR (word-addressed) */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0C0, (void*)&p->pcr);     /* PCR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0E0, (void*)&p->dscr);    /* DSCR */
 }
 
 /**
@@ -385,13 +385,13 @@ void test_port1_accessor(void)
   TEST_ASSERT_EQUAL_PTR((void*)0x0008C001, (void*)p);
 
   /* Verify individual register addresses */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C001, (void*)&p->pdr);   /* PDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C021, (void*)&p->podr);  /* PODR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C041, (void*)&p->pidr);  /* PIDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C061, (void*)&p->pmr);   /* PMR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C082, (void*)port1_odr());  /* ODR (word-addressed) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0C1, (void*)&p->pcr);   /* PCR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0E1, (void*)&p->dscr);  /* DSCR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C001, (void*)&p->pdr);     /* PDR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C021, (void*)&p->podr);    /* PODR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C041, (void*)&p->pidr);    /* PIDR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C061, (void*)&p->pmr);     /* PMR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C082, (void*)port1_odr()); /* ODR (word-addressed) */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0C1, (void*)&p->pcr);     /* PCR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0E1, (void*)&p->dscr);    /* DSCR */
 }
 
 /**
@@ -414,9 +414,9 @@ void test_port2_accessor(void)
   TEST_ASSERT_EQUAL_PTR((void*)0x0008C002, (void*)p);
 
   /* Verify key registers */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C002, (void*)&p->pdr);   /* PDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C022, (void*)&p->podr);  /* PODR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C042, (void*)&p->pidr);  /* PIDR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C002, (void*)&p->pdr);  /* PDR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C022, (void*)&p->podr); /* PODR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C042, (void*)&p->pidr); /* PIDR */
 }
 
 /**
@@ -452,13 +452,13 @@ void test_porta_accessor(void)
   TEST_ASSERT_EQUAL_PTR((void*)0x0008C00A, (void*)p);
 
   /* Verify individual register addresses */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00A, (void*)&p->pdr);   /* PDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C02A, (void*)&p->podr);  /* PODR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C04A, (void*)&p->pidr);  /* PIDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C06A, (void*)&p->pmr);   /* PMR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C094, (void*)porta_odr());  /* ODR (word-addressed) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0CA, (void*)&p->pcr);   /* PCR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0EA, (void*)&p->dscr);  /* DSCR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00A, (void*)&p->pdr);     /* PDR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C02A, (void*)&p->podr);    /* PODR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C04A, (void*)&p->pidr);    /* PIDR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C06A, (void*)&p->pmr);     /* PMR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C094, (void*)porta_odr()); /* ODR (word-addressed) */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0CA, (void*)&p->pcr);     /* PCR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0EA, (void*)&p->dscr);    /* DSCR */
 }
 
 /**
@@ -591,13 +591,13 @@ void test_portj_accessor(void)
   TEST_ASSERT_EQUAL_PTR((void*)0x0008C012, (void*)p);
 
   /* Verify individual register addresses */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C012, (void*)&p->pdr);   /* PDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C032, (void*)&p->podr);  /* PODR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C052, (void*)&p->pidr);  /* PIDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C072, (void*)&p->pmr);   /* PMR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0A4, (void*)portj_odr());  /* ODR (word-addressed) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0D2, (void*)&p->pcr);   /* PCR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0F2, (void*)&p->dscr);  /* DSCR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C012, (void*)&p->pdr);     /* PDR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C032, (void*)&p->podr);    /* PODR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C052, (void*)&p->pidr);    /* PIDR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C072, (void*)&p->pmr);     /* PMR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0A4, (void*)portj_odr()); /* ODR (word-addressed) */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0D2, (void*)&p->pcr);     /* PCR */
+  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0F2, (void*)&p->dscr);    /* DSCR */
 }
 
 /* =============================================================================
@@ -646,9 +646,9 @@ void test_odr_layout(void)
   uintptr_t odr0_addr = (uintptr_t)port0_odr();
   uintptr_t odr1_addr = (uintptr_t)port1_odr();
 
-  TEST_ASSERT_EQUAL_HEX32(0x0008C080, odr0_addr);  /* PORT0.ODR */
-  TEST_ASSERT_EQUAL_HEX32(0x0008C082, odr1_addr);  /* PORT1.ODR */
-  TEST_ASSERT_EQUAL_UINT32(2, odr1_addr - odr0_addr);  /* 2-byte spacing */
+  TEST_ASSERT_EQUAL_HEX32(0x0008C080, odr0_addr);     /* PORT0.ODR */
+  TEST_ASSERT_EQUAL_HEX32(0x0008C082, odr1_addr);     /* PORT1.ODR */
+  TEST_ASSERT_EQUAL_UINT32(2, odr1_addr - odr0_addr); /* 2-byte spacing */
 }
 
 /* =============================================================================

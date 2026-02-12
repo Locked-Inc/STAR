@@ -313,7 +313,7 @@ typedef enum : uint32_t {
    * uint32_t timeout_ms = 5 * k_rx_ms_per_second;  // 5000ms = 5 seconds
    * @endcode
    */
-  k_rx_ms_per_second    = 1000,
+  k_rx_ms_per_second = 1000,
 
   /**
    * @brief Microseconds per millisecond (SI standard)
@@ -328,7 +328,7 @@ typedef enum : uint32_t {
    * uint32_t delay_us = 250 * k_rx_us_per_ms;  // 250,000 µs = 250ms
    * @endcode
    */
-  k_rx_us_per_ms        = 1000,
+  k_rx_us_per_ms = 1000,
 
   /**
    * @brief Nanoseconds per microsecond (SI standard)
@@ -346,7 +346,7 @@ typedef enum : uint32_t {
    * // Result: 4.166ns per cycle
    * @endcode
    */
-  k_rx_ns_per_us        = 1000,
+  k_rx_ns_per_us = 1000,
 
   /**
    * @brief Microseconds per second (derived SI constant)
@@ -363,7 +363,7 @@ typedef enum : uint32_t {
    * @endcode
    * @note Max representable time: ~4294 seconds (71.6 minutes) before uint32_t overflow
    */
-  k_rx_us_per_second    = 1000000,
+  k_rx_us_per_second = 1000000,
 
   /**
    * @brief Nanoseconds per millisecond (derived SI constant)
@@ -381,7 +381,7 @@ typedef enum : uint32_t {
    * @endcode
    * @note Max representable time: ~4.29 seconds before uint32_t overflow
    */
-  k_rx_ns_per_ms        = 1000000,
+  k_rx_ns_per_ms = 1000000,
 
   /**
    * @brief Milliseconds per ThreadX tick (RTOS configuration)

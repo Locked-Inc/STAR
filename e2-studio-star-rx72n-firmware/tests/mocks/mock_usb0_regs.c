@@ -112,15 +112,33 @@ void mock_usb0_set_pipe_busy(uint8_t pipe, uint8_t busy)
   volatile uint16_t* pipe_ctr = nullptr;
 
   switch (pipe) {
-    case k_pipe_1: pipe_ctr = &g_mock_usb0.pipe1ctr; break;
-    case k_pipe_2: pipe_ctr = &g_mock_usb0.pipe2ctr; break;
-    case k_pipe_3: pipe_ctr = &g_mock_usb0.pipe3ctr; break;
-    case k_pipe_4: pipe_ctr = &g_mock_usb0.pipe4ctr; break;
-    case k_pipe_5: pipe_ctr = &g_mock_usb0.pipe5ctr; break;
-    case k_pipe_6: pipe_ctr = &g_mock_usb0.pipe6ctr; break;
-    case k_pipe_7: pipe_ctr = &g_mock_usb0.pipe7ctr; break;
-    case k_pipe_8: pipe_ctr = &g_mock_usb0.pipe8ctr; break;
-    case k_pipe_9: pipe_ctr = &g_mock_usb0.pipe9ctr; break;
+    case k_pipe_1:
+      pipe_ctr = &g_mock_usb0.pipe1ctr;
+      break;
+    case k_pipe_2:
+      pipe_ctr = &g_mock_usb0.pipe2ctr;
+      break;
+    case k_pipe_3:
+      pipe_ctr = &g_mock_usb0.pipe3ctr;
+      break;
+    case k_pipe_4:
+      pipe_ctr = &g_mock_usb0.pipe4ctr;
+      break;
+    case k_pipe_5:
+      pipe_ctr = &g_mock_usb0.pipe5ctr;
+      break;
+    case k_pipe_6:
+      pipe_ctr = &g_mock_usb0.pipe6ctr;
+      break;
+    case k_pipe_7:
+      pipe_ctr = &g_mock_usb0.pipe7ctr;
+      break;
+    case k_pipe_8:
+      pipe_ctr = &g_mock_usb0.pipe8ctr;
+      break;
+    case k_pipe_9:
+      pipe_ctr = &g_mock_usb0.pipe9ctr;
+      break;
     default:
       assert(0 && "Invalid USB pipe number in mock_usb0_set_pipe_busy");
       return;

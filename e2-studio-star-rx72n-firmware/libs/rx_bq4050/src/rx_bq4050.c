@@ -1202,10 +1202,13 @@ static rx_err_t internal_read_status_flags(rx_bus_manager_t*   manager,
   status->battery_status = status_flags;
 
   /* Decode status flags into boolean fields (using explicit comparisons per policy) */
-  status->is_charging         = !(status_flags & k_bq4050_status_discharging);
-  status->is_fully_charged    = (status_flags & k_bq4050_status_fully_charged) != k_bq4050_status_flag_clear;
-  status->is_fully_discharged = (status_flags & k_bq4050_status_fully_discharged) != k_bq4050_status_flag_clear;
-  status->is_low_capacity     = (status_flags & k_bq4050_status_remaining_capacity_alarm) != k_bq4050_status_flag_clear;
+  status->is_charging = !(status_flags & k_bq4050_status_discharging);
+  status->is_fully_charged =
+    (status_flags & k_bq4050_status_fully_charged) != k_bq4050_status_flag_clear;
+  status->is_fully_discharged =
+    (status_flags & k_bq4050_status_fully_discharged) != k_bq4050_status_flag_clear;
+  status->is_low_capacity =
+    (status_flags & k_bq4050_status_remaining_capacity_alarm) != k_bq4050_status_flag_clear;
 
   return k_rx_ok;
 }

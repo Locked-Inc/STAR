@@ -19,13 +19,12 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#include "unity.h"
+#include <string.h>
 
 #include "mock_rx_obstacle_detect.h"
 #include "mock_shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
+#include "unity.h"
 
 /* Include the task header for the public API */
 #include "obstacle_detect_task.h"
@@ -36,10 +35,10 @@
  */
 
 typedef enum : uint8_t {
-  k_test_sensor_count    = 4,  /**< Number of sensors */
-  k_test_threshold_cm    = 30, /**< Detection threshold */
-  k_test_sensor_idx_0    = 0,  /**< Sensor index 0 */
-  k_test_sensor_idx_1    = 1,  /**< Sensor index 1 */
+  k_test_sensor_count = 4,  /**< Number of sensors */
+  k_test_threshold_cm = 30, /**< Detection threshold */
+  k_test_sensor_idx_0 = 0,  /**< Sensor index 0 */
+  k_test_sensor_idx_1 = 1,  /**< Sensor index 1 */
 } test_obstacle_constants_t;
 
 /* =============================================================================
@@ -183,8 +182,7 @@ void test_obstacle_callback_sets_emergency_flag(void)
 
   /* Verify estop was triggered */
   TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_trigger_estop_count());
-  TEST_ASSERT_EQUAL(k_estop_reason_obstacle,
-                    mock_shared_data_get_last_estop_reason());
+  TEST_ASSERT_EQUAL(k_estop_reason_obstacle, mock_shared_data_get_last_estop_reason());
   TEST_ASSERT_TRUE(shared_data_is_estop_active());
 }
 
@@ -202,7 +200,7 @@ void test_obstacle_distances_stored_in_shared_data(void)
   rx_err_t         err;
 
   /* Simulate callback storing obstacle state */
-  state_in.distance_cm[k_test_sensor_idx_0]       = 25;  /* 25 cm */
+  state_in.distance_cm[k_test_sensor_idx_0]       = 25; /* 25 cm */
   state_in.obstacle_detected[k_test_sensor_idx_0] = true;
   state_in.distance_cm[k_test_sensor_idx_1]       = 100; /* 100 cm (no obstacle) */
   state_in.obstacle_detected[k_test_sensor_idx_1] = false;
@@ -269,10 +267,7 @@ void test_obstacle_get_stats(void)
   mock_obstacle_detect_set_stats(1000, 5, 2);
 
   /* Get stats */
-  err = rx_obstacle_detect_get_stats(&handle,
-                                     &total_polls,
-                                     &obstacle_events,
-                                     &false_positives);
+  err = rx_obstacle_detect_get_stats(&handle, &total_polls, &obstacle_events, &false_positives);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT32(1000, total_polls);

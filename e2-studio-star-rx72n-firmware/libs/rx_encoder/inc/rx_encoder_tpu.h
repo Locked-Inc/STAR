@@ -208,8 +208,7 @@ typedef struct {
  * @see rx_tpu_encoder_read_count() Read with overflow handling
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_tpu_encoder_read_raw(rx_tpu_channel_t channel,
-                                               uint16_t* count);
+[[nodiscard]] rx_err_t rx_tpu_encoder_read_raw(rx_tpu_channel_t channel, uint16_t* count);
 
 /**
  * @brief Read encoder count with automatic 16-bit overflow handling
@@ -244,7 +243,7 @@ typedef struct {
  * @see rx_tpu_encoder_read_velocity() Calculate velocity
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_tpu_encoder_read_count(rx_tpu_channel_t channel,
+[[nodiscard]] rx_err_t rx_tpu_encoder_read_count(rx_tpu_channel_t    channel,
                                                  rx_encoder_state_t* state);
 
 /**
@@ -276,9 +275,8 @@ typedef struct {
  * @see rx_tpu_encoder_read_count() Read position
  * @since Version 1.0.0
  */
-rx_err_t rx_tpu_encoder_read_velocity(float* velocity_rps,
-                                      float delta_time_s,
-                                      rx_tpu_channel_t channel);
+rx_err_t
+rx_tpu_encoder_read_velocity(float* velocity_rps, float delta_time_s, rx_tpu_channel_t channel);
 
 /**
  * @brief Reset encoder count to zero
@@ -320,8 +318,7 @@ rx_err_t rx_tpu_encoder_read_velocity(float* velocity_rps,
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_tpu_encoder_set_count(int32_t count,
-                                                rx_tpu_channel_t channel);
+[[nodiscard]] rx_err_t rx_tpu_encoder_set_count(int32_t count, rx_tpu_channel_t channel);
 
 /**
  * @brief Deinitialize TPU encoder

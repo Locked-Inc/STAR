@@ -860,22 +860,23 @@ volatile uint8_t* rstsr2(void);
  * @since 1.0.0
  */
 typedef struct {
-  volatile uint16_t mdmonr;   /**< Mode Monitor Register (boot mode, endianness) */
-  uint8_t reserved0[4];       /**< Reserved (maintains offset compatibility with hardware) */
-  volatile uint16_t syscr0;   /**< System Control Register 0 (RAM wait states, RAME) */
-  volatile uint16_t syscr1;   /**< System Control Register 1 (external bus configuration) */
-  uint8_t reserved1[2];       /**< Reserved (maintains offset compatibility with hardware) */
-  volatile uint16_t sbycr;    /**< Standby Control Register (sleep/standby mode config) */
-  uint8_t reserved2[2];       /**< Reserved (maintains offset compatibility with hardware) */
-  volatile uint32_t mstpcra;  /**< Module Stop Control Register A (DMA, EXDMAC modules) */
-  volatile uint32_t mstpcrb;  /**< Module Stop Control Register B (USB, CAN, I2C, SPI, SCI modules) */
-  volatile uint32_t mstpcrc;  /**< Module Stop Control Register C (RAM, ROM, TMR, CMT modules) */
-  volatile uint32_t mstpcrd;  /**< Module Stop Control Register D (MTU, GPT, POEG modules) */
-  volatile uint32_t sckcr;    /**< System Clock Control Register (ICLK, PCLK, BCLK, FCLK dividers) */
-  volatile uint16_t sckcr2;   /**< System Clock Control Register 2 (USB, SDCLK dividers) */
-  volatile uint16_t sckcr3;   /**< System Clock Control Register 3 (clock out configuration) */
-  volatile uint16_t pllcr;    /**< PLL Control Register (PLL divider, multiplier) */
-  volatile uint8_t pllcr2;    /**< PLL Control Register 2 (PLL enable/disable) */
+  volatile uint16_t mdmonr;       /**< Mode Monitor Register (boot mode, endianness) */
+  uint8_t           reserved0[4]; /**< Reserved (maintains offset compatibility with hardware) */
+  volatile uint16_t syscr0;       /**< System Control Register 0 (RAM wait states, RAME) */
+  volatile uint16_t syscr1;       /**< System Control Register 1 (external bus configuration) */
+  uint8_t           reserved1[2]; /**< Reserved (maintains offset compatibility with hardware) */
+  volatile uint16_t sbycr;        /**< Standby Control Register (sleep/standby mode config) */
+  uint8_t           reserved2[2]; /**< Reserved (maintains offset compatibility with hardware) */
+  volatile uint32_t mstpcra;      /**< Module Stop Control Register A (DMA, EXDMAC modules) */
+  volatile uint32_t
+    mstpcrb; /**< Module Stop Control Register B (USB, CAN, I2C, SPI, SCI modules) */
+  volatile uint32_t mstpcrc; /**< Module Stop Control Register C (RAM, ROM, TMR, CMT modules) */
+  volatile uint32_t mstpcrd; /**< Module Stop Control Register D (MTU, GPT, POEG modules) */
+  volatile uint32_t sckcr;   /**< System Clock Control Register (ICLK, PCLK, BCLK, FCLK dividers) */
+  volatile uint16_t sckcr2;  /**< System Clock Control Register 2 (USB, SDCLK dividers) */
+  volatile uint16_t sckcr3;  /**< System Clock Control Register 3 (clock out configuration) */
+  volatile uint16_t pllcr;   /**< PLL Control Register (PLL divider, multiplier) */
+  volatile uint8_t  pllcr2;  /**< PLL Control Register 2 (PLL enable/disable) */
 } rx_system_regs_t;
 #endif /* RX_SYSTEM_REGS_T_DEFINED */
 

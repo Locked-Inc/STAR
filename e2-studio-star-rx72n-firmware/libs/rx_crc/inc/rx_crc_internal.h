@@ -241,7 +241,7 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-    /**
+  /**
      * @brief Minimum CRC data length (1 byte)
      * @details
      * CRC computation requires at least one byte of data.
@@ -249,9 +249,9 @@ typedef enum : uint32_t {
      * @par Value: 1
      * @par Units: bytes
      */
-    k_crc_len_min = 1,
+  k_crc_len_min = 1,
 
-    /**
+  /**
      * @brief Maximum CRC data length for bounded loops (64KB - 1)
      * @details
      * This value provides the upper bound for all CRC computation loops
@@ -270,9 +270,9 @@ typedef enum : uint32_t {
      *
      * @warning Do not pass buffers larger than this to CRC functions
      */
-    k_crc_len_max = 65535,
+  k_crc_len_max = 65535,
 
-    /**
+  /**
      * @brief Loop start index (zero-based)
      * @details
      * Standard starting index for CRC computation loops.
@@ -280,7 +280,7 @@ typedef enum : uint32_t {
      * @par Value: 0
      * @par Units: index (dimensionless)
      */
-    k_crc_idx_start = 0,
+  k_crc_idx_start = 0,
 } rx_crc_shared_constants_t;
 
 /* =============================================================================

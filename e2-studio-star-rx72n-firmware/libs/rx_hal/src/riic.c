@@ -239,12 +239,12 @@
  * @invariant k_riic_max_transfer_length == 256 (single-byte length limit)
  */
 typedef enum : uint32_t {
-  k_riic_max_channels = 3, /**< Total RIIC channels: RIIC0, RIIC1, RIIC2 */
-  k_riic_timeout_us   = 10000, /**< 10ms timeout for I2C operations (microseconds) */
-  k_riic_timeout_zero = 0,     /**< Timeout counter expired sentinel value */
-  k_riic_length_zero  = 0,     /**< Zero-length transfer (invalid) sentinel */
-  k_riic_last_index_offset   = 1,   /**< Offset to calculate last byte index from length */
-  k_riic_max_transfer_length = 256, /**< Maximum bytes per transfer operation */
+  k_riic_max_channels        = 3,     /**< Total RIIC channels: RIIC0, RIIC1, RIIC2 */
+  k_riic_timeout_us          = 10000, /**< 10ms timeout for I2C operations (microseconds) */
+  k_riic_timeout_zero        = 0,     /**< Timeout counter expired sentinel value */
+  k_riic_length_zero         = 0,     /**< Zero-length transfer (invalid) sentinel */
+  k_riic_last_index_offset   = 1,     /**< Offset to calculate last byte index from length */
+  k_riic_max_transfer_length = 256,   /**< Maximum bytes per transfer operation */
 } riic_constants_t;
 
 /**
@@ -732,7 +732,7 @@ static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
   }
 
   /* Clear start flag */
-  riic->icsr2 &= (uint8_t)~(uint8_t)k_riic_icsr2_start;
+  riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_start;
 
   return k_rx_ok;
 }
@@ -820,7 +820,7 @@ static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
   }
 
   /* Clear stop flag */
-  riic->icsr2 &= (uint8_t)~(uint8_t)k_riic_icsr2_stop;
+  riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_stop;
 
   return k_rx_ok;
 }
@@ -909,7 +909,7 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, const uint8_t
 
   /* Check for NACK */
   if (riic->icsr2 & k_riic_icsr2_nackf) {
-    riic->icsr2 &= (uint8_t)~(uint8_t)k_riic_icsr2_nackf;
+    riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_nackf;
     rx_log_error(s_tag, "NACK received");
     return k_rx_err_nack;
   }
@@ -1007,7 +1007,7 @@ internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send
   if (!send_ack) {
     riic->icmr3 |= k_riic_icmr3_ackbt_mask; /* ACKBT = 1 (NACK) */
   } else {
-    riic->icmr3 &= (uint8_t)~(uint8_t)k_riic_icmr3_ackbt_mask; /* ACKBT = 0 (ACK) */
+    riic->icmr3 &= (uint8_t) ~(uint8_t)k_riic_icmr3_ackbt_mask; /* ACKBT = 0 (ACK) */
   }
 
   /* Read data */
@@ -1191,7 +1191,7 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
     return k_rx_err_timeout;
   }
 
-  riic->icsr2 &= (uint8_t)~(uint8_t)k_riic_icsr2_start;
+  riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_start;
 
   /* Set controller receive mode */
   riic->iccr2 = k_riic_iccr2_mst;

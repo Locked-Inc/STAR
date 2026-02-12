@@ -49,10 +49,9 @@ Exported global variables
 Exported global functions (to be accessed by other files)
 ***********************************************************************************************************************/
 /* Output one character to standard output (the E1 Virtual Console or a serial port via user own charput function) */
-void charput (char output_char);
+void charput(char output_char);
 
 /* Input one character from standard input (the E1 Virtual Console or a serial port via user own charget function) */
-char charget (void);
+char charget(void);
 
-#endif  /* End of multiple inclusion prevention macro */
-
+#endif /* End of multiple inclusion prevention macro */

@@ -262,11 +262,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "pb.h"
+#include "pb_decode.h"
+#include "pb_encode.h"
 #include "rx_nanopb.h"
 #include "unity.h"
-#include "pb.h"
-#include "pb_encode.h"
-#include "pb_decode.h"
 
 /* =============================================================================
  * Test Constants
@@ -321,22 +321,22 @@ static const uint32_t s_test_sequence_max = UINT32_MAX;
  * @see CLAUDE.md "Constants and Macros (RX72N C Firmware)"
  */
 typedef enum : int32_t {
-  k_test_buffer_size          = 512,    /**< Test buffer size (matches production) */
-  k_test_small_buffer_size    = 1,      /**< Minimal buffer for overflow tests */
-  k_test_sequence_zero        = 0,      /**< Initial sequence number */
-  k_test_sequence_number      = 42,     /**< Arbitrary test sequence number */
-  k_test_timestamp_us         = 1000000,/**< 1 second timestamp in microseconds */
-  k_test_wifi_signal_dbm      = -65,    /**< WiFi signal strength in dBm */
-  k_test_motor_id_left        = 0,      /**< Front-left motor index */
-  k_test_motor_id_right       = 1,      /**< Front-right motor index */
-  k_test_satellites           = 8,      /**< GPS satellite count (good fix) */
-  k_test_latency_us           = 500,    /**< Response latency in microseconds */
-  k_test_free_heap_bytes      = 262144, /**< 256 KB free heap (telemetry) */
-  k_test_uptime_seconds       = 3600,   /**< 1 hour uptime in seconds */
-  k_min_encoded_velocity_req  = 10,     /**< Min encoded SetVelocityRequest bytes */
-  k_min_encoded_velocity_resp = 2,      /**< Min encoded SetVelocityResponse bytes */
-  k_min_encoded_estop_resp    = 2,      /**< Min encoded EmergencyStopResponse bytes */
-  k_min_encoded_telemetry     = 1,      /**< Min encoded TelemetryData bytes (1 field) */
+  k_test_buffer_size          = 512,     /**< Test buffer size (matches production) */
+  k_test_small_buffer_size    = 1,       /**< Minimal buffer for overflow tests */
+  k_test_sequence_zero        = 0,       /**< Initial sequence number */
+  k_test_sequence_number      = 42,      /**< Arbitrary test sequence number */
+  k_test_timestamp_us         = 1000000, /**< 1 second timestamp in microseconds */
+  k_test_wifi_signal_dbm      = -65,     /**< WiFi signal strength in dBm */
+  k_test_motor_id_left        = 0,       /**< Front-left motor index */
+  k_test_motor_id_right       = 1,       /**< Front-right motor index */
+  k_test_satellites           = 8,       /**< GPS satellite count (good fix) */
+  k_test_latency_us           = 500,     /**< Response latency in microseconds */
+  k_test_free_heap_bytes      = 262144,  /**< 256 KB free heap (telemetry) */
+  k_test_uptime_seconds       = 3600,    /**< 1 hour uptime in seconds */
+  k_min_encoded_velocity_req  = 10,      /**< Min encoded SetVelocityRequest bytes */
+  k_min_encoded_velocity_resp = 2,       /**< Min encoded SetVelocityResponse bytes */
+  k_min_encoded_estop_resp    = 2,       /**< Min encoded EmergencyStopResponse bytes */
+  k_min_encoded_telemetry     = 1,       /**< Min encoded TelemetryData bytes (1 field) */
 } test_constants_t;
 
 /**
@@ -351,12 +351,15 @@ typedef enum : int32_t {
  * Velocity range: -2.0 to +2.0 m/s (hardware limit per motor_config.h)
  * @{
  */
-static const double s_test_front_left_velocity_mps  = 1.5;  /**< Front-left motor velocity (Motor 0) */
-static const double s_test_front_right_velocity_mps = 1.5;  /**< Front-right motor velocity (Motor 1) */
-static const double s_test_back_left_velocity_mps   = 1.0;  /**< Back-left motor velocity (Motor 2) */
-static const double s_test_back_right_velocity_mps  = 1.0;  /**< Back-right motor velocity (Motor 3) */
-static const double s_test_max_velocity_mps         = 2.0;  /**< Maximum velocity (hardware limit) */
-static const double s_test_zero_velocity_mps        = 0.0;  /**< Zero velocity (stop command) */
+static const double s_test_front_left_velocity_mps =
+  1.5; /**< Front-left motor velocity (Motor 0) */
+static const double s_test_front_right_velocity_mps =
+  1.5; /**< Front-right motor velocity (Motor 1) */
+static const double s_test_back_left_velocity_mps = 1.0; /**< Back-left motor velocity (Motor 2) */
+static const double s_test_back_right_velocity_mps =
+  1.0;                                              /**< Back-right motor velocity (Motor 3) */
+static const double s_test_max_velocity_mps  = 2.0; /**< Maximum velocity (hardware limit) */
+static const double s_test_zero_velocity_mps = 0.0; /**< Zero velocity (stop command) */
 /** @} */
 
 /**
@@ -366,18 +369,18 @@ static const double s_test_zero_velocity_mps        = 0.0;  /**< Zero velocity (
  * Values chosen to be non-zero and distinguishable from defaults.
  * @{
  */
-static const double s_test_battery_percent       = 85.5;      /**< Battery level (0-100%) */
-static const double s_test_cpu_usage_percent     = 45.0;      /**< CPU utilization (0-100%) */
-static const double s_test_temperature_c         = 25.5;      /**< Temperature (°C) */
-static const double s_test_motor_load_percent    = 30.0;      /**< Motor load (0-100%) */
-static const double s_test_latitude_deg          = 37.7749;   /**< GPS latitude (San Francisco) */
-static const double s_test_longitude_deg         = -122.4194; /**< GPS longitude (San Francisco) */
-static const double s_test_altitude_m            = 10.0;      /**< GPS altitude (meters) */
-static const double s_test_accuracy_m            = 2.5;       /**< GPS accuracy (meters) */
-static const double s_test_pitch_rad             = 0.1;       /**< IMU pitch angle (radians) */
-static const double s_test_roll_rad              = 0.05;      /**< IMU roll angle (radians) */
-static const double s_test_yaw_rad               = 1.57;      /**< IMU yaw angle (~90°) */
-static const double s_test_accel_z_mps2          = 9.81;      /**< IMU Z-axis acceleration (gravity) */
+static const double s_test_battery_percent    = 85.5;      /**< Battery level (0-100%) */
+static const double s_test_cpu_usage_percent  = 45.0;      /**< CPU utilization (0-100%) */
+static const double s_test_temperature_c      = 25.5;      /**< Temperature (°C) */
+static const double s_test_motor_load_percent = 30.0;      /**< Motor load (0-100%) */
+static const double s_test_latitude_deg       = 37.7749;   /**< GPS latitude (San Francisco) */
+static const double s_test_longitude_deg      = -122.4194; /**< GPS longitude (San Francisco) */
+static const double s_test_altitude_m         = 10.0;      /**< GPS altitude (meters) */
+static const double s_test_accuracy_m         = 2.5;       /**< GPS accuracy (meters) */
+static const double s_test_pitch_rad          = 0.1;       /**< IMU pitch angle (radians) */
+static const double s_test_roll_rad           = 0.05;      /**< IMU roll angle (radians) */
+static const double s_test_yaw_rad            = 1.57;      /**< IMU yaw angle (~90°) */
+static const double s_test_accel_z_mps2       = 9.81;      /**< IMU Z-axis acceleration (gravity) */
 /** @} */
 
 /**
@@ -1499,7 +1502,7 @@ void test_decode_pid_gains_request_null_buffer(void)
 void test_decode_pid_gains_request_null_msg(void)
 {
   uint8_t  buffer[64] = {0};
-  rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), nullptr);
+  rx_err_t err        = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1571,19 +1574,19 @@ void test_decode_pid_gains_request_valid(void)
   star_v1_SetPIDGainsRequest encode_msg = star_v1_SetPIDGainsRequest_init_zero;
 
   /* Build valid PID gains request */
-  encode_msg.has_pid_config          = true;
-  encode_msg.pid_config.kp           = 0.5;
-  encode_msg.pid_config.ki           = 10.0;
-  encode_msg.pid_config.kd           = 0.1;
+  encode_msg.has_pid_config                = true;
+  encode_msg.pid_config.kp                 = 0.5;
+  encode_msg.pid_config.ki                 = 10.0;
+  encode_msg.pid_config.kd                 = 0.1;
   encode_msg.pid_config.output_min_percent = -100.0;
   encode_msg.pid_config.output_max_percent = 100.0;
-  encode_msg.pid_config.integral_min = -50.0;
-  encode_msg.pid_config.integral_max = 50.0;
-  encode_msg.motor_id                = -1; /* Apply to all motors */
+  encode_msg.pid_config.integral_min       = -50.0;
+  encode_msg.pid_config.integral_max       = 50.0;
+  encode_msg.motor_id                      = -1; /* Apply to all motors */
 
   /* Encode using nanopb directly (since we don't have encode function yet) */
-  pb_ostream_t ostream = pb_ostream_from_buffer(encode_buffer, sizeof(encode_buffer));
-  bool encode_ok = pb_encode(&ostream, star_v1_SetPIDGainsRequest_fields, &encode_msg);
+  pb_ostream_t ostream   = pb_ostream_from_buffer(encode_buffer, sizeof(encode_buffer));
+  bool         encode_ok = pb_encode(&ostream, star_v1_SetPIDGainsRequest_fields, &encode_msg);
   TEST_ASSERT_TRUE(encode_ok);
   encode_len = ostream.bytes_written;
 
@@ -1614,25 +1617,25 @@ void test_pid_gains_request_round_trip(void)
   star_v1_SetPIDGainsRequest original = star_v1_SetPIDGainsRequest_init_zero;
 
   /* MATLAB-tuned gains for motor system (τ=75ms) */
-  original.has_pid_config          = true;
-  original.pid_config.kp           = 0.286;
-  original.pid_config.ki           = 8.01;
-  original.pid_config.kd           = 0.0;
+  original.has_pid_config                = true;
+  original.pid_config.kp                 = 0.286;
+  original.pid_config.ki                 = 8.01;
+  original.pid_config.kd                 = 0.0;
   original.pid_config.output_min_percent = -100.0;
   original.pid_config.output_max_percent = 100.0;
-  original.pid_config.integral_min = -50.0;
-  original.pid_config.integral_max = 50.0;
-  original.motor_id                = 0; /* Front-left motor */
+  original.pid_config.integral_min       = -50.0;
+  original.pid_config.integral_max       = 50.0;
+  original.motor_id                      = 0; /* Front-left motor */
 
   /* Encode */
-  pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-  bool encode_ok = pb_encode(&ostream, star_v1_SetPIDGainsRequest_fields, &original);
+  pb_ostream_t ostream   = pb_ostream_from_buffer(buffer, sizeof(buffer));
+  bool         encode_ok = pb_encode(&ostream, star_v1_SetPIDGainsRequest_fields, &original);
   TEST_ASSERT_TRUE(encode_ok);
   encode_len = ostream.bytes_written;
 
   /* Decode */
   star_v1_SetPIDGainsRequest decoded;
-  rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, encode_len, &decoded);
+  rx_err_t                   err = rx_nanopb_decode_pid_gains_request(buffer, encode_len, &decoded);
 
   /* Verify lossless round-trip */
   TEST_ASSERT_EQUAL(k_rx_ok, err);

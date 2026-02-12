@@ -382,7 +382,7 @@ rx_err_t rx_infrastructure_init(void)
   err = error_handler_get_interface(&s_global_error_interface, &s_global_error_handler);
   if (err != k_rx_ok) {
     rx_log_error("INFRA", "Failed to get error handler interface");
-    (void)error_handler_deinit(&s_global_error_handler);  /* Cleanup, ignore errors */
+    (void)error_handler_deinit(&s_global_error_handler); /* Cleanup, ignore errors */
     return err;
   }
 
@@ -390,7 +390,7 @@ rx_err_t rx_infrastructure_init(void)
   err = pin_validator_init(&s_global_pin_validator);
   if (err != k_rx_ok) {
     rx_log_error("INFRA", "Failed to initialize pin validator");
-    (void)error_handler_deinit(&s_global_error_handler);  /* Cleanup, ignore errors */
+    (void)error_handler_deinit(&s_global_error_handler); /* Cleanup, ignore errors */
     return err;
   }
 
@@ -398,8 +398,8 @@ rx_err_t rx_infrastructure_init(void)
   err = pin_validator_get_interface(&s_global_pin_interface, &s_global_pin_validator);
   if (err != k_rx_ok) {
     rx_log_error("INFRA", "Failed to get pin validator interface");
-    (void)pin_validator_deinit(&s_global_pin_validator);  /* Cleanup, ignore errors */
-    (void)error_handler_deinit(&s_global_error_handler);  /* Cleanup, ignore errors */
+    (void)pin_validator_deinit(&s_global_pin_validator); /* Cleanup, ignore errors */
+    (void)error_handler_deinit(&s_global_error_handler); /* Cleanup, ignore errors */
     return err;
   }
 

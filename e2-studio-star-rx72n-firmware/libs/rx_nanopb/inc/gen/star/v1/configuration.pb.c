@@ -8,77 +8,55 @@
 
 PB_BIND(star_v1_GetConfigurationRequest, star_v1_GetConfigurationRequest, AUTO)
 
-
 PB_BIND(star_v1_GetConfigurationResponse, star_v1_GetConfigurationResponse, 2)
-
 
 PB_BIND(star_v1_SetConfigurationRequest, star_v1_SetConfigurationRequest, 2)
 
-
-PB_BIND(star_v1_SetConfigurationResponse, star_v1_SetConfigurationResponse, 2)
-
+PB_BIND(star_v1_SetConfigurationResponse, star_v1_SetConfigurationResponse, 4)
 
 PB_BIND(star_v1_ResetToDefaultsRequest, star_v1_ResetToDefaultsRequest, AUTO)
 
-
 PB_BIND(star_v1_ResetToDefaultsResponse, star_v1_ResetToDefaultsResponse, 2)
-
 
 PB_BIND(star_v1_ValidateConfigurationRequest, star_v1_ValidateConfigurationRequest, 2)
 
-
-PB_BIND(star_v1_ValidateConfigurationResponse, star_v1_ValidateConfigurationResponse, 2)
-
+PB_BIND(star_v1_ValidateConfigurationResponse, star_v1_ValidateConfigurationResponse, 4)
 
 PB_BIND(star_v1_SaveConfigurationRequest, star_v1_SaveConfigurationRequest, AUTO)
 
-
 PB_BIND(star_v1_SaveConfigurationResponse, star_v1_SaveConfigurationResponse, 2)
-
 
 PB_BIND(star_v1_GetMotorPidConfigRequest, star_v1_GetMotorPidConfigRequest, AUTO)
 
-
 PB_BIND(star_v1_GetMotorPidConfigResponse, star_v1_GetMotorPidConfigResponse, 2)
-
 
 PB_BIND(star_v1_SetMotorPidConfigRequest, star_v1_SetMotorPidConfigRequest, AUTO)
 
+PB_BIND(star_v1_SetMotorPidConfigResponse, star_v1_SetMotorPidConfigResponse, 4)
 
-PB_BIND(star_v1_SetMotorPidConfigResponse, star_v1_SetMotorPidConfigResponse, 2)
+PB_BIND(star_v1_RetransmitConfig, star_v1_RetransmitConfig, AUTO)
 
+PB_BIND(star_v1_SetRetransmitConfigRequest, star_v1_SetRetransmitConfigRequest, AUTO)
 
-PB_BIND(star_v1_SystemConfiguration, star_v1_SystemConfiguration, AUTO)
+PB_BIND(star_v1_SetRetransmitConfigResponse, star_v1_SetRetransmitConfigResponse, 2)
 
+PB_BIND(star_v1_SystemConfiguration, star_v1_SystemConfiguration, 2)
 
 PB_BIND(star_v1_MotorPidConfiguration, star_v1_MotorPidConfiguration, AUTO)
 
-
 PB_BIND(star_v1_CurrentSensorCalibration, star_v1_CurrentSensorCalibration, AUTO)
-
 
 PB_BIND(star_v1_TemperatureCalibration, star_v1_TemperatureCalibration, AUTO)
 
-
 PB_BIND(star_v1_SafetyThresholds, star_v1_SafetyThresholds, AUTO)
-
 
 PB_BIND(star_v1_EncoderConfiguration, star_v1_EncoderConfiguration, AUTO)
 
-
 PB_BIND(star_v1_TimingConfiguration, star_v1_TimingConfiguration, AUTO)
 
+PB_BIND(star_v1_ConfigValidationResult, star_v1_ConfigValidationResult, 4)
 
-PB_BIND(star_v1_ConfigValidationResult, star_v1_ConfigValidationResult, AUTO)
-
-
-PB_BIND(star_v1_ConfigValidationError, star_v1_ConfigValidationError, AUTO)
-
-
-
-
-
-
+PB_BIND(star_v1_ConfigValidationError, star_v1_ConfigValidationError, 2)
 
 #ifndef PB_CONVERT_DOUBLE_FLOAT
 /* On some platforms (such as AVR), double is really float.
@@ -87,4 +65,3 @@ PB_BIND(star_v1_ConfigValidationError, star_v1_ConfigValidationError, AUTO)
  */
 PB_STATIC_ASSERT(sizeof(double) == 8, DOUBLE_MUST_BE_8_BYTES)
 #endif
-

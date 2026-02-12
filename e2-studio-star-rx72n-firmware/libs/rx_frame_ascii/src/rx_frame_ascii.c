@@ -527,7 +527,7 @@ static uint32_t internal_append_decimal_u16(char* buf, uint32_t pos, uint32_t ma
 
   while (value > 0 && len < k_u16_decimal_max_digits) {
     const uint8_t digit = (uint8_t)(value % k_decimal_base);
-    temp[len++] = (char)('0' + digit);
+    temp[len++]         = (char)('0' + digit);
     value /= k_decimal_base;
   }
 

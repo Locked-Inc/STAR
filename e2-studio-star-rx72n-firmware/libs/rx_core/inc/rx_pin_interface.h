@@ -1225,9 +1225,9 @@ static inline rx_err_t rx_pin_interface_validate(const rx_pin_interface_t* iface
   }
 
   /* Check required function pointers */
-  if (iface->validate_pin == nullptr || iface->reserve_pin == nullptr || iface->release_pin == nullptr ||
-      iface->is_pin_reserved == nullptr || iface->get_pin_function == nullptr ||
-      iface->clear_all_reservations == nullptr) {
+  if (iface->validate_pin == nullptr || iface->reserve_pin == nullptr ||
+      iface->release_pin == nullptr || iface->is_pin_reserved == nullptr ||
+      iface->get_pin_function == nullptr || iface->clear_all_reservations == nullptr) {
     return k_rx_err_invalid_state;
   }
 

@@ -556,21 +556,14 @@ typedef struct __attribute__((packed)) {
  */
 /* Note: struct size is 0x129 including DSCR2, ODR is accessed separately via word-addressed functions */
 static_assert(sizeof(rx_port_regs_t) == 0x129,
-               "Port register struct size must be 0x129 (297) bytes");
-static_assert(offsetof(rx_port_regs_t, pdr) == 0x00,
-               "PDR must be at offset 0x00");
-static_assert(offsetof(rx_port_regs_t, podr) == 0x20,
-               "PODR must be at offset 0x20");
-static_assert(offsetof(rx_port_regs_t, pidr) == 0x40,
-               "PIDR must be at offset 0x40");
-static_assert(offsetof(rx_port_regs_t, pmr) == 0x60,
-               "PMR must be at offset 0x60");
-static_assert(offsetof(rx_port_regs_t, pcr) == 0xC0,
-               "PCR must be at offset 0xC0");
-static_assert(offsetof(rx_port_regs_t, dscr) == 0xE0,
-               "DSCR must be at offset 0xE0");
-static_assert(offsetof(rx_port_regs_t, dscr2) == 0x128,
-               "DSCR2 must be at offset 0x128");
+              "Port register struct size must be 0x129 (297) bytes");
+static_assert(offsetof(rx_port_regs_t, pdr) == 0x00, "PDR must be at offset 0x00");
+static_assert(offsetof(rx_port_regs_t, podr) == 0x20, "PODR must be at offset 0x20");
+static_assert(offsetof(rx_port_regs_t, pidr) == 0x40, "PIDR must be at offset 0x40");
+static_assert(offsetof(rx_port_regs_t, pmr) == 0x60, "PMR must be at offset 0x60");
+static_assert(offsetof(rx_port_regs_t, pcr) == 0xC0, "PCR must be at offset 0xC0");
+static_assert(offsetof(rx_port_regs_t, dscr) == 0xE0, "DSCR must be at offset 0xE0");
+static_assert(offsetof(rx_port_regs_t, dscr2) == 0x128, "DSCR2 must be at offset 0x128");
 /** @} */ /* End of register offset verification group */
 
 /** @name PORT Register Base Address Verification
@@ -578,7 +571,7 @@ static_assert(offsetof(rx_port_regs_t, dscr2) == 0x128,
  *  @{
  */
 static_assert((uint32_t)k_port_dscr2_base == 0x0008C128,
-               "DSCR2 base address must be 0x0008C128 (DSCR + 0x48)");
+              "DSCR2 base address must be 0x0008C128 (DSCR + 0x48)");
 /** @} */ /* End of base address verification group */
 
 /* =============================================================================
