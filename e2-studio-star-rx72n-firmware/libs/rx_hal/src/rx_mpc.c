@@ -868,6 +868,38 @@ rx_err_t rx_mpc_set_mtu_encoder(const rx_port_pin_t pin)
 }
 
 /**
+ * @brief Configure pin for TPU encoder/phase counter input (TCLK)
+ *
+ * @details
+ * Convenience wrapper that configures a pin for TPU phase counting mode
+ * using PSEL = k_psel_mtu_phase (0x03). On the RX72N, PSEL 0x03 is the
+ * generic "timer phase counting input" function; routing to TPU (vs MTU)
+ * depends on which timer module has phase counting mode enabled.
+ *
+ * @param[in] pin GPIO pin identifier for TPU encoder input (e.g., PC2/PA3)
+ *
+ * @return Error code indicating success or failure
+ * @retval k_rx_ok Pin configured for TPU encoder input
+ * @retval k_rx_err_invalid_arg Invalid port or pin
+ *
+ * @note Configure both Phase A and Phase B pins for proper operation
+ *
+ * @see rx_mpc.h Full API documentation
+ * @see rx_encoder_tpu.h TPU encoder driver using phase counting
+ * @since Version 1.1.0
+ */
+rx_err_t rx_mpc_set_tpu_encoder(const rx_port_pin_t pin)
+{
+  /* TPU encoder (TCLK) pins use PSEL = 0x03 (same as MTU phase counting)
+   * Rear wheel encoder pins:
+   * - PC2/PA3: TCLKA/TCLKB (Motor 2, Rear Left)
+   * - PC0/PB3: TCLKC/TCLKD (Motor 3, Rear Right)
+   */
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_phase};
+  return rx_mpc_set_peripheral(&config);
+}
+
+/**
  * @brief Configure pin for ADC analog input
  *
  * @details

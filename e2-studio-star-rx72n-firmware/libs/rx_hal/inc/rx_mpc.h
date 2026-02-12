@@ -961,6 +961,68 @@ typedef enum : uint8_t {
 [[nodiscard]] rx_err_t rx_mpc_set_mtu_encoder(rx_port_pin_t pin);
 
 /**
+ * @brief Configure pin for TPU encoder/phase counter input (TCLK)
+ *
+ * @details
+ * Configures a pin for TPU phase counting mode input, used with
+ * quadrature encoders on the rear wheels. Sets PSEL = k_psel_mtu_phase
+ * (0x03), which is the generic "timer phase counting input" function
+ * on the RX72N. The routing to TPU (vs MTU) depends on which timer
+ * module has phase counting mode enabled.
+ *
+ * This function exists as a separate API from rx_mpc_set_mtu_encoder()
+ * for documentation clarity, even though both write the same PSEL value.
+ *
+ * @par TPU Encoder Pins (STAR Project - Rear Wheels)
+ * | Pin Pair | TPU Input | Encoder |
+ * |----------|-----------|---------|
+ * | PC2/PA3 | TCLKA/TCLKB | Motor 2 (Rear Left) |
+ * | PC0/PB3 | TCLKC/TCLKD | Motor 3 (Rear Right) |
+ *
+ * @param[in] pin GPIO pin identifier for TPU encoder input
+ *                - Must be a pin that supports TCLK function
+ *                - Configure in pairs (A+B) for quadrature
+ *
+ * @return Error code indicating success or failure
+ * @retval k_rx_ok Pin successfully configured for TPU encoder input
+ * @retval k_rx_err_invalid_arg Invalid port or pin number
+ *
+ * @pre Pin must support TPU clock/phase function
+ * @pre PCLKB clock must be running
+ *
+ * @post PFS register contains PSEL = 0x03 (timer phase counting)
+ * @post Pin ready for quadrature encoder input via TPU
+ *
+ * @note Configure both Phase A and Phase B pins for proper operation
+ * @note Also requires TPU timer configuration in phase counting mode
+ *
+ * @par Example - Rear Wheel Encoder Setup
+ * @code{.c}
+ * rx_err_t err;
+ *
+ * // Motor 2 (Rear Left) - TPU1
+ * err = rx_mpc_set_tpu_encoder(k_rx_pc_2);  // PC2 = TCLKA (Phase A)
+ * if (err != k_rx_ok) return err;
+ * err = rx_mpc_set_tpu_encoder(k_rx_pa_3);  // PA3 = TCLKB (Phase B)
+ * if (err != k_rx_ok) return err;
+ *
+ * // Motor 3 (Rear Right) - TPU2
+ * err = rx_mpc_set_tpu_encoder(k_rx_pc_0);  // PC0 = TCLKC (Phase A)
+ * if (err != k_rx_ok) return err;
+ * err = rx_mpc_set_tpu_encoder(k_rx_pb_3);  // PB3 = TCLKD (Phase B)
+ * if (err != k_rx_ok) return err;
+ * @endcode
+ *
+ * @see rx_mpc_set_mtu_encoder() Front wheel encoder pin configuration
+ * @see rx_mpc_set_peripheral() Underlying implementation
+ * @see rx_encoder_tpu.h TPU encoder driver using phase counting
+ *
+ * @since Version 1.1.0
+ * @callgraph
+ */
+[[nodiscard]] rx_err_t rx_mpc_set_tpu_encoder(rx_port_pin_t pin);
+
+/**
  * @brief Configure pin for ADC analog input
  *
  * @details
