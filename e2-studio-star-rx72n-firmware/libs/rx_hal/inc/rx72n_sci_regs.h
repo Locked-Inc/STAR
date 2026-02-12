@@ -237,15 +237,14 @@ typedef enum : uint32_t {
 
 /**
  * @struct rx_sci_regs_t
- * @brief SCI register map for UART communication (basic 8-byte structure)
+ * @brief SCI register map covering UART and SPI mode registers (14 bytes)
  *
  * @details
- * Memory-mapped register structure for basic SCI UART functionality.
- * This structure covers the essential registers for asynchronous serial
- * communication. Advanced features (FIFO, I2C mode) require additional
- * register definitions beyond this basic set.
+ * Memory-mapped register structure for the RX72N SCI peripheral. Covers
+ * registers from SMR (0x00) through SPMR (0x0D) to support both asynchronous
+ * UART and clock-synchronous SPI modes.
  *
- * @par Register Memory Layout (8 bytes total)
+ * @par Register Memory Layout (14 bytes total)
  * @verbatim
  *   Offset  Size  Register  Description
  *   ──────────────────────────────────────────────────────────────────
@@ -255,8 +254,14 @@ typedef enum : uint32_t {
  *   0x03    1     TDR       Transmit Data (write-only data buffer)
  *   0x04    1     SSR       Serial Status (flags, error conditions)
  *   0x05    1     RDR       Receive Data (read-only data buffer)
- *   0x06    1     SCMR      Smart Card Mode (special mode settings)
+ *   0x06    1     SCMR      Smart Card Mode (SDIR for bit order)
  *   0x07    1     SEMR      Serial Extended Mode (noise filter, modulation)
+ *   0x08    1     SNFR      Noise Filter Setting
+ *   0x09    1     SIMR1     I2C Mode Register 1
+ *   0x0A    1     SIMR2     I2C Mode Register 2
+ *   0x0B    1     SIMR3     I2C Mode Register 3
+ *   0x0C    1     SISR      I2C Status Register
+ *   0x0D    1     SPMR      SPI Mode Register (CKPH, CKPOL)
  * @endverbatim
  *
  * @par UART Transmission Sequence
@@ -303,11 +308,12 @@ typedef enum : uint32_t {
  * }
  * @endcode
  *
- * @invariant Structure size must be exactly 8 bytes
+ * @invariant Structure size must be exactly 14 bytes
  * @invariant All registers are 8-bit (byte-accessible)
  *
- * @note This structure covers basic UART. FIFO and advanced modes use
- *       additional registers at higher offsets.
+ * @note Offsets 0x00-0x07 are unchanged from the original 8-byte structure.
+ *       Existing UART code works unmodified. Offsets 0x08-0x0D add I2C mode
+ *       and SPI mode register access needed for clock-synchronous SPI.
  *
  * @see rx_sci_addresses_t for channel base addresses
  * @see RX72N Hardware Manual Section 41.2 (Register Descriptions)
@@ -329,13 +335,17 @@ typedef struct {
   /**
    * @brief Bit Rate Register (BRR) - baud rate divisor
    * @details
-   * Baud rate = PCLKA / (64 × 2^(2n-1) × (BRR + 1))
-   * where n = SMR.CKS clock select value.
+   * Async mode: Baud rate = PCLKA / (64 * 2^(2n-1) * (BRR + 1))
+   * Sync mode:  Bit rate  = PCLKB / (4 * (BRR + 1)) for CKS=0
    *
-   * Common values at 120 MHz PCLKA, CKS=0:
+   * Common async values at 120 MHz PCLKA, CKS=0:
    * - 9600 baud: BRR = 194
    * - 38400 baud: BRR = 48
    * - 115200 baud: BRR = 32
+   *
+   * Common sync values at 60 MHz PCLKB, CKS=0:
+   * - BRR=1: 7.5 MHz SPI clock
+   * - BRR=3: 3.75 MHz SPI clock
    */
   volatile uint8_t brr;
 
@@ -381,13 +391,15 @@ typedef struct {
   volatile uint8_t rdr;
 
   /**
-   * @brief Smart Card Mode Register (SCMR) - smart card settings
-   * @details Controls smart card interface and data inversion.
-   * - Bit 4: SDIR - Smart card data transfer direction
+   * @brief Smart Card Mode Register (SCMR) - smart card and bit order settings
+   * @details
+   * - Bit 4: SDIR - Data transfer direction (0=LSB first, 1=MSB first)
    * - Bit 3: SINV - Smart card data inversion
    * - Bit 2: Reserved
    * - Bit 1: Reserved
    * - Bit 0: SMIF - Smart card interface mode
+   *
+   * @note For SPI mode, set SDIR=1 for MSB-first transfers.
    */
   volatile uint8_t scmr;
 
@@ -403,6 +415,51 @@ typedef struct {
    * - Bits 1-0: Reserved
    */
   volatile uint8_t semr;
+
+  /**
+   * @brief Noise Filter Setting Register (SNFR)
+   * @details
+   * - Bits 2-0: NFCS - Noise filter clock select
+   */
+  volatile uint8_t snfr;
+
+  /**
+   * @brief I2C Mode Register 1 (SIMR1)
+   * @details Used in I2C mode. Not used for UART or SPI.
+   */
+  volatile uint8_t simr1;
+
+  /**
+   * @brief I2C Mode Register 2 (SIMR2)
+   * @details Used in I2C mode. Not used for UART or SPI.
+   */
+  volatile uint8_t simr2;
+
+  /**
+   * @brief I2C Mode Register 3 (SIMR3)
+   * @details Used in I2C mode. Not used for UART or SPI.
+   */
+  volatile uint8_t simr3;
+
+  /**
+   * @brief I2C Status Register (SISR)
+   * @details Used in I2C mode. Not used for UART or SPI.
+   */
+  volatile uint8_t sisr;
+
+  /**
+   * @brief SPI Mode Register (SPMR) - SPI clock polarity and phase
+   * @details
+   * - Bit 7: CKPH - Clock phase (inverted from standard CPHA in some Renesas docs)
+   * - Bit 6: CKPOL - Clock polarity (0=idle LOW, 1=idle HIGH)
+   * - Bit 4: MFF - Mode fault flag
+   * - Bit 2: MSS - Controller/peripheral select (0=controller, 1=peripheral)
+   * - Bit 0: SSE - SS pin enable
+   *
+   * @note For DRV8243S SPI Mode 1 (CPOL=0, CPHA=1): Start with CKPOL=0,
+   *       CKPH=0. Verify correct phase on hardware with oscilloscope.
+   */
+  volatile uint8_t spmr;
 } rx_sci_regs_t;
 
 /**
@@ -593,8 +650,8 @@ static inline volatile rx_sci_regs_t* sci_get_channel(uint8_t channel)
  *  @brief Verify rx_sci_regs_t matches hardware layout
  *  @{
  */
-static_assert(sizeof(rx_sci_regs_t) == 8,
-               "SCI register structure must be 8 bytes");
+static_assert(sizeof(rx_sci_regs_t) == 14,
+               "SCI register structure must be 14 bytes");
 static_assert(offsetof(rx_sci_regs_t, smr) == 0x00,
                "SCI SMR register offset incorrect");
 static_assert(offsetof(rx_sci_regs_t, brr) == 0x01,
@@ -611,6 +668,18 @@ static_assert(offsetof(rx_sci_regs_t, scmr) == 0x06,
                "SCI SCMR register offset incorrect");
 static_assert(offsetof(rx_sci_regs_t, semr) == 0x07,
                "SCI SEMR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, snfr) == 0x08,
+               "SCI SNFR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, simr1) == 0x09,
+               "SCI SIMR1 register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, simr2) == 0x0A,
+               "SCI SIMR2 register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, simr3) == 0x0B,
+               "SCI SIMR3 register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, sisr) == 0x0C,
+               "SCI SISR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, spmr) == 0x0D,
+               "SCI SPMR register offset incorrect");
 /** @} */
 
 /** @name SCI Base Address Verification
