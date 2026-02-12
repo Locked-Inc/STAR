@@ -73,9 +73,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/libs/threadx/ports/rxv3/gnu/inc
     ${CMAKE_SOURCE_DIR}/libs/threadx/utility/low_power
 
-    # smc_gen headers (not building sources, just headers for reference)
-    ${CMAKE_SOURCE_DIR}/src/smc_gen/r_bsp
-
     # Custom libraries
     ${CMAKE_SOURCE_DIR}/libs/rx_core/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_hal/inc
@@ -106,7 +103,7 @@ include_directories(
 # Source Files
 #############################################################################
 
-# Main application sources (exclude smc_gen - user ported to boot/)
+# Main application sources (all custom boot code, no auto-generated BSP)
 file(GLOB APP_SOURCES_ROOT
     ${CMAKE_SOURCE_DIR}/src/*.c
 )
@@ -118,9 +115,9 @@ file(GLOB_RECURSE APP_TASKS_SOURCES ${CMAKE_SOURCE_DIR}/src/tasks/*.c)
 file(GLOB_RECURSE APP_SHARED_SOURCES ${CMAKE_SOURCE_DIR}/src/shared/*.c)
 file(GLOB_RECURSE APP_RTOS_SOURCES ${CMAKE_SOURCE_DIR}/src/rtos_config/*.c)
 
-# BSP intrinsic functions (needed for GNUC compiler support)
+# BSP intrinsic functions (low-level GNUC implementations)
 set(BSP_INTRINSIC_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/smc_gen/r_bsp/mcu/all/r_rx_intrinsic_functions.c
+    ${CMAKE_SOURCE_DIR}/src/boot/r_bsp/r_rx_intrinsic_functions.c
 )
 
 # Suppress warnings in BSP intrinsic functions (Renesas-provided code)
@@ -128,7 +125,7 @@ set_source_files_properties(${BSP_INTRINSIC_SOURCES} PROPERTIES
     COMPILE_FLAGS "-Wno-unused-parameter -Wno-error"
 )
 
-# Combine app sources (minimal smc_gen - just intrinsic functions)
+# Combine app sources (custom boot + intrinsic functions)
 set(APP_SOURCES
     ${APP_SOURCES_ROOT}
     ${APP_BOOT_SOURCES}

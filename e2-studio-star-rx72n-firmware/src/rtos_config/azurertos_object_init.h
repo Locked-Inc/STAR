@@ -9,8 +9,8 @@
  * Description  : declare libraries includes, global Object variables used for other files, and function prototypes
  **********************************************************************************************************************/
 
- #ifndef AZURERTOS_OBJECT_INIT_H_
- #define AZURERTOS_OBJECT_INIT_H_
+#ifndef AZURERTOS_OBJECT_INIT_H_
+#define AZURERTOS_OBJECT_INIT_H_
 
 /***********************************************************************************************************************
  * Includes   <System Includes> , "Project Includes"

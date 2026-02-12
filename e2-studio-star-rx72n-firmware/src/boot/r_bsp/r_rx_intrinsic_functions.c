@@ -55,8 +55,9 @@
 /***********************************************************************************************************************
 Includes   <System Includes> , "Project Includes"
 ***********************************************************************************************************************/
-#include "r_rx_compiler.h"
 #include "r_rx_intrinsic_functions.h"
+
+#include "r_rx_compiler.h"
 
 /***********************************************************************************************************************
 Macro definitions
@@ -73,27 +74,27 @@ Exported global variables (to be accessed by other files)
 /***********************************************************************************************************************
 Private global variables and functions
 ***********************************************************************************************************************/
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_bpsw(uint32_t *data);
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_bpc(uint32_t *data);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_bpsw(uint32_t* data);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_bpc(uint32_t* data);
 #ifdef BSP_MCU_EXCEPTION_TABLE
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_extb(uint32_t *data);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_extb(uint32_t* data);
 #endif /* BSP_MCU_EXCEPTION_TABLE */
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_move_from_acc_hi_long(uint32_t *data);
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_move_from_acc_mi_long(uint32_t *data);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_move_from_acc_hi_long(uint32_t* data);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_move_from_acc_mi_long(uint32_t* data);
 #ifdef BSP_MCU_DOUBLE_PRECISION_FLOATING_POINT
 #ifdef __DPFPU
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_dpsw(uint32_t *data);
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_decnt(uint32_t *data);
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_depc(uint32_t *ret);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_dpsw(uint32_t* data);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_decnt(uint32_t* data);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_get_depc(uint32_t* ret);
 #endif /* __DPFPU */
 #endif /* BSP_MCU_DOUBLE_PRECISION_FLOATING_POINT */
 #ifdef BSP_MCU_TRIGONOMETRIC
 #ifdef __TFU
 #if BSP_MCU_TFU_VERSION == 2
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_calc_sine_fsp(int32_t *ret, int32_t fx);
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_calc_cosine_fsp(int32_t *ret, int32_t fx);
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_calc_atan_fsp(int32_t *ret, int32_t y, int32_t x);
-R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_calc_squareroot_fsp(int32_t *ret, int32_t y, int32_t x);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_calc_sine_fsp(int32_t* ret, int32_t fx);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_calc_cosine_fsp(int32_t* ret, int32_t fx);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_calc_atan_fsp(int32_t* ret, int32_t y, int32_t x);
+R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_calc_squareroot_fsp(int32_t* ret, int32_t y, int32_t x);
 #endif /* BSP_MCU_TFU_VERSION == 2 */
 #endif /* __TFU */
 #endif /* BSP_MCU_TRIGONOMETRIC */
@@ -108,7 +109,7 @@ R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_calc_squareroot_fsp(int32_t *ret, int32_
 #if defined(__GNUC__)
 signed long R_BSP_Max(signed long data1, signed long data2)
 {
-    return (data1 > data2)? data1 : data2;
+  return (data1 > data2) ? data1 : data2;
 }
 #endif /* defined(__GNUC__) */
 
@@ -122,7 +123,7 @@ signed long R_BSP_Max(signed long data1, signed long data2)
 #if defined(__GNUC__)
 signed long R_BSP_Min(signed long data1, signed long data2)
 {
-    return (data1 < data2)? data1 : data2;
+  return (data1 < data2) ? data1 : data2;
 }
 #endif /* defined(__GNUC__) */
 
@@ -138,15 +139,17 @@ signed long R_BSP_Min(signed long data1, signed long data2)
 * Return Value : result - Lower 64 bits of the init + S(data1[n] * data2[n]) result. (n=0, 1, ..., const-1)
 ***********************************************************************************************************************/
 #if defined(__GNUC__)
-long long R_BSP_MulAndAccOperation_B(long long init, unsigned long count, signed char *addr1, signed char *addr2)
+long long R_BSP_MulAndAccOperation_B(long long     init,
+                                     unsigned long count,
+                                     signed char*  addr1,
+                                     signed char*  addr2)
 {
-    long long result = init;
-    unsigned long index;
-    for(index = 0; index < count; index++)
-    {
-        result += addr1[index] * addr2[index];
-    }
-    return result;
+  long long     result = init;
+  unsigned long index;
+  for (index = 0; index < count; index++) {
+    result += addr1[index] * addr2[index];
+  }
+  return result;
 }
 #endif /* defined(__GNUC__) */
 
@@ -162,15 +165,15 @@ long long R_BSP_MulAndAccOperation_B(long long init, unsigned long count, signed
 * Return Value : result - Lower 64 bits of the init + S(data1[n] * data2[n]) result. (n=0, 1, ..., const-1)
 ***********************************************************************************************************************/
 #if defined(__GNUC__)
-long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, short *addr1, short *addr2)
+long long
+R_BSP_MulAndAccOperation_W(long long init, unsigned long count, short* addr1, short* addr2)
 {
-    long long result = init;
-    unsigned long index;
-    for(index = 0; index < count; index++)
-    {
-        result += addr1[index] * addr2[index];
-    }
-    return result;
+  long long     result = init;
+  unsigned long index;
+  for (index = 0; index < count; index++) {
+    result += addr1[index] * addr2[index];
+  }
+  return result;
 }
 #endif /* defined(__GNUC__) */
 
@@ -186,15 +189,14 @@ long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, short 
 * Return Value : result - Lower 64 bits of the init + S(data1[n] * data2[n]) result. (n=0, 1, ..., const-1)
 ***********************************************************************************************************************/
 #if defined(__GNUC__)
-long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, long *addr1, long *addr2)
+long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, long* addr1, long* addr2)
 {
-    long long result = init;
-    unsigned long index;
-    for(index = 0; index < count; index++)
-    {
-        result += addr1[index] * addr2[index];
-    }
-    return result;
+  long long     result = init;
+  unsigned long index;
+  for (index = 0; index < count; index++) {
+    result += addr1[index] * addr2[index];
+  }
+  return result;
 }
 #endif /* defined(__GNUC__) */
 
@@ -208,8 +210,8 @@ long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, long *
 #if defined(__GNUC__)
 unsigned long R_BSP_RotateLeftWithCarry(unsigned long data)
 {
-    __asm("rolc %0":"=r"(data) : "r"(data):); 
-    return data;
+  __asm("rolc %0" : "=r"(data) : "r"(data) :);
+  return data;
 }
 #endif /* defined(__GNUC__) */
 
@@ -223,8 +225,8 @@ unsigned long R_BSP_RotateLeftWithCarry(unsigned long data)
 #if defined(__GNUC__)
 unsigned long R_BSP_RotateRightWithCarry(unsigned long data)
 {
-    __asm("rorc %0":"=r"(data) : "r"(data):);
-    return data;
+  __asm("rorc %0" : "=r"(data) : "r"(data) :);
+  return data;
 }
 #endif /* defined(__GNUC__) */
 
@@ -239,8 +241,8 @@ unsigned long R_BSP_RotateRightWithCarry(unsigned long data)
 #if defined(__GNUC__)
 unsigned long R_BSP_RotateLeft(unsigned long data, unsigned long num)
 {
-    __asm("rotl %1, %0":"=r"(data) : "r"(num),"0"(data) :); 
-    return data;
+  __asm("rotl %1, %0" : "=r"(data) : "r"(num), "0"(data) :);
+  return data;
 }
 #endif /* defined(__GNUC__) */
 
@@ -255,8 +257,8 @@ unsigned long R_BSP_RotateLeft(unsigned long data, unsigned long num)
 #if defined(__GNUC__)
 unsigned long R_BSP_RotateRight(unsigned long data, unsigned long num)
 {
-    __asm("rotr %1, %0":"=r"(data) : "r"(num),"0"(data) :); 
-    return data;
+  __asm("rotr %1, %0" : "=r"(data) : "r"(num), "0"(data) :);
+  return data;
 }
 #endif /* defined(__GNUC__) */
 
@@ -270,7 +272,7 @@ unsigned long R_BSP_RotateRight(unsigned long data, unsigned long num)
 #if defined(__GNUC__) || defined(__ICCRX__)
 signed long long R_BSP_SignedMultiplication(signed long data1, signed long data2)
 {
-    return ((signed long long)data1) * ((signed long long)data2);
+  return ((signed long long)data1) * ((signed long long)data2);
 }
 #endif /* defined(__GNUC__) || defined(__ICCRX__)  */
 
@@ -284,7 +286,7 @@ signed long long R_BSP_SignedMultiplication(signed long data1, signed long data2
 #if defined(__GNUC__) || defined(__ICCRX__)
 unsigned long long R_BSP_UnsignedMultiplication(unsigned long data1, unsigned long data2)
 {
-    return ((unsigned long long)data1) * ((unsigned long long)data2);
+  return ((unsigned long long)data1) * ((unsigned long long)data2);
 }
 #endif /* defined(__GNUC__) || defined(__ICCRX__)  */
 
@@ -303,26 +305,26 @@ unsigned long long R_BSP_UnsignedMultiplication(unsigned long data1, unsigned lo
 R_BSP_PRAGMA_INLINE_ASM(R_BSP_ChangeToUserMode)
 void R_BSP_ChangeToUserMode(void)
 {
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(;_R_BSP_Change_PSW_PM_to_UserMode:                                                                   )
-    R_BSP_ASM(    PUSH.L  R1          ; push the R1 value                                                          )
-    R_BSP_ASM(    MVFC    PSW, R1     ; get the current PSW value                                                  )
-    R_BSP_ASM(    BTST    #20, R1     ; check PSW.PM                                                               )
-    R_BSP_ASM(    BNE.B   R_BSP_ASM_LAB_NEXT(0);_psw_pm_is_user_mode                                               )
-    R_BSP_ASM(;_psw_pm_is_supervisor_mode:                                                                         )
-    R_BSP_ASM(    BSET    #20, R1     ; change PM = 0(Supervisor Mode) --> 1(User Mode)                            )
-    R_BSP_ASM(    PUSH.L  R2          ; push the R2 value                                                          )
-    R_BSP_ASM(    MOV.L   R0, R2      ; move the current SP value to the R2 value                                  )
-    R_BSP_ASM(    XCHG    8[R2].L, R1 ; exchange the value of R2 destination address and the R1 value              )
-    R_BSP_ASM(                        ; (exchange the return address value of caller and the PSW value)            )
-    R_BSP_ASM(    XCHG    4[R2].L, R1 ; exchange the value of R2 destination address and the R1 value              )
-    R_BSP_ASM(                        ; (exchange the R1 value of stack and the return address value of caller)    )
-    R_BSP_ASM(    POP     R2          ; pop the R2 value of stack                                                  )
-    R_BSP_ASM(    RTE                                                                                              )
-    R_BSP_ASM_LAB(0:;_psw_pm_is_user_mode:                                                                         )
-    R_BSP_ASM(    POP     R1          ; pop the R1 value of stack                                                  )
-    R_BSP_ASM(    ;RTS                                                                                             )
-    R_BSP_ASM_END
+  R_BSP_ASM_BEGIN
+  R_BSP_ASM(; _R_BSP_Change_PSW_PM_to_UserMode:)
+  R_BSP_ASM(PUSH.L R1; push the R1 value)
+  R_BSP_ASM(MVFC PSW, R1; get the current PSW value)
+  R_BSP_ASM(BTST #20, R1; check PSW.PM)
+  R_BSP_ASM(BNE.B R_BSP_ASM_LAB_NEXT(0); _psw_pm_is_user_mode)
+  R_BSP_ASM(; _psw_pm_is_supervisor_mode:)
+  R_BSP_ASM(BSET #20, R1; change PM = 0(Supervisor Mode)-- > 1(User Mode))
+  R_BSP_ASM(PUSH.L R2; push the R2 value)
+  R_BSP_ASM(MOV.L R0, R2; move the current SP value to the R2 value)
+  R_BSP_ASM(XCHG 8 [R2].L, R1; exchange the value of R2 destination address and the R1 value)
+  R_BSP_ASM(; (exchange the return address value of caller and the PSW value))
+  R_BSP_ASM(XCHG 4 [R2].L, R1; exchange the value of R2 destination address and the R1 value)
+  R_BSP_ASM(; (exchange the R1 value of stack and the return address value of caller))
+  R_BSP_ASM(POP R2; pop the R2 value of stack)
+  R_BSP_ASM(RTE)
+  R_BSP_ASM_LAB(0 :; _psw_pm_is_user_mode:)
+  R_BSP_ASM(POP R1; pop the R1 value of stack)
+  R_BSP_ASM(; RTS)
+  R_BSP_ASM_END
 } /* End of function R_BSP_ChangeToUserMode() */
 
 /***********************************************************************************************************************
@@ -335,17 +337,17 @@ void R_BSP_ChangeToUserMode(void)
 void R_BSP_SetACC(signed long long data)
 {
 #if defined(__GNUC__)
-    __builtin_rx_mvtachi(data >> 32);
-    __builtin_rx_mvtaclo(data & 0xFFFFFFFF);
+  __builtin_rx_mvtachi(data >> 32);
+  __builtin_rx_mvtaclo(data & 0xFFFFFFFF);
 #elif defined(__ICCRX__)
-    int32_t data_hi;
-    int32_t data_lo;
+  int32_t data_hi;
+  int32_t data_lo;
 
-    data_hi = (int32_t)(data >> 32);
-    data_lo = (int32_t)(data & 0x00000000FFFFFFFF);
+  data_hi = (int32_t)(data >> 32);
+  data_lo = (int32_t)(data & 0x00000000FFFFFFFF);
 
-    R_BSP_MoveToAccHiLong(data_hi);
-    R_BSP_MoveToAccLoLong(data_lo);
+  R_BSP_MoveToAccHiLong(data_hi);
+  R_BSP_MoveToAccLoLong(data_lo);
 #endif /* defined(__GNUC__) || defined(__ICCRX__)  */
 }
 #endif /* defined(__GNUC__) || defined(__ICCRX__)  */
@@ -360,16 +362,16 @@ void R_BSP_SetACC(signed long long data)
 signed long long R_BSP_GetACC(void)
 {
 #if defined(__GNUC__)
-    signed long long result = ((signed long long)__builtin_rx_mvfachi()) << 32;
-    result |= (((signed long long)__builtin_rx_mvfacmi()) << 16) & 0xFFFF0000;
-    return result;
+  signed long long result = ((signed long long)__builtin_rx_mvfachi()) << 32;
+  result |= (((signed long long)__builtin_rx_mvfacmi()) << 16) & 0xFFFF0000;
+  return result;
 #elif defined(__ICCRX__)
-    int64_t result;
+  int64_t result;
 
-    result = ((int64_t)R_BSP_MoveFromAccHiLong()) << 32;
-    result |= (((int64_t)R_BSP_MoveFromAccMiLong()) << 16) & 0xFFFF0000;
+  result = ((int64_t)R_BSP_MoveFromAccHiLong()) << 32;
+  result |= (((int64_t)R_BSP_MoveFromAccMiLong()) << 16) & 0xFFFF0000;
 
-    return result;
+  return result;
 #endif /* defined(__GNUC__) || defined(__ICCRX__)  */
 }
 #endif /* defined(__GNUC__) || defined(__ICCRX__)  */
@@ -389,21 +391,21 @@ signed long long R_BSP_GetACC(void)
 #if defined(__GNUC__)
 long R_BSP_MulAndAccOperation_2byte(short* data1, short* data2, unsigned long count)
 {
-    register signed long *ldata1 = (signed long *)data1;
-    register signed long *ldata2 = (signed long *)data2;
-    /* this is much more then an "intrinsic", no inline asm because of loop */
-    /* will implement this.. interesting function as described in ccrx manual */
-    __builtin_rx_mullo(0, 0);
-    while (count > 1)
-    {
-        __builtin_rx_maclo(*ldata1, *ldata2);
-        __builtin_rx_machi(*ldata1, *ldata2);
-        ldata1++;
-        ldata2++;
-        count -= 2;
-    }
-    if (count != 0) __builtin_rx_maclo(*(short*)ldata1, *(short*)ldata2);
-    return __builtin_rx_mvfacmi();
+  register signed long* ldata1 = (signed long*)data1;
+  register signed long* ldata2 = (signed long*)data2;
+  /* this is much more then an "intrinsic", no inline asm because of loop */
+  /* will implement this.. interesting function as described in ccrx manual */
+  __builtin_rx_mullo(0, 0);
+  while (count > 1) {
+    __builtin_rx_maclo(*ldata1, *ldata2);
+    __builtin_rx_machi(*ldata1, *ldata2);
+    ldata1++;
+    ldata2++;
+    count -= 2;
+  }
+  if (count != 0)
+    __builtin_rx_maclo(*(short*)ldata1, *(short*)ldata2);
+  return __builtin_rx_mvfacmi();
 }
 #endif /* defined(__GNUC__) */
 
@@ -423,22 +425,22 @@ long R_BSP_MulAndAccOperation_2byte(short* data1, short* data2, unsigned long co
 #if defined(__GNUC__)
 short R_BSP_MulAndAccOperation_FixedPoint1(short* data1, short* data2, unsigned long count)
 {
-    register signed long *ldata1 = (signed long *)data1;
-    register signed long *ldata2 = (signed long *)data2;
-    /* this is much more then an "intrinsic", no inline asm because of loop */
-    /* will implement this.. interesting function as described in ccrx manual */
-    __builtin_rx_mullo(0, 0);
-    while (count > 1)
-    {
-        __builtin_rx_maclo(*ldata1, *ldata2);
-        __builtin_rx_machi(*ldata1, *ldata2);
-        ldata1++;
-        ldata2++;
-        count -= 2;
-    }
-    if (count != 0) __builtin_rx_maclo(*(short*)ldata1, *(short*)ldata2);
-    __builtin_rx_racw(1);
-    return __builtin_rx_mvfachi();
+  register signed long* ldata1 = (signed long*)data1;
+  register signed long* ldata2 = (signed long*)data2;
+  /* this is much more then an "intrinsic", no inline asm because of loop */
+  /* will implement this.. interesting function as described in ccrx manual */
+  __builtin_rx_mullo(0, 0);
+  while (count > 1) {
+    __builtin_rx_maclo(*ldata1, *ldata2);
+    __builtin_rx_machi(*ldata1, *ldata2);
+    ldata1++;
+    ldata2++;
+    count -= 2;
+  }
+  if (count != 0)
+    __builtin_rx_maclo(*(short*)ldata1, *(short*)ldata2);
+  __builtin_rx_racw(1);
+  return __builtin_rx_mvfachi();
 }
 #endif /* defined(__GNUC__) */
 
@@ -458,22 +460,22 @@ short R_BSP_MulAndAccOperation_FixedPoint1(short* data1, short* data2, unsigned 
 #if defined(__GNUC__)
 short R_BSP_MulAndAccOperation_FixedPoint2(short* data1, short* data2, unsigned long count)
 {
-    register signed long *ldata1 = (signed long *)data1;
-    register signed long *ldata2 = (signed long *)data2;
-    /* this is much more then an "intrinsic", no inline asm because of loop */
-    /* will implement this.. interesting function as described in ccrx manual */
-    __builtin_rx_mullo(0, 0);
-    while (count > 1)
-    {
-        __builtin_rx_maclo(*ldata1, *ldata2);
-        __builtin_rx_machi(*ldata1, *ldata2);
-        ldata1++;
-        ldata2++;
-        count -= 2;
-    }
-    if (count != 0) __builtin_rx_maclo(*(short*)ldata1, *(short*)ldata2);
-    __builtin_rx_racw(2);
-    return __builtin_rx_mvfachi();
+  register signed long* ldata1 = (signed long*)data1;
+  register signed long* ldata2 = (signed long*)data2;
+  /* this is much more then an "intrinsic", no inline asm because of loop */
+  /* will implement this.. interesting function as described in ccrx manual */
+  __builtin_rx_mullo(0, 0);
+  while (count > 1) {
+    __builtin_rx_maclo(*ldata1, *ldata2);
+    __builtin_rx_machi(*ldata1, *ldata2);
+    ldata1++;
+    ldata2++;
+    count -= 2;
+  }
+  if (count != 0)
+    __builtin_rx_maclo(*(short*)ldata1, *(short*)ldata2);
+  __builtin_rx_racw(2);
+  return __builtin_rx_mvfachi();
 }
 #endif /* defined(__GNUC__) */
 
@@ -484,14 +486,10 @@ short R_BSP_MulAndAccOperation_FixedPoint2(short* data1, short* data2, unsigned 
 * Return Value : none
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_INLINE_ASM(R_BSP_SetBPSW)
-void R_BSP_SetBPSW(uint32_t data)
-{
-    R_BSP_ASM_INTERNAL_USED(data)
+void R_BSP_SetBPSW(uint32_t data){R_BSP_ASM_INTERNAL_USED(data)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    MVTC    R1, BPSW    )
-    R_BSP_ASM_END
-} /* End of function R_BSP_SetBPSW() */
+                                    R_BSP_ASM_BEGIN R_BSP_ASM(MVTC R1, BPSW) R_BSP_ASM_END}
+/* End of function R_BSP_SetBPSW() */
 
 /***********************************************************************************************************************
 * Function Name: bsp_get_bpsw
@@ -499,18 +497,11 @@ void R_BSP_SetBPSW(uint32_t data)
 * Arguments    : ret - Return value address.
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_get_bpsw)
-void bsp_get_bpsw(uint32_t *ret)
-{
-    R_BSP_ASM_INTERNAL_USED(ret)
+R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_get_bpsw) void bsp_get_bpsw(uint32_t* ret){
+  R_BSP_ASM_INTERNAL_USED(ret)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L     R2           )
-    R_BSP_ASM(    MVFC       BPSW, R2     )
-    R_BSP_ASM(    MOV.L      R2, [R1]     )
-    R_BSP_ASM(    POP        R2           )
-    R_BSP_ASM_END
-} /* End of function bsp_get_bpsw() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R2) R_BSP_ASM(MVFC BPSW, R2) R_BSP_ASM(MOV.L R2, [R1])
+      R_BSP_ASM(POP R2) R_BSP_ASM_END} /* End of function bsp_get_bpsw() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_GetBPSW
@@ -522,11 +513,11 @@ void bsp_get_bpsw(uint32_t *ret)
 ***********************************************************************************************************************/
 uint32_t R_BSP_GetBPSW(void)
 {
-    uint32_t ret;
+  uint32_t ret;
 
-    /* Casting is valid because it matches the type to the right side or argument. */
-    bsp_get_bpsw((uint32_t *)&ret);
-    return ret;
+  /* Casting is valid because it matches the type to the right side or argument. */
+  bsp_get_bpsw((uint32_t*)&ret);
+  return ret;
 } /* End of function R_BSP_GetBPSW() */
 
 /***********************************************************************************************************************
@@ -536,14 +527,10 @@ uint32_t R_BSP_GetBPSW(void)
 * Return Value : none
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_INLINE_ASM(R_BSP_SetBPC)
-void R_BSP_SetBPC(void *data)
-{
-    R_BSP_ASM_INTERNAL_USED(data)
+void R_BSP_SetBPC(void* data){R_BSP_ASM_INTERNAL_USED(data)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    MVTC    R1, BPC    )
-    R_BSP_ASM_END
-} /* End of function R_BSP_SetBPC() */
+                                R_BSP_ASM_BEGIN R_BSP_ASM(MVTC R1, BPC) R_BSP_ASM_END}
+/* End of function R_BSP_SetBPC() */
 
 /***********************************************************************************************************************
 * Function Name: bsp_get_bpc
@@ -551,17 +538,16 @@ void R_BSP_SetBPC(void *data)
 * Arguments    : ret - Return value address.
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_get_bpc)
-void bsp_get_bpc(uint32_t *ret)
+R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_get_bpc) void bsp_get_bpc(uint32_t* ret)
 {
-    R_BSP_ASM_INTERNAL_USED(ret)
+  R_BSP_ASM_INTERNAL_USED(ret)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L     R2           )
-    R_BSP_ASM(    MVFC       BPC, R2      )
-    R_BSP_ASM(    MOV.L      R2, [R1]     )
-    R_BSP_ASM(    POP        R2           )
-    R_BSP_ASM_END
+  R_BSP_ASM_BEGIN
+  R_BSP_ASM(PUSH.L R2)
+  R_BSP_ASM(MVFC BPC, R2)
+  R_BSP_ASM(MOV.L R2, [R1])
+  R_BSP_ASM(POP R2)
+  R_BSP_ASM_END
 } /* End of function bsp_get_bpc() */
 
 /***********************************************************************************************************************
@@ -572,15 +558,15 @@ void bsp_get_bpc(uint32_t *ret)
 * Note         : This function exists to avoid code analysis errors. Because, when inline assembler function has
 *                a return value, the error of "No return, in function returning non-void" occurs.
 ***********************************************************************************************************************/
-void *R_BSP_GetBPC(void)
+void* R_BSP_GetBPC(void)
 {
-    uint32_t ret;
+  uint32_t ret;
 
-    /* Casting is valid because it matches the type to the right side or argument. */
-    bsp_get_bpc((uint32_t *)&ret);
+  /* Casting is valid because it matches the type to the right side or argument. */
+  bsp_get_bpc((uint32_t*)&ret);
 
-    /* Casting is valid because it matches the type to the right side or return. */
-    return (void *)ret;
+  /* Casting is valid because it matches the type to the right side or return. */
+  return (void*)ret;
 } /* End of function R_BSP_GetBPC() */
 
 #ifdef BSP_MCU_EXCEPTION_TABLE
@@ -591,14 +577,10 @@ void *R_BSP_GetBPC(void)
 * Return Value : none
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_INLINE_ASM(R_BSP_SetEXTB)
-void R_BSP_SetEXTB(void *data)
-{
-    R_BSP_ASM_INTERNAL_USED(data)
+void R_BSP_SetEXTB(void* data){R_BSP_ASM_INTERNAL_USED(data)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    MVTC    R1, EXTB    )
-    R_BSP_ASM_END
-} /* End of function R_BSP_SetEXTB() */
+                                 R_BSP_ASM_BEGIN R_BSP_ASM(MVTC R1, EXTB) R_BSP_ASM_END}
+/* End of function R_BSP_SetEXTB() */
 
 /***********************************************************************************************************************
 * Function Name: bsp_get_extb
@@ -606,17 +588,16 @@ void R_BSP_SetEXTB(void *data)
 * Arguments    : ret - Return value address.
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_get_extb)
-void bsp_get_extb(uint32_t *ret)
+R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_get_extb) void bsp_get_extb(uint32_t* ret)
 {
-    R_BSP_ASM_INTERNAL_USED(ret)
+  R_BSP_ASM_INTERNAL_USED(ret)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L     R2           )
-    R_BSP_ASM(    MVFC       EXTB, R2     )
-    R_BSP_ASM(    MOV.L      R2, [R1]     )
-    R_BSP_ASM(    POP        R2           )
-    R_BSP_ASM_END
+  R_BSP_ASM_BEGIN
+  R_BSP_ASM(PUSH.L R2)
+  R_BSP_ASM(MVFC EXTB, R2)
+  R_BSP_ASM(MOV.L R2, [R1])
+  R_BSP_ASM(POP R2)
+  R_BSP_ASM_END
 } /* End of function bsp_get_extb() */
 
 /***********************************************************************************************************************
@@ -627,15 +608,15 @@ void bsp_get_extb(uint32_t *ret)
 * Note         : This function exists to avoid code analysis errors. Because, when inline assembler function has
 *                a return value, the error of "No return, in function returning non-void" occurs.
 ***********************************************************************************************************************/
-void *R_BSP_GetEXTB(void)
+void* R_BSP_GetEXTB(void)
 {
-    uint32_t ret;
+  uint32_t ret;
 
-    /* Casting is valid because it matches the type to the right side or argument. */
-    bsp_get_extb((uint32_t *)&ret);
+  /* Casting is valid because it matches the type to the right side or argument. */
+  bsp_get_extb((uint32_t*)&ret);
 
-    /* Casting is valid because it matches the type to the right side or return. */
-    return (void *)ret;
+  /* Casting is valid because it matches the type to the right side or return. */
+  return (void*)ret;
 } /* End of function R_BSP_GetEXTB() */
 #endif /* BSP_MCU_EXCEPTION_TABLE */
 
@@ -646,14 +627,10 @@ void *R_BSP_GetEXTB(void)
 * Return Value : none
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_INLINE_ASM(R_BSP_MoveToAccHiLong)
-void R_BSP_MoveToAccHiLong(int32_t data)
-{
-    R_BSP_ASM_INTERNAL_USED(data)
+void R_BSP_MoveToAccHiLong(int32_t data){R_BSP_ASM_INTERNAL_USED(data)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    MVTACHI    R1    )
-    R_BSP_ASM_END
-} /* End of function R_BSP_MoveToAccHiLong() */
+                                           R_BSP_ASM_BEGIN R_BSP_ASM(MVTACHI R1) R_BSP_ASM_END}
+/* End of function R_BSP_MoveToAccHiLong() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_MoveToAccLoLong
@@ -661,15 +638,11 @@ void R_BSP_MoveToAccHiLong(int32_t data)
 * Arguments    : data - Input value.
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_INLINE_ASM(R_BSP_MoveToAccLoLong)
-void R_BSP_MoveToAccLoLong(int32_t data)
-{
-    R_BSP_ASM_INTERNAL_USED(data)
+R_BSP_PRAGMA_INLINE_ASM(R_BSP_MoveToAccLoLong) void R_BSP_MoveToAccLoLong(int32_t data){
+  R_BSP_ASM_INTERNAL_USED(data)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    MVTACLO    R1    )
-    R_BSP_ASM_END
-} /* End of function R_BSP_MoveToAccLoLong() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(MVTACLO R1) R_BSP_ASM_END}
+/* End of function R_BSP_MoveToAccLoLong() */
 
 /***********************************************************************************************************************
 * Function Name: bsp_move_from_acc_hi_long
@@ -677,18 +650,12 @@ void R_BSP_MoveToAccLoLong(int32_t data)
 * Arguments    : ret - Return value address.
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_move_from_acc_hi_long)
-void bsp_move_from_acc_hi_long(uint32_t *ret)
-{
-    R_BSP_ASM_INTERNAL_USED(ret)
+R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_move_from_acc_hi_long) void bsp_move_from_acc_hi_long(
+  uint32_t* ret){R_BSP_ASM_INTERNAL_USED(ret)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L     R2           )
-    R_BSP_ASM(    MVFACHI    R2           )
-    R_BSP_ASM(    MOV.L      R2, [R1]     )
-    R_BSP_ASM(    POP        R2           )
-    R_BSP_ASM_END
-} /* End of function bsp_move_from_acc_hi_long() */
+                   R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R2) R_BSP_ASM(MVFACHI R2)
+                     R_BSP_ASM(MOV.L R2, [R1]) R_BSP_ASM(POP R2) R_BSP_ASM_END}
+/* End of function bsp_move_from_acc_hi_long() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_MoveFromAccHiLong
@@ -700,11 +667,11 @@ void bsp_move_from_acc_hi_long(uint32_t *ret)
 ***********************************************************************************************************************/
 int32_t R_BSP_MoveFromAccHiLong(void)
 {
-    int32_t ret;
+  int32_t ret;
 
-    /* Casting is valid because it matches the type to the right side or argument. */
-    bsp_move_from_acc_hi_long((uint32_t *)&ret);
-    return ret;
+  /* Casting is valid because it matches the type to the right side or argument. */
+  bsp_move_from_acc_hi_long((uint32_t*)&ret);
+  return ret;
 } /* End of function R_BSP_MoveFromAccHiLong() */
 
 /***********************************************************************************************************************
@@ -714,17 +681,11 @@ int32_t R_BSP_MoveFromAccHiLong(void)
 * Return Value : none
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_move_from_acc_mi_long)
-void bsp_move_from_acc_mi_long(uint32_t *ret)
-{
-    R_BSP_ASM_INTERNAL_USED(ret)
+void bsp_move_from_acc_mi_long(uint32_t* ret){
+  R_BSP_ASM_INTERNAL_USED(ret)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L     R2           )
-    R_BSP_ASM(    MVFACMI    R2           )
-    R_BSP_ASM(    MOV.L      R2, [R1]     )
-    R_BSP_ASM(    POP        R2           )
-    R_BSP_ASM_END
-} /* End of function bsp_move_from_acc_mi_long() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R2) R_BSP_ASM(MVFACMI R2) R_BSP_ASM(MOV.L R2, [R1])
+      R_BSP_ASM(POP R2) R_BSP_ASM_END} /* End of function bsp_move_from_acc_mi_long() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_MoveFromAccMiLong
@@ -736,11 +697,11 @@ void bsp_move_from_acc_mi_long(uint32_t *ret)
 ***********************************************************************************************************************/
 int32_t R_BSP_MoveFromAccMiLong(void)
 {
-    int32_t ret;
+  int32_t ret;
 
-    /* Casting is valid because it matches the type to the right side or argument. */
-    bsp_move_from_acc_mi_long((uint32_t *)&ret);
-    return ret;
+  /* Casting is valid because it matches the type to the right side or argument. */
+  bsp_move_from_acc_mi_long((uint32_t*)&ret);
+  return ret;
 } /* End of function R_BSP_MoveFromAccMiLong() */
 
 /***********************************************************************************************************************
@@ -751,15 +712,10 @@ int32_t R_BSP_MoveFromAccMiLong(void)
 * Return Value : none
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_INLINE_ASM(R_BSP_BitSet)
-void R_BSP_BitSet(uint8_t *data, uint32_t bit)
-{
-    R_BSP_ASM_INTERNAL_USED(data)
-    R_BSP_ASM_INTERNAL_USED(bit)
+void R_BSP_BitSet(uint8_t* data, uint32_t bit){
+  R_BSP_ASM_INTERNAL_USED(data) R_BSP_ASM_INTERNAL_USED(bit)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    BSET    R2, [R1]    )
-    R_BSP_ASM_END
-} /* End of function R_BSP_BitSet() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(BSET R2, [R1]) R_BSP_ASM_END} /* End of function R_BSP_BitSet() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_BitClear
@@ -768,16 +724,10 @@ void R_BSP_BitSet(uint8_t *data, uint32_t bit)
 *                bit  - Position of the bit to be manipulated
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_INLINE_ASM(R_BSP_BitClear)
-void R_BSP_BitClear(uint8_t *data, uint32_t bit)
-{
-    R_BSP_ASM_INTERNAL_USED(data)
-    R_BSP_ASM_INTERNAL_USED(bit)
+R_BSP_PRAGMA_INLINE_ASM(R_BSP_BitClear) void R_BSP_BitClear(uint8_t* data, uint32_t bit){
+  R_BSP_ASM_INTERNAL_USED(data) R_BSP_ASM_INTERNAL_USED(bit)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    BCLR    R2, [R1]    )
-    R_BSP_ASM_END
-} /* End of function R_BSP_BitClear() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(BCLR R2, [R1]) R_BSP_ASM_END} /* End of function R_BSP_BitClear() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_BitReverse
@@ -786,16 +736,10 @@ void R_BSP_BitClear(uint8_t *data, uint32_t bit)
 *                bit  - Position of the bit to be manipulated
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_INLINE_ASM(R_BSP_BitReverse)
-void R_BSP_BitReverse(uint8_t *data, uint32_t bit)
-{
-    R_BSP_ASM_INTERNAL_USED(data)
-    R_BSP_ASM_INTERNAL_USED(bit)
+R_BSP_PRAGMA_INLINE_ASM(R_BSP_BitReverse) void R_BSP_BitReverse(uint8_t* data, uint32_t bit){
+  R_BSP_ASM_INTERNAL_USED(data) R_BSP_ASM_INTERNAL_USED(bit)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    BNOT    R2, [R1]    )
-    R_BSP_ASM_END
-} /* End of function R_BSP_BitReverse() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(BNOT R2, [R1]) R_BSP_ASM_END} /* End of function R_BSP_BitReverse() */
 
 #ifdef BSP_MCU_DOUBLE_PRECISION_FLOATING_POINT
 #ifdef __DPFPU
@@ -805,15 +749,10 @@ void R_BSP_BitReverse(uint8_t *data, uint32_t bit)
 * Arguments    : data - Value to be set.
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_INLINE_ASM(R_BSP_SetDPSW)
-void R_BSP_SetDPSW(uint32_t data)
-{
-    R_BSP_ASM_INTERNAL_USED(data)
+R_BSP_PRAGMA_INLINE_ASM(R_BSP_SetDPSW) void R_BSP_SetDPSW(uint32_t data){
+  R_BSP_ASM_INTERNAL_USED(data)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    MVTDC   R1, DPSW    )
-    R_BSP_ASM_END
-} /* End of function R_BSP_SetDPSW() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(MVTDC R1, DPSW) R_BSP_ASM_END} /* End of function R_BSP_SetDPSW() */
 
 /***********************************************************************************************************************
 * Function Name: bsp_get_dpsw
@@ -821,18 +760,11 @@ void R_BSP_SetDPSW(uint32_t data)
 * Arguments    : ret - Return value address.
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_get_dpsw)
-void bsp_get_dpsw(uint32_t *ret)
-{
-    R_BSP_ASM_INTERNAL_USED(ret)
+R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_get_dpsw) void bsp_get_dpsw(uint32_t* ret){
+  R_BSP_ASM_INTERNAL_USED(ret)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L     R2           )
-    R_BSP_ASM(    MVFDC      DPSW, R2     )
-    R_BSP_ASM(    MOV.L      R2, [R1]     )
-    R_BSP_ASM(    POP        R2           )
-    R_BSP_ASM_END
-} /* End of function bsp_get_dpsw() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R2) R_BSP_ASM(MVFDC DPSW, R2) R_BSP_ASM(MOV.L R2, [R1])
+      R_BSP_ASM(POP R2) R_BSP_ASM_END} /* End of function bsp_get_dpsw() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_GetDPSW
@@ -844,11 +776,11 @@ void bsp_get_dpsw(uint32_t *ret)
 ***********************************************************************************************************************/
 uint32_t R_BSP_GetDPSW(void)
 {
-    uint32_t ret;
+  uint32_t ret;
 
-    /* Casting is valid because it matches the type to the right side or argument. */
-    bsp_get_dpsw((uint32_t *)&ret);
-    return ret;
+  /* Casting is valid because it matches the type to the right side or argument. */
+  bsp_get_dpsw((uint32_t*)&ret);
+  return ret;
 } /* End of function R_BSP_GetDPSW() */
 
 /***********************************************************************************************************************
@@ -858,14 +790,10 @@ uint32_t R_BSP_GetDPSW(void)
 * Return Value : none
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_INLINE_ASM(R_BSP_SetDECNT)
-void R_BSP_SetDECNT(uint32_t data)
-{
-    R_BSP_ASM_INTERNAL_USED(data)
+void R_BSP_SetDECNT(uint32_t data){R_BSP_ASM_INTERNAL_USED(data)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    MVTDC   R1, DECNT    )
-    R_BSP_ASM_END
-} /* End of function R_BSP_SetDECNT() */
+                                     R_BSP_ASM_BEGIN R_BSP_ASM(MVTDC R1, DECNT) R_BSP_ASM_END}
+/* End of function R_BSP_SetDECNT() */
 
 /***********************************************************************************************************************
 * Function Name: bsp_get_decnt
@@ -873,18 +801,11 @@ void R_BSP_SetDECNT(uint32_t data)
 * Arguments    : ret - Return value address.
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_get_decnt)
-void bsp_get_decnt(uint32_t *ret)
-{
-    R_BSP_ASM_INTERNAL_USED(ret)
+R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_get_decnt) void bsp_get_decnt(uint32_t* ret){
+  R_BSP_ASM_INTERNAL_USED(ret)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L     R2           )
-    R_BSP_ASM(    MVFDC      DECNT, R2    )
-    R_BSP_ASM(    MOV.L      R2, [R1]     )
-    R_BSP_ASM(    POP        R2           )
-    R_BSP_ASM_END
-} /* End of function bsp_get_decnt() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R2) R_BSP_ASM(MVFDC DECNT, R2) R_BSP_ASM(MOV.L R2, [R1])
+      R_BSP_ASM(POP R2) R_BSP_ASM_END} /* End of function bsp_get_decnt() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_GetDECNT
@@ -896,11 +817,11 @@ void bsp_get_decnt(uint32_t *ret)
 ***********************************************************************************************************************/
 uint32_t R_BSP_GetDECNT(void)
 {
-    uint32_t ret;
+  uint32_t ret;
 
-    /* Casting is valid because it matches the type to the right side or argument. */
-    bsp_get_decnt((uint32_t *)&ret);
-    return ret;
+  /* Casting is valid because it matches the type to the right side or argument. */
+  bsp_get_decnt((uint32_t*)&ret);
+  return ret;
 } /* End of function R_BSP_GetDECNT() */
 
 /***********************************************************************************************************************
@@ -910,16 +831,16 @@ uint32_t R_BSP_GetDECNT(void)
 * Return Value : none
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_get_depc)
-void bsp_get_depc(uint32_t *ret)
+void bsp_get_depc(uint32_t* ret)
 {
-    R_BSP_ASM_INTERNAL_USED(ret)
+  R_BSP_ASM_INTERNAL_USED(ret)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L     R2           )
-    R_BSP_ASM(    MVFDC      DEPC, R2     )
-    R_BSP_ASM(    MOV.L      R2, [R1]     )
-    R_BSP_ASM(    POP        R2           )
-    R_BSP_ASM_END
+  R_BSP_ASM_BEGIN
+  R_BSP_ASM(PUSH.L R2)
+  R_BSP_ASM(MVFDC DEPC, R2)
+  R_BSP_ASM(MOV.L R2, [R1])
+  R_BSP_ASM(POP R2)
+  R_BSP_ASM_END
 } /* End of function bsp_get_decnt() */
 
 /***********************************************************************************************************************
@@ -930,13 +851,13 @@ void bsp_get_depc(uint32_t *ret)
 * Note         : This function exists to avoid code analysis errors. Because, when inline assembler function has
 *                a return value, the error of "No return, in function returning non-void" occurs.
 ***********************************************************************************************************************/
-void *R_BSP_GetDEPC(void)
+void* R_BSP_GetDEPC(void)
 {
-    uint32_t ret;
+  uint32_t ret;
 
-    /* Casting is valid because it matches the type to the right side or argument. */
-    bsp_get_depc((uint32_t *)&ret);
-    return (void *)ret;
+  /* Casting is valid because it matches the type to the right side or argument. */
+  bsp_get_depc((uint32_t*)&ret);
+  return (void*)ret;
 } /* End of function R_BSP_GetDECNT() */
 #endif /* __DPFPU */
 #endif /* BSP_MCU_DOUBLE_PRECISION_FLOATING_POINT */
@@ -951,16 +872,9 @@ void *R_BSP_GetDEPC(void)
 * Return Value : none
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_INLINE_ASM(R_BSP_InitTFU)
-void R_BSP_InitTFU(void)
-{
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L    R1             )
-    R_BSP_ASM(    MOV.L     #81400H, R1    )
-    R_BSP_ASM(    MOV.B     #7, [R1]       )
-    R_BSP_ASM(    MOV.B     #7, 1[R1]      )
-    R_BSP_ASM(    POP       R1             )
-    R_BSP_ASM_END
-} /* End of function R_BSP_InitTFU() */
+void R_BSP_InitTFU(void){R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R1) R_BSP_ASM(MOV.L#81400H, R1)
+                           R_BSP_ASM(MOV.B #7, [R1]) R_BSP_ASM(MOV.B #7, 1 [R1]) R_BSP_ASM(POP R1)
+                             R_BSP_ASM_END} /* End of function R_BSP_InitTFU() */
 #endif
 #ifdef __FPU
 /***********************************************************************************************************************
@@ -972,18 +886,12 @@ void R_BSP_InitTFU(void)
 *              : cos - Address for storing the result of the cosine operation
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcSine_Cosine)
-void R_BSP_CalcSine_Cosine(float f, float *sin, float *cos)
-{
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L    R4             )
-    R_BSP_ASM(    MOV.L     #81410H, R4    )
-    R_BSP_ASM(    MOV.L     R1, 4[R4]      )
-    R_BSP_ASM(    MOV.L     4[R4], [R2]    )
-    R_BSP_ASM(    MOV.L     [R4], [R3]     )
-    R_BSP_ASM(    POP       R4             )
-    R_BSP_ASM_END
-} /* End of function R_BSP_CalcSine_Cosine() */
+R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcSine_Cosine) void R_BSP_CalcSine_Cosine(float  f,
+                                                                          float* sin,
+                                                                          float* cos){
+  R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R4) R_BSP_ASM(MOV.L#81410H, R4) R_BSP_ASM(MOV.L R1, 4 [R4])
+    R_BSP_ASM(MOV.L 4 [R4], [R2]) R_BSP_ASM(MOV.L[R4], [R3]) R_BSP_ASM(POP R4) R_BSP_ASM_END}
+/* End of function R_BSP_CalcSine_Cosine() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_CalcAtan_SquareRoot
@@ -995,26 +903,17 @@ void R_BSP_CalcSine_Cosine(float f, float *sin, float *cos)
 *                hypot - Address for storing the result of the square root of the sum of squares of x and y
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcAtan_SquareRoot)
-void R_BSP_CalcAtan_SquareRoot(float y, float x, float *atan2, float *hypot)
-{
-    R_BSP_ASM_INTERNAL_USED(y)
-    R_BSP_ASM_INTERNAL_USED(x)
-    R_BSP_ASM_INTERNAL_USED(atan2)
+R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcAtan_SquareRoot) void R_BSP_CalcAtan_SquareRoot(float  y,
+                                                                                  float  x,
+                                                                                  float* atan2,
+                                                                                  float* hypot){
+  R_BSP_ASM_INTERNAL_USED(y) R_BSP_ASM_INTERNAL_USED(x) R_BSP_ASM_INTERNAL_USED(atan2)
     R_BSP_ASM_INTERNAL_USED(hypot)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSHM     R5-R6              )
-    R_BSP_ASM(    MOV.L     #81418H, R5        )
-    R_BSP_ASM(    MOV.L     R2, [R5]           )
-    R_BSP_ASM(    MOV.L     R1, 4[R5]          )
-    R_BSP_ASM(    MOV.L     4[R5], [R3]        )
-    R_BSP_ASM(    MOV.L     [R5], R6           )
-    R_BSP_ASM(    FMUL      #3F1B74EEH, R6     )
-    R_BSP_ASM(    MOV.L     R6, [R4]           )
-    R_BSP_ASM(    POPM      R5-R6              )
-    R_BSP_ASM_END
-} /* End of function R_BSP_CalcAtan_SquareRoot() */
+      R_BSP_ASM_BEGIN R_BSP_ASM(PUSHM R5 - R6) R_BSP_ASM(MOV.L#81418H, R5) R_BSP_ASM(MOV.L R2, [R5])
+        R_BSP_ASM(MOV.L R1, 4 [R5]) R_BSP_ASM(MOV.L 4 [R5], [R3]) R_BSP_ASM(MOV.L[R5], R6)
+          R_BSP_ASM(FMUL #3F1B74EEH, R6) R_BSP_ASM(MOV.L R6, [R4]) R_BSP_ASM(POPM R5 - R6)
+            R_BSP_ASM_END} /* End of function R_BSP_CalcAtan_SquareRoot() */
 #endif /* __FPU */
 
 #if BSP_MCU_TFU_VERSION == 2
@@ -1028,26 +927,15 @@ void R_BSP_CalcAtan_SquareRoot(float y, float x, float *atan2, float *hypot)
 *              : cos - Address for storing the result of the cosine operation
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcSine_Cosine_Fpn)
-void R_BSP_CalcSine_Cosine_Fpn(int32_t f, int32_t *sin, int32_t *cos)
-{
-    R_BSP_ASM_INTERNAL_USED(f)
-    R_BSP_ASM_INTERNAL_USED(sin)
-    R_BSP_ASM_INTERNAL_USED(cos)
+R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcSine_Cosine_Fpn) void R_BSP_CalcSine_Cosine_Fpn(int32_t  f,
+                                                                                  int32_t* sin,
+                                                                                  int32_t* cos){
+  R_BSP_ASM_INTERNAL_USED(f) R_BSP_ASM_INTERNAL_USED(sin) R_BSP_ASM_INTERNAL_USED(cos)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L    R4              )
-    R_BSP_ASM(    PUSH.L    R14             )
-    R_BSP_ASM(    MOV.L     #81420H, R4     )
-    R_BSP_ASM(    MOV.L     R1, 4[R4]       )
-    R_BSP_ASM(    MOV.L     4[R4], R1       )
-    R_BSP_ASM(    MOV.L     [R4], R14       )
-    R_BSP_ASM(    MOV.L     R1, [R2]        )
-    R_BSP_ASM(    MOV.L     R14, [R3]       )
-    R_BSP_ASM(    POP       R4              )
-    R_BSP_ASM(    POP       R14             )
-    R_BSP_ASM_END
-} /* End of function R_BSP_CalcSine_Cosine_Fpn() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R4) R_BSP_ASM(PUSH.L R14) R_BSP_ASM(MOV.L#81420H, R4)
+      R_BSP_ASM(MOV.L R1, 4 [R4]) R_BSP_ASM(MOV.L 4 [R4], R1) R_BSP_ASM(MOV.L[R4], R14)
+        R_BSP_ASM(MOV.L R1, [R2]) R_BSP_ASM(MOV.L R14, [R3]) R_BSP_ASM(POP R4) R_BSP_ASM(POP R14)
+          R_BSP_ASM_END} /* End of function R_BSP_CalcSine_Cosine_Fpn() */
 
 /***********************************************************************************************************************
 * Function Name: bsp_calc_sine_fsp
@@ -1057,20 +945,12 @@ void R_BSP_CalcSine_Cosine_Fpn(int32_t f, int32_t *sin, int32_t *cos)
 *                fx - Value in radians from which to calculate the sine
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_calc_sine_fsp)
-void bsp_calc_sine_fsp(int32_t *ret, int32_t fx)
-{
-    R_BSP_ASM_INTERNAL_USED(ret)
-    R_BSP_ASM_INTERNAL_USED(fx)
+R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_calc_sine_fsp) void bsp_calc_sine_fsp(int32_t* ret, int32_t fx){
+  R_BSP_ASM_INTERNAL_USED(ret) R_BSP_ASM_INTERNAL_USED(fx)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L    R14             )
-    R_BSP_ASM(    MOV.L     #81424H, R14    )
-    R_BSP_ASM(    MOV.L     R2, [R14]       )
-    R_BSP_ASM(    MOV.L     [R14], [R1]     )
-    R_BSP_ASM(    POP       R14             )
-    R_BSP_ASM_END
-} /* End of function bsp_calc_sine_fsp() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R14) R_BSP_ASM(MOV.L#81424H, R14) R_BSP_ASM(MOV.L R2, [R14])
+      R_BSP_ASM(MOV.L[R14], [R1]) R_BSP_ASM(POP R14) R_BSP_ASM_END}
+/* End of function bsp_calc_sine_fsp() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_CalcSine_Fpn
@@ -1081,11 +961,11 @@ void bsp_calc_sine_fsp(int32_t *ret, int32_t fx)
 ***********************************************************************************************************************/
 int32_t R_BSP_CalcSine_Fpn(int32_t fx)
 {
-    int32_t ret;
+  int32_t ret;
 
-    bsp_calc_sine_fsp((int32_t *)&ret, fx);
+  bsp_calc_sine_fsp((int32_t*)&ret, fx);
 
-    return ret;
+  return ret;
 } /* End of function R_BSP_CalcSine_Fpn() */
 
 /***********************************************************************************************************************
@@ -1097,19 +977,12 @@ int32_t R_BSP_CalcSine_Fpn(int32_t fx)
 * Return Value : none
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_calc_cosine_fsp)
-void bsp_calc_cosine_fsp(int32_t *ret, int32_t fx)
-{
-    R_BSP_ASM_INTERNAL_USED(ret)
-    R_BSP_ASM_INTERNAL_USED(fx)
+void bsp_calc_cosine_fsp(int32_t* ret, int32_t fx){
+  R_BSP_ASM_INTERNAL_USED(ret) R_BSP_ASM_INTERNAL_USED(fx)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L    R3              )
-    R_BSP_ASM(    MOV.L     #81420H, R3     )
-    R_BSP_ASM(    MOV.L     R2, 4[R3]       )
-    R_BSP_ASM(    MOV.L     [R3], [R1]      )
-    R_BSP_ASM(    POP       R3              )
-    R_BSP_ASM_END
-} /* End of function bsp_calc_cosine_fsp() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R3) R_BSP_ASM(MOV.L#81420H, R3) R_BSP_ASM(MOV.L R2, 4 [R3])
+      R_BSP_ASM(MOV.L[R3], [R1]) R_BSP_ASM(POP R3) R_BSP_ASM_END}
+/* End of function bsp_calc_cosine_fsp() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_CalcCosine_Fpn
@@ -1120,11 +993,11 @@ void bsp_calc_cosine_fsp(int32_t *ret, int32_t fx)
 ***********************************************************************************************************************/
 int32_t R_BSP_CalcCosine_Fpn(int32_t fx)
 {
-    int32_t ret;
+  int32_t ret;
 
-    bsp_calc_cosine_fsp((int32_t *)&ret, fx);
+  bsp_calc_cosine_fsp((int32_t*)&ret, fx);
 
-    return ret;
+  return ret;
 } /* End of function R_BSP_CalcCosine_Fpn() */
 
 /***********************************************************************************************************************
@@ -1138,30 +1011,16 @@ int32_t R_BSP_CalcCosine_Fpn(int32_t fx)
 * Return Value : none
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcAtan_SquareRoot_Fpn)
-void R_BSP_CalcAtan_SquareRoot_Fpn(int32_t y, int32_t x, int32_t *atan2, int32_t *hypot)
-{
-    R_BSP_ASM_INTERNAL_USED(y)
-    R_BSP_ASM_INTERNAL_USED(x)
-    R_BSP_ASM_INTERNAL_USED(atan2)
+void R_BSP_CalcAtan_SquareRoot_Fpn(int32_t y, int32_t x, int32_t* atan2, int32_t* hypot){
+  R_BSP_ASM_INTERNAL_USED(y) R_BSP_ASM_INTERNAL_USED(x) R_BSP_ASM_INTERNAL_USED(atan2)
     R_BSP_ASM_INTERNAL_USED(hypot)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L     R5                 )
-    R_BSP_ASM(    PUSH.L     R14                )
-    R_BSP_ASM(    PUSH.L     R15                )
-    R_BSP_ASM(    MOV.L      R4, R14            )
-    R_BSP_ASM(    MOV.L      #81428H, R15       )
-    R_BSP_ASM(    MOV.L      R2, [R15]          )
-    R_BSP_ASM(    MOV.L      #9B74EDA8H, R4     )
-    R_BSP_ASM(    MOV.L      R1, 4[R15]         )
-    R_BSP_ASM(    EMULU      [R15].L, R4        )
-    R_BSP_ASM(    MOV.L      4[R15], [R3]       )
-    R_BSP_ASM(    MOV.L      R5, [R14]          )
-    R_BSP_ASM(    POP        R15                )
-    R_BSP_ASM(    POP        R14                )
-    R_BSP_ASM(    POP        R5                 )
-    R_BSP_ASM_END
-} /* End of function R_BSP_CalcAtan_SquareRoot_Fpn() */
+      R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R5) R_BSP_ASM(PUSH.L R14) R_BSP_ASM(PUSH.L R15)
+        R_BSP_ASM(MOV.L R4, R14) R_BSP_ASM(MOV.L#81428H, R15) R_BSP_ASM(MOV.L R2, [R15])
+          R_BSP_ASM(MOV.L#9B74EDA8H, R4) R_BSP_ASM(MOV.L R1, 4 [R15]) R_BSP_ASM(EMULU[R15].L, R4)
+            R_BSP_ASM(MOV.L 4 [R15], [R3]) R_BSP_ASM(MOV.L R5, [R14]) R_BSP_ASM(POP R15)
+              R_BSP_ASM(POP R14) R_BSP_ASM(POP R5) R_BSP_ASM_END}
+/* End of function R_BSP_CalcAtan_SquareRoot_Fpn() */
 
 /***********************************************************************************************************************
 * Function Name: bsp_calc_atan_fsp
@@ -1171,22 +1030,14 @@ void R_BSP_CalcAtan_SquareRoot_Fpn(int32_t y, int32_t x, int32_t *atan2, int32_t
 *                x - Coordinate x (the denominator of the tangent)
 * Return Value : none
 ***********************************************************************************************************************/
-R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_calc_atan_fsp)
-void bsp_calc_atan_fsp(int32_t *ret, int32_t y, int32_t x)
-{
-    R_BSP_ASM_INTERNAL_USED(ret)
-    R_BSP_ASM_INTERNAL_USED(y)
-    R_BSP_ASM_INTERNAL_USED(x)
+R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_calc_atan_fsp) void bsp_calc_atan_fsp(int32_t* ret,
+                                                                         int32_t  y,
+                                                                         int32_t  x){
+  R_BSP_ASM_INTERNAL_USED(ret) R_BSP_ASM_INTERNAL_USED(y) R_BSP_ASM_INTERNAL_USED(x)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSH.L    R14             )
-    R_BSP_ASM(    MOV.L     #81428H, R14    )
-    R_BSP_ASM(    MOV.L     R3, [R14+]      )
-    R_BSP_ASM(    MOV.L     R2, [R14]       )
-    R_BSP_ASM(    MOV.L     [R14], [R1]     )
-    R_BSP_ASM(    POP       R14             )
-    R_BSP_ASM_END
-} /* End of function bsp_calc_atan_fsp() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R14) R_BSP_ASM(MOV.L#81428H, R14) R_BSP_ASM(MOV.L R3, [R14 + ])
+      R_BSP_ASM(MOV.L R2, [R14]) R_BSP_ASM(MOV.L[R14], [R1]) R_BSP_ASM(POP R14) R_BSP_ASM_END}
+/* End of function bsp_calc_atan_fsp() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_CalcAtan_Fpn
@@ -1197,11 +1048,11 @@ void bsp_calc_atan_fsp(int32_t *ret, int32_t y, int32_t x)
 ***********************************************************************************************************************/
 int32_t R_BSP_CalcAtan_Fpn(int32_t y, int32_t x)
 {
-    int32_t ret;
+  int32_t ret;
 
-    bsp_calc_atan_fsp((int32_t *)&ret, y, x);
+  bsp_calc_atan_fsp((int32_t*)&ret, y, x);
 
-    return ret;
+  return ret;
 } /* End of function R_BSP_CalcAtan_Fpn() */
 
 /***********************************************************************************************************************
@@ -1214,23 +1065,13 @@ int32_t R_BSP_CalcAtan_Fpn(int32_t y, int32_t x)
 * Return Value : Result of calculation of the square root of the sum of squares of x and y.
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_calc_squareroot_fsp)
-void bsp_calc_squareroot_fsp(int32_t *ret, int32_t y, int32_t x)
-{
-    R_BSP_ASM_INTERNAL_USED(ret)
-    R_BSP_ASM_INTERNAL_USED(y)
-    R_BSP_ASM_INTERNAL_USED(x)
+void bsp_calc_squareroot_fsp(int32_t* ret, int32_t y, int32_t x){
+  R_BSP_ASM_INTERNAL_USED(ret) R_BSP_ASM_INTERNAL_USED(y) R_BSP_ASM_INTERNAL_USED(x)
 
-    R_BSP_ASM_BEGIN
-    R_BSP_ASM(    PUSHM     R4-R5              )
-    R_BSP_ASM(    MOV.L     #81428H, R5        )
-    R_BSP_ASM(    MOV.L     R2, [R5]           )
-    R_BSP_ASM(    MOV.L     #9B74EDA8H, R4     )
-    R_BSP_ASM(    MOV.L     R3, 4[R5]          )
-    R_BSP_ASM(    EMULU     [R5].L, R4         )
-    R_BSP_ASM(    MOV.L     R5, [R1]           )
-    R_BSP_ASM(    POPM      R4-R5              )
-    R_BSP_ASM_END
-} /* End of function bsp_calc_squareroot_fsp() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSHM R4 - R5) R_BSP_ASM(MOV.L#81428H, R5) R_BSP_ASM(MOV.L R2, [R5])
+      R_BSP_ASM(MOV.L#9B74EDA8H, R4) R_BSP_ASM(MOV.L R3, 4 [R5]) R_BSP_ASM(EMULU[R5].L, R4)
+        R_BSP_ASM(MOV.L R5, [R1]) R_BSP_ASM(POPM R4 - R5) R_BSP_ASM_END}
+/* End of function bsp_calc_squareroot_fsp() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_CalcSquareRoot_fpn
@@ -1242,13 +1083,12 @@ void bsp_calc_squareroot_fsp(int32_t *ret, int32_t y, int32_t x)
 ***********************************************************************************************************************/
 int32_t R_BSP_CalcSquareRoot_Fpn(int32_t y, int32_t x)
 {
-    int32_t ret;
+  int32_t ret;
 
-    bsp_calc_squareroot_fsp((int32_t *)&ret, y, x);
+  bsp_calc_squareroot_fsp((int32_t*)&ret, y, x);
 
-    return ret;
+  return ret;
 } /* End of function R_BSP_CalcSquareRoot_Fpn() */
 #endif /* BSP_MCU_TFU_VERSION == 2 */
 #endif /* __TFU */
 #endif /* BSP_MCU_TRIGONOMETRIC */
-
