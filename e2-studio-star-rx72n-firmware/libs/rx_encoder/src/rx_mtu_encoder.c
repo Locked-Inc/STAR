@@ -1157,7 +1157,7 @@ rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channe
 
   /* Set hardware counter (limited to 16-bit) */
   const uint16_t raw_count = (uint16_t)((uint32_t)count & k_encoder_16bit_mask);
-  mtu->tcnt = raw_count;
+  mtu->tcnt                = raw_count;
 
   /* Set software state */
   s_encoder_state[channel].total_count    = count;
@@ -1320,9 +1320,9 @@ static rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t channel)
   *prcr_reg() = k_rx_prcr_unlock_all; /* Enable writes to MSTPCR (0xA50F) */
 
   if (channel <= k_mtu_channel_4) {
-    system_regs()->mstpcra &= (uint32_t)~(1UL << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
+    system_regs()->mstpcra &= (uint32_t) ~(1UL << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
   } else {
-    system_regs()->mstpcra &= (uint32_t)~(1UL << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
+    system_regs()->mstpcra &= (uint32_t) ~(1UL << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
   }
 
   *prcr_reg() = k_rx_prcr_lock; /* Lock MSTPCR (0xA500) */

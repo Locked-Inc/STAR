@@ -169,13 +169,13 @@ typedef enum : uint8_t {
  * @brief Test buffer sizes and counts
  */
 typedef enum : uint8_t {
-  k_test_size_0   = 0,  /**< Zero size */
-  k_test_size_1   = 1,  /**< Single byte */
-  k_test_size_4   = 4,  /**< 4 bytes */
-  k_test_size_5   = 5,  /**< 5 bytes */
-  k_test_size_10  = 10, /**< 10 bytes */
-  k_test_size_11  = 11, /**< 11 bytes (overflow test) */
-  k_test_size_50  = 50, /**< 50 bytes */
+  k_test_size_0   = 0,   /**< Zero size */
+  k_test_size_1   = 1,   /**< Single byte */
+  k_test_size_4   = 4,   /**< 4 bytes */
+  k_test_size_5   = 5,   /**< 5 bytes */
+  k_test_size_10  = 10,  /**< 10 bytes */
+  k_test_size_11  = 11,  /**< 11 bytes (overflow test) */
+  k_test_size_50  = 50,  /**< 50 bytes */
   k_test_size_100 = 100, /**< 100 bytes */
 } test_buffer_sizes_t;
 
@@ -284,7 +284,7 @@ static void* s_callback_context;
  */
 static void test_callback(rx_usb_port_id_t port, rx_usb_event_t event, void* ctx)
 {
-  s_last_port = port;
+  s_last_port  = port;
   s_last_event = event;
   s_callback_count++;
   s_callback_context = ctx;
@@ -1320,7 +1320,7 @@ void test_usb_flush_with_data_and_zero_timeout_returns_timeout(void)
  * @{
  */
 
-extern void rx_usb_set_line_coding(rx_usb_port_id_t port, const rx_usb_line_coding_t* coding);
+extern void     rx_usb_set_line_coding(rx_usb_port_id_t port, const rx_usb_line_coding_t* coding);
 extern uint32_t rx_usb_tx_pop(rx_usb_port_id_t port, uint8_t* data, uint32_t max_len);
 extern void     rx_usb_count_bus_reset(void);
 extern void     rx_usb_count_suspend(void);

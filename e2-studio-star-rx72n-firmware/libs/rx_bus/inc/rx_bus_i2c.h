@@ -427,9 +427,9 @@ extern "C" {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bus_i2c_write(rx_bus_manager_t* manager,
-                          const char*       bus_name,
-                          const uint8_t*    data,
-                          uint16_t          length);
+                                        const char*       bus_name,
+                                        const uint8_t*    data,
+                                        uint16_t          length);
 
 /**
  * @brief Read data from I2C device through bus manager
@@ -630,11 +630,11 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bus_i2c_write_read(rx_bus_manager_t* manager,
-                               const char*       bus_name,
-                               const uint8_t*    write_data,
-                               uint16_t          write_length,
-                               uint8_t*          read_data,
-                               uint16_t          read_length);
+                                             const char*       bus_name,
+                                             const uint8_t*    write_data,
+                                             uint16_t          write_length,
+                                             uint8_t*          read_data,
+                                             uint16_t          read_length);
 
 #ifdef __cplusplus
 }

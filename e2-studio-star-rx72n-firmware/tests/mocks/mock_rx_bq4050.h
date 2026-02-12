@@ -61,23 +61,23 @@ typedef struct rx_bus_manager_s rx_bus_manager_t;
  * @brief Battery status structure
  */
 typedef struct {
-  uint16_t voltage_mv;                    /**< Pack voltage (mV) */
+  uint16_t voltage_mv;                           /**< Pack voltage (mV) */
   uint16_t cell_voltages_mv[k_bq4050_max_cells]; /**< Cell voltages (mV) */
-  int16_t  current_ma;                    /**< Current (mA) */
-  int16_t  average_current_ma;            /**< Average current (mA) */
-  uint8_t  relative_soc;                  /**< Relative SoC (%) */
-  uint8_t  absolute_soc;                  /**< Absolute SoC (%) */
-  int16_t  temperature_c;                 /**< Temperature (°C) */
-  uint16_t remaining_capacity_mah;        /**< Remaining capacity (mAh) */
-  uint16_t full_capacity_mah;             /**< Full charge capacity (mAh) */
-  uint16_t design_capacity_mah;           /**< Design capacity (mAh) */
-  uint16_t cycle_count;                   /**< Charge cycles */
-  uint16_t time_to_empty_min;             /**< Time to empty (min) */
-  uint16_t time_to_full_min;              /**< Time to full (min) */
-  bool     is_charging;                   /**< Charging flag */
-  bool     is_fully_charged;              /**< Fully charged flag */
-  bool     is_fully_discharged;           /**< Fully discharged flag */
-  bool     is_low_capacity;               /**< Low capacity flag */
+  int16_t  current_ma;                           /**< Current (mA) */
+  int16_t  average_current_ma;                   /**< Average current (mA) */
+  uint8_t  relative_soc;                         /**< Relative SoC (%) */
+  uint8_t  absolute_soc;                         /**< Absolute SoC (%) */
+  int16_t  temperature_c;                        /**< Temperature (°C) */
+  uint16_t remaining_capacity_mah;               /**< Remaining capacity (mAh) */
+  uint16_t full_capacity_mah;                    /**< Full charge capacity (mAh) */
+  uint16_t design_capacity_mah;                  /**< Design capacity (mAh) */
+  uint16_t cycle_count;                          /**< Charge cycles */
+  uint16_t time_to_empty_min;                    /**< Time to empty (min) */
+  uint16_t time_to_full_min;                     /**< Time to full (min) */
+  bool     is_charging;                          /**< Charging flag */
+  bool     is_fully_charged;                     /**< Fully charged flag */
+  bool     is_fully_discharged;                  /**< Fully discharged flag */
+  bool     is_low_capacity;                      /**< Low capacity flag */
 } rx_bq4050_status_t;
 
 /**
@@ -115,25 +115,19 @@ bool     mock_bq4050_was_initialized(void);
  * =============================================================================
  */
 
-rx_err_t rx_bq4050_init(rx_bus_manager_t*         manager,
-                        const char*               bus_name,
-                        const rx_bq4050_config_t* config);
+rx_err_t
+rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_config_t* config);
 
-rx_err_t rx_bq4050_read_voltage(rx_bus_manager_t* manager,
-                                const char*       bus_name,
-                                uint16_t*         voltage_mv);
+rx_err_t
+rx_bq4050_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t* voltage_mv);
 
-rx_err_t rx_bq4050_read_current(rx_bus_manager_t* manager,
-                                const char*       bus_name,
-                                int16_t*          current_ma);
+rx_err_t
+rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t* current_ma);
 
-rx_err_t rx_bq4050_read_soc(rx_bus_manager_t* manager,
-                            const char*       bus_name,
-                            uint8_t*          soc);
+rx_err_t rx_bq4050_read_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc);
 
-rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
-                               const char*         bus_name,
-                               rx_bq4050_status_t* status);
+rx_err_t
+rx_bq4050_read_status(rx_bus_manager_t* manager, const char* bus_name, rx_bq4050_status_t* status);
 
 #ifdef __cplusplus
 }

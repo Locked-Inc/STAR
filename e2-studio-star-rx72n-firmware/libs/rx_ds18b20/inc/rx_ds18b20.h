@@ -727,7 +727,8 @@ typedef struct {
  * @return k_rx_err_invalid_state if device not responding
  * @return k_rx_err_crc if scratchpad CRC check fails
  */
-[[nodiscard]] rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t* config);
+[[nodiscard]] rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t*       handle,
+                                       const rx_ds18b20_config_t* config);
 
 /**
  * @brief Deinitialize DS18B20 sensor
@@ -774,7 +775,8 @@ typedef struct {
  * @return k_rx_err_invalid_state if not initialized or device not present
  * @return k_rx_err_crc if scratchpad CRC check fails
  */
-[[nodiscard]] rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle, float* temperature_celsius);
+[[nodiscard]] rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle,
+                                                   float*               temperature_celsius);
 
 /**
  * @brief Read raw temperature value
@@ -790,7 +792,8 @@ typedef struct {
  * @return k_rx_err_invalid_state if not initialized or device not present
  * @return k_rx_err_crc if scratchpad CRC check fails
  */
-[[nodiscard]] rx_err_t rx_ds18b20_read_temperature_raw(rx_ds18b20_handle_t* handle, int16_t* raw_temp);
+[[nodiscard]] rx_err_t rx_ds18b20_read_temperature_raw(rx_ds18b20_handle_t* handle,
+                                                       int16_t*             raw_temp);
 
 /**
  * @brief Set temperature resolution
@@ -806,7 +809,8 @@ typedef struct {
  * @return k_rx_err_invalid_arg if resolution out of range
  * @return k_rx_err_invalid_state if not initialized or device not present
  */
-[[nodiscard]] rx_err_t rx_ds18b20_set_resolution(rx_ds18b20_handle_t* handle, ds18b20_resolution_t resolution);
+[[nodiscard]] rx_err_t rx_ds18b20_set_resolution(rx_ds18b20_handle_t* handle,
+                                                 ds18b20_resolution_t resolution);
 
 /**
  * @brief Get current temperature resolution
@@ -819,7 +823,7 @@ typedef struct {
  * @return k_rx_err_invalid_state if not initialized
  */
 [[nodiscard]] rx_err_t rx_ds18b20_get_resolution(const rx_ds18b20_handle_t* handle,
-                                   ds18b20_resolution_t*      resolution);
+                                                 ds18b20_resolution_t*      resolution);
 
 /**
  * @brief Save configuration to EEPROM
@@ -861,7 +865,8 @@ typedef struct {
  * @return k_rx_err_null_ptr if any pointer is nullptr
  * @return k_rx_err_invalid_state if not initialized or device not present
  */
-[[nodiscard]] rx_err_t rx_ds18b20_read_power_mode(const rx_ds18b20_handle_t* handle, bool* external_power);
+[[nodiscard]] rx_err_t rx_ds18b20_read_power_mode(const rx_ds18b20_handle_t* handle,
+                                                  bool*                      external_power);
 
 /**
  * @brief Read scratchpad memory
@@ -878,7 +883,7 @@ typedef struct {
  * @return k_rx_err_crc if CRC check fails
  */
 [[nodiscard]] rx_err_t rx_ds18b20_read_scratchpad(rx_ds18b20_handle_t* handle,
-                                    uint8_t              scratchpad[k_ds18b20_scratchpad_bytes]);
+                                                  uint8_t scratchpad[k_ds18b20_scratchpad_bytes]);
 
 /**
  * @brief Get conversion time for current resolution

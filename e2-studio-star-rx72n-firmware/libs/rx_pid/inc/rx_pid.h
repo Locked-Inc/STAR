@@ -356,13 +356,20 @@ extern "C" {
  * @see rx_pid_set_integral_limits() Update integral limits at runtime
  */
 typedef struct {
-  float kp;           /**< Proportional gain (K_p): multiplies current error. Higher = faster response, risk of overshoot. */
-  float ki;           /**< Integral gain (K_i): multiplies accumulated error. Higher = faster elimination of steady-state error, risk of windup. */
-  float kd;           /**< Derivative gain (K_d): multiplies rate of error change. Higher = more damping, risk of noise amplification. */
-  float output_min;   /**< Minimum output limit (actuator lower bound). Example: -100.0 for full reverse motor duty cycle. */
-  float output_max;   /**< Maximum output limit (actuator upper bound). Example: +100.0 for full forward motor duty cycle. */
-  float integral_min; /**< Minimum integral accumulator limit (anti-windup). Prevents excessive negative integral buildup during saturation. */
-  float integral_max; /**< Maximum integral accumulator limit (anti-windup). Prevents excessive positive integral buildup during saturation. */
+  float
+    kp; /**< Proportional gain (K_p): multiplies current error. Higher = faster response, risk of overshoot. */
+  float
+    ki; /**< Integral gain (K_i): multiplies accumulated error. Higher = faster elimination of steady-state error, risk of windup. */
+  float
+    kd; /**< Derivative gain (K_d): multiplies rate of error change. Higher = more damping, risk of noise amplification. */
+  float
+    output_min; /**< Minimum output limit (actuator lower bound). Example: -100.0 for full reverse motor duty cycle. */
+  float
+    output_max; /**< Maximum output limit (actuator upper bound). Example: +100.0 for full forward motor duty cycle. */
+  float
+    integral_min; /**< Minimum integral accumulator limit (anti-windup). Prevents excessive negative integral buildup during saturation. */
+  float
+    integral_max; /**< Maximum integral accumulator limit (anti-windup). Prevents excessive positive integral buildup during saturation. */
 } rx_pid_config_t;
 
 /**
@@ -617,7 +624,8 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
  * @return k_rx_err_invalid_arg if any gain is negative or non-finite (NaN/Inf)
  * @return k_rx_fail if gain storage verification fails
  */
-[[nodiscard]] rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float ki, const float kd);
+[[nodiscard]] rx_err_t
+rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float ki, const float kd);
 
 /**
  * @brief Update PID output limits at runtime
@@ -633,7 +641,8 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
  * @return k_rx_err_invalid_state if not initialized
  * @return k_rx_err_invalid_arg if output_max <= output_min
  */
-[[nodiscard]] rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle, float output_min, float output_max);
+[[nodiscard]] rx_err_t
+rx_pid_set_output_limits(rx_pid_handle_t* handle, float output_min, float output_max);
 
 /**
  * @brief Update PID integral limits at runtime (anti-windup)

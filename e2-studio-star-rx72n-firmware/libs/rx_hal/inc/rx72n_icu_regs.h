@@ -110,8 +110,8 @@
 
 #pragma once
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -271,7 +271,7 @@ typedef enum : uint16_t {
  * @warning Do not set the same interrupt as both DTC and DMAC trigger.
  */
 typedef struct {
-  volatile uint8_t reg;                                /**< 8-bit vector number register */
+  volatile uint8_t reg;                                 /**< 8-bit vector number register */
   uint8_t          reserved[k_icu_dmrsr_entry_padding]; /**< Padding to 4-byte boundary */
 } rx_dmrsr_entry_t;
 
@@ -353,57 +353,57 @@ typedef struct {
  */
 typedef struct {
   /* Offset 0x000-0x0FF: Interrupt Request Registers */
-  volatile uint8_t  ir[k_icu_ir_count];                        /**< @0x000 IR016-IR255 */
+  volatile uint8_t ir[k_icu_ir_count]; /**< @0x000 IR016-IR255 */
 
   /* Offset 0x100-0x1FF: DTC Enable Registers */
-  volatile uint8_t  dtcer[k_icu_dtcer_count];                  /**< @0x100 DTCER026-DTCER255 */
+  volatile uint8_t dtcer[k_icu_dtcer_count]; /**< @0x100 DTCER026-DTCER255 */
 
   /* Offset 0x200-0x21F: Interrupt Enable Registers */
-  volatile uint8_t  ier[k_icu_ier_count];                      /**< @0x200 IER02-IER1F */
-  uint8_t           reserved0[k_icu_reserved_after_ier_bytes]; /**< @0x220 Reserved */
+  volatile uint8_t ier[k_icu_ier_count];                      /**< @0x200 IER02-IER1F */
+  uint8_t          reserved0[k_icu_reserved_after_ier_bytes]; /**< @0x220 Reserved */
 
   /* Offset 0x2E0-0x2E1: Software Interrupt Registers */
-  volatile uint8_t  swintr;                                    /**< @0x2E0 Software Interrupt Register */
-  volatile uint8_t  swint2r;                                   /**< @0x2E1 Software Interrupt 2 Register */
-  uint8_t           reserved1[k_icu_reserved_after_swint2r_bytes]; /**< @0x2E2 Reserved */
+  volatile uint8_t swintr;  /**< @0x2E0 Software Interrupt Register */
+  volatile uint8_t swint2r; /**< @0x2E1 Software Interrupt 2 Register */
+  uint8_t          reserved1[k_icu_reserved_after_swint2r_bytes]; /**< @0x2E2 Reserved */
 
   /* Offset 0x2F0: Fast Interrupt Register */
-  volatile uint16_t fir;                                       /**< @0x2F0 Fast Interrupt Register */
+  volatile uint16_t fir; /**< @0x2F0 Fast Interrupt Register */
   uint8_t           reserved2[k_icu_reserved_after_fir_bytes]; /**< @0x2F2 Reserved */
 
   /* Offset 0x300-0x3FF: Interrupt Priority Registers */
-  volatile uint8_t  ipr[k_icu_ipr_count];                      /**< @0x300 IPR000-IPR255 */
+  volatile uint8_t ipr[k_icu_ipr_count]; /**< @0x300 IPR000-IPR255 */
 
   /* Offset 0x400-0x41F: DMAC Module Start Registers (4-byte aligned 8-bit regs) */
-  rx_dmrsr_entry_t  dmrsr[k_icu_dmrsr_count];                  /**< @0x400 DMRSR0-DMRSR7 (4-byte spacing!) */
-  uint8_t           reserved3[k_icu_reserved_after_dmrsr_bytes]; /**< @0x420 Reserved (FIXED from 0x408) */
+  rx_dmrsr_entry_t dmrsr[k_icu_dmrsr_count]; /**< @0x400 DMRSR0-DMRSR7 (4-byte spacing!) */
+  uint8_t reserved3[k_icu_reserved_after_dmrsr_bytes]; /**< @0x420 Reserved (FIXED from 0x408) */
 
   /* Offset 0x500-0x50F: IRQ Control Registers */
-  volatile uint8_t  irqcr[k_icu_irqcr_count];                  /**< @0x500 IRQCR0-IRQCR15 */
-  uint8_t           reserved4[k_icu_reserved_after_irqcr_bytes]; /**< @0x510 Reserved */
+  volatile uint8_t irqcr[k_icu_irqcr_count];                    /**< @0x500 IRQCR0-IRQCR15 */
+  uint8_t          reserved4[k_icu_reserved_after_irqcr_bytes]; /**< @0x510 Reserved */
 
   /* Offset 0x520-0x52D: IRQ Filter Registers */
-  volatile uint8_t  irqflte[k_icu_irqflte_count];              /**< @0x520 IRQFLTE0-IRQFLTE1 */
+  volatile uint8_t  irqflte[k_icu_irqflte_count];                  /**< @0x520 IRQFLTE0-IRQFLTE1 */
   uint8_t           reserved5[k_icu_reserved_after_irqflte_bytes]; /**< @0x522 Reserved */
-  volatile uint16_t irqfltc[k_icu_irqfltc_count];              /**< @0x528 IRQFLTC0-IRQFLTC1 */
+  volatile uint16_t irqfltc[k_icu_irqfltc_count];                  /**< @0x528 IRQFLTC0-IRQFLTC1 */
   uint8_t           reserved6[k_icu_reserved_after_irqfltc_bytes]; /**< @0x52C Reserved */
 
   /* Offset 0x580-0x597: NMI Registers (CORRECTED ORDER - Manual Ch15 Section 15.2.13-15.2.22) */
-  volatile uint8_t  nmisr;                                     /**< @0x580 NMI Status Register */
-  volatile uint8_t  nmier;                                     /**< @0x581 NMI Enable Register */
-  volatile uint8_t  nmiclr;                                    /**< @0x582 NMI Clear Register */
-  volatile uint8_t  nmicr;                                     /**< @0x583 NMI Control Register (FIXED: was uint32_t) */
+  volatile uint8_t nmisr;  /**< @0x580 NMI Status Register */
+  volatile uint8_t nmier;  /**< @0x581 NMI Enable Register */
+  volatile uint8_t nmiclr; /**< @0x582 NMI Clear Register */
+  volatile uint8_t nmicr;  /**< @0x583 NMI Control Register (FIXED: was uint32_t) */
 
   /* Offset 0x584-0x58F: Extended NMI Registers (ADDED - were missing) */
-  volatile uint8_t  exnmisr;                                   /**< @0x584 Extended NMI Status Register */
-  volatile uint8_t  exnmier;                                   /**< @0x585 Extended NMI Enable Register */
-  volatile uint8_t  exnmiclr;                                  /**< @0x586 Extended NMI Clear Register */
-  uint8_t           reserved7[k_icu_reserved_after_exnmiclr_bytes]; /**< @0x587 Reserved */
+  volatile uint8_t exnmisr;  /**< @0x584 Extended NMI Status Register */
+  volatile uint8_t exnmier;  /**< @0x585 Extended NMI Enable Register */
+  volatile uint8_t exnmiclr; /**< @0x586 Extended NMI Clear Register */
+  uint8_t          reserved7[k_icu_reserved_after_exnmiclr_bytes]; /**< @0x587 Reserved */
 
   /* Offset 0x590-0x597: NMI Filter Registers (CORRECTED) */
-  volatile uint8_t  nmiflte;                                   /**< @0x590 NMI Filter Enable Register (ADDED - was missing) */
-  uint8_t           reserved8[k_icu_reserved_after_nmiflte_bytes]; /**< @0x591 Reserved */
-  volatile uint8_t  nmifltc;                                   /**< @0x594 NMI Filter Clock Select Register (RENAMED from nmiflt) */
+  volatile uint8_t nmiflte; /**< @0x590 NMI Filter Enable Register (ADDED - was missing) */
+  uint8_t          reserved8[k_icu_reserved_after_nmiflte_bytes]; /**< @0x591 Reserved */
+  volatile uint8_t nmifltc; /**< @0x594 NMI Filter Clock Select Register (RENAMED from nmiflt) */
 } rx_icu_regs_t;
 
 /**
@@ -520,25 +520,35 @@ static_assert(k_icu_base_addr == 0x00087000, "ICU base address must be 0x0008700
 static_assert(offsetof(rx_icu_regs_t, ir) == 0x000, "IR offset must be 0x000 (@ 0x00087000)");
 static_assert(offsetof(rx_icu_regs_t, dtcer) == 0x100, "DTCER offset must be 0x100 (@ 0x00087100)");
 static_assert(offsetof(rx_icu_regs_t, ier) == 0x200, "IER offset must be 0x200 (@ 0x00087200)");
-static_assert(offsetof(rx_icu_regs_t, swintr) == 0x2E0, "SWINTR offset must be 0x2E0 (@ 0x000872E0)");
-static_assert(offsetof(rx_icu_regs_t, swint2r) == 0x2E1, "SWINT2R offset must be 0x2E1 (@ 0x000872E1)");
+static_assert(offsetof(rx_icu_regs_t, swintr) == 0x2E0,
+              "SWINTR offset must be 0x2E0 (@ 0x000872E0)");
+static_assert(offsetof(rx_icu_regs_t, swint2r) == 0x2E1,
+              "SWINT2R offset must be 0x2E1 (@ 0x000872E1)");
 static_assert(offsetof(rx_icu_regs_t, fir) == 0x2F0, "FIR offset must be 0x2F0 (@ 0x000872F0)");
 static_assert(offsetof(rx_icu_regs_t, ipr) == 0x300, "IPR offset must be 0x300 (@ 0x00087300)");
 static_assert(offsetof(rx_icu_regs_t, dmrsr) == 0x400, "DMRSR offset must be 0x400 (@ 0x00087400)");
 static_assert(offsetof(rx_icu_regs_t, irqcr) == 0x500, "IRQCR offset must be 0x500 (@ 0x00087500)");
-static_assert(offsetof(rx_icu_regs_t, irqflte) == 0x520, "IRQFLTE offset must be 0x520 (@ 0x00087520)");
-static_assert(offsetof(rx_icu_regs_t, irqfltc) == 0x528, "IRQFLTC offset must be 0x528 (@ 0x00087528)");
+static_assert(offsetof(rx_icu_regs_t, irqflte) == 0x520,
+              "IRQFLTE offset must be 0x520 (@ 0x00087520)");
+static_assert(offsetof(rx_icu_regs_t, irqfltc) == 0x528,
+              "IRQFLTC offset must be 0x528 (@ 0x00087528)");
 
 /* Verify NMI register offsets (Ch15 Section 15.2.13-15.2.22) - CRITICAL */
 static_assert(offsetof(rx_icu_regs_t, nmisr) == 0x580, "NMISR offset must be 0x580 (@ 0x00087580)");
 static_assert(offsetof(rx_icu_regs_t, nmier) == 0x581, "NMIER offset must be 0x581 (@ 0x00087581)");
-static_assert(offsetof(rx_icu_regs_t, nmiclr) == 0x582, "NMICLR offset must be 0x582 (@ 0x00087582)");
+static_assert(offsetof(rx_icu_regs_t, nmiclr) == 0x582,
+              "NMICLR offset must be 0x582 (@ 0x00087582)");
 static_assert(offsetof(rx_icu_regs_t, nmicr) == 0x583, "NMICR offset must be 0x583 (@ 0x00087583)");
-static_assert(offsetof(rx_icu_regs_t, exnmisr) == 0x584, "EXNMISR offset must be 0x584 (@ 0x00087584)");
-static_assert(offsetof(rx_icu_regs_t, exnmier) == 0x585, "EXNMIER offset must be 0x585 (@ 0x00087585)");
-static_assert(offsetof(rx_icu_regs_t, exnmiclr) == 0x586, "EXNMICLR offset must be 0x586 (@ 0x00087586)");
-static_assert(offsetof(rx_icu_regs_t, nmiflte) == 0x590, "NMIFLTE offset must be 0x590 (@ 0x00087590)");
-static_assert(offsetof(rx_icu_regs_t, nmifltc) == 0x594, "NMIFLTC offset must be 0x594 (@ 0x00087594)");
+static_assert(offsetof(rx_icu_regs_t, exnmisr) == 0x584,
+              "EXNMISR offset must be 0x584 (@ 0x00087584)");
+static_assert(offsetof(rx_icu_regs_t, exnmier) == 0x585,
+              "EXNMIER offset must be 0x585 (@ 0x00087585)");
+static_assert(offsetof(rx_icu_regs_t, exnmiclr) == 0x586,
+              "EXNMICLR offset must be 0x586 (@ 0x00087586)");
+static_assert(offsetof(rx_icu_regs_t, nmiflte) == 0x590,
+              "NMIFLTE offset must be 0x590 (@ 0x00087590)");
+static_assert(offsetof(rx_icu_regs_t, nmifltc) == 0x594,
+              "NMIFLTC offset must be 0x594 (@ 0x00087594)");
 
 /* Verify register sizes */
 static_assert(sizeof(((rx_icu_regs_t*)0)->nmicr) == 1, "NMICR must be 8-bit (1 byte), not 32-bit");

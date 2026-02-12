@@ -99,17 +99,17 @@
  *       for consistency and readability.
  */
 #ifdef RX_SIMULATOR_MODE
-  #define RX_IS_SIMULATOR 1
+#define RX_IS_SIMULATOR 1
 
-  /**
+/**
    * @warning RX_SIMULATOR_MODE: This build is FOR SIMULATOR ONLY.
    *
    * Do not flash to hardware. Simulator builds skip hardware initialization
    * steps and may not configure peripherals correctly for real operation.
    */
-  #warning "RX_SIMULATOR_MODE: This build is FOR SIMULATOR ONLY. Do not flash to hardware."
+#warning "RX_SIMULATOR_MODE: This build is FOR SIMULATOR ONLY. Do not flash to hardware."
 #else
-  #define RX_IS_SIMULATOR 0
+#define RX_IS_SIMULATOR 0
 #endif
 
 /* =========================================================================
@@ -143,5 +143,5 @@
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_sim_clock_instant = 1,  /**< Skip delay entirely (assume immediate ready) */
+  k_sim_clock_instant = 1, /**< Skip delay entirely (assume immediate ready) */
 } simulator_clock_timing_t;

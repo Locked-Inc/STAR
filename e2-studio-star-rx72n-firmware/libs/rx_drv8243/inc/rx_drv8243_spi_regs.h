@@ -1221,11 +1221,11 @@ typedef enum : uint8_t {
  * @brief COMMAND register bit masks
  */
 typedef enum : uint8_t {
-  k_drv8243_cmd_clr_flt_mask      = (1 << 7), /**< Clear fault mask */
-  k_drv8243_cmd_spi_in_lock_mask  = (3 << 3), /**< SPI_IN lock mask (2 bits) */
-  k_drv8243_cmd_reg_lock_mask     = (3 << 0), /**< REG_LOCK mask (2 bits) */
-  k_drv8243_cmd_reg_lock_unlock   = (2 << 0), /**< Unlock config registers (10b) */
-  k_drv8243_cmd_reg_lock_locked   = (1 << 0), /**< Lock config registers (01b) */
+  k_drv8243_cmd_clr_flt_mask     = (1 << 7), /**< Clear fault mask */
+  k_drv8243_cmd_spi_in_lock_mask = (3 << 3), /**< SPI_IN lock mask (2 bits) */
+  k_drv8243_cmd_reg_lock_mask    = (3 << 0), /**< REG_LOCK mask (2 bits) */
+  k_drv8243_cmd_reg_lock_unlock  = (2 << 0), /**< Unlock config registers (10b) */
+  k_drv8243_cmd_reg_lock_locked  = (1 << 0), /**< Lock config registers (01b) */
 } drv8243_command_masks_t;
 
 /* =============================================================================
@@ -1410,13 +1410,15 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_drv8243_itrip_disabled = 0, /**< ITRIP disabled (no soft current limiting, OCP only) */
-  k_drv8243_itrip_1v18     = 1, /**< 1.18V threshold -> ~0.62A @ 1.9V/A ratio (SPI only, low-power motors) */
-  k_drv8243_itrip_1v41     = 2, /**< 1.41V threshold -> ~0.74A @ 1.9V/A ratio (SPI only, conservative) */
-  k_drv8243_itrip_1v65     = 3, /**< 1.65V threshold -> ~0.87A @ 1.9V/A ratio (hardware default) */
-  k_drv8243_itrip_1v98     = 4, /**< 1.98V threshold -> ~1.04A @ 1.9V/A ratio (STAR project) */
-  k_drv8243_itrip_2v31     = 5, /**< 2.31V threshold -> ~1.22A @ 1.9V/A ratio (moderate overload) */
-  k_drv8243_itrip_2v64     = 6, /**< 2.64V threshold -> ~1.39A @ 1.9V/A ratio (high current) */
-  k_drv8243_itrip_2v97     = 7, /**< 2.97V threshold -> ~1.57A @ 1.9V/A ratio (SPI only, maximum) */
+  k_drv8243_itrip_1v18 =
+    1, /**< 1.18V threshold -> ~0.62A @ 1.9V/A ratio (SPI only, low-power motors) */
+  k_drv8243_itrip_1v41 =
+    2, /**< 1.41V threshold -> ~0.74A @ 1.9V/A ratio (SPI only, conservative) */
+  k_drv8243_itrip_1v65 = 3, /**< 1.65V threshold -> ~0.87A @ 1.9V/A ratio (hardware default) */
+  k_drv8243_itrip_1v98 = 4, /**< 1.98V threshold -> ~1.04A @ 1.9V/A ratio (STAR project) */
+  k_drv8243_itrip_2v31 = 5, /**< 2.31V threshold -> ~1.22A @ 1.9V/A ratio (moderate overload) */
+  k_drv8243_itrip_2v64 = 6, /**< 2.64V threshold -> ~1.39A @ 1.9V/A ratio (high current) */
+  k_drv8243_itrip_2v97 = 7, /**< 2.97V threshold -> ~1.57A @ 1.9V/A ratio (SPI only, maximum) */
 } drv8243_itrip_level_t;
 
 /* =============================================================================
@@ -1567,14 +1569,14 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_drv8243_slew_1v6_us  = 0, /**< 1.6 V/µs (slowest, lowest EMI, highest switching loss) */
-  k_drv8243_slew_3v3_us  = 1, /**< 3.3 V/µs (very slow, low EMI) */
-  k_drv8243_slew_6v6_us  = 2, /**< 6.6 V/µs (slow, reduced EMI) */
-  k_drv8243_slew_13v_us  = 3, /**< 13 V/µs (moderate, balanced) */
-  k_drv8243_slew_20v_us  = 4, /**< 20 V/µs (STAR project default, good balance) */
-  k_drv8243_slew_30v_us  = 5, /**< 30 V/µs (fast, lower loss) */
-  k_drv8243_slew_40v_us  = 6, /**< 40 V/µs (very fast, minimal loss) */
-  k_drv8243_slew_47v_us  = 7, /**< 47 V/µs (fastest, lowest switching loss, highest EMI) */
+  k_drv8243_slew_1v6_us = 0, /**< 1.6 V/µs (slowest, lowest EMI, highest switching loss) */
+  k_drv8243_slew_3v3_us = 1, /**< 3.3 V/µs (very slow, low EMI) */
+  k_drv8243_slew_6v6_us = 2, /**< 6.6 V/µs (slow, reduced EMI) */
+  k_drv8243_slew_13v_us = 3, /**< 13 V/µs (moderate, balanced) */
+  k_drv8243_slew_20v_us = 4, /**< 20 V/µs (STAR project default, good balance) */
+  k_drv8243_slew_30v_us = 5, /**< 30 V/µs (fast, lower loss) */
+  k_drv8243_slew_40v_us = 6, /**< 40 V/µs (very fast, minimal loss) */
+  k_drv8243_slew_47v_us = 7, /**< 47 V/µs (fastest, lowest switching loss, highest EMI) */
 } drv8243_slew_rate_t;
 
 /**
@@ -1669,10 +1671,12 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_drv8243_mode_ph_en       = 0, /**< PH/EN mode: Phase (direction) + Enable (PWM speed) — STAR default */
-  k_drv8243_mode_independent = 1, /**< Independent half-bridge mode: Dual motor or custom H-bridge */
-  k_drv8243_mode_pwm_2       = 2, /**< PWM mode 2: Datasheet-specific (see DRV8243-Q1 section 8.3.7) */
-  k_drv8243_mode_pwm_3       = 3, /**< PWM mode 3: Datasheet-specific (see DRV8243-Q1 section 8.3.7) */
+  k_drv8243_mode_ph_en =
+    0, /**< PH/EN mode: Phase (direction) + Enable (PWM speed) — STAR default */
+  k_drv8243_mode_independent =
+    1,                      /**< Independent half-bridge mode: Dual motor or custom H-bridge */
+  k_drv8243_mode_pwm_2 = 2, /**< PWM mode 2: Datasheet-specific (see DRV8243-Q1 section 8.3.7) */
+  k_drv8243_mode_pwm_3 = 3, /**< PWM mode 3: Datasheet-specific (see DRV8243-Q1 section 8.3.7) */
 } drv8243_control_mode_t;
 
 /**
@@ -1773,10 +1777,13 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_drv8243_toff_20us = 0, /**< 20 µs off-time (fast regulation, low ripple, higher switching loss) */
-  k_drv8243_toff_30us = 1, /**< 30 µs off-time (STAR default, balanced ripple/loss, 33 kHz regulation) */
+  k_drv8243_toff_20us =
+    0, /**< 20 µs off-time (fast regulation, low ripple, higher switching loss) */
+  k_drv8243_toff_30us =
+    1, /**< 30 µs off-time (STAR default, balanced ripple/loss, 33 kHz regulation) */
   k_drv8243_toff_40us = 2, /**< 40 µs off-time (moderate regulation, moderate ripple, lower loss) */
-  k_drv8243_toff_50us = 3, /**< 50 µs off-time (slow regulation, high ripple, lowest switching loss) */
+  k_drv8243_toff_50us =
+    3, /**< 50 µs off-time (slow regulation, high ripple, lowest switching loss) */
 } drv8243_toff_t;
 
 /* =============================================================================
@@ -1985,9 +1992,12 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_drv8243_ocp_filter_1us = 0, /**< 1 µs filter (fastest, lowest noise immunity, high false trip risk) */
-  k_drv8243_ocp_filter_2us = 1, /**< 2 µs filter (STAR default, balanced noise immunity and protection speed) */
-  k_drv8243_ocp_filter_4us = 2, /**< 4 µs filter (excellent noise immunity, moderate protection speed) */
+  k_drv8243_ocp_filter_1us =
+    0, /**< 1 µs filter (fastest, lowest noise immunity, high false trip risk) */
+  k_drv8243_ocp_filter_2us =
+    1, /**< 2 µs filter (STAR default, balanced noise immunity and protection speed) */
+  k_drv8243_ocp_filter_4us =
+    2, /**< 4 µs filter (excellent noise immunity, moderate protection speed) */
   k_drv8243_ocp_filter_8us = 3, /**< 8 µs filter (maximum noise immunity, slowest protection) */
 } drv8243_ocp_filter_t;
 
@@ -2379,11 +2389,11 @@ static inline uint16_t drv8243_spi_set_parity(uint16_t frame)
  *
  * @since Version 1.0.0
  */
-#define DRV8243_SPI_WRITE_FRAME(addr, data) \
-  drv8243_spi_set_parity(                  \
-    (uint16_t)(k_drv8243_spi_cmd_write |   \
-    (((uint16_t)(addr)&k_drv8243_spi_addr_value_mask) << k_drv8243_spi_addr_shift) | \
-    ((uint16_t)(data)&k_drv8243_spi_data_mask)))
+#define DRV8243_SPI_WRITE_FRAME(addr, data)                                                        \
+  drv8243_spi_set_parity(                                                                          \
+    (uint16_t)(k_drv8243_spi_cmd_write |                                                           \
+               (((uint16_t)(addr) & k_drv8243_spi_addr_value_mask) << k_drv8243_spi_addr_shift) |  \
+               ((uint16_t)(data) & k_drv8243_spi_data_mask)))
 
 /**
  * @def DRV8243_SPI_READ_FRAME
@@ -2492,10 +2502,10 @@ static inline uint16_t drv8243_spi_set_parity(uint16_t frame)
  *
  * @since Version 1.0.0
  */
-#define DRV8243_SPI_READ_FRAME(addr) \
-  drv8243_spi_set_parity(                \
-    (uint16_t)(k_drv8243_spi_cmd_read |  \
-    (((uint16_t)(addr)&k_drv8243_spi_addr_value_mask) << k_drv8243_spi_addr_shift)))
+#define DRV8243_SPI_READ_FRAME(addr)                                                               \
+  drv8243_spi_set_parity(                                                                          \
+    (uint16_t)(k_drv8243_spi_cmd_read |                                                            \
+               (((uint16_t)(addr) & k_drv8243_spi_addr_value_mask) << k_drv8243_spi_addr_shift)))
 
 /**
  * @def DRV8243_SPI_GET_STATUS
@@ -2716,7 +2726,7 @@ static inline uint16_t drv8243_spi_set_parity(uint16_t frame)
  *
  * @since Version 1.0.0
  */
-#define DRV8243_SPI_GET_DATA(response) ((uint8_t)((response)&k_drv8243_spi_data_mask))
+#define DRV8243_SPI_GET_DATA(response) ((uint8_t)((response) & k_drv8243_spi_data_mask))
 
 #ifdef __cplusplus
 }

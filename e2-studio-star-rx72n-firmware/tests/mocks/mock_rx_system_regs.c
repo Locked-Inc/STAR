@@ -14,6 +14,7 @@
  */
 
 #include "mock_rx_system_regs.h"
+
 #include "rx72n_iwdt_regs.h"
 #include "rx72n_system_regs.h"
 
@@ -198,8 +199,8 @@ void mock_system_regs_simulate_warm_boot(void)
 
 void mock_system_regs_simulate_iwdt_timeout(void)
 {
-  s_rstsr0 = 0;                  /* PORF=0 (not a cold boot) */
-  s_rstsr1 = k_rstsr1_cwsf_bit;  /* CWSF=1 (warm start) */
+  s_rstsr0 = 0;                   /* PORF=0 (not a cold boot) */
+  s_rstsr1 = k_rstsr1_cwsf_bit;   /* CWSF=1 (warm start) */
   s_rstsr2 = k_rstsr2_iwdtrf_bit; /* IWDTRF=1 (CRITICAL!) */
 
   s_rstsr01_regs.rstsr0 = s_rstsr0;

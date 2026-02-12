@@ -150,11 +150,11 @@ typedef enum : uint32_t {
   k_lvd2sr_addr  = 0x000800E3, /**< Voltage Monitor 2 Status Register */
 
   /* Second register block (0x0008C297-0x0008C29B) */
-  k_lvcmpcr_addr  = 0x0008C297, /**< Voltage Monitor Circuit Control Register */
-  k_lvdlvlr_addr  = 0x0008C298, /**< Voltage Detection Level Select Register */
+  k_lvcmpcr_addr = 0x0008C297, /**< Voltage Monitor Circuit Control Register */
+  k_lvdlvlr_addr = 0x0008C298, /**< Voltage Detection Level Select Register */
   /* Note: 0x0008C299 is reserved */
-  k_lvd1cr0_addr  = 0x0008C29A, /**< Voltage Monitor 1 Control Register 0 */
-  k_lvd2cr0_addr  = 0x0008C29B, /**< Voltage Monitor 2 Control Register 0 */
+  k_lvd1cr0_addr = 0x0008C29A, /**< Voltage Monitor 1 Control Register 0 */
+  k_lvd2cr0_addr = 0x0008C29B, /**< Voltage Monitor 2 Control Register 0 */
 } rx_lvda_addresses_t;
 
 /* =============================================================================
@@ -351,7 +351,7 @@ typedef enum : uint8_t {
   k_lvd_idtsel_both = 0x02, /**< Interrupt on both rise and drop */
 
   /* Interrupt type select (IRQSEL) */
-  k_lvd_irqsel_nmi     = (0 << 2), /**< Non-maskable interrupt */
+  k_lvd_irqsel_nmi      = (0 << 2), /**< Non-maskable interrupt */
   k_lvd_irqsel_maskable = (1 << 2), /**< Maskable interrupt */
 
   /* Field masks */
@@ -369,10 +369,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_lvd_det_clear   = 0x00, /**< Clear detection flag (write) */
+  k_lvd_det_clear    = 0x00, /**< Clear detection flag (write) */
   k_lvd_det_detected = 0x01, /**< Vdet passage detected (read) */
-  k_lvd_mon_below   = 0x00, /**< VCC < Vdet (read) */
-  k_lvd_mon_above   = 0x02, /**< VCC >= Vdet or monitor disabled (read) */
+  k_lvd_mon_below    = 0x00, /**< VCC < Vdet (read) */
+  k_lvd_mon_above    = 0x02, /**< VCC >= Vdet or monitor disabled (read) */
 
   /* Field masks */
   k_lvd_det_mask = 0x01, /**< DET flag mask (bit 0) */
@@ -480,7 +480,7 @@ typedef enum : uint8_t {
   k_lvd_ri_reset     = (1 << 6), /**< Generate reset when voltage falls below Vdet */
 
   /* Reset negate select (RN) */
-  k_lvd_rn_vcc_above  = (0 << 7), /**< Negate after VCC > Vdet detected */
+  k_lvd_rn_vcc_above    = (0 << 7), /**< Negate after VCC > Vdet detected */
   k_lvd_rn_after_assert = (1 << 7), /**< Negate after stabilization time from assert */
 
   /* Field masks */

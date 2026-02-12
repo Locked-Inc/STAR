@@ -388,19 +388,19 @@
 
 #include "motor_control_task.h"
 
+#include <string.h>
+
 #include "hardware_config.h"
 #include "rx_bus_manager.h"
 #include "rx_check.h"
 #include "rx_drv8243.h"
+#include "rx_encoder_tpu.h"
 #include "rx_log.h"
 #include "rx_motor.h"
-#include "rx_encoder_tpu.h"
 #include "rx_mtu_encoder.h"
 #include "rx_pid.h"
 #include "shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
 
 /** @brief Global bus manager instance (defined in shared_data.c) */
 extern rx_bus_manager_t g_bus_manager;
@@ -426,12 +426,12 @@ typedef enum : uint16_t {
  * @brief Motor control algorithm constants
  */
 typedef enum : uint16_t {
-  k_motor_count             = 4,      /**< Number of motors */
-  k_control_period_us       = 4000,   /**< Control period (4ms = 250 Hz) */
-  k_active_brake_ms         = 50,     /**< Active brake duration (50ms) */
-  k_active_brake_duty       = 30,     /**< Active brake PWM duty (30%) */
-  k_pwm_frequency_hz        = 20000,  /**< PWM frequency (20 kHz) */
-  k_encoder_counts_per_rev  = 1364,   /**< 341 PPR x 4 quadrature */
+  k_motor_count            = 4,     /**< Number of motors */
+  k_control_period_us      = 4000,  /**< Control period (4ms = 250 Hz) */
+  k_active_brake_ms        = 50,    /**< Active brake duration (50ms) */
+  k_active_brake_duty      = 30,    /**< Active brake PWM duty (30%) */
+  k_pwm_frequency_hz       = 20000, /**< PWM frequency (20 kHz) */
+  k_encoder_counts_per_rev = 1364,  /**< 341 PPR x 4 quadrature */
 } motor_control_constants_t;
 
 /**
@@ -456,11 +456,11 @@ typedef enum : uint8_t {
  * @brief Motor hardware configuration constants
  */
 typedef enum : uint32_t {
-  k_motor_pwm_freq_hz      = 20000, /**< PWM frequency (20 kHz) */
-  k_motor_dead_time_ns     = 1000,  /**< Dead-time between H-bridge switches (1 us) */
-  k_motor_current_limit_ma = 2000,  /**< Software current limit (2A) */
-  k_motor_ki_propi         = 525,   /**< Default IPROPI current-sense ratio (525 A/V) */
-  k_threadx_tick_interval_ms = 10,  /**< ThreadX tick period (10ms at 100 Hz tick) */
+  k_motor_pwm_freq_hz        = 20000, /**< PWM frequency (20 kHz) */
+  k_motor_dead_time_ns       = 1000,  /**< Dead-time between H-bridge switches (1 us) */
+  k_motor_current_limit_ma   = 2000,  /**< Software current limit (2A) */
+  k_motor_ki_propi           = 525,   /**< Default IPROPI current-sense ratio (525 A/V) */
+  k_threadx_tick_interval_ms = 10,    /**< ThreadX tick period (10ms at 100 Hz tick) */
 } motor_hw_constants_t;
 
 /** @brief Default PID proportional gain (MATLAB-tuned) */
@@ -539,10 +539,9 @@ static void     internal_control_loop_iteration(void);
 static void     internal_active_brake_sequence(void);
 static void     internal_apply_pid_updates(void);
 static void     internal_check_comm_timeout(void);
-static rx_err_t internal_read_encoder_velocity(float* velocity_rps, float dt_sec,
-                                               uint8_t motor_idx);
-static rx_err_t internal_read_encoder_count(uint8_t motor_idx,
-                                            rx_encoder_state_t* state);
+static rx_err_t
+internal_read_encoder_velocity(float* velocity_rps, float dt_sec, uint8_t motor_idx);
+static rx_err_t internal_read_encoder_count(uint8_t motor_idx, rx_encoder_state_t* state);
 static void     internal_update_motor_state(void);
 static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t motor_idx);
 
@@ -1419,20 +1418,20 @@ static rx_err_t internal_init_motor_stack(void)
 
   /* Step 2: Initialize GPTW motor PWM outputs and front encoders */
   const rx_gptw_channel_t gptw_channels[k_motor_count] = {
-    k_gptw_channel_0,  /* Motor 0: Front-left */
-    k_gptw_channel_1,  /* Motor 1: Front-right */
-    k_gptw_channel_2,  /* Motor 2: Rear-left */
-    k_gptw_channel_3   /* Motor 3: Rear-right */
+    k_gptw_channel_0, /* Motor 0: Front-left */
+    k_gptw_channel_1, /* Motor 1: Front-right */
+    k_gptw_channel_2, /* Motor 2: Rear-left */
+    k_gptw_channel_3  /* Motor 3: Rear-right */
   };
 
   for (uint8_t i = 0; i < k_motor_count; i++) {
     rx_motor_config_t motor_config = {
-      .channel       = gptw_channels[i],
-      .output_a      = k_gptw_output_a,  /* PH (Phase/Direction) */
-      .output_b      = k_gptw_output_b,  /* EN (Enable/Speed) */
-      .pwm_freq_hz   = k_motor_pwm_freq_hz,  /* 20 kHz PWM */
-      .dead_time_ns  = k_motor_dead_time_ns,  /* 1 us dead-time */
-      .invert_pwm    = false             /* Active-high logic */
+      .channel      = gptw_channels[i],
+      .output_a     = k_gptw_output_a,      /* PH (Phase/Direction) */
+      .output_b     = k_gptw_output_b,      /* EN (Enable/Speed) */
+      .pwm_freq_hz  = k_motor_pwm_freq_hz,  /* 20 kHz PWM */
+      .dead_time_ns = k_motor_dead_time_ns, /* 1 us dead-time */
+      .invert_pwm   = false                 /* Active-high logic */
     };
 
     err = rx_motor_init(&s_motors[i], &motor_config);
@@ -1549,16 +1548,14 @@ static rx_err_t internal_init_encoders(void)
 
   /* Front encoders: MTU1 (motor 0) and MTU2 (motor 1) */
   const rx_mtu_channel_t front_mtu_channels[k_front_encoder_count] = {
-    k_mtu_channel_1,  /* Motor 0: Front-left */
-    k_mtu_channel_2   /* Motor 1: Front-right */
+    k_mtu_channel_1, /* Motor 0: Front-left */
+    k_mtu_channel_2  /* Motor 1: Front-right */
   };
 
   for (uint8_t i = 0; i < k_front_encoder_count; i++) {
-    rx_encoder_config_t encoder_config = {
-      .channel          = front_mtu_channels[i],
-      .counts_per_rev   = k_encoder_counts_per_rev,
-      .invert_direction = false
-    };
+    rx_encoder_config_t encoder_config = {.channel          = front_mtu_channels[i],
+                                          .counts_per_rev   = k_encoder_counts_per_rev,
+                                          .invert_direction = false};
 
     err = rx_encoder_init(&encoder_config);
     if (err != k_rx_ok) {
@@ -1569,25 +1566,24 @@ static rx_err_t internal_init_encoders(void)
 
   /* Rear encoders: TPU1 (motor 2) and TPU2 (motor 3) */
   const rx_tpu_channel_t rear_tpu_channels[k_rear_encoder_count] = {
-    k_tpu_channel_1,  /* Motor 2: Rear-left */
-    k_tpu_channel_2   /* Motor 3: Rear-right */
+    k_tpu_channel_1, /* Motor 2: Rear-left */
+    k_tpu_channel_2  /* Motor 3: Rear-right */
   };
 
   const bool rear_invert[k_rear_encoder_count] = {
-    false,  /* Motor 2 (RL): normal direction */
-    true    /* Motor 3 (RR): inverted (mirrored mounting) */
+    false, /* Motor 2 (RL): normal direction */
+    true   /* Motor 3 (RR): inverted (mirrored mounting) */
   };
 
   for (uint8_t i = 0; i < k_rear_encoder_count; i++) {
-    rx_tpu_encoder_config_t tpu_config = {
-      .channel          = rear_tpu_channels[i],
-      .counts_per_rev   = k_encoder_counts_per_rev,
-      .invert_direction = rear_invert[i]
-    };
+    rx_tpu_encoder_config_t tpu_config = {.channel          = rear_tpu_channels[i],
+                                          .counts_per_rev   = k_encoder_counts_per_rev,
+                                          .invert_direction = rear_invert[i]};
 
     err = rx_tpu_encoder_init(&tpu_config);
     if (err != k_rx_ok) {
-      rx_log_error_val(s_tag, "TPU encoder init failed for motor",
+      rx_log_error_val(s_tag,
+                       "TPU encoder init failed for motor",
                        (uint8_t)(i + k_front_encoder_count));
       return err;
     }
@@ -1617,19 +1613,16 @@ static rx_err_t internal_init_encoders(void)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_read_encoder_velocity(float*        velocity_rps,
-                                               const float   dt_sec,
-                                               const uint8_t motor_idx)
+static rx_err_t
+internal_read_encoder_velocity(float* velocity_rps, const float dt_sec, const uint8_t motor_idx)
 {
   if (motor_idx < k_front_encoder_count) {
-    return rx_encoder_read_velocity(velocity_rps, dt_sec,
-                                    (rx_mtu_channel_t)motor_idx);
+    return rx_encoder_read_velocity(velocity_rps, dt_sec, (rx_mtu_channel_t)motor_idx);
   }
 
   /* Map motor 2 -> TPU1, motor 3 -> TPU2 */
-  const rx_tpu_channel_t tpu_ch = (motor_idx == k_motor_back_left)
-                                      ? k_tpu_channel_1
-                                      : k_tpu_channel_2;
+  const rx_tpu_channel_t tpu_ch =
+    (motor_idx == k_motor_back_left) ? k_tpu_channel_1 : k_tpu_channel_2;
   return rx_tpu_encoder_read_velocity(velocity_rps, dt_sec, tpu_ch);
 }
 
@@ -1652,17 +1645,15 @@ static rx_err_t internal_read_encoder_velocity(float*        velocity_rps,
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_read_encoder_count(const uint8_t  motor_idx,
-                                            rx_encoder_state_t* state)
+static rx_err_t internal_read_encoder_count(const uint8_t motor_idx, rx_encoder_state_t* state)
 {
   if (motor_idx < k_front_encoder_count) {
     return rx_encoder_read_count((rx_mtu_channel_t)motor_idx, state);
   }
 
   /* Map motor 2 -> TPU1, motor 3 -> TPU2 */
-  const rx_tpu_channel_t tpu_ch = (motor_idx == k_motor_back_left)
-                                      ? k_tpu_channel_1
-                                      : k_tpu_channel_2;
+  const rx_tpu_channel_t tpu_ch =
+    (motor_idx == k_motor_back_left) ? k_tpu_channel_1 : k_tpu_channel_2;
   return rx_tpu_encoder_read_count(tpu_ch, state);
 }
 
@@ -1701,53 +1692,52 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
   };
 
   const uint8_t nfault_ports[k_motor_count] = {
-    k_motor_0_nfault_port,  /* Motor 0: PORT1 */
-    k_motor_1_nfault_port,  /* Motor 1: PORTA */
-    k_motor_2_nfault_port,  /* Motor 2: PORTC */
-    k_motor_3_nfault_port   /* Motor 3: PORT1 */
+    k_motor_0_nfault_port, /* Motor 0: PORT1 */
+    k_motor_1_nfault_port, /* Motor 1: PORTA */
+    k_motor_2_nfault_port, /* Motor 2: PORTC */
+    k_motor_3_nfault_port  /* Motor 3: PORT1 */
   };
 
   const uint8_t nfault_pins[k_motor_count] = {
-    k_motor_0_nfault_pin,   /* Motor 0: P15 */
-    k_motor_1_nfault_pin,   /* Motor 1: PA6 */
-    k_motor_2_nfault_pin,   /* Motor 2: PC4 */
-    k_motor_3_nfault_pin    /* Motor 3: P14 */
+    k_motor_0_nfault_pin, /* Motor 0: P15 */
+    k_motor_1_nfault_pin, /* Motor 1: PA6 */
+    k_motor_2_nfault_pin, /* Motor 2: PC4 */
+    k_motor_3_nfault_pin  /* Motor 3: P14 */
   };
 
   const uint8_t cs_ports[k_motor_count] = {
-    k_drv_cs0_port,  /* Motor 0: PORT7 (P74, pin 72) */
-    k_drv_cs1_port,  /* Motor 1: PORTC (PC1, pin 73) */
-    k_drv_cs2_port,  /* Motor 2: PORTB (PB5, pin 80) */
-    k_drv_cs3_port   /* Motor 3: PORTB (PB4, pin 81) */
+    k_drv_cs0_port, /* Motor 0: PORT7 (P74, pin 72) */
+    k_drv_cs1_port, /* Motor 1: PORTC (PC1, pin 73) */
+    k_drv_cs2_port, /* Motor 2: PORTB (PB5, pin 80) */
+    k_drv_cs3_port  /* Motor 3: PORTB (PB4, pin 81) */
   };
 
   const uint8_t cs_pins[k_motor_count] = {
-    k_drv_cs0_pin,   /* Motor 0: pin 4 (P74) */
-    k_drv_cs1_pin,   /* Motor 1: pin 1 (PC1) */
-    k_drv_cs2_pin,   /* Motor 2: pin 5 (PB5) */
-    k_drv_cs3_pin    /* Motor 3: pin 4 (PB4) */
+    k_drv_cs0_pin, /* Motor 0: pin 4 (P74) */
+    k_drv_cs1_pin, /* Motor 1: pin 1 (PC1) */
+    k_drv_cs2_pin, /* Motor 2: pin 5 (PB5) */
+    k_drv_cs3_pin  /* Motor 3: pin 4 (PB4) */
   };
 
   for (uint8_t i = 0; i < k_motor_count; i++) {
-    rx_drv8243_config_t driver_config = {
-      .bus_manager      = &g_bus_manager,
-      .gpio_bus_name    = "gpio",
-      .adc_bus_name     = "adc0",
-      .gptw_channel     = gptw_channels[i],
-      .output_ph        = k_gptw_output_a,
-      .output_en        = k_gptw_output_b,
-      .pin_ipropi       = adc_channels[i],
-      .port_nfault      = nfault_ports[i],
-      .pin_nfault       = nfault_pins[i],
-      .pwm_freq_hz      = k_motor_pwm_freq_hz,
-      .dead_time_ns     = k_motor_dead_time_ns,
-      .current_limit_ma = k_motor_current_limit_ma, /* 2A software limit */
-      .ki_propi         = k_motor_ki_propi,          /* IPROPI ratio (525 A/V) */
-      .use_spi_variant  = true,                      /* DRV8243S SPI variant */
-      .sci_channel      = 12,                        /* SCI12 for motor driver SPI bus */
-      .spi_cs_port      = cs_ports[i],
-      .spi_cs_pin       = cs_pins[i]
-    };
+    rx_drv8243_config_t driver_config = {.bus_manager   = &g_bus_manager,
+                                         .gpio_bus_name = "gpio",
+                                         .adc_bus_name  = "adc0",
+                                         .gptw_channel  = gptw_channels[i],
+                                         .output_ph     = k_gptw_output_a,
+                                         .output_en     = k_gptw_output_b,
+                                         .pin_ipropi    = adc_channels[i],
+                                         .port_nfault   = nfault_ports[i],
+                                         .pin_nfault    = nfault_pins[i],
+                                         .pwm_freq_hz   = k_motor_pwm_freq_hz,
+                                         .dead_time_ns  = k_motor_dead_time_ns,
+                                         .current_limit_ma =
+                                           k_motor_current_limit_ma,   /* 2A software limit */
+                                         .ki_propi = k_motor_ki_propi, /* IPROPI ratio (525 A/V) */
+                                         .use_spi_variant = true,      /* DRV8243S SPI variant */
+                                         .sci_channel     = 12, /* SCI12 for motor driver SPI bus */
+                                         .spi_cs_port     = cs_ports[i],
+                                         .spi_cs_pin      = cs_pins[i]};
 
     err = rx_drv8243_init(&s_drivers[i], &driver_config);
     if (err != k_rx_ok) {
@@ -2025,11 +2015,8 @@ static void internal_control_loop_iteration(void)
     target_velocity_mps = internal_get_target_velocity(&cmd, i);
 
     /* 3. Compute PID output */
-    err = rx_pid_compute(&s_pids[i],
-                         target_velocity_mps,
-                         current_velocity_mps,
-                         s_dt_sec,
-                         &pwm_duty);
+    err =
+      rx_pid_compute(&s_pids[i], target_velocity_mps, current_velocity_mps, s_dt_sec, &pwm_duty);
     if (err != k_rx_ok) {
       pwm_duty = 0.0f;
     }

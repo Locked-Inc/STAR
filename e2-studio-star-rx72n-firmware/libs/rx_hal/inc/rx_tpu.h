@@ -298,8 +298,7 @@ typedef struct {
  * @see rx_tpu_read_direction() Read counting direction
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_tpu_read_count(rx_tpu_channel_t channel,
-                                         uint16_t* count);
+[[nodiscard]] rx_err_t rx_tpu_read_count(rx_tpu_channel_t channel, uint16_t* count);
 
 /**
  * @brief Read TPU channel counting direction
@@ -326,8 +325,7 @@ typedef struct {
  * @see rx_tpu_read_count() Read counter value
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_tpu_read_direction(rx_tpu_channel_t channel,
-                                             bool* counting_up);
+[[nodiscard]] rx_err_t rx_tpu_read_direction(rx_tpu_channel_t channel, bool* counting_up);
 
 /**
  * @brief Reset TPU channel counter to zero

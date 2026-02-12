@@ -277,10 +277,14 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_gptw_channel_0 = 0, /**< GPTW0 channel for Motor 0 (Front-Left). Register base: 0x000C2100. Outputs: PE5/GTIOC0A, PE2/GTIOC0B. Phase offset: 0° in staggered mode */
-  k_gptw_channel_1 = 1, /**< GPTW1 channel for Motor 1 (Front-Right). Register base: 0x000C2180. Outputs: PE4/GTIOC1A, PE1/GTIOC1B. Phase offset: 90° in staggered mode */
-  k_gptw_channel_2 = 2, /**< GPTW2 channel for Motor 2 (Rear-Left). Register base: 0x000C2200. Outputs: PE3/GTIOC2A, PE0/GTIOC2B. Phase offset: 180° in staggered mode */
-  k_gptw_channel_3 = 3, /**< GPTW3 channel for Motor 3 (Rear-Right). Register base: 0x000C2280. Outputs: PE7/GTIOC3A, PE6/GTIOC3B. Phase offset: 270° in staggered mode */
+  k_gptw_channel_0 =
+    0, /**< GPTW0 channel for Motor 0 (Front-Left). Register base: 0x000C2100. Outputs: PE5/GTIOC0A, PE2/GTIOC0B. Phase offset: 0° in staggered mode */
+  k_gptw_channel_1 =
+    1, /**< GPTW1 channel for Motor 1 (Front-Right). Register base: 0x000C2180. Outputs: PE4/GTIOC1A, PE1/GTIOC1B. Phase offset: 90° in staggered mode */
+  k_gptw_channel_2 =
+    2, /**< GPTW2 channel for Motor 2 (Rear-Left). Register base: 0x000C2200. Outputs: PE3/GTIOC2A, PE0/GTIOC2B. Phase offset: 180° in staggered mode */
+  k_gptw_channel_3 =
+    3, /**< GPTW3 channel for Motor 3 (Rear-Right). Register base: 0x000C2280. Outputs: PE7/GTIOC3A, PE6/GTIOC3B. Phase offset: 270° in staggered mode */
 } rx_gptw_channel_t;
 
 /**
@@ -355,8 +359,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_gptw_output_a = 0, /**< GTIOCA output pin. Connected to DRV8243S PH (Phase) input in PH/EN mode. Controls motor direction: HIGH=forward, LOW=reverse */
-  k_gptw_output_b = 1, /**< GTIOCB output pin. Connected to DRV8243S EN (Enable) input in PH/EN mode. PWM duty cycle controls motor speed (0-100%) */
+  k_gptw_output_a =
+    0, /**< GTIOCA output pin. Connected to DRV8243S PH (Phase) input in PH/EN mode. Controls motor direction: HIGH=forward, LOW=reverse */
+  k_gptw_output_b =
+    1, /**< GTIOCB output pin. Connected to DRV8243S EN (Enable) input in PH/EN mode. PWM duty cycle controls motor speed (0-100%) */
 } rx_gptw_output_t;
 
 /**
@@ -451,10 +457,14 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_gptw_wave_saw_pwm  = 0, /**< Sawtooth-wave PWM (edge-aligned). Counter: 0->Period->reset. Single update point at trough. Best for simple PWM applications. GTCR.MD = 0b000 */
-  k_gptw_wave_tri_pwm1 = 1, /**< Triangle-wave PWM mode 1 (center-aligned). Counter: 0->Period->0. Update at trough only. Best for motor control with standard update rate. GTCR.MD = 0b001 */
-  k_gptw_wave_tri_pwm2 = 2, /**< Triangle-wave PWM mode 2 (center-aligned). Counter: 0->Period->0. Update at both crest and trough. Best for motor control requiring fast duty updates. GTCR.MD = 0b010 */
-  k_gptw_wave_tri_pwm3 = 3, /**< Triangle-wave PWM mode 3 (center-aligned). Counter: 0->Period->0. 64-bit buffer transfer at trough. Best for high-precision motor control. GTCR.MD = 0b011 */
+  k_gptw_wave_saw_pwm =
+    0, /**< Sawtooth-wave PWM (edge-aligned). Counter: 0->Period->reset. Single update point at trough. Best for simple PWM applications. GTCR.MD = 0b000 */
+  k_gptw_wave_tri_pwm1 =
+    1, /**< Triangle-wave PWM mode 1 (center-aligned). Counter: 0->Period->0. Update at trough only. Best for motor control with standard update rate. GTCR.MD = 0b001 */
+  k_gptw_wave_tri_pwm2 =
+    2, /**< Triangle-wave PWM mode 2 (center-aligned). Counter: 0->Period->0. Update at both crest and trough. Best for motor control requiring fast duty updates. GTCR.MD = 0b010 */
+  k_gptw_wave_tri_pwm3 =
+    3, /**< Triangle-wave PWM mode 3 (center-aligned). Counter: 0->Period->0. 64-bit buffer transfer at trough. Best for high-precision motor control. GTCR.MD = 0b011 */
 } rx_gptw_wave_mode_t;
 
 /**
@@ -1021,7 +1031,8 @@ rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_
  * @return k_rx_err_invalid_arg if channel or output is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
-[[nodiscard]] rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float* duty_percent);
+[[nodiscard]] rx_err_t
+rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float* duty_percent);
 
 /**
  * @brief Get PWM period count
@@ -1049,7 +1060,8 @@ rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_
  * @return k_rx_err_invalid_arg if channel or output is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
-[[nodiscard]] rx_err_t rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t output, bool enable);
+[[nodiscard]] rx_err_t
+rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t output, bool enable);
 
 /**
  * @brief Start GPTW timer

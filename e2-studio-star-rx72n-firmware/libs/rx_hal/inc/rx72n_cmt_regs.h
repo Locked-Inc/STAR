@@ -499,9 +499,9 @@ static_assert(sizeof(rx_cmt_channel_regs_t) == 6, "CMT channel register structur
 /* Verify CMT channel register offsets */
 static_assert(offsetof(rx_cmt_channel_regs_t, cmcr) == 0x00, "CMT CMCR register offset incorrect");
 static_assert(offsetof(rx_cmt_channel_regs_t, cmcnt) == 0x02,
-               "CMT CMCNT register offset incorrect");
+              "CMT CMCNT register offset incorrect");
 static_assert(offsetof(rx_cmt_channel_regs_t, cmcor) == 0x04,
-               "CMT CMCOR register offset incorrect");
+              "CMT CMCOR register offset incorrect");
 
 /* Verify CMT control register structure size (2 × 16-bit = 4 bytes) */
 static_assert(sizeof(rx_cmt_control_regs_t) == 4, "CMT control register structure size mismatch");

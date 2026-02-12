@@ -211,7 +211,7 @@
 #include "rx_mpc.h"
 #include "rx_port_utils.h"
 #include "rx_register_protection.h"
-#include "rx_simulator_config.h"  /* For RX_IS_SIMULATOR conditional compilation */
+#include "rx_simulator_config.h" /* For RX_IS_SIMULATOR conditional compilation */
 
 /* =============================================================================
  * Private Definitions

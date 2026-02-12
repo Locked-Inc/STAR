@@ -277,7 +277,8 @@ rx_err_t uart_putc_channel(uart_channel_t channel, char data);
 rx_err_t uart_puts_channel(uart_channel_t channel, const char* str);
 rx_err_t uart_write_channel(uart_channel_t channel, const uint8_t* data, uint16_t length);
 rx_err_t uart_getc_channel(uart_channel_t channel, char* data);
-rx_err_t uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
+rx_err_t
+uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
 rx_err_t uart_rx_available(uart_channel_t channel, bool* available);
 
 /* Debug UART convenience wrapper functions */

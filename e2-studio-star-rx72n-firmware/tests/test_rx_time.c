@@ -186,7 +186,7 @@
  * @note Not thread-local: Tests run sequentially (Unity single-threaded)
  * @warning Do not use in production code (test-only global)
  */
-static mock_time_t         s_mock;
+static mock_time_t s_mock;
 
 /**
  * @brief Static time interface for DIP abstraction

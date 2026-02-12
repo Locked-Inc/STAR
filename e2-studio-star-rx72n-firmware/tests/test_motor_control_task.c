@@ -19,7 +19,7 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#include "unity.h"
+#include <string.h>
 
 #include "mock_rx_drv8243.h"
 #include "mock_rx_motor.h"
@@ -27,8 +27,7 @@
 #include "mock_rx_pid.h"
 #include "mock_shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
+#include "unity.h"
 
 /* Include the task header for the public API */
 #include "motor_control_task.h"
@@ -161,9 +160,9 @@ void test_motor_task_initializes_4_pids(void)
    * the mock is properly configured for the pattern */
 
   /* For this test, directly verify the mock pattern works */
-  rx_pid_handle_t  pid    = {0};
-  rx_pid_config_t  config = {0};
-  rx_err_t         err;
+  rx_pid_handle_t pid    = {0};
+  rx_pid_config_t config = {0};
+  rx_err_t        err;
 
   config.kp           = 0.286f;
   config.ki           = 8.01f;
@@ -276,7 +275,7 @@ void test_motor_task_driver_fault_triggers_estop(void)
 
   /* Check fault status via mock */
   rx_drv8243_handle_t driver = {0};
-  rx_err_t err = rx_drv8243_get_fault_status(&driver, &fault);
+  rx_err_t            err    = rx_drv8243_get_fault_status(&driver, &fault);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(fault);
@@ -288,8 +287,7 @@ void test_motor_task_driver_fault_triggers_estop(void)
 
   /* Verify e-stop was triggered with correct reason */
   TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_trigger_estop_count());
-  TEST_ASSERT_EQUAL(k_estop_reason_driver_fault,
-                    mock_shared_data_get_last_estop_reason());
+  TEST_ASSERT_EQUAL(k_estop_reason_driver_fault, mock_shared_data_get_last_estop_reason());
 }
 
 /* =============================================================================
@@ -388,8 +386,7 @@ void test_motor_task_comm_timeout_triggers_estop(void)
 
   /* Verify e-stop was triggered */
   TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_trigger_estop_count());
-  TEST_ASSERT_EQUAL(k_estop_reason_comm_timeout,
-                    mock_shared_data_get_last_estop_reason());
+  TEST_ASSERT_EQUAL(k_estop_reason_comm_timeout, mock_shared_data_get_last_estop_reason());
 }
 
 /* =============================================================================
@@ -411,13 +408,13 @@ void test_motor_task_reads_pid_gains(void)
   rx_err_t    err;
 
   /* Set up PID gains */
-  gains_in.kp           = 0.5f;
-  gains_in.ki           = 10.0f;
-  gains_in.kd           = 0.1f;
-  gains_in.output_min   = -80.0f;
-  gains_in.output_max   = 80.0f;
-  gains_in.integral_min = -40.0f;
-  gains_in.integral_max = 40.0f;
+  gains_in.kp             = 0.5f;
+  gains_in.ki             = 10.0f;
+  gains_in.kd             = 0.1f;
+  gains_in.output_min     = -80.0f;
+  gains_in.output_max     = 80.0f;
+  gains_in.integral_min   = -40.0f;
+  gains_in.integral_max   = 40.0f;
   gains_in.update_pending = true;
 
   /* Store gains via mock */

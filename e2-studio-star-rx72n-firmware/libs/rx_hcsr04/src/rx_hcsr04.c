@@ -1568,7 +1568,7 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   err = hcsr04_hal_gpio_set_input(config->echo_pin);
   if (err != k_rx_ok) {
     /* Cleanup trigger pin */
-    (void)hcsr04_hal_gpio_deinit(config->trigger_pin);  /* Cleanup, ignore errors */
+    (void)hcsr04_hal_gpio_deinit(config->trigger_pin); /* Cleanup, ignore errors */
     return err;
   }
 
@@ -1618,14 +1618,14 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
   }
 
   /* Release GPIO pins */
-  rx_err_t err = k_rx_ok;
+  rx_err_t err         = k_rx_ok;
   rx_err_t trigger_err = hcsr04_hal_gpio_deinit(handle->trigger_pin);
   if (trigger_err != k_rx_ok) {
-    err = trigger_err;  /* Save first error */
+    err = trigger_err; /* Save first error */
   }
   rx_err_t echo_err = hcsr04_hal_gpio_deinit(handle->echo_pin);
   if (echo_err != k_rx_ok && err == k_rx_ok) {
-    err = echo_err;  /* Save first error */
+    err = echo_err; /* Save first error */
   }
 
   /* Clear handle */

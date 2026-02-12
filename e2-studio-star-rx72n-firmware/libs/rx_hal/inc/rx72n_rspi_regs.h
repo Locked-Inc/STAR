@@ -466,13 +466,13 @@ typedef struct __attribute__((packed)) {
    */
   volatile uint16_t spcmd0;
 
-  volatile uint16_t spcmd1;  /**< SPI Command Register 1 @ offset 0x12 */
-  volatile uint16_t spcmd2;  /**< SPI Command Register 2 @ offset 0x14 */
-  volatile uint16_t spcmd3;  /**< SPI Command Register 3 @ offset 0x16 */
-  volatile uint16_t spcmd4;  /**< SPI Command Register 4 @ offset 0x18 */
-  volatile uint16_t spcmd5;  /**< SPI Command Register 5 @ offset 0x1A */
-  volatile uint16_t spcmd6;  /**< SPI Command Register 6 @ offset 0x1C */
-  volatile uint16_t spcmd7;  /**< SPI Command Register 7 @ offset 0x1E */
+  volatile uint16_t spcmd1; /**< SPI Command Register 1 @ offset 0x12 */
+  volatile uint16_t spcmd2; /**< SPI Command Register 2 @ offset 0x14 */
+  volatile uint16_t spcmd3; /**< SPI Command Register 3 @ offset 0x16 */
+  volatile uint16_t spcmd4; /**< SPI Command Register 4 @ offset 0x18 */
+  volatile uint16_t spcmd5; /**< SPI Command Register 5 @ offset 0x1A */
+  volatile uint16_t spcmd6; /**< SPI Command Register 6 @ offset 0x1C */
+  volatile uint16_t spcmd7; /**< SPI Command Register 7 @ offset 0x1E */
 
   /**
    * @brief SPI Data Control Register 2 (SPDCR2) @ offset 0x20
@@ -928,8 +928,7 @@ static_assert(offsetof(rx_rspi_regs_t, spdcr2) == 0x20, "SPDCR2 offset incorrect
 
 /* Verify channel spacing (RSPI0 to RSPI1 = 0x40 bytes, RSPI1 to RSPI2 = 0x1C0 bytes) */
 static_assert((k_rspi1_base_addr - k_rspi0_base_addr) == 0x40, "RSPI0 to RSPI1 spacing incorrect");
-static_assert((k_rspi2_base_addr - k_rspi1_base_addr) == 0x1C0,
-               "RSPI1 to RSPI2 spacing incorrect");
+static_assert((k_rspi2_base_addr - k_rspi1_base_addr) == 0x1C0, "RSPI1 to RSPI2 spacing incorrect");
 
 #ifdef __cplusplus
 }

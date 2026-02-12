@@ -418,7 +418,7 @@ static void internal_enable_tpu_module_clock(void)
  */
 rx_err_t rx_tpu_init_phase_count(const rx_tpu_config_t* config)
 {
-  uint8_t idx;
+  uint8_t  idx;
   rx_err_t err;
 
   /* Pre-condition 1: validate config pointer (NASA Rule 5) */
@@ -490,7 +490,7 @@ rx_err_t rx_tpu_init_phase_count(const rx_tpu_config_t* config)
  */
 rx_err_t rx_tpu_start(const rx_tpu_channel_t channel)
 {
-  uint8_t idx;
+  uint8_t  idx;
   rx_err_t err;
 
   /* Pre-condition 1: validate channel */
@@ -521,7 +521,7 @@ rx_err_t rx_tpu_start(const rx_tpu_channel_t channel)
  */
 rx_err_t rx_tpu_stop(const rx_tpu_channel_t channel)
 {
-  uint8_t idx;
+  uint8_t  idx;
   rx_err_t err;
 
   /* Pre-condition 1: validate channel */
@@ -552,7 +552,7 @@ rx_err_t rx_tpu_stop(const rx_tpu_channel_t channel)
  */
 rx_err_t rx_tpu_read_count(const rx_tpu_channel_t channel, uint16_t* count)
 {
-  uint8_t idx;
+  uint8_t  idx;
   rx_err_t err;
 
   /* Pre-condition 1: validate output pointer */
@@ -591,7 +591,7 @@ rx_err_t rx_tpu_read_count(const rx_tpu_channel_t channel, uint16_t* count)
  */
 rx_err_t rx_tpu_read_direction(const rx_tpu_channel_t channel, bool* counting_up)
 {
-  uint8_t idx;
+  uint8_t  idx;
   rx_err_t err;
 
   /* Pre-condition 1: validate output pointer */
@@ -629,7 +629,7 @@ rx_err_t rx_tpu_read_direction(const rx_tpu_channel_t channel, bool* counting_up
  */
 rx_err_t rx_tpu_reset_count(const rx_tpu_channel_t channel)
 {
-  uint8_t idx;
+  uint8_t  idx;
   rx_err_t err;
 
   /* Pre-condition 1: validate channel */
@@ -665,7 +665,7 @@ rx_err_t rx_tpu_reset_count(const rx_tpu_channel_t channel)
  */
 rx_err_t rx_tpu_deinit(const rx_tpu_channel_t channel)
 {
-  uint8_t idx;
+  uint8_t  idx;
   rx_err_t err;
 
   /* Pre-condition 1: validate channel */

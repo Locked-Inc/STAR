@@ -473,8 +473,8 @@ static const char* s_tag = "USB";
  * Maximum flush timeout is 10000ms with 10ms poll interval = 1000 max iterations.
  */
 typedef enum : uint16_t {
-  k_flush_max_timeout_ms     = 10000, /**< Maximum flush timeout (10 seconds) */
-  k_flush_max_iterations     = 1000,  /**< Maximum flush loop iterations (10000ms / 10ms) */
+  k_flush_max_timeout_ms = 10000, /**< Maximum flush timeout (10 seconds) */
+  k_flush_max_iterations = 1000,  /**< Maximum flush loop iterations (10000ms / 10ms) */
 } flush_loop_bounds_t;
 
 /** @brief USB flush poll interval */
@@ -523,53 +523,56 @@ typedef enum : uint8_t {
   k_port2_pipe_bulk_out = 8, /**< Pipe 8 */
   k_port2_pipe_int_in   = 9, /**< Pipe 9 */
   /* Pipe range constants for validation (not tied to specific ports) */
-  k_data_pipe_min       = 1, /**< Minimum data pipe number (first port pipe) */
-  k_data_pipe_max       = 9, /**< Maximum data pipe number (last port pipe) */
+  k_data_pipe_min = 1, /**< Minimum data pipe number (first port pipe) */
+  k_data_pipe_max = 9, /**< Maximum data pipe number (last port pipe) */
 } port_pipe_assignments_t;
 
 /**
  * @brief Port configuration table (const, compile-time)
  */
 static const rx_usb_port_hw_config_t s_port_configs[k_usb_port_count] = {
-  [k_usb_port_proto] = {
-    .name              = "proto",
-    .rx_buffer_size    = k_usb_port_proto_rx_size,
-    .tx_buffer_size    = k_usb_port_proto_tx_size,
-    .interface_control = k_intf_port0_control,
-    .interface_data    = k_intf_port0_data,
-    .ep_bulk_in        = k_port0_ep_bulk_in,
-    .ep_bulk_out       = k_port0_ep_bulk_out,
-    .ep_interrupt_in   = k_port0_ep_int_in,
-    .pipe_bulk_in      = k_port0_pipe_bulk_in,
-    .pipe_bulk_out     = k_port0_pipe_bulk_out,
-    .pipe_interrupt    = k_port0_pipe_int_in,
-  },
-  [k_usb_port_decoded] = {
-    .name              = "decoded",
-    .rx_buffer_size    = k_usb_port_decoded_rx_size,
-    .tx_buffer_size    = k_usb_port_decoded_tx_size,
-    .interface_control = k_intf_port1_control,
-    .interface_data    = k_intf_port1_data,
-    .ep_bulk_in        = k_port1_ep_bulk_in,
-    .ep_bulk_out       = k_port1_ep_bulk_out,
-    .ep_interrupt_in   = k_port1_ep_int_in,
-    .pipe_bulk_in      = k_port1_pipe_bulk_in,
-    .pipe_bulk_out     = k_port1_pipe_bulk_out,
-    .pipe_interrupt    = k_port1_pipe_int_in,
-  },
-  [k_usb_port_log] = {
-    .name              = "log",
-    .rx_buffer_size    = k_usb_port_log_rx_size,
-    .tx_buffer_size    = k_usb_port_log_tx_size,
-    .interface_control = k_intf_port2_control,
-    .interface_data    = k_intf_port2_data,
-    .ep_bulk_in        = k_port2_ep_bulk_in,
-    .ep_bulk_out       = k_port2_ep_bulk_out,
-    .ep_interrupt_in   = k_port2_ep_int_in,
-    .pipe_bulk_in      = k_port2_pipe_bulk_in,
-    .pipe_bulk_out     = k_port2_pipe_bulk_out,
-    .pipe_interrupt    = k_port2_pipe_int_in,
-  },
+  [k_usb_port_proto] =
+    {
+      .name              = "proto",
+      .rx_buffer_size    = k_usb_port_proto_rx_size,
+      .tx_buffer_size    = k_usb_port_proto_tx_size,
+      .interface_control = k_intf_port0_control,
+      .interface_data    = k_intf_port0_data,
+      .ep_bulk_in        = k_port0_ep_bulk_in,
+      .ep_bulk_out       = k_port0_ep_bulk_out,
+      .ep_interrupt_in   = k_port0_ep_int_in,
+      .pipe_bulk_in      = k_port0_pipe_bulk_in,
+      .pipe_bulk_out     = k_port0_pipe_bulk_out,
+      .pipe_interrupt    = k_port0_pipe_int_in,
+    },
+  [k_usb_port_decoded] =
+    {
+      .name              = "decoded",
+      .rx_buffer_size    = k_usb_port_decoded_rx_size,
+      .tx_buffer_size    = k_usb_port_decoded_tx_size,
+      .interface_control = k_intf_port1_control,
+      .interface_data    = k_intf_port1_data,
+      .ep_bulk_in        = k_port1_ep_bulk_in,
+      .ep_bulk_out       = k_port1_ep_bulk_out,
+      .ep_interrupt_in   = k_port1_ep_int_in,
+      .pipe_bulk_in      = k_port1_pipe_bulk_in,
+      .pipe_bulk_out     = k_port1_pipe_bulk_out,
+      .pipe_interrupt    = k_port1_pipe_int_in,
+    },
+  [k_usb_port_log] =
+    {
+      .name              = "log",
+      .rx_buffer_size    = k_usb_port_log_rx_size,
+      .tx_buffer_size    = k_usb_port_log_tx_size,
+      .interface_control = k_intf_port2_control,
+      .interface_data    = k_intf_port2_data,
+      .ep_bulk_in        = k_port2_ep_bulk_in,
+      .ep_bulk_out       = k_port2_ep_bulk_out,
+      .ep_interrupt_in   = k_port2_ep_int_in,
+      .pipe_bulk_in      = k_port2_pipe_bulk_in,
+      .pipe_bulk_out     = k_port2_pipe_bulk_out,
+      .pipe_interrupt    = k_port2_pipe_int_in,
+    },
 };
 
 /* =============================================================================
@@ -585,11 +588,11 @@ static const rx_usb_port_hw_config_t s_port_configs[k_usb_port_count] = {
  * @brief Ring buffer structure
  */
 typedef struct {
-  uint8_t* data;     /**< Pointer to buffer data array */
-  uint32_t size;     /**< Buffer size (from port config) */
-  uint32_t head;     /**< Write index */
-  uint32_t tail;     /**< Read index */
-  uint32_t count;    /**< Bytes currently in buffer */
+  uint8_t* data;  /**< Pointer to buffer data array */
+  uint32_t size;  /**< Buffer size (from port config) */
+  uint32_t head;  /**< Write index */
+  uint32_t tail;  /**< Read index */
+  uint32_t count; /**< Bytes currently in buffer */
 } ring_buffer_t;
 
 /* =============================================================================
@@ -616,11 +619,11 @@ typedef struct {
  * @brief Global USB driver state
  */
 typedef struct {
-  bool                 initialized;      /**< Driver is initialized */
-  rx_usb_state_t       device_state;     /**< USB device state (shared) */
-  rx_usb_callback_t    global_callback;  /**< Global callback (from init config) */
-  void*                global_context;   /**< Global callback context */
-  rx_usb_port_state_t  ports[k_usb_port_count]; /**< Per-port state */
+  bool                initialized;             /**< Driver is initialized */
+  rx_usb_state_t      device_state;            /**< USB device state (shared) */
+  rx_usb_callback_t   global_callback;         /**< Global callback (from init config) */
+  void*               global_context;          /**< Global callback context */
+  rx_usb_port_state_t ports[k_usb_port_count]; /**< Per-port state */
 } usb_driver_t;
 
 /* =============================================================================
@@ -696,9 +699,7 @@ uint32_t priv_ring_buffer_read(ring_buffer_t* buf, uint8_t* data, uint32_t max_l
  * @param[in]     data Backing storage buffer
  * @param[in]     size Backing buffer size in bytes
  */
-void priv_ring_buffer_init(ring_buffer_t* buf,
-                                               uint8_t*       data,
-                                               const uint32_t size)
+void priv_ring_buffer_init(ring_buffer_t* buf, uint8_t* data, const uint32_t size)
 {
   /* Rule 5: Pre-condition validation */
   if (buf == nullptr || data == nullptr) {
@@ -752,9 +753,7 @@ uint32_t priv_ring_buffer_free(const ring_buffer_t* buf)
  * @param[in]     len  Number of bytes to write
  * @return Number of bytes written
  */
-uint32_t priv_ring_buffer_write(ring_buffer_t*  buf,
-                                                    const uint8_t*  data,
-                                                    const uint32_t  len)
+uint32_t priv_ring_buffer_write(ring_buffer_t* buf, const uint8_t* data, const uint32_t len)
 {
   /* Rule 5: Pre-condition validation */
   if (buf == nullptr || buf->data == nullptr || data == nullptr || len == k_min_transfer_size) {
@@ -785,9 +784,7 @@ uint32_t priv_ring_buffer_write(ring_buffer_t*  buf,
  * @param[in]     max_len Max bytes to read
  * @return Number of bytes read
  */
-uint32_t priv_ring_buffer_read(ring_buffer_t* buf,
-                                                   uint8_t*       data,
-                                                   const uint32_t max_len)
+uint32_t priv_ring_buffer_read(ring_buffer_t* buf, uint8_t* data, const uint32_t max_len)
 {
   /* Rule 5: Pre-condition validation */
   if (buf == nullptr || buf->data == nullptr || data == nullptr || max_len == k_min_transfer_size) {
@@ -846,15 +843,15 @@ static void internal_trigger_tx_if_idle(const rx_usb_port_id_t port)
   static bool               s_pipe_ctr_map_init = false;
 
   if (!s_pipe_ctr_map_init) {
-    s_pipe_ctr_map[0] = &usb0()->pipe1ctr;
-    s_pipe_ctr_map[1] = &usb0()->pipe2ctr;
-    s_pipe_ctr_map[2] = &usb0()->pipe3ctr;
-    s_pipe_ctr_map[3] = &usb0()->pipe4ctr;
-    s_pipe_ctr_map[4] = &usb0()->pipe5ctr;
-    s_pipe_ctr_map[5] = &usb0()->pipe6ctr;
-    s_pipe_ctr_map[6] = &usb0()->pipe7ctr;
-    s_pipe_ctr_map[7] = &usb0()->pipe8ctr;
-    s_pipe_ctr_map[8] = &usb0()->pipe9ctr;
+    s_pipe_ctr_map[0]   = &usb0()->pipe1ctr;
+    s_pipe_ctr_map[1]   = &usb0()->pipe2ctr;
+    s_pipe_ctr_map[2]   = &usb0()->pipe3ctr;
+    s_pipe_ctr_map[3]   = &usb0()->pipe4ctr;
+    s_pipe_ctr_map[4]   = &usb0()->pipe5ctr;
+    s_pipe_ctr_map[5]   = &usb0()->pipe6ctr;
+    s_pipe_ctr_map[6]   = &usb0()->pipe7ctr;
+    s_pipe_ctr_map[7]   = &usb0()->pipe8ctr;
+    s_pipe_ctr_map[8]   = &usb0()->pipe9ctr;
     s_pipe_ctr_map_init = true;
   }
 
@@ -873,27 +870,27 @@ static void internal_init_port_buffers(void)
 {
   /* Port 0 (Protocol) buffers */
   priv_ring_buffer_init(&s_usb.ports[k_usb_port_proto].rx_buffer,
-                            s_port0_rx_buf,
-                            k_usb_port_proto_rx_size);
+                        s_port0_rx_buf,
+                        k_usb_port_proto_rx_size);
   priv_ring_buffer_init(&s_usb.ports[k_usb_port_proto].tx_buffer,
-                            s_port0_tx_buf,
-                            k_usb_port_proto_tx_size);
+                        s_port0_tx_buf,
+                        k_usb_port_proto_tx_size);
 
   /* Port 1 (Decoded) buffers */
   priv_ring_buffer_init(&s_usb.ports[k_usb_port_decoded].rx_buffer,
-                            s_port1_rx_buf,
-                            k_usb_port_decoded_rx_size);
+                        s_port1_rx_buf,
+                        k_usb_port_decoded_rx_size);
   priv_ring_buffer_init(&s_usb.ports[k_usb_port_decoded].tx_buffer,
-                            s_port1_tx_buf,
-                            k_usb_port_decoded_tx_size);
+                        s_port1_tx_buf,
+                        k_usb_port_decoded_tx_size);
 
   /* Port 2 (Log) buffers */
   priv_ring_buffer_init(&s_usb.ports[k_usb_port_log].rx_buffer,
-                            s_port2_rx_buf,
-                            k_usb_port_log_rx_size);
+                        s_port2_rx_buf,
+                        k_usb_port_log_rx_size);
   priv_ring_buffer_init(&s_usb.ports[k_usb_port_log].tx_buffer,
-                            s_port2_tx_buf,
-                            k_usb_port_log_tx_size);
+                        s_port2_tx_buf,
+                        k_usb_port_log_tx_size);
 }
 
 /**
@@ -1797,9 +1794,7 @@ rx_err_t rx_usb_flush(const rx_usb_port_id_t port, const uint32_t timeout_ms)
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port is invalid
  */
-rx_err_t rx_usb_set_callback(const rx_usb_port_id_t port,
-                             rx_usb_callback_t      callback,
-                             void*                  ctx)
+rx_err_t rx_usb_set_callback(const rx_usb_port_id_t port, rx_usb_callback_t callback, void* ctx)
 {
   if (!internal_port_is_valid(port)) {
     return k_rx_err_invalid_arg;
@@ -1888,15 +1883,15 @@ void rx_usb_reset_stats(const rx_usb_port_id_t port)
 
 /** @brief Constants for integer-to-string conversion */
 typedef enum : uint8_t {
-  k_single_byte_count    = 1,    /**< Byte count for single character (putc) */
-  k_int_buffer_size      = 12,   /**< Max digits for int32_t (-2147483648) + null */
-  k_hex_buffer_size      = 9,    /**< Max 8 hex digits + null */
-  k_decimal_base         = 10,   /**< Base 10 for decimal conversion */
-  k_hex_base             = 16,   /**< Base 16 for hex conversion */
-  k_max_hex_digits       = 8,    /**< Maximum hex digits (32-bit value) */
-  k_bits_per_hex_nibble  = 4,    /**< Bits per hexadecimal nibble */
-  k_hex_nibble_mask      = 0x0F, /**< Mask to extract lowest nibble */
-  k_hex_letter_offset    = 10,   /**< Offset for hex letters (A-F) */
+  k_single_byte_count   = 1,    /**< Byte count for single character (putc) */
+  k_int_buffer_size     = 12,   /**< Max digits for int32_t (-2147483648) + null */
+  k_hex_buffer_size     = 9,    /**< Max 8 hex digits + null */
+  k_decimal_base        = 10,   /**< Base 10 for decimal conversion */
+  k_hex_base            = 16,   /**< Base 16 for hex conversion */
+  k_max_hex_digits      = 8,    /**< Maximum hex digits (32-bit value) */
+  k_bits_per_hex_nibble = 4,    /**< Bits per hexadecimal nibble */
+  k_hex_nibble_mask     = 0x0F, /**< Mask to extract lowest nibble */
+  k_hex_letter_offset   = 10,   /**< Offset for hex letters (A-F) */
 } int_conversion_constants_t;
 
 /**
@@ -2164,8 +2159,7 @@ void rx_usb_set_state(const rx_usb_state_t state)
 /**
  * @brief Set line coding for a port (called by CDC module on SET_LINE_CODING request)
  */
-void rx_usb_set_line_coding(const rx_usb_port_id_t       port,
-                            const rx_usb_line_coding_t*  coding)
+void rx_usb_set_line_coding(const rx_usb_port_id_t port, const rx_usb_line_coding_t* coding)
 {
   if (!internal_port_is_valid(port) || coding == nullptr) {
     return;
@@ -2258,8 +2252,7 @@ const rx_usb_port_hw_config_t* rx_usb_get_port_config(const rx_usb_port_id_t por
 rx_usb_port_id_t rx_usb_find_port_by_pipe(const uint8_t pipe)
 {
   for (rx_usb_port_id_t port = k_usb_port_proto; port < k_usb_port_count; port++) {
-    if (s_port_configs[port].pipe_bulk_in == pipe ||
-        s_port_configs[port].pipe_bulk_out == pipe ||
+    if (s_port_configs[port].pipe_bulk_in == pipe || s_port_configs[port].pipe_bulk_out == pipe ||
         s_port_configs[port].pipe_interrupt == pipe) {
       return port;
     }

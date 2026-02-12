@@ -69,17 +69,17 @@ typedef enum : uint8_t {
 
 /** @brief 16-bit counter overflow detection constants */
 typedef enum : uint32_t {
-  k_tpu_enc_counter_max  = 65536, /**< 16-bit counter range */
-  k_tpu_enc_counter_half = 32768, /**< Half-range for wrap detection */
+  k_tpu_enc_counter_max  = 65536,  /**< 16-bit counter range */
+  k_tpu_enc_counter_half = 32768,  /**< Half-range for wrap detection */
   k_tpu_enc_16bit_mask   = 0xFFFF, /**< 16-bit mask */
 } tpu_enc_counter_t;
 
 /** @brief Encoder parameter limits */
 typedef enum : uint16_t {
-  k_tpu_enc_min_counts_per_rev = 1,     /**< Minimum valid counts per rev */
-  k_tpu_enc_count_reset        = 0,     /**< Counter reset value */
-  k_tpu_enc_degrees_per_rev    = 360,   /**< Degrees in one revolution */
-  k_tpu_enc_turns_multiplier   = 2,     /**< +-720 deg range check */
+  k_tpu_enc_min_counts_per_rev = 1,   /**< Minimum valid counts per rev */
+  k_tpu_enc_count_reset        = 0,   /**< Counter reset value */
+  k_tpu_enc_degrees_per_rev    = 360, /**< Degrees in one revolution */
+  k_tpu_enc_turns_multiplier   = 2,   /**< +-720 deg range check */
 } tpu_enc_params_t;
 
 /** @brief Velocity calculation limits */
@@ -128,9 +128,7 @@ static int32_t s_last_count[k_tpu_enc_max_channels] = {0};
  */
 static bool internal_is_valid_channel(const rx_tpu_channel_t channel)
 {
-  return (channel == k_tpu_channel_1 ||
-          channel == k_tpu_channel_2 ||
-          channel == k_tpu_channel_4 ||
+  return (channel == k_tpu_channel_1 || channel == k_tpu_channel_2 || channel == k_tpu_channel_4 ||
           channel == k_tpu_channel_5);
 }
 
@@ -178,8 +176,7 @@ static rx_err_t internal_update_state(rx_encoder_state_t*    state,
   if (current_count >= last_raw) {
     delta = current_count - last_raw;
   } else {
-    delta = (int32_t)k_tpu_enc_counter_max - (int32_t)last_raw
-            + (int32_t)current_count;
+    delta = (int32_t)k_tpu_enc_counter_max - (int32_t)last_raw + (int32_t)current_count;
   }
 
   /* Detect reverse wraparound */
@@ -205,9 +202,8 @@ static rx_err_t internal_update_state(rx_encoder_state_t*    state,
 
   s_state[channel].revolutions = s_state[channel].total_count / cpr;
 
-  const int32_t remainder = s_state[channel].total_count % cpr;
-  s_state[channel].position_deg =
-      (float)(remainder * k_tpu_enc_degrees_per_rev) / cpr;
+  const int32_t remainder       = s_state[channel].total_count % cpr;
+  s_state[channel].position_deg = (float)(remainder * k_tpu_enc_degrees_per_rev) / cpr;
 
   /* Post-condition: position sanity check */
   if (fabsf(s_state[channel].position_deg) >
@@ -248,8 +244,8 @@ rx_err_t rx_tpu_encoder_init(const rx_tpu_encoder_config_t* config)
 
   /* Configure TPU HAL for phase counting mode 4 (4x resolution) */
   const rx_tpu_config_t tpu_config = {
-      .channel    = channel,
-      .phase_mode = k_tpu_phase_mode_4,
+    .channel    = channel,
+    .phase_mode = k_tpu_phase_mode_4,
   };
 
   rx_err_t err = rx_tpu_init_phase_count(&tpu_config);
@@ -282,8 +278,7 @@ rx_err_t rx_tpu_encoder_init(const rx_tpu_encoder_config_t* config)
   return k_rx_ok;
 }
 
-rx_err_t rx_tpu_encoder_read_raw(const rx_tpu_channel_t channel,
-                                 uint16_t*              count)
+rx_err_t rx_tpu_encoder_read_raw(const rx_tpu_channel_t channel, uint16_t* count)
 {
   RX_VALIDATE_PTR(count, s_tag, "count pointer is nullptr");
 
@@ -299,8 +294,7 @@ rx_err_t rx_tpu_encoder_read_raw(const rx_tpu_channel_t channel,
   return rx_tpu_read_count(channel, count);
 }
 
-rx_err_t rx_tpu_encoder_read_count(const rx_tpu_channel_t channel,
-                                   rx_encoder_state_t*    state)
+rx_err_t rx_tpu_encoder_read_count(const rx_tpu_channel_t channel, rx_encoder_state_t* state)
 {
   RX_VALIDATE_PTR(state, s_tag, "state pointer is nullptr");
 
@@ -315,7 +309,7 @@ rx_err_t rx_tpu_encoder_read_count(const rx_tpu_channel_t channel,
 
   /* Read current 16-bit counter from TPU HAL */
   uint16_t current_count = 0;
-  rx_err_t err = rx_tpu_read_count(channel, &current_count);
+  rx_err_t err           = rx_tpu_read_count(channel, &current_count);
   if (err != k_rx_ok) {
     return err;
   }
@@ -329,8 +323,7 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
 {
   RX_VALIDATE_PTR(velocity_rps, s_tag, "velocity_rps pointer is nullptr");
 
-  if (delta_time_s <= k_tpu_enc_min_delta_time_s ||
-      delta_time_s > k_tpu_enc_max_delta_time_s) {
+  if (delta_time_s <= k_tpu_enc_min_delta_time_s || delta_time_s > k_tpu_enc_max_delta_time_s) {
     rx_log_error(s_tag, "Invalid delta time for velocity calculation");
     return k_rx_err_invalid_arg;
   }
@@ -347,7 +340,7 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
 
   /* Read current count via overflow handler */
   uint16_t raw_count = 0;
-  rx_err_t err = rx_tpu_read_count(channel, &raw_count);
+  rx_err_t err       = rx_tpu_read_count(channel, &raw_count);
   if (err != k_rx_ok) {
     return err;
   }
@@ -360,7 +353,7 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
 
   /* Calculate velocity from count delta */
   const int32_t delta_count = state.total_count - s_last_count[channel];
-  s_last_count[channel] = state.total_count;
+  s_last_count[channel]     = state.total_count;
 
   const uint16_t cpr = s_counts_per_rev[channel];
   if (cpr < k_tpu_enc_min_counts_per_rev) {
@@ -369,7 +362,7 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
   }
 
   const float delta_revs = (float)delta_count / cpr;
-  *velocity_rps = delta_revs / delta_time_s;
+  *velocity_rps          = delta_revs / delta_time_s;
 
   /* Warn on unrealistic velocity */
   if (fabsf(*velocity_rps) > k_tpu_enc_max_velocity_rps) {
@@ -406,8 +399,7 @@ rx_err_t rx_tpu_encoder_reset(const rx_tpu_channel_t channel)
   return k_rx_ok;
 }
 
-rx_err_t rx_tpu_encoder_set_count(const int32_t          count,
-                                  const rx_tpu_channel_t channel)
+rx_err_t rx_tpu_encoder_set_count(const int32_t count, const rx_tpu_channel_t channel)
 {
   if (!internal_is_valid_channel(channel)) {
     return k_rx_err_invalid_arg;
@@ -420,9 +412,8 @@ rx_err_t rx_tpu_encoder_set_count(const int32_t          count,
 
   /* Set software state */
   s_state[channel].total_count    = count;
-  s_state[channel].last_raw_count = (uint16_t)((uint32_t)count
-                                                & k_tpu_enc_16bit_mask);
-  s_last_count[channel] = count;
+  s_state[channel].last_raw_count = (uint16_t)((uint32_t)count & k_tpu_enc_16bit_mask);
+  s_last_count[channel]           = count;
 
   /* Recalculate position */
   const uint16_t cpr = s_counts_per_rev[channel];
@@ -433,9 +424,8 @@ rx_err_t rx_tpu_encoder_set_count(const int32_t          count,
 
   s_state[channel].revolutions = count / cpr;
 
-  const int32_t remainder = count % cpr;
-  s_state[channel].position_deg =
-      (float)(remainder * k_tpu_enc_degrees_per_rev) / cpr;
+  const int32_t remainder       = count % cpr;
+  s_state[channel].position_deg = (float)(remainder * k_tpu_enc_degrees_per_rev) / cpr;
 
   return k_rx_ok;
 }

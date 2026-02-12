@@ -154,10 +154,10 @@ typedef struct {
  * @brief Obstacle detection state
  */
 typedef struct {
-  uint16_t distance_cm[k_shared_max_hcsr04];        /**< Distance readings */
-  bool     obstacle_detected[k_shared_max_hcsr04];  /**< Per-sensor obstacle */
-  bool     any_obstacle;                            /**< Any sensor detected */
-  uint32_t timestamp_ms;                            /**< Last update */
+  uint16_t distance_cm[k_shared_max_hcsr04];       /**< Distance readings */
+  bool     obstacle_detected[k_shared_max_hcsr04]; /**< Per-sensor obstacle */
+  bool     any_obstacle;                           /**< Any sensor detected */
+  uint32_t timestamp_ms;                           /**< Last update */
 } obstacle_state_t;
 
 /* =============================================================================

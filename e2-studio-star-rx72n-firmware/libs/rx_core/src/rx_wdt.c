@@ -323,9 +323,9 @@ static rx_wdt_state_t s_wdt_state = {0};
  */
 rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
 {
-  rx_wdt_config_t          default_config;
-  volatile rx_wdt_regs_t*  regs;
-  uint16_t                 wdtcr_val;
+  rx_wdt_config_t         default_config;
+  volatile rx_wdt_regs_t* regs;
+  uint16_t                wdtcr_val;
 
   if (s_wdt_state.initialized) {
     return k_rx_err_invalid_state;
@@ -364,10 +364,10 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
    * Bits 9:8 (RPES): Window end position (set to 0% = no window)
    * Bits 13:12 (RPSS): Window start position (set to 100% = no window)
    */
-  wdtcr_val = (uint16_t)config->timeout_cycles;                          /* TOPS[1:0] */
-  wdtcr_val |= ((uint16_t)config->clock_division << k_wdt_cr_cks_pos);   /* CKS[7:4] */
-  wdtcr_val |= k_wdt_rpes_0;                                              /* No window end */
-  wdtcr_val |= k_wdt_rpss_100;                                            /* No window start */
+  wdtcr_val = (uint16_t)config->timeout_cycles;                        /* TOPS[1:0] */
+  wdtcr_val |= ((uint16_t)config->clock_division << k_wdt_cr_cks_pos); /* CKS[7:4] */
+  wdtcr_val |= k_wdt_rpes_0;                                           /* No window end */
+  wdtcr_val |= k_wdt_rpss_100;                                         /* No window start */
   regs->wdtcr = wdtcr_val;
 
   /* Configure WDTRCR register (reset vs NMI selection)

@@ -142,14 +142,14 @@ typedef enum : uint32_t {
 
 /** @brief Test frame constants */
 typedef enum : uint32_t {
-  k_expected_write_frame    = 0x8E55, /**< Expected SPI write frame (CONFIG3, 0x55) with parity */
-  k_expected_read_frame     = 0xC000, /**< Expected SPI read frame (DEVICE_ID) with parity */
-  k_expected_fault_response = 0x80AB, /**< Expected response with fault bit set */
-  k_expected_status_byte    = 0x80,   /**< Expected status byte (fault bit) */
-  k_expected_data_byte      = 0xAB,   /**< Expected data byte */
-  k_test_data_value         = 0x55,   /**< Test data value for write operations */
+  k_expected_write_frame    = 0x8E55,   /**< Expected SPI write frame (CONFIG3, 0x55) with parity */
+  k_expected_read_frame     = 0xC000,   /**< Expected SPI read frame (DEVICE_ID) with parity */
+  k_expected_fault_response = 0x80AB,   /**< Expected response with fault bit set */
+  k_expected_status_byte    = 0x80,     /**< Expected status byte (fault bit) */
+  k_expected_data_byte      = 0xAB,     /**< Expected data byte */
+  k_test_data_value         = 0x55,     /**< Test data value for write operations */
   k_mock_spi_freq_hz        = 10000000, /**< Test SPI frequency (10 MHz) */
-  k_mock_spi_mode           = 1, /**< Test SPI mode (mode 1: CPOL=0, CPHA=1) */
+  k_mock_spi_mode           = 1,        /**< Test SPI mode (mode 1: CPOL=0, CPHA=1) */
 } test_frame_constants_t;
 
 /** @brief Test helper macros */
@@ -186,7 +186,7 @@ typedef struct {
  */
 
 rx_err_t rx_drv8243_spi_clear_fault(rx_drv8243_handle_t* handle);
-rx_err_t rx_drv8243_spi_get_detailed_fault(rx_drv8243_handle_t*        handle,
+rx_err_t rx_drv8243_spi_get_detailed_fault(rx_drv8243_handle_t*         handle,
                                            rx_drv8243_detailed_fault_t* fault);
 rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle, drv8243_slew_rate_t rate);
 rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*  handle,
@@ -194,8 +194,8 @@ rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*  handle,
                                   drv8243_toff_t        toff);
 rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, drv8243_control_mode_t mode);
 rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t* handle,
-                                drv8243_ocp_thresh_t  thresh,
-                                drv8243_ocp_filter_t  filter);
+                                drv8243_ocp_thresh_t thresh,
+                                drv8243_ocp_filter_t filter);
 rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, bool enable);
 rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle);
 rx_err_t rx_drv8243_spi_unlock_config(rx_drv8243_handle_t* handle);
@@ -208,14 +208,14 @@ rx_err_t rx_drv8243_spi_read_device_id(rx_drv8243_handle_t* handle, uint8_t* dev
 
 /** @brief Mock state constants */
 typedef enum : uint32_t {
-  k_mock_max_ports          = 32,
-  k_mock_default_ki_propi   = 525,
-  k_mock_max_pwm_freq_hz    = 25000,
-  k_mock_sci_channel        = 12,
-  k_mock_cs_port            = k_rx_port_4, /**< CS on Port 4 */
-  k_mock_cs_pin             = k_rx_pin_5,  /**< CS on Pin 5 */
-  k_mock_device_id_value    = 0x32,
-  k_mock_no_fault_response  = 0x0000,
+  k_mock_max_ports           = 32,
+  k_mock_default_ki_propi    = 525,
+  k_mock_max_pwm_freq_hz     = 25000,
+  k_mock_sci_channel         = 12,
+  k_mock_cs_port             = k_rx_port_4, /**< CS on Port 4 */
+  k_mock_cs_pin              = k_rx_pin_5,  /**< CS on Pin 5 */
+  k_mock_device_id_value     = 0x32,
+  k_mock_no_fault_response   = 0x0000,
   k_mock_with_fault_response = 0x8000,
 } mock_constants_t;
 
@@ -343,10 +343,23 @@ volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
 /* Logging stubs: only needed for non-simulator builds.
  * Under RX_SIMULATOR_MODE, rx_log.h provides static inline versions. */
 #ifndef RX_SIMULATOR_MODE
-void uart_debug_putc(char c) { (void)c; }
-void uart_debug_puts(const char* str) { (void)str; }
-void uart_debug_putint(int32_t value) { (void)value; }
-void uart_debug_puthex(uint32_t value, uint8_t digits) { (void)value; (void)digits; }
+void uart_debug_putc(char c)
+{
+  (void)c;
+}
+void uart_debug_puts(const char* str)
+{
+  (void)str;
+}
+void uart_debug_putint(int32_t value)
+{
+  (void)value;
+}
+void uart_debug_puthex(uint32_t value, uint8_t digits)
+{
+  (void)value;
+  (void)digits;
+}
 #endif /* !RX_SIMULATOR_MODE */
 
 /* =============================================================================
@@ -543,7 +556,7 @@ rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*  handle,
 
   /* Write ITRIP level to CONFIG_ITRIP register */
   config_itrip = (uint8_t)level << k_drv8243_itrip_level_pos;
-  err = internal_drv8243_spi_write_reg(handle, k_drv8243_reg_config_itrip, config_itrip);
+  err          = internal_drv8243_spi_write_reg(handle, k_drv8243_reg_config_itrip, config_itrip);
   if (err != k_rx_ok) {
     return err;
   }
@@ -590,8 +603,8 @@ rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, drv8243_control_mo
 }
 
 rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t* handle,
-                                drv8243_ocp_thresh_t  thresh,
-                                drv8243_ocp_filter_t  filter)
+                                drv8243_ocp_thresh_t thresh,
+                                drv8243_ocp_filter_t filter)
 {
   uint8_t  config4 = 0;
   rx_err_t err     = k_rx_fail;
@@ -614,7 +627,7 @@ rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t* handle,
     return err;
   }
 
-  config4 &= (uint8_t)~(k_drv8243_cfg4_ocp_sel_mask | k_drv8243_cfg4_tocp_sel_mask);
+  config4 &= (uint8_t) ~(k_drv8243_cfg4_ocp_sel_mask | k_drv8243_cfg4_tocp_sel_mask);
   config4 |= ((uint8_t)thresh << k_drv8243_cfg4_ocp_sel_pos) & k_drv8243_cfg4_ocp_sel_mask;
   config4 |= ((uint8_t)filter << k_drv8243_cfg4_tocp_sel_pos) & k_drv8243_cfg4_tocp_sel_mask;
 
@@ -662,8 +675,8 @@ rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
     return k_rx_err_invalid_state;
   }
 
-  err = internal_drv8243_spi_write_reg(handle, k_drv8243_reg_command,
-                                       k_drv8243_cmd_reg_lock_locked);
+  err =
+    internal_drv8243_spi_write_reg(handle, k_drv8243_reg_command, k_drv8243_cmd_reg_lock_locked);
   if (err == k_rx_ok) {
     handle->config_locked = true;
   }
@@ -682,8 +695,8 @@ rx_err_t rx_drv8243_spi_unlock_config(rx_drv8243_handle_t* handle)
     return k_rx_err_invalid_state;
   }
 
-  err = internal_drv8243_spi_write_reg(handle, k_drv8243_reg_command,
-                                       k_drv8243_cmd_reg_lock_unlock);
+  err =
+    internal_drv8243_spi_write_reg(handle, k_drv8243_reg_command, k_drv8243_cmd_reg_lock_unlock);
   if (err == k_rx_ok) {
     handle->config_locked = false;
   }
@@ -734,9 +747,9 @@ static rx_drv8243_handle_t create_initialized_spi_handle(void)
 
   /* Initialize the mock SCI SPI controller so transfers work */
   sci_spi_controller_config_t ctrl_config = {
-      .spi_mode = k_mock_spi_mode,
-      .freq_hz  = k_mock_spi_freq_hz,
-      .cs       = (rx_port_pin_t)((k_mock_cs_port << k_port_shift) | k_mock_cs_pin),
+    .spi_mode = k_mock_spi_mode,
+    .freq_hz  = k_mock_spi_freq_hz,
+    .cs       = (rx_port_pin_t)((k_mock_cs_port << k_port_shift) | k_mock_cs_pin),
   };
   rx_err_t err = sci_spi_init_controller(k_mock_sci_channel, &ctrl_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -950,7 +963,8 @@ static void test_set_ocp_success(void)
 
   mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
-  rx_err_t err = rx_drv8243_spi_set_ocp(&handle, k_drv8243_ocp_thresh_medium, k_drv8243_ocp_filter_2us);
+  rx_err_t err =
+    rx_drv8243_spi_set_ocp(&handle, k_drv8243_ocp_thresh_medium, k_drv8243_ocp_filter_2us);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -960,7 +974,8 @@ static void test_set_ocp_locked(void)
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
   handle.config_locked       = true;
 
-  rx_err_t err = rx_drv8243_spi_set_ocp(&handle, k_drv8243_ocp_thresh_medium, k_drv8243_ocp_filter_2us);
+  rx_err_t err =
+    rx_drv8243_spi_set_ocp(&handle, k_drv8243_ocp_thresh_medium, k_drv8243_ocp_filter_2us);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1062,7 +1077,7 @@ static void test_get_detailed_fault_no_faults(void)
   mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   rx_drv8243_detailed_fault_t fault;
-  rx_err_t err = rx_drv8243_spi_get_detailed_fault(&handle, &fault);
+  rx_err_t                    err = rx_drv8243_spi_get_detailed_fault(&handle, &fault);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* FAULT_SUMMARY fields */
   TEST_ASSERT_FALSE(fault.spi_error);
@@ -1092,7 +1107,7 @@ static void test_get_detailed_fault_overcurrent(void)
   mock_sci_spi_set_rx_data(k_mock_sci_channel, k_drv8243_status1_ocp_h1_mask);
 
   rx_drv8243_detailed_fault_t fault;
-  rx_err_t err = rx_drv8243_spi_get_detailed_fault(&handle, &fault);
+  rx_err_t                    err = rx_drv8243_spi_get_detailed_fault(&handle, &fault);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(fault.ocp_h1);
 }
@@ -1169,7 +1184,8 @@ static void test_set_ocp_invalid_filter(void)
   mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   /* Test with out-of-range filter (valid range: 0-3) */
-  rx_err_t err = rx_drv8243_spi_set_ocp(&handle, k_drv8243_ocp_thresh_medium, (drv8243_ocp_filter_t)4);
+  rx_err_t err =
+    rx_drv8243_spi_set_ocp(&handle, k_drv8243_ocp_thresh_medium, (drv8243_ocp_filter_t)4);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 

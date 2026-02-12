@@ -127,15 +127,15 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_dtc_offset_dtccr = 0x00U,   /**< DTCCR offset (8-bit) */
-  k_dtc_offset_dtcvbr = 0x04U,  /**< DTCVBR offset (32-bit) */
+  k_dtc_offset_dtccr    = 0x00U, /**< DTCCR offset (8-bit) */
+  k_dtc_offset_dtcvbr   = 0x04U, /**< DTCVBR offset (32-bit) */
   k_dtc_offset_dtcadmod = 0x08U, /**< DTCADMOD offset (8-bit) */
-  k_dtc_offset_dtcst = 0x0CU,   /**< DTCST offset (8-bit) */
-  k_dtc_offset_dtcsts = 0x0EU,  /**< DTCSTS offset (16-bit) */
-  k_dtc_offset_dtcibr = 0x10U,  /**< DTCIBR offset (32-bit) */
-  k_dtc_offset_dtcor = 0x14U,   /**< DTCOR offset (8-bit) */
-  k_dtc_offset_dtcsqe = 0x16U,  /**< DTCSQE offset (16-bit) */
-  k_dtc_offset_dtcdisp = 0x18U, /**< DTCDISP offset (32-bit) */
+  k_dtc_offset_dtcst    = 0x0CU, /**< DTCST offset (8-bit) */
+  k_dtc_offset_dtcsts   = 0x0EU, /**< DTCSTS offset (16-bit) */
+  k_dtc_offset_dtcibr   = 0x10U, /**< DTCIBR offset (32-bit) */
+  k_dtc_offset_dtcor    = 0x14U, /**< DTCOR offset (8-bit) */
+  k_dtc_offset_dtcsqe   = 0x16U, /**< DTCSQE offset (16-bit) */
+  k_dtc_offset_dtcdisp  = 0x18U, /**< DTCDISP offset (32-bit) */
 } dtc_offsets_t;
 
 /* =============================================================================
@@ -372,22 +372,22 @@ typedef enum : uint8_t {
   k_dtc_mra_wbdis = 0x01U, /**< Don't write back transfer info */
 
   /* SM - Source Address Addressing Mode (bits 3:2) */
-  k_dtc_mra_sm_fixed = 0x00U,     /**< Source address fixed */
+  k_dtc_mra_sm_fixed     = 0x00U, /**< Source address fixed */
   k_dtc_mra_sm_increment = 0x08U, /**< Source address increment */
   k_dtc_mra_sm_decrement = 0x0CU, /**< Source address decrement */
-  k_dtc_mra_sm_mask = 0x0CU,      /**< SM field mask */
+  k_dtc_mra_sm_mask      = 0x0CU, /**< SM field mask */
 
   /* SZ - Transfer Data Size (bits 5:4) */
-  k_dtc_mra_sz_byte = 0x00U,  /**< 8-bit transfer */
-  k_dtc_mra_sz_word = 0x10U,  /**< 16-bit transfer */
-  k_dtc_mra_sz_long = 0x20U,  /**< 32-bit transfer */
-  k_dtc_mra_sz_mask = 0x30U,  /**< SZ field mask */
+  k_dtc_mra_sz_byte = 0x00U, /**< 8-bit transfer */
+  k_dtc_mra_sz_word = 0x10U, /**< 16-bit transfer */
+  k_dtc_mra_sz_long = 0x20U, /**< 32-bit transfer */
+  k_dtc_mra_sz_mask = 0x30U, /**< SZ field mask */
 
   /* MD - Transfer Mode Select (bits 7:6) */
   k_dtc_mra_md_normal = 0x00U, /**< Normal transfer mode */
   k_dtc_mra_md_repeat = 0x40U, /**< Repeat transfer mode */
-  k_dtc_mra_md_block = 0x80U,  /**< Block transfer mode */
-  k_dtc_mra_md_mask = 0xC0U,   /**< MD field mask */
+  k_dtc_mra_md_block  = 0x80U, /**< Block transfer mode */
+  k_dtc_mra_md_mask   = 0xC0U, /**< MD field mask */
 } dtc_mra_bits_t;
 
 /**
@@ -414,18 +414,18 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_dtc_mrb_sqend = 0x01U, /**< End sequence transfer */
-  k_dtc_mrb_indx = 0x02U,  /**< Refer to index table */
+  k_dtc_mrb_indx  = 0x02U, /**< Refer to index table */
 
   /* DM - Destination Address Addressing Mode (bits 3:2) */
-  k_dtc_mrb_dm_fixed = 0x00U,     /**< Destination address fixed */
+  k_dtc_mrb_dm_fixed     = 0x00U, /**< Destination address fixed */
   k_dtc_mrb_dm_increment = 0x08U, /**< Destination address increment */
   k_dtc_mrb_dm_decrement = 0x0CU, /**< Destination address decrement */
-  k_dtc_mrb_dm_mask = 0x0CU,      /**< DM field mask */
+  k_dtc_mrb_dm_mask      = 0x0CU, /**< DM field mask */
 
-  k_dtc_mrb_dts = 0x10U,  /**< Source is repeat/block area (1=src, 0=dest) */
+  k_dtc_mrb_dts   = 0x10U, /**< Source is repeat/block area (1=src, 0=dest) */
   k_dtc_mrb_disel = 0x20U, /**< Interrupt after each transfer (not just end) */
-  k_dtc_mrb_chns = 0x40U,  /**< Chain only when counter becomes 0 */
-  k_dtc_mrb_chne = 0x80U,  /**< Chain transfer enable */
+  k_dtc_mrb_chns  = 0x40U, /**< Chain only when counter becomes 0 */
+  k_dtc_mrb_chne  = 0x80U, /**< Chain transfer enable */
 } dtc_mrb_bits_t;
 
 /**
@@ -441,12 +441,12 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct __attribute__((packed, aligned(4))) {
-  uint8_t mra;  /**< Mode Register A (transfer mode, size) */
-  uint8_t mrb;  /**< Mode Register B (chain, interrupt) */
-  uint8_t mrc;  /**< Mode Register C (sequence control) */
-  uint8_t reserved; /**< Reserved (set to 0) */
-  uint32_t sar; /**< Source Address Register */
-  uint32_t dar; /**< Destination Address Register */
+  uint8_t  mra;      /**< Mode Register A (transfer mode, size) */
+  uint8_t  mrb;      /**< Mode Register B (chain, interrupt) */
+  uint8_t  mrc;      /**< Mode Register C (sequence control) */
+  uint8_t  reserved; /**< Reserved (set to 0) */
+  uint32_t sar;      /**< Source Address Register */
+  uint32_t dar;      /**< Destination Address Register */
   union {
     struct {
       uint16_t cra_low;  /**< Transfer count (normal/repeat) */
@@ -454,7 +454,7 @@ typedef struct __attribute__((packed, aligned(4))) {
     };
     uint32_t cra; /**< Transfer Count Register A (full) */
   };
-  uint16_t crb; /**< Transfer Count Register B (block count) */
+  uint16_t crb;       /**< Transfer Count Register B (block count) */
   uint16_t reserved2; /**< Reserved */
 } dtc_transfer_info_full_t;
 
@@ -471,13 +471,13 @@ typedef struct __attribute__((packed, aligned(4))) {
  * @since Version 1.0.0
  */
 typedef struct __attribute__((packed, aligned(4))) {
-  uint8_t mra;  /**< Mode Register A */
-  uint8_t mrb;  /**< Mode Register B */
-  uint8_t mrc;  /**< Mode Register C */
-  uint8_t reserved; /**< Reserved */
-  uint8_t sar[3]; /**< Source Address (24-bit) */
+  uint8_t mra;       /**< Mode Register A */
+  uint8_t mrb;       /**< Mode Register B */
+  uint8_t mrc;       /**< Mode Register C */
+  uint8_t reserved;  /**< Reserved */
+  uint8_t sar[3];    /**< Source Address (24-bit) */
   uint8_t reserved2; /**< Reserved */
-  uint8_t dar[3]; /**< Destination Address (24-bit) */
+  uint8_t dar[3];    /**< Destination Address (24-bit) */
   uint8_t reserved3; /**< Reserved */
   union {
     struct {
@@ -635,95 +635,83 @@ static inline volatile uint32_t* dtc_dtcdisp_reg(void)
 
 /* Verify base address */
 static_assert(k_dtc_base_addr == 0x00082400U,
-               "DTC base address must be 0x00082400 per Ch20 manual");
+              "DTC base address must be 0x00082400 per Ch20 manual");
 
 /* Verify register addresses */
-static_assert(k_dtc_dtccr_addr == 0x00082400U,
-               "DTCCR address must be 0x00082400 per Ch20 manual");
+static_assert(k_dtc_dtccr_addr == 0x00082400U, "DTCCR address must be 0x00082400 per Ch20 manual");
 
 static_assert(k_dtc_dtcvbr_addr == 0x00082404U,
-               "DTCVBR address must be 0x00082404 per Ch20 manual");
+              "DTCVBR address must be 0x00082404 per Ch20 manual");
 
 static_assert(k_dtc_dtcadmod_addr == 0x00082408U,
-               "DTCADMOD address must be 0x00082408 per Ch20 manual");
+              "DTCADMOD address must be 0x00082408 per Ch20 manual");
 
-static_assert(k_dtc_dtcst_addr == 0x0008240CU,
-               "DTCST address must be 0x0008240C per Ch20 manual");
+static_assert(k_dtc_dtcst_addr == 0x0008240CU, "DTCST address must be 0x0008240C per Ch20 manual");
 
 static_assert(k_dtc_dtcsts_addr == 0x0008240EU,
-               "DTCSTS address must be 0x0008240E per Ch20 manual");
+              "DTCSTS address must be 0x0008240E per Ch20 manual");
 
 static_assert(k_dtc_dtcibr_addr == 0x00082410U,
-               "DTCIBR address must be 0x00082410 per Ch20 manual");
+              "DTCIBR address must be 0x00082410 per Ch20 manual");
 
-static_assert(k_dtc_dtcor_addr == 0x00082414U,
-               "DTCOR address must be 0x00082414 per Ch20 manual");
+static_assert(k_dtc_dtcor_addr == 0x00082414U, "DTCOR address must be 0x00082414 per Ch20 manual");
 
 static_assert(k_dtc_dtcsqe_addr == 0x00082416U,
-               "DTCSQE address must be 0x00082416 per Ch20 manual");
+              "DTCSQE address must be 0x00082416 per Ch20 manual");
 
 static_assert(k_dtc_dtcdisp_addr == 0x00082418U,
-               "DTCDISP address must be 0x00082418 per Ch20 manual");
+              "DTCDISP address must be 0x00082418 per Ch20 manual");
 
 /* Verify register offsets */
-static_assert(k_dtc_offset_dtccr == 0x00U,
-               "DTCCR offset must be 0x00");
+static_assert(k_dtc_offset_dtccr == 0x00U, "DTCCR offset must be 0x00");
 
-static_assert(k_dtc_offset_dtcvbr == 0x04U,
-               "DTCVBR offset must be 0x04");
+static_assert(k_dtc_offset_dtcvbr == 0x04U, "DTCVBR offset must be 0x04");
 
-static_assert(k_dtc_offset_dtcadmod == 0x08U,
-               "DTCADMOD offset must be 0x08");
+static_assert(k_dtc_offset_dtcadmod == 0x08U, "DTCADMOD offset must be 0x08");
 
-static_assert(k_dtc_offset_dtcst == 0x0CU,
-               "DTCST offset must be 0x0C");
+static_assert(k_dtc_offset_dtcst == 0x0CU, "DTCST offset must be 0x0C");
 
-static_assert(k_dtc_offset_dtcsts == 0x0EU,
-               "DTCSTS offset must be 0x0E");
+static_assert(k_dtc_offset_dtcsts == 0x0EU, "DTCSTS offset must be 0x0E");
 
-static_assert(k_dtc_offset_dtcibr == 0x10U,
-               "DTCIBR offset must be 0x10");
+static_assert(k_dtc_offset_dtcibr == 0x10U, "DTCIBR offset must be 0x10");
 
-static_assert(k_dtc_offset_dtcor == 0x14U,
-               "DTCOR offset must be 0x14");
+static_assert(k_dtc_offset_dtcor == 0x14U, "DTCOR offset must be 0x14");
 
-static_assert(k_dtc_offset_dtcsqe == 0x16U,
-               "DTCSQE offset must be 0x16");
+static_assert(k_dtc_offset_dtcsqe == 0x16U, "DTCSQE offset must be 0x16");
 
-static_assert(k_dtc_offset_dtcdisp == 0x18U,
-               "DTCDISP offset must be 0x18");
+static_assert(k_dtc_offset_dtcdisp == 0x18U, "DTCDISP offset must be 0x18");
 
 /* Verify offset + base = address */
 static_assert(k_dtc_base_addr + k_dtc_offset_dtccr == k_dtc_dtccr_addr,
-               "DTCCR: base + offset must equal address");
+              "DTCCR: base + offset must equal address");
 
 static_assert(k_dtc_base_addr + k_dtc_offset_dtcvbr == k_dtc_dtcvbr_addr,
-               "DTCVBR: base + offset must equal address");
+              "DTCVBR: base + offset must equal address");
 
 static_assert(k_dtc_base_addr + k_dtc_offset_dtcadmod == k_dtc_dtcadmod_addr,
-               "DTCADMOD: base + offset must equal address");
+              "DTCADMOD: base + offset must equal address");
 
 static_assert(k_dtc_base_addr + k_dtc_offset_dtcst == k_dtc_dtcst_addr,
-               "DTCST: base + offset must equal address");
+              "DTCST: base + offset must equal address");
 
 static_assert(k_dtc_base_addr + k_dtc_offset_dtcsts == k_dtc_dtcsts_addr,
-               "DTCSTS: base + offset must equal address");
+              "DTCSTS: base + offset must equal address");
 
 static_assert(k_dtc_base_addr + k_dtc_offset_dtcibr == k_dtc_dtcibr_addr,
-               "DTCIBR: base + offset must equal address");
+              "DTCIBR: base + offset must equal address");
 
 static_assert(k_dtc_base_addr + k_dtc_offset_dtcor == k_dtc_dtcor_addr,
-               "DTCOR: base + offset must equal address");
+              "DTCOR: base + offset must equal address");
 
 static_assert(k_dtc_base_addr + k_dtc_offset_dtcsqe == k_dtc_dtcsqe_addr,
-               "DTCSQE: base + offset must equal address");
+              "DTCSQE: base + offset must equal address");
 
 static_assert(k_dtc_base_addr + k_dtc_offset_dtcdisp == k_dtc_dtcdisp_addr,
-               "DTCDISP: base + offset must equal address");
+              "DTCDISP: base + offset must equal address");
 
 /* Verify transfer info structure sizes */
 static_assert(sizeof(dtc_transfer_info_full_t) == 20,
-               "Full transfer info structure must be 20 bytes");
+              "Full transfer info structure must be 20 bytes");
 
 /** @} */
 
