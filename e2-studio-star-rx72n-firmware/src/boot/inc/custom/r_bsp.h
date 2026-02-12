@@ -39,11 +39,11 @@ extern "C" {
 /***********************************************************************************************************************
  * Boot-Required Headers (from src/boot/include/)
  ***********************************************************************************************************************/
-#include "boot_common.h" /* Replaces r_bsp_common.h - provides INTERNAL_NOT_USED */
+#include "boot_common.h"   /* Replaces r_bsp_common.h - provides INTERNAL_NOT_USED */
+#include "mcu_info.h"      /* RX72N MCU definitions */
 #include "r_bsp_config.h"  /* BSP configuration macros */
 #include "r_rx_compiler.h" /* R_BSP_* macros (must be before r_rx_intrinsic_functions.h) */
-#include "mcu_info.h"      /* RX72N MCU definitions */
-#include "mcu/all/r_rx_intrinsic_functions.h" /* R_BSP_NOP, R_BSP_SET_INTB, etc. (from SMC) */
+#include "r_rx_intrinsic_functions.h" /* R_BSP_NOP, R_BSP_SET_INTB, etc. (ported to boot/) */
 
 /***********************************************************************************************************************
  * MCU-Specific Headers (minimal subset needed for boot)

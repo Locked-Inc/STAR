@@ -42,21 +42,21 @@
  * Note         : If this function is not called anywhere yet, please call it manually in application code
                   (for e.g. call it in tx_application_define())
  **********************************************************************************************************************/
-void tx_application_define_user (void)
+void tx_application_define_user(void)
 {
-    /************** thread creation *************************/
+  /************** thread creation *************************/
 
-    /************** queue creation **************************/
+  /************** queue creation **************************/
 
-    /************** Semaphore creation **********************/
+  /************** Semaphore creation **********************/
 
-    /************** Mutex creation **************************/
+  /************** Mutex creation **************************/
 
-    /************** Event flags creation ********************/
+  /************** Event flags creation ********************/
 
-    /************** Application timer creation **************/
-    /* Start user code for user initialization code. Do not edit comment generated here */
-    /* End user code. Do not edit comment generated here */
+  /************** Application timer creation **************/
+  /* Start user code for user initialization code. Do not edit comment generated here */
+  /* End user code. Do not edit comment generated here */
 } /* End of function tx_application_define_user()*/
 
 /* Start user code for others user code. Do not edit comment generated here */
