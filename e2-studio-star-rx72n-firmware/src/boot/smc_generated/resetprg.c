@@ -421,7 +421,7 @@ R_BSP_POR_FUNCTION(R_BSP_STARTUP_FUNCTION)
 
 #if BSP_CFG_CPLUSPLUS == 1
   /* Initialize C++ global class object */
-  extern void __CALL_INIT(void);  /* Defined in reset_program.S */
+  extern void __CALL_INIT(void); /* Defined in reset_program.S */
   __CALL_INIT();
 #endif
 
