@@ -49,6 +49,23 @@
  * @note Ported from Renesas Smart Configurator (SMC) generated code
  * @warning These functions are NOT thread-safe - caller must provide synchronization
  * @since Version 1.0.0
+ *
+ * @author STAR Project (Locked, Inc.)
+ * @date 2019 (original), 2026 (STAR modifications)
+ * @version 1.0.0
+ * @copyright Copyright (C) 2019 Renesas Electronics Corporation. Modified by Locked, Inc.
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 4: Functions kept short and verifiable
+ * - Rule 7: All return values checked by callers
+ * - All rules maintained throughout modifications
+ *
+ * @par SOLID Principles
+ * - Single Responsibility: Provides only character I/O primitives
+ * - Open/Closed: Extensible via BSP configuration without modifying code
+ * - Liskov Substitution: I/O functions maintain consistent contracts
+ * - Interface Segregation: Minimal API (charput, charget)
+ * - Dependency Inversion: Abstracts I/O destination through configuration
  */
 /***********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
@@ -124,6 +141,8 @@ void charput(char output_char);
  * - If BSP_CFG_USER_CHARGET_ENABLED == 1: Input from user-defined function
  *
  * @return char Character read from input device (ASCII or binary data)
+ * @retval 0x00-0x7F Valid ASCII character
+ * @retval 0x80-0xFF Extended character or binary data
  *
  * @pre BSP I/O library must be initialized (BSP_CFG_IO_LIB_ENABLE == 1)
  * @pre If using user charget, BSP_CFG_USER_CHARGET_FUNCTION must be defined
