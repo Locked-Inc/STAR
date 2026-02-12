@@ -86,24 +86,6 @@
 				)
 			)
 			(pin passive line
-				(at -5.08 -2.54 0)
-				(length 5.08)
-				(name "TMS"
-					(effects
-						(font
-							(size 1.016 1.016)
-						)
-					)
-				)
-				(number "3"
-					(effects
-						(font
-							(size 1.016 1.016)
-						)
-					)
-				)
-			)
-			(pin passive line
 				(at -5.08 -5.08 0)
 				(length 5.08)
 				(name "TDO"
@@ -168,24 +150,6 @@
 					)
 				)
 				(number "11"
-					(effects
-						(font
-							(size 1.016 1.016)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at -5.08 -15.24 0)
-				(length 5.08)
-				(name "RESn"
-					(effects
-						(font
-							(size 1.016 1.016)
-						)
-					)
-				)
-				(number "13"
 					(effects
 						(font
 							(size 1.016 1.016)
@@ -312,6 +276,44 @@
 					)
 				)
 				(number "14"
+					(effects
+						(font
+							(size 1.016 1.016)
+						)
+					)
+				)
+			)
+		)
+		(symbol "E1E2-Emulator-Interface_1_0"
+			(pin passive line
+				(at -5.08 -2.54 0)
+				(length 5.08)
+				(name "TRST#"
+					(effects
+						(font
+							(size 1.016 1.016)
+						)
+					)
+				)
+				(number "3"
+					(effects
+						(font
+							(size 1.016 1.016)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at -5.08 -15.24 0)
+				(length 5.08)
+				(name "RES#"
+					(effects
+						(font
+							(size 1.016 1.016)
+						)
+					)
+				)
+				(number "13"
 					(effects
 						(font
 							(size 1.016 1.016)
