@@ -81,14 +81,20 @@ typedef enum : uint8_t {
  */
 
 typedef struct {
-  uint8_t smr;  /**< Serial Mode Register */
-  uint8_t brr;  /**< Bit Rate Register */
-  uint8_t scr;  /**< Serial Control Register */
-  uint8_t tdr;  /**< Transmit Data Register */
-  uint8_t ssr;  /**< Serial Status Register */
-  uint8_t rdr;  /**< Receive Data Register */
-  uint8_t scmr; /**< Smart Card Mode Register */
-  uint8_t semr; /**< Serial Extended Mode Register */
+  uint8_t smr;   /**< Serial Mode Register (0x00) */
+  uint8_t brr;   /**< Bit Rate Register (0x01) */
+  uint8_t scr;   /**< Serial Control Register (0x02) */
+  uint8_t tdr;   /**< Transmit Data Register (0x03) */
+  uint8_t ssr;   /**< Serial Status Register (0x04) */
+  uint8_t rdr;   /**< Receive Data Register (0x05) */
+  uint8_t scmr;  /**< Smart Card Mode Register (0x06) */
+  uint8_t semr;  /**< Serial Extended Mode Register (0x07) */
+  uint8_t snfr;  /**< Noise Filter Setting Register (0x08) */
+  uint8_t simr1; /**< I2C Mode Register 1 (0x09) */
+  uint8_t simr2; /**< I2C Mode Register 2 (0x0A) */
+  uint8_t simr3; /**< I2C Mode Register 3 (0x0B) */
+  uint8_t sisr;  /**< I2C Status Register (0x0C) */
+  uint8_t spmr;  /**< SPI Mode Register (0x0D) */
 } mock_sci_regs_t;
 
 /* =============================================================================

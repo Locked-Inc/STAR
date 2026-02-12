@@ -100,7 +100,7 @@
  * | Address | Name | Access | Function |
  * |---------|------|--------|----------|
  * | **Status Registers (Read-Only)** ||||
- * | 0x00 | DEVICE_ID | RO | Device identification (0x01) |
+ * | 0x00 | DEVICE_ID | RO | Device identification (0x32) |
  * | 0x01 | FAULT_SUMMARY | RO | Latched fault status (8 bits) |
  * | 0x02 | STATUS1 | RO | Per-FET OCP, OLA, ITRIP, state (8 bits) |
  * | 0x03 | STATUS2 | RO | OLP comparator output (1 bit) |
@@ -120,7 +120,7 @@
  * ### 1. Status Registers (0x00-0x03): Read-Only Diagnostics
  *
  * These registers provide real-time and latched fault information:
- * - **DEVICE_ID (0x00)**: IC identification (should read 0x01)
+ * - **DEVICE_ID (0x00)**: IC identification (should read 0x32)
  * - **FAULT_SUMMARY (0x01)**: Latched fault flags (clear via CLR_FLT command)
  * - **STATUS1 (0x02)**: Per-FET overcurrent/open-load, ITRIP comparator, device state
  * - **STATUS2 (0x03)**: Over-load protection (OLP) comparator output
@@ -414,12 +414,12 @@ typedef enum : uint8_t {
   /**
    * @brief Device identification register (address 0x00, read-only)
    * @details
-   * Contains the DRV8243-Q1 device ID. Should always read 0x01.
+   * Contains the DRV8243S-Q1 device ID. Should always read 0x32.
    * Use this register to verify SPI communication during initialization.
    *
    * **Bit Layout:**
    * ```
-   * Bit 7-0: DEVICE_ID = 0x01 (DRV8243-Q1 identifier)
+   * Bit 7-0: DEVICE_ID = 0x32 (DRV8243S-Q1 identifier)
    * ```
    *
    * **Usage:**
@@ -427,11 +427,11 @@ typedef enum : uint8_t {
    * uint16_t tx = DRV8243_SPI_READ_FRAME(k_drv8243_reg_device_id);
    * uint16_t rx = rspi0_transfer_16(tx);
    * uint8_t id = DRV8243_SPI_GET_DATA(rx);
-   * assert(id == k_drv8243_device_id_expected);  // Should be 0x01
+   * assert(id == k_drv8243_device_id_expected);  // Should be 0x32
    * @endcode
    *
    * @note Read-only register, writes are ignored
-   * @warning If this register reads anything other than 0x01, SPI communication has failed
+   * @warning If this register reads anything other than 0x32, SPI communication has failed
    */
   k_drv8243_reg_device_id = 0x00,
 
@@ -2200,7 +2200,7 @@ typedef enum : uint32_t {
  * // Verify DEVICE_ID matches expected value
  * if (device_id != k_drv8243_device_id_expected) {
  *     // SPI communication error or wrong device
- *     rx_log_error("DRV8243", "Invalid DEVICE_ID: 0x%02X (expected 0x01)", device_id);
+ *     rx_log_error("DRV8243", "Invalid DEVICE_ID: 0x%02X (expected 0x32)", device_id);
  *     return k_rx_err_hardware_error;
  * }
  *
@@ -2220,7 +2220,7 @@ typedef enum : uint32_t {
  * |---------|--------------|-----|
  * | device_id = 0x00 | Insufficient t_POR delay | Wait longer after power-on |
  * | device_id = 0xFF | No pull-up on CIPO, device not responding | Check power, wiring |
- * | device_id != 0x01 | Wrong device on bus | Verify PCB schematic |
+ * | device_id != 0x32 | Wrong device on bus | Verify PCB schematic |
  * | status_byte MSB = 0 | SPI clock polarity wrong | Set CPOL=0, CPHA=0 |
  * | Random values | SPI wiring issue, clock mismatch | Check SCLK, COPI, CIPO, CS |
  *
@@ -2229,14 +2229,63 @@ typedef enum : uint32_t {
  * @see DRV8243_SPI_GET_DATA() Extract device ID from response
  *
  * @note DEVICE_ID register is read-only, writes are ignored
- * @note All DRV8243-Q1 devices return 0x01 (differentiate from DRV8244, other TI H-bridge ICs)
+ * @note All DRV8243S-Q1 devices return 0x32 (differentiate from DRV8244, other TI H-bridge ICs)
  * @warning Do not proceed with configuration if DEVICE_ID verification fails
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_drv8243_device_id_expected = 0x01, /**< Expected DEVICE_ID value for DRV8243-Q1 */
+  k_drv8243_device_id_expected = 0x32, /**< Expected DEVICE_ID value for DRV8243S-Q1 */
 } drv8243_device_id_t;
+
+/* =============================================================================
+ * Parity Calculation
+ * =============================================================================
+ */
+
+/**
+ * @brief Calculate even parity for DRV8243S SPI frame (bit 15)
+ *
+ * @details
+ * The DRV8243S-Q1 SPI protocol requires even parity over the full 16-bit frame.
+ * Bit 15 is set such that the total number of 1-bits in the 16-bit frame is even.
+ * Parity is computed over bits 14:0, and the result is placed in bit 15.
+ *
+ * ## Algorithm
+ *
+ * Uses XOR folding to count parity of bits 14:0 in O(log n) operations:
+ * 1. Mask bits 14:0
+ * 2. XOR-fold: 15 bits -> 8 -> 4 -> 2 -> 1
+ * 3. If result is 1 (odd number of 1-bits), set bit 15 to make even parity
+ *
+ * @param[in] frame 16-bit SPI frame with bits 14:0 populated
+ *
+ * @return frame with bit 15 set to achieve even parity
+ *
+ * @pre frame has valid R/W, address, and data fields in bits 14:0
+ * @pre bit 15 of input frame should be 0 (will be overwritten)
+ *
+ * @post returned frame has even parity (popcount of all 16 bits is even)
+ * @post bits 14:0 are unchanged from input
+ *
+ * @note Thread-safe, pure function with no side effects
+ * @note Optimizes to ~6 instructions on RX72N
+ *
+ * @see DRV8243_SPI_WRITE_FRAME() Uses this for frame construction
+ * @see DRV8243_SPI_READ_FRAME() Uses this for frame construction
+ *
+ * @since Version 1.1.0
+ */
+static inline uint16_t drv8243_spi_set_parity(uint16_t frame)
+{
+  uint16_t bits = frame & 0x7FFFU; /* bits 14:0 */
+  bits ^= bits >> 8;
+  bits ^= bits >> 4;
+  bits ^= bits >> 2;
+  bits ^= bits >> 1;
+  /* If odd number of 1-bits in 14:0, set bit 15 to make total even */
+  return (bits & 1U) ? (frame | 0x8000U) : (frame & 0x7FFFU);
+}
 
 /* =============================================================================
  * Helper Macros for Frame Construction
@@ -2331,8 +2380,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 #define DRV8243_SPI_WRITE_FRAME(addr, data) \
-  ((uint16_t)(k_drv8243_spi_cmd_write | (((uint16_t)(addr)&k_drv8243_spi_addr_value_mask) << k_drv8243_spi_addr_shift) | \
-              ((uint16_t)(data)&k_drv8243_spi_data_mask)))
+  drv8243_spi_set_parity(                  \
+    (uint16_t)(k_drv8243_spi_cmd_write |   \
+    (((uint16_t)(addr)&k_drv8243_spi_addr_value_mask) << k_drv8243_spi_addr_shift) | \
+    ((uint16_t)(data)&k_drv8243_spi_data_mask)))
 
 /**
  * @def DRV8243_SPI_READ_FRAME
@@ -2384,7 +2435,7 @@ typedef enum : uint8_t {
  * uint8_t device_id = DRV8243_SPI_GET_DATA(rx_frame);
  *
  * if (device_id != k_drv8243_device_id_expected) {
- *     // SPI communication error (should read 0x01)
+ *     // SPI communication error (should read 0x32)
  *     return k_rx_err_hardware_error;
  * }
  * @endcode
@@ -2442,7 +2493,9 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 #define DRV8243_SPI_READ_FRAME(addr) \
-  ((uint16_t)(k_drv8243_spi_cmd_read | (((uint16_t)(addr)&k_drv8243_spi_addr_value_mask) << k_drv8243_spi_addr_shift)))
+  drv8243_spi_set_parity(                \
+    (uint16_t)(k_drv8243_spi_cmd_read |  \
+    (((uint16_t)(addr)&k_drv8243_spi_addr_value_mask) << k_drv8243_spi_addr_shift)))
 
 /**
  * @def DRV8243_SPI_GET_STATUS
@@ -2612,7 +2665,7 @@ typedef enum : uint8_t {
  *
  * if (device_id != k_drv8243_device_id_expected) {
  *     // Wrong device or SPI communication failed
- *     // Expected: 0x01 for DRV8243-Q1
+ *     // Expected: 0x32 for DRV8243S-Q1
  *     return k_rx_err_hardware_error;
  * }
  * @endcode
