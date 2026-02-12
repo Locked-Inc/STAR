@@ -9,7 +9,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 /**************************************************************************/
 /**************************************************************************/
 /**                                                                       */
@@ -22,7 +21,6 @@
 
 #define TX_SOURCE_CODE
 
-
 /* Include necessary system files.  */
 
 #include "tx_api.h"
@@ -30,7 +28,6 @@
 #ifdef TX_THREAD_ENABLE_PERFORMANCE_INFO
 #include "tx_trace.h"
 #endif
-
 
 /**************************************************************************/
 /*                                                                        */
@@ -97,203 +94,176 @@
 /*                                            resulting in version 6.1    */
 /*                                                                        */
 /**************************************************************************/
-UINT  _tx_thread_performance_info_get(TX_THREAD *thread_ptr, ULONG *resumptions, ULONG *suspensions,
-                ULONG *solicited_preemptions, ULONG *interrupt_preemptions, ULONG *priority_inversions,
-                ULONG *time_slices, ULONG *relinquishes, ULONG *timeouts, ULONG *wait_aborts, TX_THREAD **last_preempted_by)
+UINT _tx_thread_performance_info_get(TX_THREAD*  thread_ptr,
+                                     ULONG*      resumptions,
+                                     ULONG*      suspensions,
+                                     ULONG*      solicited_preemptions,
+                                     ULONG*      interrupt_preemptions,
+                                     ULONG*      priority_inversions,
+                                     ULONG*      time_slices,
+                                     ULONG*      relinquishes,
+                                     ULONG*      timeouts,
+                                     ULONG*      wait_aborts,
+                                     TX_THREAD** last_preempted_by)
 {
 
 #ifdef TX_THREAD_ENABLE_PERFORMANCE_INFO
 
-TX_INTERRUPT_SAVE_AREA
-UINT                    status;
+  TX_INTERRUPT_SAVE_AREA
+  UINT status;
 
+  /* Determine if this is a legal request.  */
+  if (thread_ptr == TX_NULL) {
 
-    /* Determine if this is a legal request.  */
-    if (thread_ptr == TX_NULL)
-    {
+    /* Thread pointer is illegal, return error.  */
+    status = TX_PTR_ERROR;
+  }
 
-        /* Thread pointer is illegal, return error.  */
-        status =  TX_PTR_ERROR;
-    }
+  /* Determine if the thread ID is invalid.  */
+  else if (thread_ptr->tx_thread_id != TX_THREAD_ID) {
 
-    /* Determine if the thread ID is invalid.  */
-    else if (thread_ptr -> tx_thread_id != TX_THREAD_ID)
-    {
+    /* Thread pointer is illegal, return error.  */
+    status = TX_PTR_ERROR;
+  } else {
 
-        /* Thread pointer is illegal, return error.  */
-        status =  TX_PTR_ERROR;
-    }
-    else
-    {
+    /* Disable interrupts.  */
+    TX_DISABLE
 
-        /* Disable interrupts.  */
-        TX_DISABLE
+    /* If trace is enabled, insert this event into the trace buffer.  */
+    TX_TRACE_IN_LINE_INSERT(TX_TRACE_THREAD_PERFORMANCE_INFO_GET,
+                            thread_ptr,
+                            thread_ptr->tx_thread_state,
+                            0,
+                            0,
+                            TX_TRACE_THREAD_EVENTS)
 
-        /* If trace is enabled, insert this event into the trace buffer.  */
-        TX_TRACE_IN_LINE_INSERT(TX_TRACE_THREAD_PERFORMANCE_INFO_GET, thread_ptr, thread_ptr -> tx_thread_state, 0, 0, TX_TRACE_THREAD_EVENTS)
+    /* Log this kernel call.  */
+    TX_EL_THREAD_PERFORMANCE_INFO_GET_INSERT
 
-        /* Log this kernel call.  */
-        TX_EL_THREAD_PERFORMANCE_INFO_GET_INSERT
-
-        /* Retrieve all the pertinent information and return it in the supplied
+    /* Retrieve all the pertinent information and return it in the supplied
            destinations.  */
 
-        /* Retrieve number of resumptions for this thread.  */
-        if (resumptions != TX_NULL)
-        {
+    /* Retrieve number of resumptions for this thread.  */
+    if (resumptions != TX_NULL) {
 
-            *resumptions =  thread_ptr -> tx_thread_performance_resume_count;
-        }
-
-        /* Retrieve number of suspensions for this thread.  */
-        if (suspensions != TX_NULL)
-        {
-
-            *suspensions =  thread_ptr -> tx_thread_performance_suspend_count;
-        }
-
-        /* Retrieve number of solicited preemptions for this thread.  */
-        if (solicited_preemptions != TX_NULL)
-        {
-
-            *solicited_preemptions =  thread_ptr -> tx_thread_performance_solicited_preemption_count;
-        }
-
-        /* Retrieve number of interrupt preemptions for this thread.  */
-        if (interrupt_preemptions != TX_NULL)
-        {
-
-            *interrupt_preemptions =  thread_ptr -> tx_thread_performance_interrupt_preemption_count;
-        }
-
-        /* Retrieve number of priority inversions for this thread.  */
-        if (priority_inversions != TX_NULL)
-        {
-
-            *priority_inversions =  thread_ptr -> tx_thread_performance_priority_inversion_count;
-        }
-
-        /* Retrieve number of time-slices for this thread.  */
-        if (time_slices != TX_NULL)
-        {
-
-            *time_slices =  thread_ptr -> tx_thread_performance_time_slice_count;
-        }
-
-        /* Retrieve number of relinquishes for this thread.  */
-        if (relinquishes != TX_NULL)
-        {
-
-            *relinquishes =  thread_ptr -> tx_thread_performance_relinquish_count;
-        }
-
-        /* Retrieve number of timeouts for this thread.  */
-        if (timeouts != TX_NULL)
-        {
-
-            *timeouts =  thread_ptr -> tx_thread_performance_timeout_count;
-        }
-
-        /* Retrieve number of wait aborts for this thread.  */
-        if (wait_aborts != TX_NULL)
-        {
-
-            *wait_aborts =  thread_ptr -> tx_thread_performance_wait_abort_count;
-        }
-
-        /* Retrieve the pointer of the last thread that preempted this thread.  */
-        if (last_preempted_by != TX_NULL)
-        {
-
-            *last_preempted_by =  thread_ptr -> tx_thread_performance_last_preempting_thread;
-        }
-
-        /* Restore interrupts.  */
-        TX_RESTORE
-
-        /* Return completion status.  */
-        status =  TX_SUCCESS;
+      *resumptions = thread_ptr->tx_thread_performance_resume_count;
     }
-#else
-UINT                    status;
 
+    /* Retrieve number of suspensions for this thread.  */
+    if (suspensions != TX_NULL) {
 
-    /* Access input arguments just for the sake of lint, MISRA, etc.  */
-    if (thread_ptr != TX_NULL)
-    {
-
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
+      *suspensions = thread_ptr->tx_thread_performance_suspend_count;
     }
-    else if (resumptions != TX_NULL)
-    {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (suspensions != TX_NULL)
-    {
+    /* Retrieve number of solicited preemptions for this thread.  */
+    if (solicited_preemptions != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
+      *solicited_preemptions = thread_ptr->tx_thread_performance_solicited_preemption_count;
     }
-    else if (solicited_preemptions != TX_NULL)
-    {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (interrupt_preemptions != TX_NULL)
-    {
+    /* Retrieve number of interrupt preemptions for this thread.  */
+    if (interrupt_preemptions != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
+      *interrupt_preemptions = thread_ptr->tx_thread_performance_interrupt_preemption_count;
     }
-    else if (priority_inversions != TX_NULL)
-    {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (time_slices != TX_NULL)
-    {
+    /* Retrieve number of priority inversions for this thread.  */
+    if (priority_inversions != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
+      *priority_inversions = thread_ptr->tx_thread_performance_priority_inversion_count;
     }
-    else if (relinquishes != TX_NULL)
-    {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (timeouts != TX_NULL)
-    {
+    /* Retrieve number of time-slices for this thread.  */
+    if (time_slices != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
+      *time_slices = thread_ptr->tx_thread_performance_time_slice_count;
     }
-    else if (wait_aborts != TX_NULL)
-    {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (last_preempted_by != TX_NULL)
-    {
+    /* Retrieve number of relinquishes for this thread.  */
+    if (relinquishes != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
+      *relinquishes = thread_ptr->tx_thread_performance_relinquish_count;
     }
-    else
-    {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
+    /* Retrieve number of timeouts for this thread.  */
+    if (timeouts != TX_NULL) {
+
+      *timeouts = thread_ptr->tx_thread_performance_timeout_count;
     }
-#endif
+
+    /* Retrieve number of wait aborts for this thread.  */
+    if (wait_aborts != TX_NULL) {
+
+      *wait_aborts = thread_ptr->tx_thread_performance_wait_abort_count;
+    }
+
+    /* Retrieve the pointer of the last thread that preempted this thread.  */
+    if (last_preempted_by != TX_NULL) {
+
+      *last_preempted_by = thread_ptr->tx_thread_performance_last_preempting_thread;
+    }
+
+    /* Restore interrupts.  */
+    TX_RESTORE
 
     /* Return completion status.  */
-    return(status);
-}
+    status = TX_SUCCESS;
+  }
+#else
+  UINT status;
 
+  /* Access input arguments just for the sake of lint, MISRA, etc.  */
+  if (thread_ptr != TX_NULL) {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (resumptions != TX_NULL) {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (suspensions != TX_NULL) {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (solicited_preemptions != TX_NULL) {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (interrupt_preemptions != TX_NULL) {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (priority_inversions != TX_NULL) {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (time_slices != TX_NULL) {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (relinquishes != TX_NULL) {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (timeouts != TX_NULL) {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (wait_aborts != TX_NULL) {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (last_preempted_by != TX_NULL) {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else {
+
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  }
+#endif
+
+  /* Return completion status.  */
+  return (status);
+}

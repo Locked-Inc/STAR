@@ -9,7 +9,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 /**************************************************************************/
 /**************************************************************************/
 /**                                                                       */
@@ -22,7 +21,6 @@
 
 #define TX_SOURCE_CODE
 
-
 /* Include necessary system files.  */
 
 #include "tx_api.h"
@@ -30,7 +28,6 @@
 #ifdef TX_EVENT_FLAGS_ENABLE_PERFORMANCE_INFO
 #include "tx_trace.h"
 #endif
-
 
 /**************************************************************************/
 /*                                                                        */
@@ -81,124 +78,110 @@
 /*                                            resulting in version 6.1    */
 /*                                                                        */
 /**************************************************************************/
-UINT  _tx_event_flags_performance_info_get(TX_EVENT_FLAGS_GROUP *group_ptr, ULONG *sets, ULONG *gets,
-                    ULONG *suspensions, ULONG *timeouts)
+UINT _tx_event_flags_performance_info_get(TX_EVENT_FLAGS_GROUP* group_ptr,
+                                          ULONG*                sets,
+                                          ULONG*                gets,
+                                          ULONG*                suspensions,
+                                          ULONG*                timeouts)
 {
 
 #ifdef TX_EVENT_FLAGS_ENABLE_PERFORMANCE_INFO
 
-TX_INTERRUPT_SAVE_AREA
-UINT                    status;
+  TX_INTERRUPT_SAVE_AREA
+  UINT status;
 
+  /* Determine if this is a legal request.  */
+  if (group_ptr == TX_NULL) {
 
-    /* Determine if this is a legal request.  */
-    if (group_ptr == TX_NULL)
-    {
+    /* Event flags group pointer is illegal, return error.  */
+    status = TX_PTR_ERROR;
+  }
 
-        /* Event flags group pointer is illegal, return error.  */
-        status =  TX_PTR_ERROR;
-    }
+  /* Determine if the event group ID is invalid.  */
+  else if (group_ptr->tx_event_flags_group_id != TX_EVENT_FLAGS_ID) {
 
-    /* Determine if the event group ID is invalid.  */
-    else if (group_ptr -> tx_event_flags_group_id != TX_EVENT_FLAGS_ID)
-    {
+    /* Event flags group pointer is illegal, return error.  */
+    status = TX_PTR_ERROR;
+  } else {
 
-        /* Event flags group pointer is illegal, return error.  */
-        status =  TX_PTR_ERROR;
-    }
-    else
-    {
+    /* Disable interrupts.  */
+    TX_DISABLE
 
-        /* Disable interrupts.  */
-        TX_DISABLE
+    /* If trace is enabled, insert this event into the trace buffer.  */
+    TX_TRACE_IN_LINE_INSERT(TX_TRACE_EVENT_FLAGS_PERFORMANCE_INFO_GET,
+                            group_ptr,
+                            0,
+                            0,
+                            0,
+                            TX_TRACE_EVENT_FLAGS_EVENTS)
 
-        /* If trace is enabled, insert this event into the trace buffer.  */
-        TX_TRACE_IN_LINE_INSERT(TX_TRACE_EVENT_FLAGS_PERFORMANCE_INFO_GET, group_ptr, 0, 0, 0, TX_TRACE_EVENT_FLAGS_EVENTS)
+    /* Log this kernel call.  */
+    TX_EL_EVENT_FLAGS_PERFORMANCE_INFO_GET_INSERT
 
-        /* Log this kernel call.  */
-        TX_EL_EVENT_FLAGS_PERFORMANCE_INFO_GET_INSERT
-
-        /* Retrieve all the pertinent information and return it in the supplied
+    /* Retrieve all the pertinent information and return it in the supplied
            destinations.  */
 
-        /* Retrieve the number of set operations on this event flag group.  */
-        if (sets != TX_NULL)
-        {
+    /* Retrieve the number of set operations on this event flag group.  */
+    if (sets != TX_NULL) {
 
-            *sets =  group_ptr -> tx_event_flags_group_performance_set_count;
-        }
-
-        /* Retrieve the number of get operations on this event flag group.  */
-        if (gets != TX_NULL)
-        {
-
-            *gets =  group_ptr -> tx_event_flags_group__performance_get_count;
-        }
-
-        /* Retrieve the number of thread suspensions on this event flag group.  */
-        if (suspensions != TX_NULL)
-        {
-
-            *suspensions =  group_ptr -> tx_event_flags_group___performance_suspension_count;
-        }
-
-        /* Retrieve the number of thread timeouts on this event flag group.  */
-        if (timeouts != TX_NULL)
-        {
-
-            *timeouts =  group_ptr -> tx_event_flags_group____performance_timeout_count;
-        }
-
-        /* Restore interrupts.  */
-        TX_RESTORE
-
-        /* Return successful completion.  */
-        status =  TX_SUCCESS;
+      *sets = group_ptr->tx_event_flags_group_performance_set_count;
     }
+
+    /* Retrieve the number of get operations on this event flag group.  */
+    if (gets != TX_NULL) {
+
+      *gets = group_ptr->tx_event_flags_group__performance_get_count;
+    }
+
+    /* Retrieve the number of thread suspensions on this event flag group.  */
+    if (suspensions != TX_NULL) {
+
+      *suspensions = group_ptr->tx_event_flags_group___performance_suspension_count;
+    }
+
+    /* Retrieve the number of thread timeouts on this event flag group.  */
+    if (timeouts != TX_NULL) {
+
+      *timeouts = group_ptr->tx_event_flags_group____performance_timeout_count;
+    }
+
+    /* Restore interrupts.  */
+    TX_RESTORE
+
+    /* Return successful completion.  */
+    status = TX_SUCCESS;
+  }
 #else
-UINT                    status;
+  UINT status;
 
+  /* Access input arguments just for the sake of lint, MISRA, etc.  */
+  if (group_ptr != TX_NULL) {
 
-    /* Access input arguments just for the sake of lint, MISRA, etc.  */
-    if (group_ptr != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (sets != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (sets != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (gets != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (gets != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (suspensions != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (suspensions != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (timeouts != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (timeouts != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else
-    {
-
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  }
 #endif
 
-    /* Return completion status.  */
-    return(status);
+  /* Return completion status.  */
+  return (status);
 }
-

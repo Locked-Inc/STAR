@@ -1305,56 +1305,56 @@ static_assert(offsetof(rx_mtu_channel_regs_t, tgrb) == 0x0A, "MTU TGRB register 
 
 /* Verify MTU3/4 extended register critical offsets */
 static_assert(offsetof(rx_mtu34_channel_regs_t, tcr) == 0x00,
-               "MTU3/4 TCR register offset incorrect");
+              "MTU3/4 TCR register offset incorrect");
 static_assert(offsetof(rx_mtu34_channel_regs_t, tcnt) == 0x06,
-               "MTU3/4 TCNT register offset incorrect");
+              "MTU3/4 TCNT register offset incorrect");
 static_assert(offsetof(rx_mtu34_channel_regs_t, tgra) == 0x08,
-               "MTU3/4 TGRA register offset incorrect");
+              "MTU3/4 TGRA register offset incorrect");
 static_assert(offsetof(rx_mtu34_channel_regs_t, tgre) == 0x10,
-               "MTU3/4 TGRE register offset incorrect");
+              "MTU3/4 TGRE register offset incorrect");
 static_assert(offsetof(rx_mtu34_channel_regs_t, tgrf) == 0x12,
-               "MTU3/4 TGRF register offset incorrect");
+              "MTU3/4 TGRF register offset incorrect");
 
 /* Verify MTU1/2 32-bit phase counting register offsets (Ch24 Table 24.11) */
 static_assert(offsetof(rx_mtu12_phase_regs_t, tcr) == 0x00,
-               "MTU1/2 Phase TCR register offset incorrect");
+              "MTU1/2 Phase TCR register offset incorrect");
 static_assert(offsetof(rx_mtu12_phase_regs_t, tmdr) == 0x01,
-               "MTU1/2 Phase TMDR register offset incorrect");
+              "MTU1/2 Phase TMDR register offset incorrect");
 static_assert(offsetof(rx_mtu12_phase_regs_t, tcnt) == 0x06,
-               "MTU1/2 Phase TCNT register offset incorrect");
+              "MTU1/2 Phase TCNT register offset incorrect");
 static_assert(offsetof(rx_mtu12_phase_regs_t, tgra) == 0x08,
-               "MTU1/2 Phase TGRA register offset incorrect");
+              "MTU1/2 Phase TGRA register offset incorrect");
 static_assert(offsetof(rx_mtu12_phase_regs_t, tgrb) == 0x0A,
-               "MTU1/2 Phase TGRB register offset incorrect");
+              "MTU1/2 Phase TGRB register offset incorrect");
 static_assert(offsetof(rx_mtu12_phase_regs_t, tmdr3) == 0x11,
-               "MTU1/2 Phase TMDR3 register offset incorrect");
+              "MTU1/2 Phase TMDR3 register offset incorrect");
 static_assert(offsetof(rx_mtu12_phase_regs_t, tcntlw) == 0x20,
-               "MTU1/2 Phase TCNTLW register offset incorrect");
+              "MTU1/2 Phase TCNTLW register offset incorrect");
 static_assert(offsetof(rx_mtu12_phase_regs_t, tgralw) == 0x24,
-               "MTU1/2 Phase TGRALW register offset incorrect");
+              "MTU1/2 Phase TGRALW register offset incorrect");
 static_assert(offsetof(rx_mtu12_phase_regs_t, tgrblw) == 0x28,
-               "MTU1/2 Phase TGRBLW register offset incorrect");
+              "MTU1/2 Phase TGRBLW register offset incorrect");
 static_assert(sizeof(rx_mtu12_phase_regs_t) == 0x2C,
-               "MTU1/2 Phase register structure size incorrect (expected 44 bytes)");
+              "MTU1/2 Phase register structure size incorrect (expected 44 bytes)");
 
 /* Verify TSTR register structure */
 static_assert(sizeof(rx_mtu_tstr_regs_t) == 1, "MTU TSTR register structure size mismatch");
 
 /* Verify base addresses are in correct peripheral space (0x000C1xxx) */
 static_assert((k_mtu0_base_addr & 0xFFFF0000) == 0x000C0000,
-               "MTU0 base address not in MTU peripheral space");
+              "MTU0 base address not in MTU peripheral space");
 static_assert((k_mtu3_base_addr & 0xFFFF0000) == 0x000C0000,
-               "MTU3 base address not in MTU peripheral space");
+              "MTU3 base address not in MTU peripheral space");
 static_assert((k_mtu6_base_addr & 0xFFFF0000) == 0x000C0000,
-               "MTU6 base address not in MTU peripheral space");
+              "MTU6 base address not in MTU peripheral space");
 
 /* Verify MTU3 and MTU4 are interleaved (MTU4 = MTU3 + 1 byte) */
 static_assert(k_mtu4_base_addr == (k_mtu3_base_addr + 1U),
-               "MTU3 and MTU4 must be interleaved (MTU4 = MTU3 + 1 byte)");
+              "MTU3 and MTU4 must be interleaved (MTU4 = MTU3 + 1 byte)");
 
 /* Verify MTU6 and MTU7 share the same base address */
 static_assert(k_mtu6_base_addr == k_mtu7_base_addr,
-               "MTU6 and MTU7 must share base address (adjacent registers)");
+              "MTU6 and MTU7 must share base address (adjacent registers)");
 /** @} */ /* End of static assertion group */
 
 /** @} */ /* End of mtu_regs defgroup */

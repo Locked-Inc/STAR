@@ -87,8 +87,14 @@ extern "C" {
 #endif
 
 /* Initializer values for message structs */
-#define google_protobuf_Duration_init_default {0, 0}
-#define google_protobuf_Duration_init_zero    {0, 0}
+#define google_protobuf_Duration_init_default                                                      \
+  {                                                                                                \
+    0, 0                                                                                           \
+  }
+#define google_protobuf_Duration_init_zero                                                         \
+  {                                                                                                \
+    0, 0                                                                                           \
+  }
 
 /* Field tags (for use in manual encoding/decoding) */
 #define google_protobuf_Duration_seconds_tag 1

@@ -80,8 +80,8 @@ static const char* s_tag = "USB_COMM";
 
 /** @brief Total header size including sync word: SYNC(2) + SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) */
 typedef enum : uint8_t {
-  k_frame_header_total =
-    k_frame_sync_size + k_frame_seq_size + k_frame_len_size + k_frame_type_size + k_frame_flags_size,
+  k_frame_header_total = k_frame_sync_size + k_frame_seq_size + k_frame_len_size +
+                         k_frame_type_size + k_frame_flags_size,
 } rx_usb_comm_header_size_t;
 
 /**
@@ -1033,12 +1033,12 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
  * @see rx_usb_comm_send() Uses this to build frames for transmission
  */
 static rx_err_t internal_build_frame(rx_frame_t*           frame,
-                                      const uint16_t        sequence,
-                                      const rx_frame_type_t type,
-                                      const uint8_t         flags,
-                                      const uint8_t*        payload,
-                                      const uint32_t        payload_len,
-                                      const bool            fec_enabled)
+                                     const uint16_t        sequence,
+                                     const rx_frame_type_t type,
+                                     const uint8_t         flags,
+                                     const uint8_t*        payload,
+                                     const uint32_t        payload_len,
+                                     const bool            fec_enabled)
 {
   /* Pre-condition 1: Frame pointer must be valid */
   RX_ASSERT(frame != nullptr, "Frame pointer is nullptr");
@@ -1106,8 +1106,13 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
 
   /* Build frame */
   rx_frame_t frame = {0};
-  rx_err_t   err   = internal_build_frame(&frame, handle->tx_sequence, type, flags, payload,
-                                          payload_len, handle->fec_enabled);
+  rx_err_t   err   = internal_build_frame(&frame,
+                                      handle->tx_sequence,
+                                      type,
+                                      flags,
+                                      payload,
+                                      payload_len,
+                                      handle->fec_enabled);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame build failed");
     return err;

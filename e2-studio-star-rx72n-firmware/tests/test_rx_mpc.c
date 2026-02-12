@@ -408,10 +408,10 @@ void test_mpc_struct_size(void)
 void test_pwpr_bit_definitions(void)
 {
   /* PFSWE (PFS Write Enable) - bit 6 */
-  TEST_ASSERT_EQUAL_HEX8(0x40, k_mpc_pwpr_pfswe);  /* 1 << 6 */
+  TEST_ASSERT_EQUAL_HEX8(0x40, k_mpc_pwpr_pfswe); /* 1 << 6 */
 
   /* B0WI (PFSWE Bit Write Disable) - bit 7 */
-  TEST_ASSERT_EQUAL_HEX8(0x80, k_mpc_pwpr_b0wi);  /* 1 << 7 */
+  TEST_ASSERT_EQUAL_HEX8(0x80, k_mpc_pwpr_b0wi); /* 1 << 7 */
 
   /* Verify bits don't overlap */
   TEST_ASSERT_EQUAL_HEX8(0x00, k_mpc_pwpr_pfswe & k_mpc_pwpr_b0wi);
@@ -429,13 +429,13 @@ void test_pwpr_bit_definitions(void)
 void test_pfs_bit_definitions(void)
 {
   /* PSEL mask (bits 0-4) - 5 bits */
-  TEST_ASSERT_EQUAL_HEX8(0x1F, k_pfs_psel_mask);  /* 0b00011111 */
+  TEST_ASSERT_EQUAL_HEX8(0x1F, k_pfs_psel_mask); /* 0b00011111 */
 
   /* ISEL (Interrupt Input Select) - bit 6 */
-  TEST_ASSERT_EQUAL_HEX8(0x40, k_pfs_isel);  /* 1 << 6 */
+  TEST_ASSERT_EQUAL_HEX8(0x40, k_pfs_isel); /* 1 << 6 */
 
   /* ASEL (Analog Input Select) - bit 7 */
-  TEST_ASSERT_EQUAL_HEX8(0x80, k_pfs_asel);  /* 1 << 7 */
+  TEST_ASSERT_EQUAL_HEX8(0x80, k_pfs_asel); /* 1 << 7 */
 
   /* Verify PSEL mask doesn't overlap with ISEL/ASEL */
   TEST_ASSERT_EQUAL_HEX8(0x00, k_pfs_psel_mask & k_pfs_isel);
@@ -465,21 +465,21 @@ void test_pfs_bitfield_struct_size(void)
 void test_reserved_field_sizes(void)
 {
   /* Bus control reserved regions */
-  TEST_ASSERT_EQUAL_UINT8(1, k_mpc_reserved1_bytes);   /* After PFCSE */
-  TEST_ASSERT_EQUAL_UINT8(4, k_mpc_reserved2_bytes);   /* After PFBCR3 */
-  TEST_ASSERT_EQUAL_UINT8(16, k_mpc_reserved3_bytes);  /* After PFENET */
-  TEST_ASSERT_EQUAL_UINT8(8, k_mpc_reserved4_bytes);   /* After PWPR */
-  TEST_ASSERT_EQUAL_UINT8(24, k_mpc_dscr2_count);      /* DSCR2 registers */
+  TEST_ASSERT_EQUAL_UINT8(1, k_mpc_reserved1_bytes);  /* After PFCSE */
+  TEST_ASSERT_EQUAL_UINT8(4, k_mpc_reserved2_bytes);  /* After PFBCR3 */
+  TEST_ASSERT_EQUAL_UINT8(16, k_mpc_reserved3_bytes); /* After PFENET */
+  TEST_ASSERT_EQUAL_UINT8(8, k_mpc_reserved4_bytes);  /* After PWPR */
+  TEST_ASSERT_EQUAL_UINT8(24, k_mpc_dscr2_count);     /* DSCR2 registers */
 
   /* Port-specific reserved regions (144-pin LFQFP) */
-  TEST_ASSERT_EQUAL_UINT8(3, k_port3_reserved_bytes);   /* Port 3: P35-P37 */
-  TEST_ASSERT_EQUAL_UINT8(1, k_port5_reserved_bytes);   /* Port 5: P53 */
-  TEST_ASSERT_EQUAL_UINT8(1, k_port6_reserved_bytes);   /* Port 6: P65 */
-  TEST_ASSERT_EQUAL_UINT8(1, k_port7_reserved_bytes);   /* Port 7: P70 */
-  TEST_ASSERT_EQUAL_UINT8(2, k_portf_reserved1_bytes);  /* Port F: PF3-PF4 */
-  TEST_ASSERT_EQUAL_UINT8(2, k_portf_reserved2_bytes);  /* Port F: PF6-PF7 */
-  TEST_ASSERT_EQUAL_UINT8(1, k_portj_reserved1_bytes);  /* Port J: PJ4 */
-  TEST_ASSERT_EQUAL_UINT8(2, k_portj_reserved2_bytes);  /* Port J: PJ6-PJ7 */
+  TEST_ASSERT_EQUAL_UINT8(3, k_port3_reserved_bytes);  /* Port 3: P35-P37 */
+  TEST_ASSERT_EQUAL_UINT8(1, k_port5_reserved_bytes);  /* Port 5: P53 */
+  TEST_ASSERT_EQUAL_UINT8(1, k_port6_reserved_bytes);  /* Port 6: P65 */
+  TEST_ASSERT_EQUAL_UINT8(1, k_port7_reserved_bytes);  /* Port 7: P70 */
+  TEST_ASSERT_EQUAL_UINT8(2, k_portf_reserved1_bytes); /* Port F: PF3-PF4 */
+  TEST_ASSERT_EQUAL_UINT8(2, k_portf_reserved2_bytes); /* Port F: PF6-PF7 */
+  TEST_ASSERT_EQUAL_UINT8(1, k_portj_reserved1_bytes); /* Port J: PJ4 */
+  TEST_ASSERT_EQUAL_UINT8(2, k_portj_reserved2_bytes); /* Port J: PJ6-PJ7 */
 }
 
 /* =============================================================================

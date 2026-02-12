@@ -13,9 +13,9 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#include "tx_api.h"
-
 #include <string.h>
+
+#include "tx_api.h"
 
 /* External function to reset task mock states */
 extern void mock_tasks_reset(void);

@@ -162,14 +162,14 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_dmac_channel_0 = 0U, /**< DMAC channel 0 (highest priority) */
-  k_dmac_channel_1 = 1U, /**< DMAC channel 1 */
-  k_dmac_channel_2 = 2U, /**< DMAC channel 2 */
-  k_dmac_channel_3 = 3U, /**< DMAC channel 3 */
-  k_dmac_channel_4 = 4U, /**< DMAC channel 4 */
-  k_dmac_channel_5 = 5U, /**< DMAC channel 5 */
-  k_dmac_channel_6 = 6U, /**< DMAC channel 6 */
-  k_dmac_channel_7 = 7U, /**< DMAC channel 7 (lowest priority) */
+  k_dmac_channel_0     = 0U, /**< DMAC channel 0 (highest priority) */
+  k_dmac_channel_1     = 1U, /**< DMAC channel 1 */
+  k_dmac_channel_2     = 2U, /**< DMAC channel 2 */
+  k_dmac_channel_3     = 3U, /**< DMAC channel 3 */
+  k_dmac_channel_4     = 4U, /**< DMAC channel 4 */
+  k_dmac_channel_5     = 5U, /**< DMAC channel 5 */
+  k_dmac_channel_6     = 6U, /**< DMAC channel 6 */
+  k_dmac_channel_7     = 7U, /**< DMAC channel 7 (lowest priority) */
   k_dmac_channel_count = 8U, /**< Total number of DMAC channels */
 } dmac_channel_t;
 
@@ -329,27 +329,27 @@ typedef struct __attribute__((packed)) {
  */
 typedef enum : uint16_t {
   /* DCTG - Transfer Request Source Select (bits 1:0) */
-  k_dmtmd_dctg_software = 0x0000U,   /**< Software trigger */
-  k_dmtmd_dctg_interrupt = 0x0001U,  /**< Peripheral/external interrupt */
-  k_dmtmd_dctg_mask = 0x0003U,       /**< DCTG field mask */
+  k_dmtmd_dctg_software  = 0x0000U, /**< Software trigger */
+  k_dmtmd_dctg_interrupt = 0x0001U, /**< Peripheral/external interrupt */
+  k_dmtmd_dctg_mask      = 0x0003U, /**< DCTG field mask */
 
   /* SZ - Transfer Data Size Select (bits 9:8) */
-  k_dmtmd_sz_8bit = 0x0000U,   /**< 8-bit transfer */
-  k_dmtmd_sz_16bit = 0x0100U,  /**< 16-bit transfer */
-  k_dmtmd_sz_32bit = 0x0200U,  /**< 32-bit transfer */
-  k_dmtmd_sz_mask = 0x0300U,   /**< SZ field mask */
+  k_dmtmd_sz_8bit  = 0x0000U, /**< 8-bit transfer */
+  k_dmtmd_sz_16bit = 0x0100U, /**< 16-bit transfer */
+  k_dmtmd_sz_32bit = 0x0200U, /**< 32-bit transfer */
+  k_dmtmd_sz_mask  = 0x0300U, /**< SZ field mask */
 
   /* DTS - Repeat Area Select (bits 13:12) */
-  k_dmtmd_dts_dest = 0x0000U,    /**< Destination is repeat/block area */
-  k_dmtmd_dts_source = 0x1000U,  /**< Source is repeat/block area */
-  k_dmtmd_dts_none = 0x2000U,    /**< No repeat/block area */
-  k_dmtmd_dts_mask = 0x3000U,    /**< DTS field mask */
+  k_dmtmd_dts_dest   = 0x0000U, /**< Destination is repeat/block area */
+  k_dmtmd_dts_source = 0x1000U, /**< Source is repeat/block area */
+  k_dmtmd_dts_none   = 0x2000U, /**< No repeat/block area */
+  k_dmtmd_dts_mask   = 0x3000U, /**< DTS field mask */
 
   /* MD - Transfer Mode Select (bits 15:14) */
-  k_dmtmd_md_normal = 0x0000U,  /**< Normal transfer mode */
-  k_dmtmd_md_repeat = 0x4000U,  /**< Repeat transfer mode */
-  k_dmtmd_md_block = 0x8000U,   /**< Block transfer mode */
-  k_dmtmd_md_mask = 0xC000U,    /**< MD field mask */
+  k_dmtmd_md_normal = 0x0000U, /**< Normal transfer mode */
+  k_dmtmd_md_repeat = 0x4000U, /**< Repeat transfer mode */
+  k_dmtmd_md_block  = 0x8000U, /**< Block transfer mode */
+  k_dmtmd_md_mask   = 0xC000U, /**< MD field mask */
 } dmtmd_bits_t;
 
 /* =============================================================================
@@ -381,8 +381,8 @@ typedef enum : uint8_t {
   k_dmint_darie = 0x01U, /**< Dest addr extended repeat overflow int enable */
   k_dmint_sarie = 0x02U, /**< Source addr extended repeat overflow int enable */
   k_dmint_rptie = 0x04U, /**< Repeat size end interrupt enable */
-  k_dmint_esie = 0x08U,  /**< Transfer escape end interrupt enable */
-  k_dmint_dtie = 0x10U,  /**< Transfer end interrupt enable */
+  k_dmint_esie  = 0x08U, /**< Transfer escape end interrupt enable */
+  k_dmint_dtie  = 0x10U, /**< Transfer end interrupt enable */
 } dmint_bits_t;
 
 /* =============================================================================
@@ -415,21 +415,21 @@ typedef enum : uint16_t {
   k_dmamd_dara_mask = 0x0003U, /**< DARA field mask */
 
   /* DM - Destination Address Update Mode (bits 7:6) */
-  k_dmamd_dm_fixed = 0x0000U,      /**< Destination address fixed */
-  k_dmamd_dm_offset = 0x0040U,     /**< Add offset after transfer (ch0 only) */
-  k_dmamd_dm_increment = 0x0080U,  /**< Increment after transfer */
-  k_dmamd_dm_decrement = 0x00C0U,  /**< Decrement after transfer */
-  k_dmamd_dm_mask = 0x00C0U,       /**< DM field mask */
+  k_dmamd_dm_fixed     = 0x0000U, /**< Destination address fixed */
+  k_dmamd_dm_offset    = 0x0040U, /**< Add offset after transfer (ch0 only) */
+  k_dmamd_dm_increment = 0x0080U, /**< Increment after transfer */
+  k_dmamd_dm_decrement = 0x00C0U, /**< Decrement after transfer */
+  k_dmamd_dm_mask      = 0x00C0U, /**< DM field mask */
 
   /* SARA - Source Address Extended Repeat Area (bits 9:8) */
   k_dmamd_sara_mask = 0x0300U, /**< SARA field mask */
 
   /* SM - Source Address Update Mode (bits 15:14) */
-  k_dmamd_sm_fixed = 0x0000U,      /**< Source address fixed */
-  k_dmamd_sm_offset = 0x4000U,     /**< Add offset after transfer (ch0 only) */
-  k_dmamd_sm_increment = 0x8000U,  /**< Increment after transfer */
-  k_dmamd_sm_decrement = 0xC000U,  /**< Decrement after transfer */
-  k_dmamd_sm_mask = 0xC000U,       /**< SM field mask */
+  k_dmamd_sm_fixed     = 0x0000U, /**< Source address fixed */
+  k_dmamd_sm_offset    = 0x4000U, /**< Add offset after transfer (ch0 only) */
+  k_dmamd_sm_increment = 0x8000U, /**< Increment after transfer */
+  k_dmamd_sm_decrement = 0xC000U, /**< Decrement after transfer */
+  k_dmamd_sm_mask      = 0xC000U, /**< SM field mask */
 } dmamd_bits_t;
 
 /* =============================================================================
@@ -476,7 +476,7 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_dmreq_swreq = 0x01U, /**< Software start (write 1 to trigger) */
-  k_dmreq_clrs = 0x10U,  /**< Auto-clear SWREQ after transfer start */
+  k_dmreq_clrs  = 0x10U, /**< Auto-clear SWREQ after transfer start */
 } dmreq_bits_t;
 
 /* =============================================================================
@@ -503,7 +503,7 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_dmsts_esif = 0x01U, /**< Transfer escape end flag */
   k_dmsts_dtif = 0x10U, /**< Transfer end flag */
-  k_dmsts_act = 0x80U,  /**< DMA active flag (1=transfer in progress) */
+  k_dmsts_act  = 0x80U, /**< DMA active flag (1=transfer in progress) */
 } dmsts_bits_t;
 
 /* =============================================================================
@@ -636,8 +636,7 @@ typedef enum : uint32_t {
  */
 static inline volatile rx_dmac_channel_regs_t* dmac_channel(uint8_t channel)
 {
-  return (volatile rx_dmac_channel_regs_t*)(k_dmac_base_addr +
-                                            (channel * k_dmac_channel_size));
+  return (volatile rx_dmac_channel_regs_t*)(k_dmac_base_addr + (channel * k_dmac_channel_size));
 }
 
 /**
@@ -753,110 +752,95 @@ static inline volatile uint8_t* dmac_dmist_reg(void)
 
 /* Verify base addresses */
 static_assert(k_dmac_base_addr == 0x00082000U,
-               "DMAC base address must be 0x00082000 per Ch18 manual");
+              "DMAC base address must be 0x00082000 per Ch18 manual");
 
 static_assert(k_dmac0_base_addr == 0x00082000U,
-               "DMAC0 base address must be 0x00082000 per Ch18 manual");
+              "DMAC0 base address must be 0x00082000 per Ch18 manual");
 
 static_assert(k_dmac1_base_addr == 0x00082040U,
-               "DMAC1 base address must be 0x00082040 per Ch18 manual");
+              "DMAC1 base address must be 0x00082040 per Ch18 manual");
 
 static_assert(k_dmac7_base_addr == 0x000821C0U,
-               "DMAC7 base address must be 0x000821C0 per Ch18 manual");
+              "DMAC7 base address must be 0x000821C0 per Ch18 manual");
 
 /* Verify channel spacing */
-static_assert(k_dmac_channel_size == 0x40U,
-               "DMAC channel spacing must be 0x40 (64 bytes)");
+static_assert(k_dmac_channel_size == 0x40U, "DMAC channel spacing must be 0x40 (64 bytes)");
 
 static_assert(k_dmac1_base_addr - k_dmac0_base_addr == k_dmac_channel_size,
-               "Channel 0 to 1 spacing must be 0x40");
+              "Channel 0 to 1 spacing must be 0x40");
 
 static_assert(k_dmac7_base_addr - k_dmac0_base_addr == 7 * k_dmac_channel_size,
-               "Channel 0 to 7 spacing must be 7 * 0x40");
+              "Channel 0 to 7 spacing must be 7 * 0x40");
 
 /* Verify shared register addresses */
-static_assert(k_dmac_dmast_addr == 0x00082200U,
-               "DMAST address must be 0x00082200 per Ch18 manual");
+static_assert(k_dmac_dmast_addr == 0x00082200U, "DMAST address must be 0x00082200 per Ch18 manual");
 
-static_assert(k_dmac_dmist_addr == 0x00082204U,
-               "DMIST address must be 0x00082204 per Ch18 manual");
+static_assert(k_dmac_dmist_addr == 0x00082204U, "DMIST address must be 0x00082204 per Ch18 manual");
 
 /* Verify register offsets */
-static_assert(k_dmac_offset_dmsar == 0x00U,
-               "DMSAR offset must be 0x00 per Ch18 manual");
+static_assert(k_dmac_offset_dmsar == 0x00U, "DMSAR offset must be 0x00 per Ch18 manual");
 
-static_assert(k_dmac_offset_dmdar == 0x04U,
-               "DMDAR offset must be 0x04 per Ch18 manual");
+static_assert(k_dmac_offset_dmdar == 0x04U, "DMDAR offset must be 0x04 per Ch18 manual");
 
-static_assert(k_dmac_offset_dmcra == 0x08U,
-               "DMCRA offset must be 0x08 per Ch18 manual");
+static_assert(k_dmac_offset_dmcra == 0x08U, "DMCRA offset must be 0x08 per Ch18 manual");
 
-static_assert(k_dmac_offset_dmcrb == 0x0CU,
-               "DMCRB offset must be 0x0C per Ch18 manual");
+static_assert(k_dmac_offset_dmcrb == 0x0CU, "DMCRB offset must be 0x0C per Ch18 manual");
 
-static_assert(k_dmac_offset_dmtmd == 0x10U,
-               "DMTMD offset must be 0x10 per Ch18 manual");
+static_assert(k_dmac_offset_dmtmd == 0x10U, "DMTMD offset must be 0x10 per Ch18 manual");
 
-static_assert(k_dmac_offset_dmint == 0x13U,
-               "DMINT offset must be 0x13 per Ch18 manual");
+static_assert(k_dmac_offset_dmint == 0x13U, "DMINT offset must be 0x13 per Ch18 manual");
 
-static_assert(k_dmac_offset_dmamd == 0x14U,
-               "DMAMD offset must be 0x14 per Ch18 manual");
+static_assert(k_dmac_offset_dmamd == 0x14U, "DMAMD offset must be 0x14 per Ch18 manual");
 
-static_assert(k_dmac_offset_dmofr == 0x18U,
-               "DMOFR offset must be 0x18 per Ch18 manual");
+static_assert(k_dmac_offset_dmofr == 0x18U, "DMOFR offset must be 0x18 per Ch18 manual");
 
-static_assert(k_dmac_offset_dmcnt == 0x1CU,
-               "DMCNT offset must be 0x1C per Ch18 manual");
+static_assert(k_dmac_offset_dmcnt == 0x1CU, "DMCNT offset must be 0x1C per Ch18 manual");
 
-static_assert(k_dmac_offset_dmreq == 0x1DU,
-               "DMREQ offset must be 0x1D per Ch18 manual");
+static_assert(k_dmac_offset_dmreq == 0x1DU, "DMREQ offset must be 0x1D per Ch18 manual");
 
-static_assert(k_dmac_offset_dmsts == 0x1EU,
-               "DMSTS offset must be 0x1E per Ch18 manual");
+static_assert(k_dmac_offset_dmsts == 0x1EU, "DMSTS offset must be 0x1E per Ch18 manual");
 
-static_assert(k_dmac_offset_dmcsl == 0x1FU,
-               "DMCSL offset must be 0x1F per Ch18 manual");
+static_assert(k_dmac_offset_dmcsl == 0x1FU, "DMCSL offset must be 0x1F per Ch18 manual");
 
 /* Verify structure layout matches manual offsets */
 static_assert(sizeof(rx_dmac_channel_regs_t) == k_dmac_channel_size,
-               "DMAC channel struct size must be 0x40 (64 bytes)");
+              "DMAC channel struct size must be 0x40 (64 bytes)");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmsar) == k_dmac_offset_dmsar,
-               "DMSAR struct offset must match manual");
+              "DMSAR struct offset must match manual");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmdar) == k_dmac_offset_dmdar,
-               "DMDAR struct offset must match manual");
+              "DMDAR struct offset must match manual");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmcra) == k_dmac_offset_dmcra,
-               "DMCRA struct offset must match manual");
+              "DMCRA struct offset must match manual");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmcrb) == k_dmac_offset_dmcrb,
-               "DMCRB struct offset must match manual");
+              "DMCRB struct offset must match manual");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmtmd) == k_dmac_offset_dmtmd,
-               "DMTMD struct offset must match manual");
+              "DMTMD struct offset must match manual");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmint) == k_dmac_offset_dmint,
-               "DMINT struct offset must match manual");
+              "DMINT struct offset must match manual");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmamd) == k_dmac_offset_dmamd,
-               "DMAMD struct offset must match manual");
+              "DMAMD struct offset must match manual");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmofr) == k_dmac_offset_dmofr,
-               "DMOFR struct offset must match manual");
+              "DMOFR struct offset must match manual");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmcnt) == k_dmac_offset_dmcnt,
-               "DMCNT struct offset must match manual");
+              "DMCNT struct offset must match manual");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmreq) == k_dmac_offset_dmreq,
-               "DMREQ struct offset must match manual");
+              "DMREQ struct offset must match manual");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmsts) == k_dmac_offset_dmsts,
-               "DMSTS struct offset must match manual");
+              "DMSTS struct offset must match manual");
 
 static_assert(offsetof(rx_dmac_channel_regs_t, dmcsl) == k_dmac_offset_dmcsl,
-               "DMCSL struct offset must match manual");
+              "DMCSL struct offset must match manual");
 
 /** @} */
 

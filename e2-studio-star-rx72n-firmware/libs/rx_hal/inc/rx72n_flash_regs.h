@@ -207,10 +207,10 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_fwepror_flwe_mask    = 0x03,      /**< FLWE[1:0] mask */
-  k_fwepror_flwe_disable = 0x00,      /**< Program/erase disabled */
-  k_fwepror_flwe_enable  = 0x01,      /**< Program/erase enabled */
-  k_fwepror_reset_value  = 0x02,      /**< Value after reset */
+  k_fwepror_flwe_mask    = 0x03, /**< FLWE[1:0] mask */
+  k_fwepror_flwe_disable = 0x00, /**< Program/erase disabled */
+  k_fwepror_flwe_enable  = 0x01, /**< Program/erase enabled */
+  k_fwepror_reset_value  = 0x02, /**< Value after reset */
 } rx_fwepror_bits_t;
 
 /**
@@ -259,24 +259,24 @@ static inline volatile uint8_t* fwepror_reg(void)
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_faci_base_addr    = 0x007FE000, /**< FACI register base (conceptual) */
-  k_fastat_addr       = 0x007FE010, /**< Flash Access Status Register */
-  k_faeint_addr       = 0x007FE014, /**< Flash Access Error Interrupt Enable */
-  k_frdyie_addr       = 0x007FE018, /**< Flash Ready Interrupt Enable */
-  k_fsaddr_addr       = 0x007FE030, /**< FACI Start Address Register */
-  k_feaddr_addr       = 0x007FE034, /**< FACI End Address Register */
-  k_fstatr_addr       = 0x007FE080, /**< Flash Status Register */
-  k_fentryr_addr      = 0x007FE084, /**< Flash P/E Mode Entry Register */
-  k_fsuinitr_addr     = 0x007FE08C, /**< Flash Sequencer Setup Init Register */
-  k_fcmdr_addr        = 0x007FE0A0, /**< FACI Command Register */
-  k_fbccnt_addr       = 0x007FE0D0, /**< Blank Check Control Register */
-  k_fbcstat_addr      = 0x007FE0D4, /**< Blank Check Status Register */
-  k_fpsaddr_addr      = 0x007FE0D8, /**< Flash Processing Switch Address */
-  k_fawmon_addr       = 0x007FE0DC, /**< Flash Access Window Monitor */
-  k_fcpsr_addr        = 0x007FE0E0, /**< Flash Sequencer Processing Switch */
-  k_fpckar_addr       = 0x007FE0E4, /**< Flash Sequencer Clock Frequency */
-  k_fsuacr_addr       = 0x007FE0E8, /**< Flash Startup Area Select */
-  k_faci_cmd_area     = 0x007E0000, /**< FACI Command Issuing Area */
+  k_faci_base_addr = 0x007FE000, /**< FACI register base (conceptual) */
+  k_fastat_addr    = 0x007FE010, /**< Flash Access Status Register */
+  k_faeint_addr    = 0x007FE014, /**< Flash Access Error Interrupt Enable */
+  k_frdyie_addr    = 0x007FE018, /**< Flash Ready Interrupt Enable */
+  k_fsaddr_addr    = 0x007FE030, /**< FACI Start Address Register */
+  k_feaddr_addr    = 0x007FE034, /**< FACI End Address Register */
+  k_fstatr_addr    = 0x007FE080, /**< Flash Status Register */
+  k_fentryr_addr   = 0x007FE084, /**< Flash P/E Mode Entry Register */
+  k_fsuinitr_addr  = 0x007FE08C, /**< Flash Sequencer Setup Init Register */
+  k_fcmdr_addr     = 0x007FE0A0, /**< FACI Command Register */
+  k_fbccnt_addr    = 0x007FE0D0, /**< Blank Check Control Register */
+  k_fbcstat_addr   = 0x007FE0D4, /**< Blank Check Status Register */
+  k_fpsaddr_addr   = 0x007FE0D8, /**< Flash Processing Switch Address */
+  k_fawmon_addr    = 0x007FE0DC, /**< Flash Access Window Monitor */
+  k_fcpsr_addr     = 0x007FE0E0, /**< Flash Sequencer Processing Switch */
+  k_fpckar_addr    = 0x007FE0E4, /**< Flash Sequencer Clock Frequency */
+  k_fsuacr_addr    = 0x007FE0E8, /**< Flash Startup Area Select */
+  k_faci_cmd_area  = 0x007E0000, /**< FACI Command Issuing Area */
 } rx_faci_addresses_t;
 
 /**
@@ -315,13 +315,13 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_fastat_dfae_shift  = 3,           /**< DFAE bit position */
-  k_fastat_cmdlk_shift = 4,           /**< CMDLK bit position */
-  k_fastat_cfae_shift  = 7,           /**< CFAE bit position */
+  k_fastat_dfae_shift  = 3, /**< DFAE bit position */
+  k_fastat_cmdlk_shift = 4, /**< CMDLK bit position */
+  k_fastat_cfae_shift  = 7, /**< CFAE bit position */
 
-  k_fastat_dfae        = (1U << 3),   /**< Data Flash Access Violation */
-  k_fastat_cmdlk       = (1U << 4),   /**< Command Lock Flag */
-  k_fastat_cfae        = (1U << 7),   /**< Code Flash Access Violation */
+  k_fastat_dfae  = (1U << 3), /**< Data Flash Access Violation */
+  k_fastat_cmdlk = (1U << 4), /**< Command Lock Flag */
+  k_fastat_cfae  = (1U << 7), /**< Code Flash Access Violation */
 } rx_fastat_bits_t;
 
 /**
@@ -350,15 +350,15 @@ static inline volatile uint8_t* fastat_reg(void)
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_faeint_dfaeie_shift  = 3,         /**< DFAEIE bit position */
-  k_faeint_cmdlkie_shift = 4,         /**< CMDLKIE bit position */
-  k_faeint_cfaeie_shift  = 7,         /**< CFAEIE bit position */
+  k_faeint_dfaeie_shift  = 3, /**< DFAEIE bit position */
+  k_faeint_cmdlkie_shift = 4, /**< CMDLKIE bit position */
+  k_faeint_cfaeie_shift  = 7, /**< CFAEIE bit position */
 
-  k_faeint_dfaeie        = (1U << 3), /**< Data Flash Access Violation IE */
-  k_faeint_cmdlkie       = (1U << 4), /**< Command Lock Interrupt Enable */
-  k_faeint_cfaeie        = (1U << 7), /**< Code Flash Access Violation IE */
+  k_faeint_dfaeie  = (1U << 3), /**< Data Flash Access Violation IE */
+  k_faeint_cmdlkie = (1U << 4), /**< Command Lock Interrupt Enable */
+  k_faeint_cfaeie  = (1U << 7), /**< Code Flash Access Violation IE */
 
-  k_faeint_reset_value   = 0x98,      /**< Reset value (all enabled) */
+  k_faeint_reset_value = 0x98, /**< Reset value (all enabled) */
 } rx_faeint_bits_t;
 
 /**
@@ -445,24 +445,23 @@ typedef enum : uint32_t {
   k_fstatr_ilgcomerr_shift = 23,
 
   /* Bit masks */
-  k_fstatr_flweerr   = (1UL << 6),   /**< Flash P/E Protect Error */
-  k_fstatr_prgspd    = (1UL << 8),   /**< Program Suspend Status */
-  k_fstatr_ersspd    = (1UL << 9),   /**< Erase Suspend Status */
-  k_fstatr_dbfull    = (1UL << 10),  /**< Data Buffer Full */
-  k_fstatr_susrdy    = (1UL << 11),  /**< Suspend Ready */
-  k_fstatr_prgerr    = (1UL << 12),  /**< Program Error */
-  k_fstatr_erserr    = (1UL << 13),  /**< Erase Error */
-  k_fstatr_ilglerr   = (1UL << 14),  /**< Illegal Error */
-  k_fstatr_frdy      = (1UL << 15),  /**< Flash Ready */
-  k_fstatr_oterr     = (1UL << 20),  /**< Other Error */
-  k_fstatr_secerr    = (1UL << 21),  /**< Security Error */
-  k_fstatr_feseterr  = (1UL << 22),  /**< FENTRY Setting Error */
-  k_fstatr_ilgcomerr = (1UL << 23),  /**< Illegal Command Error */
+  k_fstatr_flweerr   = (1UL << 6),  /**< Flash P/E Protect Error */
+  k_fstatr_prgspd    = (1UL << 8),  /**< Program Suspend Status */
+  k_fstatr_ersspd    = (1UL << 9),  /**< Erase Suspend Status */
+  k_fstatr_dbfull    = (1UL << 10), /**< Data Buffer Full */
+  k_fstatr_susrdy    = (1UL << 11), /**< Suspend Ready */
+  k_fstatr_prgerr    = (1UL << 12), /**< Program Error */
+  k_fstatr_erserr    = (1UL << 13), /**< Erase Error */
+  k_fstatr_ilglerr   = (1UL << 14), /**< Illegal Error */
+  k_fstatr_frdy      = (1UL << 15), /**< Flash Ready */
+  k_fstatr_oterr     = (1UL << 20), /**< Other Error */
+  k_fstatr_secerr    = (1UL << 21), /**< Security Error */
+  k_fstatr_feseterr  = (1UL << 22), /**< FENTRY Setting Error */
+  k_fstatr_ilgcomerr = (1UL << 23), /**< Illegal Command Error */
 
   /* Combined error mask */
-  k_fstatr_error_mask = (k_fstatr_flweerr | k_fstatr_prgerr | k_fstatr_erserr |
-                         k_fstatr_ilglerr | k_fstatr_oterr | k_fstatr_secerr |
-                         k_fstatr_feseterr | k_fstatr_ilgcomerr),
+  k_fstatr_error_mask = (k_fstatr_flweerr | k_fstatr_prgerr | k_fstatr_erserr | k_fstatr_ilglerr |
+                         k_fstatr_oterr | k_fstatr_secerr | k_fstatr_feseterr | k_fstatr_ilgcomerr),
 
   k_fstatr_reset_value = 0x00008000, /**< Reset value (FRDY=1) */
 } rx_fstatr_bits_t;
@@ -500,14 +499,14 @@ static inline volatile uint32_t* fstatr_reg(void)
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_fentryr_fentryc     = (1U << 0),   /**< Code Flash P/E Mode Entry */
-  k_fentryr_fentryd     = (1U << 7),   /**< Data Flash P/E Mode Entry */
-  k_fentryr_key_shift   = 8,           /**< Key code position */
-  k_fentryr_key         = 0xAA00,      /**< Key code (write only) */
+  k_fentryr_fentryc   = (1U << 0), /**< Code Flash P/E Mode Entry */
+  k_fentryr_fentryd   = (1U << 7), /**< Data Flash P/E Mode Entry */
+  k_fentryr_key_shift = 8,         /**< Key code position */
+  k_fentryr_key       = 0xAA00,    /**< Key code (write only) */
 
-  k_fentryr_code_pe     = 0xAA01,      /**< Enter code flash P/E mode */
-  k_fentryr_data_pe     = 0xAA80,      /**< Enter data flash P/E mode */
-  k_fentryr_read_mode   = 0xAA00,      /**< Exit P/E mode */
+  k_fentryr_code_pe   = 0xAA01, /**< Enter code flash P/E mode */
+  k_fentryr_data_pe   = 0xAA80, /**< Enter data flash P/E mode */
+  k_fentryr_read_mode = 0xAA00, /**< Exit P/E mode */
 } rx_fentryr_bits_t;
 
 /**
@@ -536,10 +535,10 @@ static inline volatile uint16_t* fentryr_reg(void)
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_fsuinitr_suinit   = (1U << 0),   /**< Setup Initialization */
-  k_fsuinitr_key      = 0x2D00,      /**< Key code for write enable */
+  k_fsuinitr_suinit = (1U << 0), /**< Setup Initialization */
+  k_fsuinitr_key    = 0x2D00,    /**< Key code for write enable */
 
-  k_fsuinitr_init_cmd = 0x2D01,      /**< Initialize flash sequencer setup */
+  k_fsuinitr_init_cmd = 0x2D01, /**< Initialize flash sequencer setup */
 } rx_fsuinitr_bits_t;
 
 /**
@@ -672,9 +671,9 @@ static inline volatile uint8_t* faci_cmd_area(void)
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_fpckar_pcka_mask  = 0x00FF, /**< PCKA frequency field mask */
-  k_fpckar_key_shift  = 8,      /**< Key code position */
-  k_fpckar_key        = 0x1E00, /**< Key code for write enable */
+  k_fpckar_pcka_mask = 0x00FF, /**< PCKA frequency field mask */
+  k_fpckar_key_shift = 8,      /**< Key code position */
+  k_fpckar_key       = 0x1E00, /**< Key code for write enable */
 } rx_fpckar_bits_t;
 
 /**
@@ -892,14 +891,14 @@ static inline volatile const uint32_t* uidr3_reg(void)
  */
 typedef enum : uint32_t {
   /* Code Flash (4 MB for RX72N) */
-  k_code_flash_start    = 0xFFC00000, /**< Code flash start (4 MB device) */
-  k_code_flash_end      = 0xFFFFFFFF, /**< Code flash end */
-  k_code_flash_size     = 0x00400000, /**< Code flash size (4 MB) */
+  k_code_flash_start = 0xFFC00000, /**< Code flash start (4 MB device) */
+  k_code_flash_end   = 0xFFFFFFFF, /**< Code flash end */
+  k_code_flash_size  = 0x00400000, /**< Code flash size (4 MB) */
 
   /* Data Flash (32 KB) */
-  k_data_flash_start    = 0x00100000, /**< Data flash start */
-  k_data_flash_end      = 0x00107FFF, /**< Data flash end */
-  k_data_flash_size     = 0x00008000, /**< Data flash size (32 KB) */
+  k_data_flash_start = 0x00100000, /**< Data flash start */
+  k_data_flash_end   = 0x00107FFF, /**< Data flash end */
+  k_data_flash_size  = 0x00008000, /**< Data flash size (32 KB) */
 
   /* Block sizes */
   k_code_flash_block_8k  = 0x00002000, /**< 8 KB block (blocks 0-7) */
@@ -907,8 +906,8 @@ typedef enum : uint32_t {
   k_data_flash_block_64  = 0x00000040, /**< 64 byte block (data flash) */
 
   /* Program units */
-  k_code_flash_program_unit = 128,     /**< Code flash program unit (bytes) */
-  k_data_flash_program_unit = 4,       /**< Data flash program unit (bytes) */
+  k_code_flash_program_unit = 128, /**< Code flash program unit (bytes) */
+  k_data_flash_program_unit = 4,   /**< Data flash program unit (bytes) */
 } rx_flash_memory_addresses_t;
 
 /* =============================================================================

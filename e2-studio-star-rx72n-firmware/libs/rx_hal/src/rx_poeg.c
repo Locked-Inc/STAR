@@ -52,9 +52,9 @@ static const char* s_tag = "POEG";
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_icu_ir_clear        = 0,    /**< Write 0 to clear IR flag */
-  k_ier_bit_enable_base = 1,    /**< Base for IER bit shift */
-  k_ier_bits_per_reg    = 8,    /**< 8 bits per IER register */
+  k_icu_ir_clear        = 0, /**< Write 0 to clear IR flag */
+  k_ier_bit_enable_base = 1, /**< Base for IER bit shift */
+  k_ier_bits_per_reg    = 8, /**< 8 bits per IER register */
 } poeg_icu_constants_t;
 
 /**
@@ -71,10 +71,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_poeg_init_value = (k_poeg_pide_enable |
-                       k_poeg_inv_invert |
-                       k_poeg_nfen_enable |
-                       k_poeg_nfcs_pclkb_div8),
+  k_poeg_init_value =
+    (k_poeg_pide_enable | k_poeg_inv_invert | k_poeg_nfen_enable | k_poeg_nfcs_pclkb_div8),
 } poeg_init_config_t;
 
 /**
@@ -90,14 +88,10 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_gtintad_motor_0 = (k_gptw_gtintad_grp_a | k_gptw_gtintad_grpdte |
-                        k_gptw_gtintad_grpabl),
-  k_gtintad_motor_1 = (k_gptw_gtintad_grp_b | k_gptw_gtintad_grpdte |
-                        k_gptw_gtintad_grpabl),
-  k_gtintad_motor_2 = (k_gptw_gtintad_grp_c | k_gptw_gtintad_grpdte |
-                        k_gptw_gtintad_grpabl),
-  k_gtintad_motor_3 = (k_gptw_gtintad_grp_d | k_gptw_gtintad_grpdte |
-                        k_gptw_gtintad_grpabl),
+  k_gtintad_motor_0 = (k_gptw_gtintad_grp_a | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
+  k_gtintad_motor_1 = (k_gptw_gtintad_grp_b | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
+  k_gtintad_motor_2 = (k_gptw_gtintad_grp_c | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
+  k_gtintad_motor_3 = (k_gptw_gtintad_grp_d | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
 } poeg_gtintad_values_t;
 
 /* =============================================================================
@@ -216,8 +210,8 @@ static void internal_poeg_isr_handler(uint8_t motor_index, uint16_t vector)
   icu()->ir[vector] = k_icu_ir_clear;
 
   /* Read POEG status to identify fault source */
-  volatile rx_poegg_regs_t* poeg = s_poeg_groups[motor_index];
-  const uint32_t status = poeg->poeggn;
+  volatile rx_poegg_regs_t* poeg   = s_poeg_groups[motor_index];
+  const uint32_t            status = poeg->poeggn;
 
   /* Log fault source (brief - ISR context) */
   if (status & k_poeg_pidf_detected) {
@@ -300,7 +294,7 @@ rx_err_t rx_poeg_init(void)
   for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
     /* Configure POEG group: enable pin detection, invert, noise filter */
     volatile rx_poegg_regs_t* poeg = s_poeg_groups[i];
-    poeg->poeggn = k_poeg_init_value;
+    poeg->poeggn                   = k_poeg_init_value;
 
     /* Verify write-once enable bits were accepted */
     if ((poeg->poeggn & k_poeg_pide_enable) == 0) {
@@ -328,8 +322,8 @@ rx_err_t rx_poeg_get_fault_status(uint8_t motor_index, bool* fault_active)
   }
 
   const uint32_t status = s_poeg_groups[motor_index]->poeggn;
-  *fault_active = ((status & (k_poeg_pidf_detected | k_poeg_iocf_detected |
-                              k_poeg_ostpf_detected)) != 0);
+  *fault_active =
+    ((status & (k_poeg_pidf_detected | k_poeg_iocf_detected | k_poeg_ostpf_detected)) != 0);
 
   return k_rx_ok;
 }
@@ -345,15 +339,13 @@ rx_err_t rx_poeg_clear_fault(uint8_t motor_index)
   /* Check if fault source is still active (ST bit shows pin state) */
   /* With INV=1, ST=0 means nFAULT is still asserted (fault active) */
   if ((poeg->poeggn & k_poeg_st_high) == 0) {
-    rx_log_warn_val(s_tag, "Cannot clear: nFAULT still active motor",
-                    (uint32_t)motor_index);
+    rx_log_warn_val(s_tag, "Cannot clear: nFAULT still active motor", (uint32_t)motor_index);
     return k_rx_err_busy;
   }
 
   /* Clear PIDF and IOCF flags by writing 0 to them */
   uint32_t reg_val = poeg->poeggn;
-  reg_val &= ~(k_poeg_pidf_detected | k_poeg_iocf_detected |
-                k_poeg_ostpf_detected);
+  reg_val &= ~(k_poeg_pidf_detected | k_poeg_iocf_detected | k_poeg_ostpf_detected);
   poeg->poeggn = reg_val;
 
   /* Clear e-stop if this was the cause */

@@ -443,7 +443,8 @@ rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name);
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
  */
-[[nodiscard]] rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, bool* presence);
+[[nodiscard]] rx_err_t
+rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, bool* presence);
 
 /**
  * @brief Write a single bit to OneWire bus
@@ -462,7 +463,8 @@ rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name);
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
  */
-[[nodiscard]] rx_err_t rx_bus_onewire_write_bit(rx_bus_manager_t* manager, const char* bus_name, bool bit);
+[[nodiscard]] rx_err_t
+rx_bus_onewire_write_bit(rx_bus_manager_t* manager, const char* bus_name, bool bit);
 
 /**
  * @brief Read a single bit from OneWire bus
@@ -482,7 +484,8 @@ rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name);
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
  */
-[[nodiscard]] rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name, bool* bit);
+[[nodiscard]] rx_err_t
+rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name, bool* bit);
 
 /**
  * @brief Write a byte to OneWire bus
@@ -499,7 +502,8 @@ rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name);
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
  */
-[[nodiscard]] rx_err_t rx_bus_onewire_write_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t byte);
+[[nodiscard]] rx_err_t
+rx_bus_onewire_write_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t byte);
 
 /**
  * @brief Read a byte from OneWire bus
@@ -516,7 +520,8 @@ rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name);
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_timeout if mutex timeout
  */
-[[nodiscard]] rx_err_t rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t* byte);
+[[nodiscard]] rx_err_t
+rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t* byte);
 
 /**
  * @brief Write multiple bytes to OneWire bus
@@ -535,9 +540,9 @@ rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name);
  * @return k_rx_err_timeout if mutex timeout
  */
 [[nodiscard]] rx_err_t rx_bus_onewire_write(rx_bus_manager_t* manager,
-                              const char*       bus_name,
-                              const uint8_t*    data,
-                              uint32_t          length);
+                                            const char*       bus_name,
+                                            const uint8_t*    data,
+                                            uint32_t          length);
 
 /**
  * @brief Read multiple bytes from OneWire bus
@@ -556,9 +561,9 @@ rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name);
  * @return k_rx_err_timeout if mutex timeout
  */
 [[nodiscard]] rx_err_t rx_bus_onewire_read(rx_bus_manager_t* manager,
-                             const char*       bus_name,
-                             uint8_t*          data,
-                             uint32_t          length);
+                                           const char*       bus_name,
+                                           uint8_t*          data,
+                                           uint32_t          length);
 
 /**
  * @brief Send Skip ROM command
@@ -602,8 +607,8 @@ rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name);
  * @return k_rx_err_timeout if mutex timeout
  */
 [[nodiscard]] rx_err_t rx_bus_onewire_match_rom(rx_bus_manager_t* manager,
-                                  const char*       bus_name,
-                                  const uint8_t     rom[k_onewire_rom_bytes]);
+                                                const char*       bus_name,
+                                                const uint8_t     rom[k_onewire_rom_bytes]);
 
 /**
  * @brief Read ROM code from single device
@@ -628,8 +633,8 @@ rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name);
  * @return k_rx_err_hw_error if multiple devices present (ROM collision)
  */
 [[nodiscard]] rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
-                                 const char*       bus_name,
-                                 uint8_t           rom[k_onewire_rom_bytes]);
+                                               const char*       bus_name,
+                                               uint8_t           rom[k_onewire_rom_bytes]);
 
 /**
  * @brief Search for all devices on the OneWire bus
@@ -662,10 +667,10 @@ rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name);
  * @return k_rx_err_crc if ROM CRC check fails
  */
 [[nodiscard]] rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
-                               const char*       bus_name,
-                               uint8_t*          roms,
-                               uint32_t          max_devices,
-                               uint32_t*         num_devices);
+                                             const char*       bus_name,
+                                             uint8_t*          roms,
+                                             uint32_t          max_devices,
+                                             uint32_t*         num_devices);
 
 #ifdef __cplusplus
 }

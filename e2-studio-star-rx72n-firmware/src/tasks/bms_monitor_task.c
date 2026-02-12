@@ -304,14 +304,14 @@
 
 #include "bms_monitor_task.h"
 
+#include <string.h>
+
 #include "rx_bq4050.h"
 #include "rx_bq4050_constants.h"
 #include "rx_check.h"
 #include "rx_log.h"
 #include "shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
 
 /* =============================================================================
  * Constants
@@ -334,9 +334,9 @@ typedef enum : uint16_t {
  * @brief BMS threshold constants
  */
 typedef enum : uint8_t {
-  k_bms_low_soc_percent     = 15, /**< Low battery SoC threshold */
+  k_bms_low_soc_percent      = 15, /**< Low battery SoC threshold */
   k_bms_critical_soc_percent = 5,  /**< Critical battery SoC threshold */
-  k_bms_cell_count          = 4,  /**< Number of cells in pack */
+  k_bms_cell_count           = 4,  /**< Number of cells in pack */
 } bms_threshold_constants_t;
 
 /* =============================================================================
@@ -1137,10 +1137,10 @@ rx_err_t bms_monitor_task_create(void)
  */
 static void internal_bms_task_entry(ULONG input)
 {
-  rx_err_t            err;
-  rx_bq4050_status_t  status;
-  bms_state_t         bms;
-  rx_bq4050_config_t  config;
+  rx_err_t           err;
+  rx_bq4050_status_t status;
+  bms_state_t        bms;
+  rx_bq4050_config_t config;
 
   (void)input;
 
@@ -1148,7 +1148,7 @@ static void internal_bms_task_entry(ULONG input)
 
   /* Initialize BQ4050 */
   config.num_cells = k_bms_cell_count;
-  err = rx_bq4050_init(&g_bus_manager, s_i2c_bus_name, &config);
+  err              = rx_bq4050_init(&g_bus_manager, s_i2c_bus_name, &config);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "BQ4050 init failed", (uint32_t)err);
     /* Continue anyway - will report invalid data */
@@ -1159,10 +1159,7 @@ static void internal_bms_task_entry(ULONG input)
   /* Main polling loop */
   while (true) {
     /* Read battery status */
-    err = rx_bq4050_read_status(&g_bus_manager,
-                                s_i2c_bus_name,
-                                &status,
-                                k_bms_cell_count);
+    err = rx_bq4050_read_status(&g_bus_manager, s_i2c_bus_name, &status, k_bms_cell_count);
 
     if (err == k_rx_ok) {
       /* Convert to shared data format */
@@ -1173,9 +1170,10 @@ static void internal_bms_task_entry(ULONG input)
       bms.capacity_mah        = status.remaining_capacity_mah;
       bms.full_capacity_mah   = status.full_capacity_mah;
       bms.cycle_count         = status.cycle_count;
-      bms.fault_flags         = status.battery_status; /* Extract all 10 status flags from BatteryStatus register */
-      bms.timestamp_ms        = tx_time_get();
-      bms.valid               = true;
+      bms.fault_flags =
+        status.battery_status; /* Extract all 10 status flags from BatteryStatus register */
+      bms.timestamp_ms = tx_time_get();
+      bms.valid        = true;
 
       /* Check for critical battery faults (OTA, OCA, TDA) */
       (void)internal_check_critical_faults(status.battery_status);

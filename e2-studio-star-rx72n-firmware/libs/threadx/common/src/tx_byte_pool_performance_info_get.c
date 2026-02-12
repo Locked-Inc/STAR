@@ -9,7 +9,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 /**************************************************************************/
 /**************************************************************************/
 /**                                                                       */
@@ -22,7 +21,6 @@
 
 #define TX_SOURCE_CODE
 
-
 /* Include necessary system files.  */
 
 #include "tx_api.h"
@@ -30,7 +28,6 @@
 #ifdef TX_BYTE_POOL_ENABLE_PERFORMANCE_INFO
 #include "tx_trace.h"
 #endif
-
 
 /**************************************************************************/
 /*                                                                        */
@@ -88,168 +85,148 @@
 /*                                            resulting in version 6.1    */
 /*                                                                        */
 /**************************************************************************/
-UINT  _tx_byte_pool_performance_info_get(TX_BYTE_POOL *pool_ptr, ULONG *allocates, ULONG *releases,
-                    ULONG *fragments_searched, ULONG *merges, ULONG *splits, ULONG *suspensions, ULONG *timeouts)
+UINT _tx_byte_pool_performance_info_get(TX_BYTE_POOL* pool_ptr,
+                                        ULONG*        allocates,
+                                        ULONG*        releases,
+                                        ULONG*        fragments_searched,
+                                        ULONG*        merges,
+                                        ULONG*        splits,
+                                        ULONG*        suspensions,
+                                        ULONG*        timeouts)
 {
 
 #ifdef TX_BYTE_POOL_ENABLE_PERFORMANCE_INFO
 
-TX_INTERRUPT_SAVE_AREA
+  TX_INTERRUPT_SAVE_AREA
 
-UINT        status;
+  UINT status;
 
+  /* Determine if this is a legal request.  */
+  if (pool_ptr == TX_NULL) {
 
-    /* Determine if this is a legal request.  */
-    if (pool_ptr == TX_NULL)
-    {
+    /* Byte pool pointer is illegal, return error.  */
+    status = TX_PTR_ERROR;
+  }
 
-        /* Byte pool pointer is illegal, return error.  */
-        status =  TX_PTR_ERROR;
-    }
+  /* Determine if the pool ID is invalid.  */
+  else if (pool_ptr->tx_byte_pool_id != TX_BYTE_POOL_ID) {
 
-    /* Determine if the pool ID is invalid.  */
-    else if (pool_ptr -> tx_byte_pool_id != TX_BYTE_POOL_ID)
-    {
+    /* Byte pool pointer is illegal, return error.  */
+    status = TX_PTR_ERROR;
+  } else {
 
-        /* Byte pool pointer is illegal, return error.  */
-        status =  TX_PTR_ERROR;
-    }
-    else
-    {
+    /* Disable interrupts.  */
+    TX_DISABLE
 
-        /* Disable interrupts.  */
-        TX_DISABLE
+    /* If trace is enabled, insert this event into the trace buffer.  */
+    TX_TRACE_IN_LINE_INSERT(TX_TRACE_BYTE_POOL_PERFORMANCE_INFO_GET,
+                            pool_ptr,
+                            0,
+                            0,
+                            0,
+                            TX_TRACE_BYTE_POOL_EVENTS)
 
-        /* If trace is enabled, insert this event into the trace buffer.  */
-        TX_TRACE_IN_LINE_INSERT(TX_TRACE_BYTE_POOL_PERFORMANCE_INFO_GET, pool_ptr, 0, 0, 0, TX_TRACE_BYTE_POOL_EVENTS)
+    /* Log this kernel call.  */
+    TX_EL_BYTE_POOL_PERFORMANCE_INFO_GET_INSERT
 
-        /* Log this kernel call.  */
-        TX_EL_BYTE_POOL_PERFORMANCE_INFO_GET_INSERT
-
-        /* Retrieve all the pertinent information and return it in the supplied
+    /* Retrieve all the pertinent information and return it in the supplied
            destinations.  */
 
-        /* Retrieve the number of allocates on this byte pool.  */
-        if (allocates != TX_NULL)
-        {
+    /* Retrieve the number of allocates on this byte pool.  */
+    if (allocates != TX_NULL) {
 
-            *allocates =  pool_ptr -> tx_byte_pool_performance_allocate_count;
-        }
-
-        /* Retrieve the number of releases on this byte pool.  */
-        if (releases != TX_NULL)
-        {
-
-            *releases =  pool_ptr -> tx_byte_pool_performance_release_count;
-        }
-
-        /* Retrieve the number of fragments searched in this byte pool.  */
-        if (fragments_searched != TX_NULL)
-        {
-
-            *fragments_searched =  pool_ptr -> tx_byte_pool_performance_search_count;
-        }
-
-        /* Retrieve the number of fragments merged on this byte pool.  */
-        if (merges != TX_NULL)
-        {
-
-            *merges =  pool_ptr -> tx_byte_pool_performance_merge_count;
-        }
-
-        /* Retrieve the number of fragment splits on this byte pool.  */
-        if (splits != TX_NULL)
-        {
-
-            *splits =  pool_ptr -> tx_byte_pool_performance_split_count;
-        }
-
-        /* Retrieve the number of suspensions on this byte pool.  */
-        if (suspensions != TX_NULL)
-        {
-
-            *suspensions =  pool_ptr -> tx_byte_pool_performance_suspension_count;
-        }
-
-        /* Retrieve the number of timeouts on this byte pool.  */
-        if (timeouts != TX_NULL)
-        {
-
-            *timeouts =  pool_ptr -> tx_byte_pool_performance_timeout_count;
-        }
-
-        /* Restore interrupts.  */
-        TX_RESTORE
-
-        /* Return completion status.  */
-        status =  TX_SUCCESS;
+      *allocates = pool_ptr->tx_byte_pool_performance_allocate_count;
     }
 
+    /* Retrieve the number of releases on this byte pool.  */
+    if (releases != TX_NULL) {
+
+      *releases = pool_ptr->tx_byte_pool_performance_release_count;
+    }
+
+    /* Retrieve the number of fragments searched in this byte pool.  */
+    if (fragments_searched != TX_NULL) {
+
+      *fragments_searched = pool_ptr->tx_byte_pool_performance_search_count;
+    }
+
+    /* Retrieve the number of fragments merged on this byte pool.  */
+    if (merges != TX_NULL) {
+
+      *merges = pool_ptr->tx_byte_pool_performance_merge_count;
+    }
+
+    /* Retrieve the number of fragment splits on this byte pool.  */
+    if (splits != TX_NULL) {
+
+      *splits = pool_ptr->tx_byte_pool_performance_split_count;
+    }
+
+    /* Retrieve the number of suspensions on this byte pool.  */
+    if (suspensions != TX_NULL) {
+
+      *suspensions = pool_ptr->tx_byte_pool_performance_suspension_count;
+    }
+
+    /* Retrieve the number of timeouts on this byte pool.  */
+    if (timeouts != TX_NULL) {
+
+      *timeouts = pool_ptr->tx_byte_pool_performance_timeout_count;
+    }
+
+    /* Restore interrupts.  */
+    TX_RESTORE
+
     /* Return completion status.  */
-    return(status);
+    status = TX_SUCCESS;
+  }
+
+  /* Return completion status.  */
+  return (status);
 #else
 
-UINT        status;
+  UINT status;
 
+  /* Access input arguments just for the sake of lint, MISRA, etc.  */
+  if (pool_ptr != TX_NULL) {
 
-    /* Access input arguments just for the sake of lint, MISRA, etc.  */
-    if (pool_ptr != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (allocates != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (allocates != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (releases != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (releases != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (fragments_searched != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (fragments_searched != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (merges != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (merges != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (splits != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (splits != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (suspensions != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (suspensions != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (timeouts != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (timeouts != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  }
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-
-    /* Return completion status.  */
-    return(status);
+  /* Return completion status.  */
+  return (status);
 #endif
 }
-

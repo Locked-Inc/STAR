@@ -18,13 +18,12 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#include "unity.h"
+#include <string.h>
 
 #include "mock_rx_ds18b20.h"
 #include "mock_shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
+#include "unity.h"
 
 /* Include the task header for the public API */
 #include "temp_sensor_task.h"
@@ -251,7 +250,7 @@ void test_temp_task_handles_read_failure(void)
 
   /* Try to read (will fail) */
   rx_ds18b20_handle_t handle = {0};
-  float temp_celsius;
+  float               temp_celsius;
   err = rx_ds18b20_read_temperature(&handle, &temp_celsius);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 

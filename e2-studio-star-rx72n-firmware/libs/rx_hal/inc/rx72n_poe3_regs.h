@@ -175,26 +175,26 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_poe3_offset_icsr1 = 0x00U,   /**< ICSR1 offset (16-bit) */
-  k_poe3_offset_ocsr1 = 0x02U,   /**< OCSR1 offset (16-bit) */
-  k_poe3_offset_icsr2 = 0x04U,   /**< ICSR2 offset (16-bit) */
-  k_poe3_offset_ocsr2 = 0x06U,   /**< OCSR2 offset (16-bit) */
-  k_poe3_offset_icsr3 = 0x08U,   /**< ICSR3 offset (16-bit) */
-  k_poe3_offset_spoer = 0x0AU,   /**< SPOER offset (8-bit) */
-  k_poe3_offset_poecr1 = 0x0BU,  /**< POECR1 offset (8-bit) */
-  k_poe3_offset_poecr2 = 0x0CU,  /**< POECR2 offset (8-bit) */
-  k_poe3_offset_poecr4 = 0x10U,  /**< POECR4 offset (16-bit) */
-  k_poe3_offset_poecr5 = 0x12U,  /**< POECR5 offset (16-bit) */
-  k_poe3_offset_icsr4 = 0x16U,   /**< ICSR4 offset (16-bit) */
-  k_poe3_offset_icsr5 = 0x18U,   /**< ICSR5 offset (16-bit) */
-  k_poe3_offset_alr1 = 0x1AU,    /**< ALR1 offset (16-bit) */
-  k_poe3_offset_icsr6 = 0x1CU,   /**< ICSR6 offset (16-bit) */
+  k_poe3_offset_icsr1   = 0x00U, /**< ICSR1 offset (16-bit) */
+  k_poe3_offset_ocsr1   = 0x02U, /**< OCSR1 offset (16-bit) */
+  k_poe3_offset_icsr2   = 0x04U, /**< ICSR2 offset (16-bit) */
+  k_poe3_offset_ocsr2   = 0x06U, /**< OCSR2 offset (16-bit) */
+  k_poe3_offset_icsr3   = 0x08U, /**< ICSR3 offset (16-bit) */
+  k_poe3_offset_spoer   = 0x0AU, /**< SPOER offset (8-bit) */
+  k_poe3_offset_poecr1  = 0x0BU, /**< POECR1 offset (8-bit) */
+  k_poe3_offset_poecr2  = 0x0CU, /**< POECR2 offset (8-bit) */
+  k_poe3_offset_poecr4  = 0x10U, /**< POECR4 offset (16-bit) */
+  k_poe3_offset_poecr5  = 0x12U, /**< POECR5 offset (16-bit) */
+  k_poe3_offset_icsr4   = 0x16U, /**< ICSR4 offset (16-bit) */
+  k_poe3_offset_icsr5   = 0x18U, /**< ICSR5 offset (16-bit) */
+  k_poe3_offset_alr1    = 0x1AU, /**< ALR1 offset (16-bit) */
+  k_poe3_offset_icsr6   = 0x1CU, /**< ICSR6 offset (16-bit) */
   k_poe3_offset_m0selr1 = 0x24U, /**< M0SELR1 offset (8-bit) */
   k_poe3_offset_m0selr2 = 0x25U, /**< M0SELR2 offset (8-bit) */
-  k_poe3_offset_m3selr = 0x26U,  /**< M3SELR offset (8-bit) */
+  k_poe3_offset_m3selr  = 0x26U, /**< M3SELR offset (8-bit) */
   k_poe3_offset_m4selr1 = 0x27U, /**< M4SELR1 offset (8-bit) */
   k_poe3_offset_m4selr2 = 0x28U, /**< M4SELR2 offset (8-bit) */
-  k_poe3_offset_m6selr = 0x2AU,  /**< M6SELR offset (8-bit) */
+  k_poe3_offset_m6selr  = 0x2AU, /**< M6SELR offset (8-bit) */
 } poe3_offsets_t;
 
 /* =============================================================================
@@ -453,14 +453,14 @@ typedef enum : uint16_t {
  */
 typedef enum : uint16_t {
   /* POE10# to MTU mapping (bits 7:4) */
-  k_poecr5_poe10e_mtu0 = 0x0010U,   /**< POE10# affects MTU0 */
-  k_poecr5_poe10e_mtu34 = 0x0020U,  /**< POE10# affects MTU3/4 */
-  k_poecr5_poe10e_mtu67 = 0x0040U,  /**< POE10# affects MTU6/7 */
+  k_poecr5_poe10e_mtu0  = 0x0010U, /**< POE10# affects MTU0 */
+  k_poecr5_poe10e_mtu34 = 0x0020U, /**< POE10# affects MTU3/4 */
+  k_poecr5_poe10e_mtu67 = 0x0040U, /**< POE10# affects MTU6/7 */
 
   /* POE11# to MTU mapping (bits 11:8) */
-  k_poecr5_poe11e_mtu0 = 0x0100U,   /**< POE11# affects MTU0 */
-  k_poecr5_poe11e_mtu34 = 0x0200U,  /**< POE11# affects MTU3/4 */
-  k_poecr5_poe11e_mtu67 = 0x0400U,  /**< POE11# affects MTU6/7 */
+  k_poecr5_poe11e_mtu0  = 0x0100U, /**< POE11# affects MTU0 */
+  k_poecr5_poe11e_mtu34 = 0x0200U, /**< POE11# affects MTU3/4 */
+  k_poecr5_poe11e_mtu67 = 0x0400U, /**< POE11# affects MTU6/7 */
 } poecr5_bits_t;
 
 /* =============================================================================
@@ -498,7 +498,7 @@ typedef enum : uint16_t {
   k_alr1_olsg1b = 0x0008U, /**< Active level for group 1 negative */
   k_alr1_olsg2a = 0x0010U, /**< Active level for group 2 positive */
   k_alr1_olsg2b = 0x0020U, /**< Active level for group 2 negative */
-  k_alr1_olsen = 0x0080U,  /**< Active level select enable */
+  k_alr1_olsen  = 0x0080U, /**< Active level select enable */
 } alr1_bits_t;
 
 /* =============================================================================
@@ -753,84 +753,73 @@ static inline volatile uint8_t* poe3_m6selr_reg(void)
 
 /* Verify base address */
 static_assert(k_poe3_base_addr == 0x0008C4C0U,
-               "POE3 base address must be 0x0008C4C0 per Ch25 manual");
+              "POE3 base address must be 0x0008C4C0 per Ch25 manual");
 
 /* Verify ICSR register addresses */
-static_assert(k_poe3_icsr1_addr == 0x0008C4C0U,
-               "ICSR1 address must be 0x0008C4C0 per Ch25 manual");
+static_assert(k_poe3_icsr1_addr == 0x0008C4C0U, "ICSR1 address must be 0x0008C4C0 per Ch25 manual");
 
-static_assert(k_poe3_icsr2_addr == 0x0008C4C4U,
-               "ICSR2 address must be 0x0008C4C4 per Ch25 manual");
+static_assert(k_poe3_icsr2_addr == 0x0008C4C4U, "ICSR2 address must be 0x0008C4C4 per Ch25 manual");
 
-static_assert(k_poe3_icsr3_addr == 0x0008C4C8U,
-               "ICSR3 address must be 0x0008C4C8 per Ch25 manual");
+static_assert(k_poe3_icsr3_addr == 0x0008C4C8U, "ICSR3 address must be 0x0008C4C8 per Ch25 manual");
 
-static_assert(k_poe3_icsr4_addr == 0x0008C4D6U,
-               "ICSR4 address must be 0x0008C4D6 per Ch25 manual");
+static_assert(k_poe3_icsr4_addr == 0x0008C4D6U, "ICSR4 address must be 0x0008C4D6 per Ch25 manual");
 
-static_assert(k_poe3_icsr5_addr == 0x0008C4D8U,
-               "ICSR5 address must be 0x0008C4D8 per Ch25 manual");
+static_assert(k_poe3_icsr5_addr == 0x0008C4D8U, "ICSR5 address must be 0x0008C4D8 per Ch25 manual");
 
-static_assert(k_poe3_icsr6_addr == 0x0008C4DCU,
-               "ICSR6 address must be 0x0008C4DC per Ch25 manual");
+static_assert(k_poe3_icsr6_addr == 0x0008C4DCU, "ICSR6 address must be 0x0008C4DC per Ch25 manual");
 
 /* Verify OCSR register addresses */
-static_assert(k_poe3_ocsr1_addr == 0x0008C4C2U,
-               "OCSR1 address must be 0x0008C4C2 per Ch25 manual");
+static_assert(k_poe3_ocsr1_addr == 0x0008C4C2U, "OCSR1 address must be 0x0008C4C2 per Ch25 manual");
 
-static_assert(k_poe3_ocsr2_addr == 0x0008C4C6U,
-               "OCSR2 address must be 0x0008C4C6 per Ch25 manual");
+static_assert(k_poe3_ocsr2_addr == 0x0008C4C6U, "OCSR2 address must be 0x0008C4C6 per Ch25 manual");
 
 /* Verify control register addresses */
-static_assert(k_poe3_spoer_addr == 0x0008C4CAU,
-               "SPOER address must be 0x0008C4CA per Ch25 manual");
+static_assert(k_poe3_spoer_addr == 0x0008C4CAU, "SPOER address must be 0x0008C4CA per Ch25 manual");
 
 static_assert(k_poe3_poecr1_addr == 0x0008C4CBU,
-               "POECR1 address must be 0x0008C4CB per Ch25 manual");
+              "POECR1 address must be 0x0008C4CB per Ch25 manual");
 
 static_assert(k_poe3_poecr2_addr == 0x0008C4CCU,
-               "POECR2 address must be 0x0008C4CC per Ch25 manual");
+              "POECR2 address must be 0x0008C4CC per Ch25 manual");
 
 static_assert(k_poe3_poecr4_addr == 0x0008C4D0U,
-               "POECR4 address must be 0x0008C4D0 per Ch25 manual");
+              "POECR4 address must be 0x0008C4D0 per Ch25 manual");
 
 static_assert(k_poe3_poecr5_addr == 0x0008C4D2U,
-               "POECR5 address must be 0x0008C4D2 per Ch25 manual");
+              "POECR5 address must be 0x0008C4D2 per Ch25 manual");
 
-static_assert(k_poe3_alr1_addr == 0x0008C4DAU,
-               "ALR1 address must be 0x0008C4DA per Ch25 manual");
+static_assert(k_poe3_alr1_addr == 0x0008C4DAU, "ALR1 address must be 0x0008C4DA per Ch25 manual");
 
 /* Verify pin select register addresses */
 static_assert(k_poe3_m0selr1_addr == 0x0008C4E4U,
-               "M0SELR1 address must be 0x0008C4E4 per Ch25 manual");
+              "M0SELR1 address must be 0x0008C4E4 per Ch25 manual");
 
 static_assert(k_poe3_m0selr2_addr == 0x0008C4E5U,
-               "M0SELR2 address must be 0x0008C4E5 per Ch25 manual");
+              "M0SELR2 address must be 0x0008C4E5 per Ch25 manual");
 
 static_assert(k_poe3_m3selr_addr == 0x0008C4E6U,
-               "M3SELR address must be 0x0008C4E6 per Ch25 manual");
+              "M3SELR address must be 0x0008C4E6 per Ch25 manual");
 
 static_assert(k_poe3_m4selr1_addr == 0x0008C4E7U,
-               "M4SELR1 address must be 0x0008C4E7 per Ch25 manual");
+              "M4SELR1 address must be 0x0008C4E7 per Ch25 manual");
 
 static_assert(k_poe3_m4selr2_addr == 0x0008C4E8U,
-               "M4SELR2 address must be 0x0008C4E8 per Ch25 manual");
+              "M4SELR2 address must be 0x0008C4E8 per Ch25 manual");
 
 static_assert(k_poe3_m6selr_addr == 0x0008C4EAU,
-               "M6SELR address must be 0x0008C4EA per Ch25 manual");
+              "M6SELR address must be 0x0008C4EA per Ch25 manual");
 
 /* Verify register offsets from base */
 static_assert(k_poe3_icsr1_addr - k_poe3_base_addr == k_poe3_offset_icsr1,
-               "ICSR1 offset must match");
+              "ICSR1 offset must match");
 
 static_assert(k_poe3_ocsr1_addr - k_poe3_base_addr == k_poe3_offset_ocsr1,
-               "OCSR1 offset must match");
+              "OCSR1 offset must match");
 
 static_assert(k_poe3_spoer_addr - k_poe3_base_addr == k_poe3_offset_spoer,
-               "SPOER offset must match");
+              "SPOER offset must match");
 
-static_assert(k_poe3_alr1_addr - k_poe3_base_addr == k_poe3_offset_alr1,
-               "ALR1 offset must match");
+static_assert(k_poe3_alr1_addr - k_poe3_base_addr == k_poe3_offset_alr1, "ALR1 offset must match");
 
 /** @} */
 

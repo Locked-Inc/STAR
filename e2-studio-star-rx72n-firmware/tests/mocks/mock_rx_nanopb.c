@@ -207,12 +207,12 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
   }
 
   if (s_decode_velocity_return == k_rx_ok) {
-    msg->has_command                          = true;
-    msg->command.front_left_velocity_mps      = (double)s_decoded_velocity[0];
-    msg->command.front_right_velocity_mps     = (double)s_decoded_velocity[1];
-    msg->command.back_left_velocity_mps       = (double)s_decoded_velocity[2];
-    msg->command.back_right_velocity_mps      = (double)s_decoded_velocity[3];
-    msg->command.sequence                     = s_decode_velocity_count;
+    msg->has_command                      = true;
+    msg->command.front_left_velocity_mps  = (double)s_decoded_velocity[0];
+    msg->command.front_right_velocity_mps = (double)s_decoded_velocity[1];
+    msg->command.back_left_velocity_mps   = (double)s_decoded_velocity[2];
+    msg->command.back_right_velocity_mps  = (double)s_decoded_velocity[3];
+    msg->command.sequence                 = s_decode_velocity_count;
   }
 
   return s_decode_velocity_return;
@@ -233,7 +233,7 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
 
   if (s_decode_estop_return == k_rx_ok) {
     msg->reason_present = true;
-    msg->reason         = 1;  /* Manual e-stop */
+    msg->reason         = 1; /* Manual e-stop */
   }
 
   return s_decode_estop_return;

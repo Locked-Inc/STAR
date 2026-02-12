@@ -39,9 +39,9 @@ static bool           s_estop_active = false;
 static estop_reason_t s_estop_reason = k_estop_reason_none;
 static bool           s_comm_timeout = false;
 
-static motor_command_t s_motor_command = {0};
-static motor_state_t   s_motor_state   = {0};
-static pid_gains_t     s_pid_gains     = {0};
+static motor_command_t s_motor_command      = {0};
+static motor_state_t   s_motor_state        = {0};
+static pid_gains_t     s_pid_gains          = {0};
 static bool            s_pid_update_pending = false;
 
 static bms_state_t         s_bms_state      = {0};
@@ -57,10 +57,10 @@ static estop_reason_t s_last_triggered_reason = k_estop_reason_none;
 
 void mock_shared_data_reset(void)
 {
-  s_init_return               = k_rx_ok;
-  s_init_count                = 0;
-  s_trigger_estop_count       = 0;
-  s_motor_state_update_count  = 0;
+  s_init_return              = k_rx_ok;
+  s_init_count               = 0;
+  s_trigger_estop_count      = 0;
+  s_motor_state_update_count = 0;
 
   s_initialized  = false;
   s_estop_active = false;

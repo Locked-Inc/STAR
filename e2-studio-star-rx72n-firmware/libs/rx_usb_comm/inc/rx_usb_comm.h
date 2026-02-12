@@ -606,7 +606,8 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config_t* config);
+[[nodiscard]] rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t*       handle,
+                                        const rx_usb_comm_config_t* config);
 
 /**
  * @brief Deinitialize USB communication handle
@@ -717,10 +718,10 @@ typedef struct {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
-                          rx_frame_type_t       type,
-                          uint8_t               flags,
-                          const uint8_t*        payload,
-                          uint32_t              payload_len);
+                                        rx_frame_type_t       type,
+                                        uint8_t               flags,
+                                        const uint8_t*        payload,
+                                        uint32_t              payload_len);
 
 /**
  * @brief Send ACK for received frame
@@ -741,7 +742,8 @@ typedef struct {
  *
  * @return k_rx_ok on success
  */
-[[nodiscard]] rx_err_t rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, uint8_t flags);
+[[nodiscard]] rx_err_t
+rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, uint8_t flags);
 
 /* =============================================================================
  * Receive API
@@ -868,7 +870,8 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms);
+[[nodiscard]] rx_err_t
+rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms);
 
 /**
  * @brief Check if data is available for reading
@@ -878,7 +881,8 @@ typedef struct {
  *
  * @return k_rx_ok on success
  */
-[[nodiscard]] rx_err_t rx_usb_comm_data_available(const rx_usb_comm_handle_t* handle, bool* available);
+[[nodiscard]] rx_err_t rx_usb_comm_data_available(const rx_usb_comm_handle_t* handle,
+                                                  bool*                       available);
 
 /**
  * @brief Check if USB is connected and ready

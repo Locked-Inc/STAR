@@ -1741,9 +1741,9 @@ void test_usb_comm_send_fails_in_debug_mode(void)
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_set_mode(&s_handle, k_usb_comm_mode_debug));
 
-  uint8_t data[] = "test";
-  rx_err_t err = rx_usb_comm_send(&s_handle, k_frame_type_response, k_test_flags_none, data,
-                                  k_test_string_len);
+  uint8_t  data[] = "test";
+  rx_err_t err =
+    rx_usb_comm_send(&s_handle, k_frame_type_response, k_test_flags_none, data, k_test_string_len);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -1781,9 +1781,9 @@ void test_usb_comm_send_succeeds_after_mode_switch_back_to_binary(void)
   /* Switch back to binary mode */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_set_mode(&s_handle, k_usb_comm_mode_binary));
 
-  uint8_t data[] = "test";
-  rx_err_t err = rx_usb_comm_send(&s_handle, k_frame_type_response, k_test_flags_none, data,
-                                  k_test_string_len);
+  uint8_t  data[] = "test";
+  rx_err_t err =
+    rx_usb_comm_send(&s_handle, k_frame_type_response, k_test_flags_none, data, k_test_string_len);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }

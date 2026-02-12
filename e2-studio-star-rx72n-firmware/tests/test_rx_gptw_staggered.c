@@ -283,9 +283,9 @@
  * @test test_staggered_init_zero_frequency_fails
  */
 
-#include "unity.h"
-#include "rx_gptw.h"
 #include "mock_rx_gptw.h"
+#include "rx_gptw.h"
+#include "unity.h"
 
 /* =============================================================================
  * Test Constants
@@ -347,9 +347,12 @@
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_staggered_test_freq_hz   = 20000, /**< Test PWM frequency in Hz. Standard motor control frequency (above 16 kHz audible range). Produces 6000-tick period at 120 MHz PCLKA. Used in test_staggered_init_success() */
-  k_staggered_channel_count  = 4,     /**< Number of GPTW channels to test. STAR project has 4 motors requiring channels 0-3. Used as loop bound for channel iteration (NASA Power of 10 Rule 2). Value matches hardware channel count */
-  k_staggered_start_channel  = 0,     /**< Starting channel index for loop iteration. Always 0 to test all channels [0, 1, 2, 3]. Combined with k_staggered_channel_count for range: [k_staggered_start_channel, k_staggered_channel_count) */
+  k_staggered_test_freq_hz =
+    20000, /**< Test PWM frequency in Hz. Standard motor control frequency (above 16 kHz audible range). Produces 6000-tick period at 120 MHz PCLKA. Used in test_staggered_init_success() */
+  k_staggered_channel_count =
+    4, /**< Number of GPTW channels to test. STAR project has 4 motors requiring channels 0-3. Used as loop bound for channel iteration (NASA Power of 10 Rule 2). Value matches hardware channel count */
+  k_staggered_start_channel =
+    0, /**< Starting channel index for loop iteration. Always 0 to test all channels [0, 1, 2, 3]. Combined with k_staggered_channel_count for range: [k_staggered_start_channel, k_staggered_channel_count) */
 } staggered_test_constants_t;
 
 /* =============================================================================
@@ -609,10 +612,10 @@ void test_staggered_init_success(void)
   rx_gptw_channel_t ch;
 
   /* Initialize config structure */
-  config.frequency_hz     = k_staggered_test_freq_hz;
-  config.wave_mode        = k_gptw_wave_tri_pwm3;
-  config.invert_polarity  = false;
-  config.deadtime_ns      = 0;
+  config.frequency_hz         = k_staggered_test_freq_hz;
+  config.wave_mode            = k_gptw_wave_tri_pwm3;
+  config.invert_polarity      = false;
+  config.deadtime_ns          = 0;
   config.enable_complementary = false;
 
   /* Call the API under test */
@@ -833,7 +836,7 @@ void test_staggered_init_zero_frequency_fails(void)
   rx_err_t         err;
 
   /* Initialize config structure with valid values except frequency */
-  config.frequency_hz         = 0;  /* Invalid: zero frequency */
+  config.frequency_hz         = 0; /* Invalid: zero frequency */
   config.wave_mode            = k_gptw_wave_tri_pwm3;
   config.invert_polarity      = false;
   config.deadtime_ns          = 0;

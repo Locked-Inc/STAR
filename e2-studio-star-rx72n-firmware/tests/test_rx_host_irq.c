@@ -14,11 +14,11 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#include "unity.h"
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+
+#include "unity.h"
 
 /* =============================================================================
  * Mock Register Areas

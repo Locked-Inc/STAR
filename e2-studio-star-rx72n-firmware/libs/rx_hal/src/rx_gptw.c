@@ -1103,10 +1103,10 @@ rx_err_t rx_gptw_set_duty(const rx_gptw_channel_id_t channel,
   }
 
   /* Convert percentage to count value */
-  const uint32_t period = s_gptw_period[channel_value];
-  const float    period_f = (float)period;
+  const uint32_t period       = s_gptw_period[channel_value];
+  const float    period_f     = (float)period;
   const float    duty_count_f = (duty_percent * period_f) / (float)k_gptw_duty_divisor;
-  const uint32_t duty_count = (uint32_t)duty_count_f;
+  const uint32_t duty_count   = (uint32_t)duty_count_f;
 
   return rx_gptw_set_duty_raw(channel_value, output_value, duty_count);
 }

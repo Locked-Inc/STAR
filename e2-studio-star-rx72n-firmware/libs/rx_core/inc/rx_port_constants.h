@@ -319,7 +319,8 @@ typedef enum : uint8_t {
   k_rx_port_e = 0x0E, /**< Port E - Full 8-pin port available on 144-pin */
   k_rx_port_f = 0x0F, /**< Port F - Partially available on 144-pin (PF5) */
   k_rx_port_g = 0x10, /**< Port G - Not available on 144-pin package */
-  k_rx_port_j = 0x13, /**< Port J - Partial availability on 144-pin (PJ3, PJ5) - **NON-CONTIGUOUS** (0x11, 0x12 unused) */
+  k_rx_port_j =
+    0x13, /**< Port J - Partial availability on 144-pin (PJ3, PJ5) - **NON-CONTIGUOUS** (0x11, 0x12 unused) */
 } rx_port_number_t;
 
 /* =============================================================================
@@ -566,8 +567,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_port_shift = 8,    /**< Left shift amount to move port number into upper byte (bits 15-8). Used for encoding: gpio_pin_t = (port << k_port_shift) | pin */
-  k_port_mask  = 0xFF, /**< Bitmask (0xFF) to extract pin number from lower byte (bits 7-0). Used for decoding: pin = gpio_pin_t & k_port_mask */
+  k_port_shift =
+    8, /**< Left shift amount to move port number into upper byte (bits 15-8). Used for encoding: gpio_pin_t = (port << k_port_shift) | pin */
+  k_port_mask =
+    0xFF, /**< Bitmask (0xFF) to extract pin number from lower byte (bits 7-0). Used for decoding: pin = gpio_pin_t & k_port_mask */
 } port_encoding_t;
 
 /* =============================================================================
@@ -959,11 +962,11 @@ static_assert(k_port_shift == 8, "Port shift must be 8 bits");
  * Example: Port B (0x0B), Pin 2 (0x02) = 0x0B02
  */
 static_assert(((k_rx_port_b << k_port_shift) | k_rx_pin_2) == 0x0B02,
-               "Port B Pin 2 encoding must be 0x0B02");
+              "Port B Pin 2 encoding must be 0x0B02");
 static_assert(((k_rx_port_e << k_port_shift) | k_rx_pin_5) == 0x0E05,
-               "Port E Pin 5 encoding must be 0x0E05");
+              "Port E Pin 5 encoding must be 0x0E05");
 static_assert(((k_rx_port_0 << k_port_shift) | k_rx_pin_7) == 0x0007,
-               "Port 0 Pin 7 encoding must be 0x0007");
+              "Port 0 Pin 7 encoding must be 0x0007");
 
 /*
  * Verify pre-computed port/pin combinations are correct.

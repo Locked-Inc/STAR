@@ -357,13 +357,13 @@
 
 #include "temp_sensor_task.h"
 
+#include <string.h>
+
 #include "rx_check.h"
 #include "rx_ds18b20.h"
 #include "rx_log.h"
 #include "shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
 
 /* =============================================================================
  * Constants
@@ -375,11 +375,11 @@
  * @brief Temperature sensor task configuration constants
  */
 typedef enum : uint16_t {
-  k_temp_task_stack_size     = 1024, /**< Stack size in bytes */
-  k_temp_task_priority       = 15,   /**< ThreadX priority (low) */
-  k_temp_task_input          = 0,    /**< Thread entry input parameter */
-  k_temp_conversion_ticks    = 80,   /**< 800ms for 12-bit conversion */
-  k_temp_remaining_ticks     = 20,   /**< 200ms remaining in 1s period */
+  k_temp_task_stack_size  = 1024, /**< Stack size in bytes */
+  k_temp_task_priority    = 15,   /**< ThreadX priority (low) */
+  k_temp_task_input       = 0,    /**< Thread entry input parameter */
+  k_temp_conversion_ticks = 80,   /**< 800ms for 12-bit conversion */
+  k_temp_remaining_ticks  = 20,   /**< 200ms remaining in 1s period */
 } temp_task_constants_t;
 
 /**
@@ -387,8 +387,8 @@ typedef enum : uint16_t {
  * @brief Temperature sensor configuration
  */
 typedef enum : uint8_t {
-  k_temp_sensor_count     = 1, /**< Number of DS18B20 sensors */
-  k_temp_sensor_idx       = 0, /**< Primary sensor index */
+  k_temp_sensor_count = 1, /**< Number of DS18B20 sensors */
+  k_temp_sensor_idx   = 0, /**< Primary sensor index */
 } temp_sensor_constants_t;
 
 /* =============================================================================
@@ -1144,10 +1144,10 @@ rx_err_t temp_sensor_task_create(void)
  */
 static void internal_temp_task_entry(ULONG input)
 {
-  rx_err_t             err;
-  rx_ds18b20_config_t  config;
-  temp_sensor_state_t  state;
-  float                temp_celsius;
+  rx_err_t            err;
+  rx_ds18b20_config_t config;
+  temp_sensor_state_t state;
+  float               temp_celsius;
 
   (void)input;
 
@@ -1155,10 +1155,10 @@ static void internal_temp_task_entry(ULONG input)
 
   /* Configure DS18B20 */
   (void)memset(&config, 0, sizeof(config));
-  config.bus_manager       = &g_bus_manager;
-  config.bus_name          = s_onewire_bus_name;
-  config.resolution        = k_ds18b20_resolution_12bit;
-  config.use_rom_matching  = false; /* Skip ROM - only one sensor */
+  config.bus_manager      = &g_bus_manager;
+  config.bus_name         = s_onewire_bus_name;
+  config.resolution       = k_ds18b20_resolution_12bit;
+  config.use_rom_matching = false; /* Skip ROM - only one sensor */
 
   /* Initialize DS18B20 */
   err = rx_ds18b20_init(&s_ds18b20, &config);
@@ -1199,7 +1199,9 @@ static void internal_temp_task_entry(ULONG input)
       state.sensor_count                         = k_temp_sensor_count;
       state.timestamp_ms                         = tx_time_get();
 
-      rx_log_debug_val(s_tag, "Temperature (cC)", (int32_t)state.temperature_cdegc[k_temp_sensor_idx]);
+      rx_log_debug_val(s_tag,
+                       "Temperature (cC)",
+                       (int32_t)state.temperature_cdegc[k_temp_sensor_idx]);
     } else {
       state.sensor_valid[k_temp_sensor_idx] = false;
       state.sensor_count                    = k_temp_sensor_count;

@@ -273,7 +273,7 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
     handle->current_speed = speed;
 
     /* Track last speed (use set_speed_count to track which motor in iteration) */
-    uint8_t idx = (s_set_speed_count - 1) % k_mock_drv8243_max_motors;
+    uint8_t idx       = (s_set_speed_count - 1) % k_mock_drv8243_max_motors;
     s_last_speed[idx] = speed;
   }
 
@@ -309,7 +309,7 @@ rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_c
 
   if (s_read_current_return == k_rx_ok) {
     /* Use read_current_count to determine motor index */
-    idx = (s_read_current_count - 1) % k_mock_drv8243_max_motors;
+    idx          = (s_read_current_count - 1) % k_mock_drv8243_max_motors;
     *out_current = s_current_ma[idx];
   }
 
@@ -328,7 +328,7 @@ rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* ou
 
   if (s_fault_status_return == k_rx_ok) {
     /* Use fault_status_count to determine motor index */
-    idx = (s_fault_status_count - 1) % k_mock_drv8243_max_motors;
+    idx        = (s_fault_status_count - 1) % k_mock_drv8243_max_motors;
     *out_fault = s_fault_active[idx];
   }
 

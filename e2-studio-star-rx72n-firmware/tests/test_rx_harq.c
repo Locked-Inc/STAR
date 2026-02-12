@@ -452,7 +452,7 @@ static rx_chase_combiner_t s_combiner;
  *
  * @since Version 1.0.0
  */
-static rx_harq_handle_t    s_harq;
+static rx_harq_handle_t s_harq;
 
 /**
  * @brief Unity test fixture setup - initializes combiner before each test

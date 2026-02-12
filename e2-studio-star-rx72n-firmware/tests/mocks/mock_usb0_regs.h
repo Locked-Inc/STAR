@@ -35,9 +35,9 @@ extern "C" {
  * PHYSET, PIPEBUF. Renamed UFRMNUM to DVCHGR.
  */
 typedef struct {
-  uint16_t syscfg;   /* 0x00: System Configuration Control */
+  uint16_t syscfg; /* 0x00: System Configuration Control */
   uint8_t  reserved0[2];
-  uint16_t syssts0;  /* 0x04: System Configuration Status */
+  uint16_t syssts0; /* 0x04: System Configuration Status */
   uint8_t  reserved1[2];
   uint16_t dvstctr0; /* 0x08: Device State Control Register 0 */
   uint8_t  reserved2[10];
@@ -79,7 +79,7 @@ typedef struct {
   uint8_t  reserved8[2];
   uint16_t pipesel; /* 0x64: Pipe Window Select Register */
   uint8_t  reserved9[2];
-  uint16_t pipecfg;  /* 0x68: Pipe Configuration Register */
+  uint16_t pipecfg; /* 0x68: Pipe Configuration Register */
   uint8_t  reserved10[2];
   uint16_t pipemaxp; /* 0x6C: Pipe Max Packet Size Register */
   uint16_t pipeperi; /* 0x6E: Pipe Cycle Control Register */

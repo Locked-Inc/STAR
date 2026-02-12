@@ -368,15 +368,16 @@
 
 #include "comm_task.h"
 
+#include <string.h>
+
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
 #include "rx_log.h"
 #include "rx_nanopb.h"
+#include "rx_time_constants.h"
 #include "shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
 
 /* =============================================================================
  * Constants
@@ -431,11 +432,8 @@ static const char* const s_tag = "COMM";
  */
 
 static void internal_comm_task_entry(ULONG input);
-static void internal_frame_callback(rx_comm_channel_t  channel,
-                                     const rx_frame_t*  frame,
-                                     void*              ctx);
-static void internal_handle_command_frame(rx_comm_channel_t channel,
-                                           const rx_frame_t* frame);
+static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t* frame, void* ctx);
+static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame);
 
 /* =============================================================================
  * Public Functions
@@ -1039,8 +1037,8 @@ rx_err_t comm_task_create(void)
  */
 static void internal_comm_task_entry(ULONG input)
 {
-  rx_err_t                   err;
-  rx_comm_manager_config_t   config;
+  rx_err_t                 err;
+  rx_comm_manager_config_t config;
 
   (void)input;
 
@@ -1048,11 +1046,11 @@ static void internal_comm_task_entry(ULONG input)
 
   /* Initialize communication manager */
   (void)memset(&config, 0, sizeof(config));
-  config.usb_handle             = nullptr; /* USB/SPI handles set via hardware_init */
-  config.spi_handle             = nullptr;
-  config.callback               = internal_frame_callback;
-  config.callback_ctx           = &g_comm_manager;
-  config.enable_decoded_output  = true;
+  config.usb_handle            = nullptr; /* USB/SPI handles set via hardware_init */
+  config.spi_handle            = nullptr;
+  config.callback              = internal_frame_callback;
+  config.callback_ctx          = &g_comm_manager;
+  config.enable_decoded_output = true;
 
   err = rx_comm_manager_init(&g_comm_manager, &config);
   if (err != k_rx_ok) {
@@ -1071,6 +1069,10 @@ static void internal_comm_task_entry(ULONG input)
     if (err != k_rx_ok && err != k_rx_err_timeout) {
       rx_log_debug_val(s_tag, "Poll error", (uint32_t)err);
     }
+
+    /* Process pending SPI retransmissions (no-op when disabled) */
+    (void)rx_comm_manager_process_retransmits(&g_comm_manager,
+                                              (uint32_t)(tx_time_get() * k_threadx_ms_per_tick));
 
     /* Sleep until next poll cycle */
     (void)tx_thread_sleep(k_comm_task_sleep_ticks);
@@ -1375,9 +1377,7 @@ static void internal_comm_task_entry(ULONG input)
  * @callgraph
  * @callergraph
  */
-static void internal_frame_callback(rx_comm_channel_t  channel,
-                                     const rx_frame_t*  frame,
-                                     void*              ctx)
+static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t* frame, void* ctx)
 {
   (void)ctx;
 
@@ -1779,27 +1779,28 @@ static void internal_frame_callback(rx_comm_channel_t  channel,
  * @callgraph
  * @callergraph
  */
-static void internal_handle_command_frame(rx_comm_channel_t channel,
-                                           const rx_frame_t* frame)
+static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
-  rx_err_t                      err;
-  star_v1_SetVelocityRequest    velocity_req;
-  star_v1_EmergencyStopRequest  estop_req;
-  motor_command_t               cmd;
+  rx_err_t                     err;
+  star_v1_SetVelocityRequest   velocity_req;
+  star_v1_EmergencyStopRequest estop_req;
+  motor_command_t              cmd;
 
   (void)channel;
 
   /* Try to decode as SetVelocityRequest */
-  err = rx_nanopb_decode_velocity_request(frame->payload,
-                                          frame->header.length,
-                                          &velocity_req);
+  err = rx_nanopb_decode_velocity_request(frame->payload, frame->header.length, &velocity_req);
   if (err == k_rx_ok && velocity_req.has_command) {
     /* Build motor command from protobuf */
     (void)memset(&cmd, 0, sizeof(cmd));
-    cmd.target_velocity_mps[k_motor_idx_front_left]  = (float)velocity_req.command.front_left_velocity_mps;
-    cmd.target_velocity_mps[k_motor_idx_front_right] = (float)velocity_req.command.front_right_velocity_mps;
-    cmd.target_velocity_mps[k_motor_idx_back_left]   = (float)velocity_req.command.back_left_velocity_mps;
-    cmd.target_velocity_mps[k_motor_idx_back_right]  = (float)velocity_req.command.back_right_velocity_mps;
+    cmd.target_velocity_mps[k_motor_idx_front_left] =
+      (float)velocity_req.command.front_left_velocity_mps;
+    cmd.target_velocity_mps[k_motor_idx_front_right] =
+      (float)velocity_req.command.front_right_velocity_mps;
+    cmd.target_velocity_mps[k_motor_idx_back_left] =
+      (float)velocity_req.command.back_left_velocity_mps;
+    cmd.target_velocity_mps[k_motor_idx_back_right] =
+      (float)velocity_req.command.back_right_velocity_mps;
     cmd.sequence     = velocity_req.command.sequence;
     cmd.timestamp_ms = tx_time_get();
     cmd.valid        = true;
@@ -1814,9 +1815,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel,
   }
 
   /* Try to decode as EmergencyStopRequest */
-  err = rx_nanopb_decode_estop_request(frame->payload,
-                                       frame->header.length,
-                                       &estop_req);
+  err = rx_nanopb_decode_estop_request(frame->payload, frame->header.length, &estop_req);
   if (err == k_rx_ok) {
     rx_log_warn(s_tag, "E-Stop request received");
 
@@ -1830,22 +1829,20 @@ static void internal_handle_command_frame(rx_comm_channel_t channel,
 
   /* Try to decode as SetPIDGainsRequest */
   star_v1_SetPIDGainsRequest pid_req;
-  err = rx_nanopb_decode_pid_gains_request(frame->payload,
-                                           frame->header.length,
-                                           &pid_req);
+  err = rx_nanopb_decode_pid_gains_request(frame->payload, frame->header.length, &pid_req);
   if (err == k_rx_ok && pid_req.has_pid_config) {
     rx_log_info(s_tag, "PID gains request received");
 
     /* Convert protobuf PID config to firmware structure */
     pid_gains_t gains;
     (void)memset(&gains, 0, sizeof(gains));
-    gains.kp            = (float)pid_req.pid_config.kp;
-    gains.ki            = (float)pid_req.pid_config.ki;
-    gains.kd            = (float)pid_req.pid_config.kd;
-    gains.output_min    = (float)pid_req.pid_config.output_min_percent;
-    gains.output_max    = (float)pid_req.pid_config.output_max_percent;
-    gains.integral_min  = (float)pid_req.pid_config.integral_min;
-    gains.integral_max  = (float)pid_req.pid_config.integral_max;
+    gains.kp             = (float)pid_req.pid_config.kp;
+    gains.ki             = (float)pid_req.pid_config.ki;
+    gains.kd             = (float)pid_req.pid_config.kd;
+    gains.output_min     = (float)pid_req.pid_config.output_min_percent;
+    gains.output_max     = (float)pid_req.pid_config.output_max_percent;
+    gains.integral_min   = (float)pid_req.pid_config.integral_min;
+    gains.integral_max   = (float)pid_req.pid_config.integral_max;
     gains.update_pending = true;
 
     /* Update shared PID gains (applies to all motors) */
@@ -1854,6 +1851,29 @@ static void internal_handle_command_frame(rx_comm_channel_t channel,
       rx_log_error_val(s_tag, "Failed to set PID gains", (uint32_t)err);
     } else {
       rx_log_info(s_tag, "PID gains updated successfully");
+    }
+    return;
+  }
+
+  /* Try to decode as SetRetransmitConfigRequest */
+  star_v1_SetRetransmitConfigRequest retransmit_req;
+  err = rx_nanopb_decode_retransmit_config_request(frame->payload,
+                                                   frame->header.length,
+                                                   &retransmit_req);
+  if (err == k_rx_ok && retransmit_req.has_retransmit_config) {
+    rx_spi_comm_retransmit_config_t cfg;
+    (void)memset(&cfg, 0, sizeof(cfg));
+    cfg.max_retries    = (uint8_t)retransmit_req.retransmit_config.max_retries;
+    cfg.ack_timeout_ms = (uint16_t)retransmit_req.retransmit_config.ack_timeout_ms;
+    cfg.max_backoff_ms = (uint16_t)retransmit_req.retransmit_config.max_backoff_ms;
+
+    err = rx_comm_manager_set_auto_retransmit(&g_comm_manager,
+                                              retransmit_req.retransmit_config.enabled,
+                                              &cfg);
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "Failed to set retransmit config", (uint32_t)err);
+    } else {
+      rx_log_info(s_tag, "Retransmit config updated");
     }
     return;
   }

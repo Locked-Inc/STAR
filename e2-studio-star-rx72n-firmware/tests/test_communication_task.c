@@ -19,14 +19,13 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#include "unity.h"
+#include <string.h>
 
 #include "mock_rx_comm_manager.h"
 #include "mock_rx_nanopb.h"
 #include "mock_shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
+#include "unity.h"
 
 /* Include the task header for the public API */
 #include "comm_task.h"
@@ -209,12 +208,12 @@ void test_comm_task_velocity_cmd_updates_shared_data(void)
 
   /* Decode velocity request (simulating task behavior) */
   star_v1_SetVelocityRequest decoded = {0};
-  err = rx_nanopb_decode_velocity_request(nullptr, 0, &decoded);
+  err                                = rx_nanopb_decode_velocity_request(nullptr, 0, &decoded);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(decoded.has_command);
 
   /* Build and store motor command as task would */
-  motor_command_t cmd = {0};
+  motor_command_t cmd        = {0};
   cmd.target_velocity_mps[0] = (float)decoded.command.front_left_velocity_mps;
   cmd.target_velocity_mps[1] = (float)decoded.command.front_right_velocity_mps;
   cmd.target_velocity_mps[2] = (float)decoded.command.back_left_velocity_mps;
@@ -288,8 +287,7 @@ void test_comm_task_estop_request_triggers_estop(void)
 
   /* Verify estop was triggered */
   TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_trigger_estop_count());
-  TEST_ASSERT_EQUAL(k_estop_reason_manual,
-                    mock_shared_data_get_last_estop_reason());
+  TEST_ASSERT_EQUAL(k_estop_reason_manual, mock_shared_data_get_last_estop_reason());
   TEST_ASSERT_TRUE(shared_data_is_estop_active());
 }
 

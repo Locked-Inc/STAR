@@ -2066,8 +2066,11 @@ void test_rx_bus_onewire_search_null_num_devices(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   uint8_t roms[k_test_max_search_devices * k_test_rom_bytes];
-  err =
-    rx_bus_onewire_search(&s_test_manager, s_test_bus_name, roms, k_test_max_search_devices, nullptr);
+  err = rx_bus_onewire_search(&s_test_manager,
+                              s_test_bus_name,
+                              roms,
+                              k_test_max_search_devices,
+                              nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -2288,15 +2291,14 @@ typedef enum : uint32_t {
  * Sequence: [presence=false] + [64 ROM bits LSB-first per byte]
  */
 static const bool s_seq_read_rom_a[k_test_read_rom_seq_len] = {
-  false,
-  false, false, false, true,  false, true,  false, false, /* byte 0: 0x28 */
-  false, false, false, false, false, false, false, false, /* byte 1: 0x00 */
-  false, false, false, false, false, false, false, false, /* byte 2: 0x00 */
-  false, false, false, false, false, false, false, false, /* byte 3: 0x00 */
-  false, false, false, false, false, false, false, false, /* byte 4: 0x00 */
-  false, false, false, false, false, false, false, false, /* byte 5: 0x00 */
-  false, false, false, false, false, false, false, false, /* byte 6: 0x00 */
-  false, true,  true,  true,  true,  false, false, false  /* byte 7: 0x1E */
+  false, false, false, false, true,  false, true,  false, false, /* byte 0: 0x28 */
+  false, false, false, false, false, false, false, false,        /* byte 1: 0x00 */
+  false, false, false, false, false, false, false, false,        /* byte 2: 0x00 */
+  false, false, false, false, false, false, false, false,        /* byte 3: 0x00 */
+  false, false, false, false, false, false, false, false,        /* byte 4: 0x00 */
+  false, false, false, false, false, false, false, false,        /* byte 5: 0x00 */
+  false, false, false, false, false, false, false, false,        /* byte 6: 0x00 */
+  false, true,  true,  true,  true,  false, false, false         /* byte 7: 0x1E */
 };
 
 /**
@@ -2307,15 +2309,14 @@ static const bool s_seq_read_rom_a[k_test_read_rom_seq_len] = {
  * Sequence: [presence=false] + [64 ROM bits LSB-first per byte]
  */
 static const bool s_seq_read_rom_c[k_test_read_rom_seq_len] = {
-  false,
-  false, false, false, false, true,  false, false, false, /* byte 0: 0x10 */
-  false, true,  false, true,  false, true,  false, true,  /* byte 1: 0xAA */
-  true,  true,  false, true,  true,  true,  false, true,  /* byte 2: 0xBB */
-  false, false, true,  true,  false, false, true,  true,  /* byte 3: 0xCC */
-  true,  false, true,  true,  true,  false, true,  true,  /* byte 4: 0xDD */
-  false, true,  true,  true,  false, true,  true,  true,  /* byte 5: 0xEE */
-  true,  true,  true,  true,  true,  true,  true,  true,  /* byte 6: 0xFF */
-  true,  false, false, true,  false, true,  true,  true   /* byte 7: 0xE9 */
+  false, false, false, false, false, true,  false, false, false, /* byte 0: 0x10 */
+  false, true,  false, true,  false, true,  false, true,         /* byte 1: 0xAA */
+  true,  true,  false, true,  true,  true,  false, true,         /* byte 2: 0xBB */
+  false, false, true,  true,  false, false, true,  true,         /* byte 3: 0xCC */
+  true,  false, true,  true,  true,  false, true,  true,         /* byte 4: 0xDD */
+  false, true,  true,  true,  false, true,  true,  true,         /* byte 5: 0xEE */
+  true,  true,  true,  true,  true,  true,  true,  true,         /* byte 6: 0xFF */
+  true,  false, false, true,  false, true,  true,  true          /* byte 7: 0xE9 */
 };
 
 /**
@@ -2329,30 +2330,141 @@ static const bool s_seq_read_rom_c[k_test_read_rom_seq_len] = {
 static const bool s_seq_single_search[k_test_single_search_len] = {
   false,
   /* byte 0: 0x28 = 0b00101000, LSB first */
-  false, true,  false, true,  false, true,  true,  false,
-  false, true,  true,  false, false, true,  false, true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  true,
+  false,
+  false,
+  true,
+  true,
+  false,
+  false,
+  true,
+  false,
+  true,
   /* byte 1: 0x00 */
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
   /* byte 2: 0x00 */
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
   /* byte 3: 0x00 */
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
   /* byte 4: 0x00 */
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
   /* byte 5: 0x00 */
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
   /* byte 6: 0x00 */
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
   /* byte 7: 0x1E = 0b00011110, LSB first */
-  false, true,  true,  false, true,  false, true,  false,
-  true,  false, false, true,  false, true,  false, true
-};
+  false,
+  true,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true};
 
 /**
  * @brief GPIO read sequence for two-device search
@@ -2374,48 +2486,271 @@ static const bool s_seq_two_device[k_test_two_device_seq_len] = {
   /* === Iteration 1: finds Device A === */
   false, /* presence */
   /* byte 0: 0x28 — both devices agree, responses (bit, !bit) */
-  false, true,  false, true,  false, true,  true,  false,
-  false, true,  true,  false, false, true,  false, true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  true,
+  false,
+  false,
+  true,
+  true,
+  false,
+  false,
+  true,
+  false,
+  true,
   /* byte 1: discrepancy at bit 0 (0,0), then A selected (0x00 remaining) */
-  false, false, false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
+  false,
+  false,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
   /* bytes 2-6: all 0x00 — only Device A responding */
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
   /* byte 7: 0x1E — Device A CRC */
-  false, true,  true,  false, true,  false, true,  false,
-  true,  false, false, true,  false, true,  false, true,
+  false,
+  true,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
   /* === Iteration 2: finds Device B === */
   false, /* presence */
   /* byte 0: 0x28 — both devices agree again after reset */
-  false, true,  false, true,  false, true,  true,  false,
-  false, true,  true,  false, false, true,  false, true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  true,
+  false,
+  false,
+  true,
+  true,
+  false,
+  false,
+  true,
+  false,
+  true,
   /* byte 1: discrepancy at bit 0 (0,0), dir=1 selects B (0x01 remaining) */
-  false, false, false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
+  false,
+  false,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
   /* bytes 2-6: all 0x00 — only Device B responding */
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
-  false, true,  false, true,  false, true,  false, true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
+  false,
+  true,
   /* byte 7: 0x29 — Device B CRC */
-  true,  false, false, true,  false, true,  true,  false,
-  false, true,  true,  false, false, true,  false, true
-};
+  true,
+  false,
+  false,
+  true,
+  false,
+  true,
+  true,
+  false,
+  false,
+  true,
+  true,
+  false,
+  false,
+  true,
+  false,
+  true};
 
 /* =============================================================================
  * CRC Validation Tests
@@ -2499,10 +2834,14 @@ void test_rx_bus_onewire_read_rom_crc_valid_device_c(void)
   err                           = rx_bus_onewire_read_rom(&s_test_manager, s_test_bus_name, rom);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  const uint8_t expected_rom[k_test_rom_bytes] = {
-    k_test_crc_rom_c_family, k_test_crc_rom_c_byte1, k_test_crc_rom_c_byte2,
-    k_test_crc_rom_c_byte3,  k_test_crc_rom_c_byte4, k_test_crc_rom_c_byte5,
-    k_test_crc_rom_c_byte6,  k_test_crc_rom_c_byte7};
+  const uint8_t expected_rom[k_test_rom_bytes] = {k_test_crc_rom_c_family,
+                                                  k_test_crc_rom_c_byte1,
+                                                  k_test_crc_rom_c_byte2,
+                                                  k_test_crc_rom_c_byte3,
+                                                  k_test_crc_rom_c_byte4,
+                                                  k_test_crc_rom_c_byte5,
+                                                  k_test_crc_rom_c_byte6,
+                                                  k_test_crc_rom_c_byte7};
   TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_rom, rom, k_test_rom_bytes);
 }
 
@@ -2677,17 +3016,25 @@ void test_rx_bus_onewire_search_two_devices(void)
   TEST_ASSERT_EQUAL(k_test_two_device_expected, num_devices);
 
   /* Verify Device A (first found: direction=0 at discrepancy) */
-  const uint8_t expected_rom_a[k_test_rom_bytes] = {
-    k_test_crc_rom_a_family, k_test_crc_rom_byte_zero, k_test_crc_rom_byte_zero,
-    k_test_crc_rom_byte_zero, k_test_crc_rom_byte_zero, k_test_crc_rom_byte_zero,
-    k_test_crc_rom_byte_zero, k_test_crc_rom_a_byte7};
+  const uint8_t expected_rom_a[k_test_rom_bytes] = {k_test_crc_rom_a_family,
+                                                    k_test_crc_rom_byte_zero,
+                                                    k_test_crc_rom_byte_zero,
+                                                    k_test_crc_rom_byte_zero,
+                                                    k_test_crc_rom_byte_zero,
+                                                    k_test_crc_rom_byte_zero,
+                                                    k_test_crc_rom_byte_zero,
+                                                    k_test_crc_rom_a_byte7};
   TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_rom_a, &roms[0], k_test_rom_bytes);
 
   /* Verify Device B (second found: direction=1 at discrepancy) */
-  const uint8_t expected_rom_b[k_test_rom_bytes] = {
-    k_test_crc_rom_a_family, k_test_crc_rom_b_byte1, k_test_crc_rom_byte_zero,
-    k_test_crc_rom_byte_zero, k_test_crc_rom_byte_zero, k_test_crc_rom_byte_zero,
-    k_test_crc_rom_byte_zero, k_test_crc_rom_b_byte7};
+  const uint8_t expected_rom_b[k_test_rom_bytes] = {k_test_crc_rom_a_family,
+                                                    k_test_crc_rom_b_byte1,
+                                                    k_test_crc_rom_byte_zero,
+                                                    k_test_crc_rom_byte_zero,
+                                                    k_test_crc_rom_byte_zero,
+                                                    k_test_crc_rom_byte_zero,
+                                                    k_test_crc_rom_byte_zero,
+                                                    k_test_crc_rom_b_byte7};
   TEST_ASSERT_EQUAL_HEX8_ARRAY(expected_rom_b, &roms[k_test_rom_bytes], k_test_rom_bytes);
 }
 

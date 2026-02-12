@@ -438,7 +438,8 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_bus_gpio_init(rx_bus_manager_t* manager, const char* bus_name, bool output);
+[[nodiscard]] rx_err_t
+rx_bus_gpio_init(rx_bus_manager_t* manager, const char* bus_name, bool output);
 
 /**
  * @brief Write GPIO output through bus manager
@@ -527,7 +528,8 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_bus_gpio_write(rx_bus_manager_t* manager, const char* bus_name, bool value);
+[[nodiscard]] rx_err_t
+rx_bus_gpio_write(rx_bus_manager_t* manager, const char* bus_name, bool value);
 
 /**
  * @brief Read GPIO input through bus manager
@@ -638,7 +640,8 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool* value);
+[[nodiscard]] rx_err_t
+rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool* value);
 
 /**
  * @brief Toggle GPIO output through bus manager

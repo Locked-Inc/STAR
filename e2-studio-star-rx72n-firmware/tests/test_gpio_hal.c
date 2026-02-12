@@ -261,10 +261,10 @@
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_invalid_port_1 = k_rx_port_j + 1, /**< Invalid port (0x14) - beyond Port J */
-  k_invalid_port_2 = k_rx_port_j + 2, /**< Invalid port (0x15) - further beyond */
-  k_invalid_port_3 = k_rx_port_j + 3, /**< Invalid port (0x16) - even further */
-  k_invalid_port_4 = k_rx_port_j + 4, /**< Invalid port (0x17) - maximum tested */
+  k_invalid_port_1 = k_rx_port_j + 1,  /**< Invalid port (0x14) - beyond Port J */
+  k_invalid_port_2 = k_rx_port_j + 2,  /**< Invalid port (0x15) - further beyond */
+  k_invalid_port_3 = k_rx_port_j + 3,  /**< Invalid port (0x16) - even further */
+  k_invalid_port_4 = k_rx_port_j + 4,  /**< Invalid port (0x17) - maximum tested */
   k_invalid_pin_1  = k_rx_pin_max + 1, /**< Invalid pin (8) - beyond pin 7 */
   k_invalid_pin_2  = k_rx_pin_max + 2, /**< Invalid pin (9) - further beyond */
   k_invalid_pin_3  = k_rx_pin_max + 3, /**< Invalid pin (10) - even further */

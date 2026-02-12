@@ -17,12 +17,11 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "rx_sci_spi.h"
-
 #include "hardware.h"
 #include "rx72n_sci_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
+#include "rx_sci_spi.h"
 
 /* =============================================================================
  * Constants
@@ -38,10 +37,10 @@ typedef enum : uint8_t {
   k_sci_spi_scr_disable = 0x00, /**< SCR: all disabled */
   k_sci_spi_scr_enable  = 0x33, /**< SCR: TE=1, RE=1, CKE=11 (SCK output) */
   k_sci_spi_scmr_msb    = 0x08, /**< SCMR.SDIR=1: MSB-first */
-  k_sci_spi_ssr_clear    = 0x84, /**< SSR: clear error flags, keep TDRE */
-  k_sci_spi_ssr_tdre     = 0x80, /**< SSR.TDRE: transmit data register empty */
-  k_sci_spi_ssr_rdrf     = 0x40, /**< SSR.RDRF: receive data register full */
-  k_sci_spi_ssr_errors   = 0x38, /**< SSR error mask: ORER|FER|PER */
+  k_sci_spi_ssr_clear   = 0x84, /**< SSR: clear error flags, keep TDRE */
+  k_sci_spi_ssr_tdre    = 0x80, /**< SSR.TDRE: transmit data register empty */
+  k_sci_spi_ssr_rdrf    = 0x40, /**< SSR.RDRF: receive data register full */
+  k_sci_spi_ssr_errors  = 0x38, /**< SSR error mask: ORER|FER|PER */
 } sci_spi_reg_constants_t;
 
 /** @brief SPI mode to SPMR register value mapping */
@@ -54,16 +53,16 @@ typedef enum : uint8_t {
 
 /** @brief Bit shift and timeout constants */
 typedef enum : uint32_t {
-  k_sci_spi_byte_shift      = 8,      /**< Shift for high byte of 16-bit value */
-  k_sci_spi_byte_mask       = 0xFF,   /**< Mask for extracting a single byte */
-  k_sci_spi_timeout_count   = 100000, /**< Polling loop timeout (NASA Rule 2) */
-  k_sci_spi_pclkb_hz        = 60000000, /**< PCLKB frequency (60 MHz) */
-  k_sci_spi_brr_divisor     = 4,      /**< BRR formula: rate = PCLKB/(4*(BRR+1)) */
-  k_sci_spi_max_channels    = 1,      /**< Only SCI12 supported for now */
-  k_sci_spi_channel_12      = 12,     /**< SCI12 channel number */
-  k_sci_spi_cs_setup_nops   = 10,     /**< NOP count for CS setup delay (~300ns) */
-  k_sci_spi_cs_hold_nops    = 10,     /**< NOP count for CS hold delay (~300ns) */
-  k_sci_spi_max_spi_mode    = 3,      /**< Maximum valid SPI mode value */
+  k_sci_spi_byte_shift    = 8,        /**< Shift for high byte of 16-bit value */
+  k_sci_spi_byte_mask     = 0xFF,     /**< Mask for extracting a single byte */
+  k_sci_spi_timeout_count = 100000,   /**< Polling loop timeout (NASA Rule 2) */
+  k_sci_spi_pclkb_hz      = 60000000, /**< PCLKB frequency (60 MHz) */
+  k_sci_spi_brr_divisor   = 4,        /**< BRR formula: rate = PCLKB/(4*(BRR+1)) */
+  k_sci_spi_max_channels  = 1,        /**< Only SCI12 supported for now */
+  k_sci_spi_channel_12    = 12,       /**< SCI12 channel number */
+  k_sci_spi_cs_setup_nops = 10,       /**< NOP count for CS setup delay (~300ns) */
+  k_sci_spi_cs_hold_nops  = 10,       /**< NOP count for CS hold delay (~300ns) */
+  k_sci_spi_max_spi_mode  = 3,        /**< Maximum valid SPI mode value */
 } sci_spi_constants_t;
 
 /* =============================================================================
@@ -156,9 +155,8 @@ static void internal_cs_deassert(rx_port_pin_t cs_pin)
  * @param[out] rx_byte Pointer to store received byte
  * @return k_rx_ok on success, k_rx_err_timeout on timeout
  */
-static rx_err_t internal_transfer_byte(volatile rx_sci_regs_t* sci,
-                                       uint8_t                 tx_byte,
-                                       uint8_t*                rx_byte)
+static rx_err_t
+internal_transfer_byte(volatile rx_sci_regs_t* sci, uint8_t tx_byte, uint8_t* rx_byte)
 {
   uint32_t timeout;
 
@@ -192,8 +190,7 @@ static rx_err_t internal_transfer_byte(volatile rx_sci_regs_t* sci,
  * =============================================================================
  */
 
-rx_err_t sci_spi_init_controller(uint8_t                            channel,
-                                 const sci_spi_controller_config_t* config)
+rx_err_t sci_spi_init_controller(uint8_t channel, const sci_spi_controller_config_t* config)
 {
   uint8_t idx;
   uint8_t brr_value;
@@ -237,7 +234,7 @@ rx_err_t sci_spi_init_controller(uint8_t                            channel,
 
   /* 5. Calculate and set BRR: bit_rate = PCLKB / (4 * (BRR + 1)) */
   brr_value = (uint8_t)((k_sci_spi_pclkb_hz / (k_sci_spi_brr_divisor * config->freq_hz)) - 1);
-  sci->brr = brr_value;
+  sci->brr  = brr_value;
 
   /* 6. Clear error flags */
   sci->ssr = k_sci_spi_ssr_clear;
@@ -265,9 +262,7 @@ rx_err_t sci_spi_init_controller(uint8_t                            channel,
   return k_rx_ok;
 }
 
-rx_err_t sci_spi_controller_transfer_16bit(uint8_t  channel,
-                                           uint16_t tx_data,
-                                           uint16_t* rx_data)
+rx_err_t sci_spi_controller_transfer_16bit(uint8_t channel, uint16_t tx_data, uint16_t* rx_data)
 {
   uint8_t idx;
   uint8_t tx_msb;

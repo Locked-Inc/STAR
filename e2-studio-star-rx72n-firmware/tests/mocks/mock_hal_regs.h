@@ -209,11 +209,10 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_mock_hal_max_ports = 20, /**< Maximum ports (PORT0-9, PORTA-J) */
-  k_mock_hal_max_adc_ch =
-      8, /**< Maximum ADC channels per unit (AN000-AN007) */
-  k_mock_hal_max_adc_unit = 2, /**< Maximum ADC units (S12AD0, S12AD1) */
-  k_mock_hal_max_riic_ch  = 3, /**< Maximum RIIC channels (RIIC0-2) */
+  k_mock_hal_max_ports    = 20, /**< Maximum ports (PORT0-9, PORTA-J) */
+  k_mock_hal_max_adc_ch   = 8,  /**< Maximum ADC channels per unit (AN000-AN007) */
+  k_mock_hal_max_adc_unit = 2,  /**< Maximum ADC units (S12AD0, S12AD1) */
+  k_mock_hal_max_riic_ch  = 3,  /**< Maximum RIIC channels (RIIC0-2) */
 } mock_hal_constants_t;
 
 /* =============================================================================
@@ -456,7 +455,7 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  uint16_t prcr; /**< Protection Register (0xA5xx to unlock protected regs) */
+  uint16_t prcr;    /**< Protection Register (0xA5xx to unlock protected regs) */
   uint32_t mstpcra; /**< Module Stop Control Register A (peripheral clocks) */
   uint32_t mstpcrb; /**< Module Stop Control Register B (peripheral clocks) */
   uint32_t mstpcrc; /**< Module Stop Control Register C (peripheral clocks) */

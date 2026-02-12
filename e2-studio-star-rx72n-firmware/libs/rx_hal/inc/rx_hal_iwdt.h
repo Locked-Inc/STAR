@@ -209,12 +209,18 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_iwdt_timeout_128ms   = 128,   /**< Minimum timeout (128ms). Use for high-frequency control loops requiring fast failure detection. TOPS=1 divider */
-  k_iwdt_timeout_512ms   = 512,   /**< Short timeout (512ms). Use for normal control loops (10-50 Hz). Provides good responsiveness. TOPS=4 divider */
-  k_iwdt_timeout_1000ms  = 1000,  /**< Default timeout (1 second). **Recommended** for typical applications. Good balance between detection speed and tolerance. TOPS≈8 */
-  k_iwdt_timeout_2048ms  = 2048,  /**< Medium timeout (2 seconds). Use for low-frequency tasks that may have variable execution time. TOPS=16 divider */
-  k_iwdt_timeout_8192ms  = 8192,  /**< Long timeout (8 seconds). Use for slow background operations or maintenance tasks. TOPS=64 divider */
-  k_iwdt_timeout_16384ms = 16384, /**< Maximum timeout (~16 seconds). Use only for initialization phases or very slow operations. TOPS=128 divider */
+  k_iwdt_timeout_128ms =
+    128, /**< Minimum timeout (128ms). Use for high-frequency control loops requiring fast failure detection. TOPS=1 divider */
+  k_iwdt_timeout_512ms =
+    512, /**< Short timeout (512ms). Use for normal control loops (10-50 Hz). Provides good responsiveness. TOPS=4 divider */
+  k_iwdt_timeout_1000ms =
+    1000, /**< Default timeout (1 second). **Recommended** for typical applications. Good balance between detection speed and tolerance. TOPS≈8 */
+  k_iwdt_timeout_2048ms =
+    2048, /**< Medium timeout (2 seconds). Use for low-frequency tasks that may have variable execution time. TOPS=16 divider */
+  k_iwdt_timeout_8192ms =
+    8192, /**< Long timeout (8 seconds). Use for slow background operations or maintenance tasks. TOPS=64 divider */
+  k_iwdt_timeout_16384ms =
+    16384, /**< Maximum timeout (~16 seconds). Use only for initialization phases or very slow operations. TOPS=128 divider */
 } rx_iwdt_timeout_t;
 
 /**
@@ -270,9 +276,12 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_iwdt_reset_none          = 0, /**< No watchdog reset occurred. System reset was from power-on, external reset pin, or other source. IWDTSR.UNDFF=0, REFEF=0 */
-  k_iwdt_reset_underflow     = 1, /**< Reset due to counter underflow. Counter reached zero before rx_hal_iwdt_feed() was called. Indicates task deadlock or infinite loop. IWDTSR.UNDFF=1 */
-  k_iwdt_reset_refresh_error = 2, /**< Reset due to invalid refresh. Either wrong refresh sequence (not 0x00, 0xFF) or refresh during window-prohibited period. IWDTSR.REFEF=1 */
+  k_iwdt_reset_none =
+    0, /**< No watchdog reset occurred. System reset was from power-on, external reset pin, or other source. IWDTSR.UNDFF=0, REFEF=0 */
+  k_iwdt_reset_underflow =
+    1, /**< Reset due to counter underflow. Counter reached zero before rx_hal_iwdt_feed() was called. Indicates task deadlock or infinite loop. IWDTSR.UNDFF=1 */
+  k_iwdt_reset_refresh_error =
+    2, /**< Reset due to invalid refresh. Either wrong refresh sequence (not 0x00, 0xFF) or refresh during window-prohibited period. IWDTSR.REFEF=1 */
 } rx_iwdt_reset_cause_t;
 
 /* =============================================================================

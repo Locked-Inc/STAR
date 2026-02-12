@@ -357,10 +357,10 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_frame_ascii_format(const rx_frame_t* frame,
-                               bool              is_tx,
-                               char*             output,
-                               uint32_t          output_max_len,
-                               uint32_t*         output_len);
+                                             bool              is_tx,
+                                             char*             output,
+                                             uint32_t          output_max_len,
+                                             uint32_t*         output_len);
 
 /**
  * @brief Get frame type as human-readable string

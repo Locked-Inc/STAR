@@ -1050,7 +1050,7 @@ rx_err_t rx_mpc_set_gptw(const rx_port_pin_t pin)
    * Supports 4 GPTW channels (0-3) for motor phase/enable control */
   const rx_mpc_peripheral_config_t config = {
     .pin  = pin,
-    .psel = k_psel_gptw  /* 0x14 - defined in rx_pin_psel_t enum */
+    .psel = k_psel_gptw /* 0x14 - defined in rx_pin_psel_t enum */
   };
 
   return rx_mpc_set_peripheral(&config);
@@ -1084,7 +1084,7 @@ rx_err_t rx_mpc_set_usb_vbus(const rx_port_pin_t pin)
    * Typical pin: P1.6 for USB0_VBUS on RX72N */
   const rx_mpc_peripheral_config_t config = {
     .pin  = pin,
-    .psel = k_psel_usb_vbus  /* 0x11 - defined in rx_pin_psel_t enum */
+    .psel = k_psel_usb_vbus /* 0x11 - defined in rx_pin_psel_t enum */
   };
 
   return rx_mpc_set_peripheral(&config);

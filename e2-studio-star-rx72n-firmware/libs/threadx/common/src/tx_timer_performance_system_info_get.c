@@ -9,7 +9,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 /**************************************************************************/
 /**************************************************************************/
 /**                                                                       */
@@ -22,7 +21,6 @@
 
 #define TX_SOURCE_CODE
 
-
 /* Include necessary system files.  */
 
 #include "tx_api.h"
@@ -30,7 +28,6 @@
 #ifdef TX_TIMER_ENABLE_PERFORMANCE_INFO
 #include "tx_trace.h"
 #endif
-
 
 /**************************************************************************/
 /*                                                                        */
@@ -80,110 +77,99 @@
 /*                                            resulting in version 6.1    */
 /*                                                                        */
 /**************************************************************************/
-UINT  _tx_timer_performance_system_info_get(ULONG *activates, ULONG *reactivates,
-                    ULONG *deactivates, ULONG *expirations, ULONG *expiration_adjusts)
+UINT _tx_timer_performance_system_info_get(ULONG* activates,
+                                           ULONG* reactivates,
+                                           ULONG* deactivates,
+                                           ULONG* expirations,
+                                           ULONG* expiration_adjusts)
 {
 
 #ifdef TX_TIMER_ENABLE_PERFORMANCE_INFO
 
-TX_INTERRUPT_SAVE_AREA
+  TX_INTERRUPT_SAVE_AREA
 
+  /* Disable interrupts.  */
+  TX_DISABLE
 
-    /* Disable interrupts.  */
-    TX_DISABLE
+  /* If trace is enabled, insert this event into the trace buffer.  */
+  TX_TRACE_IN_LINE_INSERT(TX_TRACE_TIMER_PERFORMANCE_SYSTEM_INFO_GET,
+                          0,
+                          0,
+                          0,
+                          0,
+                          TX_TRACE_TIMER_EVENTS)
 
-    /* If trace is enabled, insert this event into the trace buffer.  */
-    TX_TRACE_IN_LINE_INSERT(TX_TRACE_TIMER_PERFORMANCE_SYSTEM_INFO_GET, 0, 0, 0, 0, TX_TRACE_TIMER_EVENTS)
+  /* Log this kernel call.  */
+  TX_EL_TIMER_PERFORMANCE_SYSTEM_INFO_GET_INSERT
 
-    /* Log this kernel call.  */
-    TX_EL_TIMER_PERFORMANCE_SYSTEM_INFO_GET_INSERT
+  /* Retrieve the total number of timer activations.  */
+  if (activates != TX_NULL) {
 
-    /* Retrieve the total number of timer activations.  */
-    if (activates != TX_NULL)
-    {
+    *activates = _tx_timer_performance_activate_count;
+  }
 
-        *activates =  _tx_timer_performance_activate_count;
-    }
+  /* Retrieve the total number of timer reactivations.  */
+  if (reactivates != TX_NULL) {
 
-    /* Retrieve the total number of timer reactivations.  */
-    if (reactivates != TX_NULL)
-    {
+    *reactivates = _tx_timer_performance_reactivate_count;
+  }
 
-        *reactivates =  _tx_timer_performance_reactivate_count;
-    }
+  /* Retrieve the total number of timer deactivations.  */
+  if (deactivates != TX_NULL) {
 
-    /* Retrieve the total number of timer deactivations.  */
-    if (deactivates != TX_NULL)
-    {
+    *deactivates = _tx_timer_performance_deactivate_count;
+  }
 
-        *deactivates =  _tx_timer_performance_deactivate_count;
-    }
+  /* Retrieve the total number of timer expirations.  */
+  if (expirations != TX_NULL) {
 
-    /* Retrieve the total number of timer expirations.  */
-    if (expirations != TX_NULL)
-    {
+    *expirations = _tx_timer_performance_expiration_count;
+  }
 
-        *expirations =  _tx_timer_performance_expiration_count;
-    }
+  /* Retrieve the total number of timer expiration adjustments.  */
+  if (expiration_adjusts != TX_NULL) {
 
-    /* Retrieve the total number of timer expiration adjustments.  */
-    if (expiration_adjusts != TX_NULL)
-    {
+    *expiration_adjusts = _tx_timer_performance__expiration_adjust_count;
+  }
 
-        *expiration_adjusts =  _tx_timer_performance__expiration_adjust_count;
-    }
+  /* Restore interrupts.  */
+  TX_RESTORE
 
-    /* Restore interrupts.  */
-    TX_RESTORE
-
-    /* Return completion status.  */
-    return(TX_SUCCESS);
+  /* Return completion status.  */
+  return (TX_SUCCESS);
 
 #else
 
-UINT        status;
+  UINT status;
 
+  /* Access input arguments just for the sake of lint, MISRA, etc.  */
+  if (activates != TX_NULL) {
 
-    /* Access input arguments just for the sake of lint, MISRA, etc.  */
-    if (activates != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (reactivates != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (reactivates != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (deactivates != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (deactivates != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (expirations != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (expirations != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (expiration_adjusts != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (expiration_adjusts != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  }
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-
-    /* Return completion status.  */
-    return(status);
+  /* Return completion status.  */
+  return (status);
 #endif
 }
-

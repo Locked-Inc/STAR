@@ -619,8 +619,10 @@ extern "C" {
  * @see adc_init() ADC initialization function
  */
 typedef enum : uint8_t {
-  k_adc_unit_0 = 0, /**< S12AD0 - ADC unit 0 (channels AN000-AN007). Used for battery/current sensing. */
-  k_adc_unit_1 = 1  /**< S12AD1 - ADC unit 1 (channels AN100-AN120). Reserved for expansion sensors. */
+  k_adc_unit_0 =
+    0, /**< S12AD0 - ADC unit 0 (channels AN000-AN007). Used for battery/current sensing. */
+  k_adc_unit_1 =
+    1 /**< S12AD1 - ADC unit 1 (channels AN100-AN120). Reserved for expansion sensors. */
 } adc_unit_t;
 
 /**
@@ -728,9 +730,9 @@ typedef rx_adc_resolution_t adc_resolution_t;
  *         k_rx_err_timeout if conversion times out
  */
 [[nodiscard]] rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
-                             adc_channel_t    channel,
-                             adc_resolution_t bits,
-                             uint32_t*        voltage_mv);
+                                           adc_channel_t    channel,
+                                           adc_resolution_t bits,
+                                           uint32_t*        voltage_mv);
 
 /* =============================================================================
  * RIIC (I2C) Functions
@@ -962,9 +964,9 @@ typedef struct {
  *         k_rx_err_nack if device NACK received
  */
 [[nodiscard]] rx_err_t riic_write(riic_channel_t    channel,
-                    i2c_device_addr_t device_addr,
-                    const uint8_t*    data,
-                    const uint16_t    length);
+                                  i2c_device_addr_t device_addr,
+                                  const uint8_t*    data,
+                                  const uint16_t    length);
 
 /**
  * @brief Read data from I2C device
@@ -981,9 +983,9 @@ typedef struct {
  *         k_rx_err_nack if device NACK received
  */
 [[nodiscard]] rx_err_t riic_read(riic_channel_t    channel,
-                   i2c_device_addr_t device_addr,
-                   uint8_t*          data,
-                   const uint16_t    length);
+                                 i2c_device_addr_t device_addr,
+                                 uint8_t*          data,
+                                 const uint16_t    length);
 
 /**
  * @brief Write then read from I2C device (combined transaction)
@@ -1004,11 +1006,11 @@ typedef struct {
  *         k_rx_err_nack if device NACK received
  */
 [[nodiscard]] rx_err_t riic_write_read(riic_channel_t    channel,
-                         i2c_device_addr_t device_addr,
-                         const uint8_t*    write_data,
-                         uint16_t          write_length,
-                         uint8_t*          read_data,
-                         uint16_t          read_length);
+                                       i2c_device_addr_t device_addr,
+                                       const uint8_t*    write_data,
+                                       uint16_t          write_length,
+                                       uint8_t*          read_data,
+                                       uint16_t          read_length);
 
 /* =============================================================================
  * RSPI (SPI) Functions - Peripheral Mode
@@ -1104,10 +1106,13 @@ typedef struct {
  * @see rspi_controller_config_t Configuration structure for controller mode
  */
 typedef enum : uint8_t {
-  k_rspi_mode_0 = 0, /**< CPOL=0, CPHA=0 - Data sampled on rising edge, idle low. Most common mode. */
-  k_rspi_mode_1 = 1, /**< CPOL=0, CPHA=1 - Data sampled on falling edge, idle low. Used by SD cards. */
+  k_rspi_mode_0 =
+    0, /**< CPOL=0, CPHA=0 - Data sampled on rising edge, idle low. Most common mode. */
+  k_rspi_mode_1 =
+    1, /**< CPOL=0, CPHA=1 - Data sampled on falling edge, idle low. Used by SD cards. */
   k_rspi_mode_2 = 2, /**< CPOL=1, CPHA=0 - Data sampled on falling edge, idle high. Rarely used. */
-  k_rspi_mode_3 = 3  /**< CPOL=1, CPHA=1 - Data sampled on rising edge, idle high. Alternative for some devices. */
+  k_rspi_mode_3 =
+    3 /**< CPOL=1, CPHA=1 - Data sampled on rising edge, idle high. Alternative for some devices. */
 } rspi_mode_t;
 
 /**
@@ -1140,9 +1145,9 @@ typedef struct {
  *         k_rx_err_timeout if transfer timeout
  */
 [[nodiscard]] rx_err_t rspi_peripheral_transfer(uint8_t        channel,
-                                  const uint8_t* tx_data,
-                                  uint8_t*       rx_data,
-                                  uint16_t       length);
+                                                const uint8_t* tx_data,
+                                                uint8_t*       rx_data,
+                                                uint16_t       length);
 
 /**
  * @brief Check if receive data is available
@@ -1190,9 +1195,9 @@ typedef struct {
  * Used for communicating with SPI peripheral devices like DRV8243.
  */
 typedef struct {
-  rspi_mode_t     spi_mode; /**< SPI mode (0-3): CPOL and CPHA configuration */
-  uint32_t        freq_hz;  /**< SPI clock frequency in Hz (100kHz - 10MHz) */
-  rx_port_pin_t   cs;       /**< GPIO pin for chip select (type-safe port+pin) */
+  rspi_mode_t   spi_mode; /**< SPI mode (0-3): CPOL and CPHA configuration */
+  uint32_t      freq_hz;  /**< SPI clock frequency in Hz (100kHz - 10MHz) */
+  rx_port_pin_t cs;       /**< GPIO pin for chip select (type-safe port+pin) */
 } rspi_controller_config_t;
 
 /**
@@ -1208,7 +1213,8 @@ typedef struct {
  *         k_rx_err_null_ptr if config is nullptr,
  *         k_rx_err_invalid_arg if channel, mode, or frequency is invalid
  */
-[[nodiscard]] rx_err_t rspi_init_controller(uint8_t channel, const rspi_controller_config_t* config);
+[[nodiscard]] rx_err_t rspi_init_controller(uint8_t                         channel,
+                                            const rspi_controller_config_t* config);
 
 /**
  * @brief Set chip select state for RSPI controller mode
@@ -1239,7 +1245,8 @@ typedef struct {
  *         k_rx_err_invalid_state if channel not initialized in controller mode,
  *         k_rx_err_timeout if transfer times out
  */
-[[nodiscard]] rx_err_t rspi_controller_transfer_16bit(uint8_t channel, uint16_t tx_data, uint16_t* rx_data);
+[[nodiscard]] rx_err_t
+rspi_controller_transfer_16bit(uint8_t channel, uint16_t tx_data, uint16_t* rx_data);
 
 /**
  * @brief Deinitialize RSPI controller mode
@@ -1368,7 +1375,8 @@ typedef struct {
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
-[[nodiscard]] rx_err_t uart_write_channel(uart_channel_t channel, const uint8_t* data, uint16_t length);
+[[nodiscard]] rx_err_t
+uart_write_channel(uart_channel_t channel, const uint8_t* data, uint16_t length);
 
 /**
  * @brief Receive a single character from specified channel (non-blocking)

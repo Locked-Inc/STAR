@@ -958,9 +958,9 @@ rx_bq4050_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
-                                      const char*       bus_name,
-                                      uint16_t*         cell_voltages,
-                                      uint8_t           num_cells);
+                                                    const char*       bus_name,
+                                                    uint16_t*         cell_voltages,
+                                                    uint8_t           num_cells);
 
 /**
  * @brief Read instantaneous battery current
@@ -1117,8 +1117,8 @@ rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t*
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bq4050_read_average_current(rx_bus_manager_t* manager,
-                                        const char*       bus_name,
-                                        int16_t*          avg_current_ma);
+                                                      const char*       bus_name,
+                                                      int16_t*          avg_current_ma);
 
 /**
  * @brief Read relative state of charge (accounts for aging)
@@ -1486,9 +1486,9 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bq4050_read_capacity(rx_bus_manager_t* manager,
-                                 const char*       bus_name,
-                                 uint16_t*         remaining_mah,
-                                 uint16_t*         full_mah);
+                                               const char*       bus_name,
+                                               uint16_t*         remaining_mah,
+                                               uint16_t*         full_mah);
 
 /**
  * @brief Read complete battery status (all telemetry in single call)
@@ -1638,9 +1638,9 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
-                               const char*         bus_name,
-                               rx_bq4050_status_t* status,
-                               uint8_t             num_cells);
+                                             const char*         bus_name,
+                                             rx_bq4050_status_t* status,
+                                             uint8_t             num_cells);
 
 #ifdef __cplusplus
 }

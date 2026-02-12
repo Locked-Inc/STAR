@@ -9,7 +9,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 /**************************************************************************/
 /**************************************************************************/
 /**                                                                       */
@@ -22,13 +21,11 @@
 
 #define TX_SOURCE_CODE
 
-
 /* Include necessary system files.  */
 
 #include "tx_api.h"
-#include "tx_trace.h"
 #include "tx_thread.h"
-
+#include "tx_trace.h"
 
 /**************************************************************************/
 /*                                                                        */
@@ -70,37 +67,41 @@
 /*                                            resulting in version 6.1    */
 /*                                                                        */
 /**************************************************************************/
-UINT  _tx_trace_interrupt_control(UINT new_posture)
+UINT _tx_trace_interrupt_control(UINT new_posture)
 {
 
 #ifdef TX_ENABLE_EVENT_TRACE
 
-TX_INTERRUPT_SAVE_AREA
-UINT    saved_posture;
+  TX_INTERRUPT_SAVE_AREA
+  UINT saved_posture;
 
-    /* Disable interrupts.  */
-    TX_DISABLE
+  /* Disable interrupts.  */
+  TX_DISABLE
 
-    /* Insert this event into the trace buffer.  */
-    TX_TRACE_IN_LINE_INSERT(TX_TRACE_INTERRUPT_CONTROL, TX_ULONG_TO_POINTER_CONVERT(new_posture), TX_POINTER_TO_ULONG_CONVERT(&saved_posture), 0, 0, TX_TRACE_INTERRUPT_CONTROL_EVENT)
+  /* Insert this event into the trace buffer.  */
+  TX_TRACE_IN_LINE_INSERT(TX_TRACE_INTERRUPT_CONTROL,
+                          TX_ULONG_TO_POINTER_CONVERT(new_posture),
+                          TX_POINTER_TO_ULONG_CONVERT(&saved_posture),
+                          0,
+                          0,
+                          TX_TRACE_INTERRUPT_CONTROL_EVENT)
 
-    /* Restore interrupts.  */
-    TX_RESTORE
+  /* Restore interrupts.  */
+  TX_RESTORE
 
-    /* Perform the interrupt service.  */
-    saved_posture =  _tx_thread_interrupt_control(new_posture);
+  /* Perform the interrupt service.  */
+  saved_posture = _tx_thread_interrupt_control(new_posture);
 
-    /* Return saved posture.  */
-    return(saved_posture);
+  /* Return saved posture.  */
+  return (saved_posture);
 #else
 
-UINT    saved_posture;
+  UINT saved_posture;
 
-    /* Perform the interrupt service.  */
-    saved_posture =  _tx_thread_interrupt_control(new_posture);
+  /* Perform the interrupt service.  */
+  saved_posture = _tx_thread_interrupt_control(new_posture);
 
-    /* Return saved posture.  */
-    return(saved_posture);
+  /* Return saved posture.  */
+  return (saved_posture);
 #endif
 }
-

@@ -426,10 +426,11 @@
  */
 typedef enum : uint16_t {
   k_test_output_buffer_size = 2048, /**< Standard test output buffer size (recommended size) */
-  k_test_small_buffer_size  = 32,   /**< Small buffer for flags string tests (sufficient for all flags) */
-  k_test_flags_buffer_size  = 32,   /**< Flags string buffer size (same as small buffer) */
-  k_test_min_buffer_size    = 64,   /**< Minimum buffer size for format (header + CRC, no payload) */
-  k_test_too_small_buffer   = 32,   /**< Buffer too small for format (triggers k_rx_err_no_mem) */
+  k_test_small_buffer_size =
+    32, /**< Small buffer for flags string tests (sufficient for all flags) */
+  k_test_flags_buffer_size = 32, /**< Flags string buffer size (same as small buffer) */
+  k_test_min_buffer_size   = 64, /**< Minimum buffer size for format (header + CRC, no payload) */
+  k_test_too_small_buffer  = 32, /**< Buffer too small for format (triggers k_rx_err_no_mem) */
 } test_buffer_constants_t;
 
 /**
@@ -845,7 +846,7 @@ void test_flags_str_null_buffer(void)
  */
 void test_flags_str_zero_length(void)
 {
-  char buffer[k_test_flags_buffer_size];
+  char        buffer[k_test_flags_buffer_size];
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_requires_ack, buffer, 0);
   TEST_ASSERT_EQUAL_STRING("", result);
 }
@@ -871,7 +872,7 @@ void test_flags_str_zero_length(void)
  */
 void test_flags_str_none(void)
 {
-  char buffer[k_test_flags_buffer_size];
+  char        buffer[k_test_flags_buffer_size];
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_none, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("NONE", result);
 }
@@ -897,7 +898,7 @@ void test_flags_str_none(void)
  */
 void test_flags_str_requires_ack(void)
 {
-  char buffer[k_test_flags_buffer_size];
+  char        buffer[k_test_flags_buffer_size];
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_requires_ack, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("ACK", result);
 }
@@ -923,7 +924,7 @@ void test_flags_str_requires_ack(void)
  */
 void test_flags_str_retransmit(void)
 {
-  char buffer[k_test_flags_buffer_size];
+  char        buffer[k_test_flags_buffer_size];
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_retransmit, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("RETX", result);
 }
@@ -949,7 +950,7 @@ void test_flags_str_retransmit(void)
  */
 void test_flags_str_priority(void)
 {
-  char buffer[k_test_flags_buffer_size];
+  char        buffer[k_test_flags_buffer_size];
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_priority, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("PRI", result);
 }
@@ -975,7 +976,7 @@ void test_flags_str_priority(void)
  */
 void test_flags_str_fec_enabled(void)
 {
-  char buffer[k_test_flags_buffer_size];
+  char        buffer[k_test_flags_buffer_size];
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_fec_enabled, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("FEC", result);
 }
@@ -1001,7 +1002,7 @@ void test_flags_str_fec_enabled(void)
  */
 void test_flags_str_soft_nack(void)
 {
-  char buffer[k_test_flags_buffer_size];
+  char        buffer[k_test_flags_buffer_size];
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_soft_nack, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("SOFT", result);
 }
@@ -1030,8 +1031,8 @@ void test_flags_str_soft_nack(void)
  */
 void test_flags_str_combined_two(void)
 {
-  char buffer[k_test_flags_buffer_size];
-  uint8_t flags = k_frame_flag_requires_ack | k_frame_flag_priority;
+  char        buffer[k_test_flags_buffer_size];
+  uint8_t     flags  = k_frame_flag_requires_ack | k_frame_flag_priority;
   const char* result = rx_frame_ascii_flags_str(flags, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("ACK|PRI", result);
 }
@@ -1061,9 +1062,9 @@ void test_flags_str_combined_two(void)
  */
 void test_flags_str_combined_all(void)
 {
-  char buffer[k_test_flags_buffer_size];
-  uint8_t flags = k_frame_flag_requires_ack | k_frame_flag_retransmit |
-                  k_frame_flag_priority | k_frame_flag_fec_enabled | k_frame_flag_soft_nack;
+  char    buffer[k_test_flags_buffer_size];
+  uint8_t flags = k_frame_flag_requires_ack | k_frame_flag_retransmit | k_frame_flag_priority |
+                  k_frame_flag_fec_enabled | k_frame_flag_soft_nack;
   const char* result = rx_frame_ascii_flags_str(flags, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("ACK|RETX|PRI|FEC|SOFT", result);
 }
@@ -1115,8 +1116,8 @@ void test_flags_str_combined_all(void)
 void test_format_null_frame(void)
 {
   uint32_t len;
-  rx_err_t err = rx_frame_ascii_format(nullptr, false, s_output_buffer,
-                                       sizeof(s_output_buffer), &len);
+  rx_err_t err =
+    rx_frame_ascii_format(nullptr, false, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1143,9 +1144,8 @@ void test_format_null_frame(void)
 void test_format_null_output(void)
 {
   rx_frame_t frame = {0};
-  uint32_t len;
-  rx_err_t err = rx_frame_ascii_format(&frame, false, nullptr,
-                                       k_test_output_buffer_size, &len);
+  uint32_t   len;
+  rx_err_t   err = rx_frame_ascii_format(&frame, false, nullptr, k_test_output_buffer_size, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1172,8 +1172,8 @@ void test_format_null_output(void)
 void test_format_null_output_len(void)
 {
   rx_frame_t frame = {0};
-  rx_err_t err = rx_frame_ascii_format(&frame, false, s_output_buffer,
-                                       sizeof(s_output_buffer), nullptr);
+  rx_err_t   err =
+    rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1202,10 +1202,9 @@ void test_format_null_output_len(void)
 void test_format_buffer_too_small(void)
 {
   rx_frame_t frame = {0};
-  uint32_t len;
-  char small_buffer[k_test_too_small_buffer];
-  rx_err_t err = rx_frame_ascii_format(&frame, false, small_buffer,
-                                       sizeof(small_buffer), &len);
+  uint32_t   len;
+  char       small_buffer[k_test_too_small_buffer];
+  rx_err_t   err = rx_frame_ascii_format(&frame, false, small_buffer, sizeof(small_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_err_no_mem, err);
 }
 
@@ -1287,7 +1286,7 @@ void test_format_buffer_too_small(void)
 void test_format_empty_frame_rx(void)
 {
   rx_frame_t frame = {0};
-  uint32_t len = 0;
+  uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
   frame.header.length   = 0;
@@ -1295,8 +1294,8 @@ void test_format_empty_frame_rx(void)
   frame.header.flags    = k_frame_flag_none;
   frame.crc             = k_test_crc_value;
 
-  rx_err_t err = rx_frame_ascii_format(&frame, false, s_output_buffer,
-                                       sizeof(s_output_buffer), &len);
+  rx_err_t err =
+    rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_GREATER_THAN(0, len);
 
@@ -1364,15 +1363,15 @@ void test_format_empty_frame_rx(void)
 void test_format_empty_frame_tx(void)
 {
   rx_frame_t frame = {0};
-  uint32_t len = 0;
+  uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
   frame.header.length   = 0;
   frame.header.type     = k_frame_type_command;
   frame.header.flags    = k_frame_flag_requires_ack;
 
-  rx_err_t err = rx_frame_ascii_format(&frame, true, s_output_buffer,
-                                       sizeof(s_output_buffer), &len);
+  rx_err_t err =
+    rx_frame_ascii_format(&frame, true, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_GREATER_THAN(0, len);
 
@@ -1429,7 +1428,7 @@ void test_format_empty_frame_tx(void)
 void test_format_with_payload(void)
 {
   rx_frame_t frame = {0};
-  uint32_t len = 0;
+  uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_1234;
   frame.header.length   = k_test_payload_4;
@@ -1437,8 +1436,8 @@ void test_format_with_payload(void)
   frame.header.flags    = k_frame_flag_priority;
   memcpy(frame.payload, "TEST", k_test_payload_4);
 
-  rx_err_t err = rx_frame_ascii_format(&frame, false, s_output_buffer,
-                                       sizeof(s_output_buffer), &len);
+  rx_err_t err =
+    rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_GREATER_THAN(0, len);
 
@@ -1502,7 +1501,7 @@ void test_format_with_payload(void)
 void test_format_with_multiline_payload(void)
 {
   rx_frame_t frame = {0};
-  uint32_t len = 0;
+  uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
   frame.header.length   = k_test_payload_20;
@@ -1514,8 +1513,8 @@ void test_format_with_multiline_payload(void)
     frame.payload[i] = i;
   }
 
-  rx_err_t err = rx_frame_ascii_format(&frame, false, s_output_buffer,
-                                       sizeof(s_output_buffer), &len);
+  rx_err_t err =
+    rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify first line offset */
@@ -1566,7 +1565,7 @@ void test_format_with_multiline_payload(void)
 void test_format_with_non_printable_payload(void)
 {
   rx_frame_t frame = {0};
-  uint32_t len = 0;
+  uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
   frame.header.length   = k_test_payload_4;
@@ -1579,8 +1578,8 @@ void test_format_with_non_printable_payload(void)
   frame.payload[2] = 0x1F;
   frame.payload[3] = 0x7F;
 
-  rx_err_t err = rx_frame_ascii_format(&frame, false, s_output_buffer,
-                                       sizeof(s_output_buffer), &len);
+  rx_err_t err =
+    rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Non-printable characters should be replaced with dots in ASCII sidebar */
@@ -1627,15 +1626,15 @@ void test_format_with_non_printable_payload(void)
 void test_format_nack_with_soft_flag(void)
 {
   rx_frame_t frame = {0};
-  uint32_t len = 0;
+  uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
   frame.header.length   = 0;
   frame.header.type     = k_frame_type_nack;
   frame.header.flags    = k_frame_flag_soft_nack;
 
-  rx_err_t err = rx_frame_ascii_format(&frame, true, s_output_buffer,
-                                       sizeof(s_output_buffer), &len);
+  rx_err_t err =
+    rx_frame_ascii_format(&frame, true, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify type */
@@ -1682,15 +1681,15 @@ void test_format_nack_with_soft_flag(void)
 void test_format_combined_flags(void)
 {
   rx_frame_t frame = {0};
-  uint32_t len = 0;
+  uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
   frame.header.length   = 0;
   frame.header.type     = k_frame_type_command;
   frame.header.flags    = k_frame_flag_requires_ack | k_frame_flag_fec_enabled;
 
-  rx_err_t err = rx_frame_ascii_format(&frame, false, s_output_buffer,
-                                       sizeof(s_output_buffer), &len);
+  rx_err_t err =
+    rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify combined flags */
@@ -1735,7 +1734,7 @@ void test_format_combined_flags(void)
 void test_format_crc_displayed(void)
 {
   rx_frame_t frame = {0};
-  uint32_t len = 0;
+  uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
   frame.header.length   = 0;
@@ -1743,8 +1742,8 @@ void test_format_crc_displayed(void)
   frame.header.flags    = k_frame_flag_none;
   frame.crc             = k_test_crc_value;
 
-  rx_err_t err = rx_frame_ascii_format(&frame, false, s_output_buffer,
-                                       sizeof(s_output_buffer), &len);
+  rx_err_t err =
+    rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify CRC value is displayed (DEADBEEF) */
