@@ -154,16 +154,16 @@
  * @code{.c}
  * // Automatic type routing via _Generic
  * uint8_t port = 5;
- * rx_log_debug_val("GPIO", "Port number", port);  // → _u8 (decimal)
+ * rx_log_debug_val("GPIO", "Port number", port);  // -> _u8 (decimal)
  *
  * uint16_t rpm = 2100;
- * rx_log_info_val("MOTOR", "Current RPM", rpm);  // → _u16 (decimal)
+ * rx_log_info_val("MOTOR", "Current RPM", rpm);  // -> _u16 (decimal)
  *
  * uint32_t timestamp = get_ticks();
- * rx_log_verbose_val("TIMER", "Timestamp", timestamp);  // → _u32 (decimal)
+ * rx_log_verbose_val("TIMER", "Timestamp", timestamp);  // -> _u32 (decimal)
  *
  * rx_err_t err = k_rx_err_timeout;
- * rx_log_error_val("SPI", "Transfer error", err);  // → _err (hex: 0x00000108)
+ * rx_log_error_val("SPI", "Transfer error", err);  // -> _err (hex: 0x00000108)
  * @endcode
  *
  * ### Hex and String Logging
@@ -180,7 +180,7 @@
  * ### Conditional Compilation (Zero Overhead)
  * @code{.c}
  * // If LOG_LEVEL < k_log_debug, this compiles to nothing (zero code)
- * rx_log_debug("TRACE", "Entering critical section");  // → ((void)0) if disabled
+ * rx_log_debug("TRACE", "Entering critical section");  // -> ((void)0) if disabled
  * @endcode
  *
  * ## Design Rationale
@@ -227,9 +227,9 @@
  * @par Module Dependencies:
  * ```
  * rx_log.h
- *   ├─→ rx_err.h (error code definitions)
- *   ├─→ uart.h (uart_debug_* output functions)
- *   └─→ rx_usb.h (optional, if USB_LOG_MIRROR=1)
+ *   ├─-> rx_err.h (error code definitions)
+ *   ├─-> uart.h (uart_debug_* output functions)
+ *   └─-> rx_usb.h (optional, if USB_LOG_MIRROR=1)
  * ```
  *
  * @author STAR Team
@@ -266,7 +266,7 @@ extern "C" {
  *
  * These inline implementations replace the hardware UART functions.
  * The simulator console automatically appears in e² studio when running
- * in debug mode (View → Console if not visible).
+ * in debug mode (View -> Console if not visible).
  *
  * NOTE: These are inline to avoid linking against UART driver in simulator.
  * =============================================================================
@@ -299,7 +299,7 @@ static inline void uart_debug_putc(char data)
  *
  * @details
  * Simulator implementation: Writes to stdout with \r\n conversion.
- * Matches hardware UART behavior where \n → \r\n.
+ * Matches hardware UART behavior where \n -> \r\n.
  *
  * @param[in] str Null-terminated string to output (must not be NULL)
  *
@@ -319,7 +319,7 @@ static inline void uart_debug_puts(const char* str)
 
   while (*str) {
     if (*str == '\n') {
-      (void)putchar('\r');  /* Hardware UART does \n → \r\n */
+      (void)putchar('\r');  /* Hardware UART does \n -> \r\n */
     }
     (void)putchar((int)(*str++));
   }
@@ -536,11 +536,11 @@ void rx_log_usb_notify_ready(void);
  *
  * ## Hierarchy (Inclusive)
  * Each level includes all messages from levels above it:
- * - `k_log_error` (1) → ERROR only
- * - `k_log_warn` (2) → ERROR + WARN
- * - `k_log_info` (3) → ERROR + WARN + INFO
- * - `k_log_debug` (4) → ERROR + WARN + INFO + DEBUG
- * - `k_log_verbose` (5) → ERROR + WARN + INFO + DEBUG + VERBOSE
+ * - `k_log_error` (1) -> ERROR only
+ * - `k_log_warn` (2) -> ERROR + WARN
+ * - `k_log_info` (3) -> ERROR + WARN + INFO
+ * - `k_log_debug` (4) -> ERROR + WARN + INFO + DEBUG
+ * - `k_log_verbose` (5) -> ERROR + WARN + INFO + DEBUG + VERBOSE
  *
  * ## Recommended Usage
  * | Build Type | Recommended Level | Rationale |
@@ -554,11 +554,11 @@ void rx_log_usb_notify_ready(void);
  * ## Compile-Time Behavior
  * @code{.c}
  * // Example: LOG_LEVEL = k_log_warn
- * rx_log_error("TAG", "msg");   // ✓ Compiled (error <= warn)
- * rx_log_warn("TAG", "msg");    // ✓ Compiled (warn <= warn)
- * rx_log_info("TAG", "msg");    // ✗ Eliminated (info > warn)
- * rx_log_debug("TAG", "msg");   // ✗ Eliminated (debug > warn)
- * rx_log_verbose("TAG", "msg"); // ✗ Eliminated (verbose > warn)
+ * rx_log_error("TAG", "msg");   // [OK] Compiled (error <= warn)
+ * rx_log_warn("TAG", "msg");    // [OK] Compiled (warn <= warn)
+ * rx_log_info("TAG", "msg");    // [X] Eliminated (info > warn)
+ * rx_log_debug("TAG", "msg");   // [X] Eliminated (debug > warn)
+ * rx_log_verbose("TAG", "msg"); // [X] Eliminated (verbose > warn)
  * @endcode
  *
  * ## Configuration
@@ -1521,10 +1521,10 @@ static inline void internal_rx_log_verbose_str(const char* tag,
  * The `_Generic` keyword performs compile-time type matching:
  * ```c
  * _Generic((val),
- *   uint8_t:  internal_rx_log_error_u8,   // Match: uint8_t  → decimal
- *   uint16_t: internal_rx_log_error_u16,  // Match: uint16_t → decimal
- *   uint32_t: internal_rx_log_error_u32,  // Match: uint32_t → decimal
- *   int32_t:  internal_rx_log_error_err   // Match: int32_t  → hex (error codes)
+ *   uint8_t:  internal_rx_log_error_u8,   // Match: uint8_t  -> decimal
+ *   uint16_t: internal_rx_log_error_u16,  // Match: uint16_t -> decimal
+ *   uint32_t: internal_rx_log_error_u32,  // Match: uint32_t -> decimal
+ *   int32_t:  internal_rx_log_error_err   // Match: int32_t  -> hex (error codes)
  * )(tag, msg, val)  // Call selected function
  * ```
  *
@@ -1543,8 +1543,8 @@ static inline void internal_rx_log_verbose_str(const char* tag,
  * between error codes and raw signed integers (both have type `int32_t`).
  *
  * **Consequence**:
- * - ✓ rx_err_t values display correctly as hex error codes
- * - ✗ Raw int32_t values display as hex (unexpected for signed integers)
+ * - [OK] rx_err_t values display correctly as hex error codes
+ * - [X] Raw int32_t values display as hex (unexpected for signed integers)
  *
  * **Workaround** for logging signed integers:
  * @code{.c}
@@ -1566,7 +1566,7 @@ static inline void internal_rx_log_verbose_str(const char* tag,
  * rx_log_error_val("MOTOR", "Status", status);
  *
  * // Step 1: Expands to RX_LOG_VAL_IMPL(error, "MOTOR", "Status", status)
- * // Step 2: _Generic matches uint8_t → selects internal_rx_log_error_u8
+ * // Step 2: _Generic matches uint8_t -> selects internal_rx_log_error_u8
  * // Step 3: Calls internal_rx_log_error_u8("MOTOR", "Status", 42)
  * // Output: [ERROR] [MOTOR] Status: 42
  * @endcode
@@ -1579,8 +1579,8 @@ static inline void internal_rx_log_verbose_str(const char* tag,
  * ## Advantages Over Manual Type Suffixes
  * | Approach | Example | Type Safety | Code Clarity |
  * |----------|---------|-------------|--------------|
- * | Manual suffixes | `log_error_u8(tag, msg, val)` | ✗ Mismatch possible | ✗ Verbose |
- * | _Generic dispatch | `log_error_val(tag, msg, val)` | ✓ Compile-time checked | ✓ Clean |
+ * | Manual suffixes | `log_error_u8(tag, msg, val)` | [X] Mismatch possible | [X] Verbose |
+ * | _Generic dispatch | `log_error_val(tag, msg, val)` | [OK] Compile-time checked | [OK] Clean |
  *
  * @param[in] level Log level name (error, warn, info, debug, verbose) - token pasting
  * @param[in] tag Component tag string (passed to selected function)
@@ -1732,7 +1732,7 @@ static inline void internal_rx_log_verbose_str(const char* tag,
  * | LOG_LEVEL Setting | Macro Expansion | Code Generated |
  * |-------------------|-----------------|----------------|
  * | k_log_none | `((void)0)` | 0 bytes |
- * | k_log_error or higher | `RX_LOG_VAL_IMPL(...)` → typed function | ~70-90 bytes |
+ * | k_log_error or higher | `RX_LOG_VAL_IMPL(...)` -> typed function | ~70-90 bytes |
  *
  * @param[in] tag Component tag (string literal, e.g., "MOTOR", "SPI", "I2C")
  * @param[in] msg Error message (string literal or const char*)
@@ -1755,13 +1755,13 @@ static inline void internal_rx_log_verbose_str(const char* tag,
  * rx_err_t motor_init(void) {
  *   rx_err_t err = configure_pwm();
  *   if (err != k_rx_ok) {
- *     rx_log_error_val("MOTOR", "PWM config failed", err);  // Auto → hex
+ *     rx_log_error_val("MOTOR", "PWM config failed", err);  // Auto -> hex
  *     return err;
  *   }
  *
  *   err = calibrate_encoder();
  *   if (err != k_rx_ok) {
- *     rx_log_error_val("MOTOR", "Encoder calibration failed", err);  // Auto → hex
+ *     rx_log_error_val("MOTOR", "Encoder calibration failed", err);  // Auto -> hex
  *     return err;
  *   }
  *
@@ -1774,22 +1774,22 @@ static inline void internal_rx_log_verbose_str(const char* tag,
  *
  * @par Example: Typed Values (Automatic Dispatch)
  * @code{.c}
- * // uint8_t → decimal
+ * // uint8_t -> decimal
  * uint8_t motor_id = 3;
  * rx_log_error_val("MOTOR", "Invalid motor ID", motor_id);
  * // Output: [ERROR] [MOTOR] Invalid motor ID: 3
  *
- * // uint16_t → decimal
+ * // uint16_t -> decimal
  * uint16_t rpm = 4500;
  * rx_log_error_val("MOTOR", "RPM out of range", rpm);
  * // Output: [ERROR] [MOTOR] RPM out of range: 4500
  *
- * // uint32_t → decimal
+ * // uint32_t -> decimal
  * uint32_t timestamp = get_tick_count();
  * rx_log_error_val("TIMER", "Overflow at", timestamp);
  * // Output: [ERROR] [TIMER] Overflow at: 4294967295
  *
- * // rx_err_t (int32_t) → hex
+ * // rx_err_t (int32_t) -> hex
  * rx_err_t err = k_rx_err_hw_fault;
  * rx_log_error_val("HAL", "Hardware fault", err);
  * // Output: [ERROR] [HAL] Hardware fault: 0x00000201

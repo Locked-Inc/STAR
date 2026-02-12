@@ -110,7 +110,7 @@
  * |-----------|---------------|-------------|-------|
  * | uart_init_channel | ~50 µs | 48 bytes | Includes MPC configuration |
  * | uart_putc_channel | ~90 µs @ 115200 | 16 bytes | Includes wait for TDRE |
- * | uart_puts_channel | ~90 µs/char | 24 bytes | With \n→\r\n conversion |
+ * | uart_puts_channel | ~90 µs/char | 24 bytes | With \n->\r\n conversion |
  * | uart_getc_channel | ~5 µs | 16 bytes | Non-blocking if no data |
  * | uart_debug_init | ~50 µs | 64 bytes | Wrapper for SCI9 |
  *
@@ -124,12 +124,12 @@
  *
  * | Function | Thread Safe? | Notes |
  * |----------|--------------|-------|
- * | uart_init_channel | ❌ No | Call once per channel during init |
- * | uart_deinit_channel | ❌ No | Call once during shutdown |
- * | uart_putc_channel | ⚠️ Partial | Safe if different channels |
- * | uart_puts_channel | ⚠️ Partial | Safe if different channels |
- * | uart_getc_channel | ⚠️ Partial | Safe if different channels |
- * | uart_debug_* | ⚠️ Partial | All use same channel (SCI9) |
+ * | uart_init_channel | [FAIL] No | Call once per channel during init |
+ * | uart_deinit_channel | [FAIL] No | Call once during shutdown |
+ * | uart_putc_channel | [WARN] Partial | Safe if different channels |
+ * | uart_puts_channel | [WARN] Partial | Safe if different channels |
+ * | uart_getc_channel | [WARN] Partial | Safe if different channels |
+ * | uart_debug_* | [WARN] Partial | All use same channel (SCI9) |
  *
  * **Note:** Multiple threads can safely use different UART channels simultaneously.
  * For shared channel access, use external mutex protection.
@@ -153,16 +153,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto/setjmp/recursion |
- * | 2. Fixed loop bounds | ✓ | All loops use k_uart_max_str_len limit |
- * | 3. No dynamic allocation | ✓ | Zero malloc/free, static buffers only |
- * | 4. Small functions | ✓ | All functions < 60 lines |
- * | 5. Assertions (≥2/func) | ✓ | Parameter validation + state checks |
- * | 6. Narrow scope | ✓ | Static file-scope state, local variables |
- * | 7. Check return values | ✓ | All rx_err_t returns propagated |
- * | 8. Limited preprocessor | ✓ | C23 typed enums only |
- * | 9. Pointer restrictions | ✓ | Single-level pointers, no arithmetic |
- * | 10. Compiler warnings | ✓ | -Wall -Wextra -Werror clean |
+ * | 1. Simple control flow | [OK] | No goto/setjmp/recursion |
+ * | 2. Fixed loop bounds | [OK] | All loops use k_uart_max_str_len limit |
+ * | 3. No dynamic allocation | [OK] | Zero malloc/free, static buffers only |
+ * | 4. Small functions | [OK] | All functions < 60 lines |
+ * | 5. Assertions (≥2/func) | [OK] | Parameter validation + state checks |
+ * | 6. Narrow scope | [OK] | Static file-scope state, local variables |
+ * | 7. Check return values | [OK] | All rx_err_t returns propagated |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums only |
+ * | 9. Pointer restrictions | [OK] | Single-level pointers, no arithmetic |
+ * | 10. Compiler warnings | [OK] | -Wall -Wextra -Werror clean |
  *
  * @par SOLID Principles:
  *
@@ -818,7 +818,7 @@ rx_err_t uart_putc_channel(const uart_channel_t channel, const char data)
  * 4. If limit reached without terminator, return k_rx_err_invalid_size
  *
  * **Newline conversion:**
- * - Input '\n' (LF) → Output '\r\n' (CR+LF)
+ * - Input '\n' (LF) -> Output '\r\n' (CR+LF)
  * - Required for Windows terminals (e.g., PuTTY, TeraTerm)
  * - Ensures cursor returns to column 0 before line feed
  *

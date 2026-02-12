@@ -33,33 +33,33 @@
  * @par Quadrature Decoding (MTU):
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
- * | 4x quadrature decoding | ✓ | 341 PPR → 1364 CPR |
- * | Bidirectional counting | ✓ | Forward/Reverse |
- * | 16-bit hardware counter | ✓ | 0-65535 range |
- * | Overflow detection (wrap 65535→0) | ✓ | Forward motion |
- * | Underflow detection (wrap 0→65535) | ✓ | Reverse motion |
- * | Multiple overflows | ✓ | Sequential wraps |
- * | 32-bit signed accumulation | ✓ | Unlimited range |
- * | Direction inversion | ✓ | Motor wiring flip |
- * | Position in degrees | ✓ | 0-360° calculation |
- * | Revolution counting | ✓ | Integer revolutions |
+ * | 4x quadrature decoding | [OK] | 341 PPR -> 1364 CPR |
+ * | Bidirectional counting | [OK] | Forward/Reverse |
+ * | 16-bit hardware counter | [OK] | 0-65535 range |
+ * | Overflow detection (wrap 65535->0) | [OK] | Forward motion |
+ * | Underflow detection (wrap 0->65535) | [OK] | Reverse motion |
+ * | Multiple overflows | [OK] | Sequential wraps |
+ * | 32-bit signed accumulation | [OK] | Unlimited range |
+ * | Direction inversion | [OK] | Motor wiring flip |
+ * | Position in degrees | [OK] | 0-360° calculation |
+ * | Revolution counting | [OK] | Integer revolutions |
  *
  * @par Velocity Measurement:
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
- * | RPS calculation | ✓ | Revolutions per second |
- * | Delta time validation | ✓ | Must be > 0 |
- * | Forward velocity | ✓ | Positive RPS |
- * | Reverse velocity | ✓ | Negative RPS |
- * | Zero velocity | ✓ | No motion |
- * | First call baseline | ✓ | Returns 0 RPS |
+ * | RPS calculation | [OK] | Revolutions per second |
+ * | Delta time validation | [OK] | Must be > 0 |
+ * | Forward velocity | [OK] | Positive RPS |
+ * | Reverse velocity | [OK] | Negative RPS |
+ * | Zero velocity | [OK] | No motion |
+ * | First call baseline | [OK] | Returns 0 RPS |
  *
  * ## Test Scenarios
  *
  * @par Scenario 1: Forward Overflow (16-bit Wrap)
  * @code
  * // Test: test_encoder_read_count_overflow_forward()
- * // Hardware counter sequence: 60000 → 65500 → 100 (wrapped)
+ * // Hardware counter sequence: 60000 -> 65500 -> 100 (wrapped)
  * //
  * // Step 1: counter = 60000, total = 60000
  * // Step 2: counter = 65500, delta = 5500, total = 65500
@@ -74,7 +74,7 @@
  * @par Scenario 2: Reverse Underflow (16-bit Wrap)
  * @code
  * // Test: test_encoder_read_count_underflow_reverse()
- * // Hardware counter sequence: 100 → 65500 (wrapped backward)
+ * // Hardware counter sequence: 100 -> 65500 (wrapped backward)
  * //
  * // Step 1: counter = 100, total = 100
  * // Step 2: counter = 65500 (wrapped)
@@ -143,11 +143,11 @@
  * @par Boundary Value Testing:
  * | Boundary | Min | Max | Tested |
  * |----------|-----|-----|--------|
- * | Hardware Counter | 0 | 65535 | ✓ |
- * | Accumulated Count | -∞ | +∞ | ✓ |
- * | Revolution Count | -∞ | +∞ | ✓ |
- * | Position | 0° | 360° | ✓ |
- * | Velocity dt | 0.0001s | 10s | ✓ |
+ * | Hardware Counter | 0 | 65535 | [OK] |
+ * | Accumulated Count | -∞ | +∞ | [OK] |
+ * | Revolution Count | -∞ | +∞ | [OK] |
+ * | Position | 0° | 360° | [OK] |
+ * | Velocity dt | 0.0001s | 10s | [OK] |
  *
  * ## Hardware Integration
  *
@@ -176,13 +176,13 @@
  * @copyright Copyright (c) 2026 STAR Project
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No recursion
- * - Rule 2: ✓ All loops have fixed bounds
- * - Rule 3: ✓ No dynamic allocation
- * - Rule 4: ✓ Test functions < 60 lines
- * - Rule 5: ✓ Input validation
- * - Rule 7: ✓ Return values checked
- * - Rule 10: ✓ Compiled with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No recursion
+ * - Rule 2: [OK] All loops have fixed bounds
+ * - Rule 3: [OK] No dynamic allocation
+ * - Rule 4: [OK] Test functions < 60 lines
+ * - Rule 5: [OK] Input validation
+ * - Rule 7: [OK] Return values checked
+ * - Rule 10: [OK] Compiled with -Wall -Wextra -Werror
  */
 
 /* Include mock registers FIRST to override hardware accessors.

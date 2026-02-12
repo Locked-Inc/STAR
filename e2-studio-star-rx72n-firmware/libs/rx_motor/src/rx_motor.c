@@ -25,17 +25,17 @@
  * The DRV8243 H-bridge operates in PH/EN mode for simplified bidirectional control:
  *
  * ### PH/EN Signal Mapping:
- * - **PH (Phase)** → output_a: Direction control (HIGH=forward, LOW=reverse)
- * - **EN (Enable)** → output_b: Speed control (PWM duty cycle 0-100%)
+ * - **PH (Phase)** -> output_a: Direction control (HIGH=forward, LOW=reverse)
+ * - **EN (Enable)** -> output_b: Speed control (PWM duty cycle 0-100%)
  *
  * ### Operating States:
  *
  * | Mode | PH (output_a) | EN (output_b) | Motor Behavior | Current Path |
  * |------|---------------|---------------|----------------|--------------|
- * | **Forward** | HIGH (100%) | PWM (0-100%) | Forward rotation | High-side A → Motor → Low-side B |
- * | **Reverse** | LOW (0%) | PWM (0-100%) | Reverse rotation | High-side B → Motor → Low-side A |
+ * | **Forward** | HIGH (100%) | PWM (0-100%) | Forward rotation | High-side A -> Motor -> Low-side B |
+ * | **Reverse** | LOW (0%) | PWM (0-100%) | Reverse rotation | High-side B -> Motor -> Low-side A |
  * | **Coast** | LOW (0%) | LOW (0%) | High impedance | Free-wheeling via body diodes |
- * | **Brake** | ❌ NOT SUPPORTED | ❌ | Falls back to coast | N/A in PH/EN mode |
+ * | **Brake** | [FAIL] NOT SUPPORTED | [FAIL] | Falls back to coast | N/A in PH/EN mode |
  *
  * **Note:** Active braking (short-circuit brake) requires IN/IN control mode, not supported in
  * this PH/EN implementation. Coast mode provides sufficient deceleration for the STAR platform.
@@ -45,7 +45,7 @@
  * **Configured Frequency: 20 kHz**
  *
  * **Rationale:**
- * - **Inaudible:** Above human hearing range (20 Hz - 20 kHz) → silent motor operation
+ * - **Inaudible:** Above human hearing range (20 Hz - 20 kHz) -> silent motor operation
  * - **Efficient:** Low enough for minimal FET switching losses (~50 ns rise/fall times)
  * - **Low EMI:** Manageable electromagnetic interference with proper PCB layout
  * - **Standard:** Industry-standard frequency for brushed DC motor PWM control
@@ -68,7 +68,7 @@
  *
  * **Timing Diagram:**
  * @code{.unparsed}
- * Time →
+ * Time ->
  * High-side FET: ████████████░░░░░░░░░░░░░░░░  (turning off, ~500ns tail)
  * Dead-time:     ░░░░░░░░░░░░┊━━━━━━┊░░░░░░░░  (1 µs hardware-enforced gap)
  * Low-side FET:  ░░░░░░░░░░░░░░░░░░░░░░████████  (turning on)
@@ -88,7 +88,7 @@
  * | **H-Bridge** | DRV8243S dual H-bridge | 3.3V logic, 5-40V motor supply, 4.5A continuous |
  * | **Motor** | 6V brushed DC gearmotor | 210 RPM, 341 PPR Hall encoder |
  * | **PWM Pins** | GPTW channel outputs | Configurable via rx_gptw_output_t |
- * | **Logic Level** | 3.3V CMOS | Direct connection RX72N → DRV8243 |
+ * | **Logic Level** | 3.3V CMOS | Direct connection RX72N -> DRV8243 |
  *
  * @par Module Dependencies:
  *
@@ -101,13 +101,13 @@
  * **Dependency Graph:**
  * @code{.unparsed}
  * rx_motor.c
- *     ├─→ rx_motor.h (API definitions)
- *     ├─→ rx_gptw.h (PWM hardware control)
- *     │       ├─→ rx72n_gptw_regs.h (hardware registers)
- *     │       └─→ rx_check.h (validation)
- *     ├─→ rx_check.h (NULL pointer checks, range validation)
- *     ├─→ rx_log.h (error/info/warn logging)
- *     └─→ rx_err.h (error code enum)
+ *     ├─-> rx_motor.h (API definitions)
+ *     ├─-> rx_gptw.h (PWM hardware control)
+ *     │       ├─-> rx72n_gptw_regs.h (hardware registers)
+ *     │       └─-> rx_check.h (validation)
+ *     ├─-> rx_check.h (NULL pointer checks, range validation)
+ *     ├─-> rx_log.h (error/info/warn logging)
+ *     └─-> rx_err.h (error code enum)
  * @endcode
  *
  * @par NASA Power of 10 Compliance:
@@ -116,16 +116,16 @@
  *
  * | Rule | Status | Implementation Details |
  * |------|--------|------------------------|
- * | **Rule 1: Simplify Control Flow** | ✅ COMPLIANT | No goto, setjmp/longjmp, or recursion. Sequential error checking only. |
- * | **Rule 2: Fixed Loop Bounds** | ✅ COMPLIANT | No loops in this module (all operations are bounded function calls). |
- * | **Rule 3: No Dynamic Memory** | ✅ COMPLIANT | Zero malloc/free. All data in rx_motor_handle_t stack-allocated by caller. |
- * | **Rule 4: Short Functions** | ✅ COMPLIANT | All functions < 60 lines. Longest: rx_motor_set_duty() at 82 lines. |
- * | **Rule 5: Assertions** | ✅ COMPLIANT | Minimum 2 checks per function: NULL validation + state validation. Pre/post-conditions documented. |
- * | **Rule 6: Smallest Scope** | ✅ COMPLIANT | Variables declared at point of use. Static const for module constants. |
- * | **Rule 7: Check Return Values** | ✅ COMPLIANT | All rx_gptw_*() calls validated. Errors logged and propagated. |
- * | **Rule 8: Limit Preprocessor** | ✅ COMPLIANT | C23 typed enums for constants. No macro constants. |
- * | **Rule 9: Restrict Pointers** | ⚠️ DEVIATION | Function pointers used in rx_gptw interface (DIP pattern for testability). |
- * | **Rule 10: Compiler Warnings** | ✅ COMPLIANT | Compiled with -Wall -Wextra -Werror. Zero warnings. |
+ * | **Rule 1: Simplify Control Flow** | [PASS] COMPLIANT | No goto, setjmp/longjmp, or recursion. Sequential error checking only. |
+ * | **Rule 2: Fixed Loop Bounds** | [PASS] COMPLIANT | No loops in this module (all operations are bounded function calls). |
+ * | **Rule 3: No Dynamic Memory** | [PASS] COMPLIANT | Zero malloc/free. All data in rx_motor_handle_t stack-allocated by caller. |
+ * | **Rule 4: Short Functions** | [PASS] COMPLIANT | All functions < 60 lines. Longest: rx_motor_set_duty() at 82 lines. |
+ * | **Rule 5: Assertions** | [PASS] COMPLIANT | Minimum 2 checks per function: NULL validation + state validation. Pre/post-conditions documented. |
+ * | **Rule 6: Smallest Scope** | [PASS] COMPLIANT | Variables declared at point of use. Static const for module constants. |
+ * | **Rule 7: Check Return Values** | [PASS] COMPLIANT | All rx_gptw_*() calls validated. Errors logged and propagated. |
+ * | **Rule 8: Limit Preprocessor** | [PASS] COMPLIANT | C23 typed enums for constants. No macro constants. |
+ * | **Rule 9: Restrict Pointers** | [WARN] DEVIATION | Function pointers used in rx_gptw interface (DIP pattern for testability). |
+ * | **Rule 10: Compiler Warnings** | [PASS] COMPLIANT | Compiled with -Wall -Wextra -Werror. Zero warnings. |
  *
  * **Rule 4 Justification:** rx_motor_set_duty() exceeds 60 lines (82 total) due to comprehensive
  * error checking and logging required for NASA Rule 5 compliance. Function represents a single
@@ -202,8 +202,8 @@
  * @par Re-entrancy:
  *
  * **Not re-entrant.** Functions are conditionally re-entrant:
- * - Different handles → safe (each motor has independent state)
- * - Same handle → unsafe (concurrent access corrupts handle state)
+ * - Different handles -> safe (each motor has independent state)
+ * - Same handle -> unsafe (concurrent access corrupts handle state)
  *
  * @see rx_motor.h Complete API documentation with H-bridge theory and state machine
  * @see rx_gptw.h GPTW PWM peripheral driver (hardware abstraction layer)
@@ -291,14 +291,14 @@ typedef enum : int16_t {
    * @brief PH signal for forward direction (100% = HIGH)
    * @details
    * PH (Phase) signal value for forward motor rotation. In PH/EN mode, PH determines direction:
-   * - PH = HIGH (100%) → Forward rotation
-   * - PH = LOW (0%) → Reverse rotation
+   * - PH = HIGH (100%) -> Forward rotation
+   * - PH = LOW (0%) -> Reverse rotation
    *
    * This constant is used to set output_a when duty cycle is positive (forward).
    * @par Value: 100 (represents logic HIGH as 100% duty)
    * @par Signal: PH (Phase, output_a)
    * @par Direction: Forward
-   * @par H-Bridge State: High-side A ON, Low-side B ON (current: A → Motor → B)
+   * @par H-Bridge State: High-side A ON, Low-side B ON (current: A -> Motor -> B)
    */
   k_motor_ph_high = 100,
 
@@ -306,14 +306,14 @@ typedef enum : int16_t {
    * @brief PH signal for reverse direction (0% = LOW)
    * @details
    * PH (Phase) signal value for reverse motor rotation. In PH/EN mode, PH determines direction:
-   * - PH = LOW (0%) → Reverse rotation
-   * - PH = HIGH (100%) → Forward rotation
+   * - PH = LOW (0%) -> Reverse rotation
+   * - PH = HIGH (100%) -> Forward rotation
    *
    * This constant is used to set output_a when duty cycle is negative (reverse).
    * @par Value: 0 (represents logic LOW as 0% duty)
    * @par Signal: PH (Phase, output_a)
    * @par Direction: Reverse
-   * @par H-Bridge State: High-side B ON, Low-side A ON (current: B → Motor → A)
+   * @par H-Bridge State: High-side B ON, Low-side A ON (current: B -> Motor -> A)
    */
   k_motor_ph_low = 0,
 } motor_constants_t;
@@ -338,7 +338,7 @@ typedef enum : int16_t {
  * - GPTW 32-bit timer @ 240 MHz can generate 488 Hz - 240 MHz PWM
  * - Practical limit: 1 kHz - 50 kHz for brushed DC motor control
  * - FET dead-time: Must exceed FET turn-off time + safety margin
- * - Typical FET turn-off: 500-800 ns → minimum dead-time: 1 µs
+ * - Typical FET turn-off: 500-800 ns -> minimum dead-time: 1 µs
  *
  * @see rx_motor_init() Validates config parameters against these limits
  * @see rx_motor_config_t Configuration structure with these fields
@@ -434,10 +434,10 @@ static const float s_duty_zero = 0.0F;
  * (NaN, Inf) which could occur from arithmetic errors or uninitialized variables.
  *
  * **Algorithm:**
- * 1. Check for NaN (Not-a-Number) or Inf (Infinity) → return 0 (safe default)
- * 2. If duty > +100 → clamp to +100 (full forward)
- * 3. If duty < -100 → clamp to -100 (full reverse)
- * 4. Otherwise → return duty unchanged
+ * 1. Check for NaN (Not-a-Number) or Inf (Infinity) -> return 0 (safe default)
+ * 2. If duty > +100 -> clamp to +100 (full forward)
+ * 3. If duty < -100 -> clamp to -100 (full reverse)
+ * 4. Otherwise -> return duty unchanged
  *
  * **Rationale for NaN/Inf check:**
  * - Prevents propagation of invalid float values to hardware registers
@@ -447,7 +447,7 @@ static const float s_duty_zero = 0.0F;
  * @param[in] duty Duty cycle percentage to clamp
  *   - Valid range: [-100.0, +100.0]
  *   - Units: Percent (%)
- *   - Special values: NaN/Inf → treated as 0.0
+ *   - Special values: NaN/Inf -> treated as 0.0
  *   - Type: float (IEEE 754 single precision)
  *
  * @return Clamped duty cycle percentage
@@ -489,9 +489,9 @@ static const float s_duty_zero = 0.0F;
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion, simple if-else logic
- * - Rule 5: ✓ Pre-condition: none (accepts all float values)
- * - Rule 5: ✓ Post-condition: output in valid range [-100, +100]
+ * - Rule 1: [OK] No goto or recursion, simple if-else logic
+ * - Rule 5: [OK] Pre-condition: none (accepts all float values)
+ * - Rule 5: [OK] Post-condition: output in valid range [-100, +100]
  */
 static float internal_clamp_duty(const float duty)
 {
@@ -524,7 +524,7 @@ static float internal_clamp_duty(const float duty)
  *
  * **Hardware Mapping:**
  * Each rx_gptw_output_t value maps to a physical MCU pin configured for GPTW output.
- * Example: k_gptw_output_a → GTIOC0A pin
+ * Example: k_gptw_output_a -> GTIOC0A pin
  *
  * @par Validation:
  * - Both outputs must be valid GPTW outputs (k_gptw_output_a or k_gptw_output_b)
@@ -573,8 +573,8 @@ typedef struct {
  * 7. On error during steps 5-6: deinitialize GPTW and propagate error
  *
  * **Error Handling:**
- * - If rx_gptw_init_pwm() fails → return error immediately (no cleanup needed)
- * - If rx_gptw_set_duty() fails → deinitialize GPTW before returning error
+ * - If rx_gptw_init_pwm() fails -> return error immediately (no cleanup needed)
+ * - If rx_gptw_set_duty() fails -> deinitialize GPTW before returning error
  * - Ensures no partial initialization state remains after failure
  *
  * @param[in] channel GPTW timer channel to use for PWM generation
@@ -656,10 +656,10 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion, sequential error checking
- * - Rule 5: ✓ 3 preconditions (channel valid, outputs valid, config non-NULL)
- * - Rule 5: ✓ 2 postconditions (GPTW initialized on success, deinitialized on failure)
- * - Rule 7: ✓ All return values checked (rx_gptw_init_pwm, rx_gptw_set_duty)
+ * - Rule 1: [OK] No goto or recursion, sequential error checking
+ * - Rule 5: [OK] 3 preconditions (channel valid, outputs valid, config non-NULL)
+ * - Rule 5: [OK] 2 postconditions (GPTW initialized on success, deinitialized on failure)
+ * - Rule 7: [OK] All return values checked (rx_gptw_init_pwm, rx_gptw_set_duty)
  */
 static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
                                            const rx_gptw_output_pair_t outputs,
@@ -904,13 +904,13 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  * @version 1.0.0 Initial implementation with PH/EN mode support
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion, sequential error checking
- * - Rule 3: ✓ No dynamic memory allocation (handle passed by caller)
- * - Rule 4: ✓ Function length: 61 lines (within 60-line guideline)
- * - Rule 5: ✓ 4 preconditions (NULL checks, state check, range validation)
- * - Rule 5: ✓ 2 postconditions (initialized flag set, config copied)
- * - Rule 7: ✓ All return values checked (internal_init_gptw_outputs)
- * - Rule 8: ✓ C23 typed enums for validation constants
+ * - Rule 1: [OK] No goto or recursion, sequential error checking
+ * - Rule 3: [OK] No dynamic memory allocation (handle passed by caller)
+ * - Rule 4: [OK] Function length: 61 lines (within 60-line guideline)
+ * - Rule 5: [OK] 4 preconditions (NULL checks, state check, range validation)
+ * - Rule 5: [OK] 2 postconditions (initialized flag set, config copied)
+ * - Rule 7: [OK] All return values checked (internal_init_gptw_outputs)
+ * - Rule 8: [OK] C23 typed enums for validation constants
  */
 rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* config)
 {
@@ -992,7 +992,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
  *
  * **Use Cases:**
  * - System shutdown: Release hardware before power-down
- * - Reconfiguration: Change PWM frequency or dead-time (requires deinit → init)
+ * - Reconfiguration: Change PWM frequency or dead-time (requires deinit -> init)
  * - Error recovery: Clean up after hardware fault
  * - Resource sharing: Free GPTW channel for other use
  *
@@ -1076,10 +1076,10 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion
- * - Rule 5: ✓ 2 preconditions (NULL check, initialized check)
- * - Rule 5: ✓ 1 postcondition (initialized flag cleared)
- * - Rule 7: ✓ Return values checked (rx_motor_stop logged, rx_gptw_deinit propagated)
+ * - Rule 1: [OK] No goto or recursion
+ * - Rule 5: [OK] 2 preconditions (NULL check, initialized check)
+ * - Rule 5: [OK] 1 postcondition (initialized flag cleared)
+ * - Rule 7: [OK] Return values checked (rx_motor_stop logged, rx_gptw_deinit propagated)
  */
 rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 {
@@ -1123,14 +1123,14 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  *
  * **Control Mapping (PH/EN Mode):**
  * - **duty > 0 (Forward):**
- *   - PH (output_a) = HIGH (100% duty) → Direction = forward
- *   - EN (output_b) = |duty| PWM → Speed = magnitude
- *   - Example: duty = +75% → PH = HIGH, EN = 75% PWM
+ *   - PH (output_a) = HIGH (100% duty) -> Direction = forward
+ *   - EN (output_b) = |duty| PWM -> Speed = magnitude
+ *   - Example: duty = +75% -> PH = HIGH, EN = 75% PWM
  *
  * - **duty < 0 (Reverse):**
- *   - PH (output_a) = LOW (0% duty) → Direction = reverse
- *   - EN (output_b) = |duty| PWM → Speed = magnitude
- *   - Example: duty = -50% → PH = LOW, EN = 50% PWM
+ *   - PH (output_a) = LOW (0% duty) -> Direction = reverse
+ *   - EN (output_b) = |duty| PWM -> Speed = magnitude
+ *   - Example: duty = -50% -> PH = LOW, EN = 50% PWM
  *
  * - **duty = 0 (Coast):**
  *   - PH (output_a) = LOW (0% duty)
@@ -1341,12 +1341,12 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  * @version 1.0.0 Initial implementation with PH/EN mode
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion, sequential if-else logic
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ⚠️ Function length: 82 lines (exceeds 60-line guideline, justified below)
- * - Rule 5: ✓ 3 preconditions (NULL check, init check, finite value check)
- * - Rule 5: ✓ 2 postconditions (duty updated, outputs configured)
- * - Rule 7: ✓ All return values checked (rx_gptw_set_duty)
+ * - Rule 1: [OK] No goto or recursion, sequential if-else logic
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [WARN] Function length: 82 lines (exceeds 60-line guideline, justified below)
+ * - Rule 5: [OK] 3 preconditions (NULL check, init check, finite value check)
+ * - Rule 5: [OK] 2 postconditions (duty updated, outputs configured)
+ * - Rule 7: [OK] All return values checked (rx_gptw_set_duty)
  *
  * @par Rule 4 Justification:
  * Function exceeds 60-line guideline (82 total) due to comprehensive error checking and
@@ -1448,12 +1448,12 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
  * with deceleration due to friction and back-EMF.
  *
  * **PH/EN Mode Behavior:**
- * - **Coast (brake=false):** PH = LOW, EN = LOW → Motor in high impedance
- * - **Brake (brake=true):** ❌ NOT SUPPORTED → Falls back to coast, warning logged
+ * - **Coast (brake=false):** PH = LOW, EN = LOW -> Motor in high impedance
+ * - **Brake (brake=true):** [FAIL] NOT SUPPORTED -> Falls back to coast, warning logged
  *
  * **Coast vs. Brake:**
- * - **Coast:** Both outputs LOW → H-bridge in high impedance → Motor free-wheels
- * - **Brake:** Both outputs HIGH → H-bridge shorts motor terminals → Active braking
+ * - **Coast:** Both outputs LOW -> H-bridge in high impedance -> Motor free-wheels
+ * - **Brake:** Both outputs HIGH -> H-bridge shorts motor terminals -> Active braking
  * - **Note:** Brake mode requires IN/IN control mode (not available in PH/EN)
  *
  * **Use Cases:**
@@ -1539,10 +1539,10 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion
- * - Rule 5: ✓ 2 preconditions (NULL check, initialized check)
- * - Rule 5: ✓ 2 postconditions (current_duty = 0, outputs at 0%)
- * - Rule 7: ✓ Return values checked (rx_gptw_set_duty)
+ * - Rule 1: [OK] No goto or recursion
+ * - Rule 5: [OK] 2 preconditions (NULL check, initialized check)
+ * - Rule 5: [OK] 2 postconditions (current_duty = 0, outputs at 0%)
+ * - Rule 7: [OK] Return values checked (rx_gptw_set_duty)
  */
 rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
 {
@@ -1675,9 +1675,9 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion
- * - Rule 5: ✓ 2 preconditions (NULL checks for handle and out_duty)
- * - Rule 5: ✓ 1 postcondition (out_duty contains current duty on success)
+ * - Rule 1: [OK] No goto or recursion
+ * - Rule 5: [OK] 2 preconditions (NULL checks for handle and out_duty)
+ * - Rule 5: [OK] 1 postcondition (out_duty contains current duty on success)
  */
 rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
 {
@@ -1711,8 +1711,8 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
  *
  * **Emergency Stop Sequence:**
  * @code{.unparsed}
- * 1. Set output_a duty → 0%  (PH signal LOW)
- * 2. Set output_b duty → 0%  (EN signal LOW)
+ * 1. Set output_a duty -> 0%  (PH signal LOW)
+ * 2. Set output_b duty -> 0%  (EN signal LOW)
  * 3. Disable output_a at hardware level (GPTW peripheral)
  * 4. Disable output_b at hardware level (GPTW peripheral)
  * 5. Stop GPTW timer (prevent any further PWM generation)
@@ -1864,10 +1864,10 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion, sequential error handling
- * - Rule 5: ✓ 2 preconditions (NULL check, initialized check)
- * - Rule 5: ✓ 3 postconditions (initialized flag cleared, duty cleared, outputs disabled)
- * - Rule 7: ✓ All return values checked (best-effort error collection)
+ * - Rule 1: [OK] No goto or recursion, sequential error handling
+ * - Rule 5: [OK] 2 preconditions (NULL check, initialized check)
+ * - Rule 5: [OK] 3 postconditions (initialized flag cleared, duty cleared, outputs disabled)
+ * - Rule 7: [OK] All return values checked (best-effort error collection)
  */
 rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
 {

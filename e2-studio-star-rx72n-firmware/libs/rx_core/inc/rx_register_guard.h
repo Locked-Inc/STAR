@@ -26,9 +26,9 @@
  * - ESD events from handling or environment
  *
  * A single bit flip in a critical register can cause catastrophic failures:
- * - GPIO direction change → short circuit
- * - Interrupt priority inversion → deadlock
- * - Module stop bit set → peripheral disabled
+ * - GPIO direction change -> short circuit
+ * - Interrupt priority inversion -> deadlock
+ * - Module stop bit set -> peripheral disabled
  *
  * ## Solution Approach
  *
@@ -89,16 +89,16 @@
  * - [rx_register_protection.h](rx_register_protection.h) - PRCR management
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1**: ✓ No goto, setjmp, recursion
- * - **Rule 2**: ✓ All loops bounded by enum constants
- * - **Rule 3**: ✓ Zero dynamic allocation (all data static)
- * - **Rule 4**: ✓ All functions <60 lines
- * - **Rule 5**: ✓ Minimum 2 pre/post conditions per function
- * - **Rule 6**: ✓ Data declared at smallest scope
- * - **Rule 7**: ✓ Return values checked (or void)
- * - **Rule 8**: ✓ C23 typed enums, no magic numbers
- * - **Rule 9**: ⚠️ Direct register access (unavoidable for this module)
- * - **Rule 10**: ✓ Compiled with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No goto, setjmp, recursion
+ * - **Rule 2**: [OK] All loops bounded by enum constants
+ * - **Rule 3**: [OK] Zero dynamic allocation (all data static)
+ * - **Rule 4**: [OK] All functions <60 lines
+ * - **Rule 5**: [OK] Minimum 2 pre/post conditions per function
+ * - **Rule 6**: [OK] Data declared at smallest scope
+ * - **Rule 7**: [OK] Return values checked (or void)
+ * - **Rule 8**: [OK] C23 typed enums, no magic numbers
+ * - **Rule 9**: [WARN] Direct register access (unavoidable for this module)
+ * - **Rule 10**: [OK] Compiled with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility**: Only handles register refresh, no other concerns
@@ -393,9 +393,9 @@ typedef enum : uint8_t {
  * @test Tested in test_rx_register_guard.c::test_init_captures_values()
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ Loop bounds: k_register_guard_max_ports, k_register_guard_max_ipr
- * - Rule 5: ✓ 2 preconditions, 3 postconditions
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] Loop bounds: k_register_guard_max_ports, k_register_guard_max_ipr
+ * - Rule 5: [OK] 2 preconditions, 3 postconditions
  *
  * @callgraph
  * @callergraph
@@ -585,10 +585,10 @@ typedef enum : uint8_t {
  * @test Tested in test_rx_register_guard.c::test_refresh_performance()
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ Loop bounds: k_register_guard_max_ports, k_register_guard_max_ipr
- * - Rule 5: ✓ 2 preconditions, 3 postconditions, 2 invariants
- * - Rule 9: ⚠️ Brief interrupt disable unavoidable for PRCR atomicity
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] Loop bounds: k_register_guard_max_ports, k_register_guard_max_ipr
+ * - Rule 5: [OK] 2 preconditions, 3 postconditions, 2 invariants
+ * - Rule 9: [WARN] Brief interrupt disable unavoidable for PRCR atomicity
  *
  * @callgraph
  * @callergraph
@@ -716,9 +716,9 @@ void rx_register_guard_refresh(void);
  * @test Tested in test_rx_register_guard.c::test_correction_count_before_init()
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ No loops
- * - Rule 5: ✓ 2 preconditions, 1 postcondition, 1 invariant
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] No loops
+ * - Rule 5: [OK] 2 preconditions, 1 postcondition, 1 invariant
  *
  * @callgraph
  * @callergraph
@@ -822,9 +822,9 @@ uint32_t rx_register_guard_get_correction_count(void);
  * @test Tested in test_rx_register_guard.c::test_reset_before_init()
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ No loops
- * - Rule 5: ✓ 2 preconditions, 2 postconditions
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] No loops
+ * - Rule 5: [OK] 2 preconditions, 2 postconditions
  *
  * @callgraph
  * @callergraph
@@ -947,9 +947,9 @@ void rx_register_guard_reset_count(void);
  * @test Tested in test_rx_register_guard.c::test_refresh_before_init()
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ No loops
- * - Rule 5: ✓ 1 precondition, 1 postcondition
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] No loops
+ * - Rule 5: [OK] 1 precondition, 1 postcondition
  *
  * @callgraph
  * @callergraph

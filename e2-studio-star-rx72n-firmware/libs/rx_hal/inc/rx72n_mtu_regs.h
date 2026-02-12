@@ -107,12 +107,12 @@
  * - Section 24.4: Interrupts
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion in inline functions
- * - Rule 2: ✓ Fixed loop bounds (N/A - register definitions only)
- * - Rule 3: ✓ Static allocation only (all definitions are compile-time)
- * - Rule 5: ✓ Static assertions verify register layout at compile time
- * - Rule 8: ✓ C23 typed enums eliminate preprocessor for constants
- * - Rule 10: ✓ Header compiles cleanly with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion in inline functions
+ * - Rule 2: [OK] Fixed loop bounds (N/A - register definitions only)
+ * - Rule 3: [OK] Static allocation only (all definitions are compile-time)
+ * - Rule 5: [OK] Static assertions verify register layout at compile time
+ * - Rule 8: [OK] C23 typed enums eliminate preprocessor for constants
+ * - Rule 10: [OK] Header compiles cleanly with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **Single Responsibility**: MTU register definitions only, no driver logic
@@ -564,7 +564,7 @@ typedef struct {
 
   /**
    * @brief Timer Buffer Transfer Mode Register (TBTM)
-   * @details Controls automatic buffer transfer from TGRC→TGRA, TGRD→TGRB.
+   * @details Controls automatic buffer transfer from TGRC->TGRA, TGRD->TGRB.
    */
   volatile uint8_t tbtm;
 } rx_mtu34_channel_regs_t;
@@ -1073,7 +1073,7 @@ typedef enum : uint8_t {
  * | 0x0D  | Compl PWM | Complementary PWM (MTU3/4, 6/7) |
  *
  * @par Buffer Transfer Mode
- * When BFA or BFB is set, buffer registers (TGRC→TGRA, TGRD→TGRB) are
+ * When BFA or BFB is set, buffer registers (TGRC->TGRA, TGRD->TGRB) are
  * automatically transferred on counter clear, enabling glitch-free
  * duty cycle updates during PWM operation.
  *
@@ -1099,10 +1099,10 @@ typedef enum : uint8_t {
   /** @brief PWM mode 2 - TGRC/TGRD as buffer registers for glitch-free updates */
   k_mtu_tmdr_md_pwm2 = 0x03,
 
-  /** @brief Enable TGRC→TGRA buffer transfer on counter clear */
+  /** @brief Enable TGRC->TGRA buffer transfer on counter clear */
   k_mtu_tmdr_bfa = (k_mtu_bit_value_set << k_mtu_tmdr_bfa_shift),
 
-  /** @brief Enable TGRD→TGRB buffer transfer on counter clear */
+  /** @brief Enable TGRD->TGRB buffer transfer on counter clear */
   k_mtu_tmdr_bfb = (k_mtu_bit_value_set << k_mtu_tmdr_bfb_shift),
 } mtu_tmdr_bits_t;
 

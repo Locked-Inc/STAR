@@ -47,7 +47,7 @@
  * @see rx72n_sci_regs.h Real SCI register definitions
  * @see uart_hal.c UART HAL implementation
  *
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Dependency Inversion
  *
  * @author STAR Team

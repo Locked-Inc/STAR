@@ -346,16 +346,16 @@
  *
  * | Rule | Status | Implementation Details |
  * |------|--------|------------------------|
- * | **Rule 1: Control Flow** | ✅ | No goto, setjmp, longjmp, or recursion. All control flow uses if/while/for only. |
- * | **Rule 2: Loop Bounds** | ✅ | Single while(true) loop with fixed 4ms sleep. All for-loops over k_motor_count (4). |
- * | **Rule 3: No Heap** | ✅ | Zero dynamic allocation. Stack (2048 bytes), TCB (140 bytes), all handles statically allocated. |
- * | **Rule 4: Function Length** | ✅ | motor_control_task_create(): 31 lines, control functions: 50-90 lines (all < 100 LOC). |
- * | **Rule 5: Assertions** | ✅ | 8+ assertions: RX_ASSERT(!s_motor_created), preconditions in all functions, postconditions. |
- * | **Rule 6: Data Scope** | ✅ | All file-scope variables use static (s_motor_thread, s_motors, s_pids, s_encoder_state, etc.). |
- * | **Rule 7: Return Checks** | ✅ | All rx_motor, rx_encoder, rx_pid, rx_drv8243, shared_data returns validated or cast to (void). |
- * | **Rule 8: Preprocessor** | ✅ | C23 typed enums for all constants (k_motor_task_*, k_motor_control_*, k_motor_index_*). Zero macros. |
- * | **Rule 9: Pointers** | ✅ | Single-level pointers only (motor_command_t*, pid_gains_t*, rx_motor_handle_t*). |
- * | **Rule 10: Warnings** | ✅ | Compiles with -Wall -Wextra -Werror. Zero warnings. |
+ * | **Rule 1: Control Flow** | [PASS] | No goto, setjmp, longjmp, or recursion. All control flow uses if/while/for only. |
+ * | **Rule 2: Loop Bounds** | [PASS] | Single while(true) loop with fixed 4ms sleep. All for-loops over k_motor_count (4). |
+ * | **Rule 3: No Heap** | [PASS] | Zero dynamic allocation. Stack (2048 bytes), TCB (140 bytes), all handles statically allocated. |
+ * | **Rule 4: Function Length** | [PASS] | motor_control_task_create(): 31 lines, control functions: 50-90 lines (all < 100 LOC). |
+ * | **Rule 5: Assertions** | [PASS] | 8+ assertions: RX_ASSERT(!s_motor_created), preconditions in all functions, postconditions. |
+ * | **Rule 6: Data Scope** | [PASS] | All file-scope variables use static (s_motor_thread, s_motors, s_pids, s_encoder_state, etc.). |
+ * | **Rule 7: Return Checks** | [PASS] | All rx_motor, rx_encoder, rx_pid, rx_drv8243, shared_data returns validated or cast to (void). |
+ * | **Rule 8: Preprocessor** | [PASS] | C23 typed enums for all constants (k_motor_task_*, k_motor_control_*, k_motor_index_*). Zero macros. |
+ * | **Rule 9: Pointers** | [PASS] | Single-level pointers only (motor_command_t*, pid_gains_t*, rx_motor_handle_t*). |
+ * | **Rule 10: Warnings** | [PASS] | Compiles with -Wall -Wextra -Werror. Zero warnings. |
  *
  * ## SOLID Principles
  *
@@ -652,7 +652,7 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  * @post Task will begin 250 Hz control loop after motor stack initialization
  * @post PID controllers initialized with MATLAB-tuned gains (Kp=0.286, Ki=8.01, Kd=0.0)
  *
- * @invariant s_motor_created transitions false → true exactly once (never resets)
+ * @invariant s_motor_created transitions false -> true exactly once (never resets)
  * @invariant Task priority remains at k_motor_task_priority (8) throughout lifetime
  * @invariant Stack size remains at k_motor_task_stack_size (2048 bytes)
  *
@@ -921,7 +921,7 @@ rx_err_t motor_control_task_create(void)
  *
  * 13. **Read Encoder Velocity:** rx_encoder_read_velocity()
  *     - Quadrature decode via MTU peripheral
- *     - Velocity estimation: counts/dt → m/s
+ *     - Velocity estimation: counts/dt -> m/s
  *     - If error: Use 0.0 m/s as fallback
  *
  * 14. **Get Target Velocity:** internal_get_target_velocity()
@@ -1168,13 +1168,13 @@ rx_err_t motor_control_task_create(void)
  * @test test_motor_control_task.c - Verify control loop timing budget (< 4ms active)
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1:** ✅ No goto, setjmp, recursion (only if/while control flow)
- * - **Rule 2:** ✅ Single while(true) loop with fixed 4ms period, for-loops over k_motor_count
- * - **Rule 3:** ✅ Zero dynamic allocation (all stack-based locals)
- * - **Rule 4:** ✅ Function is ~48 lines (under 100 LOC guideline)
- * - **Rule 5:** ✅ 6 preconditions, 5 postconditions documented
- * - **Rule 7:** ✅ All function returns checked or cast to (void)
- * - **Rule 8:** ✅ All constants use C23 typed enums (no macros)
+ * - **Rule 1:** [PASS] No goto, setjmp, recursion (only if/while control flow)
+ * - **Rule 2:** [PASS] Single while(true) loop with fixed 4ms period, for-loops over k_motor_count
+ * - **Rule 3:** [PASS] Zero dynamic allocation (all stack-based locals)
+ * - **Rule 4:** [PASS] Function is ~48 lines (under 100 LOC guideline)
+ * - **Rule 5:** [PASS] 6 preconditions, 5 postconditions documented
+ * - **Rule 7:** [PASS] All function returns checked or cast to (void)
+ * - **Rule 8:** [PASS] All constants use C23 typed enums (no macros)
  *
  * @callgraph
  * @callergraph
@@ -1399,10 +1399,10 @@ static void internal_motor_task_entry(ULONG input)
  * @test test_motor_control_task.c - Verify error handling on PID init failure
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 2:** ✅ For-loop over k_motor_count (4) with fixed bound
- * - **Rule 3:** ✅ Zero dynamic allocation (stack-based locals only)
- * - **Rule 5:** ✅ 3 preconditions, 4 postconditions documented
- * - **Rule 7:** ✅ All return values checked (shared_data_get_pid_gains, rx_pid_init)
+ * - **Rule 2:** [PASS] For-loop over k_motor_count (4) with fixed bound
+ * - **Rule 3:** [PASS] Zero dynamic allocation (stack-based locals only)
+ * - **Rule 5:** [PASS] 3 preconditions, 4 postconditions documented
+ * - **Rule 7:** [PASS] All return values checked (shared_data_get_pid_gains, rx_pid_init)
  *
  * @callgraph
  * @callergraph
@@ -1626,7 +1626,7 @@ static rx_err_t internal_read_encoder_velocity(float*        velocity_rps,
                                     (rx_mtu_channel_t)motor_idx);
   }
 
-  /* Map motor 2 → TPU1, motor 3 → TPU2 */
+  /* Map motor 2 -> TPU1, motor 3 -> TPU2 */
   const rx_tpu_channel_t tpu_ch = (motor_idx == k_motor_back_left)
                                       ? k_tpu_channel_1
                                       : k_tpu_channel_2;
@@ -1659,7 +1659,7 @@ static rx_err_t internal_read_encoder_count(const uint8_t  motor_idx,
     return rx_encoder_read_count((rx_mtu_channel_t)motor_idx, state);
   }
 
-  /* Map motor 2 → TPU1, motor 3 → TPU2 */
+  /* Map motor 2 -> TPU1, motor 3 -> TPU2 */
   const rx_tpu_channel_t tpu_ch = (motor_idx == k_motor_back_left)
                                       ? k_tpu_channel_1
                                       : k_tpu_channel_2;
@@ -1969,10 +1969,10 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * @test test_motor_control_task.c - Verify PID error fallback (0.0% duty)
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 2:** ✅ For-loop over k_motor_count (4) with fixed bound
- * - **Rule 3:** ✅ Zero dynamic allocation (stack-based locals only)
- * - **Rule 5:** ✅ 5 preconditions, 3 postconditions documented
- * - **Rule 7:** ✅ All return values checked or explicitly ignored (void cast)
+ * - **Rule 2:** [PASS] For-loop over k_motor_count (4) with fixed bound
+ * - **Rule 3:** [PASS] Zero dynamic allocation (stack-based locals only)
+ * - **Rule 5:** [PASS] 5 preconditions, 3 postconditions documented
+ * - **Rule 7:** [PASS] All return values checked or explicitly ignored (void cast)
  *
  * @callgraph
  * @callergraph
@@ -2241,10 +2241,10 @@ static void internal_control_loop_iteration(void)
  * @test test_motor_control_task.c - Verify motors stop within 60ms total
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 2:** ✅ For-loop over k_motor_count (4), while-loop with timeout bound
- * - **Rule 3:** ✅ Zero dynamic allocation (stack-based locals only)
- * - **Rule 5:** ✅ 3 preconditions, 4 postconditions documented
- * - **Rule 7:** ✅ All return values checked or explicitly ignored
+ * - **Rule 2:** [PASS] For-loop over k_motor_count (4), while-loop with timeout bound
+ * - **Rule 3:** [PASS] Zero dynamic allocation (stack-based locals only)
+ * - **Rule 5:** [PASS] 3 preconditions, 4 postconditions documented
+ * - **Rule 7:** [PASS] All return values checked or explicitly ignored
  *
  * @callgraph
  * @callergraph
@@ -2499,15 +2499,15 @@ static void internal_check_comm_timeout(void)
  *
  * 2. **For Each Motor (Steps 3-7):** Loop over 4 motors
  *
- * 3. **Read Velocity:** rx_encoder_read_velocity() → state.current_velocity_mps[i]
+ * 3. **Read Velocity:** rx_encoder_read_velocity() -> state.current_velocity_mps[i]
  *
- * 4. **Read Duty:** rx_motor_get_duty() → state.duty_cycle_percent[i]
+ * 4. **Read Duty:** rx_motor_get_duty() -> state.duty_cycle_percent[i]
  *
- * 5. **Read Current:** rx_drv8243_read_current() → state.current_ma[i]
+ * 5. **Read Current:** rx_drv8243_read_current() -> state.current_ma[i]
  *
- * 6. **Read Encoder Count:** rx_encoder_read_count() → state.encoder_counts[i]
+ * 6. **Read Encoder Count:** rx_encoder_read_count() -> state.encoder_counts[i]
  *
- * 7. **Read Fault:** rx_drv8243_get_fault_status() → state.fault_flags[i]
+ * 7. **Read Fault:** rx_drv8243_get_fault_status() -> state.fault_flags[i]
  *
  * 8. **Aggregate E-Stop:** state.estop_active = shared_data_is_estop_active()
  *
@@ -2666,8 +2666,8 @@ static void internal_update_motor_state(void)
  * @test test_motor_control_task.c - Verify out-of-range index returns 0.0
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 5:** ✅ 2 preconditions documented (NULL check, bounds check)
- * - **Rule 9:** ✅ Single-level pointer only (motor_command_t*)
+ * - **Rule 5:** [PASS] 2 preconditions documented (NULL check, bounds check)
+ * - **Rule 9:** [PASS] Single-level pointer only (motor_command_t*)
  *
  * @callgraph
  * @callergraph

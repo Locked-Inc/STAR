@@ -117,16 +117,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No recursion, goto, setjmp/longjmp |
- * | 2. Fixed loop bounds | ✓ | No loops in this module |
- * | 3. No dynamic memory after init | ✓ | User provides static config structures |
- * | 4. Functions <60 lines | ✓ | All functions <30 lines |
- * | 5. Min 2 assertions per function | ✓ | NULL checks + range validation per function |
- * | 6. Data at smallest scope | ✓ | No module-level state |
- * | 7. Check all return values | ✓ | Functions return rx_err_t, callers must check |
- * | 8. Limit preprocessor | ✓ | Only include guards and extern "C" |
- * | 9. Restrict pointers | ✓ | Single-level dereferencing only |
- * | 10. Compile with warnings | ✓ | -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No recursion, goto, setjmp/longjmp |
+ * | 2. Fixed loop bounds | [OK] | No loops in this module |
+ * | 3. No dynamic memory after init | [OK] | User provides static config structures |
+ * | 4. Functions <60 lines | [OK] | All functions <30 lines |
+ * | 5. Min 2 assertions per function | [OK] | NULL checks + range validation per function |
+ * | 6. Data at smallest scope | [OK] | No module-level state |
+ * | 7. Check all return values | [OK] | Functions return rx_err_t, callers must check |
+ * | 8. Limit preprocessor | [OK] | Only include guards and extern "C" |
+ * | 9. Restrict pointers | [OK] | Single-level dereferencing only |
+ * | 10. Compile with warnings | [OK] | -Wall -Wextra -Werror |
  *
  * @par SOLID Principles
  *
@@ -415,12 +415,12 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ Simple control flow (linear validation, no goto/recursion)
- * - Rule 3: ✓ No dynamic allocation (user provides static config)
- * - Rule 4: ✓ Function <60 lines (implementation is ~20 lines)
- * - Rule 5: ✓ 3 assertions (NULL check config, NULL check name, pin validation)
- * - Rule 7: ✓ Returns rx_err_t for caller to check
- * - Rule 9: ✓ Single-level pointer dereferencing only
+ * - Rule 1: [OK] Simple control flow (linear validation, no goto/recursion)
+ * - Rule 3: [OK] No dynamic allocation (user provides static config)
+ * - Rule 4: [OK] Function <60 lines (implementation is ~20 lines)
+ * - Rule 5: [OK] 3 assertions (NULL check config, NULL check name, pin validation)
+ * - Rule 7: [OK] Returns rx_err_t for caller to check
+ * - Rule 9: [OK] Single-level pointer dereferencing only
  */
 [[nodiscard]] rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config,
                                  const char*      name,
@@ -535,7 +535,7 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 5 assertions (NULL×2, unit, channel, bits validation)
+ * - Rule 5: [OK] 5 assertions (NULL×2, unit, channel, bits validation)
  */
 [[nodiscard]] rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
                                 const char*      name,
@@ -812,7 +812,7 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 3 assertions (NULL config, NULL name, pin validation)
+ * - Rule 5: [OK] 3 assertions (NULL config, NULL name, pin validation)
  */
 [[nodiscard]] rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config,
                                     const char*      name,
@@ -927,7 +927,7 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 6 assertions (NULL×2, channel, TX pin, RX pin, baudrate)
+ * - Rule 5: [OK] 6 assertions (NULL×2, channel, TX pin, RX pin, baudrate)
  */
 [[nodiscard]] rx_err_t rx_bus_config_init_uart(rx_bus_config_t* config,
                                  const char*      name,

@@ -27,9 +27,9 @@
  * Hardware:
  *   PCLKB (60 MHz)
  *      ↓
- *   CMT0 (/128) → 468.75 kHz
+ *   CMT0 (/128) -> 468.75 kHz
  *      ↓
- *   Compare: 4687 → 100.00 Hz interrupt
+ *   Compare: 4687 -> 100.00 Hz interrupt
  *      ↓
  * Software:
  *   cmt0_isr() (this file)
@@ -148,16 +148,16 @@
  *
  * | Rule | Compliance | Details |
  * |------|------------|---------|
- * | 1    | ✓          | No goto, setjmp, recursion - simple sequential code |
- * | 2    | ✓          | No loops (register configuration only) |
- * | 3    | ✓          | No dynamic allocation (all static configuration) |
- * | 4    | ✓          | All functions under 60 lines |
- * | 5    | ✓          | Minimum 2 pre/post conditions per function |
- * | 6    | ✓          | Minimal scope (locals declared at use point) |
- * | 7    | ✓          | All return values validated |
- * | 8    | ✓          | C23 typed enums for ALL constants |
- * | 9    | ✓          | Single level of dereferencing for registers |
- * | 10   | ✓          | Compiles with -Wall -Wextra -Werror |
+ * | 1    | [OK]          | No goto, setjmp, recursion - simple sequential code |
+ * | 2    | [OK]          | No loops (register configuration only) |
+ * | 3    | [OK]          | No dynamic allocation (all static configuration) |
+ * | 4    | [OK]          | All functions under 60 lines |
+ * | 5    | [OK]          | Minimum 2 pre/post conditions per function |
+ * | 6    | [OK]          | Minimal scope (locals declared at use point) |
+ * | 7    | [OK]          | All return values validated |
+ * | 8    | [OK]          | C23 typed enums for ALL constants |
+ * | 9    | [OK]          | Single level of dereferencing for registers |
+ * | 10   | [OK]          | Compiles with -Wall -Wextra -Werror |
  *
  * @par SOLID Principles
  *
@@ -473,7 +473,7 @@ typedef enum : uint8_t {
  * @code
  * // Timeline (measured with oscilloscope):
  * t=0.000ms: Application thread running
- * t=10.000ms: CMT0 compare match → Hardware interrupt
+ * t=10.000ms: CMT0 compare match -> Hardware interrupt
  * t=10.001ms: ISR entry (CPU context save: ~500ns)
  * t=10.002ms: Clear IR flag (register write: ~100ns)
  * t=10.003ms: Call _tx_timer_interrupt() (~2µs processing)
@@ -489,13 +489,13 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1** ✓ No goto, setjmp, recursion
- * - **Rule 2** ✓ No loops
- * - **Rule 3** ✓ No dynamic allocation
- * - **Rule 4** ✓ Function is 7 lines (under 60 line limit)
- * - **Rule 5** ✓ 3 preconditions, 4 postconditions
- * - **Rule 8** ✓ Uses C23 typed enum (k_icu_ir_clear)
- * - **Rule 9** ✓ Single level of dereferencing
+ * - **Rule 1** [OK] No goto, setjmp, recursion
+ * - **Rule 2** [OK] No loops
+ * - **Rule 3** [OK] No dynamic allocation
+ * - **Rule 4** [OK] Function is 7 lines (under 60 line limit)
+ * - **Rule 5** [OK] 3 preconditions, 4 postconditions
+ * - **Rule 8** [OK] Uses C23 typed enum (k_icu_ir_clear)
+ * - **Rule 9** [OK] Single level of dereferencing
  */
 void __attribute__((interrupt)) cmt0_isr(void)
 {
@@ -533,8 +533,8 @@ void __attribute__((interrupt)) cmt0_isr(void)
  *
  * **Configuration summary**:
  * - **Clock source**: PCLKB = 60 MHz
- * - **Divider**: /128 → 468.75 kHz
- * - **Compare value**: 4687 → 100.00 Hz
+ * - **Divider**: /128 -> 468.75 kHz
+ * - **Compare value**: 4687 -> 100.00 Hz
  * - **Interrupt priority**: 3/15 (higher than app tasks, lower than motor control)
  * - **Tick period**: 10.000 ms (exact, zero drift)
  *
@@ -673,16 +673,16 @@ void __attribute__((interrupt)) cmt0_isr(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1** ✓ No goto, setjmp, recursion (sequential register writes)
- * - **Rule 2** ✓ No loops (straight-line initialization code)
- * - **Rule 3** ✓ No dynamic allocation (all register I/O)
- * - **Rule 4** ✓ Function is 47 lines (under 60 line limit)
- * - **Rule 5** ✓ 4 preconditions, 4 postconditions documented
- * - **Rule 6** ✓ Minimal scope (no local variables)
- * - **Rule 7** ✓ All register accessor return values validated
- * - **Rule 8** ✓ C23 typed enums for ALL constants (k_cmt0_*)
- * - **Rule 9** ✓ Single level of dereferencing for registers
- * - **Rule 10** ✓ Compiles clean with -Wall -Wextra -Werror
+ * - **Rule 1** [OK] No goto, setjmp, recursion (sequential register writes)
+ * - **Rule 2** [OK] No loops (straight-line initialization code)
+ * - **Rule 3** [OK] No dynamic allocation (all register I/O)
+ * - **Rule 4** [OK] Function is 47 lines (under 60 line limit)
+ * - **Rule 5** [OK] 4 preconditions, 4 postconditions documented
+ * - **Rule 6** [OK] Minimal scope (no local variables)
+ * - **Rule 7** [OK] All register accessor return values validated
+ * - **Rule 8** [OK] C23 typed enums for ALL constants (k_cmt0_*)
+ * - **Rule 9** [OK] Single level of dereferencing for registers
+ * - **Rule 10** [OK] Compiles clean with -Wall -Wextra -Werror
  *
  * @callgraph
  * @callergraph
@@ -987,16 +987,16 @@ rx_err_t timer_stop(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1** ✓ No goto, setjmp, recursion
- * - **Rule 2** ✓ No loops
- * - **Rule 3** ✓ No dynamic allocation
- * - **Rule 4** ✓ Function is 13 lines (under 60 line limit)
- * - **Rule 5** ✓ 2 preconditions, 3 postconditions
- * - **Rule 6** ✓ Minimal scope (single output parameter)
- * - **Rule 7** ✓ All return values validated (RX_CHECK_NULL_PTR)
- * - **Rule 8** ✓ Uses C23 typed enums (k_cmt0_compare_match)
- * - **Rule 9** ✓ Single level of pointer dereferencing
- * - **Rule 10** ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1** [OK] No goto, setjmp, recursion
+ * - **Rule 2** [OK] No loops
+ * - **Rule 3** [OK] No dynamic allocation
+ * - **Rule 4** [OK] Function is 13 lines (under 60 line limit)
+ * - **Rule 5** [OK] 2 preconditions, 3 postconditions
+ * - **Rule 6** [OK] Minimal scope (single output parameter)
+ * - **Rule 7** [OK] All return values validated (RX_CHECK_NULL_PTR)
+ * - **Rule 8** [OK] Uses C23 typed enums (k_cmt0_compare_match)
+ * - **Rule 9** [OK] Single level of pointer dereferencing
+ * - **Rule 10** [OK] Compiles with -Wall -Wextra -Werror
  *
  * @callgraph
  * @callergraph

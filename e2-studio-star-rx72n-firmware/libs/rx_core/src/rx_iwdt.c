@@ -85,11 +85,11 @@
  * | Feature | IWDT (This Module) | WDT (rx_wdt.c) |
  * |---------|-------------------|----------------|
  * | Clock Source | IWDTCLK (125 kHz independent) | PCLKB (system clock) |
- * | Can be Stopped | ✗ No (hardware safety) | ✓ Yes |
- * | Clock Fault Detection | ✓ Yes (independent clock) | ✗ No |
+ * | Can be Stopped | [X] No (hardware safety) | [OK] Yes |
+ * | Clock Fault Detection | [OK] Yes (independent clock) | [X] No |
  * | Timeout Range | ~8 ms to ~17 seconds | ~4 µs to ~273 µs |
  * | Register Base | 0x00088030 | 0x00088020 |
- * | Task Monitoring | ✓ Software layer | ✗ Not implemented |
+ * | Task Monitoring | [OK] Software layer | [X] Not implemented |
  * | Primary Use | Production safety | Development/debugging |
  *
  * ## Task Monitoring System
@@ -153,16 +153,16 @@
  * - `<string.h>` - memcpy, memset, strncpy, strlen, strcmp
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1**: ✓ No goto, setjmp, recursion
- * - **Rule 2**: ✓ All loops bounded by k_iwdt_max_tasks
- * - **Rule 3**: ✓ Zero dynamic allocation (static state)
- * - **Rule 4**: ✓ All functions <60 lines
- * - **Rule 5**: ✓ Minimum 2 checks per function
- * - **Rule 6**: ✓ Data declared at smallest scope
- * - **Rule 7**: ✓ All return values checked or propagated
- * - **Rule 8**: ✓ C23 typed enums for constants
- * - **Rule 9**: ✓ Minimal pointer use, no pointer arithmetic
- * - **Rule 10**: ✓ Compiled with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No goto, setjmp, recursion
+ * - **Rule 2**: [OK] All loops bounded by k_iwdt_max_tasks
+ * - **Rule 3**: [OK] Zero dynamic allocation (static state)
+ * - **Rule 4**: [OK] All functions <60 lines
+ * - **Rule 5**: [OK] Minimum 2 checks per function
+ * - **Rule 6**: [OK] Data declared at smallest scope
+ * - **Rule 7**: [OK] All return values checked or propagated
+ * - **Rule 8**: [OK] C23 typed enums for constants
+ * - **Rule 9**: [OK] Minimal pointer use, no pointer arithmetic
+ * - **Rule 10**: [OK] Compiled with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility**: Only IWDT and task monitoring
@@ -217,9 +217,9 @@
  * | **Total** | **~470 bytes** | | Static allocation |
  *
  * @par State Transitions:
- * - initialized: false → true on rx_iwdt_init() success
- * - current_state: k_system_state_init → other states via rx_iwdt_set_state()
- * - tasks[n].active: false → true via rx_iwdt_register_task()
+ * - initialized: false -> true on rx_iwdt_init() success
+ * - current_state: k_system_state_init -> other states via rx_iwdt_set_state()
+ * - tasks[n].active: false -> true via rx_iwdt_register_task()
  *
  * @invariant initialized implies config is valid
  * @invariant status.active_tasks equals count of tasks[].active==true

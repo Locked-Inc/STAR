@@ -18,7 +18,7 @@
  *
  * **Signal Chain:**
  * ```
- * Motor Shaft → Hall Encoder → Phase A/B → MTU (Phase Counting) → CPU (Read Count)
+ * Motor Shaft -> Hall Encoder -> Phase A/B -> MTU (Phase Counting) -> CPU (Read Count)
  *              (341 PPR)      (Digital)    (4× Decode)            (Overflow Handling)
  * ```
  *
@@ -75,10 +75,10 @@
  * ```
  * delta = current_count - last_count
  * if (delta > 32768):   # Large positive jump
- *     # Counter underflowed (wrapped 65535 → 0)
+ *     # Counter underflowed (wrapped 65535 -> 0)
  *     delta -= 65536
  * elif (delta < -32768): # Large negative jump
- *     # Counter overflowed (wrapped 0 → 65535)
+ *     # Counter overflowed (wrapped 0 -> 65535)
  *     delta += 65536
  * accumulated_count += delta
  * ```
@@ -159,16 +159,16 @@
  *
  * | Rule | Status | Notes |
  * |------|--------|-------|
- * | 1. Simple control flow | ✓ | No goto, setjmp, recursion |
- * | 2. Fixed loop bounds | ✓ | No unbounded loops |
- * | 3. No dynamic memory | ✓ | Static allocation only |
- * | 4. Function length <60 lines | ✓ | All functions <50 lines |
- * | 5. Assertions | ✓ | 2+ checks per function |
- * | 6. Smallest scope | ✓ | Variables scoped minimally |
- * | 7. Check return values | ✓ | All returns validated |
- * | 8. Limited preprocessor | ✓ | Minimal macro usage |
- * | 9. Pointer restrictions | ✓ | Single-level dereferencing |
- * | 10. Compiler warnings | ✓ | `-Wall -Wextra -Werror` |
+ * | 1. Simple control flow | [OK] | No goto, setjmp, recursion |
+ * | 2. Fixed loop bounds | [OK] | No unbounded loops |
+ * | 3. No dynamic memory | [OK] | Static allocation only |
+ * | 4. Function length <60 lines | [OK] | All functions <50 lines |
+ * | 5. Assertions | [OK] | 2+ checks per function |
+ * | 6. Smallest scope | [OK] | Variables scoped minimally |
+ * | 7. Check return values | [OK] | All returns validated |
+ * | 8. Limited preprocessor | [OK] | Minimal macro usage |
+ * | 9. Pointer restrictions | [OK] | Single-level dereferencing |
+ * | 10. Compiler warnings | [OK] | `-Wall -Wextra -Werror` |
  *
  * @par SOLID Principles:
  *
@@ -237,7 +237,7 @@ extern "C" {
  *
  * **Counts Per Revolution:**
  * - Calculate as: `encoder_PPR × 4` (4× decoding)
- * - Example: 341 PPR encoder → 1364 counts/rev
+ * - Example: 341 PPR encoder -> 1364 counts/rev
  * - Used for velocity and position calculations
  * - Must match physical encoder specification
  *
@@ -386,8 +386,8 @@ typedef struct {
  * **Algorithm:**
  * 1. Read current 16-bit hardware count
  * 2. Calculate delta from last_raw_count
- * 3. Detect overflow: `if (delta > 32768) → underflow`
- * 4. Detect underflow: `if (delta < -32768) → overflow`
+ * 3. Detect overflow: `if (delta > 32768) -> underflow`
+ * 4. Detect underflow: `if (delta < -32768) -> overflow`
  * 5. Add corrected delta to total_count
  * 6. Update last_raw_count for next iteration
  *
@@ -493,7 +493,7 @@ typedef struct {
  *     .position_deg = 0.0f
  * };
  *
- * // First read: counter wraps 65530 → 10
+ * // First read: counter wraps 65530 -> 10
  * uint16_t current_count = 10;
  * int32_t delta = (int16_t)(current_count - state.last_raw_count);
  * // delta = -65520 (appears to go backward)
@@ -785,8 +785,8 @@ typedef struct {
  * @test test_rx_mtu_encoder.c::test_encoder_init() Unit test coverage
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: 6 preconditions, 5 postconditions ✓
- * - Rule 7: All return values documented and validated by caller ✓
+ * - Rule 5: 6 preconditions, 5 postconditions [OK]
+ * - Rule 7: All return values documented and validated by caller [OK]
  */
 [[nodiscard]] rx_err_t rx_encoder_init(const rx_encoder_config_t* config);
 
@@ -824,9 +824,9 @@ typedef struct {
  *    - Cast to int16_t for signed arithmetic
  *
  * 3. **Detect Overflow/Underflow:**
- *    - If `delta > 32768`: Counter underflowed (wrapped 65535 → 0)
+ *    - If `delta > 32768`: Counter underflowed (wrapped 65535 -> 0)
  *      - Correct: `delta -= 65536`
- *    - If `delta < -32768`: Counter overflowed (wrapped 0 → 65535)
+ *    - If `delta < -32768`: Counter overflowed (wrapped 0 -> 65535)
  *      - Correct: `delta += 65536`
  *
  * 4. **Update Accumulated Count:**
@@ -846,7 +846,7 @@ typedef struct {
  * last_raw_count = 65530
  * current_count = 10
  * delta = 10 - 65530 = -65520 (appears to go backward!)
- * |delta| = 65520 > 32768 → overflow detected
+ * |delta| = 65520 > 32768 -> overflow detected
  * corrected_delta = -65520 + 65536 = 16 (actual forward motion)
  * ```
  *
@@ -855,7 +855,7 @@ typedef struct {
  * last_raw_count = 10
  * current_count = 65530
  * delta = 65530 - 10 = 65520 (appears to jump forward!)
- * delta = 65520 > 32768 → underflow detected
+ * delta = 65520 > 32768 -> underflow detected
  * corrected_delta = 65520 - 65536 = -16 (actual backward motion)
  * ```
  *
@@ -1026,8 +1026,8 @@ typedef struct {
  * @test test_rx_mtu_encoder.c::test_encoder_overflow() Tests overflow detection
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: 4 preconditions, 5 postconditions ✓
- * - Rule 7: All return values checked by caller ✓
+ * - Rule 5: 4 preconditions, 5 postconditions [OK]
+ * - Rule 7: All return values checked by caller [OK]
  */
 [[nodiscard]] rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* state);
 

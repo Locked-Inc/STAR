@@ -74,13 +74,13 @@
  *
  * | Bus Type | RX72N Peripheral | Speed | Test Coverage |
  * |----------|------------------|-------|---------------|
- * | **GPIO** | I/O Ports | N/A | ✅ Primary test bus |
- * | **1-Wire** | GPIO bit-bang | ~15 kbps | ✅ Secondary test bus |
- * | **UART** | SCI | 9.6-921.6 kbps | ✅ Tertiary test bus |
- * | **I2C** | RIIC | 100-1000 kHz | ⚪ Config tested via add_bus max capacity |
- * | **SPI** | RSPI | 1-15 MHz | ⚪ Config tested via add_bus max capacity |
- * | **SMBus** | RIIC + CRC | 100-400 kHz | ⚪ Config tested via add_bus max capacity |
- * | **ADC** | S12ADFa | ~1 µs/sample | ⚪ Config tested via add_bus max capacity |
+ * | **GPIO** | I/O Ports | N/A | [PASS] Primary test bus |
+ * | **1-Wire** | GPIO bit-bang | ~15 kbps | [PASS] Secondary test bus |
+ * | **UART** | SCI | 9.6-921.6 kbps | [PASS] Tertiary test bus |
+ * | **I2C** | RIIC | 100-1000 kHz | [ ] Config tested via add_bus max capacity |
+ * | **SPI** | RSPI | 1-15 MHz | [ ] Config tested via add_bus max capacity |
+ * | **SMBus** | RIIC + CRC | 100-400 kHz | [ ] Config tested via add_bus max capacity |
+ * | **ADC** | S12ADFa | ~1 µs/sample | [ ] Config tested via add_bus max capacity |
  *
  * ## Command Pattern Design (Gang of Four)
  *
@@ -242,16 +242,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | **Rule 1** | ✅ | No goto, setjmp, recursion - only if/while/for |
- * | **Rule 2** | ✅ | All loops bounded by k_max_buses (16) or test constants |
- * | **Rule 3** | ✅ | No malloc/free - all data static or stack-allocated |
- * | **Rule 4** | ✅ | All test functions ≤60 lines, focused single assertion |
- * | **Rule 5** | ✅ | Preconditions via API calls, postconditions via TEST_ASSERT |
- * | **Rule 6** | ✅ | Variables declared at smallest scope (loop counters, configs) |
- * | **Rule 7** | ✅ | All error codes validated with TEST_ASSERT_EQUAL |
- * | **Rule 8** | ✅ | C23 typed enums for test constants (k_test_max_buses_to_add) |
- * | **Rule 9** | ✅ | Single-level pointers only (rx_bus_config_t*) |
- * | **Rule 10** | ✅ | Compiles with -Wall -Wextra -Werror, zero warnings |
+ * | **Rule 1** | [PASS] | No goto, setjmp, recursion - only if/while/for |
+ * | **Rule 2** | [PASS] | All loops bounded by k_max_buses (16) or test constants |
+ * | **Rule 3** | [PASS] | No malloc/free - all data static or stack-allocated |
+ * | **Rule 4** | [PASS] | All test functions ≤60 lines, focused single assertion |
+ * | **Rule 5** | [PASS] | Preconditions via API calls, postconditions via TEST_ASSERT |
+ * | **Rule 6** | [PASS] | Variables declared at smallest scope (loop counters, configs) |
+ * | **Rule 7** | [PASS] | All error codes validated with TEST_ASSERT_EQUAL |
+ * | **Rule 8** | [PASS] | C23 typed enums for test constants (k_test_max_buses_to_add) |
+ * | **Rule 9** | [PASS] | Single-level pointers only (rx_bus_config_t*) |
+ * | **Rule 10** | [PASS] | Compiles with -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles (System Under Test)
  *
@@ -349,10 +349,10 @@ typedef enum : uint8_t {
  * in tearDown() if initialized during test execution.
  *
  * **Lifecycle:**
- * 1. setUp() zeros structure → manager.bus_count = 0, manager.buses = nullptr
- * 2. Test calls rx_bus_manager_init() → mutex created, interfaces stored
- * 3. Test performs operations → add_bus, remove_bus, with_bus, etc.
- * 4. tearDown() deinitializes → mutex deleted, buses removed
+ * 1. setUp() zeros structure -> manager.bus_count = 0, manager.buses = nullptr
+ * 2. Test calls rx_bus_manager_init() -> mutex created, interfaces stored
+ * 3. Test performs operations -> add_bus, remove_bus, with_bus, etc.
+ * 4. tearDown() deinitializes -> mutex deleted, buses removed
  *
  * @note Not thread-local: Tests run sequentially (Unity single-threaded framework)
  * @warning Do not use in production code (test-only global state)
@@ -553,11 +553,11 @@ void tearDown(void)
  * - State clearing (bus_count, buses linked list)
  *
  * **Test Coverage:**
- * - Success path: Valid parameters → k_rx_ok
- * - nullptr manager pointer → k_rx_err_null_ptr
- * - nullptr tag pointer → k_rx_err_null_ptr
- * - Deinit success → buses removed, mutex deleted
- * - Deinit nullptr pointer → k_rx_err_null_ptr
+ * - Success path: Valid parameters -> k_rx_ok
+ * - nullptr manager pointer -> k_rx_err_null_ptr
+ * - nullptr tag pointer -> k_rx_err_null_ptr
+ * - Deinit success -> buses removed, mutex deleted
+ * - Deinit nullptr pointer -> k_rx_err_null_ptr
  *
  * **Total Tests:** 5
  *
@@ -721,11 +721,11 @@ void test_rx_bus_manager_deinit_null_manager(void)
  * - Bus count tracking
  *
  * **Test Coverage:**
- * - Success: Valid bus → k_rx_ok, bus_count++
- * - Multiple buses: 3 different protocols → all registered
- * - Duplicate name: Same name twice → k_rx_err_exists
- * - Max capacity: 16+ buses → k_rx_err_no_mem
- * - nullptr/empty name: Invalid names → k_rx_err_invalid_arg/null_ptr
+ * - Success: Valid bus -> k_rx_ok, bus_count++
+ * - Multiple buses: 3 different protocols -> all registered
+ * - Duplicate name: Same name twice -> k_rx_err_exists
+ * - Max capacity: 16+ buses -> k_rx_err_no_mem
+ * - nullptr/empty name: Invalid names -> k_rx_err_invalid_arg/null_ptr
  *
  * **Total Tests:** 8
  *
@@ -784,9 +784,9 @@ void test_rx_bus_manager_add_bus_success(void)
  * ## Test Algorithm
  *
  * 1. Initialize manager
- * 2. Add GPIO bus ("gpio_bus") → assert k_rx_ok, bus_count == 1
- * 3. Add 1-Wire bus ("onewire_bus") → assert k_rx_ok, bus_count == 2
- * 4. Add UART bus ("uart_bus") → assert k_rx_ok, bus_count == 3
+ * 2. Add GPIO bus ("gpio_bus") -> assert k_rx_ok, bus_count == 1
+ * 3. Add 1-Wire bus ("onewire_bus") -> assert k_rx_ok, bus_count == 2
+ * 4. Add UART bus ("uart_bus") -> assert k_rx_ok, bus_count == 3
  * 5. Assert final bus_count == 3
  *
  * @pre setUp() called
@@ -918,9 +918,9 @@ void test_rx_bus_manager_add_bus_duplicate_name(void)
  * 2. Loop i = 0 to k_max_buses-1 (16 iterations):
  *    a. Generate unique bus name "bus_XX"
  *    b. Create GPIO config with unique name
- *    c. Call add_bus() → assert k_rx_ok
+ *    c. Call add_bus() -> assert k_rx_ok
  * 3. Assert bus_count == k_max_buses (16)
- * 4. Attempt to add 17th bus → assert k_rx_err_no_mem
+ * 4. Attempt to add 17th bus -> assert k_rx_err_no_mem
  *
  * ## Implementation Notes
  *

@@ -76,22 +76,22 @@
  * | **1 (Decoded)** | ASCII debug | Pipe 4 | Pipe 5 | Pipe 6 | EP3 IN, EP2 OUT, EP4 IN |
  * | **2 (Log)** | Logging output | Pipe 7 | Pipe 8 | Pipe 9 | EP5 IN, EP3 OUT, EP6 IN |
  *
- * **Pipe → Port Routing:**
+ * **Pipe -> Port Routing:**
  * ```c
- * // BRDY (Bulk OUT - host → device)
- * Pipe 2 → Port 0 → rx_usb_cdc_handle_bulk_out(k_usb_port_proto)
- * Pipe 5 → Port 1 → rx_usb_cdc_handle_bulk_out(k_usb_port_decoded)
- * Pipe 8 → Port 2 → rx_usb_cdc_handle_bulk_out(k_usb_port_log)
+ * // BRDY (Bulk OUT - host -> device)
+ * Pipe 2 -> Port 0 -> rx_usb_cdc_handle_bulk_out(k_usb_port_proto)
+ * Pipe 5 -> Port 1 -> rx_usb_cdc_handle_bulk_out(k_usb_port_decoded)
+ * Pipe 8 -> Port 2 -> rx_usb_cdc_handle_bulk_out(k_usb_port_log)
  *
- * // BEMP (Bulk IN - device → host)
- * Pipe 1 → Port 0 → rx_usb_cdc_handle_bulk_in(k_usb_port_proto)
- * Pipe 4 → Port 1 → rx_usb_cdc_handle_bulk_in(k_usb_port_decoded)
- * Pipe 7 → Port 2 → rx_usb_cdc_handle_bulk_in(k_usb_port_log)
+ * // BEMP (Bulk IN - device -> host)
+ * Pipe 1 -> Port 0 -> rx_usb_cdc_handle_bulk_in(k_usb_port_proto)
+ * Pipe 4 -> Port 1 -> rx_usb_cdc_handle_bulk_in(k_usb_port_decoded)
+ * Pipe 7 -> Port 2 -> rx_usb_cdc_handle_bulk_in(k_usb_port_log)
  * ```
  *
  * ## Interrupt Flow - Complete Sequence
  *
- * **Transmission (Device → Host):**
+ * **Transmission (Device -> Host):**
  * ```
  * T+0µs:   Application: rx_usb_write(port, data, len)
  * T+1µs:   Data copied to TX ring buffer
@@ -106,7 +106,7 @@
  * ...      (continues until TX ring buffer empty)
  * ```
  *
- * **Reception (Host → Device):**
+ * **Reception (Host -> Device):**
  * ```
  * T+0µs:   Host writes to /dev/ttyACM*
  * T+1ms:   USB0 receives Bulk OUT packet in FIFO
@@ -123,14 +123,14 @@
  *
  * **State Transitions via Interrupts:**
  * ```
- * VBUS detected (VBINT)     → Detached → Attached
- * Auto-transition           → Attached → Powered
- * Bus reset (DVST)          → Powered → Default
- * SET_ADDRESS (CTRT)        → Default → Addressed
- * SET_CONFIGURATION (CTRT)  → Addressed → Configured
- * No activity 3ms (DVST)    → Configured → Suspended
- * Activity detected (RESM)  → Suspended → Configured
- * VBUS lost (VBINT)         → Any state → Detached
+ * VBUS detected (VBINT)     -> Detached -> Attached
+ * Auto-transition           -> Attached -> Powered
+ * Bus reset (DVST)          -> Powered -> Default
+ * SET_ADDRESS (CTRT)        -> Default -> Addressed
+ * SET_CONFIGURATION (CTRT)  -> Addressed -> Configured
+ * No activity 3ms (DVST)    -> Configured -> Suspended
+ * Activity detected (RESM)  -> Suspended -> Configured
+ * VBUS lost (VBINT)         -> Any state -> Detached
  * ```
  *
  * **ISR State Updates:**
@@ -197,7 +197,7 @@
  * #include "rx_usb.h"
  * #include "tx_api.h"
  *
- * // Event flags for ISR → task communication
+ * // Event flags for ISR -> task communication
  * TX_EVENT_FLAGS_GROUP g_usb_events;
  *
  * // USB callback (runs in ISR context!)
@@ -265,16 +265,16 @@
  *
  * | Rule | Status | Implementation Notes |
  * |------|--------|---------------------|
- * | 1. Simple control flow | ✅ Pass | No goto/setjmp/recursion, switch statements only |
- * | 2. Fixed loop bounds | ✅ Pass | Loops bounded by k_usb_pipe_max (compile-time constant) |
- * | 3. No dynamic memory | ✅ Pass | Zero malloc/free, all static/stack allocation |
- * | 4. Short functions | ✅ Pass | All handlers <60 lines, single responsibility |
- * | 5. Assertions | ✅ Pass | State validation in each handler |
- * | 6. Small scope | ✅ Pass | Variables declared at minimal scope |
- * | 7. Check returns | ✅ Pass | All function calls checked (CDC handlers) |
- * | 8. Limited preprocessor | ✅ Pass | C23 typed enums for constants |
- * | 9. Restrict pointers | ✅ Pass | Simple pointers only, no function pointers in ISR |
- * | 10. Compiler warnings | ✅ Pass | -Wall -Wextra -Werror, zero warnings |
+ * | 1. Simple control flow | [PASS] Pass | No goto/setjmp/recursion, switch statements only |
+ * | 2. Fixed loop bounds | [PASS] Pass | Loops bounded by k_usb_pipe_max (compile-time constant) |
+ * | 3. No dynamic memory | [PASS] Pass | Zero malloc/free, all static/stack allocation |
+ * | 4. Short functions | [PASS] Pass | All handlers <60 lines, single responsibility |
+ * | 5. Assertions | [PASS] Pass | State validation in each handler |
+ * | 6. Small scope | [PASS] Pass | Variables declared at minimal scope |
+ * | 7. Check returns | [PASS] Pass | All function calls checked (CDC handlers) |
+ * | 8. Limited preprocessor | [PASS] Pass | C23 typed enums for constants |
+ * | 9. Restrict pointers | [PASS] Pass | Simple pointers only, no function pointers in ISR |
+ * | 10. Compiler warnings | [PASS] Pass | -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *

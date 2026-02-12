@@ -37,7 +37,7 @@
  * **Why signed int32_t for rx_err_t but unsigned uint16_t for enum?**
  * - rx_err_t uses int32_t to allow negative error codes (future compatibility)
  * - Enum uses uint16_t to minimize memory usage (most values < 0xFFFF)
- * - Implicit conversion is safe: uint16_t → int32_t always preserves value
+ * - Implicit conversion is safe: uint16_t -> int32_t always preserves value
  *
  * **Why category-based ranges instead of linear numbering?**
  * - Enables fast error categorization in logging (e.g., "0x2xx = hardware")
@@ -76,16 +76,16 @@
  * @see docs/sections/06_nasa_power_of_10.tex NASA compliance documentation
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion (pure constant definitions)
- * - Rule 2: ✓ N/A (no loops)
- * - Rule 3: ✓ No dynamic allocation (compile-time constants only)
- * - Rule 4: ✓ All functions < 10 lines (simple inline helpers)
- * - Rule 5: ✓ Inline functions have implicit pre/post conditions
- * - Rule 6: ✓ All identifiers have minimal scope
- * - Rule 7: ✓ N/A (no function calls to check)
- * - Rule 8: ✓ Uses C23 typed enums (k_rx_err_codes_t : uint16_t)
- * - Rule 9: ✓ N/A (no function pointers)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, recursion (pure constant definitions)
+ * - Rule 2: [OK] N/A (no loops)
+ * - Rule 3: [OK] No dynamic allocation (compile-time constants only)
+ * - Rule 4: [OK] All functions < 10 lines (simple inline helpers)
+ * - Rule 5: [OK] Inline functions have implicit pre/post conditions
+ * - Rule 6: [OK] All identifiers have minimal scope
+ * - Rule 7: [OK] N/A (no function calls to check)
+ * - Rule 8: [OK] Uses C23 typed enums (k_rx_err_codes_t : uint16_t)
+ * - Rule 9: [OK] N/A (no function pointers)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **S (Single Responsibility):** Only error code definitions, no handling logic
@@ -1005,7 +1005,7 @@ typedef enum : uint16_t {
  * @details
  * Converts ThreadX API return values (UINT status codes) to rx_err_t error codes.
  * ThreadX uses 0 for success (TX_SUCCESS) and non-zero for various error conditions.
- * This function performs a simple binary conversion: success → k_rx_ok, any error → k_rx_err_rtos_error.
+ * This function performs a simple binary conversion: success -> k_rx_ok, any error -> k_rx_err_rtos_error.
  *
  * ## Algorithm
  *
@@ -1110,16 +1110,16 @@ typedef enum : uint16_t {
  * @see tx_thread_create() Example ThreadX API that returns UINT status
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ N/A (no loops)
- * - Rule 3: ✓ No dynamic allocation
- * - Rule 4: ✓ Function is 1 line (excluding documentation)
- * - Rule 5: ✓ 1 precondition, 1 postcondition, 1 invariant
- * - Rule 6: ✓ Minimal scope (inline function)
- * - Rule 7: ✓ No function calls to check
- * - Rule 8: ✓ Uses typed enum constants
- * - Rule 9: ✓ No function pointers
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] N/A (no loops)
+ * - Rule 3: [OK] No dynamic allocation
+ * - Rule 4: [OK] Function is 1 line (excluding documentation)
+ * - Rule 5: [OK] 1 precondition, 1 postcondition, 1 invariant
+ * - Rule 6: [OK] Minimal scope (inline function)
+ * - Rule 7: [OK] No function calls to check
+ * - Rule 8: [OK] Uses typed enum constants
+ * - Rule 9: [OK] No function pointers
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @since Version 1.0.0
  */
@@ -1145,10 +1145,10 @@ static inline rx_err_t rx_err_from_threadx(uint32_t tx_status)
  *
  * | Method                  | Type Safe | Explicit Intent | Performance |
  * |-------------------------|-----------|-----------------|-------------|
- * | rx_err_is_ok(err)       | ✓         | ✓               | 1 cycle     |
- * | err == k_rx_ok          | ✓         | ✓               | 1 cycle     |
- * | !err                    | ✗         | ✗               | 1 cycle     |
- * | err == 0                | ✗         | ✗               | 1 cycle     |
+ * | rx_err_is_ok(err)       | [OK]         | [OK]               | 1 cycle     |
+ * | err == k_rx_ok          | [OK]         | [OK]               | 1 cycle     |
+ * | !err                    | [X]         | [X]               | 1 cycle     |
+ * | err == 0                | [X]         | [X]               | 1 cycle     |
  *
  * **Recommended:** Use `rx_err_is_ok(err)` for explicit intent and self-documenting code.
  *
@@ -1211,16 +1211,16 @@ static inline rx_err_t rx_err_from_threadx(uint32_t tx_status)
  * @see k_rx_ok Success constant (0x000)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ N/A (no loops)
- * - Rule 3: ✓ No dynamic allocation
- * - Rule 4: ✓ Function is 1 line
- * - Rule 5: ✓ 1 precondition, 1 postcondition, 1 invariant
- * - Rule 6: ✓ Minimal scope (inline function)
- * - Rule 7: ✓ No function calls to check
- * - Rule 8: ✓ Uses typed enum constant k_rx_ok
- * - Rule 9: ✓ No function pointers
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] N/A (no loops)
+ * - Rule 3: [OK] No dynamic allocation
+ * - Rule 4: [OK] Function is 1 line
+ * - Rule 5: [OK] 1 precondition, 1 postcondition, 1 invariant
+ * - Rule 6: [OK] Minimal scope (inline function)
+ * - Rule 7: [OK] No function calls to check
+ * - Rule 8: [OK] Uses typed enum constant k_rx_ok
+ * - Rule 9: [OK] No function pointers
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @since Version 1.0.0
  */
@@ -1351,16 +1351,16 @@ static inline bool rx_err_is_ok(rx_err_t err)
  * @see k_rx_ok Success constant (0x000)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ N/A (no loops)
- * - Rule 3: ✓ No dynamic allocation
- * - Rule 4: ✓ Function is 1 line
- * - Rule 5: ✓ 1 precondition, 1 postcondition, 2 invariants
- * - Rule 6: ✓ Minimal scope (inline function)
- * - Rule 7: ✓ No function calls to check
- * - Rule 8: ✓ Uses typed enum constant k_rx_ok
- * - Rule 9: ✓ No function pointers
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] N/A (no loops)
+ * - Rule 3: [OK] No dynamic allocation
+ * - Rule 4: [OK] Function is 1 line
+ * - Rule 5: [OK] 1 precondition, 1 postcondition, 2 invariants
+ * - Rule 6: [OK] Minimal scope (inline function)
+ * - Rule 7: [OK] No function calls to check
+ * - Rule 8: [OK] Uses typed enum constant k_rx_ok
+ * - Rule 9: [OK] No function pointers
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @since Version 1.0.0
  */

@@ -78,16 +78,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto/setjmp/recursion |
- * | 2. Fixed loop bounds | ✓ | No unbounded loops |
- * | 3. No dynamic allocation | ✓ | All static, zero malloc |
- * | 4. Small functions | ✓ | All functions < 60 lines |
- * | 5. Assertions | ✓ | RX_VALIDATE_PTR, RX_VALIDATE_INIT |
- * | 6. Narrow scope | ✓ | Static variables, internal functions |
- * | 7. Check return values | ✓ | All rx_err_t returns checked |
- * | 8. Limited preprocessor | ✓ | C23 typed enums for constants |
- * | 9. Pointer restrictions | ✓ | Single-level pointers |
- * | 10. Compiler warnings | ✓ | Clean with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto/setjmp/recursion |
+ * | 2. Fixed loop bounds | [OK] | No unbounded loops |
+ * | 3. No dynamic allocation | [OK] | All static, zero malloc |
+ * | 4. Small functions | [OK] | All functions < 60 lines |
+ * | 5. Assertions | [OK] | RX_VALIDATE_PTR, RX_VALIDATE_INIT |
+ * | 6. Narrow scope | [OK] | Static variables, internal functions |
+ * | 7. Check return values | [OK] | All rx_err_t returns checked |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums for constants |
+ * | 9. Pointer restrictions | [OK] | Single-level pointers |
+ * | 10. Compiler warnings | [OK] | Clean with -Wall -Wextra -Werror |
  *
  * @par SOLID Principles:
  *

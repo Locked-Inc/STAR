@@ -196,16 +196,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto, setjmp, recursion in test code |
- * | 2. Fixed loop bounds | ✓ | for-loop bounded by k_staggered_channel_count (4) |
- * | 3. No dynamic allocation | ✓ | All stack-based variables |
- * | 4. Small functions | ✓ | Each test < 30 lines, clear single purpose |
- * | 5. Assertions | ✓ | Every test has ≥2 assertions |
- * | 6. Narrow scope | ✓ | Variables declared at smallest scope |
- * | 7. Check return values | ✓ | All API returns validated with TEST_ASSERT |
- * | 8. Limited preprocessor | ✓ | C23 typed enums, no macros except Unity |
- * | 9. Pointer restrictions | ✓ | Single-level pointers only |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto, setjmp, recursion in test code |
+ * | 2. Fixed loop bounds | [OK] | for-loop bounded by k_staggered_channel_count (4) |
+ * | 3. No dynamic allocation | [OK] | All stack-based variables |
+ * | 4. Small functions | [OK] | Each test < 30 lines, clear single purpose |
+ * | 5. Assertions | [OK] | Every test has ≥2 assertions |
+ * | 6. Narrow scope | [OK] | Variables declared at smallest scope |
+ * | 7. Check return values | [OK] | All API returns validated with TEST_ASSERT |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums, no macros except Unity |
+ * | 9. Pointer restrictions | [OK] | Single-level pointers only |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * ## SOLID Principles Application
  *
@@ -587,9 +587,9 @@ void tearDown(void)
  * @note Integration tests would verify actual GPTW register writes and phase timing
  *
  * @par Coverage:
- * - API success path: ✓
- * - All 4 channels initialized: ✓
- * - Error handling: ✗ (tested in separate test cases)
+ * - API success path: [OK]
+ * - All 4 channels initialized: [OK]
+ * - Error handling: [X] (tested in separate test cases)
  *
  * @see rx_gptw_init_all_staggered() Function under test
  * @see mock_gptw_is_initialized() Mock verification function
@@ -598,9 +598,9 @@ void tearDown(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 2: ✓ Loop bounded by k_staggered_channel_count (4 iterations)
- * - Rule 5: ✓ 9 assertions validate preconditions and postconditions
- * - Rule 7: ✓ Return value checked with TEST_ASSERT_EQUAL
+ * - Rule 2: [OK] Loop bounded by k_staggered_channel_count (4 iterations)
+ * - Rule 5: [OK] 9 assertions validate preconditions and postconditions
+ * - Rule 7: [OK] Return value checked with TEST_ASSERT_EQUAL
  */
 void test_staggered_init_success(void)
 {
@@ -686,20 +686,20 @@ void test_staggered_init_success(void)
  * @note Production code should check return value: if (err != k_rx_ok) handle_error()
  *
  * @par Coverage:
- * - nullptr pointer detection: ✓
- * - Error propagation: ✓
- * - Side effect prevention: ✓
+ * - nullptr pointer detection: [OK]
+ * - Error propagation: [OK]
+ * - Side effect prevention: [OK]
  *
  * @par Example Production Code:
  * @code{.c}
  * rx_gptw_config_t config = {...};
- * rx_err_t err = rx_gptw_init_all_staggered(&config);  // ✓ Pass valid pointer
+ * rx_err_t err = rx_gptw_init_all_staggered(&config);  // [OK] Pass valid pointer
  * if (err != k_rx_ok) {
  *     rx_log_error("GPTW", "Init failed: %d", err);
  *     return err;
  * }
  *
- * // ✗ WRONG - Will fail this test
+ * // [X] WRONG - Will fail this test
  * err = rx_gptw_init_all_staggered(nullptr);  // Returns k_rx_err_null_ptr
  * @endcode
  *
@@ -710,8 +710,8 @@ void test_staggered_init_success(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ Validates precondition (config must not be nullptr)
- * - Rule 7: ✓ Return value checked with TEST_ASSERT_EQUAL
+ * - Rule 5: [OK] Validates precondition (config must not be nullptr)
+ * - Rule 7: [OK] Return value checked with TEST_ASSERT_EQUAL
  */
 void test_staggered_init_null_config_fails(void)
 {
@@ -751,7 +751,7 @@ void test_staggered_init_null_config_fails(void)
  *   \text{period\_count} = \frac{f_{PCLKA}}{f_{PWM}} - 1
  * @f]
  *
- * If @f$ f_{PWM} = 0 @f$, then @f$ \text{period\_count} = \frac{120 \times 10^6}{0} @f$ → **undefined**
+ * If @f$ f_{PWM} = 0 @f$, then @f$ \text{period\_count} = \frac{120 \times 10^6}{0} @f$ -> **undefined**
  *
  * **Physical impossibility**:
  * - 0 Hz frequency means infinite period (never switches)
@@ -788,13 +788,13 @@ void test_staggered_init_null_config_fails(void)
  * @note Additional tests could validate: negative freq (if signed), freq > max, etc.
  *
  * @par Coverage:
- * - Zero frequency detection: ✓
- * - Invalid argument error code: ✓
- * - Early validation (before hardware access): ✓
+ * - Zero frequency detection: [OK]
+ * - Invalid argument error code: [OK]
+ * - Early validation (before hardware access): [OK]
  *
  * @par Example Production Code:
  * @code{.c}
- * // ✓ CORRECT - Valid frequency
+ * // [OK] CORRECT - Valid frequency
  * rx_gptw_config_t config = {
  *     .frequency_hz = 20000,  // 20 kHz (valid)
  *     .wave_mode = k_gptw_wave_saw_pwm,
@@ -805,7 +805,7 @@ void test_staggered_init_null_config_fails(void)
  * rx_err_t err = rx_gptw_init_all_staggered(&config);
  * assert(err == k_rx_ok);
  *
- * // ✗ WRONG - Zero frequency (will fail this test)
+ * // [X] WRONG - Zero frequency (will fail this test)
  * config.frequency_hz = 0;  // Invalid!
  * err = rx_gptw_init_all_staggered(&config);
  * assert(err == k_rx_err_invalid_arg);  // Caught by validation
@@ -824,8 +824,8 @@ void test_staggered_init_null_config_fails(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ Validates precondition (frequency_hz must be > 0)
- * - Rule 7: ✓ Return value checked with TEST_ASSERT_EQUAL
+ * - Rule 5: [OK] Validates precondition (frequency_hz must be > 0)
+ * - Rule 7: [OK] Return value checked with TEST_ASSERT_EQUAL
  */
 void test_staggered_init_zero_frequency_fails(void)
 {
@@ -958,9 +958,9 @@ void test_staggered_init_zero_frequency_fails(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ Simple control flow (sequential test execution)
- * - Rule 2: ✓ Fixed number of tests (3, statically defined)
- * - Rule 5: ✓ Unity framework validates all test assertions
+ * - Rule 1: [OK] Simple control flow (sequential test execution)
+ * - Rule 2: [OK] Fixed number of tests (3, statically defined)
+ * - Rule 5: [OK] Unity framework validates all test assertions
  */
 int main(void)
 {

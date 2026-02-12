@@ -129,7 +129,7 @@
  * RX72N Group User's Manual: Hardware, Chapter 31 (Compare Match Timer)
  *
  * @par Verification Status
- * ✅ VERIFIED (2026-01-28) - All register addresses and offsets verified
+ * [PASS] VERIFIED (2026-01-28) - All register addresses and offsets verified
  * against RX72N Manual Chapter 31.
  *
  * @see rx_cmt.h Higher-level CMT driver API

@@ -224,16 +224,16 @@
  * - **Newline Conversion:** puts() converts '\n' -> '\r\n' automatically
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1 (Control Flow):** ✓ All test functions use sequential flow, no goto
- * - **Rule 2 (Loop Bounds):** ✓ All loops bounded by buffer size (known at compile time)
- * - **Rule 3 (Dynamic Memory):** ✓ Zero heap allocation (stack buffers only)
- * - **Rule 4 (Function Size):** ✓ Largest test function is 44 lines (well under 60 limit)
- * - **Rule 5 (Assertions):** ✓ Every test has ≥1 assertion, most have 3-5 assertions
- * - **Rule 6 (Scope):** ✓ Variables declared at smallest scope (inside test functions)
- * - **Rule 7 (Return Checking):** ✓ All API returns validated with TEST_ASSERT_EQUAL
- * - **Rule 8 (Preprocessor):** ✓ Minimal macros, C23 typed enums for constants
- * - **Rule 9 (Pointers):** ✓ Single-level dereferencing only (data*, config*)
- * - **Rule 10 (Warnings):** ✓ Compiles with -Wall -Wextra -Werror, zero warnings
+ * - **Rule 1 (Control Flow):** [OK] All test functions use sequential flow, no goto
+ * - **Rule 2 (Loop Bounds):** [OK] All loops bounded by buffer size (known at compile time)
+ * - **Rule 3 (Dynamic Memory):** [OK] Zero heap allocation (stack buffers only)
+ * - **Rule 4 (Function Size):** [OK] Largest test function is 44 lines (well under 60 limit)
+ * - **Rule 5 (Assertions):** [OK] Every test has ≥1 assertion, most have 3-5 assertions
+ * - **Rule 6 (Scope):** [OK] Variables declared at smallest scope (inside test functions)
+ * - **Rule 7 (Return Checking):** [OK] All API returns validated with TEST_ASSERT_EQUAL
+ * - **Rule 8 (Preprocessor):** [OK] Minimal macros, C23 typed enums for constants
+ * - **Rule 9 (Pointers):** [OK] Single-level dereferencing only (data*, config*)
+ * - **Rule 10 (Warnings):** [OK] Compiles with -Wall -Wextra -Werror, zero warnings
  *
  * @par SOLID Principles:
  * - **Single Responsibility (S):** Each test validates ONE specific UART behavior

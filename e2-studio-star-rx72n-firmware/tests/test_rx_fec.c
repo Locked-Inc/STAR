@@ -86,7 +86,7 @@
  * | 0xFF 0xFF 0xFF  | 1111 1111 1111 1111 1111 1111         | (varies by impl)     | 8 bytes        |
  *
  * **Note:** Expected encoded outputs are deterministic but depend on generator polynomials.
- * Tests verify that encoding is **deterministic** (same input → same output) and that
+ * Tests verify that encoding is **deterministic** (same input -> same output) and that
  * **round-trip encoding/decoding recovers the original data**.
  *
  * ## Error Correction Capability Table
@@ -110,12 +110,12 @@
  *
  * ### 1. Encode/Decode Round-Trip Testing
  * - **Objective:** Verify lossless encoding/decoding under ideal conditions
- * - **Method:** Encode test vectors → Decode → Compare with original input
+ * - **Method:** Encode test vectors -> Decode -> Compare with original input
  * - **Coverage:** Single byte, multi-byte, boundary cases (all 0s, all 1s, alternating)
  *
  * ### 2. Error Injection Testing
  * - **Objective:** Validate error correction capability
- * - **Method:** Encode → Inject bit errors → Decode → Verify correction
+ * - **Method:** Encode -> Inject bit errors -> Decode -> Verify correction
  * - **Error Types:**
  *   - Single-bit errors (correctable)
  *   - Scattered multi-bit errors (correctable within d_free)
@@ -123,19 +123,19 @@
  *
  * ### 3. Bit Error Rate (BER) Measurement
  * - **Objective:** Quantify error correction performance
- * - **Method:** Encode → Add Gaussian noise → Decode → Count bit errors
+ * - **Method:** Encode -> Add Gaussian noise -> Decode -> Count bit errors
  * - **Metrics:**
  *   - Input BER (before decoding)
  *   - Output BER (after decoding)
  *   - Coding gain = 10 log10(BER_input / BER_output)
  *
  * ### 4. Determinism Testing
- * - **Objective:** Ensure encoding is deterministic (same input → same output)
- * - **Method:** Encode same data twice with fresh encoder state → Compare outputs
+ * - **Objective:** Ensure encoding is deterministic (same input -> same output)
+ * - **Method:** Encode same data twice with fresh encoder state -> Compare outputs
  * - **Rationale:** Catch stateful bugs in encoder (encoder should be stateless per call)
  *
  * ### 5. State Machine Testing
- * - **Objective:** Verify encoder state transitions (zero state → encoding → zero state)
+ * - **Objective:** Verify encoder state transitions (zero state -> encoding -> zero state)
  * - **Method:** Verify tail bits flush encoder to zero state
  * - **Validation:** Traceback starts from state 0 (decoder assumption)
  *
@@ -208,15 +208,15 @@
  *
  * This test suite follows NASA Power of 10 rules for safety-critical code:
  *
- * - **Rule 1 (Control Flow):** ✓ No goto, setjmp/longjmp, or recursion. All loops use for/while.
- * - **Rule 2 (Loop Bounds):** ✓ All loops have static upper bounds (k_fec_max_symbols, k_fec_num_states).
- * - **Rule 3 (No Dynamic Allocation):** ✓ All buffers are static arrays (no malloc/free).
- * - **Rule 4 (Function Length):** ✓ All test functions < 60 lines (average ~20 lines).
- * - **Rule 5 (Assertions):** ✓ Every test has ≥2 assertions (parameter validation + result check).
- * - **Rule 6 (Data Scope):** ✓ Test fixtures in file scope, local variables in function scope.
- * - **Rule 7 (Return Checks):** ✓ All API calls check return values (TEST_ASSERT_EQUAL).
- * - **Rule 8 (Preprocessor):** ✓ Uses C23 typed enums (bit_manipulation_t), no #define constants.
- * - **Rule 10 (Warnings):** ✓ Compiles with -Wall -Wextra -Werror (zero warnings).
+ * - **Rule 1 (Control Flow):** [OK] No goto, setjmp/longjmp, or recursion. All loops use for/while.
+ * - **Rule 2 (Loop Bounds):** [OK] All loops have static upper bounds (k_fec_max_symbols, k_fec_num_states).
+ * - **Rule 3 (No Dynamic Allocation):** [OK] All buffers are static arrays (no malloc/free).
+ * - **Rule 4 (Function Length):** [OK] All test functions < 60 lines (average ~20 lines).
+ * - **Rule 5 (Assertions):** [OK] Every test has ≥2 assertions (parameter validation + result check).
+ * - **Rule 6 (Data Scope):** [OK] Test fixtures in file scope, local variables in function scope.
+ * - **Rule 7 (Return Checks):** [OK] All API calls check return values (TEST_ASSERT_EQUAL).
+ * - **Rule 8 (Preprocessor):** [OK] Uses C23 typed enums (bit_manipulation_t), no #define constants.
+ * - **Rule 10 (Warnings):** [OK] Compiles with -Wall -Wextra -Werror (zero warnings).
  *
  * **Rationale for Rule 3 (Static Allocation):**
  * - Survivors buffer (8200 × uint64_t = 65.6 KB) is statically allocated in setUp()
@@ -829,7 +829,7 @@ void test_encoded_len_max_payload(void)
  *
  * **Test Coverage:**
  * - **Parameter Validation:** nullptr pointers, uninitialized encoder, zero-length input
- * - **Encoding Correctness:** Single byte, determinism (same input → same output)
+ * - **Encoding Correctness:** Single byte, determinism (same input -> same output)
  * - **Boundary Cases:** Minimum (1 byte), typical (4 bytes), edge cases
  *
  * **Encoding Algorithm Verification:**
@@ -974,16 +974,16 @@ void test_encode_single_byte(void)
 }
 
 /**
- * @brief Test encode determinism (same input → same output)
+ * @brief Test encode determinism (same input -> same output)
  *
  * @details
  * Verifies that encoding is **deterministic**: encoding the same input twice
  * (with fresh encoder state) produces identical output.
  *
  * **Test Methodology:**
- * 1. Encode input = {0xDE, 0xAD, 0xBE, 0xEF} → output1
+ * 1. Encode input = {0xDE, 0xAD, 0xBE, 0xEF} -> output1
  * 2. Deinitialize and reinitialize encoder (reset state)
- * 3. Encode same input again → output2
+ * 3. Encode same input again -> output2
  * 4. Verify output1 == output2 (bit-exact match)
  *
  * **Rationale:**
@@ -1050,8 +1050,8 @@ void test_encode_deterministic(void)
  * @details
  * Verifies that rx_fec_hard_to_soft() correctly maps hard bits to soft bits
  * with maximum confidence:
- * - 0 → -127 (confident bit is 0)
- * - 1 → +127 (confident bit is 1)
+ * - 0 -> -127 (confident bit is 0)
+ * - 1 -> +127 (confident bit is 1)
  *
  * **Mathematical Verification:**
  * @f[
@@ -1081,8 +1081,8 @@ void test_hard_to_soft(void)
  * @details
  * Verifies that rx_fec_soft_to_hard() correctly maps soft bits to hard bits
  * using sign-based decision:
- * - s < 0 → 0 (likely bit 0)
- * - s ≥ 0 → 1 (likely bit 1)
+ * - s < 0 -> 0 (likely bit 0)
+ * - s ≥ 0 -> 1 (likely bit 1)
  *
  * **Mathematical Verification:**
  * @f[
@@ -1094,11 +1094,11 @@ void test_hard_to_soft(void)
  *
  * **Test Methodology:**
  * Test boundary values and typical cases:
- * - Negative extreme: -127 → 0
- * - Negative typical: -1 → 0
- * - Zero (threshold): 0 → 1
- * - Positive typical: 1 → 1
- * - Positive extreme: +127 → 1
+ * - Negative extreme: -127 -> 0
+ * - Negative typical: -1 -> 0
+ * - Zero (threshold): 0 -> 1
+ * - Positive typical: 1 -> 1
+ * - Positive extreme: +127 -> 1
  *
  * @pre None (pure function)
  * @post No state modified
@@ -1131,7 +1131,7 @@ void test_soft_to_hard(void)
  *
  * **Test Coverage:**
  * - **Parameter Validation:** nullptr pointers, uninitialized decoder, odd soft_len, zero-length
- * - **Decoding Correctness:** Tested in round-trip tests (encode → decode)
+ * - **Decoding Correctness:** Tested in round-trip tests (encode -> decode)
  *
  * **Soft-Decision Viterbi Algorithm:**
  * The decoder computes branch metrics using correlation between received soft bits
@@ -1488,9 +1488,9 @@ void test_decode_hard_zero_length(void)
  * errors) perfectly recovers the original input data.
  *
  * **Test Methodology:**
- * 1. Encode input data → encoded bits
+ * 1. Encode input data -> encoded bits
  * 2. Convert encoded hard bits to soft bits (maximum confidence ±127)
- * 3. Decode soft bits → decoded data
+ * 3. Decode soft bits -> decoded data
  * 4. Verify decoded data == original input (bit-exact match)
  *
  * **Test Coverage:**
@@ -1520,9 +1520,9 @@ void test_decode_hard_zero_length(void)
  *
  * **Test Flow:**
  * - Input: {0x42}
- * - Encode → 4 bytes (encoded)
- * - Convert to soft bits (hard → soft)
- * - Decode → 1 byte (decoded)
+ * - Encode -> 4 bytes (encoded)
+ * - Convert to soft bits (hard -> soft)
+ * - Decode -> 1 byte (decoded)
  * - Verify: decoded[0] == 0x42
  *
  * **Mathematical Verification:**
@@ -1571,8 +1571,8 @@ void test_roundtrip_single_byte(void)
  *
  * **Test Flow:**
  * - Input: {0xDE, 0xAD, 0xBE, 0xEF}
- * - Encode → 10 bytes (encoded)
- * - Decode → 4 bytes (decoded)
+ * - Encode -> 10 bytes (encoded)
+ * - Decode -> 4 bytes (decoded)
  * - Verify: decoded == input (byte-for-byte match)
  *
  * **Mathematical Verification:**
@@ -1625,7 +1625,7 @@ void test_roundtrip_multi_byte(void)
  *
  * **Test Flow:**
  * - Input: {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
- * - Encode → Decode
+ * - Encode -> Decode
  * - Verify: decoded == input (all zeros)
  *
  * @pre setUp() has initialized s_encoder and s_decoder
@@ -1675,7 +1675,7 @@ void test_roundtrip_all_zeros(void)
  *
  * **Test Flow:**
  * - Input: {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
- * - Encode → Decode
+ * - Encode -> Decode
  * - Verify: decoded == input (all ones)
  *
  * @pre setUp() has initialized s_encoder and s_decoder
@@ -1725,7 +1725,7 @@ void test_roundtrip_all_ones(void)
  *
  * **Test Flow:**
  * - Input: {0xAA, 0x55, 0xAA, 0x55}
- * - Encode → Decode
+ * - Encode -> Decode
  * - Verify: decoded == input
  *
  * @pre setUp() has initialized s_encoder and s_decoder
@@ -1773,8 +1773,8 @@ void test_roundtrip_alternating_pattern(void)
  *
  * **Test Flow:**
  * - Input: {0, 1, 2, ..., 31} (32 bytes)
- * - Encode → ~66 bytes (encoded)
- * - Decode → 32 bytes (decoded)
+ * - Encode -> ~66 bytes (encoded)
+ * - Decode -> 32 bytes (decoded)
  * - Verify: decoded == input (byte-for-byte match)
  *
  * **Traceback Depth:**
@@ -1835,9 +1835,9 @@ void test_roundtrip_larger_payload(void)
  * introduced during transmission (simulated by flipping bits in encoded data).
  *
  * **Test Methodology:**
- * 1. Encode input data → encoded bits
+ * 1. Encode input data -> encoded bits
  * 2. Inject bit errors (flip specific bits)
- * 3. Decode noisy encoded bits → decoded data
+ * 3. Decode noisy encoded bits -> decoded data
  * 4. Verify decoded data == original input (errors corrected)
  *
  * **Error Correction Capability:**
@@ -1865,9 +1865,9 @@ void test_roundtrip_larger_payload(void)
  *
  * **Test Flow:**
  * - Input: {0x42}
- * - Encode → 4 bytes (encoded)
+ * - Encode -> 4 bytes (encoded)
  * - Inject error: Flip bit 0 of encoded[0] (XOR with 0x01)
- * - Decode → 1 byte (decoded)
+ * - Decode -> 1 byte (decoded)
  * - Verify: decoded[0] == 0x42 (error corrected)
  *
  * **Mathematical Verification:**
@@ -1925,11 +1925,11 @@ void test_single_bit_error_correction(void)
  *
  * **Test Flow:**
  * - Input: {0xAB, 0xCD}
- * - Encode → 6 bytes (encoded)
+ * - Encode -> 6 bytes (encoded)
  * - Inject errors:
  *   - Flip bit 1 of encoded[0] (XOR with 0x02)
  *   - Flip bit 3 of encoded[1] (XOR with 0x08)
- * - Decode → 2 bytes (decoded)
+ * - Decode -> 2 bytes (decoded)
  * - Verify: decoded == input (errors corrected)
  *
  * **Mathematical Verification:**

@@ -13,7 +13,7 @@
  * ## Boot Sequence
  *
  * ```
- * Power On → USB Init → Enumeration (200ms) → Configured → Flush Boot Buffer
+ * Power On -> USB Init -> Enumeration (200ms) -> Configured -> Flush Boot Buffer
  *    ↓           ↓            ↓                    ↓              ↓
  *  Logs      Buffer      Buffer                Logs to       Boot logs
  *  start     in RAM      in RAM                 USB           appear
@@ -62,7 +62,7 @@ typedef enum : uint16_t {
      * Sized to hold ~500ms of logs at typical boot rate:
      * - Typical boot: ~20 log lines
      * - Average line: ~50 chars
-     * - Total: ~1000 chars → 512B buffer (50% headroom)
+     * - Total: ~1000 chars -> 512B buffer (50% headroom)
      * @par Value: 512 bytes
      */
     k_boot_buffer_size = 512,
@@ -893,14 +893,14 @@ void rx_log_usb_get_stats(usb_log_stats_t* stats)
  * @code
  * // EAGER FLUSH (with notify_ready):
  * // USB configured @ T=200ms
- * //   → rx_log_usb_notify_ready() called
- * //   → Boot logs appear immediately @ T=200ms
+ * //   -> rx_log_usb_notify_ready() called
+ * //   -> Boot logs appear immediately @ T=200ms
  *
  * // LAZY FLUSH (without notify_ready):
  * // USB configured @ T=200ms
- * //   → No explicit flush
- * //   → Next log write @ T=250ms triggers flush
- * //   → Boot logs appear @ T=250ms (50ms delay)
+ * //   -> No explicit flush
+ * //   -> Next log write @ T=250ms triggers flush
+ * //   -> Boot logs appear @ T=250ms (50ms delay)
  * @endcode
  *
  * @see internal_check_usb_ready() Internal flush implementation

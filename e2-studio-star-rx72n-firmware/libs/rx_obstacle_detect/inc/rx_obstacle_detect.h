@@ -148,16 +148,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto, setjmp, recursion |
- * | 2. Fixed loop bounds | ✓ | All loops use enum constants |
- * | 3. No dynamic memory | ✓ | Zero malloc/free - static allocation only |
- * | 4. Functions ≤60 lines | ✓ | Longest: `internal_poll_sensors` (54 lines) |
- * | 5. Min 2 assertions/func | ✓ | All public APIs validate inputs |
- * | 6. Smallest scope | ✓ | Variables declared at first use |
- * | 7. Check return values | ✓ | All HC-SR04 and motor calls checked |
- * | 8. Limit preprocessor | ✓ | Only C23 typed enums, no macros |
- * | 9. Restrict pointers | ✓ | Max one level of dereferencing |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto, setjmp, recursion |
+ * | 2. Fixed loop bounds | [OK] | All loops use enum constants |
+ * | 3. No dynamic memory | [OK] | Zero malloc/free - static allocation only |
+ * | 4. Functions ≤60 lines | [OK] | Longest: `internal_poll_sensors` (54 lines) |
+ * | 5. Min 2 assertions/func | [OK] | All public APIs validate inputs |
+ * | 6. Smallest scope | [OK] | Variables declared at first use |
+ * | 7. Check return values | [OK] | All HC-SR04 and motor calls checked |
+ * | 8. Limit preprocessor | [OK] | Only C23 typed enums, no macros |
+ * | 9. Restrict pointers | [OK] | Max one level of dereferencing |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * @par SOLID Principles:
  *
@@ -374,9 +374,9 @@ typedef enum : uint16_t {
  * - **OBSTACLE**: Obstacle within threshold. Motors emergency-stopped. Monitoring continues for clearance.
  *
  * @see rx_obstacle_detect_get_state() Query current state
- * @see rx_obstacle_detect_start() Transition STOPPED → RUNNING
+ * @see rx_obstacle_detect_start() Transition STOPPED -> RUNNING
  * @see rx_obstacle_detect_stop() Transition to STOPPED
- * @see internal_poll_sensors() Implements RUNNING → OBSTACLE transition
+ * @see internal_poll_sensors() Implements RUNNING -> OBSTACLE transition
  *
  * @since Version 1.0.0
  */
@@ -399,7 +399,7 @@ typedef enum : uint8_t {
    * - None
    *
    * @par Valid Transitions:
-   * - STOPPED → RUNNING: via `rx_obstacle_detect_start()`
+   * - STOPPED -> RUNNING: via `rx_obstacle_detect_start()`
    *
    * @par Value: 0 (default/initial state)
    */
@@ -429,8 +429,8 @@ typedef enum : uint8_t {
    * - OR emergency stop motors (if obstacle confirmed)
    *
    * @par Valid Transitions:
-   * - RUNNING → OBSTACLE: When debounce_counter >= debounce_samples
-   * - RUNNING → STOPPED: via `rx_obstacle_detect_stop()`
+   * - RUNNING -> OBSTACLE: When debounce_counter >= debounce_samples
+   * - RUNNING -> STOPPED: via `rx_obstacle_detect_stop()`
    *
    * @par Value: 1
    */
@@ -459,8 +459,8 @@ typedef enum : uint8_t {
    * - OR suspend task (if stop requested)
    *
    * @par Valid Transitions:
-   * - OBSTACLE → RUNNING: When all sensors >= threshold (automatic)
-   * - OBSTACLE → STOPPED: via `rx_obstacle_detect_stop()`
+   * - OBSTACLE -> RUNNING: When all sensors >= threshold (automatic)
+   * - OBSTACLE -> STOPPED: via `rx_obstacle_detect_stop()`
    *
    * @par Value: 2
    *
@@ -617,11 +617,11 @@ typedef void (*rx_obstacle_detect_callback_t)(bool    obstacle_detected,
  *
  * **Example Calculation:**
  * - Max velocity: 100 cm/s (1 m/s)
- * - Poll interval: 20ms, Debounce: 3 → Latency = 60ms = 0.06s
+ * - Poll interval: 20ms, Debounce: 3 -> Latency = 60ms = 0.06s
  * - Travel during latency: 100 × 0.06 = 6cm
  * - Braking distance: ~10cm (depends on motor/PID)
  * - Margin: 10cm
- * - **Threshold: 6 + 10 + 10 = 26cm → use 30cm**
+ * - **Threshold: 6 + 10 + 10 = 26cm -> use 30cm**
  *
  * @par Field Constraints:
  *
@@ -752,7 +752,7 @@ typedef struct {
    * @par Selection Guidelines:
    * threshold >= (max_speed_cm/s × latency_s) + braking_distance_cm + 10cm margin
    *
-   * @warning Too small: Insufficient stopping time → collisions
+   * @warning Too small: Insufficient stopping time -> collisions
    * @warning Too large: Excessive false stops, limited mobility
    */
   float detection_threshold_cm;
@@ -997,9 +997,9 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 3: ✓ No dynamic memory - all allocation is static
- * - Rule 5: ✓ Minimum 6 preconditions validated
- * - Rule 7: ✓ All ThreadX return values checked
+ * - Rule 3: [OK] No dynamic memory - all allocation is static
+ * - Rule 5: [OK] Minimum 6 preconditions validated
+ * - Rule 7: [OK] All ThreadX return values checked
  */
 [[nodiscard]] rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
                                  const rx_obstacle_detect_config_t* config);

@@ -385,16 +385,16 @@ void test_poeg_init_links_gptw_to_poeg_groups(void)
   rx_err_t err = test_poeg_init();
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  /* GPTW0 → POEG Group A */
+  /* GPTW0 -> POEG Group A */
   TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[0], s_mock_gptw[0].gtintad);
 
-  /* GPTW1 → POEG Group B */
+  /* GPTW1 -> POEG Group B */
   TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[1], s_mock_gptw[1].gtintad);
 
-  /* GPTW2 → POEG Group C */
+  /* GPTW2 -> POEG Group C */
   TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[2], s_mock_gptw[2].gtintad);
 
-  /* GPTW3 → POEG Group D */
+  /* GPTW3 -> POEG Group D */
   TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[3], s_mock_gptw[3].gtintad);
 }
 
@@ -698,7 +698,7 @@ void test_poeg_full_fault_lifecycle(void)
   rx_err_t err = test_poeg_init();
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  /* 2. Fault occurs: nFAULT goes low → PIDF set */
+  /* 2. Fault occurs: nFAULT goes low -> PIDF set */
   s_mock_poeg[0].poeggn |= k_poeg_pidf_detected;
   /* ST=0 because nFAULT is still active */
 
@@ -706,14 +706,14 @@ void test_poeg_full_fault_lifecycle(void)
   test_poeg_isr_handler(0, k_poeg_irq_group_a);
   TEST_ASSERT_TRUE(s_estop_active);
 
-  /* 4. Try to clear while fault still active → busy */
+  /* 4. Try to clear while fault still active -> busy */
   err = test_poeg_clear_fault(0);
   TEST_ASSERT_EQUAL(k_rx_err_busy, err);
 
-  /* 5. Fault resolves: nFAULT deasserted → ST goes high */
+  /* 5. Fault resolves: nFAULT deasserted -> ST goes high */
   s_mock_poeg[0].poeggn |= k_poeg_st_high;
 
-  /* 6. Clear fault → success */
+  /* 6. Clear fault -> success */
   err = test_poeg_clear_fault(0);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(s_estop_active);

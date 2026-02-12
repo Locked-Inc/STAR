@@ -132,16 +132,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto, setjmp, recursion |
- * | 2. Fixed loop bounds | ✓ | All loops bounded by sensor_count/motor_count |
- * | 3. No dynamic memory | ✓ | Zero malloc/free - all static allocation |
- * | 4. Functions ≤60 lines | ✓ | Longest: internal_poll_sensors (54 lines) |
- * | 5. Min 2 assertions/func | ✓ | All public APIs validate handle/parameters |
- * | 6. Smallest scope | ✓ | Variables declared at first use |
- * | 7. Check return values | ✓ | All HC-SR04/motor/ThreadX returns checked |
- * | 8. Limit preprocessor | ✓ | Only C23 typed enums, no macros |
- * | 9. Restrict pointers | ✓ | Max one level of dereferencing |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto, setjmp, recursion |
+ * | 2. Fixed loop bounds | [OK] | All loops bounded by sensor_count/motor_count |
+ * | 3. No dynamic memory | [OK] | Zero malloc/free - all static allocation |
+ * | 4. Functions ≤60 lines | [OK] | Longest: internal_poll_sensors (54 lines) |
+ * | 5. Min 2 assertions/func | [OK] | All public APIs validate handle/parameters |
+ * | 6. Smallest scope | [OK] | Variables declared at first use |
+ * | 7. Check return values | [OK] | All HC-SR04/motor/ThreadX returns checked |
+ * | 8. Limit preprocessor | [OK] | Only C23 typed enums, no macros |
+ * | 9. Restrict pointers | [OK] | Max one level of dereferencing |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * @see rx_obstacle_detect.h Public API definitions
  * @see rx_hcsr04.c HC-SR04 sensor driver

@@ -138,7 +138,7 @@
  *
  * ### Pin Configuration (STAR Project)
  *
- * **RX72N → DRV8243 Connections:**
+ * **RX72N -> DRV8243 Connections:**
  *
  * | RX72N Pin | Signal | DRV8243 Pin | Function | Notes |
  * |-----------|--------|-------------|----------|-------|
@@ -251,7 +251,7 @@
  *     ↓
  * Check fault status (nFAULT pin via GPIO)
  *     ↓ (no fault)
- * Convert speed (-100 to +100) → PH duty + EN duty
+ * Convert speed (-100 to +100) -> PH duty + EN duty
  *     ↓
  * Call rx_motor_set_duty() for both PWM outputs
  *     ↓
@@ -264,7 +264,7 @@
  *     ↓
  * Read IPROPI pin via ADC (rx_bus_manager)
  *     ↓
- * Convert ADC counts → voltage → current_ma
+ * Convert ADC counts -> voltage -> current_ma
  * current_ma = (ADC / 4095) × 3.3V × (1000 / ki_propi) × 1000
  *     ↓
  * (Optional) Check against current_limit_ma
@@ -325,16 +325,16 @@
  *
  * | Rule | Status | Notes |
  * |------|--------|-------|
- * | 1. Simple control flow | ✓ | No goto, no recursion; linear init/control flow |
- * | 2. Fixed loop bounds | ✓ | No unbounded loops (register polling has timeout) |
- * | 3. No dynamic memory | ✓ | All structures user-provided or stack-allocated |
- * | 4. Function length <60 lines | ✓ | Longest function ~45 lines (init) |
- * | 5. Assertions | ✓ | All functions validate inputs (≥2 checks) |
- * | 6. Smallest scope | ✓ | Variables declared at point of use |
- * | 7. Check return values | ✓ | All bus_manager and rx_motor calls checked |
- * | 8. Limited preprocessor | ✓ | C23 typed enums, no macro constants |
- * | 9. Pointer restrictions | ⚠️ | Function pointers in bus_manager (DIP pattern) |
- * | 10. Compiler warnings | ✓ | `-Wall -Wextra -Werror` enforced |
+ * | 1. Simple control flow | [OK] | No goto, no recursion; linear init/control flow |
+ * | 2. Fixed loop bounds | [OK] | No unbounded loops (register polling has timeout) |
+ * | 3. No dynamic memory | [OK] | All structures user-provided or stack-allocated |
+ * | 4. Function length <60 lines | [OK] | Longest function ~45 lines (init) |
+ * | 5. Assertions | [OK] | All functions validate inputs (≥2 checks) |
+ * | 6. Smallest scope | [OK] | Variables declared at point of use |
+ * | 7. Check return values | [OK] | All bus_manager and rx_motor calls checked |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums, no macro constants |
+ * | 9. Pointer restrictions | [WARN] | Function pointers in bus_manager (DIP pattern) |
+ * | 10. Compiler warnings | [OK] | `-Wall -Wextra -Werror` enforced |
  *
  * ## SOLID Principles
  *
@@ -386,8 +386,8 @@
  *         .gpio_bus_name = "gpio",
  *         .adc_bus_name = "adc0",
  *         .gptw_channel = k_gptw_channel_0,
- *         .output_ph = k_gptw_output_a,        // GTIOC0A → PH pin
- *         .output_en = k_gptw_output_b,        // GTIOC0B → EN pin
+ *         .output_ph = k_gptw_output_a,        // GTIOC0A -> PH pin
+ *         .output_en = k_gptw_output_b,        // GTIOC0B -> EN pin
  *         .pin_ipropi = 7,                     // AN007 (P47) for Motor 0 current sense
  *         .port_nfault = 3, .pin_nfault = 2,   // PORT3.2 for fault detect
  *         .pwm_freq_hz = 20000,                // 20 kHz PWM
@@ -841,7 +841,7 @@ typedef enum : uint8_t {
    *   V_kickback = -L × (dI/dt)
    *
    * During hard braking (EN goes LOW):
-   *   I_motor = 1.5A → 0A in 10µs
+   *   I_motor = 1.5A -> 0A in 10µs
    *   dI/dt = 1.5A / 10µs = 150 A/ms
    *
    * Induced voltage:

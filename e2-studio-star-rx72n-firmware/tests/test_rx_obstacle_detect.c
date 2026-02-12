@@ -98,8 +98,8 @@
  * 3. **Threshold Crossing Scenarios** (test_obstacle_detect_threshold_*)
  *    - Test exact threshold boundaries (29.9cm vs 30.0cm vs 30.1cm)
  *    - Verify hysteresis behavior (prevent oscillation)
- *    - Test gradual approach (50cm → 40cm → 30cm → 20cm)
- *    - Test sudden appearance (no object → 10cm obstacle)
+ *    - Test gradual approach (50cm -> 40cm -> 30cm -> 20cm)
+ *    - Test sudden appearance (no object -> 10cm obstacle)
  *
  * 4. **Debouncing Validation** (test_obstacle_detect_debounce_*)
  *    - Verify 1 sample below threshold does NOT trigger (false positive rejection)
@@ -108,10 +108,10 @@
  *    - Test intermittent detections (below, above, below) reset counter
  *
  * 5. **State Machine Testing** (test_obstacle_detect_state_*)
- *    - Verify STOPPED → RUNNING transition on start()
- *    - Verify RUNNING → OBSTACLE transition on detection
- *    - Verify OBSTACLE → RUNNING transition on clearance
- *    - Verify OBSTACLE → STOPPED transition on stop()
+ *    - Verify STOPPED -> RUNNING transition on start()
+ *    - Verify RUNNING -> OBSTACLE transition on detection
+ *    - Verify OBSTACLE -> RUNNING transition on clearance
+ *    - Verify OBSTACLE -> STOPPED transition on stop()
  *
  * 6. **Emergency Stop Validation** (test_obstacle_detect_emergency_*)
  *    - Verify ALL motors stopped when ANY sensor triggers
@@ -202,16 +202,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto, setjmp, recursion in tests |
- * | 2. Fixed loop bounds | ✓ | All loops bounded by sensor_count (2) |
- * | 3. No dynamic memory | ✓ | All test fixtures statically allocated |
- * | 4. Functions ≤60 lines | ✓ | Longest test: ~30 lines |
- * | 5. Min 2 assertions/test | ✓ | All tests validate multiple conditions |
- * | 6. Smallest scope | ✓ | Variables declared at first use |
- * | 7. Check return values | ✓ | All rx_obstacle_detect_* returns checked |
- * | 8. Limit preprocessor | ✓ | Only include guards, no macros |
- * | 9. Restrict pointers | ✓ | Max one level of dereferencing |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto, setjmp, recursion in tests |
+ * | 2. Fixed loop bounds | [OK] | All loops bounded by sensor_count (2) |
+ * | 3. No dynamic memory | [OK] | All test fixtures statically allocated |
+ * | 4. Functions ≤60 lines | [OK] | Longest test: ~30 lines |
+ * | 5. Min 2 assertions/test | [OK] | All tests validate multiple conditions |
+ * | 6. Smallest scope | [OK] | Variables declared at first use |
+ * | 7. Check return values | [OK] | All rx_obstacle_detect_* returns checked |
+ * | 8. Limit preprocessor | [OK] | Only include guards, no macros |
+ * | 9. Restrict pointers | [OK] | Max one level of dereferencing |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * @par SOLID Principles in Test Design:
  *
@@ -479,9 +479,9 @@ static float s_callback_distance_cm;
  * times with the correct parameters.
  *
  * **Captured Parameters:**
- * - obstacle_detected → s_callback_obstacle_detected
- * - sensor_idx → s_callback_sensor_idx
- * - distance_cm → s_callback_distance_cm
+ * - obstacle_detected -> s_callback_obstacle_detected
+ * - sensor_idx -> s_callback_sensor_idx
+ * - distance_cm -> s_callback_distance_cm
  * - s_callback_called set to true
  *
  * This callback is registered in s_config.callback and invoked by the
@@ -607,10 +607,10 @@ test_callback(bool obstacle_detected, uint8_t sensor_idx, float distance_cm, voi
  *    - s_motors[]: Zero all motor state
  *
  * 3. **Pointer Arrays:** Setup indirection
- *    - s_sensor_ptrs[0] → &s_sensors[0]
- *    - s_sensor_ptrs[1] → &s_sensors[1]
- *    - s_motor_ptrs[0] → &s_motors[0]
- *    - s_motor_ptrs[1] → &s_motors[1]
+ *    - s_sensor_ptrs[0] -> &s_sensors[0]
+ *    - s_sensor_ptrs[1] -> &s_sensors[1]
+ *    - s_motor_ptrs[0] -> &s_motors[0]
+ *    - s_motor_ptrs[1] -> &s_motors[1]
  *
  * 4. **Default Configuration:** Initialize s_config
  *    - sensors: s_sensor_ptrs (2 sensors)
@@ -773,19 +773,19 @@ void tearDown(void)
  * parameter validation, and resource allocation.
  *
  * **Test Coverage:**
- * - ✓ Valid configuration initialization
- * - ✓ nullptr handle detection
- * - ✓ nullptr config detection
- * - ✓ Already initialized detection
- * - ✓ nullptr sensors array detection
- * - ✓ Zero sensor count validation
- * - ✓ Excessive sensor count validation (> 8)
- * - ✓ nullptr motors array detection
- * - ✓ Zero motor count validation
- * - ✓ Threshold too low validation (< 2cm)
- * - ✓ Threshold too high validation (> 400cm)
- * - ✓ Invalid debounce validation (0 samples)
- * - ✓ ThreadX resource creation (task, event flags)
+ * - [OK] Valid configuration initialization
+ * - [OK] nullptr handle detection
+ * - [OK] nullptr config detection
+ * - [OK] Already initialized detection
+ * - [OK] nullptr sensors array detection
+ * - [OK] Zero sensor count validation
+ * - [OK] Excessive sensor count validation (> 8)
+ * - [OK] nullptr motors array detection
+ * - [OK] Zero motor count validation
+ * - [OK] Threshold too low validation (< 2cm)
+ * - [OK] Threshold too high validation (> 400cm)
+ * - [OK] Invalid debounce validation (0 samples)
+ * - [OK] ThreadX resource creation (task, event flags)
  *
  * **Initialization Validation Logic:**
  *
@@ -1041,11 +1041,11 @@ void test_obstacle_detect_init_creates_threadx_resources(void)
  * cleanup, and handle state reset.
  *
  * **Test Coverage:**
- * - ✓ Successful deinitialization of initialized system
- * - ✓ nullptr handle detection
- * - ✓ Not initialized detection
- * - ✓ ThreadX task deletion (mocked)
- * - ✓ ThreadX event flags deletion (mocked)
+ * - [OK] Successful deinitialization of initialized system
+ * - [OK] nullptr handle detection
+ * - [OK] Not initialized detection
+ * - [OK] ThreadX task deletion (mocked)
+ * - [OK] ThreadX event flags deletion (mocked)
  *
  * @{
  */
@@ -1105,13 +1105,13 @@ void test_obstacle_detect_deinit_not_initialized_fails(void)
  * transitions.
  *
  * **Test Coverage:**
- * - ✓ Successful start from STOPPED state
- * - ✓ Start with nullptr handle
- * - ✓ Start when not initialized
- * - ✓ Successful stop from RUNNING state
- * - ✓ Stop with nullptr handle
- * - ✓ ThreadX task resume/suspend (mocked)
- * - ✓ Event flag setting for start/stop
+ * - [OK] Successful start from STOPPED state
+ * - [OK] Start with nullptr handle
+ * - [OK] Start when not initialized
+ * - [OK] Successful stop from RUNNING state
+ * - [OK] Stop with nullptr handle
+ * - [OK] ThreadX task resume/suspend (mocked)
+ * - [OK] Event flag setting for start/stop
  *
  * @{
  */
@@ -1196,11 +1196,11 @@ void test_obstacle_detect_stop_null_handle_fails(void)
  * Validates state query APIs including get_state() and is_obstacle_detected().
  *
  * **Test Coverage:**
- * - ✓ Get state success (returns k_obstacle_detect_state_stopped)
- * - ✓ Get state with nullptr handle
- * - ✓ Get state with nullptr output pointer
- * - ✓ Is obstacle detected returns false initially
- * - ✓ Is obstacle detected with nullptr handle
+ * - [OK] Get state success (returns k_obstacle_detect_state_stopped)
+ * - [OK] Get state with nullptr handle
+ * - [OK] Get state with nullptr output pointer
+ * - [OK] Is obstacle detected returns false initially
+ * - [OK] Is obstacle detected with nullptr handle
  *
  * @{
  */
@@ -1286,10 +1286,10 @@ void test_obstacle_detect_is_obstacle_detected_null_handle(void)
  * - false_positives: Debounced false positive count
  *
  * **Test Coverage:**
- * - ✓ Get stats success (all zero initially)
- * - ✓ Get stats with nullptr handle
- * - ✓ Reset stats success (clears all counters)
- * - ✓ Reset stats with nullptr handle
+ * - [OK] Get stats success (all zero initially)
+ * - [OK] Get stats with nullptr handle
+ * - [OK] Reset stats success (clears all counters)
+ * - [OK] Reset stats with nullptr handle
  *
  * @{
  */
@@ -1373,9 +1373,9 @@ void test_obstacle_detect_reset_stats_null_handle_fails(void)
  * after obstacle has been physically removed.
  *
  * **Test Coverage:**
- * - ✓ Clear obstacle success (resets debounce, clears active flags)
- * - ✓ Clear obstacle transitions OBSTACLE → RUNNING state
- * - ✓ Clear obstacle with nullptr handle
+ * - [OK] Clear obstacle success (resets debounce, clears active flags)
+ * - [OK] Clear obstacle transitions OBSTACLE -> RUNNING state
+ * - [OK] Clear obstacle with nullptr handle
  *
  * @{
  */

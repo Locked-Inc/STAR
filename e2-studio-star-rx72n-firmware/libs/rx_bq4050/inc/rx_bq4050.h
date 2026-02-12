@@ -73,16 +73,16 @@
  * - rx_log.h: Logging infrastructure
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp/longjmp, or recursion
- * - Rule 2: ✓ All loops have statically provable bounds (fixed cell count iterations)
- * - Rule 3: ✓ No dynamic memory allocation (all structures static or stack)
- * - Rule 4: ✓ Functions < 60 lines (largest is ~50 lines)
- * - Rule 5: ✓ Minimum 2 assertions per function (NULL checks, range validation)
- * - Rule 6: ✓ Variables declared at smallest scope
- * - Rule 7: ✓ All SMBus return values checked
- * - Rule 8: ✓ C23 typed enums for all constants (no macros)
- * - Rule 9: ✓ Single-level pointer dereferencing only
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp/longjmp, or recursion
+ * - Rule 2: [OK] All loops have statically provable bounds (fixed cell count iterations)
+ * - Rule 3: [OK] No dynamic memory allocation (all structures static or stack)
+ * - Rule 4: [OK] Functions < 60 lines (largest is ~50 lines)
+ * - Rule 5: [OK] Minimum 2 assertions per function (NULL checks, range validation)
+ * - Rule 6: [OK] Variables declared at smallest scope
+ * - Rule 7: [OK] All SMBus return values checked
+ * - Rule 8: [OK] C23 typed enums for all constants (no macros)
+ * - Rule 9: [OK] Single-level pointer dereferencing only
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility:** BQ4050 driver handles ONLY fuel gauge communication

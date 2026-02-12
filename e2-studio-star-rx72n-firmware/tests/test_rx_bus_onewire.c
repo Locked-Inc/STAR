@@ -139,10 +139,10 @@
  *   1. Read bit value from all devices
  *   2. Read complement bit value
  *   3. Determine search direction:
- *      - (1, 0): Only devices with bit=1 present → write 1
- *      - (0, 1): Only devices with bit=0 present → write 0
- *      - (0, 0): Conflict - both values present → choose path, mark bifurcation
- *      - (1, 1): No devices responding → error
+ *      - (1, 0): Only devices with bit=1 present -> write 1
+ *      - (0, 1): Only devices with bit=0 present -> write 0
+ *      - (0, 0): Conflict - both values present -> choose path, mark bifurcation
+ *      - (1, 1): No devices responding -> error
  *   4. Write chosen bit to deselect non-matching devices
  *   5. Track last discrepancy for next iteration
  * @endcode
@@ -197,44 +197,44 @@
  *
  * @par NASA Power of 10 Compliance
  *
- * **Rule 1 (Simple Control Flow):** ✓ No goto, setjmp, recursion
+ * **Rule 1 (Simple Control Flow):** [OK] No goto, setjmp, recursion
  * - ROM search uses iterative loop with static depth limit
  *
- * **Rule 2 (Fixed Loop Bounds):** ✓ All loops have static bounds
+ * **Rule 2 (Fixed Loop Bounds):** [OK] All loops have static bounds
  * - setUp/tearDown: No loops
  * - ROM search: 64 iterations (bit width)
  * - Test runner: Compile-time test count
  *
- * **Rule 3 (No Dynamic Memory):** ✓ Zero heap allocation
+ * **Rule 3 (No Dynamic Memory):** [OK] Zero heap allocation
  * - All buffers are stack arrays or static variables
  * - Bus manager uses static state pool
  *
- * **Rule 4 (Short Functions):** ✓ All test functions <60 lines
+ * **Rule 4 (Short Functions):** [OK] All test functions <60 lines
  * - Average test length: 12 lines
  * - Longest test: test_rx_bus_onewire_search_no_devices (20 lines)
  *
- * **Rule 5 (Assertions):** ✓ Every test has 2+ assertions
+ * **Rule 5 (Assertions):** [OK] Every test has 2+ assertions
  * - Input validation: TEST_ASSERT_EQUAL for error codes
  * - Output validation: TEST_ASSERT for result correctness
  * - State validation: Mock counters and GPIO state checks
  *
- * **Rule 6 (Small Scope):** ✓ Data at minimal scope
+ * **Rule 6 (Small Scope):** [OK] Data at minimal scope
  * - Test fixtures are file-static
  * - Local variables declared at first use
  *
- * **Rule 7 (Check Return Values):** ✓ Every function call checked
+ * **Rule 7 (Check Return Values):** [OK] Every function call checked
  * - All rx_err_t returns validated with TEST_ASSERT_EQUAL
  * - Mock function returns validated
  *
- * **Rule 8 (Limited Preprocessor):** ✓ No function-like macros
+ * **Rule 8 (Limited Preprocessor):** [OK] No function-like macros
  * - Uses typed enums for constants
  * - RUN_TEST macros are Unity framework (required)
  *
- * **Rule 9 (Pointer Restrictions):** ✓ Single-level dereference
+ * **Rule 9 (Pointer Restrictions):** [OK] Single-level dereference
  * - No function pointers in tests
  * - Simple pointer parameters (uint8_t*, bool*)
  *
- * **Rule 10 (Compiler Warnings):** ✓ Compiled with -Wall -Wextra -Werror
+ * **Rule 10 (Compiler Warnings):** [OK] Compiled with -Wall -Wextra -Werror
  * - Zero warnings in CI/CD builds
  * - clang-tidy: All checks pass
  *
@@ -1116,7 +1116,7 @@ void test_rx_bus_onewire_read_bit_not_initialized(void)
  *
  * @details
  * Validates byte-level operations built from bit operations:
- * - LSB-first transmission (bit 0 → bit 7)
+ * - LSB-first transmission (bit 0 -> bit 7)
  * - 8-bit data transfer
  * - Correct bit ordering
  * - Error propagation
@@ -1790,7 +1790,7 @@ void test_rx_bus_onewire_match_rom_not_initialized(void)
  * **Read ROM Command [0x33]:**
  * - Reads 64-bit ROM code from device
  * - ONLY usable when exactly one device on bus
- * - Sequence: [0x33] → [Read 8 bytes LSB-first]
+ * - Sequence: [0x33] -> [Read 8 bytes LSB-first]
  * - Multiple devices cause bus contention (invalid data)
  *
  * **Use cases:**
@@ -1914,10 +1914,10 @@ void test_rx_bus_onewire_read_rom_null_manager(void)
  *   1. All devices transmit bit N
  *   2. All devices transmit complement of bit N
  *   3. Controller analyzes response:
- *      (1, 0): Only '1' devices → write 1, continue
- *      (0, 1): Only '0' devices → write 0, continue
- *      (0, 0): Both present (conflict) → choose path, mark bifurcation
- *      (1, 1): No devices → error
+ *      (1, 0): Only '1' devices -> write 1, continue
+ *      (0, 1): Only '0' devices -> write 0, continue
+ *      (0, 0): Both present (conflict) -> choose path, mark bifurcation
+ *      (1, 1): No devices -> error
  *   4. Write chosen bit (deselects non-matching devices)
  *   5. Matching devices continue, others go idle
  *
@@ -1933,8 +1933,8 @@ void test_rx_bus_onewire_read_rom_null_manager(void)
  *           ▲
  *         Bit 8 differs
  *
- * Iteration 1: Choose '0' at bit 8 → Find Device A
- * Iteration 2: Choose '1' at bit 8 → Find Device B
+ * Iteration 1: Choose '0' at bit 8 -> Find Device A
+ * Iteration 2: Choose '1' at bit 8 -> Find Device B
  * @endcode
  *
  * **Coverage:** 6 tests, 80% code paths

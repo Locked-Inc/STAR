@@ -114,16 +114,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto/setjmp/recursion |
- * | 2. Fixed loop bounds | ✓ | Loops bounded by k_iwdt_max_tasks (8) |
- * | 3. No dynamic allocation | ✓ | Static task array only |
- * | 4. Small functions | ✓ | All < 60 lines |
- * | 5. Assertions | ✓ | Minimum 2 checks per function |
- * | 6. Narrow scope | ✓ | File-scope statics |
- * | 7. Check return values | ✓ | All return rx_err_t |
- * | 8. Limited preprocessor | ✓ | C23 typed enums only |
- * | 9. Pointer restrictions | ✓ | Single-level pointers |
- * | 10. Compiler warnings | ✓ | -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto/setjmp/recursion |
+ * | 2. Fixed loop bounds | [OK] | Loops bounded by k_iwdt_max_tasks (8) |
+ * | 3. No dynamic allocation | [OK] | Static task array only |
+ * | 4. Small functions | [OK] | All < 60 lines |
+ * | 5. Assertions | [OK] | Minimum 2 checks per function |
+ * | 6. Narrow scope | [OK] | File-scope statics |
+ * | 7. Check return values | [OK] | All return rx_err_t |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums only |
+ * | 9. Pointer restrictions | [OK] | Single-level pointers |
+ * | 10. Compiler warnings | [OK] | -Wall -Wextra -Werror |
  *
  * @par SOLID Principles:
  *

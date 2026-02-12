@@ -65,10 +65,10 @@
  * @see RX72N Group User's Manual: Hardware, Chapter 15 (Interrupt Controller)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, or recursion in accessor functions
- * - Rule 3: ✓ Zero dynamic allocation - all registers statically mapped
- * - Rule 8: ✓ All constants as C23 typed enums (vectors, priorities)
- * - Rule 10: ✓ Compile with -Wall -Wextra -Werror, zero warnings
+ * - Rule 1: [OK] No goto, setjmp, or recursion in accessor functions
+ * - Rule 3: [OK] Zero dynamic allocation - all registers statically mapped
+ * - Rule 8: [OK] All constants as C23 typed enums (vectors, priorities)
+ * - Rule 10: [OK] Compile with -Wall -Wextra -Werror, zero warnings
  *
  * @par SOLID Principles:
  * - S: Single responsibility - only ICU register definitions
@@ -96,7 +96,7 @@
  * @enddot
  *
  * @par Verification Status:
- * ✅ VERIFIED (2026-01-28) - All register offsets verified against
+ * [PASS] VERIFIED (2026-01-28) - All register offsets verified against
  * RX72N Manual Ch15 section 15.2. Corrections applied:
  * - NMI register layout corrected (was wrong order)
  * - DMRSR registers fixed: 8-bit regs at 4-byte aligned addresses (0x400/404/408/...)
@@ -285,7 +285,7 @@ typedef struct {
  * request flags, enable control, priorities, and external IRQ configuration.
  *
  * @par Interrupt Handling Workflow:
- * 1. Peripheral generates interrupt request → IR[vector] = 1
+ * 1. Peripheral generates interrupt request -> IR[vector] = 1
  * 2. ICU checks IER[vector/8] bit (vector%8) for enable
  * 3. If enabled, ICU checks IPR[vector] for priority (1-15)
  * 4. Higher priority interrupts preempt lower priority

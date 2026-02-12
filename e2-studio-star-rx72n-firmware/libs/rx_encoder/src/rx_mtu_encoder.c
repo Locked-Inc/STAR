@@ -17,7 +17,7 @@
  * hardware-accelerated position counting, offloading CPU from manual edge detection.
  *
  * ```
- * Motor Shaft → Gearbox (Nx:1) → Encoder Disk (341 PPR Hall sensor)
+ * Motor Shaft -> Gearbox (Nx:1) -> Encoder Disk (341 PPR Hall sensor)
  *                                          ↓
  *                                   Phase A, Phase B signals (differential)
  *                                          ↓
@@ -110,7 +110,7 @@
  * ### Register Configuration
  *
  * **TMDR (Timer Mode Register) = 0x04:**
- * - MD[3:0] = 0100b → Phase counting mode 1 (4x decoding)
+ * - MD[3:0] = 0100b -> Phase counting mode 1 (4x decoding)
  * - Hardware automatically increments/decrements TCNT based on phase relationship
  *
  * **TCR (Timer Control Register) = 0x00:**
@@ -128,11 +128,11 @@
  *
  * | Condition | TCNT Action | Example |
  * |-----------|-------------|---------|
- * | **Forward motion** | Increment | 100 → 101 → 102 |
- * | **Reverse motion** | Decrement | 102 → 101 → 100 |
- * | **Forward wrap** | 65535 → 0 | 0xFFFF → 0x0000 |
- * | **Reverse wrap** | 0 → 65535 | 0x0000 → 0xFFFF |
- * | **Stationary** | No change | 100 → 100 → 100 |
+ * | **Forward motion** | Increment | 100 -> 101 -> 102 |
+ * | **Reverse motion** | Decrement | 102 -> 101 -> 100 |
+ * | **Forward wrap** | 65535 -> 0 | 0xFFFF -> 0x0000 |
+ * | **Reverse wrap** | 0 -> 65535 | 0x0000 -> 0xFFFF |
+ * | **Stationary** | No change | 100 -> 100 -> 100 |
  *
  * ## Wraparound Detection Algorithm
  *
@@ -186,7 +186,7 @@
  * ```
  * last_count = 65530, current_count = 10
  * delta = (65536 - 65530) + 10 = 6 + 10 = 16 (wrapped forward)
- * delta < 32768 → not reverse wraparound
+ * delta < 32768 -> not reverse wraparound
  * total_count += 16
  * ```
  *
@@ -194,7 +194,7 @@
  * ```
  * last_count = 1100, current_count = 1000
  * delta = (65536 - 1100) + 1000 = 64436 + 1000 = 65436
- * delta > 32768 → reverse wraparound detected
+ * delta > 32768 -> reverse wraparound detected
  * delta -= 65536 = 65436 - 65536 = -100 (reverse motion, -100 counts)
  * total_count += -100
  * ```
@@ -207,7 +207,7 @@
  *
  * Actually for reverse wraparound:
  * last_count = 10, current_count = 65530
- * current < last → calculate wrap delta
+ * current < last -> calculate wrap delta
  * delta = (65536 - last) + current = (65536 - 10) + 65530 = 65526 + 65530
  * This overflows. The issue is the algorithm assumes current < last means forward wrap.
  *
@@ -262,7 +262,7 @@
  * | **Max Encoder Frequency** | 250 kHz | MTU input capture limit |
  * | **Max Motor Speed** | 366 RPS | 250 kHz / (341 PPR × 4) |
  * | **Typical Motor Speed (STAR)** | 3.5 RPS | 210 RPM nominal |
- * | **Position Resolution** | 0.264° | 1364 counts/rev → 360° / 1364 |
+ * | **Position Resolution** | 0.264° | 1364 counts/rev -> 360° / 1364 |
  * | **Velocity Resolution @ 100 Hz** | 0.073 RPS | 1 count / (1364 counts/rev × 0.01s) |
  * | **Counter Read Latency** | ~200 ns | Single 16-bit register read @ 240 MHz |
  * | **State Update Time** | ~2 µs | Wraparound detection + position calc |
@@ -311,40 +311,40 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | **Rule 1: Simplify Control Flow** | ✅ COMPLIANT | No goto, setjmp, recursion; only if/while/for |
- * | **Rule 2: Fixed Loop Bounds** | ✅ COMPLIANT | No loops (all operations O(1) complexity) |
- * | **Rule 3: No Dynamic Memory** | ✅ COMPLIANT | Static arrays only, no malloc/free |
- * | **Rule 4: Short Functions** | ✅ COMPLIANT | Longest function: internal_update_state_from_count (67 lines) |
- * | **Rule 5: Assertions** | ✅ COMPLIANT | 2-4 checks per function (pre/post conditions) |
- * | **Rule 6: Smallest Scope** | ✅ COMPLIANT | Variables declared close to use, file-scoped statics |
- * | **Rule 7: Check Return Values** | ✅ COMPLIANT | All internal function returns checked |
- * | **Rule 8: Limit Preprocessor** | ✅ COMPLIANT | No function-like macros, only include guards |
- * | **Rule 9: Restrict Pointers** | ✅ COMPLIANT | One level of dereferencing, no function pointers |
- * | **Rule 10: Compiler Warnings** | ✅ COMPLIANT | `-Wall -Wextra -Werror` clean |
+ * | **Rule 1: Simplify Control Flow** | [PASS] COMPLIANT | No goto, setjmp, recursion; only if/while/for |
+ * | **Rule 2: Fixed Loop Bounds** | [PASS] COMPLIANT | No loops (all operations O(1) complexity) |
+ * | **Rule 3: No Dynamic Memory** | [PASS] COMPLIANT | Static arrays only, no malloc/free |
+ * | **Rule 4: Short Functions** | [PASS] COMPLIANT | Longest function: internal_update_state_from_count (67 lines) |
+ * | **Rule 5: Assertions** | [PASS] COMPLIANT | 2-4 checks per function (pre/post conditions) |
+ * | **Rule 6: Smallest Scope** | [PASS] COMPLIANT | Variables declared close to use, file-scoped statics |
+ * | **Rule 7: Check Return Values** | [PASS] COMPLIANT | All internal function returns checked |
+ * | **Rule 8: Limit Preprocessor** | [PASS] COMPLIANT | No function-like macros, only include guards |
+ * | **Rule 9: Restrict Pointers** | [PASS] COMPLIANT | One level of dereferencing, no function pointers |
+ * | **Rule 10: Compiler Warnings** | [PASS] COMPLIANT | `-Wall -Wextra -Werror` clean |
  *
  * ## SOLID Principles (Applied to Embedded C)
  *
- * ### Single Responsibility Principle (S) ✅
+ * ### Single Responsibility Principle (S) [PASS]
  * - **One purpose:** Quadrature encoder position/velocity tracking via MTU hardware
  * - **No mixing:** Does NOT control motors, manage PID, or handle odometry
  * - **Clear boundary:** Encoder counting only, consumers do navigation/control
  *
- * ### Open/Closed Principle (O) ✅
+ * ### Open/Closed Principle (O) [PASS]
  * - **Extensible:** New encoder types (different PPR) via `rx_encoder_config_t`
  * - **Closed for modification:** Core algorithm unchanged for different motors
- * - **Example:** 341 PPR → 1000 PPR just changes config, no code change
+ * - **Example:** 341 PPR -> 1000 PPR just changes config, no code change
  *
- * ### Liskov Substitution Principle (L) ✅
+ * ### Liskov Substitution Principle (L) [PASS]
  * - **Interface consistency:** All MTU channels (1-4, 6-7) interchangeable
  * - **Contract:** Any valid channel behaves identically per API contract
  * - **Example:** Motor 1 (MTU1) and Motor 2 (MTU2) use same API, same behavior
  *
- * ### Interface Segregation Principle (I) ✅
+ * ### Interface Segregation Principle (I) [PASS]
  * - **Granular functions:** read_raw, read_count, read_velocity, reset, set_count
  * - **No "fat" API:** Don't force users to pass unused parameters
  * - **User benefit:** Motor control only needs read_velocity, not full state
  *
- * ### Dependency Inversion Principle (D) ✅
+ * ### Dependency Inversion Principle (D) [PASS]
  * - **High-level independence:** Motor control depends on abstract encoder API
  * - **Abstraction:** rx_encoder.h defines interface, rx_mtu_encoder.c is one implementation
  * - **Alternative:** Could swap MTU encoder for SPI absolute encoder with no motor.c changes
@@ -514,10 +514,10 @@ static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
  * 7. Verify timer is counting (post-condition check per NASA Rule 5)
  *
  * **Hardware Configuration Applied:**
- * - TMDR (Timer Mode Register) = 0x04 → Phase counting mode 1 (4x decoding)
- * - TCR (Timer Control Register) = 0x00 → External clock, no prescaler
- * - TIOR (I/O Control) = 0x00 → Disabled (not used in phase counting mode)
- * - TCNT (Counter Register) = 0 → Reset to zero
+ * - TMDR (Timer Mode Register) = 0x04 -> Phase counting mode 1 (4x decoding)
+ * - TCR (Timer Control Register) = 0x00 -> External clock, no prescaler
+ * - TIOR (I/O Control) = 0x00 -> Disabled (not used in phase counting mode)
+ * - TCNT (Counter Register) = 0 -> Reset to zero
  *
  * **Encoder Resolution Calculation:**
  * For STAR project motors (341 PPR encoder):
@@ -614,11 +614,11 @@ static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion, sequential initialization steps
- * - Rule 3: ✓ No dynamic memory allocation (static state arrays)
- * - Rule 5: ✓ 3 preconditions (NULL check, range check, channel valid)
- * - Rule 5: ✓ 2 postconditions (initialized flag set, timer counting)
- * - Rule 7: ✓ All return values checked (enable, stop, configure, start, verify)
+ * - Rule 1: [OK] No goto or recursion, sequential initialization steps
+ * - Rule 3: [OK] No dynamic memory allocation (static state arrays)
+ * - Rule 5: [OK] 3 preconditions (NULL check, range check, channel valid)
+ * - Rule 5: [OK] 2 postconditions (initialized flag set, timer counting)
+ * - Rule 7: [OK] All return values checked (enable, stop, configure, start, verify)
  */
 rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
 {
@@ -703,7 +703,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
  * **Hardware Behavior:**
  * - Counter increments on forward encoder motion (Phase A leads Phase B)
  * - Counter decrements on reverse encoder motion (Phase B leads Phase A)
- * - Counter wraps: 65535 → 0 (forward) or 0 → 65535 (reverse)
+ * - Counter wraps: 65535 -> 0 (forward) or 0 -> 65535 (reverse)
  * - No software processing applied to value
  *
  * @param[in] channel MTU channel to read
@@ -833,8 +833,8 @@ rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_
  * **Resolution and Accuracy:**
  * - Velocity resolution @ 100 Hz: 1 count / (1364 × 0.01s) = 0.073 RPS (4.4 RPM)
  * - Velocity resolution @ 1 kHz: 1 count / (1364 × 0.001s) = 0.733 RPS (44 RPM)
- * - Higher sample rates → lower resolution but faster response
- * - Lower sample rates → higher resolution but slower response
+ * - Higher sample rates -> lower resolution but faster response
+ * - Lower sample rates -> higher resolution but slower response
  *
  * **State Tracking:**
  * Function maintains internal state (s_last_count[channel]) to calculate delta between calls.
@@ -851,8 +851,8 @@ rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_
  *   - Must be > 0 and ≤ 10 seconds (validated to catch parameter swaps)
  *   - Units: Seconds (s)
  *   - Typical: 0.01s (100 Hz control loop) or 0.001s (1 kHz)
- *   - Smaller values → lower resolution, faster response
- *   - Larger values → higher resolution, slower response
+ *   - Smaller values -> lower resolution, faster response
+ *   - Larger values -> higher resolution, slower response
  *
  * @param[in] channel MTU channel to read
  *   - Must be valid channel (0-4, 6-7, excluding 5)
@@ -917,7 +917,7 @@ rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_
  *
  * rx_err_t err = rx_encoder_read_velocity(&velocity_rps, dt_s, k_mtu_channel_1);
  * if (err == k_rx_ok) {
- *     float velocity_rpm = velocity_rps * 60.0f;  // Convert RPS → RPM
+ *     float velocity_rpm = velocity_rps * 60.0f;  // Convert RPS -> RPM
  *     rx_log_info("MOTOR", "Velocity: %.1f RPM (%.2f RPS)", velocity_rpm, velocity_rps);
  *
  *     if (fabsf(velocity_rps) > 5.0f) {
@@ -954,10 +954,10 @@ rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion
- * - Rule 5: ✓ 3 preconditions (NULL check, time range check, initialized check)
- * - Rule 5: ✓ 2 postconditions (velocity calculated, last_count updated)
- * - Rule 7: ✓ Division guard (counts_per_rev validated before division)
+ * - Rule 1: [OK] No goto or recursion
+ * - Rule 5: [OK] 3 preconditions (NULL check, time range check, initialized check)
+ * - Rule 5: [OK] 2 postconditions (velocity calculated, last_count updated)
+ * - Rule 7: [OK] Division guard (counts_per_rev validated before division)
  */
 rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
                                   const float            delta_time_s,
@@ -1110,9 +1110,9 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion
- * - Rule 5: ✓ 2 preconditions (channel valid, initialized)
- * - Rule 5: ✓ 2 postconditions (TCNT=0, state zeroed)
+ * - Rule 1: [OK] No goto or recursion
+ * - Rule 5: [OK] 2 preconditions (channel valid, initialized)
+ * - Rule 5: [OK] 2 postconditions (TCNT=0, state zeroed)
  */
 rx_err_t rx_encoder_reset(const rx_mtu_channel_t channel)
 {
@@ -1195,7 +1195,7 @@ rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channe
  *
  * **Use Cases:**
  * - System shutdown: Release resources before power-down
- * - Reconfiguration: Change encoder parameters (requires deinit → init)
+ * - Reconfiguration: Change encoder parameters (requires deinit -> init)
  * - Error recovery: Clean up after hardware fault
  * - Resource sharing: Free MTU channel for other use
  *
@@ -1260,9 +1260,9 @@ rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channe
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto or recursion
- * - Rule 5: ✓ 2 preconditions (channel valid, initialized)
- * - Rule 5: ✓ 1 postcondition (initialized flag cleared)
+ * - Rule 1: [OK] No goto or recursion
+ * - Rule 5: [OK] 2 preconditions (channel valid, initialized)
+ * - Rule 5: [OK] 1 postcondition (initialized flag cleared)
  */
 rx_err_t rx_encoder_deinit(const rx_mtu_channel_t channel)
 {

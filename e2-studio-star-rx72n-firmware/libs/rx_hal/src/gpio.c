@@ -124,16 +124,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simplify control flow | ✓ | No goto, setjmp, recursion |
- * | 2. Fixed loop bounds | ✓ | No loops in this module |
- * | 3. No dynamic memory | ✓ | All static, no malloc |
- * | 4. Functions < 60 lines | ✓ | All functions under 30 lines |
- * | 5. Use assertions | ✓ | RX_CHECK_NULL_PTR, validation |
- * | 6. Data at smallest scope | ✓ | Local variables only |
- * | 7. Check return values | ✓ | RX_RETURN_ON_ERROR macro |
- * | 8. Limit preprocessor | ✓ | Only includes |
- * | 9. Restrict pointers | ✓ | Only hardware register pointers |
- * | 10. Compile warnings | ✓ | -Wall -Wextra -Werror clean |
+ * | 1. Simplify control flow | [OK] | No goto, setjmp, recursion |
+ * | 2. Fixed loop bounds | [OK] | No loops in this module |
+ * | 3. No dynamic memory | [OK] | All static, no malloc |
+ * | 4. Functions < 60 lines | [OK] | All functions under 30 lines |
+ * | 5. Use assertions | [OK] | RX_CHECK_NULL_PTR, validation |
+ * | 6. Data at smallest scope | [OK] | Local variables only |
+ * | 7. Check return values | [OK] | RX_RETURN_ON_ERROR macro |
+ * | 8. Limit preprocessor | [OK] | Only includes |
+ * | 9. Restrict pointers | [OK] | Only hardware register pointers |
+ * | 10. Compile warnings | [OK] | -Wall -Wextra -Werror clean |
  *
  * ## SOLID Principles
  *
@@ -350,7 +350,7 @@ static rx_err_t internal_validate_port_pin(const uint8_t port, const uint8_t pin
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 preconditions, 4 postconditions
+ * - Rule 5: [OK] 2 preconditions, 4 postconditions
  */
 rx_err_t gpio_set_output(const rx_port_pin_t pin)
 {
@@ -465,7 +465,7 @@ rx_err_t gpio_set_output(const rx_port_pin_t pin)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 preconditions, 4 postconditions
+ * - Rule 5: [OK] 2 preconditions, 4 postconditions
  */
 rx_err_t gpio_set_input(const rx_port_pin_t pin)
 {
@@ -815,7 +815,7 @@ rx_err_t gpio_toggle(const rx_port_pin_t pin)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 preconditions, 2 postconditions
+ * - Rule 5: [OK] 2 preconditions, 2 postconditions
  */
 rx_err_t gpio_read(const rx_port_pin_t pin, bool* value)
 {

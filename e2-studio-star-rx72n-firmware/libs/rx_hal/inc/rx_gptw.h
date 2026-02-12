@@ -81,12 +81,12 @@
  *
  *   subgraph cluster_saw {
  *     label="Sawtooth (Edge-Aligned)";
- *     saw_desc [label="Counter: 0→Period→0\nUpdate: At trough\nBest for: Simple PWM"];
+ *     saw_desc [label="Counter: 0->Period->0\nUpdate: At trough\nBest for: Simple PWM"];
  *   }
  *
  *   subgraph cluster_tri {
  *     label="Triangle (Center-Aligned)";
- *     tri_desc [label="Counter: 0→Period→0→Period\nUpdate: At crest/trough\nBest for: Motor control"];
+ *     tri_desc [label="Counter: 0->Period->0->Period\nUpdate: At crest/trough\nBest for: Motor control"];
  *   }
  * }
  * @enddot
@@ -144,16 +144,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto/setjmp/recursion |
- * | 2. Fixed loop bounds | ✓ | Loops bounded by k_gptw_channel_3 (4 iterations max) |
- * | 3. No dynamic allocation | ✓ | Zero malloc/free, all static |
- * | 4. Small functions | ✓ | All functions < 60 lines |
- * | 5. Assertions (≥2 per function) | ✓ | Minimum 2 validation checks per function |
- * | 6. Narrow scope | ✓ | File-scope statics, minimal globals |
- * | 7. Check return values | ✓ | All functions return rx_err_t |
- * | 8. Limited preprocessor | ✓ | C23 typed enums, minimal macros |
- * | 9. Pointer restrictions | ✓ | Single-level pointers only |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto/setjmp/recursion |
+ * | 2. Fixed loop bounds | [OK] | Loops bounded by k_gptw_channel_3 (4 iterations max) |
+ * | 3. No dynamic allocation | [OK] | Zero malloc/free, all static |
+ * | 4. Small functions | [OK] | All functions < 60 lines |
+ * | 5. Assertions (≥2 per function) | [OK] | Minimum 2 validation checks per function |
+ * | 6. Narrow scope | [OK] | File-scope statics, minimal globals |
+ * | 7. Check return values | [OK] | All functions return rx_err_t |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums, minimal macros |
+ * | 9. Pointer restrictions | [OK] | Single-level pointers only |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * @par SOLID Principles:
  *
@@ -387,8 +387,8 @@ typedef enum : uint8_t {
  *   rankdir=TB;
  *   node [shape=record, fontsize=10];
  *
- *   sawtooth [label="{Sawtooth Mode|Counter: 0→P→0→P→0|Update: trough only|PWM edges: aligned to start|Best for: LED dimming}"];
- *   triangle [label="{Triangle Mode|Counter: 0→P→0→P→0|Update: crest and/or trough|PWM edges: centered|Best for: motor control}"];
+ *   sawtooth [label="{Sawtooth Mode|Counter: 0->P->0->P->0|Update: trough only|PWM edges: aligned to start|Best for: LED dimming}"];
+ *   triangle [label="{Triangle Mode|Counter: 0->P->0->P->0|Update: crest and/or trough|PWM edges: centered|Best for: motor control}"];
  *
  *   sawtooth -> triangle [style=invis];
  * }
@@ -398,10 +398,10 @@ typedef enum : uint8_t {
  *
  * | Mode | Counter Pattern | Update Timing | Use Case |
  * |------|-----------------|---------------|----------|
- * | k_gptw_wave_saw_pwm | 0→P→0 (reset) | Trough | Simple PWM, LEDs |
- * | k_gptw_wave_tri_pwm1 | 0→P→0 (fold) | Trough | Motor control (standard) |
- * | k_gptw_wave_tri_pwm2 | 0→P→0 (fold) | Crest+Trough | Motor control (fast update) |
- * | k_gptw_wave_tri_pwm3 | 0→P→0 (fold) | 64-bit at trough | High-precision motor |
+ * | k_gptw_wave_saw_pwm | 0->P->0 (reset) | Trough | Simple PWM, LEDs |
+ * | k_gptw_wave_tri_pwm1 | 0->P->0 (fold) | Trough | Motor control (standard) |
+ * | k_gptw_wave_tri_pwm2 | 0->P->0 (fold) | Crest+Trough | Motor control (fast update) |
+ * | k_gptw_wave_tri_pwm3 | 0->P->0 (fold) | 64-bit at trough | High-precision motor |
  *
  * @par Mathematical Model:
  *
@@ -451,10 +451,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_gptw_wave_saw_pwm  = 0, /**< Sawtooth-wave PWM (edge-aligned). Counter: 0→Period→reset. Single update point at trough. Best for simple PWM applications. GTCR.MD = 0b000 */
-  k_gptw_wave_tri_pwm1 = 1, /**< Triangle-wave PWM mode 1 (center-aligned). Counter: 0→Period→0. Update at trough only. Best for motor control with standard update rate. GTCR.MD = 0b001 */
-  k_gptw_wave_tri_pwm2 = 2, /**< Triangle-wave PWM mode 2 (center-aligned). Counter: 0→Period→0. Update at both crest and trough. Best for motor control requiring fast duty updates. GTCR.MD = 0b010 */
-  k_gptw_wave_tri_pwm3 = 3, /**< Triangle-wave PWM mode 3 (center-aligned). Counter: 0→Period→0. 64-bit buffer transfer at trough. Best for high-precision motor control. GTCR.MD = 0b011 */
+  k_gptw_wave_saw_pwm  = 0, /**< Sawtooth-wave PWM (edge-aligned). Counter: 0->Period->reset. Single update point at trough. Best for simple PWM applications. GTCR.MD = 0b000 */
+  k_gptw_wave_tri_pwm1 = 1, /**< Triangle-wave PWM mode 1 (center-aligned). Counter: 0->Period->0. Update at trough only. Best for motor control with standard update rate. GTCR.MD = 0b001 */
+  k_gptw_wave_tri_pwm2 = 2, /**< Triangle-wave PWM mode 2 (center-aligned). Counter: 0->Period->0. Update at both crest and trough. Best for motor control requiring fast duty updates. GTCR.MD = 0b010 */
+  k_gptw_wave_tri_pwm3 = 3, /**< Triangle-wave PWM mode 3 (center-aligned). Counter: 0->Period->0. 64-bit buffer transfer at trough. Best for high-precision motor control. GTCR.MD = 0b011 */
 } rx_gptw_wave_mode_t;
 
 /**
@@ -849,10 +849,10 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto/setjmp/recursion
- * - Rule 2: ✓ Loop bounded by k_gptw_channel_3 (4 iterations)
- * - Rule 5: ✓ 2 preconditions, 3 postconditions
- * - Rule 7: ✓ All internal function returns checked
+ * - Rule 1: [OK] No goto/setjmp/recursion
+ * - Rule 2: [OK] Loop bounded by k_gptw_channel_3 (4 iterations)
+ * - Rule 5: [OK] 2 preconditions, 3 postconditions
+ * - Rule 7: [OK] All internal function returns checked
  *
  * @callgraph
  * @callergraph
@@ -985,8 +985,8 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 preconditions, 2 postconditions
- * - Rule 7: ✓ Returns error code, caller must check
+ * - Rule 5: [OK] 2 preconditions, 2 postconditions
+ * - Rule 7: [OK] Returns error code, caller must check
  */
 rx_err_t
 rx_gptw_set_duty(rx_gptw_channel_id_t channel, rx_gptw_output_id_t output, float duty_percent);

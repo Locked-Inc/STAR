@@ -73,15 +73,15 @@
  * - All loops have static upper bounds (NASA Rule 2)
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ All loops bounded (payload length, constant limits)
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ Functions under 60 lines
- * - Rule 5: ✓ Input validation on all functions
- * - Rule 6: ✓ Variables at smallest scope
- * - Rule 7: ✓ Return values checked
- * - Rule 8: ✓ C23 typed enums for constants
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] All loops bounded (payload length, constant limits)
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] Functions under 60 lines
+ * - Rule 5: [OK] Input validation on all functions
+ * - Rule 6: [OK] Variables at smallest scope
+ * - Rule 7: [OK] Return values checked
+ * - Rule 8: [OK] C23 typed enums for constants
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @see rx_frame_ascii.h Public API documentation
  *
@@ -357,7 +357,7 @@ static uint32_t internal_append_char(char* buf, uint32_t pos, uint32_t max, char
  *
  * @details
  * Converts a single byte to its two-character hexadecimal representation
- * (e.g., 0xFF → "FF") and appends it to the buffer. Uses uppercase hex
+ * (e.g., 0xFF -> "FF") and appends it to the buffer. Uses uppercase hex
  * letters via s_hex_chars lookup table.
  *
  * @param[in,out] buf Output buffer (may be NULL)
@@ -374,9 +374,9 @@ static uint32_t internal_append_char(char* buf, uint32_t pos, uint32_t max, char
  * @post buf[pos+1] contains lower nibble hex char
  *
  * @par Example Output
- * - byte=0x00 → "00"
- * - byte=0xFF → "FF"
- * - byte=0x5A → "5A"
+ * - byte=0x00 -> "00"
+ * - byte=0xFF -> "FF"
+ * - byte=0x5A -> "5A"
  *
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
@@ -400,7 +400,7 @@ static uint32_t internal_append_hex_byte(char* buf, uint32_t pos, uint32_t max, 
  *
  * @details
  * Converts a 16-bit value to its four-character hexadecimal representation
- * (e.g., 0xABCD → "ABCD") in big-endian order (most significant byte first).
+ * (e.g., 0xABCD -> "ABCD") in big-endian order (most significant byte first).
  *
  * @param[in,out] buf Output buffer (may be NULL)
  * @param[in] pos Current write position
@@ -415,9 +415,9 @@ static uint32_t internal_append_hex_byte(char* buf, uint32_t pos, uint32_t max, 
  * @post Four hex characters written at buf[pos..pos+3]
  *
  * @par Example Output
- * - value=0x0000 → "0000"
- * - value=0xFFFF → "FFFF"
- * - value=0x1234 → "1234"
+ * - value=0x0000 -> "0000"
+ * - value=0xFFFF -> "FFFF"
+ * - value=0x1234 -> "1234"
  *
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
@@ -439,7 +439,7 @@ static uint32_t internal_append_hex_u16(char* buf, uint32_t pos, uint32_t max, u
  *
  * @details
  * Converts a 32-bit value to its eight-character hexadecimal representation
- * (e.g., 0xDEADBEEF → "DEADBEEF") in big-endian order. Commonly used for
+ * (e.g., 0xDEADBEEF -> "DEADBEEF") in big-endian order. Commonly used for
  * CRC-32 values in frame output.
  *
  * @param[in,out] buf Output buffer (may be NULL)
@@ -455,9 +455,9 @@ static uint32_t internal_append_hex_u16(char* buf, uint32_t pos, uint32_t max, u
  * @post Eight hex characters written at buf[pos..pos+7]
  *
  * @par Example Output
- * - value=0x00000000 → "00000000"
- * - value=0xFFFFFFFF → "FFFFFFFF"
- * - value=0xDEADBEEF → "DEADBEEF"
+ * - value=0x00000000 -> "00000000"
+ * - value=0xFFFFFFFF -> "FFFFFFFF"
+ * - value=0xDEADBEEF -> "DEADBEEF"
  *
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
@@ -500,10 +500,10 @@ static uint32_t internal_append_hex_u32(char* buf, uint32_t pos, uint32_t max, u
  * @post Decimal digits written without leading zeros (except for value=0)
  *
  * @par Example Output
- * - value=0 → "0"
- * - value=1 → "1"
- * - value=12345 → "12345"
- * - value=65535 → "65535"
+ * - value=0 -> "0"
+ * - value=1 -> "1"
+ * - value=12345 -> "12345"
+ * - value=65535 -> "65535"
  *
  * @par Stack Usage
  * ~6 bytes (temp buffer for digit reversal)

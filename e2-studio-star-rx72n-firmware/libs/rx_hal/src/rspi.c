@@ -63,10 +63,10 @@
  * @par Supported Features
  * | Feature | Peripheral Mode | Controller Mode |
  * |---------|-----------------|-----------------|
- * | Full-duplex | ✓ | ✓ |
- * | 8-bit data | ✓ | - |
- * | 16-bit data | ✓ | ✓ |
- * | SPI modes 0-3 | ✓ | ✓ |
+ * | Full-duplex | [OK] | [OK] |
+ * | 8-bit data | [OK] | - |
+ * | 16-bit data | [OK] | [OK] |
+ * | SPI modes 0-3 | [OK] | [OK] |
  * | Hardware CS | - | GPIO-based |
  * | Clock config | External | 100kHz - 10MHz |
  *
@@ -109,16 +109,16 @@
  * - rx_register_protection.h: PRCR unlock/lock
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ All loops bounded (timeout counters, transfer length max)
- * - Rule 3: ✓ No dynamic memory allocation (static buffers only)
- * - Rule 4: ✓ Functions under 60 lines (refactored into helpers)
- * - Rule 5: ✓ Minimum 2 assertions per function (RX_ASSERT, RX_CHECK_NULL_PTR)
- * - Rule 6: ✓ Variables declared at smallest scope
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ C23 typed enums for all constants
- * - Rule 9: ✓ No function pointers (direct hardware access)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] All loops bounded (timeout counters, transfer length max)
+ * - Rule 3: [OK] No dynamic memory allocation (static buffers only)
+ * - Rule 4: [OK] Functions under 60 lines (refactored into helpers)
+ * - Rule 5: [OK] Minimum 2 assertions per function (RX_ASSERT, RX_CHECK_NULL_PTR)
+ * - Rule 6: [OK] Variables declared at smallest scope
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] C23 typed enums for all constants
+ * - Rule 9: [OK] No function pointers (direct hardware access)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S (SRP):** Driver handles only RSPI peripheral operations

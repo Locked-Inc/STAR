@@ -62,11 +62,11 @@
  *
  * The `internal_port_to_index()` function converts port numbers to array indices:
  * ```
- * Port 0-9  → Index 0-9   (direct mapping)
- * Port 0xA  → Index 10    (A = 10)
- * Port 0xB  → Index 11    (B = 11)
+ * Port 0-9  -> Index 0-9   (direct mapping)
+ * Port 0xA  -> Index 10    (A = 10)
+ * Port 0xB  -> Index 11    (B = 11)
  * ...
- * Port 0x10 → Index 16    (G = 16)
+ * Port 0x10 -> Index 16    (G = 16)
  * ```
  *
  * ### Thread Safety Model
@@ -122,16 +122,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simplify control flow | ✓ | No goto, setjmp, recursion |
- * | 2. Fixed loop bounds | ✓ | clear_all uses k_pin_validator_max_* constants |
- * | 3. No dynamic memory | ✓ | All structures caller-owned |
- * | 4. Functions < 60 lines | ✓ | All functions under 50 lines |
- * | 5. Use assertions | ✓ | RX_CHECK_NULL_PTR in all public functions |
- * | 6. Data at smallest scope | ✓ | Local variables, static helpers |
- * | 7. Check return values | ✓ | All ThreadX calls checked |
- * | 8. Limit preprocessor | ✓ | Only includes |
- * | 9. Restrict pointers | ⚠️ | Function pointers for DIP |
- * | 10. Compile warnings | ✓ | -Wall -Wextra -Werror clean |
+ * | 1. Simplify control flow | [OK] | No goto, setjmp, recursion |
+ * | 2. Fixed loop bounds | [OK] | clear_all uses k_pin_validator_max_* constants |
+ * | 3. No dynamic memory | [OK] | All structures caller-owned |
+ * | 4. Functions < 60 lines | [OK] | All functions under 50 lines |
+ * | 5. Use assertions | [OK] | RX_CHECK_NULL_PTR in all public functions |
+ * | 6. Data at smallest scope | [OK] | Local variables, static helpers |
+ * | 7. Check return values | [OK] | All ThreadX calls checked |
+ * | 8. Limit preprocessor | [OK] | Only includes |
+ * | 9. Restrict pointers | [WARN] | Function pointers for DIP |
+ * | 10. Compile warnings | [OK] | -Wall -Wextra -Werror clean |
  *
  * ## SOLID Principles
  *
@@ -642,10 +642,10 @@ static rx_err_t impl_release_pin(void* ctx, const uint8_t port, const uint8_t pi
  * ## Return Value Semantics
  *
  * Returns `false` in multiple error conditions (not just "unreserved"):
- * - ctx is nullptr → false
- * - Invalid port/pin → false
- * - Mutex acquisition failed → false
- * - Pin is not reserved → false (expected case)
+ * - ctx is nullptr -> false
+ * - Invalid port/pin -> false
+ * - Mutex acquisition failed -> false
+ * - Pin is not reserved -> false (expected case)
  *
  * Only returns `true` when pin is actually reserved.
  *
@@ -1025,7 +1025,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 3 preconditions, 4 postconditions documented
+ * - Rule 5: [OK] 3 preconditions, 4 postconditions documented
  */
 rx_err_t pin_validator_init(pin_validator_t* validator)
 {
@@ -1146,7 +1146,7 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 3 preconditions, 4 postconditions documented
+ * - Rule 5: [OK] 3 preconditions, 4 postconditions documented
  */
 rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t* validator)
 {
@@ -1252,7 +1252,7 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 3 preconditions, 4 postconditions documented
+ * - Rule 5: [OK] 3 preconditions, 4 postconditions documented
  */
 rx_err_t pin_validator_deinit(pin_validator_t* validator)
 {
