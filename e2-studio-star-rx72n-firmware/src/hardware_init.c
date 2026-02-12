@@ -593,8 +593,7 @@ static rx_err_t gpio_init(void)
    * pin input, and the GTETRG logic reads the port pin state continuously.
    * No MPC config needed -- documented here for traceability. */
 
-  rx_log_info(s_tag, "54 pins: 4xI2C, 4xSPI, 4xMTU, 4xTPU, 8xGPTW, 4xADC, 1xUSB, "
-                     "8xSonar, 7xDRV_SPI, 4xGTETRG(doc), 6xLED(TBD)");
+  rx_log_info(s_tag, "GPIO pin muxing complete");
 
   return k_rx_ok;
 }
