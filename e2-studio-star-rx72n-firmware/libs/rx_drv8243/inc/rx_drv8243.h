@@ -49,7 +49,7 @@
  *         color=lightcyan;
  *         Motor [label="rx_motor\n(GPTW PWM)", fillcolor=orange, style=filled];
  *         BusManager [label="rx_bus_manager\n(ADC + GPIO)", fillcolor=orange, style=filled];
- *         SPI_Bus [label="RSPI\n(SPI variant)", fillcolor=orange, style="filled,dashed"];
+ *         SPI_Bus [label="SCI SPI\n(SPI variant)", fillcolor=orange, style="filled,dashed"];
  *     }
  *
  *     // Hardware layer
@@ -60,7 +60,7 @@
  *         GPTW [label="GPTW Timer\n(PWM Generation)"];
  *         ADC [label="12-bit ADC\n(Current Sense)"];
  *         GPIO [label="GPIO\n(Fault Detect)"];
- *         RSPI_HW [label="RSPI\n(SPI Interface)", style=dashed];
+ *         SCI12_HW [label="SCI12\n(SPI Interface)", style=dashed];
  *     }
  *
  *     // External IC
@@ -94,13 +94,13 @@
  *     Motor -> GPTW;
  *     BusManager -> ADC;
  *     BusManager -> GPIO;
- *     SPI_Bus -> RSPI_HW [style=dashed];
+ *     SPI_Bus -> SCI12_HW [style=dashed];
  *
  *     GPTW -> PH_Pin [label="GTIOCA"];
  *     GPTW -> EN_Pin [label="GTIOCB"];
  *     ADC -> IPROPI [label="Analog voltage", dir=back];
  *     GPIO -> nFAULT [label="Digital fault", dir=back];
- *     RSPI_HW -> SPI_Regs [style=dashed, label="COPI/CIPO/CLK"];
+ *     SCI12_HW -> SPI_Regs [style=dashed, label="COPI/CIPO/CLK"];
  *
  *     PH_Pin -> HBridge;
  *     EN_Pin -> HBridge;
@@ -138,7 +138,7 @@
  *
  * ### Pin Configuration (STAR Project)
  *
- * **RX72N → DRV8243 Connections:**
+ * **RX72N -> DRV8243 Connections:**
  *
  * | RX72N Pin | Signal | DRV8243 Pin | Function | Notes |
  * |-----------|--------|-------------|----------|-------|
@@ -241,7 +241,7 @@
  * 2. Initialize underlying rx_motor for GPTW PWM generation
  * 3. Register ADC bus for current sensing (via rx_bus_manager)
  * 4. Register GPIO bus for fault detection (via rx_bus_manager)
- * 5. (SPI variant) Configure DRV8243 registers via RSPI
+ * 5. (SPI variant) Configure DRV8243 registers via SCI SPI
  * 6. (SPI variant) Clear any power-on faults with CLR_FLT command
  * 7. Mark handle as initialized (set initialized = true)
  *
@@ -251,7 +251,7 @@
  *     ↓
  * Check fault status (nFAULT pin via GPIO)
  *     ↓ (no fault)
- * Convert speed (-100 to +100) → PH duty + EN duty
+ * Convert speed (-100 to +100) -> PH duty + EN duty
  *     ↓
  * Call rx_motor_set_duty() for both PWM outputs
  *     ↓
@@ -264,7 +264,7 @@
  *     ↓
  * Read IPROPI pin via ADC (rx_bus_manager)
  *     ↓
- * Convert ADC counts → voltage → current_ma
+ * Convert ADC counts -> voltage -> current_ma
  * current_ma = (ADC / 4095) × 3.3V × (1000 / ki_propi) × 1000
  *     ↓
  * (Optional) Check against current_limit_ma
@@ -318,23 +318,23 @@
  * - **GPTW Timer**: One channel with 2 outputs (GTIOCA, GTIOCB)
  * - **ADC**: One channel for IPROPI current sensing (12-bit, 0-3.3V)
  * - **GPIO Input**: One pin for nFAULT signal (with internal pull-up)
- * - **RSPI** (optional): One SPI channel for SPI variant configuration
+ * - **SCI SPI** (optional): One SCI channel for SPI variant configuration (SCI12)
  * - **External Hardware**: DRV8243-Q1 IC with appropriate decoupling and thermal management
  *
  * ## NASA Power of 10 Compliance
  *
  * | Rule | Status | Notes |
  * |------|--------|-------|
- * | 1. Simple control flow | ✓ | No goto, no recursion; linear init/control flow |
- * | 2. Fixed loop bounds | ✓ | No unbounded loops (register polling has timeout) |
- * | 3. No dynamic memory | ✓ | All structures user-provided or stack-allocated |
- * | 4. Function length <60 lines | ✓ | Longest function ~45 lines (init) |
- * | 5. Assertions | ✓ | All functions validate inputs (≥2 checks) |
- * | 6. Smallest scope | ✓ | Variables declared at point of use |
- * | 7. Check return values | ✓ | All bus_manager and rx_motor calls checked |
- * | 8. Limited preprocessor | ✓ | C23 typed enums, no macro constants |
- * | 9. Pointer restrictions | ⚠️ | Function pointers in bus_manager (DIP pattern) |
- * | 10. Compiler warnings | ✓ | `-Wall -Wextra -Werror` enforced |
+ * | 1. Simple control flow | [OK] | No goto, no recursion; linear init/control flow |
+ * | 2. Fixed loop bounds | [OK] | No unbounded loops (register polling has timeout) |
+ * | 3. No dynamic memory | [OK] | All structures user-provided or stack-allocated |
+ * | 4. Function length <60 lines | [OK] | Longest function ~45 lines (init) |
+ * | 5. Assertions | [OK] | All functions validate inputs (≥2 checks) |
+ * | 6. Smallest scope | [OK] | Variables declared at point of use |
+ * | 7. Check return values | [OK] | All bus_manager and rx_motor calls checked |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums, no macro constants |
+ * | 9. Pointer restrictions | [WARN] | Function pointers in bus_manager (DIP pattern) |
+ * | 10. Compiler warnings | [OK] | `-Wall -Wextra -Werror` enforced |
  *
  * ## SOLID Principles
  *
@@ -386,8 +386,8 @@
  *         .gpio_bus_name = "gpio",
  *         .adc_bus_name = "adc0",
  *         .gptw_channel = k_gptw_channel_0,
- *         .output_ph = k_gptw_output_a,        // GTIOC0A → PH pin
- *         .output_en = k_gptw_output_b,        // GTIOC0B → EN pin
+ *         .output_ph = k_gptw_output_a,        // GTIOC0A -> PH pin
+ *         .output_en = k_gptw_output_b,        // GTIOC0B -> EN pin
  *         .pin_ipropi = 7,                     // AN007 (P47) for Motor 0 current sense
  *         .port_nfault = 3, .pin_nfault = 2,   // PORT3.2 for fault detect
  *         .pwm_freq_hz = 20000,                // 20 kHz PWM
@@ -492,7 +492,7 @@
  *     rx_drv8243_config_t config = {
  *         // ... (standard fields same as above)
  *         .use_spi_variant = true,              // Enable SPI features
- *         .rspi_channel = 0,                    // RSPI0
+ *         .sci_channel = 12,                    // SCI12
  *         .spi_cs_port = 2, .spi_cs_pin = 5,    // PORT2.5 for nSCS
  *         .initial_slew_rate = k_drv8243_slew_100_vus,  // 100 V/µs (moderate EMI)
  *         .initial_itrip = k_drv8243_itrip_2_0a,        // 2.0A current regulation
@@ -841,7 +841,7 @@ typedef enum : uint8_t {
    *   V_kickback = -L × (dI/dt)
    *
    * During hard braking (EN goes LOW):
-   *   I_motor = 1.5A → 0A in 10µs
+   *   I_motor = 1.5A -> 0A in 10µs
    *   dI/dt = 1.5A / 10µs = 150 A/ms
    *
    * Induced voltage:
@@ -1151,7 +1151,7 @@ typedef struct {
 
   /* SPI variant configuration (set use_spi_variant=true to enable) */
   bool    use_spi_variant; /**< Enable SPI variant features */
-  uint8_t rspi_channel;    /**< RSPI channel for SPI communication (0-2) */
+  uint8_t sci_channel;     /**< SCI channel for SPI communication (12 = SCI12) */
   uint8_t spi_cs_port;     /**< GPIO port for SPI chip select */
   uint8_t spi_cs_pin;      /**< GPIO pin for SPI chip select */
 
@@ -1188,7 +1188,7 @@ typedef struct {
 
   /* SPI variant state */
   bool    spi_enabled;    /**< True if SPI variant is enabled */
-  uint8_t rspi_channel;   /**< RSPI channel for SPI communication */
+  uint8_t sci_channel;    /**< SCI channel for SPI communication */
   bool    config_locked;  /**< True if configuration registers are locked */
   uint8_t last_spi_status; /**< Last SPI status byte received */
 } rx_drv8243_handle_t;

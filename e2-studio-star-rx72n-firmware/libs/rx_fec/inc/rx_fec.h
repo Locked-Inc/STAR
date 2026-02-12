@@ -28,7 +28,7 @@
  * For this K=7, rate 1/2 code:
  * - **Constraint Length** @f$ K = 7 @f$: Shift register holds 6 bits (K-1)
  * - **Number of States**: @f$ 2^{K-1} = 64 @f$ states
- * - **Code Rate**: @f$ R = \frac{1}{2} @f$ (1 input bit → 2 output bits)
+ * - **Code Rate**: @f$ R = \frac{1}{2} @f$ (1 input bit -> 2 output bits)
  * - **Generator Polynomials**:
  *   - @f$ G_1(D) = 1 + D^2 + D^3 + D^5 + D^6 @f$ (octal 171, hex 0xF9)
  *   - @f$ G_2(D) = 1 + D + D^2 + D^3 + D^6 @f$ (octal 133, hex 0x5B)
@@ -133,13 +133,13 @@
  * - [rx_bit_constants.h](rx_bit_constants_8h.html): Bit manipulation constants
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1**: ✓ No recursion, no goto, no setjmp/longjmp
- * - **Rule 2**: ✓ All loops have fixed bounds (k_fec_max_symbols)
- * - **Rule 3**: ✓ Zero dynamic memory allocation (all static buffers)
- * - **Rule 4**: ✓ Functions < 60 lines (largest: internal_viterbi_process_symbol ~50 lines)
- * - **Rule 5**: ✓ All functions have ≥2 preconditions and postconditions
- * - **Rule 8**: ✓ Uses C23 typed enums instead of #define for all constants
- * - **Rule 10**: ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No recursion, no goto, no setjmp/longjmp
+ * - **Rule 2**: [OK] All loops have fixed bounds (k_fec_max_symbols)
+ * - **Rule 3**: [OK] Zero dynamic memory allocation (all static buffers)
+ * - **Rule 4**: [OK] Functions < 60 lines (largest: internal_viterbi_process_symbol ~50 lines)
+ * - **Rule 5**: [OK] All functions have ≥2 preconditions and postconditions
+ * - **Rule 8**: [OK] Uses C23 typed enums instead of #define for all constants
+ * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **Single Responsibility**: Encoder and decoder are separate concerns
@@ -683,8 +683,8 @@ typedef struct {
  * @f]
  *
  * Examples:
- * - 100 bytes in → 202 bytes out (expansion factor ~2.02)
- * - 1 byte in → 4 bytes out (overhead significant for small frames)
+ * - 100 bytes in -> 202 bytes out (expansion factor ~2.02)
+ * - 1 byte in -> 4 bytes out (overhead significant for small frames)
  *
  * ## Performance Analysis
  *
@@ -755,7 +755,7 @@ typedef struct {
  * @post *output_len == (input_len × 8 + 6) × 2 / 8 (rounded up)
  * @post Last 6 tail bits ensure encoder state returns to zero
  *
- * @invariant Encoding is deterministic: same input → same output
+ * @invariant Encoding is deterministic: same input -> same output
  * @invariant Output length formula always holds: 2n + 2 bytes for n input bytes
  *
  * @note **Thread Safety**: Encoder is read-only during encode, safe for
@@ -832,8 +832,8 @@ typedef struct {
  * @test test_rx_fec.c::test_encode_tail_bits() Verifies tail bit termination
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 2**: ✓ Loop bounds statically provable (input_len ≤ k_fec_max_input_bytes)
- * - **Rule 5**: ✓ 7 precondition checks, 3 postconditions
+ * - **Rule 2**: [OK] Loop bounds statically provable (input_len ≤ k_fec_max_input_bytes)
+ * - **Rule 5**: [OK] 7 precondition checks, 3 postconditions
  */
 [[nodiscard]] rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
                        const uint8_t*          input,
@@ -986,7 +986,7 @@ typedef enum : uint16_t {
   k_fec_max_symbols = 8200,
 
   /**< @brief Maximum input bytes before FEC encoding: 1024
-   * @details Derived from k_fec_max_symbols: (8200 - 6) / 8 = 1024.25 → 1024 bytes.
+   * @details Derived from k_fec_max_symbols: (8200 - 6) / 8 = 1024.25 -> 1024 bytes.
    * Larger payloads must be fragmented. */
   k_fec_max_input_bytes = (uint16_t)((k_fec_max_symbols - k_fec_tail_bits) / k_rx_bits_per_byte),
 } rx_fec_buffer_limits_t;

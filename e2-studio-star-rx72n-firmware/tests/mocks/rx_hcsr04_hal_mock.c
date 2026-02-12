@@ -104,16 +104,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto, setjmp, recursion |
- * | 2. Fixed loop bounds | ✓ | All loops use enum constants for bounds |
- * | 3. No dynamic memory | ✓ | Zero malloc/free, stack-only allocation |
- * | 4. Functions ≤60 lines | ✓ | Longest: `hcsr04_hal_delay_us` (31 lines) |
- * | 5. Min 2 assertions/func | ✓ | All functions validate inputs |
- * | 6. Smallest scope | ✓ | Variables declared at first use |
- * | 7. Check return values | ✓ | All mock function returns checked |
- * | 8. Limit preprocessor | ✓ | Only C23 typed enums, no macros |
- * | 9. Restrict pointers | ✓ | Max one level of dereferencing |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto, setjmp, recursion |
+ * | 2. Fixed loop bounds | [OK] | All loops use enum constants for bounds |
+ * | 3. No dynamic memory | [OK] | Zero malloc/free, stack-only allocation |
+ * | 4. Functions ≤60 lines | [OK] | Longest: `hcsr04_hal_delay_us` (31 lines) |
+ * | 5. Min 2 assertions/func | [OK] | All functions validate inputs |
+ * | 6. Smallest scope | [OK] | Variables declared at first use |
+ * | 7. Check return values | [OK] | All mock function returns checked |
+ * | 8. Limit preprocessor | [OK] | Only C23 typed enums, no macros |
+ * | 9. Restrict pointers | [OK] | Max one level of dereferencing |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * @par SOLID Principles:
  *
@@ -303,8 +303,8 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 assertions (pin ≤ max, port ≤ max)
- * - Rule 6: ✓ Variables declared at smallest scope
+ * - Rule 5: [OK] 2 assertions (pin ≤ max, port ≤ max)
+ * - Rule 6: [OK] Variables declared at smallest scope
  */
 static inline bool internal_is_valid_pin(rx_port_pin_t pin)
 {
@@ -410,8 +410,8 @@ static inline bool internal_is_valid_pin(rx_port_pin_t pin)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 4 preconditions checked (pin valid, port non-NULL, pin_num non-NULL, extracted values valid)
- * - Rule 7: ✓ All function return values checked
+ * - Rule 5: [OK] 4 preconditions checked (pin valid, port non-NULL, pin_num non-NULL, extracted values valid)
+ * - Rule 7: [OK] All function return values checked
  */
 static rx_err_t
 internal_validate_and_extract_pin(rx_port_pin_t pin, uint8_t* port, uint8_t* pin_num)
@@ -516,8 +516,8 @@ internal_validate_and_extract_pin(rx_port_pin_t pin, uint8_t* port, uint8_t* pin
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 checks (pin validation, mock return)
- * - Rule 7: ✓ Validation return checked before delegation
+ * - Rule 5: [OK] 2 checks (pin validation, mock return)
+ * - Rule 7: [OK] Validation return checked before delegation
  */
 rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
 {
@@ -608,8 +608,8 @@ rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 checks (pin validation, mock return)
- * - Rule 7: ✓ Validation return checked before delegation
+ * - Rule 5: [OK] 2 checks (pin validation, mock return)
+ * - Rule 7: [OK] Validation return checked before delegation
  */
 rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
 {
@@ -684,8 +684,8 @@ rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 checks (validation, delegation)
- * - Rule 7: ✓ All returns checked
+ * - Rule 5: [OK] 2 checks (validation, delegation)
+ * - Rule 7: [OK] All returns checked
  */
 rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
 {
@@ -714,9 +714,9 @@ rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
  *
  * **HC-SR04 Protocol:**
  * After the 10µs HIGH pulse, TRIG must return to LOW to complete the trigger:
- * - LOW → HIGH: Start trigger pulse
+ * - LOW -> HIGH: Start trigger pulse
  * - Maintain HIGH for 10µs
- * - HIGH → LOW: Complete pulse, HC-SR04 begins measurement
+ * - HIGH -> LOW: Complete pulse, HC-SR04 begins measurement
  *
  * @param[in] pin GPIO pin to drive LOW
  *   - Valid range: k_rx_p0_0 to k_rx_pj_7
@@ -757,8 +757,8 @@ rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 checks (validation, delegation)
- * - Rule 7: ✓ All returns checked
+ * - Rule 5: [OK] 2 checks (validation, delegation)
+ * - Rule 7: [OK] All returns checked
  */
 rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin)
 {
@@ -788,9 +788,9 @@ rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin)
  *
  * **HC-SR04 ECHO Measurement:**
  * The ECHO pin pulse width indicates round-trip ultrasonic travel time:
- * 1. Wait for ECHO rising edge (LOW → HIGH)
+ * 1. Wait for ECHO rising edge (LOW -> HIGH)
  * 2. Record start time
- * 3. Wait for ECHO falling edge (HIGH → LOW)
+ * 3. Wait for ECHO falling edge (HIGH -> LOW)
  * 4. Calculate pulse width = end_time - start_time
  * 5. Convert to distance: distance_cm = pulse_width_us / 58.0
  *
@@ -860,8 +860,8 @@ rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 3 checks (NULL check, validation, delegation)
- * - Rule 7: ✓ All returns checked
+ * - Rule 5: [OK] 3 checks (NULL check, validation, delegation)
+ * - Rule 7: [OK] All returns checked
  */
 rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
 {
@@ -945,8 +945,8 @@ rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 checks (validation, delegation)
- * - Rule 7: ✓ All returns checked
+ * - Rule 5: [OK] 2 checks (validation, delegation)
+ * - Rule 7: [OK] All returns checked
  */
 rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
 {
@@ -1058,9 +1058,9 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 3: ✓ No dynamic allocation - stack-only message buffer
- * - Rule 5: ✓ 2 checks (zero delay, max delay validation)
- * - Rule 7: ✓ snprintf return value checked for errors
+ * - Rule 3: [OK] No dynamic allocation - stack-only message buffer
+ * - Rule 5: [OK] 2 checks (zero delay, max delay validation)
+ * - Rule 7: [OK] snprintf return value checked for errors
  */
 void hcsr04_hal_delay_us(uint32_t us)
 {
@@ -1219,8 +1219,8 @@ void hcsr04_hal_delay_us(uint32_t us)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 post-condition assertions (not UINT32_MAX, within max timeout)
- * - Rule 7: ✓ Mock return value validated via assertions
+ * - Rule 5: [OK] 2 post-condition assertions (not UINT32_MAX, within max timeout)
+ * - Rule 7: [OK] Mock return value validated via assertions
  */
 uint32_t hcsr04_hal_get_time_us(void)
 {

@@ -20,7 +20,7 @@
  * @par Usage: tests/test_rx_obstacle_detect.c, tests/test_navigation_task.c
  * @see rx_obstacle_detect.h Real obstacle detection module
  * @see mock_hcsr04_hw.h HC-SR04 hardware mock
- * @par NASA Power of 10: ✓ Static allocation, bounded loops
+ * @par NASA Power of 10: [OK] Static allocation, bounded loops
  * @par SOLID: D - Navigation depends on obstacle detection interface
  *
  * @author STAR Team

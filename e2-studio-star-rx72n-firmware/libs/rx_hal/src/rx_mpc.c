@@ -25,12 +25,12 @@
  *   │                        Internal Helper Layer                        │
  *   │   ┌─────────────────────────────────────────────────────────────┐  │
  *   │   │                  internal_write_pfs()                        │  │
- *   │   │    (unlock → write PFS → lock with error handling)          │  │
+ *   │   │    (unlock -> write PFS -> lock with error handling)          │  │
  *   │   └─────────────────────────┬───────────────────────────────────┘  │
  *   │                             │                                      │
  *   │   ┌─────────────────────────▼───────────────────────────────────┐  │
  *   │   │              internal_get_pfs_register()                    │  │
- *   │   │    (port/pin → PFS register address calculation)            │  │
+ *   │   │    (port/pin -> PFS register address calculation)            │  │
  *   │   └─────────────────────────┬───────────────────────────────────┘  │
  *   │                             │                                      │
  *   │   ┌─────────────┐     ┌─────▼─────────┐                           │
@@ -106,7 +106,7 @@
  *
  * @par Thread Safety Analysis
  * **NOT THREAD-SAFE.** Critical section analysis:
- * - internal_mpc_unlock() → internal_write_pfs() → internal_mpc_lock()
+ * - internal_mpc_unlock() -> internal_write_pfs() -> internal_mpc_lock()
  * - This sequence is non-atomic (3 register writes)
  * - Interrupt or thread switch during unlock leaves PFS unprotected
  * - Race condition: Thread A unlocks, Thread B unlocks, Thread A writes,
@@ -138,16 +138,16 @@
  * - Lock always restored even on error path (no dangling unlock)
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1**: ✓ No goto, setjmp, longjmp, recursion
- * - **Rule 2**: ✓ Fixed loop bounds (switch/case only, no iteration)
- * - **Rule 3**: ✓ No dynamic memory allocation
- * - **Rule 4**: ✓ All functions < 60 lines
- * - **Rule 5**: ✓ Assertions via RX_CHECK_* macros (2+ per function)
- * - **Rule 6**: ✓ Variables at smallest scope (function-local)
- * - **Rule 7**: ✓ All return values checked and propagated
- * - **Rule 8**: ✓ C23 typed enums for all constants
- * - **Rule 9**: ⚠️ No function pointers (direct calls only)
- * - **Rule 10**: ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No goto, setjmp, longjmp, recursion
+ * - **Rule 2**: [OK] Fixed loop bounds (switch/case only, no iteration)
+ * - **Rule 3**: [OK] No dynamic memory allocation
+ * - **Rule 4**: [OK] All functions < 60 lines
+ * - **Rule 5**: [OK] Assertions via RX_CHECK_* macros (2+ per function)
+ * - **Rule 6**: [OK] Variables at smallest scope (function-local)
+ * - **Rule 7**: [OK] All return values checked and propagated
+ * - **Rule 8**: [OK] C23 typed enums for all constants
+ * - **Rule 9**: [WARN] No function pointers (direct calls only)
+ * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **Single Responsibility**: Each internal function has one purpose
@@ -986,5 +986,74 @@ rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
    * All RSPI signals (CLK, COPI, CIPO, SSL) use same PSEL
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_rspi_clk};
+  return rx_mpc_set_peripheral(&config);
+}
+
+/**
+ * @brief Configure pin for GPTW complementary PWM output
+ *
+ * @details
+ * Convenience wrapper that configures a pin for GPTW operation using
+ * PSEL = 0x14. GPTW provides complementary PWM output with dead-time
+ * insertion for motor control.
+ *
+ * @param[in] pin GPIO pin identifier for GPTW function
+ *
+ * @return Error code from rx_mpc_set_peripheral()
+ * @retval k_rx_ok Pin configured successfully
+ * @retval k_rx_err_invalid_arg Invalid port or pin
+ * @retval k_rx_err_hw_error PWPR unlock failed
+ *
+ * @note Used for 4 GPTW channels (0-3) with 8 total pins (PH + EN per motor)
+ * @note Phase staggering configured separately via rx_gptw driver
+ *
+ * @see rx_mpc.h Full API documentation with usage examples
+ * @see rx_gptw_init_all_staggered() GPTW channel configuration
+ *
+ * @since Version 1.1.0
+ */
+rx_err_t rx_mpc_set_gptw(const rx_port_pin_t pin)
+{
+  /* GPTW pins use PSEL = 0x14
+   * Supports 4 GPTW channels (0-3) for motor phase/enable control */
+  const rx_mpc_peripheral_config_t config = {
+    .pin  = pin,
+    .psel = k_psel_gptw  /* 0x14 - defined in rx_pin_psel_t enum */
+  };
+
+  return rx_mpc_set_peripheral(&config);
+}
+
+/**
+ * @brief Configure pin for USB VBUS detection
+ *
+ * @details
+ * Convenience wrapper that configures a pin for USB VBUS detection using
+ * PSEL = 0x11. Required for USB CDC enumeration and power monitoring.
+ *
+ * @param[in] pin GPIO pin identifier for USB VBUS (typically P1.6)
+ *
+ * @return Error code from rx_mpc_set_peripheral()
+ * @retval k_rx_ok Pin configured successfully
+ * @retval k_rx_err_invalid_arg Invalid port or pin
+ * @retval k_rx_err_hw_error PWPR unlock failed
+ *
+ * @note Active-high VBUS detect (pin = 1 when 5V present)
+ * @note Also requires USB PHY and controller configuration
+ *
+ * @see rx_mpc.h Full API documentation with usage examples
+ * @see rx_usb.h USB controller driver
+ *
+ * @since Version 1.1.0
+ */
+rx_err_t rx_mpc_set_usb_vbus(const rx_port_pin_t pin)
+{
+  /* USB VBUS detect uses PSEL = 0x11
+   * Typical pin: P1.6 for USB0_VBUS on RX72N */
+  const rx_mpc_peripheral_config_t config = {
+    .pin  = pin,
+    .psel = k_psel_usb_vbus  /* 0x11 - defined in rx_pin_psel_t enum */
+  };
+
   return rx_mpc_set_peripheral(&config);
 }

@@ -105,16 +105,16 @@
  *
  * | Rule | Implementation |
  * |------|----------------|
- * | **Rule 1** | ✅ No goto, setjmp, recursion - straight-line control flow |
- * | **Rule 2** | ✅ No unbounded loops (HAL uses timeout counters) |
- * | **Rule 3** | ✅ No malloc - all buffers stack-allocated or static FIFOs |
- * | **Rule 4** | ✅ All functions ≤60 lines (longest: init_callback at 44 lines) |
- * | **Rule 5** | ✅ Minimum 2 validations per function (NULL + state checks) |
- * | **Rule 6** | ✅ Variables at smallest scope (contexts in callbacks) |
- * | **Rule 7** | ✅ All HAL returns checked (uart_init, uart_write, etc.) |
- * | **Rule 8** | ✅ C23 typed enums for constants (s_uart_ascii_max: uint8_t) |
- * | **Rule 9** | ✅ Single-level pointers only (data*, ctx*, no arithmetic) |
- * | **Rule 10** | ✅ Compiles with -Wall -Wextra -Werror, zero warnings |
+ * | **Rule 1** | [PASS] No goto, setjmp, recursion - straight-line control flow |
+ * | **Rule 2** | [PASS] No unbounded loops (HAL uses timeout counters) |
+ * | **Rule 3** | [PASS] No malloc - all buffers stack-allocated or static FIFOs |
+ * | **Rule 4** | [PASS] All functions ≤60 lines (longest: init_callback at 44 lines) |
+ * | **Rule 5** | [PASS] Minimum 2 validations per function (NULL + state checks) |
+ * | **Rule 6** | [PASS] Variables at smallest scope (contexts in callbacks) |
+ * | **Rule 7** | [PASS] All HAL returns checked (uart_init, uart_write, etc.) |
+ * | **Rule 8** | [PASS] C23 typed enums for constants (s_uart_ascii_max: uint8_t) |
+ * | **Rule 9** | [PASS] Single-level pointers only (data*, ctx*, no arithmetic) |
+ * | **Rule 10** | [PASS] Compiles with -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *

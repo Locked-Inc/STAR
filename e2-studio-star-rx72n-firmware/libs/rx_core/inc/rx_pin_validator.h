@@ -36,12 +36,12 @@
  * │  ├─ pin_reservation_t[17][8] (reservation tracking)               │
  * │  ├─ bool initialized (lifecycle management)                       │
  * │  └─ Implementation functions:                                     │
- * │     ├─ pin_validator_validate()  → iface.validate_pin             │
- * │     ├─ pin_validator_reserve()   → iface.reserve_pin              │
- * │     ├─ pin_validator_release()   → iface.release_pin              │
- * │     ├─ pin_validator_is_reserved() → iface.is_pin_reserved        │
- * │     ├─ pin_validator_get_function() → iface.get_pin_function      │
- * │     └─ pin_validator_clear_all() → iface.clear_all_reservations   │
+ * │     ├─ pin_validator_validate()  -> iface.validate_pin             │
+ * │     ├─ pin_validator_reserve()   -> iface.reserve_pin              │
+ * │     ├─ pin_validator_release()   -> iface.release_pin              │
+ * │     ├─ pin_validator_is_reserved() -> iface.is_pin_reserved        │
+ * │     ├─ pin_validator_get_function() -> iface.get_pin_function      │
+ * │     └─ pin_validator_clear_all() -> iface.clear_all_reservations   │
  * └───────────────────────────────────────────────────────────────────┘
  * ```
  *
@@ -117,15 +117,15 @@
  *
  * | Operation | Thread-Safe? | Mutex Used? | Details |
  * |-----------|--------------|-------------|---------|
- * | pin_validator_init() | ✗ No | N/A | Call from main() only |
- * | pin_validator_get_interface() | ✓ Yes | No | Read-only check |
- * | pin_validator_deinit() | ✗ No | No | Call during shutdown only |
- * | validate_pin() | ✓ Yes | No | Read-only table lookup |
- * | reserve_pin() | ✓ Yes | ✓ Yes | Mutex-protected write |
- * | release_pin() | ✓ Yes | ✓ Yes | Mutex-protected write |
- * | is_pin_reserved() | ✓ Yes | ✓ Yes | Mutex-protected read |
- * | get_pin_function() | ✓ Yes | ✓ Yes | Mutex-protected read + strcpy |
- * | clear_all_reservations() | ✓ Yes | ✓ Yes | Exclusive mutex lock |
+ * | pin_validator_init() | [X] No | N/A | Call from main() only |
+ * | pin_validator_get_interface() | [OK] Yes | No | Read-only check |
+ * | pin_validator_deinit() | [X] No | No | Call during shutdown only |
+ * | validate_pin() | [OK] Yes | No | Read-only table lookup |
+ * | reserve_pin() | [OK] Yes | [OK] Yes | Mutex-protected write |
+ * | release_pin() | [OK] Yes | [OK] Yes | Mutex-protected write |
+ * | is_pin_reserved() | [OK] Yes | [OK] Yes | Mutex-protected read |
+ * | get_pin_function() | [OK] Yes | [OK] Yes | Mutex-protected read + strcpy |
+ * | clear_all_reservations() | [OK] Yes | [OK] Yes | Exclusive mutex lock |
  *
  * ## Usage Examples
  *
@@ -229,16 +229,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simplify control flow | ✓ | No goto, setjmp, recursion |
- * | 2. Fixed loop bounds | ✓ | All loops use k_pin_validator_max_* constants |
- * | 3. No dynamic memory | ✓ | Static allocation only (2D array) |
- * | 4. Functions < 60 lines | ✓ | All functions under limit |
- * | 5. Use assertions | ✓ | NULL checks, initialization checks |
- * | 6. Data at smallest scope | ✓ | Private functions, local variables |
- * | 7. Check return values | ✓ | All errors propagated |
- * | 8. Limit preprocessor | ✓ | Only include guards |
- * | 9. Restrict pointers | ⚠️ | Function pointers (DIP pattern) |
- * | 10. Compile warnings | ✓ | -Wall -Wextra -Werror |
+ * | 1. Simplify control flow | [OK] | No goto, setjmp, recursion |
+ * | 2. Fixed loop bounds | [OK] | All loops use k_pin_validator_max_* constants |
+ * | 3. No dynamic memory | [OK] | Static allocation only (2D array) |
+ * | 4. Functions < 60 lines | [OK] | All functions under limit |
+ * | 5. Use assertions | [OK] | NULL checks, initialization checks |
+ * | 6. Data at smallest scope | [OK] | Private functions, local variables |
+ * | 7. Check return values | [OK] | All errors propagated |
+ * | 8. Limit preprocessor | [OK] | Only include guards |
+ * | 9. Restrict pointers | [WARN] | Function pointers (DIP pattern) |
+ * | 10. Compile warnings | [OK] | -Wall -Wextra -Werror |
  *
  * @see rx_pin_interface.h Abstract interface this file implements
  * @see rx_infrastructure.h Global service locator using this validator
@@ -306,10 +306,10 @@ extern "C" {
  *
  * | Design | Memory | Access Time | Complexity | Chosen? |
  * |--------|--------|-------------|------------|---------|
- * | 2D array (current) | 4.4 KB | O(1) | Low | ✓ Yes |
- * | Linked list | ~800 bytes (sparse) | O(n) | Medium | ✗ No |
- * | Hash table | ~2 KB + overhead | O(1) avg | High | ✗ No |
- * | Bitfield + separate names | ~17 bytes + strings | O(1) + lookup | Medium | ✗ No |
+ * | 2D array (current) | 4.4 KB | O(1) | Low | [OK] Yes |
+ * | Linked list | ~800 bytes (sparse) | O(n) | Medium | [X] No |
+ * | Hash table | ~2 KB + overhead | O(1) avg | High | [X] No |
+ * | Bitfield + separate names | ~17 bytes + strings | O(1) + lookup | Medium | [X] No |
  *
  * **Decision**: 2D array chosen for simplicity, predictability, and O(1) access.
  *
@@ -676,7 +676,7 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 4 preconditions, 4 postconditions
+ * - Rule 5: [OK] 4 preconditions, 4 postconditions
  */
 [[nodiscard]] rx_err_t pin_validator_init(pin_validator_t* validator);
 
@@ -770,7 +770,7 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 3 preconditions, 4 postconditions
+ * - Rule 5: [OK] 3 preconditions, 4 postconditions
  */
 [[nodiscard]] rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t* validator);
 
@@ -855,7 +855,7 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 3 preconditions, 4 postconditions
+ * - Rule 5: [OK] 3 preconditions, 4 postconditions
  */
 [[nodiscard]] rx_err_t pin_validator_deinit(pin_validator_t* validator);
 

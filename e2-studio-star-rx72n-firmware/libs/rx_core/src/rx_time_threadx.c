@@ -60,16 +60,16 @@
  * Unit tests use mock_time.c instead for deterministic testing.
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ No loops in this module
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ All functions < 20 lines
- * - Rule 5: ✓ Each function has preconditions (via RX_CHECK_NULL_PTR)
- * - Rule 6: ✓ Variables declared at smallest scope
- * - Rule 7: ✓ Return value checking (tx_thread_sleep checked implicitly)
- * - Rule 8: ✓ Minimal preprocessor (only __RX__ guard)
- * - Rule 9: ✓ Function pointers used for DIP pattern (intentional deviation)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] No loops in this module
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] All functions < 20 lines
+ * - Rule 5: [OK] Each function has preconditions (via RX_CHECK_NULL_PTR)
+ * - Rule 6: [OK] Variables declared at smallest scope
+ * - Rule 7: [OK] Return value checking (tx_thread_sleep checked implicitly)
+ * - Rule 8: [OK] Minimal preprocessor (only __RX__ guard)
+ * - Rule 9: [OK] Function pointers used for DIP pattern (intentional deviation)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles Compliance
  * - **S**: Single Responsibility - Only time-related operations
@@ -420,8 +420,8 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
  * @see impl_is_elapsed() Timeout check details
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 1 precondition (NULL check), 3 postconditions
- * - Rule 9: ✓ Function pointers for DIP (intentional deviation)
+ * - Rule 5: [OK] 1 precondition (NULL check), 3 postconditions
+ * - Rule 9: [OK] Function pointers for DIP (intentional deviation)
  *
  * @test Tested in test_rx_time.c with NULL pointer and success cases
  *

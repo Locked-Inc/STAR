@@ -127,16 +127,16 @@
  * @see rx_port_constants.h Port and pin definitions
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ All loops have fixed bounds (array iteration)
- * - Rule 3: ✓ Static allocation only (g_mock_gpio is global)
- * - Rule 4: ✓ Functions kept under 60 lines
- * - Rule 5: ✓ Input validation in all functions
- * - Rule 6: ✓ Variables declared at smallest scope
- * - Rule 7: ✓ All return values checked in implementation
- * - Rule 8: ✓ Preprocessor used only for include guards
- * - Rule 9: ✓ Single-level pointers only
- * - Rule 10: ✓ Code compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] All loops have fixed bounds (array iteration)
+ * - Rule 3: [OK] Static allocation only (g_mock_gpio is global)
+ * - Rule 4: [OK] Functions kept under 60 lines
+ * - Rule 5: [OK] Input validation in all functions
+ * - Rule 6: [OK] Variables declared at smallest scope
+ * - Rule 7: [OK] All return values checked in implementation
+ * - Rule 8: [OK] Preprocessor used only for include guards
+ * - Rule 9: [OK] Single-level pointers only
+ * - Rule 10: [OK] Code compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - S: Single Responsibility - Only provides GPIO HAL mock functionality
@@ -677,7 +677,7 @@ rx_err_t gpio_write_low(rx_port_pin_t pin);
  *
  * @details
  * Mock implementation that flips the output value in mock state
- * (true→false, false→true). Records call in history and supports
+ * (true->false, false->true). Records call in history and supports
  * error injection.
  *
  * Mock behavior:

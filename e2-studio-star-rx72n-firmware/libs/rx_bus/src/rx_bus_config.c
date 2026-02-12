@@ -17,8 +17,8 @@
  *
  * | Approach | Correctness | Maintainability | Type Safety |
  * |----------|-------------|-----------------|-------------|
- * | Direct struct init | ❌ Easy to forget fields | ❌ Repeated everywhere | ⚠️ Partial |
- * | **Helper functions** | ✅ Centralized validation | ✅ Single source of truth | ✅ Full validation |
+ * | Direct struct init | [FAIL] Easy to forget fields | [FAIL] Repeated everywhere | [WARN] Partial |
+ * | **Helper functions** | [PASS] Centralized validation | [PASS] Single source of truth | [PASS] Full validation |
  *
  * **Benefits:**
  * - **Zero-initialization guarantee**: memset(0) ensures no uninitialized fields
@@ -106,16 +106,16 @@
  *
  * | Rule | Implementation |
  * |------|----------------|
- * | **Rule 1** | ✅ No goto, setjmp, recursion - straight-line code |
- * | **Rule 2** | ✅ No loops (zero-iteration memset doesn't count) |
- * | **Rule 3** | ✅ No malloc - static allocation pattern |
- * | **Rule 4** | ✅ All functions ≤60 lines (longest: init_smbus at 52 lines) |
- * | **Rule 5** | ✅ Minimum 2 validations per function (NULL checks + range checks) |
- * | **Rule 6** | ✅ Variables at smallest scope (err declared in functions) |
- * | **Rule 7** | ✅ All internal_validate_port_pin returns checked |
- * | **Rule 8** | ✅ C23 typed enums for all constants (k_adc_resolution_12bit: uint8_t) |
- * | **Rule 9** | ✅ Single-level pointers only (config*, name*) |
- * | **Rule 10** | ✅ Compiles with -Wall -Wextra -Werror, zero warnings |
+ * | **Rule 1** | [PASS] No goto, setjmp, recursion - straight-line code |
+ * | **Rule 2** | [PASS] No loops (zero-iteration memset doesn't count) |
+ * | **Rule 3** | [PASS] No malloc - static allocation pattern |
+ * | **Rule 4** | [PASS] All functions ≤60 lines (longest: init_smbus at 52 lines) |
+ * | **Rule 5** | [PASS] Minimum 2 validations per function (NULL checks + range checks) |
+ * | **Rule 6** | [PASS] Variables at smallest scope (err declared in functions) |
+ * | **Rule 7** | [PASS] All internal_validate_port_pin returns checked |
+ * | **Rule 8** | [PASS] C23 typed enums for all constants (k_adc_resolution_12bit: uint8_t) |
+ * | **Rule 9** | [PASS] Single-level pointers only (config*, name*) |
+ * | **Rule 10** | [PASS] Compiles with -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *

@@ -143,7 +143,7 @@
  *
  * # NASA Power of 10 Compliance Analysis
  *
- * ## Rule 1: Simplify Control Flow ✓ COMPLIANT
+ * ## Rule 1: Simplify Control Flow [OK] COMPLIANT
  *
  * **No forbidden constructs:**
  * - Zero `goto` statements
@@ -153,9 +153,9 @@
  * **Evidence:**
  * - Worker thread uses `while(1)` with explicit `break` on shutdown
  * - Error handling via early return (no goto cleanup)
- * - State machine: IDLE → BUSY → IDLE (no complex transitions)
+ * - State machine: IDLE -> BUSY -> IDLE (no complex transitions)
  *
- * ## Rule 2: Fixed Loop Upper-Bounds ✓ COMPLIANT
+ * ## Rule 2: Fixed Loop Upper-Bounds [OK] COMPLIANT
  *
  * **All loops provably bounded:**
  * ```c
@@ -176,7 +176,7 @@
  * **Exception:** Worker thread main loop uses `while(true)`, but has bounded
  * lifetime (exits on shutdown request). This is standard RTOS pattern.
  *
- * ## Rule 3: No Dynamic Memory After Initialization ✓ COMPLIANT
+ * ## Rule 3: No Dynamic Memory After Initialization [OK] COMPLIANT
  *
  * **Zero malloc/free:**
  * - Worker stack: `static uint8_t s_worker_stack[1024]`
@@ -190,7 +190,7 @@
  * # (No output = no dynamic allocation)
  * ```
  *
- * ## Rule 4: Keep Functions Short (~60 lines) ✓ COMPLIANT
+ * ## Rule 4: Keep Functions Short (~60 lines) [OK] COMPLIANT
  *
  * **Function size analysis:**
  * | Function                        | Lines | Complexity | Notes              |
@@ -208,7 +208,7 @@
  * - Extensive error handling and rollback logic
  * - Could be split, but would reduce readability
  *
- * ## Rule 5: Use Assertions/Validation ✓ COMPLIANT
+ * ## Rule 5: Use Assertions/Validation [OK] COMPLIANT
  *
  * **Minimum 2 validation checks per function:**
  * ```c
@@ -231,7 +231,7 @@
  * - @post Distance within valid range (2-400 cm) or error returned
  * - @post Statistics counters updated (measurement_count, timeout_count)
  *
- * ## Rule 6: Declare Data at Smallest Scope ✓ COMPLIANT
+ * ## Rule 6: Declare Data at Smallest Scope [OK] COMPLIANT
  *
  * **Variables close to first use:**
  * ```c
@@ -251,7 +251,7 @@
  * - `s_worker_stack`
  * - `s_pending`
  *
- * ## Rule 7: Check All Return Values ✓ COMPLIANT
+ * ## Rule 7: Check All Return Values [OK] COMPLIANT
  *
  * **All function returns validated:**
  * ```c
@@ -270,7 +270,7 @@
  * (void)tx_semaphore_put(&s_worker_shutdown_sem);  // Shutdown path, ignore errors
  * ```
  *
- * ## Rule 8: Limit Preprocessor Use ✓ COMPLIANT
+ * ## Rule 8: Limit Preprocessor Use [OK] COMPLIANT
  *
  * **C23 typed enums for ALL integer constants:**
  * ```c
@@ -296,7 +296,7 @@
  *
  * **Zero macros** - only typed enums and const floats.
  *
- * ## Rule 9: Restrict Pointer Use ⚠️ INTENTIONAL DEVIATION
+ * ## Rule 9: Restrict Pointer Use [WARN] INTENTIONAL DEVIATION
  *
  * **Function pointers for callback pattern:**
  * ```c
@@ -313,7 +313,7 @@
  *
  * **All other pointers single-level:** No double-indirection except function pointers.
  *
- * ## Rule 10: Compile with Maximum Warnings ✓ COMPLIANT
+ * ## Rule 10: Compile with Maximum Warnings [OK] COMPLIANT
  *
  * **Build flags:**
  * ```cmake
@@ -333,7 +333,7 @@
  *
  * # SOLID Principles Justification
  *
- * ## Single Responsibility Principle ✓
+ * ## Single Responsibility Principle [OK]
  *
  * **One module = one sensor type:**
  * - Handles ONLY HC-SR04 ultrasonic distance measurement
@@ -345,7 +345,7 @@
  * - Hardware I/O: `rx_hcsr04_hal.h`
  * - Application logic: Caller's responsibility
  *
- * ## Open/Closed Principle ✓
+ * ## Open/Closed Principle [OK]
  *
  * **Extensible without modification:**
  * - New platforms: Implement HAL, no driver changes
@@ -361,7 +361,7 @@
  * };
  * ```
  *
- * ## Liskov Substitution Principle ✓
+ * ## Liskov Substitution Principle [OK]
  *
  * **HAL implementations interchangeable:**
  * - Hardware HAL (`rx_hcsr04_hal_hw.c`): Production firmware
@@ -374,7 +374,7 @@
  * err = hcsr04_hal_gpio_write_high(pin);  // Works with both
  * ```
  *
- * ## Interface Segregation Principle ✓
+ * ## Interface Segregation Principle [OK]
  *
  * **Small, focused interfaces:**
  * - Init/deinit: Sensor lifecycle
@@ -386,7 +386,7 @@
  * - Async requires worker thread? Call `rx_hcsr04_worker_init()` separately
  * - Don't need temp compensation? Don't call `rx_hcsr04_set_temperature()`
  *
- * ## Dependency Inversion Principle ✓
+ * ## Dependency Inversion Principle [OK]
  *
  * **Depends on abstraction (HAL), not concrete implementation:**
  * ```c
@@ -446,10 +446,10 @@
  * rx_hcsr04_t sensor;
  *
  * // Thread A
- * rx_hcsr04_measure(&sensor, &distance_A);  // ❌ Corrupts state
+ * rx_hcsr04_measure(&sensor, &distance_A);  // [FAIL] Corrupts state
  *
  * // Thread B (concurrent)
- * rx_hcsr04_measure(&sensor, &distance_B);  // ❌ Corrupts state
+ * rx_hcsr04_measure(&sensor, &distance_B);  // [FAIL] Corrupts state
  * ```
  *
  * **Solution:** Use separate handles or add external mutex:
@@ -554,7 +554,7 @@ typedef enum : uint8_t {
  * Stack allocated for HC-SR04 async worker thread.
  *
  * **Stack Usage Analysis:**
- * - Function call depth: 4 (worker → measure → measure_pulse → HAL)
+ * - Function call depth: 4 (worker -> measure -> measure_pulse -> HAL)
  * - Local variables: ~200 bytes (result struct, counters, status)
  * - ThreadX overhead: ~256 bytes
  * - Safety margin: 2× (568 bytes)
@@ -761,7 +761,7 @@ static TX_EVENT_FLAGS_GROUP s_measurement_request;
  * @brief ThreadX semaphore for synchronizing graceful worker shutdown
  *
  * @details
- * Binary semaphore (count 0 → 1) signaled by worker thread upon exit.
+ * Binary semaphore (count 0 -> 1) signaled by worker thread upon exit.
  * Used in `rx_hcsr04_worker_deinit()` to wait for worker to finish in-progress
  * measurement before deleting thread resources.
  *

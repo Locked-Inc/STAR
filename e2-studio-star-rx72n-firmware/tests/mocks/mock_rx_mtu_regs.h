@@ -43,7 +43,7 @@
  * @see rx72n_mtu_regs.h Real MTU register definitions
  * @see rx_mtu_encoder.h MTU encoder driver
  *
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Dependency Inversion
  *
  * @author STAR Team

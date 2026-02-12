@@ -133,16 +133,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto/setjmp/recursion |
- * | 2. Fixed loop bounds | ✓ | Loops bounded by channel count (8 max) |
- * | 3. No dynamic allocation | ✓ | Zero malloc/free, all static |
- * | 4. Small functions | ✓ | All functions < 60 lines |
- * | 5. Assertions (≥2 per function) | ✓ | Minimum 2 validation checks per function |
- * | 6. Narrow scope | ✓ | File-scope statics, minimal globals |
- * | 7. Check return values | ✓ | All functions return rx_err_t |
- * | 8. Limited preprocessor | ✓ | C23 typed enums, minimal macros |
- * | 9. Pointer restrictions | ✓ | Single-level pointers only |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto/setjmp/recursion |
+ * | 2. Fixed loop bounds | [OK] | Loops bounded by channel count (8 max) |
+ * | 3. No dynamic allocation | [OK] | Zero malloc/free, all static |
+ * | 4. Small functions | [OK] | All functions < 60 lines |
+ * | 5. Assertions (≥2 per function) | [OK] | Minimum 2 validation checks per function |
+ * | 6. Narrow scope | [OK] | File-scope statics, minimal globals |
+ * | 7. Check return values | [OK] | All functions return rx_err_t |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums, minimal macros |
+ * | 9. Pointer restrictions | [OK] | Single-level pointers only |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * @par SOLID Principles:
  *
@@ -282,13 +282,13 @@ typedef enum : uint8_t {
  *
  * | Channel | Output A | Output B | Output C | Output D |
  * |---------|----------|----------|----------|----------|
- * | MTU0 | ✓ | ✓ | ✓ | ✓ |
- * | MTU1 | ✓ | ✓ | - | - |
- * | MTU2 | ✓ | ✓ | - | - |
- * | MTU3 | ✓ | ✓ | ✓ | ✓ |
- * | MTU4 | ✓ | ✓ | ✓ | ✓ |
- * | MTU6 | ✓ | ✓ | ✓ | ✓ |
- * | MTU7 | ✓ | ✓ | ✓ | ✓ |
+ * | MTU0 | [OK] | [OK] | [OK] | [OK] |
+ * | MTU1 | [OK] | [OK] | - | - |
+ * | MTU2 | [OK] | [OK] | - | - |
+ * | MTU3 | [OK] | [OK] | [OK] | [OK] |
+ * | MTU4 | [OK] | [OK] | [OK] | [OK] |
+ * | MTU6 | [OK] | [OK] | [OK] | [OK] |
+ * | MTU7 | [OK] | [OK] | [OK] | [OK] |
  *
  * ## Complementary Pairs
  *
@@ -341,9 +341,9 @@ typedef enum : uint8_t {
  * - Recommended for motors: 15-25 kHz
  *
  * **Resolution Trade-off**:
- * Higher frequency → lower resolution (fewer counts per period)
- * - 20 kHz: 6000 counts → 0.017% resolution
- * - 100 kHz: 1200 counts → 0.083% resolution
+ * Higher frequency -> lower resolution (fewer counts per period)
+ * - 20 kHz: 6000 counts -> 0.017% resolution
+ * - 100 kHz: 1200 counts -> 0.083% resolution
  *
  * @par Configuration Parameter Table:
  *

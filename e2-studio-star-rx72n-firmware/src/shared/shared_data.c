@@ -292,16 +292,16 @@
  *
  * | Rule | Status | Implementation Notes |
  * |------|--------|----------------------|
- * | **Rule 1: Control flow** | ✅ PASS | No goto, setjmp, or recursion |
- * | **Rule 2: Loop bounds** | ✅ PASS | No loops (all operations O(1)) |
- * | **Rule 3: Heap allocation** | ✅ PASS | Zero dynamic allocation (all static) |
- * | **Rule 4: Function length** | ✅ PASS | Longest: shared_data_init() = 85 lines |
- * | **Rule 5: Assertions** | ✅ PASS | Every function: 2+ preconditions (nullptr, initialized) |
- * | **Rule 6: Data scope** | ✅ PASS | Variables at smallest scope (function-local) |
- * | **Rule 7: Return checks** | ✅ PASS | All ThreadX returns checked (tx_status != TX_SUCCESS) |
- * | **Rule 8: Preprocessor** | ✅ PASS | C23 typed enums only (no macros for constants) |
- * | **Rule 9: Pointers** | ✅ PASS | Single-level dereferencing only |
- * | **Rule 10: Warnings** | ✅ PASS | Compiles with -Wall -Wextra -Werror |
+ * | **Rule 1: Control flow** | [PASS] | No goto, setjmp, or recursion |
+ * | **Rule 2: Loop bounds** | [PASS] | No loops (all operations O(1)) |
+ * | **Rule 3: Heap allocation** | [PASS] | Zero dynamic allocation (all static) |
+ * | **Rule 4: Function length** | [PASS] | Longest: shared_data_init() = 85 lines |
+ * | **Rule 5: Assertions** | [PASS] | Every function: 2+ preconditions (nullptr, initialized) |
+ * | **Rule 6: Data scope** | [PASS] | Variables at smallest scope (function-local) |
+ * | **Rule 7: Return checks** | [PASS] | All ThreadX returns checked (tx_status != TX_SUCCESS) |
+ * | **Rule 8: Preprocessor** | [PASS] | C23 typed enums only (no macros for constants) |
+ * | **Rule 9: Pointers** | [PASS] | Single-level dereferencing only |
+ * | **Rule 10: Warnings** | [PASS] | Compiles with -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -446,12 +446,12 @@ rx_bus_manager_t g_bus_manager = {0};
  * **Single global instance** of all inter-task shared state. Zero-initialized at startup
  * by C runtime (.bss section). Mutexes and event flags created by shared_data_init().
  *
- * **Memory location:** .bss section (uninitialized data) → RAM
+ * **Memory location:** .bss section (uninitialized data) -> RAM
  * **Size:** ~512 bytes (see memory breakdown in file header)
  *
  * **Access rules:**
- * - ❌ **NEVER** access members directly: `g_shared_data.motor_command.valid`
- * - ✅ **ALWAYS** use accessors: `shared_data_get_motor_command(&cmd)`
+ * - [FAIL] **NEVER** access members directly: `g_shared_data.motor_command.valid`
+ * - [PASS] **ALWAYS** use accessors: `shared_data_get_motor_command(&cmd)`
  *
  * **Initialization order:**
  * 1. C runtime zeros .bss section
@@ -589,8 +589,8 @@ shared_data_t g_shared_data = {0};
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 preconditions (ThreadX entered, not initialized), 7 postconditions
- * - Rule 7: ✓ All tx_* return values checked
+ * - Rule 5: [OK] 2 preconditions (ThreadX entered, not initialized), 7 postconditions
+ * - Rule 7: [OK] All tx_* return values checked
  */
 rx_err_t shared_data_init(void)
 {
@@ -699,7 +699,7 @@ rx_err_t shared_data_init(void)
  *
  * CommTask => SharedData [label="set_motor_command(&cmd)"];
  * SharedData box SharedData [label="Acquire motor_mutex"];
- * SharedData box SharedData [label="memcpy(cmd → g_shared_data)"];
+ * SharedData box SharedData [label="memcpy(cmd -> g_shared_data)"];
  * SharedData box SharedData [label="Update timestamp"];
  * SharedData box SharedData [label="Release motor_mutex"];
  * SharedData => SharedData [label="Set NEW_MOTOR_COMMAND"];
@@ -2291,7 +2291,7 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
  * **Example:**
  * - last_comm_tick = 1000 (10 seconds since boot)
  * - current_tick = 1060 (10.6 seconds)
- * - elapsed_ms = (1060 - 1000) * 10 = 600ms → TIMEOUT!
+ * - elapsed_ms = (1060 - 1000) * 10 = 600ms -> TIMEOUT!
  *
  * @return bool Timeout status
  * @retval true Communication timeout (>500ms since last command)

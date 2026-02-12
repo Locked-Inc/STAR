@@ -116,9 +116,9 @@
  * 4. **Return** final CRC-32 value
  *
  * **Bit-exact compatibility:**
- * - Go: `crc32.ChecksumIEEE(data)` ✓
- * - Python: `zlib.crc32(data)` ✓
- * - Linux: `cksum -o3` (after byte-swap) ✓
+ * - Go: `crc32.ChecksumIEEE(data)` [OK]
+ * - Python: `zlib.crc32(data)` [OK]
+ * - Linux: `cksum -o3` (after byte-swap) [OK]
  *
  * ## Incremental CRC Calculation
  *
@@ -161,7 +161,7 @@
  *
  * ## Integration with STAR Communication Protocols
  *
- * **SPI Protocol (star.proto → nanopb):**
+ * **SPI Protocol (star.proto -> nanopb):**
  * - Frame format: `[SYNC][LEN][PAYLOAD][CRC32]`
  * - CRC calculated over: LEN + PAYLOAD (excludes SYNC and CRC32 itself)
  * - Used by: `rx_spi_comm.c`, `rx_usb_comm.c`
@@ -176,16 +176,16 @@
  *
  * | Rule | Compliance | Implementation |
  * |------|------------|----------------|
- * | **1. Simple Control Flow** | ✅ FULL | No goto, setjmp, or recursion. Delegation uses direct function calls |
- * | **2. Fixed Loop Bounds** | ✅ FULL | No loops in dispatcher (delegation only) |
- * | **3. No Dynamic Memory** | ✅ FULL | Zero malloc/free. All backend state is static |
- * | **4. Short Functions** | ✅ FULL | Both functions are 1-2 lines (delegation wrappers) |
- * | **5. Assertions** | ✅ FULL | Backend implementations validate NULL pointers |
- * | **6. Smallest Scope** | ✅ FULL | No local variables (immediate delegation) |
- * | **7. Check Return Values** | ✅ FULL | Functions return values directly (no error codes) |
- * | **8. Limit Preprocessor** | ✅ FULL | Only header guards. No macros for constants |
- * | **9. Restrict Pointers** | ⚠️ DEVIATION | Function pointers used for Dependency Inversion (DIP) |
- * | **10. Compiler Warnings** | ✅ FULL | Compiles with -Wall -Wextra -Werror |
+ * | **1. Simple Control Flow** | [PASS] FULL | No goto, setjmp, or recursion. Delegation uses direct function calls |
+ * | **2. Fixed Loop Bounds** | [PASS] FULL | No loops in dispatcher (delegation only) |
+ * | **3. No Dynamic Memory** | [PASS] FULL | Zero malloc/free. All backend state is static |
+ * | **4. Short Functions** | [PASS] FULL | Both functions are 1-2 lines (delegation wrappers) |
+ * | **5. Assertions** | [PASS] FULL | Backend implementations validate NULL pointers |
+ * | **6. Smallest Scope** | [PASS] FULL | No local variables (immediate delegation) |
+ * | **7. Check Return Values** | [PASS] FULL | Functions return values directly (no error codes) |
+ * | **8. Limit Preprocessor** | [PASS] FULL | Only header guards. No macros for constants |
+ * | **9. Restrict Pointers** | [WARN] DEVIATION | Function pointers used for Dependency Inversion (DIP) |
+ * | **10. Compiler Warnings** | [PASS] FULL | Compiles with -Wall -Wextra -Werror |
  *
  * **Rule 9 Justification (Function Pointers):**
  * - Function pointers in `rx_crc_internal.h` enable compile-time backend selection
@@ -488,7 +488,7 @@
  * @pre data must point to readable memory of at least len bytes (if len > 0)
  * @pre len must represent actual buffer size (no out-of-bounds access)
  *
- * @post CRC value is deterministic (same input → same output)
+ * @post CRC value is deterministic (same input -> same output)
  * @post No side effects (function is pure, no state modification)
  * @post Backend peripheral restored to idle state (HW implementation only)
  *
@@ -603,9 +603,9 @@
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 4: ✓ 1-line function (delegation wrapper)
- * - Rule 5: ✓ 2 preconditions (data validity, len validity)
- * - Rule 7: ✓ Backend return value used directly
+ * - Rule 4: [OK] 1-line function (delegation wrapper)
+ * - Rule 5: [OK] 2 preconditions (data validity, len validity)
+ * - Rule 7: [OK] Backend return value used directly
  */
 uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len)
 {
@@ -726,7 +726,7 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len)
  * @pre crc must be a valid CRC-32 value (from previous ieee/update call or 0)
  * @pre len must represent actual buffer size (no out-of-bounds access)
  *
- * @post Updated CRC is deterministic (same inputs → same output)
+ * @post Updated CRC is deterministic (same inputs -> same output)
  * @post Equivalent to single-shot CRC over concatenated data: `ieee(A||B) == update(ieee(A), B)`
  * @post No side effects (function is pure, no global state modification)
  * @post Backend peripheral restored to idle state (HW implementation only)
@@ -889,9 +889,9 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 4: ✓ 1-line function (delegation wrapper)
- * - Rule 5: ✓ 3 preconditions (crc validity, data validity, len validity)
- * - Rule 7: ✓ Backend return value used directly
+ * - Rule 4: [OK] 1-line function (delegation wrapper)
+ * - Rule 5: [OK] 3 preconditions (crc validity, data validity, len validity)
+ * - Rule 7: [OK] Backend return value used directly
  */
 uint32_t rx_crc32_update(const uint32_t crc, const uint8_t* data, uint32_t len)
 {

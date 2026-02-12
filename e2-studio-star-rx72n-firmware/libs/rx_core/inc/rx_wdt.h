@@ -30,9 +30,9 @@
  * | Feature | WDT (This Module) | IWDT (rx_iwdt.h) |
  * |---------|-------------------|------------------|
  * | Clock Source | PCLKB (system clock) | IWDTCLK (independent 125kHz) |
- * | Can be Stopped | ✓ Yes (rx_wdt_stop) | ✗ No (hardware safety) |
- * | Clock Fault Detection | ✗ No (same clock tree) | ✓ Yes (independent) |
- * | Development Friendly | ✓ Yes | ✗ No (always running) |
+ * | Can be Stopped | [OK] Yes (rx_wdt_stop) | [X] No (hardware safety) |
+ * | Clock Fault Detection | [X] No (same clock tree) | [OK] Yes (independent) |
+ * | Development Friendly | [OK] Yes | [X] No (always running) |
  * | Production Safety | Medium | High |
  * | Timeout Granularity | PCLKB-dependent | Fixed ~125kHz |
  * | Register Base | 0x00088020 | 0x00088030 |
@@ -57,10 +57,10 @@
  * Timeout (seconds) = (Divider × Cycles) / PCLKB_Frequency
  *
  * Where Divider is selected by CKS (Clock Select) bits:
- *   CKS=00: Divider=1   → 256 cycles   → 4.3 µs at 60 MHz
- *   CKS=01: Divider=4   → 1024 cycles  → 17 µs at 60 MHz
- *   CKS=10: Divider=16  → 4096 cycles  → 68 µs at 60 MHz
- *   CKS=11: Divider=64  → 16384 cycles → 273 µs at 60 MHz
+ *   CKS=00: Divider=1   -> 256 cycles   -> 4.3 µs at 60 MHz
+ *   CKS=01: Divider=4   -> 1024 cycles  -> 17 µs at 60 MHz
+ *   CKS=10: Divider=16  -> 4096 cycles  -> 68 µs at 60 MHz
+ *   CKS=11: Divider=64  -> 16384 cycles -> 273 µs at 60 MHz
  *
  * Example: For 1ms timeout at PCLKB=60MHz:
  *   1ms = N / 60,000,000
@@ -172,22 +172,22 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto/setjmp/recursion, sequential logic |
- * | 2. Fixed loop bounds | ✓ | No loops in driver (stateless operations) |
- * | 3. No dynamic allocation | ✓ | Zero malloc/free, static configuration |
- * | 4. Small functions | ✓ | All functions < 30 lines |
- * | 5. Assertions (≥2 per function) | ✓ | Minimum 2 checks per function (pre/post) |
- * | 6. Narrow scope | ✓ | File-scope statics, function-local variables |
- * | 7. Check return values | ✓ | All functions return rx_err_t, checked by callers |
- * | 8. Limited preprocessor | ✓ | C23 typed enums only, zero computation macros |
- * | 9. Pointer restrictions | ✓ | Single-level pointers, no pointer arithmetic |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto/setjmp/recursion, sequential logic |
+ * | 2. Fixed loop bounds | [OK] | No loops in driver (stateless operations) |
+ * | 3. No dynamic allocation | [OK] | Zero malloc/free, static configuration |
+ * | 4. Small functions | [OK] | All functions < 30 lines |
+ * | 5. Assertions (≥2 per function) | [OK] | Minimum 2 checks per function (pre/post) |
+ * | 6. Narrow scope | [OK] | File-scope statics, function-local variables |
+ * | 7. Check return values | [OK] | All functions return rx_err_t, checked by callers |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums only, zero computation macros |
+ * | 9. Pointer restrictions | [OK] | Single-level pointers, no pointer arithmetic |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * **Safety-Critical Design**:
  * - Static configuration prevents allocation failures
  * - Explicit error codes force error handling
  * - Mutex protection prevents race conditions
- * - Simple state machine (init → start/stop → feed)
+ * - Simple state machine (init -> start/stop -> feed)
  *
  * @par SOLID Principles:
  *
@@ -272,10 +272,10 @@ extern "C" {
  * ## Hardware Mapping (TOPS[1:0] Bits)
  *
  * These enum values map directly to TOPS[1:0] bits in WDTCR register:
- * - TOPS=00 → 1024 cycles (counter loads 0x03FF)
- * - TOPS=01 → 4096 cycles (counter loads 0x0FFF)
- * - TOPS=10 → 8192 cycles (counter loads 0x1FFF)
- * - TOPS=11 → 16384 cycles (counter loads 0x3FFF)
+ * - TOPS=00 -> 1024 cycles (counter loads 0x03FF)
+ * - TOPS=01 -> 4096 cycles (counter loads 0x0FFF)
+ * - TOPS=10 -> 8192 cycles (counter loads 0x1FFF)
+ * - TOPS=11 -> 16384 cycles (counter loads 0x3FFF)
  *
  * ## Combined with Clock Division
  *
@@ -705,10 +705,10 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto/setjmp/recursion, sequential control flow
- * - Rule 3: ✓ No dynamic allocation, static configuration storage
- * - Rule 5: ✓ 4 preconditions, 4 postconditions
- * - Rule 7: ✓ Returns rx_err_t, caller must check
+ * - Rule 1: [OK] No goto/setjmp/recursion, sequential control flow
+ * - Rule 3: [OK] No dynamic allocation, static configuration storage
+ * - Rule 5: [OK] 4 preconditions, 4 postconditions
+ * - Rule 7: [OK] Returns rx_err_t, caller must check
  */
 [[nodiscard]] rx_err_t rx_wdt_init(const rx_wdt_config_t* config);
 
@@ -808,9 +808,9 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto/setjmp/recursion
- * - Rule 3: ✓ No dynamic allocation
- * - Rule 5: ✓ 2 preconditions, 3 postconditions
+ * - Rule 1: [OK] No goto/setjmp/recursion
+ * - Rule 3: [OK] No dynamic allocation
+ * - Rule 5: [OK] 2 preconditions, 3 postconditions
  */
 [[nodiscard]] rx_err_t rx_wdt_start(void);
 
@@ -925,9 +925,9 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto/setjmp/recursion
- * - Rule 3: ✓ No dynamic allocation
- * - Rule 5: ✓ 1 precondition, 3 postconditions
+ * - Rule 1: [OK] No goto/setjmp/recursion
+ * - Rule 3: [OK] No dynamic allocation
+ * - Rule 5: [OK] 1 precondition, 3 postconditions
  */
 [[nodiscard]] rx_err_t rx_wdt_stop(void);
 
@@ -1078,10 +1078,10 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto/setjmp/recursion
- * - Rule 3: ✓ No dynamic allocation
- * - Rule 4: ✓ Function < 10 lines (simple register write)
- * - Rule 5: ✓ 3 preconditions, 3 postconditions
+ * - Rule 1: [OK] No goto/setjmp/recursion
+ * - Rule 3: [OK] No dynamic allocation
+ * - Rule 4: [OK] Function < 10 lines (simple register write)
+ * - Rule 5: [OK] 3 preconditions, 3 postconditions
  */
 [[nodiscard]] rx_err_t rx_wdt_feed(void);
 

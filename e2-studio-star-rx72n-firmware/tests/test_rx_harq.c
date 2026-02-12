@@ -23,7 +23,7 @@
  * --- [label="First Transmission (Fails)"];
  * Test_Transmitter box Test_Transmitter [label="Payload: 0xDE 0xAD"];
  * Test_Transmitter => TX_HARQ [label="rx_harq_encode()"];
- * TX_HARQ box TX_HARQ [label="FEC encode\n2 bytes → 6 bytes\nState: IDLE → WAITING_ACK"];
+ * TX_HARQ box TX_HARQ [label="FEC encode\n2 bytes -> 6 bytes\nState: IDLE -> WAITING_ACK"];
  * TX_HARQ => Channel [label="Encoded soft bits"];
  * Channel box Channel [label="Add noise\nBER = 10^-3"];
  * Channel => RX_HARQ [label="Noisy soft bits"];
@@ -43,7 +43,7 @@
  * Test_Receiver box Test_Receiver [label="Clamp to [-127, 127]\nSNR gain: +3 dB"];
  * RX_HARQ box RX_HARQ [label="rx_harq_decode(combined)\nSUCCESS"];
  * RX_HARQ => Test_Transmitter [label="ACK (decoded successfully)"];
- * TX_HARQ box TX_HARQ [label="State: WAITING_ACK → IDLE\nreset retry_count"];
+ * TX_HARQ box TX_HARQ [label="State: WAITING_ACK -> IDLE\nreset retry_count"];
  *
  * --- [label="Verification"];
  * Test_Receiver box Test_Receiver [label="Compare decoded\nwith original payload\nVERIFY: 0xDE 0xAD"];
@@ -138,9 +138,9 @@
  *
  * **State Transition Guards:**
  *
- * - WaitingAck → Combining: Only if `retry_count < max_retries`
- * - Combining → Error: Only if `retry_count >= max_retries` AND decode fails
- * - Any state → Idle: Via `rx_harq_reset()` or ACK received
+ * - WaitingAck -> Combining: Only if `retry_count < max_retries`
+ * - Combining -> Error: Only if `retry_count >= max_retries` AND decode fails
+ * - Any state -> Idle: Via `rx_harq_reset()` or ACK received
  *
  * ## Performance Characteristics Table
  *
@@ -167,7 +167,7 @@
  *   - Add soft bits: `[50, -30, 20, -10]`
  *   - Add soft bits: `[30, 10, -5, 60]`
  *   - Verify accumulated: `[80, -20, 15, 50]`
- *   - Test saturation: `[100, -100] + [50, -50]` → clamped to `[127, -127]`
+ *   - Test saturation: `[100, -100] + [50, -50]` -> clamped to `[127, -127]`
  * - **Coverage:** Basic accumulation, saturation edge cases, overflow prevention
  *
  * ### 3. Combining Length Mismatch Detection
@@ -181,7 +181,7 @@
  * - **Expected:** First 2 succeed, 3rd returns `k_rx_err_busy`
  *
  * ### 5. HARQ Encode/Decode Round-Trip Testing
- * - **Objective:** Verify lossless encode → decode under ideal conditions (no noise)
+ * - **Objective:** Verify lossless encode -> decode under ideal conditions (no noise)
  * - **Method:**
  *   1. Encode payload with FEC: `rx_harq_encode()`
  *   2. Convert hard bits to soft bits (perfect confidence: ±127)
@@ -192,10 +192,10 @@
  * ### 6. Combining Improves Reception Testing
  * - **Objective:** Demonstrate that combining multiple transmissions improves decode success
  * - **Method:**
- *   1. Encode payload → inject noise → decode fails (1st attempt)
+ *   1. Encode payload -> inject noise -> decode fails (1st attempt)
  *   2. Add noisy soft bits to combiner
- *   3. Retransmit (same data, independent noise) → add to combiner
- *   4. Decode combined soft bits → success (2nd attempt with 3 dB gain)
+ *   3. Retransmit (same data, independent noise) -> add to combiner
+ *   4. Decode combined soft bits -> success (2nd attempt with 3 dB gain)
  * - **Verification:** Measure BER reduction, validate decode success after combining
  *
  * ### 7. Retry Limit Enforcement Testing
@@ -413,8 +413,8 @@ static rx_harq_decode_params_t internal_make_decode_params(const rx_soft_bit_t* 
  * Reused across multiple tests to avoid re-initialization overhead.
  *
  * **Lifetime:**
- * - Initialized: setUp() → rx_chase_combiner_init() with default max_combines
- * - Cleaned up: tearDown() → rx_chase_combiner_deinit()
+ * - Initialized: setUp() -> rx_chase_combiner_init() with default max_combines
+ * - Cleaned up: tearDown() -> rx_chase_combiner_deinit()
  * - Reset between tests: Unity framework calls setUp()/tearDown() for each test
  *
  * @note Static (file-local) scope - not visible outside this test file.
@@ -463,8 +463,8 @@ static rx_harq_handle_t    s_harq;
  * which uses k_harq_default_combines).
  *
  * **What Gets Initialized:**
- * - ✅ Chase Combiner (s_combiner) with default max_combines
- * - ❌ HARQ Handle (s_harq) - tests initialize this with custom configs
+ * - [PASS] Chase Combiner (s_combiner) with default max_combines
+ * - [FAIL] HARQ Handle (s_harq) - tests initialize this with custom configs
  *
  * **Why Separate Combiner and HARQ Init?**
  * Many tests only need the combiner (testing accumulation logic), and tests
@@ -506,8 +506,8 @@ void setUp(void)
  * of pass/fail status. Ensures no resource leaks between tests.
  *
  * **What Gets Cleaned Up:**
- * - ✅ Chase Combiner (s_combiner) - always initialized by setUp()
- * - ✅ HARQ Handle (s_harq) - if initialized by test (safe if not initialized)
+ * - [PASS] Chase Combiner (s_combiner) - always initialized by setUp()
+ * - [PASS] HARQ Handle (s_harq) - if initialized by test (safe if not initialized)
  *
  * **Why Cast to (void)?**
  * Return values are explicitly ignored with `(void)` cast because:
@@ -554,7 +554,7 @@ void tearDown(void)
  * **Coverage:**
  * - nullptr pointer validation (init/deinit)
  * - Successful initialization with custom max_combines
- * - Default max_combines (max_combines=0 → k_harq_default_combines)
+ * - Default max_combines (max_combines=0 -> k_harq_default_combines)
  * - State verification after init (initialized flag, max_combines, count)
  *
  * **Test Count:** 4 tests
@@ -766,9 +766,9 @@ void test_combiner_add_length_mismatch(void)
  *
  * @par Test Steps:
  * 1. Initialize combiner with max_combines=2
- * 2. Add soft bits (1st time) → expect k_rx_ok
- * 3. Add soft bits (2nd time) → expect k_rx_ok
- * 4. Add soft bits (3rd time) → expect k_rx_err_busy (limit exceeded)
+ * 2. Add soft bits (1st time) -> expect k_rx_ok
+ * 3. Add soft bits (2nd time) -> expect k_rx_ok
+ * 4. Add soft bits (3rd time) -> expect k_rx_err_busy (limit exceeded)
  *
  * @test Validates NASA Rule 2 (bounded accumulation)
  */
@@ -861,8 +861,8 @@ void test_combiner_accumulation(void)
  * 3. Call rx_chase_combiner_combined(output, &len)
  * 4. Verify output length is 2
  * 5. Verify clamping:
- *    - output[0]: 100 + 50 = 150 → clamped to k_soft_bit_max (127)
- *    - output[1]: -100 + (-50) = -150 → clamped to k_soft_bit_min (-127)
+ *    - output[0]: 100 + 50 = 150 -> clamped to k_soft_bit_max (127)
+ *    - output[1]: -100 + (-50) = -150 -> clamped to k_soft_bit_min (-127)
  *
  * @test Validates overflow prevention (NASA Rule 3: no undefined behavior from overflow)
  */
@@ -1282,7 +1282,7 @@ void test_harq_decode_zero_length(void)
 /**
  * @defgroup harq_integration_tests HARQ Integration Tests (Full Protocol)
  * @ingroup harq_tests
- * @brief Validate complete encode → decode → combine → decode flow
+ * @brief Validate complete encode -> decode -> combine -> decode flow
  *
  * @details
  * End-to-end integration tests demonstrating the full HARQ protocol with Chase
@@ -1292,7 +1292,7 @@ void test_harq_decode_zero_length(void)
  * - Multi-transmission diversity gain
  *
  * **Test Methodology:**
- * 1. Encode payload with FEC: payload → FEC encoder → encoded bits
+ * 1. Encode payload with FEC: payload -> FEC encoder -> encoded bits
  * 2. Convert to soft bits (simulate channel)
  * 3. Decode (may fail on first attempt with noise)
  * 4. Combine multiple transmissions (Chase Combining)
@@ -1316,8 +1316,8 @@ void test_harq_decode_zero_length(void)
  * Test => HARQ_Encoder [label="rx_harq_encode(0xDE 0xAD)"];
  * HARQ_Encoder => Test [label="Encoded: 6 bytes (with FEC)"];
  *
- * Test => Converter [label="Convert hard bits → soft bits"];
- * Converter box Converter [label="Hard bit 0 → -127\nHard bit 1 → +127"];
+ * Test => Converter [label="Convert hard bits -> soft bits"];
+ * Converter box Converter [label="Hard bit 0 -> -127\nHard bit 1 -> +127"];
  * Converter => Test [label="Soft bits: 48 elements"];
  *
  * Test => Test [label="rx_harq_reset() (clear state)"];
@@ -1330,10 +1330,10 @@ void test_harq_decode_zero_length(void)
  *
  * @par Test Steps:
  * 1. Initialize HARQ with FEC enabled (default)
- * 2. Encode payload `[0xDE, 0xAD]` → expect ~6 bytes FEC-encoded output
+ * 2. Encode payload `[0xDE, 0xAD]` -> expect ~6 bytes FEC-encoded output
  * 3. Convert encoded hard bits to soft bits (perfect confidence: ±127)
  * 4. Reset HARQ state (clear encoder state before decode)
- * 5. Decode soft bits → expect 2 bytes decoded
+ * 5. Decode soft bits -> expect 2 bytes decoded
  * 6. Verify decoded == original payload
  *
  * @pre None
@@ -1419,10 +1419,10 @@ void test_harq_roundtrip_with_fec(void)
  *
  * @par Test Steps (Simplified - No Noise Injection):
  * 1. Initialize HARQ with FEC enabled
- * 2. Encode payload `[0x42]` → FEC encoded output
+ * 2. Encode payload `[0x42]` -> FEC encoded output
  * 3. Convert to perfect soft bits (±127 confidence)
  * 4. Reset HARQ state
- * 5. Decode soft bits → expect success (perfect bits always decode)
+ * 5. Decode soft bits -> expect success (perfect bits always decode)
  * 6. Verify decoded value is 0x42
  *
  * @note This test uses perfect soft bits. A more realistic test would:
@@ -1431,7 +1431,7 @@ void test_harq_roundtrip_with_fec(void)
  *       3. Add to combiner
  *       4. Generate 2nd noisy transmission (independent noise)
  *       5. Add to combiner (diversity gain)
- *       6. Decode combined soft bits → success
+ *       6. Decode combined soft bits -> success
  *
  * @par Future Enhancement:
  * Add noise injection to demonstrate actual SNR improvement:

@@ -69,16 +69,16 @@
  * - **PRC3**: Low voltage detection
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ N/A (no loops)
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ All accessors are single-statement
- * - Rule 5: ✓ N/A (hardware layer)
- * - Rule 6: ✓ Minimal scope
- * - Rule 7: ✓ N/A
- * - Rule 8: ✓ All constants use C23 typed enums
- * - Rule 9: ✓ No function pointers
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] N/A (no loops)
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] All accessors are single-statement
+ * - Rule 5: [OK] N/A (hardware layer)
+ * - Rule 6: [OK] Minimal scope
+ * - Rule 7: [OK] N/A
+ * - Rule 8: [OK] All constants use C23 typed enums
+ * - Rule 9: [OK] No function pointers
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S**: Single responsibility - only system register definitions
@@ -98,7 +98,7 @@
  * - Chapter 7: Low Power Modes
  *
  * @par Verification Status
- * ✅ VERIFIED (2026-01-28) - All base addresses and register offsets verified
+ * [PASS] VERIFIED (2026-01-28) - All base addresses and register offsets verified
  * against RX72N Manual Ch05. Critical bug fixed: PRCR was incorrectly embedded
  * in the contiguous struct at offset 0x0A, but it's actually at 0x000803FE.
  *
@@ -532,15 +532,15 @@ typedef enum : uint16_t {
  * | 3:2   | -         | Reserved                             |
  * | 4     | PLLSRCSEL | PLL source (0=main osc, 1=HOCO)      |
  * | 7:5   | -         | Reserved                             |
- * | 13:8  | STC       | PLL multiplier (value N → ×(N+1))    |
+ * | 13:8  | STC       | PLL multiplier (value N -> ×(N+1))    |
  * | 15:14 | -         | Reserved                             |
  *
  * @par STAR Project PLL Configuration
  * Input: 24 MHz main oscillator
  * Target: 240 MHz PLL output
  * Calculation: 24 MHz / 1 × 10 = 240 MHz
- * - PLIDIV = 00 (divide by 1) → 24 MHz
- * - STC = 0x09 (multiply by 10) → 240 MHz
+ * - PLIDIV = 00 (divide by 1) -> 24 MHz
+ * - STC = 0x09 (multiply by 10) -> 240 MHz
  * - PLLSRCSEL = 0 (main oscillator source)
  * - PLLCR = 0x0900
  *
@@ -569,13 +569,13 @@ typedef enum : uint16_t {
   k_pllcr_star_24mhz_to_240mhz = (
       k_pllcr_plidiv_1 |          /* 24 MHz input (no division) */
       k_pllcr_src_main |          /* Main oscillator source */
-      (9U << k_pllcr_stc_shift)   /* STC=9 → multiply by 10 */
+      (9U << k_pllcr_stc_shift)   /* STC=9 -> multiply by 10 */
   ), /**< STAR: 24 MHz × 10 = 240 MHz */
 
   k_pllcr_12mhz_to_240mhz = (
       k_pllcr_plidiv_1 |          /* 12 MHz input (no division) */
       k_pllcr_src_main |          /* Main oscillator source */
-      (19U << k_pllcr_stc_shift)  /* STC=19 → multiply by 20 */
+      (19U << k_pllcr_stc_shift)  /* STC=19 -> multiply by 20 */
   ), /**< Alternative: 12 MHz × 20 = 240 MHz */
 } pllcr_bits_t;
 

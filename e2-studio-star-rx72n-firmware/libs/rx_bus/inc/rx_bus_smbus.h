@@ -189,16 +189,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No recursion, goto, setjmp/longjmp |
- * | 2. Fixed loop bounds | ✓ | All loops have static upper bounds |
- * | 3. No dynamic memory | ✓ | No malloc/free, static/stack allocation only |
- * | 4. Functions <60 lines | ✓ | All functions <50 lines |
- * | 5. Min 2 assertions | ✓ | NULL checks + state validation per function |
- * | 6. Data at smallest scope | ✓ | No module-level state |
- * | 7. Check return values | ✓ | All functions return rx_err_t |
- * | 8. Limit preprocessor | ✓ | Only include guards and extern "C" |
- * | 9. Restrict pointers | ✓ | Single-level dereferencing |
- * | 10. Compile with warnings | ✓ | -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No recursion, goto, setjmp/longjmp |
+ * | 2. Fixed loop bounds | [OK] | All loops have static upper bounds |
+ * | 3. No dynamic memory | [OK] | No malloc/free, static/stack allocation only |
+ * | 4. Functions <60 lines | [OK] | All functions <50 lines |
+ * | 5. Min 2 assertions | [OK] | NULL checks + state validation per function |
+ * | 6. Data at smallest scope | [OK] | No module-level state |
+ * | 7. Check return values | [OK] | All functions return rx_err_t |
+ * | 8. Limit preprocessor | [OK] | Only include guards and extern "C" |
+ * | 9. Restrict pointers | [OK] | Single-level dereferencing |
+ * | 10. Compile with warnings | [OK] | -Wall -Wextra -Werror |
  *
  * @par SOLID Principles
  *
@@ -371,7 +371,7 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 4 assertions (NULL×2, bus found, bus type)
+ * - Rule 5: [OK] 4 assertions (NULL×2, bus found, bus type)
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_init(rx_bus_manager_t* manager, const char* bus_name);
 
@@ -723,7 +723,7 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 4 assertions (NULL×2, bus found, initialized)
+ * - Rule 5: [OK] 4 assertions (NULL×2, bus found, initialized)
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
                                       const char*       bus_name,
@@ -868,8 +868,8 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 5 assertions (NULL×3, bus found, initialized)
- * - Rule 7: ✓ Returns rx_err_t for caller validation
+ * - Rule 5: [OK] 5 assertions (NULL×3, bus found, initialized)
+ * - Rule 7: [OK] Returns rx_err_t for caller validation
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
                                      const char*       bus_name,
@@ -967,8 +967,8 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 2: ✓ Loop bound is statically known (max_length, max 32)
- * - Rule 5: ✓ 6 assertions (NULL×4, bus found, max_length valid)
+ * - Rule 2: [OK] Loop bound is statically known (max_length, max 32)
+ * - Rule 5: [OK] 6 assertions (NULL×4, bus found, max_length valid)
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
                                       const char*       bus_name,

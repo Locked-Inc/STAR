@@ -57,7 +57,7 @@
  * | **Clock Source** | IWDTCLK | Independent 120 kHz oscillator (survives main clock failure) |
  * | **Counter Width** | 14-bit | Down-counter (16,384 cycles maximum) |
  * | **Timeout Range** | 128ms - 16,384ms | Configurable via TOPS and CKS dividers |
- * | **Refresh Sequence** | 0x00 → 0xFF | Two-byte sequence to reset counter |
+ * | **Refresh Sequence** | 0x00 -> 0xFF | Two-byte sequence to reset counter |
  * | **Window Mode** | Optional | Detect too-early refresh (disabled in tests) |
  * | **Reset Action** | Reset or NMI | Configurable (tests use reset mode) |
  * | **Sleep Behavior** | Configurable | Continue or stop counting in sleep mode |
@@ -161,7 +161,7 @@
  * - Accuracy: ±1% (120 kHz ± 1.2 kHz)
  *
  * **Refresh Sequence**:
- * - Two-byte sequence: 0x00 → 0xFF to IWDTRR
+ * - Two-byte sequence: 0x00 -> 0xFF to IWDTRR
  * - Partial refresh (only 0x00 or only 0xFF) is invalid
  * - Refresh error sets IWDTSR.REFEF flag
  *
@@ -182,16 +182,16 @@
  *
  * | Rule | Status | Test Implementation |
  * |------|--------|---------------------|
- * | 1. Simple control flow | ✓ | No goto/setjmp/recursion, linear test flow |
- * | 2. Fixed loop bounds | ✓ | Loops bounded by k_iwdt_max_tasks (16) in driver |
- * | 3. No dynamic allocation | ✓ | Zero malloc/free, static arrays only |
- * | 4. Small functions | ✓ | All test functions < 20 lines |
- * | 5. Assertions (≥2 per function) | ✓ | Every test has multiple TEST_ASSERT checks |
- * | 6. Narrow scope | ✓ | Test-local variables, file-scope test helpers |
- * | 7. Check return values | ✓ | All rx_err_t returns verified with TEST_ASSERT_EQUAL |
- * | 8. Limited preprocessor | ✓ | C23 typed enums in driver, no test macros |
- * | 9. Pointer restrictions | ✓ | Single-level pointers, no pointer arithmetic |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto/setjmp/recursion, linear test flow |
+ * | 2. Fixed loop bounds | [OK] | Loops bounded by k_iwdt_max_tasks (16) in driver |
+ * | 3. No dynamic allocation | [OK] | Zero malloc/free, static arrays only |
+ * | 4. Small functions | [OK] | All test functions < 20 lines |
+ * | 5. Assertions (≥2 per function) | [OK] | Every test has multiple TEST_ASSERT checks |
+ * | 6. Narrow scope | [OK] | Test-local variables, file-scope test helpers |
+ * | 7. Check return values | [OK] | All rx_err_t returns verified with TEST_ASSERT_EQUAL |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums in driver, no test macros |
+ * | 9. Pointer restrictions | [OK] | Single-level pointers, no pointer arithmetic |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * **Test-Specific Safety**:
  * - Each test is independent (no cascading failures)

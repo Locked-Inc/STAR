@@ -39,7 +39,7 @@
  * | Average Current | 0x0B | int16 mA | Rolling average |
  * | Relative SOC | 0x0D | uint8 % | 0-100%, clamping >100% |
  * | Absolute SOC | 0x0E | uint8 % | vs design capacity |
- * | Temperature | 0x08 | int16 °C | 0.1K→°C conversion, range |
+ * | Temperature | 0x08 | int16 °C | 0.1K->°C conversion, range |
  * | Capacity | 0x0F, 0x10 | uint16 mAh | Remaining, full |
  * | Cycle Count | 0x17 | uint16 | Lifetime cycles |
  * | Time Estimates | 0x11, 0x13 | uint16 min | To empty/full |
@@ -75,7 +75,7 @@
  *    - Bus state tracking (initialized, transaction counts)
  *
  * 2. **Data Conversion Validation:**
- *    - Temperature: Verify 0.1K → °C conversion (temp_c = (0.1K - 2731) / 10)
+ *    - Temperature: Verify 0.1K -> °C conversion (temp_c = (0.1K - 2731) / 10)
  *    - Current: Verify signed int16 interpretation (positive = charge, negative = discharge)
  *    - SOC Clamping: Verify driver clamps >100% to 100% (SBS allows >100%)
  *
@@ -87,7 +87,7 @@
  *    - Invalid argument ranges (num_cells > 4, etc.)
  *
  * 4. **State Machine Testing:**
- *    - Verify initialization sequence (SMBus init → verify read)
+ *    - Verify initialization sequence (SMBus init -> verify read)
  *    - Test read-before-init error handling
  *    - Validate bulk status read assembles all data correctly
  *
@@ -126,16 +126,16 @@
  * - mocks/mock_rx_bus_smbus.h: Mock SMBus adapter for testing
  *
  * **NASA Power of 10 Compliance:**
- * - Rule 1: ✓ No goto, setjmp/longjmp, or recursion
- * - Rule 2: ✓ All test loops have fixed iteration counts
- * - Rule 3: ✓ No dynamic memory allocation (stack-only test data)
- * - Rule 4: ✓ Test functions < 60 lines (largest ~40 lines)
- * - Rule 5: ✓ Preconditions: Mock setup, Expected: Unity assertions
- * - Rule 6: ✓ Variables declared at smallest scope (function-local)
- * - Rule 7: ✓ All driver return values checked via TEST_ASSERT
- * - Rule 8: ✓ C23 typed enums for ALL test constants
- * - Rule 9: ✓ Single-level pointer dereferencing only
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp/longjmp, or recursion
+ * - Rule 2: [OK] All test loops have fixed iteration counts
+ * - Rule 3: [OK] No dynamic memory allocation (stack-only test data)
+ * - Rule 4: [OK] Test functions < 60 lines (largest ~40 lines)
+ * - Rule 5: [OK] Preconditions: Mock setup, Expected: Unity assertions
+ * - Rule 6: [OK] Variables declared at smallest scope (function-local)
+ * - Rule 7: [OK] All driver return values checked via TEST_ASSERT
+ * - Rule 8: [OK] C23 typed enums for ALL test constants
+ * - Rule 9: [OK] Single-level pointer dereferencing only
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * **SOLID Principles:**
  * - **Single Responsibility:** Each test validates ONE specific behavior
@@ -301,7 +301,7 @@ typedef enum : int16_t {
   k_test_status_no_flags        = 0,     /**< Battery status with no flags set (all clear) */
 
   /* Expected converted temperature values (degrees Celsius) */
-  k_test_temp_25c_expected      = 25,    /**< Expected 25°C after 0.1K→°C conversion */
+  k_test_temp_25c_expected      = 25,    /**< Expected 25°C after 0.1K->°C conversion */
   k_test_temp_0c_expected       = 0,     /**< Expected 0°C after conversion */
   k_test_temp_neg10c_expected   = -10,   /**< Expected -10°C after conversion */
 } test_values_t;
@@ -1010,7 +1010,7 @@ static void test_read_average_current_null_output(void)
  * - Relative SOC (accounts for aging, 0-100%)
  * - Absolute SOC (vs design capacity)
  * - Boundary values (0%, 50%, 100%)
- * - Over-range clamping (>100% → 100%)
+ * - Over-range clamping (>100% -> 100%)
  * - nullptr pointer validation
  * @{
  */
@@ -1154,7 +1154,7 @@ static void test_read_absolute_soc_clamped(void)
  * @defgroup bq4050_temperature_tests BQ4050 Temperature Measurement Tests
  * @brief Tests for rx_bq4050_read_temperature() with unit conversion
  * @details
- * Validates temperature read and 0.1K → °C conversion:
+ * Validates temperature read and 0.1K -> °C conversion:
  * - Positive temperatures (25°C, 0°C)
  * - Negative temperatures (-10°C)
  * - Conversion formula: temp_c = (temp_0.1k - 2731) / 10
@@ -1436,7 +1436,7 @@ static void test_read_status_too_many_cells(void)
  * @brief Test status flag decoding for charging state
  * @details
  * Verifies charging flag extraction:
- * - DISCHARGING bit clear → is_charging = true
+ * - DISCHARGING bit clear -> is_charging = true
  * - is_fully_discharged = false
  */
 static void test_read_status_charging_flags(void)
@@ -1459,7 +1459,7 @@ static void test_read_status_charging_flags(void)
  * @brief Test status flag decoding for discharging state
  * @details
  * Verifies discharging flag extraction:
- * - DISCHARGING bit set → is_charging = false
+ * - DISCHARGING bit set -> is_charging = false
  * - Status register 0x16 bit 6 = 1
  */
 static void test_read_status_discharging_flags(void)
@@ -1480,7 +1480,7 @@ static void test_read_status_discharging_flags(void)
  * @brief Test status flag decoding for fully charged state
  * @details
  * Verifies fully charged flag extraction:
- * - FULLY_CHARGED bit set → is_fully_charged = true
+ * - FULLY_CHARGED bit set -> is_fully_charged = true
  * - Status register 0x16 bit 5 = 1
  */
 static void test_read_status_fully_charged_flags(void)
@@ -1501,7 +1501,7 @@ static void test_read_status_fully_charged_flags(void)
  * @brief Test status flag decoding for fully discharged state
  * @details
  * Verifies fully discharged flag extraction:
- * - FULLY_DISCHARGED bit set → is_fully_discharged = true
+ * - FULLY_DISCHARGED bit set -> is_fully_discharged = true
  * - DISCHARGING bit also set (must be discharging to be empty)
  * - Status register 0x16 bit 4 = 1
  */
@@ -1524,7 +1524,7 @@ static void test_read_status_fully_discharged_flags(void)
  * @brief Test status flag decoding for low capacity alarm
  * @details
  * Verifies low capacity alarm flag extraction:
- * - REMAINING_CAPACITY_ALARM bit set → is_low_capacity = true
+ * - REMAINING_CAPACITY_ALARM bit set -> is_low_capacity = true
  * - Status register 0x16 bit 9 = 1
  * - Typically set at 10-20% SOC threshold
  */

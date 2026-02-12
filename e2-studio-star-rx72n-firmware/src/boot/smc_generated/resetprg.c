@@ -34,7 +34,7 @@
  *
  * **Boot Sequence:**
  * ```
- * Hardware Reset → reset_program.S → PowerON_Reset_PC() → _INITSCT() → main()
+ * Hardware Reset -> reset_program.S -> PowerON_Reset_PC() -> _INITSCT() -> main()
  * ```
  *
  * **Critical Note:** This code runs BEFORE main() and BEFORE ThreadX.
@@ -47,7 +47,7 @@
  *
  * @see reset_program.S Assembly reset vector handler
  * @see main.c Application entry point (calls rx_clock_power_init, hardware_init)
- * @see _INITSCT() C runtime initialization (copies ROM→RAM, zeros BSS)
+ * @see _INITSCT() C runtime initialization (copies ROM->RAM, zeros BSS)
  *
  * @copyright Copyright (c) 2014 Renesas Electronics Corporation
  * @copyright Modified 2026 STAR Project - Adapted to STAR coding standards
@@ -300,24 +300,24 @@ extern void R_BSP_MAIN_FUNCTION(void);
  * - Stack sizes defined in r_bsp_config.h
  *
  * **2. CPU Core Configuration:**
- * - Set INTB register → relocatable interrupt vector table base address
- * - Set EXTB register → exception vector table base address (if supported)
- * - Set FPSW register → floating-point status (rounding, denormal handling)
- * - Set DPSW register → double-precision FP status (if DPFPU supported)
- * - Initialize TFU → trigonometric function unit (if supported)
+ * - Set INTB register -> relocatable interrupt vector table base address
+ * - Set EXTB register -> exception vector table base address (if supported)
+ * - Set FPSW register -> floating-point status (rounding, denormal handling)
+ * - Set DPSW register -> double-precision FP status (if DPFPU supported)
+ * - Initialize TFU -> trigonometric function unit (if supported)
  *
  * **3. VBATT Stabilization (if battery backup function enabled):**
  * - Wait for VBATT voltage stability before accessing RTC/battery RAM
  *
  * **4. C Runtime Initialization:**
- * - Call _INITSCT() → copy .data section from ROM to RAM, zero .bss section
- * - Call _CALL_INIT() → execute C++ global constructors (if C++ enabled)
- * - Call init_iolib() → initialize standard I/O library (if enabled)
+ * - Call _INITSCT() -> copy .data section from ROM to RAM, zero .bss section
+ * - Call _CALL_INIT() -> execute C++ global constructors (if C++ enabled)
+ * - Call init_iolib() -> initialize standard I/O library (if enabled)
  *
  * **5. Interrupt and Stack Configuration:**
- * - Set PSW register → enable interrupts, select ISP or USP
+ * - Set PSW register -> enable interrupts, select ISP or USP
  * - Switch to user mode (if BSP_CFG_RUN_IN_USER_MODE == 1)
- * - Enable bus error interrupt → catch invalid memory accesses
+ * - Enable bus error interrupt -> catch invalid memory accesses
  *
  * **6. Transfer Control:**
  * - Call main() (Non-OS or Azure RTOS)
@@ -347,9 +347,9 @@ extern void R_BSP_MAIN_FUNCTION(void);
  *
  * @par Example Boot Flow:
  * @code
- * Reset → reset_program.S (setup stacks)
- *      → PowerON_Reset_PC() (this function - CPU core + C runtime)
- *      → main() (clock init + hardware init + ThreadX startup)
+ * Reset -> reset_program.S (setup stacks)
+ *      -> PowerON_Reset_PC() (this function - CPU core + C runtime)
+ *      -> main() (clock init + hardware init + ThreadX startup)
  * @endcode
  *
  * @see reset_program.S Assembly code that calls this function

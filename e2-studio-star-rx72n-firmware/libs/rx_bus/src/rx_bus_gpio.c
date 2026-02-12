@@ -107,16 +107,16 @@
  * - Bus manager integration (consistent with other bus types)
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1**: ✅ No goto, setjmp/longjmp, or recursion
- * - **Rule 2**: ✅ All loops have compile-time bounds (none in this file)
- * - **Rule 3**: ✅ Zero dynamic allocation (no malloc/free/new/delete)
- * - **Rule 4**: ✅ All functions < 60 lines (max 55 lines)
- * - **Rule 5**: ✅ Minimum 2 assertions per function (RX_CHECK_NULL_PTR)
- * - **Rule 6**: ✅ Data at smallest scope (local variables)
- * - **Rule 7**: ✅ All return values checked and propagated
- * - **Rule 8**: ✅ Preprocessor limited (no macros except includes)
- * - **Rule 9**: ⚠️ Function pointers allowed for DIP (STAR deviation)
- * - **Rule 10**: ✅ Compiled with -Wall -Wextra -Werror
+ * - **Rule 1**: [PASS] No goto, setjmp/longjmp, or recursion
+ * - **Rule 2**: [PASS] All loops have compile-time bounds (none in this file)
+ * - **Rule 3**: [PASS] Zero dynamic allocation (no malloc/free/new/delete)
+ * - **Rule 4**: [PASS] All functions < 60 lines (max 55 lines)
+ * - **Rule 5**: [PASS] Minimum 2 assertions per function (RX_CHECK_NULL_PTR)
+ * - **Rule 6**: [PASS] Data at smallest scope (local variables)
+ * - **Rule 7**: [PASS] All return values checked and propagated
+ * - **Rule 8**: [PASS] Preprocessor limited (no macros except includes)
+ * - **Rule 9**: [WARN] Function pointers allowed for DIP (STAR deviation)
+ * - **Rule 10**: [PASS] Compiled with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S (Single Responsibility)**: GPIO digital I/O operations only
@@ -562,7 +562,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
  * @brief Internal callback for GPIO output toggle operation
  *
  * @details
- * Inverts the current state of a GPIO output pin (high → low, low → high).
+ * Inverts the current state of a GPIO output pin (high -> low, low -> high).
  * Called by bus manager via rx_bus_manager_with_bus(). Performs atomic
  * read-modify-write operation protected by mutex.
  *
@@ -937,7 +937,7 @@ rx_err_t rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool*
  * @pre manager and bus_name must be non-NULL
  * @pre Pin must be configured as output
  *
- * @post Pin output state inverted (high → low or low → high)
+ * @post Pin output state inverted (high -> low or low -> high)
  * @post Physical pin reflects new state within 10-20 ns
  *
  * @note Thread-safe - atomic read-modify-write via mutex

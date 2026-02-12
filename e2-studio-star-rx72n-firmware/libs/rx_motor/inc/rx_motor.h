@@ -32,12 +32,12 @@
  * **Forward (duty > 0):**
  * - Output A: PWM active (duty cycle)
  * - Output B: Held low
- * - Motor current: A → Motor → B (forward rotation)
+ * - Motor current: A -> Motor -> B (forward rotation)
  *
  * **Reverse (duty < 0):**
  * - Output A: Held low
  * - Output B: PWM active (|duty| cycle)
- * - Motor current: B → Motor → A (reverse rotation)
+ * - Motor current: B -> Motor -> A (reverse rotation)
  *
  * **Coast (duty = 0):**
  * - Output A: Held low
@@ -52,8 +52,8 @@
  * @par H-Bridge Truth Table:
  * | Output A | Output B | Motor State | Current Direction |
  * |----------|----------|-------------|-------------------|
- * | PWM | LOW | Forward | A → Motor → B |
- * | LOW | PWM | Reverse | B → Motor → A |
+ * | PWM | LOW | Forward | A -> Motor -> B |
+ * | LOW | PWM | Reverse | B -> Motor -> A |
  * | LOW | LOW | Coast | None (free-wheel) |
  * | HIGH | HIGH | Brake | Short circuit (braking) |
  * | PWM | PWM | **FORBIDDEN** | Shoot-through risk |
@@ -71,7 +71,7 @@
  *
  * **Shoot-Through Scenario (WITHOUT Dead-Time):**
  * @code{.unparsed}
- * Time →
+ * Time ->
  * High-side FET: ████████████░░░░░░░░  (turning off)
  * Low-side FET:  ░░░░░░░░░░░░████████  (turning on)
  *                          ↑
@@ -98,7 +98,7 @@
  * | **> 50 kHz** | Low torque ripple | High switching losses, EMI |
  *
  * **STAR Configuration: 20 kHz**
- * - Above human hearing range (20 Hz - 20 kHz) → silent operation
+ * - Above human hearing range (20 Hz - 20 kHz) -> silent operation
  * - Low enough for efficient FET switching (~50 ns rise/fall times)
  * - Manageable EMI with proper PCB layout
  * - Standard for brushed DC motor PWM
@@ -216,15 +216,15 @@
  * @par Module Dependencies:
  * ```
  * rx_motor.h
- *   ├─→ rx_err.h (error code definitions)
- *   ├─→ rx_gptw.h (GPTW PWM peripheral abstraction)
- *   │     └─→ rx72n_gptw_regs.h (GPTW register definitions)
- *   └─→ stdbool.h, stdint.h (standard C types)
+ *   ├─-> rx_err.h (error code definitions)
+ *   ├─-> rx_gptw.h (GPTW PWM peripheral abstraction)
+ *   │     └─-> rx72n_gptw_regs.h (GPTW register definitions)
+ *   └─-> stdbool.h, stdint.h (standard C types)
  *
  * Used by:
- *   ├─→ Motor control tasks (velocity/position closed-loop)
- *   ├─→ lib/rx_encoder/ (encoder feedback for motor control)
- *   └─→ Application-level robot control
+ *   ├─-> Motor control tasks (velocity/position closed-loop)
+ *   ├─-> lib/rx_encoder/ (encoder feedback for motor control)
+ *   └─-> Application-level robot control
  * ```
  *
  * @author STAR Team
@@ -285,8 +285,8 @@ extern "C" {
  * @f]
  *
  * **Typical Values:**
- * - Small FETs (DRV8243S): 500-800 ns turn-off → use 1000 ns (1 µs) dead-time
- * - Large FETs: 1-2 µs turn-off → use 2000-3000 ns dead-time
+ * - Small FETs (DRV8243S): 500-800 ns turn-off -> use 1000 ns (1 µs) dead-time
+ * - Large FETs: 1-2 µs turn-off -> use 2000-3000 ns dead-time
  *
  * **Too Short:** Risk of shoot-through (FET destruction)
  * **Too Long:** Reduces effective duty cycle, lower max speed
@@ -309,8 +309,8 @@ extern "C" {
  * // Configure front-left motor (Motor 0) with GPTW0
  * rx_motor_config_t motor0_config = {
  *   .channel = k_gptw_channel_0,     // GPTW0 timer
- *   .output_a = k_gptw_output_a,     // GTIOC0A (P21) → DRV8243 IN1
- *   .output_b = k_gptw_output_b,     // GTIOC0B (P20) → DRV8243 IN2
+ *   .output_a = k_gptw_output_a,     // GTIOC0A (P21) -> DRV8243 IN1
+ *   .output_b = k_gptw_output_b,     // GTIOC0B (P20) -> DRV8243 IN2
  *   .pwm_freq_hz = 20000,            // 20 kHz PWM (inaudible)
  *   .dead_time_ns = 1000,            // 1 µs dead-time (DRV8243S safe)
  *   .invert_pwm = false              // Active-high logic (DRV8243 default)

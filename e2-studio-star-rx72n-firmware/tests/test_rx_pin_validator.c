@@ -25,10 +25,10 @@
  * **Reservation bitmap structure:**
  * ```
  * reservations[17][8] = {
- *   [PORT0][0..7] → 8 bits for PORT0
- *   [PORT1][0..7] → 8 bits for PORT1
+ *   [PORT0][0..7] -> 8 bits for PORT0
+ *   [PORT1][0..7] -> 8 bits for PORT1
  *   ...
- *   [PORTG][0..7] → 8 bits for PORTG
+ *   [PORTG][0..7] -> 8 bits for PORTG
  * }
  * ```
  *
@@ -75,10 +75,10 @@
  * **Example conflict:**
  * ```c
  * // First reservation succeeds
- * pin_reserve(validator, 5, 3, "I2C_SCL");  // ✓ OK
+ * pin_reserve(validator, 5, 3, "I2C_SCL");  // [OK] OK
  *
  * // Second reservation fails - conflict!
- * pin_reserve(validator, 5, 3, "SPI_MISO"); // ✗ k_rx_err_resource_busy
+ * pin_reserve(validator, 5, 3, "SPI_MISO"); // [X] k_rx_err_resource_busy
  * ```
  *
  * ## Test Coverage
@@ -129,23 +129,23 @@
  * @see lib/rx_hal/src/gpio.c GPIO driver using pin validator
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1 (Control Flow): ✓ No goto, recursion, or setjmp
- * - Rule 2 (Loop Bounds): ✓ All loops have fixed bounds (17 ports × 8 pins)
- * - Rule 3 (Dynamic Memory): ✓ No malloc/free, all data stack/static allocated
- * - Rule 4 (Function Size): ✓ All functions < 60 lines, focused tests
- * - Rule 5 (Assertions): ✓ TEST_ASSERT validates all preconditions/postconditions
- * - Rule 6 (Data Scope): ✓ Variables declared at smallest scope
- * - Rule 7 (Return Checks): ✓ All error codes validated with TEST_ASSERT
- * - Rule 8 (Preprocessor): ✓ Minimal preprocessor, typed enums for constants
- * - Rule 9 (Pointers): ✓ Single-level pointers only
- * - Rule 10 (Warnings): ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1 (Control Flow): [OK] No goto, recursion, or setjmp
+ * - Rule 2 (Loop Bounds): [OK] All loops have fixed bounds (17 ports × 8 pins)
+ * - Rule 3 (Dynamic Memory): [OK] No malloc/free, all data stack/static allocated
+ * - Rule 4 (Function Size): [OK] All functions < 60 lines, focused tests
+ * - Rule 5 (Assertions): [OK] TEST_ASSERT validates all preconditions/postconditions
+ * - Rule 6 (Data Scope): [OK] Variables declared at smallest scope
+ * - Rule 7 (Return Checks): [OK] All error codes validated with TEST_ASSERT
+ * - Rule 8 (Preprocessor): [OK] Minimal preprocessor, typed enums for constants
+ * - Rule 9 (Pointers): [OK] Single-level pointers only
+ * - Rule 10 (Warnings): [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility:** Pin validator manages only pin conflict detection
  * - **Open/Closed:** Extensible via interface (can add new implementations)
  * - **Liskov Substitution:** Any rx_pin_interface_t implementation is substitutable
  * - **Interface Segregation:** Minimal interface (3 functions: reserve, release, check)
- * - **Dependency Inversion:** HIGH-LEVEL ← interface → LOW-LEVEL (prevents conflicts!)
+ * - **Dependency Inversion:** HIGH-LEVEL ← interface -> LOW-LEVEL (prevents conflicts!)
  *
  * @author STAR Team
  * @date 2026-01-05

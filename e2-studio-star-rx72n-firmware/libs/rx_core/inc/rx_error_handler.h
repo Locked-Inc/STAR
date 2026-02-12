@@ -106,7 +106,7 @@
  * - Retry 3: 10ms × 2^3 = 80ms
  * - Retry 4: 10ms × 2^4 = 160ms
  * - ...
- * - Retry 9: 10ms × 2^9 = 5120ms → capped at 5000ms
+ * - Retry 9: 10ms × 2^9 = 5120ms -> capped at 5000ms
  *
  * ## Performance Characteristics
  *
@@ -177,16 +177,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto/setjmp/recursion, sequential logic |
- * | 2. Fixed loop bounds | ✓ | All loops bounded by k_error_handler_max_components (16) |
- * | 3. No dynamic allocation | ✓ | Zero malloc/free, static component array |
- * | 4. Small functions | ✓ | All functions < 60 lines |
- * | 5. Assertions (≥2 per function) | ✓ | Minimum 2 checks per function (pre/post) |
- * | 6. Narrow scope | ✓ | File-scope statics, function-local variables |
- * | 7. Check return values | ✓ | All functions return rx_err_t, checked by callers |
- * | 8. Limited preprocessor | ✓ | C23 typed enums only, zero computation macros |
- * | 9. Pointer restrictions | ✓ | Single-level pointers, no pointer arithmetic |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto/setjmp/recursion, sequential logic |
+ * | 2. Fixed loop bounds | [OK] | All loops bounded by k_error_handler_max_components (16) |
+ * | 3. No dynamic allocation | [OK] | Zero malloc/free, static component array |
+ * | 4. Small functions | [OK] | All functions < 60 lines |
+ * | 5. Assertions (≥2 per function) | [OK] | Minimum 2 checks per function (pre/post) |
+ * | 6. Narrow scope | [OK] | File-scope statics, function-local variables |
+ * | 7. Check return values | [OK] | All functions return rx_err_t, checked by callers |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums only, zero computation macros |
+ * | 9. Pointer restrictions | [OK] | Single-level pointers, no pointer arithmetic |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * **Safety-Critical Design**:
  * - Static allocation prevents fragmentation
@@ -216,7 +216,7 @@
  * - Implementation details hidden (error_handler_t)
  * - Separate init/deinit from runtime operations
  *
- * **Dependency Inversion (D)**: ✓✓✓
+ * **Dependency Inversion (D)**: [OK][OK][OK]
  * - **THIS IS THE KEY PRINCIPLE DEMONSTRATED**
  * - High-level modules depend on rx_error_interface_t (abstraction)
  * - This module implements the abstraction
@@ -265,10 +265,10 @@ extern "C" {
  *
  * **k_error_handler_max_components = 16**:
  * - Sized for typical STAR system component count:
- *   - 4 motors → 4 components
- *   - Communication (SPI, USB, UART) → 3 components
- *   - Sensors (encoders, ultrasonic, lidar) → 5 components
- *   - Peripherals (DRV8243, flash, EEPROM) → 4 components
+ *   - 4 motors -> 4 components
+ *   - Communication (SPI, USB, UART) -> 3 components
+ *   - Sensors (encoders, ultrasonic, lidar) -> 5 components
+ *   - Peripherals (DRV8243, flash, EEPROM) -> 4 components
  * - Total: ~16 unique error sources in typical system
  * - Memory usage: 16 × 72 bytes = 1152 bytes (reasonable for RX72N with 512KB SRAM)
  * - Linear search performance: < 10 µs for 16 components at 240 MHz
@@ -444,8 +444,8 @@ typedef enum : uint8_t {
  * }
  * @endcode
  *
- * @invariant in_use=false → error_count=0 AND retry_count=0
- * @invariant in_use=true → name[0]≠'\0' AND error_count≥1
+ * @invariant in_use=false -> error_count=0 AND retry_count=0
+ * @invariant in_use=true -> name[0]≠'\0' AND error_count≥1
  * @invariant retry_count ≤ error_count (always)
  * @invariant name is always null-terminated
  *
@@ -593,7 +593,7 @@ typedef struct {
  * }
  * @endcode
  *
- * @invariant initialized=true → mutex is valid AND total_error_count defined
+ * @invariant initialized=true -> mutex is valid AND total_error_count defined
  * @invariant total_error_count ≥ sum of all components[].error_count (approximately)
  * @invariant max_backoff_ms ≥ initial_backoff_ms (always)
  * @invariant Number of in_use=true components ≤ k_error_handler_max_components
@@ -659,7 +659,7 @@ typedef struct {
  * Retry 6: 10ms × 2^6 = 640ms
  * Retry 7: 10ms × 2^7 = 1280ms
  * Retry 8: 10ms × 2^8 = 2560ms
- * Retry 9: 10ms × 2^9 = 5120ms → capped at 5000ms
+ * Retry 9: 10ms × 2^9 = 5120ms -> capped at 5000ms
  * Retry 10+: 5000ms (max)
  * ```
  *
@@ -858,9 +858,9 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 3: ✓ No dynamic allocation (uses ThreadX pool for mutex)
- * - Rule 5: ✓ 4 preconditions, 4 postconditions
- * - Rule 7: ✓ Returns rx_err_t, caller must check
+ * - Rule 3: [OK] No dynamic allocation (uses ThreadX pool for mutex)
+ * - Rule 5: [OK] 4 preconditions, 4 postconditions
+ * - Rule 7: [OK] Returns rx_err_t, caller must check
  */
 [[nodiscard]] rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config_t* config);
 
@@ -878,10 +878,10 @@ typedef struct {
  * 2. Check handler is initialized (initialized flag)
  * 3. Fill iface->ctx with handler pointer (context for callbacks)
  * 4. Assign function pointers to concrete implementations:
- *    - iface->report_error → internal report function
- *    - iface->is_retry_limit_reached → internal retry check
- *    - iface->get_backoff_delay → internal backoff calculator
- *    - iface->reset_component_state → internal reset function
+ *    - iface->report_error -> internal report function
+ *    - iface->is_retry_limit_reached -> internal retry check
+ *    - iface->get_backoff_delay -> internal backoff calculator
+ *    - iface->reset_component_state -> internal reset function
  * 5. Return success
  *
  * **Dependency Inversion Pattern**:
@@ -1079,8 +1079,8 @@ typedef struct {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 3: ✓ No dynamic allocation, only resource cleanup
- * - Rule 7: ✓ Returns rx_err_t, caller should check
+ * - Rule 3: [OK] No dynamic allocation, only resource cleanup
+ * - Rule 7: [OK] Returns rx_err_t, caller should check
  */
 [[nodiscard]] rx_err_t error_handler_deinit(error_handler_t* handler);
 

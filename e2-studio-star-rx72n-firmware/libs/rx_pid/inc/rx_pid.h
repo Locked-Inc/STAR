@@ -254,12 +254,12 @@
  * @par Module Dependencies:
  * ```
  * rx_pid.h
- *   └─→ rx_err.h (error code definitions)
+ *   └─-> rx_err.h (error code definitions)
  *
  * Used by:
- *   ├─→ Motor control tasks (velocity/position loops)
- *   ├─→ Temperature control (heating/cooling)
- *   └─→ Any closed-loop control application
+ *   ├─-> Motor control tasks (velocity/position loops)
+ *   ├─-> Temperature control (heating/cooling)
+ *   └─-> Any closed-loop control application
  * ```
  *
  * @author STAR Team
