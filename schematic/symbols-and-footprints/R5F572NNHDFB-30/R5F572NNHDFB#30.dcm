@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP R5F572NNHDFB#30
+D The RX72N Group microcontrollers are equipped with the third-generation RX CPU core, the RXv3 core, and these high-performance products operate at 240MHz. Real-time control and networking of equipment are realized with a single chip with 4MB flash memory capable of read operations at 120MHz, 1MB of SRAM and 182 general-purpose I/O ports. The device also supports high-end HMI functionality for advanced display capability. The device also has complete security capability, vital for industrial and consumer equ
+K
+F https://www.renesas.com/document/dst/rx72n-group-datasheet?r=1170206
+$ENDCMP
+#
+#End Doc Library
