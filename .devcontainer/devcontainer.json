@@ -21,7 +21,6 @@
     "ghcr.io/devcontainers-extra/features/actionlint:1": {},
     "ghcr.io/devcontainers-extra/features/claude-code:1": {},
     "ghcr.io/siri404/devcontainer-ai-features/gemini-cli:1": {},
-    "ghcr.io/devcontainer-config/features/dot-config:3": {},
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
       "enableNonRootDocker": "true",
@@ -39,13 +38,16 @@
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/openai,target=/home/star/.config/openai,type=bind,consistency=cached",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gemini,target=/home/star/.gemini,type=bind,consistency=cached",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/star/.claude,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/gnurx,target=/home/star/gnurx,type=bind,consistency=cached"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/gnurx,target=/home/star/gnurx,type=bind,consistency=cached"
   ],
   "containerEnv": {
-    "CLAUDE_CONFIG_DIR": "/home/star/.claude",
-    "PATH": "/home/star/gnurx/bin:${containerEnv:PATH}"
+    "CLAUDE_CONFIG_DIR": "/home/star/.claude"
   },
-  "postCreateCommand": "sudo chown -R star:star /home/star/.claude && sudo rm -f /etc/apt/sources.list.d/yarn.list && sudo apt-get update && sudo apt-get install -y clang-format clang clangd vim cmake && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex && cd star-proto/proto && buf mod update && cd ../..",
+  "remoteEnv": {
+    "PATH": "/home/star/gnurx/bin:$PATH"
+  },
+  "updateContentCommand": "sudo apt-get update && sudo apt-get install -y clang-format clang vim cmake && sudo rm -f /etc/apt/sources.list.d/yarn.list",
+  "postCreateCommand": "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex && cd star-proto/proto && buf mod update && cd ../..",
   "customizations": {
     "vscode": {
       "extensions": [

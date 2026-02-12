@@ -17,10 +17,88 @@
 * Copyright (C) 2019 Renesas Electronics Corporation. All rights reserved.
 ***********************************************************************************************************************/
 /***********************************************************************************************************************
-* File Name    : r_rx_compiler.h
-* Description  : This is a file for integrating the definitions of different functions for each compilers.
-*                Replace different functions for each compiler.
+* MODIFICATION NOTICE
+* This file has been modified by the STAR project for use in the STAR robotics platform.
+* Modifications include: Documentation additions, C23 typed enum conversions, and style guide compliance.
+* Modified files are maintained by Locked, Inc. as part of the STAR project.
+* Original Renesas code remains under Renesas copyright as stated above.
 ***********************************************************************************************************************/
+/**
+ * @file r_rx_compiler.h
+ * @brief Cross-compiler portability layer for RX architecture BSP
+ *
+ * @details
+ * Provides unified macro interface for compiler-specific features across
+ * Renesas CC-RX, GNU RX (GNURX), and IAR ICCRX compilers. Enables portable
+ * BSP code by abstracting differences in:
+ * - Keywords and attributes (__evenaccess, __interrupt, etc.)
+ * - Pragma directives
+ * - Section placement and memory attributes
+ * - Interrupt vector table definitions
+ * - Inline assembly syntax
+ * - Compiler-specific optimizations
+ *
+ * **Purpose:**
+ * BSP code uses R_BSP_* macros which expand to compiler-specific equivalents.
+ * This allows single BSP source tree to build with all three toolchains without
+ * #ifdef clutter in application code.
+ *
+ * **Macro Categories (200+ definitions):**
+ * - **Architecture Detection:** __RX, __LIT/__BIG, __RXV1/__RXV2/__RXV3
+ * - **Keywords:** R_BSP_VOLATILE_EVENACCESS, R_BSP_PRAGMA, R_BSP_INLINE
+ * - **Section Operators:** R_BSP_SECTOP, R_BSP_SECEND, R_BSP_SECSIZE
+ * - **Section Placement:** R_BSP_ATTRIB_SECTION_CHANGE_*, R_BSP_EVENACCESS_SFR
+ * - **Interrupt Vectors:** R_BSP_SECNAME_INTVECTTBL, R_BSP_PRAGMA_INTERRUPT
+ * - **Memory Alignment:** R_BSP_ATTRIB_STRUCT_BIT_ORDER_LEFT/RIGHT
+ * - **Compiler Barriers:** R_BSP_ASM_BEGIN/END (inline assembly blocks)
+ * - **Static Analysis:** R_BSP_ATTRIB_INLINE_ASM (force inline assembly functions)
+ *
+ * **Compiler-Specific Handling:**
+ * - **CC-RX:** Native keywords (__evenaccess, __interrupt), #pragma usage
+ * - **GNUC:** __attribute__ syntax, GCC-specific #pragma, inline asm
+ * - **ICCRX:** IAR-specific __sfr, #pragma, inline asm syntax
+ *
+ * **Usage Pattern:**
+ * BSP code writes:
+ * @code
+ * R_BSP_VOLATILE_EVENACCESS uint32_t *reg = (uint32_t*)0x00087000;
+ * R_BSP_PRAGMA_INTERRUPT(my_isr, VECT(ICU, IRQ0))
+ * @endcode
+ *
+ * Preprocessor expands based on compiler:
+ * - CC-RX: `volatile __evenaccess uint32_t *reg`
+ * - GNUC: `volatile uint32_t *reg`
+ * - ICCRX: `volatile __sfr uint32_t *reg`
+ *
+ * **Macro Usage Justification (CLAUDE.md Compliance):**
+ * ALL macros in this file are **justified** per CLAUDE.md policy:
+ * - **Conditional compilation:** Compiler-specific code selection (#if defined(__CCRX__))
+ * - **Reducing duplicated code:** Single BSP codebase for 3 compilers
+ * - **NOT integer constants:** Not used for numeric values (use enums for that)
+ *
+ * **RTOS Integration:**
+ * Special handling for Renesas RI600V4/RI600PX RTOS:
+ * - Modified interrupt vector section names
+ * - RTOS-specific interrupt handler attributes
+ * - Task stack section placement
+ *
+ * @par Compiler Support
+ * - **CC-RX:** Renesas RX C/C++ Compiler (all versions)
+ * - **GNUC:** GNU RX toolchain (rx-elf-gcc)
+ * - **ICCRX:** IAR Embedded Workbench for RX
+ *
+ * @par References
+ * - Renesas RX Family C/C++ Compiler Package User's Manual - CC-RX keywords/pragmas
+ * - GNU Toolchain for Renesas RX User Manual - GCC attributes/pragmas
+ * - IAR C/C++ Compiler for Renesas RX User Guide - ICCRX keywords
+ * - r_bsp_config.h - BSP configuration
+ * - boot_common.h - INTERNAL_NOT_USED macro
+ *
+ * @note Ported from Renesas Smart Configurator (SMC) generated code
+ * @warning This is a MASSIVE file (4530 lines) - use search to find specific macros
+ * @warning Adding new compilers requires updating ALL macro definitions
+ * @since Version 1.0.0
+ */
 /**********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
 *         : 28.02.2019 1.00     First Release

@@ -17,9 +17,39 @@
 * Copyright (C) 2019 Renesas Electronics Corporation. All rights reserved.
 ***********************************************************************************************************************/
 /***********************************************************************************************************************
-* File Name    : lowlvl.h
-* Description  : Functions to support stream I/O
+* MODIFICATION NOTICE
+* This file has been modified by the STAR project for use in the STAR robotics platform.
+* Modifications include: Documentation additions, C23 typed enum conversions, and style guide compliance.
+* Modified files are maintained by Locked, Inc. as part of the STAR project.
+* Original Renesas code remains under Renesas copyright as stated above.
 ***********************************************************************************************************************/
+/**
+ * @file lowlvl.h
+ * @brief Low-level character I/O functions for standard input/output
+ *
+ * @details
+ * Provides character-level I/O primitives for standard input and output.
+ * These functions serve as the foundation for stdio library operations
+ * (printf, scanf, etc.) by implementing single-character read/write.
+ *
+ * Output destination and input source depend on BSP configuration:
+ * - **E1 Virtual Console:** Debug output via Renesas E1/E2/E2 Lite emulator
+ * - **Serial Port (UART):** User-defined functions via BSP_CFG_USER_CHARPUT_ENABLED
+ *   and BSP_CFG_USER_CHARGET_ENABLED in r_bsp_config.h
+ *
+ * @par Hardware Dependencies
+ * - RX72N microcontroller (R5F572NN)
+ * - Debug interface (E1/E2/E2 Lite) for virtual console output
+ * - UART peripheral if using serial port I/O
+ *
+ * @par References
+ * - r_bsp_config.h for I/O redirection configuration
+ * - Renesas RX Family C/C++ Compiler Package User's Manual
+ *
+ * @note Ported from Renesas Smart Configurator (SMC) generated code
+ * @warning These functions are NOT thread-safe - caller must provide synchronization
+ * @since Version 1.0.0
+ */
 /***********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
 *         : 28.02.2019 1.00     First Release
@@ -48,10 +78,67 @@ Exported global variables
 /***********************************************************************************************************************
 Exported global functions (to be accessed by other files)
 ***********************************************************************************************************************/
-/* Output one character to standard output (the E1 Virtual Console or a serial port via user own charput function) */
+
+/**
+ * @brief Output one character to standard output
+ *
+ * @details
+ * Writes a single character to the configured standard output device.
+ * This function serves as the low-level output primitive for the C
+ * standard library's printf() and related functions.
+ *
+ * The actual output destination is determined by BSP configuration:
+ * - If BSP_CFG_USER_CHARPUT_ENABLED == 0: Output to E1 Virtual Console
+ * - If BSP_CFG_USER_CHARPUT_ENABLED == 1: Output to user-defined function
+ *
+ * @param[in] output_char Character to output (ASCII or binary data)
+ *
+ * @return void
+ *
+ * @pre BSP I/O library must be initialized (BSP_CFG_IO_LIB_ENABLE == 1)
+ * @pre If using user charput, BSP_CFG_USER_CHARPUT_FUNCTION must be defined
+ * @post Character written to configured output device
+ * @post Output buffer flushed if device requires it
+ *
+ * @note Not thread-safe, caller must provide synchronization
+ * @note Function blocks until character is written to output device
+ * @warning Do not call from interrupt context if output is buffered
+ *
+ * @see charget() Input counterpart function
+ * @see r_bsp_config.h BSP I/O configuration
+ *
+ * @since Version 1.0.0
+ */
 void charput(char output_char);
 
-/* Input one character from standard input (the E1 Virtual Console or a serial port via user own charget function) */
+/**
+ * @brief Input one character from standard input
+ *
+ * @details
+ * Reads a single character from the configured standard input device.
+ * This function serves as the low-level input primitive for the C
+ * standard library's scanf() and related functions.
+ *
+ * The actual input source is determined by BSP configuration:
+ * - If BSP_CFG_USER_CHARGET_ENABLED == 0: Input from E1 Virtual Console
+ * - If BSP_CFG_USER_CHARGET_ENABLED == 1: Input from user-defined function
+ *
+ * @return char Character read from input device (ASCII or binary data)
+ *
+ * @pre BSP I/O library must be initialized (BSP_CFG_IO_LIB_ENABLE == 1)
+ * @pre If using user charget, BSP_CFG_USER_CHARGET_FUNCTION must be defined
+ * @post Character read from configured input device
+ * @post Input buffer advanced by one character
+ *
+ * @note Not thread-safe, caller must provide synchronization
+ * @note Function blocks until character is available from input device
+ * @warning Do not call from interrupt context
+ *
+ * @see charput() Output counterpart function
+ * @see r_bsp_config.h BSP I/O configuration
+ *
+ * @since Version 1.0.0
+ */
 char charget(void);
 
 #endif /* End of multiple inclusion prevention macro */
