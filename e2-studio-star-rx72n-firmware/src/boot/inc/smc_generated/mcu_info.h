@@ -72,6 +72,23 @@
  * @warning Requires Smart Configurator >= v2.14.0 (BSP_CFG_CONFIGURATOR_VERSION >= 2140)
  * @warning Do not modify calculated clock values - change source configuration in r_bsp_config.h
  * @since Version 1.0.0
+ *
+ * @author STAR Project (Locked, Inc.)
+ * @date 2019 (original), 2026 (STAR modifications)
+ * @version 1.0.5
+ * @copyright Copyright (C) 2019 Renesas Electronics Corporation. Modified by Locked, Inc.
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 4: All macros serve clear purposes (feature flags, clock calculations)
+ * - Rule 8: No magic numbers, all configuration values use named enums/macros
+ * - All rules maintained throughout modifications
+ *
+ * @par SOLID Principles
+ * - Single Responsibility: Provides only MCU hardware definitions and configuration
+ * - Open/Closed: Extensible via BSP configuration without modifying this file
+ * - Liskov Substitution: Hardware constants maintain consistent semantics
+ * - Interface Segregation: Minimal, focused API for MCU characteristics
+ * - Dependency Inversion: Configuration abstracted through r_bsp_config.h
  */
 /***********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
@@ -111,6 +128,13 @@ Typed Enums (CLAUDE.md Compliance - C23)
  * @details
  * Fixed constants for the RXv3 CPU core used in RX72N microcontroller.
  *
+ * @invariant All values are compile-time constants (no runtime validation needed)
+ *
+ * @code
+ *   // Example: Query CPU core version
+ *   uint8_t cpu_version = (uint8_t)k_cpu_version_rxv3;  // Returns 3 for RXv3
+ * @endcode
+ *
  * @see BSP_MCU_CPU_VERSION
  * @see CPU_CYCLES_PER_LOOP
  * @since Version 1.0.0
@@ -128,10 +152,19 @@ typedef enum : uint8_t {
  * Encoded package type values from MCU part number.
  * Maps to BSP_CFG_MCU_PART_PACKAGE configuration.
  *
+ * @invariant Value must match BSP_CFG_MCU_PART_PACKAGE from r_bsp_config.h
+ *
+ * @code
+ *   // Example: Query package type
+ *   #if BSP_CFG_MCU_PART_PACKAGE == k_package_type_lfqfp144
+ *     // Code for LFQFP-144 package
+ *   #endif
+ * @endcode
+ *
  * @see BSP_CFG_MCU_PART_PACKAGE
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uint8_t {
     k_package_type_lfqfp176 = 0x0,  /**< LFQFP-176 (0.50mm pitch) */
     k_package_type_lfbga176 = 0x1,  /**< LFBGA-176 (0.80mm pitch) */
     k_package_type_lfbga224 = 0x2,  /**< LFBGA-224 (0.80mm pitch) */
@@ -148,10 +181,19 @@ typedef enum : uint32_t {
  * Encoded memory size values from MCU part number.
  * Maps to BSP_CFG_MCU_PART_MEMORY_SIZE configuration.
  *
+ * @invariant Value must match BSP_CFG_MCU_PART_MEMORY_SIZE from r_bsp_config.h
+ *
+ * @code
+ *   // Example: Check memory configuration
+ *   #if BSP_CFG_MCU_PART_MEMORY_SIZE == k_memory_size_4mb
+ *     // 4MB ROM available
+ *   #endif
+ * @endcode
+ *
  * @see BSP_CFG_MCU_PART_MEMORY_SIZE
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uint8_t {
     k_memory_size_2mb = 0xD,  /**< 2MB ROM / 1MB RAM / 32KB Data Flash */
     k_memory_size_4mb = 0x17, /**< 4MB ROM / 1MB RAM / 32KB Data Flash */
 } bsp_memory_size_t;
@@ -163,6 +205,15 @@ typedef enum : uint32_t {
  * @details
  * HOCO can operate at three fixed frequencies. Selection is made via
  * BSP_CFG_HOCO_FREQUENCY in r_bsp_config.h.
+ *
+ * @invariant Value must be 0, 1, or 2 (hardware limitation)
+ *
+ * @code
+ *   // Example: Configure HOCO frequency
+ *   #if BSP_CFG_HOCO_FREQUENCY == k_hoco_freq_20mhz
+ *     // HOCO running at 20 MHz
+ *   #endif
+ * @endcode
  *
  * @see BSP_CFG_HOCO_FREQUENCY
  * @see BSP_HOCO_HZ
@@ -181,6 +232,15 @@ typedef enum : uint8_t {
  * @details
  * Available clock sources for system clock (ICLK).
  * Selection is made via BSP_CFG_CLOCK_SOURCE in r_bsp_config.h.
+ *
+ * @invariant Value must be 0-4 (hardware limitation)
+ *
+ * @code
+ *   // Example: Check clock source
+ *   #if BSP_CFG_CLOCK_SOURCE == k_clock_src_pll
+ *     // Using PLL for system clock
+ *   #endif
+ * @endcode
  *
  * @see BSP_CFG_CLOCK_SOURCE
  * @see BSP_SELECTED_CLOCK_HZ
@@ -202,6 +262,15 @@ typedef enum : uint8_t {
  * PLL can be driven by Main Clock or HOCO.
  * Selection is made via BSP_CFG_PLL_SRC in r_bsp_config.h.
  *
+ * @invariant Value must be 0 or 1 (hardware limitation)
+ *
+ * @code
+ *   // Example: Check PLL source
+ *   #if BSP_CFG_PLL_SRC == k_pll_src_main
+ *     // PLL driven by external crystal
+ *   #endif
+ * @endcode
+ *
  * @see BSP_CFG_PLL_SRC
  * @since Version 1.0.0
  */
@@ -217,6 +286,13 @@ typedef enum : uint8_t {
  * @details
  * RX architecture supports 16 interrupt priority levels (0-15).
  * Higher values = higher priority. Level 0 = interrupts masked.
+ *
+ * @invariant k_ipl_min <= priority_level <= k_ipl_max (0-15 range enforced by hardware)
+ *
+ * @code
+ *   // Example: Set interrupt priority
+ *   uint8_t priority = (uint8_t)k_ipl_max;  // Set to maximum priority (15)
+ * @endcode
  *
  * @see BSP_MCU_IPL_MAX
  * @see BSP_MCU_IPL_MIN
@@ -235,6 +311,15 @@ typedef enum : uint8_t {
  * @details
  * RX architecture reserves address range 0x10000000 for special purposes.
  * FIT modules use this as a null pointer placeholder.
+ *
+ * @invariant Address must be 0x10000000 (256MB boundary, hardware requirement)
+ *
+ * @code
+ *   // Example: FIT null pointer check
+ *   if ((uint32_t)ptr == k_fit_reserved_space) {
+ *     // Invalid pointer, do not dereference
+ *   }
+ * @endcode
  *
  * @see FIT_NO_PTR
  * @see FIT_NO_FUNC

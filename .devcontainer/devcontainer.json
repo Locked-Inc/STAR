@@ -46,7 +46,6 @@
   "remoteEnv": {
     "PATH": "/home/star/gnurx/bin:$PATH"
   },
-  "updateContentCommand": "sudo apt-get update && sudo apt-get install -y clang-format clang vim cmake && sudo rm -f /etc/apt/sources.list.d/yarn.list",
   "postCreateCommand": "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex && cd star-proto/proto && buf mod update && cd ../..",
   "customizations": {
     "vscode": {

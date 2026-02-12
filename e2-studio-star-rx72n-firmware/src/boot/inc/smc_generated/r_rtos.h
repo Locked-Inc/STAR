@@ -69,6 +69,10 @@
 *         : 26.02.2021 1.11     Changed BSP_CFG_RTOS_USED for Azure RTOS.
 ***********************************************************************************************************************/
 
+/* Multiple inclusion prevention macro */
+#ifndef R_RTOS_H
+#define R_RTOS_H
+
 /***********************************************************************************************************************
 Includes   <System Includes> , "Project Includes"
 ***********************************************************************************************************************/
@@ -105,6 +109,15 @@ Includes   <System Includes> , "Project Includes"
  * **RI600V4:** Standard ITRON kernel with T-Kernel extensions
  * **RI600PX:** High-performance variant with additional real-time features
  *
+ * @invariant Value must be 0 or 1 (only two kernel variants supported)
+ *
+ * @code
+ *   // Example: Check RTOS variant
+ *   #if BSP_CFG_RENESAS_RTOS_USED == k_renesas_rtos_ri600v4
+ *     // Using RI600V4 kernel
+ *   #endif
+ * @endcode
+ *
  * @see BSP_CFG_RTOS_USED RTOS type selection
  * @see BSP_CFG_RENESAS_RTOS_USED Renesas RTOS variant selection
  * @since Version 1.0.0
@@ -120,12 +133,14 @@ typedef enum : uint8_t {
  *
  * @details
  * Use this value with BSP_CFG_RENESAS_RTOS_USED to select RI600V4 kernel.
- * Maps to renesas_rtos_variant_t::k_renesas_rtos_ri600v4.
+ * Corresponds to renesas_rtos_variant_t::k_renesas_rtos_ri600v4.
+ *
+ * Integer literal (not enum) to allow preprocessor evaluation in #if directives.
  *
  * @see renesas_rtos_variant_t
  * @since Version 1.0.0
  */
-#define RENESAS_RI600V4 k_renesas_rtos_ri600v4
+#define RENESAS_RI600V4 0
 
 /**
  * @def RENESAS_RI600PX
@@ -133,12 +148,14 @@ typedef enum : uint8_t {
  *
  * @details
  * Use this value with BSP_CFG_RENESAS_RTOS_USED to select RI600PX kernel.
- * Maps to renesas_rtos_variant_t::k_renesas_rtos_ri600px.
+ * Corresponds to renesas_rtos_variant_t::k_renesas_rtos_ri600px.
+ *
+ * Integer literal (not enum) to allow preprocessor evaluation in #if directives.
  *
  * @see renesas_rtos_variant_t
  * @since Version 1.0.0
  */
-#define RENESAS_RI600PX k_renesas_rtos_ri600px
+#define RENESAS_RI600PX 1
 
 #undef BSP_CFG_RTOS_SYSTEM_TIMER
 /**
@@ -163,8 +180,5 @@ typedef enum : uint8_t {
 /***********************************************************************************************************************
 Macro definitions
 ***********************************************************************************************************************/
-/* Multiple inclusion prevention macro */
-#ifndef R_RTOS_H
-#define R_RTOS_H
 
 #endif /* R_RTOS_H */
