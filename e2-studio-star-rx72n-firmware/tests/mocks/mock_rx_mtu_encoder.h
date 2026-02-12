@@ -42,7 +42,7 @@
  * @see rx_mtu_encoder.h Real MTU encoder driver
  * @see tests/test_rx_mtu_encoder.c Encoder tests
  *
- * @par NASA Power of 10: ✓ Static allocation, fixed-size counters
+ * @par NASA Power of 10: [OK] Static allocation, fixed-size counters
  * @par SOLID: D - Dependency Inversion
  *
  * @author STAR Team

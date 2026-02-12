@@ -179,16 +179,16 @@
  * - rx_mpc.h: Pin function selection (GPIO vs peripheral)
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ All loops have fixed bounds (none in this module)
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ Functions under 60 lines
- * - Rule 5: ✓ Input validation via RX_CHECK_NULL_PTR
- * - Rule 6: ✓ Variables at smallest scope
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ Limited preprocessor (typed enums preferred)
- * - Rule 9: ✓ Function pointers only for bus abstraction (DIP)
- * - Rule 10: ✓ Compiled with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] All loops have fixed bounds (none in this module)
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] Functions under 60 lines
+ * - Rule 5: [OK] Input validation via RX_CHECK_NULL_PTR
+ * - Rule 6: [OK] Variables at smallest scope
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] Limited preprocessor (typed enums preferred)
+ * - Rule 9: [OK] Function pointers only for bus abstraction (DIP)
+ * - Rule 10: [OK] Compiled with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S**: Single Responsibility - GPIO digital I/O operations only
@@ -651,7 +651,7 @@ extern "C" {
  * @brief Toggle GPIO output through bus manager
  *
  * @details
- * Inverts the current state of a GPIO output pin (high → low, low → high).
+ * Inverts the current state of a GPIO output pin (high -> low, low -> high).
  * Performs an atomic read-modify-write operation protected by mutex. Useful
  * for LED blinking and signal generation.
  *

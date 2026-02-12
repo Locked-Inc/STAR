@@ -67,10 +67,10 @@
  * @see RX72N Group User's Manual: Hardware, Chapter 56 (12-Bit A/D Converter)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, or recursion in inline functions
- * - Rule 3: ✓ Zero dynamic allocation - all registers statically mapped
- * - Rule 8: ✓ All constants as C23 typed enums (base addresses, offsets)
- * - Rule 10: ✓ Compile with -Wall -Wextra -Werror, zero warnings
+ * - Rule 1: [OK] No goto, setjmp, or recursion in inline functions
+ * - Rule 3: [OK] Zero dynamic allocation - all registers statically mapped
+ * - Rule 8: [OK] All constants as C23 typed enums (base addresses, offsets)
+ * - Rule 10: [OK] Compile with -Wall -Wextra -Werror, zero warnings
  *
  * @par SOLID Principles:
  * - S: Single responsibility - only ADC register definitions
@@ -96,7 +96,7 @@
  * @enddot
  *
  * @par Verification Status:
- * ✅ VERIFIED (2026-01-28) - All base addresses and register offsets verified
+ * [PASS] VERIFIED (2026-01-28) - All base addresses and register offsets verified
  * against RX72N Manual Ch56 section 56.2. Critical bug fixed: ADDR0-7 were at
  * wrong offsets (was 0x16, now correct at 0x20).
  *

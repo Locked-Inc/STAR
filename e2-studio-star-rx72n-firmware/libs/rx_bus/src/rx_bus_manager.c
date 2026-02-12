@@ -17,8 +17,8 @@
  *
  * | Approach | Add/Remove | Memory | Iteration | Choice |
  * |----------|-----------|---------|-----------|--------|
- * | Array | O(n) shift | Fixed allocation | O(n) | ❌ |
- * | **Linked List** | O(1) | Only used buses | O(n) | ✅ |
+ * | Array | O(n) shift | Fixed allocation | O(n) | [FAIL] |
+ * | **Linked List** | O(1) | Only used buses | O(n) | [PASS] |
  *
  * Linked list chosen because:
  * - O(1) add/remove (constant time) vs O(n) array shifts
@@ -109,16 +109,16 @@
  *
  * | Rule | Implementation |
  * |------|----------------|
- * | **Rule 1** | ✅ No goto, setjmp, recursion - only if/while/for |
- * | **Rule 2** | ✅ All loops bounded: while(buses) limited by k_max_buses, mutex timeout prevents infinite wait |
- * | **Rule 3** | ✅ No malloc/free - bus_config memory managed by caller, static manager structure |
- * | **Rule 4** | ✅ All functions ≤60 lines (longest: remove_bus at 42 lines) |
- * | **Rule 5** | ✅ Minimum 2 assertions per function (RX_CHECK_NULL_PTR, RX_ASSERT) |
- * | **Rule 6** | ✅ Variables at smallest scope (current, status, err declared in blocks) |
- * | **Rule 7** | ✅ All ThreadX status checked (TX_SUCCESS), all rx_err_t returns validated |
- * | **Rule 8** | ✅ C23 typed enums for k_max_buses, k_bus_manager_mutex_timeout_ms - no macros |
- * | **Rule 9** | ✅ Single-level pointers only (rx_bus_config_t*), indirect pointers for algorithm clarity |
- * | **Rule 10** | ✅ Compiles with -Wall -Wextra -Werror, zero warnings |
+ * | **Rule 1** | [PASS] No goto, setjmp, recursion - only if/while/for |
+ * | **Rule 2** | [PASS] All loops bounded: while(buses) limited by k_max_buses, mutex timeout prevents infinite wait |
+ * | **Rule 3** | [PASS] No malloc/free - bus_config memory managed by caller, static manager structure |
+ * | **Rule 4** | [PASS] All functions ≤60 lines (longest: remove_bus at 42 lines) |
+ * | **Rule 5** | [PASS] Minimum 2 assertions per function (RX_CHECK_NULL_PTR, RX_ASSERT) |
+ * | **Rule 6** | [PASS] Variables at smallest scope (current, status, err declared in blocks) |
+ * | **Rule 7** | [PASS] All ThreadX status checked (TX_SUCCESS), all rx_err_t returns validated |
+ * | **Rule 8** | [PASS] C23 typed enums for k_max_buses, k_bus_manager_mutex_timeout_ms - no macros |
+ * | **Rule 9** | [PASS] Single-level pointers only (rx_bus_config_t*), indirect pointers for algorithm clarity |
+ * | **Rule 10** | [PASS] Compiles with -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *

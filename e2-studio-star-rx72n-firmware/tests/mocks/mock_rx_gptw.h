@@ -41,7 +41,7 @@
  * @see rx_gptw.h Real GPTW driver interface
  * @see tests/test_rx_motor.c Motor control tests
  *
- * @par NASA Power of 10: ✓ Static allocation, bounded loops
+ * @par NASA Power of 10: [OK] Static allocation, bounded loops
  * @par SOLID: D - Dependency Inversion (motor control depends on GPTW interface)
  *
  * @author STAR Team

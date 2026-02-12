@@ -115,15 +115,15 @@
  * - Section 41.6: Baud Rate Generator
  *
  * @par Verification Status
- * ✅ VERIFIED (2026-01-28) - All base addresses and register offsets verified
+ * [PASS] VERIFIED (2026-01-28) - All base addresses and register offsets verified
  * against RX72N Manual Ch41 Section 41.2
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 3: ✓ Static allocation only (all definitions compile-time)
- * - Rule 5: ✓ Static assertions verify register layout at compile time
- * - Rule 8: ✓ C23 typed enums eliminate preprocessor constants
- * - Rule 10: ✓ Header compiles cleanly with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 3: [OK] Static allocation only (all definitions compile-time)
+ * - Rule 5: [OK] Static assertions verify register layout at compile time
+ * - Rule 8: [OK] C23 typed enums eliminate preprocessor constants
+ * - Rule 10: [OK] Header compiles cleanly with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **Single Responsibility**: SCI register definitions only, no driver logic

@@ -104,16 +104,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | Rule 1: Control flow | ✅ | Constants only, no code |
- * | Rule 2: Loop bounds | ✅ | No loops |
- * | Rule 3: No heap | ✅ | Compile-time constants |
- * | Rule 4: Function length | ✅ | No functions |
- * | Rule 5: Assertions | ✅ | N/A (constants) |
- * | Rule 6: Data scope | ✅ | Header-only typed enum |
- * | Rule 7: Return checks | ✅ | N/A (constants) |
- * | Rule 8: Preprocessor | ✅ | C23 typed enum only |
- * | Rule 9: Pointers | ✅ | No pointers |
- * | Rule 10: Warnings | ✅ | Clean compilation |
+ * | Rule 1: Control flow | [PASS] | Constants only, no code |
+ * | Rule 2: Loop bounds | [PASS] | No loops |
+ * | Rule 3: No heap | [PASS] | Compile-time constants |
+ * | Rule 4: Function length | [PASS] | No functions |
+ * | Rule 5: Assertions | [PASS] | N/A (constants) |
+ * | Rule 6: Data scope | [PASS] | Header-only typed enum |
+ * | Rule 7: Return checks | [PASS] | N/A (constants) |
+ * | Rule 8: Preprocessor | [PASS] | C23 typed enum only |
+ * | Rule 9: Pointers | [PASS] | No pointers |
+ * | Rule 10: Warnings | [PASS] | Clean compilation |
  *
  * ## Module Dependencies
  *

@@ -160,16 +160,16 @@
  *
  * | Rule | Status | Verification Method |
  * |------|--------|---------------------|
- * | 1. Simplify control flow | ✓ | No goto, recursion in gpio.c |
- * | 2. Fixed loop bounds | ✓ | No loops in GPIO functions |
- * | 3. No dynamic memory | ✓ | All static, no malloc calls |
- * | 4. Functions < 60 lines | ✓ | All functions under 30 lines |
- * | 5. Use assertions | ✓ | RX_CHECK_NULL_PTR, validation tests |
- * | 6. Data at smallest scope | ✓ | Local variables only |
- * | 7. Check return values | ✓ | All tests verify rx_err_t codes |
- * | 8. Limit preprocessor | ✓ | No macros for constants |
- * | 9. Restrict pointers | ✓ | Only register pointers used |
- * | 10. Compile warnings | ✓ | -Wall -Wextra -Werror clean |
+ * | 1. Simplify control flow | [OK] | No goto, recursion in gpio.c |
+ * | 2. Fixed loop bounds | [OK] | No loops in GPIO functions |
+ * | 3. No dynamic memory | [OK] | All static, no malloc calls |
+ * | 4. Functions < 60 lines | [OK] | All functions under 30 lines |
+ * | 5. Use assertions | [OK] | RX_CHECK_NULL_PTR, validation tests |
+ * | 6. Data at smallest scope | [OK] | Local variables only |
+ * | 7. Check return values | [OK] | All tests verify rx_err_t codes |
+ * | 8. Limit preprocessor | [OK] | No macros for constants |
+ * | 9. Restrict pointers | [OK] | Only register pointers used |
+ * | 10. Compile warnings | [OK] | -Wall -Wextra -Werror clean |
  *
  * ## SOLID Principles Application
  *
@@ -246,8 +246,8 @@
  *
  * ## Valid Ranges (RX72N)
  *
- * - **Ports**: 0-9 (0x0-0x9), A-J (0xA-0x13) → k_rx_port_j = 0x13
- * - **Pins**: 0-7 (0x0-0x7) → k_rx_pin_max = 7
+ * - **Ports**: 0-9 (0x0-0x9), A-J (0xA-0x13) -> k_rx_port_j = 0x13
+ * - **Pins**: 0-7 (0x0-0x7) -> k_rx_pin_max = 7
  *
  * ## Invalid Values
  *
@@ -874,14 +874,14 @@ void test_gpio_write_low_invalid_port(void)
  * @details
  * Verifies that gpio_toggle() correctly inverts the output state on each call.
  * Tests two transitions:
- * - low → high (first toggle)
- * - high → low (second toggle)
+ * - low -> high (first toggle)
+ * - high -> low (second toggle)
  *
  * ## Test Sequence
  * 1. Configure pin as output (initial state is low)
  * 2. Verify initial state is false
- * 3. Toggle → expect true
- * 4. Toggle → expect false
+ * 3. Toggle -> expect true
+ * 4. Toggle -> expect false
  *
  * @test Toggle operation, state inversion, multiple calls
  */
@@ -960,15 +960,15 @@ void test_gpio_toggle_invalid_pin(void)
  * @details
  * Verifies that gpio_read() correctly reads both high and low logic levels
  * from a GPIO input pin. Tests both transitions:
- * - External signal high → gpio_read() returns true
- * - External signal low → gpio_read() returns false
+ * - External signal high -> gpio_read() returns true
+ * - External signal low -> gpio_read() returns false
  *
  * ## Test Sequence
  * 1. Configure pin as input
  * 2. Simulate external high signal (mock_gpio_set_input_value(pin, true))
- * 3. Read pin → verify value is true
+ * 3. Read pin -> verify value is true
  * 4. Simulate external low signal (mock_gpio_set_input_value(pin, false))
- * 5. Read pin → verify value is false
+ * 5. Read pin -> verify value is false
  *
  * ## Real Hardware Behavior
  *

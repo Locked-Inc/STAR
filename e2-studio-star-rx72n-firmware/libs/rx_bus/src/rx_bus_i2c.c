@@ -20,8 +20,8 @@
  *
  * | Approach | Thread Safety | Bus Selection | Error Handling |
  * |----------|--------------|---------------|----------------|
- * | **Callback (this)** | ✅ Bus manager mutex | ✅ Name-based lookup | ✅ Centralized validation |
- * | Direct HAL | ❌ User must lock | ❌ Channel# hardcoded | ❌ Repeated everywhere |
+ * | **Callback (this)** | [PASS] Bus manager mutex | [PASS] Name-based lookup | [PASS] Centralized validation |
+ * | Direct HAL | [FAIL] User must lock | [FAIL] Channel# hardcoded | [FAIL] Repeated everywhere |
  *
  * **Benefits:**
  * - **Thread safety**: Bus manager provides mutex protection automatically
@@ -133,16 +133,16 @@
  *
  * | Rule | Implementation |
  * |------|----------------|
- * | **Rule 1** | ✅ No goto, setjmp, recursion - straight-line callbacks |
- * | **Rule 2** | ✅ No loops (zero iterations in validation logic) |
- * | **Rule 3** | ✅ No malloc - context structs on stack, bus config pre-allocated |
- * | **Rule 4** | ✅ All functions ≤60 lines (longest callback: 35 lines) |
- * | **Rule 5** | ✅ Minimum 2 validations per function (NULL checks + state checks) |
- * | **Rule 6** | ✅ Variables at smallest scope (ctx in API functions) |
- * | **Rule 7** | ✅ All RIIC HAL returns checked (err != k_rx_ok) |
- * | **Rule 8** | ✅ C23 typed enums for validation constants (k_i2c_length_zero: uint16_t) |
- * | **Rule 9** | ✅ Single-level pointers only (data*, bus_config*, ctx*) |
- * | **Rule 10** | ✅ Compiles with -Wall -Wextra -Werror, zero warnings |
+ * | **Rule 1** | [PASS] No goto, setjmp, recursion - straight-line callbacks |
+ * | **Rule 2** | [PASS] No loops (zero iterations in validation logic) |
+ * | **Rule 3** | [PASS] No malloc - context structs on stack, bus config pre-allocated |
+ * | **Rule 4** | [PASS] All functions ≤60 lines (longest callback: 35 lines) |
+ * | **Rule 5** | [PASS] Minimum 2 validations per function (NULL checks + state checks) |
+ * | **Rule 6** | [PASS] Variables at smallest scope (ctx in API functions) |
+ * | **Rule 7** | [PASS] All RIIC HAL returns checked (err != k_rx_ok) |
+ * | **Rule 8** | [PASS] C23 typed enums for validation constants (k_i2c_length_zero: uint16_t) |
+ * | **Rule 9** | [PASS] Single-level pointers only (data*, bus_config*, ctx*) |
+ * | **Rule 10** | [PASS] Compiles with -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *

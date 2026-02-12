@@ -26,7 +26,7 @@
  *   │   ┌────────────────────────┐  ┌────────────────────────────────┐   │
  *   │   │ internal_find_         │  │ internal_configure_iwdt_       │   │
  *   │   │   timeout_config()     │  │   control_register()           │   │
- *   │   │   └→ Lookup table      │  │   └→ IWDTCR setup              │   │
+ *   │   │   └-> Lookup table      │  │   └-> IWDTCR setup              │   │
  *   │   └────────────────────────┘  └────────────────────────────────┘   │
  *   └────────────────────────────────────────────────────────────────────┘
  *                                    │
@@ -63,7 +63,7 @@
  *   │          ↓                                                    │
  *   │  Counter reloads to initial value                             │
  *   └────────────────────────────────────────────────────────────────┘
- *   WARNING: Incomplete sequence = Refresh Error → System Reset
+ *   WARNING: Incomplete sequence = Refresh Error -> System Reset
  * @endverbatim
  *
  * @par Timeout Calculation
@@ -109,16 +109,16 @@
  * - **Clock source**: Dedicated 120 kHz oscillator (independent of PCLK)
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1**: ✓ No goto, setjmp, or recursion
- * - **Rule 2**: ✓ All loops bounded by s_iwdt_timeout_table_size or k_iwdt_max_tasks
- * - **Rule 3**: ✓ Zero dynamic memory allocation (all static)
- * - **Rule 4**: ✓ All functions < 60 lines
- * - **Rule 5**: ✓ Minimum 2 validation checks per function
- * - **Rule 6**: ✓ File-scope statics (s_), local variables at narrowest scope
- * - **Rule 7**: ✓ All return values checked or explicitly cast to (void)
- * - **Rule 8**: ✓ C23 typed enums for all constants
- * - **Rule 9**: ✓ Single-level pointers, function pointers for DIP
- * - **Rule 10**: ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No goto, setjmp, or recursion
+ * - **Rule 2**: [OK] All loops bounded by s_iwdt_timeout_table_size or k_iwdt_max_tasks
+ * - **Rule 3**: [OK] Zero dynamic memory allocation (all static)
+ * - **Rule 4**: [OK] All functions < 60 lines
+ * - **Rule 5**: [OK] Minimum 2 validation checks per function
+ * - **Rule 6**: [OK] File-scope statics (s_), local variables at narrowest scope
+ * - **Rule 7**: [OK] All return values checked or explicitly cast to (void)
+ * - **Rule 8**: [OK] C23 typed enums for all constants
+ * - **Rule 9**: [OK] Single-level pointers, function pointers for DIP
+ * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S**: Module has single responsibility (watchdog management)
@@ -202,7 +202,7 @@ typedef enum : uint32_t {
  *
  * @par State Transitions
  * @verbatim
- *   [Power On] → k_iwdt_not_initialized
+ *   [Power On] -> k_iwdt_not_initialized
  *        │
  *        │ rx_hal_iwdt_init() succeeds
  *        ▼
@@ -210,7 +210,7 @@ typedef enum : uint32_t {
  *        │
  *        │ (No return path - IWDT cannot be stopped)
  *        ▼
- *   [System Reset] → k_iwdt_not_initialized
+ *   [System Reset] -> k_iwdt_not_initialized
  * @endverbatim
  *
  * @warning Once initialized, IWDT cannot be disabled (hardware feature)
@@ -802,8 +802,8 @@ rx_err_t rx_hal_iwdt_init(const uint32_t timeout_ms)
  * @note Safe to call from ISRs (uses atomic disable/restore)
  * @note On host builds, function is a no-op
  *
- * @warning Incomplete refresh sequence causes refresh error → system reset
- * @warning Missing calls to this function cause timeout → system reset
+ * @warning Incomplete refresh sequence causes refresh error -> system reset
+ * @warning Missing calls to this function cause timeout -> system reset
  *
  * @par Example:
  * @code
@@ -1097,7 +1097,7 @@ void rx_hal_iwdt_clear_status(void)
  *   │                              │ rx_hal_iwdt_check_tasks()               │
  *   │                              ▼                                     │
  *   │  ┌─────────────────────────────────────────────────────────────┐  │
- *   │  │ For each task: if (now - last_heartbeat > timeout) → FAIL   │  │
+ *   │  │ For each task: if (now - last_heartbeat > timeout) -> FAIL   │  │
  *   │  └─────────────────────────────────────────────────────────────┘  │
  *   │                              │                                     │
  *   │                              │ If all pass: rx_hal_iwdt_feed()         │
@@ -1169,7 +1169,7 @@ typedef enum : int32_t {
  * @par Timeout Check Algorithm
  * @verbatim
  *   elapsed = current_time - last_heartbeat_ms
- *   if (elapsed > timeout_ms) → Task has timed out
+ *   if (elapsed > timeout_ms) -> Task has timed out
  * @endverbatim
  *
  * @invariant task_name is null-terminated
@@ -1427,7 +1427,7 @@ rx_err_t rx_hal_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
  * @verbatim
  *   - Must be called faster than task's timeout_ms
  *   - Typical pattern: Call at end of task's main loop iteration
- *   - Example: 500ms timeout → call at least every 400ms
+ *   - Example: 500ms timeout -> call at least every 400ms
  * @endverbatim
  *
  * @param[in] task_name Name of task sending heartbeat

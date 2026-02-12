@@ -17,7 +17,7 @@
  * @par Usage: tests/test_rx_comm_manager.c, tests/test_telemetry_task.c
  * @see rx_comm_manager.h Real communication manager
  * @see mock_rx_nanopb.h Protocol Buffers mock (used by comm manager)
- * @par NASA Power of 10: ✓ Static allocation, bounded queues
+ * @par NASA Power of 10: [OK] Static allocation, bounded queues
  * @par SOLID: S - Single responsibility (communication only)
  *
  * @author STAR Team

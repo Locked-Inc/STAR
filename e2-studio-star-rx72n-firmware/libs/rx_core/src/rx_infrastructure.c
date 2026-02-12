@@ -87,16 +87,16 @@
  * - rx_infrastructure_get_*(): Thread-safe after init (read-only access)
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ No loops (uses called function loops only)
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ All functions < 60 lines
- * - Rule 5: ✓ Initialization validation, cleanup on failure
- * - Rule 6: ✓ Static variables at file scope, locals at smallest scope
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ Minimal preprocessor (only includes)
- * - Rule 9: ✓ Function pointers in interfaces (DIP, intentional)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] No loops (uses called function loops only)
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] All functions < 60 lines
+ * - Rule 5: [OK] Initialization validation, cleanup on failure
+ * - Rule 6: [OK] Static variables at file scope, locals at smallest scope
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] Minimal preprocessor (only includes)
+ * - Rule 9: [OK] Function pointers in interfaces (DIP, intentional)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles Compliance
  * - **S**: Single Responsibility - Only infrastructure lifecycle management
@@ -350,8 +350,8 @@ static bool s_infrastructure_initialized = false;
  * @see rx_infrastructure_get_pin_interface() Access pin validator
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ Cleanup on failure (4 cleanup paths)
- * - Rule 7: ✓ All return values checked
+ * - Rule 5: [OK] Cleanup on failure (4 cleanup paths)
+ * - Rule 7: [OK] All return values checked
  *
  * @since Version 1.0.0
  */

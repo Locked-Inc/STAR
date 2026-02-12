@@ -101,7 +101,7 @@
  * **UART Baud Rate**:
  * ```
  * Baud_rate = PCLKB / (32 × (N + 1))
- * 115200 = 60 MHz / (32 × (16 + 1))  → N=16 (BRR register value)
+ * 115200 = 60 MHz / (32 × (16 + 1))  -> N=16 (BRR register value)
  * ```
  *
  * **Timer Period**:
@@ -115,16 +115,16 @@
  * - Used by: ALL timing-related modules (CMT, PWM, UART, SPI, ADC, etc.)
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1**: ✓ No code (only data definitions)
- * - **Rule 2**: ✓ No loops
- * - **Rule 3**: ✓ No dynamic allocation (compile-time constants)
- * - **Rule 4**: ✓ No functions
- * - **Rule 5**: ✓ N/A (no functions)
- * - **Rule 6**: ✓ File scope only (header file)
- * - **Rule 7**: ✓ No functions
- * - **Rule 8**: ✓ C23 typed enums for all constants
- * - **Rule 9**: ✓ No pointers
- * - **Rule 10**: ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No code (only data definitions)
+ * - **Rule 2**: [OK] No loops
+ * - **Rule 3**: [OK] No dynamic allocation (compile-time constants)
+ * - **Rule 4**: [OK] No functions
+ * - **Rule 5**: [OK] N/A (no functions)
+ * - **Rule 6**: [OK] File scope only (header file)
+ * - **Rule 7**: [OK] No functions
+ * - **Rule 8**: [OK] C23 typed enums for all constants
+ * - **Rule 9**: [OK] No pointers
+ * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility**: Only defines clock frequencies, no logic
@@ -239,7 +239,7 @@ extern "C" {
  * These values are determined by the PLL and clock divider settings in
  * rx_clock_power_init() and are guaranteed to be accurate for timing calculations.
  *
- * **Clock Source**: 12 MHz external crystal → PLL (×40) → 480 MHz → divided per domain
+ * **Clock Source**: 12 MHz external crystal -> PLL (×40) -> 480 MHz -> divided per domain
  *
  * **Frequency Derivation**:
  * - PLL output: 12 MHz × 40 = 480 MHz
@@ -356,13 +356,13 @@ typedef enum : uint32_t {
    * **Encoder Capture Precision**:
    * ```
    * Max velocity = 2.5 m/s (STAR robot spec)
-   * Wheel diameter = 0.1 m → circumference = 0.314 m
+   * Wheel diameter = 0.1 m -> circumference = 0.314 m
    * Max RPM = (2.5 m/s / 0.314 m) × 60 = 477 RPM
    * Encoder PPR = 341 × 4 (quadrature) = 1364 edges/rev
    * Max edge rate = 477 RPM × 1364 edges / 60 = 10,836 edges/sec
    * Min edge period = 1 / 10,836 = 92.3 µs
    * Timer counts per edge @ 120 MHz = 92.3 µs × 120 MHz = 11,076 counts
-   * Velocity resolution = 1 count / 11,076 = 0.009% per timer count ✓
+   * Velocity resolution = 1 count / 11,076 = 0.009% per timer count [OK]
    * ```
    *
    * **Rationale**: 120 MHz chosen for:
@@ -403,7 +403,7 @@ typedef enum : uint32_t {
    * BRR = (PCLKB / (32 × baud_rate)) - 1
    * BRR = (60,000,000 / (32 × 115200)) - 1 = 16.276... ≈ 16
    * Actual baud = 60,000,000 / (32 × 17) = 110,294 baud
-   * Error = (110,294 - 115200) / 115200 = -4.3% (within ±5% tolerance) ✓
+   * Error = (110,294 - 115200) / 115200 = -4.3% (within ±5% tolerance) [OK]
    * ```
    *
    * **SPI (RSPI) @ 10 Mbps** (STAR project: communication with RPi5):
@@ -411,14 +411,14 @@ typedef enum : uint32_t {
    * SPI_bitrate = PCLKB / (2 × (SPBR + 1))
    * 10 Mbps = 60,000,000 / (2 × (SPBR + 1))
    * SPBR = (60,000,000 / (2 × 10,000,000)) - 1 = 2
-   * Actual rate = 60,000,000 / (2 × 3) = 10 Mbps exact ✓
+   * Actual rate = 60,000,000 / (2 × 3) = 10 Mbps exact [OK]
    * ```
    *
    * **I2C (RIIC) @ 400 kHz** (Fast-mode I2C for IMU):
    * ```
    * I2C_freq = PCLKB / (CKS × (BRL + BRH + 4))
    * 400 kHz typical with CKS=0 (prescaler /1), BRL=BRH=73
-   * Actual = 60,000,000 / (1 × (73 + 73 + 4)) = 400 kHz exact ✓
+   * Actual = 60,000,000 / (1 × (73 + 73 + 4)) = 400 kHz exact [OK]
    * ```
    *
    * **Rationale**: 60 MHz chosen for:
@@ -476,7 +476,7 @@ typedef enum : uint32_t {
    * Tick frequency = 100 Hz (10ms period)
    * CMT prescaler = PCLKD / 8 = 60 MHz / 8 = 7.5 MHz
    * Compare value = (7.5 MHz / 100 Hz) - 1 = 75,000 - 1 = 74,999
-   * Actual period = 75,000 / 7.5 MHz = 10.000 ms exact ✓
+   * Actual period = 75,000 / 7.5 MHz = 10.000 ms exact [OK]
    * ```
    *
    * **Rationale**: 60 MHz chosen for:

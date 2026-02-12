@@ -105,15 +105,15 @@
  * - rx_time_interface.h: Optional time interface for timeouts
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ Loop bounds via k_usb_comm_max_receive_iterations
- * - Rule 3: ✓ No dynamic memory (static buffers in handle)
- * - Rule 4: ✓ Functions are concise
- * - Rule 5: ✓ Input validation on all public functions
- * - Rule 6: ✓ Variables declared at smallest scope
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ Constants use C23 typed enums
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] Loop bounds via k_usb_comm_max_receive_iterations
+ * - Rule 3: [OK] No dynamic memory (static buffers in handle)
+ * - Rule 4: [OK] Functions are concise
+ * - Rule 5: [OK] Input validation on all public functions
+ * - Rule 6: [OK] Variables declared at smallest scope
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] Constants use C23 typed enums
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S (SRP):** USB communication only, frame details in rx_frame

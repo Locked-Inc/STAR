@@ -162,7 +162,7 @@
  * RX72N Group User's Manual: Hardware, Chapter 42 (I2C-bus Interface)
  *
  * @par Verification Status
- * ✅ VERIFIED (2026-01-28) - All base addresses and register offsets verified
+ * [PASS] VERIFIED (2026-01-28) - All base addresses and register offsets verified
  * against RX72N Manual Ch42 section 42.2
  *
  * @see rx72n_mpc_regs.h MPC pin configuration for I2C pins

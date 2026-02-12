@@ -121,15 +121,15 @@
  *    - Unlock PRCR (protect register)
  *    - Clear MSTPCRB bit 19 (USB0 module stop)
  *    - Lock PRCR
- *    → USB0 peripheral powered on
+ *    -> USB0 peripheral powered on
  *
  * 2. Disable USB module before configuration
  *    - SYSCFG = 0x0000 (all bits clear)
- *    → Safe state for configuration
+ *    -> Safe state for configuration
  *
  * 3. Wait for USB PLL stabilization
  *    - tx_thread_sleep(10ms)
- *    → 48 MHz clock stable
+ *    -> 48 MHz clock stable
  *
  * 4. Configure USB0 for Function mode
  *    - DCFM = 0 (Function, not Host)
@@ -140,25 +140,25 @@
  * 5. Enable USB clock
  *    - SYSCFG.SCKE = 1
  *    - tx_thread_sleep(10ms) for clock stabilization
- *    → 48 MHz USB clock running
+ *    -> 48 MHz USB clock running
  *
  * 6. Enable USB module
  *    - SYSCFG.USBE = 1
- *    → USB0 peripheral operational
+ *    -> USB0 peripheral operational
  *
  * 7. Configure USB interrupts
  *    - INTENB0 = VBSE | DVSE | CTRE | BRDYE | BEMPE
- *    → Enable VBUS, state, control, buffer interrupts
+ *    -> Enable VBUS, state, control, buffer interrupts
  *
  * 8. Configure Interrupt Controller (ICU)
  *    - Clear IR flag (pending interrupt)
  *    - Set IPR (interrupt priority = 6)
  *    - Enable IER bit (interrupt enable register)
- *    → USB ISR ready to handle interrupts
+ *    -> USB ISR ready to handle interrupts
  *
  * 9. Set default control pipe max packet size
  *    - DCPMAXP = 64 bytes (Full-Speed)
- *    → Ready for control transfers
+ *    -> Ready for control transfers
  * ```
  *
  * **Total initialization time:** ~25ms (20ms sleep + 5ms register writes)
@@ -235,7 +235,7 @@
  * Parameters:
  * - pipe: Pipe number (1-9, not 0 which is DCP)
  * - endpoint: Endpoint number (1-15)
- * - is_in: true for IN (device → host), false for OUT (host → device)
+ * - is_in: true for IN (device -> host), false for OUT (host -> device)
  * - type: k_usb_pipecfg_type_bulk or k_usb_pipecfg_type_int
  * - max_packet: Maximum packet size (8-512 bytes, typically 64 for FS)
  *
@@ -244,7 +244,7 @@
  * 2. Select pipe: PIPESEL = pipe
  * 3. Configure pipe: PIPECFG = endpoint | type | (DIR if is_in)
  * 4. Set max packet: PIPEMAXP = max_packet
- * 5. Clear pipe: PIPExCTR.ACLRM = 1 → 0 (toggle to clear FIFO)
+ * 5. Clear pipe: PIPExCTR.ACLRM = 1 -> 0 (toggle to clear FIFO)
  * 6. Enable pipe: PIPExCTR.PID = BUF (buffer enabled)
  * ```
  *
@@ -278,17 +278,17 @@
  *
  * **State Transitions:**
  * ```
- * Detached → (VBUS attach) → Powered
+ * Detached -> (VBUS attach) -> Powered
  *          ↓
- *       (USB RESET) → Default
+ *       (USB RESET) -> Default
  *          ↓
- *     (SET_ADDRESS) → Addressed
+ *     (SET_ADDRESS) -> Addressed
  *          ↓
- *  (SET_CONFIGURATION) → Configured
+ *  (SET_CONFIGURATION) -> Configured
  *          ↓
- *      (Bus idle >3ms) → Suspended
+ *      (Bus idle >3ms) -> Suspended
  *          ↓
- *    (Resume signaling) → Configured
+ *    (Resume signaling) -> Configured
  * ```
  *
  * ---
@@ -324,9 +324,9 @@
  * ## Thread Safety and Concurrency
  *
  * **Not thread-safe.** All functions must be called from single execution context:
- * - `rx_usb_hw_init()`, `rx_usb_hw_deinit()` → Main thread only
- * - `rx_usb_hw_attach()`, `rx_usb_hw_detach()` → Main thread or ISR
- * - `rx_usb_hw_fifo_*()`, `rx_usb_hw_configure_pipe()` → USB ISR only
+ * - `rx_usb_hw_init()`, `rx_usb_hw_deinit()` -> Main thread only
+ * - `rx_usb_hw_attach()`, `rx_usb_hw_detach()` -> Main thread or ISR
+ * - `rx_usb_hw_fifo_*()`, `rx_usb_hw_configure_pipe()` -> USB ISR only
  *
  * **Busy-Wait Justification:**
  * - FIFO ready wait (~1-10 µs) too short for context switch overhead
@@ -339,17 +339,17 @@
  * ## Error Handling Strategy
  *
  * **Initialization errors:**
- * - Module already initialized → Return k_rx_ok (idempotent)
+ * - Module already initialized -> Return k_rx_ok (idempotent)
  * - Clock/interrupt setup always succeeds (hardware guaranteed)
  *
  * **FIFO operation errors:**
- * - NULL pointer → Return 0 bytes (defensive check)
- * - Invalid pipe number → Log error, return 0 bytes
- * - FIFO timeout → Log error, return 0 bytes (host will retry)
- * - Read overflow (len > max_len) → Truncate to max_len, log error
+ * - NULL pointer -> Return 0 bytes (defensive check)
+ * - Invalid pipe number -> Log error, return 0 bytes
+ * - FIFO timeout -> Log error, return 0 bytes (host will retry)
+ * - Read overflow (len > max_len) -> Truncate to max_len, log error
  *
  * **Pipe configuration errors:**
- * - Invalid pipe/endpoint/max_packet → Return k_rx_err_invalid_arg
+ * - Invalid pipe/endpoint/max_packet -> Return k_rx_err_invalid_arg
  * - Configuration always succeeds if parameters valid (hardware guaranteed)
  *
  * **Recovery:** All errors non-fatal, next operation retries. No persistent error state.
@@ -360,16 +360,16 @@
  *
  * | Rule | Status | Evidence |
  * |------|--------|----------|
- * | **1. Simple control flow** | ✅ | No goto, setjmp/longjmp, or recursion |
- * | **2. Fixed loop bounds** | ✅ | FIFO loops bounded by len or timeout (1000) |
- * | **3. No dynamic memory** | ✅ | Zero malloc/free, all data static/stack |
- * | **4. Short functions** | ✅ | All functions <80 lines (avg ~40 lines) |
- * | **5. Assertions** | ✅ | 2+ checks per function (nullptr, bounds, state) |
- * | **6. Narrow scope** | ✅ | Variables declared at first use |
- * | **7. Check return values** | ✅ | N/A (most functions are void or return simple values) |
- * | **8. Limit preprocessor** | ✅ | C23 typed enums, no macro constants |
- * | **9. Restrict pointers** | ✅ | No function pointers in this module |
- * | **10. Compiler warnings** | ✅ | -Wall -Wextra -Werror, zero warnings |
+ * | **1. Simple control flow** | [PASS] | No goto, setjmp/longjmp, or recursion |
+ * | **2. Fixed loop bounds** | [PASS] | FIFO loops bounded by len or timeout (1000) |
+ * | **3. No dynamic memory** | [PASS] | Zero malloc/free, all data static/stack |
+ * | **4. Short functions** | [PASS] | All functions <80 lines (avg ~40 lines) |
+ * | **5. Assertions** | [PASS] | 2+ checks per function (nullptr, bounds, state) |
+ * | **6. Narrow scope** | [PASS] | Variables declared at first use |
+ * | **7. Check return values** | [PASS] | N/A (most functions are void or return simple values) |
+ * | **8. Limit preprocessor** | [PASS] | C23 typed enums, no macro constants |
+ * | **9. Restrict pointers** | [PASS] | No function pointers in this module |
+ * | **10. Compiler warnings** | [PASS] | -Wall -Wextra -Werror, zero warnings |
  *
  * ---
  *

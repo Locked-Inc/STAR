@@ -41,16 +41,16 @@
  * - No STAR firmware dependencies (constants only)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No control flow (constants only)
- * - Rule 2: ✓ N/A (no loops)
- * - Rule 3: ✓ No dynamic memory
- * - Rule 4: ✓ N/A (no functions)
- * - Rule 5: ✓ N/A (no assertions needed for constants)
- * - Rule 6: ✓ All constants at file scope
- * - Rule 7: ✓ N/A (no function calls)
- * - Rule 8: ✓ C23 typed enums used for ALL constants (no macros)
- * - Rule 9: ✓ N/A (no pointers)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No control flow (constants only)
+ * - Rule 2: [OK] N/A (no loops)
+ * - Rule 3: [OK] No dynamic memory
+ * - Rule 4: [OK] N/A (no functions)
+ * - Rule 5: [OK] N/A (no assertions needed for constants)
+ * - Rule 6: [OK] All constants at file scope
+ * - Rule 7: [OK] N/A (no function calls)
+ * - Rule 8: [OK] C23 typed enums used for ALL constants (no macros)
+ * - Rule 9: [OK] N/A (no pointers)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @see BQ4050 Data Sheet (Texas Instruments SLUUAQ3A)
  * @see Smart Battery Data Specification v1.1 (SBS-IF)
@@ -621,10 +621,10 @@ typedef enum : uint8_t {
  * @endcode
  *
  * @par Status Priority Levels:
- * - **CRITICAL:** over_charged_alarm, over_temp_alarm → Emergency shutdown
- * - **HIGH:** terminate_charge_alarm, terminate_discharge_alarm → Stop operation
- * - **MEDIUM:** remaining_capacity_alarm, remaining_time_alarm → User warnings
- * - **INFO:** initialized, discharging, fully_charged, fully_discharged → Status display
+ * - **CRITICAL:** over_charged_alarm, over_temp_alarm -> Emergency shutdown
+ * - **HIGH:** terminate_charge_alarm, terminate_discharge_alarm -> Stop operation
+ * - **MEDIUM:** remaining_capacity_alarm, remaining_time_alarm -> User warnings
+ * - **INFO:** initialized, discharging, fully_charged, fully_discharged -> Status display
  *
  * @note All flags use explicit != k_bq4050_status_flag_clear comparisons to avoid
  *       implicit boolean conversion and satisfy zero magic numbers policy.

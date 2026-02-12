@@ -39,16 +39,16 @@
  * 9. Calculate temperature using formula above
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ N/A (no loops)
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ Single-statement accessors
- * - Rule 5: ✓ Static assertions verify addresses
- * - Rule 6: ✓ Minimal scope
- * - Rule 7: ✓ N/A
- * - Rule 8: ✓ All constants use C23 typed enums
- * - Rule 9: ✓ No function pointers
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] N/A (no loops)
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] Single-statement accessors
+ * - Rule 5: [OK] Static assertions verify addresses
+ * - Rule 6: [OK] Minimal scope
+ * - Rule 7: [OK] N/A
+ * - Rule 8: [OK] All constants use C23 typed enums
+ * - Rule 9: [OK] No function pointers
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par Manual References
  * RX72N Group User's Manual: Hardware (R01UH0824EJ0120 Rev.1.20)

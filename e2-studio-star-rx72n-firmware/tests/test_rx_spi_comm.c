@@ -16,10 +16,10 @@
  * @code
  * RPi5 (Linux SPI Controller)          RX72N (RSPI Peripheral)
  * +----------------------+             +----------------------+
- * | spidev0.0            |   SCLK  →   | RSPI Channel 0      |
- * | (10 MHz, Mode 1)     |   COPI  →   | (Peripheral Mode)   |
+ * | spidev0.0            |   SCLK  ->   | RSPI Channel 0      |
+ * | (10 MHz, Mode 1)     |   COPI  ->   | (Peripheral Mode)   |
  * |                      |   CIPO  ←   |                     |
- * |                      |   CS#   →   | GPIO (software CS)  |
+ * |                      |   CS#   ->   | GPIO (software CS)  |
  * | GPIO (READY line) ←  |   RDY   ←   | GPIO out            |
  * +----------------------+             +----------------------+
  *         ↓ Frame Protocol                     ↓
@@ -72,12 +72,12 @@
  * @code
  * RPi5 (Controller)                RX72N (Peripheral)
  * ==================               ==================
- * 1. Wait for RDY line HIGH    ←   RX buffer empty → Set RDY=HIGH
+ * 1. Wait for RDY line HIGH    ←   RX buffer empty -> Set RDY=HIGH
  * 2. Assert CS# LOW
  * 3. Transfer frame bytes
  * 4. Deassert CS# HIGH
- * 5. RX72N processes frame     →   Parse, validate CRC, route to buffer
- * 6. Loop to step 1                If buffer full → Set RDY=LOW
+ * 5. RX72N processes frame     ->   Parse, validate CRC, route to buffer
+ * 6. Loop to step 1                If buffer full -> Set RDY=LOW
  *
  * Timing Constraints:
  * - RDY line poll timeout: 100ms (configurable via rx_spi_comm_send timeout param)
@@ -184,14 +184,14 @@
  * - **Non-Blocking:** All operations return immediately (no busy-wait in comm layer)
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1 (Control Flow):** ✓ All test functions use simple sequential flow
- * - **Rule 2 (Loop Bounds):** ✓ All loops have compile-time known bounds
- * - **Rule 3 (Dynamic Memory):** ✓ Zero heap allocation (stack buffers only)
- * - **Rule 4 (Function Size):** ✓ Test functions <50 lines, helpers <25 lines
- * - **Rule 5 (Assertions):** ✓ Every test has minimum 1 assertion, most have 3+
- * - **Rule 7 (Return Checking):** ✓ All API returns validated
- * - **Rule 9 (Pointers):** ✓ Single-level dereferencing only
- * - **Rule 10 (Warnings):** ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1 (Control Flow):** [OK] All test functions use simple sequential flow
+ * - **Rule 2 (Loop Bounds):** [OK] All loops have compile-time known bounds
+ * - **Rule 3 (Dynamic Memory):** [OK] Zero heap allocation (stack buffers only)
+ * - **Rule 4 (Function Size):** [OK] Test functions <50 lines, helpers <25 lines
+ * - **Rule 5 (Assertions):** [OK] Every test has minimum 1 assertion, most have 3+
+ * - **Rule 7 (Return Checking):** [OK] All API returns validated
+ * - **Rule 9 (Pointers):** [OK] Single-level dereferencing only
+ * - **Rule 10 (Warnings):** [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility:** Each test validates one SPI protocol behavior
@@ -1256,7 +1256,7 @@ void test_spi_comm_receive_ping_auto_pong(void)
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
-  /* PING consumed, no more data available → timeout */
+  /* PING consumed, no more data available -> timeout */
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 
   /* Verify PONG was transmitted (last SPI transfer was the PONG send) */
@@ -1353,7 +1353,7 @@ void test_spi_comm_receive_reset_auto_ack(void)
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
-  /* RESET consumed, no more data → timeout */
+  /* RESET consumed, no more data -> timeout */
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 
   /* Verify RESET_ACK was transmitted */

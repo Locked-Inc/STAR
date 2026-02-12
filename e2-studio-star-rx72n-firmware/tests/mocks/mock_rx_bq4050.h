@@ -19,7 +19,7 @@
  * @par Usage: tests/test_rx_bq4050.c
  * @see rx_bq4050.h Real BQ4050 driver
  * @see mock_rx_bus_smbus.h SMBus mock (used by BQ4050)
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Power monitoring depends on BQ4050 interface
  *
  * @author STAR Team

@@ -100,9 +100,9 @@
  * | 255 | 0b11111111 | 755167117 | 0x2D02EF8D |
  *
  * **Verification:**
- * - `s_crc32_table[0]` = 0x00000000 ✓
- * - `s_crc32_table[255]` = 0x2D02EF8D ✓
- * - All entries verified against Go `crc32.MakeTable(crc32.IEEE)` ✓
+ * - `s_crc32_table[0]` = 0x00000000 [OK]
+ * - `s_crc32_table[255]` = 0x2D02EF8D [OK]
+ * - All entries verified against Go `crc32.MakeTable(crc32.IEEE)` [OK]
  *
  * ## Algorithm: Lookup Table CRC-32
  *
@@ -137,7 +137,7 @@
  * Final: CRC ^ 0xFFFFFFFF = 0xB63CFBCD
  * ```
  *
- * **Verification:** `crc32.ChecksumIEEE([0x01,0x02,0x03,0x04])` = 0xB63CFBCD ✓
+ * **Verification:** `crc32.ChecksumIEEE([0x01,0x02,0x03,0x04])` = 0xB63CFBCD [OK]
  *
  * ## Performance Analysis (Software Implementation)
  *
@@ -184,7 +184,7 @@
  * **Hardware advantages:**
  * - 5× faster throughput (memory-limited vs CPU-limited)
  * - 5.5× smaller code (no lookup table)
- * - Simpler implementation (write→read vs table lookup)
+ * - Simpler implementation (write->read vs table lookup)
  *
  * ## Memory Usage
  *
@@ -242,7 +242,7 @@
  * ```c
  * uint32_t crc1 = rx_crc32_ieee_impl(part1, len1);     // Initial CRC
  * uint32_t crc2 = rx_crc32_update_sw(crc1, part2, len2); // Continue
- * // crc2 == rx_crc32_ieee_impl(part1||part2, len1+len2)  ✓
+ * // crc2 == rx_crc32_ieee_impl(part1||part2, len1+len2)  [OK]
  * ```
  *
  * ## Compile-Time Configuration
@@ -268,16 +268,16 @@
  *
  * | Rule | Compliance | Implementation |
  * |------|------------|----------------|
- * | **1. Simple Control Flow** | ✅ FULL | No goto, setjmp, or recursion |
- * | **2. Fixed Loop Bounds** | ✅ FULL | All loops bounded by k_crc_len_max (65535) |
- * | **3. No Dynamic Memory** | ✅ FULL | Zero malloc/free, all state is static/const |
- * | **4. Short Functions** | ✅ FULL | Longest: rx_crc32_ieee_impl (39 lines) |
- * | **5. Assertions** | ✅ FULL | Minimum 2 checks per function (nullptr, range, table) |
- * | **6. Smallest Scope** | ✅ FULL | Variables declared at first use |
- * | **7. Check Return Values** | ✅ FULL | rx_crc_init() return checked |
- * | **8. Limit Preprocessor** | ✅ FULL | Only conditional compilation, C23 typed enums |
- * | **9. Restrict Pointers** | ✅ FULL | Single-level pointers only |
- * | **10. Compiler Warnings** | ✅ FULL | Compiles with -Wall -Wextra -Werror |
+ * | **1. Simple Control Flow** | [PASS] FULL | No goto, setjmp, or recursion |
+ * | **2. Fixed Loop Bounds** | [PASS] FULL | All loops bounded by k_crc_len_max (65535) |
+ * | **3. No Dynamic Memory** | [PASS] FULL | Zero malloc/free, all state is static/const |
+ * | **4. Short Functions** | [PASS] FULL | Longest: rx_crc32_ieee_impl (39 lines) |
+ * | **5. Assertions** | [PASS] FULL | Minimum 2 checks per function (nullptr, range, table) |
+ * | **6. Smallest Scope** | [PASS] FULL | Variables declared at first use |
+ * | **7. Check Return Values** | [PASS] FULL | rx_crc_init() return checked |
+ * | **8. Limit Preprocessor** | [PASS] FULL | Only conditional compilation, C23 typed enums |
+ * | **9. Restrict Pointers** | [PASS] FULL | Single-level pointers only |
+ * | **10. Compiler Warnings** | [PASS] FULL | Compiles with -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *

@@ -168,10 +168,10 @@
  * **Steps:**
  * 1. **Parameter validation** (NULL check, initialized flag)
  * 2. **Poll USB channel**:
- *    - If NULL handle → skip (k_rx_err_timeout)
- *    - If data available → handle frame, mark received=true
- *    - If timeout → continue to next channel
- *    - If error → return error immediately (critical failure)
+ *    - If NULL handle -> skip (k_rx_err_timeout)
+ *    - If data available -> handle frame, mark received=true
+ *    - If timeout -> continue to next channel
+ *    - If error -> return error immediately (critical failure)
  * 3. **Poll SPI channel**:
  *    - Same logic as USB
  * 4. **Return aggregated result**:
@@ -209,12 +209,12 @@
  *
  * | Scenario | Thread Safety | Mitigation Required |
  * |----------|---------------|---------------------|
- * | **Single-threaded** | ✓ Safe | None |
- * | **Multi-threaded (different channels)** | ✓ Safe | Ensure each thread uses different channel |
- * | **Multi-threaded (same channel)** | ✗ Unsafe | External mutex required |
- * | **Multi-threaded (different handles)** | ✓ Safe | None (independent handles) |
- * | **Init/Deinit from ISR** | ✗ Unsafe | Call only from task context |
- * | **Poll/Send from ISR** | ⚠️ Conditional | OK if callback is ISR-safe |
+ * | **Single-threaded** | [OK] Safe | None |
+ * | **Multi-threaded (different channels)** | [OK] Safe | Ensure each thread uses different channel |
+ * | **Multi-threaded (same channel)** | [X] Unsafe | External mutex required |
+ * | **Multi-threaded (different handles)** | [OK] Safe | None (independent handles) |
+ * | **Init/Deinit from ISR** | [X] Unsafe | Call only from task context |
+ * | **Poll/Send from ISR** | [WARN] Conditional | OK if callback is ISR-safe |
  *
  * **Recommended Architecture**:
  * - Dedicate one thread to poll all channels (e.g., ThreadX communication task)
@@ -336,16 +336,16 @@
  *
  * | Rule | Compliance | Implementation Notes |
  * |------|------------|---------------------|
- * | **Rule 1: Control Flow** | ✓ | No goto, setjmp, longjmp, or recursion |
- * | **Rule 2: Loop Bounds** | ✓ | All loops have statically provable bounds |
- * | **Rule 3: No Dynamic Allocation** | ✓ | Zero malloc/free - all static allocation |
- * | **Rule 4: Function Size** | ✓ | All functions < 60 lines |
- * | **Rule 5: Assertions** | ✓ | Minimum 2 checks per function (nullptr, initialized) |
- * | **Rule 6: Data Scope** | ✓ | Variables declared at smallest scope |
- * | **Rule 7: Check Returns** | ✓ | All return values validated or cast to (void) |
- * | **Rule 8: Preprocessor** | ✓ | Minimal macros, typed enums for constants |
- * | **Rule 9: Pointers** | ⚠️ | Function pointers used for callback (DIP) |
- * | **Rule 10: Compiler Warnings** | ✓ | -Wall -Wextra -Werror enabled |
+ * | **Rule 1: Control Flow** | [OK] | No goto, setjmp, longjmp, or recursion |
+ * | **Rule 2: Loop Bounds** | [OK] | All loops have statically provable bounds |
+ * | **Rule 3: No Dynamic Allocation** | [OK] | Zero malloc/free - all static allocation |
+ * | **Rule 4: Function Size** | [OK] | All functions < 60 lines |
+ * | **Rule 5: Assertions** | [OK] | Minimum 2 checks per function (nullptr, initialized) |
+ * | **Rule 6: Data Scope** | [OK] | Variables declared at smallest scope |
+ * | **Rule 7: Check Returns** | [OK] | All return values validated or cast to (void) |
+ * | **Rule 8: Preprocessor** | [OK] | Minimal macros, typed enums for constants |
+ * | **Rule 9: Pointers** | [WARN] | Function pointers used for callback (DIP) |
+ * | **Rule 10: Compiler Warnings** | [OK] | -Wall -Wextra -Werror enabled |
  *
  * **Rule 9 Deviation**: Function pointer used for user callback to enable Dependency
  * Inversion Principle (SOLID) - allows application to register frame handler without
@@ -1535,9 +1535,9 @@ rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel,
  * debugging, and user interface display. Always returns a valid string (never NULL).
  *
  * **Returned Strings**:
- * - k_comm_channel_usb → "USB"
- * - k_comm_channel_spi → "SPI"
- * - Invalid/unknown → "UNKNOWN"
+ * - k_comm_channel_usb -> "USB"
+ * - k_comm_channel_spi -> "SPI"
+ * - Invalid/unknown -> "UNKNOWN"
  *
  * **Use Cases**:
  * - Logging channel activity

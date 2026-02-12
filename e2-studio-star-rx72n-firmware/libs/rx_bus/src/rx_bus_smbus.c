@@ -136,16 +136,16 @@
  *
  * | Rule | Implementation |
  * |------|----------------|
- * | **Rule 1** | ✅ No goto, setjmp, recursion - straight-line code |
- * | **Rule 2** | ✅ Loops have compile-time bounds (CRC-8: 8 iterations per byte) |
- * | **Rule 3** | ✅ No malloc - all buffers on stack, context structs stack-allocated |
- * | **Rule 4** | ✅ All functions ≤60 lines (longest: block_read at 34 lines) |
- * | **Rule 5** | ✅ Minimum 2 validations per function (nullptr checks + state checks) |
- * | **Rule 6** | ✅ Variables at smallest scope (loop counters in for statements) |
- * | **Rule 7** | ✅ All RIIC/I2C returns checked (err != k_rx_ok, PEC verified) |
- * | **Rule 8** | ✅ C23 typed enums for all constants (k_smbus_crc8_poly: uint8_t) |
- * | **Rule 9** | ✅ Single-level pointers only (data*, ctx*, no pointer arithmetic) |
- * | **Rule 10** | ✅ Compiles with -Wall -Wextra -Werror, zero warnings |
+ * | **Rule 1** | [PASS] No goto, setjmp, recursion - straight-line code |
+ * | **Rule 2** | [PASS] Loops have compile-time bounds (CRC-8: 8 iterations per byte) |
+ * | **Rule 3** | [PASS] No malloc - all buffers on stack, context structs stack-allocated |
+ * | **Rule 4** | [PASS] All functions ≤60 lines (longest: block_read at 34 lines) |
+ * | **Rule 5** | [PASS] Minimum 2 validations per function (nullptr checks + state checks) |
+ * | **Rule 6** | [PASS] Variables at smallest scope (loop counters in for statements) |
+ * | **Rule 7** | [PASS] All RIIC/I2C returns checked (err != k_rx_ok, PEC verified) |
+ * | **Rule 8** | [PASS] C23 typed enums for all constants (k_smbus_crc8_poly: uint8_t) |
+ * | **Rule 9** | [PASS] Single-level pointers only (data*, ctx*, no pointer arithmetic) |
+ * | **Rule 10** | [PASS] Compiles with -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *
@@ -1677,7 +1677,7 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
  * if (err == k_rx_ok) {
  *     float voltage_v = voltage_mv / 1000.0f;  // Convert mV to V
  *     rx_log_debug("BATTERY", "Voltage: %.3f V", voltage_v);
- *     // Example: voltage_mv = 12450 → 12.450 V
+ *     // Example: voltage_mv = 12450 -> 12.450 V
  * } else if (err == k_rx_err_crc_mismatch) {
  *     rx_log_error("BATTERY", "PEC mismatch - data corrupted, retry");
  * }

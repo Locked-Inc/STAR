@@ -12,8 +12,8 @@
  *
  * This mock enables testing of:
  * - I2C controller initialization (3 channels: RIIC0, RIIC1, RIIC2)
- * - I2C write operations (controller→peripheral)
- * - I2C read operations (peripheral→controller)
+ * - I2C write operations (controller->peripheral)
+ * - I2C read operations (peripheral->controller)
  * - Combined write-read operations (register read pattern)
  * - Error handling (NACK, timeout, bus busy)
  * - Multi-byte data transfer sequences
@@ -136,16 +136,16 @@
  * @see hardware.h Hardware peripheral definitions
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ All loops have fixed bounds
- * - Rule 3: ✓ Static allocation only (buffers in g_mock_riic)
- * - Rule 4: ✓ Functions kept under 60 lines
- * - Rule 5: ✓ Input validation in all functions
- * - Rule 6: ✓ Variables declared at smallest scope
- * - Rule 7: ✓ Return values checked
- * - Rule 8: ✓ Minimal preprocessor use
- * - Rule 9: ✓ Single-level pointers only
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] All loops have fixed bounds
+ * - Rule 3: [OK] Static allocation only (buffers in g_mock_riic)
+ * - Rule 4: [OK] Functions kept under 60 lines
+ * - Rule 5: [OK] Input validation in all functions
+ * - Rule 6: [OK] Variables declared at smallest scope
+ * - Rule 7: [OK] Return values checked
+ * - Rule 8: [OK] Minimal preprocessor use
+ * - Rule 9: [OK] Single-level pointers only
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - S: Single Responsibility - Only provides RIIC HAL mock functionality

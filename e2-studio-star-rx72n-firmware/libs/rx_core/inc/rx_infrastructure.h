@@ -232,16 +232,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simplify control flow | ✓ | No goto, setjmp, recursion |
- * | 2. Fixed loop bounds | ✓ | No loops in this header |
- * | 3. No dynamic memory | ✓ | Static global instances only |
- * | 4. Functions < 60 lines | ✓ | All functions are accessors |
- * | 5. Use assertions | ✓ | Validation in init functions |
- * | 6. Data at smallest scope | ✓ | Globals encapsulated |
- * | 7. Check return values | ✓ | All errors propagated |
- * | 8. Limit preprocessor | ✓ | Macros for convenience only |
- * | 9. Restrict pointers | ⚠️ | Function pointers (DIP) |
- * | 10. Compile warnings | ✓ | -Wall -Wextra -Werror |
+ * | 1. Simplify control flow | [OK] | No goto, setjmp, recursion |
+ * | 2. Fixed loop bounds | [OK] | No loops in this header |
+ * | 3. No dynamic memory | [OK] | Static global instances only |
+ * | 4. Functions < 60 lines | [OK] | All functions are accessors |
+ * | 5. Use assertions | [OK] | Validation in init functions |
+ * | 6. Data at smallest scope | [OK] | Globals encapsulated |
+ * | 7. Check return values | [OK] | All errors propagated |
+ * | 8. Limit preprocessor | [OK] | Macros for convenience only |
+ * | 9. Restrict pointers | [WARN] | Function pointers (DIP) |
+ * | 10. Compile warnings | [OK] | -Wall -Wextra -Werror |
  *
  * @see rx_error_interface.h Abstract error handler interface
  * @see rx_error_handler.h Concrete error handler implementation
@@ -352,7 +352,7 @@ extern "C" {
  * | max_retries       | 3             | Balance between resilience and failure detection |
  * | initial_backoff_ms| 100           | 100ms allows time for transient issues to clear |
  * | max_backoff_ms    | 5000          | 5s prevents indefinite waits |
- * | backoff_multiplier| 2.0           | Exponential backoff (100ms → 200ms → 400ms → ...) |
+ * | backoff_multiplier| 2.0           | Exponential backoff (100ms -> 200ms -> 400ms -> ...) |
  * | max_errors        | 64            | Sufficient for all firmware components |
  * | max_component_errors | 16         | Track errors per component |
  *
@@ -458,7 +458,7 @@ extern "C" {
  *
  * @par Example: Incorrect Initialization (WILL CRASH)
  * @code
- * // ❌ WRONG: Initializing SPI before infrastructure
+ * // [FAIL] WRONG: Initializing SPI before infrastructure
  * int main(void)
  * {
  *   rx_err_t err = spi_driver_init(); // SPI tries to use RX_RESERVE_PIN()
@@ -494,8 +494,8 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 4 preconditions, 6 postconditions
- * - Rule 7: ✓ All return values checked
+ * - Rule 5: [OK] 4 preconditions, 6 postconditions
+ * - Rule 7: [OK] All return values checked
  */
 [[nodiscard]] rx_err_t rx_infrastructure_init(void);
 
@@ -753,8 +753,8 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 4 preconditions, 6 postconditions
- * - Rule 7: ✓ All return values checked
+ * - Rule 5: [OK] 4 preconditions, 6 postconditions
+ * - Rule 7: [OK] All return values checked
  */
 [[nodiscard]] rx_err_t rx_infrastructure_deinit(void);
 
@@ -913,10 +913,10 @@ extern "C" {
  *
  * | Operation | Thread-Safe? | Details |
  * |-----------|--------------|---------|
- * | Calling this function | ✓ Yes | Read-only after init |
- * | Caching returned pointer | ✓ Yes | Pointer never changes |
- * | Calling interface methods | ✓ Yes | Methods are thread-safe |
- * | Calling during init/deinit | ✗ No | Undefined behavior |
+ * | Calling this function | [OK] Yes | Read-only after init |
+ * | Caching returned pointer | [OK] Yes | Pointer never changes |
+ * | Calling interface methods | [OK] Yes | Methods are thread-safe |
+ * | Calling during init/deinit | [X] No | Undefined behavior |
  *
  * @return rx_error_interface_t* Pointer to global error interface
  * @retval non-NULL Success, interface is ready for use
@@ -1000,17 +1000,17 @@ rx_error_interface_t* rx_infrastructure_get_error_interface(void);
  * Module Init Sequence:
  *     │
  *     ├─ SPI Driver Init
- *     │      ├─ Reserve PA0 ("SPI_CIPO") → Success
- *     │      ├─ Reserve PA1 ("SPI_COPI") → Success
- *     │      └─ Reserve PA2 ("SPI_CLK")  → Success
+ *     │      ├─ Reserve PA0 ("SPI_CIPO") -> Success
+ *     │      ├─ Reserve PA1 ("SPI_COPI") -> Success
+ *     │      └─ Reserve PA2 ("SPI_CLK")  -> Success
  *     │
  *     ├─ I2C Driver Init
- *     │      ├─ Reserve PA0 ("I2C_SDA")  → FAIL (already SPI_CIPO)
+ *     │      ├─ Reserve PA0 ("I2C_SDA")  -> FAIL (already SPI_CIPO)
  *     │      └─ Init fails, prevents pin conflict
  *     │
  *     └─ USB Driver Init
- *            ├─ Reserve PB0 ("USB_DP")   → Success
- *            └─ Reserve PB1 ("USB_DM")   → Success
+ *            ├─ Reserve PB0 ("USB_DP")   -> Success
+ *            └─ Reserve PB1 ("USB_DM")   -> Success
  * ```
  *
  * ## Usage Patterns
@@ -1163,11 +1163,11 @@ rx_error_interface_t* rx_infrastructure_get_error_interface(void);
  *
  * | Operation | Thread-Safe? | Details |
  * |-----------|--------------|---------|
- * | Calling this function | ✓ Yes | Read-only after init |
- * | Caching returned pointer | ✓ Yes | Pointer never changes |
- * | Calling interface methods | ✓ Yes | Methods use mutex protection |
- * | Concurrent reserve/release | ✓ Yes | Atomic operations |
- * | Calling during init/deinit | ✗ No | Undefined behavior |
+ * | Calling this function | [OK] Yes | Read-only after init |
+ * | Caching returned pointer | [OK] Yes | Pointer never changes |
+ * | Calling interface methods | [OK] Yes | Methods use mutex protection |
+ * | Concurrent reserve/release | [OK] Yes | Atomic operations |
+ * | Calling during init/deinit | [X] No | Undefined behavior |
  *
  * @return rx_pin_interface_t* Pointer to global pin interface
  * @retval non-NULL Success, interface is ready for use
@@ -1372,12 +1372,12 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  *
  * | Scenario | Use Macro | Use Direct Interface |
  * |----------|-----------|----------------------|
- * | Simple error reporting | ✓ Yes | No |
- * | One-line logging | ✓ Yes | No |
- * | Need retry logic | No | ✓ Yes |
- * | Need error counts | No | ✓ Yes |
- * | Need backoff delay | No | ✓ Yes |
- * | Performance-critical loop | No | ✓ Yes (cache pointer) |
+ * | Simple error reporting | [OK] Yes | No |
+ * | One-line logging | [OK] Yes | No |
+ * | Need retry logic | No | [OK] Yes |
+ * | Need error counts | No | [OK] Yes |
+ * | Need backoff delay | No | [OK] Yes |
+ * | Performance-critical loop | No | [OK] Yes (cache pointer) |
  *
  * ## Thread Safety
  *
@@ -1426,12 +1426,12 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  * // UNSAFE: Dynamic string (stack variable, may be invalid later)
  * char msg[64];
  * snprintf(msg, sizeof(msg), "Error %d", code);
- * RX_REPORT_ERROR(err, "MOTOR", msg); // ❌ msg may be invalid when accessed later
+ * RX_REPORT_ERROR(err, "MOTOR", msg); // [FAIL] msg may be invalid when accessed later
  *
  * // SAFE: Static buffer or string literal
  * static char msg[64];
  * snprintf(msg, sizeof(msg), "Error %d", code);
- * RX_REPORT_ERROR(err, "MOTOR", msg); // ✓ msg remains valid
+ * RX_REPORT_ERROR(err, "MOTOR", msg); // [OK] msg remains valid
  * @endcode
  *
  * @see rx_infrastructure_get_error_interface() Get error interface directly
@@ -1488,8 +1488,8 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  * - **Atomic operations**: Reservation is thread-safe (mutex protected)
  *
  * ```
- * Module A:  RX_RESERVE_PIN(0xA, 5, "SPI_COPI")  → k_rx_ok
- * Module B:  RX_RESERVE_PIN(0xA, 5, "I2C_SDA")   → k_rx_err_resource_busy (conflict!)
+ * Module A:  RX_RESERVE_PIN(0xA, 5, "SPI_COPI")  -> k_rx_ok
+ * Module B:  RX_RESERVE_PIN(0xA, 5, "I2C_SDA")   -> k_rx_err_resource_busy (conflict!)
  * ```
  *
  * ## Typical Usage Patterns

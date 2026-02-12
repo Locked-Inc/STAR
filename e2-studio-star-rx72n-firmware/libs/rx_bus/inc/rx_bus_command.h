@@ -189,16 +189,16 @@
  *
  * | Rule | Compliance | Details |
  * |------|------------|---------|
- * | 1    | ✓          | No goto, setjmp, recursion |
- * | 2    | ✓          | No loops (inline init function is O(1)) |
- * | 3    | ✓          | No dynamic allocation (commands stack-allocated) |
- * | 4    | ✓          | Inline function is 5 lines (under 60 line limit) |
- * | 5    | ✓          | Validation in execute functions (user responsibility) |
- * | 6    | ✓          | Minimal scope (command data encapsulated) |
- * | 7    | ✓          | Execute function returns must be checked |
- * | 8    | ✓          | Uses error code enums (k_rx_ok, k_rx_err_*) |
- * | 9    | ⚠️          | **Intentional deviation**: Function pointers for DIP (Rule 9 compliance note) |
- * | 10   | ✓          | Compiles with -Wall -Wextra -Werror |
+ * | 1    | [OK]          | No goto, setjmp, recursion |
+ * | 2    | [OK]          | No loops (inline init function is O(1)) |
+ * | 3    | [OK]          | No dynamic allocation (commands stack-allocated) |
+ * | 4    | [OK]          | Inline function is 5 lines (under 60 line limit) |
+ * | 5    | [OK]          | Validation in execute functions (user responsibility) |
+ * | 6    | [OK]          | Minimal scope (command data encapsulated) |
+ * | 7    | [OK]          | Execute function returns must be checked |
+ * | 8    | [OK]          | Uses error code enums (k_rx_ok, k_rx_err_*) |
+ * | 9    | [WARN]          | **Intentional deviation**: Function pointers for DIP (Rule 9 compliance note) |
+ * | 10   | [OK]          | Compiles with -Wall -Wextra -Werror |
  *
  * **Rule 9 Deviation Rationale**: Function pointers enable Dependency Inversion
  * Principle (SOLID), allowing mock implementations for unit testing and decoupling
@@ -422,7 +422,7 @@ typedef struct rx_bus_config rx_bus_config_t;
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 9** ⚠️ **Intentional deviation**: Uses function pointers for
+ * - **Rule 9** [WARN] **Intentional deviation**: Uses function pointers for
  *   Dependency Inversion Principle (SOLID). Enables mock implementations for
  *   unit testing and decouples bus manager from hardware-specific adapters.
  *   Essential for testability in safety-critical systems.
@@ -802,16 +802,16 @@ typedef struct rx_bus_command {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1** ✓ No goto, setjmp, recursion (simple assignment statements)
- * - **Rule 2** ✓ No loops (straight-line code)
- * - **Rule 3** ✓ No dynamic allocation (stack-based initialization)
- * - **Rule 4** ✓ Function is 5 lines (under 60 line limit)
- * - **Rule 5** ⚠️ No validation (inline performance optimization, caller validates)
- * - **Rule 6** ✓ Minimal scope (function parameters only)
- * - **Rule 7** ✓ No return value to check (void function)
- * - **Rule 8** ✓ Uses enum constant (k_rx_ok)
- * - **Rule 9** ✓ Single level of dereferencing (cmd->field)
- * - **Rule 10** ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1** [OK] No goto, setjmp, recursion (simple assignment statements)
+ * - **Rule 2** [OK] No loops (straight-line code)
+ * - **Rule 3** [OK] No dynamic allocation (stack-based initialization)
+ * - **Rule 4** [OK] Function is 5 lines (under 60 line limit)
+ * - **Rule 5** [WARN] No validation (inline performance optimization, caller validates)
+ * - **Rule 6** [OK] Minimal scope (function parameters only)
+ * - **Rule 7** [OK] No return value to check (void function)
+ * - **Rule 8** [OK] Uses enum constant (k_rx_ok)
+ * - **Rule 9** [OK] Single level of dereferencing (cmd->field)
+ * - **Rule 10** [OK] Compiles with -Wall -Wextra -Werror
  *
  * @callgraph
  * @callergraph

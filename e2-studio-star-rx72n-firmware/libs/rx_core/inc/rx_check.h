@@ -314,7 +314,7 @@ extern "C" {
  *
  * **wait** - Wait for Interrupt
  * - Places CPU in low-power state
- * - CPU wakes on interrupt, but interrupts disabled → immediately waits again
+ * - CPU wakes on interrupt, but interrupts disabled -> immediately waits again
  * - Reduces power consumption during halt state
  * - Effective infinite loop with minimal power draw
  *

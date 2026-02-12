@@ -42,7 +42,7 @@
  * @see rx_bq4050.h BQ4050 battery monitor driver
  * @see tests/test_rx_bq4050.c Battery monitor tests
  *
- * @par NASA Power of 10: ✓ Static allocation, bounded loops
+ * @par NASA Power of 10: [OK] Static allocation, bounded loops
  * @par SOLID: D - BQ4050 driver depends on SMBus interface
  *
  * @author STAR Team

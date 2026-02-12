@@ -117,16 +117,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | Only inline functions with sequential logic |
- * | 2. Fixed loop bounds | ✓ | No loops (constants only) |
- * | 3. No dynamic allocation | ✓ | All constants are compile-time |
- * | 4. Small functions | ✓ | Inline functions are 3-5 lines each |
- * | 5. Assertions (≥2 per function) | ✓ | 3 assertions per function (pre×2, post×1) |
- * | 6. Narrow scope | ✓ | File-scope only, no globals |
- * | 7. Check return values | ✓ | Inline functions don't fail |
- * | 8. Limited preprocessor | ✓ | C23 typed enums (zero macros) |
- * | 9. Pointer restrictions | ✓ | No pointers used |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | Only inline functions with sequential logic |
+ * | 2. Fixed loop bounds | [OK] | No loops (constants only) |
+ * | 3. No dynamic allocation | [OK] | All constants are compile-time |
+ * | 4. Small functions | [OK] | Inline functions are 3-5 lines each |
+ * | 5. Assertions (≥2 per function) | [OK] | 3 assertions per function (pre×2, post×1) |
+ * | 6. Narrow scope | [OK] | File-scope only, no globals |
+ * | 7. Check return values | [OK] | Inline functions don't fail |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums (zero macros) |
+ * | 9. Pointer restrictions | [OK] | No pointers used |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * **Rule 8 Compliance Detail**: This file demonstrates STAR project's mandatory
  * C23 typed enum standard. ALL integer constants use `typedef enum : type` syntax,
@@ -631,10 +631,10 @@ typedef enum : uint8_t {
  * Constants follow the pattern: `k_rx_p<port>_<pin>`
  *
  * Examples:
- * - `k_rx_p0_5` → Port 0, Pin 5 → P05
- * - `k_rx_pb_2` → Port B, Pin 2 → PB2
- * - `k_rx_pe_5` → Port E, Pin 5 → PE5
- * - `k_rx_pj_3` → Port J, Pin 3 → PJ3
+ * - `k_rx_p0_5` -> Port 0, Pin 5 -> P05
+ * - `k_rx_pb_2` -> Port B, Pin 2 -> PB2
+ * - `k_rx_pe_5` -> Port E, Pin 5 -> PE5
+ * - `k_rx_pj_3` -> Port J, Pin 3 -> PJ3
  *
  * This naming matches the Renesas RX72N Hardware Manual conventions.
  *
@@ -1093,8 +1093,8 @@ static_assert(k_rx_pj_3 == 0x1303, "PJ3 must be 0x1303");
  * @test test_rx_port_from_pin() Unit tests verify all 144 port/pin combinations
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 5**: ✓ 2 preconditions + 3 postconditions (5 assertions total)
- * - **Rule 4**: ✓ 5 lines of code (excluding comments/braces)
+ * - **Rule 5**: [OK] 2 preconditions + 3 postconditions (5 assertions total)
+ * - **Rule 4**: [OK] 5 lines of code (excluding comments/braces)
  */
 static inline uint8_t rx_port_from_pin(rx_port_pin_t pin)
 {
@@ -1255,8 +1255,8 @@ static inline uint8_t rx_port_from_pin(rx_port_pin_t pin)
  * @test test_rx_pin_from_pin() Unit tests verify all 144 port/pin combinations
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 5**: ✓ 2 preconditions + 3 postconditions (5 assertions total)
- * - **Rule 4**: ✓ 6 lines of code (excluding comments/braces)
+ * - **Rule 5**: [OK] 2 preconditions + 3 postconditions (5 assertions total)
+ * - **Rule 4**: [OK] 6 lines of code (excluding comments/braces)
  */
 static inline uint8_t rx_pin_from_pin(rx_port_pin_t pin)
 {

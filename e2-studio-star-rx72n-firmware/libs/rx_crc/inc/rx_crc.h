@@ -160,11 +160,11 @@
  *
  * | Function | Thread Safe? | Notes |
  * |----------|--------------|-------|
- * | `rx_crc_init()` | ❌ No | Call once during system init, single-threaded |
- * | `rx_crc32_ieee()` | ✅ Yes | Stateless, read-only lookup table |
- * | `rx_crc32_update()` | ✅ Yes | Stateless, pure function |
- * | `rx_crc8_maxim()` | ✅ Yes | Stateless, read-only lookup table |
- * | `rx_crc_deinit()` | ❌ No | Call once during shutdown, single-threaded |
+ * | `rx_crc_init()` | [FAIL] No | Call once during system init, single-threaded |
+ * | `rx_crc32_ieee()` | [PASS] Yes | Stateless, read-only lookup table |
+ * | `rx_crc32_update()` | [PASS] Yes | Stateless, pure function |
+ * | `rx_crc8_maxim()` | [PASS] Yes | Stateless, read-only lookup table |
+ * | `rx_crc_deinit()` | [FAIL] No | Call once during shutdown, single-threaded |
  *
  * **Note:** CRC computation functions are thread-safe because they use read-only
  * lookup tables and have no shared mutable state.
@@ -305,16 +305,16 @@
  *
  * | Rule | Status | Implementation Notes |
  * |------|--------|---------------------|
- * | 1. Simple control flow | ✅ Pass | No goto/setjmp/recursion, simple loops only |
- * | 2. Fixed loop bounds | ✅ Pass | All loops bounded by data length (caller-controlled) |
- * | 3. No dynamic memory | ✅ Pass | Lookup tables statically allocated, no malloc |
- * | 4. Short functions | ✅ Pass | All functions <40 lines, single responsibility |
- * | 5. Assertions | ✅ Pass | NULL pointer checks, parameter validation |
- * | 6. Small scope | ✅ Pass | Variables declared near use, minimal scope |
- * | 7. Check returns | ✅ Pass | rx_crc_init() return checked, CRC functions return value directly |
- * | 8. Limited preprocessor | ✅ Pass | Only compile-time HW/SW selection, no magic numbers |
- * | 9. Restrict pointers | ✅ Pass | No function pointers, simple data pointers only |
- * | 10. Compiler warnings | ✅ Pass | -Wall -Wextra -Werror, zero warnings |
+ * | 1. Simple control flow | [PASS] Pass | No goto/setjmp/recursion, simple loops only |
+ * | 2. Fixed loop bounds | [PASS] Pass | All loops bounded by data length (caller-controlled) |
+ * | 3. No dynamic memory | [PASS] Pass | Lookup tables statically allocated, no malloc |
+ * | 4. Short functions | [PASS] Pass | All functions <40 lines, single responsibility |
+ * | 5. Assertions | [PASS] Pass | NULL pointer checks, parameter validation |
+ * | 6. Small scope | [PASS] Pass | Variables declared near use, minimal scope |
+ * | 7. Check returns | [PASS] Pass | rx_crc_init() return checked, CRC functions return value directly |
+ * | 8. Limited preprocessor | [PASS] Pass | Only compile-time HW/SW selection, no magic numbers |
+ * | 9. Restrict pointers | [PASS] Pass | No function pointers, simple data pointers only |
+ * | 10. Compiler warnings | [PASS] Pass | -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *
@@ -886,13 +886,13 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
  *
  * @par Example - WRONG Usage (Common Mistake):
  * @code{.c}
- * // ❌ WRONG: Don't start incremental CRC with rx_crc32_ieee(nullptr, 0)
+ * // [FAIL] WRONG: Don't start incremental CRC with rx_crc32_ieee(nullptr, 0)
  * uint32_t crc = rx_crc32_ieee(nullptr, 0);  // Returns 0 (init XOR final)
- * crc = rx_crc32_update(crc, buf1, len1);  // ❌ Incorrect CRC!
+ * crc = rx_crc32_update(crc, buf1, len1);  // [FAIL] Incorrect CRC!
  *
- * // ✅ CORRECT: Start with rx_crc32_ieee() on first buffer
+ * // [PASS] CORRECT: Start with rx_crc32_ieee() on first buffer
  * uint32_t crc = rx_crc32_ieee(buf1, len1);
- * crc = rx_crc32_update(crc, buf2, len2);  // ✅ Correct
+ * crc = rx_crc32_update(crc, buf2, len2);  // [PASS] Correct
  *
  * // OR: Manually initialize if you need empty start
  * uint32_t crc = 0xFFFFFFFF;  // CRC-32 init value (before final XOR)

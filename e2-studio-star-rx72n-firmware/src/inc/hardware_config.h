@@ -607,7 +607,7 @@ typedef enum : uint8_t {
  *
  * | Signal | Pin | Pkg Pin | Direction |
  * |--------|-----|---------|-----------|
- * | HOST_IRQ | P67 | 98 | RX72N → RPi5 (output, active-low) |
+ * | HOST_IRQ | P67 | 98 | RX72N -> RPi5 (output, active-low) |
  *
  * @see rx_host_irq.h GPIO output driver
  * @{

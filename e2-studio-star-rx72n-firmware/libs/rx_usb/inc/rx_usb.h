@@ -168,11 +168,11 @@
  *
  * | Function | Thread Safe? | Notes |
  * |----------|--------------|-------|
- * | `rx_usb_init()` | ❌ No | Call once during init, single-threaded |
- * | `rx_usb_write()` | ❌ No | Use external mutex if multiple threads write to same port |
- * | `rx_usb_read()` | ❌ No | Use external mutex if multiple threads read from same port |
- * | `rx_usb_is_configured()` | ✅ Yes | Read-only hardware state check |
- * | `rx_usb_get_state()` | ✅ Yes | Read-only hardware state check |
+ * | `rx_usb_init()` | [FAIL] No | Call once during init, single-threaded |
+ * | `rx_usb_write()` | [FAIL] No | Use external mutex if multiple threads write to same port |
+ * | `rx_usb_read()` | [FAIL] No | Use external mutex if multiple threads read from same port |
+ * | `rx_usb_is_configured()` | [PASS] Yes | Read-only hardware state check |
+ * | `rx_usb_get_state()` | [PASS] Yes | Read-only hardware state check |
  * | `rx_usb_isr_handler()` | ISR | Called from interrupt context, do not call directly |
  *
  * **Recommended Pattern**: Dedicate one ThreadX task per port for read/write operations.
@@ -330,16 +330,16 @@
  *
  * | Rule | Status | Implementation Notes |
  * |------|--------|---------------------|
- * | 1. Simple control flow | ✅ Pass | No goto/setjmp/recursion, structured control flow only |
- * | 2. Fixed loop bounds | ✅ Pass | All loops bounded by constants (k_usb_max_buffer_size) |
- * | 3. No dynamic memory | ✅ Pass | Zero malloc/free, all buffers statically allocated |
- * | 4. Short functions | ✅ Pass | All <60 lines, single responsibility |
- * | 5. Assertions | ✅ Pass | Minimum 2 checks per function (NULL + state validation) |
- * | 6. Small scope | ✅ Pass | Variables declared near use, static for module data |
- * | 7. Check returns | ✅ Pass | All error codes checked or explicitly cast to (void) |
- * | 8. Limited preprocessor | ✅ Pass | C23 typed enums for constants, minimal macros |
- * | 9. Restrict pointers | ⚠️ Deviation | Function pointers for callbacks (DIP, event-driven) |
- * | 10. Compiler warnings | ✅ Pass | -Wall -Wextra -Werror, zero warnings |
+ * | 1. Simple control flow | [PASS] Pass | No goto/setjmp/recursion, structured control flow only |
+ * | 2. Fixed loop bounds | [PASS] Pass | All loops bounded by constants (k_usb_max_buffer_size) |
+ * | 3. No dynamic memory | [PASS] Pass | Zero malloc/free, all buffers statically allocated |
+ * | 4. Short functions | [PASS] Pass | All <60 lines, single responsibility |
+ * | 5. Assertions | [PASS] Pass | Minimum 2 checks per function (NULL + state validation) |
+ * | 6. Small scope | [PASS] Pass | Variables declared near use, static for module data |
+ * | 7. Check returns | [PASS] Pass | All error codes checked or explicitly cast to (void) |
+ * | 8. Limited preprocessor | [PASS] Pass | C23 typed enums for constants, minimal macros |
+ * | 9. Restrict pointers | [WARN] Deviation | Function pointers for callbacks (DIP, event-driven) |
+ * | 10. Compiler warnings | [PASS] Pass | -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *
@@ -403,11 +403,11 @@ extern "C" {
  *
  * **Host Device Mapping** (Linux):
  * ```
- * RX72N Port    →  Host Device      Typical Usage
+ * RX72N Port    ->  Host Device      Typical Usage
  * ═══════════════════════════════════════════════════════════════
- * k_usb_port_proto   →  /dev/ttyACM0   nanopb protocol, motor commands
- * k_usb_port_decoded →  /dev/ttyACM1   ASCII frame dumps, debugging
- * k_usb_port_log     →  /dev/ttyACM2   Log output, diagnostics
+ * k_usb_port_proto   ->  /dev/ttyACM0   nanopb protocol, motor commands
+ * k_usb_port_decoded ->  /dev/ttyACM1   ASCII frame dumps, debugging
+ * k_usb_port_log     ->  /dev/ttyACM2   Log output, diagnostics
  * ```
  *
  * **Port Assignment Example:**
@@ -513,7 +513,7 @@ typedef enum : uint8_t {
    * **Value**: 3 (limited by RX72N USB0 pipe count)
    * **Hardware constraint**: USB0 has 9 pipes total (pipe 0 = control)
    * **CDC requirement**: 3 pipes per CDC function (1 interrupt + 2 bulk)
-   * **Calculation**: (9 pipes - 1 control) / 3 pipes per CDC = 2.67 → 3 max
+   * **Calculation**: (9 pipes - 1 control) / 3 pipes per CDC = 2.67 -> 3 max
    * **Future**: Cannot add more ports without major architectural change
    * @par Value: 3
    * @par Rationale: USB0 pipe limit (see RX72N manual section 32.2.4)
@@ -544,13 +544,13 @@ typedef enum : uint8_t {
  *
  * **Event Timing:**
  * ```
- * Cable Plug → Attached (immediate)
- *           → Reset (20-100ms)
- *           → Configured (100-200ms)
- *           → Data RX/TX (ongoing)
- *           → Suspended (host idle >3ms)
- *           → Resumed (host activity)
- * Cable Unplug → Detached (immediate)
+ * Cable Plug -> Attached (immediate)
+ *           -> Reset (20-100ms)
+ *           -> Configured (100-200ms)
+ *           -> Data RX/TX (ongoing)
+ *           -> Suspended (host idle >3ms)
+ *           -> Resumed (host activity)
+ * Cable Unplug -> Detached (immediate)
  * ```
  *
  * **Callback Constraints:**
@@ -598,7 +598,7 @@ typedef enum : uint8_t {
    * @details
    * **Trigger**: VBUS voltage rises above threshold (~4.4V)
    * **Hardware**: PA6 (USB_VBUS) pin detects voltage
-   * **State change**: Detached → Attached
+   * **State change**: Detached -> Attached
    * **Timing**: Immediate (<1ms after cable plug)
    * **Typical action**: Log event, prepare for enumeration
    * **Note**: Enumeration starts automatically after this event
@@ -609,7 +609,7 @@ typedef enum : uint8_t {
    * @brief USB cable detached (VBUS lost)
    * @details
    * **Trigger**: VBUS voltage drops below threshold (~4.0V)
-   * **State change**: Any state → Detached
+   * **State change**: Any state -> Detached
    * **Timing**: Immediate (<1ms after cable unplug)
    * **Typical action**: Abort transfers, reset state, log event
    * **Critical**: All ports become unusable, rx_usb_write() will fail
@@ -620,7 +620,7 @@ typedef enum : uint8_t {
    * @brief USB bus reset received from host
    * @details
    * **Trigger**: Host drives D+/D- to SE0 (both low) for >10ms
-   * **State change**: Any state → Default (address 0)
+   * **State change**: Any state -> Default (address 0)
    * **Timing**: 10-50ms after cable attach, or at any time
    * **Typical action**: Log event, wait for re-enumeration
    * **Note**: Normal during initial enumeration and host driver reload
@@ -631,7 +631,7 @@ typedef enum : uint8_t {
    * @brief Port configured by host (ready for data transfer)
    * @details
    * **Trigger**: Host sends SET_CONFIGURATION request (successful)
-   * **State change**: Addressed → Configured
+   * **State change**: Addressed -> Configured
    * **Timing**: 100-200ms after cable attach (end of enumeration)
    * **Typical action**: Signal tasks, start data transfers
    * **Critical**: Only after this event can rx_usb_write/read succeed
@@ -650,7 +650,7 @@ typedef enum : uint8_t {
    * @brief Host suspended the device (USB idle >3ms)
    * @details
    * **Trigger**: No USB activity (SOF packets) for 3ms
-   * **State change**: Configured → Suspended
+   * **State change**: Configured -> Suspended
    * **Timing**: 3-10ms after host goes idle
    * **Typical action**: Enter low-power mode, stop transfers
    * **USB spec requirement**: Device must reduce current to <2.5mA
@@ -662,7 +662,7 @@ typedef enum : uint8_t {
    * @brief Host resumed the device (USB activity detected)
    * @details
    * **Trigger**: USB activity detected (SOF packets resume)
-   * **State change**: Suspended → Configured
+   * **State change**: Suspended -> Configured
    * **Timing**: <10ms after host wakes
    * **Typical action**: Exit low-power mode, resume transfers
    */
@@ -717,13 +717,13 @@ typedef enum : uint8_t {
  *
  * **State Machine** (see file header @startuml diagram for visual):
  * ```
- * Detached → Attached → Powered → Default → Addressed → Configured
+ * Detached -> Attached -> Powered -> Default -> Addressed -> Configured
  *                                     ↑          ↓            ↓
  *                                     ←── Reset ──           ↓
  *                                                             ↓
  *                                                        Suspended
  *                                                             ↓
- *                                                        (Resume) → Configured
+ *                                                        (Resume) -> Configured
  * ```
  *
  * **State Transition Table:**
@@ -774,7 +774,7 @@ typedef enum : uint8_t {
    * - Minimal power consumption
    * **Valid operations**: rx_usb_init(), rx_usb_deinit()
    * **Invalid operations**: rx_usb_write(), rx_usb_read() (return k_rx_err_invalid_state)
-   * **Exit**: VBUS detected → Attached
+   * **Exit**: VBUS detected -> Attached
    */
   k_usb_state_detached = 0,
 
@@ -787,7 +787,7 @@ typedef enum : uint8_t {
    * - Host detects device connection
    * - Waiting for host to initiate bus reset
    * **Duration**: Typically 10-50ms
-   * **Exit**: Auto-transition → Powered, or VBUS lost → Detached
+   * **Exit**: Auto-transition -> Powered, or VBUS lost -> Detached
    */
   k_usb_state_attached = 1,
 
@@ -800,7 +800,7 @@ typedef enum : uint8_t {
    * - Host preparing to enumerate device
    * - Waiting for USB bus reset
    * **Duration**: Typically <10ms
-   * **Exit**: Bus reset → Default, or VBUS lost → Detached
+   * **Exit**: Bus reset -> Default, or VBUS lost -> Detached
    */
   k_usb_state_powered = 2,
 
@@ -814,7 +814,7 @@ typedef enum : uint8_t {
    * - Host reads device/configuration descriptors
    * - Host assigns unique address via SET_ADDRESS
    * **Duration**: 50-100ms (descriptor enumeration)
-   * **Exit**: SET_ADDRESS → Addressed, or bus reset → Default (restart)
+   * **Exit**: SET_ADDRESS -> Addressed, or bus reset -> Default (restart)
    */
   k_usb_state_default = 3,
 
@@ -828,7 +828,7 @@ typedef enum : uint8_t {
    * - Host continues reading descriptors
    * - Host selects configuration via SET_CONFIGURATION
    * **Duration**: 20-50ms
-   * **Exit**: SET_CONFIGURATION → Configured, or bus reset → Default
+   * **Exit**: SET_CONFIGURATION -> Configured, or bus reset -> Default
    */
   k_usb_state_addressed = 4,
 
@@ -842,7 +842,7 @@ typedef enum : uint8_t {
    * - rx_usb_write/read operations ALLOWED
    * - Normal operation state
    * **Duration**: Indefinite (until suspend, reset, or detach)
-   * **Exit**: Suspend → Suspended, bus reset → Default, VBUS lost → Detached
+   * **Exit**: Suspend -> Suspended, bus reset -> Default, VBUS lost -> Detached
    * **CRITICAL**: This is the ONLY state where data transfer works
    * @par Example:
    * @code{.c}
@@ -864,7 +864,7 @@ typedef enum : uint8_t {
    * - rx_usb_write/read operations BLOCKED
    * - Waiting for resume signal from host
    * **Duration**: Variable (until host resumes or cable unplug)
-   * **Exit**: Resume signal → Configured, VBUS lost → Detached
+   * **Exit**: Resume signal -> Configured, VBUS lost -> Detached
    * **Note**: Rare in normal operation, typically only when host computer sleeps
    */
   k_usb_state_suspended = 6,

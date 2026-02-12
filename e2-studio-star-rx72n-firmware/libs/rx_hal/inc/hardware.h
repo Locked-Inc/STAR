@@ -190,10 +190,10 @@
  * | Signal | Pin | Peripheral | Purpose |
  * |--------|-----|------------|---------|
  * | SPI0_CIPO | P30 | RSPI0 | RPi5 ← RX72N (peripheral mode) |
- * | SPI0_COPI | P31 | RSPI0 | RPi5 → RX72N |
+ * | SPI0_COPI | P31 | RSPI0 | RPi5 -> RX72N |
  * | SPI0_CLK | P32 | RSPI0 | RPi5 clock |
  * | SPI0_CS | P33 | GPIO | RPi5 chip select |
- * | SPI1_CIPO | PC5 | RSPI1 | DRV8243 → RX72N (controller mode) |
+ * | SPI1_CIPO | PC5 | RSPI1 | DRV8243 -> RX72N (controller mode) |
  * | SPI1_COPI | PC6 | RSPI1 | DRV8243 ← RX72N |
  * | SPI1_CLK | PC7 | RSPI1 | DRV8243 clock |
  * | DRV_CS* | PC4,PC3,PC2,PC1 | GPIO | Motor driver chip selects |
@@ -230,18 +230,18 @@
  * @par Module Dependencies:
  * ```
  * hardware.h
- *   ├─→ rx_err.h (error codes)
- *   ├─→ rx_check.h (validation macros)
- *   ├─→ rx_log.h (logging)
- *   ├─→ rx_port_constants.h (port/pin enums)
- *   ├─→ rx_bus_types.h (ADC resolution enums)
- *   └─→ [internal] rx72n_regs.h (register definitions)
+ *   ├─-> rx_err.h (error codes)
+ *   ├─-> rx_check.h (validation macros)
+ *   ├─-> rx_log.h (logging)
+ *   ├─-> rx_port_constants.h (port/pin enums)
+ *   ├─-> rx_bus_types.h (ADC resolution enums)
+ *   └─-> [internal] rx72n_regs.h (register definitions)
  *
  * Used by:
- *   ├─→ Motor control (rx_motor_control.c)
- *   ├─→ USB communication (rx_usb.c)
- *   ├─→ Protocol handling (rx_comm_manager.c)
- *   └─→ Application tasks (app_main_task.c)
+ *   ├─-> Motor control (rx_motor_control.c)
+ *   ├─-> USB communication (rx_usb.c)
+ *   ├─-> Protocol handling (rx_comm_manager.c)
+ *   └─-> Application tasks (app_main_task.c)
  * ```
  *
  * @author STAR Team
@@ -790,8 +790,8 @@ typedef rx_adc_resolution_t adc_resolution_t;
  * | **SPI** | Simple typed enums | Mode, channel, frequency are distinct types |
  * | **UART** | Simple typed enums | Channel and baudrate are distinct types |
  *
- * ADC: `adc_read(k_adc_unit_0, k_adc_channel_1, &value)` → Different types prevent swaps
- * I2C: `riic_write({.value = 0}, {.value = 0x48}, data, len)` → Struct wrappers prevent swaps
+ * ADC: `adc_read(k_adc_unit_0, k_adc_channel_1, &value)` -> Different types prevent swaps
+ * I2C: `riic_write({.value = 0}, {.value = 0x48}, data, len)` -> Struct wrappers prevent swaps
  *
  * ## RX72N RIIC Hardware
  * - **Channels Available**: 3 (RIIC0, RIIC1, RIIC2)

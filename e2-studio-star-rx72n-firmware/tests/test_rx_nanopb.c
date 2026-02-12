@@ -33,7 +33,7 @@
  * | Initialization | 2 | Module init, duplicate init detection |
  * | Velocity Request Encode | 8 | nullptr checks, buffer sizing, edge cases |
  * | Velocity Request Decode | 6 | Invalid data, malformed protobuf, oversized buffers |
- * | Velocity Request Round-Trip | 3 | Encode → decode → verify equality |
+ * | Velocity Request Round-Trip | 3 | Encode -> decode -> verify equality |
  * | Velocity Response Encode | 6 | Header population, status codes, error handling |
  * | Emergency Stop Request Decode | 6 | E-stop message parsing, error injection |
  * | Emergency Stop Response Encode | 8 | E-stop engaged/disengaged states, status codes |
@@ -47,44 +47,44 @@
  * **Protocol Buffers Message Types Tested:**
  * | Message Type | Direction | Fields | Purpose |
  * |--------------|-----------|--------|---------|
- * | star.v1.SetVelocityRequest | RPi5 → RX72N | VelocityCommand (optional) | Motor velocity commands (4-motor differential drive) |
- * | star.v1.SetVelocityResponse | RX72N → RPi5 | ResponseHeader (optional) | Command acknowledgment with status/latency |
- * | star.v1.EmergencyStopRequest | RPi5 → RX72N | engage (bool) | Emergency stop command |
- * | star.v1.EmergencyStopResponse | RX72N → RPi5 | ResponseHeader + estop_engaged (bool) | E-stop state confirmation |
- * | star.v1.TelemetryData | RX72N → RPi5 | 15+ fields (battery, GPS, IMU, etc.) | Sensor/motor status telemetry |
+ * | star.v1.SetVelocityRequest | RPi5 -> RX72N | VelocityCommand (optional) | Motor velocity commands (4-motor differential drive) |
+ * | star.v1.SetVelocityResponse | RX72N -> RPi5 | ResponseHeader (optional) | Command acknowledgment with status/latency |
+ * | star.v1.EmergencyStopRequest | RPi5 -> RX72N | engage (bool) | Emergency stop command |
+ * | star.v1.EmergencyStopResponse | RX72N -> RPi5 | ResponseHeader + estop_engaged (bool) | E-stop state confirmation |
+ * | star.v1.TelemetryData | RX72N -> RPi5 | 15+ fields (battery, GPS, IMU, etc.) | Sensor/motor status telemetry |
  *
  * **Test Methodology:**
  * @par 1. Initialization Tests:
  * @code
- * 1. Call rx_nanopb_init() → Assert returns k_rx_ok
- * 2. Call rx_nanopb_init() again → Assert returns k_rx_err_invalid_state (duplicate init)
+ * 1. Call rx_nanopb_init() -> Assert returns k_rx_ok
+ * 2. Call rx_nanopb_init() again -> Assert returns k_rx_err_invalid_state (duplicate init)
  * 3. Reset state with rx_nanopb_test_reset_state()
  * 4. Verify encode/decode fail with k_rx_err_not_initialized before init
  * @endcode
  *
  * @par 2. Encode Tests (Validation):
  * @code
- * 1. nullptr pointer checks: msg=nullptr, buffer=nullptr, len=nullptr → k_rx_err_invalid_arg
- * 2. Buffer size checks: 1-byte buffer → k_rx_err_invalid_size
- * 3. Empty message: All fields zero → Encodes to 0 bytes (protobuf default optimization)
- * 4. Valid message: Populate fields → len > minimum expected size
+ * 1. nullptr pointer checks: msg=nullptr, buffer=nullptr, len=nullptr -> k_rx_err_invalid_arg
+ * 2. Buffer size checks: 1-byte buffer -> k_rx_err_invalid_size
+ * 3. Empty message: All fields zero -> Encodes to 0 bytes (protobuf default optimization)
+ * 4. Valid message: Populate fields -> len > minimum expected size
  * 5. Verify encoded length stays within s_nanopb_buffer_size (512 bytes)
  * @endcode
  *
  * @par 3. Decode Tests (Error Injection):
  * @code
- * 1. nullptr pointer checks: buffer=nullptr, msg=nullptr → k_rx_err_invalid_arg
- * 2. Empty buffer: len=0 → k_rx_err_invalid_arg
- * 3. Invalid protobuf data: 0xFF 0xFF 0xFF... → k_rx_err_protocol_error
- * 4. Oversized buffer: len > s_nanopb_buffer_size → k_rx_err_invalid_arg
+ * 1. nullptr pointer checks: buffer=nullptr, msg=nullptr -> k_rx_err_invalid_arg
+ * 2. Empty buffer: len=0 -> k_rx_err_invalid_arg
+ * 3. Invalid protobuf data: 0xFF 0xFF 0xFF... -> k_rx_err_protocol_error
+ * 4. Oversized buffer: len > s_nanopb_buffer_size -> k_rx_err_invalid_arg
  * 5. Verify protobuf wire format violations detected
  * @endcode
  *
  * @par 4. Round-Trip Tests (Lossless Encoding):
  * @code
  * 1. Create original message with known field values
- * 2. Encode to buffer → len_out
- * 3. Decode from buffer → decoded message
+ * 2. Encode to buffer -> len_out
+ * 3. Decode from buffer -> decoded message
  * 4. Assert: original.field == decoded.field for all fields
  * 5. Special cases: zero velocity, negative velocity, max velocity, max sequence
  * 6. Float comparison: TEST_ASSERT_FLOAT_WITHIN(0.0001, original, decoded)
@@ -165,7 +165,7 @@
  *
  * @par Protobuf Wire Format:
  * - **Varint encoding:** uint32/int32 use 1-5 bytes (smaller values = fewer bytes)
- * - **Default values:** Fields with default values (0, false, "") NOT encoded → 0-byte messages
+ * - **Default values:** Fields with default values (0, false, "") NOT encoded -> 0-byte messages
  * - **Optional fields:** has_<field> flag determines if field present in wire format
  * - **Little-endian:** Fixed32/64 types use little-endian byte order
  * - **No padding:** No alignment padding between fields
@@ -188,7 +188,7 @@
  * - **Sequence numbers:** 0, 42 (arbitrary), UINT32_MAX (wrap test)
  *
  * @par Message Factories:
- * - **rx_nanopb_create_velocity_command():** Converts rx_velocity_command_params_t → star_v1_VelocityCommand
+ * - **rx_nanopb_create_velocity_command():** Converts rx_velocity_command_params_t -> star_v1_VelocityCommand
  * - **rx_nanopb_create_response_header():** Creates star_v1_ResponseHeader with status + request_id
  * - **Manual initialization:** star_v1_TelemetryData_init_zero macro for zero-init
  *
@@ -228,16 +228,16 @@
  * - Rationale: Helpers reduce boilerplate, ensure zero-initialization
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1 (Control Flow):** ✓ All test functions use simple sequential flow
- * - **Rule 2 (Loop Bounds):** ✓ All loops in nanopb library have message field count bounds
- * - **Rule 3 (Dynamic Memory):** ✓ Zero heap allocation (nanopb PB_BUFFER_ONLY, static test buffers)
- * - **Rule 4 (Function Size):** ✓ Test functions <60 lines, setUp/tearDown <10 lines
- * - **Rule 5 (Assertions):** ✓ Every test has minimum 1 assertion, most have 2-6
- * - **Rule 6 (Scope):** ✓ Test variables declared in setUp() or test function scope
- * - **Rule 7 (Return Checking):** ✓ All rx_nanopb_* returns validated with TEST_ASSERT_EQUAL
- * - **Rule 8 (Preprocessor):** ✓ Only Unity macros (RUN_TEST, TEST_ASSERT_*) and nanopb _init_zero
- * - **Rule 9 (Pointers):** ✓ Single-level dereferencing only (msg->field, no msg->sub->field in tests)
- * - **Rule 10 (Warnings):** ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1 (Control Flow):** [OK] All test functions use simple sequential flow
+ * - **Rule 2 (Loop Bounds):** [OK] All loops in nanopb library have message field count bounds
+ * - **Rule 3 (Dynamic Memory):** [OK] Zero heap allocation (nanopb PB_BUFFER_ONLY, static test buffers)
+ * - **Rule 4 (Function Size):** [OK] Test functions <60 lines, setUp/tearDown <10 lines
+ * - **Rule 5 (Assertions):** [OK] Every test has minimum 1 assertion, most have 2-6
+ * - **Rule 6 (Scope):** [OK] Test variables declared in setUp() or test function scope
+ * - **Rule 7 (Return Checking):** [OK] All rx_nanopb_* returns validated with TEST_ASSERT_EQUAL
+ * - **Rule 8 (Preprocessor):** [OK] Only Unity macros (RUN_TEST, TEST_ASSERT_*) and nanopb _init_zero
+ * - **Rule 9 (Pointers):** [OK] Single-level dereferencing only (msg->field, no msg->sub->field in tests)
+ * - **Rule 10 (Warnings):** [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles Application:
  * - **Single Responsibility:** Each test verifies ONE behavior (e.g., nullptr check, buffer size, round-trip)
@@ -282,7 +282,7 @@
 /**
  * @brief Maximum sequence number for wrap-around testing
  * @details
- * Used to verify sequence number wrap from UINT32_MAX → 0 in round-trip tests.
+ * Used to verify sequence number wrap from UINT32_MAX -> 0 in round-trip tests.
  * Protocol allows sequence to wrap without error.
  */
 static const uint32_t s_test_sequence_max = UINT32_MAX;
@@ -384,7 +384,7 @@ static const double s_test_accel_z_mps2          = 9.81;      /**< IMU Z-axis ac
  * @brief Floating-point comparison tolerance for round-trip tests
  * @details
  * Tolerance accounts for:
- * - Protobuf wire format precision (double → int32 varint → double)
+ * - Protobuf wire format precision (double -> int32 varint -> double)
  * - Floating-point rounding in nanopb encoder/decoder
  * - No precision loss expected for values in test range (-2.0 to +2.0 m/s)
  *
@@ -507,7 +507,7 @@ static uint8_t s_buffer[k_test_buffer_size];
  * @post s_buffer[] contains all zeros
  * @post rx_nanopb module initialized (s_initialized == true)
  *
- * @note Unity requires setUp() with exact signature (void → void)
+ * @note Unity requires setUp() with exact signature (void -> void)
  * @note Runs 89 times (once per test function)
  *
  * @see tearDown() Cleanup after each test
@@ -536,7 +536,7 @@ void setUp(void)
  * @pre Called automatically by Unity framework after each test completes
  * @post No state changes
  *
- * @note Unity requires tearDown() with exact signature (void → void)
+ * @note Unity requires tearDown() with exact signature (void -> void)
  * @note If future tests need cleanup (e.g., closing files), add here
  */
 void tearDown(void)
@@ -611,8 +611,8 @@ void test_nanopb_init_success(void)
  *
  * **Test Sequence:**
  * 1. Reset module state to UNINITIALIZED
- * 2. Call rx_nanopb_init() → Returns k_rx_ok
- * 3. Call rx_nanopb_init() again → Returns k_rx_err_invalid_state
+ * 2. Call rx_nanopb_init() -> Returns k_rx_ok
+ * 3. Call rx_nanopb_init() again -> Returns k_rx_err_invalid_state
  * 4. Assert: First call succeeds, second call fails
  *
  * **Rationale:**
@@ -659,7 +659,7 @@ void test_nanopb_init_detects_duplicate_call(void)
  * }
  *
  * message VelocityCommand {
- *   double front_left_velocity_mps = 1;   // 8 bytes (double → varint in nanopb)
+ *   double front_left_velocity_mps = 1;   // 8 bytes (double -> varint in nanopb)
  *   double front_right_velocity_mps = 2;
  *   double back_left_velocity_mps = 3;
  *   double back_right_velocity_mps = 4;
@@ -748,7 +748,7 @@ void test_encode_velocity_request_small_buffer(void)
  * **Protobuf Wire Format Rule:**
  * Fields with default values (0, false, empty string) are NOT encoded.
  * Since star_v1_SetVelocityRequest_init_zero has has_command=false (default),
- * no fields are present in wire format → 0-byte message.
+ * no fields are present in wire format -> 0-byte message.
  *
  * **Test Sequence:**
  * 1. Initialize message with _init_zero macro (all fields default)
@@ -1062,7 +1062,7 @@ void test_decode_velocity_request_oversized_buffer(void)
 
 /**
  * @defgroup nanopb_test_velocity_req_roundtrip SetVelocityRequest Round-Trip Tests
- * @brief Tests for lossless encode → decode transformation
+ * @brief Tests for lossless encode -> decode transformation
  * @details
  * Validates that encode followed by decode preserves all message field values.
  * These tests verify protobuf serialization is lossless for the value ranges
@@ -1071,8 +1071,8 @@ void test_decode_velocity_request_oversized_buffer(void)
  * **Round-Trip Test Pattern:**
  * @code
  * 1. Create original message with known field values
- * 2. Encode: original → buffer (bytes)
- * 3. Decode: buffer (bytes) → decoded message
+ * 2. Encode: original -> buffer (bytes)
+ * 3. Decode: buffer (bytes) -> decoded message
  * 4. Assert: decoded.field == original.field for ALL fields
  * 5. Float comparison: FLOAT_WITHIN(0.0001, original, decoded)
  * @endcode
@@ -1093,7 +1093,7 @@ void test_decode_velocity_request_oversized_buffer(void)
  */
 
 /**
- * @brief Test encode → decode round-trip for velocity request with 4-motor command
+ * @brief Test encode -> decode round-trip for velocity request with 4-motor command
  *
  * @details
  * Primary round-trip validation for typical motor velocity command.
@@ -1108,7 +1108,7 @@ void test_decode_velocity_request_oversized_buffer(void)
  *
  * **Test Sequence:**
  * 1. Create original message with has_command=true and all fields populated
- * 2. Encode to s_buffer → len_out
+ * 2. Encode to s_buffer -> len_out
  * 3. Assert: Encode succeeded (k_rx_ok), len > 0
  * 4. Decode from s_buffer using same len
  * 5. Assert: Decode succeeded (k_rx_ok)
@@ -1153,7 +1153,7 @@ void test_velocity_request_roundtrip_with_command(void)
 }
 
 /**
- * @brief Test encode → decode round-trip preserves zero velocities (stop command)
+ * @brief Test encode -> decode round-trip preserves zero velocities (stop command)
  * @details Edge case: All motors stopped. Validates 0.0 values round-trip correctly.
  */
 void test_velocity_request_roundtrip_zero_velocity(void)
@@ -1184,7 +1184,7 @@ void test_velocity_request_roundtrip_zero_velocity(void)
 }
 
 /**
- * @brief Test encode → decode round-trip with negative velocities (reverse drive)
+ * @brief Test encode -> decode round-trip with negative velocities (reverse drive)
  * @details Edge case: Reverse motion. Validates negative double values round-trip correctly.
  */
 void test_velocity_request_roundtrip_negative_velocity(void)
@@ -1222,7 +1222,7 @@ void test_velocity_request_roundtrip_negative_velocity(void)
 
 /**
  * @defgroup nanopb_test_velocity_resp_encode SetVelocityResponse Encoding Tests
- * @brief Tests for encoding SetVelocityResponse messages (RX72N → RPi5 acknowledgments)
+ * @brief Tests for encoding SetVelocityResponse messages (RX72N -> RPi5 acknowledgments)
  * @details
  * Validates rx_nanopb_encode_velocity_response() with ResponseHeader population.
  * Response messages contain status codes, latency measurements, and request IDs.
@@ -1356,7 +1356,7 @@ void test_encode_velocity_response_not_initialized(void)
 
 /**
  * @defgroup nanopb_test_estop_req_decode EmergencyStopRequest Decoding Tests
- * @brief Tests for decoding emergency stop commands (RPi5 → RX72N)
+ * @brief Tests for decoding emergency stop commands (RPi5 -> RX72N)
  * @details
  * Validates rx_nanopb_decode_estop_request() for safety-critical e-stop protocol.
  * Emergency stop takes priority over all other commands.
@@ -1453,7 +1453,7 @@ void test_decode_estop_request_oversized_buffer(void)
 
 /**
  * @defgroup nanopb_test_pid_gains_req_decode SetPIDGainsRequest Decoding Tests
- * @brief Tests for decoding PID controller gains update commands (RPi5 → RX72N)
+ * @brief Tests for decoding PID controller gains update commands (RPi5 -> RX72N)
  * @details
  * Validates rx_nanopb_decode_pid_gains_request() with various error conditions
  * and valid PID configuration data.
@@ -1652,7 +1652,7 @@ void test_pid_gains_request_round_trip(void)
 
 /**
  * @defgroup nanopb_test_estop_resp_encode EmergencyStopResponse Encoding Tests
- * @brief Tests for encoding emergency stop acknowledgments (RX72N → RPi5)
+ * @brief Tests for encoding emergency stop acknowledgments (RX72N -> RPi5)
  * @details
  * Validates rx_nanopb_encode_estop_response() with e-stop engagement state.
  *
@@ -1783,7 +1783,7 @@ void test_encode_estop_response_not_initialized(void)
 
 /**
  * @defgroup nanopb_test_telemetry_encode TelemetryData Encoding Tests
- * @brief Tests for encoding telemetry sensor/motor data (RX72N → RPi5)
+ * @brief Tests for encoding telemetry sensor/motor data (RX72N -> RPi5)
  * @details
  * Validates rx_nanopb_encode_telemetry() with 15+ telemetry fields including
  * battery, GPS, IMU, temperature, CPU usage, motor load, and WiFi signal strength.

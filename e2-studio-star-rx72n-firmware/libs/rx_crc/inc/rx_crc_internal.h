@@ -112,26 +112,26 @@
  *
  * | Function | Thread Safe | Notes |
  * |----------|-------------|-------|
- * | rx_crc_init() | ❌ No | Call during single-threaded init |
- * | rx_crc_deinit() | ❌ No | Call during single-threaded shutdown |
- * | rx_crc32_ieee_impl() | ⚠️ Conditional | HW: No (shared peripheral), SW: Yes |
- * | rx_crc32_update_impl() | ✅ Yes | Stateless software implementation |
- * | rx_crc32_update_sw() | ✅ Yes | Stateless, read-only tables |
+ * | rx_crc_init() | [FAIL] No | Call during single-threaded init |
+ * | rx_crc_deinit() | [FAIL] No | Call during single-threaded shutdown |
+ * | rx_crc32_ieee_impl() | [WARN] Conditional | HW: No (shared peripheral), SW: Yes |
+ * | rx_crc32_update_impl() | [PASS] Yes | Stateless software implementation |
+ * | rx_crc32_update_sw() | [PASS] Yes | Stateless, read-only tables |
  *
  * ## NASA Power of 10 Compliance
  *
  * | Rule | Status | Notes |
  * |------|--------|-------|
- * | 1. Simple control flow | ✅ Pass | No goto/setjmp/recursion |
- * | 2. Fixed loop bounds | ✅ Pass | Loops bounded by k_crc_len_max |
- * | 3. No dynamic memory | ✅ Pass | Static lookup tables only |
- * | 4. Short functions | ✅ Pass | All functions < 40 lines |
- * | 5. Assertions | ✅ Pass | NULL checks, length validation |
- * | 6. Small scope | ✅ Pass | Variables at minimal scope |
- * | 7. Check returns | ✅ Pass | All returns checked by callers |
- * | 8. Limited preprocessor | ✅ Pass | Only HW/SW selection macros |
- * | 9. Restrict pointers | ✅ Pass | No function pointers |
- * | 10. Compiler warnings | ✅ Pass | -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [PASS] Pass | No goto/setjmp/recursion |
+ * | 2. Fixed loop bounds | [PASS] Pass | Loops bounded by k_crc_len_max |
+ * | 3. No dynamic memory | [PASS] Pass | Static lookup tables only |
+ * | 4. Short functions | [PASS] Pass | All functions < 40 lines |
+ * | 5. Assertions | [PASS] Pass | NULL checks, length validation |
+ * | 6. Small scope | [PASS] Pass | Variables at minimal scope |
+ * | 7. Check returns | [PASS] Pass | All returns checked by callers |
+ * | 8. Limited preprocessor | [PASS] Pass | Only HW/SW selection macros |
+ * | 9. Restrict pointers | [PASS] Pass | No function pointers |
+ * | 10. Compiler warnings | [PASS] Pass | -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -194,12 +194,12 @@ extern "C" {
  * The k_crc_len_max constant provides this bound:
  *
  * @code{.c}
- * // ✅ CORRECT: Loop bounded by k_crc_len_max
+ * // [PASS] CORRECT: Loop bounded by k_crc_len_max
  * for (uint32_t i = k_crc_idx_start; i < len && i < k_crc_len_max; i++) {
  *     crc = update_crc(crc, data[i]);
  * }
  *
- * // ❌ WRONG: Unbounded loop
+ * // [FAIL] WRONG: Unbounded loop
  * for (uint32_t i = 0; i < len; i++) {  // len could be unbounded
  *     crc = update_crc(crc, data[i]);
  * }

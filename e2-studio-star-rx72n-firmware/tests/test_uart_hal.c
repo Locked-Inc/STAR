@@ -105,12 +105,12 @@
  *
  * | Target Baud | BRR Value | Actual Baud | Error (%) | Status |
  * |-------------|-----------|-------------|-----------|--------|
- * | 9600        | 194       | 9615        | +0.16%    | ✓ Pass |
- * | 19200       | 96        | 19231       | +0.16%    | ✓ Pass |
- * | 38400       | 47        | 38462       | +0.16%    | ✓ Pass |
- * | 57600       | 31        | 58594       | +1.73%    | ✓ Pass |
- * | 115200      | 15        | 117188      | +1.73%    | ✓ Pass |
- * | 230400      | 7         | 234375      | +1.73%    | ⚠ Marginal |
+ * | 9600        | 194       | 9615        | +0.16%    | [OK] Pass |
+ * | 19200       | 96        | 19231       | +0.16%    | [OK] Pass |
+ * | 38400       | 47        | 38462       | +0.16%    | [OK] Pass |
+ * | 57600       | 31        | 58594       | +1.73%    | [OK] Pass |
+ * | 115200      | 15        | 117188      | +1.73%    | [OK] Pass |
+ * | 230400      | 7         | 234375      | +1.73%    | [WARN] Marginal |
  *
  * **Acceptable error**: ±2% (UART standard tolerance)
  *
@@ -130,7 +130,7 @@
  *                   &= 117{,}187.5 \text{ bps}
  * @f}
  *
- * Error: (117188 - 115200) / 115200 = +1.73% ✓ Within tolerance
+ * Error: (117188 - 115200) / 115200 = +1.73% [OK] Within tolerance
  *
  * ## SCI Channel Assignments (STAR Project)
  *
@@ -206,7 +206,7 @@
  * 3. putc invalid channel
  * 4. putc TDRE timeout
  * 5. puts success
- * 6. puts \n→\r\n conversion
+ * 6. puts \n->\r\n conversion
  * 7. puts nullptr string
  * 8. puts not initialized
  * 9. write success
@@ -240,7 +240,7 @@
  * 2. write error propagation
  *
  * **Call History Tests (1 case):**
- * 1. Verify init → putc → deinit sequence
+ * 1. Verify init -> putc -> deinit sequence
  *
  * ## Mock Infrastructure
  *
@@ -907,7 +907,7 @@ void test_uart_puts_channel_success(void)
 }
 
 /**
- * @brief Test automatic newline conversion (\n → \r\n)
+ * @brief Test automatic newline conversion (\n -> \r\n)
  *
  * @details
  * Verifies uart_puts_channel() automatically converts LF to CR+LF for
@@ -1721,7 +1721,7 @@ void test_uart_debug_puthex(void)
  * @brief Test mock call history recording
  *
  * @details
- * Verifies mock infrastructure records init → putc → deinit sequence correctly.
+ * Verifies mock infrastructure records init -> putc -> deinit sequence correctly.
  *
  * **Test steps:**
  * 1. Initialize SCI9

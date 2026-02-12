@@ -15,7 +15,7 @@
  * | Parameter       | Value                              |
  * |-----------------|------------------------------------|
  * | Pin             | P67 (PORT6, pin 7, package pin 98) |
- * | Direction       | Output (RX72N → RPi5)              |
+ * | Direction       | Output (RX72N -> RPi5)              |
  * | Active Level    | Active-low (asserted = LOW)        |
  * | Default State   | HIGH (deasserted / idle)           |
  * | Drive           | CMOS push-pull                     |
@@ -25,13 +25,13 @@
  * ```
  * RX72N has telemetry data ready
  *         |
- * rx_host_irq_assert()     → P67 driven LOW
+ * rx_host_irq_assert()     -> P67 driven LOW
  *         |
  * RPi5 detects falling edge on its GPIO
  *         |
  * RPi5 initiates SPI read
  *         |
- * rx_host_irq_deassert()   → P67 driven HIGH
+ * rx_host_irq_deassert()   -> P67 driven HIGH
  * ```
  *
  * @par NASA Power of 10 Compliance:
