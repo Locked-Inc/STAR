@@ -20,7 +20,7 @@
  * @par Usage: tests/test_rx_comm_manager.c, tests/test_telemetry_task.c
  * @see rx_nanopb.h Real nanopb wrapper
  * @see star/v1/ Protocol Buffer schemas (.proto files)
- * @par NASA Power of 10: ✓ Static buffers, bounded message sizes
+ * @par NASA Power of 10: [OK] Static buffers, bounded message sizes
  * @par SOLID: D - Communication tasks depend on serialization interface
  *
  * @author STAR Team

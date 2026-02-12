@@ -141,15 +141,15 @@
  * - CMT: Microsecond timing delays
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ All loops bounded (8 bits, ROM bytes, max devices)
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ Functions under 60 lines
- * - Rule 5: ✓ Input validation with RX_CHECK_NULL_PTR
- * - Rule 6: ✓ Variables at smallest scope
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ C23 typed enums for constants
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] All loops bounded (8 bits, ROM bytes, max devices)
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] Functions under 60 lines
+ * - Rule 5: [OK] Input validation with RX_CHECK_NULL_PTR
+ * - Rule 6: [OK] Variables at smallest scope
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] C23 typed enums for constants
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S (SRP):** OneWire protocol only, no device-specific logic
@@ -306,7 +306,7 @@ typedef enum : uint16_t {
  *
  * @par ROM Command Flow
  * ```
- * Reset → ROM Command → [ROM Address] → Function Command → Data
+ * Reset -> ROM Command -> [ROM Address] -> Function Command -> Data
  * ```
  *
  * @par Command Usage

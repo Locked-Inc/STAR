@@ -35,42 +35,42 @@
  * @par Core PID Algorithm:
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
- * | Proportional term calculation | ✓ | Positive, negative, zero error |
- * | Integral accumulation | ✓ | Multiple iterations |
- * | Integral anti-windup (upper) | ✓ | Clamping to max |
- * | Integral anti-windup (lower) | ✓ | Clamping to min |
- * | Derivative term calculation | ✓ | Error rate changes |
- * | Derivative zero on constant error | ✓ | Steady-state |
- * | Output saturation (upper) | ✓ | Clamping to max |
- * | Output saturation (lower) | ✓ | Clamping to min |
- * | Combined P+I+D response | ✓ | Full algorithm |
- * | Step response convergence | ✓ | Control loop behavior |
- * | Ramp input tracking | ✓ | Dynamic setpoint |
- * | Deterministic behavior | ✓ | Repeatability |
+ * | Proportional term calculation | [OK] | Positive, negative, zero error |
+ * | Integral accumulation | [OK] | Multiple iterations |
+ * | Integral anti-windup (upper) | [OK] | Clamping to max |
+ * | Integral anti-windup (lower) | [OK] | Clamping to min |
+ * | Derivative term calculation | [OK] | Error rate changes |
+ * | Derivative zero on constant error | [OK] | Steady-state |
+ * | Output saturation (upper) | [OK] | Clamping to max |
+ * | Output saturation (lower) | [OK] | Clamping to min |
+ * | Combined P+I+D response | [OK] | Full algorithm |
+ * | Step response convergence | [OK] | Control loop behavior |
+ * | Ramp input tracking | [OK] | Dynamic setpoint |
+ * | Deterministic behavior | [OK] | Repeatability |
  *
  * @par Parameter Validation:
  * | Validation | Tested | Coverage |
  * |------------|--------|----------|
- * | nullptr handle checks | ✓ | All API functions |
- * | nullptr pointer checks | ✓ | All output parameters |
- * | Initialization state | ✓ | Before/after init |
- * | Invalid dt (≤ 0) | ✓ | Compute function |
- * | NaN inputs | ✓ | Setpoint, measured, gains |
- * | Infinity inputs | ✓ | Setpoint, measured, gains |
- * | Negative gains | ✓ | Kp, Ki, Kd |
- * | Invalid output limits | ✓ | max ≤ min |
- * | Invalid integral limits | ✓ | max ≤ min |
- * | Double initialization | ✓ | Already initialized |
+ * | nullptr handle checks | [OK] | All API functions |
+ * | nullptr pointer checks | [OK] | All output parameters |
+ * | Initialization state | [OK] | Before/after init |
+ * | Invalid dt (≤ 0) | [OK] | Compute function |
+ * | NaN inputs | [OK] | Setpoint, measured, gains |
+ * | Infinity inputs | [OK] | Setpoint, measured, gains |
+ * | Negative gains | [OK] | Kp, Ki, Kd |
+ * | Invalid output limits | [OK] | max ≤ min |
+ * | Invalid integral limits | [OK] | max ≤ min |
+ * | Double initialization | [OK] | Already initialized |
  *
  * @par Runtime Tuning:
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
- * | Set gains at runtime | ✓ | Valid updates |
- * | Set output limits | ✓ | Valid updates |
- * | Set integral limits | ✓ | Valid updates |
- * | Integral limit clamping | ✓ | Clamps existing integral |
- * | State preservation | ✓ | Integral/derivative unchanged |
- * | Gain validation | ✓ | Rejects invalid values |
+ * | Set gains at runtime | [OK] | Valid updates |
+ * | Set output limits | [OK] | Valid updates |
+ * | Set integral limits | [OK] | Valid updates |
+ * | Integral limit clamping | [OK] | Clamps existing integral |
+ * | State preservation | [OK] | Integral/derivative unchanged |
+ * | Gain validation | [OK] | Rejects invalid values |
  *
  * ## Test Scenarios
  *
@@ -161,11 +161,11 @@
  * @par Boundary Value Testing:
  * | Boundary | Min | Max | Tested |
  * |----------|-----|-----|--------|
- * | Error | -∞ | +∞ | ✓ |
- * | dt | 0.000001s | 10s | ✓ |
- * | Output | output_min | output_max | ✓ |
- * | Integral | integral_min | integral_max | ✓ |
- * | Gains | 0.0 | 1000.0 | ✓ |
+ * | Error | -∞ | +∞ | [OK] |
+ * | dt | 0.000001s | 10s | [OK] |
+ * | Output | output_min | output_max | [OK] |
+ * | Integral | integral_min | integral_max | [OK] |
+ * | Gains | 0.0 | 1000.0 | [OK] |
  *
  * ## Integration with Motor Control
  *
@@ -191,13 +191,13 @@
  * @copyright Copyright (c) 2026 STAR Project
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No recursion, all control flow explicit
- * - Rule 2: ✓ All loops have fixed bounds (test iteration counts)
- * - Rule 3: ✓ No dynamic allocation (stack-based test data)
- * - Rule 4: ✓ Test functions < 60 lines
- * - Rule 5: ✓ All functions validate inputs (TEST_ASSERT checks)
- * - Rule 7: ✓ All return values checked (rx_err_t validated)
- * - Rule 10: ✓ Compiled with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No recursion, all control flow explicit
+ * - Rule 2: [OK] All loops have fixed bounds (test iteration counts)
+ * - Rule 3: [OK] No dynamic allocation (stack-based test data)
+ * - Rule 4: [OK] Test functions < 60 lines
+ * - Rule 5: [OK] All functions validate inputs (TEST_ASSERT checks)
+ * - Rule 7: [OK] All return values checked (rx_err_t validated)
+ * - Rule 10: [OK] Compiled with -Wall -Wextra -Werror
  */
 
 #include <math.h>

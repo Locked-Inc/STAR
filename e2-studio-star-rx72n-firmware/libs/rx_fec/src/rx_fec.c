@@ -63,9 +63,9 @@
  * ## Bit Ordering Convention
  *
  * **Throughout this implementation: MSB-first (network byte order)**
- * - Bit index 0 → byte[0] bit 7 (MSB)
- * - Bit index 7 → byte[0] bit 0 (LSB)
- * - Bit index 8 → byte[1] bit 7 (MSB)
+ * - Bit index 0 -> byte[0] bit 7 (MSB)
+ * - Bit index 7 -> byte[0] bit 0 (LSB)
+ * - Bit index 8 -> byte[1] bit 7 (MSB)
  *
  * This matches wire protocols and simplifies interoperability.
  *
@@ -76,12 +76,12 @@
  * - string.h: memset for buffer initialization
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1**: ✓ No recursion, goto, or setjmp/longjmp
- * - **Rule 2**: ✓ All loops bounded (k_fec_max_symbols, k_fec_num_states)
- * - **Rule 3**: ✓ Zero dynamic allocation
- * - **Rule 4**: ✓ All functions ≤ 60 lines
- * - **Rule 5**: ✓ All functions have ≥2 assertions
- * - **Rule 10**: ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No recursion, goto, or setjmp/longjmp
+ * - **Rule 2**: [OK] All loops bounded (k_fec_max_symbols, k_fec_num_states)
+ * - **Rule 3**: [OK] Zero dynamic allocation
+ * - **Rule 4**: [OK] All functions ≤ 60 lines
+ * - **Rule 5**: [OK] All functions have ≥2 assertions
+ * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @author STAR Team
  * @date 2026-01-27
@@ -168,9 +168,9 @@ static uint8_t internal_parity(uint8_t x)
  * @brief Set a bit at specified index in output buffer (MSB first)
  *
  * Bit ordering (MSB first, network byte order):
- *   bit_idx=0 → byte 0, bit 7 (MSB)
- *   bit_idx=7 → byte 0, bit 0 (LSB)
- *   bit_idx=8 → byte 1, bit 7 (MSB)
+ *   bit_idx=0 -> byte 0, bit 7 (MSB)
+ *   bit_idx=7 -> byte 0, bit 0 (LSB)
+ *   bit_idx=8 -> byte 1, bit 7 (MSB)
  *
  * @param[out] output Output buffer
  * @param[in]  bit_idx Bit index (0 = MSB of first byte)
@@ -197,9 +197,9 @@ static void internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uin
  * @brief Get a bit at specified index from buffer (MSB first)
  *
  * Bit ordering (MSB first, network byte order):
- *   bit_idx=0 → byte 0, bit 7 (MSB)
- *   bit_idx=7 → byte 0, bit 0 (LSB)
- *   bit_idx=8 → byte 1, bit 7 (MSB)
+ *   bit_idx=0 -> byte 0, bit 7 (MSB)
+ *   bit_idx=7 -> byte 0, bit 0 (LSB)
+ *   bit_idx=8 -> byte 1, bit 7 (MSB)
  *
  * @param[in] data Input buffer
  * @param[in] bit_idx Bit index (0 = MSB of first byte)

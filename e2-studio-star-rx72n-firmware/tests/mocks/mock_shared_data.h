@@ -16,7 +16,7 @@
  * Deterministic behavior (no race conditions in tests)
  * @par Usage: tests/test_motor_control_task.c, tests/test_telemetry_task.c
  * @see shared_data.h Real shared data module (with ThreadX mutex)
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: S - Single responsibility (data sharing only)
  *
  * @author STAR Team

@@ -12,8 +12,8 @@
  *
  * Enables testing of:
  * - HC-SR04 trigger pulse generation (10µs pulse)
- * - Echo pulse width measurement (distance→time)
- * - Distance calculation (pulse width → cm/mm)
+ * - Echo pulse width measurement (distance->time)
+ * - Distance calculation (pulse width -> cm/mm)
  * - Timeout handling (no echo received)
  * - Out-of-range detection (2cm-400cm limits)
  * - Multi-sensor management
@@ -44,7 +44,7 @@
  * @see rx_obstacle_detect.h Obstacle detection module
  * @see tests/test_rx_hcsr04.c Ultrasonic sensor tests
  *
- * @par NASA Power of 10: ✓ Static allocation, timeout bounds
+ * @par NASA Power of 10: [OK] Static allocation, timeout bounds
  * @par SOLID: D - Dependency Inversion
  *
  * @author STAR Team

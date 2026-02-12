@@ -109,11 +109,11 @@
  * - Current ratio: 1000:1 (1mA output per 1A load)
  * - Sense resistor: 4990 Ω (1% tolerance)
  * - Formula: I_motor = (V_IPROPI / 4990) × 1000 mA
- * - Full scale: 3.3V → 661 mA motor current
+ * - Full scale: 3.3V -> 661 mA motor current
  *
  * **Battery Voltage Measurement:**
  * - Resistor divider: 100kΩ / 10kΩ = 1:11 ratio
- * - Input range: 0-36.3V battery → 0-3.3V ADC
+ * - Input range: 0-36.3V battery -> 0-3.3V ADC
  * - Formula: V_battery = V_ADC × 11
  * - Protection: Zener diode clamp at 3.6V
  *
@@ -129,16 +129,16 @@
  * | Source impedance | Variable | Buffer amp if > 10 kΩ |
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1**: ✅ No goto, setjmp/longjmp, or recursion
- * - **Rule 2**: ✅ All loops bounded (conversion timeout with max iterations)
- * - **Rule 3**: ✅ Zero dynamic allocation (no malloc/free/new/delete)
- * - **Rule 4**: ✅ All functions < 60 lines (max 49 lines)
- * - **Rule 5**: ✅ Minimum 2 assertions per function (RX_CHECK_NULL_PTR)
- * - **Rule 6**: ✅ Data at smallest scope (local variables)
- * - **Rule 7**: ✅ All return values checked and propagated
- * - **Rule 8**: ✅ Preprocessor limited (typed enums for constants)
- * - **Rule 9**: ⚠️ Function pointers allowed for DIP (STAR deviation)
- * - **Rule 10**: ✅ Compiled with -Wall -Wextra -Werror
+ * - **Rule 1**: [PASS] No goto, setjmp/longjmp, or recursion
+ * - **Rule 2**: [PASS] All loops bounded (conversion timeout with max iterations)
+ * - **Rule 3**: [PASS] Zero dynamic allocation (no malloc/free/new/delete)
+ * - **Rule 4**: [PASS] All functions < 60 lines (max 49 lines)
+ * - **Rule 5**: [PASS] Minimum 2 assertions per function (RX_CHECK_NULL_PTR)
+ * - **Rule 6**: [PASS] Data at smallest scope (local variables)
+ * - **Rule 7**: [PASS] All return values checked and propagated
+ * - **Rule 8**: [PASS] Preprocessor limited (typed enums for constants)
+ * - **Rule 9**: [WARN] Function pointers allowed for DIP (STAR deviation)
+ * - **Rule 10**: [PASS] Compiled with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S (Single Responsibility)**: ADC analog measurement only
@@ -527,9 +527,9 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
  * @f]
  *
  * Example @ 12-bit, 3.3V VREF:
- * - ADC = 0 → V = 0 mV
- * - ADC = 2048 → V = 1651 mV (mid-scale)
- * - ADC = 4095 → V = 3300 mV (full-scale)
+ * - ADC = 0 -> V = 0 mV
+ * - ADC = 2048 -> V = 1651 mV (mid-scale)
+ * - ADC = 4095 -> V = 3300 mV (full-scale)
  *
  * Precision: 0.805 mV/LSB @ 3.3V VREF, 12-bit
  *

@@ -18,7 +18,7 @@
  * @par Usage: tests/test_usb_cdc.c, tests/test_rx_comm_manager.c
  * @see rx_usb_hw.h Real USB hardware layer
  * @see mock_usb0_regs.h USB0 register mock
- * @par NASA Power of 10: ✓ Static FIFOs
+ * @par NASA Power of 10: [OK] Static FIFOs
  * @par SOLID: D - USB CDC depends on hardware interface
  *
  * @date 2026-01-04

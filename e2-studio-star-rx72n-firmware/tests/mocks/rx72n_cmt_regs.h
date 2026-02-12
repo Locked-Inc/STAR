@@ -124,23 +124,23 @@
  * @see lib/rx_hal/inc/rx72n_cmt_regs.h Real hardware register definitions (target build)
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1 (No goto)**: ✓ File contains only type aliases, no control flow
- * - **Rule 2 (Bounded loops)**: ✓ No loops
- * - **Rule 3 (No dynamic allocation)**: ✓ Mock structures statically allocated in mock_rx_onewire_hw.c
- * - **Rule 4 (Short functions)**: ✓ No functions
+ * - **Rule 1 (No goto)**: [OK] File contains only type aliases, no control flow
+ * - **Rule 2 (Bounded loops)**: [OK] No loops
+ * - **Rule 3 (No dynamic allocation)**: [OK] Mock structures statically allocated in mock_rx_onewire_hw.c
+ * - **Rule 4 (Short functions)**: [OK] No functions
  * - **Rule 5 (Assertions)**: N/A (type definitions only)
- * - **Rule 6 (Minimal scope)**: ✓ Typedefs at file scope (required for global visibility)
+ * - **Rule 6 (Minimal scope)**: [OK] Typedefs at file scope (required for global visibility)
  * - **Rule 7 (Check returns)**: N/A (no function calls)
- * - **Rule 8 (Limit preprocessor)**: ✓ Uses include guards only
- * - **Rule 9 (Limit pointers)**: ✓ No pointer operations
- * - **Rule 10 (Warnings)**: ✓ Compiles with `-Wall -Wextra -Werror`
+ * - **Rule 8 (Limit preprocessor)**: [OK] Uses include guards only
+ * - **Rule 9 (Limit pointers)**: [OK] No pointer operations
+ * - **Rule 10 (Warnings)**: [OK] Compiles with `-Wall -Wextra -Werror`
  *
  * @par SOLID Principles:
- * - **Single Responsibility (S)**: ✓ Sole purpose is CMT register type aliasing for tests
- * - **Open/Closed (O)**: ✓ Extensible via mock_rx_onewire_hw.h without modifying this file
- * - **Liskov Substitution (L)**: ✓ Mock types drop-in replacements for real register types
- * - **Interface Segregation (I)**: ✓ Minimal interface (2 type aliases only)
- * - **Dependency Inversion (D)**: ✓ High-level code depends on abstract types, not concrete mock/real implementations
+ * - **Single Responsibility (S)**: [OK] Sole purpose is CMT register type aliasing for tests
+ * - **Open/Closed (O)**: [OK] Extensible via mock_rx_onewire_hw.h without modifying this file
+ * - **Liskov Substitution (L)**: [OK] Mock types drop-in replacements for real register types
+ * - **Interface Segregation (I)**: [OK] Minimal interface (2 type aliases only)
+ * - **Dependency Inversion (D)**: [OK] High-level code depends on abstract types, not concrete mock/real implementations
  *
  * @author STAR Team
  * @date 2026-01-05

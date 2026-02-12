@@ -16,7 +16,7 @@
  *
  * @par Usage: Automatically included in all tests (via include path)
  * @see ThreadX User Guide Real ThreadX RTOS API
- * @par NASA Power of 10: ✓ Static allocation (ThreadX disabled in tests)
+ * @par NASA Power of 10: [OK] Static allocation (ThreadX disabled in tests)
  * @par SOLID: D - Tasks depend on RTOS interface
  *
  * @date 2026-01-11

@@ -39,7 +39,7 @@
  * Define RX_SIMULATOR_MODE during compilation to enable simulator support:
  * @code
  * // In e² studio:
- * // Project Properties → C/C++ Build → Settings → Compiler → Preprocessor
+ * // Project Properties -> C/C++ Build -> Settings -> Compiler -> Preprocessor
  * // Add symbol: RX_SIMULATOR_MODE
  *
  * // Or via command line:

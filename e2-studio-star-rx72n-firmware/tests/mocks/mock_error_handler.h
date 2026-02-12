@@ -25,7 +25,7 @@
  *
  * @par Usage: All test files requiring error handling
  * @see rx_error_handler.h Real error handler interface
- * @par NASA Power of 10: ✓ Static allocation (circular buffer), bounded capacity
+ * @par NASA Power of 10: [OK] Static allocation (circular buffer), bounded capacity
  * @par SOLID: D - Dependency Inversion, L - Liskov Substitution
  *
  * @author STAR Team

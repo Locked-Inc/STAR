@@ -94,16 +94,16 @@
  * | 0x20   | 1    | SPDCR2   | Data Control Register 2           |
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion in accessor functions
- * - Rule 2: ✓ N/A (no loops in register definitions)
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ All accessor functions are single-statement inline
- * - Rule 5: ✓ N/A (accessor functions have no assertions needed)
- * - Rule 6: ✓ Minimal scope - inline accessors only
- * - Rule 7: ✓ N/A (no return values to check in definitions)
- * - Rule 8: ✓ All constants use C23 typed enums
- * - Rule 9: ✓ No function pointers in register definitions
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion in accessor functions
+ * - Rule 2: [OK] N/A (no loops in register definitions)
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] All accessor functions are single-statement inline
+ * - Rule 5: [OK] N/A (accessor functions have no assertions needed)
+ * - Rule 6: [OK] Minimal scope - inline accessors only
+ * - Rule 7: [OK] N/A (no return values to check in definitions)
+ * - Rule 8: [OK] All constants use C23 typed enums
+ * - Rule 9: [OK] No function pointers in register definitions
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S**: Single responsibility - only register definitions
@@ -155,8 +155,8 @@ extern "C" {
  * Addresses verified against RX72N Hardware Manual Ch44, Table 44.1.
  *
  * @par Channel Spacing
- * - RSPI0 → RSPI1: 0x40 bytes (contiguous)
- * - RSPI1 → RSPI2: 0x1C0 bytes (gap for other peripherals)
+ * - RSPI0 -> RSPI1: 0x40 bytes (contiguous)
+ * - RSPI1 -> RSPI2: 0x1C0 bytes (gap for other peripherals)
  *
  * @par Usage Example
  * @code

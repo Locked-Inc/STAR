@@ -64,7 +64,7 @@
  *
  * 1. **Type Name Tests** (6 tests)
  *    - Valid types: COMMAND, RESPONSE, ACK, NACK, UNKNOWN
- *    - Invalid type: Out-of-range values → "UNKNOWN"
+ *    - Invalid type: Out-of-range values -> "UNKNOWN"
  *
  * 2. **Flags String Tests** (10 tests)
  *    - Error cases: nullptr buffer, zero length
@@ -168,8 +168,8 @@
  *
  * | Category | Tests | Purpose |
  * |----------|-------|---------|
- * | **Type Name Conversion** | 6 | Enum → String mapping validation |
- * | **Flags String Generation** | 10 | Bitmask → String formatting |
+ * | **Type Name Conversion** | 6 | Enum -> String mapping validation |
+ * | **Flags String Generation** | 10 | Bitmask -> String formatting |
  * | **Format Error Cases** | 4 | nullptr pointers, buffer size validation |
  * | **Format Success Cases** | 10 | Correct ASCII output generation |
  * | **Total** | **30** | Complete API coverage |
@@ -267,16 +267,16 @@
  *
  * | Rule | Test Coverage |
  * |------|---------------|
- * | 1. Simple control flow | ✅ Formatter uses sequential logic, no goto |
- * | 2. Fixed loop bounds | ✅ Payload loops bounded by header.length |
- * | 3. No dynamic memory | ✅ All buffers stack or static allocated |
- * | 4. Short functions | ✅ All formatter functions < 60 lines |
- * | 5. Assertions | ✅ Every test validates preconditions/postconditions |
- * | 6. Small scope | ✅ Variables declared close to use |
- * | 7. Check returns | ✅ All rx_frame_ascii_* returns verified |
- * | 8. Limited preprocessor | ✅ Only typed enums used for constants |
- * | 9. Restrict pointers | ✅ No function pointers in ASCII formatter |
- * | 10. Compiler warnings | ✅ Tests build with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [PASS] Formatter uses sequential logic, no goto |
+ * | 2. Fixed loop bounds | [PASS] Payload loops bounded by header.length |
+ * | 3. No dynamic memory | [PASS] All buffers stack or static allocated |
+ * | 4. Short functions | [PASS] All formatter functions < 60 lines |
+ * | 5. Assertions | [PASS] Every test validates preconditions/postconditions |
+ * | 6. Small scope | [PASS] Variables declared close to use |
+ * | 7. Check returns | [PASS] All rx_frame_ascii_* returns verified |
+ * | 8. Limited preprocessor | [PASS] Only typed enums used for constants |
+ * | 9. Restrict pointers | [PASS] No function pointers in ASCII formatter |
+ * | 10. Compiler warnings | [PASS] Tests build with -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -851,7 +851,7 @@ void test_flags_str_zero_length(void)
 }
 
 /**
- * @brief Test flags string with no flags set (0x00 → "NONE")
+ * @brief Test flags string with no flags set (0x00 -> "NONE")
  *
  * @details
  * Verifies that flags=0 produces "NONE" string.
@@ -877,7 +877,7 @@ void test_flags_str_none(void)
 }
 
 /**
- * @brief Test flags string with REQUIRES_ACK flag (0x01 → "ACK")
+ * @brief Test flags string with REQUIRES_ACK flag (0x01 -> "ACK")
  *
  * @details
  * Verifies that k_frame_flag_requires_ack produces "ACK".
@@ -903,7 +903,7 @@ void test_flags_str_requires_ack(void)
 }
 
 /**
- * @brief Test flags string with RETRANSMIT flag (0x02 → "RETX")
+ * @brief Test flags string with RETRANSMIT flag (0x02 -> "RETX")
  *
  * @details
  * Verifies that k_frame_flag_retransmit produces "RETX".
@@ -929,7 +929,7 @@ void test_flags_str_retransmit(void)
 }
 
 /**
- * @brief Test flags string with PRIORITY flag (0x04 → "PRI")
+ * @brief Test flags string with PRIORITY flag (0x04 -> "PRI")
  *
  * @details
  * Verifies that k_frame_flag_priority produces "PRI".
@@ -955,7 +955,7 @@ void test_flags_str_priority(void)
 }
 
 /**
- * @brief Test flags string with FEC_ENABLED flag (0x08 → "FEC")
+ * @brief Test flags string with FEC_ENABLED flag (0x08 -> "FEC")
  *
  * @details
  * Verifies that k_frame_flag_fec_enabled produces "FEC".
@@ -981,7 +981,7 @@ void test_flags_str_fec_enabled(void)
 }
 
 /**
- * @brief Test flags string with SOFT_NACK flag (0x10 → "SOFT")
+ * @brief Test flags string with SOFT_NACK flag (0x10 -> "SOFT")
  *
  * @details
  * Verifies that k_frame_flag_soft_nack produces "SOFT".
@@ -1007,7 +1007,7 @@ void test_flags_str_soft_nack(void)
 }
 
 /**
- * @brief Test flags string with two combined flags (0x05 → "ACK|PRI")
+ * @brief Test flags string with two combined flags (0x05 -> "ACK|PRI")
  *
  * @details
  * Verifies that multiple flag bits produce pipe-separated string.
@@ -1037,7 +1037,7 @@ void test_flags_str_combined_two(void)
 }
 
 /**
- * @brief Test flags string with all five flags (0x1F → "ACK|RETX|PRI|FEC|SOFT")
+ * @brief Test flags string with all five flags (0x1F -> "ACK|RETX|PRI|FEC|SOFT")
  *
  * @details
  * Verifies that all flag bits produce complete pipe-separated string.
@@ -1054,7 +1054,7 @@ void test_flags_str_combined_two(void)
  * @post Buffer contains "ACK|RETX|PRI|FEC|SOFT\0" (26 chars + null = 27 bytes)
  *
  * @note Maximum output length test (ensures buffer size recommendations are correct)
- * @note Flag order is deterministic (bit 0 → bit 4)
+ * @note Flag order is deterministic (bit 0 -> bit 4)
  * @note Thread-safe (writes to caller-provided buffer)
  *
  * @since Version 1.0.0
@@ -1084,10 +1084,10 @@ void test_flags_str_combined_all(void)
  * invalid arguments and insufficient buffer space.
  *
  * **Coverage:**
- * - nullptr frame pointer → k_rx_err_invalid_arg
- * - nullptr output buffer → k_rx_err_invalid_arg
- * - nullptr output_len pointer → k_rx_err_invalid_arg
- * - Buffer too small (< 64 bytes) → k_rx_err_no_mem
+ * - nullptr frame pointer -> k_rx_err_invalid_arg
+ * - nullptr output buffer -> k_rx_err_invalid_arg
+ * - nullptr output_len pointer -> k_rx_err_invalid_arg
+ * - Buffer too small (< 64 bytes) -> k_rx_err_no_mem
  *
  * @{
  */

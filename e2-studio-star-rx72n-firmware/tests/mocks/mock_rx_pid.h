@@ -19,7 +19,7 @@
  * @par Usage: tests/test_rx_motor.c, tests/test_motor_control_task.c
  * @see rx_pid.h Real PID controller
  * @see rx_motor.h Motor control using PID
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Motor control depends on PID interface
  *
  * @author STAR Team

@@ -24,7 +24,7 @@
  * @see rx_crc.h Real CRC implementation
  * @see rx_ds18b20.h DS18B20 driver (uses CRC-8)
  *
- * @par NASA Power of 10: ✓ Bounded loops (CRC table lookup)
+ * @par NASA Power of 10: [OK] Bounded loops (CRC table lookup)
  * @par SOLID: S - Single responsibility (CRC only)
  *
  * @author STAR Team

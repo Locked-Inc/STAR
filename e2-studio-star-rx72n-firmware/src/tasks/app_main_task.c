@@ -91,8 +91,8 @@
  *
  * | Function | Stack Frame | Locals | Call Depth |
  * |----------|-------------|--------|------------|
- * | app_main_task_create() | 32 bytes | 12 | 2 (→tx_thread_create) |
- * | internal_app_main_task_entry() | 16 bytes | 0 | 1 (→tx_thread_sleep) |
+ * | app_main_task_create() | 32 bytes | 12 | 2 (->tx_thread_create) |
+ * | internal_app_main_task_entry() | 16 bytes | 0 | 1 (->tx_thread_sleep) |
  *
  * **Worst-case stack usage:** 1024 bytes allocated, ~200 bytes typical peak
  *
@@ -100,16 +100,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | Rule 1: Control flow | ✅ | No goto/setjmp, single while(true) loop |
- * | Rule 2: Loop bounds | ✅ | Infinite loop with watchdog, bounded sleep |
- * | Rule 3: No heap | ✅ | All allocations static (s_app_main_stack) |
- * | Rule 4: Function length | ✅ | Entry=10 lines, Create=37 lines |
- * | Rule 5: Assertions | ✅ | 4 assertions total |
- * | Rule 6: Data scope | ✅ | File-scope static with s_ prefix |
- * | Rule 7: Return checks | ✅ | tx_thread_create return checked |
- * | Rule 8: Preprocessor | ✅ | C23 typed enum for all constants |
- * | Rule 9: Pointers | ✅ | Single-level pointers only |
- * | Rule 10: Warnings | ✅ | Clean under -Wall -Wextra -Werror |
+ * | Rule 1: Control flow | [PASS] | No goto/setjmp, single while(true) loop |
+ * | Rule 2: Loop bounds | [PASS] | Infinite loop with watchdog, bounded sleep |
+ * | Rule 3: No heap | [PASS] | All allocations static (s_app_main_stack) |
+ * | Rule 4: Function length | [PASS] | Entry=10 lines, Create=37 lines |
+ * | Rule 5: Assertions | [PASS] | 4 assertions total |
+ * | Rule 6: Data scope | [PASS] | File-scope static with s_ prefix |
+ * | Rule 7: Return checks | [PASS] | tx_thread_create return checked |
+ * | Rule 8: Preprocessor | [PASS] | C23 typed enum for all constants |
+ * | Rule 9: Pointers | [PASS] | Single-level pointers only |
+ * | Rule 10: Warnings | [PASS] | Clean under -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *

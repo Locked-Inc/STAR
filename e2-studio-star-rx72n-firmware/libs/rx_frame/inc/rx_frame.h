@@ -94,9 +94,9 @@
  *
  * | Component | Thread Safe | Notes |
  * |-----------|-------------|-------|
- * | Encoder | ✅ Yes | Stateless after init |
- * | Decoder | ✅ Yes | Stateless after init |
- * | Utility functions | ✅ Yes | Pure functions |
+ * | Encoder | [PASS] Yes | Stateless after init |
+ * | Decoder | [PASS] Yes | Stateless after init |
+ * | Utility functions | [PASS] Yes | Pure functions |
  *
  * ## Memory Usage
  *
@@ -121,16 +121,16 @@
  *
  * | Rule | Status | Notes |
  * |------|--------|-------|
- * | 1. Simple control flow | ✅ Pass | No goto/setjmp/recursion |
- * | 2. Fixed loop bounds | ✅ Pass | Bounded by k_frame_max_payload |
- * | 3. No dynamic memory | ✅ Pass | All buffers caller-provided |
- * | 4. Short functions | ✅ Pass | All functions < 50 lines |
- * | 5. Assertions | ✅ Pass | NULL checks, state validation |
- * | 6. Small scope | ✅ Pass | Variables at minimal scope |
- * | 7. Check returns | ✅ Pass | All returns propagated |
- * | 8. Limited preprocessor | ✅ Pass | Only include guards |
- * | 9. Restrict pointers | ✅ Pass | No function pointers |
- * | 10. Compiler warnings | ✅ Pass | -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [PASS] Pass | No goto/setjmp/recursion |
+ * | 2. Fixed loop bounds | [PASS] Pass | Bounded by k_frame_max_payload |
+ * | 3. No dynamic memory | [PASS] Pass | All buffers caller-provided |
+ * | 4. Short functions | [PASS] Pass | All functions < 50 lines |
+ * | 5. Assertions | [PASS] Pass | NULL checks, state validation |
+ * | 6. Small scope | [PASS] Pass | Variables at minimal scope |
+ * | 7. Check returns | [PASS] Pass | All returns propagated |
+ * | 8. Limited preprocessor | [PASS] Pass | Only include guards |
+ * | 9. Restrict pointers | [PASS] Pass | No function pointers |
+ * | 10. Compiler warnings | [PASS] Pass | -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -395,8 +395,8 @@ typedef enum : uint16_t {
  *
  * | Type | Direction | Payload | Response |
  * |------|-----------|---------|----------|
- * | COMMAND | RPi5 → RX72N | Protobuf | ACK, then RESPONSE |
- * | RESPONSE | RX72N → RPi5 | Protobuf | ACK |
+ * | COMMAND | RPi5 -> RX72N | Protobuf | ACK, then RESPONSE |
+ * | RESPONSE | RX72N -> RPi5 | Protobuf | ACK |
  * | ACK | Either | None | None |
  * | NACK | Either | None (flags indicate reason) | Retransmit |
  *

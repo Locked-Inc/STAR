@@ -34,7 +34,7 @@
  *
  *   PFS Write Protection Sequence:
  *   ┌────────┐    ┌─────────┐    ┌─────────┐    ┌────────┐    ┌────────┐
- *   │ PWPR   │ →  │ PWPR    │ →  │ Write   │ →  │ PWPR   │ →  │ PWPR   │
+ *   │ PWPR   │ ->  │ PWPR    │ ->  │ Write   │ ->  │ PWPR   │ ->  │ PWPR   │
  *   │ =0x00  │    │ =0x40   │    │ PnmPFS  │    │ =0x00  │    │ =0x80  │
  *   │(B0WI=0)│    │(PFSWE=1)│    │         │    │(PFSWE=0│    │(B0WI=1)│
  *   └────────┘    └─────────┘    └─────────┘    └────────┘    └────────┘
@@ -123,7 +123,7 @@
  * RX72N Group User's Manual: Hardware, Chapter 20 (Multi-Function Pin Controller)
  *
  * @par Verification Status
- * ✅ VERIFIED (2026-01-28) - All register addresses and offsets verified
+ * [PASS] VERIFIED (2026-01-28) - All register addresses and offsets verified
  * against RX72N Manual Chapter 20 and Appendix pin function tables.
  *
  * @see rx72n_port_regs.h GPIO port direction and data registers

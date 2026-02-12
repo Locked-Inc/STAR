@@ -81,16 +81,16 @@
  * @see https://www.maximintegrated.com/en/design/technical-documents/app-notes/2/27.html Maxim AN27
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1 (Control Flow): ✓ No goto, recursion, or setjmp
- * - Rule 2 (Loop Bounds): ✓ All loops in Unity framework have fixed bounds
- * - Rule 3 (Dynamic Memory): ✓ No malloc/free, all buffers stack-allocated
- * - Rule 4 (Function Size): ✓ All functions < 60 lines, single assertion per test
- * - Rule 5 (Assertions): ✓ Each test validates expected vs actual (implicit pre/post)
- * - Rule 6 (Data Scope): ✓ Variables declared at smallest scope
- * - Rule 7 (Return Checks): ✓ TEST_ASSERT_* validates all return values
- * - Rule 8 (Preprocessor): ✓ Minimal preprocessor, no macros except Unity framework
- * - Rule 9 (Pointers): ✓ Single-level pointers only (test data arrays)
- * - Rule 10 (Warnings): ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1 (Control Flow): [OK] No goto, recursion, or setjmp
+ * - Rule 2 (Loop Bounds): [OK] All loops in Unity framework have fixed bounds
+ * - Rule 3 (Dynamic Memory): [OK] No malloc/free, all buffers stack-allocated
+ * - Rule 4 (Function Size): [OK] All functions < 60 lines, single assertion per test
+ * - Rule 5 (Assertions): [OK] Each test validates expected vs actual (implicit pre/post)
+ * - Rule 6 (Data Scope): [OK] Variables declared at smallest scope
+ * - Rule 7 (Return Checks): [OK] TEST_ASSERT_* validates all return values
+ * - Rule 8 (Preprocessor): [OK] Minimal preprocessor, no macros except Unity framework
+ * - Rule 9 (Pointers): [OK] Single-level pointers only (test data arrays)
+ * - Rule 10 (Warnings): [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility:** Each test validates exactly one scenario

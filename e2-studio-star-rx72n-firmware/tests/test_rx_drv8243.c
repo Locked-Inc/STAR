@@ -30,34 +30,34 @@
  * @par DRV8243 Motor Control:
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
- * | PH/EN PWM control | ✓ | Via rx_motor |
- * | Speed range -100% to +100% | ✓ | Full bidirectional |
- * | Speed clamping | ✓ | Boundaries enforced |
- * | Direction control | ✓ | Forward/Reverse |
- * | Brake mode (IN1=IN2=HIGH) | ✓ | Active braking |
- * | Coast mode (IN1=IN2=LOW) | ✓ | High-Z output |
- * | Fault detection (nFAULT pin) | ✓ | Active-low GPIO |
- * | Current limiting | ✓ | Speed reduction |
+ * | PH/EN PWM control | [OK] | Via rx_motor |
+ * | Speed range -100% to +100% | [OK] | Full bidirectional |
+ * | Speed clamping | [OK] | Boundaries enforced |
+ * | Direction control | [OK] | Forward/Reverse |
+ * | Brake mode (IN1=IN2=HIGH) | [OK] | Active braking |
+ * | Coast mode (IN1=IN2=LOW) | [OK] | High-Z output |
+ * | Fault detection (nFAULT pin) | [OK] | Active-low GPIO |
+ * | Current limiting | [OK] | Speed reduction |
  *
  * @par Current Sensing (IPROPI):
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
- * | ADC voltage reading | ✓ | Bus ADC interface |
- * | Voltage-to-current conversion | ✓ | ki_propi = 525 A/V |
- * | Custom ki_propi values | ✓ | Different sense resistors |
- * | Zero current measurement | ✓ | Motor stopped |
- * | Typical current (525mA @ 1V) | ✓ | Nominal operation |
- * | High current (1050mA @ 2V) | ✓ | Near limit |
- * | ADC error handling | ✓ | Timeout propagation |
+ * | ADC voltage reading | [OK] | Bus ADC interface |
+ * | Voltage-to-current conversion | [OK] | ki_propi = 525 A/V |
+ * | Custom ki_propi values | [OK] | Different sense resistors |
+ * | Zero current measurement | [OK] | Motor stopped |
+ * | Typical current (525mA @ 1V) | [OK] | Nominal operation |
+ * | High current (1050mA @ 2V) | [OK] | Near limit |
+ * | ADC error handling | [OK] | Timeout propagation |
  *
  * @par Fault Protection:
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
- * | nFAULT pin configuration | ✓ | Input + pullup |
- * | Fault detection (LOW = fault) | ✓ | Active-low logic |
- * | No fault (HIGH = normal) | ✓ | Normal operation |
- * | Speed command rejected on fault | ✓ | Safety interlock |
- * | Fault status query | ✓ | Real-time monitoring |
+ * | nFAULT pin configuration | [OK] | Input + pullup |
+ * | Fault detection (LOW = fault) | [OK] | Active-low logic |
+ * | No fault (HIGH = normal) | [OK] | Normal operation |
+ * | Speed command rejected on fault | [OK] | Safety interlock |
+ * | Fault status query | [OK] | Real-time monitoring |
  *
  * ## Test Scenarios
  *
@@ -70,7 +70,7 @@
  * //
  * // Expected behavior:
  * // 1. Read current via ADC: 1050mA
- * // 2. Compare to limit: 1050mA > 1000mA → OVER LIMIT
+ * // 2. Compare to limit: 1050mA > 1000mA -> OVER LIMIT
  * // 3. Apply reduction factor: 100% × 0.9 = 90%
  * // 4. Final motor speed: 90%
  * //
@@ -81,7 +81,7 @@
  * @code
  * // Test: test_set_speed_with_fault()
  * // Initial: Motor initialized, running normally
- * // Event: DRV8243 detects overcurrent → nFAULT pin goes LOW
+ * // Event: DRV8243 detects overcurrent -> nFAULT pin goes LOW
  * // Command: rx_drv8243_set_speed(&handle, 50.0)
  * //
  * // Expected behavior:
@@ -134,10 +134,10 @@
  * @par Boundary Value Testing:
  * | Boundary | Min | Max | Tested |
  * |----------|-----|-----|--------|
- * | Motor Speed | -100% | +100% | ✓ |
- * | Current Limit | 0mA (disabled) | 5000mA | ✓ |
- * | IPROPI Voltage | 0mV | 3300mV | ✓ |
- * | ki_propi Gain | 400 A/V | 600 A/V | ✓ |
+ * | Motor Speed | -100% | +100% | [OK] |
+ * | Current Limit | 0mA (disabled) | 5000mA | [OK] |
+ * | IPROPI Voltage | 0mV | 3300mV | [OK] |
+ * | ki_propi Gain | 400 A/V | 600 A/V | [OK] |
  *
  * ## Hardware Integration
  *
@@ -163,7 +163,7 @@
  *
  * Formula: `I_motor = (V_IPROPI × ki_propi) / 1000`
  *
- * Example: V_IPROPI = 2.0V → I_motor = (2000mV × 525) / 1000 = 1050mA
+ * Example: V_IPROPI = 2.0V -> I_motor = (2000mV × 525) / 1000 = 1050mA
  *
  * @see rx_drv8243.h for DRV8243 driver API
  * @see rx_drv8243.c for implementation
@@ -176,13 +176,13 @@
  * @copyright Copyright (c) 2026 STAR Project
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No recursion
- * - Rule 2: ✓ All loops have fixed bounds
- * - Rule 3: ✓ No dynamic allocation
- * - Rule 4: ✓ Test functions < 60 lines
- * - Rule 5: ✓ Input validation
- * - Rule 7: ✓ Return values checked
- * - Rule 10: ✓ Compiled with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No recursion
+ * - Rule 2: [OK] All loops have fixed bounds
+ * - Rule 3: [OK] No dynamic allocation
+ * - Rule 4: [OK] Test functions < 60 lines
+ * - Rule 5: [OK] Input validation
+ * - Rule 7: [OK] Return values checked
+ * - Rule 10: [OK] Compiled with -Wall -Wextra -Werror
  */
 
 #include <math.h>

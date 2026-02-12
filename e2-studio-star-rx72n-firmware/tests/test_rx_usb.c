@@ -98,11 +98,11 @@
  * - All test constants use typed enums (no magic numbers)
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto or recursion in tests
- * - Rule 2: ✓ All loops have fixed bounds
- * - Rule 3: ✓ Static allocation only
- * - Rule 4: ✓ Tests are short and focused
- * - Rule 5: ✓ Tests validate all error conditions
+ * - Rule 1: [OK] No goto or recursion in tests
+ * - Rule 2: [OK] All loops have fixed bounds
+ * - Rule 3: [OK] Static allocation only
+ * - Rule 4: [OK] Tests are short and focused
+ * - Rule 5: [OK] Tests validate all error conditions
  *
  * @par Running Tests
  * @code{.sh}

@@ -136,17 +136,17 @@
  * **Echo Pulse Simulation:**
  * - Mock can inject specific echo pulse widths
  * - Test cases: Valid distance, timeout, cancellation
- * - Example: Set ECHO pin HIGH for 580µs → simulates 10cm object
+ * - Example: Set ECHO pin HIGH for 580µs -> simulates 10cm object
  *
  * # NASA Power of 10 Compliance
  *
- * ## Rule 8: Limit Preprocessor Use ✓ COMPLIANT
+ * ## Rule 8: Limit Preprocessor Use [OK] COMPLIANT
  *
  * **Zero macros:**
  * - All functions declared as prototypes (not macros)
  * - Type-safe function calls (compiler-checked)
  *
- * ## Rule 9: Restrict Pointer Use ✓ COMPLIANT
+ * ## Rule 9: Restrict Pointer Use [OK] COMPLIANT
  *
  * **Single-level pointers only:**
  * - `rx_port_pin_t pin` - Enum (not pointer)
@@ -155,23 +155,23 @@
  *
  * # SOLID Principles
  *
- * ## Single Responsibility ✓
+ * ## Single Responsibility [OK]
  * - One purpose: Abstract hardware I/O for HC-SR04
  * - Does NOT include sensor logic, distance conversion, or calibration
  *
- * ## Open/Closed ✓
+ * ## Open/Closed [OK]
  * - Open for extension: New platforms implement this interface
  * - Closed for modification: Interface stable, implementations vary
  *
- * ## Liskov Substitution ✓
+ * ## Liskov Substitution [OK]
  * - Hardware and mock HALs interchangeable
  * - Driver code unchanged when swapping implementations
  *
- * ## Interface Segregation ✓
+ * ## Interface Segregation [OK]
  * - Minimal interface: Only 8 functions (GPIO + timing)
  * - No "fat" HAL with unused peripheral access
  *
- * ## Dependency Inversion ✓
+ * ## Dependency Inversion [OK]
  * - High-level driver depends on this abstraction
  * - Low-level hardware details hidden in implementations
  *

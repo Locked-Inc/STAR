@@ -342,16 +342,16 @@
  * @see docs/sections/01_nanopb_protocol.tex Communication protocol documentation
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp/longjmp, or recursion used
- * - Rule 2: ✓ All loops have compile-time bounded iterations (channel count = 2)
- * - Rule 3: ✓ Zero dynamic memory allocation (all buffers static)
- * - Rule 4: ✓ All functions < 60 lines
- * - Rule 5: ✓ Minimum 2 assertions per function via parameter validation
- * - Rule 6: ✓ Variables declared at smallest scope
- * - Rule 7: ✓ All return values checked and propagated
- * - Rule 8: ✓ Uses C23 typed enums exclusively (no magic numbers)
- * - Rule 9: ⚠️ INTENTIONAL DEVIATION: Uses function pointers for callback (event-driven architecture)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror (zero warnings)
+ * - Rule 1: [OK] No goto, setjmp/longjmp, or recursion used
+ * - Rule 2: [OK] All loops have compile-time bounded iterations (channel count = 2)
+ * - Rule 3: [OK] Zero dynamic memory allocation (all buffers static)
+ * - Rule 4: [OK] All functions < 60 lines
+ * - Rule 5: [OK] Minimum 2 assertions per function via parameter validation
+ * - Rule 6: [OK] Variables declared at smallest scope
+ * - Rule 7: [OK] All return values checked and propagated
+ * - Rule 8: [OK] Uses C23 typed enums exclusively (no magic numbers)
+ * - Rule 9: [WARN] INTENTIONAL DEVIATION: Uses function pointers for callback (event-driven architecture)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror (zero warnings)
  *
  * @par SOLID Principles:
  * - **S (Single Responsibility):** Only channel coordination and frame routing. Protocol parsing delegated to rx_frame, transport to rx_usb_comm/rx_spi_comm.
@@ -502,8 +502,8 @@ typedef enum : uint8_t {
    * - Reliability: Good (frame protocol includes CRC-32)
    *
    * **Pin Connections:**
-   * - COPI: RX72N → RPi5 (data out from RX72N)
-   * - CIPO: RPi5 → RX72N (data in to RX72N)
+   * - COPI: RX72N -> RPi5 (data out from RX72N)
+   * - CIPO: RPi5 -> RX72N (data in to RX72N)
    * - SCK: Clock (either device can be controller)
    * - CS: Chip select (active low)
    * - Optional: Handshake/IRQ pins for flow control

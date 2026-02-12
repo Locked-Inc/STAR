@@ -18,7 +18,7 @@
  *
  * @see rx_check.h Real error checking macros (RX72N target)
  *
- * @par NASA Power of 10: ✓ Inline functions only
+ * @par NASA Power of 10: [OK] Inline functions only
  * @par SOLID: S - Single responsibility (error checking only)
  *
  * @author STAR Team

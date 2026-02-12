@@ -129,16 +129,16 @@
  * | test_reset_state | No | Testing only |
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, longjmp, or recursion
- * - Rule 2: ✓ All loops bounded by nanopb field counts (internal)
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ All functions under 60 lines
- * - Rule 5: ✓ Input validation with minimum 2 checks per function
- * - Rule 6: ✓ Variables declared at smallest scope
- * - Rule 7: ✓ All nanopb return values checked
- * - Rule 8: ✓ Minimal preprocessor usage
- * - Rule 9: ✓ Function pointer only for nanopb callback
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, longjmp, or recursion
+ * - Rule 2: [OK] All loops bounded by nanopb field counts (internal)
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] All functions under 60 lines
+ * - Rule 5: [OK] Input validation with minimum 2 checks per function
+ * - Rule 6: [OK] Variables declared at smallest scope
+ * - Rule 7: [OK] All nanopb return values checked
+ * - Rule 8: [OK] Minimal preprocessor usage
+ * - Rule 9: [OK] Function pointer only for nanopb callback
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles Compliance
  * - **S (Single Responsibility)**: Only protobuf encode/decode operations
@@ -351,8 +351,8 @@ static const double k_velocity_mps_max = 1000.0;
  * @see s_initialized Module state flag
  *
  * @par NASA Power of 10 Compliance
- * - Rule 5: ✓ 1 pre-condition check, 1 post-condition verification
- * - Rule 7: ✓ Return value indicates success/failure
+ * - Rule 5: [OK] 1 pre-condition check, 1 post-condition verification
+ * - Rule 7: [OK] Return value indicates success/failure
  *
  * @since Version 1.0.0
  */
@@ -561,8 +561,8 @@ void rx_nanopb_test_reset_state(void)
  * @see star_v1_SetVelocityRequest_fields nanopb field descriptors
  *
  * @par NASA Power of 10 Compliance
- * - Rule 5: ✓ 3 pre-conditions, 1 post-condition
- * - Rule 7: ✓ pb_encode() return value checked
+ * - Rule 5: [OK] 3 pre-conditions, 1 post-condition
+ * - Rule 7: [OK] pb_encode() return value checked
  *
  * @since Version 1.0.0
  */
@@ -711,8 +711,8 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
  * @see rx_nanopb_encode_velocity_response() Send response after decoding
  *
  * @par NASA Power of 10 Compliance
- * - Rule 5: ✓ 3 pre-conditions
- * - Rule 7: ✓ pb_decode() return value checked
+ * - Rule 5: [OK] 3 pre-conditions
+ * - Rule 7: [OK] pb_decode() return value checked
  *
  * @since Version 1.0.0
  */
@@ -822,8 +822,8 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
  * @see rx_nanopb_create_response_header() Create header with status
  *
  * @par NASA Power of 10 Compliance
- * - Rule 5: ✓ 3 pre-conditions, 1 post-condition
- * - Rule 7: ✓ pb_encode() return value checked
+ * - Rule 5: [OK] 3 pre-conditions, 1 post-condition
+ * - Rule 7: [OK] pb_encode() return value checked
  *
  * @since Version 1.0.0
  */
@@ -1160,8 +1160,8 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  * @see star_v1_SetPIDGainsRequest_fields nanopb field descriptors
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 5:** ✅ 3 preconditions, 2 postconditions documented
- * - **Rule 7:** ✅ pb_decode() return value checked
+ * - **Rule 5:** [PASS] 3 preconditions, 2 postconditions documented
+ * - **Rule 7:** [PASS] pb_decode() return value checked
  *
  * @since Version 1.0.0
  *
@@ -1275,7 +1275,7 @@ rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
  * @see star_v1_TelemetryData Generated telemetry message structure
  *
  * @par NASA Power of 10 Compliance
- * - Rule 5: ✓ 3 pre-conditions, 1 post-condition
+ * - Rule 5: [OK] 3 pre-conditions, 1 post-condition
  *
  * @since Version 1.0.0
  */
@@ -1423,11 +1423,11 @@ rx_err_t rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            c
  *
  * @par Velocity Mapping
  * ```
- * params->left_mps  → cmd->front_left_velocity_mps
- *                   → cmd->back_left_velocity_mps
+ * params->left_mps  -> cmd->front_left_velocity_mps
+ *                   -> cmd->back_left_velocity_mps
  *
- * params->right_mps → cmd->front_right_velocity_mps
- *                   → cmd->back_right_velocity_mps
+ * params->right_mps -> cmd->front_right_velocity_mps
+ *                   -> cmd->back_right_velocity_mps
  * ```
  *
  * @par Motion Examples

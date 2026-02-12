@@ -113,16 +113,16 @@
  * - ThreadX (tx_api.h): Mutex synchronization
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ All loops have static upper bounds (k_error_handler_max_retries)
- * - Rule 3: ✓ No dynamic memory allocation (static component slots)
- * - Rule 4: ✓ Functions are concise (~30-60 lines)
- * - Rule 5: ✓ Minimum 2 assertions/validations per function
- * - Rule 6: ✓ Variables declared at smallest scope
- * - Rule 7: ✓ All return values checked or explicitly cast to void
- * - Rule 8: ✓ All constants use C23 typed enums
- * - Rule 9: ⚠ Function pointers used for interface (DIP pattern)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] All loops have static upper bounds (k_error_handler_max_retries)
+ * - Rule 3: [OK] No dynamic memory allocation (static component slots)
+ * - Rule 4: [OK] Functions are concise (~30-60 lines)
+ * - Rule 5: [OK] Minimum 2 assertions/validations per function
+ * - Rule 6: [OK] Variables declared at smallest scope
+ * - Rule 7: [OK] All return values checked or explicitly cast to void
+ * - Rule 8: [OK] All constants use C23 typed enums
+ * - Rule 9: [WARN] Function pointers used for interface (DIP pattern)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S (SRP):** Single responsibility - error tracking only

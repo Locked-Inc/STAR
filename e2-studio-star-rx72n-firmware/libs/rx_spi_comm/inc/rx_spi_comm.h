@@ -183,13 +183,13 @@
  *
  * | Scenario | Thread Safety | Mitigation Required |
  * |----------|---------------|---------------------|
- * | **Single-threaded** | ✓ Safe | None |
- * | **Multi-threaded (same handle)** | ✗ Unsafe | External mutex required |
- * | **Multi-threaded (different handles)** | ✓ Safe | None (independent state) |
- * | **Send from multiple threads** | ✗ Unsafe | Mutex around send operations |
- * | **Receive from multiple threads** | ✗ Unsafe | Dedicate one thread to polling |
- * | **Send from ISR** | ⚠️ Conditional | OK if SPI HAL is ISR-safe |
- * | **Receive from ISR** | ⚠️ Conditional | OK if SPI HAL is ISR-safe |
+ * | **Single-threaded** | [OK] Safe | None |
+ * | **Multi-threaded (same handle)** | [X] Unsafe | External mutex required |
+ * | **Multi-threaded (different handles)** | [OK] Safe | None (independent state) |
+ * | **Send from multiple threads** | [X] Unsafe | Mutex around send operations |
+ * | **Receive from multiple threads** | [X] Unsafe | Dedicate one thread to polling |
+ * | **Send from ISR** | [WARN] Conditional | OK if SPI HAL is ISR-safe |
+ * | **Receive from ISR** | [WARN] Conditional | OK if SPI HAL is ISR-safe |
  *
  * **Recommended Architecture**:
  * - Dedicate one thread to SPI communication (poll + send)
@@ -322,16 +322,16 @@
  *
  * | Rule | Compliance | Implementation Notes |
  * |------|------------|---------------------|
- * | **Rule 1: Control Flow** | ✓ | No goto, setjmp, longjmp, or recursion |
- * | **Rule 2: Loop Bounds** | ✓ | All loops have statically provable bounds |
- * | **Rule 3: No Dynamic Allocation** | ✓ | Zero malloc/free - all static buffers |
- * | **Rule 4: Function Size** | ✓ | All functions < 60 lines |
- * | **Rule 5: Assertions** | ✓ | Minimum 2 checks per function (nullptr, initialized) |
- * | **Rule 6: Data Scope** | ✓ | Variables declared at smallest scope |
- * | **Rule 7: Check Returns** | ✓ | All return values validated |
- * | **Rule 8: Preprocessor** | ✓ | Typed enums for constants, minimal macros |
- * | **Rule 9: Pointers** | ✓ | Single-level dereferencing only |
- * | **Rule 10: Compiler Warnings** | ✓ | -Wall -Wextra -Werror enabled |
+ * | **Rule 1: Control Flow** | [OK] | No goto, setjmp, longjmp, or recursion |
+ * | **Rule 2: Loop Bounds** | [OK] | All loops have statically provable bounds |
+ * | **Rule 3: No Dynamic Allocation** | [OK] | Zero malloc/free - all static buffers |
+ * | **Rule 4: Function Size** | [OK] | All functions < 60 lines |
+ * | **Rule 5: Assertions** | [OK] | Minimum 2 checks per function (nullptr, initialized) |
+ * | **Rule 6: Data Scope** | [OK] | Variables declared at smallest scope |
+ * | **Rule 7: Check Returns** | [OK] | All return values validated |
+ * | **Rule 8: Preprocessor** | [OK] | Typed enums for constants, minimal macros |
+ * | **Rule 9: Pointers** | [OK] | Single-level dereferencing only |
+ * | **Rule 10: Compiler Warnings** | [OK] | -Wall -Wextra -Werror enabled |
  *
  * ## SOLID Principles
  *
@@ -696,7 +696,7 @@ typedef struct {
    * If true, applies FEC encoding to outgoing frames and FEC decoding
    * to incoming frames. Improves reliability at cost of throughput.
    * **Default**: false
-   * **Overhead**: ~50% (e.g., 100 bytes → 150 bytes with FEC)
+   * **Overhead**: ~50% (e.g., 100 bytes -> 150 bytes with FEC)
    */
   bool    fec_enabled;
 } rx_spi_comm_config_t;

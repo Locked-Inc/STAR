@@ -55,7 +55,7 @@
  * @see tests/test_rspi.c Test file
  *
  * @par NASA Power of 10 Compliance:
- * - ✓ Static allocation, no recursion, bounded loops
+ * - [OK] Static allocation, no recursion, bounded loops
  *
  * @par SOLID Principles:
  * - D: Dependency Inversion - Tests depend on interface, not implementation

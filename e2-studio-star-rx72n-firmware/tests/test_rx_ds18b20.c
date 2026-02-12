@@ -46,7 +46,7 @@
  * @code{.unparsed}
  * ┌─────────────────────────────────────────────────────────┐
  * │ Hardware Layer (Bypassed by Mocks)                      │
- * │ - rx_bus_onewire → GPIO timing (µs-precision)           │
+ * │ - rx_bus_onewire -> GPIO timing (µs-precision)           │
  * │ - Physical 1-Wire protocol implementation               │
  * │ - Open-drain GPIO control                               │
  * └──────────────────────────────────────────────────────────┘
@@ -67,10 +67,10 @@
  *
  * | Resolution | Precision | Conversion Time | LSBs Masked | Test Coverage |
  * |------------|-----------|-----------------|-------------|---------------|
- * | 9-bit      | 0.5°C     | 93.75ms         | Bits 0-2    | ✓ Tested      |
- * | 10-bit     | 0.25°C    | 187.5ms         | Bits 0-1    | ✓ Tested      |
- * | 11-bit     | 0.125°C   | 375ms           | Bit 0       | ✓ Tested      |
- * | 12-bit     | 0.0625°C  | 750ms           | None        | ✓ Tested      |
+ * | 9-bit      | 0.5°C     | 93.75ms         | Bits 0-2    | [OK] Tested      |
+ * | 10-bit     | 0.25°C    | 187.5ms         | Bits 0-1    | [OK] Tested      |
+ * | 11-bit     | 0.125°C   | 375ms           | Bit 0       | [OK] Tested      |
+ * | 12-bit     | 0.0625°C  | 750ms           | None        | [OK] Tested      |
  *
  * # DS18B20 Scratchpad Memory Layout
  *
@@ -79,15 +79,15 @@
  * @code{.unparsed}
  * Byte│Field         │ Access │ Description                    │ Test Validation
  * ────┼──────────────┼────────┼────────────────────────────────┼─────────────────
- *  0  │ Temp LSB     │ R      │ Temperature low byte (0-7)     │ ✓ All temp values
- *  1  │ Temp MSB     │ R      │ Temperature high byte (sign)   │ ✓ Positive/negative
- *  2  │ TH Register  │ R/W    │ High alarm threshold           │ ✓ Preserved on write
- *  3  │ TL Register  │ R/W    │ Low alarm threshold            │ ✓ Preserved on write
- *  4  │ Config       │ R/W    │ Resolution bits [6:5]          │ ✓ All resolutions
- *  5  │ Reserved     │ R      │ Always 0xFF                    │ ✓ Validated
- *  6  │ Reserved     │ R      │ Factory-programmed             │ ✓ Ignored
- *  7  │ Reserved     │ R      │ Count remain (legacy)          │ ✓ Ignored
- *  8  │ CRC          │ R      │ CRC-8 of bytes 0-7             │ ✓ Valid/invalid CRC
+ *  0  │ Temp LSB     │ R      │ Temperature low byte (0-7)     │ [OK] All temp values
+ *  1  │ Temp MSB     │ R      │ Temperature high byte (sign)   │ [OK] Positive/negative
+ *  2  │ TH Register  │ R/W    │ High alarm threshold           │ [OK] Preserved on write
+ *  3  │ TL Register  │ R/W    │ Low alarm threshold            │ [OK] Preserved on write
+ *  4  │ Config       │ R/W    │ Resolution bits [6:5]          │ [OK] All resolutions
+ *  5  │ Reserved     │ R      │ Always 0xFF                    │ [OK] Validated
+ *  6  │ Reserved     │ R      │ Factory-programmed             │ [OK] Ignored
+ *  7  │ Reserved     │ R      │ Count remain (legacy)          │ [OK] Ignored
+ *  8  │ CRC          │ R      │ CRC-8 of bytes 0-7             │ [OK] Valid/invalid CRC
  * @endcode
  *
  * ## Temperature Data Format (Bytes 0-1)
@@ -120,10 +120,10 @@
  *
  * R1 R0 | Resolution | Config Value | Tested
  * ------+------------+--------------+--------
- *  0  0 |   9-bit    |     0x1F     |   ✓
- *  0  1 |  10-bit    |     0x3F     |   ✓
- *  1  0 |  11-bit    |     0x5F     |   ✓
- *  1  1 |  12-bit    |     0x7F     |   ✓
+ *  0  0 |   9-bit    |     0x1F     |   [OK]
+ *  0  1 |  10-bit    |     0x3F     |   [OK]
+ *  1  0 |  11-bit    |     0x5F     |   [OK]
+ *  1  1 |  12-bit    |     0x7F     |   [OK]
  * @endcode
  *
  * ## CRC-8/MAXIM Checksum Calculation
@@ -146,11 +146,11 @@
  * 4. **Test Fixtures**: `setUp()` resets mock to known state before each test
  *
  * **Benefits:**
- * - ✅ **No hardware required** - runs on desktop (CI/CD friendly)
- * - ✅ **Fast execution** - no delays for conversion times
- * - ✅ **Deterministic** - no flaky tests from bus noise
- * - ✅ **Error injection** - easily test CRC failures, device disconnection
- * - ✅ **100% coverage** - test all error paths without physical faults
+ * - [PASS] **No hardware required** - runs on desktop (CI/CD friendly)
+ * - [PASS] **Fast execution** - no delays for conversion times
+ * - [PASS] **Deterministic** - no flaky tests from bus noise
+ * - [PASS] **Error injection** - easily test CRC failures, device disconnection
+ * - [PASS] **100% coverage** - test all error paths without physical faults
  *
  * ## Test Categories Implemented
  *
@@ -202,11 +202,11 @@
  *
  * // Edge case: -55.0°C (minimum sensor range)
  * raw_value = 0xFC90 = -880 decimal
- * celsius = -880 / 16.0 = -55.0°C ✓ Valid
+ * celsius = -880 / 16.0 = -55.0°C [OK] Valid
  *
  * // Edge case: +125.0°C (maximum sensor range)
  * raw_value = 0x07D0 = 2000 decimal
- * celsius = 2000 / 16.0 = 125.0°C ✓ Valid
+ * celsius = 2000 / 16.0 = 125.0°C [OK] Valid
  * @endcode
  *
  * ## Resolution-Dependent LSB Masking
@@ -219,14 +219,14 @@
  * @code
  * // 9-bit resolution (0.5°C precision): Mask 0xFFF8
  * raw_12bit = 0x0191 (25.0625°C)
- * raw_9bit  = 0x0191 & 0xFFF8 = 0x0190 (25.0°C) ✓ Correct
+ * raw_9bit  = 0x0191 & 0xFFF8 = 0x0190 (25.0°C) [OK] Correct
  *
  * // 10-bit resolution (0.25°C precision): Mask 0xFFFC
  * raw_12bit = 0x0191 (25.0625°C)
- * raw_10bit = 0x0191 & 0xFFFC = 0x0190 (25.0°C) ✓ Correct
+ * raw_10bit = 0x0191 & 0xFFFC = 0x0190 (25.0°C) [OK] Correct
  *
  * // 12-bit resolution (0.0625°C precision): Mask 0xFFFF (no masking)
- * raw_12bit = 0x0191 (25.0625°C) ✓ All bits valid
+ * raw_12bit = 0x0191 (25.0625°C) [OK] All bits valid
  * @endcode
  *
  * # Mock Infrastructure Implementation
@@ -318,16 +318,16 @@
  *
  * | Rule | Requirement                  | Compliance Status                          |
  * |------|------------------------------|--------------------------------------------|
- * | 1    | Simple control flow          | ✓ No goto, no recursion in test code      |
- * | 2    | Fixed loop bounds            | ✓ All loops use enum constants             |
- * | 3    | No dynamic allocation        | ✓ Zero malloc/free (stack-only)            |
- * | 4    | Functions ≤60 lines          | ✓ All test functions <40 lines             |
- * | 5    | Assertions (min 2/function)  | ✓ Unity asserts validate all outputs       |
- * | 6    | Data scope minimization      | ✓ Variables declared at first use          |
- * | 7    | Check all returns            | ✓ All driver returns validated via asserts |
- * | 8    | Limit preprocessor           | ✓ Typed enums only, no macros              |
- * | 9    | Pointer restrictions         | ✓ Single-level dereferencing               |
- * | 10   | Compiler warnings            | ✓ -Wall -Wextra -Werror, zero warnings     |
+ * | 1    | Simple control flow          | [OK] No goto, no recursion in test code      |
+ * | 2    | Fixed loop bounds            | [OK] All loops use enum constants             |
+ * | 3    | No dynamic allocation        | [OK] Zero malloc/free (stack-only)            |
+ * | 4    | Functions ≤60 lines          | [OK] All test functions <40 lines             |
+ * | 5    | Assertions (min 2/function)  | [OK] Unity asserts validate all outputs       |
+ * | 6    | Data scope minimization      | [OK] Variables declared at first use          |
+ * | 7    | Check all returns            | [OK] All driver returns validated via asserts |
+ * | 8    | Limit preprocessor           | [OK] Typed enums only, no macros              |
+ * | 9    | Pointer restrictions         | [OK] Single-level dereferencing               |
+ * | 10   | Compiler warnings            | [OK] -Wall -Wextra -Werror, zero warnings     |
  *
  * # SOLID Principles Application
  *
@@ -443,7 +443,7 @@
  *
  * **State Lifecycle:**
  * ```
- * setUp() → Reset to defaults → Run test → Modify state → tearDown()
+ * setUp() -> Reset to defaults -> Run test -> Modify state -> tearDown()
  * ```
  *
  * **Default State (After setUp):**
@@ -550,7 +550,7 @@ typedef enum : uint8_t {
   k_test_temp_minus_55c_msb   = 0xFC, /**< -55.0°C MSB: 0xFC90 = -880 decimal (two's complement) */
   k_test_temp_125c_lsb        = 0xD0, /**< +125.0°C LSB: 0x07D0 = 2000 decimal */
   k_test_temp_125c_msb        = 0x07, /**< +125.0°C MSB: 0x07D0 = 2000 decimal */
-  k_test_config_12bit         = 0x7F, /**< 12-bit resolution config: R1=1, R0=1 → 0b01111111 */
+  k_test_config_12bit         = 0x7F, /**< 12-bit resolution config: R1=1, R0=1 -> 0b01111111 */
 } ds18b20_mock_constants_t;
 
 /**
@@ -1366,12 +1366,12 @@ static void internal_reset_mock_state(void)
  * values from previous tests interfere with current test.
  *
  * **Fields Cleared:**
- * - bus_manager → nullptr
- * - bus_name → nullptr
- * - resolution → 0 (invalid)
- * - use_rom_matching → false
- * - rom[] → all zeros
- * - initialized → false
+ * - bus_manager -> nullptr
+ * - bus_name -> nullptr
+ * - resolution -> 0 (invalid)
+ * - use_rom_matching -> false
+ * - rom[] -> all zeros
+ * - initialized -> false
  *
  * @param[out] handle DS18B20 handle to initialize
  *
@@ -1413,7 +1413,7 @@ static void internal_init_handle(rx_ds18b20_handle_t* handle)
  *
  * **Execution Order:**
  * ```
- * setUp() → test_xxx() → tearDown() → (repeat for next test)
+ * setUp() -> test_xxx() -> tearDown() -> (repeat for next test)
  * ```
  *
  * @pre None (called by Unity framework)
@@ -1461,11 +1461,11 @@ void tearDown(void)
  * invalid inputs and only initializes when device is present on bus.
  *
  * **Test Coverage:**
- * - ✓ Valid initialization (all resolutions)
- * - ✓ nullptr pointer validation (handle, config)
- * - ✓ Device presence detection (no device on bus)
- * - ✓ Double initialization prevention
- * - ✓ Invalid resolution rejection
+ * - [OK] Valid initialization (all resolutions)
+ * - [OK] nullptr pointer validation (handle, config)
+ * - [OK] Device presence detection (no device on bus)
+ * - [OK] Double initialization prevention
+ * - [OK] Invalid resolution rejection
  *
  * @{
  */
@@ -1701,10 +1701,10 @@ void test_ds18b20_init_invalid_resolution(void)
  * including two's complement decoding for negative temperatures.
  *
  * **Test Coverage:**
- * - ✓ Positive temperatures (+25°C, +125°C)
- * - ✓ Zero crossing (0°C)
- * - ✓ Negative temperatures (-55°C via two's complement)
- * - ✓ Error handling (not initialized, nullptr output)
+ * - [OK] Positive temperatures (+25°C, +125°C)
+ * - [OK] Zero crossing (0°C)
+ * - [OK] Negative temperatures (-55°C via two's complement)
+ * - [OK] Error handling (not initialized, nullptr output)
  *
  * @{
  */
@@ -1800,12 +1800,12 @@ void test_ds18b20_read_temperature_0c(void)
  * **Two's Complement Explanation:**
  * ```
  * 0xFC90 in binary:
- * MSB: 1111 1100 (sign bit = 1 → negative)
+ * MSB: 1111 1100 (sign bit = 1 -> negative)
  * LSB: 1001 0000
  *
  * Convert to decimal (signed):
  * 0xFC90 = -880 (16-bit signed interpretation)
- * -880 / 16 = -55.0°C ✓
+ * -880 / 16 = -55.0°C [OK]
  * ```
  */
 void test_ds18b20_read_temperature_minus_55c(void)
@@ -1924,9 +1924,9 @@ void test_ds18b20_read_temperature_null_output(void)
  * @brief Test resolution configuration and conversion time calculation
  *
  * **Test Coverage:**
- * - ✓ Set resolution (9, 10, 11, 12 bit)
- * - ✓ Get resolution (verify persistence)
- * - ✓ Conversion time calculation (94ms to 750ms)
+ * - [OK] Set resolution (9, 10, 11, 12 bit)
+ * - [OK] Get resolution (verify persistence)
+ * - [OK] Conversion time calculation (94ms to 750ms)
  *
  * @{
  */
@@ -2055,8 +2055,8 @@ void test_ds18b20_get_conversion_time_9bit(void)
  * @brief Test detection of external vs parasitic power modes
  *
  * **Test Coverage:**
- * - ✓ External power (VDD connected)
- * - ✓ Parasitic power (VDD = GND, powered from DQ line)
+ * - [OK] External power (VDD connected)
+ * - [OK] Parasitic power (VDD = GND, powered from DQ line)
  *
  * @{
  */
@@ -2138,8 +2138,8 @@ void test_ds18b20_read_power_mode_parasitic(void)
  * @brief Test triggering temperature conversion
  *
  * **Test Coverage:**
- * - ✓ Successful conversion trigger
- * - ✓ Conversion trigger with device not present
+ * - [OK] Successful conversion trigger
+ * - [OK] Conversion trigger with device not present
  *
  * @{
  */
@@ -2207,8 +2207,8 @@ void test_ds18b20_trigger_conversion_no_device(void)
  * @brief Test driver cleanup and resource release
  *
  * **Test Coverage:**
- * - ✓ Clean deinitialization
- * - ✓ Handle state cleared
+ * - [OK] Clean deinitialization
+ * - [OK] Handle state cleared
  *
  * @{
  */

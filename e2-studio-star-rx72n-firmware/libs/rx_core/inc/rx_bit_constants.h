@@ -30,9 +30,9 @@
  * - Unit conversion functions
  *
  * **EXCLUDE from (use peripheral-specific headers instead):**
- * - Hardware register bit positions → Use rx72n_*_regs.h (e.g., USBE.SYSCFG.DRPD = bit 5)
- * - Clock divider calculations → Use rx72n_clock.h (e.g., PCLKA_DIV = 2)
- * - Peripheral-specific shifts → Define in peripheral header (e.g., ADC channel shift)
+ * - Hardware register bit positions -> Use rx72n_*_regs.h (e.g., USBE.SYSCFG.DRPD = bit 5)
+ * - Clock divider calculations -> Use rx72n_clock.h (e.g., PCLKA_DIV = 2)
+ * - Peripheral-specific shifts -> Define in peripheral header (e.g., ADC channel shift)
  *
  * ## Common Usage Patterns
  *
@@ -108,14 +108,14 @@
  * @par Module Dependencies:
  * ```
  * rx_bit_constants.h
- *   └─→ stdint.h (uint8_t for underlying enum type)
+ *   └─-> stdint.h (uint8_t for underlying enum type)
  *
  * Used by:
- *   ├─→ lib/rx_frame/ (protocol framing, byte packing)
- *   ├─→ lib/rx_crc/ (CRC-32 byte-wise operations)
- *   ├─→ lib/rx_nanopb/ (Protocol Buffer serialization)
- *   ├─→ lib/rx_comm_manager/ (communication buffer management)
- *   └─→ lib/rx_hal/src/uart.c (data serialization)
+ *   ├─-> lib/rx_frame/ (protocol framing, byte packing)
+ *   ├─-> lib/rx_crc/ (CRC-32 byte-wise operations)
+ *   ├─-> lib/rx_nanopb/ (Protocol Buffer serialization)
+ *   ├─-> lib/rx_comm_manager/ (communication buffer management)
+ *   └─-> lib/rx_hal/src/uart.c (data serialization)
  * ```
  *
  * @author STAR Team
@@ -275,13 +275,13 @@ typedef enum : uint8_t {
  *
  * ### Big-Endian 16-bit Packing/Unpacking
  * @code{.c}
- * // Pack uint16_t → big-endian buffer
+ * // Pack uint16_t -> big-endian buffer
  * uint16_t value = 0xABCD;
  * uint8_t buffer[2];
  * buffer[0] = (value >> k_rx_shift_byte) & 0xFF;  // 0xAB (high byte)
  * buffer[1] = (value >> 0) & 0xFF;                // 0xCD (low byte)
  *
- * // Unpack big-endian buffer → uint16_t
+ * // Unpack big-endian buffer -> uint16_t
  * uint16_t reconstructed = ((uint16_t)buffer[0] << k_rx_shift_byte) | buffer[1];
  * // Result: (0xAB << 8) | 0xCD = 0xABCD
  * @endcode
@@ -296,10 +296,10 @@ typedef enum : uint8_t {
  * **Example:**
  * @code{.c}
  * // CLEAR INTENT: Using k_rx_shift_byte
- * uint8_t byte1 = (word >> k_rx_shift_byte) & 0xFF;  // ✓ Obvious: shift by 1 byte
+ * uint8_t byte1 = (word >> k_rx_shift_byte) & 0xFF;  // [OK] Obvious: shift by 1 byte
  *
  * // AMBIGUOUS INTENT: Using k_rx_bits_per_byte
- * uint8_t byte1 = (word >> k_rx_bits_per_byte) & 0xFF;  // ✗ Less clear: shifting? counting?
+ * uint8_t byte1 = (word >> k_rx_bits_per_byte) & 0xFF;  // [X] Less clear: shifting? counting?
  * @endcode
  *
  * ## Value Justification Table

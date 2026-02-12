@@ -19,14 +19,14 @@
  * ## Supported PWM Modes
  *
  * **1. Sawtooth-wave PWM (edge-aligned)**:
- * - Counter: 0 → GTPR → 0 (reset at top)
+ * - Counter: 0 -> GTPR -> 0 (reset at top)
  * - Period = PCLKA / frequency
  * - For 20kHz: period = 120MHz / 20kHz = 6000 counts (~12.5-bit resolution)
  * - Single update point at counter reset
  * - Best for: Simple PWM, LED dimming
  *
  * **2. Triangle-wave PWM (center-aligned)**:
- * - Counter: 0 → GTPR → 0 (up/down counting)
+ * - Counter: 0 -> GTPR -> 0 (up/down counting)
  * - Period = PCLKA / (2 × frequency)
  * - For 20kHz: period = 120MHz / 40kHz = 3000 counts (~11.5-bit resolution)
  * - Update at crest and/or trough (mode dependent)
@@ -78,16 +78,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto/setjmp/recursion in any function |
- * | 2. Fixed loop bounds | ✓ | Loops bounded by k_gptw_max_channels (4) |
- * | 3. No dynamic allocation | ✓ | All variables static or stack, zero malloc |
- * | 4. Small functions | ✓ | All functions < 60 lines |
- * | 5. Assertions | ✓ | RX_CHECK_NULL_PTR, switch validation, range checks |
- * | 6. Narrow scope | ✓ | Internal functions use static, minimal globals |
- * | 7. Check return values | ✓ | All rx_err_t returns propagated or handled |
- * | 8. Limited preprocessor | ✓ | C23 typed enums, macros only for RX_CHECK |
- * | 9. Pointer restrictions | ✓ | Single-level pointers, no function pointers |
- * | 10. Compiler warnings | ✓ | Builds clean with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto/setjmp/recursion in any function |
+ * | 2. Fixed loop bounds | [OK] | Loops bounded by k_gptw_max_channels (4) |
+ * | 3. No dynamic allocation | [OK] | All variables static or stack, zero malloc |
+ * | 4. Small functions | [OK] | All functions < 60 lines |
+ * | 5. Assertions | [OK] | RX_CHECK_NULL_PTR, switch validation, range checks |
+ * | 6. Narrow scope | [OK] | Internal functions use static, minimal globals |
+ * | 7. Check return values | [OK] | All rx_err_t returns propagated or handled |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums, macros only for RX_CHECK |
+ * | 9. Pointer restrictions | [OK] | Single-level pointers, no function pointers |
+ * | 10. Compiler warnings | [OK] | Builds clean with -Wall -Wextra -Werror |
  *
  * @par SOLID Principles:
  *
@@ -359,7 +359,7 @@ static inline bool internal_is_triangle_mode(const rx_gptw_wave_mode_t mode)
  * - Memory: 0 bytes heap, 0 bytes stack
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ RX_ASSERT validates unexpected conditions
+ * - Rule 5: [OK] RX_ASSERT validates unexpected conditions
  *
  * @see rx_gptw_wave_mode_t Input enum definition
  * @see RX72N Hardware Manual Section 26.2.12 GTCR register description
@@ -462,8 +462,8 @@ static uint32_t internal_get_gtcr_mode(const rx_gptw_wave_mode_t mode)
  * - Memory: 0 bytes heap, ~16 bytes stack
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 preconditions (NULL check, wave_mode validation)
- * - Rule 7: ✓ Returns error code, no silent failures
+ * - Rule 5: [OK] 2 preconditions (NULL check, wave_mode validation)
+ * - Rule 7: [OK] Returns error code, no silent failures
  *
  * @see k_pclka_hz PCLKA clock frequency constant
  * @see internal_is_triangle_mode() Determines divisor selection
@@ -828,7 +828,7 @@ static void internal_enable_gptw_module_clock(void)
  * - Memory: 0 bytes heap, ~16 bytes stack
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 3 preconditions (NULL checks, period range)
+ * - Rule 5: [OK] 3 preconditions (NULL checks, period range)
  *
  * @see internal_calculate_period() Period value calculation
  * @see rx72n_gptw_regs.h Register structure definition
@@ -1005,8 +1005,8 @@ static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t          
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ NULL pointer check, channel range check
- * - Rule 7: ✓ All internal function returns checked
+ * - Rule 5: [OK] NULL pointer check, channel range check
+ * - Rule 7: [OK] All internal function returns checked
  *
  * @callgraph
  */
@@ -1515,8 +1515,8 @@ typedef enum : uint8_t {
  * @note For sawtooth mode, direction is ignored (always up)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ NULL pointer checks, period validation
- * - Rule 2: ✓ No loops (direct calculation)
+ * - Rule 5: [OK] NULL pointer checks, period validation
+ * - Rule 2: [OK] No loops (direct calculation)
  *
  * @see internal_configure_channel_staggered() Calls this function
  * @see gptw_phase_divisor_t Divisor constants
@@ -1666,8 +1666,8 @@ static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
  * @note Called from rx_gptw_init_all_staggered() in a loop
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ Channel range validation
- * - Rule 7: ✓ All internal function returns checked
+ * - Rule 5: [OK] Channel range validation
+ * - Rule 7: [OK] All internal function returns checked
  *
  * @see rx_gptw_init_all_staggered() Parent function
  * @see internal_calculate_phase_offset() Phase calculation

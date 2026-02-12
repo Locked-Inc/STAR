@@ -150,7 +150,7 @@
  *
  * # NASA Power of 10 Compliance Analysis
  *
- * ## Rule 1: Simplify Control Flow ✓ COMPLIANT
+ * ## Rule 1: Simplify Control Flow [OK] COMPLIANT
  *
  * **No forbidden constructs:**
  * - Zero `goto` statements
@@ -158,10 +158,10 @@
  * - Zero recursion
  *
  * **All functions direct call chains:**
- * - `hcsr04_hal_delay_us()` → `internal_cmt2_init()` → hardware registers
+ * - `hcsr04_hal_delay_us()` -> `internal_cmt2_init()` -> hardware registers
  * - No loops back up the call stack
  *
- * ## Rule 2: Fixed Loop Upper-Bounds ✓ COMPLIANT
+ * ## Rule 2: Fixed Loop Upper-Bounds [OK] COMPLIANT
  *
  * **All loops provably bounded:**
  * ```c
@@ -177,14 +177,14 @@
  * }
  * ```
  *
- * ## Rule 3: No Dynamic Memory After Initialization ✓ COMPLIANT
+ * ## Rule 3: No Dynamic Memory After Initialization [OK] COMPLIANT
  *
  * **Zero malloc/free:**
  * - Mutex: Created once via `tx_mutex_create()` (ThreadX static allocation)
  * - Static variables: `s_cmt2_initialized`, `overflow_count`, `last_counter`
  * - All data: Stack or static storage
  *
- * ## Rule 4: Keep Functions Short (~60 lines) ✓ COMPLIANT
+ * ## Rule 4: Keep Functions Short (~60 lines) [OK] COMPLIANT
  *
  * **Function size analysis:**
  * | Function                      | Lines | Complexity |
@@ -198,7 +198,7 @@
  *
  * All functions under 60 lines. Most under 30 lines.
  *
- * ## Rule 5: Use Assertions/Validation ✓ COMPLIANT
+ * ## Rule 5: Use Assertions/Validation [OK] COMPLIANT
  *
  * **Minimum 2 validation checks per function:**
  * ```c
@@ -213,7 +213,7 @@
  * if (local_pin_num > k_rx_pin_max) return k_rx_err_invalid_arg; // Check 3
  * ```
  *
- * ## Rule 6: Declare Data at Smallest Scope ✓ COMPLIANT
+ * ## Rule 6: Declare Data at Smallest Scope [OK] COMPLIANT
  *
  * **Variables close to first use:**
  * ```c
@@ -228,7 +228,7 @@
  * - `s_cmt2_initialized`
  * - `s_time_mutex`
  *
- * ## Rule 7: Check All Return Values ✓ COMPLIANT
+ * ## Rule 7: Check All Return Values [OK] COMPLIANT
  *
  * **All function returns validated:**
  * ```c
@@ -243,7 +243,7 @@
  * }
  * ```
  *
- * ## Rule 8: Limit Preprocessor Use ✓ COMPLIANT
+ * ## Rule 8: Limit Preprocessor Use [OK] COMPLIANT
  *
  * **C23 typed enums for ALL integer constants:**
  * ```c
@@ -256,7 +256,7 @@
  *
  * **Zero macros** - only typed enums for constants.
  *
- * ## Rule 9: Restrict Pointer Use ✓ COMPLIANT
+ * ## Rule 9: Restrict Pointer Use [OK] COMPLIANT
  *
  * **Single-level pointers only:**
  * - `bool* value` - Output parameter
@@ -265,7 +265,7 @@
  *
  * **No double-indirection, no function pointers.**
  *
- * ## Rule 10: Compile with Maximum Warnings ✓ COMPLIANT
+ * ## Rule 10: Compile with Maximum Warnings [OK] COMPLIANT
  *
  * **Build flags:**
  * ```cmake
@@ -276,24 +276,24 @@
  *
  * # SOLID Principles Justification
  *
- * ## Single Responsibility ✓
+ * ## Single Responsibility [OK]
  * - One purpose: RX72N hardware access for HC-SR04
  * - GPIO operations separate from timing operations
  * - Does NOT include sensor logic or distance calculations
  *
- * ## Open/Closed ✓
+ * ## Open/Closed [OK]
  * - Open for extension: New platforms implement HAL interface
  * - Closed for modification: This file specific to RX72N, stable
  *
- * ## Liskov Substitution ✓
+ * ## Liskov Substitution [OK]
  * - Interchangeable with mock HAL implementation
  * - Driver code unchanged when swapping HAL
  *
- * ## Interface Segregation ✓
+ * ## Interface Segregation [OK]
  * - Minimal HAL: Only 8 functions (GPIO + timing)
  * - No unused peripheral access (I2C, SPI, etc.)
  *
- * ## Dependency Inversion ✓
+ * ## Dependency Inversion [OK]
  * - Implements abstraction (rx_hcsr04_hal.h)
  * - Driver depends on abstraction, not this concrete implementation
  *
@@ -347,7 +347,7 @@
  * **Why unsafe:**
  * - No internal locking
  * - Concurrent writes to same pin may corrupt state
- * - Example: Thread A sets HIGH, Thread B sets LOW concurrently → undefined
+ * - Example: Thread A sets HIGH, Thread B sets LOW concurrently -> undefined
  *
  * **Solution:** Caller must ensure exclusive access (external mutex)
  *
@@ -687,9 +687,9 @@ rx_err_t hcsr04_hal_gpio_deinit(const rx_port_pin_t pin)
  * **Clock Tree:**
  * ```
  * EXTAL (16 MHz crystal)
- *   → PLL (×15) = 240 MHz (ICLK)
- *   → Divider (/4) = 60 MHz (PCLKB)
- *   → CMT2 divider (/8) = 7.5 MHz (CMT2 clock)
+ *   -> PLL (×15) = 240 MHz (ICLK)
+ *   -> Divider (/4) = 60 MHz (PCLKB)
+ *   -> CMT2 divider (/8) = 7.5 MHz (CMT2 clock)
  * ```
  *
  * **Timing Calculations:**
@@ -964,7 +964,7 @@ static rx_err_t internal_time_mutex_init(void)
  *
  * 5. **Set compare match value**
  *    - Write CMCOR = 0xFFFF (maximum, free-running mode)
- *    - Timer counts 0 → 65535, then wraps to 0 (no interrupt)
+ *    - Timer counts 0 -> 65535, then wraps to 0 (no interrupt)
  *
  * 6. **Start CMT2**
  *    - Set CMSTR1 bit 0 (CMT2 start bit)
@@ -992,7 +992,7 @@ static rx_err_t internal_time_mutex_init(void)
  * @endcode
  *
  * **Free-Running Mode:**
- * - Counter increments continuously: 0 → 1 → ... → 65535 → 0 → 1 → ...
+ * - Counter increments continuously: 0 -> 1 -> ... -> 65535 -> 0 -> 1 -> ...
  * - No compare match interrupt (CMIE = 0)
  * - Overflow period: 65536 / 7.5 MHz = 8.738 ms
  * - Software extends to 32-bit via overflow tracking

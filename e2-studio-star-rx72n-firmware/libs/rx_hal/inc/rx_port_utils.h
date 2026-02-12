@@ -84,16 +84,16 @@
  *
  * | Rule | Compliance | Details |
  * |------|------------|---------|
- * | 1    | ✓          | No goto, setjmp, recursion - simple switch statement |
- * | 2    | ✓          | No loops (switch is O(1) jump table) |
- * | 3    | ✓          | No dynamic allocation (inline function) |
- * | 4    | ✓          | Function is 43 lines (under 60 line limit) |
- * | 5    | ✓          | Implicit validation: returns NULL for invalid port |
- * | 6    | ✓          | Minimal scope (single parameter, local to function) |
- * | 7    | ✓          | Return value must be checked (NULL validation required) |
- * | 8    | ✓          | Uses C23 typed enums (k_rx_port_*), no magic numbers |
- * | 9    | ✓          | Single level of dereferencing for register access |
- * | 10   | ✓          | Compiles with -Wall -Wextra -Werror |
+ * | 1    | [OK]          | No goto, setjmp, recursion - simple switch statement |
+ * | 2    | [OK]          | No loops (switch is O(1) jump table) |
+ * | 3    | [OK]          | No dynamic allocation (inline function) |
+ * | 4    | [OK]          | Function is 43 lines (under 60 line limit) |
+ * | 5    | [OK]          | Implicit validation: returns NULL for invalid port |
+ * | 6    | [OK]          | Minimal scope (single parameter, local to function) |
+ * | 7    | [OK]          | Return value must be checked (NULL validation required) |
+ * | 8    | [OK]          | Uses C23 typed enums (k_rx_port_*), no magic numbers |
+ * | 9    | [OK]          | Single level of dereferencing for register access |
+ * | 10   | [OK]          | Compiles with -Wall -Wextra -Werror |
  *
  * @par SOLID Principles
  *
@@ -301,16 +301,16 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1** ✓ Simple control flow (switch only, no goto/recursion)
- * - **Rule 2** ✓ No loops (O(1) switch statement)
- * - **Rule 3** ✓ No dynamic allocation
- * - **Rule 4** ✓ Function is 43 lines (under 60 line limit)
- * - **Rule 5** ✓ Implicit validation: NULL return signals invalid input
- * - **Rule 6** ✓ Minimal scope (single parameter, local to function)
- * - **Rule 7** ✓ Return value MUST be validated by caller
- * - **Rule 8** ✓ Uses C23 typed enums (k_rx_port_*), zero magic numbers
- * - **Rule 9** ✓ Single level of pointer dereferencing for register access
- * - **Rule 10** ✓ Compiles clean with -Wall -Wextra -Werror
+ * - **Rule 1** [OK] Simple control flow (switch only, no goto/recursion)
+ * - **Rule 2** [OK] No loops (O(1) switch statement)
+ * - **Rule 3** [OK] No dynamic allocation
+ * - **Rule 4** [OK] Function is 43 lines (under 60 line limit)
+ * - **Rule 5** [OK] Implicit validation: NULL return signals invalid input
+ * - **Rule 6** [OK] Minimal scope (single parameter, local to function)
+ * - **Rule 7** [OK] Return value MUST be validated by caller
+ * - **Rule 8** [OK] Uses C23 typed enums (k_rx_port_*), zero magic numbers
+ * - **Rule 9** [OK] Single level of pointer dereferencing for register access
+ * - **Rule 10** [OK] Compiles clean with -Wall -Wextra -Werror
  *
  * @callgraph
  * @callergraph

@@ -14,7 +14,7 @@
  * **Device**: Texas Instruments DRV8243S Dual H-Bridge Motor Driver
  * **Platform**: Renesas RX72N @ 240 MHz
  * **Control Interface**: Hardware PWM (GPTW peripheral) + GPIO + Optional SPI
- * **Current Sensing**: Analog IPROPI output → 12-bit ADC → Software current limiting
+ * **Current Sensing**: Analog IPROPI output -> 12-bit ADC -> Software current limiting
  * **Fault Detection**: Active-low nFAULT GPIO pin with interrupt capability
  *
  * **Key Features:**
@@ -101,10 +101,10 @@
  * - **Faulted**: Hardware fault detected (nFAULT=LOW) or current limit violated
  *
  * @par State Transition Guards:
- * - init() → Initialized: All resources acquired successfully
- * - set_speed() → Running: No fault active, speed within [-100, +100]
- * - Fault detection → Faulted: nFAULT pin LOW or current > limit_ma
- * - clear_fault() → Initialized: SPI variant only, fault condition resolved
+ * - init() -> Initialized: All resources acquired successfully
+ * - set_speed() -> Running: No fault active, speed within [-100, +100]
+ * - Fault detection -> Faulted: nFAULT pin LOW or current > limit_ma
+ * - clear_fault() -> Initialized: SPI variant only, fault condition resolved
  *
  * ## Hardware Requirements
  *
@@ -315,16 +315,16 @@
  * @see docs/datasheets/drv8243.pdf DRV8243 datasheet (hardware reference)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp/longjmp, or recursion used
- * - Rule 2: ✓ All loops have compile-time bounded iterations
- * - Rule 3: ✓ Zero dynamic memory allocation (all buffers static)
- * - Rule 4: ✓ All functions < 60 lines (longest: init ~58 lines)
- * - Rule 5: ✓ Minimum 2 assertions per function via RX_CHECK_NULL_PTR + state validation
- * - Rule 6: ✓ Variables declared at smallest scope (function-local)
- * - Rule 7: ✓ All return values checked (rx_err_t propagated or logged)
- * - Rule 8: ✓ Uses C23 typed enums exclusively (no magic numbers)
- * - Rule 9: ⚠️ INTENTIONAL DEVIATION: Uses function pointers via bus_manager interface (DIP pattern for testability)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror (zero warnings)
+ * - Rule 1: [OK] No goto, setjmp/longjmp, or recursion used
+ * - Rule 2: [OK] All loops have compile-time bounded iterations
+ * - Rule 3: [OK] Zero dynamic memory allocation (all buffers static)
+ * - Rule 4: [OK] All functions < 60 lines (longest: init ~58 lines)
+ * - Rule 5: [OK] Minimum 2 assertions per function via RX_CHECK_NULL_PTR + state validation
+ * - Rule 6: [OK] Variables declared at smallest scope (function-local)
+ * - Rule 7: [OK] All return values checked (rx_err_t propagated or logged)
+ * - Rule 8: [OK] Uses C23 typed enums exclusively (no magic numbers)
+ * - Rule 9: [WARN] INTENTIONAL DEVIATION: Uses function pointers via bus_manager interface (DIP pattern for testability)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror (zero warnings)
  *
  * @par SOLID Principles:
  * - **S (Single Responsibility):** Only DRV8243-specific integration logic. PWM handled by rx_motor, ADC/GPIO by bus_manager, SPI by rspi.
@@ -719,16 +719,16 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * @see rspi_init_controller() RSPI initialization (SPI variant only)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ No loops (sequential initialization)
- * - Rule 3: ✓ Zero dynamic allocation (all static/stack)
- * - Rule 4: ✓ Function length: 58 lines (within 60-line limit)
- * - Rule 5: ✓ 7 preconditions (NULL checks + range checks), 6 postconditions
- * - Rule 6: ✓ Variables at minimal scope (function-local)
- * - Rule 7: ✓ All return values checked (rx_motor_init, internal helpers)
- * - Rule 8: ✓ Uses typed enums exclusively (no magic numbers)
- * - Rule 9: ⚠️ Calls through bus_manager function pointers (DIP pattern)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] No loops (sequential initialization)
+ * - Rule 3: [OK] Zero dynamic allocation (all static/stack)
+ * - Rule 4: [OK] Function length: 58 lines (within 60-line limit)
+ * - Rule 5: [OK] 7 preconditions (NULL checks + range checks), 6 postconditions
+ * - Rule 6: [OK] Variables at minimal scope (function-local)
+ * - Rule 7: [OK] All return values checked (rx_motor_init, internal helpers)
+ * - Rule 8: [OK] Uses typed enums exclusively (no magic numbers)
+ * - Rule 9: [WARN] Calls through bus_manager function pointers (DIP pattern)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @since Version 1.0.0
  * @version 1.1.0 Added SPI variant support
@@ -902,7 +902,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
  * 4. **PWM duty cycle update**:
  *    - Call rx_motor_set_duty() with speed percentage
  *    - rx_motor translates to GPTW PWM duty cycle
- *    - Sign-magnitude control: speed > 0 → forward, speed < 0 → reverse
+ *    - Sign-magnitude control: speed > 0 -> forward, speed < 0 -> reverse
  *
  * 5. **State update**:
  *    - Store speed in handle->current_speed
@@ -1097,16 +1097,16 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
  * @see rx_motor_set_duty() Underlying PWM duty cycle control
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ No loops
- * - Rule 3: ✓ Zero dynamic allocation
- * - Rule 4: ✓ Function length: 42 lines
- * - Rule 5: ✓ 3 preconditions, 3 postconditions, 2 invariants
- * - Rule 6: ✓ Variables at minimal scope
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ Uses typed enum constants
- * - Rule 9: ⚠️ Calls through bus_manager function pointers (DIP)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] No loops
+ * - Rule 3: [OK] Zero dynamic allocation
+ * - Rule 4: [OK] Function length: 42 lines
+ * - Rule 5: [OK] 3 preconditions, 3 postconditions, 2 invariants
+ * - Rule 6: [OK] Variables at minimal scope
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] Uses typed enum constants
+ * - Rule 9: [WARN] Calls through bus_manager function pointers (DIP)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @since Version 1.0.0
  */

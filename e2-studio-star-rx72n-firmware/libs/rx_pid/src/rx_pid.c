@@ -136,17 +136,17 @@
  * @par Module Dependencies:
  * ```
  * rx_pid.c
- *   ├─→ rx_pid.h (API definitions)
- *   ├─→ rx_err.h (error codes: k_rx_ok, k_rx_err_null_ptr, etc.)
- *   ├─→ rx_check.h (validation macros: RX_CHECK_NULL_PTR)
- *   ├─→ rx_log.h (logging: rx_log_info, rx_log_error, rx_log_debug)
- *   ├─→ math.h (isfinite() for NaN/Inf detection)
- *   └─→ string.h (memset() for structure initialization)
+ *   ├─-> rx_pid.h (API definitions)
+ *   ├─-> rx_err.h (error codes: k_rx_ok, k_rx_err_null_ptr, etc.)
+ *   ├─-> rx_check.h (validation macros: RX_CHECK_NULL_PTR)
+ *   ├─-> rx_log.h (logging: rx_log_info, rx_log_error, rx_log_debug)
+ *   ├─-> math.h (isfinite() for NaN/Inf detection)
+ *   └─-> string.h (memset() for structure initialization)
  *
  * Used by:
- *   ├─→ lib/rx_motor/src/rx_motor.c (motor velocity/position control)
- *   ├─→ Application tasks requiring closed-loop control
- *   └─→ Unit tests: tests/test_rx_pid.c
+ *   ├─-> lib/rx_motor/src/rx_motor.c (motor velocity/position control)
+ *   ├─-> Application tasks requiring closed-loop control
+ *   └─-> Unit tests: tests/test_rx_pid.c
  * ```
  *
  * @author STAR Team
@@ -263,10 +263,10 @@ static const char* s_tag = "PID";
  *
  * @par Example: Edge Cases
  * @code{.c}
- * internal_clamp(50.0f, -100.0f, 100.0f);  // → 50.0 (no saturation)
- * internal_clamp(-150.0f, -100.0f, 100.0f);  // → -100.0 (lower saturation)
- * internal_clamp(200.0f, -100.0f, 100.0f);  // → 100.0 (upper saturation)
- * internal_clamp(0.0f, 0.0f, 0.0f);  // → 0.0 (degenerate case: all equal)
+ * internal_clamp(50.0f, -100.0f, 100.0f);  // -> 50.0 (no saturation)
+ * internal_clamp(-150.0f, -100.0f, 100.0f);  // -> -100.0 (lower saturation)
+ * internal_clamp(200.0f, -100.0f, 100.0f);  // -> 100.0 (upper saturation)
+ * internal_clamp(0.0f, 0.0f, 0.0f);  // -> 0.0 (degenerate case: all equal)
  * @endcode
  *
  * @par Performance Analysis:
