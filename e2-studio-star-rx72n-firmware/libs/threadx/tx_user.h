@@ -9,7 +9,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 /**************************************************************************/
 /**************************************************************************/
 /**                                                                       */
@@ -19,7 +18,6 @@
 /**                                                                       */
 /**************************************************************************/
 /**************************************************************************/
-
 
 /**************************************************************************/
 /*                                                                        */
@@ -64,7 +62,6 @@
 #ifndef TX_USER_H
 #define TX_USER_H
 
-
 /* Define various build options for the ThreadX port.  The application should either make changes
    here by commenting or un-commenting the conditional compilation defined OR supply the defines 
    though the compiler's equivalent of the -D option.  
@@ -97,31 +94,30 @@
    therefore return an error if this option is used. This may or may not be desirable for a 
    given application.  */
 
-
 /* Override various options with default values already assigned in tx_port.h. Please also refer
    to tx_port.h for descriptions on each of these options.  */
 
-#define USE_TX_MAX_PRIORITIES						0
+#define USE_TX_MAX_PRIORITIES 0
 #if USE_TX_MAX_PRIORITIES
-#define TX_MAX_PRIORITIES							32
+#define TX_MAX_PRIORITIES 32
 #endif
 
-#define USE_TX_MINIMUM_STACK						0
+#define USE_TX_MINIMUM_STACK 0
 #if USE_TX_MINIMUM_STACK
-#define TX_MINIMUM_STACK							64
+#define TX_MINIMUM_STACK 64
 #endif
 
-#define USE_TX_TIMER_THREAD_STACK_SIZE				0
+#define USE_TX_TIMER_THREAD_STACK_SIZE 0
 #if USE_TX_TIMER_THREAD_STACK_SIZE
-#define TX_TIMER_THREAD_STACK_SIZE					128
+#define TX_TIMER_THREAD_STACK_SIZE 128
 #endif
 
-#define USE_TX_TIMER_THREAD_PRIORITY				0
+#define USE_TX_TIMER_THREAD_PRIORITY 0
 #if USE_TX_TIMER_THREAD_PRIORITY
-#define TX_TIMER_THREAD_PRIORITY					1
+#define TX_TIMER_THREAD_PRIORITY 1
 #endif
 
-#define USE_TX_THREAD_USER_EXTENSION				0
+#define USE_TX_THREAD_USER_EXTENSION 0
 #if USE_TX_THREAD_USER_EXTENSION
 #define TX_THREAD_USER_EXTENSION
 #endif
@@ -130,16 +126,16 @@
    value is 10ms (i.e. 100 ticks, defined in tx_api.h), but may be replaced by a port-specific
    version in tx_port.h or here.
    Note: the actual hardware timer value may need to be changed (usually in tx_initialize_low_level).  */
-#define USE_TX_TIMER_TICKS_PER_SECOND				0
+#define USE_TX_TIMER_TICKS_PER_SECOND 0
 #if USE_TX_TIMER_TICKS_PER_SECOND
-#define TX_TIMER_TICKS_PER_SECOND		((ULONG) 100)
+#define TX_TIMER_TICKS_PER_SECOND ((ULONG)100)
 #endif
 
 /* Determine if there is a FileX pointer in the thread control block.
    By default, the pointer is there for legacy/backwards compatibility.
    The pointer must also be there for applications using FileX.
    Define this to save space in the thread control block.  */
-#define USE_TX_NO_FILEX_POINTER						0
+#define USE_TX_NO_FILEX_POINTER 0
 #if USE_TX_NO_FILEX_POINTER
 #define TX_NO_FILEX_POINTER
 #endif
@@ -149,7 +145,7 @@
    By default, the timer thread is used. When the following is defined, the timer expiration 
    processing is done directly from the timer ISR, thereby eliminating the timer thread control
    block, stack, and context switching to activate it.  */
-#define USE_TX_TIMER_PROCESS_IN_ISR					0
+#define USE_TX_TIMER_PROCESS_IN_ISR 0
 #if USE_TX_TIMER_PROCESS_IN_ISR
 #define TX_TIMER_PROCESS_IN_ISR
 #endif
@@ -158,7 +154,7 @@
    reactivating is performed in-line resulting in faster timer processing but slightly larger
    code size.  */
 
-#define USE_TX_REACTIVATE_INLINE					0
+#define USE_TX_REACTIVATE_INLINE 0
 #if USE_TX_REACTIVATE_INLINE
 #define TX_REACTIVATE_INLINE
 #endif
@@ -167,7 +163,7 @@
    which places an 0xEF pattern in each byte of each thread's stack.  This is used by
    debuggers with ThreadX-awareness and by the ThreadX run-time stack checking feature.  */
 
-#define USE_TX_DISABLE_STACK_FILLING				0
+#define USE_TX_DISABLE_STACK_FILLING 0
 #if USE_TX_DISABLE_STACK_FILLING
 #define TX_DISABLE_STACK_FILLING
 #endif
@@ -177,7 +173,7 @@
    checking is enabled (TX_ENABLE_STACK_CHECKING is defined), the TX_DISABLE_STACK_FILLING
    define is negated, thereby forcing the stack fill which is necessary for the stack checking
    logic.  */
-#define USE_TX_ENABLE_STACK_CHECKING				0
+#define USE_TX_ENABLE_STACK_CHECKING 0
 #if USE_TX_ENABLE_STACK_CHECKING
 #define TX_ENABLE_STACK_CHECKING
 #endif
@@ -185,7 +181,7 @@
 /* Determine if preemption-threshold should be disabled. By default, preemption-threshold is 
    enabled. If the application does not use preemption-threshold, it may be disabled to reduce
    code size and improve performance.  */
-#define USE_TX_DISABLE_PREEMPTION_THRESHOLD			0
+#define USE_TX_DISABLE_PREEMPTION_THRESHOLD 0
 #if USE_TX_DISABLE_PREEMPTION_THRESHOLD
 #define TX_DISABLE_PREEMPTION_THRESHOLD
 #endif
@@ -193,7 +189,7 @@
 /* Determine if global ThreadX variables should be cleared. If the compiler startup code clears 
    the .bss section prior to ThreadX running, the define can be used to eliminate unnecessary
    clearing of ThreadX global variables.  */
-#define USE_TX_DISABLE_REDUNDANT_CLEARING			0
+#define USE_TX_DISABLE_REDUNDANT_CLEARING 0
 #if USE_TX_DISABLE_REDUNDANT_CLEARING
 #define TX_DISABLE_REDUNDANT_CLEARING
 #endif
@@ -204,34 +200,33 @@
    tx_initialize_low_level. Note: if TX_NO_TIMER is used, the define TX_TIMER_PROCESS_IN_ISR
    must also be used and tx_timer_initialize must be removed from ThreadX library.  */
 
-#define USE_TX_NO_TIMER								0
+#define USE_TX_NO_TIMER 0
 #if USE_TX_NO_TIMER
-	#define TX_NO_TIMER
-	#ifndef TX_TIMER_PROCESS_IN_ISR
-		#define TX_TIMER_PROCESS_IN_ISR
-	#endif
+#define TX_NO_TIMER
+#ifndef TX_TIMER_PROCESS_IN_ISR
+#define TX_TIMER_PROCESS_IN_ISR
+#endif
 #endif
 
 /* Determine if the notify callback option should be disabled. By default, notify callbacks are
    enabled. If the application does not use notify callbacks, they may be disabled to reduce
    code size and improve performance.  */
-#define USE_TX_DISABLE_NOTIFY_CALLBACKS				1
+#define USE_TX_DISABLE_NOTIFY_CALLBACKS 1
 #if USE_TX_DISABLE_NOTIFY_CALLBACKS
 #define TX_DISABLE_NOTIFY_CALLBACKS
 #endif
 
-
 /* Determine if the tx_thread_resume and tx_thread_suspend services should have their internal 
    code in-line. This results in a larger image, but improves the performance of the thread 
    resume and suspend services.  */
-#define USE_TX_INLINE_THREAD_RESUME_SUSPEND			0
+#define USE_TX_INLINE_THREAD_RESUME_SUSPEND 0
 #if USE_TX_INLINE_THREAD_RESUME_SUSPEND
 #define TX_INLINE_THREAD_RESUME_SUSPEND
 #endif
 
 /* Determine if the internal ThreadX code is non-interruptable. This results in smaller code 
    size and less processing overhead, but increases the interrupt lockout time.  */
-#define USE_TX_NOT_INTERRUPTABLE					0
+#define USE_TX_NOT_INTERRUPTABLE 0
 #if USE_TX_NOT_INTERRUPTABLE
 #define TX_NOT_INTERRUPTABLE
 #endif
@@ -239,35 +234,35 @@
 /* Determine if the trace event logging code should be enabled. This causes slight increases in 
    code size and overhead, but provides the ability to generate system trace information which 
    is available for viewing in TraceX.  */
-#define USE_TX_ENABLE_EVENT_TRACE					0
+#define USE_TX_ENABLE_EVENT_TRACE 0
 #if USE_TX_ENABLE_EVENT_TRACE
 #define TX_ENABLE_EVENT_TRACE
 #endif
 
 /* Determine if block pool performance gathering is required by the application. When the following is
    defined, ThreadX gathers various block pool performance information. */
-#define USE_TX_BLOCK_POOL_ENABLE_PERFORMANCE_INFO	0
+#define USE_TX_BLOCK_POOL_ENABLE_PERFORMANCE_INFO 0
 #if USE_TX_BLOCK_POOL_ENABLE_PERFORMANCE_INFO
 #define TX_BLOCK_POOL_ENABLE_PERFORMANCE_INFO
 #endif
 
 /* Determine if byte pool performance gathering is required by the application. When the following is
    defined, ThreadX gathers various byte pool performance information. */
-#define USE_TX_BYTE_POOL_ENABLE_PERFORMANCE_INFO	0
+#define USE_TX_BYTE_POOL_ENABLE_PERFORMANCE_INFO 0
 #if USE_TX_BYTE_POOL_ENABLE_PERFORMANCE_INFO
 #define TX_BYTE_POOL_ENABLE_PERFORMANCE_INFO
 #endif
 
 /* Determine if event flags performance gathering is required by the application. When the following is
    defined, ThreadX gathers various event flags performance information. */
-#define USE_TX_EVENT_FLAGS_ENABLE_PERFORMANCE_INFO	0
+#define USE_TX_EVENT_FLAGS_ENABLE_PERFORMANCE_INFO 0
 #if USE_TX_EVENT_FLAGS_ENABLE_PERFORMANCE_INFO
 #define TX_EVENT_FLAGS_ENABLE_PERFORMANCE_INFO
 #endif
 
 /* Determine if mutex performance gathering is required by the application. When the following is
    defined, ThreadX gathers various mutex performance information. */
-#define USE_TX_MUTEX_ENABLE_PERFORMANCE_INFO		0
+#define USE_TX_MUTEX_ENABLE_PERFORMANCE_INFO 0
 #if USE_TX_MUTEX_ENABLE_PERFORMANCE_INFO
 #define TX_MUTEX_ENABLE_PERFORMANCE_INFO
 #endif
@@ -275,7 +270,7 @@
 /* Determine if queue performance gathering is required by the application. When the following is
    defined, ThreadX gathers various queue performance information. */
 
-#define USE_TX_QUEUE_ENABLE_PERFORMANCE_INFO		0
+#define USE_TX_QUEUE_ENABLE_PERFORMANCE_INFO 0
 #if USE_TX_QUEUE_ENABLE_PERFORMANCE_INFO
 #define TX_QUEUE_ENABLE_PERFORMANCE_INFO
 #endif
@@ -283,7 +278,7 @@
 /* Determine if semaphore performance gathering is required by the application. When the following is
    defined, ThreadX gathers various semaphore performance information. */
 
-#define USE_TX_SEMAPHORE_ENABLE_PERFORMANCE_INFO	0
+#define USE_TX_SEMAPHORE_ENABLE_PERFORMANCE_INFO 0
 #if USE_TX_SEMAPHORE_ENABLE_PERFORMANCE_INFO
 #define TX_SEMAPHORE_ENABLE_PERFORMANCE_INFO
 #endif
@@ -291,7 +286,7 @@
 /* Determine if thread performance gathering is required by the application. When the following is
    defined, ThreadX gathers various thread performance information. */
 
-#define USE_TX_THREAD_ENABLE_PERFORMANCE_INFO		0
+#define USE_TX_THREAD_ENABLE_PERFORMANCE_INFO 0
 #if USE_TX_THREAD_ENABLE_PERFORMANCE_INFO
 #define TX_THREAD_ENABLE_PERFORMANCE_INFO
 #endif
@@ -299,66 +294,65 @@
 /* Determine if timer performance gathering is required by the application. When the following is
    defined, ThreadX gathers various timer performance information. */
 
-#define USE_TX_TIMER_ENABLE_PERFORMANCE_INFO		0
+#define USE_TX_TIMER_ENABLE_PERFORMANCE_INFO 0
 #if USE_TX_TIMER_ENABLE_PERFORMANCE_INFO
 #define TX_TIMER_ENABLE_PERFORMANCE_INFO
 #endif
 
 /* Override options for byte pool searches of multiple blocks. */
-#define USE_TX_BYTE_POOL_MULTIPLE_BLOCK_SEARCH		0
+#define USE_TX_BYTE_POOL_MULTIPLE_BLOCK_SEARCH 0
 #if USE_TX_BYTE_POOL_MULTIPLE_BLOCK_SEARCH
-#define TX_BYTE_POOL_MULTIPLE_BLOCK_SEARCH			20
+#define TX_BYTE_POOL_MULTIPLE_BLOCK_SEARCH 20
 #endif
 
 /* Override options for byte pool search delay to avoid thrashing. */
-#define USE_TX_BYTE_POOL_DELAY_VALUE				0
+#define USE_TX_BYTE_POOL_DELAY_VALUE 0
 #if USE_TX_BYTE_POOL_DELAY_VALUE
-#define TX_BYTE_POOL_DELAY_VALUE 					3
+#define TX_BYTE_POOL_DELAY_VALUE 3
 #endif
 
 /* Define Low Power macros and flags */
 
 /* Define Low Power usage */
-#define TX_LOW_POWER								0
+#define TX_LOW_POWER 0
 
 /* Define the Enter low power mode macro*/
 #if TX_LOW_POWER
 void Demo_LowPower_Enter(void);
-#define TX_LOW_POWER_USER_ENTER						Demo_LowPower_Enter()
+#define TX_LOW_POWER_USER_ENTER Demo_LowPower_Enter()
 #endif
 
 /* Define the Exist low power mode macro*/
 #if TX_LOW_POWER
 void Demo_LowPower_Exit(void);
-#define TX_LOW_POWER_USER_EXIT						Demo_LowPower_Exit()
+#define TX_LOW_POWER_USER_EXIT Demo_LowPower_Exit()
 #endif
 
 /* Define Low Power tickess usage */
-#define USE_TX_LOW_POWER_TICKLESS					0
+#define USE_TX_LOW_POWER_TICKLESS 0
 #if USE_TX_LOW_POWER_TICKLESS
 #define TX_LOW_POWER_TICKLESS
 #endif
 
 /* Define the TX_LOW_POWER_TIMER_SETUP macro*/
 #if TX_LOW_POWER && !USE_TX_LOW_POWER_TICKLESS
-#define USE_TX_LOW_POWER_TIMER_SETUP				0
+#define USE_TX_LOW_POWER_TIMER_SETUP 0
 #endif
 #if USE_TX_LOW_POWER_TIMER_SETUP
 void Demo_LowPower_Timer_Setup(unsigned long tx_low_power_next_expiration); /* can not use ULONG */
-#define TX_LOW_POWER_TIMER_SETUP					Demo_LowPower_Timer_Setup
+#define TX_LOW_POWER_TIMER_SETUP Demo_LowPower_Timer_Setup
 #endif
 
 /* Define the TX_LOW_POWER_USER_TIMER_ADJUST macro*/
 #if TX_LOW_POWER && !USE_TX_LOW_POWER_TICKLESS
-#define USE_TX_LOW_POWER_USER_TIMER_ADJUST			0
+#define USE_TX_LOW_POWER_USER_TIMER_ADJUST 0
 #endif
 #if USE_TX_LOW_POWER_USER_TIMER_ADJUST
 unsigned long Demo_LowPower_User_Timer_Adjust(void); /* can not use ULONG */
-#define TX_LOW_POWER_USER_TIMER_ADJUST				Demo_LowPower_User_Timer_Adjust()
+#define TX_LOW_POWER_USER_TIMER_ADJUST Demo_LowPower_User_Timer_Adjust()
 #endif
 
 /* Define the TX_ENABLE_WAIT usage*/
-#define TX_ENABLE_WAIT								0
+#define TX_ENABLE_WAIT 0
 
 #endif
-

@@ -227,10 +227,14 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_rx_bits_per_byte   = 8,  /**< Bits per byte. Universal constant (CHAR_BIT = 8 per C99). Used for byte extraction, buffer sizing, bit-to-byte conversion. Range: Always 8 on modern systems. */
-  k_rx_bits_per_word16 = 16, /**< Bits per 16-bit word (uint16_t). Guaranteed by C99 exact-width types. Used for protocol fields, endianness conversion, CRC-16 operations. Range: Always 16. */
-  k_rx_bits_per_word32 = 32, /**< Bits per 32-bit word (uint32_t). Guaranteed by C99 exact-width types. Used for CRC-32, hash values, register access, Protocol Buffer fixed32. Range: Always 32. */
-  k_rx_bits_per_word64 = 64, /**< Bits per 64-bit word (uint64_t). Guaranteed by C99 exact-width types. Used for timestamps, large counters, Protocol Buffer fixed64. Range: Always 64. */
+  k_rx_bits_per_byte =
+    8, /**< Bits per byte. Universal constant (CHAR_BIT = 8 per C99). Used for byte extraction, buffer sizing, bit-to-byte conversion. Range: Always 8 on modern systems. */
+  k_rx_bits_per_word16 =
+    16, /**< Bits per 16-bit word (uint16_t). Guaranteed by C99 exact-width types. Used for protocol fields, endianness conversion, CRC-16 operations. Range: Always 16. */
+  k_rx_bits_per_word32 =
+    32, /**< Bits per 32-bit word (uint32_t). Guaranteed by C99 exact-width types. Used for CRC-32, hash values, register access, Protocol Buffer fixed32. Range: Always 32. */
+  k_rx_bits_per_word64 =
+    64, /**< Bits per 64-bit word (uint64_t). Guaranteed by C99 exact-width types. Used for timestamps, large counters, Protocol Buffer fixed64. Range: Always 64. */
 } rx_bit_sizes_t;
 
 /**
@@ -346,9 +350,12 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_rx_shift_byte   = 8,  /**< Shift amount to access next byte (8 bits = 1 byte). Use for extracting byte N from multi-byte word. Example: byte1 = (word >> k_rx_shift_byte) & 0xFF. Equivalent to k_rx_bits_per_byte but semantically clearer for shift operations. */
-  k_rx_shift_word16 = 16, /**< Shift amount to access upper 16 bits of 32-bit word (16 bits = 2 bytes). Use for extracting high word from dword. Example: high_word = (dword >> k_rx_shift_word16) & 0xFFFF. Also used for big-endian 16-bit packing/unpacking. */
-  k_rx_shift_word24 = 24, /**< Shift amount to access byte 3 (MSB) of 32-bit word (24 bits = 3 bytes). Use for extracting most significant byte. Example: msb = (word >> k_rx_shift_word24) & 0xFF. Critical for big-endian 32-bit encoding. */
+  k_rx_shift_byte =
+    8, /**< Shift amount to access next byte (8 bits = 1 byte). Use for extracting byte N from multi-byte word. Example: byte1 = (word >> k_rx_shift_byte) & 0xFF. Equivalent to k_rx_bits_per_byte but semantically clearer for shift operations. */
+  k_rx_shift_word16 =
+    16, /**< Shift amount to access upper 16 bits of 32-bit word (16 bits = 2 bytes). Use for extracting high word from dword. Example: high_word = (dword >> k_rx_shift_word16) & 0xFFFF. Also used for big-endian 16-bit packing/unpacking. */
+  k_rx_shift_word24 =
+    24, /**< Shift amount to access byte 3 (MSB) of 32-bit word (24 bits = 3 bytes). Use for extracting most significant byte. Example: msb = (word >> k_rx_shift_word24) & 0xFF. Critical for big-endian 32-bit encoding. */
 } rx_bit_shifts_t;
 
 #ifdef __cplusplus

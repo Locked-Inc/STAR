@@ -319,7 +319,7 @@ static inline void uart_debug_puts(const char* str)
 
   while (*str) {
     if (*str == '\n') {
-      (void)putchar('\r');  /* Hardware UART does \n -> \r\n */
+      (void)putchar('\r'); /* Hardware UART does \n -> \r\n */
     }
     (void)putchar((int)(*str++));
   }
@@ -340,7 +340,7 @@ static inline void uart_debug_puts(const char* str)
  */
 static inline void uart_debug_putint(int32_t value)
 {
-  char buf[12];  /* -2147483648 = 11 chars + null */
+  char buf[12]; /* -2147483648 = 11 chars + null */
   (void)snprintf(buf, sizeof(buf), "%" PRId32, value);
   uart_debug_puts(buf);
 }
@@ -367,8 +367,14 @@ static inline void uart_debug_puthex(uint32_t value, uint8_t digits)
   /* Pre-computed format strings keyed by digit count (1-8), avoids runtime
    * format building and all implicit-width casts (int, unsigned long). */
   static const char* const s_hex_fmts[k_max_hex_digits] = {
-    "0x%01" PRIx32, "0x%02" PRIx32, "0x%03" PRIx32, "0x%04" PRIx32,
-    "0x%05" PRIx32, "0x%06" PRIx32, "0x%07" PRIx32, "0x%08" PRIx32,
+    "0x%01" PRIx32,
+    "0x%02" PRIx32,
+    "0x%03" PRIx32,
+    "0x%04" PRIx32,
+    "0x%05" PRIx32,
+    "0x%06" PRIx32,
+    "0x%07" PRIx32,
+    "0x%08" PRIx32,
   };
 
   char buf[11]; /* "0x" + 8 hex digits + null */
@@ -466,10 +472,10 @@ void rx_log_usb_puthex(uint32_t value, uint8_t digits);
  * @brief USB CDC logging statistics structure
  */
 typedef struct {
-    uint32_t total_bytes;       /**< Total bytes sent (or buffered) */
-    uint32_t dropped_bytes;     /**< Bytes dropped (TX full or buffer overflow) */
-    uint32_t boot_buffered;     /**< Bytes buffered during boot */
-    uint32_t usb_errors;        /**< USB error count (excluding k_rx_err_busy) */
+  uint32_t total_bytes;   /**< Total bytes sent (or buffered) */
+  uint32_t dropped_bytes; /**< Bytes dropped (TX full or buffer overflow) */
+  uint32_t boot_buffered; /**< Bytes buffered during boot */
+  uint32_t usb_errors;    /**< USB error count (excluding k_rx_err_busy) */
 } usb_log_stats_t;
 
 /**
@@ -488,36 +494,40 @@ void rx_log_usb_notify_ready(void);
 /* Output to both UART and USB CDC Port 2 (log port)
  * USB backend handles boot buffering, thread safety, and error recovery.
  * Each macro evaluates its arguments exactly once to avoid side effects. */
-#define LOG_PUTC(c)          do { \
-                               char _log_c = (c); \
-                               uart_debug_putc(_log_c); \
-                               rx_log_usb_putc(_log_c); \
-                             } while (0)
+#define LOG_PUTC(c)                                                                                \
+  do {                                                                                             \
+    char _log_c = (c);                                                                             \
+    uart_debug_putc(_log_c);                                                                       \
+    rx_log_usb_putc(_log_c);                                                                       \
+  } while (0)
 
-#define LOG_PUTS(s)          do { \
-                               const char* _log_s = (s); \
-                               uart_debug_puts(_log_s); \
-                               rx_log_usb_puts(_log_s); \
-                             } while (0)
+#define LOG_PUTS(s)                                                                                \
+  do {                                                                                             \
+    const char* _log_s = (s);                                                                      \
+    uart_debug_puts(_log_s);                                                                       \
+    rx_log_usb_puts(_log_s);                                                                       \
+  } while (0)
 
-#define LOG_PUTINT(v)        do { \
-                               int32_t _log_v = (v); \
-                               uart_debug_putint(_log_v); \
-                               rx_log_usb_putint(_log_v); \
-                             } while (0)
+#define LOG_PUTINT(v)                                                                              \
+  do {                                                                                             \
+    int32_t _log_v = (v);                                                                          \
+    uart_debug_putint(_log_v);                                                                     \
+    rx_log_usb_putint(_log_v);                                                                     \
+  } while (0)
 
-#define LOG_PUTHEX(v, d)     do { \
-                               uint32_t _log_vhex = (v); \
-                               uint8_t _log_d = (d); \
-                               uart_debug_puthex(_log_vhex, _log_d); \
-                               rx_log_usb_puthex(_log_vhex, _log_d); \
-                             } while (0)
+#define LOG_PUTHEX(v, d)                                                                           \
+  do {                                                                                             \
+    uint32_t _log_vhex = (v);                                                                      \
+    uint8_t  _log_d    = (d);                                                                      \
+    uart_debug_puthex(_log_vhex, _log_d);                                                          \
+    rx_log_usb_puthex(_log_vhex, _log_d);                                                          \
+  } while (0)
 #else
 /* Output to UART only (default) - no side effects */
-#define LOG_PUTC(c)          uart_debug_putc(c)
-#define LOG_PUTS(s)          uart_debug_puts(s)
-#define LOG_PUTINT(v)        uart_debug_putint(v)
-#define LOG_PUTHEX(v, d)     uart_debug_puthex((v), (d))
+#define LOG_PUTC(c)      uart_debug_putc(c)
+#define LOG_PUTS(s)      uart_debug_puts(s)
+#define LOG_PUTINT(v)    uart_debug_putint(v)
+#define LOG_PUTHEX(v, d) uart_debug_puthex((v), (d))
 #endif
 
 /* =============================================================================
@@ -581,12 +591,16 @@ void rx_log_usb_notify_ready(void);
  * @see rx_log_error(), rx_log_warn(), rx_log_info(), rx_log_debug(), rx_log_verbose()
  */
 typedef enum : uint8_t {
-  k_log_none    = 0, /**< No logging (production silent mode). All logs eliminated at compile time. */
-  k_log_error   = 1, /**< Critical errors only. Operation-preventing failures, requires immediate attention. */
-  k_log_warn    = 2, /**< Errors and warnings. Recoverable issues, degraded functionality. */
-  k_log_info    = 3, /**< Errors, warnings, and informational messages. Default level for development. */
-  k_log_debug   = 4, /**< Errors, warnings, info, and debug messages. Detailed troubleshooting information. */
-  k_log_verbose = 5, /**< All messages including verbose trace. Maximum detail for complex debugging. */
+  k_log_none = 0, /**< No logging (production silent mode). All logs eliminated at compile time. */
+  k_log_error =
+    1, /**< Critical errors only. Operation-preventing failures, requires immediate attention. */
+  k_log_warn = 2, /**< Errors and warnings. Recoverable issues, degraded functionality. */
+  k_log_info =
+    3, /**< Errors, warnings, and informational messages. Default level for development. */
+  k_log_debug =
+    4, /**< Errors, warnings, info, and debug messages. Detailed troubleshooting information. */
+  k_log_verbose =
+    5, /**< All messages including verbose trace. Maximum detail for complex debugging. */
 } log_level_t;
 
 /**
@@ -644,8 +658,10 @@ typedef enum : uint8_t {
  * @see internal_rx_log_debug_str(), internal_rx_log_verbose_str()
  */
 typedef enum : uint16_t {
-  k_log_hex_width_err  = 8,   /**< Hex digit width for rx_err_t error codes (32-bit = 8 digits). Example: 0x00000108 */
-  k_log_str_max_len    = 256, /**< Maximum string length for bounded logging (NASA Rule 2 compliance). Prevents unbounded loops. */
+  k_log_hex_width_err =
+    8, /**< Hex digit width for rx_err_t error codes (32-bit = 8 digits). Example: 0x00000108 */
+  k_log_str_max_len =
+    256, /**< Maximum string length for bounded logging (NASA Rule 2 compliance). Prevents unbounded loops. */
 } log_format_constants_t;
 
 /**

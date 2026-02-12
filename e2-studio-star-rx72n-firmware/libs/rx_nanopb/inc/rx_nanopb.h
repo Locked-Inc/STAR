@@ -172,9 +172,10 @@
 
 /* Include generated protobuf headers */
 #include "gen/star/v1/common.pb.h"
+#include "gen/star/v1/configuration.pb.h"
+#include "gen/star/v1/gateway_service.pb.h"
 #include "gen/star/v1/motor_control.pb.h"
 #include "gen/star/v1/telemetry.pb.h"
-#include "gen/star/v1/gateway_service.pb.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -319,9 +320,9 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg,
-                                           uint8_t*                          buffer,
-                                           uint32_t                          buffer_size,
-                                           uint32_t*                         len);
+                                                         uint8_t*                          buffer,
+                                                         uint32_t  buffer_size,
+                                                         uint32_t* len);
 
 /**
  * @brief Decode SetVelocityRequest message from Protocol Buffer bytes
@@ -379,8 +380,8 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
-                                           uint32_t                    len,
-                                           star_v1_SetVelocityRequest* msg);
+                                                         uint32_t                    len,
+                                                         star_v1_SetVelocityRequest* msg);
 
 /* =============================================================================
  * SetVelocityResponse Encode/Decode
@@ -425,9 +426,9 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
-                                            uint8_t*                           buffer,
-                                            uint32_t                           buffer_size,
-                                            uint32_t*                          len);
+                                                          uint8_t*                           buffer,
+                                                          uint32_t  buffer_size,
+                                                          uint32_t* len);
 
 /* =============================================================================
  * EmergencyStopRequest Encode/Decode
@@ -466,8 +467,8 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
-                                        uint32_t                      len,
-                                        star_v1_EmergencyStopRequest* msg);
+                                                      uint32_t                      len,
+                                                      star_v1_EmergencyStopRequest* msg);
 
 /**
  * @brief Encode EmergencyStopResponse message to Protocol Buffer bytes
@@ -495,9 +496,9 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
-                                         uint8_t*                             buffer,
-                                         uint32_t                             buffer_size,
-                                         uint32_t*                            len);
+                                                       uint8_t*                             buffer,
+                                                       uint32_t  buffer_size,
+                                                       uint32_t* len);
 
 /* =============================================================================
  * SetPIDGainsRequest Encode/Decode
@@ -580,9 +581,46 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @see shared_data_set_pid_gains() Apply gains to motor controllers
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*               buffer,
-                                            uint32_t                     len,
-                                            star_v1_SetPIDGainsRequest*  msg);
+[[nodiscard]] rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
+                                                          uint32_t                    len,
+                                                          star_v1_SetPIDGainsRequest* msg);
+
+/**
+ * @brief Decode SetRetransmitConfigRequest from Protocol Buffer bytes
+ *
+ * @details
+ * Decodes a serialized SetRetransmitConfigRequest message from a byte buffer.
+ * Used to process RPi5 commands that configure SPI retransmission parameters.
+ *
+ * @param[in] buffer Raw protobuf bytes to decode
+ *   - **Valid range**: Non-NULL pointer to protobuf-encoded data
+ *   - **Max size**: s_nanopb_buffer_size (1024 bytes)
+ *
+ * @param[in] len Length of buffer in bytes
+ *   - **Valid range**: [1, s_nanopb_buffer_size]
+ *
+ * @param[out] msg Decoded message output
+ *   - **Valid range**: Non-NULL pointer to star_v1_SetRetransmitConfigRequest
+ *   - **Output**: Zero-initialized then populated from buffer
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Decode successful
+ * @retval k_rx_err_invalid_arg NULL pointer or invalid length
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_protocol_error Protobuf decode failed
+ *
+ * @pre buffer and msg must be non-NULL
+ * @pre rx_nanopb_init() must have been called
+ * @post msg populated with decoded fields on success
+ *
+ * @see rx_spi_comm_set_auto_retransmit() Apply decoded config
+ *
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t
+rx_nanopb_decode_retransmit_config_request(const uint8_t*                      buffer,
+                                           uint32_t                            len,
+                                           star_v1_SetRetransmitConfigRequest* msg);
 
 /* =============================================================================
  * Telemetry Encode/Decode
@@ -641,9 +679,9 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
-                                    uint8_t*                     buffer,
-                                    uint32_t                     buffer_size,
-                                    uint32_t*                    len);
+                                                  uint8_t*                     buffer,
+                                                  uint32_t                     buffer_size,
+                                                  uint32_t*                    len);
 
 /* =============================================================================
  * Helper Functions
@@ -680,11 +718,11 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @since Version 1.0.0
  */
 typedef struct {
-  double front_left_mps;  /**< Front left motor velocity (m/s), [-2.0, +2.0] */
-  double front_right_mps; /**< Front right motor velocity (m/s), [-2.0, +2.0] */
-  double back_left_mps;   /**< Back left motor velocity (m/s), [-2.0, +2.0] */
-  double back_right_mps;  /**< Back right motor velocity (m/s), [-2.0, +2.0] */
-  uint32_t sequence; /**< Command sequence number (monotonically increasing) */
+  double   front_left_mps;  /**< Front left motor velocity (m/s), [-2.0, +2.0] */
+  double   front_right_mps; /**< Front right motor velocity (m/s), [-2.0, +2.0] */
+  double   back_left_mps;   /**< Back left motor velocity (m/s), [-2.0, +2.0] */
+  double   back_right_mps;  /**< Back right motor velocity (m/s), [-2.0, +2.0] */
+  uint32_t sequence;        /**< Command sequence number (monotonically increasing) */
 } rx_velocity_command_params_t;
 
 /**
@@ -713,9 +751,9 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  double left_mps;   /**< Left side velocity (m/s), applied to FL and BL */
-  double right_mps;  /**< Right side velocity (m/s), applied to FR and BR */
-  uint32_t sequence; /**< Command sequence number */
+  double   left_mps;  /**< Left side velocity (m/s), applied to FL and BL */
+  double   right_mps; /**< Right side velocity (m/s), applied to FR and BR */
+  uint32_t sequence;  /**< Command sequence number */
 } rx_velocity_diff_drive_params_t;
 
 /**
@@ -757,8 +795,9 @@ typedef struct {
  * @see rx_velocity_command_params_t Parameter structure
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            cmd,
-                                           const rx_velocity_command_params_t* params);
+[[nodiscard]] rx_err_t
+rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            cmd,
+                                  const rx_velocity_command_params_t* params);
 
 /**
  * @brief Create VelocityCommand in differential drive mode

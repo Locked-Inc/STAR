@@ -650,36 +650,21 @@ static inline volatile rx_sci_regs_t* sci_get_channel(uint8_t channel)
  *  @brief Verify rx_sci_regs_t matches hardware layout
  *  @{
  */
-static_assert(sizeof(rx_sci_regs_t) == 14,
-               "SCI register structure must be 14 bytes");
-static_assert(offsetof(rx_sci_regs_t, smr) == 0x00,
-               "SCI SMR register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, brr) == 0x01,
-               "SCI BRR register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, scr) == 0x02,
-               "SCI SCR register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, tdr) == 0x03,
-               "SCI TDR register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, ssr) == 0x04,
-               "SCI SSR register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, rdr) == 0x05,
-               "SCI RDR register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, scmr) == 0x06,
-               "SCI SCMR register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, semr) == 0x07,
-               "SCI SEMR register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, snfr) == 0x08,
-               "SCI SNFR register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, simr1) == 0x09,
-               "SCI SIMR1 register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, simr2) == 0x0A,
-               "SCI SIMR2 register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, simr3) == 0x0B,
-               "SCI SIMR3 register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, sisr) == 0x0C,
-               "SCI SISR register offset incorrect");
-static_assert(offsetof(rx_sci_regs_t, spmr) == 0x0D,
-               "SCI SPMR register offset incorrect");
+static_assert(sizeof(rx_sci_regs_t) == 14, "SCI register structure must be 14 bytes");
+static_assert(offsetof(rx_sci_regs_t, smr) == 0x00, "SCI SMR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, brr) == 0x01, "SCI BRR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, scr) == 0x02, "SCI SCR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, tdr) == 0x03, "SCI TDR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, ssr) == 0x04, "SCI SSR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, rdr) == 0x05, "SCI RDR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, scmr) == 0x06, "SCI SCMR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, semr) == 0x07, "SCI SEMR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, snfr) == 0x08, "SCI SNFR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, simr1) == 0x09, "SCI SIMR1 register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, simr2) == 0x0A, "SCI SIMR2 register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, simr3) == 0x0B, "SCI SIMR3 register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, sisr) == 0x0C, "SCI SISR register offset incorrect");
+static_assert(offsetof(rx_sci_regs_t, spmr) == 0x0D, "SCI SPMR register offset incorrect");
 /** @} */
 
 /** @name SCI Base Address Verification
@@ -706,13 +691,13 @@ static_assert(k_sci12_base_addr == 0x0008B300, "SCI12 base address incorrect");
  *  @{
  */
 static_assert((k_sci0_base_addr & 0xFFFF0000) == 0x00080000,
-               "SCI0 base address not in SCI standard peripheral space");
+              "SCI0 base address not in SCI standard peripheral space");
 static_assert((k_sci8_base_addr & 0xFFFF0000) == 0x000D0000,
-               "SCI8 base address not in SCI extended peripheral space");
+              "SCI8 base address not in SCI extended peripheral space");
 static_assert((k_sci12_base_addr & 0xFFFF0000) == 0x00080000,
-               "SCI12 base address not in SCI standard peripheral space");
+              "SCI12 base address not in SCI standard peripheral space");
 static_assert((k_sci1_base_addr - k_sci0_base_addr) == 0x20,
-               "SCIj channel spacing incorrect (expected 0x20 bytes)");
+              "SCIj channel spacing incorrect (expected 0x20 bytes)");
 /** @} */
 
 /** @} */ /* End of sci_regs defgroup */

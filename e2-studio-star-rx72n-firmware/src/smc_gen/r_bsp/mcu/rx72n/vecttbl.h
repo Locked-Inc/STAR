@@ -40,19 +40,17 @@ Macro definitions
 Typedef definitions
 ***********************************************************************************************************************/
 #if defined(__GNUC__)
-typedef struct st_ofsm_sec_ofs1
-{
-    uint32_t __MDEreg;
-    uint32_t __OFS0reg;
-    uint32_t __OFS1reg;
+typedef struct st_ofsm_sec_ofs1 {
+  uint32_t __MDEreg;
+  uint32_t __OFS0reg;
+  uint32_t __OFS1reg;
 } st_ofsm_sec_ofs1_t;
 
-typedef struct st_ofsm_sec_ofs6
-{
-    uint32_t __OSIS1reg;
-    uint32_t __OSIS2reg;
-    uint32_t __OSIS3reg;
-    uint32_t __OSIS4reg;
+typedef struct st_ofsm_sec_ofs6 {
+  uint32_t __OSIS1reg;
+  uint32_t __OSIS2reg;
+  uint32_t __OSIS3reg;
+  uint32_t __OSIS4reg;
 } st_ofsm_sec_ofs6_t;
 #endif /* defined(__GNUC__) */
 
@@ -61,4 +59,3 @@ Exported global functions (to be accessed by other files)
 ***********************************************************************************************************************/
 
 #endif /* VECTTBL_HEADER_INC */
-

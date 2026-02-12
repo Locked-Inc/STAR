@@ -318,9 +318,9 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
   }
 
   /* Initialize Chase Combiner */
-  max_combines =
-    (config != nullptr && config->max_combines > 0) ? config->max_combines : k_harq_default_combines;
-  err = rx_chase_combiner_init(&harq->combiner, max_combines);
+  max_combines = (config != nullptr && config->max_combines > 0) ? config->max_combines
+                                                                 : k_harq_default_combines;
+  err          = rx_chase_combiner_init(&harq->combiner, max_combines);
   if (err != k_rx_ok) {
     return err;
   }
@@ -336,7 +336,7 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
     err =
       rx_fec_decoder_init(&harq->decoder, harq->decoder_survivors, k_harq_survivors_buffer_size);
     if (err != k_rx_ok) {
-      (void)rx_fec_encoder_deinit(&harq->encoder);  /* Cleanup, ignore errors */
+      (void)rx_fec_encoder_deinit(&harq->encoder); /* Cleanup, ignore errors */
       return err;
     }
   }
@@ -363,17 +363,17 @@ rx_err_t rx_harq_deinit(rx_harq_handle_t* harq)
   if (harq->fec_enabled == k_harq_true) {
     rx_err_t fec_enc_err = rx_fec_encoder_deinit(&harq->encoder);
     if (fec_enc_err != k_rx_ok) {
-      err = fec_enc_err;  /* Save first error */
+      err = fec_enc_err; /* Save first error */
     }
     rx_err_t fec_dec_err = rx_fec_decoder_deinit(&harq->decoder);
     if (fec_dec_err != k_rx_ok && err == k_rx_ok) {
-      err = fec_dec_err;  /* Save first error */
+      err = fec_dec_err; /* Save first error */
     }
   }
 
   rx_err_t combiner_err = rx_chase_combiner_deinit(&harq->combiner);
   if (combiner_err != k_rx_ok && err == k_rx_ok) {
-    err = combiner_err;  /* Save first error */
+    err = combiner_err; /* Save first error */
   }
 
   harq->initialized = k_harq_false;

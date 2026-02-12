@@ -24,30 +24,39 @@ static uint32_t s_start_count = 0;
 static uint32_t s_stop_count  = 0;
 
 /* Statistics */
-static uint32_t s_stats_polls      = 0;
-static uint32_t s_stats_events     = 0;
-static uint32_t s_stats_false_pos  = 0;
+static uint32_t s_stats_polls     = 0;
+static uint32_t s_stats_events    = 0;
+static uint32_t s_stats_false_pos = 0;
 
 /* Stored handle for callback */
 static rx_obstacle_detect_t* s_current_handle = nullptr;
 
 void mock_obstacle_detect_reset(void)
 {
-  s_init_return  = k_rx_ok;
-  s_start_return = k_rx_ok;
-  s_stop_return  = k_rx_ok;
-  s_init_count   = 0;
-  s_start_count  = 0;
-  s_stop_count   = 0;
-  s_stats_polls      = 0;
-  s_stats_events     = 0;
-  s_stats_false_pos  = 0;
-  s_current_handle   = nullptr;
+  s_init_return     = k_rx_ok;
+  s_start_return    = k_rx_ok;
+  s_stop_return     = k_rx_ok;
+  s_init_count      = 0;
+  s_start_count     = 0;
+  s_stop_count      = 0;
+  s_stats_polls     = 0;
+  s_stats_events    = 0;
+  s_stats_false_pos = 0;
+  s_current_handle  = nullptr;
 }
 
-void mock_obstacle_detect_set_init_return(rx_err_t err)  { s_init_return = err; }
-void mock_obstacle_detect_set_start_return(rx_err_t err) { s_start_return = err; }
-void mock_obstacle_detect_set_stop_return(rx_err_t err)  { s_stop_return = err; }
+void mock_obstacle_detect_set_init_return(rx_err_t err)
+{
+  s_init_return = err;
+}
+void mock_obstacle_detect_set_start_return(rx_err_t err)
+{
+  s_start_return = err;
+}
+void mock_obstacle_detect_set_stop_return(rx_err_t err)
+{
+  s_stop_return = err;
+}
 
 void mock_obstacle_detect_trigger_callback(bool detected, uint8_t sensor, float distance)
 {
@@ -63,10 +72,22 @@ void mock_obstacle_detect_set_stats(uint32_t polls, uint32_t events, uint32_t fa
   s_stats_false_pos = false_pos;
 }
 
-uint32_t mock_obstacle_detect_get_init_count(void)  { return s_init_count; }
-uint32_t mock_obstacle_detect_get_start_count(void) { return s_start_count; }
-uint32_t mock_obstacle_detect_get_stop_count(void)  { return s_stop_count; }
-bool     mock_obstacle_detect_was_initialized(void) { return s_init_count > 0; }
+uint32_t mock_obstacle_detect_get_init_count(void)
+{
+  return s_init_count;
+}
+uint32_t mock_obstacle_detect_get_start_count(void)
+{
+  return s_start_count;
+}
+uint32_t mock_obstacle_detect_get_stop_count(void)
+{
+  return s_stop_count;
+}
+bool mock_obstacle_detect_was_initialized(void)
+{
+  return s_init_count > 0;
+}
 
 rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
                                  const rx_obstacle_detect_config_t* config)
@@ -143,9 +164,15 @@ rx_err_t rx_obstacle_detect_get_stats(rx_obstacle_detect_t* handle,
     return k_rx_err_null_ptr;
   }
 
-  if (total_polls != nullptr)     { *total_polls     = s_stats_polls; }
-  if (obstacle_events != nullptr) { *obstacle_events = s_stats_events; }
-  if (false_positives != nullptr) { *false_positives = s_stats_false_pos; }
+  if (total_polls != nullptr) {
+    *total_polls = s_stats_polls;
+  }
+  if (obstacle_events != nullptr) {
+    *obstacle_events = s_stats_events;
+  }
+  if (false_positives != nullptr) {
+    *false_positives = s_stats_false_pos;
+  }
 
   return k_rx_ok;
 }

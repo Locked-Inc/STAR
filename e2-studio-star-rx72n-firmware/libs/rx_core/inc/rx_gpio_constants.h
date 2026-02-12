@@ -232,7 +232,7 @@ typedef enum : uint16_t {
    * @par Value: 8
    * @par Rationale: Hardware constraint of RX72N GPIO peripheral
    */
-  k_pins_per_port     = 8,
+  k_pins_per_port = 8,
 
   /**
    * @brief Maximum decimal port number
@@ -242,7 +242,7 @@ typedef enum : uint16_t {
    * @par Value: 9
    * @par Rationale: RX72N hardware supports decimal ports 0-9
    */
-  k_max_decimal_port  = 9,
+  k_max_decimal_port = 9,
 
   /**
    * @brief First hexadecimal port address
@@ -252,7 +252,7 @@ typedef enum : uint16_t {
    * @par Value: 0x0A (10 decimal)
    * @par Rationale: PORTA address offset in RX72N hardware
    */
-  k_hex_port_start    = 0xA,
+  k_hex_port_start = 0xA,
 
   /**
    * @brief Last hexadecimal port address
@@ -262,7 +262,7 @@ typedef enum : uint16_t {
    * @par Value: 0x10 (16 decimal)
    * @par Rationale: PORTG address offset in RX72N hardware
    */
-  k_hex_port_end      = 0x10,
+  k_hex_port_end = 0x10,
 
   /**
    * @brief Offset for hex port array mapping
@@ -273,7 +273,7 @@ typedef enum : uint16_t {
    * @par Value: 10
    * @par Rationale: Count of decimal ports (0-9) provides natural separation
    */
-  k_hex_port_offset   = 10,
+  k_hex_port_offset = 10,
 
   /**
    * @brief Sentinel value indicating invalid pin array index
@@ -296,7 +296,7 @@ typedef enum : uint16_t {
    * @par Rationale: Maximum uint8_t value, outside valid port range
    * @warning Do not use for hardware access; always validate first
    */
-  k_invalid_port      = 0xFF,
+  k_invalid_port = 0xFF,
 
 } rx_gpio_constants_t;
 
@@ -426,7 +426,7 @@ typedef enum : uint16_t {
    * - Total worst-case delay: 100 + 200 + 400 = 700ms (within 1 second)
    * @note Applications can override via rx_error_handler_config_t
    */
-  k_error_handler_default_max_retries        = 3,
+  k_error_handler_default_max_retries = 3,
 
   /**
    * @brief Default initial backoff delay in milliseconds
@@ -458,7 +458,7 @@ typedef enum : uint16_t {
    * - Safety-critical systems must fail fast on non-recoverable errors
    * @warning Exceeding IWDT timeout (8192ms) causes system reset
    */
-  k_error_handler_default_max_backoff_ms     = 5000,
+  k_error_handler_default_max_backoff_ms = 5000,
 
 } rx_error_handler_defaults_t;
 
@@ -628,7 +628,7 @@ typedef enum : uint16_t {
    * @warning Never use any other value; hardware ignores writes without 0xA5
    * @note Key must be in upper byte: `(k_prcr_key << k_prcr_key_shift)`
    */
-  k_prcr_key       = 0xA5,
+  k_prcr_key = 0xA5,
 
   /**
    * @brief Bit shift to position PRCR key into upper byte
@@ -655,7 +655,7 @@ typedef enum : uint16_t {
    * @note Must combine with key: `(k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all`
    * @par Complete Write Value: 0xA500
    */
-  k_prcr_lock_all  = 0x00,
+  k_prcr_lock_all = 0x00,
 
   /**
    * @brief Unlock PRC1 bit (module stop control registers)

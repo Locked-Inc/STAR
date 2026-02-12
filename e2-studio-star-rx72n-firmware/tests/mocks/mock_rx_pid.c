@@ -267,11 +267,8 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
   return s_deinit_return;
 }
 
-rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
-                        float            setpoint,
-                        float            measured,
-                        float            dt,
-                        float*           output)
+rx_err_t
+rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt, float* output)
 {
   s_compute_count++;
 
@@ -307,10 +304,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
   return s_reset_return;
 }
 
-rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle,
-                          const float      kp,
-                          const float      ki,
-                          const float      kd)
+rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float ki, const float kd)
 {
   s_set_gains_count++;
 
@@ -327,9 +321,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle,
   return s_set_gains_return;
 }
 
-rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle,
-                                  float            output_min,
-                                  float            output_max)
+rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle, float output_min, float output_max)
 {
   s_set_output_limits_count++;
 
@@ -345,9 +337,7 @@ rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle,
   return s_set_output_limits_return;
 }
 
-rx_err_t rx_pid_set_integral_limits(rx_pid_handle_t* handle,
-                                    float            integral_min,
-                                    float            integral_max)
+rx_err_t rx_pid_set_integral_limits(rx_pid_handle_t* handle, float integral_min, float integral_max)
 {
   s_set_integral_limits_count++;
 

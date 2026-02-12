@@ -515,9 +515,9 @@ extern "C" {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bus_uart_write(rx_bus_manager_t* manager,
-                           const char*       bus_name,
-                           const uint8_t*    data,
-                           uint16_t          length);
+                                         const char*       bus_name,
+                                         const uint8_t*    data,
+                                         uint16_t          length);
 
 /**
  * @brief Read data from UART through bus manager
@@ -635,10 +635,10 @@ extern "C" {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bus_uart_read(rx_bus_manager_t* manager,
-                          const char*       bus_name,
-                          uint8_t*          data,
-                          uint16_t          length,
-                          uint16_t*         bytes_read);
+                                        const char*       bus_name,
+                                        uint8_t*          data,
+                                        uint16_t          length,
+                                        uint16_t*         bytes_read);
 
 /**
  * @brief Write single character to UART through bus manager
@@ -791,7 +791,8 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_bus_uart_puts(rx_bus_manager_t* manager, const char* bus_name, const char* str);
+[[nodiscard]] rx_err_t
+rx_bus_uart_puts(rx_bus_manager_t* manager, const char* bus_name, const char* str);
 
 /**
  * @brief Read single character from UART through bus manager
@@ -978,7 +979,8 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_bus_uart_rx_available(rx_bus_manager_t* manager, const char* bus_name, bool* available);
+[[nodiscard]] rx_err_t
+rx_bus_uart_rx_available(rx_bus_manager_t* manager, const char* bus_name, bool* available);
 
 #ifdef __cplusplus
 }

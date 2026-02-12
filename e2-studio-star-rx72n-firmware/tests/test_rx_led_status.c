@@ -18,11 +18,11 @@
  * @since Version 1.0.0
  */
 
-#include "unity.h"
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+
+#include "unity.h"
 
 /* =============================================================================
  * Mock Infrastructure
@@ -68,14 +68,14 @@ typedef enum : uint8_t {
 } mock_motor_mode_t;
 
 typedef struct {
-  float    current_velocity_mps[4];
-  float    current_ma[4];
-  int32_t  encoder_counts[4];
-  uint8_t  fault_flags[4];
-  float    duty_cycle_percent[4];
-  bool     estop_active;
-  uint8_t  estop_reason;
-  uint8_t  mode;
+  float   current_velocity_mps[4];
+  float   current_ma[4];
+  int32_t encoder_counts[4];
+  uint8_t fault_flags[4];
+  float   duty_cycle_percent[4];
+  bool    estop_active;
+  uint8_t estop_reason;
+  uint8_t mode;
 } mock_motor_state_t;
 
 typedef struct {
@@ -106,17 +106,17 @@ typedef struct {
 } mock_obstacle_state_t;
 
 /* Use same type names as real code */
-typedef mock_motor_state_t   motor_state_t;
-typedef mock_motor_command_t motor_command_t;
-typedef mock_bms_state_t     bms_state_t;
+typedef mock_motor_state_t    motor_state_t;
+typedef mock_motor_command_t  motor_command_t;
+typedef mock_bms_state_t      bms_state_t;
 typedef mock_obstacle_state_t obstacle_state_t;
 
 /* ---- Mock shared_data values ---- */
-static motor_state_t   s_mock_motor_state;
-static motor_command_t s_mock_motor_command;
-static bms_state_t     s_mock_bms_state;
+static motor_state_t    s_mock_motor_state;
+static motor_command_t  s_mock_motor_command;
+static bms_state_t      s_mock_bms_state;
 static obstacle_state_t s_mock_obstacle_state;
-static bool            s_mock_estop_active;
+static bool             s_mock_estop_active;
 
 /* ---- Mock rx_err_t ---- */
 typedef enum : uint8_t {
@@ -132,9 +132,9 @@ typedef unsigned long ULONG;
 typedef unsigned int  UINT;
 
 typedef struct {
-  char     name[16];
-  uint8_t  priority;
-  bool     created;
+  char    name[16];
+  uint8_t priority;
+  bool    created;
 } TX_THREAD;
 
 /* ThreadX constants */
@@ -160,13 +160,23 @@ static thread_entry_t s_captured_entry;
  */
 
 /* ThreadX mocks */
-UINT tx_thread_create(TX_THREAD* thread, char* name, void (*entry)(ULONG),
-                      ULONG input, void* stack, ULONG stack_size,
-                      UINT priority, UINT preempt, ULONG time_slice,
-                      UINT auto_start)
+UINT tx_thread_create(TX_THREAD* thread,
+                      char*      name,
+                      void (*entry)(ULONG),
+                      ULONG input,
+                      void* stack,
+                      ULONG stack_size,
+                      UINT  priority,
+                      UINT  preempt,
+                      ULONG time_slice,
+                      UINT  auto_start)
 {
-  (void)input; (void)stack; (void)stack_size; (void)preempt;
-  (void)time_slice; (void)auto_start;
+  (void)input;
+  (void)stack;
+  (void)stack_size;
+  (void)preempt;
+  (void)time_slice;
+  (void)auto_start;
 
   s_mock_tx_create_calls++;
   s_captured_entry = entry;
@@ -174,7 +184,7 @@ UINT tx_thread_create(TX_THREAD* thread, char* name, void (*entry)(ULONG),
   if (s_mock_tx_create_return == TX_SUCCESS) {
     strncpy(thread->name, name, sizeof(thread->name) - 1);
     thread->priority = (uint8_t)priority;
-    thread->created = true;
+    thread->created  = true;
   }
 
   return s_mock_tx_create_return;
@@ -226,19 +236,36 @@ bool shared_data_is_estop_active(void)
 static volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
 {
   switch (port) {
-    case 3: return (volatile rx_port_regs_t*)&s_mock_port3;
-    case 5: return (volatile rx_port_regs_t*)&s_mock_port5;
-    case 8: return (volatile rx_port_regs_t*)&s_mock_port8;
-    default: return (volatile rx_port_regs_t*)0;
+    case 3:
+      return (volatile rx_port_regs_t*)&s_mock_port3;
+    case 5:
+      return (volatile rx_port_regs_t*)&s_mock_port5;
+    case 8:
+      return (volatile rx_port_regs_t*)&s_mock_port8;
+    default:
+      return (volatile rx_port_regs_t*)0;
   }
 }
 
 /* Logging mocks (no-op) */
-void rx_log_info(const char* tag, const char* msg) { (void)tag; (void)msg; }
-void rx_log_error_val(const char* tag, const char* msg, uint32_t val) { (void)tag; (void)msg; (void)val; }
+void rx_log_info(const char* tag, const char* msg)
+{
+  (void)tag;
+  (void)msg;
+}
+void rx_log_error_val(const char* tag, const char* msg, uint32_t val)
+{
+  (void)tag;
+  (void)msg;
+  (void)val;
+}
 
 /* RX_ASSERT mock */
-#define RX_ASSERT(cond, msg) do { (void)(cond); (void)(msg); } while (0)
+#define RX_ASSERT(cond, msg)                                                                       \
+  do {                                                                                             \
+    (void)(cond);                                                                                  \
+    (void)(msg);                                                                                   \
+  } while (0)
 
 /* =============================================================================
  * Hardware Config Constants (from hardware_config.h)
@@ -318,13 +345,21 @@ typedef enum : uint8_t {
 } test_led_index_t;
 
 static const uint8_t s_test_led_ports[k_led_count] = {
-  k_led_0_port, k_led_1_port, k_led_2_port,
-  k_led_3_port, k_led_4_port, k_led_5_port,
+  k_led_0_port,
+  k_led_1_port,
+  k_led_2_port,
+  k_led_3_port,
+  k_led_4_port,
+  k_led_5_port,
 };
 
 static const uint8_t s_test_led_pins[k_led_count] = {
-  k_led_0_pin, k_led_1_pin, k_led_2_pin,
-  k_led_3_pin, k_led_4_pin, k_led_5_pin,
+  k_led_0_pin,
+  k_led_1_pin,
+  k_led_2_pin,
+  k_led_3_pin,
+  k_led_4_pin,
+  k_led_5_pin,
 };
 
 /** @brief Set an LED on or off (test helper matching task logic) */
@@ -423,11 +458,11 @@ void setUp(void)
   memset(&s_mock_obstacle_state, 0, sizeof(s_mock_obstacle_state));
   s_mock_estop_active = false;
 
-  s_mock_tx_create_calls = 0;
-  s_mock_tx_create_return = TX_SUCCESS;
-  s_mock_tx_sleep_calls = 0;
+  s_mock_tx_create_calls     = 0;
+  s_mock_tx_create_return    = TX_SUCCESS;
+  s_mock_tx_sleep_calls      = 0;
   s_mock_tx_sleep_last_ticks = 0;
-  s_captured_entry = (thread_entry_t)0;
+  s_captured_entry           = (thread_entry_t)0;
 
   s_test_led_created = false;
 }
@@ -506,7 +541,7 @@ void test_led_gpio_init_sets_output_direction(void)
   TEST_ASSERT_BITS(0x80, 0x00, s_mock_port8.podr);
 
   /* PORT5: pins 2, 4, 5, 6 should be outputs */
-  TEST_ASSERT_BITS(0x74, 0x74, s_mock_port5.pdr);  /* Pins 2,4,5,6 = 0x04|0x10|0x20|0x40 = 0x74 */
+  TEST_ASSERT_BITS(0x74, 0x74, s_mock_port5.pdr); /* Pins 2,4,5,6 = 0x04|0x10|0x20|0x40 = 0x74 */
   TEST_ASSERT_BITS(0x74, 0x00, s_mock_port5.pmr);
   TEST_ASSERT_BITS(0x74, 0x00, s_mock_port5.podr);
 }
@@ -522,11 +557,11 @@ void test_led_gpio_init_preserves_other_bits(void)
   test_led_init_gpio();
 
   /* Non-LED bits in PORT3 should remain set */
-  TEST_ASSERT_BITS(0xFB, 0xFB, s_mock_port3.pdr);   /* All except bit 2 unchanged */
-  TEST_ASSERT_BITS(0xFB, 0xFB, s_mock_port3.pmr);   /* PMR: only bit 2 cleared */
+  TEST_ASSERT_BITS(0xFB, 0xFB, s_mock_port3.pdr); /* All except bit 2 unchanged */
+  TEST_ASSERT_BITS(0xFB, 0xFB, s_mock_port3.pmr); /* PMR: only bit 2 cleared */
 
   /* Non-LED bits in PORT5 should remain set */
-  TEST_ASSERT_BITS(0x8B, 0x8B, s_mock_port5.pdr);   /* Bits 0,1,3,7 unchanged */
+  TEST_ASSERT_BITS(0x8B, 0x8B, s_mock_port5.pdr); /* Bits 0,1,3,7 unchanged */
 }
 
 /* =============================================================================
@@ -750,28 +785,28 @@ void test_led_comm_pulse_on_new_command(void)
   memset(&s_mock_port5, 0, sizeof(s_mock_port5));
 
   /* Simulate comm pulse logic */
-  uint32_t last_seq = 0;
+  uint32_t last_seq        = 0;
   uint8_t  pulse_remaining = 0;
 
   /* No command yet */
-  s_mock_motor_command.valid = false;
+  s_mock_motor_command.valid    = false;
   s_mock_motor_command.sequence = 0;
 
   motor_command_t cmd;
   (void)shared_data_get_motor_command(&cmd);
   if (cmd.valid && cmd.sequence != last_seq) {
-    last_seq = cmd.sequence;
+    last_seq        = cmd.sequence;
     pulse_remaining = k_led_comm_pulse_duration;
   }
   TEST_ASSERT_EQUAL(0, pulse_remaining);
 
   /* New command arrives */
-  s_mock_motor_command.valid = true;
+  s_mock_motor_command.valid    = true;
   s_mock_motor_command.sequence = 1;
 
   (void)shared_data_get_motor_command(&cmd);
   if (cmd.valid && cmd.sequence != last_seq) {
-    last_seq = cmd.sequence;
+    last_seq        = cmd.sequence;
     pulse_remaining = k_led_comm_pulse_duration;
   }
   TEST_ASSERT_EQUAL(k_led_comm_pulse_duration, pulse_remaining);

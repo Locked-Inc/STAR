@@ -237,8 +237,7 @@ DEFINE YOUR SYSTEM - UNCOMMENT THE INCLUDE PATH FOR THE PLATFORM YOU ARE USING.
 MAKE SURE AT LEAST ONE PLATFORM WAS DEFINED - DO NOT EDIT BELOW THIS POINT
 ***********************************************************************************************************************/
 #ifndef PLATFORM_DEFINED
-#error  "Error - No platform defined in platform.h!"
+#error "Error - No platform defined in platform.h!"
 #endif
 
 #endif /* PLATFORM_H */
-

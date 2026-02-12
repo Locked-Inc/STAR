@@ -182,19 +182,19 @@
  * @brief Test array sizes and limits
  */
 typedef enum : uint8_t {
-  k_test_data_size         = 64,  /**< Size of test data arrays */
-  k_test_small_size        = 16,  /**< Size for small test buffers */
-  k_test_invalid_port      = 99,  /**< Invalid port ID for error testing */
-  k_port0_pipe_bulk_in     = 1,   /**< Port 0 Bulk IN pipe number */
-  k_port0_pipe_bulk_out    = 2,   /**< Port 0 Bulk OUT pipe number */
-  k_port1_pipe_bulk_in     = 4,   /**< Port 1 Bulk IN pipe number */
-  k_port1_pipe_bulk_out    = 5,   /**< Port 1 Bulk OUT pipe number */
-  k_port0_interface_ctrl   = 0,   /**< Port 0 control interface number */
-  k_port0_interface_data   = 1,   /**< Port 0 data interface number */
-  k_port1_interface_ctrl   = 2,   /**< Port 1 control interface number */
-  k_port1_interface_data   = 3,   /**< Port 1 data interface number */
-  k_invalid_pipe_id        = 99,  /**< Invalid pipe ID for error testing */
-  k_invalid_interface_id   = 99,  /**< Invalid interface ID for error testing */
+  k_test_data_size       = 64, /**< Size of test data arrays */
+  k_test_small_size      = 16, /**< Size for small test buffers */
+  k_test_invalid_port    = 99, /**< Invalid port ID for error testing */
+  k_port0_pipe_bulk_in   = 1,  /**< Port 0 Bulk IN pipe number */
+  k_port0_pipe_bulk_out  = 2,  /**< Port 0 Bulk OUT pipe number */
+  k_port1_pipe_bulk_in   = 4,  /**< Port 1 Bulk IN pipe number */
+  k_port1_pipe_bulk_out  = 5,  /**< Port 1 Bulk OUT pipe number */
+  k_port0_interface_ctrl = 0,  /**< Port 0 control interface number */
+  k_port0_interface_data = 1,  /**< Port 0 data interface number */
+  k_port1_interface_ctrl = 2,  /**< Port 1 control interface number */
+  k_port1_interface_data = 3,  /**< Port 1 data interface number */
+  k_invalid_pipe_id      = 99, /**< Invalid pipe ID for error testing */
+  k_invalid_interface_id = 99, /**< Invalid interface ID for error testing */
 } test_constants_t;
 
 /* =============================================================================
@@ -204,14 +204,14 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-extern void              rx_usb_set_state(rx_usb_state_t state);
-extern void              rx_usb_priv_set_port_state(rx_usb_port_id_t port, rx_usb_state_t state);
-extern uint32_t          rx_usb_rx_push(rx_usb_port_id_t port, const uint8_t* data, uint32_t len);
-extern uint32_t          rx_usb_tx_pop(rx_usb_port_id_t port, uint8_t* data, uint32_t max_len);
-extern void              rx_usb_count_bus_reset(void);
-extern void              rx_usb_count_suspend(void);
-extern rx_usb_port_id_t  rx_usb_find_port_by_pipe(uint8_t pipe);
-extern rx_usb_port_id_t  rx_usb_find_port_by_interface(uint8_t interface);
+extern void             rx_usb_set_state(rx_usb_state_t state);
+extern void             rx_usb_priv_set_port_state(rx_usb_port_id_t port, rx_usb_state_t state);
+extern uint32_t         rx_usb_rx_push(rx_usb_port_id_t port, const uint8_t* data, uint32_t len);
+extern uint32_t         rx_usb_tx_pop(rx_usb_port_id_t port, uint8_t* data, uint32_t max_len);
+extern void             rx_usb_count_bus_reset(void);
+extern void             rx_usb_count_suspend(void);
+extern rx_usb_port_id_t rx_usb_find_port_by_pipe(uint8_t pipe);
+extern rx_usb_port_id_t rx_usb_find_port_by_interface(uint8_t interface);
 
 /* =============================================================================
  * Test Fixtures
@@ -238,24 +238,24 @@ static void*            s_global_callback_context;
 
 static void test_callback_port0(rx_usb_port_id_t port, rx_usb_event_t event, void* ctx)
 {
-  s_port0_last_port      = port;
-  s_port0_last_event     = event;
+  s_port0_last_port  = port;
+  s_port0_last_event = event;
   s_port0_callback_count++;
   s_port0_callback_context = ctx;
 }
 
 static void test_callback_port1(rx_usb_port_id_t port, rx_usb_event_t event, void* ctx)
 {
-  s_port1_last_port      = port;
-  s_port1_last_event     = event;
+  s_port1_last_port  = port;
+  s_port1_last_event = event;
   s_port1_callback_count++;
   s_port1_callback_context = ctx;
 }
 
 static void test_callback_global(rx_usb_port_id_t port, rx_usb_event_t event, void* ctx)
 {
-  s_global_last_port      = port;
-  s_global_last_event     = event;
+  s_global_last_port  = port;
+  s_global_last_event = event;
   s_global_callback_count++;
   s_global_callback_context = ctx;
 }
@@ -324,7 +324,8 @@ void test_usb_port_invalid_id_returns_error_on_read(void)
   uint8_t  data[k_test_data_size];
   uint32_t actual_len;
 
-  rx_err_t err = rx_usb_read((rx_usb_port_id_t)k_test_invalid_port, data, sizeof(data), &actual_len);
+  rx_err_t err =
+    rx_usb_read((rx_usb_port_id_t)k_test_invalid_port, data, sizeof(data), &actual_len);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -393,12 +394,12 @@ void test_usb_port_buffers_isolated(void)
 
   /* Write data to port 0 */
   uint8_t data0[] = "PORT0";
-  err = rx_usb_write(k_usb_port_proto, data0, 5);
+  err             = rx_usb_write(k_usb_port_proto, data0, 5);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Write different data to port 1 */
   uint8_t data1[] = "PORT1";
-  err = rx_usb_write(k_usb_port_decoded, data1, 5);
+  err             = rx_usb_write(k_usb_port_decoded, data1, 5);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Check port 0 TX buffer contains PORT0 data */
@@ -446,7 +447,7 @@ void test_usb_write_port0_to_correct_buffer(void)
   rx_usb_set_state(k_usb_state_configured);
 
   uint8_t data[] = "Hello Port 0";
-  err = rx_usb_write(k_usb_port_proto, data, 12);
+  err            = rx_usb_write(k_usb_port_proto, data, 12);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data is in port 0's buffer */
@@ -466,7 +467,7 @@ void test_usb_write_port1_to_correct_buffer(void)
   rx_usb_set_state(k_usb_state_configured);
 
   uint8_t data[] = "Debug Message";
-  err = rx_usb_write(k_usb_port_decoded, data, 13);
+  err            = rx_usb_write(k_usb_port_decoded, data, 13);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data is in port 1's buffer */
@@ -487,7 +488,7 @@ void test_usb_write_port0_does_not_affect_port1(void)
 
   /* Write only to port 0 */
   uint8_t data[] = "Port 0 Only";
-  err = rx_usb_write(k_usb_port_proto, data, 11);
+  err            = rx_usb_write(k_usb_port_proto, data, 11);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Port 1 should be empty */
@@ -530,7 +531,7 @@ void test_usb_write_buffer_full_returns_busy(void)
 
   /* Next write should fail */
   uint8_t more_data[] = "more";
-  err = rx_usb_write(k_usb_port_proto, more_data, 4);
+  err                 = rx_usb_write(k_usb_port_proto, more_data, 4);
   TEST_ASSERT_EQUAL(k_rx_err_busy, err);
 }
 
@@ -581,7 +582,7 @@ void test_usb_read_empty_returns_zero_length(void)
 
   uint8_t  buf[k_test_data_size];
   uint32_t actual_len = 999;
-  rx_err_t err = rx_usb_read(k_usb_port_proto, buf, sizeof(buf), &actual_len);
+  rx_err_t err        = rx_usb_read(k_usb_port_proto, buf, sizeof(buf), &actual_len);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT32(0, actual_len);
@@ -750,7 +751,8 @@ void test_usb_callback_set_per_port(void)
 void test_usb_callback_data_rx_port0(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_set_callback(k_usb_port_proto, test_callback_port0, (void*)0xCAFE));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_usb_set_callback(k_usb_port_proto, test_callback_port0, (void*)0xCAFE));
 
   uint8_t data[] = "test";
   rx_usb_rx_push(k_usb_port_proto, data, 4);
@@ -764,7 +766,8 @@ void test_usb_callback_data_rx_port0(void)
 void test_usb_callback_data_rx_port1(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_set_callback(k_usb_port_decoded, test_callback_port1, (void*)0xBEEF));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_usb_set_callback(k_usb_port_decoded, test_callback_port1, (void*)0xBEEF));
 
   uint8_t data[] = "test";
   rx_usb_rx_push(k_usb_port_decoded, data, 4);

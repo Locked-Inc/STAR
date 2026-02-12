@@ -248,6 +248,18 @@ typedef enum : uint16_t {
   k_test_payload_large   = 256,
 } test_constants_t;
 
+/** @brief Retransmit test constant values */
+typedef enum : uint16_t {
+  k_test_retransmit_max_retries_custom    = 5,
+  k_test_retransmit_ack_timeout_custom_ms = 100,
+  k_test_retransmit_max_backoff_custom_ms = 500,
+  k_test_retransmit_max_backoff_low_ms    = 100,
+  k_test_retransmit_high_max_retries      = 10,
+  k_test_retransmit_single_retry          = 1,
+  k_test_retransmit_limit_check_time_ms   = 200,
+  k_test_retransmit_flags_offset          = 7,
+} test_retransmit_constants_t;
+
 /* =============================================================================
  * Test Fixtures
  * =============================================================================
@@ -261,6 +273,13 @@ static rx_frame_t s_last_ping_frame;
 static uint32_t   s_reset_cb_count;
 static rx_frame_t s_last_reset_frame;
 static void*      s_last_cb_ctx;
+
+/* Retransmit callback tracking */
+static uint32_t s_ack_cb_count;
+static uint16_t s_last_ack_sequence;
+static uint32_t s_nack_cb_count;
+static uint16_t s_last_nack_sequence;
+static void*    s_last_retransmit_cb_ctx;
 
 /**
  * @brief Initialize RSPI channel via mock so channel is ready
@@ -309,6 +328,26 @@ static void helper_create_encoded_frame(rx_frame_type_t type,
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_deinit(&encoder));
 }
 
+/**
+ * @brief ACK notification callback for retransmit tests
+ */
+static void test_ack_callback(uint16_t sequence, void* ctx)
+{
+  s_ack_cb_count++;
+  s_last_ack_sequence      = sequence;
+  s_last_retransmit_cb_ctx = ctx;
+}
+
+/**
+ * @brief NACK notification callback for retransmit tests
+ */
+static void test_nack_callback(uint16_t sequence, void* ctx)
+{
+  s_nack_cb_count++;
+  s_last_nack_sequence     = sequence;
+  s_last_retransmit_cb_ctx = ctx;
+}
+
 void setUp(void)
 {
   /* Initialize mock hardware */
@@ -323,6 +362,13 @@ void setUp(void)
   memset(&s_last_ping_frame, 0, sizeof(s_last_ping_frame));
   memset(&s_last_reset_frame, 0, sizeof(s_last_reset_frame));
   s_last_cb_ctx = NULL;
+
+  /* Reset retransmit callback tracking */
+  s_ack_cb_count           = 0;
+  s_nack_cb_count          = 0;
+  s_last_ack_sequence      = 0;
+  s_last_nack_sequence     = 0;
+  s_last_retransmit_cb_ctx = NULL;
 }
 
 void tearDown(void)
@@ -1127,7 +1173,8 @@ static void test_reset_callback(const rx_frame_t* frame, void* ctx)
 
 void test_spi_comm_set_callbacks_null_handle_fails(void)
 {
-  rx_err_t err = rx_spi_comm_set_control_callbacks(NULL, test_ping_callback, test_reset_callback, NULL);
+  rx_err_t err =
+    rx_spi_comm_set_control_callbacks(NULL, test_ping_callback, test_reset_callback, NULL);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1381,9 +1428,9 @@ void test_spi_comm_receive_ping_callback_invoked(void)
 
   uint32_t ctx_value = 42;
   (void)rx_spi_comm_set_control_callbacks(&s_handle,
-                                     test_ping_callback,
-                                     test_reset_callback,
-                                     &ctx_value);
+                                          test_ping_callback,
+                                          test_reset_callback,
+                                          &ctx_value);
 
   /* Create and inject PING */
   uint8_t  ping_payload[] = {0x00, 0x00, 0x00, 0x03};
@@ -1418,9 +1465,9 @@ void test_spi_comm_receive_reset_callback_invoked(void)
 
   uint32_t ctx_value = 99;
   (void)rx_spi_comm_set_control_callbacks(&s_handle,
-                                     test_ping_callback,
-                                     test_reset_callback,
-                                     &ctx_value);
+                                          test_ping_callback,
+                                          test_reset_callback,
+                                          &ctx_value);
 
   /* Create and inject RESET */
   uint8_t  encoded[64];
@@ -1440,6 +1487,710 @@ void test_spi_comm_receive_reset_callback_invoked(void)
   /* Verify sequences were reset */
   TEST_ASSERT_EQUAL_UINT16(0, s_handle.tx_sequence);
   TEST_ASSERT_EQUAL_UINT16(0, s_handle.rx_sequence);
+}
+
+/* =============================================================================
+ * Retransmit Configuration Tests
+ * =============================================================================
+ */
+
+void test_retransmit_disabled_by_default(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+
+  TEST_ASSERT_FALSE(s_handle.auto_retransmit);
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+}
+
+void test_retransmit_enabled_via_config(void)
+{
+  rx_spi_comm_config_t config = {
+    .channel         = 0,
+    .spi_mode        = 0,
+    .fec_enabled     = false,
+    .auto_retransmit = true,
+    .retransmit_config =
+      {
+        .max_retries    = k_test_retransmit_max_retries_custom,
+        .ack_timeout_ms = k_test_retransmit_ack_timeout_custom_ms,
+        .max_backoff_ms = k_test_retransmit_max_backoff_custom_ms,
+      },
+  };
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+
+  TEST_ASSERT_TRUE(s_handle.auto_retransmit);
+  TEST_ASSERT_EQUAL_UINT8(k_test_retransmit_max_retries_custom,
+                          s_handle.retransmit_cfg.max_retries);
+  TEST_ASSERT_EQUAL_UINT16(k_test_retransmit_ack_timeout_custom_ms,
+                           s_handle.retransmit_cfg.ack_timeout_ms);
+  TEST_ASSERT_EQUAL_UINT16(k_test_retransmit_max_backoff_custom_ms,
+                           s_handle.retransmit_cfg.max_backoff_ms);
+}
+
+void test_retransmit_defaults_applied_for_zero_values(void)
+{
+  rx_spi_comm_config_t config = {
+    .channel           = 0,
+    .spi_mode          = 0,
+    .fec_enabled       = false,
+    .auto_retransmit   = true,
+    .retransmit_config = {0},
+  };
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+
+  TEST_ASSERT_TRUE(s_handle.auto_retransmit);
+  TEST_ASSERT_EQUAL_UINT8(k_retransmit_default_max_retries, s_handle.retransmit_cfg.max_retries);
+  TEST_ASSERT_EQUAL_UINT16(k_retransmit_default_ack_timeout_ms,
+                           s_handle.retransmit_cfg.ack_timeout_ms);
+  TEST_ASSERT_EQUAL_UINT16(k_retransmit_default_max_backoff_ms,
+                           s_handle.retransmit_cfg.max_backoff_ms);
+}
+
+/* =============================================================================
+ * Retransmit Send Buffering Tests
+ * =============================================================================
+ */
+
+void test_retransmit_send_buffers_frame(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+  TEST_ASSERT_EQUAL_UINT16(0, s_handle.retry_sequence);
+  TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
+  TEST_ASSERT_TRUE(s_handle.retry_wire_len > 0);
+}
+
+void test_retransmit_send_not_buffered_when_off(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+  TEST_ASSERT_EQUAL_UINT32(0, s_handle.retry_wire_len);
+}
+
+void test_retransmit_send_only_requires_ack_buffered(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_none,
+                                     data,
+                                     k_test_payload_small));
+
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+}
+
+void test_retransmit_send_overwrites_on_new_send(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data1[] = "aaaa";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data1,
+                                     k_test_payload_small));
+  TEST_ASSERT_EQUAL_UINT16(0, s_handle.retry_sequence);
+
+  uint8_t data2[] = "bbbb";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data2,
+                                     k_test_payload_small));
+  TEST_ASSERT_EQUAL_UINT16(1, s_handle.retry_sequence);
+  TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+}
+
+/* =============================================================================
+ * Retransmit ACK Consumption Tests
+ * =============================================================================
+ */
+
+void test_retransmit_ack_clears_retry(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+
+  /* Inject ACK frame with matching sequence (0) */
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* ACK consumed, no more data -> timeout */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+  TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
+}
+
+void test_retransmit_ack_wrong_seq_ignored(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+
+  /* Inject ACK with wrong sequence (99 instead of 0) */
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_ack, k_test_sequence_b, NULL, 0, encoded, &encoded_len);
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* ACK consumed (still consumed in loop) but retry NOT cleared */
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+}
+
+void test_retransmit_ack_callback_invoked(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint32_t ctx_value = k_test_sequence_a;
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_set_retransmit_callbacks(&s_handle,
+                                                         test_ack_callback,
+                                                         test_nack_callback,
+                                                         &ctx_value));
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  TEST_ASSERT_EQUAL_UINT32(1, s_ack_cb_count);
+  TEST_ASSERT_EQUAL_UINT16(0, s_last_ack_sequence);
+  TEST_ASSERT_EQUAL_PTR(&ctx_value, s_last_retransmit_cb_ctx);
+  TEST_ASSERT_EQUAL_UINT32(0, s_nack_cb_count);
+}
+
+void test_retransmit_ack_not_consumed_when_off(void)
+{
+  /* Init WITHOUT auto_retransmit */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  /* Inject ACK frame */
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* ACK returned to caller as regular frame */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT8(k_frame_type_ack, frame.header.type);
+}
+
+void test_retransmit_ack_non_pending_ignored(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  /* NO send -> no pending retry */
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* ACK consumed (auto_retransmit is on), but nothing to clear */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+}
+
+/* =============================================================================
+ * Retransmit NACK Handling Tests
+ * =============================================================================
+ */
+
+void test_retransmit_nack_triggers_retry(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+  TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
+
+  /* Inject NACK with matching sequence */
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* Retransmit occurred: retry_count incremented, still pending */
+  TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+}
+
+void test_retransmit_nack_retransmit_flag_set(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+
+  /* Before NACK: retransmit flag should NOT be set */
+  TEST_ASSERT_EQUAL_HEX8(0,
+                         s_handle.retry_buffer[k_test_retransmit_flags_offset] &
+                           k_frame_flag_retransmit);
+
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* After retransmit: retransmit flag should be set in retry buffer */
+  TEST_ASSERT_NOT_EQUAL(0,
+                        s_handle.retry_buffer[k_test_retransmit_flags_offset] &
+                          k_frame_flag_retransmit);
+}
+
+void test_retransmit_nack_callback_invoked(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint32_t ctx_value = 77;
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_set_retransmit_callbacks(&s_handle,
+                                                         test_ack_callback,
+                                                         test_nack_callback,
+                                                         &ctx_value));
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  TEST_ASSERT_EQUAL_UINT32(1, s_nack_cb_count);
+  TEST_ASSERT_EQUAL_UINT16(0, s_last_nack_sequence);
+  TEST_ASSERT_EQUAL_PTR(&ctx_value, s_last_retransmit_cb_ctx);
+  TEST_ASSERT_EQUAL_UINT32(0, s_ack_cb_count);
+}
+
+void test_retransmit_nack_not_consumed_when_off(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t  encoded[64];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
+  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* NACK returned to caller as regular frame */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT8(k_frame_type_nack, frame.header.type);
+}
+
+/* =============================================================================
+ * Retransmit Timeout (process_retransmits) Tests
+ * =============================================================================
+ */
+
+void test_retransmit_process_triggers_after_timeout(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+  s_handle.retry_send_time_ms = 0;
+
+  /* Call with time > ack_timeout_ms (default 50) */
+  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, 51);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+}
+
+void test_retransmit_process_exponential_backoff(void)
+{
+  rx_spi_comm_config_t config = {
+    .auto_retransmit = true,
+    .retransmit_config =
+      {
+        .max_retries    = k_test_retransmit_high_max_retries,
+        .ack_timeout_ms = k_retransmit_default_ack_timeout_ms,
+        .max_backoff_ms = k_retransmit_default_max_backoff_ms,
+      },
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+  s_handle.retry_send_time_ms = 0;
+
+  /* First timeout: 50ms (50 << 0) — too early at 49 */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 49));
+  TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
+
+  /* First timeout: triggers at 50ms */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 50));
+  TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
+
+  /* Second timeout: 100ms (50 << 1), from retry_send_time=50 — too early at 149 */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 149));
+  TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
+
+  /* Second timeout: triggers at 150ms (50 + 100) */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 150));
+  TEST_ASSERT_EQUAL_UINT8(2, s_handle.retry_count);
+}
+
+void test_retransmit_process_max_backoff_cap(void)
+{
+  rx_spi_comm_config_t config = {
+    .auto_retransmit = true,
+    .retransmit_config =
+      {
+        .max_retries    = k_test_retransmit_high_max_retries,
+        .ack_timeout_ms = k_retransmit_default_ack_timeout_ms,
+        .max_backoff_ms = k_test_retransmit_max_backoff_low_ms,
+      },
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+  s_handle.retry_send_time_ms = 0;
+
+  /* First timeout: min(50 << 0, 100) = 50ms */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 50));
+  TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
+
+  /* Second timeout: min(50 << 1, 100) = 100ms from send_time=50 */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 150));
+  TEST_ASSERT_EQUAL_UINT8(2, s_handle.retry_count);
+
+  /* Third timeout: min(50 << 2, 100) = min(200, 100) = 100ms (capped) */
+  /* From send_time=150, need elapsed >= 100, so time >= 250 */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 249));
+  TEST_ASSERT_EQUAL_UINT8(2, s_handle.retry_count); /* 249-150=99 < 100, too early */
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 250));
+  TEST_ASSERT_EQUAL_UINT8(3, s_handle.retry_count); /* 250-150=100 >= 100, triggered */
+}
+
+void test_retransmit_process_no_action_before_timeout(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+  s_handle.retry_send_time_ms = 0;
+
+  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+}
+
+void test_retransmit_process_noop_when_nothing_pending(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+
+  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, 1000);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/* =============================================================================
+ * Retransmit Retry Limit Tests
+ * =============================================================================
+ */
+
+void test_retransmit_retry_limit_returns_error(void)
+{
+  rx_spi_comm_config_t config = {
+    .auto_retransmit   = true,
+    .retransmit_config = {.max_retries = k_test_retransmit_single_retry},
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+  s_handle.retry_send_time_ms = 0;
+
+  /* First retransmit succeeds (retry_count 0 -> 1) */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 50));
+  TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
+
+  /* Second attempt: retry_count (1) >= max_retries (1) -> limit exceeded */
+  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, k_test_retransmit_limit_check_time_ms);
+
+  TEST_ASSERT_EQUAL(k_rx_err_retry_limit, err);
+}
+
+void test_retransmit_retry_limit_clears_pending(void)
+{
+  rx_spi_comm_config_t config = {
+    .auto_retransmit   = true,
+    .retransmit_config = {.max_retries = k_test_retransmit_single_retry},
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+  s_handle.retry_send_time_ms = 0;
+
+  /* First retransmit (retry_count 0 -> 1) */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 50));
+
+  /* Limit exceeded */
+  (void)rx_spi_comm_process_retransmits(&s_handle, 200);
+
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+  TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
+}
+
+/* =============================================================================
+ * Retransmit Set Auto Retransmit Runtime Tests
+ * =============================================================================
+ */
+
+void test_retransmit_set_auto_retransmit_null_handle(void)
+{
+  rx_err_t err = rx_spi_comm_set_auto_retransmit(nullptr, true, nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_retransmit_set_auto_retransmit_enables(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+  TEST_ASSERT_FALSE(s_handle.auto_retransmit);
+
+  rx_spi_comm_retransmit_config_t cfg = {
+    .max_retries    = k_test_retransmit_max_retries_custom,
+    .ack_timeout_ms = k_test_retransmit_ack_timeout_custom_ms,
+    .max_backoff_ms = k_test_retransmit_max_backoff_custom_ms,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_set_auto_retransmit(&s_handle, true, &cfg));
+
+  TEST_ASSERT_TRUE(s_handle.auto_retransmit);
+  TEST_ASSERT_EQUAL_UINT8(k_test_retransmit_max_retries_custom,
+                          s_handle.retransmit_cfg.max_retries);
+  TEST_ASSERT_EQUAL_UINT16(k_test_retransmit_ack_timeout_custom_ms,
+                           s_handle.retransmit_cfg.ack_timeout_ms);
+}
+
+void test_retransmit_set_auto_retransmit_disables_clears_pending(void)
+{
+  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_test_channel_default);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+
+  /* Disable — should clear pending */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_set_auto_retransmit(&s_handle, false, nullptr));
+
+  TEST_ASSERT_FALSE(s_handle.auto_retransmit);
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+  TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
+}
+
+/* =============================================================================
+ * Retransmit Callback Registration Tests
+ * =============================================================================
+ */
+
+void test_retransmit_set_callbacks_null_handle(void)
+{
+  rx_err_t err = rx_spi_comm_set_retransmit_callbacks(nullptr, NULL, NULL, NULL);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_retransmit_set_callbacks_success(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+
+  rx_err_t err =
+    rx_spi_comm_set_retransmit_callbacks(&s_handle, test_ack_callback, test_nack_callback, NULL);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_PTR(test_ack_callback, s_handle.on_ack_cb);
+  TEST_ASSERT_EQUAL_PTR(test_nack_callback, s_handle.on_nack_cb);
+}
+
+/* =============================================================================
+ * Retransmit Process API Validation Tests
+ * =============================================================================
+ */
+
+void test_retransmit_process_null_handle(void)
+{
+  rx_err_t err = rx_spi_comm_process_retransmits(nullptr, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_retransmit_process_ok_when_disabled(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+
+  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, 1000);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
 /* =============================================================================
@@ -1552,6 +2303,54 @@ int main(void)
   /* Control frame callback tests */
   RUN_TEST(test_spi_comm_receive_ping_callback_invoked);
   RUN_TEST(test_spi_comm_receive_reset_callback_invoked);
+
+  /* Retransmit configuration tests */
+  RUN_TEST(test_retransmit_disabled_by_default);
+  RUN_TEST(test_retransmit_enabled_via_config);
+  RUN_TEST(test_retransmit_defaults_applied_for_zero_values);
+
+  /* Retransmit send buffering tests */
+  RUN_TEST(test_retransmit_send_buffers_frame);
+  RUN_TEST(test_retransmit_send_not_buffered_when_off);
+  RUN_TEST(test_retransmit_send_only_requires_ack_buffered);
+  RUN_TEST(test_retransmit_send_overwrites_on_new_send);
+
+  /* Retransmit ACK consumption tests */
+  RUN_TEST(test_retransmit_ack_clears_retry);
+  RUN_TEST(test_retransmit_ack_wrong_seq_ignored);
+  RUN_TEST(test_retransmit_ack_callback_invoked);
+  RUN_TEST(test_retransmit_ack_not_consumed_when_off);
+  RUN_TEST(test_retransmit_ack_non_pending_ignored);
+
+  /* Retransmit NACK handling tests */
+  RUN_TEST(test_retransmit_nack_triggers_retry);
+  RUN_TEST(test_retransmit_nack_retransmit_flag_set);
+  RUN_TEST(test_retransmit_nack_callback_invoked);
+  RUN_TEST(test_retransmit_nack_not_consumed_when_off);
+
+  /* Retransmit timeout (process_retransmits) tests */
+  RUN_TEST(test_retransmit_process_triggers_after_timeout);
+  RUN_TEST(test_retransmit_process_exponential_backoff);
+  RUN_TEST(test_retransmit_process_max_backoff_cap);
+  RUN_TEST(test_retransmit_process_no_action_before_timeout);
+  RUN_TEST(test_retransmit_process_noop_when_nothing_pending);
+
+  /* Retransmit retry limit tests */
+  RUN_TEST(test_retransmit_retry_limit_returns_error);
+  RUN_TEST(test_retransmit_retry_limit_clears_pending);
+
+  /* Retransmit set auto retransmit runtime tests */
+  RUN_TEST(test_retransmit_set_auto_retransmit_null_handle);
+  RUN_TEST(test_retransmit_set_auto_retransmit_enables);
+  RUN_TEST(test_retransmit_set_auto_retransmit_disables_clears_pending);
+
+  /* Retransmit callback registration tests */
+  RUN_TEST(test_retransmit_set_callbacks_null_handle);
+  RUN_TEST(test_retransmit_set_callbacks_success);
+
+  /* Retransmit process API validation tests */
+  RUN_TEST(test_retransmit_process_null_handle);
+  RUN_TEST(test_retransmit_process_ok_when_disabled);
 
   return UNITY_END();
 }

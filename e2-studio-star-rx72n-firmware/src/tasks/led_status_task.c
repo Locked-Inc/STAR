@@ -68,9 +68,9 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_led_heartbeat_half_period = 10,  /**< 10 ticks × 50ms = 500ms half-period (1 Hz) */
-  k_led_error_half_period     = 3,   /**< 3 ticks × 50ms = 150ms half-period (fast blink) */
-  k_led_comm_pulse_duration   = 2,   /**< 2 ticks × 50ms = 100ms comm activity pulse */
+  k_led_heartbeat_half_period = 10, /**< 10 ticks × 50ms = 500ms half-period (1 Hz) */
+  k_led_error_half_period     = 3,  /**< 3 ticks × 50ms = 150ms half-period (fast blink) */
+  k_led_comm_pulse_duration   = 2,  /**< 2 ticks × 50ms = 100ms comm activity pulse */
 } led_timing_constants_t;
 
 /**
@@ -106,14 +106,22 @@ static const char* const s_tag = "LED";
 
 /** @brief LED port numbers lookup table (indexed by LED number) */
 static const uint8_t s_led_ports[k_led_count] = {
-  k_led_0_port, k_led_1_port, k_led_2_port,
-  k_led_3_port, k_led_4_port, k_led_5_port,
+  k_led_0_port,
+  k_led_1_port,
+  k_led_2_port,
+  k_led_3_port,
+  k_led_4_port,
+  k_led_5_port,
 };
 
 /** @brief LED pin numbers lookup table (indexed by LED number) */
 static const uint8_t s_led_pins[k_led_count] = {
-  k_led_0_pin, k_led_1_pin, k_led_2_pin,
-  k_led_3_pin, k_led_4_pin, k_led_5_pin,
+  k_led_0_pin,
+  k_led_1_pin,
+  k_led_2_pin,
+  k_led_3_pin,
+  k_led_4_pin,
+  k_led_5_pin,
 };
 
 /** @brief Heartbeat blink counter (incremented each task tick) */
@@ -367,7 +375,7 @@ static void internal_led_task_entry(ULONG input)
       (void)shared_data_get_motor_command(&cmd);
 
       if (cmd.valid && (cmd.sequence != s_last_comm_sequence)) {
-        s_last_comm_sequence = cmd.sequence;
+        s_last_comm_sequence   = cmd.sequence;
         s_comm_pulse_remaining = k_led_comm_pulse_duration;
       }
 

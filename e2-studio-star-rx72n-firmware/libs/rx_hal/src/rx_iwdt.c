@@ -330,11 +330,11 @@ typedef struct {
 static const iwdt_timeout_entry_t s_timeout_table[] = {
   /* timeout_ms, TOPS (cycles),        CKS (divisor)            */
   /* Actual timeout = (cycles * divisor) / 120kHz */
-  {.timeout_ms = 128,   .tops = k_iwdt_tops_16384, .cks = k_iwdt_cks_div_1},   /* ~136ms actual  */
-  {.timeout_ms = 512,   .tops = k_iwdt_tops_4096,  .cks = k_iwdt_cks_div_16},  /* ~546ms actual  */
-  {.timeout_ms = 1000,  .tops = k_iwdt_tops_8192,  .cks = k_iwdt_cks_div_16},  /* ~1.09s actual  */
-  {.timeout_ms = 2048,  .tops = k_iwdt_tops_16384, .cks = k_iwdt_cks_div_16},  /* ~2.18s actual  */
-  {.timeout_ms = 8192,  .tops = k_iwdt_tops_16384, .cks = k_iwdt_cks_div_64},  /* ~8.74s actual  */
+  {.timeout_ms = 128, .tops = k_iwdt_tops_16384, .cks = k_iwdt_cks_div_1},     /* ~136ms actual  */
+  {.timeout_ms = 512, .tops = k_iwdt_tops_4096, .cks = k_iwdt_cks_div_16},     /* ~546ms actual  */
+  {.timeout_ms = 1000, .tops = k_iwdt_tops_8192, .cks = k_iwdt_cks_div_16},    /* ~1.09s actual  */
+  {.timeout_ms = 2048, .tops = k_iwdt_tops_16384, .cks = k_iwdt_cks_div_16},   /* ~2.18s actual  */
+  {.timeout_ms = 8192, .tops = k_iwdt_tops_16384, .cks = k_iwdt_cks_div_64},   /* ~8.74s actual  */
   {.timeout_ms = 16384, .tops = k_iwdt_tops_16384, .cks = k_iwdt_cks_div_128}, /* ~17.48s actual */
 };
 
@@ -1054,7 +1054,7 @@ void rx_hal_iwdt_clear_status(void)
    *
    * Bits 14-15 are write-0-to-clear
    */
-  iwdt()->iwdtsr &= (uint16_t)~(uint16_t)(k_iwdt_sr_undff | k_iwdt_sr_refef);
+  iwdt()->iwdtsr &= (uint16_t) ~(uint16_t)(k_iwdt_sr_undff | k_iwdt_sr_refef);
 
 #else
   /* Host-side stub - no operation */
@@ -1179,10 +1179,11 @@ typedef enum : int32_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  char     task_name[k_task_name_max_len]; /**< Task identifier (null-terminated, truncated to 15 chars) */
-  uint32_t timeout_ms;                     /**< Maximum time between heartbeats in milliseconds */
-  uint32_t last_heartbeat_ms;              /**< Timestamp (tx_time_get) of last heartbeat */
-  task_registration_state_t registered;    /**< Whether this slot is in use */
+  char
+    task_name[k_task_name_max_len]; /**< Task identifier (null-terminated, truncated to 15 chars) */
+  uint32_t                  timeout_ms; /**< Maximum time between heartbeats in milliseconds */
+  uint32_t                  last_heartbeat_ms; /**< Timestamp (tx_time_get) of last heartbeat */
+  task_registration_state_t registered;        /**< Whether this slot is in use */
 } task_monitor_t;
 
 /**

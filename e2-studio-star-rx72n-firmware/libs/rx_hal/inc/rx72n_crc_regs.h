@@ -344,8 +344,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_crc_crccr_lms_mask    = (k_crc_bit_mask << k_crc_crccr_lms_shift),    /**< LSB/MSB First mask (bit 6) */
-  k_crc_crccr_dorclr_mask = (k_crc_bit_mask << k_crc_crccr_dorclr_shift), /**< DORCLR mask (bit 7) */
+  k_crc_crccr_lms_mask =
+    (k_crc_bit_mask << k_crc_crccr_lms_shift), /**< LSB/MSB First mask (bit 6) */
+  k_crc_crccr_dorclr_mask =
+    (k_crc_bit_mask << k_crc_crccr_dorclr_shift), /**< DORCLR mask (bit 7) */
 } rx_crc_crccr_masks_t;
 
 /**

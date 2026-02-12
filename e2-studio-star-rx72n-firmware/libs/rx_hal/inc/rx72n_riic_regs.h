@@ -600,7 +600,8 @@ static_assert(k_riic1_base_addr == 0x00088320, "RIIC1 base address incorrect");
 static_assert(k_riic2_base_addr == 0x00088340, "RIIC2 base address incorrect");
 
 /* Verify register structure size (20 bytes = 0x14) */
-static_assert(sizeof(rx_riic_regs_t) == 20, "RIIC register structure size incorrect (expected 0x14)");
+static_assert(sizeof(rx_riic_regs_t) == 20,
+              "RIIC register structure size incorrect (expected 0x14)");
 
 /* Verify control register offsets */
 static_assert(offsetof(rx_riic_regs_t, iccr1) == 0x00, "ICCR1 offset incorrect");

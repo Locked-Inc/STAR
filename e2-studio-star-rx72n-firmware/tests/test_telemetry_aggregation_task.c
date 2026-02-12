@@ -19,14 +19,13 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#include "unity.h"
+#include <string.h>
 
 #include "mock_rx_comm_manager.h"
 #include "mock_rx_nanopb.h"
 #include "mock_shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
+#include "unity.h"
 
 /* Include the task header for the public API */
 #include "telemetry_task.h"
@@ -254,9 +253,9 @@ void test_telemetry_task_encodes_protobuf(void)
   rx_err_t              err;
 
   /* Set up telemetry data */
-  telemetry.timestamp_us     = 1000000;
-  telemetry.frame_sequence   = 42;
-  telemetry.emergency_stop   = false;
+  telemetry.timestamp_us      = 1000000;
+  telemetry.frame_sequence    = 42;
+  telemetry.emergency_stop    = false;
   telemetry.battery_voltage_v = 16.5;
   telemetry.battery_percent   = 75.0;
 

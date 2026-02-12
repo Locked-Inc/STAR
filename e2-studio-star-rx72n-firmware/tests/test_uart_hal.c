@@ -401,8 +401,10 @@
  */
 
 /** @brief Default test pins for SCI9 (PB7/TXD9, PB6/RXD9) */
-static const rx_port_pin_t k_test_tx_gpio = k_rx_pb_7; /**< PB7 TX pin (TXD9, connected to CY7C65213 USB bridge) */
-static const rx_port_pin_t k_test_rx_gpio = k_rx_pb_6; /**< PB6 RX pin (RXD9, connected to CY7C65213 USB bridge) */
+static const rx_port_pin_t k_test_tx_gpio =
+  k_rx_pb_7; /**< PB7 TX pin (TXD9, connected to CY7C65213 USB bridge) */
+static const rx_port_pin_t k_test_rx_gpio =
+  k_rx_pb_6; /**< PB6 RX pin (RXD9, connected to CY7C65213 USB bridge) */
 
 /**
  * @brief UART test channel constants - must match uart_channel_t
@@ -413,9 +415,12 @@ static const rx_port_pin_t k_test_rx_gpio = k_rx_pb_6; /**< PB6 RX pin (RXD9, co
  * - **SCI0**: Secondary channel for multi-channel isolation tests (9600 baud)
  * - **Invalid**: Out-of-range channel (13) for error testing
  */
-static const uart_channel_t k_test_channel_sci9    = (uart_channel_t)9;  /**< SCI9 - Debug UART @ 115200 baud */
-static const uart_channel_t k_test_channel_sci0    = (uart_channel_t)0;  /**< SCI0 - Secondary channel @ 9600 baud */
-static const uart_channel_t k_test_channel_invalid = (uart_channel_t)13; /**< Invalid channel (RX72N has 0-12 only) */
+static const uart_channel_t k_test_channel_sci9 =
+  (uart_channel_t)9; /**< SCI9 - Debug UART @ 115200 baud */
+static const uart_channel_t k_test_channel_sci0 =
+  (uart_channel_t)0; /**< SCI0 - Secondary channel @ 9600 baud */
+static const uart_channel_t k_test_channel_invalid =
+  (uart_channel_t)13; /**< Invalid channel (RX72N has 0-12 only) */
 
 /**
  * @brief UART test baudrate constants

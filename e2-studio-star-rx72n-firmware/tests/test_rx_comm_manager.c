@@ -417,13 +417,13 @@ void test_poll_no_channels(void)
  */
 void test_send_null_manager(void)
 {
-  uint8_t payload[k_test_payload_size] = {0};
-  const rx_comm_send_params_t params = {
-    .channel     = k_comm_channel_usb,
-    .type        = k_frame_type_command,
-    .flags       = k_frame_flag_none,
-    .payload     = payload,
-    .payload_len = sizeof(payload),
+  uint8_t                     payload[k_test_payload_size] = {0};
+  const rx_comm_send_params_t params                       = {
+                          .channel     = k_comm_channel_usb,
+                          .type        = k_frame_type_command,
+                          .flags       = k_frame_flag_none,
+                          .payload     = payload,
+                          .payload_len = sizeof(payload),
   };
   rx_err_t err = rx_comm_manager_send(nullptr, &params);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -436,13 +436,13 @@ void test_send_null_manager(void)
  */
 void test_send_uninitialized(void)
 {
-  uint8_t payload[k_test_payload_size] = {0};
-  const rx_comm_send_params_t params = {
-    .channel     = k_comm_channel_usb,
-    .type        = k_frame_type_command,
-    .flags       = k_frame_flag_none,
-    .payload     = payload,
-    .payload_len = sizeof(payload),
+  uint8_t                     payload[k_test_payload_size] = {0};
+  const rx_comm_send_params_t params                       = {
+                          .channel     = k_comm_channel_usb,
+                          .type        = k_frame_type_command,
+                          .flags       = k_frame_flag_none,
+                          .payload     = payload,
+                          .payload_len = sizeof(payload),
   };
   rx_err_t err = rx_comm_manager_send(&s_manager, &params);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -582,9 +582,8 @@ void test_send_empty_payload_allowed(void)
  */
 void test_respond_null_manager(void)
 {
-  uint8_t payload[k_test_payload_size] = {0};
-  rx_err_t err = rx_comm_manager_respond(nullptr, k_comm_channel_usb,
-                                         payload, sizeof(payload));
+  uint8_t  payload[k_test_payload_size] = {0};
+  rx_err_t err = rx_comm_manager_respond(nullptr, k_comm_channel_usb, payload, sizeof(payload));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -595,9 +594,8 @@ void test_respond_null_manager(void)
  */
 void test_respond_uninitialized(void)
 {
-  uint8_t payload[k_test_payload_size] = {0};
-  rx_err_t err = rx_comm_manager_respond(&s_manager, k_comm_channel_usb,
-                                         payload, sizeof(payload));
+  uint8_t  payload[k_test_payload_size] = {0};
+  rx_err_t err = rx_comm_manager_respond(&s_manager, k_comm_channel_usb, payload, sizeof(payload));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -611,8 +609,7 @@ void test_respond_channel_not_enabled(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
   uint8_t payload[k_test_payload_size] = {0};
 
-  rx_err_t err = rx_comm_manager_respond(&s_manager, k_comm_channel_usb,
-                                         payload, sizeof(payload));
+  rx_err_t err = rx_comm_manager_respond(&s_manager, k_comm_channel_usb, payload, sizeof(payload));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -628,7 +625,7 @@ void test_respond_channel_not_enabled(void)
  */
 void test_channel_ready_null_manager(void)
 {
-  bool ready;
+  bool     ready;
   rx_err_t err = rx_comm_manager_channel_ready(nullptr, k_comm_channel_usb, &ready);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -652,7 +649,7 @@ void test_channel_ready_null_ready(void)
  */
 void test_channel_ready_uninitialized(void)
 {
-  bool ready;
+  bool     ready;
   rx_err_t err = rx_comm_manager_channel_ready(&s_manager, k_comm_channel_usb, &ready);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -699,7 +696,9 @@ void test_channel_ready_invalid_channel(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
   bool ready;
 
-  rx_err_t err = rx_comm_manager_channel_ready(&s_manager, (rx_comm_channel_t)k_invalid_channel_sentinel, &ready);
+  rx_err_t err = rx_comm_manager_channel_ready(&s_manager,
+                                               (rx_comm_channel_t)k_invalid_channel_sentinel,
+                                               &ready);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
   TEST_ASSERT_FALSE(ready);
 }

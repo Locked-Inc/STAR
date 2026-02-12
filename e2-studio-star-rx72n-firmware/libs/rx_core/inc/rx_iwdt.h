@@ -315,12 +315,18 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_iwdt_max_tasks          = 16,    /**< Maximum number of tasks that can be registered for monitoring. Limits task array size to ~1 KB. Increase if more tasks needed (recompile required) */
-  k_iwdt_task_name_len      = 32,    /**< Maximum task name length in characters including null terminator. Matches ThreadX TX_THREAD_NAME_SIZE. Allows 31-character names */
-  k_iwdt_default_timeout_ms = 2000,  /**< Default watchdog timeout in milliseconds (2 seconds). Provides good balance between fast failure detection and false positive avoidance */
-  k_iwdt_min_timeout_ms     = 128,   /**< Minimum valid timeout in milliseconds (~128ms). Hardware limit with CKS=0. Use only for very fast control loops (> 10 Hz) */
-  k_iwdt_max_timeout_ms     = 16384, /**< Maximum valid timeout in milliseconds (~16 seconds). Conservative limit for reasonable hang detection. Hardware supports up to ~8s with CKS=3 */
-  k_ms_per_second           = 1000,  /**< Milliseconds per second (1000 ms/s). Time conversion constant for timeout calculations and timestamp arithmetic */
+  k_iwdt_max_tasks =
+    16, /**< Maximum number of tasks that can be registered for monitoring. Limits task array size to ~1 KB. Increase if more tasks needed (recompile required) */
+  k_iwdt_task_name_len =
+    32, /**< Maximum task name length in characters including null terminator. Matches ThreadX TX_THREAD_NAME_SIZE. Allows 31-character names */
+  k_iwdt_default_timeout_ms =
+    2000, /**< Default watchdog timeout in milliseconds (2 seconds). Provides good balance between fast failure detection and false positive avoidance */
+  k_iwdt_min_timeout_ms =
+    128, /**< Minimum valid timeout in milliseconds (~128ms). Hardware limit with CKS=0. Use only for very fast control loops (> 10 Hz) */
+  k_iwdt_max_timeout_ms =
+    16384, /**< Maximum valid timeout in milliseconds (~16 seconds). Conservative limit for reasonable hang detection. Hardware supports up to ~8s with CKS=3 */
+  k_ms_per_second =
+    1000, /**< Milliseconds per second (1000 ms/s). Time conversion constant for timeout calculations and timestamp arithmetic */
 } iwdt_constants_t;
 
 /** @brief IWDT timeout periods (hardware divider settings) */
@@ -451,13 +457,20 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_system_state_init         = 0, /**< System initialization phase. Hardware setup, peripheral configuration. Use long timeout (5s) to allow slow startup. Transitions to: Idle */
-  k_system_state_idle         = 1, /**< Idle state, no active operations. Waiting for commands. Use long timeout (5s) since no critical operations. Transitions to: Running */
-  k_system_state_running      = 2, /**< Normal operation, moderate activity. Background tasks executing. Use default timeout (2s). Transitions to: MotorActive, CommActive, Idle, Error */
-  k_system_state_motor_active = 3, /**< Motor control active, high-frequency updates. Critical real-time loop. Use short timeout (500ms) for fast failure detection. Transitions to: Running, Error */
-  k_system_state_comm_active  = 4, /**< Active communication (SPI/USB). Network I/O in progress. Use medium timeout (1s) to tolerate network delays. Transitions to: Running, Error */
-  k_system_state_error        = 5, /**< Error recovery mode. Diagnostics and cleanup. Use very long timeout (10s) to allow recovery actions and logging. Transitions to: Idle, Init */
-  k_system_state_count        = 6, /**< Number of system states (not a valid state). Used for array sizing (state_timeouts_ms[k_system_state_count]) and validation checks */
+  k_system_state_init =
+    0, /**< System initialization phase. Hardware setup, peripheral configuration. Use long timeout (5s) to allow slow startup. Transitions to: Idle */
+  k_system_state_idle =
+    1, /**< Idle state, no active operations. Waiting for commands. Use long timeout (5s) since no critical operations. Transitions to: Running */
+  k_system_state_running =
+    2, /**< Normal operation, moderate activity. Background tasks executing. Use default timeout (2s). Transitions to: MotorActive, CommActive, Idle, Error */
+  k_system_state_motor_active =
+    3, /**< Motor control active, high-frequency updates. Critical real-time loop. Use short timeout (500ms) for fast failure detection. Transitions to: Running, Error */
+  k_system_state_comm_active =
+    4, /**< Active communication (SPI/USB). Network I/O in progress. Use medium timeout (1s) to tolerate network delays. Transitions to: Running, Error */
+  k_system_state_error =
+    5, /**< Error recovery mode. Diagnostics and cleanup. Use very long timeout (10s) to allow recovery actions and logging. Transitions to: Idle, Init */
+  k_system_state_count =
+    6, /**< Number of system states (not a valid state). Used for array sizing (state_timeouts_ms[k_system_state_count]) and validation checks */
 } system_state_t;
 
 /** @brief Watchdog reset reasons */

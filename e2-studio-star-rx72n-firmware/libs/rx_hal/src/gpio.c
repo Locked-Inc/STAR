@@ -834,7 +834,7 @@ rx_err_t gpio_read(const rx_port_pin_t pin, bool* value)
   const volatile rx_port_regs_t* port_base = rx_port_get_base(port);
 
   const uint8_t pin_mask = (uint8_t)(k_gpio_bit_set << pin_num);
-  *value = (port_base->pidr & pin_mask) != k_gpio_bit_clear;
+  *value                 = (port_base->pidr & pin_mask) != k_gpio_bit_clear;
 
   return k_rx_ok;
 }

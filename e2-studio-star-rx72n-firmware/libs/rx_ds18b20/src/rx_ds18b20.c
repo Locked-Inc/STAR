@@ -280,7 +280,7 @@ static const uint32_t s_ds18b20_conversion_time_invalid_u32 = 0U;
  */
 #define CHECK_DS18B20_HANDLE(handle, tag)                                                          \
   do {                                                                                             \
-    RX_CHECK_NULL_PTR(handle, tag, "handle is nullptr");                                              \
+    RX_CHECK_NULL_PTR(handle, tag, "handle is nullptr");                                           \
     if (!(handle)->initialized) {                                                                  \
       rx_log_error(tag, "DS18B20 not initialized");                                                \
       return k_rx_err_invalid_state;                                                               \

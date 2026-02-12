@@ -261,13 +261,20 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_mtu_channel_0 = 0, /**< MTU0: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1200. Standalone operation */
-  k_mtu_channel_1 = 1, /**< MTU1: Encoder input channel. 2 outputs (A,B). Base: 0x000C1280. Phase counting with MTU2 */
-  k_mtu_channel_2 = 2, /**< MTU2: Encoder input channel. 2 outputs (A,B). Base: 0x000C1300. Phase counting with MTU1 */
-  k_mtu_channel_3 = 3, /**< MTU3: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1100. Pairs with MTU4 */
-  k_mtu_channel_4 = 4, /**< MTU4: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1100. Pairs with MTU3 */
-  k_mtu_channel_6 = 6, /**< MTU6: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1A00. Pairs with MTU7 */
-  k_mtu_channel_7 = 7, /**< MTU7: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1A00. Pairs with MTU6 */
+  k_mtu_channel_0 =
+    0, /**< MTU0: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1200. Standalone operation */
+  k_mtu_channel_1 =
+    1, /**< MTU1: Encoder input channel. 2 outputs (A,B). Base: 0x000C1280. Phase counting with MTU2 */
+  k_mtu_channel_2 =
+    2, /**< MTU2: Encoder input channel. 2 outputs (A,B). Base: 0x000C1300. Phase counting with MTU1 */
+  k_mtu_channel_3 =
+    3, /**< MTU3: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1100. Pairs with MTU4 */
+  k_mtu_channel_4 =
+    4, /**< MTU4: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1100. Pairs with MTU3 */
+  k_mtu_channel_6 =
+    6, /**< MTU6: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1A00. Pairs with MTU7 */
+  k_mtu_channel_7 =
+    7, /**< MTU7: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1A00. Pairs with MTU6 */
 } rx_mtu_channel_t;
 
 /**
@@ -318,10 +325,14 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_mtu_output_a = 0, /**< MTIOCA output pin. Available on all channels. Compare register: TGRA. Primary PWM output */
-  k_mtu_output_b = 1, /**< MTIOCB output pin. Available on all channels. Compare register: TGRB. Complementary to A when enabled */
-  k_mtu_output_c = 2, /**< MTIOCC output pin. MTU0,3,4,6,7 only. Compare register: TGRC. Secondary PWM output */
-  k_mtu_output_d = 3, /**< MTIOCD output pin. MTU0,3,4,6,7 only. Compare register: TGRD. Complementary to C when enabled */
+  k_mtu_output_a =
+    0, /**< MTIOCA output pin. Available on all channels. Compare register: TGRA. Primary PWM output */
+  k_mtu_output_b =
+    1, /**< MTIOCB output pin. Available on all channels. Compare register: TGRB. Complementary to A when enabled */
+  k_mtu_output_c =
+    2, /**< MTIOCC output pin. MTU0,3,4,6,7 only. Compare register: TGRC. Secondary PWM output */
+  k_mtu_output_d =
+    3, /**< MTIOCD output pin. MTU0,3,4,6,7 only. Compare register: TGRD. Complementary to C when enabled */
 } rx_mtu_output_t;
 
 /**
@@ -471,7 +482,8 @@ typedef struct {
  * @return k_rx_err_invalid_arg if channel, output, or duty is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
-[[nodiscard]] rx_err_t rx_mtu_set_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float duty_percent);
+[[nodiscard]] rx_err_t
+rx_mtu_set_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float duty_percent);
 
 /**
  * @brief Set PWM duty cycle (raw count value)
@@ -488,7 +500,8 @@ typedef struct {
  * @return k_rx_err_invalid_arg if channel, output, or count is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
-[[nodiscard]] rx_err_t rx_mtu_set_duty_raw(rx_mtu_channel_t channel, rx_mtu_output_t output, uint16_t duty_count);
+[[nodiscard]] rx_err_t
+rx_mtu_set_duty_raw(rx_mtu_channel_t channel, rx_mtu_output_t output, uint16_t duty_count);
 
 /**
  * @brief Get current duty cycle
@@ -502,7 +515,8 @@ typedef struct {
  * @return k_rx_err_invalid_arg if channel or output is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
-[[nodiscard]] rx_err_t rx_mtu_get_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float* duty_percent);
+[[nodiscard]] rx_err_t
+rx_mtu_get_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float* duty_percent);
 
 /**
  * @brief Get PWM period count
@@ -530,7 +544,8 @@ typedef struct {
  * @return k_rx_err_invalid_arg if channel or output is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
-[[nodiscard]] rx_err_t rx_mtu_enable_output(rx_mtu_channel_t channel, rx_mtu_output_t output, bool enable);
+[[nodiscard]] rx_err_t
+rx_mtu_enable_output(rx_mtu_channel_t channel, rx_mtu_output_t output, bool enable);
 
 /**
  * @brief Start MTU timer

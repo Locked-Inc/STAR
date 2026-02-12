@@ -457,15 +457,15 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  volatile uint8_t  tcr;         /**< Timer Control Register (TCR) @ +0x00 */
-  volatile uint8_t  tmdr;        /**< Timer Mode Register (TMDR) @ +0x01 */
-  volatile uint8_t  tior;        /**< Timer I/O Control Register (TIOR) @ +0x02 */
-  volatile uint8_t  reserved;    /**< Reserved @ +0x03 */
-  volatile uint8_t  tier;        /**< Timer Interrupt Enable Register (TIER) @ +0x04 */
-  volatile uint8_t  tsr;         /**< Timer Status Register (TSR) @ +0x05 */
-  volatile uint16_t tcnt;        /**< Timer Counter (TCNT) @ +0x06, up/down in phase mode */
-  volatile uint16_t tgra;        /**< Timer General Register A (TGRA) @ +0x08 */
-  volatile uint16_t tgrb;        /**< Timer General Register B (TGRB) @ +0x0A */
+  volatile uint8_t  tcr;          /**< Timer Control Register (TCR) @ +0x00 */
+  volatile uint8_t  tmdr;         /**< Timer Mode Register (TMDR) @ +0x01 */
+  volatile uint8_t  tior;         /**< Timer I/O Control Register (TIOR) @ +0x02 */
+  volatile uint8_t  reserved;     /**< Reserved @ +0x03 */
+  volatile uint8_t  tier;         /**< Timer Interrupt Enable Register (TIER) @ +0x04 */
+  volatile uint8_t  tsr;          /**< Timer Status Register (TSR) @ +0x05 */
+  volatile uint16_t tcnt;         /**< Timer Counter (TCNT) @ +0x06, up/down in phase mode */
+  volatile uint16_t tgra;         /**< Timer General Register A (TGRA) @ +0x08 */
+  volatile uint16_t tgrb;         /**< Timer General Register B (TGRB) @ +0x0A */
   volatile uint8_t  reserved2[4]; /**< Reserved @ +0x0C-0x0F */
 } rx_tpu_regs_t;
 
@@ -740,10 +740,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_tpu_tcr_cclr_disabled     = (0U << 5), /**< TCNT free-running (no clear) */
-  k_tpu_tcr_cclr_tgra_match   = (1U << 5), /**< Clear on TGRA compare match */
-  k_tpu_tcr_cclr_tgrb_match   = (2U << 5), /**< Clear on TGRB compare match */
-  k_tpu_tcr_cclr_sync_clear   = (3U << 5), /**< Synchronous clear */
+  k_tpu_tcr_cclr_disabled   = (0U << 5), /**< TCNT free-running (no clear) */
+  k_tpu_tcr_cclr_tgra_match = (1U << 5), /**< Clear on TGRA compare match */
+  k_tpu_tcr_cclr_tgrb_match = (2U << 5), /**< Clear on TGRB compare match */
+  k_tpu_tcr_cclr_sync_clear = (3U << 5), /**< Synchronous clear */
 } rx_tpu_tcr_cclr_t;
 
 /**
@@ -1065,8 +1065,7 @@ typedef enum : uint8_t {
  */
 
 /* --- Base Address Verification (Manual Ch28.2) --- */
-static_assert(k_tpu_control_base_addr == 0x00088100,
-              "TPU control base address incorrect");
+static_assert(k_tpu_control_base_addr == 0x00088100, "TPU control base address incorrect");
 static_assert(k_tpu0_base_addr == 0x00088110, "TPU0 base address incorrect");
 static_assert(k_tpu1_base_addr == 0x00088120, "TPU1 base address incorrect");
 static_assert(k_tpu2_base_addr == 0x00088130, "TPU2 base address incorrect");
@@ -1087,60 +1086,36 @@ static_assert((k_tpu5_base_addr - k_tpu4_base_addr) == k_tpu_channel_spacing,
               "TPU4-TPU5 spacing incorrect");
 
 /* --- Control Block Structure Verification --- */
-static_assert(sizeof(rx_tpu_control_regs_t) == 14,
-              "TPU control register structure size incorrect");
-static_assert(offsetof(rx_tpu_control_regs_t, tstr) == 0x00,
-              "TSTR offset incorrect");
-static_assert(offsetof(rx_tpu_control_regs_t, tsyr) == 0x01,
-              "TSYR offset incorrect");
-static_assert(offsetof(rx_tpu_control_regs_t, nfcr) == 0x08,
-              "NFCR array offset incorrect");
+static_assert(sizeof(rx_tpu_control_regs_t) == 14, "TPU control register structure size incorrect");
+static_assert(offsetof(rx_tpu_control_regs_t, tstr) == 0x00, "TSTR offset incorrect");
+static_assert(offsetof(rx_tpu_control_regs_t, tsyr) == 0x01, "TSYR offset incorrect");
+static_assert(offsetof(rx_tpu_control_regs_t, nfcr) == 0x08, "NFCR array offset incorrect");
 
 /* --- Extended Channel Structure (TPU0/TPU3) Verification --- */
 static_assert(sizeof(rx_tpu_ext_regs_t) == 16,
               "TPU extended channel register structure size incorrect");
-static_assert(offsetof(rx_tpu_ext_regs_t, tcr) == 0x00,
-              "TCR offset incorrect (extended)");
-static_assert(offsetof(rx_tpu_ext_regs_t, tmdr) == 0x01,
-              "TMDR offset incorrect (extended)");
-static_assert(offsetof(rx_tpu_ext_regs_t, tiorh) == 0x02,
-              "TIORH offset incorrect");
-static_assert(offsetof(rx_tpu_ext_regs_t, tiorl) == 0x03,
-              "TIORL offset incorrect");
-static_assert(offsetof(rx_tpu_ext_regs_t, tier) == 0x04,
-              "TIER offset incorrect (extended)");
-static_assert(offsetof(rx_tpu_ext_regs_t, tsr) == 0x05,
-              "TSR offset incorrect (extended)");
-static_assert(offsetof(rx_tpu_ext_regs_t, tcnt) == 0x06,
-              "TCNT offset incorrect (extended)");
-static_assert(offsetof(rx_tpu_ext_regs_t, tgra) == 0x08,
-              "TGRA offset incorrect (extended)");
-static_assert(offsetof(rx_tpu_ext_regs_t, tgrb) == 0x0A,
-              "TGRB offset incorrect (extended)");
-static_assert(offsetof(rx_tpu_ext_regs_t, tgrc) == 0x0C,
-              "TGRC offset incorrect");
-static_assert(offsetof(rx_tpu_ext_regs_t, tgrd) == 0x0E,
-              "TGRD offset incorrect");
+static_assert(offsetof(rx_tpu_ext_regs_t, tcr) == 0x00, "TCR offset incorrect (extended)");
+static_assert(offsetof(rx_tpu_ext_regs_t, tmdr) == 0x01, "TMDR offset incorrect (extended)");
+static_assert(offsetof(rx_tpu_ext_regs_t, tiorh) == 0x02, "TIORH offset incorrect");
+static_assert(offsetof(rx_tpu_ext_regs_t, tiorl) == 0x03, "TIORL offset incorrect");
+static_assert(offsetof(rx_tpu_ext_regs_t, tier) == 0x04, "TIER offset incorrect (extended)");
+static_assert(offsetof(rx_tpu_ext_regs_t, tsr) == 0x05, "TSR offset incorrect (extended)");
+static_assert(offsetof(rx_tpu_ext_regs_t, tcnt) == 0x06, "TCNT offset incorrect (extended)");
+static_assert(offsetof(rx_tpu_ext_regs_t, tgra) == 0x08, "TGRA offset incorrect (extended)");
+static_assert(offsetof(rx_tpu_ext_regs_t, tgrb) == 0x0A, "TGRB offset incorrect (extended)");
+static_assert(offsetof(rx_tpu_ext_regs_t, tgrc) == 0x0C, "TGRC offset incorrect");
+static_assert(offsetof(rx_tpu_ext_regs_t, tgrd) == 0x0E, "TGRD offset incorrect");
 
 /* --- Basic Channel Structure (TPU1/2/4/5) Verification --- */
-static_assert(sizeof(rx_tpu_regs_t) == 16,
-              "TPU basic channel register structure size incorrect");
-static_assert(offsetof(rx_tpu_regs_t, tcr) == 0x00,
-              "TCR offset incorrect (basic)");
-static_assert(offsetof(rx_tpu_regs_t, tmdr) == 0x01,
-              "TMDR offset incorrect (basic)");
-static_assert(offsetof(rx_tpu_regs_t, tior) == 0x02,
-              "TIOR offset incorrect");
-static_assert(offsetof(rx_tpu_regs_t, tier) == 0x04,
-              "TIER offset incorrect (basic)");
-static_assert(offsetof(rx_tpu_regs_t, tsr) == 0x05,
-              "TSR offset incorrect (basic)");
-static_assert(offsetof(rx_tpu_regs_t, tcnt) == 0x06,
-              "TCNT offset incorrect (basic)");
-static_assert(offsetof(rx_tpu_regs_t, tgra) == 0x08,
-              "TGRA offset incorrect (basic)");
-static_assert(offsetof(rx_tpu_regs_t, tgrb) == 0x0A,
-              "TGRB offset incorrect (basic)");
+static_assert(sizeof(rx_tpu_regs_t) == 16, "TPU basic channel register structure size incorrect");
+static_assert(offsetof(rx_tpu_regs_t, tcr) == 0x00, "TCR offset incorrect (basic)");
+static_assert(offsetof(rx_tpu_regs_t, tmdr) == 0x01, "TMDR offset incorrect (basic)");
+static_assert(offsetof(rx_tpu_regs_t, tior) == 0x02, "TIOR offset incorrect");
+static_assert(offsetof(rx_tpu_regs_t, tier) == 0x04, "TIER offset incorrect (basic)");
+static_assert(offsetof(rx_tpu_regs_t, tsr) == 0x05, "TSR offset incorrect (basic)");
+static_assert(offsetof(rx_tpu_regs_t, tcnt) == 0x06, "TCNT offset incorrect (basic)");
+static_assert(offsetof(rx_tpu_regs_t, tgra) == 0x08, "TGRA offset incorrect (basic)");
+static_assert(offsetof(rx_tpu_regs_t, tgrb) == 0x0A, "TGRB offset incorrect (basic)");
 
 /* --- Bit Field Value Verification --- */
 static_assert(k_tpu_tstr_cst0 == 0x01, "TSTR CST0 bit value incorrect");
@@ -1148,15 +1123,13 @@ static_assert(k_tpu_tstr_cst5 == 0x20, "TSTR CST5 bit value incorrect");
 static_assert(k_tpu_tsr_tcfd == 0x80, "TSR TCFD bit value incorrect");
 static_assert(k_tpu_tsr_tcfv == 0x10, "TSR TCFV bit value incorrect");
 static_assert(k_tpu_tsr_tcfu == 0x20, "TSR TCFU bit value incorrect");
-static_assert(k_tpu_tmdr_md_phase_count_4 == 0x07,
-              "TMDR phase counting mode 4 value incorrect");
+static_assert(k_tpu_tmdr_md_phase_count_4 == 0x07, "TMDR phase counting mode 4 value incorrect");
 static_assert(k_tpu_tier_tciev == 0x10, "TIER TCIEV bit value incorrect");
 static_assert(k_tpu_tier_tcieu == 0x20, "TIER TCIEU bit value incorrect");
 
 /* --- NFCR Bit Verification --- */
 static_assert(k_tpu_nfcr_nfaen == 0x01, "NFCR NFAEN bit value incorrect");
-static_assert(k_tpu_nfcr_nfcs_pclk_div32 == 0x20,
-              "NFCR NFCS PCLK/32 value incorrect");
+static_assert(k_tpu_nfcr_nfcs_pclk_div32 == 0x20, "NFCR NFCS PCLK/32 value incorrect");
 
 #ifdef __cplusplus
 }

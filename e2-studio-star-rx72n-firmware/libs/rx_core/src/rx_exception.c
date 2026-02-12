@@ -21,9 +21,10 @@
  */
 
 #include "rx_exception.h"
-#include "rx_log.h"
 
 #include <stddef.h>
+
+#include "rx_log.h"
 
 /* Exception handler forward declarations (required for -Wmissing-declarations) */
 void rx_exc_undefined_instruction_c_handler(uint32_t pc, uint32_t psw);
@@ -47,14 +48,12 @@ static const char* const s_log_tag = "EXCEPTION";
  * @brief Exception type names for logging
  * @details Indexed by rx_exception_type_t values
  */
-static const char* const s_exception_names[k_rx_exception_type_count] = {
-    "Undefined Instruction",
-    "Privileged Instruction",
-    "Access Exception",
-    "Address Exception",
-    "Floating-Point Exception",
-    "Non-Maskable Interrupt"
-};
+static const char* const s_exception_names[k_rx_exception_type_count] = {"Undefined Instruction",
+                                                                         "Privileged Instruction",
+                                                                         "Access Exception",
+                                                                         "Address Exception",
+                                                                         "Floating-Point Exception",
+                                                                         "Non-Maskable Interrupt"};
 
 /* ============================================================================
  * Module State
@@ -98,19 +97,19 @@ static uint8_t s_initialized;
  */
 static void internal_process_exception(const rx_exception_frame_t* frame)
 {
-    /* Validate type is in range */
-    if (frame->type >= k_rx_exception_type_count) {
-        return;
-    }
+  /* Validate type is in range */
+  if (frame->type >= k_rx_exception_type_count) {
+    return;
+  }
 
-    /* Update statistics */
-    s_exception_stats.count[frame->type]++;
-    s_exception_stats.last_frame = *frame;
+  /* Update statistics */
+  s_exception_stats.count[frame->type]++;
+  s_exception_stats.last_frame = *frame;
 
-    /* Log the exception */
-    rx_log_error(s_log_tag, "*** CPU EXCEPTION ***");
-    rx_log_error(s_log_tag, s_exception_names[frame->type]);
-    /* Note: PC and PSW values available in s_exception_stats.last_frame for debugging */
+  /* Log the exception */
+  rx_log_error(s_log_tag, "*** CPU EXCEPTION ***");
+  rx_log_error(s_log_tag, s_exception_names[frame->type]);
+  /* Note: PC and PSW values available in s_exception_stats.last_frame for debugging */
 }
 
 /**
@@ -124,10 +123,10 @@ static void internal_process_exception(const rx_exception_frame_t* frame)
  */
 static void internal_halt_cpu(void)
 {
-    /* Disable interrupts and halt */
-    for (;;) {
-        __asm__ volatile("wait");
-    }
+  /* Disable interrupts and halt */
+  for (;;) {
+    __asm__ volatile("wait");
+  }
 }
 
 /* ============================================================================
@@ -139,23 +138,23 @@ static void internal_halt_cpu(void)
  */
 void rx_exception_init(void)
 {
-    /* Zero all statistics */
-    for (uint8_t i = 0; i < k_rx_exception_type_count; i++) {
-        s_exception_stats.count[i] = 0;
-    }
+  /* Zero all statistics */
+  for (uint8_t i = 0; i < k_rx_exception_type_count; i++) {
+    s_exception_stats.count[i] = 0;
+  }
 
-    /* Clear last frame */
-    s_exception_stats.last_frame.pc = 0;
-    s_exception_stats.last_frame.psw = 0;
-    s_exception_stats.last_frame.type = k_rx_exception_undefined_instruction;
-    s_exception_stats.last_frame.reserved[0] = 0;
-    s_exception_stats.last_frame.reserved[1] = 0;
-    s_exception_stats.last_frame.reserved[2] = 0;
+  /* Clear last frame */
+  s_exception_stats.last_frame.pc          = 0;
+  s_exception_stats.last_frame.psw         = 0;
+  s_exception_stats.last_frame.type        = k_rx_exception_undefined_instruction;
+  s_exception_stats.last_frame.reserved[0] = 0;
+  s_exception_stats.last_frame.reserved[1] = 0;
+  s_exception_stats.last_frame.reserved[2] = 0;
 
-    /* Mark as initialized */
-    s_initialized = 1;
+  /* Mark as initialized */
+  s_initialized = 1;
 
-    rx_log_info(s_log_tag, "Exception handling initialized");
+  rx_log_info(s_log_tag, "Exception handling initialized");
 }
 
 /**
@@ -163,7 +162,7 @@ void rx_exception_init(void)
  */
 const rx_exception_stats_t* rx_exception_get_stats(void)
 {
-    return &s_exception_stats;
+  return &s_exception_stats;
 }
 
 /**
@@ -171,10 +170,10 @@ const rx_exception_stats_t* rx_exception_get_stats(void)
  */
 const char* rx_exception_get_name(rx_exception_type_t type)
 {
-    if (type >= k_rx_exception_type_count) {
-        return "Unknown";
-    }
-    return s_exception_names[type];
+  if (type >= k_rx_exception_type_count) {
+    return "Unknown";
+  }
+  return s_exception_names[type];
 }
 
 /* ============================================================================
@@ -196,17 +195,15 @@ const char* rx_exception_get_name(rx_exception_type_t type)
  */
 void rx_exc_undefined_instruction_c_handler(uint32_t pc, uint32_t psw)
 {
-    rx_exception_frame_t frame = {
-        .pc = pc,
-        .psw = psw,
-        .type = k_rx_exception_undefined_instruction,
-        .reserved = {0, 0, 0}
-    };
+  rx_exception_frame_t frame = {.pc       = pc,
+                                .psw      = psw,
+                                .type     = k_rx_exception_undefined_instruction,
+                                .reserved = {0, 0, 0}};
 
-    internal_process_exception(&frame);
+  internal_process_exception(&frame);
 
-    /* For safety, halt on undefined instruction in embedded system */
-    internal_halt_cpu();
+  /* For safety, halt on undefined instruction in embedded system */
+  internal_halt_cpu();
 }
 
 /**
@@ -217,17 +214,15 @@ void rx_exc_undefined_instruction_c_handler(uint32_t pc, uint32_t psw)
  */
 void rx_exc_privileged_instruction_c_handler(uint32_t pc, uint32_t psw)
 {
-    rx_exception_frame_t frame = {
-        .pc = pc,
-        .psw = psw,
-        .type = k_rx_exception_privileged_instruction,
-        .reserved = {0, 0, 0}
-    };
+  rx_exception_frame_t frame = {.pc       = pc,
+                                .psw      = psw,
+                                .type     = k_rx_exception_privileged_instruction,
+                                .reserved = {0, 0, 0}};
 
-    internal_process_exception(&frame);
+  internal_process_exception(&frame);
 
-    /* Halt - user mode attempted privileged operation */
-    internal_halt_cpu();
+  /* Halt - user mode attempted privileged operation */
+  internal_halt_cpu();
 }
 
 /**
@@ -238,17 +233,15 @@ void rx_exc_privileged_instruction_c_handler(uint32_t pc, uint32_t psw)
  */
 void rx_exc_access_c_handler(uint32_t pc, uint32_t psw)
 {
-    rx_exception_frame_t frame = {
-        .pc = pc,
-        .psw = psw,
-        .type = k_rx_exception_access,
-        .reserved = {0, 0, 0}
-    };
+  rx_exception_frame_t frame = {.pc       = pc,
+                                .psw      = psw,
+                                .type     = k_rx_exception_access,
+                                .reserved = {0, 0, 0}};
 
-    internal_process_exception(&frame);
+  internal_process_exception(&frame);
 
-    /* Halt - memory protection violation */
-    internal_halt_cpu();
+  /* Halt - memory protection violation */
+  internal_halt_cpu();
 }
 
 /**
@@ -259,17 +252,15 @@ void rx_exc_access_c_handler(uint32_t pc, uint32_t psw)
  */
 void rx_exc_address_c_handler(uint32_t pc, uint32_t psw)
 {
-    rx_exception_frame_t frame = {
-        .pc = pc,
-        .psw = psw,
-        .type = k_rx_exception_address,
-        .reserved = {0, 0, 0}
-    };
+  rx_exception_frame_t frame = {.pc       = pc,
+                                .psw      = psw,
+                                .type     = k_rx_exception_address,
+                                .reserved = {0, 0, 0}};
 
-    internal_process_exception(&frame);
+  internal_process_exception(&frame);
 
-    /* Halt - unaligned access is a programming error */
-    internal_halt_cpu();
+  /* Halt - unaligned access is a programming error */
+  internal_halt_cpu();
 }
 
 /**
@@ -280,17 +271,15 @@ void rx_exc_address_c_handler(uint32_t pc, uint32_t psw)
  */
 void rx_exc_floating_point_c_handler(uint32_t pc, uint32_t psw)
 {
-    rx_exception_frame_t frame = {
-        .pc = pc,
-        .psw = psw,
-        .type = k_rx_exception_floating_point,
-        .reserved = {0, 0, 0}
-    };
+  rx_exception_frame_t frame = {.pc       = pc,
+                                .psw      = psw,
+                                .type     = k_rx_exception_floating_point,
+                                .reserved = {0, 0, 0}};
 
-    internal_process_exception(&frame);
+  internal_process_exception(&frame);
 
-    /* Halt - FPU exception in motor control is dangerous */
-    internal_halt_cpu();
+  /* Halt - FPU exception in motor control is dangerous */
+  internal_halt_cpu();
 }
 
 /**
@@ -308,17 +297,15 @@ void rx_exc_floating_point_c_handler(uint32_t pc, uint32_t psw)
  */
 void rx_exc_nmi_c_handler(uint32_t pc, uint32_t psw)
 {
-    rx_exception_frame_t frame = {
-        .pc = pc,
-        .psw = psw,
-        .type = k_rx_exception_nmi,
-        .reserved = {0, 0, 0}
-    };
+  rx_exception_frame_t frame = {.pc       = pc,
+                                .psw      = psw,
+                                .type     = k_rx_exception_nmi,
+                                .reserved = {0, 0, 0}};
 
-    internal_process_exception(&frame);
+  internal_process_exception(&frame);
 
-    rx_log_error(s_log_tag, "FATAL: NMI - System halted");
+  rx_log_error(s_log_tag, "FATAL: NMI - System halted");
 
-    /* NMI is fatal - MUST NOT return */
-    internal_halt_cpu();
+  /* NMI is fatal - MUST NOT return */
+  internal_halt_cpu();
 }

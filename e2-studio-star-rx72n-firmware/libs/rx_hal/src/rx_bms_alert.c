@@ -62,13 +62,13 @@ static const char* s_tag = "BMS_ALERT";
 
 /** @brief ICU configuration constants for BMS alert */
 typedef enum : uint8_t {
-  k_bms_alert_irq_num    = 13,   /**< External IRQ number (IRQ13) */
-  k_bms_alert_vector     = 77,   /**< ICU vector number (64 + 13) */
-  k_bms_alert_priority   = 13,   /**< Interrupt priority (high, below POEG=14) */
-  k_icu_ir_clear         = 0,    /**< Write 0 to clear IR flag */
-  k_ier_bit_enable_base  = 1,    /**< Base value for IER bit shift */
-  k_ier_bits_per_reg     = 8,    /**< 8 interrupt enables per IER register */
-  k_irqcr_falling_edge   = 0x04, /**< IRQCR[n] bits[3:2]=01 for falling edge */
+  k_bms_alert_irq_num   = 13,   /**< External IRQ number (IRQ13) */
+  k_bms_alert_vector    = 77,   /**< ICU vector number (64 + 13) */
+  k_bms_alert_priority  = 13,   /**< Interrupt priority (high, below POEG=14) */
+  k_icu_ir_clear        = 0,    /**< Write 0 to clear IR flag */
+  k_ier_bit_enable_base = 1,    /**< Base value for IER bit shift */
+  k_ier_bits_per_reg    = 8,    /**< 8 interrupt enables per IER register */
+  k_irqcr_falling_edge  = 0x04, /**< IRQCR[n] bits[3:2]=01 for falling edge */
 } bms_alert_icu_constants_t;
 
 /* =============================================================================

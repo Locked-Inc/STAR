@@ -129,7 +129,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
     if (rx_err_is_error(err_rc_)) {                                                                \
       rx_log_error(tag, message);                                                                  \
       rx_log_error_val(tag, "Error", err_rc_);                                                     \
-      return nullptr;                                                                                 \
+      return nullptr;                                                                              \
     }                                                                                              \
   } while (0)
 
@@ -143,7 +143,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  */
 #define RX_CHECK_NULL_PTR(ptr, tag, message)                                                       \
   do {                                                                                             \
-    if ((ptr) == nullptr) {                                                                           \
+    if ((ptr) == nullptr) {                                                                        \
       rx_log_error(tag, message);                                                                  \
       return k_rx_err_null_ptr;                                                                    \
     }                                                                                              \

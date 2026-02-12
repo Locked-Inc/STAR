@@ -269,11 +269,8 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle);
  *
  * @return rx_err_t Configured return value (default k_rx_ok)
  */
-rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
-                        float            setpoint,
-                        float            measured,
-                        float            dt,
-                        float*           output);
+rx_err_t
+rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt, float* output);
 
 /**
  * @brief Mock rx_pid_reset() - Reset PID controller internal state
@@ -294,10 +291,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle);
  *
  * @return rx_err_t Configured return value (default k_rx_ok)
  */
-rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle,
-                          const float      kp,
-                          const float      ki,
-                          const float      kd);
+rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float ki, const float kd);
 
 /**
  * @brief Mock rx_pid_set_output_limits() - Update PID output limits
@@ -308,9 +302,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle,
  *
  * @return rx_err_t Configured return value (default k_rx_ok)
  */
-rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle,
-                                  float            output_min,
-                                  float            output_max);
+rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle, float output_min, float output_max);
 
 /**
  * @brief Mock rx_pid_set_integral_limits() - Update PID integral limits
@@ -321,9 +313,8 @@ rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle,
  *
  * @return rx_err_t Configured return value (default k_rx_ok)
  */
-rx_err_t rx_pid_set_integral_limits(rx_pid_handle_t* handle,
-                                    float            integral_min,
-                                    float            integral_max);
+rx_err_t
+rx_pid_set_integral_limits(rx_pid_handle_t* handle, float integral_min, float integral_max);
 
 #ifdef __cplusplus
 }

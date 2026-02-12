@@ -137,16 +137,16 @@ typedef struct {
  * @brief Controller mode channel state
  */
 typedef struct {
-  bool     initialized;                           /**< Controller mode initialized */
-  uint8_t  spi_mode;                              /**< SPI mode (0-3) */
-  uint32_t freq_hz;                               /**< Clock frequency */
-  uint8_t  cs_port;                               /**< Chip select port */
-  uint8_t  cs_pin;                                /**< Chip select pin */
-  bool     cs_active;                             /**< CS currently active */
-  uint16_t last_tx_data;                          /**< Last transmitted data */
-  uint16_t next_rx_data;                          /**< Next data to receive */
-  uint8_t  tx_history[k_mock_rspi_buffer_size];   /**< TX history buffer */
-  uint32_t tx_history_len;                        /**< TX history length */
+  bool     initialized;                         /**< Controller mode initialized */
+  uint8_t  spi_mode;                            /**< SPI mode (0-3) */
+  uint32_t freq_hz;                             /**< Clock frequency */
+  uint8_t  cs_port;                             /**< Chip select port */
+  uint8_t  cs_pin;                              /**< Chip select pin */
+  bool     cs_active;                           /**< CS currently active */
+  uint16_t last_tx_data;                        /**< Last transmitted data */
+  uint16_t next_rx_data;                        /**< Next data to receive */
+  uint8_t  tx_history[k_mock_rspi_buffer_size]; /**< TX history buffer */
+  uint32_t tx_history_len;                      /**< TX history length */
 } mock_rspi_controller_t;
 
 /**

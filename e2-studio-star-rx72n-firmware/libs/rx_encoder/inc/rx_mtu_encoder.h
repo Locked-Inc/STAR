@@ -347,7 +347,7 @@ typedef struct {
    * @note Must match physical encoder specification
    * @warning Zero value causes division-by-zero in velocity calculation
    */
-  uint16_t         counts_per_rev;
+  uint16_t counts_per_rev;
 
   /**
    * @brief Invert encoder count direction
@@ -363,7 +363,7 @@ typedef struct {
    * @par Usage: Set true if motor direction is opposite to expected
    * @note Does not affect hardware configuration, only software interpretation
    */
-  bool             invert_direction;
+  bool invert_direction;
 
 } rx_encoder_config_t;
 
@@ -527,7 +527,7 @@ typedef struct {
    * @par Typical Values: -10,000 to +10,000 (few revolutions)
    * @note Overflow of this 32-bit value would require ~1.5M revolutions (unlikely)
    */
-  int32_t  total_count;
+  int32_t total_count;
 
   /**
    * @brief Last raw 16-bit hardware counter value (for overflow detection)
@@ -557,7 +557,7 @@ typedef struct {
    * @par Typical Values: -100 to +100 (normal operation)
    * @par Calculation: `revolutions = total_count / counts_per_rev`
    */
-  int32_t  revolutions;
+  int32_t revolutions;
 
   /**
    * @brief Angular position in degrees (0-360° wrapping)
@@ -574,7 +574,7 @@ typedef struct {
    * @par Wrapping: Value resets to 0° after completing 360°
    * @note Use revolutions for multi-turn tracking, position_deg for angle within revolution
    */
-  float    position_deg;
+  float position_deg;
 
 } rx_encoder_state_t;
 

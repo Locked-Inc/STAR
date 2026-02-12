@@ -559,7 +559,8 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value);
+[[nodiscard]] rx_err_t
+rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value);
 
 /**
  * @brief Read ADC voltage in millivolts through bus manager

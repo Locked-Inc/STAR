@@ -149,9 +149,9 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
 
 rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
 {
-  rx_err_t             err;
-  const uint32_t       max_channels = k_mock_gptw_max_channels;
-  rx_gptw_channel_t    channel;
+  rx_err_t          err;
+  const uint32_t    max_channels = k_mock_gptw_max_channels;
+  rx_gptw_channel_t channel;
 
   /* Pre-condition: validate config pointer (NASA Power of 10 Rule 5) */
   if (config == nullptr) {

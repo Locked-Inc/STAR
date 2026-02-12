@@ -124,9 +124,8 @@
 
 #pragma once
 
-
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -258,55 +257,55 @@ extern "C" {
  * @see rx_gptw_common_regs_t Common registers for synchronized control
  */
 typedef struct {
-  volatile uint32_t gtwp;      /**< 0x00: Write Protection Register */
-  volatile uint32_t gtstr;     /**< 0x04: Software Start Register */
-  volatile uint32_t gtstp;     /**< 0x08: Software Stop Register */
-  volatile uint32_t gtclr;     /**< 0x0C: Software Clear Register */
-  volatile uint32_t gtssr;     /**< 0x10: Start Source Select Register */
-  volatile uint32_t gtpsr;     /**< 0x14: Stop Source Select Register */
-  volatile uint32_t gtcsr;     /**< 0x18: Clear Source Select Register */
-  volatile uint32_t gtupsr;    /**< 0x1C: Count-Up Source Select Register */
-  volatile uint32_t gtdnsr;    /**< 0x20: Count-Down Source Select Register */
-  volatile uint32_t gticasr;   /**< 0x24: Input Capture Source Select A */
-  volatile uint32_t gticbsr;   /**< 0x28: Input Capture Source Select B */
-  volatile uint32_t gtcr;      /**< 0x2C: Control Register */
-  volatile uint32_t gtuddtyc;  /**< 0x30: Up/Down Count Duty Setting */
-  volatile uint32_t gtior;     /**< 0x34: I/O Control Register */
-  volatile uint32_t gtintad;   /**< 0x38: Interrupt Output Setting */
-  volatile uint32_t gtst;      /**< 0x3C: Status Register */
-  volatile uint32_t gtber;     /**< 0x40: Buffer Enable Register */
-  volatile uint32_t gtitc;     /**< 0x44: Interrupt/ADC Trigger Control */
-  volatile uint32_t gtcnt;     /**< 0x48: Counter */
-  volatile uint32_t gtccra;    /**< 0x4C: Compare Capture Register A */
-  volatile uint32_t gtccrb;    /**< 0x50: Compare Capture Register B */
-  volatile uint32_t gtccrc;    /**< 0x54: Compare Capture Register C */
-  volatile uint32_t gtccre;    /**< 0x58: Compare Capture Register E */
-  volatile uint32_t gtccrd;    /**< 0x5C: Compare Capture Register D */
-  volatile uint32_t gtccrf;    /**< 0x60: Compare Capture Register F */
-  volatile uint32_t gtpr;      /**< 0x64: Cycle Setting Register (Period) */
-  volatile uint32_t gtpbr;     /**< 0x68: Cycle Setting Buffer Register */
-  volatile uint32_t gtpdbr;    /**< 0x6C: Cycle Setting Double Buffer */
-  volatile uint32_t gtadtra;   /**< 0x70: A/D Trigger Register A */
-  volatile uint32_t gtadtbra;  /**< 0x74: A/D Trigger Buffer Register A */
-  volatile uint32_t gtadtdbra; /**< 0x78: A/D Trigger Double Buffer A */
-  volatile uint32_t gtadtrb;   /**< 0x7C: A/D Trigger Register B */
-  volatile uint32_t gtadtbrb;  /**< 0x80: A/D Trigger Buffer Register B */
-  volatile uint32_t gtadtdbrb; /**< 0x84: A/D Trigger Double Buffer B */
-  volatile uint32_t gtdtcr;    /**< 0x88: Dead Time Control Register */
-  volatile uint32_t gtdvu;     /**< 0x8C: Dead Time Value Upper */
-  volatile uint32_t gtdvd;     /**< 0x90: Dead Time Value Down */
-  volatile uint32_t gtdbu;     /**< 0x94: Dead Time Buffer Upper */
-  volatile uint32_t gtdbd;     /**< 0x98: Dead Time Buffer Down */
-  volatile uint32_t gtsos;     /**< 0x9C: Output Protection Status */
-  volatile uint32_t gtsotr;    /**< 0xA0: Output Protection Trigger */
-  volatile uint32_t gtadsmr;   /**< 0xA4: A/D Conversion Start Request Signal Monitoring */
-  volatile uint32_t gteitc;    /**< 0xA8: Extended Interrupt Skipping Counter Control */
-  volatile uint32_t gteitli1;  /**< 0xAC: Extended Interrupt Skipping Setting Register 1 */
-  volatile uint32_t gteitli2;  /**< 0xB0: Extended Interrupt Skipping Setting Register 2 */
-  volatile uint32_t gteitlb;   /**< 0xB4: Extended Buffer Transfer Skipping Setting */
+  volatile uint32_t gtwp;        /**< 0x00: Write Protection Register */
+  volatile uint32_t gtstr;       /**< 0x04: Software Start Register */
+  volatile uint32_t gtstp;       /**< 0x08: Software Stop Register */
+  volatile uint32_t gtclr;       /**< 0x0C: Software Clear Register */
+  volatile uint32_t gtssr;       /**< 0x10: Start Source Select Register */
+  volatile uint32_t gtpsr;       /**< 0x14: Stop Source Select Register */
+  volatile uint32_t gtcsr;       /**< 0x18: Clear Source Select Register */
+  volatile uint32_t gtupsr;      /**< 0x1C: Count-Up Source Select Register */
+  volatile uint32_t gtdnsr;      /**< 0x20: Count-Down Source Select Register */
+  volatile uint32_t gticasr;     /**< 0x24: Input Capture Source Select A */
+  volatile uint32_t gticbsr;     /**< 0x28: Input Capture Source Select B */
+  volatile uint32_t gtcr;        /**< 0x2C: Control Register */
+  volatile uint32_t gtuddtyc;    /**< 0x30: Up/Down Count Duty Setting */
+  volatile uint32_t gtior;       /**< 0x34: I/O Control Register */
+  volatile uint32_t gtintad;     /**< 0x38: Interrupt Output Setting */
+  volatile uint32_t gtst;        /**< 0x3C: Status Register */
+  volatile uint32_t gtber;       /**< 0x40: Buffer Enable Register */
+  volatile uint32_t gtitc;       /**< 0x44: Interrupt/ADC Trigger Control */
+  volatile uint32_t gtcnt;       /**< 0x48: Counter */
+  volatile uint32_t gtccra;      /**< 0x4C: Compare Capture Register A */
+  volatile uint32_t gtccrb;      /**< 0x50: Compare Capture Register B */
+  volatile uint32_t gtccrc;      /**< 0x54: Compare Capture Register C */
+  volatile uint32_t gtccre;      /**< 0x58: Compare Capture Register E */
+  volatile uint32_t gtccrd;      /**< 0x5C: Compare Capture Register D */
+  volatile uint32_t gtccrf;      /**< 0x60: Compare Capture Register F */
+  volatile uint32_t gtpr;        /**< 0x64: Cycle Setting Register (Period) */
+  volatile uint32_t gtpbr;       /**< 0x68: Cycle Setting Buffer Register */
+  volatile uint32_t gtpdbr;      /**< 0x6C: Cycle Setting Double Buffer */
+  volatile uint32_t gtadtra;     /**< 0x70: A/D Trigger Register A */
+  volatile uint32_t gtadtbra;    /**< 0x74: A/D Trigger Buffer Register A */
+  volatile uint32_t gtadtdbra;   /**< 0x78: A/D Trigger Double Buffer A */
+  volatile uint32_t gtadtrb;     /**< 0x7C: A/D Trigger Register B */
+  volatile uint32_t gtadtbrb;    /**< 0x80: A/D Trigger Buffer Register B */
+  volatile uint32_t gtadtdbrb;   /**< 0x84: A/D Trigger Double Buffer B */
+  volatile uint32_t gtdtcr;      /**< 0x88: Dead Time Control Register */
+  volatile uint32_t gtdvu;       /**< 0x8C: Dead Time Value Upper */
+  volatile uint32_t gtdvd;       /**< 0x90: Dead Time Value Down */
+  volatile uint32_t gtdbu;       /**< 0x94: Dead Time Buffer Upper */
+  volatile uint32_t gtdbd;       /**< 0x98: Dead Time Buffer Down */
+  volatile uint32_t gtsos;       /**< 0x9C: Output Protection Status */
+  volatile uint32_t gtsotr;      /**< 0xA0: Output Protection Trigger */
+  volatile uint32_t gtadsmr;     /**< 0xA4: A/D Conversion Start Request Signal Monitoring */
+  volatile uint32_t gteitc;      /**< 0xA8: Extended Interrupt Skipping Counter Control */
+  volatile uint32_t gteitli1;    /**< 0xAC: Extended Interrupt Skipping Setting Register 1 */
+  volatile uint32_t gteitli2;    /**< 0xB0: Extended Interrupt Skipping Setting Register 2 */
+  volatile uint32_t gteitlb;     /**< 0xB4: Extended Buffer Transfer Skipping Setting */
   uint32_t          reserved[6]; /**< 0xB8-0xCC: Reserved */
-  volatile uint32_t gtsecsr;   /**< 0xD0: Operation Enable Bit Simultaneous Control Channel Select */
-  volatile uint32_t gtsecr;    /**< 0xD4: Operation Enable Bit Simultaneous Control */
+  volatile uint32_t gtsecsr; /**< 0xD0: Operation Enable Bit Simultaneous Control Channel Select */
+  volatile uint32_t gtsecr;  /**< 0xD4: Operation Enable Bit Simultaneous Control */
 } rx_gptw_channel_regs_t;
 
 /**
@@ -418,15 +417,15 @@ typedef enum : uint32_t {
   k_gptw_gtcr_tpcs_shift = 23,
   k_gptw_gtcr_tpcs_mask  = (0x0F << k_gptw_gtcr_tpcs_shift),
 
-  k_gptw_gtcr_tpcs_1    = (0x00 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/1 (120 MHz) */
-  k_gptw_gtcr_tpcs_2    = (0x01 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/2 */
-  k_gptw_gtcr_tpcs_4    = (0x02 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/4 */
-  k_gptw_gtcr_tpcs_8    = (0x03 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/8 */
-  k_gptw_gtcr_tpcs_16   = (0x04 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/16 */
-  k_gptw_gtcr_tpcs_32   = (0x05 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/32 */
-  k_gptw_gtcr_tpcs_64   = (0x06 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/64 */
+  k_gptw_gtcr_tpcs_1  = (0x00 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/1 (120 MHz) */
+  k_gptw_gtcr_tpcs_2  = (0x01 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/2 */
+  k_gptw_gtcr_tpcs_4  = (0x02 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/4 */
+  k_gptw_gtcr_tpcs_8  = (0x03 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/8 */
+  k_gptw_gtcr_tpcs_16 = (0x04 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/16 */
+  k_gptw_gtcr_tpcs_32 = (0x05 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/32 */
+  k_gptw_gtcr_tpcs_64 = (0x06 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/64 */
   /* 0x07 (0111): Setting prohibited */
-  k_gptw_gtcr_tpcs_256  = (0x08 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/256 */
+  k_gptw_gtcr_tpcs_256 = (0x08 << k_gptw_gtcr_tpcs_shift), /**< PCLKA/256 */
   /* 0x09 (1001): Setting prohibited */
   k_gptw_gtcr_tpcs_1024 = (0x0A << k_gptw_gtcr_tpcs_shift), /**< PCLKA/1024 */
   /* 0x0B (1011): Setting prohibited */
@@ -497,21 +496,21 @@ typedef enum : uint32_t {
  */
 typedef enum : uint32_t {
   /* GRP[1:0] - Output Stop Group Select (bits 25:24) */
-  k_gptw_gtintad_grp_shift  = 24,                              /**< GRP field shift */
-  k_gptw_gtintad_grp_mask   = (0x03U << 24),                   /**< GRP field mask */
-  k_gptw_gtintad_grp_a      = (0x00U << 24),                   /**< Select POEG Group A */
-  k_gptw_gtintad_grp_b      = (0x01U << 24),                   /**< Select POEG Group B */
-  k_gptw_gtintad_grp_c      = (0x02U << 24),                   /**< Select POEG Group C */
-  k_gptw_gtintad_grp_d      = (0x03U << 24),                   /**< Select POEG Group D */
+  k_gptw_gtintad_grp_shift = 24,            /**< GRP field shift */
+  k_gptw_gtintad_grp_mask  = (0x03U << 24), /**< GRP field mask */
+  k_gptw_gtintad_grp_a     = (0x00U << 24), /**< Select POEG Group A */
+  k_gptw_gtintad_grp_b     = (0x01U << 24), /**< Select POEG Group B */
+  k_gptw_gtintad_grp_c     = (0x02U << 24), /**< Select POEG Group C */
+  k_gptw_gtintad_grp_d     = (0x03U << 24), /**< Select POEG Group D */
 
   /* GRPDTE - Dead Time Error Output Stop Detection Enable (bit 28) */
-  k_gptw_gtintad_grpdte     = (1U << 28),                      /**< Enable dead-time error detection */
+  k_gptw_gtintad_grpdte = (1U << 28), /**< Enable dead-time error detection */
 
   /* GRPABH - Simultaneous High Output Stop Detection Enable (bit 29) */
-  k_gptw_gtintad_grpabh     = (1U << 29),                      /**< Enable simultaneous high detection */
+  k_gptw_gtintad_grpabh = (1U << 29), /**< Enable simultaneous high detection */
 
   /* GRPABL - Simultaneous Low Output Stop Detection Enable (bit 30) */
-  k_gptw_gtintad_grpabl     = (1U << 30),                      /**< Enable simultaneous low detection */
+  k_gptw_gtintad_grpabl = (1U << 30), /**< Enable simultaneous low detection */
 } gptw_gtintad_bits_t;
 
 /* =============================================================================
@@ -566,8 +565,8 @@ typedef enum : uint8_t {
 
 /** @brief Up/Down Count Duty Setting Register (GTUDDTYC) Bits */
 typedef enum : uint32_t {
-  k_gptw_gtuddtyc_ud       = (1 << 0),  /**< Count direction: 0=down, 1=up */
-  k_gptw_gtuddtyc_udf      = (1 << 1),  /**< Forcibly set count direction */
+  k_gptw_gtuddtyc_ud  = (1 << 0), /**< Count direction: 0=down, 1=up */
+  k_gptw_gtuddtyc_udf = (1 << 1), /**< Forcibly set count direction */
 } gptw_gtuddtyc_bits_t;
 
 /* =============================================================================
@@ -576,8 +575,8 @@ typedef enum : uint32_t {
  */
 
 typedef enum : uint32_t {
-  k_gptw_gtadsmr_adsms0 = (1 << 0),  /**< GTADSM0 output status monitor */
-  k_gptw_gtadsmr_adsms1 = (1 << 1),  /**< GTADSM1 output status monitor */
+  k_gptw_gtadsmr_adsms0 = (1 << 0), /**< GTADSM0 output status monitor */
+  k_gptw_gtadsmr_adsms1 = (1 << 1), /**< GTADSM1 output status monitor */
 } gptw_gtadsmr_bits_t;
 
 /* =============================================================================
@@ -589,15 +588,15 @@ typedef enum : uint32_t {
  */
 
 typedef enum : uint32_t {
-  k_gptw_gteitc_eivtc_mask   = 0x0000FFFF,         /**< Extended interval counter (0-65535) */
-  k_gptw_gteitc_eivtt_shift  = 16,                 /**< Extended interval transfer timing shift */
-  k_gptw_gteitc_eivtt_mask   = (0x03 << 16),       /**< Extended interval transfer timing mask */
-  k_gptw_gteitc_eivtt_none   = (0x00 << 16),       /**< No transfer */
-  k_gptw_gteitc_eivtt_trough = (0x01 << 16),       /**< Transfer at trough */
-  k_gptw_gteitc_eivtt_crest  = (0x02 << 16),       /**< Transfer at crest */
-  k_gptw_gteitc_eivtt_both   = (0x03 << 16),       /**< Transfer at both crest and trough */
-  k_gptw_gteitc_eivtcn_shift = 24,                 /**< Extended interval counter shift */
-  k_gptw_gteitc_eivtcn_mask  = (0xFFU << 24),      /**< Extended interval counter mask */
+  k_gptw_gteitc_eivtc_mask   = 0x0000FFFF,    /**< Extended interval counter (0-65535) */
+  k_gptw_gteitc_eivtt_shift  = 16,            /**< Extended interval transfer timing shift */
+  k_gptw_gteitc_eivtt_mask   = (0x03 << 16),  /**< Extended interval transfer timing mask */
+  k_gptw_gteitc_eivtt_none   = (0x00 << 16),  /**< No transfer */
+  k_gptw_gteitc_eivtt_trough = (0x01 << 16),  /**< Transfer at trough */
+  k_gptw_gteitc_eivtt_crest  = (0x02 << 16),  /**< Transfer at crest */
+  k_gptw_gteitc_eivtt_both   = (0x03 << 16),  /**< Transfer at both crest and trough */
+  k_gptw_gteitc_eivtcn_shift = 24,            /**< Extended interval counter shift */
+  k_gptw_gteitc_eivtcn_mask  = (0xFFU << 24), /**< Extended interval counter mask */
 } gptw_gteitc_bits_t;
 
 /* =============================================================================
@@ -606,9 +605,9 @@ typedef enum : uint32_t {
  */
 
 typedef enum : uint32_t {
-  k_gptw_gteitli1_eadtl   = (1 << 0),  /**< A/D conversion start request link enable */
-  k_gptw_gteitli1_eivtciv = (1 << 8),  /**< GTCIV (overflow) interrupt skipping enable */
-  k_gptw_gteitli1_eivtciu = (1 << 9),  /**< GTCIU (underflow) interrupt skipping enable */
+  k_gptw_gteitli1_eadtl   = (1 << 0), /**< A/D conversion start request link enable */
+  k_gptw_gteitli1_eivtciv = (1 << 8), /**< GTCIV (overflow) interrupt skipping enable */
+  k_gptw_gteitli1_eivtciu = (1 << 9), /**< GTCIU (underflow) interrupt skipping enable */
 } gptw_gteitli1_bits_t;
 
 /* =============================================================================
@@ -617,14 +616,14 @@ typedef enum : uint32_t {
  */
 
 typedef enum : uint32_t {
-  k_gptw_gteitli2_eivtciv_shift = 0,                /**< Extended interval counter shift */
-  k_gptw_gteitli2_eivtciv_mask  = 0x000000FF,       /**< Extended interval counter mask */
-  k_gptw_gteitli2_eivtcia = (1 << 0),  /**< GTCIA compare match interrupt skipping */
-  k_gptw_gteitli2_eivtcib = (1 << 1),  /**< GTCIB compare match interrupt skipping */
-  k_gptw_gteitli2_eivtcic = (1 << 2),  /**< GTCIC compare match interrupt skipping */
-  k_gptw_gteitli2_eivtcid = (1 << 3),  /**< GTCID compare match interrupt skipping */
-  k_gptw_gteitli2_eivtcie = (1 << 4),  /**< GTCIE compare match interrupt skipping */
-  k_gptw_gteitli2_eivtcif = (1 << 5),  /**< GTCIF compare match interrupt skipping */
+  k_gptw_gteitli2_eivtciv_shift = 0,          /**< Extended interval counter shift */
+  k_gptw_gteitli2_eivtciv_mask  = 0x000000FF, /**< Extended interval counter mask */
+  k_gptw_gteitli2_eivtcia       = (1 << 0),   /**< GTCIA compare match interrupt skipping */
+  k_gptw_gteitli2_eivtcib       = (1 << 1),   /**< GTCIB compare match interrupt skipping */
+  k_gptw_gteitli2_eivtcic       = (1 << 2),   /**< GTCIC compare match interrupt skipping */
+  k_gptw_gteitli2_eivtcid       = (1 << 3),   /**< GTCID compare match interrupt skipping */
+  k_gptw_gteitli2_eivtcie       = (1 << 4),   /**< GTCIE compare match interrupt skipping */
+  k_gptw_gteitli2_eivtcif       = (1 << 5),   /**< GTCIF compare match interrupt skipping */
 } gptw_gteitli2_bits_t;
 
 /* =============================================================================
@@ -633,9 +632,9 @@ typedef enum : uint32_t {
  */
 
 typedef enum : uint32_t {
-  k_gptw_gteitlb_eivtcpbl = (1 << 0),  /**< Period buffer transfer skipping */
-  k_gptw_gteitlb_eivtcabl = (1 << 1),  /**< GTCCRA buffer transfer skipping */
-  k_gptw_gteitlb_eivtcbbl = (1 << 2),  /**< GTCCRB buffer transfer skipping */
+  k_gptw_gteitlb_eivtcpbl = (1 << 0), /**< Period buffer transfer skipping */
+  k_gptw_gteitlb_eivtcabl = (1 << 1), /**< GTCCRA buffer transfer skipping */
+  k_gptw_gteitlb_eivtcbbl = (1 << 2), /**< GTCCRB buffer transfer skipping */
 } gptw_gteitlb_bits_t;
 
 /* =============================================================================
@@ -644,10 +643,10 @@ typedef enum : uint32_t {
  */
 
 typedef enum : uint32_t {
-  k_gptw_gtsecsr_secsel0 = (1 << 0),  /**< Channel 0 simultaneous control enable */
-  k_gptw_gtsecsr_secsel1 = (1 << 1),  /**< Channel 1 simultaneous control enable */
-  k_gptw_gtsecsr_secsel2 = (1 << 2),  /**< Channel 2 simultaneous control enable */
-  k_gptw_gtsecsr_secsel3 = (1 << 3),  /**< Channel 3 simultaneous control enable */
+  k_gptw_gtsecsr_secsel0 = (1 << 0), /**< Channel 0 simultaneous control enable */
+  k_gptw_gtsecsr_secsel1 = (1 << 1), /**< Channel 1 simultaneous control enable */
+  k_gptw_gtsecsr_secsel2 = (1 << 2), /**< Channel 2 simultaneous control enable */
+  k_gptw_gtsecsr_secsel3 = (1 << 3), /**< Channel 3 simultaneous control enable */
 } gptw_gtsecsr_bits_t;
 
 /* =============================================================================
@@ -656,9 +655,9 @@ typedef enum : uint32_t {
  */
 
 typedef enum : uint32_t {
-  k_gptw_gtsecr_sbdce = (1 << 0),  /**< Simultaneous buffer transfer disable */
-  k_gptw_gtsecr_sbdcd = (1 << 8),  /**< Buffer transfer disable clear */
-  k_gptw_gtsecr_sbdpe = (1 << 9),  /**< Simultaneous buffer transfer enable */
+  k_gptw_gtsecr_sbdce = (1 << 0), /**< Simultaneous buffer transfer disable */
+  k_gptw_gtsecr_sbdcd = (1 << 8), /**< Buffer transfer disable clear */
+  k_gptw_gtsecr_sbdpe = (1 << 9), /**< Simultaneous buffer transfer enable */
 } gptw_gtsecr_bits_t;
 
 /* =============================================================================
@@ -696,143 +695,143 @@ typedef enum : uint8_t {
 
 /* Verify GPTW channel register structure size and critical offsets */
 static_assert(sizeof(rx_gptw_channel_regs_t) == 0xD8,
-               "GPTW channel register structure size mismatch");
+              "GPTW channel register structure size mismatch");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtwp) == 0x00,
-               "GPTW GTWP register offset incorrect");
+              "GPTW GTWP register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtcr) == 0x2C,
-               "GPTW GTCR register offset incorrect");
+              "GPTW GTCR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtcnt) == 0x48,
-               "GPTW GTCNT register offset incorrect");
+              "GPTW GTCNT register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtccra) == 0x4C,
-               "GPTW GTCCRA register offset incorrect");
+              "GPTW GTCCRA register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtpr) == 0x64,
-               "GPTW GTPR register offset incorrect");
+              "GPTW GTPR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtdtcr) == 0x88,
-               "GPTW GTDTCR register offset incorrect");
+              "GPTW GTDTCR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtsotr) == 0xA0,
-               "GPTW GTSOTR register offset incorrect");
+              "GPTW GTSOTR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtadsmr) == 0xA4,
-               "GPTW GTADSMR register offset incorrect");
+              "GPTW GTADSMR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gteitc) == 0xA8,
-               "GPTW GTEITC register offset incorrect");
+              "GPTW GTEITC register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gteitli1) == 0xAC,
-               "GPTW GTEITLI1 register offset incorrect");
+              "GPTW GTEITLI1 register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gteitli2) == 0xB0,
-               "GPTW GTEITLI2 register offset incorrect");
+              "GPTW GTEITLI2 register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gteitlb) == 0xB4,
-               "GPTW GTEITLB register offset incorrect");
+              "GPTW GTEITLB register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtsecsr) == 0xD0,
-               "GPTW GTSECSR register offset incorrect");
+              "GPTW GTSECSR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtsecr) == 0xD4,
-               "GPTW GTSECR register offset incorrect");
+              "GPTW GTSECR register offset incorrect");
 
 /* Additional channel register offset verification (100% coverage) */
 static_assert(offsetof(rx_gptw_channel_regs_t, gtstr) == 0x04,
-               "GPTW GTSTR register offset incorrect");
+              "GPTW GTSTR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtstp) == 0x08,
-               "GPTW GTSTP register offset incorrect");
+              "GPTW GTSTP register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtclr) == 0x0C,
-               "GPTW GTCLR register offset incorrect");
+              "GPTW GTCLR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtssr) == 0x10,
-               "GPTW GTSSR register offset incorrect");
+              "GPTW GTSSR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtpsr) == 0x14,
-               "GPTW GTPSR register offset incorrect");
+              "GPTW GTPSR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtcsr) == 0x18,
-               "GPTW GTCSR register offset incorrect");
+              "GPTW GTCSR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtupsr) == 0x1C,
-               "GPTW GTUPSR register offset incorrect");
+              "GPTW GTUPSR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtdnsr) == 0x20,
-               "GPTW GTDNSR register offset incorrect");
+              "GPTW GTDNSR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gticasr) == 0x24,
-               "GPTW GTICASR register offset incorrect");
+              "GPTW GTICASR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gticbsr) == 0x28,
-               "GPTW GTICBSR register offset incorrect");
+              "GPTW GTICBSR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtuddtyc) == 0x30,
-               "GPTW GTUDDTYC register offset incorrect");
+              "GPTW GTUDDTYC register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtior) == 0x34,
-               "GPTW GTIOR register offset incorrect");
+              "GPTW GTIOR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtintad) == 0x38,
-               "GPTW GTINTAD register offset incorrect");
+              "GPTW GTINTAD register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtst) == 0x3C,
-               "GPTW GTST register offset incorrect");
+              "GPTW GTST register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtber) == 0x40,
-               "GPTW GTBER register offset incorrect");
+              "GPTW GTBER register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtitc) == 0x44,
-               "GPTW GTITC register offset incorrect");
+              "GPTW GTITC register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtccrb) == 0x50,
-               "GPTW GTCCRB register offset incorrect");
+              "GPTW GTCCRB register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtccrc) == 0x54,
-               "GPTW GTCCRC register offset incorrect");
+              "GPTW GTCCRC register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtccre) == 0x58,
-               "GPTW GTCCRE register offset incorrect");
+              "GPTW GTCCRE register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtccrd) == 0x5C,
-               "GPTW GTCCRD register offset incorrect");
+              "GPTW GTCCRD register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtccrf) == 0x60,
-               "GPTW GTCCRF register offset incorrect");
+              "GPTW GTCCRF register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtpbr) == 0x68,
-               "GPTW GTPBR register offset incorrect");
+              "GPTW GTPBR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtpdbr) == 0x6C,
-               "GPTW GTPDBR register offset incorrect");
+              "GPTW GTPDBR register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtadtra) == 0x70,
-               "GPTW GTADTRA register offset incorrect");
+              "GPTW GTADTRA register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtadtbra) == 0x74,
-               "GPTW GTADTBRA register offset incorrect");
+              "GPTW GTADTBRA register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtadtdbra) == 0x78,
-               "GPTW GTADTDBRA register offset incorrect");
+              "GPTW GTADTDBRA register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtadtrb) == 0x7C,
-               "GPTW GTADTRB register offset incorrect");
+              "GPTW GTADTRB register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtadtbrb) == 0x80,
-               "GPTW GTADTBRB register offset incorrect");
+              "GPTW GTADTBRB register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtadtdbrb) == 0x84,
-               "GPTW GTADTDBRB register offset incorrect");
+              "GPTW GTADTDBRB register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtdvu) == 0x8C,
-               "GPTW GTDVU register offset incorrect");
+              "GPTW GTDVU register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtdvd) == 0x90,
-               "GPTW GTDVD register offset incorrect");
+              "GPTW GTDVD register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtdbu) == 0x94,
-               "GPTW GTDBU register offset incorrect");
+              "GPTW GTDBU register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtdbd) == 0x98,
-               "GPTW GTDBD register offset incorrect");
+              "GPTW GTDBD register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, gtsos) == 0x9C,
-               "GPTW GTSOS register offset incorrect");
+              "GPTW GTSOS register offset incorrect");
 static_assert(offsetof(rx_gptw_channel_regs_t, reserved) == 0xB8,
-               "GPTW reserved register offset incorrect");
+              "GPTW reserved register offset incorrect");
 
 /* Verify GPTW common register structure size */
 static_assert(sizeof(rx_gptw_common_regs_t) == 0x2C,
-               "GPTW common register structure size mismatch");
+              "GPTW common register structure size mismatch");
 
 /* Verify GPTW common register offsets (100% coverage) */
 static_assert(offsetof(rx_gptw_common_regs_t, gtstra) == 0x00,
-               "GPTW common GTSTRA register offset incorrect");
+              "GPTW common GTSTRA register offset incorrect");
 static_assert(offsetof(rx_gptw_common_regs_t, gtstpa) == 0x04,
-               "GPTW common GTSTPA register offset incorrect");
+              "GPTW common GTSTPA register offset incorrect");
 static_assert(offsetof(rx_gptw_common_regs_t, gtclra) == 0x08,
-               "GPTW common GTCLRA register offset incorrect");
+              "GPTW common GTCLRA register offset incorrect");
 static_assert(offsetof(rx_gptw_common_regs_t, gtstra2) == 0x20,
-               "GPTW common GTSTRA2 register offset incorrect");
+              "GPTW common GTSTRA2 register offset incorrect");
 static_assert(offsetof(rx_gptw_common_regs_t, gtstpa2) == 0x24,
-               "GPTW common GTSTPA2 register offset incorrect");
+              "GPTW common GTSTPA2 register offset incorrect");
 static_assert(offsetof(rx_gptw_common_regs_t, gtclra2) == 0x28,
-               "GPTW common GTCLRA2 register offset incorrect");
+              "GPTW common GTCLRA2 register offset incorrect");
 
 /* Verify base addresses are in correct peripheral space (0x000C2xxx) */
 static_assert((k_gptw0_base_addr & 0xFFFF0000) == 0x000C0000,
-               "GPTW0 base address not in GPTW peripheral space");
+              "GPTW0 base address not in GPTW peripheral space");
 static_assert((k_gptw1_base_addr & 0xFFFF0000) == 0x000C0000,
-               "GPTW1 base address not in GPTW peripheral space");
+              "GPTW1 base address not in GPTW peripheral space");
 static_assert((k_gptw2_base_addr & 0xFFFF0000) == 0x000C0000,
-               "GPTW2 base address not in GPTW peripheral space");
+              "GPTW2 base address not in GPTW peripheral space");
 static_assert((k_gptw3_base_addr & 0xFFFF0000) == 0x000C0000,
-               "GPTW3 base address not in GPTW peripheral space");
+              "GPTW3 base address not in GPTW peripheral space");
 
 /* Verify channel spacing is correct */
 static_assert(k_gptw1_base_addr - k_gptw0_base_addr == k_gptw_channel_offset,
-               "GPTW channel spacing incorrect");
+              "GPTW channel spacing incorrect");
 static_assert(k_gptw2_base_addr - k_gptw1_base_addr == k_gptw_channel_offset,
-               "GPTW channel spacing incorrect");
+              "GPTW channel spacing incorrect");
 static_assert(k_gptw3_base_addr - k_gptw2_base_addr == k_gptw_channel_offset,
-               "GPTW channel spacing incorrect");
+              "GPTW channel spacing incorrect");
 
 /** @} */ /* End of rx_gptw_regs group */
 

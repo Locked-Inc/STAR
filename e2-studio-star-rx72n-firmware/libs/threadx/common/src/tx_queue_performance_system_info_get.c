@@ -9,7 +9,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 /**************************************************************************/
 /**************************************************************************/
 /**                                                                       */
@@ -22,7 +21,6 @@
 
 #define TX_SOURCE_CODE
 
-
 /* Include necessary system files.  */
 
 #include "tx_api.h"
@@ -30,7 +28,6 @@
 #ifdef TX_QUEUE_ENABLE_PERFORMANCE_INFO
 #include "tx_trace.h"
 #endif
-
 
 /**************************************************************************/
 /*                                                                        */
@@ -82,126 +79,113 @@
 /*                                            resulting in version 6.1    */
 /*                                                                        */
 /**************************************************************************/
-UINT  _tx_queue_performance_system_info_get(ULONG *messages_sent, ULONG *messages_received,
-                    ULONG *empty_suspensions, ULONG *full_suspensions, ULONG *full_errors, ULONG *timeouts)
+UINT _tx_queue_performance_system_info_get(ULONG* messages_sent,
+                                           ULONG* messages_received,
+                                           ULONG* empty_suspensions,
+                                           ULONG* full_suspensions,
+                                           ULONG* full_errors,
+                                           ULONG* timeouts)
 {
 
 #ifdef TX_QUEUE_ENABLE_PERFORMANCE_INFO
 
-TX_INTERRUPT_SAVE_AREA
+  TX_INTERRUPT_SAVE_AREA
 
+  /* Disable interrupts.  */
+  TX_DISABLE
 
-    /* Disable interrupts.  */
-    TX_DISABLE
+  /* If trace is enabled, insert this event into the trace buffer.  */
+  TX_TRACE_IN_LINE_INSERT(TX_TRACE_QUEUE_PERFORMANCE_SYSTEM_INFO_GET,
+                          0,
+                          0,
+                          0,
+                          0,
+                          TX_TRACE_QUEUE_EVENTS)
 
-    /* If trace is enabled, insert this event into the trace buffer.  */
-    TX_TRACE_IN_LINE_INSERT(TX_TRACE_QUEUE_PERFORMANCE_SYSTEM_INFO_GET, 0, 0, 0, 0, TX_TRACE_QUEUE_EVENTS)
+  /* Log this kernel call.  */
+  TX_EL_QUEUE_PERFORMANCE_SYSTEM_INFO_GET_INSERT
 
-    /* Log this kernel call.  */
-    TX_EL_QUEUE_PERFORMANCE_SYSTEM_INFO_GET_INSERT
-
-    /* Retrieve all the pertinent information and return it in the supplied
+  /* Retrieve all the pertinent information and return it in the supplied
        destinations.  */
 
-    /* Retrieve the total number of queue messages sent.  */
-    if (messages_sent != TX_NULL)
-    {
+  /* Retrieve the total number of queue messages sent.  */
+  if (messages_sent != TX_NULL) {
 
-        *messages_sent =  _tx_queue_performance_messages_sent_count;
-    }
+    *messages_sent = _tx_queue_performance_messages_sent_count;
+  }
 
-    /* Retrieve the total number of queue messages received.  */
-    if (messages_received != TX_NULL)
-    {
+  /* Retrieve the total number of queue messages received.  */
+  if (messages_received != TX_NULL) {
 
-        *messages_received =  _tx_queue_performance__messages_received_count;
-    }
+    *messages_received = _tx_queue_performance__messages_received_count;
+  }
 
-    /* Retrieve the total number of empty queue suspensions.  */
-    if (empty_suspensions != TX_NULL)
-    {
+  /* Retrieve the total number of empty queue suspensions.  */
+  if (empty_suspensions != TX_NULL) {
 
-        *empty_suspensions =  _tx_queue_performance_empty_suspension_count;
-    }
+    *empty_suspensions = _tx_queue_performance_empty_suspension_count;
+  }
 
-    /* Retrieve the total number of full queue suspensions.  */
-    if (full_suspensions != TX_NULL)
-    {
+  /* Retrieve the total number of full queue suspensions.  */
+  if (full_suspensions != TX_NULL) {
 
-        *full_suspensions =  _tx_queue_performance_full_suspension_count;
-    }
+    *full_suspensions = _tx_queue_performance_full_suspension_count;
+  }
 
-    /* Retrieve the total number of full errors.  */
-    if (full_errors != TX_NULL)
-    {
+  /* Retrieve the total number of full errors.  */
+  if (full_errors != TX_NULL) {
 
-        *full_errors =  _tx_queue_performance_full_error_count;
-    }
+    *full_errors = _tx_queue_performance_full_error_count;
+  }
 
-    /* Retrieve the total number of queue timeouts.  */
-    if (timeouts != TX_NULL)
-    {
+  /* Retrieve the total number of queue timeouts.  */
+  if (timeouts != TX_NULL) {
 
-        *timeouts =  _tx_queue_performance_timeout_count;
-    }
+    *timeouts = _tx_queue_performance_timeout_count;
+  }
 
-    /* Restore interrupts.  */
-    TX_RESTORE
+  /* Restore interrupts.  */
+  TX_RESTORE
 
-    /* Return completion status.  */
-    return(TX_SUCCESS);
+  /* Return completion status.  */
+  return (TX_SUCCESS);
 
 #else
 
-UINT        status;
+  UINT status;
 
+  /* Access input arguments just for the sake of lint, MISRA, etc.  */
+  if (messages_sent != TX_NULL) {
 
-    /* Access input arguments just for the sake of lint, MISRA, etc.  */
-    if (messages_sent != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (messages_received != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (messages_received != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (empty_suspensions != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (empty_suspensions != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (full_suspensions != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (full_suspensions != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (full_errors != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (full_errors != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else if (timeouts != TX_NULL) {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else if (timeouts != TX_NULL)
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else {
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else
-    {
+    /* Not enabled, return error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  }
 
-        /* Not enabled, return error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-
-    /* Return completion status.  */
-    return(status);
+  /* Return completion status.  */
+  return (status);
 #endif
 }
-

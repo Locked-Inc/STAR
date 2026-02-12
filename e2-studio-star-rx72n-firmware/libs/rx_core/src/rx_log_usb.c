@@ -39,13 +39,14 @@
 
 #include "rx_log.h"
 
-#if USB_LOG_MIRROR  /* Only compile if USB logging enabled */
+#if USB_LOG_MIRROR /* Only compile if USB logging enabled */
 
-#include "rx_usb.h"
-#include "tx_api.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+
+#include "rx_usb.h"
+#include "tx_api.h"
 
 /* =============================================================================
  * Configuration Constants
@@ -56,7 +57,7 @@
  * @brief Boot log buffer configuration
  */
 typedef enum : uint16_t {
-    /**
+  /**
      * @brief Boot log buffer size in bytes
      * @details
      * Sized to hold ~500ms of logs at typical boot rate:
@@ -65,15 +66,15 @@ typedef enum : uint16_t {
      * - Total: ~1000 chars -> 512B buffer (50% headroom)
      * @par Value: 512 bytes
      */
-    k_boot_buffer_size = 512,
+  k_boot_buffer_size = 512,
 
-    /**
+  /**
      * @brief Maximum chunk size for buffer flush
      * @details
      * USB bulk packet size is 64 bytes. Flush in 64-byte chunks for efficiency.
      * @par Value: 64 bytes
      */
-    k_flush_chunk_size = 64,
+  k_flush_chunk_size = 64,
 
 } usb_log_buffer_config_t;
 
@@ -101,10 +102,10 @@ typedef enum : uint16_t {
  * - Overflow warning logged after flush completes
  */
 typedef struct {
-    char     data[k_boot_buffer_size];  /**< Ring buffer storage */
-    uint16_t head;                       /**< Write index (next write position) */
-    uint16_t count;                      /**< Number of buffered bytes */
-    bool     overflow;                   /**< True if buffer overflowed */
+  char     data[k_boot_buffer_size]; /**< Ring buffer storage */
+  uint16_t head;                     /**< Write index (next write position) */
+  uint16_t count;                    /**< Number of buffered bytes */
+  bool     overflow;                 /**< True if buffer overflowed */
 } usb_log_boot_buffer_t;
 
 /* usb_log_stats_t is defined in rx_log.h */
@@ -160,13 +161,13 @@ static bool s_mutex_initialized = false;
  */
 static void internal_init_mutex_once(void)
 {
-    if (!s_mutex_initialized) {
-        UINT status = tx_mutex_create(&s_log_mutex, (CHAR*)"usb_log_mutex", TX_NO_INHERIT);
-        if (status == TX_SUCCESS) {
-            s_mutex_initialized = true;
-        }
-        /* If creation fails, logging will proceed without mutex (unsafe but functional) */
+  if (!s_mutex_initialized) {
+    UINT status = tx_mutex_create(&s_log_mutex, (CHAR*)"usb_log_mutex", TX_NO_INHERIT);
+    if (status == TX_SUCCESS) {
+      s_mutex_initialized = true;
     }
+    /* If creation fails, logging will proceed without mutex (unsafe but functional) */
+  }
 }
 
 /**
@@ -188,23 +189,23 @@ static void internal_init_mutex_once(void)
  */
 static rx_err_t internal_buffer_boot_log(const char* data, uint16_t len)
 {
-    /* Check space available */
-    if ((s_boot_buffer.count + len) > k_boot_buffer_size) {
-        s_boot_buffer.overflow = true;
-        s_stats.dropped_bytes += len;
-        return k_rx_err_no_mem;
-    }
+  /* Check space available */
+  if ((s_boot_buffer.count + len) > k_boot_buffer_size) {
+    s_boot_buffer.overflow = true;
+    s_stats.dropped_bytes += len;
+    return k_rx_err_no_mem;
+  }
 
-    /* Append to ring buffer (simple linear write, wrap at end) */
-    for (uint16_t i = 0; i < len; i++) {
-        s_boot_buffer.data[s_boot_buffer.head] = data[i];
-        s_boot_buffer.head = (uint16_t)((s_boot_buffer.head + 1) % k_boot_buffer_size);
-    }
+  /* Append to ring buffer (simple linear write, wrap at end) */
+  for (uint16_t i = 0; i < len; i++) {
+    s_boot_buffer.data[s_boot_buffer.head] = data[i];
+    s_boot_buffer.head = (uint16_t)((s_boot_buffer.head + 1) % k_boot_buffer_size);
+  }
 
-    s_boot_buffer.count += len;
-    s_stats.boot_buffered += len;
+  s_boot_buffer.count += len;
+  s_stats.boot_buffered += len;
 
-    return k_rx_ok;
+  return k_rx_ok;
 }
 
 /**
@@ -252,52 +253,57 @@ static rx_err_t internal_buffer_boot_log(const char* data, uint16_t len)
  */
 static void internal_check_usb_ready(void)
 {
-    /* Already flushed? Nothing to do */
-    if (s_usb_ready) {
-        return;
+  /* Already flushed? Nothing to do */
+  if (s_usb_ready) {
+    return;
+  }
+
+  /* Check if USB configured */
+  if (!rx_usb_is_configured(k_usb_port_log)) {
+    return; /* Not ready yet, keep buffering */
+  }
+
+  /* USB is ready! Flush boot buffer */
+  uint16_t tail = (uint16_t)((s_boot_buffer.head - s_boot_buffer.count + k_boot_buffer_size) %
+                             k_boot_buffer_size);
+
+  while (s_boot_buffer.count > 0) {
+    /* Calculate chunk size (up to k_flush_chunk_size bytes) */
+    uint16_t chunk_len =
+      (s_boot_buffer.count > k_flush_chunk_size) ? k_flush_chunk_size : s_boot_buffer.count;
+
+    /* Handle ring buffer wrap-around */
+    uint16_t linear_len =
+      (tail + chunk_len <= k_boot_buffer_size) ? chunk_len : (uint16_t)(k_boot_buffer_size - tail);
+
+    /* Write chunk to USB */
+    rx_err_t err =
+      rx_usb_write(k_usb_port_log, (const uint8_t*)&s_boot_buffer.data[tail], linear_len);
+
+    if (err == k_rx_err_busy) {
+      /* TX buffer full, abort flush and retry later */
+      return;
+    } else if (err != k_rx_ok) {
+      /* Other error (invalid state, etc.) - log and abort */
+      s_stats.usb_errors++;
+      s_usb_ready = true; /* Mark as "flushed" to avoid infinite retries */
+      return;
     }
 
-    /* Check if USB configured */
-    if (!rx_usb_is_configured(k_usb_port_log)) {
-        return;  /* Not ready yet, keep buffering */
-    }
+    /* Update tail and count */
+    tail = (uint16_t)((tail + linear_len) % k_boot_buffer_size);
+    s_boot_buffer.count -= linear_len;
+  }
 
-    /* USB is ready! Flush boot buffer */
-    uint16_t tail = (uint16_t)((s_boot_buffer.head - s_boot_buffer.count + k_boot_buffer_size) % k_boot_buffer_size);
+  /* Flush complete, mark USB ready */
+  s_usb_ready = true;
 
-    while (s_boot_buffer.count > 0) {
-        /* Calculate chunk size (up to k_flush_chunk_size bytes) */
-        uint16_t chunk_len = (s_boot_buffer.count > k_flush_chunk_size) ? k_flush_chunk_size : s_boot_buffer.count;
-
-        /* Handle ring buffer wrap-around */
-        uint16_t linear_len = (tail + chunk_len <= k_boot_buffer_size) ? chunk_len : (uint16_t)(k_boot_buffer_size - tail);
-
-        /* Write chunk to USB */
-        rx_err_t err = rx_usb_write(k_usb_port_log, (const uint8_t*)&s_boot_buffer.data[tail], linear_len);
-
-        if (err == k_rx_err_busy) {
-            /* TX buffer full, abort flush and retry later */
-            return;
-        } else if (err != k_rx_ok) {
-            /* Other error (invalid state, etc.) - log and abort */
-            s_stats.usb_errors++;
-            s_usb_ready = true;  /* Mark as "flushed" to avoid infinite retries */
-            return;
-        }
-
-        /* Update tail and count */
-        tail = (uint16_t)((tail + linear_len) % k_boot_buffer_size);
-        s_boot_buffer.count -= linear_len;
-    }
-
-    /* Flush complete, mark USB ready */
-    s_usb_ready = true;
-
-    /* Log overflow warning if boot buffer overflowed */
-    if (s_boot_buffer.overflow) {
-        const char* warning = "[WARN ] [usb_log     ] Boot buffer overflow, some early logs dropped\r\n";
-        (void)rx_usb_puts(k_usb_port_log, warning);
-    }
+  /* Log overflow warning if boot buffer overflowed */
+  if (s_boot_buffer.overflow) {
+    const char* warning =
+      "[WARN ] [usb_log     ] Boot buffer overflow, some early logs dropped\r\n";
+    (void)rx_usb_puts(k_usb_port_log, warning);
+  }
 }
 
 /**
@@ -352,28 +358,28 @@ static void internal_check_usb_ready(void)
  */
 static void internal_write_usb(const char* data, uint16_t len)
 {
-    /* Update statistics */
-    s_stats.total_bytes += len;
+  /* Update statistics */
+  s_stats.total_bytes += len;
 
-    /* Check if USB ready and flush boot buffer if needed */
-    internal_check_usb_ready();
+  /* Check if USB ready and flush boot buffer if needed */
+  internal_check_usb_ready();
 
-    if (!s_usb_ready) {
-        /* USB not ready, buffer logs */
-        (void)internal_buffer_boot_log(data, len);
-        return;
-    }
+  if (!s_usb_ready) {
+    /* USB not ready, buffer logs */
+    (void)internal_buffer_boot_log(data, len);
+    return;
+  }
 
-    /* USB ready, send directly */
-    rx_err_t err = rx_usb_write(k_usb_port_log, (const uint8_t*)data, len);
+  /* USB ready, send directly */
+  rx_err_t err = rx_usb_write(k_usb_port_log, (const uint8_t*)data, len);
 
-    if (err == k_rx_err_busy) {
-        /* TX buffer full, drop log (non-blocking policy) */
-        s_stats.dropped_bytes += len;
-    } else if (err != k_rx_ok) {
-        /* Other error (invalid state, null pointer, etc.) */
-        s_stats.usb_errors++;
-    }
+  if (err == k_rx_err_busy) {
+    /* TX buffer full, drop log (non-blocking policy) */
+    s_stats.dropped_bytes += len;
+  } else if (err != k_rx_ok) {
+    /* Other error (invalid state, null pointer, etc.) */
+    s_stats.usb_errors++;
+  }
 }
 
 /* =============================================================================
@@ -425,17 +431,17 @@ static void internal_write_usb(const char* data, uint16_t len)
  */
 void rx_log_usb_putc(char c)
 {
-    internal_init_mutex_once();
+  internal_init_mutex_once();
 
-    if (s_mutex_initialized) {
-        (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
-    }
+  if (s_mutex_initialized) {
+    (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
+  }
 
-    internal_write_usb(&c, 1);
+  internal_write_usb(&c, 1);
 
-    if (s_mutex_initialized) {
-        (void)tx_mutex_put(&s_log_mutex);
-    }
+  if (s_mutex_initialized) {
+    (void)tx_mutex_put(&s_log_mutex);
+  }
 }
 
 /**
@@ -493,26 +499,26 @@ void rx_log_usb_putc(char c)
  */
 void rx_log_usb_puts(const char* str)
 {
-    if (str == NULL) {
-        return;  /* Defensive: ignore null pointer */
-    }
+  if (str == NULL) {
+    return; /* Defensive: ignore null pointer */
+  }
 
-    uint16_t len = (uint16_t)strlen(str);
-    if (len == 0) {
-        return;  /* Nothing to write */
-    }
+  uint16_t len = (uint16_t)strlen(str);
+  if (len == 0) {
+    return; /* Nothing to write */
+  }
 
-    internal_init_mutex_once();
+  internal_init_mutex_once();
 
-    if (s_mutex_initialized) {
-        (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
-    }
+  if (s_mutex_initialized) {
+    (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
+  }
 
-    internal_write_usb(str, len);
+  internal_write_usb(str, len);
 
-    if (s_mutex_initialized) {
-        (void)tx_mutex_put(&s_log_mutex);
-    }
+  if (s_mutex_initialized) {
+    (void)tx_mutex_put(&s_log_mutex);
+  }
 }
 
 /**
@@ -577,29 +583,29 @@ void rx_log_usb_puts(const char* str)
  */
 void rx_log_usb_putint(int32_t value)
 {
-    /* Convert to string (max 11 chars: '-' + 10 digits + NUL) */
-    char buf[12];
-    char* p = &buf[sizeof(buf) - 1];
-    *p = '\0';
+  /* Convert to string (max 11 chars: '-' + 10 digits + NUL) */
+  char  buf[12];
+  char* p = &buf[sizeof(buf) - 1];
+  *p      = '\0';
 
-    bool negative = (value < 0);
-    uint32_t abs_value = (negative) ? (uint32_t)(-value) : (uint32_t)value;
+  bool     negative  = (value < 0);
+  uint32_t abs_value = (negative) ? (uint32_t)(-value) : (uint32_t)value;
 
-    /* Generate digits in reverse */
-    do {
-        --p;
-        *p = (char)('0' + (abs_value % 10));
-        abs_value /= 10;
-    } while (abs_value > 0);
+  /* Generate digits in reverse */
+  do {
+    --p;
+    *p = (char)('0' + (abs_value % 10));
+    abs_value /= 10;
+  } while (abs_value > 0);
 
-    /* Add sign if negative */
-    if (negative) {
-        --p;
-        *p = '-';
-    }
+  /* Add sign if negative */
+  if (negative) {
+    --p;
+    *p = '-';
+  }
 
-    /* Write string */
-    rx_log_usb_puts(p);
+  /* Write string */
+  rx_log_usb_puts(p);
 }
 
 /**
@@ -684,28 +690,28 @@ void rx_log_usb_putint(int32_t value)
  */
 void rx_log_usb_puthex(uint32_t value, uint8_t digits)
 {
-    /* Clamp digits to valid range (1-8) */
-    if (digits == 0) {
-        digits = 1;
-    } else if (digits > 8) {
-        digits = 8;
-    }
+  /* Clamp digits to valid range (1-8) */
+  if (digits == 0) {
+    digits = 1;
+  } else if (digits > 8) {
+    digits = 8;
+  }
 
-    /* Generate hex string (max 8 digits + NUL) */
-    char buf[9];
-    char* p = &buf[digits];
-    *p = '\0';
+  /* Generate hex string (max 8 digits + NUL) */
+  char  buf[9];
+  char* p = &buf[digits];
+  *p      = '\0';
 
-    /* Generate digits in reverse */
-    for (uint8_t i = 0; i < digits; i++) {
-        --p;
-        uint8_t nibble = (uint8_t)(value & 0xF);
-        *p = (char)((nibble < 10) ? ('0' + nibble) : ('A' + (nibble - 10)));
-        value >>= 4;
-    }
+  /* Generate digits in reverse */
+  for (uint8_t i = 0; i < digits; i++) {
+    --p;
+    uint8_t nibble = (uint8_t)(value & 0xF);
+    *p             = (char)((nibble < 10) ? ('0' + nibble) : ('A' + (nibble - 10)));
+    value >>= 4;
+  }
 
-    /* Write string */
-    rx_log_usb_puts(buf);
+  /* Write string */
+  rx_log_usb_puts(buf);
 }
 
 /**
@@ -800,25 +806,25 @@ void rx_log_usb_puthex(uint32_t value, uint8_t digits)
  */
 void rx_log_usb_get_stats(usb_log_stats_t* stats)
 {
-    if (stats == NULL) {
-        return;  /* Defensive: ignore null pointer */
-    }
+  if (stats == NULL) {
+    return; /* Defensive: ignore null pointer */
+  }
 
-    internal_init_mutex_once();
+  internal_init_mutex_once();
 
-    if (s_mutex_initialized) {
-        (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
-    }
+  if (s_mutex_initialized) {
+    (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
+  }
 
-    /* Copy statistics */
-    stats->total_bytes = s_stats.total_bytes;
-    stats->dropped_bytes = s_stats.dropped_bytes;
-    stats->boot_buffered = s_stats.boot_buffered;
-    stats->usb_errors = s_stats.usb_errors;
+  /* Copy statistics */
+  stats->total_bytes   = s_stats.total_bytes;
+  stats->dropped_bytes = s_stats.dropped_bytes;
+  stats->boot_buffered = s_stats.boot_buffered;
+  stats->usb_errors    = s_stats.usb_errors;
 
-    if (s_mutex_initialized) {
-        (void)tx_mutex_put(&s_log_mutex);
-    }
+  if (s_mutex_initialized) {
+    (void)tx_mutex_put(&s_log_mutex);
+  }
 }
 
 /**
@@ -910,17 +916,17 @@ void rx_log_usb_get_stats(usb_log_stats_t* stats)
  */
 void rx_log_usb_notify_ready(void)
 {
-    internal_init_mutex_once();
+  internal_init_mutex_once();
 
-    if (s_mutex_initialized) {
-        (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
-    }
+  if (s_mutex_initialized) {
+    (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
+  }
 
-    internal_check_usb_ready();
+  internal_check_usb_ready();
 
-    if (s_mutex_initialized) {
-        (void)tx_mutex_put(&s_log_mutex);
-    }
+  if (s_mutex_initialized) {
+    (void)tx_mutex_put(&s_log_mutex);
+  }
 }
 
-#endif  /* USB_LOG_MIRROR */
+#endif /* USB_LOG_MIRROR */
