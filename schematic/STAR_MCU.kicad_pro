@@ -1451,6 +1451,10 @@
       {
         "netclass": "Debug/Programming",
         "pattern": "/DEBUG*"
+      },
+      {
+        "netclass": "3V3 Main Rail",
+        "pattern": "/AVC*"
       }
     ]
   },

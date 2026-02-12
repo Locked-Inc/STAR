@@ -30538,15 +30538,15 @@
 		)
 		(uuid "03435b54-d274-4938-8004-e2d5670d5df7")
 	)
-	(label "SCI9_TXD9"
-		(at 425.45 96.52 0)
+	(label "DEBUG_RXD9"
+		(at 425.45 86.36 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "05364334-384a-4a42-b76b-ba7d833eac01")
+		(uuid "04157211-c8df-4a1f-84ba-aa9c17f6617c")
 	)
 	(label "USB0_DP_TO_CON"
 		(at 360.68 69.85 180)
@@ -31029,6 +31029,16 @@
 		)
 		(uuid "28e9103d-e704-4645-bfc4-408ab2793258")
 	)
+	(label "DRV_CIPO"
+		(at 1388.11 102.87 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2901107c-5378-483e-950f-8fcce058f234")
+	)
 	(label "P6V0_BUCK"
 		(at 417.83 439.42 0)
 		(effects
@@ -31119,6 +31129,16 @@
 		)
 		(uuid "32160877-c41f-46f6-a534-c192a95ebd2d")
 	)
+	(label "DEBUG_TXD9"
+		(at 425.45 96.52 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "32a81481-848b-4c7a-b821-1200d2ec9efb")
+	)
 	(label "BOARD_3V3"
 		(at 552.45 212.09 180)
 		(effects
@@ -31148,16 +31168,6 @@
 			(justify right bottom)
 		)
 		(uuid "355647e8-eff3-41d1-ba56-6467a470bf9c")
-	)
-	(label "USB0_USBC_VBUS"
-		(at 337.82 35.56 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "36374b6a-edab-4a83-80e1-0a9a101f3291")
 	)
 	(label "DRV_CIPO"
 		(at 684.53 347.98 180)
@@ -31478,16 +31488,6 @@
 			(justify left bottom)
 		)
 		(uuid "516a5ed4-fc7b-4a4f-bb60-6cc5613b39f5")
-	)
-	(label "SCI9_RXD9"
-		(at 425.45 86.36 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "51cea5f2-1e85-4c1f-9666-080b5b50e1d4")
 	)
 	(label "RES#"
 		(at 647.7 142.24 180)
@@ -31921,16 +31921,6 @@
 		)
 		(uuid "6d0b050f-ca31-41d1-b5da-953c9ae0242b")
 	)
-	(label "DRV_CIPO"
-		(at 1343.66 102.87 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "6de75817-b36f-4531-acd6-8c0a8a061ef3")
-	)
 	(label "BOARD_3V3"
 		(at 1325.88 80.01 180)
 		(effects
@@ -32182,6 +32172,16 @@
 		)
 		(uuid "7f868eb3-df8e-412b-b53e-41140bb6a80d")
 	)
+	(label "DEBUG_RXD9"
+		(at 1325.88 185.42 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "7fd62235-f84d-4bcc-a2d9-043d6d0e57d5")
+	)
 	(label "EMU_TDO"
 		(at 422.91 199.39 0)
 		(effects
@@ -32352,16 +32352,6 @@
 		)
 		(uuid "8fd9a3fa-4a59-4a90-93b5-db657537480b")
 	)
-	(label "DEBUG_UART_RXD"
-		(at 1325.88 185.42 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "906c4348-54a8-4536-b50b-7d2fdf6f4b02")
-	)
 	(label "MOTOR1_VCC"
 		(at 603.25 368.3 0)
 		(effects
@@ -32472,6 +32462,16 @@
 		)
 		(uuid "97e1e834-da2a-4186-be7f-5ff25b319e1d")
 	)
+	(label "DEBUG_TXD9"
+		(at 1325.88 187.96 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "980ddd26-ef21-4995-a7e8-85207578d07e")
+	)
 	(label "MOTOR0_VEE"
 		(at 684.53 306.07 180)
 		(effects
@@ -32561,16 +32561,6 @@
 			(justify right bottom)
 		)
 		(uuid "9f0fcb18-4f29-446e-ab5e-c46e5a20e905")
-	)
-	(label "DRV_COPI"
-		(at 1343.66 100.33 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "9f1c8de4-a194-4182-b239-bea66c594c31")
 	)
 	(label "LED_5"
 		(at 481.33 391.16 0)
@@ -32744,6 +32734,16 @@
 		)
 		(uuid "ab6b028f-0517-4427-9dd2-44b51dbceef7")
 	)
+	(label "DRV_CLK"
+		(at 1388.11 97.79 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ac0310e8-844c-47c6-b8c1-726ca8d2f492")
+	)
 	(label "MOTOR3_PH"
 		(at 604.52 481.33 0)
 		(effects
@@ -32854,16 +32854,6 @@
 		)
 		(uuid "b0f24351-8e9b-4a33-a454-5db3cc24858b")
 	)
-	(label "DEBUG_UART_TXD"
-		(at 1325.88 187.96 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "b14b2b25-7e38-4eb3-b3d3-4a30936377dc")
-	)
 	(label "PI_PIN_29"
 		(at 60.96 90.17 0)
 		(effects
@@ -32904,16 +32894,6 @@
 		)
 		(uuid "b6baafca-1499-424d-83b8-6edbc7f1811f")
 	)
-	(label "DRV_CLK"
-		(at 1343.66 97.79 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "b770de8e-21c6-4e87-91bf-9df5d62d8a54")
-	)
 	(label "BOARD_3V3"
 		(at 425.45 93.98 0)
 		(effects
@@ -32923,16 +32903,6 @@
 			(justify left bottom)
 		)
 		(uuid "b889952e-b69e-4842-b79b-d8263bd3f5e3")
-	)
-	(label "DRV_COPI"
-		(at 1391.92 97.79 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "b969675d-5277-4ebf-abf7-db79b2d67824")
 	)
 	(label "P6V0_BUCK"
 		(at 687.07 491.49 180)
@@ -32963,6 +32933,16 @@
 			(justify left bottom)
 		)
 		(uuid "baa1664f-7f92-4808-86f0-fd1c32528206")
+	)
+	(label "DRV_COPI"
+		(at 1388.11 100.33 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "bad17250-d9ae-48a5-99dd-d58c662d9ca3")
 	)
 	(label "MOTOR2_PH"
 		(at 603.25 419.1 0)
@@ -33025,7 +33005,7 @@
 		(uuid "c07a2b39-e71c-49a7-b900-ee9c1894a54f")
 	)
 	(label "BOARD_3V3"
-		(at 610.87 83.82 0)
+		(at 605.79 85.09 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -33173,16 +33153,6 @@
 			(justify left bottom)
 		)
 		(uuid "cc684694-74e5-45c0-af32-3ec362f8f639")
-	)
-	(label "DRV_CLK"
-		(at 1391.92 102.87 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "cc8fdaba-d154-4725-8be5-0ad7a6f49452")
 	)
 	(label "BOARD_3V3"
 		(at 687.07 408.94 0)
@@ -33384,16 +33354,6 @@
 		)
 		(uuid "da30abcf-7c57-47e4-bd89-9a9fd1821f71")
 	)
-	(label "DRV_CIPO"
-		(at 1391.92 100.33 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "daa3e459-350f-4daa-b60c-5dfc23de94d3")
-	)
 	(label "SONAR_TRIG_2"
 		(at 416.56 381 0)
 		(effects
@@ -33413,6 +33373,16 @@
 			(justify right bottom)
 		)
 		(uuid "dae7db1a-cdeb-41c2-b64b-4f8db6b3f48f")
+	)
+	(label "USB0_VBUS_3V3"
+		(at 337.82 35.56 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "de180f9e-ce44-49b9-98c5-0ebb0f280cff")
 	)
 	(label "SCI_USBC_USBDP"
 		(at 370.84 142.24 0)
@@ -38538,84 +38508,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "S1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 754.38 259.08 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "0cb00c73-4fa2-4c04-8480-162b9b3d2cb9")
-		(property "Reference" "R62"
-			(at 751.84 257.81 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "4k7"
-			(at 760.476 258.064 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 754.38 260.858 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 754.38 259.08 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 754.38 259.08 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 754.38 259.08 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "7a1e2b00-a165-4832-b2b7-3346148b3a0e")
-		)
-		(pin "2"
-			(uuid "acfac18f-f3fb-4306-a484-bd7afaac38eb")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "R62")
 					(unit 1)
 				)
 			)
@@ -85314,84 +85206,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "R8")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 754.38 256.54 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "710a56a3-88cc-40ba-ae9d-f3077c7d2c2e")
-		(property "Reference" "R66"
-			(at 751.332 255.524 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "100R"
-			(at 762 255.524 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 754.38 258.318 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 754.38 256.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 754.38 256.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" ""
-			(at 754.38 256.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "3f6e6dca-df59-4955-893e-c569bd590fed")
-		)
-		(pin "2"
-			(uuid "fe434a5e-b56f-420a-9407-f1786890ffac")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "R66")
 					(unit 1)
 				)
 			)
