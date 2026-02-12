@@ -17,9 +17,60 @@
 * Copyright (C) 2019 Renesas Electronics Corporation. All rights reserved.
 ***********************************************************************************************************************/
 /***********************************************************************************************************************
-* File Name    : r_rx_intrinsic_functions.c
-* Description  : Defines built-in functions that are in CCRX but not in the GCC and IAR compiler.
+* MODIFICATION NOTICE
+* This file has been modified by the STAR project for use in the STAR robotics platform.
+* Modifications include: Documentation additions, C23 typed enum conversions, and style guide compliance.
+* Modified files are maintained by Locked, Inc. as part of the STAR project.
+* Original Renesas code remains under Renesas copyright as stated above.
 ***********************************************************************************************************************/
+/**
+ * @file r_rx_intrinsic_functions.c
+ * @brief Implementation of RX intrinsic functions for GNUC and ICCRX compilers
+ *
+ * @details
+ * Provides implementations for RX architecture intrinsic functions that are
+ * built-in to the Renesas CC-RX compiler but not available in GCC (GNURX)
+ * or IAR ICCRX compilers. These functions bridge compiler differences to
+ * enable portable BSP code across all three supported toolchains.
+ *
+ * **Implementation Techniques:**
+ * - **Inline Assembly:** Register access, special instructions, TFU operations
+ * - **C Fallbacks:** Arithmetic operations (max/min, rotations)
+ * - **Algorithm Emulation:** Multiply-accumulate for compilers lacking intrinsics
+ *
+ * **Function Categories:**
+ * - **Arithmetic:** Max/min, multiply-accumulate operations
+ * - **Bit Manipulation:** Rotation with/without carry, bit set/clear/reverse
+ * - **Register Access:** PSW, ACC, BPC, BPSW, EXTB, INTB, etc.
+ * - **CPU Control:** Mode switching, interrupt priority
+ * - **Trigonometry:** TFU (Trigonometric Function Unit) wrappers
+ * - **Double-Precision FPU:** DPFPU control registers (if __DPFPU defined)
+ *
+ * **Compiler-Specific Implementation:**
+ * - **CC-RX:** Uses native intrinsics - this file not used
+ * - **GNUC:** Most functions implemented here with inline assembly
+ * - **ICCRX:** Some functions implemented here, others use IAR intrinsics
+ *
+ * **Inline Assembly Usage (GNUC):**
+ * Many functions use inline assembly with `R_BSP_ATTRIB_INLINE_ASM` attribute
+ * to directly execute RX instructions not exposed by GCC built-ins. Assembly
+ * syntax follows GCC inline asm conventions for RX architecture.
+ *
+ * @par Hardware Dependencies
+ * - RX72N microcontroller (RXv3 core)
+ * - TFU (Trigonometric Function Unit) for trig functions
+ * - DPFPU (Double-Precision FPU) for double-precision functions
+ * - ACC (64-bit accumulator) for multiply-accumulate operations
+ *
+ * @par References
+ * - RX72N User's Manual (r01uh0805ej0140-rx72n.pdf) - RXv3 instruction set
+ * - GNU Inline Assembly Syntax for RX - GNURX manual
+ * - r_rx_intrinsic_functions.h - Function declarations and macro wrappers
+ *
+ * @note Ported from Renesas Smart Configurator (SMC) generated code
+ * @warning All inline assembly functions must preserve registers per ABI
+ * @since Version 1.0.0
+ */
 /**********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
 *         : 28.02.2019 1.00     First Release
@@ -99,13 +150,34 @@ R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_calc_squareroot_fsp(int32_t* ret, int32_
 #endif /* __TFU */
 #endif /* BSP_MCU_TRIGONOMETRIC */
 
-/***********************************************************************************************************************
-* Function Name: R_BSP_Max
-* Description  : Selects the greater of two input values.
-* Arguments    : data1 - Input value 1.
-*                data2 - Input value 2.
-* Return Value : The greater value of data1 and data2.
-***********************************************************************************************************************/
+/**
+ * @brief Get maximum of two signed long values
+ *
+ * @details
+ * Selects the greater of two input values. GNUC implementation using
+ * C comparison operator (ternary conditional).
+ *
+ * CC-RX and ICCRX use compiler intrinsics (max() and __MAX respectively).
+ * This function provides equivalent functionality for GNUC.
+ *
+ * @param[in] data1 First value to compare
+ * @param[in] data2 Second value to compare
+ *
+ * @return signed long Maximum value (data1 or data2)
+ * @retval data1 If data1 > data2
+ * @retval data2 If data2 >= data1
+ *
+ * @pre None
+ * @post Return value is greater than or equal to both inputs
+ *
+ * @note GNUC-specific implementation
+ * @note Thread-safe (pure function with no side effects)
+ * @note Typically used via R_BSP_MAX macro
+ *
+ * @see R_BSP_Min() Corresponding minimum function
+ * @see R_BSP_MAX Portable macro wrapper
+ * @since Version 1.0.0
+ */
 #if defined(__GNUC__)
 signed long R_BSP_Max(signed long data1, signed long data2)
 {
@@ -113,13 +185,34 @@ signed long R_BSP_Max(signed long data1, signed long data2)
 }
 #endif /* defined(__GNUC__) */
 
-/***********************************************************************************************************************
-* Function Name: R_BSP_Min
-* Description  : Selects the smaller of two input values.
-* Arguments    : data1 - Input value 1.
-*                data2 - Input value 2.
-* Return Value : The smaller value of data1 and data2.
-***********************************************************************************************************************/
+/**
+ * @brief Get minimum of two signed long values
+ *
+ * @details
+ * Selects the smaller of two input values. GNUC implementation using
+ * C comparison operator (ternary conditional).
+ *
+ * CC-RX and ICCRX use compiler intrinsics (min() and __MIN respectively).
+ * This function provides equivalent functionality for GNUC.
+ *
+ * @param[in] data1 First value to compare
+ * @param[in] data2 Second value to compare
+ *
+ * @return signed long Minimum value (data1 or data2)
+ * @retval data1 If data1 < data2
+ * @retval data2 If data2 <= data1
+ *
+ * @pre None
+ * @post Return value is less than or equal to both inputs
+ *
+ * @note GNUC-specific implementation
+ * @note Thread-safe (pure function with no side effects)
+ * @note Typically used via R_BSP_MIN macro
+ *
+ * @see R_BSP_Max() Corresponding maximum function
+ * @see R_BSP_MIN Portable macro wrapper
+ * @since Version 1.0.0
+ */
 #if defined(__GNUC__)
 signed long R_BSP_Min(signed long data1, signed long data2)
 {
@@ -127,17 +220,42 @@ signed long R_BSP_Min(signed long data1, signed long data2)
 }
 #endif /* defined(__GNUC__) */
 
-/***********************************************************************************************************************
-* Function Name: R_BSP_MulAndAccOperation_B
-* Description  : Performs a multiply-and-accumulate operation with the initial value specified by init, the number of 
-*                multiply-and-accumulate operations specified by count, and the start addresses of values to be 
-*                multiplied specified by addr1 and addr2.
-* Arguments    : init   - Initial value.
-*                count  - Count of multiply-and-accumulate operations.
-*                *addr1 - Start address of values 1 to be multiplied.
-*                *addr2 - Start address of values 2 to be multiplied.
-* Return Value : result - Lower 64 bits of the init + S(data1[n] * data2[n]) result. (n=0, 1, ..., const-1)
-***********************************************************************************************************************/
+/**
+ * @brief Multiply-and-accumulate operation on signed char arrays
+ *
+ * @details
+ * Performs multiply-and-accumulate (MAC) operation on byte-sized arrays:
+ * result = init + sum(addr1[i] * addr2[i]) for i=0 to count-1
+ *
+ * GNUC implementation uses C loop since RMPA.B instruction not available
+ * as GCC built-in. CC-RX uses rmpab() intrinsic for hardware acceleration.
+ *
+ * Algorithm:
+ * 1. Initialize accumulator with init value
+ * 2. For each element: accumulator += addr1[i] * addr2[i]
+ * 3. Return lower 64 bits of accumulated result
+ *
+ * @param[in] init Initial accumulator value (64-bit)
+ * @param[in] count Number of elements to process (must be > 0)
+ * @param[in] addr1 Pointer to first array (signed char, count elements)
+ * @param[in] addr2 Pointer to second array (signed char, count elements)
+ *
+ * @return long long Lower 64 bits of: init + sum(addr1[n] * addr2[n])
+ *
+ * @pre addr1 points to valid array of at least count elements
+ * @pre addr2 points to valid array of at least count elements
+ * @pre count > 0 (loop bounds checked per NASA Rule 2)
+ * @post Accumulator contains sum of products plus initial value
+ *
+ * @note GNUC-specific implementation (C fallback)
+ * @note Not thread-safe if addr1 or addr2 arrays are shared
+ * @note Typically used via R_BSP_RMPAB macro
+ *
+ * @see R_BSP_MulAndAccOperation_W() Word-sized variant
+ * @see R_BSP_MulAndAccOperation_L() Long-sized variant
+ * @see R_BSP_RMPAB Portable macro wrapper
+ * @since Version 1.0.0
+ */
 #if defined(__GNUC__)
 long long R_BSP_MulAndAccOperation_B(long long     init,
                                      unsigned long count,
@@ -153,17 +271,42 @@ long long R_BSP_MulAndAccOperation_B(long long     init,
 }
 #endif /* defined(__GNUC__) */
 
-/***********************************************************************************************************************
-* Function Name: R_BSP_MulAndAccOperation_W
-* Description  : Performs a multiply-and-accumulate operation with the initial value specified by init, the number of
-*                multiply-and-accumulate operations specified by count, and the start addresses of values to be 
-*                multiplied specified by addr1 and addr2.
-* Arguments    : init   - Initial value.
-*                count  - Count of multiply-and-accumulate operations.
-*                *addr1 - Start address of values 1 to be multiplied.
-*                *addr2 - Start address of values 2 to be multiplied.
-* Return Value : result - Lower 64 bits of the init + S(data1[n] * data2[n]) result. (n=0, 1, ..., const-1)
-***********************************************************************************************************************/
+/**
+ * @brief Multiply-and-accumulate operation on short arrays
+ *
+ * @details
+ * Performs multiply-and-accumulate (MAC) operation on word-sized arrays:
+ * result = init + sum(addr1[i] * addr2[i]) for i=0 to count-1
+ *
+ * GNUC implementation uses C loop since RMPA.W instruction not available
+ * as GCC built-in. CC-RX uses rmpaw() intrinsic for hardware acceleration.
+ *
+ * Algorithm:
+ * 1. Initialize accumulator with init value
+ * 2. For each element: accumulator += addr1[i] * addr2[i]
+ * 3. Return lower 64 bits of accumulated result
+ *
+ * @param[in] init Initial accumulator value (64-bit)
+ * @param[in] count Number of elements to process (must be > 0)
+ * @param[in] addr1 Pointer to first array (short, count elements)
+ * @param[in] addr2 Pointer to second array (short, count elements)
+ *
+ * @return long long Lower 64 bits of: init + sum(addr1[n] * addr2[n])
+ *
+ * @pre addr1 points to valid array of at least count elements
+ * @pre addr2 points to valid array of at least count elements
+ * @pre count > 0 (loop bounds checked per NASA Rule 2)
+ * @post Accumulator contains sum of products plus initial value
+ *
+ * @note GNUC-specific implementation (C fallback)
+ * @note Not thread-safe if addr1 or addr2 arrays are shared
+ * @note Typically used via R_BSP_RMPAW macro
+ *
+ * @see R_BSP_MulAndAccOperation_B() Byte-sized variant
+ * @see R_BSP_MulAndAccOperation_L() Long-sized variant
+ * @see R_BSP_RMPAW Portable macro wrapper
+ * @since Version 1.0.0
+ */
 #if defined(__GNUC__)
 long long
 R_BSP_MulAndAccOperation_W(long long init, unsigned long count, short* addr1, short* addr2)
