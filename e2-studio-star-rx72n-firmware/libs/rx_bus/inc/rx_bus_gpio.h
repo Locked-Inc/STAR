@@ -99,16 +99,9 @@
  *   PORT0.PODR.BIT.B5 = 1;   // Set high
  * @endverbatim
  *
- * @par Port and Pin Mapping (STAR Project)
- * | Port | Pin | Function | Direction | Notes |
- * |------|-----|----------|-----------|-------|
- * | P0 | 5 | Status LED (Red) | Output | Active low |
- * | P1 | 6 | Status LED (Green) | Output | Active low |
- * | P1 | 7 | Status LED (Blue) | Output | Active low |
- * | P2 | 0 | User Button | Input | Pull-up, active low |
- * | P3 | 4 | DRV8243 nSLEEP | Output | Active high enable |
- * | P4 | 2 | Sensor Detect | Input | Interrupt capable |
- * | P5 | 1 | Peripheral Enable | Output | Active high |
+ * @par GPIO Pin Usage
+ * Application-level GPIO assignments are defined in hardware_config.h.
+ * @see hardware_config.h Complete pin assignment table
  *
  * @par Electrical Characteristics
  * | Parameter | Min | Typ | Max | Unit | Notes |

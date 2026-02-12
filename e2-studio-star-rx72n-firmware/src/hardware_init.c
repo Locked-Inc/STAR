@@ -201,6 +201,8 @@
 #include "rx_gptw.h"
 #include "rx_mpc.h"
 #include "rx_poeg.h"
+#include "rx_port_utils.h"
+#include "rx72n_sci_regs.h"
 #include "rx_simulator_config.h" /* For RX_IS_SIMULATOR conditional compilation */
 
 /** @brief Port pin identifiers for MPC configuration (rx_port_pin_t values) */
@@ -215,6 +217,29 @@ typedef enum : uint16_t {
 
   /* USB */
   k_pin_usb_vbus   = k_rx_p1_6, /**< P1.6 - USB0_VBUS (USB VBUS detect) */
+
+  /* HC-SR04 Sonar triggers (GPIO output, initial LOW) */
+  k_pin_sonar_trig0 = k_rx_pf_5, /**< PF.5 - Sonar 0 trigger (pin 9) */
+  k_pin_sonar_trig1 = k_rx_pj_5, /**< PJ.5 - Sonar 1 trigger (pin 11) */
+  k_pin_sonar_trig2 = k_rx_pj_3, /**< PJ.3 - Sonar 2 trigger (pin 13) */
+  k_pin_sonar_trig3 = k_rx_p3_3, /**< P3.3 - Sonar 3 trigger (pin 26) */
+
+  /* HC-SR04 Sonar echoes (GPIO input, IRQ8-11) */
+  k_pin_sonar_echo0 = k_rx_p0_3, /**< P0.3 - Sonar 0 echo (pin 4, IRQ11) */
+  k_pin_sonar_echo1 = k_rx_p0_2, /**< P0.2 - Sonar 1 echo (pin 6, IRQ10) */
+  k_pin_sonar_echo2 = k_rx_p0_1, /**< P0.1 - Sonar 2 echo (pin 7, IRQ9) */
+  k_pin_sonar_echo3 = k_rx_p0_0, /**< P0.0 - Sonar 3 echo (pin 8, IRQ8) */
+
+  /* DRV8243S SPI chip selects (GPIO output, initial HIGH) */
+  k_pin_drv_cs0     = k_rx_p7_4, /**< P7.4 - DRV_CS0 motor 0 (pin 72) */
+  k_pin_drv_cs1     = k_rx_pc_1, /**< PC.1 - DRV_CS1 motor 1 (pin 73) */
+  k_pin_drv_cs2     = k_rx_pb_5, /**< PB.5 - DRV_CS2 motor 2 (pin 80) */
+  k_pin_drv_cs3     = k_rx_pb_4, /**< PB.4 - DRV_CS3 motor 3 (pin 81) */
+
+  /* DRV8243S SPI data (SCI12 alternate function) */
+  k_pin_drv_sclk    = k_rx_pe_0, /**< PE.0 - SCK12 (pin 111) */
+  k_pin_drv_copi    = k_rx_pe_1, /**< PE.1 - SMOSI12 (pin 110) */
+  k_pin_drv_cipo    = k_rx_pe_2, /**< PE.2 - SMISO12 (pin 109) */
 
   /* Host SPI (RSPI2 channel A on PORTD) */
   k_pin_host_copi  = k_rx_pd_1, /**< PD.1 - MOSIC (RSPI2 COPI) */
@@ -247,8 +272,10 @@ typedef enum : uint16_t {
 
 /** @brief Number of GPTW motor control pins */
 typedef enum : uint8_t {
-  k_gptw_pin_count = 8, /**< 4 motors x 2 pins (PH + EN) */
-} gptw_pin_count_t;
+  k_gptw_pin_count  = 8, /**< 4 motors x 2 pins (PH + EN) */
+  k_sonar_count     = 4, /**< 4 HC-SR04 ultrasonic sensors */
+  k_drv_cs_count    = 4, /**< 4 DRV8243S chip select pins */
+} gpio_pin_counts_t;
 
 /** @brief GPTW PWM frequency constant */
 typedef enum : uint32_t {
@@ -467,7 +494,88 @@ static rx_err_t gpio_init(void)
   err = rx_mpc_set_usb_vbus((rx_port_pin_t)k_pin_usb_vbus);
   RX_RETURN_ON_ERROR(err, s_tag, "USB VBUS pin config failed");
 
-  rx_log_info(s_tag, "29 pins: 4xI2C, 4xSPI, 4xMTU, 8xGPTW, 4xADC, 1xUSB");
+  /* ---- HC-SR04 Sonar triggers (GPIO output, initial LOW) ---- */
+  const rx_port_pin_t sonar_trig_pins[k_sonar_count] = {
+    (rx_port_pin_t)k_pin_sonar_trig0, /* PF5 */
+    (rx_port_pin_t)k_pin_sonar_trig1, /* PJ5 */
+    (rx_port_pin_t)k_pin_sonar_trig2, /* PJ3 */
+    (rx_port_pin_t)k_pin_sonar_trig3  /* P33 */
+  };
+
+  for (uint8_t i = 0; i < k_sonar_count; i++) {
+    err = rx_mpc_set_gpio(sonar_trig_pins[i]);
+    RX_RETURN_ON_ERROR(err, s_tag, "Sonar trigger MPC config failed");
+
+    const uint8_t port = rx_port_from_pin(sonar_trig_pins[i]);
+    const uint8_t pin  = rx_pin_from_pin(sonar_trig_pins[i]);
+    volatile rx_port_regs_t* regs = rx_port_get_base(port);
+    RX_ASSERT(regs != nullptr, "Invalid sonar trigger port");
+    regs->pmr  &= ~(uint8_t)(1U << pin); /* GPIO mode */
+    regs->podr &= ~(uint8_t)(1U << pin); /* Initial LOW */
+    regs->pdr  |= (uint8_t)(1U << pin);  /* Output */
+  }
+
+  /* ---- HC-SR04 Sonar echoes (GPIO input) ---- */
+  const rx_port_pin_t sonar_echo_pins[k_sonar_count] = {
+    (rx_port_pin_t)k_pin_sonar_echo0, /* P03 / IRQ11 */
+    (rx_port_pin_t)k_pin_sonar_echo1, /* P02 / IRQ10 */
+    (rx_port_pin_t)k_pin_sonar_echo2, /* P01 / IRQ9 */
+    (rx_port_pin_t)k_pin_sonar_echo3  /* P00 / IRQ8 */
+  };
+
+  for (uint8_t i = 0; i < k_sonar_count; i++) {
+    err = rx_mpc_set_gpio(sonar_echo_pins[i]);
+    RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo MPC config failed");
+
+    const uint8_t port = rx_port_from_pin(sonar_echo_pins[i]);
+    const uint8_t pin  = rx_pin_from_pin(sonar_echo_pins[i]);
+    volatile rx_port_regs_t* regs = rx_port_get_base(port);
+    RX_ASSERT(regs != nullptr, "Invalid sonar echo port");
+    regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
+    regs->pdr &= ~(uint8_t)(1U << pin); /* Input */
+  }
+
+  /* ---- DRV8243S SPI chip selects (GPIO output, initial HIGH = deselected) ---- */
+  const rx_port_pin_t drv_cs_pins[k_drv_cs_count] = {
+    (rx_port_pin_t)k_pin_drv_cs0, /* P74 */
+    (rx_port_pin_t)k_pin_drv_cs1, /* PC1 */
+    (rx_port_pin_t)k_pin_drv_cs2, /* PB5 */
+    (rx_port_pin_t)k_pin_drv_cs3  /* PB4 */
+  };
+
+  for (uint8_t i = 0; i < k_drv_cs_count; i++) {
+    err = rx_mpc_set_gpio(drv_cs_pins[i]);
+    RX_RETURN_ON_ERROR(err, s_tag, "DRV CS MPC config failed");
+
+    const uint8_t port = rx_port_from_pin(drv_cs_pins[i]);
+    const uint8_t pin  = rx_pin_from_pin(drv_cs_pins[i]);
+    volatile rx_port_regs_t* regs = rx_port_get_base(port);
+    RX_ASSERT(regs != nullptr, "Invalid DRV CS port");
+    regs->pmr  &= ~(uint8_t)(1U << pin); /* GPIO mode */
+    regs->podr |= (uint8_t)(1U << pin);  /* Initial HIGH (deselected) */
+    regs->pdr  |= (uint8_t)(1U << pin);  /* Output */
+  }
+
+  /* ---- DRV8243S SPI data (SCI12 alternate function PE0-PE2) ---- */
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk); /* PE0 = SCK12 */
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI12 SCK pin config failed");
+
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_copi); /* PE1 = SMOSI12 */
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI12 COPI pin config failed");
+
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_cipo); /* PE2 = SMISO12 */
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI12 CIPO pin config failed");
+
+  /* ---- GTETRG nFAULT pins (POEG hardware triggers) ----
+   * POEG external trigger (GTETRGA-D) reads the physical pin level directly
+   * via the PIDR path, not through MPC peripheral routing. These pins are
+   * configured as GPIO inputs with no MPC PSEL required for POEG to sample
+   * the nFAULT signal at hardware speed. POEG PIDE=1 enables the external
+   * pin input, and the GTETRG logic reads the port pin state continuously.
+   * No MPC config needed -- documented here for traceability. */
+
+  rx_log_info(s_tag, "50 pins: 4xI2C, 4xSPI, 4xMTU, 8xGPTW, 4xADC, 1xUSB, "
+                     "8xSonar, 7xDRV_SPI, 4xGTETRG(doc), 6xLED(TBD)");
 
   return k_rx_ok;
 }
@@ -905,7 +1013,7 @@ rx_err_t hardware_init(void)
    *    UART initialized in main() before hardware_init() to enable early error logging.
    *    Error logging is now available for all peripheral initialization below. */
 
-  /* 5. SPI: RSPI2 host peripheral for RPi5 communication */
+  /* 5a. SPI: RSPI2 host peripheral for RPi5 communication */
   err = spi_init();
   RX_RETURN_ON_ERROR(err, "HW_INIT", "SPI initialization failed");
 

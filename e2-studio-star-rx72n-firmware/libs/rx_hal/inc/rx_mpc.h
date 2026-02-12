@@ -44,10 +44,9 @@
  *                                 │
  *   ┌─────────────────────────────▼──────────────────────────────────────┐
  *   │                      Physical Pins                                 │
- *   │   PE5 (PWM+) ────► GPTW0A     PB7 (TXD9) ────► SCI9-TX            │
- *   │   PE4 (PWM-) ────► GPTW0B     PB6 (RXD9) ────► SCI9-RX            │
- *   │   P24 (ENC-A) ───► MTCLKA     PA0-PA4 ───────► RSPI0              │
- *   │   P25 (ENC-B) ───► MTCLKB     P40-P47 ───────► ADC (AN000-007)    │
+ *   │   Pin (function) ──► Peripheral    Pin (function) ──► Peripheral   │
+ *   │   (Configured via PFS register PSEL field)                        │
+ *   │   @see hardware_config.h for application-level pin assignments    │
  *   └────────────────────────────────────────────────────────────────────┘
  * @endverbatim
  *
@@ -67,20 +66,13 @@
  *   Physical_Pin box Physical_Pin [label="Connected to peripheral"];
  * @endmsc
  *
- * @par STAR Project Pin Assignments (144-pin LFQFP)
- * | Package Pin | Port.Pin | Function | PSEL | Driver Call |
- * |-------------|----------|----------|------|-------------|
- * | 97 | PE5 | GPTW0A (Motor0 PWM+) | 0x07 | rx_mpc_set_peripheral() |
- * | 96 | PE4 | GPTW0B (Motor0 PWM-) | 0x07 | rx_mpc_set_peripheral() |
- * | 60 | P24 | MTCLKA (Encoder0 A) | 0x02 | rx_mpc_set_mtu_encoder() |
- * | 61 | P25 | MTCLKB (Encoder0 B) | 0x02 | rx_mpc_set_mtu_encoder() |
- * | 72 | PB7 | SCI9-TXD (Debug TX) | 0x0A | rx_mpc_set_sci() |
- * | 74 | PB6 | SCI9-RXD (Debug RX) | 0x0A | rx_mpc_set_sci() |
- * | 32 | PA0 | RSPI0-COPI | 0x0D | rx_mpc_set_rspi() |
- * | 33 | PA1 | RSPI0-CIPO | 0x0D | rx_mpc_set_rspi() |
- * | 35 | PA3 | RSPI0-CLK | 0x0D | rx_mpc_set_rspi() |
- * | 34 | PA4 | RSPI0-SSL0 | 0x0D | rx_mpc_set_rspi() |
- * | USB | - | USB D+/D- | - | (Dedicated USB pins) |
+ * @par Pin Assignments
+ * Application-level pin assignments are defined in hardware_config.h.
+ * This driver provides the MPC register interface for any valid pin/PSEL
+ * combination. See the RX72N Hardware Manual pin function tables for
+ * valid (pin, PSEL) pairs.
+ *
+ * @see hardware_config.h Application-level pin assignments
  *
  * @par Hardware Requirements
  * | Resource | Requirement | Notes |
@@ -129,7 +121,7 @@
  *     // Configure motor PWM pins (GPTW channel 0)
  *     const rx_mpc_peripheral_config_t pwm_config = {
  *         .pin  = k_port_e_pin_5,  // PE5 = GPTW0A
- *         .psel = 0x07             // GPTW function
+ *         .psel = k_psel_gptw      // GPTW function (0x14)
  *     };
  *     err = rx_mpc_set_peripheral(&pwm_config);
  *     if (err != k_rx_ok) {
@@ -277,7 +269,7 @@ extern "C" {
  * // Configure PE5 for GPTW0A (motor PWM output)
  * rx_mpc_peripheral_config_t pwm_config = {
  *     .pin  = k_port_e_pin_5,  // PE5
- *     .psel = 0x07             // GPTW function select
+ *     .psel = k_psel_gptw      // GPTW function select (0x14)
  * };
  * rx_err_t err = rx_mpc_set_peripheral(&pwm_config);
  * @endcode
@@ -342,7 +334,7 @@ typedef struct {
    * | 0x01 | MTU I/O compare (MTIOC) | P14-P17, P24-P27 |
    * | 0x02 | MTU clock input (MTCLK) | P24, P25, PC0, PC1 |
    * | 0x03 | MTU phase counter | P24, P25 |
-   * | 0x07 | GPTW output (GTIOC) | PE4, PE5 |
+   * | 0x14 | GPTW output (GTIOC) | PE3, PE7, P23, P22, etc. |
    * | 0x0A | SCI (TXD/RXD) | PB6, PB7 |
    * | 0x0D | RSPI (CLK/COPI/CIPO/SSL) | PA0-PA4 |
    * | 0x0F | RIIC (SCL/SDA) | P12, P13 |
@@ -431,7 +423,7 @@ typedef enum : uint8_t {
  * | MTU3a MTIOC | 0x01 | P14-P17, P24-P27 | PWM output |
  * | MTU3a MTCLK | 0x02 | P24, P25, PC0, PC1 | Clock/encoder input |
  * | MTU3a Phase | 0x03 | P24, P25 | Phase counting mode |
- * | GPTW GTIOC | 0x07 | PE4, PE5 | PWM output |
+ * | GPTW GTIOC | 0x14 | PE3, PE7, P23, P22, etc. | PWM output |
  * | SCI TXD/RXD | 0x0A | PB6, PB7 | UART data |
  * | RSPI signals | 0x0D | PA0-PA4 | SPI bus |
  * | RIIC SDA/SCL | 0x0F | P12, P13 | I2C bus |
@@ -802,7 +794,7 @@ typedef enum : uint8_t {
  * // Configure PE5 for GPTW0A (Motor 0 PWM Phase+)
  * rx_mpc_peripheral_config_t pwm_config = {
  *     .pin  = k_port_e_pin_5,  // PE5
- *     .psel = 0x07             // GPTW function
+ *     .psel = k_psel_gptw      // GPTW function (0x14)
  * };
  *
  * rx_err_t err = rx_mpc_set_peripheral(&pwm_config);
@@ -818,8 +810,8 @@ typedef enum : uint8_t {
  * @code{.c}
  * // Configure multiple pins in a loop
  * const rx_mpc_peripheral_config_t pins[] = {
- *     { k_port_e_pin_5, 0x07 },  // GPTW0A
- *     { k_port_e_pin_4, 0x07 },  // GPTW0B
+ *     { k_port_e_pin_5, k_psel_gptw },  // GPTW0A (0x14)
+ *     { k_port_e_pin_4, k_psel_gptw },  // GPTW0B (0x14)
  *     { k_port_2_pin_4, 0x02 },  // MTCLKA
  *     { k_port_2_pin_5, 0x02 },  // MTCLKB
  * };
@@ -883,7 +875,7 @@ typedef enum : uint8_t {
  * @post Pin ready for MTU3a compare match output
  *
  * @note Also requires MTU3a timer configuration and PORT PMR=1
- * @note STAR project typically uses GPTW for PWM (rx_mpc_set_peripheral with 0x07)
+ * @note STAR project typically uses GPTW for PWM (rx_mpc_set_gptw with PSEL 0x14)
  *
  * @par Example
  * @code{.c}

@@ -44,7 +44,7 @@
  * |--------------------|-------------------------|
  * | **MCU**            | Renesas RX72N           |
  * | **Package**        | 144-pin LFQFP           |
- * | **Available Ports**| 0-9 (partial), A-F (partial), J |
+ * | **Available Ports**| 0-9, A-F, J (see rx_port_constants.h for per-port pin counts) |
  * | **CPU Frequency**  | 240 MHz                 |
  * | **Memory Access**  | Direct register I/O     |
  *
@@ -156,12 +156,10 @@ extern "C" {
  * - Invalid port numbers safely return NULL instead of accessing garbage memory
  *
  * **Package-specific behavior**:
- * Only supports ports physically available on 144-pin LFQFP package:
- * - PORT0-5: Limited pins available (not all 8 bits)
- * - PORT6-9: Partially available on 144-pin (P67, P86/P87, etc.)
- * - PORTA-E: Full 8-bit ports
- * - PORTF: Partially available (PF5 on 144-pin)
- * - PORTJ: Limited pins available (PJ3, PJ5)
+ * Supports all ports physically available on 144-pin LFQFP package:
+ * - PORT0-9: Available (see rx_port_constants.h for per-port pin counts)
+ * - PORTA-F: Available (PORTF has PF5 only)
+ * - PORTJ: Available (PJ3, PJ5)
  * - Ports G-I, K-Q: Not available on 144-pin, will return NULL
  *
  * **Control flow**:
@@ -202,21 +200,26 @@ extern "C" {
  *
  * @par Return Value Details:
  *
- * | Port Input      | Return Value        | Condition                    |
- * |-----------------|---------------------|------------------------------|
- * | k_rx_port_0     | &PORT0 registers    | Port 0 available (P05, P07)  |
- * | k_rx_port_1     | &PORT1 registers    | Port 1 available (P12-P17)   |
- * | k_rx_port_2     | &PORT2 registers    | Port 2 available (P20-P27)   |
- * | k_rx_port_3     | &PORT3 registers    | Port 3 available (P30-P37)   |
- * | k_rx_port_4     | &PORT4 registers    | Port 4 available (P40-P47)   |
- * | k_rx_port_5     | &PORT5 registers    | Port 5 available (P50-P55)   |
- * | k_rx_port_a     | &PORTA registers    | Port A available (PA0-PA7)   |
- * | k_rx_port_b     | &PORTB registers    | Port B available (PB0-PB7)   |
- * | k_rx_port_c     | &PORTC registers    | Port C available (PC0-PC7)   |
- * | k_rx_port_d     | &PORTD registers    | Port D available (PD0-PD7)   |
- * | k_rx_port_e     | &PORTE registers    | Port E available (PE0-PE7)   |
- * | k_rx_port_j     | &PORTJ registers    | Port J available (PJ3, PJ5)  |
- * | Any other value | NULL                | Port not on 144-pin package  |
+ * | Port Input      | Return Value        | Condition                         |
+ * |-----------------|---------------------|-----------------------------------|
+ * | k_rx_port_0     | &PORT0 registers    | Port 0 (P00-P03, P05, P07)       |
+ * | k_rx_port_1     | &PORT1 registers    | Port 1 (P12-P17)                 |
+ * | k_rx_port_2     | &PORT2 registers    | Port 2 (P20-P27)                 |
+ * | k_rx_port_3     | &PORT3 registers    | Port 3 (P30-P37)                 |
+ * | k_rx_port_4     | &PORT4 registers    | Port 4 (P40-P47)                 |
+ * | k_rx_port_5     | &PORT5 registers    | Port 5 (P50-P56)                 |
+ * | k_rx_port_6     | &PORT6 registers    | Port 6 (P60-P67)                 |
+ * | k_rx_port_7     | &PORT7 registers    | Port 7 (P70-P77)                 |
+ * | k_rx_port_8     | &PORT8 registers    | Port 8 (P80-P83, P86-P87)        |
+ * | k_rx_port_9     | &PORT9 registers    | Port 9 (P90-P93)                 |
+ * | k_rx_port_a     | &PORTA registers    | Port A (PA0-PA7)                 |
+ * | k_rx_port_b     | &PORTB registers    | Port B (PB0-PB7)                 |
+ * | k_rx_port_c     | &PORTC registers    | Port C (PC0-PC7)                 |
+ * | k_rx_port_d     | &PORTD registers    | Port D (PD0-PD7)                 |
+ * | k_rx_port_e     | &PORTE registers    | Port E (PE0-PE7)                 |
+ * | k_rx_port_f     | &PORTF registers    | Port F (PF5 only)                |
+ * | k_rx_port_j     | &PORTJ registers    | Port J (PJ3, PJ5)               |
+ * | Any other value | NULL                | Port not on 144-pin package      |
  *
  * @pre None - function is always safe to call
  * @pre Parameter should use k_rx_port_* constants (not validated at runtime)
@@ -339,6 +342,15 @@ static inline volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
     case k_rx_port_6: {
       return port6();
     }
+    case k_rx_port_7: {
+      return port7();
+    }
+    case k_rx_port_8: {
+      return port8();
+    }
+    case k_rx_port_9: {
+      return port9();
+    }
     case k_rx_port_a: {
       return porta();
     }
@@ -353,6 +365,9 @@ static inline volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
     }
     case k_rx_port_e: {
       return porte();
+    }
+    case k_rx_port_f: {
+      return portf();
     }
     case k_rx_port_j: {
       return portj();

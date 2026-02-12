@@ -1714,6 +1714,20 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
     k_motor_3_nfault_pin    /* Motor 3: P14 */
   };
 
+  const uint8_t cs_ports[k_motor_count] = {
+    k_drv_cs0_port,  /* Motor 0: PORT7 (P74, pin 72) */
+    k_drv_cs1_port,  /* Motor 1: PORTC (PC1, pin 73) */
+    k_drv_cs2_port,  /* Motor 2: PORTB (PB5, pin 80) */
+    k_drv_cs3_port   /* Motor 3: PORTB (PB4, pin 81) */
+  };
+
+  const uint8_t cs_pins[k_motor_count] = {
+    k_drv_cs0_pin,   /* Motor 0: pin 4 (P74) */
+    k_drv_cs1_pin,   /* Motor 1: pin 1 (PC1) */
+    k_drv_cs2_pin,   /* Motor 2: pin 5 (PB5) */
+    k_drv_cs3_pin    /* Motor 3: pin 4 (PB4) */
+  };
+
   for (uint8_t i = 0; i < k_motor_count; i++) {
     rx_drv8243_config_t driver_config = {
       .bus_manager      = &g_bus_manager,
@@ -1729,7 +1743,10 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
       .dead_time_ns     = k_motor_dead_time_ns,
       .current_limit_ma = k_motor_current_limit_ma, /* 2A software limit */
       .ki_propi         = k_motor_ki_propi,          /* IPROPI ratio (525 A/V) */
-      .use_spi_variant  = false                      /* Standard mode */
+      .use_spi_variant  = true,                      /* DRV8243S SPI variant */
+      .sci_channel      = 12,                        /* SCI12 for motor driver SPI bus */
+      .spi_cs_port      = cs_ports[i],
+      .spi_cs_pin       = cs_pins[i]
     };
 
     err = rx_drv8243_init(&s_drivers[i], &driver_config);
