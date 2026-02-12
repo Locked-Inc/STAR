@@ -22,6 +22,10 @@ RUN apt-get update && apt-get install -y \
     libgrpc-dev \
     curl \
     clangd \
+    clang-format \
+    clang \
+    vim \
+    cmake \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Doxygen documentation toolchain

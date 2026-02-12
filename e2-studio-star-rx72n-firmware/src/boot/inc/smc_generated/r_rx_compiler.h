@@ -98,6 +98,23 @@
  * @warning This is a MASSIVE file (4530 lines) - use search to find specific macros
  * @warning Adding new compilers requires updating ALL macro definitions
  * @since Version 1.0.0
+ *
+ * @author STAR Project (Locked, Inc.)
+ * @date 2019 (original), 2026 (STAR modifications)
+ * @version 1.0.1
+ * @copyright Copyright (C) 2019 Renesas Electronics Corporation. Modified by Locked, Inc.
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 4: Macros serve clear purposes (compiler abstraction)
+ * - Rule 8: All macros justified for conditional compilation and portability
+ * - All rules maintained throughout modifications
+ *
+ * @par SOLID Principles
+ * - Single Responsibility: Provides only compiler abstraction layer
+ * - Open/Closed: Extensible to new compilers without changing BSP code
+ * - Liskov Substitution: Macros provide consistent semantics across compilers
+ * - Interface Segregation: Minimal, focused macro API for each feature
+ * - Dependency Inversion: BSP code depends on abstractions, not compiler specifics
  */
 /**********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description

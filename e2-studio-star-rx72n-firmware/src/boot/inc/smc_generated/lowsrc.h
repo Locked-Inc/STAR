@@ -135,6 +135,7 @@ void init_iolib(void);
  * @return void
  *
  * @pre init_iolib() was called
+ * @pre No I/O operations in progress on any file descriptor
  * @post All file descriptors closed
  * @post Output buffers flushed
  *
@@ -479,6 +480,11 @@ int _read(int fileno, char* buf, int count);
  *
  * @return void
  *
+ * @pre Newlib runtime initialized
+ * @pre No invalid file descriptors passed (not verified - stub only)
+ * @post No side effects on system state
+ * @post File descriptors remain unchanged
+ *
  * @warning Does nothing - stub only
  * @since Version 2.0.0
  */
@@ -492,6 +498,11 @@ void close(void);
  * Required by Newlib but not implemented.
  *
  * @return void
+ *
+ * @pre Newlib runtime initialized
+ * @pre No invalid file descriptors passed (not verified - stub only)
+ * @post No side effects on system state
+ * @post File status remains unchanged
  *
  * @warning Does nothing - stub only
  * @since Version 2.0.0
@@ -507,6 +518,11 @@ void fstat(void);
  *
  * @return void
  *
+ * @pre Newlib runtime initialized
+ * @pre No invalid file descriptors passed (not verified - stub only)
+ * @post No side effects on system state
+ * @post Terminal detection status remains unchanged
+ *
  * @warning Does nothing - stub only
  * @since Version 2.0.0
  */
@@ -520,6 +536,11 @@ void isatty(void);
  * Required by Newlib but not implemented.
  *
  * @return void
+ *
+ * @pre Newlib runtime initialized
+ * @pre No invalid file descriptors passed (not verified - stub only)
+ * @post No side effects on system state
+ * @post File position remains unchanged
  *
  * @warning Does nothing - stub only
  * @since Version 2.0.0

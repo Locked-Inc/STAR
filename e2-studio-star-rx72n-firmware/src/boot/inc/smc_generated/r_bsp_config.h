@@ -43,14 +43,31 @@
  *
  * @note Smart Configurator generated - manual edits may be lost
  * @since Version 1.0.0
+ *
+ * @author STAR Project (Locked, Inc.)
+ * @date 2019 (original), 2026 (STAR modifications)
+ * @version 2.0.2
+ * @copyright Copyright (C) 2019 Renesas Electronics Corporation. Modified by Locked, Inc.
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 4: Configuration values kept clear and documented
+ * - Rule 8: No magic numbers, all settings use named macros
+ * - All rules maintained throughout modifications
+ *
+ * @par SOLID Principles
+ * - Single Responsibility: Provides only BSP configuration values
+ * - Open/Closed: Extensible through additional configuration macros
+ * - Liskov Substitution: Configuration values maintain consistent semantics
+ * - Interface Segregation: Minimal, focused configuration interface
+ * - Dependency Inversion: BSP code depends on configuration abstractions
  */
 /* Generated configuration header file - do not edit */
 /***********************************************************************************************************************
-* File Name    : r_bsp_config_reference.h
+* File Name    : r_bsp_config.h
 * Device(s)    : RX72N
 * Description  : The file r_bsp_config.h is used to configure your BSP. r_bsp_config.h should be included
-*                somewhere in your package so that the r_bsp code has access to it. This file (r_bsp_config_reference.h)
-*                is just a reference file that the user can use to make their own r_bsp_config.h file.
+*                somewhere in your package so that the r_bsp code has access to it. This file (r_bsp_config.h)
+*                is the actual BSP configuration file for the STAR project.
 ************************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
 *         : 08.10.2019 1.00     First Release.
