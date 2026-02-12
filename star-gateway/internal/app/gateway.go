@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/controller"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/link"
@@ -47,9 +48,6 @@ const (
 
 	// grpcMaxMsgSize is the maximum message size for gRPC (10 MB).
 	grpcMaxMsgSize = 10 * 1024 * 1024
-
-	// simulationHARQTimeout is the timeout used for HARQ operations in simulation mode.
-	simulationHARQTimeout time.Duration = 500 * time.Millisecond
 )
 
 // Config holds the application configuration.
@@ -101,21 +99,27 @@ func Run(ctx context.Context, config Config) error {
 	}
 	defer tm.Stop()
 
-	// Initialize message dispatcher
-	// TODO: Implement initDispatcher to return dispatcher instance
-	if err := initDispatcher(ctx); err != nil {
+	// Log initial transport selection for observability
+	logger.Info("transport manager initialized",
+		slog.String("mode", string(config.TransportMode)),
+		slog.String("active_transport", tm.GetActiveTransport()),
+		slog.Int("registered_count", len(tm.GetAvailableTransports())))
+
+	// Initialize message dispatcher (starts receive loop, consumes control frames)
+	disp, err := initDispatcher(ctx, tm, logger)
+	if err != nil {
 		return fmt.Errorf("dispatcher initialization failed: %w", err)
 	}
-
-	// TODO: Get dispatcher instance from initDispatcher (currently returns error only)
-	// For now, pass nil dispatcher - services will need to handle this gracefully
-	var disp dispatcher.Dispatcher = nil
+	defer disp.Stop() // Ensure graceful shutdown on exit
 
 	// Initialize service layer
 	services, err := initServices(ctx, tm, disp, logger)
 	if err != nil {
 		return fmt.Errorf("services initialization failed: %w", err)
 	}
+
+	logger.Info("services initialized with dispatcher",
+		slog.Int("service_count", 5))
 
 	// Initialize servers struct
 	servers := &Servers{}
@@ -188,7 +192,7 @@ func initTransportManager(ctx context.Context, appConfig Config) (*manager.Trans
 func validateOrUseDefault(config *manager.Config) *manager.Config {
 	// Validate configuration
 	if err := config.Validate(); err != nil {
-		// TODO: Log validation failure and use default configuration
+		// Log validation failure and use default configuration
 		log.Printf("Config validation failed: %v. Using default configuration.", err)
 		return manager.DefaultConfig()
 	}
@@ -229,7 +233,7 @@ func initializeTransports(ctx context.Context, appConfig Config, tm *manager.Tra
 			log.Printf("SPI transport initialization failed: %v", err)
 		} else {
 			// Wrap in SPI link layer with shared session state
-			spiLink, err := createSPILink(ctx, spiTransport, session)
+			spiLink, err := createSPILink(spiTransport, session)
 			if err != nil {
 				log.Printf("SPI link creation failed: %v", err)
 			} else {
@@ -240,7 +244,7 @@ func initializeTransports(ctx context.Context, appConfig Config, tm *manager.Tra
 	}
 
 	// USB CDC initialization (non-fatal unless force-usb mode)
-	usbLink, err := createUSBLink(ctx, session)
+	usbLink, err := createUSBLink(session)
 	if err != nil {
 		log.Printf("USB CDC initialization failed: %v", err)
 		// If force-usb mode, this is fatal
@@ -325,7 +329,7 @@ func createSPITransport(ctx context.Context) (transport.Device, error) {
 // This function wraps the SPI transport with HARQ protocol support.
 //
 // Returns the SPI link (harq.HARQ) or an error if link creation fails.
-func createSPILink(ctx context.Context, spiTransport transport.Device, session *manager.SessionState) (harq.HARQ, error) {
+func createSPILink(spiTransport transport.Device, session *manager.SessionState) (harq.HARQ, error) {
 	// Create SPI link with default config (nil = use defaults)
 	spiLink, err := link.NewSPILink(spiTransport, session, nil)
 	if err != nil {
@@ -335,20 +339,12 @@ func createSPILink(ctx context.Context, spiTransport transport.Device, session *
 	return spiLink, nil
 }
 
-// createLegacySPILink creates a legacy ChaseCombining HARQ link.
-// This is used as a fallback when the standard SPI link creation fails.
-//
-// NOTE: Legacy HARQ implementation is deprecated and not currently supported.
-func createLegacySPILink(ctx context.Context, transport transport.Transport, appConfig Config) error {
-	return fmt.Errorf("legacy SPI link not implemented")
-}
-
 // createUSBLink creates a USB CDC link using the provided session state.
 // Returns the USB link (harq.HARQ) or an error if initialization fails.
 //
 // The CDC transport is opened and wrapped in a CDCLink with the shared session state.
 // This ensures sequence continuity during transport switching (prevents Handoff Problem).
-func createUSBLink(ctx context.Context, session *manager.SessionState) (harq.HARQ, error) {
+func createUSBLink(session *manager.SessionState) (harq.HARQ, error) {
 	// Create CDC transport with default config
 	cdcTransport := transport.NewCDCTransport(transport.DefaultCDCConfig())
 
@@ -367,28 +363,42 @@ func createUSBLink(ctx context.Context, session *manager.SessionState) (harq.HAR
 	return cdcLink, nil
 }
 
-// initDispatcher initializes the message dispatcher for routing protocol messages.
-// The dispatcher handles incoming messages from transports and routes them to
-// appropriate service handlers.
-func initDispatcher(ctx context.Context) error {
-	// TODO: Create message dispatcher
+// initDispatcher creates and starts the message dispatcher.
+// The dispatcher owns the HARQ receive loop and routes messages to services.
+// It consumes control frames (PING, PONG, RESET_ACK) internally per TRANSPORT_ARCHITECTURE.md.
+func initDispatcher(ctx context.Context, tm harq.HARQ, logger *slog.Logger) (dispatcher.Dispatcher, error) {
+	// Create dispatcher with TransportManager (which implements harq.HARQ interface)
+	config := &dispatcher.Config{
+		ShutdownTimeout: 5 * time.Second,
+		ReceiveInterval: 10 * time.Millisecond, // 100Hz for SPI communication spec
+	}
 
-	// TODO: Register message handlers for different protocol message types
+	disp, err := dispatcher.NewDispatcher(tm, logger, config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create dispatcher: %w", err)
+	}
 
-	// TODO: Return success or error
-	return nil
+	// Start dispatcher receive loop (begins consuming messages from TransportManager)
+	if err := disp.Start(ctx); err != nil {
+		return nil, fmt.Errorf("failed to start dispatcher: %w", err)
+	}
+
+	logger.Info("dispatcher initialized and started",
+		slog.Duration("receive_interval", config.ReceiveInterval),
+		slog.Duration("shutdown_timeout", config.ShutdownTimeout))
+
+	return disp, nil
 }
 
-// initServices initializes gRPC and gateway services.
-// This sets up the service layer that handles business logic and API endpoints.
 // initServices initializes all gRPC service implementations.
+// The tm parameter is the TransportManager (which implements harq.HARQ interface).
 // Returns serviceSet containing initialized services for gRPC server registration.
-func initServices(ctx context.Context, harqHandler harq.HARQ, disp dispatcher.Dispatcher, logger *slog.Logger) (*serviceSet, error) {
+func initServices(ctx context.Context, tm harq.HARQ, disp dispatcher.Dispatcher, logger *slog.Logger) (*serviceSet, error) {
 	return &serviceSet{
-		motorControl:  service.NewMotorControlService(harqHandler, disp, logger),
-		telemetry:     service.NewTelemetryService(ctx, harqHandler, disp, logger),
-		battery:       service.NewBatteryService(ctx, harqHandler, disp, logger),
-		configuration: service.NewConfigurationService(harqHandler, disp, logger),
+		motorControl:  service.NewMotorControlService(tm, disp, logger),
+		telemetry:     service.NewTelemetryService(ctx, tm, disp, logger),
+		battery:       service.NewBatteryService(ctx, tm, disp, logger),
+		configuration: service.NewConfigurationService(tm, disp, logger),
 		firmware:      service.NewFirmwareService(),
 	}, nil
 }
@@ -446,8 +456,14 @@ func startHTTPServer(ctx context.Context, servers *Servers, logger *slog.Logger)
 	// Create HTTP router
 	mux := http.NewServeMux()
 
-	// TODO: Register controller handler at /ws/controller
+	// TODO: Create Gateway Service instance for controller handler
+	gatewayService := service.NewGatewayService()
+	controllerHandler := controller.NewHandlerWithGateway(gatewayService)
+	mux.Handle("/ws/controller", controllerHandler)
+
 	// TODO: Register static file handler
+	// gatewayService.RegisterClient("client-1")
+
 	// TODO: Register API endpoints
 
 	// Configure HTTP server

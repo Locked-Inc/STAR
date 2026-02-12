@@ -54,6 +54,17 @@ type MockTransport struct {
 	closed      bool
 }
 
+// Compile-time assertion that MockTransport implements transport.Device.
+// This ensures the mock stays in sync with the interface and catches regressions.
+var _ interface {
+	Transfer(ctx context.Context, txData []byte) ([]byte, error)
+	Send(data []byte) (int, error)
+	Receive(maxLen int) ([]byte, error)
+	IsOpen() bool
+	Open() error
+	Close() error
+} = (*MockTransport)(nil)
+
 func (m *MockTransport) Send(data []byte) (int, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()

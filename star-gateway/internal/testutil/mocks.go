@@ -40,6 +40,10 @@ type MockHARQ struct {
 	ReceiveChan chan *harq.ReceiveResult
 }
 
+// Compile-time assertion that MockHARQ implements harq.HARQ.
+// This ensures the mock stays in sync with the interface and catches regressions.
+var _ harq.HARQ = (*MockHARQ)(nil)
+
 func (m *MockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
 	m.mu.Lock()
 	// Defensive copy to prevent slice aliasing
@@ -138,6 +142,10 @@ type MockDispatcher struct {
 	StopFunc        func() error
 	GetStateFunc    func() dispatcher.State
 }
+
+// Compile-time assertion that MockDispatcher implements dispatcher.Dispatcher.
+// This ensures the mock stays in sync with the interface and catches regressions.
+var _ dispatcher.Dispatcher = (*MockDispatcher)(nil)
 
 func (m *MockDispatcher) Subscribe(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 	if m.SubscribeFunc != nil {

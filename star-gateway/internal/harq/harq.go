@@ -222,7 +222,7 @@ type ChaseCombining struct {
 	retryCount int
 
 	// Dependencies (injected)
-	transport    transport.Transport
+	transport    transport.Device
 	encoder      frame.Encoder
 	decoder      frame.Decoder
 	fecEncoder   fec.Encoder
@@ -246,7 +246,7 @@ type ChaseCombining struct {
 // The transport, frame encoder/decoder, and FEC encoder/decoder are required dependencies.
 func NewChaseCombining(
 	config *Config,
-	t transport.Transport,
+	t transport.Device,
 	encoder frame.Encoder,
 	decoder frame.Decoder,
 	fecEncoder fec.Encoder,

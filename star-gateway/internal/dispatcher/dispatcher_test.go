@@ -38,6 +38,10 @@ type MockHARQ struct {
 	LastSentData []byte
 }
 
+// Compile-time assertion that MockHARQ implements harq.HARQ.
+// This ensures the mock stays in sync with the interface and catches regressions.
+var _ harq.HARQ = (*MockHARQ)(nil)
+
 func (m *MockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
 	m.LastSentData = data
 	if m.SendFunc != nil {
