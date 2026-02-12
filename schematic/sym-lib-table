@@ -118,4 +118,5 @@
   (lib (name "LVK12R010FER")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LVK12R010FER/LVK12R010FER.kicad_sym")(options "")(descr ""))
   (lib (name "MIC5205-2.5YM5-TR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/MIC5205-2.5YM5-TR/MIC5205_2_5YM5_TR.kicad_sym")(options "")(descr ""))
   (lib (name "TXS0102DCUT")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TXS0102DCUT/TXS0102DCUT.kicad_sym")(options "")(descr ""))
+  (lib (name "R5F572NNHDFB#30")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/R5F572NNHDFB-30/R5F572NNHDFB#30.kicad_sym")(options "")(descr ""))
 )
