@@ -1199,6 +1199,47 @@ rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
   return k_rx_ok;
 }
 
+/**
+ * @brief Decode SetRetransmitConfigRequest from Protocol Buffer bytes
+ * @param[in] buffer Raw protobuf bytes
+ * @param[in] len Buffer length
+ * @param[out] msg Decoded message
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if NULL or invalid length
+ * @return k_rx_err_not_initialized if module not initialized
+ * @return k_rx_err_protocol_error if decode fails
+ */
+rx_err_t rx_nanopb_decode_retransmit_config_request(const uint8_t*                      buffer,
+                                                    const uint32_t                      len,
+                                                    star_v1_SetRetransmitConfigRequest* msg)
+{
+  /* Pre-condition 1: nullptr pointer checks */
+  if (buffer == nullptr || msg == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Length validation */
+  if (len == 0 || len > s_nanopb_buffer_size) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 3: Module initialized */
+  if (!s_initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  /* Initialize message to default values (NASA Rule 5 - prevent stale data) */
+  *msg = (star_v1_SetRetransmitConfigRequest)star_v1_SetRetransmitConfigRequest_init_zero;
+
+  pb_istream_t stream = pb_istream_from_buffer(buffer, len);
+
+  if (!pb_decode(&stream, star_v1_SetRetransmitConfigRequest_fields, msg)) {
+    return k_rx_err_protocol_error;
+  }
+
+  return k_rx_ok;
+}
+
 /* =============================================================================
  * Telemetry Encode/Decode
  * =============================================================================

@@ -96,14 +96,14 @@ Configuration Options
    LK           = 0x4             = TFLGA/145/0.50
    FP           = 0x5             = LFQFP/100/0.50
 */
-#define BSP_CFG_MCU_PART_PACKAGE        (0x3) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MCU_PART_PACKAGE (0x3) /* Generated value. Do not edit this manually */
 
 /* Whether Encryption is included or not.
    Character(s) = Value for macro = Description
    D            = 0xD             = Encryption module not included
    H            = 0x11            = Encryption module included
 */
-#define BSP_CFG_MCU_PART_FUNCTION       (0x11) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MCU_PART_FUNCTION (0x11) /* Generated value. Do not edit this manually */
 
 /* ROM, RAM, and Data Flash Capacity.
    Character(s) = Value for macro = ROM Size/Ram Size/Data Flash Size
@@ -111,25 +111,25 @@ Configuration Options
    N            = 0x17            = 4MB/1MB/32KB
 NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
 */
-#define BSP_CFG_MCU_PART_MEMORY_SIZE    (0x17) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MCU_PART_MEMORY_SIZE (0x17) /* Generated value. Do not edit this manually */
 
 /* Group name.
    Character(s) = Description
    2N           = RX72N Group
 */
-#define BSP_CFG_MCU_PART_GROUP          "RX72N" /* Generated value. Do not edit this manually */
+#define BSP_CFG_MCU_PART_GROUP "RX72N" /* Generated value. Do not edit this manually */
 
 /* Series name.
    Character(s) = Description
    57           = RX700 Series
 */
-#define BSP_CFG_MCU_PART_SERIES         "RX700" /* Generated value. Do not edit this manually */
+#define BSP_CFG_MCU_PART_SERIES "RX700" /* Generated value. Do not edit this manually */
 
 /* Memory type.
    Character(s) = Value for macro = Description
    F            = 0x0             = Flash memory version
 */
-#define BSP_CFG_MCU_PART_MEMORY_TYPE    (0x0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MCU_PART_MEMORY_TYPE (0x0) /* Generated value. Do not edit this manually */
 
 /* Whether to use 1 stack or 2. RX MCUs have the ability to use 2 stacks: an interrupt stack and a user stack.
  * When using 2 stacks the user stack will be used during normal user code. When an interrupt occurs the CPU
@@ -145,19 +145,19 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
  * NOTE: This setting is available only when using CCRX and GNUC.
  *       This is invalid when using Renesas RTOS with CCRX.
  */
-#define BSP_CFG_USER_STACK_ENABLE       (1)
+#define BSP_CFG_USER_STACK_ENABLE (1)
 
 /* If only 1 stack is chosen using BSP_CFG_USER_STACK_ENABLE then no RAM will be allocated for the user stack. */
 #if BSP_CFG_USER_STACK_ENABLE == 1
 /* User Stack size in bytes. 
  * NOTE: This setting is available only when using CCRX and GNUC.
  *       This is invalid when using Renesas RTOS with CCRX. */
-#define BSP_CFG_USTACK_BYTES            (0x1000)
+#define BSP_CFG_USTACK_BYTES (0x1000)
 #endif
 
 /* Interrupt Stack size in bytes.
  * NOTE: This setting is available only when using CCRX and GNUC. */
-#define BSP_CFG_ISTACK_BYTES            (0x400)
+#define BSP_CFG_ISTACK_BYTES (0x400)
 
 /* Heap size in bytes.
    To disable the heap you must follow these steps:
@@ -167,21 +167,21 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
       settings and choosing the Standard Library section. After that choose 'Contents' in e2 studio.
       This will present a list of modules that can be included. Uncheck the box for stdio.h.
    NOTE: This setting is available only when using CCRX and GNUC. */
-#define BSP_CFG_HEAP_BYTES              (0x400)
+#define BSP_CFG_HEAP_BYTES (0x400)
 
 /* Initializes C input & output library functions.
    0 = Disable I/O library initialization in resetprg.c. If you are not using stdio then use this value.
    1 = Enable I/O library initialization in resetprg.c. This is default and needed if you are using stdio.
    NOTE: This setting is available only when using CCRX. */
-#define BSP_CFG_IO_LIB_ENABLE           (0)
+#define BSP_CFG_IO_LIB_ENABLE (0)
 
 /* If desired the user may redirect the stdio charget() and/or charput() functions to their own respective functions
    by enabling below and providing and replacing the my_sw_... function names with the names of their own functions. */
-#define BSP_CFG_USER_CHARGET_ENABLED    (0)
-#define BSP_CFG_USER_CHARGET_FUNCTION     my_sw_charget_function
+#define BSP_CFG_USER_CHARGET_ENABLED  (0)
+#define BSP_CFG_USER_CHARGET_FUNCTION my_sw_charget_function
 
-#define BSP_CFG_USER_CHARPUT_ENABLED    (0)
-#define BSP_CFG_USER_CHARPUT_FUNCTION     my_sw_charput_function
+#define BSP_CFG_USER_CHARPUT_ENABLED  (0)
+#define BSP_CFG_USER_CHARPUT_FUNCTION my_sw_charput_function
 
 /* After reset MCU will operate in Supervisor mode. To switch to User mode, set this macro to '1'. For more information
    on the differences between these 2 modes see the CPU >> Processor Mode section of your MCU's hardware manual.
@@ -189,7 +189,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    1 = Switch to User mode.
    NOTE: This is invalid when using Renesas RTOS with CCRX.
 */
-#define BSP_CFG_RUN_IN_USER_MODE        (0)
+#define BSP_CFG_RUN_IN_USER_MODE (0)
 
 /* Set your desired ID code. NOTE, leave at the default (all 0xFF's) if you do not wish to use an ID code. If you set 
    this value and program it into the MCU then you will need to remember the ID code because the debugger will ask for 
@@ -198,49 +198,49 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    FDT. The ID Code is 16 bytes long. The macro below define the ID Code in 4-byte sections. */
 /* Lowest 4-byte section, address 0xFE7F5D50. From MSB to LSB: ID code 4, ID code 3, ID code 2, ID code 1/Control Code.
  */
-#define BSP_CFG_ID_CODE_LONG_1          (0xFFFFFFFF)
+#define BSP_CFG_ID_CODE_LONG_1 (0xFFFFFFFF)
 /* 2nd ID Code section, address 0xFE7F5D54. From MSB to LSB: ID code 8, ID code 7, ID code 6, ID code 5. */
-#define BSP_CFG_ID_CODE_LONG_2          (0xFFFFFFFF)
+#define BSP_CFG_ID_CODE_LONG_2 (0xFFFFFFFF)
 /* 3rd ID Code section, address 0xFE7F5D58. From MSB to LSB: ID code 12, ID code 11, ID code 10, ID code 9. */
-#define BSP_CFG_ID_CODE_LONG_3          (0xFFFFFFFF)
+#define BSP_CFG_ID_CODE_LONG_3 (0xFFFFFFFF)
 /* 4th ID Code section, address 0xFE7F5D5C. From MSB to LSB: ID code 16, ID code 15, ID code 14, ID code 13. */
-#define BSP_CFG_ID_CODE_LONG_4          (0xFFFFFFFF)
+#define BSP_CFG_ID_CODE_LONG_4 (0xFFFFFFFF)
 
 /* Select whether to enables or disables the connection of serial programmer.
    0 = Connection of a serial programmer is prohibited after a reset.
    1 = Connection of a serial programmer is permitted after a reset. (default)
 */
-#define BSP_CFG_SERIAL_PROGRAMMER_CONECT_ENABLE   (1)
+#define BSP_CFG_SERIAL_PROGRAMMER_CONECT_ENABLE (1)
 
 /* Select whether to oscillate the Main Clock Oscillator.
    0 = Stop Oscillating the Main Clock.
    1 = Enable oscillating the Main Clock. (default)
 */
-#define BSP_CFG_MAIN_CLOCK_OSCILLATE_ENABLE    (1) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MAIN_CLOCK_OSCILLATE_ENABLE (1) /* Generated value. Do not edit this manually */
 
 /* Select whether to oscillate the Sub Clock Oscillator.
    0 = Stop Oscillating the Sub Clock. (default)
    1 = Enable Oscillating the Sub Clock.
 */
-#define BSP_CFG_SUB_CLOCK_OSCILLATE_ENABLE     (0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_SUB_CLOCK_OSCILLATE_ENABLE (0) /* Generated value. Do not edit this manually */
 
 /* Select whether to oscillate the High Speed On-Chip Oscillator (HOCO).
    0 = Stop Oscillating the HOCO. (default)
    1 = Enable Oscillating the HOCO.
 */
-#define BSP_CFG_HOCO_OSCILLATE_ENABLE          (0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_HOCO_OSCILLATE_ENABLE (0) /* Generated value. Do not edit this manually */
 
 /* Select whether to oscillate the Low Speed On-Chip Oscillator (LOCO).
    0 = Stop Oscillating the LOCO. (default)
    1 = Enable Oscillating the LOCO.
 */
-#define BSP_CFG_LOCO_OSCILLATE_ENABLE          (0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_LOCO_OSCILLATE_ENABLE (0) /* Generated value. Do not edit this manually */
 
 /* Select whether to oscillate the IWDT-Dedicated On-Chip Oscillator (IWDT).
    0 = Stop Oscillating the IWDT Clock. (default)
    1 = Enable Oscillating the IWDT Clock.
 */
-#define BSP_CFG_IWDT_CLOCK_OSCILLATE_ENABLE    (1) /* Generated value. Do not edit this manually */
+#define BSP_CFG_IWDT_CLOCK_OSCILLATE_ENABLE (1) /* Generated value. Do not edit this manually */
 
 /* Clock source select (CKSEL).
    0 = Low Speed On-Chip Oscillator  (LOCO)
@@ -249,13 +249,13 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    3 = Sub-Clock Oscillator
    4 = PLL Circuit (default)
 */
-#define BSP_CFG_CLOCK_SOURCE            (4) /* Generated value. Do not edit this manually */
+#define BSP_CFG_CLOCK_SOURCE (4) /* Generated value. Do not edit this manually */
 
 /* Main clock Oscillator Switching (MOSEL).
    0 = Resonator (default)
    1 = External clock input
 */
-#define BSP_CFG_MAIN_CLOCK_SOURCE       (1) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MAIN_CLOCK_SOURCE (1) /* Generated value. Do not edit this manually */
 
 /* USB Clock source select (UPLLSEL). Choose which clock source to input to the USB circuit.
    0 = System Clock (PLL Circuit/No division) (This is not available.)
@@ -263,7 +263,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    2 = PLL Circuit (UDIVCLK) (default)
    3 = PPLL Circuit (PPLLDIVCLK)
 */
-#define BSP_CFG_USB_CLOCK_SOURCE        (2) /* Generated value. Do not edit this manually */
+#define BSP_CFG_USB_CLOCK_SOURCE (2) /* Generated value. Do not edit this manually */
 
 /* Ethernet-PHY clock source (OUTCKSEL). Choose which clock source to input to the Ethernet PHY LSI.
    Available clock sources:
@@ -271,7 +271,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    1 = PPLL circuit (default)
    2 = Ethernet-PHY not use
 */
-#define BSP_CFG_PHY_CLOCK_SOURCE        (1) /* Generated value. Do not edit this manually */
+#define BSP_CFG_PHY_CLOCK_SOURCE (1) /* Generated value. Do not edit this manually */
 
 /* Configure clock source of clock output(CLKOUT) pin (CKOSEL).
    Available clock sources:
@@ -282,20 +282,20 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    4 = PLL circuit
    6 = PPLL circuit
  */
-#define BSP_CFG_CLKOUT_SOURCE           (2) /* Generated value. Do not edit this manually */
+#define BSP_CFG_CLKOUT_SOURCE (2) /* Generated value. Do not edit this manually */
 
 /* The sub-clock oscillation control for using the RTC.
    When '1' is selected, the registers related to RTC are initialized and the sub-clock oscillator is operated.
    0 = The RTC is not to be used.
    1 = The RTC is to be used.
 */
-#define BSP_CFG_RTC_ENABLE              (0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_RTC_ENABLE (0) /* Generated value. Do not edit this manually */
 
 /* Sub-Clock Oscillator Drive Capacity Control (RTCDV).
    0 = Drive capacity for standard CL. (default)
    1 = Drive capacity for low CL.
 */
-#define BSP_CFG_SOSC_DRV_CAP            (0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_SOSC_DRV_CAP (0) /* Generated value. Do not edit this manually */
 
 /* Clock configuration options.
    The input clock frequency is specified and then the system clocks are set by specifying the multipliers used. The
@@ -328,7 +328,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
 */
 
 /* Input clock frequency in Hz (XTAL or EXTAL). */
-#define BSP_CFG_XTAL_HZ                 (24000000) /* Generated value. Do not edit this manually */
+#define BSP_CFG_XTAL_HZ (24000000) /* Generated value. Do not edit this manually */
 
 /* The HOCO can operate at several different frequencies. Choose which one using the macro below.
    Available frequency settings:
@@ -336,89 +336,89 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    1 = 18MHz
    2 = 20MHz
 */
-#define BSP_CFG_HOCO_FREQUENCY          (0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_HOCO_FREQUENCY (0) /* Generated value. Do not edit this manually */
 
 /* PLL clock source (PLLSRCSEL). Choose which clock source to input to the PLL circuit.
    Available clock sources:
    0 = Main clock (default)
    1 = HOCO
 */
-#define BSP_CFG_PLL_SRC                 (0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_PLL_SRC (0) /* Generated value. Do not edit this manually */
 
 /* PLL Input Frequency Division Ratio Select (PLIDIV).
    Available divisors = /1 (no division), /2, /3
 */
-#define BSP_CFG_PLL_DIV                 (1) /* Generated value. Do not edit this manually */
+#define BSP_CFG_PLL_DIV (1) /* Generated value. Do not edit this manually */
 
 /* PLL Frequency Multiplication Factor Select (STC).
    Available multipliers = x10.0 to x30.0 in 0.5 increments (e.g. 10.0, 10.5, 11.0, 11.5, ..., 29.0, 29.5, 30.0)
 */
-#define BSP_CFG_PLL_MUL                 (10.0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_PLL_MUL (10.0) /* Generated value. Do not edit this manually */
 
 /* System Clock Divider (ICK).
    Available divisors = /1 (no division), /2, /4, /8, /16, /32, /64
 */
-#define BSP_CFG_ICK_DIV                 (1) /* Generated value. Do not edit this manually */
+#define BSP_CFG_ICK_DIV (1) /* Generated value. Do not edit this manually */
 
 /* Peripheral Module Clock A Divider (PCKA).
    Available divisors = /1 (no division), /2, /4, /8, /16, /32, /64
 */
-#define BSP_CFG_PCKA_DIV                (2) /* Generated value. Do not edit this manually */
+#define BSP_CFG_PCKA_DIV (2) /* Generated value. Do not edit this manually */
 
 /* Peripheral Module Clock B Divider (PCKB).
    Available divisors = /1 (no division), /2, /4, /8, /16, /32, /64
 */
-#define BSP_CFG_PCKB_DIV                (4) /* Generated value. Do not edit this manually */
+#define BSP_CFG_PCKB_DIV (4) /* Generated value. Do not edit this manually */
 
 /* Peripheral Module Clock C Divider (PCKC).
    Available divisors = /1 (no division), /2, /4, /8, /16, /32, /64
 */
-#define BSP_CFG_PCKC_DIV                (4) /* Generated value. Do not edit this manually */
+#define BSP_CFG_PCKC_DIV (4) /* Generated value. Do not edit this manually */
 
 /* Peripheral Module Clock D Divider (PCKD).
    Available divisors = /1 (no division), /2, /4, /8, /16, /32, /64
 */
-#define BSP_CFG_PCKD_DIV                (4) /* Generated value. Do not edit this manually */
+#define BSP_CFG_PCKD_DIV (4) /* Generated value. Do not edit this manually */
 
 /* External Bus Clock Divider (BCLK).
    Available divisors = /1 (no division), /2, /3, /4, /8, /16, /32, /64
 */
-#define BSP_CFG_BCK_DIV                 (3) /* Generated value. Do not edit this manually */
+#define BSP_CFG_BCK_DIV (3) /* Generated value. Do not edit this manually */
 
 /* Flash IF Clock Divider (FCK).
    Available divisors = /1 (no division), /2, /4, /8, /16, /32, /64
 */
-#define BSP_CFG_FCK_DIV                 (4) /* Generated value. Do not edit this manually */
+#define BSP_CFG_FCK_DIV (4) /* Generated value. Do not edit this manually */
 
 /* USB Clock Divider Select.
    Available divisors = /2, /3, /4, /5
 */
-#define BSP_CFG_UCK_DIV                 (5) /* Generated value. Do not edit this manually */
+#define BSP_CFG_UCK_DIV (5) /* Generated value. Do not edit this manually */
 
 /* PPLL Input Frequency Division Ratio Select (PPLIDIV).
    Available divisors = /1 (no division), /2, /3
 */
-#define BSP_CFG_PPLL_DIV                (3) /* Generated value. Do not edit this manually */
+#define BSP_CFG_PPLL_DIV (3) /* Generated value. Do not edit this manually */
 
 /* PPLL Frequency Multiplication Factor Select (PPLSTC). 
    Available multipliers = x10.0 to x30.0 in 0.5 increments (e.g. 10.0, 10.5, 11.0, 11.5, ..., 29.0, 29.5, 30.0)
 */
-#define BSP_CFG_PPLL_MUL                (25.0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_PPLL_MUL (25.0) /* Generated value. Do not edit this manually */
 
 /* PPLL Clock Divider Select. 
    Available divisors = /2, /3, /4, /5
 */
-#define BSP_CFG_PPLCK_DIV               (2) /* Generated value. Do not edit this manually */
+#define BSP_CFG_PPLCK_DIV (2) /* Generated value. Do not edit this manually */
 
 /* Configure BCLK output pin (only effective when external bus enabled)
    Values 0=no output, 1 = BCK frequency, 2= BCK/2 frequency
 */
-#define BSP_CFG_BCLK_OUTPUT             (0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_BCLK_OUTPUT (0) /* Generated value. Do not edit this manually */
 
 /* Configure SDCLK output pin (only effective when external bus enabled)
    Values 0=no output, 1 = BCK frequency
 */
-#define BSP_CFG_SDCLK_OUTPUT            (0)
+#define BSP_CFG_SDCLK_OUTPUT (0)
 
 /* CLKOUT Output Frequency Division Ratio Select. (CKODIV)
    Values
@@ -428,14 +428,14 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    3 = x1/8
    4 = x1/16
  */
-#define BSP_CFG_CLKOUT_DIV              (0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_CLKOUT_DIV (0) /* Generated value. Do not edit this manually */
 
 /* Configure clock output(CLKOUT) pin (CKOSTP).
    Values
    0 = CLKOUT pin output stopped. (Fixed to the low level) (default)
    1 = CLKOUT pin output enabled.
  */
-#define BSP_CFG_CLKOUT_OUTPUT           (0) /* Generated value. Do not edit this manually */
+#define BSP_CFG_CLKOUT_OUTPUT (0) /* Generated value. Do not edit this manually */
 
 /* Main Clock Oscillator Wait Time (MOSCWTCR).
    The value of MOSCWTCR register required for correspondence with the waiting time required to secure stable 
@@ -450,7 +450,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    NOTE: The waiting time is not required when an external clock signal is input for the main clock oscillator.
          Set the BSP_CFG_MOSC_WAIT_TIME to 00h.
 */
-#define BSP_CFG_MOSC_WAIT_TIME          (0x53) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MOSC_WAIT_TIME (0x53) /* Generated value. Do not edit this manually */
 
 /* Sub-Clock Oscillator Wait Time (SOSCWTCR).
    The value of SOSCWTCR register required for correspondence with the expected time to secure settling of oscillation
@@ -462,25 +462,25 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    If tSUBOSC is 2 s and fLOCO is 264 kHz (the period is 1/3.78 us), the formula gives
     BSP_CFG_SOSC_WAIT_TIME > (2 s * (264 kHz) +16)/16384 = 32.22, so set the  BSP_CFG_SOSC_WAIT_TIME bits to 33(21h).
 */
-#define BSP_CFG_SOSC_WAIT_TIME          (0x21) /* Generated value. Do not edit this manually */
+#define BSP_CFG_SOSC_WAIT_TIME (0x21) /* Generated value. Do not edit this manually */
 
 /* ROM Cache Enable Register (ROMCE).
    0 = ROM cache operation disabled.
    1 = ROM cache operation enabled.
-*/ 
-#define BSP_CFG_ROM_CACHE_ENABLE        (1)
+*/
+#define BSP_CFG_ROM_CACHE_ENABLE (1)
 
 /* Configure non-cacheable area 0 of the ROM cache function.
    0 = Non-cacheable area 0 settings disabled.
    1 = Non-cacheable area 0 settings enabled.
 */
-#define BSP_CFG_NONCACHEABLE_AREA0_ENABLE    (0)
+#define BSP_CFG_NONCACHEABLE_AREA0_ENABLE (0)
 
 /* Specifies the start address of non-cacheable area 0.
    Selects the start address of non-cacheable area 0.
    The upper 10 bits are fixed at 1. The lower 4 bits are fixed at 0.
 */
-#define BSP_CFG_NONCACHEABLE_AREA0_ADDR      (0xFFE00000)
+#define BSP_CFG_NONCACHEABLE_AREA0_ADDR (0xFFE00000)
 
 /* Configures the size of non-cacheable area 0.
    Selects the size of non-cacheable area 0 in byte units from among the following:
@@ -495,7 +495,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    0x8 =  4K bytes,
    0x9 =  8K bytes
 */
-#define BSP_CFG_NONCACHEABLE_AREA0_SIZE      (0x0)
+#define BSP_CFG_NONCACHEABLE_AREA0_SIZE (0x0)
 
 /* Specifies the IF non-cacheable area enable bit setting of non-cacheable area 0.
    0 = Non-cacheable area 0 setting of IF cache disabled.
@@ -519,13 +519,13 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    0 = Non-cacheable area 1 settings disabled.
    1 = Non-cacheable area 1 settings enabled.
 */
-#define BSP_CFG_NONCACHEABLE_AREA1_ENABLE    (0)
+#define BSP_CFG_NONCACHEABLE_AREA1_ENABLE (0)
 
 /* Specifies the start address of non-cacheable area 1.
    Selects the start address of non-cacheable area 1.
    The upper 10 bits are fixed at 1. The lower 4 bits are fixed at 0.
 */
-#define BSP_CFG_NONCACHEABLE_AREA1_ADDR      (0xFFE00000)
+#define BSP_CFG_NONCACHEABLE_AREA1_ADDR (0xFFE00000)
 
 /* Configures the size of non-cacheable area 1.
    Selects the size of non-cacheable area 0 in byte units from among the following:
@@ -540,7 +540,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    0x8 =  4K bytes,
    0x9 =  8K bytes
 */
-#define BSP_CFG_NONCACHEABLE_AREA1_SIZE      (0x0)
+#define BSP_CFG_NONCACHEABLE_AREA1_SIZE (0x0)
 
 /* Specifies the IF non-cacheable area enable bit setting of non-cacheable area 1.
    0 = Non-cacheable area 1 setting of IF cache disabled.
@@ -582,7 +582,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
        b0      Reserved (set to 1)
    Default value is 0xFFFFFFFF.
 */
-#define BSP_CFG_OFS0_REG_VALUE  (0xFFFFFFFF) /* Generated value. Do not edit this manually */
+#define BSP_CFG_OFS0_REG_VALUE (0xFFFFFFFF) /* Generated value. Do not edit this manually */
 
 /* Configure whether voltage detection 0 circuit and HOCO are enabled after reset.
    OFS1 - Option Function Select Register 1
@@ -595,7 +595,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
              BSP_CFG_HOCO_FREQUENCY should be default value.
    Default value is 0xFFFFFFFF.
 */
-#define BSP_CFG_OFS1_REG_VALUE  (0xFFFFFFFF) /* Generated value. Do not edit this manually */
+#define BSP_CFG_OFS1_REG_VALUE (0xFFFFFFFF) /* Generated value. Do not edit this manually */
 
 /* Trusted memory is facility to prevent the reading of blocks 8 and 9 and blocks 78 and 79 (in dual mode) in 
    the code flash memory by third party software. This feature is disabled by default.
@@ -611,7 +611,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
        b23:b0  Reserved (set to 1)
    Default value is 0xFFFFFFFF.
 */
-#define BSP_CFG_TRUSTED_MODE_FUNCTION  (0xFFFFFFFF)
+#define BSP_CFG_TRUSTED_MODE_FUNCTION (0xFFFFFFFF)
 
 /* Configure FAW register is used to set the write protection flag and boot area select flag 
    for setting the flash access window startaddress and flash access window end address.
@@ -630,7 +630,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
              Exercise extra caution when handling the FSPR bit.
    Default value is 0xFFFFFFFF.
 */
-#define BSP_CFG_FAW_REG_VALUE  (0xFFFFFFFF)
+#define BSP_CFG_FAW_REG_VALUE (0xFFFFFFFF)
 
 /* The ROM code protection register is a function to prohibit reading from or programming to the flash memory
    when the flash programmer is used during off-board programming.
@@ -641,7 +641,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
        Note: The ROMCODE register should be set in 32-bit units.
    Default value is 0xFFFFFFFF.
 */
-#define BSP_CFG_ROMCODE_REG_VALUE  (0xFFFFFFFF)
+#define BSP_CFG_ROMCODE_REG_VALUE (0xFFFFFFFF)
 
 /* Select the bank mode of dual-bank function of the code flash memory.
    0 = Dual mode.
@@ -650,7 +650,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
          Default setting of the bank mode is linear mode.
          If the dual bank function has not been incorporated in a device, this macro should be 1.
 */
-#define BSP_CFG_CODE_FLASH_BANK_MODE    (0)
+#define BSP_CFG_CODE_FLASH_BANK_MODE (0)
 
 /* Select the startup bank of the program when dual bank function is in dual mode.
    0 = The address range of bank 1 from FFC00000h to FFDFFFFFh and bank 0 from FFE00000h to FFFFFFFFh. (default)
@@ -659,7 +659,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
          Default setting of the start bank is bank0.
          If the dual bank function has not been incorporated in a device, this macro should be 0.
 */
-#define BSP_CFG_CODE_FLASH_START_BANK   (0)
+#define BSP_CFG_CODE_FLASH_START_BANK (0)
 
 /* This macro lets other modules no if a RTOS is being used.
    0 = RTOS is not used.
@@ -669,13 +669,13 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    4 = Renesas ITRON OS (RI600V4 or RI600PX) is used.
    5 = Azure RTOS is used.
 */
-#define BSP_CFG_RTOS_USED               (5)
+#define BSP_CFG_RTOS_USED (5)
 
 /* This macro is used to select which Renesas ITRON OS.
    0 = RI600V4 is used.
    1 = RI600PX is used.
 */
-#define BSP_CFG_RENESAS_RTOS_USED       (0)
+#define BSP_CFG_RENESAS_RTOS_USED (0)
 
 /* This macro is used to select which CMT channel used for system timer of RTOS.
  * The setting of this macro is only valid if the macro BSP_CFG_RTOS_USED is set to a value other than 0. */
@@ -688,7 +688,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
  * Others = Invalid.
  * NOTE: This is invalid when using Renesas RTOS with CCRX.
  */
-#define BSP_CFG_RTOS_SYSTEM_TIMER       (0)
+#define BSP_CFG_RTOS_SYSTEM_TIMER (0)
 #endif
 
 /* By default modules will use global locks found in mcu_locks.c. If the user is using a RTOS and would rather use its
@@ -697,7 +697,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    0 = Use default locking (non-RTOS)
    1 = Use user defined locking mechanism.
 */
-#define BSP_CFG_USER_LOCKING_ENABLED    (0)
+#define BSP_CFG_USER_LOCKING_ENABLED (0)
 
 /* If the user decides to use their own locking mechanism with FIT modules then they will need to redefine the typedef
    that is used for the locks. If the user is using a RTOS then they would likely redefine the typedef to be 
@@ -705,7 +705,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    NOTE: If BSP_CFG_USER_LOCKING_ENABLED == 0 then this typedef is ignored.
    NOTE: Do not surround the type with parentheses '(' ')'.
 */
-#define BSP_CFG_USER_LOCKING_TYPE       bsp_lock_t
+#define BSP_CFG_USER_LOCKING_TYPE bsp_lock_t
 
 /* If the user decides to use their own locking mechanism with FIT modules then they will need to define the functions
    that will handle the locking and unlocking. These functions should be defined below.
@@ -723,10 +723,10 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    NOTE: If BSP_CFG_USER_LOCKING_ENABLED == 0 then this typedef is ignored.
    NOTE: Do not surround the type with parentheses '(' ')'.
 */
-#define BSP_CFG_USER_LOCKING_HW_LOCK_FUNCTION      my_hw_locking_function
-#define BSP_CFG_USER_LOCKING_HW_UNLOCK_FUNCTION    my_hw_unlocking_function
-#define BSP_CFG_USER_LOCKING_SW_LOCK_FUNCTION      my_sw_locking_function
-#define BSP_CFG_USER_LOCKING_SW_UNLOCK_FUNCTION    my_sw_unlocking_function
+#define BSP_CFG_USER_LOCKING_HW_LOCK_FUNCTION   my_hw_locking_function
+#define BSP_CFG_USER_LOCKING_HW_UNLOCK_FUNCTION my_hw_unlocking_function
+#define BSP_CFG_USER_LOCKING_SW_LOCK_FUNCTION   my_sw_locking_function
+#define BSP_CFG_USER_LOCKING_SW_UNLOCK_FUNCTION my_sw_unlocking_function
 
 /* If the user would like to determine if a warm start reset has occurred, then they may enable one or more of the
    following callback definitions AND provide a call back function name for the respective callback
@@ -736,11 +736,11 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    Setting BSP_CFG_USER_WARM_START_CALLBACK_POST_INITC_ENABLED = 1 will result in a callback to the user defined
    my_sw_warmstart_postc_function just after the initialization of the C runtime environment by resetprg.
 */
-#define BSP_CFG_USER_WARM_START_CALLBACK_PRE_INITC_ENABLED    (0)
-#define BSP_CFG_USER_WARM_START_PRE_C_FUNCTION     my_sw_warmstart_prec_function
+#define BSP_CFG_USER_WARM_START_CALLBACK_PRE_INITC_ENABLED (0)
+#define BSP_CFG_USER_WARM_START_PRE_C_FUNCTION             my_sw_warmstart_prec_function
 
-#define BSP_CFG_USER_WARM_START_CALLBACK_POST_INITC_ENABLED    (0)
-#define BSP_CFG_USER_WARM_START_POST_C_FUNCTION    my_sw_warmstart_postc_function
+#define BSP_CFG_USER_WARM_START_CALLBACK_POST_INITC_ENABLED (0)
+#define BSP_CFG_USER_WARM_START_POST_C_FUNCTION             my_sw_warmstart_postc_function
 
 /* By default FIT modules will check input parameters to be valid. This is helpful during development but some users
    will want to disable this for production code. The reason for this would be to save execution time and code space.
@@ -752,7 +752,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    0 = Global setting for parameter checking is disabled.
    1 = Global setting for parameter checking is enabled (Default).
 */
-#define BSP_CFG_PARAM_CHECKING_ENABLE               (1)
+#define BSP_CFG_PARAM_CHECKING_ENABLE (1)
 
 /* The extended bus master has five transfer sources: EDMAC, GLCDC-GRA1 (GLCDC graphics 1 data read), GLCDCGRA2 (GLCDC
    graphics 2 data read), DRW2D-TX (DRW2D texture data read), and DRW2D-FB (DRW2D frame buffer data read write and
@@ -771,27 +771,27 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    Note : Settings other than above are prohibited.
           Duplicate priority settings can not be made.
 */
-#define BSP_CFG_EBMAPCR_1ST_PRIORITY                (0) /* Extended Bus Master 1st Priority Selection */
-#define BSP_CFG_EBMAPCR_2ND_PRIORITY                (3) /* Extended Bus Master 2nd Priority Selection */
-#define BSP_CFG_EBMAPCR_3RD_PRIORITY                (1) /* Extended Bus Master 3rd Priority Selection */
-#define BSP_CFG_EBMAPCR_4TH_PRIORITY                (2) /* Extended Bus Master 4th Priority Selection */
-#define BSP_CFG_EBMAPCR_5TH_PRIORITY                (4) /* Extended Bus Master 5th Priority Selection */
+#define BSP_CFG_EBMAPCR_1ST_PRIORITY (0) /* Extended Bus Master 1st Priority Selection */
+#define BSP_CFG_EBMAPCR_2ND_PRIORITY (3) /* Extended Bus Master 2nd Priority Selection */
+#define BSP_CFG_EBMAPCR_3RD_PRIORITY (1) /* Extended Bus Master 3rd Priority Selection */
+#define BSP_CFG_EBMAPCR_4TH_PRIORITY (2) /* Extended Bus Master 4th Priority Selection */
+#define BSP_CFG_EBMAPCR_5TH_PRIORITY (4) /* Extended Bus Master 5th Priority Selection */
 
 /* This macro is used to define the voltage that is supplied to the MCU (Vcc). This macro is defined in millivolts. This
    macro does not actually change anything on the MCU. Some FIT modules need this information so it is defined here. */
-#define BSP_CFG_MCU_VCC_MV                          (3300) /* Generated value. Do not edit this manually */
+#define BSP_CFG_MCU_VCC_MV (3300) /* Generated value. Do not edit this manually */
 
 /* Allow initialization of auto-generated peripheral initialization code by Smart Configurator tool.
    When not using the Smart Configurator, set the value of BSP_CFG_CONFIGURATOR_SELECT to 0.
    0 = Disabled (default)
    1 = Smart Configurator initialization code used
 */
-#define BSP_CFG_CONFIGURATOR_SELECT                 (1) /* Generated value. Do not edit this manually */
+#define BSP_CFG_CONFIGURATOR_SELECT (1) /* Generated value. Do not edit this manually */
 
 /* Version number of Smart Configurator.
    This macro definition is updated by Smart Configurator.
 */
-#define BSP_CFG_CONFIGURATOR_VERSION                (2280) /* Generated value. Do not edit this manually */
+#define BSP_CFG_CONFIGURATOR_VERSION (2280) /* Generated value. Do not edit this manually */
 
 /* For some BSP functions, it is necessary to ensure that, while these functions are executing, interrupts from other 
    FIT modules do not occur. By controlling the IPL, these functions disable interrupts that are at or below the 
@@ -801,15 +801,15 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    The default value is 0xF (maximum value).
    Don't change if there is no special processing with higher priority than all fit modules.
 */
-#define BSP_CFG_FIT_IPL_MAX                         (0xF)
+#define BSP_CFG_FIT_IPL_MAX (0xF)
 
 /* Software Interrupt (SWINT).
    0 = Software interrupt is not used.
    1 = Software interrupt is used.
    NOTE: When this macro is set to 1, the software interrupt is initialized in bsp startup routine. 
 */
-#define BSP_CFG_SWINT_UNIT1_ENABLE    (0)
-#define BSP_CFG_SWINT_UNIT2_ENABLE    (0)
+#define BSP_CFG_SWINT_UNIT1_ENABLE (0)
+#define BSP_CFG_SWINT_UNIT2_ENABLE (0)
 
 /* Software Interrupt Task Buffer Number.
    For software interrupt, this value is number of buffering user tasks.
@@ -818,7 +818,7 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    NOTE: This setting is common to all units. It can not be set individually. 
          The maximum value is 254.
 */
-#define BSP_CFG_SWINT_TASK_BUFFER_NUMBER     (8)
+#define BSP_CFG_SWINT_TASK_BUFFER_NUMBER (8)
 
 /* Initial value of the software interrupt priority.
    For software interrupt, this value is interrupt priority. Range is 0x0 - 0xF.
@@ -826,38 +826,37 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
          Please be careful that this setting is the initial value of the interrupt priority register(IPR).
          It is possible to dynamically change the IPR.
 */
-#define BSP_CFG_SWINT_IPR_INITIAL_VALUE     (0x1)
+#define BSP_CFG_SWINT_IPR_INITIAL_VALUE (0x1)
 
 /* This macro is used for serial terminal on the board selected by smart configurator.
    0 = SCI UART Terminal is disabled.
    1 = SCI UART Terminal is enabled.
 */
-#define BSP_CFG_SCI_UART_TERMINAL_ENABLE         (0)
+#define BSP_CFG_SCI_UART_TERMINAL_ENABLE (0)
 
 /* This macro is channel number for serial terminal.
 */
-#define BSP_CFG_SCI_UART_TERMINAL_CHANNEL        (9)
+#define BSP_CFG_SCI_UART_TERMINAL_CHANNEL (9)
 
 /* This macro is bit-rate for serial terminal.
 */
-#define BSP_CFG_SCI_UART_TERMINAL_BITRATE        (115200)
+#define BSP_CFG_SCI_UART_TERMINAL_BITRATE (115200)
 
 /* This macro is interrupt priority for serial terminal.
    0(low) - 15(high)
 */
-#define BSP_CFG_SCI_UART_TERMINAL_INTERRUPT_PRIORITY   (15)
+#define BSP_CFG_SCI_UART_TERMINAL_INTERRUPT_PRIORITY (15)
 
 /* This macro is used for C++ project and updated by Smart Configurator.
    0 = This project is a C project.(Not a C++ project).
    1 = This project is a C++ project.
 */
-#define BSP_CFG_CPLUSPLUS             (1) /* Generated value. Do not edit this manually */
+#define BSP_CFG_CPLUSPLUS (1) /* Generated value. Do not edit this manually */
 
 /* Select whether to enable sections of the expansion RAM area.
    0 = Sections of the expansion RAM area is disabled. (default)
    1 = Sections of the expansion RAM area is enabled.
 */
-#define BSP_CFG_EXPANSION_RAM_ENABLE  (0)
+#define BSP_CFG_EXPANSION_RAM_ENABLE (0)
 
 #endif /* R_BSP_CONFIG_REF_HEADER_FILE */
-

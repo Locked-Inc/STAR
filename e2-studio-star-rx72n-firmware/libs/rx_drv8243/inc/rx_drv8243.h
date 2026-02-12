@@ -1106,21 +1106,23 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  bool spi_error;     /**< SPI frame error or parity fault (FAULT_SUMMARY.SPI_ERROR) */
-  bool por;           /**< Power-on reset detected since last read (FAULT_SUMMARY.POR) */
-  bool vmov;          /**< VM overvoltage fault (>37V) (FAULT_SUMMARY.VMOV) */
-  bool vmuv;          /**< VM undervoltage fault (<4.5V) (FAULT_SUMMARY.VMUV) */
-  bool ocp;           /**< Overcurrent protection (any FET) (FAULT_SUMMARY.OCP) */
-  bool tsd;           /**< Thermal shutdown (TJ >165°C) (FAULT_SUMMARY.TSD) */
-  bool ola;           /**< Open-load detected (any output) (FAULT_SUMMARY.OLA) */
-  bool ocp_h1;        /**< Overcurrent on high-side OUT1 FET (STATUS1.OCP_H1) */
-  bool ocp_l1;        /**< Overcurrent on low-side OUT1 FET (STATUS1.OCP_L1) */
-  bool ocp_h2;        /**< Overcurrent on high-side OUT2 FET (STATUS1.OCP_H2) */
-  bool ocp_l2;        /**< Overcurrent on low-side OUT2 FET (STATUS1.OCP_L2) */
-  bool ola1;          /**< Open-load on OUT1 (STATUS1.OLA1) */
-  bool ola2;          /**< Open-load on OUT2 (STATUS1.OLA2) */
-  bool itrip_active;  /**< ITRIP current regulation active (STATUS1.ITRIP) - not a fault, informational */
-  bool device_active; /**< Device in active state, outputs enabled (STATUS1.STATE) - not a fault, informational */
+  bool spi_error; /**< SPI frame error or parity fault (FAULT_SUMMARY.SPI_ERROR) */
+  bool por;       /**< Power-on reset detected since last read (FAULT_SUMMARY.POR) */
+  bool vmov;      /**< VM overvoltage fault (>37V) (FAULT_SUMMARY.VMOV) */
+  bool vmuv;      /**< VM undervoltage fault (<4.5V) (FAULT_SUMMARY.VMUV) */
+  bool ocp;       /**< Overcurrent protection (any FET) (FAULT_SUMMARY.OCP) */
+  bool tsd;       /**< Thermal shutdown (TJ >165°C) (FAULT_SUMMARY.TSD) */
+  bool ola;       /**< Open-load detected (any output) (FAULT_SUMMARY.OLA) */
+  bool ocp_h1;    /**< Overcurrent on high-side OUT1 FET (STATUS1.OCP_H1) */
+  bool ocp_l1;    /**< Overcurrent on low-side OUT1 FET (STATUS1.OCP_L1) */
+  bool ocp_h2;    /**< Overcurrent on high-side OUT2 FET (STATUS1.OCP_H2) */
+  bool ocp_l2;    /**< Overcurrent on low-side OUT2 FET (STATUS1.OCP_L2) */
+  bool ola1;      /**< Open-load on OUT1 (STATUS1.OLA1) */
+  bool ola2;      /**< Open-load on OUT2 (STATUS1.OLA2) */
+  bool
+    itrip_active; /**< ITRIP current regulation active (STATUS1.ITRIP) - not a fault, informational */
+  bool
+    device_active; /**< Device in active state, outputs enabled (STATUS1.STATE) - not a fault, informational */
 } rx_drv8243_detailed_fault_t;
 
 /**
@@ -1187,9 +1189,9 @@ typedef struct {
   bool  initialized;   /**< True after successful init, false after deinit */
 
   /* SPI variant state */
-  bool    spi_enabled;    /**< True if SPI variant is enabled */
-  uint8_t sci_channel;    /**< SCI channel for SPI communication */
-  bool    config_locked;  /**< True if configuration registers are locked */
+  bool    spi_enabled;     /**< True if SPI variant is enabled */
+  uint8_t sci_channel;     /**< SCI channel for SPI communication */
+  bool    config_locked;   /**< True if configuration registers are locked */
   uint8_t last_spi_status; /**< Last SPI status byte received */
 } rx_drv8243_handle_t;
 
@@ -1209,7 +1211,8 @@ typedef struct {
  * @return k_rx_err_invalid_arg if configuration is invalid
  * @return k_rx_err_invalid_state if motor initialization fails
  */
-[[nodiscard]] rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t* config);
+[[nodiscard]] rx_err_t rx_drv8243_init(rx_drv8243_handle_t*       handle,
+                                       const rx_drv8243_config_t* config);
 
 /**
  * @brief Deinitialize DRV8243 motor driver
@@ -1256,7 +1259,8 @@ typedef struct {
  * @return k_rx_err_null_ptr if handle or out_current is nullptr
  * @return k_rx_err_invalid_state if not initialized
  */
-[[nodiscard]] rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_current);
+[[nodiscard]] rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle,
+                                               float*                     out_current);
 
 /**
  * @brief Get fault status
@@ -1268,7 +1272,8 @@ typedef struct {
  * @return k_rx_err_null_ptr if handle or out_fault is nullptr
  * @return k_rx_err_invalid_state if not initialized
  */
-[[nodiscard]] rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle, bool* out_fault);
+[[nodiscard]] rx_err_t rx_drv8243_get_fault_status(const rx_drv8243_handle_t* handle,
+                                                   bool*                      out_fault);
 
 /**
  * @brief Get current motor speed
@@ -1328,8 +1333,8 @@ typedef struct {
  * @return k_rx_err_invalid_state if not initialized or not SPI variant
  * @return k_rx_err_timeout if SPI communication timeout
  */
-[[nodiscard]] rx_err_t rx_drv8243_spi_get_detailed_fault(rx_drv8243_handle_t*        handle,
-                                           rx_drv8243_detailed_fault_t* fault);
+[[nodiscard]] rx_err_t rx_drv8243_spi_get_detailed_fault(rx_drv8243_handle_t*         handle,
+                                                         rx_drv8243_detailed_fault_t* fault);
 
 /**
  * @brief Set slew rate (SPI variant)
@@ -1344,7 +1349,8 @@ typedef struct {
  * @return k_rx_err_invalid_state if not initialized, not SPI variant, or config locked
  * @return k_rx_err_timeout if SPI communication timeout
  */
-[[nodiscard]] rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle, drv8243_slew_rate_t rate);
+[[nodiscard]] rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle,
+                                                    drv8243_slew_rate_t  rate);
 
 /**
  * @brief Set ITRIP current regulation (SPI variant)
@@ -1362,8 +1368,8 @@ typedef struct {
  * @return k_rx_err_timeout if SPI communication timeout
  */
 [[nodiscard]] rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*  handle,
-                                  drv8243_itrip_level_t level,
-                                  drv8243_toff_t        toff);
+                                                drv8243_itrip_level_t level,
+                                                drv8243_toff_t        toff);
 
 /**
  * @brief Set control mode (SPI variant)
@@ -1378,7 +1384,8 @@ typedef struct {
  * @return k_rx_err_invalid_state if not initialized, not SPI variant, or config locked
  * @return k_rx_err_timeout if SPI communication timeout
  */
-[[nodiscard]] rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, drv8243_control_mode_t mode);
+[[nodiscard]] rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t*   handle,
+                                               drv8243_control_mode_t mode);
 
 /**
  * @brief Set OCP threshold and filter (SPI variant)
@@ -1396,8 +1403,8 @@ typedef struct {
  * @return k_rx_err_timeout if SPI communication timeout
  */
 [[nodiscard]] rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t* handle,
-                                drv8243_ocp_thresh_t thresh,
-                                drv8243_ocp_filter_t filter);
+                                              drv8243_ocp_thresh_t thresh,
+                                              drv8243_ocp_filter_t filter);
 
 /**
  * @brief Enable/disable spread spectrum clocking (SPI variant)
@@ -1454,7 +1461,8 @@ typedef struct {
  * @return k_rx_err_invalid_state if not initialized or not SPI variant
  * @return k_rx_err_timeout if SPI communication timeout
  */
-[[nodiscard]] rx_err_t rx_drv8243_spi_read_device_id(rx_drv8243_handle_t* handle, uint8_t* device_id);
+[[nodiscard]] rx_err_t rx_drv8243_spi_read_device_id(rx_drv8243_handle_t* handle,
+                                                     uint8_t*             device_id);
 
 #ifdef __cplusplus
 }

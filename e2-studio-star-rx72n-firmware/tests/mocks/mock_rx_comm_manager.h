@@ -94,9 +94,9 @@ typedef struct {
  * @brief Complete frame structure
  */
 typedef struct {
-  rx_frame_header_t header;                           /**< Frame header */
+  rx_frame_header_t header;                                /**< Frame header */
   uint8_t           payload[k_mock_comm_max_payload_size]; /**< Payload data */
-  uint32_t          crc;                              /**< CRC checksum */
+  uint32_t          crc;                                   /**< CRC checksum */
 } rx_frame_t;
 
 /* Forward declarations for mock */
@@ -110,19 +110,19 @@ typedef struct rx_spi_comm_handle_s rx_spi_comm_handle_t;
  * @typedef rx_comm_frame_callback_t
  * @brief Frame received callback function type
  */
-typedef void (*rx_comm_frame_callback_t)(rx_comm_channel_t  channel,
-                                          const rx_frame_t*  frame,
-                                          void*              ctx);
+typedef void (*rx_comm_frame_callback_t)(rx_comm_channel_t channel,
+                                         const rx_frame_t* frame,
+                                         void*             ctx);
 
 /**
  * @struct rx_comm_manager_config_t
  * @brief Communication manager configuration
  */
 typedef struct {
-  rx_usb_comm_handle_t*    usb_handle;           /**< USB comm handle */
-  rx_spi_comm_handle_t*    spi_handle;           /**< SPI comm handle */
-  rx_comm_frame_callback_t callback;             /**< Frame callback */
-  void*                    callback_ctx;         /**< Callback context */
+  rx_usb_comm_handle_t*    usb_handle;            /**< USB comm handle */
+  rx_spi_comm_handle_t*    spi_handle;            /**< SPI comm handle */
+  rx_comm_frame_callback_t callback;              /**< Frame callback */
+  void*                    callback_ctx;          /**< Callback context */
   bool                     enable_decoded_output; /**< Enable ASCII output */
 } rx_comm_manager_config_t;
 
@@ -131,13 +131,13 @@ typedef struct {
  * @brief Communication manager handle
  */
 typedef struct {
-  rx_usb_comm_handle_t*    usb_handle;                         /**< USB handle */
-  rx_spi_comm_handle_t*    spi_handle;                         /**< SPI handle */
-  rx_comm_frame_callback_t callback;                           /**< Callback */
-  void*                    callback_ctx;                       /**< Context */
+  rx_usb_comm_handle_t*    usb_handle;                               /**< USB handle */
+  rx_spi_comm_handle_t*    spi_handle;                               /**< SPI handle */
+  rx_comm_frame_callback_t callback;                                 /**< Callback */
+  void*                    callback_ctx;                             /**< Context */
   char                     ascii_buffer[k_mock_comm_ascii_buf_size]; /**< ASCII buf */
-  bool                     enable_decoded_output;              /**< ASCII output */
-  bool                     initialized;                        /**< Init flag */
+  bool                     enable_decoded_output;                    /**< ASCII output */
+  bool                     initialized;                              /**< Init flag */
 } rx_comm_manager_t;
 
 /**
@@ -301,8 +301,7 @@ uint32_t mock_comm_manager_get_queue_count(void);
  *
  * @return rx_err_t Configured return value
  */
-rx_err_t rx_comm_manager_init(rx_comm_manager_t*             mgr,
-                              const rx_comm_manager_config_t* cfg);
+rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_config_t* cfg);
 
 /**
  * @brief Mock rx_comm_manager_deinit() - Deinitialize manager
@@ -330,8 +329,7 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr);
  *
  * @return rx_err_t Configured return value
  */
-rx_err_t rx_comm_manager_send(rx_comm_manager_t*            mgr,
-                              const rx_comm_send_params_t* params);
+rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_t* params);
 
 /**
  * @brief Mock rx_comm_manager_respond() - Send response
@@ -357,9 +355,8 @@ rx_err_t rx_comm_manager_respond(rx_comm_manager_t* mgr,
  *
  * @return rx_err_t k_rx_ok on success
  */
-rx_err_t rx_comm_manager_channel_ready(rx_comm_manager_t* mgr,
-                                       rx_comm_channel_t  channel,
-                                       bool*              ready);
+rx_err_t
+rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel, bool* ready);
 
 /**
  * @brief Mock rx_comm_manager_channel_name() - Get channel name

@@ -9,7 +9,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 /**************************************************************************/
 /**************************************************************************/
 /**                                                                       */
@@ -24,12 +23,10 @@
 #define TX_SOURCE_CODE
 #endif
 
-
 /* Include necessary system files.  */
 
 #include "tx_api.h"
 #include "tx_trace.h"
-
 
 /**************************************************************************/
 /*                                                                        */
@@ -71,38 +68,33 @@
 /*                                            resulting in version 6.1    */
 /*                                                                        */
 /**************************************************************************/
-UINT  _tx_trace_event_filter(ULONG event_filter_bits)
+UINT _tx_trace_event_filter(ULONG event_filter_bits)
 {
 
 #ifdef TX_ENABLE_EVENT_TRACE
 
-    /* Apply the specified filter by clearing the enable bits.  */
-    _tx_trace_event_enable_bits =  _tx_trace_event_enable_bits & (~event_filter_bits);
+  /* Apply the specified filter by clearing the enable bits.  */
+  _tx_trace_event_enable_bits = _tx_trace_event_enable_bits & (~event_filter_bits);
 
-    /* Return success.  */
-    return(TX_SUCCESS);
+  /* Return success.  */
+  return (TX_SUCCESS);
 
 #else
 
-UINT        status;
+  UINT status;
 
+  /* Access input arguments just for the sake of lint, MISRA, etc.  */
+  if (event_filter_bits != ((ULONG)0)) {
 
-    /* Access input arguments just for the sake of lint, MISRA, etc.  */
-    if (event_filter_bits != ((ULONG) 0))
-    {
+    /* Trace not enabled, return an error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  } else {
 
-        /* Trace not enabled, return an error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-    else
-    {
+    /* Trace not enabled, return an error.  */
+    status = TX_FEATURE_NOT_ENABLED;
+  }
 
-        /* Trace not enabled, return an error.  */
-        status =  TX_FEATURE_NOT_ENABLED;
-    }
-
-    /* Return completion status.  */
-    return(status);
+  /* Return completion status.  */
+  return (status);
 #endif
 }
-

@@ -209,7 +209,7 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_mdmonr_md = 0x0001U,   /**< MD pin status (0=low/boot, 1=high/single-chip) */
+  k_mdmonr_md      = 0x0001U, /**< MD pin status (0=low/boot, 1=high/single-chip) */
   k_mdmonr_md_mask = 0x0001U, /**< MD bit mask */
 } mdmonr_bits_t;
 
@@ -245,15 +245,15 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_syscr0_rome = 0x0001U,         /**< On-Chip ROM Enable (0=disabled, 1=enabled) */
-  k_syscr0_exbe = 0x0002U,         /**< External Bus Enable (0=disabled, 1=enabled) */
-  k_syscr0_key = 0x5A00U,          /**< Key code for SYSCR0 write (must be in upper byte) */
-  k_syscr0_key_mask = 0xFF00U,     /**< Key code mask */
+  k_syscr0_rome     = 0x0001U, /**< On-Chip ROM Enable (0=disabled, 1=enabled) */
+  k_syscr0_exbe     = 0x0002U, /**< External Bus Enable (0=disabled, 1=enabled) */
+  k_syscr0_key      = 0x5A00U, /**< Key code for SYSCR0 write (must be in upper byte) */
+  k_syscr0_key_mask = 0xFF00U, /**< Key code mask */
 
   /* Convenience values for common write operations */
-  k_syscr0_rom_enabled = (0x5A00U | 0x0001U),  /**< Enable ROM (write value) */
-  k_syscr0_rom_disabled = 0x5A00U,             /**< Disable ROM (write value) - IRREVERSIBLE */
-  k_syscr0_extbus_enable = (0x5A00U | 0x0003U),/**< Enable ROM + ExtBus (write value) */
+  k_syscr0_rom_enabled   = (0x5A00U | 0x0001U), /**< Enable ROM (write value) */
+  k_syscr0_rom_disabled  = 0x5A00U,             /**< Disable ROM (write value) - IRREVERSIBLE */
+  k_syscr0_extbus_enable = (0x5A00U | 0x0003U), /**< Enable ROM + ExtBus (write value) */
 } syscr0_bits_t;
 
 /**
@@ -285,15 +285,15 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_syscr1_rame = 0x0001U,        /**< RAM Enable (0=disabled, 1=enabled) */
+  k_syscr1_rame          = 0x0001U, /**< RAM Enable (0=disabled, 1=enabled) */
   k_syscr1_reserved_mask = 0x003EU, /**< Reserved bits 5:1 (read/write as 1) */
-  k_syscr1_eccrame = 0x0040U,     /**< ECCRAM Enable (0=disabled, 1=enabled) */
-  k_syscr1_sbyrame = 0x0080U,     /**< Standby RAM Enable (0=disabled, 1=enabled) */
+  k_syscr1_eccrame       = 0x0040U, /**< ECCRAM Enable (0=disabled, 1=enabled) */
+  k_syscr1_sbyrame       = 0x0080U, /**< Standby RAM Enable (0=disabled, 1=enabled) */
 
   /* Convenience values */
   k_syscr1_all_ram_enabled = 0x00FFU, /**< Default: all RAM types enabled */
-  k_syscr1_disable_eccram = 0x00BFU,  /**< Disable ECCRAM (RAME+SBYRAME enabled) */
-  k_syscr1_disable_sbyram = 0x007FU,  /**< Disable StandbyRAM (RAME+ECCRAM enabled) */
+  k_syscr1_disable_eccram  = 0x00BFU, /**< Disable ECCRAM (RAME+SBYRAME enabled) */
+  k_syscr1_disable_sbyram  = 0x007FU, /**< Disable StandbyRAM (RAME+ECCRAM enabled) */
 } syscr1_bits_t;
 
 /* =============================================================================
@@ -346,30 +346,31 @@ typedef enum : uint16_t {
  */
 typedef enum : uint16_t {
   /* Clock output source select (bits 10:8) */
-  k_ckocr_ckosel_loco = (0U << 8),      /**< LOCO (low-speed on-chip osc) */
-  k_ckocr_ckosel_hoco = (1U << 8),      /**< HOCO (high-speed on-chip osc) */
-  k_ckocr_ckosel_main = (2U << 8),      /**< Main oscillator */
-  k_ckocr_ckosel_subclock = (3U << 8),  /**< Sub-clock oscillator */
-  k_ckocr_ckosel_pll = (4U << 8),       /**< PLL output */
-  k_ckocr_ckosel_mask = (7U << 8),      /**< CKOSEL field mask */
+  k_ckocr_ckosel_loco     = (0U << 8), /**< LOCO (low-speed on-chip osc) */
+  k_ckocr_ckosel_hoco     = (1U << 8), /**< HOCO (high-speed on-chip osc) */
+  k_ckocr_ckosel_main     = (2U << 8), /**< Main oscillator */
+  k_ckocr_ckosel_subclock = (3U << 8), /**< Sub-clock oscillator */
+  k_ckocr_ckosel_pll      = (4U << 8), /**< PLL output */
+  k_ckocr_ckosel_mask     = (7U << 8), /**< CKOSEL field mask */
 
   /* Clock output divider (bits 14:12) */
-  k_ckocr_ckodiv_1 = (0U << 12),        /**< Divide by 1 */
-  k_ckocr_ckodiv_2 = (1U << 12),        /**< Divide by 2 */
-  k_ckocr_ckodiv_4 = (2U << 12),        /**< Divide by 4 */
-  k_ckocr_ckodiv_8 = (3U << 12),        /**< Divide by 8 */
-  k_ckocr_ckodiv_16 = (4U << 12),       /**< Divide by 16 */
-  k_ckocr_ckodiv_32 = (5U << 12),       /**< Divide by 32 */
-  k_ckocr_ckodiv_64 = (6U << 12),       /**< Divide by 64 */
-  k_ckocr_ckodiv_128 = (7U << 12),      /**< Divide by 128 */
-  k_ckocr_ckodiv_mask = (7U << 12),     /**< CKODIV field mask */
+  k_ckocr_ckodiv_1    = (0U << 12), /**< Divide by 1 */
+  k_ckocr_ckodiv_2    = (1U << 12), /**< Divide by 2 */
+  k_ckocr_ckodiv_4    = (2U << 12), /**< Divide by 4 */
+  k_ckocr_ckodiv_8    = (3U << 12), /**< Divide by 8 */
+  k_ckocr_ckodiv_16   = (4U << 12), /**< Divide by 16 */
+  k_ckocr_ckodiv_32   = (5U << 12), /**< Divide by 32 */
+  k_ckocr_ckodiv_64   = (6U << 12), /**< Divide by 64 */
+  k_ckocr_ckodiv_128  = (7U << 12), /**< Divide by 128 */
+  k_ckocr_ckodiv_mask = (7U << 12), /**< CKODIV field mask */
 
   /* Clock output stop (bit 15) */
-  k_ckocr_ckostp = (1U << 15),          /**< Clock output stop (1=stopped, 0=running) */
+  k_ckocr_ckostp = (1U << 15), /**< Clock output stop (1=stopped, 0=running) */
 
   /* Convenience values */
   k_ckocr_output_disabled = k_ckocr_ckostp, /**< Default: output disabled */
-  k_ckocr_pll_div4 = (k_ckocr_ckosel_pll | k_ckocr_ckodiv_4), /**< PLL/4 output (60 MHz @ 240 MHz PLL) */
+  k_ckocr_pll_div4 =
+    (k_ckocr_ckosel_pll | k_ckocr_ckodiv_4), /**< PLL/4 output (60 MHz @ 240 MHz PLL) */
 } ckocr_bits_t;
 
 /**
@@ -397,14 +398,14 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_clock_div_1 = 0,    /**< Divide by 1 (no division) */
-  k_clock_div_2 = 1,    /**< Divide by 2 */
-  k_clock_div_4 = 2,    /**< Divide by 4 */
-  k_clock_div_8 = 3,    /**< Divide by 8 */
-  k_clock_div_16 = 4,   /**< Divide by 16 */
-  k_clock_div_32 = 5,   /**< Divide by 32 */
-  k_clock_div_64 = 6,   /**< Divide by 64 */
-  k_clock_div_128 = 8,  /**< Divide by 128 (note: value is 8, not 7!) */
+  k_clock_div_1   = 0, /**< Divide by 1 (no division) */
+  k_clock_div_2   = 1, /**< Divide by 2 */
+  k_clock_div_4   = 2, /**< Divide by 4 */
+  k_clock_div_8   = 3, /**< Divide by 8 */
+  k_clock_div_16  = 4, /**< Divide by 16 */
+  k_clock_div_32  = 5, /**< Divide by 32 */
+  k_clock_div_64  = 6, /**< Divide by 64 */
+  k_clock_div_128 = 8, /**< Divide by 128 (note: value is 8, not 7!) */
 } sckcr_divider_t;
 
 /**
@@ -450,34 +451,34 @@ typedef enum : uint32_t {
   k_sckcr_pckc_shift = 4,
   k_sckcr_pckb_shift = 8,
   k_sckcr_pcka_shift = 12,
-  k_sckcr_bck_shift = 16,
-  k_sckcr_ick_shift = 24,
-  k_sckcr_fck_shift = 28,
+  k_sckcr_bck_shift  = 16,
+  k_sckcr_ick_shift  = 24,
+  k_sckcr_fck_shift  = 28,
 
   /* Field masks */
   k_sckcr_pckd_mask = 0xFUL << k_sckcr_pckd_shift,
   k_sckcr_pckc_mask = 0xFUL << k_sckcr_pckc_shift,
   k_sckcr_pckb_mask = 0xFUL << k_sckcr_pckb_shift,
   k_sckcr_pcka_mask = 0xFUL << k_sckcr_pcka_shift,
-  k_sckcr_bck_mask = 0xFUL << k_sckcr_bck_shift,
-  k_sckcr_ick_mask = 0xFUL << k_sckcr_ick_shift,
-  k_sckcr_fck_mask = 0xFUL << k_sckcr_fck_shift,
+  k_sckcr_bck_mask  = 0xFUL << k_sckcr_bck_shift,
+  k_sckcr_ick_mask  = 0xFUL << k_sckcr_ick_shift,
+  k_sckcr_fck_mask  = 0xFUL << k_sckcr_fck_shift,
 
   /* PSTOP bits (peripheral clock stop) */
   k_sckcr_pstop0 = (1UL << 22), /**< PCLKA/PCLKB stop (1=stopped) */
   k_sckcr_pstop1 = (1UL << 23), /**< USB clock stop (1=stopped) */
 
   /* STAR Project configuration value (24 MHz × 10 = 240 MHz) */
-  k_sckcr_star_240mhz = (
-      ((uint32_t)k_clock_div_4 << k_sckcr_pckd_shift) |   /* PCLKD = 240/4 = 60 MHz */
-      ((uint32_t)k_clock_div_4 << k_sckcr_pckc_shift) |   /* PCLKC = 240/4 = 60 MHz */
-      ((uint32_t)k_clock_div_4 << k_sckcr_pckb_shift) |   /* PCLKB = 240/4 = 60 MHz */
-      ((uint32_t)k_clock_div_2 << k_sckcr_pcka_shift) |   /* PCLKA = 240/2 = 120 MHz */
-      ((uint32_t)k_clock_div_2 << k_sckcr_bck_shift) |    /* BCLK = 240/2 = 120 MHz */
-      ((uint32_t)k_clock_div_1 << k_sckcr_ick_shift) |    /* ICLK = 240/1 = 240 MHz */
-      ((uint32_t)k_clock_div_4 << k_sckcr_fck_shift) |    /* FCLK = 240/4 = 60 MHz */
-      0UL                                                  /* PSTOP0/1 = 0 (clocks running) */
-  ), /**< Complete SCKCR value for STAR 240 MHz configuration */
+  k_sckcr_star_240mhz =
+    (((uint32_t)k_clock_div_4 << k_sckcr_pckd_shift) | /* PCLKD = 240/4 = 60 MHz */
+     ((uint32_t)k_clock_div_4 << k_sckcr_pckc_shift) | /* PCLKC = 240/4 = 60 MHz */
+     ((uint32_t)k_clock_div_4 << k_sckcr_pckb_shift) | /* PCLKB = 240/4 = 60 MHz */
+     ((uint32_t)k_clock_div_2 << k_sckcr_pcka_shift) | /* PCLKA = 240/2 = 120 MHz */
+     ((uint32_t)k_clock_div_2 << k_sckcr_bck_shift) |  /* BCLK = 240/2 = 120 MHz */
+     ((uint32_t)k_clock_div_1 << k_sckcr_ick_shift) |  /* ICLK = 240/1 = 240 MHz */
+     ((uint32_t)k_clock_div_4 << k_sckcr_fck_shift) |  /* FCLK = 240/4 = 60 MHz */
+     0UL                                               /* PSTOP0/1 = 0 (clocks running) */
+     ), /**< Complete SCKCR value for STAR 240 MHz configuration */
 } sckcr_bits_t;
 
 /**
@@ -508,13 +509,13 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_sckcr3_cksel_loco = 0x0000,      /**< LOCO (Low-speed On-Chip Oscillator, 240 kHz) */
-  k_sckcr3_cksel_hoco = 0x0100,      /**< HOCO (High-speed On-Chip Oscillator, 16-20 MHz) */
-  k_sckcr3_cksel_main = 0x0200,      /**< Main clock oscillator (STAR: 24 MHz crystal) */
-  k_sckcr3_cksel_subclock = 0x0300,  /**< Sub-clock oscillator (32.768 kHz) */
-  k_sckcr3_cksel_pll = 0x0400,       /**< PLL circuit (STAR: 240 MHz) */
-  k_sckcr3_cksel_ppll = 0x0500,      /**< PPLL circuit (USB: 48 MHz) */
-  k_sckcr3_cksel_mask = 0x0700,      /**< CKSEL field mask (bits 10:8) */
+  k_sckcr3_cksel_loco     = 0x0000, /**< LOCO (Low-speed On-Chip Oscillator, 240 kHz) */
+  k_sckcr3_cksel_hoco     = 0x0100, /**< HOCO (High-speed On-Chip Oscillator, 16-20 MHz) */
+  k_sckcr3_cksel_main     = 0x0200, /**< Main clock oscillator (STAR: 24 MHz crystal) */
+  k_sckcr3_cksel_subclock = 0x0300, /**< Sub-clock oscillator (32.768 kHz) */
+  k_sckcr3_cksel_pll      = 0x0400, /**< PLL circuit (STAR: 240 MHz) */
+  k_sckcr3_cksel_ppll     = 0x0500, /**< PPLL circuit (USB: 48 MHz) */
+  k_sckcr3_cksel_mask     = 0x0700, /**< CKSEL field mask (bits 10:8) */
 } sckcr3_cksel_t;
 
 /**
@@ -551,32 +552,30 @@ typedef enum : uint16_t {
  */
 typedef enum : uint16_t {
   /* PLL input divider (PLIDIV, bits 1:0) */
-  k_pllcr_plidiv_1 = 0x0000,      /**< Divide PLL input by 1 */
-  k_pllcr_plidiv_2 = 0x0001,      /**< Divide PLL input by 2 */
-  k_pllcr_plidiv_4 = 0x0002,      /**< Divide PLL input by 4 */
-  k_pllcr_plidiv_mask = 0x0003,   /**< PLIDIV field mask */
+  k_pllcr_plidiv_1    = 0x0000, /**< Divide PLL input by 1 */
+  k_pllcr_plidiv_2    = 0x0001, /**< Divide PLL input by 2 */
+  k_pllcr_plidiv_4    = 0x0002, /**< Divide PLL input by 4 */
+  k_pllcr_plidiv_mask = 0x0003, /**< PLIDIV field mask */
 
   /* PLL source select (PLLSRCSEL, bit 4) */
-  k_pllcr_src_main = 0x0000,      /**< Main oscillator as PLL source (STAR config) */
-  k_pllcr_src_hoco = 0x0010,      /**< HOCO as PLL source */
-  k_pllcr_src_mask = 0x0010,      /**< PLLSRCSEL field mask */
+  k_pllcr_src_main = 0x0000, /**< Main oscillator as PLL source (STAR config) */
+  k_pllcr_src_hoco = 0x0010, /**< HOCO as PLL source */
+  k_pllcr_src_mask = 0x0010, /**< PLLSRCSEL field mask */
 
   /* PLL multiplier field (STC, bits 13:8) - value N means multiply by (N+1) */
   k_pllcr_stc_shift = 8,
-  k_pllcr_stc_mask = 0x3F00,
+  k_pllcr_stc_mask  = 0x3F00,
 
   /* Convenience values for common configurations */
-  k_pllcr_star_24mhz_to_240mhz = (
-      k_pllcr_plidiv_1 |          /* 24 MHz input (no division) */
-      k_pllcr_src_main |          /* Main oscillator source */
-      (9U << k_pllcr_stc_shift)   /* STC=9 -> multiply by 10 */
-  ), /**< STAR: 24 MHz × 10 = 240 MHz */
+  k_pllcr_star_24mhz_to_240mhz = (k_pllcr_plidiv_1 |        /* 24 MHz input (no division) */
+                                  k_pllcr_src_main |        /* Main oscillator source */
+                                  (9U << k_pllcr_stc_shift) /* STC=9 -> multiply by 10 */
+                                  ),                        /**< STAR: 24 MHz × 10 = 240 MHz */
 
-  k_pllcr_12mhz_to_240mhz = (
-      k_pllcr_plidiv_1 |          /* 12 MHz input (no division) */
-      k_pllcr_src_main |          /* Main oscillator source */
-      (19U << k_pllcr_stc_shift)  /* STC=19 -> multiply by 20 */
-  ), /**< Alternative: 12 MHz × 20 = 240 MHz */
+  k_pllcr_12mhz_to_240mhz = (k_pllcr_plidiv_1 |         /* 12 MHz input (no division) */
+                             k_pllcr_src_main |         /* Main oscillator source */
+                             (19U << k_pllcr_stc_shift) /* STC=19 -> multiply by 20 */
+                             ),                         /**< Alternative: 12 MHz × 20 = 240 MHz */
 } pllcr_bits_t;
 
 /**
@@ -599,8 +598,8 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_pllcr2_pll_running = 0x00,   /**< PLL enabled (running) */
-  k_pllcr2_pll_stopped = 0x01,   /**< PLL disabled (stopped) */
+  k_pllcr2_pll_running = 0x00, /**< PLL enabled (running) */
+  k_pllcr2_pll_stopped = 0x01, /**< PLL disabled (stopped) */
 } pllcr2_bits_t;
 
 /**
@@ -711,7 +710,7 @@ typedef struct __attribute__((packed)) {
    * @details Read-only - indicates current operating mode
    */
   volatile uint16_t mdmonr;
-  uint8_t reserved0[k_system_reserved_02_05]; /**< Reserved @ 0x02-0x05 */
+  uint8_t           reserved0[k_system_reserved_02_05]; /**< Reserved @ 0x02-0x05 */
 
   /**
    * @brief System Control Register 0 (SYSCR0) @ 0x06
@@ -724,14 +723,14 @@ typedef struct __attribute__((packed)) {
    * @details Controls RAM wait states
    */
   volatile uint16_t syscr1;
-  uint8_t reserved1[k_system_reserved_0a_0b]; /**< Reserved @ 0x0A-0x0B */
+  uint8_t           reserved1[k_system_reserved_0a_0b]; /**< Reserved @ 0x0A-0x0B */
 
   /**
    * @brief Standby Control Register (SBYCR) @ 0x0C
    * @details Controls standby mode (SSBY bit)
    */
   volatile uint16_t sbycr;
-  uint8_t reserved2[k_system_reserved_0e_0f]; /**< Reserved @ 0x0E-0x0F */
+  uint8_t           reserved2[k_system_reserved_0e_0f]; /**< Reserved @ 0x0E-0x0F */
 
   /**
    * @brief Module Stop Control Register A (MSTPCRA) @ 0x10
@@ -786,14 +785,14 @@ typedef struct __attribute__((packed)) {
    * @details PLL enable (0=enabled, 1=disabled)
    */
   volatile uint8_t pllcr2;
-  uint8_t reserved3[k_system_reserved_2b_2f]; /**< Reserved @ 0x2B-0x2F */
+  uint8_t          reserved3[k_system_reserved_2b_2f]; /**< Reserved @ 0x2B-0x2F */
 
   /**
    * @brief External Bus Clock Control Register (BCKCR) @ 0x30
    * @details Controls external bus clock output
    */
   volatile uint8_t bckcr;
-  uint8_t reserved4[k_system_reserved_31]; /**< Reserved @ 0x31 */
+  uint8_t          reserved4[k_system_reserved_31]; /**< Reserved @ 0x31 */
 
   /**
    * @brief Main Clock Oscillator Control Register (MOSCCR) @ 0x32
@@ -830,7 +829,7 @@ typedef struct __attribute__((packed)) {
    * @details HOCO frequency selection
    */
   volatile uint8_t hococr2;
-  uint8_t reserved5[k_system_reserved_38_3b]; /**< Reserved @ 0x38-0x3B */
+  uint8_t          reserved5[k_system_reserved_38_3b]; /**< Reserved @ 0x38-0x3B */
 
   /**
    * @brief Oscillation Stabilization Flag Register (OSCOVFSR) @ 0x3C
@@ -840,7 +839,7 @@ typedef struct __attribute__((packed)) {
    * - Bit 3: PPLL stable
    */
   volatile uint8_t oscovfsr;
-  uint8_t reserved6[k_system_reserved_3d]; /**< Reserved @ 0x3D */
+  uint8_t          reserved6[k_system_reserved_3d]; /**< Reserved @ 0x3D */
 
   /**
    * @brief Clock Output Control Register (CKOCR) @ 0x3E
@@ -1147,34 +1146,55 @@ static inline volatile uint8_t* ppllcr2_reg(void)
 
 /* Verify base addresses match Hardware Manual Ch05 */
 static_assert(k_system_base_addr == 0x00080000, "System register base address incorrect");
-static_assert(k_prcr_addr == 0x000803FE, "PRCR address incorrect (must be 0x000803FE, NOT in system struct)");
+static_assert(k_prcr_addr == 0x000803FE,
+              "PRCR address incorrect (must be 0x000803FE, NOT in system struct)");
 
 /* Verify system register structure layout - offsets per RX72N Manual Ch05 */
-static_assert(sizeof(rx_system_regs_t) == 0x42, "System register structure size incorrect (expected 0x42)");
-static_assert(offsetof(rx_system_regs_t, mdmonr) == 0x00, "MDMONR offset incorrect (expected 0x00)");
-static_assert(offsetof(rx_system_regs_t, syscr0) == 0x06, "SYSCR0 offset incorrect (expected 0x06)");
-static_assert(offsetof(rx_system_regs_t, syscr1) == 0x08, "SYSCR1 offset incorrect (expected 0x08)");
+static_assert(sizeof(rx_system_regs_t) == 0x42,
+              "System register structure size incorrect (expected 0x42)");
+static_assert(offsetof(rx_system_regs_t, mdmonr) == 0x00,
+              "MDMONR offset incorrect (expected 0x00)");
+static_assert(offsetof(rx_system_regs_t, syscr0) == 0x06,
+              "SYSCR0 offset incorrect (expected 0x06)");
+static_assert(offsetof(rx_system_regs_t, syscr1) == 0x08,
+              "SYSCR1 offset incorrect (expected 0x08)");
 static_assert(offsetof(rx_system_regs_t, sbycr) == 0x0C, "SBYCR offset incorrect (expected 0x0C)");
-static_assert(offsetof(rx_system_regs_t, mstpcra) == 0x10, "MSTPCRA offset incorrect (expected 0x10)");
-static_assert(offsetof(rx_system_regs_t, mstpcrb) == 0x14, "MSTPCRB offset incorrect (expected 0x14)");
-static_assert(offsetof(rx_system_regs_t, mstpcrc) == 0x18, "MSTPCRC offset incorrect (expected 0x18)");
-static_assert(offsetof(rx_system_regs_t, mstpcrd) == 0x1C, "MSTPCRD offset incorrect (expected 0x1C)");
+static_assert(offsetof(rx_system_regs_t, mstpcra) == 0x10,
+              "MSTPCRA offset incorrect (expected 0x10)");
+static_assert(offsetof(rx_system_regs_t, mstpcrb) == 0x14,
+              "MSTPCRB offset incorrect (expected 0x14)");
+static_assert(offsetof(rx_system_regs_t, mstpcrc) == 0x18,
+              "MSTPCRC offset incorrect (expected 0x18)");
+static_assert(offsetof(rx_system_regs_t, mstpcrd) == 0x1C,
+              "MSTPCRD offset incorrect (expected 0x1C)");
 static_assert(offsetof(rx_system_regs_t, sckcr) == 0x20, "SCKCR offset incorrect (expected 0x20)");
-static_assert(offsetof(rx_system_regs_t, sckcr2) == 0x24, "SCKCR2 offset incorrect (expected 0x24)");
-static_assert(offsetof(rx_system_regs_t, sckcr3) == 0x26, "SCKCR3 offset incorrect (expected 0x26)");
+static_assert(offsetof(rx_system_regs_t, sckcr2) == 0x24,
+              "SCKCR2 offset incorrect (expected 0x24)");
+static_assert(offsetof(rx_system_regs_t, sckcr3) == 0x26,
+              "SCKCR3 offset incorrect (expected 0x26)");
 static_assert(offsetof(rx_system_regs_t, pllcr) == 0x28, "PLLCR offset incorrect (expected 0x28)");
-static_assert(offsetof(rx_system_regs_t, pllcr2) == 0x2A, "PLLCR2 offset incorrect (expected 0x2A)");
+static_assert(offsetof(rx_system_regs_t, pllcr2) == 0x2A,
+              "PLLCR2 offset incorrect (expected 0x2A)");
 static_assert(offsetof(rx_system_regs_t, bckcr) == 0x30, "BCKCR offset incorrect (expected 0x30)");
-static_assert(offsetof(rx_system_regs_t, mosccr) == 0x32, "MOSCCR offset incorrect (expected 0x32)");
-static_assert(offsetof(rx_system_regs_t, sosccr) == 0x33, "SOSCCR offset incorrect (expected 0x33)");
-static_assert(offsetof(rx_system_regs_t, lococr) == 0x34, "LOCOCR offset incorrect (expected 0x34)");
-static_assert(offsetof(rx_system_regs_t, ilococr) == 0x35, "ILOCOCR offset incorrect (expected 0x35)");
-static_assert(offsetof(rx_system_regs_t, hococr) == 0x36, "HOCOCR offset incorrect (expected 0x36)");
-static_assert(offsetof(rx_system_regs_t, hococr2) == 0x37, "HOCOCR2 offset incorrect (expected 0x37)");
-static_assert(offsetof(rx_system_regs_t, oscovfsr) == 0x3C, "OSCOVFSR offset incorrect (expected 0x3C)");
+static_assert(offsetof(rx_system_regs_t, mosccr) == 0x32,
+              "MOSCCR offset incorrect (expected 0x32)");
+static_assert(offsetof(rx_system_regs_t, sosccr) == 0x33,
+              "SOSCCR offset incorrect (expected 0x33)");
+static_assert(offsetof(rx_system_regs_t, lococr) == 0x34,
+              "LOCOCR offset incorrect (expected 0x34)");
+static_assert(offsetof(rx_system_regs_t, ilococr) == 0x35,
+              "ILOCOCR offset incorrect (expected 0x35)");
+static_assert(offsetof(rx_system_regs_t, hococr) == 0x36,
+              "HOCOCR offset incorrect (expected 0x36)");
+static_assert(offsetof(rx_system_regs_t, hococr2) == 0x37,
+              "HOCOCR2 offset incorrect (expected 0x37)");
+static_assert(offsetof(rx_system_regs_t, oscovfsr) == 0x3C,
+              "OSCOVFSR offset incorrect (expected 0x3C)");
 static_assert(offsetof(rx_system_regs_t, ckocr) == 0x3E, "CKOCR offset incorrect (expected 0x3E)");
-static_assert(offsetof(rx_system_regs_t, ostdcr) == 0x40, "OSTDCR offset incorrect (expected 0x40)");
-static_assert(offsetof(rx_system_regs_t, ostdsr) == 0x41, "OSTDSR offset incorrect (expected 0x41)");
+static_assert(offsetof(rx_system_regs_t, ostdcr) == 0x40,
+              "OSTDCR offset incorrect (expected 0x40)");
+static_assert(offsetof(rx_system_regs_t, ostdsr) == 0x41,
+              "OSTDSR offset incorrect (expected 0x41)");
 
 /* Verify RSTSR addresses match Hardware Manual Ch05 */
 static_assert(k_rstsr0_addr == 0x0008C290, "RSTSR0 address incorrect");
@@ -1196,24 +1216,25 @@ static_assert(k_ppllcr2_addr == 0x0008004A, "PPLLCR2 address incorrect");
 
 /* Verify PRCR is NOT embedded in system struct (critical check) */
 static_assert((k_prcr_addr - k_system_base_addr) == 0x3FE,
-               "PRCR must be at offset 0x3FE from system base, not embedded in struct");
+              "PRCR must be at offset 0x3FE from system base, not embedded in struct");
 
 /* Verify SCKCR clock divider field positions and masks */
-static_assert((k_sckcr_pckd_mask >> k_sckcr_pckd_shift) == 0xF,
-              "SCKCR PCKD field mask incorrect");
-static_assert((k_sckcr_ick_mask >> k_sckcr_ick_shift) == 0xF,
-              "SCKCR ICK field mask incorrect");
-static_assert((k_sckcr_fck_mask >> k_sckcr_fck_shift) == 0xF,
-              "SCKCR FCK field mask incorrect");
+static_assert((k_sckcr_pckd_mask >> k_sckcr_pckd_shift) == 0xF, "SCKCR PCKD field mask incorrect");
+static_assert((k_sckcr_ick_mask >> k_sckcr_ick_shift) == 0xF, "SCKCR ICK field mask incorrect");
+static_assert((k_sckcr_fck_mask >> k_sckcr_fck_shift) == 0xF, "SCKCR FCK field mask incorrect");
 
 /* Verify STAR project SCKCR configuration value */
-static_assert((k_sckcr_star_240mhz & k_sckcr_ick_mask) == ((uint32_t)k_clock_div_1 << k_sckcr_ick_shift),
+static_assert((k_sckcr_star_240mhz & k_sckcr_ick_mask) ==
+                ((uint32_t)k_clock_div_1 << k_sckcr_ick_shift),
               "STAR SCKCR: ICLK should be /1 (240 MHz)");
-static_assert((k_sckcr_star_240mhz & k_sckcr_pcka_mask) == ((uint32_t)k_clock_div_2 << k_sckcr_pcka_shift),
+static_assert((k_sckcr_star_240mhz & k_sckcr_pcka_mask) ==
+                ((uint32_t)k_clock_div_2 << k_sckcr_pcka_shift),
               "STAR SCKCR: PCLKA should be /2 (120 MHz)");
-static_assert((k_sckcr_star_240mhz & k_sckcr_pckb_mask) == ((uint32_t)k_clock_div_4 << k_sckcr_pckb_shift),
+static_assert((k_sckcr_star_240mhz & k_sckcr_pckb_mask) ==
+                ((uint32_t)k_clock_div_4 << k_sckcr_pckb_shift),
               "STAR SCKCR: PCLKB should be /4 (60 MHz)");
-static_assert((k_sckcr_star_240mhz & k_sckcr_fck_mask) == ((uint32_t)k_clock_div_4 << k_sckcr_fck_shift),
+static_assert((k_sckcr_star_240mhz & k_sckcr_fck_mask) ==
+                ((uint32_t)k_clock_div_4 << k_sckcr_fck_shift),
               "STAR SCKCR: FCLK should be /4 (60 MHz)");
 
 /* Verify PLLCR multiplier encoding */

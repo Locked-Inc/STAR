@@ -304,7 +304,7 @@ typedef mock_cmt_channel_t rx_cmt_channel_regs_t;
  *
  * @since 1.0.0
  */
-typedef mock_cmt_ctrl_t    rx_cmt_control_regs_t;
+typedef mock_cmt_ctrl_t rx_cmt_control_regs_t;
 
 #ifdef __cplusplus
 }

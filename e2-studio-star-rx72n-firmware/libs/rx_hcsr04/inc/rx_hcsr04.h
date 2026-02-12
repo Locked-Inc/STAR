@@ -797,9 +797,9 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius);
  * @return k_rx_err_invalid_state if not initialized
  */
 [[nodiscard]] rx_err_t rx_hcsr04_get_stats(const rx_hcsr04_t* handle,
-                             uint32_t*          measurement_count,
-                             uint32_t*          timeout_count,
-                             uint32_t*          range_error_count);
+                                           uint32_t*          measurement_count,
+                                           uint32_t*          timeout_count,
+                                           uint32_t*          range_error_count);
 
 /**
  * @brief Reset sensor statistics

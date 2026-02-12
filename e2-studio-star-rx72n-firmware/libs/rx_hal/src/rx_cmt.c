@@ -431,7 +431,7 @@ static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t
   ier_index = vector / k_icu_ier_bits_per_reg;
   ier_bit   = vector % k_icu_ier_bits_per_reg;
 
-  icu()->ipr[vector] = config.priority;
+  icu()->ipr[vector]     = config.priority;
   const uint8_t ier_mask = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
   icu()->ier[ier_index] |= ier_mask;
   icu()->ir[vector] = k_cmt_value_zero;
@@ -763,9 +763,9 @@ rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
   }
 
   /* Disable interrupt */
-  vector    = k_vect_cmt0_cmi0 + channel;
-  ier_index = vector / k_icu_ier_bits_per_reg;
-  ier_bit   = vector % k_icu_ier_bits_per_reg;
+  vector                 = k_vect_cmt0_cmi0 + channel;
+  ier_index              = vector / k_icu_ier_bits_per_reg;
+  ier_bit                = vector % k_icu_ier_bits_per_reg;
   const uint8_t ier_mask = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
   icu()->ier[ier_index] &= (uint8_t)~ier_mask;
 

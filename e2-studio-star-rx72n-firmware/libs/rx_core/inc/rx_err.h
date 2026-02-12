@@ -936,6 +936,20 @@ typedef enum : uint16_t {
    */
   k_rx_err_conflict = 0x408,
 
+  /**
+   * @brief Retransmission limit exceeded
+   * @details
+   * Automatic retransmission exhausted all retry attempts without receiving ACK.
+   * Frame delivery cannot be confirmed.
+   *
+   * @par Value: 0x409
+   * @par Cause: Remote side not responding, persistent CRC failures, link down
+   * @par Recovery: Reset communication, check physical connection, increase retries
+   * @par Prevention: Tune timeout/retry parameters for link quality
+   * @see rx_spi_comm_set_auto_retransmit() Configure retry parameters
+   */
+  k_rx_err_retry_limit = 0x409,
+
   /* =========================================================================
    * Validation Errors (0x500 - 0x5FF)
    * Input validation and checksum errors

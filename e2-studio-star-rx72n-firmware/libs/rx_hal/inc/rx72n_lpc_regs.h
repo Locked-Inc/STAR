@@ -121,8 +121,8 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_dpsbkr_size     = 32U, /**< Deep standby backup RAM size (bytes) */
-  k_dps_regs_count  = 4U,  /**< Number of DPSIERx/DPSIFRx/DPSIEGRx registers */
+  k_dpsbkr_size    = 32U, /**< Deep standby backup RAM size (bytes) */
+  k_dps_regs_count = 4U,  /**< Number of DPSIERx/DPSIFRx/DPSIEGRx registers */
 } rx_lpc_sizes_t;
 
 /* =============================================================================
@@ -155,7 +155,7 @@ typedef enum : uint8_t {
   k_opccr_opcm_mask      = 0x07U, /**< OPCM[2:0] bit mask */
 
   /* OPCMTSF - Operating Power Control Mode Transition Status Flag (bit 4) */
-  k_opccr_opcmtsf        = 0x10U, /**< 1 = Mode transition in progress */
+  k_opccr_opcmtsf = 0x10U, /**< 1 = Mode transition in progress */
 } rx_opccr_bits_t;
 
 /* =============================================================================
@@ -187,7 +187,7 @@ typedef enum : uint8_t {
   k_rstckcr_rstcksel_mask = 0x07U, /**< RSTCKSEL[2:0] bit mask */
 
   /* RSTCKEN - Sleep Mode Return Clock Source Switching Enable (bit 7) */
-  k_rstckcr_rstcken       = 0x80U, /**< 1 = Enable clock source switching */
+  k_rstckcr_rstcken = 0x80U, /**< 1 = Enable clock source switching */
 } rx_rstckcr_bits_t;
 
 /* =============================================================================
@@ -224,7 +224,7 @@ typedef enum : uint8_t {
   k_dpsbycr_iokeep = 0x40U, /**< 1 = Retain I/O state after deep standby exit */
 
   /* DPSBY - Deep Software Standby (bit 7) */
-  k_dpsbycr_dpsby  = 0x80U, /**< 1 = Enter deep standby (with SBYCR.SSBY=1) */
+  k_dpsbycr_dpsby = 0x80U, /**< 1 = Enter deep standby (with SBYCR.SSBY=1) */
 } rx_dpsbycr_bits_t;
 
 /* =============================================================================
@@ -537,7 +537,7 @@ typedef enum : uint8_t {
  */
 typedef struct __attribute__((packed)) {
   volatile uint8_t dpsbycr;   /**< Deep Standby Control @ 0x00 (0x0008C280) */
-  uint8_t reserved1;          /**< Reserved @ 0x01 */
+  uint8_t          reserved1; /**< Reserved @ 0x01 */
   volatile uint8_t dpsier0;   /**< Deep Standby Int Enable 0 @ 0x02 (0x0008C282) */
   volatile uint8_t dpsier1;   /**< Deep Standby Int Enable 1 @ 0x03 (0x0008C283) */
   volatile uint8_t dpsier2;   /**< Deep Standby Int Enable 2 @ 0x04 (0x0008C284) */
@@ -664,72 +664,49 @@ static inline volatile uint8_t* dpsbkr(void)
  */
 
 /* Verify OPCCR/RSTCKCR addresses (Ch11 Section 11.2.6/11.2.7) */
-static_assert(k_opccr_addr == 0x000800A0,
-               "OPCCR address incorrect (expected 0x000800A0)");
-static_assert(k_rstckcr_addr == 0x000800A1,
-               "RSTCKCR address incorrect (expected 0x000800A1)");
+static_assert(k_opccr_addr == 0x000800A0, "OPCCR address incorrect (expected 0x000800A0)");
+static_assert(k_rstckcr_addr == 0x000800A1, "RSTCKCR address incorrect (expected 0x000800A1)");
 
 /* Verify Deep Standby Control Register address (Ch11 Section 11.2.8) */
-static_assert(k_dpsbycr_addr == 0x0008C280,
-               "DPSBYCR address incorrect (expected 0x0008C280)");
+static_assert(k_dpsbycr_addr == 0x0008C280, "DPSBYCR address incorrect (expected 0x0008C280)");
 
 /* Verify DPSIER addresses (Ch11 Sections 11.2.9-11.2.12) */
-static_assert(k_dpsier0_addr == 0x0008C282,
-               "DPSIER0 address incorrect (expected 0x0008C282)");
-static_assert(k_dpsier1_addr == 0x0008C283,
-               "DPSIER1 address incorrect (expected 0x0008C283)");
-static_assert(k_dpsier2_addr == 0x0008C284,
-               "DPSIER2 address incorrect (expected 0x0008C284)");
-static_assert(k_dpsier3_addr == 0x0008C285,
-               "DPSIER3 address incorrect (expected 0x0008C285)");
+static_assert(k_dpsier0_addr == 0x0008C282, "DPSIER0 address incorrect (expected 0x0008C282)");
+static_assert(k_dpsier1_addr == 0x0008C283, "DPSIER1 address incorrect (expected 0x0008C283)");
+static_assert(k_dpsier2_addr == 0x0008C284, "DPSIER2 address incorrect (expected 0x0008C284)");
+static_assert(k_dpsier3_addr == 0x0008C285, "DPSIER3 address incorrect (expected 0x0008C285)");
 
 /* Verify DPSIFR addresses (Ch11 Sections 11.2.13-11.2.16) */
-static_assert(k_dpsifr0_addr == 0x0008C286,
-               "DPSIFR0 address incorrect (expected 0x0008C286)");
-static_assert(k_dpsifr1_addr == 0x0008C287,
-               "DPSIFR1 address incorrect (expected 0x0008C287)");
-static_assert(k_dpsifr2_addr == 0x0008C288,
-               "DPSIFR2 address incorrect (expected 0x0008C288)");
-static_assert(k_dpsifr3_addr == 0x0008C289,
-               "DPSIFR3 address incorrect (expected 0x0008C289)");
+static_assert(k_dpsifr0_addr == 0x0008C286, "DPSIFR0 address incorrect (expected 0x0008C286)");
+static_assert(k_dpsifr1_addr == 0x0008C287, "DPSIFR1 address incorrect (expected 0x0008C287)");
+static_assert(k_dpsifr2_addr == 0x0008C288, "DPSIFR2 address incorrect (expected 0x0008C288)");
+static_assert(k_dpsifr3_addr == 0x0008C289, "DPSIFR3 address incorrect (expected 0x0008C289)");
 
 /* Verify DPSIEGR addresses (Ch11 Sections 11.2.17-11.2.20) */
-static_assert(k_dpsiegr0_addr == 0x0008C28A,
-               "DPSIEGR0 address incorrect (expected 0x0008C28A)");
-static_assert(k_dpsiegr1_addr == 0x0008C28B,
-               "DPSIEGR1 address incorrect (expected 0x0008C28B)");
-static_assert(k_dpsiegr2_addr == 0x0008C28C,
-               "DPSIEGR2 address incorrect (expected 0x0008C28C)");
-static_assert(k_dpsiegr3_addr == 0x0008C28D,
-               "DPSIEGR3 address incorrect (expected 0x0008C28D)");
+static_assert(k_dpsiegr0_addr == 0x0008C28A, "DPSIEGR0 address incorrect (expected 0x0008C28A)");
+static_assert(k_dpsiegr1_addr == 0x0008C28B, "DPSIEGR1 address incorrect (expected 0x0008C28B)");
+static_assert(k_dpsiegr2_addr == 0x0008C28C, "DPSIEGR2 address incorrect (expected 0x0008C28C)");
+static_assert(k_dpsiegr3_addr == 0x0008C28D, "DPSIEGR3 address incorrect (expected 0x0008C28D)");
 
 /* Verify Deep Standby Backup RAM address (Ch11 Section 11.2.21) */
 static_assert(k_dpsbkr_base_addr == 0x0008C2A0,
-               "DPSBKR base address incorrect (expected 0x0008C2A0)");
+              "DPSBKR base address incorrect (expected 0x0008C2A0)");
 
 /* Verify structure size and offsets */
-static_assert(sizeof(rx_dps_regs_t) == 14,
-               "rx_dps_regs_t size incorrect (expected 14 bytes)");
-static_assert(offsetof(rx_dps_regs_t, dpsbycr) == 0,
-               "DPSBYCR offset incorrect (expected 0)");
-static_assert(offsetof(rx_dps_regs_t, dpsier0) == 2,
-               "DPSIER0 offset incorrect (expected 2)");
-static_assert(offsetof(rx_dps_regs_t, dpsifr0) == 6,
-               "DPSIFR0 offset incorrect (expected 6)");
-static_assert(offsetof(rx_dps_regs_t, dpsiegr0) == 10,
-               "DPSIEGR0 offset incorrect (expected 10)");
-static_assert(offsetof(rx_dps_regs_t, dpsiegr3) == 13,
-               "DPSIEGR3 offset incorrect (expected 13)");
+static_assert(sizeof(rx_dps_regs_t) == 14, "rx_dps_regs_t size incorrect (expected 14 bytes)");
+static_assert(offsetof(rx_dps_regs_t, dpsbycr) == 0, "DPSBYCR offset incorrect (expected 0)");
+static_assert(offsetof(rx_dps_regs_t, dpsier0) == 2, "DPSIER0 offset incorrect (expected 2)");
+static_assert(offsetof(rx_dps_regs_t, dpsifr0) == 6, "DPSIFR0 offset incorrect (expected 6)");
+static_assert(offsetof(rx_dps_regs_t, dpsiegr0) == 10, "DPSIEGR0 offset incorrect (expected 10)");
+static_assert(offsetof(rx_dps_regs_t, dpsiegr3) == 13, "DPSIEGR3 offset incorrect (expected 13)");
 
 /* Verify address relationships */
-static_assert((k_dpsier0_addr - k_dpsbycr_addr) == 2,
-               "DPSIER0 must be at offset 2 from DPSBYCR");
-static_assert((k_dpsifr0_addr - k_dpsbycr_addr) == 6,
-               "DPSIFR0 must be at offset 6 from DPSBYCR");
+static_assert((k_dpsier0_addr - k_dpsbycr_addr) == 2, "DPSIER0 must be at offset 2 from DPSBYCR");
+static_assert((k_dpsifr0_addr - k_dpsbycr_addr) == 6, "DPSIFR0 must be at offset 6 from DPSBYCR");
 static_assert((k_dpsiegr0_addr - k_dpsbycr_addr) == 10,
-               "DPSIEGR0 must be at offset 10 from DPSBYCR");
+              "DPSIEGR0 must be at offset 10 from DPSBYCR");
 static_assert((k_dpsbkr_base_addr - k_dpsbycr_addr) == 0x20,
-               "DPSBKR must be at offset 0x20 from DPSBYCR");
+              "DPSBKR must be at offset 0x20 from DPSBYCR");
 
 #ifdef __cplusplus
 }

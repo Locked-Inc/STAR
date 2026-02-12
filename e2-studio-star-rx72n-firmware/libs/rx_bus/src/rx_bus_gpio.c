@@ -254,7 +254,7 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  bool*    value;  /**< Output pointer: stores pin state (true=high, false=low). Must be non-NULL. */
+  bool*    value; /**< Output pointer: stores pin state (true=high, false=low). Must be non-NULL. */
   rx_err_t result; /**< Operation result: k_rx_ok on success, error code on failure */
 } gpio_read_ctx_t;
 

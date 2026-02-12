@@ -487,7 +487,7 @@ typedef enum : uint8_t {
    * @par Hardware: USB full-speed peripheral (RX72N USB module)
    * @par Value: 0
    */
-  k_comm_channel_usb   = 0,
+  k_comm_channel_usb = 0,
 
   /**
    * @brief SPI peripheral channel
@@ -511,7 +511,7 @@ typedef enum : uint8_t {
    * @par Hardware: RSPI peripheral (Renesas Serial Peripheral Interface)
    * @par Value: 1
    */
-  k_comm_channel_spi   = 1,
+  k_comm_channel_spi = 1,
 
   /**
    * @brief Total number of supported channels
@@ -636,9 +636,9 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef void (*rx_comm_frame_callback_t)(rx_comm_channel_t  channel,
-                                         const rx_frame_t*  frame,
-                                         void*              ctx);
+typedef void (*rx_comm_frame_callback_t)(rx_comm_channel_t channel,
+                                         const rx_frame_t* frame,
+                                         void*             ctx);
 
 /**
  * @struct rx_comm_manager_config_t
@@ -695,7 +695,7 @@ typedef struct {
    * @par Valid values: Non-NULL initialized handle, or nullptr to disable
    * @par Lifetime: Must outlive manager instance
    */
-  rx_usb_comm_handle_t*    usb_handle;
+  rx_usb_comm_handle_t* usb_handle;
 
   /**
    * @brief SPI communication handle (NULL to disable SPI channel)
@@ -716,7 +716,7 @@ typedef struct {
    * @par Valid values: Non-NULL initialized handle, or nullptr to disable
    * @par Lifetime: Must outlive manager instance
    */
-  rx_spi_comm_handle_t*    spi_handle;
+  rx_spi_comm_handle_t* spi_handle;
 
   /**
    * @brief Frame received callback function (NULL for no callback)
@@ -752,7 +752,7 @@ typedef struct {
    * @par Valid values: Any pointer value, or nullptr
    * @par Lifetime: Must remain valid if callback uses it
    */
-  void*                    callback_ctx;
+  void* callback_ctx;
 
   /**
    * @brief Enable decoded ASCII output to USB Port 1
@@ -779,7 +779,7 @@ typedef struct {
    * @par Value: true = enable ASCII output, false = disable
    * @par Default: Recommend true for development, false for production
    */
-  bool                     enable_decoded_output;
+  bool enable_decoded_output;
 } rx_comm_manager_config_t;
 
 /**
@@ -810,13 +810,13 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  rx_usb_comm_handle_t*    usb_handle;                              /**< USB comm handle */
-  rx_spi_comm_handle_t*    spi_handle;                              /**< SPI comm handle */
-  rx_comm_frame_callback_t callback;                                /**< Frame callback */
-  void*                    callback_ctx;                            /**< Callback context */
+  rx_usb_comm_handle_t*    usb_handle;                                  /**< USB comm handle */
+  rx_spi_comm_handle_t*    spi_handle;                                  /**< SPI comm handle */
+  rx_comm_frame_callback_t callback;                                    /**< Frame callback */
+  void*                    callback_ctx;                                /**< Callback context */
   char                     ascii_buffer[k_comm_manager_ascii_buf_size]; /**< ASCII buffer */
-  bool                     enable_decoded_output;                   /**< Enable ASCII output */
-  bool                     initialized;                             /**< Initialization flag */
+  bool                     enable_decoded_output;                       /**< Enable ASCII output */
+  bool                     initialized;                                 /**< Initialization flag */
 } rx_comm_manager_t;
 
 /**
@@ -882,7 +882,8 @@ typedef struct {
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if mgr is nullptr
  */
-[[nodiscard]] rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_config_t* cfg);
+[[nodiscard]] rx_err_t rx_comm_manager_init(rx_comm_manager_t*              mgr,
+                                            const rx_comm_manager_config_t* cfg);
 
 /**
  * @brief Deinitialize communication manager
@@ -935,8 +936,8 @@ typedef struct {
  * @return k_rx_err_invalid_arg if mgr or payload is nullptr
  * @return k_rx_err_invalid_state if not initialized or channel not enabled
  */
-[[nodiscard]] rx_err_t rx_comm_manager_send(rx_comm_manager_t*            mgr,
-                              const rx_comm_send_params_t* params);
+[[nodiscard]] rx_err_t rx_comm_manager_send(rx_comm_manager_t*           mgr,
+                                            const rx_comm_send_params_t* params);
 
 /**
  * @brief Send response on same channel as received frame
@@ -952,9 +953,9 @@ typedef struct {
  * @return k_rx_ok on success
  */
 [[nodiscard]] rx_err_t rx_comm_manager_respond(rx_comm_manager_t* mgr,
-                                 rx_comm_channel_t  channel,
-                                 const uint8_t*     payload,
-                                 uint32_t           payload_len);
+                                               rx_comm_channel_t  channel,
+                                               const uint8_t*     payload,
+                                               uint32_t           payload_len);
 
 /* =============================================================================
  * Status API
@@ -971,9 +972,8 @@ typedef struct {
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if mgr or ready is nullptr
  */
-[[nodiscard]] rx_err_t rx_comm_manager_channel_ready(rx_comm_manager_t* mgr,
-                                       rx_comm_channel_t  channel,
-                                       bool*              ready);
+[[nodiscard]] rx_err_t
+rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel, bool* ready);
 
 /**
  * @brief Get channel name string
@@ -982,6 +982,51 @@ typedef struct {
  * @return Human-readable channel name
  */
 const char* rx_comm_manager_channel_name(rx_comm_channel_t channel);
+
+/* =============================================================================
+ * Retransmission Pass-Through
+ * =============================================================================
+ */
+
+/**
+ * @brief Process pending retransmissions on SPI channel
+ *
+ * @details
+ * Thin pass-through to rx_spi_comm_process_retransmits() on the SPI handle.
+ * Call this from the communication task polling loop.
+ *
+ * @param[in,out] mgr Communication manager
+ * @param[in] current_time_ms Current system time in milliseconds
+ *
+ * @return rx_err_t Error code from rx_spi_comm_process_retransmits()
+ * @retval k_rx_ok No action needed or retransmit sent
+ * @retval k_rx_err_invalid_arg mgr is nullptr
+ * @retval k_rx_err_invalid_state mgr not initialized
+ * @retval k_rx_err_retry_limit Max retries exceeded
+ *
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_comm_manager_process_retransmits(rx_comm_manager_t* mgr,
+                                                           uint32_t           current_time_ms);
+
+/**
+ * @brief Enable or disable automatic retransmission on SPI channel
+ *
+ * @details
+ * Thin pass-through to rx_spi_comm_set_auto_retransmit() on the SPI handle.
+ *
+ * @param[in,out] mgr Communication manager
+ * @param[in] enabled true to enable, false to disable
+ * @param[in] config Retransmit config (NULL to keep current/defaults)
+ *
+ * @return rx_err_t Error code from rx_spi_comm_set_auto_retransmit()
+ *
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t
+rx_comm_manager_set_auto_retransmit(rx_comm_manager_t*                     mgr,
+                                    bool                                   enabled,
+                                    const rx_spi_comm_retransmit_config_t* config);
 
 #ifdef __cplusplus
 }

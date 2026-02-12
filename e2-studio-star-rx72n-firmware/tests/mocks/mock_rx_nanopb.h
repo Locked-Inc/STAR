@@ -49,8 +49,8 @@ extern "C" {
  * @brief Mock nanopb constants
  */
 typedef enum : uint8_t {
-  k_mock_nanopb_max_motors    = 4,  /**< Number of motors */
-  k_mock_nanopb_max_encoders  = 4,  /**< Number of encoders */
+  k_mock_nanopb_max_motors   = 4, /**< Number of motors */
+  k_mock_nanopb_max_encoders = 4, /**< Number of encoders */
 } mock_nanopb_constants_t;
 
 /* =============================================================================
@@ -84,8 +84,8 @@ typedef struct {
  * @brief Emergency stop request message
  */
 typedef struct {
-  bool reason_present; /**< Reason field present */
-  uint32_t reason;     /**< E-stop reason code */
+  bool     reason_present; /**< Reason field present */
+  uint32_t reason;         /**< E-stop reason code */
 } star_v1_EmergencyStopRequest;
 
 /**
@@ -93,10 +93,10 @@ typedef struct {
  * @brief Encoder data for telemetry
  */
 typedef struct {
-  uint32_t motor_id;      /**< Motor index */
-  int64_t  ticks;         /**< Encoder tick count */
-  double   velocity_mps;  /**< Calculated velocity */
-  int64_t  timestamp_us;  /**< Timestamp */
+  uint32_t motor_id;     /**< Motor index */
+  int64_t  ticks;        /**< Encoder tick count */
+  double   velocity_mps; /**< Calculated velocity */
+  int64_t  timestamp_us; /**< Timestamp */
 } star_v1_EncoderData;
 
 /**
@@ -104,35 +104,36 @@ typedef struct {
  * @brief Telemetry data message
  */
 typedef struct {
-  int64_t  timestamp_us;         /**< System timestamp */
-  uint32_t frame_sequence;       /**< Telemetry frame sequence */
-  bool     emergency_stop;       /**< E-stop active flag */
-  uint32_t fault_flags;          /**< Fault flags bitfield */
+  int64_t  timestamp_us;   /**< System timestamp */
+  uint32_t frame_sequence; /**< Telemetry frame sequence */
+  bool     emergency_stop; /**< E-stop active flag */
+  uint32_t fault_flags;    /**< Fault flags bitfield */
 
-  bool               has_encoder_front_left;  /**< Has FL encoder */
-  star_v1_EncoderData encoder_front_left;      /**< FL encoder data */
+  bool                has_encoder_front_left; /**< Has FL encoder */
+  star_v1_EncoderData encoder_front_left;     /**< FL encoder data */
 
-  bool               has_encoder_front_right; /**< Has FR encoder */
+  bool                has_encoder_front_right; /**< Has FR encoder */
   star_v1_EncoderData encoder_front_right;     /**< FR encoder data */
 
-  bool               has_encoder_back_left;   /**< Has BL encoder */
-  star_v1_EncoderData encoder_back_left;       /**< BL encoder data */
+  bool                has_encoder_back_left; /**< Has BL encoder */
+  star_v1_EncoderData encoder_back_left;     /**< BL encoder data */
 
-  bool               has_encoder_back_right;  /**< Has BR encoder */
-  star_v1_EncoderData encoder_back_right;      /**< BR encoder data */
+  bool                has_encoder_back_right; /**< Has BR encoder */
+  star_v1_EncoderData encoder_back_right;     /**< BR encoder data */
 
-  double battery_voltage_v;    /**< Battery voltage (V) */
+  double  battery_voltage_v;   /**< Battery voltage (V) */
   uint8_t battery_soc_percent; /**< Battery state of charge (%) */
-  double battery_percent;      /**< Battery percentage (0-100) */
-  double temperature_celsius;  /**< Ambient temperature (°C) */
+  double  battery_percent;     /**< Battery percentage (0-100) */
+  double  temperature_celsius; /**< Ambient temperature (°C) */
 } star_v1_TelemetryData;
 
 /**
  * @brief Zero-initializer for TelemetryData
  */
-#define star_v1_TelemetryData_init_zero { 0, 0, false, 0, \
-  false, {0}, false, {0}, false, {0}, false, {0}, \
-  0.0, 0, 0.0, 0.0 }
+#define star_v1_TelemetryData_init_zero                                                            \
+  {                                                                                                \
+    0, 0, false, 0, false, {0}, false, {0}, false, {0}, false, {0}, 0.0, 0, 0.0, 0.0               \
+  }
 
 /* =============================================================================
  * Mock Control Functions

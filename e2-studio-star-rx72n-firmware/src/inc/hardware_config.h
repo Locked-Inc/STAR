@@ -65,31 +65,31 @@
  */
 
 typedef enum : uint8_t {
-    k_motor_0_ph_port = 2,   /**< Motor 0 PH on PORT2 (P23/GTIOC0A, pin 34) */
-    k_motor_1_ph_port = 2,   /**< Motor 1 PH on PORT2 (P22/GTIOC1A, pin 35) */
-    k_motor_2_ph_port = 14,  /**< Motor 2 PH on PORTE (PE3/GTIOC2A, pin 108) */
-    k_motor_3_ph_port = 14,  /**< Motor 3 PH on PORTE (PE7/GTIOC3A, pin 101) */
+  k_motor_0_ph_port = 2,  /**< Motor 0 PH on PORT2 (P23/GTIOC0A, pin 34) */
+  k_motor_1_ph_port = 2,  /**< Motor 1 PH on PORT2 (P22/GTIOC1A, pin 35) */
+  k_motor_2_ph_port = 14, /**< Motor 2 PH on PORTE (PE3/GTIOC2A, pin 108) */
+  k_motor_3_ph_port = 14, /**< Motor 3 PH on PORTE (PE7/GTIOC3A, pin 101) */
 } motor_ph_ports_t;
 
 typedef enum : uint8_t {
-    k_motor_0_ph_pin = 3,    /**< Motor 0 PH pin 3 (P23, pin 34) */
-    k_motor_1_ph_pin = 2,    /**< Motor 1 PH pin 2 (P22, pin 35) */
-    k_motor_2_ph_pin = 3,    /**< Motor 2 PH pin 3 (PE3, pin 108) */
-    k_motor_3_ph_pin = 7,    /**< Motor 3 PH pin 7 (PE7, pin 101) */
+  k_motor_0_ph_pin = 3, /**< Motor 0 PH pin 3 (P23, pin 34) */
+  k_motor_1_ph_pin = 2, /**< Motor 1 PH pin 2 (P22, pin 35) */
+  k_motor_2_ph_pin = 3, /**< Motor 2 PH pin 3 (PE3, pin 108) */
+  k_motor_3_ph_pin = 7, /**< Motor 3 PH pin 7 (PE7, pin 101) */
 } motor_ph_pins_t;
 
 typedef enum : uint8_t {
-    k_motor_0_en_port = 1,   /**< Motor 0 EN on PORT1 (P17/GTIOC0B, pin 38) */
-    k_motor_1_en_port = 12,  /**< Motor 1 EN on PORTC (PC3/GTIOC1B, pin 67) */
-    k_motor_2_en_port = 8,   /**< Motor 2 EN on PORT8 (P86/GTIOC2B, pin 41) */
-    k_motor_3_en_port = 12,  /**< Motor 3 EN on PORTC (PC6/GTIOC3B, pin 61) */
+  k_motor_0_en_port = 1,  /**< Motor 0 EN on PORT1 (P17/GTIOC0B, pin 38) */
+  k_motor_1_en_port = 12, /**< Motor 1 EN on PORTC (PC3/GTIOC1B, pin 67) */
+  k_motor_2_en_port = 8,  /**< Motor 2 EN on PORT8 (P86/GTIOC2B, pin 41) */
+  k_motor_3_en_port = 12, /**< Motor 3 EN on PORTC (PC6/GTIOC3B, pin 61) */
 } motor_en_ports_t;
 
 typedef enum : uint8_t {
-    k_motor_0_en_pin = 7,    /**< Motor 0 EN pin 7 (P17, pin 38) */
-    k_motor_1_en_pin = 3,    /**< Motor 1 EN pin 3 (PC3, pin 67) */
-    k_motor_2_en_pin = 6,    /**< Motor 2 EN pin 6 (P86, pin 41) */
-    k_motor_3_en_pin = 6,    /**< Motor 3 EN pin 6 (PC6, pin 61) */
+  k_motor_0_en_pin = 7, /**< Motor 0 EN pin 7 (P17, pin 38) */
+  k_motor_1_en_pin = 3, /**< Motor 1 EN pin 3 (PC3, pin 67) */
+  k_motor_2_en_pin = 6, /**< Motor 2 EN pin 6 (P86, pin 41) */
+  k_motor_3_en_pin = 6, /**< Motor 3 EN pin 6 (PC6, pin 61) */
 } motor_en_pins_t;
 
 /** @} */ /* end of motor_pwm_pins */
@@ -117,17 +117,17 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_motor_0_nfault_port = 1,   /**< Motor 0 nFAULT on PORT1 (P15/GTETRGA, pin 42) */
-    k_motor_1_nfault_port = 10,  /**< Motor 1 nFAULT on PORTA (PA6/GTETRGB, pin 89) */
-    k_motor_2_nfault_port = 12,  /**< Motor 2 nFAULT on PORTC (PC4/GTETRGC, pin 66) */
-    k_motor_3_nfault_port = 1,   /**< Motor 3 nFAULT on PORT1 (P14/GTETRGD, pin 43) */
+  k_motor_0_nfault_port = 1,  /**< Motor 0 nFAULT on PORT1 (P15/GTETRGA, pin 42) */
+  k_motor_1_nfault_port = 10, /**< Motor 1 nFAULT on PORTA (PA6/GTETRGB, pin 89) */
+  k_motor_2_nfault_port = 12, /**< Motor 2 nFAULT on PORTC (PC4/GTETRGC, pin 66) */
+  k_motor_3_nfault_port = 1,  /**< Motor 3 nFAULT on PORT1 (P14/GTETRGD, pin 43) */
 } motor_nfault_ports_t;
 
 typedef enum : uint8_t {
-    k_motor_0_nfault_pin = 5,    /**< Motor 0 nFAULT pin 5 (P15, pin 42) */
-    k_motor_1_nfault_pin = 6,    /**< Motor 1 nFAULT pin 6 (PA6, pin 89) */
-    k_motor_2_nfault_pin = 4,    /**< Motor 2 nFAULT pin 4 (PC4, pin 66) */
-    k_motor_3_nfault_pin = 4,    /**< Motor 3 nFAULT pin 4 (P14, pin 43) */
+  k_motor_0_nfault_pin = 5, /**< Motor 0 nFAULT pin 5 (P15, pin 42) */
+  k_motor_1_nfault_pin = 6, /**< Motor 1 nFAULT pin 6 (PA6, pin 89) */
+  k_motor_2_nfault_pin = 4, /**< Motor 2 nFAULT pin 4 (PC4, pin 66) */
+  k_motor_3_nfault_pin = 4, /**< Motor 3 nFAULT pin 4 (P14, pin 43) */
 } motor_nfault_pins_t;
 
 /** @} */ /* end of gtetrg_pins */
@@ -157,29 +157,29 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_drv_sclk_port = 14,   /**< DRV_SCLK on PORTE (PE0/SCK12, pin 111) */
-    k_drv_copi_port = 14,   /**< DRV_COPI on PORTE (PE1/SMOSI12, pin 110) */
-    k_drv_cipo_port = 14,   /**< DRV_CIPO on PORTE (PE2/SMISO12, pin 109) */
+  k_drv_sclk_port = 14, /**< DRV_SCLK on PORTE (PE0/SCK12, pin 111) */
+  k_drv_copi_port = 14, /**< DRV_COPI on PORTE (PE1/SMOSI12, pin 110) */
+  k_drv_cipo_port = 14, /**< DRV_CIPO on PORTE (PE2/SMISO12, pin 109) */
 } drv_spi_ports_t;
 
 typedef enum : uint8_t {
-    k_drv_sclk_pin = 0,     /**< DRV_SCLK pin 0 (PE0, pin 111) */
-    k_drv_copi_pin = 1,     /**< DRV_COPI pin 1 (PE1, pin 110) */
-    k_drv_cipo_pin = 2,     /**< DRV_CIPO pin 2 (PE2, pin 109) */
+  k_drv_sclk_pin = 0, /**< DRV_SCLK pin 0 (PE0, pin 111) */
+  k_drv_copi_pin = 1, /**< DRV_COPI pin 1 (PE1, pin 110) */
+  k_drv_cipo_pin = 2, /**< DRV_CIPO pin 2 (PE2, pin 109) */
 } drv_spi_pins_t;
 
 typedef enum : uint8_t {
-    k_drv_cs0_port = 7,     /**< DRV_CS0 on PORT7 (P74/CS4#, pin 72) */
-    k_drv_cs1_port = 12,    /**< DRV_CS1 on PORTC (PC1, pin 73) */
-    k_drv_cs2_port = 11,    /**< DRV_CS2 on PORTB (PB5, pin 80) */
-    k_drv_cs3_port = 11,    /**< DRV_CS3 on PORTB (PB4, pin 81) */
+  k_drv_cs0_port = 7,  /**< DRV_CS0 on PORT7 (P74/CS4#, pin 72) */
+  k_drv_cs1_port = 12, /**< DRV_CS1 on PORTC (PC1, pin 73) */
+  k_drv_cs2_port = 11, /**< DRV_CS2 on PORTB (PB5, pin 80) */
+  k_drv_cs3_port = 11, /**< DRV_CS3 on PORTB (PB4, pin 81) */
 } drv_cs_ports_t;
 
 typedef enum : uint8_t {
-    k_drv_cs0_pin = 4,      /**< DRV_CS0 pin 4 (P74, pin 72) */
-    k_drv_cs1_pin = 1,      /**< DRV_CS1 pin 1 (PC1, pin 73) */
-    k_drv_cs2_pin = 5,      /**< DRV_CS2 pin 5 (PB5, pin 80) */
-    k_drv_cs3_pin = 4,      /**< DRV_CS3 pin 4 (PB4, pin 81) */
+  k_drv_cs0_pin = 4, /**< DRV_CS0 pin 4 (P74, pin 72) */
+  k_drv_cs1_pin = 1, /**< DRV_CS1 pin 1 (PC1, pin 73) */
+  k_drv_cs2_pin = 5, /**< DRV_CS2 pin 5 (PB5, pin 80) */
+  k_drv_cs3_pin = 4, /**< DRV_CS3 pin 4 (PB4, pin 81) */
 } drv_cs_pins_t;
 
 /** @} */ /* end of motor_spi_pins */
@@ -205,14 +205,14 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_host_spi_port = 13,   /**< Host SPI on PORTD (PD1-PD4, pins 122-125) */
+  k_host_spi_port = 13, /**< Host SPI on PORTD (PD1-PD4, pins 122-125) */
 } host_spi_ports_t;
 
 typedef enum : uint8_t {
-    k_host_sclk_pin = 3,    /**< HOST_SCLK pin 3 (PD3/RSPCKC, pin 123) */
-    k_host_copi_pin = 1,    /**< HOST_COPI pin 1 (PD1/MOSIC, pin 125) */
-    k_host_cipo_pin = 2,    /**< HOST_CIPO pin 2 (PD2/MISOC, pin 124) */
-    k_host_cs0_pin  = 4,    /**< HOST_CS0 pin 4 (PD4/SSLC0, pin 122) */
+  k_host_sclk_pin = 3, /**< HOST_SCLK pin 3 (PD3/RSPCKC, pin 123) */
+  k_host_copi_pin = 1, /**< HOST_COPI pin 1 (PD1/MOSIC, pin 125) */
+  k_host_cipo_pin = 2, /**< HOST_CIPO pin 2 (PD2/MISOC, pin 124) */
+  k_host_cs0_pin  = 4, /**< HOST_CS0 pin 4 (PD4/SSLC0, pin 122) */
 } host_spi_pins_t;
 
 /** @} */ /* end of host_spi_pins */
@@ -234,16 +234,16 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_debug_uart_port = 11,  /**< Debug UART on PORTB (PB6/PB7) */
+  k_debug_uart_port = 11, /**< Debug UART on PORTB (PB6/PB7) */
 } debug_uart_ports_t;
 
 typedef enum : uint8_t {
-    k_debug_txd_pin = 7,    /**< DEBUG_TXD9 pin 7 (PB7/TXD9, pin 78) */
-    k_debug_rxd_pin = 6,    /**< DEBUG_RXD9 pin 6 (PB6/RXD9, pin 79) */
+  k_debug_txd_pin = 7, /**< DEBUG_TXD9 pin 7 (PB7/TXD9, pin 78) */
+  k_debug_rxd_pin = 6, /**< DEBUG_RXD9 pin 6 (PB6/RXD9, pin 79) */
 } debug_uart_pins_t;
 
 typedef enum : uint8_t {
-    k_debug_uart_channel = 9, /**< Debug UART uses SCI9 */
+  k_debug_uart_channel = 9, /**< Debug UART uses SCI9 */
 } debug_uart_channel_t;
 
 /** @} */ /* end of debug_uart_pins */
@@ -265,12 +265,12 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_host_i2c_port = 1,    /**< Host I2C on PORT1 (P12/P13) */
+  k_host_i2c_port = 1, /**< Host I2C on PORT1 (P12/P13) */
 } host_i2c_ports_t;
 
 typedef enum : uint8_t {
-    k_host_scl0_pin = 2,    /**< HOST_SCL0 pin 2 (P12/SCL0, pin 45) */
-    k_host_sda0_pin = 3,    /**< HOST_SDA0 pin 3 (P13/SDA0, pin 44) */
+  k_host_scl0_pin = 2, /**< HOST_SCL0 pin 2 (P12/SCL0, pin 45) */
+  k_host_sda0_pin = 3, /**< HOST_SDA0 pin 3 (P13/SDA0, pin 44) */
 } host_i2c_pins_t;
 
 /** @} */ /* end of host_i2c_pins */
@@ -294,12 +294,12 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_bms_i2c_port = 2,     /**< BMS I2C on PORT2 (P20/P21) */
+  k_bms_i2c_port = 2, /**< BMS I2C on PORT2 (P20/P21) */
 } bms_i2c_ports_t;
 
 typedef enum : uint8_t {
-    k_bms_scl1_pin = 1,     /**< BMS_SCL1 pin 1 (P21/SCL1, pin 36) */
-    k_bms_sda1_pin = 0,     /**< BMS_SDA1 pin 0 (P20/SDA1, pin 37) */
+  k_bms_scl1_pin = 1, /**< BMS_SCL1 pin 1 (P21/SCL1, pin 36) */
+  k_bms_sda1_pin = 0, /**< BMS_SDA1 pin 0 (P20/SDA1, pin 37) */
 } bms_i2c_pins_t;
 
 /** @} */ /* end of bms_i2c_pins */
@@ -323,23 +323,23 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_encoder_0_phase_a_port = 2,   /**< Encoder 0 Phase A on PORT2 (P24/MTCLKA, pin 33) */
-    k_encoder_0_phase_b_port = 2,   /**< Encoder 0 Phase B on PORT2 (P25/MTCLKB, pin 32) */
+  k_encoder_0_phase_a_port = 2, /**< Encoder 0 Phase A on PORT2 (P24/MTCLKA, pin 33) */
+  k_encoder_0_phase_b_port = 2, /**< Encoder 0 Phase B on PORT2 (P25/MTCLKB, pin 32) */
 } encoder_0_ports_t;
 
 typedef enum : uint8_t {
-    k_encoder_0_phase_a_pin = 4,    /**< Encoder 0 Phase A pin 4 (P24, pin 33) */
-    k_encoder_0_phase_b_pin = 5,    /**< Encoder 0 Phase B pin 5 (P25, pin 32) */
+  k_encoder_0_phase_a_pin = 4, /**< Encoder 0 Phase A pin 4 (P24, pin 33) */
+  k_encoder_0_phase_b_pin = 5, /**< Encoder 0 Phase B pin 5 (P25, pin 32) */
 } encoder_0_pins_t;
 
 typedef enum : uint8_t {
-    k_encoder_1_phase_a_port = 10,  /**< Encoder 1 Phase A on PORTA (PA1/MTCLKC, pin 96) */
-    k_encoder_1_phase_b_port = 12,  /**< Encoder 1 Phase B on PORTC (PC5/MTCLKD, pin 62) */
+  k_encoder_1_phase_a_port = 10, /**< Encoder 1 Phase A on PORTA (PA1/MTCLKC, pin 96) */
+  k_encoder_1_phase_b_port = 12, /**< Encoder 1 Phase B on PORTC (PC5/MTCLKD, pin 62) */
 } encoder_1_ports_t;
 
 typedef enum : uint8_t {
-    k_encoder_1_phase_a_pin = 1,    /**< Encoder 1 Phase A pin 1 (PA1, pin 96) */
-    k_encoder_1_phase_b_pin = 5,    /**< Encoder 1 Phase B pin 5 (PC5, pin 62) */
+  k_encoder_1_phase_a_pin = 1, /**< Encoder 1 Phase A pin 1 (PA1, pin 96) */
+  k_encoder_1_phase_b_pin = 5, /**< Encoder 1 Phase B pin 5 (PC5, pin 62) */
 } encoder_1_pins_t;
 
 /** @} */ /* end of mtu_encoder_pins */
@@ -363,23 +363,23 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_encoder_2_phase_a_port = 12,  /**< Encoder 2 Phase A on PORTC (PC2/TCLKA, pin 70) */
-    k_encoder_2_phase_b_port = 10,  /**< Encoder 2 Phase B on PORTA (PA3/TCLKB, pin 94) */
+  k_encoder_2_phase_a_port = 12, /**< Encoder 2 Phase A on PORTC (PC2/TCLKA, pin 70) */
+  k_encoder_2_phase_b_port = 10, /**< Encoder 2 Phase B on PORTA (PA3/TCLKB, pin 94) */
 } encoder_2_ports_t;
 
 typedef enum : uint8_t {
-    k_encoder_2_phase_a_pin = 2,    /**< Encoder 2 Phase A pin 2 (PC2, pin 70) */
-    k_encoder_2_phase_b_pin = 3,    /**< Encoder 2 Phase B pin 3 (PA3, pin 94) */
+  k_encoder_2_phase_a_pin = 2, /**< Encoder 2 Phase A pin 2 (PC2, pin 70) */
+  k_encoder_2_phase_b_pin = 3, /**< Encoder 2 Phase B pin 3 (PA3, pin 94) */
 } encoder_2_pins_t;
 
 typedef enum : uint8_t {
-    k_encoder_3_phase_a_port = 12,  /**< Encoder 3 Phase A on PORTC (PC0/TCLKC, pin 75) */
-    k_encoder_3_phase_b_port = 11,  /**< Encoder 3 Phase B on PORTB (PB3/TCLKD, pin 82) */
+  k_encoder_3_phase_a_port = 12, /**< Encoder 3 Phase A on PORTC (PC0/TCLKC, pin 75) */
+  k_encoder_3_phase_b_port = 11, /**< Encoder 3 Phase B on PORTB (PB3/TCLKD, pin 82) */
 } encoder_3_ports_t;
 
 typedef enum : uint8_t {
-    k_encoder_3_phase_a_pin = 0,    /**< Encoder 3 Phase A pin 0 (PC0, pin 75) */
-    k_encoder_3_phase_b_pin = 3,    /**< Encoder 3 Phase B pin 3 (PB3, pin 82) */
+  k_encoder_3_phase_a_pin = 0, /**< Encoder 3 Phase A pin 0 (PC0, pin 75) */
+  k_encoder_3_phase_b_pin = 3, /**< Encoder 3 Phase B pin 3 (PB3, pin 82) */
 } encoder_3_pins_t;
 
 /** @} */ /* end of tpu_encoder_pins */
@@ -405,24 +405,24 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_motor_0_current_port = 4,  /**< Motor 0 current on PORT4 (P47/AN007, pin 133) */
-    k_motor_1_current_port = 4,  /**< Motor 1 current on PORT4 (P46/AN006, pin 134) */
-    k_motor_2_current_port = 4,  /**< Motor 2 current on PORT4 (P45/AN005, pin 135) */
-    k_motor_3_current_port = 4,  /**< Motor 3 current on PORT4 (P44/AN004, pin 136) */
+  k_motor_0_current_port = 4, /**< Motor 0 current on PORT4 (P47/AN007, pin 133) */
+  k_motor_1_current_port = 4, /**< Motor 1 current on PORT4 (P46/AN006, pin 134) */
+  k_motor_2_current_port = 4, /**< Motor 2 current on PORT4 (P45/AN005, pin 135) */
+  k_motor_3_current_port = 4, /**< Motor 3 current on PORT4 (P44/AN004, pin 136) */
 } motor_current_ports_t;
 
 typedef enum : uint8_t {
-    k_motor_0_current_pin = 7,   /**< Motor 0 current pin 7 (P47/AN007, pin 133) */
-    k_motor_1_current_pin = 6,   /**< Motor 1 current pin 6 (P46/AN006, pin 134) */
-    k_motor_2_current_pin = 5,   /**< Motor 2 current pin 5 (P45/AN005, pin 135) */
-    k_motor_3_current_pin = 4,   /**< Motor 3 current pin 4 (P44/AN004, pin 136) */
+  k_motor_0_current_pin = 7, /**< Motor 0 current pin 7 (P47/AN007, pin 133) */
+  k_motor_1_current_pin = 6, /**< Motor 1 current pin 6 (P46/AN006, pin 134) */
+  k_motor_2_current_pin = 5, /**< Motor 2 current pin 5 (P45/AN005, pin 135) */
+  k_motor_3_current_pin = 4, /**< Motor 3 current pin 4 (P44/AN004, pin 136) */
 } motor_current_pins_t;
 
 typedef enum : uint8_t {
-    k_motor_0_current_adc_ch = 7,  /**< Motor 0 current ADC channel AN007 */
-    k_motor_1_current_adc_ch = 6,  /**< Motor 1 current ADC channel AN006 */
-    k_motor_2_current_adc_ch = 5,  /**< Motor 2 current ADC channel AN005 */
-    k_motor_3_current_adc_ch = 4,  /**< Motor 3 current ADC channel AN004 */
+  k_motor_0_current_adc_ch = 7, /**< Motor 0 current ADC channel AN007 */
+  k_motor_1_current_adc_ch = 6, /**< Motor 1 current ADC channel AN006 */
+  k_motor_2_current_adc_ch = 5, /**< Motor 2 current ADC channel AN005 */
+  k_motor_3_current_adc_ch = 4, /**< Motor 3 current ADC channel AN004 */
 } motor_current_adc_channels_t;
 
 /** @} */ /* end of motor_adc_pins */
@@ -457,38 +457,38 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_sonar_0_echo_port = 0,  /**< Sonar 0 ECHO on PORT0 (P03/IRQ11, pin 4) */
-    k_sonar_1_echo_port = 0,  /**< Sonar 1 ECHO on PORT0 (P02/IRQ10, pin 6) */
-    k_sonar_2_echo_port = 0,  /**< Sonar 2 ECHO on PORT0 (P01/IRQ9, pin 7) */
-    k_sonar_3_echo_port = 0,  /**< Sonar 3 ECHO on PORT0 (P00/IRQ8, pin 8) */
+  k_sonar_0_echo_port = 0, /**< Sonar 0 ECHO on PORT0 (P03/IRQ11, pin 4) */
+  k_sonar_1_echo_port = 0, /**< Sonar 1 ECHO on PORT0 (P02/IRQ10, pin 6) */
+  k_sonar_2_echo_port = 0, /**< Sonar 2 ECHO on PORT0 (P01/IRQ9, pin 7) */
+  k_sonar_3_echo_port = 0, /**< Sonar 3 ECHO on PORT0 (P00/IRQ8, pin 8) */
 } sonar_echo_ports_t;
 
 typedef enum : uint8_t {
-    k_sonar_0_echo_pin = 3,   /**< Sonar 0 ECHO pin 3 (P03, pin 4) */
-    k_sonar_1_echo_pin = 2,   /**< Sonar 1 ECHO pin 2 (P02, pin 6) */
-    k_sonar_2_echo_pin = 1,   /**< Sonar 2 ECHO pin 1 (P01, pin 7) */
-    k_sonar_3_echo_pin = 0,   /**< Sonar 3 ECHO pin 0 (P00, pin 8) */
+  k_sonar_0_echo_pin = 3, /**< Sonar 0 ECHO pin 3 (P03, pin 4) */
+  k_sonar_1_echo_pin = 2, /**< Sonar 1 ECHO pin 2 (P02, pin 6) */
+  k_sonar_2_echo_pin = 1, /**< Sonar 2 ECHO pin 1 (P01, pin 7) */
+  k_sonar_3_echo_pin = 0, /**< Sonar 3 ECHO pin 0 (P00, pin 8) */
 } sonar_echo_pins_t;
 
 typedef enum : uint8_t {
-    k_sonar_0_echo_irq = 11,  /**< Sonar 0 ECHO IRQ11 */
-    k_sonar_1_echo_irq = 10,  /**< Sonar 1 ECHO IRQ10 */
-    k_sonar_2_echo_irq = 9,   /**< Sonar 2 ECHO IRQ9 */
-    k_sonar_3_echo_irq = 8,   /**< Sonar 3 ECHO IRQ8 */
+  k_sonar_0_echo_irq = 11, /**< Sonar 0 ECHO IRQ11 */
+  k_sonar_1_echo_irq = 10, /**< Sonar 1 ECHO IRQ10 */
+  k_sonar_2_echo_irq = 9,  /**< Sonar 2 ECHO IRQ9 */
+  k_sonar_3_echo_irq = 8,  /**< Sonar 3 ECHO IRQ8 */
 } sonar_echo_irqs_t;
 
 typedef enum : uint8_t {
-    k_sonar_0_trig_port = 15,  /**< Sonar 0 TRIG on PORTF (PF5, pin 9) */
-    k_sonar_1_trig_port = 18,  /**< Sonar 1 TRIG on PORTJ (PJ5, pin 11) */
-    k_sonar_2_trig_port = 18,  /**< Sonar 2 TRIG on PORTJ (PJ3, pin 13) */
-    k_sonar_3_trig_port = 3,   /**< Sonar 3 TRIG on PORT3 (P33, pin 26) */
+  k_sonar_0_trig_port = 15, /**< Sonar 0 TRIG on PORTF (PF5, pin 9) */
+  k_sonar_1_trig_port = 18, /**< Sonar 1 TRIG on PORTJ (PJ5, pin 11) */
+  k_sonar_2_trig_port = 18, /**< Sonar 2 TRIG on PORTJ (PJ3, pin 13) */
+  k_sonar_3_trig_port = 3,  /**< Sonar 3 TRIG on PORT3 (P33, pin 26) */
 } sonar_trig_ports_t;
 
 typedef enum : uint8_t {
-    k_sonar_0_trig_pin = 5,   /**< Sonar 0 TRIG pin 5 (PF5, pin 9) */
-    k_sonar_1_trig_pin = 5,   /**< Sonar 1 TRIG pin 5 (PJ5, pin 11) */
-    k_sonar_2_trig_pin = 3,   /**< Sonar 2 TRIG pin 3 (PJ3, pin 13) */
-    k_sonar_3_trig_pin = 3,   /**< Sonar 3 TRIG pin 3 (P33, pin 26) */
+  k_sonar_0_trig_pin = 5, /**< Sonar 0 TRIG pin 5 (PF5, pin 9) */
+  k_sonar_1_trig_pin = 5, /**< Sonar 1 TRIG pin 5 (PJ5, pin 11) */
+  k_sonar_2_trig_pin = 3, /**< Sonar 2 TRIG pin 3 (PJ3, pin 13) */
+  k_sonar_3_trig_pin = 3, /**< Sonar 3 TRIG pin 3 (P33, pin 26) */
 } sonar_trig_pins_t;
 
 /** @} */ /* end of hc_sr04_pins */
@@ -514,25 +514,25 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_led_0_port = 3,   /**< LED0 on PORT3 (P32, pin 27) */
-    k_led_1_port = 8,   /**< LED1 on PORT8 (P87, pin 39) */
-    k_led_2_port = 5,   /**< LED2 on PORT5 (P56, pin 50) */
-    k_led_3_port = 5,   /**< LED3 on PORT5 (P55, pin 51) */
-    k_led_4_port = 5,   /**< LED4 on PORT5 (P54, pin 52) */
-    k_led_5_port = 5,   /**< LED5 on PORT5 (P52, pin 54) */
+  k_led_0_port = 3, /**< LED0 on PORT3 (P32, pin 27) */
+  k_led_1_port = 8, /**< LED1 on PORT8 (P87, pin 39) */
+  k_led_2_port = 5, /**< LED2 on PORT5 (P56, pin 50) */
+  k_led_3_port = 5, /**< LED3 on PORT5 (P55, pin 51) */
+  k_led_4_port = 5, /**< LED4 on PORT5 (P54, pin 52) */
+  k_led_5_port = 5, /**< LED5 on PORT5 (P52, pin 54) */
 } led_ports_t;
 
 typedef enum : uint8_t {
-    k_led_0_pin = 2,    /**< LED0 pin 2 (P32, pin 27) */
-    k_led_1_pin = 7,    /**< LED1 pin 7 (P87, pin 39) */
-    k_led_2_pin = 6,    /**< LED2 pin 6 (P56, pin 50) */
-    k_led_3_pin = 5,    /**< LED3 pin 5 (P55, pin 51) */
-    k_led_4_pin = 4,    /**< LED4 pin 4 (P54, pin 52) */
-    k_led_5_pin = 2,    /**< LED5 pin 2 (P52, pin 54) */
+  k_led_0_pin = 2, /**< LED0 pin 2 (P32, pin 27) */
+  k_led_1_pin = 7, /**< LED1 pin 7 (P87, pin 39) */
+  k_led_2_pin = 6, /**< LED2 pin 6 (P56, pin 50) */
+  k_led_3_pin = 5, /**< LED3 pin 5 (P55, pin 51) */
+  k_led_4_pin = 4, /**< LED4 pin 4 (P54, pin 52) */
+  k_led_5_pin = 2, /**< LED5 pin 2 (P52, pin 54) */
 } led_pins_t;
 
 typedef enum : uint8_t {
-    k_led_count = 6,    /**< Total number of LEDs */
+  k_led_count = 6, /**< Total number of LEDs */
 } led_count_t;
 
 /** @} */ /* end of led_pins */
@@ -553,11 +553,11 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_temp_1wire_port = 5,   /**< 1-Wire on PORT5 (P51, pin 55) */
+  k_temp_1wire_port = 5, /**< 1-Wire on PORT5 (P51, pin 55) */
 } onewire_ports_t;
 
 typedef enum : uint8_t {
-    k_temp_1wire_pin = 1,    /**< 1-Wire pin 1 (P51, pin 55) */
+  k_temp_1wire_pin = 1, /**< 1-Wire pin 1 (P51, pin 55) */
 } onewire_pins_t;
 
 /** @} */ /* end of onewire_pins */
@@ -578,15 +578,15 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_bms_alert_port = 0,   /**< BMS_ALERT on PORT0 (P05/IRQ13, pin 2) */
+  k_bms_alert_port = 0, /**< BMS_ALERT on PORT0 (P05/IRQ13, pin 2) */
 } bms_alert_ports_t;
 
 typedef enum : uint8_t {
-    k_bms_alert_pin = 5,    /**< BMS_ALERT pin 5 (P05, pin 2) */
+  k_bms_alert_pin = 5, /**< BMS_ALERT pin 5 (P05, pin 2) */
 } bms_alert_pins_t;
 
 typedef enum : uint8_t {
-    k_bms_alert_irq = 13,   /**< BMS_ALERT IRQ13 */
+  k_bms_alert_irq = 13, /**< BMS_ALERT IRQ13 */
 } bms_alert_irqs_t;
 
 /** @} */ /* end of bms_alert_pins */
@@ -614,15 +614,15 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_host_irq_port = 6,    /**< HOST_IRQ on PORT6 (P67/IRQ15, pin 98) */
+  k_host_irq_port = 6, /**< HOST_IRQ on PORT6 (P67/IRQ15, pin 98) */
 } host_irq_ports_t;
 
 typedef enum : uint8_t {
-    k_host_irq_pin = 7,     /**< HOST_IRQ pin 7 (P67, pin 98) */
+  k_host_irq_pin = 7, /**< HOST_IRQ pin 7 (P67, pin 98) */
 } host_irq_pins_t;
 
 typedef enum : uint8_t {
-    k_host_irq_num = 15,    /**< HOST_IRQ uses IRQ15 */
+  k_host_irq_num = 15, /**< HOST_IRQ uses IRQ15 */
 } host_irq_nums_t;
 
 /** @} */ /* end of host_irq_pins */
@@ -648,17 +648,17 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-    k_usb_vbus_port = 1,     /**< USB0_VBUS on PORT1 (P16, pin 40) */
+  k_usb_vbus_port = 1, /**< USB0_VBUS on PORT1 (P16, pin 40) */
 } usb_ports_t;
 
 typedef enum : uint8_t {
-    k_usb_vbus_pin = 6,      /**< USB0_VBUS pin 6 (P16, pin 40) */
+  k_usb_vbus_pin = 6, /**< USB0_VBUS pin 6 (P16, pin 40) */
 } usb_pins_t;
 
 typedef enum : uint8_t {
-    k_usb_dm_pkg_pin  = 47,  /**< USB0_DM dedicated pin (pin 47) */
-    k_usb_dp_pkg_pin  = 48,  /**< USB0_DP dedicated pin (pin 48) */
-    k_usb_vbus_pkg_pin = 40, /**< USB0_VBUS on P16 (pin 40) */
+  k_usb_dm_pkg_pin   = 47, /**< USB0_DM dedicated pin (pin 47) */
+  k_usb_dp_pkg_pin   = 48, /**< USB0_DP dedicated pin (pin 48) */
+  k_usb_vbus_pkg_pin = 40, /**< USB0_VBUS on P16 (pin 40) */
 } usb_pkg_pins_t;
 
 /** @} */ /* end of usb_pins */

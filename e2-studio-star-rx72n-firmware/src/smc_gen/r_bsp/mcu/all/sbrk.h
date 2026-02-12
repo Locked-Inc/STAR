@@ -49,10 +49,9 @@ Macro definitions
 /***********************************************************************************************************************
 Typedef definitions
 ***********************************************************************************************************************/
-typedef union
-{
-    int32_t  dummy;             /* Dummy for 4-byte boundary */
-    int8_t heap[BSP_CFG_HEAP_BYTES];    /* Declaration of the area managed by sbrk*/
+typedef union {
+  int32_t dummy;                    /* Dummy for 4-byte boundary */
+  int8_t  heap[BSP_CFG_HEAP_BYTES]; /* Declaration of the area managed by sbrk*/
 } u_heap_type_t;
 
 /***********************************************************************************************************************
@@ -64,14 +63,14 @@ Exported global functions (to be accessed by other files)
 ***********************************************************************************************************************/
 /* const size_t _sbrk_size=      // Specifies the minimum unit of */
 /* the defined heap area */
-int8_t *_s1ptr;
+int8_t* _s1ptr;
 
 /* Memory allocation function prototype declaration (CC-RX and GNURX+NEWLIB) */
-int8_t  *sbrk(size_t size);
+int8_t* sbrk(size_t size);
 
 #if defined(__GNUC__)
 /* Memory address function prototype declaration (GNURX+OPTLIB only) */
-int8_t  *_top_of_heap(void);
+int8_t* _top_of_heap(void);
 #endif /* defined(__GNUC__) */
 
 #endif /* defined(__CCRX__), defined(__GNUC__) */
@@ -80,5 +79,4 @@ int8_t  *_top_of_heap(void);
 
 #endif /* BSP_CFG_HEAP_BYTES */
 
-#endif  /* SBRK_H */
-
+#endif /* SBRK_H */

@@ -356,12 +356,18 @@ extern "C" {
  * @see rx_gptw_output_t for GPTW output pin selection
  */
 typedef struct {
-  rx_gptw_channel_t channel;      /**< GPTW timer channel selection (0-3). Determines which GPTW peripheral instance to use. Example: k_gptw_channel_0 for Motor 0. */
-  rx_gptw_output_t  output_a;     /**< PWM output A pin (H-bridge IN1). Active for forward rotation. Typically k_gptw_output_a (GTIOCA). Must differ from output_b. */
-  rx_gptw_output_t  output_b;     /**< PWM output B pin (H-bridge IN2). Active for reverse rotation. Typically k_gptw_output_b (GTIOCB). Must differ from output_a. */
-  uint32_t          pwm_freq_hz;  /**< PWM frequency in Hertz. Range: 1,000-100,000 Hz. Recommended: 20,000 Hz (20 kHz) for inaudible operation. Higher = more switching losses. */
-  uint32_t          dead_time_ns; /**< Dead-time in nanoseconds to prevent H-bridge shoot-through. Typical: 1000 ns (1 µs). Must exceed FET turn-off time. Zero = no protection (unsafe). */
-  bool              invert_pwm;   /**< Invert PWM polarity. false = active-high (default for DRV8243), true = active-low. Use if H-bridge has inverted logic. */
+  rx_gptw_channel_t
+    channel; /**< GPTW timer channel selection (0-3). Determines which GPTW peripheral instance to use. Example: k_gptw_channel_0 for Motor 0. */
+  rx_gptw_output_t
+    output_a; /**< PWM output A pin (H-bridge IN1). Active for forward rotation. Typically k_gptw_output_a (GTIOCA). Must differ from output_b. */
+  rx_gptw_output_t
+    output_b; /**< PWM output B pin (H-bridge IN2). Active for reverse rotation. Typically k_gptw_output_b (GTIOCB). Must differ from output_a. */
+  uint32_t
+    pwm_freq_hz; /**< PWM frequency in Hertz. Range: 1,000-100,000 Hz. Recommended: 20,000 Hz (20 kHz) for inaudible operation. Higher = more switching losses. */
+  uint32_t
+    dead_time_ns; /**< Dead-time in nanoseconds to prevent H-bridge shoot-through. Typical: 1000 ns (1 µs). Must exceed FET turn-off time. Zero = no protection (unsafe). */
+  bool
+    invert_pwm; /**< Invert PWM polarity. false = active-high (default for DRV8243), true = active-low. Use if H-bridge has inverted logic. */
 } rx_motor_config_t;
 
 /**
@@ -475,13 +481,20 @@ typedef struct {
  * @see rx_motor_emergency_stop() clears initialized flag
  */
 typedef struct {
-  rx_gptw_channel_t channel;      /**< GPTW timer channel (0-3). Hardware peripheral selection. Copied from config during init, never modified. */
-  rx_gptw_output_t  output_a;     /**< PWM output A pin (forward rotation). Copied from config during init, never modified. Typically GTIOCA. */
-  rx_gptw_output_t  output_b;     /**< PWM output B pin (reverse rotation). Copied from config during init, never modified. Typically GTIOCB. */
-  uint32_t          pwm_freq_hz;  /**< Configured PWM frequency in Hz. Copied from config during init, never modified. Example: 20000 (20 kHz). */
-  float             current_duty; /**< Current duty cycle percentage. Range: -100.0 (full reverse) to +100.0 (full forward). Updated by rx_motor_set_duty(). Read by rx_motor_get_duty(). */
-  bool              invert_pwm;   /**< PWM polarity inversion flag. false = active-high, true = active-low. Copied from config during init, never modified. */
-  bool              initialized;  /**< Initialization status flag. true = ready for operation, false = not initialized or emergency stopped. Set by rx_motor_init(), cleared by rx_motor_deinit() or rx_motor_emergency_stop(). */
+  rx_gptw_channel_t
+    channel; /**< GPTW timer channel (0-3). Hardware peripheral selection. Copied from config during init, never modified. */
+  rx_gptw_output_t
+    output_a; /**< PWM output A pin (forward rotation). Copied from config during init, never modified. Typically GTIOCA. */
+  rx_gptw_output_t
+    output_b; /**< PWM output B pin (reverse rotation). Copied from config during init, never modified. Typically GTIOCB. */
+  uint32_t
+    pwm_freq_hz; /**< Configured PWM frequency in Hz. Copied from config during init, never modified. Example: 20000 (20 kHz). */
+  float
+    current_duty; /**< Current duty cycle percentage. Range: -100.0 (full reverse) to +100.0 (full forward). Updated by rx_motor_set_duty(). Read by rx_motor_get_duty(). */
+  bool
+    invert_pwm; /**< PWM polarity inversion flag. false = active-high, true = active-low. Copied from config during init, never modified. */
+  bool
+    initialized; /**< Initialization status flag. true = ready for operation, false = not initialized or emergency stopped. Set by rx_motor_init(), cleared by rx_motor_deinit() or rx_motor_emergency_stop(). */
 } rx_motor_handle_t;
 
 /* =============================================================================

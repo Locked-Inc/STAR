@@ -847,13 +847,13 @@
 
 #include "obstacle_detect_task.h"
 
+#include <string.h>
+
 #include "rx_check.h"
 #include "rx_log.h"
 #include "rx_obstacle_detect.h"
 #include "shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
 
 /* =============================================================================
  * Constants
@@ -916,10 +916,10 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_obstacle_sensor_count       = 4,  /**< Number of HC-SR04 sensors (perimeter coverage) */
-  k_obstacle_threshold_cm       = 30, /**< Obstacle detection threshold (30 cm = 71% margin) */
-  k_obstacle_debounce_samples   = 3,  /**< Consecutive readings to confirm state change */
-  k_obstacle_poll_interval_ms   = 20, /**< Polling interval: 20 ms = 50 Hz per sensor */
+  k_obstacle_sensor_count     = 4,  /**< Number of HC-SR04 sensors (perimeter coverage) */
+  k_obstacle_threshold_cm     = 30, /**< Obstacle detection threshold (30 cm = 71% margin) */
+  k_obstacle_debounce_samples = 3,  /**< Consecutive readings to confirm state change */
+  k_obstacle_poll_interval_ms = 20, /**< Polling interval: 20 ms = 50 Hz per sensor */
 } obstacle_sensor_constants_t;
 
 /* =============================================================================
@@ -1038,9 +1038,9 @@ static const char* const s_tag = "OBSTACLE";
 
 static void internal_obstacle_task_entry(ULONG input);
 static void internal_obstacle_callback(bool    obstacle_detected,
-                                        uint8_t sensor_idx,
-                                        float   distance_cm,
-                                        void*   user_data);
+                                       uint8_t sensor_idx,
+                                       float   distance_cm,
+                                       void*   user_data);
 
 /* =============================================================================
  * Public Functions
@@ -1559,12 +1559,12 @@ static void internal_obstacle_task_entry(ULONG input)
 
   /* Configure obstacle detection system */
   (void)memset(&config, 0, sizeof(config));
-  config.sensor_count             = k_obstacle_sensor_count;
-  config.detection_threshold_cm   = (float)k_obstacle_threshold_cm;
-  config.debounce_samples         = k_obstacle_debounce_samples;
-  config.poll_interval_ms         = k_obstacle_poll_interval_ms;
-  config.callback                 = internal_obstacle_callback;
-  config.user_data                = nullptr;
+  config.sensor_count           = k_obstacle_sensor_count;
+  config.detection_threshold_cm = (float)k_obstacle_threshold_cm;
+  config.debounce_samples       = k_obstacle_debounce_samples;
+  config.poll_interval_ms       = k_obstacle_poll_interval_ms;
+  config.callback               = internal_obstacle_callback;
+  config.user_data              = nullptr;
 
   /* Initialize obstacle detection (library creates its own internal task) */
   err = rx_obstacle_detect_init(&s_obstacle_handle, &config);
@@ -1862,9 +1862,9 @@ static void internal_obstacle_task_entry(ULONG input)
  * @callergraph
  */
 static void internal_obstacle_callback(bool    obstacle_detected,
-                                        uint8_t sensor_idx,
-                                        float   distance_cm,
-                                        void*   user_data)
+                                       uint8_t sensor_idx,
+                                       float   distance_cm,
+                                       void*   user_data)
 {
   obstacle_state_t state;
 
@@ -1888,10 +1888,10 @@ static void internal_obstacle_callback(bool    obstacle_detected,
 
   /* Update obstacle state in shared data */
   (void)memset(&state, 0, sizeof(state));
-  state.distance_cm[sensor_idx]        = (uint16_t)distance_cm;
-  state.obstacle_detected[sensor_idx]  = obstacle_detected;
-  state.any_obstacle                   = obstacle_detected;
-  state.timestamp_ms                   = tx_time_get();
+  state.distance_cm[sensor_idx]       = (uint16_t)distance_cm;
+  state.obstacle_detected[sensor_idx] = obstacle_detected;
+  state.any_obstacle                  = obstacle_detected;
+  state.timestamp_ms                  = tx_time_get();
 
   (void)shared_data_update_obstacle(&state);
 }

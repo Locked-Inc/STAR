@@ -310,36 +310,29 @@ static inline volatile uint8_t* rtc_rcr4_reg(void)
  */
 
 /* Verify RCR3 address is correct (critical for sub-clock disable) */
-static_assert(k_rtc_rcr3_addr == 0x0008C426U,
-               "RCR3 address must be 0x0008C426 per Ch33 manual");
+static_assert(k_rtc_rcr3_addr == 0x0008C426U, "RCR3 address must be 0x0008C426 per Ch33 manual");
 
 /* Verify base address */
 static_assert(k_rtc_base_addr == 0x0008C400U,
-               "RTC base address must be 0x0008C400 per Ch33 manual");
+              "RTC base address must be 0x0008C400 per Ch33 manual");
 
 /* Verify RCR3 offset from base */
 static_assert(k_rtc_rcr3_addr - k_rtc_base_addr == k_rtc_offset_rcr3,
-               "RCR3 offset must be 0x26 from base");
+              "RCR3 offset must be 0x26 from base");
 
 /* Verify other control register addresses */
-static_assert(k_rtc_rcr1_addr == 0x0008C422U,
-               "RCR1 address must be 0x0008C422 per Ch33 manual");
+static_assert(k_rtc_rcr1_addr == 0x0008C422U, "RCR1 address must be 0x0008C422 per Ch33 manual");
 
-static_assert(k_rtc_rcr2_addr == 0x0008C424U,
-               "RCR2 address must be 0x0008C424 per Ch33 manual");
+static_assert(k_rtc_rcr2_addr == 0x0008C424U, "RCR2 address must be 0x0008C424 per Ch33 manual");
 
-static_assert(k_rtc_rcr4_addr == 0x0008C428U,
-               "RCR4 address must be 0x0008C428 per Ch33 manual");
+static_assert(k_rtc_rcr4_addr == 0x0008C428U, "RCR4 address must be 0x0008C428 per Ch33 manual");
 
 /* Verify control register spacing (each 2 bytes apart) */
-static_assert(k_rtc_rcr2_addr - k_rtc_rcr1_addr == 2U,
-               "RCR1 to RCR2 spacing must be 2 bytes");
+static_assert(k_rtc_rcr2_addr - k_rtc_rcr1_addr == 2U, "RCR1 to RCR2 spacing must be 2 bytes");
 
-static_assert(k_rtc_rcr3_addr - k_rtc_rcr2_addr == 2U,
-               "RCR2 to RCR3 spacing must be 2 bytes");
+static_assert(k_rtc_rcr3_addr - k_rtc_rcr2_addr == 2U, "RCR2 to RCR3 spacing must be 2 bytes");
 
-static_assert(k_rtc_rcr4_addr - k_rtc_rcr3_addr == 2U,
-               "RCR3 to RCR4 spacing must be 2 bytes");
+static_assert(k_rtc_rcr4_addr - k_rtc_rcr3_addr == 2U, "RCR3 to RCR4 spacing must be 2 bytes");
 
 /** @} */
 

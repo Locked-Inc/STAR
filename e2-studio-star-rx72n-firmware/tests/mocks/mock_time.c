@@ -11,9 +11,9 @@
 
 #include "mock_time.h"
 
-#include "tx_api.h"
-
 #include <string.h>
+
+#include "tx_api.h"
 
 /* =============================================================================
  * ThreadX tx_time_get() Mock Implementation

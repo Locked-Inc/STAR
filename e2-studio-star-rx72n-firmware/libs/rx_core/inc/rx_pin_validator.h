@@ -772,7 +772,8 @@ typedef struct {
  * @par NASA Power of 10 Compliance:
  * - Rule 5: [OK] 3 preconditions, 4 postconditions
  */
-[[nodiscard]] rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t* validator);
+[[nodiscard]] rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface,
+                                                   pin_validator_t*    validator);
 
 /**
  * @brief Deinitialize pin validator (graceful shutdown only)

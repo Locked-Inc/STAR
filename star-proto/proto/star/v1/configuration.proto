@@ -49,6 +49,9 @@ service ConfigurationService {
 
   // Set individual motor PID configuration.
   rpc SetMotorPidConfig(SetMotorPidConfigRequest) returns (SetMotorPidConfigResponse);
+
+  // Set SPI retransmit configuration (RPi5 -> RX72N).
+  rpc SetRetransmitConfig(SetRetransmitConfigRequest) returns (SetRetransmitConfigResponse);
 }
 
 // Request for current configuration.
@@ -185,6 +188,39 @@ message SetMotorPidConfigResponse {
 
   // Validation result.
   ConfigValidationResult validation_result = 2;
+}
+
+// Retransmit configuration for SPI communication layer.
+message RetransmitConfig {
+  // Enable automatic retransmission.
+  bool enabled = 1;
+
+  // Maximum retransmit attempts before giving up.
+  // Valid range: 1-10. Default: 3.
+  uint32 max_retries = 2;
+
+  // Initial ACK timeout in milliseconds.
+  // Valid range: 10-1000. Default: 50.
+  uint32 ack_timeout_ms = 3;
+
+  // Maximum backoff cap in milliseconds.
+  // Valid range: 50-5000. Default: 400.
+  uint32 max_backoff_ms = 4;
+}
+
+// Request to set retransmit configuration (RPi5 -> RX72N).
+message SetRetransmitConfigRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // Retransmit configuration to apply.
+  RetransmitConfig retransmit_config = 2;
+}
+
+// Response to set retransmit configuration.
+message SetRetransmitConfigResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
 }
 
 // Complete system configuration.

@@ -99,10 +99,10 @@ typedef struct rx_bus_manager_s rx_bus_manager_t;
  * @brief DRV8243 configuration (simplified for mock)
  */
 typedef struct {
-  rx_bus_manager_t* bus_manager;   /**< Bus manager (unused in mock) */
-  const char*       gpio_bus_name; /**< GPIO bus name */
-  const char*       adc_bus_name;  /**< ADC bus name */
-  uint32_t          pwm_freq_hz;   /**< PWM frequency */
+  rx_bus_manager_t* bus_manager;      /**< Bus manager (unused in mock) */
+  const char*       gpio_bus_name;    /**< GPIO bus name */
+  const char*       adc_bus_name;     /**< ADC bus name */
+  uint32_t          pwm_freq_hz;      /**< PWM frequency */
   uint16_t          current_limit_ma; /**< Current limit */
   bool              use_spi_variant;  /**< Enable SPI variant */
 } rx_drv8243_config_t;

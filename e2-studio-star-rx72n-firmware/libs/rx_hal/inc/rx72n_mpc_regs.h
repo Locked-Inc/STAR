@@ -525,25 +525,25 @@ typedef enum : uint8_t {
 
 /* Verify critical register offsets from base (0x0008C100) */
 static_assert(offsetof(rx_mpc_regs_t, pfcse) == 0x00,
-               "PFCSE must be at offset 0x00 (address 0x0008C100)");
+              "PFCSE must be at offset 0x00 (address 0x0008C100)");
 static_assert(offsetof(rx_mpc_regs_t, pwpr) == 0x1F,
-               "PWPR must be at offset 0x1F (address 0x0008C11F)");
+              "PWPR must be at offset 0x1F (address 0x0008C11F)");
 static_assert(offsetof(rx_mpc_regs_t, p00pfs) == 0x40,
-               "P00PFS must be at offset 0x40 (address 0x0008C140)");
+              "P00PFS must be at offset 0x40 (address 0x0008C140)");
 
 /* Verify specific port offsets from P00PFS base */
 static_assert(offsetof(rx_mpc_regs_t, p50pfs) == 0x40 + 0x28,
-               "P50PFS must be at offset 0x68 (Port 5 base)");
+              "P50PFS must be at offset 0x68 (Port 5 base)");
 static_assert(offsetof(rx_mpc_regs_t, pa0pfs) == 0x40 + 0x50,
-               "PA0PFS must be at offset 0x90 (Port A base)");
+              "PA0PFS must be at offset 0x90 (Port A base)");
 static_assert(offsetof(rx_mpc_regs_t, pe0pfs) == 0x40 + 0x70,
-               "PE0PFS must be at offset 0xB0 (Port E base)");
+              "PE0PFS must be at offset 0xB0 (Port E base)");
 static_assert(offsetof(rx_mpc_regs_t, pj0pfs) == 0x40 + 0x90,
-               "PJ0PFS must be at offset 0xD0 (Port J base)");
+              "PJ0PFS must be at offset 0xD0 (Port J base)");
 
 /* Verify struct total size (64 bytes control + 152 bytes PFS = 216 bytes) */
 static_assert(sizeof(rx_mpc_regs_t) == 0x40 + 152,
-               "MPC struct size must be 64 + 152 = 216 bytes total");
+              "MPC struct size must be 64 + 152 = 216 bytes total");
 
 /** @} */ /* End of mpc_static_assert group */
 

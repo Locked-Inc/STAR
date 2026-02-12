@@ -455,7 +455,8 @@ rx_err_t uart_getc_channel(uart_channel_t channel, char* data)
   return k_rx_ok;
 }
 
-rx_err_t uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read)
+rx_err_t
+uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read)
 {
   internal_record_call(k_mock_uart_call_read, (uint8_t)channel, length);
 

@@ -506,10 +506,14 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  wdt_timeout_cycles_t timeout_cycles;   /**< Counter cycle count before timeout (TOPS bits). Use k_wdt_timeout_16384_cycles for maximum. Valid values: 0-3. See wdt_timeout_cycles_t. */
-  wdt_clock_division_t clock_division;   /**< Clock division ratio (CKS bits). Use k_wdt_clock_div_8192 for longest timeout. Combined with timeout_cycles determines actual timeout. See wdt_clock_division_t. */
-  bool                 enable_on_init;   /**< Auto-start watchdog after initialization. true = Start immediately (production mode, ensure feed loop ready). false = Manual start via rx_wdt_start() (safer for development). Default: false */
-  bool                 reset_on_timeout; /**< Behavior on watchdog timeout. true = System reset (production mode). false = NMI interrupt (development mode, allows debugging). Default: true */
+  wdt_timeout_cycles_t
+    timeout_cycles; /**< Counter cycle count before timeout (TOPS bits). Use k_wdt_timeout_16384_cycles for maximum. Valid values: 0-3. See wdt_timeout_cycles_t. */
+  wdt_clock_division_t
+    clock_division; /**< Clock division ratio (CKS bits). Use k_wdt_clock_div_8192 for longest timeout. Combined with timeout_cycles determines actual timeout. See wdt_clock_division_t. */
+  bool
+    enable_on_init; /**< Auto-start watchdog after initialization. true = Start immediately (production mode, ensure feed loop ready). false = Manual start via rx_wdt_start() (safer for development). Default: false */
+  bool
+    reset_on_timeout; /**< Behavior on watchdog timeout. true = System reset (production mode). false = NMI interrupt (development mode, allows debugging). Default: true */
 } rx_wdt_config_t;
 
 /* =============================================================================

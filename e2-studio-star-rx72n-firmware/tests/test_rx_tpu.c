@@ -34,12 +34,11 @@
  * @since Version 1.0.0
  */
 
-#include "mock_rx_tpu_regs.h"
+#include <string.h>
 
+#include "mock_rx_tpu_regs.h"
 #include "rx_tpu.h"
 #include "unity.h"
-
-#include <string.h>
 
 /*
  * System register access:
@@ -361,7 +360,7 @@ void test_read_count_tpu1(void)
   tpu1()->tcnt = 1234;
 
   uint16_t count = 0;
-  rx_err_t err = rx_tpu_read_count(k_tpu_channel_1, &count);
+  rx_err_t err   = rx_tpu_read_count(k_tpu_channel_1, &count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(1234, count);
 }
@@ -383,7 +382,7 @@ void test_read_count_max_value(void)
   tpu2()->tcnt = 0xFFFF;
 
   uint16_t count = 0;
-  rx_err_t err = rx_tpu_read_count(k_tpu_channel_2, &count);
+  rx_err_t err   = rx_tpu_read_count(k_tpu_channel_2, &count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(0xFFFF, count);
 }
@@ -410,7 +409,7 @@ void test_read_count_null_ptr(void)
 void test_read_count_uninit(void)
 {
   uint16_t count = 0;
-  rx_err_t err = rx_tpu_read_count(k_tpu_channel_4, &count);
+  rx_err_t err   = rx_tpu_read_count(k_tpu_channel_4, &count);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -435,8 +434,8 @@ void test_read_direction_counting_up(void)
   /* Set TCFD bit (bit 7) = counting up */
   tpu1()->tsr = k_tpu_tsr_tcfd;
 
-  bool counting_up = false;
-  rx_err_t err = rx_tpu_read_direction(k_tpu_channel_1, &counting_up);
+  bool     counting_up = false;
+  rx_err_t err         = rx_tpu_read_direction(k_tpu_channel_1, &counting_up);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(counting_up);
 }
@@ -457,8 +456,8 @@ void test_read_direction_counting_down(void)
   /* Clear TCFD bit = counting down */
   tpu2()->tsr = 0;
 
-  bool counting_up = true;
-  rx_err_t err = rx_tpu_read_direction(k_tpu_channel_2, &counting_up);
+  bool     counting_up = true;
+  rx_err_t err         = rx_tpu_read_direction(k_tpu_channel_2, &counting_up);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(counting_up);
 }
@@ -484,8 +483,8 @@ void test_read_direction_null_ptr(void)
  */
 void test_read_direction_uninit(void)
 {
-  bool counting_up = false;
-  rx_err_t err = rx_tpu_read_direction(k_tpu_channel_5, &counting_up);
+  bool     counting_up = false;
+  rx_err_t err         = rx_tpu_read_direction(k_tpu_channel_5, &counting_up);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 

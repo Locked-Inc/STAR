@@ -246,8 +246,9 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  uint16_t* value;  /**< Output pointer: stores raw ADC value (0-4095 for 12-bit). Must be non-NULL. */
-  rx_err_t  result; /**< Operation result: k_rx_ok on success, error code on failure */
+  uint16_t*
+    value; /**< Output pointer: stores raw ADC value (0-4095 for 12-bit). Must be non-NULL. */
+  rx_err_t result; /**< Operation result: k_rx_ok on success, error code on failure */
 } adc_read_ctx_t;
 
 /**
@@ -280,9 +281,10 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  uint32_t* voltage_mv; /**< Output pointer: stores voltage in millivolts (0-vref_mv). Must be non-NULL. */
-  uint8_t   bits;       /**< ADC resolution in bits (8, 10, or 12). Used for conversion calculation. */
-  rx_err_t  result;     /**< Operation result: k_rx_ok on success, error code on failure */
+  uint32_t*
+    voltage_mv;  /**< Output pointer: stores voltage in millivolts (0-vref_mv). Must be non-NULL. */
+  uint8_t  bits; /**< ADC resolution in bits (8, 10, or 12). Used for conversion calculation. */
+  rx_err_t result; /**< Operation result: k_rx_ok on success, error code on failure */
 } adc_voltage_ctx_t;
 
 /* =============================================================================

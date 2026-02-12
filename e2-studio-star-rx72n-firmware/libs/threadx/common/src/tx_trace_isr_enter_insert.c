@@ -9,7 +9,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 /**************************************************************************/
 /**************************************************************************/
 /**                                                                       */
@@ -22,7 +21,6 @@
 
 #define TX_SOURCE_CODE
 
-
 /* Include necessary system files.  */
 
 #include "tx_api.h"
@@ -30,7 +28,6 @@
 #include "tx_thread.h"
 #endif
 #include "tx_trace.h"
-
 
 /**************************************************************************/
 /*                                                                        */
@@ -72,39 +69,40 @@
 /*                                            resulting in version 6.1    */
 /*                                                                        */
 /**************************************************************************/
-VOID  _tx_trace_isr_enter_insert(ULONG isr_id)
+VOID _tx_trace_isr_enter_insert(ULONG isr_id)
 {
 
-TX_INTERRUPT_SAVE_AREA
-
+  TX_INTERRUPT_SAVE_AREA
 
 #ifdef TX_ENABLE_EVENT_TRACE
 
-UINT            stack_address;
-ULONG           system_state;
-UINT            preempt_disable;
+  UINT  stack_address;
+  ULONG system_state;
+  UINT  preempt_disable;
 
+  /* Disable interrupts.  */
+  TX_DISABLE
 
-    /* Disable interrupts.  */
-    TX_DISABLE
+  /* Insert this event into the trace buffer.  */
+  system_state    = TX_THREAD_GET_SYSTEM_STATE();
+  preempt_disable = _tx_thread_preempt_disable;
+  TX_TRACE_IN_LINE_INSERT(TX_TRACE_ISR_ENTER,
+                          &stack_address,
+                          isr_id,
+                          system_state,
+                          preempt_disable,
+                          TX_TRACE_INTERNAL_EVENTS)
 
-    /* Insert this event into the trace buffer.  */
-    system_state =  TX_THREAD_GET_SYSTEM_STATE();
-    preempt_disable =  _tx_thread_preempt_disable;
-    TX_TRACE_IN_LINE_INSERT(TX_TRACE_ISR_ENTER, &stack_address, isr_id, system_state, preempt_disable, TX_TRACE_INTERNAL_EVENTS)
-
-    /* Restore interrupts.  */
-    TX_RESTORE
+  /* Restore interrupts.  */
+  TX_RESTORE
 #else
 
-    /* Access input arguments just for the sake of lint, MISRA, etc.  */
-    if (isr_id != ((ULONG) 0))
-    {
+  /* Access input arguments just for the sake of lint, MISRA, etc.  */
+  if (isr_id != ((ULONG)0)) {
 
-        /* NOP code.  */
-        TX_DISABLE
-        TX_RESTORE
-    }
+    /* NOP code.  */
+    TX_DISABLE
+    TX_RESTORE
+  }
 #endif
 }
-
