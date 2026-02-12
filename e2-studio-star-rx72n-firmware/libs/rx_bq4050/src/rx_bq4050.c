@@ -20,7 +20,7 @@
  * **SBS Register Map Implementation:**
  * This driver accesses the following SBS 1.1 standard registers:
  * - 0x00: ManufacturerAccess (write-then-read, manufacturer commands)
- * - 0x08: Temperature (word, 0.1K units → converted to °C)
+ * - 0x08: Temperature (word, 0.1K units -> converted to °C)
  * - 0x09: Voltage (word, mV, pack voltage sum)
  * - 0x0A: Current (word, mA signed, instantaneous)
  * - 0x0B: AverageCurrent (word, mA signed, 1-min average)
@@ -57,16 +57,16 @@
  * - rx_log.h: Logging infrastructure (info, error, hex formatting)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp/longjmp, or recursion
- * - Rule 2: ✓ All loops bounded (cell count iterations: 0 to k_bq4050_max_cells-1)
- * - Rule 3: ✓ No dynamic allocation (all data static or stack)
- * - Rule 4: ✓ Functions < 60 lines (longest ~50 lines)
- * - Rule 5: ✓ Minimum 2 validations per function (NULL checks + range checks)
- * - Rule 6: ✓ Variables declared at smallest scope
- * - Rule 7: ✓ All return values checked (SMBus errors propagated)
- * - Rule 8: ✓ C23 typed enums for ALL constants (no magic numbers)
- * - Rule 9: ✓ Single-level pointer dereferencing only
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp/longjmp, or recursion
+ * - Rule 2: [OK] All loops bounded (cell count iterations: 0 to k_bq4050_max_cells-1)
+ * - Rule 3: [OK] No dynamic allocation (all data static or stack)
+ * - Rule 4: [OK] Functions < 60 lines (longest ~50 lines)
+ * - Rule 5: [OK] Minimum 2 validations per function (NULL checks + range checks)
+ * - Rule 6: [OK] Variables declared at smallest scope
+ * - Rule 7: [OK] All return values checked (SMBus errors propagated)
+ * - Rule 8: [OK] C23 typed enums for ALL constants (no magic numbers)
+ * - Rule 9: [OK] Single-level pointer dereferencing only
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility:** Each function has one clear purpose
@@ -191,7 +191,7 @@ typedef enum : uint16_t {
  * Celsius with complete range validation at each conversion step.
  *
  * **SBS Temperature Format:**
- * - Input: uint16_t in 0.1 Kelvin units (0-65535 → 0K to 6553.5K)
+ * - Input: uint16_t in 0.1 Kelvin units (0-65535 -> 0K to 6553.5K)
  * - Intermediate: int32_t in 0.1°C units after offset subtraction
  * - Output: int16_t in whole degrees Celsius
  *
@@ -204,9 +204,9 @@ typedef enum : uint16_t {
  * **Example Conversion:**
  * - Input: 2981 (0.1K) = 298.1K = 25.0°C
  * - Step 1: 2981 - 2731 = 250 (0.1°C)
- * - Step 2: Validate 250 in [-2731, 62804] ✓
+ * - Step 2: Validate 250 in [-2731, 62804] [OK]
  * - Step 3: 250 / 10 = 25°C
- * - Step 4: Validate 25 in [-32768, 32767] ✓
+ * - Step 4: Validate 25 in [-32768, 32767] [OK]
  *
  * @par Validation Rationale (NASA Rule 5):
  * Intermediate validation prevents overflow in division step. Without
@@ -387,10 +387,10 @@ typedef enum : uint8_t {
  * (e.g., showing 25°C when battery is actually >60°C critical).
  *
  * **Example Conversions:**
- * - Input: 2731 → 0°C (freezing point of water)
- * - Input: 2981 → 25°C (room temperature)
- * - Input: 3731 → 100°C (boiling point of water)
- * - Input: 0 → -273°C (absolute zero)
+ * - Input: 2731 -> 0°C (freezing point of water)
+ * - Input: 2981 -> 25°C (room temperature)
+ * - Input: 3731 -> 100°C (boiling point of water)
+ * - Input: 0 -> -273°C (absolute zero)
  *
  * @param[in] temp_0_1k Temperature in 0.1 Kelvin units
  *   - **Type:** uint16_t
@@ -607,15 +607,15 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
    * BQ4050-specific extension registers (not in standard SBS spec).
    *
    * **Mapping:**
-   * - Index 0 → 0x3F (Cell 1, bottom cell)
-   * - Index 1 → 0x3E (Cell 2)
-   * - Index 2 → 0x3D (Cell 3)
-   * - Index 3 → 0x3C (Cell 4, top cell)
+   * - Index 0 -> 0x3F (Cell 1, bottom cell)
+   * - Index 1 -> 0x3E (Cell 2)
+   * - Index 2 -> 0x3D (Cell 3)
+   * - Index 3 -> 0x3C (Cell 4, top cell)
    *
    * **Usage:** reg_addr = s_cell_reg_map[cell_index]
    *
    * @note Static const - no runtime overhead (compile-time initialization)
-   * @note Designated initializers ensure correct index→register mapping
+   * @note Designated initializers ensure correct index->register mapping
    */
   static const uint8_t s_cell_reg_map[k_bq4050_max_cells] = {
     [k_cell_idx_1] = k_sbs_cell_voltage_1, /* Cell 1 at 0x3F */

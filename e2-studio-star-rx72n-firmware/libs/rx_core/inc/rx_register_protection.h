@@ -112,16 +112,16 @@
  * - Used by: Clock init, module stop control, register guard, power management
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1**: ✓ No code (only data definitions)
- * - **Rule 2**: ✓ No loops
- * - **Rule 3**: ✓ No dynamic allocation (compile-time constants)
- * - **Rule 4**: ✓ No functions
- * - **Rule 5**: ✓ N/A (no functions)
- * - **Rule 6**: ✓ File scope only (header file)
- * - **Rule 7**: ✓ No functions
- * - **Rule 8**: ✓ C23 typed enums for all constants
- * - **Rule 9**: ✓ No pointers
- * - **Rule 10**: ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No code (only data definitions)
+ * - **Rule 2**: [OK] No loops
+ * - **Rule 3**: [OK] No dynamic allocation (compile-time constants)
+ * - **Rule 4**: [OK] No functions
+ * - **Rule 5**: [OK] N/A (no functions)
+ * - **Rule 6**: [OK] File scope only (header file)
+ * - **Rule 7**: [OK] No functions
+ * - **Rule 8**: [OK] C23 typed enums for all constants
+ * - **Rule 9**: [OK] No pointers
+ * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility**: Only defines PRCR constants, no logic
@@ -252,7 +252,7 @@ extern "C" {
  * ```
  *
  * **Key Code Security**:
- * - Writing without 0xA5 key → ignored (no effect)
+ * - Writing without 0xA5 key -> ignored (no effect)
  * - Prevents accidental unlock from pointer errors
  * - Prevents unlock from EMI-induced bit flips
  *

@@ -83,7 +83,7 @@
  *
  * ## Benefits of This Pattern
  *
- * **1. Testability** ✓✓✓:
+ * **1. Testability** [OK][OK][OK]:
  * - Mock implementations for unit tests
  * - Test high-level modules in isolation
  * - No need for real error handler in tests
@@ -94,7 +94,7 @@
  * motor_controller_init(&motor, iface);  // Testable!
  * ```
  *
- * **2. Flexibility** ✓✓✓:
+ * **2. Flexibility** [OK][OK][OK]:
  * - Swap implementations at runtime or compile-time
  * - Different implementations for production vs debug
  * - No changes to high-level code
@@ -109,12 +109,12 @@
  * motor_controller_init(&motor, iface);  // Same high-level code!
  * ```
  *
- * **3. Decoupling** ✓✓✓:
+ * **3. Decoupling** [OK][OK][OK]:
  * - High-level modules don't know about implementation
  * - Can change error handler internals without affecting users
  * - Stable interface, evolving implementation
  *
- * **4. Open/Closed Principle** ✓:
+ * **4. Open/Closed Principle** [OK]:
  * - Open for extension: Add new implementations
  * - Closed for modification: Interface remains stable
  * - Add features without changing interface
@@ -216,16 +216,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | Pure interface, no logic |
- * | 2. Fixed loop bounds | ✓ | No loops in interface |
- * | 3. No dynamic allocation | ✓ | Interface is stack-allocated |
- * | 4. Small functions | ✓ | Validation function < 10 lines |
- * | 5. Assertions (≥2 per function) | ✓ | Validation checks NULL and function pointers |
- * | 6. Narrow scope | ✓ | All definitions in single header |
- * | 7. Check return values | ✓ | All functions return rx_err_t |
- * | 8. Limited preprocessor | ✓ | Zero macros, pure interface |
- * | 9. Pointer restrictions | ⚠️ | Function pointers (required for DIP) |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | Pure interface, no logic |
+ * | 2. Fixed loop bounds | [OK] | No loops in interface |
+ * | 3. No dynamic allocation | [OK] | Interface is stack-allocated |
+ * | 4. Small functions | [OK] | Validation function < 10 lines |
+ * | 5. Assertions (≥2 per function) | [OK] | Validation checks NULL and function pointers |
+ * | 6. Narrow scope | [OK] | All definitions in single header |
+ * | 7. Check return values | [OK] | All functions return rx_err_t |
+ * | 8. Limited preprocessor | [OK] | Zero macros, pure interface |
+ * | 9. Pointer restrictions | [WARN] | Function pointers (required for DIP) |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * **Note on Rule 9**: Function pointers are essential for Dependency Inversion.
  * This is an intentional, justified deviation for architectural benefit.
@@ -252,7 +252,7 @@
  * - Optional operations (retry logic) can be NULL
  * - Clients use only what they need
  *
- * **Dependency Inversion (D)**: ✓✓✓ **THIS IS THE PRINCIPLE**
+ * **Dependency Inversion (D)**: [OK][OK][OK] **THIS IS THE PRINCIPLE**
  * - High-level modules depend on this abstraction
  * - Low-level modules implement this abstraction
  * - Dependencies point from concrete to abstract (inverted!)
@@ -540,7 +540,7 @@ typedef rx_err_t (*rx_error_reset_retry_fn)(void* ctx, const char* component);
  * - Retry 3: 80ms
  * - Retry 4: 160ms
  * - ...
- * - Retry 9: 5120ms → capped at 5000ms
+ * - Retry 9: 5120ms -> capped at 5000ms
  *
  * @param[in] ctx Opaque pointer to concrete error handler. Must be non-NULL.
  * @param[in] component Component name for backoff calculation. Must be non-NULL.
@@ -891,9 +891,9 @@ struct rx_error_interface {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ Simple control flow (sequential checks)
- * - Rule 4: ✓ Function < 10 lines (very small)
- * - Rule 5: ✓ Precondition checks (NULL validation)
+ * - Rule 1: [OK] Simple control flow (sequential checks)
+ * - Rule 4: [OK] Function < 10 lines (very small)
+ * - Rule 5: [OK] Precondition checks (NULL validation)
  */
 static inline rx_err_t rx_error_interface_validate(const rx_error_interface_t* iface)
 {

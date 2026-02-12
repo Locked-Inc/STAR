@@ -82,11 +82,11 @@
  * @par Supported Message Types
  * | Message | Direction | Description |
  * |---------|-----------|-------------|
- * | SetVelocityRequest | RPi5 → RX72N | Motor velocity commands |
- * | SetVelocityResponse | RX72N → RPi5 | Command acknowledgment |
- * | EmergencyStopRequest | RPi5 → RX72N | Emergency stop command |
- * | EmergencyStopResponse | RX72N → RPi5 | E-stop acknowledgment |
- * | TelemetryData | RX72N → RPi5 | Sensor/motor telemetry |
+ * | SetVelocityRequest | RPi5 -> RX72N | Motor velocity commands |
+ * | SetVelocityResponse | RX72N -> RPi5 | Command acknowledgment |
+ * | EmergencyStopRequest | RPi5 -> RX72N | Emergency stop command |
+ * | EmergencyStopResponse | RX72N -> RPi5 | E-stop acknowledgment |
+ * | TelemetryData | RX72N -> RPi5 | Sensor/motor telemetry |
  *
  * @par Buffer Configuration
  * | Parameter | Value | Notes |
@@ -136,16 +136,16 @@
  * - rx_err.h: Error code definitions
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ All loops bounded by message field counts
- * - Rule 3: ✓ No dynamic memory (static buffers only)
- * - Rule 4: ✓ Functions under 60 lines
- * - Rule 5: ✓ Input validation on all parameters
- * - Rule 6: ✓ Variables at smallest scope
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ Limited preprocessor (nanopb macros only)
- * - Rule 9: ✓ Callbacks only for nanopb field encoding
- * - Rule 10: ✓ Compiled with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] All loops bounded by message field counts
+ * - Rule 3: [OK] No dynamic memory (static buffers only)
+ * - Rule 4: [OK] Functions under 60 lines
+ * - Rule 5: [OK] Input validation on all parameters
+ * - Rule 6: [OK] Variables at smallest scope
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] Limited preprocessor (nanopb macros only)
+ * - Rule 9: [OK] Callbacks only for nanopb field encoding
+ * - Rule 10: [OK] Compiled with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S**: Single Responsibility - Protobuf encode/decode only
@@ -697,8 +697,8 @@ typedef struct {
  * identical velocities.
  *
  * @par Differential Drive Mapping
- * - left_mps → front_left_mps = back_left_mps
- * - right_mps → front_right_mps = back_right_mps
+ * - left_mps -> front_left_mps = back_left_mps
+ * - right_mps -> front_right_mps = back_right_mps
  *
  * @par Motion Examples
  * | left_mps | right_mps | Motion |
@@ -768,8 +768,8 @@ typedef struct {
  * parameters are applied to both front and back motors on each side.
  *
  * @par Velocity Mapping
- * - params->left_mps → cmd->front_left_mps AND cmd->back_left_mps
- * - params->right_mps → cmd->front_right_mps AND cmd->back_right_mps
+ * - params->left_mps -> cmd->front_left_mps AND cmd->back_left_mps
+ * - params->right_mps -> cmd->front_right_mps AND cmd->back_right_mps
  *
  * @param[out] cmd Output command structure to populate
  * @param[in] params Differential drive parameters

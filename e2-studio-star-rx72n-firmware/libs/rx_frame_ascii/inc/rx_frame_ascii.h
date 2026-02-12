@@ -98,7 +98,7 @@
  * All functions are **thread-safe** and **reentrant**:
  * - No static mutable state
  * - All state passed via parameters
- * - Pure functions (same inputs → same outputs)
+ * - Pure functions (same inputs -> same outputs)
  *
  * @par Module Dependencies
  * - rx_frame.h: Frame structure definitions (rx_frame_t, rx_frame_header_t)
@@ -107,16 +107,16 @@
  * - stdbool.h: Boolean type
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ All loops bounded by payload length or constant
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ Functions are concise (<60 lines)
- * - Rule 5: ✓ Input validation on all public functions
- * - Rule 6: ✓ Variables declared at smallest scope
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ Constants use C23 typed enums
- * - Rule 9: ✓ No function pointers (pure computation)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] All loops bounded by payload length or constant
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] Functions are concise (<60 lines)
+ * - Rule 5: [OK] Input validation on all public functions
+ * - Rule 6: [OK] Variables declared at smallest scope
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] Constants use C23 typed enums
+ * - Rule 9: [OK] No function pointers (pure computation)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S (SRP):** ASCII formatting only, no I/O operations

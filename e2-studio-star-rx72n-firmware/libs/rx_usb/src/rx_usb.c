@@ -67,7 +67,7 @@
  * 7. Host receives data via Bulk IN endpoint
  * ```
  *
- * ## Data Flow - Reception (Host → RX72N)
+ * ## Data Flow - Reception (Host -> RX72N)
  *
  * **Host sends data to USB port:**
  * ```
@@ -160,7 +160,7 @@
  *
  * **Device State Transitions:**
  * ```
- * Detached → Attached → Powered → Default → Addressed → Configured ⇄ Suspended
+ * Detached -> Attached -> Powered -> Default -> Addressed -> Configured ⇄ Suspended
  * ```
  *
  * **Port State Management:**
@@ -240,14 +240,14 @@
  *
  * | Function | Thread Safe? | Notes |
  * |----------|--------------|-------|
- * | `rx_usb_init()` | ❌ No | Call once during system init |
- * | `rx_usb_write()` | ⚠️ Partial | Safe per-port, not across ports |
- * | `rx_usb_read()` | ⚠️ Partial | Safe per-port, not across ports |
- * | `rx_usb_flush()` | ⚠️ Partial | Safe per-port, may block |
- * | `rx_usb_is_configured()` | ✅ Yes | Atomic flag read |
- * | `rx_usb_set_callback()` | ❌ No | Modify only when port idle |
- * | `rx_usb_get_stats()` | ✅ Yes | Read-only snapshot |
- * | Ring buffer ops | ✅ Yes | Single producer, single consumer |
+ * | `rx_usb_init()` | [FAIL] No | Call once during system init |
+ * | `rx_usb_write()` | [WARN] Partial | Safe per-port, not across ports |
+ * | `rx_usb_read()` | [WARN] Partial | Safe per-port, not across ports |
+ * | `rx_usb_flush()` | [WARN] Partial | Safe per-port, may block |
+ * | `rx_usb_is_configured()` | [PASS] Yes | Atomic flag read |
+ * | `rx_usb_set_callback()` | [FAIL] No | Modify only when port idle |
+ * | `rx_usb_get_stats()` | [PASS] Yes | Read-only snapshot |
+ * | Ring buffer ops | [PASS] Yes | Single producer, single consumer |
  *
  * **Concurrency Model:**
  * - **Application context**: Calls public API from ThreadX tasks
@@ -257,7 +257,7 @@
  *
  * **Synchronization Points:**
  * - Ring buffer count updates (atomic operations)
- * - State transitions (ISR → application visibility)
+ * - State transitions (ISR -> application visibility)
  * - Callback invocation (ISR context, must be brief)
  *
  * ## Integration Example - Basic Usage
@@ -397,16 +397,16 @@
  *
  * | Rule | Status | Implementation Notes |
  * |------|--------|---------------------|
- * | 1. Simple control flow | ✅ Pass | No goto/setjmp/recursion, structured loops only |
- * | 2. Fixed loop bounds | ✅ Pass | All loops bounded (buffer size, timeout iterations) |
- * | 3. No dynamic memory | ✅ Pass | All buffers statically allocated (7168 bytes) |
- * | 4. Short functions | ✅ Pass | Most functions <60 lines, single responsibility |
- * | 5. Assertions | ✅ Pass | Extensive parameter validation in all public APIs |
- * | 6. Small scope | ✅ Pass | Variables declared near use, minimal file scope |
- * | 7. Check returns | ✅ Pass | All hardware calls checked, errors propagated |
- * | 8. Limited preprocessor | ✅ Pass | Only UNIT_TEST conditional, typed enums for constants |
- * | 9. Restrict pointers | ⚠️ Deviation | Function pointers for callbacks (DIP, justified) |
- * | 10. Compiler warnings | ✅ Pass | -Wall -Wextra -Werror, zero warnings |
+ * | 1. Simple control flow | [PASS] Pass | No goto/setjmp/recursion, structured loops only |
+ * | 2. Fixed loop bounds | [PASS] Pass | All loops bounded (buffer size, timeout iterations) |
+ * | 3. No dynamic memory | [PASS] Pass | All buffers statically allocated (7168 bytes) |
+ * | 4. Short functions | [PASS] Pass | Most functions <60 lines, single responsibility |
+ * | 5. Assertions | [PASS] Pass | Extensive parameter validation in all public APIs |
+ * | 6. Small scope | [PASS] Pass | Variables declared near use, minimal file scope |
+ * | 7. Check returns | [PASS] Pass | All hardware calls checked, errors propagated |
+ * | 8. Limited preprocessor | [PASS] Pass | Only UNIT_TEST conditional, typed enums for constants |
+ * | 9. Restrict pointers | [WARN] Deviation | Function pointers for callbacks (DIP, justified) |
+ * | 10. Compiler warnings | [PASS] Pass | -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *

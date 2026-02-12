@@ -46,7 +46,7 @@
  * The HC-SR04 sensor measures distance by timing ultrasonic pulse reflections:
  *
  * **Physical Process:**
- * 1. MCU sends 10µs trigger pulse → HC-SR04
+ * 1. MCU sends 10µs trigger pulse -> HC-SR04
  * 2. HC-SR04 emits 8 ultrasonic bursts at 40 kHz
  * 3. Sound wave travels to object and reflects back
  * 4. HC-SR04 detects echo and outputs pulse (width = time-of-flight)
@@ -91,7 +91,7 @@
  *
  * ## Timing Requirements
  *
- * ### Trigger Pulse Timing (MCU → HC-SR04)
+ * ### Trigger Pulse Timing (MCU -> HC-SR04)
  *
  * ```
  * Time (µs)  TRIG Signal
@@ -108,7 +108,7 @@
  * - Pulse width: 10µs ±1µs (HC-SR04 datasheet requirement)
  * - Pulse shape: Clean rising/falling edges
  *
- * ### Echo Pulse Timing (HC-SR04 → MCU)
+ * ### Echo Pulse Timing (HC-SR04 -> MCU)
  *
  * ```
  * Distance   Echo Duration   Behavior
@@ -241,14 +241,14 @@
  *
  * ### Coverage by Feature
  *
- * - ✓ **Normal Operation:** Distance measurements at 2cm, 10cm, 30cm, 100cm, 400cm
- * - ✓ **Edge Cases:** Minimum range (2cm), maximum range (400cm), timeout (>400cm)
- * - ✓ **Error Conditions:** Out-of-range (<2cm, >400cm), GPIO failures, timeouts
- * - ✓ **Async Operation:** Callback invocation, busy state, cancellation
- * - ✓ **Temperature Compensation:** Enable/disable, 10°C, 20°C, 30°C measurements
- * - ✓ **API Validation:** nullptr pointer checks, state validation, return value checks
- * - ✓ **Statistics:** Measurement count, timeout count, range error count, reset
- * - ✓ **Worker Thread:** Init/deinit lifecycle, double-init protection
+ * - [OK] **Normal Operation:** Distance measurements at 2cm, 10cm, 30cm, 100cm, 400cm
+ * - [OK] **Edge Cases:** Minimum range (2cm), maximum range (400cm), timeout (>400cm)
+ * - [OK] **Error Conditions:** Out-of-range (<2cm, >400cm), GPIO failures, timeouts
+ * - [OK] **Async Operation:** Callback invocation, busy state, cancellation
+ * - [OK] **Temperature Compensation:** Enable/disable, 10°C, 20°C, 30°C measurements
+ * - [OK] **API Validation:** nullptr pointer checks, state validation, return value checks
+ * - [OK] **Statistics:** Measurement count, timeout count, range error count, reset
+ * - [OK] **Worker Thread:** Init/deinit lifecycle, double-init protection
  *
  * ## NASA Power of 10 Compliance
  *
@@ -256,16 +256,16 @@
  *
  * | Rule | Compliance | Implementation |
  * |------|-----------|----------------|
- * | **Rule 1: Simple Control Flow** | ✓ | No `goto`, `setjmp`, or recursion; all tests use linear flow |
- * | **Rule 2: Fixed Loop Bounds** | ✓ | Test runner loop bounded by test count (compile-time constant) |
- * | **Rule 3: No Dynamic Allocation** | ✓ | Zero `malloc`/`free`; all test data stack-allocated or static |
- * | **Rule 4: Short Functions** | ✓ | All test functions <60 lines; focused on single aspect |
- * | **Rule 5: Assertions** | ✓ | Every test has ≥2 assertions (setup + verify); Unity assertions used |
- * | **Rule 6: Data Scope** | ✓ | Variables declared at smallest scope; test fixtures static |
- * | **Rule 7: Check Returns** | ✓ | All driver return values validated with `TEST_ASSERT_EQUAL` |
- * | **Rule 8: Limit Preprocessor** | ✓ | Typed enums only; no macros except Unity framework |
- * | **Rule 9: Pointer Restrictions** | ✓ | Function pointers used only for Unity callbacks |
- * | **Rule 10: Compile Warnings** | ✓ | Tests compile with `-Wall -Wextra -Werror` on host |
+ * | **Rule 1: Simple Control Flow** | [OK] | No `goto`, `setjmp`, or recursion; all tests use linear flow |
+ * | **Rule 2: Fixed Loop Bounds** | [OK] | Test runner loop bounded by test count (compile-time constant) |
+ * | **Rule 3: No Dynamic Allocation** | [OK] | Zero `malloc`/`free`; all test data stack-allocated or static |
+ * | **Rule 4: Short Functions** | [OK] | All test functions <60 lines; focused on single aspect |
+ * | **Rule 5: Assertions** | [OK] | Every test has ≥2 assertions (setup + verify); Unity assertions used |
+ * | **Rule 6: Data Scope** | [OK] | Variables declared at smallest scope; test fixtures static |
+ * | **Rule 7: Check Returns** | [OK] | All driver return values validated with `TEST_ASSERT_EQUAL` |
+ * | **Rule 8: Limit Preprocessor** | [OK] | Typed enums only; no macros except Unity framework |
+ * | **Rule 9: Pointer Restrictions** | [OK] | Function pointers used only for Unity callbacks |
+ * | **Rule 10: Compile Warnings** | [OK] | Tests compile with `-Wall -Wextra -Werror` on host |
  *
  * **Rule 5 Detail:** Each test function contains minimum 2 assertions:
  * - Setup assertion: Verify preconditions (e.g., `rx_hcsr04_init()` succeeds)
@@ -1070,8 +1070,8 @@ void test_hcsr04_measure_full_result(void)
  * Verifies `rx_hcsr04_cm_to_inches()` conversion accuracy.
  *
  * **Test Vectors:**
- * - 2.54cm → 1.0in (definition)
- * - 100cm → 39.37in
+ * - 2.54cm -> 1.0in (definition)
+ * - 100cm -> 39.37in
  *
  * **Expected Result:** Accurate to ±0.1in
  *
@@ -1094,8 +1094,8 @@ void test_hcsr04_cm_to_inches(void)
  * Verifies `rx_hcsr04_echo_to_cm()` formula at 20°C.
  *
  * **Test Vectors:**
- * - 580µs → 10cm (580 / 58 = 10)
- * - 5,800µs → 100cm (5800 / 58 = 100)
+ * - 580µs -> 10cm (580 / 58 = 10)
+ * - 5,800µs -> 100cm (5800 / 58 = 100)
  *
  * **Formula:** distance_cm = echo_us / 58
  *
@@ -1876,7 +1876,7 @@ void test_hcsr04_get_temperature_null_output_fails(void)
  * **Physics:**
  * - Speed of sound at 10°C: 331.3 + (0.606 × 10) = 337.36 m/s
  * - Distance formula: d = (t × v) / 2
- * - Echo time 5,800µs → 97.84cm (vs 100cm at 20°C)
+ * - Echo time 5,800µs -> 97.84cm (vs 100cm at 20°C)
  *
  * **Expected Result:**
  * - Returns `k_rx_ok`
@@ -1919,7 +1919,7 @@ void test_hcsr04_measure_with_temp_compensation_10c(void)
  *
  * **Physics:**
  * - Speed of sound at 30°C: 331.3 + (0.606 × 30) = 349.48 m/s
- * - Echo time 5,800µs → 101.35cm (vs 100cm at 20°C)
+ * - Echo time 5,800µs -> 101.35cm (vs 100cm at 20°C)
  *
  * **Expected Result:**
  * - Returns `k_rx_ok`

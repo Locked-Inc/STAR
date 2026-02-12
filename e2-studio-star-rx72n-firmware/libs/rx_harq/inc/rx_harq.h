@@ -22,7 +22,7 @@
  * 1. **Stores** soft bits from failed attempt
  * 2. **Requests** retransmission (NACK)
  * 3. **Adds** new soft bits to accumulated values (element-wise)
- * 4. **Decodes** combined soft bits (higher SNR → better chance)
+ * 4. **Decodes** combined soft bits (higher SNR -> better chance)
  *
  * ### Mathematical Model
  *
@@ -48,7 +48,7 @@
  * Transmitter, Channel, Receiver;
  *
  * --- [label="Transmission 1"];
- * Transmitter box Transmitter [label="Encode with FEC\n100 bytes → 202 bytes"];
+ * Transmitter box Transmitter [label="Encode with FEC\n100 bytes -> 202 bytes"];
  * Transmitter => Channel [label="Soft bits (1st attempt)"];
  * Channel box Channel [label="Add noise\nBER = 10^-3"];
  * Channel => Receiver [label="Noisy soft bits"];
@@ -85,8 +85,8 @@
  * - **Error**: Unrecoverable error (exceeded retry limit)
  *
  * **Transition Guards:**
- * - WaitingAck → Combining: Only if retry_count < max_retries
- * - Combining → Error: When retry_count ≥ max_retries AND decode still fails
+ * - WaitingAck -> Combining: Only if retry_count < max_retries
+ * - Combining -> Error: When retry_count ≥ max_retries AND decode still fails
  *
  * ## Performance Characteristics
  *
@@ -100,11 +100,11 @@
  *
  * ## Features
  *
- * - ✓ **Chase Combining**: Soft bit accumulation (int16 to prevent overflow)
- * - ✓ **FEC Integration**: Optional K=7 rate 1/2 convolutional code
- * - ✓ **Configurable Retries**: 1-255 attempts (default: 3)
- * - ✓ **Static Allocation**: Zero malloc (NASA Rule 3)
- * - ✓ **Thread Safety**: Safe if handles not shared
+ * - [OK] **Chase Combining**: Soft bit accumulation (int16 to prevent overflow)
+ * - [OK] **FEC Integration**: Optional K=7 rate 1/2 convolutional code
+ * - [OK] **Configurable Retries**: 1-255 attempts (default: 3)
+ * - [OK] **Static Allocation**: Zero malloc (NASA Rule 3)
+ * - [OK] **Thread Safety**: Safe if handles not shared
  *
  * @par Hardware Requirements
  * | Resource | Usage                              |
@@ -118,11 +118,11 @@
  * - [rx_err.h](rx_err_8h.html): Error codes
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1**: ✓ No recursion, goto, setjmp/longjmp
- * - **Rule 2**: ✓ All loops bounded (k_harq_soft_buffer_size)
- * - **Rule 3**: ✓ Zero dynamic allocation
- * - **Rule 4**: ✓ Functions ≤ 60 lines
- * - **Rule 5**: ✓ All functions have ≥2 pre/postconditions
+ * - **Rule 1**: [OK] No recursion, goto, setjmp/longjmp
+ * - **Rule 2**: [OK] All loops bounded (k_harq_soft_buffer_size)
+ * - **Rule 3**: [OK] Zero dynamic allocation
+ * - **Rule 4**: [OK] Functions ≤ 60 lines
+ * - **Rule 5**: [OK] All functions have ≥2 pre/postconditions
  *
  * @note **Thread Safety**: HARQ handles are NOT thread-safe. Caller must
  *       provide synchronization if sharing handles between threads.

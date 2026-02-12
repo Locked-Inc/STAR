@@ -57,14 +57,14 @@
  *
  * | Feature | Status | Notes |
  * |---------|--------|-------|
- * | Dual ADC units (S12AD0, S12AD1) | ✓ | Both supported |
- * | 12/10/8-bit resolution | ✓ | Configurable per unit |
- * | Single-scan mode | ✓ | Software-triggered |
- * | Continuous scan mode | ✗ | Not implemented |
- * | Group scan mode | ✗ | Not implemented |
- * | A/D interrupts | ✗ | Polling only |
- * | Self-diagnosis | ✗ | Not implemented |
- * | Double trigger | ✗ | Not implemented |
+ * | Dual ADC units (S12AD0, S12AD1) | [OK] | Both supported |
+ * | 12/10/8-bit resolution | [OK] | Configurable per unit |
+ * | Single-scan mode | [OK] | Software-triggered |
+ * | Continuous scan mode | [X] | Not implemented |
+ * | Group scan mode | [X] | Not implemented |
+ * | A/D interrupts | [X] | Polling only |
+ * | Self-diagnosis | [X] | Not implemented |
+ * | Double trigger | [X] | Not implemented |
  *
  * ## Register Access Pattern
  *
@@ -131,16 +131,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simplify control flow | ✓ | No goto, setjmp, recursion |
- * | 2. Fixed loop bounds | ✓ | Timeout loop has fixed maximum |
- * | 3. No dynamic memory | ✓ | Static arrays only |
- * | 4. Functions < 60 lines | ✓ | Helper functions for decomposition |
- * | 5. Use assertions | ✓ | RX_CHECK_NULL_PTR, RX_CHECK_RANGE_TAG |
- * | 6. Data at smallest scope | ✓ | Local variables, static helpers |
- * | 7. Check return values | ✓ | RX_RETURN_ON_ERROR macro |
- * | 8. Limit preprocessor | ✓ | Only includes |
- * | 9. Restrict pointers | ✓ | Hardware register pointers only |
- * | 10. Compile warnings | ✓ | -Wall -Wextra -Werror clean |
+ * | 1. Simplify control flow | [OK] | No goto, setjmp, recursion |
+ * | 2. Fixed loop bounds | [OK] | Timeout loop has fixed maximum |
+ * | 3. No dynamic memory | [OK] | Static arrays only |
+ * | 4. Functions < 60 lines | [OK] | Helper functions for decomposition |
+ * | 5. Use assertions | [OK] | RX_CHECK_NULL_PTR, RX_CHECK_RANGE_TAG |
+ * | 6. Data at smallest scope | [OK] | Local variables, static helpers |
+ * | 7. Check return values | [OK] | RX_RETURN_ON_ERROR macro |
+ * | 8. Limit preprocessor | [OK] | Only includes |
+ * | 9. Restrict pointers | [OK] | Hardware register pointers only |
+ * | 10. Compile warnings | [OK] | -Wall -Wextra -Werror clean |
  *
  * @see rx72n_adc_regs.h ADC register definitions
  * @see hardware.h ADC unit and channel types
@@ -717,7 +717,7 @@ static rx_err_t internal_read_channel_value(volatile rx_s12ad_regs_t* adc,
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 preconditions, 3 postconditions
+ * - Rule 5: [OK] 2 preconditions, 3 postconditions
  */
 rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_resolution_t bits)
 {
@@ -832,8 +832,8 @@ rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 2: ✓ Timeout loop has fixed upper bound
- * - Rule 5: ✓ 2 preconditions, 2 postconditions
+ * - Rule 2: [OK] Timeout loop has fixed upper bound
+ * - Rule 5: [OK] 2 preconditions, 2 postconditions
  */
 rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* value)
 {
@@ -941,7 +941,7 @@ rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* 
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 preconditions, 2 postconditions
+ * - Rule 5: [OK] 2 preconditions, 2 postconditions
  */
 rx_err_t adc_read_voltage_mv(const adc_unit_t unit,
                              adc_channel_t    channel,

@@ -39,7 +39,7 @@
  * @see rx_drv8243.h Real DRV8243 driver
  * @see tests/test_rx_drv8243.c Motor driver tests
  *
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Driver depends on hardware interface
  *
  * @author STAR Team

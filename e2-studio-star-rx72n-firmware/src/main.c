@@ -87,7 +87,7 @@
  *
  * **Thread creation sequence:**
  * ```
- * tx_kernel_enter() → tx_application_define() → app_main_task_create() → Main control loop
+ * tx_kernel_enter() -> tx_application_define() -> app_main_task_create() -> Main control loop
  * ```
  *
  * ## Memory Map and Stack Setup
@@ -122,16 +122,16 @@
  *
  * | Rule | Status | Implementation Notes |
  * |------|--------|----------------------|
- * | **Rule 1: Control flow** | ✅ PASS | No goto, setjmp, or recursion |
- * | **Rule 2: Loop bounds** | ✅ PASS | while(1) wait loop only (infinite by design) |
- * | **Rule 3: Heap allocation** | ✅ PASS | Zero dynamic allocation (static stacks only) |
- * | **Rule 4: Function length** | ✅ PASS | Longest function: main() = 37 lines |
- * | **Rule 5: Assertions** | ✅ PASS | 11 RX_ASSERT checks across 7 functions |
- * | **Rule 6: Data scope** | ✅ PASS | All variables at smallest scope (function-local) |
- * | **Rule 7: Return checks** | ✅ PASS | All rx_err_t returns checked via RX_ERROR_CHECK |
- * | **Rule 8: Preprocessor** | ✅ PASS | Zero macros (uses typed enums for constants) |
- * | **Rule 9: Pointers** | ✅ PASS | Single-level dereferencing only |
- * | **Rule 10: Warnings** | ✅ PASS | Compiles with -Wall -Wextra -Werror |
+ * | **Rule 1: Control flow** | [PASS] | No goto, setjmp, or recursion |
+ * | **Rule 2: Loop bounds** | [PASS] | while(1) wait loop only (infinite by design) |
+ * | **Rule 3: Heap allocation** | [PASS] | Zero dynamic allocation (static stacks only) |
+ * | **Rule 4: Function length** | [PASS] | Longest function: main() = 37 lines |
+ * | **Rule 5: Assertions** | [PASS] | 11 RX_ASSERT checks across 7 functions |
+ * | **Rule 6: Data scope** | [PASS] | All variables at smallest scope (function-local) |
+ * | **Rule 7: Return checks** | [PASS] | All rx_err_t returns checked via RX_ERROR_CHECK |
+ * | **Rule 8: Preprocessor** | [PASS] | Zero macros (uses typed enums for constants) |
+ * | **Rule 9: Pointers** | [PASS] | Single-level dereferencing only |
+ * | **Rule 10: Warnings** | [PASS] | Compiles with -Wall -Wextra -Werror |
  *
  * ## SOLID Principles (Application to main.c)
  *
@@ -173,6 +173,7 @@
  */
 
 #include "app_main_task.h"
+#include "hardware.h"
 #include "hardware_init.h"
 #include "rx72n_system_regs.h"
 #include "rx_bus_manager.h"
@@ -223,8 +224,8 @@ typedef enum : uint8_t {
  *
  * | PORF Value | Meaning | Boot Type | Expected? |
  * |------------|---------|-----------|-----------|
- * | **1 (set)** | Power-on reset occurred | **Cold start** | ✅ Normal on fresh boot |
- * | **0 (clear)** | No power-on reset | **Warm start** | ⚠️ Software reset, watchdog, or debugger |
+ * | **1 (set)** | Power-on reset occurred | **Cold start** | [OK] on fresh boot |
+ * | **0 (clear)** | No power-on reset | **Warm start** | [WARN] Software reset, watchdog, or debugger |
  *
  * ## Register Details
  *
@@ -310,11 +311,8 @@ static bool internal_check_porf(void)
   /* PORF=1 indicates power-on reset occurred, which is expected on normal startup */
   const bool porf_set = (rstsr0_val & k_rstsr0_porf) != 0;
 
-  /* PORF may not be set on warm boots - this is valid, so log but don't halt */
-  if (!porf_set) {
-    /* Warm boot or software reset - both acceptable */
-    rx_log_info("MAIN", "Power-on reset flag not set - warm boot detected");
-  }
+  /* Note: Logging removed - UART not initialized yet. Will be reported by
+   * internal_report_startup_flags() after UART is ready. */
 
   return porf_set;
 }
@@ -340,9 +338,9 @@ static bool internal_check_porf(void)
  * ## Function Usage Pattern
  *
  * This helper is called by three specialized checkers:
- * - `internal_check_iwdtrf()` → checks IWDTRF (bit 1)
- * - `internal_check_wdtrf()` → checks WDTRF (bit 0)
- * - `internal_check_swrf()` → checks SWRF (bit 2)
+ * - `internal_check_iwdtrf()` -> checks IWDTRF (bit 1)
+ * - `internal_check_wdtrf()` -> checks WDTRF (bit 0)
+ * - `internal_check_swrf()` -> checks SWRF (bit 2)
  *
  * **Why this helper exists:** DRY principle - avoid duplicating register read + mask logic 3 times.
  *
@@ -443,8 +441,8 @@ static bool internal_check_rstsr2_flag_clear(const uint8_t flag_mask)
  *
  * | IWDTRF Value | Meaning | Implication | Action |
  * |--------------|---------|-------------|--------|
- * | **0 (clear)** | No IWDT reset | **Normal** - prior execution completed gracefully | ✅ Continue boot |
- * | **1 (set)** | IWDT timeout reset | **CRITICAL BUG** - prior firmware hung/crashed | 🛑 **HALT EXECUTION** |
+ * | **0 (clear)** | No IWDT reset | **Normal** - prior execution completed gracefully | [OK] boot |
+ * | **1 (set)** | IWDT timeout reset | **CRITICAL BUG** - prior firmware hung/crashed | [STOP] **HALT EXECUTION** |
  *
  * ## Independent Watchdog Timer (IWDT) Overview
  *
@@ -477,9 +475,9 @@ static bool internal_check_rstsr2_flag_clear(const uint8_t flag_mask)
  *
  * ```
  * internal_check_startup_flags()
- *   → internal_check_iwdtrf()
- *   → return false if IWDTRF=1
- *   → RX_ASSERT(iwdtrf_ok, "IWDT reset detected") → **HALTS EXECUTION**
+ *   -> internal_check_iwdtrf()
+ *   -> return false if IWDTRF=1
+ *   -> RX_ASSERT(iwdtrf_ok, "IWDT reset detected") -> **HALTS EXECUTION**
  * ```
  *
  * ## Performance (RX72N @ 240 MHz)
@@ -555,8 +553,8 @@ static bool internal_check_iwdtrf(void)
  *
  * | WDTRF Value | Meaning | Typical Cause | Action |
  * |-------------|---------|---------------|--------|
- * | **0 (clear)** | No WDT reset | Normal boot | ✅ Continue |
- * | **1 (set)** | WDT timeout reset | Firmware hang OR intentional | ⚠️ Log warning, return error |
+ * | **0 (clear)** | No WDT reset | Normal boot | [OK] |
+ * | **1 (set)** | WDT timeout reset | Firmware hang OR intentional | [WARN] Log warning, return error |
  *
  * ## WDT vs IWDT Comparison
  *
@@ -566,7 +564,7 @@ static bool internal_check_iwdtrf(void)
  * | **Disable capability** | Can be stopped in software | Cannot be stopped (always-on) |
  * | **Use case** | Intentional resets, bootloader timeout | Critical hang detection only |
  * | **Flag on reset** | WDTRF (RSTSR2.0) | IWDTRF (RSTSR2.1) |
- * | **Criticality** | ⚠️ Warning (may be intentional) | 🛑 Critical (always a bug) |
+ * | **Criticality** | [WARN] Warning (may be intentional) | [STOP] Critical (always a bug) |
  *
  * ## Interpretation and Recovery
  *
@@ -612,21 +610,21 @@ static bool internal_check_wdtrf(void)
  *
  * | SWRF Value | Meaning | Typical Cause | Error? |
  * |------------|---------|---------------|--------|
- * | **0 (clear)** | No software reset | Normal boot or hardware reset | ✅ Normal |
- * | **1 (set)** | Software reset executed | Bootloader, debug, or error recovery | ⚠️ Context-dependent |
+ * | **0 (clear)** | No software reset | Normal boot or hardware reset | [OK] |
+ * | **1 (set)** | Software reset executed | Bootloader, debug, or error recovery | [WARN] Context-dependent |
  *
  * ## Common Software Reset Scenarios
  *
  * **Intentional (non-error):**
- * 1. **Bootloader entry:** User button held during power-on → software reset to bootloader mode
+ * 1. **Bootloader entry:** User button held during power-on -> software reset to bootloader mode
  * 2. **Firmware update:** Application writes to SWRR after downloading new firmware
  * 3. **Debugger reset:** OpenOCD or GDB issues reset command
  * 4. **Configuration change:** Software reset after updating option bytes
  *
  * **Error recovery (potential issue):**
- * 1. **Error handler:** Firmware detects unrecoverable error → software reset to recover
- * 2. **Panic handler:** Hard fault exception → software reset as last resort
- * 3. **Assert failure:** RX_ASSERT failed → software reset instead of halt (if configured)
+ * 1. **Error handler:** Firmware detects unrecoverable error -> software reset to recover
+ * 2. **Panic handler:** Hard fault exception -> software reset as last resort
+ * 3. **Assert failure:** RX_ASSERT failed -> software reset instead of halt (if configured)
  *
  * ## Interpretation Strategy
  *
@@ -691,8 +689,8 @@ static bool internal_check_swrf(void)
  *
  * | LVD0RF Value | Meaning | Cause | Issue |
  * |--------------|---------|-------|-------|
- * | **0 (clear)** | No brownout reset | Voltage stable during operation | ✅ Normal |
- * | **1 (set)** | Brownout reset occurred | VCC dropped below threshold (e.g., 2.9V) | ⚠️ Power supply issue |
+ * | **0 (clear)** | No brownout reset | Voltage stable during operation | [OK] |
+ * | **1 (set)** | Brownout reset occurred | VCC dropped below threshold (e.g., 2.9V) | [WARN] Power supply issue |
  *
  * ## Low-Voltage Detect (LVD) System Overview
  *
@@ -863,9 +861,9 @@ static bool internal_check_lvd0rf(void)
  *   rx_log_info("MAIN", "Warm start detected (processor-initiated reset)");
  *   // Optional: Check other flags to determine specific warm start cause
  *   if (internal_check_swrf()) {
- *     rx_log_info("MAIN", "  → Software reset (SWRF set)");
+ *     rx_log_info("MAIN", "  -> Software reset (SWRF set)");
  *   } else if (internal_check_wdtrf()) {
- *     rx_log_info("MAIN", "  → Watchdog reset (WDTRF set)");
+ *     rx_log_info("MAIN", "  -> Watchdog reset (WDTRF set)");
  *   }
  * } else {
  *   rx_log_info("MAIN", "Cold start detected (power-on or voltage recovery)");
@@ -898,6 +896,133 @@ static bool internal_check_cwsf(void)
 
   /* Return actual CWSF state: true for warm start (CWSF=1), false for cold start (CWSF=0) */
   return (cwsf_raw == k_rstsr1_cwsf);
+}
+
+/**
+ * @brief Report startup flags to UART console after early UART initialization
+ *
+ * @details
+ * Re-reads **reset status registers** and logs diagnostic information now that UART is available.
+ * This function is called **after uart_debug_init()** in main() to provide visibility into boot
+ * conditions that occurred before UART was initialized.
+ *
+ * ## Purpose
+ *
+ * The individual flag check functions (internal_check_porf, etc.) run **before UART init**,
+ * so they cannot log to console. This function provides deferred logging of the same information
+ * once console output is available.
+ *
+ * ## Flags Reported
+ *
+ * | Flag | Register | Meaning | Severity |
+ * |------|----------|---------|----------|
+ * | **PORF** | RSTSR0.0 | Power-on reset (cold boot) | [INFO] |
+ * | **CWSF** | RSTSR1.7 | Cold/warm start classification | [INFO] |
+ * | **WDTRF** | RSTSR2.0 | Watchdog timer timeout | [WARN] |
+ * | **SWRF** | RSTSR2.2 | Software reset | [INFO] |
+ * | **LVD0RF** | RSTSR0.1 | Brownout (voltage drop) | [WARN] |
+ * | **IWDTRF** | RSTSR2.1 | Independent watchdog timeout | [N/A - halts before this] |
+ *
+ * **Note:** IWDTRF is not reported here because if it's set, the system halts via RX_ASSERT
+ * in internal_check_startup_flags() before reaching this function.
+ *
+ * ## Integration with Boot Sequence
+ *
+ * ```
+ * main()
+ *   ├─ internal_check_startup_flags()  // Check flags (silent, UART not ready)
+ *   ├─ rx_clock_power_init()           // Initialize clocks
+ *   ├─ uart_debug_init()               // Initialize UART
+ *   ├─ internal_report_startup_flags() // ← Report flags NOW (UART available)
+ *   └─ rx_infrastructure_init()        // Continue boot...
+ * ```
+ *
+ * ## Performance (RX72N @ 240 MHz)
+ *
+ * | Operation | Duration | Notes |
+ * |-----------|----------|-------|
+ * | Register reads (3 regs) | ~1.5 µs | RSTSR0, RSTSR1, RSTSR2 |
+ * | Logging (5-6 messages) | ~500 µs | UART @ 115200 baud |
+ * | **Total** | **~500 µs** | Negligible boot overhead |
+ *
+ * @return void (No return value - informational logging only)
+ *
+ * @pre uart_debug_init() called successfully (UART functional)
+ * @pre RSTSR0/RSTSR1/RSTSR2 registers accessible (memory-mapped)
+ *
+ * @post Startup flags logged to UART console for diagnostics
+ * @post No side effects (read-only operation, does not clear flags)
+ *
+ * @note **Call this function ONLY if uart_debug_init() succeeded.** If UART init failed,
+ *       skip this function to avoid silent log failures.
+ *
+ * @note **Does not clear reset flags.** Flags remain set until explicitly cleared by
+ *       firmware or next power-on reset.
+ *
+ * @par Thread Safety:
+ * Executes before ThreadX starts (single-threaded context). No race conditions.
+ *
+ * @par Example Usage:
+ * @code
+ * // In main():
+ * rx_err_t ret = uart_debug_init();
+ * if (ret == k_rx_ok) {
+ *   internal_report_startup_flags();  // Safe: UART initialized
+ * }
+ * RX_ERROR_CHECK(ret);  // Check UART status after reporting
+ * @endcode
+ *
+ * @see internal_check_startup_flags() Validates flags (runs before UART init)
+ * @see uart_debug_init() Must be called before this function
+ * @see rstsr01() Accessor for RSTSR0/RSTSR1 registers
+ * @see rstsr2() Accessor for RSTSR2 register
+ *
+ * @since Version 1.0.0
+ */
+static void internal_report_startup_flags(void)
+{
+  const volatile rx_rstsr01_regs_t* regs01 = rstsr01();
+  const volatile uint8_t*            regs2  = rstsr2();
+
+  /* Preconditions: Register pointers must be valid */
+  RX_ASSERT(regs01 != nullptr, "RSTSR01 register pointer is nullptr");
+  RX_ASSERT(regs2 != nullptr, "RSTSR2 register pointer is nullptr");
+
+  const uint8_t rstsr0_val = regs01->rstsr0;
+  const uint8_t rstsr1_val = regs01->rstsr1;
+  const uint8_t rstsr2_val = *regs2;
+
+  /* Report power-on reset flag (PORF) */
+  if (rstsr0_val & k_rstsr0_porf) {
+    rx_log_info("BOOT", "Cold boot - Power-on reset detected (PORF=1)");
+  } else {
+    rx_log_info("BOOT", "Warm boot - No power-on reset (PORF=0)");
+  }
+
+  /* Report cold/warm start flag (CWSF) */
+  if (rstsr1_val & k_rstsr1_cwsf) {
+    rx_log_info("BOOT", "Warm start - Processor-initiated reset (CWSF=1)");
+  } else {
+    rx_log_info("BOOT", "Cold start - Power/voltage related (CWSF=0)");
+  }
+
+  /* Report abnormal conditions */
+  if (rstsr2_val & k_rstsr2_wdtrf) {
+    rx_log_warn("BOOT", "Watchdog Timer timeout reset detected (WDTRF=1)");
+    rx_log_warn("BOOT", "  -> Check for firmware hang or intentional WDT reset");
+  }
+
+  if (rstsr2_val & k_rstsr2_swrf) {
+    rx_log_info("BOOT", "Software reset detected (SWRF=1)");
+    rx_log_info("BOOT", "  -> May be intentional (bootloader, firmware update, debug)");
+  }
+
+  if (rstsr0_val & k_rstsr0_lvd0rf) {
+    rx_log_warn("BOOT", "Brownout reset detected (LVD0RF=1)");
+    rx_log_warn("BOOT", "  -> VCC dropped below threshold - Check power supply!");
+  }
+
+  /* Note: IWDTRF not reported here - if set, system halts in internal_check_startup_flags() */
 }
 
 /**
@@ -970,20 +1095,20 @@ static bool internal_check_cwsf(void)
  * ## Example Reset Scenarios
  *
  * **Scenario 1: Normal power-on boot**
- * - PORF=1 (power-on reset detected) ✅
- * - IWDTRF=0 (no watchdog timeout) ✅
- * - WDTRF=0, SWRF=0, LVD0RF=0 (no other resets) ✅
+ * - PORF=1 (power-on reset detected) [PASS]
+ * - IWDTRF=0 (no watchdog timeout) [PASS]
+ * - WDTRF=0, SWRF=0, LVD0RF=0 (no other resets) [PASS]
  * - Result: k_rx_ok (boot continues)
  *
  * **Scenario 2: Warm boot (software reset)**
- * - PORF=0 (no power-on reset) ⚠️ Info logged
- * - IWDTRF=0 (no watchdog timeout) ✅
- * - SWRF=1 (software reset detected) ⚠️ Error returned
+ * - PORF=0 (no power-on reset) [WARN] Info logged
+ * - IWDTRF=0 (no watchdog timeout) [PASS]
+ * - SWRF=1 (software reset detected) [WARN] Error returned
  * - Result: k_rx_err_hw_init_failed (caller handles)
  *
  * **Scenario 3: Firmware hung (IWDT timeout)**
- * - PORF=0 (no power-on reset) ⚠️
- * - IWDTRF=1 (watchdog timeout) 🛑 **CRITICAL**
+ * - PORF=0 (no power-on reset) [WARN]
+ * - IWDTRF=1 (watchdog timeout) [STOP] **CRITICAL**
  * - Result: RX_ASSERT halts execution (firmware bug detected)
  *
  * @return rx_err_t Status code indicating boot condition
@@ -1072,7 +1197,7 @@ static rx_err_t internal_check_startup_flags(void)
  *
  * **ThreadX startup sequence:**
  * ```
- * main() → tx_kernel_enter() → [ThreadX internal init] → tx_application_define() → [scheduler start]
+ * main() -> tx_kernel_enter() -> [ThreadX internal init] -> tx_application_define() -> [scheduler start]
  * ```
  *
  * ## Application Thread Creation
@@ -1281,7 +1406,9 @@ void tx_application_define(void* first_unused_memory)
  *
  * 2. **Stage 2: System Initialization** (~250 µs)
  *    - Configure PLL for 240 MHz operation (rx_clock_power_init)
- *    - Initialize peripheral clocks (USB = 48 MHz, SPI = 60 MHz)
+ *    - Initialize UART for early error logging (uart_debug_init)
+ *    - Report startup flags to console (internal_report_startup_flags)
+ *    - Initialize infrastructure (error handler, pin validator) (rx_infrastructure_init)
  *    - Initialize hardware (motor drivers, encoders, USB CDC) (hardware_init)
  *
  * 3. **Stage 3: ThreadX Bootstrap** (never returns)
@@ -1336,19 +1463,37 @@ void tx_application_define(void* first_unused_memory)
  * ## Error Handling and Recovery
  *
  * **Critical errors (assert-halt):**
- * - IWDTRF set → Prior execution timed out (firmware bug)
- * - Register pointer NULL → Hardware access violation
- * - ThreadX thread creation failed → Memory exhaustion
+ * - IWDTRF set -> Prior execution timed out (firmware bug)
+ * - Register pointer NULL -> Hardware access violation
+ * - ThreadX thread creation failed -> Memory exhaustion
  *
  * **Non-critical errors (return error code):**
- * - WDTRF/SWRF/LVD0RF set → Log and return k_rx_err_hw_init_failed
- * - Clock init failed → Log and return error code
- * - Hardware init failed → Log and return error code
+ * - WDTRF/SWRF/LVD0RF set -> Log and return k_rx_err_hw_init_failed
+ * - Clock init failed -> Log and return error code
+ * - Hardware init failed -> Log and return error code
  *
  * **Recovery strategy:**
  * - On assert: Halt execution with message (wait loop)
  * - On error return: Caller (none for main) would handle, but main has no caller
  * - Final fallback: Infinite wait loop at end of main() (unreachable)
+ *
+ * ## UART Failure Handling
+ *
+ * If **uart_debug_init()** fails (extremely rare - hardware fault):
+ * - System attempts to log error via internal_rx_fatal_error()
+ * - UART functions fail silently by design (see uart.c line 1273 comment)
+ * - internal_report_startup_flags() skipped (conditional: only if UART succeeded)
+ * - System halts in infinite while(1) loop
+ * - **No console output available**
+ *
+ * **Debugging UART Failure:**
+ * - Use hardware debugger (e² studio debugger, OpenOCD, J-Link, GDB)
+ * - Check SCI9 clock enable (MSTPCRB bit 22 must be clear)
+ * - Verify GPIO pin configuration (P2.6/TXD9, P2.7/RXD9 in peripheral mode)
+ * - Confirm crystal oscillator stable (UART requires PCLKB = 60 MHz)
+ * - Check baud rate calculation (should be 115200 @ PCLKB=60MHz)
+ *
+ * **Likelihood:** <0.01% (requires hardware fault, incorrect clock config, or GPIO misconfiguration)
  *
  * @return k_main_ret_success Nominal return value (never reached)
  * @retval k_main_ret_success ThreadX scheduler started successfully (unreachable code path)
@@ -1395,6 +1540,16 @@ void tx_application_define(void* first_unused_memory)
  *     while (1) { __asm__ volatile("wait"); }
  *   }
  *
+ *   // Stage 2.5: Initialize UART for early error logging
+ *   ret = uart_debug_init();
+ *   if (ret == k_rx_ok) {
+ *     internal_report_startup_flags();  // Report boot diagnostics
+ *   }
+ *   // Check UART status (halt if failed, but at least tried to report)
+ *   if (ret != k_rx_ok) {
+ *     while (1) { __asm__ volatile("wait"); }
+ *   }
+ *
  *   // Stage 3: Initialize hardware (motors, USB, sensors)
  *   ret = hardware_init();
  *   if (ret != k_rx_ok) {
@@ -1434,10 +1589,23 @@ int main(void)
    *  CWSF (Cold/Warm Start Determination Flag)
    */
   ret = internal_check_startup_flags();
-  RX_ERROR_CHECK(ret);
+  RX_ERROR_CHECK(ret); /* If this fails, errors cant be logged */
 
   /* Initialize system clocks and power management */
   ret = rx_clock_power_init();
+  RX_ERROR_CHECK(ret); /* If this fails, errors cant be logged */
+
+  /* ========================================================================
+   * EARLY UART INITIALIZATION - Enable error logging ASAP
+   * ======================================================================== */
+  ret = uart_debug_init();
+
+  /* Report startup flags to console (only if UART initialized successfully) */
+  if (ret == k_rx_ok) {
+    internal_report_startup_flags();
+  }
+
+  /* Now check UART init status - will halt if failed, but at least tried to report flags */
   RX_ERROR_CHECK(ret);
 
   /* Initialize infrastructure (error handler + pin validator) before peripherals.

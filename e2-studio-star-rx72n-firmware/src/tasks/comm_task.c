@@ -245,7 +245,7 @@
  * | **Protobuf Decode** | ~200 µs | nanopb decode (SetVelocityRequest) |
  * | **Shared Data Update** | ~7 µs | Mutex lock + memcpy + event set + unlock |
  *
- * **Latency Budget (Frame Arrival → Motor Update):**
+ * **Latency Budget (Frame Arrival -> Motor Update):**
  * - SPI ISR receive: ~5 µs (RSPI0 interrupt)
  * - rx_comm_manager buffer copy: ~20 µs
  * - CRC-32 validation: ~30 µs (hardware CRC peripheral)
@@ -330,16 +330,16 @@
  *
  * | Rule | Status | Implementation Details |
  * |------|--------|------------------------|
- * | **Rule 1: Control Flow** | ✅ | No goto, setjmp, longjmp, or recursion. All control flow uses if/while/switch only. |
- * | **Rule 2: Loop Bounds** | ✅ | Single while(true) loop with fixed 10ms sleep period. Provably bounded iteration. |
- * | **Rule 3: No Heap** | ✅ | Zero dynamic allocation. Stack (2048 bytes) and TCB (140 bytes) statically allocated. |
- * | **Rule 4: Function Length** | ✅ | comm_task_create(): 30 lines, internal_comm_task_entry(): 48 lines, internal_frame_callback(): 47 lines, internal_handle_command_frame(): 56 lines (all < 100 LOC guideline). |
- * | **Rule 5: Assertions** | ✅ | 8 assertions: RX_ASSERT(!s_comm_created), preconditions, postconditions. |
- * | **Rule 6: Data Scope** | ✅ | All file-scope variables use static (s_comm_thread, s_comm_stack, s_comm_created, s_tag). g_comm_manager is global (required for telemetry task access). |
- * | **Rule 7: Return Checks** | ✅ | All rx_comm_manager, rx_nanopb, shared_data, tx_* returns validated or explicitly cast to (void). |
- * | **Rule 8: Preprocessor** | ✅ | C23 typed enums for all constants (k_comm_task_*, k_motor_idx_*). Zero macros. |
- * | **Rule 9: Pointers** | ✅ | Single-level pointers only (rx_frame_t*, motor_command_t*, rx_comm_manager_config_t*). |
- * | **Rule 10: Warnings** | ✅ | Compiles with -Wall -Wextra -Werror. Zero warnings. |
+ * | **Rule 1: Control Flow** | [PASS] | No goto, setjmp, longjmp, or recursion. All control flow uses if/while/switch only. |
+ * | **Rule 2: Loop Bounds** | [PASS] | Single while(true) loop with fixed 10ms sleep period. Provably bounded iteration. |
+ * | **Rule 3: No Heap** | [PASS] | Zero dynamic allocation. Stack (2048 bytes) and TCB (140 bytes) statically allocated. |
+ * | **Rule 4: Function Length** | [PASS] | comm_task_create(): 30 lines, internal_comm_task_entry(): 48 lines, internal_frame_callback(): 47 lines, internal_handle_command_frame(): 56 lines (all < 100 LOC guideline). |
+ * | **Rule 5: Assertions** | [PASS] | 8 assertions: RX_ASSERT(!s_comm_created), preconditions, postconditions. |
+ * | **Rule 6: Data Scope** | [PASS] | All file-scope variables use static (s_comm_thread, s_comm_stack, s_comm_created, s_tag). g_comm_manager is global (required for telemetry task access). |
+ * | **Rule 7: Return Checks** | [PASS] | All rx_comm_manager, rx_nanopb, shared_data, tx_* returns validated or explicitly cast to (void). |
+ * | **Rule 8: Preprocessor** | [PASS] | C23 typed enums for all constants (k_comm_task_*, k_motor_idx_*). Zero macros. |
+ * | **Rule 9: Pointers** | [PASS] | Single-level pointers only (rx_frame_t*, motor_command_t*, rx_comm_manager_config_t*). |
+ * | **Rule 10: Warnings** | [PASS] | Compiles with -Wall -Wextra -Werror. Zero warnings. |
  *
  * ## SOLID Principles
  *
@@ -555,7 +555,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel,
  * @post internal_comm_task_entry() scheduled for execution (auto-start)
  * @post Task will begin polling rx_comm_manager at 100 Hz after initialization
  *
- * @invariant s_comm_created transitions false → true exactly once (never resets)
+ * @invariant s_comm_created transitions false -> true exactly once (never resets)
  * @invariant Task priority remains at k_comm_task_priority (5) throughout lifetime
  * @invariant Stack size remains at k_comm_task_stack_size (2048 bytes)
  *
@@ -1026,13 +1026,13 @@ rx_err_t comm_task_create(void)
  * @test test_comm_task.c - Verify timeout handling (no frame available)
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1:** ✅ No goto, setjmp, recursion (only if/while control flow)
- * - **Rule 2:** ✅ Single while(true) loop with fixed 10ms period
- * - **Rule 3:** ✅ Zero dynamic allocation (all stack-based locals)
- * - **Rule 4:** ✅ Function is 48 lines (under 100 LOC guideline)
- * - **Rule 5:** ✅ 5 preconditions, 5 postconditions documented
- * - **Rule 7:** ✅ All function returns checked or cast to (void)
- * - **Rule 8:** ✅ All constants use C23 typed enums (no macros)
+ * - **Rule 1:** [PASS] No goto, setjmp, recursion (only if/while control flow)
+ * - **Rule 2:** [PASS] Single while(true) loop with fixed 10ms period
+ * - **Rule 3:** [PASS] Zero dynamic allocation (all stack-based locals)
+ * - **Rule 4:** [PASS] Function is 48 lines (under 100 LOC guideline)
+ * - **Rule 5:** [PASS] 5 preconditions, 5 postconditions documented
+ * - **Rule 7:** [PASS] All function returns checked or cast to (void)
+ * - **Rule 8:** [PASS] All constants use C23 typed enums (no macros)
  *
  * @callgraph
  * @callergraph
@@ -1186,10 +1186,10 @@ static void internal_comm_task_entry(ULONG input)
  *
  * | Frame Type | Direction | Purpose | Expected Frequency |
  * |------------|-----------|---------|-------------------|
- * | **COMMAND** | RPi5 → RX72N | Motor velocity commands, e-stop, config | 100 Hz (10ms) |
- * | **ACK** | RPi5 → RX72N | Acknowledge telemetry frame received | 10 Hz (100ms) |
- * | **NACK** | RPi5 → RX72N | Reject telemetry (CRC error, decode fail) | Rare (error) |
- * | **TELEMETRY** | RX72N → RPi5 | Motor state, battery, sensors | 10 Hz (100ms) |
+ * | **COMMAND** | RPi5 -> RX72N | Motor velocity commands, e-stop, config | 100 Hz (10ms) |
+ * | **ACK** | RPi5 -> RX72N | Acknowledge telemetry frame received | 10 Hz (100ms) |
+ * | **NACK** | RPi5 -> RX72N | Reject telemetry (CRC error, decode fail) | Rare (error) |
+ * | **TELEMETRY** | RX72N -> RPi5 | Motor state, battery, sensors | 10 Hz (100ms) |
  *
  * **Note:** TELEMETRY frames are sent by telemetry_task, not received here.
  *
@@ -1365,12 +1365,12 @@ static void internal_comm_task_entry(ULONG input)
  * @test test_comm_task.c - Verify watchdog updated on all frame types
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1:** ✅ No goto, setjmp, recursion (only if/switch control flow)
- * - **Rule 3:** ✅ Zero dynamic allocation (all stack-based)
- * - **Rule 4:** ✅ Function is 47 lines (under 100 LOC guideline)
- * - **Rule 5:** ✅ 5 preconditions, 4 postconditions documented
- * - **Rule 7:** ✅ All function returns checked or cast to (void)
- * - **Rule 8:** ✅ All constants use C23 typed enums (no macros)
+ * - **Rule 1:** [PASS] No goto, setjmp, recursion (only if/switch control flow)
+ * - **Rule 3:** [PASS] Zero dynamic allocation (all stack-based)
+ * - **Rule 4:** [PASS] Function is 47 lines (under 100 LOC guideline)
+ * - **Rule 5:** [PASS] 5 preconditions, 4 postconditions documented
+ * - **Rule 7:** [PASS] All function returns checked or cast to (void)
+ * - **Rule 8:** [PASS] All constants use C23 typed enums (no macros)
  *
  * @callgraph
  * @callergraph
@@ -1557,7 +1557,7 @@ static void internal_frame_callback(rx_comm_channel_t  channel,
  * }
  * @enddot
  *
- * ## Motor Command Conversion (Protobuf → Internal Format)
+ * ## Motor Command Conversion (Protobuf -> Internal Format)
  *
  * **Protobuf structure (star.v1.SetVelocityRequest):**
  * ```c
@@ -1586,13 +1586,13 @@ static void internal_frame_callback(rx_comm_channel_t  channel,
  * ```
  *
  * **Conversion mapping:**
- * - protobuf.command.front_left_velocity_mps → cmd.target_velocity_mps[0]
- * - protobuf.command.front_right_velocity_mps → cmd.target_velocity_mps[1]
- * - protobuf.command.back_left_velocity_mps → cmd.target_velocity_mps[2]
- * - protobuf.command.back_right_velocity_mps → cmd.target_velocity_mps[3]
- * - protobuf.command.sequence → cmd.sequence
- * - tx_time_get() → cmd.timestamp_ms (added by firmware)
- * - true → cmd.valid (added by firmware)
+ * - protobuf.command.front_left_velocity_mps -> cmd.target_velocity_mps[0]
+ * - protobuf.command.front_right_velocity_mps -> cmd.target_velocity_mps[1]
+ * - protobuf.command.back_left_velocity_mps -> cmd.target_velocity_mps[2]
+ * - protobuf.command.back_right_velocity_mps -> cmd.target_velocity_mps[3]
+ * - protobuf.command.sequence -> cmd.sequence
+ * - tx_time_get() -> cmd.timestamp_ms (added by firmware)
+ * - true -> cmd.valid (added by firmware)
  *
  * ## Performance Characteristics
  *
@@ -1668,7 +1668,7 @@ static void internal_frame_callback(rx_comm_channel_t  channel,
  * **Execution Time Breakdown (SetVelocityRequest path):**
  * - rx_nanopb_decode_velocity_request(): ~200 µs (nanopb decode)
  * - memset(&cmd): ~2 µs (zero 24-byte structure)
- * - 4× float assignment: ~2 µs (protobuf double → float conversion)
+ * - 4× float assignment: ~2 µs (protobuf double -> float conversion)
  * - tx_time_get(): ~1 µs (read ThreadX tick counter)
  * - shared_data_set_motor_command(): ~7 µs (mutex + memcpy + event)
  * - rx_log_debug(): ~5 µs (UART transmit)
@@ -1766,15 +1766,15 @@ static void internal_frame_callback(rx_comm_channel_t  channel,
  * @test test_comm_task.c - Verify EmergencyStopRequest decode and e-stop trigger
  * @test test_comm_task.c - Verify unknown message type logged as warning
  * @test test_comm_task.c - Verify decode error handling (corrupted protobuf)
- * @test test_comm_task.c - Verify double → float conversion accuracy
+ * @test test_comm_task.c - Verify double -> float conversion accuracy
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1:** ✅ No goto, setjmp, recursion (only if/return control flow)
- * - **Rule 3:** ✅ Zero dynamic allocation (all stack-based)
- * - **Rule 4:** ✅ Function is 56 lines (under 100 LOC guideline)
- * - **Rule 5:** ✅ 5 preconditions, 4 postconditions documented
- * - **Rule 7:** ✅ All function returns checked or cast to (void)
- * - **Rule 8:** ✅ All constants use C23 typed enums (no macros)
+ * - **Rule 1:** [PASS] No goto, setjmp, recursion (only if/return control flow)
+ * - **Rule 3:** [PASS] Zero dynamic allocation (all stack-based)
+ * - **Rule 4:** [PASS] Function is 56 lines (under 100 LOC guideline)
+ * - **Rule 5:** [PASS] 5 preconditions, 4 postconditions documented
+ * - **Rule 7:** [PASS] All function returns checked or cast to (void)
+ * - **Rule 8:** [PASS] All constants use C23 typed enums (no macros)
  *
  * @callgraph
  * @callergraph

@@ -34,7 +34,7 @@
  *
  * @par Usage: All tests with time-dependent behavior
  * @see rx_time.h Real time interface (ThreadX tick timer)
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Dependency Inversion, L - Liskov Substitution
  *
  * @author STAR Team

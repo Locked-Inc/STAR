@@ -189,7 +189,7 @@
  * @par Battery Voltage Measurement
  * Battery voltage uses a 1:11 resistor divider to scale down to ADC range:
  * - **Divider ratio**: 1/11 (100kΩ / 10kΩ)
- * - **Input range**: 0-36.3V battery → 0-3.3V ADC
+ * - **Input range**: 0-36.3V battery -> 0-3.3V ADC
  * - **Conversion**: V_battery = V_ADC × 11
  *
  * @par Error Sources and Mitigation
@@ -215,16 +215,16 @@
  * - rx_mpc.h: Pin function selection (AN pins)
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ All loops bounded (conversion timeout)
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ Functions under 60 lines
- * - Rule 5: ✓ Input validation via RX_CHECK_NULL_PTR
- * - Rule 6: ✓ Variables at smallest scope
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ Limited preprocessor (typed enums preferred)
- * - Rule 9: ✓ Function pointers only for bus abstraction (DIP)
- * - Rule 10: ✓ Compiled with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] All loops bounded (conversion timeout)
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] Functions under 60 lines
+ * - Rule 5: [OK] Input validation via RX_CHECK_NULL_PTR
+ * - Rule 6: [OK] Variables at smallest scope
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] Limited preprocessor (typed enums preferred)
+ * - Rule 9: [OK] Function pointers only for bus abstraction (DIP)
+ * - Rule 10: [OK] Compiled with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S**: Single Responsibility - ADC analog input operations only
@@ -588,9 +588,9 @@ extern "C" {
  * @f]
  *
  * Example @ 3.3V VREF:
- * - ADC = 0 → 0 mV
- * - ADC = 2048 → 1651 mV (mid-scale)
- * - ADC = 4095 → 3300 mV (full-scale)
+ * - ADC = 0 -> 0 mV
+ * - ADC = 2048 -> 1651 mV (mid-scale)
+ * - ADC = 4095 -> 3300 mV (full-scale)
  *
  * @par Precision:
  * | VREF | LSB | Effective Bits | Notes |

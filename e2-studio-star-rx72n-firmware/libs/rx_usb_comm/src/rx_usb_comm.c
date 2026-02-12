@@ -35,12 +35,12 @@
  * | Receive        | 500 µs    | timeout_ms  |
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ Loops bounded by k_max_receive_iterations
- * - Rule 3: ✓ No dynamic allocation
- * - Rule 5: ✓ Pre/post conditions on all functions
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ Typed enums for constants
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] Loops bounded by k_max_receive_iterations
+ * - Rule 3: [OK] No dynamic allocation
+ * - Rule 5: [OK] Pre/post conditions on all functions
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] Typed enums for constants
  *
  * @par SOLID Principles:
  * - SRP: Handles USB framing only, delegates I/O to rx_usb

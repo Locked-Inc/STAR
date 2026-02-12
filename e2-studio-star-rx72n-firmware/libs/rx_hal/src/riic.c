@@ -231,9 +231,9 @@
  *
  * @par Timeout Selection
  * The 10ms timeout provides sufficient margin for:
- * - Standard mode: 100 kHz = 10µs/bit, 90µs/byte → 10ms = ~111 bytes
- * - Fast mode: 400 kHz = 2.5µs/bit, 22.5µs/byte → 10ms = ~444 bytes
- * - Fast Plus: 1 MHz = 1µs/bit, 9µs/byte → 10ms = ~1111 bytes
+ * - Standard mode: 100 kHz = 10µs/bit, 90µs/byte -> 10ms = ~111 bytes
+ * - Fast mode: 400 kHz = 2.5µs/bit, 22.5µs/byte -> 10ms = ~444 bytes
+ * - Fast Plus: 1 MHz = 1µs/bit, 9µs/byte -> 10ms = ~1111 bytes
  *
  * @invariant k_riic_max_channels == 3 (hardware limitation)
  * @invariant k_riic_max_transfer_length == 256 (single-byte length limit)
@@ -642,8 +642,8 @@ internal_calculate_bit_rate(const uint32_t frequency_hz, uint8_t* icbrl, uint8_t
  *          after this function returns - caller should proceed quickly.
  *
  * @par NASA Power of 10 Compliance
- * - Rule 2: ✓ Bounded loop with k_riic_timeout_us maximum iterations
- * - Rule 5: ✓ NULL pointer check via RX_CHECK_NULL_PTR
+ * - Rule 2: [OK] Bounded loop with k_riic_timeout_us maximum iterations
+ * - Rule 5: [OK] NULL pointer check via RX_CHECK_NULL_PTR
  */
 static rx_err_t internal_wait_bus_ready(const volatile rx_riic_regs_t* riic)
 {

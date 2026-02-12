@@ -136,16 +136,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | **Rule 1** | ✅ | No goto, setjmp, recursion |
- * | **Rule 2** | ✅ | Loop bounds via k_max_buses |
- * | **Rule 3** | ✅ | Static allocation only (bus pool) |
- * | **Rule 4** | ✅ | Structures, not functions |
- * | **Rule 5** | ✅ | Field constraints documented |
- * | **Rule 6** | ✅ | Smallest scope (struct-local) |
- * | **Rule 7** | ✅ | Return checks via rx_err_t |
- * | **Rule 8** | ✅ | C23 typed enums, no macros |
- * | **Rule 9** | ✅ | Single-level pointers |
- * | **Rule 10** | ✅ | -Wall -Wextra -Werror clean |
+ * | **Rule 1** | [PASS] | No goto, setjmp, recursion |
+ * | **Rule 2** | [PASS] | Loop bounds via k_max_buses |
+ * | **Rule 3** | [PASS] | Static allocation only (bus pool) |
+ * | **Rule 4** | [PASS] | Structures, not functions |
+ * | **Rule 5** | [PASS] | Field constraints documented |
+ * | **Rule 6** | [PASS] | Smallest scope (struct-local) |
+ * | **Rule 7** | [PASS] | Return checks via rx_err_t |
+ * | **Rule 8** | [PASS] | C23 typed enums, no macros |
+ * | **Rule 9** | [PASS] | Single-level pointers |
+ * | **Rule 10** | [PASS] | -Wall -Wextra -Werror clean |
  *
  * ## SOLID Principles
  *

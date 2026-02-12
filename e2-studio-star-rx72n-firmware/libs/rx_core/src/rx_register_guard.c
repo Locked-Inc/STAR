@@ -163,16 +163,16 @@
  * - [rx72n_regs.h](../../rx_hal/inc/rx72n_regs.h) - Hardware register accessors
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1**: ✓ No goto, setjmp, recursion
- * - **Rule 2**: ✓ All loops are implicit (no explicit loops, individual checks)
- * - **Rule 3**: ✓ Zero dynamic allocation (all data static)
- * - **Rule 4**: ✓ All functions <60 lines
- * - **Rule 5**: ✓ Each function has assertions/validations
- * - **Rule 6**: ✓ Data declared at smallest scope
- * - **Rule 7**: ✓ Return values checked or void
- * - **Rule 8**: ✓ C23 typed enums for constants, no magic numbers
- * - **Rule 9**: ⚠️ Inline ASM required for PSW access (documented, unavoidable)
- * - **Rule 10**: ✓ Compiled with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No goto, setjmp, recursion
+ * - **Rule 2**: [OK] All loops are implicit (no explicit loops, individual checks)
+ * - **Rule 3**: [OK] Zero dynamic allocation (all data static)
+ * - **Rule 4**: [OK] All functions <60 lines
+ * - **Rule 5**: [OK] Each function has assertions/validations
+ * - **Rule 6**: [OK] Data declared at smallest scope
+ * - **Rule 7**: [OK] Return values checked or void
+ * - **Rule 8**: [OK] C23 typed enums for constants, no magic numbers
+ * - **Rule 9**: [WARN] Inline ASM required for PSW access (documented, unavoidable)
+ * - **Rule 10**: [OK] Compiled with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility**: Only handles register protection, no other concerns
@@ -863,9 +863,9 @@ static void internal_refresh_mstpcr(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 5: ✓ 2 preconditions, 4 postconditions
- * - Rule 7: ✓ Return value always k_rx_ok (documented)
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 5: [OK] 2 preconditions, 4 postconditions
+ * - Rule 7: [OK] Return value always k_rx_ok (documented)
  */
 rx_err_t rx_register_guard_init(void)
 {
@@ -972,9 +972,9 @@ rx_err_t rx_register_guard_init(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 5: ✓ 2 preconditions, 3 postconditions, 2 invariants
- * - Rule 9: ⚠️ Brief interrupt disable in internal_refresh_mstpcr() (documented)
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 5: [OK] 2 preconditions, 3 postconditions, 2 invariants
+ * - Rule 9: [WARN] Brief interrupt disable in internal_refresh_mstpcr() (documented)
  */
 void rx_register_guard_refresh(void)
 {
@@ -1041,8 +1041,8 @@ void rx_register_guard_refresh(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 5: ✓ 1 precondition, 1 postcondition
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 5: [OK] 1 precondition, 1 postcondition
  */
 uint32_t rx_register_guard_get_correction_count(void)
 {
@@ -1095,8 +1095,8 @@ uint32_t rx_register_guard_get_correction_count(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 5: ✓ 1 precondition, 2 postconditions (with assert validation)
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 5: [OK] 1 precondition, 2 postconditions (with assert validation)
  */
 void rx_register_guard_reset_count(void)
 {
@@ -1162,8 +1162,8 @@ void rx_register_guard_reset_count(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 5: ✓ 1 precondition, 1 postcondition
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 5: [OK] 1 precondition, 1 postcondition
  */
 bool rx_register_guard_is_initialized(void)
 {

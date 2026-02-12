@@ -13,7 +13,7 @@
  *
  * **Boot sequence context:**
  * ```
- * main() → rx_clock_power_init() → hardware_init() → tx_kernel_enter()
+ * main() -> rx_clock_power_init() -> hardware_init() -> tx_kernel_enter()
  *           ↑ System clocks        ↑ This file      ↑ Start RTOS
  * ```
  *
@@ -34,9 +34,10 @@
  *    - CMT0 for ThreadX tick (1 kHz)
  *    - MTU for PWM generation (motor control)
  *
- * 4. **UART debug** (~50 µs) **IMPLEMENTED**
- *    - SCI9 for debug console (115200 baud)
- *    - Enables rx_log_*() functions
+ * 4. **UART debug** - MOVED TO MAIN()
+ *    - SCI9 initialized in main() before hardware_init() is called
+ *    - Error logging available for all peripheral init below
+ *    - See main.c for early UART initialization
  *
  * 5. **Communication peripherals** (planned, not yet implemented)
  *    - SPI for motor drivers and sensors
@@ -88,14 +89,14 @@
  *
  * | Stage | Duration | Implementation | Notes |
  * |-------|----------|----------------|-------|
- * | **Precondition check** | ~0.5 µs | ✅ Complete | SCKCR3 register read + assert |
- * | **GPIO init** | ~5 µs | ⏳ Planned | Pin mode, pull-up/down, output levels |
- * | **Timer init** | ~10 µs | ✅ Complete | CMT0 setup for ThreadX tick |
- * | **UART debug** | ~50 µs | ✅ Complete | SCI9 baud rate, FIFO, interrupts |
- * | **SPI init** | ~20 µs | ⏳ Planned | RSPI0/1 mode, clock, DMA config |
- * | **I2C init** | ~15 µs | ⏳ Planned | RIIC0 speed, addressing, interrupts |
- * | **ADC init** | ~100 µs | ⏳ Planned | ADC0 calibration, channel config |
- * | **Postcondition check** | ~0.5 µs | ✅ Complete | SCKCR3 stability verification |
+ * | **Precondition check** | ~0.5 µs | [COMPLETE] | SCKCR3 register read + assert |
+ * | **GPIO init** | ~5 µs | [PENDING] Planned | Pin mode, pull-up/down, output levels |
+ * | **Timer init** | ~10 µs | [COMPLETE] | CMT0 setup for ThreadX tick |
+ * | **UART debug** | ~50 µs | [COMPLETE] | SCI9 baud rate, FIFO, interrupts |
+ * | **SPI init** | ~20 µs | [PENDING] Planned | RSPI0/1 mode, clock, DMA config |
+ * | **I2C init** | ~15 µs | [PENDING] Planned | RIIC0 speed, addressing, interrupts |
+ * | **ADC init** | ~100 µs | [PENDING] Planned | ADC0 calibration, channel config |
+ * | **Postcondition check** | ~0.5 µs | [COMPLETE] | SCKCR3 stability verification |
  * | **Total (current)** | **~61 µs** | Timers + UART only | |
  * | **Total (planned)** | **~201 µs** | All peripherals | |
  *
@@ -134,16 +135,16 @@
  *
  * | Rule | Status | Implementation Notes |
  * |------|--------|----------------------|
- * | **Rule 1: Control flow** | ✅ PASS | No goto, setjmp, or recursion |
- * | **Rule 2: Loop bounds** | ✅ PASS | No loops (sequential initialization) |
- * | **Rule 3: Heap allocation** | ✅ PASS | Zero dynamic allocation (static only) |
- * | **Rule 4: Function length** | ✅ PASS | hardware_init() = 80 lines |
- * | **Rule 5: Assertions** | ✅ PASS | 2 preconditions, 1 postcondition |
- * | **Rule 6: Data scope** | ✅ PASS | All variables at function scope |
- * | **Rule 7: Return checks** | ✅ PASS | All init functions checked via rx_err_is_error() |
- * | **Rule 8: Preprocessor** | ✅ PASS | Zero macros (uses typed enum for constant) |
- * | **Rule 9: Pointers** | ✅ PASS | Single-level dereferencing only |
- * | **Rule 10: Warnings** | ✅ PASS | Compiles with -Wall -Wextra -Werror |
+ * | **Rule 1: Control flow** | [PASS] | No goto, setjmp, or recursion |
+ * | **Rule 2: Loop bounds** | [PASS] | No loops (sequential initialization) |
+ * | **Rule 3: Heap allocation** | [PASS] | Zero dynamic allocation (static only) |
+ * | **Rule 4: Function length** | [PASS] | hardware_init() = 80 lines |
+ * | **Rule 5: Assertions** | [PASS] | 2 preconditions, 1 postcondition |
+ * | **Rule 6: Data scope** | [PASS] | All variables at function scope |
+ * | **Rule 7: Return checks** | [PASS] | All init functions checked via rx_err_is_error() |
+ * | **Rule 8: Preprocessor** | [PASS] | Zero macros (uses typed enum for constant) |
+ * | **Rule 9: Pointers** | [PASS] | Single-level dereferencing only |
+ * | **Rule 10: Warnings** | [PASS] | Compiles with -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -200,6 +201,8 @@
 #include "rx_gptw.h"
 #include "rx_mpc.h"
 #include "rx_poeg.h"
+#include "rx_port_utils.h"
+#include "rx72n_sci_regs.h"
 #include "rx_simulator_config.h" /* For RX_IS_SIMULATOR conditional compilation */
 
 /** @brief Port pin identifiers for MPC configuration (rx_port_pin_t values) */
@@ -214,6 +217,29 @@ typedef enum : uint16_t {
 
   /* USB */
   k_pin_usb_vbus   = k_rx_p1_6, /**< P1.6 - USB0_VBUS (USB VBUS detect) */
+
+  /* HC-SR04 Sonar triggers (GPIO output, initial LOW) */
+  k_pin_sonar_trig0 = k_rx_pf_5, /**< PF.5 - Sonar 0 trigger (pin 9) */
+  k_pin_sonar_trig1 = k_rx_pj_5, /**< PJ.5 - Sonar 1 trigger (pin 11) */
+  k_pin_sonar_trig2 = k_rx_pj_3, /**< PJ.3 - Sonar 2 trigger (pin 13) */
+  k_pin_sonar_trig3 = k_rx_p3_3, /**< P3.3 - Sonar 3 trigger (pin 26) */
+
+  /* HC-SR04 Sonar echoes (GPIO input, IRQ8-11) */
+  k_pin_sonar_echo0 = k_rx_p0_3, /**< P0.3 - Sonar 0 echo (pin 4, IRQ11) */
+  k_pin_sonar_echo1 = k_rx_p0_2, /**< P0.2 - Sonar 1 echo (pin 6, IRQ10) */
+  k_pin_sonar_echo2 = k_rx_p0_1, /**< P0.1 - Sonar 2 echo (pin 7, IRQ9) */
+  k_pin_sonar_echo3 = k_rx_p0_0, /**< P0.0 - Sonar 3 echo (pin 8, IRQ8) */
+
+  /* DRV8243S SPI chip selects (GPIO output, initial HIGH) */
+  k_pin_drv_cs0     = k_rx_p7_4, /**< P7.4 - DRV_CS0 motor 0 (pin 72) */
+  k_pin_drv_cs1     = k_rx_pc_1, /**< PC.1 - DRV_CS1 motor 1 (pin 73) */
+  k_pin_drv_cs2     = k_rx_pb_5, /**< PB.5 - DRV_CS2 motor 2 (pin 80) */
+  k_pin_drv_cs3     = k_rx_pb_4, /**< PB.4 - DRV_CS3 motor 3 (pin 81) */
+
+  /* DRV8243S SPI data (SCI12 alternate function) */
+  k_pin_drv_sclk    = k_rx_pe_0, /**< PE.0 - SCK12 (pin 111) */
+  k_pin_drv_copi    = k_rx_pe_1, /**< PE.1 - SMOSI12 (pin 110) */
+  k_pin_drv_cipo    = k_rx_pe_2, /**< PE.2 - SMISO12 (pin 109) */
 
   /* Host SPI (RSPI2 channel A on PORTD) */
   k_pin_host_copi  = k_rx_pd_1, /**< PD.1 - MOSIC (RSPI2 COPI) */
@@ -244,20 +270,12 @@ typedef enum : uint16_t {
   k_pin_adc_an007  = k_rx_p4_7, /**< P4.7 - AN007 (motor 0 current) */
 } rx_mpc_pin_t;
 
-/** @brief GPTW PSEL value for GTIOC pin function */
-typedef enum : uint8_t {
-  k_psel_gptw = 0x14, /**< GPTW output compare / input capture */
-} gptw_psel_t;
-
-/** @brief USB PSEL value for VBUS detect pin function */
-typedef enum : uint8_t {
-  k_psel_usb_vbus = 0x11, /**< USB VBUS detect function */
-} usb_psel_t;
-
 /** @brief Number of GPTW motor control pins */
 typedef enum : uint8_t {
-  k_gptw_pin_count = 8, /**< 4 motors x 2 pins (PH + EN) */
-} gptw_pin_count_t;
+  k_gptw_pin_count  = 8, /**< 4 motors x 2 pins (PH + EN) */
+  k_sonar_count     = 4, /**< 4 HC-SR04 ultrasonic sensors */
+  k_drv_cs_count    = 4, /**< 4 DRV8243S chip select pins */
+} gpio_pin_counts_t;
 
 /** @brief GPTW PWM frequency constant */
 typedef enum : uint32_t {
@@ -390,16 +408,16 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1** ✓ No goto, setjmp, recursion (sequential pin configuration)
- * - **Rule 2** ✓ No loops (8 pins configured sequentially, statically known)
- * - **Rule 3** ✓ No dynamic allocation (all register I/O)
- * - **Rule 4** ✓ Function is 45 lines (under 60 line limit)
- * - **Rule 5** ✓ 2 preconditions, 5 postconditions documented
- * - **Rule 6** ✓ Minimal scope (no local variables)
- * - **Rule 7** ✓ All rx_mpc_set_*() return values checked
- * - **Rule 8** ✓ Uses C23 typed enums for pin identifiers
- * - **Rule 9** ✓ Single level of function call dereferencing
- * - **Rule 10** ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1** [OK] No goto, setjmp, recursion (sequential pin configuration)
+ * - **Rule 2** [OK] No loops (8 pins configured sequentially, statically known)
+ * - **Rule 3** [OK] No dynamic allocation (all register I/O)
+ * - **Rule 4** [OK] Function is 45 lines (under 60 line limit)
+ * - **Rule 5** [OK] 2 preconditions, 5 postconditions documented
+ * - **Rule 6** [OK] Minimal scope (no local variables)
+ * - **Rule 7** [OK] All rx_mpc_set_*() return values checked
+ * - **Rule 8** [OK] Uses C23 typed enums for pin identifiers
+ * - **Rule 9** [OK] Single level of function call dereferencing
+ * - **Rule 10** [OK] Compiles with -Wall -Wextra -Werror
  */
 static rx_err_t gpio_init(void)
 {
@@ -446,7 +464,7 @@ static rx_err_t gpio_init(void)
   err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc1_phb); /* PC.5 = MTCLKD */
   RX_RETURN_ON_ERROR(err, s_tag, "MTCLKD pin config failed");
 
-  /* ---- GPTW PWM outputs (4 motors × PH + EN = 8 pins, PSEL=0x14) ---- */
+  /* ---- GPTW PWM outputs (4 motors × PH + EN = 8 pins) ---- */
   const rx_port_pin_t gptw_pins[] = {
     (rx_port_pin_t)k_pin_motor0_ph, (rx_port_pin_t)k_pin_motor0_en,
     (rx_port_pin_t)k_pin_motor1_ph, (rx_port_pin_t)k_pin_motor1_en,
@@ -455,11 +473,7 @@ static rx_err_t gpio_init(void)
   };
 
   for (uint8_t i = 0; i < k_gptw_pin_count; i++) {
-    rx_mpc_peripheral_config_t gptw_cfg = {
-      .pin  = gptw_pins[i],
-      .psel = k_psel_gptw
-    };
-    err = rx_mpc_set_peripheral(&gptw_cfg);
+    err = rx_mpc_set_gptw(gptw_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "GPTW pin config failed");
   }
 
@@ -476,15 +490,92 @@ static rx_err_t gpio_init(void)
   err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an007); /* P4.7 = AN007 */
   RX_RETURN_ON_ERROR(err, s_tag, "AN007 pin config failed");
 
-  /* ---- USB VBUS detect ---- */
-  rx_mpc_peripheral_config_t usb_config = {
-    .pin  = (rx_port_pin_t)k_pin_usb_vbus, /* P1.6 = USB0_VBUS */
-    .psel = k_psel_usb_vbus
-  };
-  err = rx_mpc_set_peripheral(&usb_config);
+  /* ---- USB VBUS detect (P1.6 = USB0_VBUS) ---- */
+  err = rx_mpc_set_usb_vbus((rx_port_pin_t)k_pin_usb_vbus);
   RX_RETURN_ON_ERROR(err, s_tag, "USB VBUS pin config failed");
 
-  rx_log_info(s_tag, "29 pins: 4xI2C, 4xSPI, 4xMTU, 8xGPTW, 4xADC, 1xUSB");
+  /* ---- HC-SR04 Sonar triggers (GPIO output, initial LOW) ---- */
+  const rx_port_pin_t sonar_trig_pins[k_sonar_count] = {
+    (rx_port_pin_t)k_pin_sonar_trig0, /* PF5 */
+    (rx_port_pin_t)k_pin_sonar_trig1, /* PJ5 */
+    (rx_port_pin_t)k_pin_sonar_trig2, /* PJ3 */
+    (rx_port_pin_t)k_pin_sonar_trig3  /* P33 */
+  };
+
+  for (uint8_t i = 0; i < k_sonar_count; i++) {
+    err = rx_mpc_set_gpio(sonar_trig_pins[i]);
+    RX_RETURN_ON_ERROR(err, s_tag, "Sonar trigger MPC config failed");
+
+    const uint8_t port = rx_port_from_pin(sonar_trig_pins[i]);
+    const uint8_t pin  = rx_pin_from_pin(sonar_trig_pins[i]);
+    volatile rx_port_regs_t* regs = rx_port_get_base(port);
+    RX_ASSERT(regs != nullptr, "Invalid sonar trigger port");
+    regs->pmr  &= ~(uint8_t)(1U << pin); /* GPIO mode */
+    regs->podr &= ~(uint8_t)(1U << pin); /* Initial LOW */
+    regs->pdr  |= (uint8_t)(1U << pin);  /* Output */
+  }
+
+  /* ---- HC-SR04 Sonar echoes (GPIO input) ---- */
+  const rx_port_pin_t sonar_echo_pins[k_sonar_count] = {
+    (rx_port_pin_t)k_pin_sonar_echo0, /* P03 / IRQ11 */
+    (rx_port_pin_t)k_pin_sonar_echo1, /* P02 / IRQ10 */
+    (rx_port_pin_t)k_pin_sonar_echo2, /* P01 / IRQ9 */
+    (rx_port_pin_t)k_pin_sonar_echo3  /* P00 / IRQ8 */
+  };
+
+  for (uint8_t i = 0; i < k_sonar_count; i++) {
+    err = rx_mpc_set_gpio(sonar_echo_pins[i]);
+    RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo MPC config failed");
+
+    const uint8_t port = rx_port_from_pin(sonar_echo_pins[i]);
+    const uint8_t pin  = rx_pin_from_pin(sonar_echo_pins[i]);
+    volatile rx_port_regs_t* regs = rx_port_get_base(port);
+    RX_ASSERT(regs != nullptr, "Invalid sonar echo port");
+    regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
+    regs->pdr &= ~(uint8_t)(1U << pin); /* Input */
+  }
+
+  /* ---- DRV8243S SPI chip selects (GPIO output, initial HIGH = deselected) ---- */
+  const rx_port_pin_t drv_cs_pins[k_drv_cs_count] = {
+    (rx_port_pin_t)k_pin_drv_cs0, /* P74 */
+    (rx_port_pin_t)k_pin_drv_cs1, /* PC1 */
+    (rx_port_pin_t)k_pin_drv_cs2, /* PB5 */
+    (rx_port_pin_t)k_pin_drv_cs3  /* PB4 */
+  };
+
+  for (uint8_t i = 0; i < k_drv_cs_count; i++) {
+    err = rx_mpc_set_gpio(drv_cs_pins[i]);
+    RX_RETURN_ON_ERROR(err, s_tag, "DRV CS MPC config failed");
+
+    const uint8_t port = rx_port_from_pin(drv_cs_pins[i]);
+    const uint8_t pin  = rx_pin_from_pin(drv_cs_pins[i]);
+    volatile rx_port_regs_t* regs = rx_port_get_base(port);
+    RX_ASSERT(regs != nullptr, "Invalid DRV CS port");
+    regs->pmr  &= ~(uint8_t)(1U << pin); /* GPIO mode */
+    regs->podr |= (uint8_t)(1U << pin);  /* Initial HIGH (deselected) */
+    regs->pdr  |= (uint8_t)(1U << pin);  /* Output */
+  }
+
+  /* ---- DRV8243S SPI data (SCI12 alternate function PE0-PE2) ---- */
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk); /* PE0 = SCK12 */
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI12 SCK pin config failed");
+
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_copi); /* PE1 = SMOSI12 */
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI12 COPI pin config failed");
+
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_cipo); /* PE2 = SMISO12 */
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI12 CIPO pin config failed");
+
+  /* ---- GTETRG nFAULT pins (POEG hardware triggers) ----
+   * POEG external trigger (GTETRGA-D) reads the physical pin level directly
+   * via the PIDR path, not through MPC peripheral routing. These pins are
+   * configured as GPIO inputs with no MPC PSEL required for POEG to sample
+   * the nFAULT signal at hardware speed. POEG PIDE=1 enables the external
+   * pin input, and the GTETRG logic reads the port pin state continuously.
+   * No MPC config needed -- documented here for traceability. */
+
+  rx_log_info(s_tag, "50 pins: 4xI2C, 4xSPI, 4xMTU, 8xGPTW, 4xADC, 1xUSB, "
+                     "8xSonar, 7xDRV_SPI, 4xGTETRG(doc), 6xLED(TBD)");
 
   return k_rx_ok;
 }
@@ -704,8 +795,8 @@ static void validate_peripherals(void)
  * Configures **six categories** of peripherals required by the STAR robot application:
  *
  * 1. **GPIO** (planned) - Motor control pins, LEDs, sensor chip selects
- * 2. **Timers** (✅ implemented) - CMT0 for ThreadX tick at 1 kHz
- * 3. **UART** (✅ implemented) - SCI9 for debug console at 115200 baud
+ * 2. **Timers** ([PASS] implemented) - CMT0 for ThreadX tick at 1 kHz
+ * 3. **UART** ([PASS] implemented) - SCI9 for debug console at 115200 baud
  * 4. **SPI** (planned) - Motor drivers (DRV8243), sensor bus
  * 5. **I2C** (planned) - IMU, temperature, pressure sensors
  * 6. **ADC** (planned) - Current sensing, battery voltage monitoring
@@ -738,10 +829,10 @@ static void validate_peripherals(void)
  *
  * | Stage | Duration | CPU Cycles | Implementation | Critical Path? |
  * |-------|----------|------------|----------------|----------------|
- * | **Precondition check** | 0.5 µs | ~120 | ✅ Complete | No |
- * | **Timer init (CMT0)** | 10 µs | ~2,400 | ✅ Complete | No |
- * | **UART init (SCI9)** | 50 µs | ~12,000 | ✅ Complete | No |
- * | **Postcondition check** | 0.5 µs | ~120 | ✅ Complete | No |
+ * | **Precondition check** | 0.5 µs | ~120 | [COMPLETE] | No |
+ * | **Timer init (CMT0)** | 10 µs | ~2,400 | [COMPLETE] | No |
+ * | **UART init (SCI9)** | 50 µs | ~12,000 | [COMPLETE] | No |
+ * | **Postcondition check** | 0.5 µs | ~120 | [COMPLETE] | No |
  * | **Total (current)** | **~61 µs** | **~14,640** | Timers + UART only | **No** |
  *
  * **Note:** Not on critical boot path. Total boot time (main to ThreadX) is ~51 ms,
@@ -756,18 +847,18 @@ static void validate_peripherals(void)
  * | **Return address** | 4 bytes | Stack (Main stack) | Function duration |
  * | **Total stack usage** | ~64 bytes | Main stack (4 KB available) | Function duration |
  *
- * **Stack depth:** 1 level (hardware_init → timer_init/uart_init)
+ * **Stack depth:** 1 level (hardware_init -> timer_init/uart_init)
  *
  * ## Error Handling and Recovery
  *
  * **Critical errors (assert-halt):**
- * - **Precondition:** SCKCR3 == reset_state → Clocks not initialized (caller bug)
- * - **Postcondition:** SCKCR3 changed during init → Clock corruption (peripheral bug)
+ * - **Precondition:** SCKCR3 == reset_state -> Clocks not initialized (caller bug)
+ * - **Postcondition:** SCKCR3 changed during init -> Clock corruption (peripheral bug)
  * - **Action:** RX_ASSERT halts execution with message
  *
  * **Peripheral errors (return error code):**
- * - **timer_init() failed** → CMT0 configuration error (hardware or register access issue)
- * - **uart_debug_init() failed** → SCI9 configuration error (baud rate calculation, pin config)
+ * - **timer_init() failed** -> CMT0 configuration error (hardware or register access issue)
+ * - **uart_debug_init() failed** -> SCI9 configuration error (baud rate calculation, pin config)
  * - **Action:** Return error to main(), which halts boot with error code
  *
  * **Recovery strategy:**
@@ -791,7 +882,7 @@ static void validate_peripherals(void)
  * @post System clocks still operational (SCKCR3 unchanged from precondition)
  * @post Peripherals ready for application use (motor control, sensors, communication)
  *
- * @note **Call order:** rx_clock_power_init() → hardware_init() → tx_kernel_enter()
+ * @note **Call order:** rx_clock_power_init() -> hardware_init() -> tx_kernel_enter()
  *       Violating this order causes precondition assertion failure.
  *
  * @note **Not idempotent:** Calling hardware_init() multiple times may cause errors
@@ -894,7 +985,7 @@ rx_err_t hardware_init(void)
   /* =========================================================================
    * INITIALIZE PERIPHERALS
    *
-   * Order: GPIO → GPTW → Timer → UART → SPI → I2C → ADC → Validate
+   * Order: GPIO -> GPTW -> Timer -> UART -> SPI -> I2C -> ADC -> Validate
    * Later stages depend on earlier stages (GPIO must precede peripherals).
    * =========================================================================
    */
@@ -908,7 +999,7 @@ rx_err_t hardware_init(void)
   err = gptw_pwm_init();
   RX_RETURN_ON_ERROR(err, "HW_INIT", "GPTW PWM initialization failed");
 
-  /* 2b. POEG: Motor fault protection (links GTETRG→POEG→GPTW) */
+  /* 2b. POEG: Motor fault protection (links GTETRG->POEG->GPTW) */
   err = rx_poeg_init();
   RX_RETURN_ON_ERROR(err, "HW_INIT", "POEG fault protection init failed");
 
@@ -918,13 +1009,11 @@ rx_err_t hardware_init(void)
     return err;
   }
 
-  /* 4. UART: SCI9 debug console (enables rx_log_*() from this point) */
-  err = uart_debug_init();
-  if (rx_err_is_error(err)) {
-    return err;
-  }
+  /* 4. UART: SCI9 debug console - MOVED TO MAIN()
+   *    UART initialized in main() before hardware_init() to enable early error logging.
+   *    Error logging is now available for all peripheral initialization below. */
 
-  /* 5. SPI: RSPI2 host peripheral for RPi5 communication */
+  /* 5a. SPI: RSPI2 host peripheral for RPi5 communication */
   err = spi_init();
   RX_RETURN_ON_ERROR(err, "HW_INIT", "SPI initialization failed");
 

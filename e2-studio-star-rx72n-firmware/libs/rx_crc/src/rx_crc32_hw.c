@@ -176,7 +176,7 @@
  *
  * **Why no mutex needed:**
  * 1. CRCCR.DORCLR resets CRC state at start of each calculation
- * 2. Entire computation (write CRCDIR bytes → read CRCDOR) is atomic per call
+ * 2. Entire computation (write CRCDIR bytes -> read CRCDOR) is atomic per call
  * 3. No persistent state in peripheral between function calls
  * 4. Initialization is idempotent and race-safe
  *
@@ -222,27 +222,27 @@
  * **SPI frame validation:**
  * - Frame format: `[SYNC][LEN][PAYLOAD][CRC32]`
  * - CRC computed over: LEN + PAYLOAD
- * - Typical size: 16-256 bytes → **HW is 4-5× faster**
+ * - Typical size: 16-256 bytes -> **HW is 4-5× faster**
  *
  * **USB bulk transfer verification:**
  * - Packet size: 64 bytes (USB Full-Speed max)
- * - HW throughput: 32 MB/s → **~2 µs per packet**
+ * - HW throughput: 32 MB/s -> **~2 µs per packet**
  * - Latency budget: Acceptable for 1 kHz control loop
  *
  * ## NASA Power of 10 Compliance
  *
  * | Rule | Compliance | Implementation |
  * |------|------------|----------------|
- * | **1. Simple Control Flow** | ✅ FULL | No goto, setjmp, or recursion |
- * | **2. Fixed Loop Bounds** | ✅ FULL | Loop bounded by k_crc_len_max (65535) |
- * | **3. No Dynamic Memory** | ✅ FULL | Zero malloc/free, all state is static |
- * | **4. Short Functions** | ✅ FULL | Longest function: rx_crc32_ieee_impl (54 lines) |
- * | **5. Assertions** | ✅ FULL | Minimum 2 checks per function (nullptr, range) |
- * | **6. Smallest Scope** | ✅ FULL | Variables declared at first use |
- * | **7. Check Return Values** | ✅ FULL | rx_crc_init() return checked |
- * | **8. Limit Preprocessor** | ✅ FULL | Only conditional compilation, C23 typed enums |
- * | **9. Restrict Pointers** | ✅ FULL | Single-level pointers only (no double **) |
- * | **10. Compiler Warnings** | ✅ FULL | Compiles with -Wall -Wextra -Werror |
+ * | **1. Simple Control Flow** | [PASS] FULL | No goto, setjmp, or recursion |
+ * | **2. Fixed Loop Bounds** | [PASS] FULL | Loop bounded by k_crc_len_max (65535) |
+ * | **3. No Dynamic Memory** | [PASS] FULL | Zero malloc/free, all state is static |
+ * | **4. Short Functions** | [PASS] FULL | Longest function: rx_crc32_ieee_impl (54 lines) |
+ * | **5. Assertions** | [PASS] FULL | Minimum 2 checks per function (nullptr, range) |
+ * | **6. Smallest Scope** | [PASS] FULL | Variables declared at first use |
+ * | **7. Check Return Values** | [PASS] FULL | rx_crc_init() return checked |
+ * | **8. Limit Preprocessor** | [PASS] FULL | Only conditional compilation, C23 typed enums |
+ * | **9. Restrict Pointers** | [PASS] FULL | Single-level pointers only (no double **) |
+ * | **10. Compiler Warnings** | [PASS] FULL | Compiles with -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -362,7 +362,7 @@ static bool s_crc_initialized = false;
  * ## Initialization Sequence
  *
  * **Hardware setup steps (6 operations):**
- * 1. Check if already initialized → return k_rx_ok (fast path)
+ * 1. Check if already initialized -> return k_rx_ok (fast path)
  * 2. Validate system register accessibility (NULL checks)
  * 3. Unlock protection register (PRCR = 0xA503 for PRC1+PRC3)
  * 4. Clear MSTPCRB bit 23 (enable CRC module clock)
@@ -407,7 +407,7 @@ static bool s_crc_initialized = false;
  *
  * **This function is thread-safe:**
  * - Idempotent: Multiple calls safe (early return if initialized)
- * - Race condition: Two threads initializing simultaneously → both succeed
+ * - Race condition: Two threads initializing simultaneously -> both succeed
  * - Worst case: Redundant hardware config (harmless)
  * - s_crc_initialized flag: Write-once, read-many (safe pattern)
  *
@@ -505,9 +505,9 @@ static bool s_crc_initialized = false;
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 4: ✓ 28-line function (single responsibility: HW init)
- * - Rule 5: ✓ 2 preconditions (register accessibility), 3 postconditions (clock, config, flag)
- * - Rule 7: ✓ No unchecked return values
+ * - Rule 4: [OK] 28-line function (single responsibility: HW init)
+ * - Rule 5: [OK] 2 preconditions (register accessibility), 3 postconditions (clock, config, flag)
+ * - Rule 7: [OK] No unchecked return values
  */
 rx_err_t rx_crc_init(void)
 {
@@ -681,8 +681,8 @@ rx_err_t rx_crc_deinit(void)
  *
  * **Atomic operation:**
  * ```
- * Thread A: DORCLR → write bytes 0-1023 → read CRCDOR (complete)
- * Thread B: DORCLR → write bytes 0-63 → read CRCDOR (complete)
+ * Thread A: DORCLR -> write bytes 0-1023 -> read CRCDOR (complete)
+ * Thread B: DORCLR -> write bytes 0-63 -> read CRCDOR (complete)
  * Both get correct results (DORCLR ensures clean state per call)
  * ```
  *
@@ -725,7 +725,7 @@ rx_err_t rx_crc_deinit(void)
  *
  * @post CRC module initialized (if not already, via lazy init)
  * @post CRC peripheral state reset to idle (ready for next call)
- * @post Return value is deterministic (same input → same output)
+ * @post Return value is deterministic (same input -> same output)
  * @post No side effects on input buffer (read-only access)
  *
  * @note **Thread Safety:** Fully reentrant, no mutex required
@@ -821,10 +821,10 @@ rx_err_t rx_crc_deinit(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 2: ✓ Loop bounded by k_crc_len_max (compile-time constant)
- * - Rule 4: ✓ 54-line function (single responsibility: HW CRC calc)
- * - Rule 5: ✓ 3 preconditions (data, len, registers), 4 postconditions
- * - Rule 7: ✓ rx_crc_init() return checked before use
+ * - Rule 2: [OK] Loop bounded by k_crc_len_max (compile-time constant)
+ * - Rule 4: [OK] 54-line function (single responsibility: HW CRC calc)
+ * - Rule 5: [OK] 3 preconditions (data, len, registers), 4 postconditions
+ * - Rule 7: [OK] rx_crc_init() return checked before use
  */
 uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 {

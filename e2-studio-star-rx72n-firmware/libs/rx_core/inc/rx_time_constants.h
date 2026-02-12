@@ -75,16 +75,16 @@
  *
  * | Rule | Status | Notes |
  * |------|--------|-------|
- * | 1. Simple control flow | ✓ | No code (constants only) |
- * | 2. Fixed loop bounds | ✓ | No loops |
- * | 3. No dynamic memory | ✓ | No allocations |
- * | 4. Function length <60 lines | ✓ | No functions |
- * | 5. Assertions | ✓ | N/A (header only) |
- * | 6. Smallest scope | ✓ | File-scope enums |
- * | 7. Check return values | ✓ | N/A |
- * | 8. Limited preprocessor | ✓ | Include guards only, C23 enums used |
- * | 9. Pointer restrictions | ✓ | No pointers |
- * | 10. Compiler warnings | ✓ | `-Wall -Wextra -Werror` |
+ * | 1. Simple control flow | [OK] | No code (constants only) |
+ * | 2. Fixed loop bounds | [OK] | No loops |
+ * | 3. No dynamic memory | [OK] | No allocations |
+ * | 4. Function length <60 lines | [OK] | No functions |
+ * | 5. Assertions | [OK] | N/A (header only) |
+ * | 6. Smallest scope | [OK] | File-scope enums |
+ * | 7. Check return values | [OK] | N/A |
+ * | 8. Limited preprocessor | [OK] | Include guards only, C23 enums used |
+ * | 9. Pointer restrictions | [OK] | No pointers |
+ * | 10. Compiler warnings | [OK] | `-Wall -Wextra -Werror` |
  *
  * @par SOLID Principles:
  *
@@ -151,23 +151,23 @@ extern "C" {
  *
  * ## Common Conversion Patterns
  *
- * **Seconds → Milliseconds:**
+ * **Seconds -> Milliseconds:**
  * ```c
  * uint32_t timeout_ms = timeout_sec * k_rx_ms_per_second;
  * ```
  *
- * **Milliseconds → ThreadX Ticks:**
+ * **Milliseconds -> ThreadX Ticks:**
  * ```c
  * uint32_t ticks = timeout_ms / k_threadx_ms_per_tick;
  * tx_thread_sleep(ticks);
  * ```
  *
- * **Microseconds → Nanoseconds:**
+ * **Microseconds -> Nanoseconds:**
  * ```c
  * uint32_t delay_ns = delay_us * k_rx_ns_per_us;
  * ```
  *
- * **Milliseconds → Microseconds:**
+ * **Milliseconds -> Microseconds:**
  * ```c
  * uint32_t delay_us = delay_ms * k_rx_us_per_ms;
  * ```
@@ -297,7 +297,7 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 8 (Limited preprocessor): Uses C23 typed enum, not macros ✓
+ * - Rule 8 (Limited preprocessor): Uses C23 typed enum, not macros [OK]
  */
 typedef enum : uint32_t {
   /**
@@ -394,7 +394,7 @@ typedef enum : uint32_t {
    * - **Tick period**: 10 milliseconds
    * - **Hardware timer**: CMT0 (Compare Match Timer 0)
    * - **CMT0 clock source**: PCLKB/32 = 60 MHz / 32 = 1.875 MHz
-   * - **CMT0 compare value**: 18,750 counts → 10ms period
+   * - **CMT0 compare value**: 18,750 counts -> 10ms period
    *
    * @par Value: 10 ms/tick
    * @par Rationale:

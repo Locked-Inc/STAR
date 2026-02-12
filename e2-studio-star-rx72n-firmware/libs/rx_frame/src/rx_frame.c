@@ -129,16 +129,16 @@
  *
  * | Rule | Status | Notes |
  * |------|--------|-------|
- * | 1. Simple control flow | ✅ | Sequential processing, no goto |
- * | 2. Fixed loop bounds | ✅ | Bounded by payload length |
- * | 3. No dynamic memory | ✅ | All buffers caller-provided |
- * | 4. Short functions | ✅ | Largest function ~50 lines |
- * | 5. Assertions | ✅ | All inputs validated, post-conditions checked |
- * | 6. Small scope | ✅ | Variables at point of use |
- * | 7. Check returns | ✅ | All errors propagated |
- * | 8. Limited preprocessor | ✅ | Only includes |
- * | 9. Restrict pointers | ✅ | No function pointers |
- * | 10. Compiler warnings | ✅ | Clean build with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [PASS] | Sequential processing, no goto |
+ * | 2. Fixed loop bounds | [PASS] | Bounded by payload length |
+ * | 3. No dynamic memory | [PASS] | All buffers caller-provided |
+ * | 4. Short functions | [PASS] | Largest function ~50 lines |
+ * | 5. Assertions | [PASS] | All inputs validated, post-conditions checked |
+ * | 6. Small scope | [PASS] | Variables at point of use |
+ * | 7. Check returns | [PASS] | All errors propagated |
+ * | 8. Limited preprocessor | [PASS] | Only includes |
+ * | 9. Restrict pointers | [PASS] | No function pointers |
+ * | 10. Compiler warnings | [PASS] | Clean build with -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *

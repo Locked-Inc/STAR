@@ -16,13 +16,13 @@
  *
  * **Control Architecture:**
  * ```
- * RPi5 → CommTask → MotorControlTask (this)
+ * RPi5 -> CommTask -> MotorControlTask (this)
  *                        ↓ (250 Hz)
  *                   [PID Controller]
  *                        ↓
  *                   [Encoder Feedback] ← MTU (Hall effect)
  *                        ↓
- *                   [PWM Output] → DRV8243 → Motors
+ *                   [PWM Output] -> DRV8243 -> Motors
  * ```
  *
  * @see motor_control_task.c Implementation

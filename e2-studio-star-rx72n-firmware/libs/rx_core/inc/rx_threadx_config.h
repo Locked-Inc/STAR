@@ -67,7 +67,7 @@
  *         style=filled;
  *         color=lightyellow;
  *         TickRate [label="s_rx_threadx_tick_rate_hz\n100 Hz (this file)", fillcolor=lightgreen, style="filled,bold"];
- *         TimeConv [label="Time Conversions\nms → ticks"];
+ *         TimeConv [label="Time Conversions\nms -> ticks"];
  *         API [label="ThreadX API\ntx_thread_sleep()\ntx_semaphore_get()"];
  *     }
  *
@@ -90,7 +90,7 @@
  * **Why 100 Hz Tick Rate?**
  * 1. **Control loop alignment**: Motor control runs at 100 Hz, matching tick period
  * 2. **Low overhead**: Context switch overhead <1% of CPU time (~24µs per 10ms)
- * 3. **Simple conversions**: ms → ticks is divide-by-10 (compiler optimizes to shift)
+ * 3. **Simple conversions**: ms -> ticks is divide-by-10 (compiler optimizes to shift)
  * 4. **Adequate responsiveness**: 10ms maximum scheduling latency acceptable for robotics
  * 5. **Standard practice**: Common RTOS tick rate (FreeRTOS, VxWorks use 100-1000 Hz)
  *
@@ -165,16 +165,16 @@
  *
  * | Rule | Status | Notes |
  * |------|--------|-------|
- * | 1. Simple control flow | ✓ | No code (configuration constant only) |
- * | 2. Fixed loop bounds | ✓ | No loops |
- * | 3. No dynamic memory | ✓ | No allocations (compile-time constant) |
- * | 4. Function length <60 lines | ✓ | No functions |
- * | 5. Assertions | ✓ | N/A (header-only configuration) |
- * | 6. Smallest scope | ✓ | File-scope constant |
- * | 7. Check return values | ✓ | N/A (no function calls) |
- * | 8. Limited preprocessor | ✓ | No macros (uses const, not #define) |
- * | 9. Pointer restrictions | ✓ | No pointers |
- * | 10. Compiler warnings | ✓ | `-Wall -Wextra -Werror` enforced |
+ * | 1. Simple control flow | [OK] | No code (configuration constant only) |
+ * | 2. Fixed loop bounds | [OK] | No loops |
+ * | 3. No dynamic memory | [OK] | No allocations (compile-time constant) |
+ * | 4. Function length <60 lines | [OK] | No functions |
+ * | 5. Assertions | [OK] | N/A (header-only configuration) |
+ * | 6. Smallest scope | [OK] | File-scope constant |
+ * | 7. Check return values | [OK] | N/A (no function calls) |
+ * | 8. Limited preprocessor | [OK] | No macros (uses const, not #define) |
+ * | 9. Pointer restrictions | [OK] | No pointers |
+ * | 10. Compiler warnings | [OK] | `-Wall -Wextra -Werror` enforced |
  *
  * ## SOLID Principles
  *
@@ -267,7 +267,7 @@ extern "C" {
  * | **Control loop alignment** | Motor PID runs at 100 Hz - tick period matches control quantum |
  * | **Scheduling latency** | 10ms worst-case latency acceptable for robotics (vs. 1ms for hard real-time) |
  * | **CPU overhead** | Context switch ~24µs, ISR ~5µs, total 0.29% overhead |
- * | **Simple arithmetic** | ms → ticks is divide-by-10 (optimized to right-shift-by-1 + divide-by-5) |
+ * | **Simple arithmetic** | ms -> ticks is divide-by-10 (optimized to right-shift-by-1 + divide-by-5) |
  * | **Tick counter range** | 32-bit counter @ 100 Hz wraps after 497 days (acceptable) |
  * | **Standard practice** | Common RTOS tick rate (FreeRTOS default: 100-1000 Hz) |
  *
@@ -275,27 +275,27 @@ extern "C" {
  *
  * | Tick Rate | Pros | Cons | Verdict |
  * |-----------|------|------|---------|
- * | **10 Hz (100ms)** | Minimal overhead (0.029%) | 100ms latency unacceptable for robotics | ❌ Rejected |
- * | **100 Hz (10ms)** | Good balance, aligns with control loops | N/A | ✅ **Selected** |
- * | **1000 Hz (1ms)** | Excellent responsiveness | 10× overhead (2.9%), overkill for our use case | ❌ Rejected |
+ * | **10 Hz (100ms)** | Minimal overhead (0.029%) | 100ms latency unacceptable for robotics | [FAIL] Rejected |
+ * | **100 Hz (10ms)** | Good balance, aligns with control loops | N/A | [PASS] **Selected** |
+ * | **1000 Hz (1ms)** | Excellent responsiveness | 10× overhead (2.9%), overkill for our use case | [FAIL] Rejected |
  *
  * ## Conversion Formulas
  *
- * **Milliseconds → ThreadX Ticks:**
+ * **Milliseconds -> ThreadX Ticks:**
  * ```
  * ticks = ms × (tick_rate_hz / 1000)
  *       = ms × (100 / 1000)
  *       = ms / 10
  * ```
  *
- * **ThreadX Ticks → Milliseconds:**
+ * **ThreadX Ticks -> Milliseconds:**
  * ```
  * ms = ticks × (1000 / tick_rate_hz)
  *    = ticks × (1000 / 100)
  *    = ticks × 10
  * ```
  *
- * **Seconds → ThreadX Ticks:**
+ * **Seconds -> ThreadX Ticks:**
  * ```
  * ticks = seconds × tick_rate_hz
  *       = seconds × 100
@@ -462,7 +462,7 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 8 (Limited preprocessor): Uses const, not macro ✓
+ * - Rule 8 (Limited preprocessor): Uses const, not macro [OK]
  */
 static const uint16_t s_rx_threadx_tick_rate_hz = 100U;
 

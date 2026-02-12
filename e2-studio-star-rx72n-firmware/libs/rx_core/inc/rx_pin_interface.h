@@ -48,7 +48,7 @@
  *
  * ### Problem Without Abstraction
  * ```c
- * // ❌ BAD: Direct dependency on concrete type
+ * // [FAIL] BAD: Direct dependency on concrete type
  * #include "pin_validator.h"  // Couples to implementation
  *
  * void spi_init(pin_validator_t* validator) {  // Concrete type!
@@ -63,7 +63,7 @@
  *
  * ### Solution With Abstraction
  * ```c
- * // ✓ GOOD: Dependency on abstract interface
+ * // [OK] GOOD: Dependency on abstract interface
  * #include "rx_pin_interface.h"  // Only interface
  *
  * void spi_init(rx_pin_interface_t* iface) {  // Abstract interface!
@@ -268,16 +268,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simplify control flow | ✓ | No goto, setjmp, recursion |
- * | 2. Fixed loop bounds | ✓ | No loops in interface |
- * | 3. No dynamic memory | ✓ | Interface is POD struct |
- * | 4. Functions < 60 lines | ✓ | Validation function is 14 lines |
- * | 5. Use assertions | ✓ | Validation function checks |
- * | 6. Data at smallest scope | ✓ | Function pointers encapsulated |
- * | 7. Check return values | ✓ | All methods return rx_err_t |
- * | 8. Limit preprocessor | ✓ | No macros in interface |
- * | 9. Restrict pointers | ⚠️ | Function pointers (DIP pattern) |
- * | 10. Compile warnings | ✓ | -Wall -Wextra -Werror |
+ * | 1. Simplify control flow | [OK] | No goto, setjmp, recursion |
+ * | 2. Fixed loop bounds | [OK] | No loops in interface |
+ * | 3. No dynamic memory | [OK] | Interface is POD struct |
+ * | 4. Functions < 60 lines | [OK] | Validation function is 14 lines |
+ * | 5. Use assertions | [OK] | Validation function checks |
+ * | 6. Data at smallest scope | [OK] | Function pointers encapsulated |
+ * | 7. Check return values | [OK] | All methods return rx_err_t |
+ * | 8. Limit preprocessor | [OK] | No macros in interface |
+ * | 9. Restrict pointers | [WARN] | Function pointers (DIP pattern) |
+ * | 10. Compile warnings | [OK] | -Wall -Wextra -Werror |
  *
  * ## Memory Footprint
  *
@@ -380,7 +380,7 @@ typedef enum : uint8_t {
    *
    * @par Example: Names That Will Be Truncated
    * @code
-   * "SUPER_LONG_MODULE_NAME_THAT_EXCEEDS_LIMIT"  // 43 bytes → truncated to 31+null
+   * "SUPER_LONG_MODULE_NAME_THAT_EXCEEDS_LIMIT"  // 43 bytes -> truncated to 31+null
    * @endcode
    */
   k_pin_function_name_max_len = 32,
@@ -469,10 +469,10 @@ typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, const uint8_t port, const uint
  * ## Conflict Detection Strategy
  * @code
  * // Module A tries to reserve PA5 for SPI:
- * err = iface->reserve_pin(iface->ctx, 0xA, 5, "SPI_COPI");  // Success → k_rx_ok
+ * err = iface->reserve_pin(iface->ctx, 0xA, 5, "SPI_COPI");  // Success -> k_rx_ok
  *
  * // Module B tries to reserve same pin for I2C:
- * err = iface->reserve_pin(iface->ctx, 0xA, 5, "I2C_SDA");   // Fail → k_rx_err_gpio_conflict
+ * err = iface->reserve_pin(iface->ctx, 0xA, 5, "I2C_SDA");   // Fail -> k_rx_err_gpio_conflict
  * @endcode
  *
  * ## Typical Implementation Pattern
@@ -749,12 +749,12 @@ typedef rx_err_t (*rx_pin_get_function_fn)(void*          ctx,
  *
  * ## When to Use vs. When NOT to Use
  *
- * **✓ SAFE to use:**
+ * **[OK] SAFE to use:**
  * - Unit test teardown (known clean state)
  * - System reboot/reset sequence
  * - Error recovery when retrying full initialization
  *
- * **✗ DANGEROUS to use:**
+ * **[X] DANGEROUS to use:**
  * - During normal operation (other modules may have pins reserved)
  * - Without stopping all modules first
  * - In production code (rarely needed)
@@ -910,12 +910,12 @@ typedef rx_err_t (*rx_pin_clear_all_fn)(void* ctx);
  * All function pointers **MUST** point to thread-safe implementations:
  * | Method | Thread-Safe? | Typical Protection |
  * |--------|--------------|-------------------|
- * | validate_pin | ✓ Yes | Read-only, no locks needed |
- * | reserve_pin | ✓ Yes | Mutex around reservation table |
- * | release_pin | ✓ Yes | Mutex around reservation table |
- * | is_pin_reserved | ✓ Yes | Mutex (read lock) or atomic |
- * | get_pin_function | ✓ Yes | Mutex (read lock) + strcpy |
- * | clear_all_reservations | ✓ Yes | Exclusive mutex lock |
+ * | validate_pin | [OK] Yes | Read-only, no locks needed |
+ * | reserve_pin | [OK] Yes | Mutex around reservation table |
+ * | release_pin | [OK] Yes | Mutex around reservation table |
+ * | is_pin_reserved | [OK] Yes | Mutex (read lock) or atomic |
+ * | get_pin_function | [OK] Yes | Mutex (read lock) + strcpy |
+ * | clear_all_reservations | [OK] Yes | Exclusive mutex lock |
  *
  * ## Validation Requirements
  *
@@ -1215,8 +1215,8 @@ struct rx_pin_interface {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 4: ✓ Function is 14 lines (well under 60 line limit)
- * - Rule 5: ✓ 7 validation checks (interface + 6 function pointers)
+ * - Rule 4: [OK] Function is 14 lines (well under 60 line limit)
+ * - Rule 5: [OK] 7 validation checks (interface + 6 function pointers)
  */
 static inline rx_err_t rx_pin_interface_validate(const rx_pin_interface_t* iface)
 {

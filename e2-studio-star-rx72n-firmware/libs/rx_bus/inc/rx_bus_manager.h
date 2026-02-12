@@ -135,16 +135,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | **Rule 1** | ✅ | No goto, setjmp, recursion |
- * | **Rule 2** | ✅ | Loop bounds via k_max_buses |
- * | **Rule 3** | ✅ | Static allocation (bus pool) |
- * | **Rule 4** | ✅ | Functions ≤60 lines |
- * | **Rule 5** | ✅ | Pre/post conditions documented |
- * | **Rule 6** | ✅ | Smallest scope variables |
- * | **Rule 7** | ✅ | All returns checked |
- * | **Rule 8** | ✅ | C23 typed enums, no macros |
- * | **Rule 9** | ✅ | Single-level pointers |
- * | **Rule 10** | ✅ | -Wall -Wextra -Werror |
+ * | **Rule 1** | [PASS] | No goto, setjmp, recursion |
+ * | **Rule 2** | [PASS] | Loop bounds via k_max_buses |
+ * | **Rule 3** | [PASS] | Static allocation (bus pool) |
+ * | **Rule 4** | [PASS] | Functions ≤60 lines |
+ * | **Rule 5** | [PASS] | Pre/post conditions documented |
+ * | **Rule 6** | [PASS] | Smallest scope variables |
+ * | **Rule 7** | [PASS] | All returns checked |
+ * | **Rule 8** | [PASS] | C23 typed enums, no macros |
+ * | **Rule 9** | [PASS] | Single-level pointers |
+ * | **Rule 10** | [PASS] | -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -594,8 +594,8 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  *
  * | Approach | Thread-Safe Lookup | Thread-Safe Use | Race Condition? |
  * |----------|-------------------|-----------------|-----------------|
- * | find_bus() | ✅ | ❌ | Yes - bus can be removed |
- * | **with_bus()** | ✅ | ✅ | No - mutex held during callback |
+ * | find_bus() | [PASS] | [FAIL] | Yes - bus can be removed |
+ * | **with_bus()** | [PASS] | [PASS] | No - mutex held during callback |
  *
  * ## Execution Flow
  *
@@ -702,9 +702,9 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  *
  * | Approach | Extensibility | Testability | SOLID Compliance |
  * |----------|---------------|-------------|------------------|
- * | Direct calls | Requires manager changes | Harder to mock | ❌ Violates OCP |
+ * | Direct calls | Requires manager changes | Harder to mock | [FAIL] Violates OCP |
  * | Callbacks | Ad-hoc, inconsistent | Moderate | Partial |
- * | **Commands** | New ops = new commands | Easy to mock | ✅ Full OCP |
+ * | **Commands** | New ops = new commands | Easy to mock | [PASS] Full OCP |
  *
  * ## Command Pattern Benefits
  *

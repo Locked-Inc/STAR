@@ -16,9 +16,9 @@
  * **Problem**: Communication modules (USB, SPI, UART) need timing operations
  * (sleep, timeouts) but should not directly depend on ThreadX RTOS. Direct
  * dependencies create:
- * - Tight coupling → hard to change RTOS
- * - Untestable code → cannot unit test without ThreadX
- * - Platform lock-in → cannot port to bare-metal or different RTOS
+ * - Tight coupling -> hard to change RTOS
+ * - Untestable code -> cannot unit test without ThreadX
+ * - Platform lock-in -> cannot port to bare-metal or different RTOS
  *
  * **Solution**: Define abstract time interface that both high-level and
  * low-level modules depend on:
@@ -48,7 +48,7 @@
  * | Benefit | Description | Example |
  * |---------|-------------|---------|
  * | **Testability** | Unit tests inject mock timing without ThreadX | Test USB without RTOS |
- * | **Flexibility** | Swap RTOS without changing USB/SPI code | ThreadX → FreeRTOS |
+ * | **Flexibility** | Swap RTOS without changing USB/SPI code | ThreadX -> FreeRTOS |
  * | **Decoupling** | Communication layers have zero ThreadX includes | Clean dependencies |
  * | **Portability** | Same code runs on bare-metal with null impl | Debug builds |
  * | **Simulation** | Mock advances time instantly for fast tests | 1000ms timeout in 1µs |
@@ -108,23 +108,23 @@
  * - Implementations depend on: ThreadX (`tx_api.h`) or test framework
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1**: ✓ No goto, setjmp, recursion
- * - **Rule 2**: ✓ No loops in interface (validation has bounded loop)
- * - **Rule 3**: ✓ Zero dynamic allocation (interface is stack/static)
- * - **Rule 4**: ✓ All functions <60 lines (inline validation is 10 lines)
- * - **Rule 5**: ✓ Preconditions enforced via validation function
- * - **Rule 6**: ✓ Minimal scope (interface defined in header only)
- * - **Rule 7**: ✓ Return values checked (rx_err_t for validation)
- * - **Rule 8**: ✓ No macros (pure interface, no magic numbers)
- * - **Rule 9**: ✓ **Function pointers allowed** (intentional deviation for DIP)
- * - **Rule 10**: ✓ Compiled with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No goto, setjmp, recursion
+ * - **Rule 2**: [OK] No loops in interface (validation has bounded loop)
+ * - **Rule 3**: [OK] Zero dynamic allocation (interface is stack/static)
+ * - **Rule 4**: [OK] All functions <60 lines (inline validation is 10 lines)
+ * - **Rule 5**: [OK] Preconditions enforced via validation function
+ * - **Rule 6**: [OK] Minimal scope (interface defined in header only)
+ * - **Rule 7**: [OK] Return values checked (rx_err_t for validation)
+ * - **Rule 8**: [OK] No macros (pure interface, no magic numbers)
+ * - **Rule 9**: [OK] **Function pointers allowed** (intentional deviation for DIP)
+ * - **Rule 10**: [OK] Compiled with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility**: Only defines time interface, no implementation
  * - **Open/Closed**: Extensible (add new implementations) without modification
  * - **Liskov Substitution**: All implementations interchangeable via interface
  * - **Interface Segregation**: Minimal 3-function interface, each with clear purpose
- * - **Dependency Inversion**: ✅ **THIS IS THE DIP PATTERN** - High-level modules
+ * - **Dependency Inversion**: [PASS] **THIS IS THE DIP PATTERN** - High-level modules
  *   depend on abstraction (interface), not concretions (ThreadX)
  *
  * @par Example - Production Usage (ThreadX):
@@ -470,7 +470,7 @@ typedef void (*rx_time_sleep_ms_fn)(void* ctx, uint32_t ms);
  *     uint32_t end = mock_time_get_ms();  // end = 99 (wrapped)
  *
  *     // Unsigned arithmetic handles wrap correctly
- *     uint32_t elapsed = end - start;     // 99 - (UINT32_MAX-100) = 200 ✓
+ *     uint32_t elapsed = end - start;     // 99 - (UINT32_MAX-100) = 200 [OK]
  *     assert(elapsed == 200);              // Correct!
  * }
  * @endcode
@@ -521,7 +521,7 @@ typedef uint32_t (*rx_time_get_ms_fn)(void* ctx);
  * handles wraparound at UINT32_MAX:
  * - Example: start=4294967290, timeout=100, current=50
  * - Elapsed = (50 - 4294967290) = 110 via unsigned underflow
- * - 110 >= 100 → true (timeout occurred) ✓
+ * - 110 >= 100 -> true (timeout occurred) [OK]
  *
  * **Algorithm**:
  * ```
@@ -660,7 +660,7 @@ typedef uint32_t (*rx_time_get_ms_fn)(void* ctx);
  *
  *     // Check timeout (100ms)
  *     bool elapsed = mock_time.is_elapsed(mock_time.ctx, start, 100);
- *     assert(elapsed == true);  // Correctly detected timeout across wrap! ✓
+ *     assert(elapsed == true);  // Correctly detected timeout across wrap! [OK]
  * }
  * @endcode
  *
@@ -893,10 +893,10 @@ struct rx_time_interface {
  * 5. is_elapsed pointer may be NULL (OPTIONAL)
  *
  * Algorithm steps:
- * 1. Check if iface pointer is nullptr → return k_rx_err_null_ptr
- * 2. Check if sleep_ms is nullptr → return k_rx_err_invalid_state
- * 3. Check if get_ms is nullptr → return k_rx_err_invalid_state
- * 4. All checks passed → return k_rx_ok
+ * 1. Check if iface pointer is nullptr -> return k_rx_err_null_ptr
+ * 2. Check if sleep_ms is nullptr -> return k_rx_err_invalid_state
+ * 3. Check if get_ms is nullptr -> return k_rx_err_invalid_state
+ * 4. All checks passed -> return k_rx_ok
  *
  * @param[in] iface Pointer to time interface to validate
  *   - May be NULL (will return k_rx_err_null_ptr)
@@ -1017,10 +1017,10 @@ struct rx_time_interface {
  * @test Tested in test_rx_time_interface.c::test_validate_valid_interface()
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ No loops
- * - Rule 5: ✓ 1 precondition, 2 postconditions
- * - Rule 4: ✓ Function is 10 lines (well under 60)
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] No loops
+ * - Rule 5: [OK] 1 precondition, 2 postconditions
+ * - Rule 4: [OK] Function is 10 lines (well under 60)
  *
  * @callgraph
  * @callergraph

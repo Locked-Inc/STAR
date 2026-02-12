@@ -15,7 +15,7 @@
  *
  * **Task Hierarchy:**
  * ```
- * main() → tx_kernel_enter() → AppMainTask (this)
+ * main() -> tx_kernel_enter() -> AppMainTask (this)
  *                                    ↓
  *                              [Creates all other tasks]
  *                                    ↓

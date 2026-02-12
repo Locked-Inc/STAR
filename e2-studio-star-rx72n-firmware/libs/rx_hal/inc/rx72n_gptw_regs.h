@@ -79,10 +79,10 @@
  * @see RX72N Group User's Manual: Hardware, Chapter 26 (GPTW)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, or recursion in accessor functions
- * - Rule 3: ✓ Zero dynamic allocation - all registers statically mapped
- * - Rule 8: ✓ All constants as C23 typed enums (addresses, bit fields)
- * - Rule 10: ✓ Compile with -Wall -Wextra -Werror, zero warnings
+ * - Rule 1: [OK] No goto, setjmp, or recursion in accessor functions
+ * - Rule 3: [OK] Zero dynamic allocation - all registers statically mapped
+ * - Rule 8: [OK] All constants as C23 typed enums (addresses, bit fields)
+ * - Rule 10: [OK] Compile with -Wall -Wextra -Werror, zero warnings
  *
  * @par SOLID Principles:
  * - S: Single responsibility - only GPTW register definitions
@@ -108,7 +108,7 @@
  * @enddot
  *
  * @par Verification Status:
- * ✅ VERIFIED (2026-02-03) - Complete verification against Smart Configurator iodefine.h
+ * [PASS] VERIFIED (2026-02-03) - Complete verification against Smart Configurator iodefine.h
  * - All 55 channel registers present and offset-verified
  * - All 6 common registers present and offset-verified
  * - 61/61 static assertions (100% coverage)

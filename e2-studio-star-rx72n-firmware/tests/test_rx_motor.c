@@ -40,25 +40,25 @@
  * @par PH/EN Motor Control (DRV8243):
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
- * | PH = 100%, EN = duty → Forward | ✓ | 0-100% tested |
- * | PH = 0%, EN = duty → Reverse | ✓ | 0-100% tested |
- * | PH = X, EN = 0% → Coast | ✓ | Both directions |
- * | Direction determined by PH pin | ✓ | Forward/Reverse |
- * | Speed determined by EN pin | ✓ | 0-100% PWM |
- * | Dead-time insertion | ✓ | 100ns-10µs range |
- * | Duty clamping [-100, +100] | ✓ | Boundaries tested |
- * | PWM inversion support | ✓ | Both directions |
- * | Emergency shutdown | ✓ | Immediate disable |
+ * | PH = 100%, EN = duty -> Forward | [OK] | 0-100% tested |
+ * | PH = 0%, EN = duty -> Reverse | [OK] | 0-100% tested |
+ * | PH = X, EN = 0% -> Coast | [OK] | Both directions |
+ * | Direction determined by PH pin | [OK] | Forward/Reverse |
+ * | Speed determined by EN pin | [OK] | 0-100% PWM |
+ * | Dead-time insertion | [OK] | 100ns-10µs range |
+ * | Duty clamping [-100, +100] | [OK] | Boundaries tested |
+ * | PWM inversion support | [OK] | Both directions |
+ * | Emergency shutdown | [OK] | Immediate disable |
  *
  * @par GPTW Integration:
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
- * | 4 independent channels | ✓ | All tested |
- * | Complementary outputs (A/B) | ✓ | PH/EN verified |
- * | Frequency 1kHz - 50kHz | ✓ | Boundaries tested |
- * | Dead-time 100ns - 10µs | ✓ | Boundaries tested |
- * | Channel isolation | ✓ | Multi-motor test |
- * | Output enable/disable | ✓ | Stop modes |
+ * | 4 independent channels | [OK] | All tested |
+ * | Complementary outputs (A/B) | [OK] | PH/EN verified |
+ * | Frequency 1kHz - 50kHz | [OK] | Boundaries tested |
+ * | Dead-time 100ns - 10µs | [OK] | Boundaries tested |
+ * | Channel isolation | [OK] | Multi-motor test |
+ * | Output enable/disable | [OK] | Stop modes |
  *
  * ## Test Scenarios
  *
@@ -73,8 +73,8 @@
  * @par Scenario 2: Direction Change
  * @code
  * // Test: test_motor_transition_forward_to_reverse()
- * // Step 1: duty = 50% → PH = 100%, EN = 50%
- * // Step 2: duty = -50% → PH = 0%, EN = 50%
+ * // Step 1: duty = 50% -> PH = 100%, EN = 50%
+ * // Step 2: duty = -50% -> PH = 0%, EN = 50%
  * // Result: Smooth direction transition via PH toggle
  * @endcode
  *
@@ -111,10 +111,10 @@
  * @par Boundary Value Testing:
  * | Boundary | Min | Max | Tested |
  * |----------|-----|-----|--------|
- * | Duty Cycle | -100% | +100% | ✓ |
- * | PWM Frequency | 1kHz | 50kHz | ✓ |
- * | Dead-Time | 100ns | 10µs | ✓ |
- * | GPTW Channels | 0 | 3 | ✓ |
+ * | Duty Cycle | -100% | +100% | [OK] |
+ * | PWM Frequency | 1kHz | 50kHz | [OK] |
+ * | Dead-Time | 100ns | 10µs | [OK] |
+ * | GPTW Channels | 0 | 3 | [OK] |
  *
  * ## Hardware Integration
  *
@@ -137,13 +137,13 @@
  * @copyright Copyright (c) 2026 STAR Project
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No recursion
- * - Rule 2: ✓ All loops have fixed bounds
- * - Rule 3: ✓ No dynamic allocation
- * - Rule 4: ✓ Test functions < 60 lines
- * - Rule 5: ✓ Input validation
- * - Rule 7: ✓ Return values checked
- * - Rule 10: ✓ Compiled with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No recursion
+ * - Rule 2: [OK] All loops have fixed bounds
+ * - Rule 3: [OK] No dynamic allocation
+ * - Rule 4: [OK] Test functions < 60 lines
+ * - Rule 5: [OK] Input validation
+ * - Rule 7: [OK] Return values checked
+ * - Rule 10: [OK] Compiled with -Wall -Wextra -Werror
  */
 
 #include <math.h>

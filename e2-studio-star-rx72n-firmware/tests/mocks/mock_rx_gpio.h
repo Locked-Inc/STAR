@@ -26,7 +26,7 @@
  * @see rx_gpio.h Real GPIO functions
  * @see mock_gpio_hal.h Lower-level GPIO HAL mock
  *
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Bus protocols depend on GPIO interface
  *
  * @author STAR Team

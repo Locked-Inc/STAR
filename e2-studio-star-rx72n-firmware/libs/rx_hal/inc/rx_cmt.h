@@ -90,7 +90,7 @@
  * **Calculation example for 250 Hz motor control loop:**
  * ```
  * PCLKB = 60 MHz
- * Divider = 128 → Counter clock = 468.75 kHz
+ * Divider = 128 -> Counter clock = 468.75 kHz
  * Period = 468750 / 250 = 1875 counts
  * ```
  *
@@ -108,16 +108,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | **Rule 1: Control flow** | ✅ | No goto, setjmp, or recursion |
- * | **Rule 2: Loop bounds** | ✅ | Bounded divider search (4 iterations max) |
- * | **Rule 3: No heap** | ✅ | Static callback arrays only |
- * | **Rule 4: Function length** | ✅ | All functions under 60 lines |
- * | **Rule 5: Assertions** | ✅ | Parameter validation in all functions |
- * | **Rule 6: Data scope** | ✅ | File-scope static with s_ prefix |
- * | **Rule 7: Return checks** | ✅ | All internal calls checked |
- * | **Rule 8: Preprocessor** | ✅ | C23 typed enums for all constants |
- * | **Rule 9: Pointers** | ✅ | Single-level only (callback + user_data) |
- * | **Rule 10: Warnings** | ✅ | -Wall -Wextra -Werror clean |
+ * | **Rule 1: Control flow** | [PASS] | No goto, setjmp, or recursion |
+ * | **Rule 2: Loop bounds** | [PASS] | Bounded divider search (4 iterations max) |
+ * | **Rule 3: No heap** | [PASS] | Static callback arrays only |
+ * | **Rule 4: Function length** | [PASS] | All functions under 60 lines |
+ * | **Rule 5: Assertions** | [PASS] | Parameter validation in all functions |
+ * | **Rule 6: Data scope** | [PASS] | File-scope static with s_ prefix |
+ * | **Rule 7: Return checks** | [PASS] | All internal calls checked |
+ * | **Rule 8: Preprocessor** | [PASS] | C23 typed enums for all constants |
+ * | **Rule 9: Pointers** | [PASS] | Single-level only (callback + user_data) |
+ * | **Rule 10: Warnings** | [PASS] | -Wall -Wextra -Werror clean |
  *
  * ## SOLID Principles
  *
@@ -222,12 +222,12 @@ typedef enum : uint8_t {
  *
  * | Operation | Allowed | Notes |
  * |-----------|---------|-------|
- * | Set flag | ✅ | Signal task to process |
- * | Write GPIO | ✅ | Toggle debug pin |
- * | Queue message | ✅ | Use ThreadX queue |
- * | Blocking call | ❌ | Causes interrupt overrun |
- * | Memory allocation | ❌ | NASA Rule 3 violation |
- * | Long computation | ❌ | Delays other interrupts |
+ * | Set flag | [PASS] | Signal task to process |
+ * | Write GPIO | [PASS] | Toggle debug pin |
+ * | Queue message | [PASS] | Use ThreadX queue |
+ * | Blocking call | [FAIL] | Causes interrupt overrun |
+ * | Memory allocation | [FAIL] | NASA Rule 3 violation |
+ * | Long computation | [FAIL] | Delays other interrupts |
  *
  * @param[in] user_data User data pointer provided during rx_cmt_init()
  *                      May be NULL if no user data needed.

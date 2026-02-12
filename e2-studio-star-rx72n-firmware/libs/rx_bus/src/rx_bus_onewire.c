@@ -55,12 +55,12 @@
  * | DS2431   | 0x2D        | 1Kb EEPROM               |
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ Loops bounded (k_bits_per_byte, k_onewire_rom_bytes)
- * - Rule 3: ✓ No dynamic allocation (static state pool)
- * - Rule 5: ✓ Pre/post conditions on all functions
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ Typed enums for all constants
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] Loops bounded (k_bits_per_byte, k_onewire_rom_bytes)
+ * - Rule 3: [OK] No dynamic allocation (static state pool)
+ * - Rule 5: [OK] Pre/post conditions on all functions
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] Typed enums for all constants
  *
  * @par SOLID Principles:
  * - SRP: Handles 1-Wire protocol only, delegates GPIO to HAL
