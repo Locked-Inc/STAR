@@ -1338,23 +1338,23 @@
       },
       {
         "netclass": "System Config",
-        "pattern": "/DBG_RESETn"
+        "pattern": "/RES#"
       },
       {
         "netclass": "System Config",
-        "pattern": "/DSW_MD_FINED"
+        "pattern": "/FINED"
       },
       {
         "netclass": "System Config",
-        "pattern": "/DSW_UB"
+        "pattern": "/UB"
       },
       {
         "netclass": "System Config",
-        "pattern": "/EMU_EMLE"
+        "pattern": "/EMLE"
       },
       {
         "netclass": "System Config",
-        "pattern": "/JP_UPSEL"
+        "pattern": "/UPSEL"
       },
       {
         "netclass": "System Config",
@@ -1423,6 +1423,34 @@
       {
         "netclass": "Motor VCC",
         "pattern": "/MOTOR*_VCC"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/DRV*"
+      },
+      {
+        "netclass": "Encoders",
+        "pattern": "/ENC*"
+      },
+      {
+        "netclass": "Motor Fault Signals",
+        "pattern": "/GPTW*"
+      },
+      {
+        "netclass": "Motor Current Sensing",
+        "pattern": "/MOTOR*_ISENSE"
+      },
+      {
+        "netclass": "RPi5 SPI",
+        "pattern": "/HOST*"
+      },
+      {
+        "netclass": "SMBus BMS",
+        "pattern": "/BMS*"
+      },
+      {
+        "netclass": "Debug/Programming",
+        "pattern": "/DEBUG*"
       }
     ]
   },
