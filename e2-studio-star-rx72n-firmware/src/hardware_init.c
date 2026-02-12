@@ -253,6 +253,12 @@ typedef enum : uint16_t {
   k_pin_enc1_pha   = k_rx_pa_1, /**< PA.1 - MTCLKC (encoder 1 phase A) */
   k_pin_enc1_phb   = k_rx_pc_5, /**< PC.5 - MTCLKD (encoder 1 phase B) */
 
+  /* TPU Encoder clock inputs (rear wheels) */
+  k_pin_enc2_pha   = k_rx_pc_2, /**< PC.2 - TCLKA (encoder 2 phase A) */
+  k_pin_enc2_phb   = k_rx_pa_3, /**< PA.3 - TCLKB (encoder 2 phase B) */
+  k_pin_enc3_pha   = k_rx_pc_0, /**< PC.0 - TCLKC (encoder 3 phase A) */
+  k_pin_enc3_phb   = k_rx_pb_3, /**< PB.3 - TCLKD (encoder 3 phase B) */
+
   /* GPTW PWM outputs (4 motors × 2 pins = PH + EN) */
   k_pin_motor0_ph  = k_rx_p2_3, /**< P2.3 - GTIOC0A (motor 0 phase) */
   k_pin_motor0_en  = k_rx_p1_7, /**< P1.7 - GTIOC0B (motor 0 enable) */
@@ -464,6 +470,19 @@ static rx_err_t gpio_init(void)
   err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc1_phb); /* PC.5 = MTCLKD */
   RX_RETURN_ON_ERROR(err, s_tag, "MTCLKD pin config failed");
 
+  /* ---- TPU encoder clock inputs (rear wheels) ---- */
+  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_pha); /* PC.2 = TCLKA */
+  RX_RETURN_ON_ERROR(err, s_tag, "TCLKA pin config failed");
+
+  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_phb); /* PA.3 = TCLKB */
+  RX_RETURN_ON_ERROR(err, s_tag, "TCLKB pin config failed");
+
+  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc3_pha); /* PC.0 = TCLKC */
+  RX_RETURN_ON_ERROR(err, s_tag, "TCLKC pin config failed");
+
+  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc3_phb); /* PB.3 = TCLKD */
+  RX_RETURN_ON_ERROR(err, s_tag, "TCLKD pin config failed");
+
   /* ---- GPTW PWM outputs (4 motors × PH + EN = 8 pins) ---- */
   const rx_port_pin_t gptw_pins[] = {
     (rx_port_pin_t)k_pin_motor0_ph, (rx_port_pin_t)k_pin_motor0_en,
@@ -574,8 +593,7 @@ static rx_err_t gpio_init(void)
    * pin input, and the GTETRG logic reads the port pin state continuously.
    * No MPC config needed -- documented here for traceability. */
 
-  rx_log_info(s_tag, "50 pins: 4xI2C, 4xSPI, 4xMTU, 8xGPTW, 4xADC, 1xUSB, "
-                     "8xSonar, 7xDRV_SPI, 4xGTETRG(doc), 6xLED(TBD)");
+  rx_log_info(s_tag, "GPIO pin muxing complete");
 
   return k_rx_ok;
 }
