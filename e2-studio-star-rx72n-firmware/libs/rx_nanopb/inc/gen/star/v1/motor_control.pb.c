@@ -8,42 +8,27 @@
 
 PB_BIND(star_v1_SetVelocityRequest, star_v1_SetVelocityRequest, AUTO)
 
-
 PB_BIND(star_v1_SetVelocityResponse, star_v1_SetVelocityResponse, 2)
-
 
 PB_BIND(star_v1_VelocityCommand, star_v1_VelocityCommand, AUTO)
 
-
 PB_BIND(star_v1_EmergencyStopRequest, star_v1_EmergencyStopRequest, 2)
-
 
 PB_BIND(star_v1_EmergencyStopResponse, star_v1_EmergencyStopResponse, 2)
 
-
 PB_BIND(star_v1_SetMotorPowerRequest, star_v1_SetMotorPowerRequest, AUTO)
-
 
 PB_BIND(star_v1_SetMotorPowerResponse, star_v1_SetMotorPowerResponse, 2)
 
-
 PB_BIND(star_v1_MotorPowerCommand, star_v1_MotorPowerCommand, AUTO)
-
 
 PB_BIND(star_v1_StreamEncodersRequest, star_v1_StreamEncodersRequest, AUTO)
 
-
 PB_BIND(star_v1_EncoderData, star_v1_EncoderData, AUTO)
-
 
 PB_BIND(star_v1_MotorStatus, star_v1_MotorStatus, AUTO)
 
-
 PB_BIND(star_v1_PidConfig, star_v1_PidConfig, AUTO)
-
-
-
-
 
 #ifndef PB_CONVERT_DOUBLE_FLOAT
 /* On some platforms (such as AVR), double is really float.
@@ -52,4 +37,3 @@ PB_BIND(star_v1_PidConfig, star_v1_PidConfig, AUTO)
  */
 PB_STATIC_ASSERT(sizeof(double) == 8, DOUBLE_MUST_BE_8_BYTES)
 #endif
-

@@ -122,16 +122,16 @@ typedef enum : uint32_t {
   k_mpu_repage7_addr = 0x0008643CU, /**< REPAGE7 address */
 
   /* Control/Status Registers */
-  k_mpu_mpen_addr = 0x00086500U,   /**< Memory Protection Enable */
-  k_mpu_mpbac_addr = 0x00086504U,  /**< Background Access Control */
+  k_mpu_mpen_addr   = 0x00086500U, /**< Memory Protection Enable */
+  k_mpu_mpbac_addr  = 0x00086504U, /**< Background Access Control */
   k_mpu_mpeclr_addr = 0x00086508U, /**< Error Status Clearing */
   k_mpu_mpests_addr = 0x0008650CU, /**< Error Status */
-  k_mpu_mpdea_addr = 0x00086514U,  /**< Data Error Address */
-  k_mpu_mpsa_addr = 0x00086520U,   /**< Region Search Address */
-  k_mpu_mpops_addr = 0x00086524U,  /**< Region Search Operation */
-  k_mpu_mpopi_addr = 0x00086526U,  /**< Region Invalidation Operation */
-  k_mpu_mhiti_addr = 0x00086528U,  /**< Instruction Hit Region */
-  k_mpu_mhitd_addr = 0x0008652CU,  /**< Data Hit Region */
+  k_mpu_mpdea_addr  = 0x00086514U, /**< Data Error Address */
+  k_mpu_mpsa_addr   = 0x00086520U, /**< Region Search Address */
+  k_mpu_mpops_addr  = 0x00086524U, /**< Region Search Operation */
+  k_mpu_mpopi_addr  = 0x00086526U, /**< Region Invalidation Operation */
+  k_mpu_mhiti_addr  = 0x00086528U, /**< Instruction Hit Region */
+  k_mpu_mhitd_addr  = 0x0008652CU, /**< Data Hit Region */
 } mpu_addresses_t;
 
 /**
@@ -142,14 +142,14 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_mpu_region_0 = 0U, /**< MPU region 0 */
-  k_mpu_region_1 = 1U, /**< MPU region 1 */
-  k_mpu_region_2 = 2U, /**< MPU region 2 */
-  k_mpu_region_3 = 3U, /**< MPU region 3 */
-  k_mpu_region_4 = 4U, /**< MPU region 4 */
-  k_mpu_region_5 = 5U, /**< MPU region 5 */
-  k_mpu_region_6 = 6U, /**< MPU region 6 */
-  k_mpu_region_7 = 7U, /**< MPU region 7 */
+  k_mpu_region_0     = 0U, /**< MPU region 0 */
+  k_mpu_region_1     = 1U, /**< MPU region 1 */
+  k_mpu_region_2     = 2U, /**< MPU region 2 */
+  k_mpu_region_3     = 3U, /**< MPU region 3 */
+  k_mpu_region_4     = 4U, /**< MPU region 4 */
+  k_mpu_region_5     = 5U, /**< MPU region 5 */
+  k_mpu_region_6     = 6U, /**< MPU region 6 */
+  k_mpu_region_7     = 7U, /**< MPU region 7 */
   k_mpu_region_count = 8U, /**< Total number of MPU regions */
 } mpu_region_t;
 
@@ -668,8 +668,7 @@ typedef struct __attribute__((packed)) {
  */
 static inline volatile rx_mpu_region_regs_t* mpu_region(uint8_t region)
 {
-  return (volatile rx_mpu_region_regs_t*)(k_mpu_region_base_addr +
-                                          (region * k_mpu_region_size));
+  return (volatile rx_mpu_region_regs_t*)(k_mpu_region_base_addr + (region * k_mpu_region_size));
 }
 
 /**
@@ -681,8 +680,7 @@ static inline volatile rx_mpu_region_regs_t* mpu_region(uint8_t region)
  */
 static inline volatile uint32_t* mpu_rspage_reg(uint8_t region)
 {
-  return (volatile uint32_t*)(k_mpu_region_base_addr +
-                               (region * k_mpu_region_size));
+  return (volatile uint32_t*)(k_mpu_region_base_addr + (region * k_mpu_region_size));
 }
 
 /**
@@ -694,8 +692,7 @@ static inline volatile uint32_t* mpu_rspage_reg(uint8_t region)
  */
 static inline volatile uint32_t* mpu_repage_reg(uint8_t region)
 {
-  return (volatile uint32_t*)(k_mpu_region_base_addr +
-                               (region * k_mpu_region_size) + 4U);
+  return (volatile uint32_t*)(k_mpu_region_base_addr + (region * k_mpu_region_size) + 4U);
 }
 
 /* =============================================================================
@@ -861,106 +858,87 @@ static inline uint32_t mpu_page_to_reg(uint32_t page)
 
 /* Verify base addresses */
 static_assert(k_mpu_region_base_addr == 0x00086400U,
-               "MPU region base address must be 0x00086400 per Ch17 manual");
+              "MPU region base address must be 0x00086400 per Ch17 manual");
 
 static_assert(k_mpu_control_base_addr == 0x00086500U,
-               "MPU control base address must be 0x00086500 per Ch17 manual");
+              "MPU control base address must be 0x00086500 per Ch17 manual");
 
 /* Verify RSPAGE addresses */
 static_assert(k_mpu_rspage0_addr == 0x00086400U,
-               "RSPAGE0 address must be 0x00086400 per Ch17 manual");
+              "RSPAGE0 address must be 0x00086400 per Ch17 manual");
 
 static_assert(k_mpu_rspage1_addr == 0x00086408U,
-               "RSPAGE1 address must be 0x00086408 per Ch17 manual");
+              "RSPAGE1 address must be 0x00086408 per Ch17 manual");
 
 static_assert(k_mpu_rspage7_addr == 0x00086438U,
-               "RSPAGE7 address must be 0x00086438 per Ch17 manual");
+              "RSPAGE7 address must be 0x00086438 per Ch17 manual");
 
 /* Verify REPAGE addresses */
 static_assert(k_mpu_repage0_addr == 0x00086404U,
-               "REPAGE0 address must be 0x00086404 per Ch17 manual");
+              "REPAGE0 address must be 0x00086404 per Ch17 manual");
 
 static_assert(k_mpu_repage1_addr == 0x0008640CU,
-               "REPAGE1 address must be 0x0008640C per Ch17 manual");
+              "REPAGE1 address must be 0x0008640C per Ch17 manual");
 
 static_assert(k_mpu_repage7_addr == 0x0008643CU,
-               "REPAGE7 address must be 0x0008643C per Ch17 manual");
+              "REPAGE7 address must be 0x0008643C per Ch17 manual");
 
 /* Verify region spacing */
-static_assert(k_mpu_region_size == 0x08U,
-               "MPU region spacing must be 8 bytes");
+static_assert(k_mpu_region_size == 0x08U, "MPU region spacing must be 8 bytes");
 
 static_assert(k_mpu_rspage1_addr - k_mpu_rspage0_addr == k_mpu_region_size,
-               "RSPAGE0 to RSPAGE1 spacing must be 8 bytes");
+              "RSPAGE0 to RSPAGE1 spacing must be 8 bytes");
 
 static_assert(k_mpu_rspage7_addr - k_mpu_rspage0_addr == 7 * k_mpu_region_size,
-               "RSPAGE0 to RSPAGE7 spacing must be 56 bytes");
+              "RSPAGE0 to RSPAGE7 spacing must be 56 bytes");
 
 /* Verify control register addresses */
-static_assert(k_mpu_mpen_addr == 0x00086500U,
-               "MPEN address must be 0x00086500 per Ch17 manual");
+static_assert(k_mpu_mpen_addr == 0x00086500U, "MPEN address must be 0x00086500 per Ch17 manual");
 
-static_assert(k_mpu_mpbac_addr == 0x00086504U,
-               "MPBAC address must be 0x00086504 per Ch17 manual");
+static_assert(k_mpu_mpbac_addr == 0x00086504U, "MPBAC address must be 0x00086504 per Ch17 manual");
 
 static_assert(k_mpu_mpeclr_addr == 0x00086508U,
-               "MPECLR address must be 0x00086508 per Ch17 manual");
+              "MPECLR address must be 0x00086508 per Ch17 manual");
 
 static_assert(k_mpu_mpests_addr == 0x0008650CU,
-               "MPESTS address must be 0x0008650C per Ch17 manual");
+              "MPESTS address must be 0x0008650C per Ch17 manual");
 
-static_assert(k_mpu_mpdea_addr == 0x00086514U,
-               "MPDEA address must be 0x00086514 per Ch17 manual");
+static_assert(k_mpu_mpdea_addr == 0x00086514U, "MPDEA address must be 0x00086514 per Ch17 manual");
 
-static_assert(k_mpu_mpsa_addr == 0x00086520U,
-               "MPSA address must be 0x00086520 per Ch17 manual");
+static_assert(k_mpu_mpsa_addr == 0x00086520U, "MPSA address must be 0x00086520 per Ch17 manual");
 
-static_assert(k_mpu_mpops_addr == 0x00086524U,
-               "MPOPS address must be 0x00086524 per Ch17 manual");
+static_assert(k_mpu_mpops_addr == 0x00086524U, "MPOPS address must be 0x00086524 per Ch17 manual");
 
-static_assert(k_mpu_mpopi_addr == 0x00086526U,
-               "MPOPI address must be 0x00086526 per Ch17 manual");
+static_assert(k_mpu_mpopi_addr == 0x00086526U, "MPOPI address must be 0x00086526 per Ch17 manual");
 
-static_assert(k_mpu_mhiti_addr == 0x00086528U,
-               "MHITI address must be 0x00086528 per Ch17 manual");
+static_assert(k_mpu_mhiti_addr == 0x00086528U, "MHITI address must be 0x00086528 per Ch17 manual");
 
-static_assert(k_mpu_mhitd_addr == 0x0008652CU,
-               "MHITD address must be 0x0008652C per Ch17 manual");
+static_assert(k_mpu_mhitd_addr == 0x0008652CU, "MHITD address must be 0x0008652C per Ch17 manual");
 
 /* Verify structure layout */
 static_assert(sizeof(rx_mpu_region_regs_t) == k_mpu_region_size,
-               "MPU region struct size must be 8 bytes");
+              "MPU region struct size must be 8 bytes");
 
-static_assert(offsetof(rx_mpu_region_regs_t, rspage) == 0,
-               "RSPAGE offset in struct must be 0");
+static_assert(offsetof(rx_mpu_region_regs_t, rspage) == 0, "RSPAGE offset in struct must be 0");
 
-static_assert(offsetof(rx_mpu_region_regs_t, repage) == 4,
-               "REPAGE offset in struct must be 4");
+static_assert(offsetof(rx_mpu_region_regs_t, repage) == 4, "REPAGE offset in struct must be 4");
 
 /* Verify bit definitions */
-static_assert(k_repage_v == 0x01U,
-               "REPAGE V bit must be bit 0");
+static_assert(k_repage_v == 0x01U, "REPAGE V bit must be bit 0");
 
-static_assert(k_repage_uac_x == 0x02U,
-               "REPAGE UAC.X bit must be bit 1");
+static_assert(k_repage_uac_x == 0x02U, "REPAGE UAC.X bit must be bit 1");
 
-static_assert(k_repage_uac_w == 0x04U,
-               "REPAGE UAC.W bit must be bit 2");
+static_assert(k_repage_uac_w == 0x04U, "REPAGE UAC.W bit must be bit 2");
 
-static_assert(k_repage_uac_r == 0x08U,
-               "REPAGE UAC.R bit must be bit 3");
+static_assert(k_repage_uac_r == 0x08U, "REPAGE UAC.R bit must be bit 3");
 
-static_assert(k_mpen_mpen == 0x01U,
-               "MPEN.MPEN bit must be bit 0");
+static_assert(k_mpen_mpen == 0x01U, "MPEN.MPEN bit must be bit 0");
 
-static_assert(k_mpests_imper == 0x01U,
-               "MPESTS.IMPER bit must be bit 0");
+static_assert(k_mpests_imper == 0x01U, "MPESTS.IMPER bit must be bit 0");
 
-static_assert(k_mpests_dmper == 0x02U,
-               "MPESTS.DMPER bit must be bit 1");
+static_assert(k_mpests_dmper == 0x02U, "MPESTS.DMPER bit must be bit 1");
 
-static_assert(k_mpests_drw == 0x04U,
-               "MPESTS.DRW bit must be bit 2");
+static_assert(k_mpests_drw == 0x04U, "MPESTS.DRW bit must be bit 2");
 
 /** @} */
 

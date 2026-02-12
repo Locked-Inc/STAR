@@ -1054,7 +1054,8 @@ rx_usb_state_t rx_usb_get_state(void);
  * @return k_rx_err_invalid_arg if port is invalid
  * @return k_rx_err_null_ptr if data or actual_len is nullptr
  */
-[[nodiscard]] rx_err_t rx_usb_read(rx_usb_port_id_t port, uint8_t* data, uint32_t max_len, uint32_t* actual_len);
+[[nodiscard]] rx_err_t
+rx_usb_read(rx_usb_port_id_t port, uint8_t* data, uint32_t max_len, uint32_t* actual_len);
 
 /**
  * @brief Check if RX data is available on a port
@@ -1110,7 +1111,8 @@ rx_usb_state_t rx_usb_get_state(void);
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if port is invalid
  */
-[[nodiscard]] rx_err_t rx_usb_set_callback(rx_usb_port_id_t port, rx_usb_callback_t callback, void* ctx);
+[[nodiscard]] rx_err_t
+rx_usb_set_callback(rx_usb_port_id_t port, rx_usb_callback_t callback, void* ctx);
 
 /* =============================================================================
  * Line Coding and Statistics
@@ -1129,7 +1131,8 @@ rx_usb_state_t rx_usb_get_state(void);
  * @return k_rx_err_invalid_arg if port is invalid
  * @return k_rx_err_null_ptr if line_coding is nullptr
  */
-[[nodiscard]] rx_err_t rx_usb_get_line_coding(rx_usb_port_id_t port, rx_usb_line_coding_t* line_coding);
+[[nodiscard]] rx_err_t rx_usb_get_line_coding(rx_usb_port_id_t      port,
+                                              rx_usb_line_coding_t* line_coding);
 
 /**
  * @brief Get USB statistics for a port

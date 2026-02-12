@@ -8,8 +8,4 @@
 
 PB_BIND(star_v1_WireMessage, star_v1_WireMessage, 2)
 
-
 PB_BIND(star_v1_EmergencyStopCommand, star_v1_EmergencyStopCommand, AUTO)
-
-
-

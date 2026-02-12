@@ -422,9 +422,8 @@ extern "C" {
  * - Rule 7: [OK] Returns rx_err_t for caller to check
  * - Rule 9: [OK] Single-level pointer dereferencing only
  */
-[[nodiscard]] rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config,
-                                 const char*      name,
-                                 rx_port_pin_t    pin);
+[[nodiscard]] rx_err_t
+rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t pin);
 
 /* =============================================================================
  * ADC Bus Configuration
@@ -538,10 +537,10 @@ extern "C" {
  * - Rule 5: [OK] 5 assertions (NULL×2, unit, channel, bits validation)
  */
 [[nodiscard]] rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
-                                const char*      name,
-                                uint8_t          unit,
-                                uint8_t          channel,
-                                uint8_t          bits);
+                                              const char*      name,
+                                              uint8_t          unit,
+                                              uint8_t          channel,
+                                              uint8_t          bits);
 
 /* =============================================================================
  * I2C Bus Configuration (Future)
@@ -621,12 +620,12 @@ extern "C" {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
-                                const char*      name,
-                                uint8_t          channel,
-                                uint8_t          device_addr,
-                                rx_port_pin_t    sda_pin,
-                                rx_port_pin_t    scl_pin,
-                                uint32_t         frequency_hz);
+                                              const char*      name,
+                                              uint8_t          channel,
+                                              uint8_t          device_addr,
+                                              rx_port_pin_t    sda_pin,
+                                              rx_port_pin_t    scl_pin,
+                                              uint32_t         frequency_hz);
 
 /* =============================================================================
  * SMBUS Bus Configuration
@@ -708,13 +707,13 @@ extern "C" {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
-                                  const char*      name,
-                                  uint8_t          channel,
-                                  uint8_t          device_addr,
-                                  rx_port_pin_t    sda_pin,
-                                  rx_port_pin_t    scl_pin,
-                                  uint32_t         frequency_hz,
-                                  bool             use_pec);
+                                                const char*      name,
+                                                uint8_t          channel,
+                                                uint8_t          device_addr,
+                                                rx_port_pin_t    sda_pin,
+                                                rx_port_pin_t    scl_pin,
+                                                uint32_t         frequency_hz,
+                                                bool             use_pec);
 
 /* =============================================================================
  * OneWire Bus Configuration
@@ -814,9 +813,8 @@ extern "C" {
  * @par NASA Power of 10 Compliance:
  * - Rule 5: [OK] 3 assertions (NULL config, NULL name, pin validation)
  */
-[[nodiscard]] rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config,
-                                    const char*      name,
-                                    rx_port_pin_t    pin);
+[[nodiscard]] rx_err_t
+rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, rx_port_pin_t pin);
 
 /* =============================================================================
  * UART Bus Configuration
@@ -930,11 +928,11 @@ extern "C" {
  * - Rule 5: [OK] 6 assertions (NULL×2, channel, TX pin, RX pin, baudrate)
  */
 [[nodiscard]] rx_err_t rx_bus_config_init_uart(rx_bus_config_t* config,
-                                 const char*      name,
-                                 uint8_t          channel,
-                                 rx_port_pin_t    tx_pin,
-                                 rx_port_pin_t    rx_pin,
-                                 uint32_t         baudrate);
+                                               const char*      name,
+                                               uint8_t          channel,
+                                               rx_port_pin_t    tx_pin,
+                                               rx_port_pin_t    rx_pin,
+                                               uint32_t         baudrate);
 
 #ifdef __cplusplus
 }

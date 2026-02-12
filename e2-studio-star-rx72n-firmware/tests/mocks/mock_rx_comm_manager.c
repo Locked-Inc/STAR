@@ -67,9 +67,9 @@ static uint32_t s_respond_count = 0;
  * @brief Queued frame for poll delivery
  */
 typedef struct {
-  rx_comm_channel_t channel;                               /**< Channel */
-  rx_frame_t        frame;                                 /**< Frame data */
-  bool              valid;                                 /**< Valid entry */
+  rx_comm_channel_t channel; /**< Channel */
+  rx_frame_t        frame;   /**< Frame data */
+  bool              valid;   /**< Valid entry */
 } mock_queued_frame_t;
 
 /** @brief Frame queue */
@@ -195,12 +195,12 @@ bool mock_comm_manager_queue_frame(rx_comm_channel_t channel,
     return false;
   }
 
-  entry = &s_frame_queue[s_queue_write_idx];
-  entry->channel             = channel;
-  entry->frame.header.type   = type;
-  entry->frame.header.length = (uint16_t)len;
+  entry                        = &s_frame_queue[s_queue_write_idx];
+  entry->channel               = channel;
+  entry->frame.header.type     = type;
+  entry->frame.header.length   = (uint16_t)len;
   entry->frame.header.sequence = (uint16_t)s_queue_write_idx;
-  entry->frame.header.flags  = 0;
+  entry->frame.header.flags    = 0;
 
   if (payload != nullptr && len > 0) {
     (void)memcpy(entry->frame.payload, payload, len);
@@ -292,8 +292,7 @@ uint32_t mock_comm_manager_get_queue_count(void)
  * =============================================================================
  */
 
-rx_err_t rx_comm_manager_init(rx_comm_manager_t*              mgr,
-                              const rx_comm_manager_config_t* cfg)
+rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_config_t* cfg)
 {
   s_init_count++;
 
@@ -315,7 +314,7 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t*              mgr,
       mgr->callback_ctx          = nullptr;
       mgr->enable_decoded_output = false;
     }
-    mgr->initialized = true;
+    mgr->initialized  = true;
     s_current_manager = mgr;
   }
 
@@ -332,7 +331,7 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
 
   if (s_deinit_return == k_rx_ok) {
     (void)memset(mgr, 0, sizeof(*mgr));
-    mgr->initialized = false;
+    mgr->initialized  = false;
     s_current_manager = nullptr;
   }
 
@@ -363,8 +362,8 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
     }
 
     /* Remove from queue */
-    entry->valid      = false;
-    s_queue_read_idx  = (s_queue_read_idx + 1) % k_mock_comm_frame_queue_size;
+    entry->valid     = false;
+    s_queue_read_idx = (s_queue_read_idx + 1) % k_mock_comm_frame_queue_size;
     s_queue_count--;
 
     return k_rx_ok;
@@ -373,8 +372,7 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
   return s_poll_return;
 }
 
-rx_err_t rx_comm_manager_send(rx_comm_manager_t*            mgr,
-                              const rx_comm_send_params_t*  params)
+rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_t* params)
 {
   s_send_count++;
 
@@ -425,9 +423,8 @@ rx_err_t rx_comm_manager_respond(rx_comm_manager_t* mgr,
   return rx_comm_manager_send(mgr, &params);
 }
 
-rx_err_t rx_comm_manager_channel_ready(rx_comm_manager_t* mgr,
-                                       rx_comm_channel_t  channel,
-                                       bool*              ready)
+rx_err_t
+rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel, bool* ready)
 {
   if (mgr == nullptr || ready == nullptr) {
     return k_rx_err_null_ptr;

@@ -21,6 +21,7 @@ syntax = "proto3";
 package star.v1;
 
 import "star/v1/battery_management.proto";
+import "star/v1/configuration.proto";
 import "star/v1/diagnostics.proto";
 import "star/v1/motor_control.proto";
 import "star/v1/telemetry.proto";
@@ -72,6 +73,8 @@ message WireMessage {
 
     // Configuration (RPi5 -> RX72N)
     PidConfig pid_config = 30;
+    // Retransmit configuration (RPi5 -> RX72N)
+    RetransmitConfig retransmit_config = 31;
 
     // Transport diagnostics (RPi5 -> UI or bidirectional)
     TransportDiagnostics transport_diagnostics = 50;

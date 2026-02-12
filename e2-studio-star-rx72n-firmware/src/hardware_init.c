@@ -195,6 +195,7 @@
 #include "hardware_init.h"
 
 #include "hardware.h"
+#include "rx72n_sci_regs.h"
 #include "rx72n_system_regs.h"
 #include "rx_check.h"
 #include "rx_err.h"
@@ -202,21 +203,20 @@
 #include "rx_mpc.h"
 #include "rx_poeg.h"
 #include "rx_port_utils.h"
-#include "rx72n_sci_regs.h"
 #include "rx_simulator_config.h" /* For RX_IS_SIMULATOR conditional compilation */
 
 /** @brief Port pin identifiers for MPC configuration (rx_port_pin_t values) */
 typedef enum : uint16_t {
   /* Host I2C (RIIC0) */
-  k_pin_host_scl0  = k_rx_p1_2, /**< P1.2 - SCL0 (host I2C clock) */
-  k_pin_host_sda0  = k_rx_p1_3, /**< P1.3 - SDA0 (host I2C data) */
+  k_pin_host_scl0 = k_rx_p1_2, /**< P1.2 - SCL0 (host I2C clock) */
+  k_pin_host_sda0 = k_rx_p1_3, /**< P1.3 - SDA0 (host I2C data) */
 
   /* BMS I2C (RIIC1) */
-  k_pin_bms_sda1   = k_rx_p2_0, /**< P2.0 - SDA1 (BMS I2C data) */
-  k_pin_bms_scl1   = k_rx_p2_1, /**< P2.1 - SCL1 (BMS I2C clock) */
+  k_pin_bms_sda1 = k_rx_p2_0, /**< P2.0 - SDA1 (BMS I2C data) */
+  k_pin_bms_scl1 = k_rx_p2_1, /**< P2.1 - SCL1 (BMS I2C clock) */
 
   /* USB */
-  k_pin_usb_vbus   = k_rx_p1_6, /**< P1.6 - USB0_VBUS (USB VBUS detect) */
+  k_pin_usb_vbus = k_rx_p1_6, /**< P1.6 - USB0_VBUS (USB VBUS detect) */
 
   /* HC-SR04 Sonar triggers (GPIO output, initial LOW) */
   k_pin_sonar_trig0 = k_rx_pf_5, /**< PF.5 - Sonar 0 trigger (pin 9) */
@@ -231,61 +231,61 @@ typedef enum : uint16_t {
   k_pin_sonar_echo3 = k_rx_p0_0, /**< P0.0 - Sonar 3 echo (pin 8, IRQ8) */
 
   /* DRV8243S SPI chip selects (GPIO output, initial HIGH) */
-  k_pin_drv_cs0     = k_rx_p7_4, /**< P7.4 - DRV_CS0 motor 0 (pin 72) */
-  k_pin_drv_cs1     = k_rx_pc_1, /**< PC.1 - DRV_CS1 motor 1 (pin 73) */
-  k_pin_drv_cs2     = k_rx_pb_5, /**< PB.5 - DRV_CS2 motor 2 (pin 80) */
-  k_pin_drv_cs3     = k_rx_pb_4, /**< PB.4 - DRV_CS3 motor 3 (pin 81) */
+  k_pin_drv_cs0 = k_rx_p7_4, /**< P7.4 - DRV_CS0 motor 0 (pin 72) */
+  k_pin_drv_cs1 = k_rx_pc_1, /**< PC.1 - DRV_CS1 motor 1 (pin 73) */
+  k_pin_drv_cs2 = k_rx_pb_5, /**< PB.5 - DRV_CS2 motor 2 (pin 80) */
+  k_pin_drv_cs3 = k_rx_pb_4, /**< PB.4 - DRV_CS3 motor 3 (pin 81) */
 
   /* DRV8243S SPI data (SCI12 alternate function) */
-  k_pin_drv_sclk    = k_rx_pe_0, /**< PE.0 - SCK12 (pin 111) */
-  k_pin_drv_copi    = k_rx_pe_1, /**< PE.1 - SMOSI12 (pin 110) */
-  k_pin_drv_cipo    = k_rx_pe_2, /**< PE.2 - SMISO12 (pin 109) */
+  k_pin_drv_sclk = k_rx_pe_0, /**< PE.0 - SCK12 (pin 111) */
+  k_pin_drv_copi = k_rx_pe_1, /**< PE.1 - SMOSI12 (pin 110) */
+  k_pin_drv_cipo = k_rx_pe_2, /**< PE.2 - SMISO12 (pin 109) */
 
   /* Host SPI (RSPI2 channel A on PORTD) */
-  k_pin_host_copi  = k_rx_pd_1, /**< PD.1 - MOSIC (RSPI2 COPI) */
-  k_pin_host_cipo  = k_rx_pd_2, /**< PD.2 - MISOC (RSPI2 CIPO) */
-  k_pin_host_sclk  = k_rx_pd_3, /**< PD.3 - RSPCKC (RSPI2 clock) */
-  k_pin_host_cs0   = k_rx_pd_4, /**< PD.4 - SSLC0 (RSPI2 chip select) */
+  k_pin_host_copi = k_rx_pd_1, /**< PD.1 - MOSIC (RSPI2 COPI) */
+  k_pin_host_cipo = k_rx_pd_2, /**< PD.2 - MISOC (RSPI2 CIPO) */
+  k_pin_host_sclk = k_rx_pd_3, /**< PD.3 - RSPCKC (RSPI2 clock) */
+  k_pin_host_cs0  = k_rx_pd_4, /**< PD.4 - SSLC0 (RSPI2 chip select) */
 
   /* MTU Encoder clock inputs (front wheels) */
-  k_pin_enc0_pha   = k_rx_p2_4, /**< P2.4 - MTCLKA (encoder 0 phase A) */
-  k_pin_enc0_phb   = k_rx_p2_5, /**< P2.5 - MTCLKB (encoder 0 phase B) */
-  k_pin_enc1_pha   = k_rx_pa_1, /**< PA.1 - MTCLKC (encoder 1 phase A) */
-  k_pin_enc1_phb   = k_rx_pc_5, /**< PC.5 - MTCLKD (encoder 1 phase B) */
+  k_pin_enc0_pha = k_rx_p2_4, /**< P2.4 - MTCLKA (encoder 0 phase A) */
+  k_pin_enc0_phb = k_rx_p2_5, /**< P2.5 - MTCLKB (encoder 0 phase B) */
+  k_pin_enc1_pha = k_rx_pa_1, /**< PA.1 - MTCLKC (encoder 1 phase A) */
+  k_pin_enc1_phb = k_rx_pc_5, /**< PC.5 - MTCLKD (encoder 1 phase B) */
 
   /* TPU Encoder clock inputs (rear wheels) */
-  k_pin_enc2_pha   = k_rx_pc_2, /**< PC.2 - TCLKA (encoder 2 phase A) */
-  k_pin_enc2_phb   = k_rx_pa_3, /**< PA.3 - TCLKB (encoder 2 phase B) */
-  k_pin_enc3_pha   = k_rx_pc_0, /**< PC.0 - TCLKC (encoder 3 phase A) */
-  k_pin_enc3_phb   = k_rx_pb_3, /**< PB.3 - TCLKD (encoder 3 phase B) */
+  k_pin_enc2_pha = k_rx_pc_2, /**< PC.2 - TCLKA (encoder 2 phase A) */
+  k_pin_enc2_phb = k_rx_pa_3, /**< PA.3 - TCLKB (encoder 2 phase B) */
+  k_pin_enc3_pha = k_rx_pc_0, /**< PC.0 - TCLKC (encoder 3 phase A) */
+  k_pin_enc3_phb = k_rx_pb_3, /**< PB.3 - TCLKD (encoder 3 phase B) */
 
   /* GPTW PWM outputs (4 motors × 2 pins = PH + EN) */
-  k_pin_motor0_ph  = k_rx_p2_3, /**< P2.3 - GTIOC0A (motor 0 phase) */
-  k_pin_motor0_en  = k_rx_p1_7, /**< P1.7 - GTIOC0B (motor 0 enable) */
-  k_pin_motor1_ph  = k_rx_p2_2, /**< P2.2 - GTIOC1A (motor 1 phase) */
-  k_pin_motor1_en  = k_rx_pc_3, /**< PC.3 - GTIOC1B (motor 1 enable) */
-  k_pin_motor2_ph  = k_rx_pe_3, /**< PE.3 - GTIOC2A (motor 2 phase) */
-  k_pin_motor2_en  = k_rx_p8_6, /**< P8.6 - GTIOC2B (motor 2 enable) */
-  k_pin_motor3_ph  = k_rx_pe_7, /**< PE.7 - GTIOC3A (motor 3 phase) */
-  k_pin_motor3_en  = k_rx_pc_6, /**< PC.6 - GTIOC3B (motor 3 enable) */
+  k_pin_motor0_ph = k_rx_p2_3, /**< P2.3 - GTIOC0A (motor 0 phase) */
+  k_pin_motor0_en = k_rx_p1_7, /**< P1.7 - GTIOC0B (motor 0 enable) */
+  k_pin_motor1_ph = k_rx_p2_2, /**< P2.2 - GTIOC1A (motor 1 phase) */
+  k_pin_motor1_en = k_rx_pc_3, /**< PC.3 - GTIOC1B (motor 1 enable) */
+  k_pin_motor2_ph = k_rx_pe_3, /**< PE.3 - GTIOC2A (motor 2 phase) */
+  k_pin_motor2_en = k_rx_p8_6, /**< P8.6 - GTIOC2B (motor 2 enable) */
+  k_pin_motor3_ph = k_rx_pe_7, /**< PE.7 - GTIOC3A (motor 3 phase) */
+  k_pin_motor3_en = k_rx_pc_6, /**< PC.6 - GTIOC3B (motor 3 enable) */
 
   /* ADC current sense (S12AD0, AN004-AN007) */
-  k_pin_adc_an004  = k_rx_p4_4, /**< P4.4 - AN004 (motor 3 current) */
-  k_pin_adc_an005  = k_rx_p4_5, /**< P4.5 - AN005 (motor 2 current) */
-  k_pin_adc_an006  = k_rx_p4_6, /**< P4.6 - AN006 (motor 1 current) */
-  k_pin_adc_an007  = k_rx_p4_7, /**< P4.7 - AN007 (motor 0 current) */
+  k_pin_adc_an004 = k_rx_p4_4, /**< P4.4 - AN004 (motor 3 current) */
+  k_pin_adc_an005 = k_rx_p4_5, /**< P4.5 - AN005 (motor 2 current) */
+  k_pin_adc_an006 = k_rx_p4_6, /**< P4.6 - AN006 (motor 1 current) */
+  k_pin_adc_an007 = k_rx_p4_7, /**< P4.7 - AN007 (motor 0 current) */
 } rx_mpc_pin_t;
 
 /** @brief Number of GPTW motor control pins */
 typedef enum : uint8_t {
-  k_gptw_pin_count  = 8, /**< 4 motors x 2 pins (PH + EN) */
-  k_sonar_count     = 4, /**< 4 HC-SR04 ultrasonic sensors */
-  k_drv_cs_count    = 4, /**< 4 DRV8243S chip select pins */
+  k_gptw_pin_count = 8, /**< 4 motors x 2 pins (PH + EN) */
+  k_sonar_count    = 4, /**< 4 HC-SR04 ultrasonic sensors */
+  k_drv_cs_count   = 4, /**< 4 DRV8243S chip select pins */
 } gpio_pin_counts_t;
 
 /** @brief GPTW PWM frequency constant */
 typedef enum : uint32_t {
-  k_gptw_pwm_freq_hz  = 20000, /**< 20 kHz PWM frequency */
+  k_gptw_pwm_freq_hz = 20000, /**< 20 kHz PWM frequency */
 } gptw_freq_t;
 
 /** @brief GPTW dead-time constant */
@@ -454,7 +454,7 @@ static rx_err_t gpio_init(void)
   err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_sclk); /* PD.3 = RSPCKC */
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 SCLK pin config failed");
 
-  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cs0);  /* PD.4 = SSLC0 */
+  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cs0); /* PD.4 = SSLC0 */
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 CS0 pin config failed");
 
   /* ---- MTU encoder clock inputs (front wheels only) ---- */
@@ -484,12 +484,14 @@ static rx_err_t gpio_init(void)
   RX_RETURN_ON_ERROR(err, s_tag, "TCLKD pin config failed");
 
   /* ---- GPTW PWM outputs (4 motors × PH + EN = 8 pins) ---- */
-  const rx_port_pin_t gptw_pins[] = {
-    (rx_port_pin_t)k_pin_motor0_ph, (rx_port_pin_t)k_pin_motor0_en,
-    (rx_port_pin_t)k_pin_motor1_ph, (rx_port_pin_t)k_pin_motor1_en,
-    (rx_port_pin_t)k_pin_motor2_ph, (rx_port_pin_t)k_pin_motor2_en,
-    (rx_port_pin_t)k_pin_motor3_ph, (rx_port_pin_t)k_pin_motor3_en
-  };
+  const rx_port_pin_t gptw_pins[] = {(rx_port_pin_t)k_pin_motor0_ph,
+                                     (rx_port_pin_t)k_pin_motor0_en,
+                                     (rx_port_pin_t)k_pin_motor1_ph,
+                                     (rx_port_pin_t)k_pin_motor1_en,
+                                     (rx_port_pin_t)k_pin_motor2_ph,
+                                     (rx_port_pin_t)k_pin_motor2_en,
+                                     (rx_port_pin_t)k_pin_motor3_ph,
+                                     (rx_port_pin_t)k_pin_motor3_en};
 
   for (uint8_t i = 0; i < k_gptw_pin_count; i++) {
     err = rx_mpc_set_gptw(gptw_pins[i]);
@@ -525,13 +527,13 @@ static rx_err_t gpio_init(void)
     err = rx_mpc_set_gpio(sonar_trig_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar trigger MPC config failed");
 
-    const uint8_t port = rx_port_from_pin(sonar_trig_pins[i]);
-    const uint8_t pin  = rx_pin_from_pin(sonar_trig_pins[i]);
+    const uint8_t            port = rx_port_from_pin(sonar_trig_pins[i]);
+    const uint8_t            pin  = rx_pin_from_pin(sonar_trig_pins[i]);
     volatile rx_port_regs_t* regs = rx_port_get_base(port);
     RX_ASSERT(regs != nullptr, "Invalid sonar trigger port");
-    regs->pmr  &= ~(uint8_t)(1U << pin); /* GPIO mode */
+    regs->pmr &= ~(uint8_t)(1U << pin);  /* GPIO mode */
     regs->podr &= ~(uint8_t)(1U << pin); /* Initial LOW */
-    regs->pdr  |= (uint8_t)(1U << pin);  /* Output */
+    regs->pdr |= (uint8_t)(1U << pin);   /* Output */
   }
 
   /* ---- HC-SR04 Sonar echoes (GPIO input) ---- */
@@ -546,8 +548,8 @@ static rx_err_t gpio_init(void)
     err = rx_mpc_set_gpio(sonar_echo_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo MPC config failed");
 
-    const uint8_t port = rx_port_from_pin(sonar_echo_pins[i]);
-    const uint8_t pin  = rx_pin_from_pin(sonar_echo_pins[i]);
+    const uint8_t            port = rx_port_from_pin(sonar_echo_pins[i]);
+    const uint8_t            pin  = rx_pin_from_pin(sonar_echo_pins[i]);
     volatile rx_port_regs_t* regs = rx_port_get_base(port);
     RX_ASSERT(regs != nullptr, "Invalid sonar echo port");
     regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
@@ -566,13 +568,13 @@ static rx_err_t gpio_init(void)
     err = rx_mpc_set_gpio(drv_cs_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "DRV CS MPC config failed");
 
-    const uint8_t port = rx_port_from_pin(drv_cs_pins[i]);
-    const uint8_t pin  = rx_pin_from_pin(drv_cs_pins[i]);
+    const uint8_t            port = rx_port_from_pin(drv_cs_pins[i]);
+    const uint8_t            pin  = rx_pin_from_pin(drv_cs_pins[i]);
     volatile rx_port_regs_t* regs = rx_port_get_base(port);
     RX_ASSERT(regs != nullptr, "Invalid DRV CS port");
-    regs->pmr  &= ~(uint8_t)(1U << pin); /* GPIO mode */
-    regs->podr |= (uint8_t)(1U << pin);  /* Initial HIGH (deselected) */
-    regs->pdr  |= (uint8_t)(1U << pin);  /* Output */
+    regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
+    regs->podr |= (uint8_t)(1U << pin); /* Initial HIGH (deselected) */
+    regs->pdr |= (uint8_t)(1U << pin);  /* Output */
   }
 
   /* ---- DRV8243S SPI data (SCI12 alternate function PE0-PE2) ---- */
@@ -626,13 +628,11 @@ static rx_err_t gptw_pwm_init(void)
 {
   static const char* s_tag = "GPTW";
 
-  rx_gptw_config_t config = {
-    .frequency_hz          = k_gptw_pwm_freq_hz,
-    .deadtime_ns           = k_gptw_deadtime_ns,
-    .wave_mode             = k_gptw_wave_saw_pwm,
-    .enable_complementary  = true,
-    .invert_polarity       = false
-  };
+  rx_gptw_config_t config = {.frequency_hz         = k_gptw_pwm_freq_hz,
+                             .deadtime_ns          = k_gptw_deadtime_ns,
+                             .wave_mode            = k_gptw_wave_saw_pwm,
+                             .enable_complementary = true,
+                             .invert_polarity      = false};
 
   rx_err_t err = rx_gptw_init_all_staggered(&config);
   RX_RETURN_ON_ERROR(err, s_tag, "GPTW staggered init failed");
@@ -672,10 +672,7 @@ static rx_err_t spi_init(void)
 {
   static const char* s_tag = "SPI";
 
-  rspi_config_t host_config = {
-    .spi_mode  = k_rspi_mode_0,
-    .use_16bit = false
-  };
+  rspi_config_t host_config = {.spi_mode = k_rspi_mode_0, .use_16bit = false};
 
   rx_err_t err = rspi_init_peripheral(k_host_spi_channel, &host_config);
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 peripheral init failed");
@@ -713,11 +710,11 @@ static rx_err_t i2c_init(void)
   static const char* s_tag = "I2C";
 
   riic_channel_t ch0 = {.value = 0};
-  rx_err_t err = riic_init(ch0, k_i2c_host_freq_hz);
+  rx_err_t       err = riic_init(ch0, k_i2c_host_freq_hz);
   RX_RETURN_ON_ERROR(err, s_tag, "RIIC0 init failed");
 
   riic_channel_t ch1 = {.value = 1};
-  err = riic_init(ch1, k_i2c_bms_freq_hz);
+  err                = riic_init(ch1, k_i2c_bms_freq_hz);
   RX_RETURN_ON_ERROR(err, s_tag, "RIIC1 init failed");
 
   rx_log_info(s_tag, "RIIC0 @ 400kHz, RIIC1 @ 100kHz");

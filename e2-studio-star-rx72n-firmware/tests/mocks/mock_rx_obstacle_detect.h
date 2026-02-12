@@ -62,9 +62,9 @@ typedef enum : uint8_t {
  * @brief Obstacle detection event callback
  */
 typedef void (*rx_obstacle_detect_callback_t)(bool    obstacle_detected,
-                                               uint8_t sensor_idx,
-                                               float   distance_cm,
-                                               void*   user_data);
+                                              uint8_t sensor_idx,
+                                              float   distance_cm,
+                                              void*   user_data);
 
 /**
  * @struct rx_obstacle_detect_config_t

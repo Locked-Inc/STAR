@@ -8,78 +8,48 @@
 
 PB_BIND(star_v1_BeginUpdateRequest, star_v1_BeginUpdateRequest, AUTO)
 
-
 PB_BIND(star_v1_BeginUpdateResponse, star_v1_BeginUpdateResponse, 2)
-
 
 PB_BIND(star_v1_WriteChunkRequest, star_v1_WriteChunkRequest, AUTO)
 
-
 PB_BIND(star_v1_WriteChunkResponse, star_v1_WriteChunkResponse, 2)
-
 
 PB_BIND(star_v1_FirmwareChunk, star_v1_FirmwareChunk, AUTO)
 
-
 PB_BIND(star_v1_StreamChunksResponse, star_v1_StreamChunksResponse, 2)
-
 
 PB_BIND(star_v1_FinalizeUpdateRequest, star_v1_FinalizeUpdateRequest, AUTO)
 
-
 PB_BIND(star_v1_FinalizeUpdateResponse, star_v1_FinalizeUpdateResponse, 2)
-
 
 PB_BIND(star_v1_AbortUpdateRequest, star_v1_AbortUpdateRequest, AUTO)
 
-
 PB_BIND(star_v1_AbortUpdateResponse, star_v1_AbortUpdateResponse, 2)
-
 
 PB_BIND(star_v1_GetUpdateProgressRequest, star_v1_GetUpdateProgressRequest, AUTO)
 
-
 PB_BIND(star_v1_GetUpdateProgressResponse, star_v1_GetUpdateProgressResponse, 2)
-
 
 PB_BIND(star_v1_StreamUpdateProgressRequest, star_v1_StreamUpdateProgressRequest, AUTO)
 
-
 PB_BIND(star_v1_FirmwareUpdateProgress, star_v1_FirmwareUpdateProgress, AUTO)
-
 
 PB_BIND(star_v1_RebootRequest, star_v1_RebootRequest, AUTO)
 
-
 PB_BIND(star_v1_RebootResponse, star_v1_RebootResponse, 2)
-
 
 PB_BIND(star_v1_RollbackRequest, star_v1_RollbackRequest, AUTO)
 
-
 PB_BIND(star_v1_RollbackResponse, star_v1_RollbackResponse, 2)
-
 
 PB_BIND(star_v1_MarkValidRequest, star_v1_MarkValidRequest, AUTO)
 
-
 PB_BIND(star_v1_MarkValidResponse, star_v1_MarkValidResponse, 2)
-
 
 PB_BIND(star_v1_GetFirmwareInfoRequest, star_v1_GetFirmwareInfoRequest, AUTO)
 
-
 PB_BIND(star_v1_GetFirmwareInfoResponse, star_v1_GetFirmwareInfoResponse, 2)
-
 
 PB_BIND(star_v1_FirmwareInfo, star_v1_FirmwareInfo, AUTO)
 
-
 PB_BIND(star_v1_FirmwareUpdateError, star_v1_FirmwareUpdateError, AUTO)
-
-
-
-
-
-
-

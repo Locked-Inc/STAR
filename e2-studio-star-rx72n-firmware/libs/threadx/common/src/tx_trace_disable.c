@@ -9,7 +9,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 /**************************************************************************/
 /**************************************************************************/
 /**                                                                       */
@@ -22,12 +21,10 @@
 
 #define TX_SOURCE_CODE
 
-
 /* Include necessary system files.  */
 
 #include "tx_api.h"
 #include "tx_trace.h"
-
 
 /**************************************************************************/
 /*                                                                        */
@@ -68,38 +65,33 @@
 /*                                            resulting in version 6.1    */
 /*                                                                        */
 /**************************************************************************/
-UINT  _tx_trace_disable(VOID)
+UINT _tx_trace_disable(VOID)
 {
 
 #ifdef TX_ENABLE_EVENT_TRACE
-UINT     status;
+  UINT status;
 
+  /* Determine if trace is already disabled.  */
+  if (_tx_trace_buffer_current_ptr == TX_NULL) {
 
-    /* Determine if trace is already disabled.  */
-    if (_tx_trace_buffer_current_ptr == TX_NULL)
-    {
+    /* Yes, trace is already disabled.  */
+    status = TX_NOT_DONE;
+  } else {
 
-        /* Yes, trace is already disabled.  */
-        status =  TX_NOT_DONE;
-    }
-    else
-    {
+    /* Otherwise, simply clear the current pointer and registery start pointer to disable the trace.  */
+    _tx_trace_buffer_current_ptr = TX_NULL;
+    _tx_trace_registry_start_ptr = TX_NULL;
 
-        /* Otherwise, simply clear the current pointer and registery start pointer to disable the trace.  */
-        _tx_trace_buffer_current_ptr =  TX_NULL;
-        _tx_trace_registry_start_ptr =  TX_NULL;
+    /* Successful completion.  */
+    status = TX_SUCCESS;
+  }
 
-        /* Successful completion.  */
-        status =  TX_SUCCESS;
-    }
-
-    /* Return completion status.  */
-    return(status);
+  /* Return completion status.  */
+  return (status);
 
 #else
 
-    /* Trace not enabled, return an error.  */
-    return(TX_FEATURE_NOT_ENABLED);
+  /* Trace not enabled, return an error.  */
+  return (TX_FEATURE_NOT_ENABLED);
 #endif
 }
-

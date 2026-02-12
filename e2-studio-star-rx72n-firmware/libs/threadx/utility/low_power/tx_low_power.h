@@ -9,7 +9,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 /**************************************************************************/
 /**************************************************************************/
 /**                                                                       */
@@ -19,7 +18,6 @@
 /**                                                                       */
 /**************************************************************************/
 /**************************************************************************/
-
 
 /**************************************************************************/
 /*                                                                        */
@@ -44,14 +42,14 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef  TX_LOW_POWER_H
-#define  TX_LOW_POWER_H
+#ifndef TX_LOW_POWER_H
+#define TX_LOW_POWER_H
 
 /* Declare low-power function prototypes.  */
 
-VOID        tx_low_power_enter(VOID);
-VOID        tx_low_power_exit(VOID);
-VOID        tx_time_increment(ULONG time_increment);
-ULONG       tx_timer_get_next(ULONG *next_timer_tick_ptr);
+VOID  tx_low_power_enter(VOID);
+VOID  tx_low_power_exit(VOID);
+VOID  tx_time_increment(ULONG time_increment);
+ULONG tx_timer_get_next(ULONG* next_timer_tick_ptr);
 
 #endif

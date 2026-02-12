@@ -1442,7 +1442,7 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
 #define RX_REPORT_ERROR(err, component, message)                                                   \
   do {                                                                                             \
     rx_error_interface_t* iface_ = rx_infrastructure_get_error_interface();                        \
-    if (iface_ != nullptr) {                                                                          \
+    if (iface_ != nullptr) {                                                                       \
       iface_->report_error(iface_->ctx, err, component, message);                                  \
     }                                                                                              \
   } while (0)
@@ -1660,7 +1660,7 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
   ({                                                                                               \
     rx_err_t            err_   = k_rx_err_invalid_state;                                           \
     rx_pin_interface_t* iface_ = rx_infrastructure_get_pin_interface();                            \
-    if (iface_ != nullptr) {                                                                          \
+    if (iface_ != nullptr) {                                                                       \
       err_ = iface_->reserve_pin(iface_->ctx, port, pin, function);                                \
     }                                                                                              \
     err_;                                                                                          \
@@ -1969,7 +1969,7 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
   ({                                                                                               \
     rx_err_t            err_   = k_rx_err_invalid_state;                                           \
     rx_pin_interface_t* iface_ = rx_infrastructure_get_pin_interface();                            \
-    if (iface_ != nullptr) {                                                                          \
+    if (iface_ != nullptr) {                                                                       \
       err_ = iface_->release_pin(iface_->ctx, port, pin);                                          \
     }                                                                                              \
     err_;                                                                                          \

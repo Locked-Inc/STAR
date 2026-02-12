@@ -19,13 +19,12 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#include "unity.h"
+#include <string.h>
 
 #include "mock_rx_bq4050.h"
 #include "mock_shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
+#include "unity.h"
 
 /* Include the task header for the public API */
 #include "bms_monitor_task.h"
@@ -150,17 +149,17 @@ void test_bms_task_reads_battery_data(void)
 
   /* Read status (simulating task behavior) */
   rx_bus_manager_t* manager = nullptr;
-  err = rx_bq4050_read_status(manager, "i2c0", &status);
+  err                       = rx_bq4050_read_status(manager, "i2c0", &status);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(k_test_normal_voltage_mv, status.voltage_mv);
 
   /* Convert and store in shared data */
-  bms_state_t bms = {0};
-  bms.voltage_mv    = status.voltage_mv;
-  bms.current_ma    = status.current_ma;
-  bms.soc_percent   = status.relative_soc;
-  bms.timestamp_ms  = 1000;
-  bms.valid         = true;
+  bms_state_t bms  = {0};
+  bms.voltage_mv   = status.voltage_mv;
+  bms.current_ma   = status.current_ma;
+  bms.soc_percent  = status.relative_soc;
+  bms.timestamp_ms = 1000;
+  bms.valid        = true;
 
   err = shared_data_update_bms(&bms);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -187,7 +186,7 @@ void test_bms_task_low_battery_warning(void)
 
   /* Read status */
   rx_bq4050_status_t status = {0};
-  rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status);
+  rx_err_t           err    = rx_bq4050_read_status(nullptr, "i2c0", &status);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT8(12, status.relative_soc);
 
@@ -213,7 +212,7 @@ void test_bms_task_critical_battery_triggers_estop(void)
 
   /* Read status */
   rx_bq4050_status_t status = {0};
-  rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status);
+  rx_err_t           err    = rx_bq4050_read_status(nullptr, "i2c0", &status);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT8(3, status.relative_soc);
 
@@ -228,8 +227,7 @@ void test_bms_task_critical_battery_triggers_estop(void)
 
   /* Verify e-stop was triggered */
   TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_trigger_estop_count());
-  TEST_ASSERT_EQUAL(k_estop_reason_low_battery,
-                    mock_shared_data_get_last_estop_reason());
+  TEST_ASSERT_EQUAL(k_estop_reason_low_battery, mock_shared_data_get_last_estop_reason());
 }
 
 /**

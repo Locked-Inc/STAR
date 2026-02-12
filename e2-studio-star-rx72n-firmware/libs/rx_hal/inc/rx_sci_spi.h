@@ -114,9 +114,8 @@ typedef struct {
  * @pre Channel initialized via sci_spi_init_controller()
  * @post tx_data transmitted, rx_data contains response if non-NULL
  */
-[[nodiscard]] rx_err_t sci_spi_controller_transfer_16bit(uint8_t  channel,
-                                                         uint16_t tx_data,
-                                                         uint16_t* rx_data);
+[[nodiscard]] rx_err_t
+sci_spi_controller_transfer_16bit(uint8_t channel, uint16_t tx_data, uint16_t* rx_data);
 
 /**
  * @brief Deinitialize SCI SPI controller

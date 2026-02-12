@@ -13,8 +13,8 @@
  ***********************************************************************************************************************/
 
 /* Make sure that no other platforms have already been defined. Do not touch this! */
-#ifdef  PLATFORM_DEFINED
-#error  "Error - Multiple platforms defined in platform.h!"
+#ifdef PLATFORM_DEFINED
+#error "Error - Multiple platforms defined in platform.h!"
 #else
 #define PLATFORM_DEFINED
 #endif
@@ -26,10 +26,10 @@ extern "C" {
 /***********************************************************************************************************************
  * Standard C Headers
  ***********************************************************************************************************************/
-#include <stdint.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #if defined(__CCRX__) || defined(__ICCRX__)
 /* Intrinsic functions provided by compiler */
@@ -39,18 +39,18 @@ extern "C" {
 /***********************************************************************************************************************
  * Boot-Required Headers (from src/boot/include/)
  ***********************************************************************************************************************/
-#include "boot_common.h"       /* Replaces r_bsp_common.h - provides INTERNAL_NOT_USED */
-#include "r_bsp_config.h"      /* BSP configuration macros */
-#include "mcu_info.h"          /* RX72N MCU definitions (must be before r_rx_intrinsic_functions.h) */
-#include "r_rx_compiler.h"     /* R_BSP_* macros (80,000+ LOC) */
-#include "mcu/all/r_rx_intrinsic_functions.h"  /* R_BSP_NOP, R_BSP_SET_INTB, etc. (from SMC) */
+#include "boot_common.h" /* Replaces r_bsp_common.h - provides INTERNAL_NOT_USED */
+#include "mcu/all/r_rx_intrinsic_functions.h" /* R_BSP_NOP, R_BSP_SET_INTB, etc. (from SMC) */
+#include "mcu_info.h"      /* RX72N MCU definitions (must be before r_rx_intrinsic_functions.h) */
+#include "r_bsp_config.h"  /* BSP configuration macros */
+#include "r_rx_compiler.h" /* R_BSP_* macros (80,000+ LOC) */
 
 /***********************************************************************************************************************
  * MCU-Specific Headers (minimal subset needed for boot)
  ***********************************************************************************************************************/
-#include "lowlvl.h"            /* Low-level hardware init prototypes */
-#include "lowsrc.h"            /* Data initialization prototypes */
-#include "r_rtos.h"            /* RTOS configuration */
+#include "lowlvl.h" /* Low-level hardware init prototypes */
+#include "lowsrc.h" /* Data initialization prototypes */
+#include "r_rtos.h" /* RTOS configuration */
 
 /***********************************************************************************************************************
  * Boot-Specific Type Definitions (needed by vecttbl.c)
@@ -60,23 +60,21 @@ extern "C" {
  * @brief Option-setting memory security (OFS1) register structure
  * @details Used by vecttbl.c to define flash option bytes for RX72N
  */
-typedef struct st_ofsm_sec_ofs1
-{
-    uint32_t __MDEreg;   /**< MDE register (endian select) */
-    uint32_t __OFS0reg;  /**< OFS0 register (option function select) */
-    uint32_t __OFS1reg;  /**< OFS1 register (option function select) */
+typedef struct st_ofsm_sec_ofs1 {
+  uint32_t __MDEreg;  /**< MDE register (endian select) */
+  uint32_t __OFS0reg; /**< OFS0 register (option function select) */
+  uint32_t __OFS1reg; /**< OFS1 register (option function select) */
 } st_ofsm_sec_ofs1_t;
 
 /**
  * @brief Option-setting memory security (OFS6) register structure
  * @details Used by vecttbl.c to define ID code registers for RX72N
  */
-typedef struct st_ofsm_sec_ofs6
-{
-    uint32_t __OSIS1reg; /**< ID code register 1 */
-    uint32_t __OSIS2reg; /**< ID code register 2 */
-    uint32_t __OSIS3reg; /**< ID code register 3 */
-    uint32_t __OSIS4reg; /**< ID code register 4 */
+typedef struct st_ofsm_sec_ofs6 {
+  uint32_t __OSIS1reg; /**< ID code register 1 */
+  uint32_t __OSIS2reg; /**< ID code register 2 */
+  uint32_t __OSIS3reg; /**< ID code register 3 */
+  uint32_t __OSIS4reg; /**< ID code register 4 */
 } st_ofsm_sec_ofs6_t;
 #endif /* defined(__GNUC__) */
 

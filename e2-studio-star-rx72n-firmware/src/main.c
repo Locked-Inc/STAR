@@ -982,7 +982,7 @@ static bool internal_check_cwsf(void)
 static void internal_report_startup_flags(void)
 {
   const volatile rx_rstsr01_regs_t* regs01 = rstsr01();
-  const volatile uint8_t*            regs2  = rstsr2();
+  const volatile uint8_t*           regs2  = rstsr2();
 
   /* Preconditions: Register pointers must be valid */
   RX_ASSERT(regs01 != nullptr, "RSTSR01 register pointer is nullptr");

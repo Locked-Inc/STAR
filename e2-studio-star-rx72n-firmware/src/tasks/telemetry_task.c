@@ -730,6 +730,8 @@
 
 #include "telemetry_task.h"
 
+#include <string.h>
+
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
@@ -737,8 +739,6 @@
 #include "rx_nanopb.h"
 #include "shared_data.h"
 #include "tx_api.h"
-
-#include <string.h>
 
 /* =============================================================================
  * Constants
@@ -775,7 +775,7 @@ typedef enum : uint16_t {
    *
    * @note Stack overflow detection enabled via `TX_ENABLE_STACK_CHECKING`
    */
-  k_telem_task_stack_size  = 2048,
+  k_telem_task_stack_size = 2048,
 
   /**
    * @brief ThreadX task priority (18 = LOWEST application task)
@@ -796,7 +796,7 @@ typedef enum : uint16_t {
    * @see motor_control_task.c Priority 8 (most critical)
    * @see comm_task.c Priority 10 (command latency)
    */
-  k_telem_task_priority    = 18,
+  k_telem_task_priority = 18,
 
   /**
    * @brief Sleep period in ThreadX ticks (5 ticks = 50ms @ 100 Hz)
@@ -828,7 +828,7 @@ typedef enum : uint16_t {
    *
    * @note Must be 0 to comply with ThreadX API requirements
    */
-  k_telem_task_input       = 0,
+  k_telem_task_input = 0,
 
   /**
    * @brief Telemetry protobuf encode buffer size in bytes
@@ -853,7 +853,7 @@ typedef enum : uint16_t {
    * @warning If message size exceeds 512 bytes, `rx_nanopb_encode_telemetry()`
    *          will return `k_rx_err_buffer_too_small`
    */
-  k_telem_buffer_size      = 512,
+  k_telem_buffer_size = 512,
 } telemetry_task_constants_t;
 
 /**
@@ -1739,7 +1739,7 @@ static rx_err_t internal_build_and_send_telemetry(void)
   uint32_t              encoded_len;
 
   /* Set timestamp */
-  telemetry.timestamp_us = (int64_t)tx_time_get() * (int64_t)k_telem_us_per_tick;
+  telemetry.timestamp_us   = (int64_t)tx_time_get() * (int64_t)k_telem_us_per_tick;
   telemetry.frame_sequence = s_sequence++;
 
   /* Collect motor state */
@@ -1748,38 +1748,37 @@ static rx_err_t internal_build_and_send_telemetry(void)
     /* Emergency stop status */
     telemetry.emergency_stop = motor_state.estop_active;
     /* Pack 4 motor fault bytes into single uint32_t bitfield */
-    telemetry.fault_flags = ((uint32_t)motor_state.fault_flags[0]) |
-                            ((uint32_t)motor_state.fault_flags[1] << 8) |
-                            ((uint32_t)motor_state.fault_flags[2] << 16) |
-                            ((uint32_t)motor_state.fault_flags[3] << 24);
+    telemetry.fault_flags =
+      ((uint32_t)motor_state.fault_flags[0]) | ((uint32_t)motor_state.fault_flags[1] << 8) |
+      ((uint32_t)motor_state.fault_flags[2] << 16) | ((uint32_t)motor_state.fault_flags[3] << 24);
 
     /* Front left encoder */
-    telemetry.has_encoder_front_left                = true;
-    telemetry.encoder_front_left.motor_id           = 0;
-    telemetry.encoder_front_left.ticks              = motor_state.encoder_counts[0];
-    telemetry.encoder_front_left.velocity_mps       = (float)motor_state.current_velocity_mps[0];
-    telemetry.encoder_front_left.timestamp_us       = telemetry.timestamp_us;
+    telemetry.has_encoder_front_left          = true;
+    telemetry.encoder_front_left.motor_id     = 0;
+    telemetry.encoder_front_left.ticks        = motor_state.encoder_counts[0];
+    telemetry.encoder_front_left.velocity_mps = (float)motor_state.current_velocity_mps[0];
+    telemetry.encoder_front_left.timestamp_us = telemetry.timestamp_us;
 
     /* Front right encoder */
-    telemetry.has_encoder_front_right               = true;
-    telemetry.encoder_front_right.motor_id          = 1;
-    telemetry.encoder_front_right.ticks             = motor_state.encoder_counts[1];
-    telemetry.encoder_front_right.velocity_mps      = (float)motor_state.current_velocity_mps[1];
-    telemetry.encoder_front_right.timestamp_us      = telemetry.timestamp_us;
+    telemetry.has_encoder_front_right          = true;
+    telemetry.encoder_front_right.motor_id     = 1;
+    telemetry.encoder_front_right.ticks        = motor_state.encoder_counts[1];
+    telemetry.encoder_front_right.velocity_mps = (float)motor_state.current_velocity_mps[1];
+    telemetry.encoder_front_right.timestamp_us = telemetry.timestamp_us;
 
     /* Back left encoder */
-    telemetry.has_encoder_back_left                 = true;
-    telemetry.encoder_back_left.motor_id            = 2;
-    telemetry.encoder_back_left.ticks               = motor_state.encoder_counts[2];
-    telemetry.encoder_back_left.velocity_mps        = (float)motor_state.current_velocity_mps[2];
-    telemetry.encoder_back_left.timestamp_us        = telemetry.timestamp_us;
+    telemetry.has_encoder_back_left          = true;
+    telemetry.encoder_back_left.motor_id     = 2;
+    telemetry.encoder_back_left.ticks        = motor_state.encoder_counts[2];
+    telemetry.encoder_back_left.velocity_mps = (float)motor_state.current_velocity_mps[2];
+    telemetry.encoder_back_left.timestamp_us = telemetry.timestamp_us;
 
     /* Back right encoder */
-    telemetry.has_encoder_back_right                = true;
-    telemetry.encoder_back_right.motor_id           = 3;
-    telemetry.encoder_back_right.ticks              = motor_state.encoder_counts[3];
-    telemetry.encoder_back_right.velocity_mps       = (float)motor_state.current_velocity_mps[3];
-    telemetry.encoder_back_right.timestamp_us       = telemetry.timestamp_us;
+    telemetry.has_encoder_back_right          = true;
+    telemetry.encoder_back_right.motor_id     = 3;
+    telemetry.encoder_back_right.ticks        = motor_state.encoder_counts[3];
+    telemetry.encoder_back_right.velocity_mps = (float)motor_state.current_velocity_mps[3];
+    telemetry.encoder_back_right.timestamp_us = telemetry.timestamp_us;
   }
 
   /* Collect BMS state */
@@ -1799,10 +1798,7 @@ static rx_err_t internal_build_and_send_telemetry(void)
   }
 
   /* Encode to protobuf */
-  err = rx_nanopb_encode_telemetry(&telemetry,
-                                   s_telem_buffer,
-                                   k_telem_buffer_size,
-                                   &encoded_len);
+  err = rx_nanopb_encode_telemetry(&telemetry, s_telem_buffer, k_telem_buffer_size, &encoded_len);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Telemetry encode failed", (uint32_t)err);
     return err;

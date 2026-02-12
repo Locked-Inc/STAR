@@ -13,11 +13,11 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
-#include "unity.h"
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+
+#include "unity.h"
 
 /* =============================================================================
  * Mock Register Areas
@@ -139,7 +139,7 @@ static rx_err_t mock_shared_data_trigger_estop(uint8_t reason)
 static void test_irq13_bms_alert_isr(void)
 {
   s_mock_icu.ir[k_bms_alert_vector] = k_icu_ir_clear;
-  s_alert_triggered = true;
+  s_alert_triggered                 = true;
   s_error_log_count++;
   (void)mock_shared_data_trigger_estop(k_estop_reason_battery_fault);
 }
@@ -151,7 +151,7 @@ static rx_err_t test_bms_alert_init(void)
     return k_rx_err_invalid_state;
   }
 
-  s_mock_icu.ir[k_bms_alert_vector] = k_icu_ir_clear;
+  s_mock_icu.ir[k_bms_alert_vector]     = k_icu_ir_clear;
   s_mock_icu.irqcr[k_bms_alert_irq_num] = k_irqcr_falling_edge;
 
   rx_err_t err = mock_irq_filter_enable(k_bms_alert_irq_num, k_irq_filter_pclk_32);

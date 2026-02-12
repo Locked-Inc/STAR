@@ -1259,9 +1259,9 @@ void test_rx_bus_manager_find_bus_not_found(void)
  * ```
  */
 typedef struct {
-  bool     callback_called;         /**< Set to true when callback invoked */
-  rx_err_t callback_return;         /**< Return value for callback to produce */
-  char     bus_name_seen[32];       /**< Bus name seen by callback (copied for verification) */
+  bool     callback_called;   /**< Set to true when callback invoked */
+  rx_err_t callback_return;   /**< Return value for callback to produce */
+  char     bus_name_seen[32]; /**< Bus name seen by callback (copied for verification) */
 } callback_ctx_t;
 
 /**
@@ -1471,8 +1471,8 @@ void test_rx_bus_manager_with_bus_not_found(void)
  * ```
  */
 typedef struct {
-  uint32_t value;      /**< Value modified by command (test verification) */
-  bool     executed;   /**< Set to true when command executes */
+  uint32_t value;    /**< Value modified by command (test verification) */
+  bool     executed; /**< Set to true when command executes */
 } command_test_data_t;
 
 /**

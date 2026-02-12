@@ -84,12 +84,12 @@
 #include "rx72n_clock.h"
 #include "rx72n_cmt_regs.h"
 #include "rx72n_regs.h"
+#include "rx72n_system_regs.h"
 #include "rx_bus_types.h"
 #include "rx_check.h"
 #include "rx_crc.h"
 #include "rx_log.h"
 #include "rx_register_protection.h"
-#include "rx72n_system_regs.h"
 
 static const char*    s_tag                        = "BUS_ONEWIRE";
 static const uint32_t s_onewire_max_search_devices = 64U;
@@ -213,8 +213,7 @@ static void internal_delay_timer_init(void)
   *prcr_reg() = k_rx_prcr_lock;
 
   /* Stop CMT3 before reconfiguration */
-  cmt_ctrl()->cmstr1 &=
-    (uint16_t)~((uint16_t)k_onewire_bit_set << k_onewire_cmt3_start_bit);
+  cmt_ctrl()->cmstr1 &= (uint16_t) ~((uint16_t)k_onewire_bit_set << k_onewire_cmt3_start_bit);
 
   /* Configure free-running counter (no interrupts) */
   cmt3()->cmcr  = (uint16_t)(k_onewire_cmt_divider_setting << k_onewire_cmt_clk_shift);

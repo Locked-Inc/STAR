@@ -1002,7 +1002,7 @@ typedef struct {
  * - Rule 7: [OK] All ThreadX return values checked
  */
 [[nodiscard]] rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
-                                 const rx_obstacle_detect_config_t* config);
+                                               const rx_obstacle_detect_config_t* config);
 
 /**
  * @brief Deinitialize obstacle detection system
@@ -1087,7 +1087,7 @@ typedef struct {
  * @return k_rx_err_invalid_state if not initialized
  */
 [[nodiscard]] rx_err_t rx_obstacle_detect_get_state(const rx_obstacle_detect_t* handle,
-                                      rx_obstacle_detect_state_t* out_state);
+                                                    rx_obstacle_detect_state_t* out_state);
 
 /**
  * @brief Check if obstacle is currently detected
@@ -1117,9 +1117,9 @@ typedef struct {
  * @return k_rx_err_invalid_state if not initialized
  */
 [[nodiscard]] rx_err_t rx_obstacle_detect_get_stats(const rx_obstacle_detect_t* handle,
-                                      uint32_t*                   out_total_polls,
-                                      uint32_t*                   out_obstacle_events,
-                                      uint32_t*                   out_false_positives);
+                                                    uint32_t*                   out_total_polls,
+                                                    uint32_t*                   out_obstacle_events,
+                                                    uint32_t* out_false_positives);
 
 /**
  * @brief Reset statistics counters

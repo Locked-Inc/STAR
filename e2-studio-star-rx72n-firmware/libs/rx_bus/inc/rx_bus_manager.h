@@ -284,9 +284,9 @@ extern "C" {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
-                             const char*           tag,
-                             rx_error_interface_t* error_iface,
-                             rx_pin_interface_t*   pin_iface);
+                                           const char*           tag,
+                                           rx_error_interface_t* error_iface,
+                                           rx_pin_interface_t*   pin_iface);
 
 /**
  * @brief Deinitialize bus manager and release all resources
@@ -418,7 +418,8 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_config);
+[[nodiscard]] rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager,
+                                              rx_bus_config_t*  bus_config);
 
 /**
  * @brief Unregister and cleanup a bus by name
@@ -681,9 +682,9 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
-                                 const char*       name,
-                                 rx_bus_callback_t callback,
-                                 void*             user_ctx);
+                                               const char*       name,
+                                               rx_bus_callback_t callback,
+                                               void*             user_ctx);
 
 /* =============================================================================
  * Command Pattern Interface (Recommended for new code)
@@ -848,8 +849,8 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
-                                        const char*       name,
-                                        rx_bus_command_t* command);
+                                                      const char*       name,
+                                                      rx_bus_command_t* command);
 
 #ifdef __cplusplus
 }

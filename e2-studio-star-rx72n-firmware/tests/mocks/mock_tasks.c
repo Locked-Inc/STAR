@@ -13,21 +13,21 @@
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
+#include <stdbool.h>
+
 #include "rx_err.h"
 #include "tx_api.h"
-
-#include <stdbool.h>
 
 /* =============================================================================
  * Static State - Track if tasks are already created
  * =============================================================================
  */
 
-static bool s_motor_task_created    = false;
-static bool s_comm_task_created     = false;
-static bool s_obstacle_task_created = false;
-static bool s_bms_task_created      = false;
-static bool s_temp_task_created     = false;
+static bool s_motor_task_created     = false;
+static bool s_comm_task_created      = false;
+static bool s_obstacle_task_created  = false;
+static bool s_bms_task_created       = false;
+static bool s_temp_task_created      = false;
 static bool s_telemetry_task_created = false;
 
 /* ThreadX thread structures (mocked) */
@@ -45,11 +45,11 @@ static TX_THREAD s_telemetry_thread;
 
 void mock_tasks_reset(void)
 {
-  s_motor_task_created    = false;
-  s_comm_task_created     = false;
-  s_obstacle_task_created = false;
-  s_bms_task_created      = false;
-  s_temp_task_created     = false;
+  s_motor_task_created     = false;
+  s_comm_task_created      = false;
+  s_obstacle_task_created  = false;
+  s_bms_task_created       = false;
+  s_temp_task_created      = false;
   s_telemetry_task_created = false;
 }
 
@@ -69,8 +69,16 @@ rx_err_t motor_control_task_create(void)
     return k_rx_err_invalid_state;
   }
 
-  status = tx_thread_create(&s_motor_thread, "Motor", nullptr, 0,
-                            NULL, 0, 0, 0, TX_NO_TIME_SLICE, TX_AUTO_START);
+  status = tx_thread_create(&s_motor_thread,
+                            "Motor",
+                            nullptr,
+                            0,
+                            NULL,
+                            0,
+                            0,
+                            0,
+                            TX_NO_TIME_SLICE,
+                            TX_AUTO_START);
 
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_thread_create;
@@ -91,8 +99,16 @@ rx_err_t comm_task_create(void)
     return k_rx_err_invalid_state;
   }
 
-  status = tx_thread_create(&s_comm_thread, "Comm", nullptr, 0,
-                            NULL, 0, 0, 0, TX_NO_TIME_SLICE, TX_AUTO_START);
+  status = tx_thread_create(&s_comm_thread,
+                            "Comm",
+                            nullptr,
+                            0,
+                            NULL,
+                            0,
+                            0,
+                            0,
+                            TX_NO_TIME_SLICE,
+                            TX_AUTO_START);
 
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_thread_create;
@@ -113,8 +129,16 @@ rx_err_t obstacle_detect_task_create(void)
     return k_rx_err_invalid_state;
   }
 
-  status = tx_thread_create(&s_obstacle_thread, "Obstacle", nullptr, 0,
-                            NULL, 0, 0, 0, TX_NO_TIME_SLICE, TX_AUTO_START);
+  status = tx_thread_create(&s_obstacle_thread,
+                            "Obstacle",
+                            nullptr,
+                            0,
+                            NULL,
+                            0,
+                            0,
+                            0,
+                            TX_NO_TIME_SLICE,
+                            TX_AUTO_START);
 
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_thread_create;
@@ -135,8 +159,16 @@ rx_err_t bms_monitor_task_create(void)
     return k_rx_err_invalid_state;
   }
 
-  status = tx_thread_create(&s_bms_thread, "BMS", nullptr, 0,
-                            NULL, 0, 0, 0, TX_NO_TIME_SLICE, TX_AUTO_START);
+  status = tx_thread_create(&s_bms_thread,
+                            "BMS",
+                            nullptr,
+                            0,
+                            NULL,
+                            0,
+                            0,
+                            0,
+                            TX_NO_TIME_SLICE,
+                            TX_AUTO_START);
 
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_thread_create;
@@ -157,8 +189,16 @@ rx_err_t temp_sensor_task_create(void)
     return k_rx_err_invalid_state;
   }
 
-  status = tx_thread_create(&s_temp_thread, "Temp", nullptr, 0,
-                            NULL, 0, 0, 0, TX_NO_TIME_SLICE, TX_AUTO_START);
+  status = tx_thread_create(&s_temp_thread,
+                            "Temp",
+                            nullptr,
+                            0,
+                            NULL,
+                            0,
+                            0,
+                            0,
+                            TX_NO_TIME_SLICE,
+                            TX_AUTO_START);
 
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_thread_create;
@@ -179,8 +219,16 @@ rx_err_t telemetry_task_create(void)
     return k_rx_err_invalid_state;
   }
 
-  status = tx_thread_create(&s_telemetry_thread, "Telemetry", nullptr, 0,
-                            NULL, 0, 0, 0, TX_NO_TIME_SLICE, TX_AUTO_START);
+  status = tx_thread_create(&s_telemetry_thread,
+                            "Telemetry",
+                            nullptr,
+                            0,
+                            NULL,
+                            0,
+                            0,
+                            0,
+                            TX_NO_TIME_SLICE,
+                            TX_AUTO_START);
 
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_thread_create;

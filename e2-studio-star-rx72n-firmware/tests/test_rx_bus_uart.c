@@ -301,10 +301,10 @@
 typedef enum : uint32_t {
   k_test_uart_channel           = 9,      /**< Primary SCI channel (SCI9 on PB7/PB6) */
   k_test_uart_baudrate          = 115200, /**< Primary baud rate (debug console speed) */
-  k_test_uart_channel_secondary = 0,      /**< Secondary SCI channel (SCI0 for multi-channel tests) */
-  k_test_uart_baudrate_slow     = 9600,   /**< Secondary baud rate (GPS/sensor speed) */
-  k_test_uart_channel_invalid   = 13,     /**< Invalid SCI channel (only 0-12 exist on RX72N) */
-  k_test_uart_baudrate_zero     = 0,      /**< Zero baud rate (invalid - for error tests) */
+  k_test_uart_channel_secondary = 0,    /**< Secondary SCI channel (SCI0 for multi-channel tests) */
+  k_test_uart_baudrate_slow     = 9600, /**< Secondary baud rate (GPS/sensor speed) */
+  k_test_uart_channel_invalid   = 13,   /**< Invalid SCI channel (only 0-12 exist on RX72N) */
+  k_test_uart_baudrate_zero     = 0,    /**< Zero baud rate (invalid - for error tests) */
 } test_uart_config_t;
 
 /**

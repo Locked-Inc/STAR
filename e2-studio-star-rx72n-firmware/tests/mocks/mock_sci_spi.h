@@ -49,15 +49,15 @@ typedef enum : uint16_t {
 
 /** @brief State of a single SCI SPI controller channel */
 typedef struct {
-  bool     initialized;                                /**< Channel initialized */
-  uint8_t  spi_mode;                                   /**< Configured SPI mode (0-3) */
-  uint32_t freq_hz;                                    /**< Configured clock frequency */
-  uint8_t  cs_port;                                    /**< Chip select port */
-  uint8_t  cs_pin;                                     /**< Chip select pin */
-  uint16_t last_tx_data;                               /**< Last transmitted 16-bit data */
-  uint16_t next_rx_data;                               /**< Next data to return on transfer */
-  uint8_t  tx_history[k_mock_sci_spi_tx_history_sz];   /**< TX history buffer */
-  uint32_t tx_history_len;                             /**< TX history length */
+  bool     initialized;                              /**< Channel initialized */
+  uint8_t  spi_mode;                                 /**< Configured SPI mode (0-3) */
+  uint32_t freq_hz;                                  /**< Configured clock frequency */
+  uint8_t  cs_port;                                  /**< Chip select port */
+  uint8_t  cs_pin;                                   /**< Chip select pin */
+  uint16_t last_tx_data;                             /**< Last transmitted 16-bit data */
+  uint16_t next_rx_data;                             /**< Next data to return on transfer */
+  uint8_t  tx_history[k_mock_sci_spi_tx_history_sz]; /**< TX history buffer */
+  uint32_t tx_history_len;                           /**< TX history length */
 } mock_sci_spi_channel_t;
 
 /* =============================================================================

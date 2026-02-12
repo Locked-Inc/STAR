@@ -64,7 +64,7 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    /**
+  /**
      * @brief Undefined instruction exception
      * @details
      * Occurs when CPU attempts to execute an instruction not implemented
@@ -72,9 +72,9 @@ typedef enum : uint8_t {
      * @par Vector: EXTB + 0x5C
      * @par Return: RTE instruction (if recoverable)
      */
-    k_rx_exception_undefined_instruction = 0,
+  k_rx_exception_undefined_instruction = 0,
 
-    /**
+  /**
      * @brief Privileged instruction exception
      * @details
      * Occurs when a privileged instruction is executed in user mode.
@@ -82,9 +82,9 @@ typedef enum : uint8_t {
      * @par Vector: EXTB + 0x50
      * @par Return: RTE instruction (if recoverable)
      */
-    k_rx_exception_privileged_instruction = 1,
+  k_rx_exception_privileged_instruction = 1,
 
-    /**
+  /**
      * @brief Access exception (instruction or operand)
      * @details
      * Occurs when memory protection unit (MPU) detects a memory access
@@ -92,18 +92,18 @@ typedef enum : uint8_t {
      * @par Vector: EXTB + 0x54
      * @par Return: RTE instruction (if recoverable)
      */
-    k_rx_exception_access = 2,
+  k_rx_exception_access = 2,
 
-    /**
+  /**
      * @brief Address exception
      * @details
      * Occurs on 64-bit operand access to an address not on a 32-bit boundary.
      * @par Vector: EXTB + 0x60
      * @par Return: RTE instruction (if recoverable)
      */
-    k_rx_exception_address = 3,
+  k_rx_exception_address = 3,
 
-    /**
+  /**
      * @brief Single-precision floating-point exception
      * @details
      * Occurs when IEEE 754 floating-point exception is detected:
@@ -112,9 +112,9 @@ typedef enum : uint8_t {
      * @par Vector: EXTB + 0x64
      * @par Return: RTE instruction (if recoverable)
      */
-    k_rx_exception_floating_point = 4,
+  k_rx_exception_floating_point = 4,
 
-    /**
+  /**
      * @brief Non-maskable interrupt (NMI)
      * @details
      * Fatal system fault indication. NEVER return from NMI handler -
@@ -123,13 +123,13 @@ typedef enum : uint8_t {
      * @par Return: PROHIBITED - must reset or halt
      * @warning Do not attempt to return from NMI handler
      */
-    k_rx_exception_nmi = 5,
+  k_rx_exception_nmi = 5,
 
-    /**
+  /**
      * @brief Total count of exception types
      * @details Used for array sizing and validation
      */
-    k_rx_exception_type_count = 6,
+  k_rx_exception_type_count = 6,
 
 } rx_exception_type_t;
 
@@ -152,47 +152,47 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    /**
+  /**
      * @brief Privileged instruction exception vector offset
      * @details Handler address at EXTB + 0x50 = default 0xFFFF_FFD0
      */
-    k_rx_exc_offset_privileged = 0x50,
+  k_rx_exc_offset_privileged = 0x50,
 
-    /**
+  /**
      * @brief Access exception vector offset
      * @details Handler address at EXTB + 0x54 = default 0xFFFF_FFD4
      */
-    k_rx_exc_offset_access = 0x54,
+  k_rx_exc_offset_access = 0x54,
 
-    /**
+  /**
      * @brief Undefined instruction exception vector offset
      * @details Handler address at EXTB + 0x5C = default 0xFFFF_FFDC
      */
-    k_rx_exc_offset_undefined = 0x5C,
+  k_rx_exc_offset_undefined = 0x5C,
 
-    /**
+  /**
      * @brief Address exception vector offset
      * @details Handler address at EXTB + 0x60 = default 0xFFFF_FFE0
      */
-    k_rx_exc_offset_address = 0x60,
+  k_rx_exc_offset_address = 0x60,
 
-    /**
+  /**
      * @brief Floating-point exception vector offset
      * @details Handler address at EXTB + 0x64 = default 0xFFFF_FFE4
      */
-    k_rx_exc_offset_fpu = 0x64,
+  k_rx_exc_offset_fpu = 0x64,
 
-    /**
+  /**
      * @brief Non-maskable interrupt vector offset
      * @details Handler address at EXTB + 0x78 = default 0xFFFF_FFF8
      */
-    k_rx_exc_offset_nmi = 0x78,
+  k_rx_exc_offset_nmi = 0x78,
 
-    /**
+  /**
      * @brief Reset vector offset
      * @details Handler address at EXTB + 0x7C = fixed 0xFFFF_FFFC
      */
-    k_rx_exc_offset_reset = 0x7C,
+  k_rx_exc_offset_reset = 0x7C,
 
 } rx_exception_vector_offset_t;
 
@@ -228,7 +228,7 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct {
-    /**
+  /**
      * @brief Program counter at time of exception
      * @details
      * For instruction-canceling exceptions (UND, PIE, ACE, ADE, FPE):
@@ -237,9 +237,9 @@ typedef struct {
      * Points to the next instruction.
      * @par Range: 0x00000000 to 0xFFFFFFFF
      */
-    uint32_t pc;
+  uint32_t pc;
 
-    /**
+  /**
      * @brief Processor status word at time of exception
      * @details
      * Contains flags, interrupt priority level, and mode bits.
@@ -250,25 +250,24 @@ typedef struct {
      * - [19:16] S, O, I, Reserved - Sign, overflow, interrupt enable
      * - [15:0] Reserved and other flags
      */
-    uint32_t psw;
+  uint32_t psw;
 
-    /**
+  /**
      * @brief Exception type that occurred
      * @details Identifies which exception handler was invoked
      */
-    rx_exception_type_t type;
+  rx_exception_type_t type;
 
-    /**
+  /**
      * @brief Padding for alignment
      * @details Ensures structure is 4-byte aligned
      */
-    uint8_t reserved[3];
+  uint8_t reserved[3];
 
 } rx_exception_frame_t;
 
 /* Static assertion for structure size */
-static_assert(sizeof(rx_exception_frame_t) == 12,
-               "rx_exception_frame_t must be 12 bytes");
+static_assert(sizeof(rx_exception_frame_t) == 12, "rx_exception_frame_t must be 12 bytes");
 
 /* ============================================================================
  * Exception Statistics
@@ -289,17 +288,17 @@ static_assert(sizeof(rx_exception_frame_t) == 12,
  * @since Version 1.0.0
  */
 typedef struct {
-    /**
+  /**
      * @brief Count per exception type
      * @details Index by rx_exception_type_t enum values
      */
-    uint32_t count[k_rx_exception_type_count];
+  uint32_t count[k_rx_exception_type_count];
 
-    /**
+  /**
      * @brief Last exception frame captured
      * @details Preserved for post-mortem debugging
      */
-    rx_exception_frame_t last_frame;
+  rx_exception_frame_t last_frame;
 
 } rx_exception_stats_t;
 
